@@ -3832,6 +3832,10 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	      ret = GS_ERROR;
 	      break;
 	    }
+	  /* FALLTHRU */
+
+	case PARM_DECL:
+	  tmp = *expr_p;
 
 	  /* If this is a local variable sized decl, it must be accessed
 	     indirectly.  Perform that substitution.  */
@@ -4213,10 +4217,10 @@ check_pointer_types_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
    function decl containing BODY.  */
 
 void
-gimplify_body (tree *body_p, tree fndecl)
+gimplify_body (tree *body_p, tree fndecl, bool do_parms)
 {
   location_t saved_location = input_location;
-  tree body;
+  tree body, parm_stmts;
 
   timevar_push (TV_TREE_GIMPLIFY);
   push_gimplify_context ();
@@ -4231,12 +4235,13 @@ gimplify_body (tree *body_p, tree fndecl)
   /* Make sure input_location isn't set to something wierd.  */
   input_location = DECL_SOURCE_LOCATION (fndecl);
 
+  /* Resolve callee-copies.  This has to be done before processing
+     the body so that DECL_VALUE_EXPR gets processed correctly.  */
+  parm_stmts = do_parms ? gimplify_parameters () : NULL;
+
   /* Gimplify the function's body.  */
   gimplify_stmt (body_p);
   body = *body_p;
-
-  /* Unshare again, in case gimplification was sloppy.  */
-  unshare_all_trees (body);
 
   if (!body)
     body = alloc_stmt_list ();
@@ -4256,6 +4261,18 @@ gimplify_body (tree *body_p, tree fndecl)
       append_to_statement_list_force (body, &BIND_EXPR_BODY (b));
       body = b;
     }
+
+  /* If we had callee-copies statements, insert them at the beginning
+     of the function.  */
+  if (parm_stmts)
+    {
+      append_to_statement_list_force (BIND_EXPR_BODY (body), &parm_stmts);
+      BIND_EXPR_BODY (body) = parm_stmts;
+    }
+
+  /* Unshare again, in case gimplification was sloppy.  */
+  unshare_all_trees (body);
+
   *body_p = body;
 
   pop_gimplify_context (body);
@@ -4278,8 +4295,11 @@ gimplify_function_tree (tree fndecl)
 
   oldfn = current_function_decl;
   current_function_decl = fndecl;
+  cfun = DECL_STRUCT_FUNCTION (fndecl);
+  if (cfun == NULL)
+    allocate_struct_function (fndecl);
 
-  gimplify_body (&DECL_SAVED_TREE (fndecl), fndecl);
+  gimplify_body (&DECL_SAVED_TREE (fndecl), fndecl, true);
 
   /* If we're instrumenting function entry/exit, then prepend the call to
      the entry hook and wrap the whole function in a TRY_FINALLY_EXPR to
@@ -4309,6 +4329,7 @@ gimplify_function_tree (tree fndecl)
     }
 
   current_function_decl = oldfn;
+  cfun = oldfn ? DECL_STRUCT_FUNCTION (oldfn) : NULL;
 }
 
 

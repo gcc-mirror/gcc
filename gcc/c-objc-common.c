@@ -68,7 +68,6 @@ int
 c_cannot_inline_tree_fn (tree *fnp)
 {
   tree fn = *fnp;
-  tree t;
   bool do_warning = (warn_inline
 		     && DECL_INLINE (fn)
 		     && DECL_DECLARED_INLINE_P (fn)
@@ -99,35 +98,6 @@ c_cannot_inline_tree_fn (tree *fnp)
 	warning ("%Jfunction %qF can never be inlined because it uses "
 		 "attributes conflicting with inlining", fn, fn);
       goto cannot_inline;
-    }
-
-  /* If a function has pending sizes, we must not defer its
-     compilation, and we can't inline it as a tree.  */
-  if (fn == current_function_decl)
-    {
-      t = get_pending_sizes ();
-      put_pending_sizes (t);
-
-      if (t)
-	{
-	  if (do_warning)
-	    warning ("%Jfunction %qF can never be inlined because it has "
-		     "pending sizes", fn, fn);
-	  goto cannot_inline;
-	}
-    }
-
-  if (!DECL_FILE_SCOPE_P (fn))
-    {
-      /* If a nested function has pending sizes, we may have already
-         saved them.  */
-      if (DECL_LANG_SPECIFIC (fn)->pending_sizes)
-	{
-	  if (do_warning)
-	    warning ("%Jnested function %qF can never be inlined because it "
-		     "has possibly saved pending sizes", fn, fn);
-	  goto cannot_inline;
-	}
     }
 
   return 0;

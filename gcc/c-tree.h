@@ -41,10 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 struct lang_decl GTY(())
 {
-  /* The return types and parameter types may have variable size.
-     This is a list of any SAVE_EXPRs that need to be evaluated to
-     compute those sizes.  */
-  tree pending_sizes;
+  char dummy;
 };
 
 /* In a RECORD_TYPE or UNION_TYPE, nonzero if any component is read-only.  */

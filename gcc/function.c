@@ -59,6 +59,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "target.h"
 #include "cfglayout.h"
+#include "tree-gimple.h"
 
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
@@ -2804,50 +2805,6 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       data->stack_parm = NULL;
     }
 
-  /* If we are passed an arg by reference and it is our responsibility
-     to make a copy, do it now.
-     PASSED_TYPE and PASSED mode now refer to the pointer, not the
-     original argument, so we must recreate them in the call to
-     FUNCTION_ARG_CALLEE_COPIES.  */
-  /* ??? Later add code to handle the case that if the argument isn't
-     modified, don't do the copy.  */
-
-  else if (data->passed_pointer)
-    {
-      tree type = TREE_TYPE (data->passed_type);
-    
-      if (reference_callee_copied (&all->args_so_far, TYPE_MODE (type),
-				   type, data->named_arg))
-	{
-	  rtx copy;
-
-	  /* This sequence may involve a library call perhaps clobbering
-	     registers that haven't been copied to pseudos yet.  */
-
-	  push_to_sequence (all->conversion_insns);
-
-	  if (!COMPLETE_TYPE_P (type)
-	      || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-	    {
-	      /* This is a variable sized object.  */
-	      copy = allocate_dynamic_stack_space (expr_size (parm), NULL_RTX,
-						   TYPE_ALIGN (type));
-	      copy = gen_rtx_MEM (BLKmode, copy);
-	    }
-	  else
-	    copy = assign_stack_temp (TYPE_MODE (type),
-				      int_size_in_bytes (type), 1);
-	  set_mem_attributes (copy, parm, 1);
-
-	  store_expr (parm, copy, 0);
-	  emit_move_insn (parmreg, XEXP (copy, 0));
-	  all->conversion_insns = get_insns ();
-	  end_sequence ();
-
-	  did_conversion = true;
-	}
-    }
-
   /* Mark the register as eliminable if we did no conversion and it was
      copied from memory at a fixed offset, and the arg pointer was not
      copied to a pseudo-reg.  If the arg pointer is a pseudo reg or the
@@ -3201,6 +3158,115 @@ assign_parms (tree fndecl)
 	  current_function_return_rtx = real_decl_rtl;
 	}
     }
+}
+
+/* A subroutine of gimplify_parameters, invoked via walk_tree.
+   For all seen types, gimplify their sizes.  */
+
+static tree
+gimplify_parm_type (tree *tp, int *walk_subtrees, void *data)
+{
+  tree t = *tp;
+
+  *walk_subtrees = 0;
+  if (TYPE_P (t))
+    {
+      if (POINTER_TYPE_P (t))
+	*walk_subtrees = 1;
+      else if (TYPE_SIZE (t) && !TREE_CONSTANT (TYPE_SIZE (t)))
+	{
+	  gimplify_type_sizes (t, (tree *) data);
+	  *walk_subtrees = 1;
+	}
+    }
+
+  return NULL;
+}
+
+/* Gimplify the parameter list for current_function_decl.  This involves
+   evaluating SAVE_EXPRs of variable sized parameters and generating code
+   to implement callee-copies reference parameters.  Returns a list of
+   statements to add to the beginning of the function, or NULL if nothing
+   to do.  */
+
+tree
+gimplify_parameters (void)
+{
+  struct assign_parm_data_all all;
+  tree fnargs, parm, stmts = NULL;
+
+  assign_parms_initialize_all (&all);
+  fnargs = assign_parms_augmented_arg_list (&all);
+
+  for (parm = fnargs; parm; parm = TREE_CHAIN (parm))
+    {
+      struct assign_parm_data_one data;
+
+      /* Extract the type of PARM; adjust it according to ABI.  */
+      assign_parm_find_data_types (&all, parm, &data);
+
+      /* Early out for errors and void parameters.  */
+      if (data.passed_mode == VOIDmode || DECL_SIZE (parm) == NULL)
+	continue;
+
+      /* Update info on where next arg arrives in registers.  */
+      FUNCTION_ARG_ADVANCE (all.args_so_far, data.promoted_mode,
+			    data.passed_type, data.named_arg);
+
+      /* ??? Once upon a time variable_size stuffed parameter list
+	 SAVE_EXPRs (amongst others) onto a pending sizes list.  This
+	 turned out to be less than manageable in the gimple world.
+	 Now we have to hunt them down ourselves.  */
+      walk_tree_without_duplicates (&data.passed_type,
+				    gimplify_parm_type, &stmts);
+
+      if (!TREE_CONSTANT (DECL_SIZE (parm)))
+	{
+	  gimplify_one_sizepos (&DECL_SIZE (parm), &stmts);
+	  gimplify_one_sizepos (&DECL_SIZE_UNIT (parm), &stmts);
+	}
+
+      if (data.passed_pointer)
+	{
+          tree type = TREE_TYPE (data.passed_type);
+	  if (reference_callee_copied (&all.args_so_far, TYPE_MODE (type),
+				       type, data.named_arg))
+	    {
+	      tree local, t;
+
+	      /* For constant sized objects, this is trivial; for
+		 variable-sized objects, we have to play games.  */
+	      if (TREE_CONSTANT (DECL_SIZE (parm)))
+		{
+		  local = create_tmp_var (type, get_name (parm));
+		  DECL_IGNORED_P (local) = 0;
+		}
+	      else
+		{
+		  tree ptr_type, addr, args;
+
+		  ptr_type = build_pointer_type (type);
+		  addr = create_tmp_var (ptr_type, get_name (parm));
+		  DECL_IGNORED_P (addr) = 0;
+		  local = build_fold_indirect_ref (addr);
+
+		  args = tree_cons (NULL, DECL_SIZE_UNIT (parm), NULL);
+		  t = built_in_decls[BUILT_IN_ALLOCA];
+		  t = build_function_call_expr (t, args);
+		  t = fold_convert (ptr_type, t);
+		  t = build2 (MODIFY_EXPR, void_type_node, addr, t);
+		  gimplify_and_add (t, &stmts);
+		}
+
+	      t = build2 (MODIFY_EXPR, void_type_node, local, parm);
+	      gimplify_and_add (t, &stmts);
+
+	      DECL_VALUE_EXPR (parm) = local;
+	    }
+	}
+    }
+
+  return stmts;
 }
 
 /* Indicate whether REGNO is an incoming argument to the current function
@@ -3972,22 +4038,6 @@ expand_main_function (void)
 #endif
 }
 
-/* The PENDING_SIZES represent the sizes of variable-sized types.
-   Create RTL for the various sizes now (using temporary variables),
-   so that we can refer to the sizes from the RTL we are generating
-   for the current function.  The PENDING_SIZES are a TREE_LIST.  The
-   TREE_VALUE of each node is a SAVE_EXPR.  */
-
-static void
-expand_pending_sizes (tree pending_sizes)
-{
-  tree tem;
-
-  /* Evaluate now the sizes of any types declared among the arguments.  */
-  for (tem = pending_sizes; tem; tem = TREE_CHAIN (tem))
-    expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode, 0);
-}
-
 /* Start the RTL for a new function, and set variables used for
    emitting RTL.
    SUBR is the FUNCTION_DECL node.
@@ -4151,9 +4201,6 @@ expand_function_start (tree subr)
      should go, if we end up needing one.   Ensure we have a NOTE here
      since some things (like trampolines) get placed before this.  */
   tail_recursion_reentry = emit_note (NOTE_INSN_DELETED);
-
-  /* Evaluate now the sizes of any types declared among the arguments.  */
-  expand_pending_sizes (nreverse (get_pending_sizes ()));
 
   /* Make sure there is a line number after the function entry setup code.  */
   force_next_line_note ();

@@ -6235,8 +6235,11 @@ store_parm_decls (void)
   DECL_SAVED_TREE (fndecl) = push_stmt_list ();
 
   /* ??? Insert the contents of the pending sizes list into the function
-     to be evaluated.  This just changes mis-behavior until assign_parms
-     phase ordering problems are resolved.  */
+     to be evaluated.  The only reason left to have this is
+	void foo(int n, int array[n++])
+     because we throw away the array type in favor of a pointer type, and
+     thus won't naturally see the SAVE_EXPR containing the increment.  All
+     other pending sizes would be handled by gimplify_parameters.  */
   {
     tree t;
     for (t = nreverse (get_pending_sizes ()); t ; t = TREE_CHAIN (t))
