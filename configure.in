@@ -1319,6 +1319,18 @@ if test -n "${target_makefile_frag}" ; then
   target_makefile_frag=mt-frag
 fi
 
+case "$host" in
+  *msdosdjgpp*)
+    enable_gdbtk=no ;;
+esac
+# Determine whether gdb needs tk/tcl or not.
+case "$enable_gdbtk" in
+  no)
+    GDB_TK="" ;;
+  *)
+    GDB_TK="all-tcl all-tk all-itcl all-tix all-libgui" ;;
+esac
+
 # post-target:
 
 # Make sure that the compiler is able to generate an executable.  If it
