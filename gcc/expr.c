@@ -645,7 +645,7 @@ convert_move (rtx to, rtx from, int unsignedp)
       if (to_mode == full_mode)
 	return;
 
-      /* else proceed to integer conversions below */
+      /* else proceed to integer conversions below.  */
       from_mode = full_mode;
     }
 

@@ -1952,7 +1952,7 @@ early_queue_to_ready (state_t state, struct ready_list *ready)
 
 		      insns_removed++;
 		      if (insns_removed == flag_sched_stalled_insns)
-			/* remove only one insn from Q at a time */
+			/* Remove only one insn from Q at a time.  */
 			return insns_removed;
 		    }
 		}

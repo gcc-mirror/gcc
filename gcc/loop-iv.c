@@ -34,7 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    interesting reg, it is now easy to find a reaching definition (there may be
    only one).
 
-   Induction variable is then simply analysed by walking the use-def
+   Induction variable is then simply analyzed by walking the use-def
    chains.
    
    Usage:
@@ -501,7 +501,7 @@ iv_add (struct rtx_iv *iv0, struct rtx_iv *iv1, enum rtx_code op)
   enum machine_mode mode;
   rtx arg;
 
-  /* Extend the constant to extend_mode of the other operand if neccesary.  */
+  /* Extend the constant to extend_mode of the other operand if necessary.  */
   if (iv0->extend == NIL
       && iv0->mode == iv0->extend_mode
       && iv0->step == const0_rtx
@@ -862,7 +862,7 @@ iv_analyze_biv (rtx def, struct rtx_iv *iv)
   return iv->base != NULL_RTX;
 }
 
-/* Analyses operand OP of INSN and stores the result to *IV.  */
+/* Analyzes operand OP of INSN and stores the result to *IV.  */
 
 static bool
 iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
@@ -927,7 +927,7 @@ iv_analyze_op (rtx insn, rtx op, struct rtx_iv *iv)
   return iv_analyze (def_insn, op, iv);
 }
 
-/* Analyses iv DEF defined in INSN and stores the result to *IV.  */
+/* Analyzes iv DEF defined in INSN and stores the result to *IV.  */
 
 bool
 iv_analyze (rtx insn, rtx def, struct rtx_iv *iv)
@@ -1746,7 +1746,7 @@ shorten_into_mode (struct rtx_iv *iv, enum machine_mode mode,
 }
 
 /* Transforms IV0 and IV1 compared by COND so that they are both compared as
-   subregs of the same mode if possible (sometimes it is neccesary to add
+   subregs of the same mode if possible (sometimes it is necessary to add
    some assumptions to DESC).  */
 
 static bool
@@ -2082,7 +2082,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
 		 obviously if the test for overflow during that transformation
 		 passed, we cannot overflow here.  Most importantly any
 		 loop with sharp end condition and step 1 falls into this
-		 cathegory, so handling this case specially is definitely
+		 category, so handling this case specially is definitely
 		 worth the troubles.  */
 	      may_xform = const_true_rtx;
 	    }

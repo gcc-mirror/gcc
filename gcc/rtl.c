@@ -156,7 +156,7 @@ rtvec_alloc (int n)
   rtvec rt;
 
   rt = ggc_alloc_rtvec (n);
-  /* clear out the vector */
+  /* Clear out the vector.  */
   memset (&rt->elem[0], 0, n * sizeof (rtx));
 
   PUT_NUM_ELEM (rt, n);

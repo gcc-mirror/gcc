@@ -3325,7 +3325,7 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
   nregs_xmode = hard_regno_nregs[xregno][xmode];
   nregs_ymode = hard_regno_nregs[xregno][ymode];
 
-  /* paradoxical subregs are always valid.  */
+  /* Paradoxical subregs are always valid.  */
   if (offset == 0
       && nregs_ymode > nregs_xmode
       && (GET_MODE_SIZE (ymode) > UNITS_PER_WORD

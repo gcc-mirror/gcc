@@ -36,7 +36,7 @@ static struct
   const cpp_token *source;	/* Source token for spacing.  */
   int src_line;			/* Line number currently being written.  */
   unsigned char printed;	/* Nonzero if something output at line.  */
-  bool first_time;		/* pp_file_change hasn't been called yet. */
+  bool first_time;		/* pp_file_change hasn't been called yet.  */
 } print;
 
 /* General output routines.  */

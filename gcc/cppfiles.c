@@ -109,7 +109,7 @@ struct _cpp_file
   /* If BUFFER above contains the true contents of the file.  */
   bool buffer_valid;
 
-  /* File is a PCH (on return from find_include_file). */
+  /* File is a PCH (on return from find_include_file).  */
   bool pch;
 };
 

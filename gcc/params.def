@@ -137,7 +137,7 @@ DEFPARAM(PARAM_MAX_GCSE_PASSES,
    
    This limit should be at most half of the peeling limits:  loop unroller
    decides to not unroll loops that iterate fewer than 2*number of allowed
-   unrollings and thus we would have loops that are neither peeled or unrooled
+   unrollings and thus we would have loops that are neither peeled or unrolled
    otherwise.  */
 DEFPARAM(PARAM_MAX_UNROLLED_INSNS,
 	 "max-unrolled-insns",
