@@ -1,3 +1,9 @@
+2000-12-06  Rodney Brown  <RodneyBrown@mynd.com>
+
+	* actions.h: Standarize copyright statement.
+	* except.c inout.c lang.c lex.c lex.h loop.c nloop.c: Likewise.
+	* parse.c tasking.c tasking.h timing.c xtypeck.c: Likewise.
+
 2000-11-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* actions.c (check_missing_cases), typeck.c (build_chill_slice,
