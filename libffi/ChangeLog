@@ -1,3 +1,7 @@
+2003-04-04  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/Makefile.in: Regenerate.
+
 2003-03-22  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* libffi/include/ffi.h.in: Define X86 instead of X86_64 in 32
