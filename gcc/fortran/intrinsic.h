@@ -318,6 +318,7 @@ void gfc_resolve_random_number (gfc_code *);
 void gfc_resolve_getarg (gfc_code *);
 void gfc_resolve_get_command (gfc_code *);
 void gfc_resolve_get_command_argument (gfc_code *);
+void gfc_resolve_get_environment_variable (gfc_code *);
 
 
 /* The mvbits() subroutine requires the most arguments: five.  */

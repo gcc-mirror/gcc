@@ -617,6 +617,36 @@ static void add_sym_5 (const char *name, int elemental, int actual_ok, bt type,
 }
 
 
+static void add_sym_5s  
+(
+ const char *name, int elemental, int actual_ok, bt type, int kind,
+ try (*check)(gfc_expr *,gfc_expr *,gfc_expr *,gfc_expr *,gfc_expr *),
+ gfc_expr *(*simplify)(gfc_expr *,gfc_expr *,gfc_expr *,gfc_expr *,gfc_expr *),
+ void (*resolve)(gfc_code *),
+ const char* a1, bt type1, int kind1, int optional1,
+ const char* a2, bt type2, int kind2, int optional2,
+ const char* a3, bt type3, int kind3, int optional3,
+ const char* a4, bt type4, int kind4, int optional4,
+ const char* a5, bt type5, int kind5, int optional5) 
+{
+  gfc_check_f cf;
+  gfc_simplify_f sf;
+  gfc_resolve_f rf;
+
+  cf.f5 = check;
+  sf.f5 = simplify;
+  rf.s1 = resolve;
+
+  add_sym (name, elemental, actual_ok, type, kind, cf, sf, rf,
+	   a1, type1, kind1, optional1,
+	   a2, type2, kind2, optional2,
+	   a3, type3, kind3, optional3,
+	   a4, type4, kind4, optional4,
+	   a5, type5, kind5, optional5,
+	   (void*)0);
+}
+
+
 /* Locate an intrinsic symbol given a base pointer, number of elements
    in the table and a pointer to a name.  Returns the NULL pointer if
    a name is not found.  */
@@ -1742,13 +1772,15 @@ add_subroutines (void)
     *t = "to", *zn = "zone", *fp = "frompos", *cm = "count_max",
     *f = "from", *sz = "size", *ln = "len", *cr = "count_rate",
     *com = "command", *length = "length", *st = "status",
-    *val = "value", *num = "number";
+    *val = "value", *num = "number", *name = "name",
+    *trim_name = "trim_name";
 
-  int di, dr, dc;
+  int di, dr, dc, dl;
 
   di = gfc_default_integer_kind ();
   dr = gfc_default_real_kind ();
   dc = gfc_default_character_kind ();
+  dl = gfc_default_logical_kind ();
 
   add_sym_0s ("abort", 1, NULL);
 
@@ -1775,6 +1807,11 @@ add_subroutines (void)
 	     gfc_check_etime_sub, NULL, gfc_resolve_etime_sub,
 	     vl, BT_REAL, 4, 0, tm, BT_REAL, 4, 0);
 
+  add_sym_2s ("getenv", 0, 1, BT_UNKNOWN, 0,
+	      NULL, NULL, NULL,
+	      name, BT_CHARACTER, dc, 0,
+	      val, BT_CHARACTER, dc, 0);
+
   add_sym_2s ("getarg", 0, 1, BT_UNKNOWN, 0,
 	      NULL, NULL, gfc_resolve_getarg,
 	      c, BT_INTEGER, di, 0, vl, BT_CHARACTER, dc, 0);
@@ -1793,8 +1830,18 @@ add_subroutines (void)
 	      val, BT_CHARACTER, dc, 1,
 	      length, BT_INTEGER, di, 1,
 	      st, BT_INTEGER, di, 1);
-	     
-  /* Extension */
+
+
+  /* F2003 subroutine to get environment variables. */
+
+  add_sym_5s ("get_environment_variable", 0, 1, BT_UNKNOWN, 0,
+	     NULL, NULL, gfc_resolve_get_environment_variable,
+	     name, BT_CHARACTER, dc, 0,
+	     val, BT_CHARACTER, dc, 1,
+	     length, BT_INTEGER, di, 1,
+	     st, BT_INTEGER, di, 1,
+	     trim_name, BT_LOGICAL, dl, 1);
+
 
   /* This needs changing to add_sym_5s if it gets a resolution function.  */
   add_sym_5 ("mvbits", 1, 1, BT_UNKNOWN, 0,

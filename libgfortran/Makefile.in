@@ -119,7 +119,7 @@ am__objects_32 = backspace.lo close.lo endfile.lo format.lo inquire.lo \
 	list_read.lo lock.lo open.lo read.lo rewind.lo transfer.lo \
 	unit.lo unix.lo write.lo
 am__objects_33 = associated.lo abort.lo args.lo c99_functions.lo \
-	cpu_time.lo cshift0.lo date_and_time.lo eoshift0.lo \
+	cpu_time.lo cshift0.lo date_and_time.lo env.lo eoshift0.lo \
 	eoshift2.lo etime.lo ishftc.lo pack_generic.lo size.lo \
 	spread_generic.lo string_intrinsics.lo rand.lo random.lo \
 	reshape_generic.lo reshape_packed.lo selected_kind.lo \
@@ -314,6 +314,7 @@ intrinsics/c99_functions.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/date_and_time.c \
+intrinsics/env.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
@@ -2024,6 +2025,15 @@ date_and_time.obj: intrinsics/date_and_time.c
 
 date_and_time.lo: intrinsics/date_and_time.c
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o date_and_time.lo `test -f 'intrinsics/date_and_time.c' || echo '$(srcdir)/'`intrinsics/date_and_time.c
+
+env.o: intrinsics/env.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env.o `test -f 'intrinsics/env.c' || echo '$(srcdir)/'`intrinsics/env.c
+
+env.obj: intrinsics/env.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env.obj `if test -f 'intrinsics/env.c'; then $(CYGPATH_W) 'intrinsics/env.c'; else $(CYGPATH_W) '$(srcdir)/intrinsics/env.c'; fi`
+
+env.lo: intrinsics/env.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o env.lo `test -f 'intrinsics/env.c' || echo '$(srcdir)/'`intrinsics/env.c
 
 eoshift0.o: intrinsics/eoshift0.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o eoshift0.o `test -f 'intrinsics/eoshift0.c' || echo '$(srcdir)/'`intrinsics/eoshift0.c
