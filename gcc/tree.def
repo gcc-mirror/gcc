@@ -458,7 +458,10 @@ DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", "e", 4)
      manages to act on the proper value.
    The cleanup is executed by the first enclosing CLEANUP_POINT_EXPR, if
    it exists, otherwise it is the responsibility of the caller to manually
-   call expand_cleanups_to, as needed.  */
+   call expand_start_target_temps/expand_end_target_temps, as needed.
+
+   This differs from TRY_CATCH_EXPR in that operand 2 is always
+   evaluated when an exception isn't throw when cleanups are run.  */
 DEFTREECODE (WITH_CLEANUP_EXPR, "with_cleanup_expr", "e", 3)
 
 /* Specify a cleanup point.
@@ -689,6 +692,24 @@ DEFTREECODE (PREDECREMENT_EXPR, "predecrement_expr", "e", 2)
 DEFTREECODE (PREINCREMENT_EXPR, "preincrement_expr", "e", 2)
 DEFTREECODE (POSTDECREMENT_EXPR, "postdecrement_expr", "e", 2)
 DEFTREECODE (POSTINCREMENT_EXPR, "postincrement_expr", "e", 2)
+
+/* Evalute operand 1.  If and only if an exception is thrown during
+   the evaluation of operand 1, evaluate operand 2.
+
+   This differs from WITH_CLEANUP_EXPR, in that operand 2 is never
+   evaluated unless an exception is throw.  */
+DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", "e", 2)
+
+/* Pop the top element off the dynamic handler chain.  Used in
+   conjunction with setjmp/longjmp based exception handling, see
+   except.c for more details.  This is meant to be used only by the
+   exception handling backend, expand_dhc_cleanup specifically.  */
+DEFTREECODE (POPDHC_EXPR, "popdhc_expr", "s", 0)
+
+/* Pop the top element off the dynamic cleanup chain.  Used in
+   conjunction with the exception handling.  This is meant to be used
+   only by the exception handling backend.  */
+DEFTREECODE (POPDCC_EXPR, "popdcc_expr", "s", 0)
 
 /* These types of expressions have no useful value,
    and always have side effects.  */

@@ -528,10 +528,6 @@ int flag_shared_data;
 
 int flag_delayed_branch;
 
-/* Nonzero means to run cleanups after CALL_EXPRs.  */
-
-int flag_short_temps;
-
 /* Nonzero if we are compiling pure (sharable) code.
    Value is 1 if we are doing reasonable (i.e. simple
    offset into offset table) pic.  Value is 2 if we can
@@ -646,6 +642,8 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"pic", &flag_pic, 1},
   {"PIC", &flag_pic, 2},
   {"exceptions", &flag_exceptions, 1},
+  {"sjlj-exceptions", &exceptions_via_longjmp, 1},
+  {"asynchronous-exceptions", &asynchronous_exceptions, 1},
   {"profile-arcs", &profile_arc_flag, 1},
   {"test-coverage", &flag_test_coverage, 1},
   {"branch-probabilities", &flag_branch_probabilities, 1},

@@ -94,10 +94,6 @@ int pending_stack_adjust;
    and in other cases as well.  */
 int inhibit_defer_pop;
 
-/* A list of all cleanups which belong to the arguments of
-   function calls being expanded by expand_call.  */
-tree cleanups_this_call;
-
 /* When temporaries are created by TARGET_EXPRs, they are created at
    this level of temp_slot_level, so that they can remain allocated
    until no longer needed.  CLEANUP_POINT_EXPRs define the lifetime
@@ -211,7 +207,6 @@ static void do_jump_by_parts_equality_rtx PROTO((rtx, rtx, rtx));
 static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
 static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
-static tree defer_cleanups_to	PROTO((tree));
 extern tree truthvalue_conversion       PROTO((tree));
 
 /* Record for each mode whether we can move a register directly to or
@@ -357,7 +352,6 @@ init_expr ()
 
   pending_stack_adjust = 0;
   inhibit_defer_pop = 0;
-  cleanups_this_call = 0;
   saveregs_value = 0;
   apply_args_value = 0;
   forced_labels = 0;
@@ -375,14 +369,12 @@ save_expr_status (p)
 
   p->pending_stack_adjust = pending_stack_adjust;
   p->inhibit_defer_pop = inhibit_defer_pop;
-  p->cleanups_this_call = cleanups_this_call;
   p->saveregs_value = saveregs_value;
   p->apply_args_value = apply_args_value;
   p->forced_labels = forced_labels;
 
   pending_stack_adjust = 0;
   inhibit_defer_pop = 0;
-  cleanups_this_call = 0;
   saveregs_value = 0;
   apply_args_value = 0;
   forced_labels = 0;
@@ -397,7 +389,6 @@ restore_expr_status (p)
 {
   pending_stack_adjust = p->pending_stack_adjust;
   inhibit_defer_pop = p->inhibit_defer_pop;
-  cleanups_this_call = p->cleanups_this_call;
   saveregs_value = p->saveregs_value;
   apply_args_value = p->apply_args_value;
   forced_labels = p->forced_labels;
@@ -3014,17 +3005,6 @@ store_expr (exp, target, want_value)
 	 For non-BLKmode, it is more efficient not to do this.  */
 
       rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
-      rtx flag = NULL_RTX;
-      tree left_cleanups = NULL_TREE;
-      tree right_cleanups = NULL_TREE;
-      tree old_cleanups = cleanups_this_call;
-
-      /* Used to save a pointer to the place to put the setting of
-	 the flag that indicates if this side of the conditional was
-	 taken.  We backpatch the code, if we find out later that we
-	 have any conditional cleanups that need to be performed.  */
-      rtx dest_right_flag = NULL_RTX;
-      rtx dest_left_flag = NULL_RTX;
 
       emit_queue ();
       target = protect_from_queue (target, 1);
@@ -3032,75 +3012,20 @@ store_expr (exp, target, want_value)
       do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
+      start_cleanup_deferal ();
       store_expr (TREE_OPERAND (exp, 1), target, 0);
-      dest_left_flag = get_last_insn ();
-      /* Handle conditional cleanups, if any.  */
-      left_cleanups = defer_cleanups_to (old_cleanups);
+      end_cleanup_deferal ();
       emit_queue ();
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
+      start_cleanup_deferal ();
       store_expr (TREE_OPERAND (exp, 2), target, 0);
-      dest_right_flag = get_last_insn ();
-      /* Handle conditional cleanups, if any.  */
-      right_cleanups = defer_cleanups_to (old_cleanups);
+      end_cleanup_deferal ();
       emit_queue ();
       emit_label (lab2);
       OK_DEFER_POP;
 
-      /* Add back in any conditional cleanups.  */
-      if (left_cleanups || right_cleanups)
-	{
-	  tree new_cleanups;
-	  tree cond;
-	  rtx last;
-
-	  /* Now that we know that a flag is needed, go back and add in the
-	     setting of the flag.  */
-
-	  flag = gen_reg_rtx (word_mode);
-
-	  /* Do the left side flag.  */
-	  last = get_last_insn ();
-	  /* Flag left cleanups as needed.  */
-	  emit_move_insn (flag, const1_rtx);
-	  /* ??? deprecated, use sequences instead.  */
-	  reorder_insns (NEXT_INSN (last), get_last_insn (), dest_left_flag);
-
-	  /* Do the right side flag.  */
-	  last = get_last_insn ();
-	  /* Flag left cleanups as needed.  */
-	  emit_move_insn (flag, const0_rtx);
-	  /* ??? deprecated, use sequences instead.  */
-	  reorder_insns (NEXT_INSN (last), get_last_insn (), dest_right_flag);
-
-	  /* All cleanups must be on the function_obstack.  */
-	  push_obstacks_nochange ();
-	  resume_temporary_allocation ();
-
-	  /* convert flag, which is an rtx, into a tree.  */
-	  cond = make_node (RTL_EXPR);
-	  TREE_TYPE (cond) = integer_type_node;
-	  RTL_EXPR_RTL (cond) = flag;
-	  RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
-	  cond = save_expr (cond);
-
-	  if (! left_cleanups)
-	    left_cleanups = integer_zero_node;
-	  if (! right_cleanups)
-	    right_cleanups = integer_zero_node;
-	  new_cleanups = build (COND_EXPR, void_type_node,
-				truthvalue_conversion (cond),
-				left_cleanups, right_cleanups);
-	  new_cleanups = fold (new_cleanups);
-
-	  pop_obstacks ();
-
-	  /* Now add in the conditionalized cleanups.  */
-	  cleanups_this_call
-	    = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	  expand_eh_region_start ();
-	}
       return want_value ? target : NULL_RTX;
     }
   else if (want_value && GET_CODE (target) == MEM && ! MEM_VOLATILE_P (target)
@@ -5187,7 +5112,7 @@ expand_expr (exp, target, tmode, modifier)
 	int vars_need_expansion = 0;
 
 	/* Need to open a binding contour here because
-	   if there are any cleanups they most be contained here.  */
+	   if there are any cleanups they must be contained here.  */
 	expand_start_bindings (0);
 
 	/* Mark the corresponding BLOCK for output in its proper place.  */
@@ -5831,30 +5756,28 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  RTL_EXPR_RTL (exp)
 	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-	  cleanups_this_call
-	    = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2), cleanups_this_call);
+	  expand_decl_cleanup (NULL_TREE, TREE_OPERAND (exp, 2));
+
 	  /* That's it for this cleanup.  */
 	  TREE_OPERAND (exp, 2) = 0;
-	  expand_eh_region_start ();
 	}
       return RTL_EXPR_RTL (exp);
 
     case CLEANUP_POINT_EXPR:
       {
 	extern int temp_slot_level;
-	tree old_cleanups = cleanups_this_call;
-	int old_temp_level = target_temp_slot_level;
-	push_temp_slots ();
+	/* Start a new binding layer that will keep track of all cleanup
+	   actions to be performed.  */
+	expand_start_bindings (0);
+
 	target_temp_slot_level = temp_slot_level;
+
 	op0 = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
 	/* If we're going to use this value, load it up now.  */
 	if (! ignore)
 	  op0 = force_not_mem (op0);
-	expand_cleanups_to (old_cleanups);
 	preserve_temp_slots (op0);
-	free_temp_slots ();
-	pop_temp_slots ();
-	target_temp_slot_level = old_temp_level;
+	expand_end_bindings (NULL_TREE, 0, 0);
       }
       return op0;
 
@@ -6556,17 +6479,6 @@ expand_expr (exp, target, tmode, modifier)
 	}
 
       {
-	rtx flag = NULL_RTX;
-	tree left_cleanups = NULL_TREE;
-	tree right_cleanups = NULL_TREE;
-
-	/* Used to save a pointer to the place to put the setting of
-	   the flag that indicates if this side of the conditional was
-	   taken.  We backpatch the code, if we find out later that we
-	   have any conditional cleanups that need to be performed.  */
-	rtx dest_right_flag = NULL_RTX;
-	rtx dest_left_flag = NULL_RTX;
-
 	/* Note that COND_EXPRs whose type is a structure or union
 	   are required to be constructed to contain assignments of
 	   a temporary variable, so that we can evaluate them here
@@ -6577,7 +6489,6 @@ expand_expr (exp, target, tmode, modifier)
 
 	tree singleton = 0;
 	tree binary_op = 0, unary_op = 0;
-	tree old_cleanups = cleanups_this_call;
 
 	/* If this is (A ? 1 : 0) and A is a condition, just evaluate it and
 	   convert it to our mode, if necessary.  */
@@ -6705,7 +6616,6 @@ expand_expr (exp, target, tmode, modifier)
 	NO_DEFER_POP;
 	op0 = gen_label_rtx ();
 
-	flag = gen_reg_rtx (word_mode);
 	if (singleton && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0)))
 	  {
 	    if (temp != 0)
@@ -6724,14 +6634,12 @@ expand_expr (exp, target, tmode, modifier)
 	    else
 	      expand_expr (singleton,
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    dest_left_flag = get_last_insn ();
 	    if (singleton == TREE_OPERAND (exp, 1))
 	      jumpif (TREE_OPERAND (exp, 0), op0);
 	    else
 	      jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    /* Allows cleanups up to here.  */
-	    old_cleanups = cleanups_this_call;
+	    start_cleanup_deferal ();
 	    if (binary_op && temp == 0)
 	      /* Just touch the other operand.  */
 	      expand_expr (TREE_OPERAND (binary_op, 1),
@@ -6746,43 +6654,7 @@ expand_expr (exp, target, tmode, modifier)
 				  make_tree (type, temp)),
 			  temp, 0);
 	    op1 = op0;
-	    dest_right_flag = get_last_insn ();
 	  }
-#if 0
-	/* This is now done in jump.c and is better done there because it
-	   produces shorter register lifetimes.  */
-	   
-	/* Check for both possibilities either constants or variables
-	   in registers (but not the same as the target!).  If so, can
-	   save branches by assigning one, branching, and assigning the
-	   other.  */
-	else if (temp && GET_MODE (temp) != BLKmode
-		 && (TREE_CONSTANT (TREE_OPERAND (exp, 1))
-		     || ((TREE_CODE (TREE_OPERAND (exp, 1)) == PARM_DECL
-			  || TREE_CODE (TREE_OPERAND (exp, 1)) == VAR_DECL)
-			 && DECL_RTL (TREE_OPERAND (exp, 1))
-			 && GET_CODE (DECL_RTL (TREE_OPERAND (exp, 1))) == REG
-			 && DECL_RTL (TREE_OPERAND (exp, 1)) != temp))
-		 && (TREE_CONSTANT (TREE_OPERAND (exp, 2))
-		     || ((TREE_CODE (TREE_OPERAND (exp, 2)) == PARM_DECL
-			  || TREE_CODE (TREE_OPERAND (exp, 2)) == VAR_DECL)
-			 && DECL_RTL (TREE_OPERAND (exp, 2))
-			 && GET_CODE (DECL_RTL (TREE_OPERAND (exp, 2))) == REG
-			 && DECL_RTL (TREE_OPERAND (exp, 2)) != temp)))
-	  {
-	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
-	      temp = gen_reg_rtx (mode);
-	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
-	    dest_left_flag = get_last_insn ();
-	    jumpifnot (TREE_OPERAND (exp, 0), op0);
-
-	    /* Allows cleanups up to here.  */
-	    old_cleanups = cleanups_this_call;
-	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
-	    op1 = op0;
-	    dest_right_flag = get_last_insn ();
-	  }
-#endif
 	/* Check for A op 0 ? A : FOO and A op 0 ? FOO : A where OP is any
 	   comparison operator.  If we have one of these cases, set the
 	   output to A, branch on A (cse will merge these two references),
@@ -6798,14 +6670,11 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
 	      temp = gen_reg_rtx (mode);
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
-	    dest_left_flag = get_last_insn ();
 	    jumpif (TREE_OPERAND (exp, 0), op0);
 
-	    /* Allows cleanups up to here.  */
-	    old_cleanups = cleanups_this_call;
+	    start_cleanup_deferal ();
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    op1 = op0;
-	    dest_right_flag = get_last_insn ();
 	  }
 	else if (temp
 		 && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<'
@@ -6818,102 +6687,42 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (temp) == REG && REGNO (temp) < FIRST_PSEUDO_REGISTER)
 	      temp = gen_reg_rtx (mode);
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
-	    dest_left_flag = get_last_insn ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    /* Allows cleanups up to here.  */
-	    old_cleanups = cleanups_this_call;
+	    start_cleanup_deferal ();
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    op1 = op0;
-	    dest_right_flag = get_last_insn ();
 	  }
 	else
 	  {
 	    op1 = gen_label_rtx ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    /* Allows cleanups up to here.  */
-	    old_cleanups = cleanups_this_call;
+	    start_cleanup_deferal ();
 	    if (temp != 0)
 	      store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    else
 	      expand_expr (TREE_OPERAND (exp, 1),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    dest_left_flag = get_last_insn ();
-
-	    /* Handle conditional cleanups, if any.  */
-	    left_cleanups = defer_cleanups_to (old_cleanups);
-
+	    end_cleanup_deferal ();
 	    emit_queue ();
 	    emit_jump_insn (gen_jump (op1));
 	    emit_barrier ();
 	    emit_label (op0);
+	    start_cleanup_deferal ();
 	    if (temp != 0)
 	      store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    else
 	      expand_expr (TREE_OPERAND (exp, 2),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    dest_right_flag = get_last_insn ();
 	  }
 
-	/* Handle conditional cleanups, if any.  */
-	right_cleanups = defer_cleanups_to (old_cleanups);
+	end_cleanup_deferal ();
 
 	emit_queue ();
 	emit_label (op1);
 	OK_DEFER_POP;
 
-	/* Add back in, any conditional cleanups.  */
-	if (left_cleanups || right_cleanups)
-	  {
-	    tree new_cleanups;
-	    tree cond;
-	    rtx last;
-
-	    /* Now that we know that a flag is needed, go back and add in the
-	       setting of the flag.  */
-
-	    /* Do the left side flag.  */
-	    last = get_last_insn ();
-	    /* Flag left cleanups as needed.  */
-	    emit_move_insn (flag, const1_rtx);
-	    /* ??? deprecated, use sequences instead.  */
-	    reorder_insns (NEXT_INSN (last), get_last_insn (), dest_left_flag);
-
-	    /* Do the right side flag.  */
-	    last = get_last_insn ();
-	    /* Flag left cleanups as needed.  */
-	    emit_move_insn (flag, const0_rtx);
-	    /* ??? deprecated, use sequences instead.  */
-	    reorder_insns (NEXT_INSN (last), get_last_insn (), dest_right_flag);
-
-	    /* All cleanups must be on the function_obstack.  */
-	    push_obstacks_nochange ();
-	    resume_temporary_allocation ();
-
-	    /* convert flag, which is an rtx, into a tree.  */
-	    cond = make_node (RTL_EXPR);
-	    TREE_TYPE (cond) = integer_type_node;
-	    RTL_EXPR_RTL (cond) = flag;
-	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
-	    cond = save_expr (cond);
-
-	    if (! left_cleanups)
-	      left_cleanups = integer_zero_node;
-	    if (! right_cleanups)
-	      right_cleanups = integer_zero_node;
-	    new_cleanups = build (COND_EXPR, void_type_node,
-				  truthvalue_conversion (cond),
-				  left_cleanups, right_cleanups);
-	    new_cleanups = fold (new_cleanups);
-
-	    pop_obstacks ();
-
-	    /* Now add in the conditionalized cleanups.  */
-	    cleanups_this_call
-	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	    expand_eh_region_start ();
-	  }
 	return temp;
       }
 
@@ -6996,13 +6805,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	store_expr (exp1, target, 0);
 
-	if (cleanups)
-	  {
-	    cleanups_this_call = tree_cons (NULL_TREE,
-					    cleanups,
-					    cleanups_this_call);
-	    expand_eh_region_start ();
-	  }
+	expand_decl_cleanup (NULL_TREE, cleanups);
 	
 	return target;
       }
@@ -7283,6 +7086,33 @@ expand_expr (exp, target, tmode, modifier)
 	  emit_insns (insns);
 
 	return target;
+      }
+
+    case TRY_CATCH_EXPR:
+      {
+	tree handler = TREE_OPERAND (exp, 1);
+
+	expand_eh_region_start ();
+
+	op0 = expand_expr (TREE_OPERAND (exp, 0), 0, VOIDmode, 0);
+
+	expand_eh_region_end (handler);
+
+	return op0;
+      }
+
+    case POPDCC_EXPR:
+      {
+	rtx dcc = get_dynamic_cleanup_chain ();
+	emit_move_insn (dcc, validize_mem (gen_rtx (MEM, Pmode, dcc)));
+	return const0_rtx;
+      }
+
+    case POPDHC_EXPR:
+      {
+	rtx dhc = get_dynamic_handler_chain ();
+	emit_move_insn (dhc, validize_mem (gen_rtx (MEM, Pmode, dhc)));
+	return const0_rtx;
       }
 
     case ERROR_MARK:
@@ -9925,68 +9755,6 @@ do_pending_stack_adjust ()
       pending_stack_adjust = 0;
     }
 }
-
-/* Defer the expansion all cleanups up to OLD_CLEANUPS.
-   Returns the cleanups to be performed.  */
-
-static tree
-defer_cleanups_to (old_cleanups)
-     tree old_cleanups;
-{
-  tree new_cleanups = NULL_TREE;
-  tree cleanups = cleanups_this_call;
-  tree last = NULL_TREE;
-
-  while (cleanups_this_call != old_cleanups)
-    {
-      expand_eh_region_end (TREE_VALUE (cleanups_this_call));
-      last = cleanups_this_call;
-      cleanups_this_call = TREE_CHAIN (cleanups_this_call);
-    }      
-
-  if (last)
-    {
-      /* Remove the list from the chain of cleanups.  */
-      TREE_CHAIN (last) = NULL_TREE;
-
-      /* reverse them so that we can build them in the right order.  */
-      cleanups = nreverse (cleanups);
-
-      /* All cleanups must be on the function_obstack.  */
-      push_obstacks_nochange ();
-      resume_temporary_allocation ();
-
-      while (cleanups)
-	{
-	  if (new_cleanups)
-	    new_cleanups = build (COMPOUND_EXPR, TREE_TYPE (new_cleanups),
-				  TREE_VALUE (cleanups), new_cleanups);
-	  else
-	    new_cleanups = TREE_VALUE (cleanups);
-
-	  cleanups = TREE_CHAIN (cleanups);
-	}
-
-      pop_obstacks ();
-    }
-
-  return new_cleanups;
-}
-
-/* Expand all cleanups up to OLD_CLEANUPS.
-   Needed here, and also for language-dependent calls.  */
-
-void
-expand_cleanups_to (old_cleanups)
-     tree old_cleanups;
-{
-  while (cleanups_this_call != old_cleanups)
-    {
-      expand_eh_region_end (TREE_VALUE (cleanups_this_call));
-      expand_expr (TREE_VALUE (cleanups_this_call), const0_rtx, VOIDmode, 0);
-      cleanups_this_call = TREE_CHAIN (cleanups_this_call);
-    }
-}
 
 /* Expand conditional expressions.  */
 
@@ -10131,131 +9899,21 @@ do_jump (exp, if_false_label, if_true_label)
       break;
 
     case TRUTH_ANDIF_EXPR:
-      {
-	rtx seq1, seq2;
-	tree cleanups, old_cleanups;
-
-	if (if_false_label == 0)
-	  if_false_label = drop_through_label = gen_label_rtx ();
-	start_sequence ();
-	do_jump (TREE_OPERAND (exp, 0), if_false_label, NULL_RTX);
-	seq1 = get_insns ();
-	end_sequence ();
-
-	old_cleanups = cleanups_this_call;
-	start_sequence ();
-	do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-	seq2 = get_insns ();
-	cleanups = defer_cleanups_to (old_cleanups);
-	end_sequence ();
-
-	if (cleanups)
-	  {
-	    rtx flag = gen_reg_rtx (word_mode);
-	    tree new_cleanups;
-	    tree cond;
-
-	    /* Flag cleanups as not needed.  */
-	    emit_move_insn (flag, const0_rtx);
-	    emit_insns (seq1);
-
-	    /* Flag cleanups as needed.  */
-	    emit_move_insn (flag, const1_rtx);
-	    emit_insns (seq2);
-
-	    /* All cleanups must be on the function_obstack.  */
-	    push_obstacks_nochange ();
-	    resume_temporary_allocation ();
-
-	    /* convert flag, which is an rtx, into a tree.  */
-	    cond = make_node (RTL_EXPR);
-	    TREE_TYPE (cond) = integer_type_node;
-	    RTL_EXPR_RTL (cond) = flag;
-	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
-	    cond = save_expr (cond);
-
-	    new_cleanups = build (COND_EXPR, void_type_node,
-				  truthvalue_conversion (cond),
-				  cleanups, integer_zero_node);
-	    new_cleanups = fold (new_cleanups);
-
-	    pop_obstacks ();
-
-	    /* Now add in the conditionalized cleanups.  */
-	    cleanups_this_call
-	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	    expand_eh_region_start ();
-	  }
-	else
-	  {
-	    emit_insns (seq1);
-	    emit_insns (seq2);
-	  }
-      }
+      if (if_false_label == 0)
+	if_false_label = drop_through_label = gen_label_rtx ();
+      do_jump (TREE_OPERAND (exp, 0), if_false_label, NULL_RTX);
+      start_cleanup_deferal ();
+      do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
+      end_cleanup_deferal ();
       break;
 
     case TRUTH_ORIF_EXPR:
-      {
-	rtx seq1, seq2;
-	tree cleanups, old_cleanups;
-
-	if (if_true_label == 0)
-	  if_true_label = drop_through_label = gen_label_rtx ();
-	start_sequence ();
-	do_jump (TREE_OPERAND (exp, 0), NULL_RTX, if_true_label);
-	seq1 = get_insns ();
-	end_sequence ();
-
-	old_cleanups = cleanups_this_call;
-	start_sequence ();
-	do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-	seq2 = get_insns ();
-	cleanups = defer_cleanups_to (old_cleanups);
-	end_sequence ();
-
-	if (cleanups)
-	  {
-	    rtx flag = gen_reg_rtx (word_mode);
-	    tree new_cleanups;
-	    tree cond;
-
-	    /* Flag cleanups as not needed.  */
-	    emit_move_insn (flag, const0_rtx);
-	    emit_insns (seq1);
-
-	    /* Flag cleanups as needed.  */
-	    emit_move_insn (flag, const1_rtx);
-	    emit_insns (seq2);
-
-	    /* All cleanups must be on the function_obstack.  */
-	    push_obstacks_nochange ();
-	    resume_temporary_allocation ();
-
-	    /* convert flag, which is an rtx, into a tree.  */
-	    cond = make_node (RTL_EXPR);
-	    TREE_TYPE (cond) = integer_type_node;
-	    RTL_EXPR_RTL (cond) = flag;
-	    RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
-	    cond = save_expr (cond);
-
-	    new_cleanups = build (COND_EXPR, void_type_node,
-				  truthvalue_conversion (cond),
-				  cleanups, integer_zero_node);
-	    new_cleanups = fold (new_cleanups);
-
-	    pop_obstacks ();
-
-	    /* Now add in the conditionalized cleanups.  */
-	    cleanups_this_call
-	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	    expand_eh_region_start ();
-	  }
-	else
-	  {
-	    emit_insns (seq1);
-	    emit_insns (seq2);
-	  }
-      }
+      if (if_true_label == 0)
+	if_true_label = drop_through_label = gen_label_rtx ();
+      do_jump (TREE_OPERAND (exp, 0), NULL_RTX, if_true_label);
+      start_cleanup_deferal ();
+      do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
+      end_cleanup_deferal ();
       break;
 
     case COMPOUND_EXPR:
@@ -10311,18 +9969,12 @@ do_jump (exp, if_false_label, if_true_label)
 
       else
 	{
-	  rtx seq1, seq2;
-	  tree cleanups_left_side, cleanups_right_side, old_cleanups;
-
 	  register rtx label1 = gen_label_rtx ();
 	  drop_through_label = gen_label_rtx ();
 
 	  do_jump (TREE_OPERAND (exp, 0), label1, NULL_RTX);
 
-	  /* We need to save the cleanups for the lhs and rhs separately. 
-	     Keep track of the cleanups seen before the lhs. */
-	  old_cleanups = cleanups_this_call;
-	  start_sequence ();
+	  start_cleanup_deferal ();
 	  /* Now the THEN-expression.  */
 	  do_jump (TREE_OPERAND (exp, 1),
 		   if_false_label ? if_false_label : drop_through_label,
@@ -10330,71 +9982,12 @@ do_jump (exp, if_false_label, if_true_label)
 	  /* In case the do_jump just above never jumps.  */
 	  do_pending_stack_adjust ();
 	  emit_label (label1);
-	  seq1 = get_insns ();
-	  /* Now grab the cleanups for the lhs. */
-	  cleanups_left_side = defer_cleanups_to (old_cleanups);
-	  end_sequence ();
 
-	  /* And keep track of where we start before the rhs. */
-	  old_cleanups = cleanups_this_call;
-	  start_sequence ();
 	  /* Now the ELSE-expression.  */
 	  do_jump (TREE_OPERAND (exp, 2),
 		   if_false_label ? if_false_label : drop_through_label,
 		   if_true_label ? if_true_label : drop_through_label);
-	  seq2 = get_insns ();
-	  /* Grab the cleanups for the rhs. */
-	  cleanups_right_side = defer_cleanups_to (old_cleanups);
-	  end_sequence ();
-
-	  if (cleanups_left_side || cleanups_right_side)
-	    {
-	      /* Make the cleanups for the THEN and ELSE clauses
-		 conditional based on which half is executed. */
-	      rtx flag = gen_reg_rtx (word_mode);
-	      tree new_cleanups;
-	      tree cond;
-
-	      /* Set the flag to 0 so that we know we executed the lhs. */
-	      emit_move_insn (flag, const0_rtx);
-	      emit_insns (seq1);
-
-	      /* Set the flag to 1 so that we know we executed the rhs. */
-	      emit_move_insn (flag, const1_rtx);
-	      emit_insns (seq2);
-
-	      /* Make sure the cleanup lives on the function_obstack. */
-	      push_obstacks_nochange ();
-	      resume_temporary_allocation ();
-
-	      /* Now, build up a COND_EXPR that tests the value of the
-		 flag, and then either do the cleanups for the lhs or the
-		 rhs. */
-	      cond = make_node (RTL_EXPR);
-	      TREE_TYPE (cond) = integer_type_node;
-	      RTL_EXPR_RTL (cond) = flag;
-	      RTL_EXPR_SEQUENCE (cond) = NULL_RTX;
-	      cond = save_expr (cond);
-	      
-	      new_cleanups = build (COND_EXPR, void_type_node,
-				    truthvalue_conversion (cond),
-				    cleanups_right_side, cleanups_left_side);
-	      new_cleanups = fold (new_cleanups);
-
-	      pop_obstacks ();
-
-	      /* Now add in the conditionalized cleanups.  */
-	      cleanups_this_call
-		= tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
-	      expand_eh_region_start ();
-	    }
-	  else 
-	    {
-	      /* No cleanups were needed, so emit the two sequences
-		 directly. */
-	      emit_insns (seq1);
-	      emit_insns (seq2);
-	    }
+	  end_cleanup_deferal ();
 	}
       break;
 
@@ -11336,7 +10929,7 @@ bc_load_memory (type, decl)
     else
       abort ();
   else
-    /* See corresponding comment in bc_store_memory().  */
+    /* See corresponding comment in bc_store_memory.  */
     if (TYPE_MODE (type) == BLKmode
 	|| TYPE_MODE (type) == VOIDmode)
       return;
@@ -12012,7 +11605,7 @@ bc_load_bit_field (offset, size, unsignedp)
 
   /* Load: sign-extend if signed, else zero-extend */
   bc_emit_instruction (unsignedp ? zxloadBI : sxloadBI);
-}  
+}
 
 
 /* Adjust interpreter stack by NLEVELS.  Positive means drop NLEVELS
