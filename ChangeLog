@@ -1,3 +1,10 @@
+1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure (skip-this-dir): Add handling for new shell script, which
+	might be created by a sub-directory's configure to indicate, this particular
+	directory is "unwanted".
+	* Makefile.in ($(CONFIGURE_TARGET_MODULES)): Likewise.
+
 Thu Oct 22 10:55:25 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config.guess: Match any version of Unixware7.

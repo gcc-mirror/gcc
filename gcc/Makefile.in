@@ -39,7 +39,8 @@ SUBDIRS =@subdirs@
 
 # Selection of languages to be made.
 # This is overridden by configure.
-LANGUAGES = c proto gcov$(exeext) @all_languages@
+CONFIG_LANGUAGES = @all_languages@
+LANGUAGES = c proto gcov$(exeext) $(CONFIG_LANGUAGES)
 
 # Selection of languages to be made during stage1 build.
 # This is overridden by configure.
@@ -768,7 +769,7 @@ Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
 	$(SHELL) $(srcdir)/configure.frag $(srcdir) "$(SUBDIRS)" \
 		"$(xmake_file)" "$(tmake_file)"
 	cp config.status config.run
-	$(SHELL) config.run
+	LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.run
 	rm -f config.run
 
 $(srcdir)/configure: $(srcdir)/configure.in
@@ -790,7 +791,7 @@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
 	echo timestamp > $(srcdir)/cstamp-h.in
 auto-host.h: cstamp-h ; @true
 cstamp-h: config.in config.status
-	CONFIG_HEADERS=auto-host.h:config.in $(SHELL) config.status
+	CONFIG_HEADERS=auto-host.h:config.in LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status
 
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
@@ -800,7 +801,7 @@ config.status: configure version.c
 	  echo You must configure gcc.  Look at the INSTALL file for details.; \
 	  false; \
 	else \
-	  $(SHELL) config.status --recheck; \
+	  LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status --recheck; \
 	fi
 
 all.internal: start.encap rest.encap

@@ -1,3 +1,8 @@
+1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (compiler_name): Add check to detect if this
+	language's compiler has been built.
+
 1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* config.shared (depend.new): delete libc-lock.h from

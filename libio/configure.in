@@ -2,6 +2,20 @@
 # necessary for a configure script to process the program in
 # this directory.  For more information, look at ../configure.
 
+# If the language specific compiler does not exist, but the "gcc" directory does,
+# we do not build anything. Note, $r is set by the top-level Makefile.
+compiler_name=cc1plus
+rm -f skip-this-dir
+if test -n "$r"; then
+  if test -d "$r"/gcc; then
+    if test -f "$r"/gcc/$compiler_name; then
+      true
+    else
+      echo "rm -f multilib.out" > skip-this-dir
+    fi
+  fi
+fi
+
 if [ "${srcdir}" = "." ] ; then
   if [ "${with_target_subdir}" != "." ] ; then
     topsrcdir=${with_multisrctop}../..

@@ -1,3 +1,9 @@
+1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (compiler_name): Add check to detect if this
+	language's compiler has been built.
+	* configure: Regenerate.
+
 Mon Nov 23 16:48:39 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	*  configure.in: Use AC_PREREQ(2.12.1).

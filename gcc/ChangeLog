@@ -1,3 +1,20 @@
+1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (CONFIG_LANGUAGES): New macro taking all languages
+	which can be configured.
+	(LANGUAGES): Use $(CONFIG_LANGUAGES) instead of @all_languages@
+	(Makefile): Pass actual LANGUAGES through the environment when
+	re-configuring.
+	(cstamp-h): Likewise.
+	(config.status): Likewise.
+
+	* configure.in (enable_languages): Add new configuration parameter
+	"--enable-languages=lang1,lang2,...".
+	(${srcdir}/*/config-lang.in): Change handling to configure only
+	those directories, that the user might have enabled; default to
+	"all" existing languages.
+	* configure: Regenerate.
+
 Thu Nov 26 00:19:19 1998  Richard Henderson  <rth@cygnus.com>
 
 	* rtlanal.c (regs_set_between_p): New function.

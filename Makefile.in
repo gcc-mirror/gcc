@@ -1294,15 +1294,22 @@ $(CONFIGURE_TARGET_MODULES):
 	      libsrcdir="$$s/$${dir}"; \
 	    fi; \
 	    if [ -f $${libsrcdir}/configure ] ; then \
-	      rm -f no-such-file; \
+	      rm -f no-such-file skip-this-dir; \
 	      CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 		$(CONFIG_ARGUMENTS) $${srcdiroption} \
 		--with-target-subdir="$(TARGET_SUBDIR)"; \
 	    else \
-	      rm -f no-such-file; \
+	      rm -f no-such-file skip-this-dir; \
 	      CONFIG_SITE=no-such-file $(SHELL) $$s/configure \
 		$(CONFIG_ARGUMENTS) $${srcdiroption} \
 		--with-target-subdir="$(TARGET_SUBDIR)"; \
+	    fi; \
+	    if [ -f skip-this-dir ] ; then \
+	      sh skip-this-dir; \
+	      rm -f skip-this-dir; \
+	      cd ..; rmdir $${dir} || true; \
+	    else \
+	      true; \
 	    fi; \
 	  else \
 	    true; \
