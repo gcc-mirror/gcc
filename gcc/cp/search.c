@@ -1265,6 +1265,9 @@ lookup_field (xbasetype, name, protect, want_type)
 
   if (rval || lookup_fnfields_here (type, name) >= 0)
     {
+      if (entry)
+	TREE_VALUE (entry) = rval;
+
       if (rval)
 	{
 	  if (want_type)
