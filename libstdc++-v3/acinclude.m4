@@ -871,7 +871,7 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     AC_DEFINE(_GLIBCXX_USE_C99_MATH)
   fi
 
-  # Check for the existence of <math.h> complex functions.
+  # Check for the existence of <complex.h> complex functions.
   # This is necessary even though libstdc++ uses the builtin versions
   # of these functions, because if the builtin cannot be used, a reference
   # to the library function is emitted.
@@ -1055,16 +1055,13 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
 
   AC_MSG_CHECKING([for enabled ISO C99 support])
   if test x"$ac_c99_math" = x"no" ||
+     test x"$ac_c99_complex" = x"no" ||
      test x"$ac_c99_stdio" = x"no" ||
      test x"$ac_c99_stdlib" = x"no" ||
      test x"$ac_c99_wchar" = x"no"; then
     enable_c99=no;
   fi;
   AC_MSG_RESULT($enable_c99)
-
-  if test x"$ac_99_math" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_C99_MATH)
-  fi
 
   # Option parsed, now set things appropriately
   if test x"$enable_c99" = x"yes"; then

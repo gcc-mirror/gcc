@@ -6948,7 +6948,7 @@ _ACEOF
 
   fi
 
-  # Check for the existence of <math.h> complex functions.
+  # Check for the existence of <complex.h> complex functions.
   # This is necessary even though libstdc++ uses the builtin versions
   # of these functions, because if the builtin cannot be used, a reference
   # to the library function is emitted.
@@ -9369,6 +9369,7 @@ echo "${ECHO_T}$ac_c99_wchar" >&6
   echo "$as_me:$LINENO: checking for enabled ISO C99 support" >&5
 echo $ECHO_N "checking for enabled ISO C99 support... $ECHO_C" >&6
   if test x"$ac_c99_math" = x"no" ||
+     test x"$ac_c99_complex" = x"no" ||
      test x"$ac_c99_stdio" = x"no" ||
      test x"$ac_c99_stdlib" = x"no" ||
      test x"$ac_c99_wchar" = x"no"; then
@@ -9376,13 +9377,6 @@ echo $ECHO_N "checking for enabled ISO C99 support... $ECHO_C" >&6
   fi;
   echo "$as_me:$LINENO: result: $enable_c99" >&5
 echo "${ECHO_T}$enable_c99" >&6
-
-  if test x"$ac_99_math" = x"yes"; then
-    cat >>confdefs.h <<\_ACEOF
-#define _GLIBCXX_USE_C99_MATH 1
-_ACEOF
-
-  fi
 
   # Option parsed, now set things appropriately
   if test x"$enable_c99" = x"yes"; then

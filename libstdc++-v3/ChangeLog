@@ -1,3 +1,19 @@
+2005-01-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* acinclude.m4 ([GLIBCXX_ENABLE_C99]): Add ac_c99_complex
+	to the final test for enable_c99, thus robustifying it; remove
+	duplicate final test on ac_99_math.
+	* configure: Regenerate.
+
+	* include/std/std_complex.h: Remove usages of the dead
+	_GLIBCXX_BUGGY_COMPLEX macro.
+
+	* testsuite/26_numerics/cmath/19322.cc: Protect with
+	_GLIBCXX_USE_C99_MATH instead of the stronger _GLIBCXX_USE_C99,
+	since only C99 math facilities are involved.
+	* testsuite/26_numerics/cmath/c99_classification_macros_c++.cc:
+	Likewise.
+
 2005-01-25  Loren J. Rittle  <ljrittle@acm.org>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_CLOCALE): Map FreeBSD to darwin

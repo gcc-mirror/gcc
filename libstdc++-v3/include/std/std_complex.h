@@ -995,9 +995,7 @@ namespace std
       complex(_ComplexT __z) : _M_value(__z) { }
 
       complex(float = 0.0f, float = 0.0f);
-#if _GLIBCXX_BUGGY_COMPLEX
-      complex(const complex& __z) : _M_value(__z._M_value) { }
-#endif
+
       explicit complex(const complex<double>&);
       explicit complex(const complex<long double>&);
 
@@ -1150,10 +1148,8 @@ namespace std
 
       complex(_ComplexT __z) : _M_value(__z) { }
 
-      complex(double  = 0.0, double = 0.0);
-#if _GLIBCXX_BUGGY_COMPLEX
-      complex(const complex& __z) : _M_value(__z._M_value) { }
-#endif
+      complex(double = 0.0, double = 0.0);
+
       complex(const complex<float>&);
       explicit complex(const complex<long double>&);
 
@@ -1306,9 +1302,7 @@ namespace std
       complex(_ComplexT __z) : _M_value(__z) { }
 
       complex(long double = 0.0L, long double = 0.0L);
-#if _GLIBCXX_BUGGY_COMPLEX
-      complex(const complex& __z) : _M_value(__z._M_value) { }
-#endif
+
       complex(const complex<float>&);
       complex(const complex<double>&);
 
