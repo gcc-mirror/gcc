@@ -605,13 +605,15 @@ restore_referenced_regs (x, insn, insn_mode)
 
       else if (regno < FIRST_PSEUDO_REGISTER)
 	{
-	  int numregs = MIN (HARD_REGNO_NREGS (regno, GET_MODE (x)),
-			     MOVE_MAX / UNITS_PER_WORD);
+	  int numregs = HARD_REGNO_NREGS (regno, GET_MODE (x));
+	  /* Save at most SAVEREGS at a time.  This can not be larger than
+	     MOVE_MAX, because that causes insert_save_restore to fail.  */
+	  int saveregs = MIN (numregs, MOVE_MAX / UNITS_PER_WORD);
 	  int endregno = regno + numregs;
 
 	  for (i = regno; i < endregno; i++)
 	    if (TEST_HARD_REG_BIT (hard_regs_need_restore, i))
-	      i += insert_save_restore (insn, 0, i, insn_mode, numregs);
+	      i += insert_save_restore (insn, 0, i, insn_mode, saveregs);
 	}
 
       return;
