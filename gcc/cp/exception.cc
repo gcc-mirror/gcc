@@ -118,6 +118,10 @@ struct cp_eh_info
 
 extern "C" cp_eh_info **__get_eh_info (); 	// actually void **
 
+/* Exception allocate and free, defined in libgcc2. */
+extern "C" void *__eh_alloc(size_t);
+extern "C" void __eh_free();
+
 /* Is P the type_info node for a pointer of some kind?  */
 
 extern bool __is_pointer (void *);
@@ -157,29 +161,6 @@ __start_cp_handler (void)
   p->caught = 1;
   p->handlers++;
   return p;
-}
-
-/* Allocate a buffer for a cp_eh_info and an exception object of size SIZE,
-   and return a pointer to the beginning of the object's space.  */
-
-extern "C" void * malloc (size_t);
-extern "C" void *
-__eh_alloc (size_t size)
-{
-  void *p = malloc (size);
-  if (p == 0)
-    terminate ();
-  return p;
-}
-
-/* Free the memory for an cp_eh_info and associated exception, given
-   a pointer to the cp_eh_info.  */
-
-extern "C" void free (void *);
-extern "C" void
-__eh_free (void *p)
-{
-  free (p);
 }
 
 extern "C" int __throw_type_match_rtti_2 (const void *, const void *,
