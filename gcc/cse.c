@@ -5903,6 +5903,13 @@ cse_insn (insn, in_libcall_block)
      Also determine whether there is a CLOBBER that invalidates
      all memory references, or all references at varying addresses.  */
 
+  if (GET_CODE (insn) == CALL_INSN)
+    {
+      for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
+	if (GET_CODE (XEXP (tem, 0)) == CLOBBER)
+          invalidate (SET_DEST (XEXP (tem, 0)));
+    }
+
   if (GET_CODE (x) == SET)
     {
       sets = (struct set *) alloca (sizeof (struct set));
@@ -8315,11 +8322,14 @@ count_reg_usage (x, counts, dest, incr)
      rtx dest;
      int incr;
 {
-  enum rtx_code code = GET_CODE (x);
+  enum rtx_code code;
   char *fmt;
   int i, j;
 
-  switch (code)
+  if (x == 0)
+    return;
+
+  switch (code = GET_CODE (x))
     {
     case REG:
       if (x != dest)
@@ -8352,24 +8362,26 @@ count_reg_usage (x, counts, dest, incr)
 		       incr);
       return;
 
+    case CALL_INSN:
+      count_reg_usage (CALL_INSN_FUNCTION_USAGE (x), counts, NULL_RTX, incr);
+
+      /* ... falls through ...  */
     case INSN:
     case JUMP_INSN:
-    case CALL_INSN:
       count_reg_usage (PATTERN (x), counts, NULL_RTX, incr);
 
       /* Things used in a REG_EQUAL note aren't dead since loop may try to
 	 use them.  */
 
-      if (REG_NOTES (x))
-	count_reg_usage (REG_NOTES (x), counts, NULL_RTX, incr);
+      count_reg_usage (REG_NOTES (x), counts, NULL_RTX, incr);
       return;
 
     case EXPR_LIST:
     case INSN_LIST:
-      if (REG_NOTE_KIND (x) == REG_EQUAL)
+      if (REG_NOTE_KIND (x) == REG_EQUAL
+	  || GET_CODE (XEXP (x,0)) == USE)
 	count_reg_usage (XEXP (x, 0), counts, NULL_RTX, incr);
-      if (XEXP (x, 1))
-	count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
+      count_reg_usage (XEXP (x, 1), counts, NULL_RTX, incr);
       return;
     }
 
