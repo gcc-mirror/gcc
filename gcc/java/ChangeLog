@@ -1,3 +1,9 @@
+2002-07-05  Roger Sayle  <roger@eyesopen.com>
+
+	* java/builtins.c (initialize_builtins): Ignore the additional
+	parameter to DEF_BUILTIN.  Handle more C/C++ specific junk in
+	the builtins.def file.
+
 2002-07-01  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/7073:

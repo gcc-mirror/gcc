@@ -4519,7 +4519,9 @@ The functions @code{abort}, @code{exit}, @code{_Exit} and @code{_exit}
 are recognized and presumed not to return, but otherwise are not built
 in.  @code{_exit} is not recognized in strict ISO C mode (@option{-ansi},
 @option{-std=c89} or @option{-std=c99}).  @code{_Exit} is not recognized in
-strict C89 mode (@option{-ansi} or @option{-std=c89}).
+strict C89 mode (@option{-ansi} or @option{-std=c89}).  All these functions
+have corresponding versions prefixed with @code{__builtin_}, which may be
+used even in strict C89 mode.
 
 Outside strict ISO C mode, the functions @code{alloca}, @code{bcmp},
 @code{bzero}, @code{index}, @code{rindex}, @code{ffs}, @code{fputs_unlocked},

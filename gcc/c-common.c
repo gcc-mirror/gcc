@@ -2456,7 +2456,7 @@ c_common_truthvalue_conversion (expr)
 
 static tree builtin_function_2 PARAMS ((const char *, const char *, tree, tree,
 					int, enum built_in_class, int, int,
-					int));
+					tree));
 
 /* Make a variant type in the proper way for C/C++, propagating qualifiers
    down to the element type of an array.  */
@@ -2681,6 +2681,30 @@ c_alignof_expr (expr)
   return fold (build1 (NOP_EXPR, c_size_type_node, t));
 }
 
+/* Handle C and C++ default attributes.  */
+
+enum built_in_attribute
+{
+#define DEF_ATTR_NULL_TREE(ENUM) ENUM,
+#define DEF_ATTR_INT(ENUM, VALUE) ENUM,
+#define DEF_ATTR_IDENT(ENUM, STRING) ENUM,
+#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN) ENUM,
+#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE) /* No entry needed in enum.  */
+#include "builtin-attrs.def"
+#undef DEF_ATTR_NULL_TREE
+#undef DEF_ATTR_INT
+#undef DEF_ATTR_IDENT
+#undef DEF_ATTR_TREE_LIST
+#undef DEF_FN_ATTR
+  ATTR_LAST
+};
+
+static GTY(()) tree built_in_attributes[(int) ATTR_LAST];
+
+static bool c_attrs_initialized = false;
+
+static void c_init_attributes PARAMS ((void));
+
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
 
@@ -3041,8 +3065,11 @@ c_common_nodes_and_builtins ()
 #undef DEF_FUNCTION_TYPE_VAR_1
 #undef DEF_POINTER_TYPE
 
-#define DEF_BUILTIN(ENUM, NAME, CLASS,					\
-                    TYPE, LIBTYPE, BOTH_P, FALLBACK_P, NONANSI_P)	\
+  if (!c_attrs_initialized)
+    c_init_attributes ();
+
+#define DEF_BUILTIN(ENUM, NAME, CLASS, TYPE, LIBTYPE,			\
+		    BOTH_P, FALLBACK_P, NONANSI_P, ATTRS)		\
   if (NAME)								\
     {									\
       tree decl;							\
@@ -3055,7 +3082,8 @@ c_common_nodes_and_builtins ()
 				 CLASS,					\
 				 (FALLBACK_P				\
 				  ? (NAME + strlen ("__builtin_"))	\
-				  : NULL), NULL_TREE);			\
+				  : NULL),				\
+				 built_in_attributes[(int) ATTRS]);	\
       else								\
 	decl = builtin_function_2 (NAME,				\
 				   NAME + strlen ("__builtin_"),	\
@@ -3065,34 +3093,12 @@ c_common_nodes_and_builtins ()
 				   CLASS,				\
 				   FALLBACK_P,				\
 				   NONANSI_P,				\
-				   /*noreturn_p=*/0);			\
+				   built_in_attributes[(int) ATTRS]);	\
 									\
       built_in_decls[(int) ENUM] = decl;				\
     }									
 #include "builtins.def"
 #undef DEF_BUILTIN
-
-  /* Declare _exit and _Exit just to mark them as non-returning.  */
-  builtin_function_2 (NULL, "_exit", NULL_TREE, 
-		      builtin_types[BT_FN_VOID_INT],
-		      0, NOT_BUILT_IN, 0, 1, 1);
-  builtin_function_2 (NULL, "_Exit", NULL_TREE, 
-		      builtin_types[BT_FN_VOID_INT],
-		      0, NOT_BUILT_IN, 0, !flag_isoc99, 1);
-
-  /* Declare these functions non-returning
-     to avoid spurious "control drops through" warnings.  */
-  builtin_function_2 (NULL, "abort",
-		      NULL_TREE, ((c_language == clk_cplusplus)
-				  ? builtin_types[BT_FN_VOID]
-				  : builtin_types[BT_FN_VOID_VAR]),
-		      0, NOT_BUILT_IN, 0, 0, 1);
-
-  builtin_function_2 (NULL, "exit",
-		      NULL_TREE, ((c_language == clk_cplusplus)
-				  ? builtin_types[BT_FN_VOID_INT]
-				  : builtin_types[BT_FN_VOID_VAR]),
-		      0, NOT_BUILT_IN, 0, 0, 1);
 
   main_identifier_node = get_identifier ("main");
 }
@@ -3161,15 +3167,15 @@ builtin_function_disabled_p (name)
    conflicts with headers.  FUNCTION_CODE and CLASS are as for
    builtin_function.  If LIBRARY_NAME_P is nonzero, NAME is passed as
    the LIBRARY_NAME parameter to builtin_function when declaring BUILTIN_NAME.
-   If NONANSI_P is nonzero, the name NAME is treated as a non-ANSI name; if
-   NORETURN_P is nonzero, the function is marked as non-returning.
+   If NONANSI_P is nonzero, the name NAME is treated as a non-ANSI name;
+   ATTRS is the tree list representing the builtin's function attributes.
    Returns the declaration of BUILTIN_NAME, if any, otherwise
    the declaration of NAME.  Does not declare NAME if flag_no_builtin,
    or if NONANSI_P and flag_no_nonansi_builtin.  */
 
 static tree
 builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
-		    class, library_name_p, nonansi_p, noreturn_p)
+		    class, library_name_p, nonansi_p, attrs)
      const char *builtin_name;
      const char *name;
      tree builtin_type;
@@ -3178,7 +3184,7 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
      enum built_in_class class;
      int library_name_p;
      int nonansi_p;
-     int noreturn_p;
+     tree attrs;
 {
   tree bdecl = NULL_TREE;
   tree decl = NULL_TREE;
@@ -3186,25 +3192,15 @@ builtin_function_2 (builtin_name, name, builtin_type, type, function_code,
     {
       bdecl = builtin_function (builtin_name, builtin_type, function_code,
 				class, library_name_p ? name : NULL,
-				NULL_TREE);
-      if (noreturn_p)
-	{
-	  TREE_THIS_VOLATILE (bdecl) = 1;
-	  TREE_SIDE_EFFECTS (bdecl) = 1;
-	}
+				attrs);
     }
   if (name != 0 && !flag_no_builtin && !builtin_function_disabled_p (name)
       && !(nonansi_p && flag_no_nonansi_builtin))
     {
       decl = builtin_function (name, type, function_code, class, NULL,
-			       NULL_TREE);
+			       attrs);
       if (nonansi_p)
 	DECL_BUILT_IN_NONANSI (decl) = 1;
-      if (noreturn_p)
-	{
-	  TREE_THIS_VOLATILE (decl) = 1;
-	  TREE_SIDE_EFFECTS (decl) = 1;
-	}
     }
   return (bdecl != 0 ? bdecl : decl);
 }
@@ -4232,30 +4228,6 @@ boolean_increment (code, arg)
   return val;
 }
 
-/* Handle C and C++ default attributes.  */
-
-enum built_in_attribute
-{
-#define DEF_ATTR_NULL_TREE(ENUM) ENUM,
-#define DEF_ATTR_INT(ENUM, VALUE) ENUM,
-#define DEF_ATTR_IDENT(ENUM, STRING) ENUM,
-#define DEF_ATTR_TREE_LIST(ENUM, PURPOSE, VALUE, CHAIN) ENUM,
-#define DEF_FN_ATTR(NAME, ATTRS, PREDICATE) /* No entry needed in enum.  */
-#include "builtin-attrs.def"
-#undef DEF_ATTR_NULL_TREE
-#undef DEF_ATTR_INT
-#undef DEF_ATTR_IDENT
-#undef DEF_ATTR_TREE_LIST
-#undef DEF_FN_ATTR
-  ATTR_LAST
-};
-
-static GTY(()) tree built_in_attributes[(int) ATTR_LAST];
-
-static bool c_attrs_initialized = false;
-
-static void c_init_attributes PARAMS ((void));
-
 /* Common initialization before parsing options.  */
 void
 c_common_init_options (lang)
