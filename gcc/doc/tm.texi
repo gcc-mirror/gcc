@@ -7493,13 +7493,14 @@ If this macro is not defined, nothing special is output at the end of
 the jump-table.
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_ASM_EMIT_UNWIND_LABEL (@var{stream}, @var{decl}, @var{empty})
+@deftypefn {Target Hook} void TARGET_ASM_EMIT_UNWIND_LABEL (@var{stream}, @var{decl}, @var{for_eh}, @var{empty})
 This target hook emits a label at the beginning of each FDE.  It
 should be defined on targets where FDEs need special labels, and it
 should write the appropriate label, for the FDE associated with the
 function declaration @var{decl}, to the stdio stream @var{stream}.
-The third argument, @var{empty}, is a boolean: true if this is a
-placeholder label for an omitted FDE.
+The third argument, @var{for_eh}, is a boolean: true if this is for an
+exception table.  The fourth argument, @var{empty}, is a boolean:
+true if this is a placeholder label for an omitted FDE.
 
 The default is that FDEs are not given nonlocal labels.
 @end deftypefn

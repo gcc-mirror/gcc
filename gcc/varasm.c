@@ -5000,6 +5000,7 @@ default_globalize_label (FILE * stream, const char *name)
 void
 default_emit_unwind_label (FILE * stream ATTRIBUTE_UNUSED,
 			   tree decl ATTRIBUTE_UNUSED,
+			   int for_eh ATTRIBUTE_UNUSED,
 			   int empty ATTRIBUTE_UNUSED)
 { 
 }

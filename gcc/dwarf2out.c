@@ -1959,7 +1959,7 @@ output_call_frame_info (int for_eh)
           && !fde_table[i].uses_eh_lsda
 	  && ! DECL_ONE_ONLY (fde_table[i].decl))
 	targetm.asm_out.unwind_label (asm_out_file, fde_table[i].decl,
-					 /* empty */ 1);
+				      for_eh, /* empty */ 1);
 
   /* If we don't have any functions we'll want to unwind out of, don't
      emit any EH unwind information.  Note that if exceptions aren't
@@ -2123,7 +2123,7 @@ output_call_frame_info (int for_eh)
 	  && !fde->uses_eh_lsda)
 	continue;
 
-      targetm.asm_out.unwind_label (asm_out_file, fde->decl, /* empty */ 0);
+      targetm.asm_out.unwind_label (asm_out_file, fde->decl, for_eh, /* empty */ 0);
       targetm.asm_out.internal_label (asm_out_file, FDE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i * 2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i * 2);

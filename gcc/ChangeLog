@@ -1,3 +1,21 @@
+2004-05-18  Mike Stump  <mrs@apple.com>
+	    Devang Patel  <dpatel@apple.com>
+
+	* doc/tm.texi (TARGET_ASM_EMIT_UNWIND_LABEL): Add argument to indicate
+	if this label is for eh.
+	* config/darwin-protos.h (darwin_emit_unwind_label): Likewise.
+	* config/darwin.c (darwin_emit_unwind_label): Likewise.
+	* dwarf2out.c (output_call_frame_info): Likewise.
+	* output.h (default_emit_unwind_label): Likewise.
+	* target.h (unwind_label): Likewise.
+	* varasm.c (default_emit_unwind_label): Likewise.
+
+	* config/darwin.h (DWARF2_DEBUGGING_INFO, PREFERRED_DEBUGGING_TYPE,
+	DEBUG_FRAME_SECTION, DEBUG_INFO_SECTION, DEBUG_ABBREV_SECTION,
+	DEBUG_ARANGES_SECTION, DEBUG_MACINFO_SECTION, DEBUG_LINE_SECTION,
+	DEBUG_LOC_SECTION, DEBUG_PUBNAMES_SECTION, DEBUG_STR_SECTION,
+	DEBUG_RANGES_SECTION): Define.
+
 2004-05-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* cgraph.c (hash_node, eq_node, cgraph_node, cgraph_remove_node)
