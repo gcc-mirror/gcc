@@ -1,5 +1,10 @@
 Wed Jun  3 11:02:24 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* c-common.c (check_format_info): Put back check for C9x `hh'
+	length modifier.  Warn about %n format writing into const.  Remove
+	obsolete comment.
+	(format_char_info): Fix comments. 
+
 	* configure.in: Set float_format to m68k for all m68k targets that
 	do not override LONG_DOUBLE_TYPE_SIZE.
 	* config/float-m68k.h: New file.
