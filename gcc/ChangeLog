@@ -1,3 +1,7 @@
+2002-09-03   Arati Dikey  <aratid@kpit.com>
+
+	* h8300.c (asm_file_start): Corrected optimization comment.
+
 2002-09-03  Stan Shebs  <shebs@apple.com>
 
 	* c-lang.c (recognize_objc_keyword): Remove, no longer used.
