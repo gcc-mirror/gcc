@@ -28,7 +28,9 @@
  *   You should not attempt to use it directly.
  */
 
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
+#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator_base_funcs.h>
 
 #ifndef __SGI_STL_INTERNAL_DEQUE_H
 #define __SGI_STL_INTERNAL_DEQUE_H
@@ -354,9 +356,8 @@ _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
 template <class _Tp, class _Alloc = allocator<_Tp> >
 class deque : protected _Deque_base<_Tp, _Alloc> {
 
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
 
   typedef _Deque_base<_Tp, _Alloc> _Base;
 public:                         // Basic types
@@ -469,7 +470,7 @@ public:                         // Constructor, destructor.
   template <class _InputIter>
   void _M_initialize_dispatch(_InputIter __first, _InputIter __last,
                               __false_type) {
-    _M_range_initialize(__first, __last, __ITERATOR_CATEGORY(__first));
+    _M_range_initialize(__first, __last, __iterator_category(__first));
   }
 
   ~deque() { destroy(_M_start, _M_finish); }
@@ -531,7 +532,7 @@ private:                        // helper functions for assign()
   template <class _InputIterator>
   void _M_assign_dispatch(_InputIterator __first, _InputIterator __last,
                           __false_type) {
-    _M_assign_aux(__first, __last, __ITERATOR_CATEGORY(__first));
+    _M_assign_aux(__first, __last, __iterator_category(__first));
   }
 
   template <class _InputIterator>
@@ -653,7 +654,7 @@ public:                         // Insert
   void _M_insert_dispatch(iterator __pos,
                           _InputIterator __first, _InputIterator __last,
                           __false_type) {
-    insert(__pos, __first, __last, __ITERATOR_CATEGORY(__first));
+    insert(__pos, __first, __last, __iterator_category(__first));
   }
 
   void resize(size_type __new_size, const value_type& __x) {

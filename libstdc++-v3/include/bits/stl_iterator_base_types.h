@@ -28,14 +28,15 @@
  *   You should not attempt to use it directly.
  */
 
-#ifndef __SGI_STL_INTERNAL_ITERATOR_BASE_H
-#define __SGI_STL_INTERNAL_ITERATOR_BASE_H
+#ifndef __SGI_STL_INTERNAL_ITERATOR_BASE_TYPES_H
+#define __SGI_STL_INTERNAL_ITERATOR_BASE_TYPES_H
 
-// This file contains all of the general iterator-related utilities.
+// This file contains all of the general iterator-related utility
+// types, such as iterator_traits and struct iterator.
 // The internal file stl_iterator.h contains predefined iterators, 
 // such as front_insert_iterator and istream_iterator.
 
-#include <bits/concept_checks.h>
+#pragma GCC system header
 
 namespace std
 {
@@ -171,93 +172,9 @@ template <class _Iter>
 inline typename iterator_traits<_Iter>::value_type*
 value_type(const _Iter& __i) { return __value_type(__i); }
 
-#define __ITERATOR_CATEGORY(__i) __iterator_category(__i)
-#define __DISTANCE_TYPE(__i)     __distance_type(__i)
-#define __VALUE_TYPE(__i)        __value_type(__i)
-
-template <class _InputIterator, class _Distance>
-inline void __distance(_InputIterator __first, _InputIterator __last,
-                       _Distance& __n, input_iterator_tag)
-{
-  while (__first != __last) { ++__first; ++__n; }
-}
-
-template <class _RandomAccessIterator, class _Distance>
-inline void __distance(_RandomAccessIterator __first, 
-                       _RandomAccessIterator __last, 
-                       _Distance& __n, random_access_iterator_tag)
-{
-  __STL_REQUIRES(_RandomAccessIterator, _RandomAccessIterator);
-  __n += __last - __first;
-}
-
-template <class _InputIterator, class _Distance>
-inline void distance(_InputIterator __first, 
-                     _InputIterator __last, _Distance& __n)
-{
-  __STL_REQUIRES(_InputIterator, _InputIterator);
-  __distance(__first, __last, __n, iterator_category(__first));
-}
-
-template <class _InputIterator>
-inline typename iterator_traits<_InputIterator>::difference_type
-__distance(_InputIterator __first, _InputIterator __last, input_iterator_tag)
-{
-  typename iterator_traits<_InputIterator>::difference_type __n = 0;
-  while (__first != __last) {
-    ++__first; ++__n;
-  }
-  return __n;
-}
-
-template <class _RandomAccessIterator>
-inline typename iterator_traits<_RandomAccessIterator>::difference_type
-__distance(_RandomAccessIterator __first, _RandomAccessIterator __last,
-           random_access_iterator_tag) {
-  __STL_REQUIRES(_RandomAccessIterator, _RandomAccessIterator);
-  return __last - __first;
-}
-
-template <class _InputIterator>
-inline typename iterator_traits<_InputIterator>::difference_type
-distance(_InputIterator __first, _InputIterator __last) {
-  typedef typename iterator_traits<_InputIterator>::iterator_category 
-    _Category;
-  __STL_REQUIRES(_InputIterator, _InputIterator);
-  return __distance(__first, __last, _Category());
-}
-
-template <class _InputIter, class _Distance>
-inline void __advance(_InputIter& __i, _Distance __n, input_iterator_tag) {
-  while (__n--) ++__i;
-}
-
-template <class _BidirectionalIterator, class _Distance>
-inline void __advance(_BidirectionalIterator& __i, _Distance __n, 
-                      bidirectional_iterator_tag) {
-  __STL_REQUIRES(_BidirectionalIterator, _BidirectionalIterator);
-  if (__n >= 0)
-    while (__n--) ++__i;
-  else
-    while (__n++) --__i;
-}
-
-template <class _RandomAccessIterator, class _Distance>
-inline void __advance(_RandomAccessIterator& __i, _Distance __n, 
-                      random_access_iterator_tag) {
-  __STL_REQUIRES(_RandomAccessIterator, _RandomAccessIterator);
-  __i += __n;
-}
-
-template <class _InputIterator, class _Distance>
-inline void advance(_InputIterator& __i, _Distance __n) {
-  __STL_REQUIRES(_InputIterator, _InputIterator);
-  __advance(__i, __n, iterator_category(__i));
-}
-
 } // namespace std
 
-#endif /* __SGI_STL_INTERNAL_ITERATOR_BASE_H */
+#endif /* __SGI_STL_INTERNAL_ITERATOR_BASE_TYPES_H */
 
 
 // Local Variables:

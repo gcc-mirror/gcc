@@ -38,7 +38,7 @@
                  header
                o [28]The g++-3 headers are not ours
                o [29]compilation errors from streambuf.h
-               o [30]_STL_ERROR::__something_huge_...
+               o [30]errors about *Cconcept and constraints in the STL...
          5. [31]Aw, that's easy to fix!
     5. [32]Miscellaneous
          1. [33]string::iterator is not char*; vector<T>::iterator is not
@@ -440,18 +440,16 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    Note that 2.95.x shipped with the [68]old v2 library which is no
    longer maintained.
 
-   If you see compilation errors containing messages which begin with
-   _STL_ERROR:: followed by a very verbose name, then most likely you
-   have violated one of the requirements for types used during
-   instantiation of template containers. For example,
-   _STL_ERROR::__equality_comparable_requirement_violation appears if
-   your types must be comparable with == and you have not provided this
+   If you see compilation errors containing messages about fooConcept and
+   a constraints member function, then most likely you have violated one
+   of the requirements for types used during instantiation of template
+   containers. For example, EqualityComparableConcept appears if your
+   types must be comparable with == and you have not provided this
    capability (a typo, or wrong visibility, or you just plain forgot,
    etc).
 
    More information, including how to optionally disable the checks, is
-   available [69]here. The code itself might be disabled or replaced
-   already.
+   available [69]here.
      _________________________________________________________________
 
 4.5 Aw, that's easy to fix!
@@ -573,9 +571,9 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    out!
      _________________________________________________________________
 
-   Comments and suggestions are welcome, and may be sent to [83]Phil
-   Edwards or [84]Gabriel Dos Reis.
-   $Id: index.html,v 1.4 2001/03/01 22:32:23 pme Exp $ 
+   Comments and suggestions are welcome, and may be sent to [83]the
+   mailing list.
+   $Id: index.html,v 1.5 2001/03/25 00:01:57 pme Exp $ 
 
 References
 
@@ -661,5 +659,4 @@ References
   80. http://www.ansi.org/
   81. http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998
   82. http://www.iso.ch/
-  83. mailto:pme@sources.redhat.com
-  84. mailto:gdr@gcc.gnu.org
+  83. mailto:libstdc++@gcc.gnu.org

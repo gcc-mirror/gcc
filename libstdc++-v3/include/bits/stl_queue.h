@@ -31,7 +31,7 @@
 #ifndef __SGI_STL_INTERNAL_QUEUE_H
 #define __SGI_STL_INTERNAL_QUEUE_H
 
-#include <bits/sequence_concepts.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -50,16 +50,14 @@ inline bool operator<(const queue<_Tp, _Seq>&, const queue<_Tp, _Seq>&);
 
 
 template <class _Tp, class _Sequence>
-class queue {
-
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_REQUIRES(_Sequence, _FrontInsertionSequence);
-  __STL_CLASS_REQUIRES(_Sequence, _BackInsertionSequence);
+class queue
+{
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
+  glibcpp_class_requires(_Sequence, FrontInsertionSequenceConcept);
+  glibcpp_class_requires(_Sequence, BackInsertionSequenceConcept);
   typedef typename _Sequence::value_type _Sequence_value_type;
-  __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
-
+  glibcpp_class_requires2(_Tp, _Sequence_value_type, SameTypeConcept);
 
   template <class _Tp1, class _Seq1>
   friend bool operator== (const queue<_Tp1, _Seq1>&,
@@ -135,17 +133,17 @@ operator>=(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
 template <class _Tp, 
           class _Sequence = vector<_Tp>,
           class _Compare  = less<typename _Sequence::value_type> >
-class priority_queue {
-public:
-
-  // requirements:
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_REQUIRES(_Sequence, _Sequence);
-  __STL_CLASS_REQUIRES(_Sequence, _RandomAccessContainer);
+class priority_queue
+{
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
+  glibcpp_class_requires(_Sequence, SequenceConcept);
+  glibcpp_class_requires(_Sequence, RandomAccessContainerConcept);
   typedef typename _Sequence::value_type _Sequence_value_type;
-  __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Tp, _Tp);
+  glibcpp_class_requires2(_Tp, _Sequence_value_type, SameTypeConcept);
+  glibcpp_class_requires4(_Compare, bool, _Tp, _Tp, BinaryFunctionConcept);
 
+public:
   typedef typename _Sequence::value_type      value_type;
   typedef typename _Sequence::size_type       size_type;
   typedef          _Sequence                  container_type;

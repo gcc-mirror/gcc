@@ -31,7 +31,7 @@
 #ifndef __SGI_STL_INTERNAL_MULTISET_H
 #define __SGI_STL_INTERNAL_MULTISET_H
 
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -51,11 +51,11 @@ inline bool operator<(const multiset<_Key,_Compare,_Alloc>& __x,
                       const multiset<_Key,_Compare,_Alloc>& __y);
 
 template <class _Key, class _Compare, class _Alloc>
-class multiset {
-  // requirements:
-  
-  __STL_CLASS_REQUIRES(_Key, _Assignable);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Key, _Key);
+class multiset
+{
+  // concept requirements
+  glibcpp_class_requires(_Key, SGIAssignableConcept);
+  glibcpp_class_requires4(_Compare, bool, _Key, _Key, BinaryFunctionConcept);
 
 public:
 

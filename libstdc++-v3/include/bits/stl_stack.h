@@ -31,7 +31,7 @@
 #ifndef __SGI_STL_INTERNAL_STACK_H
 #define __SGI_STL_INTERNAL_STACK_H
 
-#include <bits/sequence_concepts.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -50,15 +50,13 @@ bool operator<(const stack<_Tp,_Seq>& __x, const stack<_Tp,_Seq>& __y);
 
 
 template <class _Tp, class _Sequence>
-class stack {
-
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_REQUIRES(_Sequence, _BackInsertionSequence);
+class stack
+{
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
+  glibcpp_class_requires(_Sequence, BackInsertionSequenceConcept);
   typedef typename _Sequence::value_type _Sequence_value_type;
-  __STL_CLASS_REQUIRES_SAME_TYPE(_Tp, _Sequence_value_type);
-
+  glibcpp_class_requires2(_Tp, _Sequence_value_type, SameTypeConcept);
 
   template <class _Tp1, class _Seq1>
   friend bool operator== (const stack<_Tp1, _Seq1>&,

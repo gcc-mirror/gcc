@@ -31,23 +31,21 @@
 #ifndef _CPP_BITS_STL_MAP_H
 #define _CPP_BITS_STL_MAP_H 1
 
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
 
 template <class _Key, class _Tp, class _Compare = less<_Key>,
           class _Alloc = allocator<pair<const _Key, _Tp> > >
-class map {
+class map
+{
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
+  glibcpp_class_requires4(_Compare, bool, _Key, _Key, BinaryFunctionConcept);
+
 public:
-
-// requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_Compare, bool, _Key, _Key);
-
-// typedefs:
-
+  // typedefs:
   typedef _Key                 key_type;
   typedef _Tp                   data_type;
   typedef _Tp                   mapped_type;

@@ -63,9 +63,8 @@
 #    define __STL_UITHREADS
 #endif
 
-// Concept-checking code is off by default unless users define
-// the _STL_USE_CONCEPT_CHECKS hook.
-//#define _STL_USE_CONCEPT_CHECKS 1
+// Concept-checking hooks and related config are now in bits/concept_check.h.
+
 
 // This is also a user hook, but via -f[no-]exceptions, not direct #defines.
 #ifdef __EXCEPTIONS
@@ -85,7 +84,8 @@
 #  define __STL_UNWIND(action) 
 #endif
 
-// This is the "underlying allocator"
+// This is the "underlying allocator" for STL.  The alternatives are
+// homegrown schemes involving a kind of mutex and free list; see stl_alloc.h.
 #define __USE_MALLOC
 
 // Define this to permit user-level control of the expansion of string
@@ -103,11 +103,6 @@
 #endif
 //#ifndef __STRICT_ANSI__
 //#  define __STL_LONG_LONG
-//#endif
-
-// 20010302 pme -- this is only used in bits/concept_checks.h
-//#if (__GNUC__ < 2) || (__GNUC__ == 2 && __GNUC_MINOR__ < 95)
-#  define __STL_NO_FUNCTION_PTR_IN_CLASS_TEMPLATE
 //#endif
 
 // Mingw32, GCC compiler using the Microsoft C runtime (settings taken from

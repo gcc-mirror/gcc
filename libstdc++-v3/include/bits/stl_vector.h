@@ -31,8 +31,9 @@
 #ifndef __SGI_STL_INTERNAL_VECTOR_H
 #define __SGI_STL_INTERNAL_VECTOR_H
 
+#include <bits/stl_iterator_base_funcs.h>
 #include <bits/functexcept.h>
-#include <bits/concept_checks.h>
+#include <bits/concept_check.h>
 
 namespace std
 { 
@@ -116,9 +117,8 @@ struct _Vector_base
 template <class _Tp, class _Alloc = allocator<_Tp> >
 class vector : protected _Vector_base<_Tp, _Alloc> 
 {
-  // requirements:
-
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
+  // concept requirements
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
 
 private:
   typedef _Vector_base<_Tp, _Alloc> _Base;
@@ -223,7 +223,7 @@ public:
   template <class _InputIterator>
   void _M_initialize_aux(_InputIterator __first, _InputIterator __last,
                          __false_type) {
-    _M_range_initialize(__first, __last, __ITERATOR_CATEGORY(__first));
+    _M_range_initialize(__first, __last, __iterator_category(__first));
   }
 
   ~vector() { destroy(_M_start, _M_finish); }
@@ -261,7 +261,7 @@ public:
 
   template <class _InputIter>
   void _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
-    { _M_assign_aux(__first, __last, __ITERATOR_CATEGORY(__first)); }
+    { _M_assign_aux(__first, __last, __iterator_category(__first)); }
 
   template <class _InputIterator>
   void _M_assign_aux(_InputIterator __first, _InputIterator __last,
@@ -334,7 +334,7 @@ public:
   void _M_insert_dispatch(iterator __pos,
                           _InputIterator __first, _InputIterator __last,
                           __false_type) {
-    _M_range_insert(__pos, __first, __last, __ITERATOR_CATEGORY(__first));
+    _M_range_insert(__pos, __first, __last, __iterator_category(__first));
   }
 
   void insert (iterator __pos, size_type __n, const _Tp& __x)

@@ -32,6 +32,7 @@
 #define __SGI_STL_INTERNAL_HASH_MAP_H
 
 #include <ext/stl_hashtable.h>
+#include <bits/concept_check.h>
 
 namespace std
 {
@@ -121,8 +122,6 @@ public:
   friend bool operator== (const hash_map<_K1, _T1, _HF, _EqK, _Al>&,
                           const hash_map<_K1, _T1, _HF, _EqK, _Al>&);
 
-#include <bits/concept_checks.h>
-
   iterator begin() { return _M_ht.begin(); }
   iterator end() { return _M_ht.end(); }
   const_iterator begin() const { return _M_ht.begin(); }
@@ -204,11 +203,11 @@ operator==(const hash_multimap<_Key,_Tp,_HF,_EqKey,_Alloc>& __hm1,
 template <class _Key, class _Tp, class _HashFcn, class _EqualKey, class _Alloc>
 class hash_multimap
 {
-  // requirements:
-  __STL_CLASS_REQUIRES(_Key, _Assignable);
-  __STL_CLASS_REQUIRES(_Tp, _Assignable);
-  __STL_CLASS_UNARY_FUNCTION_CHECK(_HashFcn, size_t, _Key);
-  __STL_CLASS_BINARY_FUNCTION_CHECK(_EqualKey, bool, _Key, _Key);
+  // concept requirements
+  glibcpp_class_requires(_Key, SGIAssignableConcept);
+  glibcpp_class_requires(_Tp, SGIAssignableConcept);
+  glibcpp_class_requires3(_HashFcn, size_t, _Key, UnaryFunctionConcept);
+  glibcpp_class_requires3(_EqualKey, _Key, _Key, BinaryPredicateConcept);
 
 private:
   typedef hashtable<pair<const _Key, _Tp>, _Key, _HashFcn,

@@ -118,10 +118,14 @@ AUTOMAKE_OPTIONS = foreign dejagnu no-installinfo
 
 DEJATOOL = libstdc++
 
-EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then             echo $(top_builddir)/../expect/expect ;           else echo expect ; fi`
+EXPECT = `if [ -f $(top_builddir)/../expect/expect ] ; then \
+            echo $(top_builddir)/../expect/expect ; \
+          else echo expect ; fi`
 
 
-RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then 	       echo $(top_srcdir)/../dejagnu/runtest ; 	    else echo runtest; fi`
+RUNTEST = `if [ -f $(top_srcdir)/../dejagnu/runtest ] ; then \
+	       echo $(top_srcdir)/../dejagnu/runtest ; \
+	    else echo runtest; fi`
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h

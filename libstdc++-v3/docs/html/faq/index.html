@@ -9,7 +9,7 @@
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1, 5_6.
 -->
-<!-- $Id: index.html,v 1.4 2001/03/01 22:32:23 pme Exp $ -->
+<!-- $Id: index.html,v 1.5 2001/03/25 00:01:57 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -62,15 +62,16 @@ http://gcc.gnu.org/onlinedocs/libstdc++/faq/</A>.</P>
          <LI><A HREF="#4_2">Bugs in gcc/g++ (not libstdc++-v3)</A>
          <LI><A HREF="#4_3">Bugs in the C++ language/lib specification</A>
          <LI><A HREF="#4_4">Things in libstdc++ that look like bugs</A>
-	   <UL>
+           <UL>
              <LI><A HREF="#4_4_Weff">-Weffc++ complains too much</A>
              <LI><A HREF="#4_4_rel_ops">&quot;ambiguous overloads&quot;
-	                         after including an old-style header</A>
+                                 after including an old-style header</A>
              <LI><A HREF="#4_4_interface">The g++-3 headers are
                                  <STRONG>not ours</STRONG></A>
              <LI><A HREF="#4_4_glibc">compilation errors from streambuf.h</A>
-             <LI><A HREF="#4_4_checks">_STL_ERROR::__something_huge_...</A>
-	   </UL>
+             <LI><A HREF="#4_4_checks">errors about <EM>*Cconcept</EM> and
+                                 <EM>constraints</EM> in the STL...</A>
+           </UL>
          <LI><A HREF="#4_5">Aw, that's easy to fix!</A>
       </OL>
 
@@ -258,7 +259,7 @@ which is no longer available, thanks deja...-->
                  that building GCC is much easier and more automated
                  than building the GCC 2.[78] series was. 
             <LI> If you plan on hacking around with the makefiles, you
-	         will need the tools <A 
+                 will need the tools <A 
 HREF="http://sources.redhat.com/autoconf/">autoconf</A>and <A 
 HREF="http://sources.redhat.com/automake/">automake</A>. 
             <LI> GNU Make is the only make that supports these makefiles. 
@@ -289,11 +290,11 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
                          keep mentioning?</A></H2>
       <P>The <EM>Concurrent Versions System</EM> is one of several revision
          control packages.  It was selected for GNU projects because it's
-	 free (speech), free (beer), and very high quality.  The <A
+         free (speech), free (beer), and very high quality.  The <A
          HREF="http://www.gnu.org/software/cvs/cvs.html">CVS entry in
          the GNU software catalogue</A> has a better description as 
          well as a
-	 <A HREF="http://www.cyclic.com/">link to the makers of CVS</A>. 
+         <A HREF="http://www.cyclic.com/">link to the makers of CVS</A>. 
       </P>
       <P>The &quot;anonymous client checkout&quot; feature of CVS is
          similar to anonymous FTP in that it allows anyone to retrieve
@@ -371,7 +372,7 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
       </P>
       <P>You have two options.  You can get a newer cygwin1.dll (see the
          Cygwin paragraph in the
-	 <A HREF="../install.html">installation instructions</A>).
+         <A HREF="../install.html">installation instructions</A>).
          Or you can get a prebuilt set of bits/std_limits.h and
          src/limitsMEMBERS.cc files from Mumit Khan's
          <A HREF="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html">Cygwin-related website</A>.
@@ -381,15 +382,15 @@ HREF="http://sources.redhat.com/automake/">automake</A>.
    <H2><A NAME="3_3">3.3 Building DEC OSF kills the assembler</A></H2>
       <P>The <TT>atomicity.h</TT> header for the Alpha processor
          currently uses pseudo-operators which the DEC assembler
-	 doesn't understand (in particular, .subsection and .previous).
-	 The simple solution is to install GNU <TT>as</TT> and arrange
-	 for the GCC build to use it (or merge the sources and build
-	 it during the bootstrap).
+         doesn't understand (in particular, .subsection and .previous).
+         The simple solution is to install GNU <TT>as</TT> and arrange
+         for the GCC build to use it (or merge the sources and build
+         it during the bootstrap).
       </P>
       <P>Anyone who
          <A HREF="http://gcc.gnu.org/ml/libstdc++/2000-12/msg00279.html">knows
-	 the DEC assembler well enough</A> to provide the equivalent of
-	 these two pseudos would win praise and accolades from many.
+         the DEC assembler well enough</A> to provide the equivalent of
+         these two pseudos would win praise and accolades from many.
       </P>
 
 
@@ -511,12 +512,12 @@ to the list</A>, Nathan Myers announced that he has started a list of
       <A NAME="4_4_rel_ops">
         <P>Another is the <TT>rel_ops</TT> namespace and the template
            comparison operator functions contained therein.  If they become
-  	   visible in the same namespace as other comparison functions
-  	   (e.g., '<TT>using</TT>' them and the &lt;iterator&gt; header),
-  	   then you will suddenly be faced with huge numbers of ambiguity
-  	   errors.  This was discussed on the -v3 list; Nathan Myers
-  	   <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
-  	   things up here</A>.
+             visible in the same namespace as other comparison functions
+             (e.g., '<TT>using</TT>' them and the &lt;iterator&gt; header),
+             then you will suddenly be faced with huge numbers of ambiguity
+             errors.  This was discussed on the -v3 list; Nathan Myers
+             <A HREF="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
+             things up here</A>.
         </P>
       </A>
       <A NAME="4_4_interface"><H3>The g++-3 headers are
@@ -541,8 +542,8 @@ to the list</A>, Nathan Myers announced that he has started a list of
       </A>
       <A NAME="4_4_glibc">
         <P>If you're on a GNU/Linux system and have just upgraded to
-	   glibc 2.2, but are still using gcc 2.95.2, then you should have
-	   read the glibc FAQ, specifically 2.34:
+           glibc 2.2, but are still using gcc 2.95.2, then you should have
+           read the glibc FAQ, specifically 2.34:
    <PRE>
 2.34.   When compiling C++ programs, I get a compilation error in streambuf.h.
 
@@ -551,24 +552,24 @@ apply a patch to the include files in /usr/include/g++, because the fpos_t
 type has changed in glibc 2.2.  The patch is at
 http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    </PRE>
-	   Note that 2.95.x shipped with the
-	   <A HREF="#4_4_interface">old v2 library</A> which is no longer
-	   maintained.
+           Note that 2.95.x shipped with the
+           <A HREF="#4_4_interface">old v2 library</A> which is no longer
+           maintained.
         </P>
       </A>
       <A NAME="4_4_checks">
-        <P>If you see compilation errors containing messages which begin
-	   with _STL_ERROR:: followed by a very verbose name, then most
-	   likely you have violated one of the requirements for types used
-	   during instantiation of template containers.  For example,
-	   _STL_ERROR::__equality_comparable_requirement_violation appears
+        <P>If you see compilation errors containing messages about
+           <TT> <EM>foo</EM>Concept </TT>and a<TT> constraints </TT>
+           member function, then most
+           likely you have violated one of the requirements for types used
+           during instantiation of template containers.  For example,
+           EqualityComparableConcept appears
            if your types must be comparable with == and you have not
            provided this capability (a typo, or wrong visibility, or you
-	   just plain forgot, etc).
+           just plain forgot, etc).
         </P>
-	<P>More information, including how to optionally disable the checks,
-	   is available <A HREF="../19_diagnostics/howto.html#3">here</A>.
-	   The code itself might be disabled or replaced already.
+        <P>More information, including how to optionally disable the checks,
+           is available <A HREF="../19_diagnostics/howto.html#3">here</A>.
         </P>
       </A>
 
@@ -579,7 +580,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          on <A HREF="http://gcc.gnu.org/contribute.html">submitting
          patches</A> that covers the procedure, but for libstdc++ you
          should also send the patch to our mailing list in addition to
-	 the GCC patches mailing list.  The libstdc++
+         the GCC patches mailing list.  The libstdc++
          <A HREF="../17_intro/contribute.html">contributors' page</A>
          also talks about how to submit patches.
       </P>
@@ -720,9 +721,8 @@ HREF="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</A>.
 <HR>
 <P CLASS="fineprint"><EM>
 Comments and suggestions are welcome, and may be sent to
-<A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
-<A HREF="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</A>.
-<BR> $Id: index.html,v 1.4 2001/03/01 22:32:23 pme Exp $
+<A HREF="mailto:libstdc++@gcc.gnu.org">the mailing list</A>.
+<BR> $Id: index.html,v 1.5 2001/03/25 00:01:57 pme Exp $
 </EM></P>
 
 
