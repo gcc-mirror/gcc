@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1993 Free Software Foundation, Inc.
 
    Written by Richard Stallman (rms@ai.mit.edu).
 
@@ -639,18 +639,20 @@ struct cumulative_args { int ints, floats; };
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
-  rtx low_cxt = expand_shift (RSHIFT_EXPR, SImode, CXT,			\
-			      size_int (16), 0, 0);			\
-  rtx low_fn = expand_shift (RSHIFT_EXPR, SImode, FNADDR,		\
+  rtx cxt = force_reg (Pmode, CXT);					\
+  rtx fn = force_reg (Pmode, FNADDR);					\
+  rtx hi_cxt = expand_shift (RSHIFT_EXPR, SImode, cxt,			\
 			     size_int (16), 0, 0);			\
+  rtx hi_fn = expand_shift (RSHIFT_EXPR, SImode, fn,			\
+			    size_int (16), 0, 0);			\
   emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 16)),	\
-		  gen_rtx (SUBREG, HImode, CXT));			\
+		  gen_lowpart (HImode, cxt));				\
   emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 4)),	\
-		  gen_rtx (SUBREG, HImode, FNADDR));			\
+		  gen_lowpart (HImode, fn));				\
   emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 8)),	\
-		  gen_rtx (SUBREG, HImode, low_cxt));			\
+		  gen_lowpart (HImode, hi_cxt));			\
   emit_move_insn (gen_rtx (MEM, HImode, plus_constant (TRAMP, 0)),	\
-		  gen_rtx (SUBREG, HImode, low_fn));			\
+		  gen_lowpart (HImode, hi_fn));				\
 }
 
 /* Addressing modes, and classification of registers for them.  */
