@@ -9557,7 +9557,7 @@ mips_adjust_insn_length (insn, length)
    LENGTH is the length (in bytes) of the sequence we are to generate.
    That tells us whether to generate a simple conditional branch, or a
    reversed conditional branch around a `jr' instruction.  */
-char *
+const char *
 mips_output_conditional_branch (insn,
 				operands,
 				two_operands_p,

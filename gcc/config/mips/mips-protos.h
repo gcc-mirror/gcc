@@ -105,9 +105,9 @@ extern int		mips16_gp_offset_p PARAMS ((rtx));
 extern int		mips16_constant PARAMS ((rtx, enum machine_mode,
 						 int, int));
 extern int		build_mips16_call_stub PARAMS ((rtx, rtx, rtx, int));
-extern char  	       *mips_output_conditional_branch PARAMS ((rtx, rtx *,
-								int, int, int,
-								int));
+extern const char       *mips_output_conditional_branch PARAMS ((rtx, rtx *,
+								 int, int, int,
+								 int));
 extern int              mips_adjust_insn_length PARAMS ((rtx, int));
 extern enum reg_class	mips_secondary_reload_class PARAMS ((enum reg_class,
 							     enum machine_mode,
