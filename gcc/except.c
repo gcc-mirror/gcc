@@ -1037,14 +1037,6 @@ add_partial_entry (handler)
 {
   expand_eh_region_start ();
 
-  /* ??? This comment was old before the most recent rewrite.  We
-     really ought to fix the callers at some point.  */
-  /* For backwards compatibility, we allow callers to omit calls to
-     begin_protect_partials for the outermost region.  So, we must
-     explicitly do so here.  */
-  if (!cfun->eh->protect_list)
-    begin_protect_partials ();
-
   /* Add this entry to the front of the list.  */
   TREE_VALUE (cfun->eh->protect_list)
     = tree_cons (NULL_TREE, handler, TREE_VALUE (cfun->eh->protect_list));
@@ -1056,14 +1048,6 @@ void
 end_protect_partials ()
 {
   tree t;
-
-  /* ??? This comment was old before the most recent rewrite.  We
-     really ought to fix the callers at some point.  */
-  /* For backwards compatibility, we allow callers to omit the call to
-     begin_protect_partials for the outermost region.  So,
-     PROTECT_LIST may be NULL.  */
-  if (!cfun->eh->protect_list)
-    return;
 
   /* Pop the topmost entry.  */
   t = TREE_VALUE (cfun->eh->protect_list);
