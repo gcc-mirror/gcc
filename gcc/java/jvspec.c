@@ -190,6 +190,9 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   /* Non-zero if linking is supposed to happen.  */
   int will_link = 1;
 
+  /* Non-zero if we want to find the spec file.  */
+  int want_spec_file = 1;
+
   /* The argument we use to specify the spec file.  */
   char *spec_file = NULL;
 
@@ -228,7 +231,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	      added--;
 	    }
 	  else if (strcmp (argv[i], "-fhelp") == 0)
-	    will_link = 0;
+	    want_spec_file = 0;
 	  else if (strcmp (argv[i], "-v") == 0)
 	    {
 	      saw_verbose_flag = 1;
@@ -244,6 +247,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 	  else if (strcmp (argv[i], "-C") == 0)
 	    {
 	      saw_C = 1;
+	      want_spec_file = 0;
 #if COMBINE_INPUTS
 	      combine_inputs = 1;
 #endif
@@ -459,7 +463,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   /* Read the specs file corresponding to libgcj.
      If we didn't find the spec file on the -L path, then we hope it
      is somewhere in the standard install areas.  */
-  if (! saw_C)
+  if (want_spec_file)
     arglist[j++] = spec_file == NULL ? "-specs=libgcj.spec" : spec_file;
 
   if (saw_C)
