@@ -1,6 +1,6 @@
 /* real.c - implementation of REAL_ARITHMETIC, REAL_VALUE_ATOF,
    and support for XFmode IEEE extended real floating point arithmetic.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
 
 This file is part of GNU CC.
@@ -6091,12 +6091,15 @@ significand_size (mode)
      enum machine_mode mode;
 {
 
-switch (mode)
+/* Don't test the modes, but their sizes, lest this
+   code won't work for BITS_PER_UNIT != 8 .  */
+
+switch (GET_MODE_BITSIZE (mode))
   {
-  case SFmode:
+  case 32:
     return 24;
 
-  case DFmode:
+  case 64:
 #if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
     return 53;
 #else
@@ -6111,9 +6114,9 @@ switch (mode)
 #endif
 #endif
 
-  case XFmode:
+  case 96:
     return 64;
-  case TFmode:
+  case 128:
     return 113;
 
   default:
