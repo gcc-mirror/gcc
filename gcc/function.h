@@ -236,18 +236,9 @@ struct function GTY(())
      has_hard_reg_initial_val (see integrate.[hc]).  */
   struct initial_value_struct *hard_reg_initial_vals;
 
-  /* Number of function calls seen so far in current function.  */
-  int x_function_call_count;
-
   /* List (chain of EXPR_LIST) of labels heading the current handlers for
      nonlocal gotos.  */
   rtx x_nonlocal_goto_handler_labels;
-
-  /* Label that will go on parm cleanup code, if any.
-     Jumping to this label runs cleanup code for parameters, if
-     such code must be run.  Following this code is the logical return
-     label.  */
-  rtx x_cleanup_label;
 
   /* Label that will go on function epilogue.
      Jumping to this label serves as a "return" instruction
@@ -523,7 +514,6 @@ extern int trampolines_created;
 
 #define max_parm_reg (cfun->x_max_parm_reg)
 #define parm_reg_stack_loc (cfun->x_parm_reg_stack_loc)
-#define cleanup_label (cfun->x_cleanup_label)
 #define return_label (cfun->x_return_label)
 #define naked_return_label (cfun->x_naked_return_label)
 #define save_expr_regs (cfun->x_save_expr_regs)
@@ -533,7 +523,6 @@ extern int trampolines_created;
 #define tail_recursion_reentry (cfun->x_tail_recursion_reentry)
 #define arg_pointer_save_area (cfun->x_arg_pointer_save_area)
 #define rtl_expr_chain (cfun->x_rtl_expr_chain)
-#define function_call_count (cfun->x_function_call_count)
 #define used_temp_slots (cfun->x_used_temp_slots)
 #define avail_temp_slots (cfun->x_avail_temp_slots)
 #define temp_slot_level (cfun->x_temp_slot_level)
