@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Copyright (C) 1994, 1995 Free Software Foundation, Inc.
-   Contributed by O.M.Kellogg, DASA (okellogg@salyko.cube.net).
+   Contributed by O.M.Kellogg, DASA (kellogg@space.otn.dasa.de)
 
 This file is part of GNU CC.
 
@@ -592,7 +592,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
   fprintf(FILE,"\tlr\tr15,r14 ; set stack ptr to frame ptr\n");	\
   fprintf(FILE,"\tpopm\tr14,r14 ; restore previous frame ptr\n");	\
   if (SIZE > 0)							\
-    fprintf(FILE,"\t%s\tr14,%d ; free up local-var space\n",	\
+    fprintf(FILE,"\t%s\tr15,%d ; free up local-var space\n",	\
 			 (SIZE <= 16 ? "aisp" : "aim"),SIZE);	\
   fprintf(FILE,"\turs\tr15\n"); }
 
@@ -1161,8 +1161,10 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 	   label_pending = 0;						\
 	   datalbl[datalbl_ndx].size = 1;				\
 	}								\
-	fprintf(FILE, "\tdata\t"); output_addr_const(FILE,VALUE);	\
-	fprintf(FILE, "\n"); } while (0)
+	fprintf(FILE, "\tdata\t");					\
+	output_addr_const(FILE, VALUE); 				\
+	fprintf(FILE, "\n");						\
+  } while (0)
 
 /* This is how to output an assembler line defining a `long int' constant.
    1750 NOTE: The reason why this macro outputs `long' instead of `short'
@@ -1182,7 +1184,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  ASM_OUTPUT_CHAR(FILE,VALUE)
+#define ASM_OUTPUT_BYTE(FILE,VALUE)  fprintf(FILE, "\tdata\t#%x\n", VALUE)
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
