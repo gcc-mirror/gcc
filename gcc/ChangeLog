@@ -19,6 +19,13 @@ Tue Feb 17 22:56:14 1998  Richard Henderson  <rth@cygnus.com>
 
 Tue Feb 17 22:37:22 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+        * fold-const.c: Include "system.h" to get stdlib.h and stdio.h.
+        (lshift_double): Add parentheses around + or - inside shift.
+        (rshift_double): Likewise.
+        (size_int_wide): Explicitly set type of `bit_p' to `int'.
+
+        * Makefile.in (fold-const.o): Depend on system.h.
+
 	* Makefile.in (gcc.o): Depend on system.h, in accordance with last
 	change to gcc.c.
 
