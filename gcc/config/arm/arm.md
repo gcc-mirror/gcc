@@ -1838,7 +1838,8 @@
 		(match_operand:SI 1 "s_register_operand" "r")
 		(match_operand:SI 2 "const_int_operand" "n")
 		(match_operand:SI 3 "const_int_operand" "n"))
-	       (const_int 0)))]
+	       (const_int 0)))
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_ARM
    && (INTVAL (operands[3]) >= 0 && INTVAL (operands[3]) < 32
        && INTVAL (operands[2]) > 0 
