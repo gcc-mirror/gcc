@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.229 1998/04/01 00:36:53 karl Exp karl $
+% $Id: texinfo.tex,v 2.230 1998/04/05 21:19:01 karl Exp karl $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -60,7 +60,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.229 $
+\deftexinfoversion$Revision: 2.230 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -3636,8 +3636,8 @@ width0pt\relax} \fi
 % \nonarrowing is a flag.  If "set", @lisp etc don't narrow margins.
 \let\nonarrowing=\relax
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \cartouche: draw rectangle w/rounded corners around argument
+% @cartouche ... @end cartouche: draw rectangle w/rounded corners around
+% environment contents.
 \font\circle=lcircle10
 \newdimen\circthick
 \newdimen\cartouter\newdimen\cartinner
@@ -3664,9 +3664,9 @@ width0pt\relax} \fi
         \cartinner=\hsize \advance\cartinner by-\lskip
                           \advance\cartinner by-\rskip
         \cartouter=\hsize
-        \advance\cartouter by 18pt % allow for 3pt kerns on either
+        \advance\cartouter by 18.4pt % allow for 3pt kerns on either
 %                                    side, and for 6pt waste from
-%                                    each corner char
+%                                    each corner char, and rule thickness
         \normbskip=\baselineskip \normpskip=\parskip \normlskip=\lineskip
         % Flag to tell @lisp, etc., not to narrow margin.
         \let\nonarrowing=\comment
