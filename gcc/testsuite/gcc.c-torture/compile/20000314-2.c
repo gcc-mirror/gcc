@@ -1,4 +1,4 @@
-extern void malloc(size_t size); 
+extern void malloc(__SIZE_TYPE__ size); 
 
 toto()
 {
