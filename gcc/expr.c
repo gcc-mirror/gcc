@@ -7117,7 +7117,7 @@ expand_expr (exp, target, tmode, modifier)
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
 	    || (mode1 != BLKmode
-		&& SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op))
+		&& SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op0))
 		&& ((TYPE_ALIGN (TREE_TYPE (tem))
 		     < GET_MODE_ALIGNMENT (mode))
 		    || (bitpos % GET_MODE_ALIGNMENT (mode) != 0)))

@@ -1,3 +1,7 @@
+2001-11-15  Stan Shebs  <shebs@apple.com>
+
+	* expr.c (expand_expr, case COMPONENT_REF): Fix variable ref.
+	
 2001-11-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* config/s390/s390.md: Remove ALIGN arg from emit_cmp_and_jump_insns 
