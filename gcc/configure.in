@@ -246,7 +246,27 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gas=yes gnu_ld=yes
 		;;
-	alpha-dec-osf[[23456789]]*)
+	alpha-dec-osf[[456789]]*)
+		if [[ x$stabs = xyes ]]
+		then
+			tm_file="${tm_file} dbx.h"
+		fi
+		if [[ x$gas != xyes ]]
+		then
+			extra_passes="mips-tfile mips-tdump"
+		fi
+		broken_install=yes
+		use_collect2=yes
+		# Some versions of OSF4 (specifically X4.0-9 296.7) have
+		# a broken tar, so we use cpio instead.
+		case $machine in
+		  alpha-dec-osf4*)
+		    install_headers_dir=install-headers-cpio
+		    ;;
+		esac
+		;;
+	alpha-dec-osf[[23]]*)
+		tm_file="${tm_file} alpha/osf2or3.h"
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -390,6 +410,11 @@ for machine in $build $host $target; do
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
 		fixincludes=Makefile.in
+		;;
+	hppa1.1-*-rtems*)
+		tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h pa/rtems.h"
+		xm_file=pa/xm-papro.h
+		tmake_file=pa/t-pro
 		;;
 	hppa1.0-*-osf*)
 		tm_file="${tm_file} pa/pa-osf.h"
@@ -832,7 +857,7 @@ for machine in $build $host $target; do
 		xm_file=i386/xm-sysv4.h
 		if [[ x$stabs = xyes ]]
 		then
-			tm_file=i386/sol2gdb.h
+			tm_file=i386/sol2dbg.h
 		else
 			tm_file=i386/sol2.h
 		fi
@@ -980,6 +1005,9 @@ for machine in $build $host $target; do
 		;;
 	i960-*-*)			# Default i960 environment.
 		use_collect2=yes
+		;;
+	m32r-*-elf*)
+		extra_parts="crtinit.o crtfini.o"
 		;;
 	m68000-convergent-sysv*)
 		tm_file=m68k/ctix.h
@@ -1974,6 +2002,17 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
+	powerpc-*-rtems*)
+		tm_file=rs6000/rtems.h
+		if [[ x$gas = xyes ]]
+		then
+		     tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
+		else
+		     tmake_file="rs6000/t-ppc t-rtems rs6000/t-ppccomm"
+		fi
+		fixincludes=Makefile.in
+		extra_headers=ppc-asm.h
+		;;
 	powerpc-*-linux*)
 		tm_file=rs6000/linux.h
 		xm_file=rs6000/xm-sysv4.h
@@ -1987,19 +2026,6 @@ for machine in $build $host $target; do
 		xmake_file=rs6000/x-sysv4
 		fixincludes=Makefile.in
 		objc_thread_file=${enable_objcthreads-single}
-		extra_headers=ppc-asm.h
-		;;
-	powerpc-*-rtems*)
-		cpu_type=rs6000
-		xm_file=rs6000/xm-sysv4.h
-		tm_file=rs6000/rtems.h
-		if [[ x$gas = xyes ]]
-		then
-		     tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
-		else
-		     tmake_file="rs6000/t-ppc t-rtems rs6000/t-ppccomm"
-		fi
-		xmake_file=rs6000/x-sysv4
 		extra_headers=ppc-asm.h
 		;;
         powerpc-*-vxworks*)
