@@ -1,3 +1,8 @@
+2001-12-06  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.h (STRUCT_VALUE): Suppress definition.
+	(STRUCT_VALUE_REGNUM): Restore definition.
+
 2001-12-06  Andrew MacLeod <amacleod@redhat.com>
 
 	* flow.c (find_regno_partial): Return register, not the expression
