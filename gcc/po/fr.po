@@ -114,7 +114,7 @@ msgstr ""
 "Project-Id-Version: GNU gcc 3.4-b20040206\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2004-02-06 01:40+0000\n"
-"PO-Revision-Date: 2004-02-16 12:00-0500\n"
+"PO-Revision-Date: 2004-02-18 08:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -261,7 +261,7 @@ msgstr ""
 
 #: c-common.c:1158
 msgid "%J'%D' is not defined outside of function scope"
-msgstr "« %J'%D » n'est pas défini à l'extérieur de la portée de la fonction"
+msgstr "%J'%D' n'est pas défini à l'extérieur de la portée de la fonction"
 
 #: c-common.c:1178
 #, c-format
@@ -433,7 +433,7 @@ msgstr "valeur du « case » duppliquée (ou en chevauchant une autre)"
 
 #: c-common.c:4004
 msgid "%Jthis is the first entry overlapping that value"
-msgstr "%J est la première entrée chevauchant cette valeur"
+msgstr "%Jest la première entrée chevauchant cette valeur"
 
 #: c-common.c:4008
 msgid "duplicate case value"
@@ -441,7 +441,7 @@ msgstr "valeur du « case » duppliquée"
 
 #: c-common.c:4009
 msgid "%Jpreviously used here"
-msgstr "%J précédemment utilisé ici"
+msgstr "%Jprécédemment utilisé ici"
 
 #: c-common.c:4013
 msgid "multiple default labels in one switch"
@@ -449,7 +449,7 @@ msgstr "plusieurs étiquettes par défaut dans un « switch »"
 
 #: c-common.c:4014
 msgid "%Jthis is the first default label"
-msgstr "%J est la première étiquette par défaut"
+msgstr "%Jest la première étiquette par défaut"
 
 #: c-common.c:4039
 msgid "taking the address of a label is non-standard"
@@ -483,7 +483,7 @@ msgstr "la déclaration de « %s » masque une déclaration globale"
 
 #: c-common.c:4303
 msgid "%Jshadowed declaration is here"
-msgstr "déclaration de %J est masquée ici"
+msgstr "%Jdéclaration est masquée ici"
 
 #: c-common.c:4686
 #, c-format
@@ -507,11 +507,11 @@ msgstr "impossible d'émuler « %s »"
 
 #: c-common.c:4744
 msgid "%Jsection attribute cannot be specified for local variables"
-msgstr "l'attribut de section %J ne peut être spécifié pour des variables locales"
+msgstr "%Jl'attribut de section ne peut être spécifié pour des variables locales"
 
 #: c-common.c:4755
 msgid "%Jsection of '%D' conflicts with previous declaration"
-msgstr "section %J de « %D » en conflit avec une déclaration précédente"
+msgstr "%Jsection de « %D » en conflit avec une déclaration précédente"
 
 #: c-common.c:4764
 msgid "%Jsection attribute not allowed for '%D'"
@@ -519,7 +519,7 @@ msgstr "attribut de section %J n'est pas permis pour « %D »"
 
 #: c-common.c:4770
 msgid "%Jsection attributes are not supported for this target"
-msgstr "attributs de section %J ne sont pas supportés pour la cible"
+msgstr "%Jattributs de section ne sont pas supportés pour la cible"
 
 #: c-common.c:4808
 msgid "requested alignment is not a constant"
@@ -535,11 +535,11 @@ msgstr "l'alignement demandé est trop grand"
 
 #: c-common.c:4844
 msgid "%Jalignment may not be specified for '%D'"
-msgstr "l'alignement %J ne peut pas être spécifié pour « %D »"
+msgstr "%Jl'alignement ne peut pas être spécifié pour « %D »"
 
 #: c-common.c:4882
 msgid "%J'%D' defined both normally and as an alias"
-msgstr "« %J'%D » défini à la fois normalement et en tant qu'alias"
+msgstr "%J'%D défini à la fois normalement et en tant qu'alias"
 
 #: c-common.c:4892
 msgid "alias arg not a string"
@@ -563,11 +563,11 @@ msgstr "l'argument de tls_model doit être l'un de « local-exec », « initial-exec
 
 #: c-common.c:5005 c-common.c:5051
 msgid "%J'%E' attribute applies only to functions"
-msgstr "l'attribut « %J'%E' » ne s'applique seulement qu'à des fonctions"
+msgstr "%J'%E l'attribut ne s'applique seulement qu'à des fonctions"
 
 #: c-common.c:5010 c-common.c:5056
 msgid "%Jcan't set '%E' attribute after definition"
-msgstr "%J ne peut initialiser l'attribut « %E » après définition"
+msgstr "%Jne peut initialiser l'attribut « %E » après définition"
 
 #: c-common.c:5132
 #, c-format
@@ -671,23 +671,23 @@ msgstr "conversion vers un type non scalaire demandée"
 
 #: c-decl.c:371
 msgid "%Jarray '%D' assumed to have one element"
-msgstr "on assume que le tableau %J « %D » n'a qu'un seul élément"
+msgstr "%Jon assume que le tableau « %D » n'a qu'un seul élément"
 
 #: c-decl.c:580
 msgid "%Jlabel `%D' used but not defined"
-msgstr "étiquette %J « %D » utilisée mais non définie"
+msgstr "%Jétiquette « %D » utilisée mais non définie"
 
 #: c-decl.c:586
 msgid "%Jlabel `%D' defined but not used"
-msgstr "étiquette %J « %D » définie mais non utilisée"
+msgstr "%Jétiquette « %D » définie mais non utilisée"
 
 #: c-decl.c:588
 msgid "%Jlabel `%D' declared but not defined"
-msgstr "étiquette %J « %D » utilisée mais non définie"
+msgstr "%Jétiquette « %D » utilisée mais non définie"
 
 #: c-decl.c:613
 msgid "%Junused variable `%D'"
-msgstr "variable inutilisée %J « %D »"
+msgstr "%Jvariable inutilisée « %D »"
 
 #: c-decl.c:821
 msgid "a parameter list with an ellipsis can't match an empty parameter name list declaration"
@@ -713,15 +713,15 @@ msgstr ""
 #. for this poor-style construct.
 #: c-decl.c:891
 msgid "%Jprototype for '%D' follows non-prototype definition"
-msgstr "prototype %J pour %D suit la définition d'un non prototype"
+msgstr "%Jprototype pour %D suit la définition d'un non prototype"
 
 #: c-decl.c:906
 msgid "%Jprevious definition of '%D' was here"
-msgstr "définition précédente %J de %D était ici"
+msgstr "%Jdéfinition précédente de %D était ici"
 
 #: c-decl.c:908
 msgid "%Jprevious implicit declaration of '%D' was here"
-msgstr "déclaration précédente implicite %J de « %s » était ici"
+msgstr "%Jdéclaration précédente implicite de « %s » était ici"
 
 #: c-decl.c:910
 msgid "%Jprevious declaration of '%D' was here"
@@ -729,103 +729,103 @@ msgstr "déclaration précédente %J de « %D » était ici"
 
 #: c-decl.c:944
 msgid "%J'%D' redeclared as different kind of symbol"
-msgstr "« %J'%D' » redéclaré comme une sorte différente de symbole"
+msgstr "%J'%D' redéclaré comme une sorte différente de symbole"
 
 #: c-decl.c:949
 msgid "%Jbuilt-in function '%D' declared as non-function"
-msgstr "fonction interne %J « %D » n'est pas déclarée comme une fonction"
+msgstr "%Jfonction interne « %D » n'est pas déclarée comme une fonction"
 
 #: c-decl.c:952 c-decl.c:1042
 msgid "%Jshadowing built-in function '%D'"
-msgstr "masquage de la fonction interne %J « %D »"
+msgstr "%Jmasquage de la fonction interne « %D »"
 
 #. If types don't match for a built-in, throw away the
 #. built-in.  No point in calling locate_old_decl here, it
 #. won't print anything.
 #: c-decl.c:972
 msgid "%Jconflicting types for built-in function '%D'"
-msgstr "types conflictuels pour la fonction interne %J « %D »"
+msgstr "%Jtypes conflictuels pour la fonction interne « %D »"
 
 #: c-decl.c:996 c-decl.c:1004
 msgid "%Jconflicting types for '%D'"
-msgstr "types conflictuels pour %J « %D »"
+msgstr "%Jtypes conflictuels pour « %D »"
 
 #. allow OLDDECL to continue in use
 #: c-decl.c:1019
 msgid "%Jredefinition of typedef '%D'"
-msgstr "redéfinition de %J « %D »"
+msgstr "%Jredéfinition de « %D »"
 
 #: c-decl.c:1055 c-decl.c:1119
 msgid "%Jredefinition of '%D'"
-msgstr "redéfinition de %J « %D »"
+msgstr "%Jredéfinition de « %D »"
 
 #: c-decl.c:1086 c-decl.c:1136
 msgid "%Jstatic declaration of '%D' follows non-static declaration"
-msgstr "déclaration statique %J de « %D » suit une déclaration non statique"
+msgstr "%Jdéclaration statique de « %D » suit une déclaration non statique"
 
 #: c-decl.c:1094 c-decl.c:1133
 msgid "%Jnon-static declaration of '%D' follows static declaration"
-msgstr "déclaration non statique %J de « %D » suite une déclaration statique"
+msgstr "%Jdéclaration non statique de « %D » suite une déclaration statique"
 
 #: c-decl.c:1106
 msgid "%Jthread-local declaration of '%D' follows non-thread-local declaration"
-msgstr "déclaration de thread local %J de « %D » suit une déclaration non thread-local"
+msgstr "%Jdéclaration de thread local de « %D » suit une déclaration non thread-local"
 
 #: c-decl.c:1109
 msgid "%Jnon-thread-local declaration of '%D' follows thread-local declaration"
-msgstr "déclaration non thread local %J de « %D » suit une déclaration de thread local"
+msgstr "%Jdéclaration non thread local de « %D » suit une déclaration de thread local"
 
 #: c-decl.c:1149
 msgid "%Jextern declaration of '%D' follows declaration with no linkage"
-msgstr "déclaration externe %J de « %D » suit une déclaraion sans lien"
+msgstr "%Jdéclaration externe de « %D » suit une déclaraion sans lien"
 
 #: c-decl.c:1152
 msgid "%Jdeclaration of '%D' with no linkage follows extern declaration"
-msgstr "déclaration %J de « %D » sasn lien suivant une déclaration externe"
+msgstr "%Jdéclaration de « %D » sasn lien suivant une déclaration externe"
 
 #: c-decl.c:1155
 msgid "%Jredeclaration of '%D' with no linkage"
-msgstr "redéclaration de %J de «%D» sans lien"
+msgstr "%Jredéclaration de « %D » sans lien"
 
 #: c-decl.c:1169
 msgid "%Jredeclaration of '%D' with different visibility (old visibility preserved)"
-msgstr ""
+msgstr "%Jredéclaration de « %D » avec une visibilité différente (visibilité précédente conservée)"
 
 #: c-decl.c:1180
 msgid "%Jinline declaration of '%D' follows declaration with attribute noinline"
-msgstr "déclaration en-ligne %J de « %D » suit la déclaration avec un attribut non en-ligne"
+msgstr "%Jdéclaration en-ligne de « %D » suit la déclaration avec un attribut non en-ligne"
 
 #: c-decl.c:1187
 msgid "%Jdeclaration of '%D' with attribute noinline follows inline declaration "
-msgstr "éclaration %J de « %D » avec un attribut non en-glien suit une déclaration en-ligne"
+msgstr "%Jéclaration de « %D » avec un attribut non en-glien suit une déclaration en-ligne"
 
 #: c-decl.c:1199
 msgid "%J'%D' declared inline after being called"
-msgstr "« %J'%D » déclaré en-ligne après avoir été appelé"
+msgstr "%J'%D' déclaré en-ligne après avoir été appelé"
 
 #: c-decl.c:1205
 msgid "%J'%D' declared inline after its definition"
-msgstr "« %J'%D » déclaré en-ligne après sa définition"
+msgstr "%J'%D' déclaré en-ligne après sa définition"
 
 #: c-decl.c:1217
 msgid "%Jvolatile declaration of '%D' follows non-volatile declaration"
-msgstr "déclaration valotile %J de « %D » suit une déclaration non volatile"
+msgstr "%Jdéclaration volatile de « %D » suit une déclaration non volatile"
 
 #: c-decl.c:1220
 msgid "%Jnon-volatile declaration of '%D' follows volatile declaration"
-msgstr "déclaration non volatile %J de « %D » suit une déclaration volatile"
+msgstr "%Jdéclaration non volatile de « %D » suit une déclaration volatile"
 
 #: c-decl.c:1227
 msgid "%Jconst declaration of '%D' follows non-const declaration"
-msgstr "déclaration de constante %J de « %D » suit une déclaration de non constante"
+msgstr "%Jdéclaration de constante de « %D » suit une déclaration de non constante"
 
 #: c-decl.c:1230
 msgid "%Jnon-const declaration of '%D' follows const declaration"
-msgstr "déclaration de non constante %J de « %D » suit une déclaration de constante"
+msgstr "%Jdéclaration de non constante de « %D » suit une déclaration de constante"
 
 #: c-decl.c:1246
 msgid "%Jredundant redeclaration of '%D'"
-msgstr "déclaration redondante %J de « %D »"
+msgstr "%Jdéclaration redondante de « %D »"
 
 #: c-decl.c:1690
 #, c-format
@@ -834,7 +834,7 @@ msgstr "déclaration de « %s » externe imbriquée"
 
 #: c-decl.c:1829 objc/objc-act.c:2534 objc/objc-act.c:6793
 msgid "%Jprevious declaration of '%D'"
-msgstr "déclaration précédente %J de « %D »"
+msgstr "%Jdéclaration précédente de « %D »"
 
 #: c-decl.c:1870 c-decl.c:1872
 #, c-format
@@ -871,19 +871,19 @@ msgstr "déclaration de l'étiquette « %s » en double"
 
 #: c-decl.c:2001
 msgid "%Jthis is a previous declaration"
-msgstr "%J est la déclaration précédente"
+msgstr "%Jest la déclaration précédente"
 
 #: c-decl.c:2036
 msgid "%Hduplicate label `%D'"
-msgstr "étiquette %H « %D » apparaît en double"
+msgstr "%Hétiquette « %D » apparaît en double"
 
 #: c-decl.c:2038
 msgid "%J`%D' previously defined here"
-msgstr "« %J%'%D » précédemment défini ici"
+msgstr "%J%`%D' précédemment défini ici"
 
 #: c-decl.c:2040
 msgid "%J`%D' previously declared here"
-msgstr "%J « %D » précédemment déclaré ici"
+msgstr "%J`%D' précédemment déclaré ici"
 
 #: c-decl.c:2060
 msgid "%Htraditional C lacks a separate namespace for labels, identifier `%s' conflicts"
@@ -891,7 +891,7 @@ msgstr ""
 
 #: c-decl.c:2131
 msgid "%H`%s' defined as wrong kind of tag"
-msgstr "%H « %s » défini incorrectement comme une mauvais sorte d'étiquette"
+msgstr "%H« %s » défini incorrectement comme une mauvais sorte d'étiquette"
 
 #: c-decl.c:2369
 msgid "unnamed struct/union that defines no instances"
@@ -928,7 +928,7 @@ msgstr "static ou qualificateurs de type dans un déclarateur abstrait"
 
 #: c-decl.c:2517
 msgid "%J'%D' is usually a function"
-msgstr "%J « %s » est habituellement une fonction"
+msgstr "%J`%D' est habituellement une fonction"
 
 #: c-decl.c:2526
 #, c-format
@@ -966,27 +966,27 @@ msgstr "%J fonction en-ligne « %D » a reçu l'attribut non en-ligne"
 
 #: c-decl.c:2716
 msgid "%Jinitializer fails to determine size of '%D'"
-msgstr "initialisateur %J a échoué à déterminer la taille de « %D »"
+msgstr "%Jinitialisateur a échoué à déterminer la taille de « %D »"
 
 #: c-decl.c:2721
 msgid "%Jarray size missing in '%D'"
-msgstr "taille du tableau %J est manquante dans « %D »"
+msgstr "%Jtaille du tableau est manquante dans « %D »"
 
 #: c-decl.c:2737
 msgid "%Jzero or negative size array '%D'"
-msgstr "tableau %J « %D » de taille zéro ou négative"
+msgstr "%Jtableau « %D » de taille zéro ou négative"
 
 #: c-decl.c:2765
 msgid "%Jstorage size of '%D' isn't known"
-msgstr "taille de stockage %J de « %D » n'est pas connue"
+msgstr "%Jtaille de stockage de « %D » n'est pas connue"
 
 #: c-decl.c:2775
 msgid "%Jstorage size of '%D' isn't constant"
-msgstr "taille de stockage %J de « %D » n'est pas une constante"
+msgstr "%Jtaille de stockage de « %D » n'est pas une constante"
 
 #: c-decl.c:2858
 msgid "%Jignoring asm-specifier for non-static local variable '%D'"
-msgstr "spécificateur asm ignoré pour la variable locale non statique %J « %D »"
+msgstr "%Jspécificateur asm ignoré pour la variable locale non statique « %D »"
 
 #: c-decl.c:2969
 msgid "ISO C forbids forward parameter declarations"
@@ -1321,7 +1321,7 @@ msgstr "variable précédemment déclarée « static » redéclarée « extern »"
 
 #: c-decl.c:4424
 msgid "%Jvariable '%D' declared `inline'"
-msgstr "variable %J « %D » déclarée « inline »"
+msgstr "%Jvariable « %D » déclarée « inline »"
 
 #. A mere warning is sure to result in improper semantics
 #. at runtime.  Don't bother to allow this to compile.
@@ -1356,7 +1356,7 @@ msgstr "\"void\" doit être le seul paramètre"
 
 #: c-decl.c:4637
 msgid "%Jparameter \"%D\" has just a forward declaration"
-msgstr "le paramètre %J « %D » n'a qu'une déclaration anticipée"
+msgstr "%Jparamètre « %D » n'a qu'une déclaration anticipée"
 
 #. The first %s will be one of 'struct', 'union', or 'enum'.
 #: c-decl.c:4665
@@ -1390,7 +1390,7 @@ msgstr "déclaration ne déclarant rien du tout"
 
 #: c-decl.c:4873 c-decl.c:4889
 msgid "%Jduplicate member '%D'"
-msgstr "membre %J « %D » est double"
+msgstr "%Jmembre « %D » est double"
 
 #: c-decl.c:4923 c-decl.c:4926
 #, c-format
@@ -1429,19 +1429,19 @@ msgstr "redéfinition imbriquée de « %s »"
 
 #: c-decl.c:4998
 msgid "%Jflexible array member in union"
-msgstr "membre flexible de tableau %J dans l'union"
+msgstr "%Jmembre flexible de tableau dans l'union"
 
 #: c-decl.c:5000
 msgid "%Jflexible array member not at end of struct"
-msgstr "le membre flexible de tableau %J n'est pas à la fin de la structure"
+msgstr "%Jle membre flexible de tableau n'est pas à la fin de la structure"
 
 #: c-decl.c:5002
 msgid "%Jflexible array member in otherwise empty struct"
-msgstr "membre flexible de tableau %J dans une structure vide par ailleurs"
+msgstr "%Jmembre flexible de tableau dans une structure vide par ailleurs"
 
 #: c-decl.c:5007
 msgid "%Jinvalid use of structure with flexible array member"
-msgstr "utilisation invalide d'une structure %J ayant un membre flexible"
+msgstr "%Jutilisation invalide d'une structure ayant un membre flexible"
 
 #: c-decl.c:5102
 msgid "union cannot be made transparent"
@@ -1484,43 +1484,43 @@ msgstr "le type du retour est « int » par défaut"
 
 #: c-decl.c:5476
 msgid "%Jno previous prototype for '%D'"
-msgstr "aucun prototype précédent %J pour « %D »"
+msgstr "%Jaucun prototype précédent pour « %D »"
 
 #: c-decl.c:5482
 msgid "%J'%D' was used with no prototype before its definition"
-msgstr "« %J'%D » a été utilisé sans prototype avant sa définition"
+msgstr "%J'%D' a été utilisé sans prototype avant sa définition"
 
 #: c-decl.c:5489
 msgid "%Jno previous declaration for '%D'"
-msgstr "aucune déclaration précédente %J pour « %D »"
+msgstr "%Jaucune déclaration précédente pour « %D »"
 
 #: c-decl.c:5495
 msgid "%J`%D' was used with no declaration before its definition"
-msgstr "%J « %D » a été utilisé sans déclaration avant sa définition"
+msgstr "%J`%D' a été utilisé sans déclaration avant sa définition"
 
 #: c-decl.c:5531 c-decl.c:6037
 msgid "%Jreturn type of '%D' is not `int'"
-msgstr "le type de retour de %J « %D » n'est pas « int »"
+msgstr "%Jle type de retour de « %D » n'est pas « int »"
 
 #: c-decl.c:5546
 msgid "%Jfirst argument of '%D' should be `int'"
-msgstr "le premier argument de %J « %D » devrait être « int »"
+msgstr "%Jle premier argument de « %D » devrait être « int »"
 
 #: c-decl.c:5555
 msgid "%Jsecond argument of '%D' should be 'char **'"
-msgstr "le second argument de %J « %D » devrait être « char ** »"
+msgstr "%Jle second argument de « %D » devrait être « char ** »"
 
 #: c-decl.c:5564
 msgid "%Jthird argument of '%D' should probably be 'char **'"
-msgstr "le troisième argument de %J « %D » devrait probablement être « char ** »"
+msgstr "%Jle troisième argument de « %D » devrait probablement être « char ** »"
 
 #: c-decl.c:5574
 msgid "%J'%D' takes only zero or two arguments"
-msgstr "%J « %D » prend soit aucun argument ou soit deux arguments"
+msgstr "%J'%D' prend soit aucun argument ou soit deux arguments"
 
 #: c-decl.c:5577
 msgid "%J'%D' is normally a non-static function"
-msgstr "%J « %D » n'est pas normalement une fonction statique"
+msgstr "%J'%D' n'est pas normalement une fonction statique"
 
 #: c-decl.c:5633
 msgid "%Jold-style parameter declarations in prototyped function definition"
@@ -1528,11 +1528,11 @@ msgstr ""
 
 #: c-decl.c:5647
 msgid "%Jparameter name omitted"
-msgstr "nom de paramètre %J omis"
+msgstr "%Jnom de paramètre omis"
 
 #: c-decl.c:5722
 msgid "%Jparameter name missing from parameter list"
-msgstr "nom du paramètre %J manquant dans la liste des paramètres"
+msgstr "%Jnom du paramètre manquant dans la liste des paramètres"
 
 #: c-decl.c:5732
 msgid "%J\"%D\" declared as a non-parameter"
@@ -1540,23 +1540,23 @@ msgstr "%J\"%D\" déclaré comme un non paramètre"
 
 #: c-decl.c:5737
 msgid "%Jmultiple parameters named \"%D\""
-msgstr "plusieurs paramètres nommés %J « %D »"
+msgstr "%Jplusieurs paramètres nommés « %D »"
 
 #: c-decl.c:5745
 msgid "%Jparameter \"%D\" declared void"
-msgstr "paramètre %J \"%D\" déclaré «void »"
+msgstr "%Jparamètre \"%D\" déclaré «void »"
 
 #: c-decl.c:5760 c-decl.c:5762
 msgid "%Jtype of \"%D\" defaults to \"int\""
-msgstr "le type de %J « %D » est « int » par défaut"
+msgstr "%Jtype de « %D » est « int » par défaut"
 
 #: c-decl.c:5776
 msgid "%Jparameter \"%D\" has incomplete type"
-msgstr "le paramètre %J \"%D\" a un type incomplet"
+msgstr "%Jparamètre \"%D\" a un type incomplet"
 
 #: c-decl.c:5782
 msgid "%Jdeclaration for parameter \"%D\" but no such parameter"
-msgstr "déclaration du paramètre %J « %D » mais pas de tel paramètre"
+msgstr "%Jdéclaration du paramètre « %D » mais pas de tel paramètre"
 
 #: c-decl.c:5834
 msgid "number of arguments doesn't match prototype"
@@ -1564,7 +1564,7 @@ msgstr "le nombre d'arguments ne concorde pas avec celui du prototype"
 
 #: c-decl.c:5835 c-decl.c:5866 c-decl.c:5873
 msgid "%Hprototype declaration"
-msgstr "déclaration de prototype %H"
+msgstr "%Hdéclaration de prototype"
 
 #: c-decl.c:5864
 msgid "promoted argument \"%D\" doesn't match prototype"
@@ -1606,23 +1606,23 @@ msgstr "« enum %s » déclarée dans la déclaration initiale de la boucle « for »"
 
 #: c-decl.c:6213
 msgid "%Jdeclaration of non-variable '%D' in 'for' loop initial declaration"
-msgstr "déclaration de %J « %D » (qui n'est pas une variable) dans la déclaration initiale de « for »"
+msgstr "%Jdéclaration de « %D » (qui n'est pas une variable) dans la déclaration initiale de « for »"
 
 #: c-decl.c:6216
 msgid "%Jdeclaration of static variable '%D' in 'for' loop initial declaration"
-msgstr "déclaration de la variable statique %J « %D » dans la déclaration initiale de la boucle « for »"
+msgstr "%Jdéclaration de la variable statique « %D » dans la déclaration initiale de la boucle « for »"
 
 #: c-decl.c:6219
 msgid "%Jdeclaration of 'extern' variable '%D' in 'for' loop initial declaration"
-msgstr "déclaration de la variable externe %J « %D » dans la déclaration initiale « for »"
+msgstr "%Jdéclaration de la variable externe « %D » dans la déclaration initiale « for »"
 
 #: c-decl.c:6532
 msgid "%Jredefinition of global '%D'"
-msgstr "redéfinition globale de %J « %D »"
+msgstr "%Jredéfinition globale de « %D »"
 
 #: c-decl.c:6533
 msgid "%J'%D' previously defined here"
-msgstr "%J « %D » précédemment défini ici"
+msgstr "%J'%D' précédemment défini ici"
 
 #: c-format.c:94 c-format.c:210
 msgid "format string has invalid operand number"
@@ -2172,7 +2172,7 @@ msgstr "#pragma %s %s ignoré"
 #. ... or not.
 #: c-lex.c:385
 msgid "%Hstray '@' in program"
-msgstr "%H « @ » perdu dans le programme"
+msgstr "%H« @ » perdu dans le programme"
 
 #: c-lex.c:393
 #, c-format
@@ -2213,23 +2213,23 @@ msgstr "le C traditionel rejette la concaténation de chaînes de constantes"
 
 #: c-objc-common.c:82
 msgid "%Jfunction '%F' can never be inlined because it is supressed using -fno-inline"
-msgstr ""
+msgstr "%Jfonction '%F' ne jamais être enlignée en raison de l'option -fno-inline qui en supprime la possibilité"
 
 #: c-objc-common.c:92
 msgid "%Jfunction '%F' can never be inlined because it might not be bound within this unit of translation"
-msgstr ""
+msgstr "%Jfonction '%F' ne jamais être enlignée parce qu'elle ne peut être lié dans cette unité de traduction"
 
 #: c-objc-common.c:100
 msgid "%Jfunction '%F' can never be inlined because it uses attributes conflicting with inlining"
-msgstr ""
+msgstr "%Jfonction '%F' ne jamais être enlignée parce qu'elle utilise un attribut en conflit avec l'enlignage"
 
 #: c-objc-common.c:115
 msgid "%Jfunction '%F' can never be inlined because it has pending sizes"
-msgstr ""
+msgstr "%Jfonction '%F' ne jamais être enlignée parce qu'elle a des tailles en attente"
 
 #: c-objc-common.c:128
 msgid "%Jnested function '%F' can never be inlined because it has possibly saved pending sizes"
-msgstr ""
+msgstr "%Jfonction imbriqué '%F' ne peut jamais être enlignée parce qu'ella possiblement sauvegardé des tailles en attente"
 
 #: c-opts.c:141
 #, c-format
@@ -2237,29 +2237,29 @@ msgid "no class name specified with \"%s\""
 msgstr "aucun nom de classe spécifié avec \"%s\""
 
 #: c-opts.c:145
-#, fuzzy, c-format
+#, c-format
 msgid "assertion missing after \"%s\""
-msgstr "assertion manquante après %s"
+msgstr "assertion manquante après \"%s\""
 
 #: c-opts.c:150
-#, fuzzy, c-format
+#, c-format
 msgid "macro name missing after \"%s\""
-msgstr "nom de macro manquant après %s"
+msgstr "nom de macro manquant après \"%s\""
 
 #: c-opts.c:157
-#, fuzzy, c-format
+#, c-format
 msgid "missing path after \"%s\""
-msgstr "cible manquante après « -%s »"
+msgstr "cible manquante après \"%s\""
 
 #: c-opts.c:166
-#, fuzzy, c-format
+#, c-format
 msgid "missing filename after \"%s\""
-msgstr "nom de fichier manquant après « -%s »"
+msgstr "nom de fichier manquant après \"%s\""
 
 #: c-opts.c:171
-#, fuzzy, c-format
+#, c-format
 msgid "missing makefile target after \"%s\""
-msgstr "cible manquante après « -%s »"
+msgstr "cible manquante dans le makefile après \"%s\""
 
 #: c-opts.c:291
 msgid "-I- specified twice"
@@ -2271,7 +2271,6 @@ msgid "switch \"%s\" is no longer supported"
 msgstr "l'option « %s » n'est plus supportée"
 
 #: c-opts.c:816
-#, fuzzy
 msgid "-fhandle-exceptions has been renamed -fexceptions (and is now on by default)"
 msgstr "-fhandle-exceptions a été renommé -fexceptions (et est maintenant utilisé par défaut)"
 
@@ -2304,9 +2303,9 @@ msgid "-Wmissing-format-attribute ignored without -Wformat"
 msgstr "-Wmissing-format-attribute ignorée sans -Wformat"
 
 #: c-opts.c:1130
-#, fuzzy, c-format
+#, c-format
 msgid "opening output file %s: %m"
-msgstr "ouverture du fichier de sortie %s"
+msgstr "ouverture du fichier de sortie %s: %m"
 
 #: c-opts.c:1135
 #, c-format
@@ -2318,19 +2317,19 @@ msgid "YYDEBUG not defined"
 msgstr "YYDEBUG n'est pas défini"
 
 #: c-opts.c:1260
-#, fuzzy, c-format
+#, c-format
 msgid "opening dependency file %s: %m"
-msgstr "ouverture du fichier de dépendances %s"
+msgstr "ouverture du fichier de dépendances %s: %m"
 
 #: c-opts.c:1270
-#, fuzzy, c-format
+#, c-format
 msgid "closing dependency file %s: %m"
-msgstr "fermeture du fichier de dépendances %s"
+msgstr "fermeture du fichier de dépendances %s: %m"
 
 #: c-opts.c:1273
-#, fuzzy, c-format
+#, c-format
 msgid "when writing output to %s: %m"
-msgstr "lors de l'écriture de la sortie dans %s"
+msgstr "lors de l'écriture de la sortie dans %s: %m"
 
 #: c-opts.c:1343
 msgid "to generate dependencies you must specify either -M or -MM"
@@ -2410,9 +2409,8 @@ msgid "traditional C rejects ISO C style function definitions"
 msgstr "le C traditionel rejette les définitions de fonction au style C ISO"
 
 #: c-parse.y:699 c-parse.y:705 objc/objc-parse.y:740 objc/objc-parse.y:746
-#, fuzzy
 msgid "old-style parameter declaration"
-msgstr "ne peut utiliser «::» dans le paramètre d'un déclaration"
+msgstr "déclaration de paramètre d'un style désuet"
 
 #: c-parse.y:967 c-parse.y:973 c-parse.y:979 c-parse.y:985 c-parse.y:1006
 #: c-parse.y:1012 c-parse.y:1018 c-parse.y:1024 c-parse.y:1057 c-parse.y:1063
@@ -2428,9 +2426,8 @@ msgid "`%s' is not at beginning of declaration"
 msgstr "« %s » n'est pas au début de la déclaration"
 
 #: c-parse.y:1300 objc/objc-parse.y:1350
-#, fuzzy
 msgid "`typeof' applied to a bit-field"
-msgstr "« sizeof » appliqué à un champ de bits"
+msgstr "« typeof » appliqué à un champ de bits"
 
 #: c-parse.y:1427 objc/objc-parse.y:1477
 msgid "ISO C forbids empty initializer braces"
@@ -2481,14 +2478,12 @@ msgid "ISO C forbids member declarations with no members"
 msgstr "le C ISO interdit les déclarations de membre sans aucun membre"
 
 #: c-parse.y:1915 objc/objc-parse.y:1970
-#, fuzzy
 msgid "label at end of compound statement"
-msgstr "utilisation obsolète d'étiquette à la fin d'une déclaration composée"
+msgstr "étiquette à la fin d'une déclaration composée"
 
 #: c-parse.y:1934 objc/objc-parse.y:1989
-#, fuzzy
 msgid "ISO C90 forbids mixed declarations and code"
-msgstr "le C89 ISO interdit les déclarations mélangés au code"
+msgstr "le C89 ISO interdit les mélanges de déclarations et de code"
 
 #: c-parse.y:2012 objc/objc-parse.y:2069
 msgid "ISO C forbids label declarations"
@@ -2503,9 +2498,8 @@ msgid "empty body in an else-statement"
 msgstr "le corps du else est vide"
 
 #: c-parse.y:2192 objc/objc-parse.y:2249
-#, fuzzy
 msgid "%Hempty body in an if-statement"
-msgstr "le corps du else est vide"
+msgstr "%Hle corps de la déclaration du if est vide"
 
 #: c-parse.y:2272 cp/parser.c:6028 objc/objc-parse.y:2329
 msgid "break statement not within loop or switch"
@@ -2535,7 +2529,6 @@ msgstr "« ... » dans une liste d'identificateurs de style ancien"
 
 #: c-parse.c:5377 gengtype-yacc.c:1510 java/parse-scan.c:3059
 #: java/parse.c:6063 objc/objc-parse.c:6640
-#, fuzzy
 msgid "syntax error; also virtual memory exhausted"
 msgstr "erreur d'analyse syntaxique; de plus la mémoire virtuelle est épuisée"
 
@@ -2550,51 +2543,51 @@ msgid "syntax error at '%s' token"
 msgstr "erreur de syntaxe à l'élément lexical « %s »"
 
 #: c-pch.c:112
-#, fuzzy, c-format
+#, c-format
 msgid "can't create precompiled header %s: %m"
-msgstr "ne peut créer le répertoire %s"
+msgstr "ne peut créer une en-tête précompilée %s: %m"
 
 #: c-pch.c:132
-#, fuzzy, c-format
+#, c-format
 msgid "can't write to %s: %m"
-msgstr "ne peut écrire dans %s"
+msgstr "ne peut écrire dans %s: %m"
 
 #: c-pch.c:138
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a valid output file"
 msgstr "« %s » n'est pas un nom de fichier valide"
 
 #: c-pch.c:167 c-pch.c:183 c-pch.c:195
-#, fuzzy, c-format
+#, c-format
 msgid "can't write %s: %m"
-msgstr "ne peut écrire dans %s"
+msgstr "ne peut écrire dans %s: %m"
 
 #: c-pch.c:173
-#, fuzzy, c-format
+#, c-format
 msgid "can't seek in %s: %m"
-msgstr "ne peut ré-ouvrir %s"
+msgstr "ne peut se positionner dans %s: %m"
 
 #: c-pch.c:181 c-pch.c:221 c-pch.c:249 c-pch.c:254 c-pch.c:324
-#, fuzzy, c-format
+#, c-format
 msgid "can't read %s: %m"
-msgstr "ne peut faire l'expansion de %s"
+msgstr "ne peut lire %s: %m"
 
 #: c-pch.c:234
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not compatible with this GCC version"
-msgstr "index n'est pas compatible avec le mode index"
+msgstr "%s: n'est pas compatible avec cette version de GCC"
 
 #. It's a PCH for the wrong language.
 #: c-pch.c:237
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not for %s"
-msgstr "%s ne supporte pas %s"
+msgstr "%s: non pour %s"
 
 #. Not any kind of PCH.
 #: c-pch.c:241
-#, fuzzy, c-format
+#, c-format
 msgid "%s: not a PCH file"
-msgstr "%s : n'est pas un fichier COFF"
+msgstr "%s: n'est pas un fichier PCH"
 
 #: c-pch.c:260
 #, c-format
@@ -2628,14 +2621,12 @@ msgstr "%s : %s"
 
 # I18N
 #: c-pch.c:361
-#, fuzzy
 msgid "calling fdopen"
-msgstr "fdopen"
+msgstr "appel de fdopen()"
 
 #: c-pch.c:369 c-pch.c:381
-#, fuzzy
 msgid "reading"
-msgstr "création de %s"
+msgstr "en lecture"
 
 #: c-pragma.c:106
 msgid "#pragma pack (pop) encountered without matching #pragma pack (push, <n>)"
@@ -2685,9 +2676,8 @@ msgid "alignment must be a small power of two, not %d"
 msgstr "l'alignement doit être une petite puissance de 2, pas %d"
 
 #: c-pragma.c:278
-#, fuzzy
 msgid "%Japplying #pragma weak '%D' after first use results in unspecified behavior"
-msgstr "application de la #pragma weak « %s » après la première utilisation conduit à un comportement non spécifié"
+msgstr "%Japplication de la #pragma weak « %D » après la première utilisation conduit à un comportement non spécifié"
 
 #: c-pragma.c:325 c-pragma.c:330
 msgid "malformed #pragma weak, ignored"
@@ -2722,9 +2712,8 @@ msgid "asm declaration conflicts with previous rename"
 msgstr "déclaration asm en conflit avec le changement de nom précédent"
 
 #: c-semantics.c:697
-#, fuzzy
 msgid "destructor needed for `%D'"
-msgstr "destructeur requis pour « %#D »"
+msgstr "destructeur requis pour « %D »"
 
 #: c-semantics.c:698
 msgid "where case label appears here"
@@ -2742,9 +2731,8 @@ msgstr "%s qualificateur ignoré avec asm"
 
 # FIXME: c'est de l'assembleur ?
 #: c-semantics.c:991
-#, fuzzy
 msgid "will never be executed"
-msgstr "call   %2d n'est jamais été exécuté\n"
+msgstr "ne sera jamais exécuté"
 
 #: c-typeck.c:120
 #, c-format
@@ -2783,9 +2771,8 @@ msgid "types are not quite compatible"
 msgstr "les types ne sont pas vraiment compatibles"
 
 #: c-typeck.c:820
-#, fuzzy
 msgid "function return types not compatible due to `volatile'"
-msgstr "Le type retourné d'une fonction ne peut être une fonction"
+msgstr "les types retournés d'une fonction ne sont pas compatibles en raison de « volatile »"
 
 #: c-typeck.c:966 c-typeck.c:2143
 msgid "arithmetic on pointer to an incomplete type"
@@ -2855,9 +2842,8 @@ msgstr "l'objet appelé n'est pas une fonction"
 #. therefore, simply error unless we can prove that all possible
 #. executions of the program must execute the code.
 #: c-typeck.c:1711
-#, fuzzy
 msgid "function called through a non-compatible type"
-msgstr "sizeof appliqué sur un type incomplet"
+msgstr "fonction appellée à travers un type non compatible"
 
 #: c-typeck.c:1805 cp/typeck.c:2544
 msgid "too many arguments to function"
@@ -3024,19 +3010,16 @@ msgid "attempt to take address of bit-field structure member `%s'"
 msgstr "tentative pour prendre l'adresse du membre « %s » d'une structure de champ de bits"
 
 #: c-typeck.c:2634
-#, fuzzy
 msgid "use of conditional expressions as lvalues is deprecated"
-msgstr "le C ISO interdit l'utilisation d'expressions conditionnelles comme membre gauche"
+msgstr "utilisation d'expressions conditionnelles comme lvalues est déprécié"
 
 #: c-typeck.c:2637
-#, fuzzy
 msgid "use of compound expressions as lvalues is deprecated"
-msgstr "le C ISO interdit l'utilisation d'expressions composées comme membre gauche"
+msgstr "utilisation d'expressions composées comme lvalues est déprécié"
 
 #: c-typeck.c:2640
-#, fuzzy
 msgid "use of cast expressions as lvalues is deprecated"
-msgstr "le C ISO interdit l'utilisation de transtypage d'expression comme membre gauche"
+msgstr "utilisation de transtypage d'expressions comme lvalues est déprécié"
 
 #: c-typeck.c:2655
 #, c-format
@@ -3167,14 +3150,12 @@ msgid "dereferencing type-punned pointer will break strict-aliasing rules"
 msgstr "déréférencement du pointeur type-punned brisera les strictes d'aliases"
 
 #: c-typeck.c:3136
-#, fuzzy
 msgid "ISO C forbids conversion of function pointer to object pointer type"
-msgstr "le C ISO interdit la comparaison de « void * » avec un pointeur de fonction"
+msgstr "le C ISO interdit la conversion d'un pointeur de fonction en un type pointeur d'objet"
 
 #: c-typeck.c:3145
-#, fuzzy
 msgid "ISO C forbids conversion of object pointer to function pointer type"
-msgstr "le C ISO interdit la comparaison de « void * » avec un pointeur de fonction"
+msgstr "le C ISO interdit la conversion d'un pointeur d'objet vers un type de pointeur à une fonction"
 
 #. Now we have handled acceptable kinds of LHS that are not truly lvalues.
 #. Reject anything strange now.
@@ -3320,9 +3301,8 @@ msgid "invalid initializer"
 msgstr "initialisation invalide"
 
 #: c-typeck.c:4509 cp/decl.c:4465
-#, fuzzy
 msgid "opaque vector types cannot be initialized"
-msgstr "un objet de taille variable de type « %T » peut ne pas être initialisé"
+msgstr "type de vecteur opaque ne peut être initialisé"
 
 #: c-typeck.c:4703
 msgid "extra brace group at end of initializer"
@@ -3546,18 +3526,16 @@ msgid "comparison of promoted ~unsigned with unsigned"
 msgstr "comparaison entre élément promu ~unsigned et un élément non signé"
 
 #: calls.c:1838
-#, fuzzy
 msgid "%Jinlining failed in call to '%F'"
-msgstr "l'enlignage de l'appel à « %s » a échoué"
+msgstr "%Jenlignage a échoué dans l'appel à « %F »"
 
 #: calls.c:1839 calls.c:2208 tree-inline.c:1339 tree-inline.c:1346
 msgid "called from here"
 msgstr "appelé d'ici"
 
 #: calls.c:2207
-#, fuzzy
 msgid "%Jcan't inline call to '%F'"
-msgstr "impossible d'enligner l'appel à « %s »"
+msgstr "%Jimpossible d'enligner l'appel à « %F »"
 
 #: calls.c:2216
 msgid "ignoring return value of `%D', declared with attribute warn_unused_result"
@@ -3667,9 +3645,9 @@ msgid "Loop %d's header does not belong directly to it."
 msgstr "L'entête de la boucle %d ne lui appartient pas directement."
 
 #: cfgloop.c:1201
-#, fuzzy, c-format
+#, c-format
 msgid "Loop %d's latch is marked as part of irreducible region."
-msgstr "Le verrou %d de la boucle ne lui appartient pas directement."
+msgstr "Le verrou %d de la boucle est défini comme faisant partie d'une zone irréductible"
 
 #: cfgloop.c:1231
 #, c-format
@@ -3707,9 +3685,8 @@ msgid "head insn %d for block %d not found in the insn stream"
 msgstr "en-tête insn %d du bloc %d n'a pas été repérée dans le flot insn"
 
 #: cfgrtl.c:1925
-#, fuzzy
 msgid "verify_flow_info: REG_BR_PROB does not match cfg %wi %i"
-msgstr "verify_flow_info: REG_BR_PROB ne correspond pas à la config %i %i"
+msgstr "verify_flow_info: REG_BR_PROB ne correspond pas à la config %wi %i"
 
 #: cfgrtl.c:1953
 #, c-format
@@ -3790,9 +3767,8 @@ msgid "wrong insn in the fallthru edge"
 msgstr "insn erronée dans l'arrête fallthru"
 
 #: cfgrtl.c:2146
-#, fuzzy
 msgid "basic blocks not laid down consecutively"
-msgstr "les blocs de base ne sont pas numérotés consécutivement"
+msgstr "les blocs de base ne se suivent pas consécutivement"
 
 #: cfgrtl.c:2171
 msgid "insn outside basic block"
@@ -3810,53 +3786,48 @@ msgid "number of bb notes in insn chain (%d) != n_basic_blocks (%d)"
 msgstr "nombre de bb noté dans la chaîne d'insn (%d) != n_basic_blocks (%d)"
 
 #: cgraph.c:161
-#, fuzzy
 msgid "function body not available"
-msgstr "fonction ne pas pas être en-ligne"
+msgstr "corps de la fonction n'est pas disponible"
 
 #: cgraph.c:163 cgraphunit.c:341
-#, fuzzy
 msgid "redefined extern inline functions are not considered for inlining"
-msgstr "Avertir lorsque des fonctions en ligne ne peuvent être en-ligne"
+msgstr "fonctions externes enlignes redéfinies n'ont pas été retenues pour l'enlignage"
 
 #: cgraph.c:166 cgraphunit.c:346
-#, fuzzy
 msgid "function not considered for inlining"
-msgstr "fonction ne pas pas être en-ligne"
+msgstr "fonction n'a pas été retenue pour l'enlignage"
 
 #: cgraph.c:168 cgraphunit.c:344
-#, fuzzy
 msgid "function not inlinable"
-msgstr "fonction ne pas pas être en-ligne"
+msgstr "fonction ne peut être enligne"
 
 #: cgraph.c:476
-#, fuzzy
 msgid "%D renamed after being referenced in assembly"
-msgstr "« %s » %s après avoir été référencé avec lien dllimport."
+msgstr "« %D » renommé après avoir été référencé durant l'assemblage"
 
 #: cgraphunit.c:1042
 msgid "--param large-function-growth limit reached"
-msgstr ""
+msgstr "--param large-function-growth limite atteinte"
 
 #: cgraphunit.c:1055
 msgid "--param large-function-growth limit reached while inlining the caller"
-msgstr ""
+msgstr "--param large-function-growth limite atteinte lors de l'enlignage de l'appelant"
 
 #: cgraphunit.c:1120
 msgid "--param max-inline-insns-single limit reached"
-msgstr ""
+msgstr "--param max-inline-insns-single limite atteinte"
 
 #: cgraphunit.c:1144
 msgid "--param max-inline-insns-single limit reached after inlining into the callee"
-msgstr ""
+msgstr "--param max-inline-insns-single limite atteinte après l'enlignage dans l'appellé"
 
 #: cgraphunit.c:1221
 msgid "--param inline-unit-growth limit reached"
-msgstr ""
+msgstr "--param inline-unit-growth limite atteinte"
 
 #: cgraphunit.c:1293 cgraphunit.c:1437
 msgid "recursive inlining"
-msgstr ""
+msgstr "enlignage récursif"
 
 #: collect2.c:406
 msgid "internal error"
@@ -4112,14 +4083,14 @@ msgid "can't convert value to a vector"
 msgstr "ne peut convertir une valeur en vecteur"
 
 #: coverage.c:164
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is not a gcov data file"
-msgstr "« %s » n'est pas un nom de fichier valide"
+msgstr "« %s » n'est pas un fichier de données gcov"
 
 #: coverage.c:175
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is version `%.4s', expected version `%.4s'"
-msgstr "version du pilote gcc %s exécutant le version %s de gcc\n"
+msgstr "« %s » est de version « %.4s », version « %.4s » attendue"
 
 #: coverage.c:255 coverage.c:263
 #, c-format
@@ -4129,12 +4100,12 @@ msgstr ""
 #: coverage.c:257 coverage.c:340
 #, c-format
 msgid "checksum is %x instead of %x"
-msgstr ""
+msgstr "somme de contrôle est %x au lieu de %x"
 
 #: coverage.c:265 coverage.c:348
 #, c-format
 msgid "number of counters is %d instead of %d"
-msgstr ""
+msgstr "nombre de compteurs est %d au lieu de %d"
 
 #: coverage.c:271
 #, fuzzy, c-format
@@ -5104,37 +5075,32 @@ msgid "fold check: original tree changed by fold"
 msgstr ""
 
 #: function.c:884 varasm.c:1408
-#, fuzzy
 msgid "%Jsize of variable '%D' is too large"
-msgstr "taille de la variable « %s » est trop grande"
+msgstr "%Jtaille de la variable « %D » est trop grande"
 
 #: function.c:3737
 msgid "impossible constraint in `asm'"
 msgstr "contrainte impossible dans « asm »"
 
 #: function.c:5697
-#, fuzzy
 msgid "%J'%D' might be used uninitialized in this function"
-msgstr "« %s » pourrait être utilisé sans être initialisé dans cette fonction"
+msgstr "%J'%D' pourrait être utilisé sans être initialisé dans cette fonction"
 
 #: function.c:5704
-#, fuzzy
 msgid "%Jvariable '%D' might be clobbered by `longjmp' or `vfork'"
-msgstr "variable « %s » pourrait être maltraitée par un «longjmp» ou un «vfork »"
+msgstr "%Jvariable « %D » pourrait être maltraitée par un «longjmp» ou un «vfork »"
 
 #: function.c:5723
-#, fuzzy
 msgid "%Jargument '%D' might be clobbered by `longjmp' or `vfork'"
-msgstr "argument « %s » pourrait être maltraitée par un «longjmp» ou un «vfork »"
+msgstr "%Jargument « %D » pourrait être maltraitée par un «longjmp» ou un «vfork »"
 
 #: function.c:6497
 msgid "function returns an aggregate"
 msgstr "fonction retourne un aggrégat"
 
 #: function.c:6980
-#, fuzzy
 msgid "%Junused parameter '%D'"
-msgstr "paramètre « %s » inutilisé"
+msgstr "%Jparamètre « %D » inutilisé"
 
 #: gcc.c:1191
 #, c-format
@@ -6105,9 +6071,8 @@ msgstr "fonction avec des attributs spécifiques à la cible ne peut pas être en-l
 
 # FIXME: c'est de l'assembleur ?
 #: jump.c:1896
-#, fuzzy
 msgid "%Hwill never be executed"
-msgstr "call   %2d n'est jamais été exécuté\n"
+msgstr "%Hne sera jamais exécuté"
 
 #: line-map.c:202
 #, c-format
@@ -6749,12 +6714,11 @@ msgstr "vérification du fanion RTL: %s utilisé avec un code rtx inattendu, « %s 
 #: stmt.c:750
 #, c-format
 msgid "jump to `%s' invalidly jumps into binding contour"
-msgstr "saut vers « %s » saute de manière invalide dans un contour de binding"
+msgstr "saut vers « %s » saute de manière invalide dans un contour de liaison"
 
 #: stmt.c:977 stmt.c:3793
-#, fuzzy
 msgid "%Jlabel '%D' used before containing binding contour"
-msgstr "étiquette « %s » utilisé avant de contenir le contour de binding"
+msgstr "%Jétiquette « %D » utilisé avant de contenir le contour de liaison"
 
 #: stmt.c:1156
 msgid "output operand constraint lacks `='"
@@ -6869,22 +6833,19 @@ msgstr "opérande nommée « %s » indéfinie"
 
 #: stmt.c:2161
 msgid "%Hstatement with no effect"
-msgstr ""
+msgstr "%Hdéclaration sasn effet"
 
 #: stmt.c:2317
-#, fuzzy
 msgid "%Hvalue computed is not used"
-msgstr "automate « %s » n'est pas utilisé"
+msgstr "%Hvaleur calculée n'est pas utilisée"
 
 #: stmt.c:3733
-#, fuzzy
 msgid "%Junused variable '%D'"
-msgstr "variable inutilisée « %s »"
+msgstr "%Jvariable « %D » inutilisée"
 
 #: stmt.c:4508
-#, fuzzy
 msgid "%Hunreachable code at beginning of %s"
-msgstr "bytcode n'est pas atteignable à partir de %d jusqu'à %d"
+msgstr "%Hcode inatteignable au début de %s"
 
 #: stmt.c:5136
 #, c-format
@@ -6914,29 +6875,24 @@ msgid "variable-size type declared outside of any function"
 msgstr "type de taille variable déclaré à l'extérieur den'importe quelle fonction"
 
 #: stor-layout.c:515
-#, fuzzy
 msgid "%Jsize of '%D' is %d bytes"
-msgstr "taille de « %s » est de %d octets"
+msgstr "%Jtaille de « %D » est de %d octets"
 
 #: stor-layout.c:517
-#, fuzzy
 msgid "%Jsize of '%D' is larger than %d bytes"
-msgstr "taille de « %s » est plus grande que %d octets"
+msgstr "%Jtaille de « %D » est plus grande que %d octets"
 
 #: stor-layout.c:883
-#, fuzzy
 msgid "%Jpacked attribute causes inefficient alignment for '%D'"
-msgstr "attribut empaqueté provoque un alignement inefficient pour « %s »"
+msgstr "%Jattribut empaqueté provoque un alignement inefficient pour « %D »"
 
 #: stor-layout.c:886
-#, fuzzy
 msgid "%Jpacked attribute is unnecessary for '%D'"
-msgstr "attribut empaqueté n'est pas nécessaire pour « %s »"
+msgstr "%Jattribut empaqueté n'est pas nécessaire pour « %D »"
 
 #: stor-layout.c:902
-#, fuzzy
 msgid "%Jpadding struct to align '%D'"
-msgstr "remplissage du struct pour aligner « %s »"
+msgstr "%Jremplissage du struct pour aligner « %D »"
 
 #: stor-layout.c:1245
 msgid "padding struct size to alignment boundary"
@@ -7040,19 +6996,16 @@ msgid "setting core file size limit to maximum: %m"
 msgstr ""
 
 #: toplev.c:1678
-#, fuzzy
 msgid "%J'%F' used but never defined"
-msgstr "« %s » utilisé mais n'a jamais été défini"
+msgstr "%J'%F' utilisé mais n'a jamais été défini"
 
 #: toplev.c:1680
-#, fuzzy
 msgid "%J'%F' declared `static' but never defined"
-msgstr "« %s » déclaré «static » mais n'a jamais été défiie"
+msgstr "%J'%F' déclaré « static » mais n'a jamais été définie"
 
 #: toplev.c:1705
-#, fuzzy
 msgid "%J'%D' defined but not used"
-msgstr "« %s » défini mais n'a pas été utilisé"
+msgstr "%J'%D' défini mais n'a pas été utilisé"
 
 #: toplev.c:1726 toplev.c:1743
 #, c-format
@@ -7265,19 +7218,16 @@ msgid "%Jfunction '%F' can never be inlined because it uses variable sized varia
 msgstr ""
 
 #: tree-inline.c:1338 tree-inline.c:1345
-#, fuzzy
 msgid "%Jinlining failed in call to '%F': %s"
-msgstr "l'enlignage de l'appel à « %s » a échoué"
+msgstr "%Jl'enlignage de l'appel à « %F »: %s a échoué"
 
 #: tree-optimize.c:190
-#, fuzzy
 msgid "%Jsize of return value of '%D' is %u bytes"
-msgstr "la taille de la valeur retournée par « %s » est %u octets"
+msgstr "%Jtaille de la valeur retournée par « %D » est %u octets"
 
 #: tree-optimize.c:193
-#, fuzzy
 msgid "%Jsize of return value of '%D' is larger than %wd bytes"
-msgstr "la taille de la valeur retournée par « %s » supérieure à %d octets"
+msgstr "%Jtaille de la valeur retournée par « %D » supérieure à %wd octets"
 
 #: tree.c:3800
 msgid "arrays of functions are not meaningful"
@@ -7317,24 +7267,20 @@ msgid "%J%D causes a section type conflict"
 msgstr "%s cause un conflit du type de section"
 
 #: varasm.c:796
-#, fuzzy
 msgid "%Jregister name not specified for '%D'"
-msgstr "nom de registre n'est pas spécifié pour « %s »"
+msgstr "%Jnom de registre n'est pas spécifié pour « %D »"
 
 #: varasm.c:798
-#, fuzzy
 msgid "%Jinvalid register name for '%D'"
-msgstr "nom de registre invalide pour « %s »"
+msgstr "%Jnom de registre invalide pour « %D »"
 
 #: varasm.c:800
-#, fuzzy
 msgid "%Jdata type of '%D' isn't suitable for a register"
-msgstr "type de données de « %s » n'est pas applicable pour un registre"
+msgstr "%Jtype de données de « %D » n'est pas applicable pour un registre"
 
 #: varasm.c:803
-#, fuzzy
 msgid "%Jregister specified for '%D' isn't suitable for data type"
-msgstr "registre spécifié pour « %s » n'est applicable à un type de données"
+msgstr "%Jregistre spécifié pour « %D » n'est applicable à un type de données"
 
 #: varasm.c:813
 msgid "global register variable has initial value"
@@ -7350,14 +7296,12 @@ msgid "%Jregister name given for non-register variable '%D'"
 msgstr "nom de registre donné pour une variable non registre « %s »"
 
 #: varasm.c:1380
-#, fuzzy
 msgid "%Jstorage size of `%D' isn't known"
-msgstr "taille de stockage de « %D » n'est pas connue"
+msgstr "%Jtaille de stockage de « %D » n'est pas connue"
 
 #: varasm.c:1434
-#, fuzzy
 msgid "%Jalignment of '%D' is greater than maximum object file alignment.  Using %d"
-msgstr "alignement de « %s » est plus grand que l'alignement maximal du fichier objet. %d est utilisé."
+msgstr "%Jalignement de « %D » est plus grand que l'alignement maximal du fichier objet. %d est utilisé."
 
 #: varasm.c:1480
 msgid "thread-local COMMON data not implemented"
@@ -14026,9 +13970,8 @@ msgid "jump to case label"
 msgstr "saut à l'étiquette du « case »"
 
 #: cp/decl.c:2226 cp/decl.c:2250
-#, fuzzy
 msgid "%H  from here"
-msgstr "  à partir d'ici"
+msgstr "%H  à partir d'ici"
 
 #: cp/decl.c:2231
 msgid "  crosses initialization of `%#D'"
@@ -16118,9 +16061,8 @@ msgid "attributes after parenthesized initializer ignored"
 msgstr "les attributs dans un déclarateur de tableau de paramètres sont ignorés"
 
 #: cp/parser.c:11223
-#, fuzzy
 msgid "file ends in default argument"
-msgstr "%H fin de fichier lors de la lecture à l'intérieur de l'argument par défaut"
+msgstr "fin de fichier dans l'argument par défaut"
 
 #: cp/parser.c:11279
 #, fuzzy
@@ -19069,9 +19011,8 @@ msgid "missing Code attribute"
 msgstr "attribut Code manquant"
 
 #: java/jcf-parse.c:981
-#, fuzzy
 msgid "%Hsource file seen twice on command line and will be compiled only once"
-msgstr "fichier source vu deux fois sur la ligne de commande et ne sera compilé une seule fois"
+msgstr "%Hfichier source vu deux fois sur la ligne de commande et ne sera compilé une seule fois"
 
 #: java/jcf-parse.c:997
 msgid "no input file specified"
