@@ -270,6 +270,13 @@ for machine in $build $host $target; do
 	tm_file=${cpu_type}/${cpu_type}.h
 	xm_file=${cpu_type}/xm-${cpu_type}.h
 	
+	# Set the default macros to define for GNU/Linux systems.
+	case $machine in
+	*-*-linux-gnu*)
+		xm_defines="HAVE_ATEXIT POSIX NO_STAB_H BSTRING"
+		;;
+	esac
+
 	case $machine in
 	# Support site-specific machine types.
 	*local*)
@@ -290,7 +297,7 @@ for machine in $build $host $target; do
 		;;
 	a29k-*-bsd* | a29k-*-sym1*)
 		tm_file="${tm_file} a29k/unix.h"
-		xm_file=a29k/xm-unix.h
+		xm_defines=USG
 		xmake_file=a29k/x-unix
 		use_collect2=yes
 		;;
@@ -308,7 +315,7 @@ for machine in $build $host $target; do
 		;;
 	alpha*-*-linux-gnuecoff*)
 		tm_file="${tm_file} alpha/linux.h"
-		xm_file="${xm_file} alpha/xm-linux.h"
+		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
 		gas=no
 		xmake_file=none
@@ -317,7 +324,7 @@ for machine in $build $host $target; do
 		;;
 	alpha*-*-linux-gnulibc1*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
-		xm_file="${xm_file} alpha/xm-linux.h"
+		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux"
 		xmake_file=none
@@ -330,6 +337,7 @@ for machine in $build $host $target; do
 	alpha*-*-linux-gnu*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
+		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -427,14 +435,13 @@ for machine in $build $host $target; do
 		;;
 	arm-*-netbsd*)
 		tm_file=arm/netbsd.h
-		xm_file=arm/xm-netbsd.h
+		xm_file="xm-siglist.h ${xm_file}"
 		tmake_file="t-netbsd arm/t-netbsd"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		;;
 	arm-*-linux-gnuaout*)		# ARM GNU/Linux
 		cpu_type=arm
-		xm_file=arm/xm-linux.h
 		xmake_file=x-linux
 		tm_file=arm/linux-gas.h
 		tmake_file=arm/t-linux
@@ -679,7 +686,8 @@ for machine in $build $host $target; do
 			tm_file=i386/aix386ng.h
 			use_collect2=yes
 		fi
-		xm_file=i386/xm-aix.h
+		xm_file="xm-alloca.h i386/xm-aix.h ${xm_file}"
+		xm_defines=USG
 		xmake_file=i386/x-aix
 		broken_install=yes
 		;;
@@ -716,7 +724,7 @@ for machine in $build $host $target; do
 		fi
 		;;
 	i[[34567]]86-sequent-ptx1*)
-		xm_file=i386/xm-sysv3.h
+		xm_defines="USG SVR3"
 		xmake_file=i386/x-sysv3
 		tm_file=i386/seq-sysv3.h
 		tmake_file=i386/t-crtstuff
@@ -726,7 +734,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	i[[34567]]86-sequent-ptx2* | i[[34567]]86-sequent-sysv3*)
-		xm_file=i386/xm-sysv3.h
+		xm_defines="USG SVR3"
 		xmake_file=i386/x-sysv3
 		tm_file=i386/seq2-sysv3.h
 		tmake_file=i386/t-crtstuff
@@ -747,7 +755,7 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	i386-sun-sunos*)		# Sun i386 roadrunner
-		xm_file=i386/xm-sun.h
+		xm_defines=USG
 		tm_file=i386/sun.h
 		use_collect2=yes
 		;;
@@ -757,12 +765,10 @@ for machine in $build $host $target; do
 		;;
 	i[[34567]]86-*-bsdi* | i[[34567]]86-*-bsd386*)
 		tm_file=i386/bsd386.h
-		xm_file=i386/xm-bsd386.h
 #		tmake_file=t-libc-ok
 		;;
 	i[[34567]]86-*-bsd*)
 		tm_file=i386/386bsd.h
-		xm_file=i386/xm-bsd386.h
 #		tmake_file=t-libc-ok
 # Next line turned off because both 386BSD and BSD/386 use GNU ld.
 #		use_collect2=yes
@@ -793,7 +799,8 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-i386bare
 		;;
 	i[[34567]]86-*-isc*)		# 80386 running ISC system
-		xm_file=i386/xm-isc.h
+		xm_file="${xm_file} i386/xm-isc.h"
+		xm_defines="USG SVR3"
 		case $machine in
 		  i[[34567]]86-*-isc[[34]]*)
 		    xmake_file=i386/x-isc3
@@ -816,7 +823,8 @@ for machine in $build $host $target; do
 		broken_install=yes
 		;;
 	i[[34567]]86-*-linux-gnuoldld*)	# Intel 80386's running GNU/Linux
-		xm_file=i386/xm-linux.h # with a.out format using pre BFD linkers
+					# with a.out format using
+					# pre BFD linkers
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-oldld.h
@@ -825,7 +833,7 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		;;
 	i[[34567]]86-*-linux-gnuaout*)	# Intel 80386's running GNU/Linux
-		xm_file=i386/xm-linux.h		# with a.out format
+					# with a.out format
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-aout.h
@@ -833,10 +841,11 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	i[[34567]]86-*-linux-gnulibc1)
-		xm_file=i386/xm-linux.h	# Intel 80386's running GNU/Linux
-		xmake_file=x-linux	# with ELF format using the
-		tm_file=i386/linux.h	# GNU/Linux C library 5
+	i[[34567]]86-*-linux-gnulibc1)	# Intel 80386's running GNU/Linux
+					# with ELF format using the
+					# GNU/Linux C library 5
+		xmake_file=x-linux	
+		tm_file=i386/linux.h	
 		tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in # The headers are ok already.
@@ -847,8 +856,9 @@ for machine in $build $host $target; do
  		fi
 		;;
 	i[[34567]]86-*-linux-gnu*)	# Intel 80386's running GNU/Linux
-		xm_file=i386/xm-linux.h # with ELF format using glibc 2
-		xmake_file=x-linux	# aka GNU/Linux C library 6
+					# with ELF format using glibc 2
+					# aka GNU/Linux C library 6
+		xmake_file=x-linux
 		tm_file=i386/linux.h
 		tmake_file="t-linux i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -905,7 +915,7 @@ for machine in $build $host $target; do
 			tm_file=i386/osfrose.h
 			use_collect2=yes
 		fi
-		xm_file=i386/xm-osf.h
+		xm_file="i386/xm-osf.h ${xm_file}"
 		xmake_file=i386/x-osfrose
 		tmake_file=i386/t-osf
 		extra_objs=halfpic.o
@@ -922,7 +932,8 @@ for machine in $build $host $target; do
 		tmake_file="i386/t-i386bare t-rtems"
 		;;
 	i[[34567]]86-*-sco3.2v5*)	# 80386 running SCO Open Server 5
-		xm_file="xm-siglist.h xm-alloca.h i386/xm-sysv3.h i386/xm-sco5.h"
+		xm_file="xm-siglist.h xm-alloca.h ${xm_file} i386/xm-sco5.h"
+		xm_defines="USG SVR3"
 		xmake_file=i386/x-sco5
 		fixincludes=fixinc.sco
 		broken_install=yes
@@ -931,8 +942,9 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-sco5
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		;;
-	i[[34567]]86-*-sco3.2v4*)	 	# 80386 running SCO 3.2v4 system
-		xm_file=i386/xm-sco.h
+	i[[34567]]86-*-sco3.2v4*) 	# 80386 running SCO 3.2v4 system
+		xm_file="${xm_file} i386/xm-sco.h"
+		xm_defines="USG SVR3 BROKEN_LDEXP SMALL_ARG_MAX NO_SYS_SIGLIST"
 		xmake_file=i386/x-sco4
 		fixincludes=fixinc.sco
 		broken_install=yes
@@ -997,7 +1009,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		;;
 	i[[34567]]86-*-sysv*)		# Intel 80386's running system V
-		xm_file=i386/xm-sysv3.h
+		xm_defines="USG SVR3"
 		xmake_file=i386/x-sysv3
 		if [[ x$gas = xyes ]]
 		then
@@ -1057,7 +1069,7 @@ for machine in $build $host $target; do
 	i[[34567]]86-*-winnt3*)
 		tm_file=i386/win-nt.h
 		out_file=i386/i386.c
-		xm_file=i386/xm-winnt.h
+		xm_file="xm-winnt.h ${xm_file}"
 		xmake_file=winnt/x-winnt
 		tmake_file=i386/t-winnt
 		extra_host_objs="winnt.o oldnames.o"
@@ -1102,19 +1114,19 @@ for machine in $build $host $target; do
 		;;
 	i860-*-osf*)			# Intel Paragon XP/S, OSF/1AD
 		tm_file="${tm_file} svr3.h i860/paragon.h"
-		xm_file="${xm_file} xm-svr3.h"
+		xm_defines="USG SVR3"
 		tmake_file=t-osf
 		broken_install=yes
 		;;
 	i860-*-sysv3*)
 		tm_file="${tm_file} svr3.h i860/sysv3.h"
-		xm_file="${tm_file} xm-svr3.h"
+		xm_defines="USG SVR3"
 		xmake_file=i860/x-sysv3
 		extra_parts="crtbegin.o crtend.o"
 		;;
 	i860-*-sysv4*)
 		tm_file="${tm_file} svr4.h i860/sysv4.h"
-		xm_file="${xm_file} xm-svr3.h"
+		xm_defines="USG SVR3"
 		xmake_file=i860/x-sysv4
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
@@ -1152,7 +1164,8 @@ for machine in $build $host $target; do
 		;;
 	m68000-convergent-sysv*)
 		tm_file=m68k/ctix.h
-		xm_file=m68k/xm-3b1.h
+		xm_file="m68k/xm-3b1.h ${xm_file}"
+		xm_defines=USG
 		use_collect2=yes
 		extra_headers=math-68881.h
 		;;
@@ -1163,7 +1176,8 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		;;
 	m68000-hp-hpux*)		# HP 9000 series 300
-		xm_file=m68k/xm-hp320.h
+		xm_file="xm_alloca.h ${xm_file}"
+		xm_defines="USG NO_SYS_SIGLIST"
 		if [[ x$gas = xyes ]]
 		then
 			xmake_file=m68k/x-hp320g
@@ -1188,7 +1202,8 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		;;
 	m68000-att-sysv*)
-		xm_file=m68k/xm-3b1.h
+		xm_file="m68k/xm-3b1.h ${xm_file}"
+		xm_defines=USG
 		if [[ x$gas = xyes ]]
 		then
 			tm_file=m68k/3b1g.h
@@ -1199,7 +1214,7 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		;;
 	m68k-apple-aux*)		# Apple Macintosh running A/UX
-		xm_file=m68k/xm-aux.h
+		xm_defines="USG AUX"
 		tmake_file=m68k/t-aux
 		broken_install=yes
 		install_headers_dir=install-headers-cpio
@@ -1230,7 +1245,7 @@ for machine in $build $host $target; do
 		if [[ x$gas = xyes ]]
 		then
 		        tm_file=m68k/altos3068.h
-		        xm_file=m68k/xm-altos3068.h
+			xm_defines=USG
 		else
 			echo "The Altos is supported only with the GNU assembler" 1>&2
 			exit 1
@@ -1249,21 +1264,24 @@ for machine in $build $host $target; do
 		else
 			tm_file=m68k/dpx2.h
 		fi
-		xm_file=m68k/xm-m68kv.h
+		xm_file="xm-alloca.h ${xm_file}"
+		xm_defines=USG
 		xmake_file=m68k/x-dpx2
 		use_collect2=yes
 		extra_headers=math-68881.h
 		;;
 	m68k-atari-sysv4*)              # Atari variant of V.4.
 		tm_file=m68k/atari.h
-		xm_file=m68k/xm-atari.h
+		xm_file="xm-alloca.h ${xm_file}"
+		xm_defines="USG FULL_PROTOTYPES"
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
 		;;
 	m68k-motorola-sysv*)
 		tm_file=m68k/mot3300.h
-		xm_file=m68k/xm-mot3300.h
+		xm_file="xm-alloca.h m68k/xm-mot3300.h ${xm_file}"
+		xm_defines=NO_SYS_SIGLIST
 		if [[ x$gas = xyes ]]
 		then
 			xmake_file=m68k/x-mot3300-gas
@@ -1290,24 +1308,27 @@ for machine in $build $host $target; do
 		;;
 	m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 		tm_file=m68k/tower-as.h
-		xm_file="${xm_file} xm-svr3.h"
+		xm_defines="USG SVR3"
 		xmake_file=m68k/x-tower
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
 		;;
         m68k-plexus-sysv*)
 		tm_file=m68k/plexus.h
-		xm_file=m68k/xm-plexus.h
+		xm_file="xm-alloca.h m68k/xm-plexus.h ${xm_file}"
+		xm_defines=USG
 		use_collect2=yes
 		extra_headers=math-68881.h
 		;;
 	m68k-tti-*)
 		tm_file=m68k/pbb.h
-		xm_file=m68k/xm-m68kv.h
+		xm_file="xm-alloca.h ${xm_file}"
+		xm_defines=USG
 		extra_headers=math-68881.h
 		;;
 	m68k-crds-unos*)
-		xm_file=m68k/xm-crds.h
+		xm_file="xm-alloca.h m68k/xm-crds.h ${xm_file}"
+		xm_defines="USG unos"
 		xmake_file=m68k/x-crds
 		tm_file=m68k/crds.h
 		broken_install=yes
@@ -1316,7 +1337,8 @@ for machine in $build $host $target; do
 		;;
 	m68k-cbm-sysv4*)		# Commodore variant of V.4.
 		tm_file=m68k/amix.h
-		xm_file=m68k/xm-amix.h
+		xm_file="xm-alloca.h ${xm_file}"
+		xm_defines="USG FULL_PROTOTYPES"
 		xmake_file=m68k/x-amix
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
@@ -1351,7 +1373,8 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		;;
 	m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
-		xm_file=m68k/xm-hp320.h
+		xm_file="xm_alloca.h ${xm_file}"
+		xm_defines="USG NO_SYS_SIGLIST"
 		if [[ x$gas = xyes ]]
 		then
 			xmake_file=m68k/x-hp320g
@@ -1366,7 +1389,8 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		;;
 	m68k-hp-hpux*)	# HP 9000 series 300
-		xm_file=m68k/xm-hp320.h
+		xm_file="xm_alloca.h ${xm_file}"
+		xm_defines="USG NO_SYS_SIGLIST"
 		if [[ x$gas = xyes ]]
 		then
 			xmake_file=m68k/x-hp320g
@@ -1407,7 +1431,7 @@ for machine in $build $host $target; do
 		;;
 	m68k-next-nextstep2*)
 		tm_file=m68k/next21.h
-		xm_file=m68k/xm-next.h
+		xm_file="m68k/xm-next.h ${xm_file}"
 		tmake_file=m68k/t-next
 		xmake_file=m68k/x-next
 		extra_objs=nextstep.o
@@ -1416,7 +1440,7 @@ for machine in $build $host $target; do
                 ;;
 	m68k-next-nextstep3*)
 		tm_file=m68k/next.h
-		xm_file=m68k/xm-next.h
+		xm_file="m68k/xm-next.h ${xm_file}"
 		tmake_file=m68k/t-next
 		xmake_file=m68k/x-next
 		extra_objs=nextstep.o
@@ -1479,20 +1503,22 @@ for machine in $build $host $target; do
 		tmake_file=t-netbsd
 		;;
 	m68k-*-sysv3*)			# Motorola m68k's running system V.3
-		xm_file=m68k/xm-m68kv.h
+		xm_file="xm-alloca.h ${xm_file}"
+		xm_defines=USG
 		xmake_file=m68k/x-m68kv
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
 		;;
 	m68k-*-sysv4*)			# Motorola m68k's running system V.4
 		tm_file=m68k/m68kv4.h
-		xm_file=m68k/xm-m68kv.h
+		xm_file="xm-alloca.h ${xm_file}"
+		xm_defines=USG
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
 		;;
 	m68k-*-linux-gnuaout*)		# Motorola m68k's running GNU/Linux
-		xm_file=m68k/xm-linux.h	# with a.out format
+					# with a.out format
 		xmake_file=x-linux
 		tm_file=m68k/linux-aout.h
 		tmake_file="t-linux-aout m68k/t-linux-aout"
@@ -1501,8 +1527,9 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		;;
 	m68k-*-linux-gnulibc1)		# Motorola m68k's running GNU/Linux
-		xm_file=m68k/xm-linux.h	# with ELF format using the
-		xmake_file=x-linux	# GNU/Linux C library 5
+					# with ELF format using the
+					# GNU/Linux C library 5
+		xmake_file=x-linux
 		tm_file=m68k/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -1511,8 +1538,9 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		;;
 	m68k-*-linux-gnu*)		# Motorola m68k's running GNU/Linux
-		xm_file=m68k/xm-linux.h	# with ELF format using glibc 2
-		xmake_file=x-linux	# aka the GNU/Linux C library 6.
+					# with ELF format using glibc 2
+					# aka the GNU/Linux C library 6.
+		xmake_file=x-linux
 		tm_file=m68k/linux.h
 		tmake_file="t-linux m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -1557,7 +1585,7 @@ for machine in $build $host $target; do
 	m88k-dolphin-sysv3*)
 		tm_file=m88k/dolph.h
 		extra_parts="crtbegin.o crtend.o"
-		xm_file=m88k/xm-sysv3.h
+		xm_file="m88k/xm-sysv3.h ${xm_file}"
 		xmake_file=m88k/x-dolph
 		if [[ x$gas = xyes ]]
 		then
@@ -1567,7 +1595,7 @@ for machine in $build $host $target; do
 	m88k-tektronix-sysv3)
 		tm_file=m88k/tekXD88.h
 		extra_parts="crtbegin.o crtend.o"
-		xm_file=m88k/xm-sysv3.h
+		xm_file="m88k/xm-sysv3.h ${xm_file}"
 		xmake_file=m88k/x-tekXD88
 		if [[ x$gas = xyes ]]
 		then
@@ -1594,7 +1622,7 @@ for machine in $build $host $target; do
 	m88k-*-sysv3*)
 		tm_file=m88k/sysv3.h
 		extra_parts="crtbegin.o crtend.o"
-		xm_file=m88k/xm-sysv3.h
+		xm_file="m88k/xm-sysv3.h ${xm_file}"
 		xmake_file=m88k/x-sysv3
 		if [[ x$gas = xyes ]]
 		then
@@ -1620,8 +1648,7 @@ for machine in $build $host $target; do
 		;;
 	mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 		tm_file="mips/iris6.h mips/cross64.h"
-		xm_file="${xm_file} mips/xm-iris5.h"
-		xm_defines=USG
+		xm_defines="USG HAVE_INTTYPES_H"
 		broken_install=yes
 		fixincludes=Makefile.in
 		xmake_file=mips/x-iris
@@ -1664,8 +1691,7 @@ for machine in $build $host $target; do
 		else
 			tm_file=mips/iris5.h
 		fi
-		xm_file="${xm_file} mips/xm-iris5.h"
-		xm_defines=USG
+		xm_defines="USG HAVE_INTTYPES_H"
 		broken_install=yes
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris
@@ -2105,7 +2131,7 @@ for machine in $build $host $target; do
 		;;
 # This has not been updated to GCC 2.
 #	ns32k-ns-genix*)
-#		xm_file=ns32k/xm-genix.h
+#		xm_defines=USG
 #		xmake_file=ns32k/x-genix
 #		tm_file=ns32k/genix.h
 #		broken_install=yes
@@ -2121,7 +2147,8 @@ for machine in $build $host $target; do
 		;;
 	ns32k-pc532-minix*)
 		tm_file=ns32k/pc532-min.h
-		xm_file=ns32k/xm-pc532-min.h
+		xm_file="ns32k/xm-pc532-min.h ${xm-file}"
+		xm_defines=USG
 		use_collect2=yes
 		;;
 	ns32k-pc532-netbsd*)
@@ -2197,7 +2224,7 @@ for machine in $build $host $target; do
 	powerpc-*-linux-gnu*)
 		tm_file=rs6000/linux.h
 		xm_file="xm-siglist.h rs6000/xm-sysv4.h"
-		xm_defines="USG POSIX"
+		xm_defines="USG ${xm_defines}"
 		out_file=rs6000/rs6000.c
 		if [[ x$gas = xyes ]]
 		then
@@ -2263,7 +2290,8 @@ for machine in $build $host $target; do
 		;;
 	powerpcle-*-pe | powerpcle-*-cygwin32)
 		tm_file=rs6000/cygwin32.h
-		xm_file=rs6000/xm-cygwin32.h
+		xm_file="rs6000/xm-cygwin32.h ${xm_file}"
+		xm_defines=NO_STAB_H
 		tmake_file=rs6000/t-winnt
 		xmake_file=rs6000/x-cygwin32
 #		extra_objs=pe.o
@@ -2322,7 +2350,7 @@ for machine in $build $host $target; do
 		;;
 	rs6000-*-mach*)
 		tm_file=rs6000/mach.h
-		xm_file=rs6000/xm-mach.h
+		xm_file="${xm_file} rs6000/xm-mach.h"
 		xmake_file=rs6000/x-mach
 		use_collect2=yes
 		;;
@@ -2347,7 +2375,8 @@ for machine in $build $host $target; do
 		;;
 	sparc-tti-*)
 		tm_file=sparc/pbd.h
-		xm_file=sparc/xm-pbd.h
+		xm_file="xm-alloca.h ${xm_file}"
+		xm_defines=USG
 		;;
 	sparc-wrs-vxworks* | sparclite-wrs-vxworks*)
 		tm_file=sparc/vxsparc.h
@@ -2375,7 +2404,7 @@ for machine in $build $host $target; do
 		float_format=i64
 		;;
 	sparc-*-linux-gnuaout*)		# Sparc's running GNU/Linux, a.out
-		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
+		xm_file="${xm_file} sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
 		fixincludes=Makefile.in # The headers are ok already.
@@ -2383,7 +2412,7 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		;;
 	sparc-*-linux-gnulibc1*)	# Sparc's running GNU/Linux, libc5
-		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
+		xm_file="${xm_file} sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 sparc/t-linux"
@@ -2393,7 +2422,7 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		;;
 	sparc-*-linux-gnu*)		# Sparc's running GNU/Linux, libc6
-		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
+		xm_file="${xm_file} sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux sparc/t-linux"
@@ -2427,7 +2456,7 @@ for machine in $build $host $target; do
 		else
 			tm_file=sparc/sol2-sld.h
 		fi
-		xm_file=sparc/xm-sol2.h
+		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
 		tmake_file=sparc/t-sol2
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
@@ -2464,7 +2493,7 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		;;
 	sparc-*-vxsim*)
-		xm_file=sparc/xm-sol2.h
+		xm_file="sparc/xm-sysv4.h sparc/xm-sol2.h"
 		tm_file=sparc/vxsim.h
 		tmake_file=sparc/t-vxsparc
 		xmake_file=sparc/x-sysv4
@@ -2525,7 +2554,7 @@ for machine in $build $host $target; do
 		;;
 	vax-*-sysv*)			# vaxen running system V
 		tm_file="${tm_file} vax/vaxv.h"
-		xm_file="${xm_file} vax/xm-vaxv.h"
+		xm_defines=USG
 		float_format=vax
 		;;
 	vax-*-netbsd*)
@@ -2560,12 +2589,12 @@ for machine in $build $host $target; do
 
 	case $machine in
 	*-*-linux-gnu*)
-	        ;; # Existing Linux/GNU systems do not use the GNU setup.
+	        ;; # Existing GNU/Linux systems do not use the GNU setup.
 	*-*-gnu*)
 		# On the GNU system, the setup is just about the same on
 		# each different CPU.  The specific machines that GNU
 		# supports are matched above and just set $cpu_type.
-		xm_file=${cpu_type}/xm-gnu.h
+		xm_file="xm-gnu.h ${xm_file}"
 		tm_file=${cpu_type}/gnu.h
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		# GNU always uses ELF.
@@ -2877,12 +2906,14 @@ do
 		echo "#define TARGET_CPU_DEFAULT $target_cpu_default" >>$link
 	fi
 
-	for def in `eval echo '$'$define`; do
-		echo "#define $def" >>$link
-	done
-
 	for file in `eval echo '$'$var`; do
 		echo "#include \"$file\"" >>$link
+	done
+
+	for def in `eval echo '$'$define`; do
+		echo "#ifndef $def" >>$link
+		echo "#define $def" >>$link
+		echo "#endif" >>$link
 	done
 done
 
