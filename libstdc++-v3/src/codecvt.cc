@@ -55,10 +55,7 @@ namespace std
 
   codecvt<char, char, mbstate_t>::
   ~codecvt()
-   {
-     if (_M_c_locale_codecvt != _S_c_locale)
-       _S_destroy_c_locale(_M_c_locale_codecvt);
-   }
+  { _S_destroy_c_locale(_M_c_locale_codecvt); }
   
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
@@ -123,7 +120,7 @@ namespace std
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(size_t __refs)
   : __codecvt_abstract_base<wchar_t, char, mbstate_t>(__refs)
-  { _M_c_locale_codecvt = _S_c_locale; }  
+  { _M_c_locale_codecvt = _S_c_locale; }
 
   codecvt<wchar_t, char, mbstate_t>::
   codecvt(__c_locale __cloc, size_t __refs)
@@ -132,10 +129,7 @@ namespace std
 
   codecvt<wchar_t, char, mbstate_t>::
   ~codecvt()
-  {
-    if (_M_c_locale_codecvt != _S_c_locale)
-      _S_destroy_c_locale(_M_c_locale_codecvt); 
-  }
+  { _S_destroy_c_locale(_M_c_locale_codecvt); }
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::

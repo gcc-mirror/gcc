@@ -59,6 +59,10 @@ namespace std
   __attribute__ ((aligned(__alignof__(locale::facet*))));
   fake_facet_vec facet_vec[_GLIBCPP_NUM_FACETS];
 
+  typedef char fake_facet_name[sizeof(char*)]
+  __attribute__ ((aligned(__alignof__(char*))));
+  fake_facet_name facet_name[6 + _GLIBCPP_NUM_CATEGORIES];
+
   typedef char fake_ctype_c[sizeof(std::ctype<char>)]
   __attribute__ ((aligned(__alignof__(std::ctype<char>))));
   fake_ctype_c ctype_c;
@@ -199,7 +203,6 @@ namespace std
   fake_wfilebuf buf_wcin;
   fake_wfilebuf buf_wcerr;
 #endif
-
 
   // Globals for once-only runtime initialization of mutex objects.  This
   // allows static initialization of these objects on systems that need a

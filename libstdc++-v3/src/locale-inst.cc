@@ -35,11 +35,7 @@
 #include <clocale>
 #include <cstring>
 #include <cassert>
-#include <limits>
-#include <exception>
 #include <locale>
-#include <istream>
-#include <ostream>
 
 namespace std
 {

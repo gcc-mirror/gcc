@@ -44,8 +44,7 @@ namespace std
     ctype_byname<char>::ctype_byname(const char* __s, size_t __refs)
     : ctype<char>(0, false, __refs) 
     { 	
-      if (_M_c_locale_ctype != _S_c_locale)
-	_S_destroy_c_locale(_M_c_locale_ctype);
+      _S_destroy_c_locale(_M_c_locale_ctype);
       _S_create_c_locale(_M_c_locale_ctype, __s); 
       _M_toupper = _M_c_locale_ctype->__ctype_toupper;
       _M_tolower = _M_c_locale_ctype->__ctype_tolower;
