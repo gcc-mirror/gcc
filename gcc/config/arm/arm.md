@@ -1208,7 +1208,21 @@
   "
 {
   HOST_WIDE_INT mask = (((HOST_WIDE_INT)1) << INTVAL (operands[1])) - 1;
+  rtx target, subtarget;
 
+  target = operands[0];
+  /* Avoid using a subreg as a subtarget, and avoid writing a paradoxical 
+     subreg as the final target.  */
+  if (GET_CODE (target) == SUBREG)
+    {
+      subtarget = gen_reg_rtx (SImode);
+      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (target)))
+	  < GET_MODE_SIZE (SImode))
+        target = SUBREG_REG (target);
+    }
+  else
+    subtarget = target;    
+    
   if (GET_CODE (operands[3]) == CONST_INT)
     {
       /* Since we are inserting a known constant, we may be able to
@@ -1219,7 +1233,7 @@
 			     << INTVAL (operands[2]));
 
       emit_insn (gen_andsi3 (op1, operands[0], GEN_INT (~mask2)));
-      emit_insn (gen_iorsi3 (operands[0], op1,
+      emit_insn (gen_iorsi3 (subtarget, op1,
 			     GEN_INT (INTVAL (operands[3])
 				      << INTVAL (operands[2]))));
     }
@@ -1240,7 +1254,7 @@
       emit_insn (gen_iorsi3 (op1, gen_rtx (LSHIFTRT, SImode, operands[0],
 					   operands[1]),
 			     op0));
-      emit_insn (gen_rotlsi3 (operands[0], op1, operands[1]));
+      emit_insn (gen_rotlsi3 (subtarget, op1, operands[1]));
     }
   else if ((INTVAL (operands[1]) + INTVAL (operands[2]) == 32)
 	   && ! (const_ok_for_arm (mask)
@@ -1254,8 +1268,9 @@
       emit_insn (gen_ashlsi3 (op0, operands[3],
 			      GEN_INT (32 - INTVAL (operands[1]))));
       emit_insn (gen_ashlsi3 (op1, operands[0], operands[1]));
-      emit_insn (gen_iorsi3 (operands[0], gen_rtx (LSHIFTRT, SImode, op1,
-						   operands[1]), op0));
+      emit_insn (gen_iorsi3 (subtarget,
+			     gen_rtx (LSHIFTRT, SImode, op1,
+				      operands[1]), op0));
     }
   else
     {
@@ -1298,7 +1313,17 @@
       if (INTVAL (operands[2]) != 0)
 	op1 = gen_rtx (ASHIFT, SImode, op1, operands[2]);
 
-      emit_insn (gen_iorsi3 (operands[0], op1, op2));
+      emit_insn (gen_iorsi3 (subtarget, op1, op2));
+    }
+
+  if (subtarget != target)
+    {
+      /* If TARGET is still a SUBREG, then it must be wider than a word,
+	 so we must be careful only to set the subword we were asked to. */
+      if (GET_CODE (target) == SUBREG)
+	emit_move_insn (target, subtarget);
+      else
+	emit_move_insn (target, gen_lowpart (GET_MODE (target), subtarget));
     }
 
   DONE;
