@@ -1,3 +1,9 @@
+2003-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7809
+	* friend.c (add_friend): Check access for member functions
+	and templates.
+
 2003-06-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/11384
