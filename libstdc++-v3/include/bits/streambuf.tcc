@@ -192,8 +192,8 @@ namespace std
 	  for (;;)
   	    {
 	      streamsize __xtrct;
-	      const size_t __avail = __sbin->_M_in_end
-		                     - __sbin->_M_in_cur;
+	      const ptrdiff_t __avail = __sbin->_M_in_end
+		                        - __sbin->_M_in_cur;
  	      if (__avail)
 		{
 		  __xtrct = __sbout->sputn(__sbin->_M_in_cur, __avail);
