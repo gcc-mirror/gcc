@@ -541,6 +541,10 @@ int warn_parentheses;
 
 int warn_missing_braces;
 
+/* Warn about comparison of signed and unsigned values.  */
+
+int warn_sign_compare;
+
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
 
@@ -711,6 +715,10 @@ c_decode_option (p)
     warn_missing_braces = 1;
   else if (!strcmp (p, "-Wno-missing-braces"))
     warn_missing_braces = 0;
+  else if (!strcmp (p, "-Wsign-compare"))
+    warn_sign_compare = 1;
+  else if (!strcmp (p, "-Wno-sign-compare"))
+    warn_sign_compare = 0;
   else if (!strcmp (p, "-Wall"))
     {
       /* We save the value of warn_uninitialized, since if they put
@@ -726,6 +734,7 @@ c_decode_option (p)
       warn_char_subscripts = 1;
       warn_parentheses = 1;
       warn_missing_braces = 1;
+      warn_sign_compare = 1;
     }
   else
     return 0;
