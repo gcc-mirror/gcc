@@ -323,7 +323,7 @@ in the following sections.
 @c I wrote this xref this way to avoid overfull hbox. -- rms
 @xref{Target Options}.
 @gccoptlist{
--b @var{machine}}
+-V @var{version} -b @var{machine}}
 
 @item Machine Dependent Options
 @xref{Submodel Options,,Hardware Models and Configurations}.
@@ -4812,22 +4812,16 @@ proper position among the other output files.
 @cindex compiler version, specifying
 @cindex target machine, specifying
 
-By default, GCC compiles code for the same type of machine that you
-are using.  However, it can also be installed as a cross-compiler, to
-compile for some other type of machine.  In fact, several different
-configurations of GCC, for different target machines, can be
-installed side by side.  Then you specify which one to use with the
-@option{-b} option.
-
-In addition, older and newer versions of GCC can be installed side
-by side.  One of them (probably the newest) will be the default, but
-you may sometimes wish to use another.
+The usual way to run GCC is to run the executable called @file{gcc}, or
+@file{<machine>-gcc} when cross-compiling, or
+@file{<machine>-gcc-<version>} to run a version other than the one that
+was installed last.  Sometimes this is inconvenient, so GCC provides
+options that will switch to another cross-compiler or version.
 
 @table @gcctabopt
 @item -b @var{machine}
 @opindex b
 The argument @var{machine} specifies the target machine for compilation.
-This is useful when you have installed GCC as a cross-compiler.
 
 The value to use for @var{machine} is the same as was specified as the
 machine type when configuring GCC as a cross-compiler.  For
@@ -4835,46 +4829,16 @@ example, if a cross-compiler was configured with @samp{configure
 i386v}, meaning to compile for an 80386 running System V, then you
 would specify @option{-b i386v} to run that cross compiler.
 
-When you do not specify @option{-b}, it normally means to compile for
-the same type of machine that you are using.
+@item -V @var{version}
+@opindex V
+The argument @var{version} specifies which version of GCC to run.
+This is useful when multiple versions are installed.  For example,
+@var{version} might be @samp{2.0}, meaning to run GCC version 2.0.
 @end table
 
-The @option{-b} option actually works by controlling part of
-the file name used for the executable files and libraries used for
-compilation.  A given version of GCC, for a given target machine, is
-normally kept in the directory @file{/usr/local/lib/gcc-lib/@var{machine}/@var{version}}.
-
-Thus, sites can customize the effect of @option{-b} either by
-changing the names of these directories or adding alternate names (or
-symbolic links).  If in directory @file{/usr/local/lib/gcc-lib/} the
-file @file{80386} is a link to the file @file{i386v}, then @option{-b
-80386} becomes an alias for @option{-b i386v}.
-
-In one respect, @option{-b} does not completely change
-to a different compiler: the top-level driver program @command{gcc}
-that you originally invoked continues to run and invoke the other
-executables (preprocessor, compiler per se, assembler and linker)
-that do the real work.  However, since no real work is done in the
-driver program, it usually does not matter that the driver program
-in use is not the one for the specified target.
-
-The only way that the driver program depends on the target machine is
-in the parsing and handling of special machine-specific options.
-However, this is controlled by a file which is found, along with the
-other executables, in the directory for the specified version and
-target machine.  As a result, a single installed driver program adapts
-to any specified target machine, and sufficiently similar compiler
-versions.
-
-The driver program executable does control one significant thing,
-however: the default version and target machine.  Therefore, you can
-install different instances of the driver program, compiled for
-different targets or versions, under different names.
-
-For example, if the driver for version 2.0 is installed as @command{ogcc}
-and that for version 2.1 is installed as @command{gcc}, then the command
-@command{gcc} will use version 2.1 by default, while @command{ogcc} will use
-2.0 by default.
+The @option{-V} and @option{-b} options work by running the
+@file{<machine>-gcc-<version>} executable, so there's no real reason to
+use them if you can just run that directly.
 
 @node Submodel Options
 @section Hardware Models and Configurations

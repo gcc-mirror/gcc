@@ -1,3 +1,12 @@
+2002-06-09  Geoffrey Keating  <geoffk@redhat.com>
+
+	* Makefile.in (install-driver): Install driver as
+	$(target_alias)-gcc-$(version).
+	* gcc.c (spec_version): Make const.
+	(process_command): Handle -V and -b by using exec.
+	* doc/invoke.texi (Target Options): Restore -V option,
+	update docs for -b option.
+
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
  
          First steps to making treelang documentation compliant, based on
