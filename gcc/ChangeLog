@@ -1,3 +1,7 @@
+Sun Sep 20 00:24:24 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config/i386/sco5.h (TARGET_MEM_FUNCTIONS):  Define.
+
 1998-09-19  Torbjorn Granlund  <tege@matematik.su.se>
 
 	* fp-bit.c (pack_d): Do not clear SIGN when fraction is 0.
