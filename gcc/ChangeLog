@@ -1,5 +1,13 @@
 1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
 
+	* config/sparc/linux.h: Define WCHAR_TYPE as "int" and undef
+	MAX_WCHAR_TYPE defined in sparc.h.
+	* config/sparc/linuxaout.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+	Also default to -mvis if CPU is UltraSPARC.
+
+1999-08-02  Jakub Jelinek  <jj@ultra.linux.cz>
+
 	* config/sparc/sparc.h (ASM_DECLARE_REGISTER_GLOBAL): New macro.
 	(RTX_OK_FOR_OLO10): Likewise.
 	(GO_IF_LEGITIMATE_ADDRESS): If assembler supports offsetable
