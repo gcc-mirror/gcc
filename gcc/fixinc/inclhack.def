@@ -2002,6 +2002,30 @@ fix = {
 
 
 /*
+ * On DYNIX/ptx, sys/mc_param.h has an embedded asm for the cpuid instruction
+ * on the P5. This is not used by anything else so we ifdef it out.
+ * Current GCC doesn't seem to complain about the asm, though.
+ */
+#ifdef PTX
+fix = {
+    hackname  = ptx_sys_mc_param_h;
+    files     = sys/mc_param.h;
+    sed       = "/__asm/,/}/{"
+                  "/__asm/i\\\n"
+                  "#if !defined (__GNUC__) && !defined (__GNUG__)\n"
+                  "/}/a\\\n"
+                  "#endif\n"
+                "}";
+    test_text = "__asm\n"
+                "int _CPUID()\n"
+                "{\n"
+                "   non-GNU assembly here\n"
+                "}";
+};
+#endif
+
+
+/*
  *  Fix return type of fread and fwrite on sysV68
  */
 fix = {
