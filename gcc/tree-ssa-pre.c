@@ -1103,7 +1103,7 @@ clean (value_set_t set)
 }
 
 DEF_VEC_MALLOC_P (basic_block);
-sbitmap has_abnormal_preds;
+static sbitmap has_abnormal_preds;
 
 /* Compute the ANTIC set for BLOCK.
 
