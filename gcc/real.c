@@ -352,19 +352,24 @@ static int eisneg	PARAMS ((unsigned EMUSHORT *));
 static int eisinf	PARAMS ((unsigned EMUSHORT *));
 static int eisnan	PARAMS ((unsigned EMUSHORT *));
 static void einfin	PARAMS ((unsigned EMUSHORT *));
+#ifdef NANS
 static void enan	PARAMS ((unsigned EMUSHORT *, int));
+static void einan	PARAMS ((unsigned EMUSHORT *));
+static int eiisnan	PARAMS ((unsigned EMUSHORT *));
+static int eiisneg	PARAMS ((unsigned EMUSHORT *));
+static void make_nan	PARAMS ((unsigned EMUSHORT *, int, enum machine_mode));
+#endif
 static void emovi	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void emovo	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void ecleaz	PARAMS ((unsigned EMUSHORT *));
 static void ecleazs	PARAMS ((unsigned EMUSHORT *));
 static void emovz	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
-static void einan	PARAMS ((unsigned EMUSHORT *));
-static int eiisnan	PARAMS ((unsigned EMUSHORT *));
-static int eiisneg	PARAMS ((unsigned EMUSHORT *));
 #if 0
 static void eiinfin	PARAMS ((unsigned EMUSHORT *));
 #endif
+#ifdef INFINITY
 static int eiisinf	PARAMS ((unsigned EMUSHORT *));
+#endif
 static int ecmpm	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void eshdn1	PARAMS ((unsigned EMUSHORT *));
 static void eshup1	PARAMS ((unsigned EMUSHORT *));
@@ -459,7 +464,6 @@ static void etoc4x	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *,
 static void toc4x	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *,
  			       enum machine_mode));
 #endif
-static void make_nan	PARAMS ((unsigned EMUSHORT *, int, enum machine_mode));
 #if 0
 static void uditoe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void ditoe	PARAMS ((unsigned EMUSHORT *, unsigned EMUSHORT *));
@@ -999,11 +1003,11 @@ ereal_ldexp (x, n)
 
 int
 target_isinf (x)
-     REAL_VALUE_TYPE x;
+     REAL_VALUE_TYPE x ATTRIBUTE_UNUSED;
 {
+#ifdef INFINITY
   unsigned EMUSHORT e[NE];
 
-#ifdef INFINITY
   GET_REAL (&x, e);
   return (eisinf (e));
 #else
@@ -1015,11 +1019,11 @@ target_isinf (x)
 
 int
 target_isnan (x)
-     REAL_VALUE_TYPE x;
+     REAL_VALUE_TYPE x ATTRIBUTE_UNUSED;
 {
+#ifdef NANS
   unsigned EMUSHORT e[NE];
 
-#ifdef NANS
   GET_REAL (&x, e);
   return (eisnan (e));
 #else
@@ -1631,7 +1635,7 @@ eisinf (x)
 
 static int
 eisnan (x)
-     unsigned EMUSHORT x[];
+     unsigned EMUSHORT x[] ATTRIBUTE_UNUSED;
 {
 #ifdef NANS
   int i;
@@ -1696,6 +1700,7 @@ einfin (x)
    This generates Intel's quiet NaN pattern for extended real.
    The exponent is 7fff, the leading mantissa word is c000.  */
 
+#ifdef NANS
 static void
 enan (x, sign)
      register unsigned EMUSHORT *x;
@@ -1708,6 +1713,7 @@ enan (x, sign)
   *x++ = 0xc000;
   *x = (sign << 15) | 0x7fff;
 }
+#endif /* NANS */
 
 /* Move in an e-type number A, converting it to exploded e-type B.  */
 
@@ -1838,6 +1844,7 @@ emovz (a, b)
    The explicit pattern for this is maximum exponent and
    top two significant bits set.  */
 
+#ifdef NANS
 static void
 einan (x)
      unsigned EMUSHORT x[];
@@ -1847,9 +1854,11 @@ einan (x)
   x[E] = 0x7fff;
   x[M + 1] = 0xc000;
 }
+#endif /* NANS */
 
 /* Return nonzero if exploded e-type X is a NaN.  */
 
+#ifdef NANS
 static int
 eiisnan (x)
      unsigned EMUSHORT x[];
@@ -1866,9 +1875,11 @@ eiisnan (x)
     }
   return (0);
 }
+#endif /* NANS */
 
 /* Return nonzero if sign of exploded e-type X is nonzero.  */
 
+#ifdef NANS
 static int
 eiisneg (x)
      unsigned EMUSHORT x[];
@@ -1876,6 +1887,7 @@ eiisneg (x)
 
   return x[0] != 0;
 }
+#endif /* NANS */
 
 #if 0
 /* Fill exploded e-type X with infinity pattern.
@@ -1893,6 +1905,7 @@ eiinfin (x)
 
 /* Return nonzero if exploded e-type X is infinite.  */
 
+#ifdef INFINITY
 static int
 eiisinf (x)
      unsigned EMUSHORT x[];
@@ -1906,7 +1919,7 @@ eiisinf (x)
     return (1);
   return (0);
 }
-
+#endif /* INFINITY */
 
 /* Compare significands of numbers in internal exploded e-type format.
    Guard words are included in the comparison.
@@ -3499,7 +3512,9 @@ etoe113 (x, e)
   rndprc = 113;
   emdnorm (xi, 0, 0, exp, 64);
   rndprc = rndsav;
+#ifdef INFINITY
  nonorm:
+#endif
   toe113 (xi, e);
 }
 
@@ -3591,7 +3606,9 @@ etoe64 (x, e)
   rndprc = 64;
   emdnorm (xi, 0, 0, exp, 64);
   rndprc = rndsav;
+#ifdef INFINITY
  nonorm:
+#endif
   toe64 (xi, e);
 }
 
@@ -3804,7 +3821,9 @@ etoe53 (x, e)
   rndprc = 53;
   emdnorm (xi, 0, 0, exp, 64);
   rndprc = rndsav;
+#ifdef INFINITY
  nonorm:
+#endif
   toe53 (xi, e);
 }
 
@@ -3978,7 +3997,9 @@ etoe24 (x, e)
   rndprc = 24;
   emdnorm (xi, 0, 0, exp, 64);
   rndprc = rndsav;
+#ifdef INFINITY
  nonorm:
+#endif
   toe24 (xi, e);
 }
 
@@ -5830,7 +5851,6 @@ ibmtoe (d, e, mode)
 {
   unsigned EMUSHORT y[NI];
   register unsigned EMUSHORT r, *p;
-  int rndsav;
 
   ecleaz (y);			/* start with a zero */
   p = y;			/* point to our number */
@@ -6229,6 +6249,7 @@ unsigned EMUSHORT SFlittlenan[2] = {0, 0xffc0};
 #endif
 
 
+#ifdef NANS
 static void
 make_nan (nan, sign, mode)
      unsigned EMUSHORT *nan;
@@ -6287,6 +6308,7 @@ make_nan (nan, sign, mode)
   if (! REAL_WORDS_BIG_ENDIAN)
     *nan = (sign << 15) | (*p & 0x7fff);
 }
+#endif /* NANS */
 
 /* This is the inverse of the function `etarsingle' invoked by
    REAL_VALUE_TO_TARGET_SINGLE.  */
