@@ -35,10 +35,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	 redirect_edge_and_branch_force, tidy_fallthru_edge, force_nonfallthru
      - Edge splitting and committing to edges
 	 split_edge, insert_insn_on_edge, commit_edge_insertions
-     - Dumping and debugging
-	 print_rtl_with_bb, dump_bb, debug_bb, debug_bb_n
-     - Consistency checking
-	 verify_flow_info
      - CFG updating after constant propagation
 	 purge_dead_edges, purge_all_dead_edges   */
 
@@ -81,7 +77,7 @@ static rtx last_loop_beg_note		PARAMS ((rtx));
 static bool back_edge_of_syntactic_loop_p PARAMS ((basic_block, basic_block));
 basic_block force_nonfallthru_and_redirect PARAMS ((edge, basic_block));
 static basic_block rtl_split_edge	PARAMS ((edge));
-static void rtl_verify_flow_info	PARAMS ((void));
+static int rtl_verify_flow_info		PARAMS ((void));
 static edge cfg_layout_split_block	PARAMS ((basic_block, void *));
 static bool cfg_layout_redirect_edge_and_branch	PARAMS ((edge, basic_block));
 static basic_block cfg_layout_redirect_edge_and_branch_force PARAMS ((edge, basic_block));
@@ -90,6 +86,8 @@ static void rtl_delete_block		PARAMS ((basic_block));
 static basic_block rtl_redirect_edge_and_branch_force PARAMS ((edge, basic_block));
 static bool rtl_redirect_edge_and_branch PARAMS ((edge, basic_block));
 static edge rtl_split_block		PARAMS ((basic_block, void *));
+static void rtl_dump_bb			PARAMS ((basic_block, FILE *));
+static int rtl_verify_flow_info_1	PARAMS ((void));
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -1570,24 +1568,13 @@ commit_edge_insertions_watch_calls ()
 
 /* Print out one basic block with live information at start and end.  */
 
-void
-dump_bb (bb, outf)
+static void
+rtl_dump_bb (bb, outf)
      basic_block bb;
      FILE *outf;
 {
   rtx insn;
   rtx last;
-  edge e;
-
-  fprintf (outf, ";; Basic block %d, loop depth %d, count ",
-	   bb->index, bb->loop_depth);
-  fprintf (outf, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) bb->count);
-  putc ('\n', outf);
-
-  fputs (";; Predecessors: ", outf);
-  for (e = bb->pred; e; e = e->pred_next)
-    dump_edge_info (outf, e, 0);
-  putc ('\n', outf);
 
   fputs (";; Registers live at start:", outf);
   dump_regset (bb->global_live_at_start, outf);
@@ -1600,27 +1587,6 @@ dump_bb (bb, outf)
   fputs (";; Registers live at end:", outf);
   dump_regset (bb->global_live_at_end, outf);
   putc ('\n', outf);
-
-  fputs (";; Successors: ", outf);
-  for (e = bb->succ; e; e = e->succ_next)
-    dump_edge_info (outf, e, 1);
-  putc ('\n', outf);
-}
-
-void
-debug_bb (bb)
-     basic_block bb;
-{
-  dump_bb (bb, stderr);
-}
-
-basic_block
-debug_bb_n (n)
-     int n;
-{
-  basic_block bb = BASIC_BLOCK (n);
-  dump_bb (bb, stderr);
-  return bb;
 }
 
 /* Like print_rtl, but also print out live information for the start of each
@@ -1727,63 +1693,34 @@ update_br_prob_note (bb)
   XEXP (note, 0) = GEN_INT (BRANCH_EDGE (bb)->probability);
 }
 
-/* Verify the CFG consistency.  This function check some CFG invariants and
-   aborts when something is wrong.  Hope that this function will help to
-   convert many optimization passes to preserve CFG consistent.
+/* Verify the CFG and RTL consistency common for both underlying RTL and
+   cfglayout RTL.
 
    Currently it does following checks:
 
    - test head/end pointers
    - overlapping of basic blocks
-   - edge list correctness
    - headers of basic blocks (the NOTE_INSN_BASIC_BLOCK note)
    - tails of basic blocks (ensure that boundary is necessary)
    - scans body of the basic block for JUMP_INSN, CODE_LABEL
      and NOTE_INSN_BASIC_BLOCK
-   - check that all insns are in the basic blocks
-     (except the switch handling code, barriers and notes)
-   - check that all returns are followed by barriers
 
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
-
-void
-rtl_verify_flow_info ()
+static int
+rtl_verify_flow_info_1 ()
 {
   const int max_uid = get_max_uid ();
-  const rtx rtx_first = get_insns ();
   rtx last_head = get_last_insn ();
-  basic_block *bb_info, *last_visited;
-  size_t *edge_checksum;
+  basic_block *bb_info;
   rtx x;
-  int num_bb_notes, err = 0;
+  int err = 0;
   basic_block bb, last_bb_seen;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
-  last_visited = (basic_block *) xcalloc (last_basic_block + 2,
-					  sizeof (basic_block));
-  edge_checksum = (size_t *) xcalloc (last_basic_block + 2, sizeof (size_t));
 
   /* Check bb chain & numbers.  */
   last_bb_seen = ENTRY_BLOCK_PTR;
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
-    {
-      if (bb != EXIT_BLOCK_PTR
-	  && bb != BASIC_BLOCK (bb->index))
-	{
-	  error ("bb %d on wrong place", bb->index);
-	  err = 1;
-	}
-
-      if (bb->prev_bb != last_bb_seen)
-	{
-	  error ("prev_bb of %d should be %d, not %d",
-		 bb->index, last_bb_seen->index, bb->prev_bb->index);
-	  err = 1;
-	}
-
-      last_bb_seen = bb;
-    }
 
   FOR_EACH_BB_REVERSE (bb)
     {
@@ -1850,41 +1787,8 @@ rtl_verify_flow_info ()
 	      err = 1;
 	    }
 	}
-      if (bb->count < 0)
-	{
-	  error ("verify_flow_info: Wrong count of block %i %i",
-	         bb->index, (int)bb->count);
-	  err = 1;
-	}
-      if (bb->frequency < 0)
-	{
-	  error ("verify_flow_info: Wrong frequency of block %i %i",
-	         bb->index, bb->frequency);
-	  err = 1;
-	}
       for (e = bb->succ; e; e = e->succ_next)
 	{
-	  if (last_visited [e->dest->index + 2] == bb)
-	    {
-	      error ("verify_flow_info: Duplicate edge %i->%i",
-		     e->src->index, e->dest->index);
-	      err = 1;
-	    }
-	  if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
-	    {
-	      error ("verify_flow_info: Wrong probability of edge %i->%i %i",
-		     e->src->index, e->dest->index, e->probability);
-	      err = 1;
-	    }
-	  if (e->count < 0)
-	    {
-	      error ("verify_flow_info: Wrong count of edge %i->%i %i",
-		     e->src->index, e->dest->index, (int)e->count);
-	      err = 1;
-	    }
-
-	  last_visited [e->dest->index + 2] = bb;
-
 	  if (e->flags & EDGE_FALLTHRU)
 	    n_fallthru++;
 
@@ -1898,51 +1802,6 @@ rtl_verify_flow_info ()
 	    n_eh++;
 	  else if (e->flags & EDGE_ABNORMAL)
 	    n_abnormal++;
-
-	  if ((e->flags & EDGE_FALLTHRU)
-	      && e->src != ENTRY_BLOCK_PTR
-	      && e->dest != EXIT_BLOCK_PTR)
-	    {
-	      rtx insn;
-
-	      if (e->src->next_bb != e->dest)
-		{
-		  error
-		    ("verify_flow_info: Incorrect blocks for fallthru %i->%i",
-		     e->src->index, e->dest->index);
-		  err = 1;
-		}
-	      else
-		for (insn = NEXT_INSN (e->src->end); insn != e->dest->head;
-		     insn = NEXT_INSN (insn))
-		  if (GET_CODE (insn) == BARRIER
-#ifndef CASE_DROPS_THROUGH
-		      || INSN_P (insn)
-#else
-		      || (INSN_P (insn) && ! JUMP_TABLE_DATA_P (insn))
-#endif
-		      )
-		    {
-		      error ("verify_flow_info: Incorrect fallthru %i->%i",
-			     e->src->index, e->dest->index);
-		      fatal_insn ("wrong insn in the fallthru edge", insn);
-		      err = 1;
-		    }
-	    }
-
-	  if (e->src != bb)
-	    {
-	      error ("verify_flow_info: Basic block %d succ edge is corrupted",
-		     bb->index);
-	      fprintf (stderr, "Predecessor: ");
-	      dump_edge_info (stderr, e, 0);
-	      fprintf (stderr, "\nSuccessor: ");
-	      dump_edge_info (stderr, e, 1);
-	      fprintf (stderr, "\n");
-	      err = 1;
-	    }
-
-	  edge_checksum[e->dest->index + 2] += (size_t) e;
 	}
 
       if (n_eh && GET_CODE (PATTERN (bb->end)) != RESX
@@ -1988,38 +1847,6 @@ rtl_verify_flow_info ()
 	{
 	  error ("Abnormal edges for no purpose in bb %i", bb->index);
 	  err = 1;
-	}
-
-      if (!n_fallthru)
-	{
-	  rtx insn;
-
-	  /* Ensure existence of barrier in BB with no fallthru edges.  */
-	  for (insn = bb->end; !insn || GET_CODE (insn) != BARRIER;
-	       insn = NEXT_INSN (insn))
-	    if (!insn
-		|| (GET_CODE (insn) == NOTE
-		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK))
-		{
-		  error ("missing barrier after block %i", bb->index);
-		  err = 1;
-		  break;
-		}
-	}
-
-      for (e = bb->pred; e; e = e->pred_next)
-	{
-	  if (e->dest != bb)
-	    {
-	      error ("basic block %d pred edge is corrupted", bb->index);
-	      fputs ("Predecessor: ", stderr);
-	      dump_edge_info (stderr, e, 0);
-	      fputs ("\nSuccessor: ", stderr);
-	      dump_edge_info (stderr, e, 1);
-	      fputc ('\n', stderr);
-	      err = 1;
-	    }
-	  edge_checksum[e->dest->index + 2] -= (size_t) e;
 	}
 
       for (x = bb->head; x != NEXT_INSN (bb->end); x = NEXT_INSN (x))
@@ -2085,23 +1912,82 @@ rtl_verify_flow_info ()
 	  }
     }
 
-  /* Complete edge checksumming for ENTRY and EXIT.  */
-  {
-    edge e;
+  /* Clean up.  */
+  free (bb_info);
+  return err;
+}
 
-    for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
-      edge_checksum[e->dest->index + 2] += (size_t) e;
+/* Verify the CFG and RTL consistency common for both underlying RTL and
+   cfglayout RTL.
 
-    for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
-      edge_checksum[e->dest->index + 2] -= (size_t) e;
-  }
+   Currently it does following checks:
+   - all checks of rtl_verify_flow_info_1
+   - check that all insns are in the basic blocks
+     (except the switch handling code, barriers and notes)
+   - check that all returns are followed by barriers
+   - check that all fallthru edge points to the adjacent blocks.  */
+static int
+rtl_verify_flow_info ()
+{
+  basic_block bb;
+  int err = rtl_verify_flow_info_1 ();
+  rtx x;
+  int num_bb_notes;
+  const rtx rtx_first = get_insns ();
+  basic_block last_bb_seen = ENTRY_BLOCK_PTR, curr_bb = NULL;
 
-  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    if (edge_checksum[bb->index + 2])
-      {
-	error ("basic block %i edge lists are corrupted", bb->index);
-	err = 1;
-      }
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      edge e;
+      for (e = bb->succ; e; e = e->succ_next)
+	if (e->flags & EDGE_FALLTHRU)
+	  break;
+      if (!e)
+	{
+	  rtx insn;
+
+	  /* Ensure existence of barrier in BB with no fallthru edges.  */
+	  for (insn = bb->end; !insn || GET_CODE (insn) != BARRIER;
+	       insn = NEXT_INSN (insn))
+	    if (!insn
+		|| (GET_CODE (insn) == NOTE
+		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BASIC_BLOCK))
+		{
+		  error ("missing barrier after block %i", bb->index);
+		  err = 1;
+		  break;
+		}
+	}
+      else if (e->src != ENTRY_BLOCK_PTR
+	       && e->dest != EXIT_BLOCK_PTR)
+        {
+	  rtx insn;
+
+	  if (e->src->next_bb != e->dest)
+	    {
+	      error
+		("verify_flow_info: Incorrect blocks for fallthru %i->%i",
+		 e->src->index, e->dest->index);
+	      err = 1;
+	    }
+	  else
+	    for (insn = NEXT_INSN (e->src->end); insn != e->dest->head;
+		 insn = NEXT_INSN (insn))
+	      if (GET_CODE (insn) == BARRIER
+#ifndef CASE_DROPS_THROUGH
+		  || INSN_P (insn)
+#else
+		  || (INSN_P (insn) && ! JUMP_TABLE_DATA_P (insn))
+#endif
+		  )
+		{
+		  error ("verify_flow_info: Incorrect fallthru %i->%i",
+			 e->src->index, e->dest->index);
+		  fatal_insn ("wrong insn in the fallthru edge", insn);
+		  err = 1;
+		}
+        }
+    }
 
   num_bb_notes = 0;
   last_bb_seen = ENTRY_BLOCK_PTR;
@@ -2114,12 +2000,12 @@ rtl_verify_flow_info ()
 
 	  num_bb_notes++;
 	  if (bb != last_bb_seen->next_bb)
-	    internal_error ("basic blocks not numbered consecutively");
+	    internal_error ("basic blocks not laid down consecutively");
 
-	  last_bb_seen = bb;
+	  curr_bb = last_bb_seen = bb;
 	}
 
-      if (!bb_info[INSN_UID (x)])
+      if (!curr_bb)
 	{
 	  switch (GET_CODE (x))
 	    {
@@ -2148,6 +2034,8 @@ rtl_verify_flow_info ()
 	  && returnjump_p (x) && ! condjump_p (x)
 	  && ! (NEXT_INSN (x) && GET_CODE (NEXT_INSN (x)) == BARRIER))
 	    fatal_insn ("return not followed by barrier", x);
+      if (curr_bb && x == curr_bb->end)
+	curr_bb = NULL;
     }
 
   if (num_bb_notes != n_basic_blocks)
@@ -2155,13 +2043,7 @@ rtl_verify_flow_info ()
       ("number of bb notes in insn chain (%d) != n_basic_blocks (%d)",
        num_bb_notes, n_basic_blocks);
 
-  if (err)
-    internal_error ("verify_flow_info failed");
-
-  /* Clean up.  */
-  free (bb_info);
-  free (last_visited);
-  free (edge_checksum);
+   return err;
 }
 
 /* Assume that the preceding pass has possibly eliminated jump instructions
@@ -2532,6 +2414,7 @@ cfg_layout_delete_block (bb)
 /* Implementation of CFG manipulation for linearized RTL.  */
 struct cfg_hooks rtl_cfg_hooks = {
   rtl_verify_flow_info,
+  rtl_dump_bb,
   rtl_redirect_edge_and_branch,
   rtl_redirect_edge_and_branch_force,
   rtl_delete_block,
@@ -2544,7 +2427,8 @@ struct cfg_hooks rtl_cfg_hooks = {
    This representation will hopefully become the default one in future
    version of the compiler.  */
 struct cfg_hooks cfg_layout_rtl_cfg_hooks = {
-  NULL,   /* verify_flow_info.  */
+  rtl_verify_flow_info_1,   /* verify_flow_info.  */
+  rtl_dump_bb,
   cfg_layout_redirect_edge_and_branch,
   cfg_layout_redirect_edge_and_branch_force,
   cfg_layout_delete_block,

@@ -1,11 +1,11 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -msse2 -march=k8" } */
-/* { dg-final { scan-assembler "pand.*magic" } } */
-/* { dg-final { scan-assembler "pandn.*magic" } } */
-/* { dg-final { scan-assembler "pxor.*magic" } } */
-/* { dg-final { scan-assembler "por.*magic" } } */
+/* { dg-final { scan-assembler "pand\[^\\n\]*magic" } } */
+/* { dg-final { scan-assembler "pandn\[^\\n\]*magic" } } */
+/* { dg-final { scan-assembler "pxor\[^\\n\]*magic" } } */
+/* { dg-final { scan-assembler "por\[^\\n\]*magic" } } */
 /* { dg-final { scan-assembler "movdqa" } } */
-/* { dg-final { scan-assembler-not "movaps.*magic" } } */
+/* { dg-final { scan-assembler-not "movaps\[^\\n\]*magic" } } */
 
 /* Verify that we generate proper instruction with memory operand.  */
 

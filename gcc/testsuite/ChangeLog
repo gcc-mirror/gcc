@@ -1,3 +1,14 @@
+Sun Jun  8 16:46:04 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386-cmov1.c: Fix regular expression.
+	* i386-cvt-1.c: Likewise.
+	* i386-local.c: Likewise.
+	* i386-local2.c: Likewise.
+	* i386-mul.c: Likewise.
+	* i386-ssetype-1.c: Likewise.
+	* i386-ssetype-3.c: Likewise.
+	* i386-ssetype-5.c: Likewise.
+
 2003-06-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11039

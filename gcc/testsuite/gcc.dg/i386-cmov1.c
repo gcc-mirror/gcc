@@ -1,11 +1,11 @@
 /* { dg-do compile { target i?86-*-* x86_64-*-* } } */
 /* { dg-options "-O2 -march=k8" } */
-/* { dg-final { scan-assembler "sar.*magic_namea" } } */
-/* { dg-final { scan-assembler "sar.*magic_nameb" } } */
-/* { dg-final { scan-assembler "sar.*magic_namec" } } */
-/* { dg-final { scan-assembler "shr.*magic_named" } } */
-/* { dg-final { scan-assembler "shr.*magic_namee" } } */
-/* { dg-final { scan-assembler "shr.*magic_namef" } } */
+/* { dg-final { scan-assembler "sar\[^\\n\]*magic_namea" } } */
+/* { dg-final { scan-assembler "sar\[^\\n\]*magic_nameb" } } */
+/* { dg-final { scan-assembler "sar\[^\\n\]*magic_namec" } } */
+/* { dg-final { scan-assembler "shr\[^\\n\]*magic_named" } } */
+/* { dg-final { scan-assembler "shr\[^\\n\]*magic_namee" } } */
+/* { dg-final { scan-assembler "shr\[^\\n\]*magic_namef" } } */
 
 /* Check code generation for several conditional moves doable by single arithmetics.  */
 

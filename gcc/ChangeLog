@@ -1,3 +1,18 @@
+Sun Jun  8 15:52:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (subsi_3_zext, sse2_nandv2di3): Fix predicates.
+	* i386.c (k8_avoid_jump_misspredicts): Fix debug output.
+
+	* cfg.c (verify_flow_info): Move IL independent checks from cfgrtl here.
+	(dump_bb): New based on old dump_bb in cfgrtl.c
+	(debug_bb, debug_bb_n): Move the functions from cfgrtl.c here.
+	* cfghooks.h (cfgh_verify_flow_info): Return status.
+	* cfglayout.c (cfg_layout_finalize): Verify CFG correctness.
+	* cfgrtl.c (debug_bb, debug_bb_n): Move to cfg.c
+	(dump_bb): Remove generic parts.
+	(rtl_verify_flow_info_1): Break out from rtl_verify_flow_info.
+	(rtl_verify_flow_info): Only check things dependeing on linearized RTL.
+
 2003-06-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Rename options.c and options.h to c-options.c and

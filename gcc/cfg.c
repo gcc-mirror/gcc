@@ -39,6 +39,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      - Allocation of AUX fields for basic blocks
 	 alloc_aux_for_blocks, free_aux_for_blocks, alloc_aux_for_block
      - clear_bb_flags
+     - Consistency checking
+	 verify_flow_info
+     - Dumping and debugging
+	 print_rtl_with_bb, dump_bb, debug_bb, debug_bb_n
  */
 
 #include "config.h"
@@ -832,9 +836,185 @@ free_aux_for_edges ()
 }
 
 /* Verify the CFG consistency.  
-   ??? In the future move IL idepdendent checks here.  */
+  
+   Currently it does following checks edge and basic block list correctness
+   and calls into IL dependent checking then.  */
 void
 verify_flow_info ()
 {
-  cfg_hooks->cfgh_verify_flow_info ();
+  size_t *edge_checksum;
+  int num_bb_notes, err = 0;
+  basic_block bb, last_bb_seen;
+  basic_block *last_visited;
+
+  last_visited = (basic_block *) xcalloc (last_basic_block + 2,
+					  sizeof (basic_block));
+  edge_checksum = (size_t *) xcalloc (last_basic_block + 2, sizeof (size_t));
+
+  /* Check bb chain & numbers.  */
+  last_bb_seen = ENTRY_BLOCK_PTR;
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb, NULL, next_bb)
+    {
+      if (bb != EXIT_BLOCK_PTR
+	  && bb != BASIC_BLOCK (bb->index))
+	{
+	  error ("bb %d on wrong place", bb->index);
+	  err = 1;
+	}
+
+      if (bb->prev_bb != last_bb_seen)
+	{
+	  error ("prev_bb of %d should be %d, not %d",
+		 bb->index, last_bb_seen->index, bb->prev_bb->index);
+	  err = 1;
+	}
+
+      last_bb_seen = bb;
+    }
+
+  /* Now check the basic blocks (boundaries etc.) */
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      int n_fallthru = 0;
+      edge e;
+
+      if (bb->count < 0)
+	{
+	  error ("verify_flow_info: Wrong count of block %i %i",
+	         bb->index, (int)bb->count);
+	  err = 1;
+	}
+      if (bb->frequency < 0)
+	{
+	  error ("verify_flow_info: Wrong frequency of block %i %i",
+	         bb->index, bb->frequency);
+	  err = 1;
+	}
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  if (last_visited [e->dest->index + 2] == bb)
+	    {
+	      error ("verify_flow_info: Duplicate edge %i->%i",
+		     e->src->index, e->dest->index);
+	      err = 1;
+	    }
+	  if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
+	    {
+	      error ("verify_flow_info: Wrong probability of edge %i->%i %i",
+		     e->src->index, e->dest->index, e->probability);
+	      err = 1;
+	    }
+	  if (e->count < 0)
+	    {
+	      error ("verify_flow_info: Wrong count of edge %i->%i %i",
+		     e->src->index, e->dest->index, (int)e->count);
+	      err = 1;
+	    }
+
+	  last_visited [e->dest->index + 2] = bb;
+
+	  if (e->flags & EDGE_FALLTHRU)
+	    n_fallthru++;
+
+	  if (e->src != bb)
+	    {
+	      error ("verify_flow_info: Basic block %d succ edge is corrupted",
+		     bb->index);
+	      fprintf (stderr, "Predecessor: ");
+	      dump_edge_info (stderr, e, 0);
+	      fprintf (stderr, "\nSuccessor: ");
+	      dump_edge_info (stderr, e, 1);
+	      fprintf (stderr, "\n");
+	      err = 1;
+	    }
+
+	  edge_checksum[e->dest->index + 2] += (size_t) e;
+	}
+      if (n_fallthru > 1)
+	{
+	  error ("Wrong amount of branch edges after unconditional jump %i", bb->index);
+	  err = 1;
+	}
+
+      for (e = bb->pred; e; e = e->pred_next)
+	{
+	  if (e->dest != bb)
+	    {
+	      error ("basic block %d pred edge is corrupted", bb->index);
+	      fputs ("Predecessor: ", stderr);
+	      dump_edge_info (stderr, e, 0);
+	      fputs ("\nSuccessor: ", stderr);
+	      dump_edge_info (stderr, e, 1);
+	      fputc ('\n', stderr);
+	      err = 1;
+	    }
+	  edge_checksum[e->dest->index + 2] -= (size_t) e;
+	}
+    }
+
+  /* Complete edge checksumming for ENTRY and EXIT.  */
+  {
+    edge e;
+
+    for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
+      edge_checksum[e->dest->index + 2] += (size_t) e;
+
+    for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+      edge_checksum[e->dest->index + 2] -= (size_t) e;
+  }
+
+  FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
+    if (edge_checksum[bb->index + 2])
+      {
+	error ("basic block %i edge lists are corrupted", bb->index);
+	err = 1;
+      }
+
+  num_bb_notes = 0;
+  last_bb_seen = ENTRY_BLOCK_PTR;
+
+  /* Clean up.  */
+  free (last_visited);
+  free (edge_checksum);
+  err |= cfg_hooks->cfgh_verify_flow_info ();
+  if (err)
+    internal_error ("verify_flow_info failed");
+}
+
+/* Print out one basic block with live information at start and end.  */
+
+void
+dump_bb (bb, outf)
+     basic_block bb;
+     FILE *outf;
+{
+  edge e;
+
+  fprintf (outf, ";; Basic block %d, loop depth %d, count ",
+	   bb->index, bb->loop_depth);
+  fprintf (outf, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) bb->count);
+  putc ('\n', outf);
+
+  cfg_hooks->dump_bb (bb, outf);
+
+  fputs (";; Successors: ", outf);
+  for (e = bb->succ; e; e = e->succ_next)
+    dump_edge_info (outf, e, 1);
+  putc ('\n', outf);
+}
+
+void
+debug_bb (bb)
+     basic_block bb;
+{
+  dump_bb (bb, stderr);
+}
+
+basic_block
+debug_bb_n (n)
+     int n;
+{
+  basic_block bb = BASIC_BLOCK (n);
+  dump_bb (bb, stderr);
+  return bb;
 }
