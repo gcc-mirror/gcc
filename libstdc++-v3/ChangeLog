@@ -1,3 +1,8 @@
+2002-02-18  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+	* testsuite/22_locale/collate_byname.cc (test01): Replace size4
+          with size3 for the string collations of str5.
+
 2002-02-18  Paolo Carlini  <pcarlini@unitus.it>
 
 	libstdc++/5708
