@@ -110,3 +110,10 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Get Single Unix Specification semantics */
+#undef _XOPEN_SOURCE
+
+/* Get 64-bit file size support */
+#undef _FILE_OFFSET_BITS
+

@@ -1,3 +1,4 @@
+#include "config.h"
 #include "f2c.h"
 #include "fio.h"
 #ifdef KR_headers
@@ -20,7 +21,7 @@ integer f_rew(alist *a)
 		(void) t_runc(a);
 		b->uwrt = 3;
 		}
-	rewind(b->ufd);
+	FSEEK(b->ufd, 0, SEEK_SET);
 	b->uend=0;
 	return(0);
 }

@@ -111,7 +111,7 @@ t_runc(alist *a)
 		}
 	if (!(bf = freopen(b->ufnm, f__w_mode[0], bf)))
 		goto bad1;
-	rewind(tf);
+	FSEEK(tf, 0, SEEK_SET);
 	if (copy(tf, loc, bf))
 		goto bad1;
 	b->uwrt = 1;

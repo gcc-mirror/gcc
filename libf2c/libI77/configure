@@ -1706,6 +1706,17 @@ cat >> confdefs.h <<\EOF
 EOF
 
 
+# These defines are necessary to get 64-bit file size support.
+
+cat >> confdefs.h <<\EOF
+#define _XOPEN_SOURCE 500L
+EOF
+
+cat >> confdefs.h <<\EOF
+#define _FILE_OFFSET_BITS 64
+EOF
+
+
 trap '' 1 2 15
 cat > confcache <<\EOF
 # This file is a shell script that caches the results of configure

@@ -241,7 +241,7 @@ f__nowwriting(x) unit *x;
 f__nowwriting(unit *x)
 #endif
 {
-	long loc;
+	off_t loc;
 	int ufmt;
 	extern char *f__w_mode[];
 

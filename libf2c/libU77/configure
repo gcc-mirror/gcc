@@ -1060,7 +1060,7 @@ else
 int main() {
 
 /* Ultrix mips cc rejects this.  */
-typedef int charset[2]; const charset x;
+typedef int charset[2]; const charset x = {0,0};
 /* SunOS 4.1.1 cc rejects this.  */
 char const *const *ccp;
 char **p;
@@ -1650,6 +1650,18 @@ test $ac_cv_func_clock = yes && MAYBES="$MAYBES mclock_.o"
 
 
 
+
+
+
+# These defines are necessary to get 64-bit file size support.
+
+cat >> confdefs.h <<\EOF
+#define _XOPEN_SOURCE 500L
+EOF
+
+cat >> confdefs.h <<\EOF
+#define _FILE_OFFSET_BITS 64
+EOF
 
 
 trap '' 1 2 15

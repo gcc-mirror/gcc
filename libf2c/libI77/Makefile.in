@@ -124,14 +124,14 @@ open.o:		open.c fio.h rawio.h config.h
 rdfmt.o:	fio.h config.h
 rdfmt.o:	fmt.h
 rdfmt.o:	rdfmt.c fp.h
-rewind.o:	rewind.c fio.h
+rewind.o:	rewind.c fio.h config.h
 rsfe.o:		fio.h config.h
 rsfe.o:		rsfe.c fmt.h
 rsli.o:		fio.h
 rsli.o:		rsli.c lio.h
 rsne.o:		fio.h config.h
 rsne.o:		rsne.c lio.h
-sfe.o:		sfe.c fio.h
+sfe.o:		sfe.c fio.h config.h
 sue.o:		sue.c fio.h config.h
 typesize.o:	typesize.c config.h
 uio.o:		uio.c fio.h
@@ -141,7 +141,7 @@ wref.o:		fmt.h
 wref.o:		wref.c fp.h
 wrtfmt.o:	fio.h config.h
 wrtfmt.o:	wrtfmt.c fmt.h
-wsfe.o:		fio.h
+wsfe.o:		fio.h config.h
 wsfe.o:		wsfe.c fmt.h
 wsle.o:		fio.h config.h
 wsle.o:		fmt.h
