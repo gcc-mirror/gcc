@@ -99,8 +99,7 @@ DEFUN (main, (argc, argv),
 
   /* Check on bad usage */
   if (flag_find_main && flag_dump_class)
-    fatal ("Options `--print-main' and `--list-class' can't be turned on "
-	   "at the same time");
+    fatal ("Options `--print-main' and `--list-class' can't be turned on at the same time");
 
   if (output_file && !(out = fopen (output_file, "w")))
     fatal ("Can't open output file `%s'", output_file);

@@ -47,6 +47,7 @@ static void append_gpp_mangled_type PROTO ((struct obstack *, tree));
 static tree mangle_static_field PROTO ((tree));
 static void add_interface_do PROTO ((tree, tree, int));
 static tree maybe_layout_super_class PROTO ((tree, tree));
+static int assume_compiled PROTO ((const char *));
 
 static rtx registerClass_libfunc;
 
@@ -75,6 +76,9 @@ typedef struct assume_compiled_node_struct
   struct assume_compiled_node_struct *child;
 } assume_compiled_node;
 
+static assume_compiled_node *find_assume_compiled_node
+			PROTO ((assume_compiled_node *, const char *));
+
 /* This is the root of the include/exclude tree.  */
 
 static assume_compiled_node *assume_compiled_tree;
@@ -83,7 +87,7 @@ static assume_compiled_node *assume_compiled_tree;
    is IDENT.  Start the search from NODE.  Return NULL if an
    appropriate node does not exist.  */
 
-assume_compiled_node *
+static assume_compiled_node *
 find_assume_compiled_node (node, ident)
      assume_compiled_node *node;
      const char *ident;
@@ -131,9 +135,9 @@ add_assume_compiled (ident, excludep)
 {
   assume_compiled_node *parent;
   assume_compiled_node *node = 
-    (assume_compiled_node *) malloc (sizeof (assume_compiled_node));
+    (assume_compiled_node *) xmalloc (sizeof (assume_compiled_node));
 
-  node->ident = strdup (ident);
+  node->ident = xstrdup (ident);
   node->excludep = excludep;
   node->child = NULL;
 
@@ -142,7 +146,7 @@ add_assume_compiled (ident, excludep)
   if (NULL == assume_compiled_tree)
     {
       assume_compiled_tree = 
-	(assume_compiled_node *) malloc (sizeof (assume_compiled_node));
+	(assume_compiled_node *) xmalloc (sizeof (assume_compiled_node));
       assume_compiled_tree->ident = "";
       assume_compiled_tree->excludep = 0;
       assume_compiled_tree->sibling = NULL;
@@ -176,7 +180,7 @@ add_assume_compiled (ident, excludep)
 /* Returns non-zero if IDENT is the name of a class that the compiler
    should assume has been compiled to FIXME  */
 
-int
+static int
 assume_compiled (ident)
      const char *ident;
 {

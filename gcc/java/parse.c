@@ -6252,7 +6252,7 @@ verify_constructor_circularity (meth, current)
 	      for (liste = list; liste; liste = TREE_CHAIN (liste))
 		{
 		  parse_error_context 
-		    (TREE_PURPOSE (TREE_PURPOSE (liste)),
+		    (TREE_PURPOSE (TREE_PURPOSE (liste)), "%s",
 		     constructor_circularity_msg
 		      (TREE_VALUE (liste), TREE_VALUE (TREE_PURPOSE (liste)))); 
 		  java_error_count--;
@@ -7618,9 +7618,8 @@ java_check_abstract_methods (interface_decl)
 	     IDENTIFIER_POINTER 
 	       (DECL_NAME (TYPE_NAME (DECL_CONTEXT (found)))));
 	  free (t);
-	  continue;
-	  
 	  DECL_NAME (found) = saved_found_wfl;
+	  continue;
 	}
     }
 
@@ -10224,7 +10223,7 @@ lookup_method_invoke (lc, cl, class, name, arg_list)
   method = make_node (FUNCTION_TYPE);
   TYPE_ARG_TYPES (method) = atl;
   signature = build_java_argument_signature (method);
-  dup = strdup (lang_printable_name (class, 0));
+  dup = xstrdup (lang_printable_name (class, 0));
   parse_error_context (cl, "Can't find %s `%s(%s)' in type `%s'%s",
 		       (lc ? "constructor" : "method"),
 		       (lc ? dup : IDENTIFIER_POINTER (name)),

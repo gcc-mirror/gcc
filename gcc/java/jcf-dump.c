@@ -1018,7 +1018,7 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 #define ARRAY_NEW(TYPE) ARRAY_NEW_##TYPE
 #define ARRAY_NEW_NUM \
  INT_temp = IMMEDIATE_u1; \
- { switch (INT_temp) {  \
+ { switch ((int) INT_temp) {  \
     case  4: fputs (" boolean", out); break; \
     case  5: fputs (" char", out); break; \
     case  6: fputs (" float", out); break; \
