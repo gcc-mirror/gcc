@@ -514,6 +514,26 @@ symbolic_operand (op, mode)
       return 0;
     }
 }
+
+/* Test for a valid operand for a call instruction.
+   Don't allow the arg pointer register or virtual regs
+   since they may change into reg + const, which the patterns
+   can't handle yet.  */
+
+int
+call_insn_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_CODE (op) == MEM
+      && (CONSTANT_ADDRESS_P (XEXP (op, 0))
+	  || (GET_CODE (XEXP (op, 0)) == REG
+	      && XEXP (op, 0) != arg_pointer_rtx
+	      && !(REGNO (XEXP (op, 0)) >= FIRST_PSEUDO_REGISTER
+		   && REGNO (XEXP (op, 0)) <= LAST_VIRTUAL_REGISTER))))
+    return 1;
+  return 0;
+}
 
 /* Returns 1 if OP contains a symbol reference */
 
