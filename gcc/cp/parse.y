@@ -3222,12 +3222,16 @@ function_try_block:
 		  expand_start_early_try_stmts ();
 		}
 	  ctor_initializer_opt compstmt
-		{ expand_start_all_catch (); }
+		{ 
+                  expand_start_all_catch (); 
+                  expand_start_catch (NULL);
+                }
 	  handler_seq
 		{
 		  int nested = (hack_decl_function_context
 				(current_function_decl) != NULL_TREE);
 		  expand_end_all_catch ();
+                  expand_end_catch ();
 		  finish_function (lineno, (int)$3, nested);
 		}
 	;

@@ -30,6 +30,7 @@
 #include "typeinfo"
 #include "exception"
 #include <stddef.h>
+#include "eh-common.h"
 
 /* Define terminate, unexpected, set_terminate, set_unexpected as
    well as the default terminate func and default unexpected func.  */
@@ -85,6 +86,9 @@ std::unexpected ()
 
 struct cp_eh_info
 {
+#ifdef NEW_EH_MODEL
+  __eh_info eh_info;
+#endif
   void *value;
   void *type;
   void (*cleanup)(void *, int);
@@ -133,6 +137,29 @@ __eh_free (void *p)
   free (p);
 }
 
+
+#ifdef NEW_EH_MODEL
+
+typedef void * (* rtimetype) (void);
+
+extern "C" void *
+__cplus_type_matcher (cp_eh_info *info, exception_table *matching_info, 
+                                 exception_descriptor *exception_table)
+{
+  void *ret;
+
+  if (exception_table->lang.language != EH_LANG_C_plus_plus)
+    return NULL;
+
+  /* we don't worry about version info yet, there is only one version! */
+  
+  void *match_type = ((rtimetype) (matching_info->match_info)) ();
+  ret = __throw_type_match_rtti (match_type, info->type, info->value);
+  return ret;
+}
+#endif
+
+
 /* Compiler hook to push a new exception onto the stack.
    Used by expand_throw().  */
 
@@ -146,6 +173,13 @@ __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
   p->cleanup = cleanup;
   p->handlers = 0;
   p->caught = false;
+
+#ifdef NEW_EH_MODEL
+  p->eh_info.match_function = __cplus_type_matcher;
+  p->eh_info.language = EH_LANG_C_plus_plus;
+  p->eh_info.version = 1;
+  p->eh_info.coerced_value = NULL;
+#endif
 
   cp_eh_info **q = __get_eh_info ();
 

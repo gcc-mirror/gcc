@@ -95,7 +95,12 @@ get_label_from_map (map, i)
   rtx x = map->label_map[i];
 
   if (x == NULL_RTX)
-    x = map->label_map[i] = gen_label_rtx();
+    {                     
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+      x = map->label_map[i] = gen_label_rtx();
+      pop_obstacks ();
+    }
 
   return x;
 }
@@ -658,10 +663,28 @@ save_for_inline_copying (fndecl)
 	  if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG
 	      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_END)
 	    {
+              int new_region = CODE_LABEL_NUMBER 
+                                        (label_map[NOTE_BLOCK_NUMBER (copy)]);
+
+              /* we have to duplicate the handlers for the original */
+              if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG) 
+                {
+                  handler_info *ptr, *temp;
+                  int nr;
+                  nr = new_eh_region_entry (new_region);
+                  ptr = get_first_handler (NOTE_BLOCK_NUMBER (copy));
+                  for ( ; ptr; ptr = ptr->next)
+                    {
+                      temp = get_new_handler (
+                           label_map[CODE_LABEL_NUMBER (ptr->handler_label)],
+                                                               ptr->type_info);
+                      add_new_handler (nr, temp);
+                    }
+                }
+                
 	      /* We have to forward these both to match the new exception
 		 region.  */
-	      NOTE_BLOCK_NUMBER (copy)
-		= CODE_LABEL_NUMBER (label_map[NOTE_BLOCK_NUMBER (copy)]);
+	      NOTE_BLOCK_NUMBER (copy) = new_region;
 	      
 	    }
 	  RTX_INTEGRATED_P (copy) = RTX_INTEGRATED_P (insn);
@@ -2037,6 +2060,22 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 		{
 		  rtx label
 		    = get_label_from_map (map, NOTE_BLOCK_NUMBER (copy));
+
+                  /* we have to duplicate the handlers for the original */
+                  if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EH_REGION_BEG)
+                    {
+                      handler_info *ptr, *temp;
+                      int nr;
+                      nr = new_eh_region_entry (CODE_LABEL_NUMBER (label));
+                      ptr = get_first_handler (NOTE_BLOCK_NUMBER (copy));
+                      for ( ; ptr; ptr = ptr->next)
+                        {
+                          temp = get_new_handler ( get_label_from_map (map, 
+                                      CODE_LABEL_NUMBER (ptr->handler_label)),
+                                                               ptr->type_info);
+                          add_new_handler (nr, temp);
+                        }
+                    }
 
 		  /* We have to forward these both to match the new exception
 		     region.  */

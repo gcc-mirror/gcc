@@ -396,7 +396,8 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
   register char *block_marked = (char *) alloca (n_basic_blocks);
   /* An array of CODE_LABELs, indexed by UID for the start of the active
      EH handler for each insn in F.  */
-  rtx *active_eh_handler;
+  int *active_eh_region;
+  int *nested_eh_region;
   /* List of label_refs to all labels whose addresses are taken
      and used as data.  */
   rtx label_value_list;
@@ -406,7 +407,8 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
   int in_libcall_block = 0;
 
   pass = 1;
-  active_eh_handler = (rtx *) alloca ((max_uid_for_flow + 1) * sizeof (rtx));
+  active_eh_region = (int *) alloca ((max_uid_for_flow + 1) * sizeof (int));
+  nested_eh_region = (int *) alloca ((max_label_num () + 1) * sizeof (int));
  restart:
 
   label_value_list = 0;
@@ -414,7 +416,8 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
   bzero (block_live, n_basic_blocks);
   bzero (block_marked, n_basic_blocks);
   bzero (basic_block_computed_jump_target, n_basic_blocks);
-  bzero ((char *) active_eh_handler, (max_uid_for_flow + 1) * sizeof (rtx));
+  bzero ((char *) active_eh_region, (max_uid_for_flow + 1) * sizeof (int));
+  bzero ((char *) nested_eh_region, (max_label_num () + 1) * sizeof (int));
   current_function_has_computed_jump = 0;
 
   /* Initialize with just block 0 reachable and no blocks marked.  */
@@ -482,20 +485,18 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 						    label_value_list);
 	}
 
-      /* Keep a lifo list of the currently active exception handlers.  */
+      /* Keep a lifo list of the currently active exception notes.  */
       if (GET_CODE (insn) == NOTE)
 	{
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
 	    {
-	      for (x = exception_handler_labels; x; x = XEXP (x, 1))
-		if (CODE_LABEL_NUMBER (XEXP (x, 0)) == NOTE_BLOCK_NUMBER (insn))
-		  {
-		    eh_note = gen_rtx_EXPR_LIST (VOIDmode,
-						 XEXP (x, 0), eh_note);
-		    break;
-		  }
-	      if (x == NULL_RTX)
-		abort ();
+              if (eh_note)
+                nested_eh_region [NOTE_BLOCK_NUMBER (insn)] = 
+                                     NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
+              else
+                nested_eh_region [NOTE_BLOCK_NUMBER (insn)] = 0;
+	      eh_note = gen_rtx_EXPR_LIST (VOIDmode,
+						 insn, eh_note);
 	    }
 	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
 	    eh_note = XEXP (eh_note, 1);
@@ -509,8 +510,8 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 	       && (asynchronous_exceptions
 		   || (GET_CODE (insn) == CALL_INSN
 		       && ! in_libcall_block)))
-	active_eh_handler[INSN_UID (insn)] = XEXP (eh_note, 0);
-
+	active_eh_region[INSN_UID (insn)] = 
+                                        NOTE_BLOCK_NUMBER (XEXP (eh_note, 0));
       BLOCK_NUM (insn) = i;
 
       if (code != NOTE)
@@ -655,11 +656,20 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 				     && ! find_reg_note (insn, REG_RETVAL,
 							 NULL_RTX)))
 			  {
-			    if (active_eh_handler[INSN_UID (insn)])
-			      mark_label_ref (gen_rtx_LABEL_REF (VOIDmode,
-								 active_eh_handler[INSN_UID (insn)]),
-					      insn, 0);
-
+			    if (active_eh_region[INSN_UID (insn)]) 
+                              {
+                                int region;
+                                handler_info *ptr;
+                                region = active_eh_region[INSN_UID (insn)];
+                                for ( ; region; 
+                                             region = nested_eh_region[region]) 
+                                  {
+                                    ptr = get_first_handler (region);
+                                    for ( ; ptr ; ptr = ptr->next)
+                                      mark_label_ref (gen_rtx_LABEL_REF 
+                                       (VOIDmode, ptr->handler_label), insn, 0);
+                                  }
+                              }
 			    if (!asynchronous_exceptions)
 			      {
 				for (x = nonlocal_label_list;
@@ -764,6 +774,10 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 			    /* Now we have to find the EH_BEG and EH_END notes
 			       associated with this label and remove them.  */
 
+#if 0
+/* Handlers and labels no longer needs to have the same values.
+   If there are no references, scan_region will remove any region
+   labels which are of no use. */
 			    for (x = get_insns (); x; x = NEXT_INSN (x))
 			      {
 				if (GET_CODE (x) == NOTE
@@ -778,6 +792,7 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 				    NOTE_SOURCE_FILE (x) = 0;
 				  }
 			      }
+#endif
 			    break;
 			  }
 			prev = &XEXP (x, 1);

@@ -133,6 +133,7 @@ struct function
 
   /* For exception handling information.  */
   struct eh_stack ehstack;
+  struct eh_stack catchstack;
   struct eh_queue ehqueue;
   rtx catch_clauses;
   struct label_node *false_label_stack;

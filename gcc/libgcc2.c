@@ -3046,14 +3046,10 @@ __empty ()
 {
 }
 
-/* EH context structure. */
 
-struct eh_context
-{
-  void **dynamic_handler_chain;
-  /* This is language dependent part of the eh context. */
-  void *info;
-};
+/* Include definitions of EH context and table layout */
+
+#include "eh-common.h"
 
 /* This is a safeguard for dynamic handler chain. */
 
@@ -3361,11 +3357,6 @@ EH_TABLE_LOOKUP
 #else
 
 #ifdef DWARF2_UNWIND_INFO
-typedef struct exception_table {
-  void *start;
-  void *end;
-  void *exception_handler;
-} exception_table;
 
 /* This routine takes a PC and a pointer to the exception region TABLE for
    its translation unit, and returns the address of the exception handler
@@ -3376,31 +3367,68 @@ typedef struct exception_table {
    an inner block.  */
 
 static void *
-find_exception_handler (void *pc, exception_table *table)
+find_exception_handler (void *pc, exception_descriptor *table, void *eh_info)
 {
   if (table)
     {
+#ifdef NEW_EH_MODEL
+      /* The new model assumed the table is sorted inner-most out so the
+         first region we find which matches is the correct one */
+
+      int pos;
+      void *ret;
+      exception_table *tab = &(table->table[0]);
+
+      /* Subtract 1 from the PC to avoid hitting the next region */
+      pc--;
+      
+      /* We can't do a binary search because the table is in inner-most
+         to outermost address ranges within functions */
+      for (pos = 0; tab[pos].start_region != (void *) -1; pos++)
+        { 
+          if (tab[pos].start_region <= pc && tab[pos].end_region > pc)
+            {
+              if (tab[pos].match_info)
+                {
+                  __eh_matcher matcher = ((__eh_info *)eh_info)->match_function;
+                  /* match info but no matcher is NOT a match */
+                  if (matcher) 
+                    {
+                      ret = (*matcher)(eh_info, tab[pos].match_info, table);
+                      if (ret)
+                        {
+                          ((__eh_info *)eh_info)->coerced_value = ret;
+                          return tab[pos].exception_handler;
+                        }
+                    }
+                }
+              else
+                return tab[pos].exception_handler;
+            }
+        }
+#else
       int pos;
       int best = -1;
 
       /* We can't do a binary search because the table isn't guaranteed
-	 to be sorted from function to function.  */
-      for (pos = 0; table[pos].exception_handler != (void *) -1; ++pos)
-	{
-	  if (table[pos].start <= pc && table[pos].end > pc)
-	    {
-	      /* This can apply.  Make sure it is at least as small as
-		 the previous best.  */
-	      if (best == -1 || (table[pos].end <= table[best].end
-				 && table[pos].start >= table[best].start))
-		best = pos;
-	    }
-	  /* But it is sorted by starting PC within a function.  */
-	  else if (best >= 0 && table[pos].start > pc)
-	    break;
-	}
+         to be sorted from function to function.  */
+      for (pos = 0; table[pos].start_region != (void *) -1; ++pos)
+        {
+          if (table[pos].start_region <= pc && table[pos].end_region > pc)
+            {
+              /* This can apply.  Make sure it is at least as small as
+                 the previous best.  */
+              if (best == -1 || (table[pos].end_region <= table[best].end_region
+                        && table[pos].start_region >= table[best].start_region))
+                best = pos;
+            }
+          /* But it is sorted by starting PC within a function.  */
+          else if (best >= 0 && table[pos].start_region > pc)
+            break;
+        }
       if (best != -1)
-	return table[best].exception_handler;
+        return table[best].exception_handler;
+#endif
     }
 
   return (void *) 0;
@@ -3583,7 +3611,7 @@ label:
       if (! udata)
 	break;
 
-      handler = find_exception_handler (pc, udata->eh_ptr);
+      handler = find_exception_handler (pc, udata->eh_ptr, eh->info);
 
       /* If we found one, we can stop searching.  */
       if (handler)
@@ -3601,6 +3629,10 @@ label:
      exception.  */
   if (! handler)
     __terminate ();
+
+#ifdef NEW_EH_MODEL
+  eh->handler_label = handler;
+#endif
 
   if (pc == saved_pc)
     /* We found a handler in the throw context, no need to unwind.  */
@@ -3669,7 +3701,13 @@ label:
 
   /* Set up the registers we use to communicate with the stub.
      We check STACK_GROWS_DOWNWARD so the stub can use adjust_stack.  */
+
+#ifdef NEW_EH_MODEL
+  __builtin_set_eh_regs ((void *)eh,
+#else
   __builtin_set_eh_regs (handler,
+#endif
+
 #ifdef STACK_GROWS_DOWNWARD
 			 udata->cfa - my_udata->cfa
 #else
