@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 15 Dec 2001 <nathan@codesourcery.com>
 
 // PR 2645
@@ -29,5 +29,5 @@ template <typename T> struct B2 : T
   myconst b;
 };
 
-B1<AS> b1;	// { dg-error "instantiated" "" }
+B1<AS> b1;
 B2<AS> b2;

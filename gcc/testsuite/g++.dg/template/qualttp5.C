@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001, 2002 Free Software Foundation
 // Contributed by Kriang Lerdsuwanakij <lerdsuwa@users.sourceforge.net>
 // { dg-do compile }
 
@@ -15,11 +15,11 @@ template <template <class> class TT> void f()
 
 template <class T> struct C
 {
-	void g() { f<A<T>::template B>(); } // { dg-error "instantiated" }
+	void g() { f<A<T>::template B>(); }
 };
 
 int main()
 {
 	C<int> c;
-	c.g(); // { dg-error "instantiated" }
+	c.g();
 }
