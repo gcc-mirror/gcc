@@ -3613,10 +3613,26 @@
   [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ld,st,fcpys,fcpys,ld,st")])
 
 (define_insn ""
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
+	(match_operand:HI 1 "input_operand" "r,J,I,n,f,J"))]
+  "! TARGET_BYTE_OPS
+   && (register_operand (operands[0], HImode)
+       || register_operand (operands[1], HImode))"
+  "@
+   bis %1,%1,%0
+   bis $31,$31,%0
+   bis $31,%1,%0
+   lda %0,%L1
+   cpys %1,%1,%0
+   cpys $f31,$f31,%0"
+  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
+
+(define_insn ""
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f")
 	(match_operand:HI 1 "input_operand" "r,J,I,n,m,rJ,f,J"))]
-  "register_operand (operands[0], HImode)
-   || reg_or_0_operand (operands[1], HImode)"
+  "TARGET_BYTE_OPS
+   && (register_operand (operands[0], HImode)
+       || reg_or_0_operand (operands[1], HImode))"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
@@ -3629,10 +3645,26 @@
   [(set_attr "type" "ilog,ilog,ilog,iadd,ld,st,fcpys,fcpys")])
 
 (define_insn ""
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
+	(match_operand:QI 1 "input_operand" "r,J,I,n,f,J"))]
+  "! TARGET_BYTE_OPS
+   && (register_operand (operands[0], QImode)
+       || register_operand (operands[1], QImode))"
+  "@
+   bis %1,%1,%0
+   bis $31,$31,%0
+   bis $31,%1,%0
+   lda %0,%L1
+   cpys %1,%1,%0
+   cpys $f31,$f31,%0"
+  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
+
+(define_insn ""
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f")
 	(match_operand:QI 1 "input_operand" "r,J,I,n,m,rJ,f,J"))]
-  "register_operand (operands[0], QImode)
-   || reg_or_0_operand (operands[1], QImode)"
+  "TARGET_BYTE_OPS
+   && (register_operand (operands[0], QImode)
+       || reg_or_0_operand (operands[1], QImode))"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
