@@ -2009,10 +2009,11 @@ types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
 @item dllexport
 @cindex @code{__declspec(dllexport)}
-On Microsoft Windows targets the @code{dllexport} attribute causes the
-compiler to provide a global pointer to a pointer in a dll, so that it
-can be referenced with the @code{dllimport} attribute. The pointer name
-is formed by combining @code{_imp__} and the function or variable name.
+On Microsoft Windows targets and Symbian targets the @code{dllexport}
+attribute causes the compiler to provide a global pointer to a pointer
+in a dll, so that it can be referenced with the @code{dllimport}
+attribute. The pointer name is formed by combining @code{_imp__} and
+the function or variable name.
 
 Currently, the @code{dllexport}attribute is ignored for inlined
 functions, but export can be forced by using the
@@ -2024,21 +2025,24 @@ member functions and static data members as exports. Static consts
 initialized in-class are not marked unless they are also defined
 out-of-class.
 
-On cygwin, mingw and arm-pe targets, @code{__declspec(dllexport)} is
-recognized as a synonym for @code{__attribute__ ((dllexport))} for
-compatibility with other Microsoft Windows compilers.
+On cygwin, mingw, arm-pe and sh-symbianelf targets,
+@code{__declspec(dllexport)} is recognized as a synonym for
+@code{__attribute__ ((dllexport))} for compatibility with other
+Microsoft Windows and Symbian compilers. 
 
-Alternative methods for including the symbol in the dll's export table
-are to use a .def file with an @code{EXPORTS} section or, with GNU ld,
-using the @option{--export-all} linker flag.
+For Microsoft Windows targets there are alternative methods for
+including the symbol in the dll's export table such as using a
+@file{.def} file with an @code{EXPORTS} section or, with GNU ld, using
+the @option{--export-all} linker flag.
 
 @item dllimport
 @cindex @code{__declspec(dllimport)}
-On Microsoft Windows targets, the @code{dllimport} attribute causes the
-compiler to reference a function or variable via a global pointer to a
-pointer that is set up by the Microsoft Windows dll library. The pointer
-name is formed by combining @code{_imp__} and the function or variable
-name. The attribute implies @code{extern} storage.
+On Microsoft Windows and Symbian targets, the @code{dllimport}
+attribute causes the compiler to reference a function or variable via
+a global pointer to a pointer that is set up by the Microsoft Windows
+dll library. The pointer name is formed by combining @code{_imp__} and
+the function or variable name. The attribute implies @code{extern}
+storage.
 
 Currently, the attribute is ignored for inlined functions. If the
 attribute is applied to a symbol @emph{definition}, an error is reported.
@@ -2052,15 +2056,25 @@ member functions and static data members as imports.  However, the
 attribute is ignored for virtual methods to allow creation of vtables
 using thunks.
 
-On cygwin, mingw and arm-pe targets, @code{__declspec(dllimport)} is
-recognized as a synonym for @code{__attribute__ ((dllimport))} for
-compatibility with other Microsoft Windows compilers.
+For Symbian targets the @code{dllimport} attribute also has another
+affect - it can cause the vtable and run-time type information for a
+class to be exported.  This happens when the class has a dllimport'ed
+constructor or a non-inline, non-pure virtual function and, for either
+of those two conditions, the class also has a inline constructor or
+destructor and has a key function that is defined in the current
+translation unit.
 
-The use of the @code{dllimport} attribute on functions is not necessary,
-but provides a small performance benefit by eliminating a thunk in the
-dll. The use of the @code{dllimport} attribute on imported variables was
-required on older versions of GNU ld, but can now be avoided by passing
-the @option{--enable-auto-import} switch to ld. As with functions, using
+On cygwin, mingw, arm-pe sh-symbianelf targets,
+@code{__declspec(dllimport)} is recognized as a synonym for
+@code{__attribute__ ((dllimport))} for compatibility with other
+Microsoft Windows and Symbian compilers. 
+
+For Microsoft Windows based targets the use of the @code{dllimport}
+attribute on functions is not necessary, but provides a small
+performance benefit by eliminating a thunk in the dll. The use of the
+@code{dllimport} attribute on imported variables was required on older
+versions of GNU ld, but can now be avoided by passing the
+@option{--enable-auto-import} switch to ld. As with functions, using
 the attribute for a variable eliminates a thunk in the dll.
 
 One drawback to using this attribute is that a pointer to a function or

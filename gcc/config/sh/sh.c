@@ -451,6 +451,17 @@ static tree sh_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 /* Return current register pressure for regmode.  */
 #define CURR_REGMODE_PRESSURE(MODE) 	curr_regmode_pressure[((MODE) == SImode) ? 0 : 1]
 
+#ifdef SYMBIAN
+
+#undef  TARGET_ENCODE_SECTION_INFO
+#define TARGET_ENCODE_SECTION_INFO	sh_symbian_encode_section_info
+#undef  TARGET_STRIP_NAME_ENCODING
+#define TARGET_STRIP_NAME_ENCODING	sh_symbian_strip_name_encoding
+#undef  TARGET_CXX_IMPORT_EXPORT_CLASS
+#define TARGET_CXX_IMPORT_EXPORT_CLASS  symbian_import_export_class
+
+#endif /* SYMBIAN */
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Print the operand address in x to the stream.  */
@@ -1431,6 +1442,12 @@ sh_file_start (void)
 {
   default_file_start ();
 
+#ifdef SYMBIAN
+  /* Declare the .directive section before it is used.  */
+  fputs ("\t.section .directive, \"SM\", @progbits, 1\n", asm_out_file);
+  fputs ("\t.asciz \"#<SYMEDIT>#\\n\"\n", asm_out_file);
+#endif
+  
   if (TARGET_ELF)
     /* We need to show the text section with the proper
        attributes as in TEXT_SECTION_ASM_OP, before dwarf2out
@@ -6950,6 +6967,17 @@ const struct attribute_spec sh_attribute_table[] =
   { "sp_switch",         1, 1, true,  false, false, sh_handle_sp_switch_attribute },
   { "trap_exit",         1, 1, true,  false, false, sh_handle_trap_exit_attribute },
   { "renesas",           0, 0, false, true, false, sh_handle_renesas_attribute },
+#ifdef SYMBIAN
+  /* Symbian support adds three new attributes:
+     dllexport - for exporting a function/variable that will live in a dll
+     dllimport - for importing a function/variable from a dll
+     
+     Microsoft allows multiple declspecs in one __declspec, separating
+     them with spaces.  We do NOT support this.  Instead, use __declspec
+     multiple times.  */
+  { "dllimport",         0, 0, true,  false, false, sh_symbian_handle_dll_attribute },
+  { "dllexport",         0, 0, true,  false, false, sh_symbian_handle_dll_attribute },
+#endif
   { NULL,                0, 0, false, false, false, NULL }
 };
 
