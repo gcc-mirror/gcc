@@ -755,7 +755,7 @@ dnl GLIBCPP_CHECK_STDLIB_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_STDLIB_SUPPORT, [
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
+  CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
   GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtold)
   GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtof)
@@ -797,7 +797,7 @@ dnl GLIBCPP_CHECK_MATH_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   ac_test_CXXFLAGS="${CXXFLAGS+set}"
   ac_save_CXXFLAGS="$CXXFLAGS"
-  CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
+  CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
 
   dnl Check libm
   AC_CHECK_LIB(m, sin, libm="-lm")
@@ -2357,6 +2357,7 @@ AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)
 ])
 
+
 # isc-posix.m4 serial 2 (gettext-0.11.2)
 dnl Copyright (C) 1995-2002 Free Software Foundation, Inc.
 dnl This file is free software, distributed under the terms of the GNU
@@ -2383,7 +2384,6 @@ AC_DEFUN([AC_ISC_POSIX],
     AC_CHECK_LIB(cposix, strerror, [LIBS="$LIBS -lcposix"])
   ]
 )
-
 
 # Add --enable-maintainer-mode option to configure.
 # From Jim Meyering
