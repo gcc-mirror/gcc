@@ -1,5 +1,9 @@
 2004-06-14  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/ext/slist: Trivial formatting fixes.
+
+2004-06-14  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (time_get<>::_M_extract_name):
 	Don't use the 'magic number' 10 in the computation of __minlen;
 	never access __name past __minlen; in the loop over __i3, don't
