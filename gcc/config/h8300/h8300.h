@@ -1334,5 +1334,4 @@ do { char dstr[30];					\
 
 /* Declarations for functions used in insn-output.c.  */
 char *emit_a_shift ();
-
-
+int h8300_funcvec_function_p ();
