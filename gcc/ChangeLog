@@ -1,3 +1,15 @@
+2004-12-06  Zdenek Dvorak  <dvorakz@suse.cz>
+	    Kazu Hirata  <kazu@cs.umass.edu>
+
+	PR tree-optimization/18601
+	* tree-cfg.c (thread_jumps, thread_jumps_from_bb): Removed.
+	(tree_forwarder_block_p): Do not consider blocks that are its own
+	successors forwarders.
+	(cleanup_forwarder_blocks, remove_forwarder_block): New functions.
+	(cleanup_tree_cfg): Use cleanup_forwarder_blocks instead of
+	thread_jumps.
+	* tree-flow.h (bb_ann_d): Remove forwardable.
+
 2004-12-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c (expand_expr_real_1): Remove an "if" whose condition
