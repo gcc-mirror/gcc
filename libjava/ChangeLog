@@ -1,3 +1,10 @@
+2001-05-12  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.am (libgcj_la_OBJECTS): Remove libsupc++convenience.la.
+	* Makefile.in: Regenerate (by hand).
+	* include/jvm.h: Add #pragma GCC java_exceptions at top of file.
+	* doc/cni.sgml: Document #pragma GCC java_exceptions.
+
 2001-05-11  Richard Henderson  <rth@redhat.com>
 
 	* configure.in (ia64-*): Don't set SYSDEP_SOURCES.
