@@ -29,7 +29,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 extern int toplev_main			PARAMS ((int, char **));
 extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
-extern int count_error			PARAMS ((int));
 extern void strip_off_ending		PARAMS ((char *, int));
 extern void print_time			PARAMS ((const char *, long));
 extern const char *trim_filename	PARAMS ((const char *));
@@ -67,7 +66,6 @@ extern void warning_with_file_and_line	PARAMS ((const char *, int,
 extern void error_with_file_and_line	PARAMS ((const char *, int,
 						 const char *, ...));
 extern void sorry			PARAMS ((const char *, ...));
-extern void report_error_function	PARAMS ((const char *));
 
 extern void rest_of_decl_compilation	PARAMS ((union tree_node *,
 						const char *, int, int));

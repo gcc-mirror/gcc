@@ -56,6 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "debug.h"
 #include "target.h"
+#include "diagnostic.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -3415,9 +3416,9 @@ error_with_ivar (message, decl, rawdecl)
      tree decl;
      tree rawdecl;
 {
-  count_error (0);
+  diagnostic_count_error (global_dc, DK_ERROR);
 
-  report_error_function (DECL_SOURCE_FILE (decl));
+  diagnostic_report_current_function (global_dc);
 
   error_with_file_and_line (DECL_SOURCE_FILE (decl),
 			    DECL_SOURCE_LINE (decl),
@@ -6894,10 +6895,10 @@ warn_with_method (message, mtype, method)
      int mtype;
      tree method;
 {
-  if (count_error (1) == 0)
+  if (!diagnostic_count_error (global_dc, DK_WARNING))
     return;
 
-  report_error_function (DECL_SOURCE_FILE (method));
+  diagnostic_report_current_function (global_dc);
 
   /* Add a readable method name to the warning.  */
   warning_with_file_and_line (DECL_SOURCE_FILE (method),

@@ -32,13 +32,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 void
 pedwarn_c99 VPARAMS ((const char *msgid, ...))
 {
-  diagnostic_context dc;
-
+  diagnostic_info diagnostic;
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  set_diagnostic_context (&dc, msgid, &ap, input_filename, lineno,
-                          !flag_isoc99 || !flag_pedantic_errors);
-  report_diagnostic (&dc);
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, lineno,
+                       flag_isoc99 ? pedantic_error_kind () : DK_WARNING);
+  report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
 }

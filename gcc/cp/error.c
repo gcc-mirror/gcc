@@ -105,18 +105,19 @@ static void dump_scope PARAMS ((tree, int));
 static void dump_template_parms PARAMS ((tree, int, int));
 
 static const char *function_category PARAMS ((tree));
-static void maybe_print_instantiation_context PARAMS ((output_buffer *));
-static void print_instantiation_full_context PARAMS ((output_buffer *));
-static void print_instantiation_partial_context PARAMS ((output_buffer *, tree,
+static void maybe_print_instantiation_context PARAMS ((diagnostic_context *));
+static void print_instantiation_full_context PARAMS ((diagnostic_context *));
+static void print_instantiation_partial_context PARAMS ((diagnostic_context *,
+                                                         tree,
                                                          const char *, int));
-static void cp_diagnostic_starter PARAMS ((output_buffer *,
-                                           diagnostic_context *));
-static void cp_diagnostic_finalizer PARAMS ((output_buffer *,
-                                             diagnostic_context *));
-static void cp_print_error_function PARAMS ((output_buffer *,
-                                             diagnostic_context *));
+static void cp_diagnostic_starter PARAMS ((diagnostic_context *,
+                                           diagnostic_info *));
+static void cp_diagnostic_finalizer PARAMS ((diagnostic_context *,
+                                             diagnostic_info *));
+static void cp_print_error_function PARAMS ((diagnostic_context *,
+                                             diagnostic_info *));
 
-static int cp_printer PARAMS ((output_buffer *));
+static bool cp_printer PARAMS ((output_buffer *, text_info *));
 static void print_non_consecutive_character PARAMS ((output_buffer *, int));
 static void print_integer PARAMS ((output_buffer *, HOST_WIDE_INT));
 static tree locate_error PARAMS ((const char *, va_list));
@@ -2379,65 +2380,57 @@ cxx_print_error_function (context, file)
      diagnostic_context *context;
      const char *file;
 {
-  output_state os;
-
   lhd_print_error_function (context, file);
-  os = diagnostic_state (context);
-  output_set_prefix ((output_buffer *)context, file);
-  maybe_print_instantiation_context ((output_buffer *)context);
-  diagnostic_state (context) = os;
+  output_set_prefix (&context->buffer, file);
+  maybe_print_instantiation_context (context);
 }
 
 static void
-cp_diagnostic_starter (buffer, dc)
-     output_buffer *buffer;
-     diagnostic_context *dc;
+cp_diagnostic_starter (context, diagnostic)
+     diagnostic_context *context;
+     diagnostic_info *diagnostic;
 {
-  report_problematic_module (buffer);
-  cp_print_error_function (buffer, dc);
-  maybe_print_instantiation_context (buffer);
-  output_set_prefix (buffer,
-                     context_as_prefix (diagnostic_file_location (dc),
-                                        diagnostic_line_location (dc),
-                                        diagnostic_is_warning (dc)));
+  diagnostic_report_current_module (context);
+  cp_print_error_function (context, diagnostic);
+  maybe_print_instantiation_context (context);
+  output_set_prefix (&context->buffer, diagnostic_build_prefix (diagnostic));
 }
 
 static void
-cp_diagnostic_finalizer (buffer, dc)
-     output_buffer *buffer;
-     diagnostic_context *dc __attribute__ ((__unused__));
+cp_diagnostic_finalizer (context, diagnostic)
+     diagnostic_context *context;
+     diagnostic_info *diagnostic __attribute__((unused));
 {
-  output_destroy_prefix (buffer);
+  output_destroy_prefix (&context->buffer);
 }
 
 /* Print current function onto BUFFER, in the process of reporting
    a diagnostic message.  Called from cp_diagnostic_starter.  */
 static void
-cp_print_error_function (buffer, dc)
-     output_buffer *buffer;
-     diagnostic_context *dc;
+cp_print_error_function (context, diagnostic)
+     diagnostic_context *context;
+     diagnostic_info *diagnostic;
 {
-  if (error_function_changed ())
+  if (diagnostic_last_function_changed (context))
     {
-      char *prefix = diagnostic_file_location (dc)
-        ? file_name_as_prefix (diagnostic_file_location (dc))
+      const char *old_prefix = output_prefix (&context->buffer);
+      char *new_prefix = diagnostic->location.file
+        ? file_name_as_prefix (diagnostic->location.file)
         : NULL;
-      output_state os;
 
-      os = output_buffer_state (buffer);
-      output_set_prefix (buffer, prefix);
+      output_set_prefix (&context->buffer, new_prefix);
 
       if (current_function_decl == NULL)
-        output_add_string (buffer, "At global scope:");
+        output_add_string (&context->buffer, "At global scope:");
       else
-        output_printf
-          (buffer, "In %s `%s':", function_category (current_function_decl),
-           cxx_printable_name (current_function_decl, 2));
-      output_add_newline (buffer);
+        output_printf (&context->buffer, "In %s `%s':",
+                       function_category (current_function_decl),
+                       cxx_printable_name (current_function_decl, 2));
+      output_add_newline (&context->buffer);
 
-      record_last_error_function ();
-      output_destroy_prefix (buffer);
-      output_buffer_state (buffer) = os;
+      diagnostic_set_last_function (context);
+      output_destroy_prefix (&context->buffer);
+      context->buffer.state.prefix = old_prefix;
     }
 }
 
@@ -2466,8 +2459,8 @@ function_category (fn)
 /* Report the full context of a current template instantiation,
    onto BUFFER.  */
 static void
-print_instantiation_full_context (buffer)
-     output_buffer *buffer;
+print_instantiation_full_context (context)
+     diagnostic_context *context;
 {
   tree p = current_instantiation ();
   int line = lineno;
@@ -2486,7 +2479,8 @@ print_instantiation_full_context (buffer)
 	  if (current_function_decl == TINST_DECL (p))
 	    /* Avoid redundancy with the the "In function" line.  */;
 	  else
-	    output_verbatim (buffer, "%s: In instantiation of `%s':\n", file,
+	    output_verbatim (&context->buffer,
+                             "%s: In instantiation of `%s':\n", file,
                              decl_as_string (TINST_DECL (p),
                                              TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
 
@@ -2496,13 +2490,13 @@ print_instantiation_full_context (buffer)
 	}
     }
 
-  print_instantiation_partial_context (buffer, p, file, line);
+  print_instantiation_partial_context (context, p, file, line);
 }
 
 /* Same as above but less verbose.  */
 static void
-print_instantiation_partial_context (buffer, t, file, line)
-     output_buffer *buffer;
+print_instantiation_partial_context (context, t, file, line)
+     diagnostic_context *context;
      tree t;
      const char *file;
      int line;
@@ -2510,24 +2504,24 @@ print_instantiation_partial_context (buffer, t, file, line)
   for (; t; t = TREE_CHAIN (t))
     {
       output_verbatim
-        (buffer, "%s:%d:   instantiated from `%s'\n", file, line,
+        (&context->buffer, "%s:%d:   instantiated from `%s'\n", file, line,
          decl_as_string (TINST_DECL (t), TFF_DECL_SPECIFIERS | TFF_RETURN_TYPE));
       line = TINST_LINE (t);
       file = TINST_FILE (t);
     }
-  output_verbatim (buffer, "%s:%d:   instantiated from here\n", file, line);
+  output_verbatim (&context->buffer, "%s:%d:   instantiated from here\n", file, line);
 }
 
 /* Called from cp_thing to print the template context for an error.  */
 static void
-maybe_print_instantiation_context (buffer)
-     output_buffer *buffer;
+maybe_print_instantiation_context (context)
+     diagnostic_context *context;
 {
   if (!problematic_instantiation_changed () || current_instantiation () == 0)
     return;
 
   record_last_problematic_instantiation ();
-  print_instantiation_full_context (buffer);
+  print_instantiation_full_context (context);
 }
 
 /* Report the bare minimum context of a template instantiation.  */
@@ -2535,8 +2529,8 @@ void
 print_instantiation_context ()
 {
   print_instantiation_partial_context
-    (diagnostic_buffer, current_instantiation (), input_filename, lineno);
-  flush_diagnostic_buffer ();
+    (global_dc, current_instantiation (), input_filename, lineno);
+  diagnostic_flush_buffer (global_dc);
 }
 
 /* Called from output_format -- during diagnostic message processing --
@@ -2552,26 +2546,27 @@ print_instantiation_context ()
    %Q	assignment operator.
    %T   type.
    %V   cv-qualifier.  */
-static int
-cp_printer (buffer)
+static bool
+cp_printer (buffer, text)
      output_buffer *buffer;
+     text_info *text;
 {
   int verbose = 0;
   const char *result;
-#define next_tree    va_arg (output_buffer_format_args (buffer), tree)
-#define next_tcode   va_arg (output_buffer_format_args (buffer), enum tree_code)
-#define next_lang    va_arg (output_buffer_format_args (buffer), enum languages)
-#define next_int     va_arg (output_buffer_format_args (buffer), int)
+#define next_tree    va_arg (*text->args_ptr, tree)
+#define next_tcode   va_arg (*text->args_ptr, enum tree_code)
+#define next_lang    va_arg (*text->args_ptr, enum languages)
+#define next_int     va_arg (*text->args_ptr, int)
 
-  if (*output_buffer_text_cursor (buffer) == '+')
-    ++output_buffer_text_cursor (buffer);
-  if (*output_buffer_text_cursor (buffer) == '#')
+  if (*text->format_spec == '+')
+    ++text->format_spec;
+  if (*text->format_spec == '#')
     {
       verbose = 1;
-      ++output_buffer_text_cursor (buffer);
+      ++text->format_spec;
     }
 
-  switch (*output_buffer_text_cursor (buffer))
+  switch (*text->format_spec)
     {
     case 'A': result = args_to_string (next_tree, verbose);	break;
     case 'C': result = code_to_string (next_tcode, verbose);	break;
@@ -2586,11 +2581,11 @@ cp_printer (buffer)
     case 'V': result = cv_to_string (next_tree, verbose);	break;
  
     default:
-      return 0;
+      return false;
     }
 
   output_add_string (buffer, result);
-  return 1;
+  return true;
 #undef next_tree
 #undef next_tcode
 #undef next_lang
@@ -2684,7 +2679,7 @@ void
 cp_error_at VPARAMS ((const char *msgid, ...))
 {
   tree here;
-  diagnostic_context dc;
+  diagnostic_info diagnostic;
 
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
@@ -2694,10 +2689,9 @@ cp_error_at VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  set_diagnostic_context (&dc, msgid, &ap,
-			  cp_file_of (here),
-			  cp_line_of (here), /* warning = */ 0);
-  report_diagnostic (&dc);
+  diagnostic_set_info (&diagnostic, msgid, &ap,
+                       cp_file_of (here), cp_line_of (here), DK_WARNING);
+  report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
 }
 
@@ -2705,7 +2699,7 @@ void
 cp_warning_at VPARAMS ((const char *msgid, ...))
 {
   tree here;
-  diagnostic_context dc;
+  diagnostic_info diagnostic;
 
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
@@ -2715,10 +2709,9 @@ cp_warning_at VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  set_diagnostic_context (&dc, msgid, &ap,
-			  cp_file_of (here),
-			  cp_line_of (here), /* warning = */ 1);
-  report_diagnostic (&dc);
+  diagnostic_set_info (&diagnostic, msgid, &ap,
+                       cp_file_of (here), cp_line_of (here), DK_WARNING);
+  report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
 }
 
@@ -2726,7 +2719,7 @@ void
 cp_pedwarn_at VPARAMS ((const char *msgid, ...))
 {
   tree here;
-  diagnostic_context dc;
+  diagnostic_info diagnostic;
 
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
@@ -2736,10 +2729,9 @@ cp_pedwarn_at VPARAMS ((const char *msgid, ...))
   VA_OPEN (ap, msgid);
   VA_FIXEDARG (ap, const char *, msgid);
 
-  set_diagnostic_context (&dc, msgid, &ap,
-			  cp_file_of (here),
-			  cp_line_of (here),
-			  /* warning = */ !flag_pedantic_errors);
-  report_diagnostic (&dc);
+  diagnostic_set_info (&diagnostic, msgid, &ap,
+                       cp_file_of (here), cp_line_of (here),
+                       pedantic_error_kind());
+  report_diagnostic (&diagnostic);
   VA_CLOSE (ap);
 }
