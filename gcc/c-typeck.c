@@ -2073,12 +2073,19 @@ convert_arguments (typelist, values, name, fundecl)
 			/* Change in signedness doesn't matter
 			   if a constant value is unaffected.  */
 			;
+		      /* Likewise for a constant in a NOP_EXPR.  */
+		      else if (TREE_CODE (val) == NOP_EXPR
+			       && TREE_CODE (TREE_OPERAND (val, 0)) == INTEGER_CST
+			       && int_fits_type_p (TREE_OPERAND (val, 0), type))
+			;
+#if 0 /* We never get such tree structure here.  */
 		      else if (TREE_CODE (TREE_TYPE (val)) == ENUMERAL_TYPE
 			       && int_fits_type_p (TYPE_MIN_VALUE (TREE_TYPE (val)), type)
 			       && int_fits_type_p (TYPE_MAX_VALUE (TREE_TYPE (val)), type))
 			/* Change in signedness doesn't matter
 			   if an enum value is unaffected.  */
 			;
+#endif
 		      /* If the value is extended from a narrower
 			 unsigned type, it doesn't matter whether we
 			 pass it as signed or unsigned; the value
