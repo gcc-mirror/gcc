@@ -6,13 +6,19 @@
 	.globl	 __eabi
 
 	 .section ".got2","aw"
-.LCTOC1 = .+32768
+.LCTOC1 = . # +32768
 
 # Table of addresses
 .Ltable = .-.LCTOC1
-	.long	.Laddr				# address we are really at
+	.long	.LCTOC1				# address we are really at
+
+.Lgot = .-.LCTOC1
 	.long	_GLOBAL_OFFSET_TABLE_		# normal GOT address
+
+.Lgot2s = .-.LCTOC1
 	.long	_GOT2_START_			# -mrelocatable GOT pointers start
+
+.Lgot2e = .-.LCTOC1
 	.long	_GOT2_END_			# -mrelocatable GOT pointers end
 
 	.text
@@ -21,16 +27,17 @@
 
 __eabi:	mflr	0
 	bl	.Laddr				# get current address
-.Laddr:	mflr	11				# real address of .Ltable
-	lwz	12,(.Lptr-.Laddr)(11)		# linker generated address of .Ltable
-	add	12,12,11			# correct to real pointer
+.Laddr:	mflr	12				# real address of .Laddr
+	lwz	11,(.Lptr-.Laddr)(12)		# linker generated address of .LCTOC1
+	add	11,11,12			# correct to real pointer
+	lwz	12,.Ltable(11)			# get linker's idea of where .Laddr is
 	subf.	12,12,11			# calculate difference
 	bc	4,2,.Lreloc			# skip if we need to relocate
 
 # Normal program, load up register 2
 
 	mtlr	0				# restore link register
-	lwz	2,4(11)				# normal GOT address
+	lwz	2,.Lgot(11)			# normal GOT address
 	blr
 
 # We need to relocate the .got2 pointers.  Don't load register 2
@@ -38,8 +45,8 @@ __eabi:	mflr	0
 .Lreloc:
 	stwu	30,-4(1)
 	stwu	31,-4(1)
-	lwz	30,8(11)			# GOT pointers start
-	lwz	31,12(11)			# GOT pointers end
+	lwz	30,.Lgot2s(11)			# GOT pointers start
+	lwz	31,.Lgot2e(11)			# GOT pointers end
 	add	30,12,30			# adjust pointers
 	add	31,12,31
 
