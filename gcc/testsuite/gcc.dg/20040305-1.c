@@ -8,6 +8,9 @@
 /* { dg-do run { target s390-*-* } } */
 /* { dg-options "-O3 -mtune=z990 -fno-inline" } */
 
+extern void exit (int);
+extern void abort (void);
+
 int f;
 int g;
 int h;

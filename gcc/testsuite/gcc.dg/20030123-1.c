@@ -3,6 +3,8 @@
 /* { dg-do compile { target s390*-*-* } } */
 /* { dg-options "-O2 -fno-omit-frame-pointer" } */
 
+extern void *alloca (__SIZE_TYPE__);
+
 void func (char *p);
 
 void test (void)
