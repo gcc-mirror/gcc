@@ -1,3 +1,7 @@
+Thu May  6 08:19:31 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Advantages Over f2c): Expand on this topic.
+
 Mon May  3 19:41:48 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* com.c (ffecom_expr_intrinsic_): Fix test of CTIME_subr.
