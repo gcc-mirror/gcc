@@ -3422,6 +3422,7 @@ rest_of_compilation (decl)
 #ifdef OPTIMIZE_MODE_SWITCHING
   timevar_push (TV_GCSE);
 
+  no_new_pseudos = 1;
   if (optimize_mode_switching (NULL))
     {
       /* We did work, and so had to regenerate global life information.
@@ -3429,6 +3430,7 @@ rest_of_compilation (decl)
 	 information below.  */
       register_life_up_to_date = 1;
     }
+  no_new_pseudos = 0;
 
   timevar_pop (TV_GCSE);
 #endif

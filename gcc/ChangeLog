@@ -1,3 +1,19 @@
+Sun Jul 15 00:53:35 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (scan_loop): Add USEs inside PARALLELs into dependencies
+	of the movable.
+
+	* toplev.c (rest_of_compilation): Allow new pseudoes for mode switching.
+
+	* i386-protos.h (ix86_split_fp_branch): Update prototype.
+	(ix86_fp_jump_nontrivial_p): New.
+	* i386.md (fp_jcc_?): Update call of split_fp_branch;
+	use ix86_fp_jump_nontrivial_p.
+	* i386.c (ix86_fp_jump_nontrivial_p): New.
+	(ix86_split_fp_branch): Accept code instead of rtx.
+	(ix86_expand_compare): Expand comparison early in case
+	doing so is resonably cheap.
+
 2001-07-15  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/rs6000/sysv4.h (CPP_ENDIAN_BIG_SPEC): Assert 'endian'
