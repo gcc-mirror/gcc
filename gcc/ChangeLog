@@ -1,3 +1,8 @@
+Thu Oct  5 19:04:18 2000  J"orn Rennecke <amylaar@redhat.co.uk>
+
+	* (convert_move): Use zero_extendpsisi2 to do an unsigned extension
+	from PSImode to SImode.
+
 2000-10-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* emit-rtl.c (gen_lowpart_common) [REAL_ARITHMETICS]: Fix conversion
