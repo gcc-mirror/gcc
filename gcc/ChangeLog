@@ -10,6 +10,9 @@ Fri Oct 15 18:36:07 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	
 Thu Oct 14 22:14:23 1999  Richard Henderson  <rth@cygnus.com>
 
+	* pa.md (post_stw+1): Use pmode_register_operand.
+	(dcacheflush, icacheflush): Likewise.
+
 	* i386.md (movstricthi_1): Allow r/r.
 
 Thu Oct 14 19:44:08 1999  Jan Hubicka  <hubicka@freesoft.cz>
