@@ -1,3 +1,8 @@
+1998-05-27  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Don't try to use TYPE_OBSTACK on an
+	error_mark_node.
+
 1998-05-27  Kevin Buhr  <buhr@stat.wisc.edu>
 
 	* parse.y (base_class): Use is_aggr_type, not IS_AGGR_TYPE.
