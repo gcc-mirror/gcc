@@ -122,7 +122,93 @@ do						\
 while (0)
 #endif
 
-#if !(defined(__ia64__) || defined(__sparc__))
+#if defined(__sparc__)
+#if defined(__arch64__)
+extern "C" {
+    static void __rt_sigreturn_stub(void)
+    {
+      __asm__("mov %0, %%g1\n\t"
+	      "ta  0x6d\n\t"
+	      : /* no outputs */
+	      : "i" (__NR_rt_sigreturn));
+    }
+    struct kernel_sigaction
+    {
+      void (*k_sa_sigaction)(int,siginfo_t *,void *);
+      unsigned long k_sa_flags;
+      void (*k_sa_restorer)(void);
+      sigset_t k_sa_mask;
+    };
+}
+#define INIT_SEGV						\
+do								\
+  {								\
+    nullp = new java::lang::NullPointerException ();    	\
+    struct kernel_sigaction act;				\
+    unsigned long stub = ((unsigned long)&__rt_sigreturn_stub); \
+    act.k_sa_sigaction = _Jv_catch_segv;      			\
+    sigemptyset (&act.k_sa_mask);				\
+    act.k_sa_flags = SA_SIGINFO;	       			\
+    act.k_sa_restorer = NULL;					\
+    syscall (SYS_rt_sigaction, SIGSEGV, &act, NULL,		\
+             stub - 8, _NSIG / 8);				\
+  }								\
+while (0)  
+
+#define INIT_FPE						\
+do								\
+  { 								\
+    arithexception = new java::lang::ArithmeticException 	\
+      (JvNewStringLatin1 ("/ by zero"));			\
+    struct kernel_sigaction act;				\
+    unsigned long stub = ((unsigned long)&__rt_sigreturn_stub); \
+    act.k_sa_sigaction = _Jv_catch_fpe;				\
+    sigemptyset (&act.k_sa_mask);				\
+    act.k_sa_flags = SA_SIGINFO;		       		\
+    act.k_sa_restorer = NULL;					\
+    syscall (SYS_rt_sigaction, SIGFPE, &act, NULL,		\
+             stub - 8, _NSIG / 8);				\
+  }								\
+while (0)  
+#else /* __arch64__ */
+
+extern "C" {
+    struct kernel_sigaction
+    {
+      void (*k_sa_sigaction)(int,siginfo_t *,void *);
+      unsigned long k_sa_mask, k_sa_flags;
+      void (*k_sa_restorer)(void);
+    };
+}
+
+#define INIT_SEGV						\
+do								\
+  {								\
+    struct kernel_sigaction act;				\
+    nullp = new java::lang::NullPointerException ();    	\
+    act.k_sa_sigaction = _Jv_catch_segv;      			\
+    act.k_sa_mask = 0;						\
+    act.k_sa_flags = SA_SIGINFO;	       			\
+    act.k_sa_restorer = NULL;					\
+    syscall (SYS_sigaction, -SIGSEGV, &act, NULL);		\
+  }								\
+while (0)  
+
+#define INIT_FPE						\
+do								\
+  { 								\
+    arithexception = new java::lang::ArithmeticException 	\
+      (JvNewStringLatin1 ("/ by zero"));			\
+    struct kernel_sigaction act;				\
+    act.k_sa_sigaction = _Jv_catch_fpe;				\
+    act.k_sa_mask = 0;						\
+    act.k_sa_flags = SA_SIGINFO;		       		\
+    act.k_sa_restorer = NULL;					\
+    syscall (SYS_sigaction, -SIGFPE, &act, NULL);		\
+  }								\
+while (0)  
+#endif
+#elif !defined(__ia64__)
 #define INIT_SEGV						\
 do								\
   {								\
@@ -155,7 +241,7 @@ while (0)
  * go away once all systems have pthreads libraries that are
  * compiled with full unwind info.  */
 
-#else  /* __ia64__ || __sparc__ */
+#else  /* __ia64__ */
 
 // FIXME: We shouldn't be using libc_sigaction here, since it should
 // be glibc private.  But using syscall here would mean translating to
