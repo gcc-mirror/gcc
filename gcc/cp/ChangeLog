@@ -1,3 +1,7 @@
+2000-08-22  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* decl2.c (arg_assoc): Revert my 2000-08-11 change.
+
 2000-08-22  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* Makefile.in (error.o): Depends on diagnostic.h
@@ -31,7 +35,6 @@
 	change of 1995-04-13.
 	(push_tinst_level): Call print_instantiation_context. 
 	
-
 2000-08-21  Nix  <nix@esperi.demon.co.uk>
         
 	* lang-specs.h: Do not process -o or run the assembler if
