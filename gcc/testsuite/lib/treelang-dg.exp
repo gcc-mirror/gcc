@@ -1,0 +1,36 @@
+#   Copyright (C) 1997, 1999, 2000, 2001, 2003, 2004
+#   Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+load_lib gcc-dg.exp
+
+# Define gcc callbacks for dg.exp.
+
+proc treelang-dg-test { prog do_what extra_tool_flags } {
+    return [gcc-dg-test-1 treelang_target_compile $prog $do_what $extra_tool_flags]
+}
+
+proc treelang-dg-prune { system text } {
+    return [gcc-dg-prune $system $text]
+}
+
+# Utility routines.
+
+# Modified dg-runtest that can cycle through a list of optimization options
+# as c-torture does.
+proc treelang-dg-runtest { testcases default-extra-flags } {
+    return [gcc-dg-runtest $testcases ${default-extra-flags}]
+}

@@ -1,3 +1,9 @@
+2004-01-18  James A. Morrison  <ja2morri@uwaterloo.ca>
+
+        * compile/compile.exp: New File.
+        * compile/tabs.tree: Test whether the front end
+        compiles code with tabs in it.
+
 2003-02-25  Tim Josling  <tej@melbpc.org.au>
 
 	* treetests.exp (run3): set options to force aggressive GC, to
