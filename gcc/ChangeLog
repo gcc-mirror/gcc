@@ -1,3 +1,8 @@
+2002-03-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* expr.c (expand_expr, case NE_EXPR): Do not call copy_to_reg with
+	VOIDmode operand.  Add compile-time optimization for constant results.
+
 2002-03-12  Jason Merrill  <jason@redhat.com>
 
 	* c-typeck.c (convert_for_assignment): Don't allow conversions
