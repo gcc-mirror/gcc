@@ -12205,11 +12205,7 @@ start_enum (name)
 
   /* We are wasting space here and putting these on the permanent_obstack so
      that typeid(local enum) will work correctly. */
-#if 0
-  if (processing_template_decl && current_function_decl)
-#endif
-   
-  end_temporary_allocation ();
+  push_obstacks (&permanent_obstack, &permanent_obstack);
 
   /* If this is the real definition for a previous forward reference,
      fill in the contents in the same object that used to be the
@@ -12311,61 +12307,58 @@ finish_enum (enumtype)
     {
       tree scope = current_scope ();
       if (scope && TREE_CODE (scope) == FUNCTION_DECL)
+	add_tree (build_min (TAG_DEFN, enumtype));
+    }
+  else
+    {
+      int unsignedp = tree_int_cst_sgn (minnode) >= 0;
+      int lowprec = min_precision (minnode, unsignedp);
+      int highprec = min_precision (maxnode, unsignedp);
+      int precision = MAX (lowprec, highprec);
+      tree tem;
+
+      TYPE_SIZE (enumtype) = NULL_TREE;
+
+      /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE according to `precision'.  */
+
+      TYPE_PRECISION (enumtype) = precision;
+      if (unsignedp)
+	fixup_unsigned_type (enumtype);
+      else
+	fixup_signed_type (enumtype);
+
+      if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
+	/* Use the width of the narrowest normal C type which is wide
+	   enough.  */ 
+	TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
+						    (precision, 1));
+      else
+	TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
+
+      TYPE_SIZE (enumtype) = 0;
+      layout_type (enumtype);
+    
+      /* Fix up all variant types of this enum type.  */
+      for (tem = TYPE_MAIN_VARIANT (enumtype); tem;
+	   tem = TYPE_NEXT_VARIANT (tem))
 	{
-	  add_tree (build_min (TAG_DEFN, enumtype));
-	  resume_temporary_allocation ();
+	  TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
+	  TYPE_MIN_VALUE (tem) = TYPE_MIN_VALUE (enumtype);
+	  TYPE_MAX_VALUE (tem) = TYPE_MAX_VALUE (enumtype);
+	  TYPE_SIZE (tem) = TYPE_SIZE (enumtype);
+	  TYPE_SIZE_UNIT (tem) = TYPE_SIZE_UNIT (enumtype);
+	  TYPE_MODE (tem) = TYPE_MODE (enumtype);
+	  TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
+	  TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
+	  TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
 	}
-      return enumtype;
+
+      /* Finish debugging output for this type.  */
+      rest_of_type_compilation (enumtype, namespace_bindings_p ());
     }
 
-  {
-    int unsignedp = tree_int_cst_sgn (minnode) >= 0;
-    int lowprec = min_precision (minnode, unsignedp);
-    int highprec = min_precision (maxnode, unsignedp);
-    int precision = MAX (lowprec, highprec);
-
-    TYPE_SIZE (enumtype) = NULL_TREE;
-
-    /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE according to `precision'.  */
-
-    TYPE_PRECISION (enumtype) = precision;
-    if (unsignedp)
-      fixup_unsigned_type (enumtype);
-    else
-      fixup_signed_type (enumtype);
-
-    if (flag_short_enums || (precision > TYPE_PRECISION (integer_type_node)))
-      /* Use the width of the narrowest normal C type which is wide enough.  */
-      TYPE_PRECISION (enumtype) = TYPE_PRECISION (type_for_size
-						  (precision, 1));
-    else
-      TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
-
-    TYPE_SIZE (enumtype) = 0;
-    layout_type (enumtype);
-  }
-
-  {
-    register tree tem;
-    
-    /* Fix up all variant types of this enum type.  */
-    for (tem = TYPE_MAIN_VARIANT (enumtype); tem;
-	 tem = TYPE_NEXT_VARIANT (tem))
-      {
-	TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
-	TYPE_MIN_VALUE (tem) = TYPE_MIN_VALUE (enumtype);
-	TYPE_MAX_VALUE (tem) = TYPE_MAX_VALUE (enumtype);
-	TYPE_SIZE (tem) = TYPE_SIZE (enumtype);
-	TYPE_SIZE_UNIT (tem) = TYPE_SIZE_UNIT (enumtype);
-	TYPE_MODE (tem) = TYPE_MODE (enumtype);
-	TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
-	TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
-	TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
-      }
-  }
-
-  /* Finish debugging output for this type.  */
-  rest_of_type_compilation (enumtype, namespace_bindings_p ());
+  /* In start_enum we pushed obstacks.  Here, we must pop them.  */
+  pop_obstacks ();
 
   return enumtype;
 }
