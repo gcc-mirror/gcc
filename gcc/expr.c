@@ -4970,7 +4970,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	enum machine_mode eltmode = TYPE_MODE (elttype);
 	HOST_WIDE_INT bitsize;
 	HOST_WIDE_INT bitpos;
-	rtx *vector = NULL;
+	rtvec vector = NULL;
 	unsigned n_elts;
 	
 	gcc_assert (eltmode != BLKmode);
@@ -4985,9 +4985,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      {
 		unsigned int i;
 		
-		vector = alloca (n_elts);
+		vector = rtvec_alloc (n_elts);
 		for (i = 0; i < n_elts; i++)
-		  vector [i] = CONST0_RTX (GET_MODE_INNER (mode));
+		  RTVEC_ELT (vector, i) = CONST0_RTX (GET_MODE_INNER (mode));
 	      }
 	  }
 	
@@ -5058,7 +5058,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	        /* Vector CONSTRUCTORs should only be built from smaller
 		   vectors in the case of BLKmode vectors.  */
 		gcc_assert (TREE_CODE (TREE_TYPE (value)) != VECTOR_TYPE);
-		vector[eltpos] = expand_expr (value, NULL_RTX, VOIDmode, 0);
+		RTVEC_ELT (vector, eltpos)
+		  = expand_expr (value, NULL_RTX, VOIDmode, 0);
 	      }
 	    else
 	      {
@@ -5076,8 +5077,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	if (vector)
 	  emit_insn (GEN_FCN (icode)
 		     (target,
-		      gen_rtx_PARALLEL (GET_MODE (target),
-					gen_rtvec_v (n_elts, vector))));
+		      gen_rtx_PARALLEL (GET_MODE (target), vector)));
 	break;
       }
       
