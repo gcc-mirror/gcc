@@ -1120,14 +1120,23 @@ __transfer_from_trampoline ()					\
 
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS.  */
 
+/* Allow SUBREG everywhere we allow REG.  This results in better code.  It
+   also makes function inlining work when inline functions are called with
+   arguments that are SUBREGs.  */
+
+#define LEGITIMATE_BASE_REG_P(X)   \
+  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))	\
+   || (GET_CODE (X) == SUBREG				\
+       && GET_CODE (SUBREG_REG (X)) == REG		\
+       && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
+
 #define INDIRECTABLE_1_ADDRESS_P(X)  \
   ((CONSTANT_ADDRESS_P (X) && (!flag_pic || LEGITIMATE_PIC_OPERAND_P (X))) \
-   || (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))			\
+   || LEGITIMATE_BASE_REG_P (X)						\
    || ((GET_CODE (X) == PRE_DEC || GET_CODE (X) == POST_INC)		\
-       && REG_P (XEXP (X, 0))						\
-       && REG_OK_FOR_BASE_P (XEXP (X, 0)))				\
+       && LEGITIMATE_BASE_REG_P (XEXP (X, 0)))				\
    || (GET_CODE (X) == PLUS						\
-       && REG_P (XEXP (X, 0)) && REG_OK_FOR_BASE_P (XEXP (X, 0))	\
+       && LEGITIMATE_BASE_REG_P (XEXP (X, 0))				\
        && GET_CODE (XEXP (X, 1)) == CONST_INT				\
        && ((unsigned) INTVAL (XEXP (X, 1)) + 0x8000) < 0x10000)		\
    || (GET_CODE (X) == PLUS && XEXP (X, 0) == pic_offset_table_rtx 	\
@@ -1156,7 +1165,7 @@ __transfer_from_trampoline ()					\
       && (GET_CODE (PATTERN (temp)) == ADDR_VEC			\
 	  || GET_CODE (PATTERN (temp)) == ADDR_DIFF_VEC))	\
     goto ADDR;							\
-  if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X)) goto ADDR; }
+  if (LEGITIMATE_BASE_REG_P (X)) goto ADDR; }
 
 #define GO_IF_INDEXING(X, ADDR)	\
 { if (GET_CODE (X) == PLUS && LEGITIMATE_INDEX_P (XEXP (X, 0)))		\
@@ -1179,7 +1188,10 @@ __transfer_from_trampoline ()					\
    || (GET_CODE (X) == SIGN_EXTEND			\
        && GET_CODE (XEXP (X, 0)) == REG			\
        && GET_MODE (XEXP (X, 0)) == HImode		\
-       && REG_OK_FOR_INDEX_P (XEXP (X, 0))))
+       && REG_OK_FOR_INDEX_P (XEXP (X, 0)))		\
+   || (GET_CODE (X) == SUBREG				\
+       && GET_CODE (SUBREG_REG (X)) == REG		\
+       && REG_OK_FOR_INDEX_P (SUBREG_REG (X))))
 
 #define LEGITIMATE_INDEX_P(X)   \
    (LEGITIMATE_INDEX_REG_P (X)				\
