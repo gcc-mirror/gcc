@@ -1,3 +1,7 @@
+2002-09-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.c-torture/compile/20020910-1.c: New test.
+
 2002-09-10  Frank Ch. Eigler  <fche@redhat.com>
 
 	* gcc.c-torture/execute/20010915-1.c: Correct typo in abort call.
