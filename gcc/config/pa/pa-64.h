@@ -74,17 +74,12 @@ Boston, MA 02111-1307, USA.  */
    ?!? This may not work reliably.  Keep an eye out for problems.  */
 #undef SECONDARY_MEMORY_NEEDED_RTX
 
-
 /* ?!? This needs to be made compile-time selectable.
 
    The PA64 runtime model has arguments that grow to higher addresses
    (like most other targets).  The older runtime model has arguments
    that grow to lower addresses.  What fun.  */
 #undef ARGS_GROW_DOWNWARD
-#undef ARG_POINTER_REGNUM
-#define ARG_POINTER_REGNUM 29
-#undef STATIC_CHAIN_REGNUM
-#define STATIC_CHAIN_REGNUM 31
 
 /* If defined, a C expression which determines whether the default
    implementation of va_arg will attempt to pad down before reading the
