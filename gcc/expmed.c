@@ -2022,7 +2022,7 @@ extract_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
   else
     {
       unit = MIN (MEM_ALIGN (op0), BITS_PER_WORD);
-      if (bitsize / unit > 2)
+      if (0 && bitsize / unit > 2)
 	{
 	  rtx tmp = extract_force_align_mem_bit_field (op0, bitsize, bitpos,
 						       unsignedp);

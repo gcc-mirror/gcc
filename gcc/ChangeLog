@@ -1,3 +1,8 @@
+2004-11-13  Richard Henderson  <rth@redhat.com>
+
+	* expmed.c (extract_split_bit_field): Temporarily disable call to
+	extract_force_align_mem_bit_field.
+
 2004-11-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bitmap.c, bitmap.h, expmed.c, tree-cfg.c: Fix comment
