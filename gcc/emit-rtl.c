@@ -1862,8 +1862,7 @@ change_address (memref, mode, addr)
   MEM_ATTRS (new)
     = get_mem_attrs (MEM_ALIAS_SET (memref), 0, 0,
 		     mmode == BLKmode ? 0 : GEN_INT (GET_MODE_SIZE (mmode)),
-		     (mmode == BLKmode ? 1
-		      : GET_MODE_ALIGNMENT (mmode) / BITS_PER_UNIT),
+		     mmode == BLKmode ? 1 : GET_MODE_ALIGNMENT (mmode),
 		     mmode);
 
   return new;
