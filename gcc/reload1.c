@@ -3807,6 +3807,7 @@ reload_as_needed (first, live_known)
       else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  rtx avoid_return_reg = 0;
+	  rtx oldpat = PATTERN (insn);
 
 #ifdef SMALL_REGISTER_CLASSES
 	  /* Set avoid_return_reg if this is an insn
@@ -3936,7 +3937,7 @@ reload_as_needed (first, live_known)
 	     for this insn in order to be stored in
 	     (obeying register constraints).  That is correct; such reload
 	     registers ARE still valid.  */
-	  note_stores (PATTERN (insn), forget_old_reloads_1);
+	  note_stores (oldpat, forget_old_reloads_1);
 
 	  /* There may have been CLOBBER insns placed after INSN.  So scan
 	     between INSN and NEXT and use them to forget old reloads.  */
