@@ -2215,7 +2215,7 @@ max_size (tree exp, int max_p)
 	  if (code == SAVE_EXPR)
 	    return exp;
 	  else if (code == COND_EXPR)
-	    return fold (build (MAX_EXPR, type,
+	    return fold (build (max_p ? MAX_EXPR : MIN_EXPR, type,
 				max_size (TREE_OPERAND (exp, 1), max_p),
 				max_size (TREE_OPERAND (exp, 2), max_p)));
 	  else if (code == CALL_EXPR && TREE_OPERAND (exp, 1) != 0)
