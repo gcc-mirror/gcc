@@ -1,5 +1,8 @@
 2005-01-07  Jakub Jelinek  <jakub@redhat.com>
 
+	PR rtl-optimization/19012
+	* config/i386/i386.md (addqi_1_slp): Set memory attribute.
+
 	PR rtl-optimization/18861
 	* cfgbuild.c (BLOCK_USED_BY_TABLEJUMP): Define.
 	(FULL_STATE): Define.
