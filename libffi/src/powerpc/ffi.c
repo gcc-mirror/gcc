@@ -369,10 +369,27 @@ void hidden ffi_prep_args64(extended_cif *ecif, unsigned long *const stack)
 	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
 	  break;
 
-	case FFI_TYPE_STRUCT:
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	case FFI_TYPE_LONGDOUBLE:
+	  double_tmp = ((double *) *p_argv)[0];
+	  *(double *) next_arg = double_tmp;
+	  if (++next_arg == gpr_end)
+	    next_arg = rest;
+	  if (fparg_count < NUM_FPR_ARG_REGISTERS64)
+	    *fpr_base++ = double_tmp;
+	  fparg_count++;
+	  double_tmp = ((double *) *p_argv)[1];
+	  *(double *) next_arg = double_tmp;
+	  if (++next_arg == gpr_end)
+	    next_arg = rest;
+	  if (fparg_count < NUM_FPR_ARG_REGISTERS64)
+	    *fpr_base++ = double_tmp;
+	  fparg_count++;
+	  FFI_ASSERT(flags & FLAG_FP_ARGUMENTS);
+	  break;
 #endif
+
+	case FFI_TYPE_STRUCT:
 	  words = ((*ptr)->size + 7) / 8;
 	  if (next_arg >= gpr_base && next_arg + words > gpr_end)
 	    {
@@ -1079,7 +1096,7 @@ ffi_closure_helper_LINUX64 (ffi_closure *closure, void *rvalue,
 
 #if FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
 	case FFI_TYPE_LONGDOUBLE:
-	  if (prf + 1 < end_pfr)
+	  if (pfr + 1 < end_pfr)
 	    {
 	      avalue[i] = pfr;
 	      pfr += 2;
