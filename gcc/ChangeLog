@@ -1,5 +1,10 @@
 2002-04-20  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
 
+	* config/h8300/lib1funcs.asm (___mulsi3): Use hardware
+	multiply instructions for H8/300H case.
+
+2002-04-20  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+
 	* config/h8300/lib1funcs.asm (___cmpsi2, ___ucmpsi2):
 	Bum three instructions from each routine.
 
