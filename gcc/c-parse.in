@@ -2931,7 +2931,9 @@ methoddef:
 	  methoddecl
 		{
 		  objc_pq_context = 0;
-		  add_method (objc_implementation_context, $3, objc_inherit_code == CLASS_METHOD_DECL);
+		  objc_add_method (objc_implementation_context,
+				   $3,
+				   objc_inherit_code == CLASS_METHOD_DECL);
 		  start_method_def ($3);
 		}
 	  optarglist
@@ -2969,7 +2971,9 @@ methodproto:
 		{
 		  /* Forget protocol qualifiers here.  */
 		  objc_pq_context = 0;
-		  add_method (objc_interface_context, $3, objc_inherit_code == CLASS_METHOD_DECL);
+		  objc_add_method (objc_interface_context,
+				   $3,
+				   objc_inherit_code == CLASS_METHOD_DECL);
 		}
 	  semi_or_error
 	;

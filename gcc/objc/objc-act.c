@@ -947,10 +947,9 @@ objc_check_decl (tree decl)
 
   if (TREE_CODE (type) != RECORD_TYPE)
     return;
-  if (TYPE_NAME (type) && (type = is_class_name (TYPE_NAME (type)))
-      && type != constant_string_type)
+  if (TYPE_NAME (type) && (type = is_class_name (TYPE_NAME (type))))
     error ("statically allocated instance of Objective-C class `%s'",
-	     IDENTIFIER_POINTER (type));
+	   IDENTIFIER_POINTER (type));
 }
 
 /* Implement static typing.  At this point, we know we have an interface.  */
@@ -6300,7 +6299,7 @@ add_method_to_hash_list (hash *hash_list, tree method)
 }
 
 tree
-add_method (tree class, tree method, int is_class)
+objc_add_method (tree class, tree method, int is_class)
 {
   tree mth;
 
@@ -7815,8 +7814,8 @@ really_start_method (tree method, tree parmlist)
 			 CLASS_SUPER_NAME (objc_implementation_context));
 
 	  if (interface)
-	    add_method (interface, copy_node (method),
-			TREE_CODE (method) == CLASS_METHOD_DECL);
+	    objc_add_method (interface, copy_node (method),
+			     TREE_CODE (method) == CLASS_METHOD_DECL);
 	}
     }
 }
