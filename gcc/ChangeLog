@@ -1,3 +1,17 @@
+2003-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* sdbout.h: Use ISO C90 prototypes.
+
+	* sdbout.c (CONTIN): Removed empty macro.
+	(sdbout_one_type): Remove CONTIN usages.
+	Remove ^Ls.
+	(tag_of_ru_type): Remove #if 0'ed function.
+	(sdbout_symbol): Remove #if 0'ed code.
+	(sdbout_one_type): Remove a #if 1.
+	(sdbout_one_type): Remove #if 0'ed code.
+	(sdbout_init): Remove RMS_QUICK_HACK_1 code.
+	Remove PARAMS, use ISO C90 prototypes for all functions.
+
 2003-06-01  Josef Zlomek  <zlomekj@suse.cz>
 
 	* rtl.def (CONST_DOUBLE): Update comment.
