@@ -1,3 +1,8 @@
+2004-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/12709
+	* g++.dg/parse/try-catch-1.C: New test.
+
 2004-01-13  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* ada/acats/run_all.sh: Add more verbose output in acats.log

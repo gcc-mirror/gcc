@@ -1053,7 +1053,13 @@ finish_fname_decls (void)
       tree *p = &DECL_SAVED_TREE (current_function_decl);
       /* Skip the dummy EXPR_STMT and any EH_SPEC_BLOCK.  */
       while (TREE_CODE (*p) != COMPOUND_STMT)
-	p = &TREE_CHAIN (*p);
+       {
+         if (TREE_CODE (*p) == EXPR_STMT)
+           p = &TREE_CHAIN (*p);
+         else
+           p = &TREE_OPERAND(*p, 0);
+       }
+
       p = &COMPOUND_BODY (*p);
       if (TREE_CODE (*p) == SCOPE_STMT)
 	p = &TREE_CHAIN (*p);

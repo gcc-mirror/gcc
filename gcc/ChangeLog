@@ -1,3 +1,9 @@
+2004-01-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/12709
+	* c-common.c (finish_fname_decls): Use the chain only if the
+	tree is an expr_stmt.
+
 2004-01-13  Vladimir Makarov  <vmakarov@redhat.com>
 
         * rtl.def: Add comment about new option in automata_option.
