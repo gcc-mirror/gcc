@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-05-26
+@set last-update 1999-05-28
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -4243,7 +4243,7 @@ stream-based text file is translated to GNU Fortran lines as follows:
 A newline in the file is the character that represents the end of
 a line of text to the underlying system.
 For example, on ASCII-based systems, a newline is the @key{NL}
-character, which has ASCII value 12 (decimal).
+character, which has ASCII value 10 (decimal).
 
 @item
 Each newline in the file serves to end the line of text that precedes
