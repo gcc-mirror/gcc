@@ -2550,8 +2550,28 @@ assign_parm_setup_block (tree parm, struct assign_parm_data_one *data)
     {
       rtx parmreg = gen_reg_rtx (data->nominal_mode);
 
-      emit_group_store (parmreg, entry_parm, data->nominal_type,
-			int_size_in_bytes (data->nominal_type));
+      /* For values returned in multiple registers, handle possible
+	 incompatible calls to emit_group_store.
+
+	 For example, the following would be invalid, and would have to
+	 be fixed by the conditional below:
+
+	   emit_group_store ((reg:SF), (parallel:DF))
+	   emit_group_store ((reg:SI), (parallel:DI))
+
+	 An example of this are doubles in e500 v2:
+	   (parallel:DF (expr_list (reg:SI) (const_int 0))
+	                (expr_list (reg:SI) (const_int 4))).  */
+      if (data->nominal_mode != data->passed_mode)
+	{
+	  rtx t = gen_reg_rtx (GET_MODE (entry_parm));
+	  emit_group_store (t, entry_parm, NULL_TREE,
+			    GET_MODE_SIZE (GET_MODE (entry_parm)));
+	  convert_move (parmreg, t, 0);
+	}
+      else
+	emit_group_store (parmreg, entry_parm, data->nominal_type,
+			  int_size_in_bytes (data->nominal_type));
       SET_DECL_RTL (parm, parmreg);
       return;
     }

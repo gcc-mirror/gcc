@@ -1,3 +1,7 @@
+2004-10-28  Aldy Hernandez  <aldyh@redhat.com>
+
+	* function.c (assign_parm_setup_block): Handle parallels correctly.
+
 2004-10-28  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* final.c (shorten_branches): Initialize flags structure.
