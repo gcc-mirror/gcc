@@ -399,7 +399,7 @@ static char *switches_need_spaces = SWITCHES_NEED_SPACES;
   || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
   || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
-  || !strcmp (STR, "iwithprefix"))
+  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore"))
 
 #ifndef WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
@@ -649,6 +649,8 @@ struct option_map option_map[] =
    {"--include-prefix", "-iprefix", "a"},
    {"--include-directory-after", "-idirafter", "a"},
    {"--include-with-prefix", "-iwithprefix", "a"},
+   {"--include-with-prefix-before", "-iwithprefixbefore", "a"},
+   {"--include-with-prefix-after", "-iwithprefix", "a"},
    {"--machine-", "-m", "*j"},
    {"--machine", "-m", "aj"},
    {"--no-standard-includes", "-nostdinc", 0},
