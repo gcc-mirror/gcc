@@ -1,3 +1,7 @@
+Sat Jan 30 11:10:06 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/990130-1.c: New test.
+
 Sun Jan 17 00:02:33 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990117-1.c: New test.
