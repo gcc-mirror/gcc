@@ -1,3 +1,11 @@
+2005-03-04  Andrew Haley  <aph@redhat.com>
+
+	* unwind-dw2-fde-glibc.c (struct
+	unw_eh_callback_data.check_cache): 
+	(frame_hdr_cache): New.
+	(_Unwind_IteratePhdrCallback): Add ext_dl_phdr_info.
+	Cache frame header info.
+	
 2005-03-04  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	2005-03-02  Daniel Jacobowitz  <dan@codesourcery.com>
