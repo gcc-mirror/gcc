@@ -1689,6 +1689,8 @@ finish_template_template_parm (aggr, identifier)
   DECL_ARTIFICIAL (decl) = 1;
   end_template_decl ();
 
+  my_friendly_assert (DECL_TEMPLATE_PARMS (tmpl), 20010110);
+
   return finish_template_type_parm (aggr, tmpl);
 }
 
