@@ -473,10 +473,11 @@ format_item:
 
     case FMT_X:
       /* X requires a prior number if we're being pedantic.  */
-      if (!pedantic)
-	goto between_desc;
-      error = "X descriptor requires leading space count";
-      goto syntax;
+      if (gfc_notify_std (GFC_STD_GNU, "Extension: X descriptor "
+			  "requires leading space count at %C")
+	  == FAILURE)
+	return FAILURE;
+      goto between_desc;
 
     case FMT_SIGN:
     case FMT_BLANK:
