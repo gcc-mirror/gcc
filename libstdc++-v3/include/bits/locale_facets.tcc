@@ -825,8 +825,6 @@ namespace std
 
       if (!(__err & ios_base::failbit))
 	__v = reinterpret_cast<void*>(__ul);
-      else
-	__err |= ios_base::failbit;
       return __beg;
     }
 
@@ -1481,16 +1479,15 @@ namespace std
 	      __testvalid = false;
 	  }
 	
-	// Iff no more characters are available.
-	if (__beg == __end)
-	  __err |= ios_base::eofbit;
-	
 	// Iff valid sequence is not recognized.
 	if (!__testvalid)
 	  __err |= ios_base::failbit;
 	else
 	  __units.swap(__res);
 	
+	// Iff no more characters are available.
+	if (__beg == __end)
+	  __err |= ios_base::eofbit;
 	return __beg;
       }
 
