@@ -683,11 +683,27 @@ finclude (pfile, fd, ihash)
 
   fp = CPP_BUFFER (pfile);
 
+  /* If fd points to a plain file, we know how big it is, so we can
+     allocate the buffer all at once.  If fd is a pipe or terminal, we
+     can't.  Most C source files are 4k or less, so we guess that.  If
+     fd is something weird, like a block device or a directory, we
+     don't want to read it at all.
+
+     Unfortunately, different systems use different st.st_mode values
+     for pipes: some have S_ISFIFO, some S_ISSOCK, some are buggy and
+     zero the entire struct stat except a couple fields.  Hence the
+     mess below.
+
+     In all cases, read_and_prescan will resize the buffer if it
+     turns out there's more data than we thought.  */
+
   if (S_ISREG (st.st_mode))
     {
       /* off_t might have a wider range than size_t - in other words,
 	 the max size of a file might be bigger than the address
-	 space, and we need to detect that now. */
+	 space.  We can't handle a file that large.  (Anyone with
+         a single source file bigger than 4GB needs to rethink
+	 their coding style.)  */
       st_size = (size_t) st.st_size;
       if ((unsigned HOST_WIDE_INT) st_size
 	  != (unsigned HOST_WIDE_INT) st.st_size)
@@ -696,7 +712,11 @@ finclude (pfile, fd, ihash)
 	  goto fail;
 	}
     }
-  else if (S_ISFIFO (st.st_mode) || (S_ISCHR (st.st_mode) && isatty (fd)))
+  else if (S_ISFIFO (st.st_mode) || S_ISSOCK (st.st_mode)
+	   /* Some 4.x (x<4) derivatives have a bug that makes fstat() of a
+	      socket or pipe return a stat struct with most fields zeroed.  */
+	   || (st.st_mode == 0 && st.st_nlink == 0 && st.st_size == 0)
+	   || (S_ISCHR (st.st_mode) && isatty (fd)))
     {
       /* Cannot get its file size before reading.  4k is a decent
          first guess. */
@@ -742,6 +762,11 @@ finclude (pfile, fd, ihash)
   close (fd);
   return 0;
 }
+
+/* Given a path FNAME, extract the directory component and place it
+   onto the actual_dirs list.  Return a pointer to the allocated
+   file_name_list structure.  These structures are used to implement
+   current-directory "" include searching. */
 
 static struct file_name_list *
 actual_directory (pfile, fname)

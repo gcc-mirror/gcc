@@ -1,3 +1,13 @@
+1999-02-09 16:42 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cppfiles.c (finclude):  Handle pipes properly under old BSD
+          derivatives.
+
+1999-02-09 16:42 -0500  Melissa O'Neill <oneill@cs.sfu.ca>
+
+	* system.h: Provide fallback definitions for S_ISCHR,
+          S_ISSOCK, S_ISFIFO, O_NONBLOCK, and O_NOCTTY.
+
 1999-02-09 10:30 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpplib.c (do_define): Allow redefining __STDC__ with -D.
