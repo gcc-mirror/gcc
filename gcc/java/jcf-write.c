@@ -1555,7 +1555,6 @@ generate_bytecode_insns (exp, target, state)
 	for (;  body_block != sw_state.default_label;  body_block = body_block->next)
 	  body_block->pc += switch_length;
 
-	free (sw_state.cases);
 	state->sw_state = sw_state.prev;
 	break;
       }
@@ -1665,7 +1664,7 @@ generate_bytecode_insns (exp, target, state)
 	  generate_bytecode_insns (TREE_OPERAND (exp, 0), STACK_TARGET, state);
 	  emit_dup (1, 0, state);
 	  /* Stack:  ..., objectref, objectref. */
-	  field_op (TREE_OPERAND (exp, 1), OPCODE_getstatic, state);
+	  field_op (TREE_OPERAND (exp, 1), OPCODE_getfield, state);
 	  NOTE_PUSH (size);
 	  /* Stack:  ..., objectref, oldvalue. */
 	  offset = 1;
