@@ -89,7 +89,7 @@ LIBDATASTARTSPEC=
 NEEDS_DATA_START=
 AC_TRY_LINK([extern int data_start;], [return ((int) &data_start);],
   [AC_MSG_RESULT(found it)],
-  [LIBDATASTARTSPEC="-lgcjdata"
+  [LIBDATASTARTSPEC="-u data_start -lgcjdata"
    NEEDS_DATA_START=yes	
    AC_MSG_RESULT(missing)])
 AC_SUBST(LIBDATASTARTSPEC)
