@@ -53,8 +53,6 @@ extern void order_regs_for_local_alloc (void);
 extern HOST_WIDE_INT compute_frame_size (HOST_WIDE_INT, int);
 extern int check_pic (int);
 extern int short_branch (int, int);
-extern int sparc_flat_epilogue_delay_slots (void);
-extern HOST_WIDE_INT sparc_flat_compute_frame_size (HOST_WIDE_INT);
 extern void sparc_profile_hook (int);
 extern void sparc_override_options (void);
 extern int leaf_return_peephole_ok (void);
@@ -111,7 +109,6 @@ extern int pic_address_needs_scratch (rtx);
 extern int reg_unused_after (rtx, rtx);
 extern int register_ok_for_ldd (rtx);
 extern int registers_ok_for_ldd_peep (rtx, rtx);
-extern int sparc_flat_eligible_for_epilogue_delay (rtx, int);
 extern int v9_regcmp_p (enum rtx_code);
 extern char *sparc_v8plus_shift (rtx *, rtx, const char *);
 /* Function used for V8+ code generation.  Returns 1 if the high

@@ -1,3 +1,7 @@
+2004-02-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/20020503-1.c: Remove -mflat dg-options.
+
 2004-02-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/11658

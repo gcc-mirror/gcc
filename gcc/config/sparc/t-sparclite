@@ -15,7 +15,7 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define US_SOFTWARE_GOFAST' >> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-MULTILIB_OPTIONS = mfpu mflat
+MULTILIB_OPTIONS = mfpu
 MULTILIB_DIRNAMES =
 MULTILIB_MATCHES = mfpu=mhard-float mfpu=mcpu?f934
 

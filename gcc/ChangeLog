@@ -1,3 +1,51 @@
+2004-02-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/invoke.texi (SPARC options): Remove -mflat and
+	all -mxxx (xxx:chip) options.
+	* config/sparc/aout.h (DBX_REGISTER_NUMBER): Delete.
+	* config/sparc/litecoff.h (DBX_REGISTER_NUMBER): Likewise.
+	* config/sparc/netbsd-elf.h (DBX_REGISTER_NUMBER): Likewise.
+	* config/sparc/sol2.h (DBX_REGISTER_NUMBER): Likewise.
+	* config/sparc/sparc-protos.h: Delete sparc_flat_* prototypes.
+	* config/sparc/sparc.c: Likewise.
+	(sparc_output_function_prologue): Remove TARGET_FLAT handling.
+	(sparc_nonflat_function_prologue): Rename into sparc_function_prologue.
+	(sparc_output_function_epilogue): Remove TARGET_FLAT handling.
+	(sparc_nonflat_function_epilogue): Rename into sparc_function_epilogue.
+	(struct sparc_frame_info, current_frame_info, zero_frame_info): Delete.
+	(sparc_flat_must_save_register_p): Likewise.
+	(sparc_flat_compute_frame_size): Likewise.
+	(sparc_flat_save_restore): Likewise.
+	(sparc_flat_function_prologue): Likewise.
+	(sparc_flat_function_epilogue): Likewise.
+	(sparc_flat_epilogue_delay_slots): Likewise.
+	(sparc_flat_eligible_for_epilogue_delay): Likewise.
+	(sparc_function_ok_for_sibcall): Remove TARGET_FLAT handling.
+	* config/sparc/sparc.h (MASK_FLAT, TARGET_FLAT): Delete.
+	(TARGET_SWITCHES): Remove -mflat and all -mxxx (xxx:chip) options.
+	(SPARC_INCOMING_INT_ARG_FIRST): Remove TARGET_FLAT handling.
+	(CONDITIONAL_REGISTER_USAGE): Likewise.
+	(FRAME_POINTER_REQUIRED): Likewise.
+	(INITIAL_ELIMINATION_OFFSET): Likewise.
+	(BASE_RETURN_VALUE_REG): Likewise.
+	(BASE_OUTGOING_VALUE_REG): Likewise.
+	(BASE_PASSING_ARG_REG): Likewise.
+	(BASE_INCOMING_ARG_REG): Likewise.
+	(INCOMING_REGNO): Likewise.
+	(OUTGOING_REGNO): Likewise.
+	(LOCAL_REGNO): Likewise.
+	(DELAY_SLOTS_FOR_EPILOGUE): Likewise.
+	(ELIGIBLE_FOR_EPILOGUE_DELAY): Likewise.
+	(EPILOGUE_USES): Likewise.
+	* config/sparc/sparc.md ("isa" attribute): Change "v6" into "v7".
+	("flat" attribute): Delete.
+	(do_builtin_setjmp_setup): Remove TARGET_FLAT and "flat" attribute
+	handling.
+	(call followed by jump define_peephole's): Delete.
+	(exception_receiver): Likewise.
+	(builtin_setjmp_receiver): Likewise.
+	* config/sparc/t-sparclite (MULTILIB_OPTIONS): Remove -mflat.
+
 2004-02-03  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR c/11658
