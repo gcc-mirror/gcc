@@ -1,3 +1,8 @@
+2002-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.y (check_class_key): Allow KEY to be union/enum/struct/class
+	node with attributes.
+
 2002-2-23  David O'Brien  <obrien@FreeBSD.org>
 
 	* g++spec.c (MATH_LIBRARY_PROFILE, LIBSTDCXX_PROFILE): Add.
