@@ -1,3 +1,9 @@
+2001-05-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* lists.c (init_EXPR_INSN_LIST_cache): Only called once.
+	* toplev.c (rest_of_compilation): Don't call it here.
+	(compile_file): Call it here.
+
 2001-05-27  Lars Brinkhoff  <lars@nocrew.org>
 
 	* combine.c (try_combine): Fix typo in comment.

@@ -118,15 +118,12 @@ zap_lists (dummy)
   unused_insn_list = NULL;
 }
 
+/* Register a ggc root which clears the unused lists at GC time. */
+
 void 
 init_EXPR_INSN_LIST_cache ()
 {
-  static int initialized;
-  if (!initialized)
-    {
-      initialized = 1;
-      ggc_add_root (&unused_expr_list, 1, 1, zap_lists);
-    }
+  ggc_add_root (&unused_expr_list, 1, 1, zap_lists);
 }
 
 /* This function will free up an entire list of EXPR_LIST nodes.  */
