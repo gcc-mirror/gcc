@@ -1,10 +1,16 @@
+2001-08-03  Daniel Berlin  <dan@cgsoftware.com>
+        
+	* ChangeLog: Fix date on previous ChangeLog entry for GCSE.
+	
+	* Makefile.in: Add df.h to gcse.c dependencies.
+
 2001-08-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* varasm.c (output_constant_def_contents): Use for the length of a
 	string constant either its TREE_STRING_LENGTH or its int_size_in_bytes
 	depending on which is larger.
 
-2001-07-16  Daniel Berlin  <dan@cgsoftware.com>
+2001-08-03  Daniel Berlin  <dan@cgsoftware.com>
 
         * gcse.c: Include df.h for use as a dataflow analyzer.
         Remove regvec.
