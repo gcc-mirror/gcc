@@ -1,3 +1,9 @@
+2003-01-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9342
+	* call.c (build_conditional_expr): Always do lvalue-rvalue
+	conversion.
+
 2003-01-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9294
