@@ -1,3 +1,13 @@
+2004-09-01  Mike Stump  <mrs@apple.com>
+
+	* config/darwin.c (machopic_symbol_defined_p): In addition to
+	being SYMBOL_REF_LOCAL_P, a symbol must also be
+	! SYMBOL_REF_EXTERNAL_P, as only those are _always_ locally
+	defined in this output file, or translation unit in the case
+	of IMA not being used.
+	(machopic_output_indirection): SYMBOL_REF_LOCAL_P symbols
+	never need .indirect_symbol when indirecting.
+
 2004-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.in (bb-reorder.o): Add several dependencies.
