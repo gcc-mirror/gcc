@@ -1,8 +1,9 @@
-2004-09-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* configure: Regenerated.
 
 2004-09-04  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gimplify.c (internal_get_tmp_var): Remove unused var CLASS.
 
 	* tree.c (save_expr): No longer TREE_READONLY.
 
