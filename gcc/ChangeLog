@@ -1,3 +1,14 @@
+Wed Sep 30 19:13:20 1998 Zack Weinberg  <zack@rabi.phys.columbia.edu>  
+
+	* toplev.c (documented_lang_options): Recognize -include,
+	-imacros, -iwithprefix, -iwithprefixbefore.
+	* cpplib.c (cpp_start_read): Process -imacros and -include
+	switches at the same time and in command-line order, after
+	initializing the dependency-output code.  Emit properly nested
+	#line directives for them.  Emit a #line for the main file
+	before processing these switches, and don't do it again
+	afterward.
+
 Wed Sep 30 18:03:22 1998  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (purge_addressof_1): Use bitfield manipulation
