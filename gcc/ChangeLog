@@ -1,5 +1,10 @@
 2001-08-17  Richard Henderson  <rth@redhat.com>
 
+	* dwarf2out.c (dwarf2out_init): Don't emit .debug_loc label here.
+	(dwarf2out_finish): Do it here.  Emit .debug_loc before .debug_info.
+
+2001-08-17  Richard Henderson  <rth@redhat.com>
+
 	* varasm.c (assemble_variable): Don't overalign if DECL_USER_ALIGN.
 	* crtstuff.c (__CTOR_LIST__, __DTOR_LIST__, __EH_FRAME_BEGIN__,
 	__JCR_LIST__, __CTOR_END__, __DTOR_END__, __FRAME_END__,__JCR_END__):

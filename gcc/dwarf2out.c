@@ -11693,9 +11693,6 @@ dwarf2out_init (main_input_filename)
 			       DEBUG_INFO_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,
 			       DEBUG_LINE_SECTION_LABEL, 0);
-  ASM_GENERATE_INTERNAL_LABEL (loc_section_label, DEBUG_LOC_SECTION_LABEL, 0);
-  named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG);
-  ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
   named_section_flags (DEBUG_ABBREV_SECTION, SECTION_DEBUG);
   ASM_OUTPUT_LABEL (asm_out_file, abbrev_section_label);
   named_section_flags (DEBUG_INFO_SECTION, SECTION_DEBUG);
@@ -11785,6 +11782,18 @@ dwarf2out_finish (input_filename)
       output_line_info ();
     }
 
+  /* Output location list section if necessary.  */
+  if (have_location_lists)
+    {
+      /* Output the location lists info.  */
+      named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG);
+      ASM_GENERATE_INTERNAL_LABEL (loc_section_label,
+				   DEBUG_LOC_SECTION_LABEL, 0);
+      ASM_OUTPUT_LABEL (asm_out_file, loc_section_label);
+      output_location_lists (die);
+      have_location_lists = 0;
+    }
+
   /* We can only use the low/high_pc attributes if all of the code was
      in .text.  */
   if (separate_line_info_table_in_use == 0)
@@ -11829,15 +11838,6 @@ dwarf2out_finish (input_filename)
       /* Output the address range information.  */
       named_section_flags (DEBUG_ARANGES_SECTION, SECTION_DEBUG);
       output_aranges ();
-    }
-
-  /* Output location list section if necessary.  */
-  if (have_location_lists)
-    {
-      /* Output the location lists info.  */
-      named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG);
-      output_location_lists (die);
-      have_location_lists = 0;
     }
 
   /* Output ranges section if necessary.  */
