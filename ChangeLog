@@ -1,9 +1,23 @@
+1998-06-26  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (BASE_FLAGS_TO_PASS): Add gcc_version_trigger.
+	(Makefile): Depend on $(gcc_version_trigger).
+
+	* configure (gcc_version): Change default initializer to empty
+	string.
+	(gcc_version_trigger): New variable; pass this variable down
+	to subdir configures to enable them checking gcc's version
+	themselves. Emit make macros for both gcc_version vars.
+	(topsrcdir): Initialize reliably.
+	(recursion line): Remove --with-gcc-version=${gcc_version}.
+
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure (enable_version_specific_runtime_libs): Implement new flag
-	--enable-version-specific-runtime-libs which installs C++ runtime stuff in
-	$(libsubdir); emit definition in each generated Makefile.
-	(gxx_include_dir): Initialize depending on $enable_version_specific_runtime_libs.
+	--enable-version-specific-runtime-libs which installs C++ runtime stuff
+	in $(libsubdir); emit definition in each generated Makefile.
+	(gxx_include_dir): Initialize depending on
+	$enable_version_specific_runtime_libs.
 
 1998-06-24  Manfred Hollstein  <manfred@s-direktnet.de>
 
