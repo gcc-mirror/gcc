@@ -10568,11 +10568,7 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
       if (TYPE_P (fn))
 	fn = TYPE_STUB_DECL (fn);
       
-      /* TYPE_STUB_DECL may have given us a NULL, which decl_function_context
-	 won't like.  */
-      if (fn)	
-	fn = decl_function_context (fn);
-
+      fn = decl_function_context (fn);
       if (fn)
 	dwarf2out_abstract_function (fn);
     }

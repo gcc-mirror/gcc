@@ -172,6 +172,11 @@ remap_decl (tree decl, inline_data *id)
       /* Make a copy of the variable or label.  */
       tree t = copy_decl_for_inlining (decl, fn, VARRAY_TREE (id->fns, 0));
 
+      /* Remember it, so that if we encounter this local entity again
+	 we can reuse this copy.  Do this early because remap_type may
+	 need this decl for TYPE_STUB_DECL.  */
+      insert_decl_map (id, decl, t);
+
       /* Remap types, if necessary.  */
       TREE_TYPE (t) = remap_type (TREE_TYPE (t), id);
       if (TREE_CODE (t) == TYPE_DECL)
@@ -214,9 +219,6 @@ remap_decl (tree decl, inline_data *id)
 	}
 #endif
 
-      /* Remember it, so that if we encounter this local entity
-	 again we can reuse this copy.  */
-      insert_decl_map (id, decl, t);
       return t;
     }
 
@@ -284,6 +286,9 @@ remap_type (tree type, inline_data *id)
       TYPE_MAIN_VARIANT (new) = new;
       TYPE_NEXT_VARIANT (new) = NULL;
     }
+
+  if (TYPE_STUB_DECL (type))
+    TYPE_STUB_DECL (new) = remap_decl (TYPE_STUB_DECL (type), id);
 
   /* Lazily create pointer and reference types.  */
   TYPE_POINTER_TO (new) = NULL;
