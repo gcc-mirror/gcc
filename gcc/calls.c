@@ -702,12 +702,16 @@ expand_call (exp, target, ignore)
       /* If inlining succeeded, return.  */
       if ((HOST_WIDE_INT) temp != -1)
 	{
-	  /* Perform all cleanups needed for the arguments of this call
-	     (i.e. destructors in C++).  It is ok if these destructors
-	     clobber RETURN_VALUE_REG, because the only time we care about
-	     this is when TARGET is that register.  But in C++, we take
-	     care to never return that register directly.  */
-	  expand_cleanups_to (old_cleanups);
+	  if (flag_short_temps)
+	    {
+	      /* Perform all cleanups needed for the arguments of this
+		 call (i.e. destructors in C++).  It is ok if these
+		 destructors clobber RETURN_VALUE_REG, because the
+		 only time we care about this is when TARGET is that
+		 register.  But in C++, we take care to never return
+		 that register directly.  */
+	      expand_cleanups_to (old_cleanups);
+	    }
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* If the outgoing argument list must be preserved, push
