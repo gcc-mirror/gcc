@@ -33,6 +33,7 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "hard-reg-set.h"
 #include "output.h"
+#include "insn-attr.h"
 
 #define MSW (TARGET_LITTLE_ENDIAN ? 1 : 0)
 #define LSW (TARGET_LITTLE_ENDIAN ? 0 : 1)
@@ -45,6 +46,13 @@ int pragma_interrupt;
 /* This is set by #pragma trapa, and is similar to the above, except that
    the compiler doesn't emit code to preserve all registers.  */
 static int pragma_trapa;
+
+/* This is set by #pragma nosave_low_regs.  This is useful on the SH3,
+   which has a separate set of low regs for User and Supervisor modes.
+   This should only be used for the lowest level of interrupts.  Higher levels
+   of interrupts must save the registers in case they themselves are
+   interrupted.  */
+int pragma_nosave_low_regs;
 
 /* This is used for communication between SETUP_INCOMING_VARARGS and
    sh_expand_prologue.  */
@@ -1509,11 +1517,14 @@ calc_live_regs (count_ptr)
     {
       if (pragma_interrupt && ! pragma_trapa)
 	{
-	  /* Need to save all the regs ever live.  */
+	  /* Normally, we must save all the regs ever live.
+	     If pragma_nosave_low_regs, then don't save any of the
+	     registers which are banked on the SH3.  */
 	  if ((regs_ever_live[reg]
 	       || (call_used_regs[reg] && regs_ever_live[PR_REG]))
 	      && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
-	      && reg != T_REG && reg != GBR_REG)
+	      && reg != T_REG && reg != GBR_REG
+	      && ! (sh_cpu == CPU_SH3 && pragma_nosave_low_regs && reg < 8))
 	    {
 	      live_regs_mask |= 1 << reg;
 	      count++;
@@ -1613,7 +1624,7 @@ function_epilogue (stream, size)
      FILE *stream;
      int size;
 {
-  pragma_interrupt = pragma_trapa = 0;
+  pragma_interrupt = pragma_trapa = pragma_nosave_low_regs = 0;
 }
 
 /* Define the offset between two registers, one to be eliminated, and
@@ -1673,6 +1684,11 @@ handle_pragma (file)
       if (psize == 5 && strncmp (pbuf, "trapa", 5) == 0)
 	{
 	  pragma_interrupt = pragma_trapa = 1;
+	  return ' ';
+	}
+      if (psize == 15 && strncmp (pbuf, "nosave_low_regs", 15) == 0)
+	{
+	  pragma_nosave_low_regs = 1;
 	  return ' ';
 	}
       c = getc (file);
