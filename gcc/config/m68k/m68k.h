@@ -150,7 +150,7 @@ extern int target_flags;
     { "sky", -(MASK_FPA|MASK_68040_ONLY|MASK_68881)},			\
     { "sky", MASK_SKY},							\
     { "nosky", - MASK_SKY},						\
-    { "68881" - (MASK_FPA|MASK_SKY)},					\
+    { "68881", - (MASK_FPA|MASK_SKY)},					\
     { "68881", MASK_68881},						\
     { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881)},	\
     { "68020-40", -(MASK_5200|MASK_68060)},				\
