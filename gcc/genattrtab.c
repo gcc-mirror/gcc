@@ -4400,7 +4400,7 @@ write_test_expr (exp, in_comparison)
       if (attr->is_const)
 	{
 	  write_test_expr (evaluate_eq_attr (exp, attr->default_val->value,
-					     0, 0),
+					     -2, -2),
 			   in_comparison);
 	}
       else
