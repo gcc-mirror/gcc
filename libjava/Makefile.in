@@ -1689,6 +1689,7 @@ java/nio/channels/DatagramChannel.java \
 java/nio/channels/IllegalBlockingModeException.java \
 java/nio/channels/ServerSocketChannel.java \
 java/nio/channels/SocketChannel.java \
+java/nio/channels/spi/AbstractSelectableChannel.java \
 java/security/AccessControlContext.java \
 java/security/AccessControlException.java \
 java/security/AccessController.java \
@@ -2906,6 +2907,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/nio/channels/IllegalBlockingModeException.P \
 .deps/java/nio/channels/ServerSocketChannel.P \
 .deps/java/nio/channels/SocketChannel.P \
+.deps/java/nio/channels/spi/AbstractSelectableChannel.P \
 .deps/java/rmi/AccessException.P .deps/java/rmi/AlreadyBoundException.P \
 .deps/java/rmi/ConnectException.P .deps/java/rmi/ConnectIOException.P \
 .deps/java/rmi/MarshalException.P .deps/java/rmi/MarshalledObject.P \

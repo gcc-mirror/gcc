@@ -1,5 +1,18 @@
 2002-09-25  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/channels/spi/AbstractSelectableChannel.java: New file.
+	* java/nio/channels/DatagramChannel.java:
+	extends AbstractSelectableChannel
+	* java/nio/channels/ServerSocketChannel.java:
+	extends AbstractSelectableChannel
+	* java/nio/channels/SocketChannel.java:
+	extends AbstractSelectableChannel
+	* Makefile.am (ordinary_java_source_files):
+	java/nio/channels/spi/AbstractSelectableChannel.java added.
+	* Makefile.in: Regenerated.
+
+2002-09-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramSocket.java
 	(DatagramSocket): Exception documentation added.
 	(bind): Exception documentation added, addded SecurityManager check,
