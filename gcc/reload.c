@@ -4018,7 +4018,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      a single operand.
      We can reduce the register pressure by exploiting that a
      RELOAD_FOR_X_ADDR_ADDR that precedes all RELOAD_FOR_X_ADDRESS reloads
-     does not conflict with any of them.  */
+     does not conflict with any of them, if it is only used for the first of
+     the RELOAD_FOR_X_ADDRESS reloads.  */
   {
     int first_op_addr_num = -2;
     int first_inpaddr_num[MAX_RECOG_OPERANDS];
@@ -4037,21 +4038,21 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	switch (reload_when_needed[i])
 	  {
 	  case RELOAD_FOR_OPERAND_ADDRESS:
-	    if (! ++first_op_addr_num)
+	    if (++first_op_addr_num >= 0)
 	      {
-		first_op_addr_num= i;
+		first_op_addr_num = i;
 		need_change = 1;
 	      }
 	    break;
 	  case RELOAD_FOR_INPUT_ADDRESS:
-	    if (! ++first_inpaddr_num[reload_opnum[i]])
+	    if (++first_inpaddr_num[reload_opnum[i]] >= 0)
 	      {
 		first_inpaddr_num[reload_opnum[i]] = i;
 		need_change = 1;
 	      }
 	    break;
 	  case RELOAD_FOR_OUTPUT_ADDRESS:
-	    if (! ++first_outpaddr_num[reload_opnum[i]])
+	    if (++first_outpaddr_num[reload_opnum[i]] >= 0)
 	      {
 		first_outpaddr_num[reload_opnum[i]] = i;
 		need_change = 1;
@@ -4085,8 +4086,24 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      default:
 		continue;
 	      }
-	    if (i > first_num)
+	    if (first_num < 0)
+	      continue;
+	    else if (i > first_num)
 	      reload_when_needed[i] = type;
+	    else
+	      {
+		/* Check if the only TYPE reload that uses reload I is
+		   reload FIRST_NUM.  */
+		for (j = n_reloads - 1; j > first_num; j--)
+		  {
+		    if (reload_when_needed[j] == type
+			&& reg_mentioned_p (reload_in[i], reload_in[j]))
+		      {
+			reload_when_needed[i] = type;
+			break;
+		      }
+		  }
+	      }
 	  }
       }
   }
