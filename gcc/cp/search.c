@@ -231,6 +231,28 @@ lookup_base_r (tree binfo, tree base, base_access access,
   return found;
 }
 
+/* Returns true if type BASE is accessible in T.  (BASE is known to be
+   a base class of T.)  */
+
+bool
+accessible_base_p (tree t, tree base)
+{
+  tree decl;
+
+  /* [class.access.base]
+
+     A base class is said to be accessible if an invented public
+     member of the base class is accessible.  */
+  /* Rather than inventing a public member, we use the implicit
+     public typedef created in the scope of every class.  */
+  decl = TYPE_FIELDS (base);
+  while (!DECL_SELF_REFERENCE_P (decl))
+    decl = TREE_CHAIN (decl);
+  while (ANON_AGGR_TYPE_P (t))
+    t = TYPE_CONTEXT (t);
+  return accessible_p (t, decl);
+}
+
 /* Lookup BASE in the hierarchy dominated by T.  Do access checking as
    ACCESS specifies.  Return the binfo we discover.  If KIND_PTR is
    non-NULL, fill with information about what kind of base we
@@ -287,39 +309,24 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	break;
 
       default:
-	if (access != ba_ignore
+	if ((access & ~ba_quiet) != ba_ignore
 	    /* If BASE is incomplete, then BASE and TYPE are probably
 	       the same, in which case BASE is accessible.  If they
 	       are not the same, then TYPE is invalid.  In that case,
 	       there's no need to issue another error here, and
 	       there's no implicit typedef to use in the code that
 	       follows, so we skip the check.  */
-	    && COMPLETE_TYPE_P (base))
+	    && COMPLETE_TYPE_P (base)
+	    && !accessible_base_p (t, base))
 	  {
-	    tree decl;
-
-	    /* [class.access.base]
-
-	       A base class is said to be accessible if an invented public
-	       member of the base class is accessible.  */
-	    /* Rather than inventing a public member, we use the implicit
-	       public typedef created in the scope of every class.  */
-	    decl = TYPE_FIELDS (base);
-	    while (!DECL_SELF_REFERENCE_P (decl))
-	      decl = TREE_CHAIN (decl);
-	    while (ANON_AGGR_TYPE_P (t))
-	      t = TYPE_CONTEXT (t);
-	    if (!accessible_p (t, decl))
+	    if (!(access & ba_quiet))
 	      {
-		if (!(access & ba_quiet))
-		  {
-		    error ("`%T' is an inaccessible base of `%T'", base, t);
-		    binfo = error_mark_node;
-		  }
-		else
-		  binfo = NULL_TREE;
-		bk = bk_inaccessible;
+		error ("`%T' is an inaccessible base of `%T'", base, t);
+		binfo = error_mark_node;
 	      }
+	    else
+	      binfo = NULL_TREE;
+	    bk = bk_inaccessible;
 	  }
 	break;
       }
