@@ -4463,7 +4463,8 @@ digest_init (type, init, require_constant, constructor_constant)
 	   || typ1 == signed_wchar_type_node)
 	  && ((inside_init && TREE_CODE (inside_init) == STRING_CST)))
 	{
-	  if (TREE_TYPE (inside_init) == type)
+	  if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (inside_init)),
+			 TYPE_MAIN_VARIANT (type)))
 	    return inside_init;
 
 	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (inside_init)))
