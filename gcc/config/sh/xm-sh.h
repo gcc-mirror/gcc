@@ -31,6 +31,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define alloca __builtin_alloca
 #endif
 
+/* We have the vprintf function.  */
+#define HAVE_VPRINTF 1
+
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.  */
 #include "tm.h"
