@@ -3359,7 +3359,7 @@
        || register_operand (operands[1], DFmode)
        || fp_zero_operand (operands[1], DFmode))"
   "@
-  fzero\\t%1, %0
+  fzero\\t%0
   fmovd\\t%1, %0
   ldd\\t%1, %0
   stx\\t%r1, %0

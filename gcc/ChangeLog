@@ -1,3 +1,8 @@
+2000-05-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md (movdf_insn_v9only_vis): fzero has
+	just one argument.
+
 Mon May 22 06:57:49 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (record_component_aliases): New function.
