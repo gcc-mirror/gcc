@@ -1,3 +1,7 @@
+Thu Apr  9 01:43:04 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* calls.c (expand_call): Fix typo.
+
 Thu Apr  9 00:18:44 1998  Dave Brolley  (brolley@cygnus.com)
 
 	* c-lex.c (finput): New global.
