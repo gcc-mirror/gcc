@@ -1,5 +1,9 @@
 1999-05-02  Craig Burley  <craig@jcb-sc.com>
 
+	* g77.f-torture/compile/19990502-1.f: New test.
+
+1999-05-02  Craig Burley  <craig@jcb-sc.com>
+
 	* g77.f-torture/compile/19990502-0.f: New test.
 
 Sun May  2 01:38:50 1999  Craig Burley  <craig@jcb-sc.com>
