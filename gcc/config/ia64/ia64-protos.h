@@ -118,3 +118,6 @@ extern void ia64_init_builtins PARAMS((void));
 extern void ia64_override_options PARAMS((void));
 extern unsigned int ia64_compute_frame_size PARAMS((int));
 extern void save_restore_insns PARAMS((int));
+
+/* ??? Flag defined in toplev.c, for ia64.md -fssa hack.  */
+extern int flag_ssa;
