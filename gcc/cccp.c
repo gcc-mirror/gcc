@@ -1900,6 +1900,12 @@ main (argc, argv)
 	       && p[len - 2] == 'x'
 	       && p[len - 1] == 'x')
 	q = p + (len - 4);
+      else if (len >= 4
+	       && p[len - 4] == '.'
+	       && p[len - 3] == 'c'
+	       && p[len - 2] == 'p'
+	       && p[len - 1] == 'p')
+	q = p + (len - 4);
 
       /* Supply our own suffix.  */
 #ifndef VMS
