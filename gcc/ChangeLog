@@ -1,3 +1,9 @@
+Tue Oct 28 11:58:40 1997  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* fold-const.c (fold): For ((a * C1) / C3) or (((a * C1) + C2) / C3)
+	optimizations, look inside dividend to determine if the expression
+	can be simplified by using EXACT_DIV_EXPR.
+
 Tue Oct 28 10:19:01 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	From Brendan:
