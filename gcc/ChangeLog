@@ -1,8 +1,35 @@
+2003-10-15  Zack Weinberg  <zack@codesourcery.com>
+
+	* genmodes.c: Include hashtab.h.
+	(modes_by_name, hash_mode, eq_mode, struct mode_adjust)
+	(adj_bytesize, adj_alignment, adj_format, new_adjust)
+	(_ADD_ADJUST, ADJUST_BYTESIZE, ADJUST_ALIGNMENT, ADJUST_FORMAT)
+	(print_maybe_const_decl, emit_mode_adjustments): New.
+	(known_modes): Rename to modes.
+	(find_mode): Kill class argument; look up in hash table.
+	(new_mode): Insert into hash table also.
+	(new_adjust): New.
+	(reset_float_format, make_partial_integer_mode)
+	(make_vector_mode): Tweak error reporting.
+	(reset_float_format): Correct type of fourth argument.
+	(emit_insn_modes_h): Add #defines to help make mode_size,
+	mode_base_align, and real_format_for_mode conditionally const.
+	(emit_mode_size, emit_mode_base_align): Use print_maybe_const_decl.
+	(emit_real_format_for_mode): Likewise, but temporarily disabled.
+	(emit_insn_modes_c): Call emit_mode_adjustments.
+	(main): Initialize modes_by_name.
+	* Makefile.in: Update dependencies.
+	* machmode.def: Document EXPR arguments and new ADJUST_* statements.
+	* machmode.h: Use CONST_MODE_SIZE and CONST_MODE_BASE_ALIGN in
+	declarations of mode_size and mode_base_align.  Declare
+	init_adjust_machine_modes.
+	* toplev.c (backend_init): Call init_adjust_machine_modes.
+
 2003-10-15  Olivier Hainque  <hainque@act-europe.fr>
 
 	* genmodes.c (calc_wider_mode): Allocate enough room for all the
 	entries we'll possibly assign in the sort buffer.
-	
+
 2003-10-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.gcc (s390x-ibm-tpf*): New target.
@@ -50,13 +77,13 @@
 	New functions.
 	* config/s390/s390.h (PREDICATE_CODES): Add s390_alc_comparison
 	and s390_slb_comparison.
-	* config/s390/s390.md ("*adddi3_31", "*subdi3_31"): Do not use on 
+	* config/s390/s390.md ("*adddi3_31", "*subdi3_31"): Do not use on
 	zSeries machines.
 	("*adddi3_31z", "*subdi3_31z"): New insns.
 	("*adddi3_alc_cc", "*adddi3_alc", "*subdi3_slb_cc", "*subdi3_slb",
 	"*addsi3_alc_cc", "*addsi3_alc", "*subsi3_slb_cc", "*subsi3_slb"):
 	New insns.
-	
+
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Clean up some feedback echoes.
@@ -76,7 +103,7 @@
 
 	* config/s390/s390.md ("muldf3", "*muldf3", "*muldf3_ibm",
 	"mulsf3", "*mulsf3", "*mulsf3_ibm"): Do not clobber CC.
-	("divdf3", "*divdf3", "*divdf3_ibm", "divsf3", "*divsf3", 
+	("divdf3", "*divdf3", "*divdf3_ibm", "divsf3", "*divsf3",
 	"*divsf3_ibm"): Likewise.
 
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
@@ -103,7 +130,7 @@
 	* fixinc/inclhack.def (alpha_pthread_gcc): New fix.
 	* fixinc/fixincl.x: Regenerate.
 	* fixinc/tests/base/pthread.h [ALPHA_PTHREAD_GCC_CHECK]: New
-	testcase. 
+	testcase.
 	Fixes PR bootstrap/9330.
 
 2003-10-13  Eric Christopher  <echristo@redhat.com>

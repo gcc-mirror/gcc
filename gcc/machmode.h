@@ -78,7 +78,7 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 
 /* Get the size in bytes of an object of mode MODE.  */
 
-extern const unsigned char mode_size[NUM_MACHINE_MODES];
+extern CONST_MODE_SIZE unsigned char mode_size[NUM_MACHINE_MODES];
 #define GET_MODE_SIZE(MODE)   mode_size[MODE]
 
 /* Get the size in bytes of the basic parts of an object of mode MODE.  */
@@ -139,7 +139,7 @@ extern enum machine_mode get_best_mode (int, int, unsigned int,
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 
-extern const unsigned char mode_base_align[NUM_MACHINE_MODES];
+extern CONST_MODE_BASE_ALIGN unsigned char mode_base_align[NUM_MACHINE_MODES];
 
 extern unsigned get_mode_alignment (enum machine_mode);
 
@@ -156,5 +156,8 @@ extern const unsigned char class_narrowest_mode[MAX_MODE_CLASS];
 extern enum machine_mode byte_mode;
 extern enum machine_mode word_mode;
 extern enum machine_mode ptr_mode;
+
+/* Target-dependent machine mode initialization - in insn-modes.c.  */
+extern void init_adjust_machine_modes (void);
 
 #endif /* not HAVE_MACHINE_MODES */

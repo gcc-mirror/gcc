@@ -4365,6 +4365,8 @@ process_options (void)
 static void
 backend_init (void)
 {
+  init_adjust_machine_modes ();
+
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
 #ifdef VMS_DEBUGGING_INFO
