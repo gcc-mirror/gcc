@@ -1,5 +1,8 @@
 2000-04-15  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cpplex.c (_cpp_read_and_prescan): Enlarge len by setting it
+	to offset * 2.
+
 	* cpplex.c (output_line_command): Remove debugging prints.
 	(cpp_output_tokens): Don't write out a zero-length buffer or
 	try to see if it has a newline in it.
