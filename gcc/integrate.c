@@ -925,8 +925,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   if (GET_CODE (parm_insns) == NOTE
       && NOTE_LINE_NUMBER (parm_insns) > 0)
     {
-      rtx note = emit_note (NOTE_SOURCE_FILE (parm_insns),
-			    NOTE_LINE_NUMBER (parm_insns));
+      rtx note = emit_line_note (NOTE_SOURCE_FILE (parm_insns),
+				 NOTE_LINE_NUMBER (parm_insns));
       if (note)
 	RTX_INTEGRATED_P (note) = 1;
     }
@@ -1017,8 +1017,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	  && ! (GET_CODE (XEXP (loc, 0)) == REG
 		&& REGNO (XEXP (loc, 0)) > LAST_VIRTUAL_REGISTER))
 	{
-	  rtx note = emit_note (DECL_SOURCE_FILE (formal),
-				DECL_SOURCE_LINE (formal));
+	  rtx note = emit_line_note (DECL_SOURCE_FILE (formal),
+				     DECL_SOURCE_LINE (formal));
 	  if (note)
 	    RTX_INTEGRATED_P (note) = 1;
 
@@ -1305,7 +1305,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
      This line number note is still needed for debugging though, so we can't
      delete it.  */
   if (flag_test_coverage)
-    emit_note (0, NOTE_INSN_REPEATED_LINE_NUMBER);
+    emit_note (NULL, NOTE_INSN_REPEATED_LINE_NUMBER);
 
   emit_line_note (input_filename, input_line);
 
@@ -1683,15 +1683,17 @@ copy_insn_list (insns, map, static_chain_value)
 
 	     NOTE_INSN_DELETED notes aren't useful.  */
 
-	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END
+	  if (NOTE_LINE_NUMBER (insn) > 0)
+	    copy = emit_line_note (NOTE_SOURCE_FILE (insn),
+				   NOTE_LINE_NUMBER (insn));
+	  else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_END
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_FUNCTION_BEG
 	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED)
 	    {
-	      copy = emit_note (NOTE_SOURCE_FILE (insn),
-				NOTE_LINE_NUMBER (insn));
-	      if (copy
-		  && (NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
-		      || NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)
+	      copy = emit_note (NULL, NOTE_LINE_NUMBER (insn));
+	      NOTE_DATA (copy) = NOTE_DATA (insn);
+	      if ((NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_BEG
+		   || NOTE_LINE_NUMBER (copy) == NOTE_INSN_BLOCK_END)
 		  && NOTE_BLOCK (insn))
 		{
 		  tree *mapped_block_p;
@@ -1708,8 +1710,7 @@ copy_insn_list (insns, map, static_chain_value)
 		  else
 		    NOTE_BLOCK (copy) = *mapped_block_p;
 		}
-	      else if (copy
-		       && NOTE_LINE_NUMBER (copy) == NOTE_INSN_EXPECTED_VALUE)
+	      else if (NOTE_LINE_NUMBER (copy) == NOTE_INSN_EXPECTED_VALUE)
 		NOTE_EXPECTED_VALUE (copy)
 		  = copy_rtx_and_substitute (NOTE_EXPECTED_VALUE (insn),
 					     map, 0);

@@ -83,10 +83,9 @@ struct emit_status GTY(())
      Reset to 1 for each function compiled.  */
   int x_cur_insn_uid;
 
-  /* Line number and source file of the last line-number NOTE emitted.
+  /* Location the last line-number NOTE emitted.
      This is used to avoid generating duplicates.  */
-  int x_last_linenum;
-  const char *x_last_filename;
+  location_t x_last_location;
 
   /* The length of the regno_pointer_align, regno_decl, and x_regno_reg_rtx
      vectors.  Since these vectors are needed during the expansion phase when

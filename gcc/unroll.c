@@ -2263,14 +2263,20 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	     the associated rtl.  We do not want to share the structure in
 	     this new block.  */
 
-	  if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED_LABEL
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
-	      && ((NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
-		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_CONT)
-		  || (last_iteration && unroll_type != UNROLL_COMPLETELY)))
-	    copy = emit_note (NOTE_SOURCE_FILE (insn),
+	  if (NOTE_LINE_NUMBER (insn) > 0)
+	    copy = emit_line_note (NOTE_SOURCE_FILE (insn),
 			      NOTE_LINE_NUMBER (insn));
+	  else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
+		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED_LABEL
+		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
+		   && ((NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
+			&& NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_CONT)
+		       || (last_iteration
+			   && unroll_type != UNROLL_COMPLETELY)))
+	    {
+	      copy = emit_note (NULL, NOTE_LINE_NUMBER (insn));
+	      NOTE_DATA (copy) = NOTE_DATA (insn);
+	    }
 	  else
 	    copy = 0;
 	  break;
@@ -2315,12 +2321,18 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	     instructions before the last insn in the loop, COPY_NOTES_FROM
 	     can be a NOTE_INSN_LOOP_CONT note if there is no VTOP note,
 	     as in a do .. while loop.  */
-	  if (GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
-	      && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_CONT)
-	    emit_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
+	  if (GET_CODE (insn) != NOTE)
+	    /*NOP*/;
+	  else if (NOTE_LINE_NUMBER (insn) > 0)
+	    emit_line_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
+	  else if (NOTE_LINE_NUMBER (insn) != NOTE_INSN_DELETED
+		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_BASIC_BLOCK
+		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_VTOP
+		   && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_CONT)
+	    {
+	      rtx copy = emit_note (NULL, NOTE_LINE_NUMBER (insn));
+	      NOTE_DATA (copy) = NOTE_DATA (insn);
+	    }
 	}
     }
 

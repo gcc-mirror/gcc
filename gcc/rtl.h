@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 struct function;
 
 #include "machmode.h"
+#include "input.h"
 
 #undef FFS  /* Some systems predefine this symbol; don't let it interfere.  */
 #undef FLOAT /* Likewise.  */
@@ -782,6 +783,8 @@ extern const char * const reg_note_name[];
    between ints and pointers if we use a different macro for the block number.)
    */
 
+/* Opaque data.  */
+#define NOTE_DATA(INSN)	        XCINT (INSN, 4, NOTE)
 #define NOTE_SOURCE_FILE(INSN)	XCSTR (INSN, 4, NOTE)
 #define NOTE_BLOCK(INSN)	XCTREE (INSN, 4, NOTE)
 #define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 4, NOTE)
@@ -1511,6 +1514,7 @@ extern rtx assign_stack_temp		PARAMS ((enum machine_mode,
 extern rtx assign_stack_temp_for_type	PARAMS ((enum machine_mode,
 						 HOST_WIDE_INT, int, tree));
 extern rtx assign_temp			PARAMS ((tree, int, int, int));
+
 /* In emit-rtl.c */
 extern rtx emit_insn_before		PARAMS ((rtx, rtx));
 extern rtx emit_insn_before_setloc	PARAMS ((rtx, rtx, int));
