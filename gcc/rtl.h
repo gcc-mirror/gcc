@@ -2004,6 +2004,7 @@ extern void init_alias_once		PARAMS ((void));
 extern void init_alias_analysis		PARAMS ((void));
 extern void end_alias_analysis		PARAMS ((void));
 extern rtx addr_side_effect_eval	PARAMS ((rtx, int, int));
+extern void set_mem_alias_set		PARAMS ((rtx, HOST_WIDE_INT));
 
 /* In sibcall.c */
 typedef enum {

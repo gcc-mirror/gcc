@@ -1,3 +1,47 @@
+Wed Jul 11 10:07:18 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (set_mem_alias_set): New function.
+	* rtl.h (set_mem_alias_set): Declare it.
+	* builtins.c (expand_builtin_return_addr): Call it instead of
+	using MEM_ALIAS_SET accessor.
+	(expand_builtin_setjmp_setup, expand_builtin_longjmp): Likewise.
+	(get_memory_rtx, expand_builtin_va_arg): Likewise.
+	(expand_builtin_va_copy):Likewise.
+	* caller-save.c (setup_save_areas): Likewise.
+	* calls.c (compute_argument_addresses): Likewise.
+	* explow.c (set_mem_attributes): Likewise.
+	* expr.c (emit_single_push_insn, emit_push_insn): Likewise.
+	(expand_assignment, store_constructor_field, store_field): Likewise.
+	(expand_expr_unaligned): Likewise.
+	* function.c (assign_stack_temp_for_type): Likewise.
+	(put_reg_into_stack, gen_mem_addressof): Likewise.
+	* ifcvt.c (noce_try_cmove_arith): Likewise.
+	* reload1.c (reload, alter_reg): Likewise.
+	* config/alpha/alpha.c (get_aligned_mem): Likewise.
+	(alpha_set_memflags_1, alpha_expand_unaligned_load): Likewise.
+	(alpha_expand_unaligned_store): Likewise
+	(alpha_expand_unaligned_load_words): Likewise.
+	(alpha_expand_unaligned_store_words): Likewise.
+	(alpha_expand_block_clear, alpha_expand_prologue): Likewise.
+	(alpha_expand_epilogue): Likewise.
+	* config/arc/arc.c (arc_setup_incoming_varargs): Likewise.
+	* config/clipper/clipper.c (clipper_builtin_saveregs): Likewise.
+	* config/i386/i386.c (legitimize_pic_address): Likewise.
+	* config/i960/i960.c (setup_incoming_varargs): Likewise.
+	* config/ia64/ia64.c (spill_restore_mem): Likewise.
+	* config/m32r/m32r.c (m32r_setup_incoming_varargs): Likewise.
+	* config/m8k/m88k.c (m88k_builtin_saveregs): Likewise.
+	* config/mips/mips.c (mips_va_arg): Likewise.
+	* config/mn10300/mn10300.c (mn10300_builtin_saveregs): Likewise.
+	* config/pa/pa.c (hppa_builtin_saveregs): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Likewise.
+	(setup_incoming_varargs, rs6000_va_arg): Likewise.
+	(rs6000_emit_eh_toc_restore, rs6000_emit_prologue): Likewise.
+	(rs6000_emit_epilogue): Likewise.
+	* config/sh/sh.c (sh_builtin_saveregs): Likewise.
+	* config/sparc/sparc.c (sparc_va_arg): Likewise.
+	* config/v850/v850.c (v850_va_arg): Likewise.
+
 Wed Jul 11 21:27:25 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (merge_blocks_move_successor_nojumps): Do not crash

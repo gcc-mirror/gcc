@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Clipper
-   Copyright (C) 1987, 1988, 1991, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1991, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -402,21 +402,21 @@ clipper_builtin_saveregs ()
   /* Store int regs  */
 
   mem = gen_rtx_MEM (SImode, r0_addr);
-  MEM_ALIAS_SET (mem) = set;
+  set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (SImode, 0));
 
   mem = gen_rtx_MEM (SImode, r1_addr);
-  MEM_ALIAS_SET (mem) = set;
+  set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (SImode, 1));
 
   /* Store float regs  */
 
   mem = gen_rtx_MEM (DFmode, f0_addr);
-  MEM_ALIAS_SET (mem) = set;
+  set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (DFmode, 16));
 
   mem = gen_rtx_MEM (DFmode, f1_addr);
-  MEM_ALIAS_SET (mem) = set;
+  set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (DFmode, 17));
 
   if (current_function_check_memory_usage)

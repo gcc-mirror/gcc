@@ -4224,7 +4224,8 @@ sh_builtin_saveregs ()
   /* Number of SFmode float regs to save.  */
   int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
   rtx regbuf, fpregs;
-  int bufsize, regno, alias_set;
+  int bufsize, regno;
+  HOST_WIDE_INT alias_set;
 
   /* Allocate block of memory for the regs. */
   /* ??? If n_intregs + n_floatregs == 0, should we allocate at least 1 byte?
@@ -4233,7 +4234,7 @@ sh_builtin_saveregs ()
 
   regbuf = assign_stack_local (BLKmode, bufsize, 0);
   alias_set = get_varargs_alias_set ();
-  MEM_ALIAS_SET (regbuf) = alias_set;
+  set_mem_alias_set (regbuf, alias_set);
 
   /* Save int args.
      This is optimized to only save the regs that are necessary.  Explicitly
@@ -4264,7 +4265,7 @@ sh_builtin_saveregs ()
 	  emit_insn (gen_addsi3 (fpregs, fpregs,
 				 GEN_INT (-2 * UNITS_PER_WORD)));
 	  mem = gen_rtx_MEM (DFmode, fpregs);
-	  MEM_ALIAS_SET (mem) = alias_set;
+	  set_mem_alias_set (mem, alias_set);
 	  emit_move_insn (mem, 
 			  gen_rtx (REG, DFmode, BASE_ARG_REG (DFmode) + regno));
 	}
@@ -4273,7 +4274,7 @@ sh_builtin_saveregs ()
 	{
 	  emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (- UNITS_PER_WORD)));
 	  mem = gen_rtx_MEM (SFmode, fpregs);
-	  MEM_ALIAS_SET (mem) = alias_set;
+	  set_mem_alias_set (mem, alias_set);
 	  emit_move_insn (mem,
 			  gen_rtx (REG, SFmode, BASE_ARG_REG (SFmode) + regno
 						- (TARGET_LITTLE_ENDIAN != 0)));
@@ -4283,9 +4284,10 @@ sh_builtin_saveregs ()
     for (regno = NPARM_REGS (SFmode) - 1; regno >= first_floatreg; regno--)
       {
         rtx mem;
+
 	emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (- UNITS_PER_WORD)));
 	mem = gen_rtx_MEM (SFmode, fpregs);
-	MEM_ALIAS_SET (mem) = alias_set;
+	set_mem_alias_set (mem, alias_set);
 	emit_move_insn (mem,
 			gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode) + regno));
       }

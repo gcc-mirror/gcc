@@ -1702,7 +1702,7 @@ spill_restore_mem (reg, cfa_off)
 	   && frame_pointer_needed)
     {
       mem = gen_rtx_MEM (GET_MODE (reg), hard_frame_pointer_rtx);
-      MEM_ALIAS_SET (mem) = get_varargs_alias_set ();
+      set_mem_alias_set (mem, get_varargs_alias_set ());
       return mem;
     }
   else
@@ -1751,7 +1751,7 @@ spill_restore_mem (reg, cfa_off)
   /* ??? Not all of the spills are for varargs, but some of them are.
      The rest of the spills belong in an alias set of their own.  But
      it doesn't actually hurt to include them here.  */
-  MEM_ALIAS_SET (mem) = get_varargs_alias_set ();
+  set_mem_alias_set (mem, get_varargs_alias_set ());
 
   spill_fill_data.prev_addr[iter] = &XEXP (mem, 0);
   spill_fill_data.prev_off[iter] = cfa_off;

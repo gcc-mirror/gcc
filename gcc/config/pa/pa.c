@@ -4799,7 +4799,7 @@ hppa_builtin_saveregs ()
   dest = gen_rtx_MEM (BLKmode,
 		      plus_constant (current_function_internal_arg_pointer,
 				     -16));
-  MEM_ALIAS_SET (dest) = get_varargs_alias_set ();
+  set_mem_alias_set (dest, get_varargs_alias_set ());
   move_block_from_reg (23, dest, 4, 4 * UNITS_PER_WORD);
 
   /* move_block_from_reg will emit code to store the argument registers

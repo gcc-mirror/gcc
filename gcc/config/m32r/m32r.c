@@ -1400,7 +1400,7 @@ m32r_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       regblock = gen_rtx_MEM (BLKmode,
 			      plus_constant (arg_pointer_rtx,
 					     FIRST_PARM_OFFSET (0)));
-      MEM_ALIAS_SET (regblock) = get_varargs_alias_set ();
+      set_mem_alias_set (regblock, get_varargs_alias_set ());
       move_block_from_reg (first_reg_offset, regblock,
 			   size, size * UNITS_PER_WORD);
 

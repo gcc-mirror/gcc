@@ -1,6 +1,6 @@
 /* Subroutines used for code generation on the Argonaut ARC cpu.
-   Copyright (C) 1994, 1995, 1997, 1998, 1999,
-   2000 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -797,7 +797,7 @@ arc_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 			      plus_constant (arg_pointer_rtx,
 					     FIRST_PARM_OFFSET (0)
 					     + align_slop * UNITS_PER_WORD));
-      MEM_ALIAS_SET (regblock) = get_varargs_alias_set ();
+      set_mem_alias_set (regblock, get_varargs_alias_set ());
       move_block_from_reg (first_reg_offset, regblock,
 			   MAX_ARC_PARM_REGS - first_reg_offset,
 			   ((MAX_ARC_PARM_REGS - first_reg_offset)
