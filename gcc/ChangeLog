@@ -1,3 +1,7 @@
+2000-04-20  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (emit_iv_add_mult): Revert last change.
+
 2000-04-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (enum cpp_ttype): Add token types for all
