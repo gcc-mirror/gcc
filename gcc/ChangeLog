@@ -1,3 +1,7 @@
+2001-03-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinternals.texi: Update for file handling.
+
 Mon Mar 12 14:05:32 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* flow.c (insn_dead_p): Don't consider two memrefs equivalent
