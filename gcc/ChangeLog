@@ -1,3 +1,8 @@
+2004-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (addqi_1_slp): Test for incdec_operand
+	operand 1 instead of 2
+
 2004-10-17  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/rs6000/sysv4.h (LINK_OS_FREEBSD_SPEC): Sync '-p' handling with
