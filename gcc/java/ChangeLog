@@ -1,3 +1,7 @@
+2000-03-03  Per Bothner  <per@bothner.com>
+
+	* decl.c (init_decl_processing):  Initialize sizetype properly.
+
 2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* decl.c (current_function_decl): Move to toplev.c.
