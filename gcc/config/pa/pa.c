@@ -134,8 +134,12 @@ move_operand (op, mode)
   if (register_operand (op, mode))
     return 1;
 
-  if (op == CONST0_RTX (mode))
-    return 1;
+  if (GET_CODE (op) == CONST_INT)
+    {
+      /* OK if ldo, ldil, or zdepi, can be used.  */
+      return (INT_14_BITS (op) || (INTVAL (op) & 0x7ff) == 0
+	      || zdepi_cint_p (INTVAL (op)));
+    }
 
   if (GET_MODE (op) != mode)
     return 0;
@@ -280,6 +284,15 @@ arith11_operand (op, mode)
 }
 
 int
+pre_cint_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && INTVAL (op) >= -0x2000 && INTVAL (op) < 0x10);
+}
+
+int
 arith_double_operand (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -330,27 +343,22 @@ arith5_operand (op, mode)
 
 /* True iff zdepi can be used to generate this CONST_INT.  */
 int
-depi_cint_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+zdepi_cint_p (x)
+     unsigned x;
 {
-  unsigned x;
-  unsigned lbmask, t;
-
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
+  unsigned lsb_mask, t;
 
   /* This might not be obvious, but it's at least fast.
      This function is critcal; we don't have the time loops would take.  */
-  x = INTVAL (op);
-  lbmask = x & -x;
-  t = ((x >> 4) + lbmask) & ~(lbmask - 1);
+  lsb_mask = x & -x;
+  t = ((x >> 4) + lsb_mask) & ~(lsb_mask - 1);
+  /* Return true iff t is a power of two.  */
   return ((t & (t - 1)) == 0);
 }
 
 /* True iff depi or extru can be used to compute (reg & mask).  */
 int
-consec_zeros_p (mask)
+and_mask_p (mask)
      unsigned mask;
 {
   mask = ~mask;
@@ -365,7 +373,7 @@ and_operand (op, mode)
      enum machine_mode mode;
 {
   return (register_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT && consec_zeros_p (INTVAL (op))));
+	  || (GET_CODE (op) == CONST_INT && and_mask_p (INTVAL (op))));
 }
 
 /* True iff depi can be used to compute (reg | MASK).  */
@@ -394,29 +402,6 @@ arith32_operand (op, mode)
 {
   return register_operand (op, mode) || GET_CODE (op) == CONST_INT;
 }
-
-/* True iff OP can be the source of a move to a general register.  */
-int
-srcsi_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  /* Not intended for other modes than SImode.  */
-  if (mode != SImode)
-    return 0;
-
-  /* Accept any register or memory reference.  */
-  if (nonimmediate_operand (op, mode))
-    return 1;
-
-  if (depi_cint_operand (op, mode))
-    return 1;
-
-  /* OK if ldo or ldil can be used.  */
-  return (GET_CODE (op) == CONST_INT
-	  && (INT_14_BITS (op) || (INTVAL (op) & 0x7ff) == 0));
-}
-
 
 /* Legitimize PIC addresses.  If the address is already
    position-independent, we return ORIG.  Newly generated
@@ -471,7 +456,7 @@ legitimize_pic_address (orig, mode, reg)
       else abort ();
       if (GET_CODE (orig) == CONST_INT)
 	{
-	  if (SMALL_INT (orig))
+	  if (INT_14_BITS (orig))
 	    return plus_constant_for_output (base, INTVAL (orig));
 	  orig = force_reg (Pmode, orig);
 	}
@@ -567,7 +552,7 @@ emit_move_sequence (operands, mode, scratch_reg)
   else if (register_operand (operand0, mode))
     {
       if (register_operand (operand1, mode)
-	  || (GET_CODE (operand1) == CONST_INT && SMALL_INT (operand1))
+	  || (GET_CODE (operand1) == CONST_INT && INT_14_BITS (operand1))
 	  || (GET_CODE (operand1) == HIGH
 	      && !symbolic_operand (XEXP (operand1, 0)))
 	  /* Only `general_operands' can come here, so MEM is ok.  */
@@ -654,11 +639,10 @@ emit_move_sequence (operands, mode, scratch_reg)
 	    }
 	  return 1;
 	}
-      else if (depi_cint_operand (operand1, VOIDmode))
-	return 0;
-      else if (GET_CODE (operand1) == CONST_INT
-	       ? (! SMALL_INT (operand1)
-		  && (INTVAL (operand1) & 0x7ff) != 0) : 1)
+      else if (GET_CODE (operand1) != CONST_INT
+	       || (! INT_14_BITS (operand1)
+		   && ! ((INTVAL (operand1) & 0x7ff) == 0)
+		   && !zdepi_cint_p (INTVAL (operand1))))
 	{
 	  rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (mode);
 	  emit_insn (gen_rtx (SET, VOIDmode, temp,
@@ -705,13 +689,13 @@ singlemove_string (operands)
 }
 
 
-/* Compute position (in OPERANDS[2]) and width (in OPERANDS[3])
+/* Compute position (in OP[2]) and width (in OP[3])
    useful for copying or or'ing IMM to a register using bit field
-   instructions.  Store the immediate value to insert in OPERANDS[1].  */
+   instructions.  Store the immediate value to insert in OP[1].  */
 void
-compute_xdepi_operands_from_integer (imm, operands)
+compute_zdepi_operands (imm, op)
      unsigned imm;
-     rtx *operands;
+     unsigned *op;
 {
   int lsb, len;
 
@@ -739,9 +723,9 @@ compute_xdepi_operands_from_integer (imm, operands)
       imm = (imm & 0xf) - 0x10;
     }
 
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, imm);
-  operands[2] = gen_rtx (CONST_INT, VOIDmode, 31 - lsb);
-  operands[3] = gen_rtx (CONST_INT, VOIDmode, len);
+  op[0] = imm;
+  op[1] = 31 - lsb;
+  op[2] = len;
 }
 
 /* Output assembler code to perform a doubleword move insn
@@ -2028,6 +2012,13 @@ print_operand (file, x, code)
       return;
     case 0:			/* Don't do anything special */
       break;
+    case 'Z':
+      {
+	unsigned op[3];
+	compute_zdepi_operands (INTVAL (x), op);
+	fprintf (file, "%d,%d,%d", op[0], op[1], op[2]);
+	return;
+      }
     default:
       abort ();
     }
