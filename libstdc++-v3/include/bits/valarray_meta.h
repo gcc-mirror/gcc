@@ -297,7 +297,7 @@ namespace std {
         typedef _Tp value_type;
         
         _RefFunClos (const valarray<_Tp>& __v, _Tp __f(const _Tp&))
-                : _Base (__e, __f) {}
+                : _Base (__v, __f) {}
     };
     
     //
