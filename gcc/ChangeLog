@@ -1,3 +1,12 @@
+2003-02-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/clzsi2.c: Remove.
+	* config/h8300/ctzsi2.c: Likewise.
+	* config/h8300/paritysi2.c: Likewise.
+	* config/h8300/popcountsi2.c: Likewise.
+	* config/h8300/t-h8300 (LIB2FUNCS_EXTRA): Remove clzsi2,
+	ctzsi2, paritysi2, and popcountsi2.
+
 2003-02-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
