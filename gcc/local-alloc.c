@@ -271,43 +271,40 @@ static struct equivalence *reg_equiv;
 /* Nonzero if we recorded an equivalence for a LABEL_REF.  */
 static int recorded_label_ref;
 
-static void alloc_qty		PARAMS ((int, enum machine_mode, int, int));
-static void validate_equiv_mem_from_store PARAMS ((rtx, rtx, void *));
-static int validate_equiv_mem	PARAMS ((rtx, rtx, rtx));
-static int equiv_init_varies_p  PARAMS ((rtx));
-static int equiv_init_movable_p PARAMS ((rtx, int));
-static int contains_replace_regs PARAMS ((rtx));
-static int memref_referenced_p	PARAMS ((rtx, rtx));
-static int memref_used_between_p PARAMS ((rtx, rtx, rtx));
-static void update_equiv_regs	PARAMS ((void));
-static void no_equiv		PARAMS ((rtx, rtx, void *));
-static void block_alloc		PARAMS ((int));
-static int qty_sugg_compare    	PARAMS ((int, int));
-static int qty_sugg_compare_1	PARAMS ((const void *, const void *));
-static int qty_compare    	PARAMS ((int, int));
-static int qty_compare_1	PARAMS ((const void *, const void *));
-static int combine_regs		PARAMS ((rtx, rtx, int, int, rtx, int));
-static int reg_meets_class_p	PARAMS ((int, enum reg_class));
-static void update_qty_class	PARAMS ((int, int));
-static void reg_is_set		PARAMS ((rtx, rtx, void *));
-static void reg_is_born		PARAMS ((rtx, int));
-static void wipe_dead_reg	PARAMS ((rtx, int));
-static int find_free_reg	PARAMS ((enum reg_class, enum machine_mode,
-				       int, int, int, int, int));
-static void mark_life		PARAMS ((int, enum machine_mode, int));
-static void post_mark_life	PARAMS ((int, enum machine_mode, int, int, int));
-static int no_conflict_p	PARAMS ((rtx, rtx, rtx));
-static int requires_inout	PARAMS ((const char *));
+static void alloc_qty (int, enum machine_mode, int, int);
+static void validate_equiv_mem_from_store (rtx, rtx, void *);
+static int validate_equiv_mem (rtx, rtx, rtx);
+static int equiv_init_varies_p (rtx);
+static int equiv_init_movable_p (rtx, int);
+static int contains_replace_regs (rtx);
+static int memref_referenced_p (rtx, rtx);
+static int memref_used_between_p (rtx, rtx, rtx);
+static void update_equiv_regs (void);
+static void no_equiv (rtx, rtx, void *);
+static void block_alloc (int);
+static int qty_sugg_compare (int, int);
+static int qty_sugg_compare_1 (const void *, const void *);
+static int qty_compare (int, int);
+static int qty_compare_1 (const void *, const void *);
+static int combine_regs (rtx, rtx, int, int, rtx, int);
+static int reg_meets_class_p (int, enum reg_class);
+static void update_qty_class (int, int);
+static void reg_is_set (rtx, rtx, void *);
+static void reg_is_born (rtx, int);
+static void wipe_dead_reg (rtx, int);
+static int find_free_reg (enum reg_class, enum machine_mode, int, int, int,
+			  int, int);
+static void mark_life (int, enum machine_mode, int);
+static void post_mark_life (int, enum machine_mode, int, int, int);
+static int no_conflict_p (rtx, rtx, rtx);
+static int requires_inout (const char *);
 
 /* Allocate a new quantity (new within current basic block)
    for register number REGNO which is born at index BIRTH
    within the block.  MODE and SIZE are info on reg REGNO.  */
 
 static void
-alloc_qty (regno, mode, size, birth)
-     int regno;
-     enum machine_mode mode;
-     int size, birth;
+alloc_qty (int regno, enum machine_mode mode, int size, int birth)
 {
   int qtyno = next_qty++;
 
@@ -329,7 +326,7 @@ alloc_qty (regno, mode, size, birth)
 /* Main entry point of this file.  */
 
 int
-local_alloc ()
+local_alloc (void)
 {
   int i;
   int max_qty;
@@ -449,10 +446,8 @@ static int equiv_mem_modified;
    Called via note_stores.  */
 
 static void
-validate_equiv_mem_from_store (dest, set, data)
-     rtx dest;
-     rtx set ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+validate_equiv_mem_from_store (rtx dest, rtx set ATTRIBUTE_UNUSED,
+			       void *data ATTRIBUTE_UNUSED)
 {
   if ((GET_CODE (dest) == REG
        && reg_overlap_mentioned_p (dest, equiv_mem))
@@ -469,10 +464,7 @@ validate_equiv_mem_from_store (dest, set, data)
    Return 1 if MEMREF remains valid.  */
 
 static int
-validate_equiv_mem (start, reg, memref)
-     rtx start;
-     rtx reg;
-     rtx memref;
+validate_equiv_mem (rtx start, rtx reg, rtx memref)
 {
   rtx insn;
   rtx note;
@@ -518,8 +510,7 @@ validate_equiv_mem (start, reg, memref)
 /* Returns zero if X is known to be invariant.  */
 
 static int
-equiv_init_varies_p (x)
-     rtx x;
+equiv_init_varies_p (rtx x)
 {
   RTX_CODE code = GET_CODE (x);
   int i;
@@ -578,9 +569,7 @@ equiv_init_varies_p (x)
    or if they are not candidates for local_alloc and don't vary.  */
 
 static int
-equiv_init_movable_p (x, regno)
-     rtx x;
-     int regno;
+equiv_init_movable_p (rtx x, int regno)
 {
   int i, j;
   const char *fmt;
@@ -642,8 +631,7 @@ equiv_init_movable_p (x, regno)
 /* TRUE if X uses any registers for which reg_equiv[REGNO].replace is true.  */
 
 static int
-contains_replace_regs (x)
-     rtx x;
+contains_replace_regs (rtx x)
 {
   int i, j;
   const char *fmt;
@@ -691,9 +679,7 @@ contains_replace_regs (x)
    to MEMREF.  */
 
 static int
-memref_referenced_p (memref, x)
-     rtx x;
-     rtx memref;
+memref_referenced_p (rtx memref, rtx x)
 {
   int i, j;
   const char *fmt;
@@ -762,10 +748,7 @@ memref_referenced_p (memref, x)
    that would be affected by a store to MEMREF.  */
 
 static int
-memref_used_between_p (memref, start, end)
-     rtx memref;
-     rtx start;
-     rtx end;
+memref_used_between_p (rtx memref, rtx start, rtx end)
 {
   rtx insn;
 
@@ -785,8 +768,7 @@ memref_used_between_p (memref, start, end)
    go to spill these things to memory.  */
 
 int
-function_invariant_p (x)
-     rtx x;
+function_invariant_p (rtx x)
 {
   if (CONSTANT_P (x))
     return 1;
@@ -808,7 +790,7 @@ function_invariant_p (x)
    completely.  */
 
 static void
-update_equiv_regs ()
+update_equiv_regs (void)
 {
   rtx insn;
   basic_block bb;
@@ -1186,9 +1168,7 @@ update_equiv_regs ()
    assignment - a SET, CLOBBER or REG_INC note.  It is currently not used,
    but needs to be there because this function is called from note_stores.  */
 static void
-no_equiv (reg, store, data)
-     rtx reg, store ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+no_equiv (rtx reg, rtx store ATTRIBUTE_UNUSED, void *data ATTRIBUTE_UNUSED)
 {
   int regno;
   rtx list;
@@ -1212,8 +1192,7 @@ no_equiv (reg, store, data)
    Only the pseudos that die but once can be handled.  */
 
 static void
-block_alloc (b)
-     int b;
+block_alloc (int b)
 {
   int i, q;
   rtx insn;
@@ -1693,16 +1672,13 @@ block_alloc (b)
 	  / (qty[q].death - qty[q].birth)) * (10000 / REG_FREQ_MAX)))
 
 static int
-qty_compare (q1, q2)
-     int q1, q2;
+qty_compare (int q1, int q2)
 {
   return QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
 }
 
 static int
-qty_compare_1 (q1p, q2p)
-     const void *q1p;
-     const void *q2p;
+qty_compare_1 (const void *q1p, const void *q2p)
 {
   int q1 = *(const int *) q1p, q2 = *(const int *) q2p;
   int tem = QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
@@ -1728,8 +1704,7 @@ qty_compare_1 (q1p, q2p)
     : qty_phys_num_sugg[q] * FIRST_PSEUDO_REGISTER)
 
 static int
-qty_sugg_compare (q1, q2)
-     int q1, q2;
+qty_sugg_compare (int q1, int q2)
 {
   int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
 
@@ -1740,9 +1715,7 @@ qty_sugg_compare (q1, q2)
 }
 
 static int
-qty_sugg_compare_1 (q1p, q2p)
-     const void *q1p;
-     const void *q2p;
+qty_sugg_compare_1 (const void *q1p, const void *q2p)
 {
   int q1 = *(const int *) q1p, q2 = *(const int *) q2p;
   int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
@@ -1785,12 +1758,8 @@ qty_sugg_compare_1 (q1p, q2p)
    There are elaborate checks for the validity of combining.  */
 
 static int
-combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
-     rtx usedreg, setreg;
-     int may_save_copy;
-     int insn_number;
-     rtx insn;
-     int already_dead;
+combine_regs (rtx usedreg, rtx setreg, int may_save_copy, int insn_number,
+	      rtx insn, int already_dead)
 {
   int ureg, sreg;
   int offset = 0;
@@ -1999,9 +1968,7 @@ combine_regs (usedreg, setreg, may_save_copy, insn_number, insn, already_dead)
    True if REG's reg class either contains or is contained in CLASS.  */
 
 static int
-reg_meets_class_p (reg, class)
-     int reg;
-     enum reg_class class;
+reg_meets_class_p (int reg, enum reg_class class)
 {
   enum reg_class rclass = reg_preferred_class (reg);
   return (reg_class_subset_p (rclass, class)
@@ -2011,9 +1978,7 @@ reg_meets_class_p (reg, class)
 /* Update the class of QTYNO assuming that REG is being tied to it.  */
 
 static void
-update_qty_class (qtyno, reg)
-     int qtyno;
-     int reg;
+update_qty_class (int qtyno, int reg)
 {
   enum reg_class rclass = reg_preferred_class (reg);
   if (reg_class_subset_p (rclass, qty[qtyno].min_class))
@@ -2034,10 +1999,7 @@ update_qty_class (qtyno, reg)
    carry info from `block_alloc'.  */
 
 static void
-reg_is_set (reg, setter, data)
-     rtx reg;
-     rtx setter;
-     void *data ATTRIBUTE_UNUSED;
+reg_is_set (rtx reg, rtx setter, void *data ATTRIBUTE_UNUSED)
 {
   /* Note that note_stores will only pass us a SUBREG if it is a SUBREG of
      a hard register.  These may actually not exist any more.  */
@@ -2057,9 +2019,7 @@ reg_is_set (reg, setter, data)
    BIRTH is the index at which this is happening.  */
 
 static void
-reg_is_born (reg, birth)
-     rtx reg;
-     int birth;
+reg_is_born (rtx reg, int birth)
 {
   int regno;
 
@@ -2098,9 +2058,7 @@ reg_is_born (reg, birth)
    If OUTPUT_P is 1, then we extend the life past the end of this insn.  */
 
 static void
-wipe_dead_reg (reg, output_p)
-     rtx reg;
-     int output_p;
+wipe_dead_reg (rtx reg, int output_p)
 {
   int regno = REGNO (reg);
 
@@ -2165,14 +2123,9 @@ wipe_dead_reg (reg, output_p)
    register is available.  If not, return -1.  */
 
 static int
-find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
-	       born_index, dead_index)
-     enum reg_class class;
-     enum machine_mode mode;
-     int qtyno;
-     int accept_call_clobbered;
-     int just_try_suggested;
-     int born_index, dead_index;
+find_free_reg (enum reg_class class, enum machine_mode mode, int qtyno,
+	       int accept_call_clobbered, int just_try_suggested,
+	       int born_index, int dead_index)
 {
   int i, ins;
   HARD_REG_SET first_used, used;
@@ -2318,10 +2271,7 @@ find_free_reg (class, mode, qtyno, accept_call_clobbered, just_try_suggested,
    is zero).  */
 
 static void
-mark_life (regno, mode, life)
-     int regno;
-     enum machine_mode mode;
-     int life;
+mark_life (int regno, enum machine_mode mode, int life)
 {
   int j = HARD_REGNO_NREGS (regno, mode);
   if (life)
@@ -2337,10 +2287,8 @@ mark_life (regno, mode, life)
    to insn number DEATH (exclusive).  */
 
 static void
-post_mark_life (regno, mode, life, birth, death)
-     int regno;
-     enum machine_mode mode;
-     int life, birth, death;
+post_mark_life (int regno, enum machine_mode mode, int life, int birth,
+		int death)
 {
   int j = HARD_REGNO_NREGS (regno, mode);
 #ifdef HARD_REG_SET
@@ -2377,8 +2325,7 @@ post_mark_life (regno, mode, life, birth, death)
    Otherwise, return 0.  */
 
 static int
-no_conflict_p (insn, r0, r1)
-     rtx insn, r0 ATTRIBUTE_UNUSED, r1;
+no_conflict_p (rtx insn, rtx r0 ATTRIBUTE_UNUSED, rtx r1)
 {
   int ok = 0;
   rtx note = find_reg_note (insn, REG_LIBCALL, NULL_RTX);
@@ -2418,8 +2365,7 @@ no_conflict_p (insn, r0, r1)
    is acceptable.  */
 
 static int
-requires_inout (p)
-     const char *p;
+requires_inout (const char *p)
 {
   char c;
   int found_zero = 0;
@@ -2483,8 +2429,7 @@ requires_inout (p)
 }
 
 void
-dump_local_alloc (file)
-     FILE *file;
+dump_local_alloc (FILE *file)
 {
   int i;
   for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)

@@ -1,5 +1,5 @@
 /* Provide prototypes for functions exported from prefix.c.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 /* Update PATH using KEY if PATH starts with PREFIX.  The returned
    string is always malloc-ed, and the caller is responsible for
    freeing it.  */
-extern char *update_path PARAMS ((const char *path, const char *key));
-extern void set_std_prefix PARAMS ((const char *, int));
+extern char *update_path (const char *path, const char *key);
+extern void set_std_prefix (const char *, int);
 
 #endif /* ! GCC_PREFIX_H */

@@ -364,86 +364,77 @@ static int (*offsets_at)[NUM_ELIMINABLE_REGS];
 
 static int num_labels;
 
-static void replace_pseudos_in	PARAMS ((rtx *, enum machine_mode, rtx));
-static void maybe_fix_stack_asms	PARAMS ((void));
-static void copy_reloads		PARAMS ((struct insn_chain *));
-static void calculate_needs_all_insns	PARAMS ((int));
-static int find_reg			PARAMS ((struct insn_chain *, int));
-static void find_reload_regs		PARAMS ((struct insn_chain *));
-static void select_reload_regs		PARAMS ((void));
-static void delete_caller_save_insns	PARAMS ((void));
+static void replace_pseudos_in (rtx *, enum machine_mode, rtx);
+static void maybe_fix_stack_asms (void);
+static void copy_reloads (struct insn_chain *);
+static void calculate_needs_all_insns (int);
+static int find_reg (struct insn_chain *, int);
+static void find_reload_regs (struct insn_chain *);
+static void select_reload_regs (void);
+static void delete_caller_save_insns (void);
 
-static void spill_failure		PARAMS ((rtx, enum reg_class));
-static void count_spilled_pseudo	PARAMS ((int, int, int));
-static void delete_dead_insn		PARAMS ((rtx));
-static void alter_reg			PARAMS ((int, int));
-static void set_label_offsets		PARAMS ((rtx, rtx, int));
-static void check_eliminable_occurrences	PARAMS ((rtx));
-static void elimination_effects		PARAMS ((rtx, enum machine_mode));
-static int eliminate_regs_in_insn	PARAMS ((rtx, int));
-static void update_eliminable_offsets	PARAMS ((void));
-static void mark_not_eliminable		PARAMS ((rtx, rtx, void *));
-static void set_initial_elim_offsets	PARAMS ((void));
-static void verify_initial_elim_offsets	PARAMS ((void));
-static void set_initial_label_offsets	PARAMS ((void));
-static void set_offsets_for_label	PARAMS ((rtx));
-static void init_elim_table		PARAMS ((void));
-static void update_eliminables		PARAMS ((HARD_REG_SET *));
-static void spill_hard_reg		PARAMS ((unsigned int, int));
-static int finish_spills		PARAMS ((int));
-static void ior_hard_reg_set		PARAMS ((HARD_REG_SET *, HARD_REG_SET *));
-static void scan_paradoxical_subregs	PARAMS ((rtx));
-static void count_pseudo		PARAMS ((int));
-static void order_regs_for_reload	PARAMS ((struct insn_chain *));
-static void reload_as_needed		PARAMS ((int));
-static void forget_old_reloads_1	PARAMS ((rtx, rtx, void *));
-static int reload_reg_class_lower	PARAMS ((const void *, const void *));
-static void mark_reload_reg_in_use	PARAMS ((unsigned int, int,
-						 enum reload_type,
-						 enum machine_mode));
-static void clear_reload_reg_in_use	PARAMS ((unsigned int, int,
-						 enum reload_type,
-						 enum machine_mode));
-static int reload_reg_free_p		PARAMS ((unsigned int, int,
-						 enum reload_type));
-static int reload_reg_free_for_value_p	PARAMS ((int, int, int,
-						 enum reload_type,
-						 rtx, rtx, int, int));
-static int free_for_value_p		PARAMS ((int, enum machine_mode, int,
-						 enum reload_type, rtx, rtx,
-						 int, int));
-static int reload_reg_reaches_end_p	PARAMS ((unsigned int, int,
-						 enum reload_type));
-static int allocate_reload_reg		PARAMS ((struct insn_chain *, int,
-						 int));
-static int conflicts_with_override	PARAMS ((rtx));
-static void failed_reload		PARAMS ((rtx, int));
-static int set_reload_reg		PARAMS ((int, int));
-static void choose_reload_regs_init	PARAMS ((struct insn_chain *, rtx *));
-static void choose_reload_regs		PARAMS ((struct insn_chain *));
-static void merge_assigned_reloads	PARAMS ((rtx));
-static void emit_input_reload_insns	PARAMS ((struct insn_chain *,
-						 struct reload *, rtx, int));
-static void emit_output_reload_insns	PARAMS ((struct insn_chain *,
-						 struct reload *, int));
-static void do_input_reload		PARAMS ((struct insn_chain *,
-						 struct reload *, int));
-static void do_output_reload		PARAMS ((struct insn_chain *,
-						 struct reload *, int));
-static void emit_reload_insns		PARAMS ((struct insn_chain *));
-static void delete_output_reload	PARAMS ((rtx, int, int));
-static void delete_address_reloads	PARAMS ((rtx, rtx));
-static void delete_address_reloads_1	PARAMS ((rtx, rtx, rtx));
-static rtx inc_for_reload		PARAMS ((rtx, rtx, rtx, int));
+static void spill_failure (rtx, enum reg_class);
+static void count_spilled_pseudo (int, int, int);
+static void delete_dead_insn (rtx);
+static void alter_reg (int, int);
+static void set_label_offsets (rtx, rtx, int);
+static void check_eliminable_occurrences (rtx);
+static void elimination_effects (rtx, enum machine_mode);
+static int eliminate_regs_in_insn (rtx, int);
+static void update_eliminable_offsets (void);
+static void mark_not_eliminable (rtx, rtx, void *);
+static void set_initial_elim_offsets (void);
+static void verify_initial_elim_offsets (void);
+static void set_initial_label_offsets (void);
+static void set_offsets_for_label (rtx);
+static void init_elim_table (void);
+static void update_eliminables (HARD_REG_SET *);
+static void spill_hard_reg (unsigned int, int);
+static int finish_spills (int);
+static void ior_hard_reg_set (HARD_REG_SET *, HARD_REG_SET *);
+static void scan_paradoxical_subregs (rtx);
+static void count_pseudo (int);
+static void order_regs_for_reload (struct insn_chain *);
+static void reload_as_needed (int);
+static void forget_old_reloads_1 (rtx, rtx, void *);
+static int reload_reg_class_lower (const void *, const void *);
+static void mark_reload_reg_in_use (unsigned int, int, enum reload_type,
+				    enum machine_mode);
+static void clear_reload_reg_in_use (unsigned int, int, enum reload_type,
+				     enum machine_mode);
+static int reload_reg_free_p (unsigned int, int, enum reload_type);
+static int reload_reg_free_for_value_p (int, int, int, enum reload_type,
+					rtx, rtx, int, int);
+static int free_for_value_p (int, enum machine_mode, int, enum reload_type,
+			     rtx, rtx, int, int);
+static int reload_reg_reaches_end_p (unsigned int, int, enum reload_type);
+static int allocate_reload_reg (struct insn_chain *, int, int);
+static int conflicts_with_override (rtx);
+static void failed_reload (rtx, int);
+static int set_reload_reg (int, int);
+static void choose_reload_regs_init (struct insn_chain *, rtx *);
+static void choose_reload_regs (struct insn_chain *);
+static void merge_assigned_reloads (rtx);
+static void emit_input_reload_insns (struct insn_chain *, struct reload *,
+				     rtx, int);
+static void emit_output_reload_insns (struct insn_chain *, struct reload *,
+				      int);
+static void do_input_reload (struct insn_chain *, struct reload *, int);
+static void do_output_reload (struct insn_chain *, struct reload *, int);
+static void emit_reload_insns (struct insn_chain *);
+static void delete_output_reload (rtx, int, int);
+static void delete_address_reloads (rtx, rtx);
+static void delete_address_reloads_1 (rtx, rtx, rtx);
+static rtx inc_for_reload (rtx, rtx, rtx, int);
 #ifdef AUTO_INC_DEC
-static void add_auto_inc_notes		PARAMS ((rtx, rtx));
+static void add_auto_inc_notes (rtx, rtx);
 #endif
-static void copy_eh_notes		PARAMS ((rtx, rtx));
+static void copy_eh_notes (rtx, rtx);
 
 /* Initialize the reload pass once per compilation.  */
 
 void
-init_reload ()
+init_reload (void)
 {
   int i;
 
@@ -501,7 +492,7 @@ static struct insn_chain *unused_insn_chains = 0;
 
 /* Allocate an empty insn_chain structure.  */
 struct insn_chain *
-new_insn_chain ()
+new_insn_chain (void)
 {
   struct insn_chain *c;
 
@@ -528,9 +519,7 @@ new_insn_chain ()
    allocated to pseudos in regset FROM.  */
 
 void
-compute_use_by_pseudos (to, from)
-     HARD_REG_SET *to;
-     regset from;
+compute_use_by_pseudos (HARD_REG_SET *to, regset from)
 {
   unsigned int regno;
 
@@ -562,10 +551,7 @@ compute_use_by_pseudos (to, from)
    equivalences.  */
 
 static void
-replace_pseudos_in (loc, mem_mode, usage)
-     rtx *loc;
-     enum machine_mode mem_mode;
-     rtx usage;
+replace_pseudos_in (rtx *loc, enum machine_mode mem_mode, rtx usage)
 {
   rtx x = *loc;
   enum rtx_code code;
@@ -646,9 +632,7 @@ static int failure;
    and we must not do any more for this function.  */
 
 int
-reload (first, global)
-     rtx first;
-     int global;
+reload (rtx first, int global)
 {
   int i;
   rtx insn;
@@ -1182,7 +1166,7 @@ reload (first, global)
 		&& (GET_CODE (XEXP (PATTERN (insn), 0)) != MEM
 		    || GET_MODE (XEXP (PATTERN (insn), 0)) != BLKmode
 		    || (GET_CODE (XEXP (XEXP (PATTERN (insn), 0), 0)) != SCRATCH
-			&& XEXP (XEXP (PATTERN (insn), 0), 0) 
+			&& XEXP (XEXP (PATTERN (insn), 0), 0)
 				!= stack_pointer_rtx))
 		&& (GET_CODE (XEXP (PATTERN (insn), 0)) != REG
 		    || ! REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))))
@@ -1287,7 +1271,7 @@ reload (first, global)
    The whole thing is rather sick, I'm afraid.  */
 
 static void
-maybe_fix_stack_asms ()
+maybe_fix_stack_asms (void)
 {
 #ifdef STACK_REGS
   const char *constraints[MAX_RECOG_OPERANDS];
@@ -1400,8 +1384,7 @@ maybe_fix_stack_asms ()
 /* Copy the global variables n_reloads and rld into the corresponding elts
    of CHAIN.  */
 static void
-copy_reloads (chain)
-     struct insn_chain *chain;
+copy_reloads (struct insn_chain *chain)
 {
   chain->n_reloads = n_reloads;
   chain->rld
@@ -1415,8 +1398,7 @@ copy_reloads (chain)
    and/or eliminations.  Build the corresponding insns_need_reload list, and
    set something_needs_elimination as appropriate.  */
 static void
-calculate_needs_all_insns (global)
-     int global;
+calculate_needs_all_insns (int global)
 {
   struct insn_chain **pprev_reload = &insns_need_reload;
   struct insn_chain *chain, *next = 0;
@@ -1531,9 +1513,7 @@ calculate_needs_all_insns (global)
    should be handled first.  *P1 and *P2 are the reload numbers.  */
 
 static int
-reload_reg_class_lower (r1p, r2p)
-     const void *r1p;
-     const void *r2p;
+reload_reg_class_lower (const void *r1p, const void *r2p)
 {
   int r1 = *(const short *) r1p, r2 = *(const short *) r2p;
   int t;
@@ -1575,8 +1555,7 @@ static int spill_add_cost[FIRST_PSEUDO_REGISTER];
 /* Update the spill cost arrays, considering that pseudo REG is live.  */
 
 static void
-count_pseudo (reg)
-     int reg;
+count_pseudo (int reg)
 {
   int freq = REG_FREQ (reg);
   int r = reg_renumber[reg];
@@ -1602,8 +1581,7 @@ count_pseudo (reg)
    contents of BAD_SPILL_REGS for the insn described by CHAIN.  */
 
 static void
-order_regs_for_reload (chain)
-     struct insn_chain *chain;
+order_regs_for_reload (struct insn_chain *chain)
 {
   int i;
   HARD_REG_SET used_by_pseudos;
@@ -1653,8 +1631,7 @@ static HARD_REG_SET used_spill_regs_local;
    update SPILL_COST/SPILL_ADD_COST.  */
 
 static void
-count_spilled_pseudo (spilled, spilled_nregs, reg)
-     int spilled, spilled_nregs, reg;
+count_spilled_pseudo (int spilled, int spilled_nregs, int reg)
 {
   int r = reg_renumber[reg];
   int nregs = HARD_REGNO_NREGS (r, PSEUDO_REGNO_MODE (reg));
@@ -1673,9 +1650,7 @@ count_spilled_pseudo (spilled, spilled_nregs, reg)
 /* Find reload register to use for reload number ORDER.  */
 
 static int
-find_reg (chain, order)
-     struct insn_chain *chain;
-     int order;
+find_reg (struct insn_chain *chain, int order)
 {
   int rnum = reload_order[order];
   struct reload *rl = rld + rnum;
@@ -1781,8 +1756,7 @@ find_reg (chain, order)
    for a smaller class even though it belongs to that class.  */
 
 static void
-find_reload_regs (chain)
-     struct insn_chain *chain;
+find_reload_regs (struct insn_chain *chain)
 {
   int i;
 
@@ -1842,7 +1816,7 @@ find_reload_regs (chain)
 }
 
 static void
-select_reload_regs ()
+select_reload_regs (void)
 {
   struct insn_chain *chain;
 
@@ -1855,7 +1829,7 @@ select_reload_regs ()
 /* Delete all insns that were inserted by emit_caller_save_insns during
    this iteration.  */
 static void
-delete_caller_save_insns ()
+delete_caller_save_insns (void)
 {
   struct insn_chain *c = reload_insn_chain;
 
@@ -1887,9 +1861,7 @@ delete_caller_save_insns ()
    INSN should be one of the insns which needed this particular spill reg.  */
 
 static void
-spill_failure (insn, class)
-     rtx insn;
-     enum reg_class class;
+spill_failure (rtx insn, enum reg_class class)
 {
   static const char *const reg_class_names[] = REG_CLASS_NAMES;
   if (asm_noperands (PATTERN (insn)) >= 0)
@@ -1907,8 +1879,7 @@ spill_failure (insn, class)
    data that is dead in INSN.  */
 
 static void
-delete_dead_insn (insn)
-     rtx insn;
+delete_dead_insn (rtx insn)
 {
   rtx prev = prev_real_insn (insn);
   rtx prev_dest;
@@ -1936,9 +1907,7 @@ delete_dead_insn (insn)
    can share one stack slot.  */
 
 static void
-alter_reg (i, from_reg)
-     int i;
-     int from_reg;
+alter_reg (int i, int from_reg)
 {
   /* When outputting an inline function, this can happen
      for a reg that isn't actually used.  */
@@ -2086,8 +2055,7 @@ alter_reg (i, from_reg)
    used by pseudo-reg number REGNO.  */
 
 void
-mark_home_live (regno)
-     int regno;
+mark_home_live (int regno)
 {
   int i, lim;
 
@@ -2110,10 +2078,7 @@ mark_home_live (regno)
    current offset.  */
 
 static void
-set_label_offsets (x, insn, initial_p)
-     rtx x;
-     rtx insn;
-     int initial_p;
+set_label_offsets (rtx x, rtx insn, int initial_p)
 {
   enum rtx_code code = GET_CODE (x);
   rtx tem;
@@ -2276,10 +2241,7 @@ set_label_offsets (x, insn, initial_p)
    the proper thing.  */
 
 rtx
-eliminate_regs (x, mem_mode, insn)
-     rtx x;
-     enum machine_mode mem_mode;
-     rtx insn;
+eliminate_regs (rtx x, enum machine_mode mem_mode, rtx insn)
 {
   enum rtx_code code = GET_CODE (x);
   struct elim_table *ep;
@@ -2664,10 +2626,7 @@ eliminate_regs (x, mem_mode, insn)
    the mode of an enclosing MEM rtx, or VOIDmode if not within a MEM.  */
 
 static void
-elimination_effects (x, mem_mode)
-     rtx x;
-     enum machine_mode mem_mode;
-
+elimination_effects (rtx x, enum machine_mode mem_mode)
 {
   enum rtx_code code = GET_CODE (x);
   struct elim_table *ep;
@@ -2864,8 +2823,7 @@ elimination_effects (x, mem_mode)
    eliminable.  */
 
 static void
-check_eliminable_occurrences (x)
-     rtx x;
+check_eliminable_occurrences (rtx x)
 {
   const char *fmt;
   int i;
@@ -2914,9 +2872,7 @@ check_eliminable_occurrences (x)
    is returned.  Otherwise, 1 is returned.  */
 
 static int
-eliminate_regs_in_insn (insn, replace)
-     rtx insn;
-     int replace;
+eliminate_regs_in_insn (rtx insn, int replace)
 {
   int icode = recog_memoized (insn);
   rtx old_body = PATTERN (insn);
@@ -3262,7 +3218,7 @@ eliminate_regs_in_insn (insn, replace)
    grow downward) for each elimination pair.  */
 
 static void
-update_eliminable_offsets ()
+update_eliminable_offsets (void)
 {
   struct elim_table *ep;
 
@@ -3290,10 +3246,7 @@ update_eliminable_offsets ()
    the insns of the function.  */
 
 static void
-mark_not_eliminable (dest, x, data)
-     rtx dest;
-     rtx x;
-     void *data ATTRIBUTE_UNUSED;
+mark_not_eliminable (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
 {
   unsigned int i;
 
@@ -3325,7 +3278,7 @@ mark_not_eliminable (dest, x, data)
    cause incorrect code to be generated if we did not check for it.  */
 
 static void
-verify_initial_elim_offsets ()
+verify_initial_elim_offsets (void)
 {
   int t;
 
@@ -3348,7 +3301,7 @@ verify_initial_elim_offsets ()
 /* Reset all offsets on eliminable registers to their initial values.  */
 
 static void
-set_initial_elim_offsets ()
+set_initial_elim_offsets (void)
 {
   struct elim_table *ep = reg_eliminate;
 
@@ -3374,7 +3327,7 @@ set_initial_elim_offsets ()
    For all other labels, show that we don't know the offsets.  */
 
 static void
-set_initial_label_offsets ()
+set_initial_label_offsets (void)
 {
   rtx x;
   memset (offsets_known_at, 0, num_labels);
@@ -3388,8 +3341,7 @@ set_initial_label_offsets ()
    by INSN.  */
 
 static void
-set_offsets_for_label (insn)
-     rtx insn;
+set_offsets_for_label (rtx insn)
 {
   unsigned int i;
   int label_nr = CODE_LABEL_NUMBER (insn);
@@ -3412,8 +3364,7 @@ set_offsets_for_label (insn)
    since they can't have changed.  */
 
 static void
-update_eliminables (pset)
-     HARD_REG_SET *pset;
+update_eliminables (HARD_REG_SET *pset)
 {
   int previous_frame_pointer_needed = frame_pointer_needed;
   struct elim_table *ep;
@@ -3489,7 +3440,7 @@ update_eliminables (pset)
 /* Initialize the table of registers to eliminate.  */
 
 static void
-init_elim_table ()
+init_elim_table (void)
 {
   struct elim_table *ep;
 #ifdef ELIMINABLE_REGS
@@ -3556,9 +3507,7 @@ init_elim_table ()
    Return nonzero if any pseudos needed to be kicked out.  */
 
 static void
-spill_hard_reg (regno, cant_eliminate)
-     unsigned int regno;
-     int cant_eliminate;
+spill_hard_reg (unsigned int regno, int cant_eliminate)
 {
   int i;
 
@@ -3585,8 +3534,7 @@ spill_hard_reg (regno, cant_eliminate)
    from within EXECUTE_IF_SET_IN_REG_SET.  Hence this awkwardness.  */
 
 static void
-ior_hard_reg_set (set1, set2)
-     HARD_REG_SET *set1, *set2;
+ior_hard_reg_set (HARD_REG_SET *set1, HARD_REG_SET *set2)
 {
   IOR_HARD_REG_SET (*set1, *set2);
 }
@@ -3597,8 +3545,7 @@ ior_hard_reg_set (set1, set2)
    spill_regs array for use by choose_reload_regs.  */
 
 static int
-finish_spills (global)
-     int global;
+finish_spills (int global)
 {
   struct insn_chain *chain;
   int something_changed = 0;
@@ -3747,8 +3694,7 @@ finish_spills (global)
    forbidden from being used for spill registers.  */
 
 static void
-scan_paradoxical_subregs (x)
-     rtx x;
+scan_paradoxical_subregs (rtx x)
 {
   int i;
   const char *fmt;
@@ -3811,8 +3757,7 @@ scan_paradoxical_subregs (x)
    as the insns are scanned.  */
 
 static void
-reload_as_needed (live_known)
-     int live_known;
+reload_as_needed (int live_known)
 {
   struct insn_chain *chain;
 #if defined (AUTO_INC_DEC)
@@ -4090,10 +4035,8 @@ reload_as_needed (live_known)
    or it may be a pseudo reg that was reloaded from.  */
 
 static void
-forget_old_reloads_1 (x, ignored, data)
-     rtx x;
-     rtx ignored ATTRIBUTE_UNUSED;
-     void *data ATTRIBUTE_UNUSED;
+forget_old_reloads_1 (rtx x, rtx ignored ATTRIBUTE_UNUSED,
+		      void *data ATTRIBUTE_UNUSED)
 {
   unsigned int regno;
   unsigned int nr;
@@ -4189,11 +4132,8 @@ static HARD_REG_SET reg_used_in_insn;
    actually used.  */
 
 static void
-mark_reload_reg_in_use (regno, opnum, type, mode)
-     unsigned int regno;
-     int opnum;
-     enum reload_type type;
-     enum machine_mode mode;
+mark_reload_reg_in_use (unsigned int regno, int opnum, enum reload_type type,
+			enum machine_mode mode)
 {
   unsigned int nregs = HARD_REGNO_NREGS (regno, mode);
   unsigned int i;
@@ -4254,11 +4194,8 @@ mark_reload_reg_in_use (regno, opnum, type, mode)
 /* Similarly, but show REGNO is no longer in use for a reload.  */
 
 static void
-clear_reload_reg_in_use (regno, opnum, type, mode)
-     unsigned int regno;
-     int opnum;
-     enum reload_type type;
-     enum machine_mode mode;
+clear_reload_reg_in_use (unsigned int regno, int opnum,
+			 enum reload_type type, enum machine_mode mode)
 {
   unsigned int nregs = HARD_REGNO_NREGS (regno, mode);
   unsigned int start_regno, end_regno, r;
@@ -4366,10 +4303,7 @@ clear_reload_reg_in_use (regno, opnum, type, mode)
    specified by OPNUM and TYPE.  */
 
 static int
-reload_reg_free_p (regno, opnum, type)
-     unsigned int regno;
-     int opnum;
-     enum reload_type type;
+reload_reg_free_p (unsigned int regno, int opnum, enum reload_type type)
 {
   int i;
 
@@ -4532,10 +4466,7 @@ reload_reg_free_p (regno, opnum, type)
    in case the reg has already been marked in use.  */
 
 static int
-reload_reg_reaches_end_p (regno, opnum, type)
-     unsigned int regno;
-     int opnum;
-     enum reload_type type;
+reload_reg_reaches_end_p (unsigned int regno, int opnum, enum reload_type type)
 {
   int i;
 
@@ -4665,8 +4596,7 @@ reload_reg_reaches_end_p (regno, opnum, type)
    This function uses the same algorithm as reload_reg_free_p above.  */
 
 int
-reloads_conflict (r1, r2)
-     int r1, r2;
+reloads_conflict (int r1, int r2)
 {
   enum reload_type r1_type = rld[r1].when_needed;
   enum reload_type r2_type = rld[r2].when_needed;
@@ -4757,14 +4687,9 @@ int reload_spill_index[MAX_RELOADS];
    (possibly comprising multiple hard registers) that we are considering.  */
 
 static int
-reload_reg_free_for_value_p (start_regno, regno, opnum, type, value, out,
-			     reloadnum, ignore_address_reloads)
-     int start_regno, regno;
-     int opnum;
-     enum reload_type type;
-     rtx value, out;
-     int reloadnum;
-     int ignore_address_reloads;
+reload_reg_free_for_value_p (int start_regno, int regno, int opnum,
+			     enum reload_type type, rtx value, rtx out,
+			     int reloadnum, int ignore_address_reloads)
 {
   int time1;
   /* Set if we see an input reload that must not share its reload register
@@ -5001,15 +4926,9 @@ reload_reg_free_for_value_p (start_regno, regno, opnum, type, value, out,
    register.  */
 
 static int
-free_for_value_p (regno, mode, opnum, type, value, out, reloadnum,
-		  ignore_address_reloads)
-     int regno;
-     enum machine_mode mode;
-     int opnum;
-     enum reload_type type;
-     rtx value, out;
-     int reloadnum;
-     int ignore_address_reloads;
+free_for_value_p (int regno, enum machine_mode mode, int opnum,
+		  enum reload_type type, rtx value, rtx out, int reloadnum,
+		  int ignore_address_reloads)
 {
   int nregs = HARD_REGNO_NREGS (regno, mode);
   while (nregs-- > 0)
@@ -5024,8 +4943,7 @@ free_for_value_p (regno, mode, opnum, type, value, out, reloadnum,
    overriding inheritance.  Return nonzero if so.  */
 
 static int
-conflicts_with_override (x)
-     rtx x;
+conflicts_with_override (rtx x)
 {
   int i;
   for (i = 0; i < n_reloads; i++)
@@ -5038,9 +4956,7 @@ conflicts_with_override (x)
 /* Give an error message saying we failed to find a reload for INSN,
    and clear out reload R.  */
 static void
-failed_reload (insn, r)
-     rtx insn;
-     int r;
+failed_reload (rtx insn, int r)
 {
   if (asm_noperands (PATTERN (insn)) < 0)
     /* It's the compiler's fault.  */
@@ -5061,8 +4977,7 @@ failed_reload (insn, r)
    for reload R.  If it's valid, get an rtx for it.  Return nonzero if
    successful.  */
 static int
-set_reload_reg (i, r)
-     int i, r;
+set_reload_reg (int i, int r)
 {
   int regno;
   rtx reg = spill_reg_rtx[i];
@@ -5117,10 +5032,8 @@ set_reload_reg (i, r)
    we didn't change anything.  */
 
 static int
-allocate_reload_reg (chain, r, last_reload)
-     struct insn_chain *chain ATTRIBUTE_UNUSED;
-     int r;
-     int last_reload;
+allocate_reload_reg (struct insn_chain *chain ATTRIBUTE_UNUSED, int r,
+		     int last_reload)
 {
   int i, pass, count;
 
@@ -5241,9 +5154,7 @@ allocate_reload_reg (chain, r, last_reload)
    is the array we use to restore the reg_rtx field for every reload.  */
 
 static void
-choose_reload_regs_init (chain, save_reload_reg_rtx)
-     struct insn_chain *chain;
-     rtx *save_reload_reg_rtx;
+choose_reload_regs_init (struct insn_chain *chain, rtx *save_reload_reg_rtx)
 {
   int i;
 
@@ -5302,8 +5213,7 @@ choose_reload_regs_init (chain, save_reload_reg_rtx)
    finding a reload reg in the proper class.  */
 
 static void
-choose_reload_regs (chain)
-     struct insn_chain *chain;
+choose_reload_regs (struct insn_chain *chain)
 {
   rtx insn = chain->insn;
   int i, j;
@@ -5676,7 +5586,7 @@ choose_reload_regs (chain)
 		    {
 		      regs_used |= TEST_HARD_REG_BIT (reload_reg_used_at_all,
 						      i);
-		      bad_for_class |= ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].class], 
+		      bad_for_class |= ! TEST_HARD_REG_BIT (reg_class_contents[(int) rld[r].class],
 							   i);
 		    }
 
@@ -5998,8 +5908,7 @@ choose_reload_regs (chain)
    remove_address_replacements.  */
 
 void
-deallocate_reload_reg (r)
-     int r;
+deallocate_reload_reg (int r)
 {
   int regno;
 
@@ -6027,8 +5936,7 @@ deallocate_reload_reg (r)
    prevent redundant code.  */
 
 static void
-merge_assigned_reloads (insn)
-     rtx insn;
+merge_assigned_reloads (rtx insn)
 {
   int i, j;
 
@@ -6168,11 +6076,8 @@ static HARD_REG_SET reg_reloaded_died;
    has the number J.  OLD contains the value to be used as input.  */
 
 static void
-emit_input_reload_insns (chain, rl, old, j)
-     struct insn_chain *chain;
-     struct reload *rl;
-     rtx old;
-     int j;
+emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
+			 rtx old, int j)
 {
   rtx insn = chain->insn;
   rtx reloadreg = rl->reg_rtx;
@@ -6659,10 +6564,8 @@ emit_input_reload_insns (chain, rl, old, j)
 /* Generate insns to for the output reload RL, which is for the insn described
    by CHAIN and has the number J.  */
 static void
-emit_output_reload_insns (chain, rl, j)
-     struct insn_chain *chain;
-     struct reload *rl;
-     int j;
+emit_output_reload_insns (struct insn_chain *chain, struct reload *rl,
+			  int j)
 {
   rtx reloadreg = rl->reg_rtx;
   rtx insn = chain->insn;
@@ -6873,10 +6776,7 @@ emit_output_reload_insns (chain, rl, j)
 /* Do input reloading for reload RL, which is for the insn described by CHAIN
    and has the number J.  */
 static void
-do_input_reload (chain, rl, j)
-     struct insn_chain *chain;
-     struct reload *rl;
-     int j;
+do_input_reload (struct insn_chain *chain, struct reload *rl, int j)
 {
   rtx insn = chain->insn;
   rtx old = (rl->in && GET_CODE (rl->in) == MEM
@@ -6931,10 +6831,7 @@ do_input_reload (chain, rl, j)
    ??? At some point we need to support handling output reloads of
    JUMP_INSNs or insns that set cc0.  */
 static void
-do_output_reload (chain, rl, j)
-     struct insn_chain *chain;
-     struct reload *rl;
-     int j;
+do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
 {
   rtx note, old;
   rtx insn = chain->insn;
@@ -7003,8 +6900,7 @@ do_output_reload (chain, rl, j)
 /* Output insns to reload values in and out of the chosen reload regs.  */
 
 static void
-emit_reload_insns (chain)
-     struct insn_chain *chain;
+emit_reload_insns (struct insn_chain *chain)
 {
   rtx insn = chain->insn;
 
@@ -7377,11 +7273,7 @@ emit_reload_insns (chain)
    Returns first insn emitted.  */
 
 rtx
-gen_reload (out, in, opnum, type)
-     rtx out;
-     rtx in;
-     int opnum;
-     enum reload_type type;
+gen_reload (rtx out, rtx in, int opnum, enum reload_type type)
 {
   rtx last = get_last_insn ();
   rtx tem;
@@ -7601,10 +7493,7 @@ gen_reload (out, in, opnum, type)
    certain that reload J doesn't use REG any longer for input.  */
 
 static void
-delete_output_reload (insn, j, last_reload_reg)
-     rtx insn;
-     int j;
-     int last_reload_reg;
+delete_output_reload (rtx insn, int j, int last_reload_reg)
 {
   rtx output_reload_insn = spill_reg_store[last_reload_reg];
   rtx reg = spill_reg_stored_to[last_reload_reg];
@@ -7771,8 +7660,7 @@ delete_output_reload (insn, j, last_reload_reg)
    reload registers used in DEAD_INSN that are not used till CURRENT_INSN.
    CURRENT_INSN is being reloaded, so we have to check its reloads too.  */
 static void
-delete_address_reloads (dead_insn, current_insn)
-     rtx dead_insn, current_insn;
+delete_address_reloads (rtx dead_insn, rtx current_insn)
 {
   rtx set = single_set (dead_insn);
   rtx set2, dst, prev, next;
@@ -7808,8 +7696,7 @@ delete_address_reloads (dead_insn, current_insn)
 
 /* Subfunction of delete_address_reloads: process registers found in X.  */
 static void
-delete_address_reloads_1 (dead_insn, x, current_insn)
-     rtx dead_insn, x, current_insn;
+delete_address_reloads_1 (rtx dead_insn, rtx x, rtx current_insn)
 {
   rtx prev, set, dst, i2;
   int i, j;
@@ -7927,10 +7814,7 @@ delete_address_reloads_1 (dead_insn, x, current_insn)
    Return the instruction that stores into RELOADREG.  */
 
 static rtx
-inc_for_reload (reloadreg, in, value, inc_amount)
-     rtx reloadreg;
-     rtx in, value;
-     int inc_amount;
+inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
 {
   /* REG or MEM to be copied and incremented.  */
   rtx incloc = XEXP (value, 0);
@@ -8021,9 +7905,7 @@ inc_for_reload (reloadreg, in, value, inc_amount)
 
 #ifdef AUTO_INC_DEC
 static void
-add_auto_inc_notes (insn, x)
-     rtx insn;
-     rtx x;
+add_auto_inc_notes (rtx insn, rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt;
@@ -8051,9 +7933,7 @@ add_auto_inc_notes (insn, x)
 
 /* Copy EH notes from an insn to its reloads.  */
 static void
-copy_eh_notes (insn, x)
-     rtx insn;
-     rtx x;
+copy_eh_notes (rtx insn, rtx x)
 {
   rtx eh_note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
   if (eh_note)
@@ -8075,7 +7955,7 @@ copy_eh_notes (insn, x)
 
    Similar handle instructions throwing exceptions internally.  */
 void
-fixup_abnormal_edges ()
+fixup_abnormal_edges (void)
 {
   bool inserted = false;
   basic_block bb;

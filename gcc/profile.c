@@ -66,10 +66,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Additional information about the edges we need.  */
 struct edge_info {
   unsigned int count_valid : 1;
-  
+
   /* Is on the spanning tree.  */
   unsigned int on_tree : 1;
-  
+
   /* Pretend this edge does not exist (it is abnormal and we've
      inserted a fake to compensate).  */
   unsigned int ignore : 1;
@@ -105,18 +105,21 @@ static int total_num_never_executed;
 static int total_num_branches;
 
 /* Forward declarations.  */
-static void find_spanning_tree PARAMS ((struct edge_list *));
-static rtx gen_edge_profiler PARAMS ((int));
-static rtx gen_interval_profiler (struct histogram_value *, unsigned, unsigned);
+static void find_spanning_tree (struct edge_list *);
+static rtx gen_edge_profiler (int);
+static rtx gen_interval_profiler (struct histogram_value *, unsigned,
+				  unsigned);
 static rtx gen_pow2_profiler (struct histogram_value *, unsigned, unsigned);
-static rtx gen_one_value_profiler (struct histogram_value *, unsigned, unsigned);
-static rtx gen_const_delta_profiler (struct histogram_value *, unsigned, unsigned);
-static unsigned instrument_edges PARAMS ((struct edge_list *));
+static rtx gen_one_value_profiler (struct histogram_value *, unsigned,
+				   unsigned);
+static rtx gen_const_delta_profiler (struct histogram_value *, unsigned,
+				     unsigned);
+static unsigned instrument_edges (struct edge_list *);
 static void instrument_values (unsigned, struct histogram_value *);
-static void compute_branch_probabilities PARAMS ((void));
-static gcov_type * get_exec_counts PARAMS ((void));
-static basic_block find_group PARAMS ((basic_block));
-static void union_groups PARAMS ((basic_block, basic_block));
+static void compute_branch_probabilities (void);
+static gcov_type * get_exec_counts (void);
+static basic_block find_group (basic_block);
+static void union_groups (basic_block, basic_block);
 
 
 /* Add edge instrumentation code to the entire insn chain.
@@ -125,13 +128,12 @@ static void union_groups PARAMS ((basic_block, basic_block));
    NUM_BLOCKS is the number of basic blocks found in F.  */
 
 static unsigned
-instrument_edges (el)
-     struct edge_list *el;
+instrument_edges (struct edge_list *el)
 {
   unsigned num_instr_edges = 0;
   int num_edges = NUM_EDGES (el);
   basic_block bb;
-  
+
   remove_fake_edges ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
@@ -141,11 +143,11 @@ instrument_edges (el)
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  struct edge_info *inf = EDGE_INFO (e);
-	  
+
 	  if (!inf->ignore && !inf->on_tree)
 	    {
 	      rtx edge_profile;
-	      
+
 	      if (e->flags & EDGE_ABNORMAL)
 		abort ();
 	      if (rtl_dump_file)
@@ -172,7 +174,7 @@ instrument_values (unsigned n_values, struct histogram_value *values)
   rtx sequence;
   unsigned i, t;
   edge e;
- 
+
   /* Emit code to generate the histograms before the insns.  */
 
   for (i = 0; i < n_values; i++)
@@ -233,12 +235,12 @@ instrument_values (unsigned n_values, struct histogram_value *values)
 /* Computes hybrid profile for all matching entries in da_file.  */
 
 static gcov_type *
-get_exec_counts ()
+get_exec_counts (void)
 {
   unsigned num_edges = 0;
   basic_block bb;
   gcov_type *counts;
-  
+
   /* Count the edges to be (possibly) instrumented.  */
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
@@ -264,7 +266,7 @@ get_exec_counts ()
    Annotate them accordingly.  */
 
 static void
-compute_branch_probabilities ()
+compute_branch_probabilities (void)
 {
   basic_block bb;
   int i;
@@ -616,7 +618,7 @@ compute_branch_probabilities ()
    Main entry point of this file.  */
 
 void
-branch_prob ()
+branch_prob (void)
 {
   basic_block bb;
   unsigned i;
@@ -716,7 +718,7 @@ branch_prob ()
      as possible to minimize number of edge splits necessary.  */
 
   find_spanning_tree (el);
-  
+
   /* Fake edges that are not on the tree will not be instrumented, so
      mark them ignored.  */
   for (num_instrumented = i = 0; i < num_edges; i++)
@@ -754,7 +756,7 @@ branch_prob ()
   if (coverage_begin_output ())
     {
       gcov_position_t offset;
-      
+
       offset = gcov_write_tag (GCOV_TAG_BLOCKS);
       for (i = 0; i != (unsigned) (n_basic_blocks + 2); i++)
 	gcov_write_unsigned (0);
@@ -767,7 +769,7 @@ branch_prob ()
   ENTRY_BLOCK_PTR->index = -1;
   EXIT_BLOCK_PTR->index = last_basic_block;
 #define BB_TO_GCOV_INDEX(bb)  ((bb)->index + 1)
-  
+
   /* Arcs */
   if (coverage_begin_output ())
     {
@@ -779,14 +781,14 @@ branch_prob ()
 
 	  offset = gcov_write_tag (GCOV_TAG_ARCS);
 	  gcov_write_unsigned (BB_TO_GCOV_INDEX (bb));
-	  
+
 	  for (e = bb->succ; e; e = e->succ_next)
 	    {
 	      struct edge_info *i = EDGE_INFO (e);
 	      if (!i->ignore)
 		{
 		  unsigned flag_bits = 0;
-		  
+
 		  if (i->on_tree)
 		    flag_bits |= GCOV_ARC_ON_TREE;
 		  if (e->flags & EDGE_FAKE)
@@ -802,20 +804,20 @@ branch_prob ()
 	  gcov_write_length (offset);
 	}
     }
-  
+
   /* Line numbers.  */
   if (coverage_begin_output ())
     {
       char const *prev_file_name = NULL;
       gcov_position_t offset;
-      
+
       FOR_EACH_BB (bb)
 	{
 	  rtx insn = bb->head;
 	  int ignore_next_note = 0;
-	  
+
 	  offset = 0;
-	  
+
 	  /* We are looking for line number notes.  Search backward
 	     before basic block to find correct ones.  */
 	  insn = prev_nonnote_insn (insn);
@@ -823,7 +825,7 @@ branch_prob ()
 	    insn = get_insns ();
 	  else
 	    insn = NEXT_INSN (insn);
-	  
+
 	  while (insn != bb->end)
 	    {
 	      if (GET_CODE (insn) == NOTE)
@@ -846,7 +848,7 @@ branch_prob ()
 			  offset = gcov_write_tag (GCOV_TAG_LINES);
 			  gcov_write_unsigned (BB_TO_GCOV_INDEX (bb));
 			}
-		      
+
 		      /* If this is a new source file, then output the
 			 file's name to the .bb file.  */
 		      if (!prev_file_name
@@ -862,7 +864,7 @@ branch_prob ()
 		}
 	      insn = NEXT_INSN (insn);
 	    }
-	  
+
 	  if (offset)
 	    {
 	      /* A file of NULL indicates the end of run.  */
@@ -920,8 +922,7 @@ branch_prob ()
    aux fields.  */
 
 static basic_block
-find_group (bb)
-     basic_block bb;
+find_group (basic_block bb)
 {
   basic_block group = bb, bb1;
 
@@ -939,8 +940,7 @@ find_group (bb)
 }
 
 static void
-union_groups (bb1, bb2)
-     basic_block bb1, bb2;
+union_groups (basic_block bb1, basic_block bb2)
 {
   basic_block bb1g = find_group (bb1);
   basic_block bb2g = find_group (bb2);
@@ -961,8 +961,7 @@ union_groups (bb1, bb2)
    are more expensive to instrument.  */
 
 static void
-find_spanning_tree (el)
-     struct edge_list *el;
+find_spanning_tree (struct edge_list *el)
 {
   int i;
   int num_edges = NUM_EDGES (el);
@@ -1031,7 +1030,7 @@ find_spanning_tree (el)
 /* Perform file-level initialization for branch-prob processing.  */
 
 void
-init_branch_prob ()
+init_branch_prob (void)
 {
   int i;
 
@@ -1052,7 +1051,7 @@ init_branch_prob ()
    is completed.  */
 
 void
-end_branch_prob ()
+end_branch_prob (void)
 {
   if (rtl_dump_file)
     {
@@ -1092,8 +1091,7 @@ end_branch_prob ()
 /* Output instructions as RTL to increment the edge execution count.  */
 
 static rtx
-gen_edge_profiler (edgeno)
-     int edgeno;
+gen_edge_profiler (int edgeno)
 {
   rtx ref = coverage_counter_ref (GCOV_COUNTER_ARCS, edgeno);
   rtx tmp;
@@ -1119,8 +1117,8 @@ gen_edge_profiler (edgeno)
    section for counters, BASE is offset of the counter position.  */
 
 static rtx
-gen_interval_profiler (struct histogram_value *value,
-		       unsigned tag, unsigned base)
+gen_interval_profiler (struct histogram_value *value, unsigned tag,
+		       unsigned base)
 {
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
@@ -1175,7 +1173,7 @@ gen_interval_profiler (struct histogram_value *value,
       emit_label (more_label);
       tmp1 = expand_simple_binop (Pmode, PLUS, copy_rtx (tmp),
 				  GEN_INT (per_counter * value->hdata.intvl.steps),
-    				  mr, 0, OPTAB_WIDEN);
+				  mr, 0, OPTAB_WIDEN);
       if (tmp1 != mr)
 	emit_move_insn (copy_rtx (mr), tmp1);
       if (value->hdata.intvl.may_be_less)
@@ -1220,8 +1218,7 @@ gen_interval_profiler (struct histogram_value *value,
    section for counters, BASE is offset of the counter position.  */
 
 static rtx
-gen_pow2_profiler (struct histogram_value *value,
-		   unsigned tag, unsigned base)
+gen_pow2_profiler (struct histogram_value *value, unsigned tag, unsigned base)
 {
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
@@ -1254,7 +1251,7 @@ gen_pow2_profiler (struct histogram_value *value,
       tmp = expand_simple_binop (value->mode, AND, copy_rtx (uval), tmp,
 				 NULL_RTX, 0, OPTAB_WIDEN);
       do_compare_rtx_and_jump (tmp, const0_rtx, NE, 0, value->mode, NULL_RTX,
-    			       NULL_RTX, end_of_code_label);
+			       NULL_RTX, end_of_code_label);
     }
 
   /* Count log_2(value).  */
@@ -1294,8 +1291,8 @@ gen_pow2_profiler (struct histogram_value *value,
    section for counters, BASE is offset of the counter position.  */
 
 static rtx
-gen_one_value_profiler (struct histogram_value *value,
-			unsigned tag, unsigned base)
+gen_one_value_profiler (struct histogram_value *value, unsigned tag,
+			unsigned base)
 {
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);
   enum machine_mode mode = mode_for_size (gcov_size, MODE_INT, 0);
@@ -1324,7 +1321,7 @@ gen_one_value_profiler (struct histogram_value *value,
   /* Check if the stored value matches.  */
   do_compare_rtx_and_jump (copy_rtx (uval), copy_rtx (stored_value), EQ,
 			   0, mode, NULL_RTX, NULL_RTX, same_label);
-  
+
   /* Does not match; check whether the counter is zero.  */
   do_compare_rtx_and_jump (copy_rtx (counter), const0_rtx, EQ, 0, mode,
 			   NULL_RTX, NULL_RTX, zero_label);
@@ -1338,7 +1335,7 @@ gen_one_value_profiler (struct histogram_value *value,
 
   emit_jump_insn (gen_jump (end_of_code_label));
   emit_barrier ();
- 
+
   emit_label (zero_label);
   /* Set new value.  */
   emit_move_insn (copy_rtx (stored_value), copy_rtx (uval));
@@ -1350,7 +1347,7 @@ gen_one_value_profiler (struct histogram_value *value,
 
   if (tmp != counter)
     emit_move_insn (copy_rtx (counter), tmp);
-  
+
   emit_label (end_of_code_label);
 
   /* Increase the counter of all executions; this seems redundant given
@@ -1375,8 +1372,8 @@ gen_one_value_profiler (struct histogram_value *value,
    section for counters, BASE is offset of the counter position.  */
 
 static rtx
-gen_const_delta_profiler (struct histogram_value *value,
-			  unsigned tag, unsigned base)
+gen_const_delta_profiler (struct histogram_value *value, unsigned tag,
+			  unsigned base)
 {
   struct histogram_value one_value_delta;
   unsigned gcov_size = tree_low_cst (TYPE_SIZE (GCOV_TYPE_NODE), 1);

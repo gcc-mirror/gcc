@@ -1,5 +1,5 @@
 /* Loop unrolling and peeling.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -66,27 +66,25 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    showed that this choice may affect performance in order of several %.
    */
 
-static void decide_unrolling_and_peeling PARAMS ((struct loops *, int));
-static void peel_loops_completely PARAMS ((struct loops *, int));
-static void decide_peel_simple PARAMS ((struct loops *, struct loop *, int));
-static void decide_peel_once_rolling PARAMS ((struct loops *, struct loop *, int));
-static void decide_peel_completely PARAMS ((struct loops *, struct loop *, int));
-static void decide_unroll_stupid PARAMS ((struct loops *, struct loop *, int));
-static void decide_unroll_constant_iterations PARAMS ((struct loops *, struct loop *, int));
-static void decide_unroll_runtime_iterations PARAMS ((struct loops *, struct loop *, int));
-static void peel_loop_simple PARAMS ((struct loops *, struct loop *));
-static void peel_loop_completely PARAMS ((struct loops *, struct loop *));
-static void unroll_loop_stupid PARAMS ((struct loops *, struct loop *));
-static void unroll_loop_constant_iterations PARAMS ((struct loops *,
-						     struct loop *));
-static void unroll_loop_runtime_iterations PARAMS ((struct loops *,
-						    struct loop *));
+static void decide_unrolling_and_peeling (struct loops *, int);
+static void peel_loops_completely (struct loops *, int);
+static void decide_peel_simple (struct loops *, struct loop *, int);
+static void decide_peel_once_rolling (struct loops *, struct loop *, int);
+static void decide_peel_completely (struct loops *, struct loop *, int);
+static void decide_unroll_stupid (struct loops *, struct loop *, int);
+static void decide_unroll_constant_iterations (struct loops *,
+					       struct loop *, int);
+static void decide_unroll_runtime_iterations (struct loops *, struct loop *,
+					      int);
+static void peel_loop_simple (struct loops *, struct loop *);
+static void peel_loop_completely (struct loops *, struct loop *);
+static void unroll_loop_stupid (struct loops *, struct loop *);
+static void unroll_loop_constant_iterations (struct loops *, struct loop *);
+static void unroll_loop_runtime_iterations (struct loops *, struct loop *);
 
 /* Unroll and/or peel (depending on FLAGS) LOOPS.  */
 void
-unroll_and_peel_loops (loops, flags)
-     struct loops *loops;
-     int flags;
+unroll_and_peel_loops (struct loops *loops, int flags)
 {
   struct loop *loop, *next;
   int check;
@@ -152,9 +150,7 @@ unroll_and_peel_loops (loops, flags)
 
 /* Check whether to peel LOOPS (depending on FLAGS) completely and do so.  */
 static void
-peel_loops_completely (loops, flags)
-     struct loops *loops;
-     int flags;
+peel_loops_completely (struct loops *loops, int flags)
 {
   struct loop *loop, *next;
 
@@ -175,7 +171,7 @@ peel_loops_completely (loops, flags)
 
       loop->lpt_decision.decision = LPT_NONE;
       loop->has_desc = 0;
-  
+
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, ";; Considering loop %d for complete peeling\n",
 		 loop->num);
@@ -200,9 +196,7 @@ peel_loops_completely (loops, flags)
 
 /* Decide whether unroll or peel LOOPS (depending on FLAGS) and how much.  */
 static void
-decide_unrolling_and_peeling (loops, flags)
-     struct loops *loops;
-     int flags;
+decide_unrolling_and_peeling (struct loops *loops, int flags)
 {
   struct loop *loop = loops->tree_root, *next;
 
@@ -275,10 +269,8 @@ decide_unrolling_and_peeling (loops, flags)
 /* Decide whether the LOOP is once rolling and suitable for complete
    peeling.  */
 static void
-decide_peel_once_rolling (loops, loop, flags)
-     struct loops *loops;
-     struct loop *loop;
-     int flags ATTRIBUTE_UNUSED;
+decide_peel_once_rolling (struct loops *loops, struct loop *loop,
+			  int flags ATTRIBUTE_UNUSED)
 {
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Considering peeling once rolling loop\n");
@@ -311,10 +303,8 @@ decide_peel_once_rolling (loops, loop, flags)
 
 /* Decide whether the LOOP is suitable for complete peeling.  */
 static void
-decide_peel_completely (loops, loop, flags)
-     struct loops *loops;
-     struct loop *loop;
-     int flags ATTRIBUTE_UNUSED;
+decide_peel_completely (struct loops *loops, struct loop *loop,
+			int flags ATTRIBUTE_UNUSED)
 {
   unsigned npeel;
 
@@ -377,7 +367,7 @@ decide_peel_completely (loops, loop, flags)
   if (loop->desc.niter > npeel - 1)
     {
       if (rtl_dump_file)
-      	{
+	{
 	  fprintf (rtl_dump_file, ";; Not peeling loop completely, rolls too much (");
 	  fprintf (rtl_dump_file, HOST_WIDEST_INT_PRINT_DEC,(HOST_WIDEST_INT) loop->desc.niter);
 	  fprintf (rtl_dump_file, " iterations > %d [maximum peelings])\n", npeel);
@@ -393,29 +383,27 @@ decide_peel_completely (loops, loop, flags)
 
 /* Peel all iterations of LOOP, remove exit edges and cancel the loop
    completely.  The transformation done:
-   
+
    for (i = 0; i < 4; i++)
      body;
 
    ==>
-   
-   i = 0; 
+
+   i = 0;
    body; i++;
    body; i++;
    body; i++;
    body; i++;
    */
 static void
-peel_loop_completely (loops, loop)
-     struct loops *loops;
-     struct loop *loop;
+peel_loop_completely (struct loops *loops, struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned HOST_WIDE_INT npeel;
   unsigned n_remove_edges, i;
   edge *remove_edges;
   struct loop_desc *desc = &loop->desc;
-  
+
   npeel = desc->niter;
 
   if (npeel)
@@ -453,10 +441,8 @@ peel_loop_completely (loops, loop)
 
 /* Decide whether to unroll LOOP iterating constant number of times and how much.  */
 static void
-decide_unroll_constant_iterations (loops, loop, flags)
-     struct loops *loops;
-     struct loop *loop;
-     int flags;
+decide_unroll_constant_iterations (struct loops *loops, struct loop *loop,
+				   int flags)
 {
   unsigned nunroll, nunroll_by_av, best_copies, best_unroll = -1, n_copies, i;
 
@@ -546,13 +532,13 @@ decide_unroll_constant_iterations (loops, loop, flags)
 }
 
 /* Unroll LOOP with constant number of iterations LOOP->LPT_DECISION.TIMES + 1
-   times.  The transformation does this: 
-   
+   times.  The transformation does this:
+
    for (i = 0; i < 102; i++)
      body;
-   
+
    ==>
-   
+
    i = 0;
    body; i++;
    body; i++;
@@ -565,9 +551,7 @@ decide_unroll_constant_iterations (loops, loop, flags)
      }
   */
 static void
-unroll_loop_constant_iterations (loops, loop)
-     struct loops *loops;
-     struct loop *loop;
+unroll_loop_constant_iterations (struct loops *loops, struct loop *loop)
 {
   unsigned HOST_WIDE_INT niter;
   unsigned exit_mod;
@@ -665,10 +649,8 @@ unroll_loop_constant_iterations (loops, loop)
 /* Decide whether to unroll LOOP iterating runtime computable number of times
    and how much.  */
 static void
-decide_unroll_runtime_iterations (loops, loop, flags)
-     struct loops *loops;
-     struct loop *loop;
-     int flags;
+decide_unroll_runtime_iterations (struct loops *loops, struct loop *loop,
+				  int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
 
@@ -739,15 +721,15 @@ decide_unroll_runtime_iterations (loops, loop, flags)
 /* Unroll LOOP for that we are able to count number of iterations in runtime
    LOOP->LPT_DECISION.TIMES + 1 times.  The transformation does this (with some
    extra care for case n < 0):
-   
+
    for (i = 0; i < n; i++)
      body;
-   
+
    ==>
-  
+
    i = 0;
    mod = n % 4;
-  
+
    switch (mod)
      {
        case 3:
@@ -758,7 +740,7 @@ decide_unroll_runtime_iterations (loops, loop, flags)
          body; i++;
        case 0: ;
      }
-   
+
    while (i < n)
      {
        body; i++;
@@ -768,9 +750,7 @@ decide_unroll_runtime_iterations (loops, loop, flags)
      }
    */
 static void
-unroll_loop_runtime_iterations (loops, loop)
-     struct loops *loops;
-     struct loop *loop;
+unroll_loop_runtime_iterations (struct loops *loops, struct loop *loop)
 {
   rtx niter, init_code, branch_code, jump, label;
   unsigned i, j, p;
@@ -876,7 +856,7 @@ unroll_loop_runtime_iterations (loops, loop)
 		loops, 1,
 		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
 		DLTHE_FLAG_UPDATE_FREQ))
-    	abort ();
+	abort ();
 
       /* Create item for switch.  */
       j = n_peel - i - (extra_zero_check ? 0 : 1);
@@ -894,7 +874,7 @@ unroll_loop_runtime_iterations (loops, loop)
       REG_NOTES (jump)
 	      = gen_rtx_EXPR_LIST (REG_BR_PROB,
 				   GEN_INT (p), REG_NOTES (jump));
-	
+
       LABEL_NUSES (label)++;
       branch_code = get_insns ();
       end_sequence ();
@@ -924,7 +904,7 @@ unroll_loop_runtime_iterations (loops, loop)
       REG_NOTES (jump)
 	      = gen_rtx_EXPR_LIST (REG_BR_PROB,
 				   GEN_INT (p), REG_NOTES (jump));
-      
+
       LABEL_NUSES (label)++;
       branch_code = get_insns ();
       end_sequence ();
@@ -946,7 +926,7 @@ unroll_loop_runtime_iterations (loops, loop)
   RESET_BIT (wont_exit, may_exit_copy);
 
   if (!duplicate_loop_to_header_edge (loop, loop_latch_edge (loop),
-	 	loops, max_unroll,
+		loops, max_unroll,
 		wont_exit, desc->out_edge, remove_edges, &n_remove_edges,
 		DLTHE_FLAG_UPDATE_FREQ))
     abort ();
@@ -963,13 +943,10 @@ unroll_loop_runtime_iterations (loops, loop)
 	     ";; Unrolled loop %d times, counting # of iterations in runtime, %i insns\n",
 	     max_unroll, num_loop_insns (loop));
 }
-  
+
 /* Decide whether to simply peel LOOP and how much.  */
 static void
-decide_peel_simple (loops, loop, flags)
-     struct loops *loops;
-     struct loop *loop;
-     int flags;
+decide_peel_simple (struct loops *loops, struct loop *loop, int flags)
 {
   unsigned npeel;
 
@@ -1064,9 +1041,7 @@ decide_peel_simple (loops, loop, flags)
    end: ;
    */
 static void
-peel_loop_simple (loops, loop)
-     struct loops *loops;
-     struct loop *loop;
+peel_loop_simple (struct loops *loops, struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned npeel = loop->lpt_decision.times;
@@ -1078,7 +1053,7 @@ peel_loop_simple (loops, loop)
 		loops, npeel, wont_exit, NULL, NULL, NULL,
 		DLTHE_FLAG_UPDATE_FREQ))
     abort ();
-  
+
   free (wont_exit);
 
   if (rtl_dump_file)
@@ -1087,10 +1062,7 @@ peel_loop_simple (loops, loop)
 
 /* Decide whether to unroll LOOP stupidly and how much.  */
 static void
-decide_unroll_stupid (loops, loop, flags)
-     struct loops *loops;
-     struct loop *loop;
-     int flags;
+decide_unroll_stupid (struct loops *loops, struct loop *loop, int flags)
 {
   unsigned nunroll, nunroll_by_av, i;
 
@@ -1179,9 +1151,7 @@ decide_unroll_stupid (loops, loop, flags)
      }
    */
 static void
-unroll_loop_stupid (loops, loop)
-     struct loops *loops;
-     struct loop *loop;
+unroll_loop_stupid (struct loops *loops, struct loop *loop)
 {
   sbitmap wont_exit;
   unsigned nunroll = loop->lpt_decision.times;
@@ -1195,7 +1165,7 @@ unroll_loop_stupid (loops, loop)
     abort ();
 
   free (wont_exit);
-  
+
   if (rtl_dump_file)
     fprintf (rtl_dump_file, ";; Unrolled loop %d times, %i insns\n",
 	     nunroll, num_loop_insns (loop));

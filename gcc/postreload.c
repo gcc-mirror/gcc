@@ -45,24 +45,23 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "tree.h"
 
-static int reload_cse_noop_set_p	PARAMS ((rtx));
-static void reload_cse_simplify		PARAMS ((rtx, rtx));
-static void reload_cse_regs_1		PARAMS ((rtx));
-static int reload_cse_simplify_set	PARAMS ((rtx, rtx));
-static int reload_cse_simplify_operands	PARAMS ((rtx, rtx));
+static int reload_cse_noop_set_p (rtx);
+static void reload_cse_simplify (rtx, rtx);
+static void reload_cse_regs_1 (rtx);
+static int reload_cse_simplify_set (rtx, rtx);
+static int reload_cse_simplify_operands (rtx, rtx);
 
-static void reload_combine		PARAMS ((void));
-static void reload_combine_note_use	PARAMS ((rtx *, rtx));
-static void reload_combine_note_store	PARAMS ((rtx, rtx, void *));
+static void reload_combine (void);
+static void reload_combine_note_use (rtx *, rtx);
+static void reload_combine_note_store (rtx, rtx, void *);
 
-static void reload_cse_move2add		PARAMS ((rtx));
-static void move2add_note_store		PARAMS ((rtx, rtx, void *));
+static void reload_cse_move2add (rtx);
+static void move2add_note_store (rtx, rtx, void *);
 
 /* Call cse / combine like post-reload optimization phases.
    FIRST is the first instruction.  */
 void
-reload_cse_regs (first)
-     rtx first ATTRIBUTE_UNUSED;
+reload_cse_regs (rtx first ATTRIBUTE_UNUSED)
 {
   reload_cse_regs_1 (first);
   reload_combine ();
@@ -73,8 +72,7 @@ reload_cse_regs (first)
 
 /* See whether a single set SET is a noop.  */
 static int
-reload_cse_noop_set_p (set)
-     rtx set;
+reload_cse_noop_set_p (rtx set)
 {
   if (cselib_reg_set_mode (SET_DEST (set)) != GET_MODE (SET_DEST (set)))
     return 0;
@@ -84,9 +82,7 @@ reload_cse_noop_set_p (set)
 
 /* Try to simplify INSN.  */
 static void
-reload_cse_simplify (insn, testreg)
-     rtx insn;
-     rtx testreg;
+reload_cse_simplify (rtx insn, rtx testreg)
 {
   rtx body = PATTERN (insn);
 
@@ -180,8 +176,7 @@ reload_cse_simplify (insn, testreg)
    if possible, much like an optional reload would.  */
 
 static void
-reload_cse_regs_1 (first)
-     rtx first;
+reload_cse_regs_1 (rtx first)
 {
   rtx insn;
   rtx testreg = gen_rtx_REG (VOIDmode, -1);
@@ -209,9 +204,7 @@ reload_cse_regs_1 (first)
    and change the set into a register copy.  */
 
 static int
-reload_cse_simplify_set (set, insn)
-     rtx set;
-     rtx insn;
+reload_cse_simplify_set (rtx set, rtx insn)
 {
   int did_change = 0;
   int dreg;
@@ -354,9 +347,7 @@ reload_cse_simplify_set (set, insn)
    hard registers.  */
 
 static int
-reload_cse_simplify_operands (insn, testreg)
-     rtx insn;
-     rtx testreg;
+reload_cse_simplify_operands (rtx insn, rtx testreg)
 {
   int i, j;
 
@@ -629,7 +620,7 @@ static int reload_combine_ruid;
   (label_live[CODE_LABEL_NUMBER (LABEL) - min_labelno])
 
 static void
-reload_combine ()
+reload_combine (void)
 {
   rtx insn, set;
   int first_index_reg = -1;
@@ -922,9 +913,7 @@ reload_combine ()
    accordingly.  Called via note_stores from reload_combine.  */
 
 static void
-reload_combine_note_store (dst, set, data)
-     rtx dst, set;
-     void *data ATTRIBUTE_UNUSED;
+reload_combine_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
 {
   int regno = 0;
   int i;
@@ -972,8 +961,7 @@ reload_combine_note_store (dst, set, data)
    *XP is the pattern of INSN, or a part of it.
    Called from reload_combine, and recursively by itself.  */
 static void
-reload_combine_note_use (xp, insn)
-     rtx *xp, insn;
+reload_combine_note_use (rtx *xp, rtx insn)
 {
   rtx x = *xp;
   enum rtx_code code = x->code;
@@ -1131,8 +1119,7 @@ static int move2add_last_label_luid;
 				 GET_MODE_BITSIZE (INMODE))))
 
 static void
-reload_cse_move2add (first)
-     rtx first;
+reload_cse_move2add (rtx first)
 {
   int i;
   rtx insn;
@@ -1374,9 +1361,7 @@ reload_cse_move2add (first)
    Called from reload_cse_move2add via note_stores.  */
 
 static void
-move2add_note_store (dst, set, data)
-     rtx dst, set;
-     void *data ATTRIBUTE_UNUSED;
+move2add_note_store (rtx dst, rtx set, void *data ATTRIBUTE_UNUSED)
 {
   unsigned int regno = 0;
   unsigned int i;

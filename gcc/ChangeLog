@@ -20,6 +20,53 @@
 	* integrate.c: Likewise.
 	* input.h: Likewise.
 	* ifcvt.c: Likewise.
+	* jump.c: Convert prototypes to ISO C90.
+	* langhooks-def.h: Likewise.  Add extern to prototypes.
+	* langhooks.c: Likewise.
+	* langhooks.h: Likewise.
+	* lcm.c: Likewise.
+	* local-alloc.c: Likewise.
+	* loop-init.c: Likewise.
+	* loop-unroll.c: Likewise.
+	* loop-unswitch.c: Likewise.
+	* loop.c: Likewise.
+	* loop.h: Likewise. Add extern to prototypes.
+	* machmode.h: Likewise.
+	* main.c: Likewise.
+	* mbchar.c: Likewise.
+	* mbchar.h: Likewise.
+	* mkdeps.c: Likewise.
+	* mkdeps.h: Likewise.
+	* optabs.c: Likewise.
+	* optabs.h: Likewise.
+	* output.h: Likewise.
+	* gccspec.c: Likwise.
+	* postreload.c: Likewise.
+	* prefix.c: Likewise.
+	* prefix.h: Likewise.
+	* print-rtl.c: Likewise.
+	* print-tree.c: Likewise.
+	* profile.c: Likewise.
+	* read-rtl.c: Likewise.
+	* real.c: Likewise.
+	* real.h: Likewise.
+	* recog.c: Likewise.
+	* recog.h: Likewise.
+	* reg-stack.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* regrename.c: Likewise.
+	* regs.h: Likewise.
+	* reload.c: Likewise.
+	* reload.h: Likewise.
+	* reload1.c: Likewise.
+	* reorg.c: Likewise.
+	* resource.c: Likewise.
+	* resource.h: Likewise.
+	* rtl-error.c: Likewise.
+	* rtl.c: Likewise.
+	* rtl.h: Likewise.
+	* rtlanal.c: Likewise.
 
 2003-07-05  Kazu Hirata  <kazu@cs.umass.edu>
 

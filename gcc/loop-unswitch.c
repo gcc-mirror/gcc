@@ -1,5 +1,5 @@
 /* Loop unswitching for GNU compiler.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -78,25 +78,23 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   containing subloops would not be very large compared to complications
   with handling this case.  */
 
-static struct loop *unswitch_loop	PARAMS ((struct loops *,
-						struct loop *, basic_block));
-static void unswitch_single_loop	PARAMS ((struct loops *, struct loop *,
-						rtx, int));
-static bool may_unswitch_on_p		PARAMS ((struct loops *, basic_block,
-						struct loop *, basic_block *));
-static rtx reversed_condition		PARAMS ((rtx));
+static struct loop *unswitch_loop (struct loops *, struct loop *,
+				   basic_block);
+static void unswitch_single_loop (struct loops *, struct loop *, rtx, int);
+static bool may_unswitch_on_p (struct loops *, basic_block, struct loop *,
+			       basic_block *);
+static rtx reversed_condition (rtx);
 
 /* Main entry point.  Perform loop unswitching on all suitable LOOPS.  */
 void
-unswitch_loops (loops)
-     struct loops *loops;
+unswitch_loops (struct loops *loops)
 {
   int i, num;
   struct loop *loop;
 
   /* Go through inner loops (only original ones).  */
   num = loops->num;
-  
+
   for (i = 1; i < num; i++)
     {
       /* Removed loop?  */
@@ -119,11 +117,8 @@ unswitch_loops (loops)
    basic blocks (for what it means see comments below).  List of basic blocks
    inside LOOP is provided in BODY to save time.  */
 static bool
-may_unswitch_on_p (loops, bb, loop, body)
-     struct loops *loops;
-     basic_block bb;
-     struct loop *loop;
-     basic_block *body;
+may_unswitch_on_p (struct loops *loops, basic_block bb, struct loop *loop,
+		   basic_block *body)
 {
   rtx test;
   unsigned i;
@@ -159,8 +154,7 @@ may_unswitch_on_p (loops, bb, loop, body)
 
 /* Reverses CONDition; returns NULL if we cannot.  */
 static rtx
-reversed_condition (cond)
-     rtx cond;
+reversed_condition (rtx cond)
 {
   enum rtx_code reversed;
   reversed = reversed_comparison_code (cond, NULL);
@@ -177,11 +171,8 @@ reversed_condition (cond)
    number of unswitchings done; do not allow it to grow too much, it is too
    easy to create example on that the code would grow exponentially.  */
 static void
-unswitch_single_loop (loops, loop, cond_checked, num)
-     struct loops *loops;
-     struct loop *loop;
-     rtx cond_checked;
-     int num;
+unswitch_single_loop (struct loops *loops, struct loop *loop,
+		      rtx cond_checked, int num)
 {
   basic_block *bbs, bb;
   struct loop *nloop;
@@ -208,7 +199,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
 	fprintf (rtl_dump_file, ";; Not unswitching, not innermost loop\n");
       return;
     }
-  
+
   /* We must be able to duplicate loop body.  */
   if (!can_duplicate_loop_p (loop))
     {
@@ -224,7 +215,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
 	fprintf (rtl_dump_file, ";; Not unswitching, loop too big\n");
       return;
     }
-  
+
   /* Do not unswitch in cold areas.  */
   if (!maybe_hot_bb_p (loop->header))
     {
@@ -232,7 +223,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
 	fprintf (rtl_dump_file, ";; Not unswitching, not hot area\n");
       return;
     }
-  
+
   /* Nor if the loop usually does not roll.  */
   if (expected_loop_iterations (loop) < 1)
     {
@@ -244,7 +235,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
   do
     {
       repeat = 0;
-    
+
       /* Find a bb to unswitch on.  */
       bbs = get_loop_body (loop);
       for (i = 0; i < loop->num_nodes; i++)
@@ -260,7 +251,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
       if (!(cond = get_condition (bbs[i]->end, &split_before)))
 	abort ();
       rcond = reversed_condition (cond);
-      
+
       /* Check whether the result can be predicted.  */
       always_true = 0;
       always_false = 0;
@@ -281,7 +272,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
       if (always_true)
 	{
 	  /* Remove false path.  */
- 	  for (e = bbs[i]->succ; !(e->flags & EDGE_FALLTHRU); e = e->succ_next);
+	  for (e = bbs[i]->succ; !(e->flags & EDGE_FALLTHRU); e = e->succ_next);
 	  remove_path (loops, e);
 	  free (bbs);
 	  repeat = 1;
@@ -295,7 +286,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
 	  repeat = 1;
 	}
     } while (repeat);
- 
+
   /* We found the condition we can unswitch on.  */
   conds = alloc_EXPR_LIST (0, cond, cond_checked);
   if (rcond)
@@ -330,10 +321,7 @@ unswitch_single_loop (loops, loop, cond_checked, num)
    for the condition we unswitch on.  Returns NULL if impossible, new
    loop otherwise.  */
 static struct loop *
-unswitch_loop (loops, loop, unswitch_on)
-     struct loops *loops;
-     struct loop *loop;
-     basic_block unswitch_on;
+unswitch_loop (struct loops *loops, struct loop *loop, basic_block unswitch_on)
 {
   edge entry, latch_edge;
   basic_block switch_bb, unswitch_on_alt, src;
@@ -355,7 +343,7 @@ unswitch_loop (loops, loop, unswitch_on)
     abort ();
   if (!flow_bb_inside_loop_p (loop, unswitch_on->succ->succ_next->dest))
     abort ();
-  
+
   /* Will we be able to perform redirection?  */
   if (!any_condjump_p (unswitch_on->end))
     return NULL;
@@ -363,7 +351,7 @@ unswitch_loop (loops, loop, unswitch_on)
     return NULL;
 
   entry = loop_preheader_edge (loop);
-  
+
   /* Make a copy.  */
   src = entry->src;
   irred_flag = entry->flags & EDGE_IRREDUCIBLE_LOOP;

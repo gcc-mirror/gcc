@@ -1,5 +1,5 @@
 /* Multibyte Character Functions.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,7 +41,7 @@ typedef enum {ESCAPE, DOLLAR, BRACKET, AT, B, J, NUL, JIS_CHAR, OTHER,
 	      JIS_C_NUM} JIS_CHAR_TYPE;
 
 typedef enum {ASCII, A_ESC, A_ESC_DL, JIS, JIS_1, JIS_2, J_ESC, J_ESC_BR,
-	     J2_ESC, J2_ESC_BR, INV, JIS_S_NUM} JIS_STATE; 
+	     J2_ESC, J2_ESC_BR, INV, JIS_S_NUM} JIS_STATE;
 
 typedef enum {COPYA, COPYJ, COPYJ2, MAKE_A, MAKE_J, NOOP,
 	      EMPTY, ERROR} JIS_ACTION;
@@ -94,10 +94,7 @@ const char *literal_codeset = NULL;
    it treats locale names of the form "C-..." specially.  */
 
 int
-local_mbtowc (pwc, s, n)
-     wchar_t *pwc;
-     const char *s;
-     size_t n;
+local_mbtowc (wchar_t *pwc, const char *s, size_t n)
 {
   static JIS_STATE save_state = ASCII;
   JIS_STATE curr_state = save_state;
@@ -153,7 +150,7 @@ local_mbtowc (pwc, s, n)
       char1 = *t;
       if (ISEUCJP (char1))
         {
-          int char2 = t[1];     
+          int char2 = t[1];
 
           if (n <= 1)
             return -1;
@@ -182,7 +179,7 @@ local_mbtowc (pwc, s, n)
       JIS_CHAR_TYPE ch;
       const unsigned char *ptr;
       size_t i, curr_ch;
- 
+
       if (s == NULL)
 	{
 	  save_state = ASCII;
@@ -227,7 +224,7 @@ local_mbtowc (pwc, s, n)
 
           action = JIS_action_table[curr_state][ch];
           curr_state = JIS_state_table[curr_state][ch];
-        
+
           switch (action)
             {
             case NOOP:
@@ -272,9 +269,9 @@ local_mbtowc (pwc, s, n)
         }
 
       /* More than n bytes needed.  */
-      return -1;  
+      return -1;
     }
-               
+
 #ifdef CROSS_COMPILE
   if (s == NULL)
     /* Not state-dependent.  */
@@ -298,9 +295,7 @@ local_mbtowc (pwc, s, n)
    it treats locale names of the form "C-..." specially.  */
 
 int
-local_mblen (s, n)
-     const char *s;
-     size_t n;
+local_mblen (const char *s, size_t n)
 {
   return local_mbtowc (NULL, s, n);
 }
@@ -311,7 +306,7 @@ local_mblen (s, n)
    except it treats locale names of the form "C-..." specially.  */
 
 int
-local_mb_cur_max ()
+local_mb_cur_max (void)
 {
   if (literal_codeset == NULL || strlen (literal_codeset) <= 1)
     ;

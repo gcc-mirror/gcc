@@ -106,10 +106,10 @@ extern char test_real_width
 struct real_format
 {
   /* Move to and from the target bytes.  */
-  void (*encode) PARAMS ((const struct real_format *, long *,
-			  const REAL_VALUE_TYPE *));
-  void (*decode) PARAMS ((const struct real_format *, REAL_VALUE_TYPE *,
-			  const long *));
+  void (*encode) (const struct real_format *, long *,
+		  const REAL_VALUE_TYPE *);
+  void (*decode) (const struct real_format *, REAL_VALUE_TYPE *,
+		  const long *);
 
   /* The radix of the exponent and digits of the significand.  */
   int b;
@@ -149,82 +149,72 @@ extern const struct real_format *real_format_for_mode[TFmode - QFmode + 1];
 /* Declare functions in real.c.  */
 
 /* Binary or unary arithmetic on tree_code.  */
-extern void real_arithmetic	PARAMS ((REAL_VALUE_TYPE *, int,
-					 const REAL_VALUE_TYPE *,
-					 const REAL_VALUE_TYPE *));
+extern void real_arithmetic (REAL_VALUE_TYPE *, int, const REAL_VALUE_TYPE *,
+			     const REAL_VALUE_TYPE *);
 
 /* Compare reals by tree_code.  */
-extern bool real_compare	PARAMS ((int, const REAL_VALUE_TYPE *,
-					 const REAL_VALUE_TYPE *));
+extern bool real_compare (int, const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 
 /* Determine whether a floating-point value X is infinite.  */
-extern bool real_isinf		PARAMS ((const REAL_VALUE_TYPE *));
+extern bool real_isinf (const REAL_VALUE_TYPE *);
 
 /* Determine whether a floating-point value X is a NaN.  */
-extern bool real_isnan		PARAMS ((const REAL_VALUE_TYPE *));
+extern bool real_isnan (const REAL_VALUE_TYPE *);
 
 /* Determine whether a floating-point value X is negative.  */
-extern bool real_isneg		PARAMS ((const REAL_VALUE_TYPE *));
+extern bool real_isneg (const REAL_VALUE_TYPE *);
 
 /* Determine whether a floating-point value X is minus zero.  */
-extern bool real_isnegzero	PARAMS ((const REAL_VALUE_TYPE *));
+extern bool real_isnegzero (const REAL_VALUE_TYPE *);
 
 /* Compare two floating-point objects for bitwise identity.  */
-extern bool real_identical	PARAMS ((const REAL_VALUE_TYPE *,
-					 const REAL_VALUE_TYPE *));
+extern bool real_identical (const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 
 /* Extend or truncate to a new mode.  */
-extern void real_convert	PARAMS ((REAL_VALUE_TYPE *,
-					 enum machine_mode,
-					 const REAL_VALUE_TYPE *));
+extern void real_convert (REAL_VALUE_TYPE *, enum machine_mode,
+			  const REAL_VALUE_TYPE *);
 
 /* Return true if truncating to NEW is exact.  */
-extern bool exact_real_truncate PARAMS ((enum machine_mode,
-					 const REAL_VALUE_TYPE *));
+extern bool exact_real_truncate (enum machine_mode, const REAL_VALUE_TYPE *);
 
 /* Render R as a decimal floating point constant.  */
-extern void real_to_decimal	PARAMS ((char *, const REAL_VALUE_TYPE *,
-					 size_t, size_t, int));
+extern void real_to_decimal (char *, const REAL_VALUE_TYPE *, size_t,
+			     size_t, int);
 
 /* Render R as a hexadecimal floating point constant.  */
-extern void real_to_hexadecimal	PARAMS ((char *, const REAL_VALUE_TYPE *,
-					 size_t, size_t, int));
+extern void real_to_hexadecimal (char *, const REAL_VALUE_TYPE *,
+				 size_t, size_t, int);
 
 /* Render R as an integer.  */
-extern HOST_WIDE_INT real_to_integer PARAMS ((const REAL_VALUE_TYPE *));
-extern void real_to_integer2 PARAMS ((HOST_WIDE_INT *, HOST_WIDE_INT *,
-				      const REAL_VALUE_TYPE *));
+extern HOST_WIDE_INT real_to_integer (const REAL_VALUE_TYPE *);
+extern void real_to_integer2 (HOST_WIDE_INT *, HOST_WIDE_INT *,
+			      const REAL_VALUE_TYPE *);
 
 /* Initialize R from a decimal or hexadecimal string.  */
-extern void real_from_string	PARAMS ((REAL_VALUE_TYPE *, const char *));
+extern void real_from_string (REAL_VALUE_TYPE *, const char *);
 
 /* Initialize R from an integer pair HIGH/LOW.  */
-extern void real_from_integer	PARAMS ((REAL_VALUE_TYPE *,
-					 enum machine_mode,
-					 unsigned HOST_WIDE_INT,
-					 HOST_WIDE_INT, int));
+extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
+			       unsigned HOST_WIDE_INT, HOST_WIDE_INT, int);
 
-extern long real_to_target_fmt	PARAMS ((long *, const REAL_VALUE_TYPE *,
-					 const struct real_format *));
-extern long real_to_target	PARAMS ((long *, const REAL_VALUE_TYPE *,
-					 enum machine_mode));
+extern long real_to_target_fmt (long *, const REAL_VALUE_TYPE *,
+				const struct real_format *);
+extern long real_to_target (long *, const REAL_VALUE_TYPE *, enum machine_mode);
 
-extern void real_from_target_fmt PARAMS ((REAL_VALUE_TYPE *, const long *,
-					  const struct real_format *));
-extern void real_from_target	PARAMS ((REAL_VALUE_TYPE *, const long *,
-					 enum machine_mode));
+extern void real_from_target_fmt (REAL_VALUE_TYPE *, const long *,
+				  const struct real_format *);
+extern void real_from_target (REAL_VALUE_TYPE *, const long *,
+			      enum machine_mode);
 
-extern void real_inf		PARAMS ((REAL_VALUE_TYPE *));
+extern void real_inf (REAL_VALUE_TYPE *);
 
-extern bool real_nan		PARAMS ((REAL_VALUE_TYPE *, const char *,
-					 int, enum machine_mode));
+extern bool real_nan (REAL_VALUE_TYPE *, const char *, int, enum machine_mode);
 
-extern void real_maxval		PARAMS ((REAL_VALUE_TYPE *, int,
-					 enum machine_mode));
+extern void real_maxval (REAL_VALUE_TYPE *, int, enum machine_mode);
 
-extern void real_2expN		PARAMS ((REAL_VALUE_TYPE *, int));
+extern void real_2expN (REAL_VALUE_TYPE *, int);
 
-extern unsigned int real_hash	PARAMS ((const REAL_VALUE_TYPE *));
+extern unsigned int real_hash (const REAL_VALUE_TYPE *);
 
 
 /* Target formats defined in real.c.  */
@@ -290,14 +280,14 @@ extern const struct real_format real_internal_format;
 #define REAL_VALUE_FROM_UNSIGNED_INT(r, lo, hi, mode) \
   real_from_integer (&(r), mode, lo, hi, 1)
 
-extern REAL_VALUE_TYPE real_value_truncate PARAMS ((enum machine_mode,
-						    REAL_VALUE_TYPE));
+extern REAL_VALUE_TYPE real_value_truncate (enum machine_mode,
+					    REAL_VALUE_TYPE);
 
 #define REAL_VALUE_TO_INT(plow, phigh, r) \
   real_to_integer2 (plow, phigh, &(r))
 
-extern REAL_VALUE_TYPE real_arithmetic2 PARAMS ((int, const REAL_VALUE_TYPE *,
-						 const REAL_VALUE_TYPE *));
+extern REAL_VALUE_TYPE real_arithmetic2 (int, const REAL_VALUE_TYPE *,
+					 const REAL_VALUE_TYPE *);
 
 #define REAL_VALUE_NEGATE(X) \
   real_arithmetic2 (NEGATE_EXPR, &(X), NULL)
@@ -305,10 +295,9 @@ extern REAL_VALUE_TYPE real_arithmetic2 PARAMS ((int, const REAL_VALUE_TYPE *,
 #define REAL_VALUE_ABS(X) \
   real_arithmetic2 (ABS_EXPR, &(X), NULL)
 
-extern int significand_size PARAMS ((enum machine_mode));
+extern int significand_size (enum machine_mode);
 
-extern REAL_VALUE_TYPE real_from_string2 PARAMS ((const char *,
-						  enum machine_mode));
+extern REAL_VALUE_TYPE real_from_string2 (const char *, enum machine_mode);
 
 #define REAL_VALUE_ATOF(s, m) \
   real_from_string2 (s, m)
@@ -326,11 +315,10 @@ extern REAL_VALUE_TYPE real_from_string2 PARAMS ((const char *,
 /* ??? These were added for Paranoia support.  */
 
 /* Return floor log2(R).  */
-extern int real_exponent	PARAMS ((const REAL_VALUE_TYPE *));
+extern int real_exponent (const REAL_VALUE_TYPE *);
 
 /* R = A * 2**EXP.  */
-extern void real_ldexp		PARAMS ((REAL_VALUE_TYPE *,
-					 const REAL_VALUE_TYPE *, int));
+extern void real_ldexp (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *, int);
 
 /* **** End of software floating point emulator interface macros **** */
 
@@ -345,8 +333,7 @@ extern REAL_VALUE_TYPE dconsthalf;
 
 /* Function to return a real value (not a tree node)
    from a given integer constant.  */
-REAL_VALUE_TYPE real_value_from_int_cst	PARAMS ((union tree_node *,
-						 union tree_node *));
+REAL_VALUE_TYPE real_value_from_int_cst (union tree_node *, union tree_node *);
 
 /* Given a CONST_DOUBLE in FROM, store into TO the value it represents.  */
 #define REAL_VALUE_FROM_CONST_DOUBLE(to, from) \
@@ -355,35 +342,28 @@ REAL_VALUE_TYPE real_value_from_int_cst	PARAMS ((union tree_node *,
 /* Return a CONST_DOUBLE with value R and mode M.  */
 #define CONST_DOUBLE_FROM_REAL_VALUE(r, m) \
   const_double_from_real_value (r, m)
-extern rtx const_double_from_real_value PARAMS ((REAL_VALUE_TYPE,
-						 enum machine_mode));
+extern rtx const_double_from_real_value (REAL_VALUE_TYPE, enum machine_mode);
 
 /* Replace R by 1/R in the given machine mode, if the result is exact.  */
-extern bool exact_real_inverse	PARAMS ((enum machine_mode, REAL_VALUE_TYPE *));
+extern bool exact_real_inverse (enum machine_mode, REAL_VALUE_TYPE *);
 
 /* In tree.c: wrap up a REAL_VALUE_TYPE in a tree node.  */
-extern tree build_real			PARAMS ((tree, REAL_VALUE_TYPE));
+extern tree build_real (tree, REAL_VALUE_TYPE);
 
 /* Calculate R as the square root of X in the given machine mode.  */
-extern bool real_sqrt			PARAMS ((REAL_VALUE_TYPE *,
-						 enum machine_mode,
-						 const REAL_VALUE_TYPE *));
+extern bool real_sqrt (REAL_VALUE_TYPE *, enum machine_mode,
+		       const REAL_VALUE_TYPE *);
 
 /* Calculate R as X raised to the integer exponent N in mode MODE.  */
-extern bool real_powi			PARAMS ((REAL_VALUE_TYPE *,
-						 enum machine_mode,
-						 const REAL_VALUE_TYPE *,
-						 HOST_WIDE_INT));
+extern bool real_powi (REAL_VALUE_TYPE *, enum machine_mode,
+		       const REAL_VALUE_TYPE *, HOST_WIDE_INT);
 
 /* Standard round to integer value functions.  */
-extern void real_trunc	PARAMS ((REAL_VALUE_TYPE *,
-				 enum machine_mode,
-				 const REAL_VALUE_TYPE *));
-extern void real_floor	PARAMS ((REAL_VALUE_TYPE *,
-				 enum machine_mode,
-				 const REAL_VALUE_TYPE *));
-extern void real_ceil	PARAMS ((REAL_VALUE_TYPE *,
-				 enum machine_mode,
-				 const REAL_VALUE_TYPE *));
+extern void real_trunc (REAL_VALUE_TYPE *, enum machine_mode,
+			const REAL_VALUE_TYPE *);
+extern void real_floor (REAL_VALUE_TYPE *, enum machine_mode,
+			const REAL_VALUE_TYPE *);
+extern void real_ceil (REAL_VALUE_TYPE *, enum machine_mode,
+		       const REAL_VALUE_TYPE *);
 
 #endif /* ! GCC_REAL_H */

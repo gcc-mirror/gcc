@@ -1,5 +1,5 @@
 /* Dependency generator for Makefile fragments.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Zack Weinberg, Mar 2000
 
 This program is free software; you can redistribute it and/or modify it
@@ -29,45 +29,44 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 struct deps;
 
 /* Create a deps buffer.  */
-extern struct deps *deps_init	PARAMS ((void));
+extern struct deps *deps_init (void);
 
 /* Destroy a deps buffer.  */
-extern void deps_free		PARAMS ((struct deps *));
+extern void deps_free (struct deps *);
 
 /* Add a target (appears on left side of the colon) to the deps list.  Takes
    a boolean indicating whether to quote the target for MAKE.  */
-extern void deps_add_target	PARAMS ((struct deps *, const char *, int));
+extern void deps_add_target (struct deps *, const char *, int);
 
 /* Sets the default target if none has been given already.  An empty
    string as the default target is interpreted as stdin.  */
-extern void deps_add_default_target PARAMS ((struct deps *, const char *));
+extern void deps_add_default_target (struct deps *, const char *);
 
 /* Add a dependency (appears on the right side of the colon) to the
    deps list.  Dependencies will be printed in the order that they
    were entered with this function.  By convention, the first
    dependency entered should be the primary source file.  */
-extern void deps_add_dep	PARAMS ((struct deps *, const char *));
+extern void deps_add_dep (struct deps *, const char *);
 
 /* Write out a deps buffer to a specified file.  The third argument
    is the number of columns to word-wrap at (0 means don't wrap).  */
-extern void deps_write		PARAMS ((const struct deps *, FILE *,
-					 unsigned int));
+extern void deps_write (const struct deps *, FILE *, unsigned int);
 
 /* Write out a deps buffer to a file, in a form that can be read back
    with deps_restore.  Returns nonzero on error, in which case the
    error number will be in errno.  */
-extern int deps_save		PARAMS ((struct deps *, FILE *));
+extern int deps_save (struct deps *, FILE *);
 
 /* Read back dependency information written with deps_save into
    the deps buffer.  The third argument may be NULL, in which case
    the dependency information is just skipped, or it may be a filename,
    in which case that filename is skipped.  */
-extern int deps_restore		PARAMS ((struct deps *, FILE *, const char *));
+extern int deps_restore (struct deps *, FILE *, const char *);
 
 /* For each dependency *except the first*, emit a dummy rule for that
    file, causing it to depend on nothing.  This is used to work around
    the intermediate-file deletion misfeature in Make, in some
    automatic dependency schemes.  */
-extern void deps_phony_targets	PARAMS ((const struct deps *, FILE *));
+extern void deps_phony_targets (const struct deps *, FILE *);
 
 #endif /* ! GCC_MKDEPS_H */
