@@ -1,3 +1,19 @@
+2001-02-21  Loren J. Rittle  <ljrittle@acm.org>
+	Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/inclhack.def (freebsd_gcc3_breakage): new fix
+	* fixinc/README: Document how to convert sed substitutions
+	to format style c_fix-es.
+	* fixinc/fixincl.x: regen
+
+2001-02-21  Bruce Korb  <bkorb@gnu.org>
+            Rodney Brown  <RodneyBrown@mynd.com>
+
+	* fixinc/mkfixinc.sh: Use C fixincludes for UnixWare 7.
+	* fixinc/inclhack.def: Add fixinc.svr4 patterns with matching
+	machine restrictions
+	* fixinc/fixincl.x: regen
+
 2001-02-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppfiles.c: Update comments.   
