@@ -116,7 +116,7 @@ Boston, MA 02111-1307, USA.  */
    prior to 6.5.  They normally get defined in SUBTARGET_CPP_SPEC if
    !ansi, for g++ we want them regardless.  We don't need this on
    irix6.5 itself, but it shouldn't hurt other than the namespace
-   polution.  */
+   pollution.  */
 #undef CPLUSPLUS_CPP_SPEC
 #define CPLUSPLUS_CPP_SPEC "\
 -D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS \
