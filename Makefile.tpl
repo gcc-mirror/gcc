@@ -475,7 +475,6 @@ RECURSE_FLAGS = \
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
-# If any variables are added here, they must be added to do-*, below.
 EXTRA_HOST_FLAGS = \
 	'AR=$(AR)' \
 	'AS=$(AS)' \
@@ -504,7 +503,6 @@ X11_FLAGS_TO_PASS = \
 # Flags to pass down to makes which are built with the target environment.
 # The double $ decreases the length of the command line; the variables
 # are set in BASE_FLAGS_TO_PASS, and the sub-make will expand them.
-# If any variables are added here, they must be added to do-*, below.
 EXTRA_TARGET_FLAGS = \
 	'AR=$$(AR_FOR_TARGET)' \
 	'AS=$$(AS_FOR_TARGET)' \
@@ -526,7 +524,7 @@ TARGET_FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)
 # unfortunately needs the native compiler and the target ar and
 # ranlib.
 # If any variables are added here, they must be added to do-*, below.
-# The HOST_* variables are a special case, which are used for the gcc
+# The BUILD_* variables are a special case, which are used for the gcc
 # cross-building scheme.
 EXTRA_GCC_FLAGS = \
 	'AR=$(AR)' \
@@ -565,26 +563,6 @@ configure-target: [+
     maybe-configure-target-[+module+][+
   ENDFOR target_modules +]
 
-# This is a list of the targets for which we can do a clean-{target}.
-CLEAN_MODULES =[+
-    FOR host_modules +][+
-        IF (not (or (exist? "no_clean") (exist? "with_x"))) +] \
-	clean-[+module+][+
-        ENDIF no_clean +][+
-    ENDFOR host_modules +]
-
-# All of the target modules that can be cleaned
-CLEAN_TARGET_MODULES =[+
-    FOR target_modules +][+
-        IF (not (exist? "no_clean")) +] \
-	clean-target-[+module+][+
-        ENDIF no_clean +][+
-    ENDFOR target_modules +]
-
-# All of the x11 modules that can be cleaned
-CLEAN_X11_MODULES = [+ FOR host_modules +][+ IF with_x +]\
-	clean-[+module+] [+ ENDIF with_x +][+ ENDFOR host_modules +]
-
 # The target built for a native build.
 .PHONY: all.normal
 all.normal: @all_build_modules@ all-host all-target
@@ -604,58 +582,105 @@ all-target: [+
 # ``make X'' in all subdirectories (because, in general, there is a
 # dependency (below) of X upon do-X, a ``make X'' will also do this,
 # but it may do additional work as well).
-# This target ensures that $(BASE_FLAGS_TO_PASS) appears only once,
-# because it is so large that it can easily overflow the command line
-# length limit on some systems.
 [+ FOR recursive_targets +]
 .PHONY: do-[+make_target+]
-do-[+make_target+]:
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
-	$(SET_LIB_PATH) \
-	for i in $(SUBDIRS) -dummy-; do \
-	  if [ -f ./$$i/Makefile ]; then \
-	    case $$i in \
-	    gcc) \
-	      for flag in $(EXTRA_GCC_FLAGS); do \
-		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	      done; \
-	      ;; \
-	    *) \
-	      for flag in $(EXTRA_HOST_FLAGS); do \
-		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	      done; \
-	      ;; \
-	    esac ; \
-	    (cd ./$$i && \
-	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	                "RANLIB=$${RANLIB}" \
-			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-			[+make_target+]) \
-	    || exit 1; \
-	  else true; fi; \
-	done
-	# Break into two pieces
+do-[+make_target+]: [+make_target+]-host [+make_target+]-target
+
+.PHONY: [+make_target+]-host
+[+make_target+]-host: maybe-[+make_target+]-gcc [+
+  FOR host_modules +] \
+    maybe-[+make_target+]-[+module+][+
+  ENDFOR host_modules +]
+
+.PHONY: [+make_target+]-target
+[+make_target+]-target: [+
+  FOR target_modules +] \
+    maybe-[+make_target+]-target-[+module+][+
+  ENDFOR target_modules +]
+
+# GCC, the eternal special case
+.PHONY: maybe-[+make_target+]-gcc [+make_target+]-gcc
+maybe-[+make_target+]-gcc:
+[+make_target+]-gcc: [+
+  FOR depend +]\
+    [+depend+]-gcc [+
+  ENDFOR depend +]
+	@[ -f ./gcc/Makefile ] || exit 0; \
 	r=`${PWD}`; export r; \
 	s=`cd $(srcdir); ${PWD}`; export s; \
 	$(SET_LIB_PATH) \
-	for i in $(TARGET_CONFIGDIRS) -dummy-; do \
-	  if [ -f $(TARGET_SUBDIR)/$$i/Makefile ]; then \
-	    for flag in $(EXTRA_TARGET_FLAGS); do \
-		eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	    done; \
-	    (cd $(TARGET_SUBDIR)/$$i && \
-	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	                "RANLIB=$${RANLIB}" \
-			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-			[+make_target+]) \
-	    || exit 1; \
-	  else true; fi; \
-	done
-[+ ENDFOR recursive_targets +]
+	for flag in $(EXTRA_GCC_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing [+make_target+] in gcc" ; \
+	(cd gcc && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          [+make_target+]) \
+	  || exit 1
 
+# Host modules.
+[+ FOR host_modules +]
+.PHONY: maybe-[+make_target+]-[+module+] [+make_target+]-[+module+]
+maybe-[+make_target+]-[+module+]:
+[+ IF (match-value? = "missing" (get "make_target") ) +]
+# [+module+] doesn't support [+make_target+].
+[+make_target+]-[+module+]:
+[+ ELSE +]
+[+make_target+]-[+module+]: [+
+  FOR depend +]\
+    [+depend+]-[+module+] [+
+  ENDFOR depend +]
+	@[ -f ./[+module+]/Makefile ] || exit 0; \
+	r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	for flag in $(EXTRA_HOST_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	echo "Doing [+make_target+] in [+module+]" ; \
+	(cd [+module+] && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          [+make_target+]) \
+	  || exit 1
+[+ ENDIF +]
+[+ ENDFOR host_modules +]
+
+# Target modules.
+[+ FOR target_modules +]
+.PHONY: maybe-[+make_target+]-target-[+module+] [+make_target+]-target-[+module+]
+maybe-[+make_target+]-target-[+module+]:
+[+ IF (match-value? = "missing" (get "make_target") ) +]
+# [+module+] doesn't support [+make_target+].
+[+make_target+]-[+module+]:
+[+ ELSE +]
+[+make_target+]-target-[+module+]: [+
+  FOR depend +]\
+    [+depend+]-target-[+module+] [+
+  ENDFOR depend +]
+	@[ -f $(TARGET_SUBDIR)/[+module+]/Makefile ] || exit 0 ; \
+	r=`${PWD}`; export r; \
+	s=`cd $(srcdir); ${PWD}`; export s; \
+	$(SET_LIB_PATH) \
+	echo "Doing [+make_target+] in $(TARGET_SUBDIR)/[+module+]" ; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/[+module+] && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
+	          [+make_target+]) \
+	  || exit 1
+[+ ENDIF +]
+[+ ENDFOR target_modules +]
+[+ ENDFOR recursive_targets +]
 
 # Here are the targets which correspond to the do-X targets.
 
@@ -703,33 +728,8 @@ maintainer-clean: local-maintainer-clean do-maintainer-clean local-clean
 maintainer-clean: local-distclean
 realclean: maintainer-clean
 
-# This rule is used to clean specific modules.
-.PHONY: $(CLEAN_MODULES) $(CLEAN_X11_MODULES) clean-gcc
-$(CLEAN_MODULES) $(CLEAN_X11_MODULES) clean-gcc:
-	@dir=`echo $@ | sed -e 's/clean-//'`; \
-	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd $${dir} && $(MAKE) $(FLAGS_TO_PASS) clean); \
-	else \
-	  true; \
-	fi
-
-.PHONY: $(CLEAN_TARGET_MODULES)
-$(CLEAN_TARGET_MODULES):
-	@dir=`echo $@ | sed -e 's/clean-target-//'`; \
-	rm -f $(TARGET_SUBDIR)/$${dir}/multilib.out $(TARGET_SUBDIR)/$${dir}/tmpmulti.out; \
-	if [ -f $(TARGET_SUBDIR)/$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
-	  $(SET_LIB_PATH) \
-	  (cd $(TARGET_SUBDIR)/$${dir} && $(MAKE) $(TARGET_FLAGS_TO_PASS) clean); \
-	else \
-	  true; \
-	fi
-
-clean-target: $(CLEAN_TARGET_MODULES) clean-target-libgcc
+# Extra dependency for clean-target, owing to the mixed nature of gcc
+clean-target: clean-target-libgcc
 clean-target-libgcc:
 	test ! -d gcc/libgcc || \
 	(cd gcc/libgcc && find . -type d -print) | \
