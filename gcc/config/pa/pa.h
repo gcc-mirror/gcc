@@ -2107,3 +2107,13 @@ extern struct rtx_def *hppa_save_pic_table_rtx;
   {"call_operand_address", {LABEL_REF, SYMBOL_REF, CONST_INT,		\
 			    CONST, HIGH}},
 #endif
+
+#define DO_GLOBAL_DTORS_BODY \
+do { \
+  extern void __gcc_plt_call (); \
+  volatile int reference = &__gcc_plt_call; \
+  func_ptr *p; \
+  for (p = __DTOR_LIST__ + 1; *p; ) \
+    (*p++) (); \
+} while (0)
+
