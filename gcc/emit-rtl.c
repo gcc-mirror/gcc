@@ -1146,6 +1146,23 @@ gen_highpart (mode, x)
     abort ();
   return result;
 }
+
+/* Like gen_highpart_mode, but accept mode of EXP operand in case EXP can
+   be VOIDmode constant.  */
+rtx
+gen_highpart_mode (outermode, innermode, exp)
+    enum machine_mode outermode, innermode;
+    rtx exp;
+{
+  if (GET_MODE (exp) != VOIDmode)
+    {
+      if (GET_MODE (exp) != innermode)
+	abort ();
+      return gen_highpart (outermode, exp);
+    }
+  return simplify_gen_subreg (outermode, exp, innermode,
+			      subreg_highpart_offset (outermode, innermode));
+}
 /* Return offset in bytes to get OUTERMODE low part
    of the value in mode INNERMODE stored in memory in target format.  */
 
