@@ -1,5 +1,6 @@
 /* Definitions for rtems targeting a MIPS using ELF.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2002, 2003, 2005
+   Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GCC.
@@ -27,3 +28,9 @@ do {					\
   builtin_define ("__USE_INIT_FINI__");	\
   builtin_assert ("system=rtems");	\
 } while (0)
+
+/* No sdata.
+ * The RTEMS BSPs expect -G0
+ */
+#undef MIPS_DEFAULT_GVALUE
+#define MIPS_DEFAULT_GVALUE 0
