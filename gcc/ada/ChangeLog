@@ -65,7 +65,8 @@
 
 	* Makefile.in: Remove mention of Makefile.adalib, unused.
 
-	* Makefile.adalib: Removed, unused.
+	* Makefile.adalib, 1aexcept.adb, 1aexcept.ads, 1ic.ads, 1ssecsta.adb,
+	1ssecsta.ads: Removed, unused.
 
 2004-01-21  Javier Miranda  <miranda@gnat.com>
 
