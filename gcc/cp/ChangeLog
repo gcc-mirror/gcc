@@ -1,3 +1,8 @@
+2000-08-11  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (lookup_name_real): Don't forget the TYPENAME_TYPE we're
+	looking inside.
+
 2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (resolve_scope_to_name): Remove unused prototype.
@@ -882,7 +887,7 @@ Wed Jul 26 15:05:51 CEST 2000	Marc Espie <espie@cvs.openbsd.org>
 	* semantics.c (emit_associated_thunks): New function.
 	(expand_body): Use it.
 	* ir.texi: Adjust decriptions of thunks.
-	
+
 2000-06-22  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (tsubst_decl, case FUNCTION_DECL): Clear DECL_SAVED_TREE.

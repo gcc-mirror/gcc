@@ -5898,6 +5898,13 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 	    {
 	      val = lookup_member (type, name, 0, prefer_type);
 	      type_access_control (type, val);
+
+	      /* Restore the containing TYPENAME_TYPE if we looked
+		 through it before.  */
+	      if (got_scope && got_scope != type
+		  && val && TREE_CODE (val) == TYPE_DECL
+		  && TREE_CODE (TREE_TYPE (val)) == TYPENAME_TYPE)
+		TYPE_CONTEXT (TREE_TYPE (val)) = got_scope;
 	    }
 	}
       else
