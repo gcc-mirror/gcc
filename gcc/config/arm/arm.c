@@ -159,6 +159,7 @@ static rtx arm_struct_value_rtx (tree, int);
 static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
 static bool arm_promote_prototypes (tree);
+static bool arm_default_short_enums (void);
 
 
 /* Initialize the GCC target structure.  */
@@ -255,6 +256,9 @@ static bool arm_promote_prototypes (tree);
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS arm_setup_incoming_varargs
+
+#undef TARGET_DEFAULT_SHORT_ENUMS
+#define TARGET_DEFAULT_SHORT_ENUMS arm_default_short_enums
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14553,3 +14557,11 @@ arm_promote_prototypes (tree t ATTRIBUTE_UNUSED)
     return !TARGET_AAPCS_BASED;
 }
 
+
+/* AAPCS based ABIs use short enums by default.  */
+
+static bool
+arm_default_short_enums (void)
+{
+  return TARGET_AAPCS_BASED;
+}
