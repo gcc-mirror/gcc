@@ -8,15 +8,12 @@
 @c %**start of header
 @setfilename treelang.info
 
+@include gcc-common.texi
+
+@set version-treelang 1.0
+
 @set last-update 2001-07-30
 @set copyrights-treelang 1995,1996,1997,1998,1999,2000,2001,2002
-@c DEVELOPMENT is set to indicate an in-development version,
-@c as compared to a release version.  When making a release
-@c (e.g. a release branch in the CVS repository for GCC),
-@c clear this and set the version information correctly.
-@clear DEVELOPMENT
-@set version-treelang 1.0
-@set version-GCC 3.0
 
 @set email-general gcc@@gcc.gnu.org
 @set email-bugs gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
@@ -45,14 +42,6 @@
 @c To produce a maintainer-only manual, use the "maintaintreelang.info" setfilename,
 @c and make sure the following does NOT begin with '@c':
 @c @clear USING
-
-@c 6/27/96 FSF DO wants smallbook fmt for 1st bound edition. (from gcc.texi)
-@c @smallbook
-
-@c i also commented out the finalout command, so if there *are* any
-@c overfulls, you'll (hopefully) see the rectangle in the right hand
-@c margin. -- burley 1999-03-13 (from mew's comment in GCC.texi).
-@c @finalout
 
 @ifset INTERNALS
 @ifset USING

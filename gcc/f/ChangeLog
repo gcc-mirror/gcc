@@ -1,3 +1,12 @@
+2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* root.texi: Include gcc-common.texi.
+	* bugs.texi, news.texi: Don't include root.texi as part of full
+	manual.
+	* g77.texi: Update for use of gcc-common.texi.
+	* Make-lang.in ($(srcdir)/f/g77.info, f/g77.dvi): Depend on
+	$(srcdir)/doc/include/gcc-common.texi.
+
 2002-12-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* intdoc.in: Fix typos.

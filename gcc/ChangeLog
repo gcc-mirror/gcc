@@ -1,3 +1,7 @@
+2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/include/gcc-common.texi: Define DEVELOPMENT.
+
 2002-12-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* stor-layout.c (update_alignment_for_field): Correct handling of
