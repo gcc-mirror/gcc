@@ -1,0 +1,8 @@
+# Define SYSV as -DSYSV if you are using a System V operating system.
+SYSV = -DSYSV -DSVR4 -DSVR5
+RANLIB = true
+
+# The l flag generates a warning from the SVR4 archiver, remove it.
+AR_FLAGS = cr
+
+X11_EXTRA_LIBS = -lnsl
