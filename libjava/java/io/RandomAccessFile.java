@@ -53,34 +53,58 @@ import gnu.java.nio.FileChannelImpl;
 
 public class RandomAccessFile implements DataOutput, DataInput
 {
-  public void close () throws IOException
+
+  // The underlying file.
+  private FileDescriptor fd;
+  // The corresponding input and output streams.
+  private DataOutputStream out;
+  private DataInputStream in;
+  
+  private FileChannel ch; /* cached associated file-channel */
+  
+  /**
+   * This method initializes a new instance of <code>RandomAccessFile</code>
+   * to read from the specified <code>File</code> object with the specified 
+   * access mode.   The access mode is either "r" for read only access or "rw" 
+   * for read-write access.
+   * <p>
+   * Note that a <code>SecurityManager</code> check is made prior to
+   * opening the file to determine whether or not this file is allowed to
+   * be read or written.
+   *
+   * @param file The <code>File</code> object to read and/or write.
+   * @param mode "r" for read only or "rw" for read-write access to the file
+   *
+   * @exception IllegalArgumentException If <code>mode</code> has an 
+   * illegal value
+   * @exception SecurityException If the requested access to the file 
+   * is not allowed
+   * @exception IOException If any other error occurs
+   */
+  public RandomAccessFile (File file, String mode) throws FileNotFoundException
   {
-    if (fd.valid())
-      fd.close();
+    this (file.getPath(), mode);
   }
 
-  public final FileDescriptor getFD () throws IOException
-  {
-    if (! fd.valid())
-      throw new IOException ();
-    return fd;
-  }
-
-  public long getFilePointer () throws IOException
-  {
-    return fd.getFilePointer();
-  }
-
-  public void setLength (long pos) throws IOException
-  {
-    fd.setLength(pos);
-  }
-
-  public long length () throws IOException
-  {
-    return fd.length();
-  }
-
+  /**
+   * This method initializes a new instance of <code>RandomAccessFile</code>
+   * to read from the specified file name with the specified access mode.
+   * The access mode is either "r" for read only access or "rw" for read
+   * write access.
+   * <p>
+   * Note that a <code>SecurityManager</code> check is made prior to
+   * opening the file to determine whether or not this file is allowed to
+   * be read or written.
+   *
+   * @param name The name of the file to read and/or write
+   * @param mode "r" for read only or "rw" for read-write access to the file
+   *
+   * @exception IllegalArgumentException If <code>mode</code> has an 
+   * illegal value
+   * @exception SecurityException If the requested access to the file 
+   * is not allowed
+   * @exception FileNotFoundException If any other error occurs
+   */
   public RandomAccessFile (String fileName, String mode)
     throws FileNotFoundException
   {
@@ -105,72 +129,382 @@ public class RandomAccessFile implements DataOutput, DataInput
     in = new DataInputStream (new FileInputStream (fd));
   }
 
-  public RandomAccessFile (File file, String mode) throws FileNotFoundException
+  /**
+   * This method closes the file and frees up all file related system
+   * resources.  Since most operating systems put a limit on how many files
+   * may be opened at any given time, it is a good idea to close all files
+   * when no longer needed to avoid hitting this limit
+   */
+  public void close () throws IOException
   {
-    this (file.getPath(), mode);
+    if (fd.valid())
+      fd.close();
   }
 
+  /**
+   * This method returns a <code>FileDescriptor</code> object that 
+   * represents the native file handle for this file.
+   *
+   * @return The <code>FileDescriptor</code> object for this file
+   *
+   * @exception IOException If an error occurs
+   */
+  public final FileDescriptor getFD () throws IOException
+  {
+    if (! fd.valid())
+      throw new IOException ();
+    return fd;
+  }
+
+  /**
+   * This method returns the current offset in the file at which the next
+   * read or write will occur
+   *
+   * @return The current file position
+   *
+   * @exception IOException If an error occurs
+   */
+  public long getFilePointer () throws IOException
+  {
+    return fd.getFilePointer();
+  }
+
+  /**
+   * This method sets the length of the file to the specified length.  If
+   * the currently length of the file is longer than the specified length,
+   * then the file is truncated to the specified length.  If the current
+   * length of the file is shorter than the specified length, the file
+   * is extended with bytes of an undefined value.
+   *  <p>
+   * The file must be open for write access for this operation to succeed.
+   *
+   * @param newlen The new length of the file
+   *
+   * @exception IOException If an error occurs
+   */
+  public void setLength (long pos) throws IOException
+  {
+    fd.setLength(pos);
+  }
+
+  /**
+   * This method returns the length of the file in bytes
+   *
+   * @return The length of the file
+   *
+   * @exception IOException If an error occurs
+   */
+  public long length () throws IOException
+  {
+    return fd.length();
+  }
+
+  /**
+   * This method reads a single byte of data from the file and returns it
+   * as an integer.
+   *
+   * @return The byte read as an int, or -1 if the end of the file was reached.
+   *
+   * @exception IOException If an error occurs
+   */
   public int read () throws IOException
   {
     return in.read();
   }
 
+  /**
+   * This method reads bytes from the file into the specified array.  The
+   * bytes are stored starting at the beginning of the array and up to 
+   * <code>buf.length</code> bytes can be read.
+   *
+   * @param buf The buffer to read bytes from the file into
+   *
+   * @return The actual number of bytes read or -1 if end of file
+   *
+   * @exception IOException If an error occurs
+   */
   public int read (byte[] buffer) throws IOException
   {
     return in.read(buffer);
   }
 
+  /**
+   * This methods reads up to <code>len</code> bytes from the file into the s
+   * pecified array starting at position <code>offset</code> into the array.
+   *
+   * @param buf The array to read the bytes into
+   * @param offset The index into the array to start storing bytes
+   * @param len The requested number of bytes to read
+   *
+   * @return The actual number of bytes read, or -1 if end of file
+   *
+   * @exception IOException If an error occurs
+   */
   public int read (byte[] buffer, int offset, int count) throws IOException
   {
     return in.read(buffer, offset, count);
   }
 
+  /**
+   * This method reads a Java boolean value from an input stream.  It does
+   * so by reading a single byte of data.  If that byte is zero, then the
+   * value returned is <code>false</code>  If the byte is non-zero, then
+   * the value returned is <code>true</code>
+   * <p>
+   * This method can read a <code>boolean</code> written by an object 
+   * implementing the
+   * <code>writeBoolean()</code> method in the <code>DataOutput</code> 
+   * interface.
+   *
+   * @return The <code>boolean</code> value read
+   *
+   * @exception EOFException If end of file is reached before reading the 
+   * boolean
+   * @exception IOException If any other error occurs
+   */
   public final boolean readBoolean () throws IOException
   {
     return in.readBoolean();
   }
 
+  /**
+   * This method reads a Java byte value from an input stream.  The value
+   * is in the range of -128 to 127.
+   * <p>
+   * This method can read a <code>byte</code> written by an object 
+   * implementing the 
+   * <code>writeByte()</code> method in the <code>DataOutput</code> interface.
+   *
+   * @return The <code>byte</code> value read
+   *
+   * @exception EOFException If end of file is reached before reading the byte
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput
+   */
   public final byte readByte () throws IOException
   {
     return in.readByte();
   }
 
+  /**
+   * This method reads a Java <code>char</code> value from an input stream.  
+   * It operates by reading two bytes from the stream and converting them to 
+   * a single 16-bit Java <code>char</code>  The two bytes are stored most
+   * significant byte first (i.e., "big endian") regardless of the native
+   * host byte ordering. 
+   * <p>
+   * As an example, if <code>byte1</code> and code{byte2</code> represent 
+   * the first
+   * and second byte read from the stream respectively, they will be
+   * transformed to a <code>char</code> in the following manner:
+   * <p>
+   * <code>(char)(((byte1 & 0xFF) << 8) | (byte2 & 0xFF)</code>
+   * <p>
+   * This method can read a <code>char</code> written by an object 
+   * implementing the
+   * <code>writeChar()</code> method in the <code>DataOutput</code> interface.
+   *
+   * @return The <code>char</code> value read 
+   *
+   * @exception EOFException If end of file is reached before reading the char
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput
+   */
   public final char readChar () throws IOException
   {
     return in.readChar();
   }
 
+  /**
+   * This method reads a Java double value from an input stream.  It operates
+   * by first reading a <code>logn</code> value from the stream by calling the
+   * <code>readLong()</code> method in this interface, then 
+   * converts that <code>long</code>
+   * to a <code>double</code> using the <code>longBitsToDouble</code> 
+   * method in the class <code>java.lang.Double</code>
+   * <p>
+   * This method can read a <code>double</code> written by an object 
+   * implementing the
+   * <code>writeDouble()</code> method in the <code>DataOutput</code> 
+   * interface.
+   *
+   * @return The <code>double</code> value read
+   *
+   * @exception EOFException If end of file is reached before reading 
+   * the double
+   * @exception IOException If any other error occurs
+   *
+   * @see java.lang.Double
+   * @see DataOutput
+   */
   public final double readDouble () throws IOException
   {
     return in.readDouble();
   }
 
+  /**
+   * This method reads a Java float value from an input stream.  It operates
+   * by first reading an <code>int</code> value from the stream by calling the
+   * <code>readInt()</code> method in this interface, then converts 
+   * that <code>int</code>
+   * to a <code>float</code> using the <code>intBitsToFloat</code> method in 
+   * the class <code>java.lang.Float</code>
+   * <p>
+   * This method can read a <code>float</code> written by an object 
+   * implementing the
+   * <code>writeFloat()</code> method in the <code>DataOutput</code> interface.
+   *
+   * @return The <code>float</code> value read
+   *
+   * @exception EOFException If end of file is reached before reading the float
+   * @exception IOException If any other error occurs
+   *
+   * @see java.lang.Float
+   * @see DataOutput
+   */
   public final float readFloat () throws IOException
   {
     return in.readFloat();
   }
 
+  /**
+   * This method reads raw bytes into the passed array until the array is
+   * full.  Note that this method blocks until the data is available and
+   * throws an exception if there is not enough data left in the stream to
+   * fill the buffer
+   *
+   * @param buf The buffer into which to read the data
+   *
+   * @exception EOFException If end of file is reached before filling the 
+   * buffer
+   * @exception IOException If any other error occurs
+   */
   public final void readFully (byte[] buffer) throws IOException
   {
     in.readFully(buffer);
   }
 
+  /**
+   * This method reads raw bytes into the passed array <code>buf</code> 
+   * starting
+   * <code>offset</code> bytes into the buffer.  The number of bytes read 
+   * will be
+   * exactly <code>len</code>  Note that this method blocks until the data is 
+   * available and throws an exception if there is not enough data left in 
+   * the stream to read <code>len</code> bytes.
+   *
+   * @param buf The buffer into which to read the data
+   * @param offset The offset into the buffer to start storing data
+   * @param len The number of bytes to read into the buffer
+   *
+   * @exception EOFException If end of file is reached before filling 
+   * the buffer
+   * @exception IOException If any other error occurs
+   */
   public final void readFully (byte[] buffer, int offset, int count)
     throws IOException
   {
     in.readFully(buffer, offset, count);
   }
 
+  /**
+   * This method reads a Java <code>int</code> value from an input stream
+   * It operates by reading four bytes from the stream and converting them to 
+   * a single Java <code>int</code>  The bytes are stored most
+   * significant byte first (i.e., "big endian") regardless of the native
+   * host byte ordering. 
+   * <p>
+   * As an example, if <code>byte1</code> through <code>byte4</code> 
+   * represent the first
+   * four bytes read from the stream, they will be
+   * transformed to an <code>int</code> in the following manner:
+   * <p>
+   * <code>(int)(((byte1 & 0xFF) << 24) + ((byte2 & 0xFF) << 16) + 
+   * ((byte3 & 0xFF) << 8) + (byte4 & 0xFF)))</code>
+   * <p>
+   * The value returned is in the range of 0 to 65535.
+   * <p>
+   * This method can read an <code>int</code> written by an object 
+   * implementing the
+   * <code>writeInt()</code> method in the <code>DataOutput</code> interface.
+   *
+   * @return The <code>int</code> value read
+   *
+   * @exception EOFException If end of file is reached before reading the int
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput
+   */
   public final int readInt () throws IOException
   {
     return in.readInt();
   }
 
+  /**
+   * This method reads the next line of text data from an input stream.
+   * It operates by reading bytes and converting those bytes to 
+   * <code>char</code>
+   * values by treating the byte read as the low eight bits of the 
+   * <code>char</code>
+   * and using <code>0</code> as the high eight bits.  Because of this, it does
+   * not support the full 16-bit Unicode character set.
+   * <p>
+   * The reading of bytes ends when either the end of file or a line terminator
+   * is encountered.  The bytes read are then returned as a <code>String</code>
+   * A line terminator is a byte sequence consisting of either 
+   * <code>\r</code> <code>\n</code> or <code>\r\n</code>  These 
+   * termination charaters are
+   * discarded and are not returned as part of the string.
+   * <p>
+   * This method can read data that was written by an object implementing the
+   * <code>writeLine()</code> method in <code>DataOutput</code>
+   *
+   * @return The line read as a <code>String</code>
+   *
+   * @exception IOException If an error occurs
+   *
+   * @see DataOutput
+   *
+   * @deprecated
+   */
   public final String readLine () throws IOException
   {
     return in.readLine();
   }
 
+  /**
+   * This method reads a Java long value from an input stream
+   * It operates by reading eight bytes from the stream and converting them to 
+   * a single Java <code>long</code>  The bytes are stored most
+   * significant byte first (i.e., "big endian") regardless of the native
+   * host byte ordering. 
+   * <p>
+   * As an example, if <code>byte1</code> through <code>byte8</code> 
+   * represent the first
+   * eight bytes read from the stream, they will be
+   * transformed to an <code>long</code> in the following manner:
+   * <p>
+   * <code>
+   * (long)((((long)byte1 & 0xFF) << 56) + (((long)byte2 & 0xFF) << 48) + 
+   * (((long)byte3 & 0xFF) << 40) + (((long)byte4 & 0xFF) << 32) + 
+   * (((long)byte5 & 0xFF) << 24) + (((long)byte6 & 0xFF) << 16) + 
+   * (((long)byte7 & 0xFF) << 8) + ((long)byte9 & 0xFF)))</code>
+   * <p>
+   * The value returned is in the range of 0 to 65535.
+   * <p>
+   * This method can read an <code>long</code> written by an object 
+   * implementing the
+   * <code>writeLong()</code> method in the <code>DataOutput</code> interface.
+   *
+   * @return The <code>long</code> value read
+   *
+   * @exception EOFException If end of file is reached before reading the long
+   * @exception IOException If any other error occurs
+   *
+   * @see DataOutput
+   */
   public final long readLong () throws IOException
   {
     return in.readLong();
@@ -275,26 +609,53 @@ public class RandomAccessFile implements DataOutput, DataInput
     out.writeChars(s);
   }
   
-  public final void writeUTF (String s) throws IOException
+  /**
+   * This method writes a Java <code>String</code> to the stream in a modified
+   * UTF-8 format.  First, two bytes are written to the stream indicating the
+   * number of bytes to follow.  Note that this is the number of bytes in the
+   * encoded <code>String</code> not the <code>String</code> length.  Next
+   * come the encoded characters.  Each character in the <code>String</code>
+   * is encoded as either one, two or three bytes.  For characters in the
+   * range of <code>&#92;u0001</code> to <code>&#92;u007F</code>, 
+   * one byte is used.  The character
+   * value goes into bits 0-7 and bit eight is 0.  For characters in the range
+   * of <code>&#92;u0080</code> to <code>&#92;u007FF</code>, two 
+   * bytes are used.  Bits
+   * 6-10 of the character value are encoded bits 0-4 of the first byte, with
+   * the high bytes having a value of "110".  Bits 0-5 of the character value
+   * are stored in bits 0-5 of the second byte, with the high bits set to
+   * "10".  This type of encoding is also done for the null character
+   * <code>&#92;u0000</code>.  This eliminates any C style NUL character values
+   * in the output.  All remaining characters are stored as three bytes.
+   * Bits 12-15 of the character value are stored in bits 0-3 of the first
+   * byte.  The high bits of the first bytes are set to "1110".  Bits 6-11
+   * of the character value are stored in bits 0-5 of the second byte.  The
+   * high bits of the second byte are set to "10".  And bits 0-5 of the
+   * character value are stored in bits 0-5 of byte three, with the high bits
+   * of that byte set to "10".
+   *
+   * @param s The <code>String</code> to write to the output in UTF format
+   *
+   * @exception IOException If an error occurs
+   */
+  public final void writeUTF(String s) throws IOException
   {
     out.writeUTF(s);
   }
-
-  public FileChannel getChannel ()
+  
+  /**
+   * This method creates a java.nio.channels.FileChannel.
+   * Nio does not allow one to create a file channel directly.
+   * A file channel must be created by first creating an instance of
+   * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
+   */
+  public synchronized FileChannel getChannel() 
   {
-    synchronized (this)
-      {
-        if (ch == null)
-          ch = new FileChannelImpl (fd, true, this);
+    if (ch == null)
+      ch = new FileChannelImpl (fd, true, this);
 
-	return ch;
-      }
+    return ch;
   }
 
-  // The underlying file.
-  private FileDescriptor fd;
-  // The corresponding input and output streams.
-  private DataOutputStream out;
-  private DataInputStream in;
-  private FileChannel ch;
-}
+} // class RandomAccessFile
+
