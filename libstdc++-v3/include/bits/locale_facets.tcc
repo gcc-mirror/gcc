@@ -1271,6 +1271,18 @@ namespace std
       if (__c == __eof)
 	__err |= ios_base::eofbit;
 
+      // Iff not enough digits were supplied after the decimal-point.
+      if (__testdecfound)
+	{
+	  const int __frac = __intl ? __mpt.frac_digits() 
+				    : __mpf.frac_digits();
+	  if (__frac > 0)
+	    {
+	      if (__sep_pos != __frac)
+		__testvalid = false;
+	    }
+	}
+
       // Iff valid sequence is not recognized.
       if (!__testvalid || !__tmp_units.size())
 	__err |= ios_base::failbit;

@@ -1,3 +1,9 @@
+2003-05-26  Brendan Kehoe  <brendan@zen.org>
+
+	* include/bits/locale_facets.tcc (do_get): Honor $22.2.6.3.3/8 and
+	make sure the number of digits required after the decimal-point
+	(if any) is exactly the value returned by frac_digits().
+
 2003-05-27  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/std/std_istream.h, include/std/std_ostream.h: Typo in comment.
