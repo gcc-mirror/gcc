@@ -1,5 +1,9 @@
 2001-01-03  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.other/virtual11.C: New test.
+
+2001-01-03  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.eh/spec6.C: Remove remaining XFAIL.
 
 2001-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

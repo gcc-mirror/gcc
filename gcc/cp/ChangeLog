@@ -1,5 +1,11 @@
 2001-01-03  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* search.c (lookup_fnfields_here): Remove.
+	(look_for_overrides_r): Use lookup_fnfields_1.
+	Ignore functions from using declarations.
+
+2001-01-03  Nathan Sidwell  <nathan@codesourcery.com>
+
 	Implement exceptions specifiers for implicit member functions.
 	* cp-tree.h (merge_exceptions_specifiers): Declare new function.
 	* method.c (synthesize_exception_spec): New function.
