@@ -1361,7 +1361,7 @@ compile_file (name)
     pfatal_with_name (name);
 
 #ifdef IO_BUFFER_SIZE
-  setvbuf (finput, xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
 #endif
 
   /* Initialize data in various passes.  */
@@ -1575,7 +1575,8 @@ compile_file (name)
     }
 
 #ifdef IO_BUFFER_SIZE
-  setvbuf (asm_out_file, xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
+  setvbuf (asm_out_file, (char *) xmalloc (IO_BUFFER_SIZE),
+	   _IOFBF, IO_BUFFER_SIZE);
 #endif
 
   input_filename = name;
