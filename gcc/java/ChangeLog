@@ -1,3 +1,26 @@
+1999-02-24  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (struct namelet): New structure.
+	(add_namelet): New function.
+	(print_namelet): New function.
+	(print_class_decls): Use add_namelet and print_namelet to generate
+	namespaces and not classes.
+	(method_printed): New global.
+	(HANDLE_END_METHOD): Examine method_printed.
+	(print_method_info): Set method_printed when required.  Print
+	error if function to be ignored is marked virtual.  Handle $finit$
+	method.
+	(METHOD_IS_FINAL): New macro.
+	(print_field_info): Use it.
+	(HANDLE_METHOD): Clear method_printed.
+	(method_pass): New global.
+	(HANDLE_END_FIELD): Call add_class_decl on the first pass.
+	(process_file): Do two passes over both fields and methods.
+	(HANDLE_METHOD): Examine method_pass.
+	(root): New global.
+	(add_class_decl): New function.
+	(print_class_decls): Don't scan over entire constant pool.
+
 1999-02-23  Tom Tromey  <tromey@cygnus.com>
 
 	* jvspec.c (lang_specific_driver): Recognize -fsyntax-only and

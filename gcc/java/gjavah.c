@@ -81,6 +81,11 @@ static JCF_u2 last_access;
 
 #define ACC_VISIBILITY (ACC_PUBLIC | ACC_PRIVATE | ACC_PROTECTED)
 
+/* Pass this macro the flags for a class and for a method.  It will
+   return true if the method should be considered `final'.  */
+#define METHOD_IS_FINAL(Class, Method) \
+   (((Class) & ACC_FINAL) || ((Method) & (ACC_FINAL | ACC_PRIVATE)))
+
 /* We keep a linked list of all method names we have seen.  This lets
    us determine if a method name and a field name are in conflict.  */
 struct method_name
@@ -97,6 +102,7 @@ static void print_field_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
 static void print_method_info PROTO ((FILE *, JCF*, int, int, JCF_u2));
 static void print_c_decl PROTO ((FILE*, JCF*, int, int, JCF_u2, int, const char *));
 static void decompile_method PROTO ((FILE *, JCF *, int));
+static void add_class_decl PROTO ((FILE *, JCF *, JCF_u2));
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -107,31 +113,47 @@ JCF_u2 current_field_flags;
 ( current_field_name = (NAME), current_field_signature = (SIGNATURE), \
   current_field_flags = (ACCESS_FLAGS), current_field_value = 0)
 
-/* We pass over fields twice.  The first time we just note the start
-   of the methods.  Then we go back and parse the fields for real.
-   This is ugly.  */
+/* We pass over fields twice.  The first time we just note the types
+   of the fields and then the start of the methods.  Then we go back
+   and parse the fields for real.  This is ugly.  */
 static int field_pass;
+/* Likewise we pass over methods twice.  The first time we generate
+   class decl information; the second time we generate actual method
+   decls.  */
+static int method_pass;
 
-#define HANDLE_END_FIELD() \
-  if (out && field_pass) print_field_info (out, jcf, current_field_name, \
-					   current_field_signature, \
-					   current_field_flags);
+#define HANDLE_END_FIELD()						      \
+  if (field_pass)							      \
+    {									      \
+      if (out)								      \
+	print_field_info (out, jcf, current_field_name,			      \
+			  current_field_signature,			      \
+			  current_field_flags);				      \
+    }									      \
+  else									      \
+    add_class_decl (out, jcf, current_field_signature);
 
 #define HANDLE_CONSTANTVALUE(VALUEINDEX) current_field_value = (VALUEINDEX)
 
 static int method_declared = 0;
 static int method_access = 0;
-#define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT) \
-  if (out) { decompiled = 0; \
-      print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS); \
-  }
+static int method_printed = 0;
+#define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT)	      \
+  if (method_pass)							      \
+    {									      \
+      decompiled = 0; method_printed = 0;				      \
+      if (out)								      \
+        print_method_info (out, jcf, NAME, SIGNATURE, ACCESS_FLAGS);	      \
+    }									      \
+  else									      \
+    add_class_decl (out, jcf, SIGNATURE);
 
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
   if (out && method_declared) decompile_method (out, jcf, CODE_LENGTH);
 
 static int decompiled = 0;
 #define HANDLE_END_METHOD() \
-  if (out) fputs (decompiled ? "\n" : ";\n", out);
+  if (out && method_printed) fputs (decompiled ? "\n" : ";\n", out);
 
 #include "jcf-reader.c"
 
@@ -426,13 +448,24 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
     fprintf (stream, "<not a UTF8 constant>");
   str = JPOOL_UTF_DATA (jcf, name_index);
   length = JPOOL_UTF_LENGTH (jcf, name_index);
-  if (str[0] == '<')
+  if (str[0] == '<' || str[0] == '$')
     {
-      /* Ignore internally generated methods like <clinit>.  However,
-	 treat <init> as a constructor.  */
+      /* Ignore internally generated methods like <clinit> and
+	 $finit$.  However, treat <init> as a constructor.  */
       if (! utf8_cmp (str, length, "<init>"))
 	is_init = 1;
-      else  
+      else if (! METHOD_IS_FINAL (jcf->access_flags, flags)
+	       && ! (flags & ACC_STATIC))
+	{
+	  /* FIXME: i18n bug here.  Order of prints should not be
+	     fixed.  */
+	  fprintf (stderr, "ignored method `");
+	  jcf_print_utf8 (stderr, str, length);
+	  fprintf (stderr, "' marked virtual\n");
+	  found_error = 1;
+	  return;
+	}
+      else
 	return;
     }
   else
@@ -455,20 +488,22 @@ DEFUN(print_method_info, (stream, jcf, name_index, sig_index, flags),
      after it in the vtbl).  So we give it a dummy name instead.  */
   if (! utf8_cmp (str, length, "delete"))
     {
-      /* If the method is static, we can safely skip it.  If we don't
-	 skip it then we'll have problems since the mangling will be
-	 wrong.  FIXME.  */
-      if ((flags & ACC_STATIC))
+      /* If the method is static or final, we can safely skip it.  If
+	 we don't skip it then we'll have problems since the mangling
+	 will be wrong.  FIXME.  */
+      if (METHOD_IS_FINAL (jcf->access_flags, flags)
+	  || (flags & ACC_STATIC))
 	return;
       override = "__dummy_delete";
     }
 
+  method_printed = 1;
   generate_access (stream, flags);
 
   fputs ("  ", out);
   if ((flags & ACC_STATIC))
     fputs ("static ", out);
-  else if (! (flags & ACC_FINAL) && ! (jcf->access_flags & ACC_FINAL))
+  else if (! METHOD_IS_FINAL (jcf->access_flags, flags))
     {
       /* Don't print `virtual' if we have a constructor.  */
       if (! is_init)
@@ -795,39 +830,210 @@ super_class_name (derived_jcf, len)
   return supername;
 }
 
-/* Print declarations for all classes required by this class.  FIXME:
-   the current implementation just prints every class name from the
-   constant pool.  This is too much.  We really only need to print a
-   declaration for each class which is the type of a return value, a
-   field, or an argument.  */
-static void
-print_class_decls (out, jcf)
-     FILE *out;
-     JCF *jcf;
-{
-  int i, seen_one = 0;
+
 
-  for (i = 1; i < JPOOL_SIZE (jcf); ++i)
+/* This is used to represent part of a package or class name.  */
+struct namelet
+{
+  /* The text of this part of the name.  */
+  char *name;
+  /* True if this represents a class.  */
+  int is_class;
+  /* Linked list of all classes and packages inside this one.  */
+  struct namelet *subnamelets;
+  /* Pointer to next sibling.  */
+  struct namelet *next;
+};
+
+/* The special root namelet.  */
+static struct namelet root =
+{
+  NULL,
+  0,
+  NULL,
+  NULL
+};
+
+/* This extracts the next name segment from the full UTF-8 encoded
+   package or class name and links it into the tree.  It does this
+   recursively.  */
+static void
+add_namelet (name, name_limit, parent)
+     unsigned char *name, *name_limit;
+     struct namelet *parent;
+{
+  unsigned char *p;
+  struct namelet *n = NULL, *np;
+
+  for (p = name; p < name_limit && *p != '/' && *p != '$'; ++p)
+    ;
+
+  /* Search for this name beneath the PARENT node.  */
+  for (np = parent->subnamelets; np != NULL; np = np->next)
     {
-      int kind = JPOOL_TAG (jcf, i);
-      if (kind == CONSTANT_Class)
+      if (! strncmp (name, np->name, p - name))
 	{
-	  if (print_cxx_classname (out, "class ", jcf, i))
-	    fputs (";\n", out);
-	  seen_one = 1;
+	  n = np;
+	  break;
 	}
     }
 
-  if (seen_one)
-    fputs ("\n", out);
+  if (n == NULL)
+    {
+      n = (struct namelet *) malloc (sizeof (struct namelet));
+      n->name = malloc (p - name + 1);
+      strncpy (n->name, name, p - name);
+      n->name[p - name] = '\0';
+      n->is_class = (p == name_limit || *p == '$');
+      n->subnamelets = NULL;
+      n->next = parent->subnamelets;
+      parent->subnamelets = n;
+    }
+
+  /* We recurse if there is more text, and if the trailing piece does
+     not represent an inner class. */
+  if (p < name_limit && *p != '$')
+    add_namelet (p + 1, name_limit, n);
 }
+
+/* Print a single namelet.  Destroys namelets while printing.  */
+static void
+print_namelet (out, name, depth)
+     FILE *out;
+     struct namelet *name;
+     int depth;
+{
+  int i, term = 0;
+  struct namelet *c;
+
+  if (name->name)
+    {
+      for (i = 0; i < depth; ++i)
+	fputc (' ', out);
+      fprintf (out, "%s %s", name->is_class ? "class" : "namespace",
+	       name->name);
+      if (name->is_class && name->subnamelets == NULL)
+	fputs (";\n", out);
+      else
+	{
+	  term = 1;
+	  fputs ("\n", out);
+	  for (i = 0; i < depth; ++i)
+	    fputc (' ', out);
+	  fputs ("{\n", out);
+	}
+    }
+
+  c = name->subnamelets;
+  while (c != NULL)
+    {
+      struct namelet *next = c->next;
+      print_namelet (out, c, depth + 2);
+      c = next;
+    }
+
+  if (name->name)
+    {
+      if (term)
+	{
+	  for (i = 0; i < depth; ++i)
+	    fputc (' ', out);
+	  fputs ("};\n", out);
+	}
+
+      free (name->name);
+      free (name);
+    }
+}
+
+/* This is called to add some classes to the list of classes for which
+   we need decls.  The signature argument can be a function
+   signature.  */
+static void
+add_class_decl (out, jcf, signature)
+     FILE *out;
+     JCF *jcf;
+     JCF_u2 signature;
+{
+  unsigned char *s = JPOOL_UTF_DATA (jcf, signature);
+  int len = JPOOL_UTF_LENGTH (jcf, signature);
+  int i;
+
+  for (i = 0; i < len; ++i)
+    {
+      int start;
+      /* We're looking for `L<stuff>;' -- everything else is
+	 ignorable.  */
+      if (s[i] != 'L')
+	continue;
+      for (start = ++i; i < len && s[i] != ';'; ++i)
+	{
+	  if (s[i] == '$' && out)
+	    {
+	      /* If this class represents an inner class, then
+		 generate a `#include' for the outer class.  */
+	      fputs ("#include <", out);
+	      jcf_print_utf8 (out, &s[start], i - start);
+	      fputs (">\n", out);
+	    }
+	}
+
+#define JAVALANG "java/lang/"
+#define JAVAIO "java/io/"
+#define JAVAUTIL "java/util/"
+      if ((i - start >= sizeof (JAVALANG) - 1
+	   && ! strncmp (&s[start], JAVALANG, sizeof (JAVALANG) - 1))
+	  || (i - start >= sizeof (JAVAUTIL) - 1
+	      && ! strncmp (&s[start], JAVAUTIL, sizeof (JAVAUTIL) - 1))
+	  || (i - start >= sizeof (JAVAIO) - 1
+	      && ! strncmp (&s[start], JAVAIO, sizeof (JAVAIO) - 1)))
+	{
+	  /* Skip all the standard `java.' classes.  */
+	  continue;
+	}
+
+      add_namelet (&s[start], &s[i], &root);
+    }
+}
+
+/* Print declarations for all classes required by this class.  Any
+   class or package in the `java' package is assumed to be handled
+   statically in libjava; we don't generate declarations for these.
+   This makes the generated headers a bit easier to read.  */
+static void
+print_class_decls (out, jcf, self)
+     FILE *out;
+     JCF *jcf;
+     int self;
+{
+  /* Make sure to always add the current class to the list of things
+     that should be declared.  */
+  int name_index = JPOOL_USHORT1 (jcf, self);
+  int len;
+  unsigned char *s;
+
+  s = JPOOL_UTF_DATA (jcf, name_index);
+  len = JPOOL_UTF_LENGTH (jcf, name_index);
+  add_namelet (s, s + len, &root);
+
+  if (root.subnamelets)
+    {
+      fputs ("extern \"Java\"\n{\n", out);
+      /* We use an initial offset of 0 because the root namelet
+	 doesn't cause anything to print.  */
+      print_namelet (out, &root, 0);
+      fputs ("};\n\n", out);
+    }
+}
+
+
 
 static void
 DEFUN(process_file, (jcf, out),
       JCF *jcf AND FILE *out)
 {
   int code, i;
-  uint32 field_start, method_end;
+  uint32 field_start, method_end, method_start;
 
   current_jcf = main_jcf = jcf;
 
@@ -895,9 +1101,22 @@ DEFUN(process_file, (jcf, out),
       fputs ("\n", out);
     }
 
+  /* We want to parse the methods first.  But we need to find where
+     they start.  So first we skip the fields, then parse the methods.
+     Then we parse the fields and skip the methods.  This is ugly, but
+     not too bad since we need two full passes to get class decl
+     information anyway.  */
+  field_pass = 0;
+  field_start = JCF_TELL (jcf);
+  jcf_parse_fields (jcf);
+
+  method_start = JCF_TELL (jcf);
+  method_pass = 0;
+  jcf_parse_methods (jcf);
+
   if (out)
     {
-      print_class_decls (out, jcf);
+      print_class_decls (out, jcf, jcf->this_class);
 
       for (i = 0; i < prepend_count; ++i)
 	fprintf (out, "%s\n", prepend_specs[i]);
@@ -923,18 +1142,9 @@ DEFUN(process_file, (jcf, out),
   if (out)
     fputs ("\n{\n", out);
 
-  /* We make a single pass over the file, printing methods and fields
-     as we see them.  We have to list the methods in the same order
-     that they appear in the class file, so that the Java and C++
-     vtables have the same layout.  */
-  /* We want to parse the methods first.  But we need to find where
-     they start.  So first we skip the fields, then parse the
-     methods.  Then we parse the fields and skip the methods.  FIXME:
-     this is ugly.  */
-  field_pass = 0;
-  field_start = JCF_TELL (jcf);
-  jcf_parse_fields (jcf);
-
+  /* Now go back for second pass over methods and fields.  */
+  JCF_SEEK (jcf, method_start);
+  method_pass = 1;
   jcf_parse_methods (jcf);
   method_end = JCF_TELL (jcf);
 
