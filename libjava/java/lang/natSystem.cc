@@ -165,6 +165,7 @@ file_encoding ()
   char *e = nl_langinfo (CODESET);
   if (e == NULL || *e == '\0')
     e = "8859_1";
+  return e;
 }
 
 #define DEFAULT_FILE_ENCODING file_encoding ()
