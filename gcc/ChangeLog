@@ -1,5 +1,15 @@
 2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	Backport from mainline:
+
+	2004-01-23  Eric Botcazou  <ebotcazou@act-europe.fr>
+	            Olivier Hainque  <hainque@act-europe.fr>
+
+	* fold-const.c (fold_binary_op_with_conditional_arg): Only
+	build a COMPOUND_EXPR if 'arg' is really a SAVE_EXPR.
+
+2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	PR target/13666
 	* config/sparc/sparc.c (function_arg_union_value): New function.
 	(function_arg): Use it to deal with unions.
