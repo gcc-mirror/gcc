@@ -1,3 +1,7 @@
+2001/11/28  Geert Bosch <bosch@gnat.com>
+
+	* init.c: Minor whitespace changes.
+
 2001-11-28  Doug Rupp <rupp@gnat.com>
 
 	* init.c: (__gnat_install_handler,VMS): Increase size of alternate 
