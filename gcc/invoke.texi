@@ -714,22 +714,34 @@ other, C++-specific, extension keywords such as @code{headof}.
 @findex abs
 @findex alloca
 @findex cos
+@findex cosf
+@findex cosl
 @findex exit
+@findex _exit
 @findex fabs
+@findex fabsf
+@findex fabsl
 @findex ffs
 @findex labs
 @findex memcmp
 @findex memcpy
+@findex memset
 @findex sin
+@findex sinf
+@findex sinl
 @findex sqrt
+@findex sqrtf
+@findex sqrtl
 @findex strcmp
 @findex strcpy
 @findex strlen
 Don't recognize builtin functions that do not begin with @samp{__builtin_}
 as prefix.  Currently, the functions affected include @code{abort},
-@code{abs}, @code{alloca}, @code{cos}, @code{exit}, @code{fabs},
-@code{ffs}, @code{labs}, @code{memcmp}, @code{memcpy}, @code{sin},
-@code{sqrt}, @code{strcmp}, @code{strcpy}, and @code{strlen}.
+@code{abs}, @code{alloca}, @code{cos}, @code{cosf}, @code{cosl},
+@code{exit}, @code{_exit}, @code{fabs}, @code{fabsf}, @code{fabsl},
+@code{ffs}, @code{labs}, @code{memcmp}, @code{memcpy}, @code{memset},
+@code{sin}, @code{sinf}, @code{sinl}, @code{sqrt}, @code{sqrtf},
+@code{sqrtl}, @code{strcmp}, @code{strcpy}, and @code{strlen}.
 
 GCC normally generates special code to handle certain builtin functions
 more efficiently; for instance, calls to @code{alloca} may become single
@@ -739,9 +751,9 @@ and faster, but since the function calls no longer appear as such, you
 cannot set a breakpoint on those calls, nor can you change the behavior
 of the functions by linking with a different library.
 
-The @samp{-ansi} option prevents @code{alloca} and @code{ffs} from being
-builtin functions, since these functions do not have an ANSI standard
-meaning.
+The @samp{-ansi} option prevents @code{alloca}, @code{ffs} and @code{_exit}
+from being builtin functions, since these functions do not have an ANSI
+standard meaning.
 
 @item -fhosted
 @cindex hosted environment
