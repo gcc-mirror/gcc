@@ -1,3 +1,8 @@
+2004-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR tree-optimization/14107
+	* decl.c (finish_function): Warn about no return in all functions.
+
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
 	* cp-tree.h (struct language_function): Remove cannot_inline.
