@@ -1,3 +1,8 @@
+2001-05-18  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* include/posix-threads.h (_Jv_CondInit): `0' used in place of `NULL.'
+	(_Jv_MutexInit): Likewise.
+
 2001-05-17  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* java/lang/natClass.cc (_Jv_FindIIndex): Fix an off by one error 
