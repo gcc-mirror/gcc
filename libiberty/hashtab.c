@@ -62,7 +62,7 @@ Boston, MA 02111-1307, USA.  */
 static unsigned long higher_prime_number PARAMS ((unsigned long));
 static hashval_t hash_pointer PARAMS ((const void *));
 static int eq_pointer PARAMS ((const void *, const void *));
-static void htab_expand PARAMS ((htab_t));
+static int htab_expand PARAMS ((htab_t));
 static PTR *find_empty_slot_for_expand  PARAMS ((htab_t, hashval_t));
 
 /* At some point, we could make these be NULL, and modify the
@@ -124,7 +124,7 @@ eq_pointer (p1, p2)
 /* This function creates table with length slightly longer than given
    source length.  Created hash table is initiated as empty (all the
    hash table entries are EMPTY_ENTRY).  The function returns the
-   created hash table.  */
+   created hash table.  Memory allocation must not fail.  */
 
 htab_t
 htab_create (size, hash_f, eq_f, del_f)
@@ -142,6 +142,41 @@ htab_create (size, hash_f, eq_f, del_f)
   result->hash_f = hash_f;
   result->eq_f = eq_f;
   result->del_f = del_f;
+  result->return_allocation_failure = 0;
+  return result;
+}
+
+/* This function creates table with length slightly longer than given
+   source length.  The created hash table is initiated as empty (all the
+   hash table entries are EMPTY_ENTRY).  The function returns the created
+   hash table.  Memory allocation may fail; it may return NULL.  */
+
+htab_t
+htab_try_create (size, hash_f, eq_f, del_f)
+     size_t size;
+     htab_hash hash_f;
+     htab_eq eq_f;
+     htab_del del_f;
+{
+  htab_t result;
+
+  size = higher_prime_number (size);
+  result = (htab_t) calloc (1, sizeof (struct htab));
+  if (result == NULL)
+    return NULL;
+
+  result->entries = (PTR *) calloc (size, sizeof (PTR));
+  if (result->entries == NULL)
+    {
+      free (result);
+      return NULL;
+    }
+
+  result->size = size;
+  result->hash_f = hash_f;
+  result->eq_f = eq_f;
+  result->del_f = del_f;
+  result->return_allocation_failure = 1;
   return result;
 }
 
@@ -216,9 +251,11 @@ find_empty_slot_for_expand (htab, hash)
    entries and repeatedly inserts the table elements.  The occupancy
    of the table after the call will be about 50%.  Naturally the hash
    table must already exist.  Remember also that the place of the
-   table entries is changed.  */
+   table entries is changed.  If memory allocation failures are allowed,
+   this function will return zero, indicating that the table could not be
+   expanded.  If all goes well, it will return a non-zero value.  */
 
-static void
+static int
 htab_expand (htab)
      htab_t htab;
 {
@@ -230,7 +267,16 @@ htab_expand (htab)
   olimit = oentries + htab->size;
 
   htab->size = higher_prime_number (htab->size * 2);
-  htab->entries = (PTR *) xcalloc (htab->size, sizeof (PTR *));
+
+  if (htab->return_allocation_failure)
+    {
+      PTR *nentries = (PTR *) calloc (htab->size, sizeof (PTR *));
+      if (nentries == NULL)
+	return 0;
+      htab->entries = nentries;
+    }
+  else
+    htab->entries = (PTR *) xcalloc (htab->size, sizeof (PTR *));
 
   htab->n_elements -= htab->n_deleted;
   htab->n_deleted = 0;
@@ -252,6 +298,7 @@ htab_expand (htab)
   while (p < olimit);
 
   free (oentries);
+  return 1;
 }
 
 /* This function searches for a hash table entry equal to the given
@@ -308,7 +355,9 @@ htab_find (htab, element)
    equal to the given element.  To delete an entry, call this with
    INSERT = 0, then call htab_clear_slot on the slot returned (possibly
    after doing some checks).  To insert an entry, call this with
-   INSERT = 1, then write the value you want into the returned slot.  */
+   INSERT = 1, then write the value you want into the returned slot.
+   When inserting an entry, NULL may be returned if memory allocation
+   fails.  */
 
 PTR *
 htab_find_slot_with_hash (htab, element, hash, insert)
@@ -322,8 +371,9 @@ htab_find_slot_with_hash (htab, element, hash, insert)
   hashval_t hash2;
   size_t size;
 
-  if (insert == INSERT && htab->size * 3 <= htab->n_elements * 4)
-    htab_expand (htab);
+  if (insert == INSERT && htab->size * 3 <= htab->n_elements * 4
+      && htab_expand (htab) == 0)
+    return NULL;
 
   size = htab->size;
   hash2 = 1 + hash % (size - 2);
