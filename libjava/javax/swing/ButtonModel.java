@@ -76,12 +76,4 @@ public interface ButtonModel extends ItemSelectable
 
     void setSelected(boolean b);
     boolean isSelected();
-
-
-    // there are not in the spec !!
-
-
-    void fireItemStateChanged(ItemEvent event);
-    void fireStateChanged(ChangeEvent event);    
-    void fireActionPerformed(ActionEvent event);
 }

@@ -140,9 +140,13 @@ public class PropertyEditorManager
             return (PropertyEditor)found.newInstance();
           }
 
+	ClassLoader contextClassLoader
+		= Thread.currentThread().getContextClassLoader();
+
         try
           {
-            found = Class.forName(editedClass.getName()+"Editor");
+            found = Class.forName(editedClass.getName()+"Editor", true,
+				  contextClassLoader);
             registerEditor(editedClass,found);
             return (PropertyEditor)found.newInstance();
           }
@@ -150,14 +154,18 @@ public class PropertyEditorManager
           {
           }
 
-        String appendName = "." + ClassHelper.getTruncatedClassName(editedClass) + "Editor";
+        String appendName
+		= "."
+		+ ClassHelper.getTruncatedClassName(editedClass)
+		+ "Editor";
         synchronized(editorSearchPath)
           {
             for(int i=0;i<editorSearchPath.length;i++)
               {
                 try
                   {
-                    found = Class.forName(editorSearchPath[i] + appendName);
+                    found = Class.forName(editorSearchPath[i] + appendName,
+					  true, contextClassLoader);
                     registerEditor(editedClass,found);
                     return (PropertyEditor)found.newInstance();
                   }

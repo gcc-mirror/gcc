@@ -308,7 +308,7 @@ public class ZipFile implements ZipConstants
    */
   protected void finalize() throws IOException
   {
-    if (!closed) close();
+    if (!closed && raf != null) close();
   }
 
   /**

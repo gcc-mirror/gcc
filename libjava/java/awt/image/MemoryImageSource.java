@@ -74,7 +74,7 @@ public class MemoryImageSource implements ImageProducer
 	this.props = props;
 	int max = (( scansize > width ) ? scansize : width );
 	pixelb = new byte[ max  * height ];
-	System.arraycopy( pix, 0, pixelb, 0, max );
+	System.arraycopy( pix, 0, pixelb, 0, max * height );
     }
     /**
        Constructs an ImageProducer from memory
@@ -100,7 +100,7 @@ public class MemoryImageSource implements ImageProducer
 	this.props = props;
 	int max = (( scansize > width ) ? scansize : width );
 	pixeli = new int[ max  * height ];
-	System.arraycopy( pix, 0, pixeli, 0, max );
+	System.arraycopy( pix, 0, pixeli, 0, max * height );
     }
     /**
        Constructs an ImageProducer from memory using the default RGB ColorModel
@@ -226,6 +226,7 @@ public class MemoryImageSource implements ImageProducer
 	if( props != null ) {
 	    ic.setProperties( props );
 	}
+	ic.setDimensions(width, height);
 	if( pixeli != null ) {
 	    ic.setPixels( 0, 0, width, height, cm, pixeli, offset, scansize );
 	} else {
