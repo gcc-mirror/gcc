@@ -427,7 +427,7 @@ reload_cse_simplify_operands (rtx insn, rtx testreg)
 	     extension.  Punt on this for now.  */
 	  if (! set)
 	    continue;
-	  /* If the destination is a also MEM or a STRICT_LOW_PART, no
+	  /* If the destination is also a MEM or a STRICT_LOW_PART, no
 	     extension applies.
 	     Also, if there is an explicit extension, we don't have to
 	     worry about an implicit one.  */

@@ -44,7 +44,7 @@ The callgraph:
 
     The callgraph at the moment does not represent indirect calls or calls
     from other compilation unit.  Flag NEEDED is set for each node that may
-    be accessed in such a invisible way and it shall be considered an
+    be accessed in such an invisible way and it shall be considered an
     entry point to the callgraph.
 
     Intraprocedural information:

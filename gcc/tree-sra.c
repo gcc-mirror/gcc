@@ -620,7 +620,7 @@ struct sra_walk_fns
 };
 
 #ifdef ENABLE_CHECKING
-/* Invoked via walk_tree, if *TP contains an candidate decl, return it.  */
+/* Invoked via walk_tree, if *TP contains a candidate decl, return it.  */
 
 static tree
 sra_find_candidate_decl (tree *tp, int *walk_subtrees,

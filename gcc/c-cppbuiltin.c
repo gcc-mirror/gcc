@@ -347,7 +347,7 @@ c_cpp_builtins (cpp_reader *pfile)
        different from system to system.  */
     builtin_define_with_int_value ("__GXX_ABI_VERSION", 999999);
   else if (flag_abi_version == 1)
-    /* Due to an historical accident, this version had the value
+    /* Due to a historical accident, this version had the value
        "102".  */
     builtin_define_with_int_value ("__GXX_ABI_VERSION", 102);
   else

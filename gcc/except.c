@@ -1304,7 +1304,7 @@ emit_to_new_bb_before (rtx seq, rtx insn)
   edge e;
   edge_iterator ei;
 
-  /* If there happens to be an fallthru edge (possibly created by cleanup_cfg
+  /* If there happens to be a fallthru edge (possibly created by cleanup_cfg
      call), we don't want it to go into newly created landing pad or other EH 
      construct.  */
   for (ei = ei_start (BLOCK_FOR_INSN (insn)->preds); (e = ei_safe_edge (ei)); )
