@@ -1,3 +1,10 @@
+2000-06-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (redeclaration_error_message): If two TEMPLATE_DECLs have
+	the same DECL_RESULT, it's not a redefinition.
+	* pt.c (tsubst_decl): Remove code to handle illegal
+	specializations.
+
 2000-06-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* exception.cc: (__eh_alloc, __eh_free): Moved to libgcc2.c
