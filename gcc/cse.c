@@ -6865,6 +6865,12 @@ cse_insn (insn, libcall_insn)
       if (src == src_folded)
         src_folded = 0;
 
+      /* Folds of constant_p_rtx are to be preferred, since we do
+	 not wish any to live past CSE.  */
+      if (src && GET_CODE (src) == CONST
+	  && GET_CODE (XEXP (src, 0)) == CONSTANT_P_RTX)
+	src = 0;
+
       /* At this point, ELT, if non-zero, points to a class of expressions
          equivalent to the source of this SET and SRC, SRC_EQV, SRC_FOLDED,
 	 and SRC_RELATED, if non-zero, each contain additional equivalent
