@@ -1,3 +1,7 @@
+2003-11-11  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/20020720-1.x: Test passes also on x86_64.
+
 2003-11-10  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* ada/acats/run_all.sh: Add handling of unsupported (tasking) tests.
