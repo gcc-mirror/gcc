@@ -1857,12 +1857,13 @@ expand_expr_stmt (exp)
      except inside a ({...}) where they may be useful.  */
   if (expr_stmts_for_value == 0 && exp != error_mark_node)
     {
-      if (! TREE_SIDE_EFFECTS (exp) && (extra_warnings || warn_unused)
+      if (! TREE_SIDE_EFFECTS (exp)
+	  && (extra_warnings || warn_unused_value)
 	  && !(TREE_CODE (exp) == CONVERT_EXPR
 	       && TREE_TYPE (exp) == void_type_node))
 	warning_with_file_and_line (emit_filename, emit_lineno,
 				    "statement with no effect");
-      else if (warn_unused)
+      else if (warn_unused_value)
 	warn_if_unused_value (exp);
     }
 
@@ -3575,7 +3576,7 @@ warn_about_unused_variables (vars)
 {
   tree decl;
 
-  if (warn_unused)
+  if (warn_unused_variable)
     for (decl = vars; decl; decl = TREE_CHAIN (decl))
       if (TREE_CODE (decl) == VAR_DECL 
 	  && ! TREE_USED (decl)

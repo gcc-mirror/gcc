@@ -20,7 +20,7 @@
 .if n .sp
 .if t .sp 0.4
 ..
-.Id $Id: gcc.1,v 1.13 1999/11/02 10:23:46 law Exp $
+.Id $Id: gcc.1,v 1.14 2000/04/11 06:01:52 loewis Exp $
 .TH GCC 1 "\*(Dt" "GNU Tools" "GNU Tools"
 .SH NAME
 gcc, g++ \- GNU project C and C++ Compiler (gcc-2.96)
@@ -206,6 +206,11 @@ in the following sections.
 \-Wtrigraphs
 \-Wuninitialized
 \-Wunused
+\-Wunused-function
+\-Wunused-label
+\-Wunused-parameter
+\-Wunused-variable
+\-Wunused-value
 \-Wwrite\-strings
 .TP
 .B Debugging Options
@@ -1694,10 +1699,50 @@ return-value in a function whose return-type is not \c
 .B void\c
 \&.
 .TP
+.B \-Wunused\-function
+Warn whenever a static function is declared but not defined or a
+non\-inline static function is unused.
+.TP
+.B \-Wunused\-label
+Warn whenever a label is declared but not used.
+
+To suppress this warning use the
+.B unused
+attribute.
+.TP
+.B \-Wunused\-parameter
+Warn whenever a function parameter is unused aside from its declaration.
+
+To suppress this warning use the
+.B unused
+attribute.
+.TP
+.B \-Wunused\-variable
+Warn whenever a local variable or non\-constant static variable
+is unused aside from its declaration
+
+To suppress this warning use the
+.B unused
+attribute.
+.TP
+.B \-Wunused\-value
+Warn whenever a statement computes a result that is explicitly not used.
+
+To suppress this warning cast the expression to
+.B void\c
+\&.
+.TP
 .B \-Wunused
-Warn whenever a local variable is unused aside from its declaration,
-whenever a function is declared static but never defined, and whenever
-a statement computes a result that is explicitly not used.
+All all the above `\|\c
+.B \-Wunused\c
+\&\|' options combined.
+
+In order to get a warning about an unused function parameter, you must
+either specify `\|\c
+.B \-W \-Wunused\c
+\&\|' or separatly specify `\|\c
+.B \-Wunused\-parameter\c
+\&\|'.
 .TP
 .B \-Wswitch
 Warn whenever a \c

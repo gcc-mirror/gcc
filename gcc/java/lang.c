@@ -258,7 +258,7 @@ lang_decode_option (argc, argv)
       flag_redundant = 1;
       /* When -Wall given, enable -Wunused.  We do this because the C
 	 compiler does it, and people expect it.  */
-      warn_unused = 1;
+      set_Wunused (1);
       return 1;
     }
 

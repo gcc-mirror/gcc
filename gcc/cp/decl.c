@@ -1194,7 +1194,7 @@ pop_label (link)
 	  /* Avoid crashing later.  */
 	  define_label (input_filename, 1, DECL_NAME (label));
 	}
-      else if (warn_unused && !TREE_USED (label))
+      else if (warn_unused_label && !TREE_USED (label))
 	cp_warning_at ("label `%D' defined but not used", label);
     }
 

@@ -1289,9 +1289,30 @@ int extra_warnings = 0;
 
 int warnings_are_errors = 0;
 
-/* Nonzero to warn about unused local variables.  */
+/* Nonzero to warn about unused variables, functions et.al.  */
 
-int warn_unused;
+int warn_unused_function;
+int warn_unused_label;
+int warn_unused_parameter;
+int warn_unused_variable;
+int warn_unused_value;
+
+void
+set_Wunused (setting)
+     int setting;
+{
+  warn_unused_function = setting;
+  warn_unused_label = setting;
+  /* Unused function parameter warnings are reported when either ``-W
+     -Wunused'' or ``-Wunused-parameter'' is specified.  Differentiate
+     -Wunused by setting WARN_UNUSED_PARAMETER to -1 */
+  if (!setting)
+    warn_unused_parameter = 0;
+  else if (!warn_unused_parameter)
+    warn_unused_parameter = -1;
+  warn_unused_variable = setting;
+  warn_unused_value = setting;
+}
 
 /* Nonzero to warn about code which is never reached.  */
 
@@ -1354,7 +1375,11 @@ int warn_padded;
 
 lang_independent_options W_options[] =
 {
-  {"unused", &warn_unused, 1, "Warn when a variable is unused" },
+  {"unused-function", &warn_unused_function, 1, "Warn when a function is unused" },
+  {"unused-label", &warn_unused_label, 1, "Warn when a label is unused" },
+  {"unused-parameter", &warn_unused_parameter, 1, "Warn when a function parameter is unused" },
+  {"unused-variable", &warn_unused_variable, 1, "Warn when a variable is unused" },
+  {"unused-value", &warn_unused_value, 1, "Warn when an expression value is unused" },
   {"error", &warnings_are_errors, 1, ""},
   {"shadow", &warn_shadow, 1, "Warn when one local variable shadows another" },
   {"switch", &warn_switch, 1,
@@ -1905,7 +1930,7 @@ check_global_declarations (vec, len)
 	 because many programs have static variables
 	 that exist only to get some text into the object file.  */
       if (TREE_CODE (decl) == FUNCTION_DECL
-	  && (warn_unused
+	  && (warn_unused_function
 	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
 	  && DECL_INITIAL (decl) == 0
 	  && DECL_EXTERNAL (decl)
@@ -1926,9 +1951,10 @@ check_global_declarations (vec, len)
       /* Warn about static fns or vars defined but not used,
 	 but not about inline functions or static consts
 	 since defining those in header files is normal practice.  */
-      if (warn_unused
-	  && ((TREE_CODE (decl) == FUNCTION_DECL && ! DECL_INLINE (decl))
-	      || (TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
+      if (((warn_unused_function
+	    && TREE_CODE (decl) == FUNCTION_DECL && ! DECL_INLINE (decl))
+	   || (warn_unused_variable
+	       && TREE_CODE (decl) == VAR_DECL && ! TREE_READONLY (decl)))
 	  && ! DECL_IN_SYSTEM_HEADER (decl)
 	  && ! DECL_EXTERNAL (decl)
 	  && ! TREE_PUBLIC (decl)
@@ -3685,6 +3711,7 @@ display_help ()
 		W_options[i].string, description);
     }
   
+  printf ("  -Wunused                Enable unused warnings\n");
   printf ("  -Wid-clash-<num>        Warn if 2 identifiers have the same first <num> chars\n");
   printf ("  -Wlarger-than-<number>  Warn if an object is larger than <number> bytes\n");
   printf ("  -p                      Enable function profiling\n");
@@ -3994,6 +4021,14 @@ decode_W_option (arg)
 
       if (larger_than_size != -1)
 	warn_larger_than = 1;
+    }
+  else if (!strcmp (arg, "unused"))
+    {
+      set_Wunused (1);
+    }
+  else if (!strcmp (arg, "no-unused"))
+    {
+      set_Wunused (0);
     }
   else
     return 0;

@@ -1,3 +1,12 @@
+Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
+
+	* decl.c (pop_label): Replace warn_unused with warn_unused_label.
+  	* typeck.c (build_x_compound_expr): Replace warn_unused with
+ 	warn_unused_value.
+
+	* decl2.c (lang_decode_option): Update -Wall unused flags by
+ 	calling set_Wunused.
+
 2000-05-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-treeh (BINFO_NEW_VTABLE_MARKED): Update documentation.

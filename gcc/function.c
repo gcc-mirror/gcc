@@ -6492,7 +6492,11 @@ expand_function_end (filename, line, end_bindings)
     }
 
   /* Warn about unused parms if extra warnings were specified.  */
-  if (warn_unused && extra_warnings)
+  /* Either ``-W -Wunused'' or ``-Wunused-parameter'' enables this
+     warning.  WARN_UNUSED_PARAMETER is negative when set by
+     -Wunused. */
+  if (warn_unused_parameter > 0
+      || (warn_unused_parameter < 0 && extra_warnings))
     {
       tree decl;
 

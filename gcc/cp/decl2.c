@@ -773,7 +773,7 @@ lang_decode_option (argc, argv)
       else if (!strcmp (p, "all"))
 	{
 	  warn_return_type = setting;
-	  warn_unused = setting;
+	  set_Wunused (setting);
 	  warn_implicit = setting;
 	  warn_switch = setting;
 	  warn_format = setting;
