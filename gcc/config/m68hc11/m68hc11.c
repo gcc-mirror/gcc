@@ -1254,7 +1254,7 @@ m68hc11_initial_elimination_offset (from, to)
 
   if (from == FRAME_POINTER_REGNUM && to == HARD_FRAME_POINTER_REGNUM)
     {
-      return 0;
+      return m68hc11_sp_correction;
     }
 
   /* Push any 2 byte pseudo hard registers that we need to save.  */
@@ -1273,7 +1273,7 @@ m68hc11_initial_elimination_offset (from, to)
 
   if (from == FRAME_POINTER_REGNUM && to == HARD_SP_REGNUM)
     {
-      return size - m68hc11_sp_correction;
+      return size;
     }
   return 0;
 }

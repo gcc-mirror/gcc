@@ -877,8 +877,7 @@ extern enum reg_class m68hc11_tmp_regs_class;
    If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
-extern int m68hc11_sp_correction;
-#define STARTING_FRAME_OFFSET		m68hc11_sp_correction
+#define STARTING_FRAME_OFFSET		0
 
 /* Offset of first parameter from the argument pointer register value.  */
 
