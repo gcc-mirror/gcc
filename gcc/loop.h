@@ -164,17 +164,22 @@ struct iv_class
 				   check_dbra_loop.  */
   struct induction *giv;	/* List of all insns that compute a giv
 				   from this reg.  */
-  int total_benefit;		/* Sum of BENEFITs of all those givs */
-  rtx initial_value;		/* Value of reg at loop start */
-  rtx initial_test;		/* Test performed on BIV before loop */
-  struct iv_class *next;	/* Links all class structures together */
+  int total_benefit;		/* Sum of BENEFITs of all those givs.  */
+  rtx initial_value;		/* Value of reg at loop start.  */
+  rtx initial_test;		/* Test performed on BIV before loop.  */
+  rtx final_value;		/* Value of reg at loop end, if known.  */
+  struct iv_class *next;	/* Links all class structures together.  */
   rtx init_insn;		/* insn which initializes biv, 0 if none.  */
   rtx init_set;			/* SET of INIT_INSN, if any.  */
   unsigned incremented : 1;	/* 1 if somewhere incremented/decremented */
-  unsigned eliminable : 1;	/* 1 if plausible candidate for elimination.  */
-  unsigned nonneg : 1;		/* 1 if we added a REG_NONNEG note for this.  */
+  unsigned eliminable : 1;	/* 1 if plausible candidate for
+                                   elimination.  */
+  unsigned nonneg : 1;		/* 1 if we added a REG_NONNEG note for
+                                   this.  */
   unsigned reversed : 1;	/* 1 if we reversed the loop that this
 				   biv controls.  */
+  unsigned all_reduced : 1;	/* 1 if all givs using this biv have
+                                   been reduced. */
 };
 
 typedef struct loop_mem_info
@@ -333,6 +338,8 @@ struct loop_info
   struct loop_regs regs;
   /* The induction variable information in loop.  */
   struct loop_ivs ivs;
+  /* Non-zero if call is in pre_header extended basic block.  */
+  int pre_header_has_call;
 };
 
 /* Definitions used by the basic induction variable discovery code.  */

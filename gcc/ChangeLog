@@ -1,5 +1,13 @@
 2001-01-01  Michael Hayes  <mhayes@redhat.com>
 
+	* loop.c (loop_giv_reduce_benefit): Break out from strength_reduce.
+	(loop_givs_dead_check, loop_givs_reduce, loop_givs_rescan): Likewise.
+	(prescan_loop): Set pre_header_has_call in loop_info.
+	* loop.h (struct_iv_class): Add `final_value' and `all_reduced'.
+	(struct loop_info): Add `pre_header_has_call'.
+	
+2001-01-01  Michael Hayes  <mhayes@redhat.com>
+
 	* loop.c (loop_bivs_find): Break out from strength_reduce.
 	(loop_bivs_init_find, loop_bivs_check, loop_givs_find): Likewise.
 	(loop_givs_check, loop_biv_eliminable_p): Likewise.
