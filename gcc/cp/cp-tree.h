@@ -1425,9 +1425,8 @@ struct lang_type GTY(())
    derived class and never become non-primary.)  */
 #define SET_BINFO_NEW_VTABLE_MARKED(B)					 \
   (BINFO_NEW_VTABLE_MARKED (B) = 1,					 \
-   my_friendly_assert (!BINFO_PRIMARY_P (B)				 \
-		       || BINFO_VIRTUAL_P (B), 20000517),		 \
-   my_friendly_assert (TYPE_VFIELD (BINFO_TYPE (B)), 20000517))
+   gcc_assert (!BINFO_PRIMARY_P (B) || BINFO_VIRTUAL_P (B)),		 \
+   gcc_assert (TYPE_VFIELD (BINFO_TYPE (B))))
 
 /* Nonzero if this BINFO is a primary base class.  */
 
