@@ -2927,7 +2927,22 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 	      else_bb->global_live_at_start,
 	      then_bb->global_live_at_end);
 
-  new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb), else_bb);
+
+  /* We can avoid creating a new basic block if then_bb is immediately
+     followed by else_bb, i.e. deleting then_bb allows test_bb to fall
+     thru to else_bb.  */
+
+  if (then_bb->next_bb == else_bb
+      && then_bb->prev_bb == test_bb
+      && else_bb != EXIT_BLOCK_PTR)
+    {
+      redirect_edge_succ (FALLTHRU_EDGE (test_bb), else_bb);
+      new_bb = 0;
+    }
+  else
+    new_bb = redirect_edge_and_branch_force (FALLTHRU_EDGE (test_bb),
+                                             else_bb);
+
   then_bb_index = then_bb->index;
   delete_basic_block (then_bb);
 

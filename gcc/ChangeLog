@@ -1,3 +1,8 @@
+2005-01-08  Roger Sayle  <roger@eyesopen.com>
+
+	* ifcvt.c (find_if_case_1): Reinstate 2005-01-04 change, now that
+	the latent bug in rtl_delete_block has been resolved.
+
 2005-01-08  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/t-iris6 (MULTILIB_DIRNAMES): Use -mabi argument values.
