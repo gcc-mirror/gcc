@@ -164,7 +164,7 @@ typedef struct rtx_def
      In a REG, nonzero means this reg refers to the return value
      of the current function.  */
   unsigned integrated : 1;
-  /* 1 in an INSN if this rtx is related to the call frame,
+  /* 1 in an INSN or a SET if this rtx is related to the call frame,
      either changing how we compute the frame address or saving and
      restoring registers in the prologue and epilogue.  
      1 in a MEM if the MEM refers to a scalar, rather than a member of
@@ -997,6 +997,7 @@ extern rtx gen_mem_addressof		PROTO((rtx, union tree_node *));
 extern rtx eliminate_constant_term	PROTO((rtx, rtx *));
 extern rtx expand_complex_abs		PROTO((enum machine_mode, rtx, rtx, int));
 extern enum machine_mode choose_hard_reg_mode PROTO((int, int));
+extern void set_unique_reg_note         PROTO((rtx, enum reg_note, rtx));
 
 /* Functions in rtlanal.c */
 
