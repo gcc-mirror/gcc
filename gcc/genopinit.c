@@ -225,7 +225,7 @@ gen_insn (insn)
 
       if (matches && pp[0] == '%' && pp[1] == ')'
 	  && *np == 0
-	  && (! force_consec || (int) mode_wider_mode[m1] == m2))
+	  && (! force_consec || (int) GET_MODE_WIDER_MODE(m1) == m2))
 	break;
     }
 
