@@ -5673,6 +5673,7 @@ choose_reload_regs (chain)
 	  clear_reload_reg_in_use (regno, rld[j].opnum,
 				   rld[j].when_needed, rld[j].mode);
 	rld[j].reg_rtx = 0;
+	reload_spill_index[j] = -1;
       }
 
   /* Record which pseudos and which spill regs have output reloads.  */
