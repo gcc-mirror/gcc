@@ -1,3 +1,7 @@
+2005-02-06  Marcin Dalecki  <martin@dalecki.de>
+
+	* diagnostic.c (default_diagnostic_finalizer): Fix use of attribute.
+
 2005-02-06  Geoffrey Keating  <geoffk@apple.com>
 
 	* config.gcc (*-*-darwin*): Separate darwin7 and darwin8 configs.
