@@ -93,7 +93,7 @@ public abstract class ResourceBundle
   /**
    * We override SecurityManager in order to access getClassContext(). 
    */
-  class Security extends SecurityManager
+  static class Security extends SecurityManager
   {
     /** Return the ClassLoader of the class which called into this
         ResourceBundle, or null if it cannot be determined. */
