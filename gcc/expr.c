@@ -2785,8 +2785,11 @@ store_expr (exp, target, want_value)
       temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
       /* If TEMP is a volatile MEM and we want a result value, make
-	 the access now so it gets done only once.  */
-      if (GET_CODE (temp) == MEM && MEM_VOLATILE_P (temp) && want_value)
+	 the access now so it gets done only once.  Likewise if
+	 it contains TARGET.  */
+      if (GET_CODE (temp) == MEM && want_value
+	  && (MEM_VOLATILE_P (temp)
+	      || reg_mentioned_p (SUBREG_REG (target), XEXP (temp, 0))))
 	temp = copy_to_reg (temp);
 
       /* If TEMP is a VOIDmode constant, use convert_modes to make
