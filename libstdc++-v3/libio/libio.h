@@ -310,6 +310,9 @@ struct _IO_FILE_complete
   /* Wide character stream stuff.  */
   struct _IO_codecvt *_codecvt;
   struct _IO_wide_data *_wide_data;
+# else
+  void *__pad1;
+  void *__pad2;
 # endif
   int _mode;
   /* Make sure we don't get into trouble again.  */

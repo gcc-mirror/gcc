@@ -101,6 +101,7 @@ WFMT_FLAGS = @WFMT_FLAGS@
 cpu_include_dir = @cpu_include_dir@
 ctype_include_dir = @ctype_include_dir@
 glibcpp_basedir = @glibcpp_basedir@
+ifGNUmake = @ifGNUmake@
 libinst_wstring_la = @libinst_wstring_la@
 
 AUTOMAKE_OPTIONS = 1.3 gnits
@@ -266,10 +267,11 @@ cpu_headers = \
 
 
 sources = \
-	limitsMEMBERS.cc c++io.cc \
+	limitsMEMBERS.cc \
 	cmath.cc \
 	complex.cc complexf.cc complexl.cc complex_io.cc \
-	stdexcept.cc ios.cc stdstreams.cc strstream.cc \
+	stdexcept.cc \
+	c++io.cc ios.cc stdstreams.cc strstream.cc \
 	locale.cc localename.cc  \
 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 
@@ -318,8 +320,8 @@ libinst_string_la_OBJECTS =  libinst-string.la.lo
 libinst_wstring_la_LDFLAGS = 
 libinst_wstring_la_LIBADD = 
 libinst_wstring_la_OBJECTS =  wstring-inst.lo
-libstdc___la_OBJECTS =  limitsMEMBERS.lo c++io.lo cmath.lo complex.lo \
-complexf.lo complexl.lo complex_io.lo stdexcept.lo ios.lo stdstreams.lo \
+libstdc___la_OBJECTS =  limitsMEMBERS.lo cmath.lo complex.lo complexf.lo \
+complexl.lo complex_io.lo stdexcept.lo c++io.lo ios.lo stdstreams.lo \
 strstream.lo locale.lo localename.lo locale-inst.lo stl-inst.lo \
 misc-inst.lo valarray-inst.lo string-inst.lo
 CXXFLAGS = @CXXFLAGS@

@@ -6,6 +6,7 @@
 
 #ifndef _LIBC
 # include <bits/c++config.h>
+# define _IO_MTSAFE_IO
 #endif
 
 /* Define types for libio in terms of the standard internal type names.  */
@@ -107,7 +108,7 @@ typedef unsigned int _G_uint32_t __attribute__ ((__mode__ (__SI__)));
 //#define _G_FSTAT64(fd,buf) __fxstat64 (_STAT_VER, fd, buf)
 
 /* This is defined by <bits/stat.h> if `st_blksize' exists.  */
-#define _G_HAVE_ST_BLKSIZE defined (_STATBUF_ST_BLKSIZE)
+/*#define _G_HAVE_ST_BLKSIZE defined (_STATBUF_ST_BLKSIZE)*/
 
 #define _G_BUFSIZ 8192
 
@@ -119,7 +120,8 @@ typedef unsigned int _G_uint32_t __attribute__ ((__mode__ (__SI__)));
 #define _G_VTABLE_LABEL_PREFIX_ID __vt_
 
 #define _G_INTERNAL_CCS	"UCS4"
-
+#define _G_HAVE_WEAK_SYMBOL 1
+#define _G_STDIO_USES_LIBIO 1
 
 #if defined __cplusplus || defined __STDC__
 # define _G_ARGS(ARGLIST) ARGLIST

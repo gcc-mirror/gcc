@@ -1,3 +1,16 @@
+2000-07-18  Benjamin Kosnik  <bkoz@soma.redhat.com>
+
+	* acinclude.m4: Tweaks.
+	* config/c_io_libio.cc: Tweaks.
+	* bits/sstream.tcc (stringbuf::pbackfail): Simplify.
+	* libio/_G_config.h: Don't define _G_HAVE_ST_BLKSIZE.
+	* libio/[iofwide.c, wfiledoalloc.c, wfiteopos.c, wgenops.c]: New files.
+	* libio/iofclose.c iofopen.c, stdio.c: New files.
+	* libio/Makefile.am: Add files, add flags, etc.
+	* src/Makefile.am (sources): Add filebuf.cc.
+	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT):
+	(GLIBCPP_ENABLE_CSTDIO): Versioning testing, etc etc.
+
 2000-07-17  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4:  Import CHECK_GNU_MAKE from autoconf macro archive.

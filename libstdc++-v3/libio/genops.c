@@ -976,11 +976,9 @@ _IO_default_pbackfail (fp, c)
 	  new_buf = (char *) malloc (new_size);
 	  if (new_buf == NULL)
 	    return EOF;
-	  memcpy (new_buf + (new_size - old_size), fp->_IO_read_base,
-		  old_size);
+	  memcpy (new_buf + old_size, fp->_IO_read_base, old_size);
 	  free (fp->_IO_read_base);
-	  _IO_setg (fp, new_buf, new_buf + (new_size - old_size),
-		    new_buf + new_size);
+	  _IO_setg (fp, new_buf, new_buf + old_size, new_buf + new_size);
 	  fp->_IO_backup_base = fp->_IO_read_ptr;
 	}
 

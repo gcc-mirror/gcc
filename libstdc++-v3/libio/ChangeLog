@@ -1,3 +1,7 @@
+2000-07-12  benjamin kosnik  <bkoz@haight.constant.com>
+
+	* _G_config.h: Smoke less crack, don't define _G_HAVE_ST_BLKSIZE.
+
 2000-04-25  Benjamin Kosnik  <bkoz@haight.constant.com>
 
 	* libio.h: Change decls for seekoff/seekpos.

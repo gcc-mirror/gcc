@@ -2206,14 +2206,14 @@ fi
   enable_cstdio_flag=$enable_cstdio
 
     case x${enable_cstdio_flag} in
-	xlibio | x | xno | xnone | xyes)
-	  # default
-	  CSTDIO_H=config/c_io_libio.h
-	  CSTDIO_CC=config/c_io_libio.cc
- 	  echo "$ac_t""libio" 1>&6
+    xlibio | x | xno | xnone | xyes)
+      # default
+      CSTDIO_H=config/c_io_libio.h
+      CSTDIO_CC=config/c_io_libio.cc
+      echo "$ac_t""libio" 1>&6
 
-	  # see if we are on a system with libio native (ie, linux)
-  	  ac_safe=`echo "libio.h" | sed 'y%./+-%__p_%'`
+      # see if we are on a system with libio native (ie, linux)
+      ac_safe=`echo "libio.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for libio.h""... $ac_c" 1>&6
 echo "configure:2219: checking for libio.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
@@ -2248,82 +2248,73 @@ has_libio=no
 fi
 
 
-	  # bkoz XXX hack hack need version checks, this is temporary
-	  has_libio=no
-
-  	  if test $has_libio = "yes"; then
-   	    BUILD_LIBIO_INCLUDE=
-	    need_libio=no
-  	  else
-   	  BUILD_LIBIO_INCLUDE='-I../libio'
-     	    need_libio=yes
-  	  fi
-  	  
-
-	  # see if the _G_config.h header needs to be built. 
-	  # NB: This replaces the _G_CONFIG_H machinery in libio-v2
-	  ac_safe=`echo "_G_config.h" | sed 'y%./+-%__p_%'`
-echo $ac_n "checking for _G_config.h""... $ac_c" 1>&6
-echo "configure:2268: checking for _G_config.h" >&5
-if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 2273 "configure"
+      # Need to check and see what version of glibc is being used. If
+      # it's not glibc-2.2 or higher, then we'll need to go ahead and 
+      # compile most of libio for linux systems.
+      if test x$has_libio = x"yes"; then
+        case "$target" in
+          *-*-linux*)
+  	    echo $ac_n "checking for glibc version >= 2.2""... $ac_c" 1>&6
+echo "configure:2259: checking for glibc version >= 2.2" >&5
+  	    cat > conftest.$ac_ext <<EOF
+#line 2261 "configure"
 #include "confdefs.h"
-#include <_G_config.h>
+
+  	    #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 2) 
+    		ok
+  	    #endif
+  	    
 EOF
-ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:2278: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
-ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
-if test -z "$ac_err"; then
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  egrep "ok" >/dev/null 2>&1; then
   rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=yes"
+  glibc_satisfactory=yes
 else
-  echo "$ac_err" >&5
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
   rm -rf conftest*
-  eval "ac_cv_header_$ac_safe=no"
+  glibc_satisfactory=no
 fi
 rm -f conftest*
-fi
-if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
-  echo "$ac_t""yes" 1>&6
-  has_gconf_h=yes
-else
-  echo "$ac_t""no" 1>&6
-has_gconf_h=no
-fi
 
-  	  
+  	    echo "$ac_t""$glibc_satisfactory" 1>&6
+	    ;;
+        esac
 
-if test "$has_gconf_h" = no; then
-  GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE=
-  GLIBCPP_NEED_LIBIO_CONFIG_H_FALSE='#'
-else
-  GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE='#'
-  GLIBCPP_NEED_LIBIO_CONFIG_H_FALSE=
-fi
-	  # bkoz XXX hack need to add support for non-glibc systems here
-	   has_gconf=no
+  	if test x$glibc_satisfactory = x"yes"; then
+   	  BUILD_LIBIO_INCLUDE=
+	  need_libio=no
+	  need_xtra_libio=no
+      	  need_wlibio=no	
+      	else
+	  BUILD_LIBIO_INCLUDE='-I../libio'	  
+	  need_libio=yes
+	  need_xtra_libio=yes
+          # bkoz XXX need to add checks to enable this
+          need_wlibio=yes
+	fi
 
-	  # bkoz XXX need to add checks for this
-	  need_wlibio=yes
-	  ;;
-        xwince)
-    	  CSTDIO_H=config/c_io_wince.h
-          CSTDIO_CC=config/c_io_wince.cc
-          echo "$ac_t""wince" 1>&6
+      # Using libio, but <libio.h> doesn't exist on the target system. . .
+      else
+	BUILD_LIBIO_INCLUDE='-I../libio'	  
+	need_libio=yes
+        need_xtra_libio=no
+        # bkoz XXX need to add checks to enable this
+        need_wlibio=no
+      fi
+      ;;
 
-          need_libio=no
-          BUILD_LIBIO_INCLUDE=
-          
-          ;;
-	*)
-	  echo "$enable_cstdio is an unknown io package" 1>&2
-	  exit 1
-	  ;;
+    xwince)
+      CSTDIO_H=config/c_io_wince.h
+      CSTDIO_CC=config/c_io_wince.cc
+      echo "$ac_t""wince" 1>&6
+
+      need_libio=no
+      BUILD_LIBIO_INCLUDE=
+      
+      ;;
+    *)
+      echo "$enable_cstdio is an unknown io package" 1>&2
+      exit 1
+      ;;
   esac
   
   
@@ -2335,6 +2326,15 @@ if test "$need_libio" = yes; then
 else
   GLIBCPP_NEED_LIBIO_TRUE='#'
   GLIBCPP_NEED_LIBIO_FALSE=
+fi
+  
+
+if test "$need_xtra_libio" = yes; then
+  GLIBCPP_NEED_XTRA_LIBIO_TRUE=
+  GLIBCPP_NEED_XTRA_LIBIO_FALSE='#'
+else
+  GLIBCPP_NEED_XTRA_LIBIO_TRUE='#'
+  GLIBCPP_NEED_XTRA_LIBIO_FALSE=
 fi
   
 
@@ -16131,8 +16131,10 @@ echo "configure:16127: checking for XPG2 wchar_t support" >&5
     fi
     echo "$ac_t""$ac_XPG2_wchar_t" 1>&6
 
-            echo $ac_n "checking for enabled wchar_t specializations""... $ac_c" 1>&6
-echo "configure:16136: checking for enabled wchar_t specializations" >&5
+            #    ac_isoC9X_wchar_t=no
+    
+    echo $ac_n "checking for enabled wchar_t specializations""... $ac_c" 1>&6
+echo "configure:16138: checking for enabled wchar_t specializations" >&5
     if test x"$ac_isoC9X_wchar_t" = xyes && test x"$ac_XPG2_wchar_t" = xyes; then
       libinst_wstring_la="libinst-wstring.la"
       cat >> confdefs.h <<\EOF
@@ -16157,17 +16159,17 @@ EOF
   
   ac_safe=`echo "ctype.h" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for ctype.h""... $ac_c" 1>&6
-echo "configure:16161: checking for ctype.h" >&5
+echo "configure:16163: checking for ctype.h" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 16166 "configure"
+#line 16168 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:16171: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:16173: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -16188,9 +16190,9 @@ if eval "test \"`echo '$ac_cv_header_'$ac_safe`\" = yes"; then
         ctype_default=yes
 
         echo $ac_n "checking <ctype> for gnu-linux ""... $ac_c" 1>&6
-echo "configure:16192: checking <ctype> for gnu-linux " >&5
+echo "configure:16194: checking <ctype> for gnu-linux " >&5
     cat > conftest.$ac_ext <<EOF
-#line 16194 "configure"
+#line 16196 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
@@ -16201,7 +16203,7 @@ int
 	+ __ctype_tolower[a] + __ctype_toupper[a] + __ctype_b[a];}
 ; return 0; }
 EOF
-if { (eval echo configure:16205: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16207: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
     ctype_linux=yes
@@ -16220,9 +16222,9 @@ rm -f conftest*
 
         if test $ctype_default = "yes"; then
     echo $ac_n "checking <ctype> for freebsd 4.0 ""... $ac_c" 1>&6
-echo "configure:16224: checking <ctype> for freebsd 4.0 " >&5
+echo "configure:16226: checking <ctype> for freebsd 4.0 " >&5
     cat > conftest.$ac_ext <<EOF
-#line 16226 "configure"
+#line 16228 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
@@ -16232,7 +16234,7 @@ int
 	+ _CTYPE_D + _CTYPE_P + _CTYPE_X + _CTYPE_G ;}
 ; return 0; }
 EOF
-if { (eval echo configure:16236: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16238: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
     ctype_bsd=yes
@@ -16252,9 +16254,9 @@ rm -f conftest*
 
         if test $ctype_default = "yes"; then
     echo $ac_n "checking <ctype> for freebsd 3.4 ""... $ac_c" 1>&6
-echo "configure:16256: checking <ctype> for freebsd 3.4 " >&5
+echo "configure:16258: checking <ctype> for freebsd 3.4 " >&5
     cat > conftest.$ac_ext <<EOF
-#line 16258 "configure"
+#line 16260 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
@@ -16264,7 +16266,7 @@ int
       + _D + _P + _X + _G + __istype (a, 0);}
 ; return 0; }
 EOF
-if { (eval echo configure:16268: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16270: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
     ctype_freebsd34=yes
@@ -16284,9 +16286,9 @@ rm -f conftest*
 
         if test $ctype_default = "yes"; then
     echo $ac_n "checking <ctype> for solaris 2.6,7,8 ""... $ac_c" 1>&6
-echo "configure:16288: checking <ctype> for solaris 2.6,7,8 " >&5
+echo "configure:16290: checking <ctype> for solaris 2.6,7,8 " >&5
     cat > conftest.$ac_ext <<EOF
-#line 16290 "configure"
+#line 16292 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
@@ -16297,7 +16299,7 @@ int
 	+ __trans_lower[a] + __trans_upper[a] + __ctype_mask[a];}
 ; return 0; }
 EOF
-if { (eval echo configure:16301: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16303: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
     ctype_solaris=yes
@@ -16312,7 +16314,7 @@ rm -f conftest*
 
     if test $ctype_solaris = "yes"; then
       echo $ac_n "checking   for version""... $ac_c" 1>&6
-echo "configure:16316: checking   for version" >&5
+echo "configure:16318: checking   for version" >&5
       ac_ext=C
 # CXXFLAGS is not in ac_cpp because -g, -O, etc. are not valid cpp options.
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -16321,14 +16323,14 @@ ac_link='${CXX-g++} -o conftest${ac_exeext} $CXXFLAGS $CPPFLAGS $LDFLAGS conftes
 cross_compiling=$ac_cv_prog_cxx_cross
  
       cat > conftest.$ac_ext <<EOF
-#line 16325 "configure"
+#line 16327 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
 typedef long* __to_type; __to_type const& _M_toupper = __trans_upper;
 ; return 0; }
 EOF
-if { (eval echo configure:16332: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16334: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
       ctype_solaris26=yes
@@ -16360,9 +16362,9 @@ cross_compiling=$ac_cv_prog_cc_cross
 
         if test $ctype_default = "yes"; then
     echo $ac_n "checking <ctype> for solaris 2.5.1 ""... $ac_c" 1>&6
-echo "configure:16364: checking <ctype> for solaris 2.5.1 " >&5
+echo "configure:16366: checking <ctype> for solaris 2.5.1 " >&5
     cat > conftest.$ac_ext <<EOF
-#line 16366 "configure"
+#line 16368 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
@@ -16372,7 +16374,7 @@ int
 	+ __ctype[a];}
 ; return 0; }
 EOF
-if { (eval echo configure:16376: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16378: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
     ctype_solaris25=yes
@@ -16392,9 +16394,9 @@ rm -f conftest*
 
         if test $ctype_default = "yes"; then
     echo $ac_n "checking <ctype> for aix ""... $ac_c" 1>&6
-echo "configure:16396: checking <ctype> for aix " >&5
+echo "configure:16398: checking <ctype> for aix " >&5
     cat > conftest.$ac_ext <<EOF
-#line 16398 "configure"
+#line 16400 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
@@ -16405,7 +16407,7 @@ int
 	+ _VALC('a') + _IS('c', 0);}
 ; return 0; }
 EOF
-if { (eval echo configure:16409: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16411: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
     ctype_aix=yes
@@ -16425,9 +16427,9 @@ rm -f conftest*
 
         if test $ctype_default = "yes"; then
     echo $ac_n "checking <ctype> for newlib ""... $ac_c" 1>&6
-echo "configure:16429: checking <ctype> for newlib " >&5
+echo "configure:16431: checking <ctype> for newlib " >&5
     cat > conftest.$ac_ext <<EOF
-#line 16431 "configure"
+#line 16433 "configure"
 #include "confdefs.h"
 #include <ctype.h>
 int main() {
@@ -16437,7 +16439,7 @@ int
 	+ _ctype_[a];}
 ; return 0; }
 EOF
-if { (eval echo configure:16441: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:16443: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
   \
     ctype_newlib=yes
@@ -16471,17 +16473,17 @@ fi
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:16475: checking for $ac_hdr" >&5
+echo "configure:16477: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 16480 "configure"
+#line 16482 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:16485: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:16487: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -16510,12 +16512,12 @@ done
 for ac_func in getpagesize
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:16514: checking for $ac_func" >&5
+echo "configure:16516: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 16519 "configure"
+#line 16521 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -16538,7 +16540,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:16542: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:16544: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -16563,7 +16565,7 @@ fi
 done
 
 echo $ac_n "checking for working mmap""... $ac_c" 1>&6
-echo "configure:16567: checking for working mmap" >&5
+echo "configure:16569: checking for working mmap" >&5
 if eval "test \"`echo '$''{'ac_cv_func_mmap_fixed_mapped'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -16571,7 +16573,7 @@ else
   ac_cv_func_mmap_fixed_mapped=no
 else
   cat > conftest.$ac_ext <<EOF
-#line 16575 "configure"
+#line 16577 "configure"
 #include "confdefs.h"
 
 /* Thanks to Mike Haertel and Jim Avera for this test.
@@ -16711,7 +16713,7 @@ main()
 }
 
 EOF
-if { (eval echo configure:16715: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+if { (eval echo configure:16717: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
 then
   ac_cv_func_mmap_fixed_mapped=yes
 else
@@ -16774,19 +16776,19 @@ fi
 
 if test $ac_cv_header_locale_h = yes; then
     echo $ac_n "checking for LC_MESSAGES""... $ac_c" 1>&6
-echo "configure:16778: checking for LC_MESSAGES" >&5
+echo "configure:16780: checking for LC_MESSAGES" >&5
 if eval "test \"`echo '$''{'ac_cv_val_LC_MESSAGES'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 16783 "configure"
+#line 16785 "configure"
 #include "confdefs.h"
 #include <locale.h>
 int main() {
 return LC_MESSAGES
 ; return 0; }
 EOF
-if { (eval echo configure:16790: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:16792: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   ac_cv_val_LC_MESSAGES=yes
 else
@@ -17002,10 +17004,10 @@ s%@cpu_include_dir@%$cpu_include_dir%g
 s%@CPU_FLAGS@%$CPU_FLAGS%g
 s%@DEBUG_FLAGS@%$DEBUG_FLAGS%g
 s%@BUILD_LIBIO_INCLUDE@%$BUILD_LIBIO_INCLUDE%g
-s%@GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE@%$GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE%g
-s%@GLIBCPP_NEED_LIBIO_CONFIG_H_FALSE@%$GLIBCPP_NEED_LIBIO_CONFIG_H_FALSE%g
 s%@GLIBCPP_NEED_LIBIO_TRUE@%$GLIBCPP_NEED_LIBIO_TRUE%g
 s%@GLIBCPP_NEED_LIBIO_FALSE@%$GLIBCPP_NEED_LIBIO_FALSE%g
+s%@GLIBCPP_NEED_XTRA_LIBIO_TRUE@%$GLIBCPP_NEED_XTRA_LIBIO_TRUE%g
+s%@GLIBCPP_NEED_XTRA_LIBIO_FALSE@%$GLIBCPP_NEED_XTRA_LIBIO_FALSE%g
 s%@GLIBCPP_NEED_WLIBIO_TRUE@%$GLIBCPP_NEED_WLIBIO_TRUE%g
 s%@GLIBCPP_NEED_WLIBIO_FALSE@%$GLIBCPP_NEED_WLIBIO_FALSE%g
 s%@CSHADOWFLAGS@%$CSHADOWFLAGS%g
