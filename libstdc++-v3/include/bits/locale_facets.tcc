@@ -687,7 +687,8 @@ namespace std
 	  bool __testf = true;
 	  bool __testt = true;
 	  size_t __n;
-          for (__n = 0; __beg != __end; ++__n, ++__beg)
+	  bool __testeof = __beg == __end;
+          for (__n = 0; !__testeof; ++__n)
             {
 	      const char_type __c = *__beg;
 
@@ -705,6 +706,9 @@ namespace std
 
 	      if (!__testf && !__testt)
 		break;
+	      
+	      if (++__beg == __end)
+		__testeof = true;
             }
 	  if (__testf && __n == __lc->_M_falsename_size)
 	    __v = 0;
@@ -713,7 +717,7 @@ namespace std
 	  else
 	    __err |= ios_base::failbit;
 
-          if (__beg == __end)
+          if (__testeof)
             __err |= ios_base::eofbit;
         }
       return __beg;
