@@ -1,3 +1,8 @@
+2002-03-11  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.brendan/crash52.C: Remove return warning marker.
+	* g++.old-deja/g++.jason/report.C: Likewise.
+
 2002-03-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* testsuite/g++.old-deja/g++.other/friend9.C: Revert DR 209 changes.
