@@ -219,6 +219,9 @@ struct ivopts_data
   /* The candidates.  */
   varray_type iv_candidates;
 
+  /* A bitmap of important candidates.  */
+  bitmap important_candidates;
+
   /* Whether to consider just related and important candidates when replacing a
      use.  */
   bool consider_all_candidates;
@@ -3474,7 +3477,9 @@ find_best_candidate (struct ivopts_data *data,
   else
     {
       asol = BITMAP_XMALLOC ();
-      bitmap_a_and_b (asol, sol, use->related_cands);
+
+      bitmap_a_or_b (asol, data->important_candidates, use->related_cands);
+      bitmap_a_and_b (asol, asol, sol);
     }
 
   EXECUTE_IF_SET_IN_BITMAP (asol, 0, c, bi)
@@ -3741,6 +3746,15 @@ find_optimal_iv_set (struct ivopts_data *data)
   bitmap inv = BITMAP_XMALLOC ();
   struct iv_use *use;
 
+  data->important_candidates = BITMAP_XMALLOC ();
+  for (i = 0; i < n_iv_cands (data); i++)
+    {
+      struct iv_cand *cand = iv_cand (data, i);
+
+      if (cand->important)
+	bitmap_set_bit (data->important_candidates, i);
+    }
+
   /* Set the upper bound.  */
   cost = get_initial_solution (data, set, inv);
   if (cost == INFTY)
@@ -3783,6 +3797,7 @@ find_optimal_iv_set (struct ivopts_data *data)
     }
 
   BITMAP_XFREE (inv);
+  BITMAP_XFREE (data->important_candidates);
 
   return set;
 }
