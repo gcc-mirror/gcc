@@ -654,6 +654,114 @@ gnu/java/rmi/server/UnicastServer.java \
 gnu/java/rmi/server/UnicastServerRef.java
 
 
+javax_source_files = \
+javax/naming/directory/Attribute.java \
+javax/naming/directory/AttributeInUseException.java \
+javax/naming/directory/AttributeModificationException.java \
+javax/naming/directory/Attributes.java \
+javax/naming/directory/DirContext.java \
+javax/naming/directory/InvalidAttributeIdentifierException.java	\
+javax/naming/directory/InvalidAttributeValueException.java \
+javax/naming/directory/InvalidAttributesException.java \
+javax/naming/directory/InvalidSearchControlsException.java \
+javax/naming/directory/InvalidSearchFilterException.java \
+javax/naming/directory/NoSuchAttributeException.java \
+javax/naming/directory/SchemaViolationException.java \
+javax/naming/directory/BasicAttribute.java \
+javax/naming/directory/BasicAttributes.java \
+javax/naming/directory/ModificationItem.java \
+javax/naming/directory/SearchControls.java \
+javax/naming/directory/SearchResult.java \
+javax/naming/directory/InitialDirContext.java \
+javax/naming/AuthenticationException.java \
+javax/naming/AuthenticationNotSupportedException.java \
+javax/naming/CannotProceedException.java \
+javax/naming/CommunicationException.java \
+javax/naming/ConfigurationException.java \
+javax/naming/Context.java \
+javax/naming/ContextNotEmptyException.java \
+javax/naming/InsufficientResourcesException.java \
+javax/naming/InterruptedNamingException.java \
+javax/naming/BinaryRefAddr.java	\
+javax/naming/LimitExceededException.java \
+javax/naming/LinkException.java	\
+javax/naming/LinkLoopException.java \
+javax/naming/MalformedLinkException.java \
+javax/naming/Name.java \
+javax/naming/NameAlreadyBoundException.java \
+javax/naming/NameNotFoundException.java	\
+javax/naming/NameParser.java \
+javax/naming/NamingEnumeration.java \
+javax/naming/InitialContext.java \
+javax/naming/NamingSecurityException.java \
+javax/naming/NoInitialContextException.java \
+javax/naming/NoPermissionException.java	\
+javax/naming/NotContextException.java \
+javax/naming/NamingException.java \
+javax/naming/PartialResultException.java \
+javax/naming/event/EventContext.java \
+javax/naming/event/EventDirContext.java	\
+javax/naming/event/NamespaceChangeListener.java	\
+javax/naming/event/NamingEvent.java \
+javax/naming/event/NamingExceptionEvent.java \
+javax/naming/event/NamingListener.java \
+javax/naming/event/ObjectChangeListener.java \
+javax/naming/RefAddr.java \
+javax/naming/Reference.java \
+javax/naming/Referenceable.java	\
+javax/naming/ReferralException.java \
+javax/naming/ServiceUnavailableException.java \
+javax/naming/SizeLimitExceededException.java \
+javax/naming/StringRefAddr.java	\
+javax/naming/TimeLimitExceededException.java \
+javax/naming/spi/InitialContextFactory.java \
+javax/naming/spi/InitialContextFactoryBuilder.java \
+javax/naming/spi/NamingManager.java \
+javax/naming/spi/ObjectFactory.java \
+javax/naming/spi/Resolver.java \
+javax/naming/spi/DirObjectFactory.java \
+javax/naming/spi/DirStateFactory.java \
+javax/naming/spi/DirectoryManager.java \
+javax/naming/spi/ObjectFactoryBuilder.java \
+javax/naming/spi/ResolveResult.java \
+javax/naming/spi/StateFactory.java \
+javax/naming/InvalidNameException.java \
+javax/naming/Binding.java \
+javax/naming/CompositeName.java	\
+javax/naming/CompoundName.java \
+javax/naming/LinkRef.java \
+javax/naming/NameClassPair.java	\
+javax/naming/ldap/Control.java \
+javax/naming/ldap/ControlFactory.java \
+javax/naming/ldap/ExtendedRequest.java \
+javax/naming/ldap/ExtendedResponse.java	\
+javax/naming/ldap/HasControls.java \
+javax/naming/ldap/InitialLdapContext.java \
+javax/naming/ldap/LdapContext.java \
+javax/naming/ldap/LdapReferralException.java \
+javax/naming/ldap/UnsolicitedNotification.java \
+javax/naming/ldap/UnsolicitedNotificationEvent.java \
+javax/naming/ldap/UnsolicitedNotificationListener.java \
+javax/naming/OperationNotSupportedException.java \
+javax/transaction/xa/XAException.java \
+javax/transaction/xa/XAResource.java \
+javax/transaction/xa/Xid.java \
+javax/transaction/HeuristicCommitException.java	\
+javax/transaction/HeuristicMixedException.java \
+javax/transaction/HeuristicRollbackException.java \
+javax/transaction/InvalidTransactionException.java \
+javax/transaction/NotSupportedException.java \
+javax/transaction/RollbackException.java \
+javax/transaction/Status.java \
+javax/transaction/Synchronization.java \
+javax/transaction/SystemException.java \
+javax/transaction/Transaction.java \
+javax/transaction/TransactionManager.java \
+javax/transaction/TransactionRequiredException.java \
+javax/transaction/TransactionRolledbackException.java \
+javax/transaction/UserTransaction.java
+
+
 built_java_source_files = java/lang/ConcreteProcess.java \
                           gnu/classpath/Configuration.java
 
@@ -1208,7 +1316,8 @@ org/xml/sax/XMLFilter.java \
 org/xml/sax/XMLReader.java \
 $(rmi_java_source_files) \
 $(awt_java_source_files) \
-$(convert_source_files)
+$(convert_source_files) \
+$(javax_source_files)
 
 
 java_source_files = $(special_java_source_files) $(ordinary_java_source_files)
@@ -2140,7 +2249,105 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/ZipException.P .deps/java/util/zip/ZipFile.P \
 .deps/java/util/zip/ZipInputStream.P \
 .deps/java/util/zip/ZipOutputStream.P .deps/java/util/zip/natDeflater.P \
-.deps/java/util/zip/natInflater.P .deps/jni.P .deps/name-finder.P \
+.deps/java/util/zip/natInflater.P \
+.deps/javax/naming/AuthenticationException.P \
+.deps/javax/naming/AuthenticationNotSupportedException.P \
+.deps/javax/naming/BinaryRefAddr.P .deps/javax/naming/Binding.P \
+.deps/javax/naming/CannotProceedException.P \
+.deps/javax/naming/CommunicationException.P \
+.deps/javax/naming/CompositeName.P .deps/javax/naming/CompoundName.P \
+.deps/javax/naming/ConfigurationException.P \
+.deps/javax/naming/Context.P \
+.deps/javax/naming/ContextNotEmptyException.P \
+.deps/javax/naming/InitialContext.P \
+.deps/javax/naming/InsufficientResourcesException.P \
+.deps/javax/naming/InterruptedNamingException.P \
+.deps/javax/naming/InvalidNameException.P \
+.deps/javax/naming/LimitExceededException.P \
+.deps/javax/naming/LinkException.P \
+.deps/javax/naming/LinkLoopException.P .deps/javax/naming/LinkRef.P \
+.deps/javax/naming/MalformedLinkException.P .deps/javax/naming/Name.P \
+.deps/javax/naming/NameAlreadyBoundException.P \
+.deps/javax/naming/NameClassPair.P \
+.deps/javax/naming/NameNotFoundException.P \
+.deps/javax/naming/NameParser.P .deps/javax/naming/NamingEnumeration.P \
+.deps/javax/naming/NamingException.P \
+.deps/javax/naming/NamingSecurityException.P \
+.deps/javax/naming/NoInitialContextException.P \
+.deps/javax/naming/NoPermissionException.P \
+.deps/javax/naming/NotContextException.P \
+.deps/javax/naming/OperationNotSupportedException.P \
+.deps/javax/naming/PartialResultException.P \
+.deps/javax/naming/RefAddr.P .deps/javax/naming/Reference.P \
+.deps/javax/naming/Referenceable.P \
+.deps/javax/naming/ReferralException.P \
+.deps/javax/naming/ServiceUnavailableException.P \
+.deps/javax/naming/SizeLimitExceededException.P \
+.deps/javax/naming/StringRefAddr.P \
+.deps/javax/naming/TimeLimitExceededException.P \
+.deps/javax/naming/directory/Attribute.P \
+.deps/javax/naming/directory/AttributeInUseException.P \
+.deps/javax/naming/directory/AttributeModificationException.P \
+.deps/javax/naming/directory/Attributes.P \
+.deps/javax/naming/directory/BasicAttribute.P \
+.deps/javax/naming/directory/BasicAttributes.P \
+.deps/javax/naming/directory/DirContext.P \
+.deps/javax/naming/directory/InitialDirContext.P \
+.deps/javax/naming/directory/InvalidAttributeIdentifierException.P \
+.deps/javax/naming/directory/InvalidAttributeValueException.P \
+.deps/javax/naming/directory/InvalidAttributesException.P \
+.deps/javax/naming/directory/InvalidSearchControlsException.P \
+.deps/javax/naming/directory/InvalidSearchFilterException.P \
+.deps/javax/naming/directory/ModificationItem.P \
+.deps/javax/naming/directory/NoSuchAttributeException.P \
+.deps/javax/naming/directory/SchemaViolationException.P \
+.deps/javax/naming/directory/SearchControls.P \
+.deps/javax/naming/directory/SearchResult.P \
+.deps/javax/naming/event/EventContext.P \
+.deps/javax/naming/event/EventDirContext.P \
+.deps/javax/naming/event/NamespaceChangeListener.P \
+.deps/javax/naming/event/NamingEvent.P \
+.deps/javax/naming/event/NamingExceptionEvent.P \
+.deps/javax/naming/event/NamingListener.P \
+.deps/javax/naming/event/ObjectChangeListener.P \
+.deps/javax/naming/ldap/Control.P \
+.deps/javax/naming/ldap/ControlFactory.P \
+.deps/javax/naming/ldap/ExtendedRequest.P \
+.deps/javax/naming/ldap/ExtendedResponse.P \
+.deps/javax/naming/ldap/HasControls.P \
+.deps/javax/naming/ldap/InitialLdapContext.P \
+.deps/javax/naming/ldap/LdapContext.P \
+.deps/javax/naming/ldap/LdapReferralException.P \
+.deps/javax/naming/ldap/UnsolicitedNotification.P \
+.deps/javax/naming/ldap/UnsolicitedNotificationEvent.P \
+.deps/javax/naming/ldap/UnsolicitedNotificationListener.P \
+.deps/javax/naming/spi/DirObjectFactory.P \
+.deps/javax/naming/spi/DirStateFactory.P \
+.deps/javax/naming/spi/DirectoryManager.P \
+.deps/javax/naming/spi/InitialContextFactory.P \
+.deps/javax/naming/spi/InitialContextFactoryBuilder.P \
+.deps/javax/naming/spi/NamingManager.P \
+.deps/javax/naming/spi/ObjectFactory.P \
+.deps/javax/naming/spi/ObjectFactoryBuilder.P \
+.deps/javax/naming/spi/ResolveResult.P \
+.deps/javax/naming/spi/Resolver.P .deps/javax/naming/spi/StateFactory.P \
+.deps/javax/transaction/HeuristicCommitException.P \
+.deps/javax/transaction/HeuristicMixedException.P \
+.deps/javax/transaction/HeuristicRollbackException.P \
+.deps/javax/transaction/InvalidTransactionException.P \
+.deps/javax/transaction/NotSupportedException.P \
+.deps/javax/transaction/RollbackException.P \
+.deps/javax/transaction/Status.P \
+.deps/javax/transaction/Synchronization.P \
+.deps/javax/transaction/SystemException.P \
+.deps/javax/transaction/Transaction.P \
+.deps/javax/transaction/TransactionManager.P \
+.deps/javax/transaction/TransactionRequiredException.P \
+.deps/javax/transaction/TransactionRolledbackException.P \
+.deps/javax/transaction/UserTransaction.P \
+.deps/javax/transaction/xa/XAException.P \
+.deps/javax/transaction/xa/XAResource.P \
+.deps/javax/transaction/xa/Xid.P .deps/jni.P .deps/name-finder.P \
 .deps/no-threads.P .deps/nogc.P .deps/org/w3c/dom/Attr.P \
 .deps/org/w3c/dom/CDATASection.P .deps/org/w3c/dom/CharacterData.P \
 .deps/org/w3c/dom/Comment.P .deps/org/w3c/dom/DOMException.P \
@@ -2718,7 +2925,7 @@ libgcj.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_file
 	done; \
 	test "$$fail" = no)
 	-@rm -f tmp-list libgcj.jar
-	find java gnu org -type d -o -type f -name '*.class' | \
+	find java gnu javax org -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
 	  $(ZIP) cfM0E@ $@
 

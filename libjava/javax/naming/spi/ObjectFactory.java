@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation
+/* Copyright (C) 2001 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,14 +11,11 @@ package javax.naming.spi;
 import java.util.Hashtable;
 import javax.naming.*;
 
-public class ObjectFactory
+public interface ObjectFactory
 {
   public Object getObjectInstance (Object obj,
 				   Name name,
 				   Context nameCtx,
 				   Hashtable environment)
-       throws Exception
-  {
-    throw new Error ("javax.naming.spi.ObjectFactory.getObjectInstance not implemented");
-  }
+       throws Exception;
 }

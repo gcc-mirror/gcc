@@ -192,7 +192,7 @@ libgcj.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_file
 	test "$$fail" = no)
 	-@rm -f tmp-list libgcj.jar
 ## Note that we explicitly want to include directory information.
-	find java gnu org -type d -o -type f -name '*.class' | \
+	find java gnu javax org -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
 	  $(ZIP) cfM0E@ $@
 
@@ -912,6 +912,114 @@ gnu/java/rmi/server/UnicastRemoteStub.java \
 gnu/java/rmi/server/UnicastServer.java \
 gnu/java/rmi/server/UnicastServerRef.java
 
+javax_source_files = \
+javax/naming/directory/Attribute.java \
+javax/naming/directory/AttributeInUseException.java \
+javax/naming/directory/AttributeModificationException.java \
+javax/naming/directory/Attributes.java \
+javax/naming/directory/DirContext.java \
+javax/naming/directory/InvalidAttributeIdentifierException.java	\
+javax/naming/directory/InvalidAttributeValueException.java \
+javax/naming/directory/InvalidAttributesException.java \
+javax/naming/directory/InvalidSearchControlsException.java \
+javax/naming/directory/InvalidSearchFilterException.java \
+javax/naming/directory/NoSuchAttributeException.java \
+javax/naming/directory/SchemaViolationException.java \
+javax/naming/directory/BasicAttribute.java \
+javax/naming/directory/BasicAttributes.java \
+javax/naming/directory/ModificationItem.java \
+javax/naming/directory/SearchControls.java \
+javax/naming/directory/SearchResult.java \
+javax/naming/directory/InitialDirContext.java \
+javax/naming/AuthenticationException.java \
+javax/naming/AuthenticationNotSupportedException.java \
+javax/naming/CannotProceedException.java \
+javax/naming/CommunicationException.java \
+javax/naming/ConfigurationException.java \
+javax/naming/Context.java \
+javax/naming/ContextNotEmptyException.java \
+javax/naming/InsufficientResourcesException.java \
+javax/naming/InterruptedNamingException.java \
+javax/naming/BinaryRefAddr.java	\
+javax/naming/LimitExceededException.java \
+javax/naming/LinkException.java	\
+javax/naming/LinkLoopException.java \
+javax/naming/MalformedLinkException.java \
+javax/naming/Name.java \
+javax/naming/NameAlreadyBoundException.java \
+javax/naming/NameNotFoundException.java	\
+javax/naming/NameParser.java \
+javax/naming/NamingEnumeration.java \
+javax/naming/InitialContext.java \
+javax/naming/NamingSecurityException.java \
+javax/naming/NoInitialContextException.java \
+javax/naming/NoPermissionException.java	\
+javax/naming/NotContextException.java \
+javax/naming/NamingException.java \
+javax/naming/PartialResultException.java \
+javax/naming/event/EventContext.java \
+javax/naming/event/EventDirContext.java	\
+javax/naming/event/NamespaceChangeListener.java	\
+javax/naming/event/NamingEvent.java \
+javax/naming/event/NamingExceptionEvent.java \
+javax/naming/event/NamingListener.java \
+javax/naming/event/ObjectChangeListener.java \
+javax/naming/RefAddr.java \
+javax/naming/Reference.java \
+javax/naming/Referenceable.java	\
+javax/naming/ReferralException.java \
+javax/naming/ServiceUnavailableException.java \
+javax/naming/SizeLimitExceededException.java \
+javax/naming/StringRefAddr.java	\
+javax/naming/TimeLimitExceededException.java \
+javax/naming/spi/InitialContextFactory.java \
+javax/naming/spi/InitialContextFactoryBuilder.java \
+javax/naming/spi/NamingManager.java \
+javax/naming/spi/ObjectFactory.java \
+javax/naming/spi/Resolver.java \
+javax/naming/spi/DirObjectFactory.java \
+javax/naming/spi/DirStateFactory.java \
+javax/naming/spi/DirectoryManager.java \
+javax/naming/spi/ObjectFactoryBuilder.java \
+javax/naming/spi/ResolveResult.java \
+javax/naming/spi/StateFactory.java \
+javax/naming/InvalidNameException.java \
+javax/naming/Binding.java \
+javax/naming/CompositeName.java	\
+javax/naming/CompoundName.java \
+javax/naming/LinkRef.java \
+javax/naming/NameClassPair.java	\
+javax/naming/ldap/Control.java \
+javax/naming/ldap/ControlFactory.java \
+javax/naming/ldap/ExtendedRequest.java \
+javax/naming/ldap/ExtendedResponse.java	\
+javax/naming/ldap/HasControls.java \
+javax/naming/ldap/InitialLdapContext.java \
+javax/naming/ldap/LdapContext.java \
+javax/naming/ldap/LdapReferralException.java \
+javax/naming/ldap/UnsolicitedNotification.java \
+javax/naming/ldap/UnsolicitedNotificationEvent.java \
+javax/naming/ldap/UnsolicitedNotificationListener.java \
+javax/naming/OperationNotSupportedException.java \
+javax/transaction/xa/XAException.java \
+javax/transaction/xa/XAResource.java \
+javax/transaction/xa/Xid.java \
+javax/transaction/HeuristicCommitException.java	\
+javax/transaction/HeuristicMixedException.java \
+javax/transaction/HeuristicRollbackException.java \
+javax/transaction/InvalidTransactionException.java \
+javax/transaction/NotSupportedException.java \
+javax/transaction/RollbackException.java \
+javax/transaction/Status.java \
+javax/transaction/Synchronization.java \
+javax/transaction/SystemException.java \
+javax/transaction/Transaction.java \
+javax/transaction/TransactionManager.java \
+javax/transaction/TransactionRequiredException.java \
+javax/transaction/TransactionRolledbackException.java \
+javax/transaction/UserTransaction.java
+
+
 ## Java files which are created by configure and thus are in the build
 ## directory.
 built_java_source_files = java/lang/ConcreteProcess.java \
@@ -1475,7 +1583,8 @@ org/xml/sax/XMLFilter.java \
 org/xml/sax/XMLReader.java \
 $(rmi_java_source_files) \
 $(awt_java_source_files) \
-$(convert_source_files)
+$(convert_source_files) \
+$(javax_source_files)
 
 
 java_source_files = $(special_java_source_files) $(ordinary_java_source_files)
