@@ -96,11 +96,9 @@ struct cpp_pending
 
 static void print_help                  PARAMS ((void));
 static void path_include		PARAMS ((cpp_reader *,
-						 struct cpp_pending *,
 						 char *, int));
 static void initialize_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
-						 struct cpp_pending *,
 						 char *, int, int));
 static void merge_include_chains	PARAMS ((cpp_reader *));
 
@@ -173,9 +171,8 @@ END
    add all the names to the search path for include files.  */
 
 static void
-path_include (pfile, pend, list, path)
+path_include (pfile, list, path)
      cpp_reader *pfile;
-     struct cpp_pending *pend;
      char *list;
      int path;
 {
@@ -203,7 +200,7 @@ path_include (pfile, pend, list, path)
 	  name[q - p] = 0;
 	}
 
-      append_include_chain (pfile, pend, name, path, 0);
+      append_include_chain (pfile, name, path, 0);
 
       /* Advance past this name.  */
       if (*q == 0)
@@ -216,13 +213,13 @@ path_include (pfile, pend, list, path)
 /* Append DIR to include path PATH.  DIR must be permanently allocated
    and writable. */
 static void
-append_include_chain (pfile, pend, dir, path, cxx_aware)
+append_include_chain (pfile, dir, path, cxx_aware)
      cpp_reader *pfile;
-     struct cpp_pending *pend;
      char *dir;
      int path;
      int cxx_aware;
 {
+  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
   struct file_name_list *new;
   struct stat st;
   unsigned int len;
@@ -693,7 +690,7 @@ initialize_standard_includes (pfile)
 
   GET_ENV_PATH_LIST (path, "CPATH");
   if (path != 0 && *path != 0)
-    path_include (pfile, CPP_OPTION (pfile, pending), path, BRACKET);
+    path_include (pfile, path, BRACKET);
 
   switch ((CPP_OPTION (pfile, objc) << 1) + CPP_OPTION (pfile, cplusplus))
     {
@@ -711,7 +708,7 @@ initialize_standard_includes (pfile)
       break;
     }
   if (path != 0 && *path != 0)
-    path_include (pfile, CPP_OPTION (pfile, pending), path, SYSTEM);
+    path_include (pfile, path, SYSTEM);
 
   /* Search "translated" versions of GNU directories.
      These have /usr/local/lib/gcc... replaced by specd_prefix.  */
@@ -745,8 +742,7 @@ initialize_standard_includes (pfile)
 			  p->fname + default_len,
 			  flen - default_len + 1);
 
-		  append_include_chain (pfile, CPP_OPTION (pfile, pending),
-					str, SYSTEM, p->cxx_aware);
+		  append_include_chain (pfile, str, SYSTEM, p->cxx_aware);
 		}
 	    }
 	}
@@ -762,8 +758,7 @@ initialize_standard_includes (pfile)
 	{
 	  /* XXX Potential memory leak! */
 	  char *str = xstrdup (update_path (p->fname, p->component));
-	  append_include_chain (pfile, CPP_OPTION (pfile, pending),
-				str, SYSTEM, p->cxx_aware);
+	  append_include_chain (pfile, str, SYSTEM, p->cxx_aware);
 	}
     }
 }
@@ -1337,12 +1332,10 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, c99) = 1;
 	  CPP_OPTION (pfile, digraphs) = 1;
 	  CPP_OPTION (pfile, objc) = 0;
-	  new_pending_directive (CPP_OPTION (pfile, pending),
-				 "__STDC_VERSION__=199901L", cpp_define);
+	  new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
 	  break;
 	case OPT_std_iso9899_199409:
-	  new_pending_directive (CPP_OPTION (pfile, pending),
-				 "__STDC_VERSION__=199409L", cpp_define);
+	  new_pending_directive (pend, "__STDC_VERSION__=199409L", cpp_define);
 	  /* Fall through */
 	case OPT_std_iso9899_1990:
 	case OPT_std_c89:
@@ -1367,10 +1360,8 @@ cpp_handle_option (pfile, argc, argv)
 	  CPP_OPTION (pfile, objc) = 0;
 	  CPP_OPTION (pfile, digraphs) = 1;
 	  CPP_OPTION (pfile, trigraphs) = 1;
-	  new_pending_directive (CPP_OPTION (pfile, pending),
-				 "__STRICT_ANSI__", cpp_define);
-	  new_pending_directive (CPP_OPTION (pfile, pending),
-				 "__STDC_VERSION__=199901L", cpp_define);
+	  new_pending_directive (pend, "__STRICT_ANSI__", cpp_define);
+	  new_pending_directive (pend, "__STDC_VERSION__=199901L", cpp_define);
 	  break;
 	case OPT_o:
 	  if (CPP_OPTION (pfile, out_fname) != NULL)
@@ -1470,26 +1461,24 @@ cpp_handle_option (pfile, argc, argv)
 		{
 		  struct pending_option *o1, *o2;
 
-		  o1 = CPP_OPTION (pfile, pending)->directive_head;
+		  o1 = pend->directive_head;
 		  while (o1)
 		    {
 		      o2 = o1->next;
 		      free (o1);
 		      o1 = o2;
 		    }
-		  CPP_OPTION (pfile, pending)->directive_head = NULL;
-		  CPP_OPTION (pfile, pending)->directive_tail = NULL;
+		  pend->directive_head = NULL;
+		  pend->directive_tail = NULL;
 		}
 	      else
-		new_pending_directive (CPP_OPTION (pfile, pending),
-				       arg + 1, cpp_unassert);
+		new_pending_directive (pend, arg + 1, cpp_unassert);
 	    }
 	  else
-	    new_pending_directive (CPP_OPTION (pfile, pending),
-				   arg, cpp_assert);
+	    new_pending_directive (pend, arg, cpp_assert);
 	  break;
 	case OPT_U:
-	  new_pending_directive (CPP_OPTION (pfile, pending), arg, cpp_undef);
+	  new_pending_directive (pend, arg, cpp_undef);
 	  break;
 	case OPT_I:           /* Add directory to path for includes.  */
 	  if (!strcmp (arg, "-"))
@@ -1502,7 +1491,6 @@ cpp_handle_option (pfile, argc, argv)
 		 the default setup; -I. uses the compiler's working dir.)  */
 	      if (! CPP_OPTION (pfile, ignore_srcdir))
 		{
-		  struct cpp_pending *pend = CPP_OPTION (pfile, pending);
 		  pend->quote_head = pend->brack_head;
 		  pend->quote_tail = pend->brack_tail;
 		  pend->brack_head = 0;
@@ -1516,14 +1504,12 @@ cpp_handle_option (pfile, argc, argv)
 		}
  	    }
  	  else
-	    append_include_chain (pfile, CPP_OPTION (pfile, pending),
-				  xstrdup (arg), BRACKET, 0);
+	    append_include_chain (pfile, xstrdup (arg), BRACKET, 0);
 	  break;
 	case OPT_isystem:
 	  /* Add directory to beginning of system include path, as a system
 	     include directory. */
-	  append_include_chain (pfile, CPP_OPTION (pfile, pending),
-				xstrdup (arg), SYSTEM, 0);
+	  append_include_chain (pfile, xstrdup (arg), SYSTEM, 0);
 	  break;
 	case OPT_include:
 	  {
@@ -1534,8 +1520,8 @@ cpp_handle_option (pfile, argc, argv)
 	    /* This list has to be built in reverse order so that
 	       when cpp_start_read pushes all the -include files onto
 	       the buffer stack, they will be scanned in forward order.  */
-	    o->next = CPP_OPTION (pfile, pending)->include_head;
-	    CPP_OPTION (pfile, pending)->include_head = o;
+	    o->next = pend->include_head;
+	    pend->include_head = o;
 	  }
 	  break;
 	case OPT_imacros:
@@ -1545,7 +1531,7 @@ cpp_handle_option (pfile, argc, argv)
 	    o->arg = arg;
 	    o->next = NULL;
 
-	    APPEND (CPP_OPTION (pfile, pending), imacros, o);
+	    APPEND (pend, imacros, o);
 	  }
 	  break;
 	case OPT_iwithprefix:
@@ -1577,14 +1563,13 @@ cpp_handle_option (pfile, argc, argv)
 	    else
 	      fname = xstrdup (arg);
 
-	    append_include_chain (pfile, CPP_OPTION (pfile, pending), fname,
+	    append_include_chain (pfile, fname,
 			  opt_code == OPT_iwithprefix ? SYSTEM: BRACKET, 0);
 	  }
 	  break;
 	case OPT_idirafter:
 	  /* Add directory to end of path for includes.  */
-	  append_include_chain (pfile, CPP_OPTION (pfile, pending),
-				xstrdup (arg), AFTER, 0);
+	  append_include_chain (pfile, xstrdup (arg), AFTER, 0);
 	  break;
 	case OPT_W:
 	  /* Silently ignore unrecognised options */
