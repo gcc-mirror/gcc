@@ -1,3 +1,8 @@
+2001-04-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+        * pa.c (hppa_init_pic_save): Update last_parm_insn after emitting
+        pic save insn.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* extend.texi (extended asm): Fix typo.
