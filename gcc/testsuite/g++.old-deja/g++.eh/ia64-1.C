@@ -6,11 +6,11 @@ using namespace std;
 
 extern "C" void abort();
 
-int i0, i1, i2, i3, i4, i5, i6, i7, i8, i9;
-int j0, j1, j2, j3, j4, j5, j6, j7, j8, j9;
-int k0, k1, k2, k3, k4, k5, k6, k7, k8, k9;
-int l0, l1, l2, l3, l4, l5, l6, l7, l8, l9;
-#define A(x,y,n) register int *x##n = &y##n;
+int i_0, i_1, i_2, i_3, i_4, i_5, i_6, i_7, i_8, i_9;
+int j_0, j_1, j_2, j_3, j_4, j_5, j_6, j_7, j_8, j_9;
+int k_0, k_1, k_2, k_3, k_4, k_5, k_6, k_7, k_8, k_9;
+int l_0, l_1, l_2, l_3, l_4, l_5, l_6, l_7, l_8, l_9;
+#define A(x,y,n) register int *x##n = &y##_##n;
 #define B(x,y) \
   A(x,y,0) A(x,y,1) A(x,y,2) A(x,y,3) A(x,y,4) \
   A(x,y,5) A(x,y,6) A(x,y,7) A(x,y,8) A(x,y,9)
@@ -18,7 +18,7 @@ int l0, l1, l2, l3, l4, l5, l6, l7, l8, l9;
 #define D(x) \
   C(x,0) C(x,1) C(x,2) C(x,3) C(x,4) \
   C(x,5) C(x,6) C(x,7) C(x,8) C(x,9)
-#define E(x,y,n) if (x##n != &y##n) abort ();
+#define E(x,y,n) if (x##n != &y##_##n) abort ();
 #define F(x,y) \
   E(x,y,0) E(x,y,1) E(x,y,2) E(x,y,3) E(x,y,4) \
   E(x,y,5) E(x,y,6) E(x,y,7) E(x,y,8) E(x,y,9)
