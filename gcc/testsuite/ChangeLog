@@ -1,3 +1,10 @@
+2001-01-08  Jonathan Larmour  <jlarmour@redhat.com>
+
+	* gcc.dg/20000419-2.c: Move to "special" subdirectory.
+        * gcc.dg/special/20000419-2.c: New file. Identical to above.
+        * gcc.dg/special/special.exp: New test driver which will check
+        for alias support for the above test.
+
 2001-01-09  Alan Lehotsky  <lehotsky@tiac.net>
 
 	* gcc.c-torture/execute/921202-1.c: Use STACK_SIZE to avoid
