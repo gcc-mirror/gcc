@@ -1,3 +1,7 @@
+2001-07-06  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+        * include/bits/stl_vector.h (vector::_M_initialize_aux): Fix typo.
+
 2001-07-05  Jason Merrill  <jason_merrill@redhat.com>
 
 	* testsuite_flags.in (--build-includes): backward, not backwards.

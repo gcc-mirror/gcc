@@ -256,7 +256,7 @@ public:
     void
 	_M_initialize_aux(_InputIterator __first, _InputIterator __last, __false_type)
 	{
-	  typedef typename iterator_traits<_InputIterator>::iterator_category _IterCategoy;
+	  typedef typename iterator_traits<_InputIterator>::iterator_category _IterCategory;
 	  _M_range_initialize(__first, __last, _IterCategory());
 	}
 
