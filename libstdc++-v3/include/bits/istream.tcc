@@ -708,29 +708,27 @@ namespace std
     {
       _M_gcount = 0;
       sentry __cerb(*this, true);
-      if (__cerb && __n > 0) 
+      if (__cerb) 
 	{
 	  try 
 	    {
-	      const int_type __idelim = traits_type::to_int_type(__delim);
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
-	      int_type __c = __sb->sbumpc();	
-	      bool __testdelim = __c == __idelim;
-	      bool __testeof =  __c == __eof;
+	      int_type __c = __sb->sgetc();	
 	      
 	      __n = min(__n, numeric_limits<streamsize>::max());
-	      while (_M_gcount < __n - 1 && !__testeof && !__testdelim)
+	      while (_M_gcount < __n  && __c !=__eof && __c != __delim)
 		{
+		  __c = __sb->snextc();
 		  ++_M_gcount;
-		  __c = __sb->sbumpc();
-		  __testeof = __c == __eof;
-		  __testdelim = __c == __idelim;
 		}
-	      if ((_M_gcount == __n - 1 && !__testeof) || __testdelim)
-		++_M_gcount;
-	      if (__testeof)
+	      if (__c == __eof)
 		this->setstate(ios_base::eofbit);
+	      else if (__c == __delim)
+		{
+		  __sb->snextc();
+		  ++_M_gcount;
+		}
 	    }
 	  catch(exception& __fail)
 	    {
