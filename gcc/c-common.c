@@ -1651,7 +1651,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
       primop1 = op1;
 
       if (!real1 && !real2 && integer_zerop (primop1)
-	  && TREE_UNSIGNED (TREE_TYPE (primop0)))
+	  && TREE_UNSIGNED (*restype_ptr))
 	{
 	  tree value = 0;
 	  switch (code)
