@@ -365,14 +365,18 @@ sub postprocess
     s/\@uref\{([^\},]*),([^\},]*)\}/$2 (C<$1>)/g;
     s/\@uref\{([^\},]*),([^\},]*),([^\},]*)\}/$3/g;
 
-    # Turn B<blah I<blah> blah> into B<blah> I<blah> B<blah> to
-    # match Texinfo semantics of @emph inside @samp.  Also handle @r
-    # inside bold.
+    # Un-escape <> at this point.
     s/&LT;/</g;
     s/&GT;/>/g;
-    1 while s/B<((?:[^<>]|I<[^<>]*>)*)R<([^>]*)>/B<$1>${2}B</g;
-    1 while (s/B<([^<>]*)I<([^>]+)>/B<$1>I<$2>B</g);
-    1 while (s/I<([^<>]*)B<([^>]+)>/I<$1>B<$2>I</g);
+
+    # Now un-nest all B<>, I<>, R<>.  Theoretically we could have
+    # indefinitely deep nesting; in practice, one level suffices.
+    1 while s/([BIR])<([^<>]*)([BIR])<([^<>]*)>/$1<$2>$3<$4>$1</g;
+
+    # Replace R<...> with bare ...; eliminate empty markup, B<>;
+    # shift white space at the ends of [BI]<...> expressions outside
+    # the expression.
+    s/R<([^<>]*)>/$1/g;
     s/[BI]<>//g;
     s/([BI])<(\s+)([^>]+)>/$2$1<$3>/g;
     s/([BI])<([^>]+?)(\s+)>/$1<$2>$3/g;
