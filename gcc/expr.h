@@ -689,10 +689,7 @@ extern rtx trampoline_address PROTO((tree));
 extern rtx hard_function_value PROTO((tree, tree));
 
 
-extern rtx prepare_call_address PROTO((rtx, tree, rtx*));
-
 extern rtx expand_call PROTO((tree, rtx, int));
-extern void emit_call_1 PROTO((rtx, tree, int, int, rtx, rtx, int, rtx, int));
 
 extern rtx expand_shift PROTO((enum tree_code, enum machine_mode, rtx, tree, rtx, int));
 extern rtx expand_divmod PROTO((int, enum tree_code, enum machine_mode, rtx, rtx, rtx, int));
@@ -700,37 +697,10 @@ extern void locate_and_pad_parm PROTO((enum machine_mode, tree, int, tree, struc
 extern rtx expand_inline_function PROTO((tree, tree, rtx, int, tree, rtx));
 /* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
 extern rtx label_rtx PROTO((tree));
-#else
-/* Return an rtx for the size in bytes of the value of an expr.  */
-extern rtx expr_size ();
-
-extern rtx lookup_static_chain ();
-
-/* Convert a stack slot address ADDR valid in function FNDECL
-   into an address valid in this function (using a static chain).  */
-extern rtx fix_lexical_addr ();
-
-/* Return the address of the trampoline for entering nested fn FUNCTION.  */
-extern rtx trampoline_address ();
-
-/* Return an rtx that refers to the value returned by a function
-   in its original home.  This becomes invalid if any more code is emitted.  */
-extern rtx hard_function_value ();
-
-extern rtx prepare_call_address ();
-extern rtx expand_call ();
-extern void emit_call_1 ();
-extern rtx expand_shift ();
-extern rtx expand_divmod ();
-extern void locate_and_pad_parm ();
-extern rtx expand_inline_function ();
-
-/* Return the CODE_LABEL rtx for a LABEL_DECL, creating it if necessary.  */
-extern rtx label_rtx ();
 #endif
 
 /* Indicate how an input argument register was promoted.  */
-extern rtx promoted_input_arg ();
+extern rtx promoted_input_arg PROTO((int, enum machine_mode *, int *));
 
 /* Return an rtx like arg but sans any constant terms.
    Returns the original rtx if it has no constant terms.
@@ -754,10 +724,6 @@ extern rtx change_address PROTO((rtx, enum machine_mode, rtx));
    valid address.  */
 
 extern rtx validize_mem PROTO((rtx));
-
-/* Convert a stack slot address ADDR valid in function FNDECL
-   into an address valid in this function (using a static chain).  */
-extern rtx fix_lexical_addr ();
 
 /* Assemble the static constant template for function entry trampolines.  */
 extern rtx assemble_trampoline_template PROTO((void));
@@ -818,9 +784,6 @@ extern rtx function_value ();
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_libcall_value PROTO((enum machine_mode));
 
-/* Emit code to copy function value to a specified place.  */
-extern void copy_function_value ();
-
 /* Given an rtx, return an rtx for a value rounded up to a multiple
    of STACK_BOUNDARY / BITS_PER_UNIT.  */
 extern rtx round_push PROTO((rtx));
@@ -831,7 +794,6 @@ extern rtx store_bit_field PROTO((rtx, int, int, enum machine_mode, rtx, int, in
 extern rtx extract_bit_field PROTO((rtx, int, int, int, rtx, enum machine_mode, enum machine_mode, int, int));
 extern rtx expand_mult PROTO((enum machine_mode, rtx, rtx, rtx, int));
 extern rtx expand_mult_add PROTO((rtx, rtx, rtx, rtx,enum machine_mode, int));
-extern rtx expand_stmt_expr ();
 
 extern rtx assemble_static_space PROTO((int));
 
