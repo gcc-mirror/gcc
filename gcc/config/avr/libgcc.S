@@ -621,18 +621,48 @@ __epilogue_restores__:
 	out	__SP_H__,r29
 	out	__SREG__,__tmp_reg__
 	out	__SP_L__,r28
+#if defined (__AVR_ENHANCED__)
+	movw	r28, r26
+#else
 	mov	r28,r26
 	mov	r29,r27
+#endif
 	ret
-#endif /* defined (Lepilogue) */
+.endfunc
+#endif /* defined (L_epilogue) */
 
-#ifdef L__exit
+#ifdef L_exit
 	.weak	_exit
 	.func	_exit
 _exit:
 	rjmp	_exit
+.endfunc
+#endif /* defined (L_exit) */
+
+#ifdef L_cleanup
 	.weak	_cleanup
+	.func	_cleanup
 _cleanup:
 	ret
 .endfunc
+#endif /* defined (L_cleanup) */
+
+#ifdef L_tablejump
+	.global __tablejump__
+	.func	__tablejump__
+__tablejump__:
+#if defined (__AVR_ENHANCED__)
+	lpm	__tmp_reg__, Z+
+	lpm	r31, Z
+	mov	r30, __tmp_reg__
+	ijmp
+#else
+	lpm
+	push	r0
+	adiw	r30, 1
+	lpm
+	push	r0
+	ret
+.endfunc
 #endif
+#endif /* defined (L_tablejump) */

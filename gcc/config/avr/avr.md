@@ -136,91 +136,46 @@
 	push %A0"
   [(set_attr "length" "4")])
 
-(define_insn "*mov_r_sp"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-        (reg:HI 32))]
-  ""
-  "in %A0,__SP_L__
-	in %B0,__SP_H__"
-  [(set_attr "length" "2")])
-
-(define_insn "*mov_sp_r"
-  [(set (reg:HI 32)
-        (match_operand:HI 0 "register_operand" "r"))]
-  "(!TARGET_TINY_STACK && !TARGET_NO_INTERRUPTS)"
-  "in __tmp_reg__,__SREG__
-	cli
-	out __SP_H__,%B0
-	out __SREG__,__tmp_reg__
-	out __SP_L__,%A0"
-  [(set_attr "length" "5")])
-
-(define_insn "*mov_sp_r_no_interrupts"
-  [(set (reg:HI 32)
-        (match_operand:HI 0 "register_operand" "r"))]
-  "(!TARGET_TINY_STACK && TARGET_NO_INTERRUPTS)"
-  "out __SP_H__,%B0
-	out __SP_L__,%A0"
-  [(set_attr "length" "2")])
-
-(define_insn "*mov_sp_r_tiny"
-  [(set (reg:HI 32)
-        (match_operand:HI 0 "register_operand" "r"))]
-  "TARGET_TINY_STACK"
-  "out __SP_L__,%A0"
-  [(set_attr "length" "1")])
-
 ;;========================================================================
 ;; move byte
+;; The last alternative (any immediate constant to any register) is
+;; very expensive.  It should be optimized by peephole2 if a scratch
+;; register is available, but then that register could just as well be
+;; allocated for the variable we are loading.  But, most of NO_LD_REGS
+;; are call-saved registers, and most of LD_REGS are call-used registers,
+;; so this may still be a win for registers live across function calls.
+
 (define_expand "movqi"
   [(set (match_operand:QI 0 "nonimmediate_operand" "")
 	(match_operand:QI 1 "general_operand" ""))]
   ""
-  "
-{
-  /* One of the ops has to be in a register */
-  if (!register_operand(operand0, QImode)
-      && ! (register_operand(operand1, QImode) || const0_rtx == operand1))
-    {
-      operands[1] = copy_to_mode_reg(QImode, operand1);
-    }
- }"); 
+  "/* One of the ops has to be in a register */
+   if (!register_operand(operand0, QImode)
+       && ! (register_operand(operand1, QImode) || const0_rtx == operand1))
+       operands[1] = copy_to_mode_reg(QImode, operand1);
+  ")
 
 (define_insn "*movqi"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,d,Qm,r,q")
-	(match_operand:QI 1 "general_operand"      "r,L,i,rL,Qm,r"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,d,Qm,r,q,r,*r")
+	(match_operand:QI 1 "general_operand"       "r,i,rL,Qm,r,q,i"))]
   "(register_operand (operands[0],QImode)
     || register_operand (operands[1], QImode) || const0_rtx == operands[1])"
-  "*{
-    switch (which_alternative)
-      {
-      case 0:
-	return AS2 (mov, %0,%1);
-      case 1:
-	return AS1 (clr, %0);
-      case 2:
-	return AS2 (ldi, %0,lo8(%1));
-      case 3:
-        {
-          rtx save1=NULL;
-          if (operands[1] == const0_rtx)
-            {
-              save1 = operands[1];
-              operands[1] = zero_reg_rtx;
-            }
-          output_asm_insn (out_movqi_mr_r (insn,operands,NULL), operands);
-          if (save1)
-            operands[1] = save1;
-        }
-        return \"\";
-      case 4:
-        return out_movqi_r_mr (insn,operands,NULL);
-      case 5:
-        return (AS2 (out,%0,%1));
-      }
-}"
-  [(set_attr "length" "1,1,1,5,5,1")
-   (set_attr "cc" "none,clobber,none,clobber,clobber,none")])
+  "* return output_movqi (insn, operands, NULL);"
+  [(set_attr "length" "1,1,5,5,1,1,4")
+   (set_attr "cc" "none,none,clobber,clobber,none,none,clobber")])
+
+;; This is used in peephole2 to optimize loading immediate constants
+;; if a scratch register from LD_REGS happens to be available.
+
+(define_insn "*reload_inqi"
+  [(set (match_operand:QI 0 "register_operand" "=l")
+	(match_operand:QI 1 "immediate_operand" "i"))
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+  ""
+  "ldi %2,lo8(%1)
+	mov %0,%2"
+  [(set_attr "length" "2")
+   (set_attr "cc" "none")])
 
 ;;============================================================================
 ;; move word (16 bit)
@@ -239,61 +194,35 @@
     }
 }")
 
+
+(define_peephole2
+  [(match_scratch:QI 2 "d")
+   (set (match_operand:HI 0 "register_operand" "")
+       (match_operand:HI 1 "immediate_operand" ""))]
+  "(operands[1] != const0_rtx
+    && test_hard_reg_class (NO_LD_REGS, operands[0]))"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (clobber (match_dup 2))])]
+  "")
+
+;; '*' because it is not used in rtl generation, only in above peephole
+(define_insn "*reload_inhi"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (match_operand:HI 1 "immediate_operand" "i"))
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+  ""
+  "* return output_reload_inhi (insn, operands, NULL);"
+  [(set_attr "length" "4")
+   (set_attr "cc" "none")])
+
 (define_insn "*movhi"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,d,r,m")
-        (match_operand:HI 1 "general_operand"       "r,L,i,m,rL"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,m,d,*r,q,r")
+        (match_operand:HI 1 "general_operand"       "r,m,rL,i,i,r,q"))]
   "(register_operand (operands[0],HImode)
     || register_operand (operands[1],HImode) || const0_rtx == operands[1])"
-  "*{
-  rtx link;
-  switch (which_alternative)
-    {
-    case 0: /* mov r,r */
-      if (TARGET_ENHANCED)
-	return (AS2 (movw,%0,%1));  /* FIXME: length = 2 -> 1 */
-
-      if (true_regnum (operands[0]) > true_regnum (operands[1]))
-        return (AS2 (mov,%B0,%B1) CR_TAB
-	        AS2 (mov,%A0,%A1));
-      else
-        return (AS2 (mov,%A0,%A1) CR_TAB
-	        AS2 (mov,%B0,%B1));
-    case 1:  /* mov r,L */
-      return (AS1 (clr,%A0) CR_TAB
-	      AS1 (clr,%B0));
-    case 2: /* ld d,i */
-      if (operands[1] == const1_rtx
-          && (link = find_reg_note (insn, REG_WAS_0, 0))
-	  /* Make sure the insn that stored the 0 is still present.  */
-	  && ! INSN_DELETED_P (XEXP (link, 0))
-	  && GET_CODE (XEXP (link, 0)) != NOTE
-	  /* Make sure cross jumping didn't happen here.  */
-	  && no_labels_between_p (XEXP (link, 0), insn)
-	  /* Make sure the reg hasn't been clobbered.  */
-	  && ! reg_set_between_p (operands[0], XEXP (link, 0), insn))
-      /* Fastest way to change a 0 to a 1.  */
-        return AS1 (inc,%A0 ; reg_was_0);
-      return (AS2 (ldi,%A0,lo8(%1)) CR_TAB
-	      AS2 (ldi,%B0,hi8(%1)));
-    case 3: /* mov r,m*/
-      return out_movhi_r_mr (insn, operands, NULL);
-    case 4: /* mov m,r*/
-        {
-          rtx save1 = NULL;
-          if (operands[1] == const0_rtx)
-            {
-              save1 = operands[1];
-              operands[1] = zero_reg_rtx;
-            }
-          output_asm_insn (out_movhi_mr_r (insn,operands,NULL), operands);
-          if (save1)
-            operands[1] = save1;
-        }
-        return \"\";
-    }
-}"
-  [(set_attr "length" "2,2,2,4,4")
-   (set_attr "cc" "none,set_zn,none,clobber,clobber")])
+  "* return output_movhi (insn, operands, NULL);"
+  [(set_attr "length" "2,4,4,2,6,5,2")
+   (set_attr "cc" "none,clobber,clobber,none,clobber,none,none")])
 
 ;;==========================================================================
 ;; move double word (32 bit)
@@ -312,14 +241,37 @@
     }
 }")
 
+
+
+(define_peephole2
+  [(match_scratch:QI 2 "d")
+   (set (match_operand:SI 0 "register_operand" "")
+       (match_operand:SI 1 "immediate_operand" ""))]
+  "(operands[1] != const0_rtx
+    && test_hard_reg_class (NO_LD_REGS, operands[0]))"
+  [(parallel [(set (match_dup 0) (match_dup 1))
+	      (clobber (match_dup 2))])]
+  "")
+
+;; '*' because it is not used in rtl generation.
+(define_insn "*reload_insi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (match_operand:SI 1 "immediate_operand" "i"))
+   (clobber (match_operand:QI 2 "register_operand" "=&d"))]
+  ""
+  "* return output_reload_insisf (insn, operands, NULL);"
+  [(set_attr "length" "8")
+   (set_attr "cc" "none")])
+
+
 (define_insn "*movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,d,r,Qm")
-        (match_operand:SI 1 "general_operand"      "r,L,i,Qm,rL"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,Qm,!d,r")
+        (match_operand:SI 1 "general_operand"       "r,L,Qm,rL,i,i"))]
   "(register_operand (operands[0],SImode)
     || register_operand (operands[1],SImode) || const0_rtx == operands[1])"
   "* return output_movsisf (insn, operands, which_alternative);"
-  [(set_attr "length" "4,4,4,8,8")
-   (set_attr "cc" "none,set_zn,none,clobber,clobber")])
+  [(set_attr "length" "4,4,8,8,4,10")
+   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
 
 ;; fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ;; move floating point numbers (32 bit)
@@ -339,13 +291,13 @@
 }")
 
 (define_insn "*movsf"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,d,r,Qm")
-        (match_operand:SF 1 "general_operand"      "r,G,F,Qm,r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,r,Qm,!d,r")
+        (match_operand:SF 1 "general_operand"       "r,G,Qm,r,F,F"))]
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)"
   "* return output_movsisf (insn, operands, which_alternative);"
-  [(set_attr "length" "4,4,4,8,8")
-   (set_attr "cc" "none,set_zn,none,clobber,clobber")])
+  [(set_attr "length" "4,4,8,8,4,10")
+   (set_attr "cc" "none,set_zn,clobber,clobber,clobber,clobber")])
 
 ;;=========================================================================
 ;; move string (like memcpy)
@@ -663,7 +615,7 @@
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(mult:QI (match_operand:QI 1 "register_operand" "r")
 		 (match_operand:QI 2 "register_operand" "r")))]
-  "TARGET_ENHANCED"
+  "AVR_ENHANCED"
   "mul %1,%2
 	mov %0,r0
 	clr r1"
@@ -674,7 +626,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mult:HI (sign_extend:HI (match_operand:QI 1 "register_operand" "d"))
 		 (sign_extend:HI (match_operand:QI 2 "register_operand" "d"))))]
-  "TARGET_ENHANCED"
+  "AVR_ENHANCED"
   "muls %1,%2
 	movw %0,r0
 	clr r1"
@@ -685,7 +637,7 @@
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mult:HI (zero_extend:HI (match_operand:QI 1 "register_operand" "r"))
 		 (zero_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
-  "TARGET_ENHANCED"
+  "AVR_ENHANCED"
   "mul %1,%2
 	movw %0,r0
 	clr r1"
@@ -696,7 +648,7 @@
   [(set (match_operand:HI 0 "register_operand" "=&r")
 	(mult:HI (match_operand:HI 1 "register_operand" "r")
 		 (match_operand:HI 2 "register_operand" "r")))]
-  "TARGET_ENHANCED"
+  "AVR_ENHANCED"
   "mul %A1,%A2
 	movw %0,r0
 	mul %A1,%B2
@@ -1053,15 +1005,26 @@
   [(set_attr "length" "3,4")
    (set_attr "cc" "set_czn,set_n")])
 
-(define_insn "negsi2"
-  [(set (match_operand:SI 0 "register_operand" "=!d,r")
-	(neg:SI (match_operand:SI 1 "register_operand" "0,0")))]
+(define_insn "*negsi2"
+  [(set (match_operand:SI 0 "register_operand"       "=!d,r,&r")
+	(neg:SI (match_operand:SI 1 "register_operand" "0,0,r")))]
   ""
   "@
 	com %D0\;com %C0\;com %B0\;neg %A0\;sbci %B0,lo8(-1)\;sbci %C0,lo8(-1)\;sbci %D0,lo8(-1)
-	com %D0\;com %C0\;com %B0\;neg %A0\;brcs _PC_+8\;sec\;adc %B0,__zero_reg__\;adc %C0,__zero_reg__\;adc %D0,__zero_reg__"
-  [(set_attr "length" "7,9")
-   (set_attr "cc" "set_czn,clobber")])
+	com %D0\;com %C0\;com %B0\;com %A0\;adc %A0,%@\;adc %B0,%@\;adc %C0,%@\;adc %D0,%@
+	clr %A0\;clr %B0\;clr %C0\;clr %D0\;sub %A0,%A1\;sbc %B0,%B1\;sbc %C0,%C1\;sbc %D0,%D1"
+  [(set_attr "length" "7,8,8")
+   (set_attr "cc" "set_czn,set_n,set_czn")])
+
+(define_insn "negsf2"
+  [(set (match_operand:SF 0 "register_operand" "=d,r")
+	(neg:SF (match_operand:SF 1 "register_operand" "0,0")))]
+  ""
+  "@
+	subi %D0,0x80
+	bst %D0,7\;com %D0\;bld %D0,7\;com %D0"
+  [(set_attr "length" "1,4")
+   (set_attr "cc" "set_n,set_n")])
 
 ;; !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ;; not
@@ -1659,7 +1622,7 @@
      return \"icall\";
   else if (which_alternative==1)
     {
-      if (TARGET_ENHANCED)
+      if (AVR_ENHANCED)
 	return (AS2 (movw, r30, %0) CR_TAB
 		\"icall\");
       else
@@ -1695,7 +1658,7 @@
      return \"icall\";
   else if (which_alternative==1)
     {
-      if (TARGET_ENHANCED)
+      if (AVR_ENHANCED)
 	return (AS2 (movw, r30, %1) CR_TAB
 		\"icall\");
       else
@@ -1747,7 +1710,7 @@
 	       (plus:HI (match_operand:HI 0 "register_operand" "=&z")
 			(label_ref (match_operand 2 "" "")))))
     (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_ENHANCED"
+  "AVR_ENHANCED"
   "subi r30,lo8(-(%2))
 	sbci r31,hi8(-(%2))
 	lpm __tmp_reg__,Z+
@@ -1970,3 +1933,23 @@
 		      (pc)))]
   "jump_over_one_insn_p (insn, operands[1])"
   "sbrc %D0,7")
+
+(define_peephole
+  [(set (cc0) (match_operand:QI 0 "register_operand" ""))
+   (set (pc)
+	(if_then_else (eq (cc0) (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (insn, operands[1])"
+  "cpse %0,__zero_reg__")
+
+(define_peephole
+  [(set (cc0)
+        (compare (match_operand:QI 0 "register_operand" "")
+		 (match_operand:QI 1 "register_operand" "")))
+   (set (pc)
+	(if_then_else (eq (cc0) (const_int 0))
+		      (label_ref (match_operand 2 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (insn, operands[2])"
+  "cpse %0,%1")

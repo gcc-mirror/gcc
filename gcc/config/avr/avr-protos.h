@@ -21,9 +21,6 @@
    Boston, MA 02111-1307, USA.  */
 
 
-extern void   avr_output_ascii                  PARAMS ((FILE *file,
-							const char *p,
-							int size));
 extern int    function_arg_regno_p              PARAMS ((int r));
 extern void   asm_file_start                    PARAMS ((FILE *file));
 extern void   asm_file_end                      PARAMS ((FILE *file));
@@ -35,14 +32,17 @@ extern enum reg_class class_likely_spilled_p    PARAMS ((int c));
 extern enum reg_class avr_regno_reg_class       PARAMS ((int r));
 extern enum reg_class avr_reg_class_from_letter PARAMS ((int c));
 extern int    frame_pointer_required_p          PARAMS ((void));
-extern void   asm_globalize_label               PARAMS ((FILE *file,
-							const char *name));
-extern void   order_regs_for_local_alloc        PARAMS ((void));
-extern int    initial_elimination_offset        PARAMS ((int from, int to));
-extern void   function_prologue                 PARAMS ((FILE *file, int size));
-extern void   function_epilogue                 PARAMS ((FILE *file, int size));
-extern void   progmem_section                   PARAMS ((void));
-extern int    mask_one_bit_p                    PARAMS ((HOST_WIDE_INT mask));
+extern void   asm_globalize_label         PARAMS ((FILE *file, const char *name));
+extern void   order_regs_for_local_alloc  PARAMS ((void));
+extern int    initial_elimination_offset  PARAMS ((int from, int to));
+extern void   function_prologue           PARAMS ((FILE *file, int size));
+extern void   function_epilogue           PARAMS ((FILE *file, int size));
+extern void   progmem_section             PARAMS ((void));
+extern int    mask_one_bit_p              PARAMS ((HOST_WIDE_INT mask));
+extern void   gas_output_limited_string   PARAMS ((FILE *file, char *str));
+extern void   gas_output_ascii            PARAMS ((FILE *file, char * str,
+							 size_t length));
+
 
 #ifdef TREE_CODE
 extern void   asm_output_external          PARAMS ((FILE *file, tree decl,
@@ -57,6 +57,9 @@ extern int    valid_machine_type_attribute PARAMS ((tree type, tree attributes,
 						   tree args));
 extern int    valid_machine_decl_attribute PARAMS ((tree decl, tree attributes,
 						   tree attr, tree args));
+
+extern int    avr_progmem_p                PARAMS ((tree decl));
+
 
 #ifdef RTX_CODE /* inside TREE_CODE */
 extern rtx    avr_function_value           PARAMS ((tree type, tree func));
@@ -83,14 +86,15 @@ extern int    legitimate_address_p    PARAMS ((enum machine_mode mode, rtx x,
 					int strict));
 extern void   machine_dependent_reorg PARAMS ((rtx first_insn));
 extern int    compare_diff_p  PARAMS ((rtx insn));
+extern char * output_movqi    PARAMS ((rtx insn, rtx operands[], int *l));
+extern char * output_movhi    PARAMS ((rtx insn, rtx operands[], int *l));
 extern char * out_movqi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
 extern char * out_movqi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
 extern char * out_movhi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
 extern char * out_movhi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
 extern char * out_movsi_r_mr  PARAMS ((rtx insn, rtx op[], int *l));
 extern char * out_movsi_mr_r  PARAMS ((rtx insn, rtx op[], int *l));
-extern char * output_movsisf  PARAMS ((rtx insn, rtx operands[],
-			      	      int which_alternative));
+extern char * output_movsisf  PARAMS ((rtx insn, rtx operands[], int *l));
 extern char * out_tstsi       PARAMS ((rtx insn, int *l));
 extern char * out_tsthi       PARAMS ((rtx insn, int *l));
 extern char * ret_cond_branch PARAMS ((RTX_CODE cond, int len));
@@ -116,7 +120,7 @@ extern rtx    legitimize_address     PARAMS ((rtx x, rtx oldx,
 extern int    adjust_insn_length     PARAMS ((rtx insn, int len));
 extern rtx    avr_libcall_value      PARAMS ((enum machine_mode mode));
 extern char * output_reload_inhi     PARAMS ((rtx insn, rtx *operands,
-					     int which_alternative));
+					     int *len));
 extern char * output_reload_insisf   PARAMS ((rtx insn, rtx *operands,
 					     int which_alternative));
 extern int    default_rtx_costs      PARAMS ((rtx X, RTX_CODE code,
@@ -140,6 +144,16 @@ extern int    jump_over_one_insn_p   PARAMS ((rtx insn, rtx dest));
 
 extern int    avr_hard_regno_mode_ok PARAMS ((int regno,
 					     enum machine_mode mode));
+extern int    call_insn_operand      PARAMS ((rtx op, enum machine_mode mode));
+extern void   final_prescan_insn     PARAMS ((rtx insn, rtx *operand,
+					      int num_operands));
+extern int    avr_simplify_comparision_p PARAMS ((enum machine_mode mode,
+					      RTX_CODE operator, rtx x));
+extern RTX_CODE avr_normalize_condition  PARAMS ((RTX_CODE condition));
+extern int    compare_eq_p           PARAMS ((rtx insn));
+extern void   out_shift_with_cnt     PARAMS ((char * template, rtx insn,
+					      rtx operands[], int *len));
+extern int    const_int_pow2_p       PARAMS ((rtx x));
 #endif /* RTX_CODE */
 
 #ifdef HAVE_MACHINE_MODES
@@ -151,6 +165,4 @@ extern int    class_max_nregs        PARAMS ((enum reg_class class,
 
 extern void   asm_output_float       PARAMS ((FILE *file, REAL_VALUE_TYPE n));
 
-#endif 
-
-
+#endif
