@@ -1,5 +1,9 @@
 2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old_deja/g++.pt/instantiate12.C: New test.
+
+2001-01-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.benjamin/15309-1.C: Expect diagnostic at
 	start of structs.
 	* g++.old-deja/g++.benjamin/15309-2.C: Likewise.

@@ -1812,7 +1812,7 @@ struct lang_decl_flags
   unsigned declared_inline : 1;
   unsigned not_really_extern : 1;
   unsigned needs_final_overrider : 1;
-  unsigned defined_in_class : 1;
+  unsigned initialized_in_class : 1;
 
   unsigned pending_inline_p : 1;
   unsigned global_ctor_p : 1;
@@ -2042,10 +2042,10 @@ struct lang_decl
    should be allocated.  */
 #define DECL_IN_AGGR_P(NODE) (DECL_LANG_FLAG_3(NODE))
 
-/* Nonzero if the DECL was defined in the class definition itself,
+/* Nonzero if the DECL was initialized in the class definition itself,
    rather than outside the class.  */
-#define DECL_DEFINED_IN_CLASS_P(DECL) \
- (DECL_LANG_SPECIFIC (DECL)->decl_flags.defined_in_class)
+#define DECL_INITIALIZED_IN_CLASS_P(DECL) \
+ (DECL_LANG_SPECIFIC (DECL)->decl_flags.initialized_in_class)
 
 /* Nonzero for FUNCTION_DECL means that this decl is just a
    friend declaration, and should not be added to the list of

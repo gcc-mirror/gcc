@@ -1,6 +1,6 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001  Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -2300,7 +2300,7 @@ check_default_tmpl_args (decl, parms, is_primary, is_partial)
 			      current_class_type)))
       /* And, if it was a member function, it really was defined in
 	 the scope of the class.  */
-      && (!DECL_FUNCTION_MEMBER_P (decl) || DECL_DEFINED_IN_CLASS_P (decl)))
+      && (!DECL_FUNCTION_MEMBER_P (decl) || DECL_INITIALIZED_IN_CLASS_P (decl)))
     /* We already checked these parameters when the template was
        declared, so there's no need to do it again now.  This function
        was defined in class scope, but we're processing it's body now
@@ -5059,7 +5059,7 @@ instantiate_class_template (type)
 	  {
 	    tree init;
 
-	    if (DECL_DEFINED_IN_CLASS_P (r))
+	    if (DECL_INITIALIZED_IN_CLASS_P (r))
 	      init = tsubst_expr (DECL_INITIAL (t), args,
 				  /*complain=*/1, NULL_TREE);
 	    else
@@ -5069,7 +5069,7 @@ instantiate_class_template (type)
 					    /*asmspec_tree=*/NULL_TREE, 
 					    /*flags=*/0);
 
-	    if (DECL_DEFINED_IN_CLASS_P (r))
+	    if (DECL_INITIALIZED_IN_CLASS_P (r))
 	      check_static_variable_definition (r, TREE_TYPE (r));
 	  }
 	
@@ -9728,12 +9728,9 @@ instantiate_decl (d, defer_ok)
 	import_export_decl (d);
     }
 
-  /* We need to set up DECL_INITIAL regardless of pattern_defined if
-     the variable is a static const initialized in the class body.  */
-  if (TREE_CODE (d) == VAR_DECL 
-      && TREE_READONLY (d)
-      && DECL_INITIAL (d) == NULL_TREE
-      && DECL_INITIAL (code_pattern) != NULL_TREE)
+  /* We need to set up DECL_INITIAL regardless, if
+     the variable is initialized in the class body.  */
+  if (TREE_CODE (d) == VAR_DECL && DECL_INITIALIZED_IN_CLASS_P (d))
     ;
   /* Reject all external templates except inline functions.  */
   else if (DECL_INTERFACE_KNOWN (d)
