@@ -19,7 +19,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    into a form more conformant with ANSI/POSIX, and more suitable for C++:
 
    * extern "C" { ... } braces are added (inside #ifndef __cplusplus),
-   if they seem to be needed.  These prevcnt C++ compilers from name
+   if they seem to be needed.  These prevent C++ compilers from name
    mangling the functions inside the braces.
 
    * If an old-style incomplete function declaration is seen (without
@@ -73,6 +73,11 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
 #include <ctype.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#ifndef O_RDONLY
+#define O_RDONLY 0
+#endif
 #include "obstack.h"
 #include "scan.h"
 
@@ -84,6 +89,11 @@ int missing_extern_C_count = 0;
 int missing_extra_stuff = 0;
 
 #include "xsys-protos.h"
+
+char *inf_buffer;
+char *inf_limit;
+char *inf_ptr;
+long int inf_size;
 
 /* Certain standard files get extra treatment */
 
@@ -186,144 +196,136 @@ struct partial_proto required_dummy_proto;
 #define CLEAR_REQUIRED(FN) ((FN)->partial = 0)
 
 void
+recognized_macro (fname)
+     char *fname;
+{
+  /* The original include file defines fname as a macro. */
+  struct fn_decl *fn = lookup_std_proto (fname);
+
+  /* Since fname is a macro, don't require a prototype for it. */
+  if (fn && REQUIRED (fn))
+    {
+      CLEAR_REQUIRED(fn);
+      required_unseen_count--;
+    }
+
+  switch (special_file_handling)
+    {
+    case errno_special:
+      if (strcmp (fname, "errno") == 0) seen_errno++;
+      break;
+    case sys_stat_special:
+      if (fname[0] == 'S' && fname[1] == '_')
+	{
+	  if (strcmp (fname, "S_IFBLK") == 0) seen_S_IFBLK++;
+	  else if (strcmp (fname, "S_ISBLK") == 0) seen_S_ISBLK++;
+	  else if (strcmp (fname, "S_IFCHR") == 0) seen_S_IFCHR++;
+	  else if (strcmp (fname, "S_ISCHR") == 0) seen_S_ISCHR++;
+	  else if (strcmp (fname, "S_IFDIR") == 0) seen_S_IFDIR++;
+	  else if (strcmp (fname, "S_ISDIR") == 0) seen_S_ISDIR++;
+	  else if (strcmp (fname, "S_IFIFO") == 0) seen_S_IFIFO++;
+	  else if (strcmp (fname, "S_ISFIFO") == 0) seen_S_ISFIFO++;
+	  else if (strcmp (fname, "S_IFLNK") == 0) seen_S_IFLNK++;
+	  else if (strcmp (fname, "S_ISLNK") == 0) seen_S_ISLNK++;
+	  else if (strcmp (fname, "S_IFREG") == 0) seen_S_IFREG++;
+	  else if (strcmp (fname, "S_ISREG") == 0) seen_S_ISREG++;
+	}
+    }
+}
+
+void
+recognized_extern (name, type)
+     char *name;
+     char *type;
+{
+  switch (special_file_handling)
+    {
+    case errno_special:
+      if (strcmp (name, "errno") == 0) seen_errno++;
+      break;
+    }
+}
+
+/* Called by scan_decls if it saw a function definition for a function
+   named FNAME, with return type RTYPE, and argument list ARGS,
+   in source file FILE_SEEN on line LINE_SEEN.
+   KIND is 'I' for an inline function;
+   'F' if a normal function declaration preceded by 'extern "C"'
+   (or nested inside 'extern "C"' braces); or
+   'f' for other function declarations. */
+
+void
+recognized_function (fname, kind, rtype, args, file_seen, line_seen)
+     char *fname;
+     int kind; /* One of 'f' 'F' or 'I' */
+     char *rtype;
+     char *args;
+     char *file_seen;
+     int line_seen;
+{
+  struct partial_proto *partial;
+  int i;
+  struct fn_decl *fn;
+  if (kind == 'f')
+    missing_extern_C_count++;
+
+  fn = lookup_std_proto (fname);
+
+  /* Remove the function from the list of required function. */
+  if (fn && REQUIRED (fn))
+    {
+      CLEAR_REQUIRED(fn);
+      required_unseen_count--;
+    }
+
+  /* If we have a full prototype, we're done. */
+  if (args[0] != '\0')
+    return;
+      
+  if (kind == 'I')  /* don't edit inline function */
+    return;
+
+  /* If the partial prototype was included from some other file,
+     we don't need to patch it up (in this run). */
+  i = strlen (file_seen);
+  if (i < inc_filename_length
+      || strcmp (inc_filename, file_seen + (i - inc_filename_length)) != 0)
+    return;
+
+  if (fn == NULL)
+    return;
+  if (fn->params[0] == '\0' || strcmp(fn->params, "void") == 0)
+    return;
+
+  /* We only have a partial function declaration,
+     so remember that we have to add a complete prototype. */
+  partial_count++;
+  partial = (struct partial_proto*)
+    obstack_alloc (&scan_file_obstack, sizeof(struct partial_proto));
+  partial->fname = obstack_alloc (&scan_file_obstack, strlen(fname) + 1);
+  strcpy (partial->fname, fname);
+  partial->rtype = obstack_alloc (&scan_file_obstack, strlen(rtype) + 1);
+  strcpy (partial->rtype, rtype);
+  partial->line_seen = line_seen;
+  partial->fn = fn;
+  fn->partial = partial;
+  partial->next = partial_proto_list;
+  partial_proto_list = partial;
+  if (verbose)
+    {
+      fprintf (stderr, "(%s: %s non-prototype function declaration.)\n",
+	       inc_filename, fname);
+    }
+}
+
+void
 read_scan_file (scan_file)
      FILE *scan_file;
 {
   char **rptr;
-  int i;
   obstack_init(&scan_file_obstack); 
 
-  for (;;)
-    {
-      struct partial_proto *partial;
-      struct fn_decl *fn;
-      int ch;
-      char *ptr, *fname, *kind, *rtype, *args, *file_seen, *line_seen;
-      line.ptr = line.base;
-      ch = read_upto (scan_file, &line, '\n');
-      if (ch == EOF)
-	break;
-
-      fname = line.base;
-      for (ptr = fname; *ptr != ';'; ) ptr++;
-      *ptr = 0;
-      kind = ptr + 1;
-      for (ptr = kind; *ptr != ';'; ) ptr++;
-      *ptr = 0;
-
-      if (*kind == 'X')
-	{
-	  switch (special_file_handling)
-	    {
-	    case errno_special:
-	      if (strcmp (fname, "errno") == 0) seen_errno++;
-	      break;
-	    }
-	  continue;
-	}
-
-      if (*kind == 'M')
-	{
-	  /* The original include file defines fname as a macro. */
-	  fn = lookup_std_proto (fname);
-
-	  /* Since fname is a macro, don't require a prototype for it. */
-	  if (fn && REQUIRED (fn))
-	    {
-	      CLEAR_REQUIRED(fn);
-	      required_unseen_count--;
-	    }
-
-	  switch (special_file_handling)
-	    {
-	    case errno_special:
-	      if (strcmp (fname, "errno") == 0) seen_errno++;
-	      break;
-	    case sys_stat_special:
-	      if (fname[0] == 'S' && fname[1] == '_')
-		{
-		  if (strcmp (fname, "S_IFBLK") == 0) seen_S_IFBLK++;
-		  else if (strcmp (fname, "S_ISBLK") == 0) seen_S_ISBLK++;
-		  else if (strcmp (fname, "S_IFCHR") == 0) seen_S_IFCHR++;
-		  else if (strcmp (fname, "S_ISCHR") == 0) seen_S_ISCHR++;
-		  else if (strcmp (fname, "S_IFDIR") == 0) seen_S_IFDIR++;
-		  else if (strcmp (fname, "S_ISDIR") == 0) seen_S_ISDIR++;
-		  else if (strcmp (fname, "S_IFIFO") == 0) seen_S_IFIFO++;
-		  else if (strcmp (fname, "S_ISFIFO") == 0) seen_S_ISFIFO++;
-		  else if (strcmp (fname, "S_IFLNK") == 0) seen_S_IFLNK++;
-		  else if (strcmp (fname, "S_ISLNK") == 0) seen_S_ISLNK++;
-		  else if (strcmp (fname, "S_IFREG") == 0) seen_S_IFREG++;
-		  else if (strcmp (fname, "S_ISREG") == 0) seen_S_ISREG++;
-		}
-	      break;
-	    }
-	  continue;
-	}
-
-      rtype = ptr + 1;
-      for (ptr = rtype; *ptr != ';'; ) ptr++;
-      *ptr = 0;
-      args = ptr + 1;
-      for (ptr = args; *ptr != ';'; ) ptr++;
-      *ptr = 0;
-      file_seen = ptr + 1;
-      for (ptr = file_seen; *ptr != ';'; ) ptr++;
-      *ptr = 0;
-      line_seen = ptr + 1;
-      for (ptr = line_seen; *ptr != ';'; ) ptr++;
-      *ptr = 0;
-
-      if (kind[0] == 'f')
-	missing_extern_C_count++;
-
-      fn = lookup_std_proto (fname);
-
-      /* Remove the function from the list of required function. */
-      if (fn && REQUIRED (fn))
-	{
-	  CLEAR_REQUIRED(fn);
-	  required_unseen_count--;
-	}
-
-      /* If we have a full prototype, we're done. */
-      if (args[0] != '\0')
-	continue;
-      
-      if (kind[0] == 'I')  /* don't edit inline function */
-	continue;
-
-      /* If the partial prototype was included from some other file,
-	 we don't need to patch it up (in this run). */
-      i = strlen (file_seen);
-      if (i < inc_filename_length
-	  || strcmp (inc_filename, file_seen + (i - inc_filename_length)) != 0)
-	continue;
-
-      if (fn == NULL)
-	continue;
-      if (fn->params[0] == '\0' || strcmp(fn->params, "void") == 0)
-	continue;
-
-      /* We only have a partial function declaration,
-	 so remember that we have to add a complete prototype. */
-      partial_count++;
-      partial = (struct partial_proto*)
-	obstack_alloc (&scan_file_obstack, sizeof(struct partial_proto));
-      partial->fname = obstack_alloc (&scan_file_obstack, strlen(fname) + 1);
-      strcpy (partial->fname, fname);
-      partial->rtype = obstack_alloc (&scan_file_obstack, strlen(rtype) + 1);
-      strcpy (partial->rtype, rtype);
-      partial->line_seen = atoi(line_seen);
-      partial->fn = fn;
-      fn->partial = partial;
-      partial->next = partial_proto_list;
-      partial_proto_list = partial;
-      if (verbose)
-	{
-	  fprintf (stderr, "(%s: %s non-prototype function declaration.)\n",
-		   inc_filename, fname);
-	}
-    }
+  scan_decls (scan_file);
 
   if (missing_extern_C_count + required_unseen_count + partial_count
       + missing_extra_stuff == 0)
@@ -417,9 +419,94 @@ strdup (str)
 
  */
 
+#define INF_GET() (inf_ptr < inf_limit ? *(unsigned char*)inf_ptr++ : EOF)
+#define INF_UNGET() inf_ptr--
+
 int
-check_protection (inf, ifndef_line, endif_line)
-     FILE *inf;
+inf_skip_spaces (c)
+     int c;
+{
+  for (;;)
+    {
+      if (c == ' ' || c == '\t')
+	c = INF_GET();
+      else if (c == '/')
+	{
+	  c = INF_GET();
+	  if (c != '*')
+	    {
+	      INF_UNGET();
+	      return '/';
+	    }
+	  c = INF_GET();
+	  for (;;)
+	    {
+	      if (c == EOF)
+		return EOF;
+	      else if (c != '*')
+		{
+		  if (c == '\n')
+		    source_lineno++, lineno++;
+		  c = INF_GET ();
+		}
+	      else if ((c = INF_GET()) == '/')
+		return INF_GET();
+	    }
+	}
+      else
+	break;
+    }
+  return c;
+}
+
+/* Read into STR from inf_buffer upto DELIM. */
+
+int
+inf_read_upto (str, delim)
+     sstring *str;
+     int delim;
+{
+  int ch;
+  for (;;)
+    {
+      ch = INF_GET ();
+      if (ch == EOF || ch == delim)
+	break;
+      SSTRING_PUT(str, ch);
+    }
+  MAKE_SSTRING_SPACE(str, 1);
+  *str->ptr = 0;
+  return ch;
+}
+
+int
+inf_scan_ident (s, c)
+     register sstring *s;
+     int c;
+{
+  s->ptr = s->base;
+  if (isalpha(c) || c == '_')
+    {
+      for (;;)
+	{
+	  SSTRING_PUT(s, c);
+	  c = INF_GET ();
+	  if (c == EOF || !(isalnum(c) || c == '_'))
+	    break;
+	}
+    }
+  MAKE_SSTRING_SPACE(s, 1);
+  *s->ptr = 0;
+  return c;
+}
+
+/* Returns 1 if the file is correctly protected against multiple
+   inclusion, setting *ifndef_line to the line number of the initial #ifndef
+   and setting *endif_line to the final #endif.
+   Otherwise return 0. */
+
+int
+check_protection (ifndef_line, endif_line)
      int *ifndef_line, *endif_line;
 {
   int c;
@@ -430,7 +517,7 @@ check_protection (inf, ifndef_line, endif_line)
   /* Skip initial white space (including comments). */
   for (;; lineno++)
     {
-      c = skip_spaces (inf, ' ');
+      c = inf_skip_spaces (' ');
       if (c == EOF)
 	return 0;
       if (c != '\n')
@@ -438,26 +525,26 @@ check_protection (inf, ifndef_line, endif_line)
     }
   if (c != '#')
     return 0;
-  c = scan_ident (inf, &buf, skip_spaces (inf, ' '));
+  c = inf_scan_ident (&buf, inf_skip_spaces (' '));
   if (SSTRING_LENGTH(&buf) == 0 || strcmp (buf.base, "ifndef") != 0)
     return 0;
 
   /* So far so good: We've seen an initial #ifndef. */
   *ifndef_line = lineno;
-  c = scan_ident (inf, &buf, skip_spaces (inf, c));
+  c = inf_scan_ident (&buf, inf_skip_spaces (c));
   if (SSTRING_LENGTH(&buf) == 0 || c == EOF)
     return 0;
   protect_name = strdup (buf.base);
 
-  ungetc (c, inf);
-  c = read_upto (inf, &buf, '\n');
+  INF_UNGET();
+  c = inf_read_upto (&buf, '\n');
   if (c == EOF)
     return 0;
   lineno++;
 
   for (;;)
     {
-      c = skip_spaces(inf, ' ');
+      c = inf_skip_spaces(' ');
       if (c == EOF)
 	return 0;
       if (c == '\n')
@@ -467,7 +554,7 @@ check_protection (inf, ifndef_line, endif_line)
 	}
       if (c != '#')
 	goto skip_to_eol;
-      c = scan_ident (inf, &buf, skip_spaces (inf, ' '));
+      c = inf_scan_ident (&buf, inf_skip_spaces (' '));
       if (SSTRING_LENGTH(&buf) == 0)
 	;
       else if (!strcmp (buf.base, "ifndef")
@@ -490,8 +577,8 @@ check_protection (inf, ifndef_line, endif_line)
 	{
 	  if (if_nesting != 1)
 	    goto skip_to_eol;
-	  c = skip_spaces (inf, c);
-	  c = scan_ident (inf, &buf, c);
+	  c = inf_skip_spaces (c);
+	  c = inf_scan_ident (&buf, c);
 	  if (buf.base[0] > 0 && strcmp(buf.base, protect_name) == 0)
 	    define_seen = 1;
 	}
@@ -500,7 +587,7 @@ check_protection (inf, ifndef_line, endif_line)
 	{
 	  if (c == '\n' || c == EOF)
 	    break;
-	  c = getc (inf);
+	  c = INF_GET();
 	}
       if (c == EOF)
 	return 0;
@@ -513,7 +600,7 @@ check_protection (inf, ifndef_line, endif_line)
   /* Skip final white space (including comments). */
   for (;;)
     {
-      c = skip_spaces (inf, ' ');
+      c = inf_skip_spaces (' ');
       if (c == EOF)
 	break;
       if (c != '\n')
@@ -528,12 +615,14 @@ main(argc, argv)
      int argc;
      char **argv;
 {
-  FILE *inf;
+  int inf_fd;
+  struct stat sbuf;
   int c;
   int i, done;
   char *cptr, *cptr0, **pptr;
   int ifndef_line;
-  int endif_line;;
+  int endif_line;
+  long to_read;
 
 
   if (argv[0] && argv[0][0])
@@ -583,14 +672,46 @@ main(argc, argv)
 
   read_scan_file (stdin);
 
-  inf = fopen (argv[2], "r");
-  if (inf == NULL)
+  inf_fd = open (argv[2], O_RDONLY, 0666);
+  if (inf_fd < 0)
     {
       fprintf (stderr, "%s: Cannot open '%s' for reading -",
 	       progname, argv[2]);
       perror (NULL);
       exit (-1);
     }
+  if (fstat (inf_fd, &sbuf) < 0)
+    {
+      fprintf (stderr, "%s: Cannot get size of '%s' -", progname, argv[2]);
+      perror (NULL);
+      exit (-1);
+    }
+  inf_size = sbuf.st_size;
+  inf_buffer = (char*) xmalloc (inf_size + 2);
+  inf_buffer[inf_size] = '\n';
+  inf_buffer[inf_size + 1] = '\0';
+  inf_limit = inf_buffer + inf_size;
+  inf_ptr = inf_buffer;
+
+  to_read = inf_size;
+  while (to_read > 0)
+    {
+      long i = read (inf_fd, inf_buffer + inf_size - to_read, to_read);
+      if (i < 0)
+	{
+	  fprintf (stderr, "%s: Failed to read '%s' -", progname, argv[2]);
+	  perror (NULL);
+	  exit (-1);
+	}
+      if (i == 0)
+	{
+	  inf_size -= to_read;
+	  break;
+	}
+      to_read -= i;
+    }
+
+  close (inf_fd);
 
   outf = fopen (argv[3], "w");
   if (outf == NULL)
@@ -601,7 +722,9 @@ main(argc, argv)
       exit (-1);
     }
 
-  if (check_protection (inf, &ifndef_line, &endif_line))
+  lineno = 1;
+
+  if (check_protection (&ifndef_line, &endif_line))
     {
 #if 0
       fprintf(stderr, "#ifndef %s on line %d; #endif on line %d\n",
@@ -616,7 +739,8 @@ main(argc, argv)
       rbrac_line = -1;
     }
 
-  fseek(inf, 0, 0);
+  /* Reset input file. */
+  inf_ptr = inf_buffer;
   lineno = 1;
 
   for (;;)
@@ -628,15 +752,14 @@ main(argc, argv)
       for (;;)
 	{
 	  struct fn_decl *fn;
-	  c = getc (inf);
+	  c = INF_GET();
 	  if (c == EOF)
 	    break;
 	  if (isalpha (c) || c == '_')
 	    {
 	      struct partial_proto *partial;
-	      ungetc (c, inf);
-	      if (get_token (inf, &buf) != IDENTIFIER_TOKEN)
-		abort ();
+	      c = inf_scan_ident (&buf, c);
+	      INF_UNGET();
 	      fputs (buf.base, outf);
 	      fn = lookup_std_proto (buf.base);
 	      /* We only want to edit the declaration matching the one
@@ -644,12 +767,12 @@ main(argc, argv)
 		 declarations, selected by #ifdef __STDC__ or whatever. */
 	      if (fn && fn->partial && fn->partial->line_seen == lineno)
 		{
-		  c = skip_spaces (inf, ' ');
+		  c = inf_skip_spaces (' ');
 		  if (c == EOF)
 		    break;
 		  if (c == '(')
 		    {
-		      c = skip_spaces (inf, ' ');
+		      c = inf_skip_spaces (' ');
 		      if (c == ')')
 			{
 			  fprintf (outf, " _PARAMS((%s))", fn->params);
@@ -657,7 +780,7 @@ main(argc, argv)
 		      else
 			{
 			  putc ('(', outf);
-			  ungetc (c, inf);
+			  INF_UNGET();
 			}
 		    }
 		  else
@@ -665,9 +788,11 @@ main(argc, argv)
 		}
 	    }
 	  else
-	    putc (c, outf);
-	  if (c == '\n')
-	    break;
+	    {
+	      putc (c, outf);
+	      if (c == '\n')
+		break;
+	    }
 	}
       if (c == EOF)
 	break;
@@ -676,7 +801,6 @@ main(argc, argv)
   if (rbrac_line < 0)
     write_rbrac ();
 
-  fclose (inf);
   fclose (outf);
 
   return 0;
