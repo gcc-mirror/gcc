@@ -1,3 +1,8 @@
+2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.c (walk_tree, TREE_LIST): Don't walk the TREE_PURPOSE of
+	BASELINK_P.
+
 2001-01-16  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* typeck.c (build_function_call_real): Call fold on the CALL_EXPR.
