@@ -864,6 +864,17 @@ register_operand (op, mode)
 	 reg went on the stack.)  */
       if (! reload_completed && GET_CODE (SUBREG_REG (op)) == MEM)
 	return general_operand (op, mode);
+
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+      if (GET_CODE (SUBREG_REG (op)) == REG
+	  && REGNO (SUBREG_REG (op)) < FIRST_PSEUDO_REGISTER
+	  && TEST_HARD_REG_BIT (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+				REGNO (SUBREG_REG (op)))
+	  && (GET_MODE_SIZE (mode)
+	      != GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))))
+	return 0;
+#endif
+
       op = SUBREG_REG (op);
     }
 
