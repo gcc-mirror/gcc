@@ -161,6 +161,9 @@ public class EventQueue
    */
   public synchronized void postEvent(AWTEvent evt)
   {
+    if (evt == null)
+      throw new NullPointerException();
+
     if (next != null)
       {
         next.postEvent(evt);
