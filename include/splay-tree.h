@@ -110,6 +110,10 @@ extern splay_tree_node splay_tree_predecessor
 extern splay_tree_node splay_tree_successor
                                         PARAMS((splay_tree,
 						splay_tree_key));
+extern splay_tree_node splay_tree_max
+                                        PARAMS((splay_tree));
+extern splay_tree_node splay_tree_min
+                                        PARAMS((splay_tree));
 extern int splay_tree_foreach           PARAMS((splay_tree,
 					        splay_tree_foreach_fn,
 					        void*));
