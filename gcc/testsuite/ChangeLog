@@ -1,5 +1,13 @@
 2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/compat/union-by-value-1_main.c,
+	union-by-value-1_x.c, union-by-value-1_y.c,
+	union-check.h, union-defs.h,
+	union-init.h, union-return-1_main.c,
+	union-return-1_x.c, union-return-1_y.c: New files.
+
+2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/compat/mixed-struct-check.h, mixed-struct-defs.h,
 	mixed-struct-init.h: Add 4 mixed structure types.
 	struct-by-value-21_main.c, struct-by-value-21_x.c,
