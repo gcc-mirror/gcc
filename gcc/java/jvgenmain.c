@@ -1,5 +1,5 @@
 /* Program to generate "main" a Java(TM) class containing a main method.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -79,39 +79,79 @@ gcc_obstack_init (obstack)
 		  (void (*) PROTO((void *))) OBSTACK_CHUNK_FREE);
 }
 
+static void
+usage (const char *name)
+{
+  fprintf (stderr, "Usage: %s [OPTIONS]... CLASSNAME [OUTFILE]\n", name);
+  exit (1);
+}
+
 int
 main (int argc, const char **argv)
 {
   const char *classname;
   FILE *stream;
   const char *mangled_classname;
+  int i, last_arg;
 
-  if (argc < 2 || argc > 3)
+  if (argc < 2)
+    usage (argv[0]);
+
+  for (i = 1; i < argc; ++i)
     {
-      fprintf (stderr, "Usage: %s CLASSNAME [OUTFILE]\n", argv[0]);
-      exit(-1);
+      if (! strncmp (argv[i], "-D", 2))
+	{
+	  /* Handled later.  */
+	}
+      else
+	break;
     }
 
-  classname = argv[1];
+  if (i < argc - 2 || i == argc)
+    usage (argv[0]);
+  last_arg = i;
+
+  classname = argv[i];
 
   gcc_obstack_init (&name_obstack);
   append_gpp_mangled_classtype (&name_obstack, classname);
   obstack_1grow (&name_obstack, '\0');
   mangled_classname = obstack_finish (&name_obstack);
 
-  if (argc > 2 && strcmp (argv[2], "-") != 0)
+  if (i < argc - 1 && strcmp (argv[i + 1], "-") != 0)
     {
-      const char *outfile = argv[2];
+      const char *outfile = argv[i + 1];
       stream = fopen (outfile, "w");
       if (stream == NULL)
 	{
 	  fprintf (stderr, "%s: Cannot open output file: %s\n",
 		   argv[0], outfile);
-	  exit (-1);
+	  exit (1);
 	}
     }
   else
     stream = stdout;
+
+  /* At this point every element of ARGV from 1 to LAST_ARG is a `-D'
+     option.  Process them appropriately.  */
+  fprintf (stream, "const char *_Jv_Compiler_Properties[] =\n{\n");
+  for (i = 1; i < last_arg; ++i)
+    {
+      const char *p;
+      fprintf (stream, "  \"");
+      for (p = &argv[i][2]; *p; ++p)
+	{
+	  if (! isascii (*p))
+	    fprintf (stream, "\\%o", *p);
+	  else if (*p == '\\' || *p == '"')
+	    fprintf (stream, "\\%c", *p);
+	  else
+	    putc (*p, stream);
+	}
+      fprintf (stream, "\",\n");
+    }
+  fprintf (stream, "  0\n};\n\n");
+
   fprintf (stream, "extern struct Class %s%s;\n",
 	   class_mangling_prefix, mangled_classname);
   fprintf (stream, "int main (int argc, const char **argv)\n");
@@ -123,7 +163,7 @@ main (int argc, const char **argv)
     {
       fprintf (stderr, "%s: Failed to close output file %s\n",
 	       argv[0], argv[2]);
-      exit (-1);
+      exit (1);
     }
   return 0;
 }

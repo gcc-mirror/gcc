@@ -50,7 +50,7 @@ int lang_specific_extra_outfiles = 0;
 #define COMBINE_INPUTS 0
 
 const char jvgenmain_spec[] =
-  "jvgenmain %i %{!pipe:%umain.i} |\n\
+  "jvgenmain %{D*} %i %{!pipe:%umain.i} |\n\
    cc1 %{!pipe:%Umain.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} \
@@ -163,6 +163,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   int saw_O = 0;
   int saw_g = 0;
 
+  /* Saw a `-D' option.  */
+  int saw_D = 0;
+
   /* An array used to flag each argument that needs a bit set for
      LANGSPEC, MATHLIB, WITHLIBC, or GCLIB.  */
   int *args;
@@ -247,6 +250,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	      library = 0;
 	      will_link = 0;
 	    }
+	  else if (argv[i][1] == 'D')
+	    saw_D = 1;
 	  else if (argv[i][1] == 'g')
 	    saw_g = 1;
 	  else if (argv[i][1] == 'O')
@@ -330,6 +335,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
   if (quote)
     fatal ("argument to `%s' missing\n", quote);
+
+  if (saw_D && ! main_class_name)
+    fatal ("can't specify `-D' without `--main'\n");
 
   num_args = argc + added;
   if (saw_C)
