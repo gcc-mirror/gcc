@@ -1141,12 +1141,14 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    {
 #ifndef JUMP_TABLES_IN_TEXT_SECTION
 	      readonly_data_section ();
+#ifdef READONLY_DATA_SECTION
 	      ASM_OUTPUT_ALIGN (file,
 				exact_log2 (BIGGEST_ALIGNMENT
 					    / BITS_PER_UNIT));
-#else
+#endif /* READONLY_DATA_SECTION */
+#else /* JUMP_TABLES_IN_TEXT_SECTION */
 	      text_section ();
-#endif
+#endif /* JUMP_TABLES_IN_TEXT_SECTION */
 #ifdef ASM_OUTPUT_CASE_LABEL
 	      ASM_OUTPUT_CASE_LABEL (file, "L", CODE_LABEL_NUMBER (insn),
 				     NEXT_INSN (insn));
