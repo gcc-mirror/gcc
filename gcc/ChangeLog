@@ -1,3 +1,24 @@
+2004-11-12  Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (hashtab.h): Include.
+	(struct edge_to_case_leader_elt): New structure.
+	(edge_to_case_leader): New.
+	(edge_to_case_leader_hash): New hashtable hasing function.
+	(edge_to_case_leader_eq): New hashtable equality function.
+	(record_switch_edge): New function.
+	(get_case_leader_for_edge, get_case_leader_for_edge): New functions.
+	(make_switch_expr_edges): Build the edge-to-case-leader
+	hash table.  Tear down the hash table when we're done.
+	(cleanup_dead_labels): Use CASE_LEADER_OR_LABEL instead of
+	CASE_LABEL.
+	(tree_node_can_be_shared): Allow sharing of CASE_LABEL_EXPR nodes.
+	(tree_redirect_edge_and_branch, case SWITCH_EXPR): Update
+	to use new concept of case leaders to reduce overhead of
+	redirecting outgoing edges from switch statements.
+	* tree.c (get_case_label): New function.
+	* tree.h (CASE_LABEL): Define in terms of get_case_label.
+	(CASE_LEADER_OR_LABEL): Define.
+
 2004-11-12  Ziemowit Laski  <zlaski@apple.com>
 
 	* varasm.c (output_addressed_constants): For CONST_DECLs,
