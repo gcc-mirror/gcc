@@ -3208,7 +3208,7 @@ function_arg (cum, mode, type, named)
 		    % BITS_PER_WORD == 0))
 	      break;
 
-	  if (! field)
+	  if (! field || mode == DFmode)
 	    ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
 	  else
 	    {
