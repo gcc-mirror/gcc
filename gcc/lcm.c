@@ -972,6 +972,180 @@ reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *live)
  #error "Both MODE_ENTRY and MODE_EXIT must be defined"
 #endif
 
+#if defined (MODE_ENTRY) && defined (MODE_EXIT)
+/* Split the fallthrough edge to the exit block, so that we can note
+   that there NORMAL_MODE is required.  Return the new block if it's
+   inserted before the exit block.  Otherwise return null.  */
+
+static basic_block
+create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
+{
+  edge eg;
+  edge_iterator ei;
+  basic_block pre_exit;
+
+  /* The only non-call predecessor at this stage is a block with a
+     fallthrough edge; there can be at most one, but there could be
+     none at all, e.g. when exit is called.  */
+  pre_exit = 0;
+  FOR_EACH_EDGE (eg, ei, EXIT_BLOCK_PTR->preds)
+    if (eg->flags & EDGE_FALLTHRU)
+      {
+	basic_block src_bb = eg->src;
+	regset live_at_end = src_bb->global_live_at_end;
+	rtx last_insn, ret_reg;
+
+	gcc_assert (!pre_exit);
+	/* If this function returns a value at the end, we have to
+	   insert the final mode switch before the return value copy
+	   to its hard register.  */
+	if (EDGE_COUNT (EXIT_BLOCK_PTR->preds) == 1
+	    && GET_CODE ((last_insn = BB_END (src_bb))) == INSN
+	    && GET_CODE (PATTERN (last_insn)) == USE
+	    && GET_CODE ((ret_reg = XEXP (PATTERN (last_insn), 0))) == REG)
+	  {
+	    int ret_start = REGNO (ret_reg);
+	    int nregs = hard_regno_nregs[ret_start][GET_MODE (ret_reg)];
+	    int ret_end = ret_start + nregs;
+	    int short_block = 0;
+	    int maybe_builtin_apply = 0;
+	    int forced_late_switch = 0;
+	    rtx before_return_copy;
+
+	    do
+	      {
+		rtx return_copy = PREV_INSN (last_insn);
+		rtx return_copy_pat, copy_reg;
+		int copy_start, copy_num;
+		int j;
+
+		if (INSN_P (return_copy))
+		  {
+		    if (GET_CODE (PATTERN (return_copy)) == USE
+			&& GET_CODE (XEXP (PATTERN (return_copy), 0)) == REG
+			&& (FUNCTION_VALUE_REGNO_P
+			    (REGNO (XEXP (PATTERN (return_copy), 0)))))
+		      {
+			maybe_builtin_apply = 1;
+			last_insn = return_copy;
+			continue;
+		      }
+		    /* If the return register is not (in its entirety)
+		       likely spilled, the return copy might be
+		       partially or completely optimized away.  */
+		    return_copy_pat = single_set (return_copy);
+		    if (!return_copy_pat)
+		      {
+			return_copy_pat = PATTERN (return_copy);
+			if (GET_CODE (return_copy_pat) != CLOBBER)
+			  break;
+		      }
+		    copy_reg = SET_DEST (return_copy_pat);
+		    if (GET_CODE (copy_reg) == REG)
+		      copy_start = REGNO (copy_reg);
+		    else if (GET_CODE (copy_reg) == SUBREG
+			     && GET_CODE (SUBREG_REG (copy_reg)) == REG)
+		      copy_start = REGNO (SUBREG_REG (copy_reg));
+		    else
+		      break;
+		    if (copy_start >= FIRST_PSEUDO_REGISTER)
+		      break;
+		    copy_num
+		      = hard_regno_nregs[copy_start][GET_MODE (copy_reg)];
+
+		    /* If the return register is not likely spilled, - as is
+		       the case for floating point on SH4 - then it might
+		       be set by an arithmetic operation that needs a
+		       different mode than the exit block.  */
+		    for (j = n_entities - 1; j >= 0; j--)
+		      {
+			int e = entity_map[j];
+			int mode = MODE_NEEDED (e, return_copy);
+
+			if (mode != num_modes[e] && mode != MODE_EXIT (e))
+			  break;
+		      }
+		    if (j >= 0)
+		      {
+			/* For the SH4, floating point loads depend on fpscr,
+			   thus we might need to put the final mode switch
+			   after the return value copy.  That is still OK,
+			   because a floating point return value does not
+			   conflict with address reloads.  */
+			if (copy_start >= ret_start
+			    && copy_start + copy_num <= ret_end
+			    && OBJECT_P (SET_SRC (return_copy_pat)))
+			  forced_late_switch = 1;
+			break;
+		      }
+
+		    if (copy_start >= ret_start
+			&& copy_start + copy_num <= ret_end)
+		      nregs -= copy_num;
+		    else if (!maybe_builtin_apply
+			     || !FUNCTION_VALUE_REGNO_P (copy_start))
+		      break;
+		    last_insn = return_copy;
+		  }
+		/* ??? Exception handling can lead to the return value
+		   copy being already separated from the return value use,
+		   as in  unwind-dw2.c .
+		   Similarly, conditionally returning without a value,
+		   and conditionally using builtin_return can lead to an
+		   isolated use.  */
+		if (return_copy == BB_HEAD (src_bb))
+		  {
+		    short_block = 1;
+		    break;
+		  }
+		last_insn = return_copy;
+	      }
+	    while (nregs);
+	    /* If we didn't see a full return value copy, verify that there
+	       is a plausible reason for this.  If some, but not all of the
+	       return register is likely spilled, we can expect that there
+	       is a copy for the likely spilled part.  */
+	    if (nregs
+		&& ! forced_late_switch
+		&& ! short_block
+		&& CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (ret_start))
+		&& nregs == hard_regno_nregs[ret_start][GET_MODE (ret_reg)]
+		/* For multi-hard-register floating point values,
+		   sometimes the likely-spilled part is ordinarily copied
+		   first, then the other part is set with an arithmetic
+		   operation.  This doesn't actually cause reload failures,
+		   so let it pass.  */
+		&& (GET_MODE_CLASS (GET_MODE (ret_reg)) == MODE_INT
+		    || nregs == 1))
+	      abort ();
+	    if (INSN_P (last_insn))
+	      {
+		before_return_copy
+		  = emit_note_before (NOTE_INSN_DELETED, last_insn);
+		/* Instructions preceding LAST_INSN in the same block might
+		   require a different mode than MODE_EXIT, so if we might
+		   have such instructions, keep them in a separate block
+		   from pre_exit.  */
+		if (last_insn != BB_HEAD (src_bb))
+		  src_bb = split_block (src_bb,
+					PREV_INSN (before_return_copy))->dest;
+	      }
+	    else
+	      before_return_copy = last_insn;
+	    pre_exit = split_block (src_bb, before_return_copy)->src;
+	  }
+	else
+	  {
+	    pre_exit = split_edge (eg);
+	    COPY_REG_SET (pre_exit->global_live_at_start, live_at_end);
+	    COPY_REG_SET (pre_exit->global_live_at_end, live_at_end);
+	  }
+      }
+
+  return pre_exit;
+}
+#endif
+
 /* Find all insns that need a particular mode setting, and insert the
    necessary mode switches.  Return true if we did work.  */
 
@@ -1005,7 +1179,7 @@ optimize_mode_switching (FILE *file)
 	   If NORMAL_MODE is defined, allow for two extra
 	   blocks split from the entry and exit block.  */
 #if defined (MODE_ENTRY) && defined (MODE_EXIT)
-	entry_exit_extra = 2;
+	entry_exit_extra = 3;
 #endif
 	bb_info[n_entities]
 	  = xcalloc (last_basic_block + entry_exit_extra, sizeof **bb_info);
@@ -1018,28 +1192,10 @@ optimize_mode_switching (FILE *file)
     return 0;
 
 #if defined (MODE_ENTRY) && defined (MODE_EXIT)
-  {
-    /* Split the edge from the entry block and the fallthrough edge to the
-       exit block, so that we can note that there NORMAL_MODE is supplied /
-       required.  */
-    edge eg;
-    edge_iterator ei;
-    post_entry = split_edge (EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
-    /* The only non-call predecessor at this stage is a block with a
-       fallthrough edge; there can be at most one, but there could be
-       none at all, e.g. when exit is called.  */
-    pre_exit = 0;
-    FOR_EACH_EDGE (eg, ei, EXIT_BLOCK_PTR->preds)
-      if (eg->flags & EDGE_FALLTHRU)
-	{
-	  regset live_at_end = eg->src->global_live_at_end;
-
-	  gcc_assert (!pre_exit);
-	  pre_exit = split_edge (eg);
-	  COPY_REG_SET (pre_exit->global_live_at_start, live_at_end);
-	  COPY_REG_SET (pre_exit->global_live_at_end, live_at_end);
-	}
-  }
+  /* Split the edge from the entry block, so that we can note that
+     there NORMAL_MODE is supplied.  */
+  post_entry = split_edge (EDGE_SUCC (ENTRY_BLOCK_PTR, 0));
+  pre_exit = create_pre_exit (n_entities, entity_map, num_modes);
 #endif
 
   /* Create the bitmap vectors.  */
