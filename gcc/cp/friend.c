@@ -101,7 +101,7 @@ is_friend (type, supplicant)
   else
     /* It's a type.  */
     {
-      /* The type and its nested classes are implicitly friends, as
+      /* Nested classes are implicitly friends of their enclosing types, as
 	 per core issue 45 (this is a change from the standard).  */
       for (context = supplicant;
 	   context && TYPE_P (context);

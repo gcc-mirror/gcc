@@ -1,3 +1,13 @@
+2000-02-13  Jason Merrill  <jason@casey.cygnus.com>
+
+	* parse.y (frob_specs): Split out...
+	(parse_decl): From here.
+	(fn.def2): Call initial_deferred_type_access_control.
+	(after_type_component_declarator0): Call frob_specs.
+	(notype_component_declarator0): Likewise.
+	* search.c (friend_accessible_p): Nested classes are friends of their
+	enclosing classes.
+
 2000-02-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* ir.texi (ADDR_EXPR): Document the fact that an ADDR_EXPR can be
