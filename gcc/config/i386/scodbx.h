@@ -81,7 +81,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	      == void_type_node))) ? (SIZE)			\
    : 0)
 /* On other 386 systems, the last line looks like this:
-   : (aggregate_value_p (FUNTYPE)) ? GET_MODE_SIZE (Pmode) : 0)  */
+   : (aggregate_value_p (TREE_TYPE (FUNTYPE))) ? GET_MODE_SIZE (Pmode) : 0)  */
 
 /* Use periods rather than dollar signs in special g++ assembler names.  */
 
