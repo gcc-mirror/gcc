@@ -1,23 +1,27 @@
+2002-02-05  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in: Undo munging last change.
+
 2002-02-04  Adam Megacz <adam@xwt.org>
 
 	* win32.cc: Created it.
-	  configure.in: Added PLATFORM_SPECIFIC_SOURCES,
-	  which is set to posix.cc or win32.cc.
-          Makefile.am: Updated it to use $(PLATFORM_SPECIFIC_SOURCES).
+	* configure.in: Added PLATFORM_SPECIFIC_SOURCES,
+	which is set to posix.cc or win32.cc.
+	* Makefile.am: Updated it to use $(PLATFORM_SPECIFIC_SOURCES).
 	
 2002-02-04  Adam Megacz <adam@xwt.org>
 
-       * configure.in: Corrected mingw case branches; added * before
-         and after.
+	* configure.in: Corrected mingw case branches; added * before
+	and after.
 
 2002-02-04  Adam Megacz <adam@xwt.org>
 
-        * configure.in: Add -lgdi32 -lwsock32 -lws2_32 to libgcj.spec
-          if compiling for win32
+	* configure.in: Add -lgdi32 -lwsock32 -lws2_32 to libgcj.spec
+	if compiling for win32
 
 2002-02-04  Adam Megacz <adam@xwt.org>
 
-        * win32-threads.cc: #undef STRICT after gc.h inclusion
+	* win32-threads.cc: #undef STRICT after gc.h inclusion
 
 2002-02-02  Tom Tromey  <tromey@redhat.com>
 
@@ -51,17 +55,17 @@
 	
 2002-02-01  Adam Megacz <adam@xwt.org>
 
-        * win32-threads.cc:
-        (_Jv_CondWait, _Jv_CondNotify, _Jv_CondNotifyAll): Corrected
-        wait() algorithm to make it safe.
-        (ensure_condvar_initialized, _Jv_CondInit, _Jv_CondDestroy):
-        Added lazy creation of Win32 Events for better performance
-        (really_start): This now uses GC_CreateThread so boehm-gc
-        knows about new threads even when statically linked.
+	* win32-threads.cc:
+	(_Jv_CondWait, _Jv_CondNotify, _Jv_CondNotifyAll): Corrected
+	wait() algorithm to make it safe.
+	(ensure_condvar_initialized, _Jv_CondInit, _Jv_CondDestroy):
+	Added lazy creation of Win32 Events for better performance
+	(really_start): This now uses GC_CreateThread so boehm-gc
+	knows about new threads even when statically linked.
 
 2002-02-01  Adam Megacz <adam@xwt.org>
 
-        * include/win32-threads.h (_Jv_ConditionVariable_t): Now a struct, to
+	* include/win32-threads.h (_Jv_ConditionVariable_t): Now a struct, to
 	enable safer wait() algorithm.
 	(_Jv_CondWait, _Jv_CondInit, _Jv_CondDestroy, _Jv_CondNotify,
 	_Jv_CondNotifyAll): Implementations moved to win32-threads.cc.
