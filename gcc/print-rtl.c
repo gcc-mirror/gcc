@@ -230,6 +230,64 @@ debug_rtx (x)
   fprintf (stderr, "\n");
 }
 
+/* Count of rtx's to print with debug_rtx_list.
+   This global exists because gdb user defined commands have no arguments.  */
+
+int debug_rtx_count = 0;	/* 0 is treated as equivalent to 1 */
+
+/* Call this function to print list from X on.
+
+   N is a count of the rtx's to print. Positive values print from the specified
+   rtx on.  Negative values print a window around the rtx.
+   EG: -5 prints 2 rtx's on either side (in addition to the specified rtx).  */
+
+void
+debug_rtx_list (x, n)
+     rtx x;
+     int n;
+{
+  int i,count;
+  rtx insn;
+
+  count = n == 0 ? 1 : n < 0 ? -n : n;
+
+  /* If we are printing a window, back up to the start.  */
+
+  if (n < 0)
+    for (i = count / 2; i > 0; i--)
+      {
+	if (PREV_INSN (x) == 0)
+	  break;
+	x = PREV_INSN (x);
+      }
+
+  for (i = count, insn = x; i > 0 && insn != 0; i--, insn = NEXT_INSN (insn))
+    debug_rtx (insn);
+}
+
+/* Call this function to search an rtx list to find one with insn uid UID,
+   and then call debug_rtx_list to print it, using DEBUG_RTX_COUNT.
+   The found insn is returned to enable further debugging analysis.  */
+
+rtx
+debug_rtx_find(x, uid)
+     rtx x;
+     int uid;
+{
+  while (x != 0 && INSN_UID (x) != uid)
+    x = NEXT_INSN (x);
+  if (x != 0)
+    {
+      debug_rtx_list (x, debug_rtx_count);
+      return x;
+    }
+  else
+    {
+      fprintf (stderr, "insn uid %d not found\n", uid);
+      return 0;
+    }
+}
+
 /* External entry point for printing a chain of insns
    starting with RTX_FIRST onto file OUTF.
    A blank line separates insns.
