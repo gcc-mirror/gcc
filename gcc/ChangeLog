@@ -1,3 +1,7 @@
+2001-05-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movsfcc,movdfcc): Remove NE case.
+
 2001-05-17  Bruce Korb <bkorb@gnu.org>
 
 	* fixinc/fixincl.tpl: rewritten as an AutoGen version 5 template
