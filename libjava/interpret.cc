@@ -1080,7 +1080,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       NEXT_INSN;
 
      insn_astore:
-      STOREI (get1u (pc++));
+      STOREA (get1u (pc++));
       NEXT_INSN;
 
      insn_istore_0:

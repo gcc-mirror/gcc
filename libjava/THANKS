@@ -5,7 +5,7 @@ contributions are not listed.  Please keep this list in alphabetical
 order.
 
 Geoff Berry for his object serialization work and various patches.
-Hans-J. Boehm for his garbage collector.
+Hans-J. Boehm for his garbage collector and other work.
 Godmar Back for his improvements and encouragement.
 Per Bothner for dreaming up, designing and implementing much of gcj.
 Steve Chamberlain for config fixes and the picoJava port.
