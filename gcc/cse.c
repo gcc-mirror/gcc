@@ -4623,7 +4623,14 @@ simplify_relational_operation (code, mode, op0, op1)
       else
 	{
 	  l0u = l0s = INTVAL (op0);
-	  h0u = 0, h0s = l0s < 0 ? -1 : 0;
+	  h0s = l0s < 0 ? -1 : 0;
+	  /* If WIDTH is nonzero and larger than HOST_BITS_PER_WIDE_INT,
+	     then the high word is derived from the sign bit of the low
+	     word, else the high word is zero.  */
+	  if (width != 0 && width > HOST_BITS_PER_WIDE_INT)
+	    h0u = l0s < 0 ? -1 : 0;
+	  else
+	    h0u = 0;
 	}
 	  
       if (GET_CODE (op1) == CONST_DOUBLE)
@@ -4634,7 +4641,14 @@ simplify_relational_operation (code, mode, op0, op1)
       else
 	{
 	  l1u = l1s = INTVAL (op1);
-	  h1u = 0, h1s = l1s < 0 ? -1 : 0;
+	  h1s = l1s < 0 ? -1 : 0;
+	  /* If WIDTH is nonzero and larger than HOST_BITS_PER_WIDE_INT,
+	     then the high word is derived from the sign bit of the low
+	     word, else the high word is zero.  */
+	  if (width != 0 && width > HOST_BITS_PER_WIDE_INT)
+	    h1u = l1s < 0 ? -1 : 0;
+	  else
+	    h1u = 0;
 	}
 
       /* If WIDTH is nonzero and smaller than HOST_BITS_PER_WIDE_INT,
