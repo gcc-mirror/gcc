@@ -638,9 +638,9 @@ assign_outer_stack_local (mode, size, align, function)
 
   /* Round frame offset to that alignment.  */
 #ifdef FRAME_GROWS_DOWNWARD
-  frame_offset = FLOOR_ROUND (frame_offset, alignment);
+  function->frame_offset = FLOOR_ROUND (function->frame_offset, alignment);
 #else
-  frame_offset = CEIL_ROUND (frame_offset, alignment);
+  function->frame_offset = CEIL_ROUND (function->frame_offset, alignment);
 #endif
 
   /* On a big-endian machine, if we are allocating more space than we will use,
