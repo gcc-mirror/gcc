@@ -21,6 +21,7 @@ sed -e "s/.*\"\([^ \"]*\)[ \"].*/version=\1/" version.c  >> config.sed
 echo "s/CC = cc/CC = gcc/				">> config.sed
 echo "s/:\$/: \$/g					">> config.sed
 echo "s/^	\ *\.\//	go32 /			">> config.sed
+echo "s/<\ *\$(srcdir)\//< $(srcdir)\\/g		">> config.sed
 echo "s/^	\$(srcdir)\/move-if-change/	update/	">> config.sed
 echo "s/^USE_/# USE_/					">> config.sed
 echo "s/`echo \$(srcdir)\///g				">> config.sed
