@@ -651,17 +651,12 @@ do {								\
   								\
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));	\
 								\
-  if (DECL_ONE_ONLY (decl))					\
-    {								\
-      if (TREE_CODE (decl) == FUNCTION_DECL)			\
-	prefix = ".gnu.linkonce.t.";				\
-      else if (TREE_READONLY (decl))				\
-	prefix = ".gnu.linkonce.r.";				\
-      else							\
-	prefix = ".gnu.linkonce.d.";				\
-    }								\
+  if (TREE_CODE (decl) == FUNCTION_DECL)			\
+    prefix = ".gnu.linkonce.t.";				\
+  else if (TREE_READONLY (decl))				\
+    prefix = ".gnu.linkonce.r.";				\
   else								\
-    prefix = "";						\
+    prefix = ".gnu.linkonce.d.";				\
 								\
   len = strlen (name) + strlen (prefix);			\
   string = alloca (len + 1);					\
