@@ -1951,7 +1951,8 @@ unprotoize$(exeext): unprotoize.o getopt.o getopt1.o getpwd.o version.o \
 	  unprotoize.o getopt.o getopt1.o getpwd.o version.o \
 	  pexecute.o choose-temp.o mkstemp.o $(LIBS)
 
-protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h
+protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
+   Makefile
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1961,7 +1962,8 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
 
-unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h
+unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
+   $(CONFIG_H) system.h Makefile
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
