@@ -3198,7 +3198,7 @@ type_hash_eq (const void *va, const void *vb)
 	       || tree_int_cst_equal (TYPE_MAX_VALUE (a->type),
 				      TYPE_MAX_VALUE (b->type)))
 	      && (TYPE_MIN_VALUE (a->type) == TYPE_MIN_VALUE (b->type)
-		  && tree_int_cst_equal (TYPE_MIN_VALUE (a->type),
+		  || tree_int_cst_equal (TYPE_MIN_VALUE (a->type),
 					 TYPE_MIN_VALUE (b->type))));
 
     case OFFSET_TYPE:

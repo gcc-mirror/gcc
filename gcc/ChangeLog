@@ -1,3 +1,8 @@
+2004-07-03  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* tree.c (type_hash_eq): Allow TYPE_MIN_VALUE which compares equal
+	with tree_int_cst_equal.
+
 2004-07-03  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/ia64.md: Define new attribute "empty".
