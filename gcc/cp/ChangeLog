@@ -1,3 +1,10 @@
+2003-01-16  Jeffrey D. Oldham  <oldham@codesourcery.com>
+
+	* cp-tree.h (tsubst_copy_and_build): New declaration.
+	* pt.c (tsubst_copy): Remove 'build_expr_from_tree' from comment.
+	(tsubst_expr): Use 'tsubst_copy_and_build'.  Update initial comment.
+	(tsubst_copy_and_build): New function.
+
 2003-01-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lang_type_class): Remove is_partial_instantiation.
