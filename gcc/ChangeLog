@@ -1,3 +1,8 @@
+2003-03-21  DJ Delorie  <dj@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_expand_arith): Make
+	sure we always emit at least one insn.
+
 2003-03-21  Christopher Faylor  <cgf@redhat.com>
 
 	* config.gcc (i[34567]86-*-cygwin*): Use new common makefile

@@ -1971,6 +1971,11 @@ xstormy16_expand_arith (mode, code, dest, src0, src1, carry)
       firstloop = 0;
       emit (insn);
     }
+
+  /* If we emit nothing, try_split() will think we failed.  So emit
+     something that does nothing and can be optimized away.  */
+  if (firstloop)
+    emit (gen_nop ());
 }
 
 /* Return 1 if OP is a shift operator.  */
