@@ -4305,7 +4305,7 @@ sparc_va_arg (valist, type)
      tree valist, type;
 {
   HOST_WIDE_INT size, rsize, align;
-  tree addr, incr, tmp;
+  tree addr, incr;
   rtx addr_rtx;
   int indirect = 0;
 

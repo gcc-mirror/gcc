@@ -2045,10 +2045,12 @@ void sparc64_initialize_trampoline ();
 extern struct rtx_def *sparc_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS() sparc_builtin_saveregs ()
 
+extern void sparc_va_start ();
 /* Implement `va_start' for varargs and stdarg.  */
 #define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
   sparc_va_start (stdarg, valist, nextarg)
 
+extern struct rtx_def *sparc_va_arg ();
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   sparc_va_arg (valist, type)
