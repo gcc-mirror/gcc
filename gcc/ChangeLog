@@ -1,5 +1,9 @@
 Tue Sep 21 06:45:31 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (merge_blocks_move_successor_nojumps): Delete the
+	BARRIER at the end of the successor, not the BARRIER before
+	the successor.
+
 	* pa.c (pa_add_gc_roots): Fix thinko in last change.
 
 Tue Sep 21 05:29:17 1999  Richard Earnshaw (rearnsha@arm.com)
