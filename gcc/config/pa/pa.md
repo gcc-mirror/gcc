@@ -1488,9 +1488,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,Q,&r,&r,fx,fx,*T")
+			  "=r,Q,&r,&r,x,x,*T")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,Q,i,fxM,*T,fx"))]
+			  "rM,r,Q,i,xM,*T,x"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "*
@@ -1697,7 +1697,7 @@
 	(const_int 0))
    (set (match_operand:SF 0 "general_operand" "")
 	(float:SF (match_dup 2)))]
-  ""
+  "TARGET_SNAKE"
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_expand "floatunssidf2"
@@ -1707,21 +1707,21 @@
 	(const_int 0))
    (set (match_operand:DF 0 "general_operand" "")
 	(float:DF (match_dup 2)))]
-  ""
+  "TARGET_SNAKE"
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_insn "floatdisf2"
-  [(set (match_operand:SF 0 "general_operand" "=fx")
-	(float:SF (match_operand:DI 1 "register_operand" "fx")))]
-  ""
+  [(set (match_operand:SF 0 "general_operand" "=x")
+	(float:SF (match_operand:DI 1 "register_operand" "x")))]
+  "TARGET_SNAKE"
   "fcnvxf,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "1")])
 
 (define_insn "floatdidf2"
-  [(set (match_operand:DF 0 "general_operand" "=fx")
-	(float:DF (match_operand:DI 1 "register_operand" "fx")))]
-  ""
+  [(set (match_operand:DF 0 "general_operand" "=x")
+	(float:DF (match_operand:DI 1 "register_operand" "x")))]
+  "TARGET_SNAKE"
   "fcnvxf,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "1")])
@@ -1746,17 +1746,17 @@
    (set_attr "length" "1")])
 
 (define_insn "fix_truncsfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=fx")
-	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "fx"))))]
-  ""
+  [(set (match_operand:DI 0 "register_operand" "=x")
+	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "x"))))]
+  "TARGET_SNAKE"
   "fcnvfxt,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "1")])
 
 (define_insn "fix_truncdfdi2"
-  [(set (match_operand:DI 0 "register_operand" "=fx")
-	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "fx"))))]
-  ""
+  [(set (match_operand:DI 0 "register_operand" "=x")
+	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "x"))))]
+  "TARGET_SNAKE"
   "fcnvfxt,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "1")])
