@@ -7269,7 +7269,7 @@ cse_set_around_loop (x, insn, loop_start)
 
 /* Define maximum length of a branch path.  */
 
-#define PATHLENGTH	20
+#define PATHLENGTH	10
 
 struct cse_basic_block_data {
   /* Lowest CUID value of insns in block.  */
