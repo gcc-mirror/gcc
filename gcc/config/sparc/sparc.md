@@ -1593,7 +1593,7 @@
    (set_attr "length" "1")])
 
 (define_split
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "")
 	(match_operator:SI 2 "noov_compare_op"
 			   [(match_operand 1 "icc_or_fcc_reg_operand" "")
 			    (const_int 0)]))]
@@ -4328,12 +4328,12 @@
    (set_attr "length" "2")])
 
 (define_split
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
+  [(set (match_operand:TF 0 "register_operand" "")
 	(if_then_else:TF (match_operator 1 "comparison_operator"
-				[(match_operand 2 "icc_or_fcc_reg_operand" "X,X")
+				[(match_operand 2 "icc_or_fcc_reg_operand" "")
 				 (const_int 0)])
-                         (match_operand:TF 3 "register_operand" "e,0")
-                         (match_operand:TF 4 "register_operand" "0,e")))]
+                         (match_operand:TF 3 "register_operand" "")
+                         (match_operand:TF 4 "register_operand" "")))]
   "reload_completed && TARGET_V9 && TARGET_FPU && !TARGET_HARD_QUAD"
   [(clobber (const_int 0))]
   "
@@ -4501,12 +4501,12 @@
    (set_attr "length" "2")])
 
 (define_split
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
+  [(set (match_operand:TF 0 "register_operand" "")
 	(if_then_else:TF (match_operator 1 "v9_regcmp_op"
-				[(match_operand:DI 2 "register_operand" "r,r")
+				[(match_operand:DI 2 "register_operand" "")
 				 (const_int 0)])
-                         (match_operand:TF 3 "register_operand" "e,0")
-                         (match_operand:TF 4 "register_operand" "0,e")))]
+                         (match_operand:TF 3 "register_operand" "")
+                         (match_operand:TF 4 "register_operand" "")))]
   "reload_completed && TARGET_ARCH64 && TARGET_FPU && ! TARGET_HARD_QUAD"
   [(clobber (const_int 0))]
   "
@@ -5612,9 +5612,9 @@
   [(set_attr "length" "2")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (match_operand:DI 1 "arith_double_operand" "%r")
-		 (match_operand:DI 2 "arith_double_operand" "rHI")))
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:DI (match_operand:DI 1 "arith_double_operand" "")
+		 (match_operand:DI 2 "arith_double_operand" "")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64 && reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
@@ -5648,9 +5648,9 @@
 }")
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (match_operand:DI 1 "arith_double_operand" "r")
-		  (match_operand:DI 2 "arith_double_operand" "rHI")))
+  [(set (match_operand:DI 0 "register_operand" "")
+	(minus:DI (match_operand:DI 1 "arith_double_operand" "")
+		  (match_operand:DI 2 "arith_double_operand" "")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64 && reload_completed"
   [(parallel [(set (reg:CC_NOOV 100)
@@ -5757,9 +5757,9 @@
    (set_attr "length" "2")])
 
 (define_split
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
-                                            (match_operand:SI 2 "arith_operand" "rI"))
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extend:DI (minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "")
+                                            (match_operand:SI 2 "arith_operand" ""))
                                   (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "! TARGET_ARCH64 && reload_completed"
   [(set (match_dup 3) (minus:SI (minus:SI (match_dup 1) (match_dup 2))
@@ -7899,8 +7899,8 @@
    (set_attr "length" "1,2")])
 
 (define_split
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
-	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  [(set (match_operand:TF 0 "register_operand" "")
+	(abs:TF (match_operand:TF 1 "register_operand" "")))]
   "TARGET_FPU
    && ! TARGET_V9
    && reload_completed
@@ -7940,8 +7940,8 @@
    (set_attr "length" "1,2")])
 
 (define_split
-  [(set (match_operand:TF 0 "register_operand" "=e,e")
-	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  [(set (match_operand:TF 0 "register_operand" "")
+	(abs:TF (match_operand:TF 1 "register_operand" "")))]
   "TARGET_FPU
    && TARGET_V9
    && reload_completed
@@ -7974,8 +7974,8 @@
    (set_attr "length" "1,2")])
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "=e,e")
-	(abs:DF (match_operand:DF 1 "register_operand" "0,e")))]
+  [(set (match_operand:DF 0 "register_operand" "")
+	(abs:DF (match_operand:DF 1 "register_operand" "")))]
   "TARGET_FPU
    && ! TARGET_V9
    && reload_completed
