@@ -872,10 +872,12 @@ extern char leaf_reg_backmap[];
    : 0)
 
 /* The SPARC ABI stipulates passing struct arguments (of any size) and
-   quad-precision floats by invisible reference.  */
+   quad-precision floats by invisible reference.
+   For Pascal, also pass arrays by reference.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
   ((TYPE && (TREE_CODE (TYPE) == RECORD_TYPE				\
-	    || TREE_CODE (TYPE) == UNION_TYPE))				\
+	    || TREE_CODE (TYPE) == UNION_TYPE				\
+    	    || TREE_CODE (TYPE) == ARRAY_TYPE))				\
    || (MODE == TFmode))
 
 /* Define the information needed to generate branch and scc insns.  This is
