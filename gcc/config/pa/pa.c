@@ -37,6 +37,9 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "obstack.h"
 
+static void restore_unscaled_index_insn_codes		PROTO((rtx));
+static void record_unscaled_index_insn_codes		PROTO((rtx));
+
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
 
@@ -76,6 +79,13 @@ struct deferred_plabel
   char *name;
 } *deferred_plabels = 0;
 int n_deferred_plabels = 0;
+
+/* Array indexed by INSN_UIDs holding the INSN_CODE of an insn which
+   uses an unscaled indexed address before delay slot scheduling.  */
+static int *unscaled_index_insn_codes;
+
+/* Upper bound for the array.  */
+static int max_unscaled_index_insn_codes_uid;
 
 void
 override_options ()
@@ -2567,6 +2577,9 @@ output_function_prologue (file, size)
     total_code_bytes = -1;
 
   remove_useless_addtr_insns (get_insns (), 0);
+
+  /* Restore INSN_CODEs for insn which use unscaled indexed addresses.  */
+  restore_unscaled_index_insn_codes (get_insns ());
 }
 
 void
@@ -2916,6 +2929,11 @@ output_function_epilogue (file, size)
     fputs ("\tnop\n", file);
 
   fputs ("\t.EXIT\n\t.PROCEND\n", file);
+
+  /* Free up stuff we don't need anymore.  */
+  if (unscaled_index_insn_codes)
+    free (unscaled_index_insn_codes);
+  max_unscaled_index_insn_codes_uid = 0;
 }
 
 void
@@ -5802,6 +5820,97 @@ following_call (insn)
   return 0;
 }
 
+/* Restore any INSN_CODEs for insns with unscaled indexed addresses since
+   the INSN_CODE might be clobberd by rerecognition triggered by reorg.  */
+
+static void
+restore_unscaled_index_insn_codes (insns)
+     rtx insns;
+{
+  rtx insn;
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      if (INSN_UID (insn) < max_unscaled_index_insn_codes_uid
+	  && unscaled_index_insn_codes[INSN_UID (insn)] != -1)
+	INSN_CODE (insn) = unscaled_index_insn_codes[INSN_UID (insn)];
+    }
+}
+
+/* Severe braindamage:
+
+   On the PA, address computations within MEM expressions are not
+   commutative because of the implicit space register selection
+   from the base register (instead of the entire effective address).
+
+   Because of this mis-feature we have to know which register in a reg+reg
+   address is the base and which is the index.
+
+   Before reload, the base can be identified by REGNO_POINTER_FLAG.  We use
+   this to force base + index addresses to match a different insn than
+   index + base addresses.
+
+   We assume that no pass during or after reload creates new unscaled indexed
+   addresses, so any unscaled indexed address we find after reload must have
+   at one time been recognized a base + index or index + base and we accept
+   any register as a base register.
+
+   This scheme assumes that no pass during/after reload will rerecognize an
+   insn with an unscaled indexed address.  This failed due to a reorg call
+   to rerecognize certain insns.
+
+   So, we record if an insn uses an unscaled indexed address and which
+   register is the base (via recording of the INSN_CODE for such insns).
+
+   Just before we output code for the function, we make sure all the insns
+   using unscaled indexed addresses have the same INSN_CODE as they did
+   immediately before delay slot scheduling.
+
+   This is extremely gross.  Long term, I'd like to be able to look at
+   REG_POINTER_FLAG to handle these kinds of problems.  */
+ 
+static void
+record_unscaled_index_insn_codes (insns)
+     rtx insns;
+{
+  rtx insn;
+
+  max_unscaled_index_insn_codes_uid = get_max_uid ();
+  unscaled_index_insn_codes
+    = (int *)xmalloc (max_unscaled_index_insn_codes_uid * sizeof (int));
+  memset (unscaled_index_insn_codes, -1,
+	  max_unscaled_index_insn_codes_uid * sizeof (int));
+
+  for (insn = insns; insn; insn = NEXT_INSN (insn))
+    {
+      rtx set = single_set (insn);
+      rtx mem = NULL_RTX;
+
+      /* Ignore anything that isn't a normal SET.  */
+      if (set == NULL_RTX)
+	continue;
+
+      /* No insns can have more than one MEM.  */
+      if (GET_CODE (SET_SRC (set)) == MEM)
+	mem = SET_SRC (set);
+
+      if (GET_CODE (SET_DEST (set)) == MEM)
+	mem = SET_DEST (set);
+	
+      /* If neither operand is a mem, then there's nothing to do.  */
+      if (mem == NULL_RTX)
+	continue;
+
+      if (GET_CODE (XEXP (mem, 0)) != PLUS)
+	continue;
+
+      /* If both are REGs (or SUBREGs), then record the insn code for
+	 this insn.  */
+      if (REG_P (XEXP (XEXP (mem, 0), 0)) && REG_P (XEXP (XEXP (mem, 0), 1)))
+        unscaled_index_insn_codes[INSN_UID (insn)] = INSN_CODE (insn);
+    }
+}
+
 /* We use this hook to perform a PA specific optimization which is difficult
    to do in earlier passes.
 
@@ -5839,6 +5948,10 @@ pa_reorg (insns)
      rtx insns;
 {
   rtx insn;
+
+  /* Keep track of which insns have unscaled indexed addresses, and which
+     register is the base address in such insns.  */
+  record_unscaled_index_insn_codes (insns);
 
   remove_useless_addtr_insns (insns, 1);
 
