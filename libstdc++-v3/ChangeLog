@@ -1,5 +1,24 @@
 2000-08-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	C/C++ io merge/sync.
+	* libio/fileops.c
+	* libio/genops.c
+	* libio/iofclose.c
+	* libio/iofopen.c
+	* libio/iofwide.c
+	* libio/libio.h
+	* libio/libioP.h
+	* libio/stdio.c
+	* libio/wfileops.c
+	* libio/wgenops.c
+	* config/c_io_libio.cc (__basic_file): Add hacky casts to
+	((struct _IO_FILE_plus *) in ctors.
+	(__basic_file<wchar_t>): Adjust _wide_data->_codecvt to just _codecvt.
+	* libio/Makefile.am: Fix copyright. Remove cleanup.c.
+	* libio/cleanup.c: Remove.
+	* libio/filedoalloc.c (_IO_file_doallocate): Don't call
+	_IO_cleanup_registration_needed, even if not libc.
+		
 	* testsuite/27_io/stringstream.cc (test02): Fix.
 
 2000-08-14  Brent Verner <brent@rcfile.org>

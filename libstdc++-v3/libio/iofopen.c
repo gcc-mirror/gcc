@@ -29,6 +29,8 @@
 #endif
 #ifdef _LIBC
 # include <shlib-compat.h>
+#else
+# define _IO_new_fopen fopen
 #endif
 
 _IO_FILE *
@@ -71,7 +73,4 @@ _IO_new_fopen (filename, mode)
 strong_alias (_IO_new_fopen, __new_fopen)
 versioned_symbol (libc, _IO_new_fopen, _IO_fopen, GLIBC_2_1);
 versioned_symbol (libc, __new_fopen, fopen, GLIBC_2_1);
-#else
-int fopen (const char *,const char *)
-     __attribute__ ((alias("_IO_new_fopen")));
 #endif

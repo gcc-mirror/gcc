@@ -76,7 +76,7 @@ _IO_wdo_write (fp, data, to_do)
      const wchar_t *data;
      _IO_size_t to_do;
 {
-  struct _IO_codecvt *cc = &fp->_wide_data->_codecvt;
+  struct _IO_codecvt *cc = fp->_codecvt;
 
   if (to_do > 0)
     {
@@ -150,7 +150,7 @@ _IO_wfile_underflow (fp)
   if (fp->_wide_data->_IO_read_ptr < fp->_wide_data->_IO_read_end)
     return *fp->_wide_data->_IO_read_ptr;
 
-  cd = &fp->_wide_data->_codecvt;
+  cd = fp->_codecvt;
 
   /* Maybe there is something left in the external buffer.  */
   if (fp->_IO_read_ptr < fp->_IO_read_end)
@@ -379,7 +379,7 @@ _IO_wfile_sync (fp)
     {
       /* We have to find out how many bytes we have to go back in the
 	 external buffer.  */
-      struct _IO_codecvt *cv = &fp->_wide_data->_codecvt;
+      struct _IO_codecvt *cv = fp->_codecvt;
       _IO_off64_t new_pos;
 
       int clen = (*cv->__codecvt_do_encoding) (cv);
@@ -483,7 +483,7 @@ _IO_wfile_seekoff (fp, offset, dir, mode)
       /* Adjust for read-ahead (bytes is buffer).  To do this we must
          find out which position in the external buffer corresponds to
          the current position in the internal buffer.  */
-      cv = &fp->_wide_data->_codecvt;
+      cv = fp->_codecvt;
       clen = (*cv->__codecvt_do_encoding) (cv);
 
       if (clen > 0)

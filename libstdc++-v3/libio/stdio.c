@@ -24,13 +24,14 @@
    General Public License.  */
 
 #include "libioP.h"
+#include "stdio.h"
 
 #undef stdin
 #undef stdout
 #undef stderr
-_IO_FILE *stdin = (_IO_FILE *) &_IO_2_1_stdin_;
-_IO_FILE *stdout = (_IO_FILE *) &_IO_2_1_stdout_;
-_IO_FILE *stderr = (_IO_FILE *) &_IO_2_1_stderr_;
+_IO_FILE *stdin = (FILE *) &_IO_2_1_stdin_;
+_IO_FILE *stdout = (FILE *) &_IO_2_1_stdout_;
+_IO_FILE *stderr = (FILE *) &_IO_2_1_stderr_;
 
 #undef _IO_stdin
 #undef _IO_stdout

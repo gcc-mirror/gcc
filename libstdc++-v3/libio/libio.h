@@ -227,7 +227,6 @@ struct _IO_codecvt
   _IO_iconv_t __cd_in;
   _IO_iconv_t __cd_out;
 };
-#endif
 
 /* Extra data for wide character streams.  */
 struct _IO_wide_data
@@ -249,8 +248,8 @@ struct _IO_wide_data
 #if defined _LIBC || defined _GLIBCPP_USE_WCHAR_T
   __mbstate_t _IO_state;
   __mbstate_t _IO_last_state;
-  struct _IO_codecvt _codecvt;
 #endif
+  struct _IO_codecvt _codecvt;
 
   wchar_t _shortbuf[1];
 
@@ -258,6 +257,7 @@ struct _IO_wide_data
   struct _IO_jump_t *_wide_vtable;
 #endif
 };
+#endif
 
 struct _IO_FILE {
   int _flags;		/* High-order word is _IO_MAGIC; rest is flags. */
@@ -496,5 +496,3 @@ extern void _IO_free_wbackup_area (_IO_FILE *) __THROW;
 #endif
 
 #endif /* _IO_STDIO_H */
-
-

@@ -305,7 +305,7 @@ _IO_new_file_fopen (fp, filename, mode, is32not64)
 	    return NULL;
 	  }
 
-	cc = &fp->_wide_data->_codecvt;
+	cc = fp->_codecvt = &fp->_wide_data->_codecvt;
 
 	/* The functions are always the same.  */
 	*cc = __libio_codecvt;

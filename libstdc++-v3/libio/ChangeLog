@@ -1,3 +1,11 @@
+2000-08-14  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* *: Merge with mainline glibc sources.
+	* filedoalloc.c (_IO_file_doallocate): Don't call
+	_IO_cleanup_registration_needed, even if not libc.
+	* iofwide.c (_IO_fwide): Correct placement of defines.
+	* cleanup.c: Remove.
+	
 2000-08-04  benjamin kosnik  <bkoz@haight.constant.com>
 
 	* genops.c (_IO_unbuffer_write): Don't call _IO_SETBUF if the

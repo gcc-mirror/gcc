@@ -206,7 +206,7 @@ namespace std {
 #endif
     // Don't set the orientation of the stream when initializing.
     _IO_no_init(this, 0, 0, &_M_wfile, 0);
-    _IO_JUMPS(this) = &_IO_file_jumps;
+    _IO_JUMPS((_IO_FILE_plus *) this) = &_IO_file_jumps;
     _IO_file_init((_IO_FILE_plus*)this);
   }
 
@@ -268,7 +268,7 @@ namespace std {
 #endif
     // Don't set the orientation of the stream when initializing.
     _IO_no_init(this, 0, 0, &_M_wfile, &_IO_wfile_jumps);
-    _IO_JUMPS(this) = &_IO_wfile_jumps;
+    _IO_JUMPS((_IO_FILE_plus *) this) = &_IO_wfile_jumps;
     _IO_file_init((_IO_FILE_plus*)this);
 
     // In addition, need to allocate the buffer...
@@ -281,7 +281,7 @@ namespace std {
     _IO_wsetp(this, _wide_data->_IO_buf_base, _wide_data->_IO_buf_base);
     
     // Setup codecvt bits...
-    _wide_data->_codecvt = __c_libio_codecvt;
+    _codecvt = &__c_libio_codecvt;
     
     // Do the same for narrow bits...
     if (_IO_write_base == NULL)
