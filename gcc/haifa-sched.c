@@ -1648,11 +1648,6 @@ reemit_notes (rtx insn, rtx last)
 
 	  last = emit_note_before (note_type, last);
 	  remove_note (insn, note);
-	  note = XEXP (note, 1);
-	  if (note_type == NOTE_INSN_EH_REGION_BEG
-	      || note_type == NOTE_INSN_EH_REGION_END)
-	    NOTE_EH_HANDLER (last) = INTVAL (XEXP (note, 0));
-	  remove_note (insn, note);
 	}
     }
   return retval;

@@ -1538,10 +1538,6 @@ rest_of_clean_state (void)
 static void
 rest_of_compilation (void)
 {
-  /* Convert from NOTE_INSN_EH_REGION style notes, and do other
-     sorts of eh initialization.  */
-  convert_from_eh_region_ranges ();
-
   /* If we're emitting a nested function, make sure its parent gets
      emitted as well.  Doing otherwise confuses debug info.  */
   {

@@ -976,18 +976,14 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
     {
       rtx link;
 
-      /* Update loop_notes with any notes from this insn.  Also determine
-	 if any of the notes on the list correspond to instruction scheduling
-	 barriers (loop, eh & setjmp notes, but not range notes).  */
+      /* Update loop_notes with any notes from this insn.  */
       link = loop_notes;
       while (XEXP (link, 1))
 	{
-	  if (INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_BEG
-	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_END
-	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_BEG
-	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_END)
-	    reg_pending_barrier = MOVE_BARRIER;
+	  gcc_assert (INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_BEG
+		      || INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_END);
 
+	  reg_pending_barrier = MOVE_BARRIER;
 	  link = XEXP (link, 1);
 	}
       XEXP (link, 1) = REG_NOTES (insn);
@@ -1323,26 +1319,19 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 	    deps->in_post_call_group_p = post_call;
 	}
 
+      /* EH_REGION insn notes can not appear until well after we complete
+	 scheduling.  */
+      if (NOTE_P (insn))
+	gcc_assert (NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_BEG
+		    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_EH_REGION_END);
+
       /* See comments on reemit_notes as to why we do this.
 	 ??? Actually, the reemit_notes just say what is done, not why.  */
 
       if (NOTE_P (insn)
-	       && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
-		   || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
+	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END))
 	{
-	  rtx rtx_region;
-
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
-	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-	    rtx_region = GEN_INT (NOTE_EH_HANDLER (insn));
-	  else
-	    rtx_region = const0_rtx;
-
-	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
-					rtx_region,
-					loop_notes);
 	  loop_notes = alloc_EXPR_LIST (REG_SAVE_NOTE,
 					GEN_INT (NOTE_LINE_NUMBER (insn)),
 					loop_notes);

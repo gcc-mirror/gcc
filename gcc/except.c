@@ -260,10 +260,7 @@ static hashval_t t2r_hash (const void *);
 static void add_type_for_runtime (tree);
 static tree lookup_type_for_runtime (tree);
 
-static void resolve_fixup_regions (void);
-static void remove_fixup_regions (void);
 static void remove_unreachable_regions (rtx);
-static void convert_from_eh_region_ranges_1 (rtx *, int *, int);
 
 static int ttypes_filter_eq (const void *, const void *);
 static hashval_t ttypes_filter_hash (const void *);
@@ -668,123 +665,6 @@ collect_eh_region_array (void)
     }
 }
 
-static void
-resolve_one_fixup_region (struct eh_region *fixup)
-{
-  struct eh_region *cleanup, *real;
-  int j, n;
-
-  n = cfun->eh->last_region_number;
-  cleanup = 0;
-
-  for (j = 1; j <= n; ++j)
-    {
-      cleanup = cfun->eh->region_array[j];
-      if (cleanup && cleanup->type == ERT_CLEANUP
-	  && cleanup->u.cleanup.exp == fixup->u.fixup.cleanup_exp)
-	break;
-    }
-  gcc_assert (j <= n);
-
-  real = cleanup->outer;
-  if (real && real->type == ERT_FIXUP)
-    {
-      if (!real->u.fixup.resolved)
-	resolve_one_fixup_region (real);
-      real = real->u.fixup.real_region;
-    }
-
-  fixup->u.fixup.real_region = real;
-  fixup->u.fixup.resolved = true;
-}
-
-static void
-resolve_fixup_regions (void)
-{
-  int i, n = cfun->eh->last_region_number;
-
-  for (i = 1; i <= n; ++i)
-    {
-      struct eh_region *fixup = cfun->eh->region_array[i];
-
-      if (!fixup || fixup->type != ERT_FIXUP || fixup->u.fixup.resolved)
-	continue;
-
-      resolve_one_fixup_region (fixup);
-    }
-}
-
-/* Now that we've discovered what region actually encloses a fixup,
-   we can shuffle pointers and remove them from the tree.  */
-
-static void
-remove_fixup_regions (void)
-{
-  int i;
-  rtx insn, note;
-  struct eh_region *fixup;
-
-  /* Walk the insn chain and adjust the REG_EH_REGION numbers
-     for instructions referencing fixup regions.  This is only
-     strictly necessary for fixup regions with no parent, but
-     doesn't hurt to do it for all regions.  */
-  for (insn = get_insns(); insn ; insn = NEXT_INSN (insn))
-    if (INSN_P (insn)
-	&& (note = find_reg_note (insn, REG_EH_REGION, NULL))
-	&& INTVAL (XEXP (note, 0)) > 0
-	&& (fixup = cfun->eh->region_array[INTVAL (XEXP (note, 0))])
-	&& fixup->type == ERT_FIXUP)
-      {
-	if (fixup->u.fixup.real_region)
-	  XEXP (note, 0) = GEN_INT (fixup->u.fixup.real_region->region_number);
-	else
-	  remove_note (insn, note);
-      }
-
-  /* Remove the fixup regions from the tree.  */
-  for (i = cfun->eh->last_region_number; i > 0; --i)
-    {
-      fixup = cfun->eh->region_array[i];
-      if (! fixup)
-	continue;
-
-      /* Allow GC to maybe free some memory.  */
-      if (fixup->type == ERT_CLEANUP)
-	fixup->u.cleanup.exp = NULL_TREE;
-
-      if (fixup->type != ERT_FIXUP)
-	continue;
-
-      if (fixup->inner)
-	{
-	  struct eh_region *parent, *p, **pp;
-
-	  parent = fixup->u.fixup.real_region;
-
-	  /* Fix up the children's parent pointers; find the end of
-	     the list.  */
-	  for (p = fixup->inner; ; p = p->next_peer)
-	    {
-	      p->outer = parent;
-	      if (! p->next_peer)
-		break;
-	    }
-
-	  /* In the tree of cleanups, only outer-inner ordering matters.
-	     So link the children back in anywhere at the correct level.  */
-	  if (parent)
-	    pp = &parent->inner;
-	  else
-	    pp = &cfun->eh->region_tree;
-	  p->next_peer = *pp;
-	  *pp = fixup->inner;
-	  fixup->inner = NULL;
-	}
-
-      remove_eh_handler (fixup);
-    }
-}
-
 /* Remove all regions whose labels are not reachable from insns.  */
 
 static void
@@ -868,113 +748,23 @@ remove_unreachable_regions (rtx insns)
   free (uid_region_num);
 }
 
-/* Turn NOTE_INSN_EH_REGION notes into REG_EH_REGION notes for each
-   can_throw instruction in the region.  */
-
-static void
-convert_from_eh_region_ranges_1 (rtx *pinsns, int *orig_sp, int cur)
-{
-  int *sp = orig_sp;
-  rtx insn, next;
-
-  for (insn = *pinsns; insn ; insn = next)
-    {
-      next = NEXT_INSN (insn);
-      if (NOTE_P (insn))
-	{
-	  int kind = NOTE_LINE_NUMBER (insn);
-	  if (kind == NOTE_INSN_EH_REGION_BEG
-	      || kind == NOTE_INSN_EH_REGION_END)
-	    {
-	      if (kind == NOTE_INSN_EH_REGION_BEG)
-		{
-		  struct eh_region *r;
-
-		  *sp++ = cur;
-		  cur = NOTE_EH_HANDLER (insn);
-
-		  r = cfun->eh->region_array[cur];
-		  if (r->type == ERT_FIXUP)
-		    {
-		      r = r->u.fixup.real_region;
-		      cur = r ? r->region_number : 0;
-		    }
-		  else if (r->type == ERT_CATCH)
-		    {
-		      r = r->outer;
-		      cur = r ? r->region_number : 0;
-		    }
-		}
-	      else
-		cur = *--sp;
-
-	      if (insn == *pinsns)
-		*pinsns = next;
-	      remove_insn (insn);
-	      continue;
-	    }
-	}
-      else if (INSN_P (insn))
-	{
-	  if (cur > 0
-	      && ! find_reg_note (insn, REG_EH_REGION, NULL_RTX)
-	      /* Calls can always potentially throw exceptions, unless
-		 they have a REG_EH_REGION note with a value of 0 or less.
-		 Which should be the only possible kind so far.  */
-	      && (CALL_P (insn)
-		  /* If we wanted exceptions for non-call insns, then
-		     any may_trap_p instruction could throw.  */
-		  || (flag_non_call_exceptions
-		      && GET_CODE (PATTERN (insn)) != CLOBBER
-		      && GET_CODE (PATTERN (insn)) != USE
-		      && may_trap_p (PATTERN (insn)))))
-	    {
-	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_EH_REGION, GEN_INT (cur),
-						  REG_NOTES (insn));
-	    }
-	}
-    }
-
-  gcc_assert (sp == orig_sp);
-}
-
-static void
-collect_rtl_labels_from_trees (void)
-{
-  int i, n = cfun->eh->last_region_number;
-  for (i = 1; i <= n; ++i)
-    {
-      struct eh_region *reg = cfun->eh->region_array[i];
-      if (reg && reg->tree_label)
-	reg->label = DECL_RTL_IF_SET (reg->tree_label);
-    }
-}
+/* Set up EH labels for RTL.  */
 
 void
 convert_from_eh_region_ranges (void)
 {
   rtx insns = get_insns ();
+  int i, n = cfun->eh->last_region_number;
 
-  if (cfun->eh->region_array)
+  /* Most of the work is already done at the tree level.  All we need to
+     do is collect the rtl labels that correspond to the tree labels that
+     collect the rtl labels that correspond to the tree labels
+     we allocated earlier.  */
+  for (i = 1; i <= n; ++i)
     {
-      /* If the region array already exists, assume we're coming from
-	 optimize_function_tree.  In this case all we need to do is
-	 collect the rtl labels that correspond to the tree labels
-	 that we allocated earlier.  */
-      collect_rtl_labels_from_trees ();
-    }
-  else
-    {
-      int *stack;
-
-      collect_eh_region_array ();
-      resolve_fixup_regions ();
-
-      stack = xmalloc (sizeof (int) * (cfun->eh->last_region_number + 1));
-      convert_from_eh_region_ranges_1 (&insns, stack, 0);
-      free (stack);
-
-      remove_fixup_regions ();
+      struct eh_region *region = cfun->eh->region_array[i];
+      if (region && region->tree_label)
+	region->label = DECL_RTL_IF_SET (region->tree_label);
     }
 
   remove_unreachable_regions (insns);
