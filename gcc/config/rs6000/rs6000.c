@@ -276,6 +276,11 @@ rs6000_override_options (default_cpu)
 	}
     }
 
+  /* If we are optimizing big endian systems for space, use the
+     store multiple instructions.  */
+  if (BYTES_BIG_ENDIAN && optimize_size)
+    target_flags |= MASK_MULTIPLE;
+
   /* If -mmultiple or -mno-multiple was explicitly used, don't
      override with the processor default */
   if (TARGET_MULTIPLE_SET)
