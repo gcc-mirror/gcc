@@ -1,5 +1,10 @@
 2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_class_max_nregs): Return the number of
+	words in the mode.
+
+2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (override_options): Disable explicit
 	relocs for old ABIs unless using gas.
 
