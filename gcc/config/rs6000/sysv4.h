@@ -97,6 +97,7 @@ extern enum rs6000_sdata_type rs6000_sdata;
   { "mvme",		 0 },						\
   { "emb",		 0 },						\
   { "solaris-cclib",	 0 },						\
+  { "shlib",		 0 },						\
   { "newlib",		 0 },
 
 /* Default ABI to use */
@@ -937,8 +938,15 @@ do {									\
 #undef LINK_PATH_SPEC
 #ifndef CROSS_COMPILE
 #define LINK_PATH_SPEC "\
-%{!nostdlib: %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-%{!p:-Y P,/usr/ccs/lib:/usr/lib}}}"
+%{!R*:%{L*:-R %*}}} \
+%{!nostdlib: %{!YP,*: \
+    %{compat-bsd: \
+	%{p:-Y P,/usr/ucblib:/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+	%{!p:-Y P,/usr/ucblib:/usr/ccs/lib:/usr/lib}} \
+	%{!R*: %{!L*: -R /usr/ucblib}} \
+    %{!compat-bsd: \
+	%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+	%{!p:-Y P,/usr/ccs/lib:/usr/lib}}}}"
 
 #else
 #define LINK_PATH_SPEC ""
@@ -961,21 +969,57 @@ do {									\
 #undef LINK_SPEC
 #define LINK_SPEC "\
 %{h*} %{v:-V} %{G*} \
-%{b} %{Wl,*:%*} \
+%{Wl,*:%*} %{YP,*} %{R*} \
+%{Qy:} %{!Qn:-Qy} \
+%(link_shlib) \
+%{!Ttext*: %(link_start) } \
+%(link_target) \
+%(link_os)"
+
+/* For now, turn off shared libraries by default.  */
+#ifndef SHARED_LIB_SUPPORT
+#define NO_SHARED_LIB_SUPPORT
+#endif
+
+#undef  LINK_SHLIB_SPEC
+#ifndef NO_SHARED_LIB_SUPPORT
+/* Shared libaries are default.  */
+#define LINK_SHLIB_SPEC "\
+%{!static: %(link_path) %{!R*:%{L*:-R %*}}} \
+%{mshlib: } \
 %{static:-dn -Bstatic} \
 %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
-%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
-%{G:-G} \
-%{YP,*} \
-%(link_path) \
-%{!Ttext*: %(link_start) } \
-%{Qy:} %{!Qn:-Qy} \
-%{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
-%{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc } \
-%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: -oformat elf32-powerpcle} \
-    %{mcall-linux: -oformat elf32-powerpc} }}}}"
+%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}}"
 
+#else
+/* Shared libraries are not default.  */
+#define LINK_SHLIB_SPEC "\
+%{mshlib: %(link_path)} \
+%{!mshlib: %{!shared: %{!symbolic: -dn -Bstatic}}} \
+%{static: } \
+%{shared:-G -dy -z text %{!h*:%{o*:-h %*}} %(link_path) } \
+%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}} %(link_path) }"
+#endif
+
+/* Override the default target of the linker.  */
+#undef	LINK_TARGET_SPEC
+#define	LINK_TARGET_SPEC "\
+%{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
+%{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: %{mcall-solaris: -oformat elf32-powerpcle}}}}}"
+
+/* Any specific OS flags */
+#ifndef LINK_OS_SPEC
+#define LINK_OS_SPEC "\
+%{mmvme: %(link_os_mvme) } \
+%{msim: %(link_os_sim) } \
+%{mcall-linux: %(link_os_linux) } \
+%{mcall-solaris: %(link_os_solaris) } \
+%{!mmvme: %{!msim: %{!mcall-linux: %{!mcall-solaris: %(link_os_default) }}}}"
+#endif
+
+#ifndef	LINK_OS_DEFAULT_SPEC
+#define LINK_OS_DEFAULT_SPEC ""
+#endif
 
 #undef	CPP_SYSV_SPEC
 #define CPP_SYSV_SPEC \
@@ -1071,6 +1115,10 @@ do {									\
 #define LINK_START_MVME_SPEC ""
 #endif
 
+#ifndef LINK_OS_MVME_SPEC
+#define LINK_OS_MVME_SPEC ""
+#endif
+
 #ifndef CPP_OS_MVME_SPEC
 #define CPP_OS_MVME_SPEC ""
 #endif
@@ -1090,6 +1138,10 @@ do {									\
 
 #ifndef LINK_START_SIM_SPEC
 #define LINK_START_SIM_SPEC "-Ttext 0x10000074"
+#endif
+
+#ifndef LINK_OS_SIM_SPEC
+#define LINK_OS_SIM_SPEC ""
 #endif
 
 #ifndef CPP_OS_SIM_SPEC
@@ -1113,6 +1165,10 @@ scrti.o%s"
 
 #ifndef LINK_START_LINUX_SPEC
 #define LINK_START_LINUX_SPEC "-Ttext 0x400074"
+#endif
+
+#ifndef LINK_OS_LINUX_SPEC
+#define LINK_OS_LINUX_SPEC ""
 #endif
 
 #ifndef CPP_OS_LINUX_SPEC
@@ -1170,6 +1226,10 @@ scrti.o%s"
 #endif
 #endif
 
+#ifndef LINK_OS_SOLARIS_SPEC
+#define LINK_OS_SOLARIS_SPEC ""
+#endif
+
 #ifndef CPP_OS_SOLARIS_SPEC
 #define CPP_OS_SOLARIS_SPEC "-D__ppc -D__sun__=1 -D__unix__ -D__svr4__  -D__SVR4__ \
 %{!ansi: -Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__ } \
@@ -1194,18 +1254,26 @@ scrti.o%s"
   { "endfile_linux",		ENDFILE_LINUX_SPEC },			\
   { "endfile_solaris",		ENDFILE_SOLARIS_SPEC },			\
   { "endfile_default",		ENDFILE_DEFAULT_SPEC },			\
+  { "link_path",		LINK_PATH_SPEC },			\
+  { "link_shlib",		LINK_SHLIB_SPEC },			\
+  { "link_target",		LINK_TARGET_SPEC },			\
   { "link_start",		LINK_START_SPEC },			\
   { "link_start_mvme",		LINK_START_MVME_SPEC },			\
   { "link_start_sim",		LINK_START_SIM_SPEC },			\
   { "link_start_linux",		LINK_START_LINUX_SPEC },		\
   { "link_start_solaris",	LINK_START_SOLARIS_SPEC },		\
   { "link_start_default",	LINK_START_DEFAULT_SPEC },		\
+  { "link_os",			LINK_OS_SPEC },				\
+  { "link_os_mvme",		LINK_OS_MVME_SPEC },			\
+  { "link_os_sim",		LINK_OS_SIM_SPEC },			\
+  { "link_os_linux",		LINK_OS_LINUX_SPEC },			\
+  { "link_os_solaris",		LINK_OS_SOLARIS_SPEC },			\
+  { "link_os_default",		LINK_OS_DEFAULT_SPEC },			\
   { "cpp_os_mvme",		CPP_OS_MVME_SPEC },			\
   { "cpp_os_sim",		CPP_OS_SIM_SPEC },			\
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
   { "cpp_os_solaris",		CPP_OS_SOLARIS_SPEC },			\
-  { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },			\
-  { "link_path",		LINK_PATH_SPEC },
+  { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are

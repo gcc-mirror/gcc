@@ -41,5 +41,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	LINK_START_DEFAULT_SPEC
 #define LINK_START_DEFAULT_SPEC "%(link_start_linux)"
 
+#undef	LINK_OS_DEFAULT_SPEC
+#define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Linux)");

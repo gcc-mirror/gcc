@@ -41,3 +41,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	LINK_START_DEFAULT_SPEC
 #define LINK_START_DEFAULT_SPEC "%(link_start_sim)"
+
+#undef	LINK_OS_DEFAULT_SPEC
+#define LINK_OS_DEFAULT_SPEC "%(link_start_sim)"
