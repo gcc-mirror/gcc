@@ -62,14 +62,14 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 static ffenameSpace ffeglobal_filewide_ = NULL;
 static const char *const ffeglobal_type_string_[] =
 {
-  [FFEGLOBAL_typeNONE] "??",
-  [FFEGLOBAL_typeMAIN] "main program",
-  [FFEGLOBAL_typeEXT] "external",
-  [FFEGLOBAL_typeSUBR] "subroutine",
-  [FFEGLOBAL_typeFUNC] "function",
-  [FFEGLOBAL_typeBDATA] "block data",
-  [FFEGLOBAL_typeCOMMON] "common block",
-  [FFEGLOBAL_typeANY] "?any?"
+  [FFEGLOBAL_typeNONE] = "??",
+  [FFEGLOBAL_typeMAIN] = "main program",
+  [FFEGLOBAL_typeEXT] = "external",
+  [FFEGLOBAL_typeSUBR] = "subroutine",
+  [FFEGLOBAL_typeFUNC] = "function",
+  [FFEGLOBAL_typeBDATA] = "block data",
+  [FFEGLOBAL_typeCOMMON] = "common block",
+  [FFEGLOBAL_typeANY] = "?any?"
 };
 #endif
 
