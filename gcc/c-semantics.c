@@ -243,7 +243,7 @@ make_rtl_for_local_static (decl)
      already create RTL, which means that the modification to
      DECL_ASSEMBLER_NAME came only via the explicit extension.  */
   if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl)
-      && !DECL_RTL (decl))
+      && !DECL_RTL_SET_P (decl))
     asmspec = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
   rest_of_decl_compilation (decl, asmspec, /*top_level=*/0, /*at_end=*/0);
