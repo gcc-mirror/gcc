@@ -1486,7 +1486,7 @@ lookup_field (tree *typep, tree name)
 		{
 		  tree i1 = DECL_CONTEXT (save_field);
 		  tree i2 = DECL_CONTEXT (field);
-		  error ("reference `%s' is ambiguous: appears in interface `%s' and interface `%s'",
+		  error ("reference %qs is ambiguous: appears in interface %qs and interface %qs",
 			 IDENTIFIER_POINTER (name),
 			 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (i1))),
 			 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (i2))));
@@ -1514,7 +1514,7 @@ build_field_ref (tree self_value, tree self_class, tree name)
   tree field_decl = lookup_field (&base_class, name);
   if (field_decl == NULL_TREE)
     {
-      error ("field `%s' not found", IDENTIFIER_POINTER (name));
+      error ("field %qs not found", IDENTIFIER_POINTER (name));
       return error_mark_node;
     }
   if (self_value == NULL_TREE)
@@ -2428,7 +2428,7 @@ expand_java_field_op (int is_static, int is_putting, int field_ref_index)
 	  else if (FIELD_STATIC (field_decl))
 	    {
 	      if (!DECL_CLINIT_P (current_function_decl))
-		warning ("%Jassignment to final static field `%D' not in "
+		warning ("%Jassignment to final static field %qD not in "
                          "class initializer",
                          field_decl, field_decl);
 	    }

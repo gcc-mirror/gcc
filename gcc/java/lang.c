@@ -526,7 +526,7 @@ java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
 	fprintf (stderr, "%s: ", file);
 
       last_error_function_context = DECL_CONTEXT (current_function_decl);
-      fprintf (stderr, "In class `%s':\n",
+      fprintf (stderr, "In class '%s':\n",
 	       lang_printable_name (last_error_function_context, 0));
     }
   if (last_error_function != current_function_decl)
@@ -539,7 +539,7 @@ java_print_error_function (diagnostic_context *context ATTRIBUTE_UNUSED,
       else
 	{
 	  const char *name = lang_printable_name (current_function_decl, 2);
-	  fprintf (stderr, "In %s `%s':\n",
+	  fprintf (stderr, "In %s '%s':\n",
 		   (DECL_CONSTRUCTOR_P (current_function_decl) ? "constructor"
 		    : "method"),
 		   name);

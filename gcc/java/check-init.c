@@ -197,9 +197,9 @@ get_variable_decl (tree exp)
 static void
 final_assign_error (tree name)
 {
-  static const char format[]
-    = "Can't reassign a value to the final variable `%s'";
-  parse_error_context (wfl, format, IDENTIFIER_POINTER (name));
+  parse_error_context (wfl,
+                       "Can't reassign a value to the final variable %qs",
+                       IDENTIFIER_POINTER (name));
 }
 
 static void
@@ -466,7 +466,7 @@ check_init (tree exp, words before)
 	      && index >= 0 && ! ASSIGNED_P (before, index))
 	    {
 	      parse_error_context 
-		(wfl, "Variable `%s' may not have been initialized",
+		(wfl, "Variable %qs may not have been initialized",
 		 IDENTIFIER_POINTER (DECL_NAME (exp)));
 	      /* Suppress further errors. */
 	      DECL_BIT_INDEX (exp) = -2;
@@ -482,7 +482,7 @@ check_init (tree exp, words before)
 	  if (index >= 0 && ! ASSIGNED_P (before, index))
 	    {
 	      parse_error_context 
-		(wfl, "variable `%s' may not have been initialized",
+		(wfl, "variable %qs may not have been initialized",
 		 IDENTIFIER_POINTER (DECL_NAME (tmp)));
 	      /* Suppress further errors. */
 	      DECL_BIT_INDEX (tmp) = -2;
@@ -965,7 +965,7 @@ check_for_initialization (tree body, tree mdecl)
 	      if (index >= 0 && ! ASSIGNED_P (before, index))
 		{
 		  if (! is_finit_method)
-		    error ("%Jfinal field `%D' may not have been initialized",
+		    error ("%Jfinal field %qD may not have been initialized",
                            decl, decl);
 		}
 	      else if (is_finit_method)

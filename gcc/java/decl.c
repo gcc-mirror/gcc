@@ -1196,10 +1196,10 @@ pushdecl (tree x)
 	      && chain_member (oldlocal, current_binding_level->level_chain->names))
 	    {
 	      if (TREE_CODE (oldlocal) == PARM_DECL)
-		pedwarn ("declaration of `%s' shadows a parameter",
+		pedwarn ("declaration of %qs shadows a parameter",
 			 IDENTIFIER_POINTER (name));
 	      else
-		pedwarn ("declaration of `%s' shadows a symbol from the parameter list",
+		pedwarn ("declaration of %qs shadows a symbol from the parameter list",
 			 IDENTIFIER_POINTER (name));
 	    }
 
@@ -1221,12 +1221,12 @@ pushdecl (tree x)
 		   but there is no way to tell it's not a definition.  */
 		;
 	      else if (oldlocal != 0 && TREE_CODE (oldlocal) == PARM_DECL)
-		warnstring = "declaration of `%s' shadows a parameter";
+		warnstring = "declaration of %qs shadows a parameter";
 	      else if (oldlocal != 0)
-		warnstring = "declaration of `%s' shadows previous local";
+		warnstring = "declaration of %qs shadows previous local";
 	      else if (IDENTIFIER_GLOBAL_VALUE (name) != 0
 		       && IDENTIFIER_GLOBAL_VALUE (name) != error_mark_node)
-		warnstring = "declaration of `%s' shadows global declaration";
+		warnstring = "declaration of %qs shadows global declaration";
 
 	      if (warnstring)
 		warning (warnstring, IDENTIFIER_POINTER (name));

@@ -2034,7 +2034,7 @@ layout_class (tree this_class)
       char *report;
       tree current;
 
-      sprintf (buffer, " with `%s'",
+      sprintf (buffer, " with '%s'",
 	       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class))));
       obstack_grow (&temporary_obstack, buffer, strlen (buffer));
 
@@ -2042,7 +2042,7 @@ layout_class (tree this_class)
 	   current = TREE_CHAIN (current))
 	{
 	  tree decl = TYPE_NAME (TREE_PURPOSE (current));
-	  sprintf (buffer, "\n  which inherits from `%s' (%s:%d)",
+	  sprintf (buffer, "\n  which inherits from '%s' (%s:%d)",
 		   IDENTIFIER_POINTER (DECL_NAME (decl)),
 		   DECL_SOURCE_FILE (decl),
 		   DECL_SOURCE_LINE (decl));

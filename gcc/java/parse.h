@@ -158,14 +158,14 @@ extern tree stabilize_reference (tree);
   {                                                                          \
     if (flag_redundant && (cl) && ((flags) & (__modifier)))		     \
       parse_warning_context (cl,                                             \
-     "Discouraged redundant use of `%s' modifier in declaration of %s",      \
+     "Discouraged redundant use of %qs modifier in declaration of %s",      \
 			     java_accstring_lookup (__modifier), arg);       \
   }
 #define OBSOLETE_MODIFIER_WARNING2(cl, flags, __modifier, arg1, arg2)        \
   {                                                                          \
     if (flag_redundant && (cl) && ((flags) & (__modifier)))		     \
       parse_warning_context (cl,                                             \
-     "Discouraged redundant use of `%s' modifier in declaration of %s `%s'", \
+     "Discouraged redundant use of %qs modifier in declaration of %s %qs", \
 			     java_accstring_lookup (__modifier), arg1, arg2);\
   }
 
@@ -349,12 +349,12 @@ enum {
 /* Standard error messages */
 #define ERROR_CANT_CONVERT_TO_BOOLEAN(OPERATOR, NODE, TYPE)		\
   parse_error_context ((OPERATOR),					\
-    "Incompatible type for `%s'. Can't convert `%s' to boolean",	\
+    "Incompatible type for %qs. Can't convert %qs to boolean",	\
     operator_string ((NODE)), lang_printable_name ((TYPE),0))
 
 #define ERROR_CANT_CONVERT_TO_NUMERIC(OPERATOR, NODE, TYPE)		\
   parse_error_context ((OPERATOR),					\
-      "Incompatible type for `%s'. Can't convert `%s' to numeric type",	\
+      "Incompatible type for %qs. Can't convert %qs to numeric type",	\
       operator_string ((NODE)), lang_printable_name ((TYPE), 0))
 
 #define ERROR_CAST_NEEDED_TO_INTEGRAL(OPERATOR, NODE, TYPE)		\
@@ -362,19 +362,19 @@ do {									\
   tree _operator = (OPERATOR), _node = (NODE), _type = (TYPE);		\
   if (JPRIMITIVE_TYPE_P (_type))					\
     parse_error_context (_operator,					\
-"Incompatible type for `%s'. Explicit cast needed to convert `%s' to integral",\
+"Incompatible type for %qs. Explicit cast needed to convert %qs to integral",\
 			 operator_string(_node),			\
 			 lang_printable_name (_type, 0));		\
   else									\
     parse_error_context (_operator,					\
-      "Incompatible type for `%s'. Can't convert `%s' to integral",	\
+      "Incompatible type for %qs. Can't convert %qs to integral",	\
 			 operator_string(_node),			\
 			 lang_printable_name (_type, 0));		\
 } while (0)
 
 #define ERROR_VARIABLE_NOT_INITIALIZED(WFL, V)			\
   parse_error_context						\
-    ((WFL), "Variable `%s' may not have been initialized",	\
+    ((WFL), "Variable %qs may not have been initialized",	\
      IDENTIFIER_POINTER (V))
 
 /* Definition for loop handling. This is Java's own definition of a
