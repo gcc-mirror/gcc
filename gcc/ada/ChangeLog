@@ -1,3 +1,7 @@
+2003-12-01  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 5wsystem.ads: Disable zero cost exception, not ready yet.
+
 2003-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* Make-lang.in (nmake.ads): Add dependency on ada/nmake.adb
