@@ -7966,11 +7966,6 @@ passed in registers.  DBX format does not customarily provide any way to
 do this.  The default is @code{'P'}.
 @end defmac
 
-@defmac DBX_MEMPARM_STABS_LETTER
-The letter to use in DBX symbol data to identify a symbol as a stack
-parameter.  The default is @code{'p'}.
-@end defmac
-
 @defmac DBX_FUNCTION_FIRST
 Define this macro if the DBX information for a function and its
 arguments should precede the assembler code for the function.  Normally,

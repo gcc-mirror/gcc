@@ -1,3 +1,17 @@
+2004-10-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* dbxout.c: Remove unnecessary #undefs.
+	(GDB_INV_REF_REGPARM_STABS_LETTER, DBX_MEMPARM_STABS_LETTER)
+	(FILE_NAME_JOINER, STABS_GCC_MARKER): Remove; fold sole
+	definition into use sites.
+	(cwd): Make local to dbxout_init.
+	(dbxout_init): Restructure cwd-using logic for clarity.  Use
+	IS_DIR_SEPARATOR.
+	* xcoffout.h (DBX_OUTPUT_GCC_MARKER): Definition of
+	STABS_GCC_MARKER folded in here.
+	* system.h: Poison now-unused macros.
+	* doc/tm.texi: Remove documentation of now-unused macros.
+
 2004-10-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/17538
