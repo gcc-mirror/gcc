@@ -4846,26 +4846,48 @@ thread_prologue_and_epilogue_insns (f)
       /* If we end with a BARRIER, we don't need an epilogue.  */
       if (! (prev && GET_CODE (prev) == BARRIER))
 	{
-	  rtx tail, seq;
+	  rtx tail, seq, tem;
+	  rtx first_use = 0;
+	  rtx last_use = 0;
 
-	  /* The last basic block ends with a NOTE_INSN_EPILOGUE_BEG,
-	     the epilogue insns (this must include the jump insn that
-	     returns), USE insns ad the end of a function, and a BARRIER.  */
+	  /* The last basic block ends with a NOTE_INSN_EPILOGUE_BEG, the
+	     epilogue insns, the USE insns at the end of a function,
+	     the jump insn that returns, and then a BARRIER.  */
 
-	  emit_barrier_after (insn);
-
-	  /* Place the epilogue before the USE insns at the end of a
-	     function.  */
+	  /* Move the USE insns at the end of a function onto a list.  */
 	  while (prev
 		 && GET_CODE (prev) == INSN
 		 && GET_CODE (PATTERN (prev)) == USE)
 	    {
-	      insn = PREV_INSN (prev);
+	      tem = prev;
 	      prev = prev_nonnote_insn (prev);
+
+	      NEXT_INSN (PREV_INSN (tem)) = NEXT_INSN (tem);
+	      PREV_INSN (NEXT_INSN (tem)) = PREV_INSN (tem);
+	      if (! first_use)
+		first_use = tem;
+	      if (last_use)
+		NEXT_INSN (last_use) = tem;
+	      else
+		last_use = tem;
 	    }
+
+	  emit_barrier_after (insn);
 
 	  seq = gen_epilogue ();
 	  tail = emit_jump_insn_after (seq, insn);
+
+	  /* Insert the USE insns immediately before the return insn, which
+	     must be the first instruction before the final barrier.  */
+	  if (first_use)
+	    {
+	      tem = prev_nonnote_insn (get_last_insn ());
+	      NEXT_INSN (PREV_INSN (tem)) = first_use;
+	      PREV_INSN (first_use) = PREV_INSN (tem);
+	      PREV_INSN (tem) = last_use;
+	      NEXT_INSN (last_use) = tem;
+	    }
+
 	  emit_note_after (NOTE_INSN_EPILOGUE_BEG, insn);
 
 	  /* Include the new epilogue insns in the last block.  Ignore
