@@ -166,8 +166,3 @@ do {									\
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
-
-/* The maximum alignment which the object file format can support.  There
-   doesn't seem to be any limit on Solaris, but we've got to override the
-   default (which is BIGGEST_ALIGNMENT).  */
-#define MAX_OFILE_ALIGNMENT 0x10000
