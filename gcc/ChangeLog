@@ -1,5 +1,8 @@
 2004-11-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR target/16796
+	* config/rs6000/rs6000.md: Add DF & SF reg move peepholes.
+
 	PR target/16458
 	* config/rs6000/rs6000.c (rs6000_generate_compare): Generate an
 	unsigned equality compare when we know the operands are unsigned.
