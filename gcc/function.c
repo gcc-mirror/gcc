@@ -281,8 +281,7 @@ static int contains		PARAMS ((rtx, varray_type));
 static void emit_return_into_block PARAMS ((basic_block, rtx));
 #endif
 static void put_addressof_into_stack PARAMS ((rtx, htab_t));
-static bool purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
-					  htab_t));
+static bool purge_addressof_1 PARAMS ((rtx *, rtx, int, int, int, htab_t));
 static void purge_single_hard_subreg_set PARAMS ((rtx));
 #if defined(HAVE_epilogue) && defined(INCOMING_RETURN_ADDR_RTX)
 static rtx keep_stack_depressed PARAMS ((rtx));
@@ -299,6 +298,9 @@ static void instantiate_virtual_regs_lossage PARAMS ((rtx));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 static GTY(()) struct function *outer_function_chain;
+
+/* List of insns that were postponed by purge_addressof_1.  */
+static rtx postponed_insns;
 
 /* Given a function decl for a containing function,
    return the `struct function' for it.  */
@@ -2999,13 +3001,14 @@ static rtx purge_addressof_replacements;
 /* Helper function for purge_addressof.  See if the rtx expression at *LOC
    in INSN needs to be changed.  If FORCE, always put any ADDRESSOFs into
    the stack.  If the function returns FALSE then the replacement could not
-   be made.  */
+   be made.  If MAY_POSTPONE is true and we would not put the addressof
+   to stack, postpone processing of the insn.  */
 
 static bool
-purge_addressof_1 (loc, insn, force, store, ht)
+purge_addressof_1 (loc, insn, force, store, may_postpone, ht)
      rtx *loc;
      rtx insn;
-     int force, store;
+     int force, store, may_postpone;
      htab_t ht;
 {
   rtx x;
@@ -3028,8 +3031,10 @@ purge_addressof_1 (loc, insn, force, store, ht)
      memory.  */
   if (code == SET)
     {
-      result = purge_addressof_1 (&SET_DEST (x), insn, force, 1, ht);
-      result &= purge_addressof_1 (&SET_SRC (x), insn, force, 0, ht);
+      result = purge_addressof_1 (&SET_DEST (x), insn, force, 1,
+				  may_postpone, ht);
+      result &= purge_addressof_1 (&SET_SRC (x), insn, force, 0,
+				   may_postpone, ht);
       return result;
     }
   else if (code == ADDRESSOF)
@@ -3061,6 +3066,13 @@ purge_addressof_1 (loc, insn, force, store, ht)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
+
+      if (may_postpone)
+	{
+	  if (!postponed_insns || XEXP (postponed_insns, 0) != insn)
+	    postponed_insns = alloc_INSN_LIST (insn, postponed_insns);
+	  return true;
+	}
 
       if (GET_CODE (sub) == MEM)
 	sub = adjust_address_nv (sub, GET_MODE (x), 0);
@@ -3260,10 +3272,12 @@ purge_addressof_1 (loc, insn, force, store, ht)
   for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
     {
       if (*fmt == 'e')
-	result &= purge_addressof_1 (&XEXP (x, i), insn, force, 0, ht);
+	result &= purge_addressof_1 (&XEXP (x, i), insn, force, 0,
+				     may_postpone, ht);
       else if (*fmt == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  result &= purge_addressof_1 (&XVECEXP (x, i, j), insn, force, 0, ht);
+	  result &= purge_addressof_1 (&XVECEXP (x, i, j), insn, force, 0,
+				       may_postpone, ht);
     }
 
   return result;
@@ -3391,7 +3405,7 @@ void
 purge_addressof (insns)
      rtx insns;
 {
-  rtx insn;
+  rtx insn, tmp;
   htab_t ht;
 
   /* When we actually purge ADDRESSOFs, we turn REGs into MEMs.  That
@@ -3404,16 +3418,18 @@ purge_addressof (insns)
   ht = htab_create_ggc (1000, insns_for_mem_hash, insns_for_mem_comp, NULL);
   compute_insns_for_mem (insns, NULL_RTX, ht);
 
+  postponed_insns = NULL;
+
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       {
 	if (! purge_addressof_1 (&PATTERN (insn), insn,
-				 asm_noperands (PATTERN (insn)) > 0, 0, ht))
+				 asm_noperands (PATTERN (insn)) > 0, 0, 1, ht))
 	  /* If we could not replace the ADDRESSOFs in the insn,
 	     something is wrong.  */
 	  abort ();
 
-	if (! purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0, ht))
+	if (! purge_addressof_1 (&REG_NOTES (insn), NULL_RTX, 0, 0, 0, ht))
 	  {
 	    /* If we could not replace the ADDRESSOFs in the insn's notes,
 	       we can just remove the offending notes instead.  */
@@ -3432,6 +3448,19 @@ purge_addressof (insns)
 	      }
 	  }
       }
+
+  /* Process the postponed insns.  */
+  while (postponed_insns)
+    {
+      insn = XEXP (postponed_insns, 0);
+      tmp = postponed_insns;
+      postponed_insns = XEXP (postponed_insns, 1);
+      free_EXPR_LIST_node (tmp);
+
+      if (! purge_addressof_1 (&PATTERN (insn), insn,
+			       asm_noperands (PATTERN (insn)) > 0, 0, 0, ht))
+	abort ();
+    }
 
   /* Clean up.  */
   purge_bitfield_addressof_replacements = 0;
