@@ -2,6 +2,82 @@ Mon Oct 20 14:16:38 1997  Geoffrey KEATING  <geoffk@ozemail.com.au>
 
 	* rs6000/t-ppccomm: Use -msdata=none for crtstuff.
 
+Mon Oct 20 12:28:17 1997  Doug Evans  <devans@canuck.cygnus.com>
+
+	* sparc/sparc.h (SPARC_V9,SPARC_ARCH64): Delete.
+	(DEFAULT_ARCH32_P): New macro.
+	(TARGET_ARCH{32,64}): Allow compile time or runtime selection.
+	(enum cmodel): Declare.
+	(sparc_cmodel_string,sparc_cmodel): Declare.
+	(SPARC_DEFAULT_CMODEL): Provide default.
+	(TARGET_{MEDLOW,MEDANY}): Renamed to TARGET_CM_{MEDLOW,MEDANY}.
+	(TARGET_FULLANY): Deleted.
+	(TARGET_CM_MEDMID): New macro.
+	(CPP_CPU_DEFAULT_SPEC): Renamed from CPP_DEFAULT_SPEC.
+	(ASM_CPU_DEFAULT_SPEC): Renamed from ASM_DEFAULT_SPEC.
+	(CPP_PREDEFINES): Take out stuff now handled by %(cpp_arch).
+	(CPP_SPEC): Rewrite.
+	(CPP_ARCH{,32,64,_DEFAULT}_SPEC): New macros.
+	(CPP_{ENDIAN,SUBTARGET}_SPEC): New macros.
+	(ASM_ARCH{,32,64,_DEFAULT}_SPEC): New macros.
+	(ASM_SPEC): Add %(asm_arch).
+	(EXTRA_SPECS): Rename cpp_default to cpp_cpu_default.
+	Rename asm_default to asm_cpu_default.
+	Add cpp_arch32, cpp_arch64, cpp_arch_default, cpp_arch, cpp_endian,
+	cpp_subtarget, asm_arch32, asm_arch64, asm_arch_default, asm_arch.
+	(NO_BUILTIN_{PTRDIFF,SIZE}_TYPE): Define ifdef SPARC_BI_ARCH.
+	({PTRDIFF,SIZE}_TYPE): Provide 32 and 64 bit values.
+	(MASK_INT64,MASK_LONG64): Delete.
+	(MASK_ARCH64): Renamed to MASK_64BIT.
+	(MASK_{MEDLOW,MEDANY,FULLANY,CODE_MODEL}): Delete.
+	(EMBMEDANY_BASE_REG): Renamed from MEDANY_BASE_REG.
+	(TARGET_SWITCHES): Always provide 64 bit options.
+	(ARCH64_SWITCHES): Delete.
+	(TARGET_OPTIONS): New option -mcmodel=.
+	(INT_TYPE_SIZE): Always 32.
+	(MAX_LONG_TYPE_SIZE): Define ifdef SPARC_BI_ARCH.
+	(INIT_EXPANDERS): sparc64_init_expanders renamed to sparc_init_....
+	(FUNCTION_{,BLOCK_}PROFILER): Delete TARGET_EMBMEDANY support.
+	(PRINT_OPERAND_PUNCT_VALID_P): Add '_'.
+	* sparc/linux-aout.h (CPP_PREDEFINES): Take out stuff handled by
+	CPP_SPEC.
+	(CPP_SUBTARGET_SPEC): Renamed from CPP_SPEC.
+	* sparc/linux.h: Likewise.
+	* sparc/linux64.h (SPARC_V9,SPARC_ARCH64): Delete.
+	(ASM_CPU_DEFAULT_SPEC): Renamed from ASM_DEFAULT_SPEC.
+	(TARGET_DEFAULT): Delete MASK_LONG64, MASK_MEDANY, add MASK_64BIT.
+	(SPARC_DEFAULT_CMODEL): Define.
+	(CPP_PREDEFINES): Take out stuff handled by CPP_SPEC.
+	(CPP_SUBTARGET_SPEC): Renamed from CPP_SPEC.
+	(LONG_DOUBLE_TYPE_SIZE): Define.
+	(ASM_SPEC): Add %(asm_arch).
+	* sparc/sol2.h (CPP_PREDEFINES): Take out stuff handled by CPP_SPEC.
+	(CPP_SUBTARGET_SPEC): Renamed from CPP_SPEC.
+	(TARGET_CPU_DEFAULT): Add ultrasparc case.
+	* sparc/sp64-aout.h (SPARC_V9,SPARC_ARCH64): Delete.
+	(TARGET_DEFAULT): MASK_ARCH64 renamed to MASK_64BIT.
+	(SPARC_DEFAULT_CMODEL): Define.
+	* sparc/sp64-elf.h (SPARC_V9,SPARC_ARCH64): Delete.
+	(TARGET_DEFAULT): MASK_ARCH64 renamed to MASK_64BIT.  Delete
+	MASK_LONG64, MASK_MEDANY.
+	(SPARC_DEFAULT_CMODEL): Define.
+	(CPP_PREDEFINES): Delete.
+	(CPP_SUBTARGET_SPEC): Renamed from CPP_SPEC.
+	(ASM_SPEC): Add %(asm_arch).
+	(LONG_DOUBLE_TYPE_SIZE): Define.
+	(DWARF2_DEBUGGING_INFO): Define.
+	* sparc/splet.h (CPP_SPEC): Delete.
+	* sparc/sysv4.h (CPP_PREDEFINES): Take out stuff handled by CPP_SPEC.
+	(FUNCTION_BLOCK_PROFILER): Delete TARGET_EMBMEDANY support.
+	(BLOCK_PROFILER): Likewise.
+	* sparc/sparc.c (sparc_cmodel_string,sparc_cmodel): New globals.
+	(sparc_override_options): Handle code model selection.
+	(sparc_init_expanders): Renamed from sparc64_init_expanders.
+	* sparc/sparc.md: TARGET_<code_model> renamed to TARGET_CM_....
+	TARGET_MEDANY renamed to TARGET_CM_EMBMEDANY.
+	(sethi_di_embmedany_{data,text}): Renamed from sethi_di_medany_....
+	(sethi_di_fullany): Delete.
+
 Mon Oct 20 02:00:18 1997  Klaus Kaempf <kkaempf@progis.de>
 			  Jeff Law <law@cygnus.com>
 			  Richard Kenner <kenner@vlsi1.ultra.nyu.edu>
