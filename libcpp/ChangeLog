@@ -1,3 +1,43 @@
+2004-09-09  Matt Austern  <austern@apple.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* include/cpplib.h (TTYPE_TABLE): Remove CPP_ and SPELL_
+	prefixes throughout.  Add entry for PRAGMA.  Remove
+	unnecessary "= 0" from EQ.
+	(enum cpp_ttype): Adjust OP and TK definitions to restore
+	prefixes, via token-paste.
+	(CPP_LAST_EQ, CPP_FIRST_DIGRAPH, CPP_LAST_PUNCTUATOR, CPP_LAST_CPP_OP):
+	Change from #defines to additional cpp_ttype enumerators.
+	(struct cpp_options): Add defer_pragmas.
+	(cpp_handle_deferred_pragma): Prototype new interface.
+
+	* internal.h (struct cpp_reader): Add directive_result.
+	* directives.c (struct pragma_entry): Add is_internal field;
+	give boolean fields type bool.
+	(start_directive): Initialize pfile->directive_result.type.
+	(_cpp_do__Pragma): Likewise.
+	(run_directive): Do not crash if pfile->buffer->prev is NULL.
+	(insert_pragma_entry): Add 'internal' argument; set new->is_internal
+	from it.
+	(register_pragma): New static function, bulk of former
+	cpp_register_pragma here; add 'internal' argument, pass along
+	to insert_pragma_entry.
+	(cpp_register_pragma): Now a wrapper around register_pragma which
+	always passes false for 'internal' argument.
+	(_cpp_init_internal_pragmas): Call register_pragma directly, passing
+	true for 'internal'.
+	(do_pragma): If CPP_OPTION (pfile, defer_pragmas) and this isn't
+	an internal pragma, save text till the end of the line as a CPP_PRAGMA
+	token instead of executing the pragma.
+	(cpp_handle_deferred_pragma): New interface.
+	* lex.c (token_spellings): Adjust OP and TK definitions to
+	match changes to cpplib.h.
+	(_cpp_lex_token): Check for a directive-result token and
+	return it if present.
+	(cpp_token_val_index): Handle CPP_PRAGMA.
+	* macro.c (cpp_builtin_macro_text): Correct comment.
+	(builtin_macro): Handle directive-result tokens from _cpp_do__Pragma.
+
 2004-09-06  Serge Belyshev  <belyshev@lubercy.com>
 
 	PR preprocessor/14699
@@ -38,9 +78,9 @@
 	* macro.c: Likewise.
 	* cpplib.h (cpp_deps_style): Export enum with name.
 
-2004-07-23  Matthias Klose  <doko@debian.org> 
+2004-07-23  Matthias Klose  <doko@debian.org>
 
-	* init.c (init_library): Use PACKAGE for the text domain. 
+	* init.c (init_library): Use PACKAGE for the text domain.
 
 2004-07-16  Andris Pavenis  <pavenis@latnet.lv>
 

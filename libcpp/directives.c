@@ -44,7 +44,8 @@ struct pragma_entry
 {
   struct pragma_entry *next;
   const cpp_hashnode *pragma;	/* Name and length.  */
-  int is_nspace;
+  bool is_nspace;
+  bool is_internal;
   union {
     pragma_cb handler;
     struct pragma_entry *space;
@@ -106,7 +107,10 @@ static struct pragma_entry *lookup_pragma_entry (struct pragma_entry *,
 static struct pragma_entry *insert_pragma_entry (cpp_reader *,
                                                  struct pragma_entry **,
                                                  const cpp_hashnode *,
-                                                 pragma_cb);
+                                                 pragma_cb,
+						 bool);
+static void register_pragma (cpp_reader *, const char *, const char *,
+			     pragma_cb, bool);
 static int count_registered_pragmas (struct pragma_entry *);
 static char ** save_registered_pragmas (struct pragma_entry *, char **);
 static char ** restore_registered_pragmas (cpp_reader *, struct pragma_entry *,
@@ -219,6 +223,7 @@ start_directive (cpp_reader *pfile)
   /* Setup in-directive state.  */
   pfile->state.in_directive = 1;
   pfile->state.save_comments = 0;
+  pfile->directive_result.type = CPP_PADDING;
 
   /* Some handlers need the position of the # for diagnostics.  */
   pfile->directive_line = pfile->line_table->highest_line;
@@ -442,7 +447,7 @@ run_directive (cpp_reader *pfile, int dir_no, const char *buf, size_t count)
   cpp_push_buffer (pfile, (const uchar *) buf, count,
 		   /* from_stage3 */ true);
   /* Disgusting hack.  */
-  if (dir_no == T_PRAGMA)
+  if (dir_no == T_PRAGMA && pfile->buffer->prev)
     pfile->buffer->file = pfile->buffer->prev->file;
   start_directive (pfile);
 
@@ -954,10 +959,12 @@ lookup_pragma_entry (struct pragma_entry *chain, const cpp_hashnode *pragma)
 
 /* Create and insert a pragma entry for NAME at the beginning of a
    singly-linked CHAIN.  If handler is NULL, it is a namespace,
-   otherwise it is a pragma and its handler.  */
+   otherwise it is a pragma and its handler.  If INTERNAL is true
+   this pragma is being inserted by libcpp itself. */
 static struct pragma_entry *
 insert_pragma_entry (cpp_reader *pfile, struct pragma_entry **chain,
-		     const cpp_hashnode *pragma, pragma_cb handler)
+		     const cpp_hashnode *pragma, pragma_cb handler,
+		     bool internal)
 {
   struct pragma_entry *new;
 
@@ -975,6 +982,7 @@ insert_pragma_entry (cpp_reader *pfile, struct pragma_entry **chain,
       new->u.space = NULL;
     }
 
+  new->is_internal = internal;
   new->next = *chain;
   *chain = new;
   return new;
@@ -982,10 +990,12 @@ insert_pragma_entry (cpp_reader *pfile, struct pragma_entry **chain,
 
 /* Register a pragma NAME in namespace SPACE.  If SPACE is null, it
    goes in the global namespace.  HANDLER is the handler it will call,
-   which must be non-NULL.  */
-void
-cpp_register_pragma (cpp_reader *pfile, const char *space, const char *name,
-		     pragma_cb handler)
+   which must be non-NULL.  INTERNAL is true if this is a pragma
+   registered by cpplib itself, false if it is registered via
+   cpp_register_pragma */
+static void
+register_pragma (cpp_reader *pfile, const char *space, const char *name,
+		 pragma_cb handler, bool internal)
 {
   struct pragma_entry **chain = &pfile->pragmas;
   struct pragma_entry *entry;
@@ -999,7 +1009,7 @@ cpp_register_pragma (cpp_reader *pfile, const char *space, const char *name,
       node = cpp_lookup (pfile, U space, strlen (space));
       entry = lookup_pragma_entry (*chain, node);
       if (!entry)
-	entry = insert_pragma_entry (pfile, chain, node, NULL);
+	entry = insert_pragma_entry (pfile, chain, node, NULL, internal);
       else if (!entry->is_nspace)
 	goto clash;
       chain = &entry->u.space;
@@ -1022,7 +1032,17 @@ cpp_register_pragma (cpp_reader *pfile, const char *space, const char *name,
 	cpp_error (pfile, CPP_DL_ICE, "#pragma %s is already registered", name);
     }
   else
-    insert_pragma_entry (pfile, chain, node, handler);
+    insert_pragma_entry (pfile, chain, node, handler, internal);
+}
+
+/* Register a pragma NAME in namespace SPACE.  If SPACE is null, it
+   goes in the global namespace.  HANDLER is the handler it will call,
+   which must be non-NULL.  This function is exported from libcpp. */
+void
+cpp_register_pragma (cpp_reader *pfile, const char *space, const char *name,
+		     pragma_cb handler)
+{
+  register_pragma (pfile, space, name, handler, false);
 }
 
 /* Register the pragmas the preprocessor itself handles.  */
@@ -1030,12 +1050,12 @@ void
 _cpp_init_internal_pragmas (cpp_reader *pfile)
 {
   /* Pragmas in the global namespace.  */
-  cpp_register_pragma (pfile, 0, "once", do_pragma_once);
+  register_pragma (pfile, 0, "once", do_pragma_once, true);
 
   /* New GCC-specific pragmas should be put in the GCC namespace.  */
-  cpp_register_pragma (pfile, "GCC", "poison", do_pragma_poison);
-  cpp_register_pragma (pfile, "GCC", "system_header", do_pragma_system_header);
-  cpp_register_pragma (pfile, "GCC", "dependency", do_pragma_dependency);
+  register_pragma (pfile, "GCC", "poison", do_pragma_poison, true);
+  register_pragma (pfile, "GCC", "system_header", do_pragma_system_header, true);
+  register_pragma (pfile, "GCC", "dependency", do_pragma_dependency, true);
 }
 
 /* Return the number of registered pragmas in PE.  */
@@ -1113,7 +1133,11 @@ _cpp_restore_pragma_names (cpp_reader *pfile, char **saved)
    front end.  C99 defines three pragmas and says that no macro
    expansion is to be performed on them; whether or not macro
    expansion happens for other pragmas is implementation defined.
-   This implementation never macro-expands the text after #pragma.  */
+   This implementation never macro-expands the text after #pragma.
+
+   The library user has the option of deferring execution of
+   #pragmas not handled by cpplib, in which case they are converted
+   to CPP_PRAGMA tokens and inserted into the output stream.  */
 static void
 do_pragma (cpp_reader *pfile)
 {
@@ -1138,7 +1162,7 @@ do_pragma (cpp_reader *pfile)
 	}
     }
 
-  if (p)
+  if (p && (p->is_internal || !CPP_OPTION (pfile, defer_pragmas)))
     {
       /* Since the handler below doesn't get the line number, that it
 	 might need for diagnostics, make sure it has the right
@@ -1146,6 +1170,31 @@ do_pragma (cpp_reader *pfile)
       if (pfile->cb.line_change)
 	(*pfile->cb.line_change) (pfile, pragma_token, false);
       (*p->u.handler) (pfile);
+    }
+  else if (CPP_OPTION (pfile, defer_pragmas))
+    {
+      /* Squirrel away the pragma text.  Pragmas are newline-terminated. */
+      const uchar *line_start, *line_end;
+      uchar *s;
+      cpp_string body;
+      cpp_token *ptok;
+
+      _cpp_backup_tokens (pfile, count);
+      line_start = CPP_BUFFER (pfile)->cur;
+      line_end = ustrchr (line_start, '\n');
+
+      body.len = (line_end - line_start) + 1;
+      s = _cpp_unaligned_alloc (pfile, body.len + 1);
+      memcpy (s, line_start, body.len);
+      s[body.len] = '\0';
+      body.text = s;
+
+      /* Create a CPP_PRAGMA token.  */
+      ptok = &pfile->directive_result;
+      ptok->src_loc = pragma_token->src_loc;
+      ptok->type = CPP_PRAGMA;
+      ptok->flags = pragma_token->flags | NO_EXPAND;
+      ptok->val.str = body;
     }
   else if (pfile->cb.def_pragma)
     {
@@ -1350,12 +1399,36 @@ void
 _cpp_do__Pragma (cpp_reader *pfile)
 {
   const cpp_token *string = get__Pragma_string (pfile);
+  pfile->directive_result.type = CPP_PADDING;
 
   if (string)
     destringize_and_run (pfile, &string->val.str);
   else
     cpp_error (pfile, CPP_DL_ERROR,
 	       "_Pragma takes a parenthesized string literal");
+}
+
+/* Handle a pragma that the front end deferred until now. */
+void
+cpp_handle_deferred_pragma (cpp_reader *pfile, const cpp_string *s)
+{
+  cpp_context *saved_context = pfile->context;
+  cpp_token *saved_cur_token = pfile->cur_token;
+  tokenrun *saved_cur_run = pfile->cur_run;
+  bool saved_defer_pragmas = CPP_OPTION (pfile, defer_pragmas);
+
+  pfile->context = XNEW (cpp_context);
+  pfile->context->macro = 0;
+  pfile->context->prev = 0;
+  CPP_OPTION (pfile, defer_pragmas) = false;
+
+  run_directive (pfile, T_PRAGMA, s->text, s->len);
+
+  XDELETE (pfile->context);
+  pfile->context = saved_context;
+  pfile->cur_token = saved_cur_token;
+  pfile->cur_run = saved_cur_run;
+  CPP_OPTION (pfile, defer_pragmas) = saved_defer_pragmas;
 }
 
 /* Ignore #sccs on all systems.  */
