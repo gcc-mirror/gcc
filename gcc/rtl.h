@@ -1538,12 +1538,6 @@ do {						\
 #ifndef USE_STORE_PRE_DECREMENT
 #define USE_STORE_PRE_DECREMENT(MODE)   HAVE_PRE_DECREMENT
 #endif
-
-/* Determine if the insn is a PHI node.  */
-#define PHI_NODE_P(X)				\
-  ((X) && GET_CODE (X) == INSN			\
-   && GET_CODE (PATTERN (X)) == SET		\
-   && GET_CODE (SET_SRC (PATTERN (X))) == PHI)
 
 /* Nonzero if we need to distinguish between the return value of this function
    and the return value of a function called by this function.  This helps
