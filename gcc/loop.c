@@ -9386,6 +9386,7 @@ instrument_loop_bct (loop_start, loop_end, loop_num_iterations)
       emit_jump_insn_before (gen_decrement_and_branch_on_count (counter_reg,
 								start_label),
 			     loop_end);
+      JUMP_LABEL (prev_nonnote_insn (loop_end)) = start_label;
       LABEL_NUSES (start_label)++;
     }
 

@@ -2,6 +2,8 @@
 
 	* version.c: Bump.
 
+	* loop.c (instrument_loop_bct): Set JUMP_LABEL on new jump.
+
 	2000-12-27  Geoffrey Keating  <geoffk@redhat.com>
 	* config/rs6000/rs6000.md (define_attr "length"): Correct
 	calculation.
