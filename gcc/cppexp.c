@@ -63,10 +63,10 @@ static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT,
 static struct op parse_number PARAMS ((cpp_reader *, const cpp_token *));
 static struct op parse_charconst PARAMS ((cpp_reader *, const cpp_token *));
 static struct op parse_defined PARAMS ((cpp_reader *));
-static struct op parse_assertion PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT parse_escape PARAMS ((cpp_reader *, const U_CHAR **,
 					     const U_CHAR *, HOST_WIDEST_INT));
-static struct op lex PARAMS ((cpp_reader *, int));
+static struct op lex PARAMS ((cpp_reader *, int, cpp_token *));
+static const unsigned char *op_as_text PARAMS ((cpp_reader *, enum cpp_ttype));
 
 struct op
 {
@@ -291,7 +291,7 @@ parse_charconst (pfile, tok)
   /* If char type is signed, sign-extend the constant.  */
   num_bits = num_chars * width;
       
-  if (pfile->spec_nodes->n__CHAR_UNSIGNED__->type != T_VOID
+  if (pfile->spec_nodes.n__CHAR_UNSIGNED__->type == NT_MACRO
       || ((result >> (num_bits - 1)) & 1) == 0)
     op.value = result & ((unsigned HOST_WIDEST_INT) ~0
 			 >> (HOST_BITS_PER_WIDEST_INT - num_bits));
@@ -313,85 +313,85 @@ static struct op
 parse_defined (pfile)
      cpp_reader *pfile;
 {
-  int paren;
-  const cpp_token *tok;
+  int paren = 0;
+  cpp_hashnode *node = 0;
+  cpp_token token;
   struct op op;
 
-  paren = 0;
-  tok = _cpp_get_raw_token (pfile);
-  if (tok->type == CPP_OPEN_PAREN)
+  /* Don't expand macros.  */
+  pfile->state.prevent_expansion++;
+
+  _cpp_get_token (pfile, &token);
+  if (token.type == CPP_OPEN_PAREN)
     {
       paren = 1;
-      tok = _cpp_get_raw_token (pfile);
+      _cpp_get_token (pfile, &token);
     }
 
-  if (tok->type != CPP_NAME)
-    SYNTAX_ERROR ("\"defined\" without an identifier");
-
-  if (paren && _cpp_get_raw_token (pfile)->type != CPP_CLOSE_PAREN)
-    SYNTAX_ERROR ("missing close paren after \"defined\"");
-
-  if (tok->val.node->type == T_POISON)
-    SYNTAX_ERROR2 ("attempt to use poisoned \"%s\"", tok->val.node->name);
-
-  op.value = tok->val.node->type != T_VOID;
-  op.unsignedp = 0;
-  op.op = CPP_INT;
-  return op;
-
- syntax_error:
-  op.op = CPP_ERROR;
-  return op;
-}
-
-static struct op
-parse_assertion (pfile)
-     cpp_reader *pfile;
-{
-  struct op op;
-  struct answer *answer;
-  cpp_hashnode *hp;
-
-  op.op = CPP_ERROR;
-  hp = _cpp_parse_assertion (pfile, &answer);
-  if (hp)
+  if (token.type == CPP_NAME)
     {
-      /* If we get here, the syntax is valid.  */
-      op.op = CPP_INT;
-      op.unsignedp = 0;
-      op.value = (hp->type == T_ASSERTION &&
-		  (answer == 0 || *_cpp_find_answer (hp, &answer->list) != 0));
-
-      if (answer)
-	FREE_ANSWER (answer);
+      node = token.val.node;
+      if (paren)
+	{
+	  _cpp_get_token (pfile, &token);
+	  if (token.type != CPP_CLOSE_PAREN)
+	    {
+	      cpp_error (pfile, "missing ')' after \"defined\"");
+	      node = 0;
+	    }
+	}
     }
+  else
+    cpp_error (pfile, "\"defined\" without an identifier");
+
+  if (!node)
+    op.op = CPP_ERROR;
+  else
+    {
+      op.value = node->type == NT_MACRO;
+      op.unsignedp = 0;
+      op.op = CPP_INT;
+
+      /* No macros?  At top of file?  */
+      if (pfile->mi_state == MI_OUTSIDE && pfile->mi_cmacro == 0
+	  && pfile->mi_if_not_defined == MI_IND_NOT && pfile->mi_lexed == 1)
+	{
+	  cpp_start_lookahead (pfile);
+	  cpp_get_token (pfile, &token);
+	  if (token.type == CPP_EOF)
+	    pfile->mi_ind_cmacro = node;
+	  cpp_stop_lookahead (pfile, 0);
+	}
+    }
+
+  pfile->state.prevent_expansion--;
   return op;
 }
 
 /* Read one token.  */
 
 static struct op
-lex (pfile, skip_evaluation)
+lex (pfile, skip_evaluation, token)
      cpp_reader *pfile;
      int skip_evaluation;
+     cpp_token *token;
 {
   struct op op;
-  const cpp_token *tok;
 
  retry:
-  tok = _cpp_get_token (pfile);
+  _cpp_get_token (pfile, token);
 
-  switch (tok->type)
+  switch (token->type)
     {
     case CPP_PLACEMARKER:
       goto retry;
 
     case CPP_INT:
     case CPP_NUMBER:
-      return parse_number (pfile, tok);
+      return parse_number (pfile, token);
     case CPP_CHAR:
     case CPP_WCHAR:
-      return parse_charconst (pfile, tok);
+      return parse_charconst (pfile, token);
 
     case CPP_STRING:
     case CPP_WSTRING:
@@ -401,36 +401,60 @@ lex (pfile, skip_evaluation)
       SYNTAX_ERROR ("floating point numbers are not valid in #if");
 
     case CPP_OTHER:
-      if (ISGRAPH (tok->val.aux))
-	SYNTAX_ERROR2 ("invalid character '%c' in #if", tok->val.aux);
+      if (ISGRAPH (token->val.aux))
+	SYNTAX_ERROR2 ("invalid character '%c' in #if", token->val.aux);
       else
-	SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", tok->val.aux);
-
-    case CPP_DEFINED:
-      return parse_defined (pfile);
+	SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", token->val.aux);
 
     case CPP_NAME:
+      if (token->val.node == pfile->spec_nodes.n_defined)
+	{
+	  if (pfile->context->prev && CPP_PEDANTIC (pfile))
+	    cpp_pedwarn (pfile, "\"defined\" operator appears during macro expansion");
+
+	  return parse_defined (pfile);
+	}
+      /* Controlling #if expressions cannot contain identifiers (they
+	 could become macros in the future).  */
+      pfile->mi_state = MI_FAILED;
+
       op.op = CPP_INT;
       op.unsignedp = 0;
       op.value = 0;
 
       if (CPP_OPTION (pfile, warn_undef) && !skip_evaluation)
-	cpp_warning (pfile, "\"%s\" is not defined", tok->val.node->name);
+	cpp_warning (pfile, "\"%s\" is not defined", token->val.node->name);
+
       return op;
 
     case CPP_HASH:
-      return parse_assertion (pfile);
+      {
+	int temp;
+
+	op.op = CPP_INT;
+	if (_cpp_test_assertion (pfile, &temp))
+	  op.op = CPP_ERROR;
+	op.unsignedp = 0;
+	op.value = temp;
+	return op;
+      }
+
+    case CPP_NOT:
+      /* We don't worry about its position here.  */
+      pfile->mi_if_not_defined = MI_IND_NOT;
+      /* Fall through.  */
 
     default:
-      if ((tok->type > CPP_EQ && tok->type < CPP_PLUS_EQ)
-	  || tok->type == CPP_EOF)
+      if ((token->type > CPP_EQ && token->type < CPP_PLUS_EQ)
+	  || token->type == CPP_EOF)
 	{
-	  op.op = tok->type;
+	  op.op = token->type;
 	  return op;
 	}
 
-      SYNTAX_ERROR2("'%s' is not valid in #if expressions", TOKEN_NAME (tok));
-  }
+      SYNTAX_ERROR2 ("\"%s\" is not valid in #if expressions",
+		     cpp_token_as_text (pfile, token));
+    }
 
  syntax_error:
   op.op = CPP_ERROR;
@@ -709,8 +733,6 @@ op_to_prio[] =
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the truth value of the expression.  */
 
-#define TYPE_NAME(t) _cpp_token_spellings[t].name
-
 int
 _cpp_parse_expr (pfile)
      cpp_reader *pfile;
@@ -729,6 +751,7 @@ _cpp_parse_expr (pfile)
   struct op init_stack[INIT_STACK_SIZE];
   struct op *stack = init_stack;
   struct op *limit = stack + INIT_STACK_SIZE;
+  cpp_token token;
   register struct op *top = stack + 1;
   int skip_evaluation = 0;
   int result;
@@ -736,6 +759,10 @@ _cpp_parse_expr (pfile)
   /* Save parser state and set it to something sane.  */
   int save_skipping = pfile->skipping;
   pfile->skipping = 0;
+
+  /* Set up detection of #if ! defined().  */
+  pfile->mi_lexed = 0;
+  pfile->mi_if_not_defined = MI_IND_NONE;
 
   /* We've finished when we try to reduce this.  */
   top->op = CPP_EOF;
@@ -751,7 +778,8 @@ _cpp_parse_expr (pfile)
       struct op op;
 
       /* Read a token */
-      op = lex (pfile, skip_evaluation);
+      op = lex (pfile, skip_evaluation, &token);
+      pfile->mi_lexed++;
 
       /* If the token is an operand, push its value and get next
 	 token.  If it is an operator, get its priority and flags, and
@@ -797,7 +825,7 @@ _cpp_parse_expr (pfile)
 		SYNTAX_ERROR ("void expression between '(' and ')'");
 	      else
 		SYNTAX_ERROR2 ("operator '%s' has no right operand",
-			       TYPE_NAME (top->op));
+			       op_as_text (pfile, top->op));
 	    }
 
 	  unsigned2 = top->unsignedp, v2 = top->value;
@@ -808,7 +836,8 @@ _cpp_parse_expr (pfile)
 	  switch (top[1].op)
 	    {
 	    default:
-	      cpp_ice (pfile, "impossible operator type %s", TYPE_NAME (op.op));
+	      cpp_ice (pfile, "impossible operator '%s'",
+			       op_as_text (pfile, top[1].op));
 	      goto syntax_error;
 
 	    case CPP_NOT:	 UNARY(!);	break;
@@ -967,13 +996,13 @@ _cpp_parse_expr (pfile)
 	{
 	  if (top->flags & HAVE_VALUE)
 	    SYNTAX_ERROR2 ("missing binary operator before '%s'",
-			   TYPE_NAME (op.op));
+			   op_as_text (pfile, top->op));
 	}
       else
 	{
 	  if (!(top->flags & HAVE_VALUE))
 	    SYNTAX_ERROR2 ("operator '%s' has no left operand",
-			   TYPE_NAME (op.op));
+			   op_as_text (pfile, top->op));
 	}
 
       /* Check for and handle stack overflow.  */
@@ -1016,4 +1045,16 @@ _cpp_parse_expr (pfile)
     free (stack);
   pfile->skipping = save_skipping;
   return result;
+}
+
+static const unsigned char *
+op_as_text (pfile, op)
+     cpp_reader *pfile;
+     enum cpp_ttype op;
+{
+  cpp_token token;
+
+  token.type = op;
+  token.flags = 0;
+  return cpp_token_as_text (pfile, &token);
 }

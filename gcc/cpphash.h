@@ -22,68 +22,30 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_CPPHASH__
 #define __GCC_CPPHASH__
 
-typedef unsigned char U_CHAR;
-#define U (const U_CHAR *)  /* Intended use: U"string" */
+/* Test if a sign is valid within a preprocessing number.  */
+#define VALID_SIGN(c, prevc) \
+  (((c) == '+' || (c) == '-') && \
+   ((prevc) == 'e' || (prevc) == 'E' \
+    || (((prevc) == 'p' || (prevc) == 'P') && !CPP_OPTION (pfile, c89))))
 
-/* Tokens with SPELL_STRING store their spelling in the token list,
-   and it's length in the token->val.name.len.  */
-enum spell_type
+/* Memory pools.  */
+#define ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
+#define POOL_FRONT(p) ((p)->cur->front)
+#define POOL_LIMIT(p) ((p)->cur->limit)
+#define POOL_BASE(p)  ((p)->cur->base)
+#define POOL_SIZE(p)  ((p)->cur->limit - (p)->cur->base)
+#define POOL_ROOM(p)  ((p)->cur->limit - (p)->cur->front)
+#define POOL_USED(p)  ((p)->cur->front - (p)->cur->base)
+#define POOL_COMMIT(p, len) do {((p)->cur->front += ALIGN (len, (p)->align));\
+  if ((p)->cur->front > (p)->cur->limit) abort ();} while (0)
+
+typedef struct cpp_chunk cpp_chunk;
+struct cpp_chunk
 {
-  SPELL_OPERATOR = 0,
-  SPELL_CHAR,
-  SPELL_IDENT,
-  SPELL_STRING,
-  SPELL_NONE
-};
-
-struct token_spelling
-{
-  enum spell_type category;
-  const U_CHAR *name;
-};
-
-extern const struct token_spelling _cpp_token_spellings[];
-#define TOKEN_SPELL(token) (_cpp_token_spellings[(token)->type].category)
-#define TOKEN_NAME(token) (_cpp_token_spellings[(token)->type].name)
-
-/* Chained list of answers to an assertion.  */
-struct answer
-{
-  struct answer *next;
-  cpp_toklist list;
-};
-#define FREE_ANSWER(answer) do {_cpp_free_toklist (&answer->list); \
-				free (answer); } while (0)
-
-/* Values for the origin field of struct directive.  KANDR directives
-   come from traditional (K&R) C.  STDC89 directives come from the
-   1989 C standard.  EXTENSION directives are extensions.  */
-#define KANDR		0
-#define STDC89		1
-#define EXTENSION	2
-
-/* Values for the flags field of struct directive.  COND indicates a
-   conditional.  EXPAND means that macros are to be expanded on the
-   directive line.  INCL means to treat "..." and <...> as
-   q-char-sequence and h-char-sequence respectively.  COMMENTS means
-   preserve comments in the directive if -C.  IN_I means this directive
-   should be handled even if -fpreprocessed is in effect (these are the
-   directives with callback hooks).  */
-#define COND		(1 << 0)
-#define EXPAND   	(1 << 1)
-#define INCL		(1 << 2)
-#define COMMENTS	(1 << 3)
-#define IN_I		(1 << 4)
-
-/* Defines one #-directive, including how to handle it.  */
-typedef void (*directive_handler) PARAMS ((cpp_reader *));
-struct directive
-{
-  directive_handler handler;	/* Function to handle directive.  */
-  const U_CHAR *name;		/* Name of directive.  */
-  unsigned short length;	/* Length of name.  */
-  unsigned char origin;		/* Origin of directive.  */
-  unsigned char flags;	        /* Flags describing this directive.  */
+  cpp_chunk *next;
+  unsigned char *front;
+  unsigned char *limit;
+  unsigned char *base;
 };
 
 /* List of directories to look for include files in. */
@@ -122,28 +84,18 @@ struct include_file
   unsigned short refcnt;	/* number of stacked buffers using this file */
   unsigned char sysp;		/* file is a system header */
   unsigned char mapped;		/* file buffer is mmapped */
+  unsigned char defined;	/* cmacro prevents inclusion in this state */
 };
 
 /* The cmacro works like this: If it's NULL, the file is to be
    included again.  If it's NEVER_REREAD, the file is never to be
    included again.  Otherwise it is a macro hashnode, and the file is
-   to be included again if the macro is not defined.  */
+   to be included again if the macro is defined or not as specified by
+   DEFINED.  */
 #define NEVER_REREAD ((const cpp_hashnode *)-1)
 #define DO_NOT_REREAD(inc) \
-((inc)->cmacro && \
- ((inc)->cmacro == NEVER_REREAD || (inc)->cmacro->type != T_VOID))
-
-/* Special nodes - identifiers with predefined significance.
-   Note that the array length of dirs[] must be kept in sync with
-   cpplib.c's dtable[].  */
-struct spec_nodes
-{
-  cpp_hashnode *n_L;			/* L"str" */
-  cpp_hashnode *n__STRICT_ANSI__;	/* STDC_0_IN_SYSTEM_HEADERS */
-  cpp_hashnode *n__CHAR_UNSIGNED__;	/* plain char is unsigned */
-  cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
-  cpp_hashnode *dirs[19];		/* 19 directives counting #sccs */
-};
+((inc)->cmacro && ((inc)->cmacro == NEVER_REREAD \
+		   || ((inc)->cmacro->type == NT_MACRO) == (inc)->defined))
 
 /* Character classes.
    If the definition of `numchar' looks odd to you, please look up the
@@ -200,27 +152,30 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 /* In cpperror.c  */
 enum error_type { WARNING = 0, PEDWARN, ERROR, FATAL, ICE };
 extern int _cpp_begin_message PARAMS ((cpp_reader *, enum error_type,
-				       const char *, unsigned int,
-				       unsigned int));
+				       const char *, const cpp_lexer_pos *));
 
 /* In cppmacro.c */
 extern void _cpp_free_definition	PARAMS ((cpp_hashnode *));
 extern int _cpp_create_definition	PARAMS ((cpp_reader *, cpp_hashnode *));
+extern void _cpp_pop_context		PARAMS ((cpp_reader *));
+extern void _cpp_get_token 		PARAMS ((cpp_reader *, cpp_token *));
+extern void _cpp_free_lookaheads	PARAMS ((cpp_reader *));
+extern void _cpp_push_token		PARAMS ((cpp_reader *, const cpp_token *,
+						 const cpp_lexer_pos *));
 
 /* In cpphash.c */
-extern void _cpp_init_macros		PARAMS ((cpp_reader *));
-extern void _cpp_cleanup_macros		PARAMS ((cpp_reader *));
-extern cpp_hashnode *_cpp_lookup_with_hash PARAMS ((cpp_reader*, const U_CHAR *,
-						    size_t, unsigned int));
+extern void _cpp_init_hashtable		PARAMS ((cpp_reader *));
+extern void _cpp_cleanup_hashtable	PARAMS ((cpp_reader *));
+extern cpp_hashnode *_cpp_lookup_with_hash PARAMS ((cpp_reader*, size_t,
+						    unsigned int));
 
 /* In cppfiles.c */
 extern void _cpp_simplify_pathname	PARAMS ((char *));
-extern void _cpp_execute_include	PARAMS ((cpp_reader *, const U_CHAR *,
-						 unsigned int, int,
-						 struct file_name_list *,
-						 int));
-extern int _cpp_compare_file_date       PARAMS ((cpp_reader *, const U_CHAR *,
-                                                 unsigned int, int));
+extern void _cpp_execute_include	PARAMS ((cpp_reader *,
+						 const cpp_token *, int,
+						 struct file_name_list *));
+extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
+						 const cpp_token *));
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));
 extern void _cpp_init_includes		PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_includes	PARAMS ((cpp_reader *));
@@ -231,113 +186,33 @@ extern void _cpp_pop_file_buffer	PARAMS ((cpp_reader *, cpp_buffer *));
 extern int _cpp_parse_expr		PARAMS ((cpp_reader *));
 
 /* In cpplex.c */
-extern const unsigned char *_cpp_digraph_spellings[];
-extern void _cpp_skip_rest_of_line	PARAMS ((cpp_reader *));
-extern void _cpp_free_temp_tokens	PARAMS ((cpp_reader *));
-extern void _cpp_init_input_buffer	PARAMS ((cpp_reader *));
-extern void _cpp_grow_token_buffer	PARAMS ((cpp_reader *, long));
-extern void _cpp_init_toklist		PARAMS ((cpp_toklist *, int));
-extern void _cpp_clear_toklist		PARAMS ((cpp_toklist *));
-extern void _cpp_free_toklist		PARAMS ((const cpp_toklist *));
+extern void _cpp_lex_token		PARAMS ((cpp_reader *, cpp_token *));
 extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
 						 const cpp_token *));
-extern int _cpp_equiv_toklists		PARAMS ((const cpp_toklist *,
-						 const cpp_toklist *));
-extern void _cpp_expand_token_space	PARAMS ((cpp_toklist *, unsigned int));
-extern void _cpp_reserve_name_space	PARAMS ((cpp_toklist *, unsigned int));
-extern void _cpp_expand_name_space	PARAMS ((cpp_toklist *, unsigned int));
-extern int _cpp_equiv_tokens		PARAMS ((const cpp_token *,
-						 const cpp_token *));
-extern void _cpp_process_directive PARAMS ((cpp_reader *, const cpp_token *));
-extern void _cpp_run_directive		PARAMS ((cpp_reader *,
-						 const struct directive *,
-						 const char *, size_t,
-						 const char *));
-extern unsigned int _cpp_get_line	PARAMS ((cpp_reader *,
-						 unsigned int *));
-extern const cpp_token *_cpp_get_token PARAMS ((cpp_reader *));
-extern const cpp_token *_cpp_get_raw_token PARAMS ((cpp_reader *));
-extern void _cpp_push_token PARAMS ((cpp_reader *, const cpp_token*));
-extern const cpp_token *_cpp_glue_header_name PARAMS ((cpp_reader *));
-extern enum cpp_ttype _cpp_can_paste PARAMS ((cpp_reader *, const cpp_token *,
-					      const cpp_token *, int *));
+extern void _cpp_init_pool		PARAMS ((cpp_pool *, unsigned int,
+						  unsigned int, unsigned int));
+extern void _cpp_free_pool		PARAMS ((cpp_pool *));
+extern unsigned char *_cpp_pool_reserve PARAMS ((cpp_pool *, unsigned int));
+extern unsigned char *_cpp_pool_alloc	PARAMS ((cpp_pool *, unsigned int));
+extern unsigned char *_cpp_next_chunk	PARAMS ((cpp_pool *, unsigned int,
+						 unsigned char **));
+extern void _cpp_lock_pool		PARAMS ((cpp_pool *));
+extern void _cpp_unlock_pool		PARAMS ((cpp_pool *));
 
 /* In cpplib.c */
-extern const struct directive *_cpp_check_directive
-			PARAMS ((cpp_reader *, const cpp_token *));
-extern const struct directive *_cpp_check_linemarker
-			PARAMS ((cpp_reader *, const cpp_token *));
-extern cpp_hashnode *_cpp_parse_assertion PARAMS ((cpp_reader *,
-						    struct answer **));
-extern struct answer **_cpp_find_answer	PARAMS ((cpp_hashnode *,
-						 const cpp_toklist *));
-extern void _cpp_define_builtin		PARAMS ((cpp_reader *, const char *));
-
+extern int _cpp_test_assertion PARAMS ((cpp_reader *, int *));
+extern int _cpp_handle_directive PARAMS ((cpp_reader *, int));
+extern void _cpp_define_builtin	PARAMS ((cpp_reader *, const char *));
 extern void _cpp_init_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_cleanup_stacks	PARAMS ((cpp_reader *));
 extern void _cpp_init_internal_pragmas PARAMS ((cpp_reader *));
 
 /* Utility routines and macros.  */
+#define DSC(str) (const U_CHAR *)str, sizeof str - 1
 #define xnew(T)		(T *) xmalloc (sizeof(T))
 #define xcnew(T)	(T *) xcalloc (1, sizeof(T))
 #define xnewvec(T, N)	(T *) xmalloc (sizeof(T) * (N))
 #define xcnewvec(T, N)	(T *) xcalloc (N, sizeof(T))
 #define xobnew(O, T)	(T *) obstack_alloc (O, sizeof(T))
-
-/* These are inline functions instead of macros so we can get type
-   checking.  */
-
-static inline int ustrcmp	PARAMS ((const U_CHAR *, const U_CHAR *));
-static inline int ustrncmp	PARAMS ((const U_CHAR *, const U_CHAR *,
-					 size_t));
-static inline size_t ustrlen	PARAMS ((const U_CHAR *));
-static inline U_CHAR *uxstrdup	PARAMS ((const U_CHAR *));
-static inline U_CHAR *ustrchr	PARAMS ((const U_CHAR *, int));
-static inline int ufputs	PARAMS ((const U_CHAR *, FILE *));
-
-static inline int
-ustrcmp (s1, s2)
-     const U_CHAR *s1, *s2;
-{
-  return strcmp ((const char *)s1, (const char *)s2);
-}
-
-static inline int
-ustrncmp (s1, s2, n)
-     const U_CHAR *s1, *s2;
-     size_t n;
-{
-  return strncmp ((const char *)s1, (const char *)s2, n);
-}
-
-static inline size_t
-ustrlen (s1)
-     const U_CHAR *s1;
-{
-  return strlen ((const char *)s1);
-}
-
-static inline U_CHAR *
-uxstrdup (s1)
-     const U_CHAR *s1;
-{
-  return (U_CHAR *) xstrdup ((const char *)s1);
-}
-
-static inline U_CHAR *
-ustrchr (s1, c)
-     const U_CHAR *s1;
-     int c;
-{
-  return (U_CHAR *) strchr ((const char *)s1, c);
-}
-
-static inline int
-ufputs (s, f)
-     const U_CHAR *s;
-     FILE *f;
-{
-  return fputs ((const char *)s, f);
-}
 
 #endif

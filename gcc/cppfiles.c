@@ -217,6 +217,10 @@ stack_include_file (pfile, inc)
   if (fp == 0)
     return 0;
 
+  /* Initialise controlling macro state.  */
+  pfile->mi_state = MI_OUTSIDE;
+  pfile->mi_cmacro = 0;
+
   fp->inc = inc;
   fp->nominal_fname = inc->name;
   fp->buf = inc->buffer;
@@ -233,8 +237,10 @@ stack_include_file (pfile, inc)
   fp->inc->refcnt++;
   pfile->include_depth++;
   pfile->input_stack_listing_current = 0;
+
   if (pfile->cb.enter_file)
     (*pfile->cb.enter_file) (pfile);
+
   return 1;
 }
 
@@ -562,16 +568,20 @@ report_missing_guard (n, b)
 
 #define PRINT_THIS_DEP(p, b) (CPP_PRINT_DEPS(p) > (b||p->system_include_depth))
 void
-_cpp_execute_include (pfile, f, len, no_reinclude, search_start, angle_brackets)
+_cpp_execute_include (pfile, header, no_reinclude, search_start)
      cpp_reader *pfile;
-     const U_CHAR *f;
-     unsigned int len;
+     const cpp_token *header;
      int no_reinclude;
      struct file_name_list *search_start;
-     int angle_brackets;
 {
+  unsigned int len = header->val.str.len;
+  unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
   struct include_file *inc;
   char *fname;
+
+  fname = alloca (len + 1);
+  memcpy (fname, header->val.str.text, len);
+  fname[len] = '\0';
 
   if (!search_start)
     {
@@ -581,17 +591,13 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start, angle_brackets)
 	search_start = CPP_OPTION (pfile, quote_include);
       else
 	search_start = CPP_BUFFER (pfile)->actual_dir;
-    }
 
-  if (!search_start)
-    {
-      cpp_error (pfile, "No include path in which to find %s", f);
-      return;
+      if (!search_start)
+	{
+	  cpp_error (pfile, "No include path in which to find %s", fname);
+	  return;
+	}
     }
-
-  fname = alloca (len + 1);
-  memcpy (fname, f, len);
-  fname[len] = '\0';
 
   inc = find_include_file (pfile, fname, search_start);
 
@@ -666,20 +672,17 @@ _cpp_execute_include (pfile, f, len, no_reinclude, search_start, angle_brackets)
 
 /* Locate file F, and determine whether it is newer than PFILE. Return -1,
    if F cannot be located or dated, 1, if it is newer and 0 if older.  */
-
 int
-_cpp_compare_file_date (pfile, f, len, angle_brackets)
+_cpp_compare_file_date (pfile, f)
      cpp_reader *pfile;
-     const U_CHAR *f;
-     unsigned int len;
-     int angle_brackets;
+     const cpp_token *f;
 {
+  unsigned int len = f->val.str.len;
   char *fname;
   struct file_name_list *search_start;
   struct include_file *inc;
-  struct include_file *current_include = CPP_BUFFER (pfile)->inc;
 
-  if (angle_brackets)
+  if (f->type == CPP_HEADER_NAME)
     search_start = CPP_OPTION (pfile, bracket_include);
   else if (CPP_OPTION (pfile, ignore_srcdir))
     search_start = CPP_OPTION (pfile, quote_include);
@@ -687,7 +690,7 @@ _cpp_compare_file_date (pfile, f, len, angle_brackets)
     search_start = CPP_BUFFER (pfile)->actual_dir;
 
   fname = alloca (len + 1);
-  memcpy (fname, f, len);
+  memcpy (fname, f->val.str.text, len);
   fname[len] = '\0';
   inc = find_include_file (pfile, fname, search_start);
   
@@ -699,7 +702,7 @@ _cpp_compare_file_date (pfile, f, len, angle_brackets)
       inc->fd = -1;
     }
     
-  return inc->st.st_mtime > current_include->st.st_mtime;
+  return inc->st.st_mtime > CPP_BUFFER (pfile)->inc->st.st_mtime;
 }
 
 
@@ -723,6 +726,10 @@ cpp_read_file (pfile, fname)
       return 0;
     }
 
+  /* Return success for zero-length files.  */
+  if (DO_NOT_REREAD (f))
+    return 1;
+
   return stack_include_file (pfile, f);
 }
 
@@ -739,13 +746,18 @@ _cpp_pop_file_buffer (pfile, buf)
     pfile->system_include_depth--;
   if (pfile->include_depth)
     pfile->include_depth--;
-  if (pfile->potential_control_macro)
-    {
-      if (inc->cmacro != NEVER_REREAD)
-	inc->cmacro = pfile->potential_control_macro;
-      pfile->potential_control_macro = 0;
-    }
   pfile->input_stack_listing_current = 0;
+
+  /* Record the inclusion-preventing macro and its definedness.  */
+  if (pfile->mi_state == MI_OUTSIDE && inc->cmacro != NEVER_REREAD)
+    {
+      /* This could be NULL meaning no controlling macro.  */
+      inc->cmacro = pfile->mi_cmacro;
+      inc->defined = 1;
+    }
+
+  /* Invalidate control macros in the #including file.  */
+  pfile->mi_state = MI_FAILED;
 
   inc->refcnt--;
   if (inc->refcnt == 0 && DO_NOT_REREAD (inc))

@@ -49,7 +49,7 @@ static unsigned long higher_prime_number PARAMS ((unsigned long));
 
 /* Set up and tear down internal structures for macro expansion.  */
 void
-_cpp_init_macros (pfile)
+_cpp_init_hashtable (pfile)
      cpp_reader *pfile;
 {
   pfile->hash_ob = xnew (struct obstack);
@@ -63,7 +63,7 @@ _cpp_init_macros (pfile)
 }
 
 void
-_cpp_cleanup_macros (pfile)
+_cpp_cleanup_hashtable (pfile)
      cpp_reader *pfile;
 {
   cpp_hashnode **p, **limit;
@@ -101,29 +101,32 @@ cpp_lookup (pfile, name, len)
   size_t n = len;
   unsigned int r = 0;
   const U_CHAR *str = name;
+  U_CHAR *dest = _cpp_pool_reserve (&pfile->ident_pool, len + 1);
 
   do
     {
       r = HASHSTEP (r, *str);
-      str++;
+      *dest++ = *str++;
     }
   while (--n);
+  *dest = '\0';
 
-  return _cpp_lookup_with_hash (pfile, name, len, r);
+  return _cpp_lookup_with_hash (pfile, len, r);
 }
 
+/* NAME is a null-terminated identifier of length len.  It is assumed
+   to have been placed at the front of the identifier pool.  */
 cpp_hashnode *
-_cpp_lookup_with_hash (pfile, name, len, hash)
+_cpp_lookup_with_hash (pfile, len, hash)
      cpp_reader *pfile;
-     const U_CHAR *name;
      size_t len;
      unsigned int hash;
 {
   unsigned int index;
-  unsigned int hash2;
   size_t size;
   cpp_hashnode *entry;
   cpp_hashnode **entries;
+  unsigned char *name = POOL_FRONT (&pfile->ident_pool);
 
   entries = pfile->hashtab->entries;
   size = pfile->hashtab->size;
@@ -132,48 +135,49 @@ _cpp_lookup_with_hash (pfile, name, len, hash)
   index = hash % size;
 
   entry = entries[index];
-  if (entry == NULL)
-    goto insert;
-  if (entry->hash == hash && entry->length == len
-      && !memcmp (entry->name, name, len))
-    return entry;
-
-  hash2 = 1 + hash % (size - 2);
-
-  for (;;)
+  if (entry)
     {
-      index += hash2;
-      if (index >= size)
-	index -= size;
-      entry = entries[index];
+      unsigned int hash2;
 
-      if (entry == NULL)
-	goto insert;
       if (entry->hash == hash && entry->length == len
 	  && !memcmp (entry->name, name, len))
 	return entry;
+
+      hash2 = 1 + hash % (size - 2);
+
+      for (;;)
+	{
+	  index += hash2;
+	  if (index >= size)
+	    index -= size;
+	  entry = entries[index];
+
+	  if (entry == NULL)
+	    break;
+	  if (entry->hash == hash && entry->length == len
+	      && !memcmp (entry->name, name, len))
+	    return entry;
+	}
     }
 
- insert:
+  /* Commit the memory for the identifier.  */
+  POOL_COMMIT (&pfile->ident_pool, len + 1);
+
+  /* Create a new hash node and insert it in the table.  */
+  entries[index] = obstack_alloc (pfile->hash_ob, sizeof (cpp_hashnode));
+
+  entry = entries[index];
+  entry->type = NT_VOID;
+  entry->flags = 0;
+  entry->fe_value = 0;
+  entry->directive_index = 0;
+  entry->arg_index = 0;
+  entry->length = len;
+  entry->hash = hash;
+  entry->name = name;
+  entry->value.macro = 0;
+
   pfile->hashtab->nelts++;
-
-  /* Create a new hash node.  */
-  {
-    U_CHAR *p = obstack_alloc (pfile->hash_ob, sizeof (cpp_hashnode) + len);
-    entry = (cpp_hashnode *)p;
-    p += offsetof (cpp_hashnode, name);
-    
-    entry->type = T_VOID;
-    entry->fe_value = 0;
-    entry->length = len;
-    entry->hash = hash;
-    entry->value.expansion = NULL;
-    memcpy (p, name, len);
-    p[len] = 0;
-
-    entries[index] = entry;
-  }
-
   if (size * 3 <= pfile->hashtab->nelts * 4)
     expand_hash (pfile->hashtab);
 

@@ -57,11 +57,10 @@ print_containing_files (pfile, ip)
       if (first)
 	{
 	  first = 0;
-	  /* N.B. The current line in each outer source file is one
-	     greater than the line of the #include, so we must
-	     subtract one to correct for that.  */
+	  /* The current line in each outer source file is now the
+	     same as the line of the #include.  */
 	  fprintf (stderr,  _("In file included from %s:%u"),
-		   ip->nominal_fname, CPP_BUF_LINE (ip) - 1);
+		   ip->nominal_fname, CPP_BUF_LINE (ip));
 	}
       else
 	/* Translators note: this message is used in conjunction
@@ -107,12 +106,11 @@ print_file_and_line (filename, line, column)
    If it returns 0, this error has been suppressed.  */
 
 int
-_cpp_begin_message (pfile, code, file, line, col)
+_cpp_begin_message (pfile, code, file, pos)
      cpp_reader *pfile;
      enum error_type code;
      const char *file;
-     unsigned int line;
-     unsigned int col;
+     const cpp_lexer_pos *pos;
 {
   cpp_buffer *ip = CPP_BUFFER (pfile);
   int is_warning = 0;
@@ -177,11 +175,11 @@ _cpp_begin_message (pfile, code, file, line, col)
     {
       if (file == NULL)
 	file = ip->nominal_fname;
-      if (line == 0)
-	line = _cpp_get_line (pfile, &col);
+      if (pos == 0)
+	pos = cpp_get_line (pfile);
       print_containing_files (pfile, ip);
-      print_file_and_line (file, line,
-			   CPP_OPTION (pfile, show_column) ? col : 0);
+      print_file_and_line (file, pos->line,
+			   CPP_OPTION (pfile, show_column) ? pos->col : 0);
     }
   else
     fprintf (stderr, "%s: ", progname);
@@ -213,7 +211,7 @@ cpp_ice VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, ICE, NULL, 0, 0))
+  if (_cpp_begin_message (pfile, ICE, NULL, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -240,7 +238,7 @@ cpp_fatal VPARAMS ((cpp_reader *pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, FATAL, NULL, 0, 0))
+  if (_cpp_begin_message (pfile, FATAL, NULL, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -261,7 +259,7 @@ cpp_error VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, ERROR, NULL, 0, 0))
+  if (_cpp_begin_message (pfile, ERROR, NULL, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -277,6 +275,7 @@ cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
   const char *msgid;
 #endif
   va_list ap;
+  cpp_lexer_pos pos;
   
   VA_START (ap, msgid);
   
@@ -287,7 +286,9 @@ cpp_error_with_line VPARAMS ((cpp_reader *pfile, int line, int column,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, ERROR, NULL, line, column))
+  pos.line = line;
+  pos.col = column;
+  if (_cpp_begin_message (pfile, ERROR, NULL, &pos))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -317,7 +318,7 @@ cpp_warning VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, WARNING, NULL, 0, 0))
+  if (_cpp_begin_message (pfile, WARNING, NULL, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -333,6 +334,7 @@ cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   const char *msgid;
 #endif
   va_list ap;
+  cpp_lexer_pos pos;
   
   VA_START (ap, msgid);
   
@@ -343,7 +345,9 @@ cpp_warning_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, WARNING, NULL, line, column))
+  pos.line = line;
+  pos.col = column;
+  if (_cpp_begin_message (pfile, WARNING, NULL, &pos))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -364,7 +368,7 @@ cpp_pedwarn VPARAMS ((cpp_reader * pfile, const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, PEDWARN, NULL, 0, 0))
+  if (_cpp_begin_message (pfile, PEDWARN, NULL, 0))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -380,6 +384,7 @@ cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   const char *msgid;
 #endif
   va_list ap;
+  cpp_lexer_pos pos;
   
   VA_START (ap, msgid);
   
@@ -390,7 +395,9 @@ cpp_pedwarn_with_line VPARAMS ((cpp_reader * pfile, int line, int column,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, PEDWARN, NULL, line, column))
+  pos.line = line;
+  pos.col = column;
+  if (_cpp_begin_message (pfile, PEDWARN, NULL, &pos))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -411,6 +418,7 @@ cpp_pedwarn_with_file_and_line VPARAMS ((cpp_reader *pfile,
   const char *msgid;
 #endif
   va_list ap;
+  cpp_lexer_pos pos;
   
   VA_START (ap, msgid);
 
@@ -422,7 +430,9 @@ cpp_pedwarn_with_file_and_line VPARAMS ((cpp_reader *pfile,
   msgid = va_arg (ap, const char *);
 #endif
 
-  if (_cpp_begin_message (pfile, PEDWARN, file, line, col))
+  pos.line = line;
+  pos.col = col;
+  if (_cpp_begin_message (pfile, PEDWARN, file, &pos))
     v_message (msgid, ap);
   va_end(ap);
 }
@@ -462,11 +472,3 @@ cpp_notice_from_errno (pfile, name)
     name = "stdout";
   cpp_notice (pfile, "%s: %s", name, xstrerror (errno));
 }
-
-const char *
-cpp_type2name (type)
-     enum cpp_ttype type;
-{
-  return (const char *) _cpp_token_spellings[type].name;
-}
-

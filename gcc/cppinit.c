@@ -427,7 +427,18 @@ void
 cpp_reader_init (pfile)
      cpp_reader *pfile;
 {
+  struct spec_nodes *s;
+
   memset ((char *) pfile, 0, sizeof (cpp_reader));
+
+  /* If cpp_init hasn't been called, generate a fatal error (by hand)
+     and call it here.  */
+  if (!cpp_init_completed)
+    {
+      fputs ("cpp_reader_init: internal error: cpp_init not called.\n", stderr);
+      pfile->errors = CPP_FATAL_LIMIT;
+      cpp_init ();
+    }
 
   CPP_OPTION (pfile, dollars_in_ident) = 1;
   CPP_OPTION (pfile, cplusplus_comments) = 1;
@@ -441,44 +452,45 @@ cpp_reader_init (pfile)
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
 
-  /* If cpp_init hasn't been called, generate a fatal error (by hand)
-     and call it here.  */
-  if (!cpp_init_completed)
-    {
-      fputs ("cpp_reader_init: internal error: cpp_init not called.\n", stderr);
-      pfile->errors = CPP_FATAL_LIMIT;
-      cpp_init ();
-    }
+  /* Initialize comment saving state.  */
+  pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
 
-  _cpp_init_macros (pfile);
+  /* Indicate date and time not yet calculated.  */
+  pfile->date.type = CPP_EOF;
+
+  /* Initialise the base context.  */
+  pfile->context = &pfile->base_context;
+  pfile->base_context.macro = 0;
+  pfile->base_context.prev = pfile->base_context.next = 0;
+
+  /* Identifier pool initially 8K.  Unaligned, permanent pool.  */
+  _cpp_init_pool (&pfile->ident_pool, 8 * 1024, 1, 0);
+
+  /* String and number pool initially 4K.  Unaligned, temporary pool.  */
+  _cpp_init_pool (&pfile->temp_string_pool, 4 * 1024, 1, 1);
+
+  /* Argument pool initially 8K.  Aligned, temporary pool.  */
+  _cpp_init_pool (&pfile->argument_pool, 8 * 1024, 0, 1);
+
+  /* Macro pool initially 8K.  Aligned, permanent pool.  */
+  _cpp_init_pool (&pfile->macro_pool, 8 * 1024, 0, 0);
+
+  /* Start with temporary pool.   */
+  pfile->string_pool = &pfile->temp_string_pool;
+
+  _cpp_init_hashtable (pfile);
   _cpp_init_stacks (pfile);
   _cpp_init_includes (pfile);
   _cpp_init_internal_pragmas (pfile);
-}
 
-/* Initialize a cpp_printer structure.  As a side effect, open the
-   output file.  */
-cpp_printer *
-cpp_printer_init (pfile, print)
-     cpp_reader *pfile;
-     cpp_printer *print;
-{
-  memset (print, '\0', sizeof (cpp_printer));
-  if (CPP_OPTION (pfile, out_fname) == NULL)
-    CPP_OPTION (pfile, out_fname) = "";
-  
-  if (CPP_OPTION (pfile, out_fname)[0] == '\0')
-    print->outf = stdout;
-  else
-    {
-      print->outf = fopen (CPP_OPTION (pfile, out_fname), "w");
-      if (! print->outf)
-	{
-	  cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
-	  return NULL;
-	}
-    }
-  return print;
+  /* Initialize the special nodes.  */
+  s = &pfile->spec_nodes;
+  s->n_L                = cpp_lookup (pfile, DSC("L"));
+  s->n_defined		= cpp_lookup (pfile, DSC("defined"));
+  s->n__STRICT_ANSI__   = cpp_lookup (pfile, DSC("__STRICT_ANSI__"));
+  s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
+  s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));
+  s->n__VA_ARGS__->flags |= NODE_DIAGNOSTIC;
 }
 
 /* Free resources used by PFILE.
@@ -487,69 +499,84 @@ void
 cpp_cleanup (pfile)
      cpp_reader *pfile;
 {
-  struct file_name_list *dir, *next;
+  struct file_name_list *dir, *dirn;
+  cpp_context *context, *contextn;
 
   while (CPP_BUFFER (pfile) != NULL)
     cpp_pop_buffer (pfile);
 
+  if (pfile->macro_buffer)
+    free ((PTR) pfile->macro_buffer);
+
   if (pfile->deps)
     deps_free (pfile->deps);
 
-  if (pfile->spec_nodes)
-    free (pfile->spec_nodes);
-
-  _cpp_free_temp_tokens (pfile);
   _cpp_cleanup_includes (pfile);
   _cpp_cleanup_stacks (pfile);
-  _cpp_cleanup_macros (pfile);
+  _cpp_cleanup_hashtable (pfile);
 
-  for (dir = CPP_OPTION (pfile, quote_include); dir; dir = next)
+  _cpp_free_lookaheads (pfile);
+
+  _cpp_free_pool (&pfile->ident_pool);
+  _cpp_free_pool (&pfile->temp_string_pool);
+  _cpp_free_pool (&pfile->macro_pool);
+  _cpp_free_pool (&pfile->argument_pool);
+
+  for (dir = CPP_OPTION (pfile, quote_include); dir; dir = dirn)
     {
-      next = dir->next;
+      dirn = dir->next;
       free (dir->name);
       free (dir);
+    }
+
+  for (context = pfile->base_context.next; context; context = contextn)
+    {
+      contextn = context->next;
+      free (context);
     }
 }
 
 
-/* This structure defines one built-in macro.  A node of type TYPE will
-   be entered in the macro hash table under the name NAME, with value
-   VALUE (if any).  If TYPE is T_OPERATOR, the CODE field is used instead.
+/* This structure defines one built-in identifier.  A node will be
+   entered in the hash table under the name NAME, with value VALUE (if
+   any).  If flags has OPERATOR, the node's operator field is used; if
+   flags has BUILTIN the node's builtin field is used.
 
    Two values are not compile time constants, so we tag
    them in the FLAGS field instead:
    VERS		value is the global version_string, quoted
    ULP		value is the global user_label_prefix
 
-   Also, macros with CPLUS set in the flags field are entered only for C++.
- */
+   Also, macros with CPLUS set in the flags field are entered only for C++.  */
 
 struct builtin
 {
   const U_CHAR *name;
   const char *value;
-  unsigned char code;
-  unsigned char type;
+  unsigned char builtin;
+  unsigned char operator;
   unsigned short flags;
-  unsigned int len;
+  unsigned short len;
 };
-#define VERS  0x01
-#define ULP   0x02
-#define CPLUS 0x04
+#define VERS		0x01
+#define ULP		0x02
+#define CPLUS		0x04
+#define BUILTIN		0x08
+#define OPERATOR  	0x10
 
-#define B(n, t)       { U n, 0, 0, t,          0, sizeof n - 1 }
-#define C(n, v)       { U n, v, 0, T_MACRO,    0, sizeof n - 1 }
-#define X(n, f)       { U n, 0, 0, T_MACRO,    f, sizeof n - 1 }
-#define O(n, c, f)    { U n, 0, c, T_OPERATOR, f, sizeof n - 1 }
+#define B(n, t)       { U n, 0, t, 0, BUILTIN, sizeof n - 1 }
+#define C(n, v)       { U n, v, 0, 0, 0, sizeof n - 1 }
+#define X(n, f)       { U n, 0, 0, 0, f, sizeof n - 1 }
+#define O(n, c, f)    { U n, 0, 0, c, OPERATOR | f, sizeof n - 1 }
 static const struct builtin builtin_array[] =
 {
-  B("__TIME__",		 T_TIME),
-  B("__DATE__",		 T_DATE),
-  B("__FILE__",		 T_FILE),
-  B("__BASE_FILE__",	 T_BASE_FILE),
-  B("__LINE__",		 T_SPECLINE),
-  B("__INCLUDE_LEVEL__", T_INCLUDE_LEVEL),
-  B("__STDC__",		 T_STDC),
+  B("__TIME__",		 BT_TIME),
+  B("__DATE__",		 BT_DATE),
+  B("__FILE__",		 BT_FILE),
+  B("__BASE_FILE__",	 BT_BASE_FILE),
+  B("__LINE__",		 BT_SPECLINE),
+  B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL),
+  B("__STDC__",		 BT_STDC),
 
   X("__VERSION__",		VERS),
   X("__USER_LABEL_PREFIX__",	ULP),
@@ -570,9 +597,8 @@ static const struct builtin builtin_array[] =
 
   /* Named operators known to the preprocessor.  These cannot be #defined
      and always have their stated meaning.  They are treated like normal
-     string tokens except for the type code and the meaning.  Most of them
+     identifiers except for the type code and the meaning.  Most of them
      are only for C++ (but see iso646.h).  */
-  O("defined",	CPP_DEFINED, 0),
   O("and",	CPP_AND_AND, CPLUS),
   O("and_eq",	CPP_AND_EQ,  CPLUS),
   O("bitand",	CPP_AND,     CPLUS),
@@ -583,7 +609,7 @@ static const struct builtin builtin_array[] =
   O("or",	CPP_OR_OR,   CPLUS),
   O("or_eq",	CPP_OR_EQ,   CPLUS),
   O("xor",	CPP_XOR,     CPLUS),
-  O("xor_eq",	CPP_XOR_EQ,  CPLUS),
+  O("xor_eq",	CPP_XOR_EQ,  CPLUS)
 };
 #undef B
 #undef C
@@ -601,10 +627,25 @@ initialize_builtins (pfile)
 
   for(b = builtin_array; b < builtin_array_end; b++)
     {
-      if (b->flags & CPLUS && ! CPP_OPTION (pfile, cplusplus))
+      if ((b->flags & CPLUS) && ! CPP_OPTION (pfile, cplusplus))
 	continue;
 
-      if (b->type == T_MACRO)
+      if (b->flags & (OPERATOR | BUILTIN))
+	{
+	  cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
+	  if (b->flags & OPERATOR)
+	    {
+	      hp->flags |= NODE_OPERATOR;
+	      hp->value.operator = b->operator;
+	    }
+	  else
+	    {
+	      hp->type = NT_MACRO;
+	      hp->flags |= NODE_BUILTIN;
+	      hp->value.builtin = b->builtin;
+	    }
+	}
+      else			/* A standard macro of some kind.  */
 	{
 	  const char *val;
 	  char *str;
@@ -629,17 +670,13 @@ initialize_builtins (pfile)
 
 	  _cpp_define_builtin (pfile, str);
 	}
-      else
-	{
-	  cpp_hashnode *hp = cpp_lookup (pfile, b->name, b->len);
-	  hp->type = b->type;
-	  if (b->type == T_OPERATOR)
-	    hp->value.code = b->code;
-	}
     }
 }
+#undef BUILTIN
+#undef OPERATOR
 #undef VERS
 #undef ULP
+#undef CPLUS
 #undef builtin_array_end
 
 /* Another subroutine of cpp_start_read.  This one sets up to do
@@ -799,9 +836,8 @@ initialize_standard_includes (pfile)
  */
 
 int
-cpp_start_read (pfile, print, fname)
+cpp_start_read (pfile, fname)
      cpp_reader *pfile;
-     cpp_printer *print;
      const char *fname;
 {
   struct pending_option *p, *q;
@@ -828,19 +864,6 @@ cpp_start_read (pfile, print, fname)
   /* Set this if it hasn't been set already. */
   if (CPP_OPTION (pfile, user_label_prefix) == NULL)
     CPP_OPTION (pfile, user_label_prefix) = USER_LABEL_PREFIX;
-
-  /* Figure out if we need to save function macro parameter spellings.
-     We don't use CPP_PEDANTIC() here because that depends on whether
-     or not the current file is a system header, and there is no
-     current file yet.  */
-  pfile->save_parameter_spellings =
-    CPP_OPTION (pfile, pedantic)
-    || CPP_OPTION (pfile, debug_output)
-    || CPP_OPTION (pfile, dump_macros) == dump_definitions
-    || CPP_OPTION (pfile, dump_macros) == dump_only;
-
-  /* Set up the tables used by read_and_prescan.  */
-  _cpp_init_input_buffer (pfile);
 
   /* Set up the include search path now.  */
   if (! CPP_OPTION (pfile, no_standard_includes))
@@ -893,13 +916,6 @@ cpp_start_read (pfile, print, fname)
     }
   pfile->done_initializing = 1;
 
-  /* We start at line 1 of the main input file.  */
-  if (print)
-    {
-      print->last_fname = CPP_BUFFER (pfile)->nominal_fname;
-      print->lineno = 1;
-    }
-
   /* The -imacros files can be scanned now, but the -include files
      have to be pushed onto the include stack and processed later,
      in the main loop calling cpp_get_token.  */
@@ -934,9 +950,8 @@ cpp_start_read (pfile, print, fname)
    clear macro definitions, such that you could call cpp_start_read
    with a new filename to restart processing. */
 void
-cpp_finish (pfile, print)
+cpp_finish (pfile)
      cpp_reader *pfile;
-     cpp_printer *print;
 {
   if (CPP_BUFFER (pfile))
     {
@@ -969,15 +984,6 @@ cpp_finish (pfile, print)
 		cpp_fatal (pfile, "I/O error on output");
 	    }
 	}
-    }
-
-  /* Flush any pending output.  */
-  if (print)
-    {
-      if (pfile->need_newline)
-	putc ('\n', print->outf);
-      if (ferror (print->outf) || fclose (print->outf))
-	cpp_notice_from_errno (pfile, CPP_OPTION (pfile, out_fname));
     }
 
   /* Report on headers that could use multiple include guards.  */
