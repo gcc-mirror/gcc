@@ -194,6 +194,41 @@ struct tree_opt_pass pass_vectorize =
   0					/* letter */
 };
 
+
+/* Loop nest optimizations.  */
+
+static void
+tree_linear_transform (void)
+{
+  if (!current_loops)
+    return;
+
+  linear_transform_loops (current_loops);
+}
+
+static bool
+gate_tree_linear_transform (void)
+{
+  return flag_tree_loop_linear != 0;
+}
+
+struct tree_opt_pass pass_linear_transform =
+{
+  "ltrans",				/* name */
+  gate_tree_linear_transform,		/* gate */
+  tree_linear_transform,       		/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  TV_TREE_LINEAR_TRANSFORM,  		/* tv_id */
+  PROP_cfg | PROP_ssa,			/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  TODO_dump_func,                	/* todo_flags_finish */
+  0				        /* letter */	
+};
+
 /* Canonical induction variable creation pass.  */
 
 static void

@@ -1,3 +1,19 @@
+2004-09-08  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in (tree-loop-linear.o): Added.
+	(OBJS-common): Add tree-loop-linear.o
+	* common.opt: New flag, ftree-loop-linear.
+	* timevar.def: New timevar, TV_TREE_LOOP_LINEAR.
+	* tree-flow.h: Add prototype for linear_transform_loops.
+	* tree-optimize.c: Add linear transform after vectorization.
+	* tree-pass.h: Add struct pass_linear_transform.
+	* tree-ssa-loop.c: Add pass_linear_transform.
+	* tree-loop-linear.c: New file.
+	* lambda-code.c: gcc_assertify.
+	(gcc_loop_to_lambda_loop): Handle all exit tests.
+	Handle case where we have (invariant >= induction var).
+	(find_induction_var_from_exit_cond): Ditto.
+	
 2004-09-08  Jie Zhang  <zhangjie@magima.com.cn>
 
 	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): If type
