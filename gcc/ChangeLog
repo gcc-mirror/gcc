@@ -1,3 +1,8 @@
+2000-05-28  Nick Clifton  <nickc@cygnus.com>
+
+	* tm.texi (CONDITIONAL_REGISTER_USAGE): Document that it can
+	modify reg_names.
+
 2000-05-28  Richard Henderson  <rth@cygnus.com>
 
 	* regclass.c (record_operand_costs): Protect reg_changes_size
