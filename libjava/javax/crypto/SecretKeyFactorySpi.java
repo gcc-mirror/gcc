@@ -39,8 +39,8 @@ exception statement from your version. */
 package javax.crypto;
 
 import java.security.InvalidKeyException;
-import java.security.spec.KeySpec;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 
 /**
  * The <i>Service Provider Interface</i> (<b>SPI</b>) for the {@link
