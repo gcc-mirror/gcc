@@ -1,4 +1,4 @@
-// PR c++/20673
+// PR c++/20763
 
 typedef void *voidp;
 
