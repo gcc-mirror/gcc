@@ -221,9 +221,10 @@ enum node_type {
  T_ELSE,	/* `#else' */
  T_ELIF,	/* `#elif' */
  T_UNDEF,	/* `#undef' */
- T_ERROR,	/* `#error' */
  T_LINE,	/* `#line' */
  T_ENDIF,	/* `#endif' */
+ T_ERROR,	/* `#error' */
+ T_WARNING,	/* `#warning' */
  T_ASSERT,	/* `#assert' */
  T_UNASSERT,	/* `#unassert' */
  T_SPECLINE,	/* special symbol `__LINE__' */
@@ -329,6 +330,7 @@ struct arglist {
 
 static void do_define	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_error	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_warning	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_line	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_include	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_undef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
@@ -418,9 +420,10 @@ struct directive directive_table[] = {
   {  4, do_else,    "else",    T_ELSE    },
   {  6, do_ifndef,  "ifndef",  T_IFNDEF  },
   {  5, do_undef,   "undef",   T_UNDEF   },
-  {  5, do_error,   "error",   T_ERROR   },
   {  4, do_line,    "line",    T_LINE    },
   {  4, do_elif,    "elif",    T_ELIF    },
+  {  5, do_error,   "error",   T_ERROR   },
+  {  7, do_warning, "warning", T_WARNING },
   {  6, do_assert,  "assert",  T_ASSERT  },
   {  8, do_unassert,"unassert",T_UNASSERT},
   {  -1, 0, "", T_UNUSED},
@@ -2473,6 +2476,8 @@ finclude (f, fname, op)
   output_line_command (fp, op, 0, enter_file);
   rescan (op, 0);
   indepth--;
+  instack[indepth].lineno++;
+  instack[indepth].bufp++;	/* Skip the new line.  */
   output_line_command (&instack[indepth], op, 0, leave_file);
   free (fp->buf);
   return;
@@ -2931,18 +2936,11 @@ do_line (buf, limit, op)
   /* The Newline at the end of this line remains to be processed.
      To put the next line at the specified line number,
      we must store a line number now that is one less.  */
-  new_lineno = atoi ((const char *)bp) - 1;
+  new_lineno = atoi ((const char *)bp);
 
   /* skip over the line number.  */
   while (ISDIGIT (*bp))
     bp++;
-
-#if 0 /* #line 10"foo.c" is supposed to be allowed.  */
-  if (*bp && !is_space (*bp)) {
-    error ("invalid format #line command");
-    return;
-  }
-#endif
 
   SKIP_WHITE_SPACE (bp);
 
@@ -3009,6 +3007,7 @@ do_line (buf, limit, op)
 
   ip->lineno = new_lineno;
   output_line_command (ip, op, 0, file_change);
+  ip->bufp++;			/* Skip the new line.  */
   check_expand (op, ip->length - (ip->bufp - ip->buf));
 }
 
@@ -3196,6 +3195,16 @@ do_error (buf, limit, op)
      FILE_BUF *op ATTRIBUTE_UNUSED;
 {
   error ("#error%.*s", (int) (limit - buf), buf);
+}
+
+/* Handle a #warning directive.  */
+static void
+do_warning (buf, limit, op)
+     U_CHAR *buf;
+     U_CHAR *limit;
+     FILE_BUF *op ATTRIBUTE_UNUSED;
+{
+  warning ("#warning%.*s", (int) (limit - buf), buf);
 }
 
 /* Handle a #assert directive.  */
