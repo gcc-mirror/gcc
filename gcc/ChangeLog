@@ -1,5 +1,8 @@
 Mon Jan  1 07:38:33 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* explow.c (convert_memory_address, case SYMBOL_REF): Copy
+	STRING_POOL_ADDRESS_P.
+
 	* config/sparc/sparc.c (input_operand): Properly test for short op.
 
 	* config.gcc (sparc-*-elf): Include sparc/sol2.h.
