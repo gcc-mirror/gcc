@@ -130,6 +130,9 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "insn-attr.h"
 
+/* Import list of registers used as spill regs from reload.  */
+extern HARD_REG_SET used_spill_regs;
+
 #ifdef DELAY_SLOTS
 
 #define obstack_chunk_alloc xmalloc
@@ -252,6 +255,7 @@ static int find_basic_block	PROTO((rtx));
 static void update_block	PROTO((rtx, rtx));
 static int reorg_redirect_jump PROTO((rtx, rtx));
 static void update_reg_dead_notes PROTO((rtx, rtx));
+static void fix_reg_dead_note PROTO((rtx, rtx));
 static void update_reg_unused_notes PROTO((rtx, rtx));
 static void update_live_status	PROTO((rtx, rtx));
 static rtx next_insn_no_annul	PROTO((rtx));
@@ -2305,6 +2309,38 @@ update_reg_dead_notes (insn, delayed_insn)
       }
 }
 
+/* Called when an insn redundant with start_insn is deleted.  If there
+   is a REG_DEAD note for the target of start_insn between start_insn
+   and stop_insn, then the REG_DEAD note needs to be deleted since the
+   value no longer dies there.
+
+   If the REG_DEAD note isn't deleted, then mark_target_live_regs may be
+   confused into thinking the register is dead.  */
+
+static void
+fix_reg_dead_note (start_insn, stop_insn)
+     rtx start_insn, stop_insn;
+{
+  rtx p, link, next;
+
+  for (p = next_nonnote_insn (start_insn); p != stop_insn;
+       p = next_nonnote_insn (p))
+    for (link = REG_NOTES (p); link; link = next)
+      {
+	next = XEXP (link, 1);
+
+	if (REG_NOTE_KIND (link) != REG_DEAD
+	    || GET_CODE (XEXP (link, 0)) != REG)
+	  continue;
+
+	if (reg_set_p (XEXP (link, 0), PATTERN (start_insn)))
+	  {
+	    remove_note (p, link);
+	    return;
+	  }
+      }
+}
+
 /* Delete any REG_UNUSED notes that exist on INSN but not on REDUNDANT_INSN.
 
    This handles the case of udivmodXi4 instructions which optimize their
@@ -2400,6 +2436,185 @@ next_insn_no_annul (insn)
   return insn;
 }
 
+/* A subroutine of mark_target_live_regs.  Search forward from TARGET
+   looking for registers that are set before they are used.  These are dead. 
+   Stop after passing a few conditional jumps, and/or a small
+   number of unconditional branches.  */
+
+static rtx
+find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
+     rtx target;
+     struct resources *res;
+     rtx *jump_target;
+     int jump_count;
+     struct resources set, needed;
+{
+  HARD_REG_SET scratch;
+  rtx insn, next;
+  rtx jump_insn = 0;
+  int i;
+
+  for (insn = target; insn; insn = next)
+    {
+      rtx this_jump_insn = insn;
+
+      next = NEXT_INSN (insn);
+      switch (GET_CODE (insn))
+	{
+	case CODE_LABEL:
+	  /* After a label, any pending dead registers that weren't yet
+	     used can be made dead.  */
+	  AND_COMPL_HARD_REG_SET (pending_dead_regs, needed.regs);
+	  AND_COMPL_HARD_REG_SET (res->regs, pending_dead_regs);
+	  CLEAR_HARD_REG_SET (pending_dead_regs);
+
+	  /* All spill registers are dead at a label, so kill all of the
+	     ones that aren't needed also.  */
+	  COPY_HARD_REG_SET (scratch, used_spill_regs);
+	  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
+	  AND_COMPL_HARD_REG_SET (res->regs, scratch);
+	  continue;
+
+	case BARRIER:
+	case NOTE:
+	  continue;
+
+	case INSN:
+	  if (GET_CODE (PATTERN (insn)) == USE)
+	    {
+	      /* If INSN is a USE made by update_block, we care about the
+		 underlying insn.  Any registers set by the underlying insn
+		 are live since the insn is being done somewhere else.  */
+	      if (GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
+		mark_set_resources (XEXP (PATTERN (insn), 0), res, 0, 1);
+
+	      /* All other USE insns are to be ignored.  */
+	      continue;
+	    }
+	  else if (GET_CODE (PATTERN (insn)) == CLOBBER)
+	    continue;
+	  else if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	    {
+	      /* An unconditional jump can be used to fill the delay slot
+		 of a call, so search for a JUMP_INSN in any position.  */
+	      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+		{
+		  this_jump_insn = XVECEXP (PATTERN (insn), 0, i);
+		  if (GET_CODE (this_jump_insn) == JUMP_INSN)
+		    break;
+		}
+	    }
+	}
+
+      if (GET_CODE (this_jump_insn) == JUMP_INSN)
+	{
+	  if (jump_count++ < 10)
+	    {
+	      if (simplejump_p (this_jump_insn)
+		  || GET_CODE (PATTERN (this_jump_insn)) == RETURN)
+		{
+		  next = JUMP_LABEL (this_jump_insn);
+		  if (jump_insn == 0)
+		    {
+		      jump_insn = insn;
+		      if (jump_target)
+			*jump_target = JUMP_LABEL (this_jump_insn);
+		    }
+		}
+	      else if (condjump_p (this_jump_insn)
+		       || condjump_in_parallel_p (this_jump_insn))
+		{
+		  struct resources target_set, target_res;
+		  struct resources fallthrough_res;
+
+		  /* We can handle conditional branches here by following
+		     both paths, and then IOR the results of the two paths
+		     together, which will give us registers that are dead
+		     on both paths.  Since this is expensive, we give it
+		     a much higher cost than unconditional branches.  The
+		     cost was chosen so that we will follow at most 1
+		     conditional branch.  */
+
+		  jump_count += 4;
+		  if (jump_count >= 10)
+		    break;
+
+		  mark_referenced_resources (insn, &needed, 1);
+
+		  /* For an annulled branch, mark_set_resources ignores slots
+		     filled by instructions from the target.  This is correct
+		     if the branch is not taken.  Since we are following both
+		     paths from the branch, we must also compute correct info
+		     if the branch is taken.  We do this by inverting all of
+		     the INSN_FROM_TARGET_P bits, calling mark_set_resources,
+		     and then inverting the INSN_FROM_TARGET_P bits again.  */
+
+		  if (GET_CODE (PATTERN (insn)) == SEQUENCE
+		      && INSN_ANNULLED_BRANCH_P (this_jump_insn))
+		    {
+		      for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
+			INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i))
+			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
+
+		      target_set = set;
+		      mark_set_resources (insn, &target_set, 0, 1);
+
+		      for (i = 1; i < XVECLEN (PATTERN (insn), 0); i++)
+			INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i))
+			  = ! INSN_FROM_TARGET_P (XVECEXP (PATTERN (insn), 0, i));
+
+		      mark_set_resources (insn, &set, 0, 1);
+		    }
+		  else
+		    {
+		      mark_set_resources (insn, &set, 0, 1);
+		      target_set = set;
+		    }
+
+		  target_res = *res;
+		  COPY_HARD_REG_SET (scratch, target_set.regs);
+		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
+		  AND_COMPL_HARD_REG_SET (target_res.regs, scratch);
+
+		  fallthrough_res = *res;
+		  COPY_HARD_REG_SET (scratch, set.regs);
+		  AND_COMPL_HARD_REG_SET (scratch, needed.regs);
+		  AND_COMPL_HARD_REG_SET (fallthrough_res.regs, scratch);
+
+		  find_dead_or_set_registers (JUMP_LABEL (this_jump_insn),
+					      &target_res, 0, jump_count,
+					      target_set, needed);
+		  find_dead_or_set_registers (next,
+					      &fallthrough_res, 0, jump_count,
+					      set, needed);
+		  IOR_HARD_REG_SET (fallthrough_res.regs, target_res.regs);
+		  AND_HARD_REG_SET (res->regs, fallthrough_res.regs);
+		  break;
+		}
+	      else
+		break;
+	    }
+	  else
+	    {
+	      /* Don't try this optimization if we expired our jump count
+		 above, since that would mean there may be an infinite loop
+		 in the function being compiled.  */
+	      jump_insn = 0;
+	      break;
+	    }
+	}
+
+      mark_referenced_resources (insn, &needed, 1);
+      mark_set_resources (insn, &set, 0, 1);
+
+      COPY_HARD_REG_SET (scratch, set.regs);
+      AND_COMPL_HARD_REG_SET (scratch, needed.regs);
+      AND_COMPL_HARD_REG_SET (res->regs, scratch);
+    }
+
+  return jump_insn;
+}
+
 /* Set the resources that are live at TARGET.
 
    If TARGET is zero, we refer to the end of the current function and can
@@ -2670,92 +2885,18 @@ mark_target_live_regs (target, res)
        in use.  This should happen only extremely rarely.  */
     SET_HARD_REG_SET (res->regs);
 
-  /* Now step forward from TARGET looking for registers that are set before
-     they are used.  These are dead.  If we pass a label, any pending dead
-     registers that weren't yet used can be made dead.  Stop when we pass a
-     conditional JUMP_INSN; follow the first few unconditional branches.  */
-
   CLEAR_RESOURCE (&set);
   CLEAR_RESOURCE (&needed);
 
-  for (insn = target; insn; insn = next)
-    {
-      rtx this_jump_insn = insn;
-
-      next = NEXT_INSN (insn);
-      switch (GET_CODE (insn))
-	{
-	case CODE_LABEL:
-	  AND_COMPL_HARD_REG_SET (pending_dead_regs, needed.regs);
-	  AND_COMPL_HARD_REG_SET (res->regs, pending_dead_regs);
-	  CLEAR_HARD_REG_SET (pending_dead_regs);
-	  continue;
-
-	case BARRIER:
-	case NOTE:
-	  continue;
-
-	case INSN:
-	  if (GET_CODE (PATTERN (insn)) == USE)
-	    {
-	      /* If INSN is a USE made by update_block, we care about the
-		 underlying insn.  Any registers set by the underlying insn
-		 are live since the insn is being done somewhere else.  */
-	      if (GET_RTX_CLASS (GET_CODE (XEXP (PATTERN (insn), 0))) == 'i')
-		mark_set_resources (XEXP (PATTERN (insn), 0), res, 0, 1);
-
-	      /* All other USE insns are to be ignored.  */
-	      continue;
-	    }
-	  else if (GET_CODE (PATTERN (insn)) == CLOBBER)
-	    continue;
-	  else if (GET_CODE (PATTERN (insn)) == SEQUENCE)
-	    {
-	      /* An unconditional jump can be used to fill the delay slot
-		 of a call, so search for a JUMP_INSN in any position.  */
-	      for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
-		{
-		  this_jump_insn = XVECEXP (PATTERN (insn), 0, i);
-		  if (GET_CODE (this_jump_insn) == JUMP_INSN)
-		    break;
-		}
-	    }
-	}
-
-      if (GET_CODE (this_jump_insn) == JUMP_INSN)
-	{
-	  if (jump_count++ < 10
-	      && (simplejump_p (this_jump_insn)
-		  || GET_CODE (PATTERN (this_jump_insn)) == RETURN))
-	    {
-	      next = next_active_insn (JUMP_LABEL (this_jump_insn));
-	      if (jump_insn == 0)
-		{
-		  jump_insn = insn;
-		  jump_target = JUMP_LABEL (this_jump_insn);
-		}
-	    }
-	  else
-	    break;
-	}
-
-      mark_referenced_resources (insn, &needed, 1);
-      mark_set_resources (insn, &set, 0, 1);
-
-      COPY_HARD_REG_SET (scratch, set.regs);
-      AND_COMPL_HARD_REG_SET (scratch, needed.regs);
-      AND_COMPL_HARD_REG_SET (res->regs, scratch);
-    }
+  jump_insn = find_dead_or_set_registers (target, res, &jump_target, 0,
+					  set, needed);
 
   /* If we hit an unconditional branch, we have another way of finding out
      what is live: we can see what is live at the branch target and include
      anything used but not set before the branch.  The only things that are
-     live are those that are live using the above test and the test below.
+     live are those that are live using the above test and the test below.  */
 
-     Don't try this if we expired our jump count above, since that would
-     mean there may be an infinite loop in the function being compiled.  */
-
-  if (jump_insn && jump_count < 10)
+  if (jump_insn)
     {
       struct resources new_resources;
       rtx stop_insn = next_active_insn (jump_insn);
@@ -3361,6 +3502,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	     we did.  */
 	  if (prior_insn = redundant_insn (trial, insn, delay_list))
 	    {
+	      fix_reg_dead_note (prior_insn, insn);
 	      if (own_thread)
 		{
 		  update_block (trial, thread);
