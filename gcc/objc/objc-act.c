@@ -4710,14 +4710,16 @@ receiver_is_class_object (receiver)
 {
   tree chain, exp, arg;
 
+  /* The receiver is 'self' in the context of a class method.  */
+  if (objc_method_context
+      && receiver == self_decl
+      && TREE_CODE (objc_method_context) == CLASS_METHOD_DECL)
+    {
+      return CLASS_NAME (objc_implementation_context);
+    }
+  
   if (flag_next_runtime)
     {
-      /* The receiver is 'self' in the context of a class method.  */
-      if (objc_method_context
-	  && receiver == self_decl
-	  && TREE_CODE (objc_method_context) == CLASS_METHOD_DECL)
-	return CLASS_NAME (objc_implementation_context);
-
       /* The receiver is a variable created by
          build_class_reference_decl.  */
       if (TREE_CODE (receiver) == VAR_DECL
@@ -4731,7 +4733,8 @@ receiver_is_class_object (receiver)
     {
       /* The receiver is a function call that returns an id.  Check if
 	 it is a call to objc_getClass, if so, pick up the class name.  */
-      if ((exp = TREE_OPERAND (receiver, 0))
+      if (TREE_CODE (receiver) == CALL_EXPR 
+	  && (exp = TREE_OPERAND (receiver, 0))
 	  && TREE_CODE (exp) == ADDR_EXPR
 	  && (exp = TREE_OPERAND (exp, 0))
 	  && TREE_CODE (exp) == FUNCTION_DECL
@@ -4844,8 +4847,8 @@ finish_message_expr (receiver, sel_name, method_params)
 	       && TREE_STATIC_TEMPLATE (TREE_TYPE (rtype)))
 	statically_typed = 1;
       else if ((flag_next_runtime
-		|| (TREE_CODE (receiver) == CALL_EXPR && IS_ID (rtype)))
-	       && (class_ident = receiver_is_class_object (receiver)))
+		|| (IS_ID (rtype)
+		    && (class_ident = receiver_is_class_object (receiver)))))
 	;
       else if (! IS_ID (rtype)
 	       /* Allow any type that matches objc_class_type.  */
@@ -5022,9 +5025,9 @@ finish_message_expr (receiver, sel_name, method_params)
 
       /* We think we have an instance...loophole: extern id Object; */
       hsh = hash_lookup (nst_method_hash_list, sel_name);
+      
       if (!hsh)
-	/* For various loopholes, like sending messages to self in a
-	   factory context.  */
+	/* For various loopholes */	
 	hsh = hash_lookup (cls_method_hash_list, sel_name);
 
       method_prototype = check_duplicates (hsh);
