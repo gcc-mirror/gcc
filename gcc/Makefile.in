@@ -473,6 +473,7 @@ CPP_INSTALL_NAME = `t='$(program_transform_name)'; echo cpp | sed -e $$t`
 PROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo protoize | sed -e $$t`
 UNPROTOIZE_INSTALL_NAME = `t='$(program_transform_name)'; echo unprotoize | sed -e $$t`
 GCOV_INSTALL_NAME = `t='$(program_transform_name)'; echo gcov | sed -e $$t`
+GCCBUG_INSTALL_NAME = `t='$(program_transform_name)'; echo gccbug | sed -e $$t`
 
 # Actual name to use when installing a cross-compiler.
 GCC_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcc | sed -e $$t`
@@ -2596,6 +2597,7 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	    rm -f $(bindir)/gcov$(exeext); \
 	    $(INSTALL_PROGRAM) gcov$(exeext) $(bindir)/$(GCOV_INSTALL_NAME)$(exeext); \
 	fi
+	$(INSTALL_PROGRAM) gccbug $(bindir)/$(GCCBUG_INSTALL_NAME)
 
 # Install the driver program as $(target_alias)-gcc
 # and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
