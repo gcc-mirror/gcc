@@ -132,19 +132,29 @@ special_format (fmt)
 	  || strchr (fmt, 'n') != 0);
 }
 
-/* Return nonzero if the RTL code given by index IDX is one that we should not
-   generate a gen_RTX_FOO function foo (because that function is present
-   elsewhere in the compiler).  */
+/* Return nonzero if the RTL code given by index IDX is one that we should
+   generate a gen_rtx_raw_FOO macro for, not gen_rtx_FOO (because gen_rtx_FOO
+   is a wrapper in emit-rtl.c).  */
 
 static int
 special_rtx (idx)
      int idx;
 {
   return (strcmp (defs[idx].enumname, "CONST_INT") == 0
-	  || strcmp (defs[idx].enumname, "CONST_DOUBLE") == 0
 	  || strcmp (defs[idx].enumname, "REG") == 0
 	  || strcmp (defs[idx].enumname, "SUBREG") == 0
 	  || strcmp (defs[idx].enumname, "MEM") == 0);
+}
+
+/* Return nonzero if the RTL code given by index IDX is one that we should
+   generate no macro for at all (because gen_rtx_FOO is never used or
+   cannot have the obvious interface).  */
+
+static int
+excluded_rtx (idx)
+     int idx;
+{
+  return (strcmp (defs[idx].enumname, "CONST_DOUBLE") == 0);
 }
 
 /* Place a list of all format specifiers we use into the array FORMAT.  */
@@ -212,6 +222,10 @@ genmacro (idx)
 
   /* We write a macro that defines gen_rtx_RTLCODE to be an equivalent to
      gen_rtx_fmt_FORMAT where FORMAT is the RTX_FORMAT of RTLCODE.  */
+
+  if (excluded_rtx (idx))
+    /* Don't define a macro for this code.  */
+    return;
 
   printf ("#define gen_rtx_%s%s(MODE",
 	   special_rtx (idx) ? "raw_" : "", defs[idx].enumname);

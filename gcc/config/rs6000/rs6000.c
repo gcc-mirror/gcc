@@ -702,19 +702,6 @@ rs6000_file_start (file, default_cpu)
 	putc ('\n', file);
     }
 }
-
-
-/* Create a CONST_DOUBLE from a string.  */
-
-struct rtx_def *
-rs6000_float_const (string, mode)
-     const char *string;
-     enum machine_mode mode;
-{
-  REAL_VALUE_TYPE value;
-  value = REAL_VALUE_ATOF (string, mode);
-  return immed_real_const_1 (value, mode);
-}
 
 /* Return non-zero if this function is known to have a null epilogue.  */
 
@@ -10044,9 +10031,7 @@ rs6000_hash_constant (k)
   if (GET_CODE (k) == LABEL_REF)
     return result * 1231 + X0INT (XEXP (k, 0), 3);
 
-  if (GET_CODE (k) == CONST_DOUBLE)
-    fidx = 1;
-  else if (GET_CODE (k) == CODE_LABEL)
+  if (GET_CODE (k) == CODE_LABEL)
     fidx = 3;
   else
     fidx = 0;
@@ -10112,29 +10097,7 @@ toc_hash_eq (h1, h2)
       != ((const struct toc_hash_struct *) h2)->key_mode)
     return 0;
 
-  /* Gotcha:  One of these const_doubles will be in memory.
-     The other may be on the constant-pool chain.
-     So rtx_equal_p will think they are different...  */
-  if (r1 == r2)
-    return 1;
-  if (GET_CODE (r1) != GET_CODE (r2)
-      || GET_MODE (r1) != GET_MODE (r2))
-    return 0;
-  if (GET_CODE (r1) == CONST_DOUBLE)
-    {
-      int format_len = strlen (GET_RTX_FORMAT (CONST_DOUBLE));
-      int i;
-      for (i = 1; i < format_len; i++)
-	if (XWINT (r1, i) != XWINT (r2, i))
-	  return 0;
-      
-      return 1;
-    }
-  else if (GET_CODE (r1) == LABEL_REF)
-    return (CODE_LABEL_NUMBER (XEXP (r1, 0)) 
-	    == CODE_LABEL_NUMBER (XEXP (r2, 0)));
-  else
-    return rtx_equal_p (r1, r2);
+  return rtx_equal_p (r1, r2);
 }
 
 /* Mark the hash table-entry HASH_ENTRY.  */

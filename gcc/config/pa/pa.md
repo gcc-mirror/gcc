@@ -4796,7 +4796,8 @@
     emit_insn (gen_negdf2_fast (operands[0], operands[1]));
   else
     {
-      operands[2] = force_reg (DFmode, immed_real_const_1 (dconstm1, DFmode));
+      operands[2] = force_reg (DFmode,
+	CONST_DOUBLE_FROM_REAL_VALUE (dconstm1, DFmode));
       emit_insn (gen_muldf3 (operands[0], operands[1], operands[2]));
     }
   DONE;
@@ -4826,7 +4827,8 @@
     emit_insn (gen_negsf2_fast (operands[0], operands[1]));
   else
     {
-      operands[2] = force_reg (SFmode, immed_real_const_1 (dconstm1, SFmode));
+      operands[2] = force_reg (SFmode,
+	CONST_DOUBLE_FROM_REAL_VALUE (dconstm1, SFmode));
       emit_insn (gen_mulsf3 (operands[0], operands[1], operands[2]));
     }
   DONE;

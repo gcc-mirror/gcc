@@ -6486,7 +6486,8 @@ expand_expr (exp, target, tmode, modifier)
 	 many insns, so we'd end up copying it to a register in any case.
 
 	 Now, we do the copying in expand_binop, if appropriate.  */
-      return immed_real_const (exp);
+      return CONST_DOUBLE_FROM_REAL_VALUE (TREE_REAL_CST (exp),
+					   TYPE_MODE (TREE_TYPE (exp)));
 
     case COMPLEX_CST:
     case STRING_CST:

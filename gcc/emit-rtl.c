@@ -87,8 +87,8 @@ static int no_line_numbers;
 
 /* Commonly used rtx's, so that we only need space for one copy.
    These are initialized once for the entire compilation.
-   All of these except perhaps the floating-point CONST_DOUBLEs
-   are unique; no other rtx-object will be equal to any of these.  */
+   All of these are unique; no other rtx-object will be equal to any
+   of these.  */
 
 rtx global_rtl[GR_MAX];
 
@@ -148,6 +148,9 @@ static htab_t const_int_htab;
 /* A hash table storing memory attribute structures.  */
 static htab_t mem_attrs_htab;
 
+/* A hash table storing all CONST_DOUBLEs.  */
+static htab_t const_double_htab;
+
 /* start_sequence and gen_sequence can make a lot of rtx expressions which are
    shortly thrown away.  We use two mechanisms to prevent this waste:
 
@@ -188,6 +191,10 @@ static void mark_label_nuses		PARAMS ((rtx));
 static hashval_t const_int_htab_hash    PARAMS ((const void *));
 static int const_int_htab_eq            PARAMS ((const void *,
 						 const void *));
+static hashval_t const_double_htab_hash PARAMS ((const void *));
+static int const_double_htab_eq		PARAMS ((const void *,
+						 const void *));
+static rtx lookup_const_double		PARAMS ((rtx));
 static hashval_t mem_attrs_htab_hash    PARAMS ((const void *));
 static int mem_attrs_htab_eq            PARAMS ((const void *,
 						 const void *));
@@ -208,7 +215,7 @@ static hashval_t
 const_int_htab_hash (x)
      const void *x;
 {
-  return (hashval_t) INTVAL ((const struct rtx_def *) x);
+  return (hashval_t) INTVAL ((struct rtx_def *) x);
 }
 
 /* Returns non-zero if the value represented by X (which is really a
@@ -220,7 +227,40 @@ const_int_htab_eq (x, y)
      const void *x;
      const void *y;
 {
-  return (INTVAL ((const struct rtx_def *) x) == *((const HOST_WIDE_INT *) y));
+  return (INTVAL ((rtx) x) == *((const HOST_WIDE_INT *) y));
+}
+
+/* Returns a hash code for X (which is really a CONST_DOUBLE).  */
+static hashval_t
+const_double_htab_hash (x)
+     const void *x;
+{
+  hashval_t h = 0;
+  size_t i;
+  rtx value = (rtx) x;
+
+  for (i = 0; i < sizeof(CONST_DOUBLE_FORMAT)-1; i++)
+    h ^= XWINT (value, i);
+  return h;
+}
+
+/* Returns non-zero if the value represented by X (really a ...)
+   is the same as that represented by Y (really a ...) */
+static int
+const_double_htab_eq (x, y)
+     const void *x;
+     const void *y;
+{
+  rtx a = (rtx)x, b = (rtx)y;
+  size_t i;
+
+  if (GET_MODE (a) != GET_MODE (b))
+    return 0;
+  for (i = 0; i < sizeof(CONST_DOUBLE_FORMAT)-1; i++)
+    if (XWINT (a, i) != XWINT (b, i))
+      return 0;
+
+  return 1;
 }
 
 /* Returns a hash code for X (which is a really a mem_attrs *).  */
@@ -363,32 +403,130 @@ gen_int_mode (c, mode)
   return GEN_INT (trunc_int_for_mode (c, mode));
 }
 
-/* CONST_DOUBLEs needs special handling because their length is known
-   only at run-time.  */
+/* CONST_DOUBLEs might be created from pairs of integers, or from
+   REAL_VALUE_TYPEs.  Also, their length is known only at run time,
+   so we cannot use gen_rtx_raw_CONST_DOUBLE.  */
+
+/* Determine whether REAL, a CONST_DOUBLE, already exists in the
+   hash table.  If so, return its counterpart; otherwise add it
+   to the hash table and return it.  */
+static rtx
+lookup_const_double (real)
+     rtx real;
+{
+  void **slot = htab_find_slot (const_double_htab, real, INSERT);
+  if (*slot == 0)
+    *slot = real;
+
+  return (rtx) *slot;
+}
+
+/* Return a CONST_DOUBLE rtx for a floating-point value specified by
+   VALUE in mode MODE.  */
+rtx
+const_double_from_real_value (value, mode)
+     REAL_VALUE_TYPE value;
+     enum machine_mode mode;
+{
+  rtx real = rtx_alloc (CONST_DOUBLE);
+  PUT_MODE (real, mode);
+
+  memcpy (&CONST_DOUBLE_LOW (real), &value, sizeof (REAL_VALUE_TYPE));
+
+  return lookup_const_double (real);
+}
+
+/* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair
+   of ints: I0 is the low-order word and I1 is the high-order word.
+   Do not use this routine for non-integer modes; convert to
+   REAL_VALUE_TYPE and use CONST_DOUBLE_FROM_REAL_VALUE.  */
 
 rtx
-gen_rtx_CONST_DOUBLE (mode, arg0, arg1)
+immed_double_const (i0, i1, mode)
+     HOST_WIDE_INT i0, i1;
      enum machine_mode mode;
-     HOST_WIDE_INT arg0, arg1;
 {
-  rtx r = rtx_alloc (CONST_DOUBLE);
-  int i;
+  rtx value;
+  unsigned int i;
 
-  PUT_MODE (r, mode);
-  X0EXP (r, 0) = NULL_RTX;
-  XWINT (r, 1) = arg0;
-  XWINT (r, 2) = arg1;
+  if (mode != VOIDmode)
+    {
+      int width;
+      if (GET_MODE_CLASS (mode) != MODE_INT
+	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
+	abort ();
 
-  for (i = GET_RTX_LENGTH (CONST_DOUBLE) - 1; i > 2; --i)
-    XWINT (r, i) = 0;
+      /* We clear out all bits that don't belong in MODE, unless they and
+	 our sign bit are all one.  So we get either a reasonable negative
+	 value or a reasonable unsigned value for this mode.  */
+      width = GET_MODE_BITSIZE (mode);
+      if (width < HOST_BITS_PER_WIDE_INT
+	  && ((i0 & ((HOST_WIDE_INT) (-1) << (width - 1)))
+	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
+	i0 &= ((HOST_WIDE_INT) 1 << width) - 1, i1 = 0;
+      else if (width == HOST_BITS_PER_WIDE_INT
+	       && ! (i1 == ~0 && i0 < 0))
+	i1 = 0;
+      else if (width > 2 * HOST_BITS_PER_WIDE_INT)
+	/* We cannot represent this value as a constant.  */
+	abort ();
 
-  return r;
+      /* If this would be an entire word for the target, but is not for
+	 the host, then sign-extend on the host so that the number will
+	 look the same way on the host that it would on the target.
+
+	 For example, when building a 64 bit alpha hosted 32 bit sparc
+	 targeted compiler, then we want the 32 bit unsigned value -1 to be
+	 represented as a 64 bit value -1, and not as 0x00000000ffffffff.
+	 The latter confuses the sparc backend.  */
+
+      if (width < HOST_BITS_PER_WIDE_INT
+	  && (i0 & ((HOST_WIDE_INT) 1 << (width - 1))))
+	i0 |= ((HOST_WIDE_INT) (-1) << width);
+
+      /* If MODE fits within HOST_BITS_PER_WIDE_INT, always use a
+	 CONST_INT.
+
+	 ??? Strictly speaking, this is wrong if we create a CONST_INT for
+	 a large unsigned constant with the size of MODE being
+	 HOST_BITS_PER_WIDE_INT and later try to interpret that constant
+	 in a wider mode.  In that case we will mis-interpret it as a
+	 negative number.
+
+	 Unfortunately, the only alternative is to make a CONST_DOUBLE for
+	 any constant in any mode if it is an unsigned constant larger
+	 than the maximum signed integer in an int on the host.  However,
+	 doing this will break everyone that always expects to see a
+	 CONST_INT for SImode and smaller.
+
+	 We have always been making CONST_INTs in this case, so nothing
+	 new is being broken.  */
+
+      if (width <= HOST_BITS_PER_WIDE_INT)
+	i1 = (i0 < 0) ? ~(HOST_WIDE_INT) 0 : 0;
+    }
+
+  /* If this integer fits in one word, return a CONST_INT.  */
+  if ((i1 == 0 && i0 >= 0) || (i1 == ~0 && i0 < 0))
+    return GEN_INT (i0);
+
+  /* We use VOIDmode for integers.  */
+  value = rtx_alloc (CONST_DOUBLE);
+  PUT_MODE (value, VOIDmode);
+
+  CONST_DOUBLE_LOW (value) = i0;
+  CONST_DOUBLE_HIGH (value) = i1;
+
+  for (i = 2; i < (sizeof CONST_DOUBLE_FORMAT - 1); i++)
+    XWINT (value, i) = 0;
+
+  return lookup_const_double (value);
 }
 
 rtx
 gen_rtx_REG (mode, regno)
      enum machine_mode mode;
-     int regno;
+     unsigned int regno;
 {
   /* In case the MD file explicitly references the frame pointer, have
      all such references point to the same frame pointer.  This is
@@ -463,7 +601,7 @@ gen_rtx_SUBREG (mode, reg, offset)
   if (offset >= GET_MODE_SIZE (GET_MODE (reg)))
     abort ();
 #endif
-  return gen_rtx_fmt_ei (SUBREG, mode, reg, offset);
+  return gen_rtx_raw_SUBREG (mode, reg, offset);
 }
 
 /* Generate a SUBREG representing the least-significant part of REG if MODE
@@ -532,7 +670,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 	HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
 	HOST_WIDE_INT arg1 = va_arg (p, HOST_WIDE_INT);
 
-	rt_val = gen_rtx_CONST_DOUBLE (mode, arg0, arg1);
+        rt_val = immed_double_const (arg0, arg1, mode);
       }
       break;
 
@@ -4849,10 +4987,15 @@ init_emit_once (line_numbers)
   enum machine_mode mode;
   enum machine_mode double_mode;
 
-  /* Initialize the CONST_INT and memory attribute hash tables.  */
+  /* Initialize the CONST_INT, CONST_DOUBLE, and memory attribute hash
+     tables.  */
   const_int_htab = htab_create (37, const_int_htab_hash,
 				const_int_htab_eq, NULL);
   ggc_add_deletable_htab (const_int_htab, 0, 0);
+
+  const_double_htab = htab_create (37, const_double_htab_hash,
+				   const_double_htab_eq, NULL);
+  ggc_add_deletable_htab (const_double_htab, 0, 0);
 
   mem_attrs_htab = htab_create (37, mem_attrs_htab_hash,
 				mem_attrs_htab_eq, NULL);
@@ -4937,10 +5080,10 @@ init_emit_once (line_numbers)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  dconst0 = REAL_VALUE_ATOF ("0", double_mode);
-  dconst1 = REAL_VALUE_ATOF ("1", double_mode);
-  dconst2 = REAL_VALUE_ATOF ("2", double_mode);
-  dconstm1 = REAL_VALUE_ATOF ("-1", double_mode);
+  REAL_VALUE_FROM_INT (dconst0,   0,  0, double_mode);
+  REAL_VALUE_FROM_INT (dconst1,   1,  0, double_mode);
+  REAL_VALUE_FROM_INT (dconst2,   2,  0, double_mode);
+  REAL_VALUE_FROM_INT (dconstm1, -1, -1, double_mode);
 
   for (i = 0; i <= 2; i++)
     {
@@ -4949,17 +5092,8 @@ init_emit_once (line_numbers)
 
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
-	{
-	  rtx tem = rtx_alloc (CONST_DOUBLE);
-
-	  /* Can't use CONST_DOUBLE_FROM_REAL_VALUE here; that uses the
-	     tables we're setting up right now.  */
-	  memcpy (&CONST_DOUBLE_LOW (tem), r, sizeof (REAL_VALUE_TYPE));
-	  CONST_DOUBLE_CHAIN (tem) = NULL_RTX;
-	  PUT_MODE (tem, mode);
-
-	  const_tiny_rtx[i][(int) mode] = tem;
-	}
+	const_tiny_rtx[i][(int) mode] =
+	  CONST_DOUBLE_FROM_REAL_VALUE (*r, mode);
 
       const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
 

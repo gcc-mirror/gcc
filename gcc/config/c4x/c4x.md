@@ -3714,8 +3714,7 @@
   operands[4] = gen_reg_rtx (QFmode);
   operands[5] = gen_reg_rtx (QFmode);
   operands[6] = gen_reg_rtx (QFmode);
-  emit_move_insn (operands[5], 
-   immed_real_const_1 (REAL_VALUE_ATOF (\"4294967296.0\", QFmode), QFmode));")
+  emit_move_insn (operands[5], CONST_DOUBLE_ATOF (\"4294967296.0\", QFmode));")
 
 (define_expand "floatunsqihf2"
  [(set (match_dup 2) (match_dup 3))
@@ -3737,8 +3736,7 @@
   operands[4] = gen_reg_rtx (HFmode);
   operands[5] = gen_reg_rtx (HFmode);
   operands[6] = gen_reg_rtx (HFmode);
-  emit_move_insn (operands[5], 
-   immed_real_const_1 (REAL_VALUE_ATOF (\"4294967296.0\", HFmode), HFmode));")
+  emit_move_insn (operands[5], CONST_DOUBLE_ATOF (\"4294967296.0\", HFmode));")
 
 (define_insn "floatqihf2"
   [(set (match_operand:HF 0 "reg_operand" "=h")
@@ -3877,8 +3875,7 @@
   operands[3] = gen_reg_rtx (QFmode);
   operands[4] = gen_reg_rtx (QImode);
   operands[5] = gen_reg_rtx (QFmode);
-  emit_move_insn (operands[5],
-   immed_real_const_1 (REAL_VALUE_ATOF (\"4294967296.0\", QFmode), QFmode));")
+  emit_move_insn (operands[5], CONST_DOUBLE_ATOF (\"4294967296.0\", QFmode));")
 
 (define_expand "fixuns_trunchfqi2"
  [(parallel [(set (match_dup 2)
@@ -3900,8 +3897,7 @@
   operands[3] = gen_reg_rtx (HFmode);
   operands[4] = gen_reg_rtx (QImode);
   operands[5] = gen_reg_rtx (HFmode);
-  emit_move_insn (operands[5],
-   immed_real_const_1 (REAL_VALUE_ATOF (\"4294967296.0\", HFmode), HFmode));")
+  emit_move_insn (operands[5], CONST_DOUBLE_ATOF (\"4294967296.0\", HFmode));")
 
 (define_expand "fixuns_truncqfhi2"
   [(parallel [(set (match_operand:HI 0 "reg_operand" "")
@@ -3981,10 +3977,8 @@
    operands[2] = gen_reg_rtx (QFmode);
    operands[3] = gen_reg_rtx (QFmode);
    operands[4] = gen_reg_rtx (QFmode);
-   operands[5] = immed_real_const_1 (REAL_VALUE_ATOF (\"0.5\", QFmode),
-                                     QFmode);
-   operands[6] = immed_real_const_1 (REAL_VALUE_ATOF (\"1.5\", QFmode),
-                                     QFmode);")
+   operands[5] = CONST_DOUBLE_ATOF (\"0.5\", QFmode);
+   operands[6] = CONST_DOUBLE_ATOF (\"1.5\", QFmode);")
 
 (define_expand "sqrtqf2"
   [(parallel [(set (match_operand:QF 0 "reg_operand" "")
@@ -6197,8 +6191,8 @@
   operands[2] = gen_reg_rtx (HFmode);
   operands[3] = gen_reg_rtx (HFmode);
   operands[4] = gen_reg_rtx (HFmode);
-  operands[5] = immed_real_const_1 (REAL_VALUE_ATOF (\"0.5\", HFmode), HFmode);
-  operands[6] = immed_real_const_1 (REAL_VALUE_ATOF (\"1.5\", HFmode), HFmode);
+  operands[5] = CONST_DOUBLE_ATOF (\"0.5\", HFmode);
+  operands[6] = CONST_DOUBLE_ATOF (\"1.5\", HFmode);
   ")
 
 

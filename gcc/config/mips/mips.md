@@ -4509,7 +4509,7 @@ move\\t%0,%z4\\n\\
 
   if (reg1)			/* turn off complaints about unreached code */
     {
-      emit_move_insn (reg1, immed_real_const_1 (offset, DFmode));
+      emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
       do_pending_stack_adjust ();
 
       emit_insn (gen_cmpdf (operands[1], reg1));
@@ -4553,7 +4553,7 @@ move\\t%0,%z4\\n\\
 
   if (reg1)			/* turn off complaints about unreached code */
     {
-      emit_move_insn (reg1, immed_real_const_1 (offset, DFmode));
+      emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, DFmode));
       do_pending_stack_adjust ();
 
       emit_insn (gen_cmpdf (operands[1], reg1));
@@ -4597,7 +4597,7 @@ move\\t%0,%z4\\n\\
 
   if (reg1)			/* turn off complaints about unreached code */
     {
-      emit_move_insn (reg1, immed_real_const_1 (offset, SFmode));
+      emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
       do_pending_stack_adjust ();
 
       emit_insn (gen_cmpsf (operands[1], reg1));
@@ -4641,7 +4641,7 @@ move\\t%0,%z4\\n\\
 
   if (reg1)			/* turn off complaints about unreached code */
     {
-      emit_move_insn (reg1, immed_real_const_1 (offset, SFmode));
+      emit_move_insn (reg1, CONST_DOUBLE_FROM_REAL_VALUE (offset, SFmode));
       do_pending_stack_adjust ();
 
       emit_insn (gen_cmpsf (operands[1], reg1));

@@ -3773,7 +3773,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  if (temp == const0_rtx)
 	    temp = CONST0_RTX (mode);
 	  else
-	    temp = immed_real_const_1 (FLOAT_STORE_FLAG_VALUE (mode), mode);
+	    temp = CONST_DOUBLE_FROM_REAL_VALUE (FLOAT_STORE_FLAG_VALUE (mode),
+						 mode);
 	}
 #endif
       break;

@@ -3491,10 +3491,6 @@ rest_of_compilation (decl)
      longer valid.  */
   init_insn_lengths ();
 
-  /* Clear out the real_constant_chain before some of the rtx's
-     it runs through become garbage.  */
-  clear_const_double_mem ();
-
   /* Show no temporary slots allocated.  */
   init_temp_slots ();
 

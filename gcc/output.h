@@ -357,11 +357,6 @@ extern void assemble_real		PARAMS ((REAL_VALUE_TYPE,
 #endif
 #endif
 
-/* At the end of a function, forget the memory-constants
-   previously made for CONST_DOUBLEs.  Mark them as not on real_constant_chain.
-   Also clear out real_constant_chain and clear out all the chain-pointers.  */
-extern void clear_const_double_mem	PARAMS ((void));
-
 /* Start deferring output of subconstants.  */
 extern void defer_addressed_constants	PARAMS ((void));
 

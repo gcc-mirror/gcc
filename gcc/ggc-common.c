@@ -347,9 +347,6 @@ ggc_mark_rtx_children_1 (r)
 	case ADDRESSOF:
 	  ggc_mark_tree (ADDRESSOF_DECL (r));
 	  break;
-	case CONST_DOUBLE:
-	  ggc_mark_rtx (CONST_DOUBLE_CHAIN (r));
-	  break;
 	case NOTE:
 	  switch (NOTE_LINE_NUMBER (r))
 	    {

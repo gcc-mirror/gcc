@@ -3158,7 +3158,7 @@
       emit_insn (gen_movdi (operands[0], GEN_INT (val)));
 #else
       emit_insn (gen_movdi (operands[0],
-                            gen_rtx_CONST_DOUBLE (VOIDmode, l[1], l[0])));
+                            immed_double_const (l[1], l[0], DImode)));
 #endif
     }
   else
