@@ -1,0 +1,416 @@
+
+# This is a shell archive.  Remove anything before this line,
+# then unpack it by saving it in a file and typing "sh file".
+#
+# Wrapped by  on Fri Mar 12 08:41:28 CST 1993
+# Contents:  include/ include/limits.h include/math.h include/stddef.h
+#	include/stdlib.h
+ 
+echo mkdir - include
+mkdir include
+chmod u=rwx,g=rwx,o=rx include
+ 
+echo x - include/limits.h
+sed 's/^@//' > "include/limits.h" <<'@//E*O*F include/limits.h//'
+#ifndef _LIMITS_H
+#define _LIMITS_H
+
+#include_next <limits.h>
+
+/* Minimum and maximum values a `char' can hold.  */
+#ifdef __CHAR_UNSIGNED__
+#undef CHAR_MIN
+#define CHAR_MIN 0
+#undef CHAR_MAX
+#define CHAR_MAX 255
+#endif
+
+#endif /* _LIMITS_H */
+@//E*O*F include/limits.h//
+chmod u=rw,g=rw,o=r include/limits.h
+ 
+echo x - include/math.h
+sed 's/^@//' > "include/math.h" <<'@//E*O*F include/math.h//'
+#ifndef _MATH_H
+#define _MATH_H
+
+#include_next <math.h>
+
+#undef HUGE_VAL
+
+#if _IEEE_FLOAT_
+#define HUGE_VAL 1.79769313486231570e+308
+#else
+#define HUGE_VAL 8.98846567431157854e+307
+#endif
+
+#if __OPTIMIZE__ && ! __NO_INLINE
+
+#define frexp(x,y)	__inline_frexp ((x), (y))
+#define ldexp(x,y)	__inline_ldexp ((x), (y))
+#define irint(x)	__inline_irint (x)
+#define frexpf(x,y)	__inline_frexpf ((x), (y))
+#define ldexpf(x,y)	__inline_ldexpf ((x), (y))
+#define irintf(x)	__inline_irintf (x)
+
+#if __convex_c2__ || __convex_c32__ || __convex_c34__ || __convex_c38__
+
+#define atan(x)		__inline_atan (x)
+#define ceil(x)		__inline_ceil (x)
+#define cos(x)		__inline_cos (x)
+#define exp(x)		__inline_exp (x)
+#define floor(x)	__inline_floor (x)
+#define log(x)		__inline_log (x)
+#define log10(x)	__inline_log10 (x)
+#define modf(x,y)	__inline_modf ((x), (y))
+#define rint(x)		__inline_rint (x)
+#define sin(x)		__inline_sin (x)
+#define sqrt(x)		__inline_sqrt (x)
+
+#define atanf(x)	__inline_atanf (x)
+#define ceilf(x)	__inline_ceilf (x)
+#define cosf(x)		__inline_cosf (x)
+#define expf(x)		__inline_expf (x)
+#define floorf(x)	__inline_floorf (x)
+#define logf(x)		__inline_logf (x)
+#define log10f(x)	__inline_log10f (x)
+#define modff(x,y)	__inline_modff ((x), (y))
+#define rintf(x)	__inline_rintf (x)
+#define sinf(x)		__inline_sinf (x)
+#define sqrtf(x)	__inline_sqrtf (x)
+
+#endif /* __convex_c[23*]__ */
+
+#endif /* __OPTIMIZE__ */
+
+static __inline__ __const__ double __inline_atan (double x)
+{
+  double z;
+  __asm__ ("atan.d %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ float __inline_atanf (float x)
+{
+  float z;
+  __asm__ ("atan.s %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ double __inline_cos (double x)
+{
+  double z;
+  __asm__ ("cos.d %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ float __inline_cosf (float x)
+{
+  float z;
+  __asm__ ("cos.s %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ double __inline_exp (double x)
+{
+  double z;
+  __asm__ ("exp.d %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ float __inline_expf (float x)
+{
+  float z;
+  __asm__ ("exp.s %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ double __inline_log (double x)
+{
+  double z;
+  __asm__ ("ln.d %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ float __inline_logf (float x)
+{
+  float z;
+  __asm__ ("ln.s %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ double __inline_sin (double x)
+{
+  double z;
+  __asm__ ("sin.d %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ float __inline_sinf (float x)
+{
+  float z;
+  __asm__ ("sin.s %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ double __inline_sqrt (double x)
+{
+  double z;
+  __asm__ ("sqrt.d %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ float __inline_sqrtf (float x)
+{
+  float z;
+  __asm__ ("sqrt.s %0" : "=d" (z) : "0" (x));
+  return z;
+}
+
+static __inline__ __const__ double __inline_ceil (double x)
+{
+  double z;
+  __asm__ ("frint.d %1,%0" : "=d" (z) : "d" (x));
+  if (z < x) z += 1.0;
+  return z;
+}
+
+static __inline__ __const__ float __inline_ceilf (float x)
+{
+  float z;
+  __asm__ ("frint.s %1,%0" : "=d" (z) : "d" (x));
+  if (z < x) z += 1.0F;
+  return z;
+}
+
+static __inline__ __const__ double __inline_floor (double x)
+{
+  double z;
+  __asm__ ("frint.d %1,%0" : "=d" (z) : "d" (x));
+  if (z > x) z -= 1.0;
+  return z;
+}
+
+static __inline__ __const__ float __inline_floorf (float x)
+{
+  float z;
+  __asm__ ("frint.s %1,%0" : "=d" (z) : "d" (x));
+  if (z > x) z -= 1.0F;
+  return z;
+}
+
+static __inline__ __const__ double __inline_log10 (double x)
+{
+  return 0.43429448190325182765 * __inline_log (x);
+}
+
+static __inline__ __const__ float __inline_log10f (float x)
+{
+  return 0.43429448190325182765F * __inline_logf (x);
+}
+
+static __inline__ double __inline_modf (double x, double *np)
+{
+  double intpart;
+  __asm__ ("frint.d %1,%0" : "=d" (intpart) : "d" (x));
+  *np = intpart;
+  return x - intpart;
+}
+
+static __inline__ float __inline_modff (float x, float *np)
+{
+  float intpart;
+  __asm__ ("frint.s %1,%0" : "=d" (intpart) : "d" (x));
+  *np = intpart;
+  return x - intpart;
+}
+
+static __inline__ double __inline_frexp (double x, int *np)
+{
+  union u { double d; unsigned long long ll; } u;
+  if ((u.d = x) == 0)
+    *np = 0;
+  else
+    {
+#if _IEEE_FLOAT_
+      *np = ((u.ll >> 52) & 03777) - 01776;
+      u.ll = (u.ll & 0x800fffffffffffffLL) | 0x3fe0000000000000LL;
+#else
+      *np = ((u.ll >> 52) & 03777) - 02000;
+      u.ll = (u.ll & 0x800fffffffffffffLL) | 0x4000000000000000LL;
+#endif
+    }
+  return u.d;
+}
+
+static __inline__ float __inline_frexpf (float x, int *np)
+{
+  union u { float f; unsigned int i; } u;
+  if ((u.f = x) == 0)
+    *np = 0;
+  else
+    {
+#if _IEEE_FLOAT_
+      *np = ((u.i >> 23) & 0377) - 0176;
+      u.i = (u.i & 0x807fffff) | 0x3f000000;
+#else
+      *np = ((u.i >> 23) & 0377) - 0200;
+      u.i = (u.i & 0x807fffff) | 0x40000000;
+#endif
+    }
+  return u.f;
+}
+
+static __inline__ double __inline_ldexp (double x, int n)
+{
+  extern int errno;
+  union { double d; long long ll; unsigned sexp : 12; } u;
+  if ((u.d = x) != 0)
+    {
+      int exp = n + (u.sexp & 03777);
+      long long nn = (long long) n << 52;
+#if _IEEE_FLOAT_
+      if (exp <= 0)
+	u.ll &= 0x8000000000000000LL, errno = 34;
+      else if (exp > 03776)
+	u.ll = u.ll & 0x8000000000000000LL | 0x7fefffffffffffffLL, errno = 34;
+#else
+      if (exp <= 0)
+	u.ll = 0, errno = 34;
+      else if (exp > 03777)
+	u.ll |= 0x7fffffffffffffffLL, errno = 34;
+#endif
+      else
+	u.ll += nn;
+    }
+  return u.d;
+}
+
+static __inline__ float __inline_ldexpf (float x, int n)
+{
+  extern int errno;
+  union { float f; int i; unsigned sexp : 9; } u;
+  if ((u.f = x) != 0)
+    {
+      int exp = n + (u.sexp & 0377);
+      int nn = n << 23;
+#if _IEEE_FLOAT_
+      if (exp <= 0)
+	u.i &= 0x80000000, errno = 34;
+      else if (exp > 0376)
+	u.i = u.i & 0x80000000 | 0x7f7fffff, errno = 34;
+#else
+      if (exp <= 0)
+	u.i = 0, errno = 34;
+      else if (exp > 0377)
+	u.i |= 0x7fffffff, errno = 34;
+#endif
+      else
+	u.i += nn;
+    }
+  return u.f;
+}
+
+static __inline__ __const__ double __inline_rint (double x)
+{
+  double z;
+  union { double d; unsigned long long ll; } u;
+  u.d = x;
+#if _IEEE_FLOAT_
+  u.ll = (u.ll & 0x8000000000000000LL) | 0x3fe0000000000000LL;
+#else
+  u.ll = (u.ll & 0x8000000000000000LL) | 0x4000000000000000LL;
+#endif
+  __asm__ ("frint.d %1,%0" : "=d" (z) : "d" (x + u.d));
+  return z;
+}
+
+static __inline__ __const__ float __inline_rintf (float x)
+{
+  float z;
+  union { float f; unsigned int i; } u;
+  u.f = x;
+#if _IEEE_FLOAT_
+  u.i = (u.i & 0x80000000) | 0x3f000000;
+#else
+  u.i = (u.i & 0x80000000) | 0x40000000;
+#endif
+  __asm__ ("frint.s %1,%0" : "=d" (z) : "d" (x + u.f));
+  return z;
+}
+
+static __inline__ __const__ int __inline_irint (double x)
+{
+  union { double d; unsigned long long ll; } u;
+  u.d = x;
+#if _IEEE_FLOAT_
+  u.ll = (u.ll & 0x8000000000000000LL) | 0x3fe0000000000000LL;
+#else
+  u.ll = (u.ll & 0x8000000000000000LL) | 0x4000000000000000LL;
+#endif
+  return x + u.d;
+}
+
+static __inline__ __const__ int __inline_irintf (float x)
+{
+  union { float f; unsigned int i; } u;
+  u.f = x;
+#if _IEEE_FLOAT_
+  u.i = (u.i & 0x80000000) | 0x3f000000;
+#else
+  u.i = (u.i & 0x80000000) | 0x40000000;
+#endif
+  return x + u.f;
+}
+
+#endif /* _MATH_H */
+@//E*O*F include/math.h//
+chmod u=rw,g=rw,o=r include/math.h
+ 
+echo x - include/stddef.h
+sed 's/^@//' > "include/stddef.h" <<'@//E*O*F include/stddef.h//'
+#ifndef _STDDEF_H
+#define _STDDEF_H
+
+#ifndef __WCHAR_T
+#define __WCHAR_T
+
+#ifdef __GNUG__
+/* In C++, wchar_t is a distinct basic type,
+   and we can expect __wchar_t to be defined by cc1plus.  */
+typedef __wchar_t wchar_t;
+#else
+/* In C, cpp tells us which type to make an alias for.  */
+typedef __WCHAR_TYPE__ wchar_t;
+#endif
+
+#endif /* __WCHAR_T */
+
+#include_next <stddef.h>
+
+#endif /* _STDDEF_H */
+@//E*O*F include/stddef.h//
+chmod u=rw,g=rw,o=r include/stddef.h
+ 
+echo x - include/stdlib.h
+sed 's/^@//' > "include/stdlib.h" <<'@//E*O*F include/stdlib.h//'
+#ifndef	_STDLIB_H
+#define _STDLIB_H
+
+#if _CONVEX_SOURCE
+
+#define alloca __non_builtin_alloca
+#include_next <stdlib.h>
+#undef alloca
+
+#else
+
+#include_next <stdlib.h>
+
+#endif  /* _CONVEX_SOURCE */
+
+#endif	/* _STDLIB_H */
+@//E*O*F include/stdlib.h//
+chmod u=rw,g=rw,o=r include/stdlib.h
+ 
+exit 0
