@@ -3,26 +3,28 @@
    (Implements POSIX draft P1003.2/D11.2, except for some of the
    internationalization features.)
    Copyright (C) 1993-1999, 2000, 2001 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU Library General Public License as
-   published by the Free Software Foundation; either version 2 of the
-   License, or (at your option) any later version.
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
    The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU Library General Public
-   License along with the GNU C Library; see the file COPYING.LIB.  If not,
-   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
 /* This file has been modified for usage in libiberty.  It includes "xregex.h"
    instead of <regex.h>.  The "xregex.h" header file renames all external
    routines with an "x" prefix so they do not collide with the native regex
    routines or with other components regex routines. */
+/* AIX requires this to be the first thing in the file. */
 #if defined _AIX && !defined REGEX_MALLOC
   #pragma alloca
 #endif
@@ -1184,6 +1186,8 @@ PREFIX(print_double_string) (where, string1, size1, string2, size2)
     printf ("(null)");
   else
     {
+      int cnt;
+
       if (FIRST_STRING_P (where))
         {
           for (this_char = where - string1; this_char < size1; this_char++)
@@ -1192,8 +1196,16 @@ PREFIX(print_double_string) (where, string1, size1, string2, size2)
           where = string2;
         }
 
+      cnt = 0;
       for (this_char = where - string2; this_char < size2; this_char++)
-        PUT_CHAR (string2[this_char]);
+	{
+	  PUT_CHAR (string2[this_char]);
+	  if (++cnt > 100)
+	    {
+	      fputs ("...", stdout);
+	      break;
+	    }
+	}
     }
 }
 
@@ -5339,7 +5351,9 @@ PREFIX(re_search_2) (bufp, string1, size1, string2, size2, startpos, range,
 /* Use internationalized API instead of SYNTAX.  */
 # define WORDCHAR_P(d)							\
   (iswalnum ((wint_t)((d) == end1 ? *string2				\
-           : (d) == string2 - 1 ? *(end1 - 1) : *(d))) != 0)
+           : (d) == string2 - 1 ? *(end1 - 1) : *(d))) != 0		\
+   || ((d) == end1 ? *string2						\
+       : (d) == string2 - 1 ? *(end1 - 1) : *(d)) == L'_')
 #else /* BYTE */
 # define WORDCHAR_P(d)							\
   (SYNTAX ((d) == end1 ? *string2					\
