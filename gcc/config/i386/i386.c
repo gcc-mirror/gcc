@@ -2685,14 +2685,15 @@ output_pic_addr_const (file, x, code)
     }
 }
 
-
 /* Append the correct conditional move suffix which corresponds to CODE */
 
 static void
-put_condition_code (code, file)
-    enum rtx_code code;
-    FILE * file;
+put_condition_code (code, mode, file)
+     enum rtx_code code;
+     enum mode_class mode;
+     FILE * file;
 {
+  if (mode == MODE_INT)
   switch (code)
     {
       case NE: 
@@ -2725,13 +2726,39 @@ put_condition_code (code, file)
 	  fputs ("b", file); return;
       default: output_operand_lossage ("Invalid %%C operand");
     }
+  else if (mode == MODE_FLOAT)
+  switch (code)
+    {
+      case NE: 
+          fputs ("ne", file); return;
+      case EQ: 
+	  fputs ("e", file); return;
+      case GE: 
+	  fputs ("nb", file); return;
+      case GT: 
+	  fputs ("nbe", file); return;
+      case LE: 
+	  fputs ("be", file); return;
+      case LT: 
+	  fputs ("b", file); return;
+      case GEU: 
+	  fputs ("nb", file); return;
+      case GTU: 
+	  fputs ("nbe", file); return;
+      case LEU: 
+	  fputs ("be", file); return;
+      case LTU: 
+	  fputs ("b", file); return;
+      default: output_operand_lossage ("Invalid %%C operand");
+    }
 }
 
 /* Meaning of CODE:
-   f -- float insn (print a CONST_DOUBLE as a float rather than in hex).
-   D,L,W,B,Q,S -- print the opcode suffix for specified size of operand.
+   L,W,B,Q,S,T -- print the opcode suffix for specified size of operand.
    C -- print opcode suffix for set/cmov insn.
-   N -- like C, but print reversed condition
+   c -- like C, but print reversed condition
+   F -- print opcode suffix for fcmov insn.
+   f -- like C, but print reversed condition
    R -- print the prefix for register names.
    z -- print the opcode suffix for the size of the current operand.
    * -- print a star (in certain assembler syntax)
@@ -2740,6 +2767,13 @@ put_condition_code (code, file)
    J -- print the appropriate jump operand.
    s -- print a shift double count, followed by the assemblers argument
 	delimiter.
+   b -- print the QImode name of the register for the indicated operand.
+	%b0 would print %al if operands[0] is reg 0.
+   w --  likewise, print the HImode name of the register.
+   k --  likewise, print the SImode name of the register.
+   h --  print the QImode name for a "high" register, either ah, bh, ch or dh.
+   y --  print "st(0)" instead of "st" as a register.
+   P --  print as a PIC constant
 */
 
 void
@@ -2866,11 +2900,22 @@ print_operand (file, x, code)
 
 	  /* This is used by the conditional move instructions.  */
 	case 'C':
-	  put_condition_code (GET_CODE (x), file);
+	  put_condition_code (GET_CODE (x), MODE_INT, file);
 	  return;
+
 	  /* like above, but reverse condition */
-	case 'N':
-	  put_condition_code (reverse_condition (GET_CODE (x)), file);
+	case 'c':
+	  put_condition_code (reverse_condition (GET_CODE (x)), MODE_INT, file);
+	  return;
+
+	case 'F':
+	  put_condition_code (GET_CODE (x), MODE_FLOAT, file);
+	  return;
+
+	  /* like above, but reverse condition */
+	case 'f':
+	  put_condition_code (reverse_condition (GET_CODE (x)),
+			      MODE_FLOAT, file);
 	  return;
 
 	default:
@@ -3623,7 +3668,9 @@ output_fp_cc0_set (insn)
     }
   else if (GET_CODE (PATTERN (next)) == SET)
     {
-      code = GET_CODE (SET_SRC (PATTERN (next)));
+      if (GET_CODE (SET_SRC (PATTERN (next))) == IF_THEN_ELSE)
+	code = GET_CODE (XEXP (SET_SRC (PATTERN (next)), 0));
+      else code = GET_CODE (SET_SRC (PATTERN (next)));
     }
   else
     abort ();
