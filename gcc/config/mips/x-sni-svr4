@@ -1,0 +1,18 @@
+# Define CC and OLDCC as the same, so that the tests:
+#	if [ x"$(OLDCC)" = x"$(CC)" ] ...
+#
+# will succeed (if OLDCC != CC, it is assumed that GCC is
+# being used in secondary stage builds).
+# -Olimit is so the user can use -O2.  Down with fixed
+# size tables!
+
+CC		= $(OLDCC)
+OPT		=
+OLDCC		= cc -Olimit 3000 $(OPT)
+
+X_CFLAGS	= -DNO_SYS_SIGLIST
+
+# Show we need to use the C version of ALLOCA
+# The SVR3 configurations have it, but the SVR4 configurations don't.
+# For now, just try using it for all SVR* configurations.
+ALLOCA		= alloca.o
