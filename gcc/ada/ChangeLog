@@ -1,3 +1,8 @@
+2001-10-11  Ed Schonberg <schonber@gnat.com>
+
+	* sem_eval.adb (Compare_Fixup): get the bounds of a String_Literal 
+	properly. Fixes regression on ACATS C34005G.
+
 2001-10-11  Robert Dewar <dewar@gnat.com>
 
 	* sem_ch5.adb (Analyze_Iteration_Scheme): Suppress warning on null 
