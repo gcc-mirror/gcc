@@ -1,3 +1,16 @@
+2004-08-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* hooks.c (hook_bool_void_true): New function.
+	* hooks.h (hook_bool_void_true): Declare.
+	* target-def.h (TARGET_CXX): Add
+	TARGET_CXX_KEY_METHOD_MAY_BE_INLINE.
+	* target.h (struct cxx): Add key_method_may_be_inline.
+	* config/arm/arm.c (arm_cxx_key_method_may_be_inline): New
+	function.
+	(TARGET_CXX_KEY_METHOD_MAY_BE_INLINE): New macro.
+	* config/arm/bpabi.h: Use __THUMB_INTERWORK__ instead of
+	__THUMB_INTERWORK.
+	
 2004-08-31  Denis Chertykov  <denisc@overta.ru>
 
 	PR target/15417

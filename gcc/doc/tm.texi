@@ -8528,6 +8528,16 @@ the address of the object created/destroyed.  The default is to return
 @code{false}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CXX_KEY_METHOD_MAY_BE_INLINE (void)
+This hook returns true if the key method for a class (i.e., the method
+which, if defined in the current translation unit, causes the virtual
+table to be emitted) may be an inline function.  Under the standard
+Itanium C++ ABI the key method may be an inline function so long as
+the function is not declared inline in the class definition.  Under
+some variants of the ABI, an inline function can never be the key
+method.  The default is to return @code{true}.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous

@@ -437,6 +437,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_CXX_CDTOR_RETURNS_THIS hook_bool_void_false
 #endif
 
+#ifndef TARGET_CXX_KEY_METHOD_MAY_BE_INLINE
+#define TARGET_CXX_KEY_METHOD_MAY_BE_INLINE hook_bool_void_true
+#endif
+
 #define TARGET_CXX		\
   {				\
     TARGET_CXX_GUARD_TYPE,	\
@@ -444,7 +448,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
     TARGET_CXX_GET_COOKIE_SIZE,	\
     TARGET_CXX_COOKIE_HAS_SIZE,	\
     TARGET_CXX_IMPORT_EXPORT_CLASS,	\
-    TARGET_CXX_CDTOR_RETURNS_THIS	\
+    TARGET_CXX_CDTOR_RETURNS_THIS,	\
+    TARGET_CXX_KEY_METHOD_MAY_BE_INLINE \
   }
 
 /* The whole shebang.  */

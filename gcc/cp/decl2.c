@@ -1559,6 +1559,12 @@ maybe_emit_vtables (tree ctype)
   if (TREE_TYPE (primary_vtbl) == void_type_node)
     return false;
 
+  /* On some targets, we cannot determine the key method until the end
+     of the translation unit -- which is when this function is
+     called.  */
+  if (!targetm.cxx.key_method_may_be_inline ())
+    determine_key_method (ctype);
+
   /* See if any of the vtables are needed.  */
   for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = TREE_CHAIN (vtbl))
     {

@@ -3673,6 +3673,7 @@ extern void debug_class				(tree);
 extern void debug_thunks 			(tree);
 extern tree cp_fold_obj_type_ref		(tree, tree);
 extern void set_linkage_according_to_type       (tree, tree);
+extern void determine_key_method                (tree);
 
 /* in cvt.c */
 extern tree convert_to_reference (tree, tree, int, int, tree);

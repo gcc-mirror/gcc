@@ -4886,11 +4886,11 @@ layout_class_type (tree t, tree *virtuals_p)
   splay_tree_delete (empty_base_offsets);
 }
 
-/* Returns the virtual function with which the vtable for TYPE is
-   emitted, or NULL_TREE if that heuristic is not applicable to TYPE.  */
+/* Determine the "key method" for the class type indicated by TYPE,
+   and set CLASSTYPE_KEY_METHOD accordingly.  */
 
-static tree
-key_method (tree type)
+void
+determine_key_method (tree type)
 {
   tree method;
 
@@ -4898,16 +4898,23 @@ key_method (tree type)
       || processing_template_decl
       || CLASSTYPE_TEMPLATE_INSTANTIATION (type)
       || CLASSTYPE_INTERFACE_KNOWN (type))
-    return NULL_TREE;
+    return;
 
+  /* The key method is the first non-pure virtual function that is not
+     inline at the point of class definition.  On some targets the
+     key function may not be inline; those targets should not call
+     this function until the end of the translation unit.  */
   for (method = TYPE_METHODS (type); method != NULL_TREE;
        method = TREE_CHAIN (method))
     if (DECL_VINDEX (method) != NULL_TREE
 	&& ! DECL_DECLARED_INLINE_P (method)
 	&& ! DECL_PURE_VIRTUAL_P (method))
-      return method;
+      {
+	CLASSTYPE_KEY_METHOD (type) = method;
+	break;
+      }
 
-  return NULL_TREE;
+  return;
 }
 
 /* Perform processing required when the definition of T (a class type)
@@ -4950,7 +4957,16 @@ finish_struct_1 (tree t)
   /* Find the key method.  */
   if (TYPE_CONTAINS_VPTR_P (t))
     {
-      CLASSTYPE_KEY_METHOD (t) = key_method (t);
+      /* The Itanium C++ ABI permits the key method to be chosen when
+	 the class is defined -- even though the key method so
+	 selected may later turn out to be an inline function.  On
+	 some systems (such as ARM Symbian OS) the key method cannot
+	 be determined until the end of the translation unit.  On such
+	 systems, we leave CLASSTYPE_KEY_METHOD set to NULL, which
+	 will cause the class to be added to KEYED_CLASSES.  Then, in
+	 finish_file we will determine the key method.  */
+      if (targetm.cxx.key_method_may_be_inline ())
+	determine_key_method (t);
 
       /* If a polymorphic class has no key method, we may emit the vtable
 	 in every translation unit where the class definition appears.  */

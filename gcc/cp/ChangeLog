@@ -1,3 +1,12 @@
+2004-08-31  Mark Mitchell  <mark@codesourcery.com>
+
+ 	* class.c (key_method): Rename to ...
+	(determine_key_method): ... this.
+	(finish_struct_1): Adjust accordingly.
+	* cp-tree.h (key_method): Declare.
+	* decl2.c (maybe_emit_vtables): Determine the key method here if
+	it has not already been done.
+
 2004-08-31  Ziemowit Laski  <zlaski@apple.com>
 
 	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add cp/cp-objcp-common.o.
