@@ -1,7 +1,7 @@
 /* With tree-ssa, gcc.dg/20000724-1.c failed because we missed
    a VOP of x in the asm statement.  */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-alias-vops" } */
+/* { dg-options "-O1 -fdump-tree-alias1-vops" } */
 
 struct s { int a; };
 
@@ -13,4 +13,4 @@ main(void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "V_MAY_DEF" 2 "alias" } } */
+/* { dg-final { scan-tree-dump-times "V_MAY_DEF" 2 "alias1" } } */
