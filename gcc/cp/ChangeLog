@@ -1,3 +1,101 @@
+2003-10-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Break out decl.c (2/n) 
+	* name-lookup.c: Include diagnostic.h
+	(cxx_binding_free): Make static.
+	(cxx_binding_make): Likewise.
+	(binding_table_new): Likewise
+	(binding_table_free): Likewise.
+	(binding_table_insert): Likewise.
+	(binding_table_find_anon_type): Likewise.
+	(binding_table_reverse_maybe_remap): Likewise.
+	(supplement_binding): Likewise.
+	* name-lookup.h (global_scope_name): Declare extern.
+	(global_type_node): Likewise.
+	(cxx_binding_free): Don't export.
+	(cxx_binding_make): Likewise.
+	(binding_table_new): Likewise.
+	(binding_table_free): Likewise.
+	(binding_table_insert): Likewise.
+	(binding_table_find_anon_type): Likewise.
+	(binding_table_reverse_maybe_remap): Likewise.
+	* Make-lang.in (cp/name-lookup.o): Depend on $(DIAGNOSTIC_H)
+	* decl.c (lookup_namespace_name): Move to name-lookup.c
+	(select_decl): Likewise.
+	(unqualified_namespace_lookup): Likewise.
+	(lookup_qualified_name): Likewise.
+	(lookup_name_real): Likewise.
+	(lookup_name_nonclass): Likewise.
+	(lookup_function_nonclass): Likewise.
+	(lookup_name): Likewise.
+	(lookup_name_current_level): Likewise.
+	(lookup_type_current_level): Likewise.
+	(lookup_flags): Likewise.
+	(qualify_lookup): Likewise.
+	(lookup_tag): Likewise.
+	(lookup_tag_reverse): Likewise.
+	(getdecls): Likewise.
+	(storedecls): Remove.
+	(cxx_remember_type_decls): Likewise.
+	(global_bindings_p): Likewise.
+	(innermost_nonclass_level): Likewise.
+	(toplevel_bindings_p): Likewise.
+	(namespace_bindings_p): Likewise.
+	(kept_level_p): Likewise.
+	(innermost_scope_kind): Likewise.
+	(template_parm_scope_p): Likewise.
+	(push_binding): Likewise.
+	(push_local_binding): Likewise.
+	(add_decl_to_level): Likewise.  Make extern.
+	(push_class_binding): Move to name-lookup.c.
+	(resume_level): Likewise.  Rename to resume_scope.
+	(begin_scope): Likewise.
+	(indent): Likewise.
+	(binding_depth): Likewise.
+	(is_class_level): Likewise.
+	(cxx_scope_descriptor): Likewise.
+	(cxx_scope_debug): Likewise.
+	(namespace_scope_ht_size): Likewise.
+	(leave_scope): Likewise.
+	(pushlevel_class): Likewise.
+	(poplevel_class): Likewise.
+	(clear_identifier_class_values): Likewise.
+	(pushdecl_with_scope): Likewise.
+	(pushdecl_namespace_level): Likewise.
+	(pushdecl_class_level): Likewise.
+	(push_class_level_binding): Likewise.
+	(push_using_directive): Likewise.
+	(identifier_global_value): Likewise.
+	(keep_next_level_flag): Likewise.
+	(keep_next_level): Likewise.
+	(free_binding_level): Likewise.
+	(set_class_shadows): Likewise.
+	(maybe_push_cleanup_level): Likewise.
+	(cp_namespace_decls): Likewise.
+	(bt_print_entry): Likewise.
+	(print_binding_level): Likewise.
+	(print_other_binding_stack): Likewise.
+	(print_binding_stack): Likewise.
+	(push_namespace): Likewise.
+	(pop_namespace): Likewise.
+	(push_nested_namespace): Likewise.
+	(pop_nested_namespace): Likewise.
+	(cxx_saved_binding_make): Likewise.
+	(struct cxx_saved_binding_make): Likewise.
+	(store_bindings): Likewise.
+	(maybe_push_to_top_level): Likewise.
+	(push_to_top_level): Likewise.
+	(pop_from_top_level): Likewise.
+	(identifier_type_value): Likewise.
+	(set_identifier_type_value): Likewise.
+	(set_identifier_type_value_with_scope): Likewise.
+	(pop_everything): Likewise.
+	(pushtag): Likewise.
+	(follow_tag_typedef): Likewise.
+	(maybe_process_template_type_declaration): Likewise.
+	(pop_binding): Likewise.
+	* cp-tree.h: Move corresponding declarations to name-lookup.h
+	
 2003-10-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* cvt.c (ocp_convert): Move warning to C common code.
