@@ -1,4 +1,5 @@
 /* { dg-do compile { target powerpc*-*-* } } */
+/* { dg-xfail-if "" { "powerpc-ibm-aix*" } { "-maltivec" } { "" } } */
 /* { dg-options "-maltivec" } */
 
 #include <altivec.h>
