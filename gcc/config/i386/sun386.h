@@ -141,3 +141,14 @@ do								\
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	   \
+do {									   \
+  fprintf (FILE, "\taddl $%d,%s\n\tjmp ", DELTA,			   \
+	 i386_regparm > 0 ? "%eax" : "4(%esp)");			   \
+  assemble_name (FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION))); \
+  fprintf (FILE, "\n");							   \
+} while (0)
