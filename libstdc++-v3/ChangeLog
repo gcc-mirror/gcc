@@ -1,3 +1,30 @@
+2003-05-11  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	PR libstdc++/3181
+	* include/c_std/std_cmath.h: #include <bits/cpp_type_traits.h>
+	(acos): Handle integer argument.
+	(asin): Likewise.
+	(atan): Likewise.
+	(atan2): Likewise.
+	(ceil): Likewise.
+	(cos): Likewise.
+	(cosh): Likewise.
+	(exp): Likewise.
+	(fabs): Likewise.
+	(floor): Likewise.
+	(frexp): Likewise.
+	(ldexp): Likewise.
+	(log): Likewise.
+	(log10): Likewise.
+	(sin): Likewise.
+	(sinh): Likewise.
+	(sqrt): Likewise.
+	(tan): Likewise.
+	(tanh): Likewise.
+	* include/bits/cpp_type_traits.h (__are_same<>): New traits.
+	(__enable_if): Likewise.
+	* testsuite/26_numerics/cmath/overloads.C: New test.
+	
 2003-05-10  Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/9027
