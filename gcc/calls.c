@@ -147,7 +147,6 @@ static int check_sibcall_argument_overlap (rtx, struct arg_data *, int);
 
 static int combine_pending_stack_adjustment_and_call (int, struct args_size *,
 						      unsigned int);
-static bool shift_returned_value (tree, rtx *);
 static tree split_complex_values (tree);
 static tree split_complex_types (tree);
 
@@ -1715,39 +1714,27 @@ check_sibcall_argument_overlap (rtx insn, struct arg_data *arg, int mark_stored_
   return insn != NULL_RTX;
 }
 
-/* If function value *VALUE was returned at the most significant end of a
-   register, shift it towards the least significant end and convert it to
-   TYPE's mode.  Return true and update *VALUE if some action was needed.
+/* Given that a function returns a value of mode MODE at the most
+   significant end of hard register VALUE, shift VALUE left or right
+   as specified by LEFT_P.  Return true if some action was needed.  */
 
-   TYPE is the type of the function's return value, which is known not
-   to have mode BLKmode.  */
-
-static bool
-shift_returned_value (tree type, rtx *value)
+bool
+shift_return_value (enum machine_mode mode, bool left_p, rtx value)
 {
-  if (targetm.calls.return_in_msb (type))
-    {
-      HOST_WIDE_INT shift;
+  HOST_WIDE_INT shift;
 
-      shift = (GET_MODE_BITSIZE (GET_MODE (*value))
-	       - BITS_PER_UNIT * int_size_in_bytes (type));
-      if (shift > 0)
-	{
-	  /* Shift the value into the low part of the register.  */
-	  *value = expand_binop (GET_MODE (*value), lshr_optab, *value,
-				 GEN_INT (shift), 0, 1, OPTAB_WIDEN);
+  gcc_assert (REG_P (value) && HARD_REGISTER_P (value));
+  shift = GET_MODE_BITSIZE (GET_MODE (value)) - GET_MODE_BITSIZE (mode);
+  if (shift == 0)
+    return false;
 
-	  /* Truncate it to the type's mode, or its integer equivalent.
-	     This is subject to TRULY_NOOP_TRUNCATION.  */
-	  *value = convert_to_mode (int_mode_for_mode (TYPE_MODE (type)),
-				    *value, 0);
-
-	  /* Now convert it to the final form.  */
-	  *value = gen_lowpart (TYPE_MODE (type), *value);
-	  return true;
-	}
-    }
-  return false;
+  /* Use ashr rather than lshr for right shifts.  This is for the benefit
+     of the MIPS port, which requires SImode values to be sign-extended
+     when stored in 64-bit registers.  */
+  if (!force_expand_binop (GET_MODE (value), left_p ? ashl_optab : ashr_optab,
+			   value, GEN_INT (shift), value, 1, OPTAB_WIDEN))
+    gcc_unreachable ();
+  return true;
 }
 
 /* Remove all REG_EQUIV notes found in the insn chain.  */
@@ -2660,6 +2647,20 @@ expand_call (tree exp, rtx target, int ignore)
 		   next_arg_reg, valreg, old_inhibit_defer_pop, call_fusage,
 		   flags, & args_so_far);
 
+      /* If a non-BLKmode value is returned at the most significant end
+	 of a register, shift the register right by the appropriate amount
+	 and update VALREG accordingly.  BLKmode values are handled by the
+	 group load/store machinery below.  */
+      if (!structure_value_addr
+	  && !pcc_struct_value
+	  && TYPE_MODE (TREE_TYPE (exp)) != BLKmode
+	  && targetm.calls.return_in_msb (TREE_TYPE (exp)))
+	{
+	  if (shift_return_value (TYPE_MODE (TREE_TYPE (exp)), false, valreg))
+	    sibcall_failure = 1;
+	  valreg = gen_rtx_REG (TYPE_MODE (TREE_TYPE (exp)), REGNO (valreg));
+	}
+
       /* If call is cse'able, make appropriate pair of reg-notes around it.
 	 Test valreg so we don't crash; may safely ignore `const'
 	 if return type is void.  Disable for PARALLEL return values, because
@@ -2851,12 +2852,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  sibcall_failure = 1;
 	}
       else
-	{
-	  if (shift_returned_value (TREE_TYPE (exp), &valreg))
-	    sibcall_failure = 1;
-
-	  target = copy_to_reg (valreg);
-	}
+	target = copy_to_reg (valreg);
 
       if (targetm.calls.promote_function_return(funtype))
 	{

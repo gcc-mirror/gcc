@@ -425,6 +425,9 @@ extern rtx expand_ternary_op (enum machine_mode mode, optab ternary_optab,
 extern rtx expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
 			 enum optab_methods);
 
+extern bool force_expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
+				enum optab_methods);
+
 /* Expand a binary operation with both signed and unsigned forms.  */
 extern rtx sign_expand_binop (enum machine_mode, optab, optab, rtx, rtx,
 			      rtx, int, enum optab_methods);
