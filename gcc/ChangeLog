@@ -1,3 +1,8 @@
+2002-07-24  David Mosberger  <davidm@hpl.hp.com>
+
+	* config/ia64/ia64.c (gen_thread_pointer): Fix typo in marking
+	thread_pointer_rtx as unchanging.
+
 2002-07-24  Michael Matz  <matz@suse.de>
 
 	* ra-colorize.c (INV_REG_ALLOC_ORDER): New macro.

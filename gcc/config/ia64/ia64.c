@@ -1067,7 +1067,7 @@ gen_thread_pointer ()
   if (!thread_pointer_rtx)
     {
       thread_pointer_rtx = gen_rtx_REG (Pmode, 13);
-      RTX_UNCHANGING_P (thread_pointer_rtx);
+      RTX_UNCHANGING_P (thread_pointer_rtx) = 1;
     }
   return thread_pointer_rtx;
 }
