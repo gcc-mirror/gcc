@@ -1,3 +1,11 @@
+2002-02-01  Adam Megacz <adam@xwt.org>
+
+	* prims.cc
+	(_Jv_CreateJavaVM): We now use WIN32 instead of
+	USE_WIN32_SIGNALLING and USE_WINSOCK.
+	(win32_exception_handler): Now throws an exception out of
+	the signal handler; assumes SJLJ
+	
 2002-02-01  Adam Megacz
 
         * win32-threads.cc:
