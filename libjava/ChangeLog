@@ -1,5 +1,13 @@
 2003-06-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/zip/ZipEntry.java,
+	java/util/zip/ZipFile.java,
+	java/util/zip/ZipInputStream.java,
+	java/util/zip/ZipOutputStream.java:
+	Reworked imports, only import used classes.
+
+2003-06-17  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/lang/ArrayHelper.java,
 	gnu/java/lang/ClassHelper.java:
 	Reformatted to match classpath's versions.

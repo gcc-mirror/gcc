@@ -38,9 +38,7 @@ exception statement from your version. */
 package java.util.zip;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
