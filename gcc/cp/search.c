@@ -1955,9 +1955,8 @@ look_for_overrides (type, fndecl)
   return found;
 }
 
-/* Look in TYPE for virtual functions with the same signature as FNDECL.
-   This differs from get_matching_virtual in that it will only return
-   a function from TYPE.  */
+/* Look in TYPE for virtual functions with the same signature as
+   FNDECL.  */
 
 tree
 look_for_overrides_here (type, fndecl)

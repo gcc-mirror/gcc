@@ -1,3 +1,9 @@
+2002-11-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/thunk1.C: New test.
+	* g++.dg/abi/thunk2.C: Likewise.
+	* g++.dg/abi/vtt1.C: Likewise.
+
 2002-11-02  Diego Novillo  <dnovillo@redhat.com>
 
 	PR optimization/8423

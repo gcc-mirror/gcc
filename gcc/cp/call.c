@@ -4712,7 +4712,7 @@ build_special_member_call (tree instance, tree name, tree args,
       /* If the current function is a complete object constructor
 	 or destructor, then we fetch the VTT directly.
 	 Otherwise, we look it up using the VTT we were given.  */
-      vtt = IDENTIFIER_GLOBAL_VALUE (get_vtt_name (current_class_type));
+      vtt = TREE_CHAIN (CLASSTYPE_VTABLES (current_class_type));
       vtt = decay_conversion (vtt);
       vtt = build (COND_EXPR, TREE_TYPE (vtt),
 		   build (EQ_EXPR, boolean_type_node,

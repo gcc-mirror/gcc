@@ -60,7 +60,7 @@ typedef struct priority_info_s {
 
 static void mark_vtable_entries PARAMS ((tree));
 static void grok_function_init PARAMS ((tree, tree));
-static int finish_vtable_vardecl PARAMS ((tree *, void *));
+static int maybe_emit_vtables (tree);
 static int is_namespace_ancestor PARAMS ((tree, tree));
 static void add_using_namespace PARAMS ((tree, tree, int));
 static tree ambiguous_decl PARAMS ((tree, tree, tree,int));
@@ -1658,12 +1658,7 @@ key_method (type)
        method = TREE_CHAIN (method))
     if (DECL_VINDEX (method) != NULL_TREE
 	&& ! DECL_DECLARED_INLINE_P (method)
-	&& (! DECL_PURE_VIRTUAL_P (method)
-#if 0
-	    /* This would be nice, but we didn't think of it in time.  */
-	    || DECL_DESTRUCTOR_P (method)
-#endif
-	    ))
+	&& ! DECL_PURE_VIRTUAL_P (method))
       return method;
 
   return NULL_TREE;
@@ -1805,28 +1800,52 @@ output_vtable_inherit (vars)
   assemble_vtable_inherit (child_rtx, parent_rtx);
 }
 
-static int
-finish_vtable_vardecl (t, data)
-     tree *t;
-     void *data ATTRIBUTE_UNUSED;
-{
-  tree vars = *t;
-  tree ctype = DECL_CONTEXT (vars);
-  import_export_class (ctype);
-  import_export_vtable (vars, ctype, 1);
+/* If necessary, write out the vtables for the dynamic class CTYPE.
+   Returns non-zero if any vtables were emitted.  */
 
-  if (! DECL_EXTERNAL (vars)
-      && DECL_NEEDED_P (vars)
-      && ! TREE_ASM_WRITTEN (vars))
+static int
+maybe_emit_vtables (tree ctype)
+{
+  tree vtbl;
+  tree primary_vtbl;
+
+  /* If the vtables for this class have already been emitted there is
+     nothing more to do.  */
+  primary_vtbl = CLASSTYPE_VTABLES (ctype);
+  if (TREE_ASM_WRITTEN (primary_vtbl))
+    return 0;
+  /* Ignore dummy vtables made by get_vtable_decl.  */
+  if (TREE_TYPE (primary_vtbl) == void_type_node)
+    return 0;
+
+  import_export_class (ctype);
+  import_export_vtable (primary_vtbl, ctype, 1);
+
+  /* See if any of the vtables are needed.  */
+  for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = TREE_CHAIN (vtbl))
+    if (!DECL_EXTERNAL (vtbl) && DECL_NEEDED_P (vtbl))
+      break;
+  
+  if (!vtbl)
     {
-      if (TREE_TYPE (vars) == void_type_node)
-        /* It is a dummy vtable made by get_vtable_decl. Ignore it.  */
-        return 0;
-      
+      /* If the references to this class' vtables are optimized away,
+	 still emit the appropriate debugging information.  See
+	 dfs_debug_mark.  */
+      if (DECL_COMDAT (primary_vtbl) 
+	  && CLASSTYPE_DEBUG_REQUESTED (ctype))
+	note_debug_info_needed (ctype);
+      return 0;
+    }
+
+  /* The ABI requires that we emit all of the vtables if we emit any
+     of them.  */
+  for (vtbl = CLASSTYPE_VTABLES (ctype); vtbl; vtbl = TREE_CHAIN (vtbl))
+    {
       /* Write it out.  */
-      mark_vtable_entries (vars);
-      if (TREE_TYPE (DECL_INITIAL (vars)) == 0)
-	store_init_value (vars, DECL_INITIAL (vars));
+      import_export_vtable (vtbl, ctype, 1);
+      mark_vtable_entries (vtbl);
+      if (TREE_TYPE (DECL_INITIAL (vtbl)) == 0)
+	store_init_value (vtbl, DECL_INITIAL (vtbl));
 
       if (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG)
 	{
@@ -1851,37 +1870,29 @@ finish_vtable_vardecl (t, data)
 	      `S' get written (which would solve the problem) but that would
 	      require more intrusive changes to the g++ front end.  */
 
-	  DECL_IGNORED_P (vars) = 1;
+	  DECL_IGNORED_P (vtbl) = 1;
 	}
 
       /* Always make vtables weak.  */
       if (flag_weak)
-	comdat_linkage (vars);
+	comdat_linkage (vtbl);
 
-      rest_of_decl_compilation (vars, NULL, 1, 1);
+      rest_of_decl_compilation (vtbl, NULL, 1, 1);
 
       if (flag_vtable_gc)
-	output_vtable_inherit (vars);
+	output_vtable_inherit (vtbl);
 
       /* Because we're only doing syntax-checking, we'll never end up
 	 actually marking the variable as written.  */
       if (flag_syntax_only)
-	TREE_ASM_WRITTEN (vars) = 1;
-
-      /* Since we're writing out the vtable here, also write the debug 
-	 info.  */
-      note_debug_info_needed (ctype);
-
-      return 1;
+	TREE_ASM_WRITTEN (vtbl) = 1;
     }
 
-  /* If the references to this class' vtables were optimized away, still
-     emit the appropriate debugging information.  See dfs_debug_mark.  */
-  if (DECL_COMDAT (vars)
-      && CLASSTYPE_DEBUG_REQUESTED (ctype))
-    note_debug_info_needed (ctype);
+  /* Since we're writing out the vtable here, also write the debug
+     info.  */
+  note_debug_info_needed (ctype);
 
-  return 0;
+  return 1;
 }
 
 /* Determines the proper settings of TREE_PUBLIC and DECL_EXTERNAL for an
@@ -2755,6 +2766,8 @@ finish_file ()
   
   do 
     {
+      tree t;
+
       reconsider = 0;
 
       /* If there are templates that we've put off instantiating, do
@@ -2764,10 +2777,9 @@ finish_file ()
       /* Write out virtual tables as required.  Note that writing out
 	 the virtual table for a template class may cause the
 	 instantiation of members of that class.  */
-      if (walk_vtables (vtable_decl_p,
-			finish_vtable_vardecl,
-			/*data=*/0))
-	reconsider = 1;
+      for (t = dynamic_classes; t; t = TREE_CHAIN (t))
+	if (maybe_emit_vtables (TREE_VALUE (t)))
+	  reconsider = 1;
       
       /* Write out needed type info variables. Writing out one variable
          might cause others to be needed.  */
