@@ -1,3 +1,8 @@
+Thu Jul  9 18:01:05 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_equiv_reg): If need_stable_sp is set,
+	check if stack pointer is changed directly in a PARALLEL.
+
 Thu Jul  9 10:38:14 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (duplicate_loop_exit_test): Fix thinko.
