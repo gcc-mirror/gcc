@@ -1860,13 +1860,13 @@ mipsisa64-*-elf* | mipsisa64el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
 	tmake_file=mips/t-isa3264
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
-	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_MEABI"
+	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_ABI_DEFAULT=ABI_EABI"
 	;;
 mipsisa64sr71k-*-elf*)
         tm_file="${tm_file} mips/elf.h"
         tmake_file=mips/t-sr71k
 	target_cpu_default="MASK_64BIT|MASK_FLOAT64|MASK_GAS"
-	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_MEABI"
+	tm_defines="MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tm_file="${tm_file} mips/elf.h"
