@@ -118,6 +118,7 @@ fix = {
 fix = {
     hackname = avoid_bool;
     files    = curses.h;
+    files    = curses_colr/curses.h;
     files    = term.h;
     files    = tinfo.h;
 
