@@ -1662,6 +1662,35 @@ output_move_double (operands)
 	      return "ldw -4(0,%1),%R0\n\tldws,mb -8(0,%1),%0";
 	    }
 	}
+      else if (GET_CODE (addr) == PLUS
+	       && GET_CODE (XEXP (addr, 0)) == MULT)
+	{
+	  rtx high_reg = gen_rtx (SUBREG, SImode, operands[0], 0);
+
+	  if (!reg_overlap_mentioned_p (high_reg, addr))
+	    {
+	      rtx xoperands[3];
+
+	      xoperands[0] = high_reg;
+	      xoperands[1] = XEXP (addr, 1);
+	      xoperands[2] = XEXP (XEXP (addr, 0), 0);
+	      xoperands[3] = XEXP (XEXP (addr, 0), 1);
+	      output_asm_insn ("sh%O3addl %2,%1,%0", xoperands);
+	      return "ldw 4(0,%0),%R0\n\tldw 0(0,%0),%0";
+	    }
+	  else
+	    {
+	      rtx xoperands[3];
+
+	      xoperands[0] = high_reg;
+	      xoperands[1] = XEXP (addr, 1);
+	      xoperands[2] = XEXP (XEXP (addr, 0), 0);
+	      xoperands[3] = XEXP (XEXP (addr, 0), 1);
+	      output_asm_insn ("sh%O3addl %2,%1,%R0", xoperands);
+	      return "ldw 0(0,%R0),%0\n\tldw 4(0,%R0),%R0";
+	    }
+	   
+	}
     }
 
   /* If an operand is an unoffsettable memory ref, find a register
