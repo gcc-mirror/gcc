@@ -1,3 +1,8 @@
+Sat Feb 20 13:17:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* string, std/straits.h, std/bastring.h: Revert recent change.  Needs
+	some libiberty support before it can be re-enabled.
+
 Thu Feb 18 19:53:17 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* configure.in: Handle OpenBSD with and without threads.
