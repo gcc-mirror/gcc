@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include <signal.h>
 #include <setjmp.h>
-#include <sys/stat.h>
 
 #ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>

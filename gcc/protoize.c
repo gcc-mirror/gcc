@@ -58,7 +58,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "system.h"
-#include <sys/stat.h>
 #if ! defined (_WIN32) || defined (__CYGWIN__)
 #if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
