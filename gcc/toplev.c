@@ -292,9 +292,15 @@ int sorrycount = 0;
 /* Flag to output bytecode instead of native assembler */
 int output_bytecode = 0;
 
-/* Pointer to function to compute the name to use to print a declaration.  */
+/* Pointer to function to compute the name to use to print a declaration.
+   DECL is the declaration in question.
+   VERBOSITY determines what information will be printed:
+     0: DECL_NAME, demangled as necessary.
+     1: and scope information.
+     2: and any other information that might be interesting, such as function
+        parameter types in C++.  */
 
-char *(*decl_printable_name) ();
+char *(*decl_printable_name) (/* tree decl, int verbosity */);
 
 /* Pointer to function to compute rtl for a language-specific tree code.  */
 
@@ -1031,9 +1037,9 @@ fatal_insn_not_found (insn)
 /* This is the default decl_printable_name function.  */
 
 static char *
-decl_name (decl, kind)
+decl_name (decl, verbosity)
      tree decl;
-     char **kind;
+     int verbosity;
 {
   return IDENTIFIER_POINTER (DECL_NAME (decl));
 }
@@ -1057,11 +1063,10 @@ announce_function (decl)
 {
   if (! quiet_flag)
     {
-      char *junk;
       if (rtl_dump_and_exit)
 	fprintf (stderr, "%s ", IDENTIFIER_POINTER (DECL_NAME (decl)));
       else
-	fprintf (stderr, " %s", (*decl_printable_name) (decl, &junk));
+	fprintf (stderr, " %s", (*decl_printable_name) (decl, 2));
       fflush (stderr);
       need_error_newline = 1;
       last_error_function = current_function_decl;
@@ -1089,7 +1094,7 @@ default_print_error_function (file)
 	fprintf (stderr, "At top level:\n");
       else
 	{
-	  char *name = (*decl_printable_name) (current_function_decl, &kind);
+	  char *name = (*decl_printable_name) (current_function_decl, 2);
 	  fprintf (stderr, "In %s `%s':\n", kind, name);
 	}
 
@@ -1187,7 +1192,7 @@ v_message_with_decl (decl, prefix, s, ap)
      char *s;
      va_list ap;
 {
-  char *n, *p, *junk;
+  char *n, *p;
 
   fprintf (stderr, "%s:%d: ",
 	   DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
@@ -1223,7 +1228,7 @@ v_message_with_decl (decl, prefix, s, ap)
   if (*p == '%')		/* Print the name.  */
     {
       char *n = (DECL_NAME (decl)
-		 ? (*decl_printable_name) (decl, &junk)
+		 ? (*decl_printable_name) (decl, 2)
 		 : "((anonymous))");
       fputs (n, stderr);
       while (*p)

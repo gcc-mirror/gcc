@@ -1639,9 +1639,15 @@ extern int current_function_calls_longjmp;
 
 extern int all_types_permanent;
 
-/* Pointer to function to compute the name to use to print a declaration.  */
+/* Pointer to function to compute the name to use to print a declaration.
+   DECL is the declaration in question.
+   VERBOSITY determines what information will be printed:
+     0: DECL_NAME, demangled as necessary.
+     1: and scope information.
+     2: and any other information that might be interesting, such as function
+        parameter types in C++.  */
 
-extern char *(*decl_printable_name) ();
+extern char *(*decl_printable_name) (/* tree decl, int verbosity */);
 
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */

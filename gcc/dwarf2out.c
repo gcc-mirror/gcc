@@ -4443,6 +4443,18 @@ output_call_frame_info ()
     }
 }
 
+/* The DWARF2 pubname for a nested thingy looks like "A::f".  The output
+   of decl_printable_name for C++ looks like "A::f(int)".  Let's drop the
+   argument list, and maybe the scope.  */
+
+static char*
+dwarf2_name (decl, scope)
+     tree decl;
+     int scope;
+{
+  return (*decl_printable_name) (decl, scope ? 1 : 0);
+}
+
 /* Add a new entry to .debug_pubnames if appropriate.  */
 static void
 add_pubname (decl, die)
@@ -4462,7 +4474,8 @@ add_pubname (decl, die)
     }
   p = &pubname_table[pubname_table_in_use++];
   p->die = die;
-  p->name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  p->name = xstrdup (dwarf2_name (decl, 1));
 }
 
 /* Output the public names table used to speed up access to externally
@@ -4616,7 +4629,12 @@ output_aranges ()
       if (a->die_tag == DW_TAG_subprogram)
 	ASM_OUTPUT_DWARF_ADDR (asm_out_file, get_AT_low_pc (a));
       else
-	ASM_OUTPUT_DWARF_ADDR (asm_out_file, get_AT_string (a, DW_AT_name));
+	{
+	  char *name = get_AT_string (a, DW_AT_MIPS_linkage_name);
+	  if (! name)
+	    name = get_AT_string (a, DW_AT_name);
+	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, name);
+	}
       if (flag_verbose_asm)
 	{
 	  fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
@@ -6352,15 +6370,15 @@ add_name_and_src_coords_attributes (die, decl)
      register tree decl;
 {
   register tree decl_name;
-  if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
-    decl_name = DECL_ASSEMBLER_NAME (decl);
-  else
-    decl_name = DECL_NAME (decl); 
-
+  decl_name = DECL_NAME (decl); 
   if (decl_name && IDENTIFIER_POINTER (decl_name))
     {
-      add_name_attribute (die, IDENTIFIER_POINTER (decl_name));
+      add_name_attribute (die, dwarf2_name (decl, 0));
       add_src_coords_attributes (die, decl);
+      if ((TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
+	  && DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+	add_AT_string (die, DW_AT_MIPS_linkage_name,
+		       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
     }
 }
 
