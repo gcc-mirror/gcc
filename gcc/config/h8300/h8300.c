@@ -1827,6 +1827,16 @@ notice_update_cc (body, insn)
     }
 }
 
+/* Return nonzero if X is a stack pointer.  */
+
+int
+stack_pointer_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return x == stack_pointer_rtx;
+}
+
 /* Return nonzero if X is a constant whose absolute value is no
    greater than 2.  */
 
@@ -1849,6 +1859,30 @@ const_int_le_6_operand (x, mode)
 {
   return (GET_CODE (x) == CONST_INT
 	  && abs (INTVAL (x)) <= 6);
+}
+
+/* Return nonzero if X is a constant whose absolute value is greater
+   than 2.  */
+
+int
+const_int_gt_2_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && abs (INTVAL (x)) > 2);
+}
+
+/* Return nonzero if X is a constant whose absolute value is no
+   smaller than 8.  */
+
+int
+const_int_ge_8_operand (x, mode)
+     rtx x;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (x) == CONST_INT
+	  && abs (INTVAL (x)) >= 8);
 }
 
 /* Return nonzero if X is a constant expressible in QImode.  */
