@@ -30,8 +30,6 @@
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 32
 
-#define HANDLE_SYSV_PRAGMA
-
 /* There are conflicting reports about whether this system uses
    a different assembler syntax.  wilson@cygnus.com says # is right.  */
 #undef COMMENT_BEGIN
