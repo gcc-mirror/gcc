@@ -2886,7 +2886,7 @@ purge_addressof_1 (loc, insn, force, store)
 	      if (WORDS_BIG_ENDIAN)
 		{
 		  bitpos += (size_sub / BITS_PER_WORD) * BITS_PER_WORD;
-		  bitpos += (size_x / BITS_PER_WORD) * BITS_PER_WORD;
+		  bitpos -= (size_x / BITS_PER_WORD) * BITS_PER_WORD;
 		}
 	      if (BYTES_BIG_ENDIAN)
 		{
