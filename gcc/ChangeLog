@@ -1,3 +1,14 @@
+2004-07-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/16326
+	* reorg.c: Revert 2004-06-30 change.
+	(find_end_label): If HAVE_epilogue and !HAVE_return,
+	return 0 instead of creating a label at the end of the insn chain.
+	(optimize_skip): Account for the failure mode of find_end_label.
+	(fill_simple_delay_slots): Likewise.
+	(fill_slots_from_thread): Likewise.
+	(relax_delay_slots): Likewise.
+
 2004-07-08  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-flow.h (addressable_vars): Declare.
