@@ -3776,9 +3776,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
 
-    case BUILT_IN_FMOD:
-      break;
-
     case BUILT_IN_APPLY_ARGS:
       return expand_builtin_apply_args ();
 
@@ -3999,15 +3996,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       expand_builtin_trap ();
       return const0_rtx;
 
-    case BUILT_IN_PUTCHAR:
-    case BUILT_IN_PUTS:
-    case BUILT_IN_FPUTC:
-    case BUILT_IN_FWRITE:
-    case BUILT_IN_PUTCHAR_UNLOCKED:
-    case BUILT_IN_PUTS_UNLOCKED:
-    case BUILT_IN_FPUTC_UNLOCKED:
-    case BUILT_IN_FWRITE_UNLOCKED:
-      break;
     case BUILT_IN_FPUTS:
       target = expand_builtin_fputs (arglist, ignore,/*unlocked=*/ 0);
       if (target)
@@ -4058,9 +4046,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       return const0_rtx;
 
 
-    default:			/* just do library call, if unknown builtin */
-      error ("built-in function `%s' not currently supported",
-	     IDENTIFIER_POINTER (DECL_NAME (fndecl)));
+    default:	/* just do library call, if unknown builtin */
+      if (!DECL_ASSEMBLER_NAME_SET_P (fndecl))
+	error ("built-in function `%s' not currently supported",
+	       IDENTIFIER_POINTER (DECL_NAME (fndecl)));
     }
 
   /* The switch statement above can drop through to cause the function
