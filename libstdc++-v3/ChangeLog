@@ -1,3 +1,16 @@
+2004-02-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* 22_locale/collate/compare/wchar_t/2.cc: Change input-charset
+	from iso-8859-1 to ISO8859-1.
+	* 22_locale/collate/compare/wchar_t/wrapped_env.cc: Same.
+	* 22_locale/collate/compare/wchar_t/wrapped_locale.cc: Same.
+	* 22_locale/collate/hash/wchar_t/2.cc: Same.
+	* 22_locale/collate/hash/wchar_t/wrapped_env.cc: Same.
+	* 22_locale/collate/hash/wchar_t/wrapped_locale.cc: Same.
+	* 22_locale/collate/transform/wchar_t/2.cc: Same.
+	* 22_locale/collate/transform/wchar_t/wrapped_env.cc: Same.
+	* 22_locale/collate/transform/wchar_t/wrapped_locale.cc: Same.
+
 2004-02-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.h (money_get<>::_M_extract):
