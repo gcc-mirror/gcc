@@ -1,9 +1,15 @@
+Wed Nov 17 15:18:30 1999  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): Don't try to duplicate the loop exit
+	test if optimizing for size.
+
 1999-11-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (toplev.o): Depend on except.h.
 	(dwarf2out.o,loop.o,flow.o,haifa-sched.o): Likewise.
 
 Mon Nov 15 22:45:39 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
 	* i386.md (divmodsi4): Rewrite to expander.
 	(*divmodsi4_nocltd): New.
 	(*divmodsi4_cltd): New.
