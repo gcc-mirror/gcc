@@ -76,6 +76,7 @@ jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 C front end/isoc9x	Gavin Romig-Koch	gavin@cygnus.com
 config.sub/config.guess	Ben Elliston		bje@cygnus.com
+avr port		Denis Chertykov		denisc@overta.ru
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
