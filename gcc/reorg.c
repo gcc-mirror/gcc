@@ -3948,7 +3948,8 @@ fill_eager_delay_slots ()
 	      = fill_slots_from_thread (insn, condition, fallthrough_insn,
 					insn_at_target, 0, 0,
 					own_fallthrough,
-					slots_to_fill, &slots_filled);
+					slots_to_fill, &slots_filled,
+					delay_list);
 
 	  if (delay_list == 0)
 	    delay_list
