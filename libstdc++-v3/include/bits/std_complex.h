@@ -176,7 +176,7 @@ namespace std
     friend class complex<double>;
     friend class complex<long double>;
 
-    friend float abs<>(const complex<float>&);
+    // friend float abs<>(const complex<float>&);
     friend float arg<>(const complex<float>&);
 
     friend complex<float> conj<>(const complex<float>&);
@@ -253,7 +253,7 @@ namespace std
     friend class complex<float>;
     friend class complex<long double>;
 
-    friend double abs<>(const complex<double>&);
+    // friend double abs<>(const complex<double>&);
     friend double arg<>(const complex<double>&);
 
     friend complex<double> conj<>(const complex<double>&);
@@ -330,7 +330,7 @@ namespace std
     friend class complex<float>;
     friend class complex<double>;
 
-    friend long double abs<>(const complex<long double>&);
+    // friend long double abs<>(const complex<long double>&);
     friend long double arg<>(const complex<long double>&);
 
     friend complex<long double> conj<>(const complex<long double>&);
@@ -927,6 +927,19 @@ namespace std
     inline _Tp
     imag(const complex<_Tp>& __z)
     { return __z.imag(); }
+
+  template<typename _Tp>
+    inline _Tp
+    abs(const complex<_Tp>& __z)
+    {
+      _Tp __x = __z.real();
+      _Tp __y = __z.imag();
+      _Tp __s = abs(__x) + abs(__y);
+      if (__s == _Tp())  // well ...
+        return __s;
+      __x /= __s; __y /= __s;
+      return __s * sqrt(__x * __x + __y * __y);
+    }
     
 
   // We use here a few more specializations.
@@ -955,7 +968,3 @@ namespace std
 } // namespace std
 
 #endif	/* _CPP_COMPLEX */
-
-
-
-

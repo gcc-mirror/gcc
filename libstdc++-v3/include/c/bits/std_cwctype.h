@@ -44,6 +44,22 @@ namespace std
   using ::wctype_t;
   using ::wctrans_t;
 
+  // Get rid of those macros defined in <wctype.h> in lieu of real functions.
+#undef iswalnum
+#undef iswalpha
+#undef iswblank
+#undef iswcntrl
+#undef iswdigit
+#undef iswgraph
+#undef iswlower
+#undef iswprint
+#undef iswprint
+#undef iswpunct
+#undef iswspace
+#undef iswupper
+#undef iswxdigit
+#undef iswctype  
+
   extern "C" int iswalnum(wint_t); 
   extern "C" int iswalpha(wint_t); 
   extern "C" int iswblank(wint_t); 

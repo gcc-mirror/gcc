@@ -45,14 +45,14 @@
 
 namespace std
 {
-  template<>
-  FLT
-  abs(const complex<FLT>& __x)
-  { 
-    // We don't use cabs here because some systems (IRIX 6.5, for
-    // example) define their own incompatible version.
-    return hypot (__real__ __x._M_value, __imag__ __x._M_value); 
-  }
+//    template<>
+//    FLT
+//    abs(const complex<FLT>& __x)
+//    { 
+//      // We don't use cabs here because some systems (IRIX 6.5, for
+//      // example) define their own incompatible version.
+//      return hypot (__real__ __x._M_value, __imag__ __x._M_value); 
+//    }
 
   template<>
   FLT
