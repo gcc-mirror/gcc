@@ -99,8 +99,7 @@ public class IntrospectionIncubator {
 	 * @param method The method instance to examine.
 	 */
 	public void addMethod(Method method) {
-		if(Modifier.isPublic(method.getModifiers()) &&
-			!Modifier.isStatic(method.getModifiers())) {
+		if(Modifier.isPublic(method.getModifiers())) {
 			String name = ClassHelper.getTruncatedName(method.getName());
 			Class retType = method.getReturnType();
 			Class[] params = method.getParameterTypes();

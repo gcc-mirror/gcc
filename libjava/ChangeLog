@@ -1,3 +1,9 @@
+2005-02-21  Robert Schuster  <theBohemian@gmx.net>
+
+	* gnu/java/beans/IntrospectionIncubator.java
+	(addMethod) Reverts the patch that ntroduced a regression (see bug
+	https://savannah.gnu.org/bugs/?func=detailitem&item_id=10938).
+
 2005-02-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/awt/Checkbox.java
