@@ -1,3 +1,102 @@
+Wed Nov 25 23:32:02 1998  Ian Dall  <Ian.Dall@dsto.defence.gov.au>
+			  Matthias Pfaller  <leo@dachau.marco.de>
+
+	* invoke.texi (Option Summary, NS32K Options): add description
+ 	of NS32K specific options.
+
+	* ns32k.md (tstdf, cmpdf, movdf, truncdfsf2, fixdfqi2, fixdfhi2,
+ 	fixdfsi2, fixunsdfqi2, fixunsdfhi2, fixunsdfsi2, fix_truncdfqi2,
+ 	fix_truncdfhi2, fix_truncdfsi2, adddf3, subdf3, muldf3, divdf3,
+ 	negdf2, absdf2): Use l instead of f since the double class and
+ 	float class are no longer the same.
+	(cmpsi, truncsiqi2, truncsihi2, addsi3, subsi3, mulsi3, umulsidi3,
+ 	divsi3, modsi3, andsi3, iorsi3, xorsi3, negsi2, one_cmplsi2,
+ 	ashlsi3, ashlhi3, ashlqi3, rotlsi3, rotlhi3, rotlqi3, abssi2,...):
+ 	use "g" instead of "rmn" since LEGITIMATE_PIC_OPERAND has been
+ 	fixed.
+	(cmpsi, cmphi, cmpqi): use general_operand instead of
+ 	non_immediate_operand. Removes erroneous assumption that can't
+ 	compare constants.
+	(movsf, movsi, movhi, movqi,...): New register numbering scheme.
+	(movsi, addsi3): Use NS32K_DISPLACEMENT_P instead of hard coded
+ 	constants.
+	(movstrsi, movstrsi1, movstrsi2): completely new block move
+ 	scheme.
+	(...): Patterns to exploit multiply-add instructions.
+	(udivmodsi4, udivmodsi_internal4, udivmodhi4,
+ 	udivmoddihi4_internal, udivmodqi4, udivmoddiqi4_internal): new
+ 	patterns to exploit extended divide insns.
+	(udivsi3, udivhi3, udivqi3): remove since superceded by udivmodsi
+	etc patterns.
+
+	* ns32k.h (FUNCTION_VALUE, LIBCALL_VALUE): Use f0 for complex
+ 	float return values as well as simple scalar floats.
+	(TARGET_32381, TARGET_MULT_ADD, TARGET_SWITCHES):
+ 	support new flag to denote 32381 fpu.
+	(OVERRIDE_OPTIONS): 32381 is a strict superset of 32081.
+	(CONDITIONAL_REGISTER_USAGE): disable extra 32381 registers if not
+ 	compling for 32381.
+	(FIRST_PSEUDO_REGISTER, FIXED_REGISTERS, CALL_USED_REGISTERS,
+ 	REGISTER_NAMES, ADDITIONAL_REGISTER_NAMES, OUTPUT_REGISTER_NAMES,
+ 	REG_ALLOC_ORDER, DBX_REGISTER_NUMBER, R0_REGNUM, F0_REGNUM,
+ 	L1_REGNUM, STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM,
+ 	LONG_FP_REGS_P, ARG_POINTER_REGNUM, reg_class, REG_CLASS_NAMES,
+ 	REG_CLASS_CONTENTS, SUBSET_P,REGNO_REG_CLASS,
+ 	REG_CLASS_FROM_LETTER, FUNCTION_PROLOGUE, FUNCTION_EPILOGUE,
+ 	REGNO_OK_FOR_INDEX_P, FP_REG_P, REG_OK_FOR_INDEX_P,
+ 	REG_OK_FOR_BASE_P, MEM_REG): new register scheme to include 32381
+ 	fpu registers and special register classes for new 32381
+ 	instructions dotf and polyf.
+	(MODES_TIEABLE_P): Allow all integer modes, notably DI and SI, to
+ 	be tieable.
+	(INCOMING_RETURN_ADDR_RTX, RETURN_ADDR_RTX,
+ 	INCOMING_FRAME_SP_OFFSET): New macros in case DWARF support is
+ 	required.
+	(SMALL_REGISTER_CLASSES): Make dependant on -mmult-add option.
+	(MOVE_RATIO): Set to zero because of smart movstrsi implimentation.
+	(REGISTER_MOVE_COST): move code to register_move_cost function for
+	ease of coding and debugging.
+	(CLASS_LIKELY_SPILLED_P): Under new register scheme class
+ 	LONG_FLOAT_REGO is likely spilled but not caught by default
+ 	definition.
+	(CONSTANT_ADDRESS_P, CONSTANT_ADDRESS_NO_LABEL_P): use macro
+ 	instead of hard coded numbers in range check.
+	(ASM_OUTPUT_LABELREF_AS_INT): delete since unused.
+	(...): Add prototypes for functions in ns32k.c but disable because
+	of problems when ns32k.h is included in machine independant files.
+	
+	* ns32k.c: include "system.h", "tree.h", "expr.h", "flags.h".
+	(ns32k_reg_class_contents, regcass_map, ns32k_out_reg_names,
+ 	hard_regno_mode_ok, secondary_reload_class,
+ 	print_operand, print_operand_address): new register scheme to
+ 	include 32381 fpu registers and special register classes for new
+ 	32381 instructions dotf and polyf.
+	(gen_indexed_expr): Make static to keep namespace clean.
+	(check_reg): remove since never called.
+	(move_tail, expand_block_move): helper functions for "movstrsi"
+ 	block move insn.
+	(register_move_cost): Helper function for REGISTER_MOVE_COST macro.
+	Increase cost of moves which go via memory.
+	* netbsd.h (TARGET_DEFAULT): Set (new) 32381 fpu flag.
+	(CPP_PREDEFINES): nolonger predefine "unix".
+
+	* ns32k.md (movsi, movsi, adddi3, subdi3, subsi3, subhi3, subqi3,...):
+ 	Remove erroneous %$. print_operand() can work out from the rtx is
+ 	an immediate prefix is required.
+
+	* ns32k.h (RETURN_POPS_ARGS, VALID_MACHINE_DECL_ATTRIBUTE,
+ 	VALID_MACHINE_TYPE_ATTRIBUTE, COMP_TYPE_ATTRIBUTES,
+ 	SET_DEFAULT_TYPE_ATTRIBUTES): Support for -mrtd calling
+ 	convention.
+	(LEGITIMATE_PIC_OPERAND_P, SYMBOLIC_CONST): Correct handling of
+ 	pic operands.
+
+	* ns32k.c (symbolic_reference_mentioned_p, print_operand):
+	Correct handling of pic operands.
+	(ns32k_valid_decl_attribute_p, ns32k_valid_type_attribute_p,
+ 	ns32k_comp_type_attributes, ns32k_return_pops_args): Support for
+	-mrtd calling convention.
+
 Wed Nov 25 23:42:20 1998  Tom Tromey  <tromey@cygnus.com>
 
 	* gcc.c (option_map): Recognize --output-class-directory.
@@ -12,7 +111,6 @@ Thu Nov 26 18:26:21 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	(loop_iterations): Use loop_find_equiv_value to find increments
 	too large to be immediate constants.  Also use it to find terms
 	common to initial and final iteration values that can be removed.
-
 
 Thu Nov 26 18:05:04 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
@@ -41,7 +139,6 @@ Thu Nov 26 18:05:04 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	Replaced global variables by loop_info structure.
 	(loop_unroll_factor): Replace global array by element in
 	loop_info structure.
-
 
 Thu Nov 26 17:49:29 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
@@ -87,7 +184,6 @@ Thu Nov 26 15:16:05 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	(valid_parallel_operands_4, valid_parallel_operands_5,
  	valid_parallel_operands_6): Reject pattern if the register destination
 	of the first set is used as part of an address in the second set.
-	
 
 Thu Nov 26 14:56:32 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 

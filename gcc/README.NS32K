@@ -1,6 +1,55 @@
 This file describes the implementation notes of the GNU C Compiler for
 the National Semiconductor 32032 chip (and 32000 family).
 
+Much of this file was obsolete. It described restrictions caused by
+bugs in early versions of of the ns32032 chip and by bugs in sequent
+assemblers and linkers of the time.
+
+Many (all?) of the chip bugs were fixed in later revisions and
+certainly fixed by later chips in the same series (ns32332 and
+ns32532).
+
+Conditional code to support sequent assembler and/or linker restrictions
+has not been removed deliberately, but has probably not been tested in
+a *very* long time.
+
+Support for one sequent assembler bug has *not* been retained.
+It was necessary to say:
+
+	addr _x,rn
+	cmpd _p,rn
+
+rather than:
+
+	cmpd _p,@_x
+
+
+This used to be forced by the use of "rmn" register constraints rather
+than "g". This is bad for other platforms which do not have this
+restraint.
+
+It is likely that there are no Balance 8000's still in operation, but
+if there are and the assembler bug was never fixed then the easiest
+way to run gcc would be to also run gas.
+
+The code required by the sequent assembler is still generated when the
+-fpic flag is in effect and this is forced by the appropriate
+definition of LEGITIMATE_PIC_OPERAND_P. If support for the old sequent
+assembler bug is required, then this could be achieved by adding the
+test from LEGITIMATE_PIC_OPERAND to the GO_IF_LEGITIMATE_ADDRESS
+definition. Of course, this should be conditional on something in the
+sequent.h config file.
+
+The original contents of this file appear below as an historical note.
+SEQUENT_ADDRESS_BUG mentioned below has been replaced by
+INDEX_RATHER_THAN_BASE. Note that merlin.h still defines
+SEQUENT_ADDRESS_BUG even though it is not used anywhere. Since it has
+been like this for a long time, presumably either the
+SEQUENT_ADDRESS_BUG is not required for the merlin, or no one is using
+gcc on the merlin anymore.
+
+HISTORICAL NOTE
+
 The 32032 machine description and configuration file for this compiler
 is, for NS32000 family machine, primarily machine independent.
 However, since this release still depends on vendor-supplied

@@ -23,8 +23,6 @@ Boston, MA 02111-1307, USA.  */
 /* Note that some other tm.h files include this one and then override
    many of the definitions that relate to assembler syntax.  */
 
-extern enum reg_class secondary_reload_class();
-
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #define CPP_PREDEFINES "-Dns32000 -Dunix -Asystem(unix) -Acpu(ns32k) -Amachine(ns32k)"
@@ -66,6 +64,18 @@ extern int target_flags;
 
 /* Compile 32081 insns for floating point (not library calls). */
 #define TARGET_32081 (target_flags & 1)
+#define TARGET_32381 (target_flags & 256)
+
+/* The use of multiply-add instructions is optional because it can
+ * cause an abort due to being unable to find a spill register. The
+ * main problem is that the multiply-add instructions require f0 and
+ * f0 is not available for spilling because it is "explicitly
+ * mentioned" in the rtl for function return values. This can be fixed
+ * by defining SMALL_REGISTER_CLASSES, but that causes worse code for
+ * the (more common) integer case. We really need better reload code.
+ */
+
+#define TARGET_MULT_ADD (target_flags & 512)
 
 /* Compile using rtd insn calling sequence.
    This will not work unless you use prototypes at least
@@ -93,9 +103,9 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES  \
+#define TARGET_SWITCHES				\
   { { "32081", 1},				\
-    { "soft-float", -1},			\
+    { "soft-float", -257},			\
     { "rtd", 2},				\
     { "nortd", -2},				\
     { "regparm", 4},				\
@@ -110,16 +120,65 @@ extern int target_flags;
     { "nobitfield", 64},			\
     { "himem", 128},				\
     { "nohimem", -128},				\
+    { "32381", 256},				\
+    { "mult-add", 512},				\
+    { "nomult-add", -512},            		\
     { "", TARGET_DEFAULT}}
+
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */
 
 /* When we are generating PIC, the sb is used as a pointer
-   to the GOT.  */
+   to the GOT. 32381 is a superset of 32081  */
 
-#define OVERRIDE_OPTIONS		\
-{					\
+#define OVERRIDE_OPTIONS				\
+{							\
   if (flag_pic || TARGET_HIMEM) target_flags |= 32;	\
+  if (TARGET_32381) target_flags |= 1;			\
+  else target_flags &= ~512;				\
 }
+
+/* Zero or more C statements that may conditionally modify two
+   variables `fixed_regs' and `call_used_regs' (both of type `char
+   []') after they have been initialized from the two preceding
+   macros.
+
+   This is necessary in case the fixed or call-clobbered registers
+   depend on target flags.
+
+   You need not define this macro if it has no work to do.
+
+   If the usage of an entire class of registers depends on the target
+   flags, you may indicate this to GCC by using this macro to modify
+   `fixed_regs' and `call_used_regs' to 1 for each of the registers in
+   the classes which should not be used by GCC.  Also define the macro
+   `REG_CLASS_FROM_LETTER' to return `NO_REGS' if it is called with a
+   letter for a class that shouldn't be used.
+
+   (However, if this class is not included in `GENERAL_REGS' and all
+   of the insn patterns whose constraints permit this class are
+   controlled by target switches, then GCC will automatically avoid
+   using these registers when the target switches are opposed to
+   them.)  */
+
+#define CONDITIONAL_REGISTER_USAGE					\
+do									\
+  {									\
+    if (!TARGET_32081)						\
+      {									\
+	int regno;							\
+									\
+	for (regno = F0_REGNUM; regno <= F0_REGNUM + 8; regno++)	\
+	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
+      }									\
+    if (!TARGET_32381)						\
+      {									\
+	int regno;							\
+									\
+	for (regno = L1_REGNUM; regno <= L1_REGNUM + 8; regno++)	\
+	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
+      }									\
+  }									\
+while (0)
 
 
 /* target machine storage layout */
@@ -190,13 +249,14 @@ extern int target_flags;
    from 0 to just below FIRST_PSEUDO_REGISTER.
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
-#define FIRST_PSEUDO_REGISTER 18
+#define FIRST_PSEUDO_REGISTER 26
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
    On the ns32k, these are the FP, SP, (SB and PC are not included here).  */
 #define FIXED_REGISTERS {0, 0, 0, 0, 0, 0, 0, 0, \
 			 0, 0, 0, 0, 0, 0, 0, 0, \
+                         0, 0, 0, 0, 0, 0, 0, 0, \
 			 1, 1}
 
 /* 1 for registers not available across function calls.
@@ -207,13 +267,70 @@ extern int target_flags;
    Aside from that, you can include as many other registers as you like.  */
 #define CALL_USED_REGISTERS {1, 1, 1, 0, 0, 0, 0, 0, \
 			     1, 1, 1, 1, 0, 0, 0, 0, \
+			     1, 1, 0, 0, 0, 0, 0, 0, \
 			     1, 1}
+
+/* How to refer to registers in assembler output.
+   This sequence is indexed by compiler's hard-register-number (see above).  */
+
+#define REGISTER_NAMES \
+{"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", \
+ "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", \
+ "l1", "l1h","l3", "l3h","l5", "l5h","l7", "l7h", \
+ "fp", "sp"}
+
+
+#define ADDITIONAL_REGISTER_NAMES \
+{{"l0", 8}, {"l2", 10}, {"l4", 12}, {"l6", 14}}
+
+/* l0-7 are not recognized by the assembler. These are the names to use,
+ * but we don't want ambiguous names in REGISTER_NAMES
+ */
+#define OUTPUT_REGISTER_NAMES \
+{"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", \
+ "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", \
+ "f1", "l1h","f3", "l3h","f5", "l5h","f7", "f7h", \
+ "fp", "sp"}
+
+#define REG_ALLOC_ORDER \
+{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 16, 10, 11, 18, 12, 13, 20, 14, 15, 22, 24, 25, 17, 19, 23}
+
+/* How to renumber registers for dbx and gdb.
+   NS32000 may need more change in the numeration. XXX */
+
+#define DBX_REGISTER_NUMBER(REGNO) \
+  ((REGNO) < L1_REGNUM? (REGNO) \
+   : (REGNO) < FRAME_POINTER_REGNUM? (REGNO) - L1_REGNUM + 22 \
+   : (REGNO) == FRAME_POINTER_REGNUM? 17 \
+   : 16)
+
+
+
+
+#define R0_REGNUM 0
+#define F0_REGNUM 8
+#define L1_REGNUM 16
+
+/* Specify the registers used for certain standard purposes.
+   The values of these macros are register numbers.  */
+
+/* NS32000 pc is not overloaded on a register.  */
+/* #define PC_REGNUM */
+
+/* Register to use for pushing function arguments. */
+#define STACK_POINTER_REGNUM 25
+
+/* Base register for access to local variables of the function. */
+#define FRAME_POINTER_REGNUM 24
+
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
-   On the ns32k, all registers are 32 bits long.  */
+   On the ns32k, all registers are 32 bits long except for the 32381 "long"
+   registers but we treat those as pairs  */
+#define LONG_FP_REGS_P(REGNO) ((REGNO) >= L1_REGNUM && (REGNO) < L1_REGNUM + 8)
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
@@ -223,22 +340,19 @@ extern int target_flags;
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  (((MODE1) == DFmode || (MODE1) == DCmode || (MODE1) == DImode) ==	\
-   ((MODE2) == DFmode || (MODE2) == DCmode || (MODE2) == DImode))
+   for any hard reg, then this must be 0 for correct output.
 
-/* Specify the registers used for certain standard purposes.
-   The values of these macros are register numbers.  */
+   Early documentation says SI and DI are not tieable if some reg can
+   be OK for SI but not for DI. However other ports (mips, i860, mvs
+   and tahoe) don't meet the above criterion. Evidently the real
+   requirement is somewhat laxer. Documentation was changed for gcc
+   2.8 but was not picked up by egcs (at least egcs 1.0). Having all
+   integer modes tieable definitely generates faster code. */
 
-/* NS32000 pc is not overloaded on a register.  */
-/* #define PC_REGNUM */
-
-/* Register to use for pushing function arguments. */
-#define STACK_POINTER_REGNUM 17
-
-/* Base register for access to local variables of the function. */
-#define FRAME_POINTER_REGNUM 16
+#define MODES_TIEABLE_P(MODE1, MODE2)					\
+  ((FLOAT_MODE_P(MODE1) && FLOAT_MODE_P(MODE2)				\
+    && (GET_MODE_UNIT_SIZE(MODE1) == GET_MODE_UNIT_SIZE(MODE2)))	\
+   || (!FLOAT_MODE_P(MODE1) && !FLOAT_MODE_P(MODE2)))
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -247,7 +361,7 @@ extern int target_flags;
 #define FRAME_POINTER_REQUIRED 0
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 16
+#define ARG_POINTER_REGNUM 24
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 1
@@ -275,37 +389,39 @@ extern int target_flags;
 
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
-   
-enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
-		 FRAME_POINTER_REG, STACK_POINTER_REG, 
-                 GEN_AND_MEM_REGS, ALL_REGS, LIM_REG_CLASSES };
+
+enum reg_class
+{ NO_REGS, GENERAL_REGS, FLOAT_REG0, LONG_FLOAT_REG0, FLOAT_REGS,
+  FP_REGS, GEN_AND_FP_REGS, FRAME_POINTER_REG, STACK_POINTER_REG,
+  GEN_AND_MEM_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
- {"NO_REGS", "GENERAL_REGS", "FLOAT_REGS", "GEN_AND_FP_REGS",  \
-  "FRAME_POINTER_REG", "STACK_POINTER_REG", "GEN_AND_MEM_REGS", "ALL_REGS" }
+ {"NO_REGS", "GENERAL_REGS", "FLOAT_REG0", "LONG_FLOAT_REG0", "FLOAT_REGS", \
+  "FP_REGS", "GEN_AND_FP_REGS", "FRAME_POINTER_REG", "STACK_POINTER_REG", \
+  "GEN_AND_MEM_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x00ff, 0xff00, 0xffff, \
-			    0x10000, 0x20000, 0x300ff, 0x3ffff }
+#define REG_CLASS_CONTENTS {0, 0x00ff, 0x100, 0x300, 0xff00, \
+                            0xffff00, 0xffffff, 0x1000000, 0x2000000, \
+                            0x30000ff, 0x3ffffff }
+
+#define SUBSET_P(CLASS1, CLASS2) \
+   ((ns32k_reg_class_contents[CLASS1] & ~ns32k_reg_class_contents[CLASS2]) \
+     == 0)
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) \
-  ((REGNO) < 8 ? GENERAL_REGS          \
-   : (REGNO) < 16 ? FLOAT_REGS         \
-   : (REGNO) == 16 ? FRAME_POINTER_REG \
-   : (REGNO) == 17 ? STACK_POINTER_REG \
-   : NO_REGS)
+#define REGNO_REG_CLASS(REGNO)  (regclass_map[REGNO])
 
 /* The class value for index registers, and the one for base regs.  */
 
@@ -314,10 +430,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 
 /* Get reg_class from a letter such as appears in the machine description.  */
 
-#define REG_CLASS_FROM_LETTER(C)	\
- ((C) == 'f' ? FLOAT_REGS		\
-  : (C) == 'x' ? FRAME_POINTER_REG	\
-  : (C) == 'y' ? STACK_POINTER_REG      \
+#define REG_CLASS_FROM_LETTER(C)		\
+ ((C) == 'u' ? FLOAT_REG0			\
+  : (C) == 'v' ? LONG_FLOAT_REG0		\
+  : (C) == 'f' ? FLOAT_REGS			\
+  : (C) == 'l' ? FP_REGS			\
+  : (C) == 'x' ? FRAME_POINTER_REG		\
+  : (C) == 'y' ? STACK_POINTER_REG		\
   : NO_REGS)
 
 /* The letters I, J, K, L and M in a register constraint string
@@ -353,13 +472,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 
 /* We return GENERAL_REGS instead of GEN_AND_MEM_REGS.
    The latter offers no real additional possibilities
-   and can cause spurious secondary reloading.  */ 
+   and can cause spurious secondary reloading.  */
+
 #define PREFERRED_RELOAD_CLASS(X,CLASS) \
  ((CLASS) == GEN_AND_MEM_REGS ? GENERAL_REGS : (CLASS))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On the 32000, this is the size of MODE in words */
+
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
@@ -380,6 +501,46 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
 #define STARTING_FRAME_OFFSET 0
+
+/* A C expression whose value is RTL representing the location of the
+   incoming return address at the beginning of any function, before
+   the prologue.  This RTL is either a `REG', indicating that the
+   return value is saved in `REG', or a `MEM' representing a location
+   in the stack.
+
+   You only need to define this macro if you want to support call
+   frame debugging information like that provided by DWARF 2.
+
+   Before the prologue, RA is at 0(sp).  */
+
+#define INCOMING_RETURN_ADDR_RTX \
+  gen_rtx (MEM, VOIDmode, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM))
+
+/* A C expression whose value is RTL representing the value of the
+   return address for the frame COUNT steps up from the current frame,
+   after the prologue.  FRAMEADDR is the frame pointer of the COUNT
+   frame, or the frame pointer of the COUNT - 1 frame if
+   `RETURN_ADDR_IN_PREVIOUS_FRAME' is defined.
+
+   After the prologue, RA is at 4(fp) in the current frame.  */
+
+#define RETURN_ADDR_RTX(COUNT, FRAME)					\
+  (gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, (FRAME), GEN_INT(4))))
+
+/* A C expression whose value is an integer giving the offset, in
+   bytes, from the value of the stack pointer register to the top of
+   the stack frame at the beginning of any function, before the
+   prologue.  The top of the frame is defined to be the value of the
+   stack pointer in the previous frame, just before the call
+   instruction.
+
+   You only need to define this macro if you want to support call
+   frame debugging information like that provided by DWARF 2. */
+
+#define INCOMING_FRAME_SP_OFFSET 4
+
+/* Offset of the CFA from the argument pointer register value.  */
+#define ARG_POINTER_CFA_OFFSET 8
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -402,14 +563,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
      because the library is compiled with the Unix compiler.
    Use of RET is a selectable option, since it is incompatible with
    standard Unix calling sequences.  If the option is not selected,
-   the caller must always pop the args.  */
+   the caller must always pop the args.
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  ((TARGET_RTD && (!(FUNDECL) || TREE_CODE (FUNDECL) != IDENTIFIER_NODE)	\
-    && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
-	|| (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
-	    == void_type_node)))				\
-   ? (SIZE) : 0)
+   The attribute stdcall is equivalent to RTD on a per module basis.  */
+
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) \
+  (ns32k_return_pops_args (FUNDECL, FUNTYPE, SIZE))
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -417,23 +576,19 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
    otherwise, FUNC is 0.  */
 
 /* On the 32000 the return value is in R0,
-   or perhaps in F0 is there is fp support.  */   
+   or perhaps in F0 if there is fp support.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  (TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_32081 \
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 8) \
-   : gen_rtx (REG, TYPE_MODE (VALTYPE), 0))
+#define FUNCTION_VALUE(VALTYPE, FUNC) LIBCALL_VALUE(TYPE_MODE (VALTYPE))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
 /* On the 32000 the return value is in R0,
-   or perhaps F0 is there is fp support.  */   
+   or perhaps F0 is there is fp support.  */
 
 #define LIBCALL_VALUE(MODE)  \
-  (((MODE) == DFmode || (MODE) == SFmode) && TARGET_32081 \
-   ? gen_rtx (REG, MODE, 8) \
-   : gen_rtx (REG, MODE, 0))
+  gen_rtx (REG, MODE,				  \
+	   FLOAT_MODE_P(MODE) && TARGET_32081 ? F0_REGNUM: R0_REGNUM)
 
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
@@ -554,18 +709,18 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 #define FUNCTION_PROLOGUE(FILE, SIZE)     \
 { register int regno, g_regs_used = 0;				\
   int used_regs_buf[8], *bufp = used_regs_buf;			\
-  int used_fregs_buf[8], *fbufp = used_fregs_buf;		\
+  int used_fregs_buf[17], *fbufp = used_fregs_buf;		\
   extern char call_used_regs[];					\
   extern int current_function_uses_pic_offset_table, flag_pic;	\
   MAIN_FUNCTION_PROLOGUE;					\
-  for (regno = 0; regno < 8; regno++)				\
+  for (regno = R0_REGNUM; regno < F0_REGNUM; regno++)		\
     if (regs_ever_live[regno]					\
 	&& ! call_used_regs[regno])				\
       {								\
         *bufp++ = regno; g_regs_used++;				\
       }								\
   *bufp = -1;							\
-  for (; regno < 16; regno++)					\
+  for (; regno < FRAME_POINTER_REGNUM; regno++)			\
     if (regs_ever_live[regno] && !call_used_regs[regno])	\
       {								\
         *fbufp++ = regno;					\
@@ -600,11 +755,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   fbufp = used_fregs_buf;					\
   while (*fbufp >= 0)						\
     {								\
-      if ((*fbufp & 1) || (fbufp[0] != fbufp[1] - 1))		\
-	fprintf (FILE, "\tmovf f%d,tos\n", *fbufp++ - 8);	\
+      if ((*fbufp & 1) || (fbufp[0] != fbufp[1] - 1))	\
+	fprintf (FILE, "\tmovf %s,tos\n", ns32k_out_reg_names[*fbufp++]); \
       else							\
 	{							\
-	  fprintf (FILE, "\tmovl f%d,tos\n", fbufp[0] - 8);	\
+	  fprintf (FILE, "\tmovl %s,tos\n",                     \
+		   ns32k_out_reg_names[fbufp[0]]);                    \
 	  fbufp += 2;						\
 	}							\
     }								\
@@ -678,19 +834,19 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
 #define FUNCTION_EPILOGUE(FILE, SIZE) \
 { register int regno, g_regs_used = 0, f_regs_used = 0;		\
   int used_regs_buf[8], *bufp = used_regs_buf;			\
-  int used_fregs_buf[8], *fbufp = used_fregs_buf;		\
+  int used_fregs_buf[17], *fbufp = used_fregs_buf;		\
   extern char call_used_regs[];					\
   extern int current_function_uses_pic_offset_table, flag_pic;	\
   if (flag_pic && current_function_uses_pic_offset_table)	\
     fprintf (FILE, "\tlprd sb,tos\n");				\
   *fbufp++ = -2;						\
-  for (regno = 8; regno < 16; regno++)				\
+  for (regno = F0_REGNUM; regno < FRAME_POINTER_REGNUM; regno++) \
     if (regs_ever_live[regno] && !call_used_regs[regno])	\
       {								\
        *fbufp++ = regno; f_regs_used++;				\
       }								\
   fbufp--;							\
-  for (regno = 0; regno < 8; regno++)				\
+  for (regno = 0; regno < F0_REGNUM; regno++)			\
     if (regs_ever_live[regno]					\
 	&& ! call_used_regs[regno])				\
       {                                                        	\
@@ -698,12 +854,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
       }                                                        	\
   while (fbufp > used_fregs_buf)				\
     {								\
-      if ((*fbufp & 1) && fbufp[0] == fbufp[-1] + 1)		\
+      if ((*fbufp & 1) && fbufp[0] == fbufp[-1] + 1)	        \
 	{							\
-	  fprintf (FILE, "\tmovl tos,f%d\n", fbufp[-1] - 8);	\
+	  fprintf (FILE, "\tmovl tos,%s\n",                     \
+		   ns32k_out_reg_names[fbufp[-1]]);                   \
 	  fbufp -= 2;						\
 	}							\
-      else fprintf (FILE, "\tmovf tos,f%d\n", *fbufp-- - 8);	\
+      else fprintf (FILE, "\tmovf tos,%s\n", ns32k_out_reg_names[*fbufp--]); \
     }								\
   if (frame_pointer_needed)					\
     fprintf (FILE, "\texit [");					\
@@ -742,9 +899,12 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, GEN_AND_FP_REGS,
   int regno;							\
   int offset = -4;						\
   extern int current_function_uses_pic_offset_table, flag_pic;	\
-  for (regno = 0; regno < 16; regno++)				\
+  for (regno = 0; regno < L1_REGNUM; regno++)			\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += 4;						\
+  for (; regno < FRAME_POINTER_REGNUM; regno++)			\
+    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
+      offset += 8;						\
   if (flag_pic && current_function_uses_pic_offset_table)	\
     offset += 4;						\
   (DEPTH) = (offset + get_frame_size ()				\
@@ -824,12 +984,13 @@ __transfer_from_trampoline ()		\
 
 /* note that FP and SP cannot be used as an index. What about PC? */
 #define REGNO_OK_FOR_INDEX_P(REGNO)  \
-((REGNO) < 8 || (unsigned)reg_renumber[REGNO] < 8)
+((REGNO) < F0_REGNUM || (unsigned)reg_renumber[REGNO] < F0_REGNUM)
 #define REGNO_OK_FOR_BASE_P(REGNO)   \
-((REGNO) < 8 || (unsigned)reg_renumber[REGNO] < 8 \
+((REGNO) < F0_REGNUM || (unsigned)reg_renumber[REGNO] < F0_REGNUM \
  || (REGNO) == FRAME_POINTER_REGNUM || (REGNO) == STACK_POINTER_REGNUM)
 
-#define FP_REG_P(X)  (GET_CODE (X) == REG && REGNO (X) > 7 && REGNO (X) < 16)
+#define FP_REG_P(X) \
+ (GET_CODE (X) == REG && REGNO (X) >= F0_REGNUM && REGNO (X) < FRAME_POINTER_REGNUM)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 
@@ -838,19 +999,18 @@ __transfer_from_trampoline ()		\
 /* Recognize any constant value that is a valid address.
    This might not work on future ns32k processors as negative
    displacements are not officially allowed but a mode reserved
-   to National.  This works on processors up to 32532, though. */
+   to National.  This works on processors up to 32532, though,
+   and we don't expect any new ones in the series ;-( */
 
 #define CONSTANT_ADDRESS_P(X)   \
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
    || GET_CODE (X) == CONST						\
    || (GET_CODE (X) == CONST_INT					\
-       && ((unsigned)INTVAL (X) >= 0xe0000000				\
-	   || (unsigned)INTVAL (X) < 0x20000000)))
+       && NS32K_DISPLACEMENT_P (INTVAL (X))))
 
 #define CONSTANT_ADDRESS_NO_LABEL_P(X)   \
   (GET_CODE (X) == CONST_INT						\
-   && ((unsigned)INTVAL (X) >= 0xe0000000				\
-       || (unsigned)INTVAL (X) < 0x20000000))
+   && NS32K_DISPLACEMENT_P (INTVAL (X)))
 
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
@@ -858,6 +1018,42 @@ __transfer_from_trampoline ()		\
 
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   secondary_reload_class (CLASS, MODE, IN)
+
+/*  Certain machines have the property that some registers cannot be
+    copied to some other registers without using memory.  Define this
+    macro on those machines to be a C expression that is non-zero if
+    objects of mode M in registers of CLASS1 can only be copied to
+    registers of class CLASS2 by storing a register of CLASS1 into
+    memory and loading that memory location into a register of CLASS2.
+
+    On the ns32k, floating point regs can only be loaded through memory
+
+    The movdf and movsf insns in ns32k.md copy between general and
+    floating registers using the stack. In principle, we could get
+    better code not allowing that case in the constraints and defining
+    SECONDARY_MEMORY_NEEDED in practice, though the stack slots used
+    are not available for optimization.  */
+
+#if 0
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, M)			\
+     secondary_memory_needed(CLASS1, CLASS2, M)
+#endif
+
+/* SMALL_REGISTER_CLASSES is true only if we have said we are using the
+ * multiply-add instructions.
+ */
+#define SMALL_REGISTER_CLASSES (target_flags & 512)
+
+/* A C expression whose value is nonzero if pseudos that have been
+   assigned to registers of class CLASS would likely be spilled
+   because registers of CLASS are needed for spill registers.
+
+   The default definition won't do because class LONG_FLOAT_REG0 has two
+   registers which are always acessed as a pair */
+
+#define CLASS_LIKELY_SPILLED_P(CLASS) \
+  (reg_class_size[(int) (CLASS)] == 1 || (CLASS) == LONG_FLOAT_REG0)
+
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
@@ -882,10 +1078,10 @@ __transfer_from_trampoline ()		\
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X) \
-  (REGNO (X) < 8 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  (REGNO (X) < F0_REGNUM || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 /* Nonzero if X is a hard reg that can be used as a base reg
    of if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X) (REGNO (X) < 8 || REGNO (X) >= FRAME_POINTER_REGNUM)
+#define REG_OK_FOR_BASE_P(X) (REGNO (X) < F0_REGNUM || REGNO (X) >= FRAME_POINTER_REGNUM)
 /* Nonzero if X is a floating point reg or a pseudo reg.  */
 
 #else
@@ -936,7 +1132,8 @@ __transfer_from_trampoline ()		\
 
 /* Check for frame pointer or stack pointer.  */
 #define MEM_REG(X) \
-  (GET_CODE (X) == REG && (REGNO (X) ^ 16) < 2)
+  (GET_CODE (X) == REG && (REGNO (X) == FRAME_POINTER_REGNUM  \
+			   || REGNO(X) == STACK_POINTER_REGNUM))
 
 /* A memory ref whose address is the FP or SP, with optional integer offset,
    or (on certain machines) a constant address.  */
@@ -1040,15 +1237,21 @@ __transfer_from_trampoline ()		\
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)   {}
 
 /* Nonzero if the constant value X is a legitimate general operand
-   when generating PIC code.  It is given that flag_pic is on and 
+   when generating PIC code.  It is given that flag_pic is on and
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
 
 extern int current_function_uses_pic_offset_table, flag_pic;
 #define LEGITIMATE_PIC_OPERAND_P(X) \
   (((! current_function_uses_pic_offset_table			\
-     && global_symbolic_reference_mentioned_p (X, 1))?		\
+     && symbolic_reference_mentioned_p (X))?			\
       (current_function_uses_pic_offset_table = 1):0		\
-   ), 1)
+   ), (! SYMBOLIC_CONST (X)					\
+   || GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF))
+
+#define SYMBOLIC_CONST(X)	\
+(GET_CODE (X) == SYMBOL_REF						\
+ || GET_CODE (X) == LABEL_REF						\
+ || (GET_CODE (X) == CONST && symbolic_reference_mentioned_p (X)))
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or
@@ -1082,6 +1285,33 @@ while (0)
  { if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC)	\
      goto LABEL;}
 
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for DECL.
+   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
+
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
+  (ns32k_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
+
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for TYPE.
+   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
+
+#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, NAME, ARGS) \
+  (ns32k_valid_type_attribute_p (TYPE, ATTRIBUTES, NAME, ARGS))
+
+/* If defined, a C expression whose value is zero if the attributes on
+   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
+   two if they are nearly compatible (which causes a warning to be
+   generated).  */
+
+#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
+  (ns32k_comp_type_attributes (TYPE1, TYPE2))
+
+/* If defined, a C statement that assigns default attributes to newly
+   defined TYPE.  */
+
+/* #define SET_DEFAULT_TYPE_ATTRIBUTES (TYPE) */
+
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.
    HI mode is more efficient but the range is not wide enough for
@@ -1106,6 +1336,12 @@ while (0)
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
+
+/* The number of scalar move insns which should be generated instead
+   of a string move insn or a library call.
+   
+   We have a smart movstrsi insn */
+#define MOVE_RATIO 0
 
 /* Define this if zero-extension is slow (more than one real instruction).  */
 /* #define SLOW_ZERO_EXTEND */
@@ -1226,16 +1462,13 @@ while (0)
 /* Describe the costs of the following register moves which are discouraged:
    1.) Moves between the Floating point registers and the frame pointer and stack pointer
    2.) Moves between the stack pointer and the frame pointer
-   3.) Moves between the floating point and general registers */
+   3.) Moves between the floating point and general registers
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)   \
-  ((((CLASS1) == FLOAT_REGS && ((CLASS2) == STACK_POINTER_REG || (CLASS2) == FRAME_POINTER_REG))    \
-   || ((CLASS2) == FLOAT_REGS && ((CLASS1) == STACK_POINTER_REG || (CLASS1) == FRAME_POINTER_REG))  \
-   || ((CLASS1) == STACK_POINTER_REG && (CLASS2) == FRAME_POINTER_REG)                              \
-   || ((CLASS2) == STACK_POINTER_REG && (CLASS1) == FRAME_POINTER_REG)                              \
-   || ((CLASS1) == FLOAT_REGS && (CLASS2) == GENERAL_REGS)                                          \
-   || ((CLASS1) == GENERAL_REGS && (CLASS2) == FLOAT_REGS))                                         \
- ? 4  : 2)
+  These all involve two memory references. This is worse than a memory
+  to memory move (default cost 4)
+ */
+
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)  register_move_cost(CLASS1, CLASS2)
 
 #define OUTPUT_JUMP(NORMAL, NO_OV)  \
 { if (cc_status.flags & CC_NO_OVERFLOW)				\
@@ -1307,12 +1540,8 @@ while (0)
 /* This is how to output an assembler line defining an external/static
    address which is not in tree format (for collect.c).  */
 
-#define ASM_OUTPUT_LABELREF_AS_INT(STREAM, NAME)			\
-do {									\
-  fprintf (STREAM, "\t.long\t");					\
-  ASM_OUTPUT_LABELREF (STREAM, NAME);					\
-  fprintf (STREAM, "\n");						\
-} while (0)
+/* The prefix to add to user-visible assembler symbols. */
+#define USER_LABEL_PREFIX "_"
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -1325,19 +1554,6 @@ do {									\
 
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   fprintf (FILE, "\tmovd tos,%s\n", reg_names[REGNO])
-
-/* How to refer to registers in assembler output.
-   This sequence is indexed by compiler's hard-register-number (see above).  */
-
-#define REGISTER_NAMES \
-{"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", \
- "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", \
- "fp", "sp"}
-
-/* How to renumber registers for dbx and gdb.
-   NS32000 may need more change in the numeration.  */
-
-#define DBX_REGISTER_NUMBER(REGNO) ((REGNO < 8) ? (REGNO)+4 : (REGNO))
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
@@ -1365,9 +1581,11 @@ do {									\
 } while (0)
 #endif
 
-/* The prefix to add to user-visible assembler symbols. */
+/* This is how to output a reference to a user-level label named NAME.
+   `assemble_name' uses this.  */
 
-#define USER_LABEL_PREFIX "_"
+#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
+  fprintf (FILE, "_%s", NAME)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
@@ -1463,11 +1681,39 @@ do {									\
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address(FILE, ADDR)
 
-/* Define functions in ns32k.c and used in insn-output.c.  */
+/* Prototypes for functions in ns32k.c */
 
-extern char *output_move_double ();
-extern char *output_shift_insn ();
-extern char *output_move_dconst ();
+/* Prototypes would be nice, but for now it causes too many problems.
+   This file gets included in places where the types (such as "rtx"
+   and enum machine_mode) are not defined. */
+#define NS32K_PROTO(ARGS) ()
+
+int hard_regno_mode_ok NS32K_PROTO((int regno, enum machine_mode mode));
+int register_move_cost NS32K_PROTO((enum reg_class CLASS1, enum reg_class CLASS2));
+int calc_address_cost NS32K_PROTO((rtx operand));
+enum reg_class secondary_reload_class NS32K_PROTO((enum reg_class class,
+					     enum machine_mode mode, rtx in));
+int reg_or_mem_operand NS32K_PROTO((register rtx op, enum machine_mode mode));
+
+void split_di NS32K_PROTO((rtx operands[], int num, rtx lo_half[], hi_half[]));
+
+void expand_block_move NS32K_PROTO((rtx operands[]));
+int global_symbolic_reference_mentioned_p NS32K_PROTO((rtx op, int f));
+int ns32k_comp_type_attributes NS32K_PROTO((tree type1, tree type2));
+int ns32k_return_pops_args NS32K_PROTO((tree fundecl, tree funtype, int size));
+int ns32k_valid_decl_attribute_p NS32K_PROTO((tree decl, tree attributes,
+						tree identifier, tree args));
+int ns32k_valid_type_attribute_p NS32K_PROTO((tree decl, tree attributes,
+						tree identifier, tree args));
+void print_operand NS32K_PROTO((FILE *file, rtx x, char code));
+void print_operand_address NS32K_PROTO((register FILE *file, register rtx addr));
+char *output_move_dconst NS32K_PROTO((int n, char *s));
+char *output_move_double NS32K_PROTO((rtx *operands));
+char *output_shift_insn NS32K_PROTO((rtx *operands));
+
+extern unsigned int ns32k_reg_class_contents[N_REG_CLASSES];
+extern char *ns32k_out_reg_names[];
+extern enum reg_class regclass_map[];		/* smalled class containing REGNO */
 
 /*
 Local variables:
