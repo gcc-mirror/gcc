@@ -584,6 +584,7 @@ dequeue_and_dump (di)
     case VAR_DECL:
     case PARM_DECL:
     case FIELD_DECL:
+    case RESULT_DECL:
       if (dump_children_p)
 	{
 	  if (TREE_CODE (t) == PARM_DECL)

@@ -1,5 +1,8 @@
 1999-09-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* dump.c (dequeue_and_dump): Handle RESULT_DECL.
+	* ir.texi: Document RESULT_DECL and DECL_RESULT.
+
 	* cp-tree.h (check_return_expr): New function.
 	* decl.c (finish_constructor_body): New function.
 	(pushdecl): Put global friend functions in namespace binding
