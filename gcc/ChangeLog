@@ -1,3 +1,13 @@
+2002-08-01  Chris Demetriou  <cgd@broadcom.com>
+
+	* config.gcc (mipsisa64sb1-*-elf*): New configuration.
+	(mipsisa64sb1el-*-elf*): Likewise.
+	* config/mips/mips.c (mips_cpu_info_table): Add sb1.
+	* config/mips/mips.h (processor_type): Add PROCESSOR_SB1.
+	(TARGET_SB1, TUNE_SB1): New macros.
+	* doc/invoke.texi: Add sb1 to documentation for MIPS -march and
+	-mtune flags.
+
 2002-08-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* varasm.c (asm_emit_uninitialized): Return false if global BSS
