@@ -1,5 +1,12 @@
 Fri Oct  2 10:51:35 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
 
+	* reload1.c (reload): Break out some more pieces into separate
+	functions.
+	(dump_needs): New function, broken out of reload.
+	(set_initial_elim_offsets): Likewise.
+	(init_elim_table): Likewise.
+	(update_eliminables): Likewise.
+
 	* global.c (global_alloc): Delete code to manage the scratch_list.
 	* local-alloc.c (qty_scratch_rtx): Delete.
 	(scratch_block): Delete.
