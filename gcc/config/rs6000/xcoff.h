@@ -417,7 +417,10 @@ toc_section ()						\
 #define TARGET_ASM_UNIQUE_SECTION  rs6000_xcoff_unique_section
 
 /* Switch into a generic section.  */
-#define TARGET_ASM_NAMED_SECTION  xcoff_asm_named_section
+#define TARGET_ASM_NAMED_SECTION  rs6000_xcoff_asm_named_section
+
+/* Globalize a label.  */
+#define TARGET_ASM_GLOBALIZE_LABEL  rs6000_xcoff_asm_globalize_label
 
 /* Define the name of the section to use for the EH language specific
    data areas (.gcc_except_table on most other systems).  */

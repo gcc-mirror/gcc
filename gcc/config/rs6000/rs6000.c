@@ -205,7 +205,8 @@ static void rs6000_elf_encode_section_info PARAMS ((tree, int));
 static const char *rs6000_elf_strip_name_encoding PARAMS ((const char *));
 #endif
 #if TARGET_XCOFF
-static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
+static void rs6000_xcoff_asm_globalize_label PARAMS ((FILE *, const char *));
+static void rs6000_xcoff_asm_named_section PARAMS ((const char *, unsigned int));
 static void rs6000_xcoff_select_section PARAMS ((tree, int,
 						 unsigned HOST_WIDE_INT));
 static void rs6000_xcoff_unique_section PARAMS ((tree, int));
@@ -13096,7 +13097,17 @@ rs6000_elf_asm_out_destructor (symbol, priority)
 
 #if TARGET_XCOFF
 static void
-xcoff_asm_named_section (name, flags)
+rs6000_xcoff_asm_globalize_label (stream, name)
+     FILE *stream;
+     const char *name;
+{
+  fputs (GLOBAL_ASM_OP, stream);
+  RS6000_OUTPUT_BASENAME (stream, name);
+  putc ('\n', stream);
+}
+
+static void
+rs6000_xcoff_asm_named_section (name, flags)
      const char *name;
      unsigned int flags ATTRIBUTE_UNUSED;
 {
