@@ -1,3 +1,7 @@
+2004-12-01  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* Makefile.am (AM_CPPFLAGS): Use -iquote instead of -I.
+
 2004-11-28  Bud Davis  <bdavis9659@comcast.net>
 
 	* io/unix.c (mmap_alloc_w_a): check for a write to a location
