@@ -89,15 +89,19 @@ func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
    define this macro in such cases.  */
-#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC) \
-do {								\
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
-    fprintf (STREAM, "\t.section %s,\"ax\",@progbits\n", (NAME)); \
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	\
-    fprintf (STREAM, "\t.section %s,\"a\"\n", (NAME));		\
-  else								\
-    fprintf (STREAM, "\t.section %s,\"aw\"\n", (NAME));		\
-} while (0)
+#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC)        	\
+  do									\
+    {								  	\
+      if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		  	\
+	fprintf (STREAM, "\t.section %s,\"ax\",%%progbits\n", NAME);	\
+      else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	  	\
+	fprintf (STREAM, "\t.section %s,\"a\"\n", NAME);		\
+      else if (! strncmp (NAME, ".bss", 4))      			\
+	fprintf (STREAM, "\t.section %s,\"aw\",%%nobits\n", NAME);	\
+      else							 	\
+	fprintf (STREAM, "\t.section %s,\"aw\"\n", NAME);	  	\
+    }									\
+  while (0)
 
 /* Don't know how to order these.  UNALIGNED_WORD_ASM_OP is in
    dwarf2.out. */ 

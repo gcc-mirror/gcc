@@ -1,3 +1,16 @@
+Thu Oct 21 13:03:49 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+
+	* config/arm/telf.h (ASM_OUTPUT_SECTION_NAME): Add %nobits option
+	to .section when outputting a .bss section to deal with multiple
+	.bss input sections (as happens with -fdata-sections)
+	Also output %progbits, not @progbits so the assembler doesn't treat as
+	a comment.
+	* config/arm/unknown-elf.h (ASM_OUTPUT_SECTION_NAME): Likewise
+
+	* config/arm/lib1funcs.asm (_call_via_rX): Allow compilation of
+	thumb parts even when building with non-thumb CPUs, by forcing
+	thumb mode.	
+
 Wed Oct 20 22:57:58 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* sparc.md (movsf_const_intreg): If splitting, length must be > 1.
