@@ -867,6 +867,94 @@ target_negative (x)
   return x < 0;
 }
 #endif /* Target not IEEE */
+
+/* Try to change R into its exact multiplicative inverse in machine mode
+   MODE.  Return nonzero function value if successful.  */
+
+int
+exact_real_inverse (mode, r)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE *r;
+{
+  union
+    {
+      double d;
+      unsigned short i[4];
+    }x, t, y;
+  int i;
+
+  /* Usually disable if bounds checks are not reliable.  */
+  if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT) && !flag_pretend_float)
+    return 0;
+
+  /* Set array index to the less significant bits in the unions, depending
+     on the endian-ness of the host doubles.
+     Disable if insufficient information on the data structure.  */
+#if HOST_FLOAT_FORMAT == UNKNOWN_FLOAT_FORMAT
+  return 0;
+#else
+#if HOST_FLOAT_FORMAT == VAX_FLOAT_FORMAT
+#define K 2
+#else
+#if HOST_FLOAT_FORMAT == IBM_FLOAT_FORMAT
+#define K 2
+#else
+#define K (2 * HOST_FLOAT_WORDS_BIG_ENDIAN)
+#endif
+#endif
+#endif
+
+  if (setjmp (float_error))
+    {
+      /* Don't do the optimization if there was an arithmetic error.  */
+fail:
+      set_float_handler (NULL_PTR);
+      return 0;
+    }
+  set_float_handler (float_error);
+
+  /* Domain check the argument.  */
+  x.d = *r;
+  if (x.d == 0.0)
+    goto fail;
+
+#ifdef REAL_INFINITY
+  if (REAL_VALUE_ISINF (x.d) || REAL_VALUE_ISNAN (x.d))
+    goto fail;
+#endif
+
+  /* Compute the reciprocal and check for numerical exactness.
+     It is unnecessary to check all the significand bits to determine
+     whether X is a power of 2.  If X is not, then it is impossible for
+     the bottom half significand of both X and 1/X to be all zero bits.
+     Hence we ignore the data structure of the top half and examine only
+     the low order bits of the two significands.  */
+  t.d = 1.0 / x.d;
+  if (x.i[K] != 0 || x.i[K + 1] != 0 || t.i[K] != 0 || t.i[K + 1] != 0)
+    goto fail;
+
+  /* Truncate to the required mode and range-check the result.  */
+  y.d = REAL_VALUE_TRUNCATE (mode, t.d);
+#ifdef CHECK_FLOAT_VALUE
+  i = 0;
+  if (CHECK_FLOAT_VALUE (mode, y.d, i))
+    goto fail;
+#endif
+
+  /* Fail if truncation changed the value.  */
+  if (y.d != t.d || y.d == 0.0)
+    goto fail;
+
+#ifdef REAL_INFINITY
+  if (REAL_VALUE_ISINF (y.d) || REAL_VALUE_ISNAN (y.d))
+    goto fail;
+#endif
+
+  /* Output the reciprocal and return success flag.  */
+  set_float_handler (NULL_PTR);
+  *r = y.d;
+  return 1;
+}
 #endif /* no REAL_ARITHMETIC */
 
 /* Split a tree IN into a constant and a variable part
@@ -4343,11 +4431,24 @@ fold (expr)
 	 so only do this if -ffast-math.  We can actually always safely
 	 do it if ARG1 is a power of two, but it's hard to tell if it is
 	 or not in a portable manner.  */
-      if (TREE_CODE (arg1) == REAL_CST && flag_fast_math
-	  && 0 != (tem = const_binop (code, build_real (type, dconst1),
-				      arg1, 0)))
-	return fold (build (MULT_EXPR, type, arg0, tem));
-
+      if (TREE_CODE (arg1) == REAL_CST)
+	{
+	  if (flag_fast_math
+	      && 0 != (tem = const_binop (code, build_real (type, dconst1),
+					  arg1, 0)))
+	    return fold (build (MULT_EXPR, type, arg0, tem));
+	  /* Find the reciprocal if optimizing and the result is exact. */
+	  else if (optimize)
+	    {
+	      REAL_VALUE_TYPE r;
+	      r = TREE_REAL_CST (arg1);
+	      if (exact_real_inverse (TYPE_MODE(TREE_TYPE(arg0)), &r))
+		  {
+		    tem = build_real (type, r);
+		    return fold (build (MULT_EXPR, type, arg0, tem));
+		  }
+	    }
+	}
       goto binary;
 
     case TRUNC_DIV_EXPR:
