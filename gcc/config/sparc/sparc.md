@@ -1533,14 +1533,14 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn "get_pc_sp32"
+(define_insn "get_pc_via_call"
   [(set (pc) (label_ref (match_operand 0 "" "")))
    (set (reg:SI 15) (label_ref (match_operand 1 "" "")))]
   ""
   "call %l0%#"
   [(set_attr "type" "uncond_branch")])
 
-(define_insn "get_pc_sp64"
+(define_insn "get_pc_via_rdpc"
   [(set (match_operand:DI 0 "register_operand" "=r") (pc))]
   "TARGET_PTR64"
   "rd %%pc,%0"
