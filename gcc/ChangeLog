@@ -1,3 +1,7 @@
+2004-08-16  Adam Nemet  <anemet@lnxw.com>
+
+	* Makefile.in (LIBS): Move $(LIBIBERTY) after $(BANSHEELIB).
+
 2004-08-16  Andrew Pinski  <apinski@apple.com>
 
 	* target-def.h (TARGET_EH_RETURN_FILTER_MODE): Remove
