@@ -7215,7 +7215,7 @@ tsubst_expr (t, args, complain, in_decl)
 	tmp = tsubst_expr (FOR_EXPR (t), args, complain, in_decl);
 	finish_for_expr (tmp, stmt);
 	tsubst_expr (FOR_BODY (t), args, complain, in_decl);
-	finish_for_stmt (tmp, stmt);
+	finish_for_stmt (stmt);
       }
       break;
 
@@ -7303,7 +7303,7 @@ tsubst_expr (t, args, complain, in_decl)
 	val = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
 	finish_switch_cond (val, stmt);
 	tsubst_expr (SWITCH_BODY (t), args, complain, in_decl);
-	finish_switch_stmt (val, stmt);
+	finish_switch_stmt (stmt);
       }
       break;
 
