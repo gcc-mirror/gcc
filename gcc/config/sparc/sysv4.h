@@ -191,10 +191,6 @@ do {									\
     fprintf (FILE, ".section\t\"%s\",#alloc,#write\n", (NAME));		\
 } while (0)
 
-/* If the host and target formats match, output the floats as hex.  */
-#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-#if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
-
 /* This is how to output assembly code to define a `float' constant.
    We always have to use a .long pseudo-op to do this because the native
    SVR4 ELF assembler is buggy and it generates incorrect values when we
@@ -219,9 +215,6 @@ do { long value[2];							\
      fprintf((FILE), "\t.long\t0x%x\n", value[0]);			\
      fprintf((FILE), "\t.long\t0x%x\n", value[1]);			\
    } while (0)
-
-#endif /* word order matches */
-#endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
 
 /* This is how to output an assembler line defining a `long double'
    constant.  */
