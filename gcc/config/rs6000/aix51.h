@@ -21,9 +21,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include "rs6000/rs6000.h"
-#include "rs6000/aix.h"
-
 /* AIX V5 and above support 64-bit executables.  */
 #undef  SUBSUBTARGET_SWITCHES
 #define SUBSUBTARGET_SWITCHES					\
