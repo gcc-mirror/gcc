@@ -2,12 +2,13 @@
 
 	Backport from mainline
 
-	PR debug/15301
-	PR debug/15302
+	PR target/15301
+	PR target/15302
 	2004-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (construct_container): Do not produce BLKmode registers.
 	(classify_argument): Properly compute alignment of complex types.
+
 2004-04-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11841
