@@ -1,3 +1,9 @@
+2004-09-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16485
+	* module.c (write_symbol): Don't fill in module name here.
+	(write_symbol0): Fill in here instead.
+
 2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* data.c, decl.c, f95-lang.c, gfortran.h, match.c,
