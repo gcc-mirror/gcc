@@ -374,7 +374,7 @@ static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
 static int count_basic_blocks		PARAMS ((rtx));
 static void find_basic_blocks_1		PARAMS ((rtx));
 static rtx find_label_refs		PARAMS ((rtx, rtx));
-static void make_edges			PARAMS ((rtx, int, int));
+static void make_edges			PARAMS ((rtx, int, int, int));
 static void make_label_edge		PARAMS ((sbitmap *, basic_block,
 						 rtx, int));
 static void make_eh_edge		PARAMS ((sbitmap *, basic_block, rtx));
@@ -540,7 +540,7 @@ find_basic_blocks (f, nregs, file)
   compute_bb_for_insn (max_uid);
 
   /* Discover the edges of our cfg.  */
-  make_edges (label_value_list, 0, n_basic_blocks - 1);
+  make_edges (label_value_list, 0, n_basic_blocks - 1, 0);
 
   /* Do very simple cleanup now, for the benefit of code that runs between
      here and cleanup_cfg, e.g. thread_prologue_and_epilogue_insns.  */
@@ -709,8 +709,6 @@ find_sub_basic_blocks (bb)
   rtx insn = bb->head;
   rtx end = bb->end;
   rtx jump_insn = NULL_RTX;
-  int created = 0;
-  int barrier = 0;
   edge falltru = 0;
   basic_block first_bb = bb;
 
@@ -729,7 +727,6 @@ find_sub_basic_blocks (bb)
 	case BARRIER:
 	  if (!jump_insn)
 	    abort ();
-	  barrier = 1;
 	  break;
 	/* On code label, split current basic block.  */
 	case CODE_LABEL:
@@ -738,9 +735,7 @@ find_sub_basic_blocks (bb)
 	    bb->end = jump_insn;
 	  bb = falltru->dest;
 	  remove_edge (falltru);
-	  barrier = 0;
 	  jump_insn = 0;
-	  created = 1;
 	  if (LABEL_ALTERNATE_NAME (insn))
 	    make_edge (NULL, ENTRY_BLOCK_PTR, bb, 0);
 	  break;
@@ -773,10 +768,11 @@ find_sub_basic_blocks (bb)
       insn = NEXT_INSN (insn);
     }
 
-  /* In case we've got barrier at the end of new insn stream, put it
-     outside basic block.  */
-  if (GET_CODE (bb->end) == BARRIER)
-    bb->end = PREV_INSN (bb->end);
+  /* In case expander replaced normal insn by sequence terminating by
+     return and barrier, or possibly other sequence not behaving like
+     ordinary jump, we need to take care and move basic block boundary.  */
+  if (jump_insn && GET_CODE (bb->end) != JUMP_INSN)
+    bb->end = jump_insn;
 
   /* We've possibly replaced the conditional jump by conditional jump
      followed by cleanup at fallthru edge, so the outgoing edges may
@@ -785,7 +781,7 @@ find_sub_basic_blocks (bb)
 
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
-  make_edges (NULL, first_bb->index, bb->index - 1);
+  make_edges (NULL, first_bb->index, bb->index, 1);
 }
 
 /* Find all basic blocks of the function whose first insn is F.
@@ -1160,9 +1156,9 @@ clear_edges ()
    the list of exception regions active at the end of the basic block.  */
 
 static void
-make_edges (label_value_list, min, max)
+make_edges (label_value_list, min, max, update_p)
      rtx label_value_list;
-     int min, max;
+     int min, max, update_p;
 {
   int i;
   sbitmap *edge_cache = NULL;
@@ -1177,6 +1173,15 @@ make_edges (label_value_list, min, max)
     {
       edge_cache = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
       sbitmap_vector_zero (edge_cache, n_basic_blocks);
+
+      if (update_p)
+	for (i = min; i <= max; ++i)
+	  {
+	    edge e;
+	    for (e = BASIC_BLOCK (i)->succ; e ; e = e->succ_next)
+	      if (e->dest != EXIT_BLOCK_PTR)
+	        SET_BIT (edge_cache[i], e->dest->index);
+	  }
     }
 
   /* By nature of the way these get numbered, block 0 is always the entry.  */
