@@ -1,3 +1,11 @@
+2001-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_op_delete_call): Ignore exception-specifications
+	when looking for matching delete operators.
+	* init.c (build_new_1): Compute whether or not the allocation
+	function used is a placement allocation function or not, and
+	communicate this information to build_op_delete_call.
+
 2001-05-21  Jason Merrill  <jason_merrill@redhat.com>
 
 	* class.c (build_vtable_entry_ref): Lose vtbl parm.  Fix for new abi.

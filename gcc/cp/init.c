@@ -2293,6 +2293,9 @@ build_new_1 (exp)
      beginning of the storage allocated for an array-new expression in
      order to store the number of elements.  */
   tree cookie_size = NULL_TREE;
+  /* True if the function we are calling is a placement allocation
+     function.  */
+  bool placement_allocation_fn_p;
 
   placement = TREE_OPERAND (exp, 0);
   type = TREE_OPERAND (exp, 1);
@@ -2418,8 +2421,25 @@ build_new_1 (exp)
   if (alloc_call == error_mark_node)
     return error_mark_node;
 
-  if (alloc_call == NULL_TREE)
-    abort ();
+  /* The ALLOC_CALL should be a CALL_EXPR, and the first operand
+     should be the address of a known FUNCTION_DECL.  */
+  my_friendly_assert (TREE_CODE (alloc_call) == CALL_EXPR, 20000521);
+  t = TREE_OPERAND (alloc_call, 0);
+  my_friendly_assert (TREE_CODE (t) == ADDR_EXPR, 20000521);
+  t = TREE_OPERAND (t, 0);
+  my_friendly_assert (TREE_CODE (t) == FUNCTION_DECL, 20000521);
+  /* Now, check to see if this function is actually a placement
+     allocation function.  This can happen even when PLACEMENT is NULL
+     because we might have something like:
+
+       struct S { void* operator new (size_t, int i = 0); };
+
+     A call to `new S' will get this allocation function, even though
+     there is no explicit placement argument.  If there is more than
+     one argument, or there are variable arguments, then this is a
+     placement allocation function.  */
+  placement_allocation_fn_p 
+    = (type_num_arguments (TREE_TYPE (t)) > 1 || varargs_function_p (t));
 
   /*        unless an allocation function is declared with an empty  excep-
      tion-specification  (_except.spec_),  throw(), it indicates failure to
@@ -2536,7 +2556,8 @@ build_new_1 (exp)
 	  flags |= LOOKUP_SPECULATIVELY;
 
 	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags,
-					  alloc_call);
+					  (placement_allocation_fn_p 
+					   ? alloc_call : NULL_TREE));
 
 	  /* Ack!  First we allocate the memory.  Then we set our sentry
 	     variable to true, and expand a cleanup that deletes the memory
