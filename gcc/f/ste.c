@@ -721,7 +721,7 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 		   convert (TREE_TYPE (niters),
 			    ffecom_integer_zero_node)));
 
-      expand_exit_loop_if_false (0, expr);
+      expand_exit_loop_top_cond (0, expr);
     }
 
   if (block)
@@ -3057,7 +3057,7 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
 	ffeste_end_stmt_ ();
 
 	ffestw_set_do_hook (block, loop);
-	expand_exit_loop_if_false (0, result);
+	expand_exit_loop_top_cond (0, result);
       }
     else
       ffestw_set_do_hook (block, expand_start_loop (1));

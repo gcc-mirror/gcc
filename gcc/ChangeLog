@@ -1,6 +1,19 @@
+2002-02-02  Richard Henderson  <rth@redhat.com>
+
+	PR opt/5076
+	* rtl.h (NOTE_INSN_LOOP_END_TOP_COND): New.
+	* rtl.c (note_insn_name): Update.
+	* emit-rtl.c (remove_unnecessary_notes): Kill it.
+	* stmt.c (expand_end_loop): Kill jump opt code.  Use LOOP_END_TOP_COND
+	to perform loop rotation.
+	(expand_exit_loop_top_cond): New.
+	* tree.h (expand_exit_loop_top_cond): Declare it.
+	* c-semantics.c (genrtl_while_stmt): Use it.
+	(genrtl_for_stmt): Likewise.
+
 2002-02-01  Craig Rodrigues  <rodrigc@gcc.gnu.org>
  
-        * doc/install.texi (avr): Update outdated URL.
+	* doc/install.texi (avr): Update outdated URL.
 
 2002-01-31  Zack Weinberg  <zack@codesourcery.com>
 

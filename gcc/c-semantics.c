@@ -487,7 +487,7 @@ genrtl_while_stmt (t)
 
   cond = expand_cond (WHILE_COND (t));
   emit_line_note (input_filename, lineno);
-  expand_exit_loop_if_false (0, cond);
+  expand_exit_loop_top_cond (0, cond);
   genrtl_do_pushlevel ();
   
   expand_stmt (WHILE_BODY (t));
@@ -587,7 +587,7 @@ genrtl_for_stmt (t)
   /* Expand the condition.  */
   emit_line_note (input_filename, lineno);
   if (cond)
-    expand_exit_loop_if_false (0, cond);
+    expand_exit_loop_top_cond (0, cond);
 
   /* Expand the body.  */
   genrtl_do_pushlevel ();

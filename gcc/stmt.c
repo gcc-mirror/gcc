@@ -2451,8 +2451,8 @@ void
 expand_end_loop ()
 {
   rtx start_label = loop_stack->data.loop.start_label;
-  rtx insn = get_last_insn ();
-  int needs_end_jump = 1;
+  rtx etc_note;
+  int eh_regions, debug_blocks;
 
   /* Mark the continue-point at the top of the loop if none elsewhere.  */
   if (start_label == loop_stack->data.loop.continue_label)
@@ -2460,296 +2460,134 @@ expand_end_loop ()
 
   do_pending_stack_adjust ();
 
-  /* If optimizing, perhaps reorder the loop.
-     First, try to use a condjump near the end.
-     expand_exit_loop_if_false ends loops with unconditional jumps,
-     like this:
-
-     if (test) goto label;
-     optional: cleanup
-     goto loop_stack->data.loop.end_label
-     barrier
-     label:
-
-     If we find such a pattern, we can end the loop earlier.  */
-
-  if (optimize
-      && GET_CODE (insn) == CODE_LABEL
-      && LABEL_NAME (insn) == NULL
-      && GET_CODE (PREV_INSN (insn)) == BARRIER)
-    {
-      rtx label = insn;
-      rtx jump = PREV_INSN (PREV_INSN (label));
-
-      if (GET_CODE (jump) == JUMP_INSN
-	  && GET_CODE (PATTERN (jump)) == SET
-	  && SET_DEST (PATTERN (jump)) == pc_rtx
-	  && GET_CODE (SET_SRC (PATTERN (jump))) == LABEL_REF
-	  && (XEXP (SET_SRC (PATTERN (jump)), 0)
-	      == loop_stack->data.loop.end_label))
-	{
-	  rtx prev;
-
-	  /* The test might be complex and reference LABEL multiple times,
-	     like the loop in loop_iterations to set vtop.  To handle this,
-	     we move LABEL.  */
-	  insn = PREV_INSN (label);
-	  reorder_insns (label, label, start_label);
-
-	  for (prev = PREV_INSN (jump);; prev = PREV_INSN (prev))
-	    {
-	      /* We ignore line number notes, but if we see any other note,
-		 in particular NOTE_INSN_BLOCK_*, NOTE_INSN_EH_REGION_*,
-		 NOTE_INSN_LOOP_*, we disable this optimization.  */
-	      if (GET_CODE (prev) == NOTE)
-		{
-		  if (NOTE_LINE_NUMBER (prev) < 0)
-		    break;
-		  continue;
-		}
-	      if (GET_CODE (prev) == CODE_LABEL)
-		break;
-	      if (GET_CODE (prev) == JUMP_INSN)
-		{
-		  if (GET_CODE (PATTERN (prev)) == SET
-		      && SET_DEST (PATTERN (prev)) == pc_rtx
-		      && GET_CODE (SET_SRC (PATTERN (prev))) == IF_THEN_ELSE
-		      && (GET_CODE (XEXP (SET_SRC (PATTERN (prev)), 1))
-			  == LABEL_REF)
-		      && XEXP (XEXP (SET_SRC (PATTERN (prev)), 1), 0) == label)
-		    {
-		      XEXP (XEXP (SET_SRC (PATTERN (prev)), 1), 0)
-			= start_label;
-		      emit_note_after (NOTE_INSN_LOOP_END, prev);
-		      needs_end_jump = 0;
-		    }
-		  break;
-		}
-	   }
-	}
-    }
-
-     /* If the loop starts with a loop exit, roll that to the end where
+  /* If the loop starts with a loop exit, roll that to the end where
      it will optimize together with the jump back.
 
-     We look for the conditional branch to the exit, except that once
-     we find such a branch, we don't look past 30 instructions.
+     If the loop presently looks like this (in pseudo-C):
 
-     In more detail, if the loop presently looks like this (in pseudo-C):
-
-         start_label:
-         if (test) goto end_label;
-	 body;
-	 goto start_label;
-	 end_label:
+	LOOP_BEG
+	start_label:
+	  if (test) goto end_label;
+	LOOP_END_TOP_COND
+	  body;
+	  goto start_label;
+	end_label:
 
      transform it to look like:
 
-         goto start_label;
-         newstart_label:
-	 body;
-	 start_label:
-	 if (test) goto end_label;
-	 goto newstart_label;
-	 end_label:
+	LOOP_BEG
+	  goto start_label;
+	top_label:
+	  body;
+	start_label:
+	  if (test) goto end_label;
+	  goto top_label;
+	end_label:
 
-     Here, the `test' may actually consist of some reasonably complex
-     code, terminating in a test.  */
+     We rely on the presence of NOTE_INSN_LOOP_END_TOP_COND to mark
+     the end of the entry condtional.  Without this, our lexical scan
+     can't tell the difference between an entry conditional and a
+     body conditional that exits the loop.  Mistaking the two means
+     that we can misplace the NOTE_INSN_LOOP_CONT note, which can 
+     screw up loop unrolling.
 
-  if (optimize
-      && needs_end_jump
-      &&
-      ! (GET_CODE (insn) == JUMP_INSN
-	 && GET_CODE (PATTERN (insn)) == SET
-	 && SET_DEST (PATTERN (insn)) == pc_rtx
-	 && GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE))
-    {
-      int eh_regions = 0;
-      int num_insns = 0;
-      rtx last_test_insn = NULL_RTX;
+     Things will be oh so much better when loop optimization is done
+     off of a proper control flow graph...  */
 
-      /* Scan insns from the top of the loop looking for a qualified
-	 conditional exit.  */
-      for (insn = NEXT_INSN (loop_stack->data.loop.start_label); insn;
-	   insn = NEXT_INSN (insn))
-	{
-	  if (GET_CODE (insn) == NOTE)
-	    {
-	      if (optimize < 2
-		  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
-		      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
-		/* The code that actually moves the exit test will
-		   carefully leave BLOCK notes in their original
-		   location.  That means, however, that we can't debug
-		   the exit test itself.  So, we refuse to move code
-		   containing BLOCK notes at low optimization levels.  */
-		break;
+  /* Scan insns from the top of the loop looking for the END_TOP_COND note.  */
 
-	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
-		++eh_regions;
-	      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-		{
-		  --eh_regions;
-		  if (eh_regions < 0)
-		    /* We've come to the end of an EH region, but
-		       never saw the beginning of that region.  That
-		       means that an EH region begins before the top
-		       of the loop, and ends in the middle of it.  The
-		       existence of such a situation violates a basic
-		       assumption in this code, since that would imply
-		       that even when EH_REGIONS is zero, we might
-		       move code out of an exception region.  */
-		    abort ();
-		}
+  eh_regions = debug_blocks = 0;
+  for (etc_note = start_label; etc_note ; etc_note = NEXT_INSN (etc_note))
+    if (GET_CODE (etc_note) == NOTE)
+      {
+	if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_LOOP_END_TOP_COND)
+	  break;
 
-	      /* We must not walk into a nested loop.  */
-	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-		break;
-
-	      /* We already know this INSN is a NOTE, so there's no
-		 point in looking at it to see if it's a JUMP.  */
-	      continue;
-	    }
-
-	  if (GET_CODE (insn) == JUMP_INSN || GET_CODE (insn) == INSN)
-	    num_insns++;
-
-	  if (last_test_insn && num_insns > 30)
+	/* We must not walk into a nested loop.  */
+	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_LOOP_BEG)
+	  {
+	    etc_note = NULL_RTX;
 	    break;
+	  }
 
-	  if (eh_regions > 0)
-	    /* We don't want to move a partial EH region.  Consider:
+	/* At the same time, scan for EH region notes, as we don't want
+	   to scrog region nesting.  This shouldn't happen, but...  */
+	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_EH_REGION_BEG)
+	  eh_regions++;
+	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_EH_REGION_END)
+	  {
+	    if (--eh_regions < 0)
+	      /* We've come to the end of an EH region, but never saw the
+		 beginning of that region.  That means that an EH region
+		 begins before the top of the loop, and ends in the middle
+		 of it.  The existence of such a situation violates a basic
+		 assumption in this code, since that would imply that even
+		 when EH_REGIONS is zero, we might move code out of an
+		 exception region.  */
+	      abort ();
+	  }
 
-		  while ( ( { try {
-				if (cond ()) 0;
-				else {
-				  bar();
-				  1;
-				}
-			      } catch (...) {
-				1;
-			      } )) {
-		     body;
-		  }
+	/* Likewise for debug scopes.  In this case we'll either (1) move
+	   all of the notes if they are properly nested or (2) leave the
+	   notes alone and only rotate the loop at high optimization 
+	   levels when we expect to scrog debug info.  */
+	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_BLOCK_BEG)
+	  debug_blocks++;
+	else if (NOTE_LINE_NUMBER (etc_note) == NOTE_INSN_BLOCK_END)
+	  debug_blocks--;
+      }
 
-	        This isn't legal C++, but here's what it's supposed to
-	        mean: if cond() is true, stop looping.  Otherwise,
-	        call bar, and keep looping.  In addition, if cond
-	        throws an exception, catch it and keep looping. Such
-	        constructs are certainy legal in LISP.
+  if (etc_note
+      && optimize
+      && eh_regions == 0
+      && (debug_blocks == 0 || optimize >= 2)
+      && NEXT_INSN (etc_note) != NULL_RTX
+      && ! any_condjump_p (get_last_insn ()))
+    {
+      /* We found one.  Move everything from START to ETC to the end
+	 of the loop, and add a jump from the top of the loop.  */
+      rtx top_label = gen_label_rtx ();
+      rtx start_move = start_label;
 
-		We should not move the `if (cond()) 0' test since then
-		the EH-region for the try-block would be broken up.
-		(In this case we would the EH_BEG note for the `try'
-		and `if cond()' but not the call to bar() or the
-		EH_END note.)
+      /* If the start label is preceded by a NOTE_INSN_LOOP_CONT note,
+	 then we want to move this note also.  */
+      if (GET_CODE (PREV_INSN (start_move)) == NOTE
+	  && NOTE_LINE_NUMBER (PREV_INSN (start_move)) == NOTE_INSN_LOOP_CONT)
+	start_move = PREV_INSN (start_move);
 
-	        So we don't look for tests within an EH region.  */
-	    continue;
+      emit_label_before (top_label, start_move);
 
-	  if (GET_CODE (insn) == JUMP_INSN
-	      && GET_CODE (PATTERN (insn)) == SET
-	      && SET_DEST (PATTERN (insn)) == pc_rtx)
-	    {
-	      /* This is indeed a jump.  */
-	      rtx dest1 = NULL_RTX;
-	      rtx dest2 = NULL_RTX;
-	      rtx potential_last_test;
-	      if (GET_CODE (SET_SRC (PATTERN (insn))) == IF_THEN_ELSE)
-		{
-		  /* A conditional jump.  */
-		  dest1 = XEXP (SET_SRC (PATTERN (insn)), 1);
-		  dest2 = XEXP (SET_SRC (PATTERN (insn)), 2);
-		  potential_last_test = insn;
-		}
-	      else
-		{
-		  /* An unconditional jump.  */
-		  dest1 = SET_SRC (PATTERN (insn));
-		  /* Include the BARRIER after the JUMP.  */
-		  potential_last_test = NEXT_INSN (insn);
-		}
-
-	      do {
-		if (dest1 && GET_CODE (dest1) == LABEL_REF
-		    && ((XEXP (dest1, 0)
-			 == loop_stack->data.loop.alt_end_label)
-			|| (XEXP (dest1, 0)
-			    == loop_stack->data.loop.end_label)))
-		  {
-		    last_test_insn = potential_last_test;
-		    break;
-		  }
-
-		/* If this was a conditional jump, there may be
-		   another label at which we should look.  */
-		dest1 = dest2;
-		dest2 = NULL_RTX;
-	      } while (dest1);
-	    }
-	}
-
-      if (last_test_insn != 0 && last_test_insn != get_last_insn ())
+      /* Actually move the insns.  If the debug scopes are nested, we
+	 can move everything at once.  Otherwise we have to move them
+	 one by one and squeeze out the block notes.  */
+      if (debug_blocks == 0)
+	reorder_insns (start_move, etc_note, get_last_insn ());
+      else
 	{
-	  /* We found one.  Move everything from there up
-	     to the end of the loop, and add a jump into the loop
-	     to jump to there.  */
-	  register rtx newstart_label = gen_label_rtx ();
-	  register rtx start_move = start_label;
-	  rtx next_insn;
-
-	  /* If the start label is preceded by a NOTE_INSN_LOOP_CONT note,
-	     then we want to move this note also.  */
-	  if (GET_CODE (PREV_INSN (start_move)) == NOTE
-	      && (NOTE_LINE_NUMBER (PREV_INSN (start_move))
-		  == NOTE_INSN_LOOP_CONT))
-	    start_move = PREV_INSN (start_move);
-
-	  emit_label_after (newstart_label, PREV_INSN (start_move));
-
-	  /* Actually move the insns.  Start at the beginning, and
-	     keep copying insns until we've copied the
-	     last_test_insn.  */
+	  rtx insn, next_insn;
 	  for (insn = start_move; insn; insn = next_insn)
 	    {
 	      /* Figure out which insn comes after this one.  We have
 		 to do this before we move INSN.  */
-	      if (insn == last_test_insn)
-		/* We've moved all the insns.  */
-		next_insn = NULL_RTX;
-	      else
-		next_insn = NEXT_INSN (insn);
+	      next_insn = (insn == etc_note ? NULL : NEXT_INSN (insn));
 
 	      if (GET_CODE (insn) == NOTE
 		  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
 		      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
-		/* We don't want to move NOTE_INSN_BLOCK_BEGs or
-		   NOTE_INSN_BLOCK_ENDs because the correct generation
-		   of debugging information depends on these appearing
-		   in the same order in the RTL and in the tree
-		   structure, where they are represented as BLOCKs.
-		   So, we don't move block notes.  Of course, moving
-		   the code inside the block is likely to make it
-		   impossible to debug the instructions in the exit
-		   test, but such is the price of optimization.  */
 		continue;
 
-	      /* Move the INSN.  */
 	      reorder_insns (insn, insn, get_last_insn ());
 	    }
-
-	  emit_jump_insn_after (gen_jump (start_label),
-				PREV_INSN (newstart_label));
-	  emit_barrier_after (PREV_INSN (newstart_label));
-	  start_label = newstart_label;
 	}
+
+      /* Add the jump from the top of the loop.  */
+      emit_jump_insn_before (gen_jump (start_label), top_label);
+      emit_barrier_before (top_label);
+      start_label = top_label;
     }
 
-  if (needs_end_jump)
-    {
-      emit_jump (start_label);
-      emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
-    }
+  emit_jump (start_label);
+  emit_note (NULL, NOTE_INSN_LOOP_END);
   emit_label (loop_stack->data.loop.end_label);
 
   POPSTACK (loop_stack);
@@ -2834,6 +2672,22 @@ expand_exit_loop_if_false (whichloop, cond)
 			NULL_RTX);
   emit_label (label);
 
+  return 1;
+}
+
+/* Like expand_exit_loop_if_false except also emit a note marking
+   the end of the conditional.  Should only be used immediately 
+   after expand_loop_start.  */
+
+int
+expand_exit_loop_top_cond (whichloop, cond)
+     struct nesting *whichloop;
+     tree cond;
+{
+  if (! expand_exit_loop_if_false (whichloop, cond))
+    return 0;
+
+  emit_note (NULL, NOTE_INSN_LOOP_END_TOP_COND);
   return 1;
 }
 

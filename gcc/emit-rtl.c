@@ -2897,7 +2897,8 @@ remove_unnecessary_notes ()
 	abort ();
 
       /* Remove NOTE_INSN_DELETED notes.  */
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED)
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED
+	  || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END_TOP_COND)
 	remove_insn (insn);
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
 	{
