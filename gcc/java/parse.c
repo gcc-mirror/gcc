@@ -211,7 +211,7 @@ static tree lookup_method_invoke PARAMS ((int, tree, tree, tree, tree));
 static tree register_incomplete_type PARAMS ((int, tree, tree, tree));
 static tree obtain_incomplete_type PARAMS ((tree));
 static tree java_complete_lhs PARAMS ((tree));
-tree java_complete_tree PARAMS ((tree));
+static tree java_complete_tree PARAMS ((tree));
 static tree maybe_generate_pre_expand_clinit PARAMS ((tree));
 static int maybe_yank_clinit PARAMS ((tree));
 static void java_complete_expand_method PARAMS ((tree));
@@ -13280,7 +13280,7 @@ breakdown_qualified (left, right, source)
    local variable decls if present.
    Same as java_complete_lhs, but does resolve static finals to values. */
 
-tree
+static tree
 java_complete_tree (node)
      tree node;
 {
@@ -15690,7 +15690,10 @@ patch_incomplete_class_ref (node)
     return error_mark_node;
 
   if (!flag_emit_class_files || JPRIMITIVE_TYPE_P (ref_type))
-    return build_class_ref (ref_type);
+    {
+      /* A class referenced by `foo.class' is initialized.  */
+      return build_class_init (ref_type, build_class_ref (ref_type));
+    }
 
   /* If we're emitting class files and we have to deal with non
      primitive types, we invoke (and consider generating) the

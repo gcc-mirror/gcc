@@ -1,3 +1,8 @@
+2000-06-23  Tom Tromey  <tromey@cygnus.com>
+
+	* parse.y (patch_incomplete_class_ref): Initialize the returned
+	class.  For PR gcj/260.
+
 2000-06-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* except.c (prepare_eh_table_type): Use `CATCH_ALL_TYPE'.
