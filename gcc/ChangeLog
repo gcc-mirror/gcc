@@ -1,3 +1,10 @@
+2003-05-30  Roger Sayle  <roger@eyesopen.com>
+
+	* emit-rtl.c (gen_complex_constant_part): New function for getting
+	the constant real or imaginary part of a complex constant.
+	(gen_realpart): Use it.
+	(gen_imagpart): Likewise.
+
 2003-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Fix typos.
