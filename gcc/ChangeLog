@@ -1,3 +1,8 @@
+Mon Sep 28 17:34:35 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.h (ASM_OUTPUT_MI_THUNK): Only define on ELF systems.
+	* rs6000.c (output_mi_thunk): Always use a raw jump for now.
+
 Mon Sep 28 14:24:03 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* tree.h (TYPE_BINFO): Document.

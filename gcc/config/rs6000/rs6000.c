@@ -4557,6 +4557,15 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
      Otherwise, load up its address and jump to it.  */
 
   fname = XSTR (XEXP (DECL_RTL (function), 0), 0);
+#if 1
+  /* For now, just emit a branch always, until we can figure out better when we
+     need to load the address into the count register and emit the slower bctr
+     instruction.  */
+  fprintf (file, "\tb %s", prefix);
+  assemble_name (file, fname);
+  fprintf (file, "\n");
+
+#else
   if (TREE_ASM_WRITTEN (function)
       && !lookup_attribute ("longcall", TYPE_ATTRIBUTES (TREE_TYPE (function))))
     {
@@ -4620,6 +4629,8 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	      asm_fprintf (file, "\t{l|lwz} %s,", r0);
 	      assemble_name (file, fname);
 	      asm_fprintf (file, "@got(%s)\n", r12);
+	      asm_fprintf (file, "\tmtctr %s\n", r0);
+	      asm_fprintf (file, "\tbctr\n");
 	    }
 #if TARGET_ELF
 	  else if (flag_pic > 1 || TARGET_RELOCATABLE)
@@ -4635,6 +4646,8 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	      asm_fprintf (file, "(%s)\n", r12);
 	      asm_fprintf (file, "\t{l|lwz} %s,4(%s)\n", r12, sp);
 	      asm_fprintf (file, "\tmtlr %s\n", r12);
+	      asm_fprintf (file, "\tmtctr %s\n", r0);
+	      asm_fprintf (file, "\tbctr\n");
 	      asm_fprintf (file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);
 	      assemble_name (file, buf);
 	      fputs (" = .-.LCTOC1\n", file);
@@ -4642,22 +4655,24 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	      assemble_name (file, fname);
 	      fputs ("\n\t.previous\n", file);
 	    }
-#endif
+#endif	/* TARGET_ELF */
+
 	  else
 	    {
-	      asm_fprintf (file, "\t{liu|lis} %s,", r0);
+	      asm_fprintf (file, "\t{liu|lis} %s,", r12);
 	      assemble_name (file, fname);
 	      asm_fprintf (file, "@ha\n");
-	      asm_fprintf (file, "\t{cal|la} %s,", r0);
+	      asm_fprintf (file, "\t{cal|la} %s,", r12);
 	      assemble_name (file, fname);
-	      asm_fprintf (file, "@l(%s)\n", r0);
+	      asm_fprintf (file, "@l(%s)\n", r12);
+	      asm_fprintf (file, "\tmtctr %s\n", r12);
+	      asm_fprintf (file, "\tbctr\n");
 	    }
 
-	  asm_fprintf (file, "\tmtctr %s\n", r0);
-	  asm_fprintf (file, "\tbctr\n");
 	  break;
 	}
     }
+#endif	/* #if 0 out code to use bctr for far away jumps */
 }
 
 
