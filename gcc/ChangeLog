@@ -1,3 +1,8 @@
+Wed Aug 25 09:44:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* genattr.c (gen_attr): Add prototype arguments for get_attr_*().
+	Remove unused prototype for `init_lengths'.
+
 Wed Aug 25 09:32:31 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* calls.c (emit_call_1): Mark parameter `stack_size' with
