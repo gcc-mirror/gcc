@@ -35,10 +35,12 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.rmi;
 
 import gnu.java.rmi.RMIMarshalledObjectInputStream;
 import gnu.java.rmi.RMIMarshalledObjectOutputStream;
+
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 

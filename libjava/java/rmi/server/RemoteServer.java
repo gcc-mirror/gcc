@@ -1,5 +1,5 @@
 /* RemoteServer.java --
-   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (c) 1996, 1997, 1998, 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,13 +37,13 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
 import gnu.java.rmi.server.RMIIncomingThread;
 
-public abstract class RemoteServer
-	extends RemoteObject {
+import java.io.OutputStream;
+import java.io.PrintStream;
 
+public abstract class RemoteServer extends RemoteObject
+{
 private static final long serialVersionUID = -4100238210092549637L;
 
 protected RemoteServer() {
