@@ -11,8 +11,8 @@ struct X
 {
   X (int);
 };
-void Foo (int, float, bool);
-void Foo (float, int, X);
+void Foo (int, float, bool);	// WARNING - candidate
+void Foo (float, int, X);	// WARNING - candidate
 
 void Baz ()
 {
