@@ -1,3 +1,7 @@
+2004-05-28 Aaron W. LaFramboise <aaronraolete36@aaronwl.com>
+
+	* prefix.c (lookup_key): Cast buffer to LPBYTE.
+
 2004-06-30  Per Bothner  <per@bothner.com>
 
 	Conditionally compile support for --enable-mapped_location.
