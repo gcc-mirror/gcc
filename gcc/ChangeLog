@@ -1,5 +1,8 @@
 2002-05-29  Jeff Law <law@redhat.com>
 
+	* haifa-sched (sched_analyze): Remove another useless clearing
+	of SCHED_GROUP_P I missed yesterday.
+
 	* pa.h (ASM_OUTPUT_MI_THUNK): Move implementation into pa.c.
 	* pa.c (pa_asm_output_mi_thunk): New function.
 	* pa-protos.h (pa_asm_output_mi_thunk): Declare.
@@ -291,7 +294,7 @@ Tue May 28 21:16:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* coff.h (HAS_INIT_SECTION, INVOKE__MAIN): Define.
 
-2002-05-22  David Edelsohn  <edelsohn@gnu.org>
+2002-05-28  David Edelsohn  <edelsohn@gnu.org>
 	    Jeff Law <law@redhat.com>
 
 	* optabs.c (expand_binop): Fix nwords sign warnings.
