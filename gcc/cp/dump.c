@@ -903,6 +903,24 @@ dequeue_and_dump (di)
 	dump_child ("stmt", STMT_EXPR_STMT (t));
       break;
 
+    case BIND_EXPR:
+      if (dump_children_p)
+	{
+	  dump_child ("vars", TREE_OPERAND (t, 0));
+	  dump_child ("body", TREE_OPERAND (t, 1));
+	}
+      break;
+
+    case LOOP_EXPR:
+      if (dump_children_p)
+	dump_child ("body", TREE_OPERAND (t, 0));
+      break;
+
+    case EXIT_EXPR:
+      if (dump_children_p)
+	dump_child ("cond", TREE_OPERAND (t, 0));
+      break;
+
     case TARGET_EXPR:
       if (dump_children_p)
 	{

@@ -1,7 +1,8 @@
 1999-10-05  Mark Mitchell  <mark@codesourcery.com>
 
-	* ir.texi: Document LOOP_EXPR and EXIT_EXPR.
-
+	* ir.texi: Document BIND_EXPR, LOOP_EXPR, and EXIT_EXPR.
+	* dump.c (dequeue_and_dump): Dump them.
+	
 	* method.c (synthesize_method): Call setup_vtbl_ptr for destructors.
 
 	* decl.c (start_function): Set current_in_charge_parm for
