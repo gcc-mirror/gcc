@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-05-13
+@set last-update-news 1999-05-26
 
 @include root.texi
 
@@ -217,15 +217,9 @@ The @samp{-ax} option is now obeyed when compiling Fortran programs.
 @end ifclear
 
 @item
-The new @samp{-fsubscript-check} option
+The new @samp{-fbounds-check} option
 causes @code{g77} to compile run-time bounds checks
 of array subscripts, as well as of substring start and end points.
-
-The current implementation uses the @code{libf2c}
-library routine @code{s_rnge} to print the diagnostic.
-Since a future version of @code{g77} might use a different implementation,
-use the new @samp{-ff2c-subscript-check} option
-if your application requires use of @code{s_rnge} or a compile-time diagnostic.
 
 @item
 Source file names with the suffixes @samp{.FOR} and @samp{.FPP}
