@@ -11,11 +11,8 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#if defined(_MSC_VER)
-#   include <ostream>
-#else 
-#   include <iostream.h>
-#endif
+# include <stdio.h>
+# include <iostream.h>
 
 // Set buf_start, buf_end, and buf_ptr appropriately, filling tmp_buf
 // if necessary.  Assumes path_end[leaf_index] and leaf_pos are correct.
@@ -330,7 +327,7 @@ inline void __rope_RopeBase<charT,Alloc>::free_c_string()
     if (0 != cstr) {
 	size_t sz = size + 1;
 	destroy(cstr, cstr + sz);
-	Alloc::deallocate(cstr, sz);
+	DataAlloc::deallocate(cstr, sz);
     }
 }
 
@@ -340,7 +337,7 @@ inline void __rope_RopeBase<charT,Alloc>::free_string(charT* s, size_t n)
     if (!__is_basic_char_type((charT *)0)) {
 	destroy(s, s + n);
     }
-    Alloc::deallocate(s, rounded_up_size(n));
+    DataAlloc::deallocate(s, rounded_up_size(n));
 }
 
 template <class charT, class Alloc>
@@ -413,7 +410,7 @@ rope<charT,Alloc>::leaf_concat_char_iter
 {
     size_t old_len = r -> size;
     charT * new_data = (charT *)
-	Alloc::allocate(rounded_up_size(old_len + len));
+	DataAlloc::allocate(rounded_up_size(old_len + len));
     RopeLeaf * result;
     
     uninitialized_copy_n(r -> data, old_len, new_data);
@@ -459,6 +456,7 @@ rope<charT,Alloc>::destr_leaf_concat_char_iter
 #endif
 
 // Assumes left and right are not 0.
+// Does not increment (nor decrement on exception) child reference counts.
 // Result has ref count 1.
 template <class charT, class Alloc>
 rope<charT,Alloc>::RopeBase *
@@ -473,7 +471,7 @@ rope<charT,Alloc>::tree_concat (RopeBase * left, RopeBase * right)
     result -> is_balanced = false;
     result -> size = rsize = left -> size + right -> size;
     if (right -> depth > child_depth) child_depth = right -> depth;
-    unsigned char depth = child_depth + 1;
+    unsigned char depth = (unsigned char)(child_depth + 1);
     result -> depth = depth;
     result -> left = left;
     result -> right = right;
@@ -492,7 +490,12 @@ rope<charT,Alloc>::tree_concat (RopeBase * left, RopeBase * right)
 			     && 1 == balanced -> refcount);
 	     }
 #          endif
-	__STL_ALWAYS(result -> unref_nonnil());
+	   result -> unref_nonnil();
+	__STL_UNWIND(CAlloc::deallocate(result));
+		// In case of exception, we need to deallocate
+		// otherwise dangling result node.  But caller
+		// still owns its children.  Thus unref is
+		// inappropriate.
 	return balanced;
     } else {
 	return result;
@@ -508,7 +511,7 @@ rope<charT,Alloc>::RopeBase * rope<charT,Alloc>::concat_char_iter
 	ref(r);
 	return r;
     }
-    if (0 == r) return RopeLeaf_from_char_ptr(alloc_copy(s, slen), slen);
+    if (0 == r) return RopeLeaf_from_unowned_char_ptr(s, slen);
     if (RopeBase::leaf == r -> tag && r -> size + slen <= copy_max) {
 	result = leaf_concat_char_iter((RopeLeaf *)r, s, slen);
 #       ifndef __GC
@@ -521,23 +524,22 @@ rope<charT,Alloc>::RopeBase * rope<charT,Alloc>::concat_char_iter
 	RopeLeaf *right = (RopeLeaf *)(((RopeConcatenation *)r) -> right);
 	if (right -> size + slen <= copy_max) {
 	  RopeBase * left = ((RopeConcatenation *)r) -> left;
+	  RopeBase * nright = leaf_concat_char_iter((RopeLeaf *)right, s, slen);
 	  left -> ref_nonnil();
 	  __STL_TRY
-	    result = tree_concat(left,
-				 leaf_concat_char_iter((RopeLeaf *)right,
-							s, slen));
-	  __STL_UNWIND(unref(left));
+	    result = tree_concat(left, nright);
+	  __STL_UNWIND(unref(left); unref(nright));
 #         ifndef __GC
 	    __stl_assert(1 == result -> refcount);
 #         endif
 	  return result;
 	}
     }
+    RopeBase * nright = RopeLeaf_from_unowned_char_ptr(s, slen);
     __STL_TRY
       r -> ref_nonnil();
-      result = tree_concat(r, RopeLeaf_from_char_ptr(alloc_copy(s, slen),
-			   slen));
-    __STL_UNWIND(unref(r));
+      result = tree_concat(r, nright);
+    __STL_UNWIND(unref(r); unref(nright));
 #   ifndef __GC
       __stl_assert(1 == result -> refcount);
 #   endif
@@ -551,7 +553,7 @@ rope<charT,Alloc>::RopeBase * rope<charT,Alloc>
 		(RopeBase * r, const charT *s, size_t slen)
 {
     RopeBase *result;
-    if (0 == r) return RopeLeaf_from_char_ptr(alloc_copy(s, slen), slen);
+    if (0 == r) return RopeLeaf_from_unowned_char_ptr(s, slen);
     size_t count = r -> refcount;
     size_t orig_size = r -> size;
     __stl_assert(count >= 1);
@@ -587,11 +589,11 @@ rope<charT,Alloc>::RopeBase * rope<charT,Alloc>
 	  return r;
 	}
     }
-    charT * cpy = alloc_copy(s, slen);
+    RopeBase *right = RopeLeaf_from_unowned_char_ptr(s, slen);
     r -> ref_nonnil();
     __STL_TRY
-      result = tree_concat(r, RopeLeaf_from_char_ptr(cpy, slen));
-    __STL_UNWIND(unref(r); RopeBase::free_string(cpy,slen))
+      result = tree_concat(r, right);
+    __STL_UNWIND(unref(r); unref(right))
     __stl_assert(1 == result -> refcount);
     return result;
 }
@@ -629,13 +631,15 @@ rope<charT,Alloc>::concat(RopeBase * left, RopeBase * right)
 	    leftleft -> ref_nonnil();
 	    __STL_TRY
 	      return(tree_concat(leftleft, rest));
-	    __STL_UNWIND(unref(left); unref(rest))
+	    __STL_UNWIND(unref(leftleft); unref(rest))
 	  }
 	}
     }
     left -> ref_nonnil();
     right -> ref_nonnil();
-    return(tree_concat(left, right));
+    __STL_TRY
+      return(tree_concat(left, right));
+    __STL_UNWIND(unref(left); unref(right));
 }
 
 template <class charT, class Alloc>
@@ -686,21 +690,18 @@ rope<charT,Alloc>::substring(RopeBase * base, size_t start, size_t endp1)
 	    {
 		RopeLeaf * l = (RopeLeaf *)base;
 		RopeLeaf * result;
-		__GC_CONST charT *section;
 		size_t result_len;
 		if (start >= adj_endp1) return 0;
 		result_len = adj_endp1 - start;
 		if (result_len > lazy_threshold) goto lazy;
 #               ifdef __GC
-		    section = l -> data + start;
+		    const charT *section = l -> data + start;
 		    result = RopeLeaf_from_char_ptr(section, result_len);
 		    result -> c_string = 0;  // Not eos terminated.
 #               else
-		    section = alloc_copy(l -> data + start, result_len);
 		    // We should sometimes create substring node instead.
-		    __STL_TRY
-		      result = RopeLeaf_from_char_ptr(section, result_len);
-		    __STL_UNWIND(RopeBase::free_string(section, result_len))
+		    result = RopeLeaf_from_unowned_char_ptr(
+					l -> data + start, result_len);
 #               endif
 		return result;
 	    }
@@ -730,7 +731,7 @@ rope<charT,Alloc>::substring(RopeBase * base, size_t start, size_t endp1)
 
 		if (result_len > lazy_threshold) goto lazy;
 		section = (charT *)
-			Alloc::allocate(rounded_up_size(result_len));
+			DataAlloc::allocate(rounded_up_size(result_len));
 		__STL_TRY
 		  (*(f -> fn))(start, result_len, section);
 		__STL_UNWIND(RopeBase::free_string(section, result_len));
@@ -870,12 +871,11 @@ bool rope<charT, Alloc>::apply_to_pieces(
 		RopeFunction * f = (RopeFunction *)r;
 		size_t len = end - begin;
 		bool result;
-		charT * buffer = (charT *)
-			Alloc::allocate(len * sizeof(charT));
+		charT * buffer = DataAlloc::allocate(len);
 		__STL_TRY
 		  (*(f -> fn))(begin, end, buffer);
 		  result = c(buffer, len);
-		__STL_ALWAYS(Alloc::deallocate(buffer, len * sizeof(charT)))
+		__STL_ALWAYS(DataAlloc::deallocate(buffer, len))
 		return result;
 	    }
 	default:
@@ -887,23 +887,23 @@ bool rope<charT, Alloc>::apply_to_pieces(
 
 inline void __rope_fill(ostream& o, size_t n)
 {
-    char f = cout.fill();
+    char f = o.fill();
     size_t i;
 
     for (i = 0; i < n; i++) o.put(f);
 }
     
 
-template <class charT> inline bool __rope_is_simple(charT *c) { return false; }
-inline bool __rope_is_simple(char * c) { return true; }
-inline bool __rope_is_simple(wchar_t * c) { return true; }
+template <class charT> inline bool __rope_is_simple(charT *) { return false; }
+inline bool __rope_is_simple(char *) { return true; }
+inline bool __rope_is_simple(wchar_t *) { return true; }
 
 
 template<class charT, class Alloc>
 ostream& operator<< (ostream& o, const rope<charT, Alloc>& r)
 {
     size_t w = o.width();
-    bool left = o.flags() & ios::left;
+    bool left = bool(o.flags() & ios::left);
     size_t pad_len;
     size_t rope_len = r.size();
     __rope_insert_char_consumer<charT> c(o);
@@ -1084,6 +1084,9 @@ rope<charT,Alloc>::balance(RopeBase *r)
 #	endif
 	result = concat(forest[i], result);
 	forest[i] -> unref_nonnil();
+#	if !defined(__GC) && defined(__STL_USE_EXCEPTIONS)
+	  forest[i] = 0;
+#	endif
       }
     __STL_UNWIND(for(i = 0; i <= RopeBase::max_rope_depth; i++)
 		 unref(forest[i]))
@@ -1114,12 +1117,11 @@ template <class charT, class Alloc>
 void
 rope<charT,Alloc>::add_leaf_to_forest(RopeBase *r, RopeBase **forest)
 {
-    self_destruct_ptr insertee(r);   	// included in refcount
-    self_destruct_ptr too_tiny(0);     	// included in refcount
+    RopeBase * insertee;   		// included in refcount
+    RopeBase * too_tiny = 0;    	// included in refcount
     int i;  				// forest[0..i-1] is empty
-    size_t s = insertee -> size;
+    size_t s = r -> size;
 
-    ref(r);
     for (i = 0; s >= min_len[i+1]/* not this bucket */; ++i) {
 	if (0 != forest[i]) {
 #	    ifndef __GC
@@ -1132,12 +1134,12 @@ rope<charT,Alloc>::add_leaf_to_forest(RopeBase *r, RopeBase **forest)
     }
     {
 #	ifndef __GC
-	  self_destruct_ptr old(insertee);
+	  self_destruct_ptr old(too_tiny);
 #	endif
-	insertee = concat_and_set_balanced(too_tiny, insertee);
+	insertee = concat_and_set_balanced(too_tiny, r);
     }
-    unref(too_tiny);	// too_tiny is dead.
-    too_tiny = 0;	// Needed for exception safety.
+    // Too_tiny dead, and no longer included in refcount.
+    // Insertee is live and included.
     __stl_assert(is_almost_balanced(insertee));
     __stl_assert(insertee -> depth <= r -> depth + 1);
     for (;; ++i) {
@@ -1155,7 +1157,6 @@ rope<charT,Alloc>::add_leaf_to_forest(RopeBase *r, RopeBase **forest)
 	if (i == RopeBase::max_rope_depth
 	    || insertee -> size < min_len[i+1]) {
 	    forest[i] = insertee;
-	    insertee = 0;
 	    // refcount is OK since insertee is now dead.
 	    return;
 	}
@@ -1348,12 +1349,13 @@ __rope_charT_ref_proxy<charT, Alloc>::operator& () const {
 template <class charT, class Alloc>
 rope<charT, Alloc>::rope(size_t n, charT c)
 {
-    RopeBase * result;
+    rope result;
     const size_t exponentiate_threshold = 32;
     size_t exponent;
     size_t rest;
     charT *rest_buffer;
     RopeBase * remainder;
+    rope remainder_rope;
 
     if (0 == n) { tree_ptr = 0; return; }
     exponent = n / exponentiate_threshold;
@@ -1361,53 +1363,42 @@ rope<charT, Alloc>::rope(size_t n, charT c)
     if (0 == rest) {
 	remainder = 0;
     } else {
-	rest_buffer = (charT *)Alloc::allocate(rounded_up_size(rest));
+	rest_buffer = DataAlloc::allocate(rounded_up_size(rest));
 	uninitialized_fill_n(rest_buffer, rest, c);
 	__cond_store_eos(rest_buffer[rest]);
 	__STL_TRY
 	    remainder = RopeLeaf_from_char_ptr(rest_buffer, rest);
 	__STL_UNWIND(RopeBase::free_string(rest_buffer, rest))
     }
-    __STL_TRY
-      if (exponent != 0) {
+    remainder_rope.tree_ptr = remainder;
+    if (exponent != 0) {
 	charT * base_buffer =
-		(charT *)Alloc::allocate(
-			rounded_up_size(exponentiate_threshold));
-	self_destruct_ptr base_leaf;
+		DataAlloc::allocate(rounded_up_size(exponentiate_threshold));
+	RopeLeaf * base_leaf;
+	rope base_rope;
 	uninitialized_fill_n(base_buffer, exponentiate_threshold, c);
 	__cond_store_eos(base_buffer[exponentiate_threshold]);
 	__STL_TRY
-	  base_leaf = RopeLeaf_from_char_ptr(base_buffer,
-					     exponentiate_threshold);
+	base_leaf = RopeLeaf_from_char_ptr(base_buffer,
+					   exponentiate_threshold);
 	__STL_UNWIND(RopeBase::free_string(base_buffer, exponentiate_threshold))
+	base_rope.tree_ptr = base_leaf;
  	if (1 == exponent) {
-	    result = base_leaf;
-#           ifndef __GC
-	      __stl_assert(1 == result -> refcount);
-	      result -> refcount = 2;   // will be decremented when base_leaf disappears
-#           endif
+	  result = base_rope;
+#         ifndef __GC
+	    __stl_assert(1 == result -> tree_ptr -> refcount);
+#         endif
 	} else {
-	    result = power((RopeBase *)base_leaf, exponent, concat_fn());
-#           ifndef __GC
-	      __stl_assert(0 == result -> refcount);
-	      result -> refcount = 1;
-#           endif
+	  result = power(base_rope, exponent, concat_fn());
 	}
 	if (0 != remainder) {
-#           ifndef __GC
-	      __stl_assert(1 == remainder -> refcount);
-#           endif
-	    result = tree_concat(result, remainder);
+	  result += remainder_rope;
 	}
-	// All partial results computed by power must be used.
-      } else {
-	result = remainder;
-      }
-    __STL_UNWIND(unref(remainder));
-#   ifndef __GC
-      __stl_assert(0 == result || 1 == result -> refcount);
-#   endif
-    tree_ptr = result;
+    } else {
+	result = remainder_rope;
+    }
+    tree_ptr = result.tree_ptr;
+    tree_ptr -> ref_nonnil();
 }
 
 template<class charT, class Alloc> charT rope<charT,Alloc>::empty_c_str[1];
@@ -1427,7 +1418,7 @@ const charT * rope<charT,Alloc>::c_str() const {
     __GC_CONST charT * old_c_string = tree_ptr -> c_string;
     if (0 != old_c_string) return(old_c_string);
     size_t s = size();
-    charT * result = (charT *)Alloc::allocate((s + 1)*sizeof(charT));
+    charT * result = DataAlloc::allocate(s + 1);
     flatten(tree_ptr, result);
     result[s] = __eos((charT *)0);
 #   ifdef __GC
@@ -1438,7 +1429,7 @@ const charT * rope<charT,Alloc>::c_str() const {
 	// separately allocated.  Deallocate the old copy, since we just
 	// replaced it.
 	destroy(old_c_string, old_c_string + s + 1);
-	Alloc::deallocate(old_c_string, s + 1);
+	DataAlloc::deallocate(old_c_string, s + 1);
       }
 #   endif
     return(result);
@@ -1455,7 +1446,7 @@ const charT * rope<charT,Alloc>::replace_with_c_str() {
 	return(old_c_string);
     }
     size_t s = size();
-    charT * result = (charT *)Alloc::allocate(rounded_up_size(s));
+    charT * result = DataAlloc::allocate(rounded_up_size(s));
     flatten(tree_ptr, result);
     result[s] = __eos((charT *)0);
     tree_ptr -> unref_nonnil();

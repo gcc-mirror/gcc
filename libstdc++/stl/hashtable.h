@@ -123,7 +123,6 @@ struct __hashtable_iterator {
   typedef ptrdiff_t difference_type;
   typedef size_t size_type;
   typedef Value& reference;
-  typedef const Value& const_reference;
   typedef Value* pointer;
 
   node* cur;
@@ -132,6 +131,9 @@ struct __hashtable_iterator {
   __hashtable_iterator(node* n, hashtable* tab) : cur(n), ht(tab) {}
   __hashtable_iterator() {}
   reference operator*() const { return cur->val; }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+  pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
   iterator& operator++();
   iterator operator++(int);
   bool operator==(const iterator& it) const { return cur == it.cur; }
@@ -156,9 +158,8 @@ struct __hashtable_const_iterator {
   typedef Value value_type;
   typedef ptrdiff_t difference_type;
   typedef size_t size_type;
-  typedef Value& reference;
-  typedef const Value& const_reference;
-  typedef Value* pointer;
+  typedef const Value& reference;
+  typedef const Value* pointer;
 
   const node* cur;
   const hashtable* ht;
@@ -167,7 +168,10 @@ struct __hashtable_const_iterator {
     : cur(n), ht(tab) {}
   __hashtable_const_iterator() {}
   __hashtable_const_iterator(const iterator& it) : cur(it.cur), ht(it.ht) {}
-  const_reference operator*() const { return cur->val; }
+  reference operator*() const { return cur->val; }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+  pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
   const_iterator& operator++();
   const_iterator operator++(int);
   bool operator==(const const_iterator& it) const { return cur == it.cur; }
@@ -399,34 +403,6 @@ public:
       insert_equal_noresize(*f);
   }
 
-  template <class BidirectionalIterator>
-  void insert_unique(BidirectionalIterator f, BidirectionalIterator l,
-                     bidirectional_iterator_tag)
-  {
-    insert_unique(f, l, forward_iterator_tag());
-  }
-
-  template <class BidirectionalIterator>
-  void insert_equal(BidirectionalIterator f, BidirectionalIterator l,
-                    bidirectional_iterator_tag)
-  {
-    insert_equal(f, l, forward_iterator_tag());
-  }
-
-  template <class RandomAccessIterator>
-  void insert_unique(RandomAccessIterator f, RandomAccessIterator l,
-                     random_access_iterator_tag)
-  {
-    insert_unique(f, l, forward_iterator_tag());
-  }
-
-  template <class RandomAccessIterator>
-  void insert_equal(RandomAccessIterator f, RandomAccessIterator l,
-                    random_access_iterator_tag)
-  {
-    insert_equal(f, l, forward_iterator_tag());
-  }
-
 #else /* __STL_MEMBER_TEMPLATES */
   void insert_unique(const value_type* f, const value_type* l)
   {
@@ -619,6 +595,7 @@ __hashtable_const_iterator<V, K, HF, ExK, EqK, A>::operator++(int)
   return tmp;
 }
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
 
 template <class V, class K, class HF, class ExK, class EqK, class All>
 inline forward_iterator_tag
@@ -660,6 +637,8 @@ distance_type(const __hashtable_const_iterator<V, K, HF, ExK, EqK, All>&)
 {
   return (hashtable<V, K, HF, ExK, EqK, All>::difference_type*) 0;
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 template <class V, class K, class HF, class Ex, class Eq, class A>
 bool operator==(const hashtable<V, K, HF, Ex, Eq, A>& ht1,

@@ -99,24 +99,27 @@ struct __slist_iterator_base
   }
 };
 
-template <class T, class Ref>
+template <class T, class Ref, class Ptr>
 struct __slist_iterator : public __slist_iterator_base
 {
-  typedef __slist_iterator<T, T&> iterator;
-  typedef __slist_iterator<T, const T&> const_iterator;
-  typedef __slist_iterator<T, Ref> self;
+  typedef __slist_iterator<T, T&, T*>             iterator;
+  typedef __slist_iterator<T, const T&, const T*> const_iterator;
+  typedef __slist_iterator<T, Ref, Ptr>           self;
 
   typedef T value_type;
-  typedef value_type* pointer;
-  typedef value_type& reference;
-  typedef const value_type& const_reference;
+  typedef Ptr pointer;
+  typedef Ref reference;
   typedef __slist_node<T> list_node;
 
   __slist_iterator(list_node* x) : __slist_iterator_base(x) {}
   __slist_iterator() : __slist_iterator_base(0) {}
   __slist_iterator(const iterator& x) : __slist_iterator_base(x.node) {}
 
-  Ref operator*() const { return ((list_node*) node)->data; }
+  reference operator*() const { return ((list_node*) node)->data; }
+#ifndef __SGI_STL_NO_ARROW_OPERATOR
+  pointer operator->() const { return &(operator*()); }
+#endif /* __SGI_STL_NO_ARROW_OPERATOR */
+
   self& operator++()
   {
     incr();
@@ -130,6 +133,8 @@ struct __slist_iterator : public __slist_iterator_base
   }
 };
 
+#ifndef __STL_CLASS_PARTIAL_SPECIALIZATION
+
 inline ptrdiff_t*
 distance_type(const __slist_iterator_base&)
 {
@@ -142,11 +147,13 @@ iterator_category(const __slist_iterator_base&)
   return forward_iterator_tag();
 }
 
-template <class T, class Ref> 
+template <class T, class Ref, class Ptr> 
 inline T* 
-value_type(const __slist_iterator<T, Ref>&) {
+value_type(const __slist_iterator<T, Ref, Ptr>&) {
   return 0;
 }
+
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 inline size_t __slist_size(__slist_node_base* node)
 {
@@ -167,8 +174,8 @@ public:
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
 
-  typedef __slist_iterator<T, reference> iterator;
-  typedef __slist_iterator<T, const_reference> const_iterator;
+  typedef __slist_iterator<T, T&, T*>             iterator;
+  typedef __slist_iterator<T, const T&, const T*> const_iterator;
 
 private:
   typedef __slist_node<T> list_node;

@@ -236,6 +236,63 @@ inline ForwardIterator1 search(ForwardIterator1 first1, ForwardIterator1 last1,
 		    distance_type(first1), distance_type(first2));
 }
 
+template <class ForwardIterator, class Integer, class T>
+ForwardIterator search_n(ForwardIterator first, ForwardIterator last,
+                         Integer count, const T& value) {
+  if (count <= 0)
+    return first;
+  else {
+    first = find(first, last, value);
+    while (first != last) {
+      Integer n = count - 1;
+      ForwardIterator i = first;
+      ++i;
+      while (i != last && n != 0 && *i == value) {
+        ++i;
+        --n;
+      }
+      if (n == 0)
+        return first;
+      else
+        first = find(i, last, value);
+    }
+    return last;
+  }
+}
+
+template <class ForwardIterator, class Integer, class T, class BinaryPredicate>
+ForwardIterator search_n(ForwardIterator first, ForwardIterator last,
+                         Integer count, const T& value,
+                         BinaryPredicate binary_pred) {
+  if (count <= 0)
+    return first;
+  else {
+    while (first != last) {
+      if (binary_pred(*first, value)) break;
+      ++first;
+    }
+    while (first != last) {
+      Integer n = count - 1;
+      ForwardIterator i = first;
+      ++i;
+      while (i != last && n != 0 && binary_pred(*i, value)) {
+        ++i;
+        --n;
+      }
+      if (n == 0)
+        return first;
+      else {
+        while (i != last) {
+          if (binary_pred(*i, value)) break;
+          ++i;
+        }
+        first = i;
+      }
+    }
+    return last;
+  }
+} 
+
 template <class ForwardIterator1, class ForwardIterator2>
 ForwardIterator2 swap_ranges(ForwardIterator1 first1, ForwardIterator1 last1,
 			     ForwardIterator2 first2) {
@@ -1400,15 +1457,6 @@ ForwardIterator __lower_bound(ForwardIterator first, ForwardIterator last,
     return first;
 }
 
-template <class ForwardIterator, class T, class Distance>
-inline ForwardIterator __lower_bound(ForwardIterator first,
-				     ForwardIterator last,
-				     const T& value, Distance*,
-				     bidirectional_iterator_tag) {
-    return __lower_bound(first, last, value, (Distance*)0,
-			 forward_iterator_tag());
-}
-
 template <class RandomAccessIterator, class T, class Distance>
 RandomAccessIterator __lower_bound(RandomAccessIterator first,
 				   RandomAccessIterator last, const T& value,
@@ -1457,15 +1505,6 @@ ForwardIterator __lower_bound(ForwardIterator first, ForwardIterator last,
 	    len = half;
     }
     return first;
-}
-
-template <class ForwardIterator, class T, class Compare, class Distance>
-inline ForwardIterator __lower_bound(ForwardIterator first,
-				     ForwardIterator last,
-				     const T& value, Compare comp, Distance*,
-				     bidirectional_iterator_tag) {
-    return __lower_bound(first, last, value, comp, (Distance*)0,
-			 forward_iterator_tag());
 }
 
 template <class RandomAccessIterator, class T, class Compare, class Distance>
@@ -1520,15 +1559,6 @@ ForwardIterator __upper_bound(ForwardIterator first, ForwardIterator last,
     return first;
 }
 
-template <class ForwardIterator, class T, class Distance>
-inline ForwardIterator __upper_bound(ForwardIterator first,
-				     ForwardIterator last,
-				     const T& value, Distance*,
-				     bidirectional_iterator_tag) {
-    return __upper_bound(first, last, value, (Distance*)0,
-			 forward_iterator_tag());
-}
-
 template <class RandomAccessIterator, class T, class Distance>
 RandomAccessIterator __upper_bound(RandomAccessIterator first,
 				   RandomAccessIterator last, const T& value,
@@ -1579,15 +1609,6 @@ ForwardIterator __upper_bound(ForwardIterator first, ForwardIterator last,
 	}
     }
     return first;
-}
-
-template <class ForwardIterator, class T, class Compare, class Distance>
-inline ForwardIterator __upper_bound(ForwardIterator first,
-				     ForwardIterator last,
-				     const T& value, Compare comp, Distance*,
-				     bidirectional_iterator_tag) {
-    return __upper_bound(first, last, value, comp, (Distance*)0,
-			 forward_iterator_tag());
 }
 
 template <class RandomAccessIterator, class T, class Compare, class Distance>
@@ -1646,14 +1667,6 @@ __equal_range(ForwardIterator first, ForwardIterator last, const T& value,
 	}
     }
     return pair<ForwardIterator, ForwardIterator>(first, first);
-}
-
-template <class ForwardIterator, class T, class Distance>
-inline pair<ForwardIterator, ForwardIterator>
-__equal_range(ForwardIterator first, ForwardIterator last, const T& value,
-	      Distance*, bidirectional_iterator_tag) {
-    return __equal_range(first, last, value, (Distance*)0, 
-			 forward_iterator_tag());
 }
 
 template <class RandomAccessIterator, class T, class Distance>
@@ -1717,14 +1730,6 @@ __equal_range(ForwardIterator first, ForwardIterator last, const T& value,
     }
     return pair<ForwardIterator, ForwardIterator>(first, first);
 }           
-
-template <class ForwardIterator, class T, class Compare, class Distance>
-inline pair<ForwardIterator, ForwardIterator>
-__equal_range(ForwardIterator first, ForwardIterator last, const T& value,
-	      Compare comp, Distance*, bidirectional_iterator_tag) {
-    return __equal_range(first, last, value, comp, (Distance*)0, 
-			 forward_iterator_tag());
-}
 
 template <class RandomAccessIterator, class T, class Compare, class Distance>
 pair<RandomAccessIterator, RandomAccessIterator>
@@ -2543,6 +2548,213 @@ OutputIterator adjacent_difference(InputIterator first, InputIterator last,
 				 binary_op);
 }
 
+template <class InputIterator, class ForwardIterator>
+InputIterator find_first_of(InputIterator first1, InputIterator last1,
+                            ForwardIterator first2, ForwardIterator last2)
+{
+  for ( ; first1 != last1; ++first1) 
+    for (ForwardIterator iter = first2; iter != last2; ++iter)
+      if (*first1 == *iter)
+        return first1;
+  return last1;
+}
+
+template <class InputIterator, class ForwardIterator, class BinaryPredicate>
+InputIterator find_first_of(InputIterator first1, InputIterator last1,
+                            ForwardIterator first2, ForwardIterator last2,
+                            BinaryPredicate comp)
+{
+  for ( ; first1 != last1; ++first1) 
+    for (ForwardIterator iter = first2; iter != last2; ++iter)
+      if (comp(*first1, *iter))
+        return first1;
+  return last1;
+}
+
+
+// Search [first2, last2) as a subsequence in [first1, last1).
+
+// find_end for forward iterators. 
+template <class ForwardIterator1, class ForwardIterator2>
+ForwardIterator1 __find_end(ForwardIterator1 first1, ForwardIterator1 last1,
+                            ForwardIterator2 first2, ForwardIterator2 last2,
+                            forward_iterator_tag, forward_iterator_tag)
+{
+  if (first2 == last2)
+    return last1;
+  else {
+    ForwardIterator1 result = last1;
+    while (1) {
+      ForwardIterator1 new_result = search(first1, last1, first2, last2);
+      if (new_result == last1)
+        return result;
+      else {
+        result = new_result;
+        first1 = new_result;
+        ++first1;
+      }
+    }
+  }
+}
+
+template <class ForwardIterator1, class ForwardIterator2,
+          class BinaryPredicate>
+ForwardIterator1 __find_end(ForwardIterator1 first1, ForwardIterator1 last1,
+                            ForwardIterator2 first2, ForwardIterator2 last2,
+                            forward_iterator_tag, forward_iterator_tag,
+                            BinaryPredicate comp)
+{
+  if (first2 == last2)
+    return last1;
+  else {
+    ForwardIterator1 result = last1;
+    while (1) {
+      ForwardIterator1 new_result = search(first1, last1, first2, last2, comp);
+      if (new_result == last1)
+        return result;
+      else {
+        result = new_result;
+        first1 = new_result;
+        ++first1;
+      }
+    }
+  }
+}
+
+// find_end for bidirectional iterators.  Requires partial specialization.
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+
+template <class BidirectionalIterator1, class BidirectionalIterator2>
+BidirectionalIterator1
+__find_end(BidirectionalIterator1 first1, BidirectionalIterator1 last1,
+           BidirectionalIterator2 first2, BidirectionalIterator2 last2,
+           bidirectional_iterator_tag, bidirectional_iterator_tag)
+{
+  typedef reverse_iterator<BidirectionalIterator1> reviter1;
+  typedef reverse_iterator<BidirectionalIterator2> reviter2;
+
+  reviter1 rlast1(first1);
+  reviter2 rlast2(first2);
+  reviter1 rresult = search(reviter1(last1), rlast1, reviter2(last2), rlast2);
+
+  if (rresult == rlast1)
+    return last1;
+  else {
+    BidirectionalIterator1 result = rresult.base();
+    advance(result, -distance(first2, last2));
+    return result;
+  }
+}
+
+template <class BidirectionalIterator1, class BidirectionalIterator2,
+          class BinaryPredicate>
+BidirectionalIterator1
+__find_end(BidirectionalIterator1 first1, BidirectionalIterator1 last1,
+           BidirectionalIterator2 first2, BidirectionalIterator2 last2,
+           bidirectional_iterator_tag, bidirectional_iterator_tag, 
+           BinaryPredicate comp)
+{
+  typedef reverse_iterator<BidirectionalIterator1> reviter1;
+  typedef reverse_iterator<BidirectionalIterator2> reviter2;
+
+  reviter1 rlast1(first1);
+  reviter2 rlast2(first2);
+  reviter1 rresult = search(reviter1(last1), rlast1, reviter2(last2), rlast2,
+                            comp);
+
+  if (rresult == rlast1)
+    return last1;
+  else {
+    BidirectionalIterator1 result = rresult.base();
+    advance(result, -distance(first2, last2));
+    return result;
+  }
+}
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+
+// Dispatching functions.
+
+template <class ForwardIterator, class BidirectionalIterator>
+inline ForwardIterator 
+__find_end(ForwardIterator first1, ForwardIterator last1, 
+           BidirectionalIterator first2, BidirectionalIterator last2,
+           forward_iterator_tag, bidirectional_iterator_tag)
+{
+  return __find_end(first1, last1, first2, last2,
+                    forward_iterator_tag(), forward_iterator_tag());
+}
+ 
+template <class BidirectionalIterator, class ForwardIterator>
+inline BidirectionalIterator
+__find_end(BidirectionalIterator first1, BidirectionalIterator last1, 
+           ForwardIterator first2, ForwardIterator last2,
+           bidirectional_iterator_tag, forward_iterator_tag)
+{
+  return __find_end(first1, last1, first2, last2,
+                    forward_iterator_tag(), forward_iterator_tag());
+}
+
+template <class ForwardIterator, class BidirectionalIterator,
+          class BinaryPredicate>
+inline ForwardIterator 
+__find_end(ForwardIterator first1, ForwardIterator last1, 
+           BidirectionalIterator first2, BidirectionalIterator last2,
+           forward_iterator_tag, bidirectional_iterator_tag,
+           BinaryPredicate comp)
+{
+  return __find_end(first1, last1, first2, last2,
+                    forward_iterator_tag(), forward_iterator_tag(),
+                    comp);
+
+}
+ 
+template <class BidirectionalIterator, class ForwardIterator,
+          class BinaryPredicate>
+inline BidirectionalIterator
+__find_end(BidirectionalIterator first1, BidirectionalIterator last1, 
+           ForwardIterator first2, ForwardIterator last2,
+           bidirectional_iterator_tag, forward_iterator_tag, 
+           BinaryPredicate comp)
+{
+  return __find_end(first1, last1, first2, last2,
+                    forward_iterator_tag(), forward_iterator_tag(),
+                    comp);
+}
+
+template <class ForwardIterator1, class ForwardIterator2>
+inline ForwardIterator1 
+find_end(ForwardIterator1 first1, ForwardIterator1 last1, 
+         ForwardIterator2 first2, ForwardIterator2 last2)
+{
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+  return __find_end(first1, last1, first2, last2,
+                    iterator_traits<ForwardIterator1>::iterator_category(),
+                    iterator_traits<ForwardIterator2>::iterator_category());
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+  return __find_end(first1, last1, first2, last2,
+                    forward_iterator_tag(), forward_iterator_tag());
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+}
+
+template <class ForwardIterator1, class ForwardIterator2, 
+          class BinaryPredicate>
+inline ForwardIterator1 
+find_end(ForwardIterator1 first1, ForwardIterator1 last1, 
+         ForwardIterator2 first2, ForwardIterator2 last2,
+         BinaryPredicate comp)
+{
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+  return __find_end(first1, last1, first2, last2,
+                    iterator_traits<ForwardIterator1>::iterator_category(),
+                    iterator_traits<ForwardIterator2>::iterator_category(),
+                    comp);
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+  return __find_end(first1, last1, first2, last2,
+                    forward_iterator_tag(), forward_iterator_tag(),
+                    comp);
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
+}
+
 // Returns x ** n, where n >= 0.  Note that "multiplication"
 //  is required to be associative, but not necessarily commutative.
     
@@ -2551,18 +2763,18 @@ T power(T x, Integer n, MonoidOperation op) {
   if (n == 0)
     return identity_element(op);
   else {
-    while (n % 2 == 0) {
-      n /= 2;
+    while ((n & 1) == 0) {
+      n >>= 1;
       x = op(x, x);
     }
 
     T result = x;
-    n /= 2;
+    n >>= 1;
     while (n != 0) {
       x = op(x, x);
-      if (n % 2 != 0)
+      if ((n & 1) != 0)
         result = op(result, x);
-      n /= 2;
+      n >>= 1;
     }
     return result;
   }

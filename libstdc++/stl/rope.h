@@ -38,18 +38,18 @@ inline charT __eos(charT*) { return charT(); }
 // Test for basic character types.
 // For basic character types leaves having a trailing eos.
 template <class charT>
-inline bool __is_basic_char_type(charT* c) { return false; }
+inline bool __is_basic_char_type(charT *) { return false; }
 template <class charT>
-inline bool __is_one_byte_char_type(charT* c) { return false; }
+inline bool __is_one_byte_char_type(charT *) { return false; }
 
-inline bool __is_basic_char_type(char* c) { return true; }
-inline bool __is_one_byte_char_type(char* c) { return true; }
-inline bool __is_basic_char_type(wchar_t* c) { return true; }
+inline bool __is_basic_char_type(char *) { return true; }
+inline bool __is_one_byte_char_type(char *) { return true; }
+inline bool __is_basic_char_type(wchar_t *) { return true; }
 
 // Store an eos iff charT is a basic character type.
 // Do not reference __eos if it isn't.
 template <class charT>
-inline void __cond_store_eos(charT& c) {}
+inline void __cond_store_eos(charT&) {}
 
 inline void __cond_store_eos(char& c) { c = 0; }
 inline void __cond_store_eos(wchar_t& c) { c = 0; }
@@ -235,6 +235,7 @@ template<class CharT, class Alloc> class __rope_charT_ptr_proxy;
 template<class charT, class Alloc>
 struct __rope_RopeBase {
     typedef rope<charT,Alloc> my_rope;
+    typedef simple_alloc<charT, Alloc> DataAlloc;
     typedef simple_alloc<__rope_RopeConcatenation<charT,Alloc>, Alloc> CAlloc;
     typedef simple_alloc<__rope_RopeLeaf<charT,Alloc>, Alloc> LAlloc;
     typedef simple_alloc<__rope_RopeFunction<charT,Alloc>, Alloc> FAlloc;
@@ -368,12 +369,17 @@ struct __rope_RopeBase {
 	  {
 	      if (0 != t) t -> incr_refcount();
 	  }
+	  static void free_if_unref(__rope_RopeBase* t)
+ 	  {
+	      if (0 != t && 0 == t -> refcount) t -> free_tree();
+	  }
 #   else /* __GC */
 	  void unref_nonnil() {}
 	  void ref_nonnil() {}
 	  static void unref(__rope_RopeBase* t) {}
 	  static void ref(__rope_RopeBase* t) {}
 	  static void fn_finalization_proc(void * tree, void *);
+	  static void free_if_unref(__rope_RopeBase* t) {}
 #   endif
 
     // The data fields of leaves are allocated with some
@@ -384,9 +390,9 @@ struct __rope_RopeBase {
         size_t size_with_eos;
 	     
         if (__is_basic_char_type((charT *)0)) {
-    	    size_with_eos = (n + 1) * sizeof(charT);
+    	    size_with_eos = n + 1;
     	} else {
-  	    size_with_eos = n * sizeof(charT);
+  	    size_with_eos = n;
 	}
 #       ifdef __GC
    	   return size_with_eos;
@@ -684,6 +690,11 @@ class __rope_const_iterator : public __rope_iterator_base<charT,Alloc> {
 		     const_cast<RopeBase *>(root), pos)
 		   // Only nonconst iterators modify root ref count
     {}
+  public:
+    typedef charT reference;    // Really a value.  Returning a reference
+				// Would be a mess, since it would have
+				// to be included in refcount.
+    typedef const charT* pointer;
 
   public:
     __rope_const_iterator() {};
@@ -702,7 +713,7 @@ class __rope_const_iterator : public __rope_iterator_base<charT,Alloc> {
 	}
 	return(*this);
     }
-    const charT& operator*() {
+    reference operator*() {
 	if (0 == buf_ptr) setcache(*this);
 	return *buf_ptr;
     }
@@ -758,7 +769,7 @@ class __rope_const_iterator : public __rope_iterator_base<charT,Alloc> {
     friend __rope_const_iterator<charT,Alloc> operator+
 	(ptrdiff_t n,
 	 const __rope_const_iterator<charT,Alloc> & x);
-    charT operator[](size_t n) {
+    reference operator[](size_t n) {
 	return rope<charT,Alloc>::fetch(root, current_pos + n);
     }
     friend bool operator==
@@ -791,6 +802,10 @@ class __rope_iterator : public __rope_iterator_base<charT,Alloc> {
 	     }
     void check();
   public:
+    typedef __rope_charT_ref_proxy<charT,Alloc>  reference;
+    typedef __rope_charT_ref_proxy<charT,Alloc>* pointer;
+
+  public:
     rope<charT,Alloc>& container() { return *root_rope; }
     __rope_iterator() {
 	root = 0;  // Needed for reference counting.
@@ -819,7 +834,7 @@ class __rope_iterator : public __rope_iterator_base<charT,Alloc> {
 	RopeBase::unref(old);
 	return(*this);
     }
-    __rope_charT_ref_proxy<charT,Alloc> operator*() {
+    reference operator*() {
 	check();
 	if (0 == buf_ptr) {
 	    return __rope_charT_ref_proxy<charT,Alloc>(root_rope, current_pos);
@@ -862,7 +877,7 @@ class __rope_iterator : public __rope_iterator_base<charT,Alloc> {
 	decr(1);
 	return __rope_iterator<charT,Alloc>(root_rope, old_pos);
     }
-    __rope_charT_ref_proxy<charT,Alloc> operator[](ptrdiff_t n) {
+    reference operator[](ptrdiff_t n) {
 	return __rope_charT_ref_proxy<charT,Alloc>(root_rope, current_pos + n);
     }
     friend bool operator==
@@ -892,7 +907,7 @@ class rope {
 	typedef charT value_type;
 	typedef ptrdiff_t difference_type;
 	typedef size_t size_type;
-	typedef const charT& const_reference;
+	typedef charT const_reference;
 	typedef const charT* const_pointer;
 	typedef __rope_iterator<charT,Alloc> iterator;
 	typedef __rope_const_iterator<charT,Alloc> const_iterator;
@@ -945,6 +960,7 @@ class rope {
 
 	static charT empty_c_str[1];
 
+    	typedef simple_alloc<charT, Alloc> DataAlloc;
     	typedef simple_alloc<__rope_RopeConcatenation<charT,Alloc>, Alloc> CAlloc;
     	typedef simple_alloc<__rope_RopeLeaf<charT,Alloc>, Alloc> LAlloc;
     	typedef simple_alloc<__rope_RopeFunction<charT,Alloc>, Alloc> FAlloc;
@@ -1054,8 +1070,7 @@ class rope {
 	// Adds a trailing NULL for basic char types.
 	static charT * alloc_copy(const charT *s, size_t size)
 	{
-	    charT * result = (charT *)
-				Alloc::allocate(rounded_up_size(size));
+	    charT * result = DataAlloc::allocate(rounded_up_size(size));
 
 	    uninitialized_copy_n(s, size, result);
 	    __cond_store_eos(result[size]);
@@ -1072,6 +1087,15 @@ class rope {
 		// is eos-terminated.
 		// In the nonGC case, it was allocated from Alloc with
 		// rounded_up_size(size).
+
+	static RopeLeaf * RopeLeaf_from_unowned_char_ptr(const charT *s,
+						         size_t size) {
+	    charT * buf = alloc_copy(s, size);
+            __STL_TRY
+              return RopeLeaf_from_char_ptr(buf, size);
+            __STL_UNWIND(RopeBase::free_string(buf, size))
+	}
+	    
 
 	// Concatenation of nonempty strings.
 	// Always builds a concatenation node.
@@ -1107,24 +1131,14 @@ class rope {
 	friend struct rope<charT,Alloc>::concat_fn;
 
 	struct concat_fn
-		: binary_function<RopeBase *, RopeBase *, RopeBase *> {
-		RopeBase * operator() (RopeBase * x, RopeBase *y) {
-		    RopeBase * result;
-		    x -> ref_nonnil();
-		    y -> ref_nonnil();
-		    __STL_TRY
-		      result = tree_concat(x, y);
-#		      ifndef __GC
-			result -> refcount = 0;
-#		      endif
-		    __STL_UNWIND(unref(x); unref(y));
-		    return result;
-		    // In the nonGC case, x and y must remain accessible through
-		    // the result.  Use of concat could result on a memory leak.
+		: binary_function<rope<charT,Alloc>, rope<charT,Alloc>,
+				  rope<charT,Alloc> > {
+		rope operator() (const rope& x, const rope& y) {
+		    return x + y;
 		}
 	};
 
-        friend RopeBase* identity_element(concat_fn) { return 0; }
+        friend rope identity_element(concat_fn) { return rope<charT,Alloc>(); }
 
 	static size_t char_ptr_len(const charT * s);
 			// slightly generalized strlen
@@ -1202,7 +1216,7 @@ class rope {
 	    if (0 == len) {
 		tree_ptr = 0;
 	    } else {
-		tree_ptr = RopeLeaf_from_char_ptr(alloc_copy(s, len), len);
+		tree_ptr = RopeLeaf_from_unowned_char_ptr(s, len);
 #		ifndef __GC
 		  __stl_assert(1 == tree_ptr -> refcount);
 #		endif
@@ -1214,7 +1228,7 @@ class rope {
 	    if (0 == len) {
 		tree_ptr = 0;
 	    } else {
-		tree_ptr = RopeLeaf_from_char_ptr(alloc_copy(s, len), len);
+		tree_ptr = RopeLeaf_from_unowned_char_ptr(s, len);
 	    }
 	}
 
@@ -1225,7 +1239,7 @@ class rope {
 	    if (0 == len) {
 		tree_ptr = 0;
 	    } else {
-		tree_ptr = RopeLeaf_from_char_ptr(alloc_copy(s, len), len);
+		tree_ptr = RopeLeaf_from_unowned_char_ptr(s, len);
 	    }
 	}
 
@@ -1241,10 +1255,12 @@ class rope {
 
 	rope(charT c)
 	{
-	    charT * buf = (charT *)Alloc::allocate(rounded_up_size(1));
+	    charT * buf = DataAlloc::allocate(rounded_up_size(1));
 
 	    construct(buf, c);
-	    tree_ptr = RopeLeaf_from_char_ptr(buf, 1);
+	    __STL_TRY
+	        tree_ptr = RopeLeaf_from_char_ptr(buf, 1);
+            __STL_UNWIND(RopeBase::free_string(buf, 1))
 	}
 
 	rope(size_t n, charT c);
@@ -1258,7 +1274,7 @@ class rope {
 		tree_ptr = 0;
 	    } else {
 		size_t len = j - i;
-		tree_ptr = RopeLeaf_from_char_ptr(alloc_copy(i, len), len);
+		tree_ptr = RopeLeaf_from_unowned_char_ptr(i, len);
 	    }
 	}
 
@@ -1312,15 +1328,12 @@ class rope {
 	    return fetch(tree_ptr, tree_ptr -> size - 1);
 	}
 
-	void push_front(const charT& x)
+	void push_front(charT x)
 	{
 	    RopeBase *old = tree_ptr;
-	    charT *buf = alloc_copy(&x, 1);
 	    RopeBase *left;
 
-	    __STL_TRY
-	      left = RopeLeaf_from_char_ptr(buf, 1);
-	    __STL_UNWIND(RopeBase::free_string(buf, 1))
+	    left = RopeLeaf_from_unowned_char_ptr(&x, 1);
 	    __STL_TRY
 	      tree_ptr = concat(left, tree_ptr);
 	      unref(old);
@@ -1436,9 +1449,13 @@ class rope {
 	    //  but it's harder to make guarantees.
 	}
 
+#     ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+        typedef reverse_iterator<const_iterator> const_reverse_iterator;
+#     else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 	typedef reverse_iterator<const_iterator, value_type, const_reference,
 				 difference_type>  const_reverse_iterator;
- 
+#     endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */ 
+
 	const_reverse_iterator rbegin() const {
 	    return const_reverse_iterator(end());
 	}
@@ -1794,8 +1811,12 @@ class rope {
 	    return(iterator(this, size()));
 	}
 
+#     ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+        typedef reverse_iterator<iterator> reverse_iterator;
+#     else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 	typedef reverse_iterator<iterator, value_type, reference,
 				 difference_type>  reverse_iterator;
+#     endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */ 
 
 	reverse_iterator mutable_rbegin() {
 	    return reverse_iterator(mutable_end());

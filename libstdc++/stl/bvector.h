@@ -82,7 +82,8 @@ public:
       friend class bit_vector;
       friend class const_iterator;
     public:
-      typedef bit_reference reference;      
+      typedef bit_reference  reference;
+      typedef bit_reference* pointer;
     protected:
 	unsigned int* p;
 	unsigned int offset;
@@ -163,6 +164,7 @@ public:
       friend class bit_vector;
     public:
       typedef bit_const_reference reference;
+      typedef const bool*         pointer;
     protected:
 	unsigned int* p;
 	unsigned int offset;
@@ -243,10 +245,15 @@ public:
 	}
     };
 
+#ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
+    typedef reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef reverse_iterator<iterator> reverse_iterator;
+#else /* __STL_CLASS_PARTIAL_SPECIALIZATION */
     typedef reverse_iterator<const_iterator, value_type, const_reference, 
                              difference_type> const_reverse_iterator;
     typedef reverse_iterator<iterator, value_type, reference, difference_type>
         reverse_iterator;
+#endif /* __STL_CLASS_PARTIAL_SPECIALIZATION */
 
 protected:
     typedef simple_alloc<unsigned int, alloc> data_allocator;
@@ -303,20 +310,6 @@ protected:
       copy(first, last, start);
     }
 
-    template <class BidirectionalIterator>
-    void initialize_range(BidirectionalIterator first,
-                          BidirectionalIterator last,
-                          bidirectional_iterator_tag) {
-      initialize_range(first, last, forward_iterator_tag());
-    }
-                          
-    template <class RandomAccessIterator>
-    void initialize_range(RandomAccessIterator first,
-                          RandomAccessIterator last,
-                          random_access_iterator_tag) {
-      initialize_range(first, last, forward_iterator_tag());
-    }
-
     template <class InputIterator>
     void insert_range(iterator pos,
                       InputIterator first, InputIterator last,
@@ -351,20 +344,6 @@ protected:
         }
       }
     }      
-
-    template <class BidirectionalIterator>
-    void insert_range(iterator pos,
-                      BidirectionalIterator first, BidirectionalIterator last,
-                      bidirectional_iterator_tag) {
-      insert_range(pos, first, last, forward_iterator_tag());
-    }
-
-    template <class RandomAccessIterator>
-    void insert_range(iterator pos,
-                      RandomAccessIterator first, RandomAccessIterator last,
-                      random_access_iterator_tag) {
-      insert_range(pos, first, last, forward_iterator_tag());
-    }
 
 #endif /* __STL_MEMBER_TEMPLATES */
 

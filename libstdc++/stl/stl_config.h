@@ -47,14 +47,16 @@
 //  (9) Defines __STL_NON_TYPE_TMPL_PARAM_BUG if the compiler has 
 //      trouble performing function template argument deduction for
 //      non-type template parameters.
-//  (10) Defines __STL_USE_EXCEPTIONS if the compiler (in the current
-//      compilation mode) supports exceptions.
-//  (11) Defines __STL_SGI_THREADS if this is being compiled on an SGI
-//      compiler, and if the user hasn't selected pthreads or no threads
-//      instead.
-//  (12) Defines __STL_WIN32THREADS if this is being compiled on a 
+//  (10) Defines __SGI_STL_NO_ARROW_OPERATOR if the compiler is unable
+//       to support the -> operator for iterators.
+//  (11) Defines __STL_USE_EXCEPTIONS if the compiler (in the current
+//       compilation mode) supports exceptions.
+//  (12) Defines __STL_SGI_THREADS if this is being compiled on an SGI
+//       compiler, and if the user hasn't selected pthreads or no threads
+//       instead.
+//  (13) Defines __STL_WIN32THREADS if this is being compiled on a 
 //       WIN32 compiler in multithreaded mode.
-//  (13) Defines __stl_assert either as a test or as a null macro,
+//  (14) Defines __stl_assert either as a test or as a null macro,
 //       depending on whether or not __STL_ASSERTIONS is defined.
 
 # if defined(__sgi) && !defined(__GNUC__)
@@ -120,6 +122,7 @@
 #     define __STL_NEED_EXPLICIT
 #   endif
 #   define __STL_NON_TYPE_TMPL_PARAM_BUG
+#   define __SGI_STL_NO_ARROW_OPERATOR
 #   ifdef _CPPUNWIND
 #     define __STL_USE_EXCEPTIONS
 #   endif
@@ -132,6 +135,7 @@
 #   define __STL_NO_DRAND48
 #   define __STL_NEED_TYPENAME
 #   define __STL_LIMITED_DEFAULT_TEMPLATES
+#   define __SGI_STL_NO_ARROW_OPERATOR
 #   define __STL_NON_TYPE_TMPL_PARAM_BUG
 #   ifdef _CPPUNWIND
 #     define __STL_USE_EXCEPTIONS
