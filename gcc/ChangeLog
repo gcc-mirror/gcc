@@ -1,3 +1,10 @@
+2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (TEXT_SECTION): Poison.
+	* varasm.c (text_section): Don't use TEXT_SECTION.
+	* config/sh/sh.c (sh_file_start): Fix a comment typo.
+	* doc/tm.texi (TEXT_SECTION): Remove.
+
 2004-01-13  Ben Elliston  <bje@wasabisystems.com>
 
 	* doc/rtl.texi (Vector Operations): Remove defunct vec_const item.
