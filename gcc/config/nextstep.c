@@ -18,6 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include <tree.h>
+
 /* Make everything that used to go in the text section really go there.  */
 
 int flag_no_mach_text_sections = 0;
@@ -37,15 +39,15 @@ extern char *get_directive_line ();
 /* Called from check_newline via the macro HANDLE_PRAGMA.
    FINPUT is the source file input stream.
    CH is the first character after `#pragma'.
-   The result is the terminating character ('\n' or EOF).  */
+   The result is 1 if the pragma was handled.  */
 
 int
-handle_pragma (finput, ch, get_line_function)
+handle_pragma (finput, node)
      FILE *finput;
-     int ch;
-     char *(*get_line_function) ();
+     tree node;
 {
-  register char *p;
+  int retval = 0;
+  register char *pname;
 
   /* Record initial setting of optimize flag, so we can restore it.  */
   if (!pragma_initialized)
@@ -54,22 +56,24 @@ handle_pragma (finput, ch, get_line_function)
       initial_optimize_flag = optimize;
     }
 
-  /* Nothing to do if #pragma is by itself.  */
-  if (ch == '\n' || ch == EOF)
-    return ch;
+  if (TREE_CODE (node) != IDENTIFIER_NODE)
+    return 0;
 
-  p = (*get_line_function) (finput);
-  if (OPT_STRCMP ("CC_OPT_ON"))
+  pname = IDENTIFIER_POINTER (node);
+
+  if (strcmp (pname, "CC_OPT_ON") == 0)
     {
       optimize = 1, obey_regdecls = 0;
       warning ("optimization turned on");
+      retval = 1;
     }
-  else if (OPT_STRCMP ("CC_OPT_OFF"))
+  else if (strcmp (pname, "CC_OPT_OFF") == 0)
     {
       optimize = 0, obey_regdecls = 1;
       warning ("optimization turned off");
+      retval = 1;
     }
-  else if (OPT_STRCMP ("CC_OPT_RESTORE"))
+  else if (strcmp (pname, "CC_OPT_RESTORE") == 0)
     {
       extern int initial_optimize_flag;
 
@@ -82,14 +86,14 @@ handle_pragma (finput, ch, get_line_function)
 	  optimize = initial_optimize_flag;
 	}
       warning ("optimization level restored");
+      retval = 1;
     }
-  else if (OPT_STRCMP ("CC_WRITABLE_STRINGS"))
-    flag_writable_strings = 1;
-  else if (OPT_STRCMP ("CC_NON_WRITABLE_STRINGS"))
-    flag_writable_strings = 0;
-  else if (OPT_STRCMP ("CC_NO_MACH_TEXT_SECTIONS"))
-    flag_no_mach_text_sections = 1;
+  else if (strcmp (pname, "CC_WRITABLE_STRINGS") == 0)
+    flag_writable_strings = retval = 1;
+  else if (strcmp (pname, "CC_NON_WRITABLE_STRINGS") == 0)
+    flag_writable_strings = 0, retval = 1;
+  else if (strcmp (pname, "CC_NO_MACH_TEXT_SECTIONS") == 0)
+    flag_no_mach_text_sections = retval = 1;
 
-  /* get_line_function must leave the last character read in FINPUT.  */
-  return getc (finput);
+  return retval;
 }

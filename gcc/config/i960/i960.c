@@ -90,28 +90,29 @@ static int ret_label = 0;
    intel compilers understand.  */
 
 int
-process_pragma (finput, c)
+process_pragma (finput, t)
      FILE *finput;
-     int c;
+     tree t;
 {
   int i;
+  register int c;
+  register char *pname;
 
-  while (c == ' ' || c == '\t')
-    c = getc (finput);
+  if (TREE_CODE (t) != IDENTIFIER_NODE)
+    return 0;
 
-  if (c == 'a'
-      && getc (finput) == 'l'
-      && getc (finput) == 'i'
-      && getc (finput) == 'g'
-      && getc (finput) == 'n'
-      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
+  pname = IDENTIFIER_POINTER (t);
+
+  if (strcmp (pname, "align") == 0)
     {
       char buf[20];
       char *s = buf;
       int align;
 
-      while (c == ' ' || c == '\t')
+      do {
 	c = getc (finput);
+      } while (c == ' ' || c == '\t');
+
       if (c == '(')
 	c = getc (finput);
       while (c >= '0' && c <= '9')
@@ -157,13 +158,13 @@ process_pragma (finput, c)
 	 - missing identifier means next struct
 
 	 - alignment rules for bitfields need more investigation  */
+
+      return 1;
     }
 
   /* Should be pragma 'far' or equivalent for callx/balx here.  */
 
-  while (c != '\n' && c != EOF)
-    c = getc (finput);
-  return c;
+  return 0;
 }
 
 /* Initialize variables before compiling any files.  */
