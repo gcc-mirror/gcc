@@ -193,27 +193,30 @@ AC_ARG_WITH(ecos,
 TARGET_ECOS="$with_ecos"
 )
 
-PLATFORM_SPECIFIC_SOURCES=
+PLATFORMOBJS=
 case "$TARGET_ECOS" in
    no) case "$host" in
       mingw)
             PLATFORM=Win32
-            PLATFORM_SPECIFIC_SOURCES=win32.cc
+            PLATFORMOBJS=win32.lo
+	    PLATFORMH=win32.h
       ;;
       *)
             PLATFORM=Posix
-            PLATFORM_SPECIFIC_SOURCES=posix.cc
+            PLATFORMOBJS=posix.lo
+	    PLATFORMH=posix.h
       ;;
       esac
       ;;
    *)
       PLATFORM=Ecos
       AC_DEFINE(ECOS)
-      PLATFORM_SPECIFIC_SOURCES=posix.cc
+      PLATFORMOBJS=posix.lo
+      PLATFORMH=posix.h
       ;;
 esac
-AC_SUBST(PLATFORM_SPECIFIC_SOURCES)
-
+AC_SUBST(PLATFORMOBJS)
+AC_LINK_FILES(include/$PLATFORMH, include/platform.h)
 
 AC_EGREP_HEADER(uint32_t, stdint.h, AC_DEFINE(HAVE_INT32_DEFINED))
 AC_EGREP_HEADER(uint32_t, inttypes.h, AC_DEFINE(HAVE_INT32_DEFINED))

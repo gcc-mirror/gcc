@@ -14,7 +14,7 @@ details.  */
 #include <string.h>
 #include <stdlib.h>
 
-#include "posix.h"
+#include "platform.h"
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>
