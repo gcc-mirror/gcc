@@ -68,9 +68,10 @@ ALLOCA_FINISH = true
 # TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
 TCFLAGS =
-CFLAGS = -g @stage1_warn_cflags@
+# -W -Wall warnings are disabled for releases.
+CFLAGS = -g
 BOOT_CFLAGS = -O2 $(CFLAGS)
-WARN_CFLAGS = -W -Wall
+#WARN_CFLAGS = -W -Wall
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
