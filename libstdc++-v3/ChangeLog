@@ -1,3 +1,8 @@
+2002-01-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (libstdc___la_LDFLAGS): Increase revision number.
+	* src/Makefile.in: Regenerate.
+
 2002-01-02  Nathan Myers  <ncm@cantrip.org>
             Loren Rittle <ljrittle@acm.org>
 
