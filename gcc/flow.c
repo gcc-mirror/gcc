@@ -282,6 +282,8 @@ static void add_pred_succ		PROTO ((int, int, int_list_ptr *,
 static int_list_ptr alloc_int_list_node PROTO ((int_list_block **));
 static int_list_ptr add_int_list_node   PROTO ((int_list_block **,
 						int_list **, int));
+static void init_regset_vector		PROTO ((regset *, int,
+						struct obstack *));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register numbers
@@ -1496,7 +1498,7 @@ allocate_for_life_analysis ()
    NELTS elements, and space is allocated from the ALLOC_OBSTACK
    obstack.  */
 
-void
+static void
 init_regset_vector (vector, nelts, alloc_obstack)
      regset *vector;
      int nelts;
