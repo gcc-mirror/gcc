@@ -63,7 +63,7 @@ setenv (name, value, replace)
      const char *value;
      int replace;
 {
-  register char **ep;
+  register char **ep = 0;
   register size_t size;
   const size_t namelen = strlen (name);
   const size_t vallen = strlen (value) + 1;

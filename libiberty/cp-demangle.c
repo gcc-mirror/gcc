@@ -852,8 +852,10 @@ static status_t demangle_discriminator
   PARAMS ((demangling_t, int));
 static status_t cp_demangle
   PARAMS ((const char *, dyn_string_t));
+#ifdef IN_LIBGCC2
 static status_t cp_demangle_type
   PARAMS ((const char*, dyn_string_t));
+#endif
 
 /* When passed to demangle_bare_function_type, indicates that the
    function's return type is not encoded before its parameter types.  */
@@ -3023,6 +3025,7 @@ cp_demangle (name, result)
    dyn_string_t.  On success, returns STATUS_OK.  On failiure, returns
    an error message, and the contents of RESULT are unchanged.  */
 
+#ifdef IN_LIBGCC2
 static status_t
 cp_demangle_type (type_name, result)
      const char* type_name;
@@ -3059,9 +3062,6 @@ cp_demangle_type (type_name, result)
 
   return status;
 }
-
-
-#ifdef IN_LIBGCC2
 
 extern char *__cxa_demangle PARAMS ((const char *, char *, size_t *, int *));
 
