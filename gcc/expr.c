@@ -2074,7 +2074,10 @@ emit_library_call (va_alist)
      va_dcl
 {
   va_list p;
+  /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
+  /* Size of arguments before any adjustments (such as rounding).  */
+  struct args_size original_args_size;
   register int argnum;
   enum machine_mode outmode;
   int nargs;
@@ -2196,6 +2199,7 @@ emit_library_call (va_alist)
      functions, write one out.  */
   assemble_external_libcall (fun);
 
+  original_args_size = args_size;
 #ifdef STACK_BOUNDARY
   args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
 			 / STACK_BYTES) * STACK_BYTES);
@@ -2220,6 +2224,16 @@ emit_library_call (va_alist)
 #endif
 
 #ifdef PUSH_ARGS_REVERSED
+#ifdef STACK_BOUNDARY
+  /* If we push args individually in reverse order, perform stack alignment
+     before the first push (the last arg).  */
+  if (argblock == 0)
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
+#endif
+#endif
+
+#ifdef PUSH_ARGS_REVERSED
   inc = -1;
   argnum = nargs - 1;
 #else
@@ -2241,6 +2255,16 @@ emit_library_call (va_alist)
 			argblock, GEN_INT (argvec[count].offset.constant));
       NO_DEFER_POP;
     }
+
+#ifndef PUSH_ARGS_REVERSED
+#ifdef STACK_BOUNDARY
+  /* If we pushed args in forward order, perform stack alignment
+     after pushing the last arg.  */
+  if (argblock == 0)
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
+#endif
+#endif
 
 #ifdef PUSH_ARGS_REVERSED
   argnum = nargs - 1;
@@ -2301,7 +2325,10 @@ emit_library_call_value (va_alist)
      va_dcl
 {
   va_list p;
+  /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
+  /* Size of arguments before any adjustments (such as rounding).  */
+  struct args_size original_args_size;
   register int argnum;
   enum machine_mode outmode;
   int nargs;
@@ -2438,6 +2465,7 @@ emit_library_call_value (va_alist)
      functions, write one out.  */
   assemble_external_libcall (fun);
 
+  original_args_size = args_size;
 #ifdef STACK_BOUNDARY
   args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
 			 / STACK_BYTES) * STACK_BYTES);
@@ -2462,6 +2490,16 @@ emit_library_call_value (va_alist)
 #endif
 
 #ifdef PUSH_ARGS_REVERSED
+#ifdef STACK_BOUNDARY
+  /* If we push args individually in reverse order, perform stack alignment
+     before the first push (the last arg).  */
+  if (argblock == 0)
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
+#endif
+#endif
+
+#ifdef PUSH_ARGS_REVERSED
   inc = -1;
   argnum = nargs - 1;
 #else
@@ -2483,6 +2521,16 @@ emit_library_call_value (va_alist)
 			argblock, GEN_INT (argvec[count].offset.constant));
       NO_DEFER_POP;
     }
+
+#ifndef PUSH_ARGS_REVERSED
+#ifdef STACK_BOUNDARY
+  /* If we pushed args in forward order, perform stack alignment
+     after pushing the last arg.  */
+  if (argblock == 0)
+    anti_adjust_stack (GEN_INT (args_size.constant
+				- original_args_size.constant));
+#endif
+#endif
 
 #ifdef PUSH_ARGS_REVERSED
   argnum = nargs - 1;
