@@ -1,5 +1,16 @@
 2003-11-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*movsf_h8300h): Change to
+	*movsf_h8300hs.
+	(addsi_h8300): Change to *addsi_h8300.
+	(addsi_h8300h): Change to *addsi_h8300hs.
+	(subsi3_h8300): Change to *subsi3_h8300.
+	(subsi3_h8300h): Change to *subsi3_h8300hs.
+	(neghi2_h8300h): Change to *neghi2_h8300hs.
+	(negsi2_h8300h): Change to *negsi2_h8300hs.
+
+2003-11-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (*subhi3_h8300): Remove '&' from the
 	constraint.
 	(*subhi3_h8300hs): Likewise.
