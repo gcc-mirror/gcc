@@ -1,3 +1,13 @@
+2004-08-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa-loop-im.c (fem_single_reachable_address, for_each_memref):
+	New functions.
+	(single_reachable_address): Use them.
+	(schedule_sm): Add dump.
+	(is_call_clobbered_ref): New function.
+	(determine_lsm_reg): Check whether the reference is call clobbered.
+	Only work for gimple_reg_type values.
+
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (*mov<mode>_ra): Name previously unnamed MIPS16
