@@ -1,3 +1,18 @@
+2003-05-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/compat/scalar-return-1_main.c: New file.
+	* gcc.dg/compat/scalar-return-1_x.c: New file.
+	* gcc.dg/compat/scalar-return-1_y.c: New file.
+	* gcc.dg/compat/scalar-return-2_main.c: New file.
+	* gcc.dg/compat/scalar-return-2_x.c: New file.
+	* gcc.dg/compat/scalar-return-2_y.c: New file.
+	* gcc.dg/compat/struct-return-3_main.c: New file.
+	* gcc.dg/compat/struct-return-3_y.c: New file.
+	* gcc.dg/compat/struct-return-3_x.c: New file.
+	* gcc.dg/compat/struct-return-2_main.c: New file.
+	* gcc.dg/compat/struct-return-2_x.c: New file.
+	* gcc.dg/compat/struct-return-2_y.c: New file.
+
 2003-05-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* g++.old-deja/g++.law/profile1.C (dg-options): Add -static to options
@@ -29,19 +44,6 @@
 	* gcc.dg/compat/fp-struct-init.h: New file.
 	* gcc.dg/compat/fp-struct-test-by-value-y.h: New file.
 	* gcc.dg/compat/fp-struct-test-by-value-x.h: New file.
-
-	* gcc.dg/compat/scalar-return-1_main.c: New file.
-	* gcc.dg/compat/scalar-return-1_x.c: New file.
-	* gcc.dg/compat/scalar-return-1_y.c: New file.
-	* gcc.dg/compat/scalar-return-2_main.c: New file.
-	* gcc.dg/compat/scalar-return-2_x.c: New file.
-	* gcc.dg/compat/scalar-return-2_y.c: New file.
-	* gcc.dg/compat/struct-return-3_main.c: New file.
-	* gcc.dg/compat/struct-return-3_y.c: New file.
-	* gcc.dg/compat/struct-return-3_x.c: New file.
-	* gcc.dg/compat/struct-return-2_main.c: New file.
-	* gcc.dg/compat/struct-return-2_x.c: New file.
-	* gcc.dg/compat/struct-return-2_y.c: New file.
 
 2003-05-19  Jakub Jelinek  <jakub@redhat.com>
 
