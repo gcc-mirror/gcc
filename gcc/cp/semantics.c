@@ -317,7 +317,10 @@ finish_while_stmt_cond (cond, while_stmt)
      tree while_stmt;
 {
   cond = maybe_convert_cond (cond);
-  if (getdecls () == NULL_TREE)
+  if (processing_template_decl)
+    /* Don't mess with condition decls in a template.  */
+    FINISH_COND (cond, while_stmt, WHILE_COND (while_stmt));
+  else if (getdecls () == NULL_TREE)
     /* It was a simple condition; install it.  */
     WHILE_COND (while_stmt) = cond;
   else
@@ -452,7 +455,10 @@ finish_for_cond (cond, for_stmt)
      tree for_stmt;
 {
   cond = maybe_convert_cond (cond);
-  if (getdecls () == NULL_TREE)
+  if (processing_template_decl)
+    /* Don't mess with condition decls in a template.  */
+    FINISH_COND (cond, for_stmt, FOR_COND (for_stmt));
+  else if (getdecls () == NULL_TREE)
     /* It was a simple condition; install it.  */
     FOR_COND (for_stmt) = cond;
   else
