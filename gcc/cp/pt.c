@@ -6080,6 +6080,8 @@ instantiate_decl (d)
   /* Trick tsubst into giving us a new decl in case the template changed.  */
   save_ti = DECL_TEMPLATE_INFO (decl_pattern);
   DECL_TEMPLATE_INFO (decl_pattern) = NULL_TREE;
+  /* decl_pattern has all but one level of template parms bound.  Only pass
+     in that one level of args.  */
   temp = innermost_args (args, DECL_TEMPLATE_SPECIALIZATION (decl_pattern));
   td = tsubst (decl_pattern, temp, tmpl);
   SET_DECL_IMPLICIT_INSTANTIATION (td);
