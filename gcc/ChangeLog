@@ -1,3 +1,9 @@
+2005-03-10  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_signbit): Extend to handle floating
+	point modes wider than the largest integer type, using the
+	operand_subword_force function to obtain the signbit's word.
+
 2005-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/20322
