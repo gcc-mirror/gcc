@@ -1,3 +1,11 @@
+Fri Feb 20 10:11:20 1998  Craig Burley  <burley@gnu.org>
+
+	* Make-lang.in (f77.install-common): Don't install, and
+	don't uninstall existing, Info files if f/g77.info
+	doesn't exit.  (This is a somewhat modified version
+	of an egcs patch on 1998-01-07 12:05:51 by Bruno Haible
+	<bruno@linuix.mathematik.uni-karlsruhe.de>.
+
 Sun Jan 11 02:14:47 1998  Craig Burley  <burley@gnu.org>
 
 	Support FORMAT(I<1+2>) (constant variable-FORMAT
