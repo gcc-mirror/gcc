@@ -4,6 +4,7 @@ case "${host}" in
   *-*-cxux7*)		frag=mh-cxux7 ;;
   *-*-freebsd2.1.*)	frag=mh-fbsd21 ;;
   *-*-freebsd2.2.[012])	frag=mh-fbsd21 ;;
+  i370-*-opened*)       frag=mh-openedition ;;
   i[345]86-*-windows*)	frag=mh-windows ;;
 esac
 

@@ -1,3 +1,8 @@
+Tue Sep  7 23:32:18 1999  Linas Vepstas  <linas@linas.org>
+
+        * config.table: Add openedition target.
+	* config/mh-openedition: New file.
+
 Thu Sep  2 01:36:12 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* pexecute.c (pexecute):  Fill in temp_base when needed.
