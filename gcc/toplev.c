@@ -4013,7 +4013,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 
   compile_file (filename);
 
-#if !defined(OS2) && !defined(VMS) && !defined(_WIN32)
+#if !defined(OS2) && !defined(VMS) && (!defined(_WIN32) || defined (__CYGWIN32__))
   if (flag_print_mem)
     {
       char *lim = (char *) sbrk (0);
@@ -4028,7 +4028,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
       system ("ps v");
 #endif /* not USG */
     }
-#endif /* not OS2 and not VMS and not _WIN32 */
+#endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN32) */
 
   if (errorcount)
     exit (FATAL_EXIT_CODE);
