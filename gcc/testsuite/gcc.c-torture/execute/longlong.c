@@ -1,7 +1,7 @@
 /* Source: PR 321 modified for test suite by Neil Booth 14 Jan 2001.  */
 
 typedef unsigned long long uint64;
-unsigned int pars;
+unsigned long pars;
 
 uint64 b[32];
 uint64 *r = b;
