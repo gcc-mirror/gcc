@@ -713,6 +713,7 @@ find_sub_basic_blocks (bb)
   rtx jump_insn = NULL_RTX;
   edge falltru = 0;
   basic_block first_bb = bb;
+  int i;
 
   if (insn == bb->end)
     return;
@@ -784,6 +785,48 @@ find_sub_basic_blocks (bb)
   /* Now re-scan and wire in all edges.  This expect simple (conditional)
      jumps at the end of each new basic blocks.  */
   make_edges (NULL, first_bb->index, bb->index, 1);
+
+  /* Update branch probabilities.  Expect only (un)conditional jumps
+     to be created with only the forward edges.  */
+  for (i = first_bb->index; i <= bb->index; i++)
+    {
+      edge e,f;
+      basic_block b = BASIC_BLOCK (i);
+      if (b != first_bb)
+	{
+	  b->count = 0;
+	  b->frequency = 0;
+	  for (e = b->pred; e; e=e->pred_next)
+	    {
+	      b->count += e->count;
+	      b->frequency += EDGE_FREQUENCY (e);
+	    }
+	}
+      if (b->succ && b->succ->succ_next && !b->succ->succ_next->succ_next)
+	{
+	  rtx note = find_reg_note (b->end, REG_BR_PROB, NULL);
+	  int probability;
+
+	  if (!note)
+	    continue;
+	  probability = INTVAL (XEXP (find_reg_note (b->end,
+						     REG_BR_PROB,
+						     NULL), 0));
+	  e = BRANCH_EDGE (b);
+	  e->probability = probability;
+	  e->count = ((b->count * probability + REG_BR_PROB_BASE / 2)
+		      / REG_BR_PROB_BASE);
+	  f = FALLTHRU_EDGE (b);
+	  f->probability = REG_BR_PROB_BASE - probability;
+	  f->count = b->count - e->count;
+	}
+      if (b->succ && !b->succ->succ_next)
+	{
+	  e = b->succ;
+	  e->probability = REG_BR_PROB_BASE;
+	  e->count = b->count;
+	}
+    }
 }
 
 /* Find all basic blocks of the function whose first insn is F.
@@ -1935,7 +1978,7 @@ redirect_edge_and_branch_force (e, target)
   new_bb->succ = NULL;
   new_bb->pred = new_edge;
   new_bb->count = e->count;
-  new_bb->frequency = e->probability * e->src->frequency / REG_BR_PROB_BASE;
+  new_bb->frequency = EDGE_FREQUENCY (e);
   new_bb->loop_depth = e->dest->loop_depth;
 
   new_edge->flags = EDGE_FALLTHRU;
@@ -2060,8 +2103,7 @@ split_edge (edge_in)
   /* Wire them up.  */
   bb->succ = edge_out;
   bb->count = edge_in->count;
-  bb->frequency = (edge_in->probability * edge_in->src->frequency
-		   / REG_BR_PROB_BASE);
+  bb->frequency = EDGE_FREQUENCY (edge_in);
 
   edge_in->flags &= ~EDGE_CRITICAL;
 
@@ -3542,6 +3584,7 @@ try_crossjump_to_edge (mode, e1, e2)
   edge s;
   rtx last;
   rtx label;
+  rtx note;
 
   /* Search backward through forwarder blocks.  We don't need to worry
      about multiple entry or chained forwarders, as they will be optimized
@@ -3640,15 +3683,13 @@ try_crossjump_to_edge (mode, e1, e2)
 	{
 	  s->dest->succ->count += s2->count;
 	  s->dest->count += s2->count;
-	  s->dest->frequency += ((s->probability * s->src->frequency)
-				 / REG_BR_PROB_BASE);
+	  s->dest->frequency += EDGE_FREQUENCY (s);
 	}
       if (forwarder_block_p (s2->dest))
 	{
 	  s2->dest->succ->count -= s2->count;
 	  s2->dest->count -= s2->count;
-	  s2->dest->frequency -= ((s->probability * s->src->frequency)
-				  / REG_BR_PROB_BASE);
+	  s2->dest->frequency -= EDGE_FREQUENCY (s);
 	}
       if (!redirect_to->frequency && !src1->frequency)
 	s->probability = (s->probability + s2->probability) / 2;
@@ -3659,12 +3700,9 @@ try_crossjump_to_edge (mode, e1, e2)
 	   / (redirect_to->frequency + src1->frequency));
     }
 
-  /* FIXME: enable once probabilities are fetched properly at CFG build.  */
-#if 0
   note = find_reg_note (redirect_to->end, REG_BR_PROB, 0);
   if (note)
     XEXP (note, 0) = GEN_INT (BRANCH_EDGE (redirect_to)->probability);
-#endif
 
   /* Edit SRC1 to go to REDIRECT_TO at NEWPOS1.  */
 
@@ -3695,6 +3733,8 @@ try_crossjump_to_edge (mode, e1, e2)
   while (src1->succ)
     remove_edge (src1->succ);
   make_edge (NULL, src1, redirect_to, 0);
+  src1->succ->probability = REG_BR_PROB_BASE;
+  src1->succ->count = src1->count;
 
   return true;
 }

@@ -511,6 +511,12 @@ struct edge_list
 #define BRANCH_EDGE(bb)			((bb)->succ->flags & EDGE_FALLTHRU \
 					 ? (bb)->succ->succ_next : (bb)->succ)
 
+/* Return expected execution frequency of the edge E.  */
+#define EDGE_FREQUENCY(e)		(((e)->src->frequency \
+					  * (e)->probability \
+					  + REG_BR_PROB_BASE / 2) \
+					 / REG_BR_PROB_BASE)
+
 struct edge_list * create_edge_list	PARAMS ((void));
 void free_edge_list			PARAMS ((struct edge_list *));
 void print_edge_list			PARAMS ((FILE *, struct edge_list *));
