@@ -1,3 +1,9 @@
+2004-10-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR java/17265
+	* class.c (make_local_function_alias): Revert 2004-08-18 change.
+	(make_method_value): Likewise.
+
 2004-10-21  Andrew Haley  <aph@redhat.com>
 
 	PR java/18091:
