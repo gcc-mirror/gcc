@@ -1,3 +1,8 @@
+Wed Sep  3 09:55:09 1997  Klaus Espenlaub  (kespenla@student.informatik.uni-ulm.de)
+
+	* method.c (build_overloaded_value): Replace direct call
+	to the floating point emulator with REAL_VALUE_TO_DECIMAL macro.
+
 Wed Sep  3 00:02:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (convert_arguments): Don't arbitrarily choose the first
