@@ -3412,6 +3412,9 @@ assign_parms (fndecl, second_time)
 	      parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
 	      emit_move_insn (parmreg, DECL_RTL (parm));
 	      DECL_RTL (parm) = parmreg;
+	      /* STACK_PARM is the pointer, not the parm, and PARMREG is
+		 now the parm.  */
+	      stack_parm = 0;
 	    }
 #ifdef FUNCTION_ARG_CALLEE_COPIES
 	  /* If we are passed an arg by reference and it is our responsibility
