@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.2 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -3610,10 +3610,12 @@ tree_transform (gnat_node)
 	  Setup_Asm_Inputs (gnat_node);
 	  while (Present (gnat_temp = Asm_Input_Value ()))
 	    {
-	      gnu_input_list = tree_cons (gnat_to_gnu
-					  (Asm_Input_Constraint ()),
-					  gnat_to_gnu (gnat_temp),
-					  gnu_input_list);
+	      tree gnu_value = gnat_to_gnu (gnat_temp);
+	      tree gnu_constr = build_tree_list (NULL_TREE, gnat_to_gnu
+						 (Asm_Input_Constraint ()));
+
+	      gnu_input_list 
+		= tree_cons (gnu_constr, gnu_value, gnu_input_list);
 	      Next_Asm_Input ();
 	    }
 
@@ -3621,7 +3623,8 @@ tree_transform (gnat_node)
 	  while (Present (gnat_temp = Asm_Output_Variable ()))
 	    {
 	      tree gnu_value = gnat_to_gnu (gnat_temp);
-	      tree gnu_constr = gnat_to_gnu (Asm_Output_Constraint ());
+	      tree gnu_constr = build_tree_list (NULL_TREE, gnat_to_gnu
+						 (Asm_Output_Constraint ()));
 
 	      gnu_orig_out_list
 		= tree_cons (gnu_constr, gnu_value, gnu_orig_out_list);
