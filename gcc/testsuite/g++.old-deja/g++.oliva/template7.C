@@ -4,12 +4,11 @@
 
 // by Alexandre Oliva <oliva@lsd.ic.unicamp.br>
 // simplified from bug report by Paul Burchard <burchard@pobox.com>
-// crash test - XFAIL *-*-*
 
 template<class> struct A {};
 template<template<class> class T> struct B {
   B() {
-    T<B>(); // gets bogus error - conversion from int to non-scalar - XFAIL *-*-*
+    T<B>(); // gets bogus error - conversion from int to non-scalar
   }
 };
 B<A> foo;

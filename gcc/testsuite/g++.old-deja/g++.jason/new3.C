@@ -11,7 +11,7 @@ struct A {
   void * operator new (__SIZE_TYPE__ s)
   {
     if (ena)
-      return 0; // WARNING - returning NULL
+      return 0;
     return malloc (s);
   }
 };

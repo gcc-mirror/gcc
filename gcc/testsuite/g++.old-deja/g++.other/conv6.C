@@ -11,18 +11,18 @@ int main ()
   // The composite type is `A const *'
         A* ap = &b;
   const B* bp = &b;
-  if (ap != bp)		// gets bogus error - distinct types XFAIL *-*-*
+  if (ap != bp)		// gets bogus error - distinct types
     return 1;
 
   // The composite type is `B const *const *'
   B       *const * p = 0;
   B const *      * q = 0;
-  if (p != q)		// gets bogus error - distinct types XFAIL *-*-*
+  if (p != q)		// gets bogus error - distinct types
     return 1;
 
   // The common type is `int const B::*'
   const int A::*apm = &A::i;
         int B::*bpm = &A::i;
-  if (apm != bpm)	// gets bogus error - distinct types XFAIL *-*-*
+  if (apm != bpm)	// gets bogus error - distinct types
     return 1;
 }

@@ -6,5 +6,5 @@ void *vp;
 
 void example ()
 {
-    vp != fp;			// gets bogus error - nuttin' wrong wit dat
+    vp != fp;			// ERROR - no conversion from pfn to void*
 }
