@@ -5795,7 +5795,7 @@ cse_insn (insn, libcall_insn)
 	  else
 	    INSN_CODE (insn) = -1;
 
-	  never_reached_warning (insn);
+	  never_reached_warning (insn, NULL);
 
 	  /* Do not bother deleting any unreachable code,
 	     let jump/flow do that.  */

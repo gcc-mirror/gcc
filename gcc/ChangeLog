@@ -1,3 +1,13 @@
+2002-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* jump.c (never_reached_warning): Add finish argument.
+	If finish is NULL, stop on CODE_LABEL, otherwise stop before first
+	real insn after end.
+	* rtl.h (never_reached_warning): Adjust prototype.
+	* cse.c (cse_insn): Pass NULL as finish to never_reached_warning.
+	* cfgrtl.c (flow_delete_block): Pass b->end as finish to
+	never_reached_warning.
+
 2002-02-12  Graham Stott  <grahams@redhat.com>
 
 	* config/hp/pa.h (GO_IF_LEGITIMATE_ADDRESS): Fix typos.

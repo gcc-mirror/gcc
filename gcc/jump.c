@@ -1913,13 +1913,12 @@ delete_for_peephole (from, to)
    so it's possible to get spurious warnings from this.  */
 
 void
-never_reached_warning (avoided_insn)
-     rtx avoided_insn;
+never_reached_warning (avoided_insn, finish)
+     rtx avoided_insn, finish;
 {
   rtx insn;
   rtx a_line_note = NULL;
-  int two_avoided_lines = 0;
-  int contains_insn = 0;
+  int two_avoided_lines = 0, contains_insn = 0, reached_end = 0;
 
   if (! warn_notreached)
     return;
@@ -1929,10 +1928,11 @@ never_reached_warning (avoided_insn)
 
   for (insn = avoided_insn; insn != NULL; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (finish == NULL && GET_CODE (insn) == CODE_LABEL)
 	break;
-      else if (GET_CODE (insn) == NOTE		/* A line number note?  */
-	       && NOTE_LINE_NUMBER (insn) >= 0)
+
+      if (GET_CODE (insn) == NOTE		/* A line number note?  */
+	  && NOTE_LINE_NUMBER (insn) >= 0)
 	{
 	  if (a_line_note == NULL)
 	    a_line_note = insn;
@@ -1941,7 +1941,14 @@ never_reached_warning (avoided_insn)
 				  != NOTE_LINE_NUMBER (insn));
 	}
       else if (INSN_P (insn))
-	contains_insn = 1;
+	{
+	  if (reached_end)
+	    break;
+	  contains_insn = 1;
+	}
+
+      if (insn == finish)
+	reached_end = 1;
     }
   if (two_avoided_lines && contains_insn)
     warning_with_file_and_line (NOTE_SOURCE_FILE (a_line_note),
