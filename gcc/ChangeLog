@@ -34,6 +34,13 @@ Wed Sep  9 15:16:58 1998  Gavin Romig-Koch  <gavin@cygnus.com>
 
 Wed Sep  9 12:31:35 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (pa_reorg): New marking scheme for jumps inside switch
+	tables.
+	(pa_adjust_insn_length): Update to work with new marking scheme
+	for jumps inside switch tables. 
+	* pa.md (switch_jump): Remove pattern.
+	(jump): Handle jumps inside jump tables.
+
 	* Makefile.in (profile.o): Depend on insn-config.h
 
 Wed Sep  9 09:36:51 1998  Jim Wilson  <wilson@cygnus.com>

@@ -3563,7 +3563,7 @@ pa_adjust_insn_length (insn, length)
      also need adjustment.  */
   else if (GET_CODE (insn) == JUMP_INSN
 	   && simplejump_p (insn)
-	   && GET_MODE (PATTERN (insn)) == DImode)
+	   && GET_MODE (insn) == SImode)
     return 4;
   /* Millicode insn with an unfilled delay slot.  */
   else if (GET_CODE (insn) == INSN
@@ -6056,18 +6056,52 @@ pa_reorg (insns)
 	      if (GET_CODE (pattern) == ADDR_VEC)
 		{
 		  /* Emit the jump itself.  */
-		  tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 0, i), 0));
+		  tmp = gen_jump (XEXP (XVECEXP (pattern, 0, i), 0));
 		  tmp = emit_jump_insn_after (tmp, location);
 		  JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 0, i), 0);
+		  /* It is easy to rely on the branch table markers
+		     during assembly output to trigger the correct code
+		     for a switch table jump with an unfilled delay slot,
+
+		     However, that requires state and assumes that we look
+		     at insns in order.
+
+		     We can't make such assumptions when computing the length
+		     of instructions.  Ugh.  We could walk the insn chain to
+		     determine if this instruction is in a branch table, but
+		     that can get rather expensive, particularly during the
+		     branch shortening phase of the compiler.
+
+		     So instead we mark this jump as being special.  This is
+		     far from ideal and knows that no code after this will
+		     muck around with the mode of the JUMP_INSN itself.  */
+		  PUT_MODE (tmp, SImode);
 		  LABEL_NUSES (JUMP_LABEL (tmp))++;
 		  location = NEXT_INSN (location);
 		}
 	      else
 		{
 		  /* Emit the jump itself.  */
-		  tmp = gen_switch_jump (XEXP (XVECEXP (pattern, 1, i), 0));
+		  tmp = gen_jump (XEXP (XVECEXP (pattern, 1, i), 0));
 		  tmp = emit_jump_insn_after (tmp, location);
 		  JUMP_LABEL (tmp) = XEXP (XVECEXP (pattern, 1, i), 0);
+		  /* It is easy to rely on the branch table markers
+		     during assembly output to trigger the correct code
+		     for a switch table jump with an unfilled delay slot,
+
+		     However, that requires state and assumes that we look
+		     at insns in order.
+
+		     We can't make such assumptions when computing the length
+		     of instructions.  Ugh.  We could walk the insn chain to
+		     determine if this instruction is in a branch table, but
+		     that can get rather expensive, particularly during the
+		     branch shortening phase of the compiler.
+
+		     So instead we mark this jump as being special.  This is
+		     far from ideal and knows that no code after this will
+		     muck around with the mode of the JUMP_INSN itself.  */
+		  PUT_MODE (tmp, SImode);
 		  LABEL_NUSES (JUMP_LABEL (tmp))++;
 		  location = NEXT_INSN (location);
 		}
