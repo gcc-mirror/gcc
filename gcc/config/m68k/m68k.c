@@ -1118,7 +1118,7 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
       else
 	loperands[3] = adjust_address (operand2, SImode, 4);
     }
-  loperands[4] = gen_label_rtx();
+  loperands[4] = gen_label_rtx ();
   if (operand2 != const0_rtx)
     {
       output_asm_insn (MOTOROLA ?
@@ -1160,7 +1160,7 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
         break;
 
       case GT:
-        loperands[6] = gen_label_rtx();
+        loperands[6] = gen_label_rtx ();
         output_asm_insn (MOTOROLA ?
 			   "shi %5\n\tjbra %l6" :
 			   "shi %5\n\tjra %l6",
@@ -1179,7 +1179,7 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
         break;
 
       case LT:
-        loperands[6] = gen_label_rtx();
+        loperands[6] = gen_label_rtx ();
         output_asm_insn (MOTOROLA ?
 			   "scs %5\n\tjbra %l6" :
 			   "scs %5\n\tjra %l6",
@@ -1198,7 +1198,7 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
         break;
 
       case GE:
-        loperands[6] = gen_label_rtx();
+        loperands[6] = gen_label_rtx ();
         output_asm_insn (MOTOROLA ?
 			   "scc %5\n\tjbra %l6" :
 			   "scc %5\n\tjra %l6",
@@ -1217,7 +1217,7 @@ output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
         break;
 
       case LE:
-        loperands[6] = gen_label_rtx();
+        loperands[6] = gen_label_rtx ();
         output_asm_insn (MOTOROLA ?
 			   "sls %5\n\tjbra %l6" :
 			   "sls %5\n\tjra %l6",
@@ -1283,7 +1283,7 @@ output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
 /* Returns true if OP is either a symbol reference or a sum of a symbol
    reference and a constant.  */
 
-bool
+int
 symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (op))

@@ -41,24 +41,14 @@ extern const char *output_iorsi3 (rtx *);
 extern const char *output_xorsi3 (rtx *);
 extern void m68k_output_pic_call (rtx dest);
 extern void output_dbcc_and_branch (rtx *);
-extern int const_uint32_operand (rtx, enum machine_mode);
-extern int const_sint32_operand (rtx, enum machine_mode);
 extern int floating_exact_log2 (rtx);
-extern int not_sp_operand (rtx, enum machine_mode);
-extern int valid_dbcc_comparison_p (rtx, enum machine_mode);
-extern int extend_operator (rtx, enum machine_mode);
 extern bool strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn, rtx target);
 
 /* Functions from m68k.c used in macros.  */
-extern bool symbolic_operand (rtx, enum machine_mode);
 extern int standard_68881_constant_p (rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
 extern void notice_update_cc (rtx, rtx);
-extern int general_src_operand (rtx, enum machine_mode);
-extern int nonimmediate_src_operand (rtx, enum machine_mode);
-extern int memory_src_operand (rtx, enum machine_mode);
-extern int pcrel_address (rtx, enum machine_mode);
 extern rtx legitimize_pic_address (rtx, enum machine_mode, rtx);
 #endif /* RTX_CODE */
 

@@ -1,3 +1,15 @@
+2004-07-24  Roman Zippel  <zippel@linux-m68k.org>
+
+	* config/m68k/m68k.c (output_scc_di): Fix coding style.
+	(symbolic_operand): Fix prototype.
+	* config/m68k/m68k.h (PREDICATE_CODES): Add symbolic_operand.
+	* config/m68k/m68k.md: Add constants for registers a0 and sp and
+	use them, change from the "{...}" syntax to the simpler {...}
+	syntax.
+	(*cfv4_extendqisi2): Fix destination predicate.
+	* config/m68k/m68k-protos.h: Remove various declarations also
+	generated via PREDICATE_CODES.
+
 2004-07-23  Mike Stump  <mrs@apple.com>
 
 	* c-typeck.c (convert_for_assignment): Tightened up pointer converstions
