@@ -1189,7 +1189,7 @@ fatal (str, arg)
   fprintf (stderr, "%s: %s: ", progname, inc_filename);
   fprintf (stderr, str, arg);
   fprintf (stderr, "\n");
-  exit (FAILURE_EXIT_CODE);
+  exit (FATAL_EXIT_CODE);
 }
 
 void
@@ -1198,5 +1198,5 @@ cpp_pfatal_with_name (pfile, name)
      char *name;
 {
   cpp_perror_with_name (pfile, name);
-  exit (FAILURE_EXIT_CODE);
+  exit (FATAL_EXIT_CODE);
 }

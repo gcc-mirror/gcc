@@ -31,14 +31,6 @@ extern "C" {
 
 typedef unsigned char U_CHAR;
 
-#ifndef FAILURE_EXIT_CODE
-#define FAILURE_EXIT_CODE 33	/* gnu cc command understands this */
-#endif
-
-#ifndef SUCCESS_EXIT_CODE
-#define SUCCESS_EXIT_CODE 0	/* 0 means success on Unix.  */
-#endif
-
 struct parse_file;
 typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;

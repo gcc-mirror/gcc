@@ -5999,7 +5999,7 @@ push_parse_file (pfile, fname)
 	  if (fd < 0)
 	    {
 	      cpp_perror_with_name (pfile, pend->arg);
-	      return FAILURE_EXIT_CODE;
+	      return FATAL_EXIT_CODE;
 	    }
 	  cpp_push_buffer (pfile, NULL, 0);
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
@@ -6164,7 +6164,7 @@ push_parse_file (pfile, fname)
 	  if (fd < 0)
 	    {
 	      cpp_perror_with_name (pfile, pend->arg);
-	      return FAILURE_EXIT_CODE;
+	      return FATAL_EXIT_CODE;
 	    }
 	  cpp_push_buffer (pfile, NULL, 0);
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);

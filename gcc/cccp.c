@@ -333,14 +333,6 @@ HOST_WIDE_INT parse_c_expression PROTO((char *));
 extern int errno;
 #endif
 
-#ifndef FAILURE_EXIT_CODE
-#define FAILURE_EXIT_CODE 33	/* gnu cc command understands this */
-#endif
-
-#ifndef SUCCESS_EXIT_CODE
-#define SUCCESS_EXIT_CODE 0	/* 0 means success on Unix.  */
-#endif
-
 /* Name under which this program was invoked.  */
 
 static char *progname;
@@ -2094,7 +2086,7 @@ main (argc, argv)
       int fd = open (pend_files[i], O_RDONLY, 0666);
       if (fd < 0) {
 	perror_with_name (pend_files[i]);
-	return FAILURE_EXIT_CODE;
+	return FATAL_EXIT_CODE;
       }
       finclude (fd, pend_files[i], &outbuf, 0, NULL_PTR);
     }
@@ -2289,7 +2281,7 @@ main (argc, argv)
       int fd = open (pend_includes[i], O_RDONLY, 0666);
       if (fd < 0) {
 	perror_with_name (pend_includes[i]);
-	return FAILURE_EXIT_CODE;
+	return FATAL_EXIT_CODE;
       }
       finclude (fd, pend_includes[i], &outbuf, 0, NULL_PTR);
     }
@@ -2336,7 +2328,7 @@ main (argc, argv)
     fatal ("I/O error on output");
 
   if (errors)
-    exit (FAILURE_EXIT_CODE);
+    exit (FATAL_EXIT_CODE);
   exit (SUCCESS_EXIT_CODE);
 
  perror:
@@ -9936,7 +9928,7 @@ fatal (PRINTF_ALIST (msg))
   vfprintf (stderr, msg, args);
   va_end (args);
   fprintf (stderr, "\n");
-  exit (FAILURE_EXIT_CODE);
+  exit (FATAL_EXIT_CODE);
 }
 
 /* More 'friendly' abort that prints the line and file.
@@ -9965,7 +9957,7 @@ pfatal_with_name (name)
 #ifdef VMS
   exit (vaxc$errno);
 #else
-  exit (FAILURE_EXIT_CODE);
+  exit (FATAL_EXIT_CODE);
 #endif
 }
 
