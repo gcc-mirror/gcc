@@ -371,8 +371,8 @@ This currently produces a warning under the following circumstances:
 
 @itemize @bullet
 @item
-An INTEGER SELECT construct has a CASE the can never be matched as it's
-lower value that is greater than its upper value.
+An INTEGER SELECT construct has a CASE that can never be matched as its
+lower value is greater than its upper value.
 
 @item
 A LOGICAL SELECT construct has three CASE statements.
