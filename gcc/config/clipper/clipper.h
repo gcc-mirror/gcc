@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Clipper version.
-   Copyright (C) 1987, 88, 91, 93-96, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93-96, 98, 99, 2000 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-extern struct rtx_def *clipper_builtin_saveregs ();
-extern int clipper_frame_size ();
 
 /* Print subsidiary information on the compiler version in use.  */
 
@@ -209,7 +206,7 @@ extern int target_flags;
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
   ((REGNO) < 16 							\
-   ? ((MODE) != DImode && (MODE) != DFmode || ((REGNO) & 1) == 0)	\
+   ? (((MODE) != DImode && (MODE) != DFmode) || ((REGNO) & 1) == 0)	\
    : ((MODE) == SFmode || (MODE) == DFmode))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
@@ -282,7 +279,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS, LIM_REG_CLASSES};
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x0000ffff, 0xffff0000, 0xffffffff}
+#define REG_CLASS_CONTENTS { {0}, {0x0000ffff}, {0xffff0000}, {0xffffffff} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -921,8 +918,8 @@ do									      \
     {									      \
     case CC_CHANGE0:							      \
       if (GET_CODE (EXP) == PARALLEL) abort();				      \
-      if (cc_status.value1 && rtx_equal_p (dest, cc_status.value1) ||	      \
-	  cc_status.value2 && rtx_equal_p (dest, cc_status.value2))	      \
+      if ((cc_status.value1 && rtx_equal_p (dest, cc_status.value1)) ||	      \
+	  (cc_status.value2 && rtx_equal_p (dest, cc_status.value2)))	      \
 	CC_STATUS_INIT;							      \
       break;								      \
 									      \
@@ -1104,8 +1101,7 @@ Clipper operand formatting codes:
   ((CODE) == 'C')
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
-{ extern char *rev_cond_name ();					\
-  if (CODE == 'C')							\
+{ if (CODE == 'C')							\
     fputs (rev_cond_name (X), FILE);					\
   else if (GET_CODE (X) == REG)						\
     fprintf (FILE, "%s", reg_names[REGNO (X)]);				\
