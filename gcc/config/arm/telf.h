@@ -21,7 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #define OBJECT_FORMAT_ELF
 
+#ifndef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dthumb -Dthumbelf -D__thumb -Acpu(arm) -Amachine(arm)"
+#endif
 
 #include "arm/thumb.h"
 
@@ -45,6 +47,8 @@ extern int arm_structure_size_boundary;
 #define DWARF2_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
+/* Get the standard ELF stabs definitions.  */
+#include "dbxelf.h"
 
 /* Note - it is important that these definitions match those in semi.h for the ARM port.  */
 #undef  LOCAL_LABEL_PREFIX
@@ -54,8 +58,10 @@ extern int arm_structure_size_boundary;
 /* A C statement to output assembler commands which will identify the
    object file as having been compiled with GNU CC (or another GNU
    compiler).  */
+#ifndef ASM_IDENTIFY_GCC
 #define ASM_IDENTIFY_GCC(STREAM)				\
   fprintf (STREAM, "%sgcc2_compiled.:\n", LOCAL_LABEL_PREFIX )
+#endif
 
 #undef  ASM_FILE_START
 #define ASM_FILE_START(STREAM)						\
@@ -189,7 +195,9 @@ extern int arm_structure_size_boundary;
 #undef  EXTRA_SECTIONS
 #define EXTRA_SECTIONS SUBTARGET_EXTRA_SECTIONS in_rdata, in_ctors, in_dtors
 
+#ifndef SUBTARGET_EXTRA_SECTIONS
 #define SUBTARGET_EXTRA_SECTIONS
+#endif
 
 /* A list of extra section function definitions.  */
 
@@ -200,7 +208,9 @@ extern int arm_structure_size_boundary;
   DTORS_SECTION_FUNCTION	\
   SUBTARGET_EXTRA_SECTION_FUNCTIONS
 
+#ifndef SUBTARGET_EXTRA_SECTION_FUNCTIONS
 #define SUBTARGET_EXTRA_SECTION_FUNCTIONS
+#endif
 
 #define RDATA_SECTION_FUNCTION \
 void									\

@@ -1,3 +1,22 @@
+1999-07-27  Philip Blundell  <pb@nexus.co.uk>
+
+	* config/arm/telf.h: Include dbxelf.h.
+ 	(CPP_PREDEFINES): Only define if not already defined.
+	(ASM_IDENTIFY_GCC): Likewise.
+	(SUBTARGET_EXTRA_SECTIONS): Likewise.
+	(SUBTARGET_EXTRA_SECTION_FUNCTIONS): Likewise.
+	* config/arm/thumb.h (LINK_SPEC): Only define if not already
+	defined.
+	(DBX_DEBUGGING_INFO): Don't define.
+	* config/arm/linux-telf.h: New file.
+	* config/arm/linux-tgas.h: New file.
+	* config/arm/t-thumb-linux: New file.
+	* config/arm/uclinux-elf.h: New file.
+	* config/arm/uclinux-telf.h: New file.
+	* configure.in (arm-*-uclinux, thumb-*-linux-gnu,
+	thumb-*-uclinux): New targets.
+	* configure: Regenerate.
+
 Tue Jul 27 23:20:21 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (post_store, pre_load): New expanders.

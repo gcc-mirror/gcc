@@ -776,6 +776,10 @@ changequote([,])dnl
 			;;
 		esac
 		;;
+	arm*-*-uclinux*)		# ARM ucLinux
+		tm_file=arm/uclinux-elf.h
+		tmake_file=arm/t-arm-elf
+		;;
 	arm*-*-aout)
 		tm_file=arm/aout.h
 		tmake_file=arm/t-bare
@@ -3299,6 +3303,20 @@ changequote([,])dnl
 		xm_file=arm/xm-thumb.h
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb-elf
+		;;
+	thumb-*-linux-gnu*)
+		tm_file=arm/linux-telf.h
+		out_file=arm/thumb.c
+		xm_file=arm/xm-thumb.h
+		md_file=arm/thumb.md
+		tmake_file=arm/t-thumb-linux
+		;;
+	thumb-*-uclinux*)
+		tm_file=arm/uclinux-telf.h
+		out_file=arm/thumb.c
+		md_file=arm/thumb.md
+		tmake_file=arm/t-thumb-linux
+		xm_file=arm/xm-thumb.h
 		;;
 	thumb-wrs-vxworks)
 		tm_file=arm/tcoff.h
