@@ -1,5 +1,10 @@
 2003-02-11  Michael Koch  <konqueror@gmx.de>
 
+	* Makefile.in
+	(libgcj_la_OBJECTS): Removed natSelctorImpl.la.
+
+2003-02-11  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/ByteBufferImpl.java:
 	Reformated and removed some code.
 	(backing_buffer): Removed.	
