@@ -53,6 +53,8 @@ char * realloc ();
 
 #define min(X,Y) (((X) < (Y)) ? (X) : (Y))
 
+extern void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
+
 static const char *mystrstr PARAMS ((const char *, const char *));
 
 static const char *
@@ -421,6 +423,24 @@ qualifier_string PARAMS ((int));
 
 static const char*
 demangle_qualifier PARAMS ((int));
+
+static int
+demangle_integral_value PARAMS ((struct work_stuff *, const char **,
+				 string *));
+
+static void
+demangle_arm_hp_template PARAMS ((struct work_stuff *, const char **, int,
+				  string *));
+
+static void
+recursively_demangle PARAMS ((struct work_stuff *, const char **, string *,
+			      int));
+
+static const char *
+standard_symbol_characters PARAMS ((void));
+
+static const char *
+hp_symbol_characters PARAMS ((void));
 
 /* Translate count to integer, consuming tokens in the process.
    Conversion terminates on the first non-digit character.
@@ -4329,13 +4349,13 @@ string_prependn (p, s, n)
 
 #include "getopt.h"
 
-static char *program_name;
-static char *program_version = VERSION;
+static const char *program_name;
+static const char *program_version = VERSION;
 static int flags = DMGL_PARAMS | DMGL_ANSI;
 
 static void demangle_it PARAMS ((char *));
-static void usage PARAMS ((FILE *, int));
-static void fatal PARAMS ((char *));
+static void usage PARAMS ((FILE *, int)) ATTRIBUTE_NORETURN;
+static void fatal PARAMS ((const char *)) ATTRIBUTE_NORETURN;
 
 static void
 demangle_it (mangled_name)
@@ -4444,6 +4464,8 @@ hp_symbol_characters ()
 }
 
 
+extern int main PARAMS ((int, char **));
+
 int
 main (argc, argv)
      int argc;
@@ -4471,7 +4493,7 @@ main (argc, argv)
 	  break;
 	case 'v':
 	  printf ("GNU %s (C++ demangler), version %s\n", program_name, program_version);
-	  exit (0);
+	  return (0);
 	case '_':
 	  strip_underscore = 1;
 	  break;
@@ -4503,7 +4525,7 @@ main (argc, argv)
 	    {
 	      fprintf (stderr, "%s: unknown demangling style `%s'\n",
 		       program_name, optarg);
-	      exit (1);
+	      return (1);
 	    }
 	  break;
 	}
@@ -4581,12 +4603,12 @@ main (argc, argv)
 	}
     }
 
-  exit (0);
+  return (0);
 }
 
 static void
 fatal (str)
-     char *str;
+     const char *str;
 {
   fprintf (stderr, "%s: %s\n", program_name, str);
   exit (1);
