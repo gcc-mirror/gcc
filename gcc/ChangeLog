@@ -1,3 +1,8 @@
+2000-09-07  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* rtl.c (class_narrowest_mode): Add entries for MODE_VECTOR_INT and
+	MODE_VECTOR_FLOAT.
+
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (prep_stmt): Declare.
