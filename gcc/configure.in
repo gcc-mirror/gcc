@@ -2969,6 +2969,7 @@ AC_OUTPUT(Makefile,
 host='${host}'
 build='${build}'
 target='${target}'
+target_alias='${target_alias}'
 srcdir='${srcdir}'
 subdirs='${subdirs}'
 symbolic_link='${symbolic_link}'
