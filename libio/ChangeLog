@@ -1,3 +1,11 @@
+Sun Feb 15 21:11:25 1998  Krister Walfridsson (cato@df.lth.se)
+
+	* fileops.c: #include <unistd.h>.
+	* ioprims.c: Likewise.
+	* dbz/dbz.c (putconf): Handle systems which use "long long" as type
+	for "off_t".
+	* dbz/dbzmain.c (mkfiles): Likewise.
+
 Fri Dec 19 09:35:48 1997  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (target frags): Add *-linux-gnu.
