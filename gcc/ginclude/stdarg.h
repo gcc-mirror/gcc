@@ -3,12 +3,6 @@
    actual type **after default promotions**.
    Thus, va_arg (..., short) is not valid.  */
 
-#ifndef __GNUC__
-/* Use the system's macros with the system's compiler.
-   This is relevant only when building GCC with some other compiler.  */
-#include <stdarg.h>
-#else
-
 #ifndef _STDARG_H
 #ifndef _ANSI_STDARG_H_
 #ifndef __need___va_list
@@ -163,4 +157,3 @@ typedef __gnuc_va_list va_list;
 
 #endif /* not _ANSI_STDARG_H_ */
 #endif /* not _STDARG_H */
-#endif /* __GNUC__ */
