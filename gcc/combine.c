@@ -1065,8 +1065,6 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 
   /* Don't eliminate a store in the stack pointer.  */
   if (dest == stack_pointer_rtx
-      /* If we couldn't eliminate a field assignment, we can't combine.  */
-      || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == STRICT_LOW_PART
       /* Don't combine with an insn that sets a register to itself if it has
 	 a REG_EQUAL note.  This may be part of a REG_NO_CONFLICT sequence.  */
       || (rtx_equal_p (src, dest) && find_reg_note (insn, REG_EQUAL, NULL_RTX))
@@ -1319,45 +1317,15 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 
   if (GET_CODE (x) == SET)
     {
-      rtx set = expand_field_assignment (x);
+      rtx set = x ;
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
       rtx inner_dest = dest;
-
-#if 0
-      rtx inner_src = src;
-#endif
-
-      SUBST (*loc, set);
 
       while (GET_CODE (inner_dest) == STRICT_LOW_PART
 	     || GET_CODE (inner_dest) == SUBREG
 	     || GET_CODE (inner_dest) == ZERO_EXTRACT)
 	inner_dest = XEXP (inner_dest, 0);
-
-  /* We probably don't need this any more now that LIMIT_RELOAD_CLASS
-     was added.  */
-#if 0
-      while (GET_CODE (inner_src) == STRICT_LOW_PART
-	     || GET_CODE (inner_src) == SUBREG
-	     || GET_CODE (inner_src) == ZERO_EXTRACT)
-	inner_src = XEXP (inner_src, 0);
-
-      /* If it is better that two different modes keep two different pseudos,
-	 avoid combining them.  This avoids producing the following pattern
-	 on a 386:
-	  (set (subreg:SI (reg/v:QI 21) 0)
-	       (lshiftrt:SI (reg/v:SI 20)
-	           (const_int 24)))
-	 If that were made, reload could not handle the pair of
-	 reg 20/21, since it would try to get any GENERAL_REGS
-	 but some of them don't handle QImode.  */
-
-      if (rtx_equal_p (inner_src, i2dest)
-	  && GET_CODE (inner_dest) == REG
-	  && ! MODES_TIEABLE_P (GET_MODE (i2dest), GET_MODE (inner_dest)))
-	return 0;
-#endif
 
       /* Check for the case where I3 modifies its output, as
 	 discussed above.  */
@@ -1689,7 +1657,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	    abort ();
 
 	  lo &= ~(UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1);
-	  lo |= (INTVAL (SET_SRC (PATTERN (i3))) 
+	  lo |= (INTVAL (SET_SRC (PATTERN (i3)))
 		 & (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1));
 	}
       else if (HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
@@ -2856,7 +2824,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	    || GET_CODE (temp) != BARRIER)
 	  emit_barrier_after (undobuf.other_insn);
       }
-	
+
     /* An NOOP jump does not need barrier, but it does need cleaning up
        of CFG.  */
     if (GET_CODE (newpat) == SET
@@ -4044,7 +4012,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  return gen_binary (MINUS, mode, temp, XEXP (XEXP (x, 0), 1));
 	}
 
-      /* (neg (mult A B)) becomes (mult (neg A) B).  
+      /* (neg (mult A B)) becomes (mult (neg A) B).
          This works even for floating-point values.  */
       if (GET_CODE (XEXP (x, 0)) == MULT)
 	{
@@ -4185,14 +4153,14 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == mode)
 	return XEXP (XEXP (x, 0), 0);
 
-      /* (float_truncate:SF (float_truncate:DF foo:XF)) 
-         = (float_truncate:SF foo:XF). 
+      /* (float_truncate:SF (float_truncate:DF foo:XF))
+         = (float_truncate:SF foo:XF).
 	 This may elliminate double rounding, so it is unsafe.
 
-         (float_truncate:SF (float_extend:XF foo:DF)) 
-         = (float_truncate:SF foo:DF). 
+         (float_truncate:SF (float_extend:XF foo:DF))
+         = (float_truncate:SF foo:DF).
 
-         (float_truncate:DF (float_extend:XF foo:SF)) 
+         (float_truncate:DF (float_extend:XF foo:SF))
          = (float_extend:SF foo:DF).  */
       if ((GET_CODE (XEXP (x, 0)) == FLOAT_TRUNCATE
 	   && flag_unsafe_math_optimizations)
@@ -4233,9 +4201,9 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       break;
     case FLOAT_EXTEND:
       /*  (float_extend (float_extend x)) is (float_extend x)
-        
+
 	  (float_extend (float x)) is (float x) assuming that double
-	  rounding can't happen. 
+	  rounding can't happen.
           */
       if (GET_CODE (XEXP (x, 0)) == FLOAT_EXTEND
 	  || (GET_CODE (XEXP (x, 0)) == FLOAT
@@ -4288,11 +4256,11 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
     case PLUS:
       /* Canonicalize (plus (mult (neg B) C) A) to (minus A (mult B C)).
        */
-      if (GET_CODE (XEXP (x, 0)) == MULT 
+      if (GET_CODE (XEXP (x, 0)) == MULT
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == NEG)
 	{
 	  rtx in1, in2;
-	 
+
 	  in1 = XEXP (XEXP (XEXP (x, 0), 0), 0);
 	  in2 = XEXP (XEXP (x, 0), 1);
 	  return gen_binary (MINUS, mode, XEXP (x, 1),
@@ -4407,24 +4375,24 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 
       /* Canonicalize (minus A (mult (neg B) C)) to (plus (mult B C) A).
        */
-      if (GET_CODE (XEXP (x, 1)) == MULT 
+      if (GET_CODE (XEXP (x, 1)) == MULT
 	  && GET_CODE (XEXP (XEXP (x, 1), 0)) == NEG)
 	{
 	  rtx in1, in2;
-	 
+
 	  in1 = XEXP (XEXP (XEXP (x, 1), 0), 0);
 	  in2 = XEXP (XEXP (x, 1), 1);
 	  return gen_binary (PLUS, mode, gen_binary (MULT, mode, in1, in2),
 			     XEXP (x, 0));
 	}
 
-      /* Canonicalize (minus (neg A) (mult B C)) to 
+      /* Canonicalize (minus (neg A) (mult B C)) to
 	 (minus (mult (neg B) C) A).  */
-      if (GET_CODE (XEXP (x, 1)) == MULT 
+      if (GET_CODE (XEXP (x, 1)) == MULT
 	  && GET_CODE (XEXP (x, 0)) == NEG)
 	{
 	  rtx in1, in2;
-	 
+
 	  in1 = simplify_gen_unary (NEG, mode, XEXP (XEXP (x, 1), 0), mode);
 	  in2 = XEXP (XEXP (x, 1), 1);
 	  return gen_binary (MINUS, mode, gen_binary (MULT, mode, in1, in2),
@@ -5313,7 +5281,7 @@ simplify_set (x)
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (GET_CODE (dest) == REG && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
-					 GET_MODE (SUBREG_REG (src)), 
+					 GET_MODE (SUBREG_REG (src)),
 					 GET_MODE (src)))
 #endif
       && (GET_CODE (dest) == REG
@@ -11594,7 +11562,7 @@ update_table_tick (x)
 		break;
 	      }
 	  }
-	  
+
 	update_table_tick (XEXP (x, i));
       }
 }
