@@ -11,6 +11,14 @@ Wed Jan 13 20:12:37 1999  Richard Henderson  <rth@cygnus.com>
 	* integrate.c (expand_inline_function): Recognize (mem (addressof))
 	and substitute.  Copy the return value from there into a new pseudo.
 
+Wed Jan 13 16:47:00 1999  Catherine Moore  <clm@cygnus.com>
+
+        * config/arm.c (output_func_epilogue):  Check TARGET_ABORT_NORETURN
+        before generating a call to abort for volatile functions.
+        * config/arm.h (ARM_FLAG_ABORT_NORETURN):  Define.
+        (TARGET_ABORT_NORETURN):  Define.
+        (abort-on-noreturn):  New option.
+
 Thu Jan 14 13:52:42 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (in_annul_slot_3): Correctly allow unarycc 
