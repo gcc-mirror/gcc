@@ -1664,10 +1664,9 @@ ia64_initial_elimination_offset (from, to)
       /* Arguments start above the 16 byte save area, unless stdarg
 	 in which case we store through the 16 byte save area.  */
       if (to == HARD_FRAME_POINTER_REGNUM)
-	offset = 16 - current_function_pretend_args_size;
+	offset = 16;
       else if (to == STACK_POINTER_REGNUM)
-	offset = (current_frame_info.total_size
-		  + 16 - current_function_pretend_args_size);
+	offset = current_frame_info.total_size + 16;
       else
 	abort ();
       break;
@@ -3220,7 +3219,7 @@ ia64_va_start (stdarg_p, valist, nextarg)
   else
     ofs = (arg_words >= MAX_ARGUMENT_SLOTS ? -UNITS_PER_WORD : 0);
 
-  nextarg = plus_constant (nextarg, ofs);
+  nextarg = plus_constant (nextarg, ofs - current_function_pretend_args_size);
   std_expand_builtin_va_start (1, valist, nextarg);
 }
 
