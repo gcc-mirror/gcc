@@ -126,10 +126,8 @@ AC_PROG_MAKE_SET
 # File extensions
 manext='.1'
 objext='.o'
-exeext=''
 AC_SUBST(manext)
 AC_SUBST(objext)
-AC_SUBST(exeext)
 
 build_xm_file=
 build_broken_install=
@@ -3073,7 +3071,7 @@ AC_SUBST(local_prefix)
 AC_SUBST(gxx_include_dir)
 AC_SUBST(fixincludes)
 AC_SUBST(build_install_headers_dir)
-AC_SUBST(exeext)
+AC_SUBST(build_exeext)
 AC_SUBST(float_format)
 AC_SUBST(will_use_collect2)
 AC_SUBST(maybe_use_collect2)
@@ -3167,7 +3165,7 @@ local_prefix='${local_prefix}'
 gxx_include_dir='${gxx_include_dir}'
 fixincludes='${fixincludes}'
 build_install_headers_dir='${build_install_headers_dir}'
-exeext='${exeext}'
+build_exeext='${build_exeext}'
 float_format='${float_format}'
 use_collect2='${use_collect2}'
 will_use_collect2='${will_use_collect2}'
