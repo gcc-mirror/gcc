@@ -213,9 +213,13 @@ public:
   basic_string& insert (size_type pos, size_type n, charT c)
     { return replace (pos, 0, n, c); }
   iterator insert(iterator p, charT c)
-    { insert (p - ibegin (), 1, c); selfish (); return p; }
+    { size_type __o = p - ibegin ();
+      insert (p - ibegin (), 1, c); selfish ();
+      return ibegin () + __o; }
   iterator insert(iterator p, size_type n, charT c)
-    { insert (p - ibegin (), n, c); selfish (); return p; }
+    { size_type __o = p - ibegin ();
+      insert (p - ibegin (), n, c); selfish ();
+      return ibegin () + __o; }
 #ifdef __STL_MEMBER_TEMPLATES
   template<class InputIterator>
     void insert(iterator p, InputIterator first, InputIterator last)
