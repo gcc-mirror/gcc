@@ -1,3 +1,12 @@
+2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* gcc.c-torture/execute/920501-8.x: New file, sprintf() does not
+	support %f for HC11/HC12 targets.
+	* gcc.c-torture/execute/930513-1.x: New file, likewise.
+	* gcc.c-torture/execute/980709-1.x: New file, pow() is not available
+	on HC11/HC12 targets.
+	* gcc.c-torture/execute/990826-0.x: New file, likewise for floor().
+
 2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.dg/wchar_t-1.c: New file.
