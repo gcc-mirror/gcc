@@ -1860,12 +1860,6 @@ extern GTY (()) unsigned binfo_lang_slots;
    this identifies which built-in operation it is.  */
 #define DECL_FUNCTION_CODE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.f)
 
-/* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is
-   the approximate number of statements in this function.  There is
-   no need for this number to be exact; it is only used in various
-   heuristics regarding optimization.  */
-#define DECL_NUM_STMTS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
-
 /* The DECL_VINDEX is used for FUNCTION_DECLS in two different ways.
    Before the struct containing the FUNCTION_DECL is laid out,
    DECL_VINDEX may point to a FUNCTION_DECL in a base class which
