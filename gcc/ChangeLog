@@ -1,3 +1,10 @@
+Wed Nov 11 12:25:19 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in (JAVAGC): New macro.
+	* configure: Rebuilt.
+	* configure.in: Recognize --enable-java-gc argument.  Subst
+	`JAVAGC' variable.
+
 Thu Nov 12 03:32:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	Handle equivalences that have been obscured by gcse:
@@ -1193,6 +1200,7 @@ Thu Oct 22 15:46:23 1998  Per Bothner (bothner@cygnus.com)
 	* Makefile.in (distdir-cvs, distdir-start):  Clean up so it
 	works if "$(srcdir)" != ".".
 
+>>>>>>> 1.2469
 Wed Oct 21 19:23:59 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* expmed.c (store_bit_field): If need to add a SUBREG, then remove
