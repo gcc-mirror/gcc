@@ -1,5 +1,10 @@
 2000-02-11  Geoff Keating  <geoffk@cygnus.com>
 
+	* function.c (thread_prologue_and_epilogue_insns): Don't insert
+	a RETURN insn into a block which already ends with a jump.
+
+2000-02-11  Geoff Keating  <geoffk@cygnus.com>
+
 	* haifa-sched.c (BUF_LEN): Increase a lot.
 
 2000-02-11  Nick Clifton  <nickc@cygnus.com>
