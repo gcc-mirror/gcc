@@ -1,5 +1,9 @@
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
 
+	* config/i960/i960.h (CPP_SPEC): Define _SOFT_FLOAT for -msoft-float.
+
+2001-07-24  Joel Sherrill <joel@OARcorp.com>
+
 	* config/sparc/rtems.h (CPP_PREDEFINES): Remove redundant
 	-Acpu and -Amachine.h.
 	* config/sparc/rtemself.h (CPP_PREDEFINES): Likewise.
