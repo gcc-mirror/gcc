@@ -338,7 +338,7 @@ in the following sections.
 @emph{M68hc1x Options}
 @gccoptlist{
 -m6811  -m6812  -m68hc11  -m68hc12 @gol
--mauto-incdec  -mshort  -msoft-reg-count=@var{count}}
+-mauto-incdec  -mlong-calls  -mshort  -msoft-reg-count=@var{count}}
 
 @emph{VAX Options}
 @gccoptlist{
@@ -5170,6 +5170,14 @@ when the compiler is configured for 68HC12-based systems.
 @opindex mauto-incdec
 Enable the use of 68HC12 pre and post auto-increment and auto-decrement
 addressing modes.
+
+@item -mlong-calls
+@itemx -mno-long-calls
+@opindex mlong-calls
+@opindex mno-long-calls
+Treat all calls as being far away (near).  If calls are assumed to be
+far away, the compiler will use the @code{call} instruction to
+call a function and the @code{rtc} instruction for returning.
 
 @item -mshort
 @opindex mshort

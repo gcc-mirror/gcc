@@ -101,6 +101,10 @@ int current_function_interrupt;
 /* Set to 1 by expand_prologue() when the function is a trap handler.  */
 int current_function_trap;
 
+/* Set to 1 when the current function is placed in 68HC12 banked
+   memory and must return with rtc.  */
+int current_function_far;
+
 /* Min offset that is valid for the indirect addressing mode.  */
 HOST_WIDE_INT m68hc11_min_offset = 0;
 
@@ -283,6 +287,9 @@ m68hc11_override_options ()
       target_flags |= MASK_NO_DIRECT_MODE;
       if (m68hc11_soft_reg_count == 0)
 	m68hc11_soft_reg_count = "0";
+
+      if (TARGET_LONG_CALLS)
+        current_function_far = 1;
     }
   return 0;
 }
@@ -1277,6 +1284,11 @@ m68hc11_initial_elimination_offset (from, to)
   trap_handler = lookup_attribute ("trap", func_attr) != NULL_TREE;
   if (trap_handler && from == ARG_POINTER_REGNUM)
     size = 7;
+
+  /* For a function using 'call/rtc' we must take into account the
+     page register which is pushed in the call.  */
+  else if (current_function_far && from == ARG_POINTER_REGNUM)
+    size = 1;
   else
     size = 0;
 
@@ -5500,6 +5512,11 @@ m68hc11_asm_file_start (out, main_file)
   print_options (out);
   fprintf (out, ";;;-----------------------------------------\n");
   output_file_directive (out, main_file);
+
+  if (TARGET_SHORT)
+    fprintf (out, "\t.mode mshort\n");
+  else
+    fprintf (out, "\t.mode mlong\n");
 }
 
 

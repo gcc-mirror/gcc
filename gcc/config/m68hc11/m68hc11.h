@@ -66,7 +66,8 @@ Note:
  %{!mshort:-D__INT__=32}\
  %{m68hc12:-Dmc6812 -DMC6812 -Dmc68hc12}\
  %{!m68hc12:-Dmc6811 -DMC6811 -Dmc68hc11}\
- %{fshort-double:-D__HAVE_SHORT_DOUBLE__}"
+ %{fshort-double:-D__HAVE_SHORT_DOUBLE__}\
+ %{mlong-calls:-D__USE_RTC__}"
 #endif
 
 #undef STARTFILE_SPEC
@@ -119,6 +120,7 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 #define MASK_M6811              0010
 #define MASK_M6812              0020
 #define MASK_NO_DIRECT_MODE     0040
+#define MASK_LONG_CALLS         0200
 
 #define TARGET_OP_TIME		(optimize && optimize_size == 0)
 #define TARGET_SHORT            (target_flags & MASK_SHORT)
@@ -127,6 +129,7 @@ extern short *reg_renumber;	/* def in local_alloc.c */
 #define TARGET_AUTO_INC_DEC     (target_flags & MASK_AUTO_INC_DEC)
 #define TARGET_NO_DIRECT_MODE   (target_flags & MASK_NO_DIRECT_MODE)
 #define TARGET_RELAX            (TARGET_NO_DIRECT_MODE)
+#define TARGET_LONG_CALLS       (target_flags & MASK_LONG_CALLS)
 
 /* Default target_flags if no switches specified.  */
 #ifndef TARGET_DEFAULT
@@ -159,6 +162,10 @@ extern short *reg_renumber;	/* def in local_alloc.c */
     N_("Auto pre/post decrement increment allowed")},		\
   { "noauto-incdec", - MASK_AUTO_INC_DEC,			\
     N_("Auto pre/post decrement increment not allowed")},	\
+  { "long-calls", MASK_LONG_CALLS,				\
+    N_("Use call and rtc for function calls and returns")},	\
+  { "nolong-calls", - MASK_LONG_CALLS,				\
+    N_("Use jsr and rts for function calls and returns")},	\
   { "relax", MASK_NO_DIRECT_MODE,                               \
     N_("Do not use direct addressing mode for soft registers")},\
   { "68hc11", MASK_M6811,					\
@@ -1549,6 +1556,45 @@ do {                                                                    \
    no longer contain unusual constructs.  */
 #define ASM_APP_OFF 		"; End of inline assembler code\n#NO_APP\n"
 
+/* Write the extra assembler code needed to declare a function properly.
+   Some svr4 assemblers need to also have something extra said about the
+   function's return value.  We allow for that here.
+
+   For 68HC12 we mark functions that return with 'rtc'.  The linker
+   will ensure that a 'call' is really made (instead of 'jsr').
+   The debugger needs this information to correctly compute the stack frame.
+
+   For 68HC11/68HC12 we also mark interrupt handlers for gdb to
+   compute the correct stack frame.  */
+
+#undef ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
+  do							\
+    {							\
+      fprintf (FILE, "%s", TYPE_ASM_OP);		\
+      assemble_name (FILE, NAME);			\
+      putc (',', FILE);					\
+      fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
+      putc ('\n', FILE);				\
+      							\
+      if (TARGET_M6812 && current_function_far)		\
+        {						\
+          fprintf (FILE, "\t.far\t");			\
+	  assemble_name (FILE, NAME);			\
+	  putc ('\n', FILE);				\
+	}						\
+      else if (current_function_interrupt		\
+	       || current_function_trap)		\
+        {						\
+	  fprintf (FILE, "\t.interrupt\t");		\
+	  assemble_name (FILE, NAME);			\
+	  putc ('\b', FILE);				\
+	}						\
+      ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));	\
+      ASM_OUTPUT_LABEL(FILE, NAME);			\
+    }							\
+  while (0)
+
 /* Output #ident as a .ident.  */
 
 /* output external reference */
@@ -1703,3 +1749,4 @@ extern int debug_m6811;
 extern int z_replacement_completed;
 extern int current_function_interrupt;
 extern int current_function_trap;
+extern int current_function_far;

@@ -1,3 +1,26 @@
+2002-08-14  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* doc/invoke.texi: Document -mlong-calls for 68HC12.
+
+	* config/m68hc11/m68hc11.h (CPP_SPEC): Pass -D__USE_RTC__ when
+	-mlong-calls is specified.
+	(ASM_DECLARE_FUNCTION_NAME): Define to generate .far and .interrupt 
+	assembler directives.
+	(TARGET_LONG_CALL, MASK_LONG_CALL): Declare.
+	(TARGET_SWITCHES): Add -mlong-calls options.
+	(current_function_far): Declare.
+
+	* config/m68hc11/m68hc11.c (m68hc11_initial_elimination_offset): Take
+	into account the page register saved on the stack.
+	(m68hc11_override_options): Take into account -mlong-calls option.
+	(m68hc11_asm_file_start): Put a mode for the ELF flags ABI.
+
+	* config/m68hc11/m68hc11.md ("*return_32bit"): Return rtc
+	if the function is going to be in 68HC12 banked memory (-mlong-calls).
+	("*return_16bit"): Likewise.
+	("*return_void"): Likewise.
+	("call", "call_value"): Use call for a far function call.
+
 2002-08-14  Neil Booth  <neil@daikokuya.co.uk>
 
 	* toplev.c (parse_options_and_default_flags): Don't call
