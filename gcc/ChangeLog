@@ -1,4 +1,10 @@
 2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* recog.h (OUT_FCN): Delete.
+
+	* vax.md: Call `get_insn_template' instead of OUT_FCN.
+
+2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	
 	* cppalloc.c: PROTO -> PARAMS.
 	* cpperror.c: Likewise.

@@ -185,10 +185,6 @@ extern struct recog_data recog_data;
    Set up by preprocess_constraints.  */
 extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
 
-/* Access the output function for CODE.  */
-
-#define OUT_FCN(CODE) (*insn_data[(int) (CODE)].outfun)
-
 /* A table defined in insn-output.c that give information about
    each insn-code value.  */
 
