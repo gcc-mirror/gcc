@@ -1,3 +1,8 @@
+2003-03-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (notice_update_cc): Correctly handle
+	the case where the set destination is STRICT_LOW_PART.
+
 2003-03-22  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* config/c4x/t-c4x (INSTALL_LIBGCC): Make gcc recognize a c33 as a

@@ -1809,7 +1809,14 @@ notice_update_cc (body, insn)
       set = single_set (insn);
       cc_status.value1 = SET_SRC (set);
       if (SET_DEST (set) != cc0_rtx)
-	cc_status.value2 = SET_DEST (set);
+	{
+	  /* If the destination is STRICT_LOW_PART, strip off
+	     STRICT_LOW_PART.  */
+	  if (GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
+	    cc_status.value2 = XEXP (SET_DEST (set), 0);
+	  else
+	    cc_status.value2 = SET_DEST (set);
+	}
       break;
 
     case CC_COMPARE:
