@@ -605,6 +605,7 @@ java_init_decl_processing ()
   one_elt_array_domain_type = build_index_type (integer_one_node);
   otable_type = build_array_type (integer_type_node, 
 				  one_elt_array_domain_type);
+  TYPE_NONALIASED_COMPONENT (otable_type) = 1;
   otable_ptr_type = build_pointer_type (otable_type);
 
   method_symbol_type = make_node (RECORD_TYPE);
@@ -680,6 +681,10 @@ java_init_decl_processing ()
   for (t = TYPE_FIELDS (class_type_node);  t != NULL_TREE;  t = TREE_CHAIN (t))
     FIELD_PRIVATE (t) = 1;
   push_super_field (class_type_node, object_type_node);
+
+  /* Hash synchronization requires at least double-word alignment. */
+  if (flag_hash_synchronization && POINTER_SIZE < 64)
+    TYPE_ALIGN (class_type_node) = 64;
 
   FINISH_RECORD (class_type_node);
   build_decl (TYPE_DECL, get_identifier ("Class"), class_type_node);

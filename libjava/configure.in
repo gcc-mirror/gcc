@@ -76,6 +76,12 @@ if test -z "$enable_hash_synchronization"; then
    enable_hash_synchronization=$enable_hash_synchronization_default
 fi
 
+dnl configure.host sets slow_pthread_self if the synchronization code should 
+dnl try to avoid pthread_self calls by caching thread IDs in a hashtable.
+if test "${slow_pthread_self}" = "yes"; then
+  AC_DEFINE(SLOW_PTHREAD_SELF)
+fi
+
 
 dnl See if the user has requested runtime debugging.
 LIBGCJDEBUG="false"
@@ -414,6 +420,8 @@ AC_SUBST(THREADINCS)
 AC_SUBST(THREADDEPS)
 AC_SUBST(THREADOBJS)
 AC_SUBST(THREADSPEC)
+
+AC_LINK_FILES(sysdep/$sysdeps_dir, sysdep)
 
 HASH_SYNC_SPEC=
 # Hash synchronization is only useful with posix threads right now.

@@ -438,19 +438,17 @@ _Jv_ThreadWait (void)
 
 #if defined(SLOW_PTHREAD_SELF)
 
+#include "sysdep/locks.h"
+
 // Support for pthread_self() lookup cache.
-
 volatile self_cache_entry _Jv_self_cache[SELF_CACHE_SIZE];
-
 
 _Jv_ThreadId_t
 _Jv_ThreadSelf_out_of_line(volatile self_cache_entry *sce, size_t high_sp_bits)
 {
   pthread_t self = pthread_self();
-  // The ordering between the following writes matters.
-  // On Alpha, we probably need a memory barrier in the middle.
   sce -> high_sp_bits = high_sp_bits;
-  sce -> self = self;
+  release_set ((obj_addr_t *) &(sce -> self), self);
   return self;
 }
 
