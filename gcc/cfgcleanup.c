@@ -45,6 +45,23 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "obstack.h"
 
+/* cleanup_cfg maitains following flags for each basic block.  */
+enum bb_flags {
+    /* Set if life info needs to be recomputed for given BB.  */
+    BB_UPDATE_LIFE = 1,
+    /* Set if BB is the forwarder block to avoid too many
+       forwarder_block_p calls.  */
+    BB_FORWARDER_BLOCK = 2
+  };
+
+#define BB_FLAGS(bb) (enum bb_flags)(bb)->aux
+#define BB_SET_FLAG(bb,flag) \
+  (bb)->aux = (void *)((enum bb_flags)(bb)->aux | (flag))
+#define BB_CLEAR_FLAG(bb,flag) \
+  (bb)->aux = (void *)((enum bb_flags)(bb)->aux & ~(flag))
+
+#define FORWARDER_BLOCK_P(bb) (BB_FLAGS(bb) & BB_FORWARDER_BLOCK)
+
 static bool try_crossjump_to_edge	PARAMS ((int, edge, edge));
 static bool try_crossjump_bb		PARAMS ((int, basic_block));
 static bool outgoing_edges_match	PARAMS ((basic_block, basic_block));
@@ -62,6 +79,33 @@ static bool merge_blocks		PARAMS ((edge,basic_block,basic_block,
 static bool try_optimize_cfg		PARAMS ((int));
 static bool try_simplify_condjump	PARAMS ((basic_block));
 static bool try_forward_edges		PARAMS ((int, basic_block));
+static void notice_new_block		PARAMS ((basic_block));
+static void update_forwarder_flag	PARAMS ((basic_block));
+
+/* Set flags for newly created block.  */
+
+static void
+notice_new_block (bb)
+     basic_block bb;
+{
+  if (!bb)
+    return;
+  BB_SET_FLAG (bb, BB_UPDATE_LIFE);
+  if (forwarder_block_p (bb))
+    BB_SET_FLAG (bb, BB_FORWARDER_BLOCK);
+}
+
+/* Recompute forwarder flag after block has been modified.  */
+
+static void
+update_forwarder_flag (bb)
+     basic_block bb;
+{
+  if (forwarder_block_p (bb))
+    BB_SET_FLAG (bb, BB_FORWARDER_BLOCK);
+  else
+    BB_CLEAR_FLAG (bb, BB_FORWARDER_BLOCK);
+}
 
 /* Simplify a conditional jump around an unconditional jump.
    Return true if something changed.  */
@@ -95,7 +139,7 @@ try_simplify_condjump (cbranch_block)
   jump_block = cbranch_fallthru_edge->dest;
   if (jump_block->pred->pred_next
       || jump_block->index == n_basic_blocks - 1
-      || !forwarder_block_p (jump_block))
+      || !FORWARDER_BLOCK_P (jump_block))
     return false;
   jump_dest_block = jump_block->succ->dest;
 
@@ -163,7 +207,7 @@ try_forward_edges (mode, b)
       /* Look for the real destination of the jump.
          Avoid inifinite loop in the infinite empty loop by counting
          up to n_basic_blocks.  */
-      while (forwarder_block_p (target)
+      while (FORWARDER_BLOCK_P (target)
 	     && target->succ->dest != EXIT_BLOCK_PTR
 	     && counter < n_basic_blocks)
 	{
@@ -219,6 +263,10 @@ try_forward_edges (mode, b)
 	      int edge_frequency = ((edge_probability * b->frequency
 				     + REG_BR_PROB_BASE / 2)
 				    / REG_BR_PROB_BASE);
+
+	      if (!FORWARDER_BLOCK_P (b) && forwarder_block_p (b))
+		BB_SET_FLAG (b, BB_FORWARDER_BLOCK);
+	      BB_SET_FLAG (b, BB_UPDATE_LIFE);
 
 	      do
 		{
@@ -384,6 +432,7 @@ merge_blocks (e, b, c, mode)
   if (e->flags & EDGE_FALLTHRU)
     {
       merge_blocks_nomove (b, c);
+      update_forwarder_flag (b);
 
       if (rtl_dump_file)
 	{
@@ -405,7 +454,7 @@ merge_blocks (e, b, c, mode)
          eliminated by edge redirection instead.  One exception might have
 	 been if B is a forwarder block and C has no fallthru edge, but
 	 that should be cleaned up by bb-reorder instead.  */
-      if (forwarder_block_p (b) || forwarder_block_p (c))
+      if (FORWARDER_BLOCK_P (b) || FORWARDER_BLOCK_P (c))
 	return false;
 
       /* We must make sure to not munge nesting of lexical blocks,
@@ -441,7 +490,8 @@ merge_blocks (e, b, c, mode)
 	{
 	  if (b_fallthru_edge->src == ENTRY_BLOCK_PTR)
 	    return false;
-	  force_nonfallthru (b_fallthru_edge);
+	  BB_SET_FLAG (b_fallthru_edge, BB_UPDATE_LIFE);
+	  notice_new_block (force_nonfallthru (b_fallthru_edge));
 	}
       merge_blocks_move_predecessor_nojumps (b, c);
       return true;
@@ -681,18 +731,18 @@ outgoing_edges_match (bb1, bb2)
 
       /* Get around possible forwarders on fallthru edges.  Other cases
          should be optimized out already.  */
-      if (forwarder_block_p (f1->dest))
+      if (FORWARDER_BLOCK_P (f1->dest))
 	f1 = f1->dest->succ;
-      if (forwarder_block_p (f2->dest))
+      if (FORWARDER_BLOCK_P (f2->dest))
 	f2 = f2->dest->succ;
 
       /* To simplify use of this function, return false if there are
 	 unneeded forwarder blocks.  These will get eliminated later
 	 during cleanup_cfg.  */
-      if (forwarder_block_p (f1->dest)
-	  || forwarder_block_p (f2->dest)
-	  || forwarder_block_p (b1->dest)
-	  || forwarder_block_p (b2->dest))
+      if (FORWARDER_BLOCK_P (f1->dest)
+	  || FORWARDER_BLOCK_P (f2->dest)
+	  || FORWARDER_BLOCK_P (b1->dest)
+	  || FORWARDER_BLOCK_P (b2->dest))
 	return false;
 
       if (f1->dest == f2->dest && b1->dest == b2->dest)
@@ -795,14 +845,14 @@ try_crossjump_to_edge (mode, e1, e2)
      conditional jump that is required due to the current CFG shape.  */
   if (src1->pred
       && !src1->pred->pred_next
-      && forwarder_block_p (src1))
+      && FORWARDER_BLOCK_P (src1))
     {
       e1 = src1->pred;
       src1 = e1->src;
     }
   if (src2->pred
       && !src2->pred->pred_next
-      && forwarder_block_p (src2))
+      && FORWARDER_BLOCK_P (src2))
     {
       e2 = src2->pred;
       src2 = e2->src;
@@ -815,11 +865,11 @@ try_crossjump_to_edge (mode, e1, e2)
     return false;
 
   /* Seeing more than 1 forwarder blocks would confuse us later...  */
-  if (forwarder_block_p (e1->dest)
-      && forwarder_block_p (e1->dest->succ->dest))
+  if (FORWARDER_BLOCK_P (e1->dest)
+      && FORWARDER_BLOCK_P (e1->dest->succ->dest))
     return false;
-  if (forwarder_block_p (e2->dest)
-      && forwarder_block_p (e2->dest->succ->dest))
+  if (FORWARDER_BLOCK_P (e2->dest)
+      && FORWARDER_BLOCK_P (e2->dest->succ->dest))
     return false;
 
   /* Likewise with dead code (possibly newly created by the other optimizations
@@ -867,12 +917,12 @@ try_crossjump_to_edge (mode, e1, e2)
       edge s2;
       basic_block d = s->dest;
 
-      if (forwarder_block_p (d))
+      if (FORWARDER_BLOCK_P (d))
 	d = d->succ->dest;
       for (s2 = src1->succ; ; s2 = s2->succ_next)
 	{
 	  basic_block d2 = s2->dest;
-	  if (forwarder_block_p (d2))
+	  if (FORWARDER_BLOCK_P (d2))
 	    d2 = d2->succ->dest;
 	  if (d == d2)
 	    break;
@@ -882,13 +932,13 @@ try_crossjump_to_edge (mode, e1, e2)
       /* Take care to update possible forwarder blocks.  We verified
          that there is no more than one in the chain, so we can't run
          into infinite loop.  */
-      if (forwarder_block_p (s->dest))
+      if (FORWARDER_BLOCK_P (s->dest))
 	{
 	  s->dest->succ->count += s2->count;
 	  s->dest->count += s2->count;
 	  s->dest->frequency += EDGE_FREQUENCY (s);
 	}
-      if (forwarder_block_p (s2->dest))
+      if (FORWARDER_BLOCK_P (s2->dest))
 	{
 	  s2->dest->succ->count -= s2->count;
 	  s2->dest->count -= s2->count;
@@ -934,6 +984,9 @@ try_crossjump_to_edge (mode, e1, e2)
   while (src1->succ)
     remove_edge (src1->succ);
   make_single_succ_edge (src1, redirect_to, 0);
+
+  BB_SET_FLAG (src1, BB_UPDATE_LIFE);
+  update_forwarder_flag (src1);
 
   return true;
 }
@@ -1048,9 +1101,13 @@ try_optimize_cfg (mode)
   bool changed_overall = false;
   bool changed;
   int iterations = 0;
+  sbitmap blocks;
 
   if (mode & CLEANUP_CROSSJUMP)
     add_noreturn_fake_exit_edges ();
+
+  for (i = 0; i < n_basic_blocks; i++)
+    update_forwarder_flag (BASIC_BLOCK (i));
 
   /* Attempt to merge blocks as made possible by edge removal.  If a block
      has only one successor, and the successor has only one predecessor,
@@ -1108,7 +1165,7 @@ try_optimize_cfg (mode)
 	  if (b->pred->pred_next == NULL
 	      && (b->pred->flags & EDGE_FALLTHRU)
 	      && GET_CODE (b->head) != CODE_LABEL
-	      && forwarder_block_p (b)
+	      && FORWARDER_BLOCK_P (b)
 	      /* Note that forwarder_block_p true ensures that there
 		 is a successor for this block.  */
 	      && (b->succ->flags & EDGE_FALLTHRU)
@@ -1151,7 +1208,11 @@ try_optimize_cfg (mode)
 	      && b->succ->dest != EXIT_BLOCK_PTR
 	      && onlyjump_p (b->end)
 	      && redirect_edge_and_branch (b->succ, b->succ->dest))
-	    changed_here = true;
+	    {
+	      BB_SET_FLAG (b, BB_UPDATE_LIFE);
+	      update_forwarder_flag (b);
+	      changed_here = true;
+	    }
 
 	  /* Simplify branch to branch.  */
 	  if (try_forward_edges (mode, b))
@@ -1185,6 +1246,25 @@ try_optimize_cfg (mode)
 
   if (mode & CLEANUP_CROSSJUMP)
     remove_fake_edges ();
+
+  if ((mode & CLEANUP_UPDATE_LIFE) & changed_overall)
+    {
+      bool found = 0;
+      blocks = sbitmap_alloc (n_basic_blocks);
+      for (i = 0; i < n_basic_blocks; i++)
+	if (BB_FLAGS (BASIC_BLOCK (i)) & BB_UPDATE_LIFE)
+	  {
+	    found = 1;
+	    SET_BIT (blocks, i);
+	  }
+      if (found)
+	update_life_info (blocks, UPDATE_LIFE_GLOBAL,
+			  PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
+			  | PROP_KILL_DEAD_CODE);
+      sbitmap_free (blocks);
+    }
+  for (i = 0; i < n_basic_blocks; i++)
+    BASIC_BLOCK (i)->aux = NULL;
 
   return changed_overall;
 }
@@ -1235,8 +1315,5 @@ cleanup_cfg (mode)
   free_EXPR_LIST_list (&tail_recursion_label_list);
   timevar_pop (TV_CLEANUP_CFG);
 
-  /* Clear bb->aux on all basic blocks.  */
-  for (i = 0; i < n_basic_blocks; ++i)
-    BASIC_BLOCK (i)->aux = NULL;
   return changed;
 }

@@ -7908,6 +7908,7 @@ ix86_expand_int_movcc (operands)
   enum rtx_code code = GET_CODE (operands[1]), compare_code;
   rtx compare_seq, compare_op;
   rtx second_test, bypass_test;
+  enum machine_mode mode = GET_MODE (operands[0]);
 
   /* When the compare code is not LTU or GEU, we can not use sbbl case.
      In case comparsion is done with immediate, we can convert it to LTU or
@@ -7915,7 +7916,7 @@ ix86_expand_int_movcc (operands)
 
   if ((code == LEU || code == GTU)
       && GET_CODE (ix86_compare_op1) == CONST_INT
-      && GET_MODE (operands[0]) != HImode
+      && mode != HImode
       && (unsigned int)INTVAL (ix86_compare_op1) != 0xffffffff
       && GET_CODE (operands[2]) == CONST_INT
       && GET_CODE (operands[3]) == CONST_INT)
@@ -7937,8 +7938,8 @@ ix86_expand_int_movcc (operands)
   /* Don't attempt mode expansion here -- if we had to expand 5 or 6
      HImode insns, we'd be swallowed in word prefix ops.  */
 
-  if (GET_MODE (operands[0]) != HImode
-      && (GET_MODE (operands[0]) != DImode || TARGET_64BIT)
+  if (mode != HImode
+      && (mode != DImode || TARGET_64BIT)
       && GET_CODE (operands[2]) == CONST_INT
       && GET_CODE (operands[3]) == CONST_INT)
     {
@@ -7967,10 +7968,10 @@ ix86_expand_int_movcc (operands)
 
 	  if (reg_overlap_mentioned_p (out, ix86_compare_op0)
 	      || reg_overlap_mentioned_p (out, ix86_compare_op1))
-	    tmp = gen_reg_rtx (GET_MODE (operands[0]));
+	    tmp = gen_reg_rtx (mode);
 
 	  emit_insn (compare_seq);
-	  if (GET_MODE (tmp) == DImode)
+	  if (mode == DImode)
 	    emit_insn (gen_x86_movdicc_0_m1_rex64 (tmp));
 	  else
 	    emit_insn (gen_x86_movsicc_0_m1 (tmp));
@@ -7985,12 +7986,9 @@ ix86_expand_int_movcc (operands)
 	       * Size 5 - 8.
 	       */
 	      if (ct)
-		{
-		  if (GET_MODE (tmp) == DImode)
-	            emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (ct)));
-		  else
-	            emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
-		}
+	       	tmp = expand_simple_binop (mode, PLUS,
+					   tmp, GEN_INT (ct),
+					   tmp, 1, OPTAB_DIRECT);
 	    }
 	  else if (cf == -1)
 	    {
@@ -8001,10 +7999,9 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8.
 	       */
-	      if (GET_MODE (tmp) == DImode)
-		emit_insn (gen_iordi3 (tmp, tmp, GEN_INT (ct)));
-	      else
-		emit_insn (gen_iorsi3 (tmp, tmp, GEN_INT (ct)));
+	      tmp = expand_simple_binop (mode, IOR,
+					 tmp, GEN_INT (ct),
+					 tmp, 1, OPTAB_DIRECT);
 	    }
 	  else if (diff == -1 && ct)
 	    {
@@ -8016,18 +8013,11 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8 - 11.
 	       */
-	      if (GET_MODE (tmp) == DImode)
-	        {
-		  emit_insn (gen_one_cmpldi2 (tmp, tmp));
-		  if (cf)
-		    emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (cf)));
-		}
-	      else
-	        {
-		  emit_insn (gen_one_cmplsi2 (tmp, tmp));
-		  if (cf)
-		    emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (cf)));
-		}
+	      tmp = expand_simple_unop (mode, NOT, tmp, tmp, 1);
+	      if (cf)
+	       	tmp = expand_simple_binop (mode, PLUS,
+					   tmp, GEN_INT (cf),
+					   tmp, 1, OPTAB_DIRECT);
 	    }
 	  else
 	    {
@@ -8039,20 +8029,15 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8 - 11.
 	       */
-	      if (GET_MODE (tmp) == DImode)
-	        {
-		  emit_insn (gen_anddi3 (tmp, tmp, GEN_INT (trunc_int_for_mode
-							    (cf - ct, DImode))));
-		  if (ct)
-		    emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (ct)));
-		}
-	      else
-	        {
-		  emit_insn (gen_andsi3 (tmp, tmp, GEN_INT (trunc_int_for_mode
-							    (cf - ct, SImode))));
-		  if (ct)
-		    emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
-		}
+	      tmp = expand_simple_binop (mode, AND,
+					 tmp,
+					 GEN_INT (trunc_int_for_mode
+						  (cf - ct, mode)),
+					 tmp, 1, OPTAB_DIRECT);
+	      if (ct)
+	       	tmp = expand_simple_binop (mode, PLUS,
+					   tmp, GEN_INT (ct),
+					   tmp, 1, OPTAB_DIRECT);
 	    }
 
 	  if (tmp != out)
@@ -8082,8 +8067,9 @@ ix86_expand_int_movcc (operands)
 	      code = reverse_condition (code);
 	    }
 	}
-      if (diff == 1 || diff == 2 || diff == 4 || diff == 8
-	  || diff == 3 || diff == 5 || diff == 9)
+      if ((diff == 1 || diff == 2 || diff == 4 || diff == 8
+	   || diff == 3 || diff == 5 || diff == 9)
+	  && (mode != DImode || x86_64_sign_extended_value (GEN_INT (cf))))
 	{
 	  /*
 	   * xorl dest,dest
@@ -8111,17 +8097,17 @@ ix86_expand_int_movcc (operands)
 	    {
 	      rtx out1;
 	      out1 = out;
-	      tmp = gen_rtx_MULT (GET_MODE (out), out1, GEN_INT (diff & ~1));
+	      tmp = gen_rtx_MULT (mode, out1, GEN_INT (diff & ~1));
 	      nops++;
 	      if (diff & 1)
 		{
-		  tmp = gen_rtx_PLUS (GET_MODE (out), tmp, out1);
+		  tmp = gen_rtx_PLUS (mode, tmp, out1);
 		  nops++;
 		}
 	    }
 	  if (cf != 0)
 	    {
-	      tmp = gen_rtx_PLUS (GET_MODE (out), tmp, GEN_INT (cf));
+	      tmp = gen_rtx_PLUS (mode, tmp, GEN_INT (cf));
 	      nops++;
 	    }
 	  if (tmp != out
@@ -8191,11 +8177,17 @@ ix86_expand_int_movcc (operands)
 	  out = emit_store_flag (out, code, ix86_compare_op0,
 				 ix86_compare_op1, VOIDmode, 0, 1);
 
-	  emit_insn (gen_addsi3 (out, out, constm1_rtx));
-	  emit_insn (gen_andsi3 (out, out, GEN_INT (trunc_int_for_mode
-						    (cf - ct, SImode))));
-	  if (ct != 0)
-	    emit_insn (gen_addsi3 (out, out, GEN_INT (ct)));
+	  out = expand_simple_binop (mode, PLUS,
+				     out, constm1_rtx,
+				     out, 1, OPTAB_DIRECT);
+	  out = expand_simple_binop (mode, AND,
+				     out,
+				     GEN_INT (trunc_int_for_mode
+					      (cf - ct, mode)),
+				     out, 1, OPTAB_DIRECT);
+	  out = expand_simple_binop (mode, PLUS,
+				     out, GEN_INT (ct),
+				     out, 1, OPTAB_DIRECT);
 	  if (out != operands[0])
 	    emit_move_insn (operands[0], out);
 
@@ -8240,7 +8232,7 @@ ix86_expand_int_movcc (operands)
         return 0; /* FAIL */
 
       orig_out = operands[0];
-      tmp = gen_reg_rtx (GET_MODE (orig_out));
+      tmp = gen_reg_rtx (mode);
       operands[0] = tmp;
 
       /* Recurse to get the constant loaded.  */
@@ -8248,7 +8240,7 @@ ix86_expand_int_movcc (operands)
         return 0; /* FAIL */
 
       /* Mask in the interesting variable.  */
-      out = expand_binop (GET_MODE (orig_out), op, var, tmp, orig_out, 0,
+      out = expand_binop (mode, op, var, tmp, orig_out, 0,
 			  OPTAB_WIDEN);
       if (out != orig_out)
 	emit_move_insn (orig_out, out);
@@ -8267,41 +8259,41 @@ ix86_expand_int_movcc (operands)
    * Size 15.
    */
 
-  if (! nonimmediate_operand (operands[2], GET_MODE (operands[0])))
-    operands[2] = force_reg (GET_MODE (operands[0]), operands[2]);
-  if (! nonimmediate_operand (operands[3], GET_MODE (operands[0])))
-    operands[3] = force_reg (GET_MODE (operands[0]), operands[3]);
+  if (! nonimmediate_operand (operands[2], mode))
+    operands[2] = force_reg (mode, operands[2]);
+  if (! nonimmediate_operand (operands[3], mode))
+    operands[3] = force_reg (mode, operands[3]);
 
   if (bypass_test && reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-      rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
+      rtx tmp = gen_reg_rtx (mode);
       emit_move_insn (tmp, operands[3]);
       operands[3] = tmp;
     }
   if (second_test && reg_overlap_mentioned_p (operands[0], operands[2]))
     {
-      rtx tmp = gen_reg_rtx (GET_MODE (operands[0]));
+      rtx tmp = gen_reg_rtx (mode);
       emit_move_insn (tmp, operands[2]);
       operands[2] = tmp;
     }
   if (! register_operand (operands[2], VOIDmode)
       && ! register_operand (operands[3], VOIDmode))
-    operands[2] = force_reg (GET_MODE (operands[0]), operands[2]);
+    operands[2] = force_reg (mode, operands[2]);
 
   emit_insn (compare_seq);
   emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			  gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+			  gen_rtx_IF_THEN_ELSE (mode,
 						compare_op, operands[2],
 						operands[3])));
   if (bypass_test)
     emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+			    gen_rtx_IF_THEN_ELSE (mode,
 				  bypass_test,
 				  operands[3],
 				  operands[0])));
   if (second_test)
     emit_insn (gen_rtx_SET (VOIDmode, operands[0],
-			    gen_rtx_IF_THEN_ELSE (GET_MODE (operands[0]),
+			    gen_rtx_IF_THEN_ELSE (mode,
 				  second_test,
 				  operands[2],
 				  operands[0])));
