@@ -1,3 +1,7 @@
+Wed Dec 10 18:14:10 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c (simplify_rtx, case ABS): Do nothing for ASM_OPERANDS.
+
 Wed Dec 10 12:30:18 1997  Anthony Green  <green@cygnus.com>
 
 	* crtstuff.c (__do_global_ctors): Fix typo.
@@ -28,7 +32,7 @@ Tue Dec  9 01:16:06 1997  Jeffrey A Law  (law@cygnus.com)
 	All references changed.
 	* rtl.h: Protect from multiple inclusions.  Add many prototypes.
 	
-Tue Dec  9 01:15:15 199  Fred Fish  <fnf@ninemoons.com>7
+Tue Dec  9 01:15:15 1997  Fred Fish  <fnf@ninemoons.com>
 
 	* libgcc2.c (string.h): Hoist inclusion to occur before first use of
 	string functions like strlen.

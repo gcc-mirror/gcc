@@ -4097,6 +4097,9 @@ simplify_rtx (x, op0_mode, last, in_dest)
       if (GET_CODE (XEXP (x, 0)) == NEG)
 	SUBST (XEXP (x, 0), XEXP (XEXP (x, 0), 0));
 
+      if (GET_CODE (XEXP (x, 0)) == ASM_OPERANDS)
+	return x;
+
       /* If operand is something known to be positive, ignore the ABS.  */
       if (GET_CODE (XEXP (x, 0)) == FFS || GET_CODE (XEXP (x, 0)) == ABS
 	  || ((GET_MODE_BITSIZE (GET_MODE (XEXP (x, 0)))
