@@ -1,3 +1,29 @@
+2004-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_split_access_reg): Add prototype.
+	* config/s390/s390.c (s390_split_access_reg): New function.
+	(regclass_map): Add access registers.
+	(get_thread_pointer): Use access register instead of UNSPEC_TP.
+	* config/s390/s390.h (FIRST_PSEUDO_REGISTER): Set to 38.
+	(ACCESS_REGNO_P, ACCESS_REG_P): New macros.
+	(TP_REGNUM): New define.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS,
+	REG_ALLOC_ORDER): Add access registers.
+	(HARD_REGNO_NREGS, HARD_REGNO_MODE_OK, CLASS_MAX_NREGS,
+	CANNOT_CHANGE_MODE_CLASS): Support access registers.
+	(enum reg_class): Add ACCESS_REGS.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Likewise.
+	(REG_CLASS_FROM_LETTER): Add 't' constraint.
+	(REGISTER_NAMES): Add access registers.
+	* config/s390/s390.md (UNSPEC_TP): Remove.
+	("*movdi_64"): Add access register alternatives.  Provide splitters
+	to split DImode access register <-> GPR moves into SImode moves.
+	("*movsi_zarch", "*movsi_esa"): Add access register alternatives.
+	("movstrictsi"): Likewise.
+	("get_tp_64", "get_tp_31"): Reimplement using access registers.
+	("set_tp_64", "set_tp_31"): Likewise.
+	("*set_tp"): New insn.
+
 2004-11-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (resize_phi_node): Copy only a portion of
