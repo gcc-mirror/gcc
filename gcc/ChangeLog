@@ -1,3 +1,28 @@
+2004-07-09  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-dfa.c (dump_variable): If the variable is a pointer
+	SSA_NAME, also dump its points-to information.
+	* tree-flow.h (struct ptr_info_def): Add field
+	is_dereferenced.
+	(dump_points_to_info_for): Declare.
+	(debug_points_to_info_for): Declare.
+	* tree-optimize.c (init_tree_optimization_passes): Add a
+	second alias analysis pass after DOM2.
+	Move pass_del_pta to a later spot.
+	* tree-ssa-alias.c (compute_points_to_and_addr_escape): Do not
+	create a name tags when we find a dereferenced pointer.  Just
+	mark the pointer dereferenced.
+	(collect_points_to_info_for): Move code to clear points-to
+	information to create_name_tags.
+	(create_name_tags): New function.
+	(compute_flow_sensitive_aliasing): Call it.
+	(setup_pointers_and_addressables): Mark type tags for renaming
+	here instead of ...
+	(create_memory_tag): ... here.
+	(merge_pointed_to_info): Do not merge PT_MALLOC attributes.
+	(dump_points_to_info_for): Declare extern.
+	(debug_points_to_info_for): New function.
+
 2004-07-09  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/arc/arc.md: Switch to DFA-based scheduler description.

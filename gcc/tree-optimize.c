@@ -294,7 +294,6 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_may_alias);
   NEXT_PASS (pass_tail_recursion);
   NEXT_PASS (pass_ch);
-  NEXT_PASS (pass_del_pta);
   NEXT_PASS (pass_profile);
   NEXT_PASS (pass_lower_complex);
   NEXT_PASS (pass_sra);
@@ -303,6 +302,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (DUP_PASS (pass_redundant_phi));
   NEXT_PASS (DUP_PASS (pass_dce));
   NEXT_PASS (pass_dse);
+  NEXT_PASS (DUP_PASS (pass_may_alias));
   NEXT_PASS (DUP_PASS (pass_forwprop));
   NEXT_PASS (DUP_PASS (pass_phiopt));
   NEXT_PASS (pass_ccp);
@@ -320,6 +320,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_tail_calls);
   NEXT_PASS (pass_late_warn_uninitialized);
   NEXT_PASS (pass_warn_function_return);
+  NEXT_PASS (pass_del_pta);
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_remove_useless_vars);
