@@ -1,5 +1,37 @@
 2004-05-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* doc/invoke.texi: Document -mvr4130-align.
+	* config/mips/mips.h (MASK_VR4130_ALIGN, TARGET_VR4130_ALIGN)
+	(TUNE_MIPS4120, TUNE_MIPS4130): New macros.
+	(TUNE_MACC_CHAINS): Include TUNE_MIPS4120 and TUNE_MIPS4130.
+	(TARGET_SWITCHES): Add -mvr4130-align and -mno-vr4130-align.
+	* config/mips/mips.md: Include sched-int.h.
+	(USEFUL_INSN_P, SEQ_BEGIN, SEQ_END, FOR_EACH_SUBINSN): New macros.
+	(mips_rtx_costs): Set integer multiplication costs for TUNE_MIPS4130.
+	(override_options): Enable -mvr4130-align at -O3 and above.
+	(mips_sim_insn): New variable.
+	(mips_sim): New structure.
+	(mips_sim_reset, mips_sim_init, mips_sim_next_cycle, mips_sim_wait_reg)
+	(mips_sim_wait_regs_2, mips_sim_wait_regs_1, mips_sim_wait_regs)
+	(mips_sim_wait_units, mips_sim_wait_insn, mips_sim_record_set)
+	(mips_sim_issue_insn, mips_sim_issue_nop, mips_sim_finish_insn)
+	(vr4130_avoid_branch_rt_conflict, vr4130_align_insns): New functions.
+	(mips_reorg): Call vr4130_align_insns.
+	(vr4130_last_insn): New variable.
+	(vr4130_true_reg_dependence_p_1, vr4130_true_reg_dependence_p)
+	(vr4130_swap_insns_p, vr4130_reorder): New functions.
+	(mips_sched_reorder, mips_variable_issue): Hook in vr4130 code.
+	(mips_issue_rate): Return 2 for PROCESSOR_R4130.
+	(mips_use_dfa_pipeline_interface): Return true for the same.
+	* config/mips/4130.md: New file.
+	* config/mips/mips.md: Include it.  Add a peephole2 to convert
+	"mult;mflo" into "mtlo;macc".
+	(*macc, *umul_acc_di, *smul_acc_di): Use $1 rather than $0 as the
+	target of maccs.
+	(*msac_using_macc): New pattern.
+
+2004-05-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/5500.md (ir_vr55_store): Set latency to 0.
 	(ir_vr55_hilo): Split into...
 	(ir_vr55_mfhilo, ir_vr55_mthilo): ...these new reservations.
