@@ -3207,6 +3207,7 @@ relax_delay_slots (first)
 	 the next insn, or jumps to a label that is not the last of a
 	 group of consecutive labels.  */
       if (GET_CODE (insn) == JUMP_INSN
+	  && condjump_p (insn)
 	  && (target_label = JUMP_LABEL (insn)) != 0)
 	{
 	  target_label = follow_jumps (target_label);
