@@ -1,3 +1,10 @@
+2004-03-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-decl.c (grokdeclarator): Do not complain about redeclaring
+	visible "static" identifiers "extern" in a local scope.
+	* dwarf2out.c (loc_descriptor_from_tree): Handle pre- and
+	post-increments/decrements.
+
 2004-03-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/t-linux64 (bispecs): Don't add -mlong-double-128 for

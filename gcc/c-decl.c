@@ -4416,7 +4416,7 @@ grokdeclarator (tree declarator, tree declspecs,
 
 	/* It is invalid to create an `extern' declaration for a
 	   variable if there is a global declaration that is
-	   `static'.  */
+	   `static' and the global declaration is not visible.  */
 	if (extern_ref && current_scope != global_scope)
 	  {
 	    tree global_decl;
@@ -4424,6 +4424,7 @@ grokdeclarator (tree declarator, tree declspecs,
 	    global_decl = identifier_global_value (declarator);
 	    if (global_decl
 		&& TREE_CODE (global_decl) == VAR_DECL
+		&& lookup_name (declarator) != global_decl
 		&& !TREE_PUBLIC (global_decl))
 	      error ("variable previously declared `static' redeclared "
 		     "`extern'");

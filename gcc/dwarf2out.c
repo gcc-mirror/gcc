@@ -8506,6 +8506,13 @@ loc_descriptor_from_tree (tree loc, int addressp)
     case CALL_EXPR:
       return 0;
 
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
+    case POSTINCREMENT_EXPR:
+    case POSTDECREMENT_EXPR:
+      /* There are no opcodes for these operations.  */
+      return 0;
+
     case ADDR_EXPR:
       /* We can support this only if we can look through conversions and
 	 find an INDIRECT_EXPR.  */
