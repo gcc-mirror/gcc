@@ -1,3 +1,16 @@
+2001-10-16  Stan Shebs  <shebs@apple.com>
+
+	* config/darwin.h (GCC_NAME): Remove, no longer used.
+	(NO_MATH_LIBRARY): Ditto.
+	(MATH_LIBRARY): Define to emptiness.
+	(DWARF2_DEBUGGING_INFO): Define.
+	(PREFERRED_DEBUGGING_TYPE): Define.
+	(EXTRA_SECTION_FUNCTIONS): Add darwin_exception_section.
+	(EXCEPTION_SECTION): Define.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	* config/darwin.c (darwin_encode_section_info): Handle case of
+	DECL_INITIAL being error_mark_node.
+
 2001-10-16  Richard Henderson  <rth@redhat.com>
 
 	* alpha.c (current_file_function_operand): Don't fail for profiling.
