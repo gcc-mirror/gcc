@@ -4240,7 +4240,16 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 		   the target.  Though the cleanups are expanded multiple
 		   times, the control paths are non-overlapping so the
 		   cleanups will not be executed twice.  */
+
+		/* We may need to protect fixups with rethrow regions.  */
+		int protect = (in_fixup && ! TREE_ADDRESSABLE (tail));
+
+		if (protect)
+		  expand_fixup_region_start ();
+
 		expand_expr (TREE_VALUE (tail), const0_rtx, VOIDmode, 0);
+		if (protect)
+		  expand_fixup_region_end (TREE_VALUE (tail));
 		free_temp_slots ();
 	      }
 	  }
