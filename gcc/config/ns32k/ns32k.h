@@ -1396,9 +1396,8 @@ do {									\
   fprintf (FILE, "\t.long L%d\n", VALUE)
 
 /* This is how to output an element of a case-vector that is relative.  */
-/* ** Notice that the second element is LI format! */
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
-  fprintf (FILE, "\t.long L%d-LI%d\n", VALUE, REL)
+  fprintf (FILE, "\t.long L%d-L%d\n", VALUE, REL)
 
 /* This is how to output an assembler line
    that says to advance the location counter
