@@ -9149,11 +9149,9 @@ move2add_note_store (dst, set, data)
 	      {
 		if (REGNO (src0) != regno
 		    || reg_offset[regno] != const0_rtx)
-		  {
-		    reg_base_reg[regno] = REGNO (src0);
-		    reg_set_luid[regno] = move2add_luid;
-		  }
+		  reg_base_reg[regno] = REGNO (src0);
 
+		reg_set_luid[regno] = move2add_luid;
 		reg_offset[regno] = XEXP (src, 1);
 		break;
 	      }
