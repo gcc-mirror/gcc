@@ -273,6 +273,7 @@ mark_referenced_resources (x, res, include_called_routine)
       res->cc = 1;
       return;
 
+    case UNSPEC_VOLATILE:
     case ASM_INPUT:
       /* Traditional asm's are always volatile.  */
       res->volatil = 1;
@@ -2069,9 +2070,16 @@ mark_target_live_regs (target, res)
 		 sp, ap, and fp.  Do this before setting the result of the
 		 call live.  */
 	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		if (call_used_regs[i] && ! fixed_regs[i]
+		if (call_used_regs[i]
 		    && i != STACK_POINTER_REGNUM && i != FRAME_POINTER_REGNUM
-		    && i != ARG_POINTER_REGNUM)
+		    && i != ARG_POINTER_REGNUM
+#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
+		    && ! (i == ARG_POINTER_REGNUM && fixed_regs[i])
+#endif
+#ifdef PIC_OFFSET_TABLE_REGNUM
+		    && ! (i == PIC_OFFSET_TABLE_REGNUM && flag_pic)
+#endif
+		    )
 		  CLEAR_HARD_REG_BIT (current_live_regs, i);
 	    }
 
