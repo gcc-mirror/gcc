@@ -1123,7 +1123,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			{
 			  tem2 = expand_unop (GET_MODE (var), one_cmpl_optab,
 					      target, NULL_RTX, 0);
-			  tem2 = expand_and (cval, tem2, tem2);
+			  tem2 = expand_and (cval, tem2,
+					     (GET_CODE (tem2) == REG
+					      ? tem2 : 0));
 			}
 
 		      /* If we usually make new pseudos, do so here.  This
