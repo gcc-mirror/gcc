@@ -1253,6 +1253,9 @@ read_rtx_1 (FILE *infile)
 	      memcpy (&return_vec->elem[0], obstack_finish (&vector_stack),
 		      list_counter * sizeof (rtx));
 	    }
+	  else if (format_ptr[i] == 'E')
+	    fatal_with_file_and_line (infile,
+				      "vector must have at least one element");
 	  XVEC (return_rtx, i) = return_vec;
 	  obstack_free (&vector_stack, NULL);
 	  /* close bracket gotten */
