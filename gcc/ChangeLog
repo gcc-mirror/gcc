@@ -1,3 +1,7 @@
+2004-06-17  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_relational_const): Use constant_boolean_node.
+
 2004-06-17  Jan Hubicka  <jh@suse.cz>
 
 	PR target/15433
