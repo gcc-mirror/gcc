@@ -1,3 +1,7 @@
+Fri Oct  9 19:19:19 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/special/920521-1.c: Fix bogus test.
+
 Thu Oct  8 19:14:05 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.dg/dll-?.c Add thumb to target list.
