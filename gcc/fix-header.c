@@ -78,10 +78,10 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef O_RDONLY
 #define O_RDONLY 0
 #endif
+#include "hconfig.h"
 #include "obstack.h"
 #include "scan.h"
 
-sstring buf;
 int verbose = 0;
 int partial_count = 0;
 int missing_extern_C_count = 0;
