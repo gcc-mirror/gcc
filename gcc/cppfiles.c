@@ -530,6 +530,8 @@ cpp_make_system_header (pfile, syshdr, externc)
   if (syshdr)
     flags = 1 + (externc != 0);
   pfile->buffer->sysp = flags;
+  _cpp_do_file_change (pfile, FC_RENAME, pfile->buffer->nominal_fname,
+		       pfile->buffer->lineno);
 }
 
 /* Report on all files that might benefit from a multiple include guard.
