@@ -2617,7 +2617,7 @@ const_desc_rtx_sym_eq (const void *a, const void *b)
 {
   const struct constant_descriptor_rtx *x = a;
   const struct constant_descriptor_rtx *y = b;
-  return x->sym == y->sym;
+  return XSTR (x->sym, 0) == XSTR (y->sym, 0);
 }
 
 /* This is the worker function for const_rtx_hash, called via for_each_rtx.  */

@@ -1,3 +1,7 @@
+2004-02-03  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (const_desc_rtx_sym_eq): Compare symbol strings.
+
 2004-02-03  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config.gcc (sh[234]l): Use little endian fragments.
