@@ -1,5 +1,14 @@
 2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/larith.asm (L_regs_frame): New for _.frame.
+	Put the soft registers in bss for 68HC12.
+	(L_regs_d3_4): New for _.d3 and _.d4.
+	(L_regs_d5_6): Likewise.
+	(L_regs_d1_2): Likewise.
+	* config/m68hc11/t-m68hc11-gas (T_CPPFLAGS): Compile new parts.	
+
+2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.h (CPP_SPEC): Pass -D__HAVE_SHORT_DOUBLE__
 	to the pre-processor when -fshort-double is specified.
 	* config/m68hc11/m68hc11.2 (CPP_SPEC): Likewise.

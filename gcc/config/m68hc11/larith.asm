@@ -52,38 +52,69 @@ NAME:	.word 0;			\
 #else
 	.sect .page0
 #endif
-	.globl _.tmp,_.frame
+	.globl _.tmp
 	.globl _.z,_.xy
 REG(_.tmp)
 REG(_.z)
 REG(_.xy)
-REG(_.frame)
 
 #endif
 
-#ifdef L_regs_d1_8
-/* Pseudo hard registers used by gcc.
-   They must be located in page0. 
-   They will normally appear at the end of .page0 section.  */
+#ifdef L_regs_frame
 #ifdef mc68hc12
 	.sect .bss
 #else
 	.sect .page0
 #endif
-	.globl _.d1,_.d2,_.d3,_.d4,_.d5,_.d6
-	.globl _.d7,_.d8
-REG(_.d1)
-REG(_.d2)
-REG(_.d3)
-REG(_.d4)
-REG(_.d5)
-REG(_.d6)
-REG(_.d7)
-REG(_.d8)
-
+	.globl _.frame
+REG(_.frame)
 #endif
 
-#ifdef L_regs_d8_16
+#ifdef L_regs_d1_2
+#ifdef mc68hc12
+	.sect .bss
+#else
+	.sect .page0
+#endif
+	.globl _.d1,_.d2
+REG(_.d1)
+REG(_.d2)
+#endif
+
+#ifdef L_regs_d3_4
+#ifdef mc68hc12
+	.sect .bss
+#else
+	.sect .page0
+#endif
+	.globl _.d3,_.d4
+REG(_.d3)
+REG(_.d4)
+#endif
+
+#ifdef L_regs_d5_6
+#ifdef mc68hc12
+	.sect .bss
+#else
+	.sect .page0
+#endif
+	.globl _.d5,_.d6
+REG(_.d5)
+REG(_.d6)
+#endif
+
+#ifdef L_regs_d7_8
+#ifdef mc68hc12
+	.sect .bss
+#else
+	.sect .page0
+#endif
+	.globl _.d7,_.d8
+REG(_.d7)
+REG(_.d8)
+#endif
+
+#ifdef L_regs_d9_16
 /* Pseudo hard registers used by gcc.
    They must be located in page0. 
    They will normally appear at the end of .page0 section.  */
