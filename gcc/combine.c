@@ -8030,6 +8030,12 @@ simplify_and_const_int (x, mode, varop, constop)
   unsigned HOST_WIDE_INT nonzero;
   int i;
 
+#if 1
+   /* Can only simplify integer modes  */
+   if (!(GET_MODE_CLASS (mode) == MODE_INT || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT))
+     return x;
+ #endif
+
   /* Simplify VAROP knowing that we will be only looking at some of the
      bits in it.
 
