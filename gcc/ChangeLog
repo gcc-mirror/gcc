@@ -1,3 +1,9 @@
+2000-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* except.c (find_exception_handler_labels_1): New function.
+	(find_exception_handler_labels): Split into two functions, dive
+	into CALL_PLACEHOLDERs when looking for exception handler labels.
+
 2000-05-11 Stan Cox <scox@cygnus.com>
 
 	* regrename.c (replace_reg_in_block): Improve REG_DEAD handling.
