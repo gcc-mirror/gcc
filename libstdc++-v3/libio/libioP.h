@@ -82,7 +82,7 @@ extern "C" {
 # define _IO_JUMPS_FUNC(THIS) _IO_JUMPS ((struct _IO_FILE_plus *) (THIS))
 #endif
 #define _IO_WIDE_JUMPS_FUNC(THIS) _IO_WIDE_JUMPS(THIS)
-#ifdef _G_USING_THUNKS
+#if _G_USING_THUNKS
 # define JUMP_FIELD(TYPE, NAME) TYPE NAME
 # define JUMP0(FUNC, THIS) _IO_JUMPS_FUNC(THIS)->FUNC (THIS)
 # define JUMP1(FUNC, THIS, X1) _IO_JUMPS_FUNC(THIS)->FUNC (THIS, X1)
@@ -274,7 +274,7 @@ typedef void (*_IO_imbue_t) __PMT ((_IO_FILE *, void *));
 struct _IO_jump_t
 {
     JUMP_FIELD(_G_size_t, __dummy);
-#ifdef _G_USING_THUNKS
+#if _G_USING_THUNKS
     JUMP_FIELD(_G_size_t, __dummy2);
 #endif
     JUMP_FIELD(_IO_finish_t, __finish);

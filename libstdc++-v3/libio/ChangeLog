@@ -1,3 +1,9 @@
+2000-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* _G_config.h (_G_USING_THUNKS): Allow overrides from
+	OS-configuration files.
+	* libioP.h: Test _G_USING_THUNKS with #if, rather than #ifdef.
+
 2000-10-17  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* libioP.h: Break up extern "C" bits around includes.
