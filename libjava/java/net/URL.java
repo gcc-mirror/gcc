@@ -321,7 +321,7 @@ public final class URL implements Serializable
    */
   public URL(String spec) throws MalformedURLException
   {
-    this((URL) null, spec, (URLStreamHandler) null);
+    this((URL) null, spec != null ? spec : "", (URLStreamHandler) null);
   }
 
   /**

@@ -1,5 +1,9 @@
 2004-11-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URL.java (URL): Handle case when argument is null.
+
+2004-11-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/beans/Beans.java,
 	java/beans/PropertyChangeEvent.java,
 	java/beans/PropertyEditorSupport.java:
