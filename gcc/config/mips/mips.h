@@ -95,7 +95,6 @@ enum block_move_type {
 
 extern char mips_reg_names[][8];	/* register names (a0 vs. $4). */
 extern char mips_print_operand_punct[];	/* print_operand punctuation chars */
-extern char *current_function_name;	/* current function being compiled */
 extern char *current_function_file;	/* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
 extern int inside_function;		/* != 0 if inside of a function */
@@ -3446,7 +3445,6 @@ while (0)
 	fprintf (STREAM, "%s\n", TEXT_SECTION_ASM_OP);			\
     }									\
 									\
-  current_function_name = NAME;						\
   HALF_PIC_DECLARE (NAME);						\
 }
 
