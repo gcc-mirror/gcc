@@ -3673,6 +3673,7 @@ notice_update_cc (exp)
 		cc_status.flags
 		  = CC_NOT_POSITIVE | CC_NOT_NEGATIVE | CC_NO_OVERFLOW;
 		cc_status.value1 = XVECEXP (SET_SRC (exp), 0, 0);
+		cc_status.value2 = 0;
 		break;
 	      }
 	    /* FALLTHRU */
