@@ -2181,11 +2181,20 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	output_asm_insn (template, recog_operand);
 
-#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_prologue)
+#if defined (DWARF2_UNWIND_INFO)
+#if !defined (ACCUMULATE_OUTGOING_ARGS)
+	/* If we push arguments, we need to check all insns for stack
+	   adjustments.  */
+	if (dwarf2out_do_frame ())
+	  dwarf2out_frame_debug (insn);
+#else
+#if defined (HAVE_prologue)
 	/* If this insn is part of the prologue, emit DWARF v2
 	   call frame info.  */
 	if (RTX_FRAME_RELATED_P (insn) && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn);
+#endif
+#endif
 #endif
 
 #if 0

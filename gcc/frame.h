@@ -6,6 +6,7 @@ typedef struct frame_state
   void *cfa;
   void *eh_ptr;
   long cfa_offset;
+  long args_size;
   long reg_or_offset[FIRST_PSEUDO_REGISTER+1];
   unsigned short cfa_reg;
   unsigned short retaddr_column;

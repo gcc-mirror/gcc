@@ -3626,11 +3626,12 @@ in_reg_window (int reg, frame_state *udata)
 void
 __throw ()
 {
-  register void *pc, *handler, *retaddr;
+  void *pc, *handler, *retaddr;
   frame_state ustruct, ustruct2;
   frame_state *udata = &ustruct;
   frame_state *sub_udata = &ustruct2;
   frame_state my_ustruct, *my_udata = &my_ustruct;
+  long args_size;
 
   /* This is required for C++ semantics.  We must call terminate if we
      try and rethrow an exception, when there is no exception currently
@@ -3676,7 +3677,10 @@ label:
 
       /* If we found one, we can stop searching.  */
       if (handler)
-	break;
+	{
+	  args_size = udata->args_size;
+	  break;
+	}
 
       /* Otherwise, we continue searching.  */
       pc = get_return_addr (udata, sub_udata);
@@ -3765,6 +3769,7 @@ label:
 #else
 			 my_udata->cfa - udata->cfa
 #endif
+			 + args_size
 			 );
 
   /* Epilogue:  restore the handler frame's register values and return

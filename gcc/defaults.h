@@ -137,11 +137,5 @@ do { fprintf (FILE, "\t%s\t", ASM_LONG);				\
 /* If we have a definition of INCOMING_RETURN_ADDR_RTX, assume that
    the rest of the DWARF 2 frame unwind support is also provided.  */
 #if !defined (DWARF2_UNWIND_INFO) && defined (INCOMING_RETURN_ADDR_RTX)
-#if defined (ACCUMULATE_OUTGOING_ARGS)
 #define DWARF2_UNWIND_INFO 1
-#else
-/* Keep setjmp/longjmp as the default exception handling mechanism until
-   the dwarf2 unwinder restores sp properly; it doesn't pop args yet.  */
-#define DWARF2_UNWIND_INFO 0
-#endif
 #endif

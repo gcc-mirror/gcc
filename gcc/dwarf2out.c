@@ -555,6 +555,8 @@ dwarf_cfi_name (cfi_opc)
     /* GNU extensions */
     case DW_CFA_GNU_window_save:
       return "DW_CFA_GNU_window_save";
+    case DW_CFA_GNU_args_size:
+      return "DW_CFA_GNU_args_size";
 
     default:
       return "DW_CFA_<unknown>";
@@ -698,6 +700,9 @@ static long cfa_offset;
 static unsigned cfa_store_reg;
 static long cfa_store_offset;
 
+/* The running total of the size of arguments pushed onto the stack.  */
+static long args_size;
+
 /* Entry point to update the canonical frame address (CFA).
    LABEL is passed to add_fde_cfi.  The value of CFA is now to be
    calculated from REG+OFFSET.  */
@@ -803,6 +808,20 @@ dwarf2out_window_save (label)
   add_fde_cfi (label, cfi);
 }
 
+/* Add a CFI to update the running total of the size of arguments
+   pushed onto the stack.  */
+
+void
+dwarf2out_args_size (label, size)
+     char *label;
+     long size;
+{
+  register dw_cfi_ref cfi = new_cfi ();
+  cfi->dw_cfi_opc = DW_CFA_GNU_args_size;
+  cfi->dw_cfi_oprnd1.dw_cfi_offset = size;
+  add_fde_cfi (label, cfi);
+}
+
 /* Entry point for saving a register to the stack.  REG is the GCC register
    number.  LABEL and OFFSET are passed to reg_save.  */
 
@@ -888,6 +907,67 @@ initial_return_save (rtl)
   reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa_offset);
 }
 
+/* Check INSN to see if it looks like a push or a stack adjustment, and
+   make a note of it if it does.  EH uses this information to find out how
+   much extra space it needs to pop off the stack.  */
+
+static void
+dwarf2out_stack_adjust (insn)
+     rtx insn;
+{
+  rtx src, dest;
+  enum rtx_code code;
+  long offset;
+  char *label;
+
+  if (GET_CODE (insn) != SET)
+    return;
+
+  src = SET_SRC (insn);
+  dest = SET_DEST (insn);
+  if (dest == stack_pointer_rtx)
+    {
+      /* (set (reg sp) (plus (reg sp) (const_int))) */
+      code = GET_CODE (src);
+      if (! (code == PLUS || code == MINUS)
+	  || XEXP (src, 0) != stack_pointer_rtx
+	  || GET_CODE (XEXP (src, 1)) != CONST_INT)
+	return;
+
+      offset = INTVAL (XEXP (src, 1));
+    }
+  else if (GET_CODE (dest) == MEM)
+    {
+      /* (set (mem (pre_dec (reg sp))) (foo)) */
+      src = XEXP (dest, 0);
+      code = GET_CODE (src);
+
+      if (! (code == PRE_DEC || code == PRE_INC)
+	  || XEXP (src, 0) != stack_pointer_rtx)
+	return;
+
+      offset = GET_MODE_SIZE (GET_MODE (dest));
+    }
+  else
+    return;
+
+  if (code == PLUS || code == PRE_INC)
+    offset = -offset;
+  if (cfa_reg == STACK_POINTER_REGNUM)
+    cfa_offset += offset;
+
+#ifndef STACK_GROWS_DOWNWARD
+  offset = -offset;
+#endif
+  args_size += offset;
+  if (args_size < 0)
+    args_size = 0;
+
+  label = dwarf2out_cfi_label ();
+  dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
+  dwarf2out_args_size (label, args_size);
+}
+
 /* Record call frame debugging information for INSN, which either
    sets SP or FP (adjusting how we calculate the frame address) or saves a
    register to the stack.  If INSN is NULL_RTX, initialize our state.  */
@@ -914,6 +994,12 @@ dwarf2out_frame_debug (insn)
       cfa_store_offset = cfa_offset;
       cfa_temp_reg = -1;
       cfa_temp_value = 0;
+      return;
+    }
+
+  if (! RTX_FRAME_RELATED_P (insn))
+    {
+      dwarf2out_stack_adjust (PATTERN (insn));
       return;
     }
 
@@ -963,13 +1049,21 @@ dwarf2out_frame_debug (insn)
 		  abort ();
 		}
 
+	      if (XEXP (src, 0) == hard_frame_pointer_rtx)
+		{
+		  /* Restoring SP from FP in the epilogue.  */
+		  assert (cfa_reg == HARD_FRAME_POINTER_REGNUM);
+		  cfa_reg = STACK_POINTER_REGNUM;
+		}
+	      else
+		assert (XEXP (src, 0) == stack_pointer_rtx);
+
 	      if (GET_CODE (src) == PLUS)
 		offset = -offset;
 	      if (cfa_reg == STACK_POINTER_REGNUM)
 		cfa_offset += offset;
 	      if (cfa_store_reg == STACK_POINTER_REGNUM)
 		cfa_store_offset += offset;
-	      assert (XEXP (src, 0) == stack_pointer_rtx);
 	    }
 	  else
 	    {
@@ -1012,7 +1106,7 @@ dwarf2out_frame_debug (insn)
 	case PRE_INC:
 	case PRE_DEC:
 	  offset = GET_MODE_SIZE (GET_MODE (dest));
-	  if (GET_CODE (src) == PRE_INC)
+	  if (GET_CODE (XEXP (dest, 0)) == PRE_INC)
 	    offset = -offset;
 
 	  assert (REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM);
@@ -1255,6 +1349,10 @@ output_cfi (cfi, fde)
 	  break;
 	case DW_CFA_GNU_window_save:
 	  break;
+	case DW_CFA_GNU_args_size:
+	  output_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_offset);
+          fputc ('\n', asm_out_file);
+	  break;
 	default:
 	  break;
 	}
@@ -1484,6 +1582,8 @@ dwarf2out_begin_prologue ()
   fde->dw_fde_current_label = NULL;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
+
+  args_size = 0;
 }
 
 /* Output a marker (i.e. a label) for the absolute end of the generated code

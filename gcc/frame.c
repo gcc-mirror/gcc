@@ -481,6 +481,11 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
 	}
       break;
 
+    case DW_CFA_GNU_args_size:
+      p = decode_uleb128 (p, &offset);
+      state->s.args_size = offset;
+      break;
+
     default:
       abort ();
     }
