@@ -6297,13 +6297,12 @@ choose_reload_regs (chain)
 	     is mentioned in reload_in of the reload we are going to inherit.
 	     A special case are auto_inc expressions; even if the input is
 	     inherited, we still need the address for the output.  We can
-	     recognize them because they have RELOAD_OUT set but not
-	     RELOAD_OUT_REG.
+	     recognize them because they have RELOAD_OUT set to RELOAD_IN.
 	     If we suceeded removing some reload and we are doing a preliminary
 	     pass just to remove such reloads, make another pass, since the
 	     removal of one reload might allow us to inherit another one.  */
-	  else if ((! reload_out[r] || reload_out_reg[r])
-		   && reload_in[r]
+	  else if (reload_in[r]
+		   && reload_out[r] != reload_in[r]
 		   && remove_address_replacements (reload_in[r]) && pass)
 	    pass = 2;
 	}
