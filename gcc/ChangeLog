@@ -1,3 +1,8 @@
+2001-05-17  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc.texi (gccbug): Refer to the web pages for detailed information
+	on GNATS.
+
 2001-05-16  Zack Weinberg  <zackw@stanford.edu>
 
 	* libgcc1-test.c, libgcc1.c, config/i386/perform.h: Delete file.
