@@ -35,6 +35,13 @@ Boston, MA 02111-1307, USA.  */
 
 #include <ctype.h>
 
+/* MULTIBYTE_CHARS support only works for native compilers.
+   ??? Ideally what we want is to model widechar support after
+   the current floating point support.  */
+#ifdef CROSS_COMPILE
+#undef MULTIBYTE_CHARS
+#endif
+
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
 #include <locale.h>
@@ -1997,15 +2004,9 @@ yylex ()
 	    bzero (widep + (len * WCHAR_BYTES), WCHAR_BYTES);
 #else
 	    {
-	      union { long l; char c[sizeof (long)]; } u;
-	      int big_endian;
 	      char *wp, *cp;
 
-	      /* Determine whether host is little or big endian.  */
-	      u.l = 1;
-	      big_endian = u.c[sizeof (long) - 1];
-	      wp = widep + (big_endian ? WCHAR_BYTES - 1 : 0);
-
+	      wp = widep + (BYTES_BIG_ENDIAN ? WCHAR_BYTES - 1 : 0);
 	      bzero (widep, (p - token_buffer) * WCHAR_BYTES);
 	      for (cp = token_buffer + 1; cp < p; cp++)
 		*wp = *cp, wp += WCHAR_BYTES;
