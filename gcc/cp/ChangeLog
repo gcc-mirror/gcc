@@ -1,3 +1,12 @@
+2004-09-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/16889
+	* search.c (lookup_field_queue_p): Correct check for hidden base.
+
+	* search.c (bfs_walk): Remove.
+	(lookup_member): Use dfs_walk_real.
+	(dfs_walk_real): Move and adjust documentation from bfs_walk.
+
 2004-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c (grokfndecl): If ::main is found not to return int,

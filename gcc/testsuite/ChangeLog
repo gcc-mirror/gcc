@@ -1,3 +1,8 @@
+2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/16889
+	* g++.dg/lookup/ambig3.C: New.
+
 2004-09-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/17624
