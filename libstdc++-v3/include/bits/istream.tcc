@@ -679,7 +679,7 @@ namespace std
 		{
 		  if (__c == __idelim)
 		    {
-		      __sb->snextc();
+		      __sb->sbumpc();
 		      ++_M_gcount;
 		    }
 		  else
@@ -726,7 +726,7 @@ namespace std
 		this->setstate(ios_base::eofbit);
 	      else if (__c == __delim)
 		{
-		  __sb->snextc();
+		  __sb->sbumpc();
 		  ++_M_gcount;
 		}
 	    }

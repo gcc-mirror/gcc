@@ -3,6 +3,14 @@
 	* docs/html/faq/index.html:  Update not-a-bug list with basic_file.h.
 	* docs/html/faq/index.txt:  Regenerate.
 
+2002-05-15  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/6648
+	* include/bits/istream.tcc (istream::getline, ignore):
+	Upon __idelim (__delim) call sbumpc() not snextc().
+	* testsuite/27_io/narrow_stream_objects.cc:
+	Add test08 and test09.
+	
 2002-05-14  Release Manager
 
 	* GCC 3.1 Released.
