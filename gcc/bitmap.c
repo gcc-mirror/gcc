@@ -26,6 +26,14 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "basic-block.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef NEED_DECLARATION_FREE
+extern void free PROTO((void *));
+#endif
+
 /* Obstack to allocate bitmap elements from.  */
 static struct obstack bitmap_obstack;
 static int bitmap_obstack_init = FALSE;
