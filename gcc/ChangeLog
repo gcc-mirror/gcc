@@ -23,6 +23,8 @@
 	* lambda-code.c (lambda_compute_auxillary_space): Remove local
 	variable determinant.
 
+	* tree-cfg.c (group_case_labels): Remove local variable type.
+
 2005-03-13  Andy Hutchinson  <HutchinsonAndy@netscape.net>
 
 	PR target/18251
