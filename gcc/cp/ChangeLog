@@ -1,3 +1,8 @@
+2001-01-19  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* pt.c (copy_default_args_to_explicit_spec): Preserve
+	object's CV quals. Reorganize.
+
 2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (build_modify_expr): Say `initialization' for
