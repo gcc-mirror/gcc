@@ -1,4 +1,6 @@
-// Build don't link:  
+// conversion ops should be treated as coming from the most derived class
+// for overload resolution.  See [over.match.funcs].
+// Build don't link:
 
 class X {
 public:
@@ -11,7 +13,6 @@ private:
 };
 
 
-void f(Y const& y) {
-  if( bool(y) ) {
-  }
+int f(Y const& y) {
+  return bool(y);
 }

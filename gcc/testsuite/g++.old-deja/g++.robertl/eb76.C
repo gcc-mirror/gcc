@@ -1,9 +1,7 @@
 //Build don't link:
-// from include/g++/stl_relops.h
-template <class T>
-inline bool operator!=(const T& x, const T& y) {
-  return !(x == y);
-}
+// the template operator!= interferes.  It should be in a namespace.
+
+#include <utility>
 
 enum T {
   V1
