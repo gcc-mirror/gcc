@@ -547,10 +547,15 @@ GCOV_LINKAGE time_t gcov_time (void);
 #endif
 
 /* Make sure the library is used correctly.  */
+#if IN_LIBGCOV
 #if ENABLE_CHECKING
-#define GCOV_CHECK(expr) ((expr) ? (void)0 : (void)abort ())
+#define GCOV_CHECK(EXPR) (!(EXPR) ? abort (), 0 : 0)
 #else
-#define GCOV_CHECK(expr)
+/* Include EXPR, so that unused variable warnings do not occur.  */
+#define GCOV_CHECK(EXPR) ((void)(0 && (EXPR)))
+#endif
+#else
+#define GCOV_CHECK(EXPR) gcc_assert (EXPR)
 #endif
 #define GCOV_CHECK_READING() GCOV_CHECK(gcov_var.mode > 0)
 #define GCOV_CHECK_WRITING() GCOV_CHECK(gcov_var.mode < 0)

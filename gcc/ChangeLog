@@ -1,5 +1,8 @@
 2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* gcov-io.c (GCOV_CHECK): Use gcc_assert when available.
+	* gcov.c (abort): Remove undef.
+
 	* tree.h (BINFO_PRIMARY_BASE_OF): Remove.
 	(struct tree_binfo): Remove primary field.
 
