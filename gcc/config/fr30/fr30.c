@@ -951,6 +951,20 @@ fr30_check_multiple_regs (operands, num_operands, descending)
   return 1;
 }
 
+int
+fr30_const_double_is_zero (operand)
+     rtx operand;
+{
+  REAL_VALUE_TYPE d;
+
+  if (operand == NULL || GET_CODE (operand) != CONST_DOUBLE)
+    return 0;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (d, operand);
+
+  return REAL_VALUES_EQUAL (d, dconst0);
+}
+
 /*}}}*/
 /*{{{  Instruction Output Routines  */
 

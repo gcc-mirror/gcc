@@ -1,3 +1,12 @@
+2002-11-21  Nick Clifton  <nickc@redhat.com>
+
+	* config/fr30/fr30.md (movsf_constant_store): Move code to
+	detect 0.0 into fr30.c.
+	* config/fr30/fr30-protos.h (fr30_const_double_is_zero):
+	Prototype.
+	* config/fr30/fr30.c (fr30_const_double_is_zero): New
+	function.  Return true if the rtx is 0.0.
+
 2002-11-21  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/arm/elf.h (ASM_SPEC, LINK_SPEC): Pass -EL

@@ -1,5 +1,5 @@
 /* Prototypes for fr30.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,6 +39,7 @@ extern int   low_register_operand       PARAMS ((rtx, Mmode));
 extern int   call_operand               PARAMS ((rtx, Mmode));
 extern int   di_operand 		PARAMS ((rtx, Mmode));
 extern int   nonimmediate_di_operand 	PARAMS ((rtx, Mmode));
+extern int   fr30_const_double_is_zero  PARAMS ((rtx));
 #undef Mmode
 #endif /* HAVE_MACHINE_MODES */
 #endif /* RTX_CODE */
