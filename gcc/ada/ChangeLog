@@ -1,3 +1,8 @@
+2003-07-18  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang-options.h: Remove.
+	* lang.opt: Add help text.
+
 2003-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* trans.c (build_unit_elab, set_lineno): Adjust emit_line_note

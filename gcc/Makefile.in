@@ -356,7 +356,6 @@ xm_file=@xm_file@
 xm_defines=@xm_defines@
 lang_opt_files=@lang_opt_files@ $(srcdir)/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
-lang_options_files=@lang_options_files@
 lang_tree_files=@lang_tree_files@
 target_cpu_default=@target_cpu_default@
 GCC_THREAD_FILE=@thread_file@
@@ -1407,14 +1406,6 @@ s-gencheck : Makefile
 	$(SHELL) $(srcdir)/move-if-change tmp-gencheck.h gencheck.h
 	$(STAMP) s-gencheck
 
-options_.h : s-options ; @true
-s-options : Makefile
-	lof="$(lang_options_files)"; for f in $$lof; do \
-	    echo "#include \"$$f\""; \
-	done | sed 's|$(srcdir)/||' > tmp-options_.h
-	$(SHELL) $(srcdir)/move-if-change tmp-options_.h options_.h
-	$(STAMP) s-options
-
 specs.h : s-specs ; @true
 s-specs : Makefile
 	lsf="$(lang_specs_files)"; for f in $$lsf; do \
@@ -1492,9 +1483,9 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_
    function.h flags.h xcoffout.h input.h $(INSN_ATTR_H) output.h diagnostic.h \
    debug.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h \
    dwarf2out.h sdbout.h dbxout.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
-   graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) \
+   graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) \
    ssa.h $(PARAMS_H) $(TM_P_H) reload.h dwarf2asm.h $(TARGET_H) \
-   langhooks.h insn-flags.h options_.h cfglayout.h real.h cfgloop.h \
+   langhooks.h insn-flags.h cfglayout.h real.h cfgloop.h \
    hosthooks.h $(LANGHOOKS_DEF_H) cgraph.h $(COVERAGE_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DTARGET_NAME=\"$(target_alias)\" \

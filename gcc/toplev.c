@@ -1179,22 +1179,6 @@ static const lang_independent_options f_options[] =
   { "new-ra", &flag_new_regalloc, 1 }
 };
 
-/* Table of language-specific options.  */
-
-static const struct lang_opt
-{
-  const char *const option;
-  const char *const description;
-}
-documented_lang_options[] =
-{
-#define DEFINE_LANG_NAME(NAME) { NULL, NAME },
-
-#include "options_.h"
-
-  { NULL, "Dummy" }
-};
-
 /* Here is a table, controlled by the tm.h file, listing each -m switch
    and which bits in `target_switches' it should set or clear.
    If VALUE is positive, it is bits to set.
@@ -3605,9 +3589,7 @@ rest_of_compilation (tree decl)
 void
 display_help (void)
 {
-  int undoc;
   unsigned long i;
-  const char *lang;
 
   for (i = LAST_PARAM; i--;)
     {
@@ -3627,56 +3609,6 @@ display_help (void)
 	printf ("  -g%-21s %s\n",
 		debug_args[i].arg, _(debug_args[i].description));
     }
-
-  undoc = 0;
-  lang  = "language";
-
-  /* Display descriptions of language specific options.
-     If there is no description, note that there is an undocumented option.
-     If the description is empty, do not display anything.  (This allows
-     options to be deliberately undocumented, for whatever reason).
-     If the option string is missing, then this is a marker, indicating
-     that the description string is in fact the name of a language, whose
-     language specific options are to follow.  */
-
-  if (ARRAY_SIZE (documented_lang_options) > 1)
-    {
-      printf (_("\nLanguage specific options:\n"));
-
-      for (i = 0; i < ARRAY_SIZE (documented_lang_options); i++)
-	{
-	  const char *description = documented_lang_options[i].description;
-	  const char *option      = documented_lang_options[i].option;
-
-	  if (description == NULL)
-	    {
-	      undoc = 1;
-
-	      if (extra_warnings)
-		printf (_("  %-23s [undocumented]\n"), option);
-	    }
-	  else if (*description == 0)
-	    continue;
-	  else if (option == NULL)
-	    {
-	      if (undoc)
-		printf
-		  (_("\nThere are undocumented %s specific options as well.\n"),
-			lang);
-	      undoc = 0;
-
-	      printf (_("\n Options for %s:\n"), description);
-
-	      lang = description;
-	    }
-	  else
-	    printf ("  %-23s %s\n", option, _(description));
-	}
-    }
-
-  if (undoc)
-    printf (_("\nThere are undocumented %s specific options as well.\n"),
-	    lang);
 
   display_target_options ();
 }

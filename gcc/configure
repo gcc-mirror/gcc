@@ -7519,7 +7519,6 @@ fi
 
 lang_opt_files=
 lang_specs_files=
-lang_options_files=
 lang_tree_files=
 for subdir in . $subdirs
 do
@@ -7528,9 +7527,6 @@ do
 	fi
 	if test -f $srcdir/$subdir/lang-specs.h; then
 	    lang_specs_files="$lang_specs_files $srcdir/$subdir/lang-specs.h"
-	fi
-	if test -f $srcdir/$subdir/lang-options.h; then
-	    lang_options_files="$lang_options_files $srcdir/$subdir/lang-options.h"
 	fi
 	if test -f $srcdir/$subdir/$subdir-tree.def; then
 	    lang_tree_files="$lang_tree_files $srcdir/$subdir/$subdir-tree.def"
@@ -8101,7 +8097,6 @@ s%@host_xm_defines@%$host_xm_defines%g
 s%@out_host_hook_obj@%$out_host_hook_obj%g
 s%@install@%$install%g
 s%@lang_opt_files@%$lang_opt_files%g
-s%@lang_options_files@%$lang_options_files%g
 s%@lang_specs_files@%$lang_specs_files%g
 s%@lang_tree_files@%$lang_tree_files%g
 s%@local_prefix@%$local_prefix%g
