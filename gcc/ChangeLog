@@ -1,3 +1,7 @@
+2000-01-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (BINFO_N_BASETYPES): New macro.
+
 2000-01-01  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* expmed.c (emit_store_flag): Prevent losing a pending stack
