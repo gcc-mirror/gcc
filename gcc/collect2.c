@@ -514,6 +514,11 @@ main (argc, argv)
     clen = sizeof (STANDARD_BIN_PREFIX) - 1;
 #endif
 
+#ifdef STANDARD_EXEC_PREFIX
+  if (clen < sizeof (STANDARD_EXEC_PREFIX) - 1)
+    clen = sizeof (STANDARD_EXEC_PREFIX) - 1;
+#endif
+
   ld_file_name = xcalloc (len + sizeof ("real-ld"), 1);
   nm_file_name = xcalloc (len + sizeof ("gnm"), 1);
 
