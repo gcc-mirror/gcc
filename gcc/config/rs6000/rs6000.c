@@ -854,7 +854,7 @@ offsettable_mem_operand (op, mode)
      enum machine_mode mode;
 {
   return ((GET_CODE (op) == MEM)
-	  && offsettable_address_p (reload_completed | reload_in_progress,
+	  && offsettable_address_p (reload_completed || reload_in_progress,
 				    mode, XEXP (op, 0)));
 }
 
@@ -2335,10 +2335,11 @@ struct rtx_def *
 rs6000_got_register (value)
      rtx value;
 {
-  if (!current_function_uses_pic_offset_table || !pic_offset_table_rtx)
+  if (! current_function_uses_pic_offset_table || ! pic_offset_table_rtx)
     {
-      if (reload_in_progress || reload_completed)
-	fatal_insn ("internal error -- needed new GOT register during reload phase to load:", value);
+      if (no_new_pseudos)
+	fatal_insn ("internal error -- needed new GOT register during reload phase to load:",
+		    value);
 
       current_function_uses_pic_offset_table = 1;
       pic_offset_table_rtx = gen_rtx_REG (Pmode, GOT_TOC_REGNUM);
