@@ -93,7 +93,7 @@ BEGIN {
 $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
 /^Running target / { print ""; print; }
 /^Target / { if (host != "") next; else host = $3; }
-/^Host / && host ~ /^unix{.*}$/ { host = $3 " " substr(host, 5); }
+/^Host / && host ~ /^unix\{.*\}$/ { host = $3 " " substr(host, 5); }
 /^Native / { if (host != "") next; else host = $4; }
 /^[ 	]*=== [^ 	]+ tests ===/ {
   if (lang == "") lang = " "$2" "; else lang = " ";
