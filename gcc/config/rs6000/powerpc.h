@@ -46,6 +46,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{mcpu=rios2: -D_ARCH_PWR2} \
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=403: -D_ARCH_PPC} \
+%{mcpu=mpc403: -D_ARCH_PPC} \
+%{mcpu=ppc403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=mpc601: -D_ARCH_PPC -D_ARCH_PWR} \
 %{mcpu=ppc601: -D_ARCH_PPC -D_ARCH_PWR} \
