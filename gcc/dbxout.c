@@ -195,7 +195,7 @@ struct dbx_file GTY(())
   struct dbx_file *prev;              /* Chain to traverse all pending bincls.  */
 };
 
-#ifdef DBX_DEBUGGING_INFO
+#ifdef DBX_USE_BINCLS
 /* If zero then there is no pending BINCL.  */
 static int pending_bincls = 0;
 #endif
@@ -317,8 +317,10 @@ static int current_sym_nchars;
 #define CONTIN do { } while (0)
 #endif
 
+#ifdef DBX_USE_BINCLS
 static void emit_bincl_stab             (const char *c);
 static void emit_pending_bincls         (void);
+#endif
 static inline void emit_pending_bincls_if_required (void);
 
 static void dbxout_init (const char *);
@@ -559,6 +561,7 @@ dbxout_typedefs (tree syms)
     }
 }
 
+#ifdef DBX_USE_BINCL
 /* Emit BINCL stab using given name.   */
 static void
 emit_bincl_stab (const char *name)
@@ -573,10 +576,8 @@ emit_bincl_stab (const char *name)
 static inline void
 emit_pending_bincls_if_required ()
 {
-#ifdef DBX_USE_BINCL
   if (pending_bincls)
     emit_pending_bincls ();
-#endif
 }
 
 /* Emit all pending bincls.  */
@@ -611,6 +612,12 @@ emit_pending_bincls ()
   /* All pending bincls have been emitted.  */
   pending_bincls = 0;
 }
+
+#else
+
+static inline void
+emit_pending_bincls_if_required () {}
+#endif
 
 /* Change to reading from a new source file.  Generate a N_BINCL stab.  */
 
