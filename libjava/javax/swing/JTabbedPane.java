@@ -44,15 +44,13 @@ import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.io.Serializable;
 import java.util.Vector;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleSelection;
-import javax.accessibility.AccessibleStateSet;
-import javax.accessibility.AccessibleValue;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.plaf.TabbedPaneUI;
 import javax.swing.plaf.UIResource;
 

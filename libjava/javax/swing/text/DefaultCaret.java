@@ -41,16 +41,12 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Shape;
-import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.util.EventListener;
 import java.util.Vector;
+
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 
 
 public class DefaultCaret extends Rectangle implements Caret, FocusListener, MouseListener, MouseMotionListener

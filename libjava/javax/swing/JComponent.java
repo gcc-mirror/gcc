@@ -38,7 +38,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -55,7 +54,6 @@ import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.ImageObserver;
 import java.awt.peer.LightweightPeer;
@@ -65,17 +63,16 @@ import java.beans.VetoableChangeListener;
 import java.io.Serializable;
 import java.util.EventListener;
 import java.util.Hashtable;
-import java.util.Vector;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
-import javax.accessibility.AccessibleExtendedComponent;
 import javax.accessibility.AccessibleRole;
 import javax.accessibility.AccessibleStateSet;
+import javax.swing.border.Border;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.EventListenerList;
-import javax.swing.border.Border;
-import javax.swing.plaf.ComponentUI;
 import javax.swing.event.SwingPropertyChangeSupport;
+import javax.swing.plaf.ComponentUI;
 
 /**
  * Every component in swing inherits from this class (JLabel, JButton, etc).

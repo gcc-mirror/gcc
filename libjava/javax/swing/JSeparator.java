@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;

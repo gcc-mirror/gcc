@@ -37,8 +37,6 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.AWTEvent;
-import java.awt.AWTEventMulticaster;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Insets;
@@ -51,12 +49,10 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.Serializable;
-import java.util.Vector;
 import java.util.EventListener;
+
 import javax.accessibility.AccessibleAction;
 import javax.accessibility.AccessibleIcon;
 import javax.accessibility.AccessibleRelationSet;

@@ -41,11 +41,8 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.Writer;
+
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.event.CaretEvent;

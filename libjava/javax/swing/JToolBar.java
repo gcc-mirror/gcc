@@ -37,14 +37,14 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.Dimension;
 import java.awt.Component;
-import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Insets;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;

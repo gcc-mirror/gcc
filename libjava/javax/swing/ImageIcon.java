@@ -1,5 +1,5 @@
 /* ImageIcon.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,12 +41,7 @@ package javax.swing;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.MediaTracker;
 import java.awt.Toolkit;
-import java.io.Serializable;
-import java.net.URL;
-import javax.accessibility.Accessible;
-import javax.accessibility.AccessibleContext;
 
 public class ImageIcon implements Icon
 {

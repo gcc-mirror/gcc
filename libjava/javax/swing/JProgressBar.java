@@ -38,8 +38,7 @@ exception statement from your version. */
 package javax.swing;
 
 import java.awt.Graphics;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
@@ -47,7 +46,6 @@ import javax.accessibility.AccessibleStateSet;
 import javax.accessibility.AccessibleValue;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.EventListenerList;
 import javax.swing.plaf.ProgressBarUI;
 
 

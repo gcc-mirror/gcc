@@ -37,15 +37,13 @@ exception statement from your version. */
 
 package javax.swing;
 
-import java.awt.AWTEvent;
-import java.awt.AWTEventMulticaster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.Serializable;
 import java.util.EventListener;
-import java.util.Vector;
+
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
