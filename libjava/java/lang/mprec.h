@@ -29,10 +29,6 @@
 #include <config.h>
 #include "ieeefp.h"
 
-// #include <math.h>
-// #include <float.h>
-// #include <errno.h>
-
 #if defined HAVE_STDINT_H
 #include <stdint.h>
 #elif defined HAVE_INTTYPES_H
@@ -58,7 +54,7 @@ typedef u_int32_t uint32_t;
 #endif
 
 #if !defined HAVE_BSD_INT32_DEFINED && !defined HAVE_INT32_DEFINED
-// FIXME -- this could have problems with systems that don't define SI to be 4
+/* FIXME this could have problems with systems that don't define SI to be 4 */
 typedef int int32_t __attribute__((mode(SI)));
 
 /* This is a blatant hack: on Solaris 2.5, pthread.h defines uint32_t

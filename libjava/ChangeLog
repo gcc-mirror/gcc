@@ -1,3 +1,10 @@
+2005-03-09  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* java/lang/fdlibm.h: Merge an AIX define from GNU Classpath.
+
+	* java/lang/mprec.h: Remove commented headers. Fix comment to match
+	the file in GNU Classpath style.
+
 2005-03-09  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/URLClassLoader.java (addURLImpl): Reset 'thisString'.
@@ -7,7 +14,7 @@
 
 	* testsuite/libjava.lang/pr13107_2.xfail: Remove xfail.
 	* testsuite/libjava.lang/pr13107_3.xfail: Likewise.
-	
+
 2005-03-07  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Recognize '-f'.
