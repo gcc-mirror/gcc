@@ -1,3 +1,7 @@
+2003-03-17  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (cp/TAGS): Remove.
+
 2003-03-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9629
@@ -15,7 +19,7 @@
 	* decl.c (binding_for_name): Fix initialization thinko.
 
 2003-03-15  Gabriel Dos Reis <gdr@integrable-solutions.net>
-	
+
 	Compile-time improvement: 2/n.
 	* cp-tree.h (struct cxx_binding): New datatype;
 	(struct lang_identifier): Use it.
@@ -43,9 +47,9 @@
 	(poplevel_class): Likewise.
 	(free_bindings):  Adjust type.
 	(find_binding): Adjust return type, add a third parameter. Remove
-	non-useful assertion now that we use static typing.  
+	non-useful assertion now that we use static typing.
 	(cxx_scope_find_binding_for_name): New function.
-	(binding_for_name): Use it.  Adjust local variable type. Simplify. 
+	(binding_for_name): Use it.  Adjust local variable type. Simplify.
 	(namespace_binding):  Simplify.
 	(set_namespace_binding): Likewise.
 	(set_identifier_type_value_with_scope): Adjust local variable type.
@@ -135,7 +139,7 @@
 2003-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/9820
-	* search.c (lookup_member): Fix handling of functions in a class 
+	* search.c (lookup_member): Fix handling of functions in a class
 	being defined.
 
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
@@ -161,7 +165,7 @@
 2003-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8660
-	* decl2.c (check_classfn): A member template only matches a 
+	* decl2.c (check_classfn): A member template only matches a
 	member template.
 
 2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
@@ -184,7 +188,7 @@
 	(build_function_call): ... this.
 
 2003-03-10  Devang Patel  <dpatel@apple.com>
-	
+
 	PR c++/9394
 	* g++spec.c (lang_specific_driver): Use DEFAULT_WORD_SWTCH_TAKES_ARG.
 
@@ -261,7 +265,7 @@
 	(handle_class_head): Remove unncessary parameters.
 	* parser.c (cp_parser_class_head): Check that
 	nested-name-specifiers are used appropriately.
-	
+
 2003-03-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (reference_binding): Remove REF_IS_VAR parameter.
@@ -275,7 +279,7 @@
 	* cvt.c (build_up_reference): Adjust use of
 	make_temporary_var_for_ref_to_temp.
 	* tree.c (real_non_cast_lvalue_p): New method.
-	 
+
 2003-03-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* except.c (init_exception_processing): Use C90 prototype style.
@@ -305,7 +309,7 @@
 	(can_convert_eh): Likewise.
 	(check_handlers_1): Likewise.
 	(check_handlers): Likewise.
-	
+
 2003-03-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (merge_conversion_sequences): New function.
@@ -316,7 +320,7 @@
 	(build_user_type_conversion_1): Use merge_conversion_sequences.
 	* cp-tree.def: Add comments for CONV nodes.
 	* rtti.c (get_tinfo_decl): Use build_address/build_nop.
-	
+
 2003-03-07  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (init_error): Use C90 prototype style.
@@ -415,7 +419,7 @@
 	(push_namespace): Initialize static_decls for ordinary namespaces.
 	(cxx_init_decl_processing): Initialize static_decls for global
 	namespace.
-	
+
 2003-03-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (end_of_class): Correct thinko.
@@ -431,10 +435,10 @@
         * decl.c (cxx_saved_binding_make): New macro.
         (struct cxx_saved_binding): Define.
         (store_bindings): Adjust prototype.  Use cxx_saved_binding to save
-        C++ bindings. 
+        C++ bindings.
         (maybe_push_to_top_level): Adjust local variable type.
         (pop_from_top_level): Likewise.
-	
+
 2003-03-04  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (c++.tags): New target.
@@ -496,7 +500,7 @@
 	(convert_for_initialization): Adjust call to
 	initialize_reference.
 	* typeck2.c (store_init_value): Remove #if 0'd code.
-	
+
 2003-03-03  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (start_function): Clear DECL_NUM_STMTS.
@@ -547,7 +551,7 @@
 	build_zero_init.
 	(build_new_1): Adjust call to build_default_init.
 	* typeck2.c (process_init_constructor): Adjust call to build_zero_init.
-	
+
 2003-02-26  Devang Patel  <dpatel@apple.com>
 
 	* decl.c (finish_enum): Merge two 'for' loops. Copy value node if required.
@@ -556,7 +560,7 @@
 	#if 0'ed code.
 	* pt.c (tsubst_enum): Set TREE_TYPE and copy value node.
 	(tsubst_copy): Add check for enum type.
-	
+
 2003-02-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9683
@@ -599,7 +603,7 @@
 	* pt.c (instantiate_class_template): Don't try to instantiate
 	dependent types.
 	(resolve_typename_type): Use CLASSTYPE_PRIMARY_TEMPLATE.
-	
+
 2003-02-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9749
@@ -762,12 +766,12 @@
 	trailing bit fields when computing CLASSTYPE_SIZE_UNIT.
 
 2003-02-18  Matt Austern <austern@apple.com>
-	
+
 	* cp/cp-lang.c: Change lang hooks so that final_write_globals does
 	nothing for C++.
 	* cp/decl.c (wrapup_globals_for_namespace): Remove special
 	handling of global namespace.
-	
+
 2003-02-18  Geoffrey Keating  <geoffk@apple.com>
 
 	* cp-tree.h (rid_to_yy): Delete.
@@ -839,7 +843,7 @@
 2003-02-14   Andrew Pinski <pinskia@physics.uc.edu>
 
         * decl.c: (define_label): Fix warning for return 0 instead of NULL.
-	
+
 2003-02-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* decl.c: Include "timevar.h".
@@ -875,7 +879,7 @@
 	(xref_tag): Likewise.
 
 	* Make-lang.in (cp/decl.o): Add dependency on timevar.h
-	
+
 2003-02-12  Phil Edwards  <pme@gcc.gnu.org>
 
 	* decl.c (build_enumerator):  Remove unneeded test.
@@ -1039,7 +1043,7 @@
 	(build_modify_expr): Likewise.
 	(build_x_modify_expr): Likewise.
 	* typeck2.c (build_x_arrow): Likewise.
-	
+
 2003-01-29  Fariborz Jahanian  <fjahanian@apple.com>
 
         * pt.c (last_pending_template) Declare GTY().
@@ -1082,7 +1086,7 @@
 	PR c++/9415
 	* pt.c (tsubst_copy_and_build, CALL_EXPR): BASELINK exprs are
 	already scoped.
-	
+
 	PR c++/8545
 	* parser.c (cp_parser_cast_expression): Be more tentative.
 
@@ -1129,7 +1133,7 @@
 	(cp_parser_expression_statement): Use it.
 	(cp_parser_explicit_instantiation): Likewise.
 	* pt.c (do_decl_instantiation): Improve error handling logic.
-	
+
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9384
@@ -1163,7 +1167,7 @@
 	(dependent_template_arg_p): Likewise.
 	(dependent_template_id_p): Likewise.
 	(dependent_template_p): Likewise.
-	
+
 	PR c++/9285
 	PR c++/9294
 	* parser.c (cp_parser_simple_declaration): Return quickly when
@@ -1202,7 +1206,7 @@
 	PR c++/9272
 	* parser.c (cp_parser_constructor_declarator_p): Do not assume
 	that a constructor cannot be declared outside of its own class.
-	
+
 	* parser.c (cp_parser_resolve_typename_type): If the scope cannot
 	be resolved, neither can the qualified name.
 
@@ -1455,7 +1459,7 @@
 	2003-01-09  Geoffrey Keating  <geoffk@apple.com>
 
 	Merge to tag pch-merge-20030102:
-	
+
 	* semantics.c (finish_translation_unit): Don't call finish_file.
 	* parser.c: Don't include ggc.h.
 	(cp_lexer_new_main): Rename from cp_lexer_new, only create main lexer,
@@ -1473,7 +1477,7 @@
 
 	* Make-lang.in: Remove $(GGC_H) from all dependencies.
 	(CXX_TREE_H): Add $(GGC_H).
-	* class.c: Don't include ggc.h. 
+	* class.c: Don't include ggc.h.
 	(field_decl_cmp): Make parameters be 'const void *' to match qsort.
 	(method_name_cmp): Likewise.
 	(resort_data): New variable.
@@ -1611,7 +1615,7 @@
 	(register_local_specialization): Revert 2003-01-05 change.
 	(instantiate_decl): Use hash_local_specialization when creating
 	the local_specializations table.
-	
+
 	* decl2.c (mark_used): Do not synthesize thunks.
 
 	* class.c (layout_class_type): Correct handling of unnamed
@@ -1665,7 +1669,7 @@
 	(register_local_specialization): Use htab_find_slot, not
 	htab_find_slot_with_hash.
 	(instantiate_decl): Pass a hash function to htab_create.
-	
+
 2003-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parser.c (cp_parser_binary_expression,
@@ -1684,7 +1688,7 @@
 
 2003-01-03  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* cvt.c, decl.c, decl2.c: This is the C++ front end, not the C 
+	* cvt.c, decl.c, decl2.c: This is the C++ front end, not the C
 	front end.
 
 2003-01-03  Matt Austern  <austern@apple.com>
@@ -1702,7 +1706,7 @@
 	(finish_file): iterate only through keyed_classes list when
 	deciding whether to emit vtables, remove class from its list after
 	we do the emission.
-	
+
 2003-01-02  Jason Merrill  <jason@redhat.com>
 
 	* call.c (build_conditional_expr): Stabilize lvalues properly.
@@ -1744,7 +1748,7 @@
 
 	* parser.c (struct cp_parser): Add access_checks_lists field
 	(cp_parser_simple_declaration): Use.
-	(cp_parser_init_declarator): Likewise. 
+	(cp_parser_init_declarator): Likewise.
 
 2003-01-02  Mark Mitchell  <mark@codesourcery.com>
 

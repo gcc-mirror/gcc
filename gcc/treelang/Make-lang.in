@@ -312,15 +312,6 @@ treelang.wc: force
 
 #
 
-# Update the tags table for emacs find label (alt-.) function
-TAGS: treelang.tags
-
-.PHONY: treelang.tags
-
-treelang.tags:
-	cd $(srcdir)/treelang;						\
-	etags -l c ${TREE_SOURCE}
-
 .PHONY: treelang.html
 
 treelang.html:
