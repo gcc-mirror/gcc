@@ -1,5 +1,9 @@
 2003-01-02  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/2843
+	* parser.c (cp_parser_parameter_declaration): Allow attributes to
+	appear after the declarator.
+
 	* call.c (build_new_method_call): Fix typo in message format
 	string.
 
