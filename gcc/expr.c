@@ -110,9 +110,13 @@ static rtx saveregs_value;
 /* Similarly for __builtin_apply_args.  */
 static rtx apply_args_value;
 
+/* Don't check memory usage, since code is being emitted to check a memory
+   usage.  Used when flag_check_memory_usage is true, to avoid infinite
+   recursion.  */
+static int in_check_memory_usage;
+
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
-
 struct move_by_pieces
 {
   rtx to;
@@ -2551,10 +2555,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  move_by_pieces (gen_rtx (MEM, BLKmode, gen_push_operand ()), xinner,
 			  INTVAL (size) - used, align);
 
-	  if (flag_check_memory_usage)
+	  if (flag_check_memory_usage && ! in_check_memory_usage)
 	    {
 	      rtx temp;
 	      
+	      in_check_memory_usage = 1;
 	      temp = get_push_address (INTVAL(size) - used);
 	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
@@ -2568,6 +2573,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			 	   GEN_INT (INTVAL(size) - used),
 				   TYPE_MODE (sizetype),
 				   GEN_INT (MEMORY_USE_RW), QImode);
+	      in_check_memory_usage = 0;
 	    }
 	}
       else
@@ -2604,10 +2610,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 				   plus_constant (gen_rtx (PLUS, Pmode,
 							   args_addr, args_so_far),
 						  skip));
-	  if (flag_check_memory_usage)
+	  if (flag_check_memory_usage && ! in_check_memory_usage)
 	    {
 	      rtx target;
 	      
+	      in_check_memory_usage = 1;
 	      target = copy_to_reg (temp);
 	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
@@ -2619,6 +2626,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 				   target, ptr_mode,
 			 	   size, TYPE_MODE (sizetype),
 				   GEN_INT (MEMORY_USE_RW), QImode);
+	      in_check_memory_usage = 0;
 	    }
 
 	  /* TEMP is the address of the block.  Copy the data there.  */
@@ -2813,8 +2821,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
       emit_move_insn (gen_rtx (MEM, mode, addr), x);
 
-      if (flag_check_memory_usage)
+      if (flag_check_memory_usage && ! in_check_memory_usage)
 	{
+	  in_check_memory_usage = 1;
 	  if (target == 0)
 	    target = get_push_address (GET_MODE_SIZE (mode));
 
@@ -2830,6 +2839,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			       GEN_INT (GET_MODE_SIZE (mode)),
 			       TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_RW), QImode);
+	  in_check_memory_usage = 0;
 	}
     }
 
