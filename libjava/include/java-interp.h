@@ -45,9 +45,6 @@ int  _Jv_count_arguments (_Jv_Utf8Const *signature,
 			  jboolean staticp = true);
 void _Jv_VerifyMethod (_Jv_InterpMethod *method);
 
-/* FIXME: this should really be defined in some more generic place */
-#define ROUND(V, A) (((((unsigned) (V))-1) | ((A)-1))+1)
-
 /* the interpreter is written in C++, primarily because it makes it easy for
  * the entire thing to be "friend" with class Class. */
 
