@@ -60,7 +60,9 @@ namespace std
            typename _Alloc = allocator<_CharT> >
     class basic_string;
 
+  /// 99%% of %string users only ever [need to] see the typedef.
   typedef basic_string<char>    string;
+  /// 99%% of %wstring users only ever [need to] see the typedef.
   typedef basic_string<wchar_t> wstring;
 } // namespace std
 

@@ -1,3 +1,18 @@
+2002-08-31  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4:  Minor comment tweaks.
+
+	* docs/html/makedoc.awk:  New file...
+	* docs/html/Makefile:  ...called from here...
+	* docs/html/documentation.html:  ...to help generate this.
+
+	* docs/html/21_strings/howto.html:  Prepare for new entry.
+	* include/bits/basic_string.h:  Initial basic_stirng hook for
+	doxygen.  Remove trailing whitespace.
+	* include/bits/char_traits.h:  Point to onlinedocs for new entry.
+	* include/bits/stringfwd.h:  Add doxygen hooks for string and
+	wstring typedefs.
+
 2002-08-29  Richard Earnshaw  <rearnshaw@arm.com>
 
 	* config/cpu/arm/cpu_limits.h: New file.

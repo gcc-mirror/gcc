@@ -1,5 +1,5 @@
 dnl
-dnl Initialize configure bits.
+dnl Initialize basic configure bits, set toplevel_srcdir for Makefiles.
 dnl
 dnl GLIBCPP_TOPREL_CONFIGURE
 AC_DEFUN(GLIBCPP_TOPREL_CONFIGURE, [
@@ -37,13 +37,10 @@ AC_DEFUN(GLIBCPP_TOPREL_CONFIGURE, [
 ])
 
 dnl
-dnl Initialize configure bits.
+dnl Initialize the rest of the library configury.
 dnl
 dnl GLIBCPP_CONFIGURE
 AC_DEFUN(GLIBCPP_CONFIGURE, [
-
-#possibly test for the presence of the compiler sources here?
-
   # Export build and source directories.
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
