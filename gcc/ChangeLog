@@ -1,3 +1,10 @@
+2004-11-14  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR tree-optimization/18431
+	* tree-flow.h (stmt_references_memory_p): Declare.
+	* tree-ssa-loop-im.c (stmt_cost): Use stmt_references_memory_p.
+	* tree-ssa.c (stmt_references_memory_p): New function.
+
 2004-11-14  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (lambda-code.o, tree-loop-linear.o): Depend on
