@@ -2444,9 +2444,9 @@ display_help ()
   printf ("  -print-multi-directory   Display the root directory for versions of libgcc\n");
   printf ("  -print-multi-lib         Display the mapping between command line options and\n");
   printf ("                            multiple library search directories\n");
-  printf ("  -Wa,<text>               Pass <text> on to the assembler\n");
-  printf ("  -Wp,<text>               Pass <text> on to the preprocessor\n");
-  printf ("  -Wl,<text>               Pass <text> on to the linker\n");
+  printf ("  -Wa,<options>            Pass comma-separated <options> on to the assembler\n");
+  printf ("  -Wp,<options>            Pass comma-separated <options> on to the preprocessor\n");
+  printf ("  -Wl,<options>            Pass comma-separated <options> on to the linker\n");
   printf ("  -Xlinker <arg>           Pass <arg> on to the linker\n");
   printf ("  -save-temps              Do not delete intermediate files\n");
   printf ("  -pipe                    Use pipes rather than intermediate files\n");
@@ -2459,7 +2459,7 @@ display_help ()
   printf ("  -S                       Compile only; do not assemble or link\n");
   printf ("  -c                       Compile and assemble, but do not link\n");
   printf ("  -o <file>                Place the output into <file>\n");
-  printf ("  -x <language>            Specifiy the language of the following input files\n");
+  printf ("  -x <language>            Specify the language of the following input files\n");
   printf ("                            Permissable languages include: c c++ assembler none\n");
   printf ("                            'none' means revert to the default behaviour of\n");
   printf ("                            guessing the language based on the file's extension\n");
@@ -2473,28 +2473,59 @@ display_help ()
      sub-processes.  */
 }
 
-#define ADD_XXX_OPTION(name) 						\
-static void 								\
-add_##name##_option (option, len)					\
-     char * option;							\
-     int    len;							\
-{									\
-  n_##name##_options++;							\
-									\
-  if (! ##name##_options)						\
-    name##_options							\
-      = (char **) xmalloc (n_##name##_options * sizeof (char **));	\
-  else									\
-    name##_options							\
-      = (char **) xrealloc (##name##_options,				\
-			    n_##name##_options * sizeof (char **));	\
-  									\
-  name##_options [n_##name##_options - 1] = save_string (option, len);  \
+static void 								
+add_preprocessor_option (option, len)					
+     char * option;							
+     int    len;							
+{									
+  n_preprocessor_options++;							
+									
+  if (! preprocessor_options)						
+    preprocessor_options							
+      = (char **) xmalloc (n_preprocessor_options * sizeof (char **));	
+  else									
+    preprocessor_options							
+      = (char **) xrealloc (preprocessor_options,				
+			    n_preprocessor_options * sizeof (char **));	
+  									
+  preprocessor_options [n_preprocessor_options - 1] = save_string (option, len);  
 }
-
-ADD_XXX_OPTION (preprocessor)
-ADD_XXX_OPTION (assembler)
-ADD_XXX_OPTION (linker)
+     
+static void 								
+add_assembler_option (option, len)					
+     char * option;							
+     int    len;							
+{									
+  n_assembler_options++;							
+									
+  if (! assembler_options)						
+    assembler_options							
+      = (char **) xmalloc (n_assembler_options * sizeof (char **));	
+  else									
+    assembler_options							
+      = (char **) xrealloc (assembler_options,				
+			    n_assembler_options * sizeof (char **));	
+  									
+  assembler_options [n_assembler_options - 1] = save_string (option, len);  
+}
+     
+static void 								
+add_linker_option (option, len)					
+     char * option;							
+     int    len;							
+{									
+  n_linker_options++;							
+									
+  if (! linker_options)						
+    linker_options							
+      = (char **) xmalloc (n_linker_options * sizeof (char **));	
+  else									
+    linker_options							
+      = (char **) xrealloc (linker_options,				
+			    n_linker_options * sizeof (char **));	
+  									
+  linker_options [n_linker_options - 1] = save_string (option, len);  
+}
      
 
 /* Create the vector `switches' and its contents.
@@ -3089,7 +3120,7 @@ process_command (argc, argv)
 	      infiles[n_infiles].language = "c";
 	      infiles[n_infiles++].name   = "help-dummy";
 	      
-	      /* Preserve the --help switch so that it can bet caught by the
+	      /* Preserve the --help switch so that it can be caught by the
 		 cc1 spec string.  */
 	      switches[n_switches].part1     = "--help";
 	      switches[n_switches].args      = 0;
