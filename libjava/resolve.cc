@@ -55,10 +55,6 @@ static void throw_class_format_error (jstring msg)
 static void throw_class_format_error (char *msg)
 	__attribute__ ((__noreturn__));
 
-// Exceptional return values for _Jv_DetermineVTableIndex
-#define METHOD_NOT_THERE (-2)
-#define METHOD_INACCESSIBLE (-1)
-
 static int get_alignment_from_class (jclass);
 
 static _Jv_ResolvedMethod* 
@@ -237,7 +233,6 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
       _Jv_Utf8Const *method_name = pool->data[name_index].utf8;
       _Jv_Utf8Const *method_signature = pool->data[type_index].utf8;
 
-      int vtable_index = -1;
       _Jv_Method *the_method = 0;
       jclass found_class = 0;
 
@@ -314,15 +309,9 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	  throw new java::lang::NoSuchMethodError (sb->toString());
 	}
       
-      if (pool->tags[index] == JV_CONSTANT_InterfaceMethodref)
-	vtable_index = -1;
-      else
-	vtable_index = _Jv_DetermineVTableIndex (found_class, method_name,
-						 method_signature);
-
-      if (vtable_index == METHOD_NOT_THERE)
-	throw_incompatible_class_change_error
-	  (JvNewStringLatin1 ("method not found"));
+      int vtable_index = -1;
+      if (pool->tags[index] != JV_CONSTANT_InterfaceMethodref)
+	vtable_index = (jshort)the_method->index;
 
       pool->data[index].rmethod = 
 	_Jv_BuildResolvedMethod(the_method,
@@ -372,116 +361,6 @@ _Jv_SearchMethodInClass (jclass cls, jclass klass,
 	}
     }
   return 0;
-}
-
-/** FIXME: this is a terribly inefficient algorithm!  It would improve
-    things if compiled classes to know vtable offset, and _Jv_Method had
-    a field for this.
-
-    Returns METHOD_NOT_THERE if this class does not declare the given method.
-    Returns METHOD_INACCESSIBLE if the given method does not appear in the
-		vtable, i.e., it is static, private, final or a constructor.
-    Otherwise, returns the vtable index.  */
-int 
-_Jv_DetermineVTableIndex (jclass klass,
-			  _Jv_Utf8Const *name,
-			  _Jv_Utf8Const *signature)
-{
-  using namespace java::lang::reflect;
-
-  jclass super_class = klass->getSuperclass ();
-
-  if (super_class != NULL)
-    {
-      int prev = _Jv_DetermineVTableIndex (super_class,
-					   name,
-					   signature);
-      if (prev != METHOD_NOT_THERE)
-	return prev;
-    }
-
-  /* at this point, we know that the super-class does not declare
-   * the method.  Otherwise, the above call would have found it, and
-   * determined the result of this function (-1 or some positive
-   * number).
-   */
-
-  _Jv_Method *meth = _Jv_GetMethodLocal (klass, name, signature);
-
-  /* now, if we do not declare this method, return zero */
-  if (meth == NULL)
-    return METHOD_NOT_THERE;
-
-  /* so now, we know not only that the super class does not declare the
-   * method, but we do!  So, this is a first declaration of the method. */
-
-  /* now, the checks for things that are declared in this class, but do
-   * not go into the vtable.  There are three cases.  
-   * 1) the method is static, private or final
-   * 2) the class itself is final, or
-   * 3) it is the method <init>
-   */
-
-  if ((meth->accflags & (Modifier::STATIC
-			 | Modifier::PRIVATE
-			 | Modifier::FINAL)) != 0
-      || (klass->accflags & Modifier::FINAL) != 0
-      || _Jv_equalUtf8Consts (name, init_name))
-    return METHOD_INACCESSIBLE;
-
-  /* reaching this point, we know for sure, that the method in question
-   * will be in the vtable.  The question is where. */
-
-  /* the base offset, is where we will start assigning vtable
-   * indexes for this class.  It is 0 for base classes
-   * and for non-base classes it is the
-   * number of entries in the super class' vtable. */
-
-  int base_offset;
-  if (super_class == 0)
-    base_offset = 0;
-  else
-    base_offset = super_class->vtable_method_count;
-
-  /* we will consider methods 0..this_method_index-1.  And for each one,
-   * determine if it is new (i.e., if it appears in the super class),
-   * and if it should go in the vtable.  If so, increment base_offset */
-
-  int this_method_index = meth - (&klass->methods[0]);
-
-  for (int i = 0; i < this_method_index; i++)
-    {
-      _Jv_Method *m = &klass->methods[i];
-
-      /* fist some checks for things that surely do not go in the
-       * vtable */
-
-      if ((m->accflags & (Modifier::STATIC | Modifier::PRIVATE)) != 0)
-	continue;
-      if (_Jv_equalUtf8Consts (m->name, init_name))
-	continue;
-      
-      /* Then, we need to know if this method appears in the
-         superclass. (This is where this function gets expensive) */
-      _Jv_Method *sm = _Jv_LookupDeclaredMethod (super_class,
-						 m->name,
-						 m->signature);
-      
-      /* if it was somehow declared in the superclass, skip this */
-      if (sm != NULL)
-	continue;
-
-      /* but if it is final, and not declared in the super class,
-       * then we also skip it */
-      if ((m->accflags & Modifier::FINAL) != 0)
-	continue;
-
-      /* finally, we can assign the index of this method */
-      /* m->vtable_index = base_offset */
-      base_offset += 1;
-    }
-
-  return base_offset;
 }
 
 /* this is installed in place of abstract methods */
@@ -651,107 +530,8 @@ _Jv_PrepareClass(jclass klass)
       return;
     }
 
-  /* Now onto the actual job: vtable layout.  First, count how many new
-     methods we have */
-  int new_method_count = 0;
-
-  jclass super_class = clz->getSuperclass ();
-
-  for (int i = 0; i < clz->method_count; i++)
-    {
-      _Jv_Method *this_meth = &clz->methods[i];
-
-      if ((this_meth->accflags & (Modifier::STATIC | Modifier::PRIVATE)) != 0
-	  || _Jv_equalUtf8Consts (this_meth->name, init_name))
-	{
-	  /* skip this, it doesn't go in the vtable */
-	  continue;
-	}
-	  
-      _Jv_Method *orig_meth = _Jv_LookupDeclaredMethod (super_class,
-							this_meth->name,
-							this_meth->signature);
-
-      if (orig_meth == 0)
-	{
-	  // new methods that are final, also don't go in the vtable
-	  if ((this_meth->accflags & Modifier::FINAL) != 0)
-	    continue;
-
-	  new_method_count += 1;
-	  continue;
-	}
-
-      if ((orig_meth->accflags & (Modifier::STATIC
-				  | Modifier::PRIVATE
-				  | Modifier::FINAL)) != 0
-	  || ((orig_meth->accflags & Modifier::ABSTRACT) == 0
-	      && (this_meth->accflags & Modifier::ABSTRACT) != 0
-	      && (klass->accflags & Modifier::ABSTRACT) == 0))
-	{
-	  clz->state = JV_STATE_ERROR;
-	  clz->notifyAll ();
-	  throw new java::lang::IncompatibleClassChangeError (clz->getName ());
-	}
-
-      /* FIXME: At this point, if (loader != super_class->loader), we
-       * need to "impose class loader constraints" for the types
-       * involved in the signature of this method */
-    }
-  
-  /* determine size */
-  int vtable_count = (super_class->vtable_method_count) + new_method_count;
-  clz->vtable_method_count = vtable_count;
-
-  /* allocate vtable structure */
-  _Jv_VTable *vtable = _Jv_VTable::new_vtable (vtable_count);
-  vtable->clas = clz;
-  vtable->gc_descr = _Jv_BuildGCDescr(clz);
-
-  {
-    jclass effective_superclass = super_class;
-
-    /* If super_class is abstract or an interface it has no vtable.
-       We need to find a real one... */
-    while (effective_superclass && effective_superclass->vtable == NULL)
-      effective_superclass = effective_superclass->superclass;
-
-    /* If we ended up without a superclass, use Object.  */
-    if (! effective_superclass)
-      effective_superclass = &java::lang::Object::class$;
-
-    /* copy super class' vtable entries. */
-    if (effective_superclass && effective_superclass->vtable)
-      for (int i = 0; i < effective_superclass->vtable_method_count; ++i)
-	vtable->set_method (i, effective_superclass->vtable->get_method (i));
-  }
-
-  /* now, install our own vtable entries, reprise... */
-  for (int i = 0; i < clz->method_count; i++)
-    {
-      _Jv_Method *this_meth = &clz->methods[i];
-
-      int index = _Jv_DetermineVTableIndex (clz, 
-					    this_meth->name,
-					    this_meth->signature);
-
-      if (index == METHOD_NOT_THERE)
-	throw_internal_error ("method now found in own class");
-
-      if (index != METHOD_INACCESSIBLE)
-	{
-	  if (index > clz->vtable_method_count)
-	    throw_internal_error ("vtable problem...");
-
-	  if (clz->interpreted_methods[i] == 0)
-	    vtable->set_method(index, (void*)&_Jv_abstractMethodError);
-	  else
-	    vtable->set_method(index, this_meth->ncode);
-	}
-    }
-
-  /* finally, assign the vtable! */
-  clz->vtable = vtable;
+  clz->vtable_method_count = -1;
+  _Jv_MakeVTable (clz);
 
   /* wooha! we're done. */
   clz->state = JV_STATE_PREPARED;
