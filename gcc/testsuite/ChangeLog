@@ -1,3 +1,7 @@
+2000-11-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.pt/instantiate9.C: New test.
+
 2000-11-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.other/decl4.C: Tweak so that it fails with the
