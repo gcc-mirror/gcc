@@ -1,3 +1,8 @@
+Sun Aug 30 22:27:02 1998  Lutz Wohlrab <lutz.wohlrab@informatik.tu-chemnitz.de>
+
+        * dbz/Makefile.in: Avoid assumptions about "tr" behaves when
+        LANG is set to something other than English.
+
 Sun Aug 30 22:17:00 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config.shared: Set libsubdir.
