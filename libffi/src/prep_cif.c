@@ -125,12 +125,14 @@ ffi_status ffi_prep_cif(/*@out@*/ /*@partial@*/ ffi_cif *cif,
 
   for (ptr = cif->arg_types, i = cif->nargs; i > 0; i--, ptr++)
     {
-      /* Perform a sanity check on the argument type */
-      FFI_ASSERT_VALID_TYPE(*ptr);
 
       /* Initialize any uninitialized aggregate type definitions */
       if (((*ptr)->size == 0) && (initialize_aggregate((*ptr)) != FFI_OK))
 	return FFI_BAD_TYPEDEF;
+
+      /* Perform a sanity check on the argument type, do this 
+	 check after the initialization.  */
+      FFI_ASSERT_VALID_TYPE(*ptr);
 
 #if !defined __x86_64__ && !defined S390
 #ifdef SPARC
