@@ -1,3 +1,14 @@
+2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i370.c (mvs_function_name_length): Fix signed/unsigned warnings. 
+	* i370.h (mvs_function_name_length): Likewise.
+	* i960.h (CONSTANT_ALIGNMENT): Likewise.
+	* mips/linux.h (ASM_OUTPUT_ALIGNED_BSS): Likewise.
+	* pa/pa-pro-end.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	* pa.h (ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	* rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Delete unused
+	variable.
+
 2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
 
 	* config.gcc: Reorganize --with-cpu logic.  Set

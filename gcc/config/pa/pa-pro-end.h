@@ -64,7 +64,7 @@ Boston, MA 02111-1307, USA.  */
 { bss_section ();							\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), "\t.comm "HOST_WIDE_INT_PRINT_UNSIGNED"\n",		\
-	   MAX ((SIZE), ((ALIGNED) / BITS_PER_UNIT)));}
+	   MAX ((HOST_WIDE_INT)(SIZE), (HOST_WIDE_INT)((ALIGNED) / BITS_PER_UNIT)));}
 
 /* This says how to output an assembler line to define a local common symbol
    with size SIZE (in bytes) and alignment ALIGN (in bits).  */
