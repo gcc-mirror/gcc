@@ -1,5 +1,16 @@
 Sat Feb 28 12:06:44 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* parse.y (nested_name_specifier): Use explicit_template_type.
+	(typename_sub): Allow a template_type, an explicit_template_type,
+	or an implicit template type at the end.
+	* lex.c (yyprint): Handle a PTYPENAME being a TEMPLATE_DECL.
+	* decl.c (make_typename_type): Handle template-id where the name
+	is a TEMPLATE_DECL.
+	* call.c (build_scoped_method_call): Handle member template 
+	destructor call.
+	* pt.c (tsubst_copy, METHOD_CALL_EXPR): Don't assume a member 
+	destructor is represented by the type.
+
 	* cp-tree.h (TYPENAME_TYPE_FULLNAME): New macro.
 	* parse.y (nested_name_specifier): Add 'template' case.
 	(explicit_template_type): New rule.

@@ -4484,7 +4484,11 @@ make_typename_type (context, name)
   fullname = name;
 
   if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-    name = TREE_OPERAND (name, 0);
+    {
+      name = TREE_OPERAND (name, 0);
+      if (TREE_CODE (name) == TEMPLATE_DECL)
+	name = TREE_OPERAND (fullname, 0) = DECL_NAME (name);
+    }
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     my_friendly_abort (2000);
 
