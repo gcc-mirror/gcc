@@ -169,6 +169,7 @@ check_version(const symbol& test, bool added)
       known_versions.push_back("CXXABI_1.2");
       known_versions.push_back("CXXABI_1.2.1");
       known_versions.push_back("CXXABI_1.3");
+      known_versions.push_back("CXXABI_1.3.1");
     }
   compat_list::iterator begin = known_versions.begin();
   compat_list::iterator end = known_versions.end();
