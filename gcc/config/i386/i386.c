@@ -7472,10 +7472,8 @@ print_operand (file, x, code)
 	}
 
       x = XEXP (x, 0);
-      if (flag_pic && CONSTANT_ADDRESS_P (x))
-	output_pic_addr_const (file, x, code);
       /* Avoid (%rip) for call operands.  */
-      else if (CONSTANT_ADDRESS_P (x) && code == 'P'
+      if (CONSTANT_ADDRESS_P (x) && code == 'P'
 	       && GET_CODE (x) != CONST_INT)
 	output_addr_const (file, x);
       else if (this_is_asm_operands && ! address_operand (x, VOIDmode))

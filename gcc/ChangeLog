@@ -1,4 +1,8 @@
-Thu Apr  3 17:57:59 2003  J"orn Rennecke <joern.rennecke@superh.com>
+Thu Apr  3 18:57:19 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (print_operand): Do not bypass output_addr_const at flag_pic.
+
+Thu Apr  3 17:08:09 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_function_ok_for_sibcall): Return 0 if the current
 	function is an interrupt handler.
