@@ -221,6 +221,10 @@ struct diagnostic_context;
   (flag_abi_version == 0 || flag_abi_version >= (N))
 
 
+/* Datatype used to temporarily save C++ bindings (for implicit
+   instantiations purposes and like).  Implemented in decl.c.  */
+typedef struct cxx_saved_binding cxx_saved_binding;
+
 /* Language-dependent contents of an identifier.  */
 
 struct lang_identifier GTY(())
@@ -752,7 +756,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
 struct saved_scope GTY(())
 {
-  tree old_bindings;
+  cxx_saved_binding *old_bindings;
   tree old_namespace;
   tree decl_ns_list;
   tree class_name;
