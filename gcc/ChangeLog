@@ -1,3 +1,17 @@
+Wed Feb 16 00:58:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (udivsi3_i1, divsi3_i1, umulhisi3_i, mulhisi3_i): Name.
+	(smulsi3_highpart_i): Name.
+	(udivsi3): Wrap emitted insns in REG_LIBCALL / REG_RETVAL notes.
+	(divsi3, mulhisi3, umulhisi3, mulsidi3, umulsidi3): Likewise.
+	(smulsi3_highpart, umulsi3_highpart): Likewise.
+
+	(mulsidi3_i, umulsidi3_i): Make rtl describe operation
+	correctly independent of endianness.
+	(mulsidi3, umulsidi3): Now define_insn.  Hide details that
+	confuse the optimizers.
+	(mulsidi3+1, umulsidi3+1): New define_split.
+
 Tue Feb 15 23:22:26 2000  Andrew Haley  <aph@cygnus.com>
 
 	* config/sh/sh.md: Guard insn splits against illegal registers.
