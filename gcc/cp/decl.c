@@ -239,7 +239,7 @@ tree void_zero_node;
 /* Nodes for types `void *' and `const void *'.  */
 
 tree ptr_type_node;
-static tree const_ptr_type_node;
+tree const_ptr_type_node;
 
 /* Nodes for types `char *' and `const char *'.  */
 
