@@ -1,3 +1,9 @@
+Mon Apr 26 00:58:54 1999  Jerry Quinn <jquinn@nortelnetworks.com>
+
+	* pa/pa-hpux.h, pa/pa-hpux10.h, pa/pa-hpux9.h, pa/pa-osf.h, pa.h,
+	pa.c, pa.md, configure.in, configure: Replace TARGET_SNAKE by
+	TARGET_PA_11 and MASK_SNAKE by MASK_PA_11.
+
 Mon Apr 26 00:28:25 1999  Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
  	* flags.h (inline_max_insns): Declare.

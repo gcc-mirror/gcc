@@ -2834,7 +2834,7 @@
 	(const_int 0))
    (set (match_operand:SF 0 "register_operand" "")
 	(float:SF (match_dup 2)))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_expand "floatunssidf2"
@@ -2844,13 +2844,13 @@
 	(const_int 0))
    (set (match_operand:DF 0 "register_operand" "")
 	(float:DF (match_dup 2)))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_insn "floatdisf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
   "fcnvxf,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2858,7 +2858,7 @@
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
   "fcnvxf,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2885,7 +2885,7 @@
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
   "fcnvfxt,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2893,7 +2893,7 @@
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT"
   "fcnvfxt,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -3062,7 +3062,7 @@
   ""
   "
 {
-  if (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT)
+  if (TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT)
     {
       rtx scratch = gen_reg_rtx (DImode);
       operands[1] = force_reg (SImode, operands[1]);
@@ -3080,7 +3080,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
 		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "f"))))]
-  "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -3089,7 +3089,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
+  "TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
   "xmpyu %1,%R2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -4864,7 +4864,7 @@
    (set (match_operand 3 "register_operand" "+f")
 	(plus (match_operand 4 "register_operand" "f")
 	      (match_operand 5 "register_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT
    && reload_completed && fmpyaddoperands (operands)"
   "*
 {
@@ -4893,7 +4893,7 @@
    (set (match_operand 0 "register_operand" "=f")
 	(mult (match_operand 1 "register_operand" "f")
 	      (match_operand 2 "register_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT
    && reload_completed && fmpyaddoperands (operands)"
   "*
 {
@@ -4922,7 +4922,7 @@
    (set (match_operand 3 "register_operand" "+f")
 	(minus (match_operand 4 "register_operand" "f")
 	       (match_operand 5 "register_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT
    && reload_completed && fmpysuboperands (operands)"
   "*
 {
@@ -4941,7 +4941,7 @@
    (set (match_operand 0 "register_operand" "=f")
 	(mult (match_operand 1 "register_operand" "f")
 	      (match_operand 2 "register_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT
+  "TARGET_PA_11 && ! TARGET_SOFT_FLOAT
    && reload_completed && fmpysuboperands (operands)"
   "*
 {

@@ -70,8 +70,8 @@ extern int target_flags;
 
 /* compile code for HP-PA 1.1 ("Snake") */
 
-#define MASK_SNAKE 1
-#define TARGET_SNAKE (target_flags & MASK_SNAKE)
+#define MASK_PA_11 1
+#define TARGET_PA_11 (target_flags & MASK_PA_11)
 
 /* Disable all FP registers (they all become fixed).  This may be necessary
    for compiling kernels which perform lazy context switching of FP regs.
@@ -144,10 +144,10 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES \
-  {{"snake", MASK_SNAKE, "Generate PA1.1 code"},			\
-   {"nosnake", -MASK_SNAKE, "Do not generate PA1.1 code"},		\
-   {"pa-risc-1-0", -MASK_SNAKE, "Do not generate PA1.1 code"},		\
-   {"pa-risc-1-1", MASK_SNAKE, "Generate PA1.1 code"},			\
+  {{"snake", MASK_PA_11, "Generate PA1.1 code"},			\
+   {"nosnake", -MASK_PA_11, "Do not generate PA1.1 code"},		\
+   {"pa-risc-1-0", -MASK_PA_11, "Do not generate PA1.1 code"},		\
+   {"pa-risc-1-1", MASK_PA_11, "Generate PA1.1 code"},			\
    {"disable-fpregs", MASK_DISABLE_FPREGS, "Disable FP regs"},		\
    {"no-disable-fpregs", -MASK_DISABLE_FPREGS, "Do not disable FP regs"},\
    {"no-space-regs", MASK_NO_SPACE_REGS, "Disable space regs"},		\
@@ -254,7 +254,7 @@ extern int target_flags;
   fprintf (FILE,							\
 	   "\t.stabs \"\",%d,0,0,L$text_end0000\nL$text_end0000:\n", N_SO)
 
-#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_SNAKE) == 0
+#if ((TARGET_DEFAULT | TARGET_CPU_DEFAULT) & MASK_PA_11) == 0
 #define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
  %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}\
  %{!ansi: -D_HPUX_SOURCE -D_HIUX_SOURCE}\
@@ -547,7 +547,7 @@ do {								\
 
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
-  if (!TARGET_SNAKE)				\
+  if (!TARGET_PA_11)				\
     {						\
       for (i = 56; i < 88; i++) 		\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
@@ -614,7 +614,7 @@ do {								\
    The floating point registers are 64 bits wide. Snake fp regs are 32
    bits wide */
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (!TARGET_SNAKE && FP_REGNO_P (REGNO) ? 1				\
+  (!TARGET_PA_11 && FP_REGNO_P (REGNO) ? 1				\
    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
@@ -623,7 +623,7 @@ do {								\
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
    /* On 1.0 machines, don't allow wide non-fp modes in fp regs. */	\
-   : !TARGET_SNAKE && FP_REGNO_P (REGNO)				\
+   : !TARGET_PA_11 && FP_REGNO_P (REGNO)				\
      ? GET_MODE_SIZE (MODE) <= 4 || GET_MODE_CLASS (MODE) == MODE_FLOAT	\
    /* Make wide modes be in aligned registers. */			\
    : GET_MODE_SIZE (MODE) <= 4 || ((REGNO) & 1) == 0)
@@ -834,7 +834,7 @@ int zdepi_cint_p ();
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
-  (!TARGET_SNAKE && ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS) ? 1 :				\
+  (!TARGET_PA_11 && ((CLASS) == FP_REGS || (CLASS) == FPUPPER_REGS) ? 1 :				\
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Stack layout; function entry, exit and calling.  */
@@ -1955,7 +1955,7 @@ while (0)
   case MULT:								\
     if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
       return COSTS_N_INSNS (3);						\
-    return (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT) \
+    return (TARGET_PA_11 && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT) \
 	    ? COSTS_N_INSNS (8) : COSTS_N_INSNS (20);	\
   case DIV:								\
     if (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT)			\
