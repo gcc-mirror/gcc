@@ -1006,11 +1006,19 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 		  subvar_t sv;
 
 		  for (sv = svars; sv; sv = sv->next)
-		    add_may_alias (tag, sv->var);
+		    {
+		      add_may_alias (tag, sv->var);
+		      /* Update the bitmap used to represent TAG's alias set
+			 in case we need to group aliases.  */
+		      SET_BIT (p_map->may_aliases, var_ann (sv->var)->uid);
+		    }
 		}
 	      else
 		{
 		  add_may_alias (tag, var);
+		  /* Update the bitmap used to represent TAG's alias set
+		     in case we need to group aliases.  */
+		  SET_BIT (p_map->may_aliases, var_ann (var)->uid);
 		}
 
 	      /* Update the total number of virtual operands due to
@@ -1022,9 +1030,7 @@ compute_flow_insensitive_aliasing (struct alias_info *ai)
 	      ai->total_alias_vops += (num_var_refs + num_tag_refs);
 	      p_map->total_alias_vops += (num_var_refs + num_tag_refs);
 
-	      /* Update the bitmap used to represent TAG's alias set
-		 in case we need to group aliases.  */
-	      SET_BIT (p_map->may_aliases, var_ann (var)->uid);
+
 	    }
 	}
     }
@@ -1982,7 +1988,7 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
       svars = get_subvars_for_var (ref);
 
       uid = var_ann (pt_var)->uid;
-      bitmap_set_bit (ai->addresses_needed, uid);
+      
       if (pi->pt_vars == NULL)
 	pi->pt_vars = BITMAP_GGC_ALLOC ();
        /* If the variable is a global, mark the pointer as pointing to
@@ -1993,15 +1999,17 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
       for (sv = svars; sv; sv = sv->next)
 	{
 	  if (overlap_subvar (offset, size, sv, NULL))
-	    bitmap_set_bit (pi->pt_vars, var_ann (sv->var)->uid);
+	    {
+	      bitmap_set_bit (pi->pt_vars, var_ann (sv->var)->uid);
+	      bitmap_set_bit (ai->addresses_needed, var_ann (sv->var)->uid);
+	    }
 	}
     }
   else if (pt_var && SSA_VAR_P (pt_var))
     {
     
       uid = var_ann (pt_var)->uid;
-      bitmap_set_bit (ai->addresses_needed, uid);
-
+      
       if (pi->pt_vars == NULL)
 	pi->pt_vars = BITMAP_GGC_ALLOC ();
 
@@ -2019,7 +2027,10 @@ add_pointed_to_var (struct alias_info *ai, tree ptr, tree value)
 	    }
 	}
       else	
-	bitmap_set_bit (pi->pt_vars, uid);	  
+	{
+	  bitmap_set_bit (ai->addresses_needed, uid);
+	  bitmap_set_bit (pi->pt_vars, uid);	  
+	}
 
       /* If the variable is a global, mark the pointer as pointing to
 	 global memory (which will make its tag a global variable).  */
@@ -2894,8 +2905,18 @@ create_overlap_variables_for (tree var)
 	  *subvars = sv;
 	  free (fo);
 	}
+
+      /* Once we have created subvars, the original is no longer call
+	 clobbered on its own.  Its call clobbered status depends
+	 completely on the call clobbered status of the subvars.
+
+	 add_referenced_var in the above loop will take care of
+	 marking subvars of global variables as call clobbered for us
+	 to start, since they are global as well.  */
+      clear_call_clobbered (var);
+
     }
-  
+
   VEC_free (fieldoff_t, fieldstack);
 }
 

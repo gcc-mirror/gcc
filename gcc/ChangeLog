@@ -1,3 +1,16 @@
+2005-03-30  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-alias.c (compute_flow_insensitive_aliasing): Make sure
+	subvars get marked properly in tags for grouping.
+	(add_pointed_to_var): Mark only actual pointed to
+	variables/subvars in addresses needed.
+	(create_overlap_variables_for): Clear call clobbered on original
+	variable.
+	* tree-ssa-operands.c (get_asm_expr_operands): Don't let regular
+	addresable vars with subvars into list.
+	* tree-ssa.c (verify_ssa_name): Verify original is not used where
+	subvar should be.
+
 2005-03-30  Richard Henderson  <rth@redhat.com>
 
 	* cgraph.h (struct cgraph_node): Add alias.
