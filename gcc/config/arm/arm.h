@@ -2385,11 +2385,6 @@ typedef struct
    ((arm_arch4 || (MODE) == QImode) ? ZERO_EXTEND			\
     : ((BYTES_BIG_ENDIAN && (MODE) == HImode) ? SIGN_EXTEND : NIL)))
 
-/* Define this if zero-extension is slow (more than one real instruction).
-   On the ARM, it is more than one instruction only if not fetching from
-   memory.  */
-/* #define SLOW_ZERO_EXTEND */
-
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 

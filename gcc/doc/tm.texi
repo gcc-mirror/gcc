@@ -5176,22 +5176,6 @@ faster than word accesses, using word accesses is preferable since it
 may eliminate subsequent memory access if subsequent accesses occur to
 other fields in the same word of the structure, but to different bytes.
 
-@findex SLOW_ZERO_EXTEND
-@item SLOW_ZERO_EXTEND
-Define this macro if zero-extension (of a @code{char} or @code{short}
-to an @code{int}) can be done faster if the destination is a register
-that is known to be zero.
-
-If you define this macro, you must have instruction patterns that
-recognize RTL structures like this:
-
-@smallexample
-(set (strict_low_part (subreg:QI (reg:SI @dots{}) 0)) @dots{})
-@end smallexample
-
-@noindent
-and likewise for @code{HImode}.
-
 @findex SLOW_UNALIGNED_ACCESS
 @item SLOW_UNALIGNED_ACCESS (@var{mode}, @var{alignment})
 Define this macro to be the value 1 if memory accesses described by the

@@ -1565,10 +1565,6 @@ extern struct dsp16xx_frame_info current_frame_info;
    loads.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Define this macro if zero-extension (of a char or short to an int) can
-   be done faster if the destination is a register that is know to be zero.  */
-/* #define SLOW_ZERO_EXTEND */
-
 /* Define this macro if unaligned accesses have a cost many times greater than
    aligned accesses, for example if they are emulated in a trap handler */
 /* define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) */

@@ -1682,10 +1682,6 @@ extern int current_function_anonymous_args;
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND
 
-/* Define this if zero-extension is slow (more than one real instruction).
-   On the SH, it's only one instruction.  */
-/* #define SLOW_ZERO_EXTEND */
-
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1
 

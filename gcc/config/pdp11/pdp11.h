@@ -888,9 +888,6 @@ extern int may_call_alloca;
 
 #define MOVE_MAX 2
 
-/* Zero extension is faster if the target is known to be zero */
-/* #define SLOW_ZERO_EXTEND */
-
 /* Nonzero if access to memory by byte is slow and undesirable. -
 */
 #define SLOW_BYTE_ACCESS 0

@@ -807,9 +807,6 @@ enum reg_class { NO_REGS, ALL_REGS, LIM_REG_CLASSES };
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
-/* Define this if zero-extension is slow (more than one real instruction).  */
-/* #define SLOW_ZERO_EXTEND */
-
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
