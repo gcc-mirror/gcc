@@ -30,6 +30,9 @@ if test "${srcdir}" = "."  ; then
 else
   topsrcdir=${srcdir}/..
 fi
+dnl This is needed for a multilibbed build in the source tree so
+dnl that install-sh and config.sub get found.
+AC_CONFIG_AUX_DIR($topsrcdir)
 
 dnl Checks for programs.
 # For g77 we'll set CC to point at the built gcc, but this will get it into

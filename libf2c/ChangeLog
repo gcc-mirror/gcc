@@ -1,3 +1,9 @@
+1998-10-19  Dave Love  <d.love@dl.ac.uk>
+
+	* configure: Regenerate.
+
+	* configure.in: Use AC_CONFIG_AUX_DIR.
+
 1998-10-12  Dave Love  <fx@gnu.org>
 
 	* libI77/open.c (_XOPEN_SOURCE): Define.
