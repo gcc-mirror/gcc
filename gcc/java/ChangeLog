@@ -1,5 +1,10 @@
 1999-10-14  Tom Tromey  <tromey@cygnus.com>
 
+	* jvgenmain.c (usage): New function.
+	(main): Use it.  Also, handle `-D' options.
+	* jvspec.c (lang_specific_driver): Recognize -D.
+	(jvgenmain_spec): Added `%{D*}' to jvgenmain invocation.
+
 	* jvspec.c (jvgenmain_spec): Use `%umain', not just `%u'.
 
 1999-10-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
