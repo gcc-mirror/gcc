@@ -106,19 +106,31 @@ static int mul_highpart_cost[NUM_MACHINE_MODES];
 void
 init_expmed (void)
 {
-  rtx reg, shift_insn, shiftadd_insn, shiftsub_insn;
-  rtx shift_pat, shiftadd_pat, shiftsub_pat;
+  struct
+  {
+    struct rtx_def reg;
+    struct rtx_def plus;	rtunion plus_fld1;
+    struct rtx_def neg;
+    struct rtx_def udiv;	rtunion udiv_fld1;
+    struct rtx_def mult;	rtunion mult_fld1;
+    struct rtx_def div;		rtunion div_fld1;
+    struct rtx_def mod;		rtunion mod_fld1;
+    struct rtx_def zext;
+    struct rtx_def wide_mult;	rtunion wide_mult_fld1;
+    struct rtx_def wide_lshr;	rtunion wide_lshr_fld1;
+    struct rtx_def wide_trunc;
+    struct rtx_def shift;	rtunion shift_fld1;
+    struct rtx_def shift_mult;	rtunion shift_mult_fld1;
+    struct rtx_def shift_add;	rtunion shift_add_fld1;
+    struct rtx_def shift_sub;	rtunion shift_sub_fld1;
+  } all;
+
   rtx pow2[MAX_BITS_PER_WORD];
   rtx cint[MAX_BITS_PER_WORD];
-  int dummy;
   int m, n;
   enum machine_mode mode, wider_mode;
 
-  start_sequence ();
-
   zero_cost = rtx_cost (const0_rtx, 0);
-
-  init_recog ();
 
   for (m = 1; m < MAX_BITS_PER_WORD; m++)
     {
@@ -126,92 +138,112 @@ init_expmed (void)
       cint[m] = GEN_INT (m);
     }
 
+  memset (&all, 0, sizeof all);
+
+  PUT_CODE (&all.reg, REG);
+  REGNO (&all.reg) = 10000;
+
+  PUT_CODE (&all.plus, PLUS);
+  XEXP (&all.plus, 0) = &all.reg;
+  XEXP (&all.plus, 1) = &all.reg;
+
+  PUT_CODE (&all.neg, NEG);
+  XEXP (&all.neg, 0) = &all.reg;
+
+  PUT_CODE (&all.udiv, UDIV);
+  XEXP (&all.udiv, 0) = &all.reg;
+  XEXP (&all.udiv, 1) = &all.reg;
+
+  PUT_CODE (&all.mult, MULT);
+  XEXP (&all.mult, 0) = &all.reg;
+  XEXP (&all.mult, 1) = &all.reg;
+
+  PUT_CODE (&all.div, DIV);
+  XEXP (&all.div, 0) = &all.reg;
+  XEXP (&all.div, 1) = 32 < MAX_BITS_PER_WORD ? cint[32] : GEN_INT (32);
+
+  PUT_CODE (&all.mod, MOD);
+  XEXP (&all.mod, 0) = &all.reg;
+  XEXP (&all.mod, 1) = XEXP (&all.div, 1);
+
+  PUT_CODE (&all.zext, ZERO_EXTEND);
+  XEXP (&all.zext, 0) = &all.reg;
+
+  PUT_CODE (&all.wide_mult, MULT);
+  XEXP (&all.wide_mult, 0) = &all.zext;
+  XEXP (&all.wide_mult, 1) = &all.zext;
+
+  PUT_CODE (&all.wide_lshr, LSHIFTRT);
+  XEXP (&all.wide_lshr, 0) = &all.wide_mult;
+
+  PUT_CODE (&all.wide_trunc, TRUNCATE);
+  XEXP (&all.wide_trunc, 0) = &all.wide_lshr;
+
+  PUT_CODE (&all.shift, ASHIFT);
+  XEXP (&all.shift, 0) = &all.reg;
+
+  PUT_CODE (&all.shift_mult, MULT);
+  XEXP (&all.shift_mult, 0) = &all.reg;
+
+  PUT_CODE (&all.shift_add, PLUS);
+  XEXP (&all.shift_add, 0) = &all.shift_mult;
+  XEXP (&all.shift_add, 1) = &all.reg;
+
+  PUT_CODE (&all.shift_sub, MINUS);
+  XEXP (&all.shift_sub, 0) = &all.shift_mult;
+  XEXP (&all.shift_sub, 1) = &all.reg;
+
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
        mode != VOIDmode;
        mode = GET_MODE_WIDER_MODE (mode))
     {
-      reg = gen_rtx_REG (mode, 10000);
-      add_cost[mode] = rtx_cost (gen_rtx_PLUS (mode, reg, reg), SET);
-      neg_cost[mode] = rtx_cost (gen_rtx_NEG (mode, reg), SET);
-      div_cost[mode] = rtx_cost (gen_rtx_UDIV (mode, reg, reg), SET);
-      mul_cost[mode] = rtx_cost (gen_rtx_MULT (mode, reg, reg), SET);
+      PUT_MODE (&all.reg, mode);
+      PUT_MODE (&all.plus, mode);
+      PUT_MODE (&all.neg, mode);
+      PUT_MODE (&all.udiv, mode);
+      PUT_MODE (&all.mult, mode);
+      PUT_MODE (&all.div, mode);
+      PUT_MODE (&all.mod, mode);
+      PUT_MODE (&all.wide_trunc, mode);
+      PUT_MODE (&all.shift, mode);
+      PUT_MODE (&all.shift_mult, mode);
+      PUT_MODE (&all.shift_add, mode);
+      PUT_MODE (&all.shift_sub, mode);
 
-      sdiv_pow2_cheap[mode]
-	= (rtx_cost (gen_rtx_DIV (mode, reg, GEN_INT (32)), SET)
-	   <= 2 * add_cost[mode]);
-      smod_pow2_cheap[mode]
-	= (rtx_cost (gen_rtx_MOD (mode, reg, GEN_INT (32)), SET)
-	   <= 2 * add_cost[mode]);
+      add_cost[mode] = rtx_cost (&all.plus, SET);
+      neg_cost[mode] = rtx_cost (&all.neg, SET);
+      div_cost[mode] = rtx_cost (&all.udiv, SET);
+      mul_cost[mode] = rtx_cost (&all.mult, SET);
+
+      sdiv_pow2_cheap[mode] = (rtx_cost (&all.div, SET) <= 2 * add_cost[mode]);
+      smod_pow2_cheap[mode] = (rtx_cost (&all.mod, SET) <= 2 * add_cost[mode]);
 
       wider_mode = GET_MODE_WIDER_MODE (mode);
       if (wider_mode != VOIDmode)
 	{
-	  mul_widen_cost[wider_mode]
-	    = rtx_cost (gen_rtx_MULT (wider_mode,
-				      gen_rtx_ZERO_EXTEND (wider_mode, reg),
-				      gen_rtx_ZERO_EXTEND (wider_mode, reg)),
-			SET);
-	  mul_highpart_cost[mode]
-	    = rtx_cost (gen_rtx_TRUNCATE
-			(mode,
-			 gen_rtx_LSHIFTRT (wider_mode,
-					   gen_rtx_MULT (wider_mode,
-							 gen_rtx_ZERO_EXTEND
-							 (wider_mode, reg),
-							 gen_rtx_ZERO_EXTEND
-							 (wider_mode, reg)),
-					   GEN_INT (GET_MODE_BITSIZE (mode)))),
-			SET);
+	  PUT_MODE (&all.zext, wider_mode);
+	  PUT_MODE (&all.wide_mult, wider_mode);
+	  PUT_MODE (&all.wide_lshr, wider_mode);
+	  XEXP (&all.wide_lshr, 1) = GEN_INT (GET_MODE_BITSIZE (mode));
+
+	  mul_widen_cost[wider_mode] = rtx_cost (&all.wide_mult, SET);
+	  mul_highpart_cost[mode] = rtx_cost (&all.wide_trunc, SET);
 	}
 
-	shift_insn = emit_insn (gen_rtx_SET (VOIDmode, reg,
-					     gen_rtx_ASHIFT (mode, reg,
-							     const0_rtx)));
+      shift_cost[mode][0] = 0;
+      shiftadd_cost[mode][0] = shiftsub_cost[mode][0] = add_cost[mode];
 
-	shiftadd_insn
-	  = emit_insn (gen_rtx_SET (VOIDmode, reg,
-				    gen_rtx_PLUS (mode,
-						  gen_rtx_MULT (mode,
-								reg,
-								const0_rtx),
-						  reg)));
+      n = MIN (MAX_BITS_PER_WORD, GET_MODE_BITSIZE (mode));
+      for (m = 1; m < n; m++)
+	{
+	  XEXP (&all.shift, 1) = cint[m];
+	  XEXP (&all.shift_mult, 1) = pow2[m];
 
-	shiftsub_insn
-	  = emit_insn (gen_rtx_SET (VOIDmode, reg,
-				    gen_rtx_MINUS (mode,
-						   gen_rtx_MULT (mode,
-								 reg,
-								 const0_rtx),
-						   reg)));
-
-	shift_pat = PATTERN (shift_insn);
-	shiftadd_pat = PATTERN (shiftadd_insn);
-	shiftsub_pat = PATTERN (shiftsub_insn);
-
-	shift_cost[mode][0] = 0;
-	shiftadd_cost[mode][0] = shiftsub_cost[mode][0] = add_cost[mode];
-
-	n = MIN (MAX_BITS_PER_WORD, GET_MODE_BITSIZE (mode));
-	for (m = 1; m < n; m++)
-	  {
-	    shift_cost[mode][m] = 32000;
-	    XEXP (SET_SRC (shift_pat), 1) = cint[m];
-	    if (recog (shift_pat, shift_insn, &dummy) >= 0)
-	      shift_cost[mode][m] = rtx_cost (SET_SRC (shift_pat), SET);
-
-	    shiftadd_cost[mode][m] = 32000;
-	    XEXP (XEXP (SET_SRC (shiftadd_pat), 0), 1) = pow2[m];
-	    if (recog (shiftadd_pat, shiftadd_insn, &dummy) >= 0)
-	      shiftadd_cost[mode][m] = rtx_cost (SET_SRC (shiftadd_pat), SET);
-
-	    shiftsub_cost[mode][m] = 32000;
-	    XEXP (XEXP (SET_SRC (shiftsub_pat), 0), 1) = pow2[m];
-	    if (recog (shiftsub_pat, shiftsub_insn, &dummy) >= 0)
-	      shiftsub_cost[mode][m] = rtx_cost (SET_SRC (shiftsub_pat), SET);
-	  }
+	  shift_cost[mode][m] = rtx_cost (&all.shift, SET);
+	  shiftadd_cost[mode][m] = rtx_cost (&all.shift_add, SET);
+	  shiftsub_cost[mode][m] = rtx_cost (&all.shift_sub, SET);
+	}
     }
-
-  end_sequence ();
 }
 
 /* Return an rtx representing minus the value of X.
