@@ -157,6 +157,9 @@ extern void clear_secondary_mem PROTO((void));
    reload TO.  */
 extern void transfer_replacements PROTO((int, int));
 
+/* Remove all replacements in reload FROM.  */
+extern void remove_replacements PROTO((int));
+
 /* Like rtx_equal_p except that it allows a REG and a SUBREG to match
    if they are the same hard reg, and has special hacks for
    autoincrement and autodecrement.  */

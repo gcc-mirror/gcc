@@ -1506,6 +1506,21 @@ transfer_replacements (to, from)
       replacements[i].what = to;
 }
 
+/* Remove all replacements in reload FROM.  */
+void
+remove_replacements (from)
+     int from;
+{
+  int i, j;
+
+  for (i = 0, j = 0; i < n_replacements; i++)
+    {
+      if (replacements[i].what == from)
+        continue;
+      replacements[j++] = replacements[i];
+    }
+}
+
 /* If there is only one output reload, and it is not for an earlyclobber
    operand, try to combine it with a (logically unrelated) input reload
    to reduce the number of reload registers needed.

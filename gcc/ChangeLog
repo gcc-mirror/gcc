@@ -1,3 +1,10 @@
+Thu May 14 08:41:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (remove_replacements): New function.
+	* reload.h (remove_replacements): Declare.
+	* reload1.c (choose_reload_regs): Disable some reloads that
+	belong to inherited reloads.
+
 Thu May 14 02:17:17 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (merge_assigned_reloads):  When merging, reset
