@@ -3630,7 +3630,10 @@ mark_used_regs (pbi, x, cond, insn)
 	       does not use any of the old value.  But these other
 	       ways of storing in a register do use the old value.  */
 	    if (GET_CODE (testreg) == SUBREG
-		&& !(REG_SIZE (SUBREG_REG (testreg)) > REG_SIZE (testreg)))
+		&& !((REG_BYTES (SUBREG_REG (testreg))
+		      + UNITS_PER_WORD - 1) / UNITS_PER_WORD
+		     > (REG_BYTES (testreg)
+			+ UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 	      ;
 	    else
 	      mark_dest = 1;

@@ -1,3 +1,10 @@
+2001-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ia64/aix.h (REG_SIZE): Don't #undef.
+	* sparc.h (REG_SIZE): Delete.
+	* flow.c (mark_used_regs): Don't use REG_SIZE.
+	* regs.h (REG_SIZE): Delete.
+
 2001-11-27  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.c: Fix typo PREFERRED_DEBUGGING_FORMAT ->
