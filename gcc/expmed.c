@@ -389,7 +389,8 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  else
 	    bestmode = GET_MODE (op0);
 
-	  if (bestmode == VOIDmode)
+	  if (bestmode == VOIDmode
+	      || (STRICT_ALIGNMENT && GET_MODE_SIZE (bestmode) > align))
 	    goto insv_loses;
 
 	  /* Adjust address to point to the containing unit of that mode.  */
@@ -959,7 +960,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  else
 		    bestmode = GET_MODE (xop0);
 
-		  if (bestmode == VOIDmode)
+		  if (bestmode == VOIDmode
+		      || (STRICT_ALIGNMENT && GET_MODE_SIZE (bestmode) > align))
 		    goto extzv_loses;
 
 		  /* Compute offset as multiple of this unit,
@@ -1092,7 +1094,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  else
 		    bestmode = GET_MODE (xop0);
 
-		  if (bestmode == VOIDmode)
+		  if (bestmode == VOIDmode
+		      || (STRICT_ALIGNMENT && GET_MODE_SIZE (bestmode) > align))
 		    goto extv_loses;
 
 		  /* Compute offset as multiple of this unit,
