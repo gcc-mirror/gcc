@@ -264,6 +264,14 @@ So instead we use the macro below and test it against specific values.  */
 #define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 #endif /* ATTRIBUTE_UNUSED */
 
+/* Before GCC 3.4, the C++ frontend couldn't parse attributes placed after the
+   identifier name.  */
+#if ! defined(__cplusplus) || (GCC_VERSION >= 3004)
+# define ARG_UNUSED(NAME) NAME ATTRIBUTE_UNUSED
+#else /* !__cplusplus || GNUC >= 3.4 */
+# define ARG_UNUSED(NAME) NAME
+#endif /* !__cplusplus || GNUC >= 3.4 */
+
 #ifndef ATTRIBUTE_NORETURN
 #define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
 #endif /* ATTRIBUTE_NORETURN */

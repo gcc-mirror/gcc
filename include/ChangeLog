@@ -1,13 +1,17 @@
-2004-07-21  Paolo Bonzini  <bonzini@gnu.org>
+2004-07-24  Bernardo Innocenti  <bernie@develer.com>
 
-	* ansidecl.h (ATTRIBUTE_PURE): New.
+	* ansidecl.h (ARG_UNUSED): New Macro.
 
-2004-07-13  Bernardo Innocenti  <bernie@develer.com>
+2004-07-24  Bernardo Innocenti  <bernie@develer.com>
 
 	* libiberty.h (XNEW, XCNEW, XNEWVEC, XCNEWVEC, XOBNEW): Move here from
 	libcpp/internal.h.
 	(XDELETE, XRESIZEVEC, XDELETEVEC, XNEWVAR, XCNEWVAR, XRESIZEVAR): New
 	macros.
+
+2004-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* ansidecl.h (ATTRIBUTE_PURE): New.
 
 2004-07-13  Bernardo Innocenti  <bernie@develer.com>
 
