@@ -1,6 +1,6 @@
 /* Handle the hair of processing (but not expanding) inline functions.
    Also manage function and variable name overloading.
-   Copyright (C) 1987, 1989, 1992, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
    This file is part of GNU CC.
@@ -354,6 +354,32 @@ build_overload_nested_name (decl)
     }
 }
 
+/* Encoding for an INTEGER_CST value. */
+static void
+build_overload_int (value)
+     tree value;
+{
+  my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
+  if (TYPE_PRECISION (value) == 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      if (tree_int_cst_lt (value, integer_zero_node))
+	{
+	  OB_PUTC ('m');
+	  value = build_int_2 (~ TREE_INT_CST_LOW (value),
+			       - TREE_INT_CST_HIGH (value));
+	}
+      if (TREE_INT_CST_HIGH (value)
+	  != (TREE_INT_CST_LOW (value) >> (HOST_BITS_PER_WIDE_INT - 1)))
+	{
+	  /* need to print a DImode value in decimal */
+	  sorry ("conversion of long long as PT parameter");
+	}
+      /* else fall through to print in smaller mode */
+    }
+  /* Wordsize or smaller */
+  icat (TREE_INT_CST_LOW (value));
+}
+
 static void
 build_overload_value (type, value)
      tree type, value;
@@ -363,10 +389,17 @@ build_overload_value (type, value)
     value = TREE_OPERAND (value, 0);
   my_friendly_assert (TREE_CODE (type) == PARM_DECL, 242);
   type = TREE_TYPE (type);
+
+  if (numeric_output_need_bar)
+    {
+      OB_PUTC ('_');
+      numeric_output_need_bar = 0;
+    }
+
   if (TREE_CODE (type) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE)
     {
-      /* Handle a pointer to member as a template instantiation
+      /* Handle a pointer to data member as a template instantiation
 	 parameter, boy, what fun!  */
       type = integer_type_node;
       if (TREE_CODE (value) != INTEGER_CST)
@@ -376,35 +409,17 @@ build_overload_value (type, value)
 	}
     }
 
+  if (TYPE_PTRMEMFUNC_P (type))
+    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+
   switch (TREE_CODE (type))
     {
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      {
-	my_friendly_assert (TREE_CODE (value) == INTEGER_CST, 243);
-	if (TYPE_PRECISION (value) == 2 * HOST_BITS_PER_WIDE_INT)
-	  {
-	    if (tree_int_cst_lt (value, integer_zero_node))
-	      {
-		OB_PUTC ('m');
-		value = build_int_2 (~ TREE_INT_CST_LOW (value),
-				     - TREE_INT_CST_HIGH (value));
-	      }
-	    if (TREE_INT_CST_HIGH (value)
-		!= (TREE_INT_CST_LOW (value) >> (HOST_BITS_PER_WIDE_INT - 1)))
-	      {
-		/* need to print a DImode value in decimal */
-		sorry ("conversion of long long as PT parameter");
-	      }
-	    /* else fall through to print in smaller mode */
-	  }
-	/* Wordsize or smaller */
-	icat (TREE_INT_CST_LOW (value));
-	return;
-      }
     case BOOLEAN_TYPE:
       {
-	icat (TREE_INT_CST_LOW (value));
+	build_overload_int (value);
+	numeric_output_need_bar = 1;
 	return;
       }
 #ifndef REAL_IS_NOT_DOUBLE
@@ -451,10 +466,52 @@ build_overload_value (type, value)
 	      }
 	  }
 	OB_PUTCP (digit_buffer);
+	numeric_output_need_bar = 1;
 	return;
       }
 #endif
     case POINTER_TYPE:
+      if (TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
+	  && TREE_CODE (value) != ADDR_EXPR)
+	{
+	  if (TREE_CODE (value) == CONSTRUCTOR)
+	    {
+	      /* This is dangerous code, crack built up pointer to members. */
+	      tree args = CONSTRUCTOR_ELTS (value);
+	      tree a1 = TREE_VALUE (args);
+	      tree a2 = TREE_VALUE (TREE_CHAIN (args));
+	      tree a3 = CONSTRUCTOR_ELTS (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args))));
+	      a3 = TREE_VALUE (a3);
+	      STRIP_NOPS (a3);
+	      if (TREE_CODE (a1) == INTEGER_CST
+		  && TREE_CODE (a2) == INTEGER_CST)
+		{
+		  build_overload_int (a1);
+		  OB_PUTC ('_');
+		  build_overload_int (a2);
+		  OB_PUTC ('_');
+		  if (TREE_CODE (a3) == ADDR_EXPR)
+		    {
+		      a3 = TREE_OPERAND (a3, 0);
+		      if (TREE_CODE (a3) == FUNCTION_DECL)
+			{
+			  numeric_output_need_bar = 0;
+			  build_overload_identifier (DECL_ASSEMBLER_NAME (a3));
+			  return;
+			}
+		    }
+		  else if (TREE_CODE (a3) == INTEGER_CST)
+		    {
+		      OB_PUTC ('i');
+		      build_overload_int (a3);
+		      numeric_output_need_bar = 1;
+		      return;
+		    }
+		}
+	    }
+	  sorry ("template instantiation with pointer to method that is too complex");
+	  return;
+	}
       value = TREE_OPERAND (value, 0);
       if (TREE_CODE (value) == VAR_DECL)
 	{
@@ -509,10 +566,11 @@ build_overload_identifier (name)
 	    }
 	  else
 	    {
+	      parm = tsubst (parm, &TREE_VEC_ELT (arglist, 0),
+			     TREE_VEC_LENGTH (arglist), NULL_TREE);
 	      /* It's a PARM_DECL.  */
 	      build_overload_name (TREE_TYPE (parm), 0, 0);
 	      build_overload_value (parm, arg);
-	      numeric_output_need_bar = 1;
 	    }
 	}
     }
@@ -1323,7 +1381,7 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 
 	      /* Look for an `operator++ (int)'.  If they didn't have
 		 one, then we fall back to the old way of doing things.  */
-	      for (t = TREE_VALUE (fields1); t ; t = TREE_CHAIN (t))
+	      for (t = TREE_VALUE (fields1); t ; t = DECL_CHAIN (t))
 		{
 		  t2 = TYPE_ARG_TYPES (TREE_TYPE (t));
 		  if (TREE_CHAIN (t2) != NULL_TREE
@@ -1339,12 +1397,9 @@ build_opfncall (code, flags, xarg1, xarg2, arg3)
 		  char *op = POSTINCREMENT_EXPR ? "++" : "--";
 
 		  /* There's probably a LOT of code in the world that
-		     relies upon this old behavior.  So we'll only give this
-		     warning when we've been given -pedantic.  A few
-		     releases after 2.4, we'll convert this to be a pedwarn
-		     or something else more appropriate.  */
-		  if (pedantic)
-		    warning ("no `operator%s (int)' declared for postfix `%s'",
+		     relies upon this old behavior.  */
+		  if (! flag_traditional)
+		    pedwarn ("no `operator%s (int)' declared for postfix `%s', using prefix operator instead",
 			     op, op);
 		  xarg2 = NULL_TREE;
 		  binary_is_unary = 1;
