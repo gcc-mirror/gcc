@@ -1,3 +1,9 @@
+2000-01-24  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* genoutput.c (output_prologue): Include ggc.h in generated
+	files.
+	* Makefile.in (insn-output.o): Depends on ggc.h.
+
 2000-01-27  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 	    Hans-Peter Nilsson  <hp@bitrange.com>
 

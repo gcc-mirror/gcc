@@ -1765,9 +1765,9 @@ s-attrtab : $(md_file) genattrtab $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-attrtab.c insn-attrtab.c
 	touch s-attrtab
 
-insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) $(REGS_H) real.h conditions.h \
-    hard-reg-set.h insn-config.h insn-flags.h insn-attr.h output.h $(RECOG_H) \
-    function.h insn-codes.h system.h toplev.h flags.h
+insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) ggc.h $(REGS_H) real.h \
+    conditions.h hard-reg-set.h insn-config.h insn-flags.h insn-attr.h \
+    output.h $(RECOG_H) function.h insn-codes.h system.h toplev.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c
 
 insn-output.c: s-output ; @true
