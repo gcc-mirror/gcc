@@ -10,8 +10,8 @@
 	* config/arm/arm-protos.h (arm_float_words_big_endian): New
 	prototype. 
 	* config/arm/arm.c (arm_float_words_big_endian): New function.
-	(TARGET_CPU_CPP_BUILTINS): Define __VFP_FP__ if TARGET_VFP  
-	and not TARGET_HARD_FLOAT. 
+	* config/arm/arm.h (TARGET_CPU_CPP_BUILTINS): Define __VFP_FP__
+	if TARGET_VFP  and not TARGET_HARD_FLOAT. 
 	(ARM_FLAG_VFP, TARGET_VFP): Define. 
 	(FLOAT_WORDS_BIG_ENDIAN): Use arm_float_words_big_endian.
 
