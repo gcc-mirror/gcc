@@ -22,10 +22,10 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
 
-/* Default to -mips4.  */
-#define MIPS_ISA_DEFAULT 4
-#define MIPS_ABI_DEFAULT ABI_64
-#define MULTILIB_DEFAULTS { "mabi=64" }
+/* Default to -mabi=n32 and -mips3.  */
+#define MIPS_ISA_DEFAULT 3
+#define MIPS_ABI_DEFAULT ABI_N32
+#define MULTILIB_DEFAULTS { "mabi=n32" }
 
 #include "mips/iris5gas.h"
 #include "mips/abi64.h"
@@ -86,7 +86,8 @@ Boston, MA 02111-1307, USA.  */
 %{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
 %{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3} \
 %{membedded-pic} \
-%{mabi=32: -32}%{mabi=n32: -n32}%{!mabi=32:%{!mabi=n32: -64}}"
+%{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
+%{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
 
 #else
 /* not GAS */
@@ -104,7 +105,8 @@ Boston, MA 02111-1307, USA.  */
 %{mips1} %{mips2} %{mips3} %{mips4} \
 %{noasmopt:-O0} %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
 -g0 -G 0 %{membedded-pic} \
-%{mabi=32: -32}%{mabi=n32: -n32}%{!mabi=32:%{!mabi=n32: -64}}"
+%{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
+%{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
 
 #endif
 
@@ -260,7 +262,8 @@ while (0)
 #define STARTFILE_SPEC \
   "%{mabi=32:%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s libprof1.a%s}%{!p:crt1.o%s}}} \
    %{mabi=n32:%{pg:/usr/lib32/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mcrt1.o%s /usr/lib32/libprof1.a%s}%{!p:/usr/lib32/crt1.o%s}}} \
-   %{!mabi=32:%{!mabi=n32:%{pg:/usr/lib64/gcrt1.o}%{!pg:%{p:/usr/lib64/mcrt1.o /usr/lib64/libprof1.a}%{!p:/usr/lib64/crt1.o}}}}"
+   %{mabi=64:%{pg:/usr/lib64/gcrt1.o}%{!pg:%{p:/usr/lib64/mcrt1.o /usr/lib64/libprof1.a}%{!p:/usr/lib64/crt1.o}}} \
+   %{!mabi=32:%{!mabi=n32:%{!mabi=64:%{pg:/usr/lib32/gcrt1.o%s}%{!pg:%{p:/usr/lib32/mcrt1.o%s /usr/lib32/libprof1.a%s}%{!p:/usr/lib32/crt1.o%s}}}}}"
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{p:libprof1.a%s}%{pg:libprof1.a%s} -lc"
@@ -270,7 +273,8 @@ while (0)
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "%{mabi=32:crtn.o%s}%{mabi=n32:/usr/lib32/crtn.o%s}\
-   %{!mabi=32:%{!mabi=n32:/usr/lib64/crtn.o}}"
+   %{mabi=64:/usr/lib64/crtn.o}\
+   %{!mabi=32:%{!mabi=n32:%{!mabi=64:/usr/lib32/crtn.o%s}}}"
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
@@ -282,7 +286,8 @@ while (0)
 %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}} \
 %{rpath} \
 -_SYSTYPE_SVR4 \
-%{mabi=32: -32}%{mabi=n32: -n32}%{!mabi=32:%{!mabi=n32: -64}}"
+%{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} \
+%{!mabi=32:%{!mabi=n32:%{!mabi=64: -n32}}}"
 
 /* ??? Debugging does not work.  We get many assembler core dumps,
    and even some linker core dumps.  */
