@@ -70,7 +70,7 @@ __extension__						\
 #ifndef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #endif
-#define	va_end(AP)	((void *)0)
+#define	va_end(AP)	((void) 0)
 
 /* Copy __gnuc_va_list into another variable of this type.  */
 #define __va_copy(dest, src) (dest) = (src)
