@@ -1,5 +1,8 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.test-framework/test-framework.awk: Change recording and
+	printing of passes and failures.
+
 	* gcc.test-framework: New directory.
 	* gcc.test-framework/README: New.
 	* gcc.test-framework/test-framework.exp: New.
