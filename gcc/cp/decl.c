@@ -6553,9 +6553,22 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 	      case BIT_NOT_EXPR:
 		{
-		  tree type = TREE_OPERAND (decl, 0);
-		  type = constructor_name (type);
-		  name = IDENTIFIER_POINTER (type);
+		  tree type;
+
+		  if (innermost_code != cdk_function)
+		    {
+		      error ("declaration of %qD as non-function", decl);
+		      return error_mark_node;
+		    }
+		  else if (!qualifying_scope 
+			   && !(current_class_type && at_class_scope_p ()))
+		    {
+		      error ("declaration of %qD as non-member", decl);
+		      return error_mark_node;
+		    }
+		  
+		  type = TREE_OPERAND (decl, 0);
+		  name = IDENTIFIER_POINTER (constructor_name (type));
 		}
 		break;
 
@@ -7803,15 +7816,6 @@ grokdeclarator (const cp_declarator *declarator,
 	    int publicp = 0;
 	    tree function_context;
 
-	    /* We catch the others as conflicts with the builtin
-	       typedefs.  */
-	    if (friendp && unqualified_id == ridpointers[(int) RID_SIGNED])
-	      {
-		error ("function %qD cannot be declared friend",
-		       unqualified_id);
-		friendp = 0;
-	      }
-
 	    if (friendp == 0)
 	      {
 		if (ctype == NULL_TREE)
@@ -7847,6 +7851,18 @@ grokdeclarator (const cp_declarator *declarator,
 		  type = build_method_type_directly (ctype,
 						     TREE_TYPE (type),
 						     TYPE_ARG_TYPES (type));
+	      }
+
+	    /* Check that the name used for a destructor makes sense.  */
+	    if (sfk == sfk_destructor
+		&& !same_type_p (TREE_OPERAND 
+				 (id_declarator->u.id.unqualified_name, 0),
+				 ctype))
+	      {
+		error ("declaration of %qD as member of %qT", 
+		       id_declarator->u.id.unqualified_name,
+		       ctype);
+		return error_mark_node;
 	      }
 
 	    /* Tell grokfndecl if it needs to set TREE_PUBLIC on the node.  */

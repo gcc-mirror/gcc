@@ -1,3 +1,21 @@
+2005-02-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19787
+	* g++.dg/conversion/ambig1.C: New test.
+
+	PR c++/19739
+	* g++.dg/ext/attrib19.C: New test.
+
+	PR c++/19732
+	* g++.dg/parse/dtor5.C: New test.
+
+	PR c++/19762
+	* g++.dg/template/dtor3.C: New test.
+
+	PR c++/19826
+	* g++.dg/template/static11.C: New test.
+	* g++.dg/template/crash2.C: Remove dg-error marker.
+
 2005-02-09  Janis Johnson  <janis187@us.ibm.com>
 
 	PR C++/18491

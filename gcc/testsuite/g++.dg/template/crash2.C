@@ -5,7 +5,7 @@ class A
 {
 public:
   static const EnumType size = max; // { dg-error "" }
-  int table[size]; // { dg-error "" }
+  int table[size];
 };
 template <class EnumType>
 const EnumType A<EnumType>::size;

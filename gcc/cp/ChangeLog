@@ -1,3 +1,23 @@
+2005-02-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19787
+	* call.c (initialize_reference): Robustify.
+
+	PR ++/19732
+	* decl.c (grokdeclarator): Check for invalid use of destructor
+	names.
+
+	PR c++/19762
+	* parser.c (cp_parser_unqualified_id): Avoid creating destructor
+	names with invalid types.
+
+	PR c++/19826
+	* parser.c (cp_parser_direct_declarator): Allow type-dependent
+	expressions as array bounds.
+
+	PR c++/19739
+	* parser.c (cp_parser_attributes_list): Allow empty lists.
+
 2005-02-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19733
