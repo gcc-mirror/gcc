@@ -1,5 +1,11 @@
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
+	* g++.old-deja/g++.other/virtual9.C: New test.
+	* g++.old-deja/g++.pt/crash61.C: New test.
+	* gcc.c-torture/execute/loop-9.c: New test.
+
+2000-12-04  Neil Booth  <neilb@earthling.net>
+
 	* g++.old-deja/g++.other/instan1.C, instan2.C: Move to...
 	* g++.old-deja/g++.pt/instantiate1.C, instantiate2.C: ...here.
 	* gcc.dg/cpp/19960224-2.c, endif.c, if-6.c: Move into...
