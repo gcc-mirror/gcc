@@ -1,3 +1,13 @@
+2003-01-26  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* config/avr/avr.h, config/cris/aout.h, config/elfos.h,
+	config/i386/freebsd-aout.h, config/mips/iris6.h: Undefine
+	ASM_FINISH_DECLARE_OBJECT before defining it.
+	* toplev.c (rest_of_decl_compilation):  Don't define
+	ASM_FINISH_DECLARE_OBJECT.  Only use it if it is defined.
+	(rest_of_type_compilation): Don't ATTRIBUTE_UNUSED function
+	parameters for DWARF2 targets because they _are_ used.
+
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* fp-bit.h: Define macros for TFmode floating-point constants

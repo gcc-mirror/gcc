@@ -2249,14 +2249,6 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
      int top_level;
      int at_end;
 {
-  /* Declarations of variables, and of functions defined elsewhere.  */
-
-/* The most obvious approach, to put an #ifndef around where
-   this macro is used, doesn't work since it's inside a macro call.  */
-#ifndef ASM_FINISH_DECLARE_OBJECT
-#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP, END)
-#endif
-
   /* We deferred calling assemble_alias so that we could collect
      other attributes such as visibility.  Emit the alias now.  */
   {
@@ -2284,11 +2276,14 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 	 is seen.  But at end of compilation, do output code for them.  */
       if (at_end || !DECL_DEFER_OUTPUT (decl))
 	assemble_variable (decl, top_level, at_end, 0);
+
+#ifdef ASM_FINISH_DECLARE_OBJECT
       if (decl == last_assemble_variable_decl)
 	{
 	  ASM_FINISH_DECLARE_OBJECT (asm_out_file, decl,
 				     top_level, at_end);
 	}
+#endif
 
       timevar_pop (TV_VARCONST);
     }
@@ -2342,7 +2337,8 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 
 void
 rest_of_type_compilation (type, toplev)
-#if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO) || defined (SDB_DEBUGGING_INFO)
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)	\
+    || defined (SDB_DEBUGGING_INFO) || defined (DWARF2_DEBUGGING_INFO)
      tree type;
      int toplev;
 #else

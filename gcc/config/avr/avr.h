@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for ATMEL AVR at90s8515, ATmega103/103L, ATmega603/603L microcontrollers.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Denis Chertykov (denisc@overta.ru)
 
 This file is part of GNU CC.
@@ -22,7 +22,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Names to predefine in the preprocessor for this target machine. */
 
-#define TARGET_CPU_CPP_BUILTINS() 		\
+#define TARGET_CPU_CPP_BUILTINS()		\
   do						\
     {						\
       builtin_define_std ("AVR");		\
@@ -58,7 +58,7 @@ extern int target_flags;
 
 #define TARGET_ORDER_1		(target_flags & MASK_ORDER_1)
 #define TARGET_ORDER_2		(target_flags & MASK_ORDER_2)
-#define TARGET_INT8  		(target_flags & MASK_INT8)
+#define TARGET_INT8		(target_flags & MASK_INT8)
 #define TARGET_NO_INTERRUPTS	(target_flags & MASK_NO_INTERRUPTS)
 #define TARGET_INSN_SIZE_DUMP	(target_flags & MASK_INSN_SIZE_DUMP)
 #define TARGET_CALL_PROLOGUES	(target_flags & MASK_CALL_PROLOGUES)
@@ -70,7 +70,7 @@ extern int target_flags;
    This is for debugging the compiler itself.  */
 
 #define TARGET_RTL_DUMP		(target_flags & MASK_RTL_DUMP)
-#define TARGET_ALL_DEBUG 	(target_flags & MASK_ALL_DEBUG)
+#define TARGET_ALL_DEBUG	(target_flags & MASK_ALL_DEBUG)
 
 #define TARGET_SWITCHES {						\
   { "order1", MASK_ORDER_1, NULL },					\
@@ -244,7 +244,7 @@ extern int avr_asm_only_p;
 /* A C expression for a string describing the name of the data type
    to use for size values.  The typedef name `size_t' is defined
    using the contents of the string.
-   
+
    The string can contain more than one keyword.  If so, separate
    them with spaces, and write first any length keyword, then
    `unsigned' if appropriate, and finally `int'.  The string must
@@ -252,7 +252,7 @@ extern int avr_asm_only_p;
    `init_decl_processing' in the file `c-decl.c'.  You may not omit
    `int' or change the order--that would cause the compiler to crash
    on startup.
-   
+
    If you don't define this macro, the default is `"long unsigned
    int"'.  */
 
@@ -261,7 +261,7 @@ extern int avr_asm_only_p;
    to use for the result of subtracting two pointers.  The typedef
    name `ptrdiff_t' is defined using the contents of the string.  See
    `SIZE_TYPE' above for more information.
-   
+
    If you don't define this macro, the default is `"long int"'.  */
 
 
@@ -365,10 +365,10 @@ extern int avr_asm_only_p;
 /* If defined, an initializer for a vector of integers, containing the
    numbers of hard registers in the order in which GNU CC should
    prefer to use them (from most preferred to least).
-   
+
    If this macro is not defined, registers are used lowest numbered
    first (all else being equal).
-   
+
    One use of this macro is on machines where the highest numbered
    registers must always be saved and the save-multiple-registers
    instruction supports only sequences of consetionve registers.  On
@@ -543,10 +543,10 @@ enum reg_class {
      0x00000000},		/* POINTER_REGS, r26 - r31 */		\
   {(3 << REG_X) | (3 << REG_Y) | (3 << REG_Z) | (3 << REG_W),		\
      0x00000000},		/* ADDW_REGS, r24 - r31 */		\
-  {0x00ff0000,0x00000000}, 	/* SIMPLE_LD_REGS r16 - r23 */          \
+  {0x00ff0000,0x00000000},	/* SIMPLE_LD_REGS r16 - r23 */          \
   {(3 << REG_X)|(3 << REG_Y)|(3 << REG_Z)|(3 << REG_W)|(0xff << 16),	\
      0x00000000},	/* LD_REGS, r16 - r31 */			\
-  {0x0000ffff,0x00000000}, 	/* NO_LD_REGS  r0 - r15 */              \
+  {0x0000ffff,0x00000000},	/* NO_LD_REGS  r0 - r15 */              \
   {0xffffffff,0x00000000},	/* GENERAL_REGS, r0 - r31 */		\
   {0xffffffff,0x00000003}	/* ALL_REGS */				\
 }
@@ -1148,7 +1148,7 @@ typedef struct avr_args {
    is zero for a call to an explicitly named function, a library
    function call, or when `INIT_CUMULATIVE_ARGS' is used to find
    arguments for the function being compiled.
-   
+
    When processing a call to a compiler support library function,
    LIBNAME identifies which one.  It is a `symbol_ref' rtx which
    contains the name of the function, as a string.  LIBNAME is 0 when
@@ -1164,7 +1164,7 @@ typedef struct avr_args {
    MODE, TYPE and NAMED describe that argument.  Once this is done,
    the variable CUM is suitable for analyzing the *following*
    argument with `FUNCTION_ARG', etc.
-   
+
    This macro need not do anything if the argument in question was
    passed on the stack.  The compiler knows how to track the amount
    of stack space used for arguments without any special help. */
@@ -1496,7 +1496,7 @@ do {									    \
    top level, you'll need to replace first the top leve It is not
    necessary for this macro to come up with a legitimate address;
    but often a machine-dependent strategy can generate better code.  */
-	
+
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)			\
       if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC)	\
         goto LABEL
@@ -1558,9 +1558,9 @@ do {									    \
 {							\
   int cst = default_rtx_costs (x, code, outer_code);	\
   if (cst>0)						\
-    return cst; 			                \
+    return cst;			                \
   else if (cst<0)					\
-    total += -cst; 			                \
+    total += -cst;			                \
   break;						\
 }
 
@@ -1758,7 +1758,7 @@ progmem_section ()							      \
     {									      \
       fprintf (asm_out_file,						      \
 	       "\t.section .progmem.gcc_sw_table, \"%s\", @progbits\n",	      \
-	       AVR_MEGA ? "a" : "ax"); 					      \
+	       AVR_MEGA ? "a" : "ax");					      \
       /* Should already be aligned, this is just to be safe if it isn't.  */  \
       fprintf (asm_out_file, "\t.p2align 1\n");				      \
       in_section = in_progmem;						      \
@@ -1986,6 +1986,7 @@ do {									\
    If this macro is not defined, then the variable name is defined in
    the usual manner as a label (by means of `ASM_OUTPUT_LABEL').  */
 
+#undef ASM_FINISH_DECLARE_OBJECT
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
      const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
@@ -2050,11 +2051,11 @@ do {									 \
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP ".global\t"
 
-#define ASM_WEAKEN_LABEL(FILE, NAME) 	\
+#define ASM_WEAKEN_LABEL(FILE, NAME)	\
   do					\
     {					\
       fputs ("\t.weak\t", (FILE));	\
-      assemble_name ((FILE), (NAME)); 	\
+      assemble_name ((FILE), (NAME));	\
       fputc ('\n', (FILE));		\
     }					\
   while (0)
