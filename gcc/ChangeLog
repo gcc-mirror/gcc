@@ -1,3 +1,11 @@
+2000-06-07  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-decl.c (pushdecl): Do not call COMPLETE_TYPE_P on
+	error_mark_node. 
+	* print-tree.c (print_node): The transparent_union_flag means
+	different things for unions and arrays.  Do not inspect it
+	with TYPE_TRANSPARENT_UNION.
+
 2000-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* cpplib.c (do_ifdef, do_ifndef): Don't segfault if parse_ifdef
