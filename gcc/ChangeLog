@@ -51,6 +51,9 @@ Sun Mar 26 20:15:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	DECL_BIT_FIELD of FIELD_DECL.
 	* tree.h (DECL_RESULT_FLD): New macro.
 	
+	* expr.c (expand_assignment): Add code to handle variable-sized
+	BLKmode case.
+
 2000-03-26  Richard Henderson  <rth@cygnus.com>
 
 	* calls.c (expand_call): Pass parms not original exp to
