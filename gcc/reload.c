@@ -6185,16 +6185,29 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 		      && (valtry
 			  = operand_subword (SET_DEST (pat), 1, 0, VOIDmode))
 		      && (valueno = true_regnum (valtry)) >= 0)))
-	    if (other >= 0
-		? valueno == other
-		: ((unsigned) valueno < FIRST_PSEUDO_REGISTER
-		   && TEST_HARD_REG_BIT (reg_class_contents[(int) class],
-					 valueno)))
-	      {
-		value = valtry;
-		where = p;
-		break;
-	      }
+	    {
+	      if (other >= 0)
+		{
+		  if (valueno != other)
+		    continue;
+		}
+	      else if ((unsigned) valueno >= FIRST_PSEUDO_REGISTER)
+		continue;
+	      else
+		{
+		  int i;
+
+		  for (i = HARD_REGNO_NREGS (valueno, mode) - 1; i >= 0; i--)
+		    if (! TEST_HARD_REG_BIT (reg_class_contents[(int) class],
+					     valueno + i))
+		      break;
+		  if (i >= 0)
+		    continue;
+		}
+	      value = valtry;
+	      where = p;
+	      break;
+	    }
 	}
     }
 
