@@ -145,6 +145,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
+#include "langhooks.h"
 
 
 /*************************************************************************
@@ -196,7 +197,6 @@ static bool vect_analyze_operations (loop_vec_info);
 
 /* Main code transformation functions.  */
 static void vect_transform_loop (loop_vec_info, struct loops *);
-static void vect_transform_loop_bound (loop_vec_info, tree niters);
 static bool vect_transform_stmt (tree, block_stmt_iterator *);
 static bool vectorizable_load (tree, block_stmt_iterator *, tree *);
 static bool vectorizable_store (tree, block_stmt_iterator *, tree *);
@@ -664,10 +664,12 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
   block_stmt_iterator loop_exit_bsi = bsi_last (exit_edge->src);
   tree begin_label = tree_block_label (loop->latch);
   tree exit_label = tree_block_label (loop->single_exit->dest);
+  tree init = build_int_cst (TREE_TYPE (niters), 0);
+  tree step = build_int_cst (TREE_TYPE (niters), 1);
 
   orig_cond = get_loop_exit_condition (loop);
   gcc_assert (orig_cond);
-  create_iv (integer_zero_node, integer_one_node, NULL_TREE, loop,
+  create_iv (init, step, NULL_TREE, loop,
              &loop_exit_bsi, false, &indx_before_incr, &indx_after_incr);
   
   /* CREATE_IV uses BSI_INSERT with TSI_NEW_STMT, so we want to get
@@ -2744,20 +2746,11 @@ vect_build_loop_niters (loop_vec_info loop_vinfo)
   edge pe;
   basic_block new_bb = NULL;
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree ni = unshare_expr (LOOP_VINFO_NITERS(loop_vinfo));
+  tree ni = unshare_expr (LOOP_VINFO_NITERS (loop_vinfo));
 
   var = create_tmp_var (TREE_TYPE (ni), "niters");
   add_referenced_tmp_var (var);
-  if (TREE_CODE (ni) == INTEGER_CST)
-    {
-      /* This case is generated when treating a known loop bound 
-	 indivisible by VF. Here we cannot use force_gimple_operand.  */
-      stmt = build (MODIFY_EXPR, void_type_node, var, ni);
-      ni_name = make_ssa_name (var, stmt);
-      TREE_OPERAND (stmt, 0) = ni_name;
-    }
-  else
-    ni_name = force_gimple_operand (ni, &stmt, false, var);
+  ni_name = force_gimple_operand (ni, &stmt, false, var);
 
   pe = loop_preheader_edge (loop);
   if (stmt)
@@ -2871,45 +2864,6 @@ vect_build_symbol_bound (tree n, int vf, struct loop * loop)
       fprintf (dump_file, "New bb on preheader edge was not generated.");
 
   return var_name;
-}
-
-
-/* Function vect_transform_loop_bound.
-
-   Create a new exit condition for the loop.  */
-
-static void
-vect_transform_loop_bound (loop_vec_info loop_vinfo, tree niters)
-{
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree orig_cond_expr;
-  HOST_WIDE_INT old_N = 0;
-  int vf;
-  tree new_loop_bound;
-  bool symbol_niters;
-  tree lb_type;
-
-  symbol_niters = !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo);
-
-  if (!symbol_niters)
-    old_N = LOOP_VINFO_INT_NITERS (loop_vinfo);
-
-  vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-
-  orig_cond_expr = LOOP_VINFO_EXIT_COND (loop_vinfo);
-#ifdef ENABLE_CHECKING
-  gcc_assert (orig_cond_expr);
-#endif
-
-  /* new loop exit test:  */
-  lb_type = TREE_TYPE (TREE_OPERAND (COND_EXPR_COND (orig_cond_expr), 1));
-  if (!symbol_niters)
-    new_loop_bound = 
-	fold_convert (lb_type, build_int_cst (unsigned_type_node, old_N/vf));
-  else
-    new_loop_bound = niters;
-
-  slpeel_make_loop_iterate_ntimes (loop, new_loop_bound);
 }
 
 
@@ -3094,13 +3048,23 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 /* Function vect_gen_niters_for_prolog_loop
 
    Set the number of iterations for the loop represented by LOOP_VINFO
-   to the minimum between NITERS (the original iteration count of the loop)
+   to the minimum between LOOP_NITERS (the original iteration count of the loop)
    and the misalignment of DR - the first data reference recorded in
    LOOP_VINFO_UNALIGNED_DR (LOOP_VINFO).  As a result, after the execution of 
-   this loop, the data reference DR will refer to an aligned location.  */
+   this loop, the data reference DR will refer to an aligned location.
+
+   The following computation is generated:
+
+   compute address misalignment in bytes:
+   addr_mis = addr & (vectype_size - 1)
+
+   prolog_niters = min ( LOOP_NITERS , (VF - addr_mis/elem_size)&(VF-1) )
+   
+   (elem_size = element type size; an element is the scalar element 
+	whose type is the inner type of the vectype)  */
 
 static tree 
-vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree niters)
+vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
@@ -3111,39 +3075,43 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree niters)
   basic_block new_bb;
   tree dr_stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (dr_stmt);
-  tree start_addr, byte_miss_align, elem_miss_align;
-  int vec_type_align = 
-    GET_MODE_ALIGNMENT (TYPE_MODE (STMT_VINFO_VECTYPE (stmt_info))) 
-							/ BITS_PER_UNIT;
-  tree tmp1, tmp2;
-  tree new_stmt_list = NULL_TREE;
-
-  start_addr = vect_create_addr_base_for_vector_ref (dr_stmt,
-						     &new_stmt_list, NULL_TREE);
+  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  int vectype_align = TYPE_ALIGN (vectype) / BITS_PER_UNIT;
+  tree elem_misalign;
+  tree byte_misalign;
+  tree new_stmts = NULL_TREE;
+  tree start_addr = 
+	vect_create_addr_base_for_vector_ref (dr_stmt, &new_stmts, NULL_TREE);
+  tree ptr_type = TREE_TYPE (start_addr);
+  tree size = TYPE_SIZE (ptr_type);
+  tree type = lang_hooks.types.type_for_size (TREE_INT_CST_LOW (size), 1);
+  tree vectype_size_minus_1 = build_int_cst (type, vectype_align - 1);
+  tree vf_minus_1 = build_int_cst (unsigned_type_node, vf - 1);
+  tree niters_type = TREE_TYPE (loop_niters);
+  tree elem_size_log = 
+	build_int_cst (unsigned_type_node, exact_log2 (vectype_align/vf));
+  tree vf_tree = build_int_cst (unsigned_type_node, vf);
 
   pe = loop_preheader_edge (loop); 
-  new_bb = bsi_insert_on_edge_immediate (pe, new_stmt_list); 
+  new_bb = bsi_insert_on_edge_immediate (pe, new_stmts); 
   if (new_bb)
     add_bb_to_loop (new_bb, EDGE_PRED (new_bb, 0)->src->loop_father);
 
-  byte_miss_align = 
-	build (BIT_AND_EXPR, integer_type_node, start_addr, 
-		  build (MINUS_EXPR, integer_type_node, 
-			 build_int_cst (unsigned_type_node,
-					vec_type_align), integer_one_node));
-  tmp1 = build_int_cst (unsigned_type_node, vec_type_align/vf);
-  elem_miss_align = build (FLOOR_DIV_EXPR, integer_type_node, 
-			   byte_miss_align, tmp1); 
-  
-  tmp2 = 
-	build (BIT_AND_EXPR, integer_type_node,
-	  build (MINUS_EXPR, integer_type_node, 
-		build_int_cst (unsigned_type_node, vf), elem_miss_align),
-	  build (MINUS_EXPR, integer_type_node, 
-		build_int_cst (unsigned_type_node, vf), integer_one_node)); 
+  /* Create:  byte_misalign = addr & (vectype_size - 1)  */
+  byte_misalign = build2 (BIT_AND_EXPR, type, start_addr, vectype_size_minus_1);
 
-  iters = build2 (MIN_EXPR, TREE_TYPE (tmp2), tmp2, niters);
-  var = create_tmp_var (TREE_TYPE (iters), "iters");
+  /* Create:  elem_misalign = byte_misalign / element_size  */
+  elem_misalign = 
+	build2 (RSHIFT_EXPR, unsigned_type_node, byte_misalign, elem_size_log);
+  
+  /* Create:  (niters_type) (VF - elem_misalign)&(VF - 1)  */
+  iters = build2 (MINUS_EXPR, unsigned_type_node, vf_tree, elem_misalign);
+  iters = build2 (BIT_AND_EXPR, unsigned_type_node, iters, vf_minus_1);
+  iters = fold_convert (niters_type, iters);
+
+  /* Create:  prolog_loop_niters = min (iters, loop_niters) */
+  iters = build2 (MIN_EXPR, niters_type, iters, loop_niters);
+  var = create_tmp_var (niters_type, "prolog_loop_niters");
   add_referenced_tmp_var (var);
   iters_name = force_gimple_operand (iters, &stmt, false, var);
 
@@ -3252,7 +3220,7 @@ vect_do_peeling_for_alignment (loop_vec_info loop_vinfo, struct loops *loops)
   /* Update number of times loop executes.  */
   n_iters = LOOP_VINFO_NITERS (loop_vinfo);
   LOOP_VINFO_NITERS (loop_vinfo) =
-    build (MINUS_EXPR, integer_type_node, n_iters, niters_of_prolog_loop);
+    build2 (MINUS_EXPR, TREE_TYPE (n_iters), n_iters, niters_of_prolog_loop);
 
   /* Update the init conditions of the access functions of all data refs.  */
   vect_update_inits_of_drs (loop_vinfo, niters_of_prolog_loop);
@@ -3304,6 +3272,9 @@ vect_transform_loop (loop_vec_info loop_vinfo,
       || (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
           && LOOP_VINFO_INT_NITERS (loop_vinfo) % vectorization_factor != 0))
     vect_do_peeling_for_loop_bound (loop_vinfo, &ratio, loops);
+  else
+    ratio = build_int_cst (TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo)),
+		LOOP_VINFO_INT_NITERS (loop_vinfo) / vectorization_factor);
 
   /* 1) Make sure the loop header has exactly two entries
      2) Make sure we have a preheader basic block.  */
@@ -3366,7 +3337,7 @@ vect_transform_loop (loop_vec_info loop_vinfo,
 	}		        /* stmts in BB */
     }				/* BBs in loop */
 
-  vect_transform_loop_bound (loop_vinfo, ratio);
+  slpeel_make_loop_iterate_ntimes (loop, ratio);
 
   if (vect_debug_details (loop))
     fprintf (dump_file,"Success! loop vectorized.");

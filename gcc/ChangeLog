@@ -1,3 +1,20 @@
+2004-11-22  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-opt/18536
+	* tree-vectorizer.c (make_loop_iterate_ntimes): Use type of niters when
+	creating iv instead of integer_type.
+	(vect_build_loop_niters): Remove redundant code.
+	(vect_transform_loop_bound): Removed (duplicates functionality of
+	make_loop_iterate_ntimes.
+	(vect_gen_niters_for_prolog_loop): Add documentation. Call
+	lang_hooks.types.type_for_size to create a type of the required size.
+	Use that type instead of integer_type. Remove redundant code.
+	(vect_update_niters_after_peeling): Use type of niters instead of
+	integer_type.
+	(vect_transform_loop): Unify handling of known and unknown loop bound
+	cases. Call make_loop_iterate_ntimes instead of 
+	vect_transform_loop_bound.
+
 2004-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR target/18217
