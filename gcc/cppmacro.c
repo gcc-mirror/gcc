@@ -606,7 +606,7 @@ funlike_invocation_p (pfile, node, list)
      const cpp_hashnode *node;
      struct toklist *list;
 {
-  cpp_context *orig_context;
+  cpp_context *orig, *final;
   cpp_token maybe_paren;
   macro_arg *args = 0;
   cpp_lexer_pos macro_pos;
@@ -614,7 +614,7 @@ funlike_invocation_p (pfile, node, list)
   macro_pos = pfile->lexer_pos;
   pfile->state.parsing_args = 1;
   pfile->state.prevent_expansion++;
-  orig_context = pfile->context;
+  orig = pfile->context;
 
   cpp_start_lookahead (pfile);
   cpp_get_token (pfile, &maybe_paren);
@@ -628,7 +628,8 @@ funlike_invocation_p (pfile, node, list)
 		 node->name);
 
   /* Restore original context.  */
-  pfile->context = orig_context;
+  final = pfile->context;
+  pfile->context = orig;
   pfile->state.prevent_expansion--;
   pfile->state.parsing_args = 0;
 
@@ -646,6 +647,13 @@ funlike_invocation_p (pfile, node, list)
 	  pfile->la_write = la_saved;
 	}
       free (args);
+    }
+
+  /* Re-disable macros *after* pre-expansion.  */
+  while (final != orig)
+    {
+      final = final->next;
+      final->macro->disabled = 1;
     }
 
   return args != 0;
@@ -885,13 +893,12 @@ _cpp_pop_context (pfile)
   cpp_context *context = pfile->context;
 
   pfile->context = context->prev;
-  /* Re-enable a macro and free resources when leaving its expansion.  */
-  if (!pfile->state.parsing_args)
-    {
-      if (!pfile->context->prev)
-	unlock_pools (pfile);
-      context->macro->disabled = 0;
-    }
+  if (!pfile->context->prev && !pfile->state.parsing_args)
+    unlock_pools (pfile);
+
+  /* Re-enable a macro, temporarily if parsing_args, when leaving its
+     expansion.  */
+  context->macro->disabled = 0;
 }
 
 /* Eternal routine to get a token.  Also used nearly everywhere

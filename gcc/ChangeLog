@@ -1,3 +1,11 @@
+2000-12-03  Neil Booth  <neilb@earthling.net>
+
+        * cppmacro.c (funlike_invocation_p): Re-disable macros enabled
+        by contexts drops AFTER argument pre-expansion, so that they
+        remain enabled during argument pre-expansion.
+        (_cpp_pop_context): Unconditionally re-enable a macro when
+        dropping a context level.
+
 2000-12-03  Manfred Hollstein  <manfredh@redhat.com>
 
 	* arm/t-linux (MULTILIB_OPTIONS): Comment.
