@@ -2604,23 +2604,24 @@
 
 (define_expand "storehi"
   [;; store the low byte
-   (set (mem:QI (match_operand:SI 1 "" "")) (match_dup 3))
+   (set (match_operand 1 "" "") (match_dup 3))
    ;; extract the high byte
    (set (match_dup 2)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
    ;; store the high byte
-   (set (mem:QI (match_dup 4))
-	(subreg:QI (match_dup 2) 0))]	;explicit subreg safe
+   (set (match_dup 4) (subreg:QI (match_dup 2) 0))]	;explicit subreg safe
   ""
   "
 {
-  enum rtx_code code = GET_CODE (operands[1]);
+  rtx addr = XEXP (operands[1], 0);
+  enum rtx_code code = GET_CODE (addr);
 
-  if ((code == PLUS || code == MINUS)
-      && (GET_CODE (XEXP (operands[1], 1)) == REG
-	  || GET_CODE (XEXP (operands[1], 0)) != REG))
-    operands[1] = force_reg (SImode, operands[1]);
-  operands[4] = plus_constant (operands[1], 1);
+  if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
+      || code == MINUS)
+    addr = force_reg (SImode, addr);
+
+  operands[4] = change_address (operands[1], QImode, plus_constant (addr, 1));
+  operands[1] = change_address (operands[1], QImode, NULL_RTX);
   operands[3] = gen_lowpart (QImode, operands[0]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[2] = gen_reg_rtx (SImode); 
@@ -2628,21 +2629,22 @@
 ")
 
 (define_expand "storehi_bigend"
-  [(set (mem:QI (match_dup 4)) (match_dup 3))
+  [(set (match_dup 4) (match_dup 3))
    (set (match_dup 2)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
-   (set (mem:QI (match_operand 1 "" ""))
-	(subreg:QI (match_dup 2) 0))]
+   (set (match_operand 1 "" "")	(subreg:QI (match_dup 2) 0))]
   ""
   "
 {
-  enum rtx_code code = GET_CODE (operands[1]);
-  if ((code == PLUS || code == MINUS)
-      && (GET_CODE (XEXP (operands[1], 1)) == REG
-	  || GET_CODE (XEXP (operands[1], 0)) != REG))
-    operands[1] = force_reg (SImode, operands[1]);
+  rtx addr = XEXP (operands[1], 0);
+  enum rtx_code code = GET_CODE (addr);
 
-  operands[4] = plus_constant (operands[1], 1);
+  if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
+      || code == MINUS)
+    addr = force_reg (SImode, addr);
+
+  operands[4] = change_address (operands[1], QImode, plus_constant (addr, 1));
+  operands[1] = change_address (operands[1], QImode, NULL_RTX);
   operands[3] = gen_lowpart (QImode, operands[0]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[2] = gen_reg_rtx (SImode);
@@ -2651,19 +2653,19 @@
 
 ;; Subroutine to store a half word integer constant into memory.
 (define_expand "storeinthi"
-  [(set (mem:QI (match_operand:SI 0 "" ""))
+  [(set (match_operand 0 "" "")
 	(subreg:QI (match_operand 1 "" "") 0))
-   (set (mem:QI (match_dup 3)) (subreg:QI (match_dup 2) 0))]
+   (set (match_dup 3) (subreg:QI (match_dup 2) 0))]
   ""
   "
 {
   HOST_WIDE_INT value = INTVAL (operands[1]);
-  enum rtx_code code = GET_CODE (operands[0]);
+  rtx addr = XEXP (operands[0], 0);
+  enum rtx_code code = GET_CODE (addr);
 
-  if ((code == PLUS || code == MINUS)
-      && (GET_CODE (XEXP (operands[0], 1)) == REG
-	  || GET_CODE (XEXP (operands[0], 0)) != REG))
-  operands[0] = force_reg (SImode, operands[0]);
+  if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
+      || code == MINUS)
+    addr = force_reg (SImode, addr);
 
   operands[1] = gen_reg_rtx (SImode);
   if (BYTES_BIG_ENDIAN)
@@ -2689,7 +2691,8 @@
 	}
     }
 
-  operands[3] = plus_constant (operands[0], 1);
+  operands[3] = change_address (operands[0], QImode, plus_constant (addr, 1));
+  operands[0] = change_address (operands[0], QImode, NULL_RTX);
 }
 ")
 
@@ -2720,16 +2723,15 @@
 	      DONE;
 	    }
 	  if (GET_CODE (operands[1]) == CONST_INT)
-	    emit_insn (gen_storeinthi (XEXP (operands[0], 0), operands[1]));
+	    emit_insn (gen_storeinthi (operands[0], operands[1]));
 	  else
 	    {
 	      if (GET_CODE (operands[1]) == MEM)
 		operands[1] = force_reg (HImode, operands[1]);
 	      if (BYTES_BIG_ENDIAN)
-		emit_insn (gen_storehi_bigend (operands[1],
-					       XEXP (operands[0], 0)));
+		emit_insn (gen_storehi_bigend (operands[1], operands[0]));
 	      else
-		emit_insn (gen_storehi (operands[1], XEXP (operands[0], 0)));
+		emit_insn (gen_storehi (operands[1], operands[0]));
 	    }
 	  DONE;
 	}
