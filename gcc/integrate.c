@@ -276,6 +276,13 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
     {
       rtx p = DECL_RTL (parms);
 
+      /* If we have (mem (addressof (mem ...))), use the inner MEM since
+	 otherwise the copy_rtx call below will not unshare the MEM since
+	 it shares ADDRESSOF.  */
+      if (GET_CODE (p) == MEM && GET_CODE (XEXP (p, 0)) == ADDRESSOF
+	  && GET_CODE (XEXP (XEXP (p, 0), 0)) == MEM)
+	p = XEXP (XEXP (p, 0), 0);
+
       if (GET_CODE (p) == MEM && copy)
 	{
 	  /* Copy the rtl so that modifications of the addresses
