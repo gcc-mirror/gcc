@@ -124,22 +124,19 @@ namespace std
 // Sentry uses locale info, so have to try one formatted input/output.
 void test03()
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
 
   // output streams
-  basic_ofstream<unsigned char> ofs_uc;
-
+  std::basic_ofstream<unsigned char> ofs_uc;
   try 
     { 
       bool b = true;
       ofs_uc << b;
     }
-  catch (bad_cast& obj)
+  catch (std::bad_cast& obj)
     { }
-  catch (exception& obj)
-    { test = false; }
-   
+  catch (std::exception& obj)
+    { test = false; }   
   VERIFY( test );
 }
 

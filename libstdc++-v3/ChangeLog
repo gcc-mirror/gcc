@@ -1,3 +1,12 @@
+2003-09-26  Brad Spencer  <spencer@infointeractive.com>
+
+	* testsuite/27_io/basic_filebuf/cons/wchar_t/10132-1.cc:
+	Explicitly qualify exceptions.
+	* testsuite/27_io/basic_istream/sentry/char/3983-fstream.cc: Same.
+	* testsuite/27_io/basic_istream/sentry/char/3983-sstream.cc: Same.
+	* testsuite/27_io/basic_ostream/sentry/char/3983-fstream.cc: Same.
+	* testsuite/27_io/basic_ostream/sentry/char/3983-sstream.cc: Same.
+	
 2003-09-25  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/12352

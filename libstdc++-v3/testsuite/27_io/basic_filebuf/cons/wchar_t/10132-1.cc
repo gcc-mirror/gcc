@@ -33,20 +33,19 @@ protected:
 
 int main()
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
 
-  locale loc = locale(locale::classic(), new Cvt);
-  wfilebuf* fb = new wfilebuf;
+  std::locale loc = std::locale(std::locale::classic(), new Cvt);
+  std::wfilebuf* fb = new std::wfilebuf;
   fb->pubimbue(loc);
-  fb->open("tmp_10132", ios_base::out);
+  fb->open("tmp_10132", std::ios_base::out);
   fb->sputc(L'a');
   
   try
     {
       delete fb;
     }
-  catch(exception& obj)
+  catch(std::exception& obj)
     {
       VERIFY( false ); 
     }
