@@ -9449,7 +9449,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      
 	      /* Check on accessibility here */
 	      if (not_accessible_p (current_class, field_decl,
-				    TREE_TYPE (decl), from_super))
+				    DECL_CONTEXT (field_decl), from_super))
 		{
 		  parse_error_context 
 		    (qual_wfl,
@@ -9574,7 +9574,7 @@ not_accessible_p (reference, member, where, from_super)
       /* If where is active, access was made through a
 	 qualifier. Access is granted if the type of the qualifier is
 	 or is a sublass of the type the access made from (6.6.2.1.)  */
-      if (where && !inherits_from_p (where, reference))
+      if (where && !inherits_from_p (reference, where))
 	return 1;
 
       /* Otherwise, access is granted if occuring from the class where

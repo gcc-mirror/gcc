@@ -1,3 +1,10 @@
+2001-04-04  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (resolve_qualified_expression_name): Pass field's
+	DECL_CONTEXT to `not_accessible_p.'
+	(not_accessible_p): Changed parameters order in `inherits_from_p'
+	invokation.
+
 2001-04-04  Per Bothner  <per@bothner.com>
 
 	* java-tree.h (CONSTANT_VALUE_P):  New macro.
