@@ -326,18 +326,14 @@ fix_register (name, fixed, call_used)
   /* Decode the name and update the primary form of
      the register info.  */
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (reg_names[i][0] && ! strcmp (reg_names[i], name))
-      {
-	fixed_regs[i] = fixed;
-	call_used_regs[i] = call_used;
-	break;
-      }
-
-  if (i == FIRST_PSEUDO_REGISTER)
+  if ((i = decode_reg_name (name)) >= 0)
+    {
+      fixed_regs[i] = fixed;
+      call_used_regs[i] = call_used;
+    }
+  else
     {
       warning ("unknown register name: %s", name);
-      return;
     }
 }
 

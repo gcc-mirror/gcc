@@ -191,7 +191,8 @@ make_function_rtl (decl)
 
 /* Decode an `asm' spec for a declaration as a register name.
    Return the register number, or -1 if nothing specified,
-   or -2 if the name is not a register.  */
+   or -2 if the name is not a register.  Accept an exact spelling,
+   a decimal number, or an optional prefix of '%' or '#'.  */
 
 int
 decode_reg_name (asmspec)
@@ -218,7 +219,7 @@ decode_reg_name (asmspec)
 	if (reg_names[i][0] && ! strcmp (asmspec, reg_names[i]))
 	  return i;
 
-      if (asmspec[0] == '%')
+      if (asmspec[0] == '%' || asmspec[0] == '#')
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	  if (reg_names[i][0] && ! strcmp (asmspec + 1, reg_names[i]))
 	    return i;
@@ -232,7 +233,7 @@ decode_reg_name (asmspec)
 	  if (! strcmp (asmspec, table[i].name))
 	    return table[i].number;
 
-	if (asmspec[0] == '%')
+	if (asmspec[0] == '%' || asmspec[0] == '#')
 	  for (i = 0; i < sizeof (table) / sizeof (table[0]); i++)
 	    if (! strcmp (asmspec + 1, table[i].name))
 	      return table[i].number;
@@ -499,9 +500,9 @@ assemble_start_function (decl, fnname)
 #endif
 
 #ifdef DBX_DEBUGGING_INFO
-  /* Output SDB definition of the function.  */
+  /* Output DBX definition of the function.  */
   if (write_symbols == DBX_DEBUG)
-    dbxout_begin_function ();
+    dbxout_begin_function (decl);
 #endif
 
   /* Make function name accessible from other files, if appropriate.  */
