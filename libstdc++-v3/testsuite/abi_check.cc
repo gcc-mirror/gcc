@@ -412,25 +412,40 @@ main(int argc, char** argv)
     }
 
   // Report results.
-  cout << added_names.size() << " added symbols " << endl;
-  for (size_t j = 0; j < added_names.size() ; ++j)
-    report_symbol_info(test_symbols[added_names[j]], j + 1);
-
-  cout << missing_names.size() << " missing symbols " << endl;
-  for (size_t j = 0; j < missing_names.size() ; ++j)
-    report_symbol_info(baseline_symbols[missing_names[j]], j + 1);
-
-  cout << incompatible.size() << " incompatible symbols " << endl;
-  for (size_t j = 0; j < incompatible.size() ; ++j)
+  if (added_names.size())
     {
-      // First, report name.
-      const symbol_info& base = incompatible[j].first;
-      const symbol_info& test = incompatible[j].second;
-      report_symbol_info(test, j + 1, false);
-
-      // Second, report reason or reasons incompatible.
-      check_compatible(base, test, true);
+      cout << added_names.size() << " added symbols " << endl;
+      for (size_t j = 0; j < added_names.size() ; ++j)
+	report_symbol_info(test_symbols[added_names[j]], j + 1);
     }
+  
+  if (missing_names.size())
+    {
+      cout << missing_names.size() << " missing symbols " << endl;
+      for (size_t j = 0; j < missing_names.size() ; ++j)
+	report_symbol_info(baseline_symbols[missing_names[j]], j + 1);
+    }
+  
+  if (incompatible.size ())
+    {
+      cout << incompatible.size() << " incompatible symbols " << endl;
+      for (size_t j = 0; j < incompatible.size() ; ++j)
+	{
+	  // First, report name.
+	  const symbol_info& base = incompatible[j].first;
+	  const symbol_info& test = incompatible[j].second;
+	  report_symbol_info(test, j + 1, false);
+	  
+	  // Second, report reason or reasons incompatible.
+	  check_compatible(base, test, true);
+	}
+    }
+  
+  cout << "\n\t\t=== libstdc++-v3 check-abi Summary for " << baseline_file 
+       << " ===" << endl << endl;
+  cout << "# of added symbols:\t\t " << added_names.size() << endl;
+  cout << "# of missing symbols:\t\t " << missing_names.size() << endl;
+  cout << "# of incompatible symbols:\t " << incompatible.size() << endl;
 
   return 0;
 }
