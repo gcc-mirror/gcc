@@ -1,6 +1,6 @@
 // natString.cc - Implementation of java.lang.String native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -20,6 +20,7 @@ details.  */
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/StringIndexOutOfBoundsException.h>
 #include <java/lang/NullPointerException.h>
+#include <java/lang/StringBuffer.h>
 #include <java/io/ByteArrayOutputStream.h>
 #include <java/io/OutputStreamWriter.h>
 #include <java/io/ByteArrayInputStream.h>
@@ -102,7 +103,9 @@ hashChars (jchar* ptr, jint length)
 jint
 java::lang::String::hashCode()
 {
-  return hashChars(JvGetStringChars(this), length());
+  if (cachedHashCode == 0)
+    cachedHashCode = hashChars(JvGetStringChars(this), length());
+  return cachedHashCode;
 }
 
 jstring*
@@ -429,14 +432,6 @@ _Jv_NewStringLatin1(const char *bytes, jsize len)
 }
 
 void
-java::lang::String::init ()
-{
-  count = 0;
-  boffset = sizeof(java::lang::String);
-  data = this;
-}
-
-void
 java::lang::String::init(jcharArray chars, jint offset, jint count,
 			 jboolean dont_copy)
 {
@@ -552,11 +547,30 @@ java::lang::String::equals(jobject anObject)
   return true;
 }
 
+jboolean
+java::lang::String::contentEquals(java::lang::StringBuffer* buffer)
+{
+  if (buffer == NULL)
+    throw new NullPointerException;
+  JvSynchronize sync(buffer);
+  if (count != buffer->count)
+    return false;
+  if (data == buffer->value)
+    return true; // Possible if shared.
+  jint i = count;
+  jchar *xptr = JvGetStringChars(this);
+  jchar *yptr = elements(buffer->value);
+  while (--i >= 0)
+    if (*xptr++ != *yptr++)
+      return false;
+  return true;
+}
+
 jchar
 java::lang::String::charAt(jint i)
 {
   if (i < 0 || i >= count)
-    throw new java::lang::StringIndexOutOfBoundsException;
+    throw new java::lang::StringIndexOutOfBoundsException(i);
   return JvGetStringChars(this)[i];
 }
 

@@ -44,6 +44,8 @@ import java.io.Serializable;
 import java.lang.Comparable;
 import java.util.Comparator;
 import java.util.Locale;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Strings represent an immutable set of characters.  All String literals
@@ -85,6 +87,12 @@ public final class String implements Serializable, Comparable, CharSequence
   private Object data;
   private int boffset; // Note this is a byte offset - don't use in Java code!
   int count;
+
+  /**
+   * Caches the result of hashCode().  If this value is zero, the hashcode
+   * is considered uncached (even if 0 is the correct hash value).
+   */
+  private int cachedHashCode;
 
   /**
    * An implementation for {@link CASE_INSENSITIVE_ORDER}.
@@ -137,9 +145,11 @@ public final class String implements Serializable, Comparable, CharSequence
    * Creates an empty String (length 0). Unless you really need a new object,
    * consider using <code>""</code> instead.
    */
-  public String ()
+  public String()
   {
-    init();
+    data = "".data;
+    boffset = 0;
+    count = 0;
   }
 
   /**
@@ -154,6 +164,7 @@ public final class String implements Serializable, Comparable, CharSequence
     data = str.data;
     boffset = str.boffset;
     count = str.count;
+    cachedHashCode = str.cachedHashCode;
   }
 
   /**
@@ -511,6 +522,17 @@ public final class String implements Serializable, Comparable, CharSequence
   public native boolean equals (Object anObject);
 
   /**
+   * Compares the given StringBuffer to this String. This is true if the
+   * StringBuffer has the same content as this String at this moment.
+   *
+   * @param buffer the StringBuffer to compare to
+   * @return true if StringBuffer has the same character sequence
+   * @throws NullPointerException if the given StringBuffer is null
+   * @since 1.4
+   */
+  public native boolean contentEquals(StringBuffer buffer);
+
+  /**
    * Compares a String to this String, ignoring case. This does not handle
    * multi-character capitalization exceptions; instead the comparison is
    * made on a character-by-character basis, and is true if:<br><ul>
@@ -815,7 +837,6 @@ public final class String implements Serializable, Comparable, CharSequence
    * @since 1.4
    */
   public CharSequence subSequence(int beginIndex, int endIndex)
-    throws IndexOutOfBoundsException
   {
     return substring(beginIndex, endIndex);
   }
@@ -839,6 +860,124 @@ public final class String implements Serializable, Comparable, CharSequence
    * @return new String with all instances of oldChar replaced with newChar
    */
   public native String replace (char oldChar, char newChar);
+
+  /**
+   * Test if this String matches a regular expression. This is shorthand for
+   * <code>{@link Pattern}.matches(regex, this)</code>.
+   *
+   * @param regex the pattern to match
+   * @return true if the pattern matches
+   * @throws NullPointerException if regex is null
+   * @throws PatternSyntaxException if regex is invalid
+   * @see Pattern#matches(String, CharSequence)
+   * @since 1.4
+   */
+  public boolean matches(String regex)
+  {
+    return Pattern.matches(regex, this);
+  }
+
+  /**
+   * Replaces the first substring match of the regular expression with a
+   * given replacement. This is shorthand for <code>{@link Pattern}
+   *   .compile(regex).matcher(this).replaceFirst(replacement)</code>.
+   *
+   * @param regex the pattern to match
+   * @param replacement the replacement string
+   * @return the modified string
+   * @throws NullPointerException if regex or replacement is null
+   * @throws PatternSyntaxException if regex is invalid
+   * @see #replaceAll(String, String)
+   * @see Pattern#compile(String)
+   * @see Pattern#matcher(CharSequence)
+   * @see Matcher#replaceFirst(String)
+   * @since 1.4
+   */
+  public String replaceFirst(String regex, String replacement)
+  {
+    return Pattern.compile(regex).matcher(this).replaceFirst(replacement);
+  }
+
+  /**
+   * Replaces all matching substrings of the regular expression with a
+   * given replacement. This is shorthand for <code>{@link Pattern}
+   *   .compile(regex).matcher(this).replaceAll(replacement)</code>.
+   *
+   * @param regex the pattern to match
+   * @param replacement the replacement string
+   * @return the modified string
+   * @throws NullPointerException if regex or replacement is null
+   * @throws PatternSyntaxException if regex is invalid
+   * @see #replaceFirst(String, String)
+   * @see Pattern#compile(String)
+   * @see Pattern#matcher(CharSequence)
+   * @see Matcher#replaceAll(String)
+   * @since 1.4
+   */
+  public String replaceAll(String regex, String replacement)
+  {
+    return Pattern.compile(regex).matcher(this).replaceAll(replacement);
+  }
+
+  /**
+   * Split this string around the matches of a regular expression. Each
+   * element of the returned array is the largest block of characters not
+   * terminated by the regular expression, in the order the matches are found.
+   *
+   * <p>The limit affects the length of the array. If it is positive, the
+   * array will contain at most n elements (n - 1 pattern matches). If
+   * negative, the array length is unlimited, but there can be trailing empty
+   * entries. if 0, the array length is unlimited, and trailing empty entries
+   * are discarded.
+   *
+   * <p>For example, splitting "boo:and:foo" yields:<br>
+   * <table border=0>
+   * <th><td>Regex</td> <td>Limit</td> <td>Result</td></th>
+   * <tr><td>":"</td>   <td>2</td>  <td>{ "boo", "and:foo" }</td></tr>
+   * <tr><td>":"</td>   <td>t</td>  <td>{ "boo", "and", "foo" }</td></tr>
+   * <tr><td>":"</td>   <td>-2</td> <td>{ "boo", "and", "foo" }</td></tr>
+   * <tr><td>"o"</td>   <td>5</td>  <td>{ "b", "", ":and:f", "", "" }</td></tr>
+   * <tr><td>"o"</td>   <td>-2</td> <td>{ "b", "", ":and:f", "", "" }</td></tr>
+   * <tr><td>"o"</td>   <td>0</td>  <td>{ "b", "", ":and:f" }</td></tr>
+   * </table>
+   *
+   * <p>This is shorthand for
+   * <code>{@link Pattern}.compile(regex).split(this, limit)</code>.
+   *
+   * @param regex the pattern to match
+   * @param limit the limit threshold
+   * @return the array of split strings
+   * @throws NullPointerException if regex or replacement is null
+   * @throws PatternSyntaxException if regex is invalid
+   * @see Pattern#compile(String)
+   * @see Pattern#split(CharSequence, int)
+   * @since 1.4
+   */
+  public String[] split(String regex, int limit)
+  {
+    return Pattern.compile(regex).split(this, limit);
+  }
+
+  /**
+   * Split this string around the matches of a regular expression. Each
+   * element of the returned array is the largest block of characters not
+   * terminated by the regular expression, in the order the matches are found.
+   * The array length is unlimited, and trailing empty entries are discarded,
+   * as though calling <code>split(regex, 0)</code>.
+   *
+   * @param regex the pattern to match
+   * @return the array of split strings
+   * @throws NullPointerException if regex or replacement is null
+   * @throws PatternSyntaxException if regex is invalid
+   * @see #split(String, int)
+   * @see Pattern#compile(String)
+   * @see Pattern#split(CharSequence, int)
+   * @since 1.4
+   */
+  public String[] split(String regex)
+  {
+    return Pattern.compile(regex).split(this, 0);
+  }
 
   /**
    * Lowercases this String according to a particular locale. This uses
@@ -1088,7 +1227,6 @@ public final class String implements Serializable, Comparable, CharSequence
   public native String intern ();
 
 
-  private native void init ();
   private native void init (char[] chars, int offset, int count,
 			    boolean dont_copy);
   private native void init (byte[] chars, int hibyte, int offset, int count);
