@@ -1,3 +1,7 @@
+2002-10-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/empty1.C: Fix typo.
+
 2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/alias-1.c: New test.
