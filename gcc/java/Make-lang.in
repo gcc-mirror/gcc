@@ -42,10 +42,10 @@
 # - define the names for selecting the language in LANGUAGES.
 
 # Actual names to use when installing a native compiler.
-JAVA_INSTALL_NAME = `t='$(program_transform_name)'; echo gcj | sed $$t`
+JAVA_INSTALL_NAME = `echo gcj|sed '$(program_transform_name)'` 
 
 # Actual names to use when installing a cross-compiler.
-JAVA_CROSS_NAME = `t='$(program_transform_cross_name)'; echo gcj | sed $$t`
+JAVA_CROSS_NAME = `echo gcj|sed '$(program_transform_cross_name)'` 
 
 GCJ = gcj
 
@@ -170,10 +170,11 @@ java.install-common: installdirs
 	  fi ; \
 	fi ; \
         for tool in $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS); do \
+	  tool_transformed_name=`echo $$tool|sed '$(program_transform_name)'`; \
           if [ -f $$tool$(exeext) ]; then \
-	    rm -f $(bindir)/$$tool$(exeext); \
-	    $(INSTALL_PROGRAM) $$tool$(exeext) $(bindir)/$$tool$(exeext); \
-	    chmod a+x $(bindir)/$$tool$(exeext); \
+	    rm -f $(bindir)/$$tool_transformed_name$(exeext); \
+	    $(INSTALL_PROGRAM) $$tool$(exeext) $(bindir)/$$tool_transformed_name$(exeext); \
+	    chmod a+x $(bindir)/$$tool_transformed_name$(exeext); \
           fi ; \
        done
 

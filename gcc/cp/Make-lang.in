@@ -38,14 +38,16 @@
 # - define the names for selecting the language in LANGUAGES.
 
 # Actual names to use when installing a native compiler.
-CXX_INSTALL_NAME = `t='$(program_transform_name)'; echo c++ | sed $$t`
-GXX_INSTALL_NAME = `t='$(program_transform_name)'; echo g++ | sed $$t`
-DEMANGLER_INSTALL_NAME = `t='$(program_transform_name)'; echo c++filt | sed $$t`
+CXX_INSTALL_NAME = `echo c++|sed '$(program_transform_name)'`
+GXX_INSTALL_NAME = `echo g++|sed '$(program_transform_name)'`
+DEMANGLER_INSTALL_NAME = `echo c++filt|sed '$(program_transform_name)'`
+CXX_TARGET_INSTALL_NAME = $(target_alias)-`echo c++|sed '$(program_transform_name)'`
+GXX_TARGET_INSTALL_NAME = $(target_alias)-`echo g++|sed '$(program_transform_name)'`
 
 # Actual names to use when installing a cross-compiler.
-CXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++ | sed $$t`
-GXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g++ | sed $$t`
-DEMANGLER_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++filt | sed $$t`
+CXX_CROSS_NAME = `echo c++|sed '$(program_transform_cross_name)'`
+GXX_CROSS_NAME = `echo g++|sed '$(program_transform_cross_name)'`
+DEMANGLER_CROSS_NAME = `echo c++filt|sed '$(program_transform_cross_name)'`
 
 # The name to use for the demangler program.
 DEMANGLER_PROG = c++filt$(exeext)
@@ -162,10 +164,10 @@ c++.install-common: installdirs
 	    chmod a+x $(bindir)/$(GXX_INSTALL_NAME)$(exeext); \
 	    rm -f $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
 	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
-	    rm -f $(bindir)/$(target_alias)-g++$(exeext); \
-	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-g++$(exeext); \
-	    rm -f $(bindir)/$(target_alias)-c++$(exeext); \
-	    $(LN) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-c++$(exeext); \
+	    rm -f $(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
+	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
+	    rm -f $(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
+	    $(LN) $(bindir)/$(CXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_TARGET_INSTALL_NAME)$(exeext); \
 	  fi ; \
 	  if [ x$(DEMANGLER_PROG) != x ] && [ -x "$(DEMANGLER_PROG)" ]; then \
 	    if [ -f g++-cross$(exeext) ] ; then \

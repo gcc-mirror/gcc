@@ -1,3 +1,11 @@
+2001-11-08  Andreas Franck  <afranck@gmx.de>
+
+	* Make-lang.in (CXX_INSTALL_NAME, GXX_CROSS_NAME,
+	DEMANGLER_CROSS_NAME): Handle program_transform_name the way
+	suggested by autoconf.
+	(GXX_TARGET_INSTALL_NAME, CXX_TARGET_INSTALL_NAME): Define.
+	(c++.install-common): Use the transformed target alias names.
+
 2001-11-06  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* Make-lang.in: Update.

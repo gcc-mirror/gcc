@@ -1,3 +1,17 @@
+2001-11-08  Andreas Franck  <afranck@gmx.de>
+
+	* configure.in: Add AC_ARG_PROGRAM to support program name
+	transformation with --program-prefix, --program-suffix and
+	--program-transform-name.
+	* configure: Regenerated.
+	* Makefile.in (GCC_INSTALL_NAME, CPP_INSTALL_NAME,
+	PROTOIZE_INSTALL_NAME, UNPROTOIZE_INSTALL_NAME, GCOV_INSTALL_NAME,
+	GCCBUG_INSTALL_NAME, GCC_CROSS_NAME, CPP_CROSS_NAME,
+	PROTOIZE_CROSS_NAME, UNPROTOIZE_CROSS_NAME): Handle
+	program_transform_name the way suggested by autoconf.
+	(GCC_TARGET_INSTALL_NAME): Define.
+	(install-driver): Use the transformed target alias name.
+
 2001-11-08  Richard Henderson  <rth@redhat.com>
 
 	* config/mips/mips.c (save_restore_insns): Remove GP from the
