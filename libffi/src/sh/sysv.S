@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   sysv.S - Copyright (c) 2002, 2003 Kaz Kojima
+   sysv.S - Copyright (c) 2002, 2003, 2004 Kaz Kojima
    
    SuperH Foreign Function Interface 
 
@@ -553,9 +553,12 @@ ENTRY(ffi_closure_SYSV)
 	mov	r1,r7
 #endif
 
+	bt/s	10f
+	 mov	r2, r5
 	mov	r14,r1
 	add	#8,r1
 	mov	r1,r5
+10:
 
 	mov	r14,r1
 #if defined(__SH4__)
@@ -565,7 +568,15 @@ ENTRY(ffi_closure_SYSV)
 #endif
 	mov.l	r1,@r14
 
+#ifdef PIC
+	mov.l	L_got,r1
+	mova	L_got,r0
+	add	r0,r1
 	mov.l	L_helper,r0
+	add	r1,r0
+#else
+	mov.l	L_helper,r0
+#endif
 	jsr	@r0
 	 mov	r3,r4
 
@@ -579,8 +590,15 @@ ENTRY(ffi_closure_SYSV)
 	 add	#8,r2
 0:
 	.align 2
+#ifdef PIC
+L_got:
+	.long	_GLOBAL_OFFSET_TABLE_
+L_helper:
+	.long	ffi_closure_helper_SYSV@GOTOFF
+#else
 L_helper:
 	.long	ffi_closure_helper_SYSV
+#endif
 L_table:
 	.short L_case_v - 0b	/* FFI_TYPE_VOID */
 	.short L_case_i - 0b	/* FFI_TYPE_INT */
@@ -683,10 +701,18 @@ __FRAME_BEGIN__:
 .LSCIE1:
 	.4byte	0x0	/* CIE Identifier Tag */
 	.byte	0x1	/* CIE Version */
+#ifdef PIC
+	.ascii "zR\0"	/* CIE Augmentation */
+#else
 	.byte	0x0	/* CIE Augmentation */
+#endif
 	.byte	0x1	/* uleb128 0x1; CIE Code Alignment Factor */
 	.byte	0x7c	/* sleb128 -4; CIE Data Alignment Factor */
 	.byte	0x11	/* CIE RA Column */
+#ifdef PIC
+	.uleb128 0x1	/* Augmentation size */
+	.byte	0x10	/* FDE Encoding (pcrel) */
+#endif
 	.byte	0xc	/* DW_CFA_def_cfa */
 	.byte	0xf	/* uleb128 0xf */
 	.byte	0x0	/* uleb128 0x0 */
@@ -696,8 +722,15 @@ __FRAME_BEGIN__:
 	.4byte	.LEFDE1-.LASFDE1	/* FDE Length */
 .LASFDE1:
 	.4byte	.LASFDE1-__FRAME_BEGIN__	/* FDE CIE offset */
+#ifdef PIC
+	.4byte	.LFB1-.	/* FDE initial location */
+#else
 	.4byte	.LFB1	/* FDE initial location */
+#endif
 	.4byte	.LFE1-.LFB1	 /* FDE address range */
+#ifdef PIC
+	.uleb128 0x0	/* Augmentation size */
+#endif
 	.byte	0x4	/* DW_CFA_advance_loc4 */
 	.4byte	.LCFI0-.LFB1
 	.byte	0xe	/* DW_CFA_def_cfa_offset */
@@ -745,8 +778,15 @@ __FRAME_BEGIN__:
 	.4byte	.LEFDE3-.LASFDE3	/* FDE Length */
 .LASFDE3:
 	.4byte	.LASFDE3-__FRAME_BEGIN__	/* FDE CIE offset */
+#ifdef PIC
+	.4byte	.LFB2-.	/* FDE initial location */
+#else
 	.4byte	.LFB2	/* FDE initial location */
+#endif
 	.4byte	.LFE2-.LFB2	 /* FDE address range */
+#ifdef PIC
+	.uleb128 0x0	/* Augmentation size */
+#endif
 	.byte	0x4	/* DW_CFA_advance_loc4 */
 	.4byte	.LCFI7-.LFB2
 	.byte	0xe	/* DW_CFA_def_cfa_offset */
