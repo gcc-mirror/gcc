@@ -101,7 +101,7 @@ Boston, MA 02111-1307, USA.  */
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
-      DECL_ANTICIPATED (in FUNCTION_DECL).
+      DECL_THUNK_P (in a member FUNCTION_DECL)
 
    Usage of language-independent fields in a language-dependent manner:
    
@@ -1870,7 +1870,8 @@ struct lang_decl_flags
   unsigned global_dtor_p : 1;
   unsigned tinfo_fn_p : 1;
   unsigned assignment_operator_p : 1;
-  unsigned dummy : 3;
+  unsigned anticipated_p : 1;
+  unsigned dummy : 2;
 
   tree context;
 
@@ -2491,7 +2492,8 @@ extern int flag_new_for_scope;
 
 /* Nonzero if NODE is a FUNCTION_DECL for a built-in function, and we have
    not yet seen a prototype for that function.  */
-#define DECL_ANTICIPATED(NODE) DECL_LANG_FLAG_7 (FUNCTION_DECL_CHECK (NODE))
+#define DECL_ANTICIPATED(NODE) \
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->decl_flags.anticipated_p)
 
 /* This _DECL represents a compiler-generated entity.  */
 #define SET_DECL_ARTIFICIAL(NODE) (DECL_ARTIFICIAL (NODE) = 1)

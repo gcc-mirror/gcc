@@ -1,3 +1,8 @@
+2000-06-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_decl_flags): Add anticipated_p.
+	(DECL_ANTICIPATED): Use it.
+
 2000-06-01  Richard Henderson  <rth@cygnus.com>
 
 	* decl.c (init_decl_processing): Set lang_get_alias_set first thing.
