@@ -1,3 +1,8 @@
+2003-11-17  Graydon Hoare  <graydon@redhat.com>
+
+	* javax/swing/plaf/basic/BasicDefaults.java: Rewrite to spec.
+	* javax/swing/UIDefaults.java: Modify to reflect rewrite.
+
 2003-11-16  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/13062:
