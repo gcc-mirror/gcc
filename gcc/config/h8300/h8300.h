@@ -175,7 +175,7 @@ extern int target_flags;
 /* Default target_flags if no switches specified.  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT (128)	/* quickcall */
+#define TARGET_DEFAULT (MASK_QUICKCALL)
 #endif
 
 /* Show we can debug even without a frame pointer.  */

@@ -1,5 +1,10 @@
 2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.h (TARGET_DEFAULT): Make it
+	MASK_QUICKCALL.
+
+2002-10-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (h8300_eightbit_constant_address_p): New.
 	(h8300_tiny_constant_address_p): Likewise.
 	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Use
