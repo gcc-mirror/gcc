@@ -1,3 +1,10 @@
+2002-12-18  Doug Evans  <dje@sebabeach.org>
+
+	* m32r/m32r.c (addr24_operand): Fix arg to CONSTANT_POOL_ADDRESS_P
+	and LIT_NAME_P.
+	(move_src_operand): Remove compile-time warning.
+	* m32r/m32r.h (ROUND_ADVANCE_ARG): Ditto.
+
 2002-12-18  Jason Merrill  <jason@redhat.com>
 
 	* unwind-dw2-fde.c (frame_downheap): Split out from...

@@ -602,8 +602,8 @@ addr24_operand (op, mode)
       rtx sym = XEXP (XEXP (op, 0), 0);
       return (SMALL_NAME_P (XSTR (sym, 0))
 	      || (TARGET_ADDR24
-		  && (CONSTANT_POOL_ADDRESS_P (op)
-		      || LIT_NAME_P (XSTR (op, 0)))));
+		  && (CONSTANT_POOL_ADDRESS_P (sym)
+		      || LIT_NAME_P (XSTR (sym, 0)))));
     }
 
   return 0;
@@ -839,7 +839,7 @@ move_src_operand (op, mode)
 
 	  low = CONST_DOUBLE_LOW (op);
 	  high = CONST_DOUBLE_HIGH (op);
-	  return high == 0 && low <= 0xffffffff;
+	  return high == 0 && low <= (unsigned) 0xffffffff;
 	}
       else
 	return 0;

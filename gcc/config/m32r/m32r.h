@@ -1074,7 +1074,7 @@ M32R_STACK_ALIGN (current_function_outgoing_args_size)
 #define ROUND_ADVANCE_ARG(MODE, TYPE) \
   ((MODE) == BLKmode				\
    ? ROUND_ADVANCE ((unsigned int) int_size_in_bytes (TYPE))	\
-   : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))
+   : ROUND_ADVANCE ((unsigned int) GET_MODE_SIZE (MODE)))
 
 /* Round CUM up to the necessary point for argument MODE/TYPE.  */
 #define ROUND_ADVANCE_CUM(CUM, MODE, TYPE) (CUM)
