@@ -1,3 +1,7 @@
+Fri May 21 20:09:52 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (BRANCH_COST): Define.
+
 Thu May 20 10:00:42 1999   Stephen L Moshier  <moshier@world.std.com>
 
 	* Makefile.in (GCC_FOR_TARGET): Add -I$(build_tooldir)/include.
