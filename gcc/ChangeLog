@@ -1,3 +1,8 @@
+Thu Jun 17 21:34:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (strength_reduce): When doing biv->giv conversion, update
+	reg note of NEXT->insn.
+
 Thu Jun 17 14:25:08 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (move_movables): Note issues with replacing REGs with
