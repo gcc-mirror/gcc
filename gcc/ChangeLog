@@ -1,3 +1,11 @@
+1999-01-12  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* m68k/mot3300.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Define to
+	ensure all prototypes necessary for building libio will be available.
+	* m68k/xm-mot3300.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Remove
+	definitions here as they are not host specific.
+	* m88k/sysv3.h, m88k/xm-sysv3.h: Likewise.
+
 Tue Jan 12 02:53:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* cse.c (cse_insn): Never prefer (const (constant_p_rtx)).
