@@ -1,3 +1,11 @@
+2000-03-04  Anthony Green  <green@redhat.com>
+
+	* configure: Rebuilt.
+	* configure.in (ZLIBTESTSPEC): New macro.
+	(GCTESTSPEC): New macro.
+	(LIBGCJTESTSPEC): New macro.
+	* libgcj-test.spec.in: New file.
+
 2000-03-02  Tom Tromey  <tromey@cygnus.com>
 
 	* include/java-interp.h: Don't include MethodInvocation.h.

@@ -1,0 +1,7 @@
+#
+# This spec file is read by gcj when linking.
+# It is only used by the testing harnesses (in libjava and gdb).
+#
+%rename lib liborig2
+*lib: @LIBGCJTESTSPEC@ @GCTESTSPEC@ @ZLIBTESTSPEC@ %(liborig2)
+

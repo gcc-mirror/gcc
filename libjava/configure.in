@@ -174,10 +174,15 @@ AC_LINK_FILES(java/lang/nat${PROCESS}Process.cc, java/lang/natConcreteProcess.cc
 SYSTEMSPEC=
 AC_SUBST(SYSTEMSPEC)
 
+LIBGCJTESTSPEC="-L`pwd`/.libs -rpath `pwd`/.libs"
+AC_SUBST(LIBGCJTESTSPEC)
+
 AC_ARG_WITH(system-zlib,
 [  --with-system-zlib      use installed libz])
 ZLIBSPEC=
 AC_SUBST(ZLIBSPEC)
+ZLIBTESTSPEC=
+AC_SUBST(ZLIBTESTSPEC)
 
 dnl FIXME: this should be _libs on some hosts.
 libsubdir=.libs
@@ -195,6 +200,7 @@ GCINCS=
 GCDEPS=
 GCOBJS=
 GCSPEC=
+GCTESTSPEC=
 case "$GC" in
  boehm)
     AC_MSG_RESULT(boehm)
@@ -204,6 +210,7 @@ case "$GC" in
     GCLIBS="$GCDEPS -L\$(here)/../boehm-gc/$libsubdir"
     GCINCS='-I$(top_srcdir)/../boehm-gc -I$(top_builddir)/../boehm-gc'
     GCSPEC='-lgcjgc'
+    GCTESTSPEC="-L`pwd`/../boehm-gc/.libs -rpath `pwd`/../boehm-gc/.libs"
     dnl We also want to pick up some cpp flags required when including
     dnl boehm-config.h.  Yuck.
     GCINCS="$GCINCS `cat ../boehm-gc/boehm-cflags`"
@@ -226,6 +233,7 @@ AC_SUBST(GCINCS)
 AC_SUBST(GCDEPS)
 AC_SUBST(GCOBJS)
 AC_SUBST(GCSPEC)
+AC_SUBST(GCTESTSPEC)
 AC_LINK_FILES(include/$GCHDR, include/java-gc.h)
 
 
@@ -358,6 +366,7 @@ if test -n "${with_cross_host}"; then
    AC_DEFINE(NO_GETUID)
 
    ZLIBSPEC=-lzgcj
+   ZLIBTESTSPEC="-L`pwd`/../zlib/.libs -rpath `pwd`/../zlib/.libs"
 
    # If Canadian cross, then don't pick up tools from the build
    # directory.
@@ -546,6 +555,7 @@ else
       AC_CHECK_LIB(z, deflate, ZLIBSPEC=-lz, ZLIBSPEC=-lzgcj)
    else
       ZLIBSPEC=-lzgcj
+      ZLIBTESTSPEC="-L`pwd`/../zlib/.libs -rpath `pwd`/../zlib/.libs"
    fi
 
    # On Solaris, and maybe other architectures, the Boehm collector
@@ -720,7 +730,7 @@ fi
 here=`pwd`
 AC_SUBST(here)
 
-AC_OUTPUT(Makefile libgcj.spec gcj/Makefile include/Makefile testsuite/Makefile,
+AC_OUTPUT(Makefile libgcj.spec libgcj-test.spec gcj/Makefile include/Makefile testsuite/Makefile,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
 fi],
