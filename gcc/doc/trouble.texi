@@ -1423,7 +1423,7 @@ an error message for a certain program.
 ISO C requires a ``diagnostic'' message for certain kinds of invalid
 programs, but a warning is defined by GCC to count as a diagnostic.  If
 GCC produces a warning but not an error, that is correct ISO C support.
-If test suites call this ``failure'', they should be run with the GCC
+If testsuites call this ``failure'', they should be run with the GCC
 option @option{-pedantic-errors}, which will turn these warnings into
 errors.
 
