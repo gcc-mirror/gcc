@@ -1,3 +1,11 @@
+2002-02-03  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config.gcc (arm*-*-netbsdelf*): Placeholder to prevent match
+	by existing arm*-*-netbsd* (a.out) target.
+	(ns32k-*-netbsdelf*): Likewise.
+	(sparc-*-netbsdelf*): Likewise.
+	(vax-*-netbsdelf*): Likewise.
+
 2002-02-03  Danny Smith <dannysmith@users.sourceforge.net>
 
 	* gthr-win32.h: Protect against conflicting typedef for BOOL in windows
