@@ -1,4 +1,4 @@
-/* Copyright (C) 2000 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jes Sorensen, <Jes.Sorensen@cern.ch>
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -71,16 +71,16 @@ __dso_handle:
  */
 .section .fini,"ax","progbits"
 	{ .mlx
-	  movl r2 = @gprel(__do_global_dtors_aux#)
-	  ;;
+	  movl r2 = @pcrel(__do_global_dtors_aux# - 16)
 	}
 	{ .mii
-	  nop.m 0
-	  add r2 = r2, gp
+	  mov r3 = ip
 	  ;;
-	  mov b6 = r2
+	  add r2 = r2, r3
+	  ;;
 	}
-	{ .bbb
+	{ .mib
+	  mov b6 = r2
 	  br.call.sptk.many b0 = b6
 	  ;;
 	}
@@ -105,6 +105,7 @@ __dso_handle:
 	}
 	{ .mfb
 	  st8 [r2] = r16
+	  ;;
 	}
 #endif
 
