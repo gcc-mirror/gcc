@@ -1,5 +1,9 @@
 2003-09-29  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/image/IndexColorModel.java: Reformated.
+
+2003-09-29  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java,
 	java/net/URL.java: Reformated.
 
