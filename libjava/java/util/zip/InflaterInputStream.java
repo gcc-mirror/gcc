@@ -73,6 +73,10 @@ public class InflaterInputStream extends FilterInputStream
   public InflaterInputStream (InputStream in, Inflater infl, int bufsize)
   {
     super (in);
+
+    if (in == null)
+      throw new NullPointerException();
+    
     this.inf = infl;
     this.buf = new byte[bufsize];
   }

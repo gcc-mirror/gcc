@@ -1,5 +1,11 @@
 2003-06-19  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/zip/InflaterInputStream.java
+	(InflaterInputStream): Throw NullPointerException if in is null (as
+	JDK does).
+
+2003-06-19  Michael Koch  <konqueror@gmx.de>
+
 	* java/awt/Font.java
 	javax/swing/UIManager.java
 	javax/swing/border/AbstractBorder.java
