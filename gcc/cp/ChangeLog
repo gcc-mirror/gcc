@@ -1,3 +1,10 @@
+2000-10-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (dump_function_decl): Print no space between
+	`ptr-operator' the `type-specifier' of the return type.
+	(dump_type_prefix): Make sure we put space at the appropriate
+	place. 
+
 2000-10-23  Jason Merrill  <jason@redhat.com>
 
 	* call.c (equal_functions): Also call decls_match for extern "C" fns.

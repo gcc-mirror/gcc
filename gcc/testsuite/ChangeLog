@@ -1,3 +1,8 @@
+2000-10-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* g++.old-deja/g++.pt/memtemp77.C (main): Adjust comparaison
+	operands. 
+
 2000-10-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/qual-return-1.c, gcc.dg/qual-return-2.c: New tests.
