@@ -1,3 +1,9 @@
+2003-08-05  Matthias Klose  <doko@debian.org>
+
+	* aclocal.m4: check for libart-config binary
+	  under the name libart2-config as well.
+	* configure: regenerated.
+
 2003-08-04  David P Grove  <groved@us.ibm.com>
 
 	* java/text/DecimalFormat.java (format): avoid ArithmeticException
