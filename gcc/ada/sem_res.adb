@@ -6207,6 +6207,12 @@ package body Sem_Res is
                Error_Msg_N ("\as Duration, and will lose precision?", Rop);
             end if;
 
+         elsif Is_Numeric_Type (Typ)
+           and then Nkind (Operand) in N_Op
+           and then Unique_Fixed_Point_Type (N) /= Any_Type
+         then
+            Set_Etype (Operand, Standard_Duration);
+
          else
             Error_Msg_N ("invalid context for mixed mode operation", N);
             Set_Etype (Operand, Any_Type);

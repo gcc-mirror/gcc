@@ -38,16 +38,15 @@
 --  Default version for most targets
 
 procedure Ada.Exceptions.Last_Chance_Handler
-  (Except : Exception_Occurrence) is
-
+  (Except : Exception_Occurrence)
+is
    procedure Unhandled_Terminate;
    pragma No_Return (Unhandled_Terminate);
    pragma Import (C, Unhandled_Terminate, "__gnat_unhandled_terminate");
    --  Perform system dependent shutdown code
 
    function Tailored_Exception_Information
-     (X    : Exception_Occurrence)
-     return String;
+     (X : Exception_Occurrence) return String;
    --  Exception information to be output in the case of automatic tracing
    --  requested through GNAT.Exception_Traces.
    --
@@ -96,15 +95,13 @@ procedure Ada.Exceptions.Last_Chance_Handler
    procedure Tailored_Exception_Information
      (X    : Exception_Occurrence;
       Buff : in out String;
-      Last : in out Integer) is
-
-      Info : String := Tailored_Exception_Information (X);
+      Last : in out Integer)
+   is
+      Info : constant String := Tailored_Exception_Information (X);
    begin
       Last := Info'Last;
       Buff (1 .. Last) := Info;
    end Tailored_Exception_Information;
-
-
 
 begin
    --  First allocate & store the exception info in a buffer when
@@ -152,9 +149,9 @@ begin
 
       To_Stderr (Nline);
 
-   else
-      --  Traceback exists
+   --  Traceback exists
 
+   else
       --  Note we can have this whole information output twice if
       --  this occurrence gets reraised up to here.
 
@@ -165,5 +162,4 @@ begin
    end if;
 
    Unhandled_Terminate;
-
 end Ada.Exceptions.Last_Chance_Handler;

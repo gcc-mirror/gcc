@@ -1221,11 +1221,12 @@ ada/a-elchha.o : ada/ada.ads ada/a-except.ads ada/a-elchha.ads \
 
 ada/a-except.o : ada/ada.ads ada/a-except.ads ada/a-except.adb \
    ada/a-excach.adb ada/a-exexda.adb ada/a-exexpr.adb ada/a-exextr.adb \
-   ada/a-excpol.adb ada/a-exstat.adb ada/a-unccon.ads ada/a-uncdea.ads \
-   ada/interfac.ads ada/system.ads ada/s-exctab.ads ada/s-except.ads \
-   ada/s-mastop.ads ada/s-secsta.ads ada/s-soflin.ads ada/s-stache.ads \
-   ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb ada/s-traceb.ads \
-   ada/s-traent.ads ada/s-traent.adb ada/s-unstyp.ads ada/unchconv.ads 
+   ada/a-elchha.ads ada/a-excpol.adb ada/a-exstat.adb ada/a-unccon.ads \
+   ada/a-uncdea.ads ada/interfac.ads ada/system.ads ada/s-exctab.ads \
+   ada/s-except.ads ada/s-mastop.ads ada/s-secsta.ads ada/s-soflin.ads \
+   ada/s-stache.ads ada/s-stalib.ads ada/s-stoele.ads ada/s-stoele.adb \
+   ada/s-traceb.ads ada/s-traent.ads ada/s-traent.adb ada/s-unstyp.ads \
+   ada/unchconv.ads 
 
 ada/a-ioexce.o : ada/ada.ads ada/a-except.ads ada/a-ioexce.ads \
    ada/system.ads ada/s-exctab.ads ada/s-exctab.adb ada/s-htable.ads \

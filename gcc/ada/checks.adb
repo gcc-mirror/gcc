@@ -4778,13 +4778,16 @@ package body Checks is
 
                   --  At the library level, we need to ensure that the
                   --  type of the object is elaborated before the check
-                  --  itself is emitted.
+                  --  itself is emitted. This is only done if the object
+                  --  is in the current compilation unit, otherwise the
+                  --  type is frozen and elaborated in its unit.
 
                   if Is_Itype (Exptyp)
                     and then
                       Ekind (Cunit_Entity (Current_Sem_Unit)) = E_Package
                     and then
                       not In_Package_Body (Cunit_Entity (Current_Sem_Unit))
+                    and then In_Open_Scopes (Scope (Exptyp))
                   then
                      Ref_Node := Make_Itype_Reference (Sloc (Ck_Node));
                      Set_Itype (Ref_Node, Exptyp);

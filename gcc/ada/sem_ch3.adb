@@ -7715,8 +7715,8 @@ package body Sem_Ch3 is
          if not Error_Posted (S)
            and then
              (Nkind (S) /= N_Range
-               or else Base_Type (T) /= Base_Type (Etype (Low_Bound (S)))
-               or else Base_Type (T) /= Base_Type (Etype (High_Bound (S))))
+               or else not Covers (T, (Etype (Low_Bound (S))))
+               or else not Covers (T, (Etype (High_Bound (S)))))
          then
             if Base_Type (T) /= Any_Type
               and then Etype (Low_Bound (S)) /= Any_Type
