@@ -1139,7 +1139,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 
 	  else if (win
 		   || (GET_CODE (op) == REG
-		       && reg_fits_class_p (op, classes[i], 0, mode)))
+		       && reg_fits_class_p (op, classes[i], 0, GET_MODE (op))))
 	    ;
 
 	  /* If registers are valid, the cost of this alternative includes
