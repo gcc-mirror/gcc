@@ -382,189 +382,172 @@ gfc_conv_unary_op (enum tree_code code, gfc_se * se, gfc_expr * expr)
 
 }
 
+/* Expand power operator to optimal multiplications when a value is raised
+   to an constant integer n. See section 4.6.3, "Evaluation of Powers" of
+   Donald E. Knuth, "Seminumerical Algorithms", Vol. 2, "The Art of Computer
+   Programming", 3rd Edition, 1998.  */
 
-/* For power op (lhs ** rhs) We generate:
-    m = lhs
-    if (rhs > 0)
-      count = rhs
-    else if (rhs == 0)
-      {
-        count = 0
-        m = 1
-      }
-    else // (rhs < 0)
-      {
-        count = -rhs
-        m = 1 / m;
-      }
-    // for constant rhs we do the above at compile time
-    val = m;
-    for (n = 1; n < count; n++)
-      val = val * m;
- */
+/* This code is mostly duplicated from expand_powi in the backend.
+   We establish the "optimal power tree" lookup table with the defined size.
+   The items in the table are the exponents used to calculate the index
+   exponents. Any integer n less than the value can get an "addition chain",
+   with the first node being one.  */
+#define POWI_TABLE_SIZE 256
 
-static void
-gfc_conv_integer_power (gfc_se * se, tree lhs, tree rhs)
+/* The table is from Builtins.c.  */
+static const unsigned char powi_table[POWI_TABLE_SIZE] =
+  {
+      0,   1,   1,   2,   2,   3,   3,   4,  /*   0 -   7 */
+      4,   6,   5,   6,   6,  10,   7,   9,  /*   8 -  15 */
+      8,  16,   9,  16,  10,  12,  11,  13,  /*  16 -  23 */
+     12,  17,  13,  18,  14,  24,  15,  26,  /*  24 -  31 */
+     16,  17,  17,  19,  18,  33,  19,  26,  /*  32 -  39 */
+     20,  25,  21,  40,  22,  27,  23,  44,  /*  40 -  47 */
+     24,  32,  25,  34,  26,  29,  27,  44,  /*  48 -  55 */
+     28,  31,  29,  34,  30,  60,  31,  36,  /*  56 -  63 */
+     32,  64,  33,  34,  34,  46,  35,  37,  /*  64 -  71 */
+     36,  65,  37,  50,  38,  48,  39,  69,  /*  72 -  79 */
+     40,  49,  41,  43,  42,  51,  43,  58,  /*  80 -  87 */
+     44,  64,  45,  47,  46,  59,  47,  76,  /*  88 -  95 */
+     48,  65,  49,  66,  50,  67,  51,  66,  /*  96 - 103 */
+     52,  70,  53,  74,  54, 104,  55,  74,  /* 104 - 111 */
+     56,  64,  57,  69,  58,  78,  59,  68,  /* 112 - 119 */
+     60,  61,  61,  80,  62,  75,  63,  68,  /* 120 - 127 */
+     64,  65,  65, 128,  66, 129,  67,  90,  /* 128 - 135 */
+     68,  73,  69, 131,  70,  94,  71,  88,  /* 136 - 143 */
+     72, 128,  73,  98,  74, 132,  75, 121,  /* 144 - 151 */
+     76, 102,  77, 124,  78, 132,  79, 106,  /* 152 - 159 */
+     80,  97,  81, 160,  82,  99,  83, 134,  /* 160 - 167 */
+     84,  86,  85,  95,  86, 160,  87, 100,  /* 168 - 175 */
+     88, 113,  89,  98,  90, 107,  91, 122,  /* 176 - 183 */
+     92, 111,  93, 102,  94, 126,  95, 150,  /* 184 - 191 */
+     96, 128,  97, 130,  98, 133,  99, 195,  /* 192 - 199 */
+    100, 128, 101, 123, 102, 164, 103, 138,  /* 200 - 207 */
+    104, 145, 105, 146, 106, 109, 107, 149,  /* 208 - 215 */
+    108, 200, 109, 146, 110, 170, 111, 157,  /* 216 - 223 */
+    112, 128, 113, 130, 114, 182, 115, 132,  /* 224 - 231 */
+    116, 200, 117, 132, 118, 158, 119, 206,  /* 232 - 239 */
+    120, 240, 121, 162, 122, 147, 123, 152,  /* 240 - 247 */
+    124, 166, 125, 214, 126, 138, 127, 153,  /* 248 - 255 */
+  };
+
+/* If n is larger than lookup table's max index, we use "window method".  */
+#define POWI_WINDOW_SIZE 3
+
+/* Recursive function to expand power operator. The temporary values are put
+   in tmpvar. The function return tmpvar[1] ** n.  */
+static tree
+gfc_conv_powi (gfc_se * se, int n, tree * tmpvar)
 {
-  tree count;
-  tree result;
-  tree cond;
-  tree neg_stmt;
-  tree pos_stmt;
+  tree op0;
+  tree op1;
   tree tmp;
-  tree var;
-  tree type;
-  stmtblock_t block;
-  tree exit_label;
+  int digit;
 
-  type = TREE_TYPE (lhs);
-
-  if (INTEGER_CST_P (rhs))
+  if (n < POWI_TABLE_SIZE)
     {
-      if (integer_zerop (rhs))
-	{
-	  se->expr = gfc_build_const (type, integer_one_node);
-	  return;
-	}
-      /* Special cases for constant values.  */
-      if (TREE_INT_CST_HIGH (rhs) == -1)
-	{
-	  /* x ** (-y) == 1 / (x ** y).  */
-	  if (TREE_CODE (type) == INTEGER_TYPE)
-	    {
-	      se->expr = integer_zero_node;
-	      return;
-	    }
+      if (tmpvar[n])
+        return tmpvar[n];
 
-	  tmp = gfc_build_const (type, integer_one_node);
-	  lhs = fold (build (RDIV_EXPR, type, tmp, lhs));
-
-	  rhs = fold (build1 (NEGATE_EXPR, TREE_TYPE (rhs), rhs));
-	  assert (INTEGER_CST_P (rhs));
-	}
-      else
-	{
-	  /* TODO: really big integer powers.  */
-	  assert (TREE_INT_CST_HIGH (rhs) == 0);
-	}
-
-      if (integer_onep (rhs))
-	{
-	  se->expr = lhs;
-	  return;
-	}
-      if (TREE_INT_CST_LOW (rhs) == 2)
-	{
-	  se->expr = build (MULT_EXPR, type, lhs, lhs);
-	  return;
-	}
-      if (TREE_INT_CST_LOW (rhs) == 3)
-	{
-	  tmp = build (MULT_EXPR, type, lhs, lhs);
-	  se->expr = fold (build (MULT_EXPR, type, tmp, lhs));
-	  return;
-	}
-
-      /* Create the loop count variable.  */
-      count = gfc_create_var (TREE_TYPE (rhs), "count");
-      gfc_add_modify_expr (&se->pre, count, rhs);
+      op0 = gfc_conv_powi (se, n - powi_table[n], tmpvar);
+      op1 = gfc_conv_powi (se, powi_table[n], tmpvar);
+    }
+  else if (n & 1)
+    {
+      digit = n & ((1 << POWI_WINDOW_SIZE) - 1);
+      op0 = gfc_conv_powi (se, n - digit, tmpvar);
+      op1 = gfc_conv_powi (se, digit, tmpvar);
     }
   else
     {
-      /* Put the lhs into a temporary variable.  */
-      var = gfc_create_var (type, "val");
-      count = gfc_create_var (TREE_TYPE (rhs), "count");
-      gfc_add_modify_expr (&se->pre, var, lhs);
-      lhs = var;
-
-      /* Generate code for negative rhs.  */
-      gfc_start_block (&block);
-
-      if (TREE_CODE (TREE_TYPE (lhs)) == INTEGER_TYPE)
-	{
-	  gfc_add_modify_expr (&block, lhs, integer_zero_node);
-	  gfc_add_modify_expr (&block, count, integer_zero_node);
-	}
-      else
-	{
-	  tmp = gfc_build_const (type, integer_one_node);
-	  tmp = build (RDIV_EXPR, type, tmp, lhs);
-	  gfc_add_modify_expr (&block, var, tmp);
-
-	  tmp = build1 (NEGATE_EXPR, TREE_TYPE (rhs), rhs);
-	  gfc_add_modify_expr (&block, count, tmp);
-	}
-      neg_stmt = gfc_finish_block (&block);
-
-      pos_stmt = build_v (MODIFY_EXPR, count, rhs);
-
-      /* Code for rhs == 0.  */
-      gfc_start_block (&block);
-
-      gfc_add_modify_expr (&block, count, integer_zero_node);
-      tmp = gfc_build_const (type, integer_one_node);
-      gfc_add_modify_expr (&block, lhs, tmp);
-
-      tmp = gfc_finish_block (&block);
-
-      /* Select the appropriate action.  */
-      cond = build (EQ_EXPR, boolean_type_node, rhs, integer_zero_node);
-      tmp = build_v (COND_EXPR, cond, tmp, neg_stmt);
-
-      cond = build (GT_EXPR, boolean_type_node, rhs, integer_zero_node);
-      tmp = build_v (COND_EXPR, cond, pos_stmt, tmp);
-      gfc_add_expr_to_block (&se->pre, tmp);
+      op0 = gfc_conv_powi (se, n >> 1, tmpvar);
+      op1 = op0;
     }
 
-  /* Create a variable for the result.  */
-  result = gfc_create_var (type, "pow");
-  gfc_add_modify_expr (&se->pre, result, lhs);
+  tmp = fold (build (MULT_EXPR, TREE_TYPE (op0), op0, op1));
+  tmp = gfc_evaluate_now (tmp, &se->pre);
 
-  exit_label = gfc_build_label_decl (NULL_TREE);
-  TREE_USED (exit_label) = 1;
+  if (n < POWI_TABLE_SIZE)
+    tmpvar[n] = tmp;
 
-  /* Create the loop body.  */
-  gfc_start_block (&block);
+  return tmp;
+}
 
-  /* First the exit condition (until count <= 1).  */
-  tmp = build1_v (GOTO_EXPR, exit_label);
-  cond = build (LE_EXPR, TREE_TYPE (count), count, integer_one_node);
-  tmp = build_v (COND_EXPR, cond, tmp, build_empty_stmt ());
-  gfc_add_expr_to_block (&block, tmp);
+/* Expand lhs ** rhs. rhs is an constant integer. If expand successfully,
+   return 1. Else return 0 and will call runtime library functions.  */
+static int
+gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
+{
+  tree cond;
+  tree tmp;
+  tree type;
+  tree vartmp[POWI_TABLE_SIZE];
+  int n;
+  int sgn;
 
-  /* Multiply by the lhs.  */
-  tmp = build (MULT_EXPR, type, result, lhs);
-  gfc_add_modify_expr (&block, result, tmp);
+  type = TREE_TYPE (lhs);
+  n = abs (TREE_INT_CST_LOW (rhs));
+  sgn = tree_int_cst_sgn (rhs);
 
-  /* Adjust the loop count.  */
-  tmp = build (MINUS_EXPR, TREE_TYPE (count), count, integer_one_node);
-  gfc_add_modify_expr (&block, count, tmp);
+  if ((!flag_unsafe_math_optimizations || optimize_size) && (n > 2 || n < -1))
+    return 0;
 
-  tmp = gfc_finish_block (&block);
+  /* rhs == 0  */
+  if (sgn == 0)
+    {
+      se->expr = gfc_build_const (type, integer_one_node);
+      return 1;
+    }
+  /* If rhs < 0 and lhs is an integer, the result is -1, 0 or 1.  */
+  if ((sgn == -1) && (TREE_CODE (type) == INTEGER_TYPE))
+    {
+      tmp = build (EQ_EXPR, boolean_type_node, lhs,
+			integer_minus_one_node);
+      cond = build (EQ_EXPR, boolean_type_node, lhs,
+			integer_one_node);
 
-  /* Create the the loop.  */
-  tmp = build_v (LOOP_EXPR, tmp);
-  gfc_add_expr_to_block (&se->pre, tmp);
+      /* If rhs is an even,
+	result = (lhs == 1 || lhs == -1) ? 1 : 0.  */
+      if ((n & 1) == 0)
+        {
+	  tmp = build (TRUTH_OR_EXPR, boolean_type_node, tmp, cond);
+	  se->expr = build (COND_EXPR, type, tmp, integer_one_node, 
+			integer_zero_node);
+	  return 1;
+	}
+      /* If rhs is an odd,
+	 result = (lhs == 1) ? 1 : (lhs == -1) ? -1 : 0.  */
+      tmp = build (COND_EXPR, type, tmp, integer_minus_one_node,
+			integer_zero_node);
+      se->expr = build (COND_EXPR, type, cond, integer_one_node,
+			tmp);
+      return 1;
+    }
 
-  /* Add the exit label.  */
-  tmp = build1_v (LABEL_EXPR, exit_label);
-  gfc_add_expr_to_block (&se->pre, tmp);
+  memset (vartmp, 0, sizeof (vartmp));
+  vartmp[1] = lhs;
 
-  se->expr = result;
+  se->expr = gfc_conv_powi (se, n, vartmp);
+  if (sgn == -1)
+    {
+      tmp = gfc_build_const (type, integer_one_node);
+      se->expr = build (RDIV_EXPR, type, tmp, se->expr);
+    }
+  return 1;
 }
 
 
-/* Power op (**).  Integer rhs has special handling.  */
+/* Power op (**).  Constant integer exponent has special handling.  */
 
 static void
 gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 {
   int kind;
+  int ikind;
   gfc_se lse;
   gfc_se rse;
   tree fndecl;
   tree tmp;
-  tree type;
 
   gfc_init_se (&lse, se);
   gfc_conv_expr_val (&lse, expr->op1);
@@ -574,24 +557,83 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
   gfc_conv_expr_val (&rse, expr->op2);
   gfc_add_block_to_block (&se->pre, &rse.pre);
 
-  type = TREE_TYPE (lse.expr);
+  if (expr->op2->ts.type == BT_INTEGER
+	 && expr->op2->expr_type == EXPR_CONSTANT)
+    if (gfc_conv_cst_int_power (se, lse.expr, rse.expr))
+      return;        
 
   kind = expr->op1->ts.kind;
   switch (expr->op2->ts.type)
     {
     case BT_INTEGER:
-      /* Integer powers are expanded inline as multiplications.  */
-      gfc_conv_integer_power (se, lse.expr, rse.expr);
-      return;
+      ikind = expr->op2->ts.kind;
+      switch (ikind)
+	{
+	case 1:
+	case 2:
+	  rse.expr = convert (gfc_int4_type_node, rse.expr);
+	  /* Fall through.  */
+
+	case 4:
+	  ikind = 0;
+	  break;
+	  
+	case 8:
+	  ikind = 1;
+	  break;
+
+	default:
+	  abort();
+	}
+      switch (kind)
+	{
+	case 1:
+	case 2:
+	  if (expr->op1->ts.type == BT_INTEGER)
+	    lse.expr = convert (gfc_int4_type_node, lse.expr);
+	  else
+	    abort ();
+	  /* Fall through.  */
+
+	case 4:
+	  kind = 0;
+	  break;
+	  
+	case 8:
+	  kind = 1;
+	  break;
+
+	default:
+	  abort();
+	}
+      
+      switch (expr->op1->ts.type)
+	{
+	case BT_INTEGER:
+	  fndecl = gfor_fndecl_math_powi[kind][ikind].integer;
+	  break;
+
+	case BT_REAL:
+	  fndecl = gfor_fndecl_math_powi[kind][ikind].real;
+	  break;
+
+	case BT_COMPLEX:
+	  fndecl = gfor_fndecl_math_powi[kind][ikind].cmplx;
+	  break;
+
+	default:
+	  abort ();
+ 	}
+      break;
 
     case BT_REAL:
       switch (kind)
 	{
 	case 4:
-	  fndecl = gfor_fndecl_math_powf;
+	  fndecl = built_in_decls[BUILT_IN_POWF];
 	  break;
 	case 8:
-	  fndecl = gfor_fndecl_math_pow;
+	  fndecl = built_in_decls[BUILT_IN_POW];
 	  break;
 	default:
 	  abort ();
@@ -619,7 +661,7 @@ gfc_conv_power_op (gfc_se * se, gfc_expr * expr)
 
   tmp = gfc_chainon_list (NULL_TREE, lse.expr);
   tmp = gfc_chainon_list (tmp, rse.expr);
-  se->expr = gfc_build_function_call (fndecl, tmp);
+  se->expr = fold (gfc_build_function_call (fndecl, tmp));
 }
 
 

@@ -93,8 +93,7 @@ tree gfor_fndecl_associated;
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */
 
-tree gfor_fndecl_math_powf;
-tree gfor_fndecl_math_pow;
+gfc_powdecl_list gfor_fndecl_math_powi[3][2];
 tree gfor_fndecl_math_cpowf;
 tree gfor_fndecl_math_cpow;
 tree gfor_fndecl_math_cabsf;
@@ -1398,14 +1397,40 @@ gfc_build_intrinsic_function_decls (void)
 
 
   /* Power functions.  */
-  gfor_fndecl_math_powf =
-    gfc_build_library_function_decl (get_identifier ("powf"),
-				     gfc_real4_type_node,
-				     1, gfc_real4_type_node);
-  gfor_fndecl_math_pow =
-    gfc_build_library_function_decl (get_identifier ("pow"),
-				     gfc_real8_type_node,
-				     1, gfc_real8_type_node);
+  {
+    tree type;
+    tree itype;
+    int kind;
+    int ikind;
+    static int kinds[2] = {4, 8};
+    char name[PREFIX_LEN + 10]; /* _gfortran_pow_?n_?n */
+
+    for (ikind=0; ikind < 2; ikind++)
+      {
+	itype = gfc_get_int_type (kinds[ikind]);
+	for (kind = 0; kind < 2; kind ++)
+	  {
+	    type = gfc_get_int_type (kinds[kind]);
+	    sprintf(name, PREFIX("pow_i%d_i%d"), kinds[kind], kinds[ikind]);
+	    gfor_fndecl_math_powi[kind][ikind].integer =
+	      gfc_build_library_function_decl (get_identifier (name),
+		  type, 2, type, itype);
+
+	    type = gfc_get_real_type (kinds[kind]);
+	    sprintf(name, PREFIX("pow_r%d_i%d"), kinds[kind], kinds[ikind]);
+	    gfor_fndecl_math_powi[kind][ikind].real =
+	      gfc_build_library_function_decl (get_identifier (name),
+		  type, 2, type, itype);
+
+	    type = gfc_get_complex_type (kinds[kind]);
+	    sprintf(name, PREFIX("pow_c%d_i%d"), kinds[kind], kinds[ikind]);
+	    gfor_fndecl_math_powi[kind][ikind].cmplx =
+	      gfc_build_library_function_decl (get_identifier (name),
+		  type, 2, type, itype);
+	  }
+      }
+  }
+
   gfor_fndecl_math_cpowf =
     gfc_build_library_function_decl (get_identifier ("cpowf"),
 				     gfc_complex4_type_node,

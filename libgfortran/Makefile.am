@@ -222,6 +222,20 @@ i_set_exponent_c = \
 generated/set_exponent_r4.c \
 generated/set_exponent_r8.c
 
+i_pow_c = \
+generated/pow_i4_i4.c \
+generated/pow_i8_i4.c \
+generated/pow_r4_i4.c \
+generated/pow_r8_i4.c \
+generated/pow_c4_i4.c \
+generated/pow_c8_i4.c \
+generated/pow_i4_i8.c \
+generated/pow_i8_i8.c \
+generated/pow_r4_i8.c \
+generated/pow_r8_i8.c \
+generated/pow_c4_i8.c \
+generated/pow_c8_i8.c
+
 m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
     m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
@@ -229,14 +243,15 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/ctrig.m4 m4/cexp.m4 m4/chyp.m4 m4/mtype.m4 \
     m4/specific.m4 m4/specific2.m4 m4/head.m4 m4/shape.m4 m4/reshape.m4 \
     m4/transpose.m4 m4/eoshift1.m4 m4/eoshift3.m4 m4/exponent.m4 \
-    m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4
+    m4/fraction.m4 m4/nearest.m4 m4/set_exponent.m4 m4/pow.m4
 
 gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
     $(i_product_c) $(i_sum_c) $(i_dotprod_c) $(i_dotprodl_c) $(i_dotprodc_c) \
     $(i_matmul_c) $(i_matmull_c) $(i_transpose_c) $(i_shape_c) $(i_eoshift1_c) \
     $(i_eoshift3_c) $(i_cshift1_c) $(i_reshape_c) $(in_pack_c) $(in_unpack_c) \
-    $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c)
+    $(i_exponent_c) $(i_fraction_c) $(i_nearest_c) $(i_set_exponent_c) \
+    $(i_pow_c)
 
 # We only use these if libm doesn't contain complex math functions.
 
@@ -442,6 +457,9 @@ $(i_nearest_c): m4/nearest.m4 m4/mtype.m4
 
 $(i_set_exponent_c): m4/set_exponent.m4 m4/mtype.m4
 	m4 -Dfile=$@ -I$(srcdir)/m4 set_exponent.m4 > $@
+
+$(i_pow_c): m4/pow.m4 $(I_M4_DEPS)
+	m4 -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $@
 
 $(gfor_math_trig_c): m4/ctrig.m4 m4/mtype.m4
 	m4 -Dfile=$@ -I$(srcdir)/m4 ctrig.m4 > $@

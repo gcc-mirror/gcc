@@ -1,3 +1,20 @@
+2004-05-18  Paul Brook  <paul@codesourcery.com>
+
+	* f95-lang.c (gfc_init_builtin_functions): Use vold_list_node.
+	Create decls for __builtin_pow{,f}.
+	* gfortran.h (PREFIX_LEN): Define.
+	* trans-decl.c (gfor_fndecl_math_powi): Add.
+	(gfor_fndecl_math_powf, gfor_fndecl_math_pow): Remove.
+	(gfc_build_intrinsic_function_decls): Create decls for powi.
+	* trans-expr.c (powi_table): Add.
+	(gfc_conv_integer_power): Remove.
+	(gfc_conv_powi): New function.
+	(gfc_conv_cst_int_power): New function.
+	(gfc_conv_power_op): Use new powi routines.
+	* trans.h (struct gfc_powdecl_list): Add.
+	(gfor_fndecl_math_powi): Add.
+	(gfor_fndecl_math_powf, gfor_fndecl_math_pow): Remove.
+
 2004-05-18  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* trans.c, trans-decl.c: Fix comment typos.
