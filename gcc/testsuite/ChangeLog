@@ -1,3 +1,9 @@
+2002-10-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/7209
+	* g++.dg/expr: New directory.
+	* g++.dg/expr/cond1.C: New test.
+
 2002-10-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/noncompile/920923-1.c: Prevent spurious regressions with
