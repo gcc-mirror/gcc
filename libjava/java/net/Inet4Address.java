@@ -72,7 +72,7 @@ public final class Inet4Address extends InetAddress
    * @param addr The IP address
    * @param host The Hostname
    */
-  protected Inet4Address(byte[] addr, String host)
+  Inet4Address(byte[] addr, String host)
   {
     super (addr, host);
   }
