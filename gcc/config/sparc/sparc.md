@@ -29,7 +29,7 @@
 ;; type "call_no_delay_slot" is a call followed by an unimp instruction.
 
 (define_attr "type"
-  "move,unary,binary,compare,load,store,branch,call,call_no_delay_slot,address,fpload,fpstore,fp,fpcmp,fpmul,fpdiv,fpsqrt,multi,misc"
+  "move,unary,binary,compare,load,store,uncond_branch,branch,call,call_no_delay_slot,address,fpload,fpstore,fp,fpcmp,fpmul,fpdiv,fpsqrt,multi,misc"
   (const_string "binary"))
 
 ;; Set true if insn uses call-clobbered intermediate register.
@@ -72,7 +72,7 @@
 ;; Attributes for instruction and branch scheduling
 
 (define_attr "in_call_delay" "false,true"
-  (cond [(eq_attr "type" "branch,call,call_no_delay_slot,multi")
+  (cond [(eq_attr "type" "uncond_branch,branch,call,call_no_delay_slot,multi")
 	 	(const_string "false")
 	 (eq_attr "type" "load,fpload,store,fpstore")
 	 	(if_then_else (eq_attr "length" "1")
@@ -93,16 +93,33 @@
 ;; branches.  This would allow us to remove the nop always inserted before
 ;; a floating point branch.
 
+
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!branch,call,call_no_delay_slot,multi")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi,fpload,fpstore")
+		     (eq_attr "length" "1"))
+		(const_string "true")
+		(const_string "false")))
+
+(define_attr "in_uncond_branch_delay" "false,true"
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi")
+		     (eq_attr "length" "1"))
+		(const_string "true")
+		(const_string "false")))
+
+(define_attr "in_annul_branch_delay" "false,true"
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,call,call_no_delay_slot,multi")
 		     (eq_attr "length" "1"))
 		(const_string "true")
 		(const_string "false")))
 
 (define_delay (eq_attr "type" "branch")
   [(eq_attr "in_branch_delay" "true")
-   (nil) (eq_attr "in_branch_delay" "true")])
+   (nil) (eq_attr "in_annul_branch_delay" "true")])
 
+(define_delay (eq_attr "type" "uncond_branch")
+  [(eq_attr "in_uncond_branch_delay" "true")
+   (nil) (nil)])
+   
 ;; Function units of the SPARC
 
 ;; (define_function_unit {name} {num-units} {n-users} {test}
@@ -1146,8 +1163,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=f,r,Q,Q,f,&r,?f,?r")
-	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "f,r,f,r,Q,Q,r,f"))]
+  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=T,U,f,r,Q,Q,f,&r,?f,?r")
+	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "U,T,f,r,f,r,Q,Q,r,f"))]
   "register_operand (operands[0], DFmode)
    || register_operand (operands[1], DFmode)"
   "*
@@ -1156,8 +1173,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "fp,move,fpstore,store,fpload,load,multi,multi")
-   (set_attr "length" "2,2,3,3,3,3,3,3")])
+  [(set_attr "type" "fpstore,fpload,fp,move,fpstore,store,fpload,load,multi,multi")
+   (set_attr "length" "1,1,2,2,3,3,3,3,3,3")])
 
 (define_insn ""
   [(set (mem:DF (match_operand:SI 0 "symbolic_operand" "i,i"))
@@ -2516,7 +2533,7 @@
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
   "b%* %l0%("
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "uncond_branch")])
 
 (define_expand "tablejump"
   [(parallel [(set (pc) (match_operand:SI 0 "register_operand" "r"))
@@ -2539,21 +2556,21 @@
    (use (reg:SI 15))]
   ""
   "jmp %%o7+%0%#"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "uncond_branch")])
 
 (define_insn ""
   [(set (pc) (match_operand:SI 0 "address_operand" "p"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "jmp %a0%#"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "uncond_branch")])
 
 (define_insn ""
   [(set (pc) (label_ref (match_operand 0 "" "")))
    (set (reg:SI 15) (label_ref (match_dup 0)))]
   ""
   "call %l0%#"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "uncond_branch")])
 
 ;; This pattern recognizes the "instruction" that appears in 
 ;; a function call that wants a structure value, 
@@ -2728,7 +2745,7 @@
   [(set (pc) (match_operand:SI 0 "address_operand" "p"))]
   ""
  "jmp %a0%#"
- [(set_attr "type" "branch")])
+ [(set_attr "type" "uncond_branch")])
  
 (define_expand "nonlocal_goto"
   [(match_operand:SI 0 "general_operand" "")
@@ -2971,9 +2988,9 @@
         (match_operand:SI 1 "memory_operand" ""))
    (set (match_operand:SI 2 "register_operand" "r")
         (match_operand:SI 3 "memory_operand" ""))]
-  "registers_ok_for_ldd (operands[0], operands[2]) 
+  "registers_ok_for_ldd_peep (operands[0], operands[2]) 
    && ! MEM_VOLATILE_P (operands[1]) && ! MEM_VOLATILE_P (operands[3])
-   && memory_ok_for_ldd (XEXP (operands[1], 0), XEXP (operands[3], 0))" 
+   && addrs_ok_for_ldd_peep (XEXP (operands[1], 0), XEXP (operands[3], 0))" 
   "ldd %1,%0")
 
 (define_peephole
@@ -2981,9 +2998,9 @@
         (match_operand:SI 1 "register_operand" "r"))
    (set (match_operand:SI 2 "memory_operand" "")
         (match_operand:SI 3 "register_operand" "r"))]
-  "registers_ok_for_ldd (operands[1], operands[3]) 
+  "registers_ok_for_ldd_peep (operands[1], operands[3]) 
    && ! MEM_VOLATILE_P (operands[0]) && ! MEM_VOLATILE_P (operands[2])
-   && memory_ok_for_ldd (XEXP (operands[0], 0), XEXP (operands[2], 0))"
+   && addrs_ok_for_ldd_peep (XEXP (operands[0], 0), XEXP (operands[2], 0))"
   "std %1,%0")
  
 (define_peephole
@@ -2991,9 +3008,9 @@
         (match_operand:SF 1 "memory_operand" ""))
    (set (match_operand:SF 2 "register_operand" "fr")
         (match_operand:SF 3 "memory_operand" ""))]
-  "registers_ok_for_ldd (operands[0], operands[2]) 
+  "registers_ok_for_ldd_peep (operands[0], operands[2]) 
    && ! MEM_VOLATILE_P (operands[1]) && ! MEM_VOLATILE_P (operands[3])
-   && memory_ok_for_ldd (XEXP (operands[1], 0), XEXP (operands[3], 0))"
+   && addrs_ok_for_ldd_peep (XEXP (operands[1], 0), XEXP (operands[3], 0))"
   "ldd %1,%0")
 
 (define_peephole
@@ -3001,9 +3018,9 @@
         (match_operand:SF 1 "register_operand" "fr"))
    (set (match_operand:SF 2 "memory_operand" "")
         (match_operand:SF 3 "register_operand" "fr"))]
-  "registers_ok_for_ldd (operands[1], operands[3]) 
+  "registers_ok_for_ldd_peep (operands[1], operands[3]) 
    && ! MEM_VOLATILE_P (operands[0]) && ! MEM_VOLATILE_P (operands[2])
-   && memory_ok_for_ldd (XEXP (operands[0], 0), XEXP (operands[2], 0))"
+   && addrs_ok_for_ldd_peep (XEXP (operands[0], 0), XEXP (operands[2], 0))"
   "std %1,%0")
 
 (define_peephole
@@ -3011,9 +3028,9 @@
         (match_operand:SI 1 "memory_operand" ""))
    (set (match_operand:SI 2 "register_operand" "r")
         (match_operand:SI 3 "memory_operand" ""))]
-  "registers_ok_for_ldd (operands[2], operands[0]) 
+  "registers_ok_for_ldd_peep (operands[2], operands[0]) 
    && ! MEM_VOLATILE_P (operands[3]) && ! MEM_VOLATILE_P (operands[1])
-   && memory_ok_for_ldd (XEXP (operands[3], 0), XEXP (operands[1], 0))"
+   && addrs_ok_for_ldd_peep (XEXP (operands[3], 0), XEXP (operands[1], 0))"
   "ldd %3,%2")
 
 (define_peephole
@@ -3021,9 +3038,9 @@
         (match_operand:SI 1 "register_operand" "r"))
    (set (match_operand:SI 2 "memory_operand" "")
         (match_operand:SI 3 "register_operand" "r"))]
-  "registers_ok_for_ldd (operands[3], operands[1]) 
+  "registers_ok_for_ldd_peep (operands[3], operands[1]) 
    && ! MEM_VOLATILE_P (operands[2]) && ! MEM_VOLATILE_P (operands[0])
-   && memory_ok_for_ldd (XEXP (operands[2], 0), XEXP (operands[0], 0))" 
+   && addrs_ok_for_ldd_peep (XEXP (operands[2], 0), XEXP (operands[0], 0))" 
   "std %3,%2")
  
 (define_peephole
@@ -3031,9 +3048,9 @@
         (match_operand:SF 1 "memory_operand" ""))
    (set (match_operand:SF 2 "register_operand" "fr")
         (match_operand:SF 3 "memory_operand" ""))]
-  "registers_ok_for_ldd (operands[2], operands[0]) 
+  "registers_ok_for_ldd_peep (operands[2], operands[0]) 
    && ! MEM_VOLATILE_P (operands[3]) && ! MEM_VOLATILE_P (operands[1])
-   && memory_ok_for_ldd (XEXP (operands[3], 0), XEXP (operands[1], 0))"
+   && addrs_ok_for_ldd_peep (XEXP (operands[3], 0), XEXP (operands[1], 0))"
   "ldd %3,%2")
 
 (define_peephole
@@ -3041,9 +3058,9 @@
         (match_operand:SF 1 "register_operand" "fr"))
    (set (match_operand:SF 2 "memory_operand" "")
         (match_operand:SF 3 "register_operand" "fr"))]
-  "registers_ok_for_ldd (operands[3], operands[1]) 
+  "registers_ok_for_ldd_peep (operands[3], operands[1]) 
    && ! MEM_VOLATILE_P (operands[2]) && ! MEM_VOLATILE_P (operands[0])
-   && memory_ok_for_ldd (XEXP (operands[2], 0), XEXP (operands[0], 0))"
+   && addrs_ok_for_ldd_peep (XEXP (operands[2], 0), XEXP (operands[0], 0))"
   "std %3,%2")
  
 ;; Optimize the case of following a reg-reg move with a test
