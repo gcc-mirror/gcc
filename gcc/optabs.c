@@ -3239,8 +3239,11 @@ expand_float (to, from, unsignedp)
 	      expand_float (target, temp, 0);
 
 	      /* Multiply by 2 to undo the shift above.  */
-	      target = expand_binop (fmode, add_optab, target, target,
+	      temp = expand_binop (fmode, add_optab, target, target,
 				     target, 0, OPTAB_LIB_WIDEN);
+	      if (temp != target)
+		emit_move_insn (target, temp);
+
 	      do_pending_stack_adjust ();
 	      emit_label (label);
 	      goto done;
