@@ -5344,8 +5344,11 @@ init_integral_libfuncs (optable, opname, suffix)
      const char *opname;
      int suffix;
 {
+  int maxsize = 2*BITS_PER_WORD;
+  if (maxsize < LONG_LONG_TYPE_SIZE)
+    maxsize = LONG_LONG_TYPE_SIZE;
   init_libfuncs (optable, word_mode,
-		 mode_for_size (2*BITS_PER_WORD, MODE_INT, 0),
+		 mode_for_size (maxsize, MODE_INT, 0),
 		 opname, suffix);
 }
 

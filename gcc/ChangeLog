@@ -1,3 +1,8 @@
+2003-03-21  DJ Delorie  <dj@redhat.com>
+
+	* optabs.c (init_integral_libfuncs): Make sure we init at least up
+	to "long long" size words.
+
 2003-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.h: Do not include fixdfdi.h on s390x.
