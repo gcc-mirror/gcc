@@ -1,3 +1,13 @@
+2001-03-22  Tom Tromey  <tromey@redhat.com>
+
+	* jni.cc (_Jv_JNI_GetAnyFieldID): Handle unresolved fields.
+	* java/lang/reflect/natField.cc (getType): Use _Jv_ResolveField
+	unconditionally.
+	* include/jvm.h (_Jv_ResolveField): Declare.
+	* include/java-interp.h (_Jv_ResolveField): Don't declare.
+	* resolve.cc (_Jv_ResolveField): No longer conditional on
+	INTERPRETER.
+
 2001-03-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PR libgcj/1736. Thanks to Robert Boehne and Alexandre Oliva
