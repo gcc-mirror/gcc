@@ -572,6 +572,8 @@ simplify_unary_operation (code, mode, op, op_mode)
 	case SQRT:
 	case FLOAT_EXTEND:
 	case FLOAT_TRUNCATE:
+	case SS_TRUNCATE:
+	case US_TRUNCATE:
 	  return 0;
 
 	default:
@@ -1523,6 +1525,13 @@ simplify_binary_operation (code, mode, op0, op1)
 	  else if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0))
 	    return op0;
 	  break;
+
+	case SS_PLUS:
+	case US_PLUS:
+	case SS_MINUS:
+	case US_MINUS:
+	  /* ??? There are simplifications that can be done.  */
+	  return 0;
 
 	default:
 	  abort ();

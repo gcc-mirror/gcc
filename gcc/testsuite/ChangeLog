@@ -1,3 +1,8 @@
+2002-01-11  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/i386-mmx-1.c, gcc.dg/i386-mmx-2.c: New.
+	* gcc.dg/i386-sse-1.c, gcc.dg/i386-sse-2.c, gcc.dg/i386-sse-1.c: New.
+
 Fri Jan 11 12:13:30 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc.dg/special/unclaimed-category-1.m: Include objc/objc-api.h.
