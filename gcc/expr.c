@@ -3700,7 +3700,7 @@ store_constructor (exp, target, cleared)
 
 	      if (contains_placeholder_p (offset))
 		offset = build (WITH_RECORD_EXPR, sizetype,
-				offset, exp);
+				offset, make_tree (TREE_TYPE (exp), target));
 
 	      offset = size_binop (FLOOR_DIV_EXPR, offset,
 				   size_int (BITS_PER_UNIT));
