@@ -55,6 +55,8 @@ import java.util.Vector;
  * direction is never described.  If it means that the CompoundName
  * can only have a single element, then the Enumeration-based
  * constructor ought to throw InvalidNameException.
+ *
+ * @since 1.3
  */
 public class CompoundName implements Name, Cloneable, Serializable
 {
@@ -158,7 +160,7 @@ public class CompoundName implements Name, Cloneable, Serializable
 	    i += special.length ();
 	    continue;
 	  }
-	else if (special == separator)
+	else if (direction != FLAT && special == separator)
 	  {
 	    elts.add (new_element.toString ());
 	    new_element.setLength (0);
