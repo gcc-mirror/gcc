@@ -263,6 +263,8 @@ static void replace_call_address (rtx, rtx, rtx);
 #endif
 static rtx skip_consec_insns (rtx, int);
 static int libcall_benefit (rtx);
+static rtx libcall_other_reg (rtx, rtx);
+static void record_excess_regs (rtx, rtx, rtx *);
 static void ignore_some_movables (struct loop_movables *);
 static void force_movables (struct loop_movables *);
 static void combine_movables (struct loop_movables *, struct loop_regs *);
@@ -1231,7 +1233,7 @@ scan_loop (struct loop *loop, int flags)
 /* Add elements to *OUTPUT to record all the pseudo-regs
    mentioned in IN_THIS but not mentioned in NOT_IN_THIS.  */
 
-void
+static void
 record_excess_regs (rtx in_this, rtx not_in_this, rtx *output)
 {
   enum rtx_code code;
@@ -1285,7 +1287,7 @@ record_excess_regs (rtx in_this, rtx not_in_this, rtx *output)
    If there are none, return 0.
    If there are one or more, return an EXPR_LIST containing all of them.  */
 
-rtx
+static rtx
 libcall_other_reg (rtx insn, rtx equiv)
 {
   rtx note = find_reg_note (insn, REG_RETVAL, NULL_RTX);
