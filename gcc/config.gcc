@@ -295,7 +295,7 @@ s390*-*-*)
 	need_64bit_hwint=yes
 	;;
 # Note the 'l'; we need to be able to match e.g. "shle" or "shl".
-sh[123456789l]*-*-*)
+sh[123456789lbe]*-*-*)
 	cpu_type=sh
 	need_64bit_hwint=yes
 	;;
@@ -1683,34 +1683,124 @@ s390x-ibm-tpf*)
 	out_file=s390/s390.c
 	tmake_file="t-slibgcc-elf-ver s390/t-crtstuff s390/t-tpf"
 	;;
-sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
-	tmake_file="sh/t-sh sh/t-elf"
-	case ${target} in
-	shl* | sh[234]l* | sh64l*)
-		tm_file="sh/little.h ${tm_file}"
-		tmake_file="${tmake_file} sh/t-le"
-		;;
+sh-*-elf* | sh[12346l]*-*-elf* | sh*-*-kaos* | \
+  sh-*-linux* | sh[346lbe]*-*-linux* | \
+  sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
+   sh64-*-netbsd* | sh64l*-*-netbsd*)
+	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
+	if test x${with_endian} = x; then
+		case ${target} in
+		sh[1234]*be-*-* | sh[1234]*eb-*-*) with_endian=big ;;
+		shbe-*-* | sheb-*-*)		   with_endian=big,little ;;
+		sh[1234]l* | sh[34]*-*-linux*)	   with_endian=little ;;
+		shl* | sh64l* | sh*-*-linux* | \
+		  sh5l* | sh-superh-elf)	   with_endian=little,big ;;
+		sh[1234]*-*-*)			   with_endian=big ;;
+		*)				   with_endian=big,little ;;
+		esac
+	fi
+	case ${with_endian} in
+	big|little)	tmake_file="${tmake_file} sh/t-1e" ;;
+	big,little|little,big) ;;
+	*)	echo "with_endian=${with_endian} not supported."; exit 1 ;;
 	esac
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h"
+	case ${with_endian} in
+	little*)	tm_file="sh/little.h ${tm_file}" ;;
+	esac
+	tm_file="${tm_file} dbxelf.h elfos.h"
 	case ${target} in
+	sh*-*-netbsd*)	;;
+	*)		tm_file="${tm_file} svr4.h" ;;
+	esac
+	tm_file="${tm_file} sh/elf.h"
+	case ${target} in
+	sh*-*-linux*)	tmake_file="${tmake_file} sh/t-linux"
+			tm_file="${tm_file} sh/linux.h" ;;
+	sh*-*-kaos*)	tm_file="${tm_file} sh/embed-elf.h kaos.h sh/kaos-sh.h"
+			;;
+	sh*-*-netbsd*)	tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h" ;;
+	*)		tm_file="${tm_file} sh/embed-elf.h" ;;
+	esac
+	case ${target} in
+	sh5*-*-netbsd*)
+		# SHmedia, 32-bit ABI
+		tmake_file="${tmake_file} sh/t-sh64 sh/t-netbsd"
+		;;
+	sh64*-netbsd*)
+		# SHmedia, 64-bit ABI
+		tmake_file="${tmake_file} sh/t-sh64 sh/t-netbsd sh/t-netbsd-sh5-64"
+		;;
+	*-*-netbsd)
+                tmake_file="${tmake_file} sh/t-netbsd"
+		;;
+	sh64*-*-linux*)
+		tmake_file="${tmake_file} sh/t-sh64 sh/t-linux64"
+		tm_file="${tm_file} sh/sh64.h"
+		extra_headers="shmedia.h ushmedia.h sshmedia.h"
+		;;
 	sh64*)
 		tmake_file="${tmake_file} sh/t-sh64"
 		tm_file="${tm_file} sh/sh64.h"
 		extra_headers="shmedia.h ushmedia.h sshmedia.h"
 		;;
-	sh4_single*)  target_cpu_default="SELECT_SH4_SINGLE" ;;
-	sh4*)  target_cpu_default="SELECT_SH4" ;;
-	sh3e*) target_cpu_default="SELECT_SH3E" ;;
-	sh3*)  target_cpu_default="SELECT_SH3" ;;
-	sh2e*) target_cpu_default="SELECT_SH2E" ;;
-	sh2*)  target_cpu_default="SELECT_SH2" ;;
 	esac
-	case ${target} in
-	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
+	# sed el/eb endian suffixes away to avoid confusion with sh[23]e
+	case `echo ${target} | sed 's/e[lb]-/-/'` in
+	sh64*-*-netbsd*)	sh_cpu_target=sh5-64media ;;
+	sh64* | sh5*-*-netbsd*)	sh_cpu_target=sh5-32media ;;
+	sh4_single_only*)	sh_cpu_target=sh4-single-only ;;
+	sh4_single*)		sh_cpu_target=sh4-single ;;
+	sh4_nofpu*)		sh_cpu_target=sh4-nofpu ;;
+	sh4* | sh-superh-*)	sh_cpu_target=sh4 ;;
+	sh3e*)			sh_cpu_target=sh3e ;;
+	sh*-*-netbsd* | sh3*)	sh_cpu_target=sh3 ;;
+	sh2e*)			sh_cpu_target=sh2e ;;
+	sh2*)			sh_cpu_target=sh2 ;;
+	*)			sh_cpu_target=sh1 ;;
 	esac
-	case ${target} in
-	sh*-*-kaos*) tm_file="${tm_file} kaos.h sh/kaos-sh.h" ;;
+	sh_cpu_default="`echo $with_cpu|sed s/^m/sh/|tr A-Z_ a-z-`"
+	case $sh_cpu_default in
+	sh5-64media-nofpu | sh5-64media | \
+	  sh5-32media-nofpu | sh5-32media | sh5-compact-nofpu | sh5-compact | \
+	  sh4-single-only | sh4-single | sh4-nofpu | sh4 | \
+	  sh3e | sh3 | sh2e | sh2 | sh1)
+		sh_multilibs="${sh_cpu_default},${sh_multilibs}" ;;
+	"")	sh_cpu_default=${sh_cpu_target} ;;
+	*)	echo "with_cpu=$with_cpu not supported"; exit 1 ;;
 	esac
+	sh_multilibs=${with_multilib_list}
+	if test x${sh_multilibs} = x ; then
+		case ${target} in
+		sh[1234]*)	sh_multilibs=${sh_cpu_target} ;;
+		sh64* | sh5*)	sh_multilibs=m5-32media,m5-32media-nofpu,m5-compact,m5-compact-nofpu,m5-64media,m5-64media-nofpu ;;
+		sh-superh-*)	sh_multilibs=m4,m4-single,m4-single-only,m4-nofpu ;;
+		sh*-*-linux*)	sh_multilibs=m1,m3e,m4 ;;
+		sh*-*-netbsd*)	sh_multilibs=m3,m3e,m4 ;;
+		*) sh_multilibs=m1,m2,m2e,m4,m4-single,m4-single-only ;;
+		esac
+	fi
+	target_cpu_default=SELECT_`echo ${sh_cpu_default}|tr a-z- A-Z_`
+	tm_defines=${tm_defines}' SH_MULTILIB_CPU_DEFAULT=\"'`echo $sh_cpu_default|sed s/sh/m/`'\"'
+	sh_multilibs=`echo $sh_multilibs,$sh_cpu_default | sed -e 's/[ 	,/][ 	,]*/ /g' -e 's/ $//' -e s/^m/sh/ -e 's/ m/ sh/g' | tr A-Z_ a-z-`
+	for sh_multilib in ${sh_multilibs}; do
+		case ${sh_multilib} in
+		sh1 | sh2 | sh2e | sh3 | sh3e | \
+		sh4 | sh4-single | sh4-single-only | sh4-nofpu | \
+		sh5-64media | sh5-64media-nofpu | \
+		sh5-32media | sh5-32media-nofpu | \
+		sh5-compact | sh5-compact-nofpu)
+			tmake_file="${tmake_file} sh/t-mlib-${sh_multilib}"
+			tm_defines="$tm_defines SUPPORT_`echo $sh_multilib|tr a-z- A-Z_`"
+			;;
+		*)
+			echo "with_multilib_list=${sh_multilib} not supported."
+			exit 1
+			;;
+		esac
+	done
+	if test x${enable_incomplete_targets} == xyes ; then
+		tm_defines="$tm_defines SUPPORT_SH1 SUPPORT_SH2E SUPPORT_SH4 SUPPORT_SH4_SINGLE SUPPORT_SH5_32MEDIA SUPPORT_SH5_32MEDIA_NOFPU SUPPORT_SH5_64MEDIA SUPPORT_SH5_64MEDIA_NOFPU"
+	fi
 	use_fixproto=yes
 	;;
 sh-*-rtemscoff*)
@@ -1720,69 +1810,6 @@ sh-*-rtemscoff*)
 sh-*-rtems*)
 	tmake_file="sh/t-sh sh/t-elf t-rtems"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/embed-elf.h sh/rtemself.h rtems.h"
-	;;
-sh-*-linux* | sh[2346lbe]*-*-linux*)
-	tmake_file="sh/t-sh sh/t-elf ${tmake_file}"
-	case ${target} in
-	sh*be-*-* | sh*eb-*-*) ;;
-	*)
-		tm_file="sh/little.h ${tm_file}"
-		tmake_file="${tmake_file} sh/t-le"
-		;;
-	esac
-	tmake_file="${tmake_file} sh/t-linux"
-	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sh/elf.h sh/linux.h"
-	case ${target} in
-	sh64*)
-		tmake_file="${tmake_file} sh/t-sh64 sh/t-linux64"
-		tm_file="${tm_file} sh/sh64.h"
-		extra_headers="shmedia.h ushmedia.h sshmedia.h"
-		;;
-	sh4_single*) target_cpu_default="SELECT_SH4_SINGLE" ;;
-	sh4*) target_cpu_default="SELECT_SH4" ;;
-	sh3e[lb]e*) target_cpu_default="SELECT_SH3E" ;;
-	sh3e[lb]*) target_cpu_default="SELECT_SH3" ;;
-	sh3e*) target_cpu_default="SELECT_SH3E" ;;
-	sh3*) target_cpu_default="SELECT_SH3" ;;
-	sh2e[lb]e*) target_cpu_default="SELECT_SH2E" ;;
-	sh2e[lb]*) target_cpu_default="SELECT_SH2" ;;
-	sh2e*) target_cpu_default="SELECT_SH2E" ;;
-	sh2*) target_cpu_default="SELECT_SH2" ;;
-	esac
-	case ${target} in
-	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
-	esac
-	;;
-sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
-  sh64-*-netbsd* | sh64l*-*-netbsd*)
-	tm_file="${tm_file} dbxelf.h elfos.h sh/elf.h netbsd.h netbsd-elf.h sh/netbsd-elf.h"
-	tmake_file="${tmake_file} sh/t-sh sh/t-elf"
-	case ${target} in
-	sh*l*-*)
-		tm_file="sh/little.h ${tm_file}"
-		tmake_file="${tmake_file} sh/t-le"
-		;;
-	*)
-		tmake_file="${tmake_file} sh/t-be"
-		;;
-	esac
-	case ${target} in
-	sh5*-*)
-		# SHmedia, 32-bit ABI
-		target_cpu_default="SH5_BIT|SH4_BIT|SH3_BIT|SH_E_BIT"
-		tmake_file="${tmake_file} sh/t-sh64 sh/t-netbsd-sh5"
-		;;
-	sh64*-*)
-		# SHmedia, 64-bit ABI
-		target_cpu_default="SH5_BIT|SH4_BIT"
-		tmake_file="${tmake_file} sh/t-sh64 sh/t-netbsd-sh5 sh/t-netbsd-sh5-64"
-		;;
-	*)
-		# SH3, software floating point
-		target_cpu_default="SH1_BIT|SH2_BIT|SH3_BIT"
-		tmake_file="${tmake_file} sh/t-netbsd"
-		;;
-	esac
 	;;
 sh-wrs-vxworks)
 	tmake_file="$tmake_file sh/t-sh sh/t-elf sh/t-vxworks"
@@ -2435,6 +2462,19 @@ fi
 		esac
 		;;
 
+	sh[123456ble]-*-* | sh-*-*)
+		supported_defaults="cpu"
+		case "`echo $with_cpu | tr A-Z_ a-z- | sed s/sh/m/`" in
+		"" | m1 | m2 | m2e | m3 | m3e | m4 | m4-single | m4-single-only | m4-nofpu )
+			# OK
+			;;
+		*)
+			echo "Unknown CPU used in --with-cpu=$with_cpu, known values:"  1>&2
+			echo "m1 m2 m2e m3 m3e m4 m4-single m4-single-only m4-nofpu" 1>&2
+			exit 1
+			;;
+		esac
+		;;
 	sparc*-*-*)
 		supported_defaults="cpu float tune"
 

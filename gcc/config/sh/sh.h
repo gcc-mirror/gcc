@@ -263,6 +263,14 @@ extern int target_flags;
 
 #define TARGET_SAVE_ALL_TARGET_REGS (target_flags & SAVE_ALL_TR_BIT)
 
+#ifndef TARGET_CPU_DEFAULT
+#define TARGET_CPU_DEFAULT SELECT_SH1
+#define SUPPORT_SH1
+#define SUPPORT_SH2E
+#define SUPPORT_SH4
+#define SUPPORT_SH4_SINGLE
+#endif
+
 #define SELECT_SH1               (SH1_BIT)
 #define SELECT_SH2               (SH2_BIT | SELECT_SH1)
 #define SELECT_SH2E              (SH_E_BIT | SH2_BIT | SH1_BIT | FPU_SINGLE_BIT)
@@ -272,48 +280,149 @@ extern int target_flags;
 #define SELECT_SH4_SINGLE_ONLY   (HARD_SH4_BIT | SELECT_SH3E)
 #define SELECT_SH4               (SH4_BIT | SH_E_BIT | HARD_SH4_BIT | SELECT_SH3)
 #define SELECT_SH4_SINGLE        (FPU_SINGLE_BIT | SELECT_SH4)
-#define SELECT_SH5_64            (SH5_BIT | SH4_BIT)
-#define SELECT_SH5_64_NOFPU      (SH5_BIT)
-#define SELECT_SH5_32            (SH5_BIT | SH4_BIT | SH_E_BIT)
-#define SELECT_SH5_32_NOFPU      (SH5_BIT | SH_E_BIT)
+#define SELECT_SH5_64MEDIA       (SH5_BIT | SH4_BIT)
+#define SELECT_SH5_64MEDIA_NOFPU (SH5_BIT)
+#define SELECT_SH5_32MEDIA       (SH5_BIT | SH4_BIT | SH_E_BIT)
+#define SELECT_SH5_32MEDIA_NOFPU (SH5_BIT | SH_E_BIT)
 #define SELECT_SH5_COMPACT       (SH5_BIT | SH4_BIT | SELECT_SH3E)
 #define SELECT_SH5_COMPACT_NOFPU (SH5_BIT | SELECT_SH3)
+
+/* Disable processor switches for which we have no suitable multilibs.  */
+#ifndef SUPPORT_SH1
+#define TARGET_SWITCH_SH1
+#ifndef SUPPORT_SH2
+#define TARGET_SWITCH_SH2
+#ifndef SUPPORT_SH3
+#define TARGET_SWITCH_SH3
+#ifndef SUPPORT_SH4_NOFPU
+#define TARGET_SWITCH_SH4_NOFPU
+#endif
+#endif
+#endif
+#endif
+
+#ifndef SUPPORT_SH2E
+#define TARGET_SWITCH_SH2E
+#ifndef SUPPORT_SH3E
+#define TARGET_SWITCH_SH3E
+#ifndef SUPPORT_SH4_SINGLE_ONLY
+#define TARGET_SWITCH_SH4_SINGLE_ONLY
+#endif
+#endif
+#endif
+
+#ifndef SUPPORT_SH4
+#define TARGET_SWITCH_SH4
+#endif
+
+#ifndef SUPPORT_SH4_SINGLE
+#define TARGET_SWITCH_SH4_SINGLE
+#endif
+
+#ifndef SUPPORT_SH5_64MEDIA
+#define TARGET_SWITCH_SH5_64MEDIA
+#endif
+
+#ifndef SUPPORT_SH5_64MEDIA_NOFPU
+#define TARGET_SWITCH_SH5_64MEDIA_NOFPU
+#endif
+
+#if !defined(SUPPORT_SH5_32MEDIA) && !defined (SUPPORT_SH5_COMPACT)
+#define TARGET_SWITCHES_SH5_32MEDIA
+#endif
+
+#if !defined(SUPPORT_SH5_32MEDIA_NOFPU) && !defined (SUPPORT_SH5_COMPACT_NOFPU)
+#define TARGET_SWITCHES_SH5_32MEDIA_NOFPU
+#endif
 
 /* Reset all target-selection flags.  */
 #define TARGET_NONE -(SH1_BIT | SH2_BIT | SH3_BIT | SH_E_BIT | SH4_BIT \
 		      | HARD_SH4_BIT | FPU_SINGLE_BIT | SH5_BIT)
 
-#define TARGET_SWITCHES  			\
-{ {"1",	        TARGET_NONE, "" },		\
-  {"1",	        SELECT_SH1, "Generate SH1 code" },		\
-  {"2",	        TARGET_NONE, "" },		\
-  {"2",	        SELECT_SH2, "Generate SH2 code" },		\
-  {"2e",        TARGET_NONE, "" },		\
-  {"2e",        SELECT_SH2E, "Generate SH2e code" },		\
-  {"3",	        TARGET_NONE, "" },		\
-  {"3",	        SELECT_SH3, "Generate SH3 code" },		\
-  {"3e",	TARGET_NONE, "" },		\
-  {"3e",	SELECT_SH3E, "Generate SH3e code" },		\
-  {"4-single-only",	TARGET_NONE, "" },	\
-  {"4-single-only",	SELECT_SH4_SINGLE_ONLY, "Generate only single-precision SH4 code" },	\
-  {"4-single",	TARGET_NONE, "" },		\
-  {"4-single",	SELECT_SH4_SINGLE, "Generate default single-precision SH4 code" },	\
-  {"4-nofpu",	TARGET_NONE, "" },		\
-  {"4-nofpu",	SELECT_SH4_NOFPU, "Generate SH4 FPU-less code" },		\
-  {"4",	        TARGET_NONE, "" },		\
-  {"4",	        SELECT_SH4, "Generate SH4 code" }, 		\
+#ifndef TARGET_SWITCH_SH1
+#define TARGET_SWITCH_SH1 \
+  {"1",		TARGET_NONE, "" }, \
+  {"1",		SELECT_SH1, "Generate SH1 code" },
+#endif
+#ifndef TARGET_SWITCH_SH2
+#define TARGET_SWITCH_SH2 \
+  {"2",		TARGET_NONE, "" }, \
+  {"2",		SELECT_SH2, "Generate SH2 code" },
+#endif
+#ifndef TARGET_SWITCH_SH2E
+#define TARGET_SWITCH_SH2E \
+  {"2e",	TARGET_NONE, "" }, \
+  {"2e",	SELECT_SH2E, "Generate SH2e code" },
+#endif
+#ifndef TARGET_SWITCH_SH3
+#define TARGET_SWITCH_SH3 \
+  {"3",		TARGET_NONE, "" }, \
+  {"3",		SELECT_SH3, "Generate SH3 code" },
+#endif
+#ifndef TARGET_SWITCH_SH3E
+#define TARGET_SWITCH_SH3E \
+  {"3e",	TARGET_NONE, "" }, \
+  {"3e",	SELECT_SH3E, "Generate SH3e code" },
+#endif
+#ifndef TARGET_SWITCH_SH4_SINGLE_ONLY
+#define TARGET_SWITCH_SH4_SINGLE_ONLY \
+  {"4-single-only",	TARGET_NONE, "" }, \
+  {"4-single-only",	SELECT_SH4_SINGLE_ONLY, "Generate only single-precision SH4 code" },
+#endif
+#ifndef TARGET_SWITCH_SH4_SINGLE
+#define TARGET_SWITCH_SH4_SINGLE \
+  {"4-single",	TARGET_NONE, "" }, \
+  {"4-single",	SELECT_SH4_SINGLE, "Generate default single-precision SH4 code" },
+#endif
+#ifndef TARGET_SWITCH_SH4_NOFPU
+#define TARGET_SWITCH_SH4_NOFPU \
+  {"4-nofpu",	TARGET_NONE, "" }, \
+  {"4-nofpu",	SELECT_SH4_NOFPU, "Generate SH4 FPU-less code" },
+#endif
+#ifndef TARGET_SWITCH_SH4
+#define TARGET_SWITCH_SH4 \
+  {"4",		TARGET_NONE, "" }, \
+  {"4",		SELECT_SH4, "Generate SH4 code" },
+#endif
+#ifndef TARGET_SWITCH_SH5_64MEDIA
+#define TARGET_SWITCH_SH5_64MEDIA \
   {"5-64media",	TARGET_NONE, "" },		\
-  {"5-64media", SELECT_SH5_64, "Generate 64-bit SHmedia code" }, \
+  {"5-64media", SELECT_SH5_64MEDIA, "Generate 64-bit SHmedia code" },
+#endif
+#ifndef TARGET_SWITCH_SH5_64MEDIA_NOFPU
+#define TARGET_SWITCH_SH5_64MEDIA_NOFPU \
   {"5-64media-nofpu", TARGET_NONE, "" },	\
-  {"5-64media-nofpu", SELECT_SH5_64_NOFPU, "Generate 64-bit FPU-less SHmedia code" }, \
+  {"5-64media-nofpu", SELECT_SH5_64MEDIA_NOFPU, "Generate 64-bit FPU-less SHmedia code" },
+#endif
+#ifndef TARGET_SWITCHES_SH5_32MEDIA
+#define TARGET_SWITCHES_SH5_32MEDIA \
   {"5-32media",	TARGET_NONE, "" },		\
-  {"5-32media", SELECT_SH5_32, "Generate 32-bit SHmedia code" }, \
-  {"5-32media-nofpu", TARGET_NONE, "" },	\
-  {"5-32media-nofpu", SELECT_SH5_32_NOFPU, "Generate 32-bit FPU-less SHmedia code" }, \
+  {"5-32media", SELECT_SH5_32MEDIA, "Generate 32-bit SHmedia code" }, \
   {"5-compact",	TARGET_NONE, "" },		\
-  {"5-compact",	SELECT_SH5_COMPACT, "Generate SHcompact code" }, \
+  {"5-compact",	SELECT_SH5_COMPACT, "Generate SHcompact code" },
+#endif
+#ifndef TARGET_SWITCHES_SH5_32MEDIA_NOFPU
+#define TARGET_SWITCHES_SH5_32MEDIA_NOFPU \
+  {"5-32media-nofpu", TARGET_NONE, "" },	\
+  {"5-32media-nofpu", SELECT_SH5_32MEDIA_NOFPU, "Generate 32-bit FPU-less SHmedia code" }, \
   {"5-compact-nofpu", TARGET_NONE, "" },	\
-  {"5-compact-nofpu", SELECT_SH5_COMPACT_NOFPU, "Generate FPU-less SHcompact code" }, \
+  {"5-compact-nofpu", SELECT_SH5_COMPACT_NOFPU, "Generate FPU-less SHcompact code" },
+#endif
+
+#define TARGET_SWITCHES \
+{ TARGET_SWITCH_SH1 \
+  TARGET_SWITCH_SH2 \
+  TARGET_SWITCH_SH2E \
+  TARGET_SWITCH_SH3 \
+  TARGET_SWITCH_SH3E \
+  TARGET_SWITCH_SH4_SINGLE_ONLY \
+  TARGET_SWITCH_SH4_SINGLE \
+  TARGET_SWITCH_SH4_NOFPU \
+  TARGET_SWITCH_SH4 \
+  TARGET_SWITCH_SH5_64MEDIA \
+  TARGET_SWITCH_SH5_64MEDIA_NOFPU \
+  TARGET_SWITCHES_SH5_32MEDIA \
+  TARGET_SWITCHES_SH5_32MEDIA_NOFPU \
   {"b",		-LITTLE_ENDIAN_BIT, "Generate code in big endian mode" },  	\
   {"bigtable", 	BIGTABLE_BIT, "Generate 32-bit offsets in switch tables" },		\
   {"dalign",  	DALIGN_BIT, "Aligns doubles at 64-bit boundaries" },		\
@@ -342,11 +451,17 @@ extern int target_flags;
 #define TARGET_ENDIAN_DEFAULT 0
 #endif
 
-#ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT SELECT_SH1
+#define TARGET_DEFAULT  (TARGET_CPU_DEFAULT|TARGET_ENDIAN_DEFAULT)
+
+#ifndef SH_MULTILIB_CPU_DEFAULT
+#define SH_MULTILIB_CPU_DEFAULT "m1"
 #endif
 
-#define TARGET_DEFAULT  (TARGET_CPU_DEFAULT|TARGET_ENDIAN_DEFAULT)
+#if TARGET_ENDIAN_DEFAULT
+#define MULTILIB_DEFAULTS { "ml", SH_MULTILIB_CPU_DEFAULT }
+#else
+#define MULTILIB_DEFAULTS { "mb", SH_MULTILIB_CPU_DEFAULT }
+#endif
 
 #define CPP_SPEC " %(subtarget_cpp_spec) "
 
@@ -396,11 +511,20 @@ extern int target_flags;
 #if TARGET_CPU_DEFAULT & SH5_BIT
 #if TARGET_CPU_DEFAULT & SH_E_BIT
 #define LINK_DEFAULT_CPU_EMUL "32"
+#if TARGET_CPU_DEFAULT & SH1_BIT
+#define ASM_ISA_SPEC_DEFAULT "--isa=SHcompact"
 #else
+#define ASM_ISA_SPEC_DEFAULT "--isa=SHmedia --abi=32"
+#endif /* SH1_BIT */
+#else /* !SH_E_BIT */
 #define LINK_DEFAULT_CPU_EMUL "64"
+#define ASM_ISA_SPEC_DEFAULT "--isa=SHmedia --abi=64"
 #endif /* SH_E_BIT */
-#else
+#define ASM_ISA_DEFAULT_SPEC \
+" %{!m1:%{!m2*:%{!m3*:%{!m4*:%{!m5*:" ASM_ISA_SPEC_DEFAULT "}}}}}"
+#else /* !SH5_BIT */
 #define LINK_DEFAULT_CPU_EMUL ""
+#define ASM_ISA_DEFAULT_SPEC ""
 #endif /* SH5_BIT */
 
 #define SUBTARGET_LINK_EMUL_SUFFIX ""

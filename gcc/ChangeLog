@@ -1,3 +1,68 @@
+2004-06-21  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/t-linux (MULTILIB_OPTIONS): Remove.
+
+2004-06-21  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (SUPPORT_SH1, SUPPORT_SH2E, SUPPORT_SH4): Conditionanlly define.
+	(SUPPORT_SH4_SINGLE): Likewise.
+	(TARGET_SWITCHES): Break out switches for cpu subtargets:
+	(TARGET_SWITCH_SH1, TARGET_SWITCH_SH2, TARGET_SWITCH_SH2E): Define.
+	(TARGET_SWITCH_SH3, TARGET_SWITCH_SH3E): Likewise.
+	(TARGET_SWITCH_SH4_SINGLE_ONLY, TARGET_SWITCH_SH4_SINGLE): Likewise.
+	(TARGET_SWITCH_SH4_NOFPU, TARGET_SWITCH_SH4): Likewise.
+	(TARGET_SWITCH_SH5_64MEDIA, TARGET_SWITCH_SH5_64MEDIA_NOFPU): Likewise.
+	(TARGET_SWITCHES_SH5_32MEDIA): Likewise.
+	(TARGET_SWITCHES_SH5_32MEDIA_NOFPU): Likewise.
+	(SELECT_SH5_64, SELECT_SH5_64_NOFPU): Rename to:
+	(SELECT_SH5_64MEDIA, SELECT_SH5_64MEDIA_NOFPU)
+	(SELECT_SH5_32, SELECT_SH5_32_NOFPU): Rename to:
+	(SELECT_SH5_32MEDIA, SELECT_SH5_32MEDIA_NOFPU).
+	(SH_MULTILIB_CPU_DEFAULT, MULTILIB_DEFAULTS): Define.
+	(ASM_ISA_SPEC_DEFAULT, ASM_ISA_DEFAULT_SPEC): Likewise.
+	* sh64.h (ASM_SPEC, LINK_DEFAULT_CPU_EMUL): Don't redefine.
+	(TARGET_DEFAULT): Likewise.
+	* config/sh/t-elf: Amend comment.
+	* config/sh/t-1e, config/sh/t-mlib-sh1: New files.
+	* config/sh/t-mlib-sh2, config/sh/t-mlib-sh2e: Likewise.
+	* config/sh/t-mlib-sh3, config/sh/t-mlib-sh3e: Likewise.
+	* config/sh/t-mlib-sh4, config/sh/t-mlib-sh4-nofpu: Likewise.
+	* config/sh/t-mlib-sh4-single: Likewise.
+	* config/sh/t-mlib-sh4-single-only: Likewise.
+	* config/sh/t-mlib-sh5-32media: Likewise.
+	* config/sh/t-mlib-sh5-32media-nofpu: Likewise.
+	* config/sh/t-mlib-sh5-64media: Likewise.
+	* config/sh/t-mlib-sh5-64media-nofpu: Likewise.
+	* config/sh/t-mlib-sh5-compact: Likewise.
+	* config/sh/t-mlib-sh5-compact-nofpu: Likewise.
+	* config/sh/t-sh: (MULTILIB_ENDIAN): Add mb.
+	(MULTILIB_CPUS): Define.
+	(MULTILIB_OPTIONS): Use MULTILIB_CPUS.
+	(MULTILIB_MATCHES): Use some shell code to calculate it.
+	(MULTILIB_EXCEPTIONS): Change to ml/m1.
+	* config/sh/elf.h (SUBTARGET_ASM_ISA_SPEC): Use ASM_ISA_DEFAULT_SPEC.
+	* config/sh/netbsd-elf.h: Update code which sets TARGET_VERSION_CPU.
+	(LINK_DEFAULT_CPU_EMUL): Don't redefine.
+	(NO_PROFILE_COUNTERS): Define to 1.
+	* config/sh/t-netbsd (MULTILIB_OPTIONS): Don't append to.
+	(MULTILIB_DIRNAMES, MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Don't zap.
+	* config/sh/t-netbsd-sh5-64 (MULTILIB_OPTIONS): Don't redefine.
+	(MULTILIB_MATCHES): Don't zap.
+	(MULTILIB_DIRNAMES): Use MULTILIB_RAW_DIRNAMES.
+	* config/sh/t-sh64 (MULTILIB_OPTIONS): Don't redefine.
+	(MULTILIB_MATCHES, MULTILIB_EXCEPTIONS): Don't zap.
+	(MULTILIB_RAW_DIRNAMES): Define.
+	(MULTILIB_DIRNAMES): Use it.
+	* config.gcc: Also set cpu_type / need_64bit_hwint for sh[be]*-*-*.
+	(sh*linux configurations): Merge into:
+	(sh*elf / sh*kaos configurations).  Support --with-endian, --with-cpu,
+	--with-multilib-list options.  Support sh-superh-elf configuration.
+	(sh*-netbsd*): Use SELECT_SH* macros.
+	(supported_defaults): sh[123456ble]-*-* | sh-*-* support "cpu".
+	Merge sh*-*-netbsd* configurations into sh-elf configurations.
+	* config/sh/t-netbsd-sh5, config/sh/t-le, config/sh/t-le: Delete.
+	* config/sh/t-monolib: Likewise.
+
 2004-06-21  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.h (ARM_LEGITIMIZE_RELOAD_ADDRESS): Soft-float need

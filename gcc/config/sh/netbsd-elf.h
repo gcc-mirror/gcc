@@ -27,11 +27,11 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #if TARGET_CPU_DEFAULT & SH5_BIT
-#if TARGET_CPU_DEFAULT & SH3E_BIT
+#if TARGET_CPU_DEFAULT & SH_E_BIT
 #define TARGET_VERSION_CPU "sh5"
 #else
 #define TARGET_VERSION_CPU "sh64"
-#endif /* SH3E_BIT */
+#endif /* SH_E_BIT */
 #else
 #define TARGET_VERSION_CPU "sh"
 #endif /* SH5_BIT */
@@ -63,17 +63,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* LINK_EMUL_PREFIX from sh/elf.h */
 
-#undef LINK_DEFAULT_CPU_EMUL
-#if TARGET_CPU_DEFAULT & SH5_BIT
-#if TARGET_CPU_DEFAULT & SH3E_BIT
-#define LINK_DEFAULT_CPU_EMUL "32"
-#else
-#define LINK_DEFAULT_CPU_EMUL "64"
-#endif /* SH3E_BIT */
-#else
-#define LINK_DEFAULT_CPU_EMUL ""
-#endif /* SH5_BIT */
-
 #undef SUBTARGET_LINK_EMUL_SUFFIX
 #define SUBTARGET_LINK_EMUL_SUFFIX "_nbsd"
 
@@ -94,7 +83,7 @@ Boston, MA 02111-1307, USA.  */
   (TARGET_CPU_DEFAULT | USERMODE_BIT | TARGET_ENDIAN_DEFAULT)
 
 /* Define because we use the label and we do not need them.  */
-#define NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS 1
  
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(STREAM,LABELNO)				\

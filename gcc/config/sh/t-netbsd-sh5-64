@@ -1,3 +1,1 @@
-MULTILIB_OPTIONS = $(MULTILIB_ENDIAN) m5-64media-nofpu/m5-compact/m5-compact-nofpu/m5-32media/m5-32media-nofpu
-MULTILIB_DIRNAMES= $(MULTILIB_ENDIAN) nofpu compact nofpu/compact media32 nofpu/media32
-MULTILIB_MATCHES =
+MULTILIB_DIRNAMES= $(MULTILIB_RAW_DIRNAMES:/media64=)

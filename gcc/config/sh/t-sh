@@ -21,11 +21,30 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#endif' 		>> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-MULTILIB_ENDIAN = ml
-MULTILIB_OPTIONS= $(MULTILIB_ENDIAN) m2/m2e/m4-single-only/m4-single/m4
+MULTILIB_ENDIAN = ml/mb
+MULTILIB_CPUS= $(ML_sh1)$(ML_sh2e)$(ML_sh2)$(ML_sh3e)$(ML_sh3)$(ML_sh4_nofpu)$(ML_sh4_single_only)$(ML_sh4_single)$(ML_sh4)$(ML_m5_32media)$(ML_m5_32media_nofpu)$(ML_m5_compact)$(ML_m5_compact_nofpu)$(ML_m5_64media)$(ML_m5_64media_nofpu)
+
+MULTILIB_OPTIONS= $(MULTILIB_ENDIAN) $(MULTILIB_CPUS:/=)
 MULTILIB_DIRNAMES= 
-MULTILIB_MATCHES = m2=m3 m2e=m3e m2=m4-nofpu
-MULTILIB_EXCEPTIONS = ml
+#MULTILIB_MATCHES = m2=m3 m2e=m3e m2=m4-nofpu
+MULTILIB_MATCHES = $(shell \
+  multilibs="$(MULTILIB_OPTIONS)" ; \
+  for abi in m1,m2,m3,m4-nofpu \
+             m2e,m3e,m4-single-only \
+             m5-32media,m5-compact,m5-32media \
+             m5-32media-nofpu,m5-compact-nofpu,m5-32media-nofpu; do \
+    subst= ; \
+    for lib in `echo $$abi|tr , ' '` ; do \
+      if test "`echo $$multilibs|sed s/$$lib//`" != "$$multilibs"; then \
+        subst=$$lib ; \
+      elif test x$$subst != x ; then \
+        echo $$subst=$$lib ; \
+      fi \
+    done \
+  done)
+
+# SH1 only supports big endian.
+MULTILIB_EXCEPTIONS = ml/m1
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
