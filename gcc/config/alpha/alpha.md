@@ -444,9 +444,9 @@
 ;; and if we split before reload, we will require additional instructions.
 
 (define_insn "*adddi_fp_hack"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-        (plus:DI (match_operand:DI 1 "reg_no_subreg_operand" "r")
-		 (match_operand:DI 2 "const_int_operand" "n")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r")
+        (plus:DI (match_operand:DI 1 "reg_no_subreg_operand" "r,r,r")
+		 (match_operand:DI 2 "const_int_operand" "K,L,n")))]
   "NONSTRICT_REG_OK_FP_BASE_P (operands[1])
    && INTVAL (operands[2]) >= 0
    /* This is the largest constant an lda+ldah pair can add, minus
@@ -460,7 +460,10 @@
 			   + max_reg_num () * UNITS_PER_WORD
 			   + current_function_pretend_args_size)
 	      - current_function_pretend_args_size))"
-  "#")
+  "@
+   lda %0,%2(%1)
+   ldah %0,%h2(%1)
+   #")
 
 ;; Don't do this if we are adjusting SP since we don't want to do it
 ;; in two steps.  Don't split FP sources for the reason listed above.
