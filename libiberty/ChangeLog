@@ -1,3 +1,22 @@
+2000-07-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-demangle.c (cp_demangle_type): Wrap in IN_LIBGCC2.
+
+	* setenv.c (setenv): Initialize variable `ep'.
+
+	* sigsetmask.c (abort): Prototype.
+
+	* vasprintf.c: Include config.h.  Check ANSI_PROTOTYPES, not
+	__STDC__ for stdarg.h include.
+	(int_vasprintf): Prototype.
+	(checkit): Prototype.  Use VPARAMS/ANSI_PROTOTYPES/VA_START in
+	definition.  Cast `global_total_width' in comparison.
+	(main): Prototype.  Return a value.
+
+	* vfork.c (fork): Prototype.
+
+	* xexit.c: Include config.h.
+
 2000-07-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* cplus-dem.c (demangle_fund_type): Make 'dec' an unsigned int,

@@ -18,21 +18,31 @@ License along with libiberty; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#ifdef __STDC__
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#include <ansidecl.h>
+#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
 #else
 #include <varargs.h>
 #endif
 #include <stdio.h>
 #include <string.h>
-#include <ansidecl.h>
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#else
+extern unsigned long strtoul ();
+extern PTR malloc ();
+#endif
+#include "libiberty.h"
 
 #ifdef TEST
 int global_total_width;
 #endif
 
-unsigned long strtoul ();
-char *malloc ();
+
+static int int_vasprintf PARAMS ((char **, const char *, va_list *));
 
 static int
 int_vasprintf (result, format, args)
@@ -60,7 +70,7 @@ int_vasprintf (result, format, args)
 	      total_width += abs (va_arg (ap, int));
 	    }
 	  else
-	    total_width += strtoul (p, &p, 10);
+	    total_width += strtoul (p, (char **) &p, 10);
 	  if (*p == '.')
 	    {
 	      ++p;
@@ -70,7 +80,7 @@ int_vasprintf (result, format, args)
 		  total_width += abs (va_arg (ap, int));
 		}
 	      else
-	      total_width += strtoul (p, &p, 10);
+	      total_width += strtoul (p, (char **) &p, 10);
 	    }
 	  while (strchr ("hlL", *p))
 	    ++p;
@@ -132,32 +142,32 @@ vasprintf (result, format, args)
 }
 
 #ifdef TEST
-void
-checkit
-#ifdef __STDC__
-     (const char* format, ...)
-#else
-     (va_alist)
-     va_dcl
-#endif
+static void checkit PARAMS ((const char *, ...));
+
+static void
+checkit VPARAMS ((const char* format, ...))
 {
   va_list args;
   char *result;
-
-#ifdef __STDC__
-  va_start (args, format);
-#else
-  char *format;
-  va_start (args);
-  format = va_arg (args, char *);
+#ifndef ANSI_PROTOTYPES
+  const char *format;
 #endif
+
+  VA_START (args, format);
+
+#ifndef ANSI_PROTOTYPES
+  format = va_arg (args, const char *);
+#endif
+
   vasprintf (&result, format, args);
-  if (strlen (result) < global_total_width)
+  if (strlen (result) < (size_t) global_total_width)
     printf ("PASS: ");
   else
     printf ("FAIL: ");
   printf ("%d %s\n", global_total_width, result);
 }
+
+extern int main PARAMS ((void));
 
 int
 main ()
@@ -169,5 +179,7 @@ main ()
   checkit ("%s", "jjjjjjjjjiiiiiiiiiiiiiiioooooooooooooooooppppppppppppaa\n\
 777777777777777777333333333333366666666666622222222222777777777777733333");
   checkit ("%f%s%d%s", 1.0, "foo", 77, "asdjffffffffffffffiiiiiiiiiiixxxxx");
+
+  return 0;
 }
 #endif /* TEST */

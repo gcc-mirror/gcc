@@ -17,13 +17,15 @@ License along with libiberty; see the file COPYING.LIB.  If not, write
 to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "ansidecl.h"
-#include "libiberty.h"
-
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include <stdio.h>
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#include "libiberty.h"
+
 
 /* This variable is set by xatexit if it is called.  This way, xmalloc
    doesn't drag xatexit into the link.  */
