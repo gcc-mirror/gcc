@@ -477,6 +477,8 @@ AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy bzero bcmp \
 
 AC_CHECK_TYPE(ssize_t, int)
 
+AC_TYPE_GETGROUPS
+
 gcc_AC_FUNC_VFPRINTF_DOPRNT
 gcc_AC_FUNC_PRINTF_PTR
 

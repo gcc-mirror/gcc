@@ -1,3 +1,9 @@
+2000-06-13  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* configure.in: Add AC_TYPE_GETGROUPS test.
+	* sys-protos.h: Use GETGROUPS_T * for second arg of getgroups.
+	* configure: Rebuilt.
+
 2000-06-13  Richard Henderson  <rth@cygnus.com>
 
 	* explow.c (set_mem_attributes): Do nothing for NULL type.
