@@ -1,3 +1,8 @@
+2001-09-22  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* decl.c (init_decl_processing): Fixed typo in predef_filenames
+	last three initializations. Fixes PR java/4360.
+
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
 	* class.c (get_dispatch_table): Handle function descriptors.
