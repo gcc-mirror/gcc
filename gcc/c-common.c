@@ -752,6 +752,76 @@ decl_attributes (node, attributes, prefix_attributes)
 	}
     }
 }
+
+/* Split SPECS_ATTRS, a list of declspecs and prefix attributes, into two
+   lists.  SPECS_ATTRS may also be just a typespec (eg: RECORD_TYPE).
+
+   The head of the declspec list is stored in DECLSPECS.
+   The head of the attribute list is stored in PREFIX_ATTRIBUTES.
+
+   Note that attributes in SPECS_ATTRS are stored in the TREE_PURPOSE of
+   the list elements.  We drop the containing TREE_LIST nodes and link the
+   resulting attributes together the way decl_attributes expects them.  */
+
+void
+split_specs_attrs (specs_attrs, declspecs, prefix_attributes)
+     tree specs_attrs;
+     tree *declspecs, *prefix_attributes;
+{
+  tree t, s, a, next, specs, attrs;
+
+  /* This can happen in c++ (eg: decl: typespec initdecls ';').  */
+  if (specs_attrs != NULL_TREE
+      && TREE_CODE (specs_attrs) != TREE_LIST)
+    {
+      *declspecs = specs_attrs;
+      *prefix_attributes = NULL_TREE;
+      return;
+    }
+
+  /* Remember to keep the lists in the same order, element-wise.  */
+
+  specs = s = NULL_TREE;
+  attrs = a = NULL_TREE;
+  for (t = specs_attrs; t; t = next)
+    {
+      next = TREE_CHAIN (t);
+      /* Declspecs have a non-NULL TREE_VALUE.  */
+      if (TREE_VALUE (t) != NULL_TREE)
+	{
+	  if (specs == NULL_TREE)
+	    specs = s = t;
+	  else
+	    {
+	      TREE_CHAIN (s) = t;
+	      s = t;
+	    }
+	}
+      else
+	{
+	  if (attrs == NULL_TREE)
+	    attrs = a = TREE_PURPOSE (t);
+	  else
+	    {
+	      TREE_CHAIN (a) = TREE_PURPOSE (t);
+	      a = TREE_PURPOSE (t);
+	    }
+	  /* More attrs can be linked here, move A to the end.  */
+	  while (TREE_CHAIN (a) != NULL_TREE)
+	    a = TREE_CHAIN (a);
+	}
+    }
+
+  /* Terminate the lists.  */
+  if (s != NULL_TREE)
+    TREE_CHAIN (s) = NULL_TREE;
+  if (a != NULL_TREE)
+    TREE_CHAIN (a) = NULL_TREE;
+
+  /* All done.  */
+  *declspecs = specs;
+  *prefix_attributes = attrs;
+}
 
 /* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against
    a parameter list.  */
