@@ -514,10 +514,6 @@ while (0)
 	#error "Define CPP_PREDEFINES in the appropriate tm.h file"
 #endif
 
-#ifndef LINK_SPEC
-	#error "Define LINK_SPEC in the appropriate tm.h file"
-#endif
-
 #ifndef LIB_SPEC
 	#error "Define LIB_SPEC in the appropriate tm.h file"
 #endif
@@ -548,23 +544,40 @@ while (0)
 /* Extra switches sometimes passed to the assembler.  */
 
 #ifndef ASM_SPEC
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
+/* GAS */
+#define ASM_SPEC "\
+%{mmips-as: \
+	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
+	%{pipe: %e-pipe is not supported.} \
+	%{K}} \
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
+%{noasmopt:-O0} \
+%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
+%{g} %{g0} %{g1} %{g2} %{g3} \
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
+%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
+%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
+
+#else
+/* not GAS */
 #define ASM_SPEC "\
 %{!mgas: \
-	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
+	%{!.s:-nocpp} %{.s: %{cpp} %{nocpp}} \
 	%{pipe: %e-pipe is not supported.} \
-	%{EB} %{!EB:-EB} \
-	%{EL: %e-EL not supported} \
-	%{mips1} %{mips2} %{mips3} \
-	%{noasmopt:-O0} \
-	%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
-	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K} \
-	%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
-	%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
-	%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
-	%{gcoff:-g} %{gstabs0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}} \
-%{G*}"
+	%{K}} \
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
+%{noasmopt:-O0} \
+%{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
+%{g} %{g0} %{g1} %{g2} %{g3} \
+%{ggdb:-g} %{ggdb0:-g0} %{ggdb1:-g1} %{ggdb2:-g2} %{ggdb3:-g3} \
+%{gstabs:-g} %{gstabs0:-g0} %{gstabs1:-g1} %{gstabs2:-g2} %{gstabs3:-g3} \
+%{gstabs+:-g} %{gstabs+0:-g0} %{gstabs+1:-g1} %{gstabs+2:-g2} %{gstabs+3:-g3} \
+%{gcoff:-g} %{gcoff0:-g0} %{gcoff1:-g1} %{gcoff2:-g2} %{gcoff3:-g3}"
 
-#endif				/* ASM_SPEC */
+#endif
+#endif	/* ASM_SPEC */
 
 /* Specify to run a post-processor, mips-tfile after the assembler
    has run to stuff the mips debug information into the object file.
@@ -574,8 +587,8 @@ while (0)
    -mmips-tfile.  */
 
 #ifndef ASM_FINAL_SPEC
-#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0 || defined (CROSS_COMPILE)
-				/* GAS */
+#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
+/* GAS */
 #define ASM_FINAL_SPEC "\
 %{mmips-as: %{!mno-mips-tfile: \
 	\n mips-tfile %{v*: -v} \
@@ -584,7 +597,8 @@ while (0)
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
 		%{.s:%i} %{!.s:%g.s}}}"
 
-#else				/* not GAS, clean up after MIPS assembler */
+#else
+/* not GAS */
 #define ASM_FINAL_SPEC "\
 %{!mgas: %{!mno-mips-tfile: \
 	\n mips-tfile %{v*: -v} \
@@ -593,7 +607,7 @@ while (0)
 		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
 		%{.s:%i} %{!.s:%g.s}}}"
 
-#endif	/* GAS */
+#endif
 #endif	/* ASM_FINAL_SPEC */
 
 /* Redefinition of libraries used.  Mips doesn't support normal
@@ -605,17 +619,14 @@ while (0)
 #endif
 
 /* Extra switches sometimes passed to the linker.  */
+/* ??? The bestGnum will never be passed to the linker, because the gcc driver
+  will interpret it as a -b option.  */
 
 #ifndef LINK_SPEC
 #define LINK_SPEC "\
-%{G*} \
-%{!mgas: \
-	%{pipe: %e-pipe is not supported.} \
-	%{EB} %{!EB:-EB} \
-	%{EL: %e-EL not supported} \
-	%{mips1} %{mips2} %{mips3} \
-	%{bestGnum} %{shared} %{non_shared}}"
-#endif				/* LINK_SPEC defined */
+%{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} \
+%{bestGnum} %{shared} %{non_shared}"
+#endif	/* LINK_SPEC defined */
 
 /* Specs for the compiler proper */
 
