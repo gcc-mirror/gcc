@@ -267,7 +267,10 @@ for code in ALL STD ; do
 	      # Most systems that provide them will also declare them.
 	      required_list="kill raise" ;;
 	    stdio.h)
-	      required_list="clearerr fclose feof ferror fflush fgetc fgetpos fgets fopen fprintf fputc fputs fread freopen fscanf fseek fsetpos ftell fwrite getc getchar gets perror printf putc putchar puts remove rename rewind scanf setbuf setvbuf sprintf sscanf tmpfile tmpnam ungetc vfprintf vprintf vsprintf"
+	      # Omitted vfprintf, vprintf, vsprintf because it's hard
+	      # to specify the right data type, and because not all systems
+	      # have them.
+	      required_list="clearerr fclose feof ferror fflush fgetc fgetpos fgets fopen fprintf fputc fputs fread freopen fscanf fseek fsetpos ftell fwrite getc getchar gets perror printf putc putchar puts remove rename rewind scanf setbuf setvbuf sprintf sscanf tmpfile tmpnam ungetc"
 	      if grep '[^_a-zA-Z0-9]_flsbuf' <$abs_source_file >/dev/null; then
 		required_list="$required_list _flsbuf _filbuf"
 	      fi
