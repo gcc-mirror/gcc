@@ -1,10 +1,23 @@
+2003-01-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+	PR optimization/9279
+
+	Merge from mainline:
+
+	2002-07-10  Roger Sayle  <roger@eyesopen.com>
+
+	PR c/2454
+	* combine.c (nonzero_bits): LOAD_EXTEND_OP should only apply
+	to SUBREGs of MEMs.  (num_sign_bit_copies): Likewise.
+
 2003-01-25  Jan Hubicka  <jh@suse.cz>
 
 	PR fortran/9258
-        * global.c (struct allocno): Add no_stack_reg. 
-        (global_conflicts): Set no_stack_reg.
-        (find_reg): Use it.
-	
+	* global.c (struct allocno): Add no_stack_reg. 
+	(global_conflicts): Set no_stack_reg.
+	(find_reg): Use it.
+
 2003-01-24  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* doc/passes.texi: Fix typo.
@@ -42,13 +55,13 @@
 
 2003-01-21  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
-        PR opt/7507
-        * calls.c (fix_unsafe_tree): Split out from ...
-        (expand_call): ... here.  Use it on the function address too.
+	PR opt/7507
+	* calls.c (fix_unsafe_tree): Split out from ...
+	(expand_call): ... here.  Use it on the function address too.
 
 2003-01-19  Roger Sayle  <roger@eyesopen.com>
 
-        * config/pa/pa.md (muldi3): Avoid invalid sharing of SUBREG RTXs.
+	* config/pa/pa.md (muldi3): Avoid invalid sharing of SUBREG RTXs.
 
 2003-01-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -115,9 +128,9 @@
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
             Sunil Davasam  <sunil.k.davasam@intel.com>
 
-        PR libstdc++/9076 
-        * unwind-dw2.c (execute_cfa_program): DW_CFA_undefined,
-        DW_CFA_same_value, read next and ignore.
+	PR libstdc++/9076 
+	* unwind-dw2.c (execute_cfa_program): DW_CFA_undefined,
+	DW_CFA_same_value, read next and ignore.
 
 2003-01-07  Richard Henderson  <rth@redhat.com>
 
@@ -232,7 +245,7 @@
 
 2002-11-26  David Edelsohn  <edelsohn@gnu.org>
 
-        * config/rs6000/rs6000.c (rs6000_flag_pic): New variable.
+	* config/rs6000/rs6000.c (rs6000_flag_pic): New variable.
 	(rs6000_override_options): Save original flag_pic value.
 	(rs6000_encode_section_info): More accurate test for "local" symbol.
 
