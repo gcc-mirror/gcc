@@ -5803,7 +5803,7 @@ texinfo: TexinfoDoclet.class
 
 -include deps.mk
 
-all-recursive: libgcj-@gcc_version@.jar $(nat_headers) $(x_nat_headers)
+all-recursive: libgcj-@gcc_version@.jar $(nat_headers) $(xlib_nat_headers)
 
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
