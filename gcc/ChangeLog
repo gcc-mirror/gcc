@@ -1,3 +1,11 @@
+2000-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): Reload gp if needed.
+
+	* config/sparc/sparc.h (ASM_OUTPUT_MI_THUNK): Always use call, make
+	sure linker can relax even the delay slot mov %g1,%o7, fix output
+	formating.
+
 2000-10-17  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md: Remove an unnecessary zero_extend
