@@ -1654,13 +1654,13 @@
 ;; ??? This should be a define expand.
 
 (define_insn "movdf_k"
-  [(set (match_operand:DF 0 "general_movdst_operand" "=r,r,m")
-	(match_operand:DF 1 "general_movsrc_operand" "r,m,r"))]
+  [(set (match_operand:DF 0 "general_movdst_operand" "=r,r,r,m")
+	(match_operand:DF 1 "general_movsrc_operand" "r,FQ,m,r"))]
   "arith_reg_operand (operands[0], DFmode)
    || arith_reg_operand (operands[1], DFmode)"
   "* return output_movedouble (insn, operands, DFmode);"
   [(set_attr "length" "4")
-   (set_attr "type" "move,load,store")])
+   (set_attr "type" "move,pcload,load,store")])
 
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.  
@@ -1771,8 +1771,8 @@
   "{ if (prepare_move_operands (operands, DFmode)) DONE; }")
 
 (define_insn "movsf_i"
-  [(set (match_operand:SF 0 "general_movdst_operand" "=r,r,r,m,l,r")
-	(match_operand:SF 1 "general_movsrc_operand"  "r,I,m,r,r,l"))]
+  [(set (match_operand:SF 0 "general_movdst_operand" "=r,r,r,r,m,l,r")
+	(match_operand:SF 1 "general_movsrc_operand"  "r,I,FQ,m,r,r,l"))]
   "
    ! TARGET_SH3E &&
    (arith_reg_operand (operands[0], SFmode)
@@ -1782,13 +1782,14 @@
 	mov	%1,%0
 	mov.l	%1,%0
 	mov.l	%1,%0
+	mov.l	%1,%0
 	lds	%1,%0
 	sts	%1,%0"
-  [(set_attr "type" "move,move,load,store,move,move")])
+  [(set_attr "type" "move,move,pcload,load,store,move,move")])
 
 (define_insn "movsf_ie"
-  [(set (match_operand:SF 0 "general_movdst_operand" "=f,r,f,f,f,m,r,m,!r,!f")
-	(match_operand:SF 1 "general_movsrc_operand"  "f,r,G,H,m,f,m,r,f,r"))]
+  [(set (match_operand:SF 0 "general_movdst_operand" "=f,r,f,f,f,m,r,r,m,!r,!f")
+	(match_operand:SF 1 "general_movsrc_operand"  "f,r,G,H,m,f,FQ,m,r,f,r"))]
   "TARGET_SH3E
    && (arith_reg_operand (operands[0], SFmode)
        || arith_reg_operand (operands[1], SFmode))"
@@ -1801,16 +1802,56 @@
 	fmov.s	%1,%0
 	mov.l	%1,%0
 	mov.l	%1,%0
+	mov.l	%1,%0
 	flds	%1,fpul\;sts	fpul,%0
 	lds	%1,fpul\;fsts	fpul,%0"
-  [(set_attr "type" "move,move,fp,fp,load,store,load,store,move,fp")
-   (set_attr "length" "*,*,*,*,*,*,*,*,4,4")])
+  [(set_attr "type" "move,move,fp,fp,load,store,pcload,load,store,move,fp")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,4,4")])
+
+(define_insn "movsf_ieq"
+  [(set (match_operand:SF 0 "general_movdst_operand" "=f")
+	(match_operand:SF 1 "general_movsrc_operand"  "FQ"))
+   (clobber (reg:SI 0))]
+  "TARGET_SH3E
+   && (arith_reg_operand (operands[0], SFmode)
+       || arith_reg_operand (operands[1], SFmode))"
+  "#"
+  [(set_attr "type" "pcload") (set_attr "length" "4")])
+
+(define_split
+  [(set (match_operand:SF 0 "general_movdst_operand" "")
+	(match_operand:SF 1 "general_movsrc_operand"  ""))
+   (clobber (reg:SI 0))]
+  "GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER"
+  [(set (match_dup 0) (match_dup 1))]
+  "
+{
+  if (REGNO (operands[0]) >= FIRST_FP_REG && REGNO (operands[0]) <= LAST_FP_REG)
+    {
+      emit_insn (gen_mova (XEXP (operands[1], 0)));
+      XEXP (operands[1], 0) = gen_rtx (REG, Pmode, 0);
+    }
+}")
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_movdst_operand" "")
-	(match_operand:SF 1 "general_movsrc_operand" ""))]
+        (match_operand:SF 1 "general_movsrc_operand" ""))]
   ""
-  "{ if (prepare_move_operands (operands, SFmode)) DONE; }")
+  "
+{
+  if (prepare_move_operands (operands, SFmode))
+    DONE;
+  if (TARGET_SH3E && GET_CODE (operands[1]) == CONST_DOUBLE
+      && ! fp_zero_operand (operands[1]) && ! fp_one_operand (operands[1])
+      && GET_CODE (operands[0]) == REG
+      && (REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER
+	  || (REGNO (operands[0]) >= FIRST_FP_REG
+	      && REGNO (operands[0]) <= LAST_FP_REG)))
+    {
+      emit_insn (gen_movsf_ieq (operands[0], operands[1]));
+      DONE;
+    }
+}")
 
 ;; ------------------------------------------------------------------------
 ;; Define the real conditional branch instructions.
@@ -2307,6 +2348,36 @@
  "*
 {
   assemble_integer (operands[0], 8, 1);
+  return \"\";
+}"
+ [(set_attr "length" "8")
+  (set_attr "in_delay_slot" "no")])
+
+; 4 byte floating point
+
+(define_insn "consttable_sf"
+ [(unspec_volatile [(match_operand:SF 0 "general_operand" "=g")] 4)]
+ ""
+ "*
+{
+  union real_extract u;
+  bcopy ((char *) &CONST_DOUBLE_LOW (operands[0]), (char *) &u, sizeof u);
+  assemble_real (u.d, SFmode);
+  return \"\";
+}"
+ [(set_attr "length" "4")
+  (set_attr "in_delay_slot" "no")])
+
+; 8 byte floating point
+
+(define_insn "consttable_df"
+ [(unspec_volatile [(match_operand:DF 0 "general_operand" "=g")] 6)]
+ ""
+ "*
+{
+  union real_extract u;
+  bcopy ((char *) &CONST_DOUBLE_LOW (operands[0]), (char *) &u, sizeof u);
+  assemble_real (u.d, DFmode);
   return \"\";
 }"
  [(set_attr "length" "8")
