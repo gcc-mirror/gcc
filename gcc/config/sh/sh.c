@@ -505,6 +505,8 @@ prepare_scc_operands (code)
     case NE:
       /* It isn't possible to handle this case.  */
       abort ();
+    case EQ:
+      break;
     case LT:
       code = GT;
       break;

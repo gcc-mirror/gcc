@@ -1,3 +1,7 @@
+Wed Jan 19 21:47:53 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (prepare_scc_operands): Add EQ case.
+
 Wed Jan 19 20:23:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (PASS_IN_REG_P): Remove extraneous paranthesis.
