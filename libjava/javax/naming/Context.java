@@ -79,5 +79,50 @@ public interface Context
 
   public void bind (Name name, Object obj) throws NamingException;
   public void bind (String name, Object obj) throws NamingException;
+
+  public Object lookup (Name name) throws NamingException;
+  public Object lookup (String name) throws NamingException;
+
+  public void rebind (Name name, Object obj) throws NamingException;
+  public void rebind (String name, Object obj) throws NamingException;
+
+  public void unbind (Name name) throws NamingException;
+  public void unbind (String name) throws NamingException;
+
+  public void rename (Name oldName, Name newName) throws NamingException;
+  public void rename (String oldName, String newName) throws NamingException;
+
+  public NamingEnumeration list (Name name) throws NamingException;
+  public NamingEnumeration list (String name) throws NamingException;
+
+  public NamingEnumeration listBindings (Name name) throws NamingException;
+  public NamingEnumeration listBindings (String name) throws NamingException;
+
+  public void destroySubcontext (Name name) throws NamingException;
+  public void destroySubcontext (String name) throws NamingException;
+
+  public Context createSubcontext (Name name) throws NamingException;
+  public Context createSubcontext (String name) throws NamingException;
+
+  public Object lookupLink (Name name) throws NamingException;
+  public Object lookupLink (String name) throws NamingException;
+
+  public NameParser getNameParser (Name name) throws NamingException;
+  public NameParser getNameParser (String name) throws NamingException;
+
+  public Name composeName (Name name, Name prefix) throws NamingException;
+  public String composeName (String name, 
+			     String prefix) throws NamingException;
+
+  public Object addToEnvironment (String propName, 
+				  Object propVal) throws NamingException;
+
+  public Object removeFromEnvironment (String propName) throws NamingException;
+
+  public Hashtable getEnvironment () throws NamingException;
+
+  public void close () throws NamingException;
+
+  public String getNameInNamespace () throws NamingException;
 }
 
