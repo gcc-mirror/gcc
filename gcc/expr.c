@@ -6516,8 +6516,10 @@ static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER];
 /* Return the offset of register REGNO into the block returned by 
    __builtin_apply_args.  This is not declared static, since it is
    needed in objc-act.c. */
+
 int 
-apply_args_register_offset (int regno)
+apply_args_register_offset (regno)
+     int regno;
 {
   apply_args_size ();
 
@@ -6531,6 +6533,7 @@ apply_args_register_offset (int regno)
 
 /* Return the size required for the block returned by __builtin_apply_args,
    and initialize apply_args_mode.  */
+
 static int
 apply_args_size ()
 {
@@ -6594,6 +6597,7 @@ apply_args_size ()
 
 /* Return the size required for the block returned by __builtin_apply,
    and initialize apply_result_mode.  */
+
 static int
 apply_result_size ()
 {
@@ -6654,6 +6658,7 @@ apply_result_size ()
 /* Create a vector describing the result block RESULT.  If SAVEP is true,
    the result block is used to save the values; otherwise it is used to
    restore the values.  */
+
 static rtx
 result_vector (savep, result)
      int savep;
@@ -6683,9 +6688,9 @@ result_vector (savep, result)
 }
 #endif /* HAVE_untyped_call or HAVE_untyped_return */
 
-
 /* Save the state required to perform an untyped call with the same
    arguments as were passed to the current function.  */
+
 static rtx
 expand_builtin_apply_args ()
 {
@@ -6738,6 +6743,7 @@ expand_builtin_apply_args ()
 
 /* Perform an untyped call and save the state required to perform an
    untyped return of whatever value was returned by the given function.  */
+
 static rtx
 expand_builtin_apply (function, arguments, argsize)
      rtx function, arguments, argsize;
@@ -6896,6 +6902,7 @@ expand_builtin_apply (function, arguments, argsize)
 }
 
 /* Perform an untyped return.  */
+
 static void
 expand_builtin_return (result)
      rtx result;
