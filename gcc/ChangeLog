@@ -1,3 +1,8 @@
+2000-11-14  Richard Henderson  <rth@redhat.com>
+
+	* c-typeck.c (c_sizeof): Fold result to c_size_type_node.
+	(c_sizeof_nowarn, c_alignof, c_alignof_expr): Likewise.
+
 2000-11-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* loop.c (basic_induction_var): Revert accidental checkin.
