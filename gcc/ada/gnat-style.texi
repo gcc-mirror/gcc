@@ -7,8 +7,7 @@
 @c                                                                            o
 @c                      G N A T   C O D I N G   S T Y L E                     o
 @c                                                                            o
-@c                                                                            o
-@c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
+@c          Copyright (C) 1992-2004 Ada Core Technologies, Inc.               o
 @c                                                                            o
 @c  GNAT is free software;  you can  redistribute it  and/or modify it under  o
 @c  terms of the  GNU General Public License as published  by the Free Soft-  o
@@ -24,7 +23,11 @@
 @c oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 
 @setfilename gnat-style.info
+
 @settitle GNAT Coding Style
+@setchapternewpage odd
+
+
 @dircategory Programming
 @direntry
 * gnat-style: (gnat-style).      GNAT Coding Style
@@ -35,23 +38,58 @@
 @end macro
 @c %**end of header
 
-@ifinfo
-     @center GNAT Coding Style
-
-     @center A guide for GNAT developers
-     Copyright (C) 1992-2001 Ada Core Technologies, Inc.
-@end ifinfo
-
 @titlepage
 @sp 10
 @title GNAT Coding Style
-@subtitle A guide for GNAT developers
+@flushright
+@titlefont{A Guide for GNAT Developers}
+@end flushright
+@sp 2
+@subtitle GNAT, The GNU Ada 95 Compiler
+
 @author Ada Core Technologies, Inc.
+
+@page
+@vskip 0pt plus 1filll
+
+Copyright @copyright{} 1995-2003, Free Software Foundation
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1
+or any later version published by the Free Software Foundation;
+with the Invariant Sections being ``GNU Free Documentation License'', with the
+Front-Cover Texts being
+``GNAT Coding Style'' and ``A Guide for GNAT Developers'',
+and with no Back-Cover Texts.
+A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
 @end titlepage
+
 @raisesections
 
 @node    Top,       General,         , (dir)
 @comment node-name, next,    previous, up
+
+@ifnottex
+@noindent
+GNAT Coding Style@*
+A Guide for GNAT Developers
+@sp 2
+@noindent
+GNAT, The GNU Ada 95 Compiler@*
+
+@noindent
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1
+or any later version published by the Free Software Foundation;
+with the Invariant Sections being ``GNU Free Documentation License'', with the
+Front-Cover Texts being
+``GNAT Coding Style'' and ``A Guide for GNAT Developers''
+and with no Back-Cover Texts.
+A copy of the license is included in the section entitled
+``GNU Free Documentation License''.
+@end ifnottex
+
 
 @menu
 * General::
@@ -62,6 +100,8 @@
 * Subprograms::
 * Packages::
 * Program Structure::
+* GNU Free Documentation License::
+* Index::
 @end menu
 
 @c  -------------------------------------------------------------------------
@@ -75,31 +115,40 @@ readability of the code.  This document has been written to help
 maintain this consistent style, while having a large group of developers
 work on the compiler.
 
-@noindent
 For the coding style in the C parts of the compiler and run time,
 see the GNU Coding Guidelines.
 
-@noindent
-This document is structured after the Ada Reference manual.
+This document is structured after the @cite{Ada Reference Manual}.
 Those familiar with that document should be able to quickly
 lookup style rules for particular constructs.
+
 
 @c  -------------------------------------------------------------------------
 @node    Lexical Elements, Declarations and Types, General, Top
 @section Lexical Elements
 @c  -------------------------------------------------------------------------
+@cindex Lexical elements
 
 @subsection Character Set and Separators
 @c  -------------------------------------------------------------------------
+@cindex Character set
+@cindex ASCII
+@cindex Separators
+@cindex End-of-line
+@cindex Line length
+@cindex Indentation
 
 @itemize @bullet
 @item
 The character set used should be plain 7-bit ASCII@.
 The only separators allowed are space and the end-of-line sequence.
-No other control character or format effector (such as HT, VT, FF)
+No other control character or format effector (such as @code{HT},
+@code{VT}, @code{FF})
 should be used.
-The normal end-of-line sequence is used, which may be LF, CR/LF or CR,
-depending on the host system.  An optional SUB (16#1A#) may be present as the
+The normal end-of-line sequence is used, which may be
+@code{LF}, @code{CR/LF} or @code{CR},
+depending on the host system.  An optional @code{SUB}
+(@code{16#1A#}) may be present as the
 last character in the file on hosts using that character as file terminator.
 
 @item
@@ -113,24 +162,31 @@ separator.
 Lines must not have trailing blanks.
 
 @item
-Indentation is 3 characters per level for if statements, loops, case
-statements.  For exact information on required spacing between lexical
+Indentation is 3 characters per level for @code{if} statements, loops, and
+@code{case} statements.
+For exact information on required spacing between lexical
 elements, see file @file{style.adb}.
-
+@cindex @file{style.adb} file
 @end itemize
+
 
 @subsection Identifiers
 @c  -------------------------------------------------------------------------
 @itemize @bullet
+@cindex Identifiers
+
 @item
 Identifiers will start with an upper case letter, and each letter following
-an underscore will be upper case.  Short acronyms may be all upper case.
+an underscore will be upper case.
+@cindex Casing (for identifiers)
+Short acronyms may be all upper case.
 All other letters are lower case.
 An exception is for identifiers matching a foreign language.  In particular,
 we use all lower case where appropriate for C@.
 
 @item
 Use underscores to separate words in an identifier.
+@cindex Underscores
 
 @item Try to limit your use of abbreviations in identifiers.
 It is ok to make a few abbreviations, explain what they mean, and then
@@ -139,22 +195,25 @@ example is the @code{ALI} word which stands for Ada Library
 Information and is by convention always written in upper-case when
 used in entity names.
 
-@smallexample
+@smallexample @c adanocomment
        procedure Find_ALI_Files;
 @end smallexample
 
 @item
-Don't use the variable @samp{I}, use @samp{J} instead, @samp{I} is too
-easily mixed up with @samp{1} in some fonts.  Similarly don't use the
-variable @samp{O}, which is too easily mixed up with the number @samp{0}.
+Don't use the variable name @code{I}, use @code{J} instead; @code{I} is too
+easily confused with @code{1} in some fonts.  Similarly don't use the
+variable @code{O}, which is too easily mistaken for the number @code{0}.
 @end itemize
 
 @subsection Numeric Literals
 @c  -------------------------------------------------------------------------
+@cindex Numeric literals
+
 @itemize @bullet
 @item
 Numeric literals should include underscores where helpful for
 readability.
+@cindex Underscores
 
 @smallexample
       1_000_000
@@ -165,77 +224,89 @@ readability.
 
 @subsection Reserved Words
 @c  -------------------------------------------------------------------------
+@cindex Reserved words
+
 @itemize @bullet
 @item
 Reserved words use all lower case.
+@cindex Casing (for reserved words)
 
-@smallexample
+@smallexample @c adanocomment
        return else
 @end smallexample
 
 @item
-The words @samp{Access}, @samp{Delta} and @samp{Digits} are
+The words @code{Access}, @code{Delta} and @code{Digits} are
 capitalized when used as @syntax{attribute_designator}.
 @end itemize
 
 @subsection Comments
 @c  -------------------------------------------------------------------------
+@cindex Comments
 
 @itemize @bullet
 @item
-Comment start with @samp{--  } (i.e.@: @samp{--} followed by two spaces).
+A comment starts with @code{--} followed by two spaces).
 The only exception to this rule (i.e.@: one space is tolerated) is when the
-comment ends with @samp{ --}.
-It also accepted to have only one space between @samp{--} and the start
+comment ends with a single space followed by @code{--}.
+It is also acceptable to have only one space between @code{--} and the start
 of the comment when the comment is at the end of a line,
 after some Ada code.
 
 @item
 Every sentence in a comment should start with an upper-case letter (including
 the first letter of the comment).
+@cindex Casing (in comments)
 
 @item
 When declarations are commented with ``hanging'' comments, i.e.@:
 comments after the declaration, there is no blank line before the
 comment, and if it is absolutely necessary to have blank lines within
-the comments these blank lines @emph{do} have a @samp{--} (unlike the
+the comments these blank lines @emph{do} have a @code{--} (unlike the
 normal rule, which is to use entirely blank lines for separating
-comment paragraphs).  The comment start at same level of indentation
-as code they are commenting.
+comment paragraphs).  The comment starts at same level of indentation
+as code it is commenting.
+@cindex Blank lines (in comments)
+@cindex Indentation
 
-@smallexample
+@smallexample @c adanocomment
        z : Integer;
-       --  @r{Integer value for storing value of} z
+       --  Integer value for storing value of z
        --
-       --  @r{The previous line was a blank line.}
+       --  The previous line was a blank line.
 @end smallexample
 
 @item
-Comments that are dubious or incomplete or comment on possibly
-wrong or incomplete code should be preceded or followed by @samp{???}@.
+Comments that are dubious or incomplete, or that comment on possibly
+wrong or incomplete code, should be preceded or followed by @code{???}@.
 
 @item
-Comments in a subprogram body must generally be surrounded by blank lines,
-except after a @samp{begin}:
+Comments in a subprogram body must generally be surrounded by blank lines.
+An exception is a comment that follows a line containing a single keyword
+(@code{begin}, @code{else}, @code{loop}):
 
-@smallexample
+@smallexample @c adanocomment
+@group
        begin
-          --  @r{Comment for the next statement}
+          --  Comment for the next statement
 
           A := 5;
 
-          --  @r{Comment for the B statement}
+          --  Comment for the B statement
 
           B := 6;
+       end;
+@end group
 @end smallexample
 
 @item
 In sequences of statements, comments at the end of the lines should be
 aligned.
+@cindex Alignment (in comments)
 
-@smallexample
-        My_Identifier := 5;      --  @r{First comment}
-        Other_Id := 6;           --  @r{Second comment}
+@smallexample @c adanocomment
+        My_Identifier := 5;      --  First comment
+        Other_Id := 6;           --  Second comment
 @end smallexample
 
 @item
@@ -244,7 +315,7 @@ period.  Comments taking more than a line are punctuated in the normal
 manner.
 
 @item
-Comments should focus on why instead of what.
+Comments should focus on @emph{why} instead of @emph{what}.
 Descriptions of what subprograms do go with the specification.
 
 @item
@@ -254,20 +325,22 @@ depend on the names of things.  The names are supplementary, not
 sufficient, as comments.
 
 @item
-Do NOT put two spaces after periods in comments.
+@emph{Do not} put two spaces after periods in comments.
 @end itemize
 
 @c  -------------------------------------------------------------------------
 @node    Declarations and Types, Expressions and Names, Lexical Elements,Top
 @section Declarations and Types
 @c  -------------------------------------------------------------------------
+@cindex Declarationa and Types
 
 @itemize @bullet
 @item
 In entity declarations, colons must be surrounded by spaces.  Colons
 should be aligned.
+@cindex Alignment (in declarations)
 
-@smallexample
+@smallexample @c adanocomment
         Entity1   : Integer;
         My_Entity : Integer;
 @end smallexample
@@ -281,10 +354,11 @@ All local subprograms in a subprogram or package body should be declared
 before the first local subprogram body.
 
 @item
-Don't declare local entities that hide global entities.
+Do not declare local entities that hide global entities.
+@cindex Hiding of outer entities
 
 @item
-Don't declare multiple variables in one declaration that spans lines.
+Do not declare multiple variables in one declaration that spans lines.
 Start a new declaration on each line, instead.
 
 @item
@@ -303,24 +377,27 @@ one context, where comments explain their purpose.
 @node    Expressions and Names, Statements, Declarations and Types, Top
 @section Expressions and Names
 @c  -------------------------------------------------------------------------
+@cindex Expressions and names
 
 @itemize @bullet
 
 @item
-Every operator must be surrounded by spaces, except for the
-exponentiation operator.
+Every operator must be surrounded by spaces. An exception is that
+this rule does not apply to the exponentiation operator, for which
+there are no specific layout rules. The reason for this exception
+is that sometimes it makes clearer reading to leave out the spaces
+around exponentiation.
+@cindex Operators
 
-@smallexample
+@smallexample @c adanocomment
        E := A * B**2 + 3 * (C - D);
 @end smallexample
 
 @item
-When folding a long line, fold before an operator, not after.
-
-@item
 Use parentheses where they clarify the intended association of operands
 with operators:
-@smallexample
+@cindex Parenthesization of expressions
+@smallexample @c adanocomment
        (A / B) * C
 @end smallexample
 @end itemize
@@ -329,9 +406,12 @@ with operators:
 @node    Statements, Subprograms, Expressions and Names, Top
 @section Statements
 @c  -------------------------------------------------------------------------
+@cindex Statements
 
 @subsection Simple and Compound Statements
 @c  -------------------------------------------------------------------------
+@cindex Simple and compound statements
+
 @itemize @bullet
 @item
 Use only one statement or label per line.
@@ -342,13 +422,17 @@ groups or separated from surrounding code using a blank line.
 
 @subsection If Statements
 @c  -------------------------------------------------------------------------
+@cindex @code{if} statement
+
 @itemize @bullet
 @item
-When the @samp{if}, @samp{elsif} or @samp{else} keywords fit on the
-same line with the condition and the @samp{then} keyword, then the
+When the @code{if}, @code{elsif} or @code{else} keywords fit on the
+same line with the condition and the @code{then} keyword, then the
 statement is formatted as follows:
+@cindex Alignment (in an @code{if} statement)
 
-@smallexample
+@smallexample @c adanocomment
+@group
         if @var{condition} then
            ...
         elsif @var{condition} then
@@ -356,63 +440,81 @@ statement is formatted as follows:
         else
            ...
         end if;
+@end group
 @end smallexample
 
 @noindent
-When the above layout is not possible, @samp{then} should be aligned
-with @samp{if}, and conditions should preferably be split before an
-@samp{and} or @samp{or} keyword a follows:
+When the above layout is not possible, @code{then} should be aligned
+with @code{if}, and conditions should preferably be split before an
+@code{and} or @code{or} keyword a follows:
 
-@smallexample
+@smallexample @c adanocomment
+@group
         if @var{long_condition_that_has_to_be_split}
           and then @var{continued_on_the_next_line}
         then
            ...
         end if;
+@end group
 @end smallexample
 
 @noindent
-The @samp{elsif}, @samp{else} and @samp{end if} always line up with
-the @samp{if} keyword.  The preferred location for splitting the line
-is before @samp{and} or @samp{or}.  The continuation of a condition is
+The @code{elsif}, @code{else} and @code{end if} always line up with
+the @code{if} keyword.  The preferred location for splitting the line
+is before @code{and} or @code{or}.  The continuation of a condition is
 indented with two spaces or as many as needed to make nesting clear.
-As exception, if conditions are closely related either of the
+As an exception, if conditions are closely related either of the
 following is allowed:
 
 @smallexample
+@group
      if x = lakdsjfhlkashfdlkflkdsalkhfsalkdhflkjdsahf
           or else
         x = asldkjhalkdsjfhhfd
           or else
         x = asdfadsfadsf
      then
+       ...
+     end if;
+@end group
 
+@group
      if x = lakdsjfhlkashfdlkflkdsalkhfsalkdhflkjdsahf or else
         x = asldkjhalkdsjfhhfd                         or else
         x = asdfadsfadsf
      then
+       ...
+     end if;
+@end group
 @end smallexample
 
 @item
-Conditions should use short-circuit forms (@samp{and then},
-@samp{or else}).
+Conditions should use short-circuit forms (@code{and then},
+@code{or else}).
+@cindex Short-circuit forms
 
 @item
-Complex conditions in if statements are indented two characters:
+Complex conditions in @code{if} statements are indented two characters:
+@cindex Indentation (in @code{if} statements)
 
-@smallexample
+@smallexample @c adanocomment
+@group
       if @var{this_complex_condition}
         and then @var{that_other_one}
         and then @var{one_last_one}
       then
          ...
+      end if;
+@end group
 @end smallexample
 
 @item
-Every @samp{if} block is preceded and followed by a blank line, except
+Every @code{if} block is preceded and followed by a blank line, except
 where it begins or ends a @syntax{sequence_of_statements}.
+@cindex Blank lines (in an @code{if} statement)
 
-@smallexample
+@smallexample @c adanocomment
+@group
         A := 5;
 
         if A = 5 then
@@ -420,77 +522,93 @@ where it begins or ends a @syntax{sequence_of_statements}.
         end if;
 
         A := 6;
+@end group
 @end smallexample
 @end itemize
 
 @subsection Case Statements
+@cindex @code{case} statements
+
 @itemize @bullet
-
 @item
-Layout is as below.  For long case statements, the extra indentation
-can be saved by aligning the when clauses with the opening case.
+Layout is as below.  For long @code{case} statements, the extra indentation
+can be saved by aligning the @code{when} clauses with the opening @code{case}.
 
-@smallexample
+@smallexample @c adanocomment
+@group
        case @var{expression} is
           when @var{condition} =>
              ...
           when @var{condition} =>
              ...
        end case;
+@end group
 @end smallexample
 @end itemize
 
 @subsection Loop Statements
+@cindex Loop statements
+
 @itemize @bullet
-
 @noindent
-When possible, have @samp{for} or @samp{while} on one line with the
-condition and the @samp{loop} keyword.
+When possible, have @code{for} or @code{while} on one line with the
+condition and the @code{loop} keyword.
 
-@smallexample
+@smallexample @c adanocomment
+@group
        for J in S'Range loop
           ...
        end loop;
+@end group
 @end smallexample
 
 @noindent
 If the condition is too long, split the condition (see ``If
-statements'' above) and align @samp{loop} with the @samp{for} or
-@samp{while} keyword.
+statements'' above) and align @code{loop} with the @code{for} or
+@code{while} keyword.
+@cindex Alignment (in a loop statement)
 
-@smallexample
+@smallexample @c adanocomment
+@group
       while @var{long_condition_that_has_to_be_split}
         and then @var{continued_on_the_next_line}
       loop
          ...
       end loop;
+@end group
 @end smallexample
 
 @noindent
 If the @syntax{loop_statement} has an identifier, it is laid out as follows:
 
-@smallexample
+@smallexample @c adanocomment
+@group
       Outer : while not @var{condition} loop
          ...
       end Outer;
+@end group
 @end smallexample
 @end itemize
 
 @subsection Block Statements
+@cindex Block statement
+
 @itemize @bullet
-
 @item
-The @samp{declare} (optional), @samp{begin} and @samp{end} statements
+The @code{declare} (optional), @code{begin} and @code{end} words
 are aligned, except when the @syntax{block_statement} is named.  There
-is a blank line before the @samp{begin} keyword:
+is a blank line before the @code{begin} keyword:
+@cindex Alignment (in a block statement)
 
-@smallexample
+@smallexample @c adanocomment
+@group
       Some_Block : declare
          ...
 
       begin
          ...
       end Some_Block;
+@end group
 @end smallexample
 
 @end itemize
@@ -499,61 +617,104 @@ is a blank line before the @samp{begin} keyword:
 @node    Subprograms, Packages, Statements, Top
 @section Subprograms
 @c  -------------------------------------------------------------------------
-
+@cindex Subprograms
 
 @subsection Subprogram Declarations
 @c  -------------------------------------------------------------------------
 @itemize @bullet
 
 @item
-Do not write the @samp{in} for parameters, especially in functions:
+Do not write the @code{in} for parameters, especially in functions:
 
-@smallexample
+@smallexample @c adanocomment
       function Length (S : String) return Integer;
 @end smallexample
 
 @item
-When the declaration line for a procedure or a function is too long, fold it.
-In this case, align the colons, and, for functions, the result type.
+When the declaration line for a procedure or a function is too long to fit
+the entire declaration (including the keyword procedure or function) on a
+single line, then fold it, putting a single parameter on a line, aligning
+the colons, as in:
 
-@smallexample
+@smallexample @c adanocomment
+@group
+     procedure Set_Heading
+        (Source : String;
+         Count  : Natural;
+         Pad    : Character := Space;
+         Fill   : Boolean   := True);
+@end group
+@end smallexample
+
+@noindent
+In the case of a function, if the entire spec does not fit on one line, then
+the return may appear after the last parameter, as in:
+
+@smallexample @c adanocomment
+@group
+      function Head
+        (Source : String;
+         Count  : Natural;
+         Pad    : Character := Space) return String;
+@end group
+@end smallexample
+
+@noindent
+Or it may appear on its own as a separate line. This form is preferred when
+putting the return on the same line as the last parameter would result in
+an overlong line. The return type may optionally be aligned with the types
+of the parameters (usually we do this aligning if it results only in a small
+number of extra spaces, and otherwise we don't attempt to align). So two
+alternative forms for the above spec are:
+
+@smallexample @c adanocomment
+@group
       function Head
         (Source : String;
          Count  : Natural;
          Pad    : Character := Space)
          return   String;
-@end smallexample
 
-@item
-The parameter list for a subprogram is preceded by a space:
-
-@smallexample
-        procedure Func (A : Integer);
+      function Head
+        (Source : String;
+         Count  : Natural;
+         Pad    : Character := Space)
+         return String;
+@end group
 @end smallexample
 
 @end itemize
 
 @subsection Subprogram Bodies
 @c  -------------------------------------------------------------------------
-@itemize @bullet
+@cindex Subprogram bodies
 
+@itemize @bullet
 @item
-The functions and procedures should always be sorted alphabetically in
-a compilation unit.
+Function and procedure bodies should usually be sorted alphabetically. Do
+not attempt to sort them in some logical order by functionality. For a
+sequence of subrpgroams specs, a general alphabetical sorting is also
+usually appropriate, but occasionally it makes sense to group by major
+function, with appropriate headers.
 
 @item
 All subprograms have a header giving the function name, with the following
 format:
 
-@smallexample
+@smallexample @c adanocomment
+@group
       -----------------
       -- My_Function --
       -----------------
 
       procedure My_Function is
       begin
+        ...
+      end My_Function;
+@end group
 @end smallexample
 
+@noindent
 Note that the name in the header is preceded by a single space,
 not two spaces as for other comments.
 
@@ -561,18 +722,26 @@ not two spaces as for other comments.
 Every subprogram body must have a preceding @syntax{subprogram_declaration}.
 
 @item
-If there any declarations in a subprogram, the @samp{begin} keyword is
-preceded by a blank line.
+@cindex Blank lines (in subprogram bodies)
+A sequence of declarations may optionally be separated from the following
+begin by a blank line.  Just as we optionally allow blank lines in general
+between declarations, this blank line should be present only if it improves
+readability. Generally we avoid this blank line if the declarative part is
+small (one or two lines) and we include it if the declarative part is long.
 
 @item
 If the declarations in a subprogram contain at least one nested
-subprogram body, then just before the @samp{begin} of the enclosing
-subprogram, there is a line:
+subprogram body, then just before the @code{begin} of the enclosing
+subprogram, there is a comment line and a blank line:
 
-@smallexample
-        --  @r{Start of processing for @var{Enclosing_Subprogram}}
+@smallexample @c adanocomment
+@group
+    --  Start of processing for @var{Enclosing_Subprogram}
 
-	begin
+    begin
+      ...
+    end @var{Enclosing_Subprogram};
+@end group
 @end smallexample
 
 @end itemize
@@ -581,36 +750,44 @@ subprogram, there is a line:
 @node    Packages, Program Structure, Subprograms, Top
 @section Packages and Visibility Rules
 @c  -------------------------------------------------------------------------
+@cindex Packages
 
 @itemize @bullet
-
 @item
 All program units and subprograms have their name at the end:
 
-@smallexample
+@smallexample @c adanocomment
+@group
       package P is
          ...
       end P;
+@end group
 @end smallexample
 
 @item
-We will use the style of @samp{use}-ing @samp{with}-ed packages, with
+We will use the style of @code{use}-ing @code{with}-ed packages, with
 the context clauses looking like:
+@cindex @code{use} clauses
 
-@smallexample
+@smallexample @c adanocomment
+@group
       with A; use A;
       with B; use B;
+@end group
 @end smallexample
 
 @item
 Names declared in the visible part of packages should be
-unique, to prevent name clashes when the packages are @samp{use}d.
+unique, to prevent name clashes when the packages are @code{use}d.
+@cindex Name clash avoidance
 
-@smallexample
+@smallexample @c adanocomment
+@group
       package Entity is
          type Entity_Kind is ...;
-	 ...
+         ...
       end Entity;
+@end group
 @end smallexample
 
 @item
@@ -619,28 +796,49 @@ should be the first thing in a @syntax{program_unit}.
 @end itemize
 
 @c  -------------------------------------------------------------------------
-@node    Program Structure,, Packages, Top
+@node    Program Structure, GNU Free Documentation License, Packages, Top
 @section Program Structure and Compilation Issues
 @c  -------------------------------------------------------------------------
+@cindex Program structure
 
 @itemize @bullet
 @item
 Every GNAT source file must be compiled with the @option{-gnatg}
-switch to check the coding style (Note that you should look at
+switch to check the coding style.
+(Note that you should look at
 @file{style.adb} to see the lexical rules enforced by
 @option{-gnatg}).
+@cindex @option{-gnatg} option (to gcc)
+@cindex @file{style.adb} file
 
 @item
 Each source file should contain only one compilation unit.
 
 @item
-Filenames should be 8 characters or less followed by the @samp{.adb}
-extension for a body or @samp{.ads} for a spec.
+Filenames should be 8 or fewer characters, followed by the @code{.adb}
+extension for a body or @code{.ads} for a spec.
+@cindex File name length
 
 @item
-Unit names should be distinct when krunched to 8 characters
+Unit names should be distinct when ``krunch''ed to 8 characters
 (see @file{krunch.ads}) and the filenames should match the unit name,
 except that they are all lower case.
+@cindex @file{krunch.ads} file
 @end itemize
+
+
+@c **********************************
+@c * GNU Free Documentation License *
+@c **********************************
+@include fdl.texi
+@c GNU Free Documentation License
+@cindex GNU Free Documentation License
+
+@node Index,,GNU Free Documentation License, Top
+@unnumberedsec Index
+
+@printindex cp
+
+@contents
 
 @bye

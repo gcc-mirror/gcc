@@ -442,47 +442,17 @@ ada.tags: force
 
 
 # Generate documentation.
-#
-# The generated Texinfo files for the User Guide are stored in $(srcdir).
-#
-# ??? There is some ugliness here in that the aforementioned generated
-# documentation files depend on executables in the build tree.  Since the
-# source directory is supposed to be read only it is difficult to ship a source
-# tree with the documentation already generated such that "make" will not
-# attempt to rebuild them.
-# 
-# As a compromise this only will execute with --enable-maintainer mode.
-#
-# If gnu make 3.80 is ever made a requirement to build, then this could be
-# avoided using an order-only dependency:
-#
-# $(srcdir)/ada/gnat_ug_unx.texi: \
-#     ada/gnat_ug.texi ada/ug_words | ada/doctools/xgnatug$(build_exeext)
 
-ifndef MAINT
-ada/doctools/xgnatug$(build_exeext): ada/xgnatug.adb
+ada/doctools/xgnatugn$(build_exeext): ada/xgnatugn.adb
 	-$(MKDIR) ada/doctools
-	cp $^ ada/doctools
-	cd ada/doctools && gnatmake -q xgnatug
+	$(CP) $^ ada/doctools
+	cd ada/doctools && gnatmake -q xgnatugn
 
-$(srcdir)/ada/gnat_ug_unx.texi : ada/doctools/xgnatug$(build_exeext) \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug unx $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_unx.texi
+doc/gnat_ugn_unw.texi : ada/doctools/xgnatugn$(build_exeext) \
+	$(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words
+	ada/doctools/xgnatugn unw $(srcdir)/ada/gnat_ugn.texi $(srcdir)/ada/ug_words doc/gnat_ugn_unw.texi
 
-$(srcdir)/ada/gnat_ug_vms.texi : ada/doctools/xgnatug$(build_exeext) \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug vms $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_vms.texi
-
-$(srcdir)/ada/gnat_ug_vxw.texi : ada/doctools/xgnatug$(build_exeext) \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug vxworks $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_vxw.texi
-
-$(srcdir)/ada/gnat_ug_wnt.texi : ada/doctools/xgnatug$(build_exeext) \
-	$(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words
-	ada/doctools/xgnatug wnt $(srcdir)/ada/gnat_ug.texi $(srcdir)/ada/ug_words $(srcdir)/ada/gnat_ug_wnt.texi
-endif
-
-doc/gnat_ug_unx.info: $(srcdir)/ada/gnat_ug_unx.texi \
+doc/gnat_ugn_unw.info: doc/gnat_ugn_unw.texi \
    $(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
@@ -490,30 +460,6 @@ doc/gnat_ug_unx.info: $(srcdir)/ada/gnat_ug_unx.texi \
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 	
-doc/gnat_ug_vms.info: $(srcdir)/ada/gnat_ug_vms.texi \
-   $(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
-            -I$(srcdir)/ada -o $@ $<; \
-	else true; fi
-
-doc/gnat_ug_vxw.info: $(srcdir)/ada/gnat_ug_vxw.texi \
-   $(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
-            -I$(srcdir)/ada -o $@ $<; \
-	else true; fi
-
-doc/gnat_ug_wnt.info: $(srcdir)/ada/gnat_ug_wnt.texi \
-   $(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	if [ x$(BUILD_INFO) = xinfo ]; then \
-	  rm -f $(@)*; \
-	  $(MAKEINFO) $(MAKEINFOFLAGS) -I$(docdir)/include \
-            -I$(srcdir)/ada -o$@ $<; \
-	else true; fi
-
 doc/gnat_rm.info: ada/gnat_rm.texi $(docdir)/include/fdl.texi \
    $(docdir)/include/gcc-common.texi
 	if [ x$(BUILD_INFO) = xinfo ]; then \
@@ -529,38 +475,22 @@ doc/gnat-style.info: ada/gnat-style.texi $(docdir)/include/fdl.texi
             -I$(srcdir)/ada -o $@ $<; \
 	else true; fi
 
-ADA_INFOFILES = doc/gnat_ug_vms.info doc/gnat_ug_wnt.info \
-                doc/gnat_ug_unx.info doc/gnat_ug_vxw.info \
+ADA_INFOFILES = doc/gnat_ugn_unw.info \
                 doc/gnat_rm.info doc/gnat-style.info
 
 ada.info: $(ADA_INFOFILES)
 
 ada.srcinfo: $(ADA_INFOFILES)
-	-cp -p $^ $(srcdir)/doc
+	-$(CP) $^ $(srcdir)/doc
 
-install-info:: $(DESTDIR)$(infodir)/gnat_ug_vms.info \
-	$(DESTDIR)$(infodir)/gnat_ug_wnt.info \
-	$(DESTDIR)$(infodir)/gnat_ug_unx.info \
-	$(DESTDIR)$(infodir)/gnat_ug_vxw.info \
+install-info:: $(DESTDIR)$(infodir)/gnat_ugn_unw.info \
 	$(DESTDIR)$(infodir)/gnat_rm.info \
 	$(DESTDIR)$(infodir)/gnat-style.info
 
-dvi:: doc/gnat_ug_vms.dvi doc/gnat_ug_wnt.dvi doc/gnat_ug_unx.dvi \
-      doc/gnat_ug_vxw.dvi doc/gnat_rm.dvi doc/gnat-style.dvi
+dvi:: doc/gnat_ugn_unw.dvi \
+      doc/gnat_rm.dvi doc/gnat-style.dvi
 
-doc/gnat_ug_unx.dvi: $(srcdir)/ada/gnat_ug_unx.texi \
-	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat_ug_vms.dvi: $(srcdir)/ada/gnat_ug_vms.texi \
-	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat_ug_vxw.dvi: $(srcdir)/ada/gnat_ug_vxw.texi \
-	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
-	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
-
-doc/gnat_ug_wnt.dvi: $(srcdir)/ada/gnat_ug_wnt.texi \
+doc/gnat_ugn_unw.dvi: doc/gnat_ugn_unw.texi \
 	$(docdir)/include/fdl.texi $(docdir)/include/gcc-common.texi
 	$(TEXI2DVI) -c -I $(abs_docdir)/include -o $@ $<
 

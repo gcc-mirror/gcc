@@ -1,3 +1,21 @@
+2004-06-09  Arnaud Charlet  <charlet@act-europe.fr>
+
+	PR ada/14150
+	* Make-lang.in: Clean up generation of documentation
+
+	* gnat-style.texi, gnat_rm.texi, ug_words: Resync with AdaCore version
+
+	* xgnatug.adb: Removed, replaced by xgnatugn.adb
+
+	* xgnatugn.adb: Replaces xgnatug.adb
+
+	* gnat_ug.texi: Removed, replaced by gnat_ugn.texi
+
+	* gnat_ugn.texi: Replaces gnat_ug.texi. Resync with AdaCore version
+
+	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
+	gnat_ug_wnt.texi: Removed.
+
 2004-05-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/15331
