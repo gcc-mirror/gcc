@@ -1,4 +1,12 @@
 2001-08-27  Roman Zippel <zippel@linux-m68k.org>
+	    Richard Henderson  <rth@redhat.com>
+
+	* gcse.c (reg_first_set, reg_last_set): Replace with ...
+	(reg_avail_info, current_bb): ... these.
+	(oprs_unchanged_p, record_last_reg_set_info): Use them.
+	(compute_hash_table): Likewise.
+
+2001-08-27  Roman Zippel <zippel@linux-m68k.org>
 
 	* flow.c (verify_flow_info): Use checksums to verify edges.
 
