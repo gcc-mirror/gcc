@@ -358,30 +358,6 @@ namespace __gnu_debug
       _M_max_length(78), _M_column(1), _M_first_line(true), _M_wordwrap(false)
     { }
 
-    _Error_formatter(const _Error_formatter& __o)
-    : _M_file(__o._M_file), _M_line(__o._M_line), 
-    _M_num_parameters(__o._M_num_parameters), _M_text(__o._M_text),
-    _M_max_length(__o._M_max_length), _M_column(__o._M_column), 
-    _M_first_line(__o._M_first_line), _M_wordwrap(__o._M_wordwrap)
-    { }
-
-    _Error_formatter&
-    operator=(const _Error_formatter& __o)
-    {
-      if (&__o != this)
-	{
-	  _M_file = __o._M_file;
-	  _M_line = __o._M_line;
-	  _M_num_parameters = __o._M_num_parameters;
-	  _M_text = __o._M_text;
-	  _M_max_length = __o._M_max_length;
-	  _M_column = __o._M_column;
-	  _M_first_line = __o._M_first_line;
-	  _M_wordwrap = __o._M_wordwrap;
-	}
-      return *this;
-    }
-
     template<typename _Tp>
       void
       _M_format_word(char*, int, const char*, _Tp) const;
