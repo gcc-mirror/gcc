@@ -7141,4 +7141,10 @@ limited addressing modes.  For instance, the SH target has only positive
 offsets in addresses.  Thus sorting to put the smallest address first
 allows the most combinations to be found.
 
+@findex ISSUE_RATE
+@item ISSUE_RATE
+A C expression that returns how many instructions can be issued at the
+same time if the machine is a superscalar machine.  This is only used by
+the @samp{Haifa} scheduler, and not the traditional scheduler.
+
 @end table
