@@ -1112,7 +1112,7 @@ extern rtx trampoline_address PARAMS ((tree));
    in its original home.  This becomes invalid if any more code is emitted.  */
 extern rtx hard_function_value PARAMS ((tree, tree, int));
 
-extern rtx prepare_call_address	PARAMS ((rtx, tree, rtx *, int));
+extern rtx prepare_call_address	PARAMS ((rtx, tree, rtx *, int, int));
 
 extern rtx expand_call PARAMS ((tree, rtx, int));
 
