@@ -179,7 +179,7 @@ dump_file (const char *filename)
 	unsigned expected = GCOV_VERSION;
 	
 	printf ("%s:warning:current version is `%.4s'\n", filename,
-		(const char *)expected);
+		(const char *)&expected);
       }
   }
 
