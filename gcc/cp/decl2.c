@@ -3985,7 +3985,7 @@ ambiguous_decl (name, old, new, flags)
     type = NULL_TREE;
   if (!BINDING_TYPE (old))
     BINDING_TYPE (old) = type;
-  else if(type && BINDING_TYPE (old) != type)
+  else if (type && BINDING_TYPE (old) != type)
     {
       if (flags & LOOKUP_COMPLAIN)
         {
@@ -4604,6 +4604,10 @@ do_class_using_decl (decl)
       cp_error ("using-declaration for destructor");
       return NULL_TREE;
     }
+  if (TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
+
+  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 980716);
 
   value = build_lang_field_decl (USING_DECL, name, void_type_node);
   DECL_INITIAL (value) = TREE_OPERAND (decl, 0);
