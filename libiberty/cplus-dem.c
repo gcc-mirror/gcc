@@ -5148,7 +5148,7 @@ main (argc, argv)
 		skip_first = i;
 
 	      mbuffer[i] = 0;
-	      flags |= style;
+	      flags |= (int) style;
 	      result = cplus_demangle (mbuffer + skip_first, flags);
 	      if (result)
 		{
