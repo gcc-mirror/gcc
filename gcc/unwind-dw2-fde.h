@@ -29,15 +29,52 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-/* Describes data used to hold onto one shared object or object file.  */
+struct fde_vector
+{
+  void *orig_data;
+  size_t count;
+  struct dwarf_fde *array[];
+};
+
 struct object
+{
+  void *pc_begin;
+  void *tbase;
+  void *dbase;
+  union {
+    struct dwarf_fde *single;
+    struct dwarf_fde **array;
+    struct fde_vector *sort;
+  } u;
+
+  union {
+    struct {
+      unsigned long sorted : 1;
+      unsigned long from_array : 1;
+      unsigned long mixed_encoding : 1;
+      unsigned long encoding : 8;
+      /* ??? Wish there was an easy way to detect a 64-bit host here;
+	 we've got 32 bits left to play with... */
+      unsigned long count : 21;
+    } b;
+    size_t i;
+  } s;
+
+  struct object *next;
+};
+
+/* This is the original definition of struct object.  While the struct
+   itself was opaque to users, they did know how large it was, and
+   allocate one statically in crtbegin for each DSO.  Keep this around
+   so that we're aware of the static size limitations for the new struct.  */
+struct old_object
 {
   void *pc_begin;
   void *pc_end;
   struct dwarf_fde *fde_begin;
   struct dwarf_fde **fde_array;
   size_t count;
-  struct object *next;
+  struct old_object *next;
 };
 
 struct dwarf_eh_bases
@@ -48,8 +85,12 @@ struct dwarf_eh_bases
 };
 
 
+extern void __register_frame_info_bases (void *, struct object *,
+					 void *, void *);
 extern void __register_frame_info (void *, struct object *);
 extern void __register_frame (void *);
+extern void __register_frame_info_table_bases (void *, struct object *,
+					       void *, void *);
 extern void __register_frame_info_table (void *, struct object *);
 extern void __register_frame_table (void *);
 extern void *__deregister_frame_info (void *);
@@ -97,8 +138,7 @@ struct dwarf_fde
 {
   uword length;
   sword CIE_delta;
-  void * pc_begin;
-  uaddr pc_range;
+  unsigned char pc_begin[];
 } __attribute__ ((packed, aligned (__alignof__ (void *))));
 
 typedef struct dwarf_fde fde;

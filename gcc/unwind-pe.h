@@ -74,7 +74,7 @@ size_of_encoded_value (unsigned char encoding)
    not available.  */
 
 static _Unwind_Ptr
-base_of_encoded_value (unsigned char encoding, _Unwind_Context *context)
+base_of_encoded_value (unsigned char encoding, struct _Unwind_Context *context)
 {
   if (encoding == DW_EH_PE_omit)
     return 0;
@@ -204,7 +204,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
    rather than providing it directly.  */
 
 static inline const unsigned char *
-read_encoded_value (_Unwind_Context *context, unsigned char encoding,
+read_encoded_value (struct _Unwind_Context *context, unsigned char encoding,
 		    const unsigned char *p, _Unwind_Ptr *val)
 {
   return read_encoded_value_with_base (encoding, 
