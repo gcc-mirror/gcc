@@ -1,3 +1,7 @@
+1999-08-04  Tom Tromey  <tromey@cygnus.com>
+
+	* configure.in: Added missing `;;'.  From Anthony Green.
+
 Mon Aug  2 23:09:41 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (machdep): Use mips_ultrix_mach_dep.s on Ultrix V4.
