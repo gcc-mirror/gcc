@@ -145,7 +145,7 @@ install: all
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 
-check uninstall install-strip dist installcheck installdirs:
+check uninstall install-strip dist installcheck installdirs info install-info clean-info dvi:
 
 mostlyclean:
 	rm -f *.o
