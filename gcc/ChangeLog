@@ -1,3 +1,9 @@
+2004-02-20  James E Wilson  <wilson@specifixinc.com>
+
+	* config/ia64/ia64.md (shift_mix4left+1): Delete reload_completed
+	check.
+	(shift_mix4left+2): Delete redundant pattern.
+
 2004-02-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alias.c (OUTGOING_REGNO): Don't define the default.
