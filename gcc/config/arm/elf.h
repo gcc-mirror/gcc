@@ -193,3 +193,5 @@ Boston, MA 02111-1307, USA.  */
 	fprintf (STREAM, "\t.align\t%d\n", POWER);	\
     }							\
   while (0)
+
+#define SUPPORTS_INIT_PRIORITY 1
