@@ -1,3 +1,7 @@
+2003-03-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* gcc.c-torture/compile/20030320-1.c: New.
+
 2003-03-20  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-6.c: New test case.
