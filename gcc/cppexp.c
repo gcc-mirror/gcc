@@ -1128,9 +1128,11 @@ num_equality_op (pfile, lhs, rhs, op)
      cpp_num lhs, rhs;
      enum cpp_ttype op;
 {
-  lhs.low = num_eq (lhs, rhs);
+  /* Work around a 3.0.4 bug; see PR 6950.  */
+  bool eq = num_eq (lhs, rhs);
   if (op == CPP_NOT_EQ)
-    lhs.low = !lhs.low;
+    eq = !eq;
+  lhs.low = eq;
   lhs.high = 0;
   lhs.overflow = false;
   lhs.unsignedp = false;

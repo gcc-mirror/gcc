@@ -1,3 +1,8 @@
+2002-06-07  Jason Merrill  <jason@redhat.com>
+
+	* cppexp.c (num_equality_op): Use a temporary variable to work
+	around gcc 3.0.4 bug.
+
 2002-06-07  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* diagnostic.c (diagnostic_build_prefix): Tidy.
