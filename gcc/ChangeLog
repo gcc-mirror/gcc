@@ -1,3 +1,12 @@
+Wed Oct 23 01:52:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	PR other/8289
+	* xmmintrin.h: Add const to the argument of loads.
+
+	* i386.md (pushv2di): New pattern.
+	PR target/6890
+	* xmmintrin.h (_MM_TRANSPOSE4_PS): New.
+
 2002-10-22  Richard Henderson  <rth@redhat.com>
 
 	* target.h (gcc_target.asm_out): Merge output_mi_thunk and
