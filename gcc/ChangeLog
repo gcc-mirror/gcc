@@ -1,3 +1,9 @@
+2004-07-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_gimplify_va_arg): Use size_int instead
+	of build_int_2.  Convert both operands of PLUS_EXPR and MULT_EXPR
+	to the same type.
+
 2004-07-13  Per Bothner  <per@bothner.com>
 
 	* collect2.c (main):  Handle --no-demangle and --demangle flags.
