@@ -1,3 +1,20 @@
+2004-12-09  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* genopinit.c (vec_realign_store_optab): Initialization removed.
+	* optabs.c (optab_for_tree_code): REALIGN_STORE_EXPR case removed.
+	* optabs.h (optab_index): OTI_vec_realign_store Removed.
+	(vec_realign_store_optab): Removed.
+	* target-def.h (TARGET_VECTORIZE_BUILTIN_MASK_FOR_STORE): Removed.
+	* target.h (builtin_mask_for_store): Removed.
+	* tree.def (REALIGN_STORE_EXPR): Removed.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_for_store): Removed.
+	(altivec_builtin_mask_for_store): Removed.
+	(altivec_init_builtins): Removed initialization of
+	altivec_builtin_mask_for_store.
+
+	* doc/tm.texi (TARGET_VECTORIZE_MISALIGNED_MEM_OK): New.
+	(TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD): New.
+
 2004-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.def (SET_TYPE): Remove.

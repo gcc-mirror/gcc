@@ -147,8 +147,6 @@ enum rs6000_nop_insertion rs6000_sched_insert_nops;
 
 /* Support targetm.vectorize.builtin_mask_for_load.  */
 static GTY(()) tree altivec_builtin_mask_for_load;
-/* Support targetm.vectorize.builtin_mask_for_store.  */
-static GTY(()) tree altivec_builtin_mask_for_store;
 
 /* Size of long double */
 const char *rs6000_long_double_size_string;
@@ -693,7 +691,6 @@ static int pad_groups (FILE *, int, rtx, rtx);
 static void rs6000_sched_finish (FILE *, int);
 static int rs6000_use_sched_lookahead (void);
 static tree rs6000_builtin_mask_for_load (void);
-static tree rs6000_builtin_mask_for_store (void);
 
 static void rs6000_init_builtins (void);
 static rtx rs6000_expand_unop_builtin (enum insn_code, tree, rtx);
@@ -932,9 +929,6 @@ static const char alt_reg_names[][8] =
 
 #undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD
 #define TARGET_VECTORIZE_BUILTIN_MASK_FOR_LOAD rs6000_builtin_mask_for_load
-
-#undef TARGET_VECTORIZE_BUILTIN_MASK_FOR_STORE
-#define TARGET_VECTORIZE_BUILTIN_MASK_FOR_STORE rs6000_builtin_mask_for_store
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS rs6000_init_builtins
@@ -1588,16 +1582,6 @@ rs6000_builtin_mask_for_load (void)
 {
   if (TARGET_ALTIVEC)
     return altivec_builtin_mask_for_load;
-  else
-    return 0;
-}
-
-/* Implement targetm.vectorize.builtin_mask_for_store.  */
-static tree
-rs6000_builtin_mask_for_store (void)
-{
-  if (TARGET_ALTIVEC)
-    return altivec_builtin_mask_for_store;
   else
     return 0;
 }
@@ -8308,17 +8292,6 @@ altivec_init_builtins (void)
                                BUILT_IN_MD, NULL, NULL_TREE);
       /* Record the decl. Will be used by rs6000_builtin_mask_for_load.  */
       altivec_builtin_mask_for_load = decl;
-
-
-      /* Initialize target builtin that implements
-         targetm.vectorize.builtin_mask_for_store.  */
-
-      decl = lang_hooks.builtin_function ("__builtin_altivec_mask_for_store",
-                               v16qi_ftype_long_pcvoid,
-                               ALTIVEC_BUILTIN_MASK_FOR_STORE,
-                               BUILT_IN_MD, NULL, NULL_TREE);
-      /* Record the decl. Will be used by rs6000_builtin_mask_for_store.  */
-      altivec_builtin_mask_for_store = decl;
     }
 }
 
