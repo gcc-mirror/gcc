@@ -1069,6 +1069,20 @@ cpp_finish (pfile)
     }
 }
 
+static void
+new_pending_define (opts, text)
+     struct cpp_options *opts;
+     const char *text;
+{
+  struct pending_option *o = (struct pending_option *)
+    xmalloc (sizeof (struct pending_option));
+
+  o->arg = text;
+  o->next = NULL;
+  o->undef = 0;
+  APPEND (opts->pending, define, o);
+}
+
 /* Handle one command-line option in (argc, argv).
    Can be called multiple times, to handle multiple sets of options.
    Returns number of strings consumed.  */
@@ -1313,8 +1327,12 @@ cpp_handle_option (pfile, argc, argv)
 	  opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
 	    opts->c9x = 1, opts->objc = 0;
 	if (! strcmp (argv[i], "-lang-c89"))
-	  opts->cplusplus = 0, opts->cplusplus_comments = 0, opts->c89 = 1,
-	    opts->c9x = 0, opts->objc = 0;
+	  {
+	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
+	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	    opts->trigraphs = 1;
+	    new_pending_define (opts, "__STRICT_ANSI__=199000");
+	  }
 	if (! strcmp (argv[i], "-lang-c++"))
 	  opts->cplusplus = 1, opts->cplusplus_comments = 1, opts->c89 = 0,
 	    opts->c9x = 0, opts->objc = 0;
@@ -1338,17 +1356,41 @@ cpp_handle_option (pfile, argc, argv)
 	break;
 
       case 's':
-	if (!strcmp (argv[i], "-std=iso9899:1990")
-	    || !strcmp (argv[i], "-std=iso9899:199409")
-	    || !strcmp (argv[i], "-std=c89")
-	    || !strcmp (argv[i], "-std=gnu89"))
-	  opts->cplusplus = 0, opts->cplusplus_comments = 0,
+	if (!strcmp (argv[i], "-std=gnu89"))
+	  {
+	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
 	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	  }
+	else if (!strcmp (argv[i], "-std=gnu9x"))
+	  {
+	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
+	    opts->c89 = 0, opts->c9x = 1, opts->objc = 0;
+	  }
+	else if (!strcmp (argv[i], "-std=iso9899:1990")
+		 || !strcmp (argv[i], "-std=c89"))
+	  {
+	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
+	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	    opts->trigraphs = 1;
+	    new_pending_define (opts, "__STRICT_ANSI__=199000");
+	  }
+	else if (!strcmp (argv[i], "-std=iso9899:199409"))
+	  {
+	    opts->cplusplus = 0, opts->cplusplus_comments = 0;
+	    opts->c89 = 1, opts->c9x = 0, opts->objc = 0;
+	    opts->trigraphs = 1;
+	    new_pending_define (opts, "__STRICT_ANSI__=199409");
+	  }
 	else if (!strcmp (argv[i], "-std=iso9899:199x")
+		 || !strcmp (argv[i], "-std=iso9899:1999")
 		 || !strcmp (argv[i], "-std=c9x")
-		 || !strcmp (argv[i], "-std=gnu9x"))
-	  opts->cplusplus = 0, opts->cplusplus_comments = 1, opts->c89 = 0,
-	    opts->c9x = 1, opts->objc = 0;
+		 || !strcmp (argv[i], "-std=c99"))
+	  {
+	    opts->cplusplus = 0, opts->cplusplus_comments = 1;
+	    opts->c89 = 0, opts->c9x = 1, opts->objc = 0;
+	    opts->trigraphs = 1;
+	    new_pending_define (opts, "__STRICT_ANSI__=199900");
+	  }
 	break;
 
       case 'w':
@@ -1487,21 +1529,17 @@ cpp_handle_option (pfile, argc, argv)
       
       case 'D':
 	{
-	  struct pending_option *o = (struct pending_option *)
-	    xmalloc (sizeof (struct pending_option));
+	  const char *text;
 	  if (argv[i][2] != 0)
-	    o->arg = argv[i] + 2;
+	    text = argv[i] + 2;
 	  else if (i + 1 == argc)
 	    {
 	      cpp_fatal (pfile, "Macro name missing after -D option");
 	      return argc;
 	    }
 	  else
-	    o->arg = argv[++i];
-
-	  o->next = NULL;
-	  o->undef = 0;
-	  APPEND (opts->pending, define, o);
+	    text = argv[++i];
+	  new_pending_define (opts, text);
 	}
 	break;
       
