@@ -958,6 +958,11 @@ main (argc, argv)
 
   /* Try to discover a valid linker/nm/strip to use.  */
 
+  /* Maybe we know the right file to use (if not cross).  */
+#ifdef REAL_LD_FILE_NAME
+  ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME);
+  if (ld_file_name == 0)
+#endif
 #if 0
   /* Search the (target-specific) compiler dirs for `gld'.  */
   ld_file_name = find_a_file (&cpath, gld_suffix);
@@ -973,11 +978,6 @@ main (argc, argv)
     ld_file_name = find_a_file (&cpath, real_ld_suffix);
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, full_real_ld_suffix);
-  /* Maybe we know the right file to use (if not cross).  */
-#ifdef REAL_LD_FILE_NAME
-  if (ld_file_name == 0)
-    ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME);
-#endif
   /* Search the compiler directories for `ld'.  We have protection against
      recursive calls in find_a_file.  */
   if (ld_file_name == 0)
@@ -999,27 +999,27 @@ main (argc, argv)
       fatal ("cannot find `ld'");
     }
 
+#ifdef REAL_NM_FILE_NAME
+  nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
+  if (nm_file_name == 0)
+#endif
   nm_file_name = find_a_file (&cpath, gnm_suffix);
   if (nm_file_name == 0)
     nm_file_name = find_a_file (&path, full_gnm_suffix);
   if (nm_file_name == 0)
     nm_file_name = find_a_file (&cpath, nm_suffix);
-#ifdef REAL_NM_FILE_NAME
-  if (nm_file_name == 0)
-    nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
-#endif
   if (nm_file_name == 0)
     nm_file_name = find_a_file (&path, full_nm_suffix);
 
+#ifdef REAL_STRIP_FILE_NAME
+  strip_file_name = find_a_file (&path, REAL_STRIP_FILE_NAME);
+  if (strip_file_name == 0)
+#endif
   strip_file_name = find_a_file (&cpath, gstrip_suffix);
   if (strip_file_name == 0)
     strip_file_name = find_a_file (&path, full_gstrip_suffix);
   if (strip_file_name == 0)
     strip_file_name = find_a_file (&cpath, strip_suffix);
-#ifdef REAL_STRIP_FILE_NAME
-  if (strip_file_name == 0)
-    strip_file_name = find_a_file (&path, REAL_STRIP_FILE_NAME);
-#endif
   if (strip_file_name == 0)
     strip_file_name = find_a_file (&path, full_strip_suffix);
 
@@ -1076,13 +1076,6 @@ main (argc, argv)
 
       if (arg[0] == '-')
 	{
-#ifdef COLLECT_SUPPRESS_OPTIONS
-	  if (index (COLLECT_SUPPRESS_OPTIONS, arg[1]))
-	    {
-	      ld1--;
-	      continue;
-	    }
-#endif
 	  switch (arg[1])
 	    {
 	    case 'd':
@@ -1574,6 +1567,10 @@ scan_prog_file (prog_name, which_pass)
       for (end = p; (ch2 = *end) != '\0' && !isspace (ch2) && ch2 != '|';
 	   end++)
 	continue;
+
+#ifdef COLLECT_QUALIFY_MATCH
+      COLLECT_QUALIFY_MATCH;
+#endif
 
       *end = '\0';
       switch (is_ctor_dtor (name))
