@@ -1,5 +1,9 @@
 2000-09-05  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.md (mulhi3): New.
+
+2000-09-05  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64.h (INIT_TARGET_OPTABS): Remove.
 	* config/ia64/lib1funcs.asm (__divdi3): Update from Intel IA-64
 	Optimization Guide, minimum latency alternative.
