@@ -1,3 +1,8 @@
+Sat Mar 28 14:37:20 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* genattrtab.c (write_complex_function): Add a default case in
+	generated switch statement to keep -W -Wall quiet.
+
 Sat Mar 28 10:47:21 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* invoke.texi: Document more ARM and Thumb command line options.
