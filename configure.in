@@ -719,6 +719,9 @@ case "${target}" in
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
+  cris-*-*)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
   d10v-*-*)
     noconfigdirs="$noconfigdirs target-librx ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
