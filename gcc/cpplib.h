@@ -466,17 +466,14 @@ enum builtin_type
   BT_STDC			/* `__STDC__' */
 };
 
-/* There is a slot in the hashnode for use by front ends when integrated
-   with cpplib.  It holds a tree (see tree.h) but we mustn't drag that
-   header into every user of cpplib.h.  cpplib does not do anything with
-   this slot except clear it when a new node is created.  */
-union tree_node;
+#define NODE_LEN(NODE)		(NODE->len)
+#define NODE_NAME(NODE)		(NODE->name)
 
 struct cpp_hashnode
 {
   const unsigned char *name;		/* Null-terminated name.  */
   unsigned int hash;			/* Cached hash value.  */
-  unsigned short length;		/* Length of name excluding null.  */
+  unsigned short len;			/* Length of name excluding null.  */
   unsigned short arg_index;		/* Macro argument index.  */
   unsigned char directive_index;	/* Index into directive table.  */
   ENUM_BITFIELD(node_type) type : 8;	/* Node type.  */

@@ -210,7 +210,7 @@ builtin_macro (pfile, token)
       break;
 
     default:
-      cpp_ice (pfile, "invalid builtin macro \"%s\"", node->name);
+      cpp_ice (pfile, "invalid builtin macro \"%s\"", NODE_NAME (node));
       break;
     }
 
@@ -537,7 +537,7 @@ parse_args (pfile, node)
   if (type == CPP_EOF)
     {
       cpp_error (pfile, "unterminated argument list invoking macro \"%s\"",
-		 node->name);
+		 NODE_NAME (node));
       error = 1;
     }
   else if (argc < macro->paramc)
@@ -559,7 +559,7 @@ parse_args (pfile, node)
 	{
 	  cpp_error (pfile,
 		     "macro \"%s\" requires %u arguments, but only %u given",
-		     node->name, macro->paramc, argc);
+		     NODE_NAME (node), macro->paramc, argc);
 	  error = 1;
 	}
     }
@@ -570,7 +570,7 @@ parse_args (pfile, node)
 	{
 	  cpp_error (pfile,
 		     "macro \"%s\" passed %u arguments, but takes just %u",
-		     node->name, argc, macro->paramc);
+		     NODE_NAME (node), argc, macro->paramc);
 	  error = 1;
 	}
     }
@@ -610,7 +610,7 @@ funlike_invocation_p (pfile, node, list)
   else if (CPP_WTRADITIONAL (pfile) && ! node->value.macro->syshdr)
     cpp_warning (pfile,
 	 "function-like macro \"%s\" must be used with arguments in traditional C",
-		 node->name);
+		 NODE_NAME (node));
 
   /* Restore original context.  */
   pfile->context = orig;
@@ -1233,7 +1233,7 @@ save_parameter (pfile, macro, node)
   /* Constraint 6.10.3.6 - duplicate parameter names.  */
   if (node->arg_index)
     {
-      cpp_error (pfile, "duplicate macro parameter \"%s\"", node->name);
+      cpp_error (pfile, "duplicate macro parameter \"%s\"", NODE_NAME (node));
       return 1;
     }
 
@@ -1475,7 +1475,7 @@ _cpp_create_definition (pfile, node)
 	{
 	  cpp_pedwarn_with_line (pfile, pfile->directive_pos.line,
 				 pfile->directive_pos.col,
-				 "\"%s\" redefined", node->name);
+				 "\"%s\" redefined", NODE_NAME (node));
 
 	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
 	    cpp_pedwarn_with_file_and_line (pfile,
@@ -1489,7 +1489,7 @@ _cpp_create_definition (pfile, node)
   /* Enter definition in hash table.  */
   node->type = NT_MACRO;
   node->value.macro = macro;
-  if (! ustrncmp (node->name, DSC ("__STDC_")))
+  if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_")))
     node->flags |= NODE_WARN;
 
  cleanup:
@@ -1536,11 +1536,11 @@ check_trad_stringification (pfile, macro, string)
 	{
 	  const cpp_hashnode *node = macro->params[i];
 
-	  if (node->length == len && !memcmp (p, node->name, len))
+	  if (NODE_LEN (node) == len && !memcmp (p, NODE_NAME (node), len))
 	    {
 	      cpp_warning (pfile,
 	   "macro argument \"%s\" would be stringified with -traditional.",
-			   node->name);
+			   NODE_NAME (node));
 	      break;
 	    }
 	}
@@ -1573,7 +1573,7 @@ cpp_macro_definition (pfile, node)
     {
       len += 3;		/* "()" plus possible final "." of ellipsis.  */
       for (i = 0; i < macro->paramc; i++)
-	len += macro->params[i]->length + 2; /* ", " */
+	len += NODE_LEN (macro->params[i]) + 2; /* ", " */
     }
 
   for (i = 0; i < macro->count; i++)
@@ -1581,7 +1581,7 @@ cpp_macro_definition (pfile, node)
       cpp_token *token = &macro->expansion[i];
 
       if (token->type == CPP_MACRO_ARG)
-	len += macro->params[token->val.arg_no - 1]->length;
+	len += NODE_LEN (macro->params[token->val.arg_no - 1]);
       else
 	len += cpp_token_len (token); /* Includes room for ' '.  */
       if (token->flags & STRINGIFY_ARG)
@@ -1607,8 +1607,8 @@ cpp_macro_definition (pfile, node)
 
 	  if (param != pfile->spec_nodes.n__VA_ARGS__)
 	    {
-	      memcpy (buffer, param->name, param->length);
-	      buffer += param->length;
+	      memcpy (buffer, NODE_NAME (param), NODE_LEN (param));
+	      buffer += NODE_LEN (param);
 	    }
 
 	  if (i + 1 < macro->paramc)
@@ -1634,8 +1634,9 @@ cpp_macro_definition (pfile, node)
 
 	  if (token->type == CPP_MACRO_ARG)
 	    {
-	      len = macro->params[token->val.arg_no - 1]->length;
-	      memcpy (buffer, macro->params[token->val.arg_no - 1]->name, len);
+	      len = NODE_LEN (macro->params[token->val.arg_no - 1]);
+	      memcpy (buffer,
+		      NODE_NAME (macro->params[token->val.arg_no - 1]), len);
 	      buffer += len;
 	    }
 	  else

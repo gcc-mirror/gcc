@@ -345,7 +345,7 @@ lex (pfile, skip_evaluation, token)
 	  if (CPP_PEDANTIC (pfile)
 	      && ! cpp_defined (pfile, DSC("__bool_true_false_are_defined")))
 	    cpp_pedwarn (pfile, "ISO C++ does not permit \"%s\" in #if",
-			 token->val.node->name);
+			 NODE_NAME (token->val.node));
 	  return op;
 	}
       else
@@ -359,7 +359,8 @@ lex (pfile, skip_evaluation, token)
 	  op.value = 0;
 
 	  if (CPP_OPTION (pfile, warn_undef) && !skip_evaluation)
-	    cpp_warning (pfile, "\"%s\" is not defined", token->val.node->name);
+	    cpp_warning (pfile, "\"%s\" is not defined",
+			 NODE_NAME (token->val.node));
 	  return op;
 	}
 

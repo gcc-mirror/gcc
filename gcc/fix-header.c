@@ -532,8 +532,8 @@ recognized_function (fname, line, kind, have_arg_list)
     missing_extern_C_count++;
 #endif
 
-  fn = lookup_std_proto ((const char *)fname->val.node->name,
-			 fname->val.node->length);
+  fn = lookup_std_proto ((const char *) NODE_NAME (fname->val.node),
+			 NODE_LEN (fname->val.node));
 
   /* Remove the function from the list of required function.  */
   if (fn)

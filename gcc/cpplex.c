@@ -121,7 +121,7 @@ cpp_ideq (token, string)
   if (token->type != CPP_NAME)
     return 0;
 
-  return !ustrcmp (token->val.node->name, (const U_CHAR *) string);
+  return !ustrcmp (NODE_NAME (token->val.node), (const U_CHAR *) string);
 }
 
 /* Call when meeting a newline.  Returns the character after the newline
@@ -535,7 +535,8 @@ parse_identifier (pfile, c)
     {
       /* It is allowed to poison the same identifier twice.  */
       if ((result->flags & NODE_POISONED) && !pfile->state.poisoned_ok)
-	cpp_error (pfile, "attempt to use poisoned \"%s\"", result->name);
+	cpp_error (pfile, "attempt to use poisoned \"%s\"",
+		   NODE_NAME (result));
 
       /* Constraint 6.10.3.5: __VA_ARGS__ should only appear in the
 	 replacement list of a variadic macro.  */
@@ -1290,9 +1291,9 @@ cpp_token_len (token)
 
   switch (TOKEN_SPELL (token))
     {
-    default:		len = 0;			break;
-    case SPELL_STRING:	len = token->val.str.len;	break;
-    case SPELL_IDENT:	len = token->val.node->length;	break;
+    default:		len = 0;				break;
+    case SPELL_STRING:	len = token->val.str.len;		break;
+    case SPELL_IDENT:	len = NODE_LEN (token->val.node);	break;
     }
   /* 1 for whitespace, 4 for comment delimeters.  */
   return len + 5;
@@ -1330,8 +1331,8 @@ cpp_spell_token (pfile, token, buffer)
 
     case SPELL_IDENT:
       spell_ident:
-      memcpy (buffer, token->val.node->name, token->val.node->length);
-      buffer += token->val.node->length;
+      memcpy (buffer, NODE_NAME (token->val.node), NODE_LEN (token->val.node));
+      buffer += NODE_LEN (token->val.node);
       break;
 
     case SPELL_STRING:
@@ -1421,7 +1422,7 @@ cpp_output_token (token, fp)
 
     spell_ident:
     case SPELL_IDENT:
-      ufputs (token->val.node->name, fp);
+      ufputs (NODE_NAME (token->val.node), fp);
     break;
 
     case SPELL_STRING:
