@@ -2554,7 +2554,9 @@ tidy_fallthru_edge (e, b, c)
 	  NOTE_SOURCE_FILE (q) = 0;
 	}
       else
-	b->end = q = PREV_INSN (q);
+	q = PREV_INSN (q);
+
+      b->end = q;
     }
 
   /* Selectively unlink the sequence.  */
