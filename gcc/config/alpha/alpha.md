@@ -1219,7 +1219,15 @@
   "eqv %r1,%2,%0"
   [(set_attr "type" "ilog")])
 
-;; Handle the FFS insn if we support CIX. 
+;; Handle the FFS insn iff we support CIX. 
+;;
+;; These didn't make it into EV6 pass 2 as planned.  Instead they
+;; cropped cttz/ctlz/ctpop from the old CIX and renamed it FIX for
+;; "Square Root and Floating Point Convert Extension".
+;;
+;; I'm assured that these insns will make it into EV67 (first pass
+;; due Summer 1999), presumably with a new AMASK bit, and presumably
+;; will still be named CIX.
 
 (define_expand "ffsdi2"
   [(set (match_dup 2)
@@ -1241,7 +1249,7 @@
 	(unspec [(match_operand:DI 1 "register_operand" "r")] 1))]
   "TARGET_CIX"
   "cttz %1,%0"
-  ; ev6 calls all mvi and cttz/ctlz/popc class imisc, so just 
+  ; EV6 calls all mvi and cttz/ctlz/popc class imisc, so just 
   ; reuse the existing type name.
   [(set_attr "type" "mvi")])
 
@@ -2300,7 +2308,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=&f")
 	(sqrt:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && TARGET_CIX && alpha_tp == ALPHA_TP_INSN"
+  "TARGET_FP && TARGET_FIX && alpha_tp == ALPHA_TP_INSN"
   "sqrt%,%)%& %R1,%0"
   [(set_attr "type" "fsqrt")
    (set_attr "opsize" "si")
@@ -2309,7 +2317,7 @@
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && TARGET_CIX"
+  "TARGET_FP && TARGET_FIX"
   "sqrt%,%)%& %R1,%0"
   [(set_attr "type" "fsqrt")
    (set_attr "opsize" "si")
@@ -2318,7 +2326,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=&f")
 	(sqrt:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && TARGET_CIX && alpha_tp == ALPHA_TP_INSN"
+  "TARGET_FP && TARGET_FIX && alpha_tp == ALPHA_TP_INSN"
   "sqrt%-%)%& %R1,%0"
   [(set_attr "type" "fsqrt")
    (set_attr "trap" "yes")])
@@ -2326,7 +2334,7 @@
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
-  "TARGET_FP && TARGET_CIX"
+  "TARGET_FP && TARGET_FIX"
   "sqrt%-%)%& %1,%0"
   [(set_attr "type" "fsqrt")
    (set_attr "trap" "yes")])
@@ -4015,7 +4023,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,r,r,m,m")
 	(match_operand:SF 1 "input_operand" "fG,m,rG,m,fG,r"))]
-  "! TARGET_CIX
+  "! TARGET_FIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
@@ -4030,7 +4038,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,r,r,m,m,f,*r")
 	(match_operand:SF 1 "input_operand" "fG,m,rG,m,fG,r,r,*f"))]
-  "TARGET_CIX
+  "TARGET_FIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
   "@
@@ -4047,7 +4055,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,r,r,m,m")
 	(match_operand:DF 1 "input_operand" "fG,m,rG,m,fG,r"))]
-  "! TARGET_CIX
+  "! TARGET_FIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
@@ -4062,7 +4070,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,r,r,m,m,f,*r")
 	(match_operand:DF 1 "input_operand" "fG,m,rG,m,fG,r,r,*f"))]
-  "TARGET_CIX
+  "TARGET_FIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
   "@
@@ -4101,7 +4109,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,f,f,m")
 	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,fJ,m,f"))]
-  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && ! TARGET_CIX
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && ! TARGET_FIX
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
   "@
@@ -4118,7 +4126,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,f,f,m,r,*f")
 	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,fJ,m,f,f,*r"))]
-  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && TARGET_CIX
+  "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && TARGET_FIX
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
   "@
@@ -4250,7 +4258,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,m,f,f,Q")
 	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f"))]
-  "! TARGET_CIX
+  "! TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   "@
@@ -4268,7 +4276,7 @@
 (define_insn ""
   [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,m,f,f,Q,r,*f")
 	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f,f,*r"))]
-  "TARGET_CIX
+  "TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
   "@
@@ -5307,5 +5315,5 @@
 ;        (match_operand:SI 1 "hard_fp_register_operand" "f"))
 ;   (set (match_operand:DI 2 "register_operand" "=r")
 ;        (sign_extend:DI (match_dup 0)))]
-;  "TARGET_CIX && dead_or_set_p (insn, operands[0])"
+;  "TARGET_FIX && dead_or_set_p (insn, operands[0])"
 ;  "ftois %1,%2")
