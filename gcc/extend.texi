@@ -3840,12 +3840,16 @@ other files) without having to specify them as well.
 
 g++ has extended the template instantiation syntax outlined in the
 Working Paper to allow forward declaration of explicit instantiations
-and instantiation of the compiler support data for a template class
-(i.e. the vtable) without instantiating any of its members:
+(with @code{extern}), instantiation of the compiler support data for a
+template class (i.e. the vtable) without instantiating any of its
+members (with @code{inline}), and instantiation of only the static data
+members of a template class, without the support data or member
+functions (with (@code{static}):
 
 @example
 extern template int max (int, int);
 inline template class Foo<int>;
+static template class Foo<int>;
 @end example
 
 @item
