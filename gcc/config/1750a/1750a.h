@@ -205,8 +205,10 @@ extern char *strdup(), *float_label();
    late and fixed registers last.  Note that, in general, we prefer
    registers listed in CALL_USED_REGISTERS, keeping the others
    available for storage of persistent values.  */
+
 #define REG_ALLOC_ORDER \
    { 2, 0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
+
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
@@ -377,6 +379,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.
    For the 1750A, we force an immediate CONST_DOUBLE value to memory. */
+
 #define PREFERRED_RELOAD_CLASS(X,CLASS)  \
 		(GET_CODE(X) == CONST_DOUBLE ? NO_REGS : CLASS)
 
@@ -729,9 +732,9 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 #ifdef REG_OK_STRICT
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
+#define REG_OK_FOR_INDEX_P(X) (REGNO (X) >= 12 && REGNO (X) <= 15)
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
+#define REG_OK_FOR_BASE_P(X)  (REGNO (X) > 0 && REGNO (X) <= 15)
 
 #else
 
@@ -858,7 +861,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
-    if (INTVAL(RTX) >= -16 && INTVAL(RTX) <= 16) return 1;	\
+    return (INTVAL(RTX) >= -16 && INTVAL(RTX) <= 16) ? 1 : 3;	\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
@@ -866,7 +869,11 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
   case CONST_DOUBLE:						\
     return 7;
 
-#define ADDRESS_COST(ADDRESS)	(memop_valid(ADDRESS) ?  3 : 1000)
+#define ADDRESS_COST(ADDRESS)  (memop_valid(ADDRESS) ?  3 : 1000)
+
+#define REGISTER_MOVE_COST(FROM,TO)	2
+
+#define MEMORY_MOVE_COST(M)		5
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 
@@ -1046,7 +1053,9 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	else {							\
 	   check_section(Konst);				\
 	   fprintf(FILE,"K%s\n",NAME);				\
+	   fflush(FILE);					\
 	   datalbl[++datalbl_ndx].name = (char *)strdup (NAME);	\
+	   datalbl[datalbl_ndx].size = 0;			\
 	   label_pending = 1;					\
 	}							\
   } while (0)
@@ -1074,6 +1083,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	     label_pending = 1;					\
 	     datalbl[++datalbl_ndx].name = (char *) malloc (9); \
 	     sprintf(datalbl[datalbl_ndx].name,"LC%d",NUM);	\
+	     datalbl[datalbl_ndx].size = 0;			\
 	     check_section(Konst);				\
 	     fprintf(FILE,"K%s%d\n",PREFIX,NUM);		\
 	  }							\
@@ -1082,6 +1092,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	     jmplbl[jmplbl_ndx].pc = program_counter;		\
 	     fprintf(FILE, "%s%d\n", PREFIX, NUM);		\
 	  }							\
+	  fflush(FILE);						\
 	} while (0)
 
 
@@ -1116,12 +1127,11 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define ASM_OUTPUT_SHORT_FLOAT(FILE,VALUE) 			\
   do {								\
-      if (label_pending)					\
+      if (label_pending) {					\
 	 label_pending = 0;					\
-      else							\
-         datalbl[++datalbl_ndx].name = float_label('D',VALUE);	\
-      sprintf (datalbl[datalbl_ndx].value, "%lf", (double) VALUE); \
-      datalbl[datalbl_ndx].size = 2;				\
+         sprintf (datalbl[datalbl_ndx].value, "%lf", (double) VALUE); \
+      }								\
+      datalbl[datalbl_ndx].size += 2;				\
       fprintf (FILE, "\tdataf\t%lf\n",VALUE);			\
   } while(0)
 
@@ -1130,12 +1140,11 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define ASM_OUTPUT_THREE_QUARTER_FLOAT(FILE,VALUE)		\
   do {								\
-      if (label_pending)					\
+      if (label_pending) {					\
 	 label_pending = 0;					\
-      else							\
-         datalbl[++datalbl_ndx].name = float_label('E',VALUE);	\
-      sprintf (datalbl[datalbl_ndx].value, "%lf", VALUE);	\
-      datalbl[datalbl_ndx].size = 3;				\
+         sprintf (datalbl[datalbl_ndx].value, "%lf", VALUE);	\
+      }								\
+      datalbl[datalbl_ndx].size += 3;				\
       fprintf(FILE,"\tdataef\t%lf\n",VALUE);			\
   } while (0)
 
@@ -1143,12 +1152,9 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define ASM_OUTPUT_ASCII(FILE, PTR, LEN)  do {		\
 	int i;								\
-	if (! label_pending)						\
-	   fprintf(FILE,";in ASM_OUTPUT_ASCII without label_pending\n");\
-	else {								\
+	if (label_pending)						\
 	   label_pending = 0;						\
-	   datalbl[datalbl_ndx].size = LEN;				\
-	}								\
+	datalbl[datalbl_ndx].size += LEN;				\
 	for (i = 0; i < LEN; i++) {					\
 	  if ((i % 15) == 0) {						\
 	    if (i != 0)							\
@@ -1175,12 +1181,9 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
  */
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  do {	  \
-	if (! label_pending) 						\
-	   fprintf(FILE,";in ASM_OUTPUT_CHAR without label_pending\n");	\
-	else {								\
+	if (label_pending) 						\
 	   label_pending = 0;						\
-	   datalbl[datalbl_ndx].size = 1;				\
-	}								\
+	datalbl[datalbl_ndx].size++;					\
 	fprintf(FILE, "\tdata\t");					\
 	output_addr_const(FILE, VALUE); 				\
 	fprintf(FILE, "\n");						\
@@ -1193,18 +1196,20 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE) do {	  \
-	if (! label_pending)						\
-	   fprintf(FILE,";in ASM_OUTPUT_SHORT without label_pending\n");\
-	else {								\
+	if (label_pending)						\
 	   label_pending = 0;						\
-	   datalbl[datalbl_ndx].size = 2;				\
-	}								\
+	datalbl[datalbl_ndx].size += 2;					\
 	fprintf(FILE, "\tdatal\t%d\n",INTVAL(VALUE));			\
   } while (0)
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
-#define ASM_OUTPUT_BYTE(FILE,VALUE)  fprintf(FILE, "\tdata\t#%x\n", VALUE)
+#define ASM_OUTPUT_BYTE(FILE,VALUE) do {	  \
+	if (label_pending)						\
+	   label_pending = 0;						\
+	datalbl[datalbl_ndx].size++;					\
+	fprintf(FILE, "\tdata\t#%x\n", VALUE);				\
+  } while (0)
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -1268,11 +1273,11 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)  do {	\
 	fprintf(FILE, "\tinit\n\t"); assemble_name(FILE, NAME); \
-	fprintf(FILE,"  ;constructor\n"); } while (0)
+        fprintf(FILE,"  ;constructor\n"); } while (0)
 
 #define ASM_OUTPUT_DESTRUCTOR(FILE, NAME)  do {	\
 	fprintf(FILE, "\tinit\n\t"); assemble_name(FILE, NAME); \
-        fprintf(FILE,"  ;destructor"); } while (0)
+        fprintf(FILE,"  ;destructor\n"); } while (0)
 
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
