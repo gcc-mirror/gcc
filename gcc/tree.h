@@ -1289,6 +1289,7 @@ extern tree size_binop			PROTO((enum tree_code, tree, tree));
 extern tree size_int			PROTO((unsigned HOST_WIDE_INT));
 extern tree round_up			PROTO((tree, int));
 extern tree get_pending_sizes		PROTO((void));
+extern void put_pending_sizes		PROTO((tree));
 
 /* Type for sizes of data-type.  */
 
