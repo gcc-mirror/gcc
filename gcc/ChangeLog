@@ -1,3 +1,16 @@
+2002-01-08  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_preferred_reload_class): Never
+	return ADDR_REGS if it isn't a subset of the given class.
+	* config/s390/s390.h (REGISTER_MOVE_COST): Penalize not just
+	FP_REGS, but all superclasses as well.
+
+	* config/s390/s390.c (s390_function_profiler): Fix thinko.
+
+	* config/s390/s390.md (cmpdi_ccu_mem, cmpsi_ccu_mem,
+	cmphi_ccu_mem, cmpqi_ccu_mem): First operand of compare
+	must not be a const_int.
+
 2002-01-08  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (toplev.o): Depend on options.h.
