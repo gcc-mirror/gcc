@@ -1,3 +1,8 @@
+Thu Sep  3 18:17:34 1998 Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* invoke.texi (Warning Options): Add -Wnon-template-friend
+ 	documentation.
+
 Thu Sep  3 18:16:16 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.c (rs6000_override_options): Add -mcpu={401,e603e}.
