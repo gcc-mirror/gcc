@@ -31,10 +31,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 
-/* Needed for bytecode function entry trampoline */
-#include "bytecode.h"
-#include "bc-emit.h"
-
 /* Needed for use_return_insn.  */
 #include "flags.h"
 
@@ -2302,41 +2298,4 @@ strict_low_part_peephole_ok (mode, first_insn, target)
     }
 
   return 0;
-}
-
-/* Trampoline code for the function entry.  */
-extern struct bc_seg *trampoline;
-extern struct bc_seg *bytecode;
-extern struct bc_sym *sym_lookup ();
-
-/* Emit the machine-code interface trampoline at the beginning of a byte
-   coded function.  The argument is a label name of the interpreter
-   bytecode callinfo structure; the return value is a label name for
-   the beginning of the actual bytecode.  */
-char *
-bc_emit_trampoline (callinfo)
-  char *callinfo;
-{
-  short insn;
-  int zero = 0;
-  char mylab[256];
-  static int n;
-
-  sprintf (mylab, "*LB%d", n++);
-
-  /* Push a reference to the callinfo structure.  */
-  insn = 0x4879;		/* pea xxx.L */
-  seg_data (trampoline, (char *) &insn, sizeof insn);
-  seg_refsym (trampoline, callinfo, 0);
-
-  /* Call __interp, pop arguments, and return.  */
-  insn = 0x4EB9;		/* jsr xxx.L  */
-  seg_data (trampoline, (char *) &insn, sizeof insn);
-  seg_refsym (trampoline, "__callint", 0);
-  insn = 0x588F;		/* addql #4, sp */
-  seg_data (trampoline, (char *) &insn, sizeof insn);
-  insn = 0x4E75;		/* rts */
-  seg_data (trampoline, (char *) &insn, sizeof insn);
-  seg_defsym (bytecode, mylab);
-  return sym_lookup (mylab)->name;
 }
