@@ -284,7 +284,7 @@ __udiv_w_sdiv (rp, a1, a0, d)
 
   if ((SItype) d >= 0)
     {
-      if (a1 < d - a1 - (a0 >> 31))
+      if (a1 < d - a1 - (a0 >> (SI_TYPE_SIZE - 1)))
 	{
 	  /* dividend, divisor, and quotient are nonnegative */
 	  sdiv_qrnnd (q, r, a1, a0, d);
@@ -292,18 +292,18 @@ __udiv_w_sdiv (rp, a1, a0, d)
       else
 	{
 	  /* Compute c1*2^32 + c0 = a1*2^32 + a0 - 2^31*d */
-	  sub_ddmmss (c1, c0, a1, a0, d >> 1, d << 31);
+	  sub_ddmmss (c1, c0, a1, a0, d >> 1, d << (SI_TYPE_SIZE - 1));
 	  /* Divide (c1*2^32 + c0) by d */
 	  sdiv_qrnnd (q, r, c1, c0, d);
 	  /* Add 2^31 to quotient */
-	  q += (USItype) 1 << 31;
+	  q += (USItype) 1 << (SI_TYPE_SIZE - 1);
 	}
     }
   else
     {
       b1 = d >> 1;			/* d/2, between 2^30 and 2^31 - 1 */
       c1 = a1 >> 1;			/* A/2 */
-      c0 = (a1 << 31) + (a0 >> 1);
+      c0 = (a1 << (SI_TYPE_SIZE - 1)) + (a0 >> 1);
 
       if (a1 < b1)			/* A < 2^32*b1, so A/2 < 2^31*b1 */
 	{
