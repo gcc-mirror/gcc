@@ -2198,7 +2198,8 @@ operand_equal_p (tree arg0, tree arg1, int only_const)
 	  v2 = TREE_VECTOR_CST_ELTS (arg1);
 	  while (v1 && v2)
 	    {
-	      if (!operand_equal_p (v1, v2, only_const))
+	      if (!operand_equal_p (TREE_VALUE (v1), TREE_VALUE (v2),
+				    only_const))
 		return 0;
 	      v1 = TREE_CHAIN (v1);
 	      v2 = TREE_CHAIN (v2);
