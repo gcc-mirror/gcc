@@ -1516,13 +1516,13 @@ namespace std
 		  break;
 		case 'I':
 		  // Hour [01, 12]. [tm_hour]
-		  _M_extract_num(__beg, __end, __tm->tm_hour, 1, 12, 2,
+		  _M_extract_num(__beg, __end, __tm->tm_hour, 1, 12, 2, 
 				 __ctype, __err);
 		  break;
 		case 'm':
 		  // Month [01, 12]. [tm_mon]
-		  _M_extract_num(__beg, __end, __mem, 1, 12, 2,
-				 __ctype, __err);
+		  _M_extract_num(__beg, __end, __mem, 1, 12, 2, __ctype, 
+				 __err);
 		  if (!__err)
 		    __tm->tm_mon = __mem - 1;
 		  break;
@@ -1905,10 +1905,14 @@ namespace std
 		}
 	      else
 		__format = __c;
-	      this->do_put(__s, __io, char_type(), __tm, __format, __mod);
+	      __s = this->do_put(__s, __io, char_type(), __tm, __format, 
+				 __mod);
 	    }
 	  else
-	    __s = __c;
+	    {
+	      *__s = __c;
+	      ++__s;
+	    }
 	}
       return __s;
     }
@@ -1951,8 +1955,8 @@ namespace std
 
       // Write resulting, fully-formatted string to output iterator.
       size_t __len = char_traits<char_type>::length(__res);
-      for (size_t __i = 0; __i < __len; ++__i)
-	__s = __res[__i];
+      for (size_t __i = 0; __i < __len; ++__i, ++__s)
+	*__s = __res[__i];
       return __s;
     }
 

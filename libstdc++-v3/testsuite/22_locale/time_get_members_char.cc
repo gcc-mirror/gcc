@@ -1,6 +1,6 @@
 // 2001-09-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001-2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -585,6 +585,93 @@ void test05()
   VERIFY( errorstate == ios_base::eofbit );
 }
 
+void test06()
+{
+  using namespace std;
+  bool test = true;
+
+  // Check time_get works with other iterators besides streambuf
+  // input iterators.
+  typedef string::const_iterator iter_type;
+  typedef time_get<char, iter_type> time_get_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  ios_base::iostate err = goodbit;
+  const locale loc_c = locale::classic();
+  // Cindy Sherman's Untitled Film Stills
+  // June 26-September 2, 1997
+  const string str = "12:00:00 06/26/97 Tuesday September 1997 Cindy Sherman";
+ 
+  // Create "C" time objects
+  const tm time_sanity = { 0, 0, 12, 26, 5, 97, 2 };
+  tm tm1;
+
+  istringstream iss; 
+  iss.imbue(locale(loc_c, new time_get_type));
+
+  // Iterator advanced, state, output.
+  const time_get_type& tg = use_facet<time_get_type>(iss.getloc());
+
+  // 01 get_time
+  // 02 get_date
+  // 03 get_weekday
+  // 04 get_monthname
+  // 05 get_year
+
+  // 01 get_time
+  string res1;
+  err = goodbit;
+  iter_type end1 = tg.get_time(str.begin(), str.end(), iss, err, &tm1);
+  string rem1(end1, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( tm1.tm_sec == time_sanity.tm_sec );
+  VERIFY( tm1.tm_min == time_sanity.tm_min );
+  VERIFY( tm1.tm_hour == time_sanity.tm_hour );
+  VERIFY( rem1 ==  " 06/26/97 Tuesday September 1997 Cindy Sherman" );
+
+  // 02 get_date
+  string res2;
+  err = goodbit;
+  // White space is not eaten, so manually increment past it.
+  iter_type end2 = tg.get_date(++end1, str.end(), iss, err, &tm1);
+  string rem2(end2, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( tm1.tm_year == time_sanity.tm_year );
+  VERIFY( tm1.tm_mon == time_sanity.tm_mon );
+  VERIFY( tm1.tm_mday == time_sanity.tm_mday );
+  VERIFY( rem2 ==  " Tuesday September 1997 Cindy Sherman" );
+
+  // 03 get_weekday
+  string res3;
+  err = goodbit;
+  // White space is not eaten, so manually increment past it.
+  iter_type end3 = tg.get_weekday(++end2, str.end(), iss, err, &tm1);
+  string rem3(end3, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( tm1.tm_wday == time_sanity.tm_wday );
+  VERIFY( rem3 ==  " September 1997 Cindy Sherman" );
+
+  // 04 get_monthname
+  string res4;
+  err = goodbit;
+  // White space is not eaten, so manually increment past it.
+  iter_type end4 = tg.get_monthname(++end3, str.end(), iss, err, &tm1);
+  string rem4(end4, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( tm1.tm_mon == 8 );
+  VERIFY( rem4 ==  " 1997 Cindy Sherman" );
+
+  // 05 get_year
+  string res5;
+  err = goodbit;
+  // White space is not eaten, so manually increment past it.
+  iter_type end5 = tg.get_year(++end4, str.end(), iss, err, &tm1);
+  string rem5(end5, str.end());
+  VERIFY( err == goodbit );
+  VERIFY( tm1.tm_year == time_sanity.tm_year );
+  VERIFY( rem5 ==  " Cindy Sherman" );
+}
+
 int main()
 {
   test01();
@@ -592,5 +679,7 @@ int main()
   test03();
   test04();
   test05();
+  
+  test06();
   return 0;
 }
