@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.5 $
+--                             $Revision$
 --                                                                          --
---           Copyright (C) 1991-2000 Free Software Foundation, Inc.         --
+--           Copyright (C) 1991-2001 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the Linux (LinuxThreads) version of this package.
+--  This is the GNU/Linux (GNU/LinuxThreads) version of this package.
 
 --  This package provides low-level support for most tasking features.
 

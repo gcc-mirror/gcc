@@ -6,7 +6,7 @@
 --                                                                          --
 --                                   B o d y                                --
 --                                                                          --
---                             $Revision: 1.12 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
@@ -34,8 +34,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a LinuxThreads, Solaris pthread and HP-UX pthread version of this
---  package.
+--  This is a GNU/LinuxThreads, Solaris pthread and HP-UX pthread version
+--  of this package.
 
 pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during

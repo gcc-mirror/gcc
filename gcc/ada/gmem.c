@@ -4,7 +4,7 @@
  *                                                                          *
  *                                 G M E M                                  *
  *                                                                          *
- *                             $Revision: 1.1 $
+ *                             $Revision$
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
@@ -43,7 +43,7 @@
 
       DEC Unix
       SGI Irix
-      Linux x86
+      GNU/Linux x86
       Solaris (sparc and x86) (*)
       Windows 98/95/NT (x86)
 

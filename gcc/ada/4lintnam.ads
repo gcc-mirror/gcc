@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.5 $                             --
+--                             $Revision$
 --                                                                          --
 --           Copyright (C) 1991-2001 Free Software Foundation, Inc.         --
 --                                                                          --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Linux version of this package.
+--  This is a GNU/Linux version of this package.
 --
 --  The following signals are reserved by the run time (FSU threads):
 --

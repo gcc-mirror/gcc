@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---                             $Revision: 1.8 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  RT Linux version.
+--  RT GNU/Linux version.
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.
@@ -52,7 +52,7 @@ package System.OS_Interface is
    subtype int            is Interfaces.C.int;
    subtype unsigned_long  is Interfaces.C.unsigned_long;
 
-   --  RT Linux kernel threads should not use the
+   --  RT GNU/Linux kernel threads should not use the
    --  OS signal interfaces.
 
    Max_Interrupt : constant := 2;
@@ -69,8 +69,8 @@ package System.OS_Interface is
    RT_TIME_END : constant := 16#7fffFfffFfffFfff#;
 
    type RTIME is range -2 ** 63 .. 2 ** 63 - 1;
-   --  the introduction of type RTIME is due to the fact that RT-Linux
-   --  uses this type to represent time. In RT-Linux, it's a long long
+   --  the introduction of type RTIME is due to the fact that RT-GNU/Linux
+   --  uses this type to represent time. In RT-GNU/Linux, it's a long long
    --  integer that takes 64 bits for storage
 
    -------------------------
@@ -79,8 +79,8 @@ package System.OS_Interface is
 
    RT_LOWEST_PRIORITY : constant System.Any_Priority :=
      System.Any_Priority'First;
-   --  for the lowest priority task in RT_Linux. By the design, this task
-   --  is the regular linux kernel.
+   --  for the lowest priority task in RT-GNU/Linux. By the design, this
+   --  task is the regular GNU/Linux kernel.
 
    RT_TASK_MAGIC : constant := 16#754d2774#;
    --  a special constant used as a label for a task that has been created
@@ -91,8 +91,8 @@ package System.OS_Interface is
 
    SFIF : Integer;
    pragma Import (C, SFIF, "SFIF");
-   --  Interrupt emulation flag used by RT-Linux. If it's 0, the regular
-   --  Linux kernel is preempted. Otherwise, the regular Linux kernel is
+   --  Interrupt emulation flag used by RT-GNU/Linux. If it's 0, the regular
+   --  GNU/Linux kernel is preempted. Otherwise, the regular Linux kernel is
    --  running
 
    GFP_ATOMIC : constant := 16#1#;
@@ -112,7 +112,7 @@ package System.OS_Interface is
      function (arg : System.Address) return System.Address;
 
    --  ??? need to define a type for references to (IDs of)
-   --  RT Linux lock objects, and implement the lock objects.
+   --  RT GNU/Linux lock objects, and implement the lock objects.
 
    subtype Thread_Id is System.Address;
 
@@ -120,9 +120,9 @@ package System.OS_Interface is
    -- Useful imported functions --
    -------------------------------
 
-   ---------------------------------
-   -- functions from linux kernel --
-   ---------------------------------
+   -------------------------------------
+   -- Functions from GNU/Linux kernel --
+   -------------------------------------
 
    function Kmalloc (size : Integer; Priority : Integer) return System.Address;
    pragma Import (C, Kmalloc, "kmalloc");

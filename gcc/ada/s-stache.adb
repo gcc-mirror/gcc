@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.10 $
+--                             $Revision$
 --                                                                          --
 --          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -47,7 +47,7 @@ package body System.Stack_Checking is
    --  This size is assumed for the environment stack when no size has been
    --  set by the runtime, and no GNAT_STACK_LIMIT environment variable was
    --  present. The value is chosen to be just under 8 MB whic is the actual
-   --  default size on some systems including LinuxThreads, so we will get
+   --  default size on some systems including GNU/LinuxThreads, so we will get
    --  correct storage errors on those systems without setting environment
    --  variables.
 

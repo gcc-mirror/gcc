@@ -6,9 +6,9 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.4 $
+--                             $Revision$
 --                                                                          --
---             Copyright (C) 1991-2000 Florida State University             --
+--             Copyright (C) 1991-2001 Florida State University             --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  RT Linux version.
+--  RT GNU/Linux version.
 
 --  This package encapsulates all direct interfaces to OS services
 --  that are needed by children of System.

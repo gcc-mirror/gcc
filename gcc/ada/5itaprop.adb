@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.43 $
+--                             $Revision$
 --                                                                          --
 --             Copyright (C) 1991-2001, Florida State University            --
 --                                                                          --
@@ -34,7 +34,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is a Linux (LinuxThreads) version of this package
+--  This is a GNU/Linux (GNU/LinuxThreads) version of this package
 
 --  This package contains all the GNULL primitives that interface directly
 --  with the underlying OS.
@@ -105,7 +105,7 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    Max_Stack_Size : constant := 2000 * 1024;
-   --  LinuxThreads does not return an error value when requesting
+   --  GNU/LinuxThreads does not return an error value when requesting
    --  a task stack size which is too large, so we have to check this
    --  ourselves.
 
@@ -699,7 +699,9 @@ package body System.Task_Primitives.Operations is
          end if;
       end if;
 
-      --  Priorities are in range 1 .. 99 on Linux, so map 0 .. 31 to 1 .. 32
+      --  Priorities are in range 1 .. 99 on GNU/Linux, so we map
+      --  map 0 .. 31 to 1 .. 32
+
       Param.sched_priority := Interfaces.C.int (Prio) + 1;
 
       if Time_Slice_Val > 0 then

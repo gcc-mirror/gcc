@@ -6,7 +6,7 @@
  *                                                                          *
  *              Auxiliary C functions for Interfaces.C.Streams              *
  *                                                                          *
- *                              $Revision: 1.1 $
+ *                              $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -63,7 +63,7 @@ int max_path_len = PATH_MAX;
 
 #ifdef linux
 
-/* Don't use macros on linux since they cause incompatible changes between
+/* Don't use macros on GNU/Linux since they cause incompatible changes between
    glibc 2.0 and 2.1 */
 
 #ifdef stderr
@@ -199,7 +199,7 @@ __gnat_full_name (nam, buffer)
 #elif defined (sgi)
 
   /* Use realpath function which resolves links and references to .. and ..
-     on those Unix systems that support it. Note that linux provides it but
+     on those Unix systems that support it. Note that GNU/Linux provides it but
      cannot handle more than 5 symbolic links in a full name, so we use the
      getcwd approach instead. */
   realpath (nam, buffer);
