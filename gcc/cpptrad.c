@@ -852,7 +852,7 @@ _cpp_replacement_text_len (macro)
 {
   size_t len;
 
-  if (macro->fun_like)
+  if (macro->fun_like && (macro->paramc != 0))
     {
       const uchar *exp;
 
@@ -882,7 +882,7 @@ _cpp_copy_replacement_text (macro, dest)
      const cpp_macro *macro;
      uchar *dest;
 {
-  if (macro->fun_like)
+  if (macro->fun_like && (macro->paramc != 0))
     {
       const uchar *exp;
 
