@@ -39,7 +39,6 @@ AC_SUBST(mkinstalldirs)
 AM_INIT_AUTOMAKE(gc, 6.3, no-define)
 
 # The autoconf 2.5x version of the no-executables hack.
-sinclude(../config/no-executables.m4)
 GCC_NO_EXECUTABLES
 
 # Yak.  We must force CC and CXX to /not/ be precious variables; otherwise

@@ -5,6 +5,7 @@
 ## Makefile.am.
 
 AUTOMAKE_OPTIONS = cygnus subdir-objects
+ACLOCAL_AMFLAGS = -I .. -I ../config
 
 SUBDIRS = include
 
