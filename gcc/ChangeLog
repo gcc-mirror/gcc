@@ -1,3 +1,14 @@
+2003-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_constant_p, expand_builtin_strlen,
+	expand_builtin_frame_address): Update prototypes.
+	(expand_builtin_constant_p, expand_builtin_strlen,
+	expand_builtin_strcpy, expand_builtin_memset,
+	expand_builtin_bzero, expand_builtin_args_info,
+	expand_builtin_frame_address): Pass in just the argument(s)
+	needed, not the entire expression `exp'.
+	(expand_builtin): Update all calls to these functions.
+
 2003-05-03  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (expand_builtin) <BUILT_IN_DWARF_FP_REGNUM>: Remove.
