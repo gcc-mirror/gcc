@@ -1,3 +1,10 @@
+2001-12-20  Tom Tromey  <tromey@redhat.com>
+
+	Fixes PR java/5057:
+	* parse.y (analyze_clinit_body): Added this_class parameter.
+	Check for more cases where we must keep <clinit>.
+	(maybe_yank_clinit): Cleaned up flow control.
+
 2001-12-20  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* decl.c (java_init_decl_processing): Don't initialize 
