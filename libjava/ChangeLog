@@ -1,3 +1,9 @@
+2003-12-01  Jeff Sturm  <jsturm@one-point.com>
+
+	* verify.cc (state::clean_subrs): Clear seen_subrs.
+	(state::copy): Walk seen_subrs from copy, not `this'.
+	Don't clear seen_subrs.
+
 2003-12-01  Kim Ho <kho@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c (create):
