@@ -1988,9 +1988,6 @@ attach_deaths (x, insn, set_p)
 #if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
 		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
-#ifdef PIC_OFFSET_TABLE_REGNUM
-		&& ! (regno == PIC_OFFSET_TABLE_REGNUM && flag_pic)
-#endif
 		&& regno != STACK_POINTER_REGNUM)
 	      {
 		if (! all_needed && ! dead_or_set_p (insn, x))
@@ -2534,6 +2531,8 @@ schedule_block (b, file)
 			  || GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
 			sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
 
+		    /* ??? This code is obsolete and should be deleted.  It
+		       is harmless though, so we will leave it in for now.  */
 		    for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		      if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == USE)
 			sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
@@ -2631,6 +2630,8 @@ schedule_block (b, file)
 		    || GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == CLOBBER)
 		  sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
 
+	      /* ??? This code is obsolete and should be deleted.  It
+		 is harmless though, so we will leave it in for now.  */
 	      for (j = XVECLEN (PATTERN (insn), 0) - 1; j >= 0; j--)
 		if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == USE)
 		  sched_note_set (b, XVECEXP (PATTERN (insn), 0, j), 0);
