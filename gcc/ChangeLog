@@ -1,3 +1,8 @@
+2001-08-31  Andreas Jaeger  <aj@suse.de>
+
+	* jump.c (mark_jump_label): Revert patch from 2001-08-28, the
+	code was correct.
+
 2001-08-30  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/stormy16/stormy16.md (udivmodhi4): Express using UDIV/UMOD,
@@ -142,7 +147,7 @@ Thu Aug 30 10:21:43 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* iris6.h (ASM_DECLARE_OBJECT_NAME, ASM_FINISH_DECLARE_OBJECT):
 	Fix format specifier warnings.
-	
+
 	* irix6-libc-compat.c (inet_ntoa, inet_lnaof, inet_netof,
 	inet_makeaddr, semctl): Prototype.
 
@@ -184,7 +189,7 @@ Thu Aug 30 10:21:43 2001  J"orn Rennecke <amylaar@redhat.com>
 	df_visit_next.
 	(df_ru_global_compute): Use df_visit_next_rts instead of
 	df_visit_next.
-	
+
 	* flow.c (flow_reverse_top_sort_order_compute): New function.
 
 	* basic-block.h: Add prototype.
@@ -194,7 +199,7 @@ Thu Aug 30 10:21:43 2001  J"orn Rennecke <amylaar@redhat.com>
 	* ssa-ccp.c (ssa_ccp_df_delete_unreachable_insns): For unreachable
 	blocks, the BB_REACHABLE is now set, rather than aux being
 	non-NULL. Update the test to reflect this.
-	
+
 2001-08-28  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/crtn.asm: Add comment explaining 16 byte alignment.
