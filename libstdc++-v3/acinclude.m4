@@ -1018,6 +1018,8 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
       AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
       ac_XPG2funcs=yes, ac_XPG2funcs=no)
   
+      LIBS="$ac_save_LIBS"
+
       AC_MSG_CHECKING([for XPG2 wchar_t support])
       if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
          && test x"$ac_XPG2funcs" = xyes; then
