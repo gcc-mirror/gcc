@@ -21,6 +21,8 @@ import java.awt.FontMetrics;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ImageObserver;
 import java.awt.image.BufferedImage;
@@ -513,6 +515,16 @@ public class Graphics2DImpl extends Graphics2D implements Cloneable
   }
 
   public Stroke getStroke()
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public FontRenderContext getFontRenderContext ()
+  {
+    throw new UnsupportedOperationException("not implemented yet");
+  }
+
+  public void drawGlyphVector (GlyphVector g, float x, float y)
   {
     throw new UnsupportedOperationException("not implemented yet");
   }

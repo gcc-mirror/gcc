@@ -36,6 +36,8 @@ exception statement from your version. */
 
 package java.awt;
 
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
@@ -151,5 +153,7 @@ public abstract class Graphics2D extends Graphics
 
   public abstract void clip(Shape s);
 
-  // public abstract FontRenderContext getFontRenderContext();
+  public abstract FontRenderContext getFontRenderContext ();
+
+  public abstract void drawGlyphVector (GlyphVector g, float x, float y);
 }

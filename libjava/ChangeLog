@@ -1,3 +1,12 @@
+2003-02-19  Michael Koch <konqueror@gmx.de>
+
+	* gnu/awt/j2d/Graphics2DImpl.java
+	(getFontRenderContext): New method.
+	(drawGlyphVector): New method.
+	* java/awt/Graphics2D.java
+	(getFontRenderContext): New abstract method.
+	(drawGlyphVector): New abstract method.
+	
 2003-02-18  Hans Boehm  <Hans.Boehm@hp.com>
 
 	* gnu/awt/xlib/XToolkit.java (getFontMetrics): initialize
