@@ -69,6 +69,7 @@ extern void warning			PARAMS ((const char *, ...))
 extern void error			PARAMS ((const char *, ...))
 					       ATTRIBUTE_PRINTF_1;
 extern void fatal_error			PARAMS ((const char *, ...))
+					       ATTRIBUTE_NORETURN
 					       ATTRIBUTE_PRINTF_1;
 extern void pedwarn			PARAMS ((const char *, ...))
 					       ATTRIBUTE_PRINTF_1;
