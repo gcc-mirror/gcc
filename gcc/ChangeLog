@@ -1,5 +1,13 @@
 2003-08-26  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (fold <MULT_EXPR>): Optimize (C1/X)*C2 into
+	(C1*C2)/X when unsafe math optimizations are allowed.
+	(fold <RDIV_EXPR>): Optimize C1/(X*C2) into (C1/C2)/X with unsafe
+	math optimizations.  Minor code clean-ups.  Recursively call
+	fold when constructing sub-expressions.
+
+2003-08-26  Roger Sayle  <roger@eyesopen.com>
+
 	* builtins.c (fold_builtin_bitop): New function to perform constant
 	folding of ffs, clz, ctz, popcount and parity builtin functions
 	and their long and long long variants (such as ffsl and ffsll).
