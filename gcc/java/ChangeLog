@@ -1,3 +1,53 @@
+1999-08-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (lang.o): Depend on $(RTL_H) $(EXPR_H).
+
+	* expr.c (java_stack_pop, java_array_data_offset,
+	build_java_throw_out_of_bounds_exception, case_identity,
+	build_java_check_indexed_type): Add static prototypes.
+	(linenumber_table, expand_invoke, expand_java_field_op,
+	build_primtype_type_ref, expand_byte_code): Constify a char*.
+
+	* java-tree.h (build_primtype_type_ref, linenumber_table):
+	Constify a char*.
+	(java_lang_expand_expr): Add prototype.
+
+	* lang.c: Include rtl.h and expr.h.  Remove extern prototype for
+	`java_lang_expand_expr'.
+
+	* lex.c (java_lex_error): Constify a char*.
+	(java_get_unicode, java_read_char, java_allocate_new_line,
+	java_unget_unicode, java_sneak_unicode): Prototype.
+
+	* parse-scan.y (current_class, package_name, method_declarator,
+	report_class_declaration, yyerror): Constify a char*.
+
+	* parse.h (java_report_errors): Prototype.
+	(yyerror): Constify a char*.
+
+	* parse.y (classitf_redefinition_error, check_modifiers,
+	parse_jdk1_1_error, lookup_package_type,
+	lookup_package_type_and_set_next, get_printable_method_name,
+	purify_type_name): Constify a char*.
+	(build_super_invocation, maybe_generate_finit,
+	verify_constructor_super, parser_add_interface,
+	add_superinterfaces, jdep_resolve_class, note_possible_classname,
+	java_complete_expand_methods, java_expand_finals,
+	cut_identifier_in_qualified, java_stabilize_reference,
+	do_unary_numeric_promotion, operator_string, do_merge_string_cste,
+	merge_string_cste): Prototype.
+	(single_type_import_declaration, yyerror,
+	variable_redefinition_error, build_array_from_name,
+	build_unresolved_array_type, check_class_interface_creation,
+	resolve_class, complete_class_report_errors,
+	note_possible_classname, read_import_dir,
+	find_in_imports_on_demand, resolve_package, fix_constructors,
+	check_deprecation, lookup_method_invoke,
+	maybe_build_primttype_type_ref, array_constructor_check_entry):
+	Constify a char*.
+	(java_complete_expand_methods, java_expand_finals): Make static.
+	(convert_narrow): Remove static prototype.
+
 Tue Aug  3 20:21:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* Makefile.in (decl.o): Depends on $(srcdir)/../defaults.h.

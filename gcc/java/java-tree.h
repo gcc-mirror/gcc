@@ -584,7 +584,7 @@ extern void write_classfile PROTO ((tree));
 extern char *print_int_node PROTO ((tree));
 extern void parse_error_context PVPROTO ((tree cl, const char *, ...))
   ATTRIBUTE_PRINTF_2;
-extern tree build_primtype_type_ref PROTO ((char *));
+extern tree build_primtype_type_ref PROTO ((const char *));
 extern tree java_get_real_method_name PROTO ((tree));
 extern void finish_class PROTO ((tree));
 extern void java_layout_seen_class_methods PROTO ((void));
@@ -646,6 +646,13 @@ extern char* open_class PROTO ((char *, struct JCF *, FILE *, const char *));
 extern char* open_class PROTO ((char *, struct JCF *, int, const char *));
 # endif /* JCF_USE_STDIO */
 #endif
+
+/* We use ARGS_SIZE_RTX to indicate that gcc/expr.h has been included
+   to declare `enum expand_modifier'. */
+#if defined (TREE_CODE) && defined(RTX_CODE) && defined (HAVE_MACHINE_MODES) && defined (ARGS_SIZE_RTX)
+struct rtx_def * java_lang_expand_expr PROTO ((tree, rtx, enum machine_mode,
+					       enum expand_modifier)); 
+#endif /* TREE_CODE && RTX_CODE && HAVE_MACHINE_MODES && ARGS_SIZE_RTX */
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
@@ -731,7 +738,7 @@ extern char *instruction_bits;
 #define BCODE_VERIFIED 8
 
 /* A pointer to the line number table of the current method. */
-extern unsigned char *linenumber_table;
+extern const unsigned char *linenumber_table;
 /* The length (in items) of the line number table. */
 extern int linenumber_count;
 
