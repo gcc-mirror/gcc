@@ -1,3 +1,10 @@
+2003-09-05  Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR c/10962
+	* c-decl.c (field_decl_cmp): Add back function.
+	(finish_struct): Sort fields if number greater than 15
+	and no anymous structs/unions.
+
 2003-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/ia64/libgcc-ia64.ver: Export _Unwind_GetBSP@@GCC_3.3.2.
