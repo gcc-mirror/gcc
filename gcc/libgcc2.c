@@ -127,7 +127,15 @@ typedef int word_type __attribute__ ((mode (__word__)));
 #define float bogus_type
 #define double bogus_type
 
+#if BITS_PER_UNIT == 8
+#define SI_TYPE_SIZE 32
+#else
 #define SI_TYPE_SIZE (sizeof (SItype) * BITS_PER_UNIT)
+#endif
+#define W_TYPE_SIZE SI_TYPE_SIZE
+#define UWtype	USItype
+#define UHWtype	USItype
+#define UDWtype	UDItype
 
 /* DIstructs are pairs of SItype values in the order determined by
    LIBGCC2_WORDS_BIG_ENDIAN.  */

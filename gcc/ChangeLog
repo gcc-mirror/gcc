@@ -10,6 +10,14 @@
 	* config/sparc/sparc.h (SPARC_SETHI_P): Don't look at topmost 32 bits
 	if TARGET_ARCH32.
 
+	* longlong.h: Merge in changes from glibc.
+	Also don't clobber %g2 register in 32bit SPARC assembly, so that
+	-mno-app-regs libgcc can be compiled.
+	* libgcc2.c: Add defines so that the updated longlong.h
+	can be used in libgcc2.a. Also, make sure on most architectures
+	(at least on all which have optimized code in longlong.h defined
+	for) {SI,W}_TYPE_SIZE is suitable for preprocessor tests.
+
 1999-12-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/sparc/sol2-64.h: Same as sol2-sld-64.h, except that
