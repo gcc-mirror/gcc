@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.24 2001/06/14 22:51:17 jsm28 Exp $
+@comment $Id: install.texi,v 1.25 2001/06/15 01:07:46 m.hayes Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -455,6 +455,16 @@ supports threads.  This affects the Objective-C compiler and runtime
 library, and exception handling for other languages like C++ and Java.
 On some systems, this is the default.
 
+In general, the best (and, in many cases, the only known) threading
+model available will be configured for use.  Beware that on some
+systems, gcc has not been taught what threading models are generally
+available for the system.  In this case, @samp{--enable-threads} is an
+alias for @samp{--enable-threads=single}.
+
+@item --disable-threads
+Specify that threading support should be disabled for the system.
+This is an alias for @samp{--enable-threads=single}.
+
 @item --enable-threads=@var{lib}
 Specify that
 @var{lib} is the thread support library.  This affects the Objective-C
@@ -466,18 +476,20 @@ like C++ and Java.  The possibilities for @var{lib} are:
 AIX thread support.
 @item dce
 DCE thread support.
-@item decosf1
-DEC OSF/1 thread support.
-@item irix
-SGI IRIX thread support.
 @item mach
-Generic MACH thread support, known to work on NEXTSTEP.
-@item os2
-IBM OS/2 thread support.
+Generic MACH thread support, known to work on NEXTSTEP.  (Please note
+that the file needed to support this configuration, gthr-mach.h, is
+missing and thus this setting will cause a known bootstrap failure.)
+@item no
+This is an alias for @samp{single}.
 @item posix
 Generic POSIX thread support.
 @item pthreads
-Same as @samp{posix}.
+Same as @samp{posix} on arm*-*-linux*, *-*-chorusos* and *-*-freebsd*
+only.  A future release of gcc might remove this alias or extend it
+to all platforms.
+@item rtems
+RTEMS thread support.
 @item single
 Disable thread support, should work for all platforms.
 @item solaris
