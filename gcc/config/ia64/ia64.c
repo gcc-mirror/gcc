@@ -864,6 +864,21 @@ tfreg_or_fp01_operand (op, mode)
     return 0;
   return fr_reg_or_fp01_operand (op, mode);
 }
+
+/* Return 1 if OP is valid as a base register in a reg + offset address.  */
+
+int
+basereg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  /* ??? Should I copy the flag_omit_frame_pointer and cse_not_expected
+     checks from pa.c basereg_operand as well?  Seems to be OK without them
+     in test runs.  */
+
+  return (register_operand (op, mode) &&
+	  REG_POINTER ((GET_CODE (op) == SUBREG) ? SUBREG_REG (op) : op));
+}
 
 /* Return 1 if the operands of a move are ok.  */
 

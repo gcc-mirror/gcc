@@ -66,6 +66,7 @@ extern int ar_pfs_reg_operand PARAMS((rtx, enum machine_mode));
 extern int general_tfmode_operand PARAMS((rtx, enum machine_mode));
 extern int destination_tfmode_operand PARAMS((rtx, enum machine_mode));
 extern int tfreg_or_fp01_operand PARAMS((rtx, enum machine_mode));
+extern int basereg_operand PARAMS((rtx, enum machine_mode));
 
 extern int ia64_move_ok PARAMS((rtx, rtx));
 extern int ia64_depz_field_mask PARAMS((rtx, rtx));
