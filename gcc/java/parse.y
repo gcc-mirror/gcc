@@ -9193,8 +9193,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
   if (!flag_emit_class_files
       && !flag_emit_xref
       && lvalue_from_array 
-      && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type))
-      && !CLASS_FINAL (TYPE_NAME (GET_SKIP_TYPE (rhs_type))))
+      && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type)))
     {
       tree check;
       tree base = lvalue;

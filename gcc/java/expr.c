@@ -874,8 +874,7 @@ expand_java_arraystore (rhs_type_node)
   index = save_expr (index);
   array = save_expr (array);
 
-  if (TREE_CODE (rhs_type_node) == POINTER_TYPE
-      && !CLASS_FINAL (TYPE_NAME (TREE_TYPE (rhs_type_node))))
+  if (TREE_CODE (rhs_type_node) == POINTER_TYPE)
     {
       tree check = build (CALL_EXPR, void_type_node,
 			  build_address_of (soft_checkarraystore_node),
