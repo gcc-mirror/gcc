@@ -1,3 +1,8 @@
+Sun Nov  9 02:00:29 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* a29k.h (ELIGIBLE_FOR_EPILOGUE_DELAY): Avoid loads from varying
+	addresses in the epilogue delay slot.
+
 Sun Nov  9 01:40:40 1997  Manfred Hollstein  (manfred@s-direktnet.de)
 
 	* m88k/dgux.h (ASM_CPU_SPEC): Reformatted to suppress wrong whitespace

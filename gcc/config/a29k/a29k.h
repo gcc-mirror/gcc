@@ -987,13 +987,18 @@ extern char *a29k_function_name;
 
    On the 29k, we must be able to place it in a delay slot, it must
    not use sp if the frame pointer cannot be eliminated, and it cannot
-   use local regs if we need to push the register stack.  */
+   use local regs if we need to push the register stack.
+   If this is a SET with a memory as source, it might load from
+   a stack slot, unless the address is constant.  */
 
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(INSN,N)				\
   (get_attr_in_delay_slot (INSN) == IN_DELAY_SLOT_YES			\
    && ! (frame_pointer_needed						\
 	 && reg_mentioned_p (stack_pointer_rtx, PATTERN (INSN)))	\
-   && ! (needs_regstack_p () && uses_local_reg_p (PATTERN (INSN))))
+   && ! (needs_regstack_p () && uses_local_reg_p (PATTERN (INSN)))	\
+   && (GET_CODE (PATTERN (INSN)) != SET					\
+       || GET_CODE (SET_SRC (PATTERN (INSN))) != MEM			\
+       || ! rtx_varies_p (XEXP (SET_SRC (PATTERN (INSN)), 0))))
 
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
