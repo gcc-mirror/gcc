@@ -88,7 +88,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
       if (GetTempPath (buflen, buffer))
 	SET ("java.io.tmpdir", buffer);
 
-      _Jv_free (buffer);
+      _Jv_Free (buffer);
     }
   
   // Use GetUserName to set 'user.name'.
@@ -98,7 +98,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
     {
       if (GetUserName (buffer, &buflen))
         SET ("user.name", buffer);
-      _Jv_free (buffer);
+      _Jv_Free (buffer);
     }
 
   // According to the api documentation for 'GetWindowsDirectory()', the 
@@ -118,7 +118,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
             {
               if (GetWindowsDirectory (winHome, MAX_PATH))
 		SET ("user.home", winHome);
-              _Jv_free (winHome);
+              _Jv_Free (winHome);
             }
         }
      }
@@ -137,7 +137,7 @@ _Jv_platform_initProperties (java::util::Properties* newprops)
           sprintf (buffer, "%d.%d", (int) osvi.dwMajorVersion,
 		   (int) osvi.dwMinorVersion);
           SET ("os.version", buffer);
-          _Jv_free (buffer);
+          _Jv_Free (buffer);
         }
 
       switch (osvi.dwPlatformId)

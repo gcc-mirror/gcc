@@ -1,3 +1,7 @@
+2002-04-11  Tom Tromey  <tromey@redhat.com>
+
+	* win32.cc (_Jv_platform_initProperties): Fix spelling of _Jv_Free.
+
 2002-04-11  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* configure.host: Set can_unwind_signal on hosts which support it.
