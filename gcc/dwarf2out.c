@@ -2398,6 +2398,8 @@ static int get_AT_flag			PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
 static unsigned get_AT_unsigned		PARAMS ((dw_die_ref,
 						 enum dwarf_attribute));
+static inline dw_die_ref get_AT_ref 	PARAMS ((dw_die_ref,
+						 enum dwarf_attribute));
 static int is_c_family			PARAMS ((void));
 static int is_fortran			PARAMS ((void));
 static void remove_AT			PARAMS ((dw_die_ref,
@@ -3876,7 +3878,6 @@ get_AT_unsigned (die, attr_kind)
   return AT_unsigned (a);
 }
 
-static inline dw_die_ref get_AT_ref PARAMS ((dw_die_ref, enum dwarf_attribute));
 static inline dw_die_ref
 get_AT_ref (die, attr_kind)
      dw_die_ref die;
@@ -5730,8 +5731,6 @@ output_line_info ()
       fputc ('\n', asm_out_file);
     }
 
-  /* Output the marker for the end of the line number info.  */
-  ASM_OUTPUT_LABEL (asm_out_file, ".LTEND");
   ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s DW_LNE_end_sequence", ASM_COMMENT_START);
@@ -5926,6 +5925,9 @@ output_line_info ()
 	  fputc ('\n', asm_out_file);
 	}
     }
+
+  /* Output the marker for the end of the line number info.  */
+  ASM_OUTPUT_LABEL (asm_out_file, ".LTEND");
 }
 
 /* Given a pointer to a BLOCK node return non-zero if (and only if) the node
@@ -8881,7 +8883,7 @@ gen_struct_or_union_type_die (type, context_die)
       add_AT_flag (type_die, DW_AT_declaration, 1);
 
       /* We don't need to do this for function-local types.  */
-      if (context_die)
+      if (! decl_function_context (TYPE_STUB_DECL (type)))
 	add_incomplete_type (type);
     }
 }
