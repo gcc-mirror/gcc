@@ -1,3 +1,8 @@
+2004-09-09  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/System.java
+	(err): Fixed javadoci to point to setErr() and not setOut().
+
 2004-09-09  Jeroen Frijters  <jeroen@frijters.net>
 
 	(normalizePath): Added special case for windows systems.
