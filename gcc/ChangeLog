@@ -1,3 +1,7 @@
+2004-01-21  Inaoka Kazuhiro  <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/m32r.h (CPP_SPEC): Define.
+
 2004-01-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (merge_decls): Kill different_binding_level and

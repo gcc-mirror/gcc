@@ -184,6 +184,8 @@
   { "relax",			RELAX_SPEC },				\
   SUBTARGET_EXTRA_SPECS
 
+#define CPP_SPEC "%(cpp_cpu)"
+
 #undef  CC1_SPEC
 #define CC1_SPEC "%{G*} %(cc1_cpu)"
 
