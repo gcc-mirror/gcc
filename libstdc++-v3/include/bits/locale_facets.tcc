@@ -1566,7 +1566,7 @@ namespace std
 		    ios_base::iostate& __err) const
     {
       typedef char_traits<char_type> __traits_type;
-      int __matches[__indexlen];
+      int* __matches = static_cast<int*>(__builtin_alloca(sizeof(int) * __indexlen));
       size_t __nmatches = 0;
       size_t __pos = 0;
       bool __testvalid = true;

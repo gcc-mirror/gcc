@@ -1,5 +1,10 @@
 2001-10-25  Benjamin Kosnik  <bkoz@redhat.com>
 
+	libstdc++/4542
+	* include/bits/locale_facets.tcc (time_get::_M_extract_name): Fix.
+
+2001-10-25  Benjamin Kosnik  <bkoz@redhat.com>
+
 	libstdc++/4545
 	* include/bits/ostream.tcc (ostream::operator<<(streambuf*)): Fix
 	exceptions.
