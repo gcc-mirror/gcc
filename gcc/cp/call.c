@@ -5318,7 +5318,7 @@ build_new_method_call (tree instance, tree fns, tree args,
 	      && (DECL_CONSTRUCTOR_P (current_function_decl)
 		  || DECL_DESTRUCTOR_P (current_function_decl)))
 	    /* This is not an error, it is runtime undefined
-	       behaviour.  */
+	       behavior.  */
 	    warning ((DECL_CONSTRUCTOR_P (current_function_decl) ? 
 		      "abstract virtual `%#D' called from constructor"
 		      : "abstract virtual `%#D' called from destructor"),

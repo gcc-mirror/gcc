@@ -1037,7 +1037,7 @@ finish_handler (tree handler)
 }
 
 /* Begin a compound statement.  FLAGS contains some bits that control the
-   behaviour and context.  If BCS_NO_SCOPE is set, the compound statement
+   behavior and context.  If BCS_NO_SCOPE is set, the compound statement
    does not define a scope.  If BCS_FN_BODY is set, this is the outermost
    block of a function.  If BCS_TRY_BLOCK is set, this is the block 
    created on behalf of a TRY statement.  Returns a token to be passed to

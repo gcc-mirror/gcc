@@ -1,3 +1,8 @@
+2004-09-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c, semantics.c: Follow spelling conventions.
+	* class.c: Fix a comment typo.
+
 2004-09-16  Geoffrey Keating  <geoffk@apple.com>
 
 	PR pch/13361
