@@ -1,5 +1,13 @@
 Sat Apr 11 16:01:11 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* convert.c (convert_to_{pointer,integer,real,complex}): Use switch.
+	Add missing integer-like types.
+	Simplify return of zero in error case.
+	(convert_to_pointer): Remove dubious abort.
+	(convert_to_integer, case POINTER_TYPE): Make recursive call.
+	(convert_to_integer, case COND_EXPR): Always convert arms.
+	* tree.c (type_precision): Deleted.
+
 	* cccp.c (do_warning): Give pedantic warning if -pedantic and not
 	in system file.
 	* cpplib.c (do_warning): Likewise.
