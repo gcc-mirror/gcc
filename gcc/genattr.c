@@ -31,7 +31,6 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 extern void free PROTO((void *));
-extern int atoi PROTO((char *));
 extern rtx read_rtx PROTO((FILE *));
 
 char *xmalloc PROTO((unsigned));
