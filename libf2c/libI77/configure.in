@@ -134,6 +134,7 @@ else
   AC_MSG_RESULT(no)
 fi
 
+AC_CHECK_FUNCS(ftruncate)
 AC_CHECK_FUNCS(mkstemp)
 AC_CHECK_FUNCS(tempnam)
 
