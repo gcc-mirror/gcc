@@ -907,6 +907,7 @@ demangle_template (work, mangled, tname, trawname)
 	  is_real = 0;
 	  is_integral = 0;
           is_char = 0;
+	  is_bool = 0;
 	  done = 0;
 	  /* temp is initialized in do_type */
 	  success = do_type (work, mangled, &temp);
@@ -1060,7 +1061,10 @@ demangle_template (work, mangled, tname, trawname)
 		  success = 0;
 		  break;
 		}
-	      string_appendn (tname, *mangled, symbol_len);
+	      if (symbol_len == 0)
+		string_appendn (tname, "0", 1);
+	      else
+		string_appendn (tname, *mangled, symbol_len);
 	      *mangled += symbol_len;
 	    }
 	}
