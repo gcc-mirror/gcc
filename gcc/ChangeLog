@@ -1,3 +1,14 @@
+2001-06-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/install.texi: Merge from mainline:
+	2001-06-21  Phil Edwards  <pme@sources.redhat.com>
+	* doc/install.texi:  Add 'c' to list of --enable-languages choices.
+	2001-06-21  Stan Shebs  <shebs@apple.com>
+	* doc/install.texi: Use the correct name "Objective-C" everywhere
+	instead of "Objective C".
+	2001-06-15  Loren J. Rittle  <ljrittle@acm.org>
+	* doc/install.texi: Use correct markup hints.
+
 2001-06-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi: Update documentation of source files of C

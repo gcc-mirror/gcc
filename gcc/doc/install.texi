@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.1.2.27 2001/06/15 19:39:05 aj Exp $
+@comment $Id: install.texi,v 1.32 2001/06/21 19:00:08 pme Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -392,7 +392,7 @@ will be built.  Package names currently recognized in the GCC tree are
 @samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc} and
 @samp{libjava}.  Note that @samp{libobjc} does not recognize itself by
 any name, so, if you list package names in @option{--enable-shared},
-you'll only get static Objective C libraries.  @samp{libf2c} and
+you'll only get static Objective-C libraries.  @samp{libf2c} and
 @samp{libiberty} do not support shared libraries at all.
 
 Use @option{--disable-shared} to build only static libraries.  Note that
@@ -455,6 +455,16 @@ supports threads.  This affects the Objective-C compiler and runtime
 library, and exception handling for other languages like C++ and Java.
 On some systems, this is the default.
 
+In general, the best (and, in many cases, the only known) threading
+model available will be configured for use.  Beware that on some
+systems, gcc has not been taught what threading models are generally
+available for the system.  In this case, @option{--enable-threads} is an
+alias for @option{--enable-threads=single}.
+
+@item --disable-threads
+Specify that threading support should be disabled for the system.
+This is an alias for @option{--enable-threads=single}.
+
 @item --enable-threads=@var{lib}
 Specify that
 @var{lib} is the thread support library.  This affects the Objective-C
@@ -466,18 +476,20 @@ like C++ and Java.  The possibilities for @var{lib} are:
 AIX thread support.
 @item dce
 DCE thread support.
-@item decosf1
-DEC OSF/1 thread support.
-@item irix
-SGI IRIX thread support.
 @item mach
-Generic MACH thread support, known to work on NEXTSTEP.
-@item os2
-IBM OS/2 thread support.
+Generic MACH thread support, known to work on NEXTSTEP.  (Please note
+that the file needed to support this configuration, @file{gthr-mach.h}, is
+missing and thus this setting will cause a known bootstrap failure.)
+@item no
+This is an alias for @samp{single}.
 @item posix
 Generic POSIX thread support.
 @item pthreads
-Same as @samp{posix}.
+Same as @samp{posix} on arm*-*-linux*, *-*-chorusos* and *-*-freebsd*
+only.  A future release of gcc might remove this alias or extend it
+to all platforms.
+@item rtems
+RTEMS thread support.
 @item single
 Disable thread support, should work for all platforms.
 @item solaris
@@ -534,7 +546,7 @@ their runtime libraries should be built. For a list of valid values for
 @var{langN} you can issue the following command in the
 @file{gcc} directory of your GCC source tree:@* @samp{grep language=
 */config-lang.in}@* Currently, you can use any of the following:
-@code{c++}, @code{f77}, @code{java} and @code{objc}.
+@code{c}, @code{c++}, @code{f77}, @code{java} and @code{objc}.
 @code{CHILL} is not currently maintained, and will almost
 certainly fail to compile.  Note that this switch does not work with
 EGCS 1.1.2 or older versions of egcs.  It is supported in GCC 2.95
@@ -899,7 +911,7 @@ Finally, you can run the testsuite (which may take a long time):
 @end example
 
 The testing process will try to test as many components in the GCC
-distribution as possible, including the C, C++, Objective C and Fortran
+distribution as possible, including the C, C++, Objective-C and Fortran
 compilers as well as the C++ and Java runtime libraries.
 
 @section How can I run the test suite on selected tests?
@@ -1827,7 +1839,6 @@ applied in the GCC source tree, fixes the compatibility problems.
 
 @html
 </p>
-<hr>
 @end html
 
 @html
@@ -2386,7 +2397,7 @@ to look like:
 Current GCC versions probably do not work on version 2 of the NeXT
 operating system.
 
-On NeXTStep 3.0, the Objective C compiler does not work, due,
+On NeXTStep 3.0, the Objective-C compiler does not work, due,
 apparently, to a kernel bug that it happens to trigger.  This problem
 does not happen on 3.1.
 
