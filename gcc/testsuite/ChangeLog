@@ -1,3 +1,8 @@
+2003-01-04  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/parse/namespace3.C: Remove extra semicolons.
+	* g++.dg/parse/namespace4.C: Likewise.
+
 2003-01-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/template/ntp2.C: New test.

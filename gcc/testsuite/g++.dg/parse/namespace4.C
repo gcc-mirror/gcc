@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* Another conflict between namespace IDs and other things. */
 
-namespace A { };
+namespace A { }
 
 class B {
 
