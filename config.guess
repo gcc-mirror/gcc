@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
 #   Free Software Foundation, Inc.
 
-version='2000-07-27'
+version='2000-09-05'
 
 # This file is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
@@ -669,6 +669,9 @@ EOF
     i*:MINGW*:*)
 	echo ${UNAME_MACHINE}-pc-mingw32
 	exit 0 ;;
+    i*:PW*:*)
+	echo ${UNAME_MACHINE}-pc-pw32
+	exit 0 ;;
     i*:Windows_NT*:* | Pentium*:Windows_NT*:*)
 	# How do we know it's Interix rather than the generic POSIX subsystem?
 	# It also conflicts with pre-2.0 versions of AT&T UWIN. Should we
@@ -855,6 +858,8 @@ EOF
 	  rm -f $dummy.c $dummy
 	elif test "${UNAME_MACHINE}" = "s390"; then
 	  echo s390-ibm-linux && exit 0
+	elif test "${UNAME_MACHINE}" = "x86_64"; then
+	  echo x86_64-unknown-linux-gnu && exit 0
 	else
 	  # Either a pre-BFD a.out linker (linux-gnuoldld)
 	  # or one that does not give us useful --help.
@@ -1036,7 +1041,7 @@ EOF
     mc68*:A/UX:*:*)
 	echo m68k-apple-aux${UNAME_RELEASE}
 	exit 0 ;;
-    news*:NEWS-OS:*:6*)
+    news*:NEWS-OS:6*:*)
 	echo mips-sony-newsos6
 	exit 0 ;;
     R[34]000:*System_V*:*:* | R4000:UNIX_SYSV:*:* | R*000:UNIX_SV:*:*)
@@ -1079,7 +1084,7 @@ EOF
     *:QNX:*:4*)
 	echo i386-pc-qnx
 	exit 0 ;;
-    NSR-W:NONSTOP_KERNEL:*:*)
+    NSR-[KW]:NONSTOP_KERNEL:*:*)
 	echo nsr-tandem-nsk${UNAME_RELEASE}
 	exit 0 ;;
     BS2000:POSIX*:*:*)
