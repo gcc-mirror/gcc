@@ -2618,9 +2618,8 @@ use GAS and GDB and configure GCC with the
 @option{--with-as=@dots{}} options.
 
 If you wish to use the pa-risc 2.0 architecture support with a 32-bit
-runtime, you must use either the HP assembler, gas/binutils 2.11 or newer,
-or a recent
-@uref{ftp://sources.redhat.com/pub/binutils/snapshots,,snapshot of gas}.
+runtime, you must use either the HP assembler, or gas/binutils 2.11
+or newer.
 
 There are two default scheduling models for instructions.  These are
 PROCESSOR_7100LC and PROCESSOR_8000.  They are selected from the pa-risc
@@ -2671,62 +2670,108 @@ the failure from @samp{make bootstrap}.
 @end html
 @heading @anchor{hppa*-hp-hpux11}hppa*-hp-hpux11
 
-GCC 3.0 and up support HP-UX 11.  On 64-bit capable systems, there
-are two distinct ports.  The @samp{hppa2.0w-hp-hpux11*} port generates
-code for the 32-bit pa-risc runtime architecture.  It uses the HP
-linker.  The @samp{hppa64-hp-hpux11*} port generates 64-bit code for the
-pa-risc 2.0 architecture.  The script config.guess now selects the port
-type based on the type compiler detected during configuration.  You must
-set your @env{PATH} or define @env{CC} so that configure finds an appropriate
-compiler for the initial bootstrap.  Different prefixes must be used if
-both ports are to be installed on the same system.
+GCC 3.0 and up support HP-UX 11.  GCC 2.95.x is not supported and cannot
+be used to compile GCC 3.0 and up.
+
+Refer to @uref{binaries.html,,binaries} for information about obtaining
+precompiled GCC binaries for HP-UX.  Precompiled binaries must be obtained
+to build the Ada language as it can't be bootstrapped using C.  Ada is
+only available for the 32-bit PA-RISC runtime.  The libffi and libjava
+haven't been ported to HP-UX and don't build.
+
+It is possible to build GCC 3.3 starting with the bundled HP compiler,
+but the process requires several steps.  GCC 3.3 can then be used to
+build later versions.  The fastjar program contains ISO C code and
+can't be built with the HP bundled compiler.  This problem can be
+avoided by not building the Java language.  For example, use the
+@option{--enable-languages="c,c++,f77,objc"} option in your configure
+command.
+
+Starting with GCC 3.4 an ISO C compiler is required to bootstrap.  The
+bundled compiler supports only traditional C; you will need either HP's
+unbundled compiler, or a binary distribution of GCC@.
+
+There are several possible approaches to building the distribution.
+Binutils can be built first using the HP tools.  Then, the GCC
+distribution can be built.  The second approach is to build GCC
+first using the HP tools, then build binutils, then rebuild GCC.
+There have been problems with various binary distributions, so it
+is best not to start from a binary distribution.
+
+On 64-bit capable systems, there are two distinct targets.  Different
+installation prefixes must be used if both are to be installed on
+the same system.  The @samp{hppa[1-2]*-hp-hpux11*} target generates code
+for the 32-bit PA-RISC runtime architecture and uses the HP linker.
+The @samp{hppa64-hp-hpux11*} target generates 64-bit code for the
+PA-RISC 2.0 architecture.  The HP and GNU linkers are both supported
+for this target.
+
+The script config.guess now selects the target type based on the compiler
+detected during configuration.  You must define @env{PATH} or @env{CC} so
+that configure finds an appropriate compiler for the initial bootstrap.
+When @env{CC} is used, the definition should contain the options that are
+needed whenever @env{CC} is used.
+
+Specifically, options that determine the runtime architecture must be
+in @env{CC} to correctly select the target for the build.  It is also
+convenient to place many other compiler options in @env{CC}.  For example, 
+@env{CC="cc -Ac +DA2.0W -Wp,-H16376 -D_CLASSIC_TYPES -D_HPUX_SOURCE"}
+can be used to bootstrap the GCC 3.3 branch with the HP compiler in
+64-bit K&R/bundled mode.  The @option{+DA2.0W} option will result in
+the automatic selection of the @samp{hppa64-hp-hpux11*} target.  The
+macro definition table of cpp needs to be increased for a successful
+build with the HP compiler.  _CLASSIC_TYPES and _HPUX_SOURCE need to
+be defined when building with the bundled compiler, or when using the
+@option{-Ac} option.  These defines aren't necessary with @option{-Ae}.
 
 It is best to explicitly configure the @samp{hppa64-hp-hpux11*} target
-with the @option{--with-ld=@dots{}} option.  We support both the HP
-and GNU linkers for this target.  The two linkers require different
-link commands.  Thus, it's not possible to switch linkers during a
-GCC build.  This has been been reported to occur in a unified build
-of binutils and GCC.
+with the @option{--with-ld=@dots{}} option.  This overrides the standard
+search for ld.  The two linkers supported on this target require different
+commands.  The default linker is determined during configuration.  As a
+result, it's not possible to switch linkers in the middle of a GCC build.
+This has been been reported to sometimes occur in unified builds of
+binutils and GCC.
 
-GCC 2.95.x is not supported under HP-UX 11 and cannot be used to
-compile GCC 3.0 and up.  Refer to @uref{binaries.html,,binaries} for
-information about obtaining precompiled GCC binaries for HP-UX.
+With GCC 3.0 through 3.2, you must use binutils 2.11 or above.  As of
+GCC 3.3, binutils 2.14 or later is required.
 
-You must use GNU binutils 2.11 or above with the 32-bit port.  Thread
-support is not currently implemented, so @option{--enable-threads} does
-not work.  See:
+Although the HP assembler can be used for an initial build, it shouldn't
+be used with any languages other than C and perhaps Fortran due to its
+many limitations.  For example, it does not support weak symbols or alias
+definitions.  As a result, explicit template instantiations are required
+when using C++.  This makes it difficult if not impossible to build many
+C++ applications.  You can't generate debugging information when using
+the HP assembler.  Finally, @samp{make bootstrap} fails in the final
+comparison of object modules due to the time stamps that it inserts into
+the modules.  The bootstrap can be continued from this point with
+@samp{make all}.
 
-@itemize
-@item @uref{http://gcc.gnu.org/ml/gcc-prs/2002-01/msg00551.html}
-@item @uref{http://gcc.gnu.org/ml/gcc-bugs/2002-01/msg00663.html}
-@end itemize
+A recent linker patch must be installed for the correct operation of
+GCC 3.3 and later.  @code{PHSS_26559} and @code{PHSS_24304} are the
+oldest linker patches that are known to work.  They are for HP-UX
+11.00 and 11.11, respectively.  @code{PHSS_24303}, the companion to
+@code{PHSS_24304}, might be usable but it hasn't been tested.  These
+patches have been superseded.  Consult the HP patch database to obtain
+the currently recommended linker patch for your system.
 
-GCC 3.3 and later support weak symbols on the 32-bit port using SOM
-secondary definition symbols.  This feature is not enabled for earlier
-versions of HP-UX since there have been bugs in the linker support for
-secondary symbols.  The HP linker patches @code{PHSS_26559} and
-@code{PHSS_24304} for HP-UX 11.00 and 11.11, respectively, correct the
-problem of linker core dumps creating C++ libraries.  Earlier patches
-may work but they have not been tested.
+The patches are necessary for the support of weak symbols on the
+32-bit port, and for the running of initializers and finalizers.  Weak
+symbols are implemented using SOM secondary definition symbols.  Prior
+to HP-UX 11, there are bugs in the linker support for secondary symbols.
+The patches correct a problem of linker core dumps creating shared
+libraries containing secondary symbols, as well as various other
+linking issues involving secondary symbols.
 
-GCC 3.3 nows uses the ELF DT_INIT_ARRAY and DT_FINI_ARRAY capability
-to run initializers and finalizers on the 64-bit port.  The feature
-requires CVS binutils as of January 2, 2003, or a subsequent release
-to correct a problem arising from HP's non-standard use of the .init
-and .fini sections.  The 32-bit port uses the linker @option{+init}
-and @option{+fini} options.  As with the support for secondary symbols,
-there have been bugs in the order in which these options are executed
-by the HP linker.  So, again a recent linker patch is recommended.
-
-The HP assembler has many limitations and is not recommended for either
-the 32 or 64-bit ports.  For example, it does not support weak symbols
-or alias definitions.  As a result, explicit template instantiations
-are required when using C++.  This will make it difficult if not
-impossible to build many C++ applications.  You also can't generate
-debugging information when using the HP assembler with GCC.
+GCC 3.3 uses the ELF DT_INIT_ARRAY and DT_FINI_ARRAY capabilities to
+run initializers and finalizers on the 64-bit port.  The 32-bit port
+uses the linker @option{+init} and @option{+fini} options for the same
+purpose.  The patches correct various problems with the +init/+fini
+options, including program core dumps.  Binutils 2.14 corrects a
+problem on the 64-bit port resulting from HP's non-standard use of
+the .init and .fini sections for array initializers and finalizers.
 
 There are a number of issues to consider in selecting which linker to
-use with the 64-bit port.  The  GNU 64-bit linker can only create dynamic
+use with the 64-bit port.  The GNU 64-bit linker can only create dynamic
 binaries.  The @option{-static} option causes linking with archive
 libraries but doesn't produce a truly static binary.  Dynamic binaries
 still require final binding by the dynamic loader to resolve a set of
@@ -2745,16 +2790,10 @@ with @option{-static}.  It doesn't provide stubs for internal
 calls to global functions in shared libraries, so these calls
 can't be overloaded.
 
-There are several possible approaches to building the distribution.
-Binutils can be built first using the HP tools.  Then, the GCC
-distribution can be built.  The second approach is to build GCC
-first using the HP tools, then build binutils, then rebuild GCC.
-There have been problems with various binary distributions, so
-it is best not to start from a binary distribution.
-
-Starting with GCC 3.4 an ISO C compiler is required to bootstrap.
-The bundled compiler supports only traditional C; you will need
-either HP's unbundled compiler, or a binary distribution of GCC@.
+Thread support is not implemented in GCC 3.0 through 3.2, so the
+@option{--enable-threads} configure option does not work.  In 3.3
+and later, POSIX threads are supported.  The optional DCE thread
+library is not supported.
 
 This port still is undergoing significant development.
 

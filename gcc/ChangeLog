@@ -1,3 +1,7 @@
+2004-04-05  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* doc/install.texi: Update HP-UX 11 installation procedure.
+
 2004-04-05  Jakub Jelinek  <jakuB@redhat.com>
 	  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
