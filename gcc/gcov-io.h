@@ -250,6 +250,15 @@ extern void __gcov_init (struct gcov_info *);
 /* Called before fork, to avoid double counting.  */
 extern void __gcov_flush (void);
 
+/* Since this file is used in both host and target files, and we don't
+   include ansidecl.h in target files, provide some necessary macros.  */
+#ifndef PARAMS
+# define PARAMS(X) X
+#endif
+#ifndef ATTRIBUTE_UNUSED
+# define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+#endif
+
 #endif /* IN_LIBGCC2 */
 
 /* Functions for reading and writing gcov files.  */

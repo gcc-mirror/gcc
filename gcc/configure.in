@@ -1036,7 +1036,8 @@ tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
 host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
-xm_file="ansidecl.h ${xm_file}"
+# We don't want ansidecl.h in target files, write code there in ISO/GNU C.
+#xm_file="ansidecl.h ${xm_file}"
 
 # Truncate the target if necessary
 if test x$host_truncate_target != x; then

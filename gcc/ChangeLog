@@ -1,3 +1,12 @@
+2003-01-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ChangeLog (configure.in): Don't include ansidecl.h in tconfig.h.
+	* gcov-io.h (PARAMS, ATTRIBUTE_UNUSED: Define if IN_LIBGCC2.
+	* unwind-dw2-fde.h (last_fde): Use __attribute__, not
+	ATTRIBUTE_UNUSED.
+
+	* configure: Regenerate.
+
 2003-01-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR java/6748
