@@ -1,3 +1,7 @@
+2002-02-14  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* include/jni.h: Fix typo.
+
 2002-02-13  Martin Kahlert  <martin.kahlert@infineon.com>
 
 	* jni.cc (_Jv_JNI_AttachCurrentThread): env->locals assigned
