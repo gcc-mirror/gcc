@@ -126,8 +126,8 @@ by type.  Explanations are in the following sections.
 @gccoptlist{
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -Wall  -Waliasing  -Wconversion @gol
--Wimplicit-interface  -Wsurprising  -Wunderflow -Wunused-labels @gol
--Wline-truncation @gol
+-Wimplicit-interface  -Wnonstd-intrinsics  -Wsurprising  -Wunderflow @gol
+-Wunused-labels -Wline-truncation @gol
 -Werror  -W}
 
 @item Debugging Options
@@ -321,7 +321,8 @@ Inhibit all warning messages.
 Enables commonly used warning options that which pertain to usage that
 we recommend avoiding and that we believe is easy to avoid.
 This currently includes @option{-Wunused-labels}, @option{-Waliasing},
-@option{-Wsurprising} and @option{-Wline-truncation}.
+@option{-Wsurprising}, @option{-Wnonstd-intrinsic} and
+@option{-Wline-truncation}.
 
 
 @cindex -Waliasing option
@@ -350,6 +351,13 @@ Warn about implicit conversions between different types.
 Warn about when procedure are called without an explicit interface.
 Note this only checks that an explicit interface is present.  It does not
 check that the declared interfaces are consistent across program units.
+
+
+@cindex -Wnonstd-intrinsic option
+@cindex options, -Wnonstd-intrinsic
+@item -Wnonstd-intrinsic
+Warn if the user tries to use an intrinsic that does not belong to the 
+standard the user has chosen via the -std option.
 
 
 @cindex -Wsurprising

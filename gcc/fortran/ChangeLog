@@ -1,3 +1,31 @@
+2004-10-31  Janne Blomqvist  <jblomqvi@cc.hut.fi>
+
+	PR fortran/17590
+	* gfortran.h: Change GFC_STD_* flags to more appropriate
+	ones. (struct gfc_intrinsic_isym): Add field for standard. (struct
+	gfc_option_t): Add field for warning about use of nonstandard
+	intrinsics.
+	* intrinsic.c (add_sym): Add parameter for standard version, check
+	this against current standard.
+	(add_sym_0): Pass standard parameter to add_sym.
+	(add_sym_1, add_sym_0s, add_sym_1s, add_sym_1m, add_sym_2): Ditto.
+	(add_sym_2s, add_sym_3, add_sym_3ml, add_sym_3red, add_sym_3s): Ditto.
+	(add_sym_4, add_sym_4s, add_sym_5, add_sym_5s): Ditto.
+	(make_generic): Add parameter for standard, check this
+	against currently selected standard.
+	(add_functions, add_subroutines): Add parameter to tell which
+	standard an intrinsic belongs to.
+	(check_intrinsic_standard): New function.
+	(gfc_intrinsic_func_interface): Add call to check_intrinsic_standard.
+	(gfc_intrinsic_sub_interface): Ditto.
+	* lang.opt: Add Wnonstd-intrinsics option.
+	* options.c (gfc_init_options): Change to use new GFC_STD_* flags,
+	init new warning.
+	(set_Wall): Add warning about nonstd intrinsics.
+	(gfc_handle_option): Change to use new GFC_STD_* flags,
+	handle new warning.
+	* invoke.texi: Update manual to include -Wnonstd-intrinsics.
+
 2004-10-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* f95-lang.c (lang_tree_node): Add chain_next to be the TREE_CHAIN.
