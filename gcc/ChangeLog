@@ -1,3 +1,8 @@
+2001-03-08  Richard Henderson  <rth@redhat.com>
+
+	* configure.in (HAVE_AS_LEB128): New assembler check.
+	* configure, config.in: Rebuilt.
+
 Thu Mar  8 19:54:04 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (move_for_stack_reg): Avoid non-poping fst for
