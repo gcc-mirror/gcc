@@ -42,118 +42,122 @@ Boston, MA 02111-1307, USA.  */
 #define LOCAL(X) L_##X
 #endif
 
+#ifndef GLOBAL
+#define GLOBAL(X) ___##X
+#endif
+
 #ifdef L_ashiftrt
-	.global	___ashiftrt_r4_0
-	.global	___ashiftrt_r4_1
-	.global	___ashiftrt_r4_2
-	.global	___ashiftrt_r4_3
-	.global	___ashiftrt_r4_4
-	.global	___ashiftrt_r4_5
-	.global	___ashiftrt_r4_6
-	.global	___ashiftrt_r4_7
-	.global	___ashiftrt_r4_8
-	.global	___ashiftrt_r4_9
-	.global	___ashiftrt_r4_10
-	.global	___ashiftrt_r4_11
-	.global	___ashiftrt_r4_12
-	.global	___ashiftrt_r4_13
-	.global	___ashiftrt_r4_14
-	.global	___ashiftrt_r4_15
-	.global	___ashiftrt_r4_16
-	.global	___ashiftrt_r4_17
-	.global	___ashiftrt_r4_18
-	.global	___ashiftrt_r4_19
-	.global	___ashiftrt_r4_20
-	.global	___ashiftrt_r4_21
-	.global	___ashiftrt_r4_22
-	.global	___ashiftrt_r4_23
-	.global	___ashiftrt_r4_24
-	.global	___ashiftrt_r4_25
-	.global	___ashiftrt_r4_26
-	.global	___ashiftrt_r4_27
-	.global	___ashiftrt_r4_28
-	.global	___ashiftrt_r4_29
-	.global	___ashiftrt_r4_30
-	.global	___ashiftrt_r4_31
-	.global	___ashiftrt_r4_32
+	.global	GLOBAL(ashiftrt_r4_0)
+	.global	GLOBAL(ashiftrt_r4_1)
+	.global	GLOBAL(ashiftrt_r4_2)
+	.global	GLOBAL(ashiftrt_r4_3)
+	.global	GLOBAL(ashiftrt_r4_4)
+	.global	GLOBAL(ashiftrt_r4_5)
+	.global	GLOBAL(ashiftrt_r4_6)
+	.global	GLOBAL(ashiftrt_r4_7)
+	.global	GLOBAL(ashiftrt_r4_8)
+	.global	GLOBAL(ashiftrt_r4_9)
+	.global	GLOBAL(ashiftrt_r4_10)
+	.global	GLOBAL(ashiftrt_r4_11)
+	.global	GLOBAL(ashiftrt_r4_12)
+	.global	GLOBAL(ashiftrt_r4_13)
+	.global	GLOBAL(ashiftrt_r4_14)
+	.global	GLOBAL(ashiftrt_r4_15)
+	.global	GLOBAL(ashiftrt_r4_16)
+	.global	GLOBAL(ashiftrt_r4_17)
+	.global	GLOBAL(ashiftrt_r4_18)
+	.global	GLOBAL(ashiftrt_r4_19)
+	.global	GLOBAL(ashiftrt_r4_20)
+	.global	GLOBAL(ashiftrt_r4_21)
+	.global	GLOBAL(ashiftrt_r4_22)
+	.global	GLOBAL(ashiftrt_r4_23)
+	.global	GLOBAL(ashiftrt_r4_24)
+	.global	GLOBAL(ashiftrt_r4_25)
+	.global	GLOBAL(ashiftrt_r4_26)
+	.global	GLOBAL(ashiftrt_r4_27)
+	.global	GLOBAL(ashiftrt_r4_28)
+	.global	GLOBAL(ashiftrt_r4_29)
+	.global	GLOBAL(ashiftrt_r4_30)
+	.global	GLOBAL(ashiftrt_r4_31)
+	.global	GLOBAL(ashiftrt_r4_32)
 
 	.align	1
-___ashiftrt_r4_32:
-___ashiftrt_r4_31:
+GLOBAL(ashiftrt_r4_32):
+GLOBAL(ashiftrt_r4_31):
 	rotcl	r4
 	rts
 	subc	r4,r4
 
-___ashiftrt_r4_30:
+GLOBAL(ashiftrt_r4_30):
 	shar	r4
-___ashiftrt_r4_29:
+GLOBAL(ashiftrt_r4_29):
 	shar	r4
-___ashiftrt_r4_28:
+GLOBAL(ashiftrt_r4_28):
 	shar	r4
-___ashiftrt_r4_27:
+GLOBAL(ashiftrt_r4_27):
 	shar	r4
-___ashiftrt_r4_26:
+GLOBAL(ashiftrt_r4_26):
 	shar	r4
-___ashiftrt_r4_25:
+GLOBAL(ashiftrt_r4_25):
 	shar	r4
-___ashiftrt_r4_24:
+GLOBAL(ashiftrt_r4_24):
 	shlr16	r4
 	shlr8	r4
 	rts
 	exts.b	r4,r4
 
-___ashiftrt_r4_23:
+GLOBAL(ashiftrt_r4_23):
 	shar	r4
-___ashiftrt_r4_22:
+GLOBAL(ashiftrt_r4_22):
 	shar	r4
-___ashiftrt_r4_21:
+GLOBAL(ashiftrt_r4_21):
 	shar	r4
-___ashiftrt_r4_20:
+GLOBAL(ashiftrt_r4_20):
 	shar	r4
-___ashiftrt_r4_19:
+GLOBAL(ashiftrt_r4_19):
 	shar	r4
-___ashiftrt_r4_18:
+GLOBAL(ashiftrt_r4_18):
 	shar	r4
-___ashiftrt_r4_17:
+GLOBAL(ashiftrt_r4_17):
 	shar	r4
-___ashiftrt_r4_16:
+GLOBAL(ashiftrt_r4_16):
 	shlr16	r4
 	rts
 	exts.w	r4,r4
 
-___ashiftrt_r4_15:
+GLOBAL(ashiftrt_r4_15):
 	shar	r4
-___ashiftrt_r4_14:
+GLOBAL(ashiftrt_r4_14):
 	shar	r4
-___ashiftrt_r4_13:
+GLOBAL(ashiftrt_r4_13):
 	shar	r4
-___ashiftrt_r4_12:
+GLOBAL(ashiftrt_r4_12):
 	shar	r4
-___ashiftrt_r4_11:
+GLOBAL(ashiftrt_r4_11):
 	shar	r4
-___ashiftrt_r4_10:
+GLOBAL(ashiftrt_r4_10):
 	shar	r4
-___ashiftrt_r4_9:
+GLOBAL(ashiftrt_r4_9):
 	shar	r4
-___ashiftrt_r4_8:
+GLOBAL(ashiftrt_r4_8):
 	shar	r4
-___ashiftrt_r4_7:
+GLOBAL(ashiftrt_r4_7):
 	shar	r4
-___ashiftrt_r4_6:
+GLOBAL(ashiftrt_r4_6):
 	shar	r4
-___ashiftrt_r4_5:
+GLOBAL(ashiftrt_r4_5):
 	shar	r4
-___ashiftrt_r4_4:
+GLOBAL(ashiftrt_r4_4):
 	shar	r4
-___ashiftrt_r4_3:
+GLOBAL(ashiftrt_r4_3):
 	shar	r4
-___ashiftrt_r4_2:
+GLOBAL(ashiftrt_r4_2):
 	shar	r4
-___ashiftrt_r4_1:
+GLOBAL(ashiftrt_r4_1):
 	rts
 	shar	r4
 
-___ashiftrt_r4_0:
+GLOBAL(ashiftrt_r4_0):
 	rts
 	nop
 #endif
@@ -161,7 +165,7 @@ ___ashiftrt_r4_0:
 #ifdef L_ashiftrt_n
 
 !
-! ___ashrsi3
+! GLOBAL(ashrsi3)
 !
 ! Entry:
 !
@@ -177,9 +181,9 @@ ___ashiftrt_r4_0:
 ! (none)
 !
 
-	.global	___ashrsi3
+	.global	GLOBAL(ashrsi3)
 	.align	2
-___ashrsi3:
+GLOBAL(ashrsi3):
 	mov	#31,r0
 	and	r0,r5
 	mova	LOCAL(ashrsi3_table),r0
@@ -310,7 +314,7 @@ LOCAL(ashrsi3_0):
 #ifdef L_ashiftlt
 
 !
-! ___ashlsi3
+! GLOBAL(ashlsi3)
 !
 ! Entry:
 !
@@ -325,9 +329,9 @@ LOCAL(ashrsi3_0):
 !
 ! (none)
 !
-	.global	___ashlsi3
+	.global	GLOBAL(ashlsi3)
 	.align	2
-___ashlsi3:
+GLOBAL(ashlsi3):
 	mov	#31,r0
 	and	r0,r5
 	mova	LOCAL(ashlsi3_table),r0
@@ -467,7 +471,7 @@ LOCAL(ashlsi3_0):
 #ifdef L_lshiftrt
 
 !
-! ___lshrsi3
+! GLOBAL(lshrsi3)
 !
 ! Entry:
 !
@@ -482,9 +486,9 @@ LOCAL(ashlsi3_0):
 !
 ! (none)
 !
-	.global	___lshrsi3
+	.global	GLOBAL(lshrsi3)
 	.align	2
-___lshrsi3:
+GLOBAL(lshrsi3):
 	mov	#31,r0
 	and	r0,r5
 	mova	LOCAL(lshrsi3_table),r0
@@ -628,84 +632,84 @@ LOCAL(lshrsi3_0):
 ! jump to movstr+
 done:
 	add	#64,r5
-	mova	___movstrSI0,r0
+	mova	GLOBAL(movstrSI0),r0
 	shll2	r6
 	add	r6,r0
 	jmp	@r0
 	add	#64,r4
 	.align	4
-	.global	___movstrSI64
-___movstrSI64:
+	.global	GLOBAL(movstrSI64)
+GLOBAL(movstrSI64):
 	mov.l	@(60,r5),r0
 	mov.l	r0,@(60,r4)
-	.global	___movstrSI60
-___movstrSI60:
+	.global	GLOBAL(movstrSI60)
+GLOBAL(movstrSI60):
 	mov.l	@(56,r5),r0
 	mov.l	r0,@(56,r4)
-	.global	___movstrSI56
-___movstrSI56:
+	.global	GLOBAL(movstrSI56)
+GLOBAL(movstrSI56):
 	mov.l	@(52,r5),r0
 	mov.l	r0,@(52,r4)
-	.global	___movstrSI52
-___movstrSI52:
+	.global	GLOBAL(movstrSI52)
+GLOBAL(movstrSI52):
 	mov.l	@(48,r5),r0
 	mov.l	r0,@(48,r4)
-	.global	___movstrSI48
-___movstrSI48:
+	.global	GLOBAL(movstrSI48)
+GLOBAL(movstrSI48):
 	mov.l	@(44,r5),r0
 	mov.l	r0,@(44,r4)
-	.global	___movstrSI44
-___movstrSI44:
+	.global	GLOBAL(movstrSI44)
+GLOBAL(movstrSI44):
 	mov.l	@(40,r5),r0
 	mov.l	r0,@(40,r4)
-	.global	___movstrSI40
-___movstrSI40:
+	.global	GLOBAL(movstrSI40)
+GLOBAL(movstrSI40):
 	mov.l	@(36,r5),r0
 	mov.l	r0,@(36,r4)
-	.global	___movstrSI36
-___movstrSI36:
+	.global	GLOBAL(movstrSI36)
+GLOBAL(movstrSI36):
 	mov.l	@(32,r5),r0
 	mov.l	r0,@(32,r4)
-	.global	___movstrSI32
-___movstrSI32:
+	.global	GLOBAL(movstrSI32)
+GLOBAL(movstrSI32):
 	mov.l	@(28,r5),r0
 	mov.l	r0,@(28,r4)
-	.global	___movstrSI28
-___movstrSI28:
+	.global	GLOBAL(movstrSI28)
+GLOBAL(movstrSI28):
 	mov.l	@(24,r5),r0
 	mov.l	r0,@(24,r4)
-	.global	___movstrSI24
-___movstrSI24:
+	.global	GLOBAL(movstrSI24)
+GLOBAL(movstrSI24):
 	mov.l	@(20,r5),r0
 	mov.l	r0,@(20,r4)
-	.global	___movstrSI20
-___movstrSI20:
+	.global	GLOBAL(movstrSI20)
+GLOBAL(movstrSI20):
 	mov.l	@(16,r5),r0
 	mov.l	r0,@(16,r4)
-	.global	___movstrSI16
-___movstrSI16:
+	.global	GLOBAL(movstrSI16)
+GLOBAL(movstrSI16):
 	mov.l	@(12,r5),r0
 	mov.l	r0,@(12,r4)
-	.global	___movstrSI12
-___movstrSI12:
+	.global	GLOBAL(movstrSI12)
+GLOBAL(movstrSI12):
 	mov.l	@(8,r5),r0
 	mov.l	r0,@(8,r4)
-	.global	___movstrSI8
-___movstrSI8:
+	.global	GLOBAL(movstrSI8)
+GLOBAL(movstrSI8):
 	mov.l	@(4,r5),r0
 	mov.l	r0,@(4,r4)
-	.global	___movstrSI4
-___movstrSI4:
+	.global	GLOBAL(movstrSI4)
+GLOBAL(movstrSI4):
 	mov.l	@(0,r5),r0
 	mov.l	r0,@(0,r4)
-___movstrSI0:
+GLOBAL(movstrSI0):
 	rts
 	nop
 
 	.align	4
 
-	.global	___movstr
-___movstr:
+	.global	GLOBAL(movstr)
+GLOBAL(movstr):
 	mov.l	@(60,r5),r0
 	mov.l	r0,@(60,r4)
 
@@ -759,16 +763,16 @@ ___movstr:
 	bf	done
 
 	add	#64,r5
-	bra	___movstr
+	bra	GLOBAL(movstr)
 	add	#64,r4
 #endif
 
 #ifdef L_movstr_i4
 #if defined(__SH4__) || defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
 	.text
-	.global	___movstr_i4_even
-	.global	___movstr_i4_odd
-	.global	___movstrSI12_i4
+	.global	GLOBAL(movstr_i4_even)
+	.global	GLOBAL(movstr_i4_odd)
+	.global	GLOBAL(movstrSI12_i4)
 
 	.p2align	5
 L_movstr_2mod4_end:
@@ -778,7 +782,7 @@ L_movstr_2mod4_end:
 
 	.p2align	2
 
-___movstr_i4_odd:
+GLOBAL(movstr_i4_odd):
 	mov.l	@r5+,r1
 	add	#-4,r4
 	mov.l	@r5+,r2
@@ -804,13 +808,13 @@ L_movstr_start_even:
 	rts
 	mov.l	r3,@(12,r4)
 
-___movstr_i4_even:
+GLOBAL(movstr_i4_even):
 	mov.l	@r5+,r0
 	bra	L_movstr_start_even
 	mov.l	@r5+,r1
 
 	.p2align	4
-___movstrSI12_i4:
+GLOBAL(movstrSI12_i4):
 	mov.l	@r5,r0
 	mov.l	@(4,r5),r1
 	mov.l	@(8,r5),r2
@@ -824,7 +828,7 @@ ___movstrSI12_i4:
 #ifdef L_mulsi3
 
 
-	.global	___mulsi3
+	.global	GLOBAL(mulsi3)
 
 ! r4 =       aabb
 ! r5 =       ccdd
@@ -837,7 +841,7 @@ ___movstrSI12_i4:
 ! aa = bb*dd + (aa*dd*65536) + (cc*bb*65536)
 !
 
-___mulsi3:
+GLOBAL(mulsi3):
 	mulu    r4,r5		! multiply the lsws  macl=bb*dd
 	mov     r5,r3		! r3 = ccdd
 	swap.w  r4,r2		! r2 = bbaa
@@ -865,8 +869,8 @@ hiset:	sts	macl,r0		! r0 = bb*dd
 #ifdef __SH4__
 !! args in r4 and r5, result in fpul, clobber dr0, dr2
 
-	.global	___sdivsi3_i4
-___sdivsi3_i4:
+	.global	GLOBAL(sdivsi3_i4)
+GLOBAL(sdivsi3_i4):
 	lds r4,fpul
 	float fpul,dr0
 	lds r5,fpul
@@ -878,8 +882,8 @@ ___sdivsi3_i4:
 #elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
 !! args in r4 and r5, result in fpul, clobber r2, dr0, dr2
 
-	.global	___sdivsi3_i4
-___sdivsi3_i4:
+	.global	GLOBAL(sdivsi3_i4)
+GLOBAL(sdivsi3_i4):
 	sts.l fpscr,@-r15
 	mov #8,r2
 	swap.w r2,r2
@@ -908,8 +912,8 @@ ___sdivsi3_i4:
 
 !! args in r4 and r5, result in r0 clobber r1,r2,r3
 
-	.global	___sdivsi3
-___sdivsi3:
+	.global	GLOBAL(sdivsi3)
+GLOBAL(sdivsi3):
 	mov	r4,r1
 	mov	r5,r0
 
@@ -1002,8 +1006,8 @@ div0:	rts
 #ifdef __SH4__
 !! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4
 
-	.global	___udivsi3_i4
-___udivsi3_i4:
+	.global	GLOBAL(udivsi3_i4)
+GLOBAL(udivsi3_i4):
 	mov #1,r1
 	cmp/hi r1,r5
 	bf trivial
@@ -1046,8 +1050,8 @@ L1:
 #elif defined(__SH4_SINGLE__) || defined(__SH4_SINGLE_ONLY__)
 !! args in r4 and r5, result in fpul, clobber r0, r1, r4, r5, dr0, dr2, dr4
 
-	.global	___udivsi3_i4
-___udivsi3_i4:
+	.global	GLOBAL(udivsi3_i4)
+GLOBAL(udivsi3_i4):
 	mov #1,r1
 	cmp/hi r1,r5
 	bf trivial
@@ -1109,9 +1113,9 @@ L1:
 !!
 
 !! args in r4 and r5, result in r0, clobbers r4, pr, and t bit
-	.global	___udivsi3
+	.global	GLOBAL(udivsi3)
 
-___udivsi3:
+GLOBAL(udivsi3):
 longway:
 	mov	#0,r0
 	div0u
@@ -1163,10 +1167,10 @@ ret:	rts
 #endif
 #ifdef L_set_fpscr
 #if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
-	.global ___set_fpscr
-___set_fpscr:
+	.global GLOBAL(set_fpscr)
+GLOBAL(set_fpscr):
 	lds r4,fpscr
-	mov.l ___set_fpscr_L1,r1
+	mov.l LOCAL(set_fpscr_L1),r1
 	swap.w r4,r0
 	or #24,r0
 #ifndef FMOVD_WORKS
@@ -1194,12 +1198,12 @@ ___set_fpscr:
 	mov.l r3,@(4,r1)
 #endif
 	.align 2
-___set_fpscr_L1:
-	.long ___fpscr_values
+LOCAL(set_fpscr_L1):
+	.long GLOBAL(fpscr_values)
 #ifdef __ELF__
-        .comm   ___fpscr_values,8,4
+        .comm   GLOBAL(fpscr_values),8,4
 #else
-        .comm   ___fpscr_values,8
+        .comm   GLOBAL(fpscr_values),8
 #endif /* ELF */
 #endif /* SH3E / SH4 */
 #endif /* L_set_fpscr */
