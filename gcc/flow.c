@@ -341,10 +341,17 @@ flow_analysis (f, nregs, file)
 	    || (GET_RTX_CLASS (code) == 'i'
 		&& (prev_code == JUMP_INSN
 		    || (prev_code == CALL_INSN
-			&& nonlocal_label_list != 0)
+			&& nonlocal_label_list != 0
+			/* Ignore a CLOBBER after a CALL_INSN here.  */
+			&& ! (code == INSN
+			      && GET_CODE (PATTERN (insn)) == CLOBBER))
 		    || prev_code == BARRIER)))
 	  i++;
-	if (code != NOTE)
+	if (code != NOTE
+	    /* Skip a CLOBBER after a CALL_INSN.  See similar code in
+	       find_basic_blocks.  */
+	    && ! (prev_code == CALL_INSN
+		  && code == INSN && GET_CODE (PATTERN (insn)) == CLOBBER))
 	  prev_code = code;
       }
   }
@@ -431,7 +438,11 @@ find_basic_blocks (f, nonlocal_label_list)
 		 || (GET_RTX_CLASS (code) == 'i'
 		     && (prev_code == JUMP_INSN
 			 || (prev_code == CALL_INSN
-			     && nonlocal_label_list != 0)
+			     && nonlocal_label_list != 0
+			     /* Ignore if CLOBBER since we consider this
+				part of the CALL.  See below.  */
+			     && ! (code == INSN
+				   && GET_CODE (PATTERN (insn)) == CLOBBER))
 			 || prev_code == BARRIER)))
 	  {
 	    basic_block_head[++i] = insn;
