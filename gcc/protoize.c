@@ -182,12 +182,6 @@ extern int access ();
 extern size_t   strlen ()
 #endif
 
-/* Fork is not declared because the declaration caused a conflict
-   on the HPPA.  */
-#if !(defined (USG) || defined (VMS))
-#define fork vfork
-#endif /* (defined (USG) || defined (VMS)) */
-
 #endif /* !defined (POSIX) */
 
 /* Look for these where the `const' qualifier is intentionally cast aside.  */

@@ -30,6 +30,19 @@ Boston, MA 02111-1307, USA.  */
 #include <signal.h>
 #include <sys/stat.h>
 
+#ifdef vfork /* Autoconf may define this to fork for us. */
+# define VFORK_STRING "fork"
+#else
+# define VFORK_STRING "vfork"
+#endif
+#ifdef HAVE_VFORK_H
+#include <vfork.h>
+#endif
+#ifdef VMS
+#define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \
+               lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
+#endif /* VMS */
+
 #define COLLECT
 
 #include "demangle.h"
@@ -42,10 +55,6 @@ Boston, MA 02111-1307, USA.  */
 /* Obstack allocation and deallocation routines.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
-
-#ifdef USG
-#define vfork fork
-#endif
 
 #ifndef WIFSIGNALED
 #define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
@@ -1716,13 +1725,7 @@ collect_execute (prog, argv, redir)
 #ifndef __CYGWIN32__
   pid = vfork ();
   if (pid == -1)
-    {
-#ifdef vfork
-      fatal_perror ("fork");
-#else
-      fatal_perror ("vfork");
-#endif
-    }
+    fatal_perror (VFORK_STRING);
 
   if (pid == 0)			/* child context */
     {
@@ -2243,13 +2246,7 @@ scan_prog_file (prog_name, which_pass)
   /* Spawn child nm on pipe */
   pid = vfork ();
   if (pid == -1)
-    {
-#ifdef vfork
-      fatal_perror ("fork");
-#else
-      fatal_perror ("vfork");
-#endif
-    }
+    fatal_perror (VFORK_STRING);
 
   if (pid == 0)			/* child context */
     {
@@ -2685,13 +2682,7 @@ scan_libraries (prog_name)
   /* Spawn child ldd on pipe */
   pid = vfork ();
   if (pid == -1)
-    {
-#ifdef vfork
-      fatal_perror ("fork");
-#else
-      fatal_perror ("vfork");
-#endif
-    }
+    fatal_perror (VFORK_STRING);
 
   if (pid == 0)			/* child context */
     {

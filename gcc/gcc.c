@@ -69,10 +69,6 @@ extern void set_std_prefix PROTO((char *, int));
 #define exit __posix_exit
 #endif
 
-#ifdef USG
-#define vfork fork
-#endif /* USG */
-
 /* Test if something is a normal file.  */
 #ifndef S_ISREG
 #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
