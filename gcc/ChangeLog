@@ -1,3 +1,7 @@
+2003-02-11  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Specific): Update AVR- and Darwin-related URLs.
+
 2003-02-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/9100

@@ -1914,9 +1914,9 @@ can also be obtained from:
 @item
 @uref{http://www.openavr.org,,http://www.openavr.org}
 @item
-@uref{http://home.overta.ru/users/denisc,,http://home.overta.ru/users/denisc}
+@uref{http://home.overta.ru/users/denisc/,,http://home.overta.ru/users/denisc/}
 @item
-@uref{http://www.amelek.gda.pl/avr,,http://www.amelek.gda.pl/avr}
+@uref{http://www.amelek.gda.pl/avr/,,http://www.amelek.gda.pl/avr/}
 @end itemize
 
 We @emph{strongly} recommend using binutils 2.13 or newer.
@@ -2892,7 +2892,7 @@ GCC 3.0 does not support Darwin, but 3.1 and later releases will work.
 Pre-installed versions of Mac OS X may not include any developer tools,
 meaning that you will not be able to build GCC from source.  Tool
 binaries are available at
-@uref{http://www.opensource.apple.com/projects/darwin} (free
+@uref{http://www.opensource.apple.com/projects/darwin/} (free
 registration required).
 
 Versions of the assembler prior to ``cctools-364'' cannot handle the
