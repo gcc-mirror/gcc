@@ -6903,6 +6903,10 @@ fold (expr)
 	      tree comp_op1 = TREE_OPERAND (arg0, 1);
 	      tree comp_type = TREE_TYPE (comp_op0);
 
+	      /* Avoid adding NOP_EXPRs in case this is an lvalue.  */
+	      if (TYPE_MAIN_VARIANT (comp_type) == TYPE_MAIN_VARIANT (type))
+		comp_type = type;
+
 	      switch (comp_code)
 		{
 		case EQ_EXPR:
