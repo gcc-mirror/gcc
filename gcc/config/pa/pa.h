@@ -106,6 +106,11 @@ extern int target_flags;
 
 #define TARGET_KERNEL (target_flags & 4)
 
+/* Generate code that will link against HPUX 8.0 shared libraries.
+   Older linkers and assemblers might not support this. */
+
+#define TARGET_SHARED_LIBS (target_flags & 8)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -119,6 +124,8 @@ extern int target_flags;
    {"pa-risc-1-1", 1},	\
    {"no-bss", 2},	\
    {"kernel", 4},	\
+   {"shared-libs", 8},	\
+   {"no-shared-libs", -8},\
    { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 0
@@ -233,7 +240,8 @@ extern int target_flags;
    Reg 3	= Unused
    Reg 4	= Frame Pointer (Gnu)
    Reg 5-18	= Preserved Registers
-   Reg 19-22	= Temporary Registers
+   Reg 19	= Linkage Table Register in HPUX 8.0 shared library scheme.
+   Reg 20-22	= Temporary Registers
    Reg 23-26	= Temporary/Parameter Registers
    Reg 27	= Global Data Pointer (hp)
    Reg 28	= Temporary/???/Return Value register
@@ -376,12 +384,20 @@ extern int target_flags;
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    On the HP-PA, the cpu registers can hold any mode.  We
    force this to be an even register is it cannot hold the full mode.  */
+#if 0
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
    : (REGNO) < 32 ? ((GET_MODE_SIZE (MODE) <= 4) ? 1 : ((REGNO) & 1) == 0)\
    : (REGNO) < 48 ? (GET_MODE_SIZE (MODE) >= 4)				\
    : (GET_MODE_SIZE (MODE) > 4 ? ((REGNO) & 1) == 0			\
       : GET_MODE_SIZE (MODE) == 4))
+#endif
+#define HARD_REGNO_MODE_OK(REGNO, MODE) \
+  ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
+   : (REGNO) < 32 ? ((GET_MODE_SIZE (MODE) <= 4) ? 1 : ((REGNO) & 1) == 0)\
+   : (REGNO) < 48 ? (GET_MODE_SIZE (MODE) >= 4)				\
+   : (GET_MODE_SIZE (MODE) > 4 ? ((REGNO) & 1) == 0			\
+      : 1))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -431,7 +447,7 @@ extern int leaf_function;
 /* Register which holds offset table for position-independent
    data references.  */
 
-#define PIC_OFFSET_TABLE_REGNUM 18
+#define PIC_OFFSET_TABLE_REGNUM 19
 
 #define INITIALIZE_PIC initialize_pic ()
 #define FINALIZE_PIC finalize_pic ()
@@ -462,11 +478,14 @@ extern int leaf_function;
 
   /* The HP-PA has four kinds of registers: general regs, 1.0 fp regs,
      1.1 fp regs, and the high 1.1 fp regs, to which the operands of
-     fmpyadd and fmpysub are restricted. */
+     fmpyadd and fmpysub are restricted.
+
+     FP_OR_SNAKE_FP_REGS is for reload_{in,out}di only and isn't used
+     anywhere else.*/
 
 enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   HI_SNAKE_FP_REGS, SNAKE_FP_REGS, GENERAL_OR_SNAKE_FP_REGS,
-  SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES}; 
+  FP_OR_SNAKE_FP_REGS, SHIFT_REGS, ALL_REGS, LIM_REG_CLASSES}; 
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
@@ -475,7 +494,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
 #define REG_CLASS_NAMES \
   { "NO_REGS", "R1_REGS", "GENERAL_REGS", "FP_REGS", "GENERAL_OR_FP_REGS",\
     "HI_SNAKE_FP_REGS", "SNAKE_FP_REGS", "GENERAL_OR_SNAKE_FP_REGS",\
-    "SHIFT_REGS", "ALL_REGS"}
+    "FP_OR_SNAKE_FP_REGS","SHIFT_REGS", "ALL_REGS"}
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -491,6 +510,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
   {0, 0, 0xffff0000, 0xffff},	/* HI_SNAKE_FP_REGS */	\
   {0, 0xffff0000, ~0, 0xffff},	/* SNAKE_FP_REGS */	\
   {-2, 0xffff0000, ~0, 0xffff},	/* GENERAL_OR_SNAKE_FP_REGS */\
+  {0, ~0, ~0, 0xffff},		/* FP_OR_SNAKE_FP_REGS */\
   {0, 0, 0, 0x10000},		/* SHIFT_REGS */	\
   {-2, ~0, ~0, 0x1ffff}}	/* ALL_REGS */
 
@@ -519,7 +539,8 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FP_REGS, GENERAL_OR_FP_REGS,
    ((C) == 'x' ? (TARGET_SNAKE ? SNAKE_FP_REGS : NO_REGS) :	\
     ((C) == 'y' ? (TARGET_SNAKE ? HI_SNAKE_FP_REGS : NO_REGS) :	\
      ((C) == 'q' ? SHIFT_REGS :					\
-      ((C) == 'a' ? R1_REGS : NO_REGS)))))
+      ((C) == 'a' ? R1_REGS :					\
+       ((C) == 'z' ? FP_OR_SNAKE_FP_REGS : NO_REGS))))))
 
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -794,6 +815,13 @@ extern enum cmp_type hppa_branch_type;
   do { fprintf (FILE, ",ARGW%d=FU", (ARG0));		\
        fprintf (FILE, ",ARGW%d=FR", (ARG1));} while (0)
 #endif
+
+#ifdef BUGGY_GAS
+#define EXPORT_PARMS(FILE) fputs (",PRIV_LEV=3", FILE)
+#else
+#define EXPORT_PARMS(FILE) fputs (",ENTRY,PRIV_LEV=3", FILE)
+#endif
+
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = DECL_RESULT (DECL);	 			\
 	 tree tree_type = TREE_TYPE (DECL);				\
@@ -802,7 +830,7 @@ extern enum cmp_type hppa_branch_type;
 	 if (TREE_PUBLIC (DECL))					\
 	   { extern int current_function_varargs;			\
 	     fputs ("\t.EXPORT ", FILE); assemble_name (FILE, NAME);	\
-	     fputs (",PRIV_LEV=3", FILE);				\
+	     EXPORT_PARMS (FILE);					\
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
 		  parm = TREE_CHAIN (parm))				\
 	       {							\
@@ -984,8 +1012,8 @@ extern union tree_node *current_function_decl;
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
   ((REGNO) && ((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32))
 #define REGNO_OK_FOR_FP_P(REGNO) \
-  (((REGNO) >= 32 || reg_renumber[REGNO] >= 32)\
-   && ((REGNO) <= 111 || reg_renumber[REGNO] <= 111))
+  (((REGNO) >= 32 && (REGNO) <= 111)\
+   || (reg_renumber[REGNO] >= 32 && reg_renumber[REGNO] <= 111))
 
 /* Now macros that check whether X is a register and also,
    strictly, whether it is in a specified class.
@@ -1200,7 +1228,7 @@ extern union tree_node *current_function_decl;
   if (memory_address_p (MODE, X))				\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, gen_reg_rtx (Pmode));\
-  else if ((GET_CODE (X) == SYMBOL_REF && read_only_operand (X))\
+  else if ((GET_CODE (X) == SYMBOL_REF & read_only_operand (X))	\
 	    || GET_CODE (X) == LABEL_REF)			\
     (X) = gen_rtx (LO_SUM, Pmode,				\
 		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
@@ -1246,7 +1274,10 @@ extern union tree_node *current_function_decl;
 do									\
   {									\
     if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-      SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;			\
+      {									\
+	hppa_encode_label (XEXP (DECL_RTL (DECL), 0));			\
+	SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
+      }									\
     else								\
       {									\
 	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
@@ -1376,7 +1407,7 @@ while (0)
   case MOD:						\
   case UMOD:						\
     return COSTS_N_INSNS (60);				\
-  case PLUS: /* this includes shNadd insns */		\
+   case PLUS: /* this includes shNadd insns */		\
     return COSTS_N_INSNS (1) + 2;
 
 /* Conditional branches with empty delay slots have a length of two.  */
@@ -1518,7 +1549,7 @@ bss_section ()								\
    `assemble_name' uses this.  */
 
 #define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+  fprintf ((FILE), "%s", (NAME) + ((NAME)[0] == '@' ? 1 : 0))
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
@@ -1578,6 +1609,7 @@ bss_section ()								\
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))
 
+#if 0
 #define ASM_OUTPUT_REG_PUSH(FILE,REGNO)  \
   fprintf (FILE, "\tstws,mb %s,4(0,30)\n", reg_names[REGNO])
 
@@ -1586,7 +1618,10 @@ bss_section ()								\
 
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   fprintf (FILE, "\tldws,ma -4(0,30),%s\n", reg_names[REGNO])
+#endif
 
+#define ASM_OUTPUT_REG_PUSH(FILE,REGNO)
+#define ASM_OUTPUT_REG_POP(FILE,REGNO) 
 /* This is how to output an element of a case-vector that is absolute.
    Note that this method makes filling these branch delay slots
    virtually impossible.  */
@@ -1732,3 +1767,4 @@ extern void output_global_address ();
 extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
 extern struct rtx_def *gen_scond_fp ();
+extern void hppa_encode_label ();

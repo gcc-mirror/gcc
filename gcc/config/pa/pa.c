@@ -33,6 +33,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "c-tree.h"
 #include "expr.h"
+#include "obstack.h"
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -203,6 +204,22 @@ fp_reg_operand (op, mode)
      enum machine_mode mode;
 {
   return reg_renumber && FP_REG_P (op);
+}
+
+int
+check_fp_mov (operands)
+     rtx *operands;
+{
+  enum machine_mode mode = GET_MODE (operands[0]);
+
+  if (fp_reg_operand (operands[0], mode))
+    return (register_operand (operands[1], mode)
+	    || short_memory_operand (operands[1], mode));
+  else if (fp_reg_operand (operands[1], mode))
+    return (register_operand (operands[0], mode)
+	    || short_memory_operand (operands[0], mode));
+  else
+    return 1;
 }
 
 extern int current_function_uses_pic_offset_table;
@@ -481,63 +498,6 @@ initialize_pic ()
 void
 finalize_pic ()
 {
-  /* The table we use to reference PIC data.  */
-  rtx global_offset_table;
-  /* Labels to get the PC in the prologue of this function.  */
-  rtx l1, l2;
-  rtx seq;
-  int orig_flag_pic = flag_pic;
-
-  if (current_function_uses_pic_offset_table == 0)
-    return;
-
-  if (! flag_pic)
-    abort ();
-
-  flag_pic = 0;
-  l1 = gen_label_rtx ();
-  l2 = gen_label_rtx ();
-
-  start_sequence ();
-
-  emit_label (l1);
-  /* Note that we pun calls and jumps here!  */
-  emit_jump_insn (gen_rtx (PARALLEL, VOIDmode,
-                         gen_rtvec (2,
-                                    gen_rtx (SET, VOIDmode, pc_rtx, gen_rtx (LABEL_REF, VOIDmode, l2)),
-                                    gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 15), gen_rtx (LABEL_REF, VOIDmode, l2)))));
-  emit_label (l2);
-
-  /* Initialize every time through, since we can't easily
-     know this to be permanent.  */
-  global_offset_table = gen_rtx (SYMBOL_REF, Pmode, "*__GLOBAL_OFFSET_TABLE_");
-  pic_pc_rtx = gen_rtx (CONST, Pmode,
-			gen_rtx (MINUS, Pmode,
-				 global_offset_table,
-				 gen_rtx (CONST, Pmode,
-					  gen_rtx (MINUS, Pmode,
-						   gen_rtx (LABEL_REF, VOIDmode, l1),
-						   pc_rtx))));
-
-  emit_insn (gen_rtx (SET, VOIDmode, pic_offset_table_rtx,
-		      gen_rtx (HIGH, Pmode, pic_pc_rtx)));
-  emit_insn (gen_rtx (SET, VOIDmode,
-		      pic_offset_table_rtx,
-		      gen_rtx (LO_SUM, Pmode,
-			       pic_offset_table_rtx, pic_pc_rtx)));
-  emit_insn (gen_rtx (SET, VOIDmode,
-		      pic_offset_table_rtx,
-		      gen_rtx (PLUS, SImode,
-			       pic_offset_table_rtx, gen_rtx (REG, SImode, 15))));
-  /* emit_insn (gen_rtx (ASM_INPUT, VOIDmode, "!#PROLOGUE# 1")); */
-  LABEL_PRESERVE_P (l1) = 1;
-  LABEL_PRESERVE_P (l2) = 1;
-  flag_pic = orig_flag_pic;
-
-  seq = gen_sequence ();
-  end_sequence ();
-  emit_insn_after (seq, get_insns ());
-
   /* Need to emit this whether or not we obey regdecls,
      since setjmp/longjmp can cause life info to screw up.  */
   emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
@@ -570,15 +530,36 @@ hppa_address_cost (X)
    normally.  */
 
 int
-emit_move_sequence (operands, mode)
+emit_move_sequence (operands, mode, scratch_reg)
      rtx *operands;
      enum machine_mode mode;
+     rtx scratch_reg;
 {
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
 
-  /* Handle most common case first: storing into a register.  */
-  if (register_operand (operand0, mode))
+  if (fp_reg_operand (operand0, mode)
+      && GET_CODE (operand1) == MEM
+      && !short_memory_operand  (operand1, mode)
+      && scratch_reg)
+    {
+      emit_move_insn (scratch_reg, XEXP (operand1 , 0));
+      emit_insn (gen_rtx (SET, VOIDmode, operand0, gen_rtx (MEM, mode,
+							    scratch_reg)));
+      return 1;
+    }
+  else if (fp_reg_operand (operand1, mode)
+	   && GET_CODE (operand0) == MEM
+	   && !short_memory_operand  (operand0, mode)
+	   && scratch_reg)
+    {
+      emit_move_insn (scratch_reg, XEXP (operand0 , 0));
+      emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (MEM, mode,  scratch_reg),
+			  operand1));
+      return 1;
+    }
+  /* Handle most common case: storing into a register.  */
+  else if (register_operand (operand0, mode))
     {
       if (register_operand (operand1, mode)
 	  || (GET_CODE (operand1) == CONST_INT && SMALL_INT (operand1))
@@ -608,21 +589,6 @@ emit_move_sequence (operands, mode)
     }
 
   /* Simplify the source if we need to.  */
-#if 0
-  if (GET_CODE (operand1) == HIGH
-      && symbolic_operand (XEXP (operand1, 0), mode)
-      && !read_only_operand (XEXP (operand1, 0)))
-    {
-      rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (mode);
-      
-      emit_insn (gen_rtx (SET, VOIDmode, temp, operand1));
-      emit_insn (gen_rtx (SET, VOIDmode,
-			  operand0,
-			  gen_rtx (PLUS, mode,
-				   temp, gen_rtx (REG, mode, 27))));
-      return 1;
-    }
-#endif
   if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
     {
       if (symbolic_operand (operand1, mode))
@@ -636,12 +602,28 @@ emit_move_sequence (operands, mode)
 	  /* use dp, register 27. */
 	  else if (read_only_operand (operand1))
 	    {
+	      rtx set = gen_rtx (SET, VOIDmode,
+				  operand0,
+				  gen_rtx (LO_SUM, mode, operand0, operand1));
+				 
 	      emit_insn (gen_rtx (SET, VOIDmode,
 				  operand0,
 				  gen_rtx (HIGH, mode, operand1)));
-	      emit_insn (gen_rtx (SET, VOIDmode,
-				  operand0,
-				  gen_rtx (LO_SUM, mode, operand0, operand1)));
+	      if (TARGET_SHARED_LIBS
+		  && function_label_operand (operand1, mode))
+		{
+		  rtx temp = reload_in_progress ? scratch_reg
+		    : gen_reg_rtx (mode);
+		  if (!temp)
+		    abort ();
+		  emit_insn (gen_rtx (PARALLEL, VOIDmode,
+				      gen_rtvec (2,
+						 set,
+						 gen_rtx (CLOBBER, VOIDmode,
+							  temp))));
+		}
+	      else
+		emit_insn (set);
 	      return 1;
 	    }
 	  else
@@ -1223,7 +1205,7 @@ char *
 output_and (operands)
      rtx *operands;
 {
-  if (GET_CODE (operands[2]) == CONST_INT)
+  if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) != 0)
     {
       unsigned mask = INTVAL (operands[2]);
       int ls0, ls1, ms0, p, len;
@@ -1494,6 +1476,7 @@ output_function_prologue (file, size, leaf_function)
 {
   extern char call_used_regs[];
   extern int frame_pointer_needed;
+  extern int current_function_returns_struct;
   int i, offset;
 
   actual_fsize = compute_frame_size (size, leaf_function) + 32;
@@ -1537,6 +1520,12 @@ output_function_prologue (file, size, leaf_function)
 	fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
 		 actual_fsize, actual_fsize);
     }
+  /* The hppa calling conventions say that that %r19, the pic offset 
+     register, is saved at sp - 32 (in this function's frame) */
+  if (flag_pic)
+    {
+      fprintf (file, "\tstw %%r19,-32(%%r30)\n");
+    }
   /* Instead of taking one argument, the counter label, as most normal
      mcounts do, _mcount appears to behave differently on the HPPA. It
      takes the return address of the caller, the address of this
@@ -1561,6 +1550,8 @@ output_function_prologue (file, size, leaf_function)
 				     : STACK_POINTER_REGNUM;
       offsetadj = frame_pointer_needed ? 0 : actual_fsize;
 
+      if (current_function_returns_struct)
+	print_stw (file, STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
       for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live[i])
 	  {
@@ -1578,6 +1569,8 @@ output_function_prologue (file, size, leaf_function)
       for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
 	if (regs_ever_live[i])
 	  print_ldw (file, i, arg_offset, basereg);
+      if (current_function_returns_struct)
+	print_ldw (file, STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
     }
 
   /* Normal register save. */
@@ -2385,7 +2378,13 @@ secondary_reload_class (class, mode, in)
 {
   int regno = true_regnum (in);
 
-  if (class == SHIFT_REGS && (regno <= 0 || regno >= 32))
+  if ((TARGET_SHARED_LIBS && function_label_operand (in, mode))
+      || ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
+	  && ((mode == QImode || mode == HImode || mode == SImode
+	       || mode == DImode) 
+	      && (class == FP_REGS || class == SNAKE_FP_REGS
+		  || class == HI_SNAKE_FP_REGS)))
+      || (class == SHIFT_REGS && (regno <= 0 || regno >= 32)))
     return GENERAL_REGS;
 
   return NO_REGS;
@@ -2447,4 +2446,32 @@ hppa_builtin_saveregs (arglist)
   return copy_to_reg (expand_binop (Pmode, add_optab,
 				    current_function_internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));
+}
+
+extern struct obstack *saveable_obstack;
+
+/* In HPUX 8.0's shared library scheme, special relocations are needed
+   for function labels if they might be passed to a function 
+   in a shared library (because shared libraries don't live in code
+   space), and special magic is needed to construct their address. */
+
+void
+hppa_encode_label (sym)
+     rtx sym;
+{
+  char *str = XSTR (sym, 0);
+  int len = strlen (str);
+  char *newstr = obstack_alloc (saveable_obstack, len + 2) ;
+
+  strcpy (newstr + 1, str);
+  newstr[0] = '@';
+  XSTR (sym,0) = newstr;
+}
+  
+int
+function_label_operand  (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return GET_CODE (op) == SYMBOL_REF && (XSTR (op, 0))[0] == '@';
 }

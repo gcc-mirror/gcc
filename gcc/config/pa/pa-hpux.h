@@ -25,3 +25,11 @@
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dhppa -Dhp9000s800 -D__hp9000s800 -Dhp9k8 -DPWB -Dhpux -Dunix -D_HPUX_SOURCE"
+
+/* Link against shared libraries */
+#ifdef hpux8
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 8 
+#undef LINK_SPEC
+#define LINK_SPEC "-u main %{g*:-a archive} %{p:-a archive} %{pg:-a archive}"
+#endif
