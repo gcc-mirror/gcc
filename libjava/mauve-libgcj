@@ -10,9 +10,6 @@ JLS1.2
 JDBC1.0
 JDBC2.0
 
-# Cannot be compiled
-!java.text.ACIAttribute
-
 # The following tests seem to hang or crash the testsuite.
 # This a problem when running Mauve "standalone".
 !java.lang.reflect.Array.newInstance
@@ -25,6 +22,3 @@ JDBC2.0
 # The behaviour of the garbarge collector cannot be predicted.
 # Note the . at the end so we do test java.lang.reflect
 !java.lang.ref.
-
-# We don't have CollationElementIterator.setText.
-!java.text.CollationElementIterator.
