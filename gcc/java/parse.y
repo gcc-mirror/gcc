@@ -5718,14 +5718,16 @@ do_resolve_class (tree enclosing, tree class_type, tree decl, tree cl)
 	 class and then treat Id as a member type.  If we can't find Q
 	 as a class then we fall through.  */
       tree q, left, left_type, right;
-      breakdown_qualified (&left, &right, TYPE_NAME (class_type));
-      BUILD_PTR_FROM_NAME (left_type, left);
-      q = do_resolve_class (enclosing, left_type, decl, cl);
-      if (q)
+      if (breakdown_qualified (&left, &right, TYPE_NAME (class_type)) == 0)
 	{
-	  enclosing = q;
-	  saved_enclosing_type = TREE_TYPE (q);
-	  BUILD_PTR_FROM_NAME (class_type, right);
+	  BUILD_PTR_FROM_NAME (left_type, left);
+	  q = do_resolve_class (enclosing, left_type, decl, cl);
+	  if (q)
+	    {
+	      enclosing = q;
+	      saved_enclosing_type = TREE_TYPE (q);
+	      BUILD_PTR_FROM_NAME (class_type, right);
+	    }
 	}
     }
 
@@ -16218,8 +16220,8 @@ attach_init_test_initialization_flags (void **entry, void *ptr)
   return true;
 }
 
-/* This function is called for each classes that is known definitely
-   assigned when a given static method was called. This function
+/* This function is called for each class that is known definitely
+   initialized when a given static method was called. This function
    augments a compound expression (INFO) storing all assignment to
    initialized static class flags if a flag already existed, otherwise
    a new one is created.  */
