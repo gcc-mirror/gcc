@@ -1,3 +1,10 @@
+2004-04-08  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* fixinc/inclhack.def (rpc_xdr_lvalue_cast_a,
+	rpc_xdr_lvalue_cast_b): New fixes.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/rpc/xdr.h: Add new tests.
+
 2004-04-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC): Change c++filt3 to c++filt.
