@@ -1,3 +1,12 @@
+2003-05-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/gcc-dg.exp (gcc-dg-test): Rename to ...
+	(gcc-dg-test-1): ... this.  Add target_compile parameter.  Add
+	support for "repo" mode.
+	* lib/g++-dg.exp: Use gcc-dg.exp to implement all functionality.
+	* lib/g77-dg.exp: Likewise.
+	* lib/obj-dg.exp: Likewise.
+	
 2003-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Merge from gcc-3_2-rhl8-branch:
