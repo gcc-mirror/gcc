@@ -1540,7 +1540,7 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h
 	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
 	    if [ -d $$dir ]; \
 	    then \
-	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir); \
+	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir; \
 	    else true; fi; \
 	  done; \
 	else true; \
