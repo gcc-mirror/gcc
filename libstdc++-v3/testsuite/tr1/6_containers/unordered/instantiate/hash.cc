@@ -35,7 +35,6 @@ int main()
   hash<char> hc;
   hash<signed char> hsc;
   hash<unsigned char> huc;
-  hash<wchar_t> hw;
   hash<short> hs;
   hash<int> hi;
   hash<long> hl;
@@ -47,5 +46,9 @@ int main()
   hash<long double> hld;
   hash<void*> hp;
   hash<std::string> hstr;
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  hash<wchar_t> hw;
   hash<std::wstring> hwstr;
+#endif
 }
