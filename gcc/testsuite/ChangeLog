@@ -1,3 +1,7 @@
+2000-03-23  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.ext/array4.C: New test.
+
 2000-03-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/noreturn-1.c: Check for another bogus noreturn case.
