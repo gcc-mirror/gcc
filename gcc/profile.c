@@ -1,4 +1,4 @@
-/* Calculate branch probabilities, and basic block execution counts. 
+/* Calculate branch probabilities, and basic block execution counts.
    Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997, 1998, 1999,
    2000, 2001  Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
@@ -69,10 +69,10 @@ struct bb_info
 /* Keep all basic block indexes nonnegative in the gcov output.  Index 0
    is used for entry block, last block exit block.   */
 #define GCOV_INDEX_TO_BB(i)  ((i) == 0 ? ENTRY_BLOCK_PTR		\
-    			      : (((i) == n_basic_blocks + 1)		\
+			      : (((i) == n_basic_blocks + 1)		\
 			         ? EXIT_BLOCK_PTR : BASIC_BLOCK ((i)-1)))
-#define BB_TO_GCOV_INDEX(bb)  ((bb) == ENTRY_BLOCK_PTR ? 0 		\
-  			       : ((bb) == EXIT_BLOCK_PTR		\
+#define BB_TO_GCOV_INDEX(bb)  ((bb) == ENTRY_BLOCK_PTR ? 0		\
+			       : ((bb) == EXIT_BLOCK_PTR		\
 				  ? n_basic_blocks + 1 : (bb)->index + 1))
 
 /* Name and file pointer of the output file for the basic block graph.  */
@@ -179,7 +179,7 @@ output_gcov_string (string, delimiter)
      long delimiter;
 {
   long temp;
-			
+
   /* Write a delimiter to indicate that a file name follows.  */
   __write_long (delimiter, bb_file, 4);
 
@@ -355,7 +355,7 @@ compute_branch_probabilities ()
 		  EDGE_INFO (e)->count_valid = 1;
 		  e->count = total;
 		  bi->succ_count--;
-		  
+
 		  BB_INFO (e->dest)->pred_count--;
 		  changes = 1;
 		}
@@ -382,7 +382,7 @@ compute_branch_probabilities ()
 		  EDGE_INFO (e)->count_valid = 1;
 		  e->count = total;
 		  bi->pred_count--;
-		  
+
 		  BB_INFO (e->src)->succ_count--;
 		  changes = 1;
 		}
@@ -455,7 +455,7 @@ compute_branch_probabilities ()
 
 	      prob = e->probability;
 	      index = prob * 20 / REG_BR_PROB_BASE;
-	  
+
 	      if (index == 20)
 		index = 19;
 	      hist_br_prob[index]++;
@@ -471,7 +471,7 @@ compute_branch_probabilities ()
 				       REG_NOTES (bb->end));
 	    }
 	  num_branches++;
-	  
+
 	}
     }
 
@@ -535,13 +535,12 @@ branch_prob ()
      edge from entry node and every destination by fake edge to exit.
      This keeps graph acyclic and our calculation exact for all normal
      edges except for exit and entrance ones.
-   
+
      We also add fake exit edges for each call and asm statement in the
      basic, since it may not return.  */
 
   for (i = 0; i < n_basic_blocks ; i++)
     {
-      rtx insn;
       int need_exit_edge = 0, need_entry_edge = 0;
       int have_exit_edge = 0, have_entry_edge = 0;
       basic_block bb = BASIC_BLOCK (i);
