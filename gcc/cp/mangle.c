@@ -127,7 +127,7 @@ substitution_identifier_index_t;
 
 /* For quick substitution checks, look up these common identifiers
    once only.  */
-static tree subst_identifiers[SUBID_MAX];
+static GTY(()) tree subst_identifiers[SUBID_MAX];
 
 /* Single-letter codes for builtin integer types, defined in
    <builtin-type>.  These are indexed by integer_type_kind values.  */
@@ -2722,3 +2722,4 @@ write_java_integer_type_codes (type)
     abort ();
 }
 
+#include "gt-cp-mangle.h"
