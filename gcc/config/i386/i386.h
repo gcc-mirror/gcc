@@ -710,16 +710,16 @@ enum reg_class
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS \
-{{      0,							\
-     0x1,    0x2,  0x4,	 0x8,	/* AREG, DREG, CREG, BREG */	\
-     0x3,			/* AD_REGS */			\
-     0xf,			/* Q_REGS */			\
-    0x10,   0x20,		/* SIREG, DIREG */		\
- 0x7f,				/* INDEX_REGS */		\
- 0x100ff,			/* GENERAL_REGS */		\
-  0x0100, 0x0200,		/* FP_TOP_REG, FP_SECOND_REG */	\
-  0xff00,			/* FLOAT_REGS */		\
- 0x1ffff }}
+{      {0},							\
+     {0x1},    {0x2},  {0x4},	 {0x8},	/* AREG, DREG, CREG, BREG */	\
+     {0x3},			/* AD_REGS */			\
+     {0xf},			/* Q_REGS */			\
+    {0x10},   {0x20},		/* SIREG, DIREG */		\
+ {0x7f},				/* INDEX_REGS */		\
+ {0x100ff},			/* GENERAL_REGS */		\
+  {0x0100}, {0x0200},		/* FP_TOP_REG, FP_SECOND_REG */	\
+  {0xff00},			/* FLOAT_REGS */		\
+ {0x1ffff}}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
