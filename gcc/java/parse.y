@@ -1231,6 +1231,7 @@ statement_nsi:
 |	if_then_else_statement_nsi
 |	while_statement_nsi
 |	for_statement_nsi
+		{ $$ = exit_block (); }
 ;
 
 statement_without_trailing_substatement:
@@ -7872,7 +7873,10 @@ java_complete_lhs (node)
       POP_LABELED_BLOCK ();
 
       if (LABELED_BLOCK_BODY (node) == empty_stmt_node)
-	LABELED_BLOCK_BODY (node) = NULL_TREE;
+	{
+	  LABELED_BLOCK_BODY (node) = NULL_TREE;
+	  CAN_COMPLETE_NORMALLY (node) = 1;
+	}
       else if (CAN_COMPLETE_NORMALLY (LABELED_BLOCK_BODY (node)))
 	CAN_COMPLETE_NORMALLY (node) = 1;
       return node;
