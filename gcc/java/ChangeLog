@@ -1,3 +1,12 @@
+1998-12-14  Tom Tromey  <tromey@cygnus.com>
+
+	* gjavah.c (decompile_method): Decompile `return null'.
+	(process_file): Generate `#pragma interface'.
+	(method_declared): New global.
+	(print_method_info): Set it.
+	(HANDLE_CODE_ATTRIBUTE): Only print it method_declared set.
+	(print_method_info): Handle abstract methods.
+
 Sun Dec 13 17:31:40 1998  Per Bothner  <bothner@cygnus.com>
 
 	* parse.y (patch_method_invocation):  If class_decl is null
