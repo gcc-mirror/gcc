@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -1577,14 +1577,14 @@ __gnat_initialize(void)
 #include <signal.h>
 #include <unistd.h>
 
+static void __gnat_error_handler (int, int, struct sigcontext *);
+
 static void
-__gnat_error_handler (sig, code, sc)
-     int sig;
-     int code;
-     struct sigcontext *sc;
+__gnat_error_handler (int sig, int code __attribute__ ((unused)),
+		      struct sigcontext *sc __attribute__ ((unused)))
 {
   struct Exception_Data *exception;
-  char *msg;
+  const char *msg;
 
   switch (sig)
     {
@@ -1634,8 +1634,6 @@ __gnat_install_handler ()
   (void) sigaction (SIGSEGV, &act, NULL);
   (void) sigaction (SIGBUS,  &act, NULL);
 }
-
-void __gnat_init_float ();
 
 void
 __gnat_initialize ()
