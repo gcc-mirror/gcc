@@ -5202,6 +5202,12 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 
       /* For a union, get the initializer for 1 fld.  */
 
+      if (tail == 0)
+	{
+	  error ("empty initializer for union");
+	  tail = build_tree_list (0, 0);
+	}
+
       /* If this element specifies a field, initialize via that field.  */
       if (TREE_PURPOSE (tail) != 0)
 	{
