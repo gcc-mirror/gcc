@@ -1,3 +1,7 @@
+2003-08-04  Release Manager
+
+	* GCC 3.3.1 Released.
+
 2003-06-29  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Command "all" now creates .bz2 files only for
