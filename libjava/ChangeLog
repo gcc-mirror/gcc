@@ -1,3 +1,12 @@
+2002-11-19  Ranjit Mathew <rmathew@hotmail.com>
+
+	* include/jni.h: Add missing JNICALL and JNIEXPORT attributes
+	to function and function pointer declarations in accordance with
+	Sun's JDKs. Define JNIIMPEXP to either JNIEXPORT or JNIIMPORT
+	based on whether __GCJ_JNI_IMPL__ has been defined or not.
+	* jni.cc: Add missing JNICALL and JNIEXPORT attributes to
+	JNI function definitions.
+
 2002-11-18  Jesse Rosenstock <jmr@ugcs.caltech.edu>
 
         * java/nio/charset/CoderResult.java (Cache.get): Fix a bug
