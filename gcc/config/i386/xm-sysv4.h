@@ -3,10 +3,7 @@
 #include "i386/xm-i386.h"
 #include "xm-svr4.h"
 
-/* If compiled with GNU C, use the built-in alloca.  */
-#undef alloca
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else
+/* If not compiled with GNU C, use the portable alloca.  */
+#ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
