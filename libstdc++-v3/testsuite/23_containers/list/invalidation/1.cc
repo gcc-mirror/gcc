@@ -1,6 +1,6 @@
 // List iterator invalidation tests
 
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,11 +52,6 @@ void test01()
   v1.assign(17, 42);
   VERIFY(!finish._M_dereferenceable() && !finish._M_singular());
 }
-
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template class __gnu_cxx::__mt_alloc<std::_List_node<int> >;
-#endif
 
 int main()
 {

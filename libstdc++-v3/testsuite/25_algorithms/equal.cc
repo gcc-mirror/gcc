@@ -1,6 +1,6 @@
 // 2001-04-06 gdr
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,11 +32,6 @@ bool operator==(X, X) { return true; }
 
 // Not implemented on purpose.  { dg-do link }
 bool operator!=(X, X);
-
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template class __gnu_cxx::__mt_alloc<X>;
-#endif
 
 int main()
 {

@@ -1,6 +1,6 @@
 // 2004-06-25  Paolo Carlini  <pcarlini@suse.de>
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,12 +56,6 @@ void test01()
   fill(coll2.begin(), coll2.end(), val);
   VERIFY( equal(coll2.begin(), coll2.end(), V) );
 }
-
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template class __gnu_cxx::__mt_alloc<std::_List_node<int> >;
-template class __gnu_cxx::__mt_alloc<std::_List_node<num> >;
-#endif
 
 int main()
 {

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 Free Software Foundation
+// Copyright (C) 2004, 2005 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,11 +53,6 @@ void test02()
   swap(A, B);
   VERIFY(1 == swap_calls);
 }
-
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-template class __gnu_cxx::__mt_alloc<T>;
-template class __gnu_cxx::__mt_alloc<T*>;
-#endif
 
 // See c++/13658 for background info.
 int main()

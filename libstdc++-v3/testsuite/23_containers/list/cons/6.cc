@@ -1,4 +1,4 @@
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -61,11 +61,6 @@ test05()
   VERIFY(count == M);
   VERIFY(list0501.size() == M);
 }
-
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template class __gnu_cxx::__mt_alloc<std::_List_node<int> >;
-#endif
 
 int main()
 {
