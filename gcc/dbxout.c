@@ -1069,7 +1069,7 @@ dbxout_type (type, full, show_arg_types)
 	 Sun dbx crashes if we do.  */
       if (! full || !COMPLETE_TYPE_P (type)
 	  /* No way in DBX fmt to describe a variable size.  */
-	  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	  || ! host_integerp (TYPE_SIZE (type), 1))
 	return;
       break;
     case TYPE_DEFINED:
@@ -1094,7 +1094,7 @@ dbxout_type (type, full, show_arg_types)
 	 && !full)
 	|| !COMPLETE_TYPE_P (type)
 	/* No way in DBX fmt to describe a variable size.  */
-	|| TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	|| ! host_integerp (TYPE_SIZE (type), 1))
       {
 	typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_XREF;
 	return;
@@ -1146,7 +1146,7 @@ dbxout_type (type, full, show_arg_types)
       /* If this is a subtype of another integer type, always prefer to
 	 write it as a subtype.  */
       else if (TREE_TYPE (type) != 0
-	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_CST)
+	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
 	dbxout_range_type (type);
 
       else
@@ -1176,7 +1176,8 @@ dbxout_type (type, full, show_arg_types)
 	      && TYPE_MAX_VALUE (type) != 0
 	      && TREE_CODE (TYPE_MAX_VALUE (type)) == INTEGER_CST
 	      && (TYPE_PRECISION (type) > TYPE_PRECISION (integer_type_node)
-		  || (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
+		  || ((TYPE_PRECISION (type)
+		       == TYPE_PRECISION (integer_type_node))
 		      && TREE_UNSIGNED (type))
 		  || TYPE_PRECISION (type) > HOST_BITS_PER_WIDE_INT
 		  || (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT
@@ -1363,7 +1364,7 @@ dbxout_type (type, full, show_arg_types)
 	     && !full)
 	    || !COMPLETE_TYPE_P (type)
 	    /* No way in DBX fmt to describe a variable size.  */
-	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	    || ! host_integerp (TYPE_SIZE (type), 1))
 	  {
 	    /* If the type is just a cross reference, output one
 	       and mark the type as partially described.
@@ -1810,7 +1811,11 @@ dbxout_symbol (decl, local)
 		&& !TREE_ASM_WRITTEN (TYPE_NAME (type))
 		/* Distinguish the implicit typedefs of C++
 		   from explicit ones that might be found in C.  */
-                && DECL_ARTIFICIAL (decl))
+                && DECL_ARTIFICIAL (decl)
+		/* Do not generate a tag for records of variable size,
+		   since this type can not be properly described in the
+		   DBX format, and it confuses some tools such as objdump.  */
+		&& ! host_integerp (TYPE_SIZE (type), 1))
 	      {
 		tree name = TYPE_NAME (type);
 		if (TREE_CODE (name) == TYPE_DECL)
@@ -1859,9 +1864,9 @@ dbxout_symbol (decl, local)
 	    did_output = 1;
 	  }
 
-	/* Don't output a tag if this is an incomplete type (TYPE_SIZE is
-	   zero).  This prevents the sun4 Sun OS 4.x dbx from crashing.  */ 
-
+	/* Don't output a tag if this is an incomplete type.  This prevents
+	   the sun4 Sun OS 4.x dbx from crashing.  */
+	
 	if (tag_needed && TYPE_NAME (type) != 0
 	    && (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE
 		|| (DECL_NAME (TYPE_NAME (type)) != 0))
