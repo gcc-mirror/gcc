@@ -1274,68 +1274,28 @@ mcore-*-pe*)
 	tmake_file=mcore/t-mcore-pe
 	use_fixproto=yes
 	;;
-mips-sgi-irix6*)		# SGI System V.4., IRIX 6
-	tm_file="${tm_file} mips/iris5.h mips/iris6.h"
-	tmake_file="mips/t-iris mips/t-iris5-6 mips/t-iris6"
-	if test x$gas = xyes
+mips-sgi-irix[56]*)
+	tm_file="elfos.h ${tm_file} mips/iris.h"
+	tmake_file="mips/t-iris mips/t-slibgcc-irix"
+	target_cpu_default="MASK_GAS|MASK_ABICALLS"
+	case ${target} in
+	*-*-irix5*)
+		tm_file="${tm_file} mips/iris5.h"
+		;;
+
+	*-*-irix6*)
+		tm_file="${tm_file} mips/iris6.h"
+		tmake_file="${tmake_file} mips/t-iris6"
+		tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
+		;;
+	esac
+	if test "x$stabs" = xyes
 	then
-		tm_file="${tm_file} mips/iris6gas.h"
+		tm_file="${tm_file} dbx.h mips/dbxmdebug.h"
 	fi
 	if test "x$gnu_ld" = xyes
 	then
-		tm_file="${tm_file} mips/iris6gld.h"
-		tmake_file="$tmake_file mips/t-irix-gld"
-	fi
-	target_cpu_default="MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT"
-	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
-	# See comment in mips/iris5.h file.  Only enabled for O32 ABI
-	# without GNU as.
-	if test x$gas = xno
-	then
-		use_collect2=yes
-	fi
-#	if test x$enable_threads = xyes; then
-#		thread_file='irix'
-#	fi
-	use_fixproto=yes
-	;;
-mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
-	tm_file="${tm_file} mips/iris5.h mips/iris6.h mips/cross64.h"
-	tmake_file="mips/t-iris mips/t-cross64"
-	target_cpu_default="MASK_ABICALLS|MASK_FLOAT64|MASK_64BIT"
-	tm_defines="MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
-	# See comment in mips/iris[56].h files.
-	use_collect2=yes
-#	if test x$enable_threads = xyes; then
-#		thread_file='irix'
-#	fi
-	use_fixproto=yes
-	;;
-mips-sgi-irix5*)		# SGI System V.4., IRIX 5
-	tm_file="${tm_file} mips/iris5.h"
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} mips/sdb.h mips/iris5gas.h"
-		if test x$stabs = xyes
-		then
-			tm_file="${tm_file} dbx.h mips/dbxmdebug.h"
-		fi
-		tmake_file=mips/t-iris5-gas
-	else
-		tmake_file=mips/t-iris5-as
-	fi
-	if test "x$gnu_ld" = xyes
-	then
-		tm_file="${tm_file} mips/iris5gld.h"
-		tmake_file="$tmake_file mips/t-irix-gld"
-	fi
-	tmake_file="${tmake_file} mips/t-iris mips/t-iris5-6"
-	target_cpu_default="MASK_ABICALLS"
-	# mips-tfile doesn't work yet
-	# See comment in mips/iris5.h file.
-	if test x$gas = xno
-	then
-		use_collect2=yes
+		tm_defines="${tm_defines} IRIX_USING_GNU_LD"
 	fi
 #	if test x$enable_threads = xyes; then
 #		thread_file='irix'

@@ -2,7 +2,7 @@
 	.set	noreorder
 	.set	nomacro
 
-	.section .init,0x1,0x6,4,4
+	.section .gcc_init,"ax",@progbits
 #if _MIPS_SIM == _ABIO32
 	lw	$31,0($sp)
 	jr	$31
@@ -14,7 +14,7 @@
 	daddiu	$sp,$sp,16
 #endif
 
-	.section .fini,0x1,0x6,4,4
+	.section .gcc_fini,"ax",@progbits
 #if _MIPS_SIM == _ABIO32
 	lw	$31,0($sp)
 	jr	$31

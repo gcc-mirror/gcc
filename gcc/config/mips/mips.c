@@ -181,6 +181,9 @@ static void mips_set_tune (const struct mips_cpu_info *);
 static struct machine_function *mips_init_machine_status (void);
 static void print_operand_reloc (FILE *, rtx, const char **);
 static bool mips_assemble_integer (rtx, unsigned int, int);
+#if TARGET_IRIX
+static void irix_output_external_libcall (rtx);
+#endif
 static void mips_file_start (void);
 static void mips_file_end (void);
 static bool mips_rewrite_small_data_p (rtx);
@@ -264,19 +267,6 @@ static tree mips_build_builtin_va_list (void);
 static tree mips_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool mips_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 				    tree, bool);
-
-#if TARGET_IRIX
-static void irix_asm_named_section_1 (const char *, unsigned int,
-				      unsigned int);
-static void irix_asm_named_section (const char *, unsigned int);
-static int irix_section_align_entry_eq (const void *, const void *);
-static hashval_t irix_section_align_entry_hash (const void *);
-static void irix_file_start (void);
-static int irix_section_align_1 (void **, void *);
-static void copy_file_data (FILE *, FILE *);
-static void irix_file_end (void);
-static unsigned int irix_section_type_flags (tree, const char *, int);
-#endif
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -663,20 +653,10 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_ASM_FILE_START
 #undef TARGET_ASM_FILE_END
-#if TARGET_IRIX
-#define TARGET_ASM_FILE_START irix_file_start
-#define TARGET_ASM_FILE_END irix_file_end
-#else
 #define TARGET_ASM_FILE_START mips_file_start
 #define TARGET_ASM_FILE_END mips_file_end
-#endif
 #undef TARGET_ASM_FILE_START_FILE_DIRECTIVE
 #define TARGET_ASM_FILE_START_FILE_DIRECTIVE true
-
-#if TARGET_IRIX
-#undef TARGET_SECTION_TYPE_FLAGS
-#define TARGET_SECTION_TYPE_FLAGS irix_section_type_flags
-#endif
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS mips_init_libfuncs
@@ -3432,7 +3412,7 @@ mips_build_builtin_va_list (void)
       layout_type (record);
       return record;
     }
-  else if (TARGET_IRIX && !TARGET_IRIX5)
+  else if (TARGET_IRIX && TARGET_IRIX6)
     /* On IRIX 6, this type is 'char *'.  */
     return build_pointer_type (char_type_node);
   else
@@ -4036,58 +4016,6 @@ override_options (void)
 
   if (!TARGET_OLDABI)
     flag_pcc_struct_return = 0;
-
-#if defined(USE_COLLECT2)
-  /* For IRIX 5 or IRIX 6 with integrated O32 ABI support, USE_COLLECT2 is
-     always defined when GNU as is not in use, but collect2 is only used
-     for the O32 ABI, so override the toplev.c and target-def.h defaults
-     for flag_gnu_linker, TARGET_ASM_{CONSTRUCTOR, DESTRUCTOR} and
-     TARGET_HAVE_CTORS_DTORS.
-
-     Since the IRIX 5 and IRIX 6 O32 assemblers cannot handle named
-     sections, constructor/destructor handling depends on the ABI in use.
-
-     Since USE_COLLECT2 is defined, we only need to restore the non-collect2
-     defaults for the N32/N64 ABIs.  */
-  if (TARGET_IRIX && !TARGET_SGI_O32_AS)
-    {
-      targetm.have_ctors_dtors = true;
-      targetm.asm_out.constructor = default_named_section_asm_out_constructor;
-      targetm.asm_out.destructor = default_named_section_asm_out_destructor;
-    }
-#endif
-
-  /* Handle some quirks of the IRIX 5 and IRIX 6 O32 assemblers.  */
-
-  if (TARGET_SGI_O32_AS)
-    {
-      /* They don't recognize `.[248]byte'.  */
-      targetm.asm_out.unaligned_op.hi = "\t.align 0\n\t.half\t";
-      targetm.asm_out.unaligned_op.si = "\t.align 0\n\t.word\t";
-      /* The IRIX 6 O32 assembler gives an error for `align 0; .dword',
-	 contrary to the documentation, so disable it.  */
-      targetm.asm_out.unaligned_op.di = NULL;
-
-      /* They cannot handle named sections.  */
-      targetm.have_named_sections = false;
-      /* Therefore, EH_FRAME_SECTION_NAME isn't defined and we must use
-	 collect2.  */
-      targetm.terminate_dw2_eh_frame_info = true;
-      targetm.asm_out.eh_frame_section = collect2_eh_frame_section;
-
-      /* They cannot handle debug information.  */
-      if (write_symbols != NO_DEBUG)
-	{
-	  /* Adapt wording to IRIX version: IRIX 5 only had a single ABI,
-	     so -mabi=32 isn't usually specified.  */
-	  if (TARGET_IRIX5)
-	    inform ("-g is only supported using GNU as,");
-	  else
-	    inform ("-g is only supported using GNU as with -mabi=32,");
-	  inform ("-g option disabled");
-	  write_symbols = NO_DEBUG;
-	}
-    }
 
   if ((target_flags_explicit & MASK_BRANCHLIKELY) == 0)
     {
@@ -4996,7 +4924,7 @@ mips_output_external (FILE *file ATTRIBUTE_UNUSED, tree decl, const char *name)
 }
 
 #if TARGET_IRIX
-void
+static void
 irix_output_external_libcall (rtx fun)
 {
   register struct extern_list *p;
@@ -5027,7 +4955,7 @@ mips_output_filename (FILE *stream, const char *name)
   else if (mips_output_filename_first_time)
     {
       mips_output_filename_first_time = 0;
-      SET_FILE_NUMBER ();
+      num_source_filenames += 1;
       current_function_file = name;
       ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
       /* This tells mips-tfile that stabs will follow.  */
@@ -5046,7 +4974,7 @@ mips_output_filename (FILE *stream, const char *name)
   else if (name != current_function_file
 	   && strcmp (name, current_function_file) != 0)
     {
-      SET_FILE_NUMBER ();
+      num_source_filenames += 1;
       current_function_file = name;
       ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
     }
@@ -5070,7 +4998,6 @@ mips_output_lineno (FILE *stream, int line)
   else
     {
       fprintf (stream, "\n\t.loc\t%d %d\n", num_source_filenames, line);
-      LABEL_AFTER_LOC (stream);
     }
 }
 
@@ -5168,9 +5095,8 @@ mips_file_start (void)
   if (TARGET_MIPS_AS && optimize && flag_delayed_branch)
     fprintf (asm_out_file, "\t.set\tnobopt\n");
 
-  if (TARGET_GAS)
+  if (TARGET_GAS && !TARGET_IRIX)
     {
-#if defined(OBJECT_FORMAT_ELF) && !TARGET_IRIX
       /* Generate a special section to describe the ABI switches used to
 	 produce the resultant binary.  This used to be done by the assembler
 	 setting bits in the ELF header's flags field, but we have run out of
@@ -5205,16 +5131,12 @@ mips_file_start (void)
 
       /* Restore the default section.  */
       fprintf (asm_out_file, "\t.previous\n");
-#endif
     }
 
   /* Generate the pseudo ops that System V.4 wants.  */
-#ifndef ABICALLS_ASM_OP
-#define ABICALLS_ASM_OP "\t.abicalls"
-#endif
   if (TARGET_ABICALLS)
     /* ??? but do not want this (or want pic0) if -non-shared? */
-    fprintf (asm_out_file, "%s\n", ABICALLS_ASM_OP);
+    fprintf (asm_out_file, "\t.abicalls\n");
 
   if (TARGET_MIPS16)
     fprintf (asm_out_file, "\t.set\tmips16\n");
@@ -5317,7 +5239,7 @@ mips_output_aligned_decl_common (FILE *stream, tree decl, const char *name,
   else
     /* The SGI o32 assembler doesn't accept an alignment.  */
     mips_declare_common_object (stream, name, "\n\t.comm\t",
-				size, align, !TARGET_SGI_O32_AS);
+				size, align, true);
 }
 
 /* Declare a common object of SIZE bytes using asm directive INIT_STRING.
@@ -5380,21 +5302,18 @@ void
 mips_declare_object_name (FILE *stream, const char *name,
 			  tree decl ATTRIBUTE_UNUSED)
 {
-  if (!TARGET_SGI_O32_AS)
-    {
 #ifdef ASM_OUTPUT_TYPE_DIRECTIVE
-      ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
+  ASM_OUTPUT_TYPE_DIRECTIVE (stream, name, "object");
 #endif
 
-      size_directive_output = 0;
-      if (!flag_inhibit_size_directive && DECL_SIZE (decl))
-	{
-	  HOST_WIDE_INT size;
+  size_directive_output = 0;
+  if (!flag_inhibit_size_directive && DECL_SIZE (decl))
+    {
+      HOST_WIDE_INT size;
 
-	  size_directive_output = 1;
-	  size = int_size_in_bytes (TREE_TYPE (decl));
-	  ASM_OUTPUT_SIZE_DIRECTIVE (stream, name, size);
-	}
+      size_directive_output = 1;
+      size = int_size_in_bytes (TREE_TYPE (decl));
+      ASM_OUTPUT_SIZE_DIRECTIVE (stream, name, size);
     }
 
   mips_declare_object (stream, name, "", ":\n", 0);
@@ -5408,8 +5327,7 @@ mips_finish_declare_object (FILE *stream, tree decl, int top_level, int at_end)
   const char *name;
 
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-  if (!TARGET_SGI_O32_AS
-      && !flag_inhibit_size_directive
+  if (!flag_inhibit_size_directive
       && DECL_SIZE (decl) != 0
       && !at_end && top_level
       && DECL_INITIAL (decl) == error_mark_node
@@ -5980,6 +5898,10 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
       assemble_name (file, fnname);
       fputs (":\n", file);
     }
+
+  /* Stop mips_file_end from treating this function as external.  */
+  if (TARGET_IRIX && mips_abi == ABI_32)
+    TREE_ASM_WRITTEN (DECL_NAME (cfun->decl)) = 1;
 
   if (!flag_inhibit_size_directive)
     {
@@ -9264,205 +9186,5 @@ mips_emit_prefetch (rtx *operands)
   output_asm_insn (buffer, operands);
   return "";
 }
-
-
-
-#if TARGET_IRIX
-/* Output assembly to switch to section NAME with attribute FLAGS.  */
-
-static void
-irix_asm_named_section_1 (const char *name, unsigned int flags,
-			   unsigned int align)
-{
-  unsigned int sh_type, sh_flags, sh_entsize;
-
-  sh_flags = 0;
-  if (!(flags & SECTION_DEBUG))
-    sh_flags |= 2; /* SHF_ALLOC */
-  if (flags & SECTION_WRITE)
-    sh_flags |= 1; /* SHF_WRITE */
-  if (flags & SECTION_CODE)
-    sh_flags |= 4; /* SHF_EXECINSTR */
-  if (flags & SECTION_SMALL)
-    sh_flags |= 0x10000000; /* SHF_MIPS_GPREL */
-  if (strcmp (name, ".debug_frame") == 0)
-    sh_flags |= 0x08000000; /* SHF_MIPS_NOSTRIP */
-  if (flags & SECTION_DEBUG)
-    sh_type = 0x7000001e; /* SHT_MIPS_DWARF */
-  else if (flags & SECTION_BSS)
-    sh_type = 8; /* SHT_NOBITS */
-  else
-    sh_type = 1; /* SHT_PROGBITS */
-
-  if (flags & SECTION_CODE)
-    sh_entsize = 4;
-  else
-    sh_entsize = 0;
-
-  fprintf (asm_out_file, "\t.section %s,%#x,%#x,%u,%u\n",
-	   name, sh_type, sh_flags, sh_entsize, align);
-}
-
-static void
-irix_asm_named_section (const char *name, unsigned int flags)
-{
-  if (TARGET_SGI_O32_AS)
-    default_no_named_section (name, flags);
-  else if (mips_abi == ABI_32 && TARGET_GAS)
-    default_elf_asm_named_section (name, flags);
-  else
-    irix_asm_named_section_1 (name, flags, 0);
-}
-
-/* In addition to emitting a .align directive, record the maximum
-   alignment requested for the current section.  */
-
-struct irix_section_align_entry GTY (())
-{
-  const char *name;
-  unsigned int log;
-  unsigned int flags;
-};
-
-static htab_t irix_section_align_htab;
-static FILE *irix_orig_asm_out_file;
-
-static int
-irix_section_align_entry_eq (const void *p1, const void *p2)
-{
-  const struct irix_section_align_entry *old = p1;
-  const char *new = p2;
-
-  return strcmp (old->name, new) == 0;
-}
-
-static hashval_t
-irix_section_align_entry_hash (const void *p)
-{
-  const struct irix_section_align_entry *old = p;
-  return htab_hash_string (old->name);
-}
-
-void
-irix_asm_output_align (FILE *file, unsigned int log)
-{
-  const char *section = current_section_name ();
-  struct irix_section_align_entry **slot, *entry;
-
-  if (mips_abi != ABI_32)
-    {
-      if (! section)
-	abort ();
-
-      slot = (struct irix_section_align_entry **)
-	htab_find_slot_with_hash (irix_section_align_htab, section,
-				  htab_hash_string (section), INSERT);
-      entry = *slot;
-      if (! entry)
-	{
-	  entry = (struct irix_section_align_entry *)
-	    xmalloc (sizeof (struct irix_section_align_entry));
-	  *slot = entry;
-	  entry->name = section;
-	  entry->log = log;
-	  entry->flags = current_section_flags ();
-	}
-      else if (entry->log < log)
-	entry->log = log;
-    }
-
-  fprintf (file, "\t.align\t%u\n", log);
-}
-
-/* The IRIX assembler does not record alignment from .align directives,
-   but takes it from the first .section directive seen.  Play file
-   switching games so that we can emit a .section directive at the
-   beginning of the file with the proper alignment attached.  */
-
-static void
-irix_file_start (void)
-{
-  mips_file_start ();
-
-  if (mips_abi == ABI_32)
-    return;
-
-  irix_orig_asm_out_file = asm_out_file;
-  asm_out_file = tmpfile ();
-
-  irix_section_align_htab = htab_create (31, irix_section_align_entry_hash,
-					 irix_section_align_entry_eq, NULL);
-}
-
-static int
-irix_section_align_1 (void **slot, void *data ATTRIBUTE_UNUSED)
-{
-  const struct irix_section_align_entry *entry
-    = *(const struct irix_section_align_entry **) slot;
-
-  irix_asm_named_section_1 (entry->name, entry->flags, 1 << entry->log);
-  return 1;
-}
-
-static void
-copy_file_data (FILE *to, FILE *from)
-{
-  char buffer[8192];
-  size_t len;
-  rewind (from);
-  if (ferror (from))
-    fatal_error ("can't rewind temp file: %m");
-
-  while ((len = fread (buffer, 1, sizeof (buffer), from)) > 0)
-    if (fwrite (buffer, 1, len, to) != len)
-      fatal_error ("can't write to output file: %m");
-
-  if (ferror (from))
-    fatal_error ("can't read from temp file: %m");
-
-  if (fclose (from))
-    fatal_error ("can't close temp file: %m");
-}
-
-static void
-irix_file_end (void)
-{
-  if (mips_abi != ABI_32)
-    {
-      /* Emit section directives with the proper alignment at the top of the
-	 real output file.  */
-      FILE *temp = asm_out_file;
-      asm_out_file = irix_orig_asm_out_file;
-      htab_traverse (irix_section_align_htab, irix_section_align_1, NULL);
-
-      /* Copy the data emitted to the temp file to the real output file.  */
-      copy_file_data (asm_out_file, temp);
-    }
-
-  mips_file_end ();
-}
-
-
-/* Implement TARGET_SECTION_TYPE_FLAGS.  Make sure that .sdata and
-   .sbss sections get the SECTION_SMALL flag: this isn't set by the
-   default code.  */
-
-static unsigned int
-irix_section_type_flags (tree decl, const char *section, int relocs_p)
-{
-  unsigned int flags;
-
-  flags = default_section_type_flags (decl, section, relocs_p);
-
-  if (strcmp (section, ".sdata") == 0
-      || strcmp (section, ".sbss") == 0
-      || strncmp (section, ".gnu.linkonce.s.", 16) == 0
-      || strncmp (section, ".gnu.linkonce.sb.", 17) == 0)
-    flags |= SECTION_SMALL;
-
-  return flags;
-}
-
-#endif /* TARGET_IRIX */
 
 #include "gt-mips.h"

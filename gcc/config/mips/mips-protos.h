@@ -157,9 +157,6 @@ extern HOST_WIDE_INT mips_debugger_offset (rtx, HOST_WIDE_INT);
 extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern int mips_output_external (FILE *, tree, const char *);
-#if TARGET_IRIX
-extern void irix_output_external_libcall (rtx);
-#endif
 extern void mips_output_filename (FILE *, const char *);
 extern void mips_output_lineno (FILE *, int);
 extern void mips_output_ascii (FILE *, const char *, size_t, const char *);
