@@ -56,7 +56,6 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <sys/dir.h>
 #endif
-#endif
 #include <setjmp.h>
 
 #include "gansidecl.h"
@@ -114,39 +113,10 @@ typedef char * const_pointer_type;
 
 #if defined(POSIX)
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <signal.h>
-#include <fcntl.h>
-#include <sys/wait.h>
 
 #else /* !defined(POSIX) */
 
-#define R_OK    4       /* Test for Read permission */
-#define W_OK    2       /* Test for Write permission */
-#define X_OK    1       /* Test for eXecute permission */
-#define F_OK    0       /* Test for existence of File */
-
-#ifndef O_RDONLY
-#define O_RDONLY        0
-#endif
-
-#ifndef O_WRONLY
-#define O_WRONLY        1
-#endif
-
-#ifndef WIFSIGNALED
-#define WIFSIGNALED(S) (((S) & 0xff) != 0 && ((S) & 0xff) != 0x7f)
-#endif
-#ifndef WTERMSIG
-#define WTERMSIG(S) ((S) & 0x7f)
-#endif
-#ifndef WIFEXITED
-#define WIFEXITED(S) (((S) & 0xff) == 0)
-#endif
-#ifndef WEXITSTATUS
-#define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
-#endif
 
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
@@ -189,19 +159,19 @@ extern char *rindex ();
 
 #define NONCONST
 
-/* Define a STRINGIFY macro that's right for ANSI or traditional C.  */
-
-#ifdef __STDC__
-#define STRINGIFY(STRING) #STRING
-#else
-#define STRINGIFY(STRING) "STRING"
-#endif
-
 /* Define a default place to find the SYSCALLS.X file.  */
 
 #ifndef STD_PROTO_DIR
 #define STD_PROTO_DIR "/usr/local/lib"
 #endif /* !defined (STD_PROTO_DIR) */
+
+#ifdef HAVE_VPRINTF
+void fatal PVPROTO((char *, ...));
+#else
+/* We must not provide any prototype here, even if ANSI C.  */
+void fatal PROTO(());
+#endif
+void fancy_abort ();
 
 /* Suffix of aux_info files.  */
 
@@ -714,6 +684,41 @@ savestring2 (input1, size1, input2, size2)
   strcpy (&output[size1], input2);
   return output;
 }
+
+
+#ifdef HAVE_VPRINTF
+void
+fatal VPROTO((char *s, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  char *s;
+#endif
+  va_list ap;
+
+  VA_START (ap, s);
+
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, char *);
+#endif
+
+  fprintf (stderr, "genattrtab: ");
+  vfprintf (stderr, s, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#else /* not HAVE_VPRINTF */
+
+void
+fatal (s, a1, a2)
+     char *s;
+{
+  fprintf (stderr, "genattrtab: ");
+  fprintf (stderr, s, a1, a2);
+  fprintf (stderr, "\n");
+  exit (FATAL_EXIT_CODE);
+}
+#endif /* not HAVE_VPRINTF */
 
 /* More 'friendly' abort that prints the line and file.
    config.h can #define abort fancy_abort if you like that sort of thing.  */
