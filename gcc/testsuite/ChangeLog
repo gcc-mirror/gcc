@@ -1,3 +1,7 @@
+Fri Feb 11 12:35:40 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20000211-1.c: New test.
+
 2000-02-09  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* gcc.dg/special/ecos.exp: Use -static when testing --gc-sections
