@@ -238,7 +238,12 @@ extern int warn_nonvdtor;
 
 extern int warn_pmf2ptr;
 
+/* Nonzero means warn about violation of some Effective C++ style rules.  */
+
+extern int warn_ecpp;
+
 /* Non-zero means warn when a function is declared extern and later inline.  */
+
 extern int warn_extern_inline;
 
 /* Nonzero means to treat bitfields as unsigned unless they say `signed'.  */

@@ -444,6 +444,8 @@ do_case (start, end)
 	{
 	  if (end)
 	    error ("case label within scope of cleanup or variable array");
+	  else if (! start)
+	    error ("`default' label within scope of cleanup or variable array");
 	  else
 	    cp_error ("case label `%E' within scope of cleanup or variable array", start);
 	}

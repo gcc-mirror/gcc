@@ -7105,7 +7105,7 @@ c_expand_return (retval)
     }
 
   /* Effective C++ rule 15.  See also start_function.  */
-  if (extra_warnings
+  if (warn_ecpp
       && DECL_NAME (current_function_decl) == ansi_opname[(int) MODIFY_EXPR]
       && retval != current_class_ref)
     cp_warning ("`operator=' should return a reference to `*this'");
@@ -7113,7 +7113,8 @@ c_expand_return (retval)
   if (valtype == NULL_TREE || TREE_CODE (valtype) == VOID_TYPE)
     {
       current_function_returns_null = 1;
-      if (pedantic || TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
+      if ((pedantic && ! DECL_ARTIFICIAL (current_function_decl))
+	  || TREE_CODE (TREE_TYPE (retval)) != VOID_TYPE)
 	pedwarn ("`return' with a value, in function returning void");
       expand_return (retval);
       return;

@@ -102,3 +102,5 @@ Boston, MA 02111-1307, USA.  */
   "-Wno-synth",
   "-Wpmf-conversions",
   "-Wno-pmf-conversions",
+  "-Weffc++",
+  "-Wno-effc++",

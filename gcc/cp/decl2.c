@@ -244,6 +244,10 @@ int warn_synth;
    into a pointer to (void or function).  */
 int warn_pmf2ptr = 1;
 
+/* Nonzero means warn about violation of some Effective C++ style rules.  */
+
+int warn_ecpp = 0;
+
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
 
@@ -579,6 +583,8 @@ lang_decode_option (p)
 	warn_synth = setting;
       else if (!strcmp (p, "pmf-conversions"))
 	warn_pmf2ptr = setting;
+      else if (!strcmp (p, "effc++"))
+	warn_ecpp = setting;
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -2413,7 +2419,7 @@ finish_prevtable_vardecl (prev, vars)
   tree ctype = DECL_CONTEXT (vars);
   import_export_template (ctype);
 
-#ifndef NO_LINKAGE_HEURISTICS
+#ifndef MULTIPLE_SYMBOL_SPACES
   if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype)
       && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
