@@ -113,7 +113,7 @@ namespace std
 		    ++__beg;
 		  }
 		// Allocate more space.
-		size_type __len = __p - __r->_M_refdata();
+		const size_type __len = __p - __r->_M_refdata();
 		_Rep* __another = _Rep::_S_create(__len + 1, __a);
 		traits_type::copy(__another->_M_refdata(), 
 				  __r->_M_refdata(), __len);
@@ -144,7 +144,7 @@ namespace std
 	if (__builtin_expect(__beg == _InIter(), 0))
 	  __throw_logic_error("basic_string::_S_construct NULL not valid");
 
-	size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
+	const size_type __dnew = static_cast<size_type>(std::distance(__beg, __end));
 	
 	// Check for out_of_range and length_error exceptions.
 	_Rep* __r = _Rep::_S_create(__dnew, __a);
@@ -371,7 +371,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _M_destroy(const _Alloc& __a) throw ()
     {
-      size_type __size = sizeof(_Rep) + (_M_capacity + 1) * sizeof(_CharT);
+      const size_type __size = sizeof(_Rep) + (_M_capacity + 1) * sizeof(_CharT);
       _Raw_bytes_alloc(__a).deallocate(reinterpret_cast<char*>(this), __size);
     }
 
@@ -395,7 +395,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     _M_mutate(size_type __pos, size_type __len1, size_type __len2)
     {
-      size_type       __old_size = this->size();
+      const size_type __old_size = this->size();
       const size_type __new_size = __old_size + __len2 - __len1;
       const _CharT*        __src = _M_data()  + __pos + __len1;
       const size_type __how_much = __old_size - __pos - __len1;
@@ -534,7 +534,7 @@ namespace std
       const size_t __malloc_header_size = 4 * sizeof (void*);
       if ((__size + __malloc_header_size) > __pagesize)
 	{
-	  size_t __extra =
+	  const size_t __extra =
 	    (__pagesize - ((__size + __malloc_header_size) % __pagesize))
 	    % __pagesize;
 	  __capacity += __extra / sizeof(_CharT);
@@ -542,7 +542,7 @@ namespace std
 	}
       else if (__size > __subpagesize)
 	{
-	  size_t __extra =
+	  const size_t __extra =
 	    (__subpagesize - ((__size + __malloc_header_size) % __subpagesize))
 	    % __subpagesize;
 	  __capacity += __extra / sizeof(_CharT);
@@ -601,7 +601,7 @@ namespace std
     {
       if (__n > max_size())
 	__throw_length_error("basic_string::resize");
-      size_type __size = this->size();
+      const size_type __size = this->size();
       if (__size < __n)
 	this->append(__n - __size, __c);
       else if (__n < __size)
@@ -620,7 +620,7 @@ namespace std
 		 _InputIter __k2, input_iterator_tag)
       {
 	// Save concerned source string data in a temporary.
-	basic_string __s(__k1, __k2);
+	const basic_string __s(__k1, __k2);
 	return _M_replace_safe(__i1, __i2, __s._M_ibegin(), __s._M_iend());
       }
 
@@ -634,13 +634,13 @@ namespace std
       _M_replace_safe(iterator __i1, iterator __i2, _ForwardIter __k1, 
 		      _ForwardIter __k2)
       {
-	size_type __dnew = static_cast<size_type>(std::distance(__k1, __k2));
-	size_type __dold = __i2 - __i1;
-	size_type __dmax = this->max_size();
+	const size_type __dnew = static_cast<size_type>(std::distance(__k1, __k2));
+	const size_type __dold = __i2 - __i1;
+	const size_type __dmax = this->max_size();
 
 	if (__dmax <= __dnew)
 	  __throw_length_error("basic_string::_M_replace");
-	size_type __off = __i1 - _M_ibegin();
+	const size_type __off = __i1 - _M_ibegin();
 	_M_mutate(__off, __dold, __dnew);
 
 	// Invalidated __i1, __i2
@@ -673,8 +673,8 @@ namespace std
       // Iff appending itself, string needs to pre-reserve the
       // correct size so that _M_mutate does not clobber the
       // iterators formed here.
-      size_type __size = __str.size();
-      size_type __len = __size + this->size();
+      const size_type __size = __str.size();
+      const size_type __len = __size + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
       return _M_replace_safe(_M_iend(), _M_iend(), __str._M_ibegin(),
@@ -689,8 +689,8 @@ namespace std
       // Iff appending itself, string needs to pre-reserve the
       // correct size so that _M_mutate does not clobber the
       // iterators formed here.
-      size_type __len = std::min(size_type(__str.size() - __pos),
-				 __n) + this->size();
+      const size_type __len = std::min(size_type(__str.size() - __pos),
+				       __n) + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
       return _M_replace_safe(_M_iend(), _M_iend(), __str._M_check(__pos),
@@ -702,7 +702,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     append(const _CharT* __s, size_type __n)
     {
-      size_type __len = __n + this->size();
+      const size_type __len = __n + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
       return _M_replace_safe(_M_iend(), _M_iend(), __s, __s + __n);
@@ -713,7 +713,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     append(size_type __n, _CharT __c)
     {
-      size_type __len = __n + this->size();
+      const size_type __len = __n + this->size();
       if (__len > this->capacity())
 	this->reserve(__len);
        return this->replace(_M_iend(), _M_iend(), __n, __c);
@@ -726,7 +726,7 @@ namespace std
     {
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       typedef typename __string_type::size_type	  __size_type;
-      __size_type __len = _Traits::length(__lhs);
+      const __size_type __len = _Traits::length(__lhs);
       __string_type __str;
       __str.reserve(__len + __rhs.size());
       __str.append(__lhs, __lhs + __len);
@@ -741,7 +741,7 @@ namespace std
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       typedef typename __string_type::size_type	  __size_type;
       __string_type __str;
-      __size_type __len = __rhs.size();
+      const __size_type __len = __rhs.size();
       __str.reserve(__len + 1);
       __str.append(__size_type(1), __lhs);
       __str.append(__rhs);
@@ -753,8 +753,8 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     replace(iterator __i1, iterator __i2, size_type __n2, _CharT __c)
     {
-      size_type __n1 = __i2 - __i1;
-      size_type __off1 = __i1 - _M_ibegin();
+      const size_type __n1 = __i2 - __i1;
+      const size_type __off1 = __i1 - _M_ibegin();
       if (max_size() - (this->size() - __n1) <= __n2)
 	__throw_length_error("basic_string::replace");
       _M_mutate (__off1, __n1, __n2);
@@ -785,7 +785,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find(const _CharT* __s, size_type __pos, size_type __n) const
     {
-      size_type __size = this->size();
+      const size_type __size = this->size();
       size_t __xpos = __pos;
       const _CharT* __data = _M_data();
       for (; __xpos + __n <= __size; ++__xpos)
@@ -799,12 +799,12 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find(_CharT __c, size_type __pos) const
     {
-      size_type __size = this->size();
+      const size_type __size = this->size();
       size_type __ret = npos;
       if (__pos < __size)
 	{
 	  const _CharT* __data = _M_data();
-	  size_type __n = __size - __pos;
+	  const size_type __n = __size - __pos;
 	  const _CharT* __p = traits_type::find(__data + __pos, __n, __c);
 	  if (__p)
 	    __ret = __p - __data;
@@ -818,7 +818,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     rfind(const _CharT* __s, size_type __pos, size_type __n) const
     {
-      size_type __size = this->size();
+      const size_type __size = this->size();
       if (__n <= __size)
 	{
 	  __pos = std::min(size_type(__size - __n), __pos);
@@ -838,7 +838,7 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     rfind(_CharT __c, size_type __pos) const
     {
-      size_type __size = this->size();
+      const size_type __size = this->size();
       if (__size)
 	{
 	  size_t __xpos = __size - 1;
@@ -955,13 +955,13 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     compare(size_type __pos, size_type __n, const basic_string& __str) const
     {
-      size_type __size = this->size();
-      size_type __osize = __str.size();
+      const size_type __size = this->size();
+      const size_type __osize = __str.size();
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __rsize= std::min(size_type(__size - __pos), __n);
-      size_type __len = std::min(__rsize, __osize);
+      const size_type __rsize= std::min(size_type(__size - __pos), __n);
+      const size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __str.data(), __len);
       if (!__r)
 	__r = __rsize - __osize;
@@ -974,14 +974,14 @@ namespace std
     compare(size_type __pos1, size_type __n1, const basic_string& __str,
 	    size_type __pos2, size_type __n2) const
     {
-      size_type __size = this->size();
-      size_type __osize = __str.size();
+      const size_type __size = this->size();
+      const size_type __osize = __str.size();
       if (__pos1 > __size || __pos2 > __osize)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __rsize = std::min(size_type(__size - __pos1), __n1);
-      size_type __rosize = std::min(size_type(__osize - __pos2), __n2);
-      size_type __len = std::min(__rsize, __rosize);
+      const size_type __rsize = std::min(size_type(__size - __pos1), __n1);
+      const size_type __rosize = std::min(size_type(__osize - __pos2), __n2);
+      const size_type __len = std::min(__rsize, __rosize);
       int __r = traits_type::compare(_M_data() + __pos1, 
 				     __str.data() + __pos2, __len);
       if (!__r)
@@ -995,9 +995,9 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     compare(const _CharT* __s) const
     {
-      size_type __size = this->size();
-      size_type __osize = traits_type::length(__s);
-      size_type __len = std::min(__size, __osize);
+      const size_type __size = this->size();
+      const size_type __osize = traits_type::length(__s);
+      const size_type __len = std::min(__size, __osize);
       int __r = traits_type::compare(_M_data(), __s, __len);
       if (!__r)
 	__r = __size - __osize;
@@ -1010,13 +1010,13 @@ namespace std
     basic_string <_CharT, _Traits, _Alloc>::
     compare(size_type __pos, size_type __n1, const _CharT* __s) const
     {
-      size_type __size = this->size();
+      const size_type __size = this->size();
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __osize = traits_type::length(__s);
-      size_type __rsize = std::min(size_type(__size - __pos), __n1);
-      size_type __len = std::min(__rsize, __osize);
+      const size_type __osize = traits_type::length(__s);
+      const size_type __rsize = std::min(size_type(__size - __pos), __n1);
+      const size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
       if (!__r)
 	__r = __rsize - __osize;
@@ -1029,13 +1029,13 @@ namespace std
     compare(size_type __pos, size_type __n1, const _CharT* __s, 
 	    size_type __n2) const
     {
-      size_type __size = this->size();
+      const size_type __size = this->size();
       if (__pos > __size)
 	__throw_out_of_range("basic_string::compare");
       
-      size_type __osize = std::min(traits_type::length(__s), __n2);
-      size_type __rsize = std::min(size_type(__size - __pos), __n1);
-      size_type __len = std::min(__rsize, __osize);
+      const size_type __osize = std::min(traits_type::length(__s), __n2);
+      const size_type __rsize = std::min(size_type(__size - __pos), __n1);
+      const size_type __len = std::min(__rsize, __osize);
       int __r = traits_type::compare(_M_data() + __pos, __s, __len);
       if (!__r)
 	__r = __rsize - __osize;

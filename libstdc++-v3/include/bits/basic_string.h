@@ -283,8 +283,8 @@ namespace std
       iterator
       _M_fold(size_type __pos, size_type __off) const
       {
-	bool __testoff =  __off < this->size() - __pos;
-	size_type __newoff = __testoff ? __off : this->size() - __pos;
+	const bool __testoff =  __off < this->size() - __pos;
+	const size_type __newoff = __testoff ? __off : this->size() - __pos;
 	return (_M_ibegin() + __pos + __newoff);
       }
 
@@ -378,8 +378,8 @@ namespace std
       iterator
       end()
       {
-         _M_leak();
-	 return iterator(_M_data() + this->size());
+	_M_leak();
+	return iterator(_M_data() + this->size());
       }
 
       const_iterator
@@ -550,7 +550,7 @@ namespace std
       iterator
       insert(iterator __p, _CharT __c = _CharT())
       {
-	size_type __pos = __p - _M_ibegin();
+	const size_type __pos = __p - _M_ibegin();
 	this->insert(_M_check(__pos), size_type(1), __c);
 	_M_rep()->_M_set_leaked();
  	return this->_M_ibegin() + __pos;
@@ -566,7 +566,7 @@ namespace std
       iterator
       erase(iterator __position)
       {
-	size_type __i = __position - _M_ibegin();
+	const size_type __i = __position - _M_ibegin();
         this->replace(__position, __position + 1, _M_data(), _M_data());
 	_M_rep()->_M_set_leaked();
 	return _M_ibegin() + __i;
@@ -575,10 +575,10 @@ namespace std
       iterator
       erase(iterator __first, iterator __last)
       {
-        size_type __i = __first - _M_ibegin();
+        const size_type __i = __first - _M_ibegin();
 	this->replace(__first, __last, _M_data(), _M_data());
 	_M_rep()->_M_set_leaked();
-       return _M_ibegin() + __i;
+	return _M_ibegin() + __i;
       }
 
       basic_string&
@@ -716,7 +716,7 @@ namespace std
       c_str() const
       {
 	// MT: This assumes concurrent writes are OK.
-	size_type __n = this->size();
+	const size_type __n = this->size();
 	traits_type::assign(_M_data()[__n], _Rep::_S_terminal);
         return _M_data();
       }
@@ -825,9 +825,9 @@ namespace std
       int
       compare(const basic_string& __str) const
       {
-	size_type __size = this->size();
-	size_type __osize = __str.size();
-	size_type __len = std::min(__size, __osize);
+	const size_type __size = this->size();
+	const size_type __osize = __str.size();
+	const size_type __len = std::min(__size, __osize);
 
 	int __r = traits_type::compare(_M_data(), __str.data(), __len);
 	if (!__r)
