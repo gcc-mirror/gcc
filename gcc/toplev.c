@@ -256,7 +256,7 @@ enum dump_file_index
   DFI_cse,
   DFI_addressof,
   DFI_ssa,
-  DFI_dce,
+  DFI_ssa_dce,
   DFI_ussa,
   DFI_gcse,
   DFI_loop,
@@ -302,7 +302,7 @@ struct dump_file_info dump_file[DFI_MAX] =
   { "cse",	's', 0, 0, 0 },
   { "addressof", 'F', 0, 0, 0 },
   { "ssa",	'e', 1, 0, 0 },
-  { "dce",	'X', 1, 0, 0 },
+  { "ssadce",	'X', 1, 0, 0 },
   { "ussa",	'e', 1, 0, 0 },	/* Yes, duplicate enable switch.  */
   { "gcse",	'G', 1, 0, 0 },
   { "loop",	'L', 1, 0, 0 },
@@ -819,7 +819,7 @@ int flag_gnu_linker = 1;
 int flag_ssa = 0;
 
 /* Enable dead code elimination. */
-int flag_dce = 0;
+int flag_ssa_dce = 0;
 
 /* Tag all structures with __attribute__(packed).  */
 int flag_pack_struct = 0;
@@ -1142,8 +1142,8 @@ lang_independent_options f_options[] =
    N_("Instrument function entry/exit with profiling calls") },
   {"ssa", &flag_ssa, 1,
    N_("Enable SSA optimizations") },
-  {"dce", &flag_dce, 1,
-   N_("Enable dead code elimination") },
+  {"ssa-dce", &flag_ssa_dce, 1,
+   N_("Enable aggressive SSA dead code elimination") },
   {"leading-underscore", &flag_leading_underscore, 1,
    N_("External symbols have a leading underscore") },
   {"ident", &flag_no_ident, 0,
@@ -3064,18 +3064,18 @@ rest_of_compilation (decl)
 	 blocks, e.g., calling find_basic_blocks () or cleanup_cfg (),
 	 may cause problems.  */
 
-      if (flag_dce)
+      if (flag_ssa_dce)
 	{
 	  /* Remove dead code. */
 
-	  timevar_push (TV_DEAD_CODE_ELIM);
-	  open_dump_file (DFI_dce, decl);
+	  timevar_push (TV_SSA_DCE);
+	  open_dump_file (DFI_ssa_dce, decl);
 
 	  insns = get_insns ();
-	  eliminate_dead_code();
+	  ssa_eliminate_dead_code();
 
-	  close_dump_file (DFI_dce, print_rtl_with_bb, insns);
-	  timevar_pop (TV_DEAD_CODE_ELIM);
+	  close_dump_file (DFI_ssa_dce, print_rtl_with_bb, insns);
+	  timevar_pop (TV_SSA_DCE);
 	}
 
       /* Convert from SSA form.  */
