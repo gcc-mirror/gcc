@@ -1,3 +1,10 @@
+2001-06-09  Nicola Pero <nicola@brainstorm.co.uk>
+
+	* gthr-posix.h (__gthread_objc_init_thread_system): If
+	pthread_key_create fails, it's not clear what the return value is.
+	This obvious fix makes sure it always returns -1 if a problem
+	occurs.
+
 2001-06-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* unwind-pe.h: Conditionally qualify references to abort with
