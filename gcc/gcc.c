@@ -56,9 +56,6 @@ int __spawnvp ();
 #endif
 #include <stdio.h>
 
-/* Include multi-lib information.  */
-#include "multilib.h"
-
 #ifndef R_OK
 #define R_OK 4
 #define W_OK 2
@@ -475,13 +472,6 @@ proper position among the other output files.  */
 #endif
 #endif
 
-/* MULTILIB_SELECT comes from multilib.h.  It gives a
-   string interpreted by set_multilib_dir to select a library
-   subdirectory based on the compiler options.  */
-#ifndef MULTILIB_SELECT
-#define MULTILIB_SELECT ". ;"
-#endif
-
 static char *cpp_spec = CPP_SPEC;
 static char *cpp_predefines = CPP_PREDEFINES;
 static char *cc1_spec = CC1_SPEC;
@@ -495,7 +485,14 @@ static char *libgcc_spec = LIBGCC_SPEC;
 static char *endfile_spec = ENDFILE_SPEC;
 static char *startfile_spec = STARTFILE_SPEC;
 static char *switches_need_spaces = SWITCHES_NEED_SPACES;
-static char *multilib_select = MULTILIB_SELECT;
+
+/* Some compilers have limits on line lengths, and the multilib_select
+   string can be very long, so we build it at run time.  */
+static struct obstack multilib_obstack;
+static char *multilib_raw[] = {
+#include "multilib.h"
+};
+static char *multilib_select;
 
 #ifdef EXTRA_SPECS
 static struct { char *name, *spec; } extra_specs[] = { EXTRA_SPECS };
@@ -4200,6 +4197,19 @@ main (argc, argv)
   argbuf = (char **) xmalloc (argbuf_length * sizeof (char *));
 
   obstack_init (&obstack);
+
+  /* Build multilib_select from the separate lines that make up each multilib
+     selection.  */
+  {
+    char **q = multilib_raw;
+
+    obstack_init (&multilib_obstack);
+    while ((p = *q++) != (char *)0)
+      obstack_grow (&multilib_obstack, p, strlen (p));
+
+    obstack_1grow (&multilib_obstack, 0);
+    multilib_select = obstack_finish (&multilib_obstack);
+  }
 
   /* Set up to remember the pathname of gcc and any options
      needed for collect.  We use argv[0] instead of programname because
