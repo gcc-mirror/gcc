@@ -125,7 +125,6 @@ rtx sjpopnthrow_libfunc;
 rtx terminate_libfunc;
 rtx setjmp_libfunc;
 rtx longjmp_libfunc;
-rtx get_dynamic_handler_chain_libfunc;
 
 rtx eqhf2_libfunc;
 rtx nehf2_libfunc;
@@ -4305,7 +4304,6 @@ init_optabs ()
   setjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "setjmp");
   longjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "longjmp");
 #endif
-  get_dynamic_handler_chain_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__get_dynamic_handler_chain");
 
   eqhf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__eqhf2");
   nehf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__nehf2");
