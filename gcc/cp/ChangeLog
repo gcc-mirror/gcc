@@ -1,3 +1,27 @@
+1998-07-14  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (joust): Don't warn about "confusing" conversions to the
+	same type.
+
+1998-07-14  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* class.c (push_nested_class): Complain about namespaces.
+	* decl.c (start_decl): Enter the object's namespace.
+	(cp_finish_decl): Leave it.
+	(grokdeclarator): Likewise.
+	* decl2.c (check_decl_namespace): New function.
+	(finish_file): Call it.
+	* parse.y (complex_direct_notype_declarator): Set complexity
+	of namespace-qualified ids to -1, enter the namespace.
+
+	* method.c (build_template_decl_overload): Expect _DECL as first
+	parameter. Put context temporarily into current_namespace.
+	* pt.c (check_explicit_specialization): Change caller.
+	(tsubst): Likewise.
+
+	* init.c (build_offset_ref): Call mark_used and
+	convert_from_reference for namespace members.
+
 Mon Jul 13 23:25:28 1998  Martin von Lvwis  <loewis@informatik.hu-berlin.de>
 
 	* search.c (my_tree_cons): The bitfield is at index 2.

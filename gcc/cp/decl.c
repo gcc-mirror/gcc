@@ -6270,6 +6270,14 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       ? DECL_CLASS_CONTEXT (decl)
       : DECL_CONTEXT (decl);
 
+  if (initialized && context && TREE_CODE (context) == NAMESPACE_DECL
+      && context != current_namespace && TREE_CODE (decl) == VAR_DECL)
+    {
+      /* When parsing the initializer, lookup should use the object's
+	 namespace. */
+      push_decl_namespace (context);
+    }
+
   /* We are only interested in class contexts, later. */
   if (context && TREE_CODE (context) == NAMESPACE_DECL)
     context = NULL_TREE;
@@ -6723,6 +6731,16 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       cp_error ("Cannot initialize `%D' to namespace `%D'",
 		decl, init);
       init = NULL_TREE;
+    }
+
+  if (TREE_CODE (decl) == VAR_DECL 
+      && DECL_CONTEXT (decl)
+      && TREE_CODE (DECL_CONTEXT (decl)) == NAMESPACE_DECL
+      && DECL_CONTEXT (decl) != current_namespace
+      && init)
+    {
+      /* Leave the namespace of the object. */
+      pop_decl_namespace ();
     }
 
   /* If the type of the thing we are declaring either has
@@ -9524,6 +9542,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    if (TREE_COMPLEXITY (declarator) == 0)
 	      /* This needs to be here, in case we are called
 		 multiple times.  */ ;
+	    else if (TREE_COMPLEXITY (declarator) == -1)
+	      /* Namespace member. */
+	      pop_decl_namespace ();
 	    else if (friendp && (TREE_COMPLEXITY (declarator) < 2))
 	      /* Don't fall out into global scope. Hides real bug? --eichin */ ;
 	    else if (! IS_AGGR_TYPE_CODE

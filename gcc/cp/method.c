@@ -1657,17 +1657,31 @@ build_decl_overload (dname, parms, for_method)
 /* Like build_decl_overload, but for template functions. */
 
 tree
-build_template_decl_overload (dname, parms, ret_type, tparms, targs,
+build_template_decl_overload (decl, parms, ret_type, tparms, targs,
 			      for_method) 
-     tree dname;
+     tree decl;
      tree parms;
      tree ret_type;
      tree tparms;
      tree targs;
      int for_method;
 {
-  return build_decl_overload_real (dname, parms, ret_type, tparms, targs,
-				   for_method); 
+  tree res, saved_ctx;
+
+  /* If the template is in a namespace, we need to put that into the
+     mangled name. Unfortunately, build_decl_overload_real does not
+     get the decl to mangle, so it relies on the current
+     namespace. Therefore, we set that here temporarily. */
+
+  my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd', 980702);
+  saved_ctx = current_namespace;
+  current_namespace = CP_DECL_CONTEXT (decl);  
+
+  res = build_decl_overload_real (DECL_NAME (decl), parms, ret_type,
+				  tparms, targs, for_method); 
+
+  current_namespace = saved_ctx;
+  return res;
 }
 
 

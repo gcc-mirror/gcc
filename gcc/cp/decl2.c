@@ -62,6 +62,7 @@ static tree namespace_ancestor PROTO((tree, tree));
 static void add_using_namespace PROTO((tree, tree, int));
 static tree ambiguous_decl PROTO((tree, tree, tree));
 static tree build_anon_union_vars PROTO((tree, tree*, int, int));
+static void check_decl_namespace PROTO((void));
 
 extern int current_class_depth;
 
@@ -3125,6 +3126,8 @@ finish_file ()
   if (! global_bindings_p () || current_class_type)
     return;
 
+  check_decl_namespace ();
+
   start_time = get_run_time ();
 
   /* Otherwise, GDB can get confused, because in only knows
@@ -4114,6 +4117,12 @@ void
 pop_decl_namespace ()
 {
   decl_namespace_list = TREE_CHAIN (decl_namespace_list);
+}
+
+static void 
+check_decl_namespace ()
+{
+  my_friendly_assert (decl_namespace_list == NULL_TREE, 980711);
 }
 
 /* [basic.lookup.koenig] */

@@ -1538,7 +1538,11 @@ build_offset_ref (type, name)
 
   /* Handle namespace names fully here.  */
   if (TREE_CODE (type) == NAMESPACE_DECL)
-      return lookup_namespace_name (type, name);
+    {
+      t = lookup_namespace_name (type, name);
+      mark_used (t);
+      return convert_from_reference (t);
+    }
 
   if (type == NULL_TREE || ! is_aggr_type (type, 1))
     return error_mark_node;
