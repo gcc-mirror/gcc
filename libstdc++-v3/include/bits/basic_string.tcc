@@ -514,11 +514,11 @@ namespace std
   // i.e., when source and destination ranges are known to not overlap.
   // Presently, is called by _M_replace and by the various append.
   template<typename _CharT, typename _Traits, typename _Alloc>
-    template<typename _InputIter>
+    template<typename _ForwardIter>
       basic_string<_CharT, _Traits, _Alloc>&
       basic_string<_CharT, _Traits, _Alloc>::
-      _M_replace_safe(iterator __i1, iterator __i2, _InputIter __k1, 
-		      _InputIter __k2)
+      _M_replace_safe(iterator __i1, iterator __i2, _ForwardIter __k1, 
+		      _ForwardIter __k2)
       {
 	size_type __dnew = static_cast<size_type>(distance(__k1, __k2));
 	size_type __dold = __i2 - __i1;
