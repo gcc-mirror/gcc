@@ -160,8 +160,8 @@ static void push_macro_expansion PARAMS ((cpp_reader *,
 static struct cpp_pending *nreverse_pending PARAMS ((struct cpp_pending *));
 
 static void conditional_skip		PROTO ((cpp_reader *, int,
-					       enum node_type, U_CHAR *));
-static void skip_if_group		PROTO ((cpp_reader *, int));
+						enum node_type, U_CHAR *));
+static void skip_if_group		PROTO ((cpp_reader *));
 static int parse_name                   PARAMS ((cpp_reader *, int));
 static void print_help                  PROTO ((void));
 
@@ -3549,11 +3549,11 @@ do_elif (pfile, keyword)
   }
 
   if (pfile->if_stack->if_succeeded)
-    skip_if_group (pfile, 0);
+    skip_if_group (pfile);
   else {
     HOST_WIDE_INT value = eval_if_expression (pfile);
     if (value == 0)
-      skip_if_group (pfile, 0);
+      skip_if_group (pfile);
     else {
       ++pfile->if_stack->if_succeeded;	/* continue processing input */
       output_line_command (pfile, 1, same_file);
@@ -3695,7 +3695,7 @@ conditional_skip (pfile, skip, type, control_macro)
   pfile->if_stack->type = type;
 
   if (skip != 0) {
-    skip_if_group (pfile, 0);
+    skip_if_group (pfile);
     return;
   } else {
     ++pfile->if_stack->if_succeeded;
@@ -3703,167 +3703,155 @@ conditional_skip (pfile, skip, type, control_macro)
   }
 }
 
-/*
- * skip to #endif, #else, or #elif.  adjust line numbers, etc.
- * leaves input ptr at the sharp sign found.
- * If ANY is nonzero, return at next directive of any sort.
- */
+/* Subroutine of skip_if_group.	 Examine one preprocessing directive and
+   return 0 if skipping should continue, 1 if it should halt.  Also
+   adjusts the if_stack as appropriate.
+   The `#' has been read, but not the identifier. */
 
+static int
+consider_directive_while_skipping (pfile, stack)
+    cpp_reader *pfile;
+    IF_STACK_FRAME *stack; 
+{
+  long ident_len, ident;
+  struct directive *kt;
+  IF_STACK_FRAME *temp;
+    
+  cpp_skip_hspace (pfile);
+
+  ident = CPP_WRITTEN (pfile);
+  parse_name (pfile, GETC());
+  ident_len = CPP_WRITTEN (pfile) - ident;
+
+  CPP_SET_WRITTEN (pfile, ident);
+
+  for (kt = directive_table; kt->length >= 0; kt++)
+    if (kt->length == ident_len
+	&& strncmp (pfile->token_buffer + ident, kt->name, kt->length) == 0)
+      switch (kt->type)
+	{
+	case T_IF:
+	case T_IFDEF:
+	case T_IFNDEF:
+	    temp = (IF_STACK_FRAME *) xmalloc (sizeof (IF_STACK_FRAME));
+	    temp->next = pfile->if_stack;
+	    pfile->if_stack = temp;
+	    temp->fname = CPP_BUFFER(pfile)->nominal_fname;
+	    temp->type = kt->type;
+	    return 0;
+
+	case T_ELSE:
+	    if (CPP_PEDANTIC (pfile) && pfile->if_stack != stack)
+	      validate_else (pfile, "#else");
+	    /* fall through */
+	case T_ELIF:
+	    if (pfile->if_stack->type == T_ELSE)
+	      cpp_error (pfile, "`%s' after `#else'", kt->name);
+	    
+	    if (pfile->if_stack == stack)
+	      return 1;
+	    else
+	      {
+		pfile->if_stack->type = kt->type;
+		return 0;
+	      }
+
+	    case T_ENDIF:
+		if (CPP_PEDANTIC (pfile) && pfile->if_stack != stack)
+		  validate_else (pfile, "#endif");
+
+		if (pfile->if_stack == stack)
+		  return 1;
+		    
+		temp = pfile->if_stack;
+		pfile->if_stack = temp->next;
+		free (temp);
+		return 0;
+
+	    default:
+		return 0;
+	    }
+
+    /* Don't let erroneous code go by.	*/
+    if (!CPP_OPTIONS (pfile)->lang_asm && CPP_PEDANTIC (pfile))
+	cpp_pedwarn (pfile, "invalid preprocessor directive name");
+    return 0;
+}
+
+/* skip to #endif, #else, or #elif.  adjust line numbers, etc.
+ * leaves input ptr at the sharp sign found.
+ */
 static void
-skip_if_group (pfile, any)
-     cpp_reader *pfile;
-     int any;
+skip_if_group (pfile)
+    cpp_reader *pfile;
 {
   int c;
-  struct directive *kt;
   IF_STACK_FRAME *save_if_stack = pfile->if_stack; /* don't pop past here */
-#if 0
-  U_CHAR *beg_of_line = bp;
-#endif
-  register int ident_length;
-  U_CHAR *ident;
-  struct parse_marker line_start_mark;
+  U_CHAR *beg_of_line;
+  long old_written;
 
-  parse_set_mark (&line_start_mark, pfile);
-
-  if (CPP_OPTIONS (pfile)->output_conditionals) {
-    static char failed[] = "#failed\n";
-    CPP_PUTS (pfile, failed, sizeof(failed)-1);
-    pfile->lineno++;
-    output_line_command (pfile, 1, same_file);
-  }
-
- beg_of_line:
   if (CPP_OPTIONS (pfile)->output_conditionals)
     {
-      cpp_buffer *pbuf = CPP_BUFFER (pfile);
-      U_CHAR *start_line = pbuf->buf + line_start_mark.position;
-      CPP_PUTS (pfile, start_line, pbuf->cur - start_line);
+      CPP_PUTS (pfile, "#failed\n", 8);
+      pfile->lineno++;
+      output_line_command (pfile, 1, same_file);
     }
-  parse_move_mark (&line_start_mark, pfile);
-  if (!CPP_TRADITIONAL (pfile))
-      cpp_skip_hspace (pfile);
-  c  = GETC();
-  if (c == '#')
+
+  old_written = CPP_WRITTEN (pfile);
+  
+  for (;;)
     {
-      int old_written = CPP_WRITTEN (pfile);
-      cpp_skip_hspace (pfile);
+      beg_of_line = CPP_BUFFER (pfile)->cur;
 
-      parse_name (pfile, GETC());
-      ident_length = CPP_WRITTEN (pfile) - old_written;
-      ident = pfile->token_buffer + old_written;
-      pfile->limit = ident;
-#if 0
-      if (ident_length == 0)
-	goto not_a_directive;
-
-      /* Handle # followed by a line number.  */
-
-      /* Avoid error for `###' and similar cases unless -pedantic.  */
-#endif
-
-      for (kt = directive_table; kt->length >= 0; kt++)
+      if (! CPP_TRADITIONAL (pfile))
+	cpp_skip_hspace (pfile);
+      c = GETC();
+      if (c == '\n')
 	{
-	  IF_STACK_FRAME *temp;
-	  if (ident_length == kt->length
-	      && strncmp (ident, kt->name, kt->length) == 0)
-	    {
-	      /* If we are asked to return on next directive, do so now.  */
-	      if (any)
-		goto done;
-
-	      switch (kt->type)
-		{
-		case T_IF:
-		case T_IFDEF:
-		case T_IFNDEF:
-		  temp
-		    = (IF_STACK_FRAME *) xcalloc (1, sizeof (IF_STACK_FRAME));
-		  temp->next = pfile->if_stack;
-		  pfile->if_stack = temp;
-#if 0
-		  temp->lineno = CPP_BUFFER(pfile)->lineno;
-#endif
-		  temp->fname = CPP_BUFFER(pfile)->nominal_fname;
-		  temp->type = kt->type;
-		  break;
-		case T_ELSE:
-		case T_ENDIF:
-		  if (CPP_PEDANTIC (pfile) && pfile->if_stack != save_if_stack)
-		    validate_else (pfile,
-				   kt->type == T_ELSE ? "#else" : "#endif");
-		case T_ELIF:
-		  if (pfile->if_stack == CPP_BUFFER (pfile)->if_stack)
-		    {
-		      cpp_error (pfile,
-				 "`#%s' not within a conditional", kt->name);
-		      break;
-		    }
-		  else if (pfile->if_stack == save_if_stack)
-		    goto done;		/* found what we came for */
-
-		  if (kt->type != T_ENDIF)
-		    {
-		      if (pfile->if_stack->type == T_ELSE)
-			cpp_error (pfile, "`#else' or `#elif' after `#else'");
-		      pfile->if_stack->type = kt->type;
-		      break;
-		    }
-
-		  temp = pfile->if_stack;
-		  pfile->if_stack = temp->next;
-		  free (temp);
-		  break;
-	      default: ;
-		}
-	      break;
-	    }
-	  /* Don't let erroneous code go by.  */
-	  if (kt->length < 0 && !CPP_OPTIONS (pfile)->lang_asm
-	      && CPP_PEDANTIC (pfile))
-	    cpp_pedwarn (pfile, "invalid preprocessor directive name");
+	  if (CPP_OPTIONS (pfile)->output_conditionals)
+	    CPP_PUTC (pfile, c);
+	  continue;
 	}
-      c = GETC ();
-    }
-  /* We're in the middle of a line.  Skip the rest of it.  */
-  for (;;) {
-    switch (c)
-      {
-	long old;
-      case EOF:
-	goto done;
-      case '/':			/* possible comment */
-	c = skip_comment (pfile, NULL);
-	if (c == EOF)
-	  goto done;
-	break;
-      case '\"':
-      case '\'':
-	FORWARD(-1);
-	old = CPP_WRITTEN (pfile);
-	cpp_get_token (pfile);
-	CPP_SET_WRITTEN (pfile, old);
-	break;
-      case '\\':
-	/* Char after backslash loses its special meaning.  */
-	if (PEEKC() == '\n')
-	  FORWARD (1);
-	break;
-      case '\n':
-	goto beg_of_line;
-	break;
-      }
-    c = GETC ();
-  }
- done:
-  if (CPP_OPTIONS (pfile)->output_conditionals) {
-    static char end_failed[] = "#endfailed\n";
-    CPP_PUTS (pfile, end_failed, sizeof(end_failed)-1);
-    pfile->lineno++;
-  }
+      else if (c == '#')
+	{
+	  if (consider_directive_while_skipping (pfile, save_if_stack))
+	    break;
+	}
+      else if (c == EOF)
+	return;	 /* Caller will issue error. */
+
+      FORWARD(-1);
+      if (CPP_OPTIONS (pfile)->output_conditionals)
+	{
+	  CPP_PUTS (pfile, beg_of_line, CPP_BUFFER (pfile)->cur - beg_of_line);
+	  copy_rest_of_line (pfile);
+	}
+      else
+	{
+	  copy_rest_of_line (pfile);
+	  CPP_SET_WRITTEN (pfile, old_written);	 /* discard it */
+	}
+
+      c = GETC();
+      if (c == EOF)
+	return;	 /* Caller will issue error. */
+      else
+	{
+	  /* \n */
+	  if (CPP_OPTIONS (pfile)->output_conditionals)
+	    CPP_PUTC (pfile, c);
+	}
+    }	  
+
+  /* Back up to the beginning of this line.  Caller will process the
+     directive. */
+  CPP_BUFFER (pfile)->cur = beg_of_line;
   pfile->only_seen_white = 1;
-  parse_goto_mark (&line_start_mark, pfile);
-  parse_clear_mark (&line_start_mark);
+  if (CPP_OPTIONS (pfile)->output_conditionals)
+    {
+      CPP_PUTS (pfile, "#endfailed\n", 11);
+      pfile->lineno++;
+    }
 }
 
 /*
@@ -3903,7 +3891,7 @@ do_else (pfile, keyword)
   }
 
   if (pfile->if_stack->if_succeeded)
-    skip_if_group (pfile, 0);
+    skip_if_group (pfile);
   else {
     ++pfile->if_stack->if_succeeded;	/* continue processing input */
     output_line_command (pfile, 1, same_file);
