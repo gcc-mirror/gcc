@@ -239,6 +239,7 @@ namespace std {
 		    __ios.setstate(ios_base::eofbit);
 		    break;
 		  }
+		__bufsize = __sbin->in_avail();
 	      }
 	    else
 	      break;
