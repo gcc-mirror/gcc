@@ -1,3 +1,11 @@
+Fri Aug 18 16:22:20 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/elf.h: Do not include sh/sh.h.
+	* config/sh/rtems.h: Likewise.
+	* config/sh/rtemself.h: Do not include sh/elf.h.
+	* configure.in: Get them included with `tm_file's.
+	* configure: Rebuilt.
+
 Fri Aug 18 16:01:18 2000  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.md (fpu_switch0, fpu_switch1): Simplify.
