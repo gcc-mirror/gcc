@@ -1,3 +1,9 @@
+2004-09-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17585
+	* semantics.c (finish_id_expression): Do not add "this->" to
+	static member functions.
+
 2004-09-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/17681
