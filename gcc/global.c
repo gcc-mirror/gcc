@@ -367,8 +367,8 @@ global_alloc (file)
      that need a register window.  So prefer the ones that can be used in
      a leaf function.  */
   {
-    char *cheap_regs;
-    char *leaf_regs = LEAF_REGISTERS;
+    const char *cheap_regs;
+    const char *const leaf_regs = LEAF_REGISTERS;
 
     if (only_leaf_regs_used () && leaf_function_p ())
       cheap_regs = leaf_regs;

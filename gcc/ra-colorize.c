@@ -1160,7 +1160,7 @@ hardregset_to_string (s)
 {
   static char string[/*FIRST_PSEUDO_REGISTER + 30*/1024];
 #if FIRST_PSEUDO_REGISTER <= HOST_BITS_PER_WIDE_INT
-  sprintf (string, "%x", s);
+  sprintf (string, HOST_WIDE_INT_PRINT_HEX, s);
 #else
   char *c = string;
   int i,j;

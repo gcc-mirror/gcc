@@ -1090,7 +1090,7 @@ ip2k_set_compare (x, y)
   if (GET_MODE (x) == DImode && GET_CODE (y) == CONST_INT)
     {
       rtx value;
-      int i;
+      size_t i;
       
       value = rtx_alloc (CONST_DOUBLE);
       PUT_MODE (value, VOIDmode);
