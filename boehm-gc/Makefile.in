@@ -138,7 +138,7 @@ AM_CFLAGS = @BOEHM_GC_CFLAGS@
 check_PROGRAMS = gctest
 gctest_SOURCES = test.c
 gctest_LDADD = ./libgcjgc.la $(THREADLIBS) $(EXTRA_TEST_LIBS)
-
+gctest_LDFLAGS = -shared-gcc
 TESTS_ENVIRONMENT = LD_LIBRARY_PATH=../../$(MULTIBUILDTOP)gcc
 TESTS = gctest
 
@@ -214,7 +214,6 @@ solaris_threads.lo stubborn.lo typd_mlc.lo
 check_PROGRAMS =  gctest$(EXEEXT)
 gctest_OBJECTS =  test.$(OBJEXT)
 gctest_DEPENDENCIES =  ./libgcjgc.la
-gctest_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
 CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
