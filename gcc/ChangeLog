@@ -1,3 +1,8 @@
+Mon May 18 10:59:23 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* dbxout.c (dbxout_parms): Use TREE_ARG to compute the type of a
+	function parameter passed in memory.
+
 Mon May 18 09:02:09 1998  Robert Lipe  <robertl@dgii.com>
 
 	* dwarfout.h, dwarf2out.h, dbxout.h, sdbout.h:  New files.
