@@ -1059,6 +1059,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_CC=config/locale/c_locale_generic.cc
       CCODECVT_H=config/locale/codecvt_specializations_generic.h
       CCOLLATE_CC=config/locale/collate_members_generic.cc
+      CCTYPE_CC=config/locale/ctype_members_generic.cc
       CMESSAGES_H=config/locale/messages_members_generic.h
       CMESSAGES_CC=config/locale/messages_members_generic.cc
       CMONEY_CC=config/locale/moneypunct_members_generic.cc
@@ -1088,6 +1089,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_CC=config/locale/c_locale_gnu.cc
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
       CCOLLATE_CC=config/locale/collate_members_gnu.cc
+      CCTYPE_CC=config/locale/ctype_members_gnu.cc
       CMESSAGES_H=config/locale/messages_members_gnu.h
       CMESSAGES_CC=config/locale/messages_members_gnu.cc
       CMONEY_CC=config/locale/moneypunct_members_gnu.cc
@@ -1104,6 +1106,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CLOCALE_CC=config/locale/c_locale_ieee_1003.1-200x.cc
       CCODECVT_H=config/locale/codecvt_specializations_ieee_1003.1-200x.h
       CCOLLATE_CC=config/locale/collate_members_generic.cc
+      CCTYPE_CC=config/locale/ctype_members_generic.cc
       CMESSAGES_H=config/locale/messages_members_ieee_1003.1-200x.h
       CMESSAGES_CC=config/locale/messages_members_ieee_1003.1-200x.cc
       CMONEY_CC=config/locale/moneypunct_members_generic.cc
@@ -1127,6 +1130,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
   AC_SUBST(CMESSAGES_H)
   AC_LINK_FILES($CLOCALE_CC, src/c++locale.cc)
   AC_LINK_FILES($CCOLLATE_CC, src/collate.cc)
+  AC_LINK_FILES($CCTYPE_CC, src/ctype.cc)
   AC_LINK_FILES($CMESSAGES_CC, src/messages.cc)
   AC_LINK_FILES($CMONEY_CC, src/moneypunct.cc)
   AC_LINK_FILES($CNUMERIC_CC, src/numpunct.cc)

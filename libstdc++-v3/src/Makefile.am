@@ -60,13 +60,14 @@ INCLUDES = \
 	$(TOPLEVEL_INCLUDES)
 
 sources = \
-	basic_file.cc bitset.cc c++locale.cc cmath.cc codecvt.cc \
-	complex_io.cc functexcept.cc globals.cc ios.cc limits.cc \
-	locale.cc locale-inst.cc localename.cc \
-	collate.cc messages.cc moneypunct.cc numpunct.cc time.cc \
-	vterminate.cc \
-	misc-inst.cc stdexcept.cc stl-inst.cc string-inst.cc strstream.cc \
-	valarray-inst.cc wstring-inst.cc concept-inst.cc ext-inst.cc
+	globals.cc limits.cc \
+	basic_file.cc complex_io.cc ios.cc strstream.cc \
+	cmath.cc bitset.cc \
+	functexcept.cc stdexcept.cc vterminate.cc \
+	c++locale.cc locale.cc localename.cc codecvt.cc \
+	collate.cc ctype.cc messages.cc moneypunct.cc numpunct.cc time.cc \
+	concept-inst.cc locale-inst.cc misc-inst.cc stl-inst.cc \
+	string-inst.cc wstring-inst.cc valarray-inst.cc  ext-inst.cc
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 

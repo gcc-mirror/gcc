@@ -61,8 +61,7 @@
   ctype<char>::
   scan_not(mask __m, const char* __low, const char* __high) const
   {
-    while (__low < __high 
-	   && (_M_table[*__low] & __m) != 0)
+    while (__low < __high && (_M_table[*__low] & __m) != 0)
       ++__low;
     return __low;
   }

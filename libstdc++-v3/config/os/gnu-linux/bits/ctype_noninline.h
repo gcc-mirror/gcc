@@ -43,25 +43,27 @@
   ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del, 
 		     size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
-  _M_toupper(__cloc ? __cloc->__ctype_toupper : __ctype_toupper), 
-  _M_tolower(__cloc ? __cloc->__ctype_tolower : __ctype_tolower),
-  _M_ctable(__ctype_b), 
-  _M_table(__table ? __table : (__cloc ? __cloc->__ctype_b : __ctype_b))
-  { }
+  _M_ctable(__ctype_b)
+  {
+    _M_c_locale_ctype = _S_clone_c_locale(__cloc);
+    _M_toupper = _M_c_locale_ctype->__ctype_toupper;
+    _M_tolower = _M_c_locale_ctype->__ctype_tolower;
+    _M_table = __table ? __table : _M_c_locale_ctype->__ctype_b;
+  }
 #else
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs) 
   : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
   _M_ctable(__ctype_b), _M_table(__table ? __table : __ctype_b)
-  { }
+  { _M_c_locale_ctype = NULL; }
 #endif
 
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
   __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
   _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
   _M_ctable(__ctype_b), _M_table(__table == 0 ? _M_ctable : __table) 
-  { }
+  { _M_c_locale_ctype = NULL; }
 
   char
   ctype<char>::do_toupper(char __c) const

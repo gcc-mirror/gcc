@@ -348,9 +348,18 @@ namespace std
     return __ret;
   }
 
+  __c_locale
+  locale::facet::_S_c_locale;
+  
+  locale::facet::
+  ~facet() { }
+
   locale::facet::
   facet(size_t __refs) throw() : _M_references(__refs) 
-  { }
+  { 
+    if (!_S_c_locale)
+      _S_create_c_locale(_S_c_locale, "C");
+  }
 
   void  
   locale::facet::
@@ -370,6 +379,8 @@ namespace std
       }
   }
   
+  locale::id::id() { }
+
   // Definitions for static const data members of ctype_base.
   const ctype_base::mask ctype_base::space;
   const ctype_base::mask ctype_base::print;
@@ -389,7 +400,12 @@ namespace std
   const size_t ctype<char>::table_size;
 
   ctype<char>::~ctype()
-  { if (_M_del) delete[] this->table(); }
+  { 
+    if (_M_c_locale_ctype)
+      _S_destroy_c_locale(_M_c_locale_ctype);
+    if (_M_del) 
+      delete[] this->table(); 
+  }
 
   // These are dummy placeholders as these virtual functions are never called.
   bool 
@@ -431,171 +447,26 @@ namespace std
     return __hi;
   }
 
-  template<>
-  ctype_byname<char>::ctype_byname(const char* /*__s*/, size_t __refs)
-  : ctype<char>(new mask[table_size], true, __refs)
-  { }
-
-#ifdef _GLIBCPP_USE_WCHAR_T  
-  ctype<wchar_t>::__wmask_type
-  ctype<wchar_t>::_M_convert_to_wmask(const mask __m) const
-  {
-    __wmask_type __ret;
-    switch (__m)
-      {
-      case space:
-	__ret = wctype("space");
-	break;
-      case print:
-	__ret = wctype("print");
-	break;
-      case cntrl:
-	__ret = wctype("cntrl");
-	break;
-      case upper:
-	__ret = wctype("upper");
-	break;
-      case lower:
-	__ret = wctype("lower");
-	break;
-      case alpha:
-	__ret = wctype("alpha");
-	break;
-      case digit:
-	__ret = wctype("digit");
-	break;
-      case punct:
-	__ret = wctype("punct");
-	break;
-      case xdigit:
-	__ret = wctype("xdigit");
-	break;
-      case alnum:
-	__ret = wctype("alnum");
-	break;
-      case graph:
-	__ret = wctype("graph");
-	break;
-      default:
-	__ret = 0;
-      }
-    return __ret;
-  };
-  
-  ctype<wchar_t>::~ctype() { }
-
-  // NB: These ctype<wchar_t> methods are not configuration-specific,
-  // unlike the ctype<char> bits.
+#ifdef _GLIBCPP_USE_WCHAR_T
   ctype<wchar_t>::ctype(size_t __refs) 
-  : __ctype_abstract_base<wchar_t>(__refs) { }
+  : __ctype_abstract_base<wchar_t>(__refs)
+  { _M_c_locale_ctype = _S_clone_c_locale(_S_c_locale); }
 
-  ctype<wchar_t>::ctype(__c_locale /*__cloc*/, size_t __refs) 
-  : __ctype_abstract_base<wchar_t>(__refs) { }
+  ctype<wchar_t>::ctype(__c_locale __cloc, size_t __refs) 
+  : __ctype_abstract_base<wchar_t>(__refs) 
+  { _M_c_locale_ctype = _S_clone_c_locale(__cloc); }
 
-  wchar_t
-  ctype<wchar_t>::do_toupper(wchar_t __c) const
-  { return towupper(__c); }
-
-  const wchar_t*
-  ctype<wchar_t>::do_toupper(wchar_t* __lo, const wchar_t* __hi) const
-  {
-    while (__lo < __hi)
-      {
-        *__lo = towupper(*__lo);
-        ++__lo;
-      }
-    return __hi;
-  }
-  
-  wchar_t
-  ctype<wchar_t>::do_tolower(wchar_t __c) const
-  { return towlower(__c); }
-  
-  const wchar_t*
-  ctype<wchar_t>::do_tolower(wchar_t* __lo, const wchar_t* __hi) const
-  {
-    while (__lo < __hi)
-      {
-        *__lo = towlower(*__lo);
-        ++__lo;
-      }
-    return __hi;
-  }
-
-  bool
-  ctype<wchar_t>::
-  do_is(mask __m, char_type __c) const
-  { return static_cast<bool>(iswctype(__c, _M_convert_to_wmask(__m))); }
-  
-  const wchar_t* 
-  ctype<wchar_t>::
-  do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __m) const
-  {
-    while (__lo < __hi && !this->is(*__m, *__lo))
-      ++__lo;
-    return __lo;
-  }
-  
-  const wchar_t* 
-  ctype<wchar_t>::
-  do_scan_is(mask __m, const wchar_t* __lo, const wchar_t* __hi) const
-  {
-    while (__lo < __hi && !this->is(__m, *__lo))
-      ++__lo;
-    return __lo;
-  }
-
-  const wchar_t*
-  ctype<wchar_t>::
-  do_scan_not(mask __m, const char_type* __lo, const char_type* __hi) const
-  {
-    while (__lo < __hi && this->is(__m, *__lo) != 0)
-      ++__lo;
-    return __lo;
-  }
-
-  wchar_t
-  ctype<wchar_t>::
-  do_widen(char __c) const
-  { return btowc(__c); }
-  
-  const char* 
-  ctype<wchar_t>::
-  do_widen(const char* __lo, const char* __hi, wchar_t* __dest) const
-  {
-    mbstate_t __state;
-    memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-    mbsrtowcs(__dest, &__lo, __hi - __lo, &__state);
-    return __hi;
-  }
-
-  char
-  ctype<wchar_t>::
-  do_narrow(wchar_t __wc, char __dfault) const
-  { 
-    int __c = wctob(__wc);
-    return (__c == EOF ? __dfault : static_cast<char>(__c)); 
-  }
-
-  const wchar_t*
-  ctype<wchar_t>::
-  do_narrow(const wchar_t* __lo, const wchar_t* __hi, char __dfault, 
-	    char* __dest) const
-  {
-    mbstate_t __state;
-    memset(static_cast<void*>(&__state), 0, sizeof(mbstate_t));
-    size_t __len = __hi - __lo;
-    size_t __conv = wcsrtombs(__dest, &__lo, __len, &__state);
-    if (__conv == __len)
-      *__dest = __dfault;
-    return __hi;
-  }
+  ctype<wchar_t>::~ctype() 
+  { _S_destroy_c_locale(_M_c_locale_ctype); }
 
   template<>
-  ctype_byname<wchar_t>::
-  ctype_byname(const char* /*__s*/, size_t __refs)
-  : ctype<wchar_t>(__refs) { }
-#endif //  _GLIBCPP_USE_WCHAR_T
+    ctype_byname<wchar_t>::ctype_byname(const char* __s, size_t __refs)
+    : ctype<wchar_t>(__refs) 
+    { 	
+      _S_destroy_c_locale(_M_c_locale_ctype);
+      _S_create_c_locale(_M_c_locale_ctype, __s); 
+    }
+#endif
 
   // Definitions for static const data members of time_base
   template<> 
@@ -618,7 +489,7 @@ namespace std
 
   // Definitions for static const data members of money_base
   const money_base::pattern 
-  money_base::_S_default_pattern =  {{symbol, sign, none, value}};
+  money_base::_S_default_pattern =  { {symbol, sign, none, value} };
 
   template<>
     const ctype<char>&
@@ -708,12 +579,12 @@ namespace std
   }
   
   template<>
-    moneypunct_byname<char, false>::moneypunct_byname(const char* /*__s*/, 
+    moneypunct_byname<char, false>::moneypunct_byname(const char*, 
 						      size_t __refs)
     : moneypunct<char, false>(__refs) { }
   
   template<>
-    moneypunct_byname<char, true>::moneypunct_byname(const char* /*__s*/, 
+    moneypunct_byname<char, true>::moneypunct_byname(const char*, 
 						     size_t __refs)
     : moneypunct<char, true>(__refs) { }
 } // namespace std

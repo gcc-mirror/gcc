@@ -72,9 +72,14 @@ namespace std
   {
     // Initialize the underlying locale model, which also checks to
     // see if the given name is valid.
-    __c_locale __cloc = NULL;
+    __c_locale __cloc;
+    locale::facet::_S_create_c_locale(__cloc, __str.c_str());
+
+    // This is needed as presently "C" locales != required data in
+    // __timepunct, numpunct, and moneypunct.
+    __c_locale __cloc_c = NULL;
     if (__str != "C" && __str != "POSIX")
-      locale::facet::_S_create_c_locale(__cloc, __str.c_str());
+      __cloc_c = __cloc;
 
     // Allocate facet container.
     try
@@ -90,18 +95,17 @@ namespace std
       _M_names[i] = __str;
 
     // Construct all standard facets and add them to _M_facets.
-    // XXX How to deal cleanly, consistently with null ("C") __cloc?
     _M_init_facet(new std::collate<char>(__cloc));
     _M_init_facet(new std::ctype<char>(__cloc));
     _M_init_facet(new codecvt<char, char, mbstate_t>);
-    _M_init_facet(new moneypunct<char, false>(__cloc));
-    _M_init_facet(new moneypunct<char, true>(__cloc));
+    _M_init_facet(new moneypunct<char, false>(__cloc_c));
+    _M_init_facet(new moneypunct<char, true>(__cloc_c));
     _M_init_facet(new money_get<char>);
     _M_init_facet(new money_put<char>);
-    _M_init_facet(new numpunct<char>(__cloc));
+    _M_init_facet(new numpunct<char>(__cloc_c));
     _M_init_facet(new num_get<char>);
     _M_init_facet(new num_put<char>);
-    _M_init_facet(new __timepunct<char>(__cloc, __str.c_str()));
+    _M_init_facet(new __timepunct<char>(__cloc_c, __str.c_str()));
     _M_init_facet(new time_get<char>);
     _M_init_facet(new time_put<char>);
     _M_init_facet(new std::messages<char>(__cloc, __str.c_str()));
@@ -110,14 +114,14 @@ namespace std
     _M_init_facet(new std::collate<wchar_t>(__cloc));
     _M_init_facet(new std::ctype<wchar_t>(__cloc));
     _M_init_facet(new codecvt<wchar_t, char, mbstate_t>);
-    _M_init_facet(new moneypunct<wchar_t, false>(__cloc));
-    _M_init_facet(new moneypunct<wchar_t, true>(__cloc));
+    _M_init_facet(new moneypunct<wchar_t, false>(__cloc_c));
+    _M_init_facet(new moneypunct<wchar_t, true>(__cloc_c));
     _M_init_facet(new money_get<wchar_t>);
     _M_init_facet(new money_put<wchar_t>);
-    _M_init_facet(new numpunct<wchar_t>(__cloc));
+    _M_init_facet(new numpunct<wchar_t>(__cloc_c));
     _M_init_facet(new num_get<wchar_t>);
     _M_init_facet(new num_put<wchar_t>);
-    _M_init_facet(new __timepunct<wchar_t>(__cloc, __str.c_str()));
+    _M_init_facet(new __timepunct<wchar_t>(__cloc_c, __str.c_str()));
     _M_init_facet(new time_get<wchar_t>);
     _M_init_facet(new time_put<wchar_t>);
     _M_init_facet(new std::messages<wchar_t>(__cloc, __str.c_str()));

@@ -43,14 +43,6 @@
       return this->do_open(__s, __loc); 
     }
 
-  // Virtual member functions.
-  template<typename _CharT>
-    messages<_CharT>::~messages()
-    { 
-      if (_M_c_locale_messages)
-	_S_destroy_c_locale(_M_c_locale_messages); 
-    }
-
   template<typename _CharT>
     messages<_CharT>::catalog 
     messages<_CharT>::do_open(const basic_string<char>& __s, 

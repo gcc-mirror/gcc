@@ -282,7 +282,10 @@ namespace std
 
     static inline void  
     _S_initialize()
-    { if (!_S_classic) classic();  }
+    { 
+      if (!_S_classic) 
+	classic();  
+    }
 
     static category  
     _S_normalize_category(category);
@@ -344,7 +347,7 @@ namespace std
     _Impl(string __name, size_t);
    ~_Impl() throw();
 
-    bool
+    inline bool
     _M_check_same_name()
     {
       bool __ret = true;
@@ -352,6 +355,7 @@ namespace std
 	__ret &= _M_names[i] == _M_names[i + 1];
       return __ret;
     }
+
     void 
     _M_replace_categories(const _Impl*, category);
 
@@ -387,11 +391,15 @@ namespace std
     friend class __enc_traits;
 
   protected:
+    // Contains data from the underlying "C" library for default "C"
+    // and "POSIX" locales.
+    static __c_locale		     _S_c_locale;
+
     explicit 
     facet(size_t __refs = 0) throw();
 
     virtual 
-    ~facet() { };
+    ~facet();
 
     static void
     _S_create_c_locale(__c_locale& __cloc, const char* __s);
@@ -447,8 +455,7 @@ namespace std
   public:
     // NB: This class is always a static data member, and thus can be
     // counted on to be zero-initialized.
-    // XXX id() : _M_index(0) { }
-    id() { }
+    id();
   };
 
   template<typename _Facet>

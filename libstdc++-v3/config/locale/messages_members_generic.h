@@ -42,10 +42,6 @@
 
   // Virtual member functions.
   template<typename _CharT>
-    messages<_CharT>::~messages()
-    { }
-
-  template<typename _CharT>
     messages<_CharT>::catalog 
     messages<_CharT>::do_open(const basic_string<char>&, const locale&) const
     { return 0; }
