@@ -47,15 +47,15 @@
 
 @ifset INTERNALS
 @ifset USING
-@settitle Using and Porting GNU CC
+@settitle Using and Porting the GNU Compiler Collection (GCC)
 @end ifset
 @end ifset
 @c seems reasonable to assume at least one of INTERNALS or USING is set...
 @ifclear INTERNALS
-@settitle Using GNU CC
+@settitle Using the GNU Compiler Collection
 @end ifclear
 @ifclear USING
-@settitle Porting GNU CC
+@settitle Porting the GNU Compiler Collection
 @end ifclear
 
 @syncodeindex fn cp
@@ -82,7 +82,7 @@
 @ifinfo
 @dircategory Programming
 @direntry
-* gcc: (gcc).                  The GNU C compiler.
+* gcc: (gcc).                  The GNU Compiler Collection.
 @end direntry
 @ifset INTERNALS
 @ifset USING
@@ -100,7 +100,7 @@ Published by the Free Software Foundation
 59 Temple Place - Suite 330
 Boston, MA 02111-1307 USA
 
-Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -133,27 +133,27 @@ instead of in the original English.
 @titlepage
 @ifset INTERNALS
 @ifset USING
-@center @titlefont{Using and Porting GNU CC}
+@center @titlefont{Using and Porting the GNU Compiler Collection}
 
 @end ifset
 @end ifset
 @ifclear INTERNALS
-@title Using GNU CC
+@title Using the GNU Compiler Collection
 @end ifclear
 @ifclear USING
-@title Porting GNU CC
+@title Porting the GNU Compiler Collection
 @end ifclear
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 16 March 1998
+@center Last updated 28 July 1999
 @sp 1
 @c The version number appears five times more in this file.
 
 @center for gcc-2.95
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96, 98  Free Software Foundation, Inc.
+Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1998, 1999  Free Software Foundation, Inc.
 @sp 2
 For GCC Version 2.95@*
 @sp 1
@@ -214,19 +214,19 @@ bugs.  It corresponds to GCC version 2.95.
 @ifset USING
 * G++ and GCC::     You can compile C or C++ programs.
 * Invoking GCC::    Command options supported by @samp{gcc}.
-* Installation::    How to configure, compile and install GNU CC.
+* Installation::    How to configure, compile and install GCC.
 * C Extensions::    GNU extensions to the C language family.
 * C++ Extensions::  GNU extensions to the C++ language.
-* Gcov::	    gcov: a GNU CC test coverage program.
-* Trouble::         If you have trouble installing GNU CC.
+* Gcov::	    gcov: a GCC test coverage program.
+* Trouble::         If you have trouble installing GCC.
 * Bugs::            How, why and where to report bugs.
-* Service::         How to find suppliers of support for GNU CC.
-* Contributing::    How to contribute to testing and developing GNU CC.
-* VMS::             Using GNU CC on VMS.
+* Service::         How to find suppliers of support for GCC.
+* Contributing::    How to contribute to testing and developing GCC.
+* VMS::             Using GCC on VMS.
 @end ifset
 @ifset INTERNALS
-* Portability::     Goals of GNU CC's portability features.
-* Interface::       Function-call interface of GNU CC output.
+* Portability::     Goals of GCC's portability features.
+* Interface::       Function-call interface of GCC output.
 * Passes::          Order of passes, what they do, and what each file is for.
 * RTL::             The intermediate representation that most passes work on.
 * Machine Desc::    How to write machine description instruction patterns.
@@ -239,24 +239,27 @@ bugs.  It corresponds to GCC version 2.95.
 * GNU/Linux::       Linux and the GNU Project
 
 * Copying::         GNU General Public License says
-                     how you can copy and share GNU CC.
-* Contributors::    People who have contributed to GNU CC.
+                     how you can copy and share GCC.
+* Contributors::    People who have contributed to GCC.
 
 * Index::	    Index of concepts and symbol names.
 @end menu
 
 @ifset USING
 @node G++ and GCC
-@chapter Compile C, C++, or Objective C
+@chapter Compile C, C++, Objective C, or Fortran
 
 @cindex Objective C
-The C, C++, and Objective C versions of the compiler are integrated; the
-GNU C compiler can compile programs written in C, C++, or Objective C.
+The C, C++, and Objective C, and Fortran versions of the compiler are
+integrated; this is why we use the name ``GNU Compiler Collection''.
+GCC can compile programs written in C, C++, Objective C, or Fortran.
+The Fortran compiler is described in a separate manual.
 
 @cindex GCC
-``GCC'' is a common shorthand term for the GNU C compiler.  This is both
+``GCC'' is a common shorthand term for the GNU Compiler Collection.  This is both
 the most general name for the compiler, and the name used when the
-emphasis is on compiling C programs.
+emphasis is on compiling C programs (as the abbreviation formerly
+stood for ``GNU C Compiler'').
 
 @cindex C++
 @cindex G++
@@ -265,20 +268,20 @@ When referring to C++ compilation, it is usual to call the compiler
 it ``GCC'' no matter what the language context; however, the term
 ``G++'' is more useful when the emphasis is on compiling C++ programs.
 
-We use the name ``GNU CC'' to refer to the compilation system as a
+We use the name ``GCC'' to refer to the compilation system as a
 whole, and more specifically to the language-independent part of the
 compiler.  For example, we refer to the optimization options as
-affecting the behavior of ``GNU CC'' or sometimes just ``the compiler''.
+affecting the behavior of ``GCC'' or sometimes just ``the compiler''.
 
 Front ends for other languages, such as Ada 9X, Fortran, Modula-3, and
 Pascal, are under development.  These front-ends, like that for C++, are
-built in subdirectories of GNU CC and link to it.  The result is an
+built in subdirectories of GCC and link to it.  The result is an
 integrated compiler that can compile programs written in C, C++,
 Objective C, or any of the languages for which you have installed front
 ends.
 
 In this manual, we only discuss the options for the C, Objective-C, and
-C++ compilers and those of the GNU CC core.  Consult the documentation
+C++ compilers and those of the GCC core.  Consult the documentation
 of the other front ends for the options to use when compiling programs
 written in other languages.
 
@@ -308,13 +311,13 @@ give you comprehensive C++ source-level editing capabilities
 @include gcov.texi
 
 @node Trouble
-@chapter Known Causes of Trouble with GNU CC
+@chapter Known Causes of Trouble with GCC
 @cindex bugs, known
 @cindex installation trouble
 @cindex known causes of trouble
 
-This section describes known problems that affect users of GNU CC.  Most
-of these are not GNU CC bugs per se---if they were, we would fix them.
+This section describes known problems that affect users of GCC.  Most
+of these are not GCC bugs per se---if they were, we would fix them.
 But the result for a user may be like the result of a bug.
 
 Some of these problems are due to bugs in other software, some are
@@ -323,12 +326,12 @@ where people's opinions differ as to what is best.
 
 @menu
 * Actual Bugs::		      Bugs we will fix later.
-* Installation Problems::     Problems that manifest when you install GNU CC.
-* Cross-Compiler Problems::   Common problems of cross compiling with GNU CC.
-* Interoperation::      Problems using GNU CC with other compilers,
+* Installation Problems::     Problems that manifest when you install GCC.
+* Cross-Compiler Problems::   Common problems of cross compiling with GCC.
+* Interoperation::      Problems using GCC with other compilers,
 			   and with certain linkers, assemblers and debuggers.
 * External Bugs::	Problems compiling certain programs.
-* Incompatibilities::   GNU CC is incompatible with traditional C.
+* Incompatibilities::   GCC is incompatible with traditional C.
 * Fixed Headers::       GNU C uses corrected versions of system header files.
                            This is necessary, but doesn't always work smoothly.
 * Standard Libraries::  GNU C uses the system C library, which might not be
@@ -363,7 +366,7 @@ There are several obscure case of mis-using struct, union, and
 enum tags that are not detected as errors by the compiler.
 
 @item
-When @samp{-pedantic-errors} is specified, GNU C will incorrectly give
+When @samp{-pedantic-errors} is specified, GCC will incorrectly give
 an error message when a function name is specified in an expression
 involving the comma operator.
 
@@ -393,19 +396,19 @@ directory.  Make sure you have done all the necessary preparations.
 @xref{Other Dir}.
 
 @item
-If you build GNU CC on a BSD system using a directory stored in a System
+If you build GCC on a BSD system using a directory stored in a System
 V file system, problems may occur in running @code{fixincludes} if the
 System V file system doesn't support symbolic links.  These problems
 result in a failure to fix the declaration of @code{size_t} in
 @file{sys/types.h}.  If you find that @code{size_t} is a signed type and
 that type mismatches occur, this could be the cause.
 
-The solution is not to use such a directory for building GNU CC.
+The solution is not to use such a directory for building GCC.
 
 @item
-In previous versions of GNU CC, the @code{gcc} driver program looked for
+In previous versions of GCC, the @code{gcc} driver program looked for
 @code{as} and @code{ld} in various places; for example, in files
-beginning with @file{/usr/local/lib/gcc-}.  GNU CC version 2 looks for
+beginning with @file{/usr/local/lib/gcc-}.  GCC version 2 looks for
 them in the directory
 @file{/usr/local/lib/gcc-lib/@var{target}/@var{version}}.
 
@@ -433,12 +436,12 @@ the compiler.  In one case, this was traced down to a bug in
 @item
 If you have installed a program known as purify, you may find that it
 causes errors while linking @code{enquire}, which is part of building
-GNU CC.  The fix is to get rid of the file @code{real-ld} which purify
-installs---so that GNU CC won't try to use it.
+GCC.  The fix is to get rid of the file @code{real-ld} which purify
+installs---so that GCC won't try to use it.
 
 @item
 On GNU/Linux SLS 1.01, there is a problem with @file{libc.a}: it does not
-contain the obstack functions.  However, GNU CC assumes that the obstack
+contain the obstack functions.  However, GCC assumes that the obstack
 functions are in @file{libc.a} when it is the GNU C library.  To work
 around this problem, change the @code{__GNU_LIBRARY__} conditional
 around line 31 to @samp{#if 1}.
@@ -447,7 +450,7 @@ around line 31 to @samp{#if 1}.
 On some 386 systems, building the compiler never finishes because
 @code{enquire} hangs due to a hardware problem in the motherboard---it
 reports floating point exceptions to the kernel incorrectly.  You can
-install GNU CC except for @file{float.h} by patching out the command to
+install GCC except for @file{float.h} by patching out the command to
 run @code{enquire}.  You may also be able to fix the problem for real by
 getting a replacement motherboard.  This problem was observed in
 Revision E of the Micronics motherboard, and is fixed in Revision F.
@@ -459,7 +462,7 @@ are running SCO Unix, you can reboot and force the FPU to be ignored.
 To do this, type @samp{hd(40)unix auto ignorefpu}.
 
 @item
-On some 386 systems, GNU CC crashes trying to compile @file{enquire.c}.
+On some 386 systems, GCC crashes trying to compile @file{enquire.c}.
 This happens on machines that don't have a 387 FPU chip.  On 386
 machines, the system kernel is supposed to emulate the 387 when you
 don't have one.  The crash is due to a bug in the emulator.
@@ -490,48 +493,48 @@ enquire.c:2328: floating overflow
 @end example
 
 @item
-On SCO systems, when compiling GNU CC with the system's compiler,
+On SCO systems, when compiling GCC with the system's compiler,
 do not use @samp{-O}.  Some versions of the system's compiler miscompile
-GNU CC with @samp{-O}.
+GCC with @samp{-O}.
 
 @cindex @code{genflags}, crash on Sun 4
 @item
 Sometimes on a Sun 4 you may observe a crash in the program
-@code{genflags} or @code{genoutput} while building GNU CC.  This is said to
+@code{genflags} or @code{genoutput} while building GCC.  This is said to
 be due to a bug in @code{sh}.  You can probably get around it by running
 @code{genflags} or @code{genoutput} manually and then retrying the
 @code{make}.
 
 @item
-On Solaris 2, executables of GNU CC version 2.0.2 are commonly
+On Solaris 2, executables of GCC version 2.0.2 are commonly
 available, but they have a bug that shows up when compiling current
-versions of GNU CC: undefined symbol errors occur during assembly if you
+versions of GCC: undefined symbol errors occur during assembly if you
 use @samp{-g}.
 
-The solution is to compile the current version of GNU CC without
+The solution is to compile the current version of GCC without
 @samp{-g}.  That makes a working compiler which you can use to recompile
 with @samp{-g}.
 
 @item
 Solaris 2 comes with a number of optional OS packages.  Some of these
-packages are needed to use GNU CC fully.  If you did not install all
+packages are needed to use GCC fully.  If you did not install all
 optional packages when installing Solaris, you will need to verify that
-the packages that GNU CC needs are installed.
+the packages that GCC needs are installed.
 
 To check whether an optional package is installed, use
 the @code{pkginfo} command.  To add an optional package, use the
 @code{pkgadd} command.  For further details, see the Solaris
 documentation.
 
-For Solaris 2.0 and 2.1, GNU CC needs six packages: @samp{SUNWarc},
+For Solaris 2.0 and 2.1, GCC needs six packages: @samp{SUNWarc},
 @samp{SUNWbtool}, @samp{SUNWesu}, @samp{SUNWhea}, @samp{SUNWlibm}, and
 @samp{SUNWtoo}.
 
-For Solaris 2.2, GNU CC needs an additional seventh package: @samp{SUNWsprot}.
+For Solaris 2.2, GCC needs an additional seventh package: @samp{SUNWsprot}.
 
 @item
 On Solaris 2, trying to use the linker and other tools in
-@file{/usr/ucb} to install GNU CC has been observed to cause trouble.
+@file{/usr/ucb} to install GCC has been observed to cause trouble.
 For example, the linker may hang indefinitely.  The fix is to remove
 @file{/usr/ucb} from your @code{PATH}.
 
@@ -555,7 +558,7 @@ optional, and there should not be a warning about their absence.
 @item
 In Ultrix 4.0 on the MIPS machine, @file{stdio.h} does not work with GNU
 CC at all unless it has been fixed with @code{fixincludes}.  This causes
-problems in building GNU CC.  Once GNU CC is installed, the problems go
+problems in building GCC.  Once GCC is installed, the problems go
 away.
 
 To work around this problem, when making the stage 1 compiler, specify
@@ -585,7 +588,7 @@ Some versions of the MIPS linker will issue an assertion failure
 when linking code that uses @code{alloca} against shared
 libraries on RISC-OS 5.0, and DEC's OSF/1 systems.  This is a bug
 in the linker, that is supposed to be fixed in future revisions.
-To protect against this, GNU CC passes @samp{-non_shared} to the
+To protect against this, GCC passes @samp{-non_shared} to the
 linker unless you pass an explicit @samp{-shared} or
 @samp{-call_shared} switch.
 
@@ -618,7 +621,7 @@ On System V, if you get an error like this,
 that too indicates a problem with disk space, ULIMIT, or @code{MAXUMEM}.
 
 @item
-Current GNU CC versions probably do not work on version 2 of the NeXT
+Current GCC versions probably do not work on version 2 of the NeXT
 operating system.
 
 @item
@@ -628,7 +631,7 @@ does not happen on 3.1.
 
 @item
 On the Tower models 4@var{n}0 and 6@var{n}0, by default a process is not
-allowed to have more than one megabyte of memory.  GNU CC cannot compile
+allowed to have more than one megabyte of memory.  GCC cannot compile
 itself (or many other programs) with @samp{-O} in that much memory.
 
 To solve this problem, reconfigure the kernel adding the following line
@@ -640,7 +643,7 @@ MAXUMEM = 4096
 
 @item
 On HP 9000 series 300 or 400 running HP-UX release 8.0, there is a bug
-in the assembler that must be fixed before GNU CC can be built.  This
+in the assembler that must be fixed before GCC can be built.  This
 bug manifests itself during the first stage of compilation, while
 building @file{libgcc2.a}:
 
@@ -677,13 +680,13 @@ use BASH (the GNU shell) to run @code{fixproto}.
 
 @item
 Some versions of the Pyramid C compiler are reported to be unable to
-compile GNU CC.  You must use an older version of GNU CC for
+compile GCC.  You must use an older version of GCC for
 bootstrapping.  One indication of this problem is if you get a crash
-when GNU CC compiles the function @code{muldi3} in file @file{libgcc2.c}.
+when GCC compiles the function @code{muldi3} in file @file{libgcc2.c}.
 
-You may be able to succeed by getting GNU CC version 1, installing it,
-and using it to compile GNU CC version 2.  The bug in the Pyramid C
-compiler does not seem to affect GNU CC version 1.
+You may be able to succeed by getting GCC version 1, installing it,
+and using it to compile GCC version 2.  The bug in the Pyramid C
+compiler does not seem to affect GCC version 1.
 
 @item
 There may be similar problems on System V Release 3.1 on 386 systems.
@@ -691,7 +694,7 @@ There may be similar problems on System V Release 3.1 on 386 systems.
 @item
 On the Intel Paragon (an i860 machine), if you are using operating
 system version 1.0, you will get warnings or errors about redefinition
-of @code{va_arg} when you build GNU CC.
+of @code{va_arg} when you build GCC.
 
 If this happens, then you need to link most programs with the library
 @file{iclib.a}.  You must also modify @file{stdio.h} as follows: before
@@ -728,7 +731,7 @@ insert the line
 These problems don't exist in operating system version 1.1.
 
 @item
-On the Altos 3068, programs compiled with GNU CC won't work unless you
+On the Altos 3068, programs compiled with GCC won't work unless you
 fix a kernel bug.  This happens using system versions V.2.2 1.0gT1 and
 V.2.2 1.0e and perhaps later versions as well.  See the file
 @file{README.ALTOS}.
@@ -819,12 +822,12 @@ run.  Incompatible libraries are then detected at link time, rather than
 at run time.
 
 @item
-Older GDB versions sometimes fail to read the output of GNU CC version
+Older GDB versions sometimes fail to read the output of GCC version
 2.  If you have trouble, get GDB version 4.4 or later.
 
 @item
 @cindex DBX
-DBX rejects some files produced by GNU CC, though it accepts similar
+DBX rejects some files produced by GCC, though it accepts similar
 constructs in output from PCC.  Until someone can supply a coherent
 description of what is valid DBX input and what is not, there is
 nothing I can do about these problems.  You are on your own.
@@ -841,10 +844,10 @@ be run.
 @item
 Use of @samp{-I/usr/include} may cause trouble.
 
-Many systems come with header files that won't work with GNU CC unless
+Many systems come with header files that won't work with GCC unless
 corrected by @code{fixincludes}.  The corrected header files go in a new
-directory; GNU CC searches this directory before @file{/usr/include}.
-If you use @samp{-I/usr/include}, this tells GNU CC to search
+directory; GCC searches this directory before @file{/usr/include}.
+If you use @samp{-I/usr/include}, this tells GCC to search
 @file{/usr/include} earlier on, before the corrected headers.  The
 result is that you get the uncorrected header files.
 
@@ -854,7 +857,7 @@ Instead, you should use these options (when compiling C programs):
 -I/usr/local/lib/gcc-lib/@var{target}/@var{version}/include -I/usr/include
 @end smallexample
 
-For C++ programs, GNU CC also uses a special directory that defines C++
+For C++ programs, GCC also uses a special directory that defines C++
 interfaces to standard C subroutines.  This directory is meant to be
 searched @emph{before} other standard include directories, so that it
 takes precedence.  If you are compiling C++ programs and specifying
@@ -871,7 +874,7 @@ options above:
 There is a bug in @code{vfork} on the Sun-4 which causes the registers
 of the child process to clobber those of the parent.  Because of this,
 programs that call @code{vfork} are likely to lose when compiled
-optimized with GNU CC when the child code alters registers which contain
+optimized with GCC when the child code alters registers which contain
 C variables in the parent.  This affects variables which are live in the
 parent across the call to @code{vfork}.
 
@@ -884,18 +887,18 @@ using @samp{-O} for those source files.
 @item
 On some SGI systems, when you use @samp{-lgl_s} as an option,
 it gets translated magically to @samp{-lgl_s -lX11_s -lc_s}.
-Naturally, this does not happen when you use GNU CC.
+Naturally, this does not happen when you use GCC.
 You must specify all three options explicitly.
 
 @item
-On a Sparc, GNU CC aligns all values of type @code{double} on an 8-byte
+On a Sparc, GCC aligns all values of type @code{double} on an 8-byte
 boundary, and it expects every @code{double} to be so aligned.  The Sun
 compiler usually gives @code{double} values 8-byte alignment, with one
 exception: function arguments of type @code{double} may not be aligned.
 
 As a result, if a function compiled with Sun CC takes the address of an
 argument of type @code{double} and passes this pointer of type
-@code{double *} to a function compiled with GNU CC, dereferencing the
+@code{double *} to a function compiled with GCC, dereferencing the
 pointer may cause a fatal signal.
 
 One way to solve this problem is to compile your entire program with GNU
@@ -926,7 +929,7 @@ Storing into the pointer can be done likewise with the same union.
 
 @item
 On Solaris, the @code{malloc} function in the @file{libmalloc.a} library
-may allocate memory that is only 4 byte aligned.  Since GNU CC on the
+may allocate memory that is only 4 byte aligned.  Since GCC on the
 Sparc assumes that doubles are 8 byte aligned, this may result in a
 fatal signal if doubles are stored in memory allocated by the
 @file{libmalloc.a} library.
@@ -951,20 +954,20 @@ instructions they must be emulated by the operating system.  Long
 doubles do not work in Sun OS versions 4.0.3 and earlier, because the
 kernel emulator uses an obsolete and incompatible format.  Long doubles
 do not work in Sun OS version 4.1.1 due to a problem in a Sun library.
-Long doubles do work on Sun OS versions 4.1.2 and higher, but GNU CC
+Long doubles do work on Sun OS versions 4.1.2 and higher, but GCC
 does not enable them by default.  Long doubles appear to work in Sun OS
 5.x (Solaris 2.x).
 
 @item
 On HP-UX version 9.01 on the HP PA, the HP compiler @code{cc} does not
-compile GNU CC correctly.  We do not yet know why.  However, GNU CC
+compile GCC correctly.  We do not yet know why.  However, GCC
 compiled on earlier HP-UX versions works properly on HP-UX 9.01 and can
 compile itself properly on 9.01.
 
 @item
 On the HP PA machine, ADB sometimes fails to work on functions compiled
-with GNU CC.  Specifically, it fails to work on functions that use
-@code{alloca} or variable-size arrays.  This is because GNU CC doesn't
+with GCC.  Specifically, it fails to work on functions that use
+@code{alloca} or variable-size arrays.  This is because GCC doesn't
 generate HP-UX unwind descriptors for such functions.  It may even be
 impossible to generate them.
 
@@ -986,11 +989,11 @@ the HP assembler.  GAS for the PA does not have this problem.
 In extremely rare cases involving some very large functions you may
 receive errors from the HP linker complaining about an out of bounds
 unconditional branch offset.  This used to occur more often in previous
-versions of GNU CC, but is now exceptionally rare.  If you should run
+versions of GCC, but is now exceptionally rare.  If you should run
 into it, you can work around by making your function smaller.
 
 @item
-GNU CC compiled code sometimes emits warnings from the HP-UX assembler of
+GCC compiled code sometimes emits warnings from the HP-UX assembler of
 the form:
 
 @smallexample
@@ -1064,7 +1067,7 @@ by requesting PTF 421749 from IBM.
 
 @item
 There is an assembler bug in versions of DG/UX prior to 5.4.2.01 that
-occurs when the @samp{fldcr} instruction is used.  GNU CC uses
+occurs when the @samp{fldcr} instruction is used.  GCC uses
 @samp{fldcr} on the 88100 to serialize volatile memory references.  Use
 the option @samp{-mno-serialize-volatile} if your version of the
 assembler has this bug.
@@ -1090,7 +1093,7 @@ lines around the definition of @code{size_t}:
 @cindex Alliant
 @item
 On the Alliant, the system's own convention for returning structures
-and unions is unusual, and is not compatible with GNU CC no matter
+and unions is unusual, and is not compatible with GCC no matter
 what options are used.
 
 @cindex RT PC
@@ -1098,7 +1101,7 @@ what options are used.
 @item
 On the IBM RT PC, the MetaWare HighC compiler (hc) uses a different
 convention for structure and union returning.  Use the option
-@samp{-mhc-struct-return} to tell GNU CC to use a convention compatible
+@samp{-mhc-struct-return} to tell GCC to use a convention compatible
 with it.
 
 @cindex Vax calling convention
@@ -1108,7 +1111,7 @@ On Ultrix, the Fortran compiler expects registers 2 through 5 to be saved
 by function calls.  However, the C compiler uses conventions compatible
 with BSD Unix: registers 2 through 5 may be clobbered by function calls.
 
-GNU CC uses the same convention as the Ultrix C compiler.  You can use
+GCC uses the same convention as the Ultrix C compiler.  You can use
 these options to produce code compatible with the Fortran compiler:
 
 @smallexample
@@ -1116,7 +1119,7 @@ these options to produce code compatible with the Fortran compiler:
 @end smallexample
 
 @item
-On the WE32k, you may find that programs compiled with GNU CC do not
+On the WE32k, you may find that programs compiled with GCC do not
 work with the standard shared C library.  You may need to link with
 the ordinary C compiler.  If you do so, you must specify the following
 options:
@@ -1128,7 +1131,7 @@ options:
 The first specifies where to find the library @file{libgcc.a}
 specified with the @samp{-lgcc} option.
 
-GNU CC does linking by invoking @code{ld}, just as @code{cc} does, and
+GCC does linking by invoking @code{ld}, just as @code{cc} does, and
 there is no reason why it @emph{should} matter which compilation program
 you use to invoke @code{ld}.  If someone tracks this problem down,
 it can probably be fixed easily.
@@ -1145,7 +1148,7 @@ sometimes reorders instructions incorrectly when optimization is turned
 on.  If you think this may be happening to you, try using the GNU
 assembler; GAS version 2.1 supports ECOFF on Irix.
 
-Or use the @samp{-noasmopt} option when you compile GNU CC with itself,
+Or use the @samp{-noasmopt} option when you compile GCC with itself,
 and then again when you compile your program.  (This is a temporary
 kludge to turn off assembler optimization on Irix.)  If this proves to
 be what you need, edit the assembler spec in the file @file{specs} so
@@ -1197,13 +1200,13 @@ On various 386 Unix systems derived from System V, including SCO, ISC,
 and ESIX, you may get error messages about running out of virtual memory
 while compiling certain programs.
 
-You can prevent this problem by linking GNU CC with the GNU malloc
+You can prevent this problem by linking GCC with the GNU malloc
 (which thus replaces the malloc that comes with the system).  GNU malloc
 is available as a separate package, and also in the file
 @file{src/gmalloc.c} in the GNU Emacs 19 distribution.
 
 If you have installed GNU malloc as a separate library package, use this
-option when you relink GNU CC:
+option when you relink GCC:
 
 @example
 MALLOC=/usr/local/lib/libgmalloc.a
@@ -1211,7 +1214,7 @@ MALLOC=/usr/local/lib/libgmalloc.a
 
 Alternatively, if you have compiled @file{gmalloc.c} from Emacs 19, copy
 the object file to @file{gmalloc.o} and use this option when you relink
-GNU CC:
+GCC:
 
 @example
 MALLOC=gmalloc.o
@@ -1219,8 +1222,8 @@ MALLOC=gmalloc.o
 @end itemize
 
 @node Incompatibilities
-@section Incompatibilities of GNU CC
-@cindex incompatibilities of GNU CC
+@section Incompatibilities of GCC
+@cindex incompatibilities of GCC
 
 There are several noteworthy incompatibilities between GNU C and most
 existing (non-ANSI) versions of C.  The @samp{-traditional} option
@@ -1232,8 +1235,8 @@ telling GNU C to behave like the other C compilers.
 @cindex read-only strings
 @cindex shared strings
 @item
-GNU CC normally makes string constants read-only.  If several
-identical-looking string constants are used, GNU CC stores only one
+GCC normally makes string constants read-only.  If several
+identical-looking string constants are used, GCC stores only one
 copy of the string.
 
 @cindex @code{mktemp}, and constant strings
@@ -1252,7 +1255,7 @@ constant.  Likewise @code{fscanf} and @code{scanf}.
 The best solution to these problems is to change the program to use
 @code{char}-array variables with initialization strings for these
 purposes instead of string constants.  But if this is not possible,
-you can use the @samp{-fwritable-strings} flag, which directs GNU CC
+you can use the @samp{-fwritable-strings} flag, which directs GCC
 to handle string constants the same way most C compilers do.
 @samp{-traditional} also has this effect, among others.
 
@@ -1264,8 +1267,8 @@ This is because 2147483648 cannot fit in the type @code{int}, so
 Negating this value yields 2147483648 again.
 
 @item
-GNU CC does not substitute macro arguments when they appear inside of
-string constants.  For example, the following macro in GNU CC
+GCC does not substitute macro arguments when they appear inside of
+string constants.  For example, the following macro in GCC
 
 @example
 #define foo(a) "a"
@@ -1274,7 +1277,7 @@ string constants.  For example, the following macro in GNU CC
 @noindent
 will produce output @code{"a"} regardless of what the argument @var{a} is.
 
-The @samp{-traditional} option directs GNU CC to handle such cases
+The @samp{-traditional} option directs GCC to handle such cases
 (among others) in the old-fashioned (non-ANSI) fashion.
 
 @cindex @code{setjmp} incompatibilities
@@ -1308,7 +1311,7 @@ its first value is restored; otherwise, it keeps the last value stored
 in it.
 
 If you use the @samp{-W} option with the @samp{-O} option, you will
-get a warning when GNU CC thinks such a problem might be possible.
+get a warning when GCC thinks such a problem might be possible.
 
 The @samp{-traditional} option directs GNU C to put variables in
 the stack by default, rather than in registers, in functions that
@@ -1317,7 +1320,7 @@ traditional C compilers.
 
 @item
 Programs that use preprocessing directives in the middle of macro
-arguments do not work with GNU CC.  For example, a program like this
+arguments do not work with GCC.  For example, a program like this
 will not work:
 
 @example
@@ -1366,17 +1369,17 @@ difficulty described immediately above applies here too.
 @cindex whitespace
 @item
 PCC allows whitespace in the middle of compound assignment operators
-such as @samp{+=}.  GNU CC, following the ANSI standard, does not
+such as @samp{+=}.  GCC, following the ANSI standard, does not
 allow this.  The difficulty described immediately above applies here
 too.
 
 @cindex apostrophes
 @cindex '
 @item
-GNU CC complains about unterminated character constants inside of
+GCC complains about unterminated character constants inside of
 preprocessing conditionals that fail.  Some programs have English
 comments enclosed in conditionals that are guaranteed to fail; if these
-comments contain apostrophes, GNU CC will probably report an error.  For
+comments contain apostrophes, GCC will probably report an error.  For
 example, this code would produce an error:
 
 @example
@@ -1403,38 +1406,38 @@ type of @code{time}.
 @cindex @code{float} as function value type
 @item
 When compiling functions that return @code{float}, PCC converts it to
-a double.  GNU CC actually returns a @code{float}.  If you are concerned
+a double.  GCC actually returns a @code{float}.  If you are concerned
 with PCC compatibility, you should declare your functions to return
 @code{double}; you might as well say what you mean.
 
 @cindex structures
 @cindex unions
 @item
-When compiling functions that return structures or unions, GNU CC
+When compiling functions that return structures or unions, GCC
 output code normally uses a method different from that used on most
-versions of Unix.  As a result, code compiled with GNU CC cannot call
+versions of Unix.  As a result, code compiled with GCC cannot call
 a structure-returning function compiled with PCC, and vice versa.
 
-The method used by GNU CC is as follows: a structure or union which is
+The method used by GCC is as follows: a structure or union which is
 1, 2, 4 or 8 bytes long is returned like a scalar.  A structure or union
 with any other size is stored into an address supplied by the caller
 (usually in a special, fixed register, but on some machines it is passed
 on the stack).  The machine-description macros @code{STRUCT_VALUE} and
-@code{STRUCT_INCOMING_VALUE} tell GNU CC where to pass this address.
+@code{STRUCT_INCOMING_VALUE} tell GCC where to pass this address.
 
 By contrast, PCC on most target machines returns structures and unions
 of any size by copying the data into an area of static storage, and then
 returning the address of that storage as if it were a pointer value.
 The caller must copy the data from that memory area to the place where
-the value is wanted.  GNU CC does not use this method because it is
+the value is wanted.  GCC does not use this method because it is
 slower and nonreentrant.
 
 On some newer machines, PCC uses a reentrant convention for all
-structure and union returning.  GNU CC on most of these machines uses a
+structure and union returning.  GCC on most of these machines uses a
 compatible convention when returning structures and unions in memory,
 but still returns small structures and unions in registers.
 
-You can tell GNU CC to use a compatible convention for all structure and
+You can tell GCC to use a compatible convention for all structure and
 union returning with the option @samp{-fpcc-struct-return}.
 
 @cindex preprocessing tokens
@@ -1460,13 +1463,13 @@ the minus sign.  This whitespace will end the preprocessing number.
 @node Fixed Headers
 @section Fixed Header Files
 
-GNU CC needs to install corrected versions of some system header files.
+GCC needs to install corrected versions of some system header files.
 This is because most target systems have some header files that won't
-work with GNU CC unless they are changed.  Some have bugs, some are
+work with GCC unless they are changed.  Some have bugs, some are
 incompatible with ANSI C, and some depend on special features of other
 compilers.
 
-Installing GNU CC automatically creates and installs the fixed header
+Installing GCC automatically creates and installs the fixed header
 files, by running a program called @code{fixincludes} (or for certain
 targets an alternative such as @code{fixinc.svr4}).  Normally, you
 don't need to pay attention to this.  But there are cases where it
@@ -1475,8 +1478,8 @@ doesn't do the right thing automatically.
 @itemize @bullet
 @item
 If you update the system's header files, such as by installing a new
-system version, the fixed header files of GNU CC are not automatically
-updated.  The easiest way to update them is to reinstall GNU CC.  (If
+system version, the fixed header files of GCC are not automatically
+updated.  The easiest way to update them is to reinstall GCC.  (If
 you want to be clever, look in the makefile and you can find a
 shortcut.)
 
@@ -1499,18 +1502,18 @@ different machine models, and arrange a structure of symbolic links so
 as to use the proper set, but you'll have to do this by hand.
 
 @item
-On Lynxos, GNU CC by default does not fix the header files.  This is
+On Lynxos, GCC by default does not fix the header files.  This is
 because bugs in the shell cause the @code{fixincludes} script to fail.
 
 This means you will encounter problems due to bugs in the system header
-files.  It may be no comfort that they aren't GNU CC's fault, but it
+files.  It may be no comfort that they aren't GCC's fault, but it
 does mean that there's nothing for us to do about them.
 @end itemize
 
 @node Standard Libraries
 @section Standard Libraries
 
-GNU CC by itself attempts to be what the ISO/ANSI C standard calls a
+GCC by itself attempts to be what the ISO/ANSI C standard calls a
 @dfn{conforming freestanding implementation}.  This means all ANSI
 C language features are available, as well as the contents of
 @file{float.h}, @file{limits.h}, @file{stdarg.h}, and
@@ -1526,7 +1529,7 @@ this function match the Standard, but that would be wrong, since the
 function will still return @code{char *}.
 
 If you need a Standard compliant library, then you need to find one, as
-GNU CC does not provide one.  The GNU C library (called @code{glibc})
+GCC does not provide one.  The GNU C library (called @code{glibc})
 has been ported to a number of operating systems, and provides ANSI/ISO,
 POSIX, BSD and SystemV compatibility.  You could also ask your operating
 system vendor if newer libraries are available.
@@ -1542,10 +1545,10 @@ way around them.
 Certain local variables aren't recognized by debuggers when you compile
 with optimization.
 
-This occurs because sometimes GNU CC optimizes the variable out of
+This occurs because sometimes GCC optimizes the variable out of
 existence.  There is no way to tell the debugger how to compute the
 value such a variable ``would have had'', and it is not clear that would
-be desirable anyway.  So GNU CC simply does not mention the eliminated
+be desirable anyway.  So GCC simply does not mention the eliminated
 variable when it writes debugging information.
 
 You have to expect a certain amount of disagreement between the
@@ -1554,7 +1557,7 @@ executable and your source code, when you use optimization.
 @cindex conflicting types
 @cindex scope of declaration
 @item
-Users often think it is a bug when GNU CC reports an error for code
+Users often think it is a bug when GCC reports an error for code
 like this:
 
 @example
@@ -1592,14 +1595,14 @@ If you care about controlling the amount of memory that is accessed, use
 volatile but do not use bitfields.
 
 @item
-GNU CC comes with shell scripts to fix certain known problems in system
+GCC comes with shell scripts to fix certain known problems in system
 header files.  They install corrected copies of various header files in
-a special directory where only GNU CC will normally look for them.  The
+a special directory where only GCC will normally look for them.  The
 scripts adapt to various systems by searching all the system header
 files for the problem cases that we know about.
 
 If new system header files are installed, nothing automatically arranges
-to update the corrected header files.  You will have to reinstall GNU CC
+to update the corrected header files.  You will have to reinstall GCC
 to fix the new header files.  More specifically, go to the build
 directory and delete the files @file{stmp-fixinc} and
 @file{stmp-headers}, and the subdirectory @code{include}; then do
@@ -1891,7 +1894,7 @@ eighty characters in any case.)
 @section Certain Changes We Don't Want to Make
 
 This section lists changes that people frequently request, but which
-we do not make because we think GNU CC is better without them.
+we do not make because we think GCC is better without them.
 
 @itemize @bullet
 @item
@@ -1992,12 +1995,12 @@ that machine.  But such applications are rare.  And users writing a
 program to run on more than one type of machine cannot possibly benefit
 from this kind of compatibility.
 
-This is why GNU CC does and will treat plain bitfields in the same
+This is why GCC does and will treat plain bitfields in the same
 fashion on all types of machines (by default).
 
 There are some arguments for making bitfields unsigned by default on all
 machines.  If, for example, this becomes a universal de facto standard,
-it would make sense for GNU CC to go along with it.  This is something
+it would make sense for GCC to go along with it.  This is something
 to be considered in the future.
 
 (Of course, users strongly concerned about portability should indicate
@@ -2007,7 +2010,7 @@ they write programs which have the same meaning in both C dialects.)
 @item
 Undefining @code{__STDC__} when @samp{-ansi} is not used.
 
-Currently, GNU CC defines @code{__STDC__} as long as you don't use
+Currently, GCC defines @code{__STDC__} as long as you don't use
 @samp{-traditional}.  This provides good results in practice.
 
 Programmers normally use conditionals on @code{__STDC__} to ask whether
@@ -2033,11 +2036,11 @@ compilers such as plain @samp{gcc}.  Whatever the ANSI C standard says
 is relevant to the design of plain @samp{gcc} without @samp{-ansi} only
 for pragmatic reasons, not as a requirement.
 
-GNU CC normally defines @code{__STDC__} to be 1, and in addition
+GCC normally defines @code{__STDC__} to be 1, and in addition
 defines @code{__STRICT_ANSI__} if you specify the @samp{-ansi} option.
 On some hosts, system include files use a different convention, where
 @code{__STDC__} is normally 0, but is 1 if the user specifies strict
-conformance to the C Standard.  GNU CC follows the host convention when
+conformance to the C Standard.  GCC follows the host convention when
 processing system include files, but when processing user files it follows
 the usual GNU C convention.
 
@@ -2063,7 +2066,7 @@ test explicitly for C++ as well.
 @item
 Deleting ``empty'' loops.
 
-Historically, GNU CC has not deleted ``empty'' loops under the
+Historically, GCC has not deleted ``empty'' loops under the
 assumption that the most likely reason you would put one in a program is
 to have a delay, so deleting them will not make real programs run any
 faster.
@@ -2118,7 +2121,7 @@ warnings.  Each kind has a different purpose:
 @itemize @w{}
 @item
 @emph{Errors} report problems that make it impossible to compile your
-program.  GNU CC reports errors with the source file name and line
+program.  GCC reports errors with the source file name and line
 number where the problem is apparent.
 
 @item
@@ -2136,12 +2139,12 @@ warnings are issued only if you ask for them, with one of the @samp{-W}
 options (for instance, @samp{-Wall} requests a variety of useful
 warnings).
 
-GNU CC always tries to compile your program if possible; it never
+GCC always tries to compile your program if possible; it never
 gratuitously rejects a program whose meaning is clear merely because
 (for instance) it fails to conform to a standard.  In some cases,
 however, the C and C++ standards specify that certain extensions are
 forbidden, and a diagnostic @emph{must} be issued by a conforming
-compiler.  The @samp{-pedantic} option tells GNU CC to issue warnings in
+compiler.  The @samp{-pedantic} option tells GCC to issue warnings in
 such cases; @samp{-pedantic-errors} says to make them errors instead.
 This does not mean that @emph{all} non-ANSI constructs get warnings
 or errors.
@@ -2154,7 +2157,7 @@ more detail on these and related command-line options.
 @cindex bugs
 @cindex reporting bugs
 
-Your bug reports play an essential role in making GNU CC reliable.
+Your bug reports play an essential role in making GCC reliable.
 
 When you encounter a problem, the first thing to do is to see if it is
 already known.  @xref{Trouble}.  If it isn't known, then you should
@@ -2163,8 +2166,8 @@ report the problem.
 Reporting a bug may help you by bringing a solution to your problem, or
 it may not.  (If it does not, look in the service directory; see
 @ref{Service}.)  In any case, the principal function of a bug report is
-to help the entire community by making the next version of GNU CC work
-better.  Bug reports are your contribution to the maintenance of GNU CC.
+to help the entire community by making the next version of GCC work
+better.  Bug reports are your contribution to the maintenance of GCC.
 
 Since the maintainers are very overloaded, we cannot respond to every
 bug report.  However, if the bug has not been fixed, we are likely to
@@ -2177,7 +2180,7 @@ information that makes for fixing the bug.
 * Criteria:  Bug Criteria.   Have you really found a bug?
 * Where: Bug Lists.	     Where to send your bug report.
 * Reporting: Bug Reporting.  How to report a bug effectively.
-* Patches: Sending Patches.  How to send a patch for GNU CC.
+* Patches: Sending Patches.  How to send a patch for GCC.
 * Known: Trouble.            Known problems.
 * Help: Service.             Where to ask for help.
 @end menu
@@ -2221,11 +2224,11 @@ by chance to give the desired results with another C or C++ compiler.
 For example, in many nonoptimizing compilers, you can write @samp{x;}
 at the end of a function instead of @samp{return x;}, with the same
 results.  But the value of the function is undefined if @code{return}
-is omitted; it is not a bug when GNU CC produces different results.
+is omitted; it is not a bug when GCC produces different results.
 
 Problems often result from expressions with two increment operators,
 as in @code{f (*p++, *p++)}.  Your previous compiler might have
-interpreted that expression the way you intended; GNU CC might
+interpreted that expression the way you intended; GCC might
 interpret it another way.  Neither compiler is wrong.  The bug is
 in your code.
 
@@ -2245,8 +2248,9 @@ that is a compiler bug.  However, you should note that your idea of
 for traditional practice''.
 
 @item
-If you are an experienced user of C or C++ compilers, your suggestions
-for improvement of GNU CC or GNU C++ are welcome in any case.
+If you are an experienced user of C or C++ (or Fortran or Objective-C)
+compilers, your suggestions
+for improvement of GCC are welcome in any case.
 @end itemize
 
 @node Bug Lists
@@ -2319,11 +2323,11 @@ things:
 
 @itemize @bullet
 @item
-The version of GNU CC.  You can get this by running it with the
+The version of GCC.  You can get this by running it with the
 @samp{-v} option.
 
 Without this, we won't know whether there is any point in looking for
-the bug in the current version of GNU CC.
+the bug in the current version of GCC.
 
 @item
 A complete input file that will reproduce the bug.  If the bug is in the
@@ -2345,16 +2349,16 @@ provoke the bug.  For example, bugs in register allocation and reloading
 frequently depend on every little detail of the function they happen in.
 
 Even if the input file that fails comes from a GNU program, you should
-still send the complete test case.  Don't ask the GNU CC maintainers to
+still send the complete test case.  Don't ask the GCC maintainers to
 do the extra work of obtaining the program in question---they are all
 overworked as it is.  Also, the problem may depend on what is in the
-header files on your system; it is unreliable for the GNU CC maintainers
+header files on your system; it is unreliable for the GCC maintainers
 to try the problem with the header files available to them.  By sending
 CPP output, you can eliminate this source of uncertainty and save us
 a certain percentage of wild goose chases.
 
 @item
-The command arguments you gave GNU CC or GNU C++ to compile that example
+The command arguments you gave GCC to compile that example
 and observe the bug.  For example, did you use @samp{-O}?  To guarantee
 you won't omit something important, list all the options.
 
@@ -2383,7 +2387,7 @@ don't support) is a modification of the compiler source.
 
 @item
 Details of any other deviations from the standard procedure for installing
-GNU CC.
+GCC.
 
 @item
 A description of what behavior you observe that you believe is
@@ -2406,7 +2410,7 @@ was not happening.  If you don't say to expect a crash, then we would
 not know whether the bug was happening.  We would not be able to draw
 any conclusion from our observations.
 
-If the problem is a diagnostic when compiling GNU CC with some other
+If the problem is a diagnostic when compiling GCC with some other
 compiler, say whether it is a warning or an error.
 
 Often the observed symptom is incorrect output when your program is run.
@@ -2419,13 +2423,13 @@ person who understands the program can find this as easily as finding a
 bug in the program itself.
 
 @item
-If you send examples of assembler code output from GNU CC or GNU C++,
+If you send examples of assembler code output from GCC,
 please use @samp{-g} when you make them.  The debugging information
 includes source line numbers which are essential for correlating the
 output with the input.
 
 @item
-If you wish to mention something in the GNU CC source, refer to it by
+If you wish to mention something in the GCC source, refer to it by
 context, not by line number.
 
 The line numbers in the development sources don't match those in your
@@ -2441,7 +2445,7 @@ any chance of being useful.
 @cindex backtrace for bug reports
 For example, many people send just a backtrace, but that is never
 useful by itself.  A simple backtrace with arguments conveys little
-about GNU CC because the compiler is largely data-driven; the same
+about GCC because the compiler is largely data-driven; the same
 functions are called over and over for different RTL insns, doing
 different things depending on the details of the insn.
 
@@ -2485,7 +2489,7 @@ as well save your time for something else.
 Of course, if you can find a simpler example to report @emph{instead} of
 the original one, that is a convenience.  Errors in the output will be
 easier to spot, running under the debugger will take less time, etc.
-Most GNU CC bugs involve just one function, so the most straightforward
+Most GCC bugs involve just one function, so the most straightforward
 way to simplify an example is to delete all the function definitions
 except the one where the bug occurs.  Those earlier in the file may be
 replaced by external declarations if the crucial function depends on
@@ -2509,7 +2513,7 @@ necessary information, such as the test case, on the assumption that a
 patch is all we need.  We might see problems with your patch and decide
 to fix the problem another way, or we might not understand it at all.
 
-Sometimes with a program as complicated as GNU CC it is very hard to
+Sometimes with a program as complicated as GCC it is very hard to
 construct an example that will make the program follow a certain path
 through the code.  If you don't send the example, we won't be able to
 construct one, so we won't be able to verify that the bug is fixed.
@@ -2536,7 +2540,7 @@ we should be able to reproduce the crash ourselves.
 @end itemize
 
 @node Sending Patches,, Bug Reporting, Bugs
-@section Sending Patches for GNU CC
+@section Sending Patches for GCC
 
 If you would like to write bug fixes or improvements for the GNU C
 compiler, that is very helpful.  Send suggested fixes to the patches
@@ -2633,7 +2637,7 @@ would break other systems.
 People often suggest fixing a problem by changing machine-independent
 files such as @file{toplev.c} to do something special that a particular
 system needs.  Sometimes it is totally obvious that such changes would
-break GNU CC for almost all users.  We can't possibly make a change like
+break GCC for almost all users.  We can't possibly make a change like
 that.  At best it might tell us how to write another patch that would
 solve the problem acceptably.
 
@@ -2652,9 +2656,9 @@ form that is good to install.
 @end itemize
 
 @node Service
-@chapter How To Get Help with GNU CC
+@chapter How To Get Help with GCC
 
-If you need help installing, using or changing GNU CC, there are two
+If you need help installing, using or changing GCC, there are two
 ways to find it:
 
 @itemize @bullet
@@ -2666,34 +2670,34 @@ Send a message to a suitable network mailing list.  First try
 @item
 Look in the service directory for someone who might help you for a fee.
 The service directory is found in the file named @file{SERVICE} in the
-GNU CC distribution.
+GCC distribution.
 @end itemize
 
 @node Contributing
-@chapter Contributing to GNU CC Development
+@chapter Contributing to GCC Development
 
-If you would like to help pretest GNU CC releases to assure they work
-well, or if you would like to work on improving GNU CC, please contact
-the maintainers at @code{gcc@@gcc.gnu.org}.  A pretester should
+If you would like to help pretest GCC releases to assure they work
+well, or if you would like to work on improving GCC, please contact
+the maintainers at @code{egcs@@egcs.cygnus.com}.  A pretester should
 be willing to try to investigate bugs as well as report them.
 
 If you'd like to work on improvements, please ask for suggested projects
 or suggest your own ideas.  If you have already written an improvement,
 please tell us about it.  If you have not yet started work, it is useful
-to contact @code{gcc@@gcc.gnu.org} before you start; the
+to contact @code{egcs@@egcs.cygnus.com} before you start; the
 maintainers may be able to suggest ways to make your extension fit in
-better with the rest of GNU CC and with other development plans.
+better with the rest of GCC and with other development plans.
 
 @node VMS
-@chapter Using GNU CC on VMS
+@chapter Using GCC on VMS
 
 @c prevent bad page break with this line
-Here is how to use GNU CC on VMS.
+Here is how to use GCC on VMS.
 
 @menu
 * Include Files and VMS::  Where the preprocessor looks for the include files.
 * Global Declarations::    How to do globaldef, globalref and globalvalue with
-                           GNU CC.
+                           GCC.
 * VMS Misc::		   Misc information.
 @end menu
 
@@ -2703,11 +2707,11 @@ Here is how to use GNU CC on VMS.
 @cindex include files and VMS
 @cindex VMS and include files
 @cindex header files and VMS
-Due to the differences between the filesystems of Unix and VMS, GNU CC
+Due to the differences between the filesystems of Unix and VMS, GCC
 attempts to translate file names in @samp{#include} into names that VMS
 will understand.  The basic strategy is to prepend a prefix to the
 specification of the include file, convert the whole filename to a VMS
-filename, and then try to open the file.  GNU CC tries various prefixes
+filename, and then try to open the file.  GCC tries various prefixes
 one by one until one of them succeeds:
 
 @enumerate
@@ -2751,9 +2755,9 @@ Include directives of the form:
 @end example
 
 @noindent
-are a common source of incompatibility between VAX-C and GNU CC.  VAX-C
+are a common source of incompatibility between VAX-C and GCC.  VAX-C
 treats this much like a standard @code{#include <foobar.h>} directive.
-That is incompatible with the ANSI C behavior implemented by GNU CC: to
+That is incompatible with the ANSI C behavior implemented by GCC: to
 expand the name @code{foobar} as a macro.  Macro expansion should
 eventually yield one of the two standard formats for @code{#include}:
 
@@ -2782,17 +2786,17 @@ Another source of incompatibility is that VAX-C assumes that:
 @end example
 
 @noindent
-is actually asking for the file @file{foobar.h}.  GNU CC does not
+is actually asking for the file @file{foobar.h}.  GCC does not
 make this assumption, and instead takes what you ask for literally;
 it tries to read the file @file{foobar}.  The best way to avoid this
 problem is to always specify the desired file extension in your include
 directives.
 
-GNU CC for VMS is distributed with a set of include files that is
+GCC for VMS is distributed with a set of include files that is
 sufficient to compile most general purpose programs.  Even though the
-GNU CC distribution does not contain header files to define constants
+GCC distribution does not contain header files to define constants
 and structures for some VMS system-specific functions, there is no
-reason why you cannot use GNU CC with any of these functions.  You first
+reason why you cannot use GCC with any of these functions.  You first
 may have to generate or create header files, either by using the public
 domain utility @code{UNSDL} (which can be found on a DECUS tape), or by
 extracting the relevant modules from one of the system macro libraries,
@@ -2809,7 +2813,7 @@ whether explicitly, or implicitly via a logical name.
 @findex GLOBALDEF
 @findex GLOBALVALUEDEF
 @findex GLOBALVALUEREF
-GNU CC does not provide the @code{globalref}, @code{globaldef} and
+GCC does not provide the @code{globalref}, @code{globaldef} and
 @code{globalvalue} keywords of VAX-C.  You can get the same effect with
 an obscure feature of GAS, the GNU assembler.  (This requires GAS
 version 1.39 or later.)  The following macros allow you to use this
@@ -2928,19 +2932,19 @@ enum globaldef color @{RED, BLUE, GREEN = 3@};
 @cindex exit status and VMS
 @cindex return value of @code{main}
 @cindex @code{main} and the exit status
-GNU CC automatically arranges for @code{main} to return 1 by default if
+GCC automatically arranges for @code{main} to return 1 by default if
 you fail to specify an explicit return value.  This will be interpreted
 by VMS as a status code indicating a normal successful completion.
-Version 1 of GNU CC did not provide this default.
+Version 1 of GCC did not provide this default.
 
-GNU CC on VMS works only with the GNU assembler, GAS.  You need version
+GCC on VMS works only with the GNU assembler, GAS.  You need version
 1.37 or later of GAS in order to produce value debugging information for
 the VMS debugger.  Use the ordinary VMS linker with the object files
 produced by GAS.
 
 @cindex shared VMS run time system
 @cindex @file{VAXCRTL}
-Under previous versions of GNU CC, the generated code would occasionally
+Under previous versions of GCC, the generated code would occasionally
 give strange results when linked to the sharable @file{VAXCRTL} library.
 Now this should work.
 
@@ -2957,10 +2961,10 @@ placed in writable storage.
 Although the VMS linker does distinguish between upper and lower case
 letters in global symbols, most VMS compilers convert all such symbols
 into upper case and most run-time library routines also have upper case
-names.  To be able to reliably call such routines, GNU CC (by means of
+names.  To be able to reliably call such routines, GCC (by means of
 the assembler GAS) converts global symbols into upper case like other
 VMS compilers.  However, since the usual practice in C is to distinguish
-case, GNU CC (via GAS) tries to preserve usual C behavior by augmenting
+case, GCC (via GAS) tries to preserve usual C behavior by augmenting
 each name that is not all lower case.  This means truncating the name
 to at most 23 characters and then adding more characters at the end
 which encode the case pattern of those 23.   Names which contain at
@@ -3014,16 +3018,16 @@ number of changes to your source code.
 
 @ifset INTERNALS
 @node Portability
-@chapter GNU CC and Portability
+@chapter GCC and Portability
 @cindex portability
-@cindex GNU CC and portability
+@cindex GCC and portability
 
-The main goal of GNU CC was to make a good, fast compiler for machines in
+The main goal of GCC was to make a good, fast compiler for machines in
 the class that the GNU system aims to run on: 32-bit machines that address
 8-bit bytes and have several general registers.  Elegance, theoretical
 power and simplicity are only secondary.
 
-GNU CC gets most of the information about the target machine from a machine
+GCC gets most of the information about the target machine from a machine
 description which gives an algebraic formula for each of the machine's
 instructions.  This is a very clean way to describe the target.  But when
 the compiler needs information that is difficult to express in this
@@ -3034,7 +3038,7 @@ on the compiler; it was not of interest for its own sake.
 @cindex endianness
 @cindex autoincrement addressing, availability
 @findex abort
-GNU CC does not contain machine dependent code, but it does contain code
+GCC does not contain machine dependent code, but it does contain code
 that depends on machine parameters such as endianness (whether the most
 significant byte has the highest or lowest address of the bytes in a word)
 and the availability of autoincrement addressing.  In the RTL-generation
@@ -3050,13 +3054,13 @@ affect only the target machines that need them.
 
 @ifset INTERNALS
 @node Interface
-@chapter Interfacing to GNU CC Output
-@cindex interfacing to GNU CC output
+@chapter Interfacing to GCC Output
+@cindex interfacing to GCC output
 @cindex run-time conventions
 @cindex function call conventions
 @cindex conventions, run-time
 
-GNU CC is normally configured to use the same function calling convention
+GCC is normally configured to use the same function calling convention
 normally in use on the target system.  This is done with the
 machine-description macros described (@pxref{Target Macros}).
 
@@ -3065,43 +3069,43 @@ machine-description macros described (@pxref{Target Macros}).
 @cindex returning structures and unions
 However, returning of structure and union values is done differently on
 some target machines.  As a result, functions compiled with PCC
-returning such types cannot be called from code compiled with GNU CC,
+returning such types cannot be called from code compiled with GCC,
 and vice versa.  This does not cause trouble often because few Unix
 library routines return structures or unions.
 
-GNU CC code returns structures and unions that are 1, 2, 4 or 8 bytes
+GCC code returns structures and unions that are 1, 2, 4 or 8 bytes
 long in the same registers used for @code{int} or @code{double} return
-values.  (GNU CC typically allocates variables of such types in
+values.  (GCC typically allocates variables of such types in
 registers also.)  Structures and unions of other sizes are returned by
 storing them into an address passed by the caller (usually in a
 register).  The machine-description macros @code{STRUCT_VALUE} and
-@code{STRUCT_INCOMING_VALUE} tell GNU CC where to pass this address.
+@code{STRUCT_INCOMING_VALUE} tell GCC where to pass this address.
 
 By contrast, PCC on most target machines returns structures and unions
 of any size by copying the data into an area of static storage, and then
 returning the address of that storage as if it were a pointer value.
 The caller must copy the data from that memory area to the place where
-the value is wanted.  This is slower than the method used by GNU CC, and
+the value is wanted.  This is slower than the method used by GCC, and
 fails to be reentrant.
 
 On some target machines, such as RISC machines and the 80386, the
 standard system convention is to pass to the subroutine the address of
-where to return the value.  On these machines, GNU CC has been
+where to return the value.  On these machines, GCC has been
 configured to be compatible with the standard compiler, when this method
 is used.  It may not be compatible for structures of 1, 2, 4 or 8 bytes.
 
 @cindex argument passing
 @cindex passing arguments
-GNU CC uses the system's standard convention for passing arguments.  On
+GCC uses the system's standard convention for passing arguments.  On
 some machines, the first few arguments are passed in registers; in
 others, all are passed on the stack.  It would be possible to use
 registers for argument passing on any machine, and this would probably
 result in a significant speedup.  But the result would be complete
 incompatibility with code that follows the standard convention.  So this
-change is practical only if you are switching to GNU CC as the sole C
+change is practical only if you are switching to GCC as the sole C
 compiler for the system.  We may implement register argument passing on
 certain machines once we have a complete GNU system so that we can
-compile the libraries with GNU CC.
+compile the libraries with GCC.
 
 On some machines (particularly the Sparc), certain types of arguments
 are passed ``by invisible reference''.  This means that the value is
@@ -3111,9 +3115,9 @@ the subroutine.
 @cindex @code{longjmp} and automatic variables
 If you use @code{longjmp}, beware of automatic variables.  ANSI C says that
 automatic variables that are not declared @code{volatile} have undefined
-values after a @code{longjmp}.  And this is all GNU CC promises to do,
+values after a @code{longjmp}.  And this is all GCC promises to do,
 because it is very difficult to restore register variables correctly, and
-one of GNU CC's features is that it can put variables in registers without
+one of GCC's features is that it can put variables in registers without
 your asking it to.
 
 If you want a variable to be unaltered by @code{longjmp}, and you don't
@@ -3132,7 +3136,7 @@ go in a register:
 
 @cindex arithmetic libraries
 @cindex math libraries
-Code compiled with GNU CC may call certain library routines.  Most of
+Code compiled with GCC may call certain library routines.  Most of
 them handle arithmetic for which there are no instructions.  This
 includes multiply and divide on some machines, and floating point
 operations on any machine for which floating point support is disabled
@@ -3141,7 +3145,7 @@ with @samp{-msoft-float}.  Some standard parts of the C library, such as
 function call interface is used for calling the library routines.
 
 These library routines should be defined in the library @file{libgcc.a},
-which GNU CC automatically searches whenever it links a program.  On
+which GCC automatically searches whenever it links a program.  On
 machines that have multiply and divide instructions, if hardware
 floating point is in use, normally @file{libgcc.a} is not needed, but it
 is searched just in case.
@@ -3150,7 +3154,7 @@ Each arithmetic function is defined in @file{libgcc1.c} to use the
 corresponding C arithmetic operator.  As long as the file is compiled
 with another C compiler, which supports all the C arithmetic operators,
 this file will work portably.  However, @file{libgcc1.c} does not work if
-compiled with GNU CC, because each arithmetic function would compile
+compiled with GCC, because each arithmetic function would compile
 into a call to itself!
 @end ifset
 
@@ -3305,7 +3309,7 @@ function must meet certain criteria, currently related to the size of
 the function and the types and number of parameters it has.  Note that
 this function may contain loops, recursive calls to itself
 (tail-recursive functions can be inlined!), gotos, in short, all
-constructs supported by GNU CC.  The file @file{integrate.c} contains
+constructs supported by GCC.  The file @file{integrate.c} contains
 the code to save a function's rtl for later inlining and to inline that
 rtl when the function is called.  The header file @file{integrate.h}
 is also used for this purpose.
@@ -3656,7 +3660,7 @@ definitions that describe the machine and system on which the compiler
 is running, unlike the definitions in @file{@var{machine}.h}, which
 describe the machine for which the compiler is producing output.  Most
 of the values in @file{xm-@var{machine}.h} are actually the same on all
-machines that GNU CC runs on, so large parts of all configuration files
+machines that GCC runs on, so large parts of all configuration files
 are identical.  But there are some macros that vary:
 
 @table @code
@@ -3681,7 +3685,7 @@ exits without serious errors.
 @findex HOST_WORDS_BIG_ENDIAN
 @item HOST_WORDS_BIG_ENDIAN
 Defined if the host machine stores words of multi-word values in
-big-endian order.  (GNU CC does not depend on the host byte ordering
+big-endian order.  (GCC does not depend on the host byte ordering
 within a word.)
 
 @findex HOST_FLOAT_WORDS_BIG_ENDIAN
@@ -3760,7 +3764,7 @@ If you do define this macro, you should probably do it as follows:
 @end example
 
 @noindent
-so that when the compiler is compiled with GNU CC it uses the more
+so that when the compiler is compiled with GCC it uses the more
 efficient built-in @code{alloca} function.
 
 @item FUNCTION_CONVERSION_BUG
@@ -3772,7 +3776,7 @@ used in an expression.
 @findex MULTIBYTE_CHARS
 @item MULTIBYTE_CHARS
 Define this macro to enable support for multibyte characters in the
-input to GNU CC.  This requires that the host system support the ANSI C
+input to GCC.  This requires that the host system support the ANSI C
 library functions for converting multibyte characters to wide
 characters.
 
@@ -3803,7 +3807,7 @@ Therefore, if you define @code{sys_siglist}, you should also define
 Define this to be 1 if you know that the host compiler supports
 prototypes, even if it doesn't define __STDC__, or define
 it to be 0 if you do not want any prototypes used in compiling
-GNU CC.  If @samp{USE_PROTOTYPES} is not defined, it will be
+GCC.  If @samp{USE_PROTOTYPES} is not defined, it will be
 determined automatically whether your compiler supports
 prototypes by checking if @samp{__STDC__} is defined.
 
@@ -3811,7 +3815,7 @@ prototypes by checking if @samp{__STDC__} is defined.
 @item NO_MD_PROTOTYPES
 Define this if you wish suppression of prototypes generated from
 the machine description file, but to use other prototypes within
-GNU CC.  If @samp{USE_PROTOTYPES} is defined to be 0, or the
+GCC.  If @samp{USE_PROTOTYPES} is defined to be 0, or the
 host compiler does not support prototypes, this macro has no
 effect.
 
@@ -3836,20 +3840,20 @@ the colon character
 @item DIR_SEPARATOR
 If your system uses some character other than slash to separate
 directory names within a file specification, define this macro to be a C
-character constant specifying that character.  When GNU CC displays file
-names, the character you specify will be used.  GNU CC will test for
+character constant specifying that character.  When GCC displays file
+names, the character you specify will be used.  GCC will test for
 both slash and the character you specify when parsing filenames.
 
 @findex OBJECT_SUFFIX
 @item OBJECT_SUFFIX
 Define this macro to be a C string representing the suffix for object
-files on your machine.  If you do not define this macro, GNU CC will use
+files on your machine.  If you do not define this macro, GCC will use
 @samp{.o} as the suffix for object files.
 
 @findex EXECUTABLE_SUFFIX
 @item EXECUTABLE_SUFFIX
 Define this macro to be a C string representing the suffix for executable
-files on your machine.  If you do not define this macro, GNU CC will use
+files on your machine.  If you do not define this macro, GCC will use
 the null string as the suffix for object files.
 
 @findex COLLECT_EXPORT_LIST
@@ -3865,14 +3869,14 @@ lists.
 @findex bcmp
 In addition, configuration files for system V define @code{bcopy},
 @code{bzero} and @code{bcmp} as aliases.  Some files define @code{alloca}
-as a macro when compiled with GNU CC, in order to take advantage of the
-benefit of GNU CC's built-in @code{alloca}.
+as a macro when compiled with GCC, in order to take advantage of the
+benefit of GCC's built-in @code{alloca}.
 
 @node Fragments
 @chapter Makefile Fragments
 @cindex makefile fragment
 
-When you configure GNU CC using the @file{configure} script
+When you configure GCC using the @file{configure} script
 (@pxref{Installation}), it will construct the file @file{Makefile} from
 the template file @file{Makefile.in}.  When it does this, it will
 incorporate makefile fragment files from the @file{config} directory,
@@ -3930,11 +3934,11 @@ in @code{EXTRA-PARTS}.
 
 @findex MULTILIB_OPTIONS
 @item MULTILIB_OPTIONS
-For some targets, invoking GNU CC in different ways produces objects
-that can not be linked together.  For example, for some targets GNU CC
+For some targets, invoking GCC in different ways produces objects
+that can not be linked together.  For example, for some targets GCC
 produces both big and little endian code.  For these targets, you must
 arrange for multiple versions of @file{libgcc.a} to be compiled, one for
-each set of incompatible options.  When GNU CC invokes the linker, it
+each set of incompatible options.  When GCC invokes the linker, it
 arranges to link in the right version of @file{libgcc.a}, based on
 the command line options used.
 
@@ -3967,7 +3971,7 @@ you desire a different set of directory names.
 @findex MULTILIB_MATCHES
 @item MULTILIB_MATCHES
 Sometimes the same option may be written in two different ways.  If an
-option is listed in @code{MULTILIB_OPTIONS}, GNU CC needs to know about
+option is listed in @code{MULTILIB_OPTIONS}, GCC needs to know about
 any synonyms.  In that case, set @code{MULTILIB_MATCHES} to a list of
 items of the form @samp{option=option} to describe all relevant
 synonyms.  For example, @samp{m68000=mc68000 m68020=mc68020}.
@@ -4061,7 +4065,7 @@ difference than others.  For example, maintaining a separate version of
 a program contributes very little; maintaining the standard version of a
 program for the whole community contributes much.  Easy new ports
 contribute little, since someone else would surely do them; difficult
-ports such as adding a new CPU to the GNU C compiler contribute more;
+ports such as adding a new CPU to the GNU Compiler Collection contribute more;
 major new features or packages contribute the most.
 
 By establishing the idea that supporting further development is ``the
@@ -4511,7 +4515,7 @@ the ``copyright'' line and a pointer to where the full notice is found.
 
 @smallexample
 @var{one line to give the program's name and a brief idea of what it does.}
-Copyright (C) 19@var{yy}  @var{name of author}
+Copyright (C) @var{yyyy}  @var{name of author}
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -4534,7 +4538,7 @@ If the program is interactive, make it output a short notice like this
 when it starts in an interactive mode:
 
 @smallexample
-Gnomovision version 69, Copyright (C) 19@var{yy} @var{name of author}
+Gnomovision version 69, Copyright (C) @var{yyyy} @var{name of author}
 Gnomovision comes with ABSOLUTELY NO WARRANTY; for details
 type `show w'.
 This is free software, and you are welcome to redistribute it
@@ -4566,11 +4570,11 @@ library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
 
 @node Contributors
-@unnumbered Contributors to GNU CC
+@unnumbered Contributors to GCC
 @cindex contributors
 
 In addition to Richard Stallman, several people have written parts
-of GNU CC.
+of GCC.
 
 @itemize @bullet
 @item
@@ -4622,13 +4626,13 @@ Randy Smith finished the Sun FPA support.
 Robert Brown implemented the support for Encore 32000 systems.
 
 @item
-David Kashtan of SRI adapted GNU CC to VMS.
+David Kashtan of SRI adapted GCC to VMS.
 
 @item
 Alex Crain provided changes for the 3b1.
 
 @item
-Greg Satz and Chris Hanson assisted in making GNU CC work on HP-UX for
+Greg Satz and Chris Hanson assisted in making GCC work on HP-UX for
 the 9000 series 300.
 
 @item
@@ -4645,16 +4649,16 @@ Dario Dariol contributed the four varieties of sample programs
 that print a copy of their source.
 
 @item
-Alain Lichnewsky ported GNU CC to the Mips cpu.
+Alain Lichnewsky ported GCC to the Mips cpu.
 
 @item
-Devon Bowen, Dale Wiles and Kevin Zachmann ported GNU CC to the Tahoe.
+Devon Bowen, Dale Wiles and Kevin Zachmann ported GCC to the Tahoe.
 
 @item
 Jonathan Stone wrote the machine description for the Pyramid computer.
 
 @item
-Gary Miller ported GNU CC to Charles River Data Systems machines.
+Gary Miller ported GCC to Charles River Data Systems machines.
 
 @item
 Richard Kenner of the New York University Ultracomputer Research
