@@ -1,3 +1,17 @@
+2003-01-30  Geoffrey Keating  <geoffk@apple.com>
+
+	* gengtype.c (struct walk_type_data): Add needs_cast_p.
+	(walk_type): Set needs_cast_p in walk_type_data.
+	(write_types_process_field): Supply casts when required to suppress
+	warnings.
+	(write_root): Cast gt_pch_n_S to suppress warning.
+	* Makefile.in: Remove -Wno-error from gtype-desc.o and c-decl.o.
+	* cp/Make-lang.in: Remove -Wno-error from cp/decl.o.
+	* config/rs6000/rs6000.c (print_operand): Mask off high bits only
+	when they might exist.
+	* config/rs6000/t-rs6000: Remove -Wno-error from varasm.o,
+	insn-conditions.o, and rs6000.o.
+
 2003-01-30  Richard Henderson  <rth@redhat.com>
 
 	* ggc-page.c (G.context_depth_allocations): New.

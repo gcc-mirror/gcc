@@ -112,9 +112,6 @@ VALGRIND_DRIVER_DEFINES = @valgrind_path_defines@
 GCC_WARN_CFLAGS = $(LOOSE_WARN) $($(@D)-warn) $(NOCOMMON_FLAG) $(WERROR) $($@-warn)
 
 # These files are to have -Werror bypassed in stage2:
-# These contain warnings from the PCH merge.
-gtype-desc.o-warn = -Wno-error
-c-decl.o-warn = -Wno-error
 # These are very hard to completely clean due to target complexities.
 varasm.o-warn = -Wno-error
 gcc.o-warn = -Wno-error

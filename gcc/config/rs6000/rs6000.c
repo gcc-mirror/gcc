@@ -7780,13 +7780,17 @@ print_operand (file, x, code)
 
       if (uval & 1)	/* Clear Left */
 	{
-	  uval &= ((unsigned HOST_WIDE_INT) 1 << 63 << 1) - 1;
+#if HOST_BITS_PER_WIDE_INT > 64
+	  uval &= ((unsigned HOST_WIDE_INT) 1 << 64) - 1;
+#endif
 	  i = 64;
 	}
       else		/* Clear Right */
 	{
 	  uval = ~uval;
-	  uval &= ((unsigned HOST_WIDE_INT) 1 << 63 << 1) - 1;
+#if HOST_BITS_PER_WIDE_INT > 64
+	  uval &= ((unsigned HOST_WIDE_INT) 1 << 64) - 1;
+#endif
 	  i = 63;
 	}
       while (uval != 0)
@@ -10631,7 +10635,7 @@ rs6000_emit_prologue ()
       && flag_pic && current_function_uses_pic_offset_table)
     {
       rtx dest = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
-      char *picbase = machopic_function_base_name ();
+      const char *picbase = machopic_function_base_name ();
       rtx src = gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (picbase, -1));
 
       rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest, src)));
