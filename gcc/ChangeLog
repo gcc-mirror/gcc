@@ -1,8 +1,9 @@
 2004-11-21  Stan Shebs  <shebs@apple.com>
 
-	* config/rs6000/rs6000.c: (rs6000_darwin64_function_arg): Add UNION_TYPE case.
-	(function_arg): Move darwin test up, sniff mode first for efficiency, test
-	for union type.
+	* config/rs6000/rs6000.c: (rs6000_darwin64_function_arg): Add
+	UNION_TYPE case.
+	(function_arg): Move darwin test up, sniff mode first for
+	efficiency, test for union type.
 
 2004-11-21  Dale Johannesen  <dalej@apple.com>
 
