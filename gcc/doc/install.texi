@@ -1354,6 +1354,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#powerpc*-*-*,,powerpc*-*-*, powerpc-*-sysv4}
 @item
+@uref{#powerpc-*-darwin*,,powerpc-*-darwin*}
+@item
 @uref{#powerpc-*-elf,,powerpc-*-elf, powerpc-*-sysv4}
 @item
 @uref{#powerpc-*-linux-gnu*,,powerpc-*-linux-gnu*}
@@ -2858,6 +2860,40 @@ binaries of GCC for bootstrapping.
 
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}
 switch by using the configure option @option{--with-cpu-@var{cpu_type}}.
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{powerpc-*-darwin*}powerpc-*-darwin*
+PowerPC running Darwin (Mac OS X kernel).
+
+GCC 3.0 does not support Darwin, but 3.1 and later releases will work.
+
+Pre-installed versions of Mac OS X may not include any developer tools,
+meaning that you will not be able to build GCC from source.  Tool
+binaries are available at
+@uref{http://www.opensource.apple.com/projects/darwin} (free
+registration required).
+
+Versions of the assembler prior to ``cctools-364'' cannot handle the
+4-argument form of rlwinm and related mask-using instructions.  Darwin
+1.3 (Mac OS X 10.0) uses cctools-353 for instance.  To get cctools-364,
+check out @file{cctools} with tag @samp{Apple-364}, build it, and
+install the assembler as @file{usr/bin/as}.  See
+@uref{http://www.opensource.apple.com/tools/cvs/docs.html} for details.
+
+Also, the default stack limit of 512K is too small, and a bootstrap will
+typically fail when self-compiling @file{expr.c}.  Set the stack to 800K
+or more, for instance by doing @samp{limit stack 800}.  It's also
+convenient to use the GNU preprocessor instead of Apple's during the
+first stage of bootstrapping; this is automatic when doing @samp{make
+bootstrap}, but to do it from the toplevel objdir you will need to say
+@samp{make CC='cc -no-cpp-precomp' bootstrap}.
+
+Note that the version of GCC shipped by Apple typically includes a
+number of extensions not available in a standard GCC release.  These
+extensions are generally specific to Mac programming.
 
 @html
 </p>
