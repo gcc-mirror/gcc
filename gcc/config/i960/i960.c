@@ -55,8 +55,8 @@ rtx i960_compare_op0, i960_compare_op1;
 /* Used to implement #pragma align/noalign.  Initialized by OVERRIDE_OPTIONS
    macro in i960.h.  */
 
-static int i960_maxbitalignment;
-static int i960_last_maxbitalignment;
+int i960_maxbitalignment;
+int i960_last_maxbitalignment;
 
 /* Used to implement switching between MEM and ALU insn types, for better
    C series performance.  */
@@ -88,135 +88,6 @@ static int ret_label = 0;
 ((TYPE_ARG_TYPES (TREE_TYPE (FNDECL)) != 0						      \
   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (FNDECL)))) != void_type_node))    \
  || current_function_varargs)
-
-/* Handle pragmas for compatibility with Intel's compilers.  */
-
-/* NOTE: ic960 R3.0 pragma align definition:
-
-   #pragma align [(size)] | (identifier=size[,...])
-   #pragma noalign [(identifier)[,...]]
-     
-   (all parens are optional)
-     
-   - size is [1,2,4,8,16]
-   - noalign means size==1
-   - applies only to component elements of a struct (and union?)
-   - identifier applies to structure tag (only)
-   - missing identifier means next struct
-     
-   - alignment rules for bitfields need more investigation.
-
-   This implementation only handles the case of no identifiers.  */
-
-void
-i960_pr_align (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  tree number;
-  enum cpp_ttype type;
-  int align;
-
-  type = c_lex (&number);
-  if (type == CPP_OPEN_PAREN)
-    type = c_lex (&number);
-  if (type == CPP_NAME)
-    {
-      warning ("sorry, not implemented: #pragma align NAME=SIZE");
-      return;
-    }
-  if (type != CPP_NUMBER)
-    {
-      warning ("malformed #pragma align - ignored");
-      return;
-    }
-
-  align = TREE_INT_CST_LOW (number);
-  switch (align)
-    {
-    case 0:
-      /* Return to last alignment.  */
-      align = i960_last_maxbitalignment / 8;
-      /* Fall through.  */
-    case 16:
-    case 8:
-    case 4:
-    case 2:
-    case 1:
-      i960_last_maxbitalignment = i960_maxbitalignment;
-      i960_maxbitalignment = align * 8;
-      break;
-      
-    default:
-      /* Silently ignore bad values.  */
-      break;
-    }
-}
-
-void
-i960_pr_noalign (pfile)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
-{
-  enum cpp_ttype type;
-  tree number;
-
-  type = c_lex (&number);
-  if (type == CPP_OPEN_PAREN)
-    type = c_lex (&number);
-  if (type == CPP_NAME)
-    {
-      warning ("sorry, not implemented: #pragma noalign NAME");
-      return;
-    }
-
-  i960_last_maxbitalignment = i960_maxbitalignment;
-  i960_maxbitalignment = 8;
-}
-
-int
-process_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc) PARAMS ((void));
-     void (* p_ungetc) PARAMS ((int));
-     const char *pname;
-{
-  register int c;
-  char buf[20];
-  char *s = buf;
-  int align;
-
-  /* Should be pragma 'far' or equivalent for callx/balx here.  */
-  if (strcmp (pname, "align") != 0)
-    return 0;
-  
-  do
-    {
-      c = p_getc ();
-    }
-  while (c == ' ' || c == '\t');
-
-  if (c == '(')
-    c = p_getc ();
-  
-  while (c >= '0' && c <= '9')
-    {
-      if (s < buf + sizeof buf - 1)
-	*s++ = c;
-      c = p_getc ();
-    }
-  
-  *s = '\0';
-
-  /* We had to read a non-numerical character to get out of the
-     while loop---often a newline.  So, we have to put it back to
-     make sure we continue to parse everything properly.  */
-  
-  p_ungetc (c);
-
-  align = atoi (buf);
-
-  
-  
-  return 1;
-}
 
 /* Initialize variables before compiling any files.  */
 

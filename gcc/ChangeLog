@@ -1,3 +1,17 @@
+Thu Mar 15 11:24:29 EST 2001  John Wehle  (john@feith.com)
+
+	* i960.h (i960_maxbitalignment,
+	i960_last_maxbitalignment): Declare.
+	* i960.c (i960_maxbitalignment,
+	i960_last_maxbitalignment): Make global.
+	(process_pragma): Delete.
+	(i960_pr_align, i960_pr_noalign): Move from here ...
+	* i960-c.c: ... to this new file.
+	* t-960bare (i960-c.o): New rule.
+	* t-vxworks960 (i960-c.o): Likewise.
+	* config.gcc (i960-*-*): Define c_target_objs and
+	cxx_target_objs.
+
 2001-03-15  Bernd Schmidt  <bernds@redhat.com>
 
 	* cselib.c (hash_rtx): For REG and MEM, just use value of expression
