@@ -1,3 +1,14 @@
+2004-05-18  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/13930
+	* decl.c (add_init_expr_to_sym): Remove incorrect check.
+	(default_initializer): Move to expr.c.
+	(variable_decl): Don't assign default initializer to variables.
+	* expr.c (gfc_default_initializer): Move to here.
+	* gfortran.h (gfc_default_initializer): Add prototype.
+	* resolve.c (resolve_symbol): Check for illegal initializers.
+	Assign default initializer.
+
 2004-05-17  Steve Kargl  <kargls@comcast.net>
 
 	* arith.c (gfc_arith_power): Complex number raised to 0 power is 1.

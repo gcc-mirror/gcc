@@ -254,7 +254,6 @@ static try
 add_init_expr_to_sym (const char *name, gfc_expr ** initp,
 		      locus * var_locus)
 {
-  int i;
   symbol_attribute attr;
   gfc_symbol *sym;
   gfc_expr *init;
@@ -310,19 +309,6 @@ add_init_expr_to_sym (const char *name, gfc_expr ** initp,
       if (sym->ts.type != BT_DERIVED && init->ts.type != BT_DERIVED
 	  && gfc_check_assign_symbol (sym, init) == FAILURE)
 	return FAILURE;
-
-      for (i = 0; i < sym->attr.dimension; i++)
-	{
-	  if (sym->as->lower[i] == NULL
-	      || sym->as->lower[i]->expr_type != EXPR_CONSTANT
-	      || sym->as->upper[i] == NULL
-	      || sym->as->upper[i]->expr_type != EXPR_CONSTANT)
-	    {
-	      gfc_error ("Array '%s' at %C cannot have initializer",
-			 sym->name);
-	      return FAILURE;
-	    }
-	}
 
       /* Add initializer.  Make sure we keep the ranks sane.  */
       if (sym->attr.dimension && init->rank == 0)
@@ -444,47 +430,6 @@ gfc_match_null (gfc_expr ** result)
   *result = e;
 
   return MATCH_YES;
-}
-
-
-/* Get an expression for a default initializer.  */
-static gfc_expr *
-default_initializer (void)
-{
-  gfc_constructor *tail;
-  gfc_expr *init;
-  gfc_component *c;
-
-  init = NULL;
-
-  /* First see if we have a default initializer.  */
-  for (c = current_ts.derived->components; c; c = c->next)
-    {
-      if (c->initializer && init == NULL)
-        init = gfc_get_expr ();
-    }
-
-  if (init == NULL)
-    return NULL;
-
-  init->expr_type = EXPR_STRUCTURE;
-  init->ts = current_ts;
-  init->where = current_ts.derived->declared_at;
-  tail = NULL;
-  for (c = current_ts.derived->components; c; c = c->next)
-    {
-      if (tail == NULL)
-        init->value.constructor = tail = gfc_get_constructor ();
-      else
-        {
-          tail->next = gfc_get_constructor ();
-          tail = tail->next;
-        }
-
-      if (c->initializer)
-        tail->expr = gfc_copy_expr (c->initializer);
-    }
-  return init;
 }
 
 
@@ -644,18 +589,17 @@ variable_decl (void)
 	}
     }
 
-  if (current_ts.type == BT_DERIVED && !initializer)
-    {
-      initializer = default_initializer ();
-    }
-
-  /* Add the initializer.  Note that it is fine if &initializer is
+  /* Add the initializer.  Note that it is fine if initializer is
      NULL here, because we sometimes also need to check if a
      declaration *must* have an initialization expression.  */
   if (gfc_current_state () != COMP_DERIVED)
     t = add_init_expr_to_sym (name, &initializer, &var_locus);
   else
-    t = build_struct (name, cl, &initializer, &as);
+    {
+      if (current_ts.type == BT_DERIVED && !initializer)
+	initializer = gfc_default_initializer (&current_ts);
+      t = build_struct (name, cl, &initializer, &as);
+    }
 
   m = (t == SUCCESS) ? MATCH_YES : MATCH_ERROR;
 

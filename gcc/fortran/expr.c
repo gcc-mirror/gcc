@@ -1953,3 +1953,46 @@ gfc_check_assign_symbol (gfc_symbol * sym, gfc_expr * rvalue)
 
   return r;
 }
+
+
+/* Get an expression for a default initializer.  */
+
+gfc_expr *
+gfc_default_initializer (gfc_typespec *ts)
+{
+  gfc_constructor *tail;
+  gfc_expr *init;
+  gfc_component *c;
+
+  init = NULL;
+
+  /* See if we have a default initializer.  */
+  for (c = ts->derived->components; c; c = c->next)
+    {
+      if (c->initializer && init == NULL)
+        init = gfc_get_expr ();
+    }
+
+  if (init == NULL)
+    return NULL;
+
+  /* Build the constructor.  */
+  init->expr_type = EXPR_STRUCTURE;
+  init->ts = *ts;
+  init->where = ts->derived->declared_at;
+  tail = NULL;
+  for (c = ts->derived->components; c; c = c->next)
+    {
+      if (tail == NULL)
+        init->value.constructor = tail = gfc_get_constructor ();
+      else
+        {
+          tail->next = gfc_get_constructor ();
+          tail = tail->next;
+        }
+
+      if (c->initializer)
+        tail->expr = gfc_copy_expr (c->initializer);
+    }
+  return init;
+}

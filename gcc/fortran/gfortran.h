@@ -1545,6 +1545,8 @@ try gfc_check_assign (gfc_expr *, gfc_expr *, int);
 try gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
 try gfc_check_assign_symbol (gfc_symbol *, gfc_expr *);
 
+gfc_expr *gfc_default_initializer (gfc_typespec *);
+
 /* st.c */
 extern gfc_code new_st;
 
