@@ -714,25 +714,20 @@ static void
 merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 {
   rtx barrier, real_b_end;
+  rtx label, table;
 
   real_b_end = b->end;
-  barrier = NEXT_INSN (b->end);
 
-  /* Recognize a jump table following block B.  */
-  if (barrier
-      && GET_CODE (barrier) == CODE_LABEL
-      && NEXT_INSN (barrier)
-      && GET_CODE (NEXT_INSN (barrier)) == JUMP_INSN
-      && (GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_VEC
-	  || GET_CODE (PATTERN (NEXT_INSN (barrier))) == ADDR_DIFF_VEC))
+  /* If there is a jump table following block B temporarily add the jump table
+     to block B so that it will also be moved to the correct location.  */
+  if (tablejump_p (b->end, &label, &table)
+      && prev_active_insn (label) == b->end)
     {
-      /* Temporarily add the table jump insn to b, so that it will also
-	 be moved to the correct location.  */
-      b->end = NEXT_INSN (barrier);
-      barrier = NEXT_INSN (b->end);
+      b->end = table;
     }
 
   /* There had better have been a barrier there.  Delete it.  */
+  barrier = NEXT_INSN (b->end);
   if (barrier && GET_CODE (barrier) == BARRIER)
     delete_insn (barrier);
 

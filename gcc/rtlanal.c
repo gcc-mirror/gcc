@@ -2795,26 +2795,25 @@ rtx_referenced_p (rtx x, rtx body)
   return for_each_rtx (&body, rtx_referenced_p_1, x);
 }
 
-/* If INSN is a jump to jumptable insn rturn true and store the label (which
-   INSN jumps to) to *LABEL and the tablejump insn to *TABLE.
-   LABEL and TABLE may be NULL.  */
+/* If INSN is a tablejump return true and store the label (before jump table) to
+   *LABELP and the jump table to *TABLEP.  LABELP and TABLEP may be NULL.  */
 
 bool
-tablejump_p (rtx insn, rtx *label, rtx *table)
+tablejump_p (rtx insn, rtx *labelp, rtx *tablep)
 {
-  rtx l, t;
+  rtx label, table;
 
-  if (onlyjump_p (insn)
-      && (l = JUMP_LABEL (insn)) != NULL_RTX
-      && (t = NEXT_INSN (l)) != NULL_RTX
-      && GET_CODE (t) == JUMP_INSN
-      && (GET_CODE (PATTERN (t)) == ADDR_VEC
-	  || GET_CODE (PATTERN (t)) == ADDR_DIFF_VEC))
+  if (GET_CODE (insn) == JUMP_INSN
+      && (label = JUMP_LABEL (insn)) != NULL_RTX
+      && (table = next_active_insn (label)) != NULL_RTX
+      && GET_CODE (table) == JUMP_INSN
+      && (GET_CODE (PATTERN (table)) == ADDR_VEC
+	  || GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC))
     {
-      if (label)
-	*label = l;
-      if (table)
-	*table = t;
+      if (labelp)
+	*labelp = label;
+      if (tablep)
+	*tablep = table;
       return true;
     }
   return false;
