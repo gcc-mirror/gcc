@@ -174,9 +174,6 @@ tree void_ftype_ptr_ptr_int, int_ftype_ptr_ptr_int, void_ftype_ptr_int_int;
 /* Function type `char *(char *, char *)' and similar ones */
 tree string_ftype_ptr_ptr, int_ftype_string_string;
 
-/* Function type `size_t (const char *)' */
-tree sizet_ftype_string;
-
 /* Function type `int (const void *, const void *, size_t)' */
 tree int_ftype_cptr_cptr_sizet;
 
@@ -2261,8 +2258,8 @@ init_decl_processing ()
   register tree endlink;
   /* Either char* or void*.  */
   tree traditional_ptr_type_node;
-  /* Data type of memcpy.  */
-  tree memcpy_ftype;
+  /* Data types of memcpy and strlen.  */
+  tree memcpy_ftype, strlen_ftype;
   tree void_ftype_any;
   int wchar_type_size;
   tree temp;
@@ -2484,8 +2481,8 @@ init_decl_processing ()
 						 const_string_type_node,
 						 endlink)));
 
-  sizet_ftype_string		/* strlen prototype */
-    = build_function_type (sizetype,
+  strlen_ftype		/* strlen prototype */
+    = build_function_type (flag_traditional ? integer_type_node : sizetype,
 			   tree_cons (NULL_TREE, const_string_type_node,
 				      endlink));
 
@@ -2578,7 +2575,7 @@ init_decl_processing ()
 		    BUILT_IN_STRCMP, "strcmp");
   builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
 		    BUILT_IN_STRCPY, "strcpy");
-  builtin_function ("__builtin_strlen", sizet_ftype_string,
+  builtin_function ("__builtin_strlen", strlen_ftype,
 		    BUILT_IN_STRLEN, "strlen");
   builtin_function ("__builtin_fsqrt", double_ftype_double, 
 		    BUILT_IN_FSQRT, "sqrt");
@@ -2595,7 +2592,7 @@ init_decl_processing ()
       builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP, 0);
       builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP, 0);
       builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY, 0);
-      builtin_function ("strlen", sizet_ftype_string, BUILT_IN_STRLEN, 0);
+      builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN, 0);
       builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, 0);
 
       /* Declare these functions volatile
