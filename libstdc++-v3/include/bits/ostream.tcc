@@ -471,17 +471,18 @@ namespace std
 	{
 	  try 
 	    {
-	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
-	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__w + 1)));
-	      __pads[0] = __c;
+	      const streamsize __w = __out.width();
 	      streamsize __len = 1;
+	      _CharT* __cs = &__c;
 	      if (__w > __len)
 		{
-		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+		  __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							       * __w));
+		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs, 
 						 &__c, __w, __len, false);
 		  __len = __w;
 		}
-	      __out._M_write(__pads, __len);
+	      __out._M_write(__cs, __len);
 	      __out.width(0);
 	    }
 	  catch(...)
@@ -507,17 +508,17 @@ namespace std
 	{
 	  try 
 	    {
-	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
-	      char* __pads = static_cast<char*>(__builtin_alloca(__w + 1));
-	      __pads[0] = __c;
+	      const streamsize __w = __out.width();
 	      streamsize __len = 1;
+	      char* __cs = &__c;
 	      if (__w > __len)
 		{
-		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+		  __cs = static_cast<char*>(__builtin_alloca(__w));
+		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __cs, 
 					       &__c, __w, __len, false);
 		  __len = __w;
 		}
-	      __out._M_write(__pads, __len);
+	      __out._M_write(__cs, __len);
 	      __out.width(0);
 	    }
 	  catch(...)
@@ -542,14 +543,15 @@ namespace std
 	{
 	  try 
 	    {
-	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
-	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
+	      const streamsize __w = __out.width();
 	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	      if (__w > __len)
 		{
-		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+		  _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+								       * __w));
+		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs, 
 						 __s, __w, __len, false);
-		  __s = __pads;
+		  __s = __cs;
 		  __len = __w;
 		}
 	      __out._M_write(__s, __len);
@@ -583,22 +585,23 @@ namespace std
       if (__cerb && __s)
 	{
 	  size_t __clen = __traits_type::length(__s);
-	  _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__clen + 1)));
+	  _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							       * __clen));
 	  for (size_t  __i = 0; __i < __clen; ++__i)
 	    __ws[__i] = __out.widen(__s[__i]);
 	  _CharT* __str = __ws;
 	  
 	  try 
 	    {
+	      const streamsize __w = __out.width();
 	      streamsize __len = static_cast<streamsize>(__clen);
-	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
-	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
-	      
 	      if (__w > __len)
 		{
-		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+		  _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+								       * __w));
+		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs, 
 						 __ws, __w, __len, false);
-		  __str = __pads;
+		  __str = __cs;
 		  __len = __w;
 		}
 	      __out._M_write(__str, __len);
@@ -629,15 +632,14 @@ namespace std
 	{
 	  try 
 	    {
-	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
-	      char* __pads = static_cast<char*>(__builtin_alloca(__w));
+	      const streamsize __w = __out.width();
 	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
-
 	      if (__w > __len)
 		{
-		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+		  char* __cs = static_cast<char*>(__builtin_alloca(__w));
+		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __cs, 
 						 __s, __w, __len, false);
-		  __s = __pads;
+		  __s = __cs;
 		  __len = __w;
 		}
 	      __out._M_write(__s, __len);
@@ -667,18 +669,19 @@ namespace std
       typename __ostream_type::sentry __cerb(__out);
       if (__cerb)
 	{
-	  const _CharT* __s = __str.data();
-	  const streamsize __w = __out.width() > 0 ? __out.width() : 0;
-	  _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
+	  const streamsize __w = __out.width();
 	  streamsize __len = static_cast<streamsize>(__str.size());
+	  const _CharT* __s = __str.data();
 #ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 25. String operator<< uses width() value wrong
 #endif
 	  if (__w > __len)
 	    {
-	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, __s, 
+	      _CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+								   * __w));
+	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __cs, __s,
 					     __w, __len, false);
-	      __s = __pads;
+	      __s = __cs;
 	      __len = __w;
 	    }
 	  __out._M_write(__s, __len);
