@@ -35,6 +35,11 @@
 #  enable_threads_flag	Either the name, yes or no depending on whether
 #			threads support was requested.
 #
+#  default_use_cxa_atexit
+#			"no" by default, can be set to "yes" if a target
+#			wishes to use __cxa_atexit() by default if the
+#			$enable___cxa_atexit variable is not set.
+#
 #  gas_flag		Either yes or no depending on whether GNU as was
 #			requested.
 #
@@ -221,6 +226,7 @@ thread_file=
 gas="$gas_flag"
 gnu_ld="$gnu_ld_flag"
 enable_threads=$enable_threads_flag
+default_use_cxa_atexit=no
 target_gtfiles=
 need_64bit_hwint=
 
@@ -433,6 +439,14 @@ case $machine in
 	case $machine in
 	*-*-netbsd*1.[7-9]* | *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
 		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o"
+		;;
+	esac
+
+	# NetBSD 2.0 and later provide __cxa_atexit(), which we use by
+	# default (unless overridden by --disable-__cxa_atexit).
+	case $machine in
+	*-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
+		default_use_cxa_atexit=yes
 		;;
 	esac
 	;;
