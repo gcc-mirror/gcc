@@ -1,5 +1,5 @@
 /* C++ Parser.
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>.
 
    This file is part of GCC.
@@ -1621,7 +1621,7 @@ static void cp_parser_label_declaration
 /* Utility Routines */
 
 static tree cp_parser_lookup_name
-  (cp_parser *, tree, bool, bool, bool);
+  (cp_parser *, tree, bool, bool, bool, bool);
 static tree cp_parser_lookup_name_simple
   (cp_parser *, tree);
 static tree cp_parser_maybe_treat_template_as_class
@@ -7660,6 +7660,8 @@ cp_parser_type_parameter (cp_parser* parser)
 	   default-argument.  */
 	if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
 	  {
+	    bool is_template;
+
 	    /* Consume the `='.  */
 	    cp_lexer_consume_token (parser->lexer);
 	    /* Parse the id-expression.  */
@@ -7667,11 +7669,15 @@ cp_parser_type_parameter (cp_parser* parser)
 	      = cp_parser_id_expression (parser,
 					 /*template_keyword_p=*/false,
 					 /*check_dependency_p=*/true,
-					 /*template_p=*/NULL,
+					 /*template_p=*/&is_template,
 					 /*declarator_p=*/false);
 	    /* Look up the name.  */
 	    default_argument 
-	      = cp_parser_lookup_name_simple (parser, default_argument);
+	      = cp_parser_lookup_name (parser, default_argument,
+				       /*is_type=*/false,
+				       /*is_template=*/is_template,
+				       /*is_namespace=*/false,
+				       /*check_dependency=*/true);
 	    /* See if the default argument is valid.  */
 	    default_argument
 	      = check_template_template_default_arg (default_argument);
@@ -7979,6 +7985,7 @@ cp_parser_template_name (cp_parser* parser,
   /* Look up the name.  */
   decl = cp_parser_lookup_name (parser, identifier,
 				/*is_type=*/false,
+				/*is_template=*/false,
 				/*is_namespace=*/false,
 				check_dependency_p);
   decl = maybe_get_template_decl_from_type_decl (decl);
@@ -8934,6 +8941,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     cp_parser_lookup_name.  */
 	  decl = cp_parser_lookup_name (parser, identifier, 
 					/*is_type=*/true,
+					/*is_template=*/false,
 					/*is_namespace=*/false,
 					/*check_dependency=*/true);
 
@@ -9206,6 +9214,7 @@ cp_parser_namespace_name (cp_parser* parser)
      operator.)  */
   namespace_decl = cp_parser_lookup_name (parser, identifier,
 					  /*is_type=*/false,
+					  /*is_template=*/false,
 					  /*is_namespace=*/true,
 					  /*check_dependency=*/true);
   /* If it's not a namespace, issue an error.  */
@@ -11414,6 +11423,7 @@ cp_parser_class_name (cp_parser *parser,
 	  /* Look up the name.  */
 	  decl = cp_parser_lookup_name (parser, identifier, 
 					type_p,
+					/*is_template=*/false,
 					/*is_namespace=*/false,
 					check_dependency_p);
 	}
@@ -13245,6 +13255,9 @@ cp_parser_label_declaration (cp_parser* parser)
    If IS_TYPE is TRUE, bindings that do not refer to types are
    ignored.
 
+   If IS_TEMPLATE is TRUE, bindings that do not refer to templates are
+   ignored.
+
    If IS_NAMESPACE is TRUE, bindings that do not refer to namespaces
    are ignored.
 
@@ -13253,7 +13266,8 @@ cp_parser_label_declaration (cp_parser* parser)
 
 static tree
 cp_parser_lookup_name (cp_parser *parser, tree name, 
-		       bool is_type, bool is_namespace, bool check_dependency)
+		       bool is_type, bool is_template, bool is_namespace,
+		       bool check_dependency)
 {
   tree decl;
   tree object_type = parser->context->object_type;
@@ -13325,15 +13339,19 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       if ((check_dependency || !CLASS_TYPE_P (parser->scope))
 	   && dependent_p)
 	{
-	  if (!is_type)
-	    decl = build_nt (SCOPE_REF, parser->scope, name);
-	  else
+	  if (is_type)
 	    /* The resolution to Core Issue 180 says that `struct A::B'
 	       should be considered a type-name, even if `A' is
 	       dependent.  */
 	    decl = TYPE_NAME (make_typename_type (parser->scope,
 						  name,
 						  /*complain=*/1));
+	  else if (is_template)
+	    decl = TYPE_NAME (make_unbound_class_template (parser->scope,
+							   name,
+							   /*complain=*/1));
+	  else
+	    decl = build_nt (SCOPE_REF, parser->scope, name);
 	}
       else
 	{
@@ -13427,14 +13445,15 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 }
 
 /* Like cp_parser_lookup_name, but for use in the typical case where
-   CHECK_ACCESS is TRUE, IS_TYPE is FALSE, and CHECK_DEPENDENCY is
-   TRUE.  */
+   CHECK_ACCESS is TRUE, IS_TYPE is FALSE, IS_TEMPLATE is FALSE,
+   IS_NAMESPACE is FALSE, and CHECK_DEPENDENCY is TRUE.  */
 
 static tree
 cp_parser_lookup_name_simple (cp_parser* parser, tree name)
 {
   return cp_parser_lookup_name (parser, name, 
 				/*is_type=*/false,
+				/*is_template=*/false,
 				/*is_namespace=*/false,
 				/*check_dependency=*/true);
 }
