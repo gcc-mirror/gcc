@@ -86,7 +86,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "real.h"
 #include "flags.h"
-#include <assert.h>
 #include <gmp.h>
 #include "gfortran.h"
 #include "trans.h"
@@ -181,11 +180,11 @@ gfc_conv_descriptor_data (tree desc)
   tree type;
 
   type = TREE_TYPE (desc);
-  assert (GFC_DESCRIPTOR_TYPE_P (type));
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = TYPE_FIELDS (type);
-  assert (DATA_FIELD == 0);
-  assert (field != NULL_TREE
+  gcc_assert (DATA_FIELD == 0);
+  gcc_assert (field != NULL_TREE
 	  && TREE_CODE (TREE_TYPE (field)) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == ARRAY_TYPE);
 
@@ -199,10 +198,10 @@ gfc_conv_descriptor_offset (tree desc)
   tree field;
 
   type = TREE_TYPE (desc);
-  assert (GFC_DESCRIPTOR_TYPE_P (type));
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = gfc_advance_chain (TYPE_FIELDS (type), OFFSET_FIELD);
-  assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
+  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
   return build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
 }
@@ -214,10 +213,10 @@ gfc_conv_descriptor_dtype (tree desc)
   tree type;
 
   type = TREE_TYPE (desc);
-  assert (GFC_DESCRIPTOR_TYPE_P (type));
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
-  assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
+  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
   return build3 (COMPONENT_REF, TREE_TYPE (field), desc, field, NULL_TREE);
 }
@@ -230,10 +229,10 @@ gfc_conv_descriptor_dimension (tree desc, tree dim)
   tree tmp;
 
   type = TREE_TYPE (desc);
-  assert (GFC_DESCRIPTOR_TYPE_P (type));
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   field = gfc_advance_chain (TYPE_FIELDS (type), DIMENSION_FIELD);
-  assert (field != NULL_TREE
+  gcc_assert (field != NULL_TREE
 	  && TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
 	  && TREE_CODE (TREE_TYPE (TREE_TYPE (field))) == RECORD_TYPE);
 
@@ -251,7 +250,7 @@ gfc_conv_descriptor_stride (tree desc, tree dim)
   tmp = gfc_conv_descriptor_dimension (desc, dim);
   field = TYPE_FIELDS (TREE_TYPE (tmp));
   field = gfc_advance_chain (field, STRIDE_SUBFIELD);
-  assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
+  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
   tmp = build3 (COMPONENT_REF, TREE_TYPE (field), tmp, field, NULL_TREE);
   return tmp;
@@ -266,7 +265,7 @@ gfc_conv_descriptor_lbound (tree desc, tree dim)
   tmp = gfc_conv_descriptor_dimension (desc, dim);
   field = TYPE_FIELDS (TREE_TYPE (tmp));
   field = gfc_advance_chain (field, LBOUND_SUBFIELD);
-  assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
+  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
   tmp = build3 (COMPONENT_REF, TREE_TYPE (field), tmp, field, NULL_TREE);
   return tmp;
@@ -281,7 +280,7 @@ gfc_conv_descriptor_ubound (tree desc, tree dim)
   tmp = gfc_conv_descriptor_dimension (desc, dim);
   field = TYPE_FIELDS (TREE_TYPE (tmp));
   field = gfc_advance_chain (field, UBOUND_SUBFIELD);
-  assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
+  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == gfc_array_index_type);
 
   tmp = build3 (COMPONENT_REF, TREE_TYPE (field), tmp, field, NULL_TREE);
   return tmp;
@@ -296,8 +295,8 @@ gfc_build_null_descriptor (tree type)
   tree field;
   tree tmp;
 
-  assert (GFC_DESCRIPTOR_TYPE_P (type));
-  assert (DATA_FIELD == 0);
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
+  gcc_assert (DATA_FIELD == 0);
   field = TYPE_FIELDS (type);
 
   /* Set a NULL data pointer.  */
@@ -345,7 +344,7 @@ gfc_free_ss_chain (gfc_ss * ss)
 
   while (ss != gfc_ss_terminator)
     {
-      assert (ss != NULL);
+      gcc_assert (ss != NULL);
       next = ss->next;
       gfc_free_ss (ss);
       ss = next;
@@ -390,7 +389,7 @@ gfc_cleanup_loop (gfc_loopinfo * loop)
   ss = loop->ss;
   while (ss != gfc_ss_terminator)
     {
-      assert (ss != NULL);
+      gcc_assert (ss != NULL);
       next = ss->loop_chain;
       gfc_free_ss (ss);
       ss = next;
@@ -416,7 +415,7 @@ gfc_add_ss_to_loop (gfc_loopinfo * loop, gfc_ss * head)
       else
 	ss->loop_chain = ss->next;
     }
-  assert (ss == gfc_ss_terminator);
+  gcc_assert (ss == gfc_ss_terminator);
   loop->ss = head;
 }
 
@@ -428,7 +427,7 @@ gfc_trans_static_array_pointer (gfc_symbol * sym)
 {
   tree type;
 
-  assert (TREE_STATIC (sym->backend_decl));
+  gcc_assert (TREE_STATIC (sym->backend_decl));
   /* Just zero the data member.  */
   type = TREE_TYPE (sym->backend_decl);
   DECL_INITIAL (sym->backend_decl) =gfc_build_null_descriptor (type);
@@ -492,7 +491,7 @@ gfc_trans_allocate_array_storage (gfc_loopinfo * loop, gfc_ss_info * info,
 	  else if (gfc_index_integer_kind == 8)
 	    tmp = gfor_fndecl_internal_malloc64;
 	  else
-	    abort ();
+	    gcc_unreachable ();
 	  tmp = gfc_build_function_call (tmp, args);
 	  tmp = convert (TREE_TYPE (data), tmp);
 	  gfc_add_modify_expr (&loop->pre, data, tmp);
@@ -537,13 +536,13 @@ gfc_trans_allocate_temp_array (gfc_loopinfo * loop, gfc_ss_info * info,
   int n;
   int dim;
 
-  assert (info->dimen > 0);
+  gcc_assert (info->dimen > 0);
   /* Set the lower bound to zero.  */
   for (dim = 0; dim < info->dimen; dim++)
     {
       n = loop->order[dim];
       if (n < loop->temp_dim)
-	assert (integer_zerop (loop->from[n]));
+	gcc_assert (integer_zerop (loop->from[n]));
       else
 	{
 	  /* Callee allocated arrays may not have a known bound yet.  */
@@ -640,7 +639,7 @@ gfc_put_offset_into_var (stmtblock_t * pblock, tree * poffset,
 {
   /* We should have already created the offset variable.  We cannot
      create it here because we may be in an inner scope.  */
-  assert (*offsetvar != NULL_TREE);
+  gcc_assert (*offsetvar != NULL_TREE);
   gfc_add_modify_expr (pblock, *offsetvar, *poffset);
   *poffset = *offsetvar;
   TREE_USED (*offsetvar) = 1;
@@ -717,7 +716,7 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
 
   /* Walk the array expression.  */
   ss = gfc_walk_expr (expr);
-  assert (ss != gfc_ss_terminator);
+  gcc_assert (ss != gfc_ss_terminator);
 
   /* Initialize the scalarizer.  */
   gfc_init_loopinfo (&loop);
@@ -737,7 +736,7 @@ gfc_trans_array_constructor_subarray (stmtblock_t * pblock,
     gfc_todo_error ("character arrays in constructors");
 
   gfc_trans_array_ctor_element (&body, pointer, *poffset, &se, expr);
-  assert (se.ss == gfc_ss_terminator);
+  gcc_assert (se.ss == gfc_ss_terminator);
 
   /* Increment the offset.  */
   tmp = build2 (PLUS_EXPR, gfc_array_index_type, *poffset, gfc_index_one_node);
@@ -1145,12 +1144,12 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   if (TREE_USED (offsetvar))
     pushdecl (offsetvar);
   else
-    assert (INTEGER_CST_P (offset));
+    gcc_assert (INTEGER_CST_P (offset));
 #if 0
   /* Disable bound checking for now because it's probably broken.  */
   if (flag_bounds_check)
     {
-      abort ();
+      gcc_unreachable ();
     }
 #endif
 }
@@ -1168,11 +1167,11 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
 
   /* TODO: This can generate bad code if there are ordering dependencies.
      eg. a callee allocated function and an unknown size constructor.  */
-  assert (ss != NULL);
+  gcc_assert (ss != NULL);
 
   for (; ss != gfc_ss_terminator; ss = ss->loop_chain)
     {
-      assert (ss);
+      gcc_assert (ss);
 
       switch (ss->type)
 	{
@@ -1246,7 +1245,7 @@ gfc_add_loop_ss_code (gfc_loopinfo * loop, gfc_ss * ss, bool subscript)
           break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 }
@@ -1262,7 +1261,7 @@ gfc_conv_ss_descriptor (stmtblock_t * block, gfc_ss * ss, int base)
   tree tmp;
 
   /* Get the descriptor for the array to be scalarized.  */
-  assert (ss->expr->expr_type == EXPR_VARIABLE);
+  gcc_assert (ss->expr->expr_type == EXPR_VARIABLE);
   gfc_init_se (&se, NULL);
   se.descriptor_only = 1;
   gfc_conv_expr_lhs (&se, ss->expr);
@@ -1449,7 +1448,7 @@ gfc_conv_array_index_ref (gfc_se * se, tree pointer, tree * indices,
   tmp = gfc_build_array_ref (array, index);
 
   /* Check we've used the correct number of dimensions.  */
-  assert (TREE_CODE (TREE_TYPE (tmp)) != ARRAY_TYPE);
+  gcc_assert (TREE_CODE (TREE_TYPE (tmp)) != ARRAY_TYPE);
 
   se->expr = tmp;
 }
@@ -1494,7 +1493,7 @@ gfc_conv_vector_array_index (gfc_se * se, tree index, gfc_ss * ss)
   gfc_ss_info *info;
   int n;
 
-  assert (ss && ss->type == GFC_SS_VECTOR);
+  gcc_assert (ss && ss->type == GFC_SS_VECTOR);
 
   /* Save the descriptor.  */
   descsave = se->expr;
@@ -1507,7 +1506,7 @@ gfc_conv_vector_array_index (gfc_se * se, tree index, gfc_ss * ss)
       switch (ar->dimen_type[n])
 	{
 	case DIMEN_ELEMENT:
-	  assert (info->subscript[n] != gfc_ss_terminator
+	  gcc_assert (info->subscript[n] != gfc_ss_terminator
 		  && info->subscript[n]->type == GFC_SS_SCALAR);
 	  indices[n] = info->subscript[n]->data.scalar.expr;
 	  break;
@@ -1524,7 +1523,7 @@ gfc_conv_vector_array_index (gfc_se * se, tree index, gfc_ss * ss)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   /* Get the index from the vector.  */
@@ -1549,12 +1548,12 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
   /* Get the index into the array for this dimension.  */
   if (ar)
     {
-      assert (ar->type != AR_ELEMENT);
+      gcc_assert (ar->type != AR_ELEMENT);
       if (ar->dimen_type[dim] == DIMEN_ELEMENT)
 	{
-	  assert (i == -1);
+	  gcc_assert (i == -1);
 	  /* Elemental dimension.  */
-	  assert (info->subscript[dim]
+	  gcc_assert (info->subscript[dim]
 		  && info->subscript[dim]->type == GFC_SS_SCALAR);
 	  /* We've already translated this value outside the loop.  */
 	  index = info->subscript[dim]->data.scalar.expr;
@@ -1565,7 +1564,7 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
       else
 	{
 	  /* Scalarized dimension.  */
-	  assert (info && se->loop);
+	  gcc_assert (info && se->loop);
 
           /* Multiply the loop variable by the stride and dela.  */
 	  index = se->loop->loopvar[i];
@@ -1584,13 +1583,13 @@ gfc_conv_array_index_offset (gfc_se * se, gfc_ss_info * info, int dim, int i,
 					     dim);
 	    }
 	  else
-	    assert (ar->dimen_type[dim] == DIMEN_RANGE);
+	    gcc_assert (ar->dimen_type[dim] == DIMEN_RANGE);
 	}
     }
   else
     {
       /* Temporary array or derived type component.  */
-      assert (se->loop);
+      gcc_assert (se->loop);
       index = se->loop->loopvar[se->loop->order[i]];
       if (!integer_zerop (info->delta[i]))
 	index = fold (build2 (PLUS_EXPR, gfc_array_index_type,
@@ -1832,7 +1831,7 @@ gfc_start_scalarized_body (gfc_loopinfo * loop, stmtblock_t * pbody)
   int n;
   int flags;
 
-  assert (!loop->array_parameter);
+  gcc_assert (!loop->array_parameter);
 
   for (dim = loop->dimen - 1; dim >= 0; dim--)
     {
@@ -2000,7 +1999,7 @@ gfc_conv_section_upper_bound (gfc_ss * ss, int n, stmtblock_t * pblock)
   tree bound;
   gfc_se se;
 
-  assert (ss->type == GFC_SS_SECTION);
+  gcc_assert (ss->type == GFC_SS_SECTION);
 
   /* For vector array subscripts we want the size of the vector.  */
   dim = ss->data.info.dim[n];
@@ -2008,11 +2007,11 @@ gfc_conv_section_upper_bound (gfc_ss * ss, int n, stmtblock_t * pblock)
   while (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
     {
       vecss = vecss->data.info.subscript[dim];
-      assert (vecss && vecss->type == GFC_SS_VECTOR);
+      gcc_assert (vecss && vecss->type == GFC_SS_VECTOR);
       dim = vecss->data.info.dim[0];
     }
 
-  assert (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
+  gcc_assert (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
   end = vecss->data.info.ref->u.ar.end[dim];
   desc = vecss->data.info.descriptor;
 
@@ -2056,14 +2055,14 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int n)
   while (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_VECTOR)
     {
       vecss = vecss->data.info.subscript[dim];
-      assert (vecss && vecss->type == GFC_SS_VECTOR);
+      gcc_assert (vecss && vecss->type == GFC_SS_VECTOR);
       /* Get the descriptors for the vector subscripts as well.  */
       if (!vecss->data.info.descriptor)
 	gfc_conv_ss_descriptor (&loop->pre, vecss, !loop->array_parameter);
       dim = vecss->data.info.dim[0];
     }
 
-  assert (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
+  gcc_assert (vecss->data.info.ref->u.ar.dimen_type[dim] == DIMEN_RANGE);
   start = vecss->data.info.ref->u.ar.start[dim];
   stride = vecss->data.info.ref->u.ar.stride[dim];
   desc = vecss->data.info.descriptor;
@@ -2199,10 +2198,10 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
 		     == DIMEN_VECTOR)
 		{
 		  vecss = vecss->data.info.subscript[dim];
-		  assert (vecss && vecss->type == GFC_SS_VECTOR);
+		  gcc_assert (vecss && vecss->type == GFC_SS_VECTOR);
 		  dim = vecss->data.info.dim[0];
 		}
-	      assert (vecss->data.info.ref->u.ar.dimen_type[dim]
+	      gcc_assert (vecss->data.info.ref->u.ar.dimen_type[dim]
 		      == DIMEN_RANGE);
 	      desc = vecss->data.info.descriptor;
 
@@ -2359,7 +2358,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 	      dim = 0;
 	      for (n = 0; n < loop->dimen; n++)
 		{
-		  assert (loop->order[n] == n);
+		  gcc_assert (loop->order[n] == n);
 		  if (depends[n])
 		  loop->order[dim++] = n;
 		}
@@ -2370,7 +2369,7 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 		  loop->order[dim++] = n;
 		}
 
-	      assert (dim == loop->dimen);
+	      gcc_assert (dim == loop->dimen);
 	      break;
 	    }
 #endif
@@ -2433,7 +2432,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	      /* An unknown size constructor will always be rank one.
 		 Higher rank constructors will either have known shape,
 		 or still be wrapped in a call to reshape.  */
-	      assert (loop->dimen == 1);
+	      gcc_assert (loop->dimen == 1);
 	      /* Try to figure out the size of the constructor.  */
 	      /* TODO: avoid this by making the frontend set the shape.  */
 	      gfc_get_array_cons_size (&i, ss->expr->value.constructor);
@@ -2519,8 +2518,8 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	  switch (loopspec[n]->type)
 	    {
 	    case GFC_SS_CONSTRUCTOR:
-	      assert (info->dimen == 1);
-      	      assert (loop->to[n]);
+	      gcc_assert (info->dimen == 1);
+      	      gcc_assert (loop->to[n]);
 	      break;
 
 	    case GFC_SS_SECTION:
@@ -2530,11 +2529,11 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 
             case GFC_SS_FUNCTION:
 	      /* The loop bound will be set when we generate the call.  */
-              assert (loop->to[n] == NULL_TREE);
+              gcc_assert (loop->to[n] == NULL_TREE);
               break;
 
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	}
 
@@ -2567,7 +2566,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
   /* If we want a temporary then create it.  */
   if (loop->temp_ss != NULL)
     {
-      assert (loop->temp_ss->type == GFC_SS_TEMP);
+      gcc_assert (loop->temp_ss->type == GFC_SS_TEMP);
       tmp = loop->temp_ss->data.temp.type;
       len = loop->temp_ss->string_length;
       n = loop->temp_ss->data.temp.dimen;
@@ -2676,7 +2675,7 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
 	se.expr = gfc_index_one_node;
       else
 	{
-	  assert (lower[n]);
+	  gcc_assert (lower[n]);
           if (ubound)
             {
 	      gfc_conv_expr_type (&se, lower[n], gfc_array_index_type);
@@ -2701,7 +2700,7 @@ gfc_array_init_size (tree descriptor, int rank, tree * poffset,
 
       /* Set upper bound.  */
       gfc_init_se (&se, NULL);
-      assert (ubound);
+      gcc_assert (ubound);
       gfc_conv_expr_type (&se, ubound, gfc_array_index_type);
       gfc_add_block_to_block (pblock, &se.pre);
 
@@ -2760,7 +2759,7 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
       break;
 
     case AR_FULL:
-      assert (ref->u.ar.as->type == AS_EXPLICIT);
+      gcc_assert (ref->u.ar.as->type == AS_EXPLICIT);
 
       lower = ref->u.ar.as->lower;
       upper = ref->u.ar.as->upper;
@@ -2772,7 +2771,7 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
       break;
     }
 
@@ -2789,7 +2788,7 @@ gfc_array_allocate (gfc_se * se, gfc_ref * ref, tree pstat)
   else if (TYPE_PRECISION (gfc_array_index_type) == 64)
     allocate = gfor_fndecl_allocate64;
   else
-    abort ();
+    gcc_unreachable ();
 
   tmp = gfc_chainon_list (NULL_TREE, pointer);
   tmp = gfc_chainon_list (tmp, size);
@@ -2862,7 +2861,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	gfc_conv_structure (&se, expr, 1);
 
       tmp = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-      assert (tmp && INTEGER_CST_P (tmp));
+      gcc_assert (tmp && INTEGER_CST_P (tmp));
       hi = TREE_INT_CST_HIGH (tmp);
       lo = TREE_INT_CST_LOW (tmp);
       lo++;
@@ -2938,7 +2937,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	      break;
 
 	    default:
-	      abort();
+	      gcc_unreachable ();
 	    }
         }
       /* We created the list in reverse order.  */
@@ -2946,7 +2945,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
       break;
 
     default:
-      abort();
+      gcc_unreachable ();
     }
 
   /* Create a constructor from the list of elements.  */
@@ -3042,14 +3041,14 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   tree offset;
   bool onstack;
 
-  assert (!(sym->attr.pointer || sym->attr.allocatable));
+  gcc_assert (!(sym->attr.pointer || sym->attr.allocatable));
 
   /* Do nothing for USEd variables.  */
   if (sym->attr.use_assoc)
     return fnbody;
 
   type = TREE_TYPE (decl);
-  assert (GFC_ARRAY_TYPE_P (type));
+  gcc_assert (GFC_ARRAY_TYPE_P (type));
   onstack = TREE_CODE (type) != POINTER_TYPE;
 
   gfc_start_block (&block);
@@ -3074,9 +3073,9 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
 
   type = TREE_TYPE (type);
 
-  assert (!sym->attr.use_assoc);
-  assert (!TREE_STATIC (decl));
-  assert (!sym->module[0]);
+  gcc_assert (!sym->attr.use_assoc);
+  gcc_assert (!TREE_STATIC (decl));
+  gcc_assert (!sym->module[0]);
 
   if (sym->ts.type == BT_CHARACTER
       && !INTEGER_CST_P (sym->ts.cl->backend_decl))
@@ -3097,7 +3096,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   else if (gfc_index_integer_kind == 8)
     fndecl = gfor_fndecl_internal_malloc64;
   else
-    abort ();
+    gcc_unreachable ();
   tmp = gfc_build_function_call (fndecl, tmp);
   tmp = fold (convert (TREE_TYPE (decl), tmp));
   gfc_add_modify_expr (&block, decl, tmp);
@@ -3108,7 +3107,7 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
 
 
   /* Automatic arrays should not have initializers.  */
-  assert (!sym->value);
+  gcc_assert (!sym->value);
 
   gfc_add_expr_to_block (&block, fnbody);
 
@@ -3140,7 +3139,7 @@ gfc_trans_g77_array (gfc_symbol * sym, tree body)
   /* Descriptor type.  */
   parm = sym->backend_decl;
   type = TREE_TYPE (parm);
-  assert (GFC_ARRAY_TYPE_P (type));
+  gcc_assert (GFC_ARRAY_TYPE_P (type));
 
   gfc_start_block (&block);
 
@@ -3223,7 +3222,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
 
   /* Descriptor type.  */
   type = TREE_TYPE (tmpdesc);
-  assert (GFC_ARRAY_TYPE_P (type));
+  gcc_assert (GFC_ARRAY_TYPE_P (type));
   dumdesc = GFC_DECL_SAVED_DESCRIPTOR (tmpdesc);
   dumdesc = gfc_build_indirect_ref (dumdesc);
   gfc_start_block (&block);
@@ -3272,7 +3271,7 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc, tree body)
     }
   else
     {
-      assert (integer_onep (GFC_TYPE_ARRAY_STRIDE (type, 0)));
+      gcc_assert (integer_onep (GFC_TYPE_ARRAY_STRIDE (type, 0)));
       /* A library call to repack the array if neccessary.  */
       tmp = GFC_DECL_SAVED_DESCRIPTOR (tmpdesc);
       tmp = gfc_chainon_list (NULL_TREE, tmp);
@@ -3488,7 +3487,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   int full;
   gfc_ss *vss;
 
-  assert (ss != gfc_ss_terminator);
+  gcc_assert (ss != gfc_ss_terminator);
 
   /* TODO: Pass constant array constructors without a temporary.  */
   /* Special case things we know we can pass easily.  */
@@ -3503,7 +3502,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       while (secss != gfc_ss_terminator && secss->type != GFC_SS_SECTION)
 	secss = secss->next;
 
-      assert (secss != gfc_ss_terminator);
+      gcc_assert (secss != gfc_ss_terminator);
 
       need_tmp = 0;
       for (n = 0; n < secss->data.info.dimen; n++)
@@ -3529,7 +3528,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	full = 0;
       else
 	{
-	  assert (info->ref->u.ar.type == AR_SECTION);
+	  gcc_assert (info->ref->u.ar.type == AR_SECTION);
 
 	  full = 1;
 	  for (n = 0; n < info->ref->u.ar.dimen; n++)
@@ -3582,7 +3581,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 
       if (se->direct_byref)
 	{
-	  assert (secss != gfc_ss_terminator);
+	  gcc_assert (secss != gfc_ss_terminator);
 
 	  /* For pointer assignments pass the descriptor directly.  */
 	  se->ss = secss;
@@ -3623,7 +3622,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
   if (!need_tmp)
     loop.array_parameter = 1;
   else
-    assert (se->want_pointer && !se->direct_byref);
+    gcc_assert (se->want_pointer && !se->direct_byref);
 
   /* Setup the scalarizing loops and bounds.  */
   gfc_conv_ss_startstride (&loop);
@@ -3685,7 +3684,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
       tmp = gfc_conv_descriptor_stride (desc, gfc_rank_cst[0]);
       gfc_add_modify_expr (&loop.pre, tmp, gfc_index_zero_node);
 
-      assert (is_gimple_lvalue (desc));
+      gcc_assert (is_gimple_lvalue (desc));
       se->expr = gfc_build_addr_expr (NULL, desc);
     }
   else if (expr->expr_type == EXPR_FUNCTION)
@@ -3720,7 +3719,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	se->string_length = expr->symtree->n.sym->ts.cl->backend_decl;
 
       desc = info->descriptor;
-      assert (secss && secss != gfc_ss_terminator);
+      gcc_assert (secss && secss != gfc_ss_terminator);
       if (se->direct_byref)
 	{
 	  /* For pointer assignments we fill in the destination.  */
@@ -3764,14 +3763,14 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	  /* Work out the offset.  */
 	  if (info->ref->u.ar.dimen_type[n] == DIMEN_ELEMENT)
 	    {
-	      assert (info->subscript[n]
+	      gcc_assert (info->subscript[n]
 		      && info->subscript[n]->type == GFC_SS_SCALAR);
 	      start = info->subscript[n]->data.scalar.expr;
 	    }
 	  else
 	    {
 	      /* Check we haven't somehow got out of sync.  */
-	      assert (info->dim[dim] == n);
+	      gcc_assert (info->dim[dim] == n);
 
 	      /* Evaluate and remember the start of the section.  */
 	      start = info->start[dim];
@@ -3791,7 +3790,7 @@ gfc_conv_expr_descriptor (gfc_se * se, gfc_expr * expr, gfc_ss * ss)
 	    }
 
 	  /* Vector subscripts need copying and are handled elsewhere.  */
-	  assert (info->ref->u.ar.dimen_type[n] == DIMEN_RANGE);
+	  gcc_assert (info->ref->u.ar.dimen_type[n] == DIMEN_RANGE);
 
 	  /* Set the new lower bound.  */
 	  from = loop.from[dim];
@@ -3973,7 +3972,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
 
   gfc_init_block (&fnblock);
 
-  assert (TREE_CODE (sym->backend_decl) == VAR_DECL);
+  gcc_assert (TREE_CODE (sym->backend_decl) == VAR_DECL);
   if (sym->ts.type == BT_CHARACTER
       && !INTEGER_CST_P (sym->ts.cl->backend_decl))
     gfc_trans_init_string_length (sym->ts.cl, &fnblock);
@@ -3999,7 +3998,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, tree body)
 
   /* Get the descriptor type.  */
   type = TREE_TYPE (sym->backend_decl);
-  assert (GFC_DESCRIPTOR_TYPE_P (type));
+  gcc_assert (GFC_DESCRIPTOR_TYPE_P (type));
 
   /* NULLIFY the data pointer.  */
   tmp = gfc_conv_descriptor_data (descriptor);
@@ -4083,9 +4082,9 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 	      newss->data.info.dim[n] = n;
 	      ar->dimen_type[n] = DIMEN_RANGE;
 
-	      assert (ar->start[n] == NULL);
-	      assert (ar->end[n] == NULL);
-	      assert (ar->stride[n] == NULL);
+	      gcc_assert (ar->start[n] == NULL);
+	      gcc_assert (ar->end[n] == NULL);
+	      gcc_assert (ar->stride[n] == NULL);
 	    }
 	  return newss;
 
@@ -4108,7 +4107,7 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 		{
 		case DIMEN_ELEMENT:
 		  /* Add SS for elemental (scalar) subscripts.  */
-		  assert (ar->start[n]);
+		  gcc_assert (ar->start[n]);
 		  indexss = gfc_get_ss ();
 		  indexss->type = GFC_SS_SCALAR;
 		  indexss->expr = ar->start[n];
@@ -4149,17 +4148,17 @@ gfc_walk_variable_expr (gfc_ss * ss, gfc_expr * expr)
 
 		default:
 		  /* We should know what sort of section it is by now.  */
-		  abort ();
+		  gcc_unreachable ();
 		}
 	    }
 	  /* We should have at least one non-elemental dimension.  */
-	  assert (newss->data.info.dimen > 0);
+	  gcc_assert (newss->data.info.dimen > 0);
 	  return head;
 	  break;
 
 	default:
 	  /* We should know what sort of section it is by now.  */
-	  abort ();
+	  gcc_unreachable ();
 	}
 
     }
@@ -4203,14 +4202,14 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
       while (head && head->next != ss)
 	head = head->next;
       /* Check we haven't somehow broken the chain.  */
-      assert (head);
+      gcc_assert (head);
       newss->next = ss;
       head->next = newss;
       newss->expr = expr->op1;
     }
   else				/* head2 == head */
     {
-      assert (head2 == head);
+      gcc_assert (head2 == head);
       /* Second operand is scalar.  */
       newss->next = head2;
       head2 = newss;
@@ -4229,13 +4228,14 @@ gfc_reverse_ss (gfc_ss * ss)
   gfc_ss *next;
   gfc_ss *head;
 
-  assert (ss != NULL);
+  gcc_assert (ss != NULL);
 
   head = gfc_ss_terminator;
   while (ss != gfc_ss_terminator)
     {
       next = ss->next;
-      assert (next != NULL);	/* Check we didn't somehow break the chain.  */
+      /* Check we didn't somehow break the chain.  */
+      gcc_assert (next != NULL);
       ss->next = head;
       head = ss;
       ss = next;

@@ -35,7 +35,6 @@ Software Foundation, 59 Temple Place - Suite 330,Boston, MA
 
 #include "config.h"
 #include "gfortran.h"
-#include "assert.h"
 
 static void formalize_init_expr (gfc_expr *);
 
@@ -168,7 +167,7 @@ create_character_intializer (gfc_expr * init, gfc_typespec * ts,
 
   if (ref)
     {
-      assert (ref->type == REF_SUBSTRING);
+      gcc_assert (ref->type == REF_SUBSTRING);
 
       /* Only set a substring of the destination.  Fortran substring bounds
          are one-based [start, end], we want zero based [start, end).  */
@@ -225,7 +224,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
       if (ref->type == REF_SUBSTRING)
 	{
 	  /* A substring should always br the last subobject reference.  */
-	  assert (ref->next == NULL);
+	  gcc_assert (ref->next == NULL);
 	  break;
 	}
 
@@ -250,7 +249,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	      expr->rank = ref->u.ar.as->rank;
 	    }
 	  else
-	    assert (expr->expr_type == EXPR_ARRAY);
+	    gcc_assert (expr->expr_type == EXPR_ARRAY);
 
 	  if (ref->u.ar.type == AR_ELEMENT)
 	    get_array_index (&ref->u.ar, &offset);
@@ -279,7 +278,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	      expr->ts.derived = ref->u.c.sym;
 	    }
 	  else
-	    assert (expr->expr_type == EXPR_STRUCTURE);
+	    gcc_assert (expr->expr_type == EXPR_STRUCTURE);
 	  last_ts = &ref->u.c.component->ts;
 
 	  /* Find the same element in the existing constructor.  */
@@ -297,7 +296,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       if (init == NULL)
@@ -317,7 +316,7 @@ gfc_assign_data_value (gfc_expr * lvalue, gfc_expr * rvalue, mpz_t index)
   else
     {
       /* We should never be overwriting an existing initializer.  */
-      assert (!init);
+      gcc_assert (!init);
 
       expr = gfc_copy_expr (rvalue);
       if (!gfc_compare_types (&lvalue->ts, &expr->ts))
@@ -375,7 +374,7 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
 	      expr->rank = ref->u.ar.as->rank;
 	    }
 	  else
-	    assert (expr->expr_type == EXPR_ARRAY);
+	    gcc_assert (expr->expr_type == EXPR_ARRAY);
 
 	  if (ref->u.ar.type == AR_ELEMENT)
 	    {
@@ -383,7 +382,7 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
 
 	      /* This had better not be the bottom of the reference.
 		 We can still get to a full array via a component.  */
-	      assert (ref->next != NULL);
+	      gcc_assert (ref->next != NULL);
 	    }
 	  else
 	    {
@@ -392,8 +391,8 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
 	      /* We're at a full array or an array section.  This means
 		 that we've better have found a full array, and that we're
 		 at the bottom of the reference.  */
-	      assert (ref->u.ar.type == AR_FULL);
-	      assert (ref->next == NULL);
+	      gcc_assert (ref->u.ar.type == AR_FULL);
+	      gcc_assert (ref->next == NULL);
 	    }
 
 	  /* Find the same element in the existing constructor.  */
@@ -410,7 +409,7 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
 	      gfc_insert_constructor (expr, con);
 	    }
 	  else
-	    assert (ref->next != NULL);
+	    gcc_assert (ref->next != NULL);
 	  break;
 
 	case REF_COMPONENT:
@@ -422,7 +421,7 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
 	      expr->ts.derived = ref->u.c.sym;
 	    }
 	  else
-	    assert (expr->expr_type == EXPR_STRUCTURE);
+	    gcc_assert (expr->expr_type == EXPR_STRUCTURE);
 	  last_ts = &ref->u.c.component->ts;
 
 	  /* Find the same element in the existing constructor.  */
@@ -440,12 +439,12 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
 
 	  /* Since we're only intending to initialize arrays here,
 	     there better be an inner reference.  */
-	  assert (ref->next != NULL);
+	  gcc_assert (ref->next != NULL);
 	  break;
 
 	case REF_SUBSTRING:
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       if (init == NULL)
@@ -461,7 +460,7 @@ gfc_assign_data_value_range (gfc_expr * lvalue, gfc_expr * rvalue,
     }
 
   /* We should never be overwriting an existing initializer.  */
-  assert (!init);
+  gcc_assert (!init);
 
   expr = gfc_copy_expr (rvalue);
   if (!gfc_compare_types (&lvalue->ts, &expr->ts))
@@ -599,7 +598,7 @@ formalize_structure_cons (gfc_expr * expr)
 	  tail = tail->next;
 	}
     }
-  assert (c == NULL);
+  gcc_assert (c == NULL);
   expr->value.constructor = head;
 }
 
@@ -683,7 +682,7 @@ gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
 	  gfc_internal_error ("TODO: Vector sections in data statements");
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
 
       mpz_sub (tmp, ar->as->upper[i]->value.integer, 

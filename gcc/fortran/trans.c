@@ -30,7 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "defaults.h"
 #include "real.h"
 #include <gmp.h>
-#include <assert.h>
 #include "gfortran.h"
 #include "trans.h"
 #include "trans-stmt.h"
@@ -56,7 +55,7 @@ gfc_advance_chain (tree t, int n)
 {
   for (; n > 0; n--)
     {
-      assert (t != NULL_TREE);
+      gcc_assert (t != NULL_TREE);
       t = TREE_CHAIN (t);
     }
   return t;
@@ -151,9 +150,8 @@ gfc_add_modify_expr (stmtblock_t * pblock, tree lhs, tree rhs)
      for scalar assignments.  We should probably have something
      similar for aggregates, but right now removing that check just
      breaks everything.  */
-  if (TREE_TYPE (rhs) != TREE_TYPE (lhs)
-      && !AGGREGATE_TYPE_P (TREE_TYPE (lhs)))
-    abort ();
+  gcc_assert (TREE_TYPE (rhs) == TREE_TYPE (lhs)
+	      || AGGREGATE_TYPE_P (TREE_TYPE (lhs)));
 #endif
 
   tmp = fold (build2_v (MODIFY_EXPR, lhs, rhs));
@@ -197,7 +195,7 @@ gfc_merge_block_scope (stmtblock_t * block)
   tree decl;
   tree next;
 
-  assert (block->has_scope);
+  gcc_assert (block->has_scope);
   block->has_scope = 0;
 
   /* Remember the decls in this scope.  */
@@ -292,8 +290,7 @@ tree
 gfc_build_indirect_ref (tree t)
 {
   tree type = TREE_TYPE (t);
-  if (!POINTER_TYPE_P (type))
-    abort ();
+  gcc_assert (POINTER_TYPE_P (type));
   type = TREE_TYPE (type);
 
   if (TREE_CODE (t) == ADDR_EXPR)
@@ -309,8 +306,7 @@ tree
 gfc_build_array_ref (tree base, tree offset)
 {
   tree type = TREE_TYPE (base);
-  if (TREE_CODE (type) != ARRAY_TYPE)
-    abort ();
+  gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
   type = TREE_TYPE (type);
 
   if (DECL_P (base))
@@ -356,7 +352,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
   /* The code to generate the error.  */
   gfc_start_block (&block);
 
-  assert (TREE_CODE (msg) == STRING_CST);
+  gcc_assert (TREE_CODE (msg) == STRING_CST);
 
   TREE_USED (msg) = 1;
 
@@ -396,7 +392,7 @@ gfc_trans_runtime_check (tree cond, tree msg, stmtblock_t * pblock)
 void
 gfc_add_expr_to_block (stmtblock_t * block, tree expr)
 {
-  assert (block);
+  gcc_assert (block);
 
   if (expr == NULL_TREE || IS_EMPTY_STMT (expr))
     return;
@@ -427,8 +423,8 @@ gfc_add_expr_to_block (stmtblock_t * block, tree expr)
 void
 gfc_add_block_to_block (stmtblock_t * block, stmtblock_t * append)
 {
-  assert (append);
-  assert (!append->has_scope);
+  gcc_assert (append);
+  gcc_assert (!append->has_scope);
 
   gfc_add_expr_to_block (block, append->head);
   append->head = NULL_TREE;

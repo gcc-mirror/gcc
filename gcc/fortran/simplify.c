@@ -828,7 +828,7 @@ gfc_simplify_digits (gfc_expr * x)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return gfc_int_expr (digits);
@@ -1115,7 +1115,7 @@ gfc_simplify_huge (gfc_expr * e)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return result;
@@ -2477,7 +2477,7 @@ gfc_simplify_radix (gfc_expr * e)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   result = gfc_int_expr (i);
@@ -2508,7 +2508,7 @@ gfc_simplify_range (gfc_expr * e)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   result = gfc_int_expr (j);

@@ -31,7 +31,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include <string.h>
 #include <stdarg.h>
-#include <assert.h>
 
 #include "gfortran.h"
 #include "intrinsic.h"
