@@ -10942,8 +10942,8 @@ do_tablejump (index, mode, range, table_label, default_label)
 {
   rtx temp, vector;
 
-  if (range > cfun->max_jumptable_ents)
-    cfun->max_jumptable_ents = range;
+  if (INTVAL (range) > cfun->max_jumptable_ents)
+    cfun->max_jumptable_ents = INTVAL (range);
 
   /* Do an unsigned comparison (in the proper mode) between the index
      expression and the value which represents the length of the range.
