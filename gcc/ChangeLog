@@ -1,3 +1,8 @@
+Tue Oct  6 15:45:15 1998  Catherine Moore  <clm@cygnus.com>
+ 
+        * config/sparc/sysv4.h (ASM_OUTPUT_SECTION_NAME):  Don't
+        check for flag_function_sections.
+
 Tue Oct  6 20:02:31 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* cse.c (insert_regs): Fix bug in Sep 24 change.
