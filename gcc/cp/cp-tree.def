@@ -159,10 +159,6 @@ DEFTREECODE (TEMPLATE_DECL, "template_decl", tcc_declaration, 0)
    worrying about instantiating things.  */
 DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", tcc_exceptional, 0)
 
-/* Index into a template parameter list.  This parameter must be a type.
-   The type.value field will be a TEMPLATE_PARM_INDEX.  */
-DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", tcc_type, 0)
-
 /* Index into a template parameter list for template template parameters.
    This parameter must be a type.  The TYPE_FIELDS value will be a 
    TEMPLATE_PARM_INDEX.
@@ -172,12 +168,14 @@ DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", tcc_type, 0)
    and TYPE_NAME is a TEMPLATE_DECL.  */
 DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", tcc_type, 0)
 
-/* Like TEMPLATE_TEMPLATE_PARM it is used with bound template arguments 
-   like TT<int>.
-   In this case, TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO contains the
-   template name and its bound arguments.  TYPE_NAME is a TYPE_DECL.  */
-DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm",
-	     tcc_type, 0)
+/* The ordering of the following codes is optimized for the checking
+   macros in tree.h.  Changing the order will degrade the speed of the
+   compiler.  TEMPLATE_TYPE_PARM, TYPENAME_TYPE, TYPEOF_TYPE,
+   BOUND_TEMPLATE_TEMPLATE_PARM.  */
+     
+/* Index into a template parameter list.  This parameter must be a type.
+   The type.value field will be a TEMPLATE_PARM_INDEX.  */
+DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", tcc_type, 0)
 
 /* A type designated by `typename T::t'.  TYPE_CONTEXT is `T',
    TYPE_NAME is an IDENTIFIER_NODE for `t'.  If the type was named via
@@ -185,14 +183,21 @@ DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm",
    TREE_TYPE is always NULL.  */
 DEFTREECODE (TYPENAME_TYPE, "typename_type", tcc_type, 0)
 
+/* A type designated by `__typeof (expr)'.  TYPEOF_TYPE_EXPR is the
+   expression in question.  */
+DEFTREECODE (TYPEOF_TYPE, "typeof_type", tcc_type, 0)
+
+/* Like TEMPLATE_TEMPLATE_PARM it is used with bound template arguments 
+   like TT<int>.
+   In this case, TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO contains the
+   template name and its bound arguments.  TYPE_NAME is a TYPE_DECL.  */
+DEFTREECODE (BOUND_TEMPLATE_TEMPLATE_PARM, "bound_template_template_parm",
+	     tcc_type, 0)
+
 /* For template template argument of the form `T::template C'.
    TYPE_CONTEXT is `T', the template parameter dependent object.
    TYPE_NAME is an IDENTIFIER_NODE for `C', the member class template.  */
 DEFTREECODE (UNBOUND_CLASS_TEMPLATE, "unbound_class_template", tcc_type, 0)
-
-/* A type designated by `__typeof (expr)'.  TYPEOF_TYPE_EXPR is the
-   expression in question.  */
-DEFTREECODE (TYPEOF_TYPE, "typeof_type", tcc_type, 0)
 
 /* A using declaration.  DECL_INITIAL contains the specified scope.  
    This is not an alias, but is later expanded into multiple aliases.

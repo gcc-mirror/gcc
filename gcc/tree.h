@@ -51,6 +51,7 @@ enum tree_code {
 enum tree_code_class {
   tcc_exceptional, /* An exceptional code (fits no category).  */
   tcc_constant,    /* A constant.  */
+  /* Order of tcc_type and tcc_declaration is important.  */
   tcc_type,        /* A type object code.  */
   tcc_declaration, /* A declaration (also serving as variable refs).  */
   tcc_reference,   /* A reference to storage.  */
@@ -96,11 +97,12 @@ extern const enum tree_code_class tree_code_type[];
 #define DECL_P(CODE)\
         (TREE_CODE_CLASS (TREE_CODE (CODE)) == tcc_declaration)
 
-/* Nonzero if CODE represents a INDIRECT_REF.  */
+/* Nonzero if CODE represents a INDIRECT_REF.  Keep these checks in
+   ascending code order.  */
 #define INDIRECT_REF_P(CODE)\
   (TREE_CODE (CODE) == INDIRECT_REF \
-   || TREE_CODE (CODE) == MISALIGNED_INDIRECT_REF \
-   || TREE_CODE (CODE) == ALIGN_INDIRECT_REF)
+   || TREE_CODE (CODE) == ALIGN_INDIRECT_REF \
+   || TREE_CODE (CODE) == MISALIGNED_INDIRECT_REF)
 
 /* Nonzero if CODE represents a reference.  */
 
@@ -145,7 +147,7 @@ extern const enum tree_code_class tree_code_type[];
    expression.  */
 
 #define IS_EXPR_CODE_CLASS(CLASS)\
-	(((CLASS) >= tcc_reference) && ((CLASS) <= tcc_expression))
+	(IN_RANGE (CLASS, tcc_reference, tcc_expression))
 
 /* Returns nonzero iff NODE is an expression of some kind.  */
 
@@ -737,11 +739,14 @@ extern void tree_operand_check_failed (int, enum tree_code,
 	EXP = TREE_OPERAND (EXP, 0)
 
 /* Nonzero if TYPE represents an integral type.  Note that we do not
-   include COMPLEX types here.  */
+   include COMPLEX types here.  Keep these checks in ascending code
+   order. */
 
 #define INTEGRAL_TYPE_P(TYPE)  \
-  (TREE_CODE (TYPE) == INTEGER_TYPE || TREE_CODE (TYPE) == ENUMERAL_TYPE  \
-   || TREE_CODE (TYPE) == BOOLEAN_TYPE || TREE_CODE (TYPE) == CHAR_TYPE)
+  (TREE_CODE (TYPE) == ENUMERAL_TYPE  \
+   || TREE_CODE (TYPE) == BOOLEAN_TYPE \
+   || TREE_CODE (TYPE) == CHAR_TYPE \
+   || TREE_CODE (TYPE) == INTEGER_TYPE)
 
 /* Nonzero if TYPE represents a scalar floating-point type.  */
 
@@ -760,20 +765,25 @@ extern void tree_operand_check_failed (int, enum tree_code,
    && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE)
 
 /* Nonzero if TYPE represents a floating-point type, including complex
-   and vector floating-point types.  */
+   and vector floating-point types.  The vector and complex check does
+   not use the previous two macros to enable early folding.  */
 
-#define FLOAT_TYPE_P(TYPE)		\
-  (SCALAR_FLOAT_TYPE_P (TYPE) || COMPLEX_FLOAT_TYPE_P (TYPE)	\
-   || VECTOR_FLOAT_TYPE_P (TYPE))
+#define FLOAT_TYPE_P(TYPE)			\
+  (SCALAR_FLOAT_TYPE_P (TYPE)			\
+   || ((TREE_CODE (TYPE) == COMPLEX_TYPE 	\
+        || TREE_CODE (TYPE) == VECTOR_TYPE)	\
+       && SCALAR_FLOAT_TYPE_P (TREE_TYPE (TYPE))))
 
-/* Nonzero if TYPE represents an aggregate (multi-component) type.  */
+/* Nonzero if TYPE represents an aggregate (multi-component) type.
+   Keep these checks in ascending code order.  */
 
 #define AGGREGATE_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == ARRAY_TYPE || TREE_CODE (TYPE) == RECORD_TYPE \
    || TREE_CODE (TYPE) == UNION_TYPE || TREE_CODE (TYPE) == QUAL_UNION_TYPE)
 
 /* Nonzero if TYPE represents a pointer or reference type.
-   (It should be renamed to INDIRECT_TYPE_P.)  */
+   (It should be renamed to INDIRECT_TYPE_P.)  Keep these checks in
+   ascending code order.  */
 
 #define POINTER_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == POINTER_TYPE || TREE_CODE (TYPE) == REFERENCE_TYPE)

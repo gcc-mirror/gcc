@@ -865,7 +865,8 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    for template type parameters, typename types, and instantiated
    template template parameters.  Despite its name,
    this macro has nothing to do with the definition of aggregate given
-   in the standard.  Think of this macro as MAYBE_CLASS_TYPE_P.  */
+   in the standard.  Think of this macro as MAYBE_CLASS_TYPE_P.  Keep
+   these checks in ascending code order.  */
 #define IS_AGGR_TYPE(T)					\
   (TREE_CODE (T) == TEMPLATE_TYPE_PARM			\
    || TREE_CODE (T) == TYPENAME_TYPE			\
@@ -881,9 +882,11 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* Nonzero if T is a class type.  Zero for template type parameters,
    typename types, and so forth.  */
 #define CLASS_TYPE_P(T) \
-  (IS_AGGR_TYPE_CODE (TREE_CODE (T)) && IS_AGGR_TYPE (T))
+  (IS_AGGR_TYPE_CODE (TREE_CODE (T)) && TYPE_LANG_FLAG_5 (T))
 
-#define IS_AGGR_TYPE_CODE(T)	((T) == RECORD_TYPE || (T) == UNION_TYPE)
+/* Keep these checks in ascending code order.  */
+#define IS_AGGR_TYPE_CODE(T)	\
+  ((T) == RECORD_TYPE || (T) == UNION_TYPE)
 #define TAGGED_TYPE_P(T) \
   (CLASS_TYPE_P (T) || TREE_CODE (T) == ENUMERAL_TYPE)
 #define IS_OVERLOAD_TYPE(T) TAGGED_TYPE_P (T)
@@ -1485,11 +1488,12 @@ struct lang_type GTY(())
 /* If a DECL has DECL_LANG_SPECIFIC, it is either a lang_decl_flags or
    a lang_decl (which has lang_decl_flags as its initial prefix).
    This macro is nonzero for tree nodes whose DECL_LANG_SPECIFIC is
-   the full lang_decl, and not just lang_decl_flags.  */
-#define CAN_HAVE_FULL_LANG_DECL_P(NODE)		\
-  (!(TREE_CODE (NODE) == VAR_DECL		\
-     || TREE_CODE (NODE) == CONST_DECL		\
-     || TREE_CODE (NODE) == FIELD_DECL		\
+   the full lang_decl, and not just lang_decl_flags.  Keep these
+   checks in ascending code order.  */
+#define CAN_HAVE_FULL_LANG_DECL_P(NODE)			\
+  (!(TREE_CODE (NODE) == FIELD_DECL			\
+     || TREE_CODE (NODE) == VAR_DECL			\
+     || TREE_CODE (NODE) == CONST_DECL			\
      || TREE_CODE (NODE) == USING_DECL))
 
 struct lang_decl_flags GTY(())
@@ -2315,8 +2319,12 @@ struct lang_decl GTY(())
 #define DECL_EXTERNAL_LINKAGE_P(DECL) \
   (decl_linkage (DECL) == lk_external)
 
-#define INTEGRAL_CODE_P(CODE) \
-  ((CODE) == INTEGER_TYPE || (CODE) == ENUMERAL_TYPE || (CODE) == BOOLEAN_TYPE)
+/* Keep these codes in ascending code order.  CHAR_TYPE is used here
+   to completely fill the range.  */
+
+#define INTEGRAL_CODE_P(CODE) 				\
+  ((CODE) == ENUMERAL_TYPE || (CODE) == BOOLEAN_TYPE	\
+   || (CODE) == CHAR_TYPE || (CODE) == INTEGER_TYPE)
 
 /* [basic.fundamental]
 
@@ -2324,31 +2332,37 @@ struct lang_decl GTY(())
    are collectively called integral types.
 
    Note that INTEGRAL_TYPE_P, as defined in tree.h, allows enumeration
-   types as well, which is incorrect in C++.  */
+   types as well, which is incorrect in C++.  Keep these checks in
+   ascending code order.  CHAR_TYPE is added to complete the interval of
+   values.  */
 #define CP_INTEGRAL_TYPE_P(TYPE)		\
   (TREE_CODE (TYPE) == BOOLEAN_TYPE		\
+   || TREE_CODE (TYPE) == CHAR_TYPE		\
    || TREE_CODE (TYPE) == INTEGER_TYPE)
 
-/* Returns true if TYPE is an integral or enumeration name.  */
+/* Returns true if TYPE is an integral or enumeration name.  Keep
+   these checks in ascending code order.  */
 #define INTEGRAL_OR_ENUMERATION_TYPE_P(TYPE) \
-  (CP_INTEGRAL_TYPE_P (TYPE) || TREE_CODE (TYPE) == ENUMERAL_TYPE)
+   (TREE_CODE (TYPE) == ENUMERAL_TYPE || CP_INTEGRAL_TYPE_P (TYPE))
 
 /* [basic.fundamental]
 
    Integral and floating types are collectively called arithmetic
-   types.  */
+   types.  Keep these checks in ascending code order.  */
 #define ARITHMETIC_TYPE_P(TYPE) \
   (CP_INTEGRAL_TYPE_P (TYPE) || TREE_CODE (TYPE) == REAL_TYPE)
 
 /* [basic.types]
 
    Arithmetic types, enumeration types, pointer types, and
-   pointer-to-member types, are collectively called scalar types.  */
+   pointer-to-member types, are collectively called scalar types.
+   Keep these checks in ascending code order.  */
 #define SCALAR_TYPE_P(TYPE)			\
-  (ARITHMETIC_TYPE_P (TYPE)			\
+  (TYPE_PTRMEM_P (TYPE)				\
    || TREE_CODE (TYPE) == ENUMERAL_TYPE		\
+   || ARITHMETIC_TYPE_P (TYPE)			\
    || TYPE_PTR_P (TYPE)				\
-   || TYPE_PTR_TO_MEMBER_P (TYPE))
+   || TYPE_PTRMEMFUNC_P (TYPE))
 
 /* [dcl.init.aggr]
 
@@ -2356,12 +2370,12 @@ struct lang_decl GTY(())
    constructors, no private or protected non-static data members, no
    base classes, and no virtual functions.
 
-   As an extension, we also treat vectors as aggregates.  */
-#define CP_AGGREGATE_TYPE_P(TYPE)		\
-  (TREE_CODE (TYPE) == ARRAY_TYPE		\
-   || TREE_CODE (TYPE) == VECTOR_TYPE		\
-   || (CLASS_TYPE_P (TYPE)			\
-       && !CLASSTYPE_NON_AGGREGATE (TYPE)))
+   As an extension, we also treat vectors as aggregates.  Keep these
+   checks in ascending code order.  */
+#define CP_AGGREGATE_TYPE_P(TYPE)				\
+  (TREE_CODE (TYPE) == VECTOR_TYPE				\
+   ||TREE_CODE (TYPE) == ARRAY_TYPE				\
+   || (CLASS_TYPE_P (TYPE) && !CLASSTYPE_NON_AGGREGATE (TYPE)))
 
 /* Nonzero for a class type means that the class type has a
    user-declared constructor.  */
@@ -2442,21 +2456,26 @@ struct lang_decl GTY(())
 /* Returns true if NODE is a pointer.  */
 #define TYPE_PTR_P(NODE)			\
   (TREE_CODE (NODE) == POINTER_TYPE)
-/* Returns true if NODE is a pointer to an object.  */
-#define TYPE_PTROB_P(NODE)				\
-  (TYPE_PTR_P (NODE) 					\
-   && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
-   && TREE_CODE (TREE_TYPE (NODE)) != METHOD_TYPE	\
-   && TREE_CODE (TREE_TYPE (NODE)) != VOID_TYPE)
-/* Returns true if NODE is a reference to an object.  */
-#define TYPE_REF_OBJ_P(NODE)				\
-  (TREE_CODE (NODE) == REFERENCE_TYPE			\
-   && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE	\
-   && TREE_CODE (TREE_TYPE (NODE)) != METHOD_TYPE	\
-   && TREE_CODE (TREE_TYPE (NODE)) != VOID_TYPE)
-/* Returns true if NODE is a pointer to an object, or a pointer to void.  */
-#define TYPE_PTROBV_P(NODE)						\
-  (TYPE_PTR_P (NODE) && TREE_CODE (TREE_TYPE (NODE)) != FUNCTION_TYPE)
+/* Returns true if NODE is a pointer to an object.  Keep these checks
+   in ascending tree code order.  */
+#define TYPE_PTROB_P(NODE)					\
+  (TYPE_PTR_P (NODE) 						\
+   && !(TREE_CODE (TREE_TYPE (NODE)) == VOID_TYPE		\
+        || TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE	\
+        || TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE))
+/* Returns true if NODE is a reference to an object.  Keep these checks
+   in ascending tree code order.  */
+#define TYPE_REF_OBJ_P(NODE)					\
+  (TREE_CODE (NODE) == REFERENCE_TYPE				\
+   && !(TREE_CODE (TREE_TYPE (NODE)) == VOID_TYPE		\
+        || TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE	\
+        || TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE))
+/* Returns true if NODE is a pointer to an object, or a pointer to
+   void.  Keep these checks in ascending tree code order.  */
+#define TYPE_PTROBV_P(NODE)					\
+  (TYPE_PTR_P (NODE) 						\
+   && !(TREE_CODE (TREE_TYPE (NODE)) == FUNCTION_TYPE		\
+        || TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE))
 /* Returns true if NODE is a pointer to function.  */
 #define TYPE_PTRFN_P(NODE)				\
   (TREE_CODE (NODE) == POINTER_TYPE			\
@@ -2680,7 +2699,8 @@ struct lang_decl GTY(())
    This list is not used for static variable templates.  */
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE (NODE)
 
-/* Nonzero for a DECL which is actually a template parameter.  */
+/* Nonzero for a DECL which is actually a template parameter.  Keep
+   these checks in ascending tree code order.   */
 #define DECL_TEMPLATE_PARM_P(NODE)		\
   (DECL_LANG_FLAG_0 (NODE)			\
    && (TREE_CODE (NODE) == CONST_DECL		\
