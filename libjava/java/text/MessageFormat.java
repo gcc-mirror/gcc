@@ -38,7 +38,11 @@ exception statement from your version. */
 
 package java.text;
 
+import gnu.java.text.FormatCharacterIterator;
+
+import java.io.InvalidObjectException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Vector;
 
@@ -144,6 +148,43 @@ final class MessageFormatElement
 public class MessageFormat extends Format
 {
   private static final long serialVersionUID = 6479157306784022952L;
+
+  public static class Field extends Format.Field
+  {
+    static final long serialVersionUID = 7899943957617360810L;
+
+    /**
+     * This is the attribute set for all characters produced
+     * by MessageFormat during a formatting.
+     */
+    public static final MessageFormat.Field ARGUMENT = new Field("argument");
+
+    // For deserialization
+    private Field()
+    {
+      super("");
+    }
+    
+    private Field(String s)
+    {
+      super(s);
+    }
+
+    /**
+     * invoked to resolve the true static constant by
+     * comparing the deserialized object to know name.
+     *
+     * @return object constant
+     */
+    protected Object readResolve() throws InvalidObjectException
+    {
+      if (getName().equals(ARGUMENT.getName()))
+	return ARGUMENT;
+
+      throw new InvalidObjectException("no such MessageFormat field called " + getName());
+    }
+
+  }
 
   // Helper that returns the text up to the next format opener.  The
   // text is put into BUFFER.  Returns index of character after end of
@@ -326,12 +367,28 @@ public class MessageFormat extends Format
    * @param aPattern The pattern used when formatting.
    * @param arguments The array containing the objects to be formatted.
    */
+  public AttributedCharacterIterator formatToCharacterIterator (Object arguments)
+  {
+    Object[] arguments_array = (Object[])arguments;
+    FormatCharacterIterator iterator = new FormatCharacterIterator();
+    
+    formatInternal(arguments_array, new StringBuffer(), null, iterator);
+  
+    return iterator;
+  }
+
+  /**
+   * A convinience method to format patterns.
+   *
+   * @param aPattern The pattern used when formatting.
+   * @param arguments The array containing the objects to be formatted.
+   */
   public static String format (String pattern, Object arguments[])
   {
     MessageFormat mf = new MessageFormat (pattern);
     StringBuffer sb = new StringBuffer ();
     FieldPosition fp = new FieldPosition (NumberFormat.INTEGER_FIELD);
-    return mf.format(arguments, sb, fp).toString();
+    return mf.formatInternal(arguments, sb, fp, null).toString();
   }
 
   /**
@@ -342,9 +399,18 @@ public class MessageFormat extends Format
    * @param fp A FieldPosition object (it is ignored).
    */
   public final StringBuffer format (Object arguments[], StringBuffer appendBuf,
-				    FieldPosition ignore)
+				    FieldPosition fp)
+  {
+    return formatInternal(arguments, appendBuf, fp, null);
+  }
+
+  protected final StringBuffer formatInternal (Object arguments[], StringBuffer appendBuf,
+					       FieldPosition fp,
+					       FormatCharacterIterator output_iterator)
   {
     appendBuf.append(leader);
+    if (output_iterator != null)
+      output_iterator.append(leader);
 
     for (int i = 0; i < elements.length; ++i)
       {
@@ -352,8 +418,13 @@ public class MessageFormat extends Format
 	  throw new IllegalArgumentException("Not enough arguments given");
 
 	Object thisArg = arguments[elements[i].argNumber];
+	AttributedCharacterIterator iterator = null;
 
 	Format formatter = null;
+
+	if (fp != null && i == fp.getField() && fp.getFieldAttribute() == Field.ARGUMENT)
+	  fp.setBeginIndex(appendBuf.length());
+
 	if (elements[i].setFormat != null)
 	  formatter = elements[i].setFormat;
 	else if (elements[i].format != null)
@@ -371,25 +442,56 @@ public class MessageFormat extends Format
 	else
 	  appendBuf.append(thisArg);
 
+	if (fp != null && fp.getField() == i && fp.getFieldAttribute() == Field.ARGUMENT)
+	  fp.setEndIndex(appendBuf.length());
+
 	if (formatter != null)
 	  {
 	    // Special-case ChoiceFormat.
 	    if (formatter instanceof ChoiceFormat)
 	      {
 		StringBuffer buf = new StringBuffer ();
-		formatter.format(thisArg, buf, ignore);
+		formatter.format(thisArg, buf, fp);
 		MessageFormat mf = new MessageFormat ();
 		mf.setLocale(locale);
 		mf.applyPattern(buf.toString());
-		mf.format(arguments, appendBuf, ignore);
+		mf.format(arguments, appendBuf, fp);
 	      }
 	    else
-	      formatter.format(thisArg, appendBuf, ignore);
+	      {
+		if (output_iterator != null)
+		  iterator = formatter.formatToCharacterIterator(thisArg);
+		else
+		  formatter.format(thisArg, appendBuf, fp);
+	      }
+
+	    elements[i].format = formatter;
 	  }
 
+	if (output_iterator != null)
+	  {
+	    HashMap hash_argument = new HashMap();
+	    int position = output_iterator.getEndIndex();
+	    
+	    hash_argument.put (MessageFormat.Field.ARGUMENT,
+			       new Integer(elements[i].argNumber));
+
+	    
+	    if (iterator != null)
+	      {
+		output_iterator.append(iterator);
+		output_iterator.addAttributes(hash_argument, position, 
+					      output_iterator.getEndIndex());
+	      }	
+	    else
+	      output_iterator.append(thisArg.toString(), hash_argument);
+	    
+	    output_iterator.append(elements[i].trailer);
+	  }
+	
 	appendBuf.append(elements[i].trailer);
       }
-
+    
     return appendBuf;
   }
 
@@ -398,10 +500,10 @@ public class MessageFormat extends Format
    *
    * @param source The object to be formatted.
    * @param result The StringBuffer where the text is appened.
-   * @param fp A FieldPosition object (it is ignored).
+   * @param fpos A FieldPosition object (it is ignored).
    */
   public final StringBuffer format (Object singleArg, StringBuffer appendBuf,
-				    FieldPosition ignore)
+				    FieldPosition fpos)
   {
     Object[] args;
 
@@ -416,7 +518,7 @@ public class MessageFormat extends Format
 	args = new Object[1];
 	args[0] = singleArg;
       }
-    return format (args, appendBuf, ignore);
+    return format (args, appendBuf, fpos);
   }
 
   /**
@@ -478,6 +580,15 @@ public class MessageFormat extends Format
     applyPattern (pattern);
   }
 
+  /**
+   * Parse a string <code>sourceStr</code> against the pattern specified
+   * to the MessageFormat constructor.
+   *
+   * @param sourceStr the string to be parsed.
+   * @param pos the current parse position (and eventually the error position).
+   * @return the array of parsed objects sorted according to their argument number
+   * in the pattern.
+   */ 
   public Object[] parse (String sourceStr, ParsePosition pos)
   {
     // Check initial text.
@@ -626,6 +737,72 @@ public class MessageFormat extends Format
   public String toPattern ()
   {
     return pattern;
+  }
+
+  /**
+   * Return the formatters used sorted by argument index. It uses the
+   * internal table to fill in this array: if a format has been
+   * set using <code>setFormat</code> or <code>setFormatByArgumentIndex</code>
+   * then it returns it at the right index. If not it uses the detected
+   * formatters during a <code>format</code> call. If nothing is known
+   * about that argument index it just puts null at that position.
+   * To get useful informations you may have to call <code>format</code>
+   * at least once.
+   *
+   * @return an array of formatters sorted by argument index.
+   */
+  public Format[] getFormatsByArgumentIndex()
+  {
+    int argNumMax = 0;
+    // First, find the greatest argument number.
+    for (int i=0;i<elements.length;i++)
+      if (elements[i].argNumber > argNumMax)
+	argNumMax = elements[i].argNumber;
+
+    Format[] formats = new Format[argNumMax];
+    for (int i=0;i<elements.length;i++)
+      {
+	if (elements[i].setFormat != null)
+	  formats[elements[i].argNumber] = elements[i].setFormat;
+	else if (elements[i].format != null)
+	  formats[elements[i].argNumber] = elements[i].format;
+      }
+    return formats;
+  }
+
+  /**
+   * Set the format to used using the argument index number.
+   *
+   * @param argumentIndex the argument index.
+   * @param newFormat the format to use for this argument.
+   */
+  public void setFormatByArgumentIndex(int argumentIndex,
+				       Format newFormat)
+  {
+    for (int i=0;i<elements.length;i++)
+      {
+	if (elements[i].argNumber == argumentIndex)
+	  elements[i].setFormat = newFormat;
+      }
+  }
+
+  /**
+   * Set the format for argument using a specified array of formatters
+   * which is sorted according to the argument index. If the number of
+   * elements in the array is fewer than the number of arguments only
+   * the arguments specified by the array are touched.
+   *
+   * @param newFormats array containing the new formats to set.
+   *
+   * @throws NullPointerException if newFormats is null
+   */
+  public void setFormatsByArgumentIndex(Format[] newFormats)
+  {
+    for (int i=0;i<newFormats.length;i++)
+      {
+	// Nothing better than that can exist here.
+	setFormatByArgumentIndex(i, newFormats[i]);
+      }
   }
 
   // The pattern string.
