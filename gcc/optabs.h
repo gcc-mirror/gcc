@@ -161,6 +161,15 @@ enum optab_index
   /* tst insn; compare one operand against 0 */
   OTI_tst,
 
+  /* Floating point comparison optabs - used primarily for libfuncs */
+  OTI_eq,
+  OTI_ne,
+  OTI_gt,
+  OTI_ge,
+  OTI_lt,
+  OTI_le,
+  OTI_unord,
+
   /* String length */
   OTI_strlen,
 
@@ -242,6 +251,14 @@ extern GTY(()) optab optab_table[OTI_MAX];
 #define cmp_optab (optab_table[OTI_cmp])
 #define ucmp_optab (optab_table[OTI_ucmp])
 #define tst_optab (optab_table[OTI_tst])
+
+#define eq_optab (optab_table[OTI_eq])
+#define ne_optab (optab_table[OTI_ne])
+#define gt_optab (optab_table[OTI_gt])
+#define ge_optab (optab_table[OTI_ge])
+#define lt_optab (optab_table[OTI_lt])
+#define le_optab (optab_table[OTI_le])
+#define unord_optab (optab_table[OTI_unord])
 
 #define strlen_optab (optab_table[OTI_strlen])
 

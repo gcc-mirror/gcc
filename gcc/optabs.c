@@ -3872,336 +3872,47 @@ prepare_float_lib_cmp (rtx *px, rtx *py, enum rtx_code *pcomparison,
 		       enum machine_mode *pmode, int *punsignedp)
 {
   enum rtx_code comparison = *pcomparison;
-  rtx tmp;
-  rtx x = *px = protect_from_queue (*px, 0);
-  rtx y = *py = protect_from_queue (*py, 0);
-  enum machine_mode mode = GET_MODE (x);
+  enum rtx_code swapped = swap_condition (comparison);
+  rtx x = protect_from_queue (*px, 0);
+  rtx y = protect_from_queue (*py, 0);
+  enum machine_mode orig_mode = GET_MODE (x);
+  enum machine_mode mode;
   rtx libfunc = 0;
   rtx result;
 
-  if (mode == HFmode)
-    switch (comparison)
-      {
-      case EQ:
-	libfunc = eqhf2_libfunc;
-	break;
-
-      case NE:
-	libfunc = nehf2_libfunc;
-	break;
-
-      case GT:
-	libfunc = gthf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LT;
-	    libfunc = lthf2_libfunc;
-	  }
-	break;
-
-      case GE:
-	libfunc = gehf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LE;
-	    libfunc = lehf2_libfunc;
-	  }
-	break;
-
-      case LT:
-	libfunc = lthf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GT;
-	    libfunc = gthf2_libfunc;
-	  }
-	break;
-
-      case LE:
-	libfunc = lehf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GE;
-	    libfunc = gehf2_libfunc;
-	  }
-	break;
-
-      case UNORDERED:
-	libfunc = unordhf2_libfunc;
-	break;
-
-      default:
-	break;
-      }
-  else if (mode == SFmode)
-    switch (comparison)
-      {
-      case EQ:
-	libfunc = eqsf2_libfunc;
-	break;
-
-      case NE:
-	libfunc = nesf2_libfunc;
-	break;
-
-      case GT:
-	libfunc = gtsf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LT;
-	    libfunc = ltsf2_libfunc;
-	  }
-	break;
-
-      case GE:
-	libfunc = gesf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LE;
-	    libfunc = lesf2_libfunc;
-	  }
-	break;
-
-      case LT:
-	libfunc = ltsf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GT;
-	    libfunc = gtsf2_libfunc;
-	  }
-	break;
-
-      case LE:
-	libfunc = lesf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GE;
-	    libfunc = gesf2_libfunc;
-	  }
-	break;
-
-      case UNORDERED:
-	libfunc = unordsf2_libfunc;
-	break;
-
-      default:
-	break;
-      }
-  else if (mode == DFmode)
-    switch (comparison)
-      {
-      case EQ:
-	libfunc = eqdf2_libfunc;
-	break;
-
-      case NE:
-	libfunc = nedf2_libfunc;
-	break;
-
-      case GT:
-	libfunc = gtdf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LT;
-	    libfunc = ltdf2_libfunc;
-	  }
-	break;
-
-      case GE:
-	libfunc = gedf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LE;
-	    libfunc = ledf2_libfunc;
-	  }
-	break;
-
-      case LT:
-	libfunc = ltdf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GT;
-	    libfunc = gtdf2_libfunc;
-	  }
-	break;
-
-      case LE:
-	libfunc = ledf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GE;
-	    libfunc = gedf2_libfunc;
-	  }
-	break;
-
-      case UNORDERED:
-	libfunc = unorddf2_libfunc;
-	break;
-
-      default:
-	break;
-      }
-  else if (mode == XFmode)
-    switch (comparison)
-      {
-      case EQ:
-	libfunc = eqxf2_libfunc;
-	break;
-
-      case NE:
-	libfunc = nexf2_libfunc;
-	break;
-
-      case GT:
-	libfunc = gtxf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LT;
-	    libfunc = ltxf2_libfunc;
-	  }
-	break;
-
-      case GE:
-	libfunc = gexf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LE;
-	    libfunc = lexf2_libfunc;
-	  }
-	break;
-
-      case LT:
-	libfunc = ltxf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GT;
-	    libfunc = gtxf2_libfunc;
-	  }
-	break;
-
-      case LE:
-	libfunc = lexf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GE;
-	    libfunc = gexf2_libfunc;
-	  }
-	break;
-
-      case UNORDERED:
-	libfunc = unordxf2_libfunc;
-	break;
-
-      default:
-	break;
-      }
-  else if (mode == TFmode)
-    switch (comparison)
-      {
-      case EQ:
-	libfunc = eqtf2_libfunc;
-	break;
-
-      case NE:
-	libfunc = netf2_libfunc;
-	break;
-
-      case GT:
-	libfunc = gttf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LT;
-	    libfunc = lttf2_libfunc;
-	  }
-	break;
-
-      case GE:
-	libfunc = getf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = LE;
-	    libfunc = letf2_libfunc;
-	  }
-	break;
-
-      case LT:
-	libfunc = lttf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GT;
-	    libfunc = gttf2_libfunc;
-	  }
-	break;
-
-      case LE:
-	libfunc = letf2_libfunc;
-	if (libfunc == NULL_RTX)
-	  {
-	    tmp = x; x = y; y = tmp;
-	    *pcomparison = GE;
-	    libfunc = getf2_libfunc;
-	  }
-	break;
-
-      case UNORDERED:
-	libfunc = unordtf2_libfunc;
-	break;
-
-      default:
-	break;
-      }
-  else
+  for (mode = orig_mode; mode != VOIDmode; mode = GET_MODE_WIDER_MODE (mode))
     {
-      enum machine_mode wider_mode;
+      if ((libfunc = code_to_optab[comparison]->handlers[mode].libfunc))
+	break;
 
-      for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      if ((libfunc = code_to_optab[swapped]->handlers[mode].libfunc))
 	{
-	  if ((cmp_optab->handlers[(int) wider_mode].insn_code
-	       != CODE_FOR_nothing)
-	      || (cmp_optab->handlers[(int) wider_mode].libfunc != 0))
-	    {
-	      x = protect_from_queue (x, 0);
-	      y = protect_from_queue (y, 0);
-	      *px = convert_to_mode (wider_mode, x, 0);
-	      *py = convert_to_mode (wider_mode, y, 0);
-	      prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp);
-	      return;
-	    }
+	  rtx tmp;
+	  tmp = x; x = y; y = tmp;
+	  comparison = swapped;
+	  break;
 	}
-      abort ();
     }
 
-  if (libfunc == 0)
+  if (mode == VOIDmode)
     abort ();
+
+  if (mode != orig_mode)
+    {
+      x = convert_to_mode (mode, x, 0);
+      y = convert_to_mode (mode, y, 0);
+    }
+
+  if (comparison == UNORDERED
+      || FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
+    comparison = NE;
 
   result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST_MAKE_BLOCK,
 				    word_mode, 2, x, mode, y, mode);
   *px = result;
   *py = const0_rtx;
   *pmode = word_mode;
-  if (comparison == UNORDERED
-      || FLOAT_LIB_COMPARE_RETURNS_BOOL (mode, comparison))
-    *pcomparison = NE;
+  *pcomparison = comparison;
   *punsignedp = 0;
 }
 
@@ -5430,6 +5141,15 @@ init_optabs (void)
 
   ucmp_optab = init_optab (UNKNOWN);
   tst_optab = init_optab (UNKNOWN);
+
+  eq_optab = init_optab (EQ);
+  ne_optab = init_optab (NE);
+  gt_optab = init_optab (GT);
+  ge_optab = init_optab (GE);
+  lt_optab = init_optab (LT);
+  le_optab = init_optab (LE);
+  unord_optab = init_optab (UNORDERED);
+
   neg_optab = init_optab (NEG);
   negv_optab = init_optabv (NEG);
   abs_optab = init_optab (ABS);
@@ -5530,6 +5250,15 @@ init_optabs (void)
   init_integral_libfuncs (ucmp_optab, "ucmp", '2');
   init_floating_libfuncs (cmp_optab, "cmp", '2');
 
+  /* EQ etc are floating point only.  */
+  init_floating_libfuncs (eq_optab, "eq", '2');
+  init_floating_libfuncs (ne_optab, "ne", '2');
+  init_floating_libfuncs (gt_optab, "gt", '2');
+  init_floating_libfuncs (ge_optab, "ge", '2');
+  init_floating_libfuncs (lt_optab, "lt", '2');
+  init_floating_libfuncs (le_optab, "le", '2');
+  init_floating_libfuncs (unord_optab, "unord", '2');
+
   /* Use cabs for DC complex abs, since systems generally have cabs.
      Don't define any libcall for SCmode, so that cabs will be used.  */
   abs_optab->handlers[(int) DCmode].libfunc
@@ -5574,46 +5303,6 @@ init_optabs (void)
   unwind_sjlj_register_libfunc = init_one_libfunc ("_Unwind_SjLj_Register");
   unwind_sjlj_unregister_libfunc
     = init_one_libfunc ("_Unwind_SjLj_Unregister");
-
-  eqhf2_libfunc = init_one_libfunc ("__eqhf2");
-  nehf2_libfunc = init_one_libfunc ("__nehf2");
-  gthf2_libfunc = init_one_libfunc ("__gthf2");
-  gehf2_libfunc = init_one_libfunc ("__gehf2");
-  lthf2_libfunc = init_one_libfunc ("__lthf2");
-  lehf2_libfunc = init_one_libfunc ("__lehf2");
-  unordhf2_libfunc = init_one_libfunc ("__unordhf2");
-
-  eqsf2_libfunc = init_one_libfunc ("__eqsf2");
-  nesf2_libfunc = init_one_libfunc ("__nesf2");
-  gtsf2_libfunc = init_one_libfunc ("__gtsf2");
-  gesf2_libfunc = init_one_libfunc ("__gesf2");
-  ltsf2_libfunc = init_one_libfunc ("__ltsf2");
-  lesf2_libfunc = init_one_libfunc ("__lesf2");
-  unordsf2_libfunc = init_one_libfunc ("__unordsf2");
-
-  eqdf2_libfunc = init_one_libfunc ("__eqdf2");
-  nedf2_libfunc = init_one_libfunc ("__nedf2");
-  gtdf2_libfunc = init_one_libfunc ("__gtdf2");
-  gedf2_libfunc = init_one_libfunc ("__gedf2");
-  ltdf2_libfunc = init_one_libfunc ("__ltdf2");
-  ledf2_libfunc = init_one_libfunc ("__ledf2");
-  unorddf2_libfunc = init_one_libfunc ("__unorddf2");
-
-  eqxf2_libfunc = init_one_libfunc ("__eqxf2");
-  nexf2_libfunc = init_one_libfunc ("__nexf2");
-  gtxf2_libfunc = init_one_libfunc ("__gtxf2");
-  gexf2_libfunc = init_one_libfunc ("__gexf2");
-  ltxf2_libfunc = init_one_libfunc ("__ltxf2");
-  lexf2_libfunc = init_one_libfunc ("__lexf2");
-  unordxf2_libfunc = init_one_libfunc ("__unordxf2");
-
-  eqtf2_libfunc = init_one_libfunc ("__eqtf2");
-  netf2_libfunc = init_one_libfunc ("__netf2");
-  gttf2_libfunc = init_one_libfunc ("__gttf2");
-  getf2_libfunc = init_one_libfunc ("__getf2");
-  lttf2_libfunc = init_one_libfunc ("__lttf2");
-  letf2_libfunc = init_one_libfunc ("__letf2");
-  unordtf2_libfunc = init_one_libfunc ("__unordtf2");
 
   floatsisf_libfunc = init_one_libfunc ("__floatsisf");
   floatdisf_libfunc = init_one_libfunc ("__floatdisf");

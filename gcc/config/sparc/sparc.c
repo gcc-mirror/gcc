@@ -8424,12 +8424,12 @@ sparc_init_libfuncs (void)
       if (TARGET_FPU)
 	set_optab_libfunc (sqrt_optab, TFmode, "_Q_sqrt");
 
-      eqtf2_libfunc = init_one_libfunc ("_Q_feq");
-      netf2_libfunc = init_one_libfunc ("_Q_fne");
-      gttf2_libfunc = init_one_libfunc ("_Q_fgt");
-      getf2_libfunc = init_one_libfunc ("_Q_fge");
-      lttf2_libfunc = init_one_libfunc ("_Q_flt");
-      letf2_libfunc = init_one_libfunc ("_Q_fle");
+      set_optab_libfunc (eq_optab, TFmode, "_Q_feq");
+      set_optab_libfunc (ne_optab, TFmode, "_Q_fne");
+      set_optab_libfunc (gt_optab, TFmode, "_Q_fgt");
+      set_optab_libfunc (ge_optab, TFmode, "_Q_fge");
+      set_optab_libfunc (lt_optab, TFmode, "_Q_flt");
+      set_optab_libfunc (le_optab, TFmode, "_Q_fle");
 
       trunctfsf2_libfunc = init_one_libfunc ("_Q_qtos");
       trunctfdf2_libfunc = init_one_libfunc ("_Q_qtod");

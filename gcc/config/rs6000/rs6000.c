@@ -6779,25 +6779,24 @@ rs6000_init_libfuncs (void)
   if (!TARGET_HARD_FLOAT)
     return;
 
-  if (TARGET_AIX)
+  if (DEFAULT_ABI != ABI_V4)
     {
-      /* Optabs entries for the int->float routines and quad FP
-	 operations using the standard AIX names.  */
-      if (! TARGET_POWER2 && ! TARGET_POWERPC)
+      if (TARGET_XCOFF && ! TARGET_POWER2 && ! TARGET_POWERPC)
 	{
+	  /* AIX library routines for float->int conversion.  */
 	  fixdfsi_libfunc = init_one_libfunc ("__itrunc");
 	  fixunsdfsi_libfunc = init_one_libfunc ("__uitrunc");
 	}
 
+      /* Standard AIX/Darwin/64-bit SVR4 quad floating point routines.  */
       set_optab_libfunc (add_optab, TFmode, "_xlqadd");
       set_optab_libfunc (sub_optab, TFmode, "_xlqsub");
       set_optab_libfunc (smul_optab, TFmode, "_xlqmul");
       set_optab_libfunc (sdiv_optab, TFmode, "_xlqdiv");
     }
-  else if (TARGET_ELF)
+  else
     {
-      /* Define library calls for quad FP operations.  These are all
-	 part of the PowerPC 32bit ABI.  */
+      /* 32-bit SVR4 quad floating point routines.  */
 
       set_optab_libfunc (add_optab, TFmode, "_q_add");
       set_optab_libfunc (sub_optab, TFmode, "_q_sub");
@@ -6807,12 +6806,13 @@ rs6000_init_libfuncs (void)
       if (TARGET_PPC_GPOPT || TARGET_POWER2)
 	set_optab_libfunc (sqrt_optab, TFmode, "_q_sqrt");
 
-      eqtf2_libfunc = init_one_libfunc ("_q_feq");
-      netf2_libfunc = init_one_libfunc ("_q_fne");
-      gttf2_libfunc = init_one_libfunc ("_q_fgt");
-      getf2_libfunc = init_one_libfunc ("_q_fge");
-      lttf2_libfunc = init_one_libfunc ("_q_flt");
-      letf2_libfunc = init_one_libfunc ("_q_fle");
+      set_optab_libfunc (eq_optab, TFmode, "_q_feq");
+      set_optab_libfunc (ne_optab, TFmode, "_q_fne");
+      set_optab_libfunc (gt_optab, TFmode, "_q_fgt");
+      set_optab_libfunc (ge_optab, TFmode, "_q_fge");
+      set_optab_libfunc (lt_optab, TFmode, "_q_flt");
+      set_optab_libfunc (le_optab, TFmode, "_q_fle");
+
       trunctfsf2_libfunc = init_one_libfunc ("_q_qtos");
       trunctfdf2_libfunc = init_one_libfunc ("_q_qtod");
       extendsftf2_libfunc = init_one_libfunc ("_q_stoq");
