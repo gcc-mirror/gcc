@@ -114,6 +114,9 @@
 /* libm includes nextafterf */
 #undef HAVE_NEXTAFTERF
 
+/* libm includes powf */
+# undef HAVE_POWF
+
 /* libm includes round */
 #undef HAVE_ROUND
 

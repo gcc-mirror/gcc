@@ -245,6 +245,15 @@ nextafterf(float x, float y)
 }
 #endif
 
+
+#ifndef HAVE_POWF
+float
+powf(float x, float y)
+{
+  return (float) pow(x, y);
+}
+#endif
+
 /* Note that if HAVE_FPCLASSIFY is not defined, then NaN is not handled */
 
 /* Algorithm by Steven G. Kargl.  */
