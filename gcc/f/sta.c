@@ -644,6 +644,7 @@ ffesta_second_ (ffelexToken t)
       break;
 
     case FFESTR_firstCASE:
+    case FFESTR_firstCASEDEFAULT:
       ffesta_add_possible_exec_ ((ffelexHandler) ffestb_R810);
       break;
 

@@ -5,7 +5,7 @@
 @c The text of this file appears in the file BUGS
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1998-03-15
+@c 1998-03-17
 
 @ifclear BUGSONLY
 @node Actual Bugs
@@ -192,8 +192,8 @@ END
 @end example
 
 It is expected that a future version of @code{g77} will have a fix for this
-problem, almost certainly by the time @code{g77} supports the forthcoming
-version 2.8.0 of @code{gcc}.
+problem, almost certainly by the time @code{g77} supports
+version 2.8 of @code{gcc}.
 
 @cindex COMPLEX support
 @cindex support, COMPLEX
