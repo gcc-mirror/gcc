@@ -1,3 +1,8 @@
+Fri Aug 27 09:36:17 1999  Andreas Schwab  <schwab@suse.de>
+
+	* function.c (assign_stack_temp_for_type): Fix change of Mar 5 for
+	the fact that ALIGN is measured in bits, not bytes.
+
 1999-08-27 00:27 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* c-typeck.c (c_expand_start_case): Return immediately if exp
