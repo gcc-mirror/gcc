@@ -1,5 +1,14 @@
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/i386/i386-aout.h, config/i386/i386-coff.h, 
+	config/i386/i386-interix.h, config/i386/i386-interix3.h, 
+	config/i386/i386-modes.def, config/i386/i386-protos.h,
+	config/i386/i386.c, config/i386/i386.h, config/i386/i386.md,
+	config/i386/i386elf.h, config/i386/k6.md, config/i386/kaos-i386.h,
+	config/i386/linux-aout.h, config/i386/linux.h, config/i386/linux64.h,
+	config/i386/lynx-ng.h, config/i386/lynx.h, config/i386/mingw32.h,
+	config/i386/mmintrin.h, config/i386/moss.h: GNU CC -> GCC.
+	"GNU compiler" -> GCC.
 	* config/i386/att.h, config/i386/beos-elf.h, config/i386/biarch64.h,
 	config/i386/bsd.h, config/i386/crtdll.h, config/i386/cygming.h,
 	config/i386/cygwin.h, config/i386/cygwin1.c, config/i386/cygwin2.c,
