@@ -1,3 +1,8 @@
+2001-08-25  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config.sub: Merge from master sources, rev 1.219.
+	* MAINTAINERS: Add self as contact for stormy16 port.
+
 2001-08-14  Zack Weinberg  <zackw@panix.com>
 
 	* config.sub: Merge from master sources, rev 1.218.
@@ -9,7 +14,7 @@
 
 Mon Jul 30 19:24:13 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
-	* MAITAINERS (Various maitainers: predict.def): Added myself.
+	* MAINTAINERS (Various maitainers: predict.def): Added myself.
 
 2001-07-30  Eric Christopher  <echristo@redhat.com>
 
