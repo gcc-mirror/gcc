@@ -1,3 +1,9 @@
+Tue Mar 16 11:30:19 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* c-lex.c (yylex) : Remove warning for integer literals being
+	larger than the largest target int.  Add warning for integer
+	literal being larger than than its choosen type.
+
 Tue Mar 16 10:53:17 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* invoke.texi: Add -mlong32 documentation.

@@ -1698,20 +1698,10 @@ yylex ()
 		c = GETC();
 	      }
 
-	    /* If the constant won't fit in the targets widest int,
-	       or it won't fit in the host's representation for ints, 
-	       then warn that the constant is out of range. */
-
-#if HOST_BITS_PER_WIDE_INT >= 64
-	    bytes = TYPE_PRECISION (intTI_type_node) / HOST_BITS_PER_CHAR;
-#else
-	    bytes = TYPE_PRECISION (intDI_type_node) / HOST_BITS_PER_CHAR;
-#endif
+	    /* If it won't fit in the host's representation for integers,
+	       then pedwarn. */
 
 	    warn = overflow;
-	    for (i = bytes; i < TOTAL_PARTS; i++)
-	      if (parts[i])
-		warn = 1;
 	    if (warn)
 	      pedwarn ("integer constant out of range");
 
@@ -1802,7 +1792,10 @@ yylex ()
 	    if (pedantic && !flag_traditional && !spec_long_long && !warn
 		&& (TYPE_PRECISION (long_integer_type_node)
 		    < TYPE_PRECISION (type)))
-	      pedwarn ("integer constant out of range");
+	      {
+		warn = 1;
+		pedwarn ("integer constant out of range");
+	      }
 
 	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
 	      warning ("decimal constant is so large that it is unsigned");
@@ -1830,6 +1823,15 @@ yylex ()
 	      }
 	    else
 	      TREE_TYPE (yylval.ttype) = type;
+
+
+	    /* If it's still an integer (not a complex), and it doesn't
+	       fit in the type we choose for it, then pedwarn. */
+
+	    if (! warn
+		&& TREE_CODE (TREE_TYPE (yylval.ttype)) == INTEGER_TYPE
+		&& ! int_fits_type_p (yylval.ttype, TREE_TYPE (yylval.ttype)))
+	      pedwarn ("integer constant out of range");
 	  }
 
 	UNGETC (c);
