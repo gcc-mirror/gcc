@@ -67,14 +67,11 @@ static struct printer print;
 
 /* Preprocess and output.  */
 void
-cpp_preprocess_file (pfile)
+cpp_preprocess_file (pfile, out_stream)
      cpp_reader *pfile;
+     FILE *out_stream;
 {
   options = cpp_get_options (pfile);
-
-  /* Let preprocessor know if it's only preprocessing.  It would be
-     nice to lose this somehow.  */
-  options->preprocess_only = 1;
 
   /* Initialize the printer structure.  Setting print.line to -1 here
      is a trick to guarantee that the first token of the file will
@@ -83,21 +80,7 @@ cpp_preprocess_file (pfile)
   print.printed = 0;
   print.prev = 0;
   print.map = 0;
-
-  /* Open the output now.  We must do so even if no_output is on,
-     because there may be other output than from the actual
-     preprocessing (e.g. from -dM).  */
-  if (options->out_fname[0] == '\0')
-    print.outf = stdout;
-  else
-    {
-      print.outf = fopen (options->out_fname, "w");
-      if (print.outf == NULL)
-	{
-	  cpp_errno (pfile, DL_ERROR, options->out_fname);
-	  return;
-	}
-    }
+  print.outf = out_stream;
 
   setup_callbacks (pfile);
 
@@ -122,13 +105,6 @@ cpp_preprocess_file (pfile)
   /* Flush any pending output.  */
   if (print.printed)
     putc ('\n', print.outf);
-
-  /* Don't close stdout (dependencies have yet to be output).  */
-  if (print.outf != stdout)
-    {
-      if (ferror (print.outf) || fclose (print.outf))
-	cpp_errno (pfile, DL_ERROR, options->out_fname);
-    }
 }
 
 /* Set up the callbacks as appropriate.  */

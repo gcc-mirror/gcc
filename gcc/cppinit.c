@@ -102,13 +102,11 @@ static void merge_include_chains	PARAMS ((cpp_reader *));
 static bool push_include		PARAMS ((cpp_reader *,
 						 struct pending_option *));
 static void free_chain			PARAMS ((struct pending_option *));
-static void init_dependency_output	PARAMS ((cpp_reader *));
 static void init_standard_includes	PARAMS ((cpp_reader *));
 static void read_original_filename	PARAMS ((cpp_reader *));
 static void new_pending_directive	PARAMS ((struct cpp_pending *,
 						 const char *,
 						 cl_directive_handler));
-static void output_deps			PARAMS ((cpp_reader *));
 static int parse_option			PARAMS ((const char *));
 
 /* Fourth argument to append_include_chain: chain to use.
@@ -537,11 +535,10 @@ cpp_create_reader (lang)
 
 /* Free resources used by PFILE.  Accessing PFILE after this function
    returns leads to undefined behaviour.  Returns the error count.  */
-int
+void
 cpp_destroy (pfile)
      cpp_reader *pfile;
 {
-  int result;
   struct search_path *dir, *dirn;
   cpp_context *context, *contextn;
   tokenrun *run, *runn;
@@ -595,11 +592,7 @@ cpp_destroy (pfile)
     }
 
   free_line_maps (&pfile->line_maps);
-
-  result = pfile->errors;
   free (pfile);
-
-  return result;
 }
 
 /* This structure defines one built-in identifier.  A node will be
@@ -882,6 +875,21 @@ static void sanity_checks (pfile)
 # define sanity_checks(PFILE)
 #endif
 
+/* Add a dependency target.  Can be called any number of times before
+   cpp_read_main_file().  If no targets have been added before
+   cpp_read_main_file(), then the default target is used.  */
+void
+cpp_add_dependency_target (pfile, target, quote)
+     cpp_reader *pfile;
+     const char *target;
+     int quote;
+{
+  if (!pfile->deps)
+    pfile->deps = deps_init ();
+
+  deps_add_target (pfile->deps, target, quote);
+}
+
 /* This is called after options have been parsed, and partially
    processed.  Setup for processing input from the file named FNAME,
    or stdin if it is the empty string.  Return the original filename
@@ -936,10 +944,6 @@ cpp_read_main_file (pfile, fname, table)
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
     read_original_filename (pfile);
-  /* Overlay an empty buffer to seed traditional preprocessing.  */
-  else if (CPP_OPTION (pfile, traditional)
-	   && !CPP_OPTION (pfile, preprocess_only))
-    _cpp_overlay_buffer (pfile, U"", 0);
 
   return pfile->map->to_file;
 }
@@ -1039,48 +1043,16 @@ _cpp_maybe_push_include_file (pfile)
     }
 }
 
-/* Use mkdeps.c to output dependency information.  */
-static void
-output_deps (pfile)
+/* This is called at the end of preprocessing.  It pops the last
+   buffer and writes dependency output, and returns the number of
+   errors.
+ 
+   Maybe it should also reset state, such that you could call
+   cpp_start_read with a new filename to restart processing.  */
+int
+cpp_finish (pfile, deps_stream)
      cpp_reader *pfile;
-{
-  /* Stream on which to print the dependency information.  */
-  FILE *deps_stream = 0;
-  const char *const deps_mode =
-    CPP_OPTION (pfile, print_deps_append) ? "a" : "w";
-
-  if (CPP_OPTION (pfile, deps_file)[0] == '\0')
-    deps_stream = stdout;
-  else
-    {
-      deps_stream = fopen (CPP_OPTION (pfile, deps_file), deps_mode);
-      if (deps_stream == 0)
-	{
-	  cpp_errno (pfile, DL_ERROR, CPP_OPTION (pfile, deps_file));
-	  return;
-	}
-    }
-
-  deps_write (pfile->deps, deps_stream, 72);
-
-  if (CPP_OPTION (pfile, deps_phony_targets))
-    deps_phony_targets (pfile->deps, deps_stream);
-
-  /* Don't close stdout.  */
-  if (deps_stream != stdout)
-    {
-      if (ferror (deps_stream) || fclose (deps_stream) != 0)
-	cpp_error (pfile, DL_ERROR, "I/O error on output");
-    }
-}
-
-/* This is called at the end of preprocessing.  It pops the
-   last buffer and writes dependency output.  It should also
-   clear macro definitions, such that you could call cpp_start_read
-   with a new filename to restart processing.  */
-void
-cpp_finish (pfile)
-     cpp_reader *pfile;
+     FILE *deps_stream;
 {
   /* Warn about unused macros before popping the final buffer.  */
   if (CPP_OPTION (pfile, warn_unused_macros))
@@ -1094,13 +1066,20 @@ cpp_finish (pfile)
   while (pfile->buffer)
     _cpp_pop_buffer (pfile);
 
-  /* Don't write the deps file if preprocessing has failed.  */
-  if (CPP_OPTION (pfile, print_deps) && pfile->errors == 0)
-    output_deps (pfile);
+  /* Don't write the deps file if there are errors.  */
+  if (deps_stream && CPP_OPTION (pfile, print_deps) && !pfile->errors)
+    {
+      deps_write (pfile->deps, deps_stream, 72);
+
+      if (CPP_OPTION (pfile, deps_phony_targets))
+	deps_phony_targets (pfile->deps, deps_stream);
+    }
 
   /* Report on headers that could use multiple include guards.  */
   if (CPP_OPTION (pfile, print_include_names))
     _cpp_report_missing_guards (pfile);
+
+  return pfile->errors;
 }
 
 /* Add a directive to be handled later in the initialization phase.  */
@@ -1479,10 +1458,6 @@ cpp_post_options (pfile)
       || !strcmp (CPP_OPTION (pfile, in_fname), "-"))
     CPP_OPTION (pfile, in_fname) = "";
 
-  if (CPP_OPTION (pfile, out_fname) == NULL
-      || !strcmp (CPP_OPTION (pfile, out_fname), "-"))
-    CPP_OPTION (pfile, out_fname) = "";
-
   /* -Wtraditional is not useful in C++ mode.  */
   if (CPP_OPTION (pfile, cplusplus))
     CPP_OPTION (pfile, warn_traditional) = 0;
@@ -1518,69 +1493,4 @@ cpp_post_options (pfile)
 	CPP_OPTION (pfile, dump_macros) = dump_none;
       CPP_OPTION (pfile, dump_includes) = 0;
     }
-
-  /* Intialize, and check environment variables for, dependency
-     output.  */
-  init_dependency_output (pfile);
-
-  /* If we're not outputting dependencies, complain if other -M
-     options have been given.  */
-  if (!CPP_OPTION (pfile, print_deps)
-      && (CPP_OPTION (pfile, print_deps_missing_files)
-	  || CPP_OPTION (pfile, deps_file)
-	  || CPP_OPTION (pfile, deps_phony_targets)))
-    cpp_error (pfile, DL_ERROR,
-	       "you must additionally specify either -M or -MM");
-}
-
-/* Set up dependency-file output.  On exit, if print_deps is non-zero
-   then deps_file is not NULL; stdout is the empty string.  */
-static void
-init_dependency_output (pfile)
-     cpp_reader *pfile;
-{
-  char *spec, *s, *output_file;
-
-  /* Either of two environment variables can specify output of deps.
-     Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
-     where OUTPUT_FILE is the file to write deps info to
-     and DEPS_TARGET is the target to mention in the deps.  */
-
-  if (CPP_OPTION (pfile, print_deps) == 0)
-    {
-      spec = getenv ("DEPENDENCIES_OUTPUT");
-      if (spec)
-	CPP_OPTION (pfile, print_deps) = 1;
-      else
-	{
-	  spec = getenv ("SUNPRO_DEPENDENCIES");
-	  if (spec)
-	    CPP_OPTION (pfile, print_deps) = 2;
-	  else
-	    return;
-	}
-
-      /* Find the space before the DEPS_TARGET, if there is one.  */
-      s = strchr (spec, ' ');
-      if (s)
-	{
-	  /* Let the caller perform MAKE quoting.  */
-	  deps_add_target (pfile->deps, s + 1, 0);
-	  output_file = (char *) xmalloc (s - spec + 1);
-	  memcpy (output_file, spec, s - spec);
-	  output_file[s - spec] = 0;
-	}
-      else
-	output_file = spec;
-
-      /* Command line -MF overrides environment variables and default.  */
-      if (CPP_OPTION (pfile, deps_file) == 0)
-	CPP_OPTION (pfile, deps_file) = output_file;
-
-      CPP_OPTION (pfile, print_deps_append) = 1;
-    }
-  else if (CPP_OPTION (pfile, deps_file) == 0)
-    /* If -M or -MM was seen without -MF, default output to wherever
-       was specified with -o.  out_fname is non-NULL here.  */
-    CPP_OPTION (pfile, deps_file) = CPP_OPTION (pfile, out_fname);
 }

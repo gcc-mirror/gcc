@@ -1,3 +1,26 @@
+2002-08-11  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.c (c_common_init): Call preprocess_file instead.
+	(c_common_finish): Move to c-opts.c.
+	* c-common.h (preprocess_file): new.
+	* c-opts.c (out_fname, out_stream, deps_append, preprocess_file,
+	check_deps_environment_vars, c_common_finish): New.
+	(c_common_decode_option): Update for out_fname and dependencies.
+	* cppinit.c (init_dependency_output, output_deps): Remove.
+	(cpp_destroy): Update prototype.
+	(cpp_add_dependency_target): New.
+	(cpp_read_main_file): Don't overlay a buffer.
+	(cpp_finish): Take a deps output stream and write deps to it.
+	Return the error count.
+	(cpp_post_options): Don't canonicalize out_fname, or do anything
+	with dependencies.
+	* cpplib.h (struct cpp_options): Remove out_fname and
+	preprocess_only.
+	(cpp_add_dependency_target): New.
+	(cpp_destroy, cpp_finish, cpp_preprocess_file): Update.
+	* cppmain.c (cpp_preprocess_file): Update prototype.  Don't
+	set preprocess_only.  Don't handle the output stream directly.
+
 2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dsp16xx.c (print_operand): Fix format specifier.
