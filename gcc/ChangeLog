@@ -1,3 +1,8 @@
+2003-03-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (a peephole2): Generalize to
+	accept a memory operand.
+
 Wed Mar  5 19:34:18 2003  Olivier Hainque <hainque@act-europe.fr>
 
 	* config/alpha/alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '+'.
