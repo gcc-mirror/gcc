@@ -148,6 +148,15 @@ struct _Vector_base
  *  @brief  A standard container which offers fixed time access to individual
  *  elements in any order.
  *
+ *  @ingroup Containers
+ *  @ingroup Sequences
+ *
+ *  Meets the requirements of a <a href="tables.html#65">container</a>, a
+ *  <a href="tables.html#66">reversible container</a>, and a
+ *  <a href="tables.html#67">sequence</a>, including the
+ *  <a href="tables.html#68">optional sequence requirements</a> with the
+ *  %exception of @c push_front and @c pop_front.
+ *
  *  In some terminology a vector can be described as a dynamic C-style array,
  *  it offers fast and efficient access to individual elements in any order
  *  and saves the user from worrying about memory and size allocation.

@@ -1,6 +1,6 @@
 // nonstandard construct and destroy functions -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -67,10 +67,10 @@
 namespace std
 {
   /**
-   * @maint
+   * @if maint
    * Constructs an object in existing memory by invoking an allocated
    * object's constructor with an initializer.
-   * @endmaint
+   * @endif
    */
   template <class _T1, class _T2>
     inline void
@@ -78,10 +78,10 @@ namespace std
     { new (static_cast<void*>(__p)) _T1(__value); }
   
   /**
-   * @maint
+   * @if maint
    * Constructs an object in existing memory by invoking an allocated
    * object's default constructor (no initializers).
-   * @endmaint
+   * @endif
    */
   template <class _T1>
     inline void
@@ -89,11 +89,11 @@ namespace std
     { new (static_cast<void*>(__p)) _T1(); }
 
   /**
-   * @maint
+   * @if maint
    * Destroy a range of objects with nontrivial destructors.  
    *
    * This is a helper function used only by _Destroy().
-   * @endmaint
+   * @endif
    */
   template <class _ForwardIterator>
     inline void
@@ -101,13 +101,13 @@ namespace std
     { for ( ; __first != __last; ++__first) _Destroy(&*__first); }
 
   /**
-   * @maint
+   * @if maint
    * Destroy a range of objects with trivial destructors.  Since the destructors
    * are trivial, there's nothing to do and hopefully this function will be
    * entirely optimized away.
    *
    * This is a helper function used only by _Destroy().
-   * @endmaint
+   * @endif
    */
   template <class _ForwardIterator> 
     inline void
@@ -115,9 +115,9 @@ namespace std
     { }
 
   /**
-   * @maint
+   * @if maint
    * Destroy the object pointed to by a pointer type.
-   * @endmaint
+   * @endif
    */
   template <class _Tp>
     inline void
@@ -125,11 +125,11 @@ namespace std
     { __pointer->~_Tp(); }
   
   /**
-   * @maint
+   * @if maint
    * Destroy a range of objects.  If the value_type of the object has
    * a trivial destructor, the compiler should optimize all of this
    * away, otherwise the objects' destructors must be invoked.
-   * @endmaint
+   * @endif
    */
   template <class _ForwardIterator>
     inline void
@@ -146,6 +146,3 @@ namespace std
 
 #endif /* _CPP_BITS_STL_CONSTRUCT_H */
 
-// Local Variables:
-// mode:C++
-// End:

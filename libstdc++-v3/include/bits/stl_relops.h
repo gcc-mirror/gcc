@@ -57,7 +57,7 @@
  *  This is an internal header file, included by other library headers.
  *  You should not attempt to use it directly.
  *
- *  @maint
+ *  @if maint
  *  Inclusion of this file has been removed from
  *  all of the other STL headers for safety reasons, except std_utility.h.
  *  For more information, see the thread of about twenty messages starting
@@ -65,7 +65,7 @@
  *  FAQ at http://gcc.gnu.org/onlinedocs/libstdc++/faq/index.html#4_4 .
  *
  *  Short summary:  the rel_ops operators should be avoided for the present.
- *  @endmaint
+ *  @endif
  */
 
 #ifndef _CPP_BITS_STL_RELOPS_H
