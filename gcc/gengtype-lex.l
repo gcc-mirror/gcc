@@ -48,7 +48,7 @@ update_lineno (l, len)
 
 %}
 
-ID	[[:alpha:]][[:alnum:]_]*
+ID	[[:alpha:]_][[:alnum:]_]*
 WS	[[:space:]]+
 IWORD	short|long|(un)?signed|char|int|HOST_WIDE_INT|bool|size_t
 ITYPE	{IWORD}({WS}{IWORD})*
