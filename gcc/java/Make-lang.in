@@ -170,53 +170,54 @@ java.install-normal:
 java.install-common: installdirs
 	-if [ -f $(GCJ)$(exeext) ]; then \
 	  if [ -f $(GCJ)-cross$(exeext) ]; then \
-	    rm -f $(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) $(GCJ)-cross$(exeext) $(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
-	    chmod a+x $(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) $(GCJ)-cross$(exeext) $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext); \
 	  else \
-	    rm -f $(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
-	    $(INSTALL_PROGRAM) $(GCJ)$(exeext) $(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
-	    chmod a+x $(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
-	    rm -f $(bindir)/$(JAVA_TARGET_INSTALL_NAME)$(exeext); \
-	    $(LN) $(bindir)/$(JAVA_INSTALL_NAME)$(exeext) $(bindir)/$(JAVA_TARGET_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
+	    $(INSTALL_PROGRAM) $(GCJ)$(exeext) $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(JAVA_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(JAVA_INSTALL_NAME)$(exeext) $(JAVA_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi ; \
 	fi ; \
         for tool in $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS); do \
 	  tool_transformed_name=`echo $$tool|sed '$(program_transform_name)'`; \
           if [ -f $$tool$(exeext) ]; then \
-	    rm -f $(bindir)/$$tool_transformed_name$(exeext); \
-	    $(INSTALL_PROGRAM) $$tool$(exeext) $(bindir)/$$tool_transformed_name$(exeext); \
-	    chmod a+x $(bindir)/$$tool_transformed_name$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
+	    $(INSTALL_PROGRAM) $$tool$(exeext) $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
+	    chmod a+x $(DESTDIR)$(bindir)/$$tool_transformed_name$(exeext); \
           fi ; \
        done
 
 java.install-man:
 
 java.uninstall:
-	-rm -rf $(bindir)/$(JAVA_INSTALL_NAME)$(exeext)
-	-rm -rf $(bindir)/$(JAVA_CROSS_NAME)$(exeext)
-	-rm -rf $(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext)
-	-rm -rf $(man1dir)/$(JAVA_CROSS_NAME)$(man1ext)
-	-rm -rf $(man1dir)/gcjh$(man1ext)
-	-rm -rf $(man1dir)/jv-scan$(man1ext)
-	-rm -rf $(man1dir)/jcf-dump$(man1ext)
-	-rm -rf $(man1dir)/gij$(man1ext)
-	-rm -rf $(man1dir)/jv-convert$(man1ext)
+	-rm -rf $(DESTDIR)$(bindir)/$(JAVA_INSTALL_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(bindir)/$(JAVA_CROSS_NAME)$(exeext)
+	-rm -rf $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/gcjh$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/gij$(man1ext)
+	-rm -rf $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
 
 java.install-info: installdirs
 	if [ -f jc1$(exeext) ] ; then \
 	  if [ -f $(srcdir)/java/gcj.info ]; then \
-	    rm -f $(infodir)/gcj.info*; \
+	    rm -f $(DESTDIR)$(infodir)/gcj.info*; \
 	    for f in $(srcdir)/java/gcj.info*; do \
 	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
-	      $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
+	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
 	    done; \
-	    chmod a-x $(infodir)/gcj.info*; \
+	    chmod a-x $(DESTDIR)$(infodir)/gcj.info*; \
 	  else true; fi; \
 	else true; fi
-	-if [ -f jc1$(exeext) ] && [ -f $(infodir)/gcj.info ]; then \
+	-if [ -f jc1$(exeext) ] && [ -f $(DESTDIR)$(infodir)/gcj.info ]; then \
 	  if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
-	    install-info --dir-file=$(infodir)/dir $(infodir)/gcj.info; \
+	    install-info --dir-file=$(DESTDIR)$(infodir)/dir $(DESTDIR)$(infodir)/gcj.info; \
 	  else true; fi; \
 	else true; fi
 
@@ -408,33 +409,33 @@ $(srcdir)/java/rmiregistry.1: $(srcdir)/java/gcj.texi
 java.install-man: installdirs $(GENERATED_JAVA_MANPAGES)
 	-if [ -f $(GCJ)$(exeext) ]; then \
 	  if [ -f $(GCJ)-cross$(exeext) ]; then \
-	    rm -f $(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/java/gcj.1 $(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
-	    chmod a-x $(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
+	    rm -f $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/java/gcj.1 $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
+	    chmod a-x $(DESTDIR)$(man1dir)/$(JAVA_CROSS_NAME)$(man1ext); \
 	  else \
-	    rm -f $(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/java/gcj.1 $(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
-	    chmod a-x $(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
+	    rm -f $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(srcdir)/java/gcj.1 $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
+	    chmod a-x $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext); \
 	  fi ; \
 	fi
-	-rm -f $(man1dir)/gcjh$(man1ext)
-	-$(INSTALL_DATA) $(srcdir)/java/gcjh.1 $(man1dir)/gcjh$(man1ext)
-	-chmod a-x $(man1dir)/gcjh$(man1ext)
-	-rm -f $(man1dir)/jv-scan$(man1ext)
-	-$(INSTALL_DATA) $(srcdir)/java/jv-scan.1 $(man1dir)/jv-scan$(man1ext)
-	-chmod a-x $(man1dir)/jv-scan$(man1ext)
-	-rm -f $(man1dir)/jcf-dump$(man1ext)
-	-$(INSTALL_DATA) $(srcdir)/java/jcf-dump.1 $(man1dir)/jcf-dump$(man1ext)
-	-chmod a-x $(man1dir)/jcf-dump$(man1ext)
-	-rm -f $(man1dir)/gij$(man1ext)
-	-$(INSTALL_DATA) $(srcdir)/java/gij.1 $(man1dir)/gij$(man1ext)
-	-chmod a-x $(man1dir)/gij$(man1ext)
-	-rm -f $(man1dir)/jv-convert$(man1ext)
-	-$(INSTALL_DATA) $(srcdir)/java/jv-convert.1 $(man1dir)/jv-convert$(man1ext)
-	-chmod a-x $(man1dir)/jv-convert$(man1ext)
-	-rm -f $(man1dir)/rmic$(man1ext)
-	-$(INSTALL_DATA) $(srcdir)/java/rmic.1 $(man1dir)/rmic$(man1ext)
-	-chmod a-x $(man1dir)/rmic$(man1ext)
-	-rm -f $(man1dir)/rmiregistry$(man1ext)
-	-$(INSTALL_DATA) $(srcdir)/java/rmiregistry.1 $(man1dir)/rmiregistry$(man1ext)
-	-chmod a-x $(man1dir)/rmiregistry$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/gcjh$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/gcjh.1 $(DESTDIR)$(man1dir)/gcjh$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/gcjh$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/jv-scan.1 $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/jv-scan$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/jcf-dump.1 $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/jcf-dump$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/gij$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/gij.1 $(DESTDIR)$(man1dir)/gij$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/gij$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/jv-convert.1 $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/jv-convert$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/rmic$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/rmic.1 $(DESTDIR)$(man1dir)/rmic$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/rmic$(man1ext)
+	-rm -f $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)
+	-$(INSTALL_DATA) $(srcdir)/java/rmiregistry.1 $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)
+	-chmod a-x $(DESTDIR)$(man1dir)/rmiregistry$(man1ext)

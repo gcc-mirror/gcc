@@ -1,3 +1,11 @@
+2003-01-26  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Make-lang.in (java.install-common, java.uninstall)
+	(java.install-info, java.install-man): Prepend $(DESTDIR)
+	to destination paths in all (un)installation commands.
+	(java.install-common): Rewrite $(LN) command to support
+	DESTDIR with "ln" as well as with "ln -s".
+
 2003-01-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-io.c (caching_stat): Cast the 3rd arg of scandir to void*.
