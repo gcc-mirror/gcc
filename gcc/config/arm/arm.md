@@ -75,6 +75,18 @@
    			; and stack frame generation.  Operand 0 is the
    			; register to "use".
    (UNSPEC_CHECK_ARCH 7); Set CCs to indicate 26-bit or 32-bit mode.
+   (UNSPEC_WSHUFH    8) ; Used by the instrinsic form of the iWMMXt WSHUFH instruction.
+   (UNSPEC_WACC      9) ; Used by the instrinsic form of the iWMMXt WACC instruction.
+   (UNSPEC_TMOVMSK  10) ; Used by the instrinsic form of the iWMMXt TMOVMSK instruction.
+   (UNSPEC_WSAD     11) ; Used by the instrinsic form of the iWMMXt WSAD instruction.
+   (UNSPEC_WSADZ    12) ; Used by the instrinsic form of the iWMMXt WSADZ instruction.
+   (UNSPEC_WMACS    13) ; Used by the instrinsic form of the iWMMXt WMACS instruction.
+   (UNSPEC_WMACU    14) ; Used by the instrinsic form of the iWMMXt WMACU instruction.
+   (UNSPEC_WMACSZ   15) ; Used by the instrinsic form of the iWMMXt WMACSZ instruction.
+   (UNSPEC_WMACUZ   16) ; Used by the instrinsic form of the iWMMXt WMACUZ instruction.
+   (UNSPEC_CLRDI    17) ; Used by the instrinsic form of the iWMMXt CLRDI instruction.
+   (UNSPEC_WMADDS   18) ; Used by the instrinsic form of the iWMMXt WMADDS instruction.
+   (UNSPEC_WMADDU   19) ; Used by the instrinsic form of the iWMMXt WMADDU instruction.
   ]
 )
 
@@ -99,6 +111,12 @@
 			;   a 32-bit object.
    (VUNSPEC_POOL_8   7) ; `pool-entry(8)'.  An entry in the constant pool for
 			;   a 64-bit object.
+   (VUNSPEC_TMRC     8) ; Used by the iWMMXt TMRC instruction.
+   (VUNSPEC_TMCR     9) ; Used by the iWMMXt TMCR instruction.
+   (VUNSPEC_ALIGN8   10) ; 8-byte alignment version of VUNSPEC_ALIGN
+   (VUNSPEC_WCMP_EQ  11) ; Used by the iWMMXt WCMPEQ instructions
+   (VUNSPEC_WCMP_GTU 12) ; Used by the iWMMXt WCMPGTU instructions
+   (VUNSPEC_WCMP_GT  13) ; Used by the iwMMXT WCMPGT instructions
   ]
 )
 
@@ -1369,7 +1387,7 @@
 	(match_operator:DI 6 "logical_binary_operator"
 	  [(match_operand:DI 1 "s_register_operand" "")
 	   (match_operand:DI 2 "s_register_operand" "")]))]
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
   [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
    (set (match_dup 3) (match_op_dup:SI 6 [(match_dup 4) (match_dup 5)]))]
   "
@@ -1446,7 +1464,7 @@
   [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
 	(and:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
 		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_ARM"
+  "TARGET_ARM && ! TARGET_IWMMXT"
   "#"
   [(set_attr "length" "8")]
 )
@@ -1800,7 +1818,7 @@
 		(match_operand:DI 2 "s_register_operand" "0,r")))]
   "TARGET_ARM"
   "#"
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
   [(set (match_dup 0) (and:SI (not:SI (match_dup 1)) (match_dup 2)))
    (set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))]
   "
@@ -1926,7 +1944,7 @@
   [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
 	(ior:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
 		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_ARM"
+  "TARGET_ARM && ! TARGET_IWMMXT"
   "#"
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
@@ -2048,7 +2066,7 @@
   [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
 	(xor:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
 		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_ARM"
+  "TARGET_ARM && !TARGET_IWMMXT"
   "#"
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
@@ -2390,7 +2408,7 @@
   [(set (match_operand:DI            0 "s_register_operand" "")
 	(ashift:DI (match_operand:DI 1 "general_operand"    "")
 		   (match_operand:SI 2 "general_operand"    "")))]
-  "TARGET_ARM && (TARGET_CIRRUS)"
+  "TARGET_ARM && (TARGET_IWMMXT || TARGET_CIRRUS)"
   "
   if (! s_register_operand (operands[1], DImode))
     operands[1] = copy_to_mode_reg (DImode, operands[1]);
@@ -3588,7 +3606,7 @@
 (define_insn "*arm_movdi"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, o<>")
 	(match_operand:DI 1 "di_operand"              "rIK,mi,r"))]
-  "TARGET_ARM && !TARGET_CIRRUS"
+  "TARGET_ARM && !TARGET_CIRRUS && ! TARGET_IWMMXT"
   "*
   return (output_move_double (operands));
   "
@@ -3687,7 +3705,7 @@
 (define_insn "*arm_movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m")
 	(match_operand:SI 1 "general_operand"      "rI,K,mi,r"))]
-  "TARGET_ARM
+  "TARGET_ARM && ! TARGET_IWMMXT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
@@ -4741,6 +4759,28 @@
    (set_attr "type" "*,load,store2,load,store2,*")
    (set_attr "pool_range" "*,*,*,1020,*,*")]
 )
+
+;; Vector Moves
+(define_expand "movv2si"
+  [(set (match_operand:V2SI 0 "nonimmediate_operand" "")
+	(match_operand:V2SI 1 "general_operand" ""))]
+  "TARGET_REALLY_IWMMXT"
+{
+})
+
+(define_expand "movv4hi"
+  [(set (match_operand:V4HI 0 "nonimmediate_operand" "")
+	(match_operand:V4HI 1 "general_operand" ""))]
+  "TARGET_REALLY_IWMMXT"
+{
+})
+
+(define_expand "movv8qi"
+  [(set (match_operand:V8QI 0 "nonimmediate_operand" "")
+	(match_operand:V8QI 1 "general_operand" ""))]
+  "TARGET_REALLY_IWMMXT"
+{
+})
 
 
 ;; load- and store-multiple insns
@@ -6011,8 +6051,8 @@
 )
 
 (define_insn "*call_value_reg"
-  [(set (match_operand 0 "" "=r,f,v")
-        (call (mem:SI (match_operand:SI 1 "s_register_operand" "r,r,r"))
+  [(set (match_operand 0 "" "=ryfv")
+        (call (mem:SI (match_operand:SI 1 "s_register_operand" "r"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
@@ -6025,8 +6065,8 @@
 )
 
 (define_insn "*call_value_mem"
-  [(set (match_operand 0 "" "=r,f,v")
-	(call (mem:SI (match_operand:SI 1 "memory_operand" "m,m,m"))
+  [(set (match_operand 0 "" "=ryfv")
+	(call (mem:SI (match_operand:SI 1 "memory_operand" "m"))
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
@@ -6057,8 +6097,8 @@
 )
 
 (define_insn "*call_value_symbol"
-  [(set (match_operand 0 "s_register_operand" "=r,f,v")
-	(call (mem:SI (match_operand:SI 1 "" "X,X,X"))
+  [(set (match_operand 0 "s_register_operand" "=ryfv")
+	(call (mem:SI (match_operand:SI 1 "" "X"))
 	(match_operand:SI 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
@@ -6140,8 +6180,8 @@
 )
 
 (define_insn "*sibcall_value_insn"
- [(set (match_operand 0 "s_register_operand" "=r,f,v")
-       (call (mem:SI (match_operand:SI 1 "" "X,X,X"))
+ [(set (match_operand 0 "s_register_operand" "=ryfv")
+       (call (mem:SI (match_operand:SI 1 "" "X"))
 	     (match_operand 2 "" "")))
   (return)
   (use (match_operand 3 "" ""))]
@@ -6166,6 +6206,7 @@
     return output_return_instruction (const_true_rtx, TRUE, FALSE);
   }"
   [(set_attr "type" "load")
+   (set_attr "length" "12")
    (set_attr "predicable" "yes")]
 )
 
@@ -6186,6 +6227,7 @@
     return output_return_instruction (operands[0], TRUE, FALSE);
   }"
   [(set_attr "conds" "use")
+   (set_attr "length" "12")
    (set_attr "type" "load")]
 )
 
@@ -8324,7 +8366,10 @@
 			 (match_dup 0)
 			 (match_operand 4 "" "")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed"
+  ;; Note we have to suppress this split for the iwmmxt because it
+  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
+  ;; is not predicable.  This sucks.
+  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_dup 7)
 	      (set (match_dup 0) (match_dup 4)))]
@@ -8352,7 +8397,10 @@
 			 (match_operand 4 "" "")
 			 (match_dup 0)))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed"
+  ;; Note we have to suppress this split for the iwmmxt because it
+  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
+  ;; is not predicable.  This sucks.
+  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
   [(set (match_dup 5) (match_dup 6))
    (cond_exec (match_op_dup 1 [(match_dup 5) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))]
@@ -8373,7 +8421,10 @@
 			 (match_operand 4 "" "")
 			 (match_operand 5 "" "")))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed"
+  ;; Note we have to suppress this split for the iwmmxt because it
+  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
+  ;; is not predicable.  This sucks.
+  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
   [(set (match_dup 6) (match_dup 7))
    (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))
@@ -8405,7 +8456,10 @@
 			 (not:SI
 			  (match_operand:SI 5 "s_register_operand" ""))))
    (clobber (reg:CC CC_REGNUM))]
-  "TARGET_ARM && reload_completed"
+  ;; Note we have to suppress this split for the iwmmxt because it
+  ;; creates a conditional movsi and the iwmmxt_movsi_insn pattern
+  ;; is not predicable.  This sucks.
+  "TARGET_ARM && reload_completed && ! TARGET_IWMMXT"
   [(set (match_dup 6) (match_dup 7))
    (cond_exec (match_op_dup 1 [(match_dup 6) (const_int 0)])
 	      (set (match_dup 0) (match_dup 4)))
@@ -8555,6 +8609,15 @@
   "TARGET_EITHER"
   "*
   assemble_align (32);
+  return \"\";
+  "
+)
+
+(define_insn "align_8"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_ALIGN8)]
+  "TARGET_REALLY_IWMMXT"
+  "*
+  assemble_align (64);
   return \"\";
   "
 )
@@ -8745,3 +8808,5 @@
 (include "fpa.md")
 ;; Load the Maverick co-processor patterns
 (include "cirrus.md")
+;; Load the Intel Wireless Multimedia Extension patterns
+(include "iwmmxt.md")

@@ -281,12 +281,14 @@ strongarm*-*-*)
 	;;
 arm*-*-*)
 	cpu_type=arm
+	extra_headers="mmintrin.h"
 	;;
 ep9312*-*-*)
 	cpu_type=arm
 	;;
 xscale-*-*)
 	cpu_type=arm
+	extra_headers="mmintrin.h"
 	;;
 i[34567]86-*-*)
 	cpu_type=i386
@@ -2303,7 +2305,7 @@ then
 			| xarm920t | xarm940t | xarm9e | xarm10tdmi \
 			| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
 			| xarm1020t \
-			| xxscale \
+			| xxscale | xiwmmxt \
 			| xep9312 \
 			| xstrongarm | xstrongarm110 | xstrongarm11[01]0)
 				# OK

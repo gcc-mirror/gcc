@@ -65,7 +65,6 @@
 #define LOCAL_LABEL_PREFIX 	""
 #endif
 
-
 /* The assembler's names for the registers.  */
 #ifndef REGISTER_NAMES
 #define REGISTER_NAMES  			   \
@@ -74,9 +73,15 @@
   "r8", "r9", "sl", "fp", "ip", "sp", "lr", "pc",  \
   "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",  \
   "cc", "sfp", "afp",		   		   \
-  "mv0",  "mv1",   "mv2",  "mv3",  "mv4",   "mv5", \
-  "mv6",  "mv7",   "mv8",  "mv9",  "mv10",  "mv11",\
-  "mv12", "mv13",  "mv14", "mv15"		   \
+  "mv0",   "mv1",   "mv2",   "mv3",		   \
+  "mv4",   "mv5",   "mv6",   "mv7",		   \
+  "mv8",   "mv9",   "mv10",  "mv11",		   \
+  "mv12",  "mv13",  "mv14",  "mv15",		   \
+  "wcgr0", "wcgr1", "wcgr2", "wcgr3",		   \
+  "wr0",   "wr1",   "wr2",   "wr3",		   \
+  "wr4",   "wr5",   "wr6",   "wr7",		   \
+  "wr8",   "wr9",   "wr10",  "wr11",		   \
+  "wr12",  "wr13",  "wr14",  "wr15"		   \
 }
 #endif
 
@@ -235,12 +240,12 @@
 
 #undef  ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)  \
-  output_ascii_pseudo_op (STREAM, (const unsigned char *)(PTR), LEN)
+  output_ascii_pseudo_op (STREAM, (const unsigned char *) (PTR), LEN)
 
 /* Output a gap.  In fact we fill it with nulls.  */
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES) 	\
-  fprintf (STREAM, "\t.space\t%d\n", (int)(NBYTES))
+  fprintf (STREAM, "\t.space\t%d\n", (int) (NBYTES))
 
 /* Align output to a power of two.  Horrible /bin/as.  */
 #ifndef ASM_OUTPUT_ALIGN  

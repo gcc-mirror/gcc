@@ -37,6 +37,10 @@ MULTILIB_EXCEPTIONS += *mhard-float/*mthumb*
 
 MULTILIB_REDUNDANT_DIRS = interwork/thumb=thumb
 
+MULTILIB_OPTIONS    += mcpu=iwmmxt
+MULTILIB_DIRNAMES   += iwmmxt
+MULTILIB_REDUNDANT_DIRS += interwork/thumb/iwmmxt=thumb
+
 EXTRA_MULTILIB_PARTS = crtbegin.o crtend.o crti.o crtn.o
 
 LIBGCC               = stmp-multilib
