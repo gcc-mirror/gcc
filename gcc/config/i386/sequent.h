@@ -1,5 +1,5 @@
 /* Definitions for Sequent Intel 386.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -144,3 +144,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)\
   fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
+
+/* The native compiler passes the address of the returned structure in eax. */
+#undef STRUCT_VALUE
+#undef STRUCT_VALUE_INCOMING
+#define STRUCT_VALUE_REGNUM	0
