@@ -301,7 +301,7 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    and optionally pop the results.
    The CALL_INSN is the first insn generated.
 
-   FNDECL is the declaration node of the function.  This is given ot the
+   FNDECL is the declaration node of the function.  This is given to the
    macro RETURN_POPS_ARGS to determine whether this function pops its own args.
 
    FUNTYPE is the data type of the function, or, for a library call,
