@@ -1,3 +1,9 @@
+2004-01-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/11234
+	* gcc.dg/func-ptr-conv-1.c: New test.
+	* gcc.dg/weak/weak-6.c, gcc.dg/weak/weak-7.c: Update.
+
 2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR target/13380.

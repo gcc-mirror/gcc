@@ -1,3 +1,18 @@
+2004-01-09  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/11234
+	* c-typeck.c (build_c_cast): If pedantic, warn for conversions
+	between function and object pointers.
+	(digest_init): When comparing a pointer to function type to the
+	target type, only apply TREE_TYPE once to the pointer to function
+	type.
+	* except.c (for_each_eh_label_1): Treat data as a pointer to a
+	function pointer rather than casting it to a function pointer.
+	(for_each_eh_label): Update caller.
+	* recog.h (struct insn_data): Use a struct or union for output.
+	* genoutput.c (output_insn_data): Update.
+	* final.c (get_insn_template): Update.
+
 2004-01-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* expr.h (expand_expr): Make it a macro, not a function.

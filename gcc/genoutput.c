@@ -1,6 +1,6 @@
 /* Generate code from to output assembler insns as recognized from rtl.
    Copyright (C) 1987, 1988, 1992, 1994, 1995, 1997, 1998, 1999, 2000, 2002,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -286,6 +286,7 @@ output_insn_data (void)
 	break;
       }
 
+  printf ("#if GCC_VERSION >= 2007\n__extension__\n#endif\n");
   printf ("\nconst struct insn_data insn_data[] = \n{\n");
 
   for (d = idata; d; d = d->next)
@@ -322,13 +323,22 @@ output_insn_data (void)
       switch (d->output_format)
 	{
 	case INSN_OUTPUT_FORMAT_NONE:
-	  printf ("    0,\n");
+	  printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	  printf ("    { 0 },\n");
+	  printf ("#else\n");
+	  printf ("    { 0, 0, 0 },\n");
+	  printf ("#endif\n");
 	  break;
 	case INSN_OUTPUT_FORMAT_SINGLE:
 	  {
 	    const char *p = d->template;
 	    char prev = 0;
 
+	    printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	    printf ("    { .single =\n");
+	    printf ("#else\n");
+	    printf ("    {\n");
+	    printf ("#endif\n");
 	    printf ("    \"");
 	    while (*p)
 	      {
@@ -345,11 +355,26 @@ output_insn_data (void)
 		++p;
 	      }
 	    printf ("\",\n");
+	    printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	    printf ("    },\n");
+	    printf ("#else\n");
+	    printf ("    0, 0 },\n");
+	    printf ("#endif\n");
 	  }
 	  break;
 	case INSN_OUTPUT_FORMAT_MULTI:
+	  printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	  printf ("    { .multi = output_%d },\n", d->code_number);
+	  printf ("#else\n");
+	  printf ("    { 0, output_%d, 0 },\n", d->code_number);
+	  printf ("#endif\n");
+	  break;
 	case INSN_OUTPUT_FORMAT_FUNCTION:
-	  printf ("    (const void *) output_%d,\n", d->code_number);
+	  printf ("#if HAVE_DESIGNATED_INITIALIZERS\n");
+	  printf ("    { .function = output_%d },\n", d->code_number);
+	  printf ("#else\n");
+	  printf ("    { 0, 0, output_%d },\n", d->code_number);
+	  printf ("#endif\n");
 	  break;
 	default:
 	  abort ();

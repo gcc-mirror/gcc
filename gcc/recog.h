@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987, 1996, 1997, 1998, 1999, 2000, 2001, 2003
+   Copyright (C) 1987, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -238,7 +238,19 @@ struct insn_operand_data
 struct insn_data
 {
   const char *const name;
-  const void *output;
+#if HAVE_DESIGNATED_INITIALIZERS
+  union {
+    const char *single;
+    const char *const *multi;
+    insn_output_fn function;
+  } output;
+#else
+  struct {
+    const char *single;
+    const char *const *multi;
+    insn_output_fn function;
+  } output;
+#endif
   const insn_gen_fn genfun;
   const struct insn_operand_data *const operand;
 
