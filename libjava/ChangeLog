@@ -5,6 +5,8 @@
 	
 	* java/util/Hashtable.java (Enumerator.nextElement): Initialize `e'.
 
+	* gcj/javaprims.h: Rebuilt CNI namespace declarations.
+	
 2000-12-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am: Add HashSet.java and java/lang/ref classes.
