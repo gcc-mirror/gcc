@@ -417,7 +417,7 @@ AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS],
 # 02111-1307, USA.
 
 AC_DEFUN([AM_PROG_GCJ],[
-AC_CHECK_PROGS(GCJ, gcj, gcj)
+AC_CHECK_PROGS(GCJ, [gcj gcj-3.2 gcj-3.1 gcj-3.0 gcj-2.95], gcj)
 test -z "$GCJ" && AC_MSG_ERROR([no acceptable gcj found in \$PATH])
 if test "x${GCJFLAGS-unset}" = xunset; then
    GCJFLAGS="-g -O2"
