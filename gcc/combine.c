@@ -196,6 +196,12 @@ static rtx added_links_insn;
 
 /* Basic block number of the block in which we are performing combines.  */
 static int this_basic_block;
+
+/* A bitmap indicating which blocks had registers go dead at entry.  
+   After combine, we'll need to re-do global life analysis with 
+   those blocks as starting points.  */
+static sbitmap refresh_blocks;
+static int need_refresh;
 
 /* The next group of arrays allows the recording of the last value assigned
    to (hard or pseudo) register n.  We use this information to see if a
@@ -551,6 +557,10 @@ combine_instructions (f, nregs)
 
   setup_incoming_promotions ();
 
+  refresh_blocks = sbitmap_alloc (n_basic_blocks);
+  sbitmap_zero (refresh_blocks);
+  need_refresh = 0;
+
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
       uid_cuid[INSN_UID (insn)] = ++i;
@@ -684,6 +694,10 @@ combine_instructions (f, nregs)
 	  ;
 	}
     }
+
+  if (need_refresh)
+    update_life_info (refresh_blocks, UPDATE_LIFE_GLOBAL_RM_NOTES);
+  sbitmap_free (refresh_blocks);
 
   total_attempts += combine_attempts;
   total_merges += combine_merges;
@@ -11858,30 +11872,15 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	      /* We haven't found an insn for the death note and it
 		 is still a REG_DEAD note, but we have hit the beginning
 		 of the block.  If the existing life info says the reg
-		 was dead, there's nothing left to do.
-
-		 ??? If the register was live, we ought to mark for later
-		 global life update.  Cop out like the previous code and
-		 just add a hook for the death note to live on.  */
+		 was dead, there's nothing left to do.  Otherwise, we'll
+		 need to do a global life update after combine.  */
 	      if (REG_NOTE_KIND (note) == REG_DEAD && place == 0)
 		{
 		  int regno = REGNO (XEXP (note, 0));
-
 		  if (REGNO_REG_SET_P (bb->global_live_at_start, regno))
 		    {
-		      rtx die = gen_rtx_USE (VOIDmode, XEXP (note, 0));
-
-		      place = bb->head;
-		      if (GET_CODE (place) != CODE_LABEL
-			  && GET_CODE (place) != NOTE)
-			{
-			  place = emit_insn_before (die, place);
-			  bb->head = place;
-			}
-		      else
-			{
-			  place = emit_insn_after (die, place);
-			}
+		      SET_BIT (refresh_blocks, this_basic_block);
+		      need_refresh = 1;
 		    }
 		}
 	    }

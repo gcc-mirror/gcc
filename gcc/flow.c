@@ -2554,9 +2554,9 @@ verify_local_live_at_start (new_live_at_start, bb)
    lose the kill.  So we _can_ have a pseudo go live.  How irritating.  */
 
 void
-update_life_info (blocks, local_only)
+update_life_info (blocks, extent)
      sbitmap blocks;
-     enum update_life_extent local_only;
+     enum update_life_extent extent;
 {
   regset tmp;
   int i;
@@ -2565,8 +2565,14 @@ update_life_info (blocks, local_only)
   tmp = ALLOCA_REG_SET ();
 
   /* For a global update, we go through the relaxation process again.  */
-  if (! local_only)
-    calculate_global_regs_live (blocks, blocks, 0);
+  if (extent != UPDATE_LIFE_LOCAL)
+    {
+      calculate_global_regs_live (blocks, blocks, 0);
+
+      /* If asked, remove notes from the blocks we'll update.  */
+      if (extent == UPDATE_LIFE_GLOBAL_RM_NOTES)
+	count_or_remove_death_notes (blocks, 1);
+    }
 
   EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
     {
@@ -2576,7 +2582,7 @@ update_life_info (blocks, local_only)
       propagate_block (tmp, bb->head, bb->end, (regset) NULL, i,
 		       PROP_DEATH_NOTES);
 
-      if (local_only)
+      if (extent == UPDATE_LIFE_LOCAL)
 	verify_local_live_at_start (tmp, bb);
 
       CLEAN_ALLOCA;
