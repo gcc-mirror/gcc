@@ -1,3 +1,8 @@
+Sat Nov 24 16:11:00 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (assign_stack_temp_for_type): Clear alias set before
+	setting new one.
+
 2001-11-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (print_operand, case 'v'): Use HOST_WIDE_INT_PRINT_HEX
