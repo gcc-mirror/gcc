@@ -1,6 +1,6 @@
 /* Generate attribute information (insn-attr.h) from machine description.
-   Copyright (C) 1991 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu)
+   Copyright (C) 1991, 1994 Free Software Foundation, Inc.
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
 
@@ -391,7 +391,6 @@ from the machine description file `md'.  */\n\n");
       for (unit = units; unit; unit = unit->next)
 	{
 	  struct range blockage;
-	  int max_issue_time = MAX (unit->issue_delay.max, 1);
 
 	  blockage = unit->issue_delay;
 	  blockage.max = MAX (unit->ready_cost.max
