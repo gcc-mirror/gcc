@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* We just to ICE because we removed the cast to List_linked*
+/* We used to ICE because we removed the cast to List_linked*
    in -[ListIndex_linked next]. */
 
 @interface List
