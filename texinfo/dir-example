@@ -3,7 +3,7 @@ topmost node of the Info hierarchy.  This file is merely made available
 for your hacking pleasure, not official or standard in any way.
 If it doesn't make sense to you, or you don't like it, ignore it.
 
-$Id: dir,v 1.23 1997/07/25 18:05:32 karl Exp $
+$Id: dir-example,v 1.3 1998/03/24 18:05:15 law Exp $
 
 File: dir	Node: Top	This is the top of the INFO tree.
 
