@@ -1,3 +1,9 @@
+2001-07-29  Daniel Berlin  <dan@cgsoftware.com>
+
+	* df.c (df_rd_global_compute): Add successors to worklist, not
+	current item.
+	(df_ru_global_compute): Ditto.
+
 2001-07-27  Daniel Berlin  <dan@cgsoftware.com>
 
 	* regclass.c (reg_scan_mark_refs): Increment REG_N_REFS when we
