@@ -2205,6 +2205,22 @@ expand_assignment (to, from, want_value, suggest_reg)
 	      : result);
     }
 
+  /* If the rhs is a function call and its value is not an aggregate,
+     call the function before we start to compute the lhs.
+     This is needed for correct code for cases such as
+     val = setjmp (buf) on machines where reference to val
+     requires loading up part of an address in a separate insn.  */
+  if (TREE_CODE (from) == CALL_EXPR && ! aggregate_value_p (from))
+    {
+      rtx value = expand_expr (from, NULL_RTX, VOIDmode, 0);
+      if (to_rtx == 0)
+	to_rtx = expand_expr (to, NULL_RTX, VOIDmode, 0);
+      emit_move_insn (to_rtx, value);
+      preserve_temp_slots (to_rtx);
+      free_temp_slots ();
+      return to_rtx;
+    }
+
   /* Ordinary treatment.  Expand TO to get a REG or MEM rtx.
      Don't re-expand if it was expanded already (in COMPONENT_REF case).  */
 
