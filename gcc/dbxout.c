@@ -983,9 +983,15 @@ dbxout_type (type, full, show_arg_types)
   if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
       || TREE_CODE (type) == QUAL_UNION_TYPE
       || TREE_CODE (type) == ENUMERAL_TYPE)
-
-    if ((TYPE_NAME (type) != 0 && !full)
-	|| TYPE_SIZE (type) == 0)
+    /* We must use the same test here as we use twice below when deciding
+       whether to emit a cross-reference.  */
+    if ((TYPE_NAME (type) != 0
+	 && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+	       && DECL_IGNORED_P (TYPE_NAME (type)))
+	 && !full)
+	|| TYPE_SIZE (type) == 0
+	/* No way in DBX fmt to describe a variable size.  */
+	|| TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
       {
 	typevec[TYPE_SYMTAB_ADDRESS (type)] = TYPE_XREF;
 	return;
@@ -1157,16 +1163,11 @@ dbxout_type (type, full, show_arg_types)
 	if (TYPE_BINFO (type) != 0 && TYPE_BINFO_BASETYPES (type) != 0)
 	  n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
 
-	/* Output a structure type.  */
+	/* Output a structure type.  We must use the same test here as we
+	   use in the DBX_NO_XREFS case above.  */
 	if ((TYPE_NAME (type) != 0
-	     /* Long ago, Tiemann said this creates output that "confuses GDB".
-		In April 93, mrs@cygnus.com said there is no such problem.
-		The type decls made automatically by struct specifiers
-		are marked with DECL_IGNORED_P in C++.  */
-#if 0 /* This creates output for anonymous classes which confuses GDB. */
 	     && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		   && DECL_IGNORED_P (TYPE_NAME (type)))
-#endif
 	     && !full)
 	    || TYPE_SIZE (type) == 0
 	    /* No way in DBX fmt to describe a variable size.  */
@@ -1278,9 +1279,13 @@ dbxout_type (type, full, show_arg_types)
       break;
 
     case ENUMERAL_TYPE:
-      if ((TYPE_NAME (type) != 0 && !full
-	   && (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	       && ! DECL_IGNORED_P (TYPE_NAME (type))))
+      /* We must use the same test here as we use in the DBX_NO_XREFS case
+	 above.  We simplify it a bit since an enum will never have a variable
+	 size.  */
+      if ((TYPE_NAME (type) != 0
+	   && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+		 && DECL_IGNORED_P (TYPE_NAME (type)))
+	   && !full)
 	  || TYPE_SIZE (type) == 0)
 	{
 	  fprintf (asmfile, "xe");
