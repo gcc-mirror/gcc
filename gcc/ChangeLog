@@ -1,3 +1,8 @@
+2004-04-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (expand_mult_highpart_optab): Use narrower version of OP1
+	in two more places; remove unneeded force_reg
+
 2004-04-21  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/rs6000/rs6000.c (symbol_ref_operand): Remove hack
