@@ -1,3 +1,8 @@
+2005-04-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20212
+	* g++.dg/warn/Wunused-11.C: New test.
+
 2005-04-06  Bernd Schmidt  <bernd.schmidt@analog.com>
 
 	* gcc.c-torture/execute/20020720-1.x: Disable on bfin*-*.

@@ -1,3 +1,9 @@
+2005-04-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/20212
+	* pt.c (regenerate_decl_from_template): Copy attributes for
+	parameters from the pattern to the instantiation.
+
 2005-04-05  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20734
