@@ -9318,7 +9318,7 @@ try_swap_copy_prop (loop, replacement, regno)
 	break;
     }
 
-  if (set)
+  if (insn != NULL_RTX)
     {
       rtx prev_insn;
       rtx prev_set;
