@@ -1,29 +1,38 @@
 # This file lists all the sources which should *not* be scanned for
 # strings to translate.  Only the first word on each line is used; the
-# rest is ignored.  Only files with an extension of .c or .h are
+# rest is ignored.  Only files with an extension of .c or .h or .def are
 # examined to begin with.
 
 #   These files are part of libgcc, or target headers provided by gcc.
-config/rs6000/sol-c0.c
-config/float-c4x.h
-config/float-i128.h
-config/float-i32.h
-config/float-i386.h
-config/float-i64.h
-config/float-m68k.h
-config/float-sh.h
-config/float-sparc.h
-config/float-vax.h
+config/darwin-crt2.c
+config/fp-bit.c
+config/fp-bit.h
+config/vxlib.c
 crtstuff.c
-frame.h
 gbl-ctors.h
-libgcc1.c
-libgcc1-test.c
+gcov-io.h
+gcov-iov.c
+gthr-aix.h
+gthr-dce.h
+gthr-gnat.c
+gthr-gnat.h
+gthr-posix.c
+gthr-posix.h
+gthr-rtems.h
+gthr-single.h
+gthr-solaris.h
+gthr-vxworks.h
+gthr-win32.h
+gthr.h
 libgcc2.c
 libgcc2.h
+libgcov.c
 limitx.h
 limity.h
 longlong.h
+unwind-c.c
+unwind-dw2-fde-darwin.c
+unwind-dw2-fde-glibc.c
 unwind-dw2-fde.c
 unwind-dw2-fde.h
 unwind-dw2.c
@@ -34,19 +43,22 @@ unwind.h
 #   These programs are meant to be executed only by GCC maintainers or
 #   installers.  Such files do not need to be translated, as these
 #   people typically need to be able to read English anyway.
-enquire.c
 fix-header.c
 gen-protos.c
 genattr.c
 genattrtab.c
+genautomata.c
 gencheck.c
 gencodes.c
+genconditions.c
 genconfig.c
 genconstants.c
 genemit.c
 genextract.c
 genflags.c
 gengenrtl.c
+gengtype.c
+genmodes.c
 genopinit.c
 genoutput.c
 genpeep.c
