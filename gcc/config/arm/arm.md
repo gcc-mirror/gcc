@@ -469,47 +469,8 @@
   "*
   return (arm_output_asm_insn (\"fltd\\t%0, %1\", operands));
 ")
-
+
 ;; Truncation insns
-
-(define_insn "truncsiqi2"
-  [(set (match_operand:QI 0 "general_operand" "=mr")
-        (truncate:QI (match_operand:SI 1 "register_operand" "r")))]
-  ""
-  "*
-  if (GET_CODE (operands[0]) == MEM)
-    return (arm_output_asm_insn (\"strb\\t%1, %0\\t@ truncsiqi2\", operands));
-  else
-    return (arm_output_asm_insn (\"and\\t%0, %1, #255\\t@ truncsiqi2\", operands));
-")
-
-(define_insn "trunchiqi2"
-  [(set (match_operand:QI 0 "general_operand" "=mr")
-        (truncate:QI (match_operand:HI 1 "register_operand" "r")))]
-  ""
-  "*
-  if (GET_CODE(operands[0]) == MEM)
-    return (arm_output_asm_insn (\"strb\\t%1, %0\\t@ trunchiqi2\", operands));
-  else
-    return (arm_output_asm_insn (\"and\\t%0, %1, #255\\t@ trunchiqi2\", operands));
-")
-
-;; Mode is changed to SI below
-
-(define_expand "truncsihi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-        (ashift:SI (match_operand:HI 1 "register_operand" "")
-                   (const_int 16)))
-   (set (match_dup 0)
-        (ashiftrt:SI (match_dup 0) (const_int 16)))]
-  ""
-  "
-  if (GET_CODE (operands[1]) == SUBREG)
-      operands[1] = gen_rtx (SUBREG, SImode, SUBREG_REG (operands[1]),
-                             SUBREG_WORD (operands[1]));
-  else
-      operands[1] = gen_rtx(SUBREG, SImode, operands[1], 0);
-")
 
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -751,7 +712,6 @@
 ;; Operand 2 is a temporary (SImode).
 ;; Operand 3 is a temporary (SImode).
 ;; Operand 4 is a temporary (SImode).
-;; Operand 5 is a local temporary (SImode).
 
 (define_expand "storehi"
   [;; compute the address into a register
@@ -759,7 +719,7 @@
         (match_operand:SI 1 "address_operand" ""))
    ;; get the half word into a full word register
    (set (match_operand:SI 3 "register_operand" "")
-        (match_dup 5))
+        (match_operand:HI 0 "register_operand" ""))
    ;; store the low byte
    (set (mem:QI (match_dup 2))
         (truncate:QI (match_dup 3)))
@@ -771,12 +731,7 @@
         (truncate:QI (match_dup 4)))]
   ""
   "
-  if (GET_CODE(operands[0]) == SUBREG)
-    operands[5] = gen_rtx(SUBREG, SImode, SUBREG_REG(operands[0]),
-              SUBREG_WORD(operands[0]));
-  else
-    operands[5] = gen_rtx(SUBREG, SImode, operands[0], 0);
-  
+  operands[0] = gen_lowpart (SImode, operands[0]);
 ")
 
 ;; Subroutine to store a half word integer constant into memory.
@@ -786,7 +741,6 @@
 ;; Operand 3 is a temporary (QImode).
 ;; Operand 4 is a temporary (QImode).
 ;; Operand 5 is a local CONST_INT.
-;; Operand 6 is a local CONST_INT.
 
 (define_expand "storeinthi"
   [;; compute the address into a register
@@ -794,13 +748,13 @@
         (match_operand:SI 1 "address_operand" ""))
    ;; load the low byte
    (set (match_operand:QI 3 "register_operand" "")
-        (match_dup 5))
+        (match_operand:SI 0 "" ""))
    ;; store the low byte
    (set (mem:QI (match_dup 2))
         (match_dup 3))
    ;; load the high byte
    (set (match_operand:QI 4 "register_operand" "")
-        (match_dup 6))
+        (match_dup 5))
    ;; store the high byte
    (set (mem:QI (plus (match_dup 2) (const_int 1)))
         (match_dup 4))]
@@ -809,8 +763,8 @@
     {
       int value = INTVAL(operands[0]);
 
-      operands[5] = gen_rtx(CONST_INT, VOIDmode, value & 255);
-      operands[6] = gen_rtx(CONST_INT, VOIDmode,(value>>8) & 255);
+      operands[0] = gen_rtx(CONST_INT, VOIDmode, value & 255);
+      operands[5] = gen_rtx(CONST_INT, VOIDmode,(value>>8) & 255);
     }
 ")
 
