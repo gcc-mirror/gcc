@@ -196,7 +196,12 @@ proc libstdc++-v3_target_compile { source dest type options } {
     set cxx_final [concat $cxx_final $cxxflags]
     set cxx_final [concat $cxx_final $includes]
 
-    lappend options "compiler=$cxx_final";
+    lappend options "compiler=$cxx_final"
+
+    # Picks up our local freshly-built testsuite library.  We could just
+    # name it directly, "./libv3test.a" but this is more portable.
+    lappend options "ldflags=-L."
+    lappend options "libs=-lv3test"
 
     return [target_compile $source $dest $type $options]
 }

@@ -1,6 +1,6 @@
 ## Makefile for the testsuite subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -34,4 +34,13 @@ RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
 	    else echo runtest; fi`
 
 RUNTESTFLAGS =
+
+CXX = @glibcpp_CXX@ @GLIBCPP_INCLUDES@
+# Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
+INCLUDES = @TOPLEVEL_INCLUDES@
+
+noinst_LIBRARIES = libv3test.a
+
+libv3test_a_SOURCES = testsuite_hooks.cc
+
 

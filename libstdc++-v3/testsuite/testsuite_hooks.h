@@ -46,6 +46,10 @@
 //   which starts at zero, increments on instance construction, and decrements
 //   on instance destruction.  "assert_count(n)" can be called to VERIFY()
 //   that the count equals N.
+//
+// 4)  gnu_copy_tracker, from Stephen M. Webb <stephen@bregmasoft.com>.
+//   A class with nontrivial ctor/dtor that provides the ability to track the
+//   number of copy ctors and dtors, and will throw on demand during copy.
 
 #ifndef _GLIBCPP_TESTSUITE_HOOKS_H
 #define _GLIBCPP_TESTSUITE_HOOKS_H
@@ -61,64 +65,28 @@
 
 // Defined in GLIBCPP_CONFIGURE_TESTSUITE.
 #ifndef _GLIBCPP_MEM_LIMITS
-
 // Don't do memory limits.
-void
+extern void
 __set_testsuite_memlimit(float x = 0)
 { }
 
 #else
 
 // Do memory limits.
-#include <sys/resource.h>
-#include <unistd.h>
-
 #ifndef MEMLIMIT_MB
 #define MEMLIMIT_MB 16.0
 #endif
 
-void
-__set_testsuite_memlimit(float __size = MEMLIMIT_MB)
-{
-    struct rlimit r;
-    rlim_t limit = (rlim_t)(__size * 1048576);
-
-    // Heap size, seems to be common.
-#if _GLIBCPP_HAVE_MEMLIMIT_DATA
-    getrlimit(RLIMIT_DATA, &r);
-    r.rlim_cur = limit;
-    setrlimit(RLIMIT_DATA, &r);
-#endif
-
-    // Resident set size.
-#if _GLIBCPP_HAVE_MEMLIMIT_RSS
-    getrlimit(RLIMIT_RSS, &r);
-    r.rlim_cur = limit;
-    setrlimit(RLIMIT_RSS, &r);
-#endif
-
-    // Mapped memory (brk + mmap).
-#if _GLIBCPP_HAVE_MEMLIMIT_VMEM
-    getrlimit(RLIMIT_VMEM, &r);
-    r.rlim_cur = limit;
-    setrlimit(RLIMIT_VMEM, &r);
-#endif
-
-    // Virtual memory.
-#if _GLIBCPP_HAVE_MEMLIMIT_AS
-    getrlimit(RLIMIT_AS, &r);
-    r.rlim_cur = limit;
-    setrlimit(RLIMIT_AS, &r);
-#endif
-}
+extern void
+__set_testsuite_memlimit(float __size = MEMLIMIT_MB);
 #endif
 
 
 struct gnu_counting_struct
 {
     // Specifically and glaringly-obviously marked 'signed' so that when
-    // count mistakenly goes negative, we can track the patterns of
-    // deletions easier.
+    // COUNT mistakenly goes negative, we can track the patterns of
+    // deletions more easily.
     typedef  signed int     size_type;
     static size_type   count;
     gnu_counting_struct() { ++count; }
@@ -128,7 +96,56 @@ struct gnu_counting_struct
 
 #define assert_count(n)   VERIFY(gnu_counting_struct::count == n)
 
-gnu_counting_struct::size_type  gnu_counting_struct::count = 0;
+
+class gnu_copy_tracker
+{
+  public:
+    // Cannot be explicit.  Conversion ctor used by list_modifiers.cc's
+    // test03(), "range fill at beginning".
+    gnu_copy_tracker (int anId, bool throwOnDemand = false)
+    : itsId(anId), willThrow(throwOnDemand)
+    {}
+
+    gnu_copy_tracker (const gnu_copy_tracker& rhs)
+    : itsId(rhs.id()), willThrow(rhs.willThrow)
+    {
+      ++itsCopyCount;
+      if (willThrow) throw "copy tracker exception";
+    }
+
+    gnu_copy_tracker& operator=(const gnu_copy_tracker& rhs)
+    {
+      itsId = rhs.id();
+      // willThrow must obviously already be false to get this far
+    }
+
+    ~gnu_copy_tracker() { ++itsDtorCount; }
+
+    int
+    id() const
+    { return itsId; }
+
+  private:
+          int   itsId;
+    const bool  willThrow;
+
+  public:
+    static void
+    reset()
+    { itsCopyCount = 0; itsDtorCount = 0; }
+
+    static int
+    copyCount() 
+    { return itsCopyCount; }
+
+    static int
+    dtorCount() 
+    { return itsDtorCount; }
+
+  private:
+    static int itsCopyCount;
+    static int itsDtorCount;
+};
 
 
 #endif // _GLIBCPP_TESTSUITE_HOOKS_H

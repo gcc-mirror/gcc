@@ -1,3 +1,15 @@
+2002-05-28  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/Makefile.am (noinst_LIBRARIES):  New target.  Pull in
+	CXX/INCLUDES.
+	* testsuite/Makefile.in:  Regenerate.
+	* testsuite/testsuite_hooks.h (gnu_copy_tracker):  Move from
+	list_modifiers.cc and rename from 'T'.  Move code bodies...
+	* testsuite/testsuite_hooks.cc:  ...to here.  New file.
+	* testsuite/23_containers/list_modifiers.cc:  Move 'T' class out.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3_target_compile):
+	Add libv3test.a to link options.
+
 2002-05-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/misc-inst.cc: Define unnecessary algorithm
