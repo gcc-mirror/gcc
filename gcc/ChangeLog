@@ -1,3 +1,8 @@
+2002-01-14  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/invoke.texi (Xstormy16 Options): Add xstormy16 option.
+	* doc/md.texi (Machine Constraints): Use @minus{} where appropriate.
+
 Mon Jan 14 20:18:19 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (try_forward_edges): Avoid infinite loop at infinite

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 2000, 2001
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1996, 1998, 1999, 2000, 2001, 2002
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -2040,16 +2040,16 @@ A constant that has exactly one bit clear.
 A constant between 0 and 255 inclusive.
 
 @item M
-A constant between -255 and 0 inclusive.
+A constant between @minus{}255 and 0 inclusive.
 
 @item N
-A constant between -3 and 0 inclusive.
+A constant between @minus{}3 and 0 inclusive.
 
 @item O
 A constant between 1 and 4 inclusive.
 
 @item P
-A constant between -4 and -1 inclusive.
+A constant between @minus{}4 and @minus{}1 inclusive.
 
 @item Q
 A memory reference that is a stack push.
