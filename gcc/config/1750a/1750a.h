@@ -200,6 +200,13 @@ extern char *strdup(), *float_label();
  { 1, 1, 1, 1, 1, 1, 1, 1, \
    1, 1, 1, 1, 1, 1, 1, 1 }
 
+/* Order in which to allocate registers.  Each register must be
+   listed once, even those in FIXED_REGISTERS.  List frame pointer
+   late and fixed registers last.  Note that, in general, we prefer
+   registers listed in CALL_USED_REGISTERS, keeping the others
+   available for storage of persistent values.  */
+#define REG_ALLOC_ORDER \
+   { 2, 0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
@@ -682,7 +689,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
  ((REGNO) > 0 && (REGNO) <= 15 ||   \
-  reg_renumber[REGNO] > 0 && reg_renumber[REGNO] < 15)
+  reg_renumber[REGNO] > 0 && reg_renumber[REGNO] <= 15)
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
  ((REGNO) >= 12 && (REGNO) <= 15 || \
   reg_renumber[REGNO] >= 12 && reg_renumber[REGNO] <= 15)
@@ -1264,8 +1271,8 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	fprintf(FILE,"  ;constructor\n"); } while (0)
 
 #define ASM_OUTPUT_DESTRUCTOR(FILE, NAME)  do {	\
-	fprintf(FILE, "\t; ASM_OUTPUT_DESTRUCTOR called for "); \
-	assemble_name(FILE, NAME); } while (0)
+	fprintf(FILE, "\tinit\n\t"); assemble_name(FILE, NAME); \
+        fprintf(FILE,"  ;destructor"); } while (0)
 
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
