@@ -1,8 +1,8 @@
-// { dg-options "-D_GLIBCXX_ASSERT -O0" }
+// { dg-options "-O0" }
 // 2000-11-20
 // Benjamin Kosnik bkoz@redhat.com
 
-// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

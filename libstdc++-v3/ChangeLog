@@ -1,3 +1,31 @@
+2004-03-04  Paolo Carlini  <pcarlini@suse.de>
+
+	* scripts/testsuite_flags.in: Add "-D_GLIBCXX_ASSERT" to
+	CXXFLAGS_save.
+	* testsuite/lib/libstdc++.exp: Don't add it conditionally to
+	DEFAULT_CXXFLAGS. 
+	* testsuite/18_support/numeric_limits.cc: Remove "-D_GLIBCXX_ASSERT"
+	from the dg-options.
+	* testsuite/23_containers/vector/invalidation/1.cc: Likewise.
+	* testsuite/23_containers/vector/invalidation/2.cc: Likewise.
+	* testsuite/23_containers/vector/invalidation/3.cc: Likewise.
+	* testsuite/23_containers/vector/invalidation/4.cc: Likewise.
+	* testsuite/23_containers/vector/resize/1.cc: Likewise.
+	* testsuite/26_numerics/complex_value.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/1.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/3.cc: Likewise.
+	* testsuite/27_io/manipulators/standard/char/2.cc: Likewise.
+	* testsuite/27_io/objects/char/5.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/5.cc: Likewise.
+	* testsuite/backward/11460.cc: Likewise.
+	* testsuite/thread/pthread7-rope.cc: Likewise.
+
+	* testsuite/21_strings/basic_string/compare/char/1.cc: Add
+	missing test variable.
+	* testsuite/21_strings/basic_string/compare/wchar_t/1.cc: Add
+	missing test variable.
+
 2004-03-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/20_util/allocator/1.cc: Provide explicit

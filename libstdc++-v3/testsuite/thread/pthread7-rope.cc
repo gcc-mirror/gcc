@@ -19,8 +19,8 @@
 // USA.
 
 // { dg-do run { target *-*-freebsd* *-*-netbsd* *-*-linux* *-*-solaris* *-*-cygwin *-*-darwin* alpha*-*-osf* } }
-// { dg-options "-D_GLIBCXX_ASSERT -pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* } }
-// { dg-options "-D_GLIBCXX_ASSERT -pthreads" { target *-*-solaris* } }
+// { dg-options "-pthread" { target *-*-freebsd* *-*-netbsd* *-*-linux* alpha*-*-osf* } }
+// { dg-options "-pthreads" { target *-*-solaris* } }
 
 #include <ext/rope>
 #include <cstring>
