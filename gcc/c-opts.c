@@ -148,7 +148,7 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("Wformat-y2k",		CL_ALL,   OPT_Wformat_y2k)		     \
   OPT("Wformat-zero-length",	CL_C,     OPT_Wformat_zero_length)	     \
   OPT("Wformat=",		CL_ALL | CL_JOINED, OPT_Wformat_eq)	     \
-  OPT("Wimplicit",		CL_CXX,   OPT_Wimplicit)		     \
+  OPT("Wimplicit",		CL_ALL,   OPT_Wimplicit)		     \
   OPT("Wimplicit-function-declaration",	CL_C, OPT_Wimplicit_function_decl)   \
   OPT("Wimplicit-int",		CL_C,	  OPT_Wimplicit_int)		     \
   OPT("Wimport",                CL_ALL,   OPT_Wimport)			     \

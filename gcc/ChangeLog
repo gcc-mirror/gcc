@@ -1,3 +1,7 @@
+2002-11-09  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (COMMAND_LINE_OPTIONS): Fix -Wimplicit.
+
 2002-11-08  Dale Johannesen  <dalej@apple.com>
 
         * dbxout.c (dbxout_type):  Fix stabs info for vector types.
