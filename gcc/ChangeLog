@@ -1,3 +1,11 @@
+Fri Mar 21 22:44:33 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR inline-asm/7916
+	* function.c (instantiate_virtual_regs_lossage): New function.
+	(instantiate_virtual_regs_1): Use it.
+	(instantiate_virtual_regs): Do not continue in substition when insn has
+	been deleted.
+
 2003-03-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* combine.c (make_field_assignment): Fix a warning.
