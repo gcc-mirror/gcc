@@ -2116,7 +2116,7 @@ pexecute (search_flag, program, argv, not_last)
     }
 }
 
-#endif /* not __MSDOS__ and not OS2 */
+#endif /* not __MSDOS__ and not OS2 and not WINNT */
 
 #if defined(OS2) || defined(WINNT)
 
