@@ -1,3 +1,29 @@
+2004-02-03  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/net/PlainSocketImpl.java 
+	(inChannelOperation): New field.
+	(isInChannelOperation): New accessor.
+	(setInChannelOperation): New modifier.
+	* gnu/java/nio/ServerSocketChannelImpl.java
+	(accept): Set and reset our server socket's PlainSocketImpl's
+	"in channel operation" indicator before and after delegating
+	the accept to our server socket.
+	* gnu/java/nio/SocketChannelImpl.java
+	(connect): Set and reset our socket's PlainSocketImpl's "in channel
+	operation" indicator before and after delegating the operation to
+	our socket.
+	(read): Likewise.
+	(write): Likewise.
+	* java/net/ServerSocket.java (implAccept): Don't throw an
+	IllegalBlockingModeException if we have a non-blocking
+	channel which initiated this accept operation.
+	* java/net/Socket.java (connect): Don't throw an
+	IllegalBlockingModeException if we have a non-blocking
+	channel which initiated this connect operation.
+	* java/nio/channels/spi/AbstractSelectableChannel.java
+	(configureBlocking): Only call implConfigureBlocking() if
+	the desired blocking mode is different from our current one.
+
 2004-01-24  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/net/protocol/http/Connection.java

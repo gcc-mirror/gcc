@@ -420,8 +420,13 @@ public class Socket
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException("unsupported address type");
 
+    // The Sun spec says that if we have an associated channel and
+    // it is in non-blocking mode, we throw an IllegalBlockingModeException.
+    // However, in our implementation if the channel itself initiated this
+    // operation, then we must honor it regardless of its blocking mode.
     if (getChannel() != null
-        && !getChannel().isBlocking ())
+        && !getChannel().isBlocking ()
+        && !((PlainSocketImpl) getImpl()).isInChannelOperation())
       throw new IllegalBlockingModeException ();
   
     if (!isBound ())

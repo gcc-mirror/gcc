@@ -107,6 +107,11 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
     
     try
       {
+        begin();
+        serverSocket.getPlainSocketImpl().setInChannelOperation(true);
+          // indicate that a channel is initiating the accept operation
+          // so that the socket ignores the fact that we might be in
+          // non-blocking mode.
         NIOSocket socket = (NIOSocket) serverSocket.accept();
         completed = true;
         return socket.getChannel();
@@ -117,6 +122,7 @@ public final class ServerSocketChannelImpl extends ServerSocketChannel
       }
     finally
       {
+        serverSocket.getPlainSocketImpl().setInChannelOperation(false);
         end (completed);
       }
   }

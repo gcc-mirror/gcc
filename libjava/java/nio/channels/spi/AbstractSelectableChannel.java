@@ -80,8 +80,11 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
   {
     synchronized (blockingLock())
       {
-        implConfigureBlocking(blocking);
-        this.blocking = blocking;
+        if (this.blocking != blocking)
+          {
+            implConfigureBlocking(blocking);
+            this.blocking = blocking;
+          }
       }
     
     return this;
