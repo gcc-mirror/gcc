@@ -210,7 +210,7 @@ Makefile: Makefile.in config.status
 config.status: configure
 	rm -f config.cache
 	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
-  	CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
+	CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
 
 ${srcdir}/configure: configure.in
 	rm -f config.cache
@@ -232,7 +232,7 @@ mostlyclean:
 	@$(MULTICLEAN) multi-clean DO=mostlyclean
 
 clean: mostlyclean
-	rm -f config.log
+	rm -f config.log libchill.a
 	@$(MULTICLEAN) multi-clean DO=clean
 
 distclean: clean
