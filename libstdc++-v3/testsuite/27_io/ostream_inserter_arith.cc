@@ -28,7 +28,9 @@
 
 using namespace std;
 
-#define __TEST_NUMPUT_VERBOSE 1
+#ifndef DEBUG_ASSERT
+#  define TEST_NUMPUT_VERBOSE 1
+#endif
 
 struct _TestCase
 {
@@ -190,7 +192,7 @@ void test01()
   for (int j=0; j<sizeof(testcases)/sizeof(testcases[0]); j++)
     {
       _TestCase & tc = testcases[j];
-#ifdef __TEST_NUMPUT_VERBOSE
+#ifdef TEST_NUMPUT_VERBOSE
       cout << "expect: " << tc.result << endl;
 #endif
       // test double with char type
@@ -201,7 +203,7 @@ void test01()
         os.imbue(__loc);
         apply_formatting(tc, os);
         os << tc.val;
-#ifdef __TEST_NUMPUT_VERBOSE
+#ifdef TEST_NUMPUT_VERBOSE
         cout << "result: " << os.str() << endl;
 #endif
         assert(os && os.str() == tc.result);
@@ -214,7 +216,7 @@ void test01()
         os.imbue(__loc);
         apply_formatting(tc, os);
         os << (long double)tc.val;
-#ifdef __TEST_NUMPUT_VERBOSE
+#ifdef TEST_NUMPUT_VERBOSE
         cout << "result: " << os.str() << endl;
 #endif
         assert(os && os.str() == tc.result);
@@ -257,7 +259,7 @@ void test02()
 
   char largebuf[512];
   sprintf(largebuf, "%.*Le", prec, val);
-#ifdef __TEST_NUMPUT_VERBOSE
+#ifdef TEST_NUMPUT_VERBOSE
   cout << "expect: " << largebuf << endl;
   cout << "result: " << os.str() << endl;
 #endif
@@ -298,7 +300,7 @@ int main()
 {
   test01();
   test02();
-#ifdef __TEST_NUMPUT_VERBOSE
+#ifdef TEST_NUMPUT_VERBOSE
   cout << "Test passed!" << endl;
 #endif
   return 0;

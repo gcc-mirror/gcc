@@ -1,8 +1,23 @@
+2000-06-13  Brent Verner <brent@rcfile.org>
+
+	* bits/string.tcc (string::rfind): Fix.
+	* testsuite/21_strings/rfind.cc: New file.
+	
+2000-06-26  Anthony Williams  <anthony@anthonyw.cjb.net>
+
+	* testsuite/21_strings/ctor_copy_dtor.cc: Fixed logic error.
+	
 2000-06-26  Branko Cibej  <branko.cibej@hermes.si>
 
-	* mkcheck.in:  Make the *.txt and *.tst files writable
-	  after copying them to $TEST_DIR.
+        * testsuite/27_io/filebuf_members.cc (test_01): Fixed typos.
 
+        * mkcheck.in: Make the *.txt and *.tst files writable after
+	  copying them to $TEST_DIR.
+
+        * testsuite/27_io/ostream_inserter_arith.cc: Renamed
+          __TEST_NUMPUT_VERBOSE to TEST_NUMPUT_VERBOSE.
+        Define TEST_NUMPUT_VERBOSE only if DEBUG_ASSERT.
+	
 2000-06-23  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/fstream.tcc (basic_filebuf::basic_filebuf(fd)): Use it.
