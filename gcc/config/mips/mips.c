@@ -4199,7 +4199,7 @@ mips_va_arg (valist, type)
 	      if (r != addr_rtx)
 		emit_move_insn (addr_rtx, r);
 
-	      emit_jump (gen_jump (lab_over));
+	      emit_jump (lab_over);
 	      emit_barrier ();
 	      emit_label (lab_false);
 	    }
@@ -7447,7 +7447,9 @@ function_arg_pass_by_reference (cum, mode, type, named)
      ??? This is really a kludge.  We should either fix GCC so that such
      a situation causes an abort and then do something in the MIPS port
      to prevent it, or add code to function.c to properly handle the case.  */
-  if (FUNCTION_ARG (*cum, mode, type, named) != 0
+  /* ??? cum can be NULL when called from mips_va_arg.  The problem handled
+     here hopefully is not relevant to mips_va_arg.  */
+  if (cum && FUNCTION_ARG (*cum, mode, type, named) != 0
       && MUST_PASS_IN_STACK (mode, type))
     return 1;
 
