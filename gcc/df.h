@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.  
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -29,17 +29,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define DF_RD_CHAIN	64	/* Reg-def chain.  */
 #define DF_RU_CHAIN    128	/* Reg-use chain.  */
 #define DF_ALL	       255
-#define DF_HARD_REGS  1024
+#define DF_HARD_REGS  1024	/* Mark hard registers.  */
 #define DF_EQUIV_NOTES 2048	/* Mark uses present in EQUIV/EQUAL notes.  */
 
 enum df_ref_type {DF_REF_REG_DEF, DF_REF_REG_USE, DF_REF_REG_MEM_LOAD,
 		  DF_REF_REG_MEM_STORE};
 
 #define DF_REF_TYPE_NAMES {"def", "use", "mem load", "mem store"}
-
-/* ???> Perhaps all these data structures should be made private
-   to enforce the interface.  */
-
 
 /* Link on a def-use or use-def chain.  */
 struct df_link
@@ -50,27 +46,33 @@ struct df_link
 
 enum df_ref_flags
   {
+    /* Read-modify-write refs generate both a use and a def and
+       these are marked with this flag to show that they are not
+       independent.  */
     DF_REF_READ_WRITE = 1,
-
-    /* This flag is set on register references itself representing a or
-       being inside a subreg on machines which have CLASS_CANNOT_CHANGE_MODE
-       and where the mode change of that subreg expression is invalid for
-       this class.  Note, that this flag can also be set on df_refs
-       representing the REG itself (i.e. one might not see the subreg
-       anymore).  Also note, that this flag is set also for hardreg refs.
-       I.e. you must check yourself if it's a pseudo.  */
+    
+    /* This flag is set on register references inside a subreg on
+       machines which have CLASS_CANNOT_CHANGE_MODE and where the mode
+       change of that subreg expression is invalid for this class.
+       Note, that this flag can also be set on df_refs representing
+       the REG itself (i.e., one might not see the subreg anyore).
+       Also note, that this flag is set also for hardreg refs, i.e.,
+       you must check yourself if it's a pseudo.  */
     DF_REF_MODE_CHANGE = 2
   };
 
-/* Define a register reference structure.  */
+
+/* Define a register reference structure.  One of these is allocated
+   for every register reference (use or def).  Note some register
+   references (e.g., post_inc, subreg) generate both a def and a use.  */
 struct ref
 {
   rtx reg;			/* The register referenced.  */
   rtx insn;			/* Insn containing ref.  */
-  rtx *loc;			/* Loc is the location of the reg.  */
+  rtx *loc;			/* The location of the reg.  */
   struct df_link *chain;	/* Head of def-use or use-def chain.  */
-  enum df_ref_type type;	/* Type of ref.  */
   unsigned int id;		/* Ref index.  */
+  enum df_ref_type type;	/* Type of ref.  */
   enum df_ref_flags flags;	/* Various flags.  */
 };
 
@@ -80,12 +82,9 @@ struct insn_info
 {
   struct df_link *defs;		/* Head of insn-def chain.  */
   struct df_link *uses;		/* Head of insn-use chain.  */
-  /* ???? The following luid field should be considered private so that
+  /* ???? The following luid field should be considerd private so that
      we can change it on the fly to accommodate new insns?  */
   int luid;			/* Logical UID.  */
-#if 0
-  rtx insn;			/* Backpointer to the insn.  */
-#endif
 };
 
 
@@ -151,12 +150,12 @@ struct df
   /* The sbitmap vector of dominators or NULL if not computed. 
      Ideally, this should be a pointer to a CFG object.  */
   sbitmap *dom;
-  int * dfs_order; /* DFS order -> block number */
-  int * rc_order; /* reverse completion order -> block number */
-  int * rts_order; /* reverse top sort order -> block number */
-  int * inverse_rc_map; /* block number -> reverse completion order */
-  int * inverse_dfs_map; /* block number -> DFS order */
-  int * inverse_rts_map; /* block number -> reverse top-sort order */
+  int *dfs_order;		/* DFS order -> block number.  */
+  int *rc_order;		/* Reverse completion order -> block number.  */
+  int *rts_order;		/* Reverse top sort order -> block number.  */
+  int *inverse_rc_map;		/* Block number -> reverse completion order.  */
+  int *inverse_dfs_map;		/* Block number -> DFS order.  */
+  int *inverse_rts_map;		/* Block number -> reverse top-sort order.  */
 };
 
 
@@ -171,18 +170,14 @@ struct df_map
 
 
 /* Macros to access the elements within the ref structure.  */
+
 #define DF_REF_REAL_REG(REF) (GET_CODE ((REF)->reg) == SUBREG \
 				? SUBREG_REG ((REF)->reg) : ((REF)->reg))
 #define DF_REF_REGNO(REF) REGNO (DF_REF_REAL_REG (REF))
 #define DF_REF_REAL_LOC(REF) (GET_CODE ((REF)->reg) == SUBREG \
 			        ? &SUBREG_REG ((REF)->reg) : ((REF)->loc))
-#ifdef OLD_DF_INTERFACE
-#define DF_REF_REG(REF) DF_REF_REAL_REG(REF)
-#define DF_REF_LOC(REF) DF_REF_REAL_LOC(REF)
-#else
 #define DF_REF_REG(REF) ((REF)->reg)
 #define DF_REF_LOC(REF) ((REF)->loc)
-#endif
 #define DF_REF_BB(REF) (BLOCK_FOR_INSN ((REF)->insn))
 #define DF_REF_BBNO(REF) (BLOCK_FOR_INSN ((REF)->insn)->index)
 #define DF_REF_INSN(REF) ((REF)->insn)
@@ -199,7 +194,7 @@ struct df_map
 #define DF_REF_REG_MEM_STORE_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_MEM_STORE)
 #define DF_REF_REG_MEM_LOAD_P(REF) (DF_REF_TYPE (REF) == DF_REF_REG_MEM_LOAD)
 #define DF_REF_REG_MEM_P(REF) (DF_REF_REG_MEM_STORE_P (REF) \
-                            || DF_REF_REG_MEM_LOAD_P (REF))
+                               || DF_REF_REG_MEM_LOAD_P (REF))
 
 
 /* Macros to access the elements within the reg_info structure table.  */
@@ -234,6 +229,7 @@ extern void df_finish PARAMS ((struct df *));
 
 extern void df_dump PARAMS ((struct df *, int, FILE *));
 
+
 /* Functions to modify insns.  */
 
 extern void df_insn_modify PARAMS ((struct df *, basic_block, rtx));
@@ -247,7 +243,7 @@ extern rtx df_jump_pattern_emit_after PARAMS ((struct df *, rtx,
 					       basic_block, rtx));
 
 extern rtx df_pattern_emit_after PARAMS ((struct df *, rtx, 
-					   basic_block, rtx));
+					  basic_block, rtx));
 
 extern rtx df_insn_move_before PARAMS ((struct df *, basic_block, rtx,
 					basic_block, rtx));
@@ -311,25 +307,33 @@ extern void debug_df_useno PARAMS ((unsigned int));
 extern void debug_df_ref PARAMS ((struct ref *));
 
 extern void debug_df_chain PARAMS ((struct df_link *));
+
 extern void df_insn_debug PARAMS ((struct df *, rtx, FILE *));
+
 extern void df_insn_debug_regno PARAMS ((struct df *, rtx, FILE *));
-/* Meet over any path (UNION) or meet over all paths (INTERSECTION) */
+
+
+/* Meet over any path (UNION) or meet over all paths (INTERSECTION).  */
 enum df_confluence_op
   {
-    UNION,
-    INTERSECTION
-  };
-/* Dataflow direction */
-enum df_flow_dir
-  {
-    FORWARD,
-    BACKWARD
+    DF_UNION,
+    DF_INTERSECTION
   };
 
+
+/* Dataflow direction.  */
+enum df_flow_dir
+  {
+    DF_FORWARD,
+    DF_BACKWARD
+  };
+
+
 typedef void (*transfer_function_sbitmap) PARAMS ((int, int *, sbitmap, sbitmap, 
-					   sbitmap, sbitmap, void *));
+						   sbitmap, sbitmap, void *));
+
 typedef void (*transfer_function_bitmap) PARAMS ((int, int *, bitmap, bitmap,
-					  bitmap, bitmap, void *));
+						  bitmap, bitmap, void *));
 
 extern void iterative_dataflow_sbitmap PARAMS ((sbitmap *, sbitmap *, 
 						sbitmap *, sbitmap *, 
@@ -337,6 +341,7 @@ extern void iterative_dataflow_sbitmap PARAMS ((sbitmap *, sbitmap *,
 						enum df_confluence_op, 
 						transfer_function_sbitmap, 
 						int *, void *));
+
 extern void iterative_dataflow_bitmap PARAMS ((bitmap *, bitmap *, bitmap *, 
 					       bitmap *, bitmap, 
 					       enum df_flow_dir, 
