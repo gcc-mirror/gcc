@@ -3277,15 +3277,16 @@ build_offset_ref_call_from_tree (tree fn, tree args)
   /* This code is not really correct (for example, it does not
      handle the case that `A::f' is overloaded), but it is
      historically how we have handled this situation.  */
-  object_addr = build_unary_op (ADDR_EXPR, TREE_OPERAND (fn, 0), 0);
   if (TREE_CODE (TREE_OPERAND (fn, 1)) == FIELD_DECL)
-    fn = resolve_offset_ref (fn);
+    /* This case should now be handled elsewhere.  */
+    abort ();
   else
     {
+      object_addr = build_unary_op (ADDR_EXPR, TREE_OPERAND (fn, 0), 0);
       fn = TREE_OPERAND (fn, 1);
       fn = get_member_function_from_ptrfunc (&object_addr, fn);
+      args = tree_cons (NULL_TREE, object_addr, args);
     }
-  args = tree_cons (NULL_TREE, object_addr, args);
   return build_function_call (fn, args);
 }
 

@@ -1,3 +1,12 @@
+2003-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/9868
+	* call.c (resolve_scoped_fn_name): Handle the case of a function
+	pointer member.
+
+	* decl2.c (build_offset_ref_call_from_tree): Only mess with 'this'
+	argument in the pointer-to-member case.
+
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9373
