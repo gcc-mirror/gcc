@@ -1,3 +1,8 @@
+Tue Oct 19 15:26:11 1999  Richard Earnshaw  (rearnsha@arm.com)
+
+	* arm.c (arm_return_in_memory): APCS rules state that the elements
+	of a structure returned in a register must be 'integer-like'.
+
 1999-10-19  Bruce Korb  <autogen@linuxbox.com>
 
         * fixinc/Makefile.in: Change the generation rules to run `genfixes'
