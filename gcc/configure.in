@@ -77,6 +77,37 @@ if [[ x$gxx_include_dir = x ]]; then
 	gxx_include_dir='${prefix}/include/g++'
 fi
 
+# Enable threads
+# Pass with no value to take the default
+# Pass with a value to specify a thread package
+AC_ARG_ENABLE(threads,
+[  --enable-threads        enable thread usage for target GCC.
+  --enable-threads=LIB    use LIB thread package for target GCC.],
+if [[[ x$enable_threads = xno ]]]; then
+	enable_threads=''
+fi,
+enable_threads='')
+
+# Check if a valid thread package
+case x${enable_threads} in
+	x | xno)
+		# No threads
+		thread_file='single'
+		;;
+	xyes)
+		# default
+		thread_file=''
+		;;
+	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
+	xsolaris | xwin32)
+		thread_file=$enable_threads
+		;;
+	*)
+		echo "$enable_threads is an unknown thread package" 1>&2
+		exit 1
+		;;
+esac
+
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
@@ -142,16 +173,6 @@ for machine in $build $host $target; do
 	truncate_target=
 	# Set this if gdb needs a dir command with `dirname $out_file`
 	gdb_needs_out_file_path=
-	# Set this to the tag of the Objective-C runtime thread file to compile
-        # It may be set (in the absence of autoconf configuration) by
-        # --enable-objcthreads=posix (for instance) where it's not
-        # well defined as is the case for Linux.
-	objc_thread_file=
-        case x${enable_objcthreads-x} in
-        x | xyes)
-            echo "\`--enable-objcthreads' must be passed a value." 1>&2
-            exit 1 ;;
-        esac
 	# Set this if the build machine requires executables to have a
 	# file name suffix.
 	exeext=
@@ -231,7 +252,6 @@ for machine in $build $host $target; do
 	alpha-*-linux*ecoff*)
 		tm_file="${tm_file} alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		objc_thread_file=${enable_objcthreads-single}
 		target_cpu_default=4
 		xmake_file=none
 		fixincludes=Makefile.in
@@ -316,7 +336,9 @@ for machine in $build $host $target; do
 		then
 			extra_programs=ld.exe
 		fi
-		objc_thread_file=${enable_objcthreads-win32}
+		if [[ x$thread_file = x ]]; then
+			thread_file='win32'
+		fi
 		;;
 	alpha-dec-vms*)
 		tm_file=alpha/vms.h
@@ -620,7 +642,9 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-next
 		xmake_file=i386/x-next
 		extra_objs=nextstep.o
-		objc_thread_file=${enable_objcthreads-mach}
+		if [[ x$thread_file = x ]]; then
+			thread_file='mach'
+		fi
 		;;
 	i[[3456]]86-sequent-bsd*) 		# 80386 from Sequent
 		use_collect2=yes
@@ -741,7 +765,6 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
-		objc_thread_file=${enable_objcthreads-single}
 		;;
 	i[[3456]]86-*-linux*aout*)		# Intel 80386's running Linux
 		xm_file=i386/xm-linux.h		# with a.out format
@@ -751,7 +774,6 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
-		objc_thread_file=${enable_objcthreads-single}
 		;;
 	i[[3456]]86-*-linux*)		# Intel 80386's running Linux
 		xm_file=i386/xm-linux.h # with ELF format
@@ -762,7 +784,6 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
-		objc_thread_file=${enable_objcthreads-single}
 		;;
 	i[[3456]]86-*-gnu*)
 		;;
@@ -876,7 +897,9 @@ for machine in $build $host $target; do
 		xmake_file=x-svr4
 		fixincludes=fixinc.svr4
 		broken_install=yes
-		objc_thread_file=${enable_objcthreads-solaris}
+		if [[ x$thread_file = x ]]; then
+			thread_file='solaris'
+		fi
 		;;
 	i[[3456]]86-*-sysv4*)		# Intel 80386's running system V.4
 		xm_file=i386/xm-sysv4.h
@@ -923,7 +946,9 @@ for machine in $build $host $target; do
 		xmake_file=i386/x-cygwin32
 		extra_objs=winnt.o
 		fixincludes=Makefile.in
-		objc_thread_file=${enable_objcthreads-win32}
+		if [[ x$thread_file = x ]]; then
+			thread_file='win32'
+		fi
 		exeext=.exe
 		;;
 	i[[3456]]86-*-mingw32)
@@ -933,7 +958,9 @@ for machine in $build $host $target; do
 		extra_objs=winnt.o
 		xmake_file=i386/x-cygwin32
 		fixincludes=Makefile.in
-		objc_thread_file=${enable_objcthreads-win32}
+		if [[ x$thread_file = x ]]; then
+			thread_file='win32'
+		fi
 		exeext=.exe
 		;;
 	i[[3456]]86-*-winnt3*)
@@ -949,7 +976,9 @@ for machine in $build $host $target; do
 		then
 			extra_programs=ld.exe
 		fi
-		objc_thread_file=${enable_objcthreads-win32}
+		if [[ x$thread_file = x ]]; then
+			thread_file='win32'
+		fi
 		;;
 	i[[3456]]86-dg-dgux)
 		xm_file=i386/xm-dgux.h
@@ -1300,7 +1329,9 @@ for machine in $build $host $target; do
 		xmake_file=m68k/x-next
 		extra_objs=nextstep.o
 		extra_headers=math-68881.h
-		objc_thread_file=${enable_objcthreads-mach}
+		if [[ x$thread_file = x ]]; then
+			thread_file='mach'
+		fi
 		;;
 	m68k-sun-sunos3*)
 		if [[ x$with_fp = xno ]]
@@ -1378,7 +1409,6 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
-		objc_thread_file=${enable_objcthreads-single}
 		;;
 	m68k-*-linux*)			# Motorola m68k's running Linux
 		xm_file=m68k/xm-linux.h	# with ELF format
@@ -1389,7 +1419,6 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
-		objc_thread_file=${enable_objcthreads-single}
 		;;
 	m68k-*-psos*)
 		tmake_file=m68k/t-m68kbare
@@ -1482,7 +1511,9 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris6
 		tmake_file=mips/t-iris6
-		objc_thread_file=${enable_objcthreads-irix}
+		if [[ x$thread_file = x ]]; then
+			thread_file='irix'
+		fi
 		;;
 	mips-sgi-irix5cross64)		# Irix5 host, Irix 6 target, cross64
 		tm_file=mips/cross64.h
@@ -1493,7 +1524,9 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-cross64
 		# See comment in mips/iris[56].h files.
 		use_collect2=yes
-		objc_thread_file=${enable_objcthreads-irix}
+		if [[ x$thread_file = x ]]; then
+			thread_file='irix'
+		fi
 		;;
         mips-sni-sysv4)
 		if [[ x$gas = xyes ]]
@@ -1535,7 +1568,9 @@ for machine in $build $host $target; do
 		tmake_file=mips/t-mips-gas
 		# See comment in mips/iris5.h file.
 		use_collect2=yes
-		objc_thread_file=${enable_objcthreads-irix}
+		if [[ x$thread_file = x ]]; then
+			thread_file='irix'
+		fi
 		;;
 	mips-sgi-irix4loser*)		# Mostly like a MIPS.
 		tm_file=mips/iris4loser.h
@@ -1555,7 +1590,9 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		objc_thread_file=${enable_objcthreads-irix}
+		if [[ x$thread_file = x ]]; then
+			thread_file='irix'
+		fi
 		;;
 	mips-sgi-irix4*)		# Mostly like a MIPS.
 		tm_file=mips/iris4.h
@@ -1575,7 +1612,9 @@ for machine in $build $host $target; do
 		then
 			use_collect2=yes
 		fi
-		objc_thread_file=${enable_objcthreads-irix}
+		if [[ x$thread_file = x ]]; then
+			thread_file='irix'
+		fi
 		;;
 	mips-sgi-*)			# Mostly like a MIPS.
 		tm_file=mips/iris3.h
@@ -2054,7 +2093,6 @@ for machine in $build $host $target; do
 		fi
 		xmake_file=rs6000/x-sysv4
 		fixincludes=Makefile.in
-		objc_thread_file=${enable_objcthreads-single}
 		extra_headers=ppc-asm.h
 		;;
         powerpc-*-vxworks*)
@@ -2098,7 +2136,9 @@ for machine in $build $host $target; do
                 tmake_file=rs6000/t-winnt
 #               extra_objs=pe.o
 		fixincludes=Makefile.in
-		objc_thread_file=${enable_objcthreads-win32}
+		if [[ x$thread_file = x ]]; then
+			thread_file='win32'
+		fi
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-pe | powerpcle-*-cygwin32)
@@ -2108,7 +2148,9 @@ for machine in $build $host $target; do
 		xmake_file=rs6000/x-cygwin32
 #		extra_objs=pe.o
 		fixincludes=Makefile.in
-		objc_thread_file=${enable_objcthreads-win32}
+		if [[ x$thread_file = x ]]; then
+			thread_file='win32'
+		fi
 		exeext=.exe
 		extra_headers=ppc-asm.h
 		;;
@@ -2207,7 +2249,6 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
-		objc_thread_file=${enable_objcthreads-single}
 		;;
 	sparc-*-linux*)			# Sparc's running Linux, ELF
 		xm_file=sparc/xm-linux.h
@@ -2219,7 +2260,6 @@ for machine in $build $host $target; do
 		# Don't use it. Linux uses a slightly different one.
 		# The real one comes with the Linux C library.
 		#extra_parts="crtbegin.o crtend.o"
-		objc_thread_file=${enable_objcthreads-single}
 		;;
 	sparc-*-lynxos*)
 		if [[ x$gas = xyes ]]
@@ -2244,7 +2284,9 @@ for machine in $build $host $target; do
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		fixincludes=fixinc.svr4
 		broken_install=yes
-		objc_thread_file=${enable_objcthreads-solaris}
+		if [[ x$thread_file = x ]]; then
+			thread_file='solaris'
+		fi
 		;;
 	sparc-*-sunos4.0*)
 		tm_file=sparc/sunos4.h
@@ -2571,10 +2613,9 @@ if [[ "$host_xm_file" != "$build_xm_file" ]]; then
 	fi
 fi
 
-if [[ x$objc_thread_file = x ]]
-then objc_thread_file=${enable_objcthreads-single}
+if [[ x$thread_file = x ]]
+then thread_file='single'
 fi
-echo "Using \`$srcdir/objc/thr-${objc_thread_file}.c' as Objective-C Runtime thread file."
 
 # Set up the header files.
 # $links is the list of header files to create.
@@ -2975,7 +3016,7 @@ AC_SUBST(build_xm_file_list)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(lang_specs_files)
 AC_SUBST(lang_options_files)
-AC_SUBST(objc_thread_file)
+AC_SUBST(thread_file)
 AC_SUBST(version)
 AC_SUBST(local_prefix)
 AC_SUBST(gxx_include_dir)
@@ -3069,7 +3110,7 @@ host_xm_file_list='${host_xm_file_list}'
 host_xm_file_sub='${host_xm_file_sub}'
 lang_specs_files='${lang_specs_files}'
 lang_options_files='${lang_options_files}'
-objc_thread_file='${objc_thread_file}'
+thread_file='${thread_file}'
 version='${version}'
 local_prefix='${local_prefix}'
 gxx_include_dir='${gxx_include_dir}'
