@@ -1,3 +1,21 @@
+2001-12-29  Graham Stott  <grahams@redhat.com>
+
+        * config/i386/i386.c (ix86_asm_dialect): Fix enum type.
+
+        (override_options): Delete abs macro unused. 
+
+        (output_pic_addr_const): Use ASM_ATT/ASM_INTEL enumerations
+        when testing ASSEMBLER_DIALECT.
+
+        (print_reg): Likewise.
+        (print_operand): Likewise.
+        (print_operand_address): Likewise.
+        (print_operand): abort if ASSEMBLER_DIALECT is unknown dialect.
+
+        * config/i386/i386.h (ix86_asm_dialect): Fix enum type.
+
+        (FIND_BASE_TERM): Fix typo.
+
 Sat Dec 29 15:48:54 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_field): Use adjust_address, not PUT_MODE.
