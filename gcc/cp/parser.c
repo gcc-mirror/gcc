@@ -12343,20 +12343,12 @@ cp_parser_class_specifier (cp_parser* parser)
     pop_p = push_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL (type)));
   type = begin_class_definition (type);
   
-  if (processing_template_decl)
-    /* There are no access checks when parsing a template, as we do no
-       know if a specialization will be a friend.  */
-    push_deferring_access_checks (dk_no_check);
-  
   if (type == error_mark_node)
     /* If the type is erroneous, skip the entire body of the class.  */
     cp_parser_skip_to_closing_brace (parser);
   else
     /* Parse the member-specification.  */
     cp_parser_member_specification_opt (parser);
-  
-  if (processing_template_decl)
-    pop_deferring_access_checks ();
   
   /* Look for the trailing `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, "`}'");
@@ -14879,10 +14871,16 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
     cp_parser_template_declaration_after_export (parser, member_p);
   else
     {
+      /* There are no access checks when parsing a template, as we do not
+         know if a specialization will be a friend.  */
+      push_deferring_access_checks (dk_no_check);
+      
       decl = cp_parser_single_declaration (parser,
 					   member_p,
 					   &friend_p);
 
+      pop_deferring_access_checks ();
+  
       /* If this is a member template declaration, let the front
 	 end know.  */
       if (member_p && !friend_p && decl)
