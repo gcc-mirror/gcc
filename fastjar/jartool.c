@@ -17,9 +17,17 @@
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
-/* $Id: jartool.c,v 1.5 2001/05/03 21:40:47 danglin Exp $
+/* $Id: jartool.c,v 1.6 2001/07/04 18:33:53 tromey Exp $
 
    $Log: jartool.c,v $
+   Revision 1.6  2001/07/04 18:33:53  tromey
+   	Modified from patch by Julian Hall <jules@acris.co.uk>:
+   	* jartool.c (errno): Conditionally declare.
+   	(O_BINARY): Conditionally define.
+   	(main): Use open, not creat.  Use O_BINARY everywhere.
+   	(make_manifest): Use O_BINARY.
+   	(add_to_jar): Likewise.
+
    Revision 1.5  2001/05/03 21:40:47  danglin
    	* jartool.c (jt_strdup): New function.
    	(get_next_arg): Use jt_strdup instead of strdup.
@@ -241,7 +249,7 @@ ub1 data_descriptor[16];
 int do_compress;
 int seekable;
 int verbose;
-char jarfile[256];
+char *jarfile;
 
 /* If non zero, then don't recurse in directory. Instead, add the
    directory entry and relie on an explicit list of files to populate
@@ -357,7 +365,7 @@ int main(int argc, char **argv){
     if(i >= argc)
       usage(argv[0]);
 
-    strncpy(jarfile, argv[i++], 256);
+    jarfile = jt_strdup (argv[i++]);
   }
   if(manifest_file){
     if(i >= argc)
@@ -370,7 +378,7 @@ int main(int argc, char **argv){
     if(i >= argc)
       usage(argv[0]);
 
-    strncpy(jarfile, argv[i++], 256);
+    jarfile = jt_strdup (argv[i++]);
   }
 
   /* create the jarfile */
