@@ -301,8 +301,10 @@ do {								\
 
 #define READONLY_SECTION_ASM_OP ".rdata"
 
+#define LITERALS_SECTION_ASM_OP ".literals"
+
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS	in_link, in_rdata
+#define EXTRA_SECTIONS	in_link, in_rdata, in_literals
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
@@ -322,6 +324,15 @@ link_section ()							\
     {								\
       fprintf (asm_out_file, "%s\n", LINK_SECTION_ASM_OP); 	\
       in_section = in_link;					\
+    }								\
+}                                                               \
+void								\
+literals_section ()						\
+{								\
+  if (in_section != in_literals)				\
+    {								\
+      fprintf (asm_out_file, "%s\n", LITERALS_SECTION_ASM_OP); 	\
+      in_section = in_literals;					\
     }								\
 }
 
@@ -442,6 +453,15 @@ do {									\
       if (ovr)							\
         (NAME) = "";						\
     } while (0)
+
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
+  do {	literals_section();                                             \
+	fprintf ((FILE), "\t");						\
+	assemble_name (FILE, LABEL1);					\
+	fprintf (FILE, " = ");						\
+	assemble_name (FILE, LABEL2);					\
+	fprintf (FILE, "\n");						\
+  } while (0)
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
