@@ -3261,7 +3261,8 @@ output_constant_def_contents (exp, reloc, labelno)
   /* Output the value of EXP.  */
   output_constant (exp,
 		   (TREE_CODE (exp) == STRING_CST
-		    ? TREE_STRING_LENGTH (exp)
+		    ? MAX (TREE_STRING_LENGTH (exp),
+			   int_size_in_bytes (TREE_TYPE (exp)))
 		    : int_size_in_bytes (TREE_TYPE (exp))));
 
 }

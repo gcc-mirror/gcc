@@ -1,3 +1,9 @@
+2001-08-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* varasm.c (output_constant_def_contents): Use for the length of a
+	string constant either its TREE_STRING_LENGTH or its int_size_in_bytes
+	depending on which is larger.
+
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* doc/extend.texi (Other Builtins): Fix typo in last change.
