@@ -361,14 +361,37 @@ public class File implements Serializable, Comparable
   {
     if (name == null)
       throw new NullPointerException();
-    if (dirPath != null && dirPath.length() > 0)
+    if (dirPath != null)
       {
-	// Try to be smart about the number of separator characters.
-	if (dirPath.charAt(dirPath.length() - 1) == separatorChar
-	    || name.length() == 0)
-	  path = normalizePath(dirPath + name);
+	if (dirPath.length() > 0)
+	  {
+	    // Try to be smart about the number of separator characters.
+	    if (dirPath.charAt(dirPath.length() - 1) == separatorChar
+		|| name.length() == 0)
+	      path = normalizePath(dirPath + name);
+	    else
+	      path = normalizePath(dirPath + separatorChar + name);
+	  }
 	else
-	  path = normalizePath(dirPath + separatorChar + name);
+	  {
+	    // If dirPath is empty, use a system dependant
+	    // default prefix.
+	    // Note that the leading separators in name have
+	    // to be chopped off, to prevent them forming
+	    // a UNC prefix on Windows.
+	    if (separatorChar == '\\' /* TODO use ON_WINDOWS */)
+	      {
+		int skip = 0;
+		while(name.length() > skip
+		    && (name.charAt(skip) == separatorChar
+		    || name.charAt(skip) == '/'))
+		  {
+		    skip++;
+		  }
+		name = name.substring(skip);
+	      }
+	    path = normalizePath(separatorChar + name);
+	  }
       }
     else
       path = normalizePath(name);
