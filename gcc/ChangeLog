@@ -1,3 +1,16 @@
+2003-01-25  Roger Sayle  <roger@eyesopen.com>
+
+	* stmt.c (emit_case_bit_tests): New routine to implement suitable
+	switch statements using the equivalent of "if ((1<<x) & cst) ... ".
+	(case_bit_test_cmp): New comparison function for "qsort" to order
+	case_bit_tests by decreasing number of destination nodes.
+	(lshift_cheap_p): New function to determine if "1 << x" is cheap.
+	(expand_end_case_type): Use emit_case_bit_tests to implement
+	suitable switch statments.
+	(CASE_USE_BIT_TESTS): New target macro to disable the above.
+	* Makefile.in (stmt.o): Add dependency on optab.h.
+	* doc/tm.texi (CASE_USE_BIT_TESTS): Document new target macro.
+
 2003-01-23  Andreas Schwab  <schwab@suse.de>
 
 	* config/ia64/crtend.asm [HAVE_INITFINI_ARRAY]: Make

@@ -56,6 +56,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "langhooks.h"
 #include "predict.h"
+#include "optabs.h"
 
 /* Assume that case vectors are not pc-relative.  */
 #ifndef CASE_VECTOR_PC_RELATIVE
@@ -420,6 +421,10 @@ static void do_jump_if_equal		PARAMS ((rtx, rtx, rtx, int));
 static int estimate_case_costs		PARAMS ((case_node_ptr));
 static bool same_case_target_p		PARAMS ((rtx, rtx));
 static void strip_default_case_nodes	PARAMS ((case_node_ptr *, rtx));
+static bool lshift_cheap_p		PARAMS ((void));
+static int case_bit_test_cmp		PARAMS ((const void *, const void *));
+static void emit_case_bit_tests		PARAMS ((tree, tree, tree, tree,
+						 case_node_ptr, rtx));
 static void group_case_nodes		PARAMS ((case_node_ptr));
 static void balance_case_nodes		PARAMS ((case_node_ptr *,
 					       case_node_ptr));
@@ -5172,6 +5177,154 @@ check_for_full_enumeration_handling (type)
 }
 
 
+/* Maximum number of case bit tests.  */
+#define MAX_CASE_BIT_TESTS  3
+
+/* By default, enable case bit tests on targets with ashlsi3.  */
+#ifndef CASE_USE_BIT_TESTS
+#define CASE_USE_BIT_TESTS  (ashl_optab->handlers[word_mode].insn_code \
+			     != CODE_FOR_nothing)
+#endif
+
+
+/* A case_bit_test represents a set of case nodes that may be
+   selected from using a bit-wise comparison.  HI and LO hold
+   the integer to be tested against, LABEL contains the label
+   to jump to upon success and BITS counts the number of case
+   nodes handled by this test, typically the number of bits
+   set in HI:LO.  */
+
+struct case_bit_test
+{
+  HOST_WIDE_INT hi;
+  HOST_WIDE_INT lo;
+  rtx label;
+  int bits;
+};
+
+/* Determine whether "1 << x" is relatively cheap in word_mode.  */
+
+static bool lshift_cheap_p ()
+{
+  static bool init = false;
+  static bool cheap = true;
+
+  if (!init)
+    {
+      rtx reg = gen_rtx_REG (word_mode, 10000);
+      int cost = rtx_cost (gen_rtx_ASHIFT (word_mode, const1_rtx, reg), SET);
+      cheap = cost < COSTS_N_INSNS (3);
+      init = true;
+    }
+
+  return cheap;
+}
+
+/* Comparison function for qsort to order bit tests by decreasing
+   number of case nodes, i.e. the node with the most cases gets
+   tested first.  */
+
+static int case_bit_test_cmp (p1, p2)
+     const void *p1;
+     const void *p2;
+{
+  const struct case_bit_test *d1 = p1;
+  const struct case_bit_test *d2 = p2;
+
+  return d2->bits - d1->bits;
+}
+
+/*  Expand a switch statement by a short sequence of bit-wise
+    comparisons.  "switch(x)" is effectively converted into
+    "if ((1 << (x-MINVAL)) & CST)" where CST and MINVAL are
+    integer constants.
+
+    INDEX_EXPR is the value being switched on, which is of
+    type INDEX_TYPE.  MINVAL is the lowest case value of in
+    the case nodes, of INDEX_TYPE type, and RANGE is highest
+    value minus MINVAL, also of type INDEX_TYPE.  NODES is
+    the set of case nodes, and DEFAULT_LABEL is the label to
+    branch to should none of the cases match.
+
+    There *MUST* be MAX_CASE_BIT_TESTS or less unique case
+    node targets.  */
+
+static void
+emit_case_bit_tests (index_type, index_expr, minval, range,
+		     nodes, default_label)
+     tree index_type, index_expr, minval, range;
+     case_node_ptr nodes;
+     rtx default_label;
+{
+  struct case_bit_test test[MAX_CASE_BIT_TESTS];
+  enum machine_mode mode;
+  rtx expr, index, label;
+  unsigned int i,j,lo,hi;
+  struct case_node *n;
+  unsigned int count;
+
+  count = 0;
+  for (n = nodes; n; n = n->right)
+    {
+      label = label_rtx (n->code_label);
+      for (i = 0; i < count; i++)
+	if (same_case_target_p (label, test[i].label))
+	  break;
+
+      if (i == count)
+	{
+	  if (count >= MAX_CASE_BIT_TESTS)
+	    abort ();
+          test[i].hi = 0;
+          test[i].lo = 0;
+	  test[i].label = label;
+	  test[i].bits = 1;
+	  count++;
+	}
+      else
+        test[i].bits++;
+
+      lo = tree_low_cst (fold (build (MINUS_EXPR, index_type,
+				      n->low, minval)), 1);
+      hi = tree_low_cst (fold (build (MINUS_EXPR, index_type,
+				      n->high, minval)), 1);
+      for (j = lo; j <= hi; j++)
+        if (j >= HOST_BITS_PER_WIDE_INT)
+	  test[i].hi |= (HOST_WIDE_INT) 1 << (j - HOST_BITS_PER_INT);
+	else
+	  test[i].lo |= (HOST_WIDE_INT) 1 << j;
+    }
+
+  qsort (test, count, sizeof(*test), case_bit_test_cmp);
+
+  index_expr = fold (build (MINUS_EXPR, index_type,
+			    convert (index_type, index_expr),
+			    convert (index_type, minval)));
+  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
+  emit_queue ();
+  index = protect_from_queue (index, 0);
+  do_pending_stack_adjust ();
+
+  mode = TYPE_MODE (index_type);
+  expr = expand_expr (range, NULL_RTX, VOIDmode, 0);
+  emit_cmp_and_jump_insns (index, expr, GTU, NULL_RTX, mode, 1,
+			   default_label);
+
+  index = convert_to_mode (word_mode, index, 0);
+  index = expand_binop (word_mode, ashl_optab, const1_rtx,
+			index, NULL_RTX, 1, OPTAB_WIDEN);
+
+  for (i = 0; i < count; i++)
+    {
+      expr = immed_double_const (test[i].lo, test[i].hi, word_mode);
+      expr = expand_binop (word_mode, and_optab, index, expr,
+			   NULL_RTX, 1, OPTAB_WIDEN);
+      emit_cmp_and_jump_insns (expr, const0_rtx, NE, NULL_RTX,
+			       word_mode, 1, test[i].label);
+    }
+
+  emit_jump (default_label);
+}
 
 /* Terminate a case (Pascal) or switch (C) statement
    in which ORIG_INDEX is the expression to be tested.
@@ -5185,14 +5338,14 @@ expand_end_case_type (orig_index, orig_type)
 {
   tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE;
   rtx default_label = 0;
-  struct case_node *n;
-  unsigned int count;
+  struct case_node *n, *m;
+  unsigned int count, uniq;
   rtx index;
   rtx table_label;
   int ncases;
   rtx *labelvec;
   int i;
-  rtx before_case, end;
+  rtx before_case, end, lab;
   struct nesting *thiscase = case_stack;
   tree index_expr, index_type;
   bool exit_done = false;
@@ -5267,6 +5420,7 @@ expand_end_case_type (orig_index, orig_type)
       /* Get upper and lower bounds of case values.
 	 Also convert all the case values to the index expr's data type.  */
 
+      uniq = 0;
       count = 0;
       for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 	{
@@ -5296,6 +5450,16 @@ expand_end_case_type (orig_index, orig_type)
 	  /* A range counts double, since it requires two compares.  */
 	  if (! tree_int_cst_equal (n->low, n->high))
 	    count++;
+
+	  /* Count the number of unique case node targets.  */
+          uniq++;
+	  lab = label_rtx (n->code_label);
+          for (m = thiscase->data.case_stmt.case_list; m != n; m = m->right)
+            if (same_case_target_p (label_rtx (m->code_label), lab))
+              {
+                uniq--;
+                break;
+              }
 	}
 
       /* Compute span of values.  */
@@ -5309,6 +5473,31 @@ expand_end_case_type (orig_index, orig_type)
 	  expand_expr (index_expr, const0_rtx, VOIDmode, 0);
 	  emit_queue ();
 	  emit_jump (default_label);
+	}
+
+      /* Try implementing this switch statement by a short sequence of
+	 bit-wise comparisons.  However, we let the binary-tree case
+	 below handle constant index expressions.  */
+      else if (CASE_USE_BIT_TESTS
+	       && ! TREE_CONSTANT (index_expr)
+	       && compare_tree_int (range, GET_MODE_BITSIZE (word_mode)) < 0
+	       && lshift_cheap_p ()
+	       && ((uniq == 1 && count >= 3)
+		   || (uniq == 2 && count >= 5)
+		   || (uniq == 3 && count >= 6)))
+	{
+	  /* Optimize the case where all the case values fit in a
+	     word without having to subtract MINVAL.  In this case,
+	     we can optimize away the subtraction.  */
+	  if (compare_tree_int (minval, 0) > 0
+	      && compare_tree_int (maxval, GET_MODE_BITSIZE (word_mode)) < 0)
+	    {
+	      minval = integer_zero_node;
+	      range = maxval;
+	    }
+	  emit_case_bit_tests (index_type, index_expr, minval, range,
+			       thiscase->data.case_stmt.case_list,
+			       default_label);
 	}
 
       /* If range of values is much bigger than number of values,

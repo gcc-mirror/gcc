@@ -1,3 +1,7 @@
+2003-01-25  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.c-torture/execute/switch-1.c: New test case.
+
 Sat Jan 25 12:32:55 CET 2003  Jan HUbicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20030125-1.[cx]: New test.
