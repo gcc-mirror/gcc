@@ -2095,6 +2095,14 @@ libselect (d)
   return (strncmp (libname, d->d_name, strlen (libname)) == 0);
 }
 
+/* If one file has an additional numeric extention past LIBNAME, then put
+   that one first in the sort.  If both files have additional numeric
+   extensions, then put the one with the higher number first in the sort.
+
+   We must verify that the extension is numeric, because Sun saves the
+   original versions of patched libraries with a .FCS extension.  Files with
+   invalid extensions must go last in the sort, so that they won't be used.  */
+
 static int
 libcompare (d1, d2)
      struct direct **d1, **d2;
@@ -2103,7 +2111,8 @@ libcompare (d1, d2)
   char *e1 = (*d1)->d_name + i2;
   char *e2 = (*d2)->d_name + i2;
 
-  while (*e1 && *e2)
+  while (*e1 && *e2 && *e1 == '.' && *e2 == '.'
+	 && e1[1] && isdigit (e1[1]) && e2[1] && isdigit (e2[1]))
     {
       ++e1;
       ++e2;
@@ -2114,9 +2123,23 @@ libcompare (d1, d2)
     }
 
   if (*e1)
-    return 1;
+    {
+      /* It has a valid numeric extension, prefer this one.  */
+      if (*e1 == '.' && e1[1] && isdigit (e1[1]))
+	return 1;
+      /* It has a invalid numeric extension, must prefer the other one.  */
+      else
+	return -1;
+    }
   else if (*e2)
-    return -1;
+    {
+      /* It has a valid numeric extension, prefer this one.  */
+      if (*e2 == '.' && e2[1] && isdigit (e2[1]))
+	return -1;
+      /* It has a invalid numeric extension, must prefer the other one.  */
+      else
+	return 1;
+    }
   else
     return 0;
 }
