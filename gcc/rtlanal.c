@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 static int rtx_addr_can_trap_p	PARAMS ((rtx));
 static void reg_set_p_1		PARAMS ((rtx, rtx, void *));
-static void insn_dependant_p_1	PARAMS ((rtx, rtx, void *));
+static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
 static void reg_set_last_1	PARAMS ((rtx, rtx, void *));
 
 
@@ -689,11 +689,11 @@ modified_in_p (x, insn)
   return 0;
 }
 
-/* Return true if anything in insn X is (anti,output,true) dependant on
+/* Return true if anything in insn X is (anti,output,true) dependent on
    anything in insn Y.  */
 
 int
-insn_dependant_p (x, y)
+insn_dependent_p (x, y)
      rtx x, y;
 {
   rtx tmp;
@@ -702,22 +702,22 @@ insn_dependant_p (x, y)
     abort ();
 
   tmp = PATTERN (y);
-  note_stores (PATTERN (x), insn_dependant_p_1, &tmp);
+  note_stores (PATTERN (x), insn_dependent_p_1, &tmp);
   if (tmp == NULL_RTX)
     return 1;
 
   tmp = PATTERN (x);
-  note_stores (PATTERN (y), insn_dependant_p_1, &tmp);
+  note_stores (PATTERN (y), insn_dependent_p_1, &tmp);
   if (tmp == NULL_RTX)
     return 1;
 
   return 0;
 }
 
-/* A helper routine for insn_dependant_p called through note_stores.  */
+/* A helper routine for insn_dependent_p called through note_stores.  */
 
 static void
-insn_dependant_p_1 (x, pat, data)
+insn_dependent_p_1 (x, pat, data)
      rtx x;
      rtx pat ATTRIBUTE_UNUSED;
      void *data;
@@ -2113,7 +2113,7 @@ jmp_uses_reg_or_mem (x)
 /* Return nonzero if INSN is an indirect jump (aka computed jump).
 
    Tablejumps and casesi insns are not considered indirect jumps;
-   we can recognize them by a (use (lael_ref)).  */
+   we can recognize them by a (use (label_ref)).  */
 
 int
 computed_jump_p (insn)

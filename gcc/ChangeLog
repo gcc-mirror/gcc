@@ -1,3 +1,23 @@
+2000-07-22  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* collect2.c (main): Typo fixed.
+	* diagnostic.c: Typo fixed.
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Typo fixed.
+	* eh-common.h: Typo fixed.
+	* emit-rtl.c (start_sequence): Typo fixed.
+	* flow.c (find_label_refs): Typo fixed.
+	(calculate_global_regs_live): Typo fixed.
+	(mark_regno_cond_dead): Typo fixed.
+	(create_edge_list): Typos fixed.
+	(verify_edge_list): Typo fixed.
+	* ggc-common.c (ggc_mark_rtx_children): Typo fixed.
+	* loop.c (strength_reduce): Typo in function name fixed.
+	* rtl.h: Added comments.  Typo in function name fixed.
+	* rtlanal.c: Typo in function name fixed.
+	(insn_dependant_p): Rename to ...
+	(insn_dependent_p): ... this.
+	(computed_jumo_p): Typo fixed.
+
 2000-07-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* system.h (__FUNCTION__): Wrap definition in #ifndef.

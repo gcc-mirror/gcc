@@ -3494,7 +3494,7 @@ emit (x)
    pops have previously been deferred; see INHIBIT_DEFER_POP for more
    details), use do_pending_stack_adjust before calling this function.
    That will ensure that the deferred pops are not accidentally
-   emitted in the middel of this sequence.  */
+   emitted in the middle of this sequence.  */
 
 void
 start_sequence ()

@@ -876,7 +876,7 @@ main (argc, argv)
   int num_c_args	= argc+9;
 
 #if defined (COLLECT2_HOST_INITIALIZATION)
-  /* Perform system dependant initialization, if neccessary.  */
+  /* Perform system dependent initialization, if neccessary.  */
   COLLECT2_HOST_INITIALIZATION;
 #endif
 

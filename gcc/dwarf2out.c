@@ -1226,7 +1226,7 @@ dwarf2out_frame_debug_expr (expr, label)
   long offset;
     
   /* If RTX_FRAME_RELATED_P is set on a PARALLEL, process each member of 
-     the PARALLEL independantly. The first element is always processed if 
+     the PARALLEL independently. The first element is always processed if 
      it is a SET. This is for backward compatability.   Other elements 
      are processed only if they are SETs and the RTX_FRAME_RELATED_P 
      flag is set in them. */

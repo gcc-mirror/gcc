@@ -4104,7 +4104,7 @@ strength_reduce (loop, insn_count, flags)
 		    {
 		      if (GET_CODE (next) == JUMP_INSN
 			  || (INSN_P (next)
-			      && insn_dependant_p (giv_insn, next)))
+			      && insn_dependent_p (giv_insn, next)))
 			break;
 #ifdef HAVE_cc0
 		      if (! INSN_P (next)

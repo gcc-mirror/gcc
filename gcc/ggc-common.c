@@ -220,7 +220,7 @@ ggc_mark_rtx_children (r)
 	  ggc_stats->size_rtxs[(int) code] += ggc_get_size (r);
 	}
 
-      /* ??? If (some of) these are really pass-dependant info, do we
+      /* ??? If (some of) these are really pass-dependent info, do we
 	 have any right poking our noses in?  */
       switch (code)
 	{
