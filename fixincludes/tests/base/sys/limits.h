@@ -9,13 +9,6 @@
 
 
 
-#if defined( LIMITS_IFNDEFS_CHECK )
-#ifndef DBL_DIG
- #	define	DBL_DIG 	 0  /* somthin' */
-#endif
-#endif  /* LIMITS_IFNDEFS_CHECK */
-
-
 #if defined( NESTED_MOTOROLA_CHECK )
 #undef PIPE_BUF /* max # bytes atomic in write to a */
 		/* PIPE */

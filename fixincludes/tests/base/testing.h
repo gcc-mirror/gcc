@@ -129,17 +129,6 @@ extern size_t
 #endif  /* SYSV68_STRING_CHECK */
 
 
-#if defined( UNDEFINE_NULL_CHECK )
-#ifndef NULL
-#define NULL 0UL
-#endif
-#ifndef NULL
-#define NULL	((void*)0)
-#endif
-
-#endif  /* UNDEFINE_NULL_CHECK */
-
-
 #if defined( WINDISS_VALIST_CHECK )
 #include <stdarg.h>
 #endif  /* WINDISS_VALIST_CHECK */

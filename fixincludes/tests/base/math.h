@@ -68,17 +68,8 @@ typedef struct exception t_math_exception;
 
 #if defined( MATH_HUGE_VAL_FROM_DBL_MAX_CHECK )
 
-#ifndef HUGE_VAL
 #define HUGE_VAL 3.1415e+9 /* really big */
-#endif
 #endif  /* MATH_HUGE_VAL_FROM_DBL_MAX_CHECK */
-
-
-#if defined( MATH_HUGE_VAL_IFNDEF_CHECK )
-#ifndef HUGE_VAL
-# define	HUGE_VAL 3.4e+40
-#endif
-#endif  /* MATH_HUGE_VAL_IFNDEF_CHECK */
 
 
 #if defined( RS6000_DOUBLE_CHECK )
@@ -103,13 +94,6 @@ extern int class();
 int foo;
 #endif
 #endif  /* STRICT_ANSI_NOT_CTD_CHECK */
-
-
-#if defined( SVR4__P_CHECK )
-#ifndef __P
-#define __P(a) a
-#endif
-#endif  /* SVR4__P_CHECK */
 
 
 #if defined( ULTRIX_ATOF_PARAM_CHECK )

@@ -1,3 +1,13 @@
+2004-11-13  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* inclhack.def (hpux_maxint, limits_ifndefs, math_huge_val_ifndef,
+	svr4__p, undefine_null): Remove.
+	* fixincl.x: Regenerate.
+	* tests/base/AvailabilityMacros.h, tests/base/com_err.h: New.
+	* tests/base/sys/param.h: Remove.
+	* tests/base/curses.h, tests/base/math.h, tests/base/testing.h,
+	tests/base/sys/limits.h: Update.
+
 2004-11-12  Mike Stump  <mrs@apple.com>
 
 	* Makefile.in (html): Add html generation support.
