@@ -2481,14 +2481,6 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	  && ! DECL_IN_SYSTEM_HEADER (decl))
 	warning_with_decl (decl, "unused variable `%s'");
 
-  /* Mark the beginning and end of the scope if requested.  */
-
-  if (mark_ends)
-    emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
-  else
-    /* Get rid of the beginning-mark if we don't make an end-mark.  */
-    NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
-
   if (thisblock->exit_label)
     {
       do_pending_stack_adjust ();
@@ -2669,6 +2661,16 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 		   thisblock->data.block.first_insn,
 		   dont_jump_in);
     }
+
+  /* Mark the beginning and end of the scope if requested.
+     We do this now, after running cleanups on the variables
+     just going out of scope, so they are in scope for their cleanups.  */
+
+  if (mark_ends)
+    emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
+  else
+    /* Get rid of the beginning-mark if we don't make an end-mark.  */
+    NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
 
   /* If doing stupid register allocation, make sure lives of all
      register variables declared here extend thru end of scope.  */
