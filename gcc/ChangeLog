@@ -1,3 +1,8 @@
+2000-04-15  Ulrich Drepper  <drepper@redhat.com>
+
+	* i386.c (ix86_expand_epilogue): Yes, the x86 can pop 64k at once
+	using ret $N.
+
 2000-04-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* toplev.c (display_help): Prefix "f" to "sched-verbose=".
