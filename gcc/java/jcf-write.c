@@ -1226,7 +1226,7 @@ generate_bytecode_conditional (tree exp,
 	      OP1 (OPCODE_lcmp);
 	      goto compare_1;
 	    }
-	  /* FALLTHOUGH */
+	  /* FALLTHROUGH */
 	default:
 	  if (integer_zerop (exp1))
 	    {
@@ -2026,7 +2026,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	  emit_dup (TYPE_IS_WIDE (type) ? 2 : 1 , offset, state);
 	exp = lhs;
       }
-      /* FALLTHOUGH */
+      /* FALLTHROUGH */
 
     finish_assignment:
       if (TREE_CODE (exp) == COMPONENT_REF)
