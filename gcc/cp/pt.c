@@ -8307,29 +8307,12 @@ static int
 verify_class_unification (targs, parms, args)
      tree targs, parms, args;
 {
-  int i;
-  int nparms = TREE_VEC_LENGTH (parms);
-  tree new_parms = tsubst (parms, add_outermost_template_args (args, targs),
-  			   tf_none, NULL_TREE);
-  if (new_parms == error_mark_node)
+  parms = tsubst (parms, add_outermost_template_args (args, targs),
+  		  tf_none, NULL_TREE);
+  if (parms == error_mark_node)
     return 1;
 
-  args = INNERMOST_TEMPLATE_ARGS (args);
-
-  for (i = 0; i < nparms; i++)
-    {
-      tree parm = TREE_VEC_ELT (new_parms, i);
-      tree arg = TREE_VEC_ELT (args, i);
-
-      /* In case we are deducing from a function argument of a function
-	 templates, some parameters may not be deduced yet.  So we
-	 make sure that only fully substituted elements of PARM are
-	 compared below.  */
-
-      if (!uses_template_parms (parm) && !template_args_equal (parm, arg))
-	return 1;
-    }
-  return 0;
+  return !comp_template_args (parms, INNERMOST_TEMPLATE_ARGS (args));
 }
 
 /* PARM is a template class (perhaps with unbound template
@@ -8812,8 +8795,12 @@ unify (tparms, targs, parm, arg, strict)
 	 deduced from an array bound may be of any integral type. 
 	 The non-type parameter might use already deduced type parameters.  */
       tparm = tsubst (TREE_TYPE (parm), targs, 0, NULL_TREE);
-      if (same_type_p (TREE_TYPE (arg), tparm))
-	  /* OK */;
+      if (!TREE_TYPE (arg))
+	/* Template-parameter dependent expression.  Just accept it for now.
+	   It will later be processed in convert_template_argument.  */
+	;
+      else if (same_type_p (TREE_TYPE (arg), tparm))
+	/* OK */;
       else if ((strict & UNIFY_ALLOW_INTEGER)
 	       && (TREE_CODE (tparm) == INTEGER_TYPE
 		   || TREE_CODE (tparm) == BOOLEAN_TYPE))
