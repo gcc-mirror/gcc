@@ -1746,6 +1746,7 @@ javax/print/attribute/AttributeSet.java \
 javax/print/attribute/DateTimeSyntax.java \
 javax/print/attribute/DocAttribute.java \
 javax/print/attribute/DocAttributeSet.java \
+javax/print/attribute/EnumSyntax.java \
 javax/print/attribute/IntegerSyntax.java \
 javax/print/attribute/PrintJobAttribute.java \
 javax/print/attribute/PrintJobAttributeSet.java \
@@ -1754,6 +1755,7 @@ javax/print/attribute/PrintRequestAttributeSet.java \
 javax/print/attribute/PrintServiceAttribute.java \
 javax/print/attribute/PrintServiceAttributeSet.java \
 javax/print/attribute/ResolutionSyntax.java \
+javax/print/attribute/SetOfIntegerSyntax.java \
 javax/print/attribute/Size2DSyntax.java \
 javax/print/attribute/SupportedValuesAttribute.java \
 javax/print/attribute/TextSyntax.java \

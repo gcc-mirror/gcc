@@ -1,5 +1,14 @@
 2003-12-21  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/EnumSyntax.java,
+	javax/print/attribute/SetOfIntegerSyntax.java: New files.
+	* Makefile.am (ordinary_java_source_files):
+	Added javax/print/attribute/EnumSyntax.java
+	and javax/print/attribute/SetOfIntegerSyntax.java.
+	* Makefile.in: Regenerated.
+
+2003-12-21  Michael Koch  <konqueror@gmx.de>
+
 	* javax/print/attribute/PrintJobAttribute.java,
 	javax/print/attribute/PrintJobAttributeSet.java,
 	javax/print/attribute/PrintRequestAttribute.java,
