@@ -1302,6 +1302,8 @@ rs6000_override_options (const char *default_cpu)
   if (DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT)
     {
       rs6000_darwin64_abi = 1;
+      /* Setting to empty string is same as "-mone-byte-bool".  */
+      darwin_one_byte_bool = "";
     }
 
   /* Handle -mabi= options.  */
