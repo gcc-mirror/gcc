@@ -2622,7 +2622,7 @@ cannot_change_mode_set_regs (used, from, regno)
 	int i;
 	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
           if (! TEST_HARD_REG_BIT (*used, i)
-	      && REG_CANNOT_CHANGE_MODE_P (from, to, i))
+	      && REG_CANNOT_CHANGE_MODE_P (i, from, to))
 	    SET_HARD_REG_BIT (*used, i);
       }
 }

@@ -1,3 +1,7 @@
+Mon Feb  3 01:18:26 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* regclass.c (cannot_change_mode_set_regs): Correct argument order.
+
 2003-02-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips/_tilib.c: Don't include tsystem.h.  Don't define
