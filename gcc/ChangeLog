@@ -1,5 +1,9 @@
 Mon Oct 11 23:35:19 1999  Jeffrey A Law  (law@cygnus.com)
 
+	Fri Sep  3 09:14:32 1999  Marc Espie <espie@tetto.liafa.jussieu.fr>
+	* tlink.c (scan_linker_output): Skip the initial underscore in
+	a mangled name if appropriate.
+
 	Fri Aug 27 19:19:43 CEST 1999	Marc Espie <espie@cvs.openbsd.org>
 	* config/openbsd.h (SET_ASM_OP): Define.
 
