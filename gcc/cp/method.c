@@ -1049,14 +1049,14 @@ build_mangled_name (parmtypes, begin, end)
 
               if (TREE_USED (parmtype))
                 {
-    #if 0
+#if 0
                   /* We can turn this on at some point when we want
                      improved symbol mangling.  */
                   Nrepeats++;
-    #else
+#else
                   /* This is bug compatible with 2.7.x  */
                   flush_repeats (parmtype);
-    #endif
+endif
                   continue;
                 }
 
