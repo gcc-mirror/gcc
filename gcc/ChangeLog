@@ -1,3 +1,18 @@
+2004-07-21  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-common.c (vector_types_convertible_p): Use vector types'
+	TYPE_SIZE and TREE_TYPE instead of their mode.
+	* convert.c (convert_to_integer): Likewise.
+	(convert_to_vector): Likewise.
+	* fold-const.c (fold_convert): Likewise.
+	* varasm.c (output_constant): Likewise.
+	* expr.c (store_constructor): Split ARRAY_TYPE and VECTOR_TYPE.
+	Allow a VECTOR_TYPE initializer to be made of several vectors.
+	For ARRAY_TYPEs and VECTOR_TYPES, simplify a bit the handling
+	of cleared and need_to_clear, and use fold_convert.
+	* c-typeck.c (build_binary_op): Do not use RDIV_EXPR for
+	integer vectors.
+
 2004-07-20  Richard Henderson  <rth@redhat.com>
 
 	* cfgexpand.c (expand_gimple_cond_expr, expand_gimple_tailcall): Split,
@@ -89,6 +104,7 @@
 	for EXTRA_SECTION_FUNCTIONS.
 	* doc/install.texi: Update binutils requirements.
 
+>>>>>>> 2.4622
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h (VEC_T_length, VEC_T_index, VEC_T_iterate, VEC_T_truncate,
