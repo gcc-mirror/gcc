@@ -42,7 +42,7 @@ enum real_value_class {
 
 struct real_value GTY(())
 {
-  enum real_value_class class : 2;
+  ENUM_BITFIELD (real_value_class) class : 2;
   unsigned int sign : 1;
   signed int exp : EXP_BITS;
   unsigned long sig[SIGSZ];
