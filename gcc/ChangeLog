@@ -1,3 +1,19 @@
+Wed Dec 11 20:15:19 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (REG_CLASS_HAS_GENERAL_REG): Only true for SIBCALL_REGS
+	if not TARGET_SHMEDIA.
+
+Wed Dec 11 19:05:05 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (REG_CLASS_HAS_FP_REG): New.
+	(REGISTER_MOVE_COST) Use it.  Put body into a function and
+	move it into:
+	* sh.c (sh_register_move_cost).
+	* sh-protos.h (sh_register_move_cost): Declare.
+
+	* sh.c (sh_expand_builtin): Abort for unexpected nop values.
+	(sh_adjust_cost): Always return a value.
+
 Wed Dec 11 18:39:52 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (REG_CLASS_HAS_GENERAL_REG): New.
