@@ -568,7 +568,10 @@ jcf_parse_source ()
   java_parser_context_save_global ();
   java_push_parser_context ();
   BUILD_FILENAME_IDENTIFIER_NODE (file, current_jcf->filename);
-  EXPR_WFL_FILENAME_NODE (wfl_operator) = file;
+  if (wfl_operator == NULL_TREE)
+    wfl_operator = build_expr_wfl (NULL_TREE, file, 0, 0);
+  else
+    EXPR_WFL_FILENAME_NODE (wfl_operator) = file;
   input_filename = ggc_strdup (current_jcf->filename);
   current_class = NULL_TREE;
   current_function_decl = NULL_TREE;
