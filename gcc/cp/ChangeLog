@@ -1,3 +1,7 @@
+Sat Dec 20 13:00:30 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_decl): Defer all templates but inline functions.
+
 Fri Dec 19 09:37:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (struct lang_decl_flags): Add comdat.

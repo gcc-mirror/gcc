@@ -4530,15 +4530,16 @@ instantiate_decl (d)
 	import_export_decl (d);
     }
 
+  /* Reject all external templates except inline functions.  */
+  if (DECL_INTERFACE_KNOWN (d)
+      && ! DECL_NOT_REALLY_EXTERN (d)
+      && ! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d)))
+    goto out;
+
+  /* Defer all templates except inline functions used in another function.  */
   if (! pattern_defined
-      || (TREE_CODE (d) == FUNCTION_DECL && ! DECL_INLINE (d)
-	  && (! DECL_INTERFACE_KNOWN (d)
-	      || ! DECL_NOT_REALLY_EXTERN (d)))
-      /* Kludge: if we compile a constructor in the middle of processing a
-         toplevel declaration, we blow away the declspecs in
-         temp_decl_obstack when we call permanent_allocation in
-         finish_function.  So don't compile it yet.  */
-      || (TREE_CODE (d) == FUNCTION_DECL && ! nested && ! at_eof))
+      || (! (TREE_CODE (d) == FUNCTION_DECL && DECL_INLINE (d) && nested)
+	  && ! at_eof))
     {
       add_pending_template (d);
       goto out;
