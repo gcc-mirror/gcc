@@ -5,6 +5,21 @@
 
 2004-08-30  Paolo Bonzini  <bonzini@gnu.org>
 
+	* fixinc/Makefile.in (machname.h): Remove.
+	(fixincl.x): Do not pass $@ to genfixes.
+	* fixinc/genfixes: Remove code to produce machname.h.
+	* fixinc/fixincl.sh: Move it here instead.
+	* fixinc/fixlib.c: Do not conditionalize on MN_NAME_PAT's presence,
+	instead check if pz_mn_name_pat is NULL.  Make mn_get_regexps
+	return a bool indicating whether pz_mn_name_pat is NULL.
+	* fixinc/fixlib.h: Do not conditionalize on MN_NAME_PAT's presence.
+	Declare extern C variables for the ENV_TABLE.
+	* fixinc/fixfixes.c: Do not conditionalize on MN_NAME_PAT's presence,
+	instead use the result of mn_get_regexps.
+	* fixinc/fixtests.c: Likewise.
+
+2004-08-30  Paolo Bonzini  <bonzini@gnu.org>
+
 	* configure.ac: Do not run fixincludes after stage1 during
 	toplevel bootstrap.
 	* configure: Regenerate.

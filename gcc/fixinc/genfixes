@@ -45,11 +45,8 @@ do
     ;;
 
   '-?' )
-    echo "USAGE: gendefs [ -D<def-name> ... ] [ <output-name> ]"
+    echo "USAGE: gendefs [ -D<def-name> ... ]"
     echo "WHERE: '<def-name>' specifies a #define test name from inclhack.def"
-    echo "  and  '<output-name>' is one of:"
-    echo "       fixincl.x machine.h"
-    echo "The default is to produce the first three outputs."
     exit 0
     ;;
 
@@ -66,53 +63,15 @@ fi
 AG="autogen $AG"
 set -e
 
-case "$1" in
-fixincl.x | */fixincl.x )
-  if [ -z "`${AG} -v | fgrep 'Ver. 5.'`" ]
-  then
-    echo "AutoGen appears to be out of date or not correctly installed."
-    echo "Please download and install:"
-    echo "   ftp://gcc.gnu.org/pub/gcc/infrastructure/autogen.tar.gz"
-    touch fixincl.x
-  else
-    echo AutoGen-ing fixincl.x
-    $AG inclhack.def
-  fi
-  ;;
-
-machname.h | */machname.h )
-  # This script extracts from the specs file all the predefined macros
-  # that are not in the C89 reserved namespace (the reserved namespace
-  # is all identifiers beginnning with two underscores or one underscore
-  # followed by a capital letter).  The specs file is on standard input.
-  # A #define for a regular expression to find any of those macros in a
-  # header file is written to standard output.
-
-  # Note dependency on ASCII. \040 = space, \011 = tab, \012 = newline.
-  # tr ' ' '\n' is, alas, not portable.
-
-  tr -s '\040\011' '\012\012' < ../specs |
-    sed -n 's/^.*-D\([a-zA-Z_][a-zA-Z0-9_]*\).*$/\1/p' |
-    sort -u > mn.T
-
-  if grep -v '^_[_A-Z]' mn.T > mn.U
-  then
-    echo "Forbidden identifiers: `tr '\012' ' ' <mn.U`" >&2
-    sed 's/^/\\\\</; s/$/\\\\>/' <mn.U | tr '\012' '|' > mn.V
-    echo '' >>mn.V
-    sed 's/^/#define MN_NAME_PAT "/; s/|$/"/' < mn.V > machname.T
-  else
-    echo "No forbidden identifiers defined by this target" >&2
-    echo '#undef MN_NAME_PAT' > machname.T
-  fi
-  rm -f mn.[TUV]
-  mv -f machname.T machname.h
-  ;;
-
-* )
-  echo genfixes cannot create $1
-  exit 1
-  ;;
-esac
+if [ -z "`${AG} -v | fgrep 'Ver. 5.'`" ]
+then
+  echo "AutoGen appears to be out of date or not correctly installed."
+  echo "Please download and install:"
+  echo "   ftp://gcc.gnu.org/pub/gcc/infrastructure/autogen.tar.gz"
+  touch fixincl.x
+else
+  echo AutoGen-ing fixincl.x
+  $AG inclhack.def
+fi
 
 exit 0

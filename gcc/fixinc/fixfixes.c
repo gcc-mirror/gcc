@@ -488,9 +488,6 @@ FIX_PROC_HEAD( char_macro_def_fix )
 
 FIX_PROC_HEAD( machine_name_fix )
 {
-#ifndef MN_NAME_PAT
-  fputs( "The target machine has no needed machine name fixes\n", stderr );
-#else
   regmatch_t match[2];
   const char *line, *base, *limit, *p, *q;
   regex_t *label_re, *name_re;
@@ -499,7 +496,11 @@ FIX_PROC_HEAD( machine_name_fix )
   IGNORE_ARG(filname);
   IGNORE_ARG(p_fixd);
 
-  mn_get_regexps (&label_re, &name_re, "machine_name_fix");
+  if (!mn_get_regexps (&label_re, &name_re, "machine_name_fix"))
+    {
+      fputs( "The target machine has no needed machine name fixes\n", stderr );
+      goto done;
+    }
 
   scratch[0] = '_';
   scratch[1] = '_';
@@ -577,7 +578,6 @@ FIX_PROC_HEAD( machine_name_fix )
         }
     }
  done:
-#endif
   fputs (text, stdout);
 }
 

@@ -204,32 +204,30 @@ compile_re( tCC* pat, regex_t* re, int match, tCC* e1, tCC* e2 )
 
 /* * * * * * * * * * * * *
 
-   Helper routine and data for the machine_name test and fix.
-   machname.h is created by black magic in the Makefile.  */
-
-#ifdef MN_NAME_PAT
+   Helper routine and data for the machine_name test and fix.  */
 
 tSCC mn_label_pat[] = "^[ \t]*#[ \t]*(if|ifdef|ifndef)[ \t]+";
 static regex_t mn_label_re;
-
-tSCC mn_name_pat[] = MN_NAME_PAT;
 static regex_t mn_name_re;
 
 static int mn_compiled = 0;
 
-void
+t_bool
 mn_get_regexps(regex_t** label_re, regex_t** name_re, tCC* who )
 {
+  if (! pz_mn_name_pat)
+    return BOOL_FALSE;
+
   if (! mn_compiled)
     {
       compile_re (mn_label_pat, &mn_label_re, 1, "label pattern", who);
-      compile_re (mn_name_pat, &mn_name_re, 1, "name pattern", who);
+      compile_re (pz_mn_name_pat, &mn_name_re, 1, "name pattern", who);
       mn_compiled++;
     }
   *label_re = &mn_label_re;
   *name_re = &mn_name_re;
+  return BOOL_TRUE;
 }
-#endif
 
 
 #ifdef SEPARATE_FIX_PROC

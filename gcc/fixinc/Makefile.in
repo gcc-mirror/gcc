@@ -73,7 +73,7 @@ ALLOBJ = fixincl.o fixtests.o fixfixes.o server.o procopen.o \
 TESTOBJ = fixincl.o fixlib.o fixtests.o
 FIXOBJ  = fixfixes.o fixlib.o
 
-HDR = server.h fixlib.h machname.h
+HDR = server.h fixlib.h
 FI  = fixincl@build_exeext@
 AF  = applyfix@build_exeext@
 
@@ -102,17 +102,11 @@ server.o    : server.c
 procopen.o  : procopen.c
 fixlib.o    : fixlib.c
 
-#  'machname.h' is built in the build directory.
-#  'fixincl.x' in the source dir.
-#
-machname.h: ../specs
-	$(SHELL) $(srcdir)/genfixes $@
-
 $(srcdir)/fixincl.x: @MAINT@ fixincl.tpl inclhack.def
-	cd $(srcdir) ; $(SHELL) ./genfixes $@
+	cd $(srcdir) ; $(SHELL) ./genfixes
 
 clean:
-	rm -f *.o *-stamp $(AF) $(FI) machname.h *~
+	rm -f *.o *-stamp $(AF) $(FI) *~
 
 maintainer-clean : clean
 	rm -f $(srcdir)/fixincl.x
@@ -129,8 +123,7 @@ install-bin : $(TARGETS)
 
 Makefile: Makefile.in ../config.status
 	cd .. \
-	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= \
-	  $(SHELL) ./config.status
+	  && $(SHELL) ./config.status $(subdir)/Makefile
 
 check : $(TARGETS)
 	autogen -T $(srcdir)/check.tpl $(srcdir)/inclhack.def

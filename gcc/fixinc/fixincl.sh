@@ -133,6 +133,36 @@ fi
 
 # # # # # # # # # # # # # # # # # # # # #
 #
+#  Extract from the gcc -dM and from the specs file all the predefined
+#  macros that are not in the C89 reserved namespace (the reserved
+#  namespace is all  identifiers beginnning with two underscores or one
+#  underscore followed by a capital letter).  The specs file is in
+#  ${ORIGDIR}, as is cc1.  A regular expression to find any of those
+#  macros in a header file is written to MN_NAME_PAT.
+#
+#  Note dependency on ASCII. \012 = newline.
+#  tr ' ' '\n' is, alas, not portable.
+
+echo | ${ORIGDIR}/cc1 -quiet -dM -E - |
+  sed -n 's/^#define \([a-zA-Z][a-zA-Z0-9_]*\).*/\1/p' > mn.T
+tr -s '\040\011' '\012\012' < ${ORIGDIR}/specs |
+  sed -n 's/^.*-D\([a-zA-Z_][a-zA-Z0-9_]*\).*/\1/p' >> mn.T
+
+if sort -u mn.T | grep -v '^_[_A-Z]' > mn.U
+then
+  if test $VERBOSE -gt 0
+  then echo "Forbidden identifiers: `tr '\012' ' ' <mn.U`" ; fi
+  sed 's/^/\\\\</; s/$/\\\\>/; $!s/$/|/' < mn.U | tr -d '\012' > mn.V
+  MN_NAME_PAT="`cat mn.V`"
+  export MN_NAME_PAT
+else
+  if test $VERBOSE -gt 0
+  then echo "No forbidden identifiers defined by this target" ; fi
+fi
+rm -f mn.[TUV]
+
+# # # # # # # # # # # # # # # # # # # # #
+#
 #  Search each input directory for broken header files.
 #  This loop ends near the end of the file.
 #
