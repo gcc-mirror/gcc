@@ -1199,6 +1199,17 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	     is not defined and the condition is tested by a separate compare
 	     insn.  This is because the code below assumes that the result
 	     of the compare dies in the following branch.  */
+
+	  /* ??? This has to be turned off.  The problem is that the
+	     unconditional jump might indirectly end up branching to the
+	     label between TEMP1 and TEMP.  We can't detect this, in general,
+	     since it may become a jump to there after further optimizations.
+	     If that jump is done, it will be deleted, so we will retry
+	     this optimization in the next pass, thus an infinite loop.
+
+	     The present code prevents this by putting the jump after the
+	     label, but this is not logically correct.  */
+#if 0
 	  else if (this_is_condjump
 		   /* Safe to skip USE and CLOBBER insns here
 		      since they will not be deleted.  */
@@ -1260,9 +1271,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		    /* Get the label out of the LABEL_REF.  */
 		    ultimate = XEXP (ultimate, 0);
 
-		  /* Insert the jump after any USE or CLOBBER
-		     that follows TEMP1.  */
-		  last_insn = prev_real_insn (temp);
+		  /* Insert the jump immediately before TEMP, specifically
+		     after the label that is between TEMP1 and TEMP.  */
+		  last_insn = PREV_INSN (temp);
 
 		  /* If we would be branching to the next insn, the jump
 		     would immediately be deleted and the re-inserted in
@@ -1288,6 +1299,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		    }
 		}
 	    }
+#endif
 	  /* Detect a conditional jump going to the same place
 	     as an immediately following unconditional jump.  */
 	  else if (this_is_condjump
@@ -2513,6 +2525,8 @@ sets_cc0_p (x)
 /* Follow any unconditional jump at LABEL;
    return the ultimate label reached by any such chain of jumps.
    If LABEL is not followed by a jump, return LABEL.
+   If the chain loops or we can't find end, return LABEL,
+   since that tells caller to avoid changing the insn.
 
    If RELOAD_COMPLETED is 0, we do not chain across a NOTE_INSN_LOOP_BEG or
    a USE or CLOBBER.  */
@@ -2548,9 +2562,11 @@ follow_jumps (label)
 
       /* If we have found a cycle, make the insn jump to itself.  */
       if (JUMP_LABEL (insn) == label)
-	break;
+	return label;
       value = JUMP_LABEL (insn);
     }
+  if (depth == 10)
+    return label;
   return value;
 }
 
@@ -3098,7 +3114,8 @@ redirect_jump (jump, nlabel)
       int label_index = nlabel ? INSN_UID (nlabel) : 0;
 
       delete_from_jump_chain (jump);
-      if (label_index < max_jump_chain)
+      if (label_index < max_jump_chain
+	  && INSN_UID (jump) < max_jump_chain)
 	{
 	  jump_chain[INSN_UID (jump)] = jump_chain[label_index];
 	  jump_chain[label_index] = jump;
