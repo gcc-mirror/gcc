@@ -1,5 +1,6 @@
 /* Parse C expressions for cpplib.
-   Copyright (C) 1987, 92, 94, 95, 97, 98, 1999, 2000 Free Software Foundation.
+   Copyright (C) 1987, 1992, 1994, 1995, 1997, 1998, 1999, 2000
+   Free Software Foundation.
    Contributed by Per Bothner, 1994.
 
 This program is free software; you can redistribute it and/or modify it

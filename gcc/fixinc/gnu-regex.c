@@ -2,7 +2,8 @@
    version 0.12.
    (Implements POSIX draft P1003.2/D11.2, except for some of the
    internationalization features.)
-   Copyright (C) 1993, 94, 95, 96, 97, 98 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998
+   Free Software Foundation, Inc.
 
    NOTE: The canonical source of this file is maintained with the 
    GNU C Library.  Bugs can be reported to bug-glibc@prep.ai.mit.edu.

@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 88, 93, 95, 96, 98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1995, 1996, 1998, 1999
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

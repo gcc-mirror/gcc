@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for AT&T we32000 Family.
-   Copyright (C) 1991, 92, 1997, 1998, 1999, 2000
+   Copyright (C) 1991, 1992, 1997, 1998, 1999, 2000
    Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
