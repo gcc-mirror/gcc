@@ -1392,7 +1392,7 @@ invoke_build_dtable (is_invoke_interface, arg_list)
 	       object_type_node : TREE_VALUE (arg_list));
   
   if (dtable_ident == NULL_TREE)
-    dtable_ident = get_identifier ("dtable");
+    dtable_ident = get_identifier ("vtable");
   dtable = build1 (INDIRECT_REF, object_type_node, objectref );
   dtable = build (COMPONENT_REF, dtable_ptr_type, dtable,
 		  lookup_field (&object_type_node, dtable_ident));

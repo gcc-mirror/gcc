@@ -1078,9 +1078,9 @@ make_class_data (type)
 
   START_RECORD_CONSTRUCTOR (temp, object_type_node);
 #if 0
-  PUSH_FIELD_VALUE (temp, "dtable", NULL_TREE);
+  PUSH_FIELD_VALUE (temp, "vtable", NULL_TREE);
 #else
-  PUSH_FIELD_VALUE (temp, "dtable",
+  PUSH_FIELD_VALUE (temp, "vtable",
 		    build1 (ADDR_EXPR, dtable_ptr_type, class_dtable_decl));
 #endif
   PUSH_FIELD_VALUE (temp, "sync_info", null_pointer_node);
@@ -1103,7 +1103,7 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "methods",
 		    build1 (ADDR_EXPR, method_ptr_type_node, methods_decl));
   PUSH_FIELD_VALUE (cons, "method_count",  build_int_2 (method_count, 0));
-  PUSH_FIELD_VALUE (cons, "dtable_method_count", TYPE_NVIRTUALS (type));
+  PUSH_FIELD_VALUE (cons, "vtable_method_count", TYPE_NVIRTUALS (type));
   PUSH_FIELD_VALUE (cons, "fields",
 		    fields_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, field_ptr_type_node, fields_decl));
@@ -1111,7 +1111,7 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "field_count", build_int_2 (field_count, 0));
   PUSH_FIELD_VALUE (cons, "static_field_count",
 		    build_int_2 (static_field_count, 0));
-  PUSH_FIELD_VALUE (cons, "dtable",
+  PUSH_FIELD_VALUE (cons, "vtable",
 		    dtable_decl == NULL_TREE ? null_pointer_node
 		    : build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl));
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
