@@ -1,3 +1,7 @@
+2003-06-16  Andreas Jaeger  <aj@suse.de>
+        
+        * testsuite/abi_check.cc: Create summary report.
+ 
 2003-06-16  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/27_io/basic_filebuf/sgetn/char/1-in.cc: Fix
