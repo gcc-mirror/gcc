@@ -29,10 +29,8 @@
 
 // 27.5.2 template class basic_streambuf
 
-#include <cstring> // for memset, memcmp
 #include <streambuf>
-#include <sstream>
-#include <ostream>
+#include <locale>
 #include <testsuite_hooks.h>
 
 class testbuf : public std::streambuf

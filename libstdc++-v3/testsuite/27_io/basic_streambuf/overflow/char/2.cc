@@ -31,6 +31,7 @@
 
 #include <streambuf>
 #include <ostream>
+#include <string>
 #include <testsuite_hooks.h>
 
 // test03

@@ -30,6 +30,7 @@
 // 27.5.2 template class basic_streambuf
 
 #include <streambuf>
+#include <string>
 #include <testsuite_hooks.h>
 
 class setpbuf : public std::streambuf

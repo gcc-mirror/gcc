@@ -1,6 +1,7 @@
 // 1999-10-11 bkoz
 
-// Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,40 +30,33 @@
 
 // 27.5.2 template class basic_streambuf
 
+#include <string>
 #include <streambuf>
-#include <ostream>
 #include <testsuite_hooks.h>
 
-// libstdc++/3599
-class testbuf : public std::streambuf
+class nullsetpbuf : public std::wstreambuf
 {
+  wchar_t foo[64];
 public:
-  typedef std::streambuf::traits_type traits_type;
-
-  testbuf() : std::streambuf() { }
- 
-protected:
-  int_type 
-  overflow(int_type c __attribute__((unused)) = traits_type::eof()) 
-  { return traits_type::not_eof(0); }
+  nullsetpbuf()
+  {
+    setp(foo, foo + 64);
+    setp(NULL, NULL);
+  }
 };
 
-void
-test07()
+// libstdc++/1057
+void test05()
 {
-  bool test __attribute__((unused)) = true;
-  testbuf ob;
-  std::ostream out(&ob); 
-
-  out << "gasp";
-  VERIFY( out.good() );
-
-  out << std::endl;
-  VERIFY( out.good() );
+  std::wstring text1 = L"abcdefghijklmn";
+  
+  nullsetpbuf nsp;
+  // Immediate crash as sputc writes to null pointer
+  nsp.sputc(L'a');
 }
 
 int main() 
 {
-  test07();
+  test05();
   return 0;
 }

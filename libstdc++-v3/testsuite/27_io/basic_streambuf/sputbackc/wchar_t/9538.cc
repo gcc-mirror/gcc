@@ -1,7 +1,6 @@
-// 981208 bkoz test functionality of basic_stringbuf for char_type == char
+// 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
-// Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,35 +18,49 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+// 27.8.1.4 Overridden virtual functions
+
 #include <streambuf>
 #include <locale>
+#include <cwchar>
 #include <testsuite_hooks.h>
 
-class testbuf : public std::streambuf
+class MyTraits : public std::char_traits<wchar_t>
 {
 public:
-  typedef std::streambuf::traits_type traits_type;
-
-  testbuf() : std::streambuf() { }
+  static bool eq(wchar_t c1, wchar_t c2)
+  {
+    bool test __attribute__((unused)) = true;
+    VERIFY( c1 != L'X' );
+    VERIFY( c2 != L'X' );
+    return std::char_traits<wchar_t>::eq(c1, c2);
+  }
 };
 
-// test the streambuf locale settings
-void test02() 
+class MyBuf : public std::basic_streambuf<wchar_t, MyTraits>
 {
-  testbuf buf;
-  std::locale loc_c = std::locale::classic();
-  loc_c = buf.getloc();
-  buf.pubimbue(loc_c); //This should initialize _M_init to true
-  std::locale loc_tmp = buf.getloc(); 
-  VERIFY( loc_tmp == loc_c );
+  wchar_t buffer[8];
+
+public:
+  MyBuf()
+  {
+    std::wmemset(buffer, L'X', sizeof(buffer) / sizeof(buffer[0]));
+    std::wmemset(buffer + 2, L'f', 4);
+    setg(buffer + 2, buffer + 2, buffer + 6);
+  }
+};
+
+// libstdc++/9538
+void test08()
+{
+  bool test __attribute__((unused)) = true;
+
+  MyBuf mb;
+  mb.sputbackc(L'a');
 }
 
-int main()
+int main() 
 {
-  test02();
+  test08();
   return 0;
 }
-
-
-
-// more candy!!!

@@ -34,12 +34,12 @@
 #include <testsuite_hooks.h>
 
 // libstdc++/3599
-class testbuf : public std::streambuf
+class testbuf : public std::wstreambuf
 {
 public:
-  typedef std::streambuf::traits_type traits_type;
+  typedef std::wstreambuf::traits_type traits_type;
 
-  testbuf() : std::streambuf() { }
+  testbuf() : std::wstreambuf() { }
  
 protected:
   int_type 
@@ -52,9 +52,9 @@ test07()
 {
   bool test __attribute__((unused)) = true;
   testbuf ob;
-  std::ostream out(&ob); 
+  std::wostream out(&ob); 
 
-  out << "gasp";
+  out << L"gasp";
   VERIFY( out.good() );
 
   out << std::endl;
