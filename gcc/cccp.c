@@ -9505,6 +9505,7 @@ initialize_builtins (inp, outp)
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
 /*  install ((U_CHAR *) "__GNUC__", -1, T_CONST, "2", -1);  */
+  install ((U_CHAR *) "__HAVE_BUILTIN_SETJMP__", -1, T_CONST, "1", -1);
 
   if (debug_output)
     {
