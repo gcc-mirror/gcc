@@ -718,7 +718,7 @@ noce_try_store_flag (if_info)
 
       seq = get_insns ();
       end_sequence ();
-      emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+      emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATOR (if_info->insn_a));
 
       return TRUE;
     }
@@ -853,7 +853,7 @@ noce_try_store_flag_constants (if_info)
       if (seq_contains_jump (seq))
 	return FALSE;
 
-      emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+      emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATOR (if_info->insn_a));
 
       return TRUE;
     }
@@ -901,8 +901,8 @@ noce_try_addcc (if_info)
 
 	      seq = get_insns ();
 	      end_sequence ();
-	      emit_insn_before_scope (seq, if_info->jump,
-				      INSN_SCOPE (if_info->insn_a));
+	      emit_insn_before_setloc (seq, if_info->jump,
+				      INSN_LOCATOR (if_info->insn_a));
 	      return TRUE;
 	    }
 	  end_sequence ();
@@ -943,8 +943,8 @@ noce_try_addcc (if_info)
 	      if (seq_contains_jump (seq))
 		return FALSE;
 
-	      emit_insn_before_scope (seq, if_info->jump,
-				      INSN_SCOPE (if_info->insn_a));
+	      emit_insn_before_setloc (seq, if_info->jump,
+				      INSN_LOCATOR (if_info->insn_a));
 
 	      return TRUE;
 	    }
@@ -996,8 +996,8 @@ noce_try_store_flag_mask (if_info)
 	  if (seq_contains_jump (seq))
 	    return FALSE;
 
-	  emit_insn_before_scope (seq, if_info->jump,
-				  INSN_SCOPE (if_info->insn_a));
+	  emit_insn_before_setloc (seq, if_info->jump,
+				  INSN_LOCATOR (if_info->insn_a));
 
 	  return TRUE;
 	}
@@ -1092,8 +1092,8 @@ noce_try_cmove (if_info)
 
 	  seq = get_insns ();
 	  end_sequence ();
-	  emit_insn_before_scope (seq, if_info->jump,
-				  INSN_SCOPE (if_info->insn_a));
+	  emit_insn_before_setloc (seq, if_info->jump,
+				  INSN_LOCATOR (if_info->insn_a));
 	  return TRUE;
 	}
       else
@@ -1255,7 +1255,7 @@ noce_try_cmove_arith (if_info)
 
   tmp = get_insns ();
   end_sequence ();
-  emit_insn_before_scope (tmp, if_info->jump, INSN_SCOPE (if_info->insn_a));
+  emit_insn_before_setloc (tmp, if_info->jump, INSN_LOCATOR (if_info->insn_a));
   return TRUE;
 
  end_seq_and_fail:
@@ -1507,7 +1507,7 @@ noce_try_minmax (if_info)
   if (seq_contains_jump (seq))
     return FALSE;
 
-  emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+  emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATOR (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
 
@@ -1625,7 +1625,7 @@ noce_try_abs (if_info)
   if (seq_contains_jump (seq))
     return FALSE;
 
-  emit_insn_before_scope (seq, if_info->jump, INSN_SCOPE (if_info->insn_a));
+  emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATOR (if_info->insn_a));
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
 
@@ -1945,7 +1945,7 @@ noce_process_if_block (ce_info)
       insn_b = get_insns ();
       end_sequence ();
 
-      emit_insn_after_scope (insn_b, test_bb->end, INSN_SCOPE (insn_a));
+      emit_insn_after_setloc (insn_b, test_bb->end, INSN_LOCATOR (insn_a));
     }
 
   /* Merge the blocks!  */
@@ -2548,7 +2548,7 @@ find_cond_trap (test_bb, then_edge, else_edge)
     return FALSE;
 
   /* Emit the new insns before cond_earliest.  */
-  emit_insn_before_scope (seq, cond_earliest, INSN_SCOPE (trap));
+  emit_insn_before_setloc (seq, cond_earliest, INSN_LOCATOR (trap));
 
   /* Delete the trap block if possible.  */
   remove_edge (trap_bb == then_bb ? then_edge : else_edge);

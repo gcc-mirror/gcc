@@ -429,7 +429,7 @@ duplicate_loop_exit_test (loop_start)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
 
 	  mark_jump_label (PATTERN (copy), copy, 0);
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 
 	  /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
 	     make them.  */
@@ -455,7 +455,7 @@ duplicate_loop_exit_test (loop_start)
 	case JUMP_INSN:
 	  copy = emit_jump_insn_before (copy_insn (PATTERN (insn)),
 					loop_start);
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 	  if (reg_map)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
 	  mark_jump_label (PATTERN (copy), copy, 0);

@@ -1546,7 +1546,7 @@ copy_insn_list (insns, map, static_chain_value)
 #else
 	  try_constants (copy, map);
 #endif
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 	  break;
 
 	case JUMP_INSN:
@@ -1567,7 +1567,7 @@ copy_insn_list (insns, map, static_chain_value)
 	  cc0_insn = 0;
 #endif
 	  try_constants (copy, map);
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 
 	  /* If this used to be a conditional jump insn but whose branch
 	     direction is now know, we must do something special.  */
@@ -1635,7 +1635,7 @@ copy_insn_list (insns, map, static_chain_value)
 
 	  SIBLING_CALL_P (copy) = SIBLING_CALL_P (insn);
 	  CONST_OR_PURE_CALL_P (copy) = CONST_OR_PURE_CALL_P (insn);
-	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
+	  INSN_LOCATOR (copy) = INSN_LOCATOR (insn);
 
 	  /* Because the USAGE information potentially contains objects other
 	     than hard registers, we need to copy it.  */
