@@ -1,3 +1,13 @@
+2003-01-02  Mark Wielaard  <mark@klomp.org>
+	    Jeroen Frijters  <jeroen@sumatra.nl>
+
+	* java/net/URLClassLoader.java (Resource.getCodeSource):
+	Fix check certs == null.
+	(getCanonicalFileURL): Removed method.
+	(JarURLLoader): Don't call removed method.
+	(FileURLLoader): Likewise.
+	(FileURLLoader.getResource): Don't canonicalize file name.
+
 2003-01-01  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
