@@ -771,8 +771,8 @@ path_include (pfile, path)
 }
 
 void
-init_parse_options (opts)
-     struct cpp_options *opts;
+cpp_options_init (opts)
+     cpp_options *opts;
 {
   bzero ((char *) opts, sizeof *opts);
   opts->in_fname = NULL;
@@ -843,40 +843,6 @@ file_cleanup (pbuf, pfile)
       pbuf->buf = 0;
     }
   return 0;
-}
-
-static void
-newline_fix (pfile)
-     cpp_reader *pfile;
-{
-#if 1
-  NEWLINE_FIX;
-#else
-  register U_CHAR *p = bp;
-
-  /* First count the backslash-newline pairs here.  */
-
-  while (p[0] == '\\' && p[1] == '\n')
-    p += 2;
-
-  /* What follows the backslash-newlines is not embarrassing.  */
-
-  if (*p != '/' && *p != '*')
-    return;
-
-  /* Copy all potentially embarrassing characters
-     that follow the backslash-newline pairs
-     down to where the pairs originally started.  */
-
-  while (*p == '*' || *p == '/')
-    *bp++ = *p++;
-
-  /* Now write the same number of pairs after the embarrassing chars.  */
-  while (bp < p) {
-    *bp++ = '\\';
-    *bp++ = '\n';
-  }
-#endif
 }
 
 /* Assuming we have read '/'.
@@ -1884,7 +1850,6 @@ struct argdata {
   char newlines;
   char use_count;
 };
-
 
 /* Allocate a new cpp_buffer for PFILE, and push it on the input buffer stack.
    If BUFFER != NULL, then use the LENGTH characters in BUFFER
@@ -5678,8 +5643,14 @@ finclude (pfile, f, fname, system_header_p, dirptr)
   return 1;
 }
 
+/* This is called after options have been processed.
+ * Check options for consistency, and setup for processing input
+ * from the file named FNAME.  (Use standard input if FNAME==NULL.)
+ * Return 1 on succes, 0 on failure.
+ */
+
 int
-push_parse_file (pfile, fname)
+cpp_start_read (pfile, fname)
      cpp_reader *pfile;
      char *fname;
 {
@@ -5972,7 +5943,7 @@ push_parse_file (pfile, fname)
 	  if (fd < 0)
 	    {
 	      cpp_perror_with_name (pfile, pend->arg);
-	      return FATAL_EXIT_CODE;
+	      return 0;
 	    }
 	  cpp_push_buffer (pfile, NULL, 0);
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
@@ -5994,7 +5965,10 @@ push_parse_file (pfile, fname)
      inhibit compilation.  */
   if (opts->print_deps_missing_files
       && (opts->print_deps == 0 || !opts->no_output))
-    fatal (pfile, "-MG must be specified with one of -M or -MM");
+    {
+      cpp_fatal (pfile, "-MG must be specified with one of -M or -MM");
+      return 0;
+    }
 
   /* Either of two environment variables can specify output of deps.
      Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
@@ -6137,7 +6111,7 @@ push_parse_file (pfile, fname)
 	  if (fd < 0)
 	    {
 	      cpp_perror_with_name (pfile, pend->arg);
-	      return FATAL_EXIT_CODE;
+	      return 0;
 	    }
 	  cpp_push_buffer (pfile, NULL, 0);
 	  finclude (pfile, fd, pend->arg, 0, NULL_PTR);
@@ -6168,11 +6142,11 @@ push_parse_file (pfile, fname)
 #endif
   if (finclude (pfile, f, fname, 0, NULL_PTR))
     output_line_command (pfile, 0, same_file);
-  return SUCCESS_EXIT_CODE;
+  return 1;
 }
 
 void
-init_parse_file (pfile)
+cpp_reader_init (pfile)
      cpp_reader *pfile;
 {
   bzero ((char *) pfile, sizeof (cpp_reader));
@@ -6236,7 +6210,10 @@ cpp_handle_options (pfile, argc, argv)
   for (i = 0; i < argc; i++) {
     if (argv[i][0] != '-') {
       if (opts->out_fname != NULL)
-	fatal ("Usage: %s [switches] input output", argv[0]);
+	{
+	  cpp_fatal (pfile, "Usage: %s [switches] input output", argv[0]);
+	  return argc;
+	}
       else if (opts->in_fname != NULL)
 	opts->out_fname = argv[i];
       else
@@ -6244,17 +6221,24 @@ cpp_handle_options (pfile, argc, argv)
     } else {
       switch (argv[i][1]) {
 
+      missing_filename:
+	cpp_fatal (pfile, "Filename missing after `%s' option", argv[i]);
+	return argc;
+      missing_dirname:
+	cpp_fatal (pfile, "Directory name missing after `%s' option", argv[i]);
+	return argc;
+
       case 'i':
 	if (!strcmp (argv[i], "-include")
 	    || !strcmp (argv[i], "-imacros")) {
 	  if (i + 1 == argc)
-	    fatal ("Filename missing after `%s' option", argv[i]);
+	    goto missing_filename;
 	  else
 	    push_pending (pfile, argv[i], argv[i+1]), i++;
 	}
 	if (!strcmp (argv[i], "-iprefix")) {
 	  if (i + 1 == argc)
-	    fatal ("Filename missing after `-iprefix' option");
+	    goto missing_filename;
 	  else
 	    opts->include_prefix = argv[++i];
 	}
@@ -6265,7 +6249,7 @@ cpp_handle_options (pfile, argc, argv)
 	  struct file_name_list *dirtmp;
 
 	  if (i + 1 == argc)
-	    fatal ("Filename missing after `-isystem' option");
+	    goto missing_filename;
 
 	  dirtmp = (struct file_name_list *)
 	    xmalloc (sizeof (struct file_name_list));
@@ -6303,7 +6287,7 @@ cpp_handle_options (pfile, argc, argv)
 	  dirtmp->control_macro = 0;
 	  dirtmp->c_system_include_path = 0;
 	  if (i + 1 == argc)
-	    fatal ("Directory name missing after `-iwithprefix' option");
+	    goto missing_dirname;
 
 	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
 					    + strlen (prefix) + 1);
@@ -6338,7 +6322,7 @@ cpp_handle_options (pfile, argc, argv)
 	  dirtmp->control_macro = 0;
 	  dirtmp->c_system_include_path = 0;
 	  if (i + 1 == argc)
-	    fatal ("Directory name missing after `-iwithprefixbefore' option");
+	    goto missing_dirname;
 
 	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1])
 					    + strlen (prefix) + 1);
@@ -6358,7 +6342,7 @@ cpp_handle_options (pfile, argc, argv)
 	  dirtmp->control_macro = 0;
 	  dirtmp->c_system_include_path = 0;
 	  if (i + 1 == argc)
-	    fatal ("Directory name missing after `-idirafter' option");
+	    goto missing_dirname;
 	  else
 	    dirtmp->fname = argv[++i];
 	  dirtmp->got_name_map = 0;
@@ -6373,9 +6357,12 @@ cpp_handle_options (pfile, argc, argv)
 
       case 'o':
 	if (opts->out_fname != NULL)
-	  fatal ("Output filename specified twice");
+	  {
+	    cpp_fatal (pfile, "Output filename specified twice");
+	    return argc;
+	  }
 	if (i + 1 == argc)
-	  fatal ("Filename missing after -o option");
+	  goto missing_filename;
 	opts->out_fname = argv[++i];
 	if (!strcmp (opts->out_fname, "-"))
 	  opts->out_fname = "";
@@ -6503,7 +6490,7 @@ cpp_handle_options (pfile, argc, argv)
 	if (!strcmp (argv[i], "-MD") || !strcmp (argv[i], "-MMD"))
 	  {
 	    if (i+1 == argc)
-	      fatal ("Filename missing after %s option", argv[i]);
+	      goto missing_filename;
 	    opts->deps_file = argv[++i];
 	  }
 	else
@@ -6558,7 +6545,10 @@ cpp_handle_options (pfile, argc, argv)
 	if (argv[i][2] != 0)
 	  push_pending (pfile, "-D", argv[i] + 2);
 	else if (i + 1 == argc)
-	  fatal ("Macro name missing after -D option");
+	  {
+	    cpp_fatal (pfile, "Macro name missing after -D option");
+	    return argc;
+	  }
 	else
 	  i++, push_pending (pfile, "-D", argv[i]);
 	break;
@@ -6570,7 +6560,10 @@ cpp_handle_options (pfile, argc, argv)
 	  if (argv[i][2] != 0)
 	    p = argv[i] + 2;
 	  else if (i + 1 == argc)
-	    fatal ("Assertion missing after -A option");
+	    {
+	      cpp_fatal (pfile, "Assertion missing after -A option");
+	      return argc;
+	    }
 	  else
 	    p = argv[++i];
 
@@ -6604,7 +6597,10 @@ cpp_handle_options (pfile, argc, argv)
 	if (argv[i][2] != 0)
 	  push_pending (pfile, "-U", argv[i] + 2);
 	else if (i + 1 == argc)
-	  fatal ("Macro name missing after -U option");
+	  {
+	    cpp_fatal (pfile, "Macro name missing after -U option", NULL);
+	    return argc;
+	  }
 	else
 	  push_pending (pfile, "-U", argv[i+1]), i++;
 	break;
@@ -6643,7 +6639,7 @@ cpp_handle_options (pfile, argc, argv)
 	    if (argv[i][2] != 0)
 	      dirtmp->fname = argv[i] + 2;
 	    else if (i + 1 == argc)
-	      fatal ("Directory name missing after -I option");
+	      goto missing_dirname;
 	    else
 	      dirtmp->fname = argv[++i];
 	    dirtmp->got_name_map = 0;
@@ -6713,7 +6709,7 @@ cpp_finish (pfile)
 	  if (opts->deps_file)
 	    {
 	      if (ferror (deps_stream) || fclose (deps_stream) != 0)
-		fatal ("I/O error on output");
+		cpp_fatal (pfile, "I/O error on output");
 	    }
 	}
     }
@@ -7218,7 +7214,7 @@ parse_goto_mark (pmark, pfile)
 {
   cpp_buffer *pbuf = CPP_BUFFER (pfile);
   if (pbuf != pmark->buf)
-    fatal ("internal error %s", "parse_goto_mark");
+    cpp_fatal (pfile, "internal error %s", "parse_goto_mark");
   pbuf->cur = pbuf->buf + pmark->position;
 }
 
@@ -7232,7 +7228,7 @@ parse_move_mark (pmark, pfile)
 {
   cpp_buffer *pbuf = CPP_BUFFER (pfile);
   if (pbuf != pmark->buf)
-    fatal ("internal error %s", "parse_move_mark");
+    cpp_fatal (pfile, "internal error %s", "parse_move_mark");
   pmark->position = pbuf->cur - pbuf->buf;
 }
 
