@@ -185,7 +185,7 @@ public class Proxy implements Serializable
    * Proxy.
    * @serial invocation handler associated with this proxy instance
    */
-  protected final InvocationHandler h;
+  protected InvocationHandler h;
 
   /**
    * Constructs a new Proxy from a subclass (usually a proxy class),
