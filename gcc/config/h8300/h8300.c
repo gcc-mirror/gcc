@@ -938,12 +938,9 @@ const_costs (r, c)
 /* Documentation for the machine specific operand escapes:
 
    'A' print rn in H8/300 mode, erN in H8/300H mode
-   'C' print (operand - 2).
    'E' like s but negative.
    'F' like t but negative.
    'G' constant just the negative
-   'M' turn a 'M' constant into its negative mod 2.
-   'P' if operand is incing/decing sp, print .w, otherwise .b.
    'R' print operand as a byte:8 address if appropriate, else fall back to
        'X' handling.
    'S' print operand as a long word
@@ -956,13 +953,10 @@ const_costs (r, c)
        If this operand isn't a register, fall back to 'R' handling.
    'Z' print int & 7.
    'b' print the bit opcode
-   'c' print the ibit opcode
-   'd' bcc if EQ, bcs if NE
    'e' first word of 32 bit value - if reg, then least reg. if mem
        then least. if const then most sig word
    'f' second word of 32 bit value - if reg, then biggest reg. if mem
        then +2. if const then least sig word
-   'g' bcs if EQ, bcc if NE
    'j' print operand as condition code.
    'k' print operand as reverse condition code.
    's' print as low byte of 16 bit value
@@ -1029,9 +1023,6 @@ print_operand (file, x, code)
       else
 	goto def;
       break;
-    case 'C':
-      fprintf (file, "#%d", INTVAL (x) - 2);
-      break;
     case 'E':
       switch (GET_CODE (x))
 	{
@@ -1062,38 +1053,6 @@ print_operand (file, x, code)
       if (GET_CODE (x) != CONST_INT)
 	abort ();
       fprintf (file, "#%d", 0xff & (-INTVAL (x)));
-      break;
-    case 'M':
-      /* For 3/-3 and 4/-4, the other 2 is handled separately.  */
-      switch (INTVAL (x))
-	{
-	case 2:
-	case 4:
-	case -2:
-	case -4:
-	  fprintf (file, "#2");
-	  break;
-	case 1:
-	case 3:
-	case -1:
-	case -3:
-	  fprintf (file, "#1");
-	  break;
-	default:
-	  abort ();
-	}
-      break;
-    case 'P':
-      if (REGNO (XEXP (XEXP (x, 0), 0)) == STACK_POINTER_REGNUM)
-	{
-	  last_p = "";
-	  fprintf (file, ".w");
-	}
-      else
-	{
-	  last_p = "l";
-	  fprintf (file, ".b");
-	}
       break;
     case 'S':
       if (GET_CODE (x) == REG)
@@ -1158,35 +1117,6 @@ print_operand (file, x, code)
 	  break;
 	}
       break;
-    case 'c':
-      switch (GET_CODE (x))
-	{
-	case IOR:
-	  fprintf (file, "bior");
-	  break;
-	case XOR:
-	  fprintf (file, "bixor");
-	  break;
-	case AND:
-	  fprintf (file, "biand");
-	  break;
-	default:
-	  break;
-	}
-      break;
-    case 'd':
-      switch (GET_CODE (x))
-	{
-	case EQ:
-	  fprintf (file, "bcc");
-	  break;
-	case NE:
-	  fprintf (file, "bcs");
-	  break;
-	default:
-	  abort ();
-	}
-      break;
     case 'e':
       switch (GET_CODE (x))
 	{
@@ -1241,19 +1171,6 @@ print_operand (file, x, code)
 	    fprintf (file, "#%ld", (val & 0xffff));
 	    break;
 	  }
-	default:
-	  abort ();
-	}
-      break;
-    case 'g':
-      switch (GET_CODE (x))
-	{
-	case NE:
-	  fprintf (file, "bcc");
-	  break;
-	case EQ:
-	  fprintf (file, "bcs");
-	  break;
 	default:
 	  abort ();
 	}
