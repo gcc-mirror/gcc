@@ -50,11 +50,11 @@
 
 // Define the base class to std::allocator.
 
-#include <ext/new_allocator.h>
-#define __glibcxx_default_allocator  __gnu_cxx::new_allocator
+//#include <ext/new_allocator.h>
+//#define __glibcxx_default_allocator  __gnu_cxx::new_allocator
 
-//#include <ext/mt_allocator.h>
-//#define __glibcxx_default_allocator  __gnu_cxx::__mt_alloc
+#include <ext/mt_allocator.h>
+#define __glibcxx_default_allocator  __gnu_cxx::__mt_alloc
 
 namespace std
 {
