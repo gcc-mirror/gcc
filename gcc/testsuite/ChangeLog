@@ -1,3 +1,13 @@
+2005-02-22  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/20100
+	PR tree-optimization/20115
+	* gcc.dg/pr20115.c: New test.
+	* gcc.dg/pr20115-1.c: New test.
+	* gcc.dg/pr20100.c: New test.
+	* gcc.dg/tree-ssa/20040517-1.c: Expect virtual operands for
+	call-clobbered variables after alias1.
+
 2005-02-22  Bud Davis  <bdavis@gfortran.org>
 
 	* gfortran.dg/list_read_4.f90: new test.

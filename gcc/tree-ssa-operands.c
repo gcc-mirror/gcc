@@ -1460,7 +1460,17 @@ get_call_expr_operands (tree stmt, tree expr)
   tree op;
   int call_flags = call_expr_flags (expr);
 
-  if (!bitmap_empty_p (call_clobbered_vars))
+  /* If aliases have been computed already, add V_MAY_DEF or V_USE
+     operands for all the symbols that have been found to be
+     call-clobbered.
+     
+     Note that if aliases have not been computed, the global effects
+     of calls will not be included in the SSA web. This is fine
+     because no optimizer should run before aliases have been
+     computed.  By not bothering with virtual operands for CALL_EXPRs
+     we avoid adding superfluous virtual operands, which can be a
+     significant compile time sink (See PR 15855).  */
+  if (aliases_computed_p && !bitmap_empty_p (call_clobbered_vars))
     {
       /* A 'pure' or a 'const' functions never call clobber anything. 
 	 A 'noreturn' function might, but since we don't return anyway 
