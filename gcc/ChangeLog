@@ -1,3 +1,9 @@
+Thu Jun  3 23:58:55 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* fixinc/inclhack.def (limits_ifndefs): Also apply to sys/limits.h
+	* fixinc/fixincl.x: Regenerated.
+	* fixinc/inclhack.sh: Regenerated.
+
 Fri Jun  4 05:42:23 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (barrier_align): Don't return early for normal branch/barrier
