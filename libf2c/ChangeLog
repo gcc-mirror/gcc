@@ -1,3 +1,7 @@
+Wed Aug 26 23:20:12 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (FLAGS_TO_PASS): Fix typo.
+
 1998-08-11  Dave Love  <d.love@dl.ac.uk>
 
 	* README: Update from Craig.
