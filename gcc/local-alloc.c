@@ -1182,12 +1182,11 @@ update_equiv_regs ()
 		       && GET_CODE (insn) == INSN
 		       && reg_basic_block[regno] < 0)
 		{
-		  int l, offset, bit;
+		  int l, offset;
+		  REGSET_ELT_TYPE bit;
 
-		  emit_insn_before (copy_rtx (PATTERN (equiv_insn)),
-				    insn);
-		  REG_NOTES (PREV_INSN (insn)) =
-		    REG_NOTES (equiv_insn);
+		  emit_insn_before (copy_rtx (PATTERN (equiv_insn)), insn);
+		  REG_NOTES (PREV_INSN (insn)) = REG_NOTES (equiv_insn);
 
 		  PUT_CODE (equiv_insn, NOTE);
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
