@@ -1649,7 +1649,6 @@ Switches:\n\
   -std=<std name>           Specify the conformance standard; one of:\n\
                             gnu89, gnu9x, c89, c9x, iso9899:1990,\n\
                             iso9899:199409, iso9899:199x\n\
-
   -+                        Allow parsing of C++ style features\n\
   -w                        Inhibit warning messages\n\
   -Wtrigraphs               Warn if trigraphs are encountered\n\
