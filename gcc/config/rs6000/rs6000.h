@@ -383,7 +383,6 @@ enum processor_type
   PROCESSOR_MPCCORE,
   PROCESSOR_PPC403,
   PROCESSOR_PPC601,
-  PROCESSOR_PPC602,
   PROCESSOR_PPC603,
   PROCESSOR_PPC604,
   PROCESSOR_PPC620};
@@ -1981,8 +1980,12 @@ typedef struct rs6000_args
     case PROCESSOR_MPCCORE:				\
       return COSTS_N_INSNS (2);				\
     case PROCESSOR_PPC601:				\
-    case PROCESSOR_PPC603:				\
       return COSTS_N_INSNS (5);				\
+    case PROCESSOR_PPC603:				\
+      return (GET_CODE (XEXP (X, 1)) != CONST_INT	\
+	      ? COSTS_N_INSNS (5)			\
+	      : INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
+	      ? COSTS_N_INSNS (2) : COSTS_N_INSNS (3));	\
     case PROCESSOR_PPC403:				\
     case PROCESSOR_PPC604:				\
     case PROCESSOR_PPC620:				\
