@@ -179,9 +179,13 @@ extern int target_flags;
 
 /* target machine storage layout */
 
+#if 0
+/* ??? This does not work in SunOS 4.x, so it is not enabled here.
+   Instead, it is enabled in sol2.h, because it does work under Solaris.  */
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
+#endif
 
 /* Define for cross-compilation to a sparc target with no TFmode from a host
    with a different float format (e.g. VAX).  */
