@@ -1,5 +1,9 @@
 Sat Jun 27 07:35:21 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* mkstemp.c: Include gansidecl.h.  Rename uint64_t to gcc_uint64_t.
+	(mkstemp): Remove size specifier for variable `letters'.  Call
+	gettimeofday, not __gettimeofday.
+
 	* Makefile.in (EXPR_H): New dependency variable.
 	(c-typeck.o): Depend on $(EXPR_H) instead of expr.h.
 	(c-iterate.o): Likewise.
