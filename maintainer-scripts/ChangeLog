@@ -1,3 +1,9 @@
+2003-05-09  Gerald Pfeifer  <gerald@sourceware.org>
+
+	* update_version (ADD_BRANCHES): Add, set to MAIN and
+	tree-ssa-20020619-branch.
+	(BRANCHES): Always consider branches given by $ADD_BRANCHES.
+
 2003-05-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* update_version (textstring_FILES): Only version.c needs to be
