@@ -1,3 +1,8 @@
+2002-07-20  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_relational_operation): Optimize
+	abs(x) < 0.0 (and abs(x) >= 0.0 when using -ffast-math).
+
 2002-07-20  Michae Matz  <matz@suse.de>
 
 	* ra-build.c: (remember_web_was_spilled): Use GENERAL_REGS.

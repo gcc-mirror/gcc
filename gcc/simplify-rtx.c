@@ -2075,6 +2075,28 @@ simplify_relational_operation (code, mode, op0, op1)
 	    return const0_rtx;
 	  break;
 
+	case LT:
+	  /* Optimize abs(x) < 0.0.  */
+	  if (trueop1 == CONST0_RTX (mode))
+	    {
+	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
+						       : trueop0;
+	      if (GET_CODE (tem) == ABS)
+		return const0_rtx;
+	    }
+	  break;
+
+	case GE:
+	  /* Optimize abs(x) >= 0.0.  */
+	  if (trueop1 == CONST0_RTX (mode) && !HONOR_NANS (mode))
+	    {
+	      tem = GET_CODE (trueop0) == FLOAT_EXTEND ? XEXP (trueop0, 0)
+						       : trueop0;
+	      if (GET_CODE (tem) == ABS)
+		return const1_rtx;
+	    }
+	  break;
+
 	default:
 	  break;
 	}
