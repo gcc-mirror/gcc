@@ -1092,7 +1092,7 @@
 (define_insn "set_ldp"
   [(set (match_operand:QI 0 "dp_reg_operand" "=z")
         (high:QI (match_operand:QI 1 "" "")))]
-  "!TARGET_SMALL"
+  "! TARGET_SMALL"
   "* return (TARGET_C3X) ? \"ldp\\t%A1\" : \"ldpk\\t%A1\";"
   [(set_attr "type" "ldp")])
 
@@ -1105,7 +1105,7 @@
   [(parallel [(set (match_operand:QI 0 "dp_reg_operand" "=z")
                    (high:QI (match_operand:QI 1 "" "")))
               (use (match_operand 2 "" ""))])]
-  "!TARGET_SMALL"
+  "! TARGET_SMALL"
   "* return (TARGET_C3X) ? \"ldp\\t%A1\" : \"ldpk\\t%A1\";"
   [(set_attr "type" "ldp")])
 
@@ -1113,7 +1113,7 @@
   [(parallel [(set (match_operand:QI 0 "std_reg_operand" "=c")
                    (high:QI (match_operand:QI 1 "" "")))
               (use (match_operand 2 "" ""))])]
-  "!TARGET_C3X && !TARGET_SMALL"
+  "! TARGET_C3X && ! TARGET_SMALL"
   "ldhi\\t^%H1,%0"
   [(set_attr "type" "unary")])
 
@@ -1123,7 +1123,7 @@
                            (and:QI (match_operand:QI 1 "" "")
                                    (const_int 65535))))
               (use (match_operand 2 "" ""))])]
-  "!TARGET_C3X && !TARGET_SMALL"
+  "! TARGET_C3X && ! TARGET_SMALL"
   "or\\t#%H1,%0"
   [(set_attr "type" "unary")])
 
@@ -1137,7 +1137,7 @@
 (define_insn "*movqi_stik"
   [(set (match_operand:QI 0 "memory_operand" "=m")
         (match_operand:QI 1 "stik_const_operand" "K"))]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "stik\\t%1,%0"
   [(set_attr "type" "store")])
 
@@ -1152,7 +1152,7 @@
    if (which_alternative == 2)
      return \"sti\\t%1,%0\";
 
-   if (!TARGET_C3X && which_alternative == 3)
+   if (! TARGET_C3X && which_alternative == 3)
      {
        operands[1] = GEN_INT ((INTVAL (operands[1]) >> 16) & 0xffff);
        return \"ldhi\\t%1,%0\";
@@ -1160,7 +1160,7 @@
 
    /* The lda instruction cannot use the same register as source
       and destination.  */
-   if (!TARGET_C3X && which_alternative == 1
+   if (! TARGET_C3X && which_alternative == 1
        && (   IS_ADDR_REG (REGNO (operands[0]))
            || IS_INDEX_REG (REGNO (operands[0]))
            || IS_SP_REG (REGNO (operands[0])))
@@ -1230,20 +1230,20 @@
    /* We shouldn't have to do this, since reload is supposed to
       be able to do this if we have a memory constraint.  */
    if (CONSTANT_P (operands[1])
-       && !const_operand (operands[1], QImode))
+       && ! const_operand (operands[1], QImode))
      {
         operands[1] = force_const_mem (QImode, operands[1]);
-        if (!memory_address_p (QImode, XEXP (operands[1], 0))
-            && !reload_in_progress)
+        if (! memory_address_p (QImode, XEXP (operands[1], 0))
+            && ! reload_in_progress)
           operands[1] = change_address (operands[1], QImode,
                                         XEXP (operands[1], 0));
      }
 
-   if (!reload_in_progress
-       && !reg_operand (operands[0], QImode) 
-       && !reg_operand (operands[1], QImode)
-       && !(stik_const_operand (operands[1], QImode) 
-            && !push_operand (operands[0], QImode)))
+   if (! reload_in_progress
+       && ! reg_operand (operands[0], QImode) 
+       && ! reg_operand (operands[1], QImode)
+       && ! (stik_const_operand (operands[1], QImode) 
+            && ! push_operand (operands[0], QImode)))
      operands[1] = force_reg (QImode, operands[1]);")
 
 (define_insn "*movqi_update"
@@ -2051,7 +2051,7 @@
            (sign_extend:HI (match_operand:QI 2 "src_operand" "JR,rS<>,g,JR,rS<>,g")))
       (const_int 32))))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X && valid_operands (MULT, operands, QImode)"
+  "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
   "@
    mpyshi3\\t%2,%1,%0
    mpyshi3\\t%2,%1,%0
@@ -2092,7 +2092,7 @@
            (zero_extend:HI (match_operand:QI 2 "lsrc_operand" "JR,rS<>,g,JR,rS<>,g")))
           (const_int 32))))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X && valid_operands (MULT, operands, QImode)"
+  "! TARGET_C3X && valid_operands (MULT, operands, QImode)"
   "@
    mpyuhi3\\t%2,%1,%0
    mpyuhi3\\t%2,%1,%0
@@ -2675,7 +2675,7 @@
                                     (match_operand:QI 2 "const_int_operand" "")
                                     (match_operand:QI 3 "const_int_operand" "")))
               (clobber (reg:CC 21))])]
- "!TARGET_C3X"
+ "! TARGET_C3X"
  "if ((INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 16)
       || (INTVAL (operands[3]) % INTVAL (operands[2]) != 0))
         FAIL;
@@ -2687,7 +2687,7 @@
                          (match_operand:QI 2 "const_int_operand" "n,n")
                          (match_operand:QI 3 "const_int_operand" "n,n")))
    (clobber (reg:CC 21))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && (INTVAL (operands[3]) % INTVAL (operands[2]) == 0)"
   "*
@@ -2709,7 +2709,7 @@
                                      (match_operand:QI 3 "const_int_operand" "n"))
    		    (const_int 0)))
    (clobber (match_scratch:QI 0 "=d"))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && (INTVAL (operands[3]) % INTVAL (operands[2]) == 0)"
   "*
@@ -2734,7 +2734,7 @@
         (sign_extract:QI (match_dup 1)
                          (match_dup 2)
                          (match_dup 3)))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && (INTVAL (operands[3]) % INTVAL (operands[2]) == 0)"
   "*
@@ -2758,7 +2758,7 @@
                                     (match_operand:QI 2 "const_int_operand" "")
                                     (match_operand:QI 3 "const_int_operand" "")))
               (clobber (reg:CC 21))])]
- "!TARGET_C3X"
+ "! TARGET_C3X"
  "if ((INTVAL (operands[2]) != 8 && INTVAL (operands[2]) != 16)
       || (INTVAL (operands[3]) % INTVAL (operands[2]) != 0))
         FAIL;
@@ -2770,7 +2770,7 @@
                          (match_operand:QI 2 "const_int_operand" "n,n")
                          (match_operand:QI 3 "const_int_operand" "n,n")))
    (clobber (reg:CC 21))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && (INTVAL (operands[3]) % INTVAL (operands[2]) == 0)"
   "*
@@ -2792,7 +2792,7 @@
                                      (match_operand:QI 3 "const_int_operand" "n"))
    		    (const_int 0)))
    (clobber (match_scratch:QI 0 "=d"))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && (INTVAL (operands[3]) % INTVAL (operands[2]) == 0)"
   "*
@@ -2817,7 +2817,7 @@
         (zero_extract:QI (match_dup 1)
                          (match_dup 2)
                          (match_dup 3)))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (INTVAL (operands[2]) == 8 || INTVAL (operands[2]) == 16)
    && (INTVAL (operands[3]) % INTVAL (operands[2]) == 0)"
   "*
@@ -2841,8 +2841,8 @@
                                     (match_operand:QI 2 "const_int_operand" ""))
                    (match_operand:QI 3 "src_operand" ""))
               (clobber (reg:CC 21))])]
- "!TARGET_C3X"
- "if (!(((INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
+ "! TARGET_C3X"
+ "if (! (((INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
          && (INTVAL (operands[2]) % INTVAL (operands[1]) == 0))
         || (INTVAL (operands[1]) == 24 && INTVAL (operands[2]) == 8)))
     FAIL;
@@ -2854,7 +2854,7 @@
                          (match_operand:QI 2 "const_int_operand" "n,n"))
         (match_operand:QI 3 "src_operand" "g,g"))
    (clobber (reg:CC 21))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (((INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
         && (INTVAL (operands[2]) % INTVAL (operands[1]) == 0))
        || (INTVAL (operands[1]) == 24 && INTVAL (operands[2]) == 8))"
@@ -2882,7 +2882,7 @@
 	      (clobber (reg:CC 21))])
    (set (reg:CC 21)
         (compare:CC (match_dup 0) (const_int 0)))]
-  "!TARGET_C3X
+  "! TARGET_C3X
    && (INTVAL (operands[1]) == 8 || INTVAL (operands[1]) == 16)
    && (INTVAL (operands[2]) % INTVAL (operands[1]) == 0)"
   "*
@@ -2914,18 +2914,18 @@
         (match_operand:QF 1 "src_operand" ""))]
  ""
  "
-  if (CONSTANT_P (operands[1]) && !const_operand (operands[1], QFmode))
+  if (CONSTANT_P (operands[1]) && ! const_operand (operands[1], QFmode))
     {
       operands[1] = force_const_mem (QFmode, operands[1]);
-      if (!memory_address_p (QFmode, XEXP (operands[1], 0))
-          && !reload_in_progress)
+      if (! memory_address_p (QFmode, XEXP (operands[1], 0))
+          && ! reload_in_progress)
         operands[1] = change_address (operands[1], QFmode,
                                       XEXP (operands[1], 0));
     }
 
-  if (!reload_in_progress
-      && !reg_operand (operands[0], QFmode)
-      && !reg_operand (operands[1], QFmode))
+  if (! reload_in_progress
+      && ! reg_operand (operands[0], QFmode)
+      && ! reg_operand (operands[1], QFmode))
     operands[1] = force_reg (QFmode, operands[1]);
  ")
 
@@ -3237,7 +3237,7 @@
   [(set (match_operand:QF 0 "reg_operand" "=f")
         (unspec [(match_operand:QF 1 "src_operand" "fmH")] 5))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "rcpf\\t%1,%0"
   [(set_attr "type" "unarycc")])
 
@@ -3248,7 +3248,7 @@
   [(set (match_operand:QF 0 "reg_operand" "=f")
         (unspec [(match_operand:QF 1 "src_operand" "fmH")] 10))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "rsqrf\\t%1,%0"
   [(set_attr "type" "unarycc")])
 
@@ -3259,7 +3259,7 @@
   [(set (match_operand:QF 0 "reg_operand" "=f")
         (unspec [(match_operand:QF 1 "src_operand" "fmH")] 6))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "rnd\\t%1,%0"
   [(set_attr "type" "unarycc")])
 
@@ -3292,9 +3292,9 @@
    (parallel [(set (match_operand:QF 0 "reg_operand" "")
 	           (unspec [(match_dup 4)] 6))
 	      (clobber (reg:CC_NOOV 21))])]
-  "!TARGET_C3X"
-  "if (!reload_in_progress
-       && !reg_operand (operands[1], QFmode))
+  "! TARGET_C3X"
+  "if (! reload_in_progress
+       && ! reg_operand (operands[1], QFmode))
      operands[1] = force_reg (QFmode, operands[1]);
    operands[2] = gen_reg_rtx (QFmode);
    operands[3] = gen_reg_rtx (QFmode);
@@ -3309,7 +3309,7 @@
                    (sqrt:QF (match_operand:QF 1 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "if (TARGET_C3X || !TARGET_INLINE)
+  "if (TARGET_C3X || ! TARGET_INLINE)
      FAIL;
    else
      {
@@ -3537,9 +3537,9 @@
    (parallel [(set (match_operand:QF 0 "reg_operand" "")
 	           (unspec [(match_dup 3)] 6))
 	      (clobber (reg:CC_NOOV 21))])]
-  "!TARGET_C3X"
-  "if (!reload_in_progress
-      && !reg_operand (operands[2], QFmode))
+  "! TARGET_C3X"
+  "if (! reload_in_progress
+      && ! reg_operand (operands[2], QFmode))
      operands[2] = force_reg (QFmode, operands[2]);
    operands[3] = gen_reg_rtx (QFmode);
    operands[4] = gen_reg_rtx (QFmode);
@@ -3551,7 +3551,7 @@
                             (match_operand:QF 2 "src_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "if (TARGET_C3X || !TARGET_INLINE)
+  "if (TARGET_C3X || ! TARGET_INLINE)
      {
        c4x_emit_libcall3 (DIVQF3_LIBCALL, DIV, QFmode, operands);
        DONE;
@@ -4339,7 +4339,7 @@
   (clobber (reg:QI 31))]
   ;; Operand 1 not really used on the C4x.
 
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "*
    if (which_alternative == 0)
      {
@@ -4386,7 +4386,7 @@
   (clobber (reg:QI 31))]
   ;; Operand 0 and 2 not really used in the C30 instruction.
 
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "*
    if (which_alternative == 0)
      {
@@ -4553,7 +4553,7 @@
    (use (label_ref (match_operand 1 "" "")))]
   ""
   "*
-   return !final_sequence && c4x_rptb_rpts_p (insn, operands[0])
+   return ! final_sequence && c4x_rptb_rpts_p (insn, operands[0])
 	 ? \"rpts\\trc\" : \"rptb%#\\t%l1-1\";
   "
   [(set_attr "type" "repeat_top")])
@@ -4809,15 +4809,15 @@
  "if (CONSTANT_P (operands[1]))
     {
       operands[1] = force_const_mem (HFmode, operands[1]); 
-      if (!memory_address_p (HFmode, XEXP (operands[1], 0))
-          && !reload_in_progress)
+      if (! memory_address_p (HFmode, XEXP (operands[1], 0))
+          && ! reload_in_progress)
         operands[1] = change_address (operands[1], HFmode,
                                       XEXP (operands[1], 0));
      }
 
   /* Memory to memory copies must go through a register.  */
   if (GET_CODE (operands[1]) == MEM && GET_CODE (operands[0]) == MEM
-      && !reload_in_progress)
+      && ! reload_in_progress)
     operands[1] = force_reg (HFmode, operands[1]); 
 ")
 
@@ -5104,7 +5104,7 @@
   [(set (match_operand:HF 0 "reg_operand" "=h")
         (unspec [(match_operand:HF 1 "reg_or_const_operand" "hH")] 5))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "rcpf\\t%1,%0"
   [(set_attr "type" "unarycc")])
 
@@ -5115,7 +5115,7 @@
   [(set (match_operand:HF 0 "reg_operand" "=h")
         (unspec [(match_operand:HF 1 "reg_or_const_operand" "hH")] 10))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "rsqrf\\t%1,%0"
   [(set_attr "type" "unarycc")])
 
@@ -5126,7 +5126,7 @@
   [(set (match_operand:HF 0 "reg_operand" "=h")
         (unspec [(match_operand:HF 1 "reg_or_const_operand" "hH")] 6))
    (clobber (reg:CC_NOOV 21))]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "rnd\\t%1,%0"
   [(set_attr "type" "unarycc")])
 
@@ -5157,7 +5157,7 @@
    (parallel [(set (match_operand:HF 0 "reg_operand" "")
 		   (mult:HF (match_dup 2) (match_dup 1)))
 	      (clobber (reg:CC_NOOV 21))])]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "
   operands[2] = gen_reg_rtx (HFmode);
   operands[3] = gen_reg_rtx (HFmode);
@@ -5172,7 +5172,7 @@
                    (sqrt:HF (match_operand:HF 1 "reg_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "if (TARGET_C3X || !TARGET_INLINE)
+  "if (TARGET_C3X || ! TARGET_INLINE)
      FAIL;
    else
      {
@@ -5309,7 +5309,7 @@
 		   (mult:HF (match_operand:HF 1 "reg_operand" "")
 	         	    (match_dup 3)))
 	      (clobber (reg:CC_NOOV 21))])]
-  "!TARGET_C3X"
+  "! TARGET_C3X"
   "
   operands[3] = gen_reg_rtx (HFmode);
   operands[4] = gen_reg_rtx (HFmode);
@@ -5322,7 +5322,7 @@
                            (match_operand:HF 2 "reg_operand" "")))
               (clobber (reg:CC 21))])]
   ""
-  "if (TARGET_C3X || !TARGET_INLINE)
+  "if (TARGET_C3X || ! TARGET_INLINE)
      {
        c4x_emit_libcall3 (DIVHF3_LIBCALL, DIV, HFmode, operands);
        DONE;
@@ -5350,15 +5350,15 @@
       /* We don't need to force all constants into memory.
          This could be improved.... */
       operands[1] = force_const_mem (HImode, operands[1]); 
-      if (!memory_address_p (HImode, XEXP (operands[1], 0))
-          && !reload_in_progress)
+      if (! memory_address_p (HImode, XEXP (operands[1], 0))
+          && ! reload_in_progress)
         operands[1] = change_address (operands[1], HImode,
                                       XEXP (operands[1], 0));
      }
 
   /* Memory to memory copies must go through a register.  */
   if (GET_CODE (operands[1]) == MEM && GET_CODE (operands[0]) == MEM
-      && !reload_in_progress)
+      && ! reload_in_progress)
     operands[1] = force_reg (HImode, operands[1]); 
 ")
 
@@ -5411,7 +5411,7 @@
   [(set (match_operand:HI 0 "reg_operand" "=?dc")
         (sign_extend:HI (match_operand:QI 1 "src_operand" "g")))
    (clobber (reg:CC 21))]
-  "reload_completed && !TARGET_C3X"
+  "reload_completed && ! TARGET_C3X"
   [(set (match_dup 2) (match_dup 1))
    (parallel [(set (match_dup 3) (ashiftrt:QI (match_dup 2) (const_int 31)))
               (clobber (reg:CC 21))])]
@@ -5955,7 +5955,7 @@
   [(set (reg:CC 21)
         (compare:CC (match_operand:HI 0 "src_operand" "")
                     (match_operand:HI 1 "src_operand" "")))]
-  "!reload_completed"
+  "! reload_completed"
   [(parallel [(set (reg:CC 21)
                    (unspec [(compare:CC (match_dup 0)
                                         (match_dup 1))] 4))
@@ -5967,7 +5967,7 @@
   [(set (reg:CC_NOOV 21)
         (compare:CC_NOOV (match_operand:HI 0 "src_operand" "")
                          (match_operand:HI 1 "src_operand" "")))]
-  "!reload_completed"
+  "! reload_completed"
   [(parallel [(set (reg:CC_NOOV 21)
                    (unspec [(compare:CC_NOOV (match_dup 0)
                                              (match_dup 1))] 4))
@@ -6191,7 +6191,7 @@
           (plus:QI (match_dup 0)
                    (const_int -1)))
      (clobber (reg:CC_NOOV 21))])]
-  "!c4x_label_conflict (insn, operands[2], operands[1])"
+  "! c4x_label_conflict (insn, operands[2], operands[1])"
   "db%I3\\t%0,%l1\\n\\tb%3\\t%l2")
 
 (define_peephole
@@ -6210,7 +6210,7 @@
           (plus:QI (match_dup 0)
                    (const_int -1)))
      (clobber (reg:CC_NOOV 21))])]
-  "!c4x_label_conflict (insn, operands[2], operands[1])"
+  "! c4x_label_conflict (insn, operands[2], operands[1])"
   "db%I3\\t%0,%l1\\n\\tb%3\\t%l2")
 
 ;
@@ -6248,7 +6248,7 @@
   (set (match_operand:QI 2 "ext_low_reg_operand" "")
        (match_operand:QI 3 "par_ind_operand" ""))]
  "(REGNO (operands[0]) != REGNO (operands[2])) 
-  && !c4x_address_conflict (operands[1], operands[3], 0, 0)"
+  && ! c4x_address_conflict (operands[1], operands[3], 0, 0)"
  "ldi1\\t%1,%0\\n||\\tldi2\\t%3,%2")
 
 ; load occurs before store if 1 and 2 point to same address
@@ -6258,7 +6258,7 @@
   (set (match_operand:QI 2 "par_ind_operand" "")
        (match_operand:QI 3 "ext_low_reg_operand" ""))]
  "(REGNO (operands[0]) != REGNO (operands[3]))
-  && !c4x_address_conflict (operands[1], operands[2], 0, 1)"
+  && ! c4x_address_conflict (operands[1], operands[2], 0, 1)"
  "ldi\\t%1,%0\\n||\\tsti\\t%3,%2")
 
 ; load occurs before store if 0 and 3 point to same address
@@ -6268,7 +6268,7 @@
   (set (match_operand:QI 2 "ext_low_reg_operand" "")
        (match_operand:QI 3 "par_ind_operand" ""))]
  "(REGNO (operands[1]) != REGNO (operands[2]))
-  && !c4x_address_conflict (operands[0], operands[3], 1, 0)"
+  && ! c4x_address_conflict (operands[0], operands[3], 1, 0)"
  "ldi\\t%3,%2\\n||\\tsti\\t%1,%0")
 
 (define_peephole
@@ -6276,7 +6276,7 @@
        (match_operand:QI 1 "ext_low_reg_operand" ""))
   (set (match_operand:QI 2 "par_ind_operand" "")
        (match_operand:QI 3 "ext_low_reg_operand" ""))]
- "!c4x_address_conflict (operands[0], operands[2], 1, 1)"
+ "! c4x_address_conflict (operands[0], operands[2], 1, 1)"
  "sti\\t%1,%0\\n||\\tsti\\t%3,%2")
 
 ; This peephole should be unnecessary with my patches to flow.c
@@ -6297,7 +6297,7 @@
   (set (match_operand:QF 2 "ext_low_reg_operand" "")
        (match_operand:QF 3 "par_ind_operand" ""))]
  "(REGNO (operands[0]) != REGNO (operands[2]))
-  && !c4x_address_conflict (operands[1], operands[3], 0, 1)"
+  && ! c4x_address_conflict (operands[1], operands[3], 0, 1)"
  "ldf1\\t%1,%0\\n||\\tldf2\\t%3,%2")
 
 ; This peephole should be unnecessary with my patches to flow.c
@@ -6325,7 +6325,7 @@
        (match_operand:QF 1 "ext_low_reg_operand" ""))
   (set (match_operand:QF 2 "ext_low_reg_operand" "")
        (match_operand:QF 3 "par_ind_operand" ""))]
- "!c4x_address_conflict (operands[0], operands[3], 1, 1)"
+ "! c4x_address_conflict (operands[0], operands[3], 1, 1)"
  "ldf\\t%3,%2\\n||\\tstf\\t%1,%0")
 
 (define_peephole
@@ -6333,7 +6333,7 @@
        (match_operand:QF 1 "ext_low_reg_operand" ""))
   (set (match_operand:QF 2 "par_ind_operand" "")
        (match_operand:QF 3 "ext_low_reg_operand" ""))]
- "!c4x_address_conflict (operands[0], operands[2], 1, 1)"
+ "! c4x_address_conflict (operands[0], operands[2], 1, 1)"
  "stf1\\t%1,%0\\n||\\tstf2\\t%3,%2")
 
 (define_peephole

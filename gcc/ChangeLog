@@ -1,3 +1,9 @@
+Thu Jan  7 23:54:05 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c: Added space after negation operator.
+	* config/c4x/c4x.h: Likewise.
+	* config/c4x/c4x.md: Likewise.
+
 Thu Jan  7 23:39:27 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_preferred_reload_class): Always return class.

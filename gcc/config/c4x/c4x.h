@@ -238,7 +238,7 @@ extern int target_flags;
 #define TARGET_RPTB		(target_flags & RPTB_FLAG \
 				 && optimize >= 2)
 #define TARGET_BK		(target_flags & BK_FLAG)
-#define TARGET_DB		(!TARGET_C3X || (target_flags & DB_FLAG))
+#define TARGET_DB		(! TARGET_C3X || (target_flags & DB_FLAG))
 #define TARGET_DEBUG		(target_flags & DEBUG_FLAG)
 #define TARGET_HOIST		(target_flags & HOIST_FLAG)
 #define TARGET_LOOP_UNSIGNED	(target_flags & LOOP_UNSIGNED_FLAG)
@@ -418,7 +418,7 @@ extern void c4x_optimization_options ();
 
 /* Extended precision registers (high set) */
 
-#define IS_EXT_HIGH_REG(r)         (!TARGET_C3X \
+#define IS_EXT_HIGH_REG(r)         (! TARGET_C3X \
 			            && ((r) >= R8_REGNO) && ((r) <= R11_REGNO))
 /* Address registers */
 
@@ -512,7 +512,7 @@ extern void c4x_optimization_options ();
 
 #define CONDITIONAL_REGISTER_USAGE			\
   {							\
-    if (!TARGET_BK)					\
+    if (! TARGET_BK)					\
       {							\
 	fixed_regs[BK_REGNO] = 1;			\
         call_used_regs[BK_REGNO] = 1;			\
@@ -813,7 +813,7 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
 
 #define IS_NOT_UINT16_CONST(VAL) IS_UINT16_CONST(~(VAL))	/* 'N' */
 
-#define IS_HIGH_CONST(VAL) (!TARGET_C3X && (((VAL) & 0xffff) == 0)) /* 'O' */
+#define IS_HIGH_CONST(VAL) (! TARGET_C3X && (((VAL) & 0xffff) == 0)) /* 'O' */
 
 
 #define IS_DISP1_CONST(VAL) (((VAL) <= 1) && ((VAL) >= -1)) /* 'S' */
@@ -828,10 +828,10 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
 
 #define CONST_OK_FOR_LETTER_P(VAL, C)					\
         ( ((C) == 'I') ? (IS_INT16_CONST (VAL))				\
-	: ((C) == 'J') ? (!TARGET_C3X && IS_INT8_CONST (VAL))		\
-	: ((C) == 'K') ? (!TARGET_C3X && IS_INT5_CONST (VAL))		\
+	: ((C) == 'J') ? (! TARGET_C3X && IS_INT8_CONST (VAL))		\
+	: ((C) == 'K') ? (! TARGET_C3X && IS_INT5_CONST (VAL))		\
         : ((C) == 'L') ? (IS_UINT16_CONST (VAL))			\
-	: ((C) == 'M') ? (!TARGET_C3X && IS_UINT8_CONST (VAL))		\
+	: ((C) == 'M') ? (! TARGET_C3X && IS_UINT8_CONST (VAL))		\
 	: ((C) == 'N') ? (IS_NOT_UINT16_CONST (VAL))		        \
 	: ((C) == 'O') ? (IS_HIGH_CONST (VAL))			        \
         : 0 )	
@@ -990,7 +990,7 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
  int regno;							\
  int offset = 0;						\
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && !call_used_regs[regno])	\
+    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += TARGET_PRESERVE_FLOAT				\
 		&& ((regno == R6_REGNO) || (regno == R7_REGNO)) \
 		? 2 : 1;					\
@@ -1002,7 +1002,7 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
   {{ FRAME_POINTER_REGNUM, FRAME_POINTER_REGNUM }}
 
 #define	CAN_ELIMINATE(FROM, TO)					\
-  (!(((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM) \
+  (! (((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM) \
   || ((FROM) == FRAME_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM)))
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)	 	\
@@ -1010,7 +1010,7 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
  int regno;							\
  int offset = 0;						\
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && !call_used_regs[regno])	\
+    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
       offset += TARGET_PRESERVE_FLOAT				\
 		&& ((regno == R6_REGNO) || (regno == R7_REGNO)) \
 		? 2 : 1;					\
@@ -1108,7 +1108,7 @@ extern struct rtx_def *c4x_function_arg();
    MSBs of the address.  This is not supported by the TI assembler.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO) 			\
-     if (!TARGET_C3X)						\
+     if (! TARGET_C3X)						\
      {								\
 	fprintf (FILE, "\tpush\tar2\n");			\
 	fprintf (FILE, "\tldhi\t^LP%d,ar2\n", (LABELNO));	\
@@ -1158,7 +1158,7 @@ extern struct rtx_def *c4x_function_arg();
 #define FUNCTION_BLOCK_PROFILER(FILE, BLOCKNO) 			\
   if (profile_block_flag == 2)					\
     {								\
-      if (!TARGET_C3X)						\
+      if (! TARGET_C3X)						\
       {								\
 	fprintf (FILE, "\tpush\tst\n");				\
 	fprintf (FILE, "\tpush\tar2\n");			\
@@ -1205,7 +1205,7 @@ extern struct rtx_def *c4x_function_arg();
     }								\
   else								\
     {								\
-      if (!TARGET_C3X)						\
+      if (! TARGET_C3X)						\
       {								\
 	fprintf (FILE, "\tpush\tst\n");				\
 	fprintf (FILE, "\tpush\tar2\n");			\
@@ -1237,7 +1237,7 @@ extern struct rtx_def *c4x_function_arg();
 #define BLOCK_PROFILER(FILE, BLOCKNO) 				\
   if (profile_block_flag == 2)					\
     {								\
-      if (!TARGET_C3X)						\
+      if (! TARGET_C3X)						\
       {								\
 	fprintf (FILE, "\tpush\tst\n");				\
 	fprintf (FILE, "\tpush\tar2\n");			\
@@ -1293,7 +1293,7 @@ extern struct rtx_def *c4x_function_arg();
     }								\
   else								\
     {								\
-      if (!TARGET_C3X)						\
+      if (! TARGET_C3X)						\
       {								\
 	fprintf (FILE, "\tpush\tar2\n");			\
 	fprintf (FILE, "\tpush\tar0\n");			\
@@ -1830,7 +1830,7 @@ void									\
 const_section ()							\
 {									\
   extern void text_section();						\
-  if (!USE_CONST_SECTION)						\
+  if (! USE_CONST_SECTION)						\
     text_section();							\
   else if (in_section != in_const)					\
     {									\
@@ -1910,10 +1910,10 @@ dtors_section ()							\
   else if (TREE_CODE (DECL) == VAR_DECL)				\
     {									\
       if ((0 && RELOC)	/* should be (flag_pic && RELOC) */		\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || !DECL_INITIAL (DECL)					\
+	  || ! TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
+	  || ! DECL_INITIAL (DECL)					\
 	  || (DECL_INITIAL (DECL) != error_mark_node			\
-	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))			\
+	      && ! TREE_CONSTANT (DECL_INITIAL (DECL))))			\
 	data_section ();						\
       else								\
 	const_section ();						\
@@ -1965,7 +1965,7 @@ dtors_section ()							\
    may have quietly changed this register on the sly. */
 
 #define ASM_IDENTIFY_GCC(FILE) \
-    if (!TARGET_TI) fputs ("gcc2_compiled.:\n", FILE);	\
+    if (! TARGET_TI) fputs ("gcc2_compiled.:\n", FILE);	\
       fputs ("\t.data\ndata_sec:\n", FILE);
 
 #define ASM_COMMENT_START	";"
