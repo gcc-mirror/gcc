@@ -1258,11 +1258,7 @@ init_cumulative_args (cum, fntype, libname, incoming)
   cum->call_cookie = CALL_NORMAL;
 
   if (incoming)
-    {
-      cum->nargs_prototype = 1000;		/* don't return a PARALLEL */
-      if (abi == ABI_V4 || abi == ABI_SOLARIS)
-	cum->varargs_offset = RS6000_VARARGS_OFFSET;
-    }
+    cum->nargs_prototype = 1000;		/* don't return a PARALLEL */
 
   else if (cum->prototype)
     cum->nargs_prototype = (list_length (TYPE_ARG_TYPES (fntype)) - 1
@@ -1293,9 +1289,6 @@ init_cumulative_args (cum, fntype, libname, incoming)
 	  fprintf (stderr, " ret code = %s,",
 		   tree_code_name[ (int)TREE_CODE (ret_type) ]);
 	}
-
-      if ((abi == ABI_V4 || abi == ABI_SOLARIS) && incoming)
-	fprintf (stderr, " varargs = %d, ", cum->varargs_offset);
 
       if (cum->call_cookie & CALL_NT_DLLIMPORT)
 	fprintf (stderr, " dllimport,");
@@ -1634,7 +1627,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       rs6000_sysv_varargs_p = 1;
       if (! no_rtl)
 	save_area = plus_constant (virtual_stack_vars_rtx,
-				   - RS6000_VARARGS_OFFSET);
+				   - RS6000_VARARGS_SIZE);
     }
   else
     rs6000_sysv_varargs_p = 0;
