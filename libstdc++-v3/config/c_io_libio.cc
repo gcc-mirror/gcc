@@ -60,49 +60,10 @@ namespace std {
     _IO_default_finish(this, 0);
   }
       
-  __basic_file*
-  __basic_file::sys_open(int __fd, ios_base::openmode __mode) 
+  void 
+  __basic_file::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
+			     int& __rw_mode)
   {
-    __basic_file* __retval = NULL;
-    bool __testi = __mode & ios_base::in;
-    bool __testo = __mode & ios_base::out;
-#ifdef O_BINARY
-    bool __testb = __mode & ios_base::binary;
-#endif
-    int __p_mode = 0;
-    int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
-
-    if (__testi)
-      {
-	__p_mode = O_RDONLY;
-	__rw_mode = _IO_NO_WRITES;
-      }
-    if (__testo)
-      {
-	__p_mode = O_WRONLY | O_TRUNC;
-	__rw_mode = _IO_NO_READS;
-      }
-#ifdef O_BINARY
-    if (__testb)
-      __p_mode |= O_BINARY;
-#endif	   
-
-    if (__fd >= 0)
-      {
-	_fileno = __fd;
-	int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
-	_flags = (_flags & ~__mask) | (__rw_mode & __mask);
-	_IO_link_in((_IO_FILE_plus*) this); 
-	__retval = this;
-      }
-    return __retval;
-  }
-
-  __basic_file* 
-  __basic_file::open(const char* __name, ios_base::openmode __mode, 
-		     int __prot = 0664)
-  {
-    __basic_file* __retval = NULL;
 #ifdef O_BINARY
     bool __testb = __mode & ios_base::binary;
 #endif
@@ -110,8 +71,6 @@ namespace std {
     bool __testo = __mode & ios_base::out;
     bool __testt = __mode & ios_base::trunc;
     bool __testa = __mode & ios_base::app;
-    int __p_mode = 0;
-    int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
     
     if (!__testi && __testo && !__testt && !__testa)
       {
@@ -147,6 +106,36 @@ namespace std {
     if (__testb)
       __p_mode |= O_BINARY;
 #endif	   
+    }
+
+  __basic_file*
+  __basic_file::sys_open(int __fd, ios_base::openmode __mode) 
+  {
+    __basic_file* __retval = NULL;
+    int __p_mode = 0;
+    int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
+
+    _M_open_mode(__mode, __p_mode, __rw_mode);
+    if (__fd >= 0)
+      {
+	_fileno = __fd;
+	int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
+	_flags = (_flags & ~__mask) | (__rw_mode & __mask);
+	_IO_link_in((_IO_FILE_plus*) this); 
+	__retval = this;
+      }
+    return __retval;
+  }
+
+  __basic_file* 
+  __basic_file::open(const char* __name, ios_base::openmode __mode, 
+		     int __prot = 0664)
+  {
+    __basic_file* __retval = NULL;
+    int __p_mode = 0;
+    int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
+
+    _M_open_mode(__mode, __p_mode, __rw_mode);
     if (!_IO_file_is_open(this))
       {
 #if _G_HAVE_IO_FILE_OPEN
