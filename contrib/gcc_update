@@ -70,6 +70,7 @@ gcc/c-parse.c: gcc/c-parse.y
 gcc/c-parse.h: gcc/c-parse.c
 gcc/c-gperf.h: gcc/c-parse.gperf
 gcc/fixinc/fixincl.x: gcc/fixinc/fixincl.tpl gcc/fixinc/inclhack.def
+gcc/tradcif.c: gcc/tradcif.y
 # And then, language-specific files
 gcc/cp/parse.c: gcc/cp/parse.y
 gcc/cp/parse.h: gcc/cp/parse.c
