@@ -2291,7 +2291,9 @@ copy_rtx_and_substitute (orig, map)
 	 Small hard registers are returned as-is.  Pseudo-registers
 	 go through their `reg_map'.  */
       regno = REGNO (orig);
-      if (regno <= LAST_VIRTUAL_REGISTER)
+      if (regno <= LAST_VIRTUAL_REGISTER
+	  || (map->integrating
+	      && DECL_SAVED_INSNS (map->fndecl)->internal_arg_pointer == orig))
 	{
 	  /* Some hard registers are also mapped,
 	     but others are not translated.  */
@@ -2342,7 +2344,10 @@ copy_rtx_and_substitute (orig, map)
 	      emit_insn_after (seq, map->insns_at_start);
 	      return temp;
 	    }
-	  else if (regno == VIRTUAL_INCOMING_ARGS_REGNUM)
+	  else if (regno == VIRTUAL_INCOMING_ARGS_REGNUM
+		   || (map->integrating
+		       && (DECL_SAVED_INSNS (map->fndecl)->internal_arg_pointer
+			   == orig)))
 	    {
 	      /* Do the same for a block to contain any arguments referenced
 		 in memory.  */

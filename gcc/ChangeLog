@@ -1,3 +1,9 @@
+Mon Aug 30 01:02:09 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* integrate.c (copy_rtx_and_substitute): Handle internal_arg_pointer
+	just like we would the virtual incoming args register when
+	integrating.
+
 Sun Aug 29 23:17:54 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (ASM_FILE_START): Specify complete filename, including
