@@ -291,7 +291,9 @@ static void
 expand_start_java_handler (range)
   struct eh_range *range ATTRIBUTE_UNUSED;
 {
+  push_obstacks (&permanent_obstack, &permanent_obstack);
   expand_eh_region_start ();
+  pop_obstacks ();
 }
 
 tree
@@ -327,7 +329,9 @@ expand_end_java_handler (range)
      struct eh_range *range;
 {
   tree handler = range->handlers;
+  push_obstacks (&permanent_obstack, &permanent_obstack);
   expand_start_all_catch ();
+  pop_obstacks ();
   for ( ; handler != NULL_TREE; handler = TREE_CHAIN (handler))
     {
       start_catch_handler (prepare_eh_table_type (TREE_PURPOSE (handler)));
