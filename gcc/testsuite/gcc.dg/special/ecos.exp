@@ -139,7 +139,11 @@ set ld_output [ remote_exec host "[ find_ld ]" "--help" ]
 if { [ string first "--gc-sections" $ld_output ] >= 0 } {
 
     dg-init
-    dg-runtest "$srcdir/$subdir/gcsec-1.c" "-ffunction-sections -fdata-sections -Wl,--gc-sections" ""
+    if [isnative] {
+	dg-runtest "$srcdir/$subdir/gcsec-1.c" "-ffunction-sections -fdata-sections -Wl,--gc-sections -static" ""
+    } else {
+	dg-runtest "$srcdir/$subdir/gcsec-1.c" "-ffunction-sections -fdata-sections -Wl,--gc-sections" ""
+    }
     dg-finish
 } else {
     unsupported "gcsec-1.c"
