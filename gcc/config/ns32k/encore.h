@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ENCORE NS32000 version.
-   Copyright (C) 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 2000 Free Software Foundation, Inc.
    Adapted by Robert Brown (brown@harvard.harvard.edu) from the Sequent
    version by Michael Tiemann (tiemann@mcc.com).
 
@@ -172,7 +172,7 @@ do {							\
     
 /* Assembler pseudo-op for shared data segment. */
 
-#define SHARED_SECTION_ASM_OP ".shrdata"
+#define SHARED_SECTION_ASM_OP "\t.shrdata"
 
 /* This says how to output an assembler line
    to define a shared common symbol. */

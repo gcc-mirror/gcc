@@ -90,7 +90,7 @@ do {									\
 
 /* use .stabd instead of .stabn */
 
-#define	ASM_STABN_OP	".stabd"
+#define	ASM_STABN_OP	"\t.stabd\t"
 
 #undef  ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(file, line)				\

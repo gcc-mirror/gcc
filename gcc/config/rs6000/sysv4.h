@@ -738,16 +738,16 @@ extern int rs6000_pic_labelno;
 
 /* Override elfos.h definition.  */
 #undef	SKIP_ASM_OP
-#define SKIP_ASM_OP	".space"
+#define SKIP_ASM_OP	"\t.space\t"
 
 /* This says how to output assembler code to declare an
    uninitialized internal linkage data object.  Under SVR4,
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#define	LOCAL_ASM_OP	".local"
+#define	LOCAL_ASM_OP	"\t.local\t"
 
-#define	LCOMM_ASM_OP	".lcomm"
+#define	LCOMM_ASM_OP	"\t.lcomm\t"
 
 /* Override elfos.h definition.  */
 #undef	ASM_OUTPUT_ALIGNED_LOCAL

@@ -2384,7 +2384,7 @@ extern int toc_initialized;
 
 /* This is how we tell the assembler that two symbols have the same value.  */
 
-#define SET_ASM_OP ".set"
+#define SET_ASM_OP "\t.set\t"
 
 /* This implementes the `alias' attribute.  */
 

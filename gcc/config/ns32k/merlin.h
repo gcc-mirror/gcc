@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  MERLIN NS32000 version.
-   Copyright (C) 1990, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1994, 2000 Free Software Foundation, Inc.
    By Mark Mason (mason@reed.bitnet, pyramid!unify!mason@uunet.uu.net).
 
 This file is part of GNU CC.
@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LABEL_ALIGN_AFTER_BARRIER
 
 /* Assembler pseudo-op for shared data segment. */
-#define SHARED_SECTION_ASM_OP ".shdata"
+#define SHARED_SECTION_ASM_OP "\t.shdata"
 
 /* %$ means print the prefix for an immediate operand. */
 
