@@ -330,14 +330,6 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       op0 = SUBREG_REG (op0);
     }
 
-  /* If OP0 is a register, BITPOS must count within a word.
-     But as we have it, it counts within whatever size OP0 now has.
-     On a bigendian machine, these are not the same, so convert.  */
-  if (BYTES_BIG_ENDIAN
-      && GET_CODE (op0) != MEM
-      && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
-    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
-
   value = protect_from_queue (value, 0);
 
   if (flag_force_mem)
@@ -350,7 +342,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
      done with a simple store.  For targets that support fast unaligned
      memory, any naturally sized, unit aligned field can be done directly.  */
      
-  if (bitnum == 0
+  if (bitpos == 0
       && bitsize == GET_MODE_BITSIZE (fieldmode)
       && (GET_CODE (op0) != MEM
 	  ? (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
@@ -400,6 +392,14 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	  abort ();
       }
   }
+
+  /* If OP0 is a register, BITPOS must count within a word.
+     But as we have it, it counts within whatever size OP0 now has.
+     On a bigendian machine, these are not the same, so convert.  */
+  if (BYTES_BIG_ENDIAN
+      && GET_CODE (op0) != MEM
+      && unit > GET_MODE_BITSIZE (GET_MODE (op0)))
+    bitpos += unit - GET_MODE_BITSIZE (GET_MODE (op0));
 
   /* Storing an lsb-aligned field in a register
      can be done with a movestrict instruction.  */
