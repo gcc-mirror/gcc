@@ -1,5 +1,10 @@
 2002-11-01  David O'Brien  <obrien@FreeBSD.org>
 
+	* config/sparc/freebsd.h (CPP_CPU64_DEFAULT_SPEC): Define __arch64__.
+	Add comment.
+
+2002-11-01  David O'Brien  <obrien@FreeBSD.org>
+
 	* config/sparc/freebsd.h (TRANSFER_FROM_TRAMPOLINE): Define
 	__enable_execute_stack function.
 

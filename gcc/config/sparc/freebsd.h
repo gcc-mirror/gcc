@@ -18,11 +18,13 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* FreeBSD needs's the platform name (sparc64) defined.  */
+/* FreeBSD needs's the platform name (sparc64) defined.
+   Emacs needs to know if the arch is 64 or 32-bits.  */
 
 #undef  CPP_CPU64_DEFAULT_SPEC
-#define CPP_CPU64_DEFAULT_SPEC "-D__sparc64__ -D__sparc_v9__"
+#define CPP_CPU64_DEFAULT_SPEC "-D__sparc64__ -D__sparc_v9__ -D__arch64__"
 
+/* Because we include sparc/sysv4.h.  */
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES FBSD_CPP_PREDEFINES
 
