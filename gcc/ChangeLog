@@ -1,3 +1,14 @@
+1999-06-28  "David O'Brien"  <obrien@NUXI.com>
+
+	* fixinc/inclhack.def(stdio_va_list): This patch Removes a
+	semicolon from the BSD VA_LIST replacement expression.
+
+	* fixinc/inclhack.sh: regen
+	* fixinc/fixincl.x: regen
+
+	* fixinc/mkfixinc.sh: Have `i[34567]86-*-freebsd*' machines
+	now use the fixincl program.
+
 Mon Jun 28 05:28:12 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.h (CONDITIONAL_REGISTER_USAGE): Define for !SUN_FPA
