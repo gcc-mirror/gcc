@@ -1,3 +1,8 @@
+1998-07-27  Dave Brolley  <brolley@cygnus.com>
+
+	* c-lex.c (yylex): Fix boundary conditions in character literal and
+	string literal loops.
+
 1998-07-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): OK, do return the from_obj value

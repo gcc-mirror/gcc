@@ -4132,7 +4132,7 @@ real_yylex ()
 		int char_len = -1;
 		for (i = 0; i < longest_char; ++i)
 		  {
-		    if (p + i == token_buffer + maxtoken)
+		    if (p + i >= token_buffer + maxtoken)
 		      p = extend_token_buffer (p);
 		    p[i] = c;
 
@@ -4169,7 +4169,7 @@ real_yylex ()
 		unsigned bytemask = (1 << width) - 1;
 		int byte;
 
-		if (p + WCHAR_BYTES >= token_buffer + maxtoken)
+		if (p + WCHAR_BYTES > token_buffer + maxtoken)
 		  p = extend_token_buffer (p);
 
 		for (byte = 0; byte < WCHAR_BYTES; ++byte)
@@ -4188,7 +4188,7 @@ real_yylex ()
 	      }
 	    else
 	      {
-		if (p == token_buffer + maxtoken)
+		if (p >= token_buffer + maxtoken)
 		  p = extend_token_buffer (p);
 		*p++ = c;
 	      }
@@ -4205,14 +4205,14 @@ real_yylex ()
 	   or with a wide zero.  */
 	if (wide_flag)
 	  {
-	    if (p + WCHAR_BYTES >= token_buffer + maxtoken)
+	    if (p + WCHAR_BYTES > token_buffer + maxtoken)
 	      p = extend_token_buffer (p);
 	    bzero (p, WCHAR_BYTES);
 	    p += WCHAR_BYTES;
 	  }
 	else
 	  {
-	    if (p == token_buffer + maxtoken)
+	    if (p >= token_buffer + maxtoken)
 	      p = extend_token_buffer (p);
 	    *p++ = 0;
 	  }
