@@ -954,8 +954,18 @@ dbxout_range_type (type)
 	 were defined to be sub-ranges of int.  Unfortunately, this
 	 does not allow us to distinguish true sub-ranges from integer
 	 types.  So, instead we define integer (non-sub-range) types as
-	 sub-ranges of themselves.  */
-      dbxout_type_index (type);
+	 sub-ranges of themselves.  This matters for Chill.  If this isn't
+	 a subrange type, then we want to define it in terms of itself.
+	 However, in C, this may be an anonymous integer type, and we don't
+	 want to emit debug info referring to it.  Just calling
+	 dbxout_type_index won't work anyways, because the type hasn't been
+	 defined yet.  We make this work for both cases by checked to see
+	 whether this is a defined type, referring to it if it is, and using
+	 'int' otherwise.  */
+      if (TYPE_SYMTAB_ADDRESS (type) != 0)
+	dbxout_type_index (type);
+      else
+	dbxout_type_index (integer_type_node);
     }
   if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST)
     {

@@ -1,3 +1,8 @@
+Thu Jul 23 18:53:20 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* dbxout.c (dbxout_range_type): Only call dbxout_type_index for
+	already defined type.
+
 Thu Jul 23 13:49:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (check_max_integer_computation_mode): Allow conversions
