@@ -1,3 +1,8 @@
+Sat Apr 18 15:41:16 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* regmove.c (fixup_match_1): In three places, in flag_exceptions
+	check, change p to q.
+
 Sat Apr 18 15:30:49 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* gcc.c (lang_specific_driver): Add new parm type to prototype.

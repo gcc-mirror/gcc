@@ -1345,7 +1345,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		     it is inside an EH region.  There is no easy way to tell,
 		     so we just always break when we see a CALL_INSN if
 		     flag_exceptions is nonzero.  */
-		  if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+		  if (flag_exceptions && GET_CODE (q) == CALL_INSN)
 		    {
 		      q = 0;
 		      break;
@@ -1520,7 +1520,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 		 it is inside an EH region.  There is no easy way to tell,
 		 so we just always break when we see a CALL_INSN if
 		 flag_exceptions is nonzero.  */
-	      if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	      if (flag_exceptions && GET_CODE (q) == CALL_INSN)
 		{
 		  q = 0;
 		  break;
@@ -1604,7 +1604,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	     is inside an EH region.  There is no easy way to tell so we
 	     just always break when we see a CALL_INSN if flag_exceptions
 	     is nonzero.  */
-	  if (flag_exceptions && GET_CODE (p) == CALL_INSN)
+	  if (flag_exceptions && GET_CODE (q) == CALL_INSN)
 	    break;
 
 	  if (GET_RTX_CLASS (GET_CODE (q)) != 'i')
