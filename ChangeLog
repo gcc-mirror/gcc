@@ -1,3 +1,8 @@
+2003-02-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* MAINTAINERS: Remove John Carr (who never actually had access to
+	gcc.gnu.org).
+
 2003-02-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* configure.in (*-*-darwin*): Rename from powerpc*-*-darwin*,
