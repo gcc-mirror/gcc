@@ -3,7 +3,7 @@
 # This script parses the output of a gcc bootstrap when using warning
 # flags and determines various statistics.
 # 
-# usage: warn_summary [-llf] [-s stage] [-nosub|-ch|-cp|-f|-java|-ada|-intl|-fixinc]
+# usage: warn_summary [-llf] [-s stage] [-nosub|-ch|-cp|-f|-fortran|-java|-ada|-intl|-fixinc]
 # 	[-pass|-wpass] [file(s)]
 #
 # -llf
@@ -19,8 +19,8 @@
 #
 # -nosub
 # Only show warnings from the gcc top level directory.
-# -ch|-cp|-f|-java|-ada|-intl|-fixinc
-# Only show warnings from the specified language subdirectory.
+# -ch|-cp|-f|-fortran|-java|-ada|-intl|-fixinc
+# Only show warnings from the specified gcc subdirectory.
 # These override each other so only the last one passed takes effect.
 #
 # -pass
@@ -57,7 +57,7 @@ subdirectoryFilter()
   else
     if test "$filter" = nosub ; then
       # Omit all subdirectories.
-      egrep -v '/gcc/(ch|cp|f|java|intl|fixinc)/'
+      egrep -v '/gcc/(ch|cp|f|fortran|java|ada|intl|fixinc)/'
     else
       # Pass through only subdir $filter.
       grep "/gcc/$filter/"
@@ -132,7 +132,7 @@ s%^[^ ]*/\(lib[a-z23+-]*/\)%\1%;'
 
 # Start the main section.
 
-usage="usage: `basename $0` [-llf] [-s stage] [-nosub|-ch|-cp|-f|-java|-ada|-intl|-fixinc] [-pass|-wpass] [file(s)]"
+usage="usage: `basename $0` [-llf] [-s stage] [-nosub|-ch|-cp|-f|-fortran|-java|-ada|-intl|-fixinc] [-pass|-wpass] [file(s)]"
 stageN=3
 tmpfile=/tmp/tmp-warn.$$
 
@@ -158,7 +158,7 @@ while test -n "$1" ; do
    -s)  if test -z "$2"; then echo $usage 1>&2; exit 1; fi
 	stageN="$2"; shift 2 ;;
    -s*) stageN="`expr $1 : '-s\(.*\)'`" ; shift ;;
-   -nosub|-ch|-cp|-f|-java|-ada|-intl|-fixinc) filter="`expr $1 : '-\(.*\)'`" ; shift ;;
+   -nosub|-ch|-cp|-f|-fortran|-java|-ada|-intl|-fixinc) filter="`expr $1 : '-\(.*\)'`" ; shift ;;
    -pass) pass=1 ; shift ;;
    -wpass) pass=w ; shift ;;
    -*)  echo $usage 1>&2 ; exit 1 ;;
