@@ -1,5 +1,10 @@
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
+	* combine.c (combine_simplify_rtx): Use gen_unary to distribute
+	the NOT for De Morgan's rule.
+	* simplify-rtx.c (simplify_unary_operation): Simplify a BImode NOT
+	of a comparison to the reverse comparison.
+
 	* combine.c (try_combine): Allow split to create a single insn.
 
 	* machmode.def: Add BImode.  Add a column for bitsize.

@@ -3933,21 +3933,17 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       if (GET_CODE (XEXP (x, 0)) == IOR || GET_CODE (XEXP (x, 0)) == AND)
  	{
 	  rtx in1 = XEXP (XEXP (x, 0), 0), in2 = XEXP (XEXP (x, 0), 1);
+	  enum machine_mode op_mode;
 
-	  if (GET_CODE (in1) == NOT)
-	    in1 = XEXP (in1, 0);
-	  else
-	    in1 = gen_rtx_combine (NOT, GET_MODE (in1), in1);
+	  op_mode = GET_MODE (in1);
+	  in1 = gen_unary (NOT, op_mode, op_mode, in1);
 
-	  if (GET_CODE (in2) == NOT)
-	    in2 = XEXP (in2, 0);
-	  else if (GET_CODE (in2) == CONST_INT
-		   && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-	    in2 = GEN_INT (GET_MODE_MASK (mode) & ~INTVAL (in2));
-	  else
-	    in2 = gen_rtx_combine (NOT, GET_MODE (in2), in2);
+	  op_mode = GET_MODE (in2);
+	  if (op_mode == VOIDmode)
+	    op_mode = mode;
+	  in2 = gen_unary (NOT, op_mode, op_mode, in2);
 
-	  if (GET_CODE (in2) == NOT)
+	  if (GET_CODE (in2) == NOT && GET_CODE (in1) != NOT)
 	    {
 	      rtx tem = in2;
 	      in2 = in1; in1 = tem;
