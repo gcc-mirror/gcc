@@ -118,16 +118,17 @@ Boston, MA 02111-1307, USA.  */
    addr-expr-arg: ID
 		| compref
 
-   with-size-arg: addr-expr-arg
+   addressable	: addr-expr-arg
 		| indirectref
+
+   with-size-arg: addressable
 		| call-stmt
 
    indirectref	: INDIRECT_REF
 			op0 -> val
 
-   lhs		: addr-expr-arg
+   lhs		: addressable
 		| bitfieldref
-		| indirectref
 		| WITH_SIZE_EXPR
 			op0 -> with-size-arg
 			op1 -> val
@@ -300,8 +301,7 @@ is_gimple_constructor_elt (tree t)
 bool
 is_gimple_lvalue (tree t)
 {
-  return (is_gimple_addr_expr_arg (t)
-	  || TREE_CODE (t) == INDIRECT_REF
+  return (is_gimple_addressable (t)
 	  || TREE_CODE (t) == WITH_SIZE_EXPR
 	  /* These are complex lvalues, but don't have addresses, so they
 	     go here.  */
@@ -317,13 +317,15 @@ is_gimple_condexpr (tree t)
 	  || TREE_CODE_CLASS (TREE_CODE (t)) == '<');
 }
 
-/*  Return true if T is a valid operand for ADDR_EXPR.  */
+/*  Return true if T is something whose address can be taken.  */
 
 bool
-is_gimple_addr_expr_arg (tree t)
+is_gimple_addressable (tree t)
 {
   return (is_gimple_id (t) || handled_component_p (t)
-	  || TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR);
+	  || TREE_CODE (t) == REALPART_EXPR
+	  || TREE_CODE (t) == IMAGPART_EXPR
+	  || TREE_CODE (t) == INDIRECT_REF);
 }
 
 /* Return true if T is function invariant.  Or rather a restricted

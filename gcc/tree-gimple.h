@@ -55,8 +55,8 @@ extern bool is_gimple_tmp_reg (tree);
 extern bool is_gimple_variable (tree);
 /* Returns true iff T is a variable or an INDIRECT_REF (of a variable).  */
 extern bool is_gimple_min_lval (tree);
-/* Returns true iff T is an lvalue other than an INDIRECT_REF.  */
-extern bool is_gimple_addr_expr_arg (tree);
+/* Returns true iff T is something whose address can be taken.  */
+extern bool is_gimple_addressable (tree);
 /* Returns true iff T is any valid GIMPLE lvalue.  */
 extern bool is_gimple_lvalue (tree);
 
