@@ -2991,8 +2991,8 @@ duplicate_decls (newdecl, olddecl)
 	  TREE_TYPE (olddecl) = build_exception_variant (newtype,
 							 TYPE_RAISES_EXCEPTIONS (oldtype));
 
-	  if ((pedantic || (! DECL_IN_SYSTEM_HEADER (olddecl)
-			    && DECL_SOURCE_LINE (olddecl) != 0))
+	  if ((pedantic || ! DECL_IN_SYSTEM_HEADER (olddecl))
+	      && DECL_SOURCE_LINE (olddecl) != 0
 	      && flag_exceptions
 	      && ! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
 	    {
