@@ -230,6 +230,10 @@ print_operand (file, x, code)
 	fputc (')', file);
 	break;
 
+      case 'N':
+	output_address (GEN_INT ((~INTVAL (x)) & 0xff));
+	break;
+
       default:
 	switch (GET_CODE (x))
 	  {
@@ -368,7 +372,9 @@ expand_epilogue ()
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
       size = 0;
     }
-  else if (size > 255)
+  else if ((regs_ever_live[2] || regs_ever_live[3]
+	    || regs_ever_live[6] || regs_ever_live[7])
+	   && size > 255)
     {
       emit_insn (gen_addsi3 (stack_pointer_rtx,
 			     stack_pointer_rtx,
