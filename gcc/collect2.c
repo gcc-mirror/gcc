@@ -1567,6 +1567,7 @@ main (argc, argv)
     {
       notice ("%d constructor(s) found\n", constructors.number);
       notice ("%d destructor(s)  found\n", destructors.number);
+      notice ("%d frame table(s) found\n", frame_tables.number);
     }
 
   if (constructors.number == 0 && destructors.number == 0
@@ -2389,6 +2390,7 @@ scan_prog_file (prog_name, which_pass)
 	case 5:
 	  if (which_pass != PASS_LIB)
 	    add_to_list (&frame_tables, name);
+	  break;
 
 	default:		/* not a constructor or destructor */
 	  continue;
@@ -2833,7 +2835,7 @@ scan_libraries (prog_name)
 #if defined(EXTENDED_COFF)
 #   define GCC_SYMBOLS(X)	(SYMHEADER(X).isymMax + SYMHEADER(X).iextMax)
 #   define GCC_SYMENT		SYMR
-#   define GCC_OK_SYMBOL(X)	((X).st == stProc && (X).sc == scText)
+#   define GCC_OK_SYMBOL(X)	((X).st == stProc || (X).st == stGlobal)
 #   define GCC_SYMINC(X)	(1)
 #   define GCC_SYMZERO(X)	(SYMHEADER(X).isymMax)
 #   define GCC_CHECK_HDR(X)	(PSYMTAB(X) != 0)
@@ -2973,6 +2975,11 @@ scan_prog_file (prog_name, which_pass)
 			    add_to_list (&destructors, name);
 			  break;
 #endif
+
+			case 5:
+			  if (! is_shared)
+			    add_to_list (&frame_tables, name);
+			  break;
 
 			default:	/* not a constructor or destructor */
 #ifdef COLLECT_EXPORT_LIST
