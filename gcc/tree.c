@@ -270,7 +270,7 @@ void gcc_obstack_init ();
 
 /* If non-null, a language specific helper for unsave_expr_now. */
 
-int (*lang_unsave_expr_now) PROTO((tree));
+void (*lang_unsave_expr_now) PROTO((tree));
 
 /* Init the principal obstacks.  */
 

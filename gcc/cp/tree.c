@@ -2866,7 +2866,7 @@ init_cplus_unsave ()
 /* The C++ version of unsave_expr_now.
    See gcc/tree.c:unsave_expr_now for comments. */
 
-tree
+void
 cplus_unsave_expr_now (expr)
      tree expr;
 {
