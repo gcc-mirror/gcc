@@ -378,13 +378,8 @@ get_tinfo_decl (tree type)
 static tree
 get_tinfo_ptr (tree type)
 {
-  tree exp = get_tinfo_decl (type);
-  
-   /* Convert to type_info type.  */
-  exp = build_unary_op (ADDR_EXPR, exp, 0);
-  exp = ocp_convert (type_info_ptr_type, exp, CONV_REINTERPRET, 0);
-
-  return exp;
+  return build_nop (type_info_ptr_type, 
+		    build_address (get_tinfo_decl (type)));
 }
 
 /* Return the type_info object for TYPE.  */
