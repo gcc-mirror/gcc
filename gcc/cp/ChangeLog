@@ -1,3 +1,10 @@
+2004-09-20  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14179
+	* decl.c (reshape_init): Extract array handling into...
+	(reshape_init_array): New function. Use integers instead of trees
+	for indices. Handle out-of-range designated initializers.
+
 2004-09-20  Steven Bosscher  <stevenb@suse.de>
 
 	* lex.c (cxx_init): Don't set the ridpointer for RID_NULL
