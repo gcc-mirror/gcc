@@ -44,11 +44,11 @@ fortran			Richard Henderson	rth@cygnus.com
 c++			Jason Merrill		jason@cygnus.com
 c++                     Mark Mitchell		mark@codesourcery.com
 chill			Dave Brolley		brolley@cygnus.com
-chill			Per Bothner		bothner@cygnus.com
-java			Per Bothner		bothner@cygnus.com
+chill			Per Bothner		per@bothner.com
+java			Per Bothner		per@bothner.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib			Dave Brolley		brolley@cygnus.com
-cpplib			Per Bothner		bothner@cygnus.com
+cpplib			Per Bothner		per@bothner.com
 fixincludes		Ian Taylor		ian@cygnus.com
 alias analysis		John Carr		jfc@mit.edu
 loop unrolling		Jim Wilson		wilson@cygnus.com
