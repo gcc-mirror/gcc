@@ -1,3 +1,8 @@
+2004-07-11  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (store_expr): Don't fiddle subreg promotion for types
+	with precision smaller than the mode.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* tree.h (all_types_permanent): Remove.

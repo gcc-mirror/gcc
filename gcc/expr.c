@@ -4144,7 +4144,10 @@ store_expr (tree exp, rtx target, int want_value)
 	 more than just converting modes.  */
       if ((want_value & 1) == 0
 	  && INTEGRAL_TYPE_P (TREE_TYPE (exp))
-	  && TREE_TYPE (TREE_TYPE (exp)) == 0)
+	  && TREE_TYPE (TREE_TYPE (exp)) == 0
+	  && (!lang_hooks.reduce_bit_field_operations
+	      || (GET_MODE_PRECISION (GET_MODE (target))
+		  == TYPE_PRECISION (TREE_TYPE (exp)))))
 	{
 	  if (TYPE_UNSIGNED (TREE_TYPE (exp))
 	      != SUBREG_PROMOTED_UNSIGNED_P (target))
