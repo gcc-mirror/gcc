@@ -41,6 +41,7 @@ extern int dbr_sequence_length	PROTO((void));
 /* Indicate that branch shortening hasn't yet been done.  */
 extern void init_insn_lengths	PROTO((void));
 
+#ifdef RTX_CODE
 /* Obtain the current length of an insn.  If branch shortening has been done,
    get its actual length.  Otherwise, get its maximum length.  */
 extern int get_attr_length	PROTO((rtx));
@@ -112,14 +113,188 @@ extern int only_leaf_regs_used	PROTO((void));
 /* Scan IN_RTX and its subexpressions, and renumber all regs into those
    available in leaf functions.  */
 extern void leaf_renumber_regs_insn PROTO((rtx));
+#endif
 
-/* Output a name (as found inside a symbol_ref) in assembler syntax.  */
-extern void assemble_name STDIO_PROTO((FILE *, char *));
+/* Functions in varasm.c.  */
+
+/* Tell assembler to switch to text section.  */
+extern void text_section		PROTO((void));
+
+/* Tell assembler to switch to data section.  */
+extern void data_section		PROTO((void));
+
+/* Tell assembler to switch to read-only data section.  This is normally
+   the text section.  */
+extern void readonly_data_section	PROTO((void));
+
+/* Determine if we're in the text section. */
+extern int in_text_section		PROTO((void));
+
+#ifdef TREE_CODE
+/* Tell assembler to change to section NAME for DECL.
+   If DECL is NULL, just switch to section NAME.
+   If NAME is NULL, get the name from DECL.  */
+extern void named_section		PROTO((tree, char *));
+
+/* Create the rtl to represent a function, for a function definition.
+   DECL is a FUNCTION_DECL node which describes which function.
+   The rtl is stored into DECL.  */
+extern void make_function_rtl		PROTO((tree));
+
+/* Decode an `asm' spec for a declaration as a register name.
+   Return the register number, or -1 if nothing specified,
+   or -2 if the ASMSPEC is not `cc' or `memory' and is not recognized,
+   or -3 if ASMSPEC is `cc' and is not recognized,
+   or -4 if ASMSPEC is `memory' and is not recognized.
+   Accept an exact spelling or a decimal number.
+   Prefixes such as % are optional.  */
+extern int decode_reg_name		PROTO((char *));
+
+/* Create the DECL_RTL for a declaration for a static or external variable
+   or static or external function.
+   ASMSPEC, if not 0, is the string which the user specified
+   as the assembler symbol name.
+   TOP_LEVEL is nonzero if this is a file-scope variable.
+
+   This is never called for PARM_DECL nodes.  */
+extern void make_decl_rtl		PROTO((tree, char *, int));
+
+/* Make the rtl for variable VAR be volatile.
+   Use this only for static variables.  */
+extern void make_var_volatile		PROTO((tree));
+
+/* Output alignment directive to align for constant expression EXP.  */
+extern void assemble_constant_align	PROTO((tree));
+
+/* Output a string of literal assembler code
+   for an `asm' keyword used between functions.  */
+extern void assemble_asm		PROTO((tree));
+
+/* Record an element in the table of global destructors.
+   How this is done depends on what sort of assembler and linker
+   are in use.
+
+   NAME should be the name of a global function to be called
+   at exit time.  This name is output using assemble_name.  */
+extern void assemble_destructor		PROTO((char *));
+
+/* Likewise for global constructors.  */
+extern void assemble_constructor	PROTO((char *));
+
+/* Likewise for entries we want to record for garbage collection.
+   Garbage collection is still under development.  */
+extern void assemble_gc_entry		PROTO((char *));
+
+/* Output assembler code for the constant pool of a function and associated
+   with defining the name of the function.  DECL describes the function.
+   NAME is the function's name.  For the constant pool, we use the current
+   constant pool data.  */
+extern void assemble_start_function	PROTO((tree, char *));
+
+/* Output assembler code associated with defining the size of the
+   function.  DECL describes the function.  NAME is the function's name.  */
+extern void assemble_end_function	PROTO((tree, char *));
+
+/* Assemble code to leave SIZE bytes of zeros.  */
+extern void assemble_zeros		PROTO((int));
+
+/* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
+extern void assemble_align		PROTO((int));
+
+/* Assemble a string constant with the specified C string as contents.  */
+extern void assemble_string		PROTO((char *, int));
+/* Assemble everything that is needed for a variable or function declaration.
+   Not used for automatic variables, and not used for function definitions.
+   Should not be called for variables of incomplete structure type.
+
+   TOP_LEVEL is nonzero if this variable has file scope.
+   AT_END is nonzero if this is the special handling, at end of compilation,
+   to define things that have had only tentative definitions.
+   DONT_OUTPUT_DATA if nonzero means don't actually output the
+   initial value (that will be done by the caller).  */
+extern void assemble_variable		PROTO((tree, int, int, int));
+
+/* Output text storage for constructor CONSTR. */
+extern void bc_output_constructor	PROTO((tree, int));
+
+/* Create storage for constructor CONSTR. */
+extern void bc_output_data_constructor	PROTO((tree));
+
+/* Output something to declare an external symbol to the assembler.
+   (Most assemblers don't need this, so we normally output nothing.)
+   Do nothing if DECL is not external.  */
+extern void assemble_external		PROTO((tree));
+#endif
+
+#ifdef RTX_CODE
+/* Similar, for calling a library function FUN.  */
+extern void assemble_external_libcall	PROTO((rtx));
+#endif
+
+/* Declare the label NAME global.  */
+extern void assemble_global		PROTO((char *));
+
+/* Assemble a label named NAME.  */
+extern void assemble_label		PROTO((char *));
+
+/* Output to FILE a reference to the assembler name of a C-level name NAME.
+   If NAME starts with a *, the rest of NAME is output verbatim.
+   Otherwise NAME is transformed in an implementation-defined way
+   (usually by the addition of an underscore).
+   Many macros in the tm file are defined to call this function.  */
+extern void assemble_name		STDIO_PROTO((FILE *, char *));
+
+#ifdef RTX_CODE
+/* Assemble the integer constant X into an object of SIZE bytes.
+   X must be either a CONST_INT or CONST_DOUBLE.
+
+   Return 1 if we were able to output the constant, otherwise 0.  If FORCE is
+   non-zero, abort if we can't output the constant.  */
+extern int assemble_integer		PROTO((rtx, int, int));
+
+#ifdef EMUSHORT
+/* Assemble the floating-point constant D into an object of size MODE.  */
+extern void assemble_real		PROTO((REAL_VALUE_TYPE,
+					       enum machine_mode));
+#endif
+#endif
+
+/* At the end of a function, forget the memory-constants
+   previously made for CONST_DOUBLEs.  Mark them as not on real_constant_chain.
+   Also clear out real_constant_chain and clear out all the chain-pointers.  */
+extern void clear_const_double_mem	PROTO((void));
+
+/* Start deferring output of subconstants.  */
+extern void defer_addressed_constants	PROTO((void));
+
+/* Stop deferring output of subconstants,
+   and output now all those that have been deferred.  */
+extern void output_deferred_addressed_constants PROTO((void));
+
+/* Initialize constant pool hashing for next function.  */
+extern void init_const_rtx_hash_table	PROTO((void));
+
+/* Return the size of the constant pool.  */
+extern int get_pool_size		PROTO((void));
+
+#ifdef TREE_CODE
+/* Write all the constants in the constant pool.  */
+extern void output_constant_pool	PROTO((char *, tree));
+
+/* Output assembler code for constant EXP to FILE, with no label.
+   This includes the pseudo-op such as ".int" or ".byte", and a newline.
+   Assumes output_addressed_constants has been done on EXP already.
+
+   Generate exactly SIZE bytes of assembler data, padding at the end
+   with zeros if necessary.  SIZE must always be specified.  */
+extern void output_constant		PROTO((tree, int));
+#endif
 
 /* When outputting assembler code, indicates which alternative
    of the constraints was actually satisfied.  */
 extern int which_alternative;
 
+#ifdef RTX_CODE
 /* When outputting delayed branch sequences, this rtx holds the
    sequence being output.  It is null when no delayed branch
    sequence is being output, so it can be used as a test in the
@@ -127,6 +302,7 @@ extern int which_alternative;
 
    This variable is defined  in final.c.  */
 extern rtx final_sequence;
+#endif
 
 /* Number of bytes of args popped by function being compiled on its return.
    Zero if no bytes are to be popped.
@@ -205,6 +381,7 @@ extern CUMULATIVE_ARGS current_function_args_info;
 
 extern char *current_function_name;
 
+#ifdef RTX_CODE
 /* If non-zero, an RTL expression for that location at which the current
    function returns its result.  Usually equal to
    DECL_RTL (DECL_RESULT (current_function_decl)).  */
@@ -215,6 +392,7 @@ extern rtx current_function_return_rtx;
    delay list for them is recorded here.  */
 
 extern rtx current_function_epilogue_delay_list;
+#endif
 
 /* Nonzero means generate position-independent code.
    This is not fully implemented yet.  */
