@@ -9829,7 +9829,7 @@ dwarf2out_init (asm_out_file, main_input_filename)
   if (ggc_p)
     {
       VARRAY_RTX_INIT (used_rtx_varray, 32, "used_rtx_varray");
-      ggc_add_tree_varray_root (&used_rtx_varray, 1);
+      ggc_add_rtx_varray_root (&used_rtx_varray, 1);
     }
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);

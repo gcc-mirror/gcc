@@ -50,12 +50,14 @@ void ggc_add_root PARAMS ((void *base, int nelt, int size, void (*)(void *)));
 void ggc_add_rtx_root PARAMS ((struct rtx_def **, int nelt));
 void ggc_add_tree_root PARAMS ((union tree_node **, int nelt));
 void ggc_add_string_root PARAMS ((char **, int nelt));
+void ggc_add_rtx_varray_root PARAMS ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_varray_root PARAMS ((struct varray_head_tag **, int nelt));
 void ggc_add_tree_hash_table_root PARAMS ((struct hash_table **, int nelt));
 void ggc_del_root PARAMS ((void *base));
 
 /* Mark nodes from the gc_add_root callback.  These functions follow
    pointers to mark other objects too.  */
+extern void ggc_mark_rtx_varray PARAMS ((struct varray_head_tag *));
 extern void ggc_mark_tree_varray PARAMS ((struct varray_head_tag *));
 extern void ggc_mark_tree_hash_table PARAMS ((struct hash_table *));
 extern void ggc_mark_roots PARAMS ((void));
