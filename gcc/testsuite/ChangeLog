@@ -1,3 +1,7 @@
+2002-10-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/inherit/override1.C: Add dg-options clause.
+
 2002-10-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* testsuite/gcc.dg/i386-sse-3.c: Add tests for _mm_srli_si128 and
