@@ -11,6 +11,7 @@
 	The comment seems to indicate that we should select for files
 	containing 'pragma extern_prefix'.
 
+	* fixinc/fixinc.x86-linux-gnu: deleted
 	* fixinc/inclhack.sh:  regen
 	* fixinc/fixincl.x:  regen
 	* fixinc/fixincl.sh:  regen
