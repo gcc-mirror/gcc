@@ -1,3 +1,10 @@
+2000-05-31  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (STROBJS): Get memmove.o from configure.
+	* configure.in (RANLIB): Detect and substitute.
+	(memmove): Detect and substitute.
+	* memmove.c (memmove): Use size_t.
+
 2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* concatstr.c, exh.c: Include stdlib.h and string.h.

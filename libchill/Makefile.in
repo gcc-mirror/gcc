@@ -81,7 +81,7 @@ PSOBJS = andps.o cardps.o concatps.o copyps.o diffps.o eqps.o ffsetclrps.o \
 	ffsetps.o flsetclrps.o flsetps.o inbitstr.o inps.o leps.o ltps.o \
 	neps.o notps.o orps.o setbitps.o setbits.o sliceps.o xorps.o
 
-STROBJS = concatstr.o eqstr.o ltstr.o memmove.o
+STROBJS = concatstr.o eqstr.o ltstr.o @MEMMOVE_O@
 
 TIMEOBJS = abstime.o inttime.o waituntil.o remaintime.o convdurrtstime.o \
 	   checkcycle.o

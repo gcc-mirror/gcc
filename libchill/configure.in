@@ -70,6 +70,11 @@ AC_PROG_CC
 
 test "$AR" || AR=ar
 AC_SUBST(AR)
+if test "$RANLIB"; then :
+  AC_SUBST(RANLIB)
+else
+  AC_PROG_RANLIB
+fi
 AC_PROG_MAKE_SET
 
 dnl Checks for libraries.
@@ -123,6 +128,10 @@ AC_CHECK_FUNC(atexit,
      AC_DEFINE(onexit,on_exit),)])])
 else true
 fi
+AC_CHECK_FUNC(memmove,
+  MEMMOVE_O='',
+  MEMMOVE_O=memmove.o)
+AC_SUBST(MEMMOVE_O)
 
 # We need multilib support, but only if configuring for the target.
 AC_OUTPUT(Makefile,
