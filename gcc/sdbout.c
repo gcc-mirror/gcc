@@ -155,9 +155,8 @@ static void sdbout_global_decl		PARAMS ((tree));
 #ifndef PUT_SDB_INT_VAL
 #define PUT_SDB_INT_VAL(a) \
  do {									\
-   fputs ("\t.val\t", asm_out_file);		       			\
-   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
-   fprintf (asm_out_file, "%s", SDB_DELIM);				\
+   fprintf (asm_out_file, "\t.val\t" HOST_WIDE_INT_PRINT_DEC "%s",	\
+	    (HOST_WIDE_INT) (a), SDB_DELIM);				\
  } while (0)
 
 #endif
@@ -191,9 +190,8 @@ do { fprintf (asm_out_file, "\t.def\t");	\
 #ifndef PUT_SDB_SIZE
 #define PUT_SDB_SIZE(a) \
  do {									\
-   fputs ("\t.size\t", asm_out_file);					\
-   fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
-   fprintf (asm_out_file, "%s", SDB_DELIM);				\
+   fprintf (asm_out_file, "\t.size\t" HOST_WIDE_INT_PRINT_DEC "%s",	\
+	    (HOST_WIDE_INT) (a), SDB_DELIM);				\
  } while(0)
 #endif
 

@@ -714,10 +714,10 @@ dump_igraph (df)
 	  ra_debug_msg (DUMP_WEBS, " sub %d", SUBREG_BYTE (web->orig_x));
 	  ra_debug_msg (DUMP_WEBS, " par %d", find_web_for_subweb (web)->id);
 	}
-      ra_debug_msg (DUMP_WEBS, " +%d (span %d, cost ",
-		    web->add_hardregs, web->span_deaths);
-      ra_debug_msg (DUMP_WEBS, HOST_WIDE_INT_PRINT_DEC, web->spill_cost);
-      ra_debug_msg (DUMP_WEBS, ") (%s)", reg_class_names[web->regclass]);
+      ra_debug_msg (DUMP_WEBS, " +%d (span %d, cost "
+		    HOST_WIDE_INT_PRINT_DEC ") (%s)",
+		    web->add_hardregs, web->span_deaths, web->spill_cost,
+		    reg_class_names[web->regclass]);
       if (web->spill_temp == 1)
 	ra_debug_msg (DUMP_WEBS, " (spilltemp)");
       else if (web->spill_temp == 2)
@@ -870,9 +870,9 @@ dump_graph_cost (level, msg)
       if (alias (web)->type == SPILLED)
 	cost += web->orig_spill_cost;
     }
-  ra_debug_msg (level, " spill cost of graph (%s) = ", msg ? msg : "");
-  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, cost);
-  ra_debug_msg (level, "\n");
+  ra_debug_msg (level, " spill cost of graph (%s) = "
+		HOST_WIDE_INT_PRINT_UNSIGNED "\n",
+		msg ? msg : "", cost);
 }
 
 /* Dump the color assignment per web, the coalesced and spilled webs.  */
@@ -985,21 +985,21 @@ dump_static_insn_cost (file, message, prefix)
   if (!prefix)
     prefix = "";
   fprintf (file, "static insn cost %s\n", message ? message : "");
-  fprintf (file, "  %soverall:\tnum=%6d\tcost=", prefix, overall.count);
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC_SPACE, 8, overall.cost);
-  fprintf (file, "\n");
-  fprintf (file, "  %sloads:\tnum=%6d\tcost=", prefix, load.count);
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC_SPACE, 8, load.cost);
-  fprintf (file, "\n");
-  fprintf (file, "  %sstores:\tnum=%6d\tcost=", prefix, store.count);
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC_SPACE, 8, store.cost);
-  fprintf (file, "\n");
-  fprintf (file, "  %sregcopy:\tnum=%6d\tcost=", prefix, regcopy.count);
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC_SPACE, 8, regcopy.cost);
-  fprintf (file, "\n");
-  fprintf (file, "  %sselfcpy:\tnum=%6d\tcost=", prefix, selfcopy.count);
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC_SPACE, 8, selfcopy.cost);
-  fprintf (file, "\n");
+  fprintf (file, "  %soverall:\tnum=%6d\tcost="
+	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
+	   prefix, overall.count, 8, overall.cost);
+  fprintf (file, "  %sloads:\tnum=%6d\tcost="
+	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
+	   prefix, load.count, 8, load.cost);
+  fprintf (file, "  %sstores:\tnum=%6d\tcost="
+	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
+	   prefix, store.count, 8, store.cost);
+  fprintf (file, "  %sregcopy:\tnum=%6d\tcost="
+	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
+	   prefix, regcopy.count, 8, regcopy.cost);
+  fprintf (file, "  %sselfcpy:\tnum=%6d\tcost="
+	   HOST_WIDE_INT_PRINT_DEC_SPACE "\n",
+	   prefix, selfcopy.count, 8, selfcopy.cost);
 }
 
 /* Returns nonzero, if WEB1 and WEB2 have some possible

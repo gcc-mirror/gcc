@@ -1,5 +1,24 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cfgloopanal.c (test_for_iteration): Use string concatentation on
+	HOST_WIDE_INT_PRINT_* format specifier to collapse multiple
+	function calls into one.
+	* dbxout.c (dbxout_symbol): Likewise.
+	* defaults.h (ASM_OUTPUT_SIZE_DIRECTIVE): Likewise.
+	* dwarf2asm.c (dw2_asm_output_data_uleb128,
+	dw2_asm_output_data_sleb128): Likewise.
+	* genrecog.c (debug_decision_2): Likewise.
+	* loop.c (emit_prefetch_instructions): Likewise.
+	* print-rtl.c (print_rtx): Likewise.
+	* print-tree.c (print_node_brief, print_node): Likewise.
+	* ra-debug.c (dump_igraph, dump_graph_cost,
+	dump_static_insn_cost): Likewise.
+	* ra-rewrite.c (dump_cost): Likewise.
+	* sdbout.c (PUT_SDB_INT_VAL, PUT_SDB_SIZE): Likewise.
+	* sreal.c (dump_sreal): Likewise.
+	* unroll.c (unroll_loop, precondition_loop_p): Likewise.
+	* varasm.c (assemble_vtable_entry): Likewise.
+
 	* avr.c (avr_output_function_prologue,
 	avr_output_function_epilogue, print_operand): Fix format specifier
 	warnings.

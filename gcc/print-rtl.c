@@ -374,11 +374,8 @@ print_rtx (in_rtx)
 	  fprintf (outfile, " ");
 	fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, XWINT (in_rtx, i));
 	if (! flag_simple)
-	  {
-	    fprintf (outfile, " [");
-	    fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, XWINT (in_rtx, i));
-	    fprintf (outfile, "]");
-	  }
+	  fprintf (outfile, " [" HOST_WIDE_INT_PRINT_HEX "]",
+		   XWINT (in_rtx, i));
 	break;
 
       case 'i':
@@ -431,11 +428,8 @@ print_rtx (in_rtx)
 		  print_mem_expr (outfile, REG_EXPR (in_rtx));
 
 		if (REG_OFFSET (in_rtx))
-		  {
-		    fputc ('+', outfile);
-		    fprintf (outfile, HOST_WIDE_INT_PRINT_DEC,
-			     REG_OFFSET (in_rtx));
-		  }
+		  fprintf (outfile, "+" HOST_WIDE_INT_PRINT_DEC,
+			   REG_OFFSET (in_rtx));
 		fputs (" ]", outfile);
 	      }
 
@@ -525,25 +519,18 @@ print_rtx (in_rtx)
     {
 #ifndef GENERATOR_FILE
     case MEM:
-      fputs (" [", outfile);
-      fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
+      fprintf (outfile, " [" HOST_WIDE_INT_PRINT_DEC, MEM_ALIAS_SET (in_rtx));
 
       if (MEM_EXPR (in_rtx))
 	print_mem_expr (outfile, MEM_EXPR (in_rtx));
 
       if (MEM_OFFSET (in_rtx))
-	{
-	  fputc ('+', outfile);
-	  fprintf (outfile, HOST_WIDE_INT_PRINT_DEC,
-		   INTVAL (MEM_OFFSET (in_rtx)));
-	}
+	fprintf (outfile, "+" HOST_WIDE_INT_PRINT_DEC,
+		 INTVAL (MEM_OFFSET (in_rtx)));
 
       if (MEM_SIZE (in_rtx))
-	{
-	  fputs (" S", outfile);
-	  fprintf (outfile, HOST_WIDE_INT_PRINT_DEC,
-		   INTVAL (MEM_SIZE (in_rtx)));
-	}
+	fprintf (outfile, " S" HOST_WIDE_INT_PRINT_DEC,
+		 INTVAL (MEM_SIZE (in_rtx)));
 
       if (MEM_ALIGN (in_rtx) != 1)
 	fprintf (outfile, " A%u", MEM_ALIGN (in_rtx));

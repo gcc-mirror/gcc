@@ -984,11 +984,10 @@ debug_binfo (elem)
   HOST_WIDE_INT n;
   tree virtuals;
 
-  fprintf (stderr, "type \"%s\", offset = ",
-	   TYPE_NAME_STRING (BINFO_TYPE (elem)));
-  fprintf (stderr, HOST_WIDE_INT_PRINT_DEC,
+  fprintf (stderr, "type \"%s\", offset = " HOST_WIDE_INT_PRINT_DEC
+	   "\nvtable type:\n",
+	   TYPE_NAME_STRING (BINFO_TYPE (elem)),
 	   TREE_INT_CST_LOW (BINFO_OFFSET (elem)));
-  fprintf (stderr, "\nvtable type:\n");
   debug_tree (BINFO_TYPE (elem));
   if (BINFO_VTABLE (elem))
     fprintf (stderr, "vtable decl \"%s\"\n",

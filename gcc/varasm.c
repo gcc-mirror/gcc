@@ -4825,9 +4825,7 @@ assemble_vtable_entry (symbol, offset)
 {
   fputs ("\t.vtable_entry ", asm_out_file);
   output_addr_const (asm_out_file, symbol);
-  fputs (", ", asm_out_file);
-  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC, offset);
-  fputc ('\n', asm_out_file);
+  fprintf (asm_out_file, ", " HOST_WIDE_INT_PRINT_DEC "\n", offset);
 }
 
 /* Used for vtable gc in GNU binutils.  Record the class hierarchy by noting

@@ -1,3 +1,9 @@
+2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* parse.y (print_int_node): Use string concatentation on
+	HOST_WIDE_INT_PRINT_* format specifier to collapse multiple
+	function calls into one.
+
 2003-05-13  Zack Weinberg  <zack@codesourcery.com>
 
 	* jcf-parse.c, jcf-write.c, lex.c: Replace all calls to
