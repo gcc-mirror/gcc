@@ -905,11 +905,8 @@ public class Container extends Component
    */
   public void addNotify ()
   {
-    if (peer == null)
-      {
-	addNotifyContainerChildren ();
-	super.addNotify();
-      }
+    addNotifyContainerChildren ();
+    super.addNotify();
   }
 
   private void addNotifyContainerChildren()
