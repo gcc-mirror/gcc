@@ -1,3 +1,8 @@
+2000-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/linux64.h (CC1_SPEC): If compiling -m32 with -g but
+	no -g option specifying debugging format, default to -gstabs+.
+
 Wed Jan 26 22:19:14 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* calls.c (special_function_p): New argument fork_or_exec.
