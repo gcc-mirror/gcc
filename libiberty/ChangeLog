@@ -1,3 +1,7 @@
+2004-09-03  Paolo Bonzini  <bonzini@gnu.org> 
+
+	* configure: Regenerate.
+
 2004-09-02  Paolo Bonzini  <bonzini@gnu.org> 
 
 	* configure.ac: Do not enable multilibs for build-side libiberty.
