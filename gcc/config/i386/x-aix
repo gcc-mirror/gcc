@@ -1,2 +1,5 @@
 # There is an alloca in -lbsd, but it is limited to 32K
 ALLOCA = alloca.o
+
+# Use a special fixincludes file to avoid munging types.h.
+FIXINCLUDES = fixinc.ps2
