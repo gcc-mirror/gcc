@@ -100,7 +100,7 @@ final class LongBufferImpl extends LongBuffer
   /**
    * Relative get method. Reads the next <code>long</code> from the buffer.
    */
-  final public long get ()
+  public long get ()
   {
     long result = backing_buffer [position ()];
     position (position () + 1);
@@ -113,7 +113,7 @@ final class LongBufferImpl extends LongBuffer
    * 
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public LongBuffer put (long value)
+  public LongBuffer put (long value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
@@ -130,7 +130,7 @@ final class LongBufferImpl extends LongBuffer
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit.
    */
-  final public long get (int index)
+  public long get (int index)
   {
     return backing_buffer [index];
   }
@@ -143,7 +143,7 @@ final class LongBufferImpl extends LongBuffer
    * than the buffer's limit.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public LongBuffer put (int index, long value)
+  public LongBuffer put (int index, long value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
@@ -152,7 +152,7 @@ final class LongBufferImpl extends LongBuffer
     return this;
   }
   
-  final public ByteOrder order ()
+  public ByteOrder order ()
   {
     return ByteOrder.nativeOrder ();
   }

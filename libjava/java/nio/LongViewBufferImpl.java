@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.nio;
 
-class LongViewBufferImpl extends LongBuffer
+final class LongViewBufferImpl extends LongBuffer
 {
   /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;

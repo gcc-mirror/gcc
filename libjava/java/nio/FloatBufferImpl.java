@@ -100,7 +100,7 @@ final class FloatBufferImpl extends FloatBuffer
   /**
    * Relative get method. Reads the next <code>float</code> from the buffer.
    */
-  final public float get ()
+  public float get ()
   {
     float result = backing_buffer [position ()];
     position (position () + 1);
@@ -113,7 +113,7 @@ final class FloatBufferImpl extends FloatBuffer
    * 
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public FloatBuffer put (float value)
+  public FloatBuffer put (float value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
@@ -130,7 +130,7 @@ final class FloatBufferImpl extends FloatBuffer
    * @exception IndexOutOfBoundsException If index is negative or not smaller
    * than the buffer's limit.
    */
-  final public float get (int index)
+  public float get (int index)
   {
     return backing_buffer [index];
   }
@@ -143,7 +143,7 @@ final class FloatBufferImpl extends FloatBuffer
    * than the buffer's limit.
    * @exception ReadOnlyBufferException If this buffer is read-only.
    */
-  final public FloatBuffer put (int index, float value)
+  public FloatBuffer put (int index, float value)
   {
     if (readOnly)
       throw new ReadOnlyBufferException ();
@@ -152,7 +152,7 @@ final class FloatBufferImpl extends FloatBuffer
     return this;
   }
   
-  final public ByteOrder order ()
+  public ByteOrder order ()
   {
     return ByteOrder.nativeOrder ();
   }

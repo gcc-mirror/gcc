@@ -1,5 +1,24 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteBufferImpl.java,
+	java/nio/CharBufferImpl.java,
+	java/nio/DirectByteBufferImpl.java,
+	java/nio/DoubleBufferImpl.java,
+	java/nio/DoubleViewBufferImpl.java,
+	java/nio/FloatBufferImpl.java,
+	java/nio/FloatViewBufferImpl.java,
+	java/nio/IntBufferImpl.java,
+	java/nio/IntViewBufferImpl.java,
+	java/nio/LongBufferImpl.java,
+	java/nio/LongViewBufferImpl.java,
+	java/nio/MappedByteBufferImpl.java,
+	java/nio/ShortBufferImpl.java,
+	java/nio/ShortViewBufferImpl.java:
+	Made sure all classes are final and removed final keyword from all
+	methods.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/MarshalledObject.java,
 	java/rmi/Naming.java,
 	java/rmi/RemoteException.java,

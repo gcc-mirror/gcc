@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package java.nio;
 
-class ShortViewBufferImpl extends ShortBuffer
+final class ShortViewBufferImpl extends ShortBuffer
 {
   /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;
