@@ -1,3 +1,7 @@
+Wed Nov 25 23:42:20 1998  Tom Tromey  <tromey@cygnus.com>
+
+	* gcc.c (option_map): Recognize --output-class-directory.
+
 Thu Nov 26 18:26:21 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
  	* loop.h (precondition_loop_p): Added new mode argument.

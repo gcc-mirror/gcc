@@ -841,6 +841,7 @@ struct option_map option_map[] =
    {"--no-warnings", "-w", 0},
    {"--optimize", "-O", "oj"},
    {"--output", "-o", "a"},
+   {"--output-class-directory", "-foutput-class-dir=", "ja"},
    {"--pedantic", "-pedantic", 0},
    {"--pedantic-errors", "-pedantic-errors", 0},
    {"--pipe", "-pipe", 0},
