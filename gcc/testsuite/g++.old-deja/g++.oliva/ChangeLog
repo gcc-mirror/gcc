@@ -1,3 +1,7 @@
+1999-07-20  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* template8.C, typeof1.C: New test.
+
 1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* template6.C, delete1.C, template7.C: New test.
