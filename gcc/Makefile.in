@@ -741,10 +741,15 @@ crtend.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h c-parse.h \
     c-tree.h input.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
-$(srcdir)/c-parse.c $(srcdir)/c-parse.h: $(srcdir)/c-parse.y
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d c-parse.y -o c-parse.c
-$(srcdir)/c-parse.y: $(srcdir)/c-parse.in $(srcdir)/cond.awk
-	cd $(srcdir); awk -f cond.awk objc=0 c-parse.in > c-parse.y
+$(srcdir)/c-parse.y: $(srcdir)/c-parse.in
+	sed -e "/^ifobjc$$/,/^end ifobjc$$/d" \
+	  -e "/^ifc$$/d" -e "/^end ifc$$/d" \
+	  $(srcdir)/c-parse.in > $(srcdir)/c-parse.y
+
+$(srcdir)/objc-parse.y: $(srcdir)/c-parse.in
+	sed -e "/^ifc$$/,/^end ifc$$/d" \
+	  -e "/^ifobjc$$/d" -e "/^end ifobjc$$/d" \
+	  $(srcdir)/c-parse.in > $(srcdir)/objc-parse.y
 
 c-decl.o : c-decl.c $(CONFIG_H) $(TREE_H) c-tree.h c-lex.h flags.h
 c-typeck.o : c-typeck.c $(CONFIG_H) $(TREE_H) c-tree.h flags.h
