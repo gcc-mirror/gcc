@@ -2097,7 +2097,7 @@ do {						\
   {"addition_operation", {PLUS}},					\
   {"symbolic_operand", {SYMBOL_REF, LABEL_REF, CONST}},			\
   {"some_small_symbolic_mem_operand", {MEM, SIGN_EXTEND, ZERO_EXTEND,	\
-				      FLOAT_EXTEND}},
+				       FLOAT_EXTEND}},
 
 /* Define the `__builtin_va_list' type for the ABI.  */
 #define BUILD_VA_LIST_TYPE(VALIST) \
