@@ -1,3 +1,7 @@
+2002-07-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (output_deferred_plabels): Remove unused millicode enum mulU.
+
 2002-07-18  Richard Henderson  <rth@redhat.com>
 
 	PR optimization/7147
