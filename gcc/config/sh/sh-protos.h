@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi / SuperH SH.
-   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2003
    Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
@@ -138,9 +138,9 @@ extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
 #endif
 
 #ifdef GCC_C_PRAGMA_H
-extern void sh_pr_interrupt PARAMS ((cpp_reader *));
-extern void sh_pr_trapa PARAMS ((cpp_reader *));
-extern void sh_pr_nosave_low_regs PARAMS ((cpp_reader *));
+extern void sh_pr_interrupt PARAMS ((struct cpp_reader *));
+extern void sh_pr_trapa PARAMS ((struct cpp_reader *));
+extern void sh_pr_nosave_low_regs PARAMS ((struct cpp_reader *));
 #endif
 
 #endif /* ! GCC_SH_PROTOS_H */

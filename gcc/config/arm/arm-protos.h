@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in arm.c and pe.c
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@arm.com)
    Minor hacks by Nick Clifton (nickc@cygnus.com)
 
@@ -211,9 +211,9 @@ extern rtx arm_expand_builtin		PARAMS ((tree, rtx, rtx,
 #endif
 
 #ifdef GCC_C_PRAGMA_H  /* included from code that cares about pragmas */
-extern void arm_pr_long_calls		PARAMS ((cpp_reader *));
-extern void arm_pr_no_long_calls	PARAMS ((cpp_reader *));
-extern void arm_pr_long_calls_off	PARAMS ((cpp_reader *));
+extern void arm_pr_long_calls		PARAMS ((struct cpp_reader *));
+extern void arm_pr_no_long_calls	PARAMS ((struct cpp_reader *));
+extern void arm_pr_long_calls_off	PARAMS ((struct cpp_reader *));
 #endif
 
 #endif /* ! GCC_ARM_PROTOS_H */
