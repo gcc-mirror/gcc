@@ -4601,6 +4601,21 @@ echo "Building a new-abi g++ compiler."
 ])
 AC_SUBST(GXX_ABI_FLAG)
 
+# Build a new-libstdc++ system (ie libstdc++-v3)
+AC_MSG_CHECKING([for libstdc++ to install])
+AC_ARG_ENABLE(libstdcxx-v3,
+[  --enable-libstdcxx-v3 
+			  enable libstdc++-v3 for building and installation],
+  [enable_libstdcxx_v3=yes], [enable_libstdcxx_v3=no])
+
+if test x$enable_libstdcxx_v3 = xyes; then
+  AC_MSG_RESULT(v3)
+  AC_DEFINE(ENABLE_STD_NAMESPACE)
+else
+  AC_MSG_RESULT(v2)
+fi
+
+
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
 

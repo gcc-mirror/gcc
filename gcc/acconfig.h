@@ -4,6 +4,12 @@
 /* Define if printf supports "%p".  */
 #undef HAVE_PRINTF_PTR
 
+/* Define if you want to enable namespaces (-fhonor-std) by default. */
+#undef ENABLE_STD_NAMESPACE
+#if !defined(ENABLE_STD_NAMESPACE)
+#  define ENABLE_STD_NAMESPACE 0
+#endif
+
 /* Define if you want to always select the new-abi for g++.  */
 #undef ENABLE_NEW_GXX_ABI
 
