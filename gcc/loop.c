@@ -1469,12 +1469,18 @@ force_movables (struct loop_movables *movables)
 	  m = 0;
 
 	/* Increase the priority of the moving the first insn
-	   since it permits the second to be moved as well.  */
+	   since it permits the second to be moved as well.
+	   Likewise for insns already forced by the first insn.  */
 	if (m != 0)
 	  {
+	    struct movable *m2;
+
 	    m->forces = m1;
-	    m1->lifetime += m->lifetime;
-	    m1->savings += m->savings;
+	    for (m2 = m1; m2; m2 = m2->forces)
+	      {
+		m2->lifetime += m->lifetime;
+		m2->savings += m->savings;
+	      }
 	  }
       }
 }

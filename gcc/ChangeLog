@@ -1,3 +1,8 @@
+2004-02-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* loop.c (force_movables): Transitively increase the priorities of
+	all insns forces by an insn, not just the first one.
+
 2004-02-06  Falk Hueffner  <falk@debian.org>
 
 	PR target/12898
