@@ -1,3 +1,8 @@
+Sun Feb 14 11:24:05 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+ 	* loop.c (scan_loop): Call reg_in_basic_block_p before
+	loop_reg_used_before_p.
+
 Sat Feb 13 05:32:00 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.md: Use gen_rtx_FOO instead of gen_rtx (FOO, ...).
