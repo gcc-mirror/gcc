@@ -273,10 +273,17 @@ gen_rtx_CONST_DOUBLE (mode, arg0, arg1, arg2)
      HOST_WIDE_INT arg1, arg2;
 {
   rtx r = rtx_alloc (CONST_DOUBLE);
+  int i;
+
   PUT_MODE (r, mode);
   XEXP (r, 0) = arg0;
-  XINT (r, 2) = arg1;
-  XINT (r, 3) = arg2;
+  XEXP (r, 1) = NULL_RTX;
+  XWINT (r, 2) = arg1;
+  XWINT (r, 3) = arg2;
+
+  for (i = GET_RTX_LENGTH (CONST_DOUBLE) - 1; i > 3; --i)
+    XWINT (r, i) = 0;
+
   return r;
 }
 

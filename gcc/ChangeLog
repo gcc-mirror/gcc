@@ -1,3 +1,8 @@
+Tue Apr  6 15:47:51 1999  Richard Henderson  <rth@cygnus.com>
+
+	* emit-rtl.c (gen_rtx_CONST_DOUBLE): Use XWINT not XINT.
+	Clear third and following slots, if they exist.
+
 Tue Apr  6 15:45:28 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (create_basic_block): Make sure the bb note is in the block.
