@@ -2,6 +2,17 @@ Wed Nov 26 11:12:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* toplev.c (main): Complain about -gdwarfn.
 
+Tue Nov 25 20:32:24 1997  Michael Meissner  <meissner@cygnus.com>
+
+	(patches originally from Geoffrey Keating)
+	* rs6000.c (function_arg): Excess floating point arguments don't
+	go into GPR registers after exhausting FP registers under the
+	System V.4 ABI.
+	(function_arg_partial_nregs): Ditto.
+
+	* rs6000.md (call insns): If -fPIC or -mrelocatable, add @plt
+	suffix to calls.
+
 Tue Nov 25 23:37:27 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* integrate.c (output_inline_function): Just unset DECL_INLINE.
