@@ -1,12 +1,18 @@
 2000-03-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse-scan.y (pop_class_context): Reset `inner_qualifier_length'
+	when negative *before* using it as an array index.
+	* ChangeLog: Fixed typo.
+
+2000-03-28  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse-scan.y (pop_class_context): Reset `inner_qualifier_length'
 	to 0 when it reaches -1.
 
 2000-03-27  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jcf-parse.c (get_constant): Properly cast `num' during the
-	invocation of `add_double call'.
+	invocation of `add_double'.
 	* jcf-write.c (push_long_const): Properly cast `lo' before
 	comparing it to short bounds.
 	* parse-scan.y (interface_declaration:): Rule re-arrange so that

@@ -2495,9 +2495,9 @@ pop_class_context ()
         && inner_qualifier [inner_qualifier_length-1] != '$')
     ;
   inner_qualifier = xrealloc (inner_qualifier, inner_qualifier_length+1);
-  inner_qualifier [inner_qualifier_length] = '\0';
   if (inner_qualifier_length == -1)
     inner_qualifier_length = 0;
+  inner_qualifier [inner_qualifier_length] = '\0';
 }
 
 /* Actions defined here */
