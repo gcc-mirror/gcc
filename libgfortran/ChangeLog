@@ -1,5 +1,14 @@
 2004-05-18  Paul Brook  <paul@codesourcery.com>
 
+	* Makefile.am (i_pow_c): Set it. Add build rule.
+	(gfor_built_src): Use it.
+	(m4_files): add m4/pow.m4.
+	* Makefile.in: Regenerate.
+	* m4/pow.m4: New file.
+	* generated/pow_*.c: Regenerate.
+
+2004-05-18  Paul Brook  <paul@codesourcery.com>
+
 	* Makefile.am: Remove references to types.m4.
 	* m4/iparm.m4: Merge with types.m4.
 	* m4/types.m4: Remove.

@@ -428,8 +428,16 @@ extern GTY(()) tree gfor_fndecl_associated;
 
 /* Math functions.  Many other math functions are handled in
    trans-intrinsic.c.  */
-extern GTY(()) tree gfor_fndecl_math_powf;
-extern GTY(()) tree gfor_fndecl_math_pow;
+
+typedef struct gfc_powdecl_list GTY(())
+{
+  tree integer;
+  tree real;
+  tree cmplx;
+}
+gfc_powdecl_list;
+
+extern GTY(()) gfc_powdecl_list gfor_fndecl_math_powi[3][2];
 extern GTY(()) tree gfor_fndecl_math_cpowf;
 extern GTY(()) tree gfor_fndecl_math_cpow;
 extern GTY(()) tree gfor_fndecl_math_cabsf;

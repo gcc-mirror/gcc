@@ -3,9 +3,41 @@ program testpow
    implicit none
    real(kind=4) r, s, two
    real(kind=8) :: q
-   complex(kind=4) :: c
+   complex(kind=4) :: c, z
    real, parameter :: del = 0.0001
-   integer i
+   integer i, j
+
+   i = 2
+   j = i ** 10
+   if (abs (j - 1024) .gt. del) call abort
+   j = i ** (-10)
+   if (abs (j - 0) .gt. del) call abort
+   j = i ** 0
+   if (abs (j - 1) .gt. del) call abort
+   i = 1
+   j = i ** 10
+   if (abs (j - 1) .gt. del) call abort
+   j = i ** (-10)
+   if (abs (j - 1) .gt. del) call abort
+   j = i ** 0
+   if (abs (j - 1) .gt. del) call abort
+   i = -1
+   j = i ** 10
+   if (abs (j - 1) .gt. del) call abort
+   j = i ** (-10)
+   if (abs (j - 1) .gt. del) call abort
+   j = i ** 0
+   if (abs (j - 1) .gt. del) call abort
+   j = i ** 11
+   if (abs (j - (-1)) .gt. del) call abort
+   j = i ** (-11)
+   if (abs (j - (-1)) .gt. del) call abort
+
+   c = (2.0, 3.0)
+   z = c ** 2
+   if (abs(z - (-5.0, 12.0)) .gt. del) call abort
+   z = c ** 7
+   if (abs(z - (6554.0, 4449.0)) .gt. del) call abort
 
    two = 2.0
 

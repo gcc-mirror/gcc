@@ -82,6 +82,7 @@ char *alloca ();
    ugly to look at and a pain to type when you add the prefix by hand,
    so we hide it behind a macro.  */
 #define PREFIX(x) "_gfortran_" x
+#define PREFIX_LEN 10
 
 /* Macro to initialize an mstring structure.  */
 #define minit(s, t) { s, NULL, t }

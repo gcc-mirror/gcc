@@ -750,16 +750,13 @@ gfc_init_builtin_functions (void)
   tree mfunc_double[2];
   tree ftype;
   tree tmp;
-  tree voidchain;
 
-  voidchain = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
-
-  tmp = tree_cons (NULL_TREE, float_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, float_type_node, void_list_node);
   mfunc_float[0] = build_function_type (float_type_node, tmp);
   tmp = tree_cons (NULL_TREE, float_type_node, tmp);
   mfunc_float[1] = build_function_type (float_type_node, tmp);
 
-  tmp = tree_cons (NULL_TREE, double_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, double_type_node, void_list_node);
   mfunc_double[0] = build_function_type (double_type_node, tmp);
   tmp = tree_cons (NULL_TREE, double_type_node, tmp);
   mfunc_double[1] = build_function_type (double_type_node, tmp);
@@ -777,57 +774,63 @@ gfc_init_builtin_functions (void)
   gfc_define_builtin ("__builtin_roundf", mfunc_float[0], 
 		      BUILT_IN_ROUNDF, "roundf", true);
 
+  /* These are used to implement the ** operator.  */
+  gfc_define_builtin ("__builtin_pow", mfunc_double[0], 
+		      BUILT_IN_POW, "pow", true);
+  gfc_define_builtin ("__builtin_powf", mfunc_float[0], 
+		      BUILT_IN_POWF, "powf", true);
+
   /* Other builtin functions we use.  */
 
-  tmp = tree_cons (NULL_TREE, long_integer_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
   tmp = tree_cons (NULL_TREE, long_integer_type_node, tmp);
   ftype = build_function_type (long_integer_type_node, tmp);
   gfc_define_builtin ("__builtin_expect", ftype, BUILT_IN_EXPECT,
 		      "__builtin_expect", true);
 
-  tmp = tree_cons (NULL_TREE, size_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
   tmp = tree_cons (NULL_TREE, pvoid_type_node, tmp);
   tmp = tree_cons (NULL_TREE, pvoid_type_node, tmp);
   ftype = build_function_type (pvoid_type_node, tmp);
   gfc_define_builtin ("__builtin_memcpy", ftype, BUILT_IN_MEMCPY,
 		      "memcpy", false);
 
-  tmp = tree_cons (NULL_TREE, integer_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, integer_type_node, void_list_node);
   ftype = build_function_type (integer_type_node, tmp);
   gfc_define_builtin ("__builtin_clz", ftype, BUILT_IN_CLZ, "clz", true);
 
-  tmp = tree_cons (NULL_TREE, long_integer_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, long_integer_type_node, void_list_node);
   ftype = build_function_type (integer_type_node, tmp);
   gfc_define_builtin ("__builtin_clzl", ftype, BUILT_IN_CLZL, "clzl", true);
 
-  tmp = tree_cons (NULL_TREE, long_long_integer_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, long_long_integer_type_node, void_list_node);
   ftype = build_function_type (integer_type_node, tmp);
   gfc_define_builtin ("__builtin_clzll", ftype, BUILT_IN_CLZLL, "clzll", true);
 
-  tmp = tree_cons (NULL_TREE, pvoid_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, pvoid_type_node, void_list_node);
   tmp = tree_cons (NULL_TREE, pvoid_type_node, tmp);
   tmp = tree_cons (NULL_TREE, pvoid_type_node, tmp);
   ftype = build_function_type (void_type_node, tmp);
   gfc_define_builtin ("__builtin_init_trampoline", ftype,
 		      BUILT_IN_INIT_TRAMPOLINE, "init_trampoline", false);
 
-  tmp = tree_cons (NULL_TREE, pvoid_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, pvoid_type_node, void_list_node);
   ftype = build_function_type (pvoid_type_node, tmp);
   gfc_define_builtin ("__builtin_adjust_trampoline", ftype,
 		      BUILT_IN_ADJUST_TRAMPOLINE, "adjust_trampoline", true);
 
-  tmp = tree_cons (NULL_TREE, pvoid_type_node, voidchain);
-  tmp = tree_cons (NULL_TREE, size_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, pvoid_type_node, void_list_node);
+  tmp = tree_cons (NULL_TREE, size_type_node, void_list_node);
   ftype = build_function_type (pvoid_type_node, tmp);
   gfc_define_builtin ("__builtin_stack_alloc", ftype, BUILT_IN_STACK_ALLOC,
 		      "stack_alloc", false);
 
   /* The stack_save and stack_restore builtins aren't used directly.  They
      are inserted during gimplification to implement stack_alloc calls.  */
-  ftype = build_function_type (pvoid_type_node, voidchain);
+  ftype = build_function_type (pvoid_type_node, void_list_node);
   gfc_define_builtin ("__builtin_stack_save", ftype, BUILT_IN_STACK_SAVE,
 		      "stack_save", false);
-  tmp = tree_cons (NULL_TREE, pvoid_type_node, voidchain);
+  tmp = tree_cons (NULL_TREE, pvoid_type_node, void_list_node);
   ftype = build_function_type (void_type_node, tmp);
   gfc_define_builtin ("__builtin_stack_restore", ftype, BUILT_IN_STACK_RESTORE,
 		      "stack_restore", false);
