@@ -1,3 +1,21 @@
+2000-06-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* m68k.c (legitimize_pic_address): Move prototype ...
+	
+	* m68k-protos.h (legitimize_pic_address): ... here.
+
+	* m68k.md (legitimize_pic_address): Delete prototypes.
+	(untyped_call): Invoke GEN_CALL(), not gen_call().
+
+	* nextstep.c: Include system.h and toplev.h.
+	(get_directive_line): Don't prototype.
+	(handle_pragma): Mark parameters with ATTRIBUTE_UNUSED and constify.
+
+	* nextstep.h (handle_pragma): Prototype.
+	(SECTION_FUNCTION): Prototype FUNCTION().  Move prototype of
+	objc_section_init ...
+	(EXTRA_SECTION_FUNCTIONS): ... here.
+
 Tue Jun  6 08:17:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* sdbout.c (struct sdb_file): NAME now const.

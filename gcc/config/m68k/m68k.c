@@ -54,7 +54,6 @@ enum reg_class regno_reg_class[]
 int switch_table_difference_label_flag;
 
 static rtx find_addr_reg PARAMS ((rtx));
-rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
 static const char *singlemove_string PARAMS ((rtx *));
 
 

@@ -259,7 +259,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	HANDLE_PRAGMA
 #define HANDLE_PRAGMA(GETC, UNGETC, NAME) handle_pragma (GETC, UNGETC, NAME)
-extern int handle_pragma ();
+extern int handle_pragma PARAMS ((int(*)(void), void (*)(int), const char *));
 
 /* Give methods pretty symbol names on NeXT. */
 
@@ -320,10 +320,10 @@ extern int handle_pragma ();
 
 #undef	SECTION_FUNCTION
 #define SECTION_FUNCTION(FUNCTION, SECTION, DIRECTIVE, WAS_TEXT, OBJC)	\
+extern void FUNCTION PARAMS ((void));					\
 void									\
 FUNCTION ()								\
 {									\
-  extern void objc_section_init ();					\
   extern int flag_no_mach_text_sections;				\
   									\
   if (WAS_TEXT && flag_no_mach_text_sections)       			\
@@ -353,6 +353,7 @@ FUNCTION ()								\
 
 #undef	EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS			\
+extern void objc_section_init PARAMS ((void));	\
 SECTION_FUNCTION (const_section,		\
 		  in_const,			\
 		  ".const", 1, 0)		\

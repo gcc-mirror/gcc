@@ -20,9 +20,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "flags.h"
 #include "tree.h"
+#include "toplev.h"
 
 /* Make everything that used to go in the text section really go there.  */
 
@@ -38,8 +39,6 @@ static int pragma_initialized;
 
 static int initial_optimize_flag;
 
-extern char *get_directive_line ();
-
 /* Called from check_newline via the macro HANDLE_PRAGMA.
    FINPUT is the source file input stream.
    CH is the first character after `#pragma'.
@@ -47,9 +46,9 @@ extern char *get_directive_line ();
 
 int
 handle_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc) PARAMS ((void));
-     void (* p_ungetc) PARAMS ((int));
-     char * pname;
+     int (*  p_getc) PARAMS ((void)) ATTRIBUTE_UNUSED;
+     void (* p_ungetc) PARAMS ((int)) ATTRIBUTE_UNUSED;
+     const char *pname;
 {
   int retval = 0;
 
