@@ -5075,7 +5075,8 @@ print_multilib_info ()
 {
   char *p = multilib_select;
   char *last_path, *this_path;
-  int last_path_len, skip, use_arg;
+  int skip, use_arg;
+  int last_path_len = 0;
 
   while (*p != '\0')
     {
