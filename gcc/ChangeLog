@@ -1,3 +1,7 @@
+2002-06-20  Stan Shebs  <shebs@apple.com>
+
+	* dominance.c: Include errors.h instead of error.h.
+
 2002-06-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppexp.c (cpp_interpret_integer): Don't force traditional
