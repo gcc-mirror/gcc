@@ -7248,27 +7248,10 @@
   [(set_attr "type" "shift")])
 
 ;; Unconditional and other jump instructions
-;; On the SPARC, by setting the annul bit on an unconditional branch, the
-;; following insn is never executed.  This saves us a nop.  Dbx does not
-;; handle such branches though, so we only use them when optimizing.
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
-{
-  /* TurboSPARC is reported to have problems with
-     with
-	foo: b,a foo
-     i.e. an empty loop with the annul bit set.  The workaround is to use 
-        foo: b foo; nop
-     instead.  */
-
-  if (! TARGET_V9 && flag_delayed_branch
-      && (INSN_ADDRESSES (INSN_UID (operands[0]))
-	  == INSN_ADDRESSES (INSN_UID (insn))))
-    return "b\t%l0%#";
-  else
-    return TARGET_V9 ? "ba%*,pt\t%%xcc, %l0%(" : "b%*\t%l0%(";
-}
+  "* return output_ubranch (operands[0], 0, insn);"
   [(set_attr "type" "uncond_branch")])
 
 (define_expand "tablejump"
