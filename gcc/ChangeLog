@@ -1,3 +1,7 @@
+2004-06-28  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* config.gcc (sh*-*elf*): Remove dead assignment of sh_multilibs.
+
 2004-06-28  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* builtins.def (execl, execlp, execle, execv, execvp, execve,
