@@ -1746,20 +1746,25 @@ gimplify_self_mod_expr (tree *expr_p, tree *pre_p, tree *post_p,
 static void
 maybe_with_size_expr (tree *expr_p)
 {
-  tree expr, type, size;
+  tree expr = *expr_p;
+  tree type = TREE_TYPE (expr);
+  tree size;
 
-  expr = *expr_p;
-  type = TREE_TYPE (expr);
-  if (type == error_mark_node)
+  /* If we've already wrapped this or the type is error_mark_node, we can't do
+     anything.  */
+  if (TREE_CODE (expr) == WITH_SIZE_EXPR
+      || type == error_mark_node)
     return;
 
+  /* If the size isn't known or is a constant, we have nothing to do.  */
   size = TYPE_SIZE_UNIT (type);
-  if (size && TREE_CODE (size) != INTEGER_CST)
-    {
-      size = unshare_expr (size);
-      size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, expr);
-      *expr_p = build2 (WITH_SIZE_EXPR, type, expr, size);
-    }
+  if (!size || TREE_CODE (size) == INTEGER_CST)
+    return;
+
+  /* Otherwise, make a WITH_SIZE_EXPR.  */
+  size = unshare_expr (size);
+  size = SUBSTITUTE_PLACEHOLDER_IN_EXPR (size, expr);
+  *expr_p = build2 (WITH_SIZE_EXPR, type, expr, size);
 }
 
 /* Subroutine of gimplify_call_expr:  Gimplify a single argument.  */
