@@ -1,3 +1,7 @@
+Tue Jan 27 23:15:55 1998  Lassi A. Tuura  <lat@iki.fi>
+
+	* config.sub: More accurate determine of HP processor types.
+
 Tue Jan 27 23:11:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-lex.c: Include <stdlib.h> and <string.h>/<strings.h>.  Add

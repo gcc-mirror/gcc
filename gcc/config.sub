@@ -336,7 +336,22 @@ case $basic_machine in
 	hp9k3[2-9][0-9])
 		basic_machine=m68k-hp
 		;;
-	hp9k7[0-9][0-9] | hp7[0-9][0-9] | hp9k8[0-9]7 | hp8[0-9]7)
+	hp9k6[0-9][0-9] | hp6[0-9][0-9] )
+		basic_machine=hppa1.0-hp
+		;;
+	hp9k7[0-79][0-9] | hp7[0-79][0-9] )
+		basic_machine=hppa1.1-hp
+		;;
+	hp9k78[0-9] | hp78[0-9] )
+		# FIXME: really hppa2.0-hp
+		basic_machine=hppa1.1-hp
+		;;
+	hp9k8[67]1 | hp8[67]1 | hp9k80[24] | hp80[24] | \
+	hp9k8[78]9 | hp8[78]9 | hp9k893 | hp893 )
+		# FIXME: really hppa2.0-hp
+		basic_machine=hppa1.1-hp
+		;;
+	hp9k8[0-9][13679] | hp8[0-9][13679] )
 		basic_machine=hppa1.1-hp
 		;;
 	hp9k8[0-9][0-9] | hp8[0-9][0-9])
