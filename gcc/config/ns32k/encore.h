@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  ENCORE NS32000 version.
-   Copyright (C) 1988, 1993, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 2000, 2001, 2002 Free Software Foundation, Inc.
    Adapted by Robert Brown (brown@harvard.harvard.edu) from the Sequent
    version by Michael Tiemann (tiemann@mcc.com).
 
@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PRINT_OPERAND_ADDRESS
 #undef TARGET_VERSION
 #undef FUNCTION_PROFILER
-#undef ASM_OUTPUT_LABELREF_AS_INT
 
 #define TARGET_DEFAULT 9  /* 32332 with 32081.  */
 #define TARGET_VERSION fprintf (stderr, " (32000, Encore syntax)");
@@ -95,14 +94,6 @@ output_file_directive ((FILE), main_input_filename)
  *  Different syntax for integer constants, double constants, and
  *  uninitialized locals.
  */
-
-#define ASM_OUTPUT_LABELREF_AS_INT(STREAM, NAME)			\
-do {									\
-  fprintf (STREAM, "\t.double\t");					\
-  ASM_OUTPUT_LABELREF (STREAM, NAME);					\
-  fprintf (STREAM, "\n");						\
-} while (0)
-
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)		\
 ( fputs ("\t.bss ", (FILE)),					\

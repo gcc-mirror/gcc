@@ -1,3 +1,14 @@
+2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/tm.texi (ASM_OUTPUT_EH_REGION_BEG, ASM_OUTPUT_EH_REGION_END,
+	ASM_OUTPUT_LABELREF_AS_INT, DOESNT_NEED_UNWINDER, EH_TABLE_LOOKUP,
+	OBJC_SELECTORS_WITHOUT_LABELS, OMIT_EH_TABLE): Remove
+	documentation of obsolete macros.
+	* system.h: Poison these macros.
+	* config/d30v/d30v.h, config/ns32k/encore.h,
+	config/stormy16/stormy16.h: Remove definitions and commented out
+	definitions of obsolete macros.
+
 Tue Jan  8 15:56:41 2002  Nicola Pero  <nicola@brainstorm.co.uk>
 
 	* objc/objc-act.c (handle_class_ref): Mark the declaration of

@@ -1,5 +1,5 @@
 /* Definitions of target machine for Mitsubishi D30V.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
@@ -995,14 +995,6 @@ do {									\
    the constant value that is the largest value that `WCHAR_TYPE_SIZE' can have
    at run-time.  This is used in `cpp'.  */
 /* #define MAX_WCHAR_TYPE_SIZE */
-
-/* Define this macro if the compiler can group all the selectors together into
-   a vector and use just one label at the beginning of the vector.  Otherwise,
-   the compiler must give each selector its own assembler label.
-
-   On certain machines, it is important to have a separate label for each
-   selector because this enables the linker to eliminate duplicate selectors.  */
-/* #define OBJC_SELECTORS_WITHOUT_LABELS */
 
 
 /* D30V register layout.  */
@@ -4544,33 +4536,6 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
 
 /* Assembler Commands for Exception Regions.  */
-
-/* A C expression to output text to mark the start of an exception region.
-
-   This macro need not be defined on most platforms.  */
-/* #define ASM_OUTPUT_EH_REGION_BEG() */
-
-/* A C expression to output text to mark the end of an exception region.
-
-   This macro need not be defined on most platforms.  */
-/* #define ASM_OUTPUT_EH_REGION_END() */
-
-/* A C expression that is nonzero if the normal exception table output should
-   be omitted.
-
-   This macro need not be defined on most platforms.  */
-/* #define OMIT_EH_TABLE() */
-
-/* Alternate runtime support for looking up an exception at runtime and finding
-   the associated handler, if the default method won't work.
-
-   This macro need not be defined on most platforms.  */
-/* #define EH_TABLE_LOOKUP() */
-
-/* A C expression that decides whether or not the current function needs to
-   have a function unwinder generated for it.  See the file `except.c' for
-   details on when to define this, and how.  */
-/* #define DOESNT_NEED_UNWINDER */
 
 /* An rtx used to mask the return address found via RETURN_ADDR_RTX, so that it
    does not contain any extraneous set bits in it.  */

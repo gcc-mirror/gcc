@@ -1,6 +1,6 @@
 /* Get common system includes and various definitions and declarations based
    on autoconf macros.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -597,7 +597,10 @@ typedef char _Bool;
 	ASM_OUTPUT_DESTRUCTOR
 
 /* And other obsolete target macros.  */
- #pragma GCC poison INT_ASM_OP
+ #pragma GCC poison INT_ASM_OP ASM_OUTPUT_EH_REGION_BEG			   \
+	ASM_OUTPUT_EH_REGION_END ASM_OUTPUT_LABELREF_AS_INT		   \
+	DOESNT_NEED_UNWINDER EH_TABLE_LOOKUP OBJC_SELECTORS_WITHOUT_LABELS \
+	OMIT_EH_TABLE
 
 #endif /* IN_GCC */
 
