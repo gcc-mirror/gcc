@@ -2969,12 +2969,16 @@ diff:
 	  $(LANG_DIFF_EXCLUDES) \
 	  gcc-$(oldversion) gcc-$(version) > gcc-$(oldversion)-$(version).diff
 
+# A list of files to be destroyed during "lean" builds.
+VOL_FILES=`echo $(OBJS) $(C_OBJS) $(LIBCPP_OBJS) *.c *.h gen*`
+
 bootstrap bootstrap-lean: force
 # Only build the C compiler for stage1, because that is the only one that
 # we can guarantee will build with the native compiler, and also it is the
 # only thing useful for building stage2.
 	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
 	$(MAKE) stage1
+	-if test $@ = bootstrap-lean; then cd stage1 ; rm -f $(VOL_FILES); else true; fi
 # This used to define ALLOCA as empty, but that would lead to bad results
 # for a subsequent `make install' since that would not have ALLOCA empty.
 # To prevent `make install' from compiling alloca.o and then relinking cc1
@@ -2982,13 +2986,13 @@ bootstrap bootstrap-lean: force
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
 	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	-if test $@ = bootstrap-lean; then rm -rf stage1; else true; fi
+	-if test $@ = bootstrap-lean; then rm -rf stage1; cd stage2 ; rm -f $(VOL_FILES); else true; fi
 	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap2 bootstrap2-lean: force
 	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	-if test $@ = bootstrap2-lean; then rm -rf stage1; else true; fi
+	-if test $@ = bootstrap2-lean; then rm -rf stage1; cd stage2 ; rm -f $(VOL_FILES); else true; fi
 	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap3 bootstrap3-lean: force

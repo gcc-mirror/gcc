@@ -1,3 +1,8 @@
+2000-02-11  Robert Lipe  <robertl@sco.com>
+
+	* Makefile.in (bootstrap-lean): Remove additional files.
+	(bootstrap2-lean): Likewise.                                                    (VOL_FILES): List of files for above.                                   
+
 2000-02-11  Nathan Sidwell  <nathan@acm.org>
 
 	* cpphash.c (special_symbol): Remove spurious argument to
