@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -508,6 +508,9 @@ add_to_sequence (pattern, last, position)
       newpos[depth] = '1';
       new = add_to_sequence (XEXP (pattern, 1), &new->success, newpos);
       return new;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -1286,6 +1289,8 @@ write_tree_1 (tree, prevpos, afterward, type)
 	  printf ("%sswitch (GET_MODE (x%d))\n", indents[indent], depth);
 	  printf ("%s{\n", indents[indent + 2]);
 	  indent += 4;
+	  printf ("%sdefault:\n%sbreak;\n", indents[indent - 2],
+		  indents[indent]);
 	  printf ("%scase %smode:\n", indents[indent - 2],
 		  GET_MODE_NAME (mode));
 	  modemap[(int) mode] = 1;
@@ -1301,6 +1306,8 @@ write_tree_1 (tree, prevpos, afterward, type)
 	  printf ("%sswitch (GET_CODE (x%d))\n", indents[indent], depth);
 	  printf ("%s{\n", indents[indent + 2]);
 	  indent += 4;
+	  printf ("%sdefault:\n%sbreak;\n", indents[indent - 2],
+		  indents[indent]);
 	  printf ("%scase ", indents[indent - 2]);
 	  print_code (p->code);
 	  printf (":\n");
