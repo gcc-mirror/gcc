@@ -60,6 +60,8 @@ public class GdkGlyphVector extends GlyphVector
       {
         System.loadLibrary("gtkpeer");
       }
+
+    if (GtkToolkit.useGraphics2D ())
     initStaticState ();
   }
   native static void initStaticState ();

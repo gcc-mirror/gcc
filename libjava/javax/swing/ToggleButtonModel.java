@@ -40,11 +40,6 @@ package javax.swing;
 
 public class ToggleButtonModel extends DefaultButtonModel
 {
-    ToggleButtonModel(JComponent c)
-    {
-	super(c);
-    }
-
     public void setPressed(boolean b)  
     {
 	if (! isEnabled())

@@ -228,11 +228,24 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
 {
   void *ptr = NSA_GET_PTR (env, obj);
   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
+  GtkWidget* vbox, *layout;
+  GList* children;
   g_assert (gref);
 
   gdk_threads_enter ();
 
   gtk_widget_realize (ptr);
+
+  /* Receive events from the GtkLayout too */
+  children = gtk_container_get_children(GTK_CONTAINER(ptr));
+  vbox = children->data;  
+  g_assert(GTK_IS_VBOX(vbox));
+  children = gtk_container_get_children(GTK_CONTAINER(vbox));
+  layout = children->data;  
+  g_assert(GTK_IS_LAYOUT(layout));
+
+  g_signal_connect (GTK_OBJECT (layout), "event", 
+		    G_CALLBACK (pre_event_handler), *gref);
 
   /* Connect signals for window event support. */
   g_signal_connect (G_OBJECT (ptr), "delete-event",

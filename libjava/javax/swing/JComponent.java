@@ -46,6 +46,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -56,6 +57,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.ImageObserver;
 import java.awt.peer.LightweightPeer;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -271,13 +273,16 @@ public abstract class JComponent extends Container implements Serializable
 		super();
 		super.setLayout(new FlowLayout());
 		
+		listenerList = new EventListenerList();
+    
 		//eventMask |= AWTEvent.COMP_KEY_EVENT_MASK;
-		enableEvents( AWTEvent.KEY_EVENT_MASK );
+		// enableEvents( AWTEvent.KEY_EVENT_MASK );
 
 		//updateUI(); // get a proper ui
 	}
 
-	// protected EventListenerList listenerList
+	protected EventListenerList listenerList;
+
 	public boolean contains(int x, int y)
 	{
 		//return dims.contains(x,y);
@@ -701,11 +706,29 @@ public abstract class JComponent extends Container implements Serializable
 
 	public void paint(Graphics g)
 	{
-		//	System.out.println("SWING_PAINT:" + this);
+		Graphics g2 = g;
+		Image im = null;
+		Rectangle r = getBounds ();
+		// System.err.println(this + ".paint(...), bounds = " + r);
+		
+		if (use_double_buffer)
+		{
+			im = createImage (r.width, r.height);
+			g2 = im.getGraphics ();
+			g2.clearRect (0, 0, r.width, r.height);
+		}
+		
+		paintBorder(g2);
+		paintComponent(g2);
+		paintChildren(g2);
 
-		paintBorder(g);
-		paintComponent(g);
-		paintChildren(g);
+		if (use_double_buffer)
+		{
+			// always draw at 0,0, because regardless of your current bounds,
+			// the graphics object you were passed was positioned so the origin
+			// was at the upper left corner of your bounds.
+			g.drawImage (im, 0, 0, (ImageObserver)null);
+		}
 	}
 
 	protected  void paintBorder(Graphics g)
@@ -729,7 +752,7 @@ public abstract class JComponent extends Container implements Serializable
 	protected  void paintChildren(Graphics g)
 	{
 	    //      Paint this component's children.
-	    //super.paintChildren(g);
+		super.paint(g);
 	}
 
 	protected  void paintComponent(Graphics g)

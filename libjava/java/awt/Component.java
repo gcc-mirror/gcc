@@ -4252,6 +4252,7 @@ p   * <li>the set of backward traversal keys
 	  default:
 	    throw new IllegalArgumentException("unknown paint event");
 	  }
+	event.consume ();
       }
     finally
       {
