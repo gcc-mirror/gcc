@@ -5631,10 +5631,7 @@ grok_reference_init (decl, type, init, cleanupp)
 	    }
 	}
 
-      if (TREE_SIDE_EFFECTS (init))
-	DECL_INITIAL (decl) = save_expr (init);
-      else
-	DECL_INITIAL (decl) = init;
+      DECL_INITIAL (decl) = save_expr (init);
     }
   else
     {
