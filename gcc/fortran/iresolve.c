@@ -1196,13 +1196,24 @@ gfc_resolve_rrspacing (gfc_expr * f, gfc_expr * x)
 
 
 void
-gfc_resolve_scale (gfc_expr * f, gfc_expr * x,
-		   gfc_expr * y ATTRIBUTE_UNUSED)
+gfc_resolve_scale (gfc_expr * f, gfc_expr * x, gfc_expr * i)
 {
 
   f->ts = x->ts;
-  f->value.function.name = gfc_get_string ("__scale_%d_%d", x->ts.kind,
-					   x->ts.kind);
+
+  /* The implementation calls scalbn which takes an int as the
+     second argument.  */
+  if (i->ts.kind != gfc_c_int_kind)
+    {
+      gfc_typespec ts;
+
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_default_integer_kind;
+
+      gfc_convert_type_warn (i, &ts, 2, 0);
+    }
+
+  f->value.function.name = gfc_get_string ("__scale_%d", x->ts.kind);
 }
 
 
@@ -1223,8 +1234,21 @@ gfc_resolve_set_exponent (gfc_expr * f, gfc_expr * x, gfc_expr * i)
 {
 
   f->ts = x->ts;
-  f->value.function.name =
-    gfc_get_string ("__set_exponent_%d_%d", x->ts.kind, i->ts.kind);
+
+  /* The library implementation uses GFC_INTEGER_4 unconditionally,
+     convert type so we don't have to implment all possible
+     permutations.  */
+  if (i->ts.kind != 4)
+    {
+      gfc_typespec ts;
+
+      ts.type = BT_INTEGER;
+      ts.kind = gfc_default_integer_kind;
+
+      gfc_convert_type_warn (i, &ts, 2, 0);
+    }
+
+  f->value.function.name = gfc_get_string ("__set_exponent_%d", x->ts.kind);
 }
 
 
