@@ -10000,6 +10000,10 @@ ffestc_R838 (ffelexToken label_token, ffebld target,
     return;
   ffestc_labeldef_branch_begin_ ();
 
+  /* Mark target symbol as target of an ASSIGN.  */
+  if (ffebld_op (target) == FFEBLD_opSYMTER)
+    ffesymbol_set_assigned (ffebld_symter (target), TRUE);
+
   if (ffestc_labelref_is_assignable_ (label_token, &label))
     ffestd_R838 (label, target);
 

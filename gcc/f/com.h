@@ -56,6 +56,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 #define FFECOM_constantNULL NULL_TREE
+#define FFECOM_nonterNULL NULL_TREE
 #define FFECOM_globalNULL NULL_TREE
 #define FFECOM_labelNULL NULL_TREE
 #define FFECOM_storageNULL NULL_TREE
@@ -202,6 +203,8 @@ typedef enum
 
 typedef tree ffecomConstant;
 #define FFECOM_constantHOOK
+typedef tree ffecomNonter;
+#define FFECOM_nonterHOOK
 typedef tree ffecomLabel;
 #define FFECOM_globalHOOK
 typedef tree ffecomGlobal;
@@ -279,15 +282,20 @@ tree ffecom_3 (enum tree_code code, tree type, tree node1, tree node2,
 tree ffecom_3s (enum tree_code code, tree type, tree node1, tree node2,
 		tree node3);
 tree ffecom_arg_expr (ffebld expr, tree *length);
+tree ffecom_arg_ptr_to_const_expr (ffebld expr, tree *length);
 tree ffecom_arg_ptr_to_expr (ffebld expr, tree *length);
-tree ffecom_call_gfrt (ffecomGfrt ix, tree args);
+tree ffecom_call_gfrt (ffecomGfrt ix, tree args, tree hook);
 tree ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 			   ffeinfoKindtype kt, tree tree_type);
+tree ffecom_const_expr (ffebld expr);
 tree ffecom_decl_field (tree context, tree prevfield, const char *name,
 			tree type);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 void ffecom_close_include (FILE *f);
 int ffecom_decode_include_option (char *spec);
+#if FFECOM_targetCURRENT == FFECOM_targetGCC
+tree ffecom_end_compstmt (void);
+#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 void ffecom_end_transition (void);
 void ffecom_exec_transition (void);
 void ffecom_expand_let_stmt (ffebld dest, ffebld source);
@@ -295,7 +303,8 @@ void ffecom_expand_let_stmt (ffebld dest, ffebld source);
 tree ffecom_expr (ffebld expr);
 tree ffecom_expr_assign (ffebld expr);
 tree ffecom_expr_assign_w (ffebld expr);
-tree ffecom_expr_rw (ffebld expr);
+tree ffecom_expr_rw (tree type, ffebld expr);
+tree ffecom_expr_w (tree type, ffebld expr);
 void ffecom_finish_compile (void);
 void ffecom_finish_decl (tree decl, tree init, bool is_top_level);
 void ffecom_finish_progunit (void);
@@ -308,6 +317,8 @@ void ffecom_init_2 (void);
 tree ffecom_list_expr (ffebld list);
 tree ffecom_list_ptr_to_expr (ffebld list);
 tree ffecom_lookup_label (ffelab label);
+tree ffecom_make_tempvar (const char *commentary, tree type,
+			  ffetargetCharacterSize size, int elements);
 tree ffecom_modify (tree newtype, tree lhs, tree rhs);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 void ffecom_file (char *name);
@@ -316,14 +327,18 @@ void ffecom_notify_init_symbol (ffesymbol s);
 void ffecom_notify_primary_entry (ffesymbol fn);
 FILE *ffecom_open_include (char *name, ffewhereLine l, ffewhereColumn c);
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-void ffecom_pop_calltemps (void);
-void ffecom_pop_tempvar (tree var);
+void ffecom_prepare_arg_ptr_to_expr (ffebld expr);
+bool ffecom_prepare_end (void);
+void ffecom_prepare_expr_ (ffebld expr, ffebld dest);
+void ffecom_prepare_expr_rw (tree type, ffebld expr);
+void ffecom_prepare_expr_w (tree type, ffebld expr);
+void ffecom_prepare_ptr_to_expr (ffebld expr);
+void ffecom_prepare_return_expr (ffebld expr);
+tree ffecom_ptr_to_const_expr (ffebld expr);
 tree ffecom_ptr_to_expr (ffebld expr);
-void ffecom_push_calltemps (void);
-tree ffecom_push_tempvar (tree type, ffetargetCharacterSize size,
-			  int elements, bool auto_pop);
 tree ffecom_return_expr (ffebld expr);
 tree ffecom_save_tree (tree t);
+void ffecom_start_compstmt (void);
 tree ffecom_start_decl (tree decl, bool is_init);
 void ffecom_sym_commit (ffesymbol s);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
@@ -335,6 +350,7 @@ void ffecom_sym_retract (ffesymbol s);
 tree ffecom_temp_label (void);
 tree ffecom_truth_value (tree expr);
 tree ffecom_truth_value_invert (tree expr);
+tree ffecom_type_expr (ffebld expr);
 tree ffecom_which_entrypoint_decl (void);
 
 /* These need to be in the front end with exactly these interfaces,
@@ -360,6 +376,7 @@ int mark_addressable (tree expr);
 #define ffecom_f2c_typecode(bt,kt) ffecom_f2c_typecode_[(bt)][(kt)]
 #define ffecom_label_kind() ffecom_label_kind_
 #define ffecom_pointer_kind() ffecom_pointer_kind_
+#define ffecom_prepare_expr(e) ffecom_prepare_expr_ ((e), NULL)
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 #define ffecom_init_1()

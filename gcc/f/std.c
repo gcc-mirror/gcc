@@ -192,15 +192,27 @@ struct _ffestd_stmt_
 	struct
 	  {
 	    mallocPool pool;
+	    ffestw block;
 	    ffebld expr;
 	  }
 	R803;
 	struct
 	  {
 	    mallocPool pool;
+	    ffestw block;
 	    ffebld expr;
 	  }
 	R804;
+	struct
+	  {
+	    ffestw block;
+	  }
+	R805;
+	struct
+	  {
+	    ffestw block;
+	  }
+	R806;
 	struct
 	  {
 	    mallocPool pool;
@@ -750,27 +762,28 @@ ffestd_stmt_pass_ ()
 	case FFESTD_stmtidR803_:
 	  ffestd_subr_line_restore_ (stmt);
 	  if (okay)
-	    ffeste_R803 (stmt->u.R803.expr);
+	    ffeste_R803 (stmt->u.R803.block, stmt->u.R803.expr);
 	  malloc_pool_kill (stmt->u.R803.pool);
 	  break;
 
 	case FFESTD_stmtidR804_:
 	  ffestd_subr_line_restore_ (stmt);
 	  if (okay)
-	    ffeste_R804 (stmt->u.R804.expr);
+	    ffeste_R804 (stmt->u.R803.block, stmt->u.R804.expr);
 	  malloc_pool_kill (stmt->u.R804.pool);
 	  break;
 
 	case FFESTD_stmtidR805_:
 	  ffestd_subr_line_restore_ (stmt);
 	  if (okay)
-	    ffeste_R805 ();
+	    ffeste_R805 (stmt->u.R803.block);
 	  break;
 
 	case FFESTD_stmtidR806_:
 	  ffestd_subr_line_restore_ (stmt);
 	  if (okay)
-	    ffeste_R806 ();
+	    ffeste_R806 (stmt->u.R806.block);
+	  ffestw_kill (stmt->u.R806.block);
 	  break;
 
 	case FFESTD_stmtidR807_:
@@ -1597,7 +1610,19 @@ ffestd_labeldef_format (ffelab label)
     ffestdStmt_ stmt;
 
     stmt = ffestd_stmt_new_ (FFESTD_stmtidFORMATLABEL_);
+#if 0
+    /* Don't bother with this.  See FORMAT statement.  */
+    /* Prepend FORMAT label instead of appending it, so all the
+       FORMAT label/statement pairs end up at the top of the list.
+       This helps ensure all decls for a block (in the GBE) are
+       known before any executable statements are generated.  */
+    stmt->previous = (ffestdStmt_) &ffestd_stmt_list_.first;
+    stmt->next = ffestd_stmt_list_.first;
+    stmt->next->previous = stmt;
+    stmt->previous->next = stmt;
+#else
     ffestd_stmt_append_ (stmt);
+#endif
     stmt->u.formatlabel.label = label;
   }
 #endif
@@ -2989,13 +3014,7 @@ ffestd_R744 ()
 #endif
 }
 
-/* ffestd_R745 -- Implicit END WHERE statement
-
-   ffestd_R745(TRUE);
-
-   Implement the end of the current WHERE "block".  ok==TRUE iff statement
-   following WHERE (substatement) is valid; else, statement is invalid
-   or stack forcibly popped due to ffestd_eof_().  */
+/* ffestd_R745 -- Implicit END WHERE statement.  */
 
 void
 ffestd_R745 (bool ok)
@@ -3011,11 +3030,8 @@ ffestd_R745 (bool ok)
 }
 
 #endif
-/* ffestd_R803 -- Block IF (IF-THEN) statement
 
-   ffestd_R803(construct_name,expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
+/* Block IF (IF-THEN) statement.  */
 
 void
 ffestd_R803 (ffelexToken construct_name UNUSED, ffebld expr)
@@ -3033,6 +3049,7 @@ ffestd_R803 (ffelexToken construct_name UNUSED, ffebld expr)
     ffestd_stmt_append_ (stmt);
     ffestd_subr_line_save_ (stmt);
     stmt->u.R803.pool = ffesta_output_pool;
+    stmt->u.R803.block = ffestw_use (ffestw_stack_top ());
     stmt->u.R803.expr = expr;
     ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
   }
@@ -3042,13 +3059,7 @@ ffestd_R803 (ffelexToken construct_name UNUSED, ffebld expr)
   assert (ffestd_block_level_ > 0);
 }
 
-/* ffestd_R804 -- ELSE IF statement
-
-   ffestd_R804(expr,expr_token,name_token);
-
-   Make sure ffestd_kind_ identifies an IF block.  If not
-   NULL, make sure name_token gives the correct name.  Implement the else
-   of the IF block.  */
+/* ELSE IF statement.  */
 
 void
 ffestd_R804 (ffebld expr, ffelexToken name UNUSED)
@@ -3066,19 +3077,14 @@ ffestd_R804 (ffebld expr, ffelexToken name UNUSED)
     ffestd_stmt_append_ (stmt);
     ffestd_subr_line_save_ (stmt);
     stmt->u.R804.pool = ffesta_output_pool;
+    stmt->u.R804.block = ffestw_use (ffestw_stack_top ());
     stmt->u.R804.expr = expr;
     ffesta_set_outpooldisp (FFESTA_pooldispPRESERVE);
   }
 #endif
 }
 
-/* ffestd_R805 -- ELSE statement
-
-   ffestd_R805(name_token);
-
-   Make sure ffestd_kind_ identifies an IF block.  If not
-   NULL, make sure name_token gives the correct name.  Implement the ELSE
-   of the IF block.  */
+/* ELSE statement.  */
 
 void
 ffestd_R805 (ffelexToken name UNUSED)
@@ -3095,13 +3101,12 @@ ffestd_R805 (ffelexToken name UNUSED)
     stmt = ffestd_stmt_new_ (FFESTD_stmtidR805_);
     ffestd_stmt_append_ (stmt);
     ffestd_subr_line_save_ (stmt);
+    stmt->u.R805.block = ffestw_use (ffestw_stack_top ());
   }
 #endif
 }
 
-/* ffestd_R806 -- End an IF-THEN
-
-   ffestd_R806(TRUE);  */
+/* END IF statement.  */
 
 void
 ffestd_R806 (bool ok UNUSED)
@@ -3116,6 +3121,7 @@ ffestd_R806 (bool ok UNUSED)
     stmt = ffestd_stmt_new_ (FFESTD_stmtidR806_);
     ffestd_stmt_append_ (stmt);
     ffestd_subr_line_save_ (stmt);
+    stmt->u.R806.block = ffestw_use (ffestw_stack_top ());
   }
 #endif
 
@@ -4273,7 +4279,24 @@ ffestd_R1001 (ffesttFormatList f)
     ffestdStmt_ stmt;
 
     stmt = ffestd_stmt_new_ (FFESTD_stmtidR1001_);
+#if 0
+    /* Don't bother with this.  After all, things like cilists also are
+       declared midway through code-generation.  Perhaps the only problems
+       the gcc back end has with midway declarations are with stack vars,
+       maybe only with vars that can be put in registers.  Unless/until the
+       need is established, handle FORMAT just like cilists and others; at
+       that point, they'd likely *all* have to be fixed, which would be
+       very painful anyway.  */
+    /* Insert FORMAT statement just after the first item on the
+       statement list, which must be a FORMAT label, which see.  */
+    assert (ffestd_stmt_list_.first->id == FFESTD_stmtidFORMATLABEL_);
+    stmt->previous = ffestd_stmt_list_.first;
+    stmt->next = ffestd_stmt_list_.first->next;
+    stmt->next->previous = stmt;
+    stmt->previous->next = stmt;
+#else
     ffestd_stmt_append_ (stmt);
+#endif
     stmt->u.R1001.str = str;
   }
 #endif

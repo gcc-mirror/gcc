@@ -255,6 +255,7 @@ ffesymbol_new_ (ffename n)
   s->reported = FALSE;
   s->explicit_where = FALSE;
   s->namelisted = FALSE;
+  s->assigned = FALSE;
 
   ffename_set_symbol (n, s);
 

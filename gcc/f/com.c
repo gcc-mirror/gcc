@@ -60,9 +60,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		   is_nested, is_public);
    // for each arg, build PARM_DECL and call push_parm_decl (decl) with it;
    store_parm_decls (is_main_program);
-   ffecom_start_compstmt_ ();
+   ffecom_start_compstmt ();
    // for stmts and decls inside function, do appropriate things;
-   ffecom_end_compstmt_ ();
+   ffecom_end_compstmt ();
    finish_function (is_nested);
    if (is_nested) pop_f_function_context ();
    if (is_nested) resume_momentary (yes);
@@ -231,8 +231,8 @@ tree unsigned_type_node;
 tree char_type_node;
 tree current_function_decl;
 
-/* ~~tree.h SHOULD declare this, because toplev.c and dwarfout.c reference
-   it.  */
+/* ~~gcc/tree.h *should* declare this, because toplev.c and dwarfout.c
+   reference it.  */
 
 char *language_string = "GNU F77";
 
@@ -369,7 +369,6 @@ typedef enum
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 typedef struct _ffecom_concat_list_ ffecomConcatList_;
-typedef struct _ffecom_temp_ *ffecomTemp_;
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 /* Private include files. */
@@ -386,18 +385,6 @@ struct _ffecom_concat_list_
     ffetargetCharacterSize minlen;
     ffetargetCharacterSize maxlen;
   };
-
-struct _ffecom_temp_
-  {
-    ffecomTemp_ next;
-    tree type;			/* Base type (w/o size/array applied). */
-    tree t;
-    ffetargetCharacterSize size;
-    int elements;
-    bool in_use;
-    bool auto_pop;
-  };
-
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 /* Static functions (internal). */
@@ -416,13 +403,13 @@ static tree ffecom_call_ (tree fn, ffeinfoKindtype kt,
 			  bool is_f2c_complex, tree type,
 			  tree args, tree dest_tree,
 			  ffebld dest, bool *dest_used,
-			  tree callee_commons, bool scalar_args);
+			  tree callee_commons, bool scalar_args, tree hook);
 static tree ffecom_call_binop_ (tree fn, ffeinfoKindtype kt,
 				bool is_f2c_complex, tree type,
 				ffebld left, ffebld right,
 				tree dest_tree, ffebld dest,
 				bool *dest_used, tree callee_commons,
-				bool scalar_args);
+				bool scalar_args, tree hook);
 static void ffecom_char_args_x_ (tree *xitem, tree *length,
 				 ffebld expr, bool with_null);
 static tree ffecom_check_size_overflow_ (ffesymbol s, tree type, bool dummy);
@@ -442,7 +429,7 @@ static tree ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 			  bool *dest_used, bool assignp, bool widenp);
 static tree ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				    ffebld dest, bool *dest_used);
-static tree ffecom_expr_power_integer_ (ffebld left, ffebld right);
+static tree ffecom_expr_power_integer_ (ffebld expr);
 static void ffecom_expr_transform_ (ffebld expr);
 static void ffecom_f2c_make_type_ (tree *type, int tcode, const char *name);
 static void ffecom_f2c_set_lio_code_ (ffeinfoBasictype bt, int size,
@@ -470,6 +457,8 @@ static void ffecom_member_phase1_ (ffestorag mst, ffestorag st);
 #ifdef SOMEONE_GETS_DEBUG_SUPPORT_WORKING
 static void ffecom_member_phase2_ (ffestorag mst, ffestorag st);
 #endif
+static void ffecom_prepare_let_char_ (ffetargetCharacterSize dest_size,
+				      ffebld source);
 static void ffecom_push_dummy_decls_ (ffebld dumlist,
 				      bool stmtfunc);
 static void ffecom_start_progunit_ (void);
@@ -484,7 +473,7 @@ static void ffecom_tree_canonize_ref_ (tree *decl, tree *offset,
 				       tree *size, tree tree);
 static tree ffecom_tree_divide_ (tree tree_type, tree left, tree right,
 				 tree dest_tree, ffebld dest,
-				 bool *dest_used);
+				 bool *dest_used, tree hook);
 static tree ffecom_type_localvar_ (ffesymbol s,
 				   ffeinfoBasictype bt,
 				   ffeinfoKindtype kt);
@@ -504,11 +493,12 @@ static tree ffecom_convert_widen_ (tree type, tree expr);
    end and thus have the same names.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-static void bison_rule_compstmt_ (void);
+static tree bison_rule_compstmt_ (void);
 static void bison_rule_pushlevel_ (void);
 static tree builtin_function (const char *name, tree type,
 			      enum built_in_function function_code,
 			      const char *library_name);
+static void delete_block (tree block);
 static int duplicate_decls (tree newdecl, tree olddecl);
 static void finish_decl (tree decl, tree init, bool is_top_level);
 static void finish_function (int nested);
@@ -519,6 +509,7 @@ static void pop_f_function_context (void);
 static void push_f_function_context (void);
 static void push_parm_decl (tree parm);
 static tree pushdecl_top_level (tree decl);
+static int kept_level_p (void);
 static tree storedecls (tree decls);
 static void store_parm_decls (int is_main_program);
 static tree start_decl (tree decl, bool is_top_level);
@@ -543,8 +534,6 @@ static bool ffecom_primary_entry_is_proc_;
 static tree ffecom_outer_function_decl_;
 static tree ffecom_previous_function_decl_;
 static tree ffecom_which_entrypoint_decl_;
-static ffecomTemp_ ffecom_latest_temp_;
-static int ffecom_pending_calls_ = 0;
 static tree ffecom_float_zero_ = NULL_TREE;
 static tree ffecom_float_half_ = NULL_TREE;
 static tree ffecom_double_zero_ = NULL_TREE;
@@ -647,9 +636,6 @@ static const char *ffecom_gfrt_argstring_[FFECOM_gfrt]
 #define ffecom_concat_list_maxlen_(catlist) ((catlist).maxlen)
 #define ffecom_concat_list_minlen_(catlist) ((catlist).minlen)
 
-#define ffecom_start_compstmt_ bison_rule_pushlevel_
-#define ffecom_end_compstmt_ bison_rule_compstmt_
-
 #define ffecom_char_args_(i,l,e) ffecom_char_args_x_((i),(l),(e),FALSE)
 #define ffecom_char_args_with_null_(i,l,e) ffecom_char_args_x_((i),(l),(e),TRUE)
 
@@ -669,20 +655,27 @@ static const char *ffecom_gfrt_argstring_[FFECOM_gfrt]
 
 struct binding_level
   {
-    /* A chain of _DECL nodes for all variables, constants, functions, and
-       typedef types.  These are in the reverse of the order supplied. */
+    /* A chain of _DECL nodes for all variables, constants, functions,
+       and typedef types.  These are in the reverse of the order supplied.
+     */
     tree names;
 
-    /* For each level (except not the global one), a chain of BLOCK nodes for
-       all the levels that were entered and exited one level down.  */
+    /* For each level (except not the global one),
+       a chain of BLOCK nodes for all the levels
+       that were entered and exited one level down.  */
     tree blocks;
 
-    /* The BLOCK node for this level, if one has been preallocated. If 0, the
-       BLOCK is allocated (if needed) when the level is popped.  */
+    /* The BLOCK node for this level, if one has been preallocated.
+       If 0, the BLOCK is allocated (if needed) when the level is popped.  */
     tree this_block;
 
     /* The binding level which this one is contained in (inherits from).  */
     struct binding_level *level_chain;
+
+    /* 0: no ffecom_prepare_* functions called at this level yet;
+       1: ffecom_prepare* functions called, except not ffecom_prepare_end;
+       2: ffecom_prepare_end called.  */
+    int prep_state;
   };
 
 #define NULL_BINDING_LEVEL (struct binding_level *) NULL
@@ -705,7 +698,7 @@ static struct binding_level *global_binding_level;
 
 static struct binding_level clear_binding_level
 =
-{NULL, NULL, NULL, NULL_BINDING_LEVEL};
+{NULL, NULL, NULL, NULL_BINDING_LEVEL, 0};
 
 /* Language-dependent contents of an identifier.  */
 
@@ -752,7 +745,6 @@ static tree shadowed_labels;
 
 #endif /* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
-
 /* This is like gcc's stabilize_reference -- in fact, most of the code
    comes from that -- but it handles the situation where the reference
    is going to have its subparts picked at, and it shouldn't change
@@ -1563,7 +1555,7 @@ static tree
 ffecom_call_ (tree fn, ffeinfoKindtype kt, bool is_f2c_complex,
 	      tree type, tree args, tree dest_tree,
 	      ffebld dest, bool *dest_used, tree callee_commons,
-	      bool scalar_args)
+	      bool scalar_args, tree hook)
 {
   tree item;
   tree tempvar;
@@ -1583,10 +1575,15 @@ ffecom_call_ (tree fn, ffeinfoKindtype kt, bool is_f2c_complex,
 				       callee_commons,
 				       scalar_args))
 	{
-	  tempvar = ffecom_push_tempvar (ffecom_tree_type
+#ifdef HOHO
+	  tempvar = ffecom_make_tempvar (ffecom_tree_type
 					 [FFEINFO_basictypeCOMPLEX][kt],
 					 FFETARGET_charactersizeNONE,
-					 -1, TRUE);
+					 -1);
+#else
+	  tempvar = hook;
+	  assert (tempvar);
+#endif
 	}
       else
 	{
@@ -1598,7 +1595,7 @@ ffecom_call_ (tree fn, ffeinfoKindtype kt, bool is_f2c_complex,
       item
 	= build_tree_list (NULL_TREE,
 			   ffecom_1 (ADDR_EXPR,
-				   build_pointer_type (TREE_TYPE (tempvar)),
+				     build_pointer_type (TREE_TYPE (tempvar)),
 				     tempvar));
       TREE_CHAIN (item) = args;
 
@@ -1627,17 +1624,15 @@ static tree
 ffecom_call_binop_ (tree fn, ffeinfoKindtype kt, bool is_f2c_complex,
 		    tree type, ffebld left, ffebld right,
 		    tree dest_tree, ffebld dest, bool *dest_used,
-		    tree callee_commons, bool scalar_args)
+		    tree callee_commons, bool scalar_args, tree hook)
 {
   tree left_tree;
   tree right_tree;
   tree left_length;
   tree right_length;
 
-  ffecom_push_calltemps ();
   left_tree = ffecom_arg_ptr_to_expr (left, &left_length);
   right_tree = ffecom_arg_ptr_to_expr (right, &right_length);
-  ffecom_pop_calltemps ();
 
   left_tree = build_tree_list (NULL_TREE, left_tree);
   right_tree = build_tree_list (NULL_TREE, right_tree);
@@ -1660,17 +1655,11 @@ ffecom_call_binop_ (tree fn, ffeinfoKindtype kt, bool is_f2c_complex,
 
   return ffecom_call_ (fn, kt, is_f2c_complex, type, left_tree,
 		       dest_tree, dest, dest_used, callee_commons,
-		       scalar_args);
+		       scalar_args, hook);
 }
 #endif
 
-/* ffecom_char_args_x_ -- Return ptr/length args for char subexpression
-
-   tree ptr_arg;
-   tree length_arg;
-   ffebld expr;
-   bool with_null;
-   ffecom_char_args_x_(&ptr_arg,&length_arg,expr,with_null);
+/* Return ptr/length args for char subexpression
 
    Handles CHARACTER-type CONTER, SYMTER, SUBSTR, ARRAYREF, and FUNCREF
    subexpressions by constructing the appropriate trees for the ptr-to-
@@ -1696,15 +1685,17 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
       newlen = ffetarget_length_character1 (val);
       if (with_null)
 	{
+	  /* Begin FFETARGET-NULL-KLUDGE.  */
 	  if (newlen != 0)
-	    ++newlen;	/* begin FFETARGET-NULL-KLUDGE. */
+	    ++newlen;
 	}
       *length = build_int_2 (newlen, 0);
       TREE_TYPE (*length) = ffecom_f2c_ftnlen_type_node;
       high = build_int_2 (newlen, 0);
       TREE_TYPE (high) = ffecom_f2c_ftnlen_type_node;
-      item = build_string (newlen,	/* end FFETARGET-NULL-KLUDGE. */
+      item = build_string (newlen,
 			   ffetarget_text_character1 (val));
+      /* End FFETARGET-NULL-KLUDGE.  */
       TREE_TYPE (item)
 	= build_type_variant
 	  (build_array_type
@@ -1742,7 +1733,8 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	  }
 	else if (item == error_mark_node)
 	  *length = error_mark_node;
-	else			/* FFEINFO_kindFUNCTION: */
+	else
+	  /* FFEINFO_kindFUNCTION.  */
 	  *length = NULL_TREE;
 	if (!ffesymbol_hook (s).addr
 	    && (item != error_mark_node))
@@ -1758,9 +1750,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	tree array;
 	int i;
 
-	ffecom_push_calltemps ();
 	ffecom_char_args_ (&item, length, ffebld_left (expr));
-	ffecom_pop_calltemps ();
 
 	if (item == error_mark_node || *length == error_mark_node)
 	  {
@@ -1805,9 +1795,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	assert (ffebld_trail (thing) == NULL);
 	end = ffebld_head (thing);
 
-	ffecom_push_calltemps ();
 	ffecom_char_args_ (&item, length, ffebld_left (expr));
-	ffecom_pop_calltemps ();
 
 	if (item == error_mark_node || *length == error_mark_node)
 	  {
@@ -1892,7 +1880,8 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	ffecomGfrt ix;
 
 	if (size == FFETARGET_charactersizeNONE)
-	  size = 24;	/* ~~~~ Kludge alert!  This should someday be fixed. */
+	  /* ~~Kludge alert!  This should someday be fixed. */
+	  size = 24;
 
 	*length = build_int_2 (size, 0);
 	TREE_TYPE (*length) = ffecom_f2c_ftnlen_type_node;
@@ -1901,7 +1890,8 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	    == FFEINFO_whereINTRINSIC)
 	  {
 	    if (size == 1)
-	      {			/* Invocation of an intrinsic returning CHARACTER*1. */
+	      {
+		/* Invocation of an intrinsic returning CHARACTER*1.  */
 		item = ffecom_expr_intrinsic_ (expr, NULL_TREE,
 					       NULL, NULL);
 		break;
@@ -1929,13 +1919,15 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	      item = ffecom_1_fn (item);
 	  }
 
-	assert (ffecom_pending_calls_ != 0);
+#ifdef HOHO
 	tempvar = ffecom_push_tempvar (char_type_node, size, -1, TRUE);
+#else
+	tempvar = ffebld_nonter_hook (expr);
+	assert (tempvar);
+#endif
 	tempvar = ffecom_1 (ADDR_EXPR,
 			    build_pointer_type (TREE_TYPE (tempvar)),
 			    tempvar);
-
-	ffecom_push_calltemps ();
 
 	args = build_tree_list (NULL_TREE, tempvar);
 
@@ -1962,16 +1954,12 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 			  item, args, NULL_TREE);
 	item = ffecom_2 (COMPOUND_EXPR, TREE_TYPE (tempvar), item,
 			 tempvar);
-
-	ffecom_pop_calltemps ();
       }
       break;
 
     case FFEBLD_opCONVERT:
 
-      ffecom_push_calltemps ();
       ffecom_char_args_ (&item, length, ffebld_left (expr));
-      ffecom_pop_calltemps ();
 
       if (item == error_mark_node || *length == error_mark_node)
 	{
@@ -1988,9 +1976,13 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	  tree args;
 	  tree newlen;
 
-	  assert (ffecom_pending_calls_ != 0);
-	  tempvar = ffecom_push_tempvar (char_type_node,
-					 ffebld_size (expr), -1, TRUE);
+#ifdef HOHO
+	  tempvar = ffecom_make_tempvar (char_type_node,
+					 ffebld_size (expr), -1);
+#else
+	  tempvar = ffebld_nonter_hook (expr);
+	  assert (tempvar);
+#endif
 	  tempvar = ffecom_1 (ADDR_EXPR,
 			      build_pointer_type (TREE_TYPE (tempvar)),
 			      tempvar);
@@ -2004,7 +1996,7 @@ ffecom_char_args_x_ (tree *xitem, tree *length, ffebld expr, bool with_null)
 	  TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (args)))
 	    = build_tree_list (NULL_TREE, *length);
 
-	  item = ffecom_call_gfrt (FFECOM_gfrtCOPY, args);
+	  item = ffecom_call_gfrt (FFECOM_gfrtCOPY, args, NULL_TREE);
 	  TREE_SIDE_EFFECTS (item) = 1;
 	  item = ffecom_2 (COMPOUND_EXPR, TREE_TYPE (tempvar), fold (item),
 			   tempvar);
@@ -2082,10 +2074,10 @@ ffecom_char_enhance_arg_ (tree *xtype, ffesymbol s)
     {
       if (ffesymbol_where (s) == FFEINFO_whereDUMMY)
 	tlen = ffecom_get_invented_identifier ("__g77_length_%s",
-					       ffesymbol_text (s), 0);
+					       ffesymbol_text (s), -1);
       else
 	tlen = ffecom_get_invented_identifier ("__g77_%s",
-					       "length", 0);
+					       "length", -1);
       tlen = build_decl (PARM_DECL, tlen, ffecom_f2c_ftnlen_type_node);
 #if BUILT_FOR_270
       DECL_ARTIFICIAL (tlen) = 1;
@@ -2182,7 +2174,8 @@ recurse:			/* :::::::::::::::::::: */
 	    case FFEBLD_opARRAYREF:
 	    case FFEBLD_opFUNCREF:
 	    case FFEBLD_opSUBSTR:
-	      break;		/* ~~Do useful truncations here. */
+	      /* ~~Do useful truncations here. */
+	      break;
 
 	    default:
 	      assert ("op changed or inconsistent switches!" == NULL);
@@ -2243,12 +2236,7 @@ ffecom_concat_list_kill_ (ffecomConcatList_ catlist)
 }
 
 #endif
-/* ffecom_concat_list_new_ -- Make list of concatenated string exprs
-
-   ffecomConcatList_ catlist;
-   ffebld expr;	 // Root expr of CHARACTER basictype.
-   ffetargetCharacterSize max;	// max chars to gather or _...NONE if no max
-   catlist = ffecom_concat_list_new_(expr,max);
+/* Make list of concatenated string exprs.
 
    Returns a flattened list of concatenated subexpressions given a
    tree of such expressions.  */
@@ -2526,7 +2514,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 	type = ffecom_tree_type[FFEINFO_basictypeCOMPLEX][kt];
 
       result = ffecom_get_invented_identifier ("__g77_%s",
-					       "result", 0);
+					       "result", -1);
 
       /* Make length arg _and_ enhance type info for CHAR arg itself.  */
 
@@ -2556,7 +2544,9 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 
   store_parm_decls (0);
 
-  ffecom_start_compstmt_ ();
+  ffecom_start_compstmt ();
+  /* Disallow temp vars at this level.  */
+  current_binding_level->prep_state = 2;
 
   /* Make local var to hold return type for multi-type master fn. */
 
@@ -2565,7 +2555,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
       yes = suspend_momentary ();
 
       multi_retval = ffecom_get_invented_identifier ("__g77_%s",
-						     "multi_retval", 0);
+						     "multi_retval", -1);
       multi_retval = build_decl (VAR_DECL, multi_retval,
 				 ffecom_multi_type_node_);
       multi_retval = start_decl (multi_retval, FALSE);
@@ -2726,7 +2716,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
     clear_momentary ();
   }
 
-  ffecom_end_compstmt_ ();
+  ffecom_end_compstmt ();
 
   finish_function (0);
 
@@ -3040,7 +3030,8 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
       left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
       return ffecom_1 (NOP_EXPR, tree_type, left);
 
-    case FFEBLD_opPAREN:	/* ~~~Make sure Fortran rules respected here */
+    case FFEBLD_opPAREN:
+      /* ~~~Make sure Fortran rules respected here */
       left = ffecom_expr_ (ffebld_left (expr), NULL, NULL, NULL, FALSE, widenp);
       return ffecom_1 (NOP_EXPR, tree_type, left);
 
@@ -3096,7 +3087,8 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	  right = convert (tree_type, right);
 	}
       return ffecom_tree_divide_ (tree_type, left, right,
-			          dest_tree, dest, dest_used);
+			          dest_tree, dest, dest_used,
+				  ffebld_nonter_hook (expr));
 
     case FFEBLD_opPOWER:
       {
@@ -3111,7 +3103,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	  case FFEINFO_basictypeINTEGER:
 	    if (1 || optimize)
 	      {
-		item = ffecom_expr_power_integer_ (left, right);
+		item = ffecom_expr_power_integer_ (expr);
 		if (item != NULL_TREE)
 		  return item;
 	      }
@@ -3228,7 +3220,8 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 				    && ffecom_gfrt_complex_[code]),
 				   tree_type, left, right,
 				   dest_tree, dest, dest_used,
-				   NULL_TREE, FALSE);
+				   NULL_TREE, FALSE,
+				   ffebld_nonter_hook (expr));
       }
 
     case FFEBLD_opNOT:
@@ -3277,12 +3270,10 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
       else
 	item = ffecom_1_fn (dt);
 
-      ffecom_push_calltemps ();
       if (ffesymbol_where (s) == FFEINFO_whereCONSTANT)
 	args = ffecom_list_expr (ffebld_right (expr));
       else
 	args = ffecom_list_ptr_to_expr (ffebld_right (expr));
-      ffecom_pop_calltemps ();
 
       if (args == error_mark_node)
 	return error_mark_node;
@@ -3295,7 +3286,8 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 			   tree_type,
 			   args,
 			   dest_tree, dest, dest_used,
-			   error_mark_node, FALSE);
+			   error_mark_node, FALSE,
+			   ffebld_nonter_hook (expr));
       TREE_SIDE_EFFECTS (item) = 1;
       return item;
 
@@ -3513,8 +3505,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	  }
 
 	case FFEINFO_basictypeCHARACTER:
-	  ffecom_push_calltemps ();	/* Even though we might not call. */
-
 	  {
 	    ffebld left = ffebld_left (expr);
 	    ffebld right = ffebld_right (expr);
@@ -3546,10 +3536,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	    if (left_tree == error_mark_node || left_length == error_mark_node
 		|| right_tree == error_mark_node
 		|| right_length == error_mark_node)
-	      {
-		ffecom_pop_calltemps ();
-		return error_mark_node;
-	      }
+	      return error_mark_node;
 
 	    if ((ffebld_size_known (left) == 1)
 		&& (ffebld_size_known (right) == 1))
@@ -3582,7 +3569,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 							       left_length);
 		TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (item)))
 		  = build_tree_list (NULL_TREE, right_length);
-		item = ffecom_call_gfrt (FFECOM_gfrtCMP, item);
+		item = ffecom_call_gfrt (FFECOM_gfrtCMP, item, NULL_TREE);
 		item = ffecom_2 (code, integer_type_node,
 				 item,
 				 convert (TREE_TYPE (item),
@@ -3591,7 +3578,6 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 	    item = convert (tree_type, item);
 	  }
 
-	  ffecom_pop_calltemps ();
 	  return item;
 
 	default:
@@ -3793,8 +3779,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 
     case FFEINTRIN_impAINT:
     case FFEINTRIN_impDINT:
-#if 0				/* ~~ someday implement FIX_TRUNC_EXPR
-				   yielding same type as arg */
+#if 0
+      /* ~~Someday implement FIX_TRUNC_EXPR yielding same type as arg.  */
       return ffecom_1 (FIX_TRUNC_EXPR, tree_type, ffecom_expr (arg1));
 #else /* in the meantime, must use floor to avoid range problems with ints */
       /* r__1 = r1 >= 0 ? floor(r1) : -floor(-r1); */
@@ -3810,14 +3796,16 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			   ffecom_call_gfrt (FFECOM_gfrtL_FLOOR,
 					     build_tree_list (NULL_TREE,
 						  convert (double_type_node,
-							   saved_expr1))),
+							   saved_expr1)),
+					     NULL_TREE),
 			   ffecom_1 (NEGATE_EXPR, double_type_node,
 				     ffecom_call_gfrt (FFECOM_gfrtL_FLOOR,
 						 build_tree_list (NULL_TREE,
 						  convert (double_type_node,
 						      ffecom_1 (NEGATE_EXPR,
 								arg1_type,
-								saved_expr1))))
+							       saved_expr1))),
+						       NULL_TREE)
 				     ))
 		 );
 #endif
@@ -3862,7 +3850,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 								     arg1_type,
 								     saved_expr1,
 								     convert (arg1_type,
-									      ffecom_float_half_))))),
+									      ffecom_float_half_)))),
+					     NULL_TREE),
 			   ffecom_1 (NEGATE_EXPR, double_type_node,
 				     ffecom_call_gfrt (FFECOM_gfrtL_FLOOR,
 						       build_tree_list (NULL_TREE,
@@ -3871,7 +3860,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 											   arg1_type,
 											   convert (arg1_type,
 												    ffecom_float_half_),
-											   saved_expr1)))))
+											   saved_expr1))),
+						       NULL_TREE))
 			   )
 		 );
 #endif
@@ -3886,9 +3876,12 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 
     case FFEINTRIN_impCHAR:
     case FFEINTRIN_impACHAR:
-      assert (ffecom_pending_calls_ != 0);
-      tempvar = ffecom_push_tempvar (char_type_node,
-				     1, -1, TRUE);
+#ifdef HOHO
+      tempvar = ffecom_make_tempvar (char_type_node, 1, -1);
+#else
+      tempvar = ffebld_nonter_hook (expr);
+      assert (tempvar);
+#endif
       {
 	tree tmv = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (tempvar)));
 
@@ -4138,8 +4131,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 
     case FFEINTRIN_impNINT:
     case FFEINTRIN_impIDNINT:
-#if 0				/* ~~ ideally FIX_ROUND_EXPR would be
-				   implemented, but it ain't yet */
+#if 0
+      /* ~~Ideally FIX_ROUND_EXPR would be implemented, but it ain't yet.  */
       return ffecom_1 (FIX_ROUND_EXPR, tree_type, ffecom_expr (arg1));
 #else
       /* i__1 = r1 >= 0 ? floor(r1 + .5) : -floor(.5 - r1); */
@@ -4552,13 +4545,11 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree prep_arg4;
 	tree arg5_plus_arg3;
 
-	ffecom_push_calltemps ();
-
 	arg2_tree = convert (integer_type_node,
 			     ffecom_expr (arg2));
 	arg3_tree = ffecom_save_tree (convert (integer_type_node,
 					       ffecom_expr (arg3)));
-	arg4_tree = ffecom_expr_rw (arg4);
+	arg4_tree = ffecom_expr_rw (NULL_TREE, arg4);
 	arg4_type = TREE_TYPE (arg4_tree);
 
 	arg1_tree = ffecom_save_tree (convert (arg4_type,
@@ -4566,8 +4557,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 
 	arg5_tree = ffecom_save_tree (convert (integer_type_node,
 					       ffecom_expr (arg5)));
-
-	ffecom_pop_calltemps ();
 
 	prep_arg1
 	  = ffecom_2 (LSHIFT_EXPR, arg4_type,
@@ -4686,8 +4675,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg2_tree;
 	tree arg3_tree;
 
-	ffecom_push_calltemps ();
-
 	arg1_tree = convert (ffecom_f2c_integer_type_node,
 			     ffecom_expr (arg1));
 	arg1_tree = ffecom_1 (ADDR_EXPR,
@@ -4703,11 +4690,9 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			     arg2_tree);
 
 	if (arg3 != NULL)
-	  arg3_tree = ffecom_expr_rw (arg3);
+	  arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
 	else
 	  arg3_tree = NULL_TREE;
-
-	ffecom_pop_calltemps ();
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg2_tree = build_tree_list (NULL_TREE, arg2_tree);
@@ -4721,7 +4706,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			   NULL_TREE :
 			   tree_type),
 			  arg1_tree,
-			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+			  ffebld_nonter_hook (expr));
 
 	if (arg3_tree != NULL_TREE)
 	  expr_tree
@@ -4737,8 +4723,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg2_tree;
 	tree arg3_tree;
 
-	ffecom_push_calltemps ();
-
 	arg1_tree = convert (ffecom_f2c_integer_type_node,
 			     ffecom_expr (arg1));
 	arg1_tree = ffecom_1 (ADDR_EXPR,
@@ -4754,11 +4738,9 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			     arg2_tree);
 
 	if (arg3 != NULL)
-	  arg3_tree = ffecom_expr_rw (arg3);
+	  arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
 	else
 	  arg3_tree = NULL_TREE;
-
-	ffecom_pop_calltemps ();
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg2_tree = build_tree_list (NULL_TREE, arg2_tree);
@@ -4770,7 +4752,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			  FALSE,
 			  NULL_TREE,
 			  arg1_tree,
-			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+			  ffebld_nonter_hook (expr));
 
 	if (arg3_tree != NULL_TREE)
 	  expr_tree
@@ -4793,16 +4776,12 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg1_tree;
 	tree arg2_tree;
 
-	ffecom_push_calltemps ();
-
 	arg1_tree = ffecom_arg_ptr_to_expr (arg1, &arg1_len);
 
 	if (arg2 != NULL)
-	  arg2_tree = ffecom_expr_rw (arg2);
+	  arg2_tree = ffecom_expr_w (NULL_TREE, arg2);
 	else
 	  arg2_tree = NULL_TREE;
-
-	ffecom_pop_calltemps ();
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg1_len = build_tree_list (NULL_TREE, arg1_len);
@@ -4814,7 +4793,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			  FALSE,
 			  NULL_TREE,
 			  arg1_tree,
-			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+			  ffebld_nonter_hook (expr));
 
 	if (arg2_tree != NULL_TREE)
 	  expr_tree
@@ -4840,7 +4820,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 		      FALSE,
 		      void_type_node,
 		      expr_tree,
-		      NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+		      NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+		      ffebld_nonter_hook (expr));
 
     case FFEINTRIN_impFLUSH:
       if (arg1 == NULL)
@@ -4860,16 +4841,12 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg2_tree;
 	tree arg3_tree;
 
-	ffecom_push_calltemps ();
-
 	arg1_tree = ffecom_arg_ptr_to_expr (arg1, &arg1_len);
 	arg2_tree = ffecom_arg_ptr_to_expr (arg2, &arg2_len);
 	if (arg3 != NULL)
-	  arg3_tree = ffecom_expr_rw (arg3);
+	  arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
 	else
 	  arg3_tree = NULL_TREE;
-
-	ffecom_pop_calltemps ();
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg1_len = build_tree_list (NULL_TREE, arg1_len);
@@ -4883,7 +4860,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  FALSE,
 				  NULL_TREE,
 				  arg1_tree,
-				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+				  ffebld_nonter_hook (expr));
 	if (arg3_tree != NULL_TREE)
 	  expr_tree = ffecom_modify (NULL_TREE, arg3_tree,
 				     convert (TREE_TYPE (arg3_tree),
@@ -4899,18 +4877,14 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg2_tree;
 	tree arg3_tree;
 
-	ffecom_push_calltemps ();
-
 	arg1_tree = ffecom_arg_ptr_to_expr (arg1, &arg1_len);
 
 	arg2_tree = ffecom_ptr_to_expr (arg2);
 
 	if (arg3 != NULL)
-	  arg3_tree = ffecom_expr_rw (arg3);
+	  arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
 	else
 	  arg3_tree = NULL_TREE;
-
-	ffecom_pop_calltemps ();
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg1_len = build_tree_list (NULL_TREE, arg1_len);
@@ -4922,7 +4896,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  FALSE,
 				  NULL_TREE,
 				  arg1_tree,
-				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+				  ffebld_nonter_hook (expr));
 	if (arg3_tree != NULL_TREE)
 	  expr_tree = ffecom_modify (NULL_TREE, arg3_tree,
 				     convert (TREE_TYPE (arg3_tree),
@@ -4938,8 +4913,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg2_len = integer_zero_node;
 	tree arg3_tree;
 
-	ffecom_push_calltemps ();
-
 	arg1_tree = convert (ffecom_f2c_integer_type_node,
 			     ffecom_expr (arg1));
 	arg1_tree = ffecom_1 (ADDR_EXPR,
@@ -4947,9 +4920,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			      arg1_tree);
 
 	arg2_tree = ffecom_arg_ptr_to_expr (arg2, &arg2_len);
-	arg3_tree = ffecom_expr_rw (arg3);
-
-	ffecom_pop_calltemps ();
+	arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg2_tree = build_tree_list (NULL_TREE, arg2_tree);
@@ -4962,7 +4933,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  FALSE,
 				  NULL_TREE,
 				  arg1_tree,
-				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+				  ffebld_nonter_hook (expr));
 	expr_tree = ffecom_modify (NULL_TREE, arg3_tree,
 				   convert (TREE_TYPE (arg3_tree),
 					    expr_tree));
@@ -4974,8 +4946,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg1_tree;
 	tree arg2_tree;
 	tree arg3_tree;
-
-	ffecom_push_calltemps ();
 
 	arg1_tree = convert (ffecom_f2c_integer_type_node,
 			     ffecom_expr (arg1));
@@ -4989,9 +4959,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	if (arg3 == NULL)
 	  arg3_tree = NULL_TREE;
 	else
-	  arg3_tree = ffecom_expr_rw (arg3);
-
-	ffecom_pop_calltemps ();
+	  arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg2_tree = build_tree_list (NULL_TREE, arg2_tree);
@@ -5001,7 +4969,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  FALSE,
 				  NULL_TREE,
 				  arg1_tree,
-				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+				  ffebld_nonter_hook (expr));
 	if (arg3_tree != NULL_TREE) {
 	  expr_tree = ffecom_modify (NULL_TREE, arg3_tree,
 				     convert (TREE_TYPE (arg3_tree),
@@ -5015,8 +4984,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg1_tree;
 	tree arg2_tree;
 	tree arg3_tree;
-
-	ffecom_push_calltemps ();
 
 	arg1_tree = convert (ffecom_f2c_integer_type_node,
 			     ffecom_expr (arg1));
@@ -5033,9 +5000,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	if (arg3 == NULL)
 	  arg3_tree = NULL_TREE;
 	else
-	  arg3_tree = ffecom_expr_rw (arg3);
-
-	ffecom_pop_calltemps ();
+	  arg3_tree = ffecom_expr_w (NULL_TREE, arg3);
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg2_tree = build_tree_list (NULL_TREE, arg2_tree);
@@ -5045,7 +5010,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  FALSE,
 				  NULL_TREE,
 				  arg1_tree,
-				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+				  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+				  ffebld_nonter_hook (expr));
 	if (arg3_tree != NULL_TREE) {
 	  expr_tree = ffecom_modify (NULL_TREE, arg3_tree,
 				     convert (TREE_TYPE (arg3_tree),
@@ -5061,8 +5027,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg1_tree;
 	tree arg2_tree;
 
-	ffecom_push_calltemps ();
-
 	arg1_tree = ffecom_arg_ptr_to_expr (arg1, &arg1_len);
 
 	arg2_tree = convert (((gfrt == FFEINTRIN_impCTIME_subr) ?
@@ -5072,8 +5036,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	arg2_tree = ffecom_1 (ADDR_EXPR,
 			      build_pointer_type (TREE_TYPE (arg2_tree)),
 			      arg2_tree);
-
-	ffecom_pop_calltemps ();
 
 	arg1_tree = build_tree_list (NULL_TREE, arg1_tree);
 	arg1_len = build_tree_list (NULL_TREE, arg1_len);
@@ -5087,7 +5049,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			  FALSE,
 			  NULL_TREE,
 			  arg1_tree,
-			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+			  ffebld_nonter_hook (expr));
       }
       return expr_tree;
 
@@ -5116,7 +5079,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				   ffecom_f2c_real_type_node),
 				  arg1_tree,
 				  dest_tree, dest, dest_used,
-				  NULL_TREE, TRUE);
+				  NULL_TREE, TRUE,
+				  ffebld_nonter_hook (expr));
       }
       return expr_tree;
 
@@ -5125,8 +5089,6 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
       {
 	tree arg1_tree;
 	tree arg2_tree;
-
-	ffecom_push_calltemps ();
 
 	arg1_tree = convert (ffecom_f2c_integer_type_node,
 			     ffecom_expr (arg1));
@@ -5137,9 +5099,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	if (arg2 == NULL)
 	  arg2_tree = NULL_TREE;
 	else
-	  arg2_tree = ffecom_expr_rw (arg2);
-
-	ffecom_pop_calltemps ();
+	  arg2_tree = ffecom_expr_w (NULL_TREE, arg2);
 
 	expr_tree = ffecom_call_ (ffecom_gfrt_tree_ (gfrt),
 				  ffecom_gfrt_kindtype (gfrt),
@@ -5147,7 +5107,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  NULL_TREE,
 				  build_tree_list (NULL_TREE, arg1_tree),
 				  NULL_TREE, NULL, NULL, NULL_TREE,
-				  TRUE);
+				  TRUE,
+				  ffebld_nonter_hook (expr));
 	if (arg2_tree != NULL_TREE) {
 	  expr_tree = ffecom_modify (NULL_TREE, arg2_tree,
 				     convert (TREE_TYPE (arg2_tree),
@@ -5161,11 +5122,7 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
       {
 	tree arg1_tree;
 
-	ffecom_push_calltemps ();
-
-	arg1_tree = ffecom_expr_rw (arg1);
-
-	ffecom_pop_calltemps ();
+	arg1_tree = ffecom_expr_w (NULL_TREE, arg1);
 
 	expr_tree
 	  = ffecom_call_ (ffecom_gfrt_tree_ (gfrt),
@@ -5173,7 +5130,8 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 			  FALSE,
 			  NULL_TREE,
 			  NULL_TREE,
-			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE);
+			  NULL_TREE, NULL, NULL, NULL_TREE, TRUE,
+			  ffebld_nonter_hook (expr));
 
 	expr_tree
 	  = ffecom_modify (NULL_TREE, arg1_tree,
@@ -5188,13 +5146,9 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 	tree arg1_tree;
 	tree arg2_tree;
 
-	ffecom_push_calltemps ();
-
-	arg1_tree = ffecom_expr_rw (arg1);
+	arg1_tree = ffecom_expr_w (NULL_TREE, arg1);
 
 	arg2_tree = ffecom_ptr_to_expr (arg2);
-
-	ffecom_pop_calltemps ();
 
 	expr_tree = ffecom_call_ (ffecom_gfrt_tree_ (gfrt),
 				  ffecom_gfrt_kindtype (gfrt),
@@ -5202,14 +5156,15 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 				  NULL_TREE,
 				  build_tree_list (NULL_TREE, arg2_tree),
 				  NULL_TREE, NULL, NULL, NULL_TREE,
-				  TRUE);
+				  TRUE,
+				  ffebld_nonter_hook (expr));
 	expr_tree = ffecom_modify (NULL_TREE, arg1_tree,
 				   convert (TREE_TYPE (arg1_tree),
 					    expr_tree));
       }
       return expr_tree;
 
-    /* Straightforward calls of libf2c routines: */
+      /* Straightforward calls of libf2c routines: */
     case FFEINTRIN_impABORT:
     case FFEINTRIN_impACCESS:
     case FFEINTRIN_impBESJ0:
@@ -5290,890 +5245,20 @@ ffecom_expr_intrinsic_ (ffebld expr, tree dest_tree,
 
   assert (gfrt != FFECOM_gfrt);	/* Must have an implementation! */
 
-  ffecom_push_calltemps ();
   expr_tree = ffecom_arglist_expr_ (ffecom_gfrt_args_ (gfrt),
 				    ffebld_right (expr));
-  ffecom_pop_calltemps ();
 
   return ffecom_call_ (ffecom_gfrt_tree_ (gfrt), ffecom_gfrt_kindtype (gfrt),
 		       (ffe_is_f2c_library () && ffecom_gfrt_complex_[gfrt]),
 		       tree_type,
 		       expr_tree, dest_tree, dest, dest_used,
-		       NULL_TREE, TRUE);
-
-  /**INDENT* (Do not reformat this comment even with -fca option.)
-   Data-gathering files: Given the source file listed below, compiled with
-   f2c I obtained the output file listed after that, and from the output
-   file I derived the above code.
-
--------- (begin input file to f2c)
-	implicit none
-	character*10 A1,A2
-	complex C1,C2
-	integer I1,I2
-	real R1,R2
-	double precision D1,D2
-C
-	call getem(A1,A2,C1,C2,I1,I2,R1,R2,D1,D2)
-c /
-	call fooI(I1/I2)
-	call fooR(R1/I1)
-	call fooD(D1/I1)
-	call fooC(C1/I1)
-	call fooR(R1/R2)
-	call fooD(R1/D1)
-	call fooD(D1/D2)
-	call fooD(D1/R1)
-	call fooC(C1/C2)
-	call fooC(C1/R1)
-	call fooZ(C1/D1)
-c **
-	call fooI(I1**I2)
-	call fooR(R1**I1)
-	call fooD(D1**I1)
-	call fooC(C1**I1)
-	call fooR(R1**R2)
-	call fooD(R1**D1)
-	call fooD(D1**D2)
-	call fooD(D1**R1)
-	call fooC(C1**C2)
-	call fooC(C1**R1)
-	call fooZ(C1**D1)
-c FFEINTRIN_impABS
-	call fooR(ABS(R1))
-c FFEINTRIN_impACOS
-	call fooR(ACOS(R1))
-c FFEINTRIN_impAIMAG
-	call fooR(AIMAG(C1))
-c FFEINTRIN_impAINT
-	call fooR(AINT(R1))
-c FFEINTRIN_impALOG
-	call fooR(ALOG(R1))
-c FFEINTRIN_impALOG10
-	call fooR(ALOG10(R1))
-c FFEINTRIN_impAMAX0
-	call fooR(AMAX0(I1,I2))
-c FFEINTRIN_impAMAX1
-	call fooR(AMAX1(R1,R2))
-c FFEINTRIN_impAMIN0
-	call fooR(AMIN0(I1,I2))
-c FFEINTRIN_impAMIN1
-	call fooR(AMIN1(R1,R2))
-c FFEINTRIN_impAMOD
-	call fooR(AMOD(R1,R2))
-c FFEINTRIN_impANINT
-	call fooR(ANINT(R1))
-c FFEINTRIN_impASIN
-	call fooR(ASIN(R1))
-c FFEINTRIN_impATAN
-	call fooR(ATAN(R1))
-c FFEINTRIN_impATAN2
-	call fooR(ATAN2(R1,R2))
-c FFEINTRIN_impCABS
-	call fooR(CABS(C1))
-c FFEINTRIN_impCCOS
-	call fooC(CCOS(C1))
-c FFEINTRIN_impCEXP
-	call fooC(CEXP(C1))
-c FFEINTRIN_impCHAR
-	call fooA(CHAR(I1))
-c FFEINTRIN_impCLOG
-	call fooC(CLOG(C1))
-c FFEINTRIN_impCONJG
-	call fooC(CONJG(C1))
-c FFEINTRIN_impCOS
-	call fooR(COS(R1))
-c FFEINTRIN_impCOSH
-	call fooR(COSH(R1))
-c FFEINTRIN_impCSIN
-	call fooC(CSIN(C1))
-c FFEINTRIN_impCSQRT
-	call fooC(CSQRT(C1))
-c FFEINTRIN_impDABS
-	call fooD(DABS(D1))
-c FFEINTRIN_impDACOS
-	call fooD(DACOS(D1))
-c FFEINTRIN_impDASIN
-	call fooD(DASIN(D1))
-c FFEINTRIN_impDATAN
-	call fooD(DATAN(D1))
-c FFEINTRIN_impDATAN2
-	call fooD(DATAN2(D1,D2))
-c FFEINTRIN_impDCOS
-	call fooD(DCOS(D1))
-c FFEINTRIN_impDCOSH
-	call fooD(DCOSH(D1))
-c FFEINTRIN_impDDIM
-	call fooD(DDIM(D1,D2))
-c FFEINTRIN_impDEXP
-	call fooD(DEXP(D1))
-c FFEINTRIN_impDIM
-	call fooR(DIM(R1,R2))
-c FFEINTRIN_impDINT
-	call fooD(DINT(D1))
-c FFEINTRIN_impDLOG
-	call fooD(DLOG(D1))
-c FFEINTRIN_impDLOG10
-	call fooD(DLOG10(D1))
-c FFEINTRIN_impDMAX1
-	call fooD(DMAX1(D1,D2))
-c FFEINTRIN_impDMIN1
-	call fooD(DMIN1(D1,D2))
-c FFEINTRIN_impDMOD
-	call fooD(DMOD(D1,D2))
-c FFEINTRIN_impDNINT
-	call fooD(DNINT(D1))
-c FFEINTRIN_impDPROD
-	call fooD(DPROD(R1,R2))
-c FFEINTRIN_impDSIGN
-	call fooD(DSIGN(D1,D2))
-c FFEINTRIN_impDSIN
-	call fooD(DSIN(D1))
-c FFEINTRIN_impDSINH
-	call fooD(DSINH(D1))
-c FFEINTRIN_impDSQRT
-	call fooD(DSQRT(D1))
-c FFEINTRIN_impDTAN
-	call fooD(DTAN(D1))
-c FFEINTRIN_impDTANH
-	call fooD(DTANH(D1))
-c FFEINTRIN_impEXP
-	call fooR(EXP(R1))
-c FFEINTRIN_impIABS
-	call fooI(IABS(I1))
-c FFEINTRIN_impICHAR
-	call fooI(ICHAR(A1))
-c FFEINTRIN_impIDIM
-	call fooI(IDIM(I1,I2))
-c FFEINTRIN_impIDNINT
-	call fooI(IDNINT(D1))
-c FFEINTRIN_impINDEX
-	call fooI(INDEX(A1,A2))
-c FFEINTRIN_impISIGN
-	call fooI(ISIGN(I1,I2))
-c FFEINTRIN_impLEN
-	call fooI(LEN(A1))
-c FFEINTRIN_impLGE
-	call fooL(LGE(A1,A2))
-c FFEINTRIN_impLGT
-	call fooL(LGT(A1,A2))
-c FFEINTRIN_impLLE
-	call fooL(LLE(A1,A2))
-c FFEINTRIN_impLLT
-	call fooL(LLT(A1,A2))
-c FFEINTRIN_impMAX0
-	call fooI(MAX0(I1,I2))
-c FFEINTRIN_impMAX1
-	call fooI(MAX1(R1,R2))
-c FFEINTRIN_impMIN0
-	call fooI(MIN0(I1,I2))
-c FFEINTRIN_impMIN1
-	call fooI(MIN1(R1,R2))
-c FFEINTRIN_impMOD
-	call fooI(MOD(I1,I2))
-c FFEINTRIN_impNINT
-	call fooI(NINT(R1))
-c FFEINTRIN_impSIGN
-	call fooR(SIGN(R1,R2))
-c FFEINTRIN_impSIN
-	call fooR(SIN(R1))
-c FFEINTRIN_impSINH
-	call fooR(SINH(R1))
-c FFEINTRIN_impSQRT
-	call fooR(SQRT(R1))
-c FFEINTRIN_impTAN
-	call fooR(TAN(R1))
-c FFEINTRIN_impTANH
-	call fooR(TANH(R1))
-c FFEINTRIN_imp_CMPLX_C
-	call fooC(cmplx(C1,C2))
-c FFEINTRIN_imp_CMPLX_D
-	call fooZ(cmplx(D1,D2))
-c FFEINTRIN_imp_CMPLX_I
-	call fooC(cmplx(I1,I2))
-c FFEINTRIN_imp_CMPLX_R
-	call fooC(cmplx(R1,R2))
-c FFEINTRIN_imp_DBLE_C
-	call fooD(dble(C1))
-c FFEINTRIN_imp_DBLE_D
-	call fooD(dble(D1))
-c FFEINTRIN_imp_DBLE_I
-	call fooD(dble(I1))
-c FFEINTRIN_imp_DBLE_R
-	call fooD(dble(R1))
-c FFEINTRIN_imp_INT_C
-	call fooI(int(C1))
-c FFEINTRIN_imp_INT_D
-	call fooI(int(D1))
-c FFEINTRIN_imp_INT_I
-	call fooI(int(I1))
-c FFEINTRIN_imp_INT_R
-	call fooI(int(R1))
-c FFEINTRIN_imp_REAL_C
-	call fooR(real(C1))
-c FFEINTRIN_imp_REAL_D
-	call fooR(real(D1))
-c FFEINTRIN_imp_REAL_I
-	call fooR(real(I1))
-c FFEINTRIN_imp_REAL_R
-	call fooR(real(R1))
-c
-c FFEINTRIN_imp_INT_D:
-c
-c FFEINTRIN_specIDINT
-	call fooI(IDINT(D1))
-c
-c FFEINTRIN_imp_INT_R:
-c
-c FFEINTRIN_specIFIX
-	call fooI(IFIX(R1))
-c FFEINTRIN_specINT
-	call fooI(INT(R1))
-c
-c FFEINTRIN_imp_REAL_D:
-c
-c FFEINTRIN_specSNGL
-	call fooR(SNGL(D1))
-c
-c FFEINTRIN_imp_REAL_I:
-c
-c FFEINTRIN_specFLOAT
-	call fooR(FLOAT(I1))
-c FFEINTRIN_specREAL
-	call fooR(REAL(I1))
-c
-	end
--------- (end input file to f2c)
-
--------- (begin output from providing above input file as input to:
---------  `f2c | gcc -E -C - | sed -e "s:/[*]*://:g" -e "s:[*]*[/]://:g" \
---------     -e "s:^#.*$::g"')
-
-//  -- translated by f2c (version 19950223).
-   You must link the resulting object file with the libraries:
-        -lf2c -lm   (in that order)
-//
-
-
-// f2c.h  --  Standard Fortran to C header file //
-
-///  barf  [ba:rf]  2.  "He suggested using FORTRAN, and everybody barfed."
-
-        - From The Shogakukan DICTIONARY OF NEW ENGLISH (Second edition) //
-
-
-
-
-// F2C_INTEGER will normally be `int' but would be `long' on 16-bit systems //
-// we assume short, float are OK //
-typedef long int // long int // integer;
-typedef char *address;
-typedef short int shortint;
-typedef float real;
-typedef double doublereal;
-typedef struct { real r, i; } complex;
-typedef struct { doublereal r, i; } doublecomplex;
-typedef long int // long int // logical;
-typedef short int shortlogical;
-typedef char logical1;
-typedef char integer1;
-// typedef long long longint; // // system-dependent //
-
-
-
-
-// Extern is for use with -E //
-
-
-
-
-// I/O stuff //
-
-
-
-
-
-
-
-
-typedef long int // int or long int // flag;
-typedef long int // int or long int // ftnlen;
-typedef long int // int or long int // ftnint;
-
-
-//external read, write//
-typedef struct
-{       flag cierr;
-        ftnint ciunit;
-        flag ciend;
-        char *cifmt;
-        ftnint cirec;
-} cilist;
-
-//internal read, write//
-typedef struct
-{       flag icierr;
-        char *iciunit;
-        flag iciend;
-        char *icifmt;
-        ftnint icirlen;
-        ftnint icirnum;
-} icilist;
-
-//open//
-typedef struct
-{       flag oerr;
-        ftnint ounit;
-        char *ofnm;
-        ftnlen ofnmlen;
-        char *osta;
-        char *oacc;
-        char *ofm;
-        ftnint orl;
-        char *oblnk;
-} olist;
-
-//close//
-typedef struct
-{       flag cerr;
-        ftnint cunit;
-        char *csta;
-} cllist;
-
-//rewind, backspace, endfile//
-typedef struct
-{       flag aerr;
-        ftnint aunit;
-} alist;
-
-// inquire //
-typedef struct
-{       flag inerr;
-        ftnint inunit;
-        char *infile;
-        ftnlen infilen;
-        ftnint  *inex;  //parameters in standard's order//
-        ftnint  *inopen;
-        ftnint  *innum;
-        ftnint  *innamed;
-        char    *inname;
-        ftnlen  innamlen;
-        char    *inacc;
-        ftnlen  inacclen;
-        char    *inseq;
-        ftnlen  inseqlen;
-        char    *indir;
-        ftnlen  indirlen;
-        char    *infmt;
-        ftnlen  infmtlen;
-        char    *inform;
-        ftnint  informlen;
-        char    *inunf;
-        ftnlen  inunflen;
-        ftnint  *inrecl;
-        ftnint  *innrec;
-        char    *inblank;
-        ftnlen  inblanklen;
-} inlist;
-
-
-
-union Multitype {       // for multiple entry points //
-        integer1 g;
-        shortint h;
-        integer i;
-        // longint j; //
-        real r;
-        doublereal d;
-        complex c;
-        doublecomplex z;
-        };
-
-typedef union Multitype Multitype;
-
-typedef long Long;      // No longer used; formerly in Namelist //
-
-struct Vardesc {        // for Namelist //
-        char *name;
-        char *addr;
-        ftnlen *dims;
-        int  type;
-        };
-typedef struct Vardesc Vardesc;
-
-struct Namelist {
-        char *name;
-        Vardesc **vars;
-        int nvars;
-        };
-typedef struct Namelist Namelist;
-
-
-
-
-
-
-
-
-// procedure parameter types for -A and -C++ //
-
-
-
-
-typedef int // Unknown procedure type // (*U_fp)();
-typedef shortint (*J_fp)();
-typedef integer (*I_fp)();
-typedef real (*R_fp)();
-typedef doublereal (*D_fp)(), (*E_fp)();
-typedef // Complex // void  (*C_fp)();
-typedef // Double Complex // void  (*Z_fp)();
-typedef logical (*L_fp)();
-typedef shortlogical (*K_fp)();
-typedef // Character // void  (*H_fp)();
-typedef // Subroutine // int (*S_fp)();
-
-// E_fp is for real functions when -R is not specified //
-typedef void  C_f;      // complex function //
-typedef void  H_f;      // character function //
-typedef void  Z_f;      // double complex function //
-typedef doublereal E_f; // real function with -R not specified //
-
-// undef any lower-case symbols that your C compiler predefines, e.g.: //
-
-
-// (No such symbols should be defined in a strict ANSI C compiler.
-   We can avoid trouble with f2c-translated code by using
-   gcc -ansi [-traditional].) //
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Main program // MAIN__()
-{
-    // System generated locals //
-    integer i__1;
-    real r__1, r__2;
-    doublereal d__1, d__2;
-    complex q__1;
-    doublecomplex z__1, z__2, z__3;
-    logical L__1;
-    char ch__1[1];
-
-    // Builtin functions //
-    void c_div();
-    integer pow_ii();
-    double pow_ri(), pow_di();
-    void pow_ci();
-    double pow_dd();
-    void pow_zz();
-    double acos(), r_imag(), r_int(), log(), r_lg10(), r_mod(), r_nint(), 
-            asin(), atan(), atan2(), c_abs();
-    void c_cos(), c_exp(), c_log(), r_cnjg();
-    double cos(), cosh();
-    void c_sin(), c_sqrt();
-    double d_dim(), exp(), r_dim(), d_int(), d_lg10(), d_mod(), d_nint(), 
-            d_sign(), sin(), sinh(), sqrt(), tan(), tanh();
-    integer i_dim(), i_dnnt(), i_indx(), i_sign(), i_len();
-    logical l_ge(), l_gt(), l_le(), l_lt();
-    integer i_nint();
-    double r_sign();
-
-    // Local variables //
-    extern // Subroutine // int fooa_(), fooc_(), food_(), fooi_(), foor_(), 
-            fool_(), fooz_(), getem_();
-    static char a1[10], a2[10];
-    static complex c1, c2;
-    static doublereal d1, d2;
-    static integer i1, i2;
-    static real r1, r2;
-
-
-    getem_(a1, a2, &c1, &c2, &i1, &i2, &r1, &r2, &d1, &d2, 10L, 10L);
-// / //
-    i__1 = i1 / i2;
-    fooi_(&i__1);
-    r__1 = r1 / i1;
-    foor_(&r__1);
-    d__1 = d1 / i1;
-    food_(&d__1);
-    d__1 = (doublereal) i1;
-    q__1.r = c1.r / d__1, q__1.i = c1.i / d__1;
-    fooc_(&q__1);
-    r__1 = r1 / r2;
-    foor_(&r__1);
-    d__1 = r1 / d1;
-    food_(&d__1);
-    d__1 = d1 / d2;
-    food_(&d__1);
-    d__1 = d1 / r1;
-    food_(&d__1);
-    c_div(&q__1, &c1, &c2);
-    fooc_(&q__1);
-    q__1.r = c1.r / r1, q__1.i = c1.i / r1;
-    fooc_(&q__1);
-    z__1.r = c1.r / d1, z__1.i = c1.i / d1;
-    fooz_(&z__1);
-// ** //
-    i__1 = pow_ii(&i1, &i2);
-    fooi_(&i__1);
-    r__1 = pow_ri(&r1, &i1);
-    foor_(&r__1);
-    d__1 = pow_di(&d1, &i1);
-    food_(&d__1);
-    pow_ci(&q__1, &c1, &i1);
-    fooc_(&q__1);
-    d__1 = (doublereal) r1;
-    d__2 = (doublereal) r2;
-    r__1 = pow_dd(&d__1, &d__2);
-    foor_(&r__1);
-    d__2 = (doublereal) r1;
-    d__1 = pow_dd(&d__2, &d1);
-    food_(&d__1);
-    d__1 = pow_dd(&d1, &d2);
-    food_(&d__1);
-    d__2 = (doublereal) r1;
-    d__1 = pow_dd(&d1, &d__2);
-    food_(&d__1);
-    z__2.r = c1.r, z__2.i = c1.i;
-    z__3.r = c2.r, z__3.i = c2.i;
-    pow_zz(&z__1, &z__2, &z__3);
-    q__1.r = z__1.r, q__1.i = z__1.i;
-    fooc_(&q__1);
-    z__2.r = c1.r, z__2.i = c1.i;
-    z__3.r = r1, z__3.i = 0.;
-    pow_zz(&z__1, &z__2, &z__3);
-    q__1.r = z__1.r, q__1.i = z__1.i;
-    fooc_(&q__1);
-    z__2.r = c1.r, z__2.i = c1.i;
-    z__3.r = d1, z__3.i = 0.;
-    pow_zz(&z__1, &z__2, &z__3);
-    fooz_(&z__1);
-// FFEINTRIN_impABS //
-    r__1 = (doublereal)((  r1  ) >= 0 ? (  r1  ) : -(  r1  ))  ;
-    foor_(&r__1);
-// FFEINTRIN_impACOS //
-    r__1 = acos(r1);
-    foor_(&r__1);
-// FFEINTRIN_impAIMAG //
-    r__1 = r_imag(&c1);
-    foor_(&r__1);
-// FFEINTRIN_impAINT //
-    r__1 = r_int(&r1);
-    foor_(&r__1);
-// FFEINTRIN_impALOG //
-    r__1 = log(r1);
-    foor_(&r__1);
-// FFEINTRIN_impALOG10 //
-    r__1 = r_lg10(&r1);
-    foor_(&r__1);
-// FFEINTRIN_impAMAX0 //
-    r__1 = (real) (( i1 ) >= ( i2 ) ? ( i1 ) : ( i2 )) ;
-    foor_(&r__1);
-// FFEINTRIN_impAMAX1 //
-    r__1 = (doublereal)((  r1  ) >= (  r2  ) ? (  r1  ) : (  r2  ))  ;
-    foor_(&r__1);
-// FFEINTRIN_impAMIN0 //
-    r__1 = (real) (( i1 ) <= ( i2 ) ? ( i1 ) : ( i2 )) ;
-    foor_(&r__1);
-// FFEINTRIN_impAMIN1 //
-    r__1 = (doublereal)((  r1  ) <= (  r2  ) ? (  r1  ) : (  r2  ))  ;
-    foor_(&r__1);
-// FFEINTRIN_impAMOD //
-    r__1 = r_mod(&r1, &r2);
-    foor_(&r__1);
-// FFEINTRIN_impANINT //
-    r__1 = r_nint(&r1);
-    foor_(&r__1);
-// FFEINTRIN_impASIN //
-    r__1 = asin(r1);
-    foor_(&r__1);
-// FFEINTRIN_impATAN //
-    r__1 = atan(r1);
-    foor_(&r__1);
-// FFEINTRIN_impATAN2 //
-    r__1 = atan2(r1, r2);
-    foor_(&r__1);
-// FFEINTRIN_impCABS //
-    r__1 = c_abs(&c1);
-    foor_(&r__1);
-// FFEINTRIN_impCCOS //
-    c_cos(&q__1, &c1);
-    fooc_(&q__1);
-// FFEINTRIN_impCEXP //
-    c_exp(&q__1, &c1);
-    fooc_(&q__1);
-// FFEINTRIN_impCHAR //
-    *(unsigned char *)&ch__1[0] = i1;
-    fooa_(ch__1, 1L);
-// FFEINTRIN_impCLOG //
-    c_log(&q__1, &c1);
-    fooc_(&q__1);
-// FFEINTRIN_impCONJG //
-    r_cnjg(&q__1, &c1);
-    fooc_(&q__1);
-// FFEINTRIN_impCOS //
-    r__1 = cos(r1);
-    foor_(&r__1);
-// FFEINTRIN_impCOSH //
-    r__1 = cosh(r1);
-    foor_(&r__1);
-// FFEINTRIN_impCSIN //
-    c_sin(&q__1, &c1);
-    fooc_(&q__1);
-// FFEINTRIN_impCSQRT //
-    c_sqrt(&q__1, &c1);
-    fooc_(&q__1);
-// FFEINTRIN_impDABS //
-    d__1 = (( d1 ) >= 0 ? ( d1 ) : -( d1 )) ;
-    food_(&d__1);
-// FFEINTRIN_impDACOS //
-    d__1 = acos(d1);
-    food_(&d__1);
-// FFEINTRIN_impDASIN //
-    d__1 = asin(d1);
-    food_(&d__1);
-// FFEINTRIN_impDATAN //
-    d__1 = atan(d1);
-    food_(&d__1);
-// FFEINTRIN_impDATAN2 //
-    d__1 = atan2(d1, d2);
-    food_(&d__1);
-// FFEINTRIN_impDCOS //
-    d__1 = cos(d1);
-    food_(&d__1);
-// FFEINTRIN_impDCOSH //
-    d__1 = cosh(d1);
-    food_(&d__1);
-// FFEINTRIN_impDDIM //
-    d__1 = d_dim(&d1, &d2);
-    food_(&d__1);
-// FFEINTRIN_impDEXP //
-    d__1 = exp(d1);
-    food_(&d__1);
-// FFEINTRIN_impDIM //
-    r__1 = r_dim(&r1, &r2);
-    foor_(&r__1);
-// FFEINTRIN_impDINT //
-    d__1 = d_int(&d1);
-    food_(&d__1);
-// FFEINTRIN_impDLOG //
-    d__1 = log(d1);
-    food_(&d__1);
-// FFEINTRIN_impDLOG10 //
-    d__1 = d_lg10(&d1);
-    food_(&d__1);
-// FFEINTRIN_impDMAX1 //
-    d__1 = (( d1 ) >= ( d2 ) ? ( d1 ) : ( d2 )) ;
-    food_(&d__1);
-// FFEINTRIN_impDMIN1 //
-    d__1 = (( d1 ) <= ( d2 ) ? ( d1 ) : ( d2 )) ;
-    food_(&d__1);
-// FFEINTRIN_impDMOD //
-    d__1 = d_mod(&d1, &d2);
-    food_(&d__1);
-// FFEINTRIN_impDNINT //
-    d__1 = d_nint(&d1);
-    food_(&d__1);
-// FFEINTRIN_impDPROD //
-    d__1 = (doublereal) r1 * r2;
-    food_(&d__1);
-// FFEINTRIN_impDSIGN //
-    d__1 = d_sign(&d1, &d2);
-    food_(&d__1);
-// FFEINTRIN_impDSIN //
-    d__1 = sin(d1);
-    food_(&d__1);
-// FFEINTRIN_impDSINH //
-    d__1 = sinh(d1);
-    food_(&d__1);
-// FFEINTRIN_impDSQRT //
-    d__1 = sqrt(d1);
-    food_(&d__1);
-// FFEINTRIN_impDTAN //
-    d__1 = tan(d1);
-    food_(&d__1);
-// FFEINTRIN_impDTANH //
-    d__1 = tanh(d1);
-    food_(&d__1);
-// FFEINTRIN_impEXP //
-    r__1 = exp(r1);
-    foor_(&r__1);
-// FFEINTRIN_impIABS //
-    i__1 = (( i1 ) >= 0 ? ( i1 ) : -( i1 )) ;
-    fooi_(&i__1);
-// FFEINTRIN_impICHAR //
-    i__1 = *(unsigned char *)a1;
-    fooi_(&i__1);
-// FFEINTRIN_impIDIM //
-    i__1 = i_dim(&i1, &i2);
-    fooi_(&i__1);
-// FFEINTRIN_impIDNINT //
-    i__1 = i_dnnt(&d1);
-    fooi_(&i__1);
-// FFEINTRIN_impINDEX //
-    i__1 = i_indx(a1, a2, 10L, 10L);
-    fooi_(&i__1);
-// FFEINTRIN_impISIGN //
-    i__1 = i_sign(&i1, &i2);
-    fooi_(&i__1);
-// FFEINTRIN_impLEN //
-    i__1 = i_len(a1, 10L);
-    fooi_(&i__1);
-// FFEINTRIN_impLGE //
-    L__1 = l_ge(a1, a2, 10L, 10L);
-    fool_(&L__1);
-// FFEINTRIN_impLGT //
-    L__1 = l_gt(a1, a2, 10L, 10L);
-    fool_(&L__1);
-// FFEINTRIN_impLLE //
-    L__1 = l_le(a1, a2, 10L, 10L);
-    fool_(&L__1);
-// FFEINTRIN_impLLT //
-    L__1 = l_lt(a1, a2, 10L, 10L);
-    fool_(&L__1);
-// FFEINTRIN_impMAX0 //
-    i__1 = (( i1 ) >= ( i2 ) ? ( i1 ) : ( i2 )) ;
-    fooi_(&i__1);
-// FFEINTRIN_impMAX1 //
-    i__1 = (integer) (doublereal)((  r1  ) >= (  r2  ) ? (  r1  ) : (  r2  ))  ;
-    fooi_(&i__1);
-// FFEINTRIN_impMIN0 //
-    i__1 = (( i1 ) <= ( i2 ) ? ( i1 ) : ( i2 )) ;
-    fooi_(&i__1);
-// FFEINTRIN_impMIN1 //
-    i__1 = (integer) (doublereal)((  r1  ) <= (  r2  ) ? (  r1  ) : (  r2  ))  ;
-    fooi_(&i__1);
-// FFEINTRIN_impMOD //
-    i__1 = i1 % i2;
-    fooi_(&i__1);
-// FFEINTRIN_impNINT //
-    i__1 = i_nint(&r1);
-    fooi_(&i__1);
-// FFEINTRIN_impSIGN //
-    r__1 = r_sign(&r1, &r2);
-    foor_(&r__1);
-// FFEINTRIN_impSIN //
-    r__1 = sin(r1);
-    foor_(&r__1);
-// FFEINTRIN_impSINH //
-    r__1 = sinh(r1);
-    foor_(&r__1);
-// FFEINTRIN_impSQRT //
-    r__1 = sqrt(r1);
-    foor_(&r__1);
-// FFEINTRIN_impTAN //
-    r__1 = tan(r1);
-    foor_(&r__1);
-// FFEINTRIN_impTANH //
-    r__1 = tanh(r1);
-    foor_(&r__1);
-// FFEINTRIN_imp_CMPLX_C //
-    r__1 = c1.r;
-    r__2 = c2.r;
-    q__1.r = r__1, q__1.i = r__2;
-    fooc_(&q__1);
-// FFEINTRIN_imp_CMPLX_D //
-    z__1.r = d1, z__1.i = d2;
-    fooz_(&z__1);
-// FFEINTRIN_imp_CMPLX_I //
-    r__1 = (real) i1;
-    r__2 = (real) i2;
-    q__1.r = r__1, q__1.i = r__2;
-    fooc_(&q__1);
-// FFEINTRIN_imp_CMPLX_R //
-    q__1.r = r1, q__1.i = r2;
-    fooc_(&q__1);
-// FFEINTRIN_imp_DBLE_C //
-    d__1 = (doublereal) c1.r;
-    food_(&d__1);
-// FFEINTRIN_imp_DBLE_D //
-    d__1 = d1;
-    food_(&d__1);
-// FFEINTRIN_imp_DBLE_I //
-    d__1 = (doublereal) i1;
-    food_(&d__1);
-// FFEINTRIN_imp_DBLE_R //
-    d__1 = (doublereal) r1;
-    food_(&d__1);
-// FFEINTRIN_imp_INT_C //
-    i__1 = (integer) c1.r;
-    fooi_(&i__1);
-// FFEINTRIN_imp_INT_D //
-    i__1 = (integer) d1;
-    fooi_(&i__1);
-// FFEINTRIN_imp_INT_I //
-    i__1 = i1;
-    fooi_(&i__1);
-// FFEINTRIN_imp_INT_R //
-    i__1 = (integer) r1;
-    fooi_(&i__1);
-// FFEINTRIN_imp_REAL_C //
-    r__1 = c1.r;
-    foor_(&r__1);
-// FFEINTRIN_imp_REAL_D //
-    r__1 = (real) d1;
-    foor_(&r__1);
-// FFEINTRIN_imp_REAL_I //
-    r__1 = (real) i1;
-    foor_(&r__1);
-// FFEINTRIN_imp_REAL_R //
-    r__1 = r1;
-    foor_(&r__1);
-
-// FFEINTRIN_imp_INT_D: //
-
-// FFEINTRIN_specIDINT //
-    i__1 = (integer) d1;
-    fooi_(&i__1);
-
-// FFEINTRIN_imp_INT_R: //
-
-// FFEINTRIN_specIFIX //
-    i__1 = (integer) r1;
-    fooi_(&i__1);
-// FFEINTRIN_specINT //
-    i__1 = (integer) r1;
-    fooi_(&i__1);
-
-// FFEINTRIN_imp_REAL_D: //
-
-// FFEINTRIN_specSNGL //
-    r__1 = (real) d1;
-    foor_(&r__1);
-
-// FFEINTRIN_imp_REAL_I: //
-
-// FFEINTRIN_specFLOAT //
-    r__1 = (real) i1;
-    foor_(&r__1);
-// FFEINTRIN_specREAL //
-    r__1 = (real) i1;
-    foor_(&r__1);
-
-} // MAIN__ //
-
--------- (end output file from f2c)
-
-*/
+		       NULL_TREE, TRUE,
+		       ffebld_nonter_hook (expr));
+
+  /* See bottom of this file for f2c transforms used to determine
+     many of the above implementations.  The info seems to confuse
+     Emacs's C mode indentation, which is why it's been moved to
+     the bottom of this source file.  */
 }
 
 #endif
@@ -6183,10 +5268,10 @@ typedef doublereal E_f; // real function with -R not specified //
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
-ffecom_expr_power_integer_ (ffebld left, ffebld right)
+ffecom_expr_power_integer_ (ffebld expr)
 {
-  tree l = ffecom_expr (left);
-  tree r = ffecom_expr (right);
+  tree l = ffecom_expr (ffebld_left (expr));
+  tree r = ffecom_expr (ffebld_right (expr));
   tree ltype = TREE_TYPE (l);
   tree rtype = TREE_TYPE (r);
   tree result = NULL_TREE;
@@ -6212,7 +5297,7 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
 	  result = ffecom_tree_divide_ (ltype,
 					convert (ltype, integer_one_node),
 					l,
-					NULL_TREE, NULL, NULL);
+					NULL_TREE, NULL, NULL, NULL_TREE);
 	  r = ffecom_1 (NEGATE_EXPR,
 			rtype,
 			r);
@@ -6231,7 +5316,8 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
 	  l = ffecom_tree_divide_ (ltype,
 				   convert (ltype, integer_one_node),
 				   l,
-				   NULL_TREE, NULL, NULL);
+				   NULL_TREE, NULL, NULL,
+				   ffebld_nonter_hook (expr));
 	  r = ffecom_1 (NEGATE_EXPR, rtype, r);
 	  assert (TREE_CODE (r) == INTEGER_CST);
 
@@ -6351,21 +5437,50 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
   {
     tree rtmp;
     tree ltmp;
+    tree divide;
     tree basetypeof_l_is_int;
     tree se;
+    tree t;
 
     basetypeof_l_is_int
       = build_int_2 ((TREE_CODE (ltype) == INTEGER_TYPE), 0);
 
     se = expand_start_stmt_expr ();
-    ffecom_push_calltemps ();
 
-    rtmp = ffecom_push_tempvar (rtype, FFETARGET_charactersizeNONE, -1,
-				TRUE);
-    ltmp = ffecom_push_tempvar (ltype, FFETARGET_charactersizeNONE, -1,
-				TRUE);
-    result = ffecom_push_tempvar (ltype, FFETARGET_charactersizeNONE, -1,
-				  TRUE);
+    ffecom_start_compstmt ();
+
+#ifndef HAHA
+    rtmp = ffecom_make_tempvar ("power_r", rtype,
+				FFETARGET_charactersizeNONE, -1);
+    ltmp = ffecom_make_tempvar ("power_l", ltype,
+				FFETARGET_charactersizeNONE, -1);
+    result = ffecom_make_tempvar ("power_res", ltype,
+				  FFETARGET_charactersizeNONE, -1);
+    if (TREE_CODE (ltype) == COMPLEX_TYPE
+	|| TREE_CODE (ltype) == RECORD_TYPE)
+      divide = ffecom_make_tempvar ("power_div", ltype,
+				    FFETARGET_charactersizeNONE, -1);
+    else
+      divide = NULL_TREE;
+#else  /* HAHA */
+    {
+      tree hook;
+
+      hook = ffebld_nonter_hook (expr);
+      assert (hook);
+      assert (TREE_CODE (hook) == TREE_VEC);
+      assert (TREE_VEC_LENGTH (hook) == 4);
+      rtmp = TREE_VEC_ELT (hook, 0);
+      ltmp = TREE_VEC_ELT (hook, 1);
+      result = TREE_VEC_ELT (hook, 2);
+      divide = TREE_VEC_ELT (hook, 3);
+      if (TREE_CODE (ltype) == COMPLEX_TYPE
+	  || TREE_CODE (ltype) == RECORD_TYPE)
+	assert (divide);
+      else
+	assert (! divide);
+    }
+#endif  /* HAHA */
 
     expand_expr_stmt (ffecom_modify (void_type_node,
 				     rtmp,
@@ -6382,7 +5497,7 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
 				     result,
 				     convert (ltype, integer_one_node)));
     expand_start_else ();
-    if (!integer_zerop (basetypeof_l_is_int))
+    if (! integer_zerop (basetypeof_l_is_int))
       {
 	expand_start_cond (ffecom_2 (LT_EXPR, integer_type_node,
 				     rtmp,
@@ -6395,7 +5510,8 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
 					 (ltype,
 					  convert (ltype, integer_one_node),
 					  ltmp,
-					  NULL_TREE, NULL, NULL)));
+					  NULL_TREE, NULL, NULL,
+					  divide)));
 	expand_start_cond (ffecom_truth_value
 			   (ffecom_2 (TRUTH_ANDIF_EXPR, integer_type_node,
 				      ffecom_2 (LT_EXPR, integer_type_node,
@@ -6439,7 +5555,8 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
 				     (ltype,
 				      convert (ltype, integer_one_node),
 				      ltmp,
-				      NULL_TREE, NULL, NULL)));
+				      NULL_TREE, NULL, NULL,
+				      divide)));
     expand_expr_stmt (ffecom_modify (void_type_node,
 				     rtmp,
 				     ffecom_1 (NEGATE_EXPR, rtype,
@@ -6494,9 +5611,24 @@ ffecom_expr_power_integer_ (ffebld left, ffebld right)
       expand_end_cond ();
     expand_expr_stmt (result);
 
-    ffecom_pop_calltemps ();
+    t = ffecom_end_compstmt ();
+
     result = expand_end_stmt_expr (se);
-    TREE_SIDE_EFFECTS (result) = 1;
+
+    /* This code comes from c-parse.in, after its expand_end_stmt_expr.  */
+
+    if (TREE_CODE (t) == BLOCK)
+      {
+	/* Make a BIND_EXPR for the BLOCK already made.  */
+	result = build (BIND_EXPR, TREE_TYPE (result),
+			NULL_TREE, result, t);
+	/* Remove the block from the tree at this point.
+	   It gets put back at the proper place
+	   when the BIND_EXPR is expanded.  */
+	delete_block (t);
+      }
+    else
+      result = t;
   }
 
   return result;
@@ -6634,7 +5766,7 @@ ffecom_f2c_make_type_ (tree *type, int tcode, const char *name)
 
   pushdecl (build_decl (TYPE_DECL,
 			ffecom_get_invented_identifier ("__g77_f2c_%s",
-							name, 0),
+							name, -1),
 			*type));
 }
 
@@ -6904,8 +6036,6 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
 
   push_f_function_context ();
 
-  ffecom_push_calltemps ();
-
   if (charfunc)
     type = void_type_node;
   else
@@ -6934,7 +6064,7 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
       type = ffecom_tree_type[FFEINFO_basictypeCHARACTER][kt];
 
       result = ffecom_get_invented_identifier ("__g77_%s",
-					       "result", 0);
+					       "result", -1);
 
       ffecom_char_enhance_arg_ (&type, s);	/* Ignore returned length. */
 
@@ -6952,7 +6082,7 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
 
   store_parm_decls (0);
 
-  ffecom_start_compstmt_ ();
+  ffecom_start_compstmt ();
 
   if (expr != NULL)
     {
@@ -6964,23 +6094,31 @@ ffecom_gen_sfuncdef_ (ffesymbol s, ffeinfoBasictype bt, ffeinfoKindtype kt)
 	  result_length = build_int_2 (sz, 0);
 	  TREE_TYPE (result_length) = ffecom_f2c_ftnlen_type_node;
 
+	  ffecom_prepare_let_char_ (sz, expr);
+
+	  ffecom_prepare_end ();
+
 	  ffecom_let_char_ (result, result_length, sz, expr);
 	  expand_null_return ();
 	}
       else
-	expand_return (ffecom_modify (NULL_TREE,
-				      DECL_RESULT (current_function_decl),
-				      ffecom_expr (expr)));
+	{
+	  ffecom_prepare_expr (expr);
+
+	  ffecom_prepare_end ();
+
+	  expand_return (ffecom_modify (NULL_TREE,
+					DECL_RESULT (current_function_decl),
+					ffecom_expr (expr)));
+	}
 
       clear_momentary ();
     }
 
-  ffecom_end_compstmt_ ();
+  ffecom_end_compstmt ();
 
   func = current_function_decl;
   finish_function (1);
-
-  ffecom_pop_calltemps ();
 
   pop_f_function_context ();
 
@@ -7105,9 +6243,7 @@ ffecom_intrinsic_ichar_ (tree tree_type, ffebld arg,
     case FFEBLD_opARRAYREF:
     case FFEBLD_opFUNCREF:
     case FFEBLD_opSUBSTR:
-      ffecom_push_calltemps ();
       ffecom_char_args_ (&expr_tree, &length_tree, arg);
-      ffecom_pop_calltemps ();
 
       if ((expr_tree == error_mark_node)
 	  || (length_tree == error_mark_node))
@@ -7333,13 +6469,7 @@ ffecom_intrinsic_len_ (ffebld expr)
 }
 
 #endif
-/* ffecom_let_char_ -- Do assignment stuff for character type
-
-   tree dest_tree;  // destination (ADDR_EXPR)
-   tree dest_length;  // length (INT_CST/INDIRECT_REF(PARM_DECL))
-   ffetargetCharacterSize dest_size;  // length
-   ffebld source;  // source expression
-   ffecom_let_char_(dest_tree,dest_length,dest_size,source);
+/* Handle CHARACTER assignments.
 
    Generates code to do the assignment.	 Used by ordinary assignment
    statement handler ffecom_let_stmt and by statement-function
@@ -7386,7 +6516,7 @@ ffecom_let_char_ (tree dest_tree, tree dest_length,
       TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (expr_tree)))
 	= build_tree_list (NULL_TREE, source_length);
 
-      expr_tree = ffecom_call_gfrt (FFECOM_gfrtCOPY, expr_tree);
+      expr_tree = ffecom_call_gfrt (FFECOM_gfrtCOPY, expr_tree, NULL_TREE);
       TREE_SIDE_EFFECTS (expr_tree) = 1;
 
       expand_expr_stmt (expr_tree);
@@ -7443,7 +6573,7 @@ ffecom_let_char_ (tree dest_tree, tree dest_length,
       TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (expr_tree)))
 	= build_tree_list (NULL_TREE, source_length);
 
-      expr_tree = ffecom_call_gfrt (FFECOM_gfrtCOPY, expr_tree);
+      expr_tree = ffecom_call_gfrt (FFECOM_gfrtCOPY, expr_tree, NULL_TREE);
       TREE_SIDE_EFFECTS (expr_tree) = 1;
 
       expand_expr_stmt (expr_tree);
@@ -7466,6 +6596,7 @@ ffecom_let_char_ (tree dest_tree, tree dest_length,
     tree citem;
     tree clength;
 
+#ifdef HOHO
     length_array
       = lengths
       = ffecom_push_tempvar (ffecom_f2c_ftnlen_type_node,
@@ -7473,6 +6604,18 @@ ffecom_let_char_ (tree dest_tree, tree dest_length,
     item_array = items = ffecom_push_tempvar (ffecom_f2c_address_type_node,
 					      FFETARGET_charactersizeNONE,
 					      count, TRUE);
+#else
+    {
+      tree hook;
+
+      hook = ffebld_nonter_hook (source);
+      assert (hook);
+      assert (TREE_CODE (hook) == TREE_VEC);
+      assert (TREE_VEC_LENGTH (hook) == 2);
+      length_array = lengths = TREE_VEC_ELT (hook, 0);
+      item_array = items = TREE_VEC_ELT (hook, 1);
+    }
+#endif
 
     for (i = 0; i < count; ++i)
       {
@@ -7525,7 +6668,7 @@ ffecom_let_char_ (tree dest_tree, tree dest_length,
     TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (expr_tree))))
       = build_tree_list (NULL_TREE, dest_length);
 
-    expr_tree = ffecom_call_gfrt (FFECOM_gfrtCAT, expr_tree);
+    expr_tree = ffecom_call_gfrt (FFECOM_gfrtCAT, expr_tree, NULL_TREE);
     TREE_SIDE_EFFECTS (expr_tree) = 1;
 
     expand_expr_stmt (expr_tree);
@@ -7704,6 +6847,51 @@ ffecom_member_phase2_ (ffestorag mst, ffestorag st)
 
 #endif
 #endif
+/* Prepare source expression for assignment into a destination perhaps known
+   to be of a specific size.  */
+
+static void
+ffecom_prepare_let_char_ (ffetargetCharacterSize dest_size, ffebld source)
+{
+  ffecomConcatList_ catlist;
+  int count;
+  int i;
+  tree ltmp;
+  tree itmp;
+  tree tempvar = NULL_TREE;
+
+  while (ffebld_op (source) == FFEBLD_opCONVERT)
+    source = ffebld_left (source);
+
+  catlist = ffecom_concat_list_new_ (source, dest_size);
+  count = ffecom_concat_list_count_ (catlist);
+
+  if (count >= 2)
+    {
+      ltmp
+	= ffecom_make_tempvar ("let_char_len", ffecom_f2c_ftnlen_type_node,
+			       FFETARGET_charactersizeNONE, count);
+      itmp
+	= ffecom_make_tempvar ("let_char_item", ffecom_f2c_address_type_node,
+			       FFETARGET_charactersizeNONE, count);
+
+      tempvar = make_tree_vec (2);
+      TREE_VEC_ELT (tempvar, 0) = ltmp;
+      TREE_VEC_ELT (tempvar, 1) = itmp;
+    }
+
+  for (i = 0; i < count; ++i)
+    ffecom_prepare_arg_ptr_to_expr (ffecom_concat_list_expr_ (catlist, i));
+
+  ffecom_concat_list_kill_ (catlist);
+
+  if (tempvar)
+    {
+      ffebld_nonter_set_hook (source, tempvar);
+      current_binding_level->prep_state = 1;
+    }
+}
+
 /* ffecom_push_dummy_decls_ -- Transform dummy args, push parm decls in order
 
    Ignores STAR (alternate-return) dummies.  All other get exec-transitioned
@@ -7920,7 +7108,7 @@ ffecom_start_progunit_ ()
     {
       id = ffecom_get_invented_identifier ("__g77_masterfun_%s",
 					   ffesymbol_text (fn),
-					   0);
+					   -1);
     }
 #if FFETARGET_isENFORCED_MAIN
   else if (main_program)
@@ -7956,7 +7144,7 @@ ffecom_start_progunit_ ()
 	= build_decl (PARM_DECL,
 		      ffecom_get_invented_identifier ("__g77_%s",
 						      "which_entrypoint",
-						      0),
+						      -1),
 		      integer_type_node);
       push_parm_decl (ffecom_which_entrypoint_decl_);
     }
@@ -7976,7 +7164,7 @@ ffecom_start_progunit_ ()
 	type = ffecom_multi_type_node_;
 
       result = ffecom_get_invented_identifier ("__g77_%s",
-					       "result", 0);
+					       "result", -1);
 
       /* Make length arg _and_ enhance type info for CHAR arg itself.  */
 
@@ -8015,7 +7203,9 @@ ffecom_start_progunit_ ()
   if (TREE_CODE (current_function_decl) != ERROR_MARK)
     store_parm_decls (main_program ? 1 : 0);
 
-  ffecom_start_compstmt_ ();
+  ffecom_start_compstmt ();
+  /* Disallow temp vars at this level.  */
+  current_binding_level->prep_state = 2;
 
   lineno = old_lineno;
   input_filename = old_input_filename;
@@ -8051,6 +7241,20 @@ ffecom_sym_transform_ (ffesymbol s)
   int yes;
   int old_lineno = lineno;
   char *old_input_filename = input_filename;
+
+  /* Must ensure special ASSIGN variables are declared at top of outermost
+     block, else they'll end up in the innermost block when their first
+     ASSIGN is seen, which leaves them out of scope when they're the
+     subject of a GOTO or I/O statement.
+
+     We make this variable even if -fugly-assign.  Just let it go unused,
+     in case it turns out there are cases where we really want to use this
+     variable anyway (e.g. ASSIGN to INTEGER*2 variable).  */
+
+  if (! ffecom_transform_only_dummies_
+      && ffesymbol_assigned (s)
+      && ! ffesymbol_hook (s).assign_tree)
+    s = ffecom_sym_transform_assign_ (s);
 
   if (ffesymbol_sfdummyparent (s) == NULL)
     {
@@ -8144,7 +7348,8 @@ ffecom_sym_transform_ (ffesymbol s)
       switch (ffeinfo_where (ffesymbol_info (s)))
 	{
 
-	case FFEINFO_whereCONSTANT:	/* ~~debugging info needed? */
+	case FFEINFO_whereCONSTANT:
+	  /* ~~Debugging info needed? */
 	  assert (!ffecom_transform_only_dummies_);
 	  t = error_mark_node;	/* Shouldn't ever see this in expr. */
 	  break;
@@ -8547,13 +7752,13 @@ ffecom_sym_transform_ (ffesymbol s)
 				   ffecom_integer_zero_node);
 #endif
 
-		/* ~~~gcc/stor-layout.c/layout_type should do this,
+		/* ~~~gcc/stor-layout.c (layout_type) should do this,
 		   probably.  Fixes 950302-1.f.  */
 
 		if (TREE_CODE (low) != INTEGER_CST)
 		  low = variable_size (low);
 
-		/* ~~~similarly, this fixes dumb0.f.  The C front end
+		/* ~~~Similarly, this fixes dumb0.f.  The C front end
 		   does this, which is why dumb0.c would work.  */
 
 		if (high && TREE_CODE (high) != INTEGER_CST)
@@ -9122,7 +8327,7 @@ ffecom_sym_transform_assign_ (ffesymbol s)
   t = build_decl (VAR_DECL,
 		  ffecom_get_invented_identifier ("__g77_ASSIGN_%s",
 						   ffesymbol_text (s),
-						   0),
+						   -1),
 		  TREE_TYPE (null_pointer_node));
 
   switch (ffesymbol_where (s))
@@ -9442,7 +8647,7 @@ ffecom_transform_equiv_ (ffestorag eqst)
 						    ffesymbol_text
 						    (ffestorag_symbol
 						     (eqst)),
-						    0),
+						    -1),
 		    eqtype);
   DECL_EXTERNAL (eqt) = 0;
   if (is_init
@@ -9847,7 +9052,8 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset,
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
 ffecom_tree_divide_ (tree tree_type, tree left, tree right,
-		     tree dest_tree, ffebld dest, bool *dest_used)
+		     tree dest_tree, ffebld dest, bool *dest_used,
+		     tree hook)
 {
   if ((left == error_mark_node)
       || (right == error_mark_node))
@@ -9886,7 +9092,7 @@ ffecom_tree_divide_ (tree tree_type, tree left, tree right,
 			     tree_type,
 			     left,
 			     dest_tree, dest, dest_used,
-			     NULL_TREE, TRUE);
+			     NULL_TREE, TRUE, hook);
       }
       break;
 
@@ -9916,7 +9122,7 @@ ffecom_tree_divide_ (tree tree_type, tree left, tree right,
 			     tree_type,
 			     left,
 			     dest_tree, dest, dest_used,
-			     NULL_TREE, TRUE);
+			     NULL_TREE, TRUE, hook);
       }
       break;
 
@@ -9928,16 +9134,7 @@ ffecom_tree_divide_ (tree tree_type, tree left, tree right,
 }
 
 #endif
-/* ffecom_type_localvar_ -- Build type info for non-dummy variable
-
-   tree type;
-   ffesymbol s;	 // the variable's symbol
-   ffeinfoBasictype bt;	 // it's basictype
-   ffeinfoKindtype kt; // it's kindtype
-
-   type = ffecom_type_localvar_(s,bt,kt);
-
-   Handles static arrays, CHARACTER type, etc.	*/
+/* Build type info for non-dummy variable.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
@@ -10900,6 +10097,7 @@ ffecom_3s (enum tree_code code, tree type, tree node1,
 }
 
 #endif
+
 /* ffecom_arg_expr -- Transform argument expr into gcc tree
 
    See use by ffecom_list_expr.
@@ -10935,6 +10133,51 @@ ffecom_arg_expr (ffebld expr, tree *length)
 }
 
 #endif
+/* Transform expression into constant argument-pointer-to-expression tree.
+
+   If the expression can be transformed into a argument-pointer-to-expression
+   tree that is constant, that is done, and the tree returned.  Else
+   NULL_TREE is returned.
+
+   That way, a caller can attempt to provide compile-time initialization
+   of a variable and, if that fails, *then* choose to start a new block
+   and resort to using temporaries, as appropriate.  */
+
+tree
+ffecom_arg_ptr_to_const_expr (ffebld expr, tree *length)
+{
+  if (! expr)
+    return integer_zero_node;
+
+  if (ffebld_op (expr) == FFEBLD_opANY)
+    {
+      if (length)
+	*length = error_mark_node;
+      return error_mark_node;
+    }
+
+  if (ffebld_arity (expr) == 0
+      && (ffebld_op (expr) != FFEBLD_opSYMTER
+	  || ffebld_where (expr) == FFEINFO_whereCOMMON
+	  || ffebld_where (expr) == FFEINFO_whereGLOBAL
+	  || ffebld_where (expr) == FFEINFO_whereINTRINSIC))
+    {
+      tree t;
+
+      t = ffecom_arg_ptr_to_expr (expr, length);
+      assert (TREE_CONSTANT (t));
+      assert (! length || TREE_CONSTANT (*length));
+      return t;
+    }
+
+  if (length
+      && ffebld_size (expr) != FFETARGET_charactersizeNONE)
+    *length = build_int_2 (ffebld_size (expr), 0);
+  else if (length)
+    *length = NULL_TREE;
+  return NULL_TREE;
+}
+
 /* ffecom_arg_ptr_to_expr -- Transform argument expr into gcc tree
 
    See use by ffecom_list_ptr_to_expr.
@@ -11083,6 +10326,11 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
     tree known_length;
     ffetargetCharacterSize sz;
 
+    sz = ffecom_concat_list_maxlen_ (catlist);
+    /* ~~Kludge! */
+    assert (sz != FFETARGET_charactersizeNONE);
+
+#ifdef HOHO
     length_array
       = lengths
       = ffecom_push_tempvar (ffecom_f2c_ftnlen_type_node,
@@ -11091,6 +10339,21 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
       = items
       = ffecom_push_tempvar (ffecom_f2c_address_type_node,
 			     FFETARGET_charactersizeNONE, count, TRUE);
+    temporary = ffecom_push_tempvar (char_type_node,
+				     sz, -1, TRUE);
+#else
+    {
+      tree hook;
+
+      hook = ffebld_nonter_hook (expr);
+      assert (hook);
+      assert (TREE_CODE (hook) == TREE_VEC);
+      assert (TREE_VEC_LENGTH (hook) == 3);
+      length_array = lengths = TREE_VEC_ELT (hook, 0);
+      item_array = items = TREE_VEC_ELT (hook, 1);
+      temporary = TREE_VEC_ELT (hook, 2);
+    }
+#endif
 
     known_length = ffecom_f2c_ftnlen_zero_node;
 
@@ -11137,11 +10400,6 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
 		      lengths);
       }
 
-    sz = ffecom_concat_list_maxlen_ (catlist);
-    assert (sz != FFETARGET_charactersizeNONE);
-
-    temporary = ffecom_push_tempvar (char_type_node,
-				     sz, -1, TRUE);
     temporary = ffecom_1 (ADDR_EXPR,
 			  build_pointer_type (TREE_TYPE (temporary)),
 			  temporary);
@@ -11168,7 +10426,7 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
     TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (item))))
       = build_tree_list (NULL_TREE, num);
 
-    item = ffecom_call_gfrt (FFECOM_gfrtCAT, item);
+    item = ffecom_call_gfrt (FFECOM_gfrtCAT, item, NULL_TREE);
     TREE_SIDE_EFFECTS (item) = 1;
     item = ffecom_2 (COMPOUND_EXPR, TREE_TYPE (temporary),
 		     item,
@@ -11184,10 +10442,7 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
 }
 
 #endif
-/* ffecom_call_gfrt -- Generate call to run-time function
-
-   tree expr;
-   expr = ffecom_call_gfrt(FFECOM_gfrtSTOPNIL,NULL_TREE);
+/* Generate call to run-time function.
 
    The first arg is the GNU Fortran Run-Time function index, the second
    arg is the list of arguments to pass to it.	Returned is the expression
@@ -11196,23 +10451,17 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
-ffecom_call_gfrt (ffecomGfrt ix, tree args)
+ffecom_call_gfrt (ffecomGfrt ix, tree args, tree hook)
 {
   return ffecom_call_ (ffecom_gfrt_tree_ (ix),
 		       ffecom_gfrt_kindtype (ix),
 		       ffe_is_f2c_library () && ffecom_gfrt_complex_[ix],
 		       NULL_TREE, args, NULL_TREE, NULL,
-		       NULL, NULL_TREE, TRUE);
+		       NULL, NULL_TREE, TRUE, hook);
 }
 #endif
 
-/* ffecom_constantunion -- Transform constant-union to tree
-
-   ffebldConstantUnion cu;  // the constant to transform
-   ffeinfoBasictype bt;	 // its basic type
-   ffeinfoKindtype kt;	// its kind type
-   tree tree_type;  // ffecom_tree_type[bt][kt]
-   ffecom_constantunion(&cu,bt,kt,tree_type);  */
+/* Transform constant-union to tree.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
@@ -11484,6 +10733,43 @@ ffecom_constantunion (ffebldConstantUnion *cu, ffeinfoBasictype bt,
 
 #endif
 
+/* Transform expression into constant tree.
+
+   If the expression can be transformed into a tree that is constant,
+   that is done, and the tree returned.  Else NULL_TREE is returned.
+
+   That way, a caller can attempt to provide compile-time initialization
+   of a variable and, if that fails, *then* choose to start a new block
+   and resort to using temporaries, as appropriate.  */
+
+tree
+ffecom_const_expr (ffebld expr)
+{
+  if (! expr)
+    return integer_zero_node;
+
+  if (ffebld_op (expr) == FFEBLD_opANY)
+    return error_mark_node;
+
+  if (ffebld_arity (expr) == 0
+      && (ffebld_op (expr) != FFEBLD_opSYMTER
+#if NEWCOMMON
+	  /* ~~Enable once common/equivalence is handled properly?  */
+	  || ffebld_where (expr) == FFEINFO_whereCOMMON
+#endif
+	  || ffebld_where (expr) == FFEINFO_whereGLOBAL
+	  || ffebld_where (expr) == FFEINFO_whereINTRINSIC))
+    {
+      tree t;
+
+      t = ffecom_expr (expr);
+      assert (TREE_CONSTANT (t));
+      return t;
+    }
+
+  return NULL_TREE;
+}
+
 /* Handy way to make a field in a struct/union.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
@@ -11521,6 +10807,16 @@ ffecom_decode_include_option (char *spec)
   return 1;
 #endif
 }
+
+/* End a compound statement (block).  */
+
+#if FFECOM_targetCURRENT == FFECOM_targetGCC
+tree
+ffecom_end_compstmt (void)
+{
+  return bison_rule_compstmt_ ();
+}
+#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 /* ffecom_end_transition -- Perform end transition on all symbols
 
@@ -11643,11 +10939,7 @@ ffecom_exec_transition ()
     ffebad_set_inhibit (TRUE);
 }
 
-/* ffecom_expand_let_stmt -- Compile let (assignment) statement
-
-   ffebld dest;
-   ffebld source;
-   ffecom_expand_let_stmt(dest,source);
+/* Handle assignment statement.
 
    Convert dest and source using ffecom_expr, then join them
    with an ASSIGN op and pass the whole thing to expand_expr_stmt.  */
@@ -11665,7 +10957,28 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
     {
       bool dest_used;
 
-      dest_tree = ffecom_expr_rw (dest);
+      /* This attempts to replicate the test below, but must not be
+	 true when the test below is false.  (Always err on the side
+	 of creating unused temporaries, to avoid ICEs.)  */
+      if (ffebld_op (dest) != FFEBLD_opSYMTER
+	  || ((dest_tree = ffesymbol_hook (ffebld_symter (dest)).decl_tree)
+	      && (TREE_CODE (dest_tree) != VAR_DECL
+		  || TREE_ADDRESSABLE (dest_tree))))
+	{
+	  ffecom_prepare_expr_ (source, dest);
+	  dest_used = TRUE;
+	}
+      else
+	{
+	  ffecom_prepare_expr_ (source, NULL);
+	  dest_used = FALSE;
+	}
+
+      ffecom_prepare_expr_w (NULL_TREE, dest);
+
+      ffecom_prepare_end ();
+
+      dest_tree = ffecom_expr_w (NULL_TREE, dest);
       if (dest_tree == error_mark_node)
 	return;
 
@@ -11675,8 +10988,9 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 				    FALSE, FALSE);
       else
 	{
-	  source_tree = ffecom_expr (source);
+	  assert (! dest_used);
 	  dest_used = FALSE;
+	  source_tree = ffecom_expr (source);
 	}
       if (source_tree == error_mark_node)
 	return;
@@ -11692,11 +11006,14 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
       return;
     }
 
-  ffecom_push_calltemps ();
+  ffecom_prepare_let_char_ (ffebld_size_known (dest), source);
+  ffecom_prepare_expr_w (NULL_TREE, dest);
+
+  ffecom_prepare_end ();
+
   ffecom_char_args_ (&dest_tree, &dest_length, dest);
   ffecom_let_char_ (dest_tree, dest_length, ffebld_size_known (dest),
 		    source);
-  ffecom_pop_calltemps ();
 }
 
 #endif
@@ -11745,9 +11062,29 @@ ffecom_expr_assign_w (ffebld expr)
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
-ffecom_expr_rw (ffebld expr)
+ffecom_expr_rw (tree type, ffebld expr)
 {
   assert (expr != NULL);
+  /* Different target types not yet supported.  */
+  assert (type == NULL_TREE || type == ffecom_type_expr (expr));
+
+  return stabilize_reference (ffecom_expr (expr));
+}
+
+#endif
+/* Transform expr for use as into write tree and stabilize the
+   reference.  Not for use on CHARACTER expressions.
+
+   Recursive descent on expr while making corresponding tree nodes and
+   attaching type info and such.  */
+
+#if FFECOM_targetCURRENT == FFECOM_targetGCC
+tree
+ffecom_expr_w (tree type, ffebld expr)
+{
+  assert (expr != NULL);
+  /* Different target types not yet supported.  */
+  assert (type == NULL_TREE || type == ffecom_type_expr (expr));
 
   return stabilize_reference (ffecom_expr (expr));
 }
@@ -11783,7 +11120,7 @@ ffecom_finish_decl (tree decl, tree init, bool is_top_level)
 void
 ffecom_finish_progunit ()
 {
-  ffecom_end_compstmt_ ();
+  ffecom_end_compstmt ();
 
   ffecom_previous_function_decl_ = current_function_decl;
   ffecom_which_entrypoint_decl_ = NULL_TREE;
@@ -11792,33 +11129,54 @@ ffecom_finish_progunit ()
 }
 
 #endif
-/* Wrapper for get_identifier.  pattern is like "...%s...", text is
-   inserted into final name in place of "%s", or if text is NULL,
-   pattern is like "...%d..." and text form of number is inserted
-   in place of "%d".  */
+/* Wrapper for get_identifier.  pattern is sprintf-like, assumed to contain
+   one %s if text is not NULL, assumed to contain one %d if number is
+   not -1.  If both are assumed, the %s is assumed to precede the %d.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
-ffecom_get_invented_identifier (const char *pattern, const char *text, int number)
+ffecom_get_invented_identifier (const char *pattern, const char *text,
+				int number)
 {
   tree decl;
   char *nam;
   mallocSize lenlen;
   char space[66];
 
+  lenlen = 0;
+  if (text)
+    lenlen += strlen (text);
+  if (number != -1)
+    lenlen += 20;
+  if (text || number != -1)
+    {
+      lenlen += strlen (pattern);
+      if (lenlen > ARRAY_SIZE (space))
+	nam = malloc_new_ks (malloc_pool_image (), pattern, lenlen);
+      else
+	nam = &space[0];
+    }
+  else
+    {
+      lenlen = 0;
+      nam = (char *) pattern;
+    }
+
   if (text == NULL)
-    lenlen = strlen (pattern) + 20;
+    {
+      if (number != -1)
+	sprintf (&nam[0], pattern, number);
+    }
   else
-    lenlen = strlen (pattern) + strlen (text) - 1;
-  if (lenlen > ARRAY_SIZE (space))
-    nam = malloc_new_ks (malloc_pool_image (), pattern, lenlen);
-  else
-    nam = &space[0];
-  if (text == NULL)
-    sprintf (&nam[0], pattern, number);
-  else
-    sprintf (&nam[0], pattern, text);
+    {
+      if (number == -1)
+	sprintf (&nam[0], pattern, text);
+      else
+	sprintf (&nam[0], pattern, text, number);
+    }
+
   decl = get_identifier (nam);
+
   if (lenlen > ARRAY_SIZE (space))
     malloc_kill_ks (malloc_pool_image (), nam, lenlen);
 
@@ -11986,9 +11344,10 @@ ffecom_init_0 ()
   named_labels = NULL_TREE;
   current_binding_level = NULL_BINDING_LEVEL;
   free_binding_level = NULL_BINDING_LEVEL;
-  pushlevel (0);		/* make the binding_level structure for
-				   global names */
+  /* Make the binding_level structure for global names.  */
+  pushlevel (0);
   global_binding_level = current_binding_level;
+  current_binding_level->prep_state = 2;
 
   /* Define `int' and `char' first so that dbx will output them first.  */
 
@@ -12461,8 +11820,9 @@ ffecom_init_0 ()
 			    FFETARGET_f2cTYLOGICAL2);
   ffecom_f2c_set_lio_code_ (FFEINFO_basictypeLOGICAL, CHAR_TYPE_SIZE,
 			    FFETARGET_f2cTYLOGICAL1);
+  /* ~~~Not really such a type in libf2c, e.g. I/O support?  */
   ffecom_f2c_set_lio_code_ (FFEINFO_basictypeLOGICAL, LONG_LONG_TYPE_SIZE,
-			    FFETARGET_f2cTYQUAD	/* ~~~ */);
+			    FFETARGET_f2cTYQUAD);
 
   /* CHARACTER stuff is all special-cased, so it is not handled in the above
      loop.  CHARACTER items are built as arrays of unsigned char.  */
@@ -12683,7 +12043,6 @@ ffecom_init_2 ()
 
   ffecom_master_arglist_ = NULL;
   ++ffecom_num_fns_;
-  ffecom_latest_temp_ = NULL;
   ffecom_primary_entry_ = NULL;
   ffecom_is_altreturning_ = FALSE;
   ffecom_func_result_ = NULL_TREE;
@@ -13107,65 +12466,6 @@ ffecom_open_include (char *name, ffewhereLine l, ffewhereColumn c)
 #endif
 }
 
-/* Clean up after making automatically popped call-arg temps.
-
-   Call this in pairs with push_calltemps around calls to
-   ffecom_arg_ptr_to_expr if the latter might use temporaries.
-   Any temporaries made within the outermost sequence of
-   push_calltemps and pop_calltemps, that are marked as "auto-pop"
-   meaning they won't be explicitly popped (freed), are popped
-   at this point so they can be reused later.
-
-   NOTE: when called by ffecom_gen_sfuncdef_, ffecom_pending_calls_
-   should come in == 1, and all of the in-use auto-pop temps
-   should have DECL_CONTEXT (temp->t) == current_function_decl.
-   Moreover, these temps should _never_ be re-used in future
-   calls to ffecom_push_tempvar -- since current_function_decl will
-   never be the same again.
-
-   SO, it could be a minor win in terms of compile time to just
-   strip these temps off the list.  That is, if the above assumptions
-   are correct, just remove from the list of temps any temp
-   that is both in-use and has DECL_CONTEXT (temp->t)
-   == current_function_decl, when called from ffecom_gen_sfuncdef_.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
-void
-ffecom_pop_calltemps ()
-{
-  ffecomTemp_ temp;
-
-  assert (ffecom_pending_calls_ > 0);
-
-  if (--ffecom_pending_calls_ == 0)
-    for (temp = ffecom_latest_temp_; temp != NULL; temp = temp->next)
-      if (temp->auto_pop)
-	temp->in_use = FALSE;
-}
-
-#endif
-/* Mark latest temp with given tree as no longer in use.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
-void
-ffecom_pop_tempvar (tree t)
-{
-  ffecomTemp_ temp;
-
-  for (temp = ffecom_latest_temp_; temp != NULL; temp = temp->next)
-    if (temp->in_use && (temp->t == t))
-      {
-	assert (!temp->auto_pop);
-	temp->in_use = FALSE;
-	return;
-      }
-    else
-      assert (temp->t != t);
-
-  assert ("couldn't ffecom_pop_tempvar!" != NULL);
-}
-
-#endif
 /* ffecom_ptr_to_expr -- Transform expr into gcc tree with & in front
 
    tree t;
@@ -13229,7 +12529,7 @@ ffecom_ptr_to_expr (ffebld expr)
 	if (item == error_mark_node)
 	  return item;
 
-	if ((ffeinfo_where (ffebld_info (expr)) == FFEINFO_whereFLEETING)
+	if ((ffebld_where (expr) == FFEINFO_whereFLEETING)
 	    && !mark_addressable (item))
 	  return error_mark_node;	/* Make sure non-const ref is to
 					   non-reg. */
@@ -13281,8 +12581,6 @@ ffecom_ptr_to_expr (ffebld expr)
       return error_mark_node;
 
     default:
-      assert (ffecom_pending_calls_ > 0);
-
       bt = ffeinfo_basictype (ffebld_info (expr));
       kt = ffeinfo_kindtype (ffebld_info (expr));
 
@@ -13322,59 +12620,26 @@ ffecom_ptr_to_expr (ffebld expr)
 }
 
 #endif
-/* Prepare to make call-arg temps.
-
-   Call this in pairs with pop_calltemps around calls to
-   ffecom_arg_ptr_to_expr if the latter might use temporaries.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
-void
-ffecom_push_calltemps ()
-{
-  ffecom_pending_calls_++;
-}
-
-#endif
 /* Obtain a temp var with given data type.
 
-   Returns a VAR_DECL tree of a currently (that is, at the current
-   statement being compiled) not in use and having the given data type,
-   making a new one if necessary.  size is FFETARGET_charactersizeNONE
-   for a non-CHARACTER type or >= 0 for a CHARACTER type.  elements is
-   -1 for a scalar or > 0 for an array of type.  auto_pop is TRUE if
-   ffecom_pop_tempvar won't be called, meaning temp will be freed
-   when #pending calls goes to zero.  */
+   size is FFETARGET_charactersizeNONE for a non-CHARACTER type
+   or >= 0 for a CHARACTER type.
+
+   elements is -1 for a scalar or > 0 for an array of type.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 tree
-ffecom_push_tempvar (tree type, ffetargetCharacterSize size, int elements,
-		     bool auto_pop)
+ffecom_make_tempvar (const char *commentary, tree type,
+		     ffetargetCharacterSize size, int elements)
 {
-  ffecomTemp_ temp;
   int yes;
   tree t;
   static int mynumber;
 
-  assert (!auto_pop || (ffecom_pending_calls_ > 0));
+  assert (current_binding_level->prep_state < 2);
 
   if (type == error_mark_node)
     return error_mark_node;
-
-  for (temp = ffecom_latest_temp_; temp != NULL; temp = temp->next)
-    {
-      if (temp->in_use
-	  || (temp->type != type)
-	  || (temp->size != size)
-	  || (temp->elements != elements)
-	  || (DECL_CONTEXT (temp->t) != current_function_decl))
-	continue;
-
-      temp->in_use = TRUE;
-      temp->auto_pop = auto_pop;
-      return temp->t;
-    }
-
-  /* Create a new temp. */
 
   yes = suspend_momentary ();
 
@@ -13390,42 +12655,369 @@ ffecom_push_tempvar (tree type, ffetargetCharacterSize size, int elements,
 					       build_int_2 (elements - 1,
 							    0)));
   t = build_decl (VAR_DECL,
-		  ffecom_get_invented_identifier ("__g77_expr_%d", NULL,
+		  ffecom_get_invented_identifier ("__g77_%s_%d",
+						  commentary,
 						  mynumber++),
 		  type);
-
-  /* This temp must be put in the same scope as the containing BLOCK
-     (aka function), but for reasons that should be explained elsewhere,
-     the GBE normally decides it should be in a "phantom BLOCK" associated
-     with the expand_start_stmt_expr() call.  So push the topmost
-     sequence back onto the GBE's internal stack before telling it
-     about the decl, then restore it afterwards.  */
-  push_topmost_sequence ();
 
   t = start_decl (t, FALSE);
   finish_decl (t, NULL_TREE, FALSE);
 
-  pop_topmost_sequence ();
-
   resume_momentary (yes);
-
-  temp = malloc_new_kp (ffe_pool_program_unit (), "ffecomTemp_",
-			sizeof (*temp));
-
-  temp->next = ffecom_latest_temp_;
-  temp->type = type;
-  temp->t = t;
-  temp->size = size;
-  temp->elements = elements;
-  temp->in_use = TRUE;
-  temp->auto_pop = auto_pop;
-
-  ffecom_latest_temp_ = temp;
 
   return t;
 }
-
 #endif
+
+/* Prepare argument pointer to expression.
+
+   Like ffecom_prepare_expr, except for expressions to be evaluated
+   via ffecom_arg_ptr_to_expr.  */
+
+void
+ffecom_prepare_arg_ptr_to_expr (ffebld expr)
+{
+  /* ~~For now, it seems to be the same thing.  */
+  ffecom_prepare_expr (expr);
+  return;
+}
+
+/* End of preparations.  */
+
+bool
+ffecom_prepare_end (void)
+{
+  int prep_state = current_binding_level->prep_state;
+
+  assert (prep_state < 2);
+  current_binding_level->prep_state = 2;
+
+  return (prep_state == 1) ? TRUE : FALSE;
+}
+
+/* Prepare expression.
+
+   This is called before any code is generated for the current block.
+   It scans the expression, declares any temporaries that might be needed
+   during evaluation of the expression, and stores those temporaries in
+   the appropriate "hook" fields of the expression.  `dest', if not NULL,
+   specifies the destination that ffecom_expr_ will see, in case that
+   helps avoid generating unused temporaries.
+
+   ~~Improve to avoid allocating unused temporaries by taking `dest'
+   into account vis-a-vis aliasing requirements of complex/character
+   functions.  */
+
+void
+ffecom_prepare_expr_ (ffebld expr, ffebld dest UNUSED)
+{
+  ffeinfoBasictype bt;
+  ffeinfoKindtype kt;
+  ffetargetCharacterSize sz;
+  tree tempvar = NULL_TREE;
+
+  assert (current_binding_level->prep_state < 2);
+
+  if (! expr)
+    return;
+
+  bt = ffeinfo_basictype (ffebld_info (expr));
+  kt = ffeinfo_kindtype (ffebld_info (expr));
+  sz = ffeinfo_size (ffebld_info (expr));
+
+  /* Generate whatever temporaries are needed to represent the result
+     of the expression.  */
+
+  switch (ffebld_op (expr))
+    {
+    default:
+      /* Don't make temps for SYMTER, CONTER, etc.  */
+      if (ffebld_arity (expr) == 0)
+	break;
+
+      switch (bt)
+	{
+	case FFEINFO_basictypeCOMPLEX:
+	  if (ffebld_op (expr) == FFEBLD_opFUNCREF)
+	    {
+	      ffesymbol s;
+
+	      if (ffebld_op (ffebld_left (expr)) != FFEBLD_opSYMTER)
+		break;
+
+	      s = ffebld_symter (ffebld_left (expr));
+	      if (ffesymbol_where (s) == FFEINFO_whereCONSTANT
+		  || ! ffesymbol_is_f2c (s))
+		break;
+	    }
+	  else if (ffebld_op (expr) == FFEBLD_opPOWER)
+	    {
+	      /* Requires special treatment.  There's no POW_CC function
+		 in libg2c, so POW_ZZ is used, which means we always
+		 need a double-complex temp, not a single-complex.  */
+	      kt = FFEINFO_kindtypeREAL2;
+	    }
+	  else if (ffebld_op (expr) != FFEBLD_opDIVIDE)
+	    /* The other ops don't need temps for complex operands.  */
+	    break;
+
+	  /* ~~~Avoid making temps for some intrinsics, such as AIMAG(C),
+	     REAL(C).  See 19990325-0.f, routine `check', for cases.  */
+	  tempvar = ffecom_make_tempvar ("complex",
+					 ffecom_tree_type
+					 [FFEINFO_basictypeCOMPLEX][kt],
+					 FFETARGET_charactersizeNONE,
+					 -1);
+	  break;
+
+	case FFEINFO_basictypeCHARACTER:
+	  if (ffebld_op (expr) != FFEBLD_opFUNCREF)
+	    break;
+
+	  if (sz == FFETARGET_charactersizeNONE)
+	    /* ~~Kludge alert!  This should someday be fixed. */
+	    sz = 24;
+
+	  tempvar = ffecom_make_tempvar ("char", char_type_node, sz, -1);
+	  break;
+
+	default:
+	  break;
+	}
+      break;
+
+#ifdef HAHA
+    case FFEBLD_opPOWER:
+      {
+	tree rtype, ltype;
+	tree rtmp, ltmp, result;
+
+	ltype = ffecom_type_expr (ffebld_left (expr));
+	rtype = ffecom_type_expr (ffebld_right (expr));
+
+	rtmp = ffecom_make_tempvar (rtype, FFETARGET_charactersizeNONE, -1);
+	ltmp = ffecom_make_tempvar (ltype, FFETARGET_charactersizeNONE, -1);
+	result = ffecom_make_tempvar (ltype, FFETARGET_charactersizeNONE, -1);
+
+	tempvar = make_tree_vec (3);
+	TREE_VEC_ELT (tempvar, 0) = rtmp;
+	TREE_VEC_ELT (tempvar, 1) = ltmp;
+	TREE_VEC_ELT (tempvar, 2) = result;
+      }
+      break;
+#endif  /* HAHA */
+
+    case FFEBLD_opCONCATENATE:
+      {
+	/* This gets special handling, because only one set of temps
+	   is needed for a tree of these -- the tree is treated as
+	   a flattened list of concatenations when generating code.  */
+
+	ffecomConcatList_ catlist;
+	tree ltmp, itmp, result;
+	int count;
+	int i;
+
+	catlist = ffecom_concat_list_new_ (expr, FFETARGET_charactersizeNONE);
+	count = ffecom_concat_list_count_ (catlist);
+
+	if (count >= 2)
+	  {
+	    ltmp
+	      = ffecom_make_tempvar ("concat_len",
+				     ffecom_f2c_ftnlen_type_node,
+				     FFETARGET_charactersizeNONE, count);
+	    itmp
+	      = ffecom_make_tempvar ("concat_item",
+				     ffecom_f2c_address_type_node,
+				     FFETARGET_charactersizeNONE, count);
+	    result
+	      = ffecom_make_tempvar ("concat_res",
+				     char_type_node,
+				     ffecom_concat_list_maxlen_ (catlist),
+				     -1);
+
+	    tempvar = make_tree_vec (3);
+	    TREE_VEC_ELT (tempvar, 0) = ltmp;
+	    TREE_VEC_ELT (tempvar, 1) = itmp;
+	    TREE_VEC_ELT (tempvar, 2) = result;
+	  }
+
+	for (i = 0; i < count; ++i)
+	  ffecom_prepare_arg_ptr_to_expr (ffecom_concat_list_expr_ (catlist,
+								    i));
+
+	ffecom_concat_list_kill_ (catlist);
+
+	if (tempvar)
+	  {
+	    ffebld_nonter_set_hook (expr, tempvar);
+	    current_binding_level->prep_state = 1;
+	  }
+      }
+      return;
+
+    case FFEBLD_opCONVERT:
+      if (bt == FFEINFO_basictypeCHARACTER
+	  && ((ffebld_size_known (ffebld_left (expr))
+	       == FFETARGET_charactersizeNONE)
+	      || (ffebld_size_known (ffebld_left (expr)) >= sz)))
+	tempvar = ffecom_make_tempvar ("convert", char_type_node, sz, -1);
+      break;
+    }
+
+  if (tempvar)
+    {
+      ffebld_nonter_set_hook (expr, tempvar);
+      current_binding_level->prep_state = 1;
+    }
+
+  /* Prepare subexpressions for this expr.  */
+
+  switch (ffebld_op (expr))
+    {
+    case FFEBLD_opPERCENT_LOC:
+      ffecom_prepare_ptr_to_expr (ffebld_left (expr));
+      break;
+
+    case FFEBLD_opPERCENT_VAL:
+    case FFEBLD_opPERCENT_REF:
+      ffecom_prepare_expr (ffebld_left (expr));
+      break;
+
+    case FFEBLD_opPERCENT_DESCR:
+      ffecom_prepare_arg_ptr_to_expr (ffebld_left (expr));
+      break;
+
+    case FFEBLD_opITEM:
+      {
+	ffebld item;
+
+	for (item = expr;
+	     item != NULL;
+	     item = ffebld_trail (item))
+	  if (ffebld_head (item) != NULL)
+	    ffecom_prepare_expr (ffebld_head (item));
+      }
+      break;
+
+    default:
+      /* Need to handle character conversion specially.  */
+      switch (ffebld_arity (expr))
+	{
+	case 2:
+	  ffecom_prepare_expr (ffebld_left (expr));
+	  ffecom_prepare_expr (ffebld_right (expr));
+	  break;
+
+	case 1:
+	  ffecom_prepare_expr (ffebld_left (expr));
+	  break;
+
+	default:
+	  break;
+	}
+    }
+
+  return;
+}
+
+/* Prepare expression for reading and writing.
+
+   Like ffecom_prepare_expr, except for expressions to be evaluated
+   via ffecom_expr_rw.  */
+
+void
+ffecom_prepare_expr_rw (tree type, ffebld expr)
+{
+  /* This is all we support for now.  */
+  assert (type == NULL_TREE || type == ffecom_type_expr (expr));
+
+  /* ~~For now, it seems to be the same thing.  */
+  ffecom_prepare_expr (expr);
+  return;
+}
+
+/* Prepare expression for writing.
+
+   Like ffecom_prepare_expr, except for expressions to be evaluated
+   via ffecom_expr_w.  */
+
+void
+ffecom_prepare_expr_w (tree type, ffebld expr)
+{
+  /* This is all we support for now.  */
+  assert (type == NULL_TREE || type == ffecom_type_expr (expr));
+
+  /* ~~For now, it seems to be the same thing.  */
+  ffecom_prepare_expr (expr);
+  return;
+}
+
+/* Prepare expression for returning.
+
+   Like ffecom_prepare_expr, except for expressions to be evaluated
+   via ffecom_return_expr.  */
+
+void
+ffecom_prepare_return_expr (ffebld expr)
+{
+  assert (current_binding_level->prep_state < 2);
+
+  if (ffecom_primary_entry_kind_ == FFEINFO_kindSUBROUTINE
+      && ffecom_is_altreturning_
+      && expr != NULL)
+    ffecom_prepare_expr (expr);
+}
+
+/* Prepare pointer to expression.
+
+   Like ffecom_prepare_expr, except for expressions to be evaluated
+   via ffecom_ptr_to_expr.  */
+
+void
+ffecom_prepare_ptr_to_expr (ffebld expr)
+{
+  /* ~~For now, it seems to be the same thing.  */
+  ffecom_prepare_expr (expr);
+  return;
+}
+
+/* Transform expression into constant pointer-to-expression tree.
+
+   If the expression can be transformed into a pointer-to-expression tree
+   that is constant, that is done, and the tree returned.  Else NULL_TREE
+   is returned.
+
+   That way, a caller can attempt to provide compile-time initialization
+   of a variable and, if that fails, *then* choose to start a new block
+   and resort to using temporaries, as appropriate.  */
+
+tree
+ffecom_ptr_to_const_expr (ffebld expr)
+{
+  if (! expr)
+    return integer_zero_node;
+
+  if (ffebld_op (expr) == FFEBLD_opANY)
+    return error_mark_node;
+
+  if (ffebld_arity (expr) == 0
+      && (ffebld_op (expr) != FFEBLD_opSYMTER
+	  || ffebld_where (expr) == FFEINFO_whereCOMMON
+	  || ffebld_where (expr) == FFEINFO_whereGLOBAL
+	  || ffebld_where (expr) == FFEINFO_whereINTRINSIC))
+    {
+      tree t;
+
+      t = ffecom_ptr_to_expr (expr);
+      assert (TREE_CONSTANT (t));
+      return t;
+    }
+
+  return NULL_TREE;
+}
+
 /* ffecom_return_expr -- Returns return-value expr given alt return expr
 
    tree rtn;  // NULL_TREE means use expand_null_return()
@@ -13520,6 +13112,16 @@ ffecom_save_tree (tree t)
   return save_expr (t);
 }
 #endif
+
+/* Start a compound statement (block).  */
+
+#if FFECOM_targetCURRENT == FFECOM_targetGCC
+void
+ffecom_start_compstmt (void)
+{
+  bison_rule_pushlevel_ ();
+}
+#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 /* Public entry point for front end to access start_decl.  */
 
@@ -13765,6 +13367,74 @@ ffecom_truth_value_invert (tree expr)
 }
 
 #endif
+
+/* Return the tree that is the type of the expression, as would be
+   returned in TREE_TYPE(ffecom_expr(expr)), without otherwise
+   transforming the expression, generating temporaries, etc.  */
+
+tree
+ffecom_type_expr (ffebld expr)
+{
+  ffeinfoBasictype bt;
+  ffeinfoKindtype kt;
+  tree tree_type;
+
+  assert (expr != NULL);
+
+  bt = ffeinfo_basictype (ffebld_info (expr));
+  kt = ffeinfo_kindtype (ffebld_info (expr));
+  tree_type = ffecom_tree_type[bt][kt];
+
+  switch (ffebld_op (expr))
+    {
+    case FFEBLD_opCONTER:
+    case FFEBLD_opSYMTER:
+    case FFEBLD_opARRAYREF:
+    case FFEBLD_opUPLUS:
+    case FFEBLD_opPAREN:
+    case FFEBLD_opUMINUS:
+    case FFEBLD_opADD:
+    case FFEBLD_opSUBTRACT:
+    case FFEBLD_opMULTIPLY:
+    case FFEBLD_opDIVIDE:
+    case FFEBLD_opPOWER:
+    case FFEBLD_opNOT:
+    case FFEBLD_opFUNCREF:
+    case FFEBLD_opSUBRREF:
+    case FFEBLD_opAND:
+    case FFEBLD_opOR:
+    case FFEBLD_opXOR:
+    case FFEBLD_opNEQV:
+    case FFEBLD_opEQV:
+    case FFEBLD_opCONVERT:
+    case FFEBLD_opLT:
+    case FFEBLD_opLE:
+    case FFEBLD_opEQ:
+    case FFEBLD_opNE:
+    case FFEBLD_opGT:
+    case FFEBLD_opGE:
+    case FFEBLD_opPERCENT_LOC:
+      return tree_type;
+
+    case FFEBLD_opACCTER:
+    case FFEBLD_opARRTER:
+    case FFEBLD_opITEM:
+    case FFEBLD_opSTAR:
+    case FFEBLD_opBOUNDS:
+    case FFEBLD_opREPEAT:
+    case FFEBLD_opLABTER:
+    case FFEBLD_opLABTOK:
+    case FFEBLD_opIMPDO:
+    case FFEBLD_opCONCATENATE:
+    case FFEBLD_opSUBSTR:
+    default:
+      assert ("bad op for ffecom_type_expr" == NULL);
+      /* Fall through. */
+    case FFEBLD_opANY:
+      return error_mark_node;
+    }
+}
+
 /* Return PARM_DECL for arg#1 of master fn containing alternate ENTRY points
 
    If the PARM_DECL already exists, return it, else create it.	It's an
@@ -13802,15 +13472,6 @@ ffecom_which_entrypoint_decl ()
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 
 static void
-bison_rule_compstmt_ ()
-{
-  emit_line_note (input_filename, lineno);
-  expand_end_bindings (getdecls (), 1, 1);
-  poplevel (1, 1, 0);
-  pop_momentary ();
-}
-
-static void
 bison_rule_pushlevel_ ()
 {
   emit_line_note (input_filename, lineno);
@@ -13818,6 +13479,24 @@ bison_rule_pushlevel_ ()
   clear_last_expr ();
   push_momentary ();
   expand_start_bindings (0);
+}
+
+static tree
+bison_rule_compstmt_ ()
+{
+  tree t;
+  int keep = kept_level_p ();
+
+  /* Make the temps go away.  */
+  if (! keep)
+    current_binding_level->names = NULL_TREE;
+
+  emit_line_note (input_filename, lineno);
+  expand_end_bindings (getdecls (), keep, 0);
+  t = poplevel (keep, 1, 0);
+  pop_momentary ();
+
+  return t;
 }
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -14802,6 +14481,7 @@ start_function (tree name, tree type, int nested, int public)
     ffecom_outer_function_decl_ = current_function_decl;
 
   pushlevel (0);
+  current_binding_level->prep_state = 2;
 
   if (TREE_CODE (current_function_decl) != ERROR_MARK)
     {
@@ -14894,9 +14574,9 @@ global_bindings_p ()
   return current_binding_level == global_binding_level;
 }
 
-/* Insert BLOCK at the end of the list of subblocks of the
-   current binding level.  This is used when a BIND_EXPR is expanded,
-   to handle the BLOCK node inside the BIND_EXPR.  */
+/* Print an error message for invalid use of an incomplete type.
+   VALUE is the expression that was used (or 0 if that isn't known)
+   and TYPE is the type that was invalid.  */
 
 void
 incomplete_type_error (value, type)
@@ -14953,6 +14633,30 @@ void
 finish_parse ()
 {
   fclose (finput);
+}
+
+/* Delete the node BLOCK from the current binding level.
+   This is used for the block inside a stmt expr ({...})
+   so that the block can be reinserted where appropriate.  */
+
+static void
+delete_block (block)
+     tree block;
+{
+  tree t;
+  if (current_binding_level->blocks == block)
+    current_binding_level->blocks = TREE_CHAIN (block);
+  for (t = current_binding_level->blocks; t;)
+    {
+      if (TREE_CHAIN (t) == block)
+	TREE_CHAIN (t) = TREE_CHAIN (block);
+      else
+	t = TREE_CHAIN (t);
+    }
+  TREE_CHAIN (block) = NULL;
+  /* Clear TREE_USED which is always set by poplevel.
+     The flag is set again if insert_block is called.  */
+  TREE_USED (block) = 0;
 }
 
 void
@@ -15107,17 +14811,17 @@ poplevel (keep, reverse, functionbody)
      int functionbody;
 {
   register tree link;
-  /* The chain of decls was accumulated in reverse order. Put it into forward
-     order, just for cleanliness.  */
+  /* The chain of decls was accumulated in reverse order.
+     Put it into forward order, just for cleanliness.  */
   tree decls;
   tree subblocks = current_binding_level->blocks;
   tree block = 0;
   tree decl;
   int block_previously_created;
 
-  /* Get the decls in the order they were written. Usually
-     current_binding_level->names is in reverse order. But parameter decls
-     were previously put in forward order.  */
+  /* Get the decls in the order they were written.
+     Usually current_binding_level->names is in reverse order.
+     But parameter decls were previously put in forward order.  */
 
   if (reverse)
     current_binding_level->names
@@ -15125,21 +14829,25 @@ poplevel (keep, reverse, functionbody)
   else
     decls = current_binding_level->names;
 
-  /* Output any nested inline functions within this block if they weren't
-     already output.  */
+  /* Output any nested inline functions within this block
+     if they weren't already output.  */
 
   for (decl = decls; decl; decl = TREE_CHAIN (decl))
     if (TREE_CODE (decl) == FUNCTION_DECL
-	&& !TREE_ASM_WRITTEN (decl)
+	&& ! TREE_ASM_WRITTEN (decl)
 	&& DECL_INITIAL (decl) != 0
 	&& TREE_ADDRESSABLE (decl))
       {
-	/* If this decl was copied from a file-scope decl on account of a
-	   block-scope extern decl, propagate TREE_ADDRESSABLE to the
-	   file-scope decl.  */
-	if (DECL_ABSTRACT_ORIGIN (decl) != 0)
+	/* If this decl was copied from a file-scope decl
+	   on account of a block-scope extern decl,
+	   propagate TREE_ADDRESSABLE to the file-scope decl.
+
+	   DECL_ABSTRACT_ORIGIN can be set to itself if warn_return_type is
+	   true, since then the decl goes through save_for_inline_copying.  */
+	if (DECL_ABSTRACT_ORIGIN (decl) != 0
+	    && DECL_ABSTRACT_ORIGIN (decl) != decl)
 	  TREE_ADDRESSABLE (DECL_ABSTRACT_ORIGIN (decl)) = 1;
-	else
+	else if (DECL_SAVED_INSNS (decl) != 0)
 	  {
 	    push_function_context ();
 	    output_inline_function (decl);
@@ -15147,9 +14855,9 @@ poplevel (keep, reverse, functionbody)
 	  }
       }
 
-  /* If there were any declarations or structure tags in that level, or if
-     this level is a function body, create a BLOCK to record them for the
-     life of this function.  */
+  /* If there were any declarations or structure tags in that level,
+     or if this level is a function body,
+     create a BLOCK to record them for the life of this function.  */
 
   block = 0;
   block_previously_created = (current_binding_level->this_block != 0);
@@ -15188,15 +14896,16 @@ poplevel (keep, reverse, functionbody)
 	}
     }
 
-  /* If the level being exited is the top level of a function, check over all
-     the labels, and clear out the current (function local) meanings of their
-     names.  */
+  /* If the level being exited is the top level of a function,
+     check over all the labels, and clear out the current
+     (function local) meanings of their names.  */
 
   if (functionbody)
     {
-      /* If this is the top level block of a function, the vars are the
-	 function's parameters. Don't leave them in the BLOCK because they
-	 are found in the FUNCTION_DECL instead.  */
+      /* If this is the top level block of a function,
+	 the vars are the function's parameters.
+	 Don't leave them in the BLOCK because they are
+	 found in the FUNCTION_DECL instead.  */
 
       BLOCK_VARS (block) = 0;
     }
@@ -15221,27 +14930,14 @@ poplevel (keep, reverse, functionbody)
 	current_binding_level->blocks
 	  = chainon (current_binding_level->blocks, block);
     }
-  /* If we did not make a block for the level just exited, any blocks made
-     for inner levels (since they cannot be recorded as subblocks in that
-     level) must be carried forward so they will later become subblocks of
-     something else.  */
+  /* If we did not make a block for the level just exited,
+     any blocks made for inner levels
+     (since they cannot be recorded as subblocks in that level)
+     must be carried forward so they will later become subblocks
+     of something else.  */
   else if (subblocks)
     current_binding_level->blocks
       = chainon (current_binding_level->blocks, subblocks);
-
-  /* Set the TYPE_CONTEXTs for all of the tagged types belonging to this
-     binding contour so that they point to the appropriate construct, i.e.
-     either to the current FUNCTION_DECL node, or else to the BLOCK node we
-     just constructed.
-
-     Note that for tagged types whose scope is just the formal parameter list
-     for some function type specification, we can't properly set their
-     TYPE_CONTEXTs here, because we don't have a pointer to the appropriate
-     FUNCTION_TYPE node readily available to us.  For those cases, the
-     TYPE_CONTEXTs of the relevant tagged type nodes get set in
-     `grokdeclarator' as soon as we have created the FUNCTION_TYPE node which
-     will represent the "scope" for these "parameter list local" tagged
-     types. */
 
   if (block)
     TREE_USED (block) = 1;
@@ -15398,6 +15094,27 @@ pushdecl (x)
   return x;
 }
 
+/* Nonzero if the current level needs to have a BLOCK made.  */
+
+static int
+kept_level_p ()
+{
+  tree decl;
+
+  for (decl = current_binding_level->names;
+       decl;
+       decl = TREE_CHAIN (decl))
+    {
+      if (TREE_USED (decl) || TREE_CODE (decl) != VAR_DECL
+	  || (DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)))
+	/* Currently, there aren't supposed to be non-artificial names
+	   at other than the top block for a function -- they're
+	   believed to always be temps.  But it's wise to check anyway.  */
+	return 1;
+    }
+  return 0;
+}
+
 /* Enter a new binding level.
    If TAG_TRANSPARENT is nonzero, do so only for the name space of variables,
    not for that of tags.  */
@@ -15408,7 +15125,12 @@ pushlevel (tag_transparent)
 {
   register struct binding_level *newlevel = NULL_BINDING_LEVEL;
 
-  assert (!tag_transparent);
+  assert (! tag_transparent);
+
+  if (current_binding_level == global_binding_level)
+    {
+      named_labels = 0;
+    }
 
   /* Reuse or create a struct for this binding level.  */
 
@@ -15422,8 +15144,8 @@ pushlevel (tag_transparent)
       newlevel = make_binding_level ();
     }
 
-  /* Add this level to the front of the chain (stack) of levels that are
-     active.  */
+  /* Add this level to the front of the chain (stack) of levels that
+     are active.  */
 
   *newlevel = clear_binding_level;
   newlevel->level_chain = current_binding_level;
@@ -15440,7 +15162,7 @@ set_block (block)
   current_binding_level->this_block = block;
 }
 
-/* ~~tree.h SHOULD declare this, because toplev.c references it.  */
+/* ~~gcc/tree.h *should* declare this, because toplev.c references it.  */
 
 /* Can't 'yydebug' a front end not generated by yacc/bison!  */
 
@@ -16523,3 +16245,877 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
   return f;
 }
 #endif	/* FFECOM_GCC_INCLUDE */
+
+/**INDENT* (Do not reformat this comment even with -fca option.)
+   Data-gathering files: Given the source file listed below, compiled with
+   f2c I obtained the output file listed after that, and from the output
+   file I derived the above code.
+
+-------- (begin input file to f2c)
+	implicit none
+	character*10 A1,A2
+	complex C1,C2
+	integer I1,I2
+	real R1,R2
+	double precision D1,D2
+C
+	call getem(A1,A2,C1,C2,I1,I2,R1,R2,D1,D2)
+c /
+	call fooI(I1/I2)
+	call fooR(R1/I1)
+	call fooD(D1/I1)
+	call fooC(C1/I1)
+	call fooR(R1/R2)
+	call fooD(R1/D1)
+	call fooD(D1/D2)
+	call fooD(D1/R1)
+	call fooC(C1/C2)
+	call fooC(C1/R1)
+	call fooZ(C1/D1)
+c **
+	call fooI(I1**I2)
+	call fooR(R1**I1)
+	call fooD(D1**I1)
+	call fooC(C1**I1)
+	call fooR(R1**R2)
+	call fooD(R1**D1)
+	call fooD(D1**D2)
+	call fooD(D1**R1)
+	call fooC(C1**C2)
+	call fooC(C1**R1)
+	call fooZ(C1**D1)
+c FFEINTRIN_impABS
+	call fooR(ABS(R1))
+c FFEINTRIN_impACOS
+	call fooR(ACOS(R1))
+c FFEINTRIN_impAIMAG
+	call fooR(AIMAG(C1))
+c FFEINTRIN_impAINT
+	call fooR(AINT(R1))
+c FFEINTRIN_impALOG
+	call fooR(ALOG(R1))
+c FFEINTRIN_impALOG10
+	call fooR(ALOG10(R1))
+c FFEINTRIN_impAMAX0
+	call fooR(AMAX0(I1,I2))
+c FFEINTRIN_impAMAX1
+	call fooR(AMAX1(R1,R2))
+c FFEINTRIN_impAMIN0
+	call fooR(AMIN0(I1,I2))
+c FFEINTRIN_impAMIN1
+	call fooR(AMIN1(R1,R2))
+c FFEINTRIN_impAMOD
+	call fooR(AMOD(R1,R2))
+c FFEINTRIN_impANINT
+	call fooR(ANINT(R1))
+c FFEINTRIN_impASIN
+	call fooR(ASIN(R1))
+c FFEINTRIN_impATAN
+	call fooR(ATAN(R1))
+c FFEINTRIN_impATAN2
+	call fooR(ATAN2(R1,R2))
+c FFEINTRIN_impCABS
+	call fooR(CABS(C1))
+c FFEINTRIN_impCCOS
+	call fooC(CCOS(C1))
+c FFEINTRIN_impCEXP
+	call fooC(CEXP(C1))
+c FFEINTRIN_impCHAR
+	call fooA(CHAR(I1))
+c FFEINTRIN_impCLOG
+	call fooC(CLOG(C1))
+c FFEINTRIN_impCONJG
+	call fooC(CONJG(C1))
+c FFEINTRIN_impCOS
+	call fooR(COS(R1))
+c FFEINTRIN_impCOSH
+	call fooR(COSH(R1))
+c FFEINTRIN_impCSIN
+	call fooC(CSIN(C1))
+c FFEINTRIN_impCSQRT
+	call fooC(CSQRT(C1))
+c FFEINTRIN_impDABS
+	call fooD(DABS(D1))
+c FFEINTRIN_impDACOS
+	call fooD(DACOS(D1))
+c FFEINTRIN_impDASIN
+	call fooD(DASIN(D1))
+c FFEINTRIN_impDATAN
+	call fooD(DATAN(D1))
+c FFEINTRIN_impDATAN2
+	call fooD(DATAN2(D1,D2))
+c FFEINTRIN_impDCOS
+	call fooD(DCOS(D1))
+c FFEINTRIN_impDCOSH
+	call fooD(DCOSH(D1))
+c FFEINTRIN_impDDIM
+	call fooD(DDIM(D1,D2))
+c FFEINTRIN_impDEXP
+	call fooD(DEXP(D1))
+c FFEINTRIN_impDIM
+	call fooR(DIM(R1,R2))
+c FFEINTRIN_impDINT
+	call fooD(DINT(D1))
+c FFEINTRIN_impDLOG
+	call fooD(DLOG(D1))
+c FFEINTRIN_impDLOG10
+	call fooD(DLOG10(D1))
+c FFEINTRIN_impDMAX1
+	call fooD(DMAX1(D1,D2))
+c FFEINTRIN_impDMIN1
+	call fooD(DMIN1(D1,D2))
+c FFEINTRIN_impDMOD
+	call fooD(DMOD(D1,D2))
+c FFEINTRIN_impDNINT
+	call fooD(DNINT(D1))
+c FFEINTRIN_impDPROD
+	call fooD(DPROD(R1,R2))
+c FFEINTRIN_impDSIGN
+	call fooD(DSIGN(D1,D2))
+c FFEINTRIN_impDSIN
+	call fooD(DSIN(D1))
+c FFEINTRIN_impDSINH
+	call fooD(DSINH(D1))
+c FFEINTRIN_impDSQRT
+	call fooD(DSQRT(D1))
+c FFEINTRIN_impDTAN
+	call fooD(DTAN(D1))
+c FFEINTRIN_impDTANH
+	call fooD(DTANH(D1))
+c FFEINTRIN_impEXP
+	call fooR(EXP(R1))
+c FFEINTRIN_impIABS
+	call fooI(IABS(I1))
+c FFEINTRIN_impICHAR
+	call fooI(ICHAR(A1))
+c FFEINTRIN_impIDIM
+	call fooI(IDIM(I1,I2))
+c FFEINTRIN_impIDNINT
+	call fooI(IDNINT(D1))
+c FFEINTRIN_impINDEX
+	call fooI(INDEX(A1,A2))
+c FFEINTRIN_impISIGN
+	call fooI(ISIGN(I1,I2))
+c FFEINTRIN_impLEN
+	call fooI(LEN(A1))
+c FFEINTRIN_impLGE
+	call fooL(LGE(A1,A2))
+c FFEINTRIN_impLGT
+	call fooL(LGT(A1,A2))
+c FFEINTRIN_impLLE
+	call fooL(LLE(A1,A2))
+c FFEINTRIN_impLLT
+	call fooL(LLT(A1,A2))
+c FFEINTRIN_impMAX0
+	call fooI(MAX0(I1,I2))
+c FFEINTRIN_impMAX1
+	call fooI(MAX1(R1,R2))
+c FFEINTRIN_impMIN0
+	call fooI(MIN0(I1,I2))
+c FFEINTRIN_impMIN1
+	call fooI(MIN1(R1,R2))
+c FFEINTRIN_impMOD
+	call fooI(MOD(I1,I2))
+c FFEINTRIN_impNINT
+	call fooI(NINT(R1))
+c FFEINTRIN_impSIGN
+	call fooR(SIGN(R1,R2))
+c FFEINTRIN_impSIN
+	call fooR(SIN(R1))
+c FFEINTRIN_impSINH
+	call fooR(SINH(R1))
+c FFEINTRIN_impSQRT
+	call fooR(SQRT(R1))
+c FFEINTRIN_impTAN
+	call fooR(TAN(R1))
+c FFEINTRIN_impTANH
+	call fooR(TANH(R1))
+c FFEINTRIN_imp_CMPLX_C
+	call fooC(cmplx(C1,C2))
+c FFEINTRIN_imp_CMPLX_D
+	call fooZ(cmplx(D1,D2))
+c FFEINTRIN_imp_CMPLX_I
+	call fooC(cmplx(I1,I2))
+c FFEINTRIN_imp_CMPLX_R
+	call fooC(cmplx(R1,R2))
+c FFEINTRIN_imp_DBLE_C
+	call fooD(dble(C1))
+c FFEINTRIN_imp_DBLE_D
+	call fooD(dble(D1))
+c FFEINTRIN_imp_DBLE_I
+	call fooD(dble(I1))
+c FFEINTRIN_imp_DBLE_R
+	call fooD(dble(R1))
+c FFEINTRIN_imp_INT_C
+	call fooI(int(C1))
+c FFEINTRIN_imp_INT_D
+	call fooI(int(D1))
+c FFEINTRIN_imp_INT_I
+	call fooI(int(I1))
+c FFEINTRIN_imp_INT_R
+	call fooI(int(R1))
+c FFEINTRIN_imp_REAL_C
+	call fooR(real(C1))
+c FFEINTRIN_imp_REAL_D
+	call fooR(real(D1))
+c FFEINTRIN_imp_REAL_I
+	call fooR(real(I1))
+c FFEINTRIN_imp_REAL_R
+	call fooR(real(R1))
+c
+c FFEINTRIN_imp_INT_D:
+c
+c FFEINTRIN_specIDINT
+	call fooI(IDINT(D1))
+c
+c FFEINTRIN_imp_INT_R:
+c
+c FFEINTRIN_specIFIX
+	call fooI(IFIX(R1))
+c FFEINTRIN_specINT
+	call fooI(INT(R1))
+c
+c FFEINTRIN_imp_REAL_D:
+c
+c FFEINTRIN_specSNGL
+	call fooR(SNGL(D1))
+c
+c FFEINTRIN_imp_REAL_I:
+c
+c FFEINTRIN_specFLOAT
+	call fooR(FLOAT(I1))
+c FFEINTRIN_specREAL
+	call fooR(REAL(I1))
+c
+	end
+-------- (end input file to f2c)
+
+-------- (begin output from providing above input file as input to:
+--------  `f2c | gcc -E -C - | sed -e "s:/[*]*://:g" -e "s:[*]*[/]://:g" \
+--------     -e "s:^#.*$::g"')
+
+//  -- translated by f2c (version 19950223).
+   You must link the resulting object file with the libraries:
+        -lf2c -lm   (in that order)
+//
+
+
+// f2c.h  --  Standard Fortran to C header file //
+
+///  barf  [ba:rf]  2.  "He suggested using FORTRAN, and everybody barfed."
+
+        - From The Shogakukan DICTIONARY OF NEW ENGLISH (Second edition) //
+
+
+
+
+// F2C_INTEGER will normally be `int' but would be `long' on 16-bit systems //
+// we assume short, float are OK //
+typedef long int // long int // integer;
+typedef char *address;
+typedef short int shortint;
+typedef float real;
+typedef double doublereal;
+typedef struct { real r, i; } complex;
+typedef struct { doublereal r, i; } doublecomplex;
+typedef long int // long int // logical;
+typedef short int shortlogical;
+typedef char logical1;
+typedef char integer1;
+// typedef long long longint; // // system-dependent //
+
+
+
+
+// Extern is for use with -E //
+
+
+
+
+// I/O stuff //
+
+
+
+
+
+
+
+
+typedef long int // int or long int // flag;
+typedef long int // int or long int // ftnlen;
+typedef long int // int or long int // ftnint;
+
+
+//external read, write//
+typedef struct
+{       flag cierr;
+        ftnint ciunit;
+        flag ciend;
+        char *cifmt;
+        ftnint cirec;
+} cilist;
+
+//internal read, write//
+typedef struct
+{       flag icierr;
+        char *iciunit;
+        flag iciend;
+        char *icifmt;
+        ftnint icirlen;
+        ftnint icirnum;
+} icilist;
+
+//open//
+typedef struct
+{       flag oerr;
+        ftnint ounit;
+        char *ofnm;
+        ftnlen ofnmlen;
+        char *osta;
+        char *oacc;
+        char *ofm;
+        ftnint orl;
+        char *oblnk;
+} olist;
+
+//close//
+typedef struct
+{       flag cerr;
+        ftnint cunit;
+        char *csta;
+} cllist;
+
+//rewind, backspace, endfile//
+typedef struct
+{       flag aerr;
+        ftnint aunit;
+} alist;
+
+// inquire //
+typedef struct
+{       flag inerr;
+        ftnint inunit;
+        char *infile;
+        ftnlen infilen;
+        ftnint  *inex;  //parameters in standard's order//
+        ftnint  *inopen;
+        ftnint  *innum;
+        ftnint  *innamed;
+        char    *inname;
+        ftnlen  innamlen;
+        char    *inacc;
+        ftnlen  inacclen;
+        char    *inseq;
+        ftnlen  inseqlen;
+        char    *indir;
+        ftnlen  indirlen;
+        char    *infmt;
+        ftnlen  infmtlen;
+        char    *inform;
+        ftnint  informlen;
+        char    *inunf;
+        ftnlen  inunflen;
+        ftnint  *inrecl;
+        ftnint  *innrec;
+        char    *inblank;
+        ftnlen  inblanklen;
+} inlist;
+
+
+
+union Multitype {       // for multiple entry points //
+        integer1 g;
+        shortint h;
+        integer i;
+        // longint j; //
+        real r;
+        doublereal d;
+        complex c;
+        doublecomplex z;
+        };
+
+typedef union Multitype Multitype;
+
+typedef long Long;      // No longer used; formerly in Namelist //
+
+struct Vardesc {        // for Namelist //
+        char *name;
+        char *addr;
+        ftnlen *dims;
+        int  type;
+        };
+typedef struct Vardesc Vardesc;
+
+struct Namelist {
+        char *name;
+        Vardesc **vars;
+        int nvars;
+        };
+typedef struct Namelist Namelist;
+
+
+
+
+
+
+
+
+// procedure parameter types for -A and -C++ //
+
+
+
+
+typedef int // Unknown procedure type // (*U_fp)();
+typedef shortint (*J_fp)();
+typedef integer (*I_fp)();
+typedef real (*R_fp)();
+typedef doublereal (*D_fp)(), (*E_fp)();
+typedef // Complex // void  (*C_fp)();
+typedef // Double Complex // void  (*Z_fp)();
+typedef logical (*L_fp)();
+typedef shortlogical (*K_fp)();
+typedef // Character // void  (*H_fp)();
+typedef // Subroutine // int (*S_fp)();
+
+// E_fp is for real functions when -R is not specified //
+typedef void  C_f;      // complex function //
+typedef void  H_f;      // character function //
+typedef void  Z_f;      // double complex function //
+typedef doublereal E_f; // real function with -R not specified //
+
+// undef any lower-case symbols that your C compiler predefines, e.g.: //
+
+
+// (No such symbols should be defined in a strict ANSI C compiler.
+   We can avoid trouble with f2c-translated code by using
+   gcc -ansi [-traditional].) //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Main program // MAIN__()
+{
+    // System generated locals //
+    integer i__1;
+    real r__1, r__2;
+    doublereal d__1, d__2;
+    complex q__1;
+    doublecomplex z__1, z__2, z__3;
+    logical L__1;
+    char ch__1[1];
+
+    // Builtin functions //
+    void c_div();
+    integer pow_ii();
+    double pow_ri(), pow_di();
+    void pow_ci();
+    double pow_dd();
+    void pow_zz();
+    double acos(), r_imag(), r_int(), log(), r_lg10(), r_mod(), r_nint(), 
+            asin(), atan(), atan2(), c_abs();
+    void c_cos(), c_exp(), c_log(), r_cnjg();
+    double cos(), cosh();
+    void c_sin(), c_sqrt();
+    double d_dim(), exp(), r_dim(), d_int(), d_lg10(), d_mod(), d_nint(), 
+            d_sign(), sin(), sinh(), sqrt(), tan(), tanh();
+    integer i_dim(), i_dnnt(), i_indx(), i_sign(), i_len();
+    logical l_ge(), l_gt(), l_le(), l_lt();
+    integer i_nint();
+    double r_sign();
+
+    // Local variables //
+    extern // Subroutine // int fooa_(), fooc_(), food_(), fooi_(), foor_(), 
+            fool_(), fooz_(), getem_();
+    static char a1[10], a2[10];
+    static complex c1, c2;
+    static doublereal d1, d2;
+    static integer i1, i2;
+    static real r1, r2;
+
+
+    getem_(a1, a2, &c1, &c2, &i1, &i2, &r1, &r2, &d1, &d2, 10L, 10L);
+// / //
+    i__1 = i1 / i2;
+    fooi_(&i__1);
+    r__1 = r1 / i1;
+    foor_(&r__1);
+    d__1 = d1 / i1;
+    food_(&d__1);
+    d__1 = (doublereal) i1;
+    q__1.r = c1.r / d__1, q__1.i = c1.i / d__1;
+    fooc_(&q__1);
+    r__1 = r1 / r2;
+    foor_(&r__1);
+    d__1 = r1 / d1;
+    food_(&d__1);
+    d__1 = d1 / d2;
+    food_(&d__1);
+    d__1 = d1 / r1;
+    food_(&d__1);
+    c_div(&q__1, &c1, &c2);
+    fooc_(&q__1);
+    q__1.r = c1.r / r1, q__1.i = c1.i / r1;
+    fooc_(&q__1);
+    z__1.r = c1.r / d1, z__1.i = c1.i / d1;
+    fooz_(&z__1);
+// ** //
+    i__1 = pow_ii(&i1, &i2);
+    fooi_(&i__1);
+    r__1 = pow_ri(&r1, &i1);
+    foor_(&r__1);
+    d__1 = pow_di(&d1, &i1);
+    food_(&d__1);
+    pow_ci(&q__1, &c1, &i1);
+    fooc_(&q__1);
+    d__1 = (doublereal) r1;
+    d__2 = (doublereal) r2;
+    r__1 = pow_dd(&d__1, &d__2);
+    foor_(&r__1);
+    d__2 = (doublereal) r1;
+    d__1 = pow_dd(&d__2, &d1);
+    food_(&d__1);
+    d__1 = pow_dd(&d1, &d2);
+    food_(&d__1);
+    d__2 = (doublereal) r1;
+    d__1 = pow_dd(&d1, &d__2);
+    food_(&d__1);
+    z__2.r = c1.r, z__2.i = c1.i;
+    z__3.r = c2.r, z__3.i = c2.i;
+    pow_zz(&z__1, &z__2, &z__3);
+    q__1.r = z__1.r, q__1.i = z__1.i;
+    fooc_(&q__1);
+    z__2.r = c1.r, z__2.i = c1.i;
+    z__3.r = r1, z__3.i = 0.;
+    pow_zz(&z__1, &z__2, &z__3);
+    q__1.r = z__1.r, q__1.i = z__1.i;
+    fooc_(&q__1);
+    z__2.r = c1.r, z__2.i = c1.i;
+    z__3.r = d1, z__3.i = 0.;
+    pow_zz(&z__1, &z__2, &z__3);
+    fooz_(&z__1);
+// FFEINTRIN_impABS //
+    r__1 = (doublereal)((  r1  ) >= 0 ? (  r1  ) : -(  r1  ))  ;
+    foor_(&r__1);
+// FFEINTRIN_impACOS //
+    r__1 = acos(r1);
+    foor_(&r__1);
+// FFEINTRIN_impAIMAG //
+    r__1 = r_imag(&c1);
+    foor_(&r__1);
+// FFEINTRIN_impAINT //
+    r__1 = r_int(&r1);
+    foor_(&r__1);
+// FFEINTRIN_impALOG //
+    r__1 = log(r1);
+    foor_(&r__1);
+// FFEINTRIN_impALOG10 //
+    r__1 = r_lg10(&r1);
+    foor_(&r__1);
+// FFEINTRIN_impAMAX0 //
+    r__1 = (real) (( i1 ) >= ( i2 ) ? ( i1 ) : ( i2 )) ;
+    foor_(&r__1);
+// FFEINTRIN_impAMAX1 //
+    r__1 = (doublereal)((  r1  ) >= (  r2  ) ? (  r1  ) : (  r2  ))  ;
+    foor_(&r__1);
+// FFEINTRIN_impAMIN0 //
+    r__1 = (real) (( i1 ) <= ( i2 ) ? ( i1 ) : ( i2 )) ;
+    foor_(&r__1);
+// FFEINTRIN_impAMIN1 //
+    r__1 = (doublereal)((  r1  ) <= (  r2  ) ? (  r1  ) : (  r2  ))  ;
+    foor_(&r__1);
+// FFEINTRIN_impAMOD //
+    r__1 = r_mod(&r1, &r2);
+    foor_(&r__1);
+// FFEINTRIN_impANINT //
+    r__1 = r_nint(&r1);
+    foor_(&r__1);
+// FFEINTRIN_impASIN //
+    r__1 = asin(r1);
+    foor_(&r__1);
+// FFEINTRIN_impATAN //
+    r__1 = atan(r1);
+    foor_(&r__1);
+// FFEINTRIN_impATAN2 //
+    r__1 = atan2(r1, r2);
+    foor_(&r__1);
+// FFEINTRIN_impCABS //
+    r__1 = c_abs(&c1);
+    foor_(&r__1);
+// FFEINTRIN_impCCOS //
+    c_cos(&q__1, &c1);
+    fooc_(&q__1);
+// FFEINTRIN_impCEXP //
+    c_exp(&q__1, &c1);
+    fooc_(&q__1);
+// FFEINTRIN_impCHAR //
+    *(unsigned char *)&ch__1[0] = i1;
+    fooa_(ch__1, 1L);
+// FFEINTRIN_impCLOG //
+    c_log(&q__1, &c1);
+    fooc_(&q__1);
+// FFEINTRIN_impCONJG //
+    r_cnjg(&q__1, &c1);
+    fooc_(&q__1);
+// FFEINTRIN_impCOS //
+    r__1 = cos(r1);
+    foor_(&r__1);
+// FFEINTRIN_impCOSH //
+    r__1 = cosh(r1);
+    foor_(&r__1);
+// FFEINTRIN_impCSIN //
+    c_sin(&q__1, &c1);
+    fooc_(&q__1);
+// FFEINTRIN_impCSQRT //
+    c_sqrt(&q__1, &c1);
+    fooc_(&q__1);
+// FFEINTRIN_impDABS //
+    d__1 = (( d1 ) >= 0 ? ( d1 ) : -( d1 )) ;
+    food_(&d__1);
+// FFEINTRIN_impDACOS //
+    d__1 = acos(d1);
+    food_(&d__1);
+// FFEINTRIN_impDASIN //
+    d__1 = asin(d1);
+    food_(&d__1);
+// FFEINTRIN_impDATAN //
+    d__1 = atan(d1);
+    food_(&d__1);
+// FFEINTRIN_impDATAN2 //
+    d__1 = atan2(d1, d2);
+    food_(&d__1);
+// FFEINTRIN_impDCOS //
+    d__1 = cos(d1);
+    food_(&d__1);
+// FFEINTRIN_impDCOSH //
+    d__1 = cosh(d1);
+    food_(&d__1);
+// FFEINTRIN_impDDIM //
+    d__1 = d_dim(&d1, &d2);
+    food_(&d__1);
+// FFEINTRIN_impDEXP //
+    d__1 = exp(d1);
+    food_(&d__1);
+// FFEINTRIN_impDIM //
+    r__1 = r_dim(&r1, &r2);
+    foor_(&r__1);
+// FFEINTRIN_impDINT //
+    d__1 = d_int(&d1);
+    food_(&d__1);
+// FFEINTRIN_impDLOG //
+    d__1 = log(d1);
+    food_(&d__1);
+// FFEINTRIN_impDLOG10 //
+    d__1 = d_lg10(&d1);
+    food_(&d__1);
+// FFEINTRIN_impDMAX1 //
+    d__1 = (( d1 ) >= ( d2 ) ? ( d1 ) : ( d2 )) ;
+    food_(&d__1);
+// FFEINTRIN_impDMIN1 //
+    d__1 = (( d1 ) <= ( d2 ) ? ( d1 ) : ( d2 )) ;
+    food_(&d__1);
+// FFEINTRIN_impDMOD //
+    d__1 = d_mod(&d1, &d2);
+    food_(&d__1);
+// FFEINTRIN_impDNINT //
+    d__1 = d_nint(&d1);
+    food_(&d__1);
+// FFEINTRIN_impDPROD //
+    d__1 = (doublereal) r1 * r2;
+    food_(&d__1);
+// FFEINTRIN_impDSIGN //
+    d__1 = d_sign(&d1, &d2);
+    food_(&d__1);
+// FFEINTRIN_impDSIN //
+    d__1 = sin(d1);
+    food_(&d__1);
+// FFEINTRIN_impDSINH //
+    d__1 = sinh(d1);
+    food_(&d__1);
+// FFEINTRIN_impDSQRT //
+    d__1 = sqrt(d1);
+    food_(&d__1);
+// FFEINTRIN_impDTAN //
+    d__1 = tan(d1);
+    food_(&d__1);
+// FFEINTRIN_impDTANH //
+    d__1 = tanh(d1);
+    food_(&d__1);
+// FFEINTRIN_impEXP //
+    r__1 = exp(r1);
+    foor_(&r__1);
+// FFEINTRIN_impIABS //
+    i__1 = (( i1 ) >= 0 ? ( i1 ) : -( i1 )) ;
+    fooi_(&i__1);
+// FFEINTRIN_impICHAR //
+    i__1 = *(unsigned char *)a1;
+    fooi_(&i__1);
+// FFEINTRIN_impIDIM //
+    i__1 = i_dim(&i1, &i2);
+    fooi_(&i__1);
+// FFEINTRIN_impIDNINT //
+    i__1 = i_dnnt(&d1);
+    fooi_(&i__1);
+// FFEINTRIN_impINDEX //
+    i__1 = i_indx(a1, a2, 10L, 10L);
+    fooi_(&i__1);
+// FFEINTRIN_impISIGN //
+    i__1 = i_sign(&i1, &i2);
+    fooi_(&i__1);
+// FFEINTRIN_impLEN //
+    i__1 = i_len(a1, 10L);
+    fooi_(&i__1);
+// FFEINTRIN_impLGE //
+    L__1 = l_ge(a1, a2, 10L, 10L);
+    fool_(&L__1);
+// FFEINTRIN_impLGT //
+    L__1 = l_gt(a1, a2, 10L, 10L);
+    fool_(&L__1);
+// FFEINTRIN_impLLE //
+    L__1 = l_le(a1, a2, 10L, 10L);
+    fool_(&L__1);
+// FFEINTRIN_impLLT //
+    L__1 = l_lt(a1, a2, 10L, 10L);
+    fool_(&L__1);
+// FFEINTRIN_impMAX0 //
+    i__1 = (( i1 ) >= ( i2 ) ? ( i1 ) : ( i2 )) ;
+    fooi_(&i__1);
+// FFEINTRIN_impMAX1 //
+    i__1 = (integer) (doublereal)((  r1  ) >= (  r2  ) ? (  r1  ) : (  r2  ))  ;
+    fooi_(&i__1);
+// FFEINTRIN_impMIN0 //
+    i__1 = (( i1 ) <= ( i2 ) ? ( i1 ) : ( i2 )) ;
+    fooi_(&i__1);
+// FFEINTRIN_impMIN1 //
+    i__1 = (integer) (doublereal)((  r1  ) <= (  r2  ) ? (  r1  ) : (  r2  ))  ;
+    fooi_(&i__1);
+// FFEINTRIN_impMOD //
+    i__1 = i1 % i2;
+    fooi_(&i__1);
+// FFEINTRIN_impNINT //
+    i__1 = i_nint(&r1);
+    fooi_(&i__1);
+// FFEINTRIN_impSIGN //
+    r__1 = r_sign(&r1, &r2);
+    foor_(&r__1);
+// FFEINTRIN_impSIN //
+    r__1 = sin(r1);
+    foor_(&r__1);
+// FFEINTRIN_impSINH //
+    r__1 = sinh(r1);
+    foor_(&r__1);
+// FFEINTRIN_impSQRT //
+    r__1 = sqrt(r1);
+    foor_(&r__1);
+// FFEINTRIN_impTAN //
+    r__1 = tan(r1);
+    foor_(&r__1);
+// FFEINTRIN_impTANH //
+    r__1 = tanh(r1);
+    foor_(&r__1);
+// FFEINTRIN_imp_CMPLX_C //
+    r__1 = c1.r;
+    r__2 = c2.r;
+    q__1.r = r__1, q__1.i = r__2;
+    fooc_(&q__1);
+// FFEINTRIN_imp_CMPLX_D //
+    z__1.r = d1, z__1.i = d2;
+    fooz_(&z__1);
+// FFEINTRIN_imp_CMPLX_I //
+    r__1 = (real) i1;
+    r__2 = (real) i2;
+    q__1.r = r__1, q__1.i = r__2;
+    fooc_(&q__1);
+// FFEINTRIN_imp_CMPLX_R //
+    q__1.r = r1, q__1.i = r2;
+    fooc_(&q__1);
+// FFEINTRIN_imp_DBLE_C //
+    d__1 = (doublereal) c1.r;
+    food_(&d__1);
+// FFEINTRIN_imp_DBLE_D //
+    d__1 = d1;
+    food_(&d__1);
+// FFEINTRIN_imp_DBLE_I //
+    d__1 = (doublereal) i1;
+    food_(&d__1);
+// FFEINTRIN_imp_DBLE_R //
+    d__1 = (doublereal) r1;
+    food_(&d__1);
+// FFEINTRIN_imp_INT_C //
+    i__1 = (integer) c1.r;
+    fooi_(&i__1);
+// FFEINTRIN_imp_INT_D //
+    i__1 = (integer) d1;
+    fooi_(&i__1);
+// FFEINTRIN_imp_INT_I //
+    i__1 = i1;
+    fooi_(&i__1);
+// FFEINTRIN_imp_INT_R //
+    i__1 = (integer) r1;
+    fooi_(&i__1);
+// FFEINTRIN_imp_REAL_C //
+    r__1 = c1.r;
+    foor_(&r__1);
+// FFEINTRIN_imp_REAL_D //
+    r__1 = (real) d1;
+    foor_(&r__1);
+// FFEINTRIN_imp_REAL_I //
+    r__1 = (real) i1;
+    foor_(&r__1);
+// FFEINTRIN_imp_REAL_R //
+    r__1 = r1;
+    foor_(&r__1);
+
+// FFEINTRIN_imp_INT_D: //
+
+// FFEINTRIN_specIDINT //
+    i__1 = (integer) d1;
+    fooi_(&i__1);
+
+// FFEINTRIN_imp_INT_R: //
+
+// FFEINTRIN_specIFIX //
+    i__1 = (integer) r1;
+    fooi_(&i__1);
+// FFEINTRIN_specINT //
+    i__1 = (integer) r1;
+    fooi_(&i__1);
+
+// FFEINTRIN_imp_REAL_D: //
+
+// FFEINTRIN_specSNGL //
+    r__1 = (real) d1;
+    foor_(&r__1);
+
+// FFEINTRIN_imp_REAL_I: //
+
+// FFEINTRIN_specFLOAT //
+    r__1 = (real) i1;
+    foor_(&r__1);
+// FFEINTRIN_specREAL //
+    r__1 = (real) i1;
+    foor_(&r__1);
+
+} // MAIN__ //
+
+-------- (end output file from f2c)
+
+*/

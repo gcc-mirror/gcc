@@ -151,11 +151,13 @@ struct _ffesymbol_
 				   away. */
     bool explicit_where;	/* TRUE if INTRINSIC/EXTERNAL explicit. */
     bool namelisted;		/* TRUE if in NAMELIST (needs static alloc). */
+    bool assigned;		/* TRUE if ever ASSIGNed to.  */
   };
 
 #define ffesymbol_accretes(s) ((s)->accretes)
 #define ffesymbol_accretion(s) ((s)->accretion)
 #define ffesymbol_arraysize(s) ((s)->array_size)
+#define ffesymbol_assigned(s) ((s)->assigned)
 #define ffesymbol_attr(s,a) ((s)->attrs & ((ffesymbolAttrs) 1 << (a)))
 #define ffesymbol_attrs(s) ((s)->attrs)
 const char *ffesymbol_attrs_string (ffesymbolAttrs attrs);
@@ -231,6 +233,7 @@ bool ffesymbol_retractable (void);
 #define ffesymbol_set_accretes(s,a) ((s)->accretes = (a))
 #define ffesymbol_set_accretion(s,a) ((s)->accretion = (a))
 #define ffesymbol_set_arraysize(s,a) ((s)->array_size = (a))
+#define ffesymbol_set_assigned(s,a) ((s)->assigned = (a))
 #define ffesymbol_set_attr(s,a) ((s)->attrs |= ((ffesymbolAttrs) 1 << (a)))
 #define ffesymbol_set_attrs(s,a) ((s)->attrs = (a))
 #define ffesymbol_set_common(s,c) ((s)->common = (c))

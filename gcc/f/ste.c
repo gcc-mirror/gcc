@@ -28,21 +28,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    Modifications:
 */
 
-/* As of 0.5.4, any statement that calls on ffecom to transform an
-   expression might need to be wrapped in ffecom_push_calltemps ()
-   and ffecom_pop_calltemps () as are some other cases.  That is
-   the case when the transformation might involve generation of
-   a temporary that must be auto-popped, the specific case being
-   when a COMPLEX operation requiring a call to libf2c being
-   generated, whereby a temp is needed to hold the result since
-   libf2c doesn't return COMPLEX results directly.  Cases where it
-   is known that ffecom_expr () won't need to do this, such as
-   the CALL statement (where it's the transformation of the
-   call expr itself that does the wrapping), don't need to bother
-   with this wrapping.  Forgetting to do the wrapping currently
-   means a crash at an assertion when the wrapping would be helpful
-   to keep temporaries from being wasted -- see ffecom_push_tempvar.  */
-
 /* Include files. */
 
 #include "proj.h"
@@ -114,8 +99,10 @@ static void ffeste_begin_iterdo_ (ffestw block, tree *tvar, tree *tincr,
 				  ffebld end, ffelexToken end_token,
 				  ffebld incr, ffelexToken incr_token,
 				  const char *msg);
-static void ffeste_end_iterdo_ (tree tvar, tree tincr, tree itersvar);
+static void ffeste_end_iterdo_ (ffestw block, tree tvar, tree tincr,
+				tree itersvar);
 static void ffeste_io_call_ (tree call, bool do_check);
+static void ffeste_io_impdo_ (ffebld impdo, ffelexToken impdo_token);
 static tree ffeste_io_dofio_ (ffebld expr);
 static tree ffeste_io_dolio_ (ffebld expr);
 static tree ffeste_io_douio_ (ffebld expr);
@@ -131,7 +118,23 @@ static tree ffeste_io_cllist_ (bool have_err, ffebld unit_expr,
 static tree ffeste_io_icilist_ (bool have_err, ffebld unit_expr,
 				bool have_end, ffestvFormat format,
 				ffestpFile *format_spec);
-static void ffeste_io_impdo_ (ffebld impdo, ffelexToken impdo_token);
+static tree ffeste_io_inlist_ (bool have_err,
+			       ffestpFile *unit_spec,
+			       ffestpFile *file_spec,
+			       ffestpFile *exist_spec,
+			       ffestpFile *open_spec,
+			       ffestpFile *number_spec,
+			       ffestpFile *named_spec,
+			       ffestpFile *name_spec,
+			       ffestpFile *access_spec,
+			       ffestpFile *sequential_spec,
+			       ffestpFile *direct_spec,
+			       ffestpFile *form_spec,
+			       ffestpFile *formatted_spec,
+			       ffestpFile *unformatted_spec,
+			       ffestpFile *recl_spec,
+			       ffestpFile *nextrec_spec,
+			       ffestpFile *blank_spec);
 static tree ffeste_io_olist_ (bool have_err, ffebld unit_expr,
 			      ffestpFile *file_spec,
 			      ffestpFile *stat_spec,
@@ -177,118 +180,325 @@ static void ffeste_subr_file_ (const char *kw, ffestpFile *spec);
 	 || ffeste_statelet_ == FFESTE_stateletITEM_); \
   ffeste_statelet_ = FFESTE_stateletSIMPLE_
 
-#define ffeste_f2c_charnolenspec_(Spec,Exp,Init)			    \
+#define ffeste_f2c_init_charnolen_(Exp,Init,Spec)			      \
   do									      \
     {									      \
-    if (Spec->kw_or_val_present)					      \
-	Exp = ffecom_arg_ptr_to_expr(Spec->u.expr,&ignore);		 \
+      if ((Spec)->kw_or_val_present)					      \
+	Exp = ffecom_arg_ptr_to_const_expr ((Spec)->u.expr, &ignore);	      \
       else								      \
 	Exp = null_pointer_node;					      \
-    if (TREE_CONSTANT(Exp))						      \
-	{								      \
+      if (Exp)								      \
 	Init = Exp;							      \
-	Exp = NULL_TREE;						      \
-	}								      \
       else								      \
 	{								      \
-	Init = null_pointer_node;					      \
-	constantp = FALSE;						      \
+	  Init = null_pointer_node;					      \
+	  constantp = FALSE;						      \
 	}								      \
     } while(0)
 
-#define ffeste_f2c_charspec_(Spec,Exp,Init,Lenexp,Leninit)		    \
+#define ffeste_f2c_init_char_(Exp,Init,Lenexp,Leninit,Spec)		      \
   do									      \
     {									      \
-    if (Spec->kw_or_val_present)					      \
-	Exp = ffecom_arg_ptr_to_expr(Spec->u.expr,&Lenexp);		      \
+      if ((Spec)->kw_or_val_present)					      \
+	Exp = ffecom_arg_ptr_to_const_expr ((Spec)->u.expr, &Lenexp);	      \
       else								      \
 	{								      \
-	Exp = null_pointer_node;					      \
-	Lenexp = ffecom_f2c_ftnlen_zero_node;				      \
+	  Exp = null_pointer_node;					      \
+	  Lenexp = ffecom_f2c_ftnlen_zero_node;				      \
 	}								      \
-    if (TREE_CONSTANT(Exp))						      \
-	{								      \
+      if (Exp)								      \
 	Init = Exp;							      \
-	Exp = NULL_TREE;						      \
-	}								      \
       else								      \
 	{								      \
-	Init = null_pointer_node;					      \
-	constantp = FALSE;						      \
+	  Init = null_pointer_node;					      \
+	  constantp = FALSE;						      \
 	}								      \
-    if ((Lenexp != NULL_TREE) && TREE_CONSTANT(Lenexp))			      \
-	{								      \
+      if (Lenexp)							      \
 	Leninit = Lenexp;						      \
-	Lenexp = NULL_TREE;						      \
-	}								      \
       else								      \
 	{								      \
-	Leninit = ffecom_f2c_ftnlen_zero_node;				      \
-	constantp = FALSE;						      \
+	  Leninit = ffecom_f2c_ftnlen_zero_node;			      \
+	  constantp = FALSE;						      \
 	}								      \
     } while(0)
 
-#define ffeste_f2c_exp_(Field,Exp)					      \
+#define ffeste_f2c_init_flag_(Flag,Init)				      \
   do									      \
     {									      \
-    if (Exp != NULL_TREE)						      \
+      Init = convert (ffecom_f2c_flag_type_node,			      \
+		      (Flag) ? integer_one_node : integer_zero_node);	      \
+    } while(0)
+
+#define ffeste_f2c_init_format_(Exp,Init,Spec)				      \
+  do									      \
+    {									      \
+      Exp = ffecom_arg_ptr_to_const_expr ((Spec)->u.expr, NULL);	      \
+      if (Exp)								      \
+	Init = Exp;							      \
+      else								      \
 	{								      \
-	Exp = ffecom_modify(void_type_node,ffecom_2(COMPONENT_REF,	      \
-	      TREE_TYPE(Field),t,Field),Exp);				      \
-	expand_expr_stmt(Exp);						      \
+	  Init = null_pointer_node;					      \
+	  constantp = FALSE;						      \
 	}								      \
     } while(0)
 
-#define ffeste_f2c_init_(Init)						    \
+#define ffeste_f2c_init_int_(Exp,Init,Spec)				      \
   do									      \
     {									      \
-    TREE_CHAIN(initn) = build_tree_list((field = TREE_CHAIN(field)),Init);    \
-    initn = TREE_CHAIN(initn);						      \
-    } while(0)
-
-#define ffeste_f2c_flagspec_(Flag,Init)					      \
-  do { Init = convert (ffecom_f2c_flag_type_node,			      \
-		       Flag ? integer_one_node : integer_zero_node); }	      \
-    while(0)
-
-#define ffeste_f2c_intspec_(Spec,Exp,Init)				      \
-  do									      \
-    {									      \
-    if (Spec->kw_or_val_present)					      \
-	Exp = ffecom_expr(Spec->u.expr);				      \
+      if ((Spec)->kw_or_val_present)					      \
+	Exp = ffecom_const_expr ((Spec)->u.expr);			      \
       else								      \
 	Exp = ffecom_integer_zero_node;					      \
-    if (TREE_CONSTANT(Exp))						      \
-	{								      \
+      if (Exp)								      \
 	Init = Exp;							      \
-	Exp = NULL_TREE;						      \
-	}								      \
       else								      \
 	{								      \
-	Init = ffecom_integer_zero_node;				      \
-	constantp = FALSE;						      \
+	  Init = ffecom_integer_zero_node;				      \
+	  constantp = FALSE;						      \
 	}								      \
     } while(0)
 
-#define ffeste_f2c_ptrtointspec_(Spec,Exp,Init)				    \
+#define ffeste_f2c_init_ptrtoint_(Exp,Init,Spec)			      \
   do									      \
     {									      \
-    if (Spec->kw_or_val_present)					      \
-	Exp = ffecom_ptr_to_expr(Spec->u.expr);				 \
+      if ((Spec)->kw_or_val_present)					      \
+	Exp = ffecom_ptr_to_const_expr ((Spec)->u.expr);		      \
       else								      \
 	Exp = null_pointer_node;					      \
-    if (TREE_CONSTANT(Exp))						      \
-	{								      \
+      if (Exp)								      \
 	Init = Exp;							      \
-	Exp = NULL_TREE;						      \
-	}								      \
       else								      \
 	{								      \
-	Init = null_pointer_node;					      \
-	constantp = FALSE;						      \
+	  Init = null_pointer_node;					      \
+	  constantp = FALSE;						      \
+	}								      \
+    } while(0)
+
+#define ffeste_f2c_init_next_(Init)					      \
+  do									      \
+    {									      \
+      TREE_CHAIN (initn) = build_tree_list ((field = TREE_CHAIN (field)),     \
+					    (Init));			      \
+      initn = TREE_CHAIN(initn);					      \
+    } while(0)
+
+#define ffeste_f2c_prepare_charnolen_(Spec,Exp)				      \
+  do									      \
+    {									      \
+      if (! (Exp))							      \
+        ffecom_prepare_arg_ptr_to_expr ((Spec)->u.expr);		      \
+    } while(0)
+
+#define ffeste_f2c_prepare_char_(Spec,Exp)				      \
+  do									      \
+    {									      \
+      if (! (Exp))							      \
+        ffecom_prepare_arg_ptr_to_expr ((Spec)->u.expr);		      \
+    } while(0)
+
+#define ffeste_f2c_prepare_format_(Spec,Exp)				      \
+  do									      \
+    {									      \
+      if (! (Exp))							      \
+        ffecom_prepare_arg_ptr_to_expr ((Spec)->u.expr);		      \
+    } while(0)
+
+#define ffeste_f2c_prepare_int_(Spec,Exp)				      \
+  do									      \
+    {									      \
+      if (! (Exp))							      \
+        ffecom_prepare_expr ((Spec)->u.expr);				      \
+    } while(0)
+
+#define ffeste_f2c_prepare_ptrtoint_(Spec,Exp)				      \
+  do									      \
+    {									      \
+      if (! (Exp))							      \
+        ffecom_prepare_ptr_to_expr ((Spec)->u.expr);			      \
+    } while(0)
+
+#define ffeste_f2c_compile_(Field,Exp)					      \
+  do									      \
+    {									      \
+      tree exz;								      \
+      if ((Exp))							      \
+	{								      \
+	  exz = ffecom_modify (void_type_node,				      \
+			       ffecom_2 (COMPONENT_REF, TREE_TYPE (Field),    \
+					 t, (Field)),			      \
+			       (Exp));					      \
+	  expand_expr_stmt (exz);					      \
+	}								      \
+    } while(0)
+
+#define ffeste_f2c_compile_charnolen_(Field,Spec,Exp)			      \
+  do									      \
+    {									      \
+      tree exq;								      \
+      if (! (Exp))							      \
+	{								      \
+	  exq = ffecom_arg_ptr_to_expr ((Spec)->u.expr, &ignore);	      \
+	  ffeste_f2c_compile_ ((Field), exq);				      \
+	}								      \
+    } while(0)
+
+#define ffeste_f2c_compile_char_(Field,Lenfield,Spec,Exp,Lenexp)	      \
+  do									      \
+    {									      \
+      tree exq = (Exp);							      \
+      tree lenexq = (Lenexp);						      \
+      int need_exq = (! exq);						      \
+      int need_lenexq = (! lenexq); 					      \
+      if (need_exq || need_lenexq)					      \
+	{								      \
+	  exq = ffecom_arg_ptr_to_expr ((Spec)->u.expr, &lenexq);	      \
+	  if (need_exq)							      \
+	    ffeste_f2c_compile_ ((Field), exq);				      \
+	  if (need_lenexq)						      \
+	    ffeste_f2c_compile_ ((Lenfield), lenexq);			      \
+	}								      \
+    } while(0)
+
+#define ffeste_f2c_compile_format_(Field,Spec,Exp)			      \
+  do									      \
+    {									      \
+      tree exq;								      \
+      if (! (Exp))							      \
+	{								      \
+	  exq = ffecom_arg_ptr_to_expr ((Spec)->u.expr, NULL);		      \
+	  ffeste_f2c_compile_ ((Field), exq);				      \
+	}								      \
+    } while(0)
+
+#define ffeste_f2c_compile_int_(Field,Spec,Exp)				      \
+  do									      \
+    {									      \
+      tree exq;								      \
+      if (! (Exp))							      \
+	{								      \
+	  exq = ffecom_expr ((Spec)->u.expr);				      \
+	  ffeste_f2c_compile_ ((Field), exq);				      \
+	}								      \
+    } while(0)
+
+#define ffeste_f2c_compile_ptrtoint_(Field,Spec,Exp)			      \
+  do									      \
+    {									      \
+      tree exq;								      \
+      if (! (Exp))							      \
+	{								      \
+	  exq = ffecom_ptr_to_expr ((Spec)->u.expr);			      \
+	  ffeste_f2c_compile_ ((Field), exq);				      \
 	}								      \
     } while(0)
 
+/* Start a Fortran block.  */
+
+#ifdef ENABLE_CHECKING
+
+typedef struct gbe_block
+{
+  struct gbe_block *outer;
+  ffestw block;
+  int lineno;
+  char *input_filename;
+  bool is_stmt;
+} *gbe_block;
+
+gbe_block ffeste_top_block_ = NULL;
+
+static void
+ffeste_start_block_ (ffestw block)
+{
+  gbe_block b = xmalloc (sizeof (*b));
+
+  b->outer = ffeste_top_block_;
+  b->block = block;
+  b->lineno = lineno;
+  b->input_filename = input_filename;
+  b->is_stmt = FALSE;
+
+  ffeste_top_block_ = b;
+
+  ffecom_start_compstmt ();
+}
+
+/* End a Fortran block.  */
+
+static void
+ffeste_end_block_ (ffestw block)
+{
+  gbe_block b = ffeste_top_block_;
+
+  assert (b);
+  assert (! b->is_stmt);
+  assert (b->block == block);
+  assert (! b->is_stmt);
+
+  ffeste_top_block_ = b->outer;
+
+  free (b);
+
+  clear_momentary ();
+
+  ffecom_end_compstmt ();
+}
+
+/* Start a Fortran statement.
+
+   Starts a back-end block, so temporaries can be managed, clean-ups
+   properly handled, etc.  Nesting of statements *is* allowed -- the
+   handling of I/O items, even implied-DO I/O lists, within a READ,
+   PRINT, or WRITE statement is one example.  */
+
+static void
+ffeste_start_stmt_(void)
+{
+  gbe_block b = xmalloc (sizeof (*b));
+
+  b->outer = ffeste_top_block_;
+  b->block = NULL;
+  b->lineno = lineno;
+  b->input_filename = input_filename;
+  b->is_stmt = TRUE;
+
+  ffeste_top_block_ = b;
+
+  ffecom_start_compstmt ();
+}
+
+/* End a Fortran statement.  */
+
+static void
+ffeste_end_stmt_(void)
+{
+  gbe_block b = ffeste_top_block_;
+
+  assert (b);
+  assert (b->is_stmt);
+
+  ffeste_top_block_ = b->outer;
+
+  free (b);
+
+  clear_momentary ();
+
+  ffecom_end_compstmt ();
+}
+
+#else  /* ! defined (ENABLE_CHECKING) */
+
+#define ffeste_start_block_(b) ffecom_start_compstmt ()
+#define ffeste_end_block_(b)	\
+  do				\
+    {				\
+      clear_momentary ();	\
+      ffecom_end_compstmt ();	\
+    } while(0)
+#define ffeste_start_stmt_() ffeste_start_block_(NULL)
+#define ffeste_end_stmt_() ffeste_end_block_(NULL)
+
+#endif  /* ! defined (ENABLE_CHECKING) */
 
 /* Begin an iterative DO loop.  Pass the block to start if applicable.
 
@@ -311,20 +521,40 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
   tree tincr;
   tree tincr_saved;
   tree niters;
+  struct nesting *expanded_loop;
 
-  push_momentary ();		/* Want to save these throughout the loop. */
+  /* Want to have tvar, tincr, and niters for the whole loop body. */
 
-  tvar = ffecom_expr_rw (var);
+  if (block)
+    ffeste_start_block_ (block);
+  else
+    ffeste_start_stmt_ ();
+
+  niters = ffecom_make_tempvar (block ? "do" : "impdo",
+				ffecom_integer_type_node,
+				FFETARGET_charactersizeNONE, -1);
+
+  ffecom_prepare_expr (incr);
+  ffecom_prepare_expr_rw (NULL_TREE, var);
+
+  ffecom_prepare_end ();
+
+  tvar = ffecom_expr_rw (NULL_TREE, var);
   tincr = ffecom_expr (incr);
 
   if (TREE_CODE (tvar) == ERROR_MARK
       || TREE_CODE (tincr) == ERROR_MARK)
     {
       if (block)
-	ffestw_set_do_tvar (block, error_mark_node);
+	{
+	  ffeste_end_block_ (block);
+	  ffestw_set_do_tvar (block, error_mark_node);
+	}
       else
-	*xtvar = error_mark_node;
-      pop_momentary ();
+	{
+	  ffeste_end_stmt_ ();
+	  *xtvar = error_mark_node;
+	}
       return;
     }
 
@@ -342,7 +572,16 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 
   tincr_saved = ffecom_save_tree (tincr);
 
-  push_momentary ();		/* Want to discard the rest after the loop. */
+  preserve_momentary ();
+
+  /* Want to have tstart, tend for just this statement. */
+
+  ffeste_start_stmt_ ();
+
+  ffecom_prepare_expr (start);
+  ffecom_prepare_expr (end);
+
+  ffecom_prepare_end ();
 
   tstart = ffecom_expr (start);
   tend = ffecom_expr (end);
@@ -350,20 +589,26 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
   if (TREE_CODE (tstart) == ERROR_MARK
       || TREE_CODE (tend) == ERROR_MARK)
     {
+      ffeste_end_stmt_ ();
+
       if (block)
-	ffestw_set_do_tvar (block, error_mark_node);
+	{
+	  ffeste_end_block_ (block);
+	  ffestw_set_do_tvar (block, error_mark_node);
+	}
       else
-	*xtvar = error_mark_node;
-      pop_momentary ();
-      pop_momentary ();
+	{
+	  ffeste_end_stmt_ ();
+	  *xtvar = error_mark_node;
+	}
       return;
     }
 
-  {				/* For warnings only, nothing else
-				   happens here.  */
+  /* For warnings only, nothing else happens here.  */
+  {
     tree try;
 
-    if (!ffe_is_onetrip ())
+    if (! ffe_is_onetrip ())
       {
 	try = ffecom_2 (MINUS_EXPR, TREE_TYPE (tvar),
 			tend,
@@ -425,7 +670,7 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 		   tend,
 		   tstart);
 
-  if (!ffe_is_onetrip ())
+  if (! ffe_is_onetrip ())
     {
       expr = ffecom_2 (PLUS_EXPR, TREE_TYPE (expr),
 		       expr,
@@ -457,21 +702,22 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
     expr = convert (ffecom_integer_type_node, expr);
 #endif
 
-  niters = ffecom_push_tempvar (TREE_TYPE (expr),
-				FFETARGET_charactersizeNONE, -1, FALSE);
+  assert (TYPE_MAIN_VARIANT (TREE_TYPE (niters))
+	  == TYPE_MAIN_VARIANT (TREE_TYPE (expr)));
+
   expr = ffecom_modify (void_type_node, niters, expr);
   expand_expr_stmt (expr);
 
   expr = ffecom_modify (void_type_node, tvar, tstart);
   expand_expr_stmt (expr);
 
-  if (block == NULL)
-    expand_start_loop_continue_elsewhere (0);
-  else
-    ffestw_set_do_hook (block,
-			expand_start_loop_continue_elsewhere (1));
+  ffeste_end_stmt_ ();
 
-  if (!ffe_is_onetrip ())
+  expanded_loop = expand_start_loop_continue_elsewhere (!! block);
+  if (block)
+    ffestw_set_do_hook (block, expanded_loop);
+
+  if (! ffe_is_onetrip ())
     {
       expr = ffecom_truth_value
 	(ffecom_2 (GE_EXPR, integer_type_node,
@@ -486,20 +732,17 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
       expand_exit_loop_if_false (0, expr);
     }
 
-  clear_momentary ();		/* Discard the above now that we're done with
-				   DO stmt. */
-
-  if (block == NULL)
-    {
-      *xtvar = tvar;
-      *xtincr = tincr_saved;
-      *xitersvar = niters;
-    }
-  else
+  if (block)
     {
       ffestw_set_do_tvar (block, tvar);
       ffestw_set_do_incr_saved (block, tincr_saved);
       ffestw_set_do_count_var (block, niters);
+    }
+  else
+    {
+      *xtvar = tvar;
+      *xtincr = tincr_saved;
+      *xitersvar = niters;
     }
 }
 
@@ -510,7 +753,7 @@ ffeste_begin_iterdo_ (ffestw block, tree *xtvar, tree *xtincr,
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
-ffeste_end_iterdo_ (tree tvar, tree tincr, tree itersvar)
+ffeste_end_iterdo_ (ffestw block, tree tvar, tree tincr, tree itersvar)
 {
   tree expr;
   tree niters = itersvar;
@@ -519,6 +762,8 @@ ffeste_end_iterdo_ (tree tvar, tree tincr, tree itersvar)
     return;
 
   expand_loop_continue_here ();
+
+  ffeste_start_stmt_ ();
 
   if (ffe_is_onetrip ())
     {
@@ -540,27 +785,21 @@ ffeste_end_iterdo_ (tree tvar, tree tincr, tree itersvar)
 				  tvar,
 				  tincr));
   expand_expr_stmt (expr);
+
+  /* Lose the stuff we just built. */
+  ffeste_end_stmt_ ();
+
   expand_end_loop ();
 
-  ffecom_pop_tempvar (itersvar);	/* Free #iters var. */
-
-  clear_momentary ();
-  pop_momentary ();		/* Lose the stuff we just built. */
-
-  clear_momentary ();
-  pop_momentary ();		/* Lose the tvar and incr_saved trees. */
+  /* Lose the tvar and incr_saved trees. */
+  if (block)
+    ffeste_end_block_ (block);
+  else
+    ffeste_end_stmt_ ();
 }
-
 #endif
-/* ffeste_io_call_ -- Generate call to run-time I/O routine
 
-   tree callexpr = build(CALL_EXPR,...);
-   ffeste_io_call_(callexpr,TRUE);
-
-   Sets TREE_SIDE_EFFECTS(callexpr) = 1.  If ffeste_io_iostat_ is not
-   NULL_TREE, replaces callexpr with "iostat = callexpr;".  Expands the
-   result.  If ffeste_io_abort_ is not NULL_TREE and the second argument
-   is TRUE, generates "if (iostat != 0) goto ffeste_io_abort_;".  */
+/* Generate call to run-time I/O routine.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
@@ -570,15 +809,13 @@ ffeste_io_call_ (tree call, bool do_check)
 
   TREE_SIDE_EFFECTS (call) = 1;
   if (ffeste_io_iostat_ != NULL_TREE)
-    {
-      call = ffecom_modify (do_check ? NULL_TREE : void_type_node,
-			    ffeste_io_iostat_, call);
-    }
+    call = ffecom_modify (do_check ? NULL_TREE : void_type_node,
+			  ffeste_io_iostat_, call);
   expand_expr_stmt (call);
 
-  if (!do_check
-      || (ffeste_io_abort_ == NULL_TREE)
-      || (TREE_CODE (ffeste_io_abort_) == ERROR_MARK))
+  if (! do_check
+      || ffeste_io_abort_ == NULL_TREE
+      || TREE_CODE (ffeste_io_abort_) == ERROR_MARK)
     return;
 
   /* Generate optional test. */
@@ -587,13 +824,96 @@ ffeste_io_call_ (tree call, bool do_check)
   expand_goto (ffeste_io_abort_);
   expand_end_cond ();
 }
-
 #endif
-/* ffeste_io_dofio_ -- Generate call to do_fio for formatted I/O item
 
-   ffebld expr;
-   tree call;
-   call = ffeste_io_dofio_(expr);
+/* Handle implied-DO in I/O list.
+
+   Expands code to start up the DO loop.  Then for each item in the
+   DO loop, handles appropriately (possibly including recursively calling
+   itself).  Then expands code to end the DO loop.  */
+
+#if FFECOM_targetCURRENT == FFECOM_targetGCC
+static void
+ffeste_io_impdo_ (ffebld impdo, ffelexToken impdo_token)
+{
+  ffebld var = ffebld_head (ffebld_right (impdo));
+  ffebld start = ffebld_head (ffebld_trail (ffebld_right (impdo)));
+  ffebld end = ffebld_head (ffebld_trail (ffebld_trail
+					  (ffebld_right (impdo))));
+  ffebld incr = ffebld_head (ffebld_trail (ffebld_trail
+				    (ffebld_trail (ffebld_right (impdo)))));
+  ffebld list;
+  ffebld item;
+  tree tvar;
+  tree tincr;
+  tree titervar;
+
+  if (incr == NULL)
+    {
+      incr = ffebld_new_conter (ffebld_constant_new_integerdefault_val (1));
+      ffebld_set_info (incr, ffeinfo_new
+		       (FFEINFO_basictypeINTEGER,
+			FFEINFO_kindtypeINTEGERDEFAULT,
+			0,
+			FFEINFO_kindENTITY,
+			FFEINFO_whereCONSTANT,
+			FFETARGET_charactersizeNONE));
+    }
+
+  /* Start the DO loop.  */
+
+  start = ffeexpr_convert_expr (start, impdo_token, var, impdo_token,
+				FFEEXPR_contextLET);
+  end = ffeexpr_convert_expr (end, impdo_token, var, impdo_token,
+			      FFEEXPR_contextLET);
+  incr = ffeexpr_convert_expr (incr, impdo_token, var, impdo_token,
+			       FFEEXPR_contextLET);
+
+  ffeste_begin_iterdo_ (NULL, &tvar, &tincr, &titervar, var,
+			start, impdo_token,
+			end, impdo_token,
+			incr, impdo_token,
+			"Implied DO loop");
+
+  /* Handle the list of items.  */
+
+  for (list = ffebld_left (impdo); list != NULL; list = ffebld_trail (list))
+    {
+      item = ffebld_head (list);
+      if (item == NULL)
+	continue;
+
+      /* Strip parens off items such as in "READ *,(A)".  This is really a bug
+	 in the user's code, but I've been told lots of code does this.  */
+      while (ffebld_op (item) == FFEBLD_opPAREN)
+	item = ffebld_left (item);
+
+      if (ffebld_op (item) == FFEBLD_opANY)
+	continue;
+
+      if (ffebld_op (item) == FFEBLD_opIMPDO)
+	ffeste_io_impdo_ (item, impdo_token);
+      else
+	{
+	  ffeste_start_stmt_ ();
+
+	  ffecom_prepare_arg_ptr_to_expr (item);
+
+	  ffecom_prepare_end ();
+
+	  ffeste_io_call_ ((*ffeste_io_driver_) (item), TRUE);
+
+	  ffeste_end_stmt_ ();
+	}
+    }
+
+  /* Generate end of implied-do construct. */
+
+  ffeste_end_iterdo_ (NULL, tvar, tincr, titervar);
+}
+#endif
+
+/* I/O driver for formatted I/O item (do_fio)
 
    Returns a tree for a CALL_EXPR to the do_fio function, which handles
    a formatted I/O list item, along with the appropriate arguments for
@@ -629,16 +949,11 @@ ffeste_io_dofio_ (ffebld expr)
   else
     is_complex = FALSE;
 
-  ffecom_push_calltemps ();
-
   variable = ffecom_arg_ptr_to_expr (expr, &size);
 
   if ((variable == error_mark_node)
       || (size == error_mark_node))
-    {
-      ffecom_pop_calltemps ();
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   if (size == NULL_TREE)	/* Already filled in for CHARACTER type. */
     {				/* "(ftnlen) sizeof(type)" */
@@ -655,14 +970,15 @@ ffeste_io_dofio_ (ffebld expr)
       size = convert (ffecom_f2c_ftnlen_type_node, size);
     }
 
-  if ((ffeinfo_rank (ffebld_info (expr)) == 0)
-      || (TREE_CODE (TREE_TYPE (TREE_TYPE (variable))) != ARRAY_TYPE))
-    num_elements = is_complex ? ffecom_f2c_ftnlen_two_node
-      : ffecom_f2c_ftnlen_one_node;
+  if (ffeinfo_rank (ffebld_info (expr)) == 0
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (variable))) != ARRAY_TYPE)
+    num_elements
+      = is_complex ? ffecom_f2c_ftnlen_two_node : ffecom_f2c_ftnlen_one_node;
   else
     {
       num_elements = size_binop (CEIL_DIV_EXPR,
-			TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))), size);
+				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))),
+				 size);
       num_elements = size_binop (CEIL_DIV_EXPR,
 				 num_elements,
 				 size_int (TYPE_PRECISION
@@ -681,17 +997,11 @@ ffeste_io_dofio_ (ffebld expr)
   TREE_CHAIN (arglist) = build_tree_list (NULL_TREE, variable);
   TREE_CHAIN (TREE_CHAIN (arglist)) = build_tree_list (NULL_TREE, size);
 
-  ffecom_pop_calltemps ();
-
-  return ffecom_call_gfrt (FFECOM_gfrtDOFIO, arglist);
+  return ffecom_call_gfrt (FFECOM_gfrtDOFIO, arglist, NULL_TREE);
 }
 
 #endif
-/* ffeste_io_dolio_ -- Generate call to do_lio for list-directed I/O item
-
-   ffebld expr;
-   tree call;
-   call = ffeste_io_dolio_(expr);
+/* I/O driver for list-directed I/O item (do_lio)
 
    Returns a tree for a CALL_EXPR to the do_lio function, which handles
    a list-directed I/O list item, along with the appropriate arguments for
@@ -720,8 +1030,6 @@ ffeste_io_dolio_ (ffebld expr)
       || (kt == FFEINFO_kindtypeANY))
     return error_mark_node;
 
-  ffecom_push_calltemps ();
-
   tc = ffecom_f2c_typecode (bt, kt);
   assert (tc != -1);
   type_id = build_int_2 (tc, 0);
@@ -736,10 +1044,7 @@ ffeste_io_dolio_ (ffebld expr)
   if ((type_id == error_mark_node)
       || (variable == error_mark_node)
       || (size == error_mark_node))
-    {
-      ffecom_pop_calltemps ();
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   if (size == NULL_TREE)	/* Already filled in for CHARACTER type. */
     {				/* "(ftnlen) sizeof(type)" */
@@ -756,13 +1061,14 @@ ffeste_io_dolio_ (ffebld expr)
       size = convert (ffecom_f2c_ftnlen_type_node, size);
     }
 
-  if ((ffeinfo_rank (ffebld_info (expr)) == 0)
-      || (TREE_CODE (TREE_TYPE (TREE_TYPE (variable))) != ARRAY_TYPE))
+  if (ffeinfo_rank (ffebld_info (expr)) == 0
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (variable))) != ARRAY_TYPE)
     num_elements = ffecom_integer_one_node;
   else
     {
       num_elements = size_binop (CEIL_DIV_EXPR,
-			TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))), size);
+				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))),
+				 size);
       num_elements = size_binop (CEIL_DIV_EXPR,
 				 num_elements,
 				 size_int (TYPE_PRECISION
@@ -783,17 +1089,11 @@ ffeste_io_dolio_ (ffebld expr)
   TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist)))
     = build_tree_list (NULL_TREE, size);
 
-  ffecom_pop_calltemps ();
-
-  return ffecom_call_gfrt (FFECOM_gfrtDOLIO, arglist);
+  return ffecom_call_gfrt (FFECOM_gfrtDOLIO, arglist, NULL_TREE);
 }
 
 #endif
-/* ffeste_io_douio_ -- Generate call to do_uio for unformatted I/O item
-
-   ffebld expr;
-   tree call;
-   call = ffeste_io_douio_(expr);
+/* I/O driver for unformatted I/O item (do_uio)
 
    Returns a tree for a CALL_EXPR to the do_uio function, which handles
    an unformatted I/O list item, along with the appropriate arguments for
@@ -829,16 +1129,11 @@ ffeste_io_douio_ (ffebld expr)
   else
     is_complex = FALSE;
 
-  ffecom_push_calltemps ();
-
   variable = ffecom_arg_ptr_to_expr (expr, &size);
 
   if ((variable == error_mark_node)
       || (size == error_mark_node))
-    {
-      ffecom_pop_calltemps ();
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   if (size == NULL_TREE)	/* Already filled in for CHARACTER type. */
     {				/* "(ftnlen) sizeof(type)" */
@@ -855,14 +1150,15 @@ ffeste_io_douio_ (ffebld expr)
       size = convert (ffecom_f2c_ftnlen_type_node, size);
     }
 
-  if ((ffeinfo_rank (ffebld_info (expr)) == 0)
-      || (TREE_CODE (TREE_TYPE (TREE_TYPE (variable))) != ARRAY_TYPE))
-    num_elements = is_complex ? ffecom_f2c_ftnlen_two_node
-      : ffecom_f2c_ftnlen_one_node;
+  if (ffeinfo_rank (ffebld_info (expr)) == 0
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (variable))) != ARRAY_TYPE)
+    num_elements
+      = is_complex ? ffecom_f2c_ftnlen_two_node : ffecom_f2c_ftnlen_one_node;
   else
     {
       num_elements = size_binop (CEIL_DIV_EXPR,
-			TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))), size);
+				 TYPE_SIZE (TREE_TYPE (TREE_TYPE (variable))),
+				 size);
       num_elements = size_binop (CEIL_DIV_EXPR, num_elements,
 				 size_int (TYPE_PRECISION
 					   (char_type_node)));
@@ -880,21 +1176,24 @@ ffeste_io_douio_ (ffebld expr)
   TREE_CHAIN (arglist) = build_tree_list (NULL_TREE, variable);
   TREE_CHAIN (TREE_CHAIN (arglist)) = build_tree_list (NULL_TREE, size);
 
-  ffecom_pop_calltemps ();
-
-  return ffecom_call_gfrt (FFECOM_gfrtDOUIO, arglist);
+  return ffecom_call_gfrt (FFECOM_gfrtDOUIO, arglist, NULL_TREE);
 }
 
 #endif
-/* ffeste_io_ialist_ -- Make arglist with ptr to B/E/R control list
-
-   tree arglist;
-   arglist = ffeste_io_ialist_(...);
+/* Make arglist with ptr to BACKSPACE/ENDFILE/REWIND control list.
 
    Returns a tree suitable as an argument list containing a pointer to
    a BACKSPACE/ENDFILE/REWIND control list.  First, generates that control
    list, if necessary, along with any static and run-time initializations
-   that are needed as specified by the arguments to this function.  */
+   that are needed as specified by the arguments to this function.
+
+   Must ensure that all expressions are prepared before being evaluated,
+   for any whose evaluation might result in the generation of temporaries.
+
+   Note that this means this function causes a transition, within the
+   current block being code-generated via the back end, from the
+   declaration of variables (temporaries) to the expanding of expressions,
+   statements, etc.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
@@ -938,23 +1237,23 @@ ffeste_io_ialist_ (bool have_err,
       f2c_alist_struct = ref;
     }
 
-  ffeste_f2c_flagspec_ (have_err, errinit);
+  /* Try to do as much compile-time initialization of the structure
+     as possible, to save run time.  */
+
+  ffeste_f2c_init_flag_ (have_err, errinit);
 
   switch (unit)
     {
     case FFESTV_unitNONE:
     case FFESTV_unitASTERISK:
       unitinit = build_int_2 (unit_dflt, 0);
-      unitexp = NULL_TREE;
+      unitexp = unitinit;
       break;
 
     case FFESTV_unitINTEXPR:
-      unitexp = ffecom_expr (unit_expr);
-      if (TREE_CONSTANT (unitexp))
-	{
-	  unitinit = unitexp;
-	  unitexp = NULL_TREE;
-	}
+      unitexp = ffecom_const_expr (unit_expr);
+      if (unitexp)
+	unitinit = unitexp;
       else
 	{
 	  unitinit = ffecom_integer_zero_node;
@@ -964,14 +1263,14 @@ ffeste_io_ialist_ (bool have_err,
 
     default:
       assert ("bad unit spec" == NULL);
-      unitexp = NULL_TREE;
       unitinit = ffecom_integer_zero_node;
+      unitexp = unitinit;
       break;
     }
 
   inits = build_tree_list ((field = TYPE_FIELDS (f2c_alist_struct)), errinit);
   initn = inits;
-  ffeste_f2c_init_ (unitinit);
+  ffeste_f2c_init_next_ (unitinit);
 
   inits = build (CONSTRUCTOR, f2c_alist_struct, NULL_TREE, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
@@ -989,7 +1288,20 @@ ffeste_io_ialist_ (bool have_err,
 
   resume_momentary (yes);
 
-  ffeste_f2c_exp_ (unitfield, unitexp);
+  /* Prepare run-time expressions.  */
+
+  if (! unitexp)
+    ffecom_prepare_expr (unit_expr);
+
+  ffecom_prepare_end ();
+
+  /* Now evaluate run-time expressions as needed.  */
+
+  if (! unitexp)
+    {
+      unitexp = ffecom_expr (unit_expr);
+      ffeste_f2c_compile_ (unitfield, unitexp);
+    }
 
   ttype = build_pointer_type (TREE_TYPE (t));
   t = ffecom_1 (ADDR_EXPR, ttype, t);
@@ -1000,15 +1312,20 @@ ffeste_io_ialist_ (bool have_err,
 }
 
 #endif
-/* ffeste_io_cilist_ -- Make arglist with ptr to external I/O control list
-
-   tree arglist;
-   arglist = ffeste_io_cilist_(...);
+/* Make arglist with ptr to external-I/O control list.
 
    Returns a tree suitable as an argument list containing a pointer to
-   an external-file I/O control list.  First, generates that control
+   an external-I/O control list.  First, generates that control
    list, if necessary, along with any static and run-time initializations
-   that are needed as specified by the arguments to this function.  */
+   that are needed as specified by the arguments to this function.
+
+   Must ensure that all expressions are prepared before being evaluated,
+   for any whose evaluation might result in the generation of temporaries.
+
+   Note that this means this function causes a transition, within the
+   current block being code-generated via the back end, from the
+   declaration of variables (temporaries) to the expanding of expressions,
+   statements, etc.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
@@ -1063,23 +1380,23 @@ ffeste_io_cilist_ (bool have_err,
       f2c_cilist_struct = ref;
     }
 
-  ffeste_f2c_flagspec_ (have_err, errinit);
+  /* Try to do as much compile-time initialization of the structure
+     as possible, to save run time.  */
+
+  ffeste_f2c_init_flag_ (have_err, errinit);
 
   switch (unit)
     {
     case FFESTV_unitNONE:
     case FFESTV_unitASTERISK:
       unitinit = build_int_2 (unit_dflt, 0);
-      unitexp = NULL_TREE;
+      unitexp = unitinit;
       break;
 
     case FFESTV_unitINTEXPR:
-      unitexp = ffecom_expr (unit_expr);
-      if (TREE_CONSTANT (unitexp))
-	{
-	  unitinit = unitexp;
-	  unitexp = NULL_TREE;
-	}
+      unitexp = ffecom_const_expr (unit_expr);
+      if (unitexp)
+	unitinit = unitexp;
       else
 	{
 	  unitinit = ffecom_integer_zero_node;
@@ -1089,8 +1406,8 @@ ffeste_io_cilist_ (bool have_err,
 
     default:
       assert ("bad unit spec" == NULL);
-      unitexp = NULL_TREE;
       unitinit = ffecom_integer_zero_node;
+      unitexp = unitinit;
       break;
     }
 
@@ -1098,11 +1415,11 @@ ffeste_io_cilist_ (bool have_err,
     {
     case FFESTV_formatNONE:
       formatinit = null_pointer_node;
-      formatexp = NULL_TREE;
+      formatexp = formatinit;
       break;
 
     case FFESTV_formatLABEL:
-      formatexp = NULL_TREE;
+      formatexp = error_mark_node;
       formatinit = ffecom_lookup_label (format_spec->u.label);
       if ((formatinit == NULL_TREE)
 	  || (TREE_CODE (formatinit) == ERROR_MARK))
@@ -1114,12 +1431,9 @@ ffeste_io_cilist_ (bool have_err,
       break;
 
     case FFESTV_formatCHAREXPR:
-      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, NULL);
-      if (TREE_CONSTANT (formatexp))
-	{
-	  formatinit = formatexp;
-	  formatexp = NULL_TREE;
-	}
+      formatexp = ffecom_arg_ptr_to_const_expr (format_spec->u.expr, NULL);
+      if (formatexp)
+	formatinit = formatexp;
       else
 	{
 	  formatinit = null_pointer_node;
@@ -1129,7 +1443,7 @@ ffeste_io_cilist_ (bool have_err,
 
     case FFESTV_formatASTERISK:
       formatinit = null_pointer_node;
-      formatexp = NULL_TREE;
+      formatexp = formatinit;
       break;
 
     case FFESTV_formatINTEXPR:
@@ -1143,27 +1457,24 @@ ffeste_io_cilist_ (bool have_err,
 
     case FFESTV_formatNAMELIST:
       formatinit = ffecom_expr (format_spec->u.expr);
-      formatexp = NULL_TREE;
+      formatexp = formatinit;
       break;
 
     default:
       assert ("bad format spec" == NULL);
-      formatexp = NULL_TREE;
       formatinit = integer_zero_node;
+      formatexp = formatinit;
       break;
     }
 
-  ffeste_f2c_flagspec_ (have_end, endinit);
+  ffeste_f2c_init_flag_ (have_end, endinit);
 
   if (rec)
-    recexp = ffecom_expr (rec_expr);
+    recexp = ffecom_const_expr (rec_expr);
   else
     recexp = ffecom_integer_zero_node;
-  if (TREE_CONSTANT (recexp))
-    {
-      recinit = recexp;
-      recexp = NULL_TREE;
-    }
+  if (recexp)
+    recinit = recexp;
   else
     {
       recinit = ffecom_integer_zero_node;
@@ -1172,10 +1483,10 @@ ffeste_io_cilist_ (bool have_err,
 
   inits = build_tree_list ((field = TYPE_FIELDS (f2c_cilist_struct)), errinit);
   initn = inits;
-  ffeste_f2c_init_ (unitinit);
-  ffeste_f2c_init_ (endinit);
-  ffeste_f2c_init_ (formatinit);
-  ffeste_f2c_init_ (recinit);
+  ffeste_f2c_init_next_ (unitinit);
+  ffeste_f2c_init_next_ (endinit);
+  ffeste_f2c_init_next_ (formatinit);
+  ffeste_f2c_init_next_ (recinit);
 
   inits = build (CONSTRUCTOR, f2c_cilist_struct, NULL_TREE, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
@@ -1193,9 +1504,40 @@ ffeste_io_cilist_ (bool have_err,
 
   resume_momentary (yes);
 
-  ffeste_f2c_exp_ (unitfield, unitexp);
-  ffeste_f2c_exp_ (formatfield, formatexp);
-  ffeste_f2c_exp_ (recfield, recexp);
+  /* Prepare run-time expressions.  */
+
+  if (! unitexp)
+    ffecom_prepare_expr (unit_expr);
+
+  if (! formatexp)
+    ffecom_prepare_arg_ptr_to_expr (format_spec->u.expr);
+
+  if (! recexp)
+    ffecom_prepare_expr (rec_expr);
+
+  ffecom_prepare_end ();
+
+  /* Now evaluate run-time expressions as needed.  */
+
+  if (! unitexp)
+    {
+      unitexp = ffecom_expr (unit_expr);
+      ffeste_f2c_compile_ (unitfield, unitexp);
+    }
+
+  if (! formatexp)
+    {
+      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, NULL);
+      ffeste_f2c_compile_ (formatfield, formatexp);
+    }
+  else if (format == FFESTV_formatINTEXPR)
+    ffeste_f2c_compile_ (formatfield, formatexp);
+
+  if (! recexp)
+    {
+      recexp = ffecom_expr (rec_expr);
+      ffeste_f2c_compile_ (recfield, recexp);
+    }
 
   ttype = build_pointer_type (TREE_TYPE (t));
   t = ffecom_1 (ADDR_EXPR, ttype, t);
@@ -1206,15 +1548,20 @@ ffeste_io_cilist_ (bool have_err,
 }
 
 #endif
-/* ffeste_io_cllist_ -- Make arglist with ptr to CLOSE control list
-
-   tree arglist;
-   arglist = ffeste_io_cllist_(...);
+/* Make arglist with ptr to CLOSE control list.
 
    Returns a tree suitable as an argument list containing a pointer to
    a CLOSE-statement control list.  First, generates that control
    list, if necessary, along with any static and run-time initializations
-   that are needed as specified by the arguments to this function.  */
+   that are needed as specified by the arguments to this function.
+
+   Must ensure that all expressions are prepared before being evaluated,
+   for any whose evaluation might result in the generation of temporaries.
+
+   Note that this means this function causes a transition, within the
+   current block being code-generated via the back end, from the
+   declaration of variables (temporaries) to the expanding of expressions,
+   statements, etc.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
@@ -1260,26 +1607,26 @@ ffeste_io_cllist_ (bool have_err,
       f2c_close_struct = ref;
     }
 
-  ffeste_f2c_flagspec_ (have_err, errinit);
+  /* Try to do as much compile-time initialization of the structure
+     as possible, to save run time.  */
 
-  unitexp = ffecom_expr (unit_expr);
-  if (TREE_CONSTANT (unitexp))
-    {
-      unitinit = unitexp;
-      unitexp = NULL_TREE;
-    }
+  ffeste_f2c_init_flag_ (have_err, errinit);
+
+  unitexp = ffecom_const_expr (unit_expr);
+  if (unitexp)
+    unitinit = unitexp;
   else
     {
       unitinit = ffecom_integer_zero_node;
       constantp = FALSE;
     }
 
-  ffeste_f2c_charnolenspec_ (stat_spec, statexp, statinit);
+  ffeste_f2c_init_charnolen_ (statexp, statinit, stat_spec);
 
   inits = build_tree_list ((field = TYPE_FIELDS (f2c_close_struct)), errinit);
   initn = inits;
-  ffeste_f2c_init_ (unitinit);
-  ffeste_f2c_init_ (statinit);
+  ffeste_f2c_init_next_ (unitinit);
+  ffeste_f2c_init_next_ (statinit);
 
   inits = build (CONSTRUCTOR, f2c_close_struct, NULL_TREE, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
@@ -1297,8 +1644,25 @@ ffeste_io_cllist_ (bool have_err,
 
   resume_momentary (yes);
 
-  ffeste_f2c_exp_ (unitfield, unitexp);
-  ffeste_f2c_exp_ (statfield, statexp);
+  /* Prepare run-time expressions.  */
+
+  if (! unitexp)
+    ffecom_prepare_expr (unit_expr);
+
+  if (! statexp)
+    ffecom_prepare_arg_ptr_to_expr (stat_spec->u.expr);
+
+  ffecom_prepare_end ();
+
+  /* Now evaluate run-time expressions as needed.  */
+
+  if (! unitexp)
+    {
+      unitexp = ffecom_expr (unit_expr);
+      ffeste_f2c_compile_ (unitfield, unitexp);
+    }
+
+  ffeste_f2c_compile_charnolen_ (statfield, stat_spec, statexp);
 
   ttype = build_pointer_type (TREE_TYPE (t));
   t = ffecom_1 (ADDR_EXPR, ttype, t);
@@ -1309,15 +1673,20 @@ ffeste_io_cllist_ (bool have_err,
 }
 
 #endif
-/* ffeste_io_icilist_ -- Make arglist with ptr to internal I/O control list
-
-   tree arglist;
-   arglist = ffeste_io_icilist_(...);
+/* Make arglist with ptr to internal-I/O control list.
 
    Returns a tree suitable as an argument list containing a pointer to
-   an internal-file I/O control list.  First, generates that control
+   an internal-I/O control list.  First, generates that control
    list, if necessary, along with any static and run-time initializations
-   that are needed as specified by the arguments to this function.  */
+   that are needed as specified by the arguments to this function.
+
+   Must ensure that all expressions are prepared before being evaluated,
+   for any whose evaluation might result in the generation of temporaries.
+
+   Note that this means this function causes a transition, within the
+   current block being code-generated via the back end, from the
+   declaration of variables (temporaries) to the expanding of expressions,
+   statements, etc.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
@@ -1371,48 +1740,54 @@ ffeste_io_icilist_ (bool have_err,
       f2c_icilist_struct = ref;
     }
 
-  ffeste_f2c_flagspec_ (have_err, errinit);
+  /* Try to do as much compile-time initialization of the structure
+     as possible, to save run time.  */
 
-  unitexp = ffecom_arg_ptr_to_expr (unit_expr, &unitlenexp);
-  if ((ffeinfo_rank (ffebld_info (unit_expr)) == 0)
-      || (TREE_CODE (TREE_TYPE (TREE_TYPE (unitexp))) != ARRAY_TYPE))
-    unitnumexp = ffecom_integer_one_node;
-  else
-    {
-      unitnumexp = size_binop (CEIL_DIV_EXPR,
-		   TYPE_SIZE (TREE_TYPE (TREE_TYPE (unitexp))), unitlenexp);
-      unitnumexp = size_binop (CEIL_DIV_EXPR,
-			       unitnumexp, size_int (TYPE_PRECISION
-						     (char_type_node)));
-    }
-  if (TREE_CONSTANT (unitexp))
-    {
-      unitinit = unitexp;
-      unitexp = NULL_TREE;
-    }
+  ffeste_f2c_init_flag_ (have_err, errinit);
+
+  unitexp = ffecom_arg_ptr_to_const_expr (unit_expr, &unitlenexp);
+  if (unitexp)
+    unitinit = unitexp;
   else
     {
       unitinit = null_pointer_node;
       constantp = FALSE;
     }
-  if ((unitlenexp != NULL_TREE) && TREE_CONSTANT (unitlenexp))
-    {
-      unitleninit = unitlenexp;
-      unitlenexp = NULL_TREE;
-    }
+  if (unitlenexp)
+    unitleninit = unitlenexp;
   else
     {
       unitleninit = ffecom_integer_zero_node;
       constantp = FALSE;
     }
-  if (TREE_CONSTANT (unitnumexp))
+
+  /* Now see if we can fully initialize the number of elements, or
+     if we have to compute that at run time.  */
+  if (ffeinfo_rank (ffebld_info (unit_expr)) == 0
+      || (unitexp
+	  && TREE_CODE (TREE_TYPE (TREE_TYPE (unitexp))) != ARRAY_TYPE))
     {
-      unitnuminit = unitnumexp;
-      unitnumexp = NULL_TREE;
+      /* Not an array, so just one element.  */
+      unitnuminit = ffecom_integer_one_node;
+      unitnumexp = unitnuminit;
+    }
+  else if (unitexp && unitlenexp)
+    {
+      /* An array, but all the info is constant, so compute now.  */
+      unitnuminit = size_binop (CEIL_DIV_EXPR,
+				TYPE_SIZE (TREE_TYPE (TREE_TYPE (unitexp))),
+				unitlenexp);
+      unitnuminit = size_binop (CEIL_DIV_EXPR,
+				unitnuminit,
+				size_int (TYPE_PRECISION
+					  (char_type_node)));
+      unitnumexp = unitnuminit;
     }
   else
     {
+      /* Put off computing until run time.  */
       unitnuminit = ffecom_integer_zero_node;
+      unitnumexp = NULL_TREE;
       constantp = FALSE;
     }
 
@@ -1420,11 +1795,11 @@ ffeste_io_icilist_ (bool have_err,
     {
     case FFESTV_formatNONE:
       formatinit = null_pointer_node;
-      formatexp = NULL_TREE;
+      formatexp = formatinit;
       break;
 
     case FFESTV_formatLABEL:
-      formatexp = NULL_TREE;
+      formatexp = error_mark_node;
       formatinit = ffecom_lookup_label (format_spec->u.label);
       if ((formatinit == NULL_TREE)
 	  || (TREE_CODE (formatinit) == ERROR_MARK))
@@ -1436,22 +1811,12 @@ ffeste_io_icilist_ (bool have_err,
       break;
 
     case FFESTV_formatCHAREXPR:
-      formatexp = ffecom_arg_ptr_to_expr (format_spec->u.expr, NULL);
-      if (TREE_CONSTANT (formatexp))
-	{
-	  formatinit = formatexp;
-	  formatexp = NULL_TREE;
-	}
-      else
-	{
-	  formatinit = null_pointer_node;
-	  constantp = FALSE;
-	}
+      ffeste_f2c_init_format_ (formatexp, formatinit, format_spec);
       break;
 
     case FFESTV_formatASTERISK:
       formatinit = null_pointer_node;
-      formatexp = NULL_TREE;
+      formatexp = formatinit;
       break;
 
     case FFESTV_formatINTEXPR:
@@ -1465,21 +1830,21 @@ ffeste_io_icilist_ (bool have_err,
 
     default:
       assert ("bad format spec" == NULL);
-      formatexp = NULL_TREE;
       formatinit = ffecom_integer_zero_node;
+      formatexp = formatinit;
       break;
     }
 
-  ffeste_f2c_flagspec_ (have_end, endinit);
+  ffeste_f2c_init_flag_ (have_end, endinit);
 
   inits = build_tree_list ((field = TYPE_FIELDS (f2c_icilist_struct)),
 			   errinit);
   initn = inits;
-  ffeste_f2c_init_ (unitinit);
-  ffeste_f2c_init_ (endinit);
-  ffeste_f2c_init_ (formatinit);
-  ffeste_f2c_init_ (unitleninit);
-  ffeste_f2c_init_ (unitnuminit);
+  ffeste_f2c_init_next_ (unitinit);
+  ffeste_f2c_init_next_ (endinit);
+  ffeste_f2c_init_next_ (formatinit);
+  ffeste_f2c_init_next_ (unitleninit);
+  ffeste_f2c_init_next_ (unitnuminit);
 
   inits = build (CONSTRUCTOR, f2c_icilist_struct, NULL_TREE, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
@@ -1497,10 +1862,47 @@ ffeste_io_icilist_ (bool have_err,
 
   resume_momentary (yes);
 
-  ffeste_f2c_exp_ (unitfield, unitexp);
-  ffeste_f2c_exp_ (formatfield, formatexp);
-  ffeste_f2c_exp_ (unitlenfield, unitlenexp);
-  ffeste_f2c_exp_ (unitnumfield, unitnumexp);
+  /* Prepare run-time expressions.  */
+
+  if (! unitexp)
+    ffecom_prepare_arg_ptr_to_expr (unit_expr);
+
+  ffeste_f2c_prepare_format_ (format_spec, formatexp);
+
+  ffecom_prepare_end ();
+
+  /* Now evaluate run-time expressions as needed.  */
+
+  if (! unitexp || ! unitlenexp)
+    {
+      int need_unitexp = (! unitexp);
+      int need_unitlenexp = (! unitlenexp);
+ 
+      unitexp = ffecom_arg_ptr_to_expr (unit_expr, &unitlenexp);
+      if (need_unitexp)
+	ffeste_f2c_compile_ (unitfield, unitexp);
+      if (need_unitlenexp)
+	ffeste_f2c_compile_ (unitlenfield, unitlenexp);
+    }
+
+  if (! unitnumexp
+      && unitexp != error_mark_node
+      && unitlenexp != error_mark_node)
+    {
+      unitnumexp = size_binop (CEIL_DIV_EXPR,
+			       TYPE_SIZE (TREE_TYPE (TREE_TYPE (unitexp))),
+			       unitlenexp);
+      unitnumexp = size_binop (CEIL_DIV_EXPR,
+			       unitnumexp,
+			       size_int (TYPE_PRECISION
+					 (char_type_node)));
+      ffeste_f2c_compile_ (unitnumfield, unitnumexp);
+    }
+
+  if (format == FFESTV_formatINTEXPR)
+    ffeste_f2c_compile_ (formatfield, formatexp);
+  else
+    ffeste_f2c_compile_format_ (formatfield, format_spec, formatexp);
 
   ttype = build_pointer_type (TREE_TYPE (t));
   t = ffecom_1 (ADDR_EXPR, ttype, t);
@@ -1509,94 +1911,22 @@ ffeste_io_icilist_ (bool have_err,
 
   return t;
 }
-
 #endif
-/* ffeste_io_impdo_ -- Handle implied-DO in I/O list
 
-   ffebld expr;
-   ffeste_io_impdo_(expr);
-
-   Expands code to start up the DO loop.  Then for each item in the
-   DO loop, handles appropriately (possibly including recursively calling
-   itself).  Then expands code to end the DO loop.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
-static void
-ffeste_io_impdo_ (ffebld impdo, ffelexToken impdo_token)
-{
-  ffebld var = ffebld_head (ffebld_right (impdo));
-  ffebld start = ffebld_head (ffebld_trail (ffebld_right (impdo)));
-  ffebld end = ffebld_head (ffebld_trail (ffebld_trail
-					  (ffebld_right (impdo))));
-  ffebld incr = ffebld_head (ffebld_trail (ffebld_trail
-				    (ffebld_trail (ffebld_right (impdo)))));
-  ffebld list;			/* Used for list of items in left part of
-				   impdo. */
-  ffebld item;			/* I/O item from head of given list. */
-  tree tvar;
-  tree tincr;
-  tree titervar;
-
-  if (incr == NULL)
-    {
-      incr = ffebld_new_conter (ffebld_constant_new_integerdefault_val (1));
-      ffebld_set_info (incr, ffeinfo_new
-		       (FFEINFO_basictypeINTEGER,
-			FFEINFO_kindtypeINTEGERDEFAULT,
-			0,
-			FFEINFO_kindENTITY,
-			FFEINFO_whereCONSTANT,
-			FFETARGET_charactersizeNONE));
-    }
-
-  /* Start the DO loop.  */
-
-  start = ffeexpr_convert_expr (start, impdo_token, var, impdo_token,
-				FFEEXPR_contextLET);
-  end = ffeexpr_convert_expr (end, impdo_token, var, impdo_token,
-			      FFEEXPR_contextLET);
-  incr = ffeexpr_convert_expr (incr, impdo_token, var, impdo_token,
-			       FFEEXPR_contextLET);
-
-  ffeste_begin_iterdo_ (NULL, &tvar, &tincr, &titervar, var,
-			start, impdo_token,
-			end, impdo_token,
-			incr, impdo_token,
-			"Implied DO loop");
-
-  /* Handle the list of items.  */
-
-  for (list = ffebld_left (impdo); list != NULL; list = ffebld_trail (list))
-    {
-      item = ffebld_head (list);
-      if (item == NULL)
-	continue;
-      while (ffebld_op (item) == FFEBLD_opPAREN)
-	item = ffebld_left (item);
-      if (ffebld_op (item) == FFEBLD_opANY)
-	continue;
-      if (ffebld_op (item) == FFEBLD_opIMPDO)
-	ffeste_io_impdo_ (item, impdo_token);
-      else
-	ffeste_io_call_ ((*ffeste_io_driver_) (item), TRUE);
-      clear_momentary ();
-    }
-
-  /* Generate end of implied-do construct. */
-
-  ffeste_end_iterdo_ (tvar, tincr, titervar);
-}
-
-#endif
-/* ffeste_io_inlist_ -- Make arglist with ptr to INQUIRE control list
-
-   tree arglist;
-   arglist = ffeste_io_inlist_(...);
+/* Make arglist with ptr to INQUIRE control list
 
    Returns a tree suitable as an argument list containing a pointer to
    an INQUIRE-statement control list.  First, generates that control
    list, if necessary, along with any static and run-time initializations
-   that are needed as specified by the arguments to this function.  */
+   that are needed as specified by the arguments to this function.
+
+   Must ensure that all expressions are prepared before being evaluated,
+   for any whose evaluation might result in the generation of temporaries.
+
+   Note that this means this function causes a transition, within the
+   current block being code-generated via the back end, from the
+   declaration of variables (temporaries) to the expanding of expressions,
+   statements, etc.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
@@ -1717,58 +2047,64 @@ ffeste_io_inlist_ (bool have_err,
       f2c_inquire_struct = ref;
     }
 
-  ffeste_f2c_flagspec_ (have_err, errinit);
-  ffeste_f2c_intspec_ (unit_spec, unitexp, unitinit);
-  ffeste_f2c_charspec_ (file_spec, fileexp, fileinit, filelenexp, fileleninit);
-  ffeste_f2c_ptrtointspec_ (exist_spec, existexp, existinit);
-  ffeste_f2c_ptrtointspec_ (open_spec, openexp, openinit);
-  ffeste_f2c_ptrtointspec_ (number_spec, numberexp, numberinit);
-  ffeste_f2c_ptrtointspec_ (named_spec, namedexp, namedinit);
-  ffeste_f2c_charspec_ (name_spec, nameexp, nameinit, namelenexp, nameleninit);
-  ffeste_f2c_charspec_ (access_spec, accessexp, accessinit, accesslenexp,
-			accessleninit);
-  ffeste_f2c_charspec_ (sequential_spec, sequentialexp, sequentialinit,
-			sequentiallenexp, sequentialleninit);
-  ffeste_f2c_charspec_ (direct_spec, directexp, directinit, directlenexp,
-			directleninit);
-  ffeste_f2c_charspec_ (form_spec, formexp, forminit, formlenexp, formleninit);
-  ffeste_f2c_charspec_ (formatted_spec, formattedexp, formattedinit,
-			formattedlenexp, formattedleninit);
-  ffeste_f2c_charspec_ (unformatted_spec, unformattedexp, unformattedinit,
-			unformattedlenexp, unformattedleninit);
-  ffeste_f2c_ptrtointspec_ (recl_spec, reclexp, reclinit);
-  ffeste_f2c_ptrtointspec_ (nextrec_spec, nextrecexp, nextrecinit);
-  ffeste_f2c_charspec_ (blank_spec, blankexp, blankinit, blanklenexp,
-			blankleninit);
+  /* Try to do as much compile-time initialization of the structure
+     as possible, to save run time.  */
+
+  ffeste_f2c_init_flag_ (have_err, errinit);
+  ffeste_f2c_init_int_ (unitexp, unitinit, unit_spec);
+  ffeste_f2c_init_char_ (fileexp, fileinit, filelenexp, fileleninit,
+			 file_spec);
+  ffeste_f2c_init_ptrtoint_ (existexp, existinit, exist_spec);
+  ffeste_f2c_init_ptrtoint_ (openexp, openinit, open_spec);
+  ffeste_f2c_init_ptrtoint_ (numberexp, numberinit, number_spec);
+  ffeste_f2c_init_ptrtoint_ (namedexp, namedinit, named_spec);
+  ffeste_f2c_init_char_ (nameexp, nameinit, namelenexp, nameleninit,
+			 name_spec);
+  ffeste_f2c_init_char_ (accessexp, accessinit, accesslenexp,
+			 accessleninit, access_spec);
+  ffeste_f2c_init_char_ (sequentialexp, sequentialinit, sequentiallenexp,
+			 sequentialleninit, sequential_spec);
+  ffeste_f2c_init_char_ (directexp, directinit, directlenexp,
+			 directleninit, direct_spec);
+  ffeste_f2c_init_char_ (formexp, forminit, formlenexp, formleninit,
+			 form_spec);
+  ffeste_f2c_init_char_ (formattedexp, formattedinit,
+			 formattedlenexp, formattedleninit, formatted_spec);
+  ffeste_f2c_init_char_ (unformattedexp, unformattedinit, unformattedlenexp,
+			 unformattedleninit, unformatted_spec);
+  ffeste_f2c_init_ptrtoint_ (reclexp, reclinit, recl_spec);
+  ffeste_f2c_init_ptrtoint_ (nextrecexp, nextrecinit, nextrec_spec);
+  ffeste_f2c_init_char_ (blankexp, blankinit, blanklenexp,
+			 blankleninit, blank_spec);
 
   inits = build_tree_list ((field = TYPE_FIELDS (f2c_inquire_struct)),
 			   errinit);
   initn = inits;
-  ffeste_f2c_init_ (unitinit);
-  ffeste_f2c_init_ (fileinit);
-  ffeste_f2c_init_ (fileleninit);
-  ffeste_f2c_init_ (existinit);
-  ffeste_f2c_init_ (openinit);
-  ffeste_f2c_init_ (numberinit);
-  ffeste_f2c_init_ (namedinit);
-  ffeste_f2c_init_ (nameinit);
-  ffeste_f2c_init_ (nameleninit);
-  ffeste_f2c_init_ (accessinit);
-  ffeste_f2c_init_ (accessleninit);
-  ffeste_f2c_init_ (sequentialinit);
-  ffeste_f2c_init_ (sequentialleninit);
-  ffeste_f2c_init_ (directinit);
-  ffeste_f2c_init_ (directleninit);
-  ffeste_f2c_init_ (forminit);
-  ffeste_f2c_init_ (formleninit);
-  ffeste_f2c_init_ (formattedinit);
-  ffeste_f2c_init_ (formattedleninit);
-  ffeste_f2c_init_ (unformattedinit);
-  ffeste_f2c_init_ (unformattedleninit);
-  ffeste_f2c_init_ (reclinit);
-  ffeste_f2c_init_ (nextrecinit);
-  ffeste_f2c_init_ (blankinit);
-  ffeste_f2c_init_ (blankleninit);
+  ffeste_f2c_init_next_ (unitinit);
+  ffeste_f2c_init_next_ (fileinit);
+  ffeste_f2c_init_next_ (fileleninit);
+  ffeste_f2c_init_next_ (existinit);
+  ffeste_f2c_init_next_ (openinit);
+  ffeste_f2c_init_next_ (numberinit);
+  ffeste_f2c_init_next_ (namedinit);
+  ffeste_f2c_init_next_ (nameinit);
+  ffeste_f2c_init_next_ (nameleninit);
+  ffeste_f2c_init_next_ (accessinit);
+  ffeste_f2c_init_next_ (accessleninit);
+  ffeste_f2c_init_next_ (sequentialinit);
+  ffeste_f2c_init_next_ (sequentialleninit);
+  ffeste_f2c_init_next_ (directinit);
+  ffeste_f2c_init_next_ (directleninit);
+  ffeste_f2c_init_next_ (forminit);
+  ffeste_f2c_init_next_ (formleninit);
+  ffeste_f2c_init_next_ (formattedinit);
+  ffeste_f2c_init_next_ (formattedleninit);
+  ffeste_f2c_init_next_ (unformattedinit);
+  ffeste_f2c_init_next_ (unformattedleninit);
+  ffeste_f2c_init_next_ (reclinit);
+  ffeste_f2c_init_next_ (nextrecinit);
+  ffeste_f2c_init_next_ (blankinit);
+  ffeste_f2c_init_next_ (blankleninit);
 
   inits = build (CONSTRUCTOR, f2c_inquire_struct, NULL_TREE, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
@@ -1786,31 +2122,56 @@ ffeste_io_inlist_ (bool have_err,
 
   resume_momentary (yes);
 
-  ffeste_f2c_exp_ (unitfield, unitexp);
-  ffeste_f2c_exp_ (filefield, fileexp);
-  ffeste_f2c_exp_ (filelenfield, filelenexp);
-  ffeste_f2c_exp_ (existfield, existexp);
-  ffeste_f2c_exp_ (openfield, openexp);
-  ffeste_f2c_exp_ (numberfield, numberexp);
-  ffeste_f2c_exp_ (namedfield, namedexp);
-  ffeste_f2c_exp_ (namefield, nameexp);
-  ffeste_f2c_exp_ (namelenfield, namelenexp);
-  ffeste_f2c_exp_ (accessfield, accessexp);
-  ffeste_f2c_exp_ (accesslenfield, accesslenexp);
-  ffeste_f2c_exp_ (sequentialfield, sequentialexp);
-  ffeste_f2c_exp_ (sequentiallenfield, sequentiallenexp);
-  ffeste_f2c_exp_ (directfield, directexp);
-  ffeste_f2c_exp_ (directlenfield, directlenexp);
-  ffeste_f2c_exp_ (formfield, formexp);
-  ffeste_f2c_exp_ (formlenfield, formlenexp);
-  ffeste_f2c_exp_ (formattedfield, formattedexp);
-  ffeste_f2c_exp_ (formattedlenfield, formattedlenexp);
-  ffeste_f2c_exp_ (unformattedfield, unformattedexp);
-  ffeste_f2c_exp_ (unformattedlenfield, unformattedlenexp);
-  ffeste_f2c_exp_ (reclfield, reclexp);
-  ffeste_f2c_exp_ (nextrecfield, nextrecexp);
-  ffeste_f2c_exp_ (blankfield, blankexp);
-  ffeste_f2c_exp_ (blanklenfield, blanklenexp);
+  /* Prepare run-time expressions.  */
+
+  ffeste_f2c_prepare_int_ (unit_spec, unitexp);
+  ffeste_f2c_prepare_char_ (file_spec, fileexp);
+  ffeste_f2c_prepare_ptrtoint_ (exist_spec, existexp);
+  ffeste_f2c_prepare_ptrtoint_ (open_spec, openexp);
+  ffeste_f2c_prepare_ptrtoint_ (number_spec, numberexp);
+  ffeste_f2c_prepare_ptrtoint_ (named_spec, namedexp);
+  ffeste_f2c_prepare_char_ (name_spec, nameexp);
+  ffeste_f2c_prepare_char_ (access_spec, accessexp);
+  ffeste_f2c_prepare_char_ (sequential_spec, sequentialexp);
+  ffeste_f2c_prepare_char_ (direct_spec, directexp);
+  ffeste_f2c_prepare_char_ (form_spec, formexp);
+  ffeste_f2c_prepare_char_ (formatted_spec, formattedexp);
+  ffeste_f2c_prepare_char_ (unformatted_spec, unformattedexp);
+  ffeste_f2c_prepare_ptrtoint_ (recl_spec, reclexp);
+  ffeste_f2c_prepare_ptrtoint_ (nextrec_spec, nextrecexp);
+  ffeste_f2c_prepare_char_ (blank_spec, blankexp);
+
+  ffecom_prepare_end ();
+
+  /* Now evaluate run-time expressions as needed.  */
+
+  ffeste_f2c_compile_int_ (unitfield, unit_spec, unitexp);
+  ffeste_f2c_compile_char_ (filefield, filelenfield, file_spec,
+			    fileexp, filelenexp);
+  ffeste_f2c_compile_ptrtoint_ (existfield, exist_spec, existexp);
+  ffeste_f2c_compile_ptrtoint_ (openfield, open_spec, openexp);
+  ffeste_f2c_compile_ptrtoint_ (numberfield, number_spec, numberexp);
+  ffeste_f2c_compile_ptrtoint_ (namedfield, named_spec, namedexp);
+  ffeste_f2c_compile_char_ (namefield, namelenfield, name_spec, nameexp,
+			    namelenexp);
+  ffeste_f2c_compile_char_ (accessfield, accesslenfield, access_spec,
+			    accessexp, accesslenexp);
+  ffeste_f2c_compile_char_ (sequentialfield, sequentiallenfield,
+			    sequential_spec, sequentialexp,
+			    sequentiallenexp);
+  ffeste_f2c_compile_char_ (directfield, directlenfield, direct_spec,
+			    directexp, directlenexp);
+  ffeste_f2c_compile_char_ (formfield, formlenfield, form_spec, formexp,
+			    formlenexp);
+  ffeste_f2c_compile_char_ (formattedfield, formattedlenfield, formatted_spec,
+			    formattedexp, formattedlenexp);
+  ffeste_f2c_compile_char_ (unformattedfield, unformattedlenfield,
+			    unformatted_spec, unformattedexp,
+			    unformattedlenexp);
+  ffeste_f2c_compile_ptrtoint_ (reclfield, recl_spec, reclexp);
+  ffeste_f2c_compile_ptrtoint_ (nextrecfield, nextrec_spec, nextrecexp);
+  ffeste_f2c_compile_char_ (blankfield, blanklenfield, blank_spec, blankexp,
+			    blanklenexp);
 
   ttype = build_pointer_type (TREE_TYPE (t));
   t = ffecom_1 (ADDR_EXPR, ttype, t);
@@ -1821,15 +2182,20 @@ ffeste_io_inlist_ (bool have_err,
 }
 
 #endif
-/* ffeste_io_olist_ -- Make arglist with ptr to OPEN control list
-
-   tree arglist;
-   arglist = ffeste_io_olist_(...);
+/* Make arglist with ptr to OPEN control list
 
    Returns a tree suitable as an argument list containing a pointer to
    an OPEN-statement control list.  First, generates that control
    list, if necessary, along with any static and run-time initializations
-   that are needed as specified by the arguments to this function.  */
+   that are needed as specified by the arguments to this function.
+
+   Must ensure that all expressions are prepared before being evaluated,
+   for any whose evaluation might result in the generation of temporaries.
+
+   Note that this means this function causes a transition, within the
+   current block being code-generated via the back end, from the
+   declaration of variables (temporaries) to the expanding of expressions,
+   statements, etc.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static tree
@@ -1896,37 +2262,38 @@ ffeste_io_olist_ (bool have_err,
       f2c_open_struct = ref;
     }
 
-  ffeste_f2c_flagspec_ (have_err, errinit);
+  /* Try to do as much compile-time initialization of the structure
+     as possible, to save run time.  */
 
-  unitexp = ffecom_expr (unit_expr);
-  if (TREE_CONSTANT (unitexp))
-    {
-      unitinit = unitexp;
-      unitexp = NULL_TREE;
-    }
+  ffeste_f2c_init_flag_ (have_err, errinit);
+
+  unitexp = ffecom_const_expr (unit_expr);
+  if (unitexp)
+    unitinit = unitexp;
   else
     {
       unitinit = ffecom_integer_zero_node;
       constantp = FALSE;
     }
 
-  ffeste_f2c_charspec_ (file_spec, fileexp, fileinit, filelenexp, fileleninit);
-  ffeste_f2c_charnolenspec_ (stat_spec, statexp, statinit);
-  ffeste_f2c_charnolenspec_ (access_spec, accessexp, accessinit);
-  ffeste_f2c_charnolenspec_ (form_spec, formexp, forminit);
-  ffeste_f2c_intspec_ (recl_spec, reclexp, reclinit);
-  ffeste_f2c_charnolenspec_ (blank_spec, blankexp, blankinit);
+  ffeste_f2c_init_char_ (fileexp, fileinit, filelenexp, fileleninit,
+			 file_spec);
+  ffeste_f2c_init_charnolen_ (statexp, statinit, stat_spec);
+  ffeste_f2c_init_charnolen_ (accessexp, accessinit, access_spec);
+  ffeste_f2c_init_charnolen_ (formexp, forminit, form_spec);
+  ffeste_f2c_init_int_ (reclexp, reclinit, recl_spec);
+  ffeste_f2c_init_charnolen_ (blankexp, blankinit, blank_spec);
 
   inits = build_tree_list ((field = TYPE_FIELDS (f2c_open_struct)), errinit);
   initn = inits;
-  ffeste_f2c_init_ (unitinit);
-  ffeste_f2c_init_ (fileinit);
-  ffeste_f2c_init_ (fileleninit);
-  ffeste_f2c_init_ (statinit);
-  ffeste_f2c_init_ (accessinit);
-  ffeste_f2c_init_ (forminit);
-  ffeste_f2c_init_ (reclinit);
-  ffeste_f2c_init_ (blankinit);
+  ffeste_f2c_init_next_ (unitinit);
+  ffeste_f2c_init_next_ (fileinit);
+  ffeste_f2c_init_next_ (fileleninit);
+  ffeste_f2c_init_next_ (statinit);
+  ffeste_f2c_init_next_ (accessinit);
+  ffeste_f2c_init_next_ (forminit);
+  ffeste_f2c_init_next_ (reclinit);
+  ffeste_f2c_init_next_ (blankinit);
 
   inits = build (CONSTRUCTOR, f2c_open_struct, NULL_TREE, inits);
   TREE_CONSTANT (inits) = constantp ? 1 : 0;
@@ -1944,14 +2311,35 @@ ffeste_io_olist_ (bool have_err,
 
   resume_momentary (yes);
 
-  ffeste_f2c_exp_ (unitfield, unitexp);
-  ffeste_f2c_exp_ (filefield, fileexp);
-  ffeste_f2c_exp_ (filelenfield, filelenexp);
-  ffeste_f2c_exp_ (statfield, statexp);
-  ffeste_f2c_exp_ (accessfield, accessexp);
-  ffeste_f2c_exp_ (formfield, formexp);
-  ffeste_f2c_exp_ (reclfield, reclexp);
-  ffeste_f2c_exp_ (blankfield, blankexp);
+  /* Prepare run-time expressions.  */
+
+  if (! unitexp)
+    ffecom_prepare_expr (unit_expr);
+
+  ffeste_f2c_prepare_char_ (file_spec, fileexp);
+  ffeste_f2c_prepare_charnolen_ (stat_spec, statexp);
+  ffeste_f2c_prepare_charnolen_ (access_spec, accessexp);
+  ffeste_f2c_prepare_charnolen_ (form_spec, formexp);
+  ffeste_f2c_prepare_int_ (recl_spec, reclexp);
+  ffeste_f2c_prepare_charnolen_ (blank_spec, blankexp);
+
+  ffecom_prepare_end ();
+
+  /* Now evaluate run-time expressions as needed.  */
+
+  if (! unitexp)
+    {
+      unitexp = ffecom_expr (unit_expr);
+      ffeste_f2c_compile_ (unitfield, unitexp);
+    }
+
+  ffeste_f2c_compile_char_ (filefield, filelenfield, file_spec, fileexp,
+			    filelenexp);
+  ffeste_f2c_compile_charnolen_ (statfield, stat_spec, statexp);
+  ffeste_f2c_compile_charnolen_ (accessfield, access_spec, accessexp);
+  ffeste_f2c_compile_charnolen_ (formfield, form_spec, formexp);
+  ffeste_f2c_compile_int_ (reclfield, recl_spec, reclexp);
+  ffeste_f2c_compile_charnolen_ (blankfield, blank_spec, blankexp);
 
   ttype = build_pointer_type (TREE_TYPE (t));
   t = ffecom_1 (ADDR_EXPR, ttype, t);
@@ -1962,9 +2350,7 @@ ffeste_io_olist_ (bool have_err,
 }
 
 #endif
-/* ffeste_subr_file_ -- Display file-statement specifier
-
-   ffeste_subr_file_(&specifier);  */
+/* Display file-statement specifier.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
 static void
@@ -1989,9 +2375,7 @@ ffeste_subr_file_ (const char *kw, ffestpFile *spec)
 }
 #endif
 
-/* ffeste_subr_beru_ -- Generate code for BACKSPACE/ENDFILE/REWIND
-
-   ffeste_subr_beru_(FFECOM_gfrtFBACK);	 */
+/* Generate code for BACKSPACE/ENDFILE/REWIND.  */
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
 static void
@@ -2001,14 +2385,14 @@ ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
   bool iostat;
   bool errl;
 
-#define specified(something) (info->beru_spec[something].kw_or_val_present)
-
   ffeste_emit_line_note_ ();
 
-  /* Do the real work. */
+#define specified(something) (info->beru_spec[something].kw_or_val_present)
 
   iostat = specified (FFESTP_beruixIOSTAT);
   errl = specified (FFESTP_beruixERR);
+
+#undef specified
 
   /* ~~For now, we assume the unit number is specified and is not ASTERISK,
      because the FFE doesn't support BACKSPACE(*) and rejects a BACKSPACE
@@ -2018,15 +2402,14 @@ ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
      ffestvUnit indicator of FFESTV_unitINTEXPR or _unitASTERISK to
      ffeste_R919 and company, and they will want to pass that same value to
      this function, and that argument will replace the constant _unitINTEXPR_
-     in the call below.	 Right now, the default unit number, 6, is ignored. */
+     in the call below.	 Right now, the default unit number, 6, is ignored.  */
 
-  ffecom_push_calltemps ();
-
-  alist = ffeste_io_ialist_ (errl || iostat, FFESTV_unitINTEXPR,
-			     info->beru_spec[FFESTP_beruixUNIT].u.expr, 6);
+  ffeste_start_stmt_ ();
 
   if (errl)
-    {				/* ERR= */
+    {
+      /* Have ERR= specification.   */
+
       ffeste_io_err_
 	= ffeste_io_abort_
 	= ffecom_lookup_label
@@ -2034,7 +2417,9 @@ ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
       ffeste_io_abort_is_temp_ = FALSE;
     }
   else
-    {				/* no ERR= */
+    {
+      /* No ERR= specification.  */
+
       ffeste_io_err_ = NULL_TREE;
 
       if ((ffeste_io_abort_is_temp_ = iostat))
@@ -2044,29 +2429,40 @@ ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
     }
 
   if (iostat)
-    {				/* IOSTAT= */
+    {
+      /* Have IOSTAT= specification.  */
+
       ffeste_io_iostat_is_temp_ = FALSE;
       ffeste_io_iostat_ = ffecom_expr
 	(info->beru_spec[FFESTP_beruixIOSTAT].u.expr);
     }
   else if (ffeste_io_abort_ != NULL_TREE)
-    {				/* no IOSTAT= but ERR= */
+    {
+      /* Have no IOSTAT= but have ERR=.  */
+
       ffeste_io_iostat_is_temp_ = TRUE;
       ffeste_io_iostat_
-	= ffecom_push_tempvar (ffecom_integer_type_node,
-			       FFETARGET_charactersizeNONE, -1, FALSE);
+	= ffecom_make_tempvar ("beru", ffecom_integer_type_node,
+			       FFETARGET_charactersizeNONE, -1);
     }
   else
-    {				/* no IOSTAT=, or ERR= */
+    {
+      /* No IOSTAT= or ERR= specification.  */
+
       ffeste_io_iostat_is_temp_ = FALSE;
       ffeste_io_iostat_ = NULL_TREE;
     }
 
+  /* Now prescan, then convert, all the arguments.  */
+
+  alist = ffeste_io_ialist_ (errl || iostat, FFESTV_unitINTEXPR,
+			     info->beru_spec[FFESTP_beruixUNIT].u.expr, 6);
+
   /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
      label, since we're gonna fall through to there anyway. */
 
-  ffeste_io_call_ (ffecom_call_gfrt (rt, alist),
-		   !ffeste_io_abort_is_temp_);
+  ffeste_io_call_ (ffecom_call_gfrt (rt, alist, NULL_TREE),
+		   ! ffeste_io_abort_is_temp_);
 
   /* If we've got a temp label, generate its code here. */
 
@@ -2079,28 +2475,16 @@ ffeste_subr_beru_ (ffestpBeruStmt *info, ffecomGfrt rt)
       assert (ffeste_io_err_ == NULL_TREE);
     }
 
-  /* If we've got a temp iostat, pop the temp. */
-
-  if (ffeste_io_iostat_is_temp_)
-    ffecom_pop_tempvar (ffeste_io_iostat_);
-
-  ffecom_pop_calltemps ();
-
-#undef specified
-
-  clear_momentary ();
+  ffeste_end_stmt_ ();
 }
-
 #endif
-/* ffeste_do -- End of statement following DO-term-stmt etc
 
-   ffeste_do(TRUE);
+/* END DO statement
 
    Also invoked by _labeldef_branch_finish_ (or, in cases
    of errors, other _labeldef_ functions) when the label definition is
    for a DO-target (LOOPEND) label, once per matching/outstanding DO
-   block on the stack.	These cases invoke this function with ok==TRUE, so
-   only forced stack popping (via ffeste_eof_()) invokes it with ok==FALSE.  */
+   block on the stack.  */
 
 void
 ffeste_do (ffestw block)
@@ -2109,28 +2493,26 @@ ffeste_do (ffestw block)
   fputs ("+ END_DO\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
+
   if (ffestw_do_tvar (block) == 0)
-    expand_end_loop ();		/* DO WHILE and just DO. */
+    {
+      expand_end_loop ();		/* DO WHILE and just DO. */
+
+      ffeste_end_block_ (block);
+    }
   else
-    ffeste_end_iterdo_ (ffestw_do_tvar (block),
+    ffeste_end_iterdo_ (block,
+			ffestw_do_tvar (block),
 			ffestw_do_incr_saved (block),
 			ffestw_do_count_var (block));
-
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_end_R807 -- End of statement following logical IF
+/* End of statement following logical IF.
 
-   ffeste_end_R807(TRUE);
-
-   Applies ONLY to logical IF, not to IF-THEN.	For example, does not
-   ffelex_token_kill the construct name for an IF-THEN block (the name
-   field is invalid for logical IF).  ok==TRUE iff statement following
-   logical IF (substatement) is valid; else, statement is invalid or
-   stack forcibly popped due to ffeste_eof_().	*/
+   Applies to *only* logical IF, not to IF-THEN.  */
 
 void
 ffeste_end_R807 ()
@@ -2139,16 +2521,16 @@ ffeste_end_R807 ()
   fputs ("+ END_IF\n", dmpout);	/* Also see ffeste_R806. */
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
+
   expand_end_cond ();
-  clear_momentary ();
+
+  ffeste_end_block_ (NULL);
 #else
 #error
 #endif
 }
 
-/* ffeste_labeldef_branch -- Generate "code" for branch label def
-
-   ffeste_labeldef_branch(label);  */
+/* Generate "code" for branch label definition.  */
 
 void
 ffeste_labeldef_branch (ffelab label)
@@ -2163,11 +2545,15 @@ ffeste_labeldef_branch (ffelab label)
     assert (glabel != NULL_TREE);
     if (TREE_CODE (glabel) == ERROR_MARK)
       return;
+
     assert (DECL_INITIAL (glabel) == NULL_TREE);
+
     DECL_INITIAL (glabel) = error_mark_node;
     DECL_SOURCE_FILE (glabel) = ffelab_definition_filename (label);
     DECL_SOURCE_LINE (glabel) = ffelab_definition_filelinenum (label);
+
     emit_nop ();
+
     expand_label (glabel);
   }
 #else
@@ -2175,9 +2561,7 @@ ffeste_labeldef_branch (ffelab label)
 #endif
 }
 
-/* ffeste_labeldef_format -- Generate "code" for FORMAT label def
-
-   ffeste_labeldef_format(label);  */
+/* Generate "code" for FORMAT label definition.  */
 
 void
 ffeste_labeldef_format (ffelab label)
@@ -2191,9 +2575,7 @@ ffeste_labeldef_format (ffelab label)
 #endif
 }
 
-/* ffeste_R737A -- Assignment statement outside of WHERE
-
-   ffeste_R737A(dest_expr,source_expr);	 */
+/* Assignment statement (outside of WHERE).  */
 
 void
 ffeste_R737A (ffebld dest, ffebld source)
@@ -2208,25 +2590,21 @@ ffeste_R737A (ffebld dest, ffebld source)
   fputc ('\n', dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
-  ffecom_push_calltemps ();
+
+  ffeste_start_stmt_ ();
 
   ffecom_expand_let_stmt (dest, source);
 
-  ffecom_pop_calltemps ();
-  clear_momentary ();
+  ffeste_end_stmt_ ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R803 -- Block IF (IF-THEN) statement
-
-   ffeste_R803(construct_name,expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
+/* Block IF (IF-THEN) statement.  */
 
 void
-ffeste_R803 (ffebld expr)
+ffeste_R803 (ffestw block, ffebld expr)
 {
   ffeste_check_simple_ ();
 
@@ -2235,28 +2613,53 @@ ffeste_R803 (ffebld expr)
   ffebld_dump (expr);
   fputs (")\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  ffeste_emit_line_note_ ();
-  ffecom_push_calltemps ();
+  {
+    tree temp;
 
-  expand_start_cond (ffecom_truth_value (ffecom_expr (expr)), 0);
+    ffeste_emit_line_note_ ();
 
-  ffecom_pop_calltemps ();
-  clear_momentary ();
+    ffeste_start_block_ (block);
+
+    temp = ffecom_make_tempvar ("ifthen", integer_type_node,
+				FFETARGET_charactersizeNONE, -1);
+
+    ffeste_start_stmt_ ();
+
+    ffecom_prepare_expr (expr);
+
+    if (ffecom_prepare_end ())
+      {
+	tree result;
+
+	result = ffecom_modify (void_type_node,
+				temp,
+				ffecom_truth_value (ffecom_expr (expr)));
+
+	expand_expr_stmt (result);
+
+	ffeste_end_stmt_ ();
+      }
+    else
+      {
+	ffeste_end_stmt_ ();
+
+	temp = ffecom_truth_value (ffecom_expr (expr));
+      }
+
+    expand_start_cond (temp, 0);
+
+    /* No fake `else' constructs introduced (yet).  */
+    ffestw_set_ifthen_fake_else (block, 0);
+  }
 #else
 #error
 #endif
 }
 
-/* ffeste_R804 -- ELSE IF statement
-
-   ffeste_R804(expr,expr_token,name_token);
-
-   Make sure ffeste_kind_ identifies an IF block.  If not
-   NULL, make sure name_token gives the correct name.  Implement the else
-   of the IF block.  */
+/* ELSE IF statement.  */
 
 void
-ffeste_R804 (ffebld expr)
+ffeste_R804 (ffestw block, ffebld expr)
 {
   ffeste_check_simple_ ();
 
@@ -2265,28 +2668,65 @@ ffeste_R804 (ffebld expr)
   ffebld_dump (expr);
   fputs (")\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  ffeste_emit_line_note_ ();
-  ffecom_push_calltemps ();
+  {
+    tree temp;
 
-  expand_start_elseif (ffecom_truth_value (ffecom_expr (expr)));
+    ffeste_emit_line_note_ ();
 
-  ffecom_pop_calltemps ();
-  clear_momentary ();
+    /* Since ELSEIF(expr) might require preparations for expr,
+       implement as ELSE; prepare-expr; IF (expr) THEN ...; ENDIF.  */
+
+    expand_start_else ();
+
+    ffeste_start_block_ (block);
+
+    temp = ffecom_make_tempvar ("elseif", integer_type_node,
+				FFETARGET_charactersizeNONE, -1);
+
+    ffeste_start_stmt_ ();
+
+    ffecom_prepare_expr (expr);
+
+    if (ffecom_prepare_end ())
+      {
+	tree result;
+
+	result = ffecom_modify (void_type_node,
+				temp,
+				ffecom_truth_value (ffecom_expr (expr)));
+
+	expand_expr_stmt (result);
+
+	ffeste_end_stmt_ ();
+      }
+    else
+      {
+	/* In this case, we could probably have used expand_start_elseif
+	   instead, saving the need for a fake `else' construct.  But,
+	   until it's clear that'd improve performance, it's easier this
+	   way, since we have to expand_start_else before we get to this
+	   test, given the current design.  */
+
+	ffeste_end_stmt_ ();
+
+	temp = ffecom_truth_value (ffecom_expr (expr));
+      }
+
+    expand_start_cond (temp, 0);
+
+    /* Increment number of fake `else' constructs introduced.  */
+    ffestw_set_ifthen_fake_else (block,
+				 ffestw_ifthen_fake_else (block) + 1);
+  }
 #else
 #error
 #endif
 }
 
-/* ffeste_R805 -- ELSE statement
-
-   ffeste_R805(name_token);
-
-   Make sure ffeste_kind_ identifies an IF block.  If not
-   NULL, make sure name_token gives the correct name.  Implement the ELSE
-   of the IF block.  */
+/* ELSE statement.  */
 
 void
-ffeste_R805 ()
+ffeste_R805 (ffestw block UNUSED)
 {
   ffeste_check_simple_ ();
 
@@ -2294,36 +2734,39 @@ ffeste_R805 ()
   fputs ("+ ELSE\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
+
   expand_start_else ();
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R806 -- End an IF-THEN
-
-   ffeste_R806(TRUE);  */
+/* END IF statement.  */
 
 void
-ffeste_R806 ()
+ffeste_R806 (ffestw block)
 {
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
   fputs ("+ END_IF_then\n", dmpout);	/* Also see ffeste_shriek_if_. */
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  ffeste_emit_line_note_ ();
-  expand_end_cond ();
-  clear_momentary ();
+  {
+    int i = ffestw_ifthen_fake_else (block) + 1;
+
+    ffeste_emit_line_note_ ();
+
+    for (; i; --i)
+      {
+	expand_end_cond ();
+
+	ffeste_end_block_ (block);
+      }
+  }
 #else
 #error
 #endif
 }
 
-/* ffeste_R807 -- Logical IF statement
-
-   ffeste_R807(expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
+/* Logical IF statement.  */
 
 void
 ffeste_R807 (ffebld expr)
@@ -2335,23 +2778,47 @@ ffeste_R807 (ffebld expr)
   ffebld_dump (expr);
   fputs (")\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  ffeste_emit_line_note_ ();
-  ffecom_push_calltemps ();
+  {
+    tree temp;
 
-  expand_start_cond (ffecom_truth_value (ffecom_expr (expr)), 0);
+    ffeste_emit_line_note_ ();
 
-  ffecom_pop_calltemps ();
-  clear_momentary ();
+    ffeste_start_block_ (NULL);
+
+    temp = ffecom_make_tempvar ("if", integer_type_node,
+				FFETARGET_charactersizeNONE, -1);
+
+    ffeste_start_stmt_ ();
+
+    ffecom_prepare_expr (expr);
+
+    if (ffecom_prepare_end ())
+      {
+	tree result;
+
+	result = ffecom_modify (void_type_node,
+				temp,
+				ffecom_truth_value (ffecom_expr (expr)));
+
+	expand_expr_stmt (result);
+
+	ffeste_end_stmt_ ();
+      }
+    else
+      {
+	ffeste_end_stmt_ ();
+
+	temp = ffecom_truth_value (ffecom_expr (expr));
+      }
+
+    expand_start_cond (temp, 0);
+  }
 #else
 #error
 #endif
 }
 
-/* ffeste_R809 -- SELECT CASE statement
-
-   ffeste_R809(construct_name,expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
+/* SELECT CASE statement.  */
 
 void
 ffeste_R809 (ffestw block, ffebld expr)
@@ -2363,52 +2830,63 @@ ffeste_R809 (ffestw block, ffebld expr)
   ffebld_dump (expr);
   fputs (")\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  ffecom_push_calltemps ();
+  ffeste_emit_line_note_ ();
 
-  {
-    tree texpr;
+  ffeste_start_block_ (block);
 
-    ffeste_emit_line_note_ ();
+  if ((expr == NULL)
+      || (ffeinfo_basictype (ffebld_info (expr))
+	  == FFEINFO_basictypeANY))
+    ffestw_set_select_texpr (block, error_mark_node);
+  else if (ffeinfo_basictype (ffebld_info (expr))
+	   == FFEINFO_basictypeCHARACTER)
+    {
+      /* ~~~Someday handle CHARACTER*1, CHARACTER*N */
 
-    if ((expr == NULL)
-	|| (ffeinfo_basictype (ffebld_info (expr))
-	    == FFEINFO_basictypeANY))
-      {
-	ffestw_set_select_texpr (block, error_mark_node);
-	clear_momentary ();
-      }
-    else
-      {
-	texpr = ffecom_expr (expr);
-	if (ffeinfo_basictype (ffebld_info (expr))
-	    != FFEINFO_basictypeCHARACTER)
-	  {
-	    expand_start_case (1, texpr, TREE_TYPE (texpr),
-			       "SELECT CASE statement");
-	    ffestw_set_select_texpr (block, texpr);
-	    ffestw_set_select_break (block, FALSE);
-	    push_momentary ();
-	  }
-	else
-	  {
-	    ffebad_start_msg ("SELECT CASE on CHARACTER type (at %0) not supported -- sorry",
-			      FFEBAD_severityFATAL);
-	    ffebad_here (0, ffestw_line (block), ffestw_col (block));
-	    ffebad_finish ();
-	    ffestw_set_select_texpr (block, error_mark_node);
-	  }
-      }
-  }
+      ffebad_start_msg ("SELECT CASE on CHARACTER type (at %0) not supported -- sorry",
+			FFEBAD_severityFATAL);
+      ffebad_here (0, ffestw_line (block), ffestw_col (block));
+      ffebad_finish ();
+      ffestw_set_select_texpr (block, error_mark_node);
+    }
+  else
+    {
+      tree result;
+      tree texpr;
 
-  ffecom_pop_calltemps ();
+      result = ffecom_make_tempvar ("select", ffecom_type_expr (expr),
+				    ffeinfo_size (ffebld_info (expr)),
+				    -1);
+
+      ffeste_start_stmt_ ();
+
+      ffecom_prepare_expr (expr);
+
+      ffecom_prepare_end ();
+
+      texpr = ffecom_expr (expr);
+
+      assert (TYPE_MAIN_VARIANT (TREE_TYPE (texpr))
+	      == TYPE_MAIN_VARIANT (TREE_TYPE (result)));
+
+      texpr = ffecom_modify (void_type_node,
+			     result,
+			     texpr);
+      expand_expr_stmt (texpr);
+
+      ffeste_end_stmt_ ();
+
+      expand_start_case (1, result, TREE_TYPE (result),
+			 "SELECT CASE statement");
+      ffestw_set_select_texpr (block, texpr);
+      ffestw_set_select_break (block, FALSE);
+    }
 #else
 #error
 #endif
 }
 
-/* ffeste_R810 -- CASE statement
-
-   ffeste_R810(case_value_range_list,name);
+/* CASE statement.
 
    If casenum is 0, it's CASE DEFAULT.	Else it's the case ranges at
    the start of the first_stmt list in the select object at the top of
@@ -2466,17 +2944,18 @@ ffeste_R810 (ffestw block, unsigned long casenum)
   {
     tree texprlow;
     tree texprhigh;
-    tree tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+    tree tlabel;
     int pushok;
     tree duplicate;
 
     ffeste_emit_line_note_ ();
 
-    if (TREE_CODE (ffestw_select_texpr (block)) == ERROR_MARK)
-      {
-	clear_momentary ();
-	return;
-      }
+    if (ffestw_select_texpr (block) == error_mark_node)
+      return;
+
+    /* ~~~Someday handle CHARACTER*1, CHARACTER*N */
+
+    tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
     if (ffestw_select_break (block))
       expand_exit_something ();
@@ -2516,15 +2995,13 @@ ffeste_R810 (ffestw block, unsigned long casenum)
       while ((c != (ffestwCase) &s->first_rel) && (casenum == c->casenum));
 
     clear_momentary ();
-  }				/* ~~~handle character, character*1 */
+  }
 #else
 #error
 #endif
 }
 
-/* ffeste_R811 -- End a SELECT
-
-   ffeste_R811(TRUE);  */
+/* END SELECT statement.  */
 
 void
 ffeste_R811 (ffestw block)
@@ -2534,15 +3011,12 @@ ffeste_R811 (ffestw block)
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
 
-  if (TREE_CODE (ffestw_select_texpr (block)) == ERROR_MARK)
-    {
-      clear_momentary ();
-      return;
-    }
+  /* ~~~Someday handle CHARACTER*1, CHARACTER*N */
 
-  expand_end_case (ffestw_select_texpr (block));
-  pop_momentary ();
-  clear_momentary ();		/* ~~~handle character and character*1 */
+  if (TREE_CODE (ffestw_select_texpr (block)) != ERROR_MARK)
+    expand_end_case (ffestw_select_texpr (block));
+
+  ffeste_end_block_ (block);
 #else
 #error
 #endif
@@ -2585,9 +3059,6 @@ ffeste_R819A (ffestw block, ffelab label UNUSED, ffebld var,
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   {
     ffeste_emit_line_note_ ();
-    ffecom_push_calltemps ();
-
-    /* Start the DO loop.  */
 
     ffeste_begin_iterdo_ (block, NULL, NULL, NULL,
 			  var,
@@ -2595,19 +3066,13 @@ ffeste_R819A (ffestw block, ffelab label UNUSED, ffebld var,
 			  end, end_token,
 			  incr, incr_token,
 			  "Iterative DO loop");
-
-    ffecom_pop_calltemps ();
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_R819B -- DO WHILE statement
-
-   ffeste_R819B(construct_name,label_token,expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
+/* DO WHILE statement.  */
 
 void
 ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
@@ -2623,32 +3088,50 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
   fputs (")\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   {
+    tree result;
+
     ffeste_emit_line_note_ ();
-    ffecom_push_calltemps ();
 
-    ffestw_set_do_hook (block, expand_start_loop (1));
-    ffestw_set_do_tvar (block, 0);	/* Means DO WHILE vs. iter DO. */
-    if (expr != NULL)
-      expand_exit_loop_if_false (0, ffecom_truth_value (ffecom_expr (expr)));
+    ffeste_start_block_ (block);
 
-    ffecom_pop_calltemps ();
-    clear_momentary ();
+    if (expr)
+      {
+	result = ffecom_make_tempvar ("dowhile", integer_type_node,
+				      FFETARGET_charactersizeNONE, -1);
+
+	ffeste_start_stmt_ ();
+
+	ffecom_prepare_expr (expr);
+
+	ffecom_prepare_end ();
+
+	result = ffecom_modify (void_type_node,
+				result,
+				ffecom_truth_value (ffecom_expr (expr)));
+	expand_expr_stmt (result);
+
+	ffeste_end_stmt_ ();
+
+	ffestw_set_do_hook (block, expand_start_loop (1));
+	expand_exit_loop_if_false (0, result);
+      }
+    else
+      ffestw_set_do_hook (block, expand_start_loop (1));
+
+    ffestw_set_do_tvar (block, NULL_TREE);
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_R825 -- END DO statement
+/* END DO statement.
 
-   ffeste_R825(name_token);
-
-   Make sure ffeste_kind_ identifies a DO block.  If not
-   NULL, make sure name_token gives the correct name.  Do whatever
-   is specific to seeing END DO with a DO-target label definition on it,
-   where the END DO is really treated as a CONTINUE (i.e. generate th
-   same code you would for CONTINUE).  ffeste_do handles the actual
-   generation of end-loop code.	 */
+   This is the MIL-STD 1753 END DO. It's syntactic sugar, similar to
+   CONTINUE (except that it has to have a label that is the target of
+   one or more iterative DO statement), not the Fortran-90 structured
+   END DO, which is handled elsewhere, as is the actual mechanism of
+   ending an iterative DO statement, even one that ends at a label.  */
 
 void
 ffeste_R825 ()
@@ -2659,17 +3142,14 @@ ffeste_R825 ()
   fputs ("+ END_DO_sugar\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
+
   emit_nop ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R834 -- CYCLE statement
-
-   ffeste_R834(name_token);
-
-   Handle a CYCLE within a loop.  */
+/* CYCLE statement.  */
 
 void
 ffeste_R834 (ffestw block)
@@ -2680,18 +3160,14 @@ ffeste_R834 (ffestw block)
   fprintf (dmpout, "+ CYCLE block #%lu\n", ffestw_blocknum (block));
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
+
   expand_continue_loop (ffestw_do_hook (block));
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R835 -- EXIT statement
-
-   ffeste_R835(name_token);
-
-   Handle a EXIT within a loop.	 */
+/* EXIT statement.  */
 
 void
 ffeste_R835 (ffestw block)
@@ -2702,19 +3178,14 @@ ffeste_R835 (ffestw block)
   fprintf (dmpout, "+ EXIT block #%lu\n", ffestw_blocknum (block));
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
+
   expand_exit_loop (ffestw_do_hook (block));
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R836 -- GOTO statement
-
-   ffeste_R836(label);
-
-   Make sure label_token identifies a valid label for a GOTO.  Update
-   that label's info to indicate it is the target of a GOTO.  */
+/* GOTO statement.  */
 
 void
 ffeste_R836 (ffelab label)
@@ -2728,13 +3199,13 @@ ffeste_R836 (ffelab label)
     tree glabel;
 
     ffeste_emit_line_note_ ();
+
     glabel = ffecom_lookup_label (label);
     if ((glabel != NULL_TREE)
 	&& (TREE_CODE (glabel) != ERROR_MARK))
       {
-	TREE_USED (glabel) = 1;
 	expand_goto (glabel);
-	clear_momentary ();
+	TREE_USED (glabel) = 1;
       }
   }
 #else
@@ -2742,12 +3213,7 @@ ffeste_R836 (ffelab label)
 #endif
 }
 
-/* ffeste_R837 -- Computed GOTO statement
-
-   ffeste_R837(labels,count,expr);
-
-   Make sure label_list identifies valid labels for a GOTO.  Update
-   each label's info to indicate it is the target of a GOTO.  */
+/* Computed GOTO statement.  */
 
 void
 ffeste_R837 (ffelab *labels, int count, ffebld expr)
@@ -2776,12 +3242,17 @@ ffeste_R837 (ffelab *labels, int count, ffebld expr)
     tree duplicate;
 
     ffeste_emit_line_note_ ();
-    ffecom_push_calltemps ();
+
+    ffeste_start_stmt_ ();
+
+    ffecom_prepare_expr (expr);
+
+    ffecom_prepare_end ();
 
     texpr = ffecom_expr (expr);
+
     expand_start_case (0, texpr, TREE_TYPE (texpr), "computed GOTO statement");
-    push_momentary ();		/* In case of lots of labels, keep clearing
-				   them out. */
+
     for (i = 0; i < count; ++i)
       {
 	value = build_int_2 (i + 1, 0);
@@ -2789,33 +3260,25 @@ ffeste_R837 (ffelab *labels, int count, ffebld expr)
 
 	pushok = pushcase (value, convert, tlabel, &duplicate);
 	assert (pushok == 0);
+
 	tlabel = ffecom_lookup_label (labels[i]);
 	if ((tlabel == NULL_TREE)
 	    || (TREE_CODE (tlabel) == ERROR_MARK))
 	  continue;
-	TREE_USED (tlabel) = 1;
+
 	expand_goto (tlabel);
-	clear_momentary ();
+	TREE_USED (tlabel) = 1;
       }
-    pop_momentary ();
     expand_end_case (texpr);
 
-    ffecom_pop_calltemps ();
-    clear_momentary ();
+    ffeste_end_stmt_ ();
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_R838 -- ASSIGN statement
-
-   ffeste_R838(label_token,target_variable,target_token);
-
-   Make sure label_token identifies a valid label for an assignment.  Update
-   that label's info to indicate it is the source of an assignment.  Update
-   target_variable's info to indicate it is the target the assignment of that
-   label.  */
+/* ASSIGN statement.  */
 
 void
 ffeste_R838 (ffelab label, ffebld target)
@@ -2833,7 +3296,9 @@ ffeste_R838 (ffelab label, ffebld target)
     tree target_tree;
 
     ffeste_emit_line_note_ ();
-    ffecom_push_calltemps ();
+
+    /* No need to call ffeste_start_stmt_(), as the sorts of expressions
+       seen here should never require use of temporaries.  */
 
     label_tree = ffecom_lookup_label (label);
     if ((label_tree != NULL_TREE)
@@ -2843,31 +3308,28 @@ ffeste_R838 (ffelab label, ffebld target)
 			       build_pointer_type (void_type_node),
 			       label_tree);
 	TREE_CONSTANT (label_tree) = 1;
+
 	target_tree = ffecom_expr_assign_w (target);
 	if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (target_tree)))
 	    < GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (label_tree))))
 	  error ("ASSIGN to variable that is too small");
+
 	label_tree = convert (TREE_TYPE (target_tree), label_tree);
+
 	expr_tree = ffecom_modify (void_type_node,
 				   target_tree,
 				   label_tree);
 	expand_expr_stmt (expr_tree);
+
 	clear_momentary ();
       }
-
-    ffecom_pop_calltemps ();
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_R839 -- Assigned GOTO statement
-
-   ffeste_R839(target,target_token,label_list);
-
-   Make sure label_list identifies valid labels for a GOTO.  Update
-   each label's info to indicate it is the target of a GOTO.  */
+/* Assigned GOTO statement.  */
 
 void
 ffeste_R839 (ffebld target)
@@ -2883,15 +3345,17 @@ ffeste_R839 (ffebld target)
     tree t;
 
     ffeste_emit_line_note_ ();
-    ffecom_push_calltemps ();
+
+    /* No need to call ffeste_start_stmt_(), as the sorts of expressions
+       seen here should never require use of temporaries.  */
 
     t = ffecom_expr_assign (target);
     if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (t)))
 	< GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (null_pointer_node))))
       error ("ASSIGNed GOTO target variable is too small");
+
     expand_computed_goto (convert (TREE_TYPE (null_pointer_node), t));
 
-    ffecom_pop_calltemps ();
     clear_momentary ();
   }
 #else
@@ -2899,11 +3363,7 @@ ffeste_R839 (ffebld target)
 #endif
 }
 
-/* ffeste_R840 -- Arithmetic IF statement
-
-   ffeste_R840(expr,expr_token,neg,zero,pos);
-
-   Make sure the labels are valid; implement.  */
+/* Arithmetic IF statement.  */
 
 void
 ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
@@ -2922,6 +3382,8 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
     tree gpos = ffecom_lookup_label (pos);
     tree texpr;
 
+    ffeste_emit_line_note_ ();
+
     if ((gneg == NULL_TREE) || (gzero == NULL_TREE) || (gpos == NULL_TREE))
       return;
     if ((TREE_CODE (gneg) == ERROR_MARK)
@@ -2929,15 +3391,19 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
 	|| (TREE_CODE (gpos) == ERROR_MARK))
       return;
 
-    ffecom_push_calltemps ();
+    ffeste_start_stmt_ ();
+
+    ffecom_prepare_expr (expr);
+
+    ffecom_prepare_end ();
 
     if (neg == zero)
       {
 	if (neg == pos)
 	  expand_goto (gzero);
 	else
-	  {			/* IF (expr.LE.0) THEN GOTO neg/zero ELSE
-				   GOTO pos. */
+	  {
+	    /* IF (expr.LE.0) THEN GOTO neg/zero ELSE GOTO pos.  */
 	    texpr = ffecom_expr (expr);
 	    texpr = ffecom_2 (LE_EXPR, integer_type_node,
 			      texpr,
@@ -2951,8 +3417,8 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
 	  }
       }
     else if (neg == pos)
-      {				/* IF (expr.NE.0) THEN GOTO neg/pos ELSE GOTO
-				   zero. */
+      {
+	/* IF (expr.NE.0) THEN GOTO neg/pos ELSE GOTO zero.  */
 	texpr = ffecom_expr (expr);
 	texpr = ffecom_2 (NE_EXPR, integer_type_node,
 			  texpr,
@@ -2965,8 +3431,8 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
 	expand_end_cond ();
       }
     else if (zero == pos)
-      {				/* IF (expr.GE.0) THEN GOTO zero/pos ELSE
-				   GOTO neg. */
+      {
+	/* IF (expr.GE.0) THEN GOTO zero/pos ELSE GOTO neg.  */
 	texpr = ffecom_expr (expr);
 	texpr = ffecom_2 (GE_EXPR, integer_type_node,
 			  texpr,
@@ -2979,10 +3445,11 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
 	expand_end_cond ();
       }
     else
-      {				/* Use a SAVE_EXPR in combo with:
-				   IF (expr.LT.0) THEN GOTO neg
-				   ELSEIF (expr.GT.0) THEN GOTO pos
-				   ELSE GOTO zero. */
+      {
+	/* Use a SAVE_EXPR in combo with:
+	   IF (expr.LT.0) THEN GOTO neg
+	   ELSEIF (expr.GT.0) THEN GOTO pos
+	   ELSE GOTO zero.  */
 	tree expr_saved = ffecom_save_tree (ffecom_expr (expr));
 
 	texpr = ffecom_2 (LT_EXPR, integer_type_node,
@@ -3001,19 +3468,15 @@ ffeste_R840 (ffebld expr, ffelab neg, ffelab zero, ffelab pos)
 	expand_goto (gzero);
 	expand_end_cond ();
       }
-    ffeste_emit_line_note_ ();
 
-    ffecom_pop_calltemps ();
-    clear_momentary ();
+    ffeste_end_stmt_ ();
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_R841 -- CONTINUE statement
-
-   ffeste_R841();  */
+/* CONTINUE statement.  */
 
 void
 ffeste_R841 ()
@@ -3024,15 +3487,14 @@ ffeste_R841 ()
   fputs ("+ CONTINUE\n", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   ffeste_emit_line_note_ ();
+
   emit_nop ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R842 -- STOP statement
-
-   ffeste_R842(expr);  */
+/* STOP statement.  */
 
 void
 ffeste_R842 (ffebld expr)
@@ -3056,6 +3518,7 @@ ffeste_R842 (ffebld expr)
     ffelexToken msg;
 
     ffeste_emit_line_note_ ();
+
     if ((expr == NULL)
 	|| (ffeinfo_basictype (ffebld_info (expr))
 	    == FFEINFO_basictypeANY))
@@ -3099,12 +3562,16 @@ ffeste_R842 (ffebld expr)
 		== FFEINFO_kindtypeCHARACTERDEFAULT);
       }
 
-    ffecom_push_calltemps ();
+    /* No need to call ffeste_start_stmt_(), as the sorts of expressions
+       seen here should never require use of temporaries.  */
+
     callit = ffecom_call_gfrt (FFECOM_gfrtSTOP,
-		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)));
-    ffecom_pop_calltemps ();
+		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
+			       NULL_TREE);
     TREE_SIDE_EFFECTS (callit) = 1;
+
     expand_expr_stmt (callit);
+
     clear_momentary ();
   }
 #else
@@ -3112,12 +3579,7 @@ ffeste_R842 (ffebld expr)
 #endif
 }
 
-/* ffeste_R843 -- PAUSE statement
-
-   ffeste_R843(expr,expr_token);
-
-   Make sure statement is valid here; implement.  expr and expr_token are
-   both NULL if there was no expression.  */
+/* PAUSE statement.  */
 
 void
 ffeste_R843 (ffebld expr)
@@ -3141,6 +3603,7 @@ ffeste_R843 (ffebld expr)
     ffelexToken msg;
 
     ffeste_emit_line_note_ ();
+
     if ((expr == NULL)
 	|| (ffeinfo_basictype (ffebld_info (expr))
 	    == FFEINFO_basictypeANY))
@@ -3184,12 +3647,16 @@ ffeste_R843 (ffebld expr)
 		== FFEINFO_kindtypeCHARACTERDEFAULT);
       }
 
-    ffecom_push_calltemps ();
+    /* No need to call ffeste_start_stmt_(), as the sorts of expressions
+       seen here should never require use of temporaries.  */
+
     callit = ffecom_call_gfrt (FFECOM_gfrtPAUSE,
-		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)));
-    ffecom_pop_calltemps ();
+		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
+			       NULL_TREE);
     TREE_SIDE_EFFECTS (callit) = 1;
+
     expand_expr_stmt (callit);
+
     clear_momentary ();
   }
 #if 0				/* Old approach for phantom g77 run-time
@@ -3198,28 +3665,25 @@ ffeste_R843 (ffebld expr)
     tree callit;
 
     ffeste_emit_line_note_ ();
+
     if (expr == NULL)
-      callit = ffecom_call_gfrt (FFECOM_gfrtPAUSENIL, NULL_TREE);
+      callit = ffecom_call_gfrt (FFECOM_gfrtPAUSENIL, NULL_TREE, NULL_TREE);
     else if (ffeinfo_basictype (ffebld_info (expr))
 	     == FFEINFO_basictypeINTEGER)
-      {
-	ffecom_push_calltemps ();
-	callit = ffecom_call_gfrt (FFECOM_gfrtPAUSEINT,
-		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)));
-	ffecom_pop_calltemps ();
-      }
+      callit = ffecom_call_gfrt (FFECOM_gfrtPAUSEINT,
+		      ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
+				 NULL_TREE);
+    else if (ffeinfo_basictype (ffebld_info (expr))
+	     == FFEINFO_basictypeCHARACTER)
+      callit = ffecom_call_gfrt (FFECOM_gfrtPAUSECHAR,
+		      ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)),
+				 NULL_TREE);
     else
-      {
-	if (ffeinfo_basictype (ffebld_info (expr))
-	    != FFEINFO_basictypeCHARACTER)
-	  break;
-	ffecom_push_calltemps ();
-	callit = ffecom_call_gfrt (FFECOM_gfrtPAUSECHAR,
-		    ffecom_list_ptr_to_expr (ffebld_new_item (expr, NULL)));
-	ffecom_pop_calltemps ();
-      }
+      abort ();
     TREE_SIDE_EFFECTS (callit) = 1;
+
     expand_expr_stmt (callit);
+
     clear_momentary ();
   }
 #endif
@@ -3228,11 +3692,7 @@ ffeste_R843 (ffebld expr)
 #endif
 }
 
-/* ffeste_R904 -- OPEN statement
-
-   ffeste_R904();
-
-   Make sure an OPEN is valid in the current context, and implement it.	 */
+/* OPEN statement.  */
 
 void
 ffeste_R904 (ffestpOpenStmt *info)
@@ -3277,23 +3737,16 @@ ffeste_R904 (ffestpOpenStmt *info)
     bool iostat;
     bool errl;
 
-#define specified(something) (info->open_spec[something].kw_or_val_present)
-
     ffeste_emit_line_note_ ();
+
+#define specified(something) (info->open_spec[something].kw_or_val_present)
 
     iostat = specified (FFESTP_openixIOSTAT);
     errl = specified (FFESTP_openixERR);
 
-    ffecom_push_calltemps ();
+#undef specified
 
-    args = ffeste_io_olist_ (errl || iostat,
-			     info->open_spec[FFESTP_openixUNIT].u.expr,
-			     &info->open_spec[FFESTP_openixFILE],
-			     &info->open_spec[FFESTP_openixSTATUS],
-			     &info->open_spec[FFESTP_openixACCESS],
-			     &info->open_spec[FFESTP_openixFORM],
-			     &info->open_spec[FFESTP_openixRECL],
-			     &info->open_spec[FFESTP_openixBLANK]);
+    ffeste_start_stmt_ ();
 
     if (errl)
       {
@@ -3314,31 +3767,48 @@ ffeste_R904 (ffestpOpenStmt *info)
       }
 
     if (iostat)
-      {				/* IOSTAT= */
+      {
+	/* Have IOSTAT= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = ffecom_expr
 	  (info->open_spec[FFESTP_openixIOSTAT].u.expr);
       }
     else if (ffeste_io_abort_ != NULL_TREE)
-      {				/* no IOSTAT= but ERR= */
+      {
+	/* Have no IOSTAT= but have ERR=.  */
+
 	ffeste_io_iostat_is_temp_ = TRUE;
 	ffeste_io_iostat_
-	  = ffecom_push_tempvar (ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1, FALSE);
+	  = ffecom_make_tempvar ("open", ffecom_integer_type_node,
+				 FFETARGET_charactersizeNONE, -1);
       }
     else
-      {				/* no IOSTAT=, or ERR= */
+      {
+	/* No IOSTAT= or ERR= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = NULL_TREE;
       }
 
+    /* Now prescan, then convert, all the arguments.  */
+
+    args = ffeste_io_olist_ (errl || iostat,
+			     info->open_spec[FFESTP_openixUNIT].u.expr,
+			     &info->open_spec[FFESTP_openixFILE],
+			     &info->open_spec[FFESTP_openixSTATUS],
+			     &info->open_spec[FFESTP_openixACCESS],
+			     &info->open_spec[FFESTP_openixFORM],
+			     &info->open_spec[FFESTP_openixRECL],
+			     &info->open_spec[FFESTP_openixBLANK]);
+
     /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
        label, since we're gonna fall through to there anyway. */
 
-    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFOPEN, args),
-		     !ffeste_io_abort_is_temp_);
+    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFOPEN, args, NULL_TREE),
+		     ! ffeste_io_abort_is_temp_);
 
-    /* If we've got a temp label, generate its code here. */
+    /* If we've got a temp label, generate its code here.  */
 
     if (ffeste_io_abort_is_temp_)
       {
@@ -3349,27 +3819,14 @@ ffeste_R904 (ffestpOpenStmt *info)
 	assert (ffeste_io_err_ == NULL_TREE);
       }
 
-    /* If we've got a temp iostat, pop the temp. */
-
-    if (ffeste_io_iostat_is_temp_)
-      ffecom_pop_tempvar (ffeste_io_iostat_);
-
-    ffecom_pop_calltemps ();
-
-#undef specified
+    ffeste_end_stmt_ ();
   }
-
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R907 -- CLOSE statement
-
-   ffeste_R907();
-
-   Make sure a CLOSE is valid in the current context, and implement it.	 */
+/* CLOSE statement.  */
 
 void
 ffeste_R907 (ffestpCloseStmt *info)
@@ -3389,18 +3846,16 @@ ffeste_R907 (ffestpCloseStmt *info)
     bool iostat;
     bool errl;
 
-#define specified(something) (info->close_spec[something].kw_or_val_present)
-
     ffeste_emit_line_note_ ();
+
+#define specified(something) (info->close_spec[something].kw_or_val_present)
 
     iostat = specified (FFESTP_closeixIOSTAT);
     errl = specified (FFESTP_closeixERR);
 
-    ffecom_push_calltemps ();
+#undef specified
 
-    args = ffeste_io_cllist_ (errl || iostat,
-			      info->close_spec[FFESTP_closeixUNIT].u.expr,
-			      &info->close_spec[FFESTP_closeixSTATUS]);
+    ffeste_start_stmt_ ();
 
     if (errl)
       {
@@ -3421,29 +3876,41 @@ ffeste_R907 (ffestpCloseStmt *info)
       }
 
     if (iostat)
-      {				/* IOSTAT= */
+      {
+	/* Have IOSTAT= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = ffecom_expr
 	  (info->close_spec[FFESTP_closeixIOSTAT].u.expr);
       }
     else if (ffeste_io_abort_ != NULL_TREE)
-      {				/* no IOSTAT= but ERR= */
+      {
+	/* Have no IOSTAT= but have ERR=.  */
+
 	ffeste_io_iostat_is_temp_ = TRUE;
 	ffeste_io_iostat_
-	  = ffecom_push_tempvar (ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1, FALSE);
+	  = ffecom_make_tempvar ("close", ffecom_integer_type_node,
+				 FFETARGET_charactersizeNONE, -1);
       }
     else
-      {				/* no IOSTAT=, or ERR= */
+      {
+	/* No IOSTAT= or ERR= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = NULL_TREE;
       }
 
+    /* Now prescan, then convert, all the arguments.  */
+
+    args = ffeste_io_cllist_ (errl || iostat,
+			      info->close_spec[FFESTP_closeixUNIT].u.expr,
+			      &info->close_spec[FFESTP_closeixSTATUS]);
+
     /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
        label, since we're gonna fall through to there anyway. */
 
-    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFCLOS, args),
-		     !ffeste_io_abort_is_temp_);
+    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFCLOS, args, NULL_TREE),
+		     ! ffeste_io_abort_is_temp_);
 
     /* If we've got a temp label, generate its code here. */
 
@@ -3456,28 +3923,14 @@ ffeste_R907 (ffestpCloseStmt *info)
 	assert (ffeste_io_err_ == NULL_TREE);
       }
 
-    /* If we've got a temp iostat, pop the temp. */
-
-    if (ffeste_io_iostat_is_temp_)
-      ffecom_pop_tempvar (ffeste_io_iostat_);
-
-    ffecom_pop_calltemps ();
-
-#undef specified
+    ffeste_end_stmt_ ();
   }
-
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R909_start -- READ(...) statement list begin
-
-   ffeste_R909_start(FALSE);
-
-   Verify that READ is valid here, and begin accepting items in the
-   list.  */
+/* READ(...) statement -- start.  */
 
 void
 ffeste_R909_start (ffestpReadStmt *info, bool only_format UNUSED,
@@ -3553,11 +4006,7 @@ ffeste_R909_start (ffestpReadStmt *info, bool only_format UNUSED,
   fputs (") ", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
 
-#define specified(something) (info->read_spec[something].kw_or_val_present)
-
   ffeste_emit_line_note_ ();
-
-  /* Do the real work. */
 
   {
     ffecomGfrt start;
@@ -3568,10 +4017,9 @@ ffeste_R909_start (ffestpReadStmt *info, bool only_format UNUSED,
     bool endl;
 
     /* First determine the start, per-item, and end run-time functions to
-       call.  The per-item function is picked by choosing an ffeste functio
+       call.  The per-item function is picked by choosing an ffeste function
        to call to handle a given item; it knows how to generate a call to the
-       appropriate run-time function, and is called an "io driver".  It
-       handles the implied-DO construct, for example. */
+       appropriate run-time function, and is called an "I/O driver".  */
 
     switch (format)
       {
@@ -3624,45 +4072,34 @@ ffeste_R909_start (ffestpReadStmt *info, bool only_format UNUSED,
       }
     ffeste_io_endgfrt_ = end;
 
+#define specified(something) (info->read_spec[something].kw_or_val_present)
+
     iostat = specified (FFESTP_readixIOSTAT);
     errl = specified (FFESTP_readixERR);
     endl = specified (FFESTP_readixEND);
 
-    ffecom_push_calltemps ();
+#undef specified
 
-    if (unit == FFESTV_unitCHAREXPR)
-      {
-	cilist = ffeste_io_icilist_ (errl || iostat,
-				  info->read_spec[FFESTP_readixUNIT].u.expr,
-				     endl || iostat, format,
-				     &info->read_spec[FFESTP_readixFORMAT]);
-      }
-    else
-      {
-	cilist = ffeste_io_cilist_ (errl || iostat, unit,
-				  info->read_spec[FFESTP_readixUNIT].u.expr,
-				    5, endl || iostat, format,
-				    &info->read_spec[FFESTP_readixFORMAT],
-				    rec,
-				  info->read_spec[FFESTP_readixREC].u.expr);
-      }
+    ffeste_start_stmt_ ();
 
     if (errl)
-      {				/* ERR= */
+      {
+	/* Have ERR= specification.   */
+
 	ffeste_io_err_
-	  = ffecom_lookup_label
-	  (info->read_spec[FFESTP_readixERR].u.label);
+	  = ffecom_lookup_label (info->read_spec[FFESTP_readixERR].u.label);
 
 	if (endl)
-	  {			/* ERR= END= */
+	  {
+	    /* Have both ERR= and END=.  Need a temp label to handle both.  */
 	    ffeste_io_end_
-	      = ffecom_lookup_label
-	      (info->read_spec[FFESTP_readixEND].u.label);
+	      = ffecom_lookup_label (info->read_spec[FFESTP_readixEND].u.label);
 	    ffeste_io_abort_is_temp_ = TRUE;
 	    ffeste_io_abort_ = ffecom_temp_label ();
 	  }
 	else
-	  {			/* ERR= but no END= */
+	  {
+	    /* Have ERR= but no END=.  */
 	    ffeste_io_end_ = NULL_TREE;
 	    if ((ffeste_io_abort_is_temp_ = iostat))
 	      ffeste_io_abort_ = ffecom_temp_label ();
@@ -3671,20 +4108,24 @@ ffeste_R909_start (ffestpReadStmt *info, bool only_format UNUSED,
 	  }
       }
     else
-      {				/* no ERR= */
+      {
+	/* No ERR= specification.  */
+
 	ffeste_io_err_ = NULL_TREE;
 	if (endl)
-	  {			/* END= but no ERR= */
+	  {
+	    /* Have END= but no ERR=.  */
 	    ffeste_io_end_
-	      = ffecom_lookup_label
-	      (info->read_spec[FFESTP_readixEND].u.label);
+	      = ffecom_lookup_label (info->read_spec[FFESTP_readixEND].u.label);
 	    if ((ffeste_io_abort_is_temp_ = iostat))
 	      ffeste_io_abort_ = ffecom_temp_label ();
 	    else
 	      ffeste_io_abort_ = ffeste_io_end_;
 	  }
 	else
-	  {			/* no ERR= or END= */
+	  {
+	    /* Have no ERR= or END=.  */
+
 	    ffeste_io_end_ = NULL_TREE;
 	    if ((ffeste_io_abort_is_temp_ = iostat))
 	      ffeste_io_abort_ = ffecom_temp_label ();
@@ -3694,46 +4135,59 @@ ffeste_R909_start (ffestpReadStmt *info, bool only_format UNUSED,
       }
 
     if (iostat)
-      {				/* IOSTAT= */
+      {
+	/* Have IOSTAT= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
-	ffeste_io_iostat_ = ffecom_expr
-	  (info->read_spec[FFESTP_readixIOSTAT].u.expr);
+	ffeste_io_iostat_
+	  = ffecom_expr (info->read_spec[FFESTP_readixIOSTAT].u.expr);
       }
     else if (ffeste_io_abort_ != NULL_TREE)
-      {				/* no IOSTAT= but ERR= or END= or both */
+      {
+	/* Have no IOSTAT= but have ERR= and/or END=.  */
+
 	ffeste_io_iostat_is_temp_ = TRUE;
 	ffeste_io_iostat_
-	  = ffecom_push_tempvar (ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1, FALSE);
+	  = ffecom_make_tempvar ("read", ffecom_integer_type_node,
+				 FFETARGET_charactersizeNONE, -1);
       }
     else
-      {				/* no IOSTAT=, ERR=, or END= */
+      {
+	/* No IOSTAT=, ERR=, or END= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = NULL_TREE;
       }
+
+    /* Now prescan, then convert, all the arguments.  */
+
+    if (unit == FFESTV_unitCHAREXPR)
+      cilist = ffeste_io_icilist_ (errl || iostat,
+				   info->read_spec[FFESTP_readixUNIT].u.expr,
+				   endl || iostat, format,
+				   &info->read_spec[FFESTP_readixFORMAT]);
+    else
+      cilist = ffeste_io_cilist_ (errl || iostat, unit,
+				  info->read_spec[FFESTP_readixUNIT].u.expr,
+				  5, endl || iostat, format,
+				  &info->read_spec[FFESTP_readixFORMAT],
+				  rec,
+				  info->read_spec[FFESTP_readixREC].u.expr);
 
     /* If there is no end function, then there are no item functions (i.e.
        it's a NAMELIST), and vice versa by the way.  In this situation, don't
        generate the "if (iostat != 0) goto label;" if the label is temp abort
        label, since we're gonna fall through to there anyway.  */
 
-    ffeste_io_call_ (ffecom_call_gfrt (start, cilist),
-		     !ffeste_io_abort_is_temp_ || (end != FFECOM_gfrt));
+    ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
+		     (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
   }
-
-#undef specified
-
-  push_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R909_item -- READ statement i/o item
-
-   ffeste_R909_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* READ statement -- I/O item.  */
 
 void
 ffeste_R909_item (ffebld expr, ffelexToken expr_token)
@@ -3746,27 +4200,35 @@ ffeste_R909_item (ffebld expr, ffelexToken expr_token)
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   if (expr == NULL)
     return;
+
+  /* Strip parens off items such as in "READ *,(A)".  This is really a bug
+     in the user's code, but I've been told lots of code does this.  */
   while (ffebld_op (expr) == FFEBLD_opPAREN)
-    expr = ffebld_left (expr);	/* "READ *,(A)" -- really a bug in the user's
-				   code, but I've been told lots of code does
-				   this (blech)! */
+    expr = ffebld_left (expr);
+
   if (ffebld_op (expr) == FFEBLD_opANY)
     return;
+
   if (ffebld_op (expr) == FFEBLD_opIMPDO)
     ffeste_io_impdo_ (expr, expr_token);
   else
-    ffeste_io_call_ ((*ffeste_io_driver_) (expr), TRUE);
-  clear_momentary ();
+    {
+      ffeste_start_stmt_ ();
+
+      ffecom_prepare_arg_ptr_to_expr (expr);
+
+      ffecom_prepare_end ();
+
+      ffeste_io_call_ ((*ffeste_io_driver_) (expr), TRUE);
+
+      ffeste_end_stmt_ ();
+    }
 #else
 #error
 #endif
 }
 
-/* ffeste_R909_finish -- READ statement list complete
-
-   ffeste_R909_finish();
-
-   Just wrap up any local activities.  */
+/* READ statement -- end.  */
 
 void
 ffeste_R909_finish ()
@@ -3780,73 +4242,56 @@ ffeste_R909_finish ()
   /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
      label, since we're gonna fall through to there anyway. */
 
-  {
-    if (ffeste_io_endgfrt_ != FFECOM_gfrt)
-      ffeste_io_call_ (ffecom_call_gfrt (ffeste_io_endgfrt_, NULL_TREE),
-		       !ffeste_io_abort_is_temp_);
+  if (ffeste_io_endgfrt_ != FFECOM_gfrt)
+    ffeste_io_call_ (ffecom_call_gfrt (ffeste_io_endgfrt_, NULL_TREE,
+				       NULL_TREE),
+		     ! ffeste_io_abort_is_temp_);
 
-    clear_momentary ();
-    pop_momentary ();
+  /* If we've got a temp label, generate its code here and have it fan out
+     to the END= or ERR= label as appropriate. */
 
-    /* If we've got a temp label, generate its code here and have it fan out
-       to the END= or ERR= label as appropriate. */
+  if (ffeste_io_abort_is_temp_)
+    {
+      DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
+      emit_nop ();
+      expand_label (ffeste_io_abort_);
 
-    if (ffeste_io_abort_is_temp_)
-      {
-	DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
-	emit_nop ();
-	expand_label (ffeste_io_abort_);
+      /* "if (iostat<0) goto end_label;".  */
 
-	/* if (iostat<0) goto end_label; */
+      if ((ffeste_io_end_ != NULL_TREE)
+	  && (TREE_CODE (ffeste_io_end_) != ERROR_MARK))
+	{
+	  expand_start_cond (ffecom_truth_value
+			     (ffecom_2 (LT_EXPR, integer_type_node,
+					ffeste_io_iostat_,
+					ffecom_integer_zero_node)),
+			     0);
+	  expand_goto (ffeste_io_end_);
+	  expand_end_cond ();
+	}
 
-	if ((ffeste_io_end_ != NULL_TREE)
-	    && (TREE_CODE (ffeste_io_end_) != ERROR_MARK))
-	  {
-	    expand_start_cond (ffecom_truth_value
-			       (ffecom_2 (LT_EXPR, integer_type_node,
-					  ffeste_io_iostat_,
-					  ffecom_integer_zero_node)),
-			       0);
-	    expand_goto (ffeste_io_end_);
-	    expand_end_cond ();
-	  }
+      /* "if (iostat>0) goto err_label;".  */
 
-	/* if (iostat>0) goto err_label; */
+      if ((ffeste_io_err_ != NULL_TREE)
+	  && (TREE_CODE (ffeste_io_err_) != ERROR_MARK))
+	{
+	  expand_start_cond (ffecom_truth_value
+			     (ffecom_2 (GT_EXPR, integer_type_node,
+					ffeste_io_iostat_,
+					ffecom_integer_zero_node)),
+			     0);
+	  expand_goto (ffeste_io_err_);
+	  expand_end_cond ();
+	}
+    }
 
-	if ((ffeste_io_err_ != NULL_TREE)
-	    && (TREE_CODE (ffeste_io_err_) != ERROR_MARK))
-	  {
-	    expand_start_cond (ffecom_truth_value
-			       (ffecom_2 (GT_EXPR, integer_type_node,
-					  ffeste_io_iostat_,
-					  ffecom_integer_zero_node)),
-			       0);
-	    expand_goto (ffeste_io_err_);
-	    expand_end_cond ();
-	  }
-
-      }
-
-    /* If we've got a temp iostat, pop the temp. */
-
-    if (ffeste_io_iostat_is_temp_)
-      ffecom_pop_tempvar (ffeste_io_iostat_);
-
-    ffecom_pop_calltemps ();
-
-    clear_momentary ();
-  }
+  ffeste_end_stmt_ ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R910_start -- WRITE(...) statement list begin
-
-   ffeste_R910_start();
-
-   Verify that WRITE is valid here, and begin accepting items in the
-   list.  */
+/* WRITE statement -- start.  */
 
 void
 ffeste_R910_start (ffestpWriteStmt *info, ffestvUnit unit,
@@ -3900,11 +4345,7 @@ ffeste_R910_start (ffestpWriteStmt *info, ffestvUnit unit,
   fputs (") ", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
 
-#define specified(something) (info->write_spec[something].kw_or_val_present)
-
   ffeste_emit_line_note_ ();
-
-  /* Do the real work. */
 
   {
     ffecomGfrt start;
@@ -3914,10 +4355,9 @@ ffeste_R910_start (ffestpWriteStmt *info, ffestvUnit unit,
     bool errl;
 
     /* First determine the start, per-item, and end run-time functions to
-       call.  The per-item function is picked by choosing an ffeste functio
+       call.  The per-item function is picked by choosing an ffeste function
        to call to handle a given item; it knows how to generate a call to the
-       appropriate run-time function, and is called an "io driver".  It
-       handles the implied-DO construct, for example. */
+       appropriate run-time function, and is called an "I/O driver".  */
 
     switch (format)
       {
@@ -3962,32 +4402,21 @@ ffeste_R910_start (ffestpWriteStmt *info, ffestvUnit unit,
       }
     ffeste_io_endgfrt_ = end;
 
+#define specified(something) (info->write_spec[something].kw_or_val_present)
+
     iostat = specified (FFESTP_writeixIOSTAT);
     errl = specified (FFESTP_writeixERR);
 
-    ffecom_push_calltemps ();
+#undef specified
 
-    if (unit == FFESTV_unitCHAREXPR)
-      {
-	cilist = ffeste_io_icilist_ (errl || iostat,
-				info->write_spec[FFESTP_writeixUNIT].u.expr,
-				     FALSE, format,
-				   &info->write_spec[FFESTP_writeixFORMAT]);
-      }
-    else
-      {
-	cilist = ffeste_io_cilist_ (errl || iostat, unit,
-				info->write_spec[FFESTP_writeixUNIT].u.expr,
-				    6, FALSE, format,
-				    &info->write_spec[FFESTP_writeixFORMAT],
-				    rec,
-				info->write_spec[FFESTP_writeixREC].u.expr);
-      }
+    ffeste_start_stmt_ ();
 
     ffeste_io_end_ = NULL_TREE;
 
     if (errl)
-      {				/* ERR= */
+      {
+	/* Have ERR= specification.   */
+
 	ffeste_io_err_
 	  = ffeste_io_abort_
 	  = ffecom_lookup_label
@@ -3995,7 +4424,9 @@ ffeste_R910_start (ffestpWriteStmt *info, ffestvUnit unit,
 	ffeste_io_abort_is_temp_ = FALSE;
       }
     else
-      {				/* no ERR= */
+      {
+	/* No ERR= specification.  */
+
 	ffeste_io_err_ = NULL_TREE;
 
 	if ((ffeste_io_abort_is_temp_ = iostat))
@@ -4005,46 +4436,59 @@ ffeste_R910_start (ffestpWriteStmt *info, ffestvUnit unit,
       }
 
     if (iostat)
-      {				/* IOSTAT= */
+      {
+	/* Have IOSTAT= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = ffecom_expr
 	  (info->write_spec[FFESTP_writeixIOSTAT].u.expr);
       }
     else if (ffeste_io_abort_ != NULL_TREE)
-      {				/* no IOSTAT= but ERR= */
+      {
+	/* Have no IOSTAT= but have ERR=.  */
+
 	ffeste_io_iostat_is_temp_ = TRUE;
 	ffeste_io_iostat_
-	  = ffecom_push_tempvar (ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1, FALSE);
+	  = ffecom_make_tempvar ("write", ffecom_integer_type_node,
+				 FFETARGET_charactersizeNONE, -1);
       }
     else
-      {				/* no IOSTAT=, or ERR= */
+      {
+	/* No IOSTAT= or ERR= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = NULL_TREE;
       }
+
+    /* Now prescan, then convert, all the arguments.  */
+
+    if (unit == FFESTV_unitCHAREXPR)
+      cilist = ffeste_io_icilist_ (errl || iostat,
+				   info->write_spec[FFESTP_writeixUNIT].u.expr,
+				   FALSE, format,
+				   &info->write_spec[FFESTP_writeixFORMAT]);
+    else
+      cilist = ffeste_io_cilist_ (errl || iostat, unit,
+				  info->write_spec[FFESTP_writeixUNIT].u.expr,
+				  6, FALSE, format,
+				  &info->write_spec[FFESTP_writeixFORMAT],
+				  rec,
+				  info->write_spec[FFESTP_writeixREC].u.expr);
 
     /* If there is no end function, then there are no item functions (i.e.
        it's a NAMELIST), and vice versa by the way.  In this situation, don't
        generate the "if (iostat != 0) goto label;" if the label is temp abort
        label, since we're gonna fall through to there anyway.  */
 
-    ffeste_io_call_ (ffecom_call_gfrt (start, cilist),
-		     !ffeste_io_abort_is_temp_ || (end != FFECOM_gfrt));
+    ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
+		     (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
   }
-
-#undef specified
-
-  push_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R910_item -- WRITE statement i/o item
-
-   ffeste_R910_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* WRITE statement -- I/O item.  */
 
 void
 ffeste_R910_item (ffebld expr, ffelexToken expr_token)
@@ -4057,23 +4501,30 @@ ffeste_R910_item (ffebld expr, ffelexToken expr_token)
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   if (expr == NULL)
     return;
+
   if (ffebld_op (expr) == FFEBLD_opANY)
     return;
+
   if (ffebld_op (expr) == FFEBLD_opIMPDO)
     ffeste_io_impdo_ (expr, expr_token);
   else
-    ffeste_io_call_ ((*ffeste_io_driver_) (expr), TRUE);
-  clear_momentary ();
+    {
+      ffeste_start_stmt_ ();
+
+      ffecom_prepare_arg_ptr_to_expr (expr);
+
+      ffecom_prepare_end ();
+
+      ffeste_io_call_ ((*ffeste_io_driver_) (expr), TRUE);
+
+      ffeste_end_stmt_ ();
+    }
 #else
 #error
 #endif
 }
 
-/* ffeste_R910_finish -- WRITE statement list complete
-
-   ffeste_R910_finish();
-
-   Just wrap up any local activities.  */
+/* WRITE statement -- end.  */
 
 void
 ffeste_R910_finish ()
@@ -4087,45 +4538,29 @@ ffeste_R910_finish ()
   /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
      label, since we're gonna fall through to there anyway. */
 
-  {
-    if (ffeste_io_endgfrt_ != FFECOM_gfrt)
-      ffeste_io_call_ (ffecom_call_gfrt (ffeste_io_endgfrt_, NULL_TREE),
-		       !ffeste_io_abort_is_temp_);
+  if (ffeste_io_endgfrt_ != FFECOM_gfrt)
+    ffeste_io_call_ (ffecom_call_gfrt (ffeste_io_endgfrt_, NULL_TREE,
+				       NULL_TREE),
+		     ! ffeste_io_abort_is_temp_);
 
-    clear_momentary ();
-    pop_momentary ();
+  /* If we've got a temp label, generate its code here. */
 
-    /* If we've got a temp label, generate its code here. */
+  if (ffeste_io_abort_is_temp_)
+    {
+      DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
+      emit_nop ();
+      expand_label (ffeste_io_abort_);
 
-    if (ffeste_io_abort_is_temp_)
-      {
-	DECL_INITIAL (ffeste_io_abort_) = error_mark_node;
-	emit_nop ();
-	expand_label (ffeste_io_abort_);
+      assert (ffeste_io_err_ == NULL_TREE);
+    }
 
-	assert (ffeste_io_err_ == NULL_TREE);
-      }
-
-    /* If we've got a temp iostat, pop the temp. */
-
-    if (ffeste_io_iostat_is_temp_)
-      ffecom_pop_tempvar (ffeste_io_iostat_);
-
-    ffecom_pop_calltemps ();
-
-    clear_momentary ();
-  }
+  ffeste_end_stmt_ ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R911_start -- PRINT statement list begin
-
-   ffeste_R911_start();
-
-   Verify that PRINT is valid here, and begin accepting items in the
-   list.  */
+/* PRINT statement -- start.  */
 
 void
 ffeste_R911_start (ffestpPrintStmt *info, ffestvFormat format)
@@ -4158,18 +4593,15 @@ ffeste_R911_start (ffestpPrintStmt *info, ffestvFormat format)
 
   ffeste_emit_line_note_ ();
 
-  /* Do the real work. */
-
   {
     ffecomGfrt start;
     ffecomGfrt end;
     tree cilist;
 
     /* First determine the start, per-item, and end run-time functions to
-       call.  The per-item function is picked by choosing an ffeste functio
+       call.  The per-item function is picked by choosing an ffeste function
        to call to handle a given item; it knows how to generate a call to the
-       appropriate run-time function, and is called an "io driver".  It
-       handles the implied-DO construct, for example. */
+       appropriate run-time function, and is called an "I/O driver".  */
 
     switch (format)
       {
@@ -4198,10 +4630,7 @@ ffeste_R911_start (ffestpPrintStmt *info, ffestvFormat format)
       }
     ffeste_io_endgfrt_ = end;
 
-    ffecom_push_calltemps ();
-
-    cilist = ffeste_io_cilist_ (FALSE, FFESTV_unitNONE, NULL, 6, FALSE, format,
-		      &info->print_spec[FFESTP_printixFORMAT], FALSE, NULL);
+    ffeste_start_stmt_ ();
 
     ffeste_io_end_ = NULL_TREE;
     ffeste_io_err_ = NULL_TREE;
@@ -4210,26 +4639,25 @@ ffeste_R911_start (ffestpPrintStmt *info, ffestvFormat format)
     ffeste_io_iostat_is_temp_ = FALSE;
     ffeste_io_iostat_ = NULL_TREE;
 
+    /* Now prescan, then convert, all the arguments.  */
+
+    cilist = ffeste_io_cilist_ (FALSE, FFESTV_unitNONE, NULL, 6, FALSE, format,
+		      &info->print_spec[FFESTP_printixFORMAT], FALSE, NULL);
+
     /* If there is no end function, then there are no item functions (i.e.
        it's a NAMELIST), and vice versa by the way.  In this situation, don't
        generate the "if (iostat != 0) goto label;" if the label is temp abort
        label, since we're gonna fall through to there anyway.  */
 
-    ffeste_io_call_ (ffecom_call_gfrt (start, cilist),
-		     !ffeste_io_abort_is_temp_ || (end != FFECOM_gfrt));
+    ffeste_io_call_ (ffecom_call_gfrt (start, cilist, NULL_TREE),
+		     (! ffeste_io_abort_is_temp_) || (end != FFECOM_gfrt));
   }
-
-  push_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R911_item -- PRINT statement i/o item
-
-   ffeste_R911_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* PRINT statement -- I/O item.  */
 
 void
 ffeste_R911_item (ffebld expr, ffelexToken expr_token)
@@ -4242,23 +4670,30 @@ ffeste_R911_item (ffebld expr, ffelexToken expr_token)
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   if (expr == NULL)
     return;
+
   if (ffebld_op (expr) == FFEBLD_opANY)
     return;
+
   if (ffebld_op (expr) == FFEBLD_opIMPDO)
     ffeste_io_impdo_ (expr, expr_token);
   else
-    ffeste_io_call_ ((*ffeste_io_driver_) (expr), FALSE);
-  clear_momentary ();
+    {
+      ffeste_start_stmt_ ();
+
+      ffecom_prepare_arg_ptr_to_expr (expr);
+
+      ffecom_prepare_end ();
+
+      ffeste_io_call_ ((*ffeste_io_driver_) (expr), TRUE);
+
+      ffeste_end_stmt_ ();
+    }
 #else
 #error
 #endif
 }
 
-/* ffeste_R911_finish -- PRINT statement list complete
-
-   ffeste_R911_finish();
-
-   Just wrap up any local activities.  */
+/* PRINT statement -- end.  */
 
 void
 ffeste_R911_finish ()
@@ -4268,27 +4703,19 @@ ffeste_R911_finish ()
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
   fputc ('\n', dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  {
-    if (ffeste_io_endgfrt_ != FFECOM_gfrt)
-      ffeste_io_call_ (ffecom_call_gfrt (ffeste_io_endgfrt_, NULL_TREE),
-		       FALSE);
 
-    ffecom_pop_calltemps ();
+  if (ffeste_io_endgfrt_ != FFECOM_gfrt)
+    ffeste_io_call_ (ffecom_call_gfrt (ffeste_io_endgfrt_, NULL_TREE,
+				       NULL_TREE),
+		     FALSE);
 
-    clear_momentary ();
-    pop_momentary ();
-    clear_momentary ();
-  }
+  ffeste_end_stmt_ ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R919 -- BACKSPACE statement
-
-   ffeste_R919();
-
-   Make sure a BACKSPACE is valid in the current context, and implement it.  */
+/* BACKSPACE statement.  */
 
 void
 ffeste_R919 (ffestpBeruStmt *info)
@@ -4308,11 +4735,7 @@ ffeste_R919 (ffestpBeruStmt *info)
 #endif
 }
 
-/* ffeste_R920 -- ENDFILE statement
-
-   ffeste_R920();
-
-   Make sure a ENDFILE is valid in the current context, and implement it.  */
+/* ENDFILE statement.  */
 
 void
 ffeste_R920 (ffestpBeruStmt *info)
@@ -4332,11 +4755,7 @@ ffeste_R920 (ffestpBeruStmt *info)
 #endif
 }
 
-/* ffeste_R921 -- REWIND statement
-
-   ffeste_R921();
-
-   Make sure a REWIND is valid in the current context, and implement it.  */
+/* REWIND statement.  */
 
 void
 ffeste_R921 (ffestpBeruStmt *info)
@@ -4356,11 +4775,7 @@ ffeste_R921 (ffestpBeruStmt *info)
 #endif
 }
 
-/* ffeste_R923A -- INQUIRE statement (non-IOLENGTH version)
-
-   ffeste_R923A(bool by_file);
-
-   Make sure an INQUIRE is valid in the current context, and implement it.  */
+/* INQUIRE statement (non-IOLENGTH version).  */
 
 void
 ffeste_R923A (ffestpInquireStmt *info, bool by_file UNUSED)
@@ -4413,32 +4828,16 @@ ffeste_R923A (ffestpInquireStmt *info, bool by_file UNUSED)
     bool iostat;
     bool errl;
 
-#define specified(something) (info->inquire_spec[something].kw_or_val_present)
-
     ffeste_emit_line_note_ ();
+
+#define specified(something) (info->inquire_spec[something].kw_or_val_present)
 
     iostat = specified (FFESTP_inquireixIOSTAT);
     errl = specified (FFESTP_inquireixERR);
 
-    ffecom_push_calltemps ();
+#undef specified
 
-    args = ffeste_io_inlist_ (errl || iostat,
-			      &info->inquire_spec[FFESTP_inquireixUNIT],
-			      &info->inquire_spec[FFESTP_inquireixFILE],
-			      &info->inquire_spec[FFESTP_inquireixEXIST],
-			      &info->inquire_spec[FFESTP_inquireixOPENED],
-			      &info->inquire_spec[FFESTP_inquireixNUMBER],
-			      &info->inquire_spec[FFESTP_inquireixNAMED],
-			      &info->inquire_spec[FFESTP_inquireixNAME],
-			      &info->inquire_spec[FFESTP_inquireixACCESS],
-			    &info->inquire_spec[FFESTP_inquireixSEQUENTIAL],
-			      &info->inquire_spec[FFESTP_inquireixDIRECT],
-			      &info->inquire_spec[FFESTP_inquireixFORM],
-			      &info->inquire_spec[FFESTP_inquireixFORMATTED],
-			   &info->inquire_spec[FFESTP_inquireixUNFORMATTED],
-			      &info->inquire_spec[FFESTP_inquireixRECL],
-			      &info->inquire_spec[FFESTP_inquireixNEXTREC],
-			      &info->inquire_spec[FFESTP_inquireixBLANK]);
+    ffeste_start_stmt_ ();
 
     if (errl)
       {
@@ -4459,31 +4858,58 @@ ffeste_R923A (ffestpInquireStmt *info, bool by_file UNUSED)
       }
 
     if (iostat)
-      {				/* IOSTAT= */
+      {
+	/* Have IOSTAT= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = ffecom_expr
 	  (info->inquire_spec[FFESTP_inquireixIOSTAT].u.expr);
       }
     else if (ffeste_io_abort_ != NULL_TREE)
-      {				/* no IOSTAT= but ERR= */
+      {
+	/* Have no IOSTAT= but have ERR=.  */
+
 	ffeste_io_iostat_is_temp_ = TRUE;
 	ffeste_io_iostat_
-	  = ffecom_push_tempvar (ffecom_integer_type_node,
-				 FFETARGET_charactersizeNONE, -1, FALSE);
+	  = ffecom_make_tempvar ("inquire", ffecom_integer_type_node,
+				 FFETARGET_charactersizeNONE, -1);
       }
     else
-      {				/* no IOSTAT=, or ERR= */
+      {
+	/* No IOSTAT= or ERR= specification.  */
+
 	ffeste_io_iostat_is_temp_ = FALSE;
 	ffeste_io_iostat_ = NULL_TREE;
       }
 
+    /* Now prescan, then convert, all the arguments.  */
+
+    args
+      = ffeste_io_inlist_ (errl || iostat,
+			   &info->inquire_spec[FFESTP_inquireixUNIT],
+			   &info->inquire_spec[FFESTP_inquireixFILE],
+			   &info->inquire_spec[FFESTP_inquireixEXIST],
+			   &info->inquire_spec[FFESTP_inquireixOPENED],
+			   &info->inquire_spec[FFESTP_inquireixNUMBER],
+			   &info->inquire_spec[FFESTP_inquireixNAMED],
+			   &info->inquire_spec[FFESTP_inquireixNAME],
+			   &info->inquire_spec[FFESTP_inquireixACCESS],
+			   &info->inquire_spec[FFESTP_inquireixSEQUENTIAL],
+			   &info->inquire_spec[FFESTP_inquireixDIRECT],
+			   &info->inquire_spec[FFESTP_inquireixFORM],
+			   &info->inquire_spec[FFESTP_inquireixFORMATTED],
+			   &info->inquire_spec[FFESTP_inquireixUNFORMATTED],
+			   &info->inquire_spec[FFESTP_inquireixRECL],
+			   &info->inquire_spec[FFESTP_inquireixNEXTREC],
+			   &info->inquire_spec[FFESTP_inquireixBLANK]);
+
     /* Don't generate "if (iostat != 0) goto label;" if label is temp abort
        label, since we're gonna fall through to there anyway. */
 
-    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFINQU, args),
-		     !ffeste_io_abort_is_temp_);
+    ffeste_io_call_ (ffecom_call_gfrt (FFECOM_gfrtFINQU, args, NULL_TREE),
+		     ! ffeste_io_abort_is_temp_);
 
-    /* If we've got a temp label, generate its code here. */
+    /* If we've got a temp label, generate its code here.  */
 
     if (ffeste_io_abort_is_temp_)
       {
@@ -4494,28 +4920,14 @@ ffeste_R923A (ffestpInquireStmt *info, bool by_file UNUSED)
 	assert (ffeste_io_err_ == NULL_TREE);
       }
 
-    /* If we've got a temp iostat, pop the temp. */
-
-    if (ffeste_io_iostat_is_temp_)
-      ffecom_pop_tempvar (ffeste_io_iostat_);
-
-    ffecom_pop_calltemps ();
-
-#undef specified
+    ffeste_end_stmt_ ();
   }
-
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R923B_start -- INQUIRE(IOLENGTH=expr) statement list begin
-
-   ffeste_R923B_start();
-
-   Verify that INQUIRE is valid here, and begin accepting items in the
-   list.  */
+/* INQUIRE(IOLENGTH=expr) statement -- start.  */
 
 void
 ffeste_R923B_start (ffestpInquireStmt *info UNUSED)
@@ -4528,18 +4940,14 @@ ffeste_R923B_start (ffestpInquireStmt *info UNUSED)
   fputs (") ", dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
   assert ("INQUIRE(IOLENGTH=<var>) not implemented yet! ~~~" == NULL);
+
   ffeste_emit_line_note_ ();
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R923B_item -- INQUIRE statement i/o item
-
-   ffeste_R923B_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* INQUIRE(IOLENGTH=expr) statement -- I/O item.  */
 
 void
 ffeste_R923B_item (ffebld expr UNUSED)
@@ -4550,17 +4958,12 @@ ffeste_R923B_item (ffebld expr UNUSED)
   ffebld_dump (expr);
   fputc (',', dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  clear_momentary ();
 #else
 #error
 #endif
 }
 
-/* ffeste_R923B_finish -- INQUIRE statement list complete
-
-   ffeste_R923B_finish();
-
-   Just wrap up any local activities.  */
+/* INQUIRE(IOLENGTH=expr) statement -- end.  */
 
 void
 ffeste_R923B_finish ()
@@ -4570,7 +4973,6 @@ ffeste_R923B_finish ()
 #if FFECOM_targetCURRENT == FFECOM_targetFFE
   fputc ('\n', dmpout);
 #elif FFECOM_targetCURRENT == FFECOM_targetGCC
-  clear_momentary ();
 #else
 #error
 #endif
@@ -4642,9 +5044,7 @@ ffeste_R1001 (ffests s)
 #endif
 }
 
-/* ffeste_R1103 -- End a PROGRAM
-
-   ffeste_R1103();  */
+/* END PROGRAM.  */
 
 void
 ffeste_R1103 ()
@@ -4657,9 +5057,7 @@ ffeste_R1103 ()
 #endif
 }
 
-/* ffeste_R1112 -- End a BLOCK DATA
-
-   ffeste_R1112(TRUE);	*/
+/* END BLOCK DATA.  */
 
 void
 ffeste_R1112 ()
@@ -4672,11 +5070,7 @@ ffeste_R1112 ()
 #endif
 }
 
-/* ffeste_R1212 -- CALL statement
-
-   ffeste_R1212(expr,expr_token);
-
-   Make sure statement is valid here; implement.  */
+/* CALL statement.  */
 
 void
 ffeste_R1212 (ffebld expr)
@@ -4741,6 +5135,27 @@ ffeste_R1212 (ffebld expr)
     else
       ffebld_set_trail (prevargs, NULL);
 
+    ffeste_start_stmt_ ();
+
+    /* No temporaries are actually needed at this level, but we go
+       through the motions anyway, just to be sure in case they do
+       get made.  Temporaries needed for arguments should be in the
+       scopes of inner blocks, and if clean-up actions are supported,
+       such as CALL-ing an intrinsic that writes to an argument of one
+       type when a variable of a different type is provided (requiring
+       assignment to the variable from a temporary after the library
+       routine returns), the clean-up must be done by the expression
+       evaluator, generally, to handle alternate returns (which we hope
+       won't ever be supported by intrinsics, but might be a similar
+       issue, such as CALL-ing an F90-style subroutine with an INTERFACE
+       block).  That implies the expression evaluator will have to
+       recognize the need for its own temporary anyway, meaning it'll
+       construct a block within the one constructed here.  */
+
+    ffecom_prepare_expr (expr);
+
+    ffecom_prepare_end ();
+
     if (labels == NULL)
       expand_expr_stmt (ffecom_expr (expr));
     else
@@ -4751,43 +5166,41 @@ ffeste_R1212 (ffebld expr)
 	int caseno;
 	int pushok;
 	tree duplicate;
+	ffebld label;
 
 	texpr = ffecom_expr (expr);
 	expand_start_case (0, texpr, TREE_TYPE (texpr), "CALL statement");
-	push_momentary ();	/* In case of many labels, keep 'em cleared
-				   out. */
-	for (caseno = 1;
-	     labels != NULL;
-	     ++caseno, labels = ffebld_trail (labels))
+
+	for (caseno = 1, label = labels;
+	     label != NULL;
+	     ++caseno, label = ffebld_trail (label))
 	  {
 	    value = build_int_2 (caseno, 0);
 	    tlabel = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
 	    pushok = pushcase (value, convert, tlabel, &duplicate);
 	    assert (pushok == 0);
+
 	    tlabel
-	      = ffecom_lookup_label (ffebld_labter (ffebld_head (labels)));
+	      = ffecom_lookup_label (ffebld_labter (ffebld_head (label)));
 	    if ((tlabel == NULL_TREE)
 		|| (TREE_CODE (tlabel) == ERROR_MARK))
 	      continue;
 	    TREE_USED (tlabel) = 1;
 	    expand_goto (tlabel);
-	    clear_momentary ();
 	  }
 
-	pop_momentary ();
 	expand_end_case (texpr);
       }
-    clear_momentary ();
+
+    ffeste_end_stmt_ ();
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_R1221 -- End a FUNCTION
-
-   ffeste_R1221(TRUE);	*/
+/* END FUNCTION.  */
 
 void
 ffeste_R1221 ()
@@ -4800,9 +5213,7 @@ ffeste_R1221 ()
 #endif
 }
 
-/* ffeste_R1225 -- End a SUBROUTINE
-
-   ffeste_R1225(TRUE);	*/
+/* END SUBROUTINE.  */
 
 void
 ffeste_R1225 ()
@@ -4815,12 +5226,7 @@ ffeste_R1225 ()
 #endif
 }
 
-/* ffeste_R1226 -- ENTRY statement
-
-   ffeste_R1226(entryname,arglist,ending_token);
-
-   Make sure we're in a SUBROUTINE or FUNCTION, register arguments for the
-   entry point name, and so on.	 */
+/* ENTRY statement.  */
 
 void
 ffeste_R1226 (ffesymbol entry)
@@ -4868,23 +5274,19 @@ ffeste_R1226 (ffesymbol entry)
 
     ffeste_emit_line_note_ ();
 
+    if (label == error_mark_node)
+      return;
+
     DECL_INITIAL (label) = error_mark_node;
     emit_nop ();
     expand_label (label);
-
-    clear_momentary ();
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_R1227 -- RETURN statement
-
-   ffeste_R1227(expr);
-
-   Make sure statement is valid here; implement.  expr and expr_token are
-   both NULL if there was no expression.  */
+/* RETURN statement.  */
 
 void
 ffeste_R1227 (ffestw block UNUSED, ffebld expr)
@@ -4907,7 +5309,12 @@ ffeste_R1227 (ffestw block UNUSED, ffebld expr)
     tree rtn;
 
     ffeste_emit_line_note_ ();
-    ffecom_push_calltemps ();
+
+    ffeste_start_stmt_ ();
+
+    ffecom_prepare_return_expr (expr);
+
+    ffecom_prepare_end ();
 
     rtn = ffecom_return_expr (expr);
 
@@ -4928,20 +5335,14 @@ ffeste_R1227 (ffestw block UNUSED, ffebld expr)
 	  expand_null_return ();
       }
 
-    ffecom_pop_calltemps ();
-    clear_momentary ();
+    ffeste_end_stmt_ ();
   }
 #else
 #error
 #endif
 }
 
-/* ffeste_V018_start -- REWRITE(...) statement list begin
-
-   ffeste_V018_start();
-
-   Verify that REWRITE is valid here, and begin accepting items in the
-   list.  */
+/* REWRITE statement -- start.  */
 
 #if FFESTR_VXT
 void
@@ -4976,11 +5377,7 @@ ffeste_V018_start (ffestpRewriteStmt *info, ffestvFormat format)
 #endif
 }
 
-/* ffeste_V018_item -- REWRITE statement i/o item
-
-   ffeste_V018_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* REWRITE statement -- I/O item.  */
 
 void
 ffeste_V018_item (ffebld expr)
@@ -4996,11 +5393,7 @@ ffeste_V018_item (ffebld expr)
 #endif
 }
 
-/* ffeste_V018_finish -- REWRITE statement list complete
-
-   ffeste_V018_finish();
-
-   Just wrap up any local activities.  */
+/* REWRITE statement -- end.  */
 
 void
 ffeste_V018_finish ()
@@ -5015,12 +5408,7 @@ ffeste_V018_finish ()
 #endif
 }
 
-/* ffeste_V019_start -- ACCEPT statement list begin
-
-   ffeste_V019_start();
-
-   Verify that ACCEPT is valid here, and begin accepting items in the
-   list.  */
+/* ACCEPT statement -- start.  */
 
 void
 ffeste_V019_start (ffestpAcceptStmt *info, ffestvFormat format)
@@ -5055,11 +5443,7 @@ ffeste_V019_start (ffestpAcceptStmt *info, ffestvFormat format)
 #endif
 }
 
-/* ffeste_V019_item -- ACCEPT statement i/o item
-
-   ffeste_V019_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* ACCEPT statement -- I/O item.  */
 
 void
 ffeste_V019_item (ffebld expr)
@@ -5075,11 +5459,7 @@ ffeste_V019_item (ffebld expr)
 #endif
 }
 
-/* ffeste_V019_finish -- ACCEPT statement list complete
-
-   ffeste_V019_finish();
-
-   Just wrap up any local activities.  */
+/* ACCEPT statement -- end.  */
 
 void
 ffeste_V019_finish ()
@@ -5095,12 +5475,7 @@ ffeste_V019_finish ()
 }
 
 #endif
-/* ffeste_V020_start -- TYPE statement list begin
-
-   ffeste_V020_start();
-
-   Verify that TYPE is valid here, and begin accepting items in the
-   list.  */
+/* TYPE statement -- start.  */
 
 void
 ffeste_V020_start (ffestpTypeStmt *info UNUSED,
@@ -5136,11 +5511,7 @@ ffeste_V020_start (ffestpTypeStmt *info UNUSED,
 #endif
 }
 
-/* ffeste_V020_item -- TYPE statement i/o item
-
-   ffeste_V020_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* TYPE statement -- I/O item.  */
 
 void
 ffeste_V020_item (ffebld expr UNUSED)
@@ -5156,11 +5527,7 @@ ffeste_V020_item (ffebld expr UNUSED)
 #endif
 }
 
-/* ffeste_V020_finish -- TYPE statement list complete
-
-   ffeste_V020_finish();
-
-   Just wrap up any local activities.  */
+/* TYPE statement -- end.  */
 
 void
 ffeste_V020_finish ()
@@ -5175,11 +5542,7 @@ ffeste_V020_finish ()
 #endif
 }
 
-/* ffeste_V021 -- DELETE statement
-
-   ffeste_V021();
-
-   Make sure a DELETE is valid in the current context, and implement it.  */
+/* DELETE statement.  */
 
 #if FFESTR_VXT
 void
@@ -5200,11 +5563,7 @@ ffeste_V021 (ffestpDeleteStmt *info)
 #endif
 }
 
-/* ffeste_V022 -- UNLOCK statement
-
-   ffeste_V022();
-
-   Make sure a UNLOCK is valid in the current context, and implement it.  */
+/* UNLOCK statement.  */
 
 void
 ffeste_V022 (ffestpBeruStmt *info)
@@ -5223,12 +5582,7 @@ ffeste_V022 (ffestpBeruStmt *info)
 #endif
 }
 
-/* ffeste_V023_start -- ENCODE(...) statement list begin
-
-   ffeste_V023_start();
-
-   Verify that ENCODE is valid here, and begin accepting items in the
-   list.  */
+/* ENCODE statement -- start.  */
 
 void
 ffeste_V023_start (ffestpVxtcodeStmt *info)
@@ -5249,11 +5603,7 @@ ffeste_V023_start (ffestpVxtcodeStmt *info)
 #endif
 }
 
-/* ffeste_V023_item -- ENCODE statement i/o item
-
-   ffeste_V023_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* ENCODE statement -- I/O item.  */
 
 void
 ffeste_V023_item (ffebld expr)
@@ -5269,11 +5619,7 @@ ffeste_V023_item (ffebld expr)
 #endif
 }
 
-/* ffeste_V023_finish -- ENCODE statement list complete
-
-   ffeste_V023_finish();
-
-   Just wrap up any local activities.  */
+/* ENCODE statement -- end.  */
 
 void
 ffeste_V023_finish ()
@@ -5288,12 +5634,7 @@ ffeste_V023_finish ()
 #endif
 }
 
-/* ffeste_V024_start -- DECODE(...) statement list begin
-
-   ffeste_V024_start();
-
-   Verify that DECODE is valid here, and begin accepting items in the
-   list.  */
+/* DECODE statement -- start.  */
 
 void
 ffeste_V024_start (ffestpVxtcodeStmt *info)
@@ -5314,11 +5655,7 @@ ffeste_V024_start (ffestpVxtcodeStmt *info)
 #endif
 }
 
-/* ffeste_V024_item -- DECODE statement i/o item
-
-   ffeste_V024_item(expr,expr_token);
-
-   Implement output-list expression.  */
+/* DECODE statement -- I/O item.  */
 
 void
 ffeste_V024_item (ffebld expr)
@@ -5334,11 +5671,7 @@ ffeste_V024_item (ffebld expr)
 #endif
 }
 
-/* ffeste_V024_finish -- DECODE statement list complete
-
-   ffeste_V024_finish();
-
-   Just wrap up any local activities.  */
+/* DECODE statement -- end.  */
 
 void
 ffeste_V024_finish ()
@@ -5353,12 +5686,7 @@ ffeste_V024_finish ()
 #endif
 }
 
-/* ffeste_V025_start -- DEFINEFILE statement list begin
-
-   ffeste_V025_start();
-
-   Verify that DEFINEFILE is valid here, and begin accepting items in the
-   list.  */
+/* DEFINEFILE statement -- start.  */
 
 void
 ffeste_V025_start ()
@@ -5373,11 +5701,7 @@ ffeste_V025_start ()
 #endif
 }
 
-/* ffeste_V025_item -- DEFINE FILE statement item
-
-   ffeste_V025_item(u,ut,m,mt,n,nt,asv,asvt);
-
-   Implement item.  */
+/* DEFINE FILE statement -- item.  */
 
 void
 ffeste_V025_item (ffebld u, ffebld m, ffebld n, ffebld asv)
@@ -5399,11 +5723,7 @@ ffeste_V025_item (ffebld u, ffebld m, ffebld n, ffebld asv)
 #endif
 }
 
-/* ffeste_V025_finish -- DEFINE FILE statement list complete
-
-   ffeste_V025_finish();
-
-   Just wrap up any local activities.  */
+/* DEFINE FILE statement -- end.  */
 
 void
 ffeste_V025_finish ()
@@ -5418,11 +5738,7 @@ ffeste_V025_finish ()
 #endif
 }
 
-/* ffeste_V026 -- FIND statement
-
-   ffeste_V026();
-
-   Make sure a FIND is valid in the current context, and implement it.	*/
+/* FIND statement.  */
 
 void
 ffeste_V026 (ffestpFindStmt *info)
@@ -5442,4 +5758,12 @@ ffeste_V026 (ffestpFindStmt *info)
 #endif
 }
 
+#endif
+
+#ifdef ENABLE_CHECKING
+void
+ffeste_terminate_2 (void)
+{
+  assert (! ffeste_top_block_);
+}
 #endif
