@@ -36,7 +36,7 @@ namespace __cxxabiv1
 #endif
 
 #ifdef __ARM_EABI__
-  // The ARM EABI uses the least significan bit of a 32-bit
+  // The ARM EABI uses the least significant bit of a 32-bit
   // guard variable.  */
 #define _GLIBCXX_GUARD_ACQUIRE(x) (!(*(x) & 1))
 #define _GLIBCXX_GUARD_RELEASE(x) *(x) = 1
