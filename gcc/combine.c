@@ -6253,12 +6253,32 @@ force_to_mode (x, mode, mask, reg, just_select)
 	  smask |= (HOST_WIDE_INT) -1 << width;
 
 	if (GET_CODE (XEXP (x, 1)) == CONST_INT
-	    && exact_log2 (- smask) >= 0
-	    && (nonzero_bits (XEXP (x, 0), mode) & ~ mask) == 0
-	    && (INTVAL (XEXP (x, 1)) & ~ mask) != 0)
-	  return force_to_mode (plus_constant (XEXP (x, 0),
-					       INTVAL (XEXP (x, 1)) & mask),
-				mode, mask, reg, next_select);
+	    && exact_log2 (- smask) >= 0)
+	  {
+#ifdef STACK_BIAS
+	    if (STACK_BIAS
+	        && (XEXP (x, 0) == stack_pointer_rtx
+	            || XEXP (x, 0) == frame_pointer_rtx))
+	      {
+                int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
+                unsigned HOST_WIDE_INT sp_mask = GET_MODE_MASK (mode);
+          
+		sp_mask &= ~ (sp_alignment - 1);
+		if ((sp_mask & ~ mask) == 0
+		    && ((INTVAL (XEXP (x, 1)) - STACK_BIAS) & ~ mask) != 0)
+		  return force_to_mode (plus_constant (XEXP (x, 0),
+		  				       ((INTVAL (XEXP (x, 1)) -
+							 STACK_BIAS) & mask)
+						       + STACK_BIAS),
+		 			mode, mask, reg, next_select);
+              }
+#endif
+	    if ((nonzero_bits (XEXP (x, 0), mode) & ~ mask) == 0
+	        && (INTVAL (XEXP (x, 1)) & ~ mask) != 0)
+	      return force_to_mode (plus_constant (XEXP (x, 0),
+					           INTVAL (XEXP (x, 1)) & mask),
+				    mode, mask, reg, next_select);
+	  }
       }
 
       /* ... fall through ...  */
@@ -7331,10 +7351,15 @@ nonzero_bits (x, mode)
 	 In particular, in the Irix6 n64 ABI, the stack has 128 bit
 	 alignment but the argument pointer has only 64 bit alignment.  */
 
-      if (x == stack_pointer_rtx || x == frame_pointer_rtx
-	  || x == hard_frame_pointer_rtx
-	  || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
-	      && REGNO (x) <= LAST_VIRTUAL_REGISTER))
+      if ((x == frame_pointer_rtx
+	   || x == stack_pointer_rtx
+	   || x == hard_frame_pointer_rtx
+	   || (REGNO (x) >= FIRST_VIRTUAL_REGISTER
+	       && REGNO (x) <= LAST_VIRTUAL_REGISTER))
+#ifdef STACK_BIAS
+	  && !STACK_BIAS
+#endif	      
+	      )
 	{
 	  int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
 
@@ -7515,6 +7540,22 @@ nonzero_bits (x, mode)
 	switch (code)
 	  {
 	  case PLUS:
+#ifdef STACK_BIAS
+	    if (STACK_BIAS
+	        && (XEXP (x, 0) == stack_pointer_rtx
+	            || XEXP (x, 0) == frame_pointer_rtx)
+	        && GET_CODE (XEXP (x, 1)) == CONST_INT)
+	      {
+		int sp_alignment = STACK_BOUNDARY / BITS_PER_UNIT;
+
+	        nz0 = (GET_MODE_MASK (mode) & ~ (sp_alignment - 1));
+	        nz1 = INTVAL (XEXP (x, 1)) - STACK_BIAS;
+	        width0 = floor_log2 (nz0) + 1;
+	        width1 = floor_log2 (nz1) + 1;
+	        low0 = floor_log2 (nz0 & -nz0);
+	        low1 = floor_log2 (nz1 & -nz1);
+	      }
+#endif	  
 	    result_width = MAX (width0, width1) + 1;
 	    result_low = MIN (low0, low1);
 	    break;
