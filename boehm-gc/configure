@@ -6558,6 +6558,14 @@ _ACEOF
   fi
 fi;
 
+if test "${gc_use_mmap}" = "yes"; then
+
+cat >>confdefs.h <<\_ACEOF
+#define USE_MMAP 1
+_ACEOF
+
+fi
+
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   toolexecdir='$(exec_prefix)/$(target_noncanonical)'
