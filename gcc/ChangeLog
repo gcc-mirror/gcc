@@ -1,3 +1,8 @@
+Sat Sep 23 19:10:20 2000  Denis Chertykov  <denisc@overta.ru> & Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* expmed.c (expand_divmod): For signed divide by 2, prefer
+	a branch and fewer shifts if branches are very cheap.
+
 2000-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Makefile.in: Remove all targets related to building

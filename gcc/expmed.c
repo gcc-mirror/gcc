@@ -3258,7 +3258,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d))
 		  {
 		    lgup = floor_log2 (abs_d);
-		    if (abs_d != 2 && BRANCH_COST < 3)
+		    if (BRANCH_COST < 1 || (abs_d != 2 && BRANCH_COST < 3))
 		      {
 			rtx label = gen_label_rtx ();
 			rtx t1;
