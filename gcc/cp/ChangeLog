@@ -1,3 +1,8 @@
+1999-08-25  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (cp_build_qualified_type_real): If we're asking for the
+	same quals we already have, just return.
+
 1999-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (SUBOBJECT): New tree node.
