@@ -1,3 +1,12 @@
+2004-08-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* expr.c (move_by_pieces): Set alignment for move to minimum of
+	MOVE_MAX_PIECES mode alignment and the largest non-slow mode
+	alignment, but not less than the original alignment.
+	(move_by_pieces_ninsns): Same.
+	(can_store_by_pieces): Similar for store with STORE_MAX_PIECES.
+	(store_by_pieces_1): Same.
+
 2004-08-12  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16867
