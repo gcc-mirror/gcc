@@ -1,3 +1,8 @@
+1998-06-10  Brendan Kehoe  <brendan@cygnus.com>
+
+	* decl.c (grokparms): Check that INIT isn't an error_mark_node
+	before giving error about invalid type for default arg.
+
 1998-06-10  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_method_call): Fix thinko.

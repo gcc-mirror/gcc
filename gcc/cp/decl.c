@@ -10585,6 +10585,7 @@ grokparms (first_parm, funcdef_flag)
 		      else
 			init = require_instantiated_type (type, init, integer_zero_node);
 		      if (! processing_template_decl
+			  && init != error_mark_node
 			  && TREE_CODE (init) != DEFAULT_ARG
 			  && ! can_convert_arg (type, TREE_TYPE (init), init))
 			cp_pedwarn ("invalid type `%T' for default argument to `%#D'",
