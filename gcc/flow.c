@@ -1913,7 +1913,7 @@ delete_block (b)
     end = tmp;
 
   /* Include any barrier that may follow the basic block.  */
-  tmp = next_nonnote_insn (b->end);
+  tmp = next_nonnote_insn (end);
   if (tmp && GET_CODE (tmp) == BARRIER)
     end = tmp;
 
