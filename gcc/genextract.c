@@ -306,7 +306,7 @@ print_path (path)
 	abort ();
     }
   
-  printf ("insn");
+  printf ("pat");
 
   for (i = 0; i < len; i++)
     {
@@ -436,9 +436,8 @@ from the machine description file `md'.  */\n\n");
   printf ("{\n");
   printf ("  register rtx *ro = recog_operand;\n");
   printf ("  register rtx **ro_loc = recog_operand_loc;\n");
-  printf ("  int insn_code = INSN_CODE (insn);\n");
-  printf ("  insn = PATTERN (insn);\n");
-  printf ("  switch (insn_code)\n");
+  printf ("  rtx pat = PATTERN (insn);\n");
+  printf ("  switch (INSN_CODE (insn))\n");
   printf ("    {\n");
   printf ("    case -1:\n");
   printf ("      fatal_insn_not_found (insn);\n\n");
@@ -488,8 +487,8 @@ from the machine description file `md'.  */\n\n");
       printf ("#if __GNUC__ > 1 && !defined (bcopy)\n");
       printf ("#define bcopy(FROM,TO,COUNT) __builtin_memcpy(TO,FROM,COUNT)\n");
       printf ("#endif\n");
-      printf ("      bcopy (&XVECEXP (insn, 0, 0), ro,\n");
-      printf ("             sizeof (rtx) * XVECLEN (insn, 0));\n");
+      printf ("      bcopy (&XVECEXP (pat, 0, 0), ro,\n");
+      printf ("             sizeof (rtx) * XVECLEN (pat, 0));\n");
       printf ("      break;\n\n");
     }
 
