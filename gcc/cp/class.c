@@ -97,7 +97,7 @@ typedef struct vtbl_init_data_s
 /* The type of a function passed to walk_subobject_offsets.  */
 typedef int (*subobject_offset_fn) PARAMS ((tree, tree, splay_tree));
 
-/* The stack itself.  This is an dynamically resized array.  The
+/* The stack itself.  This is a dynamically resized array.  The
    number of elements allocated is CURRENT_CLASS_STACK_SIZE.  */
 static int current_class_stack_size;
 static class_stack_node_t current_class_stack;
@@ -2343,7 +2343,7 @@ get_vcall_index (tree fn, tree type)
 }
 
 /* Update an entry in the vtable for BINFO, which is in the hierarchy
-   dominated by T.  FN has been overriden in BINFO; VIRTUALS points to the
+   dominated by T.  FN has been overridden in BINFO; VIRTUALS points to the
    corresponding position in the BINFO_VIRTUALS list.  */
 
 static void
@@ -4508,7 +4508,7 @@ create_vtable_ptr (t, virtuals_p)
 	 type-based alias analysis code would decide that assignments
 	 to the base class vtable pointer can't alias assignments to
 	 the derived class vtable pointer, since they have different
-	 types.  Thus, in an derived class destructor, where the base
+	 types.  Thus, in a derived class destructor, where the base
 	 class constructor was inlined, we could generate bad code for
 	 setting up the vtable pointer.  
 

@@ -1,3 +1,9 @@
+2002-12-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog: Fix a typo.
+	* class.c: Fix comment typos.
+	* cp-tree.h: Likewise.
+
 2002-12-18  Jason Merrill  <jason@redhat.com>
 
 	Handle anonymous unions at the tree level.
@@ -4809,7 +4815,7 @@ Tue Oct 23 14:00:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* parse.y (asm_operand): Allow named operands.
 	* semantics.c (finish_asm_stmt): Tweek for changed location
-	of the operand constrant.
+	of the operand constraint.
 
 2001-10-09  Jason Merrill  <jason_merrill@redhat.com>
 
