@@ -1,6 +1,12 @@
 1999-05-22  Mark Mitchell  <mark@codesourcery.com>
 
-	* tree.c (mapcar): Handle LVALUE_EXPR.
+	* cp-tree.h (push_nested_namespace): Declare.
+	(pop_nested_namespace): Likewise.
+	* decl.c (push_nested_namespace): New function.
+	(pop_nested_namespace): Likewise.
+	* pt.c (instantiate_class_template): Use them.
+
+	* tree.c (mapcar): Handle NON_LVALUE_EXPR.
 
 	* cp-tree.h (cplus_expand_constant): Declare.
 	* cvt.c (convert_to_pointer): Expand PTRMEM_CSTs when they're

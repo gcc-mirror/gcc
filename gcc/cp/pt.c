@@ -5079,11 +5079,16 @@ instantiate_class_template (type)
 	new_friend_type = tsubst (friend_type, args, /*complain=*/1,
 				  NULL_TREE);
       else 
-	/* The call to xref_tag_from_type does injection for friend
-	   classes.  */
-	new_friend_type = 
-	  xref_tag_from_type (friend_type, NULL_TREE, 1);
+	{
+	  tree ns = decl_namespace_context (TYPE_MAIN_DECL (friend_type));
 
+	  /* The call to xref_tag_from_type does injection for friend
+	     classes.  */
+	  push_nested_namespace (ns);
+	  new_friend_type = 
+	    xref_tag_from_type (friend_type, NULL_TREE, 1);
+	  pop_nested_namespace (ns);
+	}
 
       if (TREE_CODE (friend_type) == TEMPLATE_DECL)
 	/* Trick make_friend_class into realizing that the friend
