@@ -1,6 +1,6 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -40,6 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "reload.h"
 #include "ggc.h"
 #include "real.h"
+#include "basic-block.h"
 
 /* Each optab contains info on how this target machine
    can perform a particular operation
@@ -3241,10 +3242,26 @@ emit_libcall_block (insns, target, result, equiv)
   /* Encapsulate the block so it gets manipulated as a unit.  */
   if (!flag_non_call_exceptions || !may_trap_p (equiv))
     {
-      REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
-		      			     REG_NOTES (first));
-      REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
-		      			    REG_NOTES (last));
+      /* We can't attach the REG_LIBCALL and REG_RETVAL notes
+	 when the encapsulated region would not be in one basic block,
+	 i.e. when there is a control_flow_insn_p insn between FIRST and LAST.
+       */
+      bool attach_libcall_retval_notes = true;
+      next = NEXT_INSN (last);
+      for (insn = first; insn != next; insn = NEXT_INSN (insn))
+	if (control_flow_insn_p (insn))
+	  {
+	    attach_libcall_retval_notes = false;
+	    break;
+	  }
+
+      if (attach_libcall_retval_notes)
+	{
+	  REG_NOTES (first) = gen_rtx_INSN_LIST (REG_LIBCALL, last,
+						 REG_NOTES (first));
+	  REG_NOTES (last) = gen_rtx_INSN_LIST (REG_RETVAL, first,
+						REG_NOTES (last));
+	}
     }
 }
 

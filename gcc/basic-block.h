@@ -1,5 +1,5 @@
 /* Define control and data flow tables, and regsets.
-   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1987, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -800,6 +800,7 @@ extern void fixup_abnormal_edges	PARAMS ((void));
 extern bool can_hoist_insn_p		PARAMS ((rtx, rtx, regset));
 extern rtx hoist_insn_after		PARAMS ((rtx, rtx, rtx, rtx));
 extern rtx hoist_insn_to_edge		PARAMS ((rtx, edge, rtx, rtx));
+extern bool control_flow_insn_p		PARAMS ((rtx));
 
 /* In dominance.c */
 

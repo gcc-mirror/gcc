@@ -1,6 +1,6 @@
 # Makefile for GNU C compiler.
 #   Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997
-#   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+#   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -1448,7 +1448,7 @@ explow.o : explow.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    toplev.h function.h ggc.h $(TM_P_H) gt-explow.h
 optabs.o : optabs.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h  \
    insn-config.h $(EXPR_H) $(OPTABS_H) libfuncs.h $(RECOG_H) reload.h \
-   toplev.h $(GGC_H) real.h $(TM_P_H) except.h gt-optabs.h
+   toplev.h $(GGC_H) real.h $(TM_P_H) except.h gt-optabs.h $(BASIC_BLOCK_H)
 dbxout.o : dbxout.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \
     $(REGS_H) debug.h $(TM_P_H) $(TARGET_H) function.h langhooks.h \
    insn-config.h reload.h gstab.h xcoffout.h output.h dbxout.h toplev.h
