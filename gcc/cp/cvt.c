@@ -609,7 +609,7 @@ build_up_reference (type, arg, flags, checkconst)
              use INDIRECT_BIND.  */
 	  tree slot = build (VAR_DECL, argtype);
 	  layout_decl (slot, 0);
-	  rval = build (TARGET_EXPR, argtype, slot, arg, 0);
+	  rval = build (TARGET_EXPR, argtype, slot, arg, NULL_TREE);
 	  rval = build1 (ADDR_EXPR, type, rval);
 	  goto done;
 	}

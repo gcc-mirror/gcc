@@ -1282,8 +1282,8 @@ extern int flag_new_for_scope;
 #define TYPE_GET_PTRMEMFUNC_TYPE(NODE) ((tree)TYPE_LANG_SPECIFIC(NODE))
 #define TYPE_SET_PTRMEMFUNC_TYPE(NODE, VALUE) (TYPE_LANG_SPECIFIC(NODE) = ((struct lang_type *)(void*)(VALUE)))
 /* These are to get the delta2 and pfn fields from a TYPE_PTRMEMFUNC_P. */
-#define DELTA2_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, 0, 0), delta2_identifier, 0, 0))
-#define PFN_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, 0, 0), pfn_identifier, 0, 0))
+#define DELTA2_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, NULL_TREE, 0), delta2_identifier, NULL_TREE, 0))
+#define PFN_FROM_PTRMEMFUNC(NODE) (build_component_ref (build_component_ref ((NODE), pfn_or_delta2_identifier, NULL_TREE, 0), pfn_identifier, NULL_TREE, 0))
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  */
@@ -1945,7 +1945,6 @@ extern tree build_scoped_method_call		PROTO((tree, tree, tree, tree));
 extern tree build_method_call			PROTO((tree, tree, tree, tree, int));
 extern tree build_overload_call_real		PROTO((tree, tree, int, struct candidate *, int));
 extern tree build_overload_call			PROTO((tree, tree, int, struct candidate *));
-extern tree build_overload_call_maybe		PROTO((tree, tree, int, struct candidate *));
 
 /* in class.c */
 extern tree build_vbase_pointer			PROTO((tree, tree));

@@ -174,7 +174,7 @@ perform_member_init (member, name, init, explicit, protect_list)
       if (init != NULL_TREE && TREE_CODE (init) != TREE_LIST)
 	init = build_tree_list (NULL_TREE, init);
 
-      decl = build_component_ref (C_C_D, name, 0, explicit);
+      decl = build_component_ref (C_C_D, name, NULL_TREE, explicit);
 
       if (explicit
 	  && TREE_CODE (type) == ARRAY_TYPE
@@ -220,7 +220,7 @@ perform_member_init (member, name, init, explicit, protect_list)
 	 current_member_init_list.  */
       if (init || explicit)
 	{
-	  decl = build_component_ref (C_C_D, name, 0, explicit);
+	  decl = build_component_ref (C_C_D, name, NULL_TREE, explicit);
 	  expand_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
 	}
     }
@@ -237,7 +237,7 @@ perform_member_init (member, name, init, explicit, protect_list)
 
   if (TYPE_NEEDS_DESTRUCTOR (type))
     {
-      tree expr = build_component_ref (C_C_D, name, 0, explicit);
+      tree expr = build_component_ref (C_C_D, name, NULL_TREE, explicit);
       expr = build_delete (type, expr, integer_zero_node,
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
@@ -1071,7 +1071,7 @@ expand_member_init (exp, name, init)
 	  TREE_USED (exp) = 1;
 	}
       type = TYPE_MAIN_VARIANT (TREE_TYPE (field));
-      parm = build_component_ref (exp, name, 0, 0);
+      parm = build_component_ref (exp, name, NULL_TREE, 0);
 
       /* Now get to the constructors.  */
       fndecl = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 0);
@@ -1114,7 +1114,7 @@ expand_member_init (exp, name, init)
     }
   else if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (field)))
     {
-      parm = build_component_ref (exp, name, 0, 0);
+      parm = build_component_ref (exp, name, NULL_TREE, 0);
       expand_aggr_init (parm, NULL_TREE, 0, 0);
       rval = error_mark_node;
     }
@@ -1457,7 +1457,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	      tree arg = build_unary_op (ADDR_EXPR, exp, 0);
 	      init = TREE_OPERAND (init, 1);
 	      init = build (CALL_EXPR, build_pointer_type (TREE_TYPE (init)),
-			    TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), 0);
+			    TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), NULL_TREE);
 	      TREE_SIDE_EFFECTS (init) = 1;
 	      TREE_VALUE (TREE_OPERAND (init, 1))
 		= convert_pointer_to (TREE_TYPE (TREE_TYPE (TREE_VALUE (tmp))), arg);
@@ -2529,7 +2529,7 @@ build_builtin_call (type, node, arglist)
      tree node;
      tree arglist;
 {
-  tree rval = build (CALL_EXPR, type, node, arglist, 0);
+  tree rval = build (CALL_EXPR, type, node, arglist, NULL_TREE);
   TREE_SIDE_EFFECTS (rval) = 1;
   assemble_external (TREE_OPERAND (node, 0));
   TREE_USED (TREE_OPERAND (node, 0)) = 1;
@@ -2842,7 +2842,7 @@ build_new (placement, decl, init, use_global_new)
       cookie = build_indirect_ref (build (MINUS_EXPR, build_pointer_type (BI_header_type),
 					  rval, extra), NULL_PTR);
       exp1 = build (MODIFY_EXPR, void_type_node,
-		    build_component_ref (cookie, nc_nelts_field_id, 0, 0),
+		    build_component_ref (cookie, nc_nelts_field_id, NULL_TREE, 0),
 		    nelts);
       TREE_SIDE_EFFECTS (exp1) = 1;
       rval = convert (build_pointer_type (true_type), rval);
@@ -3080,9 +3080,9 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, auto_delete,
 					       base,
 					       virtual_size)));
   DECL_REGISTER (tbase) = 1;
-  controller = build (BIND_EXPR, void_type_node, tbase, 0, 0);
+  controller = build (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
-  block = build_block (tbase, 0, 0, 0, 0);
+  block = build_block (tbase, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
   add_block_current_level (block);
 
   if (auto_delete != integer_zero_node
@@ -3802,7 +3802,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	    continue;
 	  if (TYPE_NEEDS_DESTRUCTOR (TREE_TYPE (member)))
 	    {
-	      tree this_member = build_component_ref (ref, DECL_NAME (member), 0, 0);
+	      tree this_member = build_component_ref (ref, DECL_NAME (member), NULL_TREE, 0);
 	      tree this_type = TREE_TYPE (member);
 	      expr = build_delete (this_type, this_member, integer_two_node, flags, 0);
 	      exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
@@ -3884,7 +3884,7 @@ build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
       tree cookie_addr = build (MINUS_EXPR, build_pointer_type (BI_header_type),
 				base, BI_header_size);
       tree cookie = build_indirect_ref (cookie_addr, NULL_PTR);
-      maxindex = build_component_ref (cookie, nc_nelts_field_id, 0, 0);
+      maxindex = build_component_ref (cookie, nc_nelts_field_id, NULL_TREE, 0);
       do
 	type = TREE_TYPE (type);
       while (TREE_CODE (type) == ARRAY_TYPE);

@@ -139,7 +139,7 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	    call_target = validize_mem (call_target);
 	  }
 
-	call_exp = build (CALL_EXPR, type, func, args, 0);
+	call_exp = build (CALL_EXPR, type, func, args, NULL_TREE);
 	TREE_SIDE_EFFECTS (call_exp) = 1;
 	return_target = expand_call (call_exp, call_target, ignore);
 	if (call_target == 0)

@@ -682,6 +682,15 @@ appear in cp-decl.c and cp-decl2.c, so the are a good candidate for
 proper fixing, and removal.
 
 
+@item TREE_HAS_CONSTRUCTOR
+A flag to indicate when a CALL_EXPR represents a call to a constructor.
+If set, we know that the type of the object, is the complete type of the
+object, and that the value returned is nonnull.  When used in this
+fashion, it is an optimization.  Can also be used on SAVE_EXPRs to
+indicate when they are of fixed type and nonnull.  Can also be used on
+INDIRECT_EXPRs on CALL_EXPRs that represent a call to a constructor.
+
+
 @item TREE_PRIVATE
 Set for FIELD_DECLs by finish_struct.  But not uniformly set.
 
