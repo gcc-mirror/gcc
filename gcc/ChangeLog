@@ -1,3 +1,8 @@
+2001-11-09  Kazu Hirata  <kazu@hxi.com>
+
+	* config/convex/convex.c: Fix comment formatting.
+	* config/convex/convex.h: Likewise.
+
 2001-11-08  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (.po.pox): Look both in srcdir and builddir
