@@ -1,3 +1,9 @@
+2003-05-07  Nick Clifton  <nickc@redhat.com>
+
+	* config/stormy16/stormy-abi: Update to include
+	R_XSTORMY16_FPTR16, R_XSTORMY16_LO16, R_XSTORMY16_HI16 and
+	R_XSTORMY16_12 relocs.
+
 2003-05-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* function.c (assign_parms): Correct reversed reg_parm_stack_space
