@@ -1,3 +1,13 @@
+2002-11-26  Andrew Haley  <aph@redhat.com>
+
+	* unwind-sjlj.c (_Unwind_FindEnclosingFunction): Rename
+	from_Unwind_Find_Enclosing_Function.
+	* unwind-dw2.c (_Unwind_FindEnclosingFunction): Likewise.
+	* config/ia64/unwind-ia64.c (_Unwind_FindEnclosingFunction): Likewise.
+	* libgcc-std.ver (_Unwind_FindEnclosingFunction): Rename from
+	_Unwind_Find_Enclosing_Function, export @@GCC_3.3.
+	* unwind.h (_Unwind_FindEnclosingFunction): Add.
+	
 2002-11-26  Hartmut Penner  <hpenner@de.ibm.com>
 
         * config/s390/s390.c (390_output_constant_pool): Set alignment 

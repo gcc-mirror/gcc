@@ -203,7 +203,7 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
 }
 
 void *
-_Unwind_Find_Enclosing_Function (void *pc)
+_Unwind_FindEnclosingFunction (void *pc)
 {
   struct dwarf_eh_bases bases;
   struct dwarf_fde *fde = _Unwind_Find_FDE (pc-1, &bases);

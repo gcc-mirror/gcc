@@ -209,7 +209,7 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context __attribute__((unused)) 
 }
 
 void *
-_Unwind_Find_Enclosing_Function (void *pc)
+_Unwind_FindEnclosingFunction (void *pc)
 {
   return NULL;
 }
