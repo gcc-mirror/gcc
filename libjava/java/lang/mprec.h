@@ -29,7 +29,7 @@
 #include <config.h>
 #include "ieeefp.h"
 
-#include <math.h>
+// #include <math.h>
 // #include <float.h>
 // #include <errno.h>
 

@@ -27,6 +27,8 @@ details.  */
 
 #include "fdlibm.h"
 
+extern "C" float fabsf (float);
+
 jdouble java::lang::Math::cos(jdouble x)
 {
   return (jdouble)::cos((double)x);
