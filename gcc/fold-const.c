@@ -4730,9 +4730,10 @@ fold (expr)
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
 	    {
 	      arg0 = TREE_OPERAND (t, 0) = tem;
-	      TREE_OPERAND (t, 1) = TREE_OPERAND (t, 2);
-	      TREE_OPERAND (t, 2) = arg1;
-	      arg1 = TREE_OPERAND (t, 1);
+	      arg1 = TREE_OPERAND (t, 2);
+	      TREE_OPERAND (t, 2) = TREE_OPERAND (t, 1);
+	      TREE_OPERAND (t, 1) = arg1;
+	      STRIP_NOPS (arg1);
 	    }
 	}
 
@@ -4750,6 +4751,8 @@ fold (expr)
 	{
 	  tree arg2 = TREE_OPERAND (t, 2);
 	  enum tree_code comp_code = TREE_CODE (arg0);
+
+	  STRIP_NOPS (arg2);
 
 	  /* If we have A op 0 ? A : -A, this is A, -A, abs (A), or abs (-A),
 	     depending on the comparison operation.  */
@@ -4792,21 +4795,29 @@ fold (expr)
 
 	  if (operand_equal_for_comparison_p (TREE_OPERAND (arg0, 1),
 					      arg2, TREE_OPERAND (arg0, 0)))
-	    switch (comp_code)
-	      {
-	      case EQ_EXPR:
-		return pedantic_non_lvalue (convert (type, arg2));
-	      case NE_EXPR:
-		return pedantic_non_lvalue (convert (type, arg1));
-	      case LE_EXPR:
-	      case LT_EXPR:
-		return pedantic_non_lvalue
-		  (fold (build (MIN_EXPR, type, arg1, arg2)));
-	      case GE_EXPR:
-	      case GT_EXPR:
-		return pedantic_non_lvalue
-		  (fold (build (MAX_EXPR, type, arg1, arg2)));
-	      }
+	    {
+	      tree comp_op0 = TREE_OPERAND (arg0, 0);
+	      tree comp_op1 = TREE_OPERAND (arg0, 1);
+	      tree comp_type = TREE_TYPE (comp_op0);
+
+	      switch (comp_code)
+		{
+		case EQ_EXPR:
+		  return pedantic_non_lvalue (convert (type, arg2));
+		case NE_EXPR:
+		  return pedantic_non_lvalue (convert (type, arg1));
+		case LE_EXPR:
+		case LT_EXPR:
+		  return pedantic_non_lvalue
+		    (convert (type, (fold (build (MIN_EXPR, comp_type,
+						  comp_op0, comp_op1)))));
+		case GE_EXPR:
+		case GT_EXPR:
+		  return pedantic_non_lvalue
+		    (convert (type, fold (build (MAX_EXPR, comp_type,
+						 comp_op0, comp_op1))));
+		}
+	    }
 
 	  /* If this is A op C1 ? A : C2 with C1 and C2 constant integers,
 	     we might still be able to simplify this.  For example,
@@ -4883,9 +4894,10 @@ fold (expr)
 	  if (TREE_CODE (tem) != TRUTH_NOT_EXPR)
 	    {
 	      arg0 = TREE_OPERAND (t, 0) = tem;
-	      TREE_OPERAND (t, 1) = TREE_OPERAND (t, 2);
-	      TREE_OPERAND (t, 2) = arg1;
-	      arg1 = TREE_OPERAND (t, 1);
+	      arg1 = TREE_OPERAND (t, 2);
+	      TREE_OPERAND (t, 2) = TREE_OPERAND (t, 1);
+	      TREE_OPERAND (t, 1) = arg1;
+	      STRIP_NOPS (arg1);
 	    }
 	}
 
