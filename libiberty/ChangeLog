@@ -1,3 +1,53 @@
+2003-12-04  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (IS_UPPER, IS_LOWER): Define.
+	(d_last_char): Define new macro.
+	(d_make_name): Reject an empty name.
+	(d_prefix, d_unqualified_name, d_type): Use new IS_* macros.
+	(d_substitution, d_print_identifier): Likewise.
+	(d_print_comp) [D_COMP_OPERATOR]: Likewise.
+	(d_print_comp) [D_COMP_TEMPLATE]: Use new d_last_char macro.
+	(d_print_mod) Use new d_last_char macro.
+	(d_print_cast): Use new d_last_char macro.
+	(is_ctor_or_dtor): Don't leak memory.
+
+	Fix handling of member function modifiers:
+	* cp-demangle.c (enum d_comp_type): Add D_COMP_RESTRICT_THIS,
+	D_COMP_VOLATILE_THIS, and D_COMP_CONST_THIS.
+	(d_dump): Dump new d_comp_type values.
+	(d_make_comp): Accept new d_comp_type values.
+	(has_return_type): Only accept _THIS variants of qualifiers.
+	(d_encoding): Without DMGL_PARAMS, only remove _THIS variants of
+	qualifiers.
+	(d_cv_qualifiers): Add member_fn parameter.  Change all callers.
+	(d_print_comp) [D_COMP_TYPED_NAME]: Rather than removing
+	qualifiers and printing them at the end, add _THIS qualifiers to
+	the modifier list.
+	(d_print_comp) [D_COMP_*_THIS]: New cases.
+	(d_print_comp) [D_COMP_PTRMEM_TYPE]: Remove special handling of
+	qualifiers.
+	(d_print_mod_list): Add suffix parameter.  Change all callers.
+	Keep walking the list even if the current modifier has been
+	printed.
+	(d_print_mod): Handle new _THIS qualifiers.
+	(d_print_function_type): Handle new _THIS qualifiers when deciding
+	whether to print a parenthesis.  Put a space before the
+	parenthesis in some cases.  Call d_print_mod_list again at the
+	end, passing suffix as 1.
+	(is_ctor_or_dtor): Look for new _THIS qualifiers.
+	* testsuite/demangle-expected: Add test case.
+
+	Fix for PR gcc/13304:
+	* cp-demangle.c (d_print_comp) [D_COMP_TEMPLATE]: If the character
+	before the '<' is itself a '<', insert a space.
+	(d_print_cast): Likewise.
+	* testsuite/demangle-expected: Add test case.
+
+	Fix for PR gcc/13244:
+	* cp-demangle.c (d_print_comp) [D_COMP_BINARY]: Wrap an expression
+	which uses the '>' operator in an extra layer of parens.
+	* testsuite/demangle-expected: Add test case.
+
 2003-12-03  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* floatformat.c: Include "config.h" and <string.h> if available.
