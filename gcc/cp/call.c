@@ -1144,14 +1144,8 @@ add_function_candidate (candidates, fn, arglist, flags)
   for (i = 0; i < len; ++i)
     {
       tree arg = TREE_VALUE (argnode);
-      tree argtype = TREE_TYPE (arg);
+      tree argtype = lvalue_type (arg);
       tree t;
-
-      /* An overloaded function does not have an argument type */
-      if (TREE_CODE (arg) == OVERLOAD)
-	argtype = unknown_type_node;
-      argtype = cp_build_type_variant
-	(argtype, TREE_READONLY (arg), TREE_THIS_VOLATILE (arg));
 
       if (parmnode == void_list_node)
 	break;
