@@ -1,3 +1,15 @@
+2004-01-20  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c: Include alloc-pool.h
+	(empty_vals, empty_elt_lists, empty_elt_loc_lists): Kill.
+	(elt_loc_list_pool, elt_list_pool, cselib_val_pool): Declare.
+	(new_elt_list, new_elt_loc_list, unchain_one_elt_list,
+	unchain_one_elt_loc_list_pool, unchain_one_value,
+	new_cselib_val): Simplify using allocpool.
+	(cselib_init): Initialize allocpools.
+	(cselib_finish): Finish allocpools.
+	* Makefile.in (cselib.o): Depend on alloc-pool.h
+
 2004-01-20  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_load_call_address): Make the call insn
