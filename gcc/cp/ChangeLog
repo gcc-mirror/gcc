@@ -1,3 +1,12 @@
+2001-10-11  Richard Henderson  <rth@redhat.com>
+
+	* class.c (build_vtable_entry_ref): Create a VTABLE_REF instead
+	of an asm statement.
+	(build_vtbl_ref_1): Split out from build_vtbl_ref.
+	(build_vfn_ref): Use it to handle vtable descriptors before
+	calling build_vtable_entry_ref.
+	* decl2.c (output_vtable_inherit): Use assemble_vtable_inherit.
+
 2001-10-10  Richard Henderson  <rth@redhat.com>
 
         * parse.y (asm_operand): Allow named operands.

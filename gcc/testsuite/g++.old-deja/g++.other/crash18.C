@@ -1,5 +1,5 @@
 // Build don't link:
-// Special g++ Options: -fvtable-gc
+// Special g++ Options: -fvtable-gc -S
 // Origin: Mark Mitchell <mitchell@codesourcery.com>
 
 struct S {

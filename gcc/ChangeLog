@@ -1,5 +1,16 @@
 2001-10-11  Richard Henderson  <rth@redhat.com>
 
+	* rtl.h (REG_VTABLE_REF): New.
+	* rtl.c (reg_note_name): Add it.
+	* combine.c (distribute_notes): Handle it.
+	* final.c (final_scan_insn): Handle it.
+	* tree.def (VTABLE_REF): New.
+	* expr.c (expand_expr): Handle it.
+	* varasm.c (assemble_vtable_entry, assemble_vtable_inherit): New.
+	* output.h: Declare them.
+
+2001-10-11  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (rtl_for_decl_location): If no DECL_RTL, look
 	for a DECL_INITIAL.
 

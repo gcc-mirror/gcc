@@ -579,7 +579,11 @@ enum reg_note
   REG_SETJMP,
 
   /* Indicate calls that always returns.  */
-  REG_ALWAYS_RETURN
+  REG_ALWAYS_RETURN,
+
+  /* Indicate that the memory load references a vtable.  The expression
+     is of the form (plus (symbol_ref vtable_sym) (const_int offset)).  */
+  REG_VTABLE_REF
 };
 
 /* The base value for branch probability notes.  */

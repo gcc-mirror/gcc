@@ -7211,6 +7211,43 @@ expand_expr (exp, target, tmode, modifier)
 	return target;
       }
 
+    case VTABLE_REF:
+      {
+	rtx insn, before = get_last_insn (), vtbl_ref;
+
+	/* Evaluate the interior expression.  */
+	subtarget = expand_expr (TREE_OPERAND (exp, 0), target,
+				 tmode, modifier);
+
+	/* Get or create an instruction off which to hang a note.  */
+	if (REG_P (subtarget))
+	  {
+	    target = subtarget;
+	    insn = get_last_insn ();
+	    if (insn == before)
+	      abort ();
+	    if (! INSN_P (insn))
+	      insn = prev_nonnote_insn (insn);
+	  }
+	else
+	  {
+	    target = gen_reg_rtx (GET_MODE (subtarget));
+	    insn = emit_move_insn (target, subtarget);
+	  }
+
+	/* Collect the data for the note.  */
+	vtbl_ref = XEXP (DECL_RTL (TREE_OPERAND (exp, 1)), 0);
+	vtbl_ref = plus_constant (vtbl_ref,
+				  tree_low_cst (TREE_OPERAND (exp, 2), 0));
+	/* Discard the initial CONST that was added.  */
+	vtbl_ref = XEXP (vtbl_ref, 0);
+
+	REG_NOTES (insn)
+	  = gen_rtx_EXPR_LIST (REG_VTABLE_REF, vtbl_ref, REG_NOTES (insn));
+
+	return target;
+      }
+
       /* Intended for a reference to a buffer of a file-object in Pascal.
 	 But it's not certain that a special tree code will really be
 	 necessary for these.  INDIRECT_REF might work for them.  */

@@ -2406,23 +2406,23 @@ output_vtable_inherit (vars)
      tree vars;
 {
   tree parent;
-  rtx op[2];
+  rtx child_rtx, parent_rtx;
 
-  op[0] = XEXP (DECL_RTL (vars), 0);	  /* strip the mem ref  */
+  child_rtx = XEXP (DECL_RTL (vars), 0);	  /* strip the mem ref  */
 
   parent = binfo_for_vtable (vars);
 
   if (parent == TYPE_BINFO (DECL_CONTEXT (vars)))
-    op[1] = const0_rtx;
+    parent_rtx = const0_rtx;
   else if (parent)
     {
       parent = get_vtbl_decl_for_binfo (TYPE_BINFO (BINFO_TYPE (parent)));
-      op[1] = XEXP (DECL_RTL (parent), 0);  /* strip the mem ref  */
+      parent_rtx = XEXP (DECL_RTL (parent), 0);  /* strip the mem ref  */
     }
   else
     my_friendly_abort (980826);
 
-  output_asm_insn (".vtable_inherit %c0, %c1", op);
+  assemble_vtable_inherit (child_rtx, parent_rtx);
 }
 
 static int

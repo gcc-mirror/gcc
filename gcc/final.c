@@ -2375,9 +2375,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	rtx body = PATTERN (insn);
 	int insn_code_number;
 	const char *template;
-#ifdef HAVE_cc0
 	rtx note;
-#endif
 
 	/* An INSN, JUMP_INSN or CALL_INSN.
 	   First check for special kinds that recog doesn't recognize.  */
@@ -2799,7 +2797,6 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    if (next != 0 && next != NEXT_INSN (insn))
 	      {
 		rtx prev = PREV_INSN (insn);
-		rtx note;
 
 		for (note = NEXT_INSN (insn); note != next;
 		     note = NEXT_INSN (note))
@@ -2952,6 +2949,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	/* Mark this insn as having been output.  */
 	INSN_DELETED_P (insn) = 1;
 #endif
+
+	/* Emit information for vtable gc.  */
+	note = find_reg_note (insn, REG_VTABLE_REF, NULL_RTX);
+	if (note)
+	  assemble_vtable_entry (XEXP (XEXP (note, 0), 0),
+				 INTVAL (XEXP (XEXP (note, 0), 1)));
 
 	current_output_insn = debug_insn = 0;
       }
