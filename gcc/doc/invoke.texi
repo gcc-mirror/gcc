@@ -550,7 +550,7 @@ in the following sections.
 
 @emph{H8/300 Options}
 @gccoptlist{
--mrelax  -mh  -ms  -mint32  -malign-300}
+-mrelax  -mh  -ms  -mn  -mint32  -malign-300}
 
 @emph{SH Options}
 @gccoptlist{
@@ -8631,6 +8631,11 @@ Generate code for the H8/300H@.
 @item -ms
 @opindex ms
 Generate code for the H8S@.
+
+@item -mn
+@opindex mn
+Generate code for the H8S and H8/300H in the normal mode.  This switch
+must be used either with -mh or -ms.
 
 @item -ms2600
 @opindex ms2600

@@ -314,6 +314,12 @@ h8300_init_once ()
       error ("-ms2600 is used without -ms");
       target_flags |= 1;
     }
+  
+  if (TARGET_H8300 && TARGET_NORMAL_MODE)
+    {
+      error ("-mn used without -mh or -ms");
+      target_flags ^= MASK_NORMAL_MODE;
+    }
 
   /* Some of the shifts are optimized for speed by default.
      See http://gcc.gnu.org/ml/gcc-patches/2002-07/msg01858.html
@@ -1637,6 +1643,10 @@ h8300_initial_elimination_offset (from, to)
       if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
 	offset += UNITS_PER_WORD;	/* Skip saved PC */
     }
+
+  if ((TARGET_H8300H || TARGET_H8300S) && TARGET_NORMAL_MODE)
+    offset -= 2;
+
   return offset;
 }
 
@@ -3882,7 +3892,7 @@ h8300_eightbit_constant_address_p (x)
   addr = INTVAL (x);
 
   return (0
-	  || (TARGET_H8300  && IN_RANGE (addr, n1, n2))
+	  || ((TARGET_H8300 || TARGET_NORMAL_MODE) && IN_RANGE (addr, n1, n2))
 	  || (TARGET_H8300H && IN_RANGE (addr, h1, h2))
 	  || (TARGET_H8300S && IN_RANGE (addr, s1, s2)));
 }
@@ -3909,8 +3919,8 @@ h8300_tiny_constant_address_p (x)
   addr = INTVAL (x);
 
   return (0
-	  || (TARGET_H8300H
+	  || ((TARGET_H8300H && !TARGET_NORMAL_MODE)
 	      && (IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4)))
-	  || (TARGET_H8300S
+	  || ((TARGET_H8300S && !TARGET_NORMAL_MODE)
 	      && (IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4))));
 }
