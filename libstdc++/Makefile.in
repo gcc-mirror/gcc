@@ -301,7 +301,6 @@ force:
 stuff:
 	$(MAKE) clean
 	$(MAKE) -C ../libio c++clean
-	$(MAKE) -C ../libg++ clean
 	-$(MAKE) $(MAKEFLAGS) check
 	-$(MAKE) -C ../libio check
 	-$(MAKE) -C ../../gcc check-g++
