@@ -3766,11 +3766,16 @@ bad_parm:
 		}
 	| notype_declarator
 		{
-		  error ("type specifier omitted for parameter");
-		  if (TREE_CODE ($$) == SCOPE_REF
-		      && (TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM
-			  || TREE_CODE (TREE_OPERAND ($$, 0)) == BOUND_TEMPLATE_TEMPLATE_PARM))
-		    error ("  perhaps you want `typename %E' to make it a type", $$);
+		  if (TREE_CODE ($$) == SCOPE_REF)
+		    {
+		      if (TREE_CODE (TREE_OPERAND ($$, 0)) == TEMPLATE_TYPE_PARM
+			  || TREE_CODE (TREE_OPERAND ($$, 0)) == BOUND_TEMPLATE_TEMPLATE_PARM)
+			error ("`%E' is not a type, use `typename %E' to make it one", $$);
+		      else
+			error ("no type `%D' in `%T'", TREE_OPERAND ($$, 1), TREE_OPERAND ($$, 0));
+		    }
+		  else
+		    error ("type specifier omitted for parameter `%E'", $$);
 		  $$ = build_tree_list (integer_type_node, $$);
 		}
 	;

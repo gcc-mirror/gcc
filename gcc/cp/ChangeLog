@@ -1,3 +1,8 @@
+2001-12-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/196
+	* cp/parse.y (bad_parm): Better diagnostic when given a SCOPE_REF.
+
 2001-12-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/160
