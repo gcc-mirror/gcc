@@ -114,6 +114,10 @@ gnat_to_gnu_type (Entity_Id gnat_entity)
 {
   tree gnu_decl;
 
+  /* The back end never attempts to annotate generic types */
+  if (Is_Generic_Type (gnat_entity) && type_annotate_only)
+     return void_type_node;
+
   /* Convert the ada entity type into a GCC TYPE_DECL node.  */
   gnu_decl = gnat_to_gnu_entity (gnat_entity, NULL_TREE, 0);
   if (TREE_CODE (gnu_decl) != TYPE_DECL)

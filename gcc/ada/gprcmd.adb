@@ -372,8 +372,8 @@ procedure Gprcmd is
                                 "copy file time stamp from file1 to file2");
       Put_Line (Standard_Error, "  prefix      " &
                                 "get the prefix of the GNAT installation");
-      Put_Line (Standard_Error, "  path        " &
-                                "convert a directory list into a path list");
+      Put_Line (Standard_Error, "  path_sep    " &
+                                "returns the path separator");
       Put_Line (Standard_Error, "  linkopts      " &
                                 "process attribute Linker'Linker_Options");
       Put_Line (Standard_Error, "  ignore      " &
@@ -530,11 +530,8 @@ begin
 
       --  For "path" just add path separator after each directory argument
 
-      elsif Cmd = "path" then
-         for J in 2 .. Argument_Count loop
-            Put (Argument (J));
-            Put (Path_Separator);
-         end loop;
+      elsif Cmd = "path_sep" then
+         Put (Path_Separator);
 
       --  Check the linker options for relative paths. Insert the project
       --  base dir before relative paths.

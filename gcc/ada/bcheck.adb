@@ -572,6 +572,8 @@ package body Bcheck is
       Src : Source_Id;
       --  Source file Id for this Sdep entry
 
+      ALI_Path_Id : Name_Id;
+
    begin
       --  First, we go through the source table to see if there are any cases
       --  in which we should go after source files and compute checksums of
@@ -655,18 +657,17 @@ package body Bcheck is
                   end if;
 
                else
-                  if Osint.Is_Readonly_Library (ALIs.Table (A).Afile) then
-                     Error_Msg_Name_2 :=
-                       Osint.Find_File ((ALIs.Table (A).Afile), Osint.Library);
-
+                  ALI_Path_Id :=
+                    Osint.Find_File ((ALIs.Table (A).Afile), Osint.Library);
+                  if Osint.Is_Readonly_Library (ALI_Path_Id) then
                      if Tolerate_Consistency_Errors then
                         Error_Msg ("?% should be recompiled");
-                        Error_Msg_Name_1 := Error_Msg_Name_2;
+                        Error_Msg_Name_1 := ALI_Path_Id;
                         Error_Msg ("?(% is obsolete and read-only)");
 
                      else
                         Error_Msg ("% must be compiled");
-                        Error_Msg_Name_1 := Error_Msg_Name_2;
+                        Error_Msg_Name_1 := ALI_Path_Id;
                         Error_Msg ("(% is obsolete and read-only)");
                      end if;
 

@@ -695,6 +695,7 @@ package body Exp_Ch2 is
    --  where rec is a selector whose Entry_Formal link points to the formal
    --  For a formal of a task entity, the formal is rewritten as a local
    --  renaming.
+
    --  In addition, a formal that is marked volatile because it is aliased
    --  through an address clause is rewritten as dereference as well.
 

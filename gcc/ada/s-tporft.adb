@@ -63,11 +63,13 @@ begin
 
    --  Finish initialization
 
+   Lock_RTS;
    System.Tasking.Initialize_ATCB
      (Self_Id, null, Null_Address, Null_Task,
       Foreign_Task_Elaborated'Access,
       System.Priority'First, Task_Info.Unspecified_Task_Info, 0, Self_Id,
       Succeeded);
+   Unlock_RTS;
    pragma Assert (Succeeded);
 
    Self_Id.Master_of_Task := 0;

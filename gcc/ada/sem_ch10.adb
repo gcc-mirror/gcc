@@ -958,9 +958,15 @@ package body Sem_Ch10 is
          then
             Comp_Unit := Cunit (Unum);
 
-            Set_Corresponding_Stub (Unit (Comp_Unit), N);
-            Analyze_Subunit (Comp_Unit);
-            Set_Library_Unit (N, Comp_Unit);
+            if Nkind (Unit (Comp_Unit)) /= N_Subunit then
+               Error_Msg_N
+                 ("expected SEPARATE subunit, found child unit",
+                  Cunit_Entity (Unum));
+            else
+               Set_Corresponding_Stub (Unit (Comp_Unit), N);
+               Analyze_Subunit (Comp_Unit);
+               Set_Library_Unit (N, Comp_Unit);
+            end if;
 
          elsif Unum = No_Unit
            and then Present (Nam)

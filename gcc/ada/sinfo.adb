@@ -861,7 +861,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_With_Clause);
-      return Flag15 (N);
+      return Flag14 (N);
    end Elaborate_All_Present;
 
    function Elaborate_Present
@@ -2040,7 +2040,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Compilation_Unit
-        or else NT (N).Nkind = N_Formal_Derived_Type_Definition);
+        or else NT (N).Nkind = N_Formal_Derived_Type_Definition
+        or else NT (N).Nkind = N_With_Clause);
       return Flag15 (N);
    end Private_Present;
 
@@ -3317,7 +3318,7 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_With_Clause);
-      Set_Flag15 (N, Val);
+      Set_Flag14 (N, Val);
    end Set_Elaborate_All_Present;
 
    procedure Set_Elaborate_Present
@@ -4487,7 +4488,8 @@ package body Sinfo is
    begin
       pragma Assert (False
         or else NT (N).Nkind = N_Compilation_Unit
-        or else NT (N).Nkind = N_Formal_Derived_Type_Definition);
+        or else NT (N).Nkind = N_Formal_Derived_Type_Definition
+        or else NT (N).Nkind = N_With_Clause);
       Set_Flag15 (N, Val);
    end Set_Private_Present;
 

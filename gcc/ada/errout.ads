@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -275,6 +275,43 @@ package Errout is
    --      If the insertion character | appears, the message is considered
    --      to be non-serious, and does not cause Serious_Errors_Detected
    --      to be incremented (so expansion is not prevented by such a msg).
+
+   ----------------------------------------
+   -- Specialization of Messages for VMS --
+   ----------------------------------------
+
+   --  Some messages mention gcc-style switch names. When using an OpenVMS
+   --  host, such switch names must be converted to their corresponding VMS
+   --  qualifer. The following table controls this translation. In each case
+   --  the original message must contain the string "-xxx switch", where xxx
+   --  is the Gname? entry from below, and this string will be replaced by
+   --  "/yyy qualifier", where yyy is the corresponding Vname? entry.
+
+   Gname1 : aliased constant String := "fno-strict-aliasing";
+   Vname1 : aliased constant String := "OPTIMIZE=NO_ALIASING";
+
+   Gname2 : aliased constant String := "gnatX";
+   Vname2 : aliased constant String := "EXTENSIONS_ALLOWED";
+
+   Gname3 : aliased constant String := "gnatW";
+   Vname3 : aliased constant String := "WIDE_CHARACTER_ENCODING";
+
+   Gname4 : aliased constant String := "gnatf";
+   Vname4 : aliased constant String := "REPORT_ERRORS=FULL";
+
+   type Cstring_Ptr is access constant String;
+
+   Gnames : array (Nat range <>) of Cstring_Ptr :=
+              (Gname1'Access,
+               Gname2'Access,
+               Gname3'Access,
+               Gname4'Access);
+
+   Vnames : array (Nat range <>) of Cstring_Ptr :=
+              (Vname1'Access,
+               Vname2'Access,
+               Vname3'Access,
+               Vname4'Access);
 
    -----------------------------------------------------
    -- Global Values Used for Error Message Insertions --

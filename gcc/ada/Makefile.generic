@@ -230,20 +230,16 @@ ifeq ($(filter c++,$(LANGUAGES)),c++)
 
    ifeq ($(filter ada,$(LANGUAGES)),ada)
       # C++ and Ada mixed
-      LINKER = $(OBJ_DIR)/c++linker
       LARGS = --LINK=$(LINKER)
 
       ifeq ($(strip $(filter-out %gcc %g++,$(CXX))),)
-         # Case of GNU C++ and GNAT
-
-$(LINKER): Makefile.$(PROJECT_BASE)
-	@echo \#!/bin/sh > $(LINKER)
-	@echo unset BINUTILS_ROOT >> $(LINKER)
-	@echo unset GCC_ROOT >> $(LINKER)
-	@echo $(CXX) $$\* >> $(LINKER)
-	@chmod +x $(LINKER)
+         # Case of GNAT and a GNU C++ compiler
+$(LINKER):
 
       else
+         # Case of GNAT and a non GNU C++ compiler
+         LINKER = $(OBJ_DIR)/c++linker
+
 $(LINKER): Makefile.$(PROJECT_BASE)
 	@echo \#!/bin/sh > $(LINKER)
 	@echo $(CXX) $$\* $(shell gcc -print-libgcc-file-name) >> $(LINKER)
@@ -399,10 +395,13 @@ endif
 
 ifeq ($(strip $(filter-out %gcc %g++,$(CC) $(CXX))),)
 # Compiler is GCC, take avantage of the preprocessor option -MD and
-# C*_INCLUDE_PATH environment variables
+# the CPATH environment variable
 
-export C_INCLUDE_PATH:=$(shell gprcmd path $(SRC_DIRS))$(C_INCLUDE_PATH)
-export CXX_INCLUDE_PATH:=$(shell gprcmd path $(SRC_DIRS))$(CXX_INCLUDE_PATH)
+empty:=
+space:=$(empty) $(empty)
+path_sep:=$(shell gprcmd path_sep)
+SRC_DIRS_PATH:= $(subst $(space),$(path_sep),$(SRC_DIRS))
+export CPATH:=$(SRC_DIRS_PATH)$(path_sep)$(CPATH)
 
 DEP_CFLAGS = -Wp,-MD,$(OBJ_DIR)/$(*F).d
 

@@ -759,6 +759,7 @@ package body Prj.Part is
                   begin
                      Name_Len := Normed'Length;
                      Name_Buffer (1 .. Name_Len) := Normed;
+                     Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
                      Canonical_Path_Name := Name_Find;
 
                      for Index in 1 .. Project_Stack.Last loop
@@ -886,7 +887,9 @@ package body Prj.Part is
             for Current in reverse 1 .. Project_Stack.Last loop
                Error_Msg_Name_1 := Project_Stack.Table (Current).Path_Name;
 
-               if Error_Msg_Name_1 /= Canonical_Path_Name then
+               if Project_Stack.Table (Current).Canonical_Path_Name /=
+                    Canonical_Path_Name
+               then
                   Error_Msg
                     ("\  { which itself is imported by", Token_Ptr);
 

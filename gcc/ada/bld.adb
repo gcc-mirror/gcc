@@ -3120,11 +3120,14 @@ package body Bld is
                   end if;
                end if;
 
-               --  Add source dirs of this project file to variable SRC_DIRS
+               --  Add source dirs of this project file to variable SRC_DIRS.
+               --  Put them in front, and remove duplicates.
 
-               Put ("SRC_DIRS:=$(SRC_DIRS) $(");
+               Put ("SRC_DIRS:=$(");
                Put (Uname);
-               Put (".src_dirs)");
+               Put (".src_dirs) $(filter-out $(");
+               Put (Uname);
+               Put (".src_dirs),$(SRC_DIRS))");
                New_Line;
 
                --  Set OBJ_DIR to the object directory

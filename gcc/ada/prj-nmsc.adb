@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -758,9 +758,10 @@ package body Prj.Nmsc is
          --  If a non extending project is not supposed to contain
          --  any source, then we never call Find_Sources.
 
-         if Data.Extends = No_Project
-           and then Current_Source = Nil_String
-         then
+         if Current_Source /= Nil_String then
+            Data.Sources_Present := True;
+
+         elsif Data.Extends = No_Project then
             Error_Msg
               (Project,
                "there are no Ada sources in this project",
@@ -1405,7 +1406,7 @@ package body Prj.Nmsc is
                         String_Elements.Increment_Last;
                         String_Elements.Table (String_Elements.Last) :=
                           (Value    => ALI_Name_Id,
-                           Display_Value => No_Name,
+                           Display_Value => ALI_Name_Id,
                            Location => String_Elements.Table
                                                          (Interfaces).Location,
                            Flag     => False,
@@ -2573,10 +2574,6 @@ package body Prj.Nmsc is
          Directory : constant String := Get_Name_String (From);
          Element   : String_Element;
 
-         Canonical_Directory_Id : Name_Id;
-         pragma Unreferenced (Canonical_Directory_Id);
-         --  Is this in fact being used for anything useful ???
-
          procedure Recursive_Find_Dirs (Path : Name_Id);
          --  Find all the subdirectories (recursively) of Path and add them
          --  to the list of source directories of the project.
@@ -2593,136 +2590,128 @@ package body Prj.Nmsc is
             Element  : String_Element;
             Found    : Boolean := False;
 
-            Canonical_Path : Name_Id := No_Name;
+            Non_Canonical_Path : Name_Id := No_Name;
+            Canonical_Path     : Name_Id := No_Name;
+
+            The_Path : constant String :=
+                         Normalize_Pathname (Get_Name_String (Path)) &
+            Directory_Separator;
+
+            The_Path_Last : constant Natural :=
+                              Compute_Directory_Last (The_Path);
 
          begin
-            Get_Name_String (Path);
+            Name_Len := The_Path_Last - The_Path'First + 1;
+            Name_Buffer (1 .. Name_Len) :=
+              The_Path (The_Path'First .. The_Path_Last);
+            Non_Canonical_Path := Name_Find;
+            Get_Name_String (Non_Canonical_Path);
             Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+            Canonical_Path := Name_Find;
 
-            declare
-               The_Path : constant String :=
-                            Normalize_Pathname
-                              (Name => Name_Buffer (1 .. Name_Len)) &
-                               Directory_Separator;
+            --  To avoid processing the same directory several times, check
+            --  if the directory is already in Recursive_Dirs. If it is,
+            --  then there is nothing to do, just return. If it is not, put
+            --  it there and continue recursive processing.
 
-               The_Path_Last : constant Natural :=
-                                 Compute_Directory_Last (The_Path);
+            if Recursive_Dirs.Get (Canonical_Path) then
+               return;
 
-            begin
-               Name_Len := The_Path_Last - The_Path'First + 1;
-               Name_Buffer (1 .. Name_Len) :=
-                 The_Path (The_Path'First .. The_Path_Last);
-               Canonical_Path := Name_Find;
+            else
+               Recursive_Dirs.Set (Canonical_Path, True);
+            end if;
 
-               --  To avoid processing the same directory several times, check
-               --  if the directory is already in Recursive_Dirs. If it is,
-               --  then there is nothing to do, just return. If it is not, put
-               --  it there and continue recursive processing.
+            --  Check if directory is already in list
 
-               if Recursive_Dirs.Get (Canonical_Path) then
-                  return;
+            while List /= Nil_String loop
+               Element := String_Elements.Table (List);
+
+               if Element.Value /= No_Name then
+                  Found := Element.Value = Canonical_Path;
+                  exit when Found;
+               end if;
+
+               List := Element.Next;
+            end loop;
+
+            --  If directory is not already in list, put it there
+
+            if not Found then
+               if Current_Verbosity = High then
+                  Write_Str  ("   ");
+                  Write_Line (The_Path (The_Path'First .. The_Path_Last));
+               end if;
+
+               String_Elements.Increment_Last;
+               Element :=
+                 (Value    => Canonical_Path,
+                  Display_Value => Non_Canonical_Path,
+                  Location => No_Location,
+                  Flag     => False,
+                  Next     => Nil_String);
+
+               --  Case of first source directory
+
+               if Last_Source_Dir = Nil_String then
+                  Data.Source_Dirs := String_Elements.Last;
+
+                  --  Here we already have source directories.
 
                else
-                  Recursive_Dirs.Set (Canonical_Path, True);
+                  --  Link the previous last to the new one
+
+                  String_Elements.Table (Last_Source_Dir).Next :=
+                    String_Elements.Last;
                end if;
 
-               --  Check if directory is already in list
+               --  And register this source directory as the new last
 
-               while List /= Nil_String loop
-                  Element := String_Elements.Table (List);
+               Last_Source_Dir  := String_Elements.Last;
+               String_Elements.Table (Last_Source_Dir) := Element;
+            end if;
 
-                  if Element.Value /= No_Name then
-                     Get_Name_String (Element.Value);
-                     Found :=
-                       The_Path (The_Path'First .. The_Path_Last) =
-                       Name_Buffer (1 .. Name_Len);
-                     exit when Found;
-                  end if;
+            --  Now look for subdirectories. We do that even when this
+            --  directory is already in the list, because some of its
+            --  subdirectories may not be in the list yet.
 
-                  List := Element.Next;
-               end loop;
+            Open (Dir, The_Path (The_Path'First .. The_Path_Last));
 
-               --  If directory is not already in list, put it there
+            loop
+               Read (Dir, Name, Last);
+               exit when Last = 0;
 
-               if not Found then
+               if Name (1 .. Last) /= "."
+                 and then Name (1 .. Last) /= ".."
+               then
+                  --  Avoid . and ..
+
                   if Current_Verbosity = High then
-                     Write_Str  ("   ");
-                     Write_Line (The_Path (The_Path'First .. The_Path_Last));
+                     Write_Str  ("   Checking ");
+                     Write_Line (Name (1 .. Last));
                   end if;
 
-                  String_Elements.Increment_Last;
-                  Element :=
-                    (Value    => Canonical_Path,
-                     Display_Value => No_Name,
-                     Location => No_Location,
-                     Flag     => False,
-                     Next     => Nil_String);
+                  declare
+                     Path_Name : constant String :=
+                                   Normalize_Pathname
+                                     (Name      => Name (1 .. Last),
+                                      Directory =>
+                                        The_Path
+                                          (The_Path'First .. The_Path_Last));
 
-                  --  Case of first source directory
+                  begin
+                     if Is_Directory (Path_Name) then
 
-                  if Last_Source_Dir = Nil_String then
-                     Data.Source_Dirs := String_Elements.Last;
+                        --  We have found a new subdirectory, call self
 
-                     --  Here we already have source directories.
-
-                  else
-                     --  Link the previous last to the new one
-
-                     String_Elements.Table (Last_Source_Dir).Next :=
-                       String_Elements.Last;
-                  end if;
-
-                  --  And register this source directory as the new last
-
-                  Last_Source_Dir  := String_Elements.Last;
-                  String_Elements.Table (Last_Source_Dir) := Element;
-               end if;
-
-               --  Now look for subdirectories. We do that even when this
-               --  directory is already in the list, because some of its
-               --  subdirectories may not be in the list yet.
-
-               Open (Dir, The_Path (The_Path'First .. The_Path_Last));
-
-               loop
-                  Read (Dir, Name, Last);
-                  exit when Last = 0;
-
-                  if Name (1 .. Last) /= "."
-                    and then Name (1 .. Last) /= ".."
-                  then
-                     --  Avoid . and ..
-
-                     if Current_Verbosity = High then
-                        Write_Str  ("   Checking ");
-                        Write_Line (Name (1 .. Last));
+                        Name_Len := Path_Name'Length;
+                        Name_Buffer (1 .. Name_Len) := Path_Name;
+                        Recursive_Find_Dirs (Name_Find);
                      end if;
+                  end;
+               end if;
+            end loop;
 
-                     declare
-                        Path_Name : String :=
-                                      Normalize_Pathname
-                                        (Name      => Name (1 .. Last),
-                                         Directory =>
-                                           The_Path
-                                            (The_Path'First .. The_Path_Last));
-
-                     begin
-                        Canonical_Case_File_Name (Path_Name);
-
-                        if Is_Directory (Path_Name) then
-
-                           --  We have found a new subdirectory, call self
-
-                           Name_Len := Path_Name'Length;
-                           Name_Buffer (1 .. Name_Len) := Path_Name;
-                           Recursive_Find_Dirs (Name_Find);
-                        end if;
-                     end;
-                  end if;
-               end loop;
-
-               Close (Dir);
-            end;
+            Close (Dir);
 
          exception
             when Directory_Error =>
@@ -2741,10 +2730,6 @@ package body Prj.Nmsc is
 
          --  Directory    := Name_Buffer (1 .. Name_Len);
          --  Why is above line commented out ???
-
-         Canonical_Directory_Id := Name_Find;
-         --  What is purpose of above assignment ???
-         --  Are we sure it is being used ???
 
          if Current_Verbosity = High then
             Write_Str (Directory);
@@ -3098,7 +3083,6 @@ package body Prj.Nmsc is
             while Current /= Nil_String loop
                Element := String_Elements.Table (Current);
                if Element.Value /= No_Name then
-                  Element.Display_Value := Element.Value;
                   Get_Name_String (Element.Value);
                   Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
                   Element.Value := Name_Find;

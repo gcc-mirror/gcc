@@ -1401,6 +1401,9 @@ __gnat_error_handler (int *sigargs, void *mechargs)
     case 1381050: /* Nickerson bug #33 ??? */
       return SS$_RESIGNAL;
 
+    case 20480426: /* RDB-E-STREAM_EOF */
+      return SS$_RESIGNAL;
+
     case 11829410: /* Resignalled as Use_Error for CE10VRC */
       return SS$_RESIGNAL;
 

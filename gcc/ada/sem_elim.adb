@@ -289,11 +289,11 @@ package body Sem_Elim is
 
             --  Then we need to see if the static scope matches within the
             --  compilation unit.
+
             --  At the moment, gnatelim does not consider block statements as
             --  scopes (even if a block is named)
 
             Scop := Scope (E);
-
             while Ekind (Scop) = E_Block loop
                Scop := Scope (Scop);
             end loop;
@@ -305,7 +305,6 @@ package body Sem_Elim is
                   end if;
 
                   Scop := Scope (Scop);
-
                   while Ekind (Scop) = E_Block loop
                      Scop := Scope (Scop);
                   end loop;
@@ -324,7 +323,6 @@ package body Sem_Elim is
                end if;
 
                Scop := Scope (Scop);
-
                while Ekind (Scop) = E_Block loop
                   Scop := Scope (Scop);
                end loop;

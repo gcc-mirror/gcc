@@ -1811,6 +1811,8 @@ package body ALI is
                   ----------------------------------
 
                   procedure Read_Instantiation_Reference is
+                     Local_File_Num : Sdep_Id := Current_File_Num;
+
                   begin
                      Xref.Increment_Last;
 
@@ -1824,12 +1826,12 @@ package body ALI is
                         if Nextc = '|' then
                            XR.File_Num :=
                              Sdep_Id (N + Nat (First_Sdep_Entry) - 1);
-                           Current_File_Num := XR.File_Num;
+                           Local_File_Num := XR.File_Num;
                            P := P + 1;
                            N := Get_Nat;
 
                         else
-                           XR.File_Num := Current_File_Num;
+                           XR.File_Num := Local_File_Num;
                         end if;
 
                         XR.Line  := N;
