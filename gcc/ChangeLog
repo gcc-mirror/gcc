@@ -1,3 +1,10 @@
+2004-03-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/fp-bit.c (_fpdiv_parts): Do not round when pack_d would
+	round the same.  When rounding, clear bits that would cause a
+	second rounding in pack_d.
+	(_fpmul_parts): Ditto.  Remove #if 0:d code.
+
 2004-03-04  Ziemowit Laski  <zlaski@apple.com>
 
 	PR c++/14425, c++/14426

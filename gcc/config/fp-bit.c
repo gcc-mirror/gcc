@@ -899,32 +899,28 @@ _fpmul_parts ( fp_number_type *  a,
 	high |= 1;
       low <<= 1;
     }
-  /* rounding is tricky. if we only round if it won't make us round later.  */
-#if 0
-  if (low & FRACHIGH2)
-    {
-      if (((high & GARDMASK) != GARDMSB)
-	  && (((high + 1) & GARDMASK) == GARDMSB))
-	{
-	  /* don't round, it gets done again later.  */
-	}
-      else
-	{
-	  high++;
-	}
-    }
-#endif
+
   if (!ROUND_TOWARDS_ZERO && (high & GARDMASK) == GARDMSB)
     {
       if (high & (1 << NGARDS))
 	{
-	  /* half way, so round to even */
-	  high += GARDROUND + 1;
+	  /* Because we're half way, we would round to even by adding
+	     GARDROUND + 1, except that's also done in the packing
+	     function, and rounding twice will lose precision and cause
+	     the result to be too far off.  Example: 32-bit floats with
+	     bit patterns 0xfff * 0x3f800400 ~= 0xfff (less than 0.5ulp
+	     off), not 0x1000 (more than 0.5ulp off).  */
 	}
       else if (low)
 	{
-	  /* but we really weren't half way */
+	  /* We're a further than half way by a small amount corresponding
+	     to the bits set in "low".  Knowing that, we round here and
+	     not in pack_d, because there we don't have "low" avaliable
+	     anymore.  */
 	  high += GARDROUND + 1;
+
+	  /* Avoid further rounding in pack_d.  */
+	  high &= ~(fractype) GARDMASK;
 	}
     }
   tmp->fraction.ll = high;
@@ -1028,13 +1024,21 @@ _fpdiv_parts (fp_number_type * a,
       {
 	if (quotient & (1 << NGARDS))
 	  {
-	    /* half way, so round to even */
-	    quotient += GARDROUND + 1;
+	    /* Because we're half way, we would round to even by adding
+	       GARDROUND + 1, except that's also done in the packing
+	       function, and rounding twice will lose precision and cause
+	       the result to be too far off.  */
 	  }
 	else if (numerator)
 	  {
-	    /* but we really weren't half way, more bits exist */
+	    /* We're a further than half way by the small amount
+	       corresponding to the bits set in "numerator".  Knowing
+	       that, we round here and not in pack_d, because there we
+	       don't have "numerator" avaliable anymore.  */
 	    quotient += GARDROUND + 1;
+
+	    /* Avoid further rounding in pack_d.  */
+	    quotient &= ~(fractype) GARDMASK;
 	  }
       }
 
