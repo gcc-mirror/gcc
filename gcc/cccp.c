@@ -2991,38 +2991,29 @@ do { ip = &instack[indepth];		\
 	/* C++ style comment... */
 	start_line = ip->lineno;
 
-	--ibp;			/* Back over the slash */
-	--obp;
-
 	/* Comments are equivalent to spaces. */
 	if (! put_out_comments)
-	  *obp++ = ' ';
-	else {
-	  /* must fake up a comment here */
-	  *obp++ = '/';
-	  *obp++ = '/';
-	}
-	{
-	  U_CHAR *before_bp = ibp+2;
+	  obp[-1] = ' ';
 
-	  while (ibp < limit) {
-	    if (ibp[-1] != '\\' && *ibp == '\n') {
-	      if (put_out_comments) {
-		bcopy ((char *) before_bp, (char *) obp, ibp - before_bp);
-		obp += ibp - before_bp;
+	{
+	  U_CHAR *before_bp = ibp;
+
+	  while (++ibp < limit) {
+	    if (*ibp == '\n') {
+	      if (ibp[-1] != '\\') {
+		if (put_out_comments) {
+		  bcopy ((char *) before_bp, (char *) obp, ibp - before_bp);
+		  obp += ibp - before_bp;
+		}
+		break;
 	      }
-	      break;
-	    } else {
-	      if (*ibp == '\n') {
-		++ip->lineno;
-		/* Copy the newline into the output buffer, in order to
-		   avoid the pain of a #line every time a multiline comment
-		   is seen.  */
-		if (!put_out_comments)
-		  *obp++ = '\n';
-		++op->lineno;
-	      }
-	      ibp++;
+	      ++ip->lineno;
+	      /* Copy the newline into the output buffer, in order to
+		 avoid the pain of a #line every time a multiline comment
+		 is seen.  */
+	      if (!put_out_comments)
+		*obp++ = '\n';
+	      ++op->lineno;
 	    }
 	  }
 	  break;
