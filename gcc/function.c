@@ -453,11 +453,13 @@ assign_stack_local_1 (enum machine_mode mode, HOST_WIDE_INT size, int align,
 	  use logical operations which are unambiguous.  */
 #ifdef FRAME_GROWS_DOWNWARD
       function->x_frame_offset
-	= (FLOOR_ROUND (function->x_frame_offset - frame_phase, alignment)
+	= (FLOOR_ROUND (function->x_frame_offset - frame_phase,
+			(unsigned HOST_WIDE_INT) alignment)
 	   + frame_phase);
 #else
       function->x_frame_offset
-	= (CEIL_ROUND (function->x_frame_offset - frame_phase, alignment)
+	= (CEIL_ROUND (function->x_frame_offset - frame_phase,
+		       (unsigned HOST_WIDE_INT) alignment)
 	   + frame_phase);
 #endif
     }
