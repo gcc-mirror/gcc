@@ -1066,6 +1066,22 @@ real_value_truncate (mode, arg)
   return (r);
 }
 
+/* Return true if ARG can be represented exactly in MODE.  */
+
+bool
+exact_real_truncate (mode, arg)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE *arg;
+{
+  REAL_VALUE_TYPE trunc;
+
+  if (target_isnan (*arg))
+    return false;
+
+  trunc = real_value_truncate (mode, *arg);
+  return ereal_cmp (*arg, trunc) == 0;
+}
+
 /* Try to change R into its exact multiplicative inverse in machine mode
    MODE.  Return nonzero function value if successful.  */
 

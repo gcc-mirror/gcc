@@ -134,6 +134,7 @@ static void store_by_pieces_1	PARAMS ((struct store_by_pieces *,
 static void store_by_pieces_2	PARAMS ((rtx (*) (rtx, ...),
 					 enum machine_mode,
 					 struct store_by_pieces *));
+static rtx compress_float_constant PARAMS ((rtx, rtx));
 static rtx get_subtarget	PARAMS ((rtx));
 static int is_zeros_p		PARAMS ((tree));
 static int mostly_zeros_p	PARAMS ((tree));
@@ -166,6 +167,10 @@ static void do_tablejump PARAMS ((rtx, enum machine_mode, rtx, rtx, rtx));
 
 static char direct_load[NUM_MACHINE_MODES];
 static char direct_store[NUM_MACHINE_MODES];
+
+/* Record for each mode whether we can float-extend from memory.  */
+
+static bool float_extend_from_mem[NUM_MACHINE_MODES][NUM_MACHINE_MODES];
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction sequences, we will do a movstr or libcall instead.  */
@@ -263,6 +268,28 @@ init_expr_once ()
 	    if (recog (pat, insn, &num_clobbers) >= 0)
 	      direct_store[(int) mode] = 1;
 	  }
+    }
+
+  mem = gen_rtx_MEM (VOIDmode, gen_rtx_raw_REG (Pmode, 10000));
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      enum machine_mode srcmode;
+      for (srcmode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); srcmode != mode;
+           srcmode = GET_MODE_WIDER_MODE (srcmode))
+	{
+	  enum insn_code ic;
+
+	  ic = can_extend_p (mode, srcmode, 0);
+	  if (ic == CODE_FOR_nothing)
+	    continue;
+
+	  PUT_MODE (mem, srcmode);
+	  
+	  if ((*insn_data[ic].operand[1].predicate) (mem, srcmode))
+	    float_extend_from_mem[mode][srcmode] = true;
+	}
     }
 
   end_sequence ();
@@ -2771,10 +2798,18 @@ emit_move_insn (x, y)
   /* Never force constant_p_rtx to memory.  */
   if (GET_CODE (y) == CONSTANT_P_RTX)
     ;
-  else if (CONSTANT_P (y) && ! LEGITIMATE_CONSTANT_P (y))
+  else if (CONSTANT_P (y))
     {
-      y_cst = y;
-      y = force_const_mem (mode, y);
+      if (optimize
+	  && FLOAT_MODE_P (GET_MODE (x))
+	  && (last_insn = compress_float_constant (x, y)))
+	return last_insn;
+
+      if (!LEGITIMATE_CONSTANT_P (y))
+	{
+	  y_cst = y;
+	  y = force_const_mem (mode, y);
+	}
     }
 
   /* If X or Y are memory references, verify that their addresses are valid
@@ -3099,6 +3134,64 @@ emit_move_insn_1 (x, y)
     }
   else
     abort ();
+}
+
+/* If Y is representable exactly in a narrower mode, and the target can
+   perform the extension directly from constant or memory, then emit the
+   move as an extension.  */
+
+static rtx
+compress_float_constant (x, y)
+     rtx x, y;
+{
+  enum machine_mode dstmode = GET_MODE (x);
+  enum machine_mode orig_srcmode = GET_MODE (y);
+  enum machine_mode srcmode;
+  REAL_VALUE_TYPE r;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, y);
+
+  for (srcmode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (orig_srcmode));
+       srcmode != orig_srcmode;
+       srcmode = GET_MODE_WIDER_MODE (srcmode))
+    {
+      enum insn_code ic;
+      rtx trunc_y, last_insn;
+
+      /* Skip if the target can't extend this way.  */
+      ic = can_extend_p (dstmode, srcmode, 0);
+      if (ic == CODE_FOR_nothing)
+	continue;
+
+      /* Skip if the narrowed value isn't exact.  */
+      if (! exact_real_truncate (srcmode, &r))
+	continue;
+
+      trunc_y = CONST_DOUBLE_FROM_REAL_VALUE (r, srcmode);
+
+      if (LEGITIMATE_CONSTANT_P (trunc_y))
+	{
+	  /* Skip if the target needs extra instructions to perform
+	     the extension.  */
+	  if (! (*insn_data[ic].operand[1].predicate) (trunc_y, srcmode))
+	    continue;
+	}
+      else if (float_extend_from_mem[dstmode][srcmode])
+	trunc_y = validize_mem (force_const_mem (srcmode, trunc_y));
+      else
+	continue;
+
+      emit_unop_insn (ic, x, trunc_y, UNKNOWN);
+      last_insn = get_last_insn ();
+
+      if (GET_CODE (x) == REG)
+	REG_NOTES (last_insn)
+	  = gen_rtx_EXPR_LIST (REG_EQUAL, y, REG_NOTES (last_insn));
+
+      return last_insn;
+    }
+
+  return NULL_RTX;
 }
 
 /* Pushing data onto the stack.  */
