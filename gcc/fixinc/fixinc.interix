@@ -1,3 +1,0 @@
-#!/bin/sh
-rm -f include/stddef.h
-exit
