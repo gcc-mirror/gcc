@@ -3,7 +3,7 @@
    in the form of comments (the mips assembler does not support
    assembly access to debug information).
    Contributed by:  Michael Meissner, meissner@osf.org
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -642,7 +642,7 @@ typedef char *CPTR_T;
 #else
 #define Size_t		unsigned int
 #endif
-#define Ptrdiff_t	int
+#define Ptrdiff_t	long
 
 /* The following might be called from obstack or malloc,
    so they can't be static.  */
@@ -937,7 +937,7 @@ enum alloc_type {
 };
 
 
-#define WORD_ALIGN(x)  (((x) + 3) & ~3)
+#define WORD_ALIGN(x)  (((x) + (sizeof (long) - 1)) & ~ (sizeof (long -1))))
 #define DWORD_ALIGN(x) (((x) + 7) & ~7)
 
 
@@ -1734,11 +1734,13 @@ STATIC void	  free_thead		__proto((thead_t *));
 STATIC char	 *local_index		__proto((const char *, int));
 STATIC char	 *local_rindex		__proto((const char *, int));
 
+#ifndef __alpha
 extern char  *sbrk			__proto((int));
 extern PTR_T  malloc			__proto((Size_t));
 extern PTR_T  calloc			__proto((Size_t, Size_t));
 extern PTR_T  realloc			__proto((PTR_T, Size_t));
 extern void   free			__proto((PTR_T));
+#endif
 extern char  *mktemp			__proto((char *));
 extern long   strtol			__proto((const char *, char **, int));
 
