@@ -2880,7 +2880,8 @@ mark_used_regs (needed, live, x, final, insn)
       if (! EXIT_IGNORE_STACK
 	  || (! FRAME_POINTER_REQUIRED
 	      && ! current_function_calls_alloca
-	      && flag_omit_frame_pointer))
+	      && flag_omit_frame_pointer)
+	  || current_function_sp_is_unchanging)
 #endif
 	SET_REGNO_REG_SET (live, STACK_POINTER_REGNUM);
 
