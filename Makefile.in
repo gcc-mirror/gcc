@@ -1351,8 +1351,11 @@ bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean b
 	$(SET_LIB_PATH) \
 	echo "$$msg"; \
 	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
-	@echo "Building runtime libraries"; \
-	$(MAKE) $(TARGET_FLAGS_TO_PASS) all
+	@r=`pwd`; export r; \
+	s=`cd $(srcdir); pwd` ; export s; \
+	$(SET_LIB_PATH) \
+	echo "Building runtime libraries"; \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) all
 
 .PHONY: cross
 cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
@@ -1361,8 +1364,11 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	$(SET_LIB_PATH) \
 	echo "Building the C and C++ compiler"; \
 	cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
-	@echo "Building runtime libraries"; \
-	$(MAKE) all LANGUAGES="c c++"
+	@r=`pwd`; export r; \
+	s=`cd $(srcdir); pwd` ; export s; \
+	$(SET_LIB_PATH) \
+	echo "Building runtime libraries"; \
+	$(MAKE) $(BASE_FLAGS_TO_PASS) all LANGUAGES="c c++"
 
 .PHONY: check-gcc
 check-gcc:
