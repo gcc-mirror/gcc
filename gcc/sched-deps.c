@@ -76,7 +76,7 @@ static enum reg_pending_barrier_mode reg_pending_barrier;
 static bitmap_head *true_dependency_cache;
 static bitmap_head *anti_dependency_cache;
 static bitmap_head *output_dependency_cache;
-int cache_size;
+static int cache_size;
 
 /* To speed up checking consistency of formed forward insn
    dependencies we use the following cache.  Another possible solution
