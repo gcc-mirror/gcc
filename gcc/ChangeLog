@@ -1,3 +1,38 @@
+Tue Feb 15 22:30:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+                          Andrew MacLeod  <amacleod@cygnus.com>
+
+	* Makefile.in (lcm.o): Depend on insn-attr.h.
+	* basic-block.h (optimize_mode_switching): Declare.
+	* lcm.c (tm_p.h, insn-attr.h): #include.
+	(seginfo, bb_info): New structs.
+	(antic, transp, comp, delete, insert) : New file-scope static variables.
+	(new_seginfo, add_seginfo, make_preds_opaque, reg_dies): New functions.
+	(reg_becomes_live, optimize_mode_switching): Likewise.
+	* tm.texi: Add description of mode switching macros.
+	* toplev.c (rest_of_compilation): Call optimize_mode_switching.
+
+	* sh-protos.h (remove_dead_before_cse): Remove prototype.
+	(fldi_ok, fpscr_set_from_mem): New prototypes.
+	* sh.h (OPTIMIZATION_OPTION): Remove sh_flag_remove_dead_before_cse set.
+	(CONST_DOUBLE_OK_FOR_LETTER_P, SECONDARY_INPUT_RELOAD_CLASS):
+	Disable fldi for (TARGET_SH4 && ! TARGET_FMOVD).
+	(sh_flag_remove_dead_before_cse): Remove declaration.
+	(NUM_MODES_FOR_MODE_SWITCHING, OPTIMIZE_MODE_SWITCHING): New macros.
+	(MODE_USES_IN_EXIT_BLOCK, MODE_NEEDED, MODE_AT_ENTRY): Likewise.
+	(MODE_PRIORITY_TO_MODE, EMIT_MODE_SET): Likewise.
+	* sh.c (broken_move): Disable fldi for (TARGET_SH4 && ! TARGET_FMOVD).
+	(barrier_align): Allow for JUMP_INSNS containing a parallel.
+	(machine_dependent_reorg): Remove sh_flag_remove_dead_before_cse set.
+	(fldi_ok): New function.
+	(get_fpscr_rtx): Add fpscr_rtx as GC root.
+	(emit_sf_insn): Only generate fpu switches when optimize < 1.
+	(emit_df_insn): Likewise.
+	(expand_fp_branch, emit_fpscr_use, remove_dead_before_cse): Delete.
+	(sh_flag_remove_dead_before_cse): Delete.
+	(get_free_reg, fpscr_set_from_mem): New functions.
+	* sh.md (movdf, movsf): Remove no_new_pseudos code.
+	(return): Remove emit_fpscr_use / remove_dead_before_cse calls.
+
 2000-02-15  Loren Rittle  <ljrittle@acm.org>
 
 	* ginclude/stddef.h: Correct usage of _BSD_RUNE_T_ for FreeBSD.

@@ -1567,7 +1567,7 @@ resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
    $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h function.h toplev.h \
    insn-attr.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
-   real.h insn-config.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
+   real.h insn-config.h insn-attr.h $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) system.h $(RTL_H) flags.h insn-flags.h \
    gcov-io.h $(TREE_H) output.h $(REGS_H) toplev.h function.h insn-config.h \
    ggc.h

@@ -1,5 +1,5 @@
 /* Output routines for GCC for Hitachi Super-H.
-   Copyright (C) 1993-1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993-1999, 2000 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com). 
 
@@ -2025,6 +2025,9 @@ broken_move (insn)
 		&& GET_CODE (SET_SRC (pat)) == CONST_DOUBLE
 		&& (fp_zero_operand (SET_SRC (pat))
 		    || fp_one_operand (SET_SRC (pat)))
+		/* ??? If this is a -m4 or -m4-single compilation, we don't
+		   know the current setting of fpscr, so disable fldi.  */
+		&& (! TARGET_SH4 || TARGET_FMOVD)
 		&& GET_CODE (SET_DEST (pat)) == REG
 		&& REGNO (SET_DEST (pat)) >= FIRST_FP_REG
 		&& REGNO (SET_DEST (pat)) <= LAST_FP_REG)
@@ -2772,9 +2775,14 @@ barrier_align (barrier_or_label)
       if (prev
 	  && GET_CODE (prev) == JUMP_INSN
 	  && JUMP_LABEL (prev)
-	  && next_real_insn (JUMP_LABEL (prev)) == next_real_insn (barrier_or_label)
-	  && (credit - slot >= (GET_CODE (SET_SRC (PATTERN (prev))) == PC ? 2 : 0)))
-	return 0;
+	  && next_real_insn (JUMP_LABEL (prev)) == next_real_insn (barrier_or_label))
+	{
+	  rtx pat = PATTERN (prev);
+	  if (GET_CODE (pat) == PARALLEL)
+	    pat = XVECEXP (pat, 0, 0);
+	  if (credit - slot >= (GET_CODE (SET_SRC (pat)) == PC ? 2 : 0))
+	    return 0;
+	}
     }
 
   return CACHE_LOG;
@@ -3203,13 +3211,11 @@ machine_dependent_reorg (first)
 #if 0
   /* fpscr is not actually a user variable, but we pretend it is for the
      sake of the previous optimization passes, since we want it handled like
-     one.  However, we don't have eny debugging information for it, so turn
+     one.  However, we don't have any debugging information for it, so turn
      it into a non-user variable now.  */
   if (TARGET_SH4)
     REG_USERVAR_P (get_fpscr_rtx ()) = 0;
 #endif
-  if (optimize)
-    sh_flag_remove_dead_before_cse = 1;
   mdep_reorg_phase = SH_AFTER_MDEP_REORG;
 }
 
@@ -4617,6 +4623,19 @@ fp_one_operand (op)
   return REAL_VALUES_EQUAL (r, dconst1);
 }
 
+/* For -m4 and -m4-single-only, mode switching is used.  If we are
+   compiling without -mfmovd, movsf_ie isn't taken into account for
+   mode switching.  We could check in machine_dependent_reorg for
+   cases where we know we are in single precision mode, but there is
+   interface to find that out during reload, so we must avoid
+   choosing an fldi alternative during reload and thus failing to
+   allocate a scratch register for the constant loading.  */
+int
+fldi_ok ()
+{
+  return ! TARGET_SH4 || TARGET_FMOVD || reload_completed;
+}
+
 int
 tertiary_reload_operand (op, mode)
      rtx op;
@@ -4815,6 +4834,7 @@ get_fpscr_rtx ()
       fpscr_rtx = gen_rtx (REG, PSImode, 48);
       REG_USERVAR_P (fpscr_rtx) = 1;
       pop_obstacks ();
+      ggc_add_rtx_root (&fpscr_rtx, 1);
       mark_user_reg (fpscr_rtx);
     }
   if (! reload_completed || mdep_reorg_phase != SH_AFTER_MDEP_REORG)
@@ -4829,13 +4849,13 @@ emit_sf_insn (pat)
   rtx addr;
   /* When generating reload insns,  we must not create new registers.  FPSCR
      should already have the correct value, so do nothing to change it.  */
-  if (! TARGET_FPU_SINGLE && ! reload_in_progress)
+  if (! TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
     {
       addr = gen_reg_rtx (SImode);
       emit_insn (gen_fpu_switch0 (addr));
     }
   emit_insn (pat);
-  if (! TARGET_FPU_SINGLE && ! reload_in_progress)
+  if (! TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
     {
       addr = gen_reg_rtx (SImode);
       emit_insn (gen_fpu_switch1 (addr));
@@ -4847,13 +4867,13 @@ emit_df_insn (pat)
      rtx pat;
 {
   rtx addr;
-  if (TARGET_FPU_SINGLE && ! reload_in_progress)
+  if (TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
     {
       addr = gen_reg_rtx (SImode);
       emit_insn (gen_fpu_switch0 (addr));
     }
   emit_insn (pat);
-  if (TARGET_FPU_SINGLE && ! reload_in_progress)
+  if (TARGET_FPU_SINGLE && ! reload_in_progress && optimize < 1)
     {
       addr = gen_reg_rtx (SImode);
       emit_insn (gen_fpu_switch1 (addr));
@@ -4893,65 +4913,6 @@ expand_df_binop (fun, operands)
   emit_df_insn ((*fun) (operands[0], operands[1], operands[2],
 			 get_fpscr_rtx ()));
 }
-
-void
-expand_fp_branch (compare, branch)
-     rtx (*compare) PARAMS ((void)), (*branch) PARAMS ((void));
-{
-  (GET_MODE (sh_compare_op0)  == SFmode ? emit_sf_insn : emit_df_insn)
-    ((*compare) ());
-  emit_jump_insn ((*branch) ());
-}
-
-/* We don't want to make fpscr call-saved, because that would prevent
-   channging it, and it would also cost an exstra instruction to save it.
-   We don't want it to be known as a global register either, because
-   that disables all flow analysis.  But it has to be live at the function
-   return.  Thus, we need to insert a USE at the end of the function.  */
-/* This should best be called at about the time FINALIZE_PIC is called,
-   but not dependent on flag_pic.  Alas, there is no suitable hook there,
-   so this gets called from HAVE_RETURN.  */
-void
-emit_fpscr_use ()
-{
-  static int fpscr_uses = 0;
-
-  if (rtx_equal_function_value_matters)
-    {
-      emit_insn (gen_rtx (USE, VOIDmode, get_fpscr_rtx ()));
-      fpscr_uses++;
-    }
-  else
-    {
-      if (fpscr_uses > 1)
-	{
-	  /* Due to he crude way we emit the USEs, we might end up with
-	     some extra ones.  Delete all but the last one.  */
-	  rtx insn;
-
-	  for (insn = get_last_insn(); insn; insn = PREV_INSN (insn))
-	    if (GET_CODE (insn) == INSN
-		&& GET_CODE (PATTERN (insn)) == USE
-		&& GET_CODE (XEXP (PATTERN (insn), 0)) == REG
-		&& REGNO (XEXP (PATTERN (insn), 0)) == FPSCR_REG)
-	      {
-		insn = PREV_INSN (insn);
-		break;
-	      }
-	  for (; insn; insn = PREV_INSN (insn))
-	    if (GET_CODE (insn) == INSN
-		&& GET_CODE (PATTERN (insn)) == USE
-		&& GET_CODE (XEXP (PATTERN (insn), 0)) == REG
-		&& REGNO (XEXP (PATTERN (insn), 0)) == FPSCR_REG)
-	      {
-		PUT_CODE (insn, NOTE);
-		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-		NOTE_SOURCE_FILE (insn) = 0;
-	      }
-	}
-      fpscr_uses = 0;
-    }
-}
 
 /* ??? gcc does flow analysis strictly after common subexpression
    elimination.  As a result, common subespression elimination fails
@@ -4979,8 +4940,6 @@ f(double a)
    So we add another pass before common subexpression elimination, to
    remove assignments that are dead due to a following assignment in the
    same basic block.  */
-
-int sh_flag_remove_dead_before_cse;
 
 static void 
 mark_use (x, reg_set_block)
@@ -5035,70 +4994,67 @@ mark_use (x, reg_set_block)
       }
     }
 }
+
+static rtx get_free_reg PARAMS ((HARD_REG_SET));
 
-void
-remove_dead_before_cse ()
+/* This function returns a register to use to load the address to load
+   the fpscr from.  Currently it always returns r1 or r7, but when we are
+   able to use pseudo registers after combine, or have a better mechanism
+   for choosing a register, it should be done here.  */
+/* REGS_LIVE is the liveness information for the point for which we
+   need this allocation.  In some bare-bones exit blocks, r1 is live at the
+   start.  We can even have all of r0..r3 being live:
+__complex__ long long f (double d) { if (d == 0) return 2; else return 3; }
+   INSN before which new insns are placed with will clobber the register
+   we return.  If a basic block consists only of setting the return value
+   register to a pseudo and using that register, the return value is not
+   live before or after this block, yet we we'll insert our insns right in
+   the middle.  */
+
+static rtx
+get_free_reg (regs_live)
+     HARD_REG_SET regs_live;
 {
-  rtx *reg_set_block, last, last_call, insn, set;
-  int in_libcall = 0;
+  rtx reg;
 
-  /* This pass should run just once, after rtl generation.  */
+  if (! TEST_HARD_REG_BIT (regs_live, 1))
+    return gen_rtx_REG (Pmode, 1);
 
-  if (! sh_flag_remove_dead_before_cse
-      || rtx_equal_function_value_matters
-      || reload_completed)
-    return;
+  /* Hard reg 1 is live; since this is a SMALL_REGISTER_CLASSES target,
+     there shouldn't be anything but a jump before the function end.  */
+  if (! TEST_HARD_REG_BIT (regs_live, 7))
+    return gen_rtx_REG (Pmode, 7);
 
-  sh_flag_remove_dead_before_cse = 0;
+  abort ();
+}
 
-  reg_set_block = (rtx *)alloca (max_reg_num () * sizeof (rtx));
-  bzero ((char *)reg_set_block, max_reg_num () * sizeof (rtx));
-  last_call = last = get_last_insn ();
-  for (insn = last; insn; insn = PREV_INSN (insn))
+/* This function will set the fpscr from memory. 
+   MODE is the mode we are setting it to.  */
+void
+fpscr_set_from_mem (mode, regs_live)
+     int mode;
+     HARD_REG_SET regs_live;
+{
+  enum attr_fp_mode fp_mode = mode;
+  rtx i;
+  rtx addr_reg = get_free_reg (regs_live);
+
+  i = gen_rtx_SET (VOIDmode, addr_reg,
+		   gen_rtx_SYMBOL_REF (SImode, "__fpscr_values"));
+  emit_insn (i);
+  if (fp_mode == (TARGET_FPU_SINGLE ? FP_MODE_SINGLE : FP_MODE_DOUBLE))
     {
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	continue;
-      if (GET_CODE (insn) == JUMP_INSN)
-	{
-	  last_call = last = insn;
-	  continue;
-	}
-      set = single_set (insn);
-
-      /* Don't delete parts of libcalls, since that would confuse cse, loop
-	 and flow.  */
-      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	in_libcall = 1;
-      else if (in_libcall)
-	{
-	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	    in_libcall = 0;
-	}
-      else if (set && GET_CODE (SET_DEST (set)) == REG)
-	{
-	  int regno = REGNO (SET_DEST (set));
-	  rtx ref_insn = (regno < FIRST_PSEUDO_REGISTER && call_used_regs[regno]
-			  ? last_call
-			  : last);
-	  if (reg_set_block[regno] == ref_insn
-	      && (regno >= FIRST_PSEUDO_REGISTER
-		  || HARD_REGNO_NREGS (regno, GET_MODE (SET_DEST (set))) == 1)
-	      && (GET_CODE (insn) != CALL_INSN || CONST_CALL_P (insn)))
-	    {
-	      PUT_CODE (insn, NOTE);
-	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (insn) = 0;
-	      continue;
-	    }
-	  else
-	    reg_set_block[REGNO (SET_DEST (set))] = ref_insn;
-	}
-      if (GET_CODE (insn) == CALL_INSN)
-	{
-	  last_call = insn;
-	  mark_use (CALL_INSN_FUNCTION_USAGE (insn), reg_set_block);
-	}
-      mark_use (PATTERN (insn), reg_set_block);
+      rtx r = addr_reg;
+      addr_reg = get_free_reg (regs_live);
+      i = gen_rtx_SET (VOIDmode, addr_reg,
+		       gen_rtx_PLUS (Pmode, r, GEN_INT (4)));
+      emit_insn (i);
     }
-  return;
+  
+  i = gen_rtx_SET (VOIDmode, 
+ 		   get_fpscr_rtx (), 
+  		   gen_rtx_MEM (PSImode, gen_rtx_POST_INC (Pmode, addr_reg)));
+  i = emit_insn (i);
+  REG_NOTES (i) = gen_rtx_EXPR_LIST (REG_DEAD, addr_reg, REG_NOTES (i));
+  REG_NOTES (i) = gen_rtx_EXPR_LIST (REG_INC, addr_reg, REG_NOTES (i));
 }

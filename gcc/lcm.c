@@ -61,6 +61,10 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "basic-block.h"
+#include "tm_p.h"
+/* We want target macros for the mode switching code to be able to refer
+   to instruction attribute values.  */
+#include "insn-attr.h"
 
 /* Edge based LCM routines.  */
 static void compute_antinout_edge  PARAMS ((sbitmap *, sbitmap *,
@@ -793,4 +797,459 @@ pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
 #endif
 
   return edge_list;
+}
+
+/* MODE SWITCHING */
+/* The algorithm for setting the modes consists of scanning the insn list
+   and finding all the insns which require a specific mode.  Each insn gets
+   a unique struct seginfo element.  These structures are inserted into a list
+   for each basic block.  For each entity, there is an array of bb_info over
+   the flow graph basic blocks (local var 'bb_info'), and contains a list
+   of all insns within that basic block, in the order they are encountered.
+
+   For each entity, any basic block WITHOUT any insns requiring a specific
+   mode are given a single entry, without a mode.  (Each basic block
+   in the flow graph must have at least one entry in the segment table.)
+
+   The LCM algorithm is then run over the flow graph to determine where to
+   place the sets to the highest-priority value in respect of first the first
+   insn in any one block.  Any adjustments required to the transparancy
+   vectors are made, then the next iteration starts for the next-lower
+   priority mode, till for each entity all modes are exhasted.
+
+   More details are located in the code for optimize_mode_switching().  */
+
+/* This structure contains the information for each insn which requires
+   either single or double mode to be set.  
+   MODE is the mode this insn must be executed in.
+   INSN_PTR is the insn to be executed.
+   BBNUM is the flow graph basic block this insn occurs in.
+   NEXT is the next insn in the same basic block.  */
+struct seginfo 
+{
+  int mode;
+  rtx insn_ptr;
+  int bbnum;
+  struct seginfo *next;
+  HARD_REG_SET regs_live;
+};
+
+struct bb_info
+{
+  struct seginfo *seginfo;
+  int computing;
+};
+
+/* These bitmaps are used for the LCM algorithm.  */
+
+static sbitmap *antic;
+static sbitmap *transp;
+static sbitmap *comp;
+static sbitmap *delete;
+static sbitmap *insert;
+
+static struct seginfo * new_seginfo PARAMS ((int, rtx, int, HARD_REG_SET));;
+static void add_seginfo PARAMS ((struct bb_info *, struct seginfo *));
+static void make_preds_opaque PARAMS ((basic_block, int));
+static void reg_dies PARAMS ((rtx, HARD_REG_SET));
+static void reg_becomes_live PARAMS ((rtx, rtx, void *));
+
+/* This function will allocate a new BBINFO structure, initialized
+   with the FP_MODE, INSN, and basic block BB parameters.  */
+static struct seginfo *
+new_seginfo (mode, insn, bb, regs_live)
+     int mode;
+     rtx insn;
+     int bb;
+     HARD_REG_SET regs_live;
+{
+  struct seginfo *ptr;
+  ptr = xmalloc (sizeof (struct seginfo));
+  ptr->mode = mode;
+  ptr->insn_ptr = insn;
+  ptr->bbnum = bb;
+  ptr->next = NULL;
+  COPY_HARD_REG_SET (ptr->regs_live, regs_live);
+  return ptr;
+}
+
+/* Add a seginfo element to the end of a list.  
+   HEAD is a pointer to the list beginning.
+   INFO is the structure to be linked in.  */
+static void
+add_seginfo (head, info)
+     struct bb_info *head;
+     struct seginfo *info;
+{
+  struct seginfo *ptr;
+
+  if (head->seginfo == NULL)
+    head->seginfo = info;
+  else
+    {
+      ptr = head->seginfo;
+      while (ptr->next != NULL)
+        ptr = ptr->next;
+      ptr->next = info;
+    }
+}
+
+/* Make all predecessors of basic block B opaque, recursively, till we hit
+   some that are already non-transparent, or an edge where aux is set; that
+   denotes that a mode set is to be done on that edge.
+   J is the bit number in the bitmaps that corresponds to the entity that
+   we are currently handling mode-switching for.  */
+static void
+make_preds_opaque (b, j)
+     basic_block b;
+     int j;
+{
+  edge e;
+
+  for (e = b->pred; e; e = e->pred_next)
+    {
+      basic_block pb = e->src;
+      if (e->aux || ! TEST_BIT (transp[pb->index], j))
+	continue;
+      RESET_BIT (transp[pb->index], j);
+      make_preds_opaque (pb, j);
+    }
+}
+
+/* Record in LIVE that register REG died.  */
+static void
+reg_dies (reg, live)
+     rtx reg;
+     HARD_REG_SET live;
+{
+  int regno;
+
+  if (GET_CODE (reg) != REG)
+    return;
+  regno = REGNO (reg);
+  if (regno < FIRST_PSEUDO_REGISTER)
+    {
+      int nregs = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+
+      for (; --nregs >=0; nregs--, regno++)
+	CLEAR_HARD_REG_BIT (live, regno);
+    }
+}
+
+/* Record in LIVE that register REG became live.
+   This is called via note_stores.  */
+static void
+reg_becomes_live (reg, setter, live)
+     rtx reg;
+     rtx setter ATTRIBUTE_UNUSED;
+     void *live;
+{
+  int regno;
+
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+
+  if (GET_CODE (reg) != REG)
+    return;
+
+  regno = REGNO (reg);
+  if (regno < FIRST_PSEUDO_REGISTER)
+    {
+      int nregs = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+
+      for (; nregs-- > 0; regno++)
+	SET_HARD_REG_BIT (* (HARD_REG_SET *) live, regno);
+    }
+}
+
+/* Find all insns that need a particular mode
+   setting, and insert the necessary mode switches.  */
+void
+optimize_mode_switching (file)
+     FILE *file ATTRIBUTE_UNUSED;
+{
+#ifdef OPTIMIZE_MODE_SWITCHING
+  rtx insn;
+  int bb, e;
+  edge eg;
+  int need_commit = 0;
+  sbitmap *kill;
+  struct edge_list *edge_list;
+  static int num_modes[] = NUM_MODES_FOR_MODE_SWITCHING;
+#define N_ENTITIES (sizeof num_modes / sizeof (int))
+  int entity_map[N_ENTITIES];
+  struct bb_info *bb_info[N_ENTITIES];
+  int i, j;
+  int n_entities;
+  int max_num_modes = 0;
+
+  for (e = N_ENTITIES - 1, n_entities = 0; e >= 0; e--)
+    {
+      if (OPTIMIZE_MODE_SWITCHING (e))
+	{
+	  /* Create the list of segments within each basic block.  */
+	  bb_info[n_entities]
+	    = (struct bb_info *) xcalloc (n_basic_blocks, sizeof **bb_info);
+	  entity_map[n_entities++] = e;
+	  if (num_modes[e] > max_num_modes)
+	    max_num_modes = num_modes[e];
+	}
+    }
+  if (! n_entities)
+    return;
+
+#ifdef MODE_USES_IN_EXIT_BLOCK
+  /* For some ABIs a particular mode setting is required at function exit.  */
+
+  for (eg = EXIT_BLOCK_PTR->pred; eg; eg = eg->pred_next)
+    {
+      int bb = eg->src->index;
+
+      rtx insn = BLOCK_END (bb);
+      rtx use = MODE_USES_IN_EXIT_BLOCK;
+
+      /* If the block ends with the use of the return value
+	 and / or a return, insert the new use(s) in front of them.  */
+      while ((GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
+	     || GET_CODE (insn) == JUMP_INSN)
+	insn = PREV_INSN (insn);
+      use = emit_insn_after (use, insn);
+      if (insn == BLOCK_END (bb))
+	BLOCK_END (bb) = use;
+      else if (NEXT_INSN (use) == BLOCK_HEAD (bb))
+	BLOCK_HEAD (bb) = NEXT_INSN (insn);
+    }
+#endif
+
+  /* Create the bitmap vectors.  */
+
+  antic = sbitmap_vector_alloc (n_basic_blocks, n_entities);
+  transp = sbitmap_vector_alloc (n_basic_blocks, n_entities);
+  comp = sbitmap_vector_alloc (n_basic_blocks, n_entities);
+
+  sbitmap_vector_ones (transp, n_basic_blocks);
+
+  for (j = n_entities - 1; j >= 0; j--)
+    {
+      int e = entity_map[j];
+      int no_mode = num_modes[e];
+      struct bb_info *info = bb_info[j];
+
+      /* Determine what the first use (if any) need for a mode of entity E is.
+	 This will be th mode that is anticipatable for this block.
+	 Also compute the initial transparency settings.  */
+      for (bb = 0 ; bb < n_basic_blocks; bb++)
+	{
+	  struct seginfo *ptr;
+	  int last_mode = no_mode;
+	  HARD_REG_SET live_now;
+
+	  REG_SET_TO_HARD_REG_SET (live_now,
+				   BASIC_BLOCK (bb)->global_live_at_start);
+	  for (insn = BLOCK_HEAD (bb); 
+	       insn != NULL && insn != NEXT_INSN (BLOCK_END (bb));
+	       insn = NEXT_INSN (insn))
+	    {
+	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+		{
+		  int mode = MODE_NEEDED (e, insn);
+		  rtx link;
+
+		  if (mode != no_mode && mode != last_mode)
+		    {
+		      last_mode = mode;
+		      ptr = new_seginfo (mode, insn, bb, live_now);
+		      add_seginfo (info + bb, ptr);
+		      RESET_BIT (transp[bb], j);
+		    }
+
+		  /* Update LIVE_NOW.  */
+		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+		    if (REG_NOTE_KIND (link) == REG_DEAD)
+		      reg_dies (XEXP (link, 0), live_now);
+		  note_stores (PATTERN (insn), reg_becomes_live, &live_now);
+		  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+		    if (REG_NOTE_KIND (link) == REG_UNUSED)
+		      reg_dies (XEXP (link, 0), live_now);
+		}
+	    }
+	  info[bb].computing = last_mode;
+	  /* Check for blocks without ANY mode requirements.  */
+	  if (last_mode == no_mode)
+	    {
+	      ptr = new_seginfo (no_mode, insn, bb, live_now);
+	      add_seginfo (info + bb, ptr);
+	    }
+	}
+#ifdef MODE_AT_ENTRY
+      {
+	int mode = MODE_AT_ENTRY (e);
+	if (mode != no_mode)
+	  {
+	    for (eg = ENTRY_BLOCK_PTR->succ; eg; eg = eg->succ_next)
+	      {
+		bb = eg->dest->index;
+
+	        /* By always making this nontransparent, we save
+		   an extra check in make_preds_opaque.  We also
+		   need this to avoid confusing pre_edge_lcm when
+		   antic is cleared but transp and comp are set.  */
+		RESET_BIT (transp[bb], j);
+
+		/* If the block already has MODE, pretend it
+		   has none (because we don't need to set it),
+		   but retain whatever mode it computes.  */
+		if (info[bb].seginfo->mode == mode)
+		  {
+		    info[bb].seginfo->mode = no_mode;
+		  }
+		/* Insert a fake computing definition of MODE into entry blocks
+		   which compute no mode. This represents the mode on entry.  */
+		else if (info[bb].computing == no_mode)
+		  {
+		    info[bb].computing = mode;
+		    info[bb].seginfo->mode = no_mode;
+		  }
+	      }
+	  }
+      }
+#endif /* MODE_AT_ENTRY */
+    }
+
+  kill = sbitmap_vector_alloc (n_basic_blocks, n_entities);
+  for (i = 0; i < max_num_modes; i++)
+    {
+      int current_mode[N_ENTITIES];
+
+      /* Set the anticipatable and computing arrays.  */
+      sbitmap_vector_zero (antic, n_basic_blocks);
+      sbitmap_vector_zero (comp, n_basic_blocks);
+      for (j = n_entities - 1; j >= 0; j--)
+	{
+	  int m = current_mode[j] = MODE_PRIORITY_TO_MODE (entity_map[j], i);
+	  struct bb_info *info = bb_info[j];
+	  
+	  for (bb = 0 ; bb < n_basic_blocks; bb++)
+	    {
+
+	      if (info[bb].seginfo->mode == m)
+		SET_BIT (antic[bb], j);
+
+	      if (info[bb].computing == m)
+		SET_BIT (comp[bb], j);
+	    }
+	}
+
+      /* Calculate the optimal locations for the
+	 placement mode switches to modes with priority I.  */
+
+      for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+	sbitmap_not (kill[bb], transp[bb]);
+      edge_list = pre_edge_lcm (file, 1, transp, comp, antic,
+				kill, &insert, &delete);
+
+      for (j = n_entities - 1; j >=0; j--)
+	{
+	  /* Insert all mode sets that have been inserted by lcm.  */
+	  int no_mode = num_modes[entity_map[j]];
+	  /* Wherever we have moved a mode setting upwards in the flow graph,
+	     the blocks between the new setting site and the now redundant
+	     computation ceases to be transparent for any lower-priority
+	     mode of the same entity.  First set the aux field of each
+	     insertion site edge non-transparent, then propagate the new
+	     non-transparency from the redundant computation upwards till
+	     we hit an insertion site or an already non-transparent block.  */
+	  for (e = NUM_EDGES (edge_list) - 1; e >= 0; e--)
+	    {
+	      edge eg = INDEX_EDGE (edge_list, e);
+	      int mode;
+	      basic_block src_bb;
+	      HARD_REG_SET live_at_edge;
+	      rtx mode_set;
+
+	      eg->aux = 0;
+
+	      if (! TEST_BIT (insert[e], j))
+		continue;
+
+	      eg->aux = (void *)1;
+
+	      mode = current_mode[j];
+	      src_bb = eg->src;
+
+	      REG_SET_TO_HARD_REG_SET (live_at_edge, src_bb->global_live_at_end);
+	      start_sequence ();
+	      EMIT_MODE_SET (entity_map[j], mode, live_at_edge);
+	      mode_set = gen_sequence ();
+	      end_sequence ();
+
+	      /* If this is an abnormal edge, we'll insert at the end of the
+		 previous block.  */
+	      if (eg->flags & EDGE_ABNORMAL)
+		{
+
+		  src_bb->end = emit_insn_after (mode_set, src_bb->end);
+		  bb_info[j][src_bb->index].computing = mode;
+		  RESET_BIT (transp[src_bb->index], j);
+		}
+	      else
+		{
+		  need_commit = 1;
+		  insert_insn_on_edge (mode_set, eg);
+		}
+
+	    }
+
+	  for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+	    {
+	      if (TEST_BIT (delete[bb], j))
+		{
+		  make_preds_opaque (BASIC_BLOCK (bb), j);
+		  /* Cancel the 'deleted' mode set.  */
+		  bb_info[j][bb].seginfo->mode = no_mode;
+		}
+	    }
+	}
+      free_edge_list (edge_list);
+    }
+
+  /* Now output the remaining mode sets in all the segments.  */
+  for (j = n_entities - 1; j >= 0; j--)
+    {
+      for (bb = n_basic_blocks - 1; bb >= 0; bb--)
+	{
+	  struct seginfo *ptr, *next;
+	  for (ptr = bb_info[j][bb].seginfo; ptr; ptr = next)
+	    {
+	      next = ptr->next;
+	      if (ptr->mode != FP_MODE_NONE)
+		{
+		  rtx mode_set;
+
+		  start_sequence ();
+		  EMIT_MODE_SET (entity_map[j], ptr->mode, ptr->regs_live);
+		  mode_set = gen_sequence ();
+		  end_sequence ();
+
+		  emit_block_insn_before (mode_set, ptr->insn_ptr,
+					  BASIC_BLOCK (ptr->bbnum));
+		}
+	      free (ptr);
+	    }
+	}
+      free (bb_info[j]);
+    }
+
+  /* Finished. Free up all the things we've allocated.  */
+  
+  sbitmap_vector_free (kill);
+  sbitmap_vector_free (antic);
+  sbitmap_vector_free (transp);
+  sbitmap_vector_free (comp);
+  sbitmap_vector_free (delete);
+  sbitmap_vector_free (insert);
+
+  if (need_commit)
+    commit_edge_insertions ();
+#endif /* OPTIMIZE_MODE_SWITCHING */
 }

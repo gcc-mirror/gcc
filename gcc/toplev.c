@@ -3305,6 +3305,11 @@ rest_of_compilation (decl)
   /* Print function header into sched dump now
      because doing the sched analysis makes some of the dump.  */
 
+  if (optimize && n_basic_blocks)
+    {
+      optimize_mode_switching (NULL_PTR);
+    }
+
 #ifdef INSN_SCHEDULING
   if (optimize > 0 && flag_schedule_insns)
     {

@@ -37,6 +37,7 @@ includes @file{tm.h} and most compiler source files include
 * Assembler Format::    Defining how to write insns and pseudo-ops to output.
 * Debugging Info::      Defining the format of debugging output.
 * Cross-compilation::   Handling floating point for cross-compilers.
+* Mode Switching::      Insertion of mode-switching instructions.
 * Misc::                Everything else.
 @end menu
 
@@ -7192,6 +7193,85 @@ found in @var{low} and @var{high}, two variables of type @var{int},
 into a floating point value which is then stored into @var{x}.
 The value is in the target machine's representation for mode @var{mode}
 and has the type @code{REAL_VALUE_TYPE}.
+@end table
+
+@node Mode Switching
+@section Mode Switching Instructions
+@cindex mode switching
+The following macros control mode switching optimizations:
+
+@table @code
+@findex OPTIMIZE_MODE_SWITCHING
+@item OPTIMIZE_MODE_SWITCHING (@var{entity})
+Define this macro if the port needs extra instructions inserted for mode
+switching in an optimizing compilation.
+
+For an example, the SH4 can perform both single and double precision
+floating point operations, but to perform a single precision operation,
+the FPSCR PR bit has to be cleared, while for a double precision
+operation, this bit has to be set.  Changing the PR bit requires a general
+purpose register as a scratch register, hence these FPSCR sets have to
+be inserted before reload, i.e. you can't put this into instruction emitting
+or MACHINE_DEPENDENT_REORG.
+
+You can have multiple entities that are mode-switched, and select at run time
+which entities actually need it.  @code{OPTIMIZE_MODE_SWITCHING} should
+return non-zero for any @var{entity} that that needs mode-switching.
+If you define this macro, you also have to define
+@code{NUM_MODES_FOR_MODE_SWITCHING}, @code{MODE_NEEDED},
+@code{MODE_PRIORITY_TO_MODE} and @code{EMIT_MODE_SET}.
+@code{MODE_AT_ENTRY} and @code{MODE_USES_IN_EXIT_BLOCK} are optional.
+
+@findex NUM_MODES_FOR_MODE_SWITCHING
+@item NUM_MODES_FOR_MODE_SWITCHING
+If you define @code{OPTIMIZE_MODE_SWITCHING}, you have to define this as
+initializer for an array of integers.  Each initializer element
+N refers to an entity that needs mode switching, and specifies the number
+of different modes that might need to be set for this entity.
+The position of the initializer in the initializer - starting counting at
+zero - determines the integer that is used to refer to the mode-switched
+entity in question.
+In macros that take mode arguments / yield a mode result, modes are
+represented as numbers 0 .. N - 1.  N is used to specify that no mode
+switch is needed / supplied.
+
+@findex MODE_USES_IN_EXIT_BLOCK
+@item MODE_USES_IN_EXIT_BLOCK
+If this macro is defined, it is called for each exit block when mode switching
+optimization is performed.  Its return value should be the pattern of an insn,
+or a sequence of insns.  It is emitted before the return insn / use insns at
+the end of the exit block.
+
+This is done before insns are examined for their need of any mode switching.
+
+@findex MODE_NEEDED
+@item MODE_NEEDED (@var{entity}, @var{insn})
+@var{entity} is an integer specifying a mode-switched entity.  If
+@code{OPTIMIZE_MODE_SWITCHING} is defined, you must define this macro to
+return an integer value not larger than the corresponding element in
+NUM_MODES_FOR_MODE_SWITCHING, to denote the mode that @var{entity} must
+be switched into prior to the execution of INSN.
+
+@findex MODE_AT_ENTRY
+@item MODE_AT_ENTRY (@var{entity})
+If this macro is defined, it is evaluated for every @var{entity} that needs
+mode switching.  It should evaluate to an integer, which is a mode that
+@var{entity} is assumed to be switched to at function entry.
+
+@findex MODE_PRIORITY_TO_MODE
+@item MODE_PRIORITY_TO_MODE (@var{entity}, @var{n})
+This macro specifies the order in which modes for ENTITY are processed.
+0 is the highest priority, NUM_MODES_FOR_MODE_SWITCHING[ENTITY] - 1 the
+lowest.  The value of the macro should be an integer designating a mode
+for ENTITY.  For any fixed @var{entity}, @code{mode_priority_to_mode}
+(@var{entity}, @var{n}) shall be a bijection in 0 ..
+@code{num_modes_for_mode_switching}[@var{entity}] - 1 .
+
+@findex EMIT_MODE_SET
+@item EMIT_MODE_SET (@var{entity}, @var{mode}, @var{hard_regs_live})
+Generate one or more insns to set @var{entity} to @var{mode}.
+@var{hard_reg_live} is the set of hard registers live at the point where
+the insn(s) are to be inserted.
 @end table
 
 @node Misc

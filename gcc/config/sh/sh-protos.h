@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler for Hitachi Super-H.
-   Copyright (C) 1993-1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993-1999, 2000 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com).
    Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -109,4 +109,8 @@ extern void sh_expand_epilogue PARAMS ((void));
 extern void function_epilogue PARAMS ((FILE *, int));
 extern int initial_elimination_offset PARAMS ((int, int));
 extern void emit_fpscr_use PARAMS ((void));
-extern void remove_dead_before_cse PARAMS ((void));
+extern int fldi_ok PARAMS ((void));
+
+#ifdef HARD_CONST
+extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
+#endif
