@@ -77,7 +77,7 @@ public class StackTraceElement implements Serializable
    *
    * @serial the enclosing class, if known
    */
-  private final String className;
+  private final String declaringClass;
 
   /**
    * The method name in the class, null if unknown.
@@ -106,7 +106,7 @@ public class StackTraceElement implements Serializable
   {
     this.fileName = fileName;
     this.lineNumber = lineNumber;
-    this.className = className;
+    this.declaringClass = className;
     this.methodName = methodName;
     this.isNative = isNative;
   }
@@ -142,7 +142,7 @@ public class StackTraceElement implements Serializable
    */
   public String getClassName()
   {
-    return className;
+    return declaringClass;
   }
 
   /**
@@ -183,9 +183,9 @@ public class StackTraceElement implements Serializable
   public String toString()
   {
     StringBuffer sb = new StringBuffer();
-    if (className != null)
+    if (declaringClass != null)
       {
-        sb.append(className);
+        sb.append(declaringClass);
         if (methodName != null)
           sb.append('.');
       }
@@ -217,7 +217,7 @@ public class StackTraceElement implements Serializable
     StackTraceElement e = (StackTraceElement) o;
     return equals(fileName, e.fileName)
       && lineNumber == e.lineNumber
-      && equals(className, e.className)
+      && equals(declaringClass, e.declaringClass)
       && equals(methodName, e.methodName);
   }
 
@@ -230,7 +230,7 @@ public class StackTraceElement implements Serializable
    */
   public int hashCode()
   {
-    return hashCode(fileName) ^ lineNumber ^ hashCode(className)
+    return hashCode(fileName) ^ lineNumber ^ hashCode(declaringClass)
       ^ hashCode(methodName);
   }
 

@@ -1,3 +1,9 @@
+2004-09-24  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/lang/StackTraceElement.java
+	(className): Renamed field to declaringClass to be compatible
+	with Sun serialization format.
+
 2004-09-23  Michael Koch  <konqueror@gmx.de>
 
 	* java/applet/AppletContext.java,
