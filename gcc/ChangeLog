@@ -1,3 +1,10 @@
+2000-07-15  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64-protos.h (ia64_move_ok): Prototype.
+	* config/ia64/ia64.c (ia64_move_ok): New function.
+	* config/ia64/ia64.md (movqi, movqi_internal): Use it.
+	(movhi, movsi, movdi, movsf, movdf, movxf): Likewise.
+
 2000-07-15  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (save_expansion): Clear PREV_WHITE on tokens
