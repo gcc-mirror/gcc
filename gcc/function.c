@@ -117,6 +117,7 @@ static int virtuals_instantiated;
 /* These variables hold pointers to functions to
    save and restore machine-specific data,
    in push_function_context and pop_function_context.  */
+void (*init_machine_status) PROTO((struct function *));
 void (*save_machine_status) PROTO((struct function *));
 void (*restore_machine_status) PROTO((struct function *));
 
@@ -300,7 +301,15 @@ void
 push_function_context_to (context)
      tree context;
 {
-  struct function *p;
+  struct function *p, *context_data;
+
+  if (context)
+    {
+      context_data = (context == current_function_decl
+		      ? current_function
+		      : find_function_data (context));
+      context_data->contains_functions = 1;
+    }
 
   if (current_function == 0)
     init_dummy_function_start ();
@@ -311,8 +320,7 @@ push_function_context_to (context)
   p->decl = current_function_decl;
   p->fixup_var_refs_queue = 0;
 
-  save_tree_status (p, context);
-  save_varasm_status (p, context);
+  save_tree_status (p);
   if (save_lang_status)
     (*save_lang_status) (p);
   if (save_machine_status)
@@ -340,14 +348,11 @@ pop_function_context_from (context)
   current_function = p;
   outer_function_chain = p->next;
 
-  current_function_contains_functions
-    |= p->inline_obstacks || context == current_function_decl;
   current_function_decl = p->decl;
   reg_renumber = 0;
 
-  restore_tree_status (p, context);
+  restore_tree_status (p);
   restore_emit_status (p);
-  restore_varasm_status (p);
 
   if (restore_machine_status)
     (*restore_machine_status) (p);
@@ -365,7 +370,8 @@ pop_function_context_from (context)
   virtuals_instantiated = 0;
 }
 
-void pop_function_context ()
+void
+pop_function_context ()
 {
   pop_function_context_from (current_function_decl);
 }
@@ -5576,7 +5582,7 @@ prepare_function_start ()
   /* We haven't done register allocation yet.  */
   reg_renumber = 0;
 
-  init_const_rtx_hash_table ();
+  init_varasm_status (current_function);
 
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;
@@ -5640,6 +5646,9 @@ prepare_function_start ()
   inhibit_defer_pop = 0;
 
   current_function_outgoing_args_size = 0;
+
+  if (init_machine_status)
+    (*init_machine_status) (current_function);
 }
 
 /* Initialize the rtl expansion mechanism so that we can do simple things

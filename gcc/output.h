@@ -309,9 +309,6 @@ extern void defer_addressed_constants	PROTO((void));
    and output now all those that have been deferred.  */
 extern void output_deferred_addressed_constants PROTO((void));
 
-/* Initialize constant pool hashing for next function.  */
-extern void init_const_rtx_hash_table	PROTO((void));
-
 /* Return the size of the constant pool.  */
 extern int get_pool_size		PROTO((void));
 

@@ -168,6 +168,18 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
 struct rtx_def *ix86_compare_op0 = NULL_RTX;
 struct rtx_def *ix86_compare_op1 = NULL_RTX;
 
+#define MAX_386_STACK_LOCALS 2
+
+/* Define the structure for the machine field in struct function.  */
+struct machine_function
+{
+  rtx stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
+};
+
+static int pic_label_no = 0;
+
+#define ix86_stack_locals (current_function->machine->stack_locals)
+
 /* which cpu are we scheduling for */
 enum processor_type ix86_cpu;
 
@@ -235,6 +247,7 @@ static void ix86_dump_ppro_packet PROTO ((FILE *));
 static void ix86_reorder_insn PROTO ((rtx *, rtx *));
 static rtx * ix86_pent_find_pair PROTO ((rtx *, rtx *, enum attr_pent_pair,
 					 rtx));
+static void ix86_init_machine_status PROTO ((struct function *));
 
 struct ix86_address
 {
@@ -337,6 +350,9 @@ override_options ()
   ix86_cost = processor_target_table[ix86_cpu].cost;
   target_flags |= processor_target_table[ix86_cpu].target_enable;
   target_flags &= ~processor_target_table[ix86_cpu].target_disable;
+
+  /* Arrange to set up i386_stack_locals for all functions.  */
+  init_machine_status = ix86_init_machine_status;
 
   /* Validate registers in register allocation order.  */
   if (ix86_reg_alloc_order)
@@ -4940,58 +4956,23 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx, scratch)
   emit_label (end_0_label);
 }
 
-#define MAX_386_STACK_LOCALS 2
-
-static rtx ix86_stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
-
-/* Define the structure for the machine field in struct function.  */
-struct machine_function
-{
-  rtx ix86_stack_locals[(int) MAX_MACHINE_MODE][MAX_386_STACK_LOCALS];
-};
-
-/* Functions to save and restore ix86_stack_locals.
-   These will be called, via pointer variables,
-   from push_function_context and pop_function_context.  */
-
-void
-save_386_machine_status (p)
-     struct function *p;
-{
-  p->machine
-    = (struct machine_function *) xmalloc (sizeof (struct machine_function));
-  bcopy ((char *) ix86_stack_locals, (char *) p->machine->ix86_stack_locals,
-	 sizeof ix86_stack_locals);
-}
-
-void
-restore_386_machine_status (p)
-     struct function *p;
-{
-  bcopy ((char *) p->machine->ix86_stack_locals, (char *) ix86_stack_locals,
-	 sizeof ix86_stack_locals);
-  free (p->machine);
-  p->machine = NULL;
-}
-
 /* Clear stack slot assignments remembered from previous functions.
    This is called from INIT_EXPANDERS once before RTL is emitted for each
    function.  */
 
-void
-clear_386_stack_locals ()
+static void
+ix86_init_machine_status (p)
+    struct function *p;
 {
   enum machine_mode mode;
   int n;
+  p->machine
+    = (struct machine_function *) xmalloc (sizeof (struct machine_function));
 
   for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
        mode = (enum machine_mode) ((int) mode + 1))
     for (n = 0; n < MAX_386_STACK_LOCALS; n++)
       ix86_stack_locals[(int) mode][n] = NULL_RTX;
-
-  /* Arrange to save and restore ix86_stack_locals around nested functions.  */
-  save_machine_status = save_386_machine_status;
-  restore_machine_status = restore_386_machine_status;
 }
 
 /* Return a MEM corresponding to a stack slot with mode MODE.

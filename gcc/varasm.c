@@ -85,6 +85,48 @@ extern struct obstack *rtl_obstack;
 extern struct obstack permanent_obstack;
 #define obstack_chunk_alloc xmalloc
 
+struct addr_const;
+struct constant_descriptor;
+struct rtx_const;
+struct pool_constant;
+
+#define MAX_RTX_HASH_TABLE 61
+
+struct varasm_status
+{
+  /* Hash facility for making memory-constants
+     from constant rtl-expressions.  It is used on RISC machines
+     where immediate integer arguments and constant addresses are restricted
+     so that such constants must be stored in memory.
+
+     This pool of constants is reinitialized for each function
+     so each function gets its own constants-pool that comes right before
+     it.  */
+  struct constant_descriptor **x_const_rtx_hash_table;
+  struct pool_sym **x_const_rtx_sym_hash_table;
+
+  /* Pointers to first and last constant in pool.  */
+  struct pool_constant *x_first_pool, *x_last_pool;
+
+  /* Current offset in constant pool (does not include any machine-specific
+     header.  */
+  int x_pool_offset;
+
+  /* Chain of all CONST_DOUBLE rtx's constructed for the current function.
+     They are chained through the CONST_DOUBLE_CHAIN.
+     A CONST_DOUBLE rtx has CONST_DOUBLE_MEM != cc0_rtx iff it is on this chain.
+     In that case, CONST_DOUBLE_MEM is either a MEM,
+     or const0_rtx if no MEM has been made for this CONST_DOUBLE yet.  */
+  rtx x_const_double_chain;
+};
+
+#define const_rtx_hash_table (current_function->varasm->x_const_rtx_hash_table)
+#define const_rtx_sym_hash_table (current_function->varasm->x_const_rtx_sym_hash_table)
+#define first_pool (current_function->varasm->x_first_pool)
+#define last_pool (current_function->varasm->x_last_pool)
+#define pool_offset (current_function->varasm->x_pool_offset)
+#define const_double_chain (current_function->varasm->x_const_double_chain)
+
 /* Number for making the label on the next
    constant that is stored in memory.  */
 
@@ -111,11 +153,6 @@ tree last_assemble_variable_decl;
 
 static int function_defined;
 
-struct addr_const;
-struct constant_descriptor;
-struct rtx_const;
-struct pool_constant;
-
 static const char *strip_reg_name	PROTO((const char *));
 static int contains_pointers_p		PROTO((tree));
 static void decode_addr_const		PROTO((tree, struct addr_const *));
@@ -134,7 +171,7 @@ static int compare_constant_rtx		PROTO((enum machine_mode, rtx,
 					       struct constant_descriptor *));
 static struct constant_descriptor *record_constant_rtx PROTO((enum machine_mode,
 							      rtx));
-static struct pool_constant *find_pool_constant PROTO((rtx));
+static struct pool_constant *find_pool_constant PROTO((struct function *, rtx));
 static void mark_constant_pool		PROTO((void));
 static void mark_constants		PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
@@ -1960,17 +1997,6 @@ assemble_real (d, mode)
 /* Here we combine duplicate floating constants to make
    CONST_DOUBLE rtx's, and force those out to memory when necessary.  */
 
-/* Chain of all CONST_DOUBLE rtx's constructed for the current function.
-   They are chained through the CONST_DOUBLE_CHAIN.
-   A CONST_DOUBLE rtx has CONST_DOUBLE_MEM != cc0_rtx iff it is on this chain.
-   In that case, CONST_DOUBLE_MEM is either a MEM,
-   or const0_rtx if no MEM has been made for this CONST_DOUBLE yet.
-
-   (CONST_DOUBLE_MEM is used only for top-level functions.
-   See force_const_mem for explanation.)  */
-
-static rtx const_double_chain;
-
 /* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair of ints.
    For an integer, I0 is the low-order word and I1 is the high-order word.
    For a real number, I0 is the word with the low address
@@ -2045,11 +2071,11 @@ immed_double_const (i0, i1, mode)
 
   /* Search the chain for an existing CONST_DOUBLE with the right value.
      If one is found, return it.  */
-
-  for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
-    if (CONST_DOUBLE_LOW (r) == i0 && CONST_DOUBLE_HIGH (r) == i1
-	&& GET_MODE (r) == mode)
-      return r;
+  if (current_function != 0)
+    for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
+      if (CONST_DOUBLE_LOW (r) == i0 && CONST_DOUBLE_HIGH (r) == i1
+	  && GET_MODE (r) == mode)
+	return r;
 
   /* No; make a new one and add it to the chain.
 
@@ -2064,9 +2090,8 @@ immed_double_const (i0, i1, mode)
   r = gen_rtx_CONST_DOUBLE (mode, NULL_RTX, i0, i1);
   pop_obstacks ();
 
-  /* Don't touch const_double_chain in nested function; see force_const_mem.
-     Also, don't touch it if not inside any function.  */
-  if (outer_function_chain == 0 && current_function_decl != 0)
+  /* Don't touch const_double_chain if not inside any function.  */
+  if (current_function_decl != 0)
     {
       CONST_DOUBLE_CHAIN (r) = const_double_chain;
       const_double_chain = r;
@@ -2118,11 +2143,11 @@ immed_real_const_1 (d, mode)
 
   /* Search the chain for an existing CONST_DOUBLE with the right value.
      If one is found, return it.  */
-
-  for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
-    if (! bcmp ((char *) &CONST_DOUBLE_LOW (r), (char *) &u, sizeof u)
-	&& GET_MODE (r) == mode)
-      return r;
+  if (current_function != 0)
+    for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
+      if (! bcmp ((char *) &CONST_DOUBLE_LOW (r), (char *) &u, sizeof u)
+	  && GET_MODE (r) == mode)
+	return r;
 
   /* No; make a new one and add it to the chain.
 
@@ -2131,17 +2156,15 @@ immed_real_const_1 (d, mode)
      we will be leaving this constant on the chain, so we cannot tolerate
      freed memory.  So switch to saveable_obstack for this allocation
      and then switch back if we were in current_obstack.  */
-
   push_obstacks_nochange ();
   rtl_in_saveable_obstack ();
   r = rtx_alloc (CONST_DOUBLE);
+  pop_obstacks ();
   PUT_MODE (r, mode);
   bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (r), sizeof u);
-  pop_obstacks ();
 
-  /* Don't touch const_double_chain in nested function; see force_const_mem.
-     Also, don't touch it if not inside any function.  */
-  if (outer_function_chain == 0 && current_function_decl != 0)
+  /* Don't touch const_double_chain if not inside any function.  */
+  if (current_function_decl != 0)
     {
       CONST_DOUBLE_CHAIN (r) = const_double_chain;
       const_double_chain = r;
@@ -2174,11 +2197,6 @@ void
 clear_const_double_mem ()
 {
   register rtx r, next;
-
-  /* Don't touch CONST_DOUBLE_MEM for nested functions.
-     See force_const_mem for explanation.  */
-  if (outer_function_chain != 0)
-    return;
 
   for (r = const_double_chain; r; r = next)
     {
@@ -3110,20 +3128,6 @@ output_constant_def_contents (exp, reloc, labelno)
 
 }
 
-/* Similar hash facility for making memory-constants
-   from constant rtl-expressions.  It is used on RISC machines
-   where immediate integer arguments and constant addresses are restricted
-   so that such constants must be stored in memory.
-
-   This pool of constants is reinitialized for each function
-   so each function gets its own constants-pool that comes right before it.
-
-   All structures allocated here are discarded when functions are saved for
-   inlining, so they do not need to be allocated permanently.  */
-
-#define MAX_RTX_HASH_TABLE 61
-static struct constant_descriptor **const_rtx_hash_table;
-
 /* Structure to represent sufficient information about a constant so that
    it can be output when the constant pool is output, so that function
    integration can be done, and to simplify handling on machines that reference
@@ -3141,15 +3145,6 @@ struct pool_constant
   int mark;
 };
 
-/* Pointers to first and last constant in pool.  */
-
-static struct pool_constant *first_pool, *last_pool;
-
-/* Current offset in constant pool (does not include any machine-specific
-   header.  */
-
-static int pool_offset;
-
 /* Structure used to maintain hash table mapping symbols used to their
    corresponding constants.  */
 
@@ -3160,63 +3155,35 @@ struct pool_sym
   struct pool_sym *next;
 };
 
-static struct pool_sym **const_rtx_sym_hash_table;
-
 /* Hash code for a SYMBOL_REF with CONSTANT_POOL_ADDRESS_P true.
    The argument is XSTR (... , 0)  */
 
 #define SYMHASH(LABEL)	\
   ((((unsigned long) (LABEL)) & ((1 << HASHBITS) - 1))  % MAX_RTX_HASH_TABLE)
 
-/* Initialize constant pool hashing for next function.  */
+/* Initialize constant pool hashing for a new function.  */
 
 void
-init_const_rtx_hash_table ()
+init_varasm_status (f)
+     struct function *f;
 {
-  const_rtx_hash_table
+  struct varasm_status *p;
+  p = (struct varasm_status *) xmalloc (sizeof (struct varasm_status));
+  f->varasm = p;
+  p->x_const_rtx_hash_table
     = ((struct constant_descriptor **)
-       oballoc (MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *)));
-  const_rtx_sym_hash_table
+       xmalloc (MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *)));
+  p->x_const_rtx_sym_hash_table
     = ((struct pool_sym **)
-       oballoc (MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *)));
-  bzero ((char *) const_rtx_hash_table,
+       xmalloc (MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *)));
+  bzero ((char *) p->x_const_rtx_hash_table,
 	 MAX_RTX_HASH_TABLE * sizeof (struct constant_descriptor *));
-  bzero ((char *) const_rtx_sym_hash_table,
+  bzero ((char *) p->x_const_rtx_sym_hash_table,
 	 MAX_RTX_HASH_TABLE * sizeof (struct pool_sym *));
 
-  first_pool = last_pool = 0;
-  pool_offset = 0;
-}
-
-/* Save and restore status for a nested function.  */
-
-void
-save_varasm_status (p, context)
-     struct function *p;
-     tree context;
-{
-  p->const_rtx_hash_table = const_rtx_hash_table;
-  p->const_rtx_sym_hash_table = const_rtx_sym_hash_table;
-  p->first_pool = first_pool;
-  p->last_pool = last_pool;
-  p->pool_offset = pool_offset;
-  p->const_double_chain = const_double_chain;
-
-  /* If we are pushing to toplevel, we can't reuse const_double_chain.  */
-  if (context == NULL_TREE)
-    const_double_chain = 0;
-}
-
-void
-restore_varasm_status (p)
-     struct function *p;
-{
-  const_rtx_hash_table = p->const_rtx_hash_table;
-  const_rtx_sym_hash_table = p->const_rtx_sym_hash_table;
-  first_pool = p->first_pool;
-  last_pool = p->last_pool;
-  pool_offset = p->pool_offset;
-  const_double_chain = p->const_double_chain;
+  p->x_first_pool = p->x_last_pool = 0;
+  p->x_pool_offset = 0;
+  p->x_const_double_chain = 0;
 }
 
 enum kind { RTX_DOUBLE, RTX_INT };
@@ -3439,15 +3406,10 @@ force_const_mem (mode, x)
      modes in an alternating fashion, we will allocate a lot of different
      memory locations, but this should be extremely rare.  */
 
-  /* Don't use CONST_DOUBLE_MEM in a nested function.
-     Nested functions have their own constant pools,
-     so they can't share the same values in CONST_DOUBLE_MEM
-     with the containing function.  */
-  if (outer_function_chain == 0)
-    if (GET_CODE (x) == CONST_DOUBLE
-	&& GET_CODE (CONST_DOUBLE_MEM (x)) == MEM
-	&& GET_MODE (CONST_DOUBLE_MEM (x)) == mode)
-      return CONST_DOUBLE_MEM (x);
+  if (GET_CODE (x) == CONST_DOUBLE
+      && GET_CODE (CONST_DOUBLE_MEM (x)) == MEM
+      && GET_MODE (CONST_DOUBLE_MEM (x)) == mode)
+    return CONST_DOUBLE_MEM (x);
 
   /* Compute hash code of X.  Search the descriptors for that hash code
      to see if any of them describes X.  If yes, the descriptor records
@@ -3558,16 +3520,15 @@ force_const_mem (mode, x)
   CONSTANT_POOL_ADDRESS_P (XEXP (def, 0)) = 1;
   current_function_uses_const_pool = 1;
 
-  if (outer_function_chain == 0)
-    if (GET_CODE (x) == CONST_DOUBLE)
-      {
-	if (CONST_DOUBLE_MEM (x) == cc0_rtx)
-	  {
-	    CONST_DOUBLE_CHAIN (x) = const_double_chain;
-	    const_double_chain = x;
-	  }
-	CONST_DOUBLE_MEM (x) = def;
-      }
+  if (GET_CODE (x) == CONST_DOUBLE)
+    {
+      if (CONST_DOUBLE_MEM (x) == cc0_rtx)
+	{
+	  CONST_DOUBLE_CHAIN (x) = const_double_chain;
+	  const_double_chain = x;
+	}
+      CONST_DOUBLE_MEM (x) = def;
+    }
 
   return def;
 }
@@ -3576,13 +3537,14 @@ force_const_mem (mode, x)
    the corresponding pool_constant structure.  */
 
 static struct pool_constant *
-find_pool_constant (addr)
+find_pool_constant (f, addr)
+     struct function *f;
      rtx addr;
 {
   struct pool_sym *sym;
   char *label = XSTR (addr, 0);
 
-  for (sym = const_rtx_sym_hash_table[SYMHASH (label)]; sym; sym = sym->next)
+  for (sym = f->varasm->x_const_rtx_sym_hash_table[SYMHASH (label)]; sym; sym = sym->next)
     if (sym->label == label)
       return sym->pool;
 
@@ -3595,7 +3557,17 @@ rtx
 get_pool_constant (addr)
      rtx addr;
 {
-  return (find_pool_constant (addr))->constant;
+  return (find_pool_constant (current_function, addr))->constant;
+}
+
+/* Likewise, but for the constant pool of a specific function.  */
+
+rtx
+get_pool_constant_for_function (f, addr)
+     struct function *f;
+     rtx addr;
+{
+  return (find_pool_constant (f, addr))->constant;
 }
 
 /* Similar, return the mode.  */
@@ -3604,7 +3576,15 @@ enum machine_mode
 get_pool_mode (addr)
      rtx addr;
 {
-  return (find_pool_constant (addr))->mode;
+  return (find_pool_constant (current_function, addr))->mode;
+}
+
+enum machine_mode
+get_pool_mode_for_function (f, addr)
+     struct function *f;
+     rtx addr;
+{
+  return (find_pool_constant (f, addr))->mode;
 }
 
 /* Similar, return the offset in the constant pool.  */
@@ -3613,7 +3593,7 @@ int
 get_pool_offset (addr)
      rtx addr;
 {
-  return (find_pool_constant (addr))->offset;
+  return (find_pool_constant (current_function, addr))->offset;
 }
 
 /* Return the size of the constant pool.  */
@@ -3786,14 +3766,11 @@ mark_constants (x)
   if (GET_CODE (x) == SYMBOL_REF)
     {
       if (CONSTANT_POOL_ADDRESS_P (x))
-	find_pool_constant (x)->mark = 1;
+	find_pool_constant (current_function, x)->mark = 1;
       return;
     }
   /* Never search inside a CONST_DOUBLE, because CONST_DOUBLE_MEM may be
-     a MEM, but does not constitute a use of that MEM.  This is particularly
-     important inside a nested function, because CONST_DOUBLE_MEM may be
-     a reference to a MEM in the parent's constant pool.  See the comment
-     in force_const_mem.  */
+     a MEM, but does not constitute a use of that MEM.  */
   else if (GET_CODE (x) == CONST_DOUBLE)
     return;
 

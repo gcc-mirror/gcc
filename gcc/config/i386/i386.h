@@ -1603,13 +1603,6 @@ do									\
   }									\
 while (0)
 
-/* Initialize data used by insn expanders.  This is called from
-   init_emit, once for each function, before code is generated.
-   For 386, clear stack slot assignments remembered from previous
-   functions. */
-
-#define INIT_EXPANDERS clear_386_stack_locals ()
-
 /* The `FINALIZE_PIC' macro serves as a hook to emit these special
    codes once the function is being compiled into assembly code, but
    not before.  (It is not done before, because in the case of
@@ -2498,9 +2491,6 @@ extern void ix86_split_ashrdi XPARAMS((xrtx *, xrtx));
 extern void ix86_split_lshrdi XPARAMS((xrtx *, xrtx));
 extern void ix86_expand_strlensi_unroll_1 XPARAMS((xrtx, xrtx, xrtx));
 
-extern void save_386_machine_status XPARAMS((struct function *));
-extern void restore_386_machine_status XPARAMS((struct function *));
-extern void clear_386_stack_locals XPARAMS((void));
 extern xrtx assign_386_stack_local XPARAMS((xmode, int));
 extern int ix86_attr_length_default XPARAMS((xrtx));
 
