@@ -1,3 +1,9 @@
+2004-08-25  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* expr.c (gfc_check_assign): Add comment. Add new warning.
+	* trans-expr.c (gfc_conv_function_call): Correctly dereference
+ 	result of pointer valued function when not in pointer assignment.
+
 2004-08-25  Paul Brook  <paul@codesourcery.com>
 
 	* config-lang.in: Remove dead commented line.
