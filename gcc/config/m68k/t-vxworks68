@@ -7,7 +7,7 @@ LIB1ASMFUNCS = _mulsi3 _udivsi3 _divsi3 _umodsi3 _modsi3 \
 
 # We don't want to put exit in libgcc.a for VxWorks, because VxWorks
 # does not have _exit.
-LIBGCC2_CFLAGS = -O2 $(GCC_CFLAGS) -g1 -Dexit=unused_exit
+TARGET_LIBGCC2_CFLAGS = -Dexit=unused_exit
 
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so...
