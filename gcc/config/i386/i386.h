@@ -473,6 +473,26 @@ extern int x86_prefetch_sse;
 %n`-mno-intel-syntax' is deprecated. Use `-masm=att' instead.\n}"
 #endif
 
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()			\
+  do							\
+    {							\
+      if (TARGET_64BIT)					\
+	{						\
+	  builtin_assert ("cpu=x86_64");		\
+	  builtin_assert ("machine=x86_64");		\
+	  builtin_define ("__x86_64");			\
+	  builtin_define ("__x86_64__");		\
+	}						\
+      else						\
+	{						\
+	  builtin_assert ("cpu=i386");			\
+	  builtin_assert ("machine=i386");		\
+	  builtin_define_std ("i386");			\
+	}						\
+    }							\
+  while (0)
+
 #define TARGET_CPU_DEFAULT_i386 0
 #define TARGET_CPU_DEFAULT_i486 1
 #define TARGET_CPU_DEFAULT_pentium 2
@@ -535,14 +555,7 @@ extern int x86_prefetch_sse;
 #endif
 #endif /* CPP_CPU_DEFAULT_SPEC */
 
-#define CPP_CPU32_SPEC \
-  "-Acpu=i386 -Amachine=i386 %{!ansi:%{!std=c*:%{!std=i*:-Di386}}} -D__i386 \
--D__i386__"
-
-#define CPP_CPU64_SPEC \
-  "-Acpu=x86_64 -Amachine=x86_64 -D__x86_64 -D__x86_64__"
-
-#define CPP_CPUCOMMON_SPEC "\
+#define CPP_CPU_SPEC "\
 %{march=i386:%{!mcpu*:-D__tune_i386__ }}\
 %{march=i486:-D__i486 -D__i486__ %{!mcpu*:-D__tune_i486__ }}\
 %{march=pentium|march=i586:-D__i586 -D__i586__ -D__pentium -D__pentium__ \
@@ -589,22 +602,6 @@ extern int x86_prefetch_sse;
 %{march=pentium4: -D__SSE2__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 
-#ifndef CPP_CPU_SPEC
-#ifdef TARGET_BI_ARCH
-#if TARGET_64BIT_DEFAULT
-#define CPP_CPU_SPEC "%{m32:%(cpp_cpu32)}%{!m32:%(cpp_cpu64)} %(cpp_cpucommon)"
-#else
-#define CPP_CPU_SPEC "%{m64:%(cpp_cpu64)}%{!m64:%(cpp_cpu32)} %(cpp_cpucommon)"
-#endif
-#else
-#if TARGET_64BIT_DEFAULT
-#define CPP_CPU_SPEC "%(cpp_cpu64) %(cpp_cpucommon)"
-#else
-#define CPP_CPU_SPEC "%(cpp_cpu32) %(cpp_cpucommon)"
-#endif
-#endif
-#endif
-
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
 #endif
@@ -626,9 +623,6 @@ extern int x86_prefetch_sse;
 #define EXTRA_SPECS							\
   { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
   { "cpp_cpu",	CPP_CPU_SPEC },						\
-  { "cpp_cpu32", CPP_CPU32_SPEC },					\
-  { "cpp_cpu64", CPP_CPU64_SPEC },					\
-  { "cpp_cpucommon", CPP_CPUCOMMON_SPEC },				\
   { "cc1_cpu",  CC1_CPU_SPEC },						\
   SUBTARGET_EXTRA_SPECS
 
