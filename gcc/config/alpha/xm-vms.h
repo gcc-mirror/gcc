@@ -68,6 +68,7 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_VPRINTF
 #define HAVE_PUTENV
 #define HAVE_STRERROR
+#define HAVE_ATOLL
 
 #define NO_SYS_PARAMS_H		/* Don't have <sys/params.h> */
 #define NO_STAB_H		/* Don't have <stab.h> */

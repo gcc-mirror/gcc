@@ -558,6 +558,43 @@ read_name (str, infile)
   *p = 0;
 }
 
+/* Provide a version of a function to read a long long if the system does
+   not provide one.  */
+#if HOST_BITS_PER_WIDE_INT > HOST_BITS_PER_LONG && !defined(HAVE_ATOLL) && !defined(HAVE_ATOQ)
+HOST_WIDE_INT
+atoll(p)
+    const char *p;
+{
+  int neg = 0;
+  HOST_WIDE_INT tmp_wide;
+
+  while (isspace(*p))
+    p++;
+  if (*p == '-')
+    neg = 1, p++;
+  else if (*p == '+')
+    p++;
+
+  tmp_wide = 0;
+  while (isdigit(*p))
+    {
+      HOST_WIDE_INT new_wide = tmp_wide*10 + (*p - '0');
+      if (new_wide < tmp_wide)
+	{
+	  /* Return INT_MAX equiv on overflow.  */
+	  tmp_wide = (~(unsigned HOST_WIDE_INT)0) >> 1;
+	  break;
+	}
+      tmp_wide = new_wide;
+      p++;
+    }
+
+  if (neg)
+    tmp_wide = -tmp_wide;
+  return tmp_wide;
+}
+#endif
+
 /* Read an rtx in printed representation from INFILE
    and return an actual rtx in core constructed accordingly.
    read_rtx is not used in the compiler proper, but rather in
@@ -768,12 +805,12 @@ read_rtx (infile)
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 	tmp_wide = atol (tmp_char);
 #else
-#ifdef HAVE_ATOLL
+	/* Prefer atoll over atoq, since the former is in the ISO C9X draft. 
+	   But prefer not to use our hand-rolled function above either.  */
+#if defined(HAVE_ATOLL) || !defined(HAVE_ATOQ)
 	tmp_wide = atoll (tmp_char);
 #else
-#ifdef HAVE_ATOQ
 	tmp_wide = atoq (tmp_char);
-#endif
 #endif
 #endif
 #endif
