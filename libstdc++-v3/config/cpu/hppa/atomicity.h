@@ -61,7 +61,8 @@ namespace __gnu_cxx
 			  "nop\n\t"
 			  "b,n .-20"
 			  : "=&r" (tmp)
-			  : "r" (&lock));
+			  : "r" (&lock)
+			  : "memory");
     
     result = *__mem;
     *__mem = result + __val;
@@ -85,7 +86,8 @@ namespace __gnu_cxx
 			  "nop\n\t"
 			  "b,n .-20"
 			  : "=&r" (tmp)
-			  : "r" (&lock));
+			  : "r" (&lock)
+			  : "memory");
     
     *__mem += __val;
     /* Reset lock with PA 2.0 "ordered" store.  */
