@@ -1,0 +1,41 @@
+# Name of assembly file containing libgcc1 functions.
+# This entry must be present, but it can be empty if the target does
+# not need any assembler functions to support its code generation.
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIBGCC1 = libgcc1-asm.a
+LIB1ASMSRC    = ia64/lib1funcs.asm
+
+# ??? We change the names of the DImode div/mod files so that they won't
+# accidentally be overridden by libgcc2.c files.  We used to use __ia64 as
+# a prefix, now we use __ as the prefix.
+LIB1ASMFUNCS  = __divdf3 __divsf3 \
+	__divdi3 __moddi3 __udivdi3 __umoddi3 \
+	__divsi3 __modsi3 __udivsi3 __umodsi3 __save_stack_nonlocal \
+	__nonlocal_goto
+
+# ??? Hack to get -P option used when compiling lib1funcs.asm, because Intel
+# assembler does not accept # line number as a comment.
+# ??? This breaks C++ pragma interface/implementation, which is used in the
+# C++ part of libgcc2, hence it had to be disabled.  Must find some other way
+# to support the Intel assembler.
+#LIBGCC2_DEBUG_CFLAGS = -g1 -P
+
+# For svr4 we build crtbegin.o and crtend.o which serve to add begin and
+# end labels to the .ctors and .dtors section when we link using gcc.
+
+EXTRA_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o
+
+# Effectively disable the crtbegin/end rules using crtstuff.c
+T = disable
+
+# Assemble startup files.
+crtbegin.o: $(srcdir)/config/ia64/crtbegin.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtbegin.o -x assembler-with-cpp $(srcdir)/config/ia64/crtbegin.asm
+crtend.o: $(srcdir)/config/ia64/crtend.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -c -o crtend.o -x assembler-with-cpp $(srcdir)/config/ia64/crtend.asm
+crtbeginS.o: $(srcdir)/config/ia64/crtbegin.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -DSHARED -c -o crtbeginS.o -x assembler-with-cpp $(srcdir)/config/ia64/crtbegin.asm
+crtendS.o: $(srcdir)/config/ia64/crtend.asm $(GCC_PASSES)
+	$(GCC_FOR_TARGET) -DSHARED -c -o crtendS.o -x assembler-with-cpp $(srcdir)/config/ia64/crtend.asm
+
+EXTRA_HEADERS = $(srcdir)/config/ia64/ia64intrin.h

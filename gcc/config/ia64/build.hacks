@@ -1,0 +1,97 @@
+The gcse.c patch fixes an optimization problem.  This is probably not the right
+solution, but it was quick.  I will replace with a better solution later.
+
+The libio/libstdc++ patches are useful if you have a version of glibc without
+thread support.  There is no official ia64 glibc version yet, and some of the
+unofficial ones in common use are missing thread support.  libio/libstdc++
+assume that glibc always has thread support, so we need to patch them until
+the official ia64 glibc is available.
+
+Index: gcc/gcse.c
+===================================================================
+RCS file: /cvs/cvsfiles/devo/gcc/gcse.c,v
+retrieving revision 1.87
+diff -p -r1.87 gcse.c
+*** gcse.c	2000/01/11 14:59:28	1.87
+--- gcse.c	2000/02/16 04:17:06
+*************** try_replace_reg (from, to, insn)
+*** 4039,4045 ****
+       information.  */
+    if (!success && !note)
+      {
+!       if (!set)
+  	return 0;
+        note = REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+  						   copy_rtx (SET_SRC (set)),
+--- 4039,4048 ----
+       information.  */
+    if (!success && !note)
+      {
+!       /* Don't add a REG_EQUAL note for a CCmode destination, because this
+! 	 confuses the code in cse.c that simplifies compare and branch
+! 	 instructions.  */
+!       if (!set || GET_MODE_CLASS (GET_MODE (SET_DEST (set))) == MODE_CC)
+  	return 0;
+        note = REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL,
+  						   copy_rtx (SET_SRC (set)),
+Index: libio/configure.in
+===================================================================
+RCS file: /cvs/cvsfiles/devo/libio/configure.in,v
+retrieving revision 1.57
+diff -p -r1.57 configure.in
+*** configure.in	1999/10/26 03:42:26	1.57
+--- configure.in	2000/02/16 04:17:56
+*************** case "${target}" in
+*** 57,62 ****
+--- 57,64 ----
+  		 frags="linux.mt linuxaxp1.mt mtsafe.mt" ;;
+    *-linux-gnulibc1)
+  		 frags=linuxlibc1.mt ;;
++   # ??? glibc does not have thread support yet, so we can't use mtsafe.mt.
++   ia64*-linux-gnu) frags="linux.mt" ;;
+    *-linux-gnu)   frags="linux.mt mtsafe.mt" ;;
+    *-sco3.2v[45]*)   frags=sco4.mt ;;
+    *-isc*)        frags=isc.mt ;;
+Index: libstdc++/configure.in
+===================================================================
+RCS file: /cvs/cvsfiles/devo/libstdc++/configure.in,v
+retrieving revision 1.46
+diff -p -r1.46 configure.in
+*** configure.in	1999/09/21 19:26:16	1.46
+--- configure.in	2000/02/16 04:17:57
+*************** fi
+*** 89,94 ****
+--- 89,96 ----
+  case "${target}" in
+    alpha*-*-linux-gnulibc1)	frags="${frags} linux.mt" ;;
+    powerpc*-*-linux-gnulibc1)	frags="${frags} linux.mt" ;;
++   # ??? ia64 glibc port does not have thread support yet.
++   ia64*-*-linux-gnu)		;;
+    *-*-linux-gnu)		frags="${frags} linux.mt" ;;
+    *-*-openbsd*)		
+    	case "x${enable_threads}" in
+Index: libstdc++/stl/stl_config.h
+===================================================================
+RCS file: /cvs/cvsfiles/devo/libstdc++/stl/stl_config.h,v
+retrieving revision 1.17
+diff -p -r1.17 stl_config.h
+*** stl_config.h	1999/12/24 16:21:31	1.17
+--- stl_config.h	2000/02/16 04:17:58
+***************
+*** 168,174 ****
+  #   if defined(__linux__)
+       /* glibc pre 2.0 is very buggy. We have to disable thread for it.
+          It should be upgraded to glibc 2.0 or later. */
+! #    if !defined(_NOTHREADS) && __GLIBC__ >= 2 && defined(_G_USING_THUNKS)
+  #      define __STL_PTHREADS
+  #      ifdef __STRICT_ANSI__
+           /* Work around a bug in the glibc 2.0.x pthread.h.  */
+--- 168,175 ----
+  #   if defined(__linux__)
+       /* glibc pre 2.0 is very buggy. We have to disable thread for it.
+          It should be upgraded to glibc 2.0 or later. */
+!      /* ??? ia64 glibc port does not have thread support yet.  */
+! #    if !defined(_NOTHREADS) && __GLIBC__ >= 2 && defined(_G_USING_THUNKS) && !defined(__ia64__)
+  #      define __STL_PTHREADS
+  #      ifdef __STRICT_ANSI__
+           /* Work around a bug in the glibc 2.0.x pthread.h.  */
