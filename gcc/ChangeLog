@@ -3,6 +3,11 @@
 	* target-defs.h (TARGET_SCHED_CYCLE_DISPLAY): Delete.
 	* target.h (struct gcc_target): Delete cycle_display member.
 
+	* config/ia64/ia64.c (ia64_emit_insn_before): Put it back.
+	(rtx_needs_barrier): Delete reference to cycle_display unspec.
+	(ia64_sched_reorder2): Mention need for cycle display handling
+	once such notes exist.
+	
 2002-05-03  Richard Henderson  <rth@redhat.com>
 
 	* real.c (etoasc): Strip most trailing zeros for clarity.

@@ -4602,7 +4602,6 @@ rtx_needs_barrier (x, flags, pred)
 	case 20: /* mov = ar.bsp */
 	case 21: /* flushrs */
 	case 22: /* bundle selector */
-	case 23: /* cycle display */
           break;
 
         case 24: /* addp4 */
@@ -5159,6 +5158,7 @@ int ia64_final_schedule = 0;
 static int itanium_split_issue PARAMS ((const struct ia64_packet *, int));
 static rtx ia64_single_set PARAMS ((rtx));
 static int insn_matches_slot PARAMS ((const struct ia64_packet *, enum attr_type, int, rtx));
+static void ia64_emit_insn_before PARAMS ((rtx, rtx));
 static void maybe_rotate PARAMS ((FILE *));
 static void finish_last_head PARAMS ((FILE *, int));
 static void rotate_one_bundle PARAMS ((FILE *));
@@ -5481,6 +5481,16 @@ insn_matches_slot (p, itype, slot, insn)
   return 0;
 }
 
+/* Like emit_insn_before, but skip cycle_display notes.
+   ??? When cycle display notes are implemented, update this.  */
+
+static void
+ia64_emit_insn_before (insn, before)
+     rtx insn, before;
+{
+  emit_insn_before (insn, before);
+}
+
 /* When rotating a bundle out of the issue window, insert a bundle selector
    insn in front of it.  DUMP is the scheduling dump file or NULL.  START
    is either 0 or 3, depending on whether we want to emit a bundle selector
@@ -5512,7 +5522,7 @@ finish_last_head (dump, start)
     fprintf (dump, "//    Emitting template before %d: %s\n",
 	     INSN_UID (insn), b->name);
 
-  emit_insn_before (gen_bundle_selector (GEN_INT (bundle_type)), insn);
+  ia64_emit_insn_before (gen_bundle_selector (GEN_INT (bundle_type)), insn);
 }
 
 /* We can't schedule more insns this cycle.  Fix up the scheduling state
@@ -6372,7 +6382,10 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 	    abort ();
 	  insn_code = recog_memoized (stop);
 
-	  /* Ignore .pred.rel.mutex.  */
+	  /* Ignore .pred.rel.mutex.
+
+	     ??? Update this to ignore cycle display notes too
+	     ??? once those are implemented  */
 	  if (insn_code == CODE_FOR_pred_rel_mutex
 	      || insn_code == CODE_FOR_prologue_use)
 	    continue;
@@ -6470,7 +6483,7 @@ ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
       int t = sched_data.first_slot;
       if (t == 0)
 	t = 3;
-      emit_insn_before (gen_insn_group_barrier (GEN_INT (t)), insn);
+      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (t)), insn);
       init_insn_group_barriers ();
       sched_data.last_was_stop = 0;
     }
