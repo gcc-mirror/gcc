@@ -5335,6 +5335,7 @@ fold (expr)
 			      0);
 	}
 
+#if 0 /* This is no longer useful, but breaks some real code.  */
       /* Assume a nonexplicit constant cannot equal an explicit one,
 	 since such code would be undefined anyway.
 	 Exception: on sysvr4, using #pragma weak,
@@ -5345,7 +5346,7 @@ fold (expr)
 	       && TREE_CODE (arg0) == ADDR_EXPR
 	       && code == EQ_EXPR)
 	t1 = build_int_2 (0, 0);
-
+#endif
       /* Two real constants can be compared explicitly.  */
       else if (TREE_CODE (arg0) == REAL_CST && TREE_CODE (arg1) == REAL_CST)
 	{
