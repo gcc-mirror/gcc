@@ -95,7 +95,7 @@ Boston, MA 02111-1307, USA.  */
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
-   4: DECL_MAYBE_TEMPLATE.
+   4: DECL_C_BIT_FIELD
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
@@ -1031,11 +1031,6 @@ extern int warn_ctor_dtor_privacy;
 
 extern int warn_return_type;
 
-/* If non-NULL, dump the tree structure for the entire translation
-   unit to this file.  */
-
-extern const char *flag_dump_translation_unit;
-
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */
 
@@ -1237,9 +1232,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* The type qualifiers for this type, including the qualifiers on the
    elements for an array type.  */
-#define CP_TYPE_QUALS(NODE)			\
-  ((TREE_CODE (NODE) != ARRAY_TYPE)		\
-   ? TYPE_QUALS (NODE) : cp_type_quals (NODE))
+#define CP_TYPE_QUALS(NODE) C_TYPE_QUALS (NODE)
 
 /* Nonzero if this type is const-qualified.  */
 #define CP_TYPE_CONST_P(NODE)				\
@@ -2485,14 +2478,6 @@ extern int flag_new_for_scope;
 
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
-
-/* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
-#define DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE)) == 1)
-#define SET_DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE)) = 1)
-#define CLEAR_DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE)) = 0)
 
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) \
@@ -4213,7 +4198,6 @@ extern void do_decl_instantiation		PARAMS ((tree, tree, tree));
 extern void do_type_instantiation		PARAMS ((tree, tree, int));
 extern tree instantiate_decl			PARAMS ((tree, int));
 extern tree get_bindings			PARAMS ((tree, tree, tree));
-extern void add_maybe_template			PARAMS ((tree, tree));
 extern void pop_tinst_level			PARAMS ((void));
 extern int more_specialized_class		PARAMS ((tree, tree));
 extern int is_member_template                   PARAMS ((tree));
@@ -4546,7 +4530,6 @@ extern tree convert_for_initialization		PARAMS ((tree, tree, tree, int, const ch
 extern int comp_ptr_ttypes			PARAMS ((tree, tree));
 extern int ptr_reasonably_similar		PARAMS ((tree, tree));
 extern tree build_ptrmemfunc			PARAMS ((tree, tree, int));
-extern tree strip_array_types                   PARAMS ((tree));
 extern int cp_type_quals                        PARAMS ((tree));
 extern int cp_has_mutable_p                     PARAMS ((tree));
 extern int at_least_as_qualified_p              PARAMS ((tree, tree));
@@ -4600,9 +4583,6 @@ extern void GNU_xref_assign			PARAMS ((tree));
 extern void GNU_xref_hier			PARAMS ((tree, tree, int, int, int));
 extern void GNU_xref_member			PARAMS ((tree, tree));
 
-/* in dump.c */
-extern void dump_node_to_file                   PARAMS ((tree, const char *));
-
 /* in mangle.c */
 extern void init_mangle                         PARAMS ((void));
 extern tree mangle_decl                         PARAMS ((tree));
@@ -4616,6 +4596,9 @@ extern tree mangle_ctor_vtbl_for_type           PARAMS ((tree, tree));
 extern tree mangle_thunk                        PARAMS ((tree, tree, tree));
 extern tree mangle_conv_op_name_for_type        PARAMS ((tree));
 extern tree mangle_guard_variable               PARAMS ((tree));
+
+/* in dump.c */
+extern int cp_dump_tree                         PARAMS ((dump_info_p, tree));
 
 /* -- end of C++ */
 

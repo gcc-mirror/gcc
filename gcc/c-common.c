@@ -149,6 +149,11 @@ int flag_no_builtin;
 
 int flag_no_nonansi_builtin;
 
+/* If non-NULL, dump the tree structure for the entire translation
+   unit to this file.  */
+
+const char *flag_dump_translation_unit;
+
 /* Nonzero means warn about possible violations of sequence point rules.  */
 
 int warn_sequence_point;
@@ -5396,6 +5401,19 @@ self_promoting_args_p (parms)
 	return 0;
     }
   return 1;
+}
+
+/* Recursively examines the array elements of TYPE, until a non-array
+   element type is found.  */
+
+tree
+strip_array_types (type)
+     tree type;
+{
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
+
+  return type;
 }
 
 /* Recognize certain built-in functions so we can make tree-codes

@@ -1,3 +1,26 @@
+2000-11-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (C_AND_OBJC_OBJS): Add c-dump.o.
+	(c-dump.o): New target.
+	* c-common.h (flag_dump_translation_unit): New variable.
+	(C_TYPE_QUALS): New macro.
+	(strip_array_types): New function.
+	(DECL_C_BIT_FIELD): New macro.
+	(SET_DECL_C_BIT_FIELD): Likewise.
+	(CLEAR_DECL_C_BIT_FIELD): Likewise.
+	(dump_info_p): New typedef.
+	(dump_tree_fn): Likewise.
+	(lang_dump_tree): New variable.
+	(dump_node_to_file): New function.
+	* c-common.c (flag_dump_translation_unit): Define it.
+	(strip_array_types): New function.
+	* c-decl.c (c_decode_option): Handle -fdump-translation-unit.
+	* c-lang.c (finish_file): Call dump_node_to_file if 
+	flag_dump_translation_unit.
+	* c-semantics.c (mark_rtl_for_local_static): Fix typo in comment.
+	* c-tree.h (DECL_C_BIT_FIELD): Remove declaration.
+	* c-dump.c: New file.
+	
 2000-11-09  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h: Add mingw startfile prefix.

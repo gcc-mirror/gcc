@@ -6967,19 +6967,6 @@ comp_ptr_ttypes_reinterpret (to, from)
     }
 }
 
-/* Recursively examines the array elements of TYPE, until a non-array
-   element type is found.  */
-
-tree
-strip_array_types (type)
-     tree type;
-{
-  while (TREE_CODE (type) == ARRAY_TYPE)
-    type = TREE_TYPE (type);
-
-  return type;
-}
-
 /* Returns the type-qualifier set corresponding to TYPE.  */
 
 int

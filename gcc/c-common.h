@@ -379,6 +379,11 @@ extern int flag_no_builtin;
 
 extern int flag_no_nonansi_builtin;
 
+/* If non-NULL, dump the tree structure for the entire translation
+   unit to this file.  */
+
+extern const char *flag_dump_translation_unit;
+
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;
@@ -397,6 +402,14 @@ extern int warn_conversion;
 
 #define C_TYPE_FUNCTION_P(type) \
   (TREE_CODE (type) == FUNCTION_TYPE)
+
+/* Return the qualifiers that apply to this type.  In C++, that means
+   descending through array types.  Note that this macro evaluates its
+   arguments mor than once.  */
+#define C_TYPE_QUALS(TYPE)				\
+  (TYPE_QUALS ((TREE_CODE (TYPE) == ARRAY_TYPE 		\
+		&& c_language == clk_cplusplus)		\
+	       ? strip_array_types (TYPE) : TYPE))
 
 /* For convenience we define a single macro to identify the class of
    object or incomplete types.  */
@@ -480,6 +493,7 @@ extern tree build_va_arg			PARAMS ((tree, tree));
 
 extern int self_promoting_args_p		PARAMS ((tree));
 extern tree simple_type_promotes_to		PARAMS ((tree));
+extern tree strip_array_types                   PARAMS ((tree));
 
 /* These macros provide convenient access to the various _STMT nodes.  */
 
@@ -657,6 +671,14 @@ extern int anon_aggr_type_p                     PARAMS ((tree));
    sub-variables that make up the anonymous union.  */
 #define DECL_ANON_UNION_ELEMS(NODE) DECL_ARGUMENTS ((NODE))
 
+/* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
+#define DECL_C_BIT_FIELD(NODE) \
+  (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) == 1)
+#define SET_DECL_C_BIT_FIELD(NODE) \
+  (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 1)
+#define CLEAR_DECL_C_BIT_FIELD(NODE) \
+  (DECL_LANG_FLAG_4 (FIELD_DECL_CHECK (NODE)) = 0)
+
 extern void emit_local_var                      PARAMS ((tree));
 extern void make_rtl_for_local_static           PARAMS ((tree));
 extern tree expand_cond                         PARAMS ((tree));
@@ -721,6 +743,20 @@ extern struct rtx_def *c_expand_expr            PARAMS ((tree, rtx,
 extern int c_safe_from_p                        PARAMS ((rtx, tree));
 
 #endif
+
+/* In dump.c */
+
+typedef struct dump_info *dump_info_p;
+
+/* A callback function used dump language-specific parts of tree
+   nodes.  Returns non-zero if it does not want the usual dumping of
+   the second argument.  */
+
+typedef int (*dump_tree_fn) PARAMS ((dump_info_p, tree));
+
+extern dump_tree_fn lang_dump_tree;
+
+extern void dump_node_to_file                   PARAMS ((tree, const char *));
 
 /* Information recorded about each file examined during compilation.  */
 

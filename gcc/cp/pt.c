@@ -5654,7 +5654,7 @@ tsubst_decl (t, args, type, in_decl)
 	/* We do NOT check for matching decls pushed separately at this
            point, as they may not represent instantiations of this
            template, and in any case are considered separate under the
-           discrete model.  Instead, see add_maybe_template.  */
+           discrete model.  */
 	r = copy_decl (t);
 	DECL_USE_TEMPLATE (r) = 0;
 	TREE_TYPE (r) = type;
@@ -9869,34 +9869,6 @@ tsubst_initializer_list (t, argvec)
       p = &TREE_CHAIN (*p);
     }
   return first;
-}
-
-/* D is an undefined function declaration in the presence of templates with
-   the same name, listed in FNS.  If one of them can produce D as an
-   instantiation, remember this so we can instantiate it at EOF if D has
-   not been defined by that time.  */
-
-void
-add_maybe_template (d, fns)
-     tree d, fns;
-{
-  tree t;
-
-  if (DECL_MAYBE_TEMPLATE (d))
-    return;
-
-  t = most_specialized (fns, d, NULL_TREE);
-  if (! t)
-    return;
-  if (t == error_mark_node)
-    {
-      cp_error ("ambiguous template instantiation for `%D'", d);
-      return;
-    }
-
-  *maybe_template_tail = tree_cons (t, d, NULL_TREE);
-  maybe_template_tail = &TREE_CHAIN (*maybe_template_tail);
-  DECL_MAYBE_TEMPLATE (d) = 1;
 }
 
 /* Set CURRENT_ACCESS_SPECIFIER based on the protection of DECL.  */
