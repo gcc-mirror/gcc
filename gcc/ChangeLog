@@ -1,3 +1,8 @@
+2004-09-02  Roman Zippel  <zippel@linux-m68k.org>
+ 
+	* combine.c (try_combine): Delay modifying of insns which cannot
+	be easily undone.
+
 2004-09-02  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcc/common.opt: Rename ivcanon to tree-loop-ivcanon, tree-lim to
