@@ -1,3 +1,17 @@
+2004-01-15  Roger Sayle  <roger@eyesopen.com>
+
+	* harg-reg-set.h (reg_class_names): Prototype global array.
+	* regclass.c (reg_class_names): Declare here and initialize to
+	REG_CLASS_NAMES.
+	(dump_regclass): Remove local declaration of reg_class_names.
+	(regclass): Likewise.
+	* cfg.c (dump_flow_info): Likewise.
+	* ra-debug.c (reg_class_names): Likewise.
+	* regrename.c (reg_class_names): Likewise.
+	* reload.c (reg_class_names): Likewise.
+	* reload1.c (spill_failure): Likewise.
+	* config/m68hc11/m68hc11.c (reg_class_names): Likewise.
+
 2005-01-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("reload_outti"): Remove predicate for

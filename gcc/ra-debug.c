@@ -1,5 +1,5 @@
 /* Graph coloring register allocator
-   Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004, 2005 Free Software Foundation, Inc.
    Contributed by Michael Matz <matz@suse.de>
    and Daniel Berlin <dan@cgsoftware.com>.
 
@@ -40,9 +40,6 @@ static void ra_print_rtx_1op (FILE *, rtx);
 static void ra_print_rtx_2op (FILE *, rtx);
 static void ra_print_rtx_3op (FILE *, rtx);
 static void ra_print_rtx_object (FILE *, rtx);
-
-/* The hardregs as names, for debugging.  */
-static const char *const reg_class_names[] = REG_CLASS_NAMES;
 
 /* Print a message to the dump file, if debug_new_regalloc and LEVEL
    have any bits in common.  */
