@@ -1,3 +1,7 @@
+2001-10-11  Pascal Obry <obry@gnat.com>
+	
+	* impunit.adb: Add GNAT.CRC32.
+
 2001-10-11  Ed Schonberg <schonber@gnat.com>
 
 	* exp_fixd.adb (Expand_Multiply_Fixed_By_Fixed_Giving_Fixed): handle 
