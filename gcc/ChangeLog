@@ -1,3 +1,16 @@
+2002-01-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * rs6000.c (altivec_expand_ternop_builtin): Don't die on invalid
+        arguments.
+        (altivec_expand_binop_builtin): Same.
+        (altivec_expand_unop_builtin): Same.
+        (print_operand): Fix typo.
+        (bdesc_1arg): Add vupk* variants.
+
+        * rs6000.h (rs6000_builtins): Add vupk* enums.
+
+        * rs6000.md: Add altivec_vupk* variants.
+
 2002-01-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi, doc/gccint.texi, doc/cppinternals.texi,

@@ -3375,6 +3375,12 @@ static const struct builtin_description bdesc_1arg[] =
   { MASK_ALTIVEC, CODE_FOR_altivec_vspltisb, "__builtin_altivec_vspltisb", ALTIVEC_BUILTIN_VSPLTISB },
   { MASK_ALTIVEC, CODE_FOR_altivec_vspltish, "__builtin_altivec_vspltish", ALTIVEC_BUILTIN_VSPLTISH },
   { MASK_ALTIVEC, CODE_FOR_altivec_vspltisw, "__builtin_altivec_vspltisw", ALTIVEC_BUILTIN_VSPLTISW },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vupkhsb, "__builtin_altivec_vupkhsb", ALTIVEC_BUILTIN_VUPKHSB },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vupkhpx, "__builtin_altivec_vupkhpx", ALTIVEC_BUILTIN_VUPKHPX },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vupkhsh, "__builtin_altivec_vupkhsh", ALTIVEC_BUILTIN_VUPKHSH },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vupklsb, "__builtin_altivec_vupklsb", ALTIVEC_BUILTIN_VUPKLSB },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vupklpx, "__builtin_altivec_vupklpx", ALTIVEC_BUILTIN_VUPKLPX },
+  { MASK_ALTIVEC, CODE_FOR_altivec_vupklsh, "__builtin_altivec_vupklsh", ALTIVEC_BUILTIN_VUPKLSH },
 };
 
 static rtx
@@ -3389,7 +3395,11 @@ altivec_expand_unop_builtin (icode, arglist, target)
   enum machine_mode tmode = insn_data[icode].operand[0].mode;
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
 
-  if (! target
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return target;
+
+  if (target != 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
@@ -3419,7 +3429,11 @@ altivec_expand_binop_builtin (icode, arglist, target)
   enum machine_mode mode0 = insn_data[icode].operand[1].mode;
   enum machine_mode mode1 = insn_data[icode].operand[2].mode;
 
-  if (! target
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node || arg1 == error_mark_node)
+    return target;
+
+  if (target != 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
@@ -3454,7 +3468,13 @@ altivec_expand_ternop_builtin (icode, arglist, target)
   enum machine_mode mode1 = insn_data[icode].operand[2].mode;
   enum machine_mode mode2 = insn_data[icode].operand[3].mode;
 
-  if (! target
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node
+      || arg1 == error_mark_node
+      || arg2 == error_mark_node)
+    return target;
+
+  if (target != 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
     target = gen_reg_rtx (tmode);
@@ -3497,7 +3517,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (! target
+      if (target != 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -3518,7 +3538,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (! target
+      if (target != 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -3539,7 +3559,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (! target
+      if (target != 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -3560,7 +3580,7 @@ altivec_expand_builtin (exp, target)
       tmode = insn_data[icode].operand[0].mode;
       mode0 = insn_data[icode].operand[1].mode;
 
-      if (! target
+      if (target != 0
 	  || GET_MODE (target) != tmode
 	  || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
 	target = gen_reg_rtx (tmode);
@@ -3716,6 +3736,7 @@ altivec_init_builtins (void)
   tree pshort_type_node = build_pointer_type (short_integer_type_node);
   tree pchar_type_node = build_pointer_type (char_type_node);
   tree pfloat_type_node = build_pointer_type (float_type_node);
+
   tree v4sf_ftype_v4sf_v4sf_v16qi
     = build_function_type (V4SF_type_node,
 			   tree_cons (NULL_TREE, V4SF_type_node,
@@ -3780,6 +3801,11 @@ altivec_init_builtins (void)
   tree v4sf_ftype_pfloat
     = build_function_type (V4SF_type_node,
 			   tree_cons (NULL_TREE, pfloat_type_node, endlink));
+
+  /* V8HI foo (V16QI).  */
+  tree v8hi_ftype_v16qi
+    = build_function_type (V8HI_type_node,
+			   tree_cons (NULL_TREE, V16QI_type_node, endlink));
 
   /* void foo (int *, V4SI).  */
   tree void_ftype_pint_v4si
@@ -3977,6 +4003,10 @@ altivec_init_builtins (void)
 			   tree_cons (NULL_TREE, V8HI_type_node,
 				      tree_cons (NULL_TREE, V4SI_type_node,
 						 endlink)));
+
+  tree v4si_ftype_v8hi
+    = build_function_type (V4SI_type_node,
+			   tree_cons (NULL_TREE, V8HI_type_node, endlink));
 
   tree int_ftype_v4si_v4si
     = build_function_type (integer_type_node,
@@ -4239,6 +4269,10 @@ altivec_init_builtins (void)
         type = v16qi_ftype_char;
       else if (mode0 == V4SFmode && mode1 == V4SFmode)
 	type = v4sf_ftype_v4sf;
+      else if (mode0 == V8HImode && mode1 == V16QImode)
+	type = v8hi_ftype_v16qi;
+      else if (mode0 == V4SImode && mode1 == V8HImode)
+	type = v4si_ftype_v8hi;
       else
 	abort ();
 
@@ -5525,7 +5559,7 @@ print_operand (file, x, code)
       /* If X is a constant integer whose low-order 5 bits are zero,
 	 write 'l'.  Otherwise, write 'r'.  This is a kludge to fix a bug
 	 in the AIX assembler where "sri" with a zero shift count
-	 write a trash instruction.  */
+	 writes a trash instruction.  */
       if (GET_CODE (x) == CONST_INT && (INTVAL (x) & 31) == 0)
 	putc ('l', file);
       else
