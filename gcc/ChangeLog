@@ -1,3 +1,7 @@
+2001-01-24  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* c4x.h (TARGET_LOAD_DIRECT_MEMS): Define.
+
 2001-01-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * c-lex.c (lex_charconst): Fix typo: s/p/str.
