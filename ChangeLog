@@ -1,3 +1,8 @@
+2003-01-25  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* MAINTAINERS: Remove incorrect entry for Paul Eggert.  Fix
+	entry of HJ Lu.
+
 2003-01-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Revert previous change.
