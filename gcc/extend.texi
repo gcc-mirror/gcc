@@ -2258,10 +2258,16 @@ inc (int *a)
 
 (If you are writing a header file to be included in ANSI C programs, write
 @code{__inline__} instead of @code{inline}.  @xref{Alternate Keywords}.)
-
 You can also make all ``simple enough'' functions inline with the option
-@samp{-finline-functions}.  Note that certain usages in a function
-definition can make it unsuitable for inline substitution.
+@samp{-finline-functions}. 
+
+Note that certain usages in a function definition can make it unsuitable
+for inline substitution.  Among these usages are: use of varargs, use of
+alloca, use of variable sized data types (@pxref{Variable Length}),
+use of computed goto (@pxref{Labels as Values}), use of nonlocal goto,
+and nested functions (@pxref{Nested Functions}).  Using @samp{-Winline}
+will warn when a function marked @code{inline} could not be substituted,
+and will give the reason for the failure.
 
 Note that in C and Objective C, unlike C++, the @code{inline} keyword
 does not affect the linkage of the function.
