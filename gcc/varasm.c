@@ -196,6 +196,9 @@ static enum in_section { no_section, in_text, in_data, in_named
 #ifdef DTORS_SECTION_ASM_OP
   , in_dtors
 #endif
+#ifdef READONLY_DATA_SECTION_ASM_OP
+  , in_readonly_data
+#endif
 #ifdef EXTRA_SECTIONS
   , EXTRA_SECTIONS
 #endif
@@ -234,12 +237,12 @@ text_section ()
 {
   if (in_section != in_text)
     {
+      in_section = in_text;
 #ifdef TEXT_SECTION
       TEXT_SECTION ();
 #else
       fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
 #endif
-      in_section = in_text;
     }
 }
 
@@ -250,6 +253,7 @@ data_section ()
 {
   if (in_section != in_data)
     {
+      in_section = in_data;
       if (flag_shared_data)
 	{
 #ifdef SHARED_SECTION_ASM_OP
@@ -260,8 +264,6 @@ data_section ()
 	}
       else
 	fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
-
-      in_section = in_data;
     }
 }
 
@@ -284,7 +286,16 @@ readonly_data_section ()
 #ifdef READONLY_DATA_SECTION
   READONLY_DATA_SECTION ();  /* Note this can call data_section.  */
 #else
+#ifdef READONLY_DATA_SECTION_ASM_OP
+  if (in_section != in_readonly_data)
+    {
+      in_section = in_readonly_data;
+      fputs (READONLY_DATA_SECTION_ASM_OP, asm_out_file);
+      fputc ('\n', asm_out_file);
+    }
+#else
   text_section ();
+#endif
 #endif
 }
 

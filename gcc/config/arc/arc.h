@@ -1106,12 +1106,12 @@ extern const char *arc_text_section, *arc_data_section, *arc_rodata_section;
 #if defined (CRT_INIT) || defined (CRT_FINI)
 #define TEXT_SECTION_ASM_OP	"\t.section .text"
 #else
-#define TEXT_SECTION_ASM_OP	arc_text_section /*"\t.section .text"*/
+#define TEXT_SECTION_ASM_OP	arc_text_section
 #endif
-#define DATA_SECTION_ASM_OP	arc_data_section /*"\t.section .data"*/
+#define DATA_SECTION_ASM_OP	arc_data_section
 
-#undef CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP	arc_rodata_section /*"\t.section .rodata"*/
+#undef  READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP	arc_rodata_section
 
 #define BSS_SECTION_ASM_OP	"\t.section .bss"
 

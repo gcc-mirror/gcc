@@ -1619,7 +1619,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Allow pseudo-ops to be overridden.  Override these in svr[34].h.  */
 #undef	ASCII_DATA_ASM_OP
-#undef	CONST_SECTION_ASM_OP
+#undef	READONLY_DATA_SECTION_ASM_OP
 #undef	CTORS_SECTION_ASM_OP
 #undef	DTORS_SECTION_ASM_OP
 #undef  TARGET_ASM_NAMED_SECTION
@@ -1638,7 +1638,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define DATA_SECTION_ASM_OP	"\tdata"
 
 /* Other sections.  */
-#define CONST_SECTION_ASM_OP (TARGET_SVR4			\
+#define READONLY_DATA_SECTION_ASM_OP (TARGET_SVR4		\
 			      ? "\tsection\t .rodata,\"a\""	\
 			      : "\tsection\t .rodata,\"x\"")
 #define TDESC_SECTION_ASM_OP (TARGET_SVR4			\
@@ -2295,32 +2295,24 @@ do {									 \
    and so follows DECLARE_ASM_NAME.  Note that strings go in text
    rather than const.  Override svr[34].h.  */
 
-#undef	USE_CONST_SECTION
 #undef	EXTRA_SECTIONS
-
-#define USE_CONST_SECTION DECLARE_ASM_NAME
 
 #if defined(USING_SVR4_H)
 
-#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata
+#define EXTRA_SECTIONS in_tdesc, in_sdata
 #define INIT_SECTION_FUNCTION
 #define FINI_SECTION_FUNCTION
 
 #else
 #if defined(USING_SVR3_H)
 
-#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_init, in_fini
+#define EXTRA_SECTIONS in_tdesc, in_sdata, in_init, in_fini
 
 #else /* luna or other not based on svr[34].h.  */
 
+#undef READONLY_DATA_SECTION_ASM_OP
 #undef INIT_SECTION_ASM_OP
-#define EXTRA_SECTIONS in_const, in_tdesc, in_sdata
-#define CONST_SECTION_FUNCTION						\
-void									\
-const_section ()							\
-{									\
-  text_section();							\
-}
+#define EXTRA_SECTIONS in_tdesc, in_sdata
 #define INIT_SECTION_FUNCTION
 #define FINI_SECTION_FUNCTION
 
@@ -2329,8 +2321,6 @@ const_section ()							\
 
 #undef	EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
-									\
 void									\
 tdesc_section ()							\
 {									\

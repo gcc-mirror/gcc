@@ -139,15 +139,15 @@ do {							\
 
 extern unsigned int ia64_section_threshold;
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)				\
-{									\
-  if (GET_MODE_SIZE (MODE) > 0						\
-      && GET_MODE_SIZE (MODE) <= ia64_section_threshold)		\
-    sdata_section ();							\
-  else if (symbolic_operand ((RTX), (MODE)))		                \
-    data_section ();							\
-  else									\
-    const_section ();							\
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)			\
+{								\
+  if (GET_MODE_SIZE (MODE) > 0					\
+      && GET_MODE_SIZE (MODE) <= ia64_section_threshold)	\
+    sdata_section ();						\
+  else if (symbolic_operand ((RTX), (MODE)))			\
+    data_section ();						\
+  else								\
+    readonly_data_section ();					\
 }
 
 /* Override ia64/sysv4.h setting with that used by AIX5.  */

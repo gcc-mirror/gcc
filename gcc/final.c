@@ -99,6 +99,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define JUMP_TABLES_IN_TEXT_SECTION 0
 #endif
 
+#if defined(READONLY_DATA_SECTION) || defined(READONLY_DATA_SECTION_ASM_OP)
+#define HAVE_READONLY_DATA_SECTION 1
+#else
+#define HAVE_READONLY_DATA_SECTION 0
+#endif
+
 /* Last insn processed by final_scan_insn.  */
 static rtx debug_insn;
 rtx current_output_insn;
@@ -1115,11 +1121,7 @@ shorten_branches (first)
 	  next = NEXT_INSN (insn);
 	  /* ADDR_VECs only take room if read-only data goes into the text
 	     section.  */
-	  if (JUMP_TABLES_IN_TEXT_SECTION
-#if !defined(READONLY_DATA_SECTION)
-	      || 1
-#endif
-	      )
+	  if (JUMP_TABLES_IN_TEXT_SECTION || !HAVE_READONLY_DATA_SECTION)
 	    if (next && GET_CODE (next) == JUMP_INSN)
 	      {
 		rtx nextbody = PATTERN (next);
@@ -1282,11 +1284,7 @@ shorten_branches (first)
 	{
 	  /* This only takes room if read-only data goes into the text
 	     section.  */
-	  if (JUMP_TABLES_IN_TEXT_SECTION
-#if !defined(READONLY_DATA_SECTION)
-	      || 1
-#endif
-	      )
+	  if (JUMP_TABLES_IN_TEXT_SECTION || !HAVE_READONLY_DATA_SECTION)
 	    insn_lengths[uid] = (XVECLEN (body,
 					  GET_CODE (body) == ADDR_DIFF_VEC)
 				 * GET_MODE_SIZE (GET_MODE (body)));
@@ -1487,11 +1485,7 @@ shorten_branches (first)
 	      PUT_MODE (body, CASE_VECTOR_SHORTEN_MODE (min_addr - rel_addr,
 							max_addr - rel_addr,
 							body));
-	      if (JUMP_TABLES_IN_TEXT_SECTION
-#if !defined(READONLY_DATA_SECTION)
-		  || 1
-#endif
-		  )
+	      if (JUMP_TABLES_IN_TEXT_SECTION || !HAVE_READONLY_DATA_SECTION)
 		{
 		  insn_lengths[uid]
 		    = (XVECLEN (body, 1) * GET_MODE_SIZE (GET_MODE (body)));

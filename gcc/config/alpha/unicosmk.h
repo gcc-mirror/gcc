@@ -347,9 +347,9 @@ do { fprintf (FILE, "\tbr $1,0\n");			\
 #undef DATA_SECTION_ASM_OP
 #define DATA_SECTION_ASM_OP unicosmk_data_section ()
 
-/* There are ni read-only sections on Unicos/Mk.  */
+/* There are no read-only sections on Unicos/Mk.  */
 
-#undef READONLY_DATA_SECTION
+#undef READONLY_DATA_SECTION_ASM_OP
 #define READONLY_DATA_SECTION data_section
 
 /* Define extra sections for common data and SSIBs (static subroutine

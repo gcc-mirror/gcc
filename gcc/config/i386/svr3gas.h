@@ -83,13 +83,8 @@ Boston, MA 02111-1307, USA.  */
    this file should be rewritten to include config/svr3.h
    and override what isn't right.  */
 
-/* Support const sections and the ctors and dtors sections for g++.  */
-
-#define USE_CONST_SECTION	0
-
 #define INIT_SECTION_ASM_OP     "\t.section\t.init"
 #define FINI_SECTION_ASM_OP     "\t.section .fini,\"x\""
-#define CONST_SECTION_ASM_OP	"\t.section\t.rodata, \"x\""
 #define CTORS_SECTION_ASM_OP	INIT_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    FINI_SECTION_ASM_OP
 
@@ -113,14 +108,11 @@ do {								\
     (*--p) ();							\
 } while (0)
 
-/* Add extra sections .rodata, .init and .fini.  */
-
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_init, in_fini
+#define EXTRA_SECTIONS in_init, in_fini
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
-  CONST_SECTION_FUNCTION					\
   INIT_SECTION_FUNCTION						\
   FINI_SECTION_FUNCTION
 
@@ -146,21 +138,6 @@ fini_section ()							\
     }								\
 }
 
-#define READONLY_DATA_SECTION() const_section ()
-
-#define CONST_SECTION_FUNCTION						\
-void									\
-const_section ()							\
-{									\
-  if (!USE_CONST_SECTION)						\
-    text_section();							\
-  else if (in_section != in_const)					\
-    {									\
-      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);		\
-      in_section = in_const;						\
-    }									\
-}
-
 #define TARGET_ASM_CONSTRUCTOR  ix86_svr3_asm_out_constructor
 
 /* A C statement or statements to switch to the appropriate
@@ -169,4 +146,4 @@ const_section ()							\
    in the case of a `const_int' rtx.  Currently, these always
    go into the const section.  */
 
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN) const_section()
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN) readonly_data_section()

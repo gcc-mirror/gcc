@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80860 running System V.4
-   Copyright (C) 1991, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -124,11 +124,10 @@ extern const char *current_function_original_name;
 #define TDESC_SECTION_ASM_OP    "\t.section\t.tdesc"
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_tdesc
+#define EXTRA_SECTIONS in_tdesc
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
   TDESC_SECTION_FUNCTION
 
 #define TDESC_SECTION_FUNCTION						\

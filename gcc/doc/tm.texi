@@ -5668,6 +5668,22 @@ A C expression whose value is a string, including spacing, containing the
 assembler operation to identify the following data as writable initialized
 data.  Normally @code{"\t.data"} is right.
 
+@findex READONLY_DATA_SECTION_ASM_OP
+@item READONLY_DATA_SECTION_ASM_OP
+A C expression whose value is a string, including spacing, containing the
+assembler operation to identify the following data as read-only initialized
+data.
+
+@findex READONLY_DATA_SECTION
+@item READONLY_DATA_SECTION
+A macro naming a function to call to switch to the proper section for
+read-only data.  The default is to use @code{READONLY_DATA_SECTION_ASM_OP}
+if defined, else fall back to @code{text_section}.
+
+The most common definition will be @code{data_section}, if the target
+does not have a special read-only data section, and does not put data
+in the text section.
+
 @findex SHARED_SECTION_ASM_OP
 @item SHARED_SECTION_ASM_OP
 If defined, a C expression whose value is a string, including spacing,
@@ -5740,17 +5756,6 @@ One or more functions to be defined in @file{varasm.c}.  These
 functions should do jobs analogous to those of @code{text_section} and
 @code{data_section}, for your additional sections.  Do not define this
 macro if you do not define @code{EXTRA_SECTIONS}.
-
-@findex READONLY_DATA_SECTION
-@item READONLY_DATA_SECTION
-On most machines, read-only variables, constants, and jump tables are
-placed in the text section.  If this is not the case on your machine,
-this macro should be defined to be the name of a function (either
-@code{data_section} or a function defined in @code{EXTRA_SECTIONS}) that
-switches to the section to be used for read-only items.
-
-If these items should be placed in the text section, this macro should
-not be defined.
 
 @findex SELECT_RTX_SECTION
 @item SELECT_RTX_SECTION (@var{mode}, @var{rtx}, @var{align})

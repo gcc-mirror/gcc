@@ -191,14 +191,8 @@ do {									\
 #undef  ASCII_DATA_ASM_OP
 #define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
-/* Support const sections and the ctors and dtors sections for g++.  */
-
-#undef USE_CONST_SECTION
-#define USE_CONST_SECTION	1
-
-#undef  CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
-
+#undef  READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rodata"
 #undef  BSS_SECTION_ASM_OP
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 #undef  SBSS_SECTION_ASM_OP
@@ -233,7 +227,7 @@ do {									\
    includes this file.  */
 
 #undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_sbss, in_sdata
+#define EXTRA_SECTIONS in_sbss, in_sdata
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
@@ -241,29 +235,11 @@ do {									\
 
 #undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
   SECTION_FUNCTION_TEMPLATE(sbss_section, in_sbss, SBSS_SECTION_ASM_OP)	\
   SECTION_FUNCTION_TEMPLATE(sdata_section, in_sdata, SDATA_SECTION_ASM_OP)
 
 extern void sbss_section		PARAMS ((void));
 extern void sdata_section		PARAMS ((void));
-
-#undef  READONLY_DATA_SECTION
-#define READONLY_DATA_SECTION() const_section ()
-
-#undef  CONST_SECTION_FUNCTION
-#define CONST_SECTION_FUNCTION					\
-void								\
-const_section ()						\
-{								\
-  if (!USE_CONST_SECTION)					\
-    text_section();						\
-  else if (in_section != in_const)				\
-    {								\
-      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);	\
-      in_section = in_const;					\
-    }								\
-}
 
 #undef  SECTION_FUNCTION_TEMPLATE
 #define SECTION_FUNCTION_TEMPLATE(FN, ENUM, OP)	\

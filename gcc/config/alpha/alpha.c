@@ -6617,15 +6617,14 @@ alpha_start_function (file, fnname, decl)
     }
 
 #if TARGET_ABI_OPEN_VMS
-  /* Ifdef'ed cause readonly_section and link_section are only
-     available then.  */
-  readonly_section ();
+  /* Ifdef'ed cause link_section are only available then.  */
+  readonly_data_section ();
   fprintf (file, "\t.align 3\n");
   assemble_name (file, fnname); fputs ("..na:\n", file);
   fputs ("\t.ascii \"", file);
   assemble_name (file, fnname);
   fputs ("\\0\"\n", file);
-      
+
   link_section ();
   fprintf (file, "\t.align 3\n");
   fputs ("\t.name ", file);
@@ -8256,7 +8255,7 @@ alpha_write_linkage (stream)
 {
   if (alpha_links)
     {
-      readonly_section ();
+      readonly_data_section ();
       fprintf (stream, "\t.align 3\n");
       splay_tree_foreach (alpha_links, alpha_write_one_linkage, stream);
     }

@@ -10952,7 +10952,7 @@ rs6000_select_rtx_section (mode, x)
 	       || GET_CODE (x) == CONST))
     data_section ();
   else
-    const_section ();
+    readonly_data_section ();
 }
 
 /* A C statement or statements to switch to the appropriate
@@ -10970,7 +10970,7 @@ rs6000_elf_select_section (decl, reloc, align)
   int needs_sdata;
   int readonly;
   static void (* const sec_funcs[4]) PARAMS ((void)) = {
-    &const_section,
+    &readonly_data_section,
     &sdata2_section,
     &data_section,
     &sdata_section

@@ -464,42 +464,6 @@ do								\
   }								\
 while (0)
 
-
-/* On most machines, read-only variables, constants, and jump tables
-   are placed in the text section.  If this is not the case on your
-   machine, this macro should be defined to be the name of a function
-   (either `data_section' or a function defined in `EXTRA_SECTIONS')
-   that switches to the section to be used for read-only items.
-
-   If these items should be placed in the text section, this macro
-   should not be defined.  */
-
-#if 0
-#undef	READONLY_DATA_SECTION
-#define READONLY_DATA_SECTION()						\
-do									\
-  {									\
-    if (TARGET_ELF)							\
-      {									\
-	if (in_section != in_rodata)					\
-	  {								\
-	    fprintf (asm_out_file, "\t.section \"rodata\"\n");		\
-	    in_section = in_rodata;					\
-	  }								\
-      }									\
-    else								\
-      text_section ();							\
-  }									\
-while (0)
-#endif
-
-/* A list of names for sections other than the standard two, which are
-   `in_text' and `in_data'.  You need not define this macro on a
-   system with no other sections (that GCC needs to use).  */
-
-#undef	EXTRA_SECTIONS
-#define	EXTRA_SECTIONS in_rodata, in_data1
-
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */
 

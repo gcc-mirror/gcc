@@ -156,11 +156,10 @@ extern unsigned int ia64_section_threshold;
 }
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_sdata, in_sbss
+#define EXTRA_SECTIONS in_sdata, in_sbss
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
   SDATA_SECTION_FUNCTION						\
   SBSS_SECTION_FUNCTION
 

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80860 running System V.3
-   Copyright (C) 1991, 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
@@ -134,6 +134,7 @@ extern const char *current_function_original_name;
   while (0)
 
 
+#define READONLY_DATA_SECTION_ASM_OP "\t.section\t.rodata, \"x\""
 #undef CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors,\"x\""
 #undef DTORS_SECTION_ASM_OP
@@ -145,11 +146,10 @@ extern const char *current_function_original_name;
 #define TDESC_SECTION_ASM_OP    "\t.section\t.tdesc"
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_tdesc
+#define EXTRA_SECTIONS in_tdesc
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
-  CONST_SECTION_FUNCTION						\
   TDESC_SECTION_FUNCTION
 
 #define TDESC_SECTION_FUNCTION						\
@@ -162,7 +162,3 @@ tdesc_section ()							\
       in_section = in_tdesc;						\
     }									\
 }
-
-/* Enable the `const' section that svr3.h defines how to use.  */
-#undef USE_CONST_SECTION
-#define USE_CONST_SECTION	1

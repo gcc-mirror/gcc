@@ -1021,7 +1021,7 @@ typedef enum
    `in_text' and `in_data'.  You need not define this macro on a
    system with no other sections (that GCC needs to use).  */
 #undef	EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_tdata, in_sdata, in_zdata, in_const, \
+#define EXTRA_SECTIONS in_tdata, in_sdata, in_zdata, \
  in_rozdata, in_rosdata, in_sbss, in_zbss, in_zcommon, in_scommon
 
 /* One or more functions to be defined in `varasm.c'.  These
@@ -1032,8 +1032,6 @@ typedef enum
 
 /* This could be done a lot more cleanly using ANSI C ... */
 #define EXTRA_SECTION_FUNCTIONS						\
-CONST_SECTION_FUNCTION							\
-									\
 void									\
 sdata_section ()							\
 {									\

@@ -2535,16 +2535,6 @@ do {							\
    Defined in svr4.h.  */
 /* #define EXTRA_SECTION_FUNCTIONS */
 
-/* On most machines, read-only variables, constants, and jump tables are placed
-   in the text section.  If this is not the case on your machine, this macro
-   should be defined to be the name of a function (either `data_section' or a
-   function defined in `EXTRA_SECTIONS') that switches to the section to be
-   used for read-only items.
-
-   If these items should be placed in the text section, this macro should not
-   be defined.  */
-/* #define READONLY_DATA_SECTION */
-
 /* A C statement or statements to switch to the appropriate section for output
    of RTX in mode MODE.  You can assume that RTX is some kind of constant in
    RTL.  The argument MODE is redundant except in the case of a `const_int'

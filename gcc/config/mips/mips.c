@@ -7913,7 +7913,7 @@ mips_select_rtx_section (mode, x)
     {
       /* For embedded applications, always put constants in read-only data,
 	 in order to reduce RAM usage.  */
-      READONLY_DATA_SECTION ();
+      readonly_data_section ();
     }
   else
     {
@@ -7932,7 +7932,7 @@ mips_select_rtx_section (mode, x)
 	   read-only).  */
 	data_section ();
       else
-	READONLY_DATA_SECTION ();
+	readonly_data_section ();
     }
 }
 
@@ -7979,7 +7979,7 @@ mips_select_section (decl, reloc, align)
 	       && (TREE_CODE (decl) != STRING_CST
 		   || !flag_writable_strings)))
 	  && ! (flag_pic && reloc))
-	READONLY_DATA_SECTION ();
+	readonly_data_section ();
       else if (size > 0 && size <= mips_section_threshold)
 	SMALL_DATA_SECTION ();
       else
@@ -8002,7 +8002,7 @@ mips_select_section (decl, reloc, align)
 		    && (TREE_CODE (decl) != STRING_CST
 			|| !flag_writable_strings)))
 	       && ! (flag_pic && reloc))
-	READONLY_DATA_SECTION ();
+	readonly_data_section ();
       else
 	data_section ();
     }

@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6.
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -249,8 +250,13 @@ Boston, MA 02111-1307, USA.  */
    do_global_* functions instead of running collect2.  */
 
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
-#define CONST_SECTION_ASM_OP_32	"\t.rdata"
-#define CONST_SECTION_ASM_OP_64	"\t.section\t.rodata"
+
+#define READONLY_DATA_SECTION_ASM_OP_32	"\t.rdata"
+#define READONLY_DATA_SECTION_ASM_OP_64	"\t.section\t.rodata"
+#define READONLY_DATA_SECTION_ASM_OP		\
+  (mips_abi != ABI_32 && mips_abi != ABI_O64	\
+   ? READONLY_DATA_SECTION_ASM_OP_64		\
+   : READONLY_DATA_SECTION_ASM_OP_32)
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -258,13 +264,11 @@ Boston, MA 02111-1307, USA.  */
    includes this file.  */
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_rdata, in_const
+#define EXTRA_SECTIONS in_sdata
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
    definition in the target-specific file which includes this file.  */
-
-/* ??? rdata_section is now same as svr4 const_section.  */
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
@@ -278,19 +282,6 @@ sdata_section ()							\
     }									\
 }									\
 									\
-void									\
-rdata_section ()							\
-{									\
-  if (in_section != in_rdata)						\
-    {									\
-      if (mips_abi != ABI_32 && mips_abi != ABI_O64)			\
-	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_64);	\
-      else								\
-	fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP_32);	\
-      in_section = in_rdata;						\
-    }									\
-}									\
-									\
 const char *								\
 current_section_name ()							\
 {									\
@@ -301,8 +292,7 @@ current_section_name ()							\
     case in_data:	return ".data";					\
     case in_sdata:	return ".sdata";				\
     case in_bss:	return ".bss";					\
-    case in_rdata:							\
-    case in_const:							\
+    case in_readonly_data:						\
       if (mips_abi != ABI_32 && mips_abi != ABI_O64)			\
 	return ".rodata";						\
       else								\
@@ -323,8 +313,7 @@ current_section_flags ()						\
     case in_data:	return SECTION_WRITE;				\
     case in_sdata:	return SECTION_WRITE | SECTION_SMALL;		\
     case in_bss:	return SECTION_WRITE | SECTION_BSS;		\
-    case in_rdata:							\
-    case in_const:	return 0;					\
+    case in_readonly_data: return 0;					\
     case in_named:	return get_named_section_flags (in_named_name);	\
     }									\
   abort ();								\

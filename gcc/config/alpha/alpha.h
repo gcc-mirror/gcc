@@ -1724,36 +1724,6 @@ do {									     \
 
 #define DATA_SECTION_ASM_OP "\t.data"
 
-/* Define an extra section for read-only data, a routine to enter it, and
-   indicate that it is for read-only data.
-
-   The first time we enter the readonly data section for a file, we write
-   eight bytes of zero.  This works around a bug in DEC's assembler in
-   some versions of OSF/1 V3.x.  */
-
-#define EXTRA_SECTIONS	readonly_data
-
-#define EXTRA_SECTION_FUNCTIONS					\
-void								\
-literal_section ()						\
-{								\
-  if (in_section != readonly_data)				\
-    {								\
-      static int firsttime = 1;				        \
-								\
-      fprintf (asm_out_file, "%s\n", READONLY_DATA_SECTION_ASM_OP); \
-      if (firsttime)						\
-	{							\
-	  firsttime = 0;				        \
-	  assemble_aligned_integer (8, const0_rtx);		\
-	}							\
-								\
-      in_section = readonly_data;				\
-    }								\
-}								\
-
-#define READONLY_DATA_SECTION	literal_section
-
 /* Define this macro if references to a symbol must be treated differently
    depending on something about the variable or function named by the symbol
    (such as what section it is in).  */

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80x86 running DG/ux
-   Copyright (C) 1993, 1995, 1996, 1997, 1998, 2000, 2001
+   Copyright (C) 1993, 1995, 1996, 1997, 1998, 2000, 2001, 2002
    Free Software Foundation, Inc.
    Currently maintained by gcc@dg-rtp.dg.com.
 
@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 */
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.16 $"
+#define VERSION_INFO2   "$Revision: 1.17 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -232,13 +232,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)      \
-{                                               \
-  if (flag_pic && symbolic_operand (RTX, VOIDmode)) \
-    data_section ();                            \
-  else                                          \
-    const_section ();                           \
-}
+#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)		\
+do {							\
+  if (flag_pic && symbolic_operand (RTX, VOIDmode))	\
+    data_section ();					\
+  else							\
+    readonly_data_section ();				\
+} while (0)
 
 /* This supplements FUNCTION_ARG's definition in i386.h to check
    TARGET_WARN_PASS_STRUCT */
@@ -250,5 +250,5 @@ Boston, MA 02111-1307, USA.  */
     (function_arg (&CUM, MODE, TYPE, NAMED)))
 
 /* Add .align 1 to avoid .backalign bug in assembler */
-#undef CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP    "\t.section\t.rodata\n\t.align 1"
+#undef READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP    "\t.section\t.rodata\n\t.align 1"

@@ -92,6 +92,7 @@ Boston, MA 02111-1307, USA.  */
  * cannot handle those.
  */
 #ifndef USE_GAS
+# undef READONLY_DATA_SECTION_ASM_OP
 # undef INIT_SECTION_ASM_OP
 # undef FINI_SECTION_ASM_OP
 # undef CTORS_SECTION_ASM_OP
@@ -108,18 +109,6 @@ Boston, MA 02111-1307, USA.  */
 # define DTOR_LIST_BEGIN
 # undef DTOR_LIST_END
 # define DTOR_LIST_END
-
-# undef CONST_SECTION_FUNCTION
-# define CONST_SECTION_FUNCTION						\
-void									\
-const_section ()							\
-{									\
-  text_section();							\
-}
-
-# undef EXTRA_SECTION_FUNCTIONS
-# define EXTRA_SECTION_FUNCTIONS				\
-  CONST_SECTION_FUNCTION
 
 /* for collect2 */
 # define OBJECT_FORMAT_COFF

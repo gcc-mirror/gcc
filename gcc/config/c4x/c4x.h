@@ -1673,9 +1673,7 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 
 #define DATA_SECTION_ASM_OP "\t.data"
 
-#define USE_CONST_SECTION 1
-
-#define CONST_SECTION_ASM_OP "\t.sect\t\".const\""
+#define READONLY_DATA_SECTION_ASM_OP "\t.sect\t\".const\""
 
 /* Do not use .init section so __main will be called on startup. This will
    call __do_global_ctors and prepare for __do_global_dtors on exit.  */
@@ -1687,11 +1685,10 @@ if (REG_P (OP1) && ! REG_P (OP0))			\
 #define FINI_SECTION_ASM_OP  "\t.sect\t\".fini\""
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_init, in_fini
+#define EXTRA_SECTIONS in_init, in_fini
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
-  CONST_SECTION_FUNCTION					\
   INIT_SECTION_FUNCTION						\
   FINI_SECTION_FUNCTION
 
@@ -1716,21 +1713,6 @@ fini_section ()							\
       fprintf (asm_out_file, "%s\n", FINI_SECTION_ASM_OP);	\
       in_section = in_fini;					\
     }								\
-}
-
-#define READONLY_DATA_SECTION() const_section ()
-
-#define CONST_SECTION_FUNCTION						\
-void									\
-const_section ()							\
-{									\
-  if (! USE_CONST_SECTION)						\
-    text_section();							\
-  else if (in_section != in_const)					\
-    {									\
-      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);		\
-      in_section = in_const;						\
-    }									\
 }
 
 #define ASM_STABS_OP "\t.stabs\t"
@@ -1759,7 +1741,7 @@ const_section ()							\
    in the case of a `const_int' rtx.  Currently, these always
    go into the const section.  */
 
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) const_section()
+#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) readonly_data_section()
 
 
 /* Overall Framework of an Assembler File.  */

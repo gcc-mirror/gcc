@@ -1,6 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    For NCR Tower 32/4x0 and 32/6x0 running System V Release 3.
-   Copyright (C) 1990, 1993, 1994, 1996, 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1993, 1994, 1996, 1997, 2000, 2002
+   Free Software Foundation, Inc.
    Contributed by Robert Andersson (ra@intsys.no), International Systems,
    Oslo, Norway.
 
@@ -543,8 +544,8 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 #define INIT_SECTION_ASM_OP	"\tsection\t~init"
 #undef FINI_SECTION_ASM_OP
 #define FINI_SECTION_ASM_OP	"\tsection\t~fini"
-#undef CONST_SECTION_ASM_OP
-#define CONST_SECTION_ASM_OP	"\tsection\t~rodata"
+#undef READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP	"\tsection\t~rodata"
 
 #define CTOR_LIST_BEGIN				\
   asm (INIT_SECTION_ASM_OP);			\

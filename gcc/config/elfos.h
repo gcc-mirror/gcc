@@ -216,10 +216,8 @@ Boston, MA 02111-1307, USA.  */
 #undef  ASCII_DATA_ASM_OP
 #define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
-/* Support const sections and the ctors and dtors sections for g++.  */
-
-#define USE_CONST_SECTION	1
-#define CONST_SECTION_ASM_OP	"\t.section\t.rodata"
+/* Support a read-only data section.  */
+#define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rodata"
 
 /* On svr4, we *do* have support for the .init and .fini sections, and we
    can put stuff in there to be executed before and after `main'.  We let
@@ -230,46 +228,12 @@ Boston, MA 02111-1307, USA.  */
 #define INIT_SECTION_ASM_OP	"\t.section\t.init"
 #define FINI_SECTION_ASM_OP	"\t.section\t.fini"
 
-#ifdef HAVE_GAS_SUBSECTION_ORDERING
-
-#define ASM_SECTION_START_OP	"\t.subsection\t-1"
-
 /* Output assembly directive to move to the beginning of current section.  */
-#define ASM_OUTPUT_SECTION_START(FILE)	\
+#ifdef HAVE_GAS_SUBSECTION_ORDERING
+# define ASM_SECTION_START_OP	"\t.subsection\t-1"
+# define ASM_OUTPUT_SECTION_START(FILE)	\
   fprintf ((FILE), "%s\n", ASM_SECTION_START_OP)
-
 #endif
-
-/* A default list of other sections which we might be "in" at any given
-   time.  For targets that use additional sections (e.g. .tdesc) you
-   should override this definition in the target-specific file which
-   includes this file.  */
-
-#undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const
-
-/* A default list of extra section function definitions.  For targets
-   that use additional sections (e.g. .tdesc) you should override this
-   definition in the target-specific file which includes this file.  */
-
-#undef  EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS		\
-  CONST_SECTION_FUNCTION
-
-#define READONLY_DATA_SECTION() const_section ()
-
-#define CONST_SECTION_FUNCTION					\
-void								\
-const_section ()						\
-{								\
-  if (!USE_CONST_SECTION)					\
-    text_section ();						\
-  else if (in_section != in_const)				\
-    {								\
-      fprintf (asm_out_file, "%s\n", CONST_SECTION_ASM_OP);	\
-      in_section = in_const;					\
-    }								\
-}
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
      

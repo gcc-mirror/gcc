@@ -672,12 +672,11 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 #define DATA_SECTION_ASM_OP "\t.data"
 
-/* Read-only data goes in the data section because
-   AT&T's assembler doesn't guarantee the proper alignment
-   of data in the text section even if an align statement
-   is used.  */
+/* Read-only data goes in the data section because AT&T's assembler
+   doesn't guarantee the proper alignment of data in the text section
+   even if an align statement is used.  */
 
-#define READONLY_DATA_SECTION() data_section()
+#define READONLY_DATA_SECTION data_section
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number (see above).  */

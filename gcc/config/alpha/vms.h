@@ -263,25 +263,16 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 }
 
 #define LINK_SECTION_ASM_OP "\t.link"
-#define READONLY_SECTION_ASM_OP "\t.rdata"
+#define READONLY_DATA_SECTION_ASM_OP "\t.rdata"
 #define LITERALS_SECTION_ASM_OP "\t.literals"
 #define CTORS_SECTION_ASM_OP "\t.ctors"
 #define DTORS_SECTION_ASM_OP "\t.dtors"
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS	in_link, in_rdata, in_literals
+#define EXTRA_SECTIONS	in_link, in_literals
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS					\
-void								\
-readonly_section ()						\
-{								\
-  if (in_section != in_rdata)				\
-    {								\
-      fprintf (asm_out_file, "%s\n", READONLY_SECTION_ASM_OP);	\
-      in_section = in_rdata;				\
-    }								\
-}								\
 void								\
 link_section ()							\
 {								\
@@ -301,7 +292,6 @@ literals_section ()						\
     }								\
 }
 
-extern void readonly_section	PARAMS ((void));
 extern void link_section	PARAMS ((void));
 extern void literals_section	PARAMS ((void));
 
@@ -311,9 +301,6 @@ extern void literals_section	PARAMS ((void));
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
   fprintf (FILE, "\t.quad $L%d\n", (VALUE))
-
-#undef READONLY_DATA_SECTION
-#define READONLY_DATA_SECTION readonly_section
 
 #define ASM_FILE_END(FILE) alpha_write_linkage (FILE);
 
