@@ -1,3 +1,7 @@
+Sun May 20 16:39:24 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_decl): Set mode, alignment, and sizes for CONST_DECL.
+
 2001-05-20  Richard Henderson  <rth@redhat.com>
 
 	* sched-deps.c (sched_analyze_insn): Force volatile memory reads
