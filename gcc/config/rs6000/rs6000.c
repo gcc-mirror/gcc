@@ -1418,7 +1418,8 @@ output_prolog (file, size)
   /* Write .extern for truncation routines, if needed.  */
   if (rs6000_trunc_used && ! trunc_defined)
     {
-      fprintf (file, "\t.extern .itrunc\n\t.extern .uitrunc\n");
+      fprintf (file, "\t.extern .%s\n\t.extern .%s\n",
+	       RS6000_ITRUNC, RS6000_UITRUNC);
       trunc_defined = 1;
     }
 
