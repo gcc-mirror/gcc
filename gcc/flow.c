@@ -3368,15 +3368,32 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	  IOR_REG_SET (new_live_at_end, sb->global_live_at_start);
 	}
 
-      /* Force the stack pointer to be live -- which might not already be
-	 the case for blocks within infinite loops.  */
-      SET_REGNO_REG_SET (new_live_at_end, STACK_POINTER_REGNUM);
-
-      /* Similarly for the frame pointer before reload.  Any reference
-	 to any pseudo before reload is a potential reference of the
-	 frame pointer.  */
+      /* Before reload, there are a few registers that must be forced
+	 live everywhere -- which might not already be the case for 
+	 blocks within infinite loops.  */
       if (! reload_completed)
-	SET_REGNO_REG_SET (new_live_at_end, FRAME_POINTER_REGNUM);
+	{
+	  /* The all-important stack pointer.  */
+	  SET_REGNO_REG_SET (new_live_at_end, STACK_POINTER_REGNUM);
+
+	  /* Any reference to any pseudo before reload is a potential
+	     reference of the frame pointer.  */
+	  SET_REGNO_REG_SET (new_live_at_end, FRAME_POINTER_REGNUM);
+
+#if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
+	  /* Pseudos with argument area equivalences may require
+	     reloading via the argument pointer.  */
+	  if (fixed_regs[ARG_POINTER_REGNUM])
+	    SET_REGNO_REG_SET (new_live_at_end, ARG_POINTER_REGNUM);
+#endif
+
+#ifdef PIC_OFFSET_TABLE_REGNUM
+	  /* Any constant, or pseudo with constant equivalences, may
+	     require reloading from memory using the pic register.  */
+	  if (fixed_regs[PIC_OFFSET_TABLE_REGNUM])
+	    SET_REGNO_REG_SET (new_live_at_end, PIC_OFFSET_TABLE_REGNUM);
+#endif
+	}
 
       /* Regs used in phi nodes are not included in
 	 global_live_at_start, since they are live only along a
@@ -4219,6 +4236,10 @@ insn_dead_p (pbi, x, call_ok, notes)
 	      if (regno == STACK_POINTER_REGNUM)
 		return 0;
 
+	      /* ??? These bits might be redundant with the force live bits
+		 in calculate_global_regs_live.  We would delete from
+		 sequential sets; whether this actually affects real code
+		 for anything but the stack pointer I don't know.  */
 	      /* Make sure insns to set the frame pointer aren't deleted.  */
 	      if (regno == FRAME_POINTER_REGNUM
 		  && (! reload_completed || frame_pointer_needed))
@@ -4234,16 +4255,6 @@ insn_dead_p (pbi, x, call_ok, notes)
 		 (if the arg pointer isn't fixed, there will be a USE
 		 for it, so we can treat it normally).  */
 	      if (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
-		return 0;
-#endif
-
-#ifdef PIC_OFFSET_TABLE_REGNUM
-	      /* Before reload, do not allow sets of the pic register
-		 to be deleted.  Reload can insert references to
-		 constant pool memory anywhere in the function, making
-		 the PIC register live where it wasn't before.  */
-	      if (regno == PIC_OFFSET_TABLE_REGNUM && fixed_regs[regno]
-		  && ! reload_completed)
 		return 0;
 #endif
 
