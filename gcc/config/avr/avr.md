@@ -1832,3 +1832,56 @@
           AS1 (jmp,%1));
 }")
 					
+(define_peephole
+  [(set (cc0) (match_operand:QI 0 "register_operand" ""))
+   (set (pc)
+	(if_then_else (lt (cc0) (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (insn, operands[1])"
+  "sbrs %0,7")
+
+(define_peephole
+  [(set (cc0) (match_operand:QI 0 "register_operand" ""))
+   (set (pc)
+	(if_then_else (ge (cc0) (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (insn, operands[1])"
+  "sbrc %0,7")
+					
+(define_peephole
+  [(set (cc0) (match_operand:HI 0 "register_operand" ""))
+   (set (pc)
+	(if_then_else (lt (cc0) (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (NEXT_INSN (insn), operands[1])"
+  "sbrs %B0,7")
+
+(define_peephole
+  [(set (cc0) (match_operand:HI 0 "register_operand" ""))
+   (set (pc)
+	(if_then_else (ge (cc0) (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (insn, operands[1])"
+  "sbrc %B0,7")
+
+(define_peephole
+  [(set (cc0) (match_operand:SI 0 "register_operand" ""))
+   (set (pc)
+	(if_then_else (lt (cc0) (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (NEXT_INSN (insn), operands[1])"
+  "sbrs %D0,7")
+
+(define_peephole
+  [(set (cc0) (match_operand:SI 0 "register_operand" ""))
+   (set (pc)
+	(if_then_else (ge (cc0) (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  "jump_over_one_insn_p (insn, operands[1])"
+  "sbrc %D0,7")

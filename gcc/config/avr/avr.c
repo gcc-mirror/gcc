@@ -3869,4 +3869,16 @@ debug_hard_reg_set (HARD_REG_SET set)
     }
   fprintf (stderr, "\n");
 }
-	     
+
+int
+jump_over_one_insn_p (insn, dest)
+     rtx insn;
+     rtx dest;
+{
+  int uid = INSN_UID (GET_CODE (dest) == LABEL_REF
+		      ? XEXP (dest, 0)
+		      : dest);
+  int jump_addr = insn_addresses[INSN_UID (insn)];
+  int dest_addr = insn_addresses[uid];
+  return dest_addr - jump_addr == 2;
+}
