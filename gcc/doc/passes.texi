@@ -240,12 +240,6 @@ for the variable within this function.  This data is needed by the
 SSA rewriting routines.  The pass is located in @file{tree-dfa.c}
 and is described by @code{pass_referenced_vars}.
 
-@item Points-to analysis
-
-This pass constructs flow-insensitive alias analysis information.
-The pass is located in @file{tree-alias-common.c} and described by
-@code{pass_build_pta}.
-
 @item Enter static single assignment form
 
 This pass rewrites the function such that it is in SSA form.  After

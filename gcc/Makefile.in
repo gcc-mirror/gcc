@@ -200,8 +200,6 @@ SYSCALLS.c.X-warn = -Wno-strict-prototypes -Wno-error
 # recognizing that the loop will always be executed at least once.  We need
 # a new loop optimizer.
 reload1.o-warn = -Wno-error
-# These warnings are due to libbanshee.
-tree-alias-ander.o-warn = -Wno-error
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
@@ -285,9 +283,6 @@ ZLIBINC = @zlibinc@
 # How to find GMP
 GMPLIBS = @GMPLIBS@
 GMPINC = @GMPINC@
-
-BANSHEELIB = @BANSHEELIB@
-BANSHEEINC = @BANSHEEINC@
 
 CPPLIB = ../libcpp/libcpp.a
 CPPINC = -I$(srcdir)/../libcpp/include
@@ -757,7 +752,7 @@ LIBIBERTY = ../libiberty/libiberty.a
 BUILD_LIBIBERTY = ../$(build_subdir)/libiberty/libiberty.a
 
 # Dependencies on the intl and portability libraries.
-LIBDEPS= $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP) $(BANSHEELIB)
+LIBDEPS= $(CPPLIB) $(LIBIBERTY) $(LIBINTL_DEP) $(LIBICONV_DEP)
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
@@ -765,7 +760,7 @@ BUILD_LIBDEPS= $(BUILD_LIBIBERTY)
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
-LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(BANSHEELIB) $(LIBIBERTY)
+LIBS = @LIBS@ $(CPPLIB) $(LIBINTL) $(LIBICONV) $(LIBIBERTY)
 
 # Any system libraries needed just for GNAT.
 SYSLIBS = @GNAT_LIBEXC@
@@ -794,7 +789,7 @@ BUILD_VARRAY = build-varray.o
 # libintl.h will be found in ../intl if we are using the included libintl.
 INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 	   -I$(srcdir)/../include @INCINTL@ \
-	   $(CPPINC) $(BANSHEEINC) $(GMPINC)
+	   $(CPPINC) $(GMPINC)
 
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -890,9 +885,9 @@ C_OBJS = c-parse.o c-lang.o stub-objc.o $(C_AND_OBJC_OBJS)
 OBJS-common = \
  tree-chrec.o tree-scalar-evolution.o tree-data-ref.o			   \
  tree-cfg.o tree-dfa.o tree-eh.o tree-ssa.o tree-optimize.o tree-gimple.o  \
- tree-alias-type.o gimplify.o tree-pretty-print.o tree-into-ssa.o          \
- tree-outof-ssa.o tree-alias-common.o tree-ssa-ccp.o tree-vn.o             \
- @ANDER@ tree-ssa-dce.o  tree-ssa-copy.o tree-nrv.o tree-ssa-copyrename.o  \
+ gimplify.o tree-pretty-print.o tree-into-ssa.o          \
+ tree-outof-ssa.o tree-ssa-ccp.o tree-vn.o             \
+ tree-ssa-dce.o  tree-ssa-copy.o tree-nrv.o tree-ssa-copyrename.o  \
  tree-ssa-pre.o tree-ssa-live.o tree-ssa-operands.o tree-ssa-alias.o       \
  tree-ssa-phiopt.o tree-ssa-forwprop.o tree-nested.o tree-ssa-dse.o	   \
  tree-ssa-dom.o domwalk.o tree-tailcall.o gimple-low.o tree-iterator.o	   \
@@ -1556,7 +1551,7 @@ gtype-desc.o: gtype-desc.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	varray.h $(HASHTAB_H) $(SPLAY_TREE_H) bitmap.h $(TREE_H) $(RTL_H) \
 	function.h insn-config.h $(EXPR_H) hard-reg-set.h $(BASIC_BLOCK_H) \
 	cselib.h insn-addr.h $(OPTABS_H) libfuncs.h debug.h $(GGC_H) \
-	cgraph.h tree-alias-type.h $(TREE_FLOW_H) reload.h $(CPP_ID_DATA_H)
+	cgraph.h $(TREE_FLOW_H) reload.h $(CPP_ID_DATA_H)
 
 ggc-common.o: ggc-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
 	$(HASHTAB_H) toplev.h $(PARAMS_H) hosthooks.h
@@ -1599,31 +1594,19 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(PARAMS_H) $(FLAGS_H) function.h $(EXPR_H) $(RTL_H) toplev.h \
    $(GGC_H) $(TM_P_H) $(TARGET_H) \
    langhooks.h $(REGS_H)
-tree-alias-type.o: tree-alias-type.c tree-alias-type.h $(SYSTEM_H) $(CONFIG_H) \
-   $(GGC_H) $(TM_H) coretypes.h $(VARRAY_H)
-tree-alias-ander.o: tree-alias-ander.c tree-alias-ander.h $(SYSTEM_H) \
-   $(CONFIG_H) $(GGC_H) $(TREE_H) $(TREE_FLOW_H) tree-alias-common.h \
-   $(TM_H) coretypes.h cgraph.h tree-pass.h
-tree-alias-common.o: tree-alias-common.c tree-alias-common.h $(SYSTEM_H) \
-   $(CONFIG_H) $(GGC_H) $(TREE_H) gt-tree-alias-common.h $(TREE_FLOW_H) \
-   $(TM_H) coretypes.h cgraph.h tree-pass.h $(TIMEVAR_H) tree-alias-type.h \
-   bitmap.h tree-alias-ander.h $(FLAGS_H) $(RTL_H) $(TM_P_H) \
-   hard-reg-set.h $(BASIC_BLOCK_H) output.h errors.h $(EXPR_H) \
-   $(DIAGNOSTIC_H) $(C_COMMON_H) tree-inline.h varray.h $(C_TREE_H) \
-   $(TREE_GIMPLE_H) $(HASHTAB_H) function.h
 tree-ssa.o : tree-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h diagnostic.h \
-   errors.h toplev.h function.h $(TIMEVAR_H) tree-alias-common.h \
+   errors.h toplev.h function.h $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) langhooks.h $(CFGLOOP_H) \
    tree-pass.h
 tree-into-ssa.o : tree-into-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h diagnostic.h \
-   errors.h toplev.h function.h $(TIMEVAR_H) tree-alias-common.h \
+   errors.h toplev.h function.h $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) langhooks.h domwalk.h tree-pass.h \
    $(GGC_H)
 tree-outof-ssa.o : tree-outof-ssa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) output.h diagnostic.h \
-   errors.h toplev.h function.h $(TIMEVAR_H) tree-alias-common.h \
+   errors.h toplev.h function.h $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) langhooks.h domwalk.h \
    tree-pass.h $(TREE_SSA_LIVE_H)
 tree-ssa-dse.o : tree-ssa-dse.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -1665,12 +1648,12 @@ domwalk.o : domwalk.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) domwalk.h $(GGC_H)
 tree-ssa-live.o : tree-ssa-live.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h diagnostic.h \
-   errors.h toplev.h function.h $(TIMEVAR_H) tree-alias-common.h \
+   errors.h toplev.h function.h $(TIMEVAR_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_SSA_LIVE_H)
 tree-ssa-copyrename.o : tree-ssa-copyrename.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h \
    diagnostic.h errors.h toplev.h function.h $(TIMEVAR_H) tree-pass.h \
-   tree-alias-common.h $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_SSA_LIVE_H)
+   $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_SSA_LIVE_H)
 tree-ssa-pre.o : tree-ssa-pre.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(EXPR_H) \
    $(GGC_H) output.h diagnostic.h errors.h toplev.h $(TIMEVAR_H) \
@@ -1697,7 +1680,7 @@ tree-iterator.o : tree-iterator.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) \
 tree-dfa.o : tree-dfa.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) output.h diagnostic.h \
    errors.h tree-inline.h $(HASHTAB_H) $(FLAGS_H) function.h $(TIMEVAR_H) \
-   tree-alias-common.h convert.h $(TM_H) coretypes.h langhooks.h \
+   convert.h $(TM_H) coretypes.h langhooks.h \
    $(TREE_DUMP_H) tree-pass.h params.h
 tree-ssa-operands.o : tree-ssa-operands.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(GGC_H) diagnostic.h errors.h \
@@ -1736,11 +1719,11 @@ tree-ssa-loop-im.o : tree-ssa-loop-im.c $(TREE_FLOW_H) $(CONFIG_H) \
    tree-pass.h flags.h
 tree-ssa-alias.o : tree-ssa-alias.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) $(GGC_H) tree-inline.h $(FLAGS_H) \
-   function.h $(TIMEVAR_H) tree-alias-common.h convert.h $(TM_H) coretypes.h \
+   function.h $(TIMEVAR_H) convert.h $(TM_H) coretypes.h \
    langhooks.h $(TREE_DUMP_H) tree-pass.h params.h
 tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(RTL_H) $(TREE_H) $(TM_P_H) $(EXPR_H) \
-   $(GGC_H) output.h diagnostic.h errors.h $(FLAGS_H) tree-alias-common.h \
+   $(GGC_H) output.h diagnostic.h errors.h $(FLAGS_H) \
    $(TIMEVAR_H) $(TM_H) coretypes.h $(TREE_DUMP_H) toplev.h function.h \
    langhooks.h $(FLAGS_H) cgraph.h tree-inline.h tree-mudflap.h $(GGC_H) \
    cgraph.h tree-pass.h
@@ -2430,8 +2413,6 @@ GTFILES = $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-phinodes.c $(srcdir)/tree-cfg.c \
   $(srcdir)/tree-dfa.c $(srcdir)/tree-ssa-propagate.c \
   $(srcdir)/tree-iterator.c $(srcdir)/gimplify.c \
-  $(srcdir)/tree-alias-type.h $(srcdir)/tree-alias-common.h \
-  $(srcdir)/tree-alias-type.c $(srcdir)/tree-alias-common.c \
   $(srcdir)/tree-chrec.h \
   $(srcdir)/tree-ssa-operands.h $(srcdir)/tree-ssa-operands.c \
   $(srcdir)/tree-profile.c $(srcdir)/rtl-profile.c $(srcdir)/tree-nested.c \
@@ -2451,7 +2432,7 @@ gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dojump.h \
 gt-dwarf2out.h gt-ra-build.h gt-reg-stack.h gt-dwarf2asm.h \
 gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parse.h \
 gt-c-pragma.h gtype-c.h gt-input.h gt-cfglayout.h \
-gt-tree-alias-common.h gt-tree-mudflap.h \
+gt-tree-mudflap.h \
 gt-tree-ssa-ccp.h gt-tree-eh.h \
 gt-tree-ssanames.h gt-tree-iterator.h gt-gimplify.h \
 gt-tree-phinodes.h gt-tree-cfg.h gt-tree-nested.h \

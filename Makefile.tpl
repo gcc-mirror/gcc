@@ -107,7 +107,7 @@ REALLY_SET_LIB_PATH = \
   $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # This is the list of directories to be built for the build system.
-BUILD_CONFIGDIRS = libiberty libbanshee
+BUILD_CONFIGDIRS = libiberty
 # Build programs are put under this directory.
 BUILD_SUBDIR = @build_subdir@
 # This is set by the configure script to the arguments to use when configuring

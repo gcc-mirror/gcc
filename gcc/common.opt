@@ -876,9 +876,6 @@ ftree-loop-optimize
 Common Report Var(flag_tree_loop_optimize) Init(1)
 Enable loop optimizations on tree level
 
-ftree-points-to=
-Common Joined RejectNegative
-
 ftree-pre
 Common Report Var(flag_tree_pre)
 Enable SSA-PRE optimization on trees

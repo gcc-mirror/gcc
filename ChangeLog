@@ -1,3 +1,11 @@
+2004-09-09  Daniel Berlin  <dberlin@dberlin.org>
+	
+	* Makefile.def: Remove libbanshee.
+	* Makefile.tpl: Ditto.
+	* configure.in: Ditto.
+	* Makefile.in: Regen.
+	* configure: Ditto.
+
 2004-09-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* ltmain.sh: Use $pic_object as $non_pic_object if
