@@ -583,10 +583,21 @@ simplify_unary_operation (code, mode, op, op_mode)
 	 aren't constant.  */
       switch (code)
 	{
-	case NEG:
 	case NOT:
-	  /* (not (not X)) == X, similarly for NEG.  */
-	  if (GET_CODE (op) == code)
+	  /* (not (not X)) == X.  */
+	  if (GET_CODE (op) == NOT)
+	    return XEXP (op, 0);
+
+	  /* (not (eq X Y)) == (ne X Y), etc.  */
+	  if (mode == BImode && GET_RTX_CLASS (GET_CODE (op)) == '<'
+	      && can_reverse_comparison_p (op, NULL_RTX))
+	    return gen_rtx_fmt_ee (reverse_condition (GET_CODE (op)),
+				   op_mode, XEXP (op, 0), XEXP (op, 1));
+	  break;
+
+	case NEG:
+	  /* (neg (neg X)) == X.  */
+	  if (GET_CODE (op) == NEG)
 	    return XEXP (op, 0);
 	  break;
 
