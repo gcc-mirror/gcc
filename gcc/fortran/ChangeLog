@@ -5,6 +5,9 @@
 	(gfc_match_nullify): Make sure that ')' is in front of the end of
 	statement.
 
+	* scanner.c (skip_fixed_comments): Fix typo in comment preceding
+	function.
+
 2004-12-14  Richard Henderson  <rth@redhat.com>
 
 	* gfortran.h (gfc_expr.function.name): Make const.

@@ -360,7 +360,7 @@ skip_free_comments (void)
 
 /* Skip comment lines in fixed source mode.  We have the same rules as
    in skip_free_comment(), except that we can have a 'c', 'C' or '*'
-   in column 1. and a '!' cannot be in* column 6.  */
+   in column 1, and a '!' cannot be in column 6.  */
 
 static void
 skip_fixed_comments (void)
