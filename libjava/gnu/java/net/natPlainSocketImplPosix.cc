@@ -408,7 +408,7 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
       // that means we've timed out.
       if (sel_retval == 0)
         throw new ::java::net::SocketTimeoutException
-          (JvNewStringUTF ("read timed out") );
+          (JvNewStringUTF ("Read timed out") );
       // If select returns ok we know we either got signalled or read some data...
       // either way we need to try to read.
     }
@@ -422,7 +422,7 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(void)
     {
       ::java::io::InterruptedIOException *iioe =
         new ::java::io::InterruptedIOException
-        (JvNewStringUTF("read interrupted"));
+        (JvNewStringUTF("Read interrupted"));
       iioe->bytesTransferred = r == -1 ? 0 : r;
       throw iioe;
     }
@@ -478,7 +478,7 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint 
         {
           ::java::net::SocketTimeoutException *timeoutException =
             new ::java::net::SocketTimeoutException
-            (JvNewStringUTF ("read timed out"));
+            (JvNewStringUTF ("Read timed out"));
 	  throw timeoutException;
         }
     }
@@ -493,7 +493,7 @@ gnu::java::net::PlainSocketImpl$SocketInputStream::read(jbyteArray buffer, jint 
     {
       ::java::io::InterruptedIOException *iioe =
         new ::java::io::InterruptedIOException
-        (JvNewStringUTF ("read interrupted"));
+        (JvNewStringUTF ("Read interrupted"));
       iioe->bytesTransferred = r == -1 ? 0 : r;
       throw iioe;
     }
