@@ -1,4 +1,4 @@
 // { dg-do assemble  }
 
-template <>
-enum E {e}; // { dg-error "" } template declaration of enum
+template <> // { dg-error "" } template declaration of enum
+enum E {e};
