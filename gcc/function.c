@@ -4638,7 +4638,7 @@ assign_parms (fndecl)
 
 	      push_to_sequence (conversion_insns);
 
-	      if (TYPE_SIZE (type) == 0
+	      if (!COMPLETE_TYPE_P (type)
 		  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 		/* This is a variable sized object.  */
 		copy = gen_rtx_MEM (BLKmode,

@@ -473,7 +473,7 @@ dbxout_typedefs (syms)
 	  tree type = TREE_TYPE (syms);
 	  if (TYPE_NAME (type)
 	      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	      && TYPE_SIZE (type) != NULL_TREE
+	      && COMPLETE_TYPE_P (type)
 	      && ! TREE_ASM_WRITTEN (TYPE_NAME (type)))
 	    dbxout_symbol (TYPE_NAME (type), 0);
 	}
@@ -1072,7 +1072,7 @@ dbxout_type (type, full, show_arg_types)
 	 and either that's all we want or that's the best we could do,
 	 don't repeat the cross reference.
 	 Sun dbx crashes if we do.  */
-      if (! full || TYPE_SIZE (type) == 0
+      if (! full || !COMPLETE_TYPE_P (type)
 	  /* No way in DBX fmt to describe a variable size.  */
 	  || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	return;
@@ -1097,7 +1097,7 @@ dbxout_type (type, full, show_arg_types)
 	 && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	       && DECL_IGNORED_P (TYPE_NAME (type)))
 	 && !full)
-	|| TYPE_SIZE (type) == 0
+	|| !COMPLETE_TYPE_P (type)
 	/* No way in DBX fmt to describe a variable size.  */
 	|| TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
       {
@@ -1362,7 +1362,7 @@ dbxout_type (type, full, show_arg_types)
 	     && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		   && DECL_IGNORED_P (TYPE_NAME (type)))
 	     && !full)
-	    || TYPE_SIZE (type) == 0
+	    || !COMPLETE_TYPE_P (type)
 	    /* No way in DBX fmt to describe a variable size.  */
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
 	  {
@@ -1487,7 +1487,7 @@ dbxout_type (type, full, show_arg_types)
 	   && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		 && DECL_IGNORED_P (TYPE_NAME (type)))
 	   && !full)
-	  || TYPE_SIZE (type) == 0)
+	  || !COMPLETE_TYPE_P (type))
 	{
 	  fprintf (asmfile, "xe");
 	  CHARS (3);
@@ -1866,7 +1866,7 @@ dbxout_symbol (decl, local)
 	if (tag_needed && TYPE_NAME (type) != 0
 	    && (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE
 		|| (DECL_NAME (TYPE_NAME (type)) != 0))
-	    && TYPE_SIZE (type) != 0
+	    && COMPLETE_TYPE_P (type)
 	    && !TREE_ASM_WRITTEN (TYPE_NAME (type)))
 	  {
 	    /* For a TYPE_DECL with no name, but the type has a name,

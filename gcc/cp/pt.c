@@ -657,7 +657,7 @@ maybe_process_partial_specialization (type)
   if (IS_AGGR_TYPE (type) && CLASSTYPE_USE_TEMPLATE (type))
     {
       if (CLASSTYPE_IMPLICIT_INSTANTIATION (type)
-	  && TYPE_SIZE (type) == NULL_TREE)
+	  && !COMPLETE_TYPE_P (type))
 	{
 	  if (current_namespace
 	      != decl_namespace_context (CLASSTYPE_TI_TEMPLATE (type)))
@@ -4577,7 +4577,7 @@ tsubst_friend_function (decl, args)
 	  new_friend = old_decl;
 	}
     }
-  else if (TYPE_SIZE (DECL_CONTEXT (new_friend)))
+  else if (COMPLETE_TYPE_P (DECL_CONTEXT (new_friend)))
     {
       /* Check to see that the declaration is really present, and,
 	 possibly obtain an improved declaration.  */
@@ -4673,7 +4673,7 @@ instantiate_class_template (type)
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (TYPE_BEING_DEFINED (type) || TYPE_SIZE (type))
+  if (TYPE_BEING_DEFINED (type) || COMPLETE_TYPE_P (type))
     return type;
 
   /* Figure out which template is being instantiated.  */
@@ -4749,7 +4749,7 @@ instantiate_class_template (type)
 
   /* If the template we're instantiating is incomplete, then clearly
      there's nothing we can do.  */
-  if (TYPE_SIZE (pattern) == NULL_TREE)
+  if (!COMPLETE_TYPE_P (pattern))
     return type;
 
   /* If this is a partial instantiation, don't tsubst anything.  We will
@@ -6623,7 +6623,7 @@ tsubst (t, args, complain, in_decl)
 	       point, so here CTX really should have complete type, unless
 	       it's a partial instantiation.  */
 	    ctx = complete_type (ctx);
-	    if (!TYPE_SIZE (ctx))
+	    if (!COMPLETE_TYPE_P (ctx))
 	      {
 		if (complain)
 		  incomplete_type_error (NULL_TREE, ctx);
@@ -9177,7 +9177,7 @@ do_type_instantiation (t, storage)
   if (flag_external_templates)
     return;
 
-  if (TYPE_SIZE (t) == NULL_TREE)
+  if (!COMPLETE_TYPE_P (t))
     {
       cp_error ("explicit instantiation of `%#T' before definition of template",
 		t);
@@ -9653,7 +9653,7 @@ instantiate_pending_templates ()
 	    {
 	      tree fn;
 
-	      if (!TYPE_SIZE (instantiation))
+	      if (!COMPLETE_TYPE_P (instantiation))
 		{
 		  instantiate_class_template (instantiation);
 		  if (CLASSTYPE_TEMPLATE_INSTANTIATION (instantiation))
@@ -9662,14 +9662,14 @@ instantiate_pending_templates ()
 			 fn = TREE_CHAIN (fn))
 		      if (! DECL_ARTIFICIAL (fn))
 			instantiate_decl (fn);
-		  if (TYPE_SIZE (instantiation))
+		  if (COMPLETE_TYPE_P (instantiation))
 		    {
 		      instantiated_something = 1;
 		      reconsider = 1;
 		    }
 		}
 
-	      if (TYPE_SIZE (instantiation))
+	      if (COMPLETE_TYPE_P (instantiation))
 		/* If INSTANTIATION has been instantiated, then we don't
 		   need to consider it again in the future.  */
 		*t = TREE_CHAIN (*t);

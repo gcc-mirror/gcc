@@ -362,7 +362,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
       /* A nested class may declare a member of an enclosing class
 	 to be a friend, so we do lookup here even if CTYPE is in
 	 the process of being defined.  */
-      else if (TYPE_SIZE (ctype) != 0 || TYPE_BEING_DEFINED (ctype))
+      else if (COMPLETE_TYPE_P (ctype) || TYPE_BEING_DEFINED (ctype))
 	{
 	  decl = check_classfn (ctype, decl);
 

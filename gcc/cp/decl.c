@@ -2722,7 +2722,7 @@ maybe_process_template_type_declaration (type, globalize, b)
 		 binding level, but is instead the pseudo-global level.  */
 	      b->level_chain->tags =
 		tree_cons (name, type, b->level_chain->tags);
-	      if (TYPE_SIZE (current_class_type) == NULL_TREE)
+	      if (!COMPLETE_TYPE_P (current_class_type))
 		CLASSTYPE_TAGS (current_class_type) = b->level_chain->tags;
 	    }
 	}
@@ -2838,7 +2838,7 @@ pushtag (name, type, globalize)
         }
       if (b->parm_flag == 2)
 	{
-	  if (TYPE_SIZE (current_class_type) == NULL_TREE)
+	  if (!COMPLETE_TYPE_P (current_class_type))
 	    CLASSTYPE_TAGS (current_class_type) = b->tags;
 	}
     }
@@ -4144,7 +4144,7 @@ pushdecl (x)
       /* Keep count of variables in this level with incomplete type.  */
       if (TREE_CODE (x) == VAR_DECL
 	  && TREE_TYPE (x) != error_mark_node
-	  && ((TYPE_SIZE (TREE_TYPE (x)) == NULL_TREE
+	  && ((!COMPLETE_TYPE_P (TREE_TYPE (x))
 	       && PROMOTES_TO_AGGR_TYPE (TREE_TYPE (x), ARRAY_TYPE))
 	      /* RTTI TD entries are created while defining the type_info.  */
 	      || (TYPE_LANG_SPECIFIC (TREE_TYPE (x))
@@ -4668,8 +4668,8 @@ redeclaration_error_message (newdecl, olddecl)
 	   && DECL_INITIAL (DECL_TEMPLATE_RESULT (newdecl))
 	   && DECL_INITIAL (DECL_TEMPLATE_RESULT (olddecl)))
 	  || (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL
-	      && TYPE_SIZE (TREE_TYPE (newdecl))
-	      && TYPE_SIZE (TREE_TYPE (olddecl))))
+	      && COMPLETE_TYPE_P (TREE_TYPE (newdecl))
+	      && COMPLETE_TYPE_P (TREE_TYPE (olddecl))))
 	return "redefinition of `%#D'";
       return 0;
     }
@@ -7003,7 +7003,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
   cplus_decl_attributes (decl, attributes, prefix_attributes);
 
-  if (context && TYPE_SIZE (complete_type (context)) != NULL_TREE)
+  if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
       push_nested_class (context, 2);
 
@@ -7110,7 +7110,7 @@ start_decl_1 (decl)
     {
       /* Don't allow initializations for incomplete types except for
 	 arrays which might be completed by the initialization.  */
-      if (TYPE_SIZE (complete_type (type)) != NULL_TREE)
+      if (COMPLETE_TYPE_P (complete_type (type)))
 	;			/* A complete type is ok.  */
       else if (TREE_CODE (type) != ARRAY_TYPE)
 	{
@@ -7119,7 +7119,7 @@ start_decl_1 (decl)
 	  initialized = 0;
 	  type = TREE_TYPE (decl) = error_mark_node;
 	}
-      else if (TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
+      else if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
 	{
 	  if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
 	    cp_error ("elements of array `%#D' have incomplete type", decl);
@@ -7136,7 +7136,7 @@ start_decl_1 (decl)
       && ! DECL_EXTERNAL (decl))
     {
       if ((! processing_template_decl || ! uses_template_parms (type))
-	  && TYPE_SIZE (complete_type (type)) == NULL_TREE)
+	  && !COMPLETE_TYPE_P (complete_type (type)))
 	{
 	  cp_error ("aggregate `%#D' has incomplete type and cannot be initialized",
 		 decl);
@@ -7337,7 +7337,7 @@ layout_var_decl (decl)
      `extern X x' for some incomplete type `X'.)  */
   if (!DECL_EXTERNAL (decl))
     complete_type (type);
-  if (!DECL_SIZE (decl) && TYPE_SIZE (type))
+  if (!DECL_SIZE (decl) && COMPLETE_TYPE_P (type))
     layout_decl (decl, 0);
 
   if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
@@ -7480,18 +7480,18 @@ check_initializer (decl, init)
       if (type == error_mark_node)
 	/* We will have already complained.  */
 	init = NULL_TREE;
-      else if (TYPE_SIZE (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
+      else if (COMPLETE_TYPE_P (type) && !TREE_CONSTANT (TYPE_SIZE (type)))
 	{
 	  cp_error ("variable-sized object `%D' may not be initialized", decl);
 	  init = NULL_TREE;
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE
-	       && !TYPE_SIZE (TREE_TYPE (type)))
+	       && !COMPLETE_TYPE_P (TREE_TYPE (type)))
 	{
 	  cp_error ("elements of array `%#D' have incomplete type", decl);
 	  init = NULL_TREE;
 	}
-      else if (!TYPE_SIZE (type))
+      else if (!COMPLETE_TYPE_P (type))
 	{
 	  cp_error ("`%D' has incomplete type", decl);
 	  TREE_TYPE (decl) = error_mark_node;
@@ -7565,8 +7565,7 @@ check_initializer (decl, init)
 
       check_for_uninitialized_const_var (decl);
 
-      if (TYPE_SIZE (type) != NULL_TREE
-	  && TYPE_NEEDS_CONSTRUCTING (type))
+      if (COMPLETE_TYPE_P (type) && TYPE_NEEDS_CONSTRUCTING (type))
 	init = obscure_complex_init (decl, NULL_TREE);
 
     }
@@ -7944,7 +7943,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	 type, and that type has not been defined yet, delay emitting
 	 the debug information for it, as we will emit it later.  */
       if (TYPE_MAIN_DECL (TREE_TYPE (decl)) == decl
-	  && TYPE_SIZE (TREE_TYPE (decl)) == NULL_TREE)
+	  && !COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
 
       rest_of_decl_compilation (decl, NULL_PTR,
@@ -8059,7 +8058,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	    /* If size hasn't been set, we're still defining it,
 	       and therefore inside the class body; don't pop
 	       the binding level..  */
-	    && TYPE_SIZE (context) != NULL_TREE
+	    && COMPLETE_TYPE_P (context)
 	    && context == current_class_type)
 	  pop_nested_class ();
       }
@@ -10695,7 +10694,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      }
 		  }
 		else if (RIDBIT_SETP (RID_TYPEDEF, specbits)
-			 || TYPE_SIZE (complete_type (ctype)) != NULL_TREE)
+			 || COMPLETE_TYPE_P (complete_type (ctype)))
 		  {
 		    /* Have to move this code elsewhere in this function.
 		       this code is used for i.e., typedef int A::M; M *pm;
@@ -11212,7 +11211,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      return NULL_TREE;
 	  }
 	else if (!staticp && ! processing_template_decl
-		 && TYPE_SIZE (complete_type (type)) == NULL_TREE
+		 && !COMPLETE_TYPE_P (complete_type (type))
 		 && (TREE_CODE (type) != ARRAY_TYPE || initialized == 0))
 	  {
 	    if (declarator)
@@ -11532,7 +11531,7 @@ require_complete_types_for_parms (parms)
       if (type == error_mark_node)
 	continue;
 
-      if (TYPE_SIZE (type) == NULL_TREE)
+      if (!COMPLETE_TYPE_P (type))
 	{
 	  if (DECL_NAME (parms))
 	    error ("parameter `%s' has incomplete type",
@@ -12160,7 +12159,7 @@ grok_op_properties (decl, virtualp, friendp)
 		what = "the same type";
 	      /* Don't force t to be complete here.  */
 	      else if (IS_AGGR_TYPE (t)
-		       && TYPE_SIZE (t)
+		       && COMPLETE_TYPE_P (t)
 		       && DERIVED_FROM_P (t, current_class_type))
 		what = "a base class";
 
@@ -12533,7 +12532,7 @@ xref_tag (code_type_node, name, globalize)
 
   /* Until the type is defined, tentatively accept whatever
      structure tag the user hands us.  */
-  if (TYPE_SIZE (ref) == NULL_TREE
+  if (!COMPLETE_TYPE_P (ref)
       && ref != current_class_type
       /* Have to check this, in case we have contradictory tag info.  */
       && IS_AGGR_TYPE_CODE (TREE_CODE (ref)))
@@ -12643,7 +12642,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 
       /* This code replaces similar code in layout_basetypes.
          We put the complete_type first for implicit `typename'.  */
-      if (TYPE_SIZE (basetype) == NULL_TREE
+      if (!COMPLETE_TYPE_P (basetype)
 	  && ! (current_template_parms && uses_template_parms (basetype)))
 	{
 	  cp_error ("base class `%T' has incomplete type", basetype);
@@ -13058,11 +13057,12 @@ check_function_type (decl)
      tree decl;
 {
   tree fntype = TREE_TYPE (decl);
+  tree return_type = complete_type (TREE_TYPE (fntype));
 
   /* In a function definition, arg types must be complete.  */
   require_complete_types_for_parms (current_function_parms);
 
-  if (TYPE_SIZE (complete_type (TREE_TYPE (fntype))) == NULL_TREE)
+  if (!COMPLETE_OR_VOID_TYPE_P (return_type))
     {
       cp_error ("return type `%#T' is incomplete", TREE_TYPE (fntype));
 

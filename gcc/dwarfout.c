@@ -2410,6 +2410,7 @@ location_or_const_value_attribute (decl)
 	  rtl = DECL_INCOMING_RTL (decl);
 	else if (! BYTES_BIG_ENDIAN)
 	  if (TREE_CODE (declared_type) == INTEGER_TYPE)
+	    /* NMS WTF? */
 	    if (TYPE_SIZE (declared_type) <= TYPE_SIZE (passed_type))
 	      rtl = DECL_INCOMING_RTL (decl);
       }
@@ -3361,7 +3362,7 @@ output_enumeration_type_die (arg)
      given enum type is incomplete, do not generate the AT_byte_size
      attribute or the AT_element_list attribute.  */
 
-  if (TYPE_SIZE (type))
+  if (COMPLETE_TYPE_P (type))
     {
       byte_size_attribute (type);
       element_list_attribute (TYPE_FIELDS (type));
@@ -3794,7 +3795,7 @@ output_structure_type_die (arg)
      of members (since we don't have any idea what they might be for an
      incomplete type).	*/
 
-  if (TYPE_SIZE (type))
+  if (COMPLETE_TYPE_P (type))
     {
       dienum_push ();
       byte_size_attribute (type);
@@ -3907,7 +3908,7 @@ output_union_type_die (arg)
      of members (since we don't have any idea what they might be for an
      incomplete type).	*/
 
-  if (TYPE_SIZE (type))
+  if (COMPLETE_TYPE_P (type))
     {
       dienum_push ();
       byte_size_attribute (type);
@@ -4408,7 +4409,7 @@ output_type (type, containing_scope)
 	   can safely generate correct Dwarf descriptions for these file-
 	   scope tagged types.  */
 
-	if (TYPE_SIZE (type) == 0
+	if (!COMPLETE_TYPE_P (type)
 	    && (TYPE_CONTEXT (type) == NULL
 		|| AGGREGATE_TYPE_P (TYPE_CONTEXT (type))
 		|| TREE_CODE (TYPE_CONTEXT (type)) == NAMESPACE_DECL)
@@ -4463,7 +4464,7 @@ output_type (type, containing_scope)
 	   appropriate (containing) type.
 	*/
 
-	if (TYPE_SIZE (type))
+	if (COMPLETE_TYPE_P (type))
 	  {
 	    /* First output info about the base classes.  */
 	    if (TYPE_BINFO (type) && TYPE_BINFO_BASETYPES (type))

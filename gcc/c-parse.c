@@ -1,7 +1,6 @@
 
 /*  A Bison parser, made from c-parse.y
- by  GNU Bison version 1.27
-  */
+    by GNU Bison version 1.28  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
@@ -1275,8 +1274,8 @@ static const short yycheck[] = {    38,
     48,    49,    50,    51,    52,    53,    54,    55,    56,    57
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/bison.simple"
-/* This file comes from bison-1.27.  */
+#line 3 "/usr/lib/bison.simple"
+/* This file comes from bison-1.28.  */
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1489,7 +1488,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 216 "/usr/share/bison.simple"
+#line 217 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2110,7 +2109,7 @@ case 62:
 		  else
 		    name = "";
 		  yyval.ttype = result;
-		  if (TREE_CODE (type) == ARRAY_TYPE && TYPE_SIZE (type) == 0)
+		  if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
 		    {
 		      int failure = complete_array_type (type, yyval.ttype, 1);
 		      if (failure)
@@ -3836,7 +3835,7 @@ case 407:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 542 "/usr/share/bison.simple"
+#line 543 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;

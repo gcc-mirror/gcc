@@ -273,7 +273,7 @@ build_typeid (exp)
       return error_mark_node;
     }
   
-  if (TYPE_SIZE (type_info_type_node) == NULL_TREE)
+  if (!COMPLETE_TYPE_P (type_info_type_node))
     {
       error ("must #include <typeinfo> before using typeid");
       return error_mark_node;
@@ -462,7 +462,7 @@ get_typeid (type)
   if (type == error_mark_node)
     return error_mark_node;
 
-  if (TYPE_SIZE (type_info_type_node) == NULL_TREE)
+  if (!COMPLETE_TYPE_P (type_info_type_node))
     {
       error ("must #include <typeinfo> before using typeid");
       return error_mark_node;
@@ -564,7 +564,7 @@ build_dynamic_cast_1 (type, expr)
 	  errstr = "target is not pointer or reference to class";
 	  goto fail;
 	}
-      if (TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
+      if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
 	{
 	  errstr = "target is not pointer or reference to complete type";
 	  goto fail;
@@ -609,7 +609,7 @@ build_dynamic_cast_1 (type, expr)
 	  errstr = "source is not a pointer to class";
 	  goto fail;
 	}
-      if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
+      if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (exprtype))))
 	{
 	  errstr = "source is a pointer to incomplete type";
 	  goto fail;
@@ -625,7 +625,7 @@ build_dynamic_cast_1 (type, expr)
 	  errstr = "source is not of class type";
 	  goto fail;
 	}
-      if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
+      if (!COMPLETE_TYPE_P (complete_type (TREE_TYPE (exprtype))))
 	{
 	  errstr = "source is of incomplete class type";
 	  goto fail;
@@ -1466,7 +1466,7 @@ synthesize_tinfo_var (target_type, real_name)
       break;
     case UNION_TYPE:
     case RECORD_TYPE:
-      if (!TYPE_SIZE (target_type))
+      if (!COMPLETE_TYPE_P (target_type))
         {
           /* FIXME: incomplete type. Awaiting specification.  */
           return NULL_TREE;
@@ -1820,7 +1820,7 @@ emit_support_tinfos ()
   bltn_type = xref_tag (class_type_node,
                         get_identifier ("__fundamental_type_info"), 1);
   pop_nested_namespace (abi_node);
-  if (!TYPE_SIZE (bltn_type))
+  if (!COMPLETE_TYPE_P (bltn_type))
     return;
   dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (bltn_type), 1);
   if (DECL_EXTERNAL (dtor))

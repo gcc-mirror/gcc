@@ -1457,7 +1457,7 @@ check_classfn (ctype, function)
   else
     {
       methods = 0;
-      if (TYPE_SIZE (ctype) == 0)
+      if (!COMPLETE_TYPE_P (ctype))
         incomplete_type_error (function, ctype);
       else
         cp_error ("no `%#D' member function declared in class `%T'",
@@ -1468,7 +1468,7 @@ check_classfn (ctype, function)
      spurious errors (unless the CTYPE is not yet defined, in which
      case we'll only confuse ourselves when the function is declared
      properly within the class.  */
-  if (TYPE_SIZE (ctype))
+  if (COMPLETE_TYPE_P (ctype))
     add_method (ctype, methods, function);
   return NULL_TREE;
 }
@@ -3734,7 +3734,7 @@ reparse_absdcl_as_casts (decl, expr)
       decl = TREE_OPERAND (decl, 0);
 
       expr = digest_init (type, expr, (tree *) 0);
-      if (TREE_CODE (type) == ARRAY_TYPE && TYPE_SIZE (type) == 0)
+      if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
 	{
 	  int failure = complete_array_type (type, expr, 1);
 	  if (failure)

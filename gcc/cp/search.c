@@ -1692,7 +1692,7 @@ lookup_fnfields_1 (type, name)
 	  /* If the type is complete and we're past the conversion ops,
 	     switch to binary search.  */
 	  if (! DECL_CONV_FN_P (tmp)
-	      && TYPE_SIZE (type))
+	      && COMPLETE_TYPE_P (type))
 	    {
 	      int lo = i + 1, hi = len;
 
@@ -3560,7 +3560,7 @@ lookup_conversions (type)
   tree t;
   tree conversions = NULL_TREE;
 
-  if (TYPE_SIZE (type))
+  if (COMPLETE_TYPE_P (type))
     bfs_walk (TYPE_BINFO (type), add_conversions, 0, &conversions);
 
   for (t = conversions; t; t = TREE_CHAIN (t))

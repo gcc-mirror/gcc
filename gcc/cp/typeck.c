@@ -106,7 +106,7 @@ require_complete_type (value)
     type = TREE_TYPE (value);
 
   /* First, detect a valid value with a complete type.  */
-  if (TYPE_SIZE (type) && !integer_zerop (TYPE_SIZE (type)))
+  if (COMPLETE_TYPE_P (type))
     return value;
 
   /* If we see X::Y, we build an OFFSET_TYPE which has
@@ -145,12 +145,12 @@ complete_type (type)
        at some point.  */
     return error_mark_node;
 
-  if (type == error_mark_node || TYPE_SIZE (type) != NULL_TREE)
+  if (type == error_mark_node || COMPLETE_TYPE_P (type))
     ;
   else if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
     {
       tree t = complete_type (TREE_TYPE (type));
-      if (TYPE_SIZE (t) != NULL_TREE && ! processing_template_decl)
+      if (COMPLETE_TYPE_P (t) && ! processing_template_decl)
 	layout_type (type);
       TYPE_NEEDS_CONSTRUCTING (type)
 	= TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (t));
@@ -176,7 +176,7 @@ complete_type_or_else (type, value)
   if (type == error_mark_node)
     /* We already issued an error.  */
     return NULL_TREE;
-  else if (!TYPE_SIZE (type) || integer_zerop (TYPE_SIZE (type)))
+  else if (!COMPLETE_TYPE_P (type))
     {
       incomplete_type_error (value, type);
       return NULL_TREE;
@@ -1584,7 +1584,7 @@ c_sizeof (type)
       return size_zero_node;
     }
 
-  if (TYPE_SIZE (complete_type (type)) == 0)
+  if (!COMPLETE_TYPE_P (complete_type (type)))
     {
       cp_error ("`sizeof' applied to incomplete type `%T'", type);
       return size_zero_node;
@@ -1643,7 +1643,7 @@ c_sizeof_nowarn (type)
   if (code == REFERENCE_TYPE)
     type = TREE_TYPE (type);
 
-  if (TYPE_SIZE (type) == 0)
+  if (!COMPLETE_TYPE_P (type))
     return size_zero_node;
 
   /* Convert in case a char is more than one unit.  */
@@ -2436,7 +2436,7 @@ build_array_ref (array, idx)
 	 address arithmetic on its address.
 	 Likewise an array of elements of variable size.  */
       if (TREE_CODE (idx) != INTEGER_CST
-	  || (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))) != 0
+	  || (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (array)))
 	      && (TREE_CODE (TYPE_SIZE (TREE_TYPE (TREE_TYPE (array))))
 		  != INTEGER_CST)))
 	{
@@ -3163,7 +3163,7 @@ convert_arguments (typelist, values, fndecl, flags)
 	  /* Formal parm type is specified by a function prototype.  */
 	  tree parmval;
 
-	  if (TYPE_SIZE (complete_type (type)) == 0)
+	  if (!COMPLETE_TYPE_P (complete_type (type)))
 	    {
 	      error ("parameter type of called function is incomplete");
 	      parmval = val;
@@ -4228,7 +4228,7 @@ pointer_diff (op0, op1, ptrtype)
 			 cp_convert (restype, op1));
 
   /* This generates an error if op1 is a pointer to an incomplete type.  */
-  if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
+  if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (op1))))
     error ("invalid use of a pointer to an incomplete type in pointer arithmetic");
 
   op1 = ((TREE_CODE (target_type) == VOID_TYPE
@@ -4316,7 +4316,7 @@ build_x_unary_op (code, xarg)
   if (code == ADDR_EXPR
       && TREE_CODE (xarg) != TEMPLATE_ID_EXPR
       && ((IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (xarg)))
-	   && TYPE_SIZE (TREE_TYPE (xarg)) == NULL_TREE)
+	   && !COMPLETE_TYPE_P (TREE_TYPE (xarg)))
 	  || (TREE_CODE (xarg) == OFFSET_REF)))
     /* don't look for a function */;
   else
@@ -4524,7 +4524,9 @@ build_unary_op (code, xarg, noconvert)
 	if (TREE_CODE (argtype) == POINTER_TYPE)
 	  {
 	    enum tree_code tmp = TREE_CODE (TREE_TYPE (argtype));
-	    if (TYPE_SIZE (complete_type (TREE_TYPE (argtype))) == 0)
+	    tree type = complete_type (TREE_TYPE (argtype));
+	    
+	    if (!COMPLETE_OR_VOID_TYPE_P (type))
 	      cp_error ("cannot %s a pointer to incomplete type `%T'",
 			((code == PREINCREMENT_EXPR
 			  || code == POSTINCREMENT_EXPR)
@@ -5536,8 +5538,8 @@ build_c_cast (type, expr)
       && TREE_CODE (otype) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
       && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
-      && TYPE_SIZE (TREE_TYPE (otype))
-      && TYPE_SIZE (TREE_TYPE (type))
+      && COMPLETE_TYPE_P (TREE_TYPE (otype))
+      && COMPLETE_TYPE_P (TREE_TYPE (type))
       && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
     cp_warning ("cast from `%T' to `%T' increases required alignment of target type",
                 otype, type);
@@ -5819,7 +5821,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	{
 	  tree tmp = convert_from_reference (lhs);
 	  lhstype = TREE_TYPE (tmp);
-	  if (TYPE_SIZE (lhstype) == 0)
+	  if (!COMPLETE_TYPE_P (lhstype))
 	    {
 	      incomplete_type_error (lhs, lhstype);
 	      return error_mark_node;
@@ -5830,7 +5832,7 @@ build_modify_expr (lhs, modifycode, rhs)
       if (TREE_CODE (TREE_TYPE (newrhs)) == REFERENCE_TYPE)
 	{
 	  tree tmp = convert_from_reference (newrhs);
-	  if (TYPE_SIZE (TREE_TYPE (tmp)) == 0)
+	  if (!COMPLETE_TYPE_P (TREE_TYPE (tmp)))
 	    {
 	      incomplete_type_error (newrhs, TREE_TYPE (tmp));
 	      return error_mark_node;

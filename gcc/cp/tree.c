@@ -474,7 +474,7 @@ build_cplus_method_type (basetype, rettype, argtypes)
 
   t = type_hash_canon (hashcode, t);
 
-  if (TYPE_SIZE (t) == 0)
+  if (!COMPLETE_TYPE_P (t))
     layout_type (t);
 
   return t;

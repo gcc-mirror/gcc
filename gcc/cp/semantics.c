@@ -1919,7 +1919,7 @@ begin_class_definition (t)
     }
   /* If this type was already complete, and we see another definition,
      that's an error.  */
-  else if (TYPE_SIZE (t))
+  else if (COMPLETE_TYPE_P (t))
     duplicate_tag_error (t);
 
   /* Update the location of the decl.  */

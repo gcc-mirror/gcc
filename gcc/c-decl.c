@@ -985,7 +985,7 @@ poplevel (keep, reverse, functionbody)
 #if 0
   /* Warn about incomplete structure types in this level.  */
   for (link = tags; link; link = TREE_CHAIN (link))
-    if (TYPE_SIZE (TREE_VALUE (link)) == 0)
+    if (!COMPLETE_TYPE_P (TREE_VALUE (link)))
       {
 	tree type = TREE_VALUE (link);
 	tree type_name = TYPE_NAME (type);
@@ -2409,7 +2409,7 @@ pushdecl (x)
 	}
 
       /* Keep count of variables in this level with incomplete type.  */
-      if (TYPE_SIZE (TREE_TYPE (x)) == 0)
+      if (!COMPLETE_TYPE_P (TREE_TYPE (x)))
 	++b->n_incomplete;
     }
 
@@ -3338,7 +3338,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       default:
 	/* Don't allow initializations for incomplete types
 	   except for arrays which might be completed by the initialization.  */
-	if (TYPE_SIZE (TREE_TYPE (decl)) != 0)
+	if (COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	  {
 	    /* A complete type is ok if size is fixed.  */
 
@@ -3355,7 +3355,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 		   IDENTIFIER_POINTER (DECL_NAME (decl)));
 	    initialized = 0;
 	  }
-	else if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl))) == 0)
+	else if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
 	  {
 	    error ("elements of array `%s' have incomplete type",
 		   IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -3414,7 +3414,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	 (which may or may not happen).  */
       && DECL_RTL (tem) == 0)
     {
-      if (TYPE_SIZE (TREE_TYPE (tem)) != 0)
+      if (COMPLETE_TYPE_P (TREE_TYPE (tem)))
 	expand_decl (tem);
       else if (TREE_CODE (TREE_TYPE (tem)) == ARRAY_TYPE
 	       && DECL_INITIAL (tem) != 0)
@@ -3517,7 +3517,7 @@ finish_decl (decl, init, asmspec_tree)
 
   if (TREE_CODE (decl) == VAR_DECL)
     {
-      if (DECL_SIZE (decl) == 0 && TYPE_SIZE (TREE_TYPE (decl)) != 0)
+      if (DECL_SIZE (decl) == 0 && COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	layout_decl (decl, 0);
 
       if (DECL_SIZE (decl) == 0
@@ -4319,7 +4319,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	 union incomplete (*foo)[4];  */
 	  /* Complain about arrays of incomplete types, except in typedefs.  */
 
-	  if (TYPE_SIZE (type) == 0
+	  if (!COMPLETE_TYPE_P (type)
 	      /* Avoid multiple warnings for nested array types.  */
 	      && TREE_CODE (type) != ARRAY_TYPE
 	      && !(specbits & (1 << (int) RID_TYPEDEF))
@@ -4480,7 +4480,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   /* Did array size calculations overflow?  */
 
   if (TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_SIZE (type)
+      && COMPLETE_TYPE_P (type)
       && TREE_OVERFLOW (TYPE_SIZE (type)))
     error ("size of array `%s' is too large", name);
 
@@ -4614,7 +4614,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    error ("field `%s' declared as a function", name);
 	    type = build_pointer_type (type);
 	  }
-	else if (TREE_CODE (type) != ERROR_MARK && TYPE_SIZE (type) == 0)
+	else if (TREE_CODE (type) != ERROR_MARK
+	         && !COMPLETE_OR_UNBOUND_ARRAY_TYPE_P (type))
 	  {
 	    error ("field `%s' has incomplete type", name);
 	    type = error_mark_node;
@@ -4822,7 +4823,7 @@ grokparms (parms_info, funcdef_flag)
 	    {
 	      /* Barf if the parameter itself has an incomplete type.  */
 	      tree type = TREE_VALUE (typelt);
-	      if (TYPE_SIZE (type) == 0)
+	      if (!COMPLETE_TYPE_P (type))
 		{
 		  if (funcdef_flag && DECL_NAME (parm) != 0)
 		    error ("parameter `%s' has incomplete type",
@@ -4844,7 +4845,7 @@ grokparms (parms_info, funcdef_flag)
 			 || TREE_CODE (type) == REFERENCE_TYPE)
 		    type = TREE_TYPE (type);
 		  type = TYPE_MAIN_VARIANT (type);
-		  if (TYPE_SIZE (type) == 0)
+		  if (!COMPLETE_TYPE_P (type))
 		    {
 		      if (DECL_NAME (parm) != 0)
 			warning ("parameter `%s' points to incomplete type",
@@ -5361,7 +5362,7 @@ finish_struct (t, fieldlist, attributes)
 		expand_decl (decl);
 	      --current_binding_level->n_incomplete;
 	    }
-	  else if (TYPE_SIZE (TREE_TYPE (decl)) == 0
+	  else if (!COMPLETE_TYPE_P (TREE_TYPE (decl))
 		   && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	    {
 	      tree element = TREE_TYPE (decl);
@@ -5660,7 +5661,7 @@ start_function (declspecs, declarator, prefix_attributes, attributes)
 
   announce_function (decl1);
 
-  if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl1))) == 0)
+  if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (decl1))))
     {
       error ("return-type is an incomplete type");
       /* Make it return void instead.  */
@@ -6086,7 +6087,7 @@ store_parm_decls ()
 	  else
 	    {
 	      /* Complain about args with incomplete types.  */
-	      if (TYPE_SIZE (TREE_TYPE (parm)) == 0)
+	      if (!COMPLETE_TYPE_P (TREE_TYPE (parm)))
 	        {
 	          error_with_decl (parm, "parameter `%s' has incomplete type");
 	          TREE_TYPE (parm) = error_mark_node;
@@ -6376,7 +6377,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
       TREE_CHAIN (parm) = 0;
 
       /* Complain about args with incomplete types.  */
-      if (TYPE_SIZE (TREE_TYPE (parm)) == 0)
+      if (!COMPLETE_TYPE_P (TREE_TYPE (parm)))
 	{
 	  error_with_decl (parm, "parameter `%s' has incomplete type");
 	  TREE_TYPE (parm) = error_mark_node;

@@ -860,7 +860,7 @@ sdbout_symbol (decl, local)
 	  || TREE_CODE (type) == UNION_TYPE
 	  || TREE_CODE (type) == QUAL_UNION_TYPE)
 	{
-	  if (TYPE_SIZE (type) != 0		/* not a forward reference */
+	  if (COMPLETE_TYPE_P (type)		/* not a forward reference */
 	      && KNOWN_TYPE_TAG (type) == 0)	/* not yet declared */
 	    sdbout_one_type (type);
 	}
@@ -1131,7 +1131,7 @@ sdbout_one_type (type)
 	return;
 
       /* Output nothing if type is not yet defined.  */
-      if (TYPE_SIZE (type) == 0)
+      if (!COMPLETE_TYPE_P (type))
 	return;
 
       TREE_ASM_WRITTEN (type) = 1;

@@ -1,3 +1,32 @@
+2000-03-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (COMPLETE_TYPE_P): New macro.
+	(COMPLETE_OR_VOID_TYPE_P): New macro.
+	(COMPLETE_OR_UNBOUND_ARRAY_TYPE_P): New macro.
+	* stor-layout.c (layout_type, case VOID_TYPE): Don't set TYPE_SIZE.
+	* c-aux-info.c (gen_type): Use them.
+	* c-common.c (c_expand_expr_stmt): Likewise.
+	* c-decl.c (poplevel, pushdecl, start_decl, finish_decl,
+	grokdeclarator, grokparms, finish_struct, start_function,
+	store_parm_decls, combine_parm_decls): Likewise.
+	* c-parse.y (cast_expr): Likewise.
+	* c-typeck.c (require_complete_type, c_sizeof, c_sizeof_nowarn,
+	c_size_in_bytes, c_alignof, build_component_ref,
+	build_indirect_ref, build_array_ref, convert_arguments,
+	build_binary_op, pointer_diff, build_unary_op, digest_init: Likewise.
+	* calls.c (initialize_argument_information): Likewise.
+	* convert.c (convert_to_integer): Likewise.
+	* dbxout.c (dbxout_typedefs, dbxout_type, dbxout_symbol): Likewise.
+	* dwarfout.c (location_or_const_value_attribute,
+	output_enumeration_type_die, output_structure_type_die,
+	output_union_type_die, output_type): Likewise.
+	* expr.c (safe_from_p, expand_expr): Likewise.
+	* function.c (assign_parms): Likewise.
+	* sdbout.c (sdbout_symbol, sdbout_one_type): Likewise.
+	* tree.c (build_array_type, build_function_type,
+	build_method_type, build_offset_type, build_complex_type): Likewise.
+	* c-parse.c, c-parse.h: Regenerated.
+
 2000-03-21  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/rtems.h: Include config/rtems.h.
@@ -17161,7 +17190,7 @@ Fri Aug 20 18:53:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 	copy_rtx_and_substitute, subst_constants, restore_constants):
 	Likewise.
 
-	* jump.c  (mark_jump_label, invert_exp, redirect_e   xp,
+	* jump.c  (mark_jump_label, invert_exp, redirect_exp,
 	rtx_renumbered_equal_p, rtx_equal_for_thread_p): Likewise.
 
 	* local-alloc.c (contains_replace_regs, memref_referenced_p):
@@ -18001,7 +18030,7 @@ Mon Aug  9 10:08:50 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(unroll_loop): Access regno_pointer_* variables through
 	current_function.
 
-	* tree.h (struct tree_decl): Add elt f to saved_ins   ns member.
+	* tree.h (struct tree_decl): Add elt f to saved_insns member.
 	(DECL_SAVED_INSNS): use it.
 	(expand_dummy_function_end): Declare.
 	(init_function_for_compilation): Declare.
@@ -18904,7 +18933,7 @@ Wed Jul 28 11:22:21 1999  Richard Henderson  <rth@cygnus.com>
 
 Wed Jul 28 11:20:19 1999  Richard Henderson  <rth@cygnus.com>
 
-	* mn102   00.c (mn10200_va_arg): New.
+	* mn10200.c (mn10200_va_arg): New.
 	* mn10200.h (EXPAND_BUILTIN_VA_ARG): New.
 
 Wed Jul 28 11:19:06 1999  Richard Henderson  <rth@cygnus.com>

@@ -2139,7 +2139,7 @@ c_expand_expr_stmt (expr)
     expr = default_conversion (expr);
 
   if (TREE_TYPE (expr) != error_mark_node
-      && TYPE_SIZE (TREE_TYPE (expr)) == 0
+      && !COMPLETE_TYPE_P (TREE_TYPE (expr))
       && TREE_CODE (TREE_TYPE (expr)) != ARRAY_TYPE)
     error ("expression statement has incomplete type");
 
