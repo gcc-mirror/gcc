@@ -1,5 +1,11 @@
 2005-03-30  Andreas Tobler  <a.tobler@schweiz.ch>
 
+	* Makefile.am (classes.stamp): Add gnu/gcj/tools/gcj_dbtool/Main.java
+	to fix a ONESTEP fallout.
+	* Makefile.in: Regenerate.
+
+2005-03-30  Andreas Tobler  <a.tobler@schweiz.ch>
+
 	* testsuite/lib/libjava.exp (libjava_init): Use the same target
 	check for Darwin.
 	(libjava_arguments): Likewise.

@@ -26663,7 +26663,7 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 
 # Compile all classfiles in one go.
 
-@ONESTEP_TRUE@classes.stamp: $(all_java_source_files)
+@ONESTEP_TRUE@classes.stamp: $(all_java_source_files) gnu/gcj/tools/gcj_dbtool/Main.java
 @ONESTEP_TRUE@	@echo Compiling Java sourcefiles...
 @ONESTEP_TRUE@	@: $(call write_entries_to_file,$?,libgcj.sourcelist)
 @ONESTEP_TRUE@	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(BOOTCLASSPATH) -d $(here) @libgcj.sourcelist
@@ -26672,7 +26672,7 @@ $(lib_gnu_java_awt_peer_gtk_la_OBJECTS): $(lib_gnu_java_awt_peer_gtk_la_DEPENDEN
 # classfiles are compiled in one go when classes.stamp is built and 2)
 # anything which depends on a particular .class file must wait until
 # this file is built.
-@ONESTEP_TRUE@$(all_java_class_files): classes.stamp
+@ONESTEP_TRUE@$(all_java_class_files) gnu/gcj/tools/gcj_dbtool/Main.class: classes.stamp
 
 # Compile each classfile individually.
 
