@@ -1,3 +1,7 @@
+2005-03-08  Ira Rosen  <irar@il.ibm.com>
+
+	* gcc.dg/vect/pr20122.c: New test.
+
 2005-03-07  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/20030821-1.c: Verify that the computed goto
