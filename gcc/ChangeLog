@@ -1,3 +1,10 @@
+2003-07-17  Richard Henderson  <rth@redhat.com>
+
+        PR target/10907
+        * config/ia64/ia64.c (ia64_epilogue_uses): GP is live at end
+        even with !TARGET_CONST_GP.
+        (ia64_function_ok_for_sibcall): Reject non-local functions.
+
 2003-07-17  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-common.c (c_estimate_num_insns_1): Don't handle
