@@ -1,3 +1,16 @@
+2004-08-11  Paul Brook  <paul@codesourcery.com>
+
+	* arm.c (thumb_force_lr_save): Add prototype.
+	(thumb_compute_save_reg_mask): New function.
+	(thumb_find_work_register): New function.
+	(arm_get_frame_offsets): Use thumb_compute_save_reg_mask.
+	(thumb_unexpanded_epilogue): Ditto.  Remove redundant code.
+	Don't clobber r3 when removing pretend args.
+	(thumb_expand_prologue): Use thumb_compute_save_reg_mask.
+	(thumb_output_function_prologue): Use new functions.
+	(thumb_set_return_address): Use thumb_compute_save_reg_mask.
+	* arm.h (THUMB_REG_PUSHED_P): Remove.
+
 2004-08-11  James E Wilson  <wilson@specifixinc.com>
 
 	PR rtl-optimization/16490

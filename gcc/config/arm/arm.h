@@ -1857,12 +1857,6 @@ typedef struct
    ((TO) == THUMB_HARD_FRAME_POINTER_REGNUM && TARGET_ARM) ? 0 :	\
    1)
 
-#define THUMB_REG_PUSHED_P(reg)					\
-  (regs_ever_live [reg]						\
-   && (! call_used_regs [reg]					\
-       || (flag_pic && (reg) == PIC_OFFSET_TABLE_REGNUM))	\
-   && !(TARGET_SINGLE_PIC_BASE && ((reg) == arm_pic_register)))
-     
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
