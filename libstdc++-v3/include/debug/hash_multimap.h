@@ -46,24 +46,24 @@ namespace __gnu_debug_def
 						       _EqualKey, _Alloc> >
     {
       typedef __gnu_cxx::hash_multimap<_Value,_Tp,_HashFcn, _EqualKey,_Alloc>
-      							_Base;
+							_Base;
       typedef __gnu_debug::_Safe_sequence<hash_multimap> _Safe_base;
 
   public:
-      typedef typename _Base::key_type        		key_type;
-      typedef typename _Base::data_type       		data_type;
-      typedef typename _Base::mapped_type     		mapped_type;
-      typedef typename _Base::value_type      		value_type;
-      typedef typename _Base::hasher          		hasher;
-      typedef typename _Base::key_equal       		key_equal;
-      typedef typename _Base::size_type       		size_type;
-      typedef typename _Base::difference_type 		difference_type;
-      typedef typename _Base::pointer         		pointer;
-      typedef typename _Base::const_pointer   		const_pointer;
-      typedef typename _Base::reference       		reference;
-      typedef typename _Base::const_reference 		const_reference;
+      typedef typename _Base::key_type			key_type;
+      typedef typename _Base::data_type			data_type;
+      typedef typename _Base::mapped_type		mapped_type;
+      typedef typename _Base::value_type		value_type;
+      typedef typename _Base::hasher			hasher;
+      typedef typename _Base::key_equal			key_equal;
+      typedef typename _Base::size_type			size_type;
+      typedef typename _Base::difference_type		difference_type;
+      typedef typename _Base::pointer			pointer;
+      typedef typename _Base::const_pointer		const_pointer;
+      typedef typename _Base::reference			reference;
+      typedef typename _Base::const_reference		const_reference;
 
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, 
+      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator,
 					  hash_multimap> iterator;
       typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator,
 					  hash_multimap> const_iterator;
@@ -73,17 +73,17 @@ namespace __gnu_debug_def
       using _Base::hash_funct;
       using _Base::key_eq;
       using _Base::get_allocator;
-      
+
       hash_multimap() { }
-      
+
       explicit hash_multimap(size_type __n) : _Base(__n) { }
-      
+
       hash_multimap(size_type __n, const hasher& __hf) : _Base(__n, __hf) { }
 
       hash_multimap(size_type __n, const hasher& __hf, const key_equal& __eql,
 		    const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __eql, __a) { }
-    
+
       template<typename _InputIterator>
         hash_multimap(_InputIterator __f, _InputIterator __l)
 	: _Base(__gnu_debug::__check_valid_range(__f, __l), __l) { }
@@ -107,96 +107,96 @@ namespace __gnu_debug_def
       using _Base::size;
       using _Base::max_size;
       using _Base::empty;
-      
-      void 
+
+      void
       swap(hash_multimap& __x)
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
       }
-      
-      iterator 
+
+      iterator
       begin() { return iterator(_Base::begin(), this); }
 
-      iterator 
+      iterator
       end()   { return iterator(_Base::end(),   this); }
-      
-      const_iterator 
-      begin() const 
+
+      const_iterator
+      begin() const
       { return const_iterator(_Base::begin(), this); }
-      
-      const_iterator 
-      end() const 
+
+      const_iterator
+      end() const
       { return const_iterator(_Base::end(),   this); }
-      
+
       iterator
       insert(const value_type& __obj)
       { return iterator(_Base::insert(__obj), this); }
-      
+
       template <typename _InputIterator>
-        void 
-        insert(_InputIterator __first, _InputIterator __last) 
+        void
+        insert(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::insert(__first.base(), __last.base());
 	}
-      
+
       iterator
       insert_noresize(const value_type& __obj)
       { return iterator(_Base::insert_noresize(__obj), this); }
-      
-      iterator 
+
+      iterator
       find(const key_type& __key)
       { return iterator(_Base::find(__key), this); }
-      
-      const_iterator 
-      find(const key_type& __key) const 
+
+      const_iterator
+      find(const key_type& __key) const
       { return const_iterator(_Base::find(__key), this); }
-      
+
       using _Base::count;
-      
-      std::pair<iterator, iterator> 
+
+      std::pair<iterator, iterator>
       equal_range(const key_type& __key)
-      { 
+      {
 	typedef typename _Base::iterator _Base_iterator;
-	std::pair<_Base_iterator, _Base_iterator> __res = 
+	std::pair<_Base_iterator, _Base_iterator> __res =
 	                                             _Base::equal_range(__key);
 	return std::make_pair(iterator(__res.first, this),
 			      iterator(__res.second, this));
       }
-      
-      std::pair<const_iterator, const_iterator> 
+
+      std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __key) const
-      { 
+      {
 	typedef typename _Base::const_iterator _Base_iterator;
-	std::pair<_Base_iterator, _Base_iterator> __res = 
+	std::pair<_Base_iterator, _Base_iterator> __res =
         _Base::equal_range(__key);
 	return std::make_pair(const_iterator(__res.first, this),
 			      const_iterator(__res.second, this));
       }
-      
-      size_type 
-      erase(const key_type& __key) 
+
+      size_type
+      erase(const key_type& __key)
       {
 	std::pair<iterator, iterator> __victims = this->equal_range(__key);
 	size_t __num_victims = 0;
-	while (__victims.first != __victims.second) 
+	while (__victims.first != __victims.second)
 	{
 	  this->erase(__victims.first++);
 	  ++__num_victims;
 	}
 	return __num_victims;
       }
-    
-      void 
-      erase(iterator __it) 
+
+      void
+      erase(iterator __it)
       {
 	__glibcxx_check_erase(__it);
 	__it._M_invalidate();
 	_Base::erase(__it.base());
       }
-      
-      void 
+
+      void
       erase(iterator __first, iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
@@ -207,27 +207,27 @@ namespace __gnu_debug_def
 	}
 	_Base::erase(__first.base(), __last.base());
       }
-      
-      void 
-      clear() 
-      { 
+
+      void
+      clear()
+      {
 	_Base::clear();
-	this->_M_invalidate_all(); 
+	this->_M_invalidate_all();
       }
-      
+
       using _Base::resize;
       using _Base::bucket_count;
       using _Base::max_bucket_count;
       using _Base::elems_in_bucket;
-      
-      _Base&       
+
+      _Base&
       _M_base()       { return *this; }
 
-      const _Base& 
+      const _Base&
       _M_base() const { return *this; }
-      
+
     private:
-      void 
+      void
       _M_invalidate_all()
       {
 	typedef typename _Base::const_iterator _Base_const_iterator;
@@ -235,22 +235,22 @@ namespace __gnu_debug_def
 	this->_M_invalidate_if(_Not_equal(_M_base().end()));
       }
     };
-  
-  template<typename _Value, typename _Tp, typename _HashFcn, 
+
+  template<typename _Value, typename _Tp, typename _HashFcn,
 	   typename _EqualKey, typename _Alloc>
     inline bool
     operator==(const hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>& __x,
 	       const hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>& __y)
     { return __x._M_base() == __y._M_base(); }
 
-  template<typename _Value, typename _Tp, typename _HashFcn, 
+  template<typename _Value, typename _Tp, typename _HashFcn,
 	   typename _EqualKey, typename _Alloc>
     inline bool
     operator!=(const hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>& __x,
 	       const hash_multimap<_Value,_Tp,_HashFcn,_EqualKey,_Alloc>& __y)
     { return __x._M_base() != __y._M_base(); }
-  
-  template<typename _Value, typename _Tp, typename _HashFcn, 
+
+  template<typename _Value, typename _Tp, typename _HashFcn,
 	   typename _EqualKey, typename _Alloc>
     inline void
     swap(hash_multimap<_Value, _Tp, _HashFcn, _EqualKey, _Alloc>& __x,

@@ -45,18 +45,18 @@ namespace __gnu_debug_def
     {
       typedef __gnu_norm::set<_Key,_Compare,_Allocator> _Base;
       typedef __gnu_debug::_Safe_sequence<set> _Safe_base;
-      
+
     public:
       // types:
-      typedef _Key 	 			    key_type;
-      typedef _Key 	 			    value_type;
-      typedef _Compare   			    key_compare;
-      typedef _Compare   			    value_compare;
-      typedef _Allocator 			    allocator_type;
+      typedef _Key				    key_type;
+      typedef _Key				    value_type;
+      typedef _Compare				    key_compare;
+      typedef _Compare				    value_compare;
+      typedef _Allocator			    allocator_type;
       typedef typename _Allocator::reference        reference;
       typedef typename _Allocator::const_reference  const_reference;
-      
-      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, set> 
+
+      typedef __gnu_debug::_Safe_iterator<typename _Base::iterator, set>
                                                     iterator;
       typedef __gnu_debug::_Safe_iterator<typename _Base::const_iterator, set>
                                                     const_iterator;
@@ -67,12 +67,12 @@ namespace __gnu_debug_def
       typedef typename _Allocator::const_pointer    const_pointer;
       typedef std::reverse_iterator<iterator>       reverse_iterator;
       typedef std::reverse_iterator<const_iterator> const_reverse_iterator;
-      
+
       // 23.3.3.1 construct/copy/destroy:
       explicit set(const _Compare& __comp = _Compare(),
 		   const _Allocator& __a = _Allocator())
       : _Base(__comp, __a) { }
-      
+
       template<typename _InputIterator>
         set(_InputIterator __first, _InputIterator __last,
 	    const _Compare& __comp = _Compare(),
@@ -80,63 +80,63 @@ namespace __gnu_debug_def
 	: _Base(__gnu_debug::__check_valid_range(__first, __last), __last,
 		__comp, __a) { }
 
-      set(const set<_Key,_Compare,_Allocator>& __x) 
+      set(const set<_Key,_Compare,_Allocator>& __x)
       : _Base(__x), _Safe_base() { }
-    
+
       set(const _Base& __x) : _Base(__x), _Safe_base() { }
-      
+
       ~set() { }
-      
-      set<_Key,_Compare,_Allocator>& 
+
+      set<_Key,_Compare,_Allocator>&
       operator=(const set<_Key,_Compare,_Allocator>& __x)
       {
 	*static_cast<_Base*>(this) = __x;
 	this->_M_invalidate_all();
 	return *this;
       }
-      
+
       using _Base::get_allocator;
-      
+
       // iterators:
-      iterator       
-      begin() 
+      iterator
+      begin()
       { return iterator(_Base::begin(), this); }
-      
-      const_iterator 
-      begin() const 
+
+      const_iterator
+      begin() const
       { return const_iterator(_Base::begin(), this); }
-      
-      iterator       
+
+      iterator
       end()
       { return iterator(_Base::end(), this); }
-      
-      const_iterator 
-      end() const   
+
+      const_iterator
+      end() const
       { return const_iterator(_Base::end(), this); }
-      
-      reverse_iterator 
+
+      reverse_iterator
       rbegin()
       { return reverse_iterator(end()); }
-      
-      const_reverse_iterator 
+
+      const_reverse_iterator
       rbegin() const
       { return const_reverse_iterator(end()); }
-      
-      reverse_iterator 
-      rend() 
+
+      reverse_iterator
+      rend()
       { return reverse_iterator(begin()); }
-      
-      const_reverse_iterator 
-      rend() const 
+
+      const_reverse_iterator
+      rend() const
       { return const_reverse_iterator(begin()); }
-      
+
       // capacity:
       using _Base::empty;
       using _Base::size;
       using _Base::max_size;
-      
+
       // modifiers:
-      std::pair<iterator, bool> 
+      std::pair<iterator, bool>
       insert(const value_type& __x)
       {
 	typedef typename _Base::iterator _Base_iterator;
@@ -144,31 +144,31 @@ namespace __gnu_debug_def
 	return std::pair<iterator, bool>(iterator(__res.first, this),
 					 __res.second);
       }
-      
-      iterator 
+
+      iterator
       insert(iterator __position, const value_type& __x)
       {
 	__glibcxx_check_insert(__position);
 	return iterator(_Base::insert(__position.base(), __x), this);
       }
-      
+
       template <typename _InputIterator>
-        void 
+        void
         insert(_InputIterator __first, _InputIterator __last)
         {
 	  __glibcxx_check_valid_range(__first, __last);
 	  _Base::insert(__first, __last);
 	}
-      
-      void 
+
+      void
       erase(iterator __position)
       {
 	__glibcxx_check_erase(__position);
 	__position._M_invalidate();
 	_Base::erase(__position.base());
       }
-      
-      size_type 
+
+      size_type
       erase(const key_type& __x)
       {
 	iterator __victim = find(__x);
@@ -181,66 +181,66 @@ namespace __gnu_debug_def
 	  return 1;
         }
       }
-      
-      void 
+
+      void
       erase(iterator __first, iterator __last)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-	
+
 	while (__first != __last)
         this->erase(__first++);
       }
-      
-      void 
+
+      void
       swap(set<_Key,_Compare,_Allocator>& __x)
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
       }
-      
-      void 
+
+      void
       clear()
       { this->erase(begin(), end()); }
-      
+
       // observers:
       using _Base::key_comp;
       using _Base::value_comp;
-      
+
       // set operations:
-      iterator 
+      iterator
       find(const key_type& __x)
       { return iterator(_Base::find(__x), this); }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214. set::find() missing const overload
-      const_iterator 
+      const_iterator
       find(const key_type& __x) const
       { return const_iterator(_Base::find(__x), this); }
-      
+
       using _Base::count;
-      
-      iterator 
+
+      iterator
       lower_bound(const key_type& __x)
       { return iterator(_Base::lower_bound(__x), this); }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214. set::find() missing const overload
-      const_iterator 
+      const_iterator
       lower_bound(const key_type& __x) const
       { return const_iterator(_Base::lower_bound(__x), this); }
-      
-      iterator 
+
+      iterator
       upper_bound(const key_type& __x)
       { return iterator(_Base::upper_bound(__x), this); }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214. set::find() missing const overload
-      const_iterator 
+      const_iterator
       upper_bound(const key_type& __x) const
       { return const_iterator(_Base::upper_bound(__x), this); }
-      
+
       std::pair<iterator,iterator>
       equal_range(const key_type& __x)
       {
@@ -250,7 +250,7 @@ namespace __gnu_debug_def
 	return std::make_pair(iterator(__res.first, this),
 			      iterator(__res.second, this));
       }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 214. set::find() missing const overload
       std::pair<const_iterator,const_iterator>
@@ -262,15 +262,15 @@ namespace __gnu_debug_def
 	return std::make_pair(const_iterator(__res.first, this),
 			      const_iterator(__res.second, this));
       }
-      
-      _Base&       
+
+      _Base&
       _M_base() { return *this; }
 
-      const _Base& 
+      const _Base&
       _M_base() const { return *this; }
-      
+
     private:
-      void 
+      void
       _M_invalidate_all()
       {
 	typedef typename _Base::const_iterator _Base_const_iterator;
@@ -278,46 +278,46 @@ namespace __gnu_debug_def
 	this->_M_invalidate_if(_Not_equal(_M_base().end()));
       }
     };
-  
+
   template<typename _Key, typename _Compare, typename _Allocator>
-    inline bool 
+    inline bool
     operator==(const set<_Key,_Compare,_Allocator>& __lhs,
 	       const set<_Key,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
-    inline bool 
+    inline bool
     operator!=(const set<_Key,_Compare,_Allocator>& __lhs,
 	       const set<_Key,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() != __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
-    inline bool 
+    inline bool
     operator<(const set<_Key,_Compare,_Allocator>& __lhs,
 	      const set<_Key,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() < __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
-    inline bool 
+    inline bool
     operator<=(const set<_Key,_Compare,_Allocator>& __lhs,
 	       const set<_Key,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() <= __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
-    inline bool 
+    inline bool
     operator>=(const set<_Key,_Compare,_Allocator>& __lhs,
 	       const set<_Key,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() >= __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
-    inline bool 
+    inline bool
     operator>(const set<_Key,_Compare,_Allocator>& __lhs,
 	      const set<_Key,_Compare,_Allocator>& __rhs)
     { return __lhs._M_base() > __rhs._M_base(); }
 
   template<typename _Key, typename _Compare, typename _Allocator>
     void
-    swap(set<_Key,_Compare,_Allocator>& __x, 
+    swap(set<_Key,_Compare,_Allocator>& __x,
 	 set<_Key,_Compare,_Allocator>& __y)
     { return __x.swap(__y); }
 } // namespace __gnu_debug_def

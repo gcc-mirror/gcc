@@ -1,5 +1,17 @@
 2003-12-09  Bernardo Innocenti  <bernie@develer.com>
 
+	* include/debug/bitset, include/debug/debug.h, include/debug/deque,
+	include/debug/formatter.h, include/debug/hash_map.h,
+	include/debug/hash_multimap.h, include/debug/hash_multiset.h,
+	include/debug/hash_set, include/debug/hash_set.h, include/debug/list,
+	include/debug/map.h, include/debug/multimap.h,
+	include/debug/multiset.h, include/debug/safe_base.h,
+	include/debug/safe_iterator.h, include/debug/safe_iterator.tcc,
+	include/debug/safe_sequence.h, include/debug/set.h,
+	include/debug/string, include/debug/vector: Remove trailing whitespace.
+
+2003-12-09  Bernardo Innocenti  <bernie@develer.com>
+
 	* include/c_compatibility/iso646.h, include/c_compatibility/limits.h,
 	include/c_compatibility/locale.h, include/c_compatibility/stdio.h,
 	include/c_compatibility/string.h, include/c_compatibility/time.h,

@@ -36,25 +36,25 @@
 #include <debug/safe_iterator.h>
 
 namespace __gnu_debug_def
-{ 
-  template<size_t _Nb> 
+{
+  template<size_t _Nb>
     class bitset
     : public __gnu_norm::bitset<_Nb>, public __gnu_debug::_Safe_sequence_base
     {
-      typedef  __gnu_norm::bitset<_Nb> 	   	_Base;
+      typedef  __gnu_norm::bitset<_Nb>		_Base;
       typedef __gnu_debug::_Safe_sequence_base  _Safe_base;
 
     public:
       // bit reference:
-      class reference 
+      class reference
       : private _Base::reference, public __gnu_debug::_Safe_iterator_base
       {
 	typedef typename _Base::reference _Base_ref;
 
 	friend class bitset;
 	reference();
-	
-	reference(const _Base_ref& __base, bitset* __seq) 
+
+	reference(const _Base_ref& __base, bitset* __seq)
 	: _Base_ref(__base), _Safe_iterator_base(__seq, false)
 	{ }
 
@@ -63,7 +63,7 @@ namespace __gnu_debug_def
 	: _Base_ref(__x), _Safe_iterator_base(__x, false)
 	{ }
 
-	reference& 
+	reference&
 	operator=(bool __x)
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
@@ -73,7 +73,7 @@ namespace __gnu_debug_def
 	  return *this;
 	}
 
-	reference& 
+	reference&
 	operator=(const reference& __x)
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! __x._M_singular(),
@@ -85,8 +85,8 @@ namespace __gnu_debug_def
 	  *static_cast<_Base_ref*>(this) = __x;
 	  return *this;
 	}
-	
-	bool 
+
+	bool
 	operator~() const
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
@@ -94,7 +94,7 @@ namespace __gnu_debug_def
 				._M_iterator(*this));
 	  return ~(*static_cast<const _Base_ref*>(this));
 	}
-	
+
 	operator bool() const
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
@@ -102,8 +102,8 @@ namespace __gnu_debug_def
 				._M_iterator(*this));
 	  return *static_cast<const _Base_ref*>(this);
 	}
-	
-	reference& 
+
+	reference&
 	flip()
 	{
 	  _GLIBCXX_DEBUG_VERIFY(! this->_M_singular(),
@@ -116,170 +116,170 @@ namespace __gnu_debug_def
 
       // 23.3.5.1 constructors:
       bitset() : _Base() { }
-      
+
       bitset(unsigned long __val) : _Base(__val) { }
-      
+
       template<typename _CharT, typename _Traits, typename _Allocator>
-        explicit 
+        explicit
         bitset(const std::basic_string<_CharT,_Traits,_Allocator>& __str,
 	       typename std::basic_string<_CharT,_Traits,_Allocator>::size_type
 	       __pos = 0,
 	       typename std::basic_string<_CharT,_Traits,_Allocator>::size_type
-  	       __n = (std::basic_string<_CharT,_Traits,_Allocator>::npos))
+	       __n = (std::basic_string<_CharT,_Traits,_Allocator>::npos))
 	: _Base(__str, __pos, __n) { }
 
       bitset(const _Base& __x) : _Base(__x), _Safe_base() { }
 
       // 23.3.5.2 bitset operations:
-      bitset<_Nb>& 
+      bitset<_Nb>&
       operator&=(const bitset<_Nb>& __rhs)
       {
 	_M_base() &= __rhs;
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       operator|=(const bitset<_Nb>& __rhs)
       {
 	_M_base() != __rhs;
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       operator^=(const bitset<_Nb>& __rhs)
       {
 	_M_base() ^= __rhs;
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       operator<<=(size_t __pos)
       {
 	_M_base() <<= __pos;
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       operator>>=(size_t __pos)
       {
 	_M_base() >>= __pos;
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       set()
       {
 	_Base::set();
 	return *this;
       }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 186. bitset::set() second parameter should be bool 
-      bitset<_Nb>& 
+      // 186. bitset::set() second parameter should be bool
+      bitset<_Nb>&
       set(size_t __pos, bool __val = true)
       {
 	_Base::set(__pos, __val);
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       reset()
       {
 	_Base::reset();
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       reset(size_t __pos)
       {
 	_Base::reset(__pos);
 	return *this;
       }
-      
+
       bitset<_Nb> operator~() const { return bitset(~_M_base()); }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       flip()
       {
 	_Base::flip();
 	return *this;
       }
-      
-      bitset<_Nb>& 
+
+      bitset<_Nb>&
       flip(size_t __pos)
       {
 	_Base::flip(__pos);
 	return *this;
       }
-      
+
       // element access:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 11. Bitset minor problems 
-      reference 
+      // 11. Bitset minor problems
+      reference
       operator[](size_t __pos)
-      { 
+      {
 	__glibcxx_check_subscript(__pos);
-	return reference(_M_base()[__pos], this); 
+	return reference(_M_base()[__pos], this);
       }
-      
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 11. Bitset minor problems 
-      bool 
-      operator[](size_t __pos) const 
-      { 
+      // 11. Bitset minor problems
+      bool
+      operator[](size_t __pos) const
+      {
 	__glibcxx_check_subscript(__pos);
-	return _M_base()[__pos]; 
+	return _M_base()[__pos];
       }
-      
+
       using _Base::to_ulong;
-      
+
       template <typename _CharT, typename _Traits, typename _Allocator>
-        std::basic_string<_CharT, _Traits, _Allocator> 
+        std::basic_string<_CharT, _Traits, _Allocator>
         to_string() const
         { return _M_base().template to_string<_CharT, _Traits, _Allocator>(); }
-      
+
       using _Base::count;
       using _Base::size;
-      
-      bool 
+
+      bool
       operator==(const bitset<_Nb>& __rhs) const
       { return _M_base() == __rhs; }
 
-      bool 
+      bool
       operator!=(const bitset<_Nb>& __rhs) const
       { return _M_base() != __rhs; }
-      
+
       using _Base::test;
       using _Base::any;
       using _Base::none;
-      
-      bitset<_Nb> 
+
+      bitset<_Nb>
       operator<<(size_t __pos) const
       { return bitset<_Nb>(_M_base() << __pos); }
-      
-      bitset<_Nb> 
+
+      bitset<_Nb>
       operator>>(size_t __pos) const
       { return bitset<_Nb>(_M_base() >> __pos); }
-      
-      _Base&       
+
+      _Base&
       _M_base() { return *this; }
 
-      const _Base& 
+      const _Base&
       _M_base() const { return *this; }
     };
- 
+
   template<size_t _Nb>
-    bitset<_Nb> 
+    bitset<_Nb>
     operator&(const bitset<_Nb>& __x, const bitset<_Nb>& __y)
     { return bitset<_Nb>(__x) &= __y; }
-  
+
   template<size_t _Nb>
-    bitset<_Nb> 
+    bitset<_Nb>
     operator|(const bitset<_Nb>& __x, const bitset<_Nb>& __y)
     { return bitset<_Nb>(__x) |= __y; }
 
   template<size_t _Nb>
-    bitset<_Nb> 
+    bitset<_Nb>
     operator^(const bitset<_Nb>& __x, const bitset<_Nb>& __y)
     { return bitset<_Nb>(__x) ^= __y; }
 
@@ -290,7 +290,7 @@ namespace __gnu_debug_def
 
   template<typename _CharT, typename _Traits, size_t _Nb>
     std::basic_ostream<_CharT, _Traits>&
-    operator<<(std::basic_ostream<_CharT, _Traits>& __os, 
+    operator<<(std::basic_ostream<_CharT, _Traits>& __os,
 	       const bitset<_Nb>& __x)
     { return __os << __x._M_base(); }
 } // namespace __gnu_debug_def
