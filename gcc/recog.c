@@ -3315,6 +3315,9 @@ store_data_bypass_p (out_insn, in_insn)
 	{
 	  rtx exp = XVECEXP (out_pat, 0, i);
 
+	  if (GET_CODE (exp) == CLOBBER)
+	    continue;
+
 	  if (GET_CODE (exp) != SET)
 	    abort ();
 

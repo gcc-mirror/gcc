@@ -1,3 +1,7 @@
+2002-05-05  David S. Miller  <davem@redhat.com>
+
+	* recog.c (store_data_bypass_p): Handle CLOBBER inside PARALLEL.
+
 2002-05-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c: Fix formatting.
