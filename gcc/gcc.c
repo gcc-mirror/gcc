@@ -1371,6 +1371,7 @@ choose_temp_base ()
 
 #ifndef HAVE_PUTENV
 
+void
 putenv (str)
      char *str;
 {
@@ -2971,8 +2972,6 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	    /* Here are digits and numbers that just process
-	       a certain constant string as a spec.
-	    /* Here are digits and numbers that just process
 	       a certain constant string as a spec.  */
 
 	  case '1':
@@ -3578,8 +3577,10 @@ main (argc, argv)
 
   if (signal (SIGINT, SIG_IGN) != SIG_IGN)
     signal (SIGINT, fatal_error);
+#ifdef SIGHUP
   if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
     signal (SIGHUP, fatal_error);
+#endif
   if (signal (SIGTERM, SIG_IGN) != SIG_IGN)
     signal (SIGTERM, fatal_error);
 #ifdef SIGPIPE
