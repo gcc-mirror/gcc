@@ -23,13 +23,13 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "rtl.h"
 
-static int rtx_addr_can_trap_p	PROTO((rtx));
-static void reg_set_p_1		PROTO((rtx, rtx, void *));
-static void reg_set_last_1	PROTO((rtx, rtx, void *));
+static int rtx_addr_can_trap_p	PARAMS ((rtx));
+static void reg_set_p_1		PARAMS ((rtx, rtx, void *));
+static void reg_set_last_1	PARAMS ((rtx, rtx, void *));
 
 
 /* Forward declarations */
-static int jmp_uses_reg_or_mem		PROTO((rtx));
+static int jmp_uses_reg_or_mem		PARAMS ((rtx));
 
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
@@ -1081,7 +1081,7 @@ reg_set_last (x, insn)
 void
 note_stores (x, fun, data)
      register rtx x;
-     void (*fun) PROTO ((rtx, rtx, void *));
+     void (*fun) PARAMS ((rtx, rtx, void *));
      void *data;
 {
   if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER))

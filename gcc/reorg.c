@@ -177,53 +177,53 @@ static int *uid_to_ruid;
 /* Highest valid index in `uid_to_ruid'.  */
 static int max_uid;
 
-static int stop_search_p		PROTO((rtx, int));
-static int resource_conflicts_p		PROTO((struct resources *,
+static int stop_search_p		PARAMS ((rtx, int));
+static int resource_conflicts_p		PARAMS ((struct resources *,
 					       struct resources *));
-static int insn_references_resource_p	PROTO((rtx, struct resources *, int));
-static int insn_sets_resource_p		PROTO((rtx, struct resources *, int));
-static rtx find_end_label		PROTO((void));
-static rtx emit_delay_sequence		PROTO((rtx, rtx, int));
-static rtx add_to_delay_list		PROTO((rtx, rtx));
-static rtx delete_from_delay_slot	PROTO((rtx));
-static void delete_scheduled_jump	PROTO((rtx));
-static void note_delay_statistics	PROTO((int, int));
+static int insn_references_resource_p	PARAMS ((rtx, struct resources *, int));
+static int insn_sets_resource_p		PARAMS ((rtx, struct resources *, int));
+static rtx find_end_label		PARAMS ((void));
+static rtx emit_delay_sequence		PARAMS ((rtx, rtx, int));
+static rtx add_to_delay_list		PARAMS ((rtx, rtx));
+static rtx delete_from_delay_slot	PARAMS ((rtx));
+static void delete_scheduled_jump	PARAMS ((rtx));
+static void note_delay_statistics	PARAMS ((int, int));
 #if defined(ANNUL_IFFALSE_SLOTS) || defined(ANNUL_IFTRUE_SLOTS)
-static rtx optimize_skip		PROTO((rtx));
+static rtx optimize_skip		PARAMS ((rtx));
 #endif
-static int get_jump_flags		PROTO((rtx, rtx));
-static int rare_destination		PROTO((rtx));
-static int mostly_true_jump		PROTO((rtx, rtx));
-static rtx get_branch_condition		PROTO((rtx, rtx));
-static int condition_dominates_p	PROTO((rtx, rtx));
-static int redirect_with_delay_slots_safe_p PROTO ((rtx, rtx, rtx));
-static int redirect_with_delay_list_safe_p PROTO ((rtx, rtx, rtx));
-static int check_annul_list_true_false	PROTO ((int, rtx));
-static rtx steal_delay_list_from_target PROTO((rtx, rtx, rtx, rtx,
+static int get_jump_flags		PARAMS ((rtx, rtx));
+static int rare_destination		PARAMS ((rtx));
+static int mostly_true_jump		PARAMS ((rtx, rtx));
+static rtx get_branch_condition		PARAMS ((rtx, rtx));
+static int condition_dominates_p	PARAMS ((rtx, rtx));
+static int redirect_with_delay_slots_safe_p PARAMS ((rtx, rtx, rtx));
+static int redirect_with_delay_list_safe_p PARAMS ((rtx, rtx, rtx));
+static int check_annul_list_true_false	PARAMS ((int, rtx));
+static rtx steal_delay_list_from_target PARAMS ((rtx, rtx, rtx, rtx,
 					       struct resources *,
 					       struct resources *,
 					       struct resources *,
 					       int, int *, int *, rtx *));
-static rtx steal_delay_list_from_fallthrough PROTO((rtx, rtx, rtx, rtx,
+static rtx steal_delay_list_from_fallthrough PARAMS ((rtx, rtx, rtx, rtx,
 						    struct resources *,
 						    struct resources *,
 						    struct resources *,
 						    int, int *, int *));
-static void try_merge_delay_insns	PROTO((rtx, rtx));
-static rtx redundant_insn		PROTO((rtx, rtx, rtx));
-static int own_thread_p			PROTO((rtx, rtx, int));
-static void update_block		PROTO((rtx, rtx));
-static int reorg_redirect_jump		PROTO((rtx, rtx));
-static void update_reg_dead_notes	PROTO((rtx, rtx));
-static void fix_reg_dead_note		PROTO((rtx, rtx));
-static void update_reg_unused_notes	PROTO((rtx, rtx));
-static void fill_simple_delay_slots	PROTO((int));
-static rtx fill_slots_from_thread	PROTO((rtx, rtx, rtx, rtx, int, int,
+static void try_merge_delay_insns	PARAMS ((rtx, rtx));
+static rtx redundant_insn		PARAMS ((rtx, rtx, rtx));
+static int own_thread_p			PARAMS ((rtx, rtx, int));
+static void update_block		PARAMS ((rtx, rtx));
+static int reorg_redirect_jump		PARAMS ((rtx, rtx));
+static void update_reg_dead_notes	PARAMS ((rtx, rtx));
+static void fix_reg_dead_note		PARAMS ((rtx, rtx));
+static void update_reg_unused_notes	PARAMS ((rtx, rtx));
+static void fill_simple_delay_slots	PARAMS ((int));
+static rtx fill_slots_from_thread	PARAMS ((rtx, rtx, rtx, rtx, int, int,
 					       int, int, int *, rtx));
-static void fill_eager_delay_slots	PROTO((void));
-static void relax_delay_slots		PROTO((rtx));
+static void fill_eager_delay_slots	PARAMS ((void));
+static void relax_delay_slots		PARAMS ((rtx));
 #ifdef HAVE_return
-static void make_return_insns		PROTO((rtx));
+static void make_return_insns		PARAMS ((rtx));
 #endif
 
 /* Return TRUE if this insn should stop the search for insn to fill delay

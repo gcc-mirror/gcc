@@ -257,11 +257,11 @@ const char * const reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "
 			  "REG_FRAME_RELATED_EXPR", "REG_EH_REGION",
 			  "REG_EH_RETHROW", "REG_SAVE_NOTE" };
 
-static void fatal_with_file_and_line PVPROTO((FILE *, const char *, ...))
+static void fatal_with_file_and_line PARAMS ((FILE *, const char *, ...))
   ATTRIBUTE_NORETURN;
-static void fatal_expected_char PROTO((FILE *, int, int)) ATTRIBUTE_NORETURN;
-static void read_name		PROTO((char *, FILE *));
-static const char *trim_filename PROTO((const char *));
+static void fatal_expected_char PARAMS ((FILE *, int, int)) ATTRIBUTE_NORETURN;
+static void read_name		PARAMS ((char *, FILE *));
+static const char *trim_filename PARAMS ((const char *));
 
 /* Allocate an rtx vector of N elements.
    Store the length, and initialize all elements to zero.  */
@@ -697,7 +697,7 @@ int read_rtx_lineno = 1;
 const char *read_rtx_filename = "<unknown>";
 
 static void
-fatal_with_file_and_line VPROTO((FILE *infile, const char *msg, ...))
+fatal_with_file_and_line VPARAMS ((FILE *infile, const char *msg, ...))
 {
 #ifndef ANSI_PROTOTYPES
   FILE *infile;

@@ -400,36 +400,36 @@ static int using_eh_for_cleanups_p = 0;
 static char *digit_strings[10];
 
 
-static int n_occurrences		PROTO((int, const char *));
-static void expand_goto_internal	PROTO((tree, rtx, rtx));
-static int expand_fixup			PROTO((tree, rtx, rtx));
-static rtx expand_nl_handler_label	PROTO((rtx, rtx));
-static void expand_nl_goto_receiver	PROTO((void));
-static void expand_nl_goto_receivers	PROTO((struct nesting *));
-static void fixup_gotos			PROTO((struct nesting *, rtx, tree,
+static int n_occurrences		PARAMS ((int, const char *));
+static void expand_goto_internal	PARAMS ((tree, rtx, rtx));
+static int expand_fixup			PARAMS ((tree, rtx, rtx));
+static rtx expand_nl_handler_label	PARAMS ((rtx, rtx));
+static void expand_nl_goto_receiver	PARAMS ((void));
+static void expand_nl_goto_receivers	PARAMS ((struct nesting *));
+static void fixup_gotos			PARAMS ((struct nesting *, rtx, tree,
 					       rtx, int));
-static void expand_null_return_1	PROTO((rtx, int));
-static void expand_value_return		PROTO((rtx));
-static int tail_recursion_args		PROTO((tree, tree));
-static void expand_cleanups		PROTO((tree, tree, int, int));
-static void check_seenlabel		PROTO((void));
-static void do_jump_if_equal		PROTO((rtx, rtx, rtx, int));
-static int estimate_case_costs		PROTO((case_node_ptr));
-static void group_case_nodes		PROTO((case_node_ptr));
-static void balance_case_nodes		PROTO((case_node_ptr *,
+static void expand_null_return_1	PARAMS ((rtx, int));
+static void expand_value_return		PARAMS ((rtx));
+static int tail_recursion_args		PARAMS ((tree, tree));
+static void expand_cleanups		PARAMS ((tree, tree, int, int));
+static void check_seenlabel		PARAMS ((void));
+static void do_jump_if_equal		PARAMS ((rtx, rtx, rtx, int));
+static int estimate_case_costs		PARAMS ((case_node_ptr));
+static void group_case_nodes		PARAMS ((case_node_ptr));
+static void balance_case_nodes		PARAMS ((case_node_ptr *,
 					       case_node_ptr));
-static int node_has_low_bound		PROTO((case_node_ptr, tree));
-static int node_has_high_bound		PROTO((case_node_ptr, tree));
-static int node_is_bounded		PROTO((case_node_ptr, tree));
-static void emit_jump_if_reachable	PROTO((rtx));
-static void emit_case_nodes		PROTO((rtx, case_node_ptr, rtx, tree));
-static int add_case_node		PROTO((tree, tree, tree, tree *));
-static struct case_node *case_tree2list	PROTO((case_node *, case_node *));
-static void mark_cond_nesting           PROTO((struct nesting *));
-static void mark_loop_nesting           PROTO((struct nesting *));
-static void mark_block_nesting          PROTO((struct nesting *));
-static void mark_case_nesting           PROTO((struct nesting *));
-static void mark_goto_fixup             PROTO((struct goto_fixup *));
+static int node_has_low_bound		PARAMS ((case_node_ptr, tree));
+static int node_has_high_bound		PARAMS ((case_node_ptr, tree));
+static int node_is_bounded		PARAMS ((case_node_ptr, tree));
+static void emit_jump_if_reachable	PARAMS ((rtx));
+static void emit_case_nodes		PARAMS ((rtx, case_node_ptr, rtx, tree));
+static int add_case_node		PARAMS ((tree, tree, tree, tree *));
+static struct case_node *case_tree2list	PARAMS ((case_node *, case_node *));
+static void mark_cond_nesting           PARAMS ((struct nesting *));
+static void mark_loop_nesting           PARAMS ((struct nesting *));
+static void mark_block_nesting          PARAMS ((struct nesting *));
+static void mark_case_nesting           PARAMS ((struct nesting *));
+static void mark_goto_fixup             PARAMS ((struct goto_fixup *));
 
 
 void
@@ -4547,7 +4547,7 @@ check_seenlabel ()
 int
 pushcase (value, converter, label, duplicate)
      register tree value;
-     tree (*converter) PROTO((tree, tree));
+     tree (*converter) PARAMS ((tree, tree));
      register tree label;
      tree *duplicate;
 {
@@ -4611,7 +4611,7 @@ pushcase (value, converter, label, duplicate)
 int
 pushcase_range (value1, value2, converter, label, duplicate)
      register tree value1, value2;
-     tree (*converter) PROTO((tree, tree));
+     tree (*converter) PARAMS ((tree, tree));
      register tree label;
      tree *duplicate;
 {

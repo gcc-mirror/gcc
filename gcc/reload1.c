@@ -366,92 +366,92 @@ static int (*offsets_at)[NUM_ELIMINABLE_REGS];
 
 static int num_labels;
 
-static void maybe_fix_stack_asms	PROTO((void));
-static void copy_reloads		PROTO((struct insn_chain *));
-static void calculate_needs_all_insns	PROTO((int));
-static int find_reg			PROTO((struct insn_chain *, int,
+static void maybe_fix_stack_asms	PARAMS ((void));
+static void copy_reloads		PARAMS ((struct insn_chain *));
+static void calculate_needs_all_insns	PARAMS ((int));
+static int find_reg			PARAMS ((struct insn_chain *, int,
 					       FILE *));
-static void find_reload_regs		PROTO((struct insn_chain *, FILE *));
-static void select_reload_regs		PROTO((FILE *));
-static void delete_caller_save_insns	PROTO((void));
+static void find_reload_regs		PARAMS ((struct insn_chain *, FILE *));
+static void select_reload_regs		PARAMS ((FILE *));
+static void delete_caller_save_insns	PARAMS ((void));
 
-static void spill_failure		PROTO((rtx, enum reg_class));
-static void count_spilled_pseudo	PROTO((int, int, int));
-static void delete_dead_insn		PROTO((rtx));
-static void alter_reg  			PROTO((int, int));
-static void set_label_offsets		PROTO((rtx, rtx, int));
-static void check_eliminable_occurrences	PROTO((rtx));
-static void elimination_effects		PROTO((rtx, enum machine_mode));
-static int eliminate_regs_in_insn	PROTO((rtx, int));
-static void update_eliminable_offsets	PROTO((void));
-static void mark_not_eliminable		PROTO((rtx, rtx, void *));
-static void set_initial_elim_offsets	PROTO((void));
-static void verify_initial_elim_offsets	PROTO((void));
-static void set_initial_label_offsets	PROTO((void));
-static void set_offsets_for_label	PROTO((rtx));
-static void init_elim_table		PROTO((void));
-static void update_eliminables		PROTO((HARD_REG_SET *));
-static void spill_hard_reg		PROTO((int, FILE *, int));
-static int finish_spills		PROTO((int, FILE *));
-static void ior_hard_reg_set		PROTO((HARD_REG_SET *, HARD_REG_SET *));
-static void scan_paradoxical_subregs	PROTO((rtx));
-static void count_pseudo		PROTO((int));
-static void order_regs_for_reload	PROTO((struct insn_chain *));
-static void reload_as_needed		PROTO((int));
-static void forget_old_reloads_1	PROTO((rtx, rtx, void *));
-static int reload_reg_class_lower	PROTO((const PTR, const PTR));
-static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
+static void spill_failure		PARAMS ((rtx, enum reg_class));
+static void count_spilled_pseudo	PARAMS ((int, int, int));
+static void delete_dead_insn		PARAMS ((rtx));
+static void alter_reg  			PARAMS ((int, int));
+static void set_label_offsets		PARAMS ((rtx, rtx, int));
+static void check_eliminable_occurrences	PARAMS ((rtx));
+static void elimination_effects		PARAMS ((rtx, enum machine_mode));
+static int eliminate_regs_in_insn	PARAMS ((rtx, int));
+static void update_eliminable_offsets	PARAMS ((void));
+static void mark_not_eliminable		PARAMS ((rtx, rtx, void *));
+static void set_initial_elim_offsets	PARAMS ((void));
+static void verify_initial_elim_offsets	PARAMS ((void));
+static void set_initial_label_offsets	PARAMS ((void));
+static void set_offsets_for_label	PARAMS ((rtx));
+static void init_elim_table		PARAMS ((void));
+static void update_eliminables		PARAMS ((HARD_REG_SET *));
+static void spill_hard_reg		PARAMS ((int, FILE *, int));
+static int finish_spills		PARAMS ((int, FILE *));
+static void ior_hard_reg_set		PARAMS ((HARD_REG_SET *, HARD_REG_SET *));
+static void scan_paradoxical_subregs	PARAMS ((rtx));
+static void count_pseudo		PARAMS ((int));
+static void order_regs_for_reload	PARAMS ((struct insn_chain *));
+static void reload_as_needed		PARAMS ((int));
+static void forget_old_reloads_1	PARAMS ((rtx, rtx, void *));
+static int reload_reg_class_lower	PARAMS ((const PTR, const PTR));
+static void mark_reload_reg_in_use	PARAMS ((int, int, enum reload_type,
 					       enum machine_mode));
-static void clear_reload_reg_in_use	PROTO((int, int, enum reload_type,
+static void clear_reload_reg_in_use	PARAMS ((int, int, enum reload_type,
 					       enum machine_mode));
-static int reload_reg_free_p		PROTO((int, int, enum reload_type));
-static int reload_reg_free_for_value_p	PROTO((int, int, enum reload_type,
+static int reload_reg_free_p		PARAMS ((int, int, enum reload_type));
+static int reload_reg_free_for_value_p	PARAMS ((int, int, enum reload_type,
 					       rtx, rtx, int, int));
-static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
-static int allocate_reload_reg		PROTO((struct insn_chain *, int, int));
-static void failed_reload		PROTO((rtx, int));
-static int set_reload_reg		PROTO((int, int));
-static void choose_reload_regs_init	PROTO((struct insn_chain *, rtx *));
-static void choose_reload_regs		PROTO((struct insn_chain *));
-static void merge_assigned_reloads	PROTO((rtx));
-static void emit_input_reload_insns	PROTO((struct insn_chain *,
+static int reload_reg_reaches_end_p	PARAMS ((int, int, enum reload_type));
+static int allocate_reload_reg		PARAMS ((struct insn_chain *, int, int));
+static void failed_reload		PARAMS ((rtx, int));
+static int set_reload_reg		PARAMS ((int, int));
+static void choose_reload_regs_init	PARAMS ((struct insn_chain *, rtx *));
+static void choose_reload_regs		PARAMS ((struct insn_chain *));
+static void merge_assigned_reloads	PARAMS ((rtx));
+static void emit_input_reload_insns	PARAMS ((struct insn_chain *,
 					       struct reload *, rtx, int));
-static void emit_output_reload_insns	PROTO((struct insn_chain *,
+static void emit_output_reload_insns	PARAMS ((struct insn_chain *,
 					       struct reload *, int));
-static void do_input_reload		PROTO((struct insn_chain *,
+static void do_input_reload		PARAMS ((struct insn_chain *,
 					       struct reload *, int));
-static void do_output_reload		PROTO((struct insn_chain *,
+static void do_output_reload		PARAMS ((struct insn_chain *,
 					       struct reload *, int));
-static void emit_reload_insns		PROTO((struct insn_chain *));
-static void delete_output_reload	PROTO((rtx, int, int));
-static void delete_address_reloads	PROTO((rtx, rtx));
-static void delete_address_reloads_1	PROTO((rtx, rtx, rtx));
-static rtx inc_for_reload		PROTO((rtx, rtx, rtx, int));
-static int constraint_accepts_reg_p	PROTO((const char *, rtx));
-static void reload_cse_regs_1		PROTO((rtx));
-static void reload_cse_invalidate_regno	PROTO((int, enum machine_mode, int));
-static int reload_cse_mem_conflict_p	PROTO((rtx, rtx));
-static void reload_cse_invalidate_mem	PROTO((rtx));
-static void reload_cse_invalidate_rtx	PROTO((rtx, rtx, void *));
-static int reload_cse_regno_equal_p	PROTO((int, rtx, enum machine_mode));
-static int reload_cse_noop_set_p	PROTO((rtx, rtx));
-static int reload_cse_simplify_set	PROTO((rtx, rtx));
-static int reload_cse_simplify_operands	PROTO((rtx));
-static void reload_cse_check_clobber	PROTO((rtx, rtx, void *));
-static void reload_cse_record_set	PROTO((rtx, rtx));
-static void reload_combine PROTO((void));
-static void reload_combine_note_use PROTO((rtx *, rtx));
-static void reload_combine_note_store PROTO((rtx, rtx, void *));
-static void reload_cse_move2add PROTO((rtx));
-static void move2add_note_store PROTO((rtx, rtx, void *));
+static void emit_reload_insns		PARAMS ((struct insn_chain *));
+static void delete_output_reload	PARAMS ((rtx, int, int));
+static void delete_address_reloads	PARAMS ((rtx, rtx));
+static void delete_address_reloads_1	PARAMS ((rtx, rtx, rtx));
+static rtx inc_for_reload		PARAMS ((rtx, rtx, rtx, int));
+static int constraint_accepts_reg_p	PARAMS ((const char *, rtx));
+static void reload_cse_regs_1		PARAMS ((rtx));
+static void reload_cse_invalidate_regno	PARAMS ((int, enum machine_mode, int));
+static int reload_cse_mem_conflict_p	PARAMS ((rtx, rtx));
+static void reload_cse_invalidate_mem	PARAMS ((rtx));
+static void reload_cse_invalidate_rtx	PARAMS ((rtx, rtx, void *));
+static int reload_cse_regno_equal_p	PARAMS ((int, rtx, enum machine_mode));
+static int reload_cse_noop_set_p	PARAMS ((rtx, rtx));
+static int reload_cse_simplify_set	PARAMS ((rtx, rtx));
+static int reload_cse_simplify_operands	PARAMS ((rtx));
+static void reload_cse_check_clobber	PARAMS ((rtx, rtx, void *));
+static void reload_cse_record_set	PARAMS ((rtx, rtx));
+static void reload_combine PARAMS ((void));
+static void reload_combine_note_use PARAMS ((rtx *, rtx));
+static void reload_combine_note_store PARAMS ((rtx, rtx, void *));
+static void reload_cse_move2add PARAMS ((rtx));
+static void move2add_note_store PARAMS ((rtx, rtx, void *));
 #ifdef AUTO_INC_DEC
-static void add_auto_inc_notes PROTO((rtx, rtx));
+static void add_auto_inc_notes PARAMS ((rtx, rtx));
 #endif
-static rtx gen_mode_int			PROTO((enum machine_mode,
+static rtx gen_mode_int			PARAMS ((enum machine_mode,
 					       HOST_WIDE_INT));
-static void failed_reload		PROTO((rtx, int));
-static int set_reload_reg		PROTO((int, int));
-extern void dump_needs			PROTO((struct insn_chain *, FILE *));
+static void failed_reload		PARAMS ((rtx, int));
+static int set_reload_reg		PARAMS ((int, int));
+extern void dump_needs			PARAMS ((struct insn_chain *, FILE *));
 
 /* Initialize the reload pass once per compilation.  */
 

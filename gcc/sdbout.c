@@ -105,22 +105,22 @@ extern tree current_function_decl;
 
 #include "sdbout.h"
 
-static char *gen_fake_label		PROTO((void));
-static int plain_type			PROTO((tree));
-static int template_name_p		PROTO((tree));
-static void sdbout_record_type_name	PROTO((tree));
-static int plain_type_1			PROTO((tree, int));
-static void sdbout_block		PROTO((tree));
-static void sdbout_syms			PROTO((tree));
+static char *gen_fake_label		PARAMS ((void));
+static int plain_type			PARAMS ((tree));
+static int template_name_p		PARAMS ((tree));
+static void sdbout_record_type_name	PARAMS ((tree));
+static int plain_type_1			PARAMS ((tree, int));
+static void sdbout_block		PARAMS ((tree));
+static void sdbout_syms			PARAMS ((tree));
 #ifdef SDB_ALLOW_FORWARD_REFERENCES
-static void sdbout_queue_anonymous_type	PROTO((tree));
-static void sdbout_dequeue_anonymous_types PROTO((void));
+static void sdbout_queue_anonymous_type	PARAMS ((tree));
+static void sdbout_dequeue_anonymous_types PARAMS ((void));
 #endif
-static void sdbout_type			PROTO((tree));
-static void sdbout_field_types		PROTO((tree));
-static void sdbout_one_type		PROTO((tree));
-static void sdbout_parms		PROTO((tree));
-static void sdbout_reg_parms		PROTO((tree));
+static void sdbout_type			PARAMS ((tree));
+static void sdbout_field_types		PARAMS ((tree));
+static void sdbout_one_type		PARAMS ((tree));
+static void sdbout_parms		PARAMS ((tree));
+static void sdbout_reg_parms		PARAMS ((tree));
 
 /* Define the default sizes for various types.  */
 

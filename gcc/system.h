@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 # undef fputs
 # define fputs(String, Stream) fputs_unlocked (String, Stream)
 # ifdef NEED_DECLARATION_FPUTS_UNLOCKED
-extern int fputs_unlocked PROTO ((const char *, FILE *));
+extern int fputs_unlocked PARAMS ((const char *, FILE *));
 # endif
 #endif
 
