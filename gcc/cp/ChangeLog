@@ -1,3 +1,8 @@
+1999-09-07  Richard Henderson  <rth@cygnus.com>
+
+	* cp-tree.h (C_PROMOTING_INTEGER_TYPE_P): Delete.
+	* typeck.c (self_promoting_args_p): Delete.
+
 1999-09-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* search.c (binfo_for_vtable): Use CLASSTYPE_VFIELD_PARENT.

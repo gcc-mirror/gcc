@@ -1,3 +1,20 @@
+Tue Sep  7 21:41:38 1999  Richard Henderson  <rth@cygnus.com>
+
+	* c-typeck.c (type_lists_compatible_p): Use simple_type_promotes_to.
+	(self_promoting_type_p): Delete.
+	(self_promoting_args_p): Move ...
+	* c-common.c: ... here.
+	(c_common_nodes_and_builtins): Initialize lang_type_promotes_to.
+	(simple_type_promotes_to): New.
+	* builtins.c (lang_type_promotes_to): New.
+	(expand_builtin_va_arg): Use it to give diagnostic for illegal types.
+	* c-tree.h (C_PROMOTING_INTEGER_TYPE_P): Move ...
+	* c-common.h: ... here.
+	(self_promoting_args_p, simple_type_promotes_to): Declare.
+	* c-decl.c (duplicate_decls): Use simple_type_promotes_to.
+	(grokdeclarator): Likewise.
+	* tree.h (lang_type_promotes_to): Declare.
+
 Tue Sep  7 17:15:21 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	Add some machine-dependent GC roots.

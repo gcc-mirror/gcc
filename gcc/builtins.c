@@ -52,6 +52,8 @@ Boston, MA 02111-1307, USA.  */
 #define OUTGOING_REGNO(IN) (IN)
 #endif
 
+tree (*lang_type_promotes_to) PROTO((tree));
+
 static int get_pointer_alignment	PROTO((tree, unsigned));
 static tree c_strlen			PROTO((tree));
 static rtx get_memory_rtx		PROTO((tree));
@@ -1972,11 +1974,43 @@ expand_builtin_va_arg (valist, type)
      tree valist, type;
 {
   rtx addr, result;
+  tree promoted_type;
 
   if (TYPE_MAIN_VARIANT (TREE_TYPE (valist))
       != TYPE_MAIN_VARIANT (va_list_type_node))
     {
-      error ("first argument to `__builtin_va_arg' not of type `va_list'");
+      error ("first argument to `va_arg' not of type `va_list'");
+      addr = const0_rtx;
+    }
+  else if ((promoted_type = (*lang_type_promotes_to) (type)) != NULL_TREE)
+    {
+      const char *name = "<anonymous type>", *pname;
+      static int gave_help;
+
+      if (TYPE_NAME (type))
+	{
+	  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+	    name = IDENTIFIER_POINTER (TYPE_NAME (type));
+	  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (type)))
+	    name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	}
+      if (TYPE_NAME (promoted_type))
+	{
+	  if (TREE_CODE (TYPE_NAME (promoted_type)) == IDENTIFIER_NODE)
+	    pname = IDENTIFIER_POINTER (TYPE_NAME (promoted_type));
+	  else if (TREE_CODE (TYPE_NAME (promoted_type)) == TYPE_DECL
+		   && DECL_NAME (TYPE_NAME (promoted_type)))
+	    pname = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (promoted_type)));
+	}
+
+      error ("`%s' is promoted to `%s' when passed through `...'", name, pname);
+      if (! gave_help)
+	{
+	  gave_help = 1;
+	  error ("(so you should pass `%s' not `%s' to `va_arg')", pname, name);
+	}
+
       addr = const0_rtx;
     }
   else

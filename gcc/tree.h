@@ -2040,6 +2040,12 @@ extern void rrotate_double	PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
 				       HOST_WIDE_INT *));
 extern int operand_equal_p	PROTO((tree, tree, int));
 extern tree invert_truthvalue	PROTO((tree));
+
+/* In builtins.c.  Given a type, apply default promotions wrt unnamed
+   function arguments and return the new type.  Return NULL_TREE if no
+   change.  Required by any language that supports variadic arguments.  */
+
+extern tree (*lang_type_promotes_to)	PROTO((tree));
 
 /* Interface of the DWARF2 unwind info support.  */
 

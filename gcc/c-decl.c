@@ -1664,8 +1664,7 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 		  break;
 		}
 
-	      if (TYPE_MAIN_VARIANT (type) == float_type_node
-		  || C_PROMOTING_INTEGER_TYPE_P (type))
+	      if (simple_type_promotes_to (type) != NULL_TREE)
 		{
 		  error ("An argument type that has a default promotion can't match an empty parameter name list declaration.");
 		  break;
@@ -4858,7 +4857,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
     if (decl_context == PARM)
       {
 	tree type_as_written = type;
-	tree main_type;
+	tree promoted_type;
 
 	/* A parameter declared as an array of T is really a pointer to T.
 	   One declared as a function is really a pointer to a function.  */
@@ -4892,25 +4891,16 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	   (For example, shorts and chars are passed as ints.)
 	   When there is a prototype, this is overridden later.  */
 
-	DECL_ARG_TYPE (decl) = type;
-	main_type = (type == error_mark_node
-		     ? error_mark_node
-		     : TYPE_MAIN_VARIANT (type));
-	if (main_type == float_type_node)
-	  DECL_ARG_TYPE (decl) = double_type_node;
-	/* Don't use TYPE_PRECISION to decide whether to promote,
-	   because we should convert short if it's the same size as int,
-	   but we should not convert long if it's the same size as int.  */
-	else if (TREE_CODE (main_type) != ERROR_MARK
-		 && C_PROMOTING_INTEGER_TYPE_P (main_type))
+	if (type == error_mark_node)
+	  promoted_type = type;
+	else
 	  {
-	    if (TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)
-		&& TREE_UNSIGNED (type))
-	      DECL_ARG_TYPE (decl) = unsigned_type_node;
-	    else
-	      DECL_ARG_TYPE (decl) = integer_type_node;
+	    promoted_type = simple_type_promotes_to (type);
+	    if (! promoted_type)
+	      promoted_type = type;
 	  }
 
+	DECL_ARG_TYPE (decl) = promoted_type;
 	DECL_ARG_TYPE_AS_WRITTEN (decl) = type_as_written;
       }
     else if (decl_context == FIELD)

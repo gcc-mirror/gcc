@@ -3804,6 +3804,10 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
   builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
 		    NULL_PTR);
 #endif
+
+  /* ??? Perhaps there's a better place to do this.  But it is related
+     to __builtin_va_arg, so it isn't that off-the-wall.  */
+  lang_type_promotes_to = simple_type_promotes_to;
 }
 
 tree
@@ -3967,4 +3971,58 @@ initializer_constant_valid_p (value, endtype)
 
   return 0;
 }
+
+/* Given a type, apply default promotions wrt unnamed function arguments
+   and return the new type.  Return NULL_TREE if no change.  */
+/* ??? There is a function of the same name in the C++ front end that 
+   does something similar, but is more thorough and does not return NULL
+   if no change.  We could perhaps share code, but it would make the 
+   self_promoting_type property harder to identify.  */
 
+tree
+simple_type_promotes_to (type)
+     tree type;
+{
+  if (TYPE_MAIN_VARIANT (type) == float_type_node)
+    return double_type_node;
+
+  if (C_PROMOTING_INTEGER_TYPE_P (type))
+    {
+      /* Traditionally, unsignedness is preserved in default promotions.
+         Also preserve unsignedness if not really getting any wider.  */
+      if (TREE_UNSIGNED (type)
+          && (flag_traditional
+              || TYPE_PRECISION (type) == TYPE_PRECISION (integer_type_node)))
+        return unsigned_type_node;
+      return integer_type_node;
+    }
+
+  return NULL_TREE;
+}
+
+/* Return 1 if PARMS specifies a fixed number of parameters
+   and none of their types is affected by default promotions.  */
+
+int
+self_promoting_args_p (parms)
+     tree parms;
+{
+  register tree t;
+  for (t = parms; t; t = TREE_CHAIN (t))
+    {
+      register tree type = TREE_VALUE (t);
+
+      if (TREE_CHAIN (t) == 0 && type != void_type_node)
+	return 0;
+
+      if (type == 0)
+	return 0;
+
+      if (TYPE_MAIN_VARIANT (type) == float_type_node)
+	return 0;
+
+      if (C_PROMOTING_INTEGER_TYPE_P (type))
+	return 0;
+    }
+  return 1;
+}
