@@ -1917,19 +1917,15 @@ immed_real_const_1 (d, mode)
 
   u.d = d;
 
-  /* Detect special cases.  But be careful we don't use a CONST_DOUBLE
-     that's from a parent function since it may be in its constant pool.  */
-  if (REAL_VALUES_IDENTICAL (dconst0, d)
-      && (cfun == 0 || decl_function_context (current_function_decl) == 0))
+  /* Detect special cases.  */
+  if (REAL_VALUES_IDENTICAL (dconst0, d))
     return CONST0_RTX (mode);
 
   /* Check for NaN first, because some ports (specifically the i386) do not
      emit correct ieee-fp code by default, and thus will generate a core
      dump here if we pass a NaN to REAL_VALUES_EQUAL and if REAL_VALUES_EQUAL
      does a floating point comparison.  */
-  else if ((! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
-	   && (cfun == 0
-	       || decl_function_context (current_function_decl) == 0))
+  else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
     return CONST1_RTX (mode);
 
   if (sizeof u == sizeof (HOST_WIDE_INT))
@@ -1996,6 +1992,8 @@ void
 clear_const_double_mem ()
 {
   register rtx r, next;
+  enum machine_mode mode;
+  int i;
 
   for (r = const_double_chain; r; r = next)
     {
@@ -2004,6 +2002,15 @@ clear_const_double_mem ()
       CONST_DOUBLE_MEM (r) = cc0_rtx;
     }
   const_double_chain = 0;
+
+  for (i = 0; i <= 2; i++)
+    for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+         mode = GET_MODE_WIDER_MODE (mode))
+      {
+	r = const_tiny_rtx[i][(int) mode];
+	CONST_DOUBLE_CHAIN (r) = 0;
+	CONST_DOUBLE_MEM (r) = cc0_rtx;
+      }
 }
 
 /* Given an expression EXP with a constant value,
