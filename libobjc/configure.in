@@ -223,7 +223,8 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(sched.h)
 
 # Determine CFLAGS for gthread.
-
+# FIXME: the current implementation is dependent on the 'r' variable
+# passed down from the top level
 AC_CACHE_CHECK([for gthread cflags],objc_cv_gthread_flags,
 [if test -f "$r"/gcc/Makefile
 then
@@ -237,14 +238,12 @@ AC_SUBST(GTHREAD_FLAGS)
 AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc       enable the use of Boehm's garbage collector with
                           the GNU Objective-C runtime.],
-if [[[ x$enable_objc_gc = xno ]]]; then
-        OBJC_BOEHM_GC=''
-else
-        OBJC_BOEHM_GC=libobjc_gc.la
-fi,
-OBJC_BOEHM_GC='')
+[case $enable_objc_gc in
+  no) OBJC_BOEHM_GC='' ;;
+  *) OBJC_BOEHM_GC=libobjc_gc.la ;;
+esac],
+[OBJC_BOEHM_GC=''])
 AC_SUBST(OBJC_BOEHM_GC)
-
 
 # We need multilib support, but only if configuring for the target.
 AC_OUTPUT(Makefile,

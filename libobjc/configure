@@ -2790,9 +2790,10 @@ done
 
 
 # Determine CFLAGS for gthread.
-
+# FIXME: the current implementation is dependent on the 'r' variable
+# passed down from the top level
 echo $ac_n "checking for gthread cflags""... $ac_c" 1>&6
-echo "configure:2796: checking for gthread cflags" >&5
+echo "configure:2797: checking for gthread cflags" >&5
 if eval "test \"`echo '$''{'objc_cv_gthread_flags'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -2811,15 +2812,13 @@ GTHREAD_FLAGS=$objc_cv_gthread_flags
 # Check whether --enable-objc-gc or --disable-objc-gc was given.
 if test "${enable_objc_gc+set}" = set; then
   enableval="$enable_objc_gc"
-  if [ x$enable_objc_gc = xno ]; then
-        OBJC_BOEHM_GC=''
-else
-        OBJC_BOEHM_GC=libobjc_gc.la
-fi
+  case $enable_objc_gc in
+  no) OBJC_BOEHM_GC='' ;;
+  *) OBJC_BOEHM_GC=libobjc_gc.la ;;
+esac
 else
   OBJC_BOEHM_GC=''
 fi
-
 
 
 

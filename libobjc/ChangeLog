@@ -1,5 +1,9 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Improve comments on gthread_cflags.  Improve m4
+	quotation, and replace 'if test' with 'case', for --enable-objc-gc.
+	* configure: Regenerate.
+
 	* configure.in: Move PACKAGE and VERSION settings up top.  Remove
 	unused call to AC_PROG_LN_S.  Default RANLIB to ':'.  Remove
 	redundant checks for values of RANLIB, AR, INSTALL.
