@@ -213,6 +213,10 @@ int current_function_uses_pic_offset_table;
 /* The arg pointer hard register, or the pseudo into which it was copied.  */
 rtx current_function_internal_arg_pointer;
 
+/* Nonzero if memory access checking should be enabled in the current
+   function.  */
+int current_function_check_memory_usage;
+
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
 
@@ -552,6 +556,7 @@ push_function_context_to (context)
   p->fixup_var_refs_queue = 0;
   p->epilogue_delay_list = current_function_epilogue_delay_list;
   p->args_info = current_function_args_info;
+  p->check_memory_usage = current_function_check_memory_usage;
 
   save_tree_status (p, context);
   save_storage_status (p);
@@ -636,6 +641,7 @@ pop_function_context_from (context)
   current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
   current_function_args_info = p->args_info;
+  current_function_check_memory_usage = p->check_memory_usage;
 
   restore_tree_status (p, context);
   restore_storage_status (p);
@@ -1495,7 +1501,7 @@ put_var_into_stack (decl)
   else
     return;
   
-  if (flag_check_memory_usage)
+  if (current_function_check_memory_usage)
     emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 		       XEXP (reg, 0), ptr_mode,
 		       GEN_INT (GET_MODE_SIZE (GET_MODE (reg))),
@@ -4062,7 +4068,7 @@ assign_parms (fndecl, second_time)
 	  else
 	    stack_parm = gen_rtx (MEM, nominal_mode,
 				  gen_rtx (PLUS, Pmode,
-	      if (flag_check_memory_usage)
+	      if (current_function_check_memory_usage)
 		{
 		  push_to_sequence (conversion_insns);
 		  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
@@ -4296,7 +4302,7 @@ assign_parms (fndecl, second_time)
 
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
-	      if (flag_check_memory_usage)
+	      if (current_function_check_memory_usage)
 		emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 				   XEXP (copy, 0), ptr_mode,
 				   GEN_INT (int_size_in_bytes (type)),
@@ -4455,7 +4461,7 @@ assign_parms (fndecl, second_time)
 		emit_move_insn (validize_mem (stack_parm),
 				validize_mem (entry_parm));
 	    }
-	  if (flag_check_memory_usage)
+	  if (current_function_check_memory_usage)
 	    {
 	      push_to_sequence (conversion_insns);
 	      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
@@ -5615,6 +5621,11 @@ expand_function_start (subr, parms_have_cleanups)
   /* Make sure volatile mem refs aren't considered
      valid operands of arithmetic insns.  */
   init_recog_no_volatile ();
+
+  /* Set this before generating any memory accesses.  */
+  current_function_check_memory_usage
+    = (flag_check_memory_usage
+       && ! DECL_NO_CHECK_MEMORY_USAGE (current_function_decl));
 
   /* If function gets a static chain arg, store it in the stack frame.
      Do this first, so it gets the first stack slot offset.  */
