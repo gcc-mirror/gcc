@@ -939,6 +939,11 @@ cpp_start_read (pfile, fname)
   if (!_cpp_read_file (pfile, fname))
     return 0;
 
+  /* Set this after cpp_post_options so the client can change the
+     option if it wishes, and after stacking the main file so we don't
+     trace the main file.  */
+  pfile->line_maps.trace_includes = CPP_OPTION (pfile, print_include_names);
+
   /* Install builtins and process command line macros etc. in the order
      they appeared, but only if not already preprocessed.  */
   if (! CPP_OPTION (pfile, preprocessed))

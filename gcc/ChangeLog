@@ -1,5 +1,14 @@
 2001-08-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cppfiles.c (stack_include_file): Don't handle -H here.
+	* cppinit.c (cpp_start_read): Set include tracing after
+	cpp_post_options and after stacking the main file.
+	* line-map.c (trace_include): New.
+	(init_line_maps, add_line_map): Update.
+	* line-map.h (struct line_maps): New member trace_includes.
+
+2001-08-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppfiles.c (stack_include_file): Harmonize system headerness tests.
 	* cppfiles.c (stack_include_file): Only stack a file if there
 	is something to do.  Return a boolean indicating whether a
