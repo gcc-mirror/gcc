@@ -1,3 +1,8 @@
+2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* dump-parse-tree.c (gfc_show_array_ref): Print colon only
+	for ranges when dumping array references.
+
 2004-05-14  Victor Leikehman  <lei@haifasphere.co.il>
 
 	* decl.c (variable_decl): Always apply default initializer.

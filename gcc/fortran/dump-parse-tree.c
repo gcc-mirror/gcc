@@ -183,18 +183,28 @@ gfc_show_array_ref (gfc_array_ref * ar)
     case AR_SECTION:
       for (i = 0; i < ar->dimen; i++)
 	{
+	  /* There are two types of array sections: either the
+	     elements are identified by an integer array ('vector'),
+	     or by an index range. In the former case we only have to
+	     print the start expression which contains the vector, in
+	     the latter case we have to print any of lower and upper
+	     bound and the stride, if they're present.  */
+  
 	  if (ar->start[i] != NULL)
 	    gfc_show_expr (ar->start[i]);
 
-	  gfc_status_char (':');
-
-	  if (ar->end[i] != NULL)
-	    gfc_show_expr (ar->end[i]);
-
-	  if (ar->stride[i] != NULL)
+	  if (ar->dimen_type[i] == DIMEN_RANGE)
 	    {
 	      gfc_status_char (':');
-	      gfc_show_expr (ar->stride[i]);
+
+	      if (ar->end[i] != NULL)
+		gfc_show_expr (ar->end[i]);
+
+	      if (ar->stride[i] != NULL)
+		{
+		  gfc_status_char (':');
+		  gfc_show_expr (ar->stride[i]);
+		}
 	    }
 
 	  if (i != ar->dimen - 1)
