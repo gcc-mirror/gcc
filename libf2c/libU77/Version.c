@@ -1,6 +1,6 @@
-                                        static char junk[] = "\n@(#) LIBU77 VERSION 19980709\n";
+                                                static char junk[] = "\n@(#) LIBU77 VERSION 19980709\n";
 
-char __G77_LIBU77_VERSION__[] = "3.2 20020301 (experimental)";
+char __G77_LIBU77_VERSION__[] = "3.2 20020302 (experimental)";
 
 #include <stdio.h>
 
