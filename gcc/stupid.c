@@ -42,8 +42,8 @@ Boston, MA 02111-1307, USA.  */
    pseudo reg is computed.  Then the pseudo regs are ordered by priority
    and assigned hard regs in priority order.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "regs.h"
@@ -230,21 +230,34 @@ stupid_life_analysis (f, nregs, file)
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
 	last_setjmp_suid = INSN_SUID (insn);
 
-      /* Mark all call-clobbered regs as live after each call insn
-	 so that a pseudo whose life span includes this insn
-	 will not go in one of them.
+      /* Mark all call-clobbered regs as dead after each call insn so that
+	 a pseudo whose life span includes this insn will not go in one of
+	 them.  If the function contains a non-local goto, mark all hard
+	 registers dead (except for stack related bits).
+
 	 Then mark those regs as all dead for the continuing scan
 	 of the insns before the call.  */
 
       if (GET_CODE (insn) == CALL_INSN)
 	{
 	  last_call_suid = INSN_SUID (insn);
-	  IOR_HARD_REG_SET (after_insn_hard_regs[last_call_suid],
-			    call_used_reg_set);
 
-	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (call_used_regs[i])
-	      regs_live[i] = 0;
+	  if (current_function_has_nonlocal_label)
+	    {
+	      IOR_COMPL_HARD_REG_SET (after_insn_hard_regs[last_call_suid],
+				      fixed_reg_set);
+	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		if (! fixed_regs[i])
+	          regs_live[i] = 0;
+	    }
+	  else
+	    {
+	      IOR_HARD_REG_SET (after_insn_hard_regs[last_call_suid],
+				call_used_reg_set);
+	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	        if (call_used_regs[i])
+	          regs_live[i] = 0;
+	    }
 
 	  /* It is important that this be done after processing the insn's
 	     pattern because we want the function result register to still
@@ -269,8 +282,11 @@ stupid_life_analysis (f, nregs, file)
       register int r = reg_order[i];
 
       /* Some regnos disappear from the rtl.  Ignore them to avoid crash. 
-	 Also don't allocate registers that cross a setjmp.  */
-      if (regno_reg_rtx[r] == 0 || regs_crosses_setjmp[r])
+	 Also don't allocate registers that cross a setjmp, or live across
+	 a call if this function receives a nonlocal goto.  */
+      if (regno_reg_rtx[r] == 0 || regs_crosses_setjmp[r]
+	  || (REG_N_CALLS_CROSSED (r) > 0 
+	      && current_function_has_nonlocal_label))
 	continue;
 
       /* Now find the best hard-register class for this pseudo register */
