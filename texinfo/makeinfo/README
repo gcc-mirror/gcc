@@ -1,0 +1,6 @@
+A standalone program to convert Texinfo source into Info files
+readable with standalone info or M-x info in Emacs.
+makeinfo can also output plain ASCII.
+
+The Emacs function M-x texinfo-format-buffer does the same job, but
+makeinfo is faster and gives better error messages.
