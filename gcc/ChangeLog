@@ -1,3 +1,8 @@
+Tue Dec  1 15:03:30 1998  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* jump.c (jump_optimize): Call regs_set_between_p with PREV_INSN(x),
+	NEXT_INSN(x) to check insn x.
+	
 Tue Dec  1 15:20:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (reload): Do not set reload_completed or split insns
