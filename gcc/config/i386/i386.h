@@ -3302,6 +3302,7 @@ do {						\
   {"register_and_not_any_fp_reg_operand", {REG}},			\
   {"fp_register_operand", {REG}},					\
   {"register_and_not_fp_reg_operand", {REG}},				\
+  {"vector_move_operand", {CONST_VECTOR, SUBREG, REG, MEM}},		\
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */

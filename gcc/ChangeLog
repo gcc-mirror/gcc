@@ -1,3 +1,11 @@
+Tue Feb 11 23:33:40 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (ahi?v*3): Set third operand type to TImode.
+	* i386.c (ix86_expand_binop_builtin): Extend operand when needed.
+
+	* i386.c (contains_128bit_aligned_vector_p): New function
+	(ix86_function_arg_boundary): Properly align vector modes.
+
 2003-02-11  Bob Wilson  <bob.wilson@acm.org>
 
 	Backport following patch:
