@@ -1,3 +1,15 @@
+2003-11-28  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java
+	(lookup): New method that doesnt lookup "0.0.0.0".
+	(ImplLookup): Renamed from lookup.
+	* java/net/natInetAddressNoNet.cc
+	(ImplLookup): Renamed from lookup.
+	* java/net/natInetAddressPosix.cc
+	(ImplLookup): Renamed from lookup.
+	* java/net/natInetAddressWin32.cc
+	(ImplLookup): Renamed from lookup.
+
 2003-11-28  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* configure: Rebuilt.

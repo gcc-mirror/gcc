@@ -50,8 +50,9 @@ java::net::InetAddress::getFamily (jbyteArray bytes)
 
 
 JArray<java::net::InetAddress*> *
-java::net::InetAddress::lookup (jstring host, java::net::InetAddress* iaddr,
-        jboolean all)
+java::net::InetAddress::implLookup (jstring host,
+				    java::net::InetAddress* iaddr,
+				    jboolean all)
 {
   struct hostent *hptr = NULL;
   if (host != NULL)

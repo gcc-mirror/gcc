@@ -564,8 +564,23 @@ public class InetAddress implements Serializable
    */
   private static native byte[] aton (String host);
 
-  private static native InetAddress[] lookup (String hostname,
-		                              InetAddress addr, boolean all);
+  private static native InetAddress[] implLookup(String hostname,
+		                                 InetAddress addr,
+						 boolean all);
+
+  private static InetAddress[] lookup (String hostname,
+				       InetAddress addr, boolean all)
+  {
+    if (addr.equals(ANY_IF))
+      {
+	byte[] zeros = { 0, 0, 0, 0 };
+	InetAddress[] result = new InetAddress[1];
+	result[0] = new InetAddress(zeros, "0.0.0.0");
+	return result;
+      }
+
+    return implLookup(hostname, addr, all);
+  }
 
   private static native int getFamily (byte[] address);
 

@@ -24,7 +24,7 @@ java::net::InetAddress::getFamily (jbyteArray bytes)
 }
 
 JArray<java::net::InetAddress*> *
-java::net::InetAddress::lookup (jstring, java::net::InetAddress *, jboolean)
+java::net::InetAddress::implLookup (jstring, java::net::InetAddress *, jboolean)
 {
   return NULL;
 }
