@@ -55,7 +55,6 @@ static rtx simplify_plus_minus (enum rtx_code, enum machine_mode, rtx,
 				rtx, int);
 static rtx simplify_immed_subreg (enum machine_mode, rtx, enum machine_mode,
 				  unsigned int);
-static bool associative_constant_p (rtx);
 static rtx simplify_associative_operation (enum rtx_code, enum machine_mode,
 					   rtx, rtx);
 
@@ -1084,67 +1083,59 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
     }
 }
 
-/* Subroutine of simplify_associative_operation.  Return true if rtx OP
-   is a suitable integer or floating point immediate constant.  */
-static bool
-associative_constant_p (rtx op)
-{
-  if (GET_CODE (op) == CONST_INT
-      || GET_CODE (op) == CONST_DOUBLE)
-    return true;
-  op = avoid_constant_pool_reference (op);
-  return GET_CODE (op) == CONST_INT
-	 || GET_CODE (op) == CONST_DOUBLE;
-}
+/* Subroutine of simplify_binary_operation to simplify a commutative,
+   associative binary operation CODE with result mode MODE, operating
+   on OP0 and OP1.  CODE is currently one of PLUS, MULT, AND, IOR, XOR,
+   SMIN, SMAX, UMIN or UMAX.  Return zero if no simplification or
+   canonicalization is possible.  */
 
-/* Subroutine of simplify_binary_operation to simplify an associative
-   binary operation CODE with result mode MODE, operating on OP0 and OP1.
-   Return 0 if no simplification is possible.  */
 static rtx
 simplify_associative_operation (enum rtx_code code, enum machine_mode mode,
 				rtx op0, rtx op1)
 {
   rtx tem;
 
-  /* Simplify (x op c1) op c2 as x op (c1 op c2).  */
-  if (GET_CODE (op0) == code
-      && associative_constant_p (op1)
-      && associative_constant_p (XEXP (op0, 1)))
+  /* Linearize the operator to the left.  */
+  if (GET_CODE (op1) == code)
     {
-      tem = simplify_binary_operation (code, mode, XEXP (op0, 1), op1);
-      if (! tem)
-	return tem;
-      return simplify_gen_binary (code, mode, XEXP (op0, 0), tem);
+      /* "(a op b) op (c op d)" becomes "((a op b) op c) op d)".  */
+      if (GET_CODE (op0) == code)
+	{
+	  tem = simplify_gen_binary (code, mode, op0, XEXP (op1, 0));
+	  return simplify_gen_binary (code, mode, tem, XEXP (op1, 1));
+	}
+
+      /* "a op (b op c)" becomes "(b op c) op a".  */
+      if (! swap_commutative_operands_p (op1, op0))
+	return simplify_gen_binary (code, mode, op1, op0);
+
+      tem = op0;
+      op0 = op1;
+      op1 = tem;
     }
 
-  /* Simplify (x op c1) op (y op c2) as (x op y) op (c1 op c2).  */
-  if (GET_CODE (op0) == code
-      && GET_CODE (op1) == code
-      && associative_constant_p (XEXP (op0, 1))
-      && associative_constant_p (XEXP (op1, 1)))
+  if (GET_CODE (op0) == code)
     {
-      rtx c = simplify_binary_operation (code, mode,
-					 XEXP (op0, 1), XEXP (op1, 1));
-      if (! c)
-	return 0;
-      tem = simplify_gen_binary (code, mode, XEXP (op0, 0), XEXP (op1, 0));
-      return simplify_gen_binary (code, mode, tem, c);
-    }
+      /* Canonicalize "(x op c) op y" as "(x op y) op c".  */
+      if (swap_commutative_operands_p (XEXP (op0, 1), op1))
+	{
+	  tem = simplify_gen_binary (code, mode, XEXP (op0, 0), op1);
+	  return simplify_gen_binary (code, mode, tem, XEXP (op0, 1));
+	}
 
-  /* Canonicalize (x op c) op y as (x op y) op c.  */
-  if (GET_CODE (op0) == code
-      && associative_constant_p (XEXP (op0, 1)))
-    {
-      tem = simplify_gen_binary (code, mode, XEXP (op0, 0), op1);
-      return simplify_gen_binary (code, mode, tem, XEXP (op0, 1));
-    }
+      /* Attempt to simplify "(a op b) op c" as "a op (b op c)".  */
+      tem = swap_commutative_operands_p (XEXP (op0, 1), op1)
+	    ? simplify_binary_operation (code, mode, op1, XEXP (op0, 1))
+	    : simplify_binary_operation (code, mode, XEXP (op0, 1), op1);
+      if (tem != 0)
+        return simplify_gen_binary (code, mode, XEXP (op0, 0), tem);
 
-  /* Canonicalize x op (y op c) as (x op y) op c.  */
-  if (GET_CODE (op1) == code
-      && associative_constant_p (XEXP (op1, 1)))
-    {
-      tem = simplify_gen_binary (code, mode, op0, XEXP (op1, 0));
-      return simplify_gen_binary (code, mode, tem, XEXP (op1, 1));
+      /* Attempt to simplify "(a op b) op c" as "(a op c) op b".  */
+      tem = swap_commutative_operands_p (XEXP (op0, 0), op1)
+	    ? simplify_binary_operation (code, mode, op1, XEXP (op0, 0))
+	    : simplify_binary_operation (code, mode, XEXP (op0, 0), op1);
+      if (tem != 0)
+        return simplify_gen_binary (code, mode, tem, XEXP (op0, 1));
     }
 
   return 0;
@@ -1162,9 +1153,8 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
   HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
   HOST_WIDE_INT val;
   unsigned int width = GET_MODE_BITSIZE (mode);
+  rtx trueop0, trueop1;
   rtx tem;
-  rtx trueop0 = avoid_constant_pool_reference (op0);
-  rtx trueop1 = avoid_constant_pool_reference (op1);
 
   /* Relational operations don't work here.  We must know the mode
      of the operands in order to do the comparison correctly.
@@ -1176,11 +1166,13 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 
   /* Make sure the constant is second.  */
   if (GET_RTX_CLASS (code) == 'c'
-      && swap_commutative_operands_p (trueop0, trueop1))
+      && swap_commutative_operands_p (op0, op1))
     {
       tem = op0, op0 = op1, op1 = tem;
-      tem = trueop0, trueop0 = trueop1, trueop1 = tem;
     }
+
+  trueop0 = avoid_constant_pool_reference (op0);
+  trueop1 = avoid_constant_pool_reference (op1);
 
   if (VECTOR_MODE_P (mode)
       && GET_CODE (trueop0) == CONST_VECTOR
@@ -2509,21 +2501,20 @@ simplify_relational_operation (enum rtx_code code, enum machine_mode mode,
   if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
 
-  trueop0 = avoid_constant_pool_reference (op0);
-  trueop1 = avoid_constant_pool_reference (op1);
-
   /* We can't simplify MODE_CC values since we don't know what the
      actual comparison is.  */
   if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC || CC0_P (op0))
     return 0;
 
   /* Make sure the constant is second.  */
-  if (swap_commutative_operands_p (trueop0, trueop1))
+  if (swap_commutative_operands_p (op0, op1))
     {
       tem = op0, op0 = op1, op1 = tem;
-      tem = trueop0, trueop0 = trueop1, trueop1 = tem;
       code = swap_condition (code);
     }
+
+  trueop0 = avoid_constant_pool_reference (op0);
+  trueop1 = avoid_constant_pool_reference (op1);
 
   /* For integer comparisons of A and B maybe we can simplify A - B and can
      then simplify a comparison of that with zero.  If A and B are both either
