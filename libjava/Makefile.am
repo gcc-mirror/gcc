@@ -337,6 +337,8 @@ all_java_source_files = \
     $(gtk_awt_peer_sources) \
     $(x_java_source_files)
 
+all_java_class_files = $(all_java_source_files:.java=.class)
+
 libgcj-@gcc_version@.jar: $(all_java_source_files)
 	-@rm -f libgcj-@gcc_version@.jar
 	@echo Compiling Java sourcefiles...
@@ -346,6 +348,13 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 	find java gnu javax org -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
 	  $(ZIP) cfM0E@ $@
+
+# This next rule seems backward, but reflects the fact
+# that 1) all classfiles are compiled in one go when the
+# libgcj jarfile is built and 2) anything which depends
+# on a particular .class file must wait until the jarfile
+# is built.
+$(all_java_class_files): libgcj-@gcc_version@.jar
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
 CLEANFILES = libgcj-@gcc_version@.jar

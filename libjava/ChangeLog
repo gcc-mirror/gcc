@@ -1,3 +1,11 @@
+2003-08-28  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* Makefile.am: Fixed problems with parallel makes.
+	(all_java_class_files): Readded definition.
+	(all_java_class_files): New target which depends on
+	libgcj-@gcc_version@.jar
+	* Makefile.in: Rebuilt
+
 2003-08-28  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
