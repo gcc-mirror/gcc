@@ -804,7 +804,7 @@ init_decl_processing ()
 		 tree_cons (NULL_TREE, class_ptr_type, endlink));
   soft_instanceof_node
     = builtin_function ("_Jv_IsInstanceOf",
-			build_function_type (promoted_boolean_type_node, t),
+			build_function_type (boolean_type_node, t),
 			0, NOT_BUILT_IN, NULL_PTR);
   t = tree_cons (NULL_TREE, object_ptr_type_node,
 		 tree_cons (NULL_TREE, object_ptr_type_node, endlink));
