@@ -206,9 +206,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"08/05/92"
+#define VERSION_INFO2	"08/28/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.5 08/05/92 13:10:08"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.6 08/28/92 07:51:00"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1551,6 +1551,23 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST (TARGET_88100 ? 1 : 2)
+
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  On the m88k, ignore the cost of anti- and
+   output-dependencies.  On the m88100, a store can issue two cycles
+   before the value (not the address) has finished computing.  */
+#define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
+  do {									\
+    if (REG_NOTE_KIND (LINK) != 0)					\
+      (COST) = 0; /* Anti or output dependence.  */			\
+    else if (! TARGET_88100						\
+	     && recog_memoized (INSN) >= 0				\
+	     && get_attr_type (INSN) == TYPE_STORE			\
+	     && SET_SRC (PATTERN (INSN)) == SET_DEST (PATTERN (DEP_INSN))) \
+      (COST) -= 4; /* 88110 store reservation station.  */		\
+  } while (0)
 
 /* Define this to be nonzero if the character `$' should be allowed
    by default in identifier names.  */
