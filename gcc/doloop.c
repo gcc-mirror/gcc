@@ -552,6 +552,7 @@ doloop_modify_runtime (loop, iterations_max,
 {
   const struct loop_info *loop_info = LOOP_INFO (loop);
   HOST_WIDE_INT abs_inc;
+  HOST_WIDE_INT abs_loop_inc;
   int neg_inc;
   rtx diff;
   rtx sequence;
@@ -595,13 +596,18 @@ doloop_modify_runtime (loop, iterations_max,
      except in cases where the loop never terminates.  So we don't
      need to use this more costly calculation.
 
-     If the loop has been unrolled, then the loop body has been
-     preconditioned to iterate a multiple of unroll_number times.  If
-     abs_inc is != 1, the full calculation is
+     If the loop has been unrolled, the full calculation is
 
-       t1 = abs_inc * unroll_number;
-       n = abs (final - initial) / t1;
-       n += (abs (final - initial) % t1) > t1 - abs_inc;
+       t1 = abs_inc * unroll_number;		increment per loop
+       n = abs (final - initial) / t1;		full loops
+       n += (abs (final - initial) % t1) != 0;	partial loop
+
+     However, in certain cases the unrolled loop will be preconditioned
+     by emitting copies of the loop body with conditional branches,
+     so that the unrolled loop is always a full loop and thus needs
+     no exit tests.  In this case we don't want to add the partial
+     loop count.  As above, when t1 is a power of two we don't need to
+     worry about overflow.
 
      The division and modulo operations can be avoided by requiring
      that the increment is a power of 2 (precondition_loop_p enforces
@@ -667,20 +673,22 @@ doloop_modify_runtime (loop, iterations_max,
 	}
     }
 
-  if (abs_inc * loop_info->unroll_number != 1)
+  abs_loop_inc = abs_inc * loop_info->unroll_number;
+  if (abs_loop_inc != 1)
     {
       int shift_count;
 
-      shift_count = exact_log2 (abs_inc * loop_info->unroll_number);
+      shift_count = exact_log2 (abs_loop_inc);
       if (shift_count < 0)
 	abort ();
 
-      if (abs_inc != 1)
+      if (!loop_info->preconditioned)
 	diff = expand_simple_binop (GET_MODE (diff), PLUS,
-				    diff, GEN_INT (abs_inc - 1),
+				    diff, GEN_INT (abs_loop_inc - 1),
 				    diff, 1, OPTAB_LIB_WIDEN);
 
-      /* (abs (final - initial) + abs_inc - 1) / (abs_inc * unroll_number)  */
+      /* (abs (final - initial) + abs_inc * unroll_number - 1)
+	 / (abs_inc * unroll_number)  */
       diff = expand_simple_binop (GET_MODE (diff), LSHIFTRT,
 				  diff, GEN_INT (shift_count),
 				  diff, 1, OPTAB_LIB_WIDEN);

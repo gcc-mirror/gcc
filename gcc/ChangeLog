@@ -1,3 +1,10 @@
+2002-07-20  Alan Modra  <amodra@bigpond.net.au>
+
+	PR optimization/7130
+	* loop.h (struct loop_info): Add "preconditioned".
+	* unroll.c (unroll_loop): Set it.
+	* doloop.c (doloop_modify_runtime): Correct count for unrolled loops.
+
 2002-07-19  Zack Weinberg  <zack@codesourcery.com>
 
 	* rtl.def (CODE_LABEL): Remove slot 8.
