@@ -259,27 +259,13 @@ resolve_contained_fntype (gfc_symbol * sym, gfc_namespace * ns)
 	   || sym->attr.flavor == FL_VARIABLE))
     return;
 
-  /* Try to find out of what type the function is.  If there was an
-     explicit RESULT clause, try to get the type from it.  If the
-     function is never defined, set it to the implicit type.  If
-     even that fails, give up.  */
+  /* Try to find out of what the return type is.  */
   if (sym->result != NULL)
     sym = sym->result;
 
   if (sym->ts.type == BT_UNKNOWN)
     {
-      /* Assume we can find an implicit type.  */
-      t = SUCCESS;
-
-      if (sym->result == NULL)
-	t = gfc_set_default_type (sym, 0, ns);
-      else
-	{
-	  if (sym->result->ts.type == BT_UNKNOWN)
-	    t = gfc_set_default_type (sym->result, 0, NULL);
-
-	  sym->ts = sym->result->ts;
-	}
+      t = gfc_set_default_type (sym, 0, ns);
 
       if (t == FAILURE)
 	gfc_error ("Contained function '%s' at %L has no IMPLICIT type",
