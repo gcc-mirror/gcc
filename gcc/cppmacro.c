@@ -1403,7 +1403,6 @@ _cpp_create_definition (pfile, node)
   macro->paramc = 0;
   macro->fun_like = 0;
   macro->var_args = 0;
-  macro->disabled = 0;
   macro->count = 0;
   macro->expansion = (cpp_token *) POOL_FRONT (&pfile->macro_pool);
 
@@ -1484,6 +1483,11 @@ _cpp_create_definition (pfile, node)
 
   /* Clear the whitespace flag from the leading token.  */
   macro->expansion[0].flags &= ~PREV_WHITE;
+
+  /* Implement the macro-defined-to-itself optimisation.  */
+  macro->disabled = (macro->count == 1 && !macro->fun_like
+		     && macro->expansion[0].type == CPP_NAME
+		     && macro->expansion[0].val.node == node);
 
   /* Commit the memory.  */
   POOL_COMMIT (&pfile->macro_pool, macro->count * sizeof (cpp_token));

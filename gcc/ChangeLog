@@ -1,5 +1,10 @@
 2000-10-29  Neil Booth  <neilb@earthling.net>
 
+	* cppmacro.c (_cpp_create_definition): Optimize the case of
+        a macro defined to itself.
+
+2000-10-29  Neil Booth  <neilb@earthling.net>
+
 	* cpplex.c (save_comment): Don't store new lines in C++ comments.
 
 2000-10-29  Michael Hayes  <mhayes@redhat.com>
