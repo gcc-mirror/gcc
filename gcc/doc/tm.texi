@@ -140,6 +140,26 @@ the linker needs a space between the option and its argument.
 
 If this macro is not defined, the default value is @code{""}.
 
+@findex TARGET_OPTION_TRANSLATE_TABLE
+@item TARGET_OPTION_TRANSLATE_TABLE
+If defined, a list of pairs of strings, the first of which is a
+potential command line target to the @file{gcc} driver program, and the
+second of which is a space-separated (tabs and other whitespace are not
+supported) list of options with which to replace the first option.  The
+target defining this list is responsible for assuring that the results
+are valid.  Replacement options may not be the @code{--opt} style, they
+must be the @code{-opt} style.  It is the intention of this macro to
+provide a mechanism for substitution that affects the multilibs chosen,
+such as one option that enables many options, some of which select
+multilibs.  Example nonsensical definition, where @code{-malt-abi},
+@code{-EB}, and @code{-mspoo} cause different multilibs to be chosen:
+
+@example
+#define TARGET_OPTION_TRANSLATE_TABLE \
+@{ "-fast",   "-march=fast-foo -malt-abi -I/usr/fast-foo" @}, \
+@{ "-compat", "-EB -malign=4 -mspoo" @}
+@end example
+
 @findex CPP_SPEC
 @item CPP_SPEC
 A C string constant that tells the GCC driver program options to

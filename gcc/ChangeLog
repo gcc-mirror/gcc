@@ -1,3 +1,10 @@
+2001-07-05  DJ Delorie  <dj@redhat.com>
+
+	* gcc.c (TARGET_OPTION_TRANSLATE_TABLE): New.
+	(translate_options): If the above is defined, use it to map
+	given options to new options.
+	* doc/tm.texi: Document it.
+
 2001-07-05  Brad Lucier <lucier@math.purdue.edu>
 	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
