@@ -2274,7 +2274,7 @@ do {									     \
 
 /* Mode of a function address in a call instruction (for indexing purposes).
    Doesn't matter on RS/6000.  */
-#define FUNCTION_MODE (TARGET_32BIT ? SImode : DImode)
+#define FUNCTION_MODE SImode
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.

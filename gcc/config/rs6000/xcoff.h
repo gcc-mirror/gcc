@@ -296,11 +296,7 @@ toc_section ()						\
   putc ('.', FILE);						\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (":\n", FILE);						\
-  if (write_symbols == XCOFF_DEBUG				\
-      /* When called before targetm.asm_out.output_mi_thunk,	\
-	 we won't be emitting the rest of the debug info that	\
-	 goes along with this, leading to assembler errors.  */ \
-      && !(current_function_is_thunk && !no_new_pseudos))	\
+  if (write_symbols != NO_DEBUG)				\
     xcoffout_declare_function (FILE, DECL, NAME);		\
 }
 

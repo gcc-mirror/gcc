@@ -1,3 +1,14 @@
+2003-01-08  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (FUNCTION_MODE): Always use SImode.
+	* config/rs6000/rs6000.c (TARGET_ASM_CAN_OUTPUT_MI_THUNK): Redefine
+	as hook_bool_tree_hwi_hwi_tree_true.
+	(rs6000_emit_allocate_stack): Use TARGET_32BIT.
+	(rs6000_emit_epilogue): Same.
+	(rs6000_output_mi_thunk): Re-implement as RTL.
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Call
+	xcoffout_declare_function if any debugging enabled.
+
 2003-01-08  Chris Demetriou  <cgd@broadcom.com>
 
 	* config.gcc (mipsisa32r2-*-elf*, mipsisa32r2el-*-elf*): New
