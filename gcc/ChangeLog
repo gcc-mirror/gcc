@@ -1,5 +1,6 @@
 2003-10-26  Ottavio Campana <ottavio@campana.vi.it>
 
+	PR target/12690
 	* config/i386/mmintrin.h (_mm_set1_pi8): Fix comment.
 
 2003-10-26  Gunther Nikl  <gni@gecko.de>
