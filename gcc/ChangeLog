@@ -2917,12 +2917,699 @@ Thu Mar 16 02:14:16 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 
 2000-03-15  Geoff Keating  <geoffk@cygnus.com>
 
-	See the ChangeLog on the branch for more details.
+	Merge changes from newppc-branch onto trunk.
+
+	2000-03-15  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (toc_hash_table): Update for new hash table functions.
+	(toc_hash_function): Likewise.
+	(toc_hash_eq): Likewise.
+	(toc_hash_mark_entry): Likewise.
+	(toc_hash_mark_table): Likewise.
+	(output_toc): Likewise.
+	(rs6000_add_gc_roots): Likewise.
+
+	2000-03-15  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* t-aix43 (AR_FOR_TARGET): Deleted.  Moved `-X32_64'...
+	(AR_FLAGS_FOR_TARGET): here.  New macro.
+
+	2000-03-05  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/rs6000/rs6000.c (rs6000_fpmem_offset, rs6000_fpmem_size,
+	fpmem_operand) Delete.
+	(xer_operand) New.
+	(rs6000_reg_names, alt_reg_names): Change fpmem to xer.
+	(machine_function): Remove fpmem_size, fpmem_offset, save_toc_p.
+	(rs6000_save_machine_status, rs6000_restore_machine_status, 
+	rs6000_init_expanders, rs6000_stack_info, debug_stack_info): Remove 
+	references to above variables.
+	(gpc_reg_operand): Use XER_REGNO_P instead of FPMEM_REGNO_P.
+	* config/rs6000/rs6000.h (REG_ALLOC_ORDER, REGISTER_NAMES,
+	DEBUG_REGISTER_NAMES): Chagne fpmem to xer.
+	(FPMEM_REGNO_P, FPMEM_REGNUM): Delete.
+	(XER_REGNO_P, XER_REGNO): New.
+	(rs6000_stack): Remove fpmem_p, fpmem_offset, fpmem_size.
+	(PREDICATE_CODES): Change fpmem_operand to xer_operand.
+	(HARD_REGNO_NREGS, HARD_REGNO_MODE_OK): Change FPMEM_REGNO_P to 
+	XER_REGNO_P.
+	(reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS,
+	REG_CLASS_FROM_LETTER, CLASS_MAX_NREGS): Change FPMEM_REGS to XER_REGS,		and remove FLOAT_OR_FPMEM_REGS.
+	(CLASS_CANNOT_CHANGE_SIZE): Change to FLOAT_REGS.
 	
-	* configure.in: Merge in changes from newppc-branch.
-	* configure: Regenerate.
-	* config/rs6000/*: Merge in changes from newppc-branch.
-	Also correct copyright notices.
+	2000-02-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* aix.h (FP_SAVE_INLINE, ASM_OUTPUT_INTERNAL_LABEL_PREFIX,
+	TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP): Move here...
+	* rs6000.h: from here.
+
+	* rs6000-protos.h (rs6000_select_section): Provide prototype.
+	(rs6000_select_rtx_section): Likewise.
+	(rs6000_encode_section_info): Likewise.
+	(sdata_section): Likewise.
+	(sdata2_section): Likewise.
+	(sbss_section): Likewise.
+	* sysv4.h (rs6000_select_section): Delete prototype.
+	(rs6000_select_rtx_section): Likewise.
+	(rs6000_encode_section_info): Likewise.
+	(sdata_section): Likewise.
+	(sdata2_section): Likewise.
+	(sbss_section): Likewise.
+	(REG_SAVE_AREA): Delete definition duplicated in rs6000.h.
+
+	* sysv4.h: Delete various unnecessary #undef's and put a comment
+	on the remaining ones.
+	Change various comments according to coding standard.
+
+	2000-02-29  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/rs6000/rs6000.h (MQ_REGNO, CR0_REGNO, CR1_REGNO, CR2_REGNO, 
+	CR3_REGNO, CR4_REGNO, MAX_CR_REGNO): Define.
+	(CR0_REGNO_P) Remove.
+	* config/rs6000/rs6000.c (gpc_reg_operand, and64_operand, and_operand, 
+	setup_incoming_varargs, mtcrf_operation, print_operand, 
+	rs6000_stack_info, rs6000_emit_prologue, rs6000_emit_epilogue): 
+	Use the above macros.
+
+	2000-02-24  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/rs6000/rs6000.md: Added a new alternative for each
+	pattern that had a 'x' alternative but no 'y' alternative.
+	Added a new split for each of the above patterns.
+
+	2000-02-18  Geoff Keating  <geoffk@cygnus.com>
+
+	* aix41.h (ASM_CPU_SPEC): Delete.
+	(CPP_CPU_SPEC): Delete.
+
+	* aix.h (RS6000_OUTPUT_BASENAME): Define.
+	(ASM_OUTPUT_LABEL): Define.
+	(ASM_GLOBALIZE_LABEL): Define.
+	(STRIP_NAME_ENCODING): Define.
+	* rs6000.h (RS6000_OUTPUT_BASENAME): Don't define.
+	(STRIP_NAME_ENCODING): Don't define.
+	(ASM_OUTPUT_LABEL): Don't define.
+	(ASM_GLOBALIZE_LABEL): Don't define.
+	* sysv4.h (ASM_DECLARE_FUNCTION_NAME): Use assemble_name to output
+	names, and ASM_OUTPUT_LABEL to output labels, rather than
+	asm_fprintf.
+	(ASM_OUTPUT_LABEL): Define.
+	(ASM_OUTPUT_INT): Use assemble_name.
+	(ASM_OUTPUT_DWARF_ADDR): Use assemble_name.
+	(STRIP_NAME_ENCODING): Don't undefine first.
+	(RS6000_OUTPUT_BASENAME): Make equivalent to assemble_name for
+	ELF.
+	(ASM_OUTPUT_LABELREF): Don't prepend underscores to labels
+	specified with 'asm' even with -fleading-underscore.
+	* rs6000.c (print_operand): Use assemble_name when !TARGET_AIX.
+	(output_epilog): Likewise.
+	(output_toc): Likewise. 
+	* tramp.asm: Handle -fleading-underscore correctly.
+
+	* rs6000.md (builtin_setjmp_receiver): Also run for -fPIC and
+	-mminimal-toc.
+	(nonlocal_goto_receiver): Delete.
+	* rs6000.h (DONT_ACCESS_GBLS_AFTER_EPILOGUE): Delete.
+
+	* rs6000.h (ASM_OUTPUT_DEF): Don't define.
+	(SET_ASM_OP): Define.
+	* sysv4.h (ASM_OUTPUT_DEF): Don't undefine.
+
+	* rs6000.h (ASM_OUTPUT_ADDR_VEC_ELT): Don't define.
+	(ASM_LONG): Define.
+
+	* rs6000.c (rs6000_dll_import_ref): Delete, not used.
+	* rs6000-protos.h (rs6000_dll_import_ref): Delete.
+
+	* rs6000.h: Add 'u' to more constants.
+
+	2000-02-18  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (mfcr+shift): Delete PowerPC64 version.
+
+	2000-02-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (reg_or_u_cint_operand): New function.
+	(logical_operand): Handle 64-bit hosts.
+	(logical_u_operand): New function.
+	(non_logical_cint_operand): Handle 64-bit hosts.
+	(non_logical_u_cint_operand): New function.
+	* rs6000.h (DATA_SECTION_ASM_OP): Add tab.
+	(PREDICATE_CODES): Define new functions.
+	* rs6000-protos.h: Declare new functions.
+	* rs6000.md (iordi3, xordi3): Constant int must be unsigned 32-bits.
+	(movdi_64): Bracket code intended for 64-bit hosts.  Create
+	CONST_DOUBLE for 32-bit values.
+	(scc insns): Generate DImode compares.
+	(mfcr insns): Create DImode versions.
+	(sge matchers): New patterns.
+	
+	2000-02-15  Gabriel Paubert  <paubert@iram.es>
+
+	* rs6000.md: Correct instructions length attributes and
+	constraints on unsigned compare instructions.
+	(*ne0): Disable for PowerPC64.
+
+	2000-02-11  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (output_function_profiler): Use .long for a 32-bit
+	quantity, fix profile1.C test failure under -fPIC.
+
+	* rs6000.c: Add 'u' to many constants to suppress warnings.
+	(constant_pool_expr_1): Make static.
+	(rs6000_emit_eh_toc_restore): Remove unused 'r2'.
+	* rs6000.h: Add 'u' to many constants to suppress warnings.
+
+	* rs6000.c (rs6000_emit_load_toc_table): Use LCTOC..1 under AIX
+	for the start of the TOC, instead of LCTOC..0.
+	* aix.h (toc_section): Use LCTOC..1 under AIX for the start
+	of the TOC.
+	* rs6000.md (load_toc_aix_si): Use LCTOC..1.
+	(load_toc_aix_di): Use LCTOC..1.
+
+	* rs6000.h (LEGITIMIZE_ADDRESS): Turn into a function.
+	* rs6000.c (rs6000_legitimize_address): New function from
+	LEGITIMIZE_ADDRESS.  Only use create_TOC_reference on
+	symbols in the constant pool that really are TOC references.
+	(print_operand_address): For ELF, write TOC offsets under
+	-fPIC as subtractions in the insn.
+	(output_toc): For ELF, define symbols in TOC as normal labels,
+	to match RTL.
+	(create_TOC_reference): Use gen_rtx_PLUS rather than gen_rtx.
+	* rs6000-protos.h (rs6000_legitimize_address): Prototype.
+	(create_TOC_reference): Prototype only when RTX_CODE is defined.
+	* rs6000.md (movsi): Only use create_TOC_reference on
+	symbols in the constant pool that really are TOC references.
+
+	* rs6000.h (MACHINE_DEPENDENT_REORG): Don't define.
+	* rs6000.c (rs6000_reorg): Delete.
+	* rs6000-protos.h (rs6000_reorg): Delete.
+
+	2000-02-09  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.h (INCOMING_RETURN_ADDR_RTX): New macro.
+
+	* aix.h (SETUP_FRAME_ADDRESSES): Define.
+	* rs6000.c [TARGET_AIX] (insn_after_throw): New static variable.
+	[TARGET_AIX] (rs6000_aix_emit_builtin_unwind_init): New function.
+	[TARGET_AIX] (rs6000_emit_eh_toc_restore): New function.
+	* rs6000-protos.h: Prototype rs6000_emit_eh_toc_restore,
+	rs6000_aix_emit_builtin_unwind_init.
+	* rs6000.md (eh_epilogue) [TARGET_AIX]: Call 
+	rs6000_emit_eh_toc_restore on AIX.
+	(return_eh_si): Use r2.
+	(return_eh_di): Use r2.
+
+	* aix43.h: Turn on HAS_INIT_SECTION and LD_INIT_SWITCH,
+	since we're breaking binary compatibility anyway.
+
+	2000-02-09  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/rs6000/rs6000-protos.h: (get_TOC_alias_set, uses_TOC,
+	constant_pool_expr_p): Declare them.
+	(constant_pool_expr_p): Declare it.
+	* config/rs6000/rs6000.c (toc_label_name): Define.
+	(rs6000_override_options): Set toc_label_name.
+	(input_operand): Allow any TOC_RELATIVE_EXPR_P.
+	(get_TOC_alias_set, constant_pool_expr_p, constant_pool_expr_1,
+	uses_TOC): New functions.
+	(print_operand): Delete old '*' case.
+	(print_operand_address): Use LEGITIMATE_CONSTANT_POOL_ADDRESS_P,
+	and strip off rtl for TOC before calling output_addr_const.
+	(rs6000_emit_load_toc_table): Use toc_label_name.
+	* config/rs6000/rs6000.h (TARGET_SWITCHES): Make msched-prolog
+	the default.
+	(LEGITIMATE_CONSTANT_POOL_BASE_P): Delete.
+	(CONSTANT_POOL_EXPR_P, TOC_RELATIVE_EXPR_P): New macros.
+	(LEGITIMATE_CONSTANT_POOL_ADDRESS_P): Use CONSTANT_POOL_EXPR_P.
+	(LEGITIMIZE_ADDRESS, LEGITIMIZE_RELOAD_ADDRESS): Turn symbol_refs
+	into explicit TOC_REGISTER offsets.
+	(TOC_REGISTER): New macro.
+	* config/rs6000/rs6000.md (movsi, movdi): Emit rtl under 
+	TARGET_TOC to reference TOC_REGISTER.
+	(load_toc_v4_PIC_1b): Add 4 to offset for toc reload.
+	* config/rs6000/sysv4.h (ASM_DECLARE_FUNCTION_NAME): Call  
+	uses_TOC before emitting label references.
+
+	2000-02-05  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.md (stack_tie): Fix warning.
+
+	* eabi-ctors.c: Use 'asm' names for the start/end variables,
+	to handle -fleading-underscore.
+	* sysv4.h (ASM_DECLARE_FUNCTION_NAME): Use asm_fprintf and %U.
+	(USER_LABEL_PREFIX): New macro.
+	(ASM_OUTPUT_INTERNAL_LABEL_PREFIX): Use asm_fprintf and %L.
+	(ASM_OUTPUT_LABELREF): Use asm_fprintf and %U.
+	* t-ppccomm (MULTILIB_MATCHES_SYSV): Note that call-sysv and
+	call-linux can use the same multilibs.
+	* t-ppcgas (MULTILIB_OPTIONS): Don't need to have separate call-sysv
+	and call-linux multilibs.  Do multilib with -fleading-underscore.
+	(MULTILIB_DIRNAMES): Follow MULTILIB_OPTIONS change.
+	(MULTILIB_EXCEPTIONS): Remove call-linux exceptions.  Add restrictions
+	to call-aix.
+
+	* sysv4.h (CPP_SYSV_SPEC): Define _SOFT_FLOAT for all those CPUs that
+	have MASK_SOFT_FLOAT set.
+	(CPP_FLOAT_DEFAULT_SPEC): New macro.
+	(SUBTARGET_EXTRA_SPECS): Set `cpp_float_default' to the value of
+	CPP_FLOAT_DEFAULT_SPEC.
+
+	* rs6000.c (ccr_bit): Add some consistency checks and a variable 'reg'.
+	* rs6000.md: Whitespace change.
+	* sysv4.h (LINK_TARGET_SPEC): Whitespace change.
+	* sysv4le.h (LINK_TARGET_SPEC): Whitespace change.
+
+	2000-02-05  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.md (eh_epilogue): New expander.
+	(eh_reg_restore): New expand/split/insn combination.
+	(return_eh_si): New insn.
+	(return_eh_di): New insn.
+
+	* eabi-ci.asm: Put a label at the start of the .eh_frame section.
+	* eabi-cn.asm: Put a zero at the end of the .eh_frame section.
+	* eabi-ctors.c (__do_global_ctors): Register this object's
+	frame.  Clean up.  Call atexit() after the constructors.
+	(__do_global_dtors): Deregister this object's frame.  Clean up.
+	Allow for recursive calls to exit().
+	* rs6000.c (fixuplabelno): New variable.
+	* sysv4.h (ASM_OUTPUT_INT): Don't do .fixup if not
+	TARGET_RELOCATABLE, it slows down exec() under linux.
+	(ASM_OUTPUT_DWARF_ADDR): Do .fixup if TARGET_RELOCATABLE.
+
+	* aix.h (ASM_OUTPUT_DWARF_ADDR_VAR): New macro.
+	(ASM_OUTPUT_DWARF_DELTA_VAR): New macro.
+	(ASM_OUTPUT_DWARF_DELTA2): New macro.
+	(ASM_OUTPUT_DWARF_DELTA4): New macro.
+	(ASM_OUTPUT_DWARF_ADDR_DELTA): New macro.
+	(ASM_OUTPUT_DWARF_ADDR): New macro.
+	(ASM_OUTPUT_DWARF_DATA4): New macro.
+	(ASM_OUTPUT_DWARF_DATA2): New macro.
+	(ASM_OUTPUT_DWARF_OFFSET4): New macro.
+	(ASM_OUTPUT_DWARF_OFFSET): New macro.
+	(UNALIGNED_INT_ASM_OP): New macro, fake definition.
+
+	2000-02-03  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (rs6000_sr_alias_set): New variable.
+	(rs6000_override_options): Initialise rs6000_sr_alias_set.
+	(rs6000_emit_stack_tie): New function.
+	(rs6000_emit_allocate_stack): Specify RTX_FRAME_RELATED_P
+	in a way that dwarf2out can understand.
+	(rs6000_frame_related): New function.
+	(rs6000_emit_prologue): Use rs6000_sr_alias_set.  Specify
+	RTX_FRAME_RELATED_P in a way that dwarf2out can understand.
+	Use rs6000_emit_stack_tie when needed.
+	(rs6000_emit_epilogue): Use rs6000_sr_alias_set.  Don't set
+	RTX_FRAME_RELATED_P.  Use rs6000_emit_stack_tie when needed.
+	* rs6000.md (stack_tie): New insn.
+	(return_internal_si): Allow return value to be in the count
+	register.
+	(return_internal_di): Likewise.
+
+	* rs6000.c (output_mi_thunk): Remove unused variable `sp'.
+
+	2000-02-03  Geoff Keating  <geoffk@cygnus.com>
+
+	* sysv4.h (LOCAL_LABEL_PREFIX): Define, for the use of dbxelf.h.
+
+	2000-01-31  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.h (ASM_OUTPUT_DEF_FROM_DECLS): New macro.
+
+	* rs6000.md (stmw): Use the right POWER opcode.
+	(lmw): Likewise.
+
+	2000-01-31  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rs6000-protos.h: New file.
+
+	* rs6000.c: Include tm_p.h.  Fix compile time warnings.
+	
+	* rs6000.h: Move prototypes to rs6000-protos.h.  Fix compile time
+	warnings.
+	
+	* sysv4.h: Likewise.
+
+	2000-01-28  Geoff Keating  <geoffk@cygnus.com>
+
+	* ../../configure.in: Delete powerpcle-*-winnt*
+	and powerpcle-*-pe|powerpcle-*-cygwin*.
+	* ../../configure: Regenerated.
+	* cygwin.h: Delete.
+	* rs6000.h (OBJECT_WINDOWS_NT): Delete.
+	(TARGET_WINDOWS_NT): Delete.
+	(ABI_NT): Delete.
+	(CALL_NT_DLLIMPORT): Delete.
+	Delete NT-specific code.
+	* rs6000.md, rs6000.c, sysv4.h: Delete NT-specific code.
+	* win-nt.h: Delete.
+	* t-winnt: Delete.
+	* nt-ci.asm: Delete.
+	* nt-cn.asm: Delete.
+	* ntstack.asm: Delete.
+
+	2000-01-27  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.h (SELECT_RTX_SECTION): Move to aix.h.
+	(ASM_FILE_START): Likewise.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	(ASM_OUTPUT_LABELREF): Likewise.
+	(ASM_OUTPUT_SKIP): Likewise.
+	(ASM_OUTPUT_INTERNAL_LABEL): Likewise.
+	(ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	(ASM_OUTPUT_CASE_LABEL): Likewise.
+	(ASM_OUTPUT_ALIGNED_COMMON): Likewise.
+	(ASM_OUTPUT_ASCII): Likewise.
+
+	2000-01-27  Clinton Popetz  <cpopetz@cygnus.com>
+
+        * rs6000.c (rs6000_emit_load_toc_table): Use "LCG" and
+        reload_toc_labelno for non-prologue TOC reloads.  Also, don't
+        increment rs6000_pic_labelno here.
+        (rs6000_emit_prologue): Pass TRUE to rs6000_emit_load_toc_table,
+        and increment rs6000_pic_labelno here.
+
+	2000-01-24  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* rs6000.md (fctiwz): Use (set (reg) (unspec:DI [(fix:SI ...)]))
+	rather than (set (subreg:SI (reg)) (fix:SI ...)) so that register
+	allocation knows (reg) is dead before the insn.
+
+	2000-01-21  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.md (movsi_to_cr): Correct typo in output template.
+
+	2000-01-19  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (rs6000_pic_labelno): Always define.
+	(rs6000_pic_func_labelno): Delete.
+	(lmw_operation): Check for a zero base register,
+	which doesn't mean what we want.
+	(stmw_operation): New function.
+	(print_operand): Define new 'l' modifier.
+	(rs6000_stack_info): We must save all 64 bits of the registers
+	if TARGET_POWERPC64.
+	(rs6000_output_load_toc_table): Delete.
+	(rs6000_emit_load_toc_table): New function.
+	(rs6000_allocate_stack_space): Delete.
+	(rs6000_emit_allocate_stack): New function.
+	(rs6000_emit_prologue): New function.
+	(output_prolog): Use rs6000_emit_prologue.
+	(rs6000_emit_epilogue): Change a few variable names to be
+	more accurate.  Restore all 64 bits of the registers if
+	TARGET_POWERPC64.  Only restore the FP registers which were used
+	if they are being saved/restored one-at-a-time.
+	(output_mi_thunk): Delete inefficient code generation.
+	(output_function_profiler): Don't use rs6000_output_load_toc_table.
+	* rs6000.h: Declare rs6000_emit_load_toc_table,
+	rs6000_allocate_stack_space, stmw_operation.  Don't declare
+	rs6000_output_load_toc_table.
+	* rs6000.md (elf_high): Allow register 0, but discourage it
+	heavily.
+	(elf_low): Support loading into register 0.
+	(load_toc_aix_si): New pattern.
+	(load_toc_aix_di): New pattern.
+	(load_toc_v4_pic_si): New pattern.
+	(load_toc_v4_pic_di): New pattern.
+	(load_toc_v4_PIC_1): New pattern.
+	(load_toc_v4_PIC_1b): New pattern.
+	(load_toc_v4_PIC_2): New pattern.
+	(builtin_setjmp_receiver): Use rs6000_emit_load_toc_table.
+	(nonlocal_goto_receiver): Use rs6000_emit_load_toc_table.
+	(prologue): New expander.
+	(movesi_from_cr): New pattern.
+	(stmw): New pattern.
+	(save_fpregs_si): New pattern.
+	(save_fpregs_di): New pattern.
+
+	2000-01-19  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.md (movsi): Don't use force_reg when no_new_pseudos.
+	(movdi): Likewise.
+	(movhi): Likewise.
+	(movqi): Likewise.
+
+	2000-01-19  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.md (movsi_got): 'unspec 8' returns a SImode result,
+	at present.
+	(movsi_got_internal): Likewise.
+	(movsi_got_internal+1): Likewise.
+	(set_sp): 'unspec 7' does a SImode clobber.
+
+	2000-01-19  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.md (floatsidf2): Don't use the fpmem "register", just
+	allocate a stack temporary.
+	(floatsidf2_internal): Likewise.
+	(floatsidf2_internal+1): Likewise.  Don't do bizzare hacks
+	with unspec.
+	(floatunssidf2): Don't use the fpmem "register", just
+	allocate a stack temporary.
+	(floatunssidf2_internal): Likewise.
+	(floatunssidf2_internal+1): Likewise.  Don't do bizzare hacks
+	with unspec.
+	(floatsidf2_loadaddr): Delete.
+	(floatsidf2_store1): Delete.
+	(floatsidf2_store2): Delete.
+	(floatsidf2_load): Delete.
+	(fix_truncdfsi2): Don't use the fpmem "register", just
+	allocate a stack temporary.
+	(fix_truncdfsi2_internal_si): Delete.
+	(fix_truncdfsi2_internal_di): Delete.
+	(fix_truncdfsi2_internal): New insn.
+	(fix_truncdfsi2_internal+1): Don't use the fpmem "register".
+	(fix_truncdfsi2_store): Delete.
+	(fix_truncdfsi2_load): Delete.
+	(fctiwz): Produce gen_fctiwz.
+
+	2000-01-19  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* eabi.h (INVOKE__main): Define.
+	* rs6000.c (rs6000_stack_info): Don't handle call to NAME__MAIN
+	specially.
+	(rs6000_emit_prologue): Likewise.
+	* rs6000.h (struct rs6000_stack): Don't keep track of whether
+	this is the main program.
+
+	2000-01-19  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (rs6000_va_arg): Delete some unused variables.
+
+	2000-01-19  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (rs6000_va_arg): On AIX, padding for small arguments
+	goes after the argument.
+
+	2000-01-12  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.md: Document 'unspec' values used.
+	(epilogue): New expander.
+	(movesi_to_cr_one): New expander.
+	(movesi_to_cr and following): New pattern.
+	(lmw): New pattern.
+	(return_internal_si): New pattern.
+	(return_internal_di): New pattern.
+	(return_and_restore_fpregs_si): New pattern.
+	(return_and_restore_fpregs_di): New pattern.
+	* rs6000.h: Declare new functions.
+	* rs6000.c (rs6000_stack_info): Use current_function_is_leaf
+	rather than rs6000_calls_p.
+	(rs6000_makes_calls): Delete.
+	(lmw_operation): New function.
+	(mtcrf_operation): New function.
+	(rs6000_emit_epilogue): New function.
+	(output_epilog): Call rs6000_emit_epilogue and final if
+	!TARGET_SCHED_PROLOG, instead of writing text unconditionally.
+
+	2000-01-12  Geoff Keating  <geoffk@cygnus.com>
+
+	* aix43.h (SUBSUBTARGET_SWITCHES): Document switches.
+	* aix41.h (SUBSUBTARGET_SWITCHES): Document switches.
+	* aix.h (SUBTARGET_SWITCHES): Document switches.
+	* rs6000.h: (TARGET_SWITCHES): Don't print options twice.  Make
+	sched-prolog and sched-epilog the same.  Document all the
+	switches.
+	(TARGET_OPTIONS): No longer allow -mdebug-.
+
+	2000-01-12  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.h (ASM_FILE_END): Move to aix.h.
+	(EXTRA_SECTIONS): Move to aix.h.
+	(READONLY_DATA_SECTION): Move to aix.h.
+	(EXTRA_SECTION_FUNCTIONS): Move to aix.h.
+	(SELECT_SECTION): Move to aix.h.
+	(JUMP_TABLES_IN_TEXT_SECTION): Move to aix.h.
+	(INT_REGNO_P): Use symbolic name for ARG_POINTER_REGNUM.
+	(LINK_REGISTER_REGNUM): New definition.
+	(RETURN_ADDR_RTX): Use symbolic name for LINK_REGISTER_REGNUM.
+	(SLOW_UNALIGNED_ACCESS): Define in a way suitable for both
+	AIX and SVR4.
+	* sysv4.h: Delete the code between the inclusion of rs6000.h
+	and svr4.h.
+	(DWARF_DEBUGGING_INFO): Don't define, it's defined in elfos.h.
+	(FP_ARG_MAX_REG): Move generic definition to rs6000.h.
+	(RS6000_REG_SAVE): Move generic definition to rs6000.h.
+	(RS6000_SAVE_AREA): Move generic definition to rs6000.h.
+	* rs6000.md (floatsidf2_loadaddr): The first arg here is Pmode.
+	(fix_truncdfsi2_internal): Rename to fix_truncdfsi2_internal_si.
+	(fix_truncdfsi2_internal_di): New pattern.
+	(fix_truncdfsi2_store): The second arg here is Pmode too.
+	(fix_truncdfsi2_load): The second arg here is Pmode too.
+	(tablejumpdi): Now that switch tables hold only SImode values,
+	gcc needs to know how to add them to the pc which is DImode.
+	* rs6000.c (rs6000_stack_info): Use symbolic name for 
+	LINK_REGISTER_REGNUM.
+	(output_mi_thunk) [!TARGET_ELF]: Don't define sp, it's not used.
+	(output_toc): Delete unused variables s1 and s2.
+	(output_ascii): Use fputs not fprintf on a variable string.
+
+	2000-01-07  David Edelsohn  <edelsohn@gnu.org>
+
+        * rs6000.c (processor_target_table): Add power3 as alias for 630.
+        * aix43.h: Revert Aug 2 change.
+        (HAS_INIT_SECTION): Define, not visible yet.
+        (LD_INIT_SWITCH): Define, not visible yet.
+        * t-aix43 (MULTILIB_OPTIONS): Revert Aug 2 change.
+
+	2000-01-04  Joel Sherrill (joel@OARcorp.com>
+
+        * config/rs6000/rtems.h: Include config/rtems.h.
+
+	2000-01-04  David Edelsohn  <edelsohn@gnu.org>
+
+        * rs6000.h (HANDLE_PRAGMA_PACK): Define.
+        (SLOW_UNALIGNED_ACCESS): Define.
+        (CASE_VECTOR_MODE): Always use 32-bit offsets.
+        (ASM_FILE_END): Generate 64-bit symbol in 64-bit mode.
+        (EXTRA_SECTOIN_FUNCTIONS): Indent .csect pseudo-op.
+        (toc_section): Likewise and .toc pseudo-op.
+        (ASM_DECLARE_FUNCTION): Likewise.  Align text more strictly in
+        64-bit mode.
+        (TEXT_SECTION_ASM_OP): Likewise.
+        (ASM_OUTPUT_ADD_VEC_ELT, ASM_OUTPUT_ADDR_DIFF_ELT): Always use
+        32-bit offsets.
+
+	1999-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.h (TARGET_POWERPC64): Make sure
+	UNITS_PER_WORD and BITS_PER_WORD are compile time constants when
+	compiling libgcc2.
+	
+	2000-01-06  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.h: Move more stuff from here...
+	* aix.h: to here.
+	* sysv4.h: Cleanup accordingly.
+	* netware.h: Likewise
+
+	2000-01-05  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+        * rs6000.h: Continue cleanup.
+	* aix.h: Likewise.
+	* lynx.h: Likewise.
+	* netware.h: Likewise.
+	* sol2.h: Likewise.
+	* sysv4.h: Likewise.
+	* win-nt.h: Likewise.
+
+	* rs6000.h (TARGET_SWITCHES): Add descriptions.
+	(TARGET_OPTIONS): Likewise.
+
+	* sysv4.h (SUBTARGET_SWITCHES): Add descriptions.
+	(SUBTARGET_OPTIONS): Likewise.
+
+	* rs6000.md: Fix compile time warnings.
+
+	2000-01-04  Geoff Keating  <geoffk@cygnus.com>
+
+	vxworks patches from the Cygnus tree originally by
+	Michael Meissner <meissner@cygnus.com> and Vladimir Makarov
+	<vmakarov@cygnus.com>.
+	* sysv4.h (SUBTARGET_SWITCHES): Add vxworks.
+	(ENDFILE_SPEC): Likewise.
+	(LIB_VXWORKS_SPEC): New macro.
+	(STARTFILE_VXWORKS_SPEC): New macro.
+	(ENDFILE_VXWORKS_SPEC): New macro.
+	(LINK_START_VXWORKS_SPEC): New macro.
+	(LINK_OS_VXWORKS_SPEC): New macro.
+	(CPP_OS_VXWORKS_SPEC): New macro.
+	(SUBTARGET_EXTRA_SPECS): Add all the vxworks specs.
+	* vxppc.h: Rewrite to use proper configuration method.
+	* vxppcle.h: New file.
+	* ../../configure.in: Add powerpcle-wrs-vxworks*.
+	* ../../configure: Rebuilt.
+
+	2000-01-04  Geoff Keating  <geoffk@cygnus.com>
+
+	Lots of changes to rs6000.h, sysv4.h, aix.h,
+	aix31.h, aix3newas.h, aix41.h, aix43.h, beos.h,
+	with the aim that rs6000.h is the first header
+	included and the others override it.
+	* aix.h: New file.
+
+	* x-aix41-gld: Remove.  
+	* x-aix43: Remove.
+	* x-aix41: Remove target-specific switches, and don't specify
+	-Wl,-bbigtoc as we don't need it any more.
+	* ../../configure.in: Use x-aix41 for ppc AIX 4.1 and above.
+	Use t-aix43 for AIX 4.3 and above.
+	* ../../configure: Regenerated.
+
+	* rs6000.h (TARGET_SWITCHES): Add some initial prolog-scheduling
+	options, that don't do anything yet.
+	(MASK_SCHED_PROLOG): New macro.
+	(MASK_SCHED_EPILOG): New macro.
+	(TARGET_SCHED_PROLOG): New macro.
+	(TARGET_SCHED_EPILOG): New macro.
+
+	2000-01-04  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c: Correct comment, the `minimal' TOCs are actually
+	one per translation unit, not one per function.
+	(output_toc): Also do duplicate constant elimination
+	for per-translation-unit TOCs.
+
+	* rs6000.md (nonlocal_goto_receiver): Put it back as before.  Add
+	a comment explaining _exactly_ when this pattern gets used.
+	(builtin_setjmp_receiver): New pattern for better clarity.
+	(init_v4_pic): Move it into a section dealing with TOC registers.
+
+	1999-12-30  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (toc_hash_table): New variable.
+	(rs6000_hash_constant): New function.
+	(toc_hash_function): New function.
+	(toc_hash_eq): New function.
+	(toc_hash_mark_entry): New function.
+	(toc_hash_mark_table): New function.
+	(output_toc): Don't output duplicate TOC entries in
+	a single file.
+	(rs6000_add_gc_roots): Add the hash table as a GC root.
+	* t-aix43: Move AR_FOR_TARGET and CLIB here from x-aix43,
+	where they clearly shouldn't be.  This may need to be fixed
+	later when there is a GNU ar for AIX.
+	* x-aix43: Don't define CLIB or AR_FOR_TARGET.
+	Don't define BOOT_LDFLAGS as it is now not necessary.
+
+	1999-12-29  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (rs6000_build_va_list): Use 'char *' rather than 'void *'
+	for va_list on AIX.  Use unsigned_char_type_node rather than
+	constructing our own version on svr4.
+
+	1999-12-17  Geoff Keating  <geoffk@cygnus.com>
+
+	* tramp.asm (__trampoline_size): Delete CYGNUS LOCAL comment,
+	since patently it's not.
+
+	1999-12-08  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.md (nonlocal_goto_receiver): Turn into
+	define_expand/define_insn pair, and handle restore of the
+	SVR4 -fpic register.
 
 Wed Mar 15 15:43:38 2000  Jeffrey A Law  (law@cygnus.com)
 
