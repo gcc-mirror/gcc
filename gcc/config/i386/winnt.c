@@ -47,8 +47,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 */
 
 static tree associated_type (tree);
-static const char * gen_stdcall_suffix (tree);
-static const char * gen_fastcall_suffix (tree);
+static tree gen_stdcall_or_fastcall_suffix (tree, bool);
 static int i386_pe_dllexport_p (tree);
 static int i386_pe_dllimport_p (tree);
 static void i386_pe_mark_dllexport (tree);
@@ -333,83 +332,56 @@ i386_pe_mark_dllimport (tree decl)
 }
 
 /* Return string which is the former assembler name modified with a
-   prefix consisting of FASTCALL_PREFIX and a suffix consisting of an
-   atsign (@) followed by the number of bytes of arguments.  */
-
-static const char *
-gen_fastcall_suffix (tree decl)
-{
-  int total = 0;
-  const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  char *newsym;
-
-  if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-    if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl))))
-        == void_type_node)
-      {
-	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
-
-	/* Quit if we hit an incomplete type.  Error is reported
-	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
-	while (TREE_VALUE (formal_type) != void_type_node
-	       && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
-	  {
-	    int parm_size
-	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
-	    /* Must round up to include padding.  This is done the same
-	       way as in store_one_arg.  */
-	    parm_size = ((parm_size + PARM_BOUNDARY - 1)
-			 / PARM_BOUNDARY * PARM_BOUNDARY);
-	    total += parm_size;
-	    formal_type = TREE_CHAIN (formal_type);
-	  }
-      }
-
-  /* Assume max of 8 base 10 digits in the suffix.  */
-  newsym = xmalloc (1 + strlen (asmname) + 1 + 8 + 1);
-  sprintf (newsym, "%c%s@%d", FASTCALL_PREFIX, asmname, total/BITS_PER_UNIT);
-  return IDENTIFIER_POINTER (get_identifier (newsym));
-}
-
-/* Return string which is the former assembler name modified with a
    suffix consisting of an atsign (@) followed by the number of bytes of
-   arguments */
+   arguments.  If FASTCALL is true, also add the FASTCALL_PREFIX.  */
 
-static const char *
-gen_stdcall_suffix (tree decl)
+static tree
+gen_stdcall_or_fastcall_suffix (tree decl, bool fastcall)
 {
   int total = 0;
   /* ??? This probably should use XSTR (XEXP (DECL_RTL (decl), 0), 0) instead
      of DECL_ASSEMBLER_NAME.  */
-  const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+   const char *asmname =  IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *newsym;
+  char *p;
+  tree formal_type;
 
-  if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
-    if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl))))
-        == void_type_node)
-      {
-	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  /* Do not change the identifier if a verbatim asmspec or already done. */
+  if (*asmname == '*' || strchr (asmname, '@'))
+    return DECL_ASSEMBLER_NAME (decl);
 
-	/* Quit if we hit an incomplete type.  Error is reported
-	   by convert_arguments in c-typeck.c or cp/typeck.c.  */
-	while (TREE_VALUE (formal_type) != void_type_node
-	       && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
-	  {
-	    int parm_size
-	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
+  formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  if (formal_type != NULL_TREE)
+    {
+      /* These attributes are ignored for variadic functions in
+	 i386.c:ix86_return_pops_args. For compatibility with MS
+         compiler do not add @0 suffix here.  */ 
+      if (TREE_VALUE (tree_last (formal_type)) != void_type_node)
+        return DECL_ASSEMBLER_NAME (decl);
+
+      /* Quit if we hit an incomplete type.  Error is reported
+         by convert_arguments in c-typeck.c or cp/typeck.c.  */
+      while (TREE_VALUE (formal_type) != void_type_node
+	     && COMPLETE_TYPE_P (TREE_VALUE (formal_type)))	
+	{
+	  int parm_size
+	    = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
 	    /* Must round up to include padding.  This is done the same
 	       way as in store_one_arg.  */
-	    parm_size = ((parm_size + PARM_BOUNDARY - 1)
-			 / PARM_BOUNDARY * PARM_BOUNDARY);
-	    total += parm_size;
-	    formal_type = TREE_CHAIN (formal_type);
-	  }
-      }
+	  parm_size = ((parm_size + PARM_BOUNDARY - 1)
+		       / PARM_BOUNDARY * PARM_BOUNDARY);
+	  total += parm_size;
+	  formal_type = TREE_CHAIN (formal_type);\
+	}
+     }
 
   /* Assume max of 8 base 10 digits in the suffix.  */
-  newsym = xmalloc (strlen (asmname) + 1 + 8 + 1);
-  sprintf (newsym, "%s@%d", asmname, total/BITS_PER_UNIT);
-  return IDENTIFIER_POINTER (get_identifier (newsym));
+  newsym = alloca (1 + strlen (asmname) + 1 + 8 + 1);
+  p = newsym;
+  if (fastcall)
+    *p++ = FASTCALL_PREFIX;
+  sprintf (p, "%s@%d", asmname, total/BITS_PER_UNIT);
+  return get_identifier (newsym);
 }
 
 void
@@ -420,13 +392,24 @@ i386_pe_encode_section_info (tree decl, rtx rtl, int first)
   if (first && TREE_CODE (decl) == FUNCTION_DECL)
     {
       tree type_attributes = TYPE_ATTRIBUTES (TREE_TYPE (decl));
-      rtx rtlname = XEXP (rtl, 0);
-      if (GET_CODE (rtlname) == MEM)
-	rtlname = XEXP (rtlname, 0);
+      tree newid = NULL_TREE;
+
       if (lookup_attribute ("stdcall", type_attributes))
-	XSTR (rtlname, 0) = gen_stdcall_suffix (decl);
+	newid = gen_stdcall_or_fastcall_suffix (decl, false);
       else if (lookup_attribute ("fastcall", type_attributes))
-	XSTR (rtlname, 0) = gen_fastcall_suffix (decl);
+	newid = gen_stdcall_or_fastcall_suffix (decl, true);
+      if (newid != NULL_TREE) 	
+	{
+	  rtx rtlname = XEXP (rtl, 0);
+	  if (GET_CODE (rtlname) == MEM)
+	    rtlname = XEXP (rtlname, 0);
+	  XSTR (rtlname, 0) = IDENTIFIER_POINTER (newid);
+	  /* These attributes must be present on first declaration,
+	     change_decl_assembler_name will warn if they are added
+	     later and the decl has been referenced, but duplicate_decls
+	     should catch the mismatch before this is called.  */ 
+	  change_decl_assembler_name (decl, newid);
+	}
     }
 
   /* Mark the decl so we can tell from the rtl whether the object is

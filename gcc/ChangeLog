@@ -1,3 +1,14 @@
+2004-08-18  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	PR  c++/16030
+	* config/i386/winnt/c (gen_stdcall_suffix, gen_fastcall_suffix):
+	Remove, merging into ...
+	(gen_stdcall_or_fastcall_suffix): New function, returning tree
+	rather than const char*, and accepting additional parameter.
+	Don't add suffix to '*'-prefixed symbols or variadic functions.
+	(i386_pe_encode_section_info): Adjust for call to new function.
+	Call change_decl_assembler_name.
+
 2004-08-20  Mike Stump  <mrs@apple.com>
 
 	* config/darwin.c (machopic_indirect_data_reference): Mark
