@@ -1286,7 +1286,7 @@ __transfer_from_trampoline ()					\
 	&& GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& (INTVAL (XEXP (X, 1)) == 2			\
 	    || INTVAL (XEXP (X, 1)) == 4		\
-	    || INTVAL (XEXP (X, 1)) == 8)))
+	    || (INTVAL (XEXP (X, 1)) == 8 && !TARGET_5200))))
 
 /* If pic, we accept INDEX+LABEL, which is what do_tablejump makes.  */
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
