@@ -1,3 +1,8 @@
+2004-05-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fold-const.c (fold) [case TRUTH_NOT_EXPR]: Make sure the type is
+	of BOOLEAN_TYPE.
+
 2004-05-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-common.c, calls.c, cfgcleanup.c, cgraph.c, cgraphunit.c,
