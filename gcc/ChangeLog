@@ -1,3 +1,7 @@
+2000-08-20  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (merge_blocks_nomove): Don't seek back past the bb note.
+
 2000-08-20  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppinit.c (cpp_init): Set global flag when called.

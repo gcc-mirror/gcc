@@ -2209,7 +2209,9 @@ merge_blocks_nomove (a, b)
       rtx prev;
 
       for (prev = PREV_INSN (a_end); ; prev = PREV_INSN (prev))
-	if (GET_CODE (prev) != NOTE || prev == a->head)
+	if (GET_CODE (prev) != NOTE
+	    || NOTE_LINE_NUMBER (prev) == NOTE_INSN_BASIC_BLOCK
+	    || prev == a->head)
 	  break;
 
       del_first = a_end;
