@@ -1,3 +1,7 @@
+Sat Nov  1 18:03:42 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* libF77/signal_.c: Undo last change until we can fix it right.
+
 Wed Oct 15 10:06:29 1997  Richard Henderson  <rth@cygnus.com>
 
 	* libF77/signal_.c (G77_signal_0): Make return type sig_pf as well.
