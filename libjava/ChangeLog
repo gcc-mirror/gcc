@@ -1,5 +1,10 @@
 2002-03-09  Adam Megacz  <adam@xwt.org>
 
+        * win32.cc (_CRT_MT, __mingwthr_key_dtor) Added fake
+        definitions to simulate -mthreads.
+	
+2002-03-09  Adam Megacz  <adam@xwt.org>
+
         * win32.cc (_Jv_platform_gettimeofday) Cast 1000 to long long to
 	avoid precision loss.
 
