@@ -16,7 +16,7 @@
 
 	* sparc.h (MASK_FASTER_STRUCTS, TARGET_FASTER_STRUCTS): Define.
 	(TARGET_SWITCHES): Add -mfaster-structs/-mno-faster-structs flags.
-	(ROUND_TYPE_ALIGN): Use better value of -mfaster-structs.
+	(ROUND_TYPE_ALIGN): Use better value if -mfaster-structs.
 	* sparc.md (sparclite86x_branch, sparclite86x_shift): New function
 	units for the sparclite86x chip.
 	(flush): Revert October 14th change; add SImode specifically.
