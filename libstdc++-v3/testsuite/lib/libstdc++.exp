@@ -322,8 +322,10 @@ proc v3-build_support {} {
 	[list testsuite_abi.cc testsuite_allocator.cc testsuite_hooks.cc]
     foreach f $source_files {
 	set object_file [file rootname $f].o
+	# Compile with "-w" so that warnings issued by the compiler
+	# do not prevent compilation.
 	if { [v3_target_compile $srcdir/$f $object_file "object" \
-               "incdir=$srcdir"] 
+		  [list "incdir=$srcdir" "additional_flags=-w"]]
 	     != "" } {
 	    error "could not compile $f"
 	}
