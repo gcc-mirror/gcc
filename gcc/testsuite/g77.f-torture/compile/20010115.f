@@ -1,3 +1,4 @@
+* GNATS PR Fortran/1636
       PRINT 42, 'HELLO'
    42 FORMAT(A)
       CALL WORLD
