@@ -64,7 +64,7 @@ public interface Context
 
   // Property specifying the credentials of the principal for
   // authenticating the caller to the service.
-  public static final String SECURITY_CREDENTIAL
+  public static final String SECURITY_CREDENTIALS
     = "java.naming.security.credentials";
 
   // Property for specifying the preferred language to use with the
