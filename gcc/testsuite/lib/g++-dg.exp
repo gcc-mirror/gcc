@@ -17,6 +17,8 @@
 # Define g++ callbacks for dg.exp.
 
 load_lib dg.exp
+load_lib file-format.exp
+load_lib target-supports.exp
 load_lib scanasm.exp
 
 proc g++-dg-test { prog do_what extra_tool_flags } {
@@ -68,6 +70,7 @@ proc g++-dg-test { prog do_what extra_tool_flags } {
 
 
 proc g++-dg-prune { system text } {
+    set text [prune_gcc_output $text]
 
     # If we see "region xxx is full" then the testcase is too big for ram.
     # This is tricky to deal with in a large testsuite like c-torture so

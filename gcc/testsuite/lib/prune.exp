@@ -1,0 +1,45 @@
+#   Copyright (C) 1997, 1999, 2000 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# Prune messages from gcc that aren't useful.
+
+proc prune_gcc_output { text } {
+    #send_user "Before:$text\n"
+
+    regsub -all "(^|\n)\[^\n\]*: In (function|method) \[^\n\]*" $text "" text
+    regsub -all "(^|\n)\[^\n\]*: At top level:\[^\n\]*" $text "" text
+    regsub -all "(^|\n)collect2: ld returned \[^\n\]*" $text "" text
+
+    # It would be nice to avoid passing anything to gcc that would cause it to
+    # issue these messages (since ignoring them seems like a hack on our part),
+    # but that's too difficult in the general case.  For example, sometimes
+    # you need to use -B to point gcc at crt0.o, but there are some targets
+    # that don't have crt0.o.
+    regsub -all "(^|\n)\[^\n\]*file path prefix \[^\n\]* never used" $text "" text
+    regsub -all "(^|\n)\[^\n\]*linker input file unused since linking not done" $text "" text
+
+    #send_user "After:$text\n"
+
+    return $text
+}
+
+# Provide a definition of this if missing (delete after next dejagnu release).
+
+if { [info procs prune_warnings] == "" } then {
+    proc prune_warnings { text } {
+	return $text
+    }
+}

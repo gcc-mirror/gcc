@@ -18,6 +18,7 @@ load_lib dg.exp
 load_lib file-format.exp
 load_lib target-supports.exp
 load_lib scanasm.exp
+load_lib prune.exp
 
 if ![info exists TORTURE_OPTIONS] {
     # It is theoretically beneficial to group all of the O2/O3 options together,
