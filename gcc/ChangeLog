@@ -1,3 +1,8 @@
+Thu Mar 19 23:51:01 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (hppa1.0-hp-hpux10): Handle threads for this
+	config too.
+
 Thu Mar 19 20:30:31 1998  Philippe De Muyter  <phdm@macqel.be>
 
 	* libgcc2.c (exit): Do not call __bb_exit_func if HAVE_ATEXIT.
