@@ -973,10 +973,11 @@ demangle_name (dm, template_p)
      int *template_p;
 {
   int start = substitution_start (dm);
+  char peek = peek_char (dm);
 
   DEMANGLE_TRACE ("name", dm);
 
-  switch (peek_char (dm))
+  switch (peek)
     {
     case 'N':
       /* This is a <nested-name>.  */
@@ -985,6 +986,7 @@ demangle_name (dm, template_p)
 
     case 'Z':
       RETURN_IF_ERROR (demangle_local_name (dm));
+      *template_p = 0;
       break;
 
     case 'S':
@@ -1005,8 +1007,11 @@ demangle_name (dm, template_p)
 	 If so, then we just demangled an <unqualified-template-name>.  */
       if (peek_char (dm) == 'I') 
 	{
-	  RETURN_IF_ERROR (substitution_add (dm, start, 0, 
-					     NOT_TEMPLATE_PARM));
+	  /* The template name is a substitution candidate, unless it
+             was already a back-substitution.  */
+	  if (peek != 'S')
+	    RETURN_IF_ERROR (substitution_add (dm, start, 0, 
+					       NOT_TEMPLATE_PARM));
 	  RETURN_IF_ERROR (demangle_template_args (dm));
 	  *template_p = 1;
 	}
@@ -1041,7 +1046,7 @@ demangle_name (dm, template_p)
 
 /* Demangles and emits a <nested-name>. 
 
-    <nested-name>       ::= N [<CV-qualifiers>] <prefix> <component> E  */
+    <nested-name>     ::= N [<CV-qualifiers>] <prefix> <unqulified-name> E  */
 
 static status_t
 demangle_nested_name (dm, template_p)
@@ -1072,8 +1077,8 @@ demangle_nested_name (dm, template_p)
     }
   
   RETURN_IF_ERROR (demangle_prefix (dm, template_p));
-  /* No need to demangle the final <component>; demangle_prefix will
-     handle it.  */
+  /* No need to demangle the final <unqualified-name>; demangle_prefix
+     will handle it.  */
   RETURN_IF_ERROR (demangle_char (dm, 'E'));
 
   return STATUS_OK;
@@ -1081,16 +1086,13 @@ demangle_nested_name (dm, template_p)
 
 /* Demangles and emits a <prefix>.
 
-    <prefix>            ::= <prefix> <component>
+    <prefix>            ::= <prefix> <unqualified-name>
                         ::= <template-prefix> <template-args>
 			::= # empty
 			::= <substitution>
 
     <template-prefix>   ::= <prefix>
-                        ::= <substitution>
-
-    <component>         ::= <unqualified-name>
-                        ::= <local-name>  */
+                        ::= <substitution>  */
 
 static status_t
 demangle_prefix (dm, template_p)
@@ -1145,8 +1147,7 @@ demangle_prefix (dm, template_p)
 	    RETURN_IF_ERROR (demangle_substitution (dm, template_p));
 	  else
 	    {
-	      /* It's just a name.  Remember whether it's a
-		 constructor.  */
+	      /* It's just a name.  */
 	      RETURN_IF_ERROR (demangle_unqualified_name (dm));
 	      *template_p = 0;
 	    }
@@ -1160,8 +1161,6 @@ demangle_prefix (dm, template_p)
 	RETURN_IF_ERROR (demangle_local_name (dm));
       else if (peek == 'I')
 	{
-	  /* The template name is a substitution candidate.  */
-	  RETURN_IF_ERROR (substitution_add (dm, start, 0, NOT_TEMPLATE_PARM));
 	  RETURN_IF_ERROR (demangle_template_args (dm));
 
 	  /* Now we want to indicate to the caller that we've
@@ -1183,9 +1182,11 @@ demangle_prefix (dm, template_p)
       else
 	return "Unexpected character in <compound-name>.";
 
-      /* Add a new substitution for the prefix thus far.  */
-      RETURN_IF_ERROR (substitution_add (dm, start, *template_p, 
-					 NOT_TEMPLATE_PARM));
+      if (peek != 'S'
+	  && peek_char (dm) != 'E')
+	/* Add a new substitution for the prefix thus far.  */
+	RETURN_IF_ERROR (substitution_add (dm, start, *template_p, 
+					   NOT_TEMPLATE_PARM));
     }
 }
 
@@ -2975,7 +2976,7 @@ demangle_local_name (dm)
   RETURN_IF_ERROR (demangle_char (dm, 'Z'));
   RETURN_IF_ERROR (demangle_encoding (dm));
   RETURN_IF_ERROR (demangle_char (dm, 'E'));
-  RETURN_IF_ERROR (result_append (dm, "'s "));
+  RETURN_IF_ERROR (result_append (dm, "::"));
 
   if (peek_char (dm) == 's')
     {
@@ -2988,7 +2989,6 @@ demangle_local_name (dm)
   else
     {
       int unused;
-      RETURN_IF_ERROR (result_append (dm, "local "));
       /* Local name for some other entity.  Demangle its name.  */
       RETURN_IF_ERROR (demangle_name (dm, &unused));
       RETURN_IF_ERROR (demangle_discriminator (dm, 1));
