@@ -2125,6 +2125,14 @@ into consecutive memory locations.  Operand 0 is the first of the
 consecutive memory locations, operand 1 is the first register, and
 operand 2 is a constant: the number of consecutive registers.
 
+@cindex @code{push@var{m}} instruction pattern
+@item @samp{push@var{m}}
+Output an push instruction.  Operand 0 is value to push.  Used only when
+@code{PUSH_ROUNDING} is defined.  For historical reason, this pattern may be
+missing and in such case an @code{mov} expander is used instead, with a
+@code{MEM} expression forming the push operation.  The @cpde{mov} expander
+method is deprecated.
+
 @cindex @code{add@var{m}3} instruction pattern
 @item @samp{add@var{m}3}
 Add operand 2 and operand 1, storing the result in operand 0.  All operands
