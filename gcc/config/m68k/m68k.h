@@ -2107,9 +2107,9 @@ extern int flags_in_68881 ();
 extern int strict_low_part_peephole_ok ();
 
 /* Variables in m68k.c */
-extern char *m68k_align_loops_string;
-extern char *m68k_align_jumps_string;
-extern char *m68k_align_funcs_string;
+extern const char *m68k_align_loops_string;
+extern const char *m68k_align_jumps_string;
+extern const char *m68k_align_funcs_string;
 extern int m68k_align_loops;
 extern int m68k_align_jumps;
 extern int m68k_align_funcs;
