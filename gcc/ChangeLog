@@ -1,3 +1,8 @@
+2002-02-07  Richard Henderson  <rth@redhat.com>
+
+	* loop.c (strength_reduce): Sink final_value when not
+	eliminating a biv.
+
 2002-02-07  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/sparc/freebsd.h: Fix mismatched spec {.
