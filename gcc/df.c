@@ -1588,7 +1588,7 @@ df_rd_transfer_function (int bb ATTRIBUTE_UNUSED, int *changed, void *in,
 			 void *out, void *gen, void *kill,
 			 void *data ATTRIBUTE_UNUSED)
 {
-  *changed = bitmap_union_of_diff (out, gen, in, kill);
+  *changed = bitmap_ior_and_compl (out, gen, in, kill);
 }
 
 
@@ -1597,7 +1597,7 @@ df_ru_transfer_function (int bb ATTRIBUTE_UNUSED, int *changed, void *in,
 			 void *out, void *gen, void *kill,
 			 void *data ATTRIBUTE_UNUSED)
 {
-  *changed = bitmap_union_of_diff (in, gen, out, kill);
+  *changed = bitmap_ior_and_compl (in, gen, out, kill);
 }
 
 
@@ -1606,7 +1606,7 @@ df_lr_transfer_function (int bb ATTRIBUTE_UNUSED, int *changed, void *in,
 			 void *out, void *use, void *def,
 			 void *data ATTRIBUTE_UNUSED)
 {
-  *changed = bitmap_union_of_diff (in, use, out, def);
+  *changed = bitmap_ior_and_compl (in, use, out, def);
 }
 
 

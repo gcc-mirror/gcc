@@ -2307,7 +2307,7 @@ modify_bb_reg_pav (basic_block bb, basic_block pred, bool changed_p)
   bb_pavout = bb_info->pavout;
   if (pred->index != ENTRY_BLOCK)
     bitmap_a_or_b (bb_pavin, bb_pavin, BB_INFO (pred)->pavout);
-  changed_p |= bitmap_union_of_diff (bb_pavout, bb_info->avloc,
+  changed_p |= bitmap_ior_and_compl (bb_pavout, bb_info->avloc,
 				     bb_pavin, bb_info->killed);
   return changed_p;
 }
