@@ -1018,6 +1018,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL,
 	       TYPE_UNQUALIFIED);
   grok_special_member_properties (fn);
+  TREE_PUBLIC (fn) = !decl_function_context (TYPE_MAIN_DECL (type));
   cp_finish_decl (fn, /*init=*/NULL_TREE, /*asmspec_tree=*/NULL_TREE,
 		  /*flags=*/LOOKUP_ONLYCONVERTING);
   DECL_IN_AGGR_P (fn) = 1;
