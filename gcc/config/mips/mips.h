@@ -2836,7 +2836,6 @@ typedef struct mips_args {
 	      && (!TARGET_EMBEDDED_PIC					\
 		  || code1 != CONST					\
 		  || GET_CODE (XEXP (xplus1, 0)) != MINUS)		\
-	      && ! (code1 == CONST_INT && ! SMALL_INT (xplus1))         \
 	      && !TARGET_MIPS16)					\
 	    goto ADDR;							\
 	}								\
