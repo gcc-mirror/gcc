@@ -133,6 +133,7 @@ static struct unparsed_text * alloc_unparsed_text
 
 static void snarf_block PARAMS ((struct unparsed_text *t));
 static tree snarf_defarg PARAMS ((void));
+static void snarf_parenthesized_expression (struct unparsed_text *);
 static int frob_id PARAMS ((int, int, tree *));
 
 /* The list of inline functions being held off until we reach the end of
@@ -1067,6 +1068,30 @@ alloc_unparsed_text (locus, decl, interface)
   return r;
 }
 
+/* Accumulate the tokens that make up a parenthesized expression in T,
+   having already read the opening parenthesis.  */
+
+static void
+snarf_parenthesized_expression (struct unparsed_text *t)
+{
+  int yyc;
+  int level = 1;
+
+  while (1)
+    {
+      yyc = next_token (space_for_token (t));
+      if (yyc == '(')
+	++level;
+      else if (yyc == ')' && --level == 0)
+	break;
+      else if (yyc == 0)
+	{
+	  error ("%Hend of file read inside definition", &t->locus);
+	  break;
+	}
+    }
+}
+
 /* Subroutine of snarf_method, deals with actual absorption of the block.  */
 
 static void
@@ -1145,6 +1170,8 @@ snarf_block (t)
 	  else if (look_for_semicolon && blev == 0)
 	    break;
 	}
+      else if (yyc == '(' && blev == 0)
+	snarf_parenthesized_expression (t);
       else if (yyc == 0)
 	{
 	  error ("%Hend of file read inside definition", &t->locus);
