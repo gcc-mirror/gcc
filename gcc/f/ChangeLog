@@ -1,3 +1,10 @@
+Mon Apr 19 21:36:48 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* ste.c (ffeste_R819B): Start the loop before expanding
+	the termination expression.
+
+	* version.c: Bump version.
+
 Sun Apr 18 21:53:58 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* com.c (ffecom_sym_transform_): COMMON and EQUIVALENCE

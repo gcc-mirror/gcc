@@ -3096,8 +3096,11 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
 
     if (expr)
       {
+	tree loop;
+
 	result = ffecom_make_tempvar ("dowhile", integer_type_node,
 				      FFETARGET_charactersizeNONE, -1);
+	loop = expand_start_loop (1);
 
 	ffeste_start_stmt_ ();
 
@@ -3112,7 +3115,7 @@ ffeste_R819B (ffestw block, ffelab label UNUSED, ffebld expr)
 
 	ffeste_end_stmt_ ();
 
-	ffestw_set_do_hook (block, expand_start_loop (1));
+	ffestw_set_do_hook (block, loop);
 	expand_exit_loop_if_false (0, result);
       }
     else
