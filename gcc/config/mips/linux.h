@@ -171,6 +171,7 @@ void FN ()							\
         builtin_define ("_MIPS_SZINT=32");			\
 } while (0)
 
+#undef  SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
 %{fno-PIC:-U__PIC__ -U__pic__} %{fno-pic:-U__PIC__ -U__pic__} \
 %{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} \

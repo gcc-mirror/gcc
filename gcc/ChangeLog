@@ -1,3 +1,13 @@
+2002-07-03  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/linux.h: Add #undef for SUBTARGET_CPP_SPEC.
+	* config/mips/mips.h: Remove deprecated -m<processor> options
+	and cc1_cpu_spec associated.
+	(CONSTANT_ADDRESS_P): Fix last patch.
+	(ASM_DECLARE_FUNCTION_NAME): Declare. Fix comment.
+	* config/mips/mips.md (bungt, bunge, sungt_df, sungt_sf, sunge_df,
+	sunge_sf): Remove.
+
 2002-07-03  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.h (APPLE_CC): Remove, not meaningful in FSF GCC.
@@ -100,7 +110,7 @@ Wed Jul  3 10:24:16 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* cpptrad.c: Update comment.
 
 2002-07-02  Neil Booth  <neil@daikokuya.co.uk>
-	
+
 	* doc/cpp.texi: Update for traditional preprocessing changes.
 	* goc/cppopts.texi: Similarly.
 
@@ -118,7 +128,7 @@ Tue Jul  2 18:45:45 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* sh.c (print_operand, case 'N'): Allow zero vector.
 	(arith_reg_or_0_operand): Likewise.
 	(zero_vec_operand): Check for CONST_VECTOR, not PARALLEL.
-	* sh.h (CONST_COSTS): 0 has 0 cost.  Check OUTER_CODE for 
+	* sh.h (CONST_COSTS): 0 has 0 cost.  Check OUTER_CODE for
 	IOR, XOR, PLUS and SET and take their respective constant
 	ranges into account.
 	(PREDICATE_CODES, arith_reg_or_0_operand): Can be CONST_VECTOR.
@@ -290,7 +300,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 			  Alan Lehotsky <apl@alum.mit.edu>
 			  Bernd Schmidt  <bernds@redhat.com>
 			  Graham Stott  <grahams@redhat.com>
-			  
+
 	* doc/extend.texi: Add ip2k port to description of attribute
 	naked.
 	* doc/install.texi (Specific): Add ip2k description.
@@ -411,7 +421,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 	* config/m68hc11/m68hc11.md ("*addsi3"): Use 'o' constraint to
 	avoid the auto increment addressing modes.
 	("*subsi3"): Likewise.
-	(split for add/sub on address): For 68HC12 push the value on 
+	(split for add/sub on address): For 68HC12 push the value on
 	the stack and do the operation with a pop.
 
 2002-06-28  Neil Booth  <neil@daikokuya.co.uk>
@@ -512,7 +522,7 @@ Fri Jun 28 17:22:37 2002  Denis Chertykov  <denisc@overta.ru>
 2002-06-27  Daniel Berlin  <dberlin@dberlin.org>
 
 	* gcse.c (hoist_code): Rewrite to only get list of dominated
-	blocks once per BB. Also fix reversed test (by removing need for 
+	blocks once per BB. Also fix reversed test (by removing need for
 	the test at all).
 
 2002-06-27  Neil Booth  <neil@daikokuya.co.uk>
@@ -587,7 +597,7 @@ Tue Jun 25 21:51:13 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* optabs.c (expand_vector_binop, expand_vector_unop): Don't assume
 	GET_MODE_UNIT_SIZE (mode) == UNITS_PER_WORD.
 
-	* config/sh/lib1funcs.asm (udivdi3): Make first divide step 
+	* config/sh/lib1funcs.asm (udivdi3): Make first divide step
 	produce a 32 bit result before normalization, then normalize with a
 	left shift.  Compute approximative error of 2nd reciprocal
 	approximation in 2's complement.  Fix mask generation from upper
@@ -644,7 +654,7 @@ Mon Jun 24 21:05:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* doc/extend.texi: Change `@dots{}' to `/* @r{@dots{}} */'
 	in examples.
-	
+
 2002-06-24  Art Haas  <ahaas@neosoft.com>
 
 	* doc/extend.texi (Other Builtins): Change `...' to `@dots{}'.
@@ -1010,7 +1020,7 @@ Thu Jun 20 12:14:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* i386.md (xorqi_1_slp, xorqi_2_slp): New patterns.
 
 2002-06-16  Aldy Hernandez  <aldyh@redhat.com>
-	
+
 	* gcc.c-torture/execute/simd-1.c: New.
 
 	* gcc.dg/simd-1.c: New.
@@ -1040,7 +1050,7 @@ Thu Jun 20 12:14:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(expand_unop): Open-code vector unops.
 	(expand_vector_binop): New.
 	(expand_vector_unop): New.
-	
+
 	* c-typeck.c (build_binary_op): Allow vectors in binops.
 	Allow vectors in conditional operatiors.
 	(build_unary_op): Allow vectors in unary minus.
