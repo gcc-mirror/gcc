@@ -1,3 +1,11 @@
+2004-03-15  Manfred Hollstein  <mh@suse.com>
+
+	* Makefile.in (LIBOBJC_VERSION, LIBOBJC_GC_VERSION): Use
+	definition from configure.in.
+	* configure.in (PACKAGE): Add definition.
+	(VERSION): Add definition; substitute it in output files.
+	* configure: Re-generate.
+
 2004-03-05  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/hash.h (hash_string, compare_strings):

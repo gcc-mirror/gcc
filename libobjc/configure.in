@@ -60,6 +60,12 @@ fi
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
+dnl we need the following definitions because AC_PROG_LIBTOOL relies on them
+PACKAGE=libobjc
+dnl version is pulled out to make it a bit easier to change using sed.
+VERSION=1:0:0
+AC_SUBST(VERSION)
+
 dnl Checks for header files.
 # Sanity check for the cross-compilation case:
 AC_CHECK_HEADER(stdio.h,:,

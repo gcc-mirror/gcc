@@ -2635,6 +2635,10 @@ else
 fi
 
 
+PACKAGE=libobjc
+VERSION=1:0:0
+
+
 # Sanity check for the cross-compilation case:
 echo $ac_n "checking how to run the C preprocessor""... $ac_c" 1>&6
 echo "configure:2641: checking how to run the C preprocessor" >&5
@@ -3107,6 +3111,7 @@ s%@DLLTOOL@%$DLLTOOL%g
 s%@OBJDUMP@%$OBJDUMP%g
 s%@LIBTOOL@%$LIBTOOL%g
 s%@SET_MAKE@%$SET_MAKE%g
+s%@VERSION@%$VERSION%g
 s%@CPP@%$CPP%g
 s%@GTHREAD_FLAGS@%$GTHREAD_FLAGS%g
 s%@OBJC_BOEHM_GC@%$OBJC_BOEHM_GC%g
