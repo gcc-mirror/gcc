@@ -1066,12 +1066,9 @@ alpha_sa_size ()
     if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i])
       size++;
 
-  /* If we are going to need a frame, we MUST save $26.  */
-  if (! regs_ever_live[26]
-      && (size != 0
-	  || get_frame_size () != 0
-	  || current_function_outgoing_args_size != 0
-	  || current_function_pretend_args_size != 0))
+  /* If some registers were saved but not reg 26, reg 26 must also
+     be saved, so leave space for it.  */
+  if (size != 0 && ! regs_ever_live[26])
     size++;
 
   return size * 8;
@@ -1146,26 +1143,56 @@ output_prolog (file, size)
   /* Put a label after the GP load so we can enter the function at it.  */
   fprintf (file, "%s..ng:\n", alpha_function_name);
 
-  /* Adjust the stack by the frame size.  If the frame size is > 32768
-     bytes, we have to load it into a register first and then subtract
-     from sp.  Note that we are only allowed to adjust sp once in the
-     prologue.  */
+  /* Adjust the stack by the frame size.  If the frame size is > 4096
+     bytes, we need to be sure we probe somewhere in the first and last
+     4096 bytes (we can probably get away without the latter test) and
+     every 8192 bytes in between.  If the frame size is > 32768, we
+     do this in a loop.  Otherwise, we generate the explicit probe
+     instructions. 
 
-  if (frame_size > 32768)
+     Note that we are only allowed to adjust sp once in the prologue.  */
+
+  if (frame_size < 32768)
     {
-      HOST_WIDE_INT low = (frame_size & 0xffff) - 2 * (frame_size & 0x8000);
-      HOST_WIDE_INT tmp1 = frame_size - low;
+      if (frame_size > 4096)
+	{
+	  int probed = 4096;
+	  int regnum = 2;
+
+	  fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed);
+
+	  while (probed + 8192 < frame_size)
+	    fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed += 8192);
+
+	  if (probed + 4096 < frame_size)
+	    fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed += 4096);
+
+	  if (regnum > 9)
+	    abort ();
+	}
+
+      if (frame_size != 0)
+	fprintf (file, "\tlda $30,-%d($30)\n", frame_size);
+    }
+  else
+    {
+      /* Here we generate code to set R4 to SP + 4096 and set R5 to the
+	 number of 8192 byte blocks to probe.  We then probe each block
+	 in the loop and then set SP to the proper location.  If the
+	 amount remaining is > 4096, we have to do one more probe.
+
+	 This is complicated by the code we would generate if
+	 the number of blocks > 32767.  */
+
+      HOST_WIDE_INT blocks = (frame_size + 4096) / 8192;
+      HOST_WIDE_INT leftover = frame_size + 4096 - blocks * 8192;
+      HOST_WIDE_INT low = (blocks & 0xffff) - 2 * (blocks & 0x8000);
+      HOST_WIDE_INT tmp1 = blocks - low;
       HOST_WIDE_INT high
-	= ((tmp1 >> 16) & 0xfff) - 2 * ((tmp1 >> 16) & 0x8000);
-      HOST_WIDE_INT tmp2 = frame_size - (high << 16) - low;
+	= ((tmp1 >> 16) & 0xffff) - 2 * ((tmp1 >> 16) & 0x8000);
+      HOST_WIDE_INT tmp2 = blocks - (high << 16) - low;
       HOST_WIDE_INT extra = 0;
       int in_reg = 31;
-
-      /* We haven't written code to handle frames > 4GB.  */
-#if HOST_BITS_PER_LONG_INT == 64
-      if ((unsigned HOST_WIDE_INT) frame_size >> 32 != 0)
-	abort ();
-#endif
 
       if (tmp2)
 	{
@@ -1176,29 +1203,42 @@ output_prolog (file, size)
 
       if (low != 0)
 	{
-	  fprintf (file, "\tlda $28,%d($%d)\n", low, in_reg);
-	  in_reg = 28;
+	  if (low < 255)
+	    fprintf (file, "\tbis $31,%d,$5\n", low);
+	  else
+	    fprintf (file, "\tlda $5,%d($31)\n", low);
+	  in_reg = 5;
 	}
 
       if (extra)
 	{
-	  fprintf (file, "\tldah $28,%d($%d)\n", extra, in_reg);
-	  in_reg = 28;
+	  fprintf (file, "\tldah $5,%d($%d)\n", extra, in_reg);
+	  in_reg = 5;
 	}
 
-      fprintf (file, "\tldah $28,%d($%d)\n", high, in_reg);
-      fprintf (file, "\tsubq $30,$28,$30\n");
+      if (high)
+	fprintf (file, "\tldah $5,%d($%d)\n", high, in_reg);
+
+      fprintf (file, "\tlda $4,4096($30)\n");
+      fprintf (file, "%s..sc:\n", alpha_function_name);
+      fprintf (file, "\tldq $6,-8192($4)\n");
+      fprintf (file, "\tsubq $5,1,$5\n");
+      fprintf (file, "\tlda $4,-8192($4)\n");
+      fprintf (file, "\tbne $5,%s..sc\n", alpha_function_name);
+      fprintf (file, "\tlda $30,-%d($4)\n", leftover);
+
+      if (leftover > 4096)
+	fprintf (file, "\tldq $2,%d(sp)\n", leftover - 4096);
     }
-  else if (frame_size)
-    fprintf (file, "\tlda $30,-%d($30)\n", frame_size);
 
   /* Describe our frame.  */
   fprintf (file, "\t.frame $%d,%d,$26,%d\n", 
 	   frame_pointer_needed ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM,
 	   frame_size, current_function_pretend_args_size);
     
-  /* Save register 26 if we have a frame.  */
-  if (frame_size != 0)
+  /* Save register 26 if it is used or if any other register needs to
+     be saved.  */
+  if (regs_ever_live[26] || alpha_sa_size () != 0)
     {
       reg_mask |= 1 << 26;
       fprintf (file, "\tstq $26,%d($30)\n", reg_offset);
@@ -1272,7 +1312,7 @@ output_epilog (file, size)
 
       /* Restore all the registers, starting with the return address
 	 register.  */
-      if (frame_size != 0)
+      if (regs_ever_live[26] || alpha_sa_size () != 0)
 	{
 	  fprintf (file, "\tldq $26,%d($30)\n", reg_offset);
 	  reg_offset += 8;
