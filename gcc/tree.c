@@ -5165,7 +5165,7 @@ cst_or_constructor_check (node, file, line)
 }
 
 tree
-cst_or_constructor_check (node, file, line)
+expr_check (node, file, line)
      const tree node;
      const char *file;
      int line;
