@@ -1,4 +1,4 @@
-#   Copyright (C) 2002 Free Software Foundation, Inc.
+#   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -46,16 +46,27 @@ set PREFETCH_NONE [list \
 # instructions as nops.
 
 set PREFETCH_SSE [list \
-	{ -march=i386 -mtune=pentium3 } \
-	{ -march=i386 -mtune=pentium4 } \
-	{ -march=i386 -mtune=athlon } \
-	{ -march=i386 -mtune=athlon-4 } \
+	{ -march=i686 -mtune=pentium3 } \
+	{ -march=i686 -mtune=pentium3m } \
+	{ -march=i686 -mtune=pentium-m } \
+	{ -march=i686 -mtune=pentium4 } \
+	{ -march=i686 -mtune=pentium4m } \
+	{ -march=i686 -mtune=prescott } \
+	{ -march=i686 -mtune=athlon } \
+	{ -march=i686 -mtune=athlon-4 } \
+	{ -march=i686 -mtune=c3-2 } \
 	{ -march=pentium3 } \
-	{ -march=pentium4 } ]
+	{ -march=pentium3m } \
+	{ -march=pentium-m } \
+	{ -march=pentium4 } \
+	{ -march=pentium4m } \
+	{ -march=prescott } \
+	{ -march=c3-2 } ]
 
 # Generate 3DNow! prefetch instructions for the following.
 
 set PREFETCH_3DNOW [list \
+	{ -march=c3 } \
 	{ -march=k6-2 } \
 	{ -march=k6-3 } ]
 
