@@ -448,7 +448,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
       DECL_RESULT (thunk_fndecl) = NULL_TREE;
 
-      start_function (NULL_TREE, thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
+      start_preparsed_function (thunk_fndecl, NULL_TREE, SF_PRE_PARSED);
       /* We don't bother with a body block for thunks.  */
 
       /* There's no need to check accessibility inside the thunk body.  */
@@ -742,7 +742,7 @@ synthesize_method (tree fndecl)
   DECL_SOURCE_LOCATION (fndecl) = input_location;
 
   interface_unknown = 1;
-  start_function (NULL_TREE, fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
+  start_preparsed_function (fndecl, NULL_TREE, SF_DEFAULT | SF_PRE_PARSED);
   clear_last_expr ();
   stmt = begin_function_body ();
 
@@ -937,56 +937,56 @@ locate_copy (tree type, void *client_)
 tree
 implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
 {
-  tree declspecs = NULL_TREE;
-  tree fn, args = NULL_TREE;
+  tree fn;
+  tree parameter_types = void_list_node;
+  tree return_type = void_type_node;
+  tree fn_type;
   tree raises = empty_except_spec;
-  bool retref = false;
-  bool has_parm = false;
-  tree name = constructor_name (type);
+  tree rhs_parm_type = NULL_TREE;
+  tree name;
 
   switch (kind)
     {
     case sfk_destructor:
       /* Destructor.  */
-      name = build_nt (BIT_NOT_EXPR, name);
-      args = void_list_node;
+      name = constructor_name (type);
       raises = synthesize_exception_spec (type, &locate_dtor, 0);
       break;
 
     case sfk_constructor:
       /* Default constructor.  */
-      args = void_list_node;
+      name = constructor_name (type);
       raises = synthesize_exception_spec (type, &locate_ctor, 0);
+      TYPE_HAS_CONSTRUCTOR (type) = 1;
       break;
 
     case sfk_copy_constructor:
+      TYPE_HAS_CONSTRUCTOR (type) = 1;
+      /* Fall through. */
     case sfk_assignment_operator:
     {
       struct copy_data data;
-      tree argtype = type;
       
-      has_parm = true;
       data.name = NULL;
       data.quals = 0;
       if (kind == sfk_assignment_operator)
         {
-          retref = true;
-          declspecs = build_tree_list (NULL_TREE, type);
-
+	  return_type = build_reference_type (type);
           name = ansi_assopname (NOP_EXPR);
           data.name = name;
         }
+      else
+	name = constructor_name (type);
+
       if (const_p)
         {
           data.quals = TYPE_QUAL_CONST;
-          argtype = build_qualified_type (argtype, TYPE_QUAL_CONST);
+	  rhs_parm_type = build_qualified_type (type, TYPE_QUAL_CONST);
         }
-    
-      argtype = build_reference_type (argtype);
-      args = build_tree_list (hash_tree_chain (argtype, NULL_TREE),
-			      get_identifier ("_ctor_arg"));
-      args = tree_cons (NULL_TREE, args, void_list_node);
-      
+      else
+	rhs_parm_type = type;
+      rhs_parm_type = build_reference_type (rhs_parm_type);
+      parameter_types = tree_cons (NULL_TREE, rhs_parm_type, parameter_types);
       raises = synthesize_exception_spec (type, &locate_copy, &data);
       break;
     }
@@ -994,21 +994,37 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       abort ();
     }
 
-  TREE_PARMLIST (args) = 1;
+  /* Create the function.  */
+  fn_type = build_method_type_directly (type, return_type, parameter_types);
+  if (raises)
+    fn_type = build_exception_variant (fn_type, raises);
+  fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
+  if (kind == sfk_constructor || kind == sfk_copy_constructor)
+    DECL_CONSTRUCTOR_P (fn) = 1;
+  else if (kind == sfk_destructor)
+    DECL_DESTRUCTOR_P (fn) = 1;
+  else
+    {
+      DECL_ASSIGNMENT_OPERATOR_P (fn) = 1;
+      SET_OVERLOADED_OPERATOR_CODE (fn, NOP_EXPR);
+    }
+  /* Create the argument list.  The call to "grokclassfn" will add the
+     "this" parameter and any other implicit parameters.  */
+  if (rhs_parm_type)
+    {
+      /* Note that this parameter is *not* marked DECL_ARTIFICIAL; we
+	 want its type to be included in the mangled function
+	 name.  */
+      DECL_ARGUMENTS (fn) = cp_build_parm_decl (NULL_TREE, rhs_parm_type);
+      TREE_READONLY (DECL_ARGUMENTS (fn)) = 1;
+    }
 
-  {
-    tree declarator = make_call_declarator (name, args, NULL_TREE, raises);
-    
-    if (retref)
-      declarator = build_nt (ADDR_EXPR, declarator);
-
-    fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
-    if (has_parm)
-      TREE_USED (FUNCTION_FIRST_USER_PARM (fn)) = 1;
-  }
-
-  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL, 20000408);
-
+  grokclassfn (type, fn, kind == sfk_destructor ? DTOR_FLAG : NO_SPECIAL,
+	       /*quals=*/NULL_TREE);
+  grok_special_member_properties (fn);
+  cp_finish_decl (fn, /*init=*/NULL_TREE, /*asmspec_tree=*/NULL_TREE,
+		  /*flags=*/LOOKUP_ONLYCONVERTING);
+  DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;

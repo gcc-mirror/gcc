@@ -51,8 +51,9 @@ DEFTREECODE (PTRMEM_CST, "ptrmem_cst", 'c', 0)
 
 /* For NEW_EXPR, operand 0 is the placement list.
    Operand 1 is the new-declarator.
-   Operand 2 is the initializer.  */
-DEFTREECODE (NEW_EXPR, "nw_expr", 'e', 3)
+   Operand 2 is the number of elements in the array.
+   Operand 3 is the initializer.  */
+DEFTREECODE (NEW_EXPR, "nw_expr", 'e', 4)
 DEFTREECODE (VEC_NEW_EXPR, "vec_nw_expr", 'e', 3)
 
 /* For DELETE_EXPR, operand 0 is the store to be destroyed.

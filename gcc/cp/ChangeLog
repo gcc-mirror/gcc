@@ -1,3 +1,112 @@
+2004-06-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.def (NEW_EXPR): Add a fourth slot.
+	* cp-tree.h (PARMLIST_ELLIPSIS_P): Remove.
+	(TREE_PARMLIST): Likewise.
+	(CALL_DECLARATOR_PARMS): Likewise.
+	(CALL_DECLARATOR_QUALS): Likewise.
+	(CALL_DECLARATOR_EXCEPTION_SPEC): Likewise.
+	(cp_declarator_kind): New type.
+	(cp_parameter_declarator): Likewise.
+	(cp_declarator): Likewise.
+	(cp_error_declarator): Likewise.
+	(no_parameters): Likewise.
+	(groktypename): Change prototype.
+	(start_decl): Likewise.
+	(start_handler_parms): Likewise.
+	(get_scope_of_declarator): Likewise.
+	(start_function): Likewise.
+	(start_preparsed_function): New function.
+	(start_function): Change prototype.
+	(start_method): Likewise.
+	(grokfield): Likewise.
+	(grokbitfield): Likewise.
+	(build_new): Likewise.
+	(make_pointer_declarator): Remove.
+	(make_reference_declarator): Likewise.
+	(make_call_declarator): Likewise.
+	(set_quals_and_spec): Likewise.
+	(process_template_parm): Change prototype.
+	(begin_function_definition): Remove.
+	(finish_parmlist): Remove.
+	* decl.c (groktypename): Do not use trees to represent
+	declarators.
+	(start_decl): Likewise.
+	(start_handler_parms): Remove.
+	(get_scope_of_declarator): Reimplement.
+	(grokdeclarator): Do not use trees to represent	declarators.
+	(grokparms): Likewise.
+	(start_function): Likewise.
+	(start_method): Likewise.
+	(build_void_list_mode): Do not use TREE_PARMLIST.
+	* decl.h (grokdeclarator): Change prototype.
+	* decl2.c (grok_method_quals): Robustify.
+	(grok_x_components): Do not use trees to represent declarators.
+	(grokfield): Likewise.
+	(grokbitfield): Likewise.
+	(start_objects): Build FUNCTION_DECLs, not declarators.
+	(start_static_storage_duration_function): Likewise.
+	* init.c (build_new): Simplify.
+	* lex.c (make_pointer_declarator): Remove.
+	(make_reference_declarator): Likewise.
+	(make_call_declarator): Likewise.
+	(set_quals_and_spec): Likewise.
+	* method.c (use_thunk): Use start_preparsed_function.
+	(synthesize_method): Likewise.
+	(implicitly_declare_fn): Build FUNCTION_DECLs, not declarators.
+	* optimize.c (maybe_clone_body): Use start_preparsed_function.
+	* parser.c (cp_error_declarator): New variable.
+	(declarator_obstack): Likewise.
+	(alloc_declarator): New function.
+	(make_declarator): Likewise.
+	(make_id_declarator): Likewise.
+	(make_pointer_declarator): Likewise.
+	(make_reference_declarator): Likewise.
+	(make_ptrmem_declarator): Likewise.
+	(make_call_declarator): Likewise.
+	(make_array_declarator): Likewise.
+	(no_parameters): New variable.
+	(make_parameter_declarator): Likewise.
+	(cp_parser_check_for_definition_in_return_type): Do not use trees
+	to represent declarators.
+	(cp_parser_translation_unit): Likewise.
+	(cp_parser_new_expression): Likewise.
+	(cp_parser_new_type_id): Likewise.
+	(cp_parser_new_declarator_opt): Likewise.
+	(cp_parser_direct_new_declarator): Likewise.
+	(cp_parser_condition): Likewise.
+	(cp_parser_declaration_statement): Likewise.
+	(cp_parser_declaration): Likewise.
+	(cp_parser_conversion_type_id): Likewise.
+	(cp_parser_conversion_declarator_opt): Likewise.
+	(cp_parser_template_parameter_list): Likewise.
+	(cp_parser_template_parameter): Likewise.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_declarator): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_type_id): Likewise.
+	(cp_parser_parameter_declaration_clause): Likewise.
+	(cp_parser_parameter_declaration_list): Likewise.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_exception_declaration): Likewise.
+	(cp_parser_check_declarator_template_parameters): Likewise.
+	(cp_parser_function_definition_from_specifiers_and_declarator):
+	Likewise.
+	(cp_parser_save_member_function_body): Likewise.
+	* pt.c (process_template_parm): Add is_non_type parameter.
+	(convert_template_argument): Adjust call to groktypename.
+	(tsubst_call_declarator_parms): Remove use of TREE_PARMLIST.
+	(tsubst): Do not expect declarators.
+	(tsubst_copy_and_build): Adjust NEW_EXPR case to handle additional
+	argument.
+	(instantiate_decl): Use start_preparsed_function.
+	* semantics.c (begin_function_definition): Remove.
+	(finish_parmlist): Remove.
+	* cp-mudflap.c (mflang_flush_calls): Build FUNCTION_DECLs, not
+	declarators.
+
 2004-06-21  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* call.c (build_vfield_ref): Add new operand for COMPONENT_REF.
