@@ -54,4 +54,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MD_STARTFILE_PREFIX "/bsd43/usr/lib/cmplrs/cc/"
 #define MD_EXEC_PREFIX "/bsd43/usr/lib/cmplrs/cc/"
 
-#include "mips.h"
+#include "mips/mips.h"

@@ -31,7 +31,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
 	%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}}"
 
-#include "decstatn.h"
+#include "mips/ultrix.h"
 
 /* Specify size_t, ptrdiff_t, and wchar_t types.  */
 #undef	SIZE_TYPE

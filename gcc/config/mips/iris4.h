@@ -21,4 +21,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    our own exit function.  */
 #define HAVE_ATEXIT
 
-#include "iris.h"
+#include "mips/iris3.h"

@@ -57,4 +57,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MACHINE_TYPE "RISC NEWS-OS"
 
-#include "mips.h"
+#include "mips/mips.h"
