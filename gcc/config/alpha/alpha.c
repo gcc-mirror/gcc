@@ -2317,7 +2317,7 @@ output_prolog (file, size)
   int int_reg_save_area_size = 0;
   rtx insn;
   unsigned reg_mask = 0;
-  int i;
+  int i, sa_reg;
 
   /* Ecoff can handle multiple .file directives, so put out file and lineno.
      We have to do that before the .ent directive as we cannot switch
@@ -2463,12 +2463,30 @@ output_prolog (file, size)
 	        ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM),
 	       frame_size, current_function_pretend_args_size);
     }
+
+  /* Cope with very large offsets to the register save area.  */
+  sa_reg = 30;
+  if (reg_offset + sa_size > 0x8000)
+    {
+      int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;
+      if (low + sa_size <= 0x8000)
+	{
+	  add_long_const (file, reg_offset - low, 30, 24, 24);
+	  reg_offset = low;
+	}
+      else
+	{
+          add_long_const (file, reg_offset, 30, 24, 24);
+          reg_offset = 0;
+	}
+      sa_reg = 24;
+    }
     
   /* Save register 26 if any other register needs to be saved.  */
   if (sa_size != 0)
     {
       reg_mask |= 1 << 26;
-      fprintf (file, "\tstq $26,%d($30)\n", reg_offset);
+      fprintf (file, "\tstq $26,%d($%d)\n", reg_offset, sa_reg);
       reg_offset += 8;
       int_reg_save_area_size += 8;
     }
@@ -2478,7 +2496,7 @@ output_prolog (file, size)
     if (! fixed_regs[i] && ! call_used_regs[i] && regs_ever_live[i] && i != 26)
       {
 	reg_mask |= 1 << i;
-	fprintf (file, "\tstq $%d,%d($30)\n", i, reg_offset);
+	fprintf (file, "\tstq $%d,%d($%d)\n", i, reg_offset, sa_reg);
 	reg_offset += 8;
 	int_reg_save_area_size += 8;
       }
@@ -2496,7 +2514,7 @@ output_prolog (file, size)
 	&& regs_ever_live[i + 32])
       {
 	reg_mask |= 1 << i;
-	fprintf (file, "\tstt $f%d,%d($30)\n", i, reg_offset);
+	fprintf (file, "\tstt $f%d,%d($%d)\n", i, reg_offset, sa_reg);
 	reg_offset += 8;
       }
 
@@ -2542,6 +2560,7 @@ output_epilog (file, size)
   if (insn == 0 || GET_CODE (insn) != BARRIER)
     {
       int fp_offset = 0;
+      int sa_reg;
 
       final_prescan_insn (NULL_RTX, NULL_PTR, 0);
 
@@ -2549,11 +2568,29 @@ output_epilog (file, size)
       if (frame_pointer_needed)
 	fprintf (file, "\tbis $15,$15,$30\n");
 
+      /* Cope with large offsets to the register save area.  */
+      sa_reg = 30;
+      if (reg_offset + sa_size > 0x8000)
+	{
+          int low = ((reg_offset & 0xffff) ^ 0x8000) - 0x8000;
+          if (low + sa_size <= 0x8000)
+	    {
+	      add_long_const (file, reg_offset - low, 30, 24, 24);
+	      reg_offset = low;
+	    }
+          else
+	    {
+              add_long_const (file, reg_offset, 30, 24, 24);
+              reg_offset = 0;
+	    }
+	  sa_reg = 24;
+	}
+
       /* Restore all the registers, starting with the return address
 	 register.  */
       if (sa_size != 0)
 	{
-	  fprintf (file, "\tldq $26,%d($30)\n", reg_offset);
+	  fprintf (file, "\tldq $26,%d($%d)\n", reg_offset, sa_reg);
 	  reg_offset += 8;
 	}
 
@@ -2568,7 +2605,7 @@ output_epilog (file, size)
 	    if (i == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
 	      fp_offset = reg_offset;
 	    else
-	      fprintf (file, "\tldq $%d,%d($30)\n", i, reg_offset);
+	      fprintf (file, "\tldq $%d,%d($%d)\n", i, reg_offset, sa_reg);
 	    reg_offset += 8;
 	  }
 
@@ -2576,7 +2613,7 @@ output_epilog (file, size)
 	if (! fixed_regs[i + 32] && ! call_used_regs[i + 32]
 	    && regs_ever_live[i + 32])
 	  {
-	    fprintf (file, "\tldt $f%d,%d($30)\n", i, reg_offset);
+	    fprintf (file, "\tldt $f%d,%d($%d)\n", i, reg_offset, sa_reg);
 	    reg_offset += 8;
 	  }
 
@@ -2591,7 +2628,7 @@ output_epilog (file, size)
 	 now.  This must be done in one instruction immediately
 	 before the SP update.  */
       if (restore_fp && fp_offset)
-	fprintf (file, "\tldq $15,%d($30)\n", fp_offset);
+	fprintf (file, "\tldq $15,%d($%d)\n", fp_offset, sa_reg);
 
       /* Now update the stack pointer, if needed.  Only one instruction must
 	 modify the stack pointer.  It must be the last instruction in the
