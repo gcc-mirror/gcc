@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -320,27 +320,27 @@ static int current_sym_nchars;
 #endif
 
 #if defined(ASM_OUTPUT_SECTION_NAME)
-static void dbxout_function_end		PROTO((void));
+static void dbxout_function_end		PARAMS ((void));
 #endif
-static void dbxout_typedefs		PROTO((tree));
-static void dbxout_type_index		PROTO((tree));
+static void dbxout_typedefs		PARAMS ((tree));
+static void dbxout_type_index		PARAMS ((tree));
 #if DBX_CONTIN_LENGTH > 0
-static void dbxout_continue		PROTO((void));
+static void dbxout_continue		PARAMS ((void));
 #endif
-static void dbxout_type_fields		PROTO((tree));
-static void dbxout_type_method_1	PROTO((tree, const char *));
-static void dbxout_type_methods		PROTO((tree));
-static void dbxout_range_type		PROTO((tree));
-static void dbxout_type			PROTO((tree, int, int));
-static void print_int_cst_octal		PROTO((tree));
-static void print_octal			PROTO((unsigned HOST_WIDE_INT, int));
-static void dbxout_type_name		PROTO((tree));
-static void dbxout_symbol_location	PROTO((tree, tree, const char *, rtx));
-static void dbxout_symbol_name		PROTO((tree, const char *, int));
-static void dbxout_prepare_symbol	PROTO((tree));
-static void dbxout_finish_symbol	PROTO((tree));
-static void dbxout_block		PROTO((tree, int, tree));
-static void dbxout_really_begin_function PROTO((tree));
+static void dbxout_type_fields		PARAMS ((tree));
+static void dbxout_type_method_1	PARAMS ((tree, const char *));
+static void dbxout_type_methods		PARAMS ((tree));
+static void dbxout_range_type		PARAMS ((tree));
+static void dbxout_type			PARAMS ((tree, int, int));
+static void print_int_cst_octal		PARAMS ((tree));
+static void print_octal			PARAMS ((unsigned HOST_WIDE_INT, int));
+static void dbxout_type_name		PARAMS ((tree));
+static void dbxout_symbol_location	PARAMS ((tree, tree, const char *, rtx));
+static void dbxout_symbol_name		PARAMS ((tree, const char *, int));
+static void dbxout_prepare_symbol	PARAMS ((tree));
+static void dbxout_finish_symbol	PARAMS ((tree));
+static void dbxout_block		PARAMS ((tree, int, tree));
+static void dbxout_really_begin_function PARAMS ((tree));
 
 #if defined(ASM_OUTPUT_SECTION_NAME)
 static void

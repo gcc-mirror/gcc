@@ -350,73 +350,73 @@ static struct undobuf undobuf;
 
 static int n_occurrences;
 
-static void do_SUBST			PROTO((rtx *, rtx));
-static void do_SUBST_INT		PROTO((int *, int));
-static void init_reg_last_arrays	PROTO((void));
-static void setup_incoming_promotions   PROTO((void));
-static void set_nonzero_bits_and_sign_copies  PROTO((rtx, rtx, void *));
-static int can_combine_p	PROTO((rtx, rtx, rtx, rtx, rtx *, rtx *));
-static int sets_function_arg_p	PROTO((rtx));
-static int combinable_i3pat	PROTO((rtx, rtx *, rtx, rtx, int, rtx *));
-static int contains_muldiv	PROTO((rtx));
-static rtx try_combine		PROTO((rtx, rtx, rtx));
-static void undo_all		PROTO((void));
-static void undo_commit		PROTO((void));
-static rtx *find_split_point	PROTO((rtx *, rtx));
-static rtx subst		PROTO((rtx, rtx, rtx, int, int));
-static rtx combine_simplify_rtx	PROTO((rtx, enum machine_mode, int, int));
-static rtx simplify_if_then_else  PROTO((rtx));
-static rtx simplify_set		PROTO((rtx));
-static rtx simplify_logical	PROTO((rtx, int));
-static rtx expand_compound_operation  PROTO((rtx));
-static rtx expand_field_assignment  PROTO((rtx));
-static rtx make_extraction	PROTO((enum machine_mode, rtx, int, rtx, int,
-				       int, int, int));
-static rtx extract_left_shift	PROTO((rtx, int));
-static rtx make_compound_operation  PROTO((rtx, enum rtx_code));
-static int get_pos_from_mask	PROTO((unsigned HOST_WIDE_INT, int *));
-static rtx force_to_mode	PROTO((rtx, enum machine_mode,
-				       unsigned HOST_WIDE_INT, rtx, int));
-static rtx if_then_else_cond	PROTO((rtx, rtx *, rtx *));
-static rtx known_cond		PROTO((rtx, enum rtx_code, rtx, rtx));
-static int rtx_equal_for_field_assignment_p PROTO((rtx, rtx));
-static rtx make_field_assignment  PROTO((rtx));
-static rtx apply_distributive_law  PROTO((rtx));
-static rtx simplify_and_const_int  PROTO((rtx, enum machine_mode, rtx,
-					  unsigned HOST_WIDE_INT));
-static unsigned HOST_WIDE_INT nonzero_bits  PROTO((rtx, enum machine_mode));
-static int num_sign_bit_copies  PROTO((rtx, enum machine_mode));
-static int merge_outer_ops	PROTO((enum rtx_code *, HOST_WIDE_INT *,
-				       enum rtx_code, HOST_WIDE_INT,
-				       enum machine_mode, int *));
-static rtx simplify_shift_const	PROTO((rtx, enum rtx_code, enum machine_mode,
-				       rtx, int));
-static int recog_for_combine	PROTO((rtx *, rtx, rtx *));
-static rtx gen_lowpart_for_combine  PROTO((enum machine_mode, rtx));
-static rtx gen_rtx_combine PVPROTO((enum rtx_code code, enum machine_mode mode,
-				  ...));
-static rtx gen_binary		PROTO((enum rtx_code, enum machine_mode,
-				       rtx, rtx));
-static rtx gen_unary		PROTO((enum rtx_code, enum machine_mode,
-				       enum machine_mode, rtx));
-static enum rtx_code simplify_comparison  PROTO((enum rtx_code, rtx *, rtx *));
-static int reversible_comparison_p  PROTO((rtx));
-static void update_table_tick	PROTO((rtx));
-static void record_value_for_reg  PROTO((rtx, rtx, rtx));
-static void check_promoted_subreg PROTO((rtx, rtx));
-static void record_dead_and_set_regs_1  PROTO((rtx, rtx, void *));
-static void record_dead_and_set_regs  PROTO((rtx));
-static int get_last_value_validate  PROTO((rtx *, rtx, int, int));
-static rtx get_last_value	PROTO((rtx));
-static int use_crosses_set_p	PROTO((rtx, int));
-static void reg_dead_at_p_1	PROTO((rtx, rtx, void *));
-static int reg_dead_at_p	PROTO((rtx, rtx));
-static void move_deaths		PROTO((rtx, rtx, int, rtx, rtx *));
-static int reg_bitfield_target_p  PROTO((rtx, rtx));
-static void distribute_notes	PROTO((rtx, rtx, rtx, rtx, rtx, rtx));
-static void distribute_links	PROTO((rtx));
-static void mark_used_regs_combine PROTO((rtx));
-static int insn_cuid		PROTO((rtx));
+static void do_SUBST			PARAMS ((rtx *, rtx));
+static void do_SUBST_INT		PARAMS ((int *, int));
+static void init_reg_last_arrays	PARAMS ((void));
+static void setup_incoming_promotions   PARAMS ((void));
+static void set_nonzero_bits_and_sign_copies  PARAMS ((rtx, rtx, void *));
+static int can_combine_p	PARAMS ((rtx, rtx, rtx, rtx, rtx *, rtx *));
+static int sets_function_arg_p	PARAMS ((rtx));
+static int combinable_i3pat	PARAMS ((rtx, rtx *, rtx, rtx, int, rtx *));
+static int contains_muldiv	PARAMS ((rtx));
+static rtx try_combine		PARAMS ((rtx, rtx, rtx));
+static void undo_all		PARAMS ((void));
+static void undo_commit		PARAMS ((void));
+static rtx *find_split_point	PARAMS ((rtx *, rtx));
+static rtx subst		PARAMS ((rtx, rtx, rtx, int, int));
+static rtx combine_simplify_rtx	PARAMS ((rtx, enum machine_mode, int, int));
+static rtx simplify_if_then_else  PARAMS ((rtx));
+static rtx simplify_set		PARAMS ((rtx));
+static rtx simplify_logical	PARAMS ((rtx, int));
+static rtx expand_compound_operation  PARAMS ((rtx));
+static rtx expand_field_assignment  PARAMS ((rtx));
+static rtx make_extraction	PARAMS ((enum machine_mode, rtx, int, rtx, int,
+					 int, int, int));
+static rtx extract_left_shift	PARAMS ((rtx, int));
+static rtx make_compound_operation  PARAMS ((rtx, enum rtx_code));
+static int get_pos_from_mask	PARAMS ((unsigned HOST_WIDE_INT, int *));
+static rtx force_to_mode	PARAMS ((rtx, enum machine_mode,
+					 unsigned HOST_WIDE_INT, rtx, int));
+static rtx if_then_else_cond	PARAMS ((rtx, rtx *, rtx *));
+static rtx known_cond		PARAMS ((rtx, enum rtx_code, rtx, rtx));
+static int rtx_equal_for_field_assignment_p PARAMS ((rtx, rtx));
+static rtx make_field_assignment  PARAMS ((rtx));
+static rtx apply_distributive_law  PARAMS ((rtx));
+static rtx simplify_and_const_int  PARAMS ((rtx, enum machine_mode, rtx,
+					    unsigned HOST_WIDE_INT));
+static unsigned HOST_WIDE_INT nonzero_bits  PARAMS ((rtx, enum machine_mode));
+static int num_sign_bit_copies  PARAMS ((rtx, enum machine_mode));
+static int merge_outer_ops	PARAMS ((enum rtx_code *, HOST_WIDE_INT *,
+					 enum rtx_code, HOST_WIDE_INT,
+					 enum machine_mode, int *));
+static rtx simplify_shift_const	PARAMS ((rtx, enum rtx_code, enum machine_mode,
+					 rtx, int));
+static int recog_for_combine	PARAMS ((rtx *, rtx, rtx *));
+static rtx gen_lowpart_for_combine  PARAMS ((enum machine_mode, rtx));
+static rtx gen_rtx_combine PARAMS ((enum rtx_code code, enum machine_mode mode,
+				    ...));
+static rtx gen_binary		PARAMS ((enum rtx_code, enum machine_mode,
+					 rtx, rtx));
+static rtx gen_unary		PARAMS ((enum rtx_code, enum machine_mode,
+					 enum machine_mode, rtx));
+static enum rtx_code simplify_comparison  PARAMS ((enum rtx_code, rtx *, rtx *));
+static int reversible_comparison_p  PARAMS ((rtx));
+static void update_table_tick	PARAMS ((rtx));
+static void record_value_for_reg  PARAMS ((rtx, rtx, rtx));
+static void check_promoted_subreg PARAMS ((rtx, rtx));
+static void record_dead_and_set_regs_1  PARAMS ((rtx, rtx, void *));
+static void record_dead_and_set_regs  PARAMS ((rtx));
+static int get_last_value_validate  PARAMS ((rtx *, rtx, int, int));
+static rtx get_last_value	PARAMS ((rtx));
+static int use_crosses_set_p	PARAMS ((rtx, int));
+static void reg_dead_at_p_1	PARAMS ((rtx, rtx, void *));
+static int reg_dead_at_p	PARAMS ((rtx, rtx));
+static void move_deaths		PARAMS ((rtx, rtx, int, rtx, rtx *));
+static int reg_bitfield_target_p  PARAMS ((rtx, rtx));
+static void distribute_notes	PARAMS ((rtx, rtx, rtx, rtx, rtx, rtx));
+static void distribute_links	PARAMS ((rtx));
+static void mark_used_regs_combine PARAMS ((rtx));
+static int insn_cuid		PARAMS ((rtx));
 
 /* Substitute NEWVAL, an rtx expression, into INTO, a place in some
    insn.  The substitution can be undone by undo_all.  If INTO is already
@@ -9595,7 +9595,7 @@ gen_lowpart_for_combine (mode, x)
 
 /*VARARGS2*/
 static rtx
-gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
+gen_rtx_combine VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 {
 #ifndef ANSI_PROTOTYPES
   enum rtx_code code;

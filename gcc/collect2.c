@@ -263,43 +263,43 @@ static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 static const char *libexts[3] = {"a", "so", NULL};  /* possible library extentions */
 #endif
 
-static void handler		PROTO((int));
-static int is_ctor_dtor		PROTO((const char *));
-static char *find_a_file	PROTO((struct path_prefix *, const char *));
-static void add_prefix		PROTO((struct path_prefix *, const char *));
-static void prefix_from_env	PROTO((const char *, struct path_prefix *));
-static void prefix_from_string	PROTO((const char *, struct path_prefix *));
-static void do_wait		PROTO((const char *));
-static void fork_execute	PROTO((const char *, char **));
-static void maybe_unlink	PROTO((const char *));
-static void add_to_list		PROTO((struct head *, const char *));
-static int extract_init_priority PROTO((const char *));
-static void sort_ids		PROTO((struct head *));
-static void write_list		PROTO((FILE *, const char *, struct id *));
+static void handler		PARAMS ((int));
+static int is_ctor_dtor		PARAMS ((const char *));
+static char *find_a_file	PARAMS ((struct path_prefix *, const char *));
+static void add_prefix		PARAMS ((struct path_prefix *, const char *));
+static void prefix_from_env	PARAMS ((const char *, struct path_prefix *));
+static void prefix_from_string	PARAMS ((const char *, struct path_prefix *));
+static void do_wait		PARAMS ((const char *));
+static void fork_execute	PARAMS ((const char *, char **));
+static void maybe_unlink	PARAMS ((const char *));
+static void add_to_list		PARAMS ((struct head *, const char *));
+static int extract_init_priority PARAMS ((const char *));
+static void sort_ids		PARAMS ((struct head *));
+static void write_list		PARAMS ((FILE *, const char *, struct id *));
 #ifdef COLLECT_EXPORT_LIST
-static void dump_list		PROTO((FILE *, const char *, struct id *));
+static void dump_list		PARAMS ((FILE *, const char *, struct id *));
 #endif
 #if 0
-static void dump_prefix_list	PROTO((FILE *, const char *, struct prefix_list *));
+static void dump_prefix_list	PARAMS ((FILE *, const char *, struct prefix_list *));
 #endif
-static void write_list_with_asm PROTO((FILE *, const char *, struct id *));
-static void write_c_file	PROTO((FILE *, const char *));
-static void write_c_file_stat	PROTO((FILE *, const char *));
+static void write_list_with_asm PARAMS ((FILE *, const char *, struct id *));
+static void write_c_file	PARAMS ((FILE *, const char *));
+static void write_c_file_stat	PARAMS ((FILE *, const char *));
 #ifndef LD_INIT_SWITCH
-static void write_c_file_glob	PROTO((FILE *, const char *));
+static void write_c_file_glob	PARAMS ((FILE *, const char *));
 #endif
-static void scan_prog_file	PROTO((const char *, enum pass));
+static void scan_prog_file	PARAMS ((const char *, enum pass));
 #ifdef SCAN_LIBRARIES
-static void scan_libraries	PROTO((const char *));
+static void scan_libraries	PARAMS ((const char *));
 #endif
 #ifdef COLLECT_EXPORT_LIST
-static int is_in_list		PROTO((const char *, struct id *));
-static void write_aix_file	PROTO((FILE *, struct id *));
-static char *resolve_lib_name	PROTO((const char *));
-static int use_import_list	PROTO((const char *));
-static int ignore_library	PROTO((const char *));
+static int is_in_list		PARAMS ((const char *, struct id *));
+static void write_aix_file	PARAMS ((FILE *, struct id *));
+static char *resolve_lib_name	PARAMS ((const char *));
+static int use_import_list	PARAMS ((const char *));
+static int ignore_library	PARAMS ((const char *));
 #endif
-static char *extract_string	PROTO((const char **));
+static char *extract_string	PARAMS ((const char **));
 
 #ifdef NO_DUP2
 int
@@ -358,7 +358,7 @@ collect_exit (status)
 
 /* Notify user of a non-error.  */
 void
-notice VPROTO((const char *msgid, ...))
+notice VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -378,7 +378,7 @@ notice VPROTO((const char *msgid, ...))
 /* Die when sys call fails.  */
 
 void
-fatal_perror VPROTO((const char * msgid, ...))
+fatal_perror VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -403,7 +403,7 @@ fatal_perror VPROTO((const char * msgid, ...))
 /* Just die.  */
 
 void
-fatal VPROTO((const char * msgid, ...))
+fatal VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -427,7 +427,7 @@ fatal VPROTO((const char * msgid, ...))
 /* Write error message.  */
 
 void
-error VPROTO((const char * msgid, ...))
+error VPARAMS ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char * msgid;
@@ -832,7 +832,7 @@ prefix_from_string (p, pprefix)
 
 /* Main program.  */
 
-int main 		PROTO ((int, char *[]));
+int main 		PARAMS ((int, char *[]));
 int
 main (argc, argv)
      int argc;
@@ -2111,8 +2111,8 @@ scan_prog_file (prog_name, which_pass)
      const char *prog_name;
      enum pass which_pass;
 {
-  void (*int_handler) PROTO ((int));
-  void (*quit_handler) PROTO ((int));
+  void (*int_handler) PARAMS ((int));
+  void (*quit_handler) PARAMS ((int));
   char *real_nm_argv[4];
   const char **nm_argv = (const char **) real_nm_argv;
   int pid;
@@ -2179,9 +2179,9 @@ scan_prog_file (prog_name, which_pass)
     }
 
   /* Parent context from here on.  */
-  int_handler  = (void (*) PROTO ((int))) signal (SIGINT,  SIG_IGN);
+  int_handler  = (void (*) PARAMS ((int))) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
-  quit_handler = (void (*) PROTO ((int))) signal (SIGQUIT, SIG_IGN);
+  quit_handler = (void (*) PARAMS ((int))) signal (SIGQUIT, SIG_IGN);
 #endif
 
   if (close (pipe_fd[1]) < 0)
@@ -2296,7 +2296,7 @@ struct head libraries;
 
 /* Map the file indicated by NAME into memory and store its address.  */
 
-static void mapfile			PROTO ((const char *));
+static void mapfile			PARAMS ((const char *));
 
 static void
 mapfile (name)
@@ -2322,7 +2322,7 @@ mapfile (name)
 
 static const char *libname;
 
-static int libselect			PROTO ((struct direct *));
+static int libselect			PARAMS ((struct direct *));
 
 static int
 libselect (d)
@@ -2338,7 +2338,7 @@ libselect (d)
    We must verify that the extension is numeric, because Sun saves the
    original versions of patched libraries with a .FCS extension.  Files with
    invalid extensions must go last in the sort, so that they will not be used.  */
-static int libcompare		PROTO ((struct direct **, struct direct **));
+static int libcompare		PARAMS ((struct direct **, struct direct **));
 
 static int
 libcompare (d1, d2)
@@ -2383,7 +2383,7 @@ libcompare (d1, d2)
 
 /* Given the name NAME of a dynamic dependency, find its pathname and add
    it to the list of libraries.  */
-static void locatelib			PROTO ((const char *));
+static void locatelib			PARAMS ((const char *));
 
 static void
 locatelib (name)
@@ -2556,8 +2556,8 @@ scan_libraries (prog_name)
 {
   static struct head libraries;		/* list of shared libraries found */
   struct id *list;
-  void (*int_handler) PROTO ((int));
-  void (*quit_handler) PROTO ((int));
+  void (*int_handler) PARAMS ((int));
+  void (*quit_handler) PARAMS ((int));
   char *real_ldd_argv[4];
   const char **ldd_argv = (const char **) real_ldd_argv;
   int pid;
@@ -2621,9 +2621,9 @@ scan_libraries (prog_name)
     }
 
   /* Parent context from here on.  */
-  int_handler  = (void (*) PROTO ((int))) signal (SIGINT,  SIG_IGN);
+  int_handler  = (void (*) PARAMS ((int))) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
-  quit_handler = (void (*) PROTO ((int))) signal (SIGQUIT, SIG_IGN);
+  quit_handler = (void (*) PARAMS ((int))) signal (SIGQUIT, SIG_IGN);
 #endif
 
   if (close (pipe_fd[1]) < 0)
@@ -3073,13 +3073,13 @@ struct file_info
 extern int decode_mach_o_hdr ();
 extern int encode_mach_o_hdr ();
 
-static void add_func_table	PROTO((mo_header_t *, load_all_t *,
+static void add_func_table	PARAMS ((mo_header_t *, load_all_t *,
 				       symbol_info_t *, int));
-static void print_header	PROTO((mo_header_t *));
-static void print_load_command	PROTO((load_union_t *, size_t, int));
-static void bad_header		PROTO((int));
-static struct file_info	*read_file  PROTO((const char *, int, int));
-static void end_file		PROTO((struct file_info *));
+static void print_header	PARAMS ((mo_header_t *));
+static void print_load_command	PARAMS ((load_union_t *, size_t, int));
+static void bad_header		PARAMS ((int));
+static struct file_info	*read_file  PARAMS ((const char *, int, int));
+static void end_file		PARAMS ((struct file_info *));
 
 /* OSF/rose specific version to scan the name list of the loaded
    program for the symbols g++ uses for static constructors and

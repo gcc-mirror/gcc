@@ -1,5 +1,23 @@
 2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* cccp.c: PROTO -> PARAMS.
+	* cexp.y: Likewise.
+	* collect2.c: Likewise.
+	* combine.c: Likewise.
+	* convert.h: Likewise.
+	* cse.c: Likewise.
+	* dbxout.c: Likewise.
+	* dbxout.h: Likewise.
+	* diagnostic.c: Likewise.
+	* doprint.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarf2out.h: Likewise.
+	* dwarfout.c: Likewise.
+	* dwarfout.h: Likewise.
+	* dyn-string.h: Likewise.
+
+2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* calls.c (emit_call_1): Wrap varaible `struct_value_size_rtx' in
 	macro conditionals guarding use.
 
