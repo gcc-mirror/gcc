@@ -37,6 +37,9 @@ Wed Sep 22 06:25:15 1999  Jim Kingdon  <http://developer.redhat.com>
 
 Wed Sep 22 06:06:57 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (subsi3): Turn into an expander.  Create two anonymous
+	patterns.  One for PA2.0 one for PA1.x.  Use mtsarcm for PA2.0.
+
 	* pa.md (floatunssisf2, floatunssidf2): Generate different RTL
 	for TARGET_PA_20.
 	(floatunssidf2_pa20, floatunssisf2_pa20): New patterns for PA2.0
