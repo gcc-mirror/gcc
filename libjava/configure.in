@@ -737,10 +737,6 @@ AC_SUBST(HASH_SYNC_SPEC)
 
 AM_CONDITIONAL(USING_GCC, test "$GCC" = yes)
 
-CANADIAN=no
-NULL_TARGET=no
-NATIVE=yes
-
 # We're in the tree with gcc, and need to include some of its headers.
 GCC_UNWIND_INCLUDE='-I$(libgcj_basedir)/../gcc'
 
@@ -1050,6 +1046,8 @@ changequote(<<,>>)
 changequote([,])
 fi
 
+NATIVE=yes
+
 # Which gcj do we use?
 which_gcj=default
 built_gcc_dir="`cd ${builddotdot}/../../gcc && ${PWDCMD-pwd}`"
@@ -1091,11 +1089,10 @@ fi
 case "${which_gcj}" in
    built)
       GCJ="$built_gcc_dir/gcj -B`${PWDCMD-pwd}`/ -B$built_gcc_dir/"
+      GCJH = '$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
+      ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
    ;;
    cross)
-      # See the comment below about CANADIAN being a misnomer
-      CANADIAN=yes
-      NULL_TARGET=no
       if test "x${with_newlib}" = "xyes"; then
          # FIXME (comment): Why is this needed?
          GCC_UNWIND_INCLUDE=
@@ -1103,31 +1100,17 @@ case "${which_gcj}" in
       else
          GCJ="${target_noncanonical}-gcj -B`${PWDCMD-pwd}`/"
       fi
+      ZIP = jar
+      GCJH = '$(target_noncanonical)-gcjh'
    ;;
    path)
-      # See the comment below about CANADIAN being a misnomer
-      CANADIAN=yes
-      NULL_TARGET=yes
       GCJ="gcj -B`${PWDCMD-pwd}`/"
+      ## In this case, gcj is found outside the build tree.  However, zip is
+      ## found in the build tree.
+      ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
+      GCJH = gcjh
    ;;
 esac
-
-## CANADIAN is a misnomer.  Really we check to see if we must pick up
-## the tools from the path.
-if test $CANADIAN = yes ; then
-  if test $NULL_TARGET = yes ; then
-    ## In this case, gcj is found outside the build tree.  However, zip is
-    ## found in the build tree.
-    ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
-    GCJH = gcjh
-  else
-    ZIP = jar
-    GCJH = '$(target_noncanonical)-gcjh'
-  fi
-else # CANADIAN
-  GCJH = '$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh'
-  ZIP = '$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar'
-fi # CANADIAN
 
 AC_SUBST(GCJH)
 AC_SUBST(ZIP)
