@@ -1,3 +1,8 @@
+2004-07-05  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/11406
+	* g++.dg/template/sizeof8.C: New test.
+
 2004-07-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/compile/20040705-1.c: New test.
