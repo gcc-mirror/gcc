@@ -568,6 +568,7 @@ dbxout_type_fields (type)
       /* For nameless subunions and subrecords, treat their fields as ours.  */
       if (DECL_NAME (tem) == NULL_TREE
 	  && (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
+	      || TREE_CODE (TREE_TYPE (tem)) == QUAL_UNION_TYPE
 	      || TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE))
 	dbxout_type_fields (TREE_TYPE (tem));
       /* Omit here local type decls until we know how to support them.  */
@@ -952,6 +953,7 @@ dbxout_type (type, full, show_arg_types)
      leave the type-number completely undefined rather than output
      a cross-reference.  */
   if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
+      || TREE_CODE (type) == QUAL_UNION_TYPE
       || TREE_CODE (type) == ENUMERAL_TYPE)
 
     if ((TYPE_NAME (type) != 0 && !full)
@@ -1093,6 +1095,7 @@ dbxout_type (type, full, show_arg_types)
 
     case RECORD_TYPE:
     case UNION_TYPE:
+    case QUAL_UNION_TYPE:
       {
 	int i, n_baseclasses = 0;
 
@@ -1505,7 +1508,8 @@ dbxout_symbol (decl, local)
 	       which gives both a typedef name and a tag.  */
 	    /* dbx requires the tag first and the typedef second.  */
 	    if ((TREE_CODE (type) == RECORD_TYPE
-		 || TREE_CODE (type) == UNION_TYPE)
+		 || TREE_CODE (type) == UNION_TYPE
+		 || TREE_CODE (type) == QUAL_UNION_TYPE)
 		&& TYPE_NAME (type) == decl
 		&& !(use_gnu_debug_info_extensions && have_used_extensions)
 		&& !TREE_ASM_WRITTEN (TYPE_NAME (type))
@@ -1534,7 +1538,8 @@ dbxout_symbol (decl, local)
 
 	    /* Short cut way to output a tag also.  */
 	    if ((TREE_CODE (type) == RECORD_TYPE
-		 || TREE_CODE (type) == UNION_TYPE)
+		 || TREE_CODE (type) == UNION_TYPE
+		 || TREE_CODE (type) == QUAL_UNION_TYPE)
 		&& TYPE_NAME (type) == decl)
 	      {
 		if (use_gnu_debug_info_extensions && have_used_extensions)

@@ -527,6 +527,7 @@ plain_type_1 (type)
 
     case RECORD_TYPE:
     case UNION_TYPE:
+    case QUAL_UNION_TYPE:
     case ENUMERAL_TYPE:
       {
 	char *tag;
@@ -558,6 +559,7 @@ plain_type_1 (type)
 	  }
 	return ((TREE_CODE (type) == RECORD_TYPE) ? T_STRUCT
 		: (TREE_CODE (type) == UNION_TYPE) ? T_UNION
+		: (TREE_CODE (type) == QUAL_UNION_TYPE) ? T_UNION
 		: T_ENUM);
       }
     case POINTER_TYPE:
@@ -753,7 +755,8 @@ sdbout_symbol (decl, local)
 	 within functions.  */
       if (TREE_CODE (type) == ENUMERAL_TYPE
 	  || TREE_CODE (type) == RECORD_TYPE
-	  || TREE_CODE (type) == UNION_TYPE)
+	  || TREE_CODE (type) == UNION_TYPE
+	  || TREE_CODE (type) == QUAL_UNION_TYPE)
 	{
 	  if (TYPE_SIZE (type) != 0		/* not a forward reference */
 	      && KNOWN_TYPE_TAG (type) == 0)	/* not yet declared */
@@ -992,6 +995,7 @@ sdbout_one_type (type)
     {
     case RECORD_TYPE:
     case UNION_TYPE:
+    case QUAL_UNION_TYPE:
     case ENUMERAL_TYPE:
       type = TYPE_MAIN_VARIANT (type);
       /* Don't output a type twice.  */
@@ -1053,6 +1057,7 @@ sdbout_one_type (type)
 	switch (TREE_CODE (type))
 	  {
 	  case UNION_TYPE:
+	  case QUAL_UNION_TYPE:
 	    PUT_SDB_SCL (C_UNTAG);
 	    PUT_SDB_TYPE (T_UNION);
 	    member_scl = C_MOU;

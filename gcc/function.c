@@ -883,7 +883,8 @@ put_var_into_stack (decl)
   MEM_IN_STRUCT_P (reg)
     = (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
        || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE);
+       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
+       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
 
   /* Now make sure that all refs to the variable, previously made
      when it was a register, are fixed up to be valid again.  */
@@ -2650,7 +2651,8 @@ aggregate_value_p (exp)
     return 1;
   if (flag_pcc_struct_return
       && (TREE_CODE (TREE_TYPE (exp)) == RECORD_TYPE
-	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE))
+	  || TREE_CODE (TREE_TYPE (exp)) == UNION_TYPE
+	  || TREE_CODE (TREE_TYPE (exp)) == QUAL_UNION_TYPE))
     return 1;
   /* Make sure we have suitable call-clobbered regs to return
      the value in; if not, we must return it in memory.  */
@@ -2768,7 +2770,8 @@ assign_parms (fndecl, second_time)
       int aggregate
 	= (TREE_CODE (TREE_TYPE (parm)) == ARRAY_TYPE
 	   || TREE_CODE (TREE_TYPE (parm)) == RECORD_TYPE
-	   || TREE_CODE (TREE_TYPE (parm)) == UNION_TYPE);
+	   || TREE_CODE (TREE_TYPE (parm)) == UNION_TYPE
+	   || TREE_CODE (TREE_TYPE (parm)) == QUAL_UNION_TYPE);
       struct args_size stack_offset;
       struct args_size arg_size;
       int passed_pointer = 0;
@@ -3593,6 +3596,7 @@ uninitialized_vars_warning (block)
 	     Unions are troublesome because members may be shorter.  */
 	  && TREE_CODE (TREE_TYPE (decl)) != RECORD_TYPE
 	  && TREE_CODE (TREE_TYPE (decl)) != UNION_TYPE
+	  && TREE_CODE (TREE_TYPE (decl)) != QUAL_UNION_TYPE
 	  && TREE_CODE (TREE_TYPE (decl)) != ARRAY_TYPE
 	  && DECL_RTL (decl) != 0
 	  && GET_CODE (DECL_RTL (decl)) == REG
@@ -4166,6 +4170,7 @@ init_function_start (subr, filename, line)
   if (warn_aggregate_return
       && (TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == RECORD_TYPE
 	  || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == UNION_TYPE
+	  || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == QUAL_UNION_TYPE
 	  || TREE_CODE (TREE_TYPE (DECL_RESULT (subr))) == ARRAY_TYPE))
     warning ("function returns an aggregate");
 
