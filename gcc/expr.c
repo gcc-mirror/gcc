@@ -2150,15 +2150,14 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
 /* Expand an assignment that stores the value of FROM into TO.
    If WANT_VALUE is nonzero, return an rtx for the value of TO.
-   (This may contain a QUEUED rtx.)
-   Otherwise, the returned value is not meaningful.
+   (This may contain a QUEUED rtx;
+   if the value is constant, this rtx is a constant.)
+   Otherwise, the returned value is NULL_RTX.
 
    SUGGEST_REG is no longer actually used.
    It used to mean, copy the value through a register
    and return that register, if that is possible.
-   But now we do this if WANT_VALUE.
-
-   If the value stored is a constant, we return the constant.  */
+   We now use WANT_VALUE to decide whether to do this.  */
 
 rtx
 expand_assignment (to, from, want_value, suggest_reg)
@@ -2172,7 +2171,10 @@ expand_assignment (to, from, want_value, suggest_reg)
   /* Don't crash if the lhs of the assignment was erroneous.  */
 
   if (TREE_CODE (to) == ERROR_MARK)
-    return expand_expr (from, NULL_RTX, VOIDmode, 0);
+    {
+      result = expand_expr (from, NULL_RTX, VOIDmode, 0);
+      return want_value ? result : NULL_RTX;
+    }
 
   /* Assignment of a structure component needs special treatment
      if the structure component's rtx is not simply a MEM.
@@ -2235,12 +2237,11 @@ expand_assignment (to, from, want_value, suggest_reg)
       preserve_temp_slots (result);
       free_temp_slots ();
 
-      /* If we aren't returning a result, just pass on what expand_expr
-	 returned; it was probably const0_rtx.  Otherwise, convert RESULT
-	 to the proper mode.  */
+      /* If the value is meaningful, convert RESULT to the proper mode.
+	 Otherwise, return nothing.  */
       return (want_value ? convert_to_mode (TYPE_MODE (TREE_TYPE (to)), result,
 					    TREE_UNSIGNED (TREE_TYPE (to)))
-	      : result);
+	      : NULL_RTX);
     }
 
   /* If the rhs is a function call and its value is not an aggregate,
@@ -2256,7 +2257,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       emit_move_insn (to_rtx, value);
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
-      return to_rtx;
+      return want_value ? to_rtx : NULL_RTX;
     }
 
   /* Ordinary treatment.  Expand TO to get a REG or MEM rtx.
@@ -2272,7 +2273,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       emit_move_insn (to_rtx, temp);
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
-      return to_rtx;
+      return want_value ? to_rtx : NULL_RTX;
     }
 
   /* In case we are returning the contents of an object which overlaps
@@ -2303,7 +2304,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
-      return to_rtx;
+      return want_value ? to_rtx : NULL_RTX;
     }
 
   /* Compute FROM and store the value in the rtx we got.  */
@@ -2311,24 +2312,37 @@ expand_assignment (to, from, want_value, suggest_reg)
   result = store_expr (from, to_rtx, want_value);
   preserve_temp_slots (result);
   free_temp_slots ();
-  return result;
+  return want_value ? result : NULL_RTX;
 }
 
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.
-   Returns TARGET or an equivalent value.
    TARGET may contain a QUEUED rtx.
 
-   If SUGGEST_REG is nonzero, copy the value through a register
-   and return that register, if that is possible.
+   If WANT_VALUE is nonzero, return a copy of the value
+   not in TARGET, so that we can be sure to use the proper
+   value in a containing expression even if TARGET has something
+   else stored in it.  If possible, we copy the value through a pseudo
+   and return that pseudo.  Or, if the value is constant, we try to
+   return the constant.  In some cases, we return a pseudo
+   copied *from* TARGET.
 
-   If the value stored is a constant, we return the constant.  */
+   If the mode is BLKmode then we may return TARGET itself.
+   It turns out that in BLKmode it doesn't cause a problem.
+   because C has no operators that could combine two different
+   assignments into the same BLKmode object with different values
+   with no sequence point.  Will other languages need this to
+   be more thorough?
+
+   If WANT_VALUE is 0, we return NULL, to make sure
+   to catch quickly any cases where the caller uses the value
+   and fails to set WANT_VALUE.  */
 
 rtx
-store_expr (exp, target, suggest_reg)
+store_expr (exp, target, want_value)
      register tree exp;
      register rtx target;
-     int suggest_reg;
+     int want_value;
 {
   register rtx temp;
   int dont_return_target = 0;
@@ -2339,7 +2353,7 @@ store_expr (exp, target, suggest_reg)
 	 part.  */
       expand_expr (TREE_OPERAND (exp, 0), const0_rtx, VOIDmode, 0);
       emit_queue ();
-      return store_expr (TREE_OPERAND (exp, 1), target, suggest_reg);
+      return store_expr (TREE_OPERAND (exp, 1), target, want_value);
     }
   else if (TREE_CODE (exp) == COND_EXPR && GET_MODE (target) == BLKmode)
     {
@@ -2355,22 +2369,22 @@ store_expr (exp, target, suggest_reg)
 
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
-      store_expr (TREE_OPERAND (exp, 1), target, suggest_reg);
+      store_expr (TREE_OPERAND (exp, 1), target, 0);
       emit_queue ();
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      store_expr (TREE_OPERAND (exp, 2), target, suggest_reg);
+      store_expr (TREE_OPERAND (exp, 2), target, 0);
       emit_queue ();
       emit_label (lab2);
       OK_DEFER_POP;
-      return target;
+      return want_value ? target : NULL_RTX;
     }
-  else if (suggest_reg && GET_CODE (target) == MEM && ! MEM_VOLATILE_P (target)
+  else if (want_value && GET_CODE (target) == MEM && ! MEM_VOLATILE_P (target)
 	   && GET_MODE (target) != BLKmode)
     /* If target is in memory and caller wants value in a register instead,
        arrange that.  Pass TARGET as target for expand_expr so that,
-       if EXP is another assignment, SUGGEST_REG will be nonzero for it.
+       if EXP is another assignment, WANT_VALUE will be nonzero for it.
        We know expand_expr will not use the target in that case.
        Don't do this if TARGET is volatile because we are supposed
        to write it and then read it.  */
@@ -2382,15 +2396,9 @@ store_expr (exp, target, suggest_reg)
       dont_return_target = 1;
     }
   else if (queued_subexp_p (target))
-    /* If target contains a postincrement, it is not safe
-       to use as the returned value.  It would access the wrong
-       place by the time the queued increment gets output.
-       So copy the value through a temporary and use that temp
-       as the result.  */
+    /* If target contains a postincrement, let's not risk
+       using it as the place to generate the rhs.  */
     {
-      /* ??? There may be a bug here in the case of a target
-	 that is volatile, but I' too sleepy today to write anything
-	 to handle it.  */
       if (GET_MODE (target) != BLKmode && GET_MODE (target) != VOIDmode)
 	{
 	  /* Expand EXP into a new pseudo.  */
@@ -2399,7 +2407,12 @@ store_expr (exp, target, suggest_reg)
 	}
       else
 	temp = expand_expr (exp, NULL_RTX, GET_MODE (target), 0);
-      dont_return_target = 1;
+
+      /* If target is volatile, ANSI requires accessing the value
+	 *from* the target, if it is accessed.  So make that happen.
+	 In no case return the target itself.  */
+      if (! MEM_VOLATILE_P (target) && want_value)
+	dont_return_target = 1;
     }
   else if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
     /* If this is an scalar in a register that is stored in a wider mode
@@ -2410,18 +2423,24 @@ store_expr (exp, target, suggest_reg)
       temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
       convert_move (SUBREG_REG (target), temp,
 		    SUBREG_PROMOTED_UNSIGNED_P (target));
-      return temp;
+      return want_value ? temp : NULL_RTX;
     }
   else
     {
       temp = expand_expr (exp, target, GET_MODE (target), 0);
       /* DO return TARGET if it's a specified hardware register.
 	 expand_return relies on this.
-	 DO return TARGET if it's a volatile mem ref; ANSI requires this.  */
+	 If TARGET is a volatile mem ref, either return TARGET
+	 or return a reg copied *from* TARGET; ANSI requires this.
+
+	 Otherwise, if TEMP is not TARGET, return TEMP
+	 if it is constant (for efficiency),
+	 or if we really want the correct value.  */
       if (!(target && GET_CODE (target) == REG
 	    && REGNO (target) < FIRST_PSEUDO_REGISTER)
-	  && CONSTANT_P (temp)
-	  && !(GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
+	  && !(GET_CODE (target) == MEM && MEM_VOLATILE_P (target))
+	  && temp != target
+	  && (CONSTANT_P (temp) || want_value))
 	dont_return_target = 1;
     }
 
@@ -2527,9 +2546,14 @@ store_expr (exp, target, suggest_reg)
       else
 	emit_move_insn (target, temp);
     }
+
   if (dont_return_target)
     return temp;
-  return target;
+  if (want_value && GET_MODE (target) != BLKmode)
+    return copy_to_reg (target);
+  if (want_value)
+    return target;
+  return NULL_RTX;
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
@@ -4380,6 +4404,10 @@ expand_expr (exp, target, tmode, modifier)
 		{
 		  op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
 				     VOIDmode, modifier);
+		  /* Don't go to both_summands if modifier
+		     says it's not right to return a PLUS.  */
+		  if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
+		    goto binop2;
 		  goto both_summands;
 		}
 	      op0 = plus_constant (op0, TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)));
@@ -8136,6 +8164,14 @@ do_tablejump (index, mode, range, table_label, default_label)
      Convert to Pmode so we can index with it.  */
   if (mode != Pmode)
     index = convert_to_mode (Pmode, index, 1);
+
+  /* Don't let a MEM slip thru, because then INDEX that comes
+     out of PIC_CASE_VECTOR_ADDRESS won't be a valid address,
+     and break_out_memory_refs will go to work on it and mess it up.  */
+#ifdef PIC_CASE_VECTOR_ADDRESS
+  if (flag_pic && GET_CODE (index) != REG)
+    index = copy_to_mode_reg (Pmode, index);
+#endif
 
   /* If flag_force_addr were to affect this address
      it could interfere with the tricky assumptions made
