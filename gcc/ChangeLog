@@ -1,3 +1,9 @@
+2002-01-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c (option_map): Remove --version.
+	(process_command): Handle -fversion following the GNU Coding
+	Standards.  Partially addresses PR other/704.
+
 2002-01-08  Graham Stott  <grahams@redhat.com>
 
 	* combine.c (combine_instructions): Fix typo.
