@@ -51,5 +51,6 @@ int spawnvp (int modeflag, char *path, char *argv[]);
 #endif
 
 #define EXECUTABLE_SUFFIX ".exe"
+#define OBJECT_SUFFIX ".obj"
 
 #include "i386/xm-i386.h"
