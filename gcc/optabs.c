@@ -413,6 +413,66 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	delete_insns_since (last);
     }
 
+  /* Look for a wider mode of the same class for which we think we
+     can open-code the operation.  */
+
+  if ((class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
+      && mode != OPTAB_DIRECT && mode != OPTAB_LIB)
+    for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
+	 wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      {
+	if (binoptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+	  {
+	    rtx xop0 = op0, xop1 = op1;
+	    int no_extend = 0;
+
+	    /* For certain integer operations, we need not actually extend
+	       the narrow operands, as long as we will truncate
+	       the results to the same narrowness.  */
+
+	    if ((binoptab == ior_optab || binoptab == and_optab
+		 || binoptab == xor_optab
+		 || binoptab == add_optab || binoptab == sub_optab
+		 || binoptab == smul_optab
+		 || binoptab == ashl_optab || binoptab == lshl_optab)
+		&& class == MODE_INT)
+	      no_extend = 1;
+
+	    /* If an operand is a constant integer, we might as well
+	       convert it since that is more efficient than using a SUBREG,
+	       unlike the case for other operands.  */
+
+	    if (no_extend && GET_MODE (xop0) != VOIDmode)
+	      xop0 = gen_rtx (SUBREG, wider_mode,
+			      force_reg (GET_MODE (xop0), xop0), 0);
+	    else
+	      xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+
+	    if (no_extend && GET_MODE (xop1) != VOIDmode)
+	      xop1 = gen_rtx (SUBREG, wider_mode,
+				force_reg (GET_MODE (xop1), xop1), 0);
+	    else
+	      xop1 = convert_to_mode (wider_mode, xop1, unsignedp);
+
+	    temp = expand_binop (wider_mode, binoptab, xop0, xop1, 0,
+				 unsignedp, OPTAB_DIRECT);
+	    if (temp)
+	      {
+		if (class != MODE_INT)
+		  {
+		    if (target == 0)
+		      target = gen_reg_rtx (mode);
+		    convert_move (target, temp, 0);
+		    return target;
+		  }
+		else
+		  return gen_lowpart (mode, temp);
+	      }
+	    else
+	      delete_insns_since (last);
+	  }
+      }
+
   /* These can be done a word at a time.  */
   if ((binoptab == and_optab || binoptab == ior_optab || binoptab == xor_optab)
       && class == MODE_INT
@@ -1105,6 +1165,45 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       else
 	delete_insns_since (last);
     }
+
+  /* It can't be done in this mode.  Can we open-code it in a wider mode?  */
+
+  if (class == MODE_INT || class == MODE_FLOAT || class == MODE_COMPLEX_FLOAT)
+    for (wider_mode = GET_MODE_WIDER_MODE (mode); wider_mode != VOIDmode;
+	 wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      {
+	if (unoptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+	  {
+	    rtx xop0 = op0;
+
+	    /* For certain operations, we need not actually extend
+	       the narrow operand, as long as we will truncate the
+	       results to the same narrowness.  */
+
+	    if ((unoptab == neg_optab || unoptab == one_cmpl_optab)
+		&& class == MODE_INT)
+	      xop0 = gen_rtx (SUBREG, wider_mode, force_reg (mode, xop0), 0);
+	    else
+	      xop0 = convert_to_mode (wider_mode, xop0, unsignedp);
+	      
+	    temp = expand_unop (wider_mode, unoptab, xop0, 0, unsignedp);
+
+	    if (temp)
+	      {
+		if (class != MODE_INT)
+		  {
+		    if (target == 0)
+		      target = gen_reg_rtx (mode);
+		    convert_move (target, temp, 0);
+		    return target;
+		  }
+		else
+		  return gen_lowpart (mode, temp);
+	      }
+	    else
+	      delete_insns_since (last);
+	  }
+      }
 
   /* These can be done a word at a time.  */
   if (unoptab == one_cmpl_optab
