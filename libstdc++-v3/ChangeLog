@@ -1,3 +1,9 @@
+2002-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/locale/generic/messages_members.cc: Add specialization for
+	messages<wchar_t>.
+	* config/locale/ieee_1003.1-20021/messages_members.cc: Likewise.
+
 2002-09-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/localefwd.h: Tweak formatting.
