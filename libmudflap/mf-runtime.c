@@ -237,6 +237,7 @@ __mf_set_default_options ()
   __mf_opts.persistent_count = 100;
   __mf_opts.crumple_zone = 32;
   __mf_opts.backtrace = 4;
+  __mf_opts.timestamps = 1;
   __mf_opts.mudflap_mode = mode_check;
   __mf_opts.violation_mode = viol_nop;
   __mf_opts.heur_std_data = 1;
@@ -313,6 +314,12 @@ options [] =
     {"abbreviate", 
      "abbreviate repetitive listings",
      set_option, 1, &__mf_opts.abbreviate},
+    {"timestamps", 
+     "track object lifetime timestamps",
+     set_option, 1, &__mf_opts.timestamps},
+    {"ignore-reads", 
+     "ignore read accesses - assume okay",
+     set_option, 1, &__mf_opts.ignore_reads},
     {"wipe-stack",
      "wipe stack objects at unwind",
      set_option, 1, &__mf_opts.wipe_stack},
@@ -917,7 +924,8 @@ __mf_insert_new_object (uintptr_t low, uintptr_t high, int type,
   new_obj->name = name;
   new_obj->alloc_pc = pc;
 #if HAVE_GETTIMEOFDAY
-  gettimeofday (& new_obj->alloc_time, NULL);
+  if (__mf_opts.timestamps)
+    gettimeofday (& new_obj->alloc_time, NULL);
 #endif
 #if LIBMUDFLAPTH
   new_obj->alloc_thread = pthread_self ();
@@ -1157,7 +1165,8 @@ __mfu_unregister (void *ptr, size_t sz, int type)
             old_obj->deallocated_p = 1;
             old_obj->dealloc_pc = (uintptr_t) __builtin_return_address (0);
 #if HAVE_GETTIMEOFDAY
-            gettimeofday (& old_obj->dealloc_time, NULL);
+            if (__mf_opts.timestamps)
+              gettimeofday (& old_obj->dealloc_time, NULL);
 #endif
 #ifdef LIBMUDFLAPTH
             old_obj->dealloc_thread = pthread_self ();
@@ -1843,7 +1852,7 @@ __mf_violation (void *ptr, size_t sz, uintptr_t pc,
   {
     unsigned dead_p;
     unsigned num_helpful = 0;
-    struct timeval now;
+    struct timeval now = { 0, 0 };
 #if HAVE_GETTIMEOFDAY
     gettimeofday (& now, NULL);
 #endif

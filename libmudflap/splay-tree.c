@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "splay-tree.h"
 
 
-static void splay_tree_delete_helper (splay_tree, splay_tree_node);
 static void splay_tree_splay (splay_tree, splay_tree_key);
 static splay_tree_node splay_tree_splay_helper (splay_tree,
                                                 splay_tree_key,

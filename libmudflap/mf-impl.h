@@ -133,9 +133,6 @@ struct __mf_options
   /* Emit internal tracing message. */
   unsigned verbose_trace;
 
-  /* Support multiple threads.  XXX: not yet implemented. */
-  /* unsigned multi_threaded; */
-
   /* Wipe stack/heap objects upon unwind.  */
   unsigned wipe_stack;
   unsigned wipe_heap;
@@ -153,6 +150,12 @@ struct __mf_options
   /* Maintain this many stack frames for contexts. */
   unsigned backtrace;
 
+  /* Ignore read operations even if mode_check is in effect.  */
+  unsigned ignore_reads;
+
+  /* Collect register/unregister timestamps.  */
+  unsigned timestamps;
+
 #ifdef LIBMUDFLAPTH
   /* Thread stack size.  */
   unsigned thread_stack;
@@ -168,9 +171,7 @@ struct __mf_options
   }
   mudflap_mode;
 
-
   /* How to handle a violation. */
-
   enum
   {
     viol_nop,        /* Return control to application. */ 
@@ -240,7 +241,6 @@ extern enum __mf_state_enum *__mf_state_perthread ();
 extern enum __mf_state_enum __mf_state;
 #endif
 extern int __mf_starting_p;
-
 extern struct __mf_options __mf_opts;
 
 /* ------------------------------------------------------------------------ */
@@ -355,6 +355,7 @@ ret __mfwrap_ ## fname (__VA_ARGS__)
 #define MF_VALIDATE_EXTENT(value,size,acc,context) \
  do { \
   if (UNLIKELY (size > 0 && __MF_CACHE_MISS_P (value, size))) \
+    if (acc == __MF_CHECK_WRITE || ! __mf_opts.ignore_reads) \
     __mf_check ((void *) (value), (size), acc, "(" context ")"); \
  } while (0)
 #define BEGIN_PROTECT(fname, ...)       \

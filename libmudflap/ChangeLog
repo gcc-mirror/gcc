@@ -1,3 +1,13 @@
+2004-07-20  Frank Ch. Eigler  <fche@redhat.com>
+
+	* mf-impl.h (__mf_options): Add ignore_reads and timestamps fields.
+	* mf-runtime.c (options): Give them a name.
+	(__mf_set_default_options): Set them.
+	(__mf_insert_new_object, __mfu_unregister): Optionalize timestamps.
+	(__mf_violation): Warning cleanup.
+	* mf-impl.h (MF_VALIDATE_EXTENT): Support ignore_reads option.
+	* splay-tree.c (splay_tree_delete_helper): Remove obsolete decl.
+
 2004-07-15  Frank Ch. Eigler  <fche@redhat.com>
 
 	g++/15861
