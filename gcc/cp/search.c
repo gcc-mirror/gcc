@@ -427,18 +427,13 @@ get_binfo (parent, binfo, protect)
   
   if (TREE_CODE (parent) == TREE_VEC)
     parent = BINFO_TYPE (parent);
-  /* unions cannot participate in inheritance relationships */
-  else if (TREE_CODE (parent) == UNION_TYPE)
-    return NULL_TREE;
-  else if (TREE_CODE (parent) != RECORD_TYPE)
+  else if (! IS_AGGR_TYPE_CODE (TREE_CODE (parent)))
     my_friendly_abort (89);
 
   if (TREE_CODE (binfo) == TREE_VEC)
     type = BINFO_TYPE (binfo);
-  else if (TREE_CODE (binfo) == RECORD_TYPE)
+  else if (IS_AGGR_TYPE_CODE (TREE_CODE (binfo)))
     type = binfo;
-  else if (TREE_CODE (binfo) == UNION_TYPE)
-    return NULL_TREE;
   else
     my_friendly_abort (90);
   

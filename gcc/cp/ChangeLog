@@ -5,7 +5,49 @@ Mon Mar 27 07:14:33 1995  Warner Losh	<imp@village.org>
 	declare sys_errlist and sys_nerr.
 	(my_strerror): New function.
 
+Tue Mar 28 14:16:35 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* search.c (get_binfo): Don't try to be so clever.
+
+	* tree.c (copy_to_permanent): Also suspend_momentary().
+
+	* cvt.c (cp_convert_to_pointer): Hand off to convert_fn_pointer even
+	if the types are the same.
+
+	* decl.c (start_function): Handle extern inlines more like C++ says
+        we should.
+
+	* init.c (build_member_call): Hand constructor calls off to
+	build_functional_cast.
+
+	* typeck2.c (build_functional_cast): Use DECL_NESTED_TYPENAME to get
+	the name of the type.
+
+Tue Mar 28 13:13:56 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* decl.c (grokdeclarator): Check for the decl returned by
+	grokfndecl to be null before using build_decl_attribute_variant.
+
+Mon Mar 27 18:04:41 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* init.c (build_new): Use build_pointer_type instead of
+	TYPE_POINTER_TO.
+
 Fri Mar 24 12:11:24 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (build_conditional_expr): Handle pmfs.
+	(convert_for_assignment): Fix pmf support.
+
+	* cvt.c (convert_fn_ptr): Support !flag_vtable_thunks.
+	(cp_convert_to_pointer): Handle pmfs.
+	(cp_convert): Pass pmfs to cp_convert_to_pointer.
+
+	* typeck.c (common_type): Handle inheritance for pmfs.
+
+	* typeck2.c (build_m_component_ref): Do access control.
+
+	* typeck.c (comp_target_types): Check for conversion to void *
+	before checking trickier conversions.
 
 	* decl.c (duplicate_decls): Propagate DECL_ABSTRACT_VIRTUAL_P.
 

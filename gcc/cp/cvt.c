@@ -81,23 +81,29 @@ static tree
 convert_fn_ptr (type, expr)
      tree type, expr;
 {
-  tree binfo = get_binfo (TYPE_METHOD_BASETYPE (TREE_TYPE (TREE_TYPE (expr))),
-			  TYPE_METHOD_BASETYPE (TREE_TYPE (type)),
-			  1);
-  if (binfo == error_mark_node)
+  if (flag_vtable_thunks)
     {
-      error ("  in pointer to member conversion");
-      return error_mark_node;
+      tree intype = TREE_TYPE (expr);
+      tree binfo = get_binfo (TYPE_METHOD_BASETYPE (TREE_TYPE (intype)),
+			      TYPE_METHOD_BASETYPE (TREE_TYPE (type)), 1);
+      if (binfo == error_mark_node)
+	{
+	  error ("  in pointer to member conversion");
+	  return error_mark_node;
+	}
+      if (binfo == NULL_TREE)
+	{
+	  /* ARM 4.8 restriction. */
+	  error ("invalid pointer to member conversion");
+	  return error_mark_node;
+	}
+
+      if (BINFO_OFFSET_ZEROP (binfo))
+	return build1 (NOP_EXPR, type, expr);
+      return build1 (NOP_EXPR, type, build_thunk (BINFO_OFFSET (binfo), expr));
     }
-  if (binfo == NULL_TREE)
-    {
-      /* ARM 4.8 restriction. */
-      error ("invalid pointer to member conversion");
-      return error_mark_node;
-    }
-  if (BINFO_OFFSET_ZEROP (binfo))
-    return build1 (NOP_EXPR, type, expr);
-  return build1 (NOP_EXPR, type, build_thunk (BINFO_OFFSET (binfo), expr));
+  else
+    return build_ptrmemfunc (type, expr, 1);
 }
 
 /* if converting pointer to pointer
@@ -111,8 +117,15 @@ cp_convert_to_pointer (type, expr)
      tree type, expr;
 {
   register tree intype = TREE_TYPE (expr);
-  register enum tree_code form = TREE_CODE (intype);
-  
+  register enum tree_code form;
+
+  if (TYPE_PTRMEMFUNC_P (type))
+    type = TYPE_PTRMEMFUNC_FN_TYPE (type);
+  if (TYPE_PTRMEMFUNC_P (intype))
+    intype = TYPE_PTRMEMFUNC_FN_TYPE (intype);
+
+  form = TREE_CODE (intype);
+
   if (form == POINTER_TYPE || form == REFERENCE_TYPE)
     {
       intype = TYPE_MAIN_VARIANT (intype);
@@ -149,10 +162,9 @@ cp_convert_to_pointer (type, expr)
 		}
 	    }
 	}
-      if (TYPE_MAIN_VARIANT (type) != intype
-	  && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE
+      if (TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE
 	  && TREE_CODE (type) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (intype)) == METHOD_TYPE)
+	  && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
 	return convert_fn_ptr (type, expr);
 
       if (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
@@ -1279,7 +1291,8 @@ cp_convert (type, expr, convtype, flags)
 	return truthvalue_conversion (e);
       return fold (convert_to_integer (type, e));
     }
-  if (code == POINTER_TYPE || code == REFERENCE_TYPE)
+  if (code == POINTER_TYPE || code == REFERENCE_TYPE
+      || TYPE_PTRMEMFUNC_P (type))
     return fold (cp_convert_to_pointer (type, e));
   if (code == REAL_TYPE)
     {
