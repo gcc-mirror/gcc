@@ -3,7 +3,7 @@
    Copyright (C) 1988, 1989, 1990, 1991 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Enhanced by Michael Meissner (meissner@osf.org)
-   Currently supported by Tom Wood (wood@dg-rtp.dg.com)
+   Version 2 port by Tom Wood (Tom_Wood@NeXT.com)
 
 This file is part of GNU CC.
 
@@ -84,9 +84,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Assembler support (-V, silicon filter, legends for mxdb).  */
 #undef	ASM_SPEC
 #define ASM_SPEC "\
-%{V} %{v:%{!V:-V}} %{pipe: - %{msvr4:%{mversion-03.00:-KV3}}}\
+%{V} %{v:%{!V:-V}} %{pipe:%{!.s: - }\
+%{msvr4:%{mversion-03.00:-KV3}%{!mversion-03.00:%{mversion-*:-KV%*}}}}\
 %{!mlegend:%{mstandard:-Wc,off}}\
-%{mlegend:-Wc,-fix-bb,-h\"gcc-2.2.14\",-s\"%i\"\
+%{mlegend:-Wc,-fix-bb,-h\"gcc-2.3.3\",-s\"%i\"\
 %{traditional:,-lc}%{!traditional:,-lansi-c}\
 %{mstandard:,-keep-std}\
 %{mkeep-coff:,-keep-coff}\
@@ -100,10 +101,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Linker and library spec's.
    -static, -shared, -symbolic, -h* and -z* access AT&T V.4 link options.
    -svr4 instructs gcc to place /usr/lib/values-X[cat].o on link the line.
+   The absense of -msvr4 indicates linking done in a COFF environment and
+   adds the link script to the link line.  In all environments, the first
+   and last objects are crtbegin.o and crtend.o.
    When the -G link option is used (-shared and -symbolic) a final link is
    not being done.  */
 #undef	LIB_SPEC
-#define LIB_SPEC "%{!shared:%{!symbolic:-lc}}"
+#define LIB_SPEC "%{!shared:%{!symbolic:-lc}} crtend.o%s"
 #undef	LINK_SPEC
 #define LINK_SPEC "%{z*} %{h*} %{V} %{v:%{!V:-V}} \
 		   %{static:-dn -Bstatic} \
@@ -113,6 +117,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{!symbolic:%{pg:gcrt0.o%s} \
 			 %{!pg:%{p:/lib/mcrt0.o}%{!p:/lib/crt0.o}} \
+			 %{!msvr4:m88kdgux.ld%s} crtbegin.o%s \
 			 %{svr4:%{ansi:/lib/values-Xc.o} \
 			  %{!ansi:%{traditional:/lib/values-Xt.o} \
 			   %{!traditional:/usr/lib/values-Xa.o}}}}}"
@@ -139,8 +144,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  ASM_FIRST_LINE
 #define ASM_FIRST_LINE(FILE)						\
   do {									\
-    if (VERSION_0300_SYNTAX)						\
-      fprintf (FILE, "\t%s\t \"03.00\"\n", VERSION_ASM_OP);		\
+    if (m88k_version)							\
+      fprintf (FILE, "\t%s\t \"%s\"\n", VERSION_ASM_OP, m88k_version);	\
     if (write_symbols != NO_DEBUG					\
 	&& ! (TARGET_STANDARD && ! TARGET_LEGEND))			\
       {									\
@@ -162,14 +167,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
 
-/* Override svr4.h and m88k.h except when compiling crtstuff.c.  */
+/* Override svr4.h and m88k.h except when compiling crtstuff.c.  These must
+   be constant strings when compiling crtstuff.c.  Otherwise, respect the
+   -mversion-STRING option used.  */
 #if !defined (CRT_BEGIN) && !defined (CRT_END)
-#if 0 /* The SVR4 init method doesn't yet work.  */
 #undef	INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
 			     ? "section\t .init,\"xa\""	\
 			     : "section\t .init,\"x\"")
-#endif
 #undef	CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP (VERSION_0300_SYNTAX		\
 			      ? "section\t .ctors,\"aw\""	\
@@ -179,3 +184,40 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 			      ? "section\t .dtors,\"aw\""	\
 			      : "section\t .dtors,\"d\"")
 #endif /* crtstuff.c */
+
+/* The lists of global object constructors and global destructors are always
+   placed in the .ctors/.dtors sections.  This requires the use of a link
+   script if the COFF linker is used, but otherwise COFF and ELF objects
+   can be intermixed.  A COFF object will pad the section to 16 bytes with
+   zeros; and ELF object will not contain padding.  We deal with this by
+   putting a -1 marker at the begin and end of the list and ignoring zero
+   entries.  */
+
+/* Mark the end of the .ctors/.dtors sections with a -1.  */
+#define CTOR_LIST_END			\
+asm (CTORS_SECTION_ASM_OP);		\
+func_ptr __CTOR_END__[1] = { (func_ptr) (-1) }
+
+#define DTOR_LIST_END			\
+asm (DTORS_SECTION_ASM_OP);		\
+func_ptr __DTOR_END__[1] = { (func_ptr) (-1) }
+
+/* Walk the list ignoring NULL entries till we hit the terminating -1.  */
+#define DO_GLOBAL_CTORS_BODY				\
+  do {							\
+    int i;						\
+    for (i=1;(int)(__CTOR_LIST__[i]) != -1; i++)	\
+      if (((int *)__CTOR_LIST__)[i] != 0)		\
+	__CTOR_LIST__[i] ();				\
+  } while (0)					
+
+/* Walk the list looking for the terminating -1 that marks the end.
+   Go backward and ignore any NULL entries.  */
+#define DO_GLOBAL_DTORS_BODY				\
+  do {							\
+    int i;						\
+    for (i=1;(int)(__DTOR_LIST__[i]) != -1; i++);	\
+    for (i-=1;(int)(__DTOR_LIST__[i]) != -1; i--)	\
+      if (((int *)__DTOR_LIST__)[i] != 0)		\
+	__DTOR_LIST__[i] ();				\
+  } while (0)					
