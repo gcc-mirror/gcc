@@ -65,10 +65,6 @@ extern int yydebug;
 /* File used for outputting assembler code.  */
 extern FILE *asm_out_file;
 
-#ifndef LONG_LONG_TYPE_SIZE
-#define LONG_LONG_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
 #ifndef WCHAR_TYPE_SIZE
 #ifdef INT_TYPE_SIZE
 #define WCHAR_TYPE_SIZE INT_TYPE_SIZE
@@ -1170,8 +1166,10 @@ yylex ()
 	/* for multi-precision arithmetic,
 	   we actually store only HOST_BITS_PER_CHAR bits in each part.
 	   The number of parts is chosen so as to be sufficient to hold
-	   at least as many bits as are in a target `long long' value.  */
-#define TOTAL_PARTS (LONG_LONG_TYPE_SIZE / HOST_BITS_PER_CHAR) + 2
+	   the enough bits to fit into the two HOST_WIDE_INTs that contain
+	   the integer value (this is always at least as many bits as are
+	   in a target `long long' value, but may be wider).  */
+#define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2 + 2)
 	int parts[TOTAL_PARTS];
 	int overflow = 0;
 
