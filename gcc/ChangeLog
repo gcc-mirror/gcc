@@ -1,3 +1,7 @@
+2002-06-17  Tom Tromey  <tromey@redhat.com>
+
+	* dwarfout.c: Include function.h.
+
 2002-06-17  Andreas Schwab  <schwab@suse.de>
 
 	* print-rtl.c (print_rtx): Print space before vector, not after.

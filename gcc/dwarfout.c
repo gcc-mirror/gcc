@@ -1,5 +1,5 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
-   Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998,
+   Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 2002,
    1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
 
@@ -569,6 +569,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "dwarf.h"
 #include "tree.h"
 #include "flags.h"
+#include "function.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
 #include "insn-config.h"
