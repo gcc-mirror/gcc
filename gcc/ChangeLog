@@ -1,3 +1,26 @@
+003-02-18  Nick Clifton  <nickc@redhat.com>
+            Aldy Hernandez  <aldyh@redhat.com>
+
+        * testsuite/gcc.dg/20030218-1.c: New.
+
+        * doc/tm.texi: Document TARGET_VECTOR_TYPES_COMPATIBLE.
+
+        * target-def.h (TARGET_INITIALIZER): Add
+        TARGET_VECTOR_TYPES_COMPATIBLE.
+        (TARGET_VECTOR_TYPES_COMPATIBLE): New macro.
+
+        * target.h (struct gcc_target): Add field vector_types_compatible.
+
+        * c-typeck.c (comptypes): Take into account
+        TARGET_VECTOR_TYPES_COMPATIBLE.
+        (convert_for_assignment): Same.
+        (really_start_incremental_init): Disallow initialization of
+        ev64_opaque types.
+
+        * config/rs6000/rs6000.c (is_ev64_opaque_type): New.
+        (rs6000_spe_vector_types_compatible): New.
+        (TARGET_VECTOR_TYPES_COMPATIBLE): Define.
+
 2003-02-19  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (toplev.o): Depend on $(LANGHOOKS_DEF_H).
