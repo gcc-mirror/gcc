@@ -11,6 +11,6 @@
 
 int main ()
 {
-  double d = glue (1.0e, +1); /* { dg-error "exponent|(parse|syntax) error" } */
+  double d = glue (1.0e, +1); /* { dg-error "exponent|parse error|syntax error|expected" } */
   return 0;
 }

@@ -12,8 +12,8 @@ int x0[] = { [0] = 1 };
 int x1[] = { [0] 1 };
 
 /* Invalid syntax: multiple designators without "=".  */
-int x2[2][2] = { [0][0] 1 }; /* { dg-error "(syntax|parse) error" } */
+int x2[2][2] = { [0][0] 1 }; /* { dg-error "syntax error|parse error|expected" } */
 
 
 /* Invalid syntax: C99-style structure designator without "=".  */
-struct s s2 = { .a 1 }; /* { dg-error "(syntax|parse) error" } */
+struct s s2 = { .a 1 }; /* { dg-error "syntax error|parse error|expected" } */

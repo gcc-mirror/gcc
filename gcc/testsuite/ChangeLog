@@ -1,3 +1,14 @@
+2004-11-04  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c90-restrict-1.c, gcc.dg/c99-arraydecl-2.c,
+	gcc.dg/c99-func-2.c, gcc.dg/charset/asm2.c, gcc.dg/concat.c,
+	gcc.dg/cpp/19990413-1.c, gcc.dg/cpp/paste4.c,
+	gcc.dg/init-desig-obs-1.c, gcc.dg/noncompile/920721-2.c,
+	gcc.dg/noncompile/930622-2.c, gcc.dg/noncompile/940112-1.c,
+	gcc.dg/noncompile/950921-1.c, gcc.dg/switch-2.c,
+	objc.dg/naming-1.m, objc.dg/naming-2.m: Adjust expected messages
+	for new parser.
+
 2004-11-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/15342
