@@ -28,7 +28,7 @@ Boston, MA 02111-1307, USA.  */
 /* To whomever it may concern: I have heard that such a thing was once
    written by AT&T, but I have never seen it.  */
 
-%expect 52
+%expect 53
 
 %{
 #include "config.h"
@@ -1407,12 +1407,21 @@ component_decl:
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
 		  declspec_stack = TREE_CHAIN (declspec_stack);
 		  resume_momentary ($2); }
-	| typed_typespecs
-		{ if (pedantic)
-		    pedwarn ("ANSI C forbids member declarations with no members");
-		  shadow_tag($1);
-		  $$ = NULL_TREE; }
-	| nonempty_type_quals setspecs components
+	| typed_typespecs setspecs save_filename save_lineno maybe_attribute
+		{
+		  /* Support for unnamed structs or unions as members of 
+		     structs or unions (which is [a] useful and [b] supports 
+		     MS P-SDK).  */
+		  if (pedantic)
+		    pedwarn ("ANSI C doesn't support unnamed structs/unions");
+
+		  $$ = grokfield($3, $4, NULL, current_declspecs, NULL_TREE);
+		  current_declspecs = TREE_VALUE (declspec_stack);
+		  prefix_attributes = TREE_PURPOSE (declspec_stack);
+		  declspec_stack = TREE_CHAIN (declspec_stack);
+		  resume_momentary ($2);
+		}
+    | nonempty_type_quals setspecs components
 		{ $$ = $3;
 		  current_declspecs = TREE_VALUE (declspec_stack);
 		  prefix_attributes = TREE_PURPOSE (declspec_stack);
