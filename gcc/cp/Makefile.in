@@ -55,7 +55,7 @@ T_CPPFLAGS =
 
 CC = cc
 BISON = bison
-BISONFLAGS = --yacc
+BISONFLAGS =
 LEX = flex
 LEXFLAGS =
 AR = ar
@@ -194,19 +194,20 @@ parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
-#$(PARSE_C) $(PARSE_H) : $(srcdir)/parse.y
-#	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
-#	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
-#	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
-$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
-stamp-parse: $(srcdir)/parse.y
+$(PARSE_H) : $(PARSE_C)
+$(PARSE_C) : $(srcdir)/parse.y
 	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
-	$(BISON) $(BISONFLAGS) -d $(srcdir)/parse.y
-	grep '^#define[ 	]*YYEMPTY' y.tab.c >>y.tab.h
-	$(srcdir)/../move-if-change y.tab.c $(PARSE_C)
-	$(srcdir)/../move-if-change y.tab.h $(PARSE_H)
-	cp $(PARSE_C) y.tab.c
-	touch stamp-parse
+	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
+	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
+#$(PARSE_C) $(PARSE_H) : stamp-parse ; @true
+#stamp-parse: $(srcdir)/parse.y
+#	@echo expect 1 shift/reduce confict and 34 reduce/reduce conflicts.
+#	$(BISON) $(BISONFLAGS) -d $(srcdir)/parse.y
+#	grep '^#define[ 	]*YYEMPTY' y.tab.c >>y.tab.h
+#	$(srcdir)/../move-if-change y.tab.c $(PARSE_C)
+#	$(srcdir)/../move-if-change y.tab.h $(PARSE_H)
+#	cp $(PARSE_C) y.tab.c
+#	touch stamp-parse
 
 # hash.h really depends on $(srcdir)/gxx.gperf.
 # But this would screw things for people that don't have gperf,
