@@ -1188,19 +1188,17 @@ ia64_setup_incoming_varargs (cum, int_mode, type, pretend_size, second_time)
 	{
 	  int i;
 	  int first_reg = GR_ARG_FIRST + cum.words + offset;
-	  rtx tmp_reg = gen_rtx_REG (DImode, GR_REG (16));
-	  rtx tmp_post_inc = gen_rtx_POST_INC (DImode, tmp_reg);
-	  rtx mem = gen_rtx_MEM (DImode, tmp_post_inc);
-	  rtx insn;
+	  rtx reg1 = gen_reg_rtx (Pmode);
+	  rtx mem1 = gen_rtx_MEM (DImode, reg1);
 
 	  /* We must emit st8.spill insns instead of st8 because we might
-	     be saving non-argument registers, and non-argument registers might
-	     not contain valid values.  */
-	  emit_move_insn (tmp_reg, virtual_incoming_args_rtx);
+	     be saving non-argument registers, and non-argument registers
+	     might not contain valid values.  */
+	  emit_move_insn (reg1, virtual_incoming_args_rtx);
 	  for (i = first_reg; i < GR_ARG_FIRST + 8; i++)
 	    {
-	      insn = emit_insn (gen_gr_spill (mem, gen_rtx_REG (DImode, i)));
-	      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_INC, tmp_reg, 0);
+	      emit_insn (gen_gr_spill (mem1, gen_rtx_REG (DImode, i)));
+	      emit_insn (gen_adddi3 (reg1, reg1, GEN_INT (8)));
 	    }
 	}
       *pretend_size = ((MAX_ARGUMENT_SLOTS - cum.words - offset)
