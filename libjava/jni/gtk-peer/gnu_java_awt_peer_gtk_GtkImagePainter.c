@@ -58,6 +58,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkImagePainter_drawPixels
 
   g = (struct graphics *) NSA_GET_PTR (env, gc_obj);
 
+  if (!jpixels)
+    return;
+
   elems = (*env)->GetIntArrayElements (env, jpixels, NULL);
   num_pixels = (*env)->GetArrayLength (env, jpixels);
  

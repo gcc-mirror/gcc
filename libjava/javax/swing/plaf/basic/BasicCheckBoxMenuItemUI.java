@@ -38,7 +38,6 @@ exception statement from your version. */
 package javax.swing.plaf.basic;
 
 import java.awt.event.MouseEvent;
-
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.MenuElement;
@@ -48,18 +47,39 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
 
+/**
+ * DOCUMENT ME!
+ *
+ * @author $author$
+ * @version $Revision: 1.1.2.3 $
+ */
 public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
 {
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public static ComponentUI createUI(final JComponent c)
   {
     return new BasicCheckBoxMenuItemUI();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected String getPropertyPrefix()
   {
     return null; // TODO
   }
 
+  /**
+   * DOCUMENT ME!
+   */
   protected void installDefaults()
   {
     super.installDefaults();
@@ -68,6 +88,14 @@ public class BasicCheckBoxMenuItemUI extends BasicMenuItemUI
     checkIcon = defaults.getIcon("CheckBoxMenuItem.checkIcon");
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param item DOCUMENT ME!
+   * @param e DOCUMENT ME!
+   * @param path DOCUMENT ME!
+   * @param manager DOCUMENT ME!
+   */
   void processMouseEvent(JMenuItem item, MouseEvent e, MenuElement[] path,
                          MenuSelectionManager manager)
   {

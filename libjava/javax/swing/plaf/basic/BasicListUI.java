@@ -502,6 +502,7 @@ public class BasicListUI extends ListUI
     list.setBackground(defaults.getColor("List.background"));
     list.setSelectionForeground(defaults.getColor("List.selectionForeground"));
     list.setSelectionBackground(defaults.getColor("List.selectionBackground"));
+    list.setOpaque(true);
   }
 
   /**
@@ -620,7 +621,8 @@ public class BasicListUI extends ListUI
     maybeUpdateLayoutState();
     if (list.getModel().getSize() == 0)
       return new Dimension(0, 0);
-    Rectangle bounds = getCellBounds(list, 0, list.getModel().getSize() - 1);
+    int nrows = Math.min(list.getVisibleRowCount(), list.getModel().getSize());
+    Rectangle bounds = getCellBounds(list, 0, nrows - 1);
     return bounds.getSize();
   }
 
@@ -696,11 +698,11 @@ public class BasicListUI extends ListUI
 
   public int locationToIndex(JList list, Point location)
   {
-    throw new Error("Not implemented");
+    return convertYToRow(location.y);
   }
 
   public Point indexToLocation(JList list, int index)
   {
-    throw new Error("Not implemented");
+    return new Point(0, convertRowToY(index));
   }
 }

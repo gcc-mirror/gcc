@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.image.AreaAveragingScaleFilter;
+import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageObserver;
 import java.awt.image.ImageProducer;
 import java.awt.image.ReplicateScaleFilter;
@@ -179,7 +180,20 @@ public abstract class Image
    */
   public Image getScaledInstance(int width, int height, int flags)
   {
-    throw new Error("not implemented");
+    switch (flags)
+    {
+      case SCALE_DEFAULT:
+      case SCALE_FAST:
+      case SCALE_REPLICATE:
+        ImageProducer producer =
+          new FilteredImageSource(this.getSource(),
+                                  new ReplicateScaleFilter(width, height));
+        return Toolkit.getDefaultToolkit().createImage(producer);
+      case SCALE_SMOOTH:
+      case SCALE_AREA_AVERAGING:
+      default:
+        throw new Error("not implemented");
+    }
   }
 
   /**

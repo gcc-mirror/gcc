@@ -104,7 +104,27 @@ public class ReplicateScaleFilter extends ImageFilter
      */
     public void setDimensions(int width, int height)
     {
-	consumer.setDimensions(width, height);
+	srcWidth = width;
+	srcHeight = height;
+
+	/* If either destHeight or destWidth is < 0, the image should
+	   maintain its original aspect ratio.  When both are < 0,
+	   just maintain the original width and height. */
+	if (destWidth < 0 && destHeight < 0)
+        {
+	    destWidth = width;
+	    destHeight = height;
+	}
+	else if (destWidth < 0)
+	{
+	    destWidth = (int) (width * ((double) destHeight / srcHeight));
+	}
+	else if (destHeight < 0)
+	{
+	    destHeight = (int) (height * ((double) destWidth / srcWidth));
+	}
+
+	consumer.setDimensions(destWidth, destHeight);
     }
 
     /**
@@ -136,7 +156,18 @@ public class ReplicateScaleFilter extends ImageFilter
     public void setPixels(int x, int y, int w, int h, 
 	   ColorModel model, byte[] pixels, int offset, int scansize)
     {
-	consumer.setPixels(x, y, w, h, model, pixels, offset, scansize);
+	double rx = ((double) srcWidth) / destWidth;
+	double ry = ((double) srcHeight) / destHeight;
+
+	int destScansize = (int) Math.round(scansize / rx);
+
+	byte[] destPixels = replicatePixels(x, y, w, h,
+                                           model, pixels, offset, scansize,
+	                                   rx, ry, destScansize);
+
+	consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
+                           (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
+                           model, destPixels, 0, destScansize);
     }
 
     /**
@@ -156,8 +187,58 @@ public class ReplicateScaleFilter extends ImageFilter
     public void setPixels(int x, int y, int w, int h, 
            ColorModel model, int[] pixels, int offset, int scansize)
     {
-	consumer.setPixels(x, y, w, h, model, pixels, offset, scansize);
+	double rx = ((double) srcWidth) / destWidth;
+	double ry = ((double) srcHeight) / destHeight;
+
+	int destScansize = (int) Math.round(scansize / rx);
+
+	int[] destPixels = replicatePixels(x, y, w, h,
+                                           model, pixels, offset, scansize,
+	                                   rx, ry, destScansize);
+
+	consumer.setPixels((int) Math.floor(x/rx), (int) Math.floor(y/ry),
+                           (int) Math.ceil(w/rx), (int) Math.ceil(h/ry),
+                           model, destPixels, 0, destScansize);
     }
 
+    protected byte[] replicatePixels(int srcx, int srcy, int srcw, int srch,
+                                    ColorModel model, byte[] srcPixels,
+                                    int srcOffset, int srcScansize,
+                                    double rx, double ry, int destScansize)
+    {
+	byte[] destPixels =
+	  new byte[(int) Math.ceil(srcw/rx) * (int) Math.ceil(srch/ry)];
+
+	int a, b;
+	for (int i = 0; i < destPixels.length; i++)
+	{
+	    a = (int) ((int) ( ((double) i) / destScansize) * ry) * srcScansize;
+	    b = (int) ((i % destScansize) * rx);
+	    if ((a + b + srcOffset) < srcPixels.length)
+		destPixels[i] = srcPixels[a + b + srcOffset];
+	}
+
+	return destPixels;
+    }
+
+    protected int[] replicatePixels(int srcx, int srcy, int srcw, int srch,
+                                    ColorModel model, int[] srcPixels,
+                                    int srcOffset, int srcScansize,
+                                    double rx, double ry, int destScansize)
+    {
+	int[] destPixels =
+	  new int[(int) Math.ceil(srcw/rx) * (int) Math.ceil(srch/ry)];
+
+	int a, b;
+	for (int i = 0; i < destPixels.length; i++)
+	{
+	    a = (int) ((int) ( ((double) i) / destScansize) * ry) * srcScansize;
+	    b = (int) ((i % destScansize) * rx);
+	    if ((a + b + srcOffset) < srcPixels.length)
+		destPixels[i] = srcPixels[a + b + srcOffset];
+	}
+
+	return destPixels;
+    }
 }
 

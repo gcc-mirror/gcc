@@ -38,6 +38,7 @@ exception statement from your version. */
 package javax.swing.plaf.basic;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -47,12 +48,17 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
-
+import java.beans.PropertyChangeListener;
+import java.util.Vector;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.MenuElement;
 import javax.swing.MenuSelectionManager;
@@ -68,116 +74,219 @@ import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.MenuItemUI;
 
 
+/**
+ * DOCUMENT ME!
+ *
+ * @author $author$
+ * @version $Revision: 1.1.2.10 $
+ */
 public class BasicMenuItemUI extends MenuItemUI
 {
-  /** Font to be used when displaying menu item's accelerator. */
+  /**
+   * Font to be used when displaying menu item's accelerator.
+   */
   protected Font acceleratorFont;
 
-  /** Color to be used when displaying menu item's accelerator. */  
+  /**
+   * Color to be used when displaying menu item's accelerator.
+   */
   protected Color acceleratorForeground;
 
-  /** Color to be used when displaying menu item's accelerator
-   * when menu item is selected.
-   */ 
-  protected Color acceleratorSelectionForeground;
-  
   /**
-   * Icon that is displayed after the text to indicated that this menu
-   * contains submenu.
+   * Color to be used when displaying menu item's accelerator when menu item is
+   * selected.
+   */
+  protected Color acceleratorSelectionForeground;
+
+  /**
+   * Icon that is displayed after the text to indicated that this menu contains
+   * submenu.
    */
   protected Icon arrowIcon;
-  
+
   /**
    * Icon that is displayed before the text. This icon is only used in
    * JCheckBoxMenuItem or JRadioBoxMenuItem.
    */
   protected Icon checkIcon;
 
-  /** Number of spaces between icon and text. */  
+  /**
+   * Number of spaces between icon and text.
+   */
   protected int defaultTextIconGap = 4;
-  
-  /** Color of the text when menu item is disabled*/
+
+  /**
+   * Color of the text when menu item is disabled
+   */
   protected Color disabledForeground;
-  
-  /** The menu Drag mouse listener listening to the menu item. */
+
+  /**
+   * The menu Drag mouse listener listening to the menu item.
+   */
   protected MenuDragMouseListener menuDragMouseListener;
-  
-  /** The menu item itself*/
+
+  /**
+   * The menu item itself
+   */
   protected JMenuItem menuItem;
-  
-  /** Menu Key listener listening to the menu item. */
+
+  /**
+   * Menu Key listener listening to the menu item.
+   */
   protected MenuKeyListener menuKeyListener;
-  
-  /** mouse input listener listening to menu item. */
+
+  /**
+   * mouse input listener listening to menu item.
+   */
   protected MouseInputListener mouseInputListener;
-  
-  /** Indicates if border should be painted  */
+
+  /**
+   * Indicates if border should be painted
+   */
   protected boolean oldBorderPainted;
 
-  /** Color of text that is used when menu item is selected */
+  /**
+   * Color of text that is used when menu item is selected
+   */
   protected Color selectionBackground;
-  
-  /** Color of the background that is used when menu item is selected.*/ 
+
+  /**
+   * Color of the background that is used when menu item is selected.
+   */
   protected Color selectionForeground;
 
-  /** String that separates description of the modifiers and the key*/  
+  /**
+   * String that separates description of the modifiers and the key
+   */
   private String acceleratorDelimiter;
-  
-  /** Number of spaces between accelerator and menu item's label. */
+  private PropertyChangeListener propertyChangeListener;
+
+  /**
+   * Number of spaces between accelerator and menu item's label.
+   */
   private int defaultAcceleratorLabelGap = 4;
 
-  // Constructor Summary
-  BasicMenuItemUI()
+  public BasicMenuItemUI()
   {
     mouseInputListener = createMouseInputListener(menuItem);
     menuDragMouseListener = createMenuDragMouseListener(menuItem);
     menuKeyListener = createMenuKeyListener(menuItem);
+    propertyChangeListener = new PropertyChangeHandler();
   }
 
-  // Method Summary
   protected MenuDragMouseListener createMenuDragMouseListener(JComponent c)
   {
     return new MenuDragMouseHandler();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected MenuKeyListener createMenuKeyListener(JComponent c)
   {
     return new MenuKeyHandler();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected MouseInputListener createMouseInputListener(JComponent c)
   {
     return new MouseInputHandler();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public static ComponentUI createUI(JComponent c)
   {
     return new BasicMenuItemUI();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param msm DOCUMENT ME!
+   */
   protected void doClick(MenuSelectionManager msm)
   {
-    // TODO
+    menuItem.doClick();
+    msm.clearSelectedPath();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public Dimension getMaximumSize(JComponent c)
   {
-    // TODO    
     return null;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public Dimension getMinimumSize(JComponent c)
   {
-    // TODO
     return null;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public MenuElement[] getPath()
   {
-    // TODO
-    return null;
+    Vector path = new Vector();
+    Component c = menuItem;
+    while (c instanceof MenuElement)
+      {
+	path.add(c);
+
+	if (c instanceof JPopupMenu)
+	  c = ((JPopupMenu) c).getInvoker();
+	else
+	  c = c.getParent();
+      }
+
+    // convert from vector to array
+    MenuElement[] pathArray = new MenuElement[path.size()];
+    for (int i = 0; i < path.size(); i++)
+      pathArray[i] = (MenuElement) path.get(path.size() - i - 1);
+
+    return pathArray;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   * @param checkIcon DOCUMENT ME!
+   * @param arrowIcon DOCUMENT ME!
+   * @param defaultTextIconGap DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected Dimension getPreferredMenuItemSize(JComponent c, Icon checkIcon,
                                                Icon arrowIcon,
                                                int defaultTextIconGap)
@@ -186,51 +295,80 @@ public class BasicMenuItemUI extends MenuItemUI
     return null;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public Dimension getPreferredSize(JComponent c)
   {
     AbstractButton b = (AbstractButton) c;
     Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b,
                                                             defaultTextIconGap);
-    
+
     // if menu item has accelerator then take accelerator's size into account
     // when calculating preferred size.
-    
     KeyStroke accelerator = ((JMenuItem) c).getAccelerator();
     Rectangle rect;
+
     if (accelerator != null)
       {
-        rect = getAcceleratorRect(accelerator,
-                                  b.getToolkit().getFontMetrics(acceleratorFont));
-        
-        // add width of accelerator's text
-        d.width = d.width + rect.width + defaultAcceleratorLabelGap;
+	rect = getAcceleratorRect(accelerator,
+	                          b.getToolkit().getFontMetrics(acceleratorFont));
 
-        // adjust the heigth of the preferred size if necessary
-        if (d.height < rect.height)
-          d.height = rect.height;
+	// add width of accelerator's text
+	d.width = d.width + rect.width + defaultAcceleratorLabelGap;
+
+	// adjust the heigth of the preferred size if necessary
+	if (d.height < rect.height)
+	  d.height = rect.height;
       }
 
     if (checkIcon != null)
       {
-        d.width = d.width + checkIcon.getIconWidth() + defaultTextIconGap;
-        if (checkIcon.getIconHeight() > d.height)
-          d.height = checkIcon.getIconHeight();
+	d.width = d.width + checkIcon.getIconWidth() + defaultTextIconGap;
+
+	if (checkIcon.getIconHeight() > d.height)
+	  d.height = checkIcon.getIconHeight();
       }
-      
+
+    if (arrowIcon != null && (c instanceof JMenu))
+      {
+	d.width = d.width + arrowIcon.getIconWidth() + defaultTextIconGap;
+
+	if (arrowIcon.getIconHeight() > d.height)
+	  d.height = arrowIcon.getIconHeight();
+      }
+
     return d;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected String getPropertyPrefix()
   {
     // TODO
     return null;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param menuItem DOCUMENT ME!
+   */
   protected void installComponents(JMenuItem menuItem)
   {
     // TODO
   }
 
+  /**
+   * DOCUMENT ME!
+   */
   protected void installDefaults()
   {
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
@@ -240,27 +378,40 @@ public class BasicMenuItemUI extends MenuItemUI
     menuItem.setFont(defaults.getFont("MenuItem.font"));
     menuItem.setForeground(defaults.getColor("MenuItem.foreground"));
     menuItem.setMargin(defaults.getInsets("MenuItem.margin"));
+    menuItem.setOpaque(true);
+
     acceleratorFont = defaults.getFont("MenuItem.acceleratorFont");
     acceleratorForeground = defaults.getColor("MenuItem.acceleratorForeground");
     acceleratorSelectionForeground = defaults.getColor("MenuItem.acceleratorSelectionForeground");
-    arrowIcon = defaults.getIcon("MenuItem.arrowIcon");
     selectionBackground = defaults.getColor("MenuItem.selectionBackground");
     selectionForeground = defaults.getColor("MenuItem.selectionForeground");
     acceleratorDelimiter = defaults.getString("MenuItem.acceleratorDelimiter");
   }
 
+  /**
+   * DOCUMENT ME!
+   */
   protected void installKeyboardActions()
   {
     // TODO
   }
 
+  /**
+   * DOCUMENT ME!
+   */
   protected void installListeners()
   {
     menuItem.addMouseListener(mouseInputListener);
     menuItem.addMenuDragMouseListener(menuDragMouseListener);
     menuItem.addMenuKeyListener(menuKeyListener);
+    menuItem.addPropertyChangeListener(propertyChangeListener);
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   */
   public void installUI(JComponent c)
   {
     super.installUI(c);
@@ -269,12 +420,25 @@ public class BasicMenuItemUI extends MenuItemUI
     installListeners();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param g DOCUMENT ME!
+   * @param c DOCUMENT ME!
+   */
   public void paint(Graphics g, JComponent c)
   {
-    paintMenuItem(g, c, checkIcon, arrowIcon, c.getBackground(), 
+    paintMenuItem(g, c, checkIcon, arrowIcon, c.getBackground(),
                   c.getForeground(), defaultTextIconGap);
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param g DOCUMENT ME!
+   * @param menuItem DOCUMENT ME!
+   * @param bgColor DOCUMENT ME!
+   */
   protected void paintBackground(Graphics g, JMenuItem menuItem, Color bgColor)
   {
     Dimension size = getPreferredSize(menuItem);
@@ -284,6 +448,17 @@ public class BasicMenuItemUI extends MenuItemUI
     g.setColor(foreground);
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param g DOCUMENT ME!
+   * @param c DOCUMENT ME!
+   * @param checkIcon DOCUMENT ME!
+   * @param arrowIcon DOCUMENT ME!
+   * @param background DOCUMENT ME!
+   * @param foreground DOCUMENT ME!
+   * @param defaultTextIconGap DOCUMENT ME!
+   */
   protected void paintMenuItem(Graphics g, JComponent c, Icon checkIcon,
                                Icon arrowIcon, Color background,
                                Color foreground, int defaultTextIconGap)
@@ -295,7 +470,7 @@ public class BasicMenuItemUI extends MenuItemUI
     Rectangle br = new Rectangle(); // border rectangle
     Rectangle ar = new Rectangle(); // accelerator rectangle
     Rectangle cr = new Rectangle(); // checkIcon rectangle
-    
+
     int vertAlign = b.getVerticalAlignment();
     int horAlign = b.getHorizontalAlignment();
     int vertTextPos = b.getVerticalTextPosition();
@@ -303,50 +478,53 @@ public class BasicMenuItemUI extends MenuItemUI
 
     Font f = c.getFont();
     g.setFont(f);
-    FontMetrics fm = g.getFontMetrics(f);    
+    FontMetrics fm = g.getFontMetrics(f);
     SwingUtilities.calculateInnerArea(b, br);
-    SwingUtilities.calculateInsetArea(br, b.getMargin(), vr);        
+    SwingUtilities.calculateInsetArea(br, b.getMargin(), vr);
     paintBackground(g, (JMenuItem) c, c.getBackground());
-    
+
     if ((b.getModel().isArmed() && b.getModel().isPressed()))
       {
-        if (((AbstractButton) b).isContentAreaFilled())
-          {
-            g.setColor(b.getBackground().darker());
-            g.fillRect(br.x, br.y, br.width, br.height);
-          }
+	if (((AbstractButton) b).isContentAreaFilled())
+	  {
+	    g.setColor(b.getBackground().darker());
+	    g.fillRect(br.x, br.y, br.width, br.height);
+	  }
       }
     else
       {
-        if (((AbstractButton) b).isContentAreaFilled())
-          {
-            g.setColor(b.getBackground());
-            g.fillRect(br.x, br.y, br.width, br.height);
-          }
+	if (((AbstractButton) b).isContentAreaFilled())
+	  {
+	    g.setColor(b.getBackground());
+	    g.fillRect(br.x, br.y, br.width, br.height);
+	  }
       }
-    
-    
+
     if (checkIcon != null)
       {
-        SwingUtilities.layoutCompoundLabel(c, fm, null, checkIcon, vertAlign,
-                                           horAlign, vertTextPos, horTextPos,
-                                           vr, cr, tr, defaultTextIconGap);
-        checkIcon.paintIcon(c, g, cr.x, cr.y);
+	SwingUtilities.layoutCompoundLabel(c, fm, null, checkIcon, vertAlign,
+	                                   horAlign, vertTextPos, horTextPos,
+	                                   vr, cr, tr, defaultTextIconGap);
+	checkIcon.paintIcon(c, g, cr.x, cr.y);
 
-        // We need to calculate position of the menu text and position of
-        // user menu icon if there exists one relative to the check icon.
+	// We need to calculate position of the menu text and position of
+	// user menu icon if there exists one relative to the check icon.
 	// So we need to adjust view rectangle s.t. its starting point is at
 	// checkIcon.width + defaultTextIconGap. 
-	 
-	 vr.x = cr.x + cr.width + defaultTextIconGap;
+	vr.x = cr.x + cr.width + defaultTextIconGap;
       }
 
-    if (arrowIcon != null)
+    if (arrowIcon != null && (c instanceof JMenu))
       {
-        // FIXME: if this menu contains a submenu, we need to draw arrow icon 
-        // here as well
-      }
+	if (! ((JMenu) c).isTopLevelMenu())
+	  {
+	    int width = arrowIcon.getIconWidth();
+	    int height = arrowIcon.getIconHeight();
 
+	    arrowIcon.paintIcon(c, g, vr.width - width + defaultTextIconGap,
+	                        vr.y + 2);
+	  }
+      }
 
     // paint text and user menu icon if it exists	     
     SwingUtilities.layoutCompoundLabel(c, fm, b.getText(), b.getIcon(),
@@ -354,13 +532,13 @@ public class BasicMenuItemUI extends MenuItemUI
                                        horTextPos, vr, ir, tr,
                                        defaultTextIconGap);
 
-    paintText(g, (JMenuItem) c, tr, b.getText());   
-    
+    paintText(g, (JMenuItem) c, tr, b.getText());
+
     // paint icon
     // FIXME: should paint different icon at different button state's.
     // i.e disabled icon when button is disabled.. etc.
-    
-    /*  
+
+    /*
     Icon i = b.getIcon();
     if (i != null)
       {
@@ -369,28 +547,35 @@ public class BasicMenuItemUI extends MenuItemUI
          i.paintIcon(c, g, x, y);
       }
     */
-        
+
     // paint accelerator    
     String acceleratorText = "";
+
     if (((JMenuItem) c).getAccelerator() != null)
       {
-        acceleratorText = getAcceleratorText(((JMenuItem) c).getAccelerator());
-        fm = g.getFontMetrics(acceleratorFont);
-        ar.width = fm.stringWidth(acceleratorText);
-        ar.x = br.width - ar.width;      
-        vr.x = br.width - ar.width;
-	
-        SwingUtilities.layoutCompoundLabel(c, fm, acceleratorText, null,
-                                          vertAlign, horAlign, vertTextPos,
-                                          horTextPos, vr, ir, ar,
-                                          defaultTextIconGap); 
-	
-        paintAccelerator(g, (JMenuItem) c, ar, acceleratorText);
-	
-      }          
+	acceleratorText = getAcceleratorText(((JMenuItem) c).getAccelerator());
+	fm = g.getFontMetrics(acceleratorFont);
+	ar.width = fm.stringWidth(acceleratorText);
+	ar.x = br.width - ar.width;
+	vr.x = br.width - ar.width;
 
+	SwingUtilities.layoutCompoundLabel(c, fm, acceleratorText, null,
+	                                   vertAlign, horAlign, vertTextPos,
+	                                   horTextPos, vr, ir, ar,
+	                                   defaultTextIconGap);
+
+	paintAccelerator(g, (JMenuItem) c, ar, acceleratorText);
+      }
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param g DOCUMENT ME!
+   * @param menuItem DOCUMENT ME!
+   * @param textRect DOCUMENT ME!
+   * @param text DOCUMENT ME!
+   */
   protected void paintText(Graphics g, JMenuItem menuItem, Rectangle textRect,
                            String text)
   {
@@ -400,14 +585,22 @@ public class BasicMenuItemUI extends MenuItemUI
     g.setColor(menuItem.getForeground());
 
     BasicGraphicsUtils.drawString(g, text, 0, textRect.x,
-                                 textRect.y + fm.getAscent());
+                                  textRect.y + fm.getAscent());
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param menuItem DOCUMENT ME!
+   */
   protected void uninstallComponents(JMenuItem menuItem)
   {
     // TODO
   }
 
+  /**
+   * DOCUMENT ME!
+   */
   protected void uninstallDefaults()
   {
     menuItem.setForeground(null);
@@ -428,18 +621,30 @@ public class BasicMenuItemUI extends MenuItemUI
     acceleratorDelimiter = null;
   }
 
+  /**
+   * DOCUMENT ME!
+   */
   protected void uninstallKeyboardActions()
   {
     // TODO
   }
 
+  /**
+   * DOCUMENT ME!
+   */
   protected void uninstallListeners()
   {
     menuItem.removeMouseListener(mouseInputListener);
     menuItem.removeMenuDragMouseListener(menuDragMouseListener);
     menuItem.removeMenuKeyListener(menuKeyListener);
+    menuItem.removePropertyChangeListener(propertyChangeListener);
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param c DOCUMENT ME!
+   */
   public void uninstallUI(JComponent c)
   {
     uninstallListeners();
@@ -447,24 +652,35 @@ public class BasicMenuItemUI extends MenuItemUI
     menuItem = null;
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param g DOCUMENT ME!
+   * @param c DOCUMENT ME!
+   */
   public void update(Graphics g, JComponent c)
   {
-    // TODO
+    paint(g, c);
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param accelerator DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   private String getAcceleratorText(KeyStroke accelerator)
   {
-    
     // convert keystroke into string format
-    
     String modifiersText = "";
     int modifiers = accelerator.getModifiers();
     char keyChar = accelerator.getKeyChar();
     int keyCode = accelerator.getKeyCode();
 
     if (modifiers != 0)
-      modifiersText = KeyEvent.getKeyModifiersText(modifiers) +
-                      acceleratorDelimiter;
+      modifiersText = KeyEvent.getKeyModifiersText(modifiers)
+                      + acceleratorDelimiter;
 
     if (keyCode == KeyEvent.VK_UNDEFINED)
       return modifiersText + keyChar;
@@ -472,161 +688,233 @@ public class BasicMenuItemUI extends MenuItemUI
       return modifiersText + KeyEvent.getKeyText(keyCode);
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param accelerator DOCUMENT ME!
+   * @param fm DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   private Rectangle getAcceleratorRect(KeyStroke accelerator, FontMetrics fm)
-  {    
+  {
     int width = fm.stringWidth(getAcceleratorText(accelerator));
     int height = fm.getHeight();
     return new Rectangle(0, 0, width, height);
   }
 
-  private void paintAccelerator(Graphics g, JMenuItem menuItem, Rectangle acceleratorRect,
-                           String acceleratorText)
+  /**
+   * DOCUMENT ME!
+   *
+   * @param g DOCUMENT ME!
+   * @param menuItem DOCUMENT ME!
+   * @param acceleratorRect DOCUMENT ME!
+   * @param acceleratorText DOCUMENT ME!
+   */
+  private void paintAccelerator(Graphics g, JMenuItem menuItem,
+                                Rectangle acceleratorRect,
+                                String acceleratorText)
   {
     g.setFont(acceleratorFont);
     FontMetrics fm = g.getFontMetrics(acceleratorFont);
     g.setColor(acceleratorForeground);
     BasicGraphicsUtils.drawString(g, acceleratorText, 0, acceleratorRect.x,
-                                 acceleratorRect.y + fm.getAscent());
+                                  acceleratorRect.y + fm.getAscent());
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.1.2.10 $
+   */
   protected class MouseInputHandler implements MouseInputListener
   {
+    /**
+     * Creates a new MouseInputHandler object.
+     */
     protected MouseInputHandler()
     {
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void mouseClicked(MouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void mouseDragged(MouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void mouseEntered(MouseEvent e)
     {
-      if (e.getSource() instanceof AbstractButton)
-        {
-          AbstractButton button = (AbstractButton) e.getSource();
-          ButtonModel model = button.getModel();
-
-          if (button.isRolloverEnabled())
-            {
-              model.setRollover(true);
-            }
-
-          if (model.isPressed() &&
-              ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0))
-            {
-              model.setArmed(true);
-            }
-          else
-            {
-              model.setArmed(false);
-            }
-        }
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void mouseExited(MouseEvent e)
     {
-      if (e.getSource() instanceof AbstractButton)
-        {
-          AbstractButton button = (AbstractButton) e.getSource();
-          ButtonModel model = button.getModel();
-
-          if (button.isRolloverEnabled())
-            {
-              model.setRollover(false);
-            }
-
-          model.setArmed(false);
-        }
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void mouseMoved(MouseEvent e)
     {
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void mousePressed(MouseEvent e)
     {
-      if (e.getSource() instanceof AbstractButton)
-        {
-          AbstractButton button = (AbstractButton) e.getSource();
-          ButtonModel model = button.getModel();
-
-          if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
-            {
-              // It is important that these transitions happen in this order.
-              model.setArmed(true);
-              model.setPressed(true);
-            }
-        }
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.processMouseEvent(e);
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void mouseReleased(MouseEvent e)
     {
-
-      if (e.getSource() instanceof AbstractButton)
-        {
-          AbstractButton button = (AbstractButton) e.getSource();
-          ButtonModel model = button.getModel();
-
-          if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
-            {
-              // It is important that these transitions happen in this order.
-              model.setPressed(false);
-              model.setArmed(false);
-            }
-        }
+      // FIXME: Should check if the mouse released while mouse cursor
+      // was indeed over the menu item. If this wasn't the case we probably 
+      // should sent this event to MenuSelectionManager. 
+      MenuSelectionManager manager = MenuSelectionManager.defaultManager();
+      manager.clearSelectedPath();
+      menuItem.doClick(0);
     }
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.1.2.10 $
+   */
   protected class MenuDragMouseHandler implements MenuDragMouseListener
   {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void menuDragMouseDragged(MenuDragMouseEvent e)
     {
-      // TODO        
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void menuDragMouseEntered(MenuDragMouseEvent e)
     {
-      // TODO        
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void menuDragMouseExited(MenuDragMouseEvent e)
     {
-      // TODO        
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void menuDragMouseReleased(MenuDragMouseEvent e)
     {
-      // TODO        
     }
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.1.2.10 $
+   */
   protected class MenuKeyHandler implements MenuKeyListener
   {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void menuKeyPressed(MenuKeyEvent e)
     {
-      // TODO        
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void menuKeyReleased(MenuKeyEvent e)
     {
-      // TODO        
     }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @param e DOCUMENT ME!
+     */
     public void menuKeyTyped(MenuKeyEvent e)
     {
-      // TODO    
     }
   }
 
-  protected class PropertyChangeHandler
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.1.2.10 $
+   */
+  protected class PropertyChangeHandler implements PropertyChangeListener
   {
+    /**
+     * DOCUMENT ME!
+     *
+     * @param evt DOCUMENT ME!
+     */
     public void propertyChange(PropertyChangeEvent evt)
     {
-      // TODO        
     }
   }
 }

@@ -241,7 +241,7 @@ public class GtkImage extends Image implements ImageConsumer
 	return;
       }
 
-    if (scansize == width)
+    if (scansize == width && height == 1)
       {
 	System.arraycopy (pixels, offset, 
 			  pixelCache, y * this.width + x,

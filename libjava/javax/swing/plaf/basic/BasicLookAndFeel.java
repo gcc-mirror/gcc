@@ -249,7 +249,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       "Button.foreground", new ColorUIResource(Color.black),
       "Button.highlight", new ColorUIResource(Color.white),
       "Button.light", new ColorUIResource(Color.lightGray.brighter()),
-      "Button.margin", new InsetsUIResource(2, 14, 2, 14),
+      "Button.margin", new InsetsUIResource(2, 2, 2, 2),
       "Button.shadow", new ColorUIResource(Color.gray),
       "Button.textIconGap", new Integer(4),
       "Button.textShiftOffset", new Integer(0),
@@ -694,7 +694,7 @@ public abstract class BasicLookAndFeel extends LookAndFeel
       }),
       "SplitPane.background", new ColorUIResource(Color.lightGray),
       "SplitPane.border", new BasicBorders.SplitPaneBorder(null, null),
-      "SplitPane.dividerSize", new Integer(7),
+      "SplitPane.dividerSize", new Integer(10),
       "SplitPane.highlight", new ColorUIResource(Color.white),
       "SplitPane.shadow", new ColorUIResource(Color.gray),
       "TabbedPane.ancestorInputMap", new UIDefaults.LazyInputMap(new Object[] {

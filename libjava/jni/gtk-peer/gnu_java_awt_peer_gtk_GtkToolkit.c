@@ -39,6 +39,8 @@ exception statement from your version. */
 #include "gtkpeer.h"
 #include "gnu_java_awt_peer_gtk_GtkToolkit.h"
 
+static jint gdk_color_to_java_color (GdkColor color);
+
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkToolkit_beep
   (JNIEnv *env __attribute__((unused)), jobject obj __attribute__((unused)))
@@ -88,3 +90,70 @@ Java_gnu_java_awt_peer_gtk_GtkToolkit_getScreenResolution
   return res;
 }
 
+#define CONVERT(type, state) \
+  gdk_color_to_java_color (style->type[GTK_STATE_ ## state])
+
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkToolkit_loadSystemColors
+  (JNIEnv *env, jobject obj __attribute__((unused)),
+   jintArray jcolors)
+{
+  jint *colors;
+  GtkStyle *style;
+
+  colors = (*env)->GetIntArrayElements (env, jcolors, 0);
+
+  gdk_threads_enter ();
+
+  style = gtk_widget_get_default_style ();
+
+  colors[AWT_DESKTOP]                 = CONVERT (bg, SELECTED);
+  colors[AWT_ACTIVE_CAPTION]          = CONVERT (bg, SELECTED);
+  colors[AWT_ACTIVE_CAPTION_TEXT]     = CONVERT (text, SELECTED);
+  colors[AWT_ACTIVE_CAPTION_BORDER]   = CONVERT (fg, NORMAL);
+  colors[AWT_INACTIVE_CAPTION]        = CONVERT (base, INSENSITIVE);
+  colors[AWT_INACTIVE_CAPTION_TEXT]   = CONVERT (fg, INSENSITIVE);
+  colors[AWT_INACTIVE_CAPTION_BORDER] = CONVERT (fg, INSENSITIVE);
+  colors[AWT_WINDOW]                  = CONVERT (bg, NORMAL);
+  colors[AWT_WINDOW_BORDER]           = CONVERT (fg, NORMAL);
+  colors[AWT_WINDOW_TEXT]             = CONVERT (fg, NORMAL);
+  colors[AWT_MENU]                    = CONVERT (bg, NORMAL);
+  colors[AWT_MENU_TEXT]               = CONVERT (fg, NORMAL);
+  colors[AWT_TEXT]                    = CONVERT (bg, NORMAL);
+  colors[AWT_TEXT_TEXT]               = CONVERT (fg, NORMAL);
+  colors[AWT_TEXT_HIGHLIGHT]          = CONVERT (bg, SELECTED);
+  colors[AWT_TEXT_HIGHLIGHT_TEXT]     = CONVERT (fg, SELECTED);
+  colors[AWT_TEXT_INACTIVE_TEXT]      = CONVERT (bg, INSENSITIVE);
+  colors[AWT_CONTROL]                 = CONVERT (bg, NORMAL);
+  colors[AWT_CONTROL_TEXT]            = CONVERT (fg, NORMAL);
+  colors[AWT_CONTROL_HIGHLIGHT]       = CONVERT (base, ACTIVE);
+  colors[AWT_CONTROL_LT_HIGHLIGHT]    = CONVERT (bg, PRELIGHT);
+  colors[AWT_CONTROL_SHADOW]          = CONVERT (bg, ACTIVE);
+  colors[AWT_CONTROL_DK_SHADOW]       = CONVERT (fg, INSENSITIVE);
+  colors[AWT_SCROLLBAR]               = CONVERT (base, INSENSITIVE);
+  colors[AWT_INFO]                    = CONVERT (bg, NORMAL);
+  colors[AWT_INFO_TEXT]               = CONVERT (fg, NORMAL);
+
+  gdk_threads_leave ();
+
+  (*env)->ReleaseIntArrayElements(env, jcolors, colors, 0);
+}
+
+#undef CONVERT
+
+static jint
+gdk_color_to_java_color (GdkColor gdk_color)
+{
+  guchar red;
+  guchar green;
+  guchar blue;
+  float factor;
+
+  factor = 255.0 / 65535.0;
+
+  red   = (float) gdk_color.red   * factor;
+  green = (float) gdk_color.green * factor;
+  blue  = (float) gdk_color.blue  * factor;
+
+  return (jint) (0xff000000 | (red << 16) | (green << 8) | blue);
+}

@@ -257,9 +257,15 @@ public class MemoryImageSource implements ImageProducer
 				ic.setProperties( props );
 			    }
 			    if( pixeli != null ) {
-				ic.setPixels( 0, 0, width, height, cm, pixeli, offset, scansize );
+				int[] pixelbuf = new int[w * h];
+				for (int row = y; row < h; row++)
+				    System.arraycopy(pixeli, row * scansize + x + offset, pixelbuf, row * w, w);
+				ic.setPixels( x, y, w, h, cm, pixelbuf, 0, w );
 			    } else {
-				ic.setPixels( 0, 0, width, height, cm, pixelb, offset, scansize );
+				byte[] pixelbuf = new byte[w * h];
+				for (int row = y; row < h; row++)
+				    System.arraycopy(pixelb, row * scansize + x + offset, pixelbuf, row * w, w);
+				ic.setPixels( x, y, w, h, cm, pixelbuf, 0, w );
 			    }
 			    ic.imageComplete( ImageConsumer.SINGLEFRAME );
 		    }
@@ -296,9 +302,15 @@ public class MemoryImageSource implements ImageProducer
 				ic.setProperties( props );
 			    }
 			    if( pixeli != null ) {
-				ic.setPixels( 0, 0, width, height, cm, pixeli, offset, scansize );
+				int[] pixelbuf = new int[w * h];
+				for (int row = y; row < h; row++)
+				    System.arraycopy(pixeli, row * scansize + x + offset, pixelbuf, row * w, w);
+				ic.setPixels( x, y, w, h, cm, pixelbuf, 0, w );
 			    } else {
-				ic.setPixels( 0, 0, width, height, cm, pixelb, offset, scansize );
+				byte[] pixelbuf = new byte[w * h];
+				for (int row = y; row < h; row++)
+				    System.arraycopy(pixelb, row * scansize + x + offset, pixelbuf, row * w, w);
+				ic.setPixels( x, y, w, h, cm, pixelbuf, 0, w );
 			    }
 			    if( framenotify == true )
 				ic.imageComplete( ImageConsumer.SINGLEFRAME );
@@ -313,9 +325,14 @@ public class MemoryImageSource implements ImageProducer
 				       int scansize)
 
     {
+	pixeli = null;
+	pixelb = newpix;
+	cm = newmodel;
+	this.offset = offset;
+	this.scansize = scansize;
 	if( animated == true )
 	    {
-		//FIXME
+		newPixels();
 	    }
     }
 
@@ -325,9 +342,14 @@ public class MemoryImageSource implements ImageProducer
 				       int scansize)
 
     {
+	pixelb = null;
+	pixeli = newpix;
+	cm = newmodel;
+	this.offset = offset;
+	this.scansize = scansize;
 	if( animated == true )
 	    {
-		//FIXME
+		newPixels();
 	    }
     }
 

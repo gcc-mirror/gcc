@@ -35,20 +35,22 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
 import java.awt.Component;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-
+import java.util.EventListener;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuDragMouseEvent;
@@ -57,48 +59,79 @@ import javax.swing.event.MenuKeyEvent;
 import javax.swing.event.MenuKeyListener;
 import javax.swing.plaf.MenuItemUI;
 
+
+/**
+ * DOCUMENT ME!
+ *
+ * @author $author$
+ * @version $Revision: 1.2.18.4 $
+ */
 public class JMenuItem extends AbstractButton implements Accessible,
                                                          MenuElement
 {
-  //-------------------------------------------------------------
-  // Variables --------------------------------------------------
-  //-------------------------------------------------------------
   private static final String uiClassID = "MenuItemUI";
   private KeyStroke accelerator;
 
-  //-------------------------------------------------------------
-  // Initialization ---------------------------------------------
-  //-------------------------------------------------------------
+  /**
+   * Creates a new JMenuItem object.
+   */
   public JMenuItem()
   {
     this(null, null);
-  } // JMenuItem()
+  }
 
+  /**
+   * Creates a new JMenuItem object.
+   *
+   * @param icon DOCUMENT ME!
+   */
   public JMenuItem(Icon icon)
   {
     this(null, icon);
-  } // JMenuItem()
+  }
 
+  /**
+   * Creates a new JMenuItem object.
+   *
+   * @param text DOCUMENT ME!
+   */
   public JMenuItem(String text)
   {
     this(text, null);
-  } // JMenuItem()
+  }
 
+  /**
+   * Creates a new JMenuItem object.
+   *
+   * @param action DOCUMENT ME!
+   */
   public JMenuItem(Action action)
   {
     // TODO		
-  } // JMenuItem()
+  }
 
+  /**
+   * Creates a new JMenuItem object.
+   *
+   * @param text DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   */
   public JMenuItem(String text, Icon icon)
   {
     super(text, icon);
-  } // JMenuItem()
+  }
 
+  /**
+   * Creates a new JMenuItem object.
+   *
+   * @param text DOCUMENT ME!
+   * @param mnemonic DOCUMENT ME!
+   */
   public JMenuItem(String text, int mnemonic)
   {
     super(text, null);
     setMnemonic(mnemonic);
-  } // JMenuItem()
+  }
 
   //-------------------------------------------------------------
   // Methods ----------------------------------------------------
@@ -107,60 +140,116 @@ public class JMenuItem extends AbstractButton implements Accessible,
                    throws IOException, ClassNotFoundException
   {
     // TODO
-  } // readObject()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param stream DOCUMENT ME!
+   *
+   * @throws IOException DOCUMENT ME!
+   */
   private void writeObject(ObjectOutputStream stream) throws IOException
   {
     // TODO
-  } // writeObject()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param text DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   */
   protected void init(String text, Icon icon)
   {
     // TODO
-  } // init()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param ui DOCUMENT ME!
+   */
   public void setUI(MenuItemUI ui)
   {
     super.setUI(ui);
-  } // setUI()
+  }
 
+  /**
+   * DOCUMENT ME!
+   */
   public void updateUI()
   {
     MenuItemUI mi = ((MenuItemUI) UIManager.getUI(this));
     setUI(mi);
     invalidate();
-  } // updateUI()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public String getUIClassID()
   {
     return uiClassID;
-  } // getUIClassID()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public boolean isArmed()
   {
     return getModel().isArmed();
-  } // isArmed()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param armed DOCUMENT ME!
+   */
   public void setArmed(boolean armed)
   {
     getModel().setArmed(armed);
-  } // setArmed()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param enabled DOCUMENT ME!
+   */
   public void setEnabled(boolean enabled)
   {
     setEnabled(enabled);
-  } // setEnabled()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public KeyStroke getAccelerator()
   {
     return accelerator;
-  } // getAccelerator()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param keystroke DOCUMENT ME!
+   */
   public void setAccelerator(KeyStroke keystroke)
   {
     this.accelerator = keystroke;
-  } // setAccelerator()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param action DOCUMENT ME!
+   */
   protected void configurePropertiesFromAction(Action action)
   {
     super.configurePropertiesFromAction(action);
@@ -169,147 +258,371 @@ public class JMenuItem extends AbstractButton implements Accessible,
       setAccelerator(null);
     else
       setAccelerator((KeyStroke) (action.getValue(Action.ACCELERATOR_KEY)));
-  
-  } // configurePropertiesFromAction()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param action DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected PropertyChangeListener createActionPropertyChangeListener(Action action)
   {
-    return null;
-  } // createActionPropertyChangeListener()
+    return new PropertyChangeListener()
+      {
+	public void propertyChange(PropertyChangeEvent e)
+	{
+	  Action act = (Action) (e.getSource());
+	  configurePropertiesFromAction(act);
+	}
+      };
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   * @param path DOCUMENT ME!
+   * @param manager DOCUMENT ME!
+   */
   public void processMouseEvent(MouseEvent event, MenuElement[] path,
                                 MenuSelectionManager manager)
   {
-    // TODO
-  } // processMouseEvent()
+    switch (event.getID())
+      {
+      case MouseEvent.MOUSE_CLICKED:
+	doClick();
+	break;
+      case MouseEvent.MOUSE_ENTERED:
+	if (event.getSource() instanceof JMenuItem)
+	  {
+	    JMenuItem item = (JMenuItem) event.getSource();
+	    ButtonModel model = item.getModel();
 
+	    if (item.isRolloverEnabled())
+	      model.setRollover(true);
+
+	    if (model.isPressed()
+	        && (event.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
+	      model.setArmed(true);
+	    else
+	      model.setArmed(false);
+	  }
+	break;
+      case MouseEvent.MOUSE_EXITED:
+	if (event.getSource() instanceof JMenuItem)
+	  {
+	    JMenuItem item = (JMenuItem) event.getSource();
+	    ButtonModel model = item.getModel();
+	    if (item.isRolloverEnabled())
+	      model.setRollover(false);
+	    model.setArmed(false);
+	  }
+	break;
+      case MouseEvent.MOUSE_PRESSED:
+	if (event.getSource() instanceof JMenuItem)
+	  {
+	    if ((event.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
+	      {
+		model.setArmed(true);
+		model.setPressed(true);
+	      }
+	  }
+	break;
+      case MouseEvent.MOUSE_RELEASED:
+	if (event.getSource() instanceof JMenuItem)
+	  {
+	    JMenuItem item = (JMenuItem) event.getSource();
+	    ButtonModel model = item.getModel();
+	    if ((event.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
+	      {
+		model.setPressed(false);
+		model.setArmed(false);
+		manager.clearSelectedPath();
+	      }
+	  }
+	break;
+      case MouseEvent.MOUSE_MOVED:
+	break;
+      case MouseEvent.MOUSE_DRAGGED:
+	MenuDragMouseEvent e = new MenuDragMouseEvent((Component) event
+	                                              .getSource(),
+	                                              event.getID(),
+	                                              event.getWhen(),
+	                                              event.getModifiers(),
+	                                              event.getX(),
+	                                              event.getY(),
+	                                              event.getClickCount(),
+	                                              event.isPopupTrigger(),
+	                                              path, manager);
+	processMenuDragMouseEvent(e);
+	break;
+      }
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   * @param path DOCUMENT ME!
+   * @param manager DOCUMENT ME!
+   */
   public void processKeyEvent(KeyEvent event, MenuElement[] path,
                               MenuSelectionManager manager)
   {
     // TODO
-  } // processKeyEvent()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   public void processMenuDragMouseEvent(MenuDragMouseEvent event)
   {
-  } // processMenuDragMouseEvent()
+    switch (event.getID())
+      {
+      case MouseEvent.MOUSE_ENTERED:
+	fireMenuDragMouseEntered(event);
+	break;
+      case MouseEvent.MOUSE_EXITED:
+	fireMenuDragMouseExited(event);
+	break;
+      case MouseEvent.MOUSE_DRAGGED:
+	fireMenuDragMouseDragged(event);
+	break;
+      case MouseEvent.MOUSE_RELEASED:
+	fireMenuDragMouseReleased(event);
+	break;
+      }
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   public void processMenuKeyEvent(MenuKeyEvent event)
   {
     // TODO
-  } // processMenuKeyEvent()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   protected void fireMenuDragMouseEntered(MenuDragMouseEvent event)
   {
-    // TODO
-  } // fireMenuDragMouseEntered()
+    EventListener[] ll = listenerList.getListeners(MenuDragMouseListener.class);
 
+    for (int i = 0; i < ll.length; i++)
+      ((MenuDragMouseListener) ll[i]).menuDragMouseEntered(event);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   protected void fireMenuDragMouseExited(MenuDragMouseEvent event)
   {
-    // TODO
-  } // fireMenuDragMouseExited()
+    EventListener[] ll = listenerList.getListeners(MenuDragMouseListener.class);
 
+    for (int i = 0; i < ll.length; i++)
+      ((MenuDragMouseListener) ll[i]).menuDragMouseExited(event);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   protected void fireMenuDragMouseDragged(MenuDragMouseEvent event)
   {
-    // TODO
-  } // fireMenuDragMouseDragged()
+    EventListener[] ll = listenerList.getListeners(MenuDragMouseListener.class);
 
+    for (int i = 0; i < ll.length; i++)
+      ((MenuDragMouseListener) ll[i]).menuDragMouseDragged(event);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   protected void fireMenuDragMouseReleased(MenuDragMouseEvent event)
   {
-    // TODO
-  } // fireMenuDragMouseReleased()
+    EventListener[] ll = listenerList.getListeners(MenuDragMouseListener.class);
 
+    for (int i = 0; i < ll.length; i++)
+      ((MenuDragMouseListener) ll[i]).menuDragMouseReleased(event);
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   protected void fireMenuKeyPressed(MenuKeyEvent event)
   {
     // TODO
-  } // fireMenuKeyPressed()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   protected void fireMenuKeyReleased(MenuKeyEvent event)
   {
     // TODO
-  } // fireMenuKeyReleased()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param event DOCUMENT ME!
+   */
   protected void fireMenuKeyTyped(MenuKeyEvent event)
   {
     // TODO
-  } // fireMenuKeyTyped()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param changed DOCUMENT ME!
+   */
   public void menuSelectionChanged(boolean changed)
   {
-    // TODO
-  } // menuSelectionChanged()
+    if (changed)
+      model.setArmed(true);
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public MenuElement[] getSubElements()
   {
-    return null; // TODO
-  } // getSubElements()
+    return new MenuElement[0];
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public Component getComponent()
   {
-    return null; // TODO
-  } // getComponent()
+    return this;
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param listener DOCUMENT ME!
+   */
   public void addMenuDragMouseListener(MenuDragMouseListener listener)
   {
-    // TODO
-  } // addMenuDragMouseListener()
+    listenerList.add(MenuDragMouseListener.class, listener);
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param listener DOCUMENT ME!
+   */
   public void removeMenuDragMouseListener(MenuDragMouseListener listener)
   {
-  } // removeMenuDragMouseListener()
+    listenerList.remove(MenuDragMouseListener.class, listener);
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param listener DOCUMENT ME!
+   */
   public void addMenuKeyListener(MenuKeyListener listener)
   {
-  } // addMenuKeyListener()
+    listenerList.add(MenuKeyListener.class, listener);
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param listener DOCUMENT ME!
+   */
   public void removeMenuKeyListener(MenuKeyListener listener)
   {
-  } // removeMenuKeyListener()
+    listenerList.remove(MenuKeyListener.class, listener);
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected String paramString()
   {
     return "JMenuItem";
-  } // paramString()
+  }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public AccessibleContext getAccessibleContext()
   {
     if (accessibleContext == null)
-      {
-        accessibleContext = new AccessibleJMenuItem(this);
-      }
+      accessibleContext = new AccessibleJMenuItem(this);
 
     return accessibleContext;
-  } // getAccessibleContext()
+  }
 
-  //-------------------------------------------------------------
-  // Classes ----------------------------------------------------
-  //-------------------------------------------------------------
+  /**
+   * DOCUMENT ME!
+   *
+   * @author $author$
+   * @version $Revision: 1.2.18.4 $
+   */
   protected class AccessibleJMenuItem extends AccessibleAbstractButton
     implements ChangeListener
   {
-    //-------------------------------------------------------------
-    // Variables --------------------------------------------------
-    //-------------------------------------------------------------
-    //-------------------------------------------------------------
-    // Initialization ---------------------------------------------
-    //-------------------------------------------------------------
+    /**
+     * Creates a new AccessibleJMenuItem object.
+     *
+     * @param component DOCUMENT ME!
+     */
     AccessibleJMenuItem(JMenuItem component)
     {
       super(component);
 
       // TODO
-    } // AccessibleJMenuItem()
+    }
 
-    //-------------------------------------------------------------
-    // Methods ----------------------------------------------------
-    //-------------------------------------------------------------
+    /**
+     * DOCUMENT ME!
+     *
+     * @param event DOCUMENT ME!
+     */
     public void stateChanged(ChangeEvent event)
     {
       // TODO
-    } // stateChanged()
+    }
 
+    /**
+     * DOCUMENT ME!
+     *
+     * @return $returnType$ DOCUMENT ME!
+     */
     public AccessibleRole getAccessibleRole()
     {
       return AccessibleRole.MENU_ITEM;
-    } // getAccessibleRole()
-  } // AccessibleJMenuItem
-} // JMenuItem
+    }
+  }
+}

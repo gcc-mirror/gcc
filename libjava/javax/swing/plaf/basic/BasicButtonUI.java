@@ -92,6 +92,7 @@ public class BasicButtonUI extends ButtonUI
     b.setBackground(defaults.getColor("Button.background"));
     b.setMargin(defaults.getInsets("Button.margin"));
     b.setBorder(defaults.getBorder("Button.border"));
+    b.setOpaque(true);
   }
 
   protected void uninstallDefaults(AbstractButton b)

@@ -1,5 +1,5 @@
-/* JOptionPane.java -- 
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+/* JOptionPane.java
+   Copyright (C) 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,365 +35,1388 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-
 package javax.swing;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.Frame;
-
+import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.swing.Icon;
 import javax.swing.plaf.OptionPaneUI;
 
-public class JOptionPane extends JComponent 
+
+/**
+ * This class creates different types of JDialogs and JInternalFrames that can
+ * ask users for input or pass on information. JOptionPane can be used by
+ * calling one of the show static methods or  by creating an instance of
+ * JOptionPane and calling createDialog or createInternalFrame.
+ */
+public class JOptionPane extends JComponent implements Accessible
 {
-    public static final int DEFAULT_OPTION        = 0;
-    public static final int YES_NO_OPTION         = 1;
-    public static final int YES_NO_CANCEL_OPTION  = 2;
-    public static final int OK_CANCEL_OPTION      = 3;
-    public static final int YES_OPTION            = 4;
-    public static final int NO_OPTION             = 5;
-    public static final int CANCEL_OPTION         = 6;
-    public static final int OK_OPTION             = 7;
-    public static final int CLOSED_OPTION         = 8;
+  /**
+   * DOCUMENT ME!
+   */
+  protected class AccessibleJOptionPane extends JComponent.AccessibleJComponent
+  {
+    /**
+     * Creates a new AccessibleJOptionPane object.
+     */
+    protected AccessibleJOptionPane()
+    {
+      super(JOptionPane.this);
+    }
 
-    public static final int ERROR_MESSAGE         = 0;
-    public static final int INFORMATION_MESSAGE   = 1;
-    public static final int WARNING_MESSAGE       = 2;
-    public static final int QUESTION_MESSAGE      = 3;
-    public static final int PLAIN_MESSAGE         = 4;
-
-    final static String VALUE_PROPERTY = "value_prop";
-    final static String INPUT_VALUE_PROPERTY = "input_value_prop";
-    
-    final static String UNINITIALIZED_VALUE = "uninit";
-
-    // Ronald: shouldnt by public ?
-    public Object msg;
-    public int mtype;
-    public int otype;
-    public Icon icon;
-    public Object []args;
-    public Object init;
-
-    public JDialog dialog;
-
-    /*****************************************************************************
+    /**
+     * DOCUMENT ME!
      *
-     *
-     *  joptionpanels
-     *
-     *
-     ***********************************/
-
-    JOptionPane()
+     * @return DOCUMENT ME!
+     */
+    public AccessibleRole getAccessibleRole()
     {
-	this("mess");
+      return null;
     }
-    
-    JOptionPane(Object m)
-    {
-	this(m, PLAIN_MESSAGE);
-    }
-    
-    JOptionPane(Object m,
-		 int mtype)
-    {
-	this(m, mtype, DEFAULT_OPTION);
-    }
+  }
 
-    JOptionPane(Object m,
-		int mtype,
-		int otype)
-    {
-	this(m, mtype, otype, null);
-    }
- 
-    JOptionPane(Object m,
-		 int mtype,
-		 int otype,
-		 Icon icon)
-    {
-	this(m, mtype, otype, icon, null);
-    }
+  /** The value returned when cancel option is selected. */
+  public static final int CANCEL_OPTION = 2;
 
-    JOptionPane(Object m,
-		 int mtype,
-		 int otype,
-		 Icon icon,
-		 Object []args)
-    {
-	this(m, mtype, otype, icon, args, null);
-    }
+  /** The value returned when the dialog is closed without a selection. */
+  public static final int CLOSED_OPTION = -1;
 
-    JOptionPane(Object msg,
-		int mtype,
-		int otype,
-		Icon icon,
-		Object []args,
-		Object init)
-    {
-	//	this(m, mtype, otype, icon, args, init);
-	this.msg   = msg;
-	this.mtype = mtype;
-	this.otype = otype;
-	this.icon  = icon;
-	this.args  = args;
-	this.init  = init;
-	
-	updateUI();
-    }
+  /** An option used in confirmation dialog methods. */
+  public static final int DEFAULT_OPTION = -1;
 
+  /** The value returned when the no option is selected. */
+  public static final int NO_OPTION = 1;
 
-    /*****************************************************************************
-     *
-     *
-     *
-     *
-     *
-     ***********************************/
+  /** An option used in confirmation dialog methods. */
+  public static final int OK_CANCEL_OPTION = 2;
 
-    Object val;
-    public void setValue(Object v)  
-    {   val = v;       }
-    public Object getValue()
-    {	return val;    }
+  /** The value returned when the ok option is selected. */
+  public static final int OK_OPTION = 0;
 
-    public String getUIClassID()
-    {	return "OptionPaneUI";    }
+  /** An option used in confirmation dialog methods. */
+  public static final int YES_NO_CANCEL_OPTION = 1;
 
+  /** An option used in confirmation dialog methods. */
+  public static final int YES_NO_OPTION = 0;
 
-    public void setUI(OptionPaneUI ui) {
-        super.setUI(ui);
-    }
-    
-    public OptionPaneUI getUI() {
-        return (OptionPaneUI)ui;
-    }
-    
-    public void updateUI() {
-	setUI((OptionPaneUI)UIManager.getUI(this));
-    }
+  /** The value returned when the yes option is selected. */
+  public static final int YES_OPTION = 0;
 
+  /** Identifier for the error message type. */
+  public static final int ERROR_MESSAGE = 0;
 
-    public AccessibleContext getAccessibleContext()
-    {
-	return null;
-    }
-    
-    protected  String paramString()
-    {
-	return "JOptionPane";
-    }
-    
-    public static void showMessageDialog(Component frame,
-				  String msg,
-				  String title,
-				  int bla)
-    {
-	DoShowOptionDialog(frame,
-			  msg,
-			  title,
-			  bla,
-			  0,
-			  null,
-			  null,
-			  null);
-    }
+  /** Identifier for the information message type. */
+  public static final int INFORMATION_MESSAGE = 1;
 
-    public static void showMessageDialog(Component frame,
-				 String msg,
-				 String title,
-				 int bla,
-				 Icon icon)
-    {
-	DoShowOptionDialog(frame,
-				 msg,
-				 title,
-				 bla,
-				 0,
-				 icon,
-				 null,
-				 null);
-    }
+  /** Identifier for the plain message type. */
+  public static final int PLAIN_MESSAGE = -1;
 
-    public static void showMessageDialog(Component frame,
-				  String msg)
-    {
-	showMessageDialog(frame,
-			  msg,
-			  null);
-    }
-    
+  /** Identifier for the question message type. */
+  public static final int QUESTION_MESSAGE = 3;
 
-    public static void showMessageDialog(Component frame,
-				  String msg,
-				  Icon icon)
-    {	
-	//System.out.println("++++++++++++++++++creating message dialog:"+msg + ", frame="+frame);
-         DoShowOptionDialog(frame, 
-				msg, 
-				"Message",				
-				DEFAULT_OPTION, 
-				PLAIN_MESSAGE,
-				icon,
-				null,
-				null);
-    }
+  /** Identifier for the warning message type. */
+  public static final int WARNING_MESSAGE = 2;
 
-    public static int showConfirmDialog(JFrame frame,
-				 String yes,
-				 String no, 
-				 int bla)
-    {
-	return 0;
-    }
+  /**
+   * The identifier for the propertyChangeEvent when the icon property
+   * changes.
+   */
+  public static final String ICON_PROPERTY = "icon";
 
-    public static String showInputDialog(JFrame frame,
-			     String msg, 
-			     String title, 
-			     int opt_type, 
-			     int msg_type,
-			     Icon icon, 
-			     Object[] opts, 
-			     Object init)
-    {
-	return (String) DoShowOptionDialog(frame,
-				msg, 
-				title, 
-				opt_type, 
-				msg_type,
-				icon, 
-				opts, 
-				init);
-    }
+  /**
+   * The identifier for the propertyChangeEvent when the initialSelectionValue
+   * property changes.
+   */
+  public static final String INITIAL_SELECTION_VALUE_PROPERTY = "initialSelectionValue";
 
-    public static Object showInputDialog(JFrame frame,
-			     String msg, 
-			     String title, 
-			     int opt_type, 
-			     Icon icon, 
-			     Object[] opts, 
-			     Object init)
-    {
-	return DoShowOptionDialog(frame,
-				msg, 
-				title, 
-				opt_type, 
-				0, //msg_type,
-				icon, 
-				opts, 
-				init);
-    }
+  /**
+   * The identifier for the propertyChangeEvent when the initialValue property
+   * changes.
+   */
+  public static final String INITIAL_VALUE_PROPERTY = "initialValue";
 
+  /**
+   * The identifier for the propertyChangeEvent when the inputValue property
+   * changes.
+   */
+  public static final String INPUT_VALUE_PROPERTY = "inputValue";
 
-    // everybody comes here eventually
-    public static int showOptionDialog(Component frame,
-				String msg, 
-				String title, 
-				int opt_type, 
-				int msg_type,
-				Icon icon, 
-				Object[] opts, 
-				Object init)
-    {
-	Integer a = (Integer) DoShowOptionDialog(frame,
-						 msg, 
-						 title, 
-						 opt_type, 
-						 msg_type,
-						 icon, 
-						 opts, 
-						 init);
-	if (a == null)
-	    return -1;
-	return a.intValue();
-    }
-    
-    public static Object DoShowOptionDialog(Component frame,
-				   String msg, 
-				   String title, 
-				   int opt_type, 
-				   int msg_type,
-				   Icon icon, 
-				   Object[] opts, 
-				   Object init)
-    {
-	
-	JOptionPane p = new JOptionPane(msg,
-					msg_type,
-					opt_type,
-					icon,
-					opts,
-					init);
-	System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ " + p.msg);
+  /**
+   * The identifier for the propertyChangeEvent when the message property
+   * changes.
+   */
+  public static final String MESSAGE_PROPERTY = "message";
 
-	
-	JDialog a;
+  /**
+   * The identifier for the propertyChangeEvent when the messageType property
+   * changes.
+   */
+  public static final String MESSAGE_TYPE_PROPERTY = "messageType";
 
-	if (frame == null)
-	    {
-		a = new JDialog((Frame)frame,
-				title,
-				true);
-	    }
-	else if (frame instanceof Dialog)
-	    {
-		a = new JDialog((Dialog) frame,
-				title,
-				true);
-	    }
-	else if (frame instanceof Frame)
-	    {
-		a = new JDialog((Frame) frame,
-				title,
-				true);
-	    }
-	else
-	    {
-		System.out.println("HUUUUHHH, not a frame or dialog !");
-		
-		a = new JDialog((Frame)null,
-				title,
-				true);
-	    }
+  /**
+   * The identifier for the propertyChangeEvent when the optionType property
+   * changes.
+   */
+  public static final String OPTION_TYPE_PROPERTY = "optionType";
 
-	p.dialog = a;
-	
-	a.getContentPane().setLayout(new BorderLayout());
-	a.getContentPane().add(p,
-			       BorderLayout.CENTER);
-	// package the deal
-	a.pack();
-	
-	a.setVisible(true);
-	
-	Object s = p.getValue();
+  /**
+   * The identifier for the propertyChangeEvent when the options property
+   * changes.
+   */
+  public static final String OPTIONS_PROPERTY = "options";
 
-	System.out.println("RESULT FROM DIALOG = " + s);
+  /**
+   * The identifier for the propertyChangeEvent when the selectionValues
+   * property changes.
+   */
+  public static final String SELECTION_VALUES_PROPERTY = "selectionValues";
 
-	if (s == null)
-	    return null;
-	
-	return s;
-    }
+  /**
+   * The identifier for the propertyChangeEvent when the value property
+   * changes.
+   */
+  public static final String VALUE_PROPERTY = "value";
 
+  /**
+   * The identifier for the propertyChangeEvent when the wantsInput property
+   * changes.
+   */
+  public static final String WANTS_INPUT_PROPERTY = "wantsInput";
+
+  /** The value returned when the inputValue is uninitialized. */
+  public static Object UNINITIALIZED_VALUE = "uninitializedValue";
+
+  /** The icon displayed in the dialog/internal frame. */
+  protected Icon icon;
+
+  /** The initial selected value in the input component. */
+  protected Object initialSelectionValue;
+
+  /** The object that is initially selected for options. */
+  protected Object initialValue;
+
+  /** The value the user inputs. */
+  protected Object inputValue = UNINITIALIZED_VALUE;
+
+  /** The message displayed in the dialog/internal frame. */
+  protected Object message = "JOptionPane message";
+
+  /** The type of message displayed. */
+  protected int messageType = PLAIN_MESSAGE;
+
+  /**
+   * The options (usually buttons) aligned at the bottom for the user to
+   * select.
+   */
+  protected Object[] options;
+
+  /** The type of options to display. */
+  protected int optionType = DEFAULT_OPTION;
+
+  /** The input values the user can select. */
+  protected Object[] selectionValues;
+
+  /** The value returned by selecting an option. */
+  protected Object value = UNINITIALIZED_VALUE;
+
+  /** Whether the Dialog/InternalFrame needs input. */
+  protected boolean wantsInput;
+
+  /** The common frame used when no parent is provided. */
+  private static Frame privFrame = SwingUtilities.getOwnerFrame();
+
+  /**
+   * Creates a new JOptionPane object using a message of "JOptionPane
+   * message", using the PLAIN_MESSAGE type and DEFAULT_OPTION.
+   */
+  public JOptionPane()
+  {
+    this(this.message, PLAIN_MESSAGE, DEFAULT_OPTION, null, null, null);
+  }
+
+  /**
+   * Creates a new JOptionPane object using the given message using the
+   * PLAIN_MESSAGE type and DEFAULT_OPTION.
+   *
+   * @param message The message to display.
+   */
+  public JOptionPane(Object message)
+  {
+    this(message, PLAIN_MESSAGE, DEFAULT_OPTION, null, null, null);
+  }
+
+  /**
+   * Creates a new JOptionPane object using the given message and messageType
+   * and DEFAULT_OPTION.
+   *
+   * @param message The message to display.
+   * @param messageType The type of message.
+   */
+  public JOptionPane(Object message, int messageType)
+  {
+    this(message, messageType, DEFAULT_OPTION, null, null, null);
+  }
+
+  /**
+   * Creates a new JOptionPane object using the given message, messageType and
+   * optionType.
+   *
+   * @param message The message to display.
+   * @param messageType The type of message.
+   * @param optionType The type of options.
+   */
+  public JOptionPane(Object message, int messageType, int optionType)
+  {
+    this(message, messageType, optionType, null, null, null);
+  }
+
+  /**
+   * Creates a new JOptionPane object using the given message, messageType,
+   * optionType and icon.
+   *
+   * @param message The message to display.
+   * @param messageType The type of message.
+   * @param optionType The type of options.
+   * @param icon The icon to display.
+   */
+  public JOptionPane(Object message, int messageType, int optionType, Icon icon)
+  {
+    this(message, messageType, optionType, icon, null, null);
+  }
+
+  /**
+   * Creates a new JOptionPane object using the given message, messageType,
+   * optionType, icon and options.
+   *
+   * @param message The message to display.
+   * @param messageType The type of message.
+   * @param optionType The type of options.
+   * @param icon The icon to display.
+   * @param options The options given.
+   */
+  public JOptionPane(Object message, int messageType, int optionType,
+                     Icon icon, Object[] options)
+  {
+    this(message, messageType, optionType, icon, options, null);
+  }
+
+  /**
+   * Creates a new JOptionPane object using the given message, messageType,
+   * optionType, icon, options and initialValue. The initialValue will be
+   * focused initially.
+   *
+   * @param message The message to display.
+   * @param messageType The type of message.
+   * @param optionType The type of options.
+   * @param icon The icon to display.
+   * @param options The options given.
+   * @param initialValue The component to focus on initially.
+   *
+   * @throws IllegalArgumentException If the messageType or optionType are not
+   *         legal values.
+   */
+  public JOptionPane(Object message, int messageType, int optionType,
+                     Icon icon, Object[] options, Object initialValue)
+  {
+    this.message = message;
+    if (! validMessageType(messageType))
+      throw new IllegalArgumentException("Message Type not legal value.");
+    this.messageType = messageType;
+    if (! validOptionType(optionType))
+      throw new IllegalArgumentException("Option Type not legal value.");
+    this.optionType = optionType;
+    this.icon = icon;
+    this.options = options;
+    this.initialValue = initialValue;
+
+    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+
+    updateUI();
+    invalidate();
+    repaint();
+  }
+
+  /**
+   * This method creates a new JDialog that is either centered around the
+   * parent's frame or centered on the screen (if the parent is null). The
+   * JDialog will not be resizable and will be modal. Once the JDialog is
+   * disposed, the inputValue and value properties will  be set by the
+   * optionPane.
+   *
+   * @param parentComponent The parent of the Dialog.
+   * @param title The title in the bar of the JDialog.
+   *
+   * @return A new JDialog based on the JOptionPane configuration.
+   */
+  public JDialog createDialog(Component parentComponent, String title)
+  {
+    Frame toUse = getFrameForComponent(parentComponent);
+    if (toUse == null)
+      toUse = getRootFrame();
+
+    JDialog dialog = new JDialog(toUse, title);
+    inputValue = UNINITIALIZED_VALUE;
+    value = UNINITIALIZED_VALUE;
+
+    // FIXME: This dialog should be centered on the parent
+    // or at the center of the screen (if the parent is null)
+    // Need getGraphicsConfiguration to return non-null in
+    // order for that to work so we know how large the 
+    // screen is.
+    dialog.getContentPane().add(this);
+    dialog.setModal(true);
+    dialog.setResizable(false);
+
+    return dialog;
+  }
+
+  /**
+   * This method creates a new JInternalFrame that is in the JDesktopPane
+   * which contains the parentComponent given. If no suitable JDesktopPane
+   * can be found from the parentComponent given, a RuntimeException will be
+   * thrown.
+   *
+   * @param parentComponent The parent to find a JDesktopPane from.
+   * @param title The title of the JInternalFrame.
+   *
+   * @return A new JInternalFrame based on the JOptionPane configuration.
+   *
+   * @throws RuntimeException If no suitable JDesktopPane is found.
+   */
+  public JInternalFrame createInternalFrame(Component parentComponent,
+                                            String title)
+                                     throws RuntimeException
+  {
+    // FIXME: implement.
+    return null;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public AccessibleContext getAccessibleContext()
+  {
+    if (accessibleContext == null)
+      accessibleContext = new AccessibleJOptionPane();
+    return accessibleContext;
+  }
+
+  /**
+   * This method returns the JDesktopPane for the given parentComponent or
+   * null if none can be found.
+   *
+   * @param parentComponent The component to look in.
+   *
+   * @return The JDesktopPane for the given component or null if none can be
+   *         found.
+   */
+  public static JDesktopPane getDesktopPaneForComponent(Component parentComponent)
+  {
+    if (parentComponent == null)
+      return null;
+    if (parentComponent instanceof JDesktopPane)
+      return (JDesktopPane) parentComponent;
+    JDesktopPane parent = null;
+    while (parentComponent.getParent() != null)
+      {
+	parentComponent = parentComponent.getParent();
+	if (parentComponent instanceof JDesktopPane)
+	  {
+	    parent = (JDesktopPane) parentComponent;
+	    break;
+	  }
+      }
+    return parent;
+  }
+
+  /**
+   * This method returns the Frame for the given parentComponent or null if
+   * none can be found.
+   *
+   * @param parentComponent The component to look in.
+   *
+   * @return The Frame for the given component or null if none can be found.
+   */
+  public static Frame getFrameForComponent(Component parentComponent)
+  {
+    if (parentComponent == null)
+      return null;
+    if (parentComponent instanceof Frame)
+      return (Frame) parentComponent;
+    Frame parent = null;
+    while (parentComponent.getParent() != null)
+      {
+	parentComponent = parentComponent.getParent();
+	if (parentComponent instanceof Frame)
+	  {
+	    parent = (Frame) parentComponent;
+	    break;
+	  }
+      }
+    return parent;
+  }
+
+  /**
+   * This method returns the icon displayed.
+   *
+   * @return The icon displayed.
+   */
+  public Icon getIcon()
+  {
+    return icon;
+  }
+
+  /**
+   * This method returns the value initially selected from the list of values
+   * the user can input.
+   *
+   * @return The initial selection value.
+   */
+  public Object getInitialSelectionValue()
+  {
+    return initialSelectionValue;
+  }
+
+  /**
+   * This method returns the value that is focused from the list of options.
+   *
+   * @return The initial value from options.
+   */
+  public Object getInitialValue()
+  {
+    return initialValue;
+  }
+
+  /**
+   * This method returns the value that the user input.
+   *
+   * @return The user's input value.
+   */
+  public Object getInputValue()
+  {
+    return inputValue;
+  }
+
+  /**
+   * This method returns the maximum characters per line. By default, this is
+   * Integer.MAX_VALUE.
+   *
+   * @return The maximum characters per line.
+   */
+  public int getMaxCharactersPerLineCount()
+  {
+    return Integer.MAX_VALUE;
+  }
+
+  /**
+   * This method returns the message displayed.
+   *
+   * @return The message displayed.
+   */
+  public Object getMessage()
+  {
+    return message;
+  }
+
+  /**
+   * This method returns the message type.
+   *
+   * @return The message type.
+   */
+  public int getMessageType()
+  {
+    return messageType;
+  }
+
+  /**
+   * This method returns the options.
+   *
+   * @return The options.
+   */
+  public Object[] getOptions()
+  {
+    return options;
+  }
+
+  /**
+   * This method returns the option type.
+   *
+   * @return The option type.
+   */
+  public int getOptionType()
+  {
+    return optionType;
+  }
+
+  /**
+   * This method returns the Frame used by JOptionPane dialog's that have no
+   * parent.
+   *
+   * @return The Frame used by dialogs that have no parent.
+   */
+  public static Frame getRootFrame()
+  {
+    return privFrame;
+  }
+
+  /**
+   * This method returns the selection values.
+   *
+   * @return The selection values.
+   */
+  public Object[] getSelectionValues()
+  {
+    return selectionValues;
+  }
+
+  /**
+   * This method returns the UI used by the JOptionPane.
+   *
+   * @return The UI used by the JOptionPane.
+   */
+  public OptionPaneUI getUI()
+  {
+    return (OptionPaneUI) ui;
+  }
+
+  /**
+   * This method returns an identifier to determine which UI class will act as
+   * the UI.
+   *
+   * @return The UI identifier.
+   */
+  public String getUIClassID()
+  {
+    return "OptionPaneUI";
+  }
+
+  /**
+   * This method returns the value that the user selected out of options.
+   *
+   * @return The value that the user selected out of options.
+   */
+  public Object getValue()
+  {
+    return value;
+  }
+
+  /**
+   * This method returns whether this JOptionPane wants input.
+   *
+   * @return Whether this JOptionPane wants input.
+   */
+  public boolean getWantsInput()
+  {
+    return wantsInput;
+  }
+
+  /**
+   * This method returns a String that describes this JOptionPane.
+   *
+   * @return A String that describes this JOptionPane.
+   */
+  protected String paramString()
+  {
+    return "JOptionPane";
+  }
+
+  /**
+   * This method requests focus for the initial value.
+   */
+  public void selectInitialValue()
+  {
+    if (ui != null)
+      ((OptionPaneUI) ui).selectInitialValue(this);
+  }
+
+  /**
+   * This method changes the icon property.
+   *
+   * @param newIcon The new icon to use.
+   */
+  public void setIcon(Icon newIcon)
+  {
+    if (icon != newIcon)
+      {
+	Icon old = icon;
+	icon = newIcon;
+	firePropertyChange(ICON_PROPERTY, old, icon);
+      }
+  }
+
+  /**
+   * This method changes the initial selection property.
+   *
+   * @param newValue The new initial selection.
+   */
+  public void setInitialSelectionValue(Object newValue)
+  {
+    if (initialSelectionValue != newValue)
+      {
+	Object old = initialSelectionValue;
+	initialSelectionValue = newValue;
+	firePropertyChange(INITIAL_SELECTION_VALUE_PROPERTY, old,
+	                   initialSelectionValue);
+      }
+  }
+
+  /**
+   * This method changes the initial value property.
+   *
+   * @param newValue The new initial value.
+   */
+  public void setInitialValue(Object newValue)
+  {
+    if (initialValue != newValue)
+      {
+	Object old = initialValue;
+	initialValue = newValue;
+	firePropertyChange(INITIAL_VALUE_PROPERTY, old, initialValue);
+      }
+  }
+
+  /**
+   * This method changes the inputValue property.
+   *
+   * @param newValue The new inputValue.
+   */
+  public void setInputValue(Object newValue)
+  {
+    if (inputValue != newValue)
+      {
+	Object old = inputValue;
+	inputValue = newValue;
+	firePropertyChange(INPUT_VALUE_PROPERTY, old, inputValue);
+      }
+  }
+
+  /**
+   * This method changes the message property.
+   *
+   * @param newMessage The new message.
+   */
+  public void setMessage(Object newMessage)
+  {
+    if (message != newMessage)
+      {
+	Object old = message;
+	message = newMessage;
+	firePropertyChange(MESSAGE_PROPERTY, old, message);
+      }
+  }
+
+  /**
+   * This method changes the messageType property.
+   *
+   * @param newType The new messageType.
+   *
+   * @throws IllegalArgumentException If the messageType is not valid.
+   */
+  public void setMessageType(int newType)
+  {
+    if (! validMessageType(newType))
+      throw new IllegalArgumentException("Message Type not legal value.");
+    if (newType != messageType)
+      {
+	int old = messageType;
+	messageType = newType;
+	firePropertyChange(MESSAGE_TYPE_PROPERTY, old, messageType);
+      }
+  }
+
+  /**
+   * This method changes the options property.
+   *
+   * @param newOptions The new options.
+   */
+  public void setOptions(Object[] newOptions)
+  {
+    if (options != newOptions)
+      {
+	Object[] old = options;
+	options = newOptions;
+	firePropertyChange(OPTIONS_PROPERTY, old, options);
+      }
+  }
+
+  /**
+   * This method changes the optionType property.
+   *
+   * @param newType The new optionType.
+   *
+   * @throws IllegalArgumentException If the optionType is not valid.
+   */
+  public void setOptionType(int newType)
+  {
+    if (! validOptionType(newType))
+      throw new IllegalArgumentException("Option Type not legal value.");
+    if (newType != optionType)
+      {
+	int old = optionType;
+	optionType = newType;
+	firePropertyChange(OPTION_TYPE_PROPERTY, old, optionType);
+      }
+  }
+
+  /**
+   * This method changes the Frame used for JOptionPane dialogs that have no
+   * parent.
+   *
+   * @param newRootFrame The Frame to use for dialogs that have no parent.
+   */
+  public static void setRootFrame(Frame newRootFrame)
+  {
+    privFrame = newRootFrame;
+  }
+
+  /**
+   * This method changes the selectionValues property.
+   *
+   * @param newValues The new selectionValues.
+   */
+  public void setSelectionValues(Object[] newValues)
+  {
+    if (newValues != selectionValues)
+      {
+	if (newValues != null)
+	  wantsInput = true;
+	Object[] old = selectionValues;
+	selectionValues = newValues;
+	firePropertyChange(SELECTION_VALUES_PROPERTY, old, selectionValues);
+      }
+  }
+
+  /**
+   * This method sets the UI used with the JOptionPane.
+   *
+   * @param ui The UI used with the JOptionPane.
+   */
+  public void setUI(OptionPaneUI ui)
+  {
+    super.setUI(ui);
+  }
+
+  /**
+   * This method sets the value has been selected out of options.
+   *
+   * @param newValue The value that has been selected out of options.
+   */
+  public void setValue(Object newValue)
+  {
+    if (value != newValue)
+      {
+	Object old = value;
+	value = newValue;
+	firePropertyChange(VALUE_PROPERTY, old, value);
+      }
+  }
+
+  /**
+   * This method changes the wantsInput property.
+   *
+   * @param newValue Whether this JOptionPane requires input.
+   */
+  public void setWantsInput(boolean newValue)
+  {
+    if (wantsInput != newValue)
+      {
+	boolean old = wantsInput;
+	wantsInput = newValue;
+	firePropertyChange(WANTS_INPUT_PROPERTY, old, wantsInput);
+      }
+  }
+
+  /**
+   * This method shows a confirmation dialog with the title "Select an Option"
+   * and displays the given message. The parent frame will be the same as the
+   * parent frame of the given parentComponent. This method returns the
+   * option chosen by the user.
+   *
+   * @param parentComponent The parentComponent to find a frame in.
+   * @param message The message to display.
+   *
+   * @return The option that was selected.
+   */
+  public static int showConfirmDialog(Component parentComponent, Object message)
+  {
+    JOptionPane pane = new JOptionPane(message);
+    JDialog dialog = pane.createDialog(parentComponent, "Select an Option");
+    dialog.pack();
+    dialog.show();
+
+    return ((Integer) pane.getValue()).intValue();
+  }
+
+  /**
+   * This method shows a confirmation dialog with the given message,
+   * optionType and title. The frame that owns the dialog will be the same
+   * frame that holds the given parentComponent. This method returns the
+   * option that was chosen.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   * @param title The title of the dialog.
+   * @param optionType The optionType.
+   *
+   * @return The option that was chosen.
+   */
+  public static int showConfirmDialog(Component parentComponent,
+                                      Object message, String title,
+                                      int optionType)
+  {
+    JOptionPane pane = new JOptionPane(message, PLAIN_MESSAGE, optionType);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+
+    return ((Integer) pane.getValue()).intValue();
+  }
+
+  /**
+   * This method shows a confirmation dialog with the given message, title,
+   * messageType and optionType. The frame owner will be the same frame as
+   * the one that holds the given parentComponent. This method returns the
+   * option selected by the user.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   * @param title The title of the dialog.
+   * @param optionType The optionType.
+   * @param messageType The messageType.
+   *
+   * @return The selected option.
+   */
+  public static int showConfirmDialog(Component parentComponent,
+                                      Object message, String title,
+                                      int optionType, int messageType)
+  {
+    JOptionPane pane = new JOptionPane(message, messageType, optionType);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+
+    return ((Integer) pane.getValue()).intValue();
+  }
+
+  /**
+   * This method shows a confirmation dialog with the given message, title,
+   * optionType, messageType and icon. The frame owner will be the same as
+   * the one that holds the given parentComponent. This method returns the
+   * option selected by the user.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   * @param title The title of the dialog.
+   * @param optionType The optionType.
+   * @param messageType The messsageType.
+   * @param icon The icon displayed.
+   *
+   * @return The selected option.
+   */
+  public static int showConfirmDialog(Component parentComponent,
+                                      Object message, String title,
+                                      int optionType, int messageType,
+                                      Icon icon)
+  {
+    JOptionPane pane = new JOptionPane(message, messageType, optionType, icon);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+
+    return ((Integer) pane.getValue()).intValue();
+  }
+
+  /**
+   * This method will show a QUESTION_MESSAGE input dialog with the given
+   * message. No selectionValues is set so the Look and Feel will usually
+   * give the user a TextField to fill out. The frame owner will be the same
+   * frame that holds the given parentComponent. This method will return the
+   * value entered by the user.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   *
+   * @return The value entered by the user.
+   */
+  public static String showInputDialog(Component parentComponent,
+                                       Object message)
+  {
+    JOptionPane pane = new JOptionPane(message, QUESTION_MESSAGE);
+    pane.setWantsInput(true);
+    JDialog dialog = pane.createDialog(parentComponent, null);
+    dialog.pack();
+    dialog.show();
+
+    return (String) pane.getInputValue();
+  }
+
+  /**
+   * This method will show a QUESTION_MESSAGE type input dialog with the given
+   * message and initialSelectionValue. Since there is no selectionValues
+   * set, the Look and Feel will usually give a TextField to fill out. The
+   * frame owner will be the same as the one that holds the given
+   * parentComponent. This method will return the value entered by the user.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message to display.
+   * @param initialSelectionValue The initially selected value.
+   *
+   * @return The value the user input.
+   */
+  public static String showInputDialog(Component parentComponent,
+                                       Object message,
+                                       Object initialSelectionValue)
+  {
+    JOptionPane pane = new JOptionPane(message, QUESTION_MESSAGE);
+    pane.setInitialSelectionValue(initialSelectionValue);
+    pane.setWantsInput(true);
+    JDialog dialog = pane.createDialog(parentComponent, null);
+    dialog.pack();
+    dialog.show();
+
+    return (String) pane.getInputValue();
+  }
+
+  /**
+   * This method displays a new input dialog with the given message, title and
+   * messageType. Since no selectionValues value is given, the Look and Feel
+   * will usually give the user a TextField to input data to. This method
+   * returns the value the user inputs.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message to display.
+   * @param title The title of the dialog.
+   * @param messageType The messageType.
+   *
+   * @return The value the user input.
+   */
+  public static String showInputDialog(Component parentComponent,
+                                       Object message, String title,
+                                       int messageType)
+  {
+    JOptionPane pane = new JOptionPane(message, messageType);
+    pane.setWantsInput(true);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+
+    return (String) pane.getInputValue();
+  }
+
+  /**
+   * This method shows an input dialog with the given message, title,
+   * messageType, icon, selectionValues, and initialSelectionValue. This
+   * method returns the value that the user selects.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   * @param title The title of the dialog.
+   * @param messageType The messageType.
+   * @param icon The icon displayed.
+   * @param selectionValues The list of values to select from.
+   * @param initialSelectionValue The initially selected value.
+   *
+   * @return The user selected value.
+   */
+  public static Object showInputDialog(Component parentComponent,
+                                       Object message, String title,
+                                       int messageType, Icon icon,
+                                       Object[] selectionValues,
+                                       Object initialSelectionValue)
+  {
+    JOptionPane pane = new JOptionPane(message, messageType);
+    pane.setWantsInput(true);
+    pane.setIcon(icon);
+    pane.setSelectionValues(selectionValues);
+    pane.setInitialSelectionValue(initialSelectionValue);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+
+    return (String) pane.getInputValue();
+  }
+
+  /**
+   * This method shows a QUESTION_MESSAGE type input dialog. Since no
+   * selectionValues is set, the Look and Feel will usually give the user a
+   * TextField to input data to. This method returns the value the user
+   * inputs.
+   *
+   * @param message The message to display.
+   *
+   * @return The user selected value.
+   */
+  public static String showInputDialog(Object message)
+  {
+    JOptionPane pane = new JOptionPane(message, QUESTION_MESSAGE);
+    pane.setWantsInput(true);
+    JDialog dialog = pane.createDialog(null, null);
+    dialog.pack();
+    dialog.show();
+
+    return (String) pane.getInputValue();
+  }
+
+  /**
+   * This method shows a QUESTION_MESSAGE type input dialog. Since no
+   * selectionValues is set, the Look and Feel will usually give the user a
+   * TextField to input data to. The input component will be initialized with
+   * the initialSelectionValue. This method returns the value the user
+   * inputs.
+   *
+   * @param message The message to display.
+   * @param initialSelectionValue The initialSelectionValue.
+   *
+   * @return The user selected value.
+   */
+  public static String showInputDialog(Object message,
+                                       Object initialSelectionValue)
+  {
+    JOptionPane pane = new JOptionPane(message, QUESTION_MESSAGE);
+    pane.setWantsInput(true);
+    pane.setInitialSelectionValue(initialSelectionValue);
+    JDialog dialog = pane.createDialog(null, null);
+    dialog.pack();
+    dialog.show();
+
+    return (String) pane.getInputValue();
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static int showInternalConfirmDialog(Component parentComponent,
+                                              Object message)
+  {
+    // FIXME: implement
+    return 0;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param optionType DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static int showInternalConfirmDialog(Component parentComponent,
+                                              Object message, String title,
+                                              int optionType)
+  {
+    // FIXME: implement  
+    return 0;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param optionType DOCUMENT ME!
+   * @param messageType DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static int showInternalConfirmDialog(Component parentComponent,
+                                              Object message, String title,
+                                              int optionType, int messageType)
+  {
+    // FIXME: implement  
+    return 0;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param optionType DOCUMENT ME!
+   * @param messageType DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static int showInternalConfirmDialog(Component parentComponent,
+                                              Object message, String title,
+                                              int optionType, int messageType,
+                                              Icon icon)
+  {
+    // FIXME: implement  
+    return 0;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static String showInternalInputDialog(Component parentComponent,
+                                               Object message)
+  {
+    // FIXME: implement  
+    return null;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param messageType DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static String showInternalInputDialog(Component parentComponent,
+                                               Object message, String title,
+                                               int messageType)
+  {
+    // FIXME: implement  
+    return null;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param messageType DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   * @param selectionValues DOCUMENT ME!
+   * @param initialSelectionValue DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static Object showInternalInputDialog(Component parentComponent,
+                                               Object message, String title,
+                                               int messageType, Icon icon,
+                                               Object[] selectionValues,
+                                               Object initialSelectionValue)
+  {
+    // FIXME: implement  
+    return null;
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   */
+  public static void showInternalMessageDialog(Component parentComponent,
+                                               Object message)
+  {
+    // FIXME: implement  
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param messageType DOCUMENT ME!
+   */
+  public static void showInternalMessageDialog(Component parentComponent,
+                                               Object message, String title,
+                                               int messageType)
+  {
+    // FIXME: implement
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param messageType DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   */
+  public static void showInternalMessageDialog(Component parentComponent,
+                                               Object message, String title,
+                                               int messageType, Icon icon)
+  {
+    // FIXME: implement  
+  }
+
+  /**
+   * DOCUMENT ME!
+   *
+   * @param parentComponent DOCUMENT ME!
+   * @param message DOCUMENT ME!
+   * @param title DOCUMENT ME!
+   * @param optionType DOCUMENT ME!
+   * @param messageType DOCUMENT ME!
+   * @param icon DOCUMENT ME!
+   * @param options DOCUMENT ME!
+   * @param initialValue DOCUMENT ME!
+   *
+   * @return DOCUMENT ME!
+   */
+  public static int showInternalOptionDialog(Component parentComponent,
+                                             Object message, String title,
+                                             int optionType, int messageType,
+                                             Icon icon, Object[] options,
+                                             Object initialValue)
+  {
+    // FIXME: implement  
+    return 0;
+  }
+
+  /**
+   * This method shows an INFORMATION_MESSAGE type message dialog.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   */
+  public static void showMessageDialog(Component parentComponent,
+                                       Object message)
+  {
+    JOptionPane pane = new JOptionPane(message, INFORMATION_MESSAGE);
+    JDialog dialog = pane.createDialog(parentComponent, null);
+    dialog.pack();
+    dialog.show();
+  }
+
+  /**
+   * This method shows a message dialog with the given message, title and
+   * messageType.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   * @param title The title of the dialog.
+   * @param messageType The messageType.
+   */
+  public static void showMessageDialog(Component parentComponent,
+                                       Object message, String title,
+                                       int messageType)
+  {
+    JOptionPane pane = new JOptionPane(message, messageType);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+  }
+
+  /**
+   * This method shows a message dialog with the given message, title,
+   * messageType and icon.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   * @param title The title of the dialog.
+   * @param messageType The messageType.
+   * @param icon The icon displayed.
+   */
+  public static void showMessageDialog(Component parentComponent,
+                                       Object message, String title,
+                                       int messageType, Icon icon)
+  {
+    JOptionPane pane = new JOptionPane(message, messageType);
+    pane.setIcon(icon);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+  }
+
+  /**
+   * This method shows an option dialog with the given message, title,
+   * optionType, messageType, icon, options and initialValue. This method
+   * returns the option that was selected.
+   *
+   * @param parentComponent The component to find a frame in.
+   * @param message The message displayed.
+   * @param title The title of the dialog.
+   * @param optionType The optionType.
+   * @param messageType The messageType.
+   * @param icon The icon displayed.
+   * @param options The options to choose from.
+   * @param initialValue The initial value.
+   *
+   * @return The selected option.
+   */
+  public static int showOptionDialog(Component parentComponent,
+                                     Object message, String title,
+                                     int optionType, int messageType,
+                                     Icon icon, Object[] options,
+                                     Object initialValue)
+  {
+    JOptionPane pane = new JOptionPane(message, messageType, optionType, icon,
+                                       options, initialValue);
+    JDialog dialog = pane.createDialog(parentComponent, title);
+    dialog.pack();
+    dialog.show();
+
+    return ((Integer) pane.getValue()).intValue();
+  }
+
+  /**
+   * This method resets the UI to the Look and Feel default.
+   */
+  public void updateUI()
+  {
+    setUI((OptionPaneUI) UIManager.getUI(this));
+    invalidate();
+  }
+
+  /**
+   * This method returns true if the key is a valid messageType.
+   *
+   * @param key The key to check.
+   *
+   * @return True if key is valid.
+   */
+  private boolean validMessageType(int key)
+  {
+    switch (key)
+      {
+      case ERROR_MESSAGE:
+      case INFORMATION_MESSAGE:
+      case PLAIN_MESSAGE:
+      case QUESTION_MESSAGE:
+      case WARNING_MESSAGE:
+	return true;
+      }
+    return false;
+  }
+
+  /**
+   * This method returns true if the key is a valid optionType.
+   *
+   * @param key The key to check.
+   *
+   * @return True if key is valid.
+   */
+  private boolean validOptionType(int key)
+  {
+    switch (key)
+      {
+      case DEFAULT_OPTION:
+      case OK_CANCEL_OPTION:
+      case YES_NO_CANCEL_OPTION:
+      case YES_NO_OPTION:
+	return true;
+      }
+    return false;
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

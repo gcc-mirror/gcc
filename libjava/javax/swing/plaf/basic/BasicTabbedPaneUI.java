@@ -223,10 +223,11 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
         {
 	  Component visible = getVisibleComponent();
 	  Insets insets = getContentBorderInsets(tabPane.getTabPlacement());
-	  visible.setBounds(contentRect.x + insets.left,
-	                    contentRect.y + insets.top,
-	                    contentRect.width - insets.left - insets.right,
-	                    contentRect.height - insets.top - insets.bottom);
+	  if (visible != null)
+	    visible.setBounds(contentRect.x + insets.left,
+	                      contentRect.y + insets.top,
+	                      contentRect.width - insets.left - insets.right,
+	                      contentRect.height - insets.top - insets.bottom);
         }
     }
 
@@ -1510,6 +1511,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
     tabPane.setFont(defaults.getFont("TabbedPane.font"));
     tabPane.setForeground(defaults.getColor("TabbedPane.foreground"));
     tabPane.setBackground(defaults.getColor("TabbedPane.background"));
+    tabPane.setOpaque(true);
 
     highlight = defaults.getColor("TabbedPane.highlight");
     lightHighlight = defaults.getColor("TabbedPane.lightHighlight");
@@ -1790,7 +1792,7 @@ public class BasicTabbedPaneUI extends TabbedPaneUI implements SwingConstants
     // FIXME: Paint little folding corner and jagged edge clipped tab.
     if (icon != null)
       paintIcon(g, tabPlacement, tabIndex, icon, iconRect, isSelected);
-    if (title == null || ! title.equals(""))
+    if (title != null && ! title.equals(""))
       paintText(g, tabPlacement, tabPane.getFont(), fm, tabIndex, title,
                 textRect, isSelected);
   }

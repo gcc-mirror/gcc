@@ -48,27 +48,55 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
 
+/**
+ * DOCUMENT ME!
+ *
+ * @author $author$
+ * @version $Revision: 1.1.2.3 $
+ */
 public class BasicRadioButtonMenuItemUI extends BasicMenuItemUI
 {
-
+  /**
+   * Creates a new BasicRadioButtonMenuItemUI object.
+   */
   public BasicRadioButtonMenuItemUI()
-  {    
+  {
     super();
     UIDefaults defaults = UIManager.getLookAndFeelDefaults();
     checkIcon = defaults.getIcon("RadioButtonMenuItem.checkIcon");
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param b DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   public static ComponentUI createUI(JComponent b)
   {
     return new BasicRadioButtonMenuItemUI();
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @return $returnType$ DOCUMENT ME!
+   */
   protected String getPropertyPrefix()
   {
     return null;
     // TODO
   }
 
+  /**
+   * DOCUMENT ME!
+   *
+   * @param item DOCUMENT ME!
+   * @param e DOCUMENT ME!
+   * @param path DOCUMENT ME!
+   * @param manager DOCUMENT ME!
+   */
   void processMouseEvent(JMenuItem item, MouseEvent e, MenuElement[] path,
                          MenuSelectionManager manager)
   {

@@ -54,9 +54,10 @@ public class GtkButtonPeer extends GtkComponentPeer
   public native void connectJObject ();
   public native void connectSignals ();
 
-  native void gtkSetFont(String name, int style, int size);
+  native void gtkSetFont (String name, int style, int size);
   native void gtkSetLabel(String label);
   native void gtkWidgetSetForeground (int red, int green, int blue);
+  native void gtkActivate ();
 
   public GtkButtonPeer (Button b)
   {
@@ -87,8 +88,11 @@ public class GtkButtonPeer extends GtkComponentPeer
       {
 	KeyEvent ke = (KeyEvent) e;
 	if (!ke.isConsumed () && ke.getKeyCode () == KeyEvent.VK_SPACE)
-	  postActionEvent (((Button)awtComponent).getActionCommand (),
-			   ke.getModifiers ());
+          {
+            postActionEvent (((Button) awtComponent).getActionCommand (),
+                             ke.getModifiers ());
+            gtkActivate ();
+          }
       }
 
     super.handleEvent (e);
@@ -99,10 +103,5 @@ public class GtkButtonPeer extends GtkComponentPeer
     super.getArgs (component, args);
 
     args.add ("label", ((Button)component).getLabel ());
-  }
-
-  public void setFont (Font f)
-  {
-    gtkSetFont(f.getName(), f.getStyle(), f.getSize());
   }
 }
