@@ -1,4 +1,9 @@
-2004-6-12  Bud Davis  <bdavis9659@comcast.net>
+2004-06-13  Steven G. Kargl  <kargls@comcast.net>
+
+	* random.c (random_r4): Burn a random number.
+	(random_r8): fix infinite loop.
+	
+2004-06-12  Bud Davis  <bdavis9659@comcast.net>
       Steve Kargl  <sgk@troutmask.apl.washington.edu>
 
 	PR gfortran/15292
