@@ -3256,6 +3256,16 @@ for backward compatibility in pre GCC 3.0 compiled code.
 If this macro is not defined, it defaults to
 @code{DWARF_FRAME_REGISTERS}.
 
+@findex DWARF_REG_TO_UNWIND_COLUMN
+@item DWARF_REG_TO_UNWIND_COLUMN (@var{regno})
+
+Define this macro if the target's representation for dwarf registers
+is different than the internal representation for unwind column.
+Given a dwarf register, this macro should return the interal unwind
+column number to use instead.
+
+See the PowerPC's SPE target for an example.  
+
 @end table
 
 @node Elimination

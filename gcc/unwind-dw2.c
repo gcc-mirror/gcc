@@ -50,6 +50,10 @@
 #define PRE_GCC3_DWARF_FRAME_REGISTERS DWARF_FRAME_REGISTERS
 #endif
 
+#ifndef DWARF_REG_TO_UNWIND_COLUMN
+#define DWARF_REG_TO_UNWIND_COLUMN(REGNO) (REGNO)
+#endif
+
 /* This is the register and unwind state for a particular frame.  This
    provides the information necessary to unwind up past a frame and return
    to its caller.  */
@@ -164,6 +168,7 @@ read_8s (const void *p) { const union unaligned *up = p; return up->s8; }
 inline _Unwind_Word
 _Unwind_GetGR (struct _Unwind_Context *context, int index)
 {
+  index = DWARF_REG_TO_UNWIND_COLUMN (index);
   /* This will segfault if the register hasn't been saved.  */
   return * (_Unwind_Word *) context->reg[index];
 }
@@ -173,7 +178,26 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
 inline void
 _Unwind_SetGR (struct _Unwind_Context *context, int index, _Unwind_Word val)
 {
+  index = DWARF_REG_TO_UNWIND_COLUMN (index);
   * (_Unwind_Word *) context->reg[index] = val;
+}
+
+/* Get the pointer to a register INDEX as saved in CONTEXT.  */
+
+static inline void *
+_Unwind_GetGRPtr (struct _Unwind_Context *context, int index)
+{
+  index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  return context->reg[index];
+}
+
+/* Set the pointer to a register INDEX as saved in CONTEXT.  */
+
+static inline void
+_Unwind_SetGRPtr (struct _Unwind_Context *context, int index, void *p)
+{
+  index = DWARF_REG_TO_UNWIND_COLUMN (index);
+  context->reg[index] = p;
 }
 
 /* Retrieve the return address for CONTEXT.  */
@@ -741,13 +765,14 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = insn & 0x3f;
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  offset = (_Unwind_Sword) utmp * fs->data_align;
-	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
-	  fs->regs.reg[reg].loc.offset = offset;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
+	    = REG_SAVED_OFFSET;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
 	}
       else if ((insn & 0xc0) == DW_CFA_restore)
 	{
 	  reg = insn & 0x3f;
-	  fs->regs.reg[reg].how = REG_UNSAVED;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how = REG_UNSAVED;
 	}
       else switch (insn)
 	{
@@ -773,13 +798,14 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  offset = (_Unwind_Sword) utmp * fs->data_align;
-	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
-	  fs->regs.reg[reg].loc.offset = offset;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
+	    = REG_SAVED_OFFSET;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
 	  break;
 
 	case DW_CFA_restore_extended:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
-	  fs->regs.reg[reg].how = REG_UNSAVED;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN(reg)].how = REG_UNSAVED;
 	  break;
 
 	case DW_CFA_undefined:
@@ -795,8 +821,8 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	    _Unwind_Word reg2;
 	    insn_ptr = read_uleb128 (insn_ptr, &reg);
 	    insn_ptr = read_uleb128 (insn_ptr, &reg2);
-	    fs->regs.reg[reg].how = REG_SAVED_REG;
-	    fs->regs.reg[reg].loc.reg = reg2;
+	    fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how = REG_SAVED_REG;
+	    fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.reg = reg2;
 	  }
 	  break;
 
@@ -853,8 +879,8 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	case DW_CFA_expression:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
-	  fs->regs.reg[reg].how = REG_SAVED_EXP;
-	  fs->regs.reg[reg].loc.exp = insn_ptr;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how = REG_SAVED_EXP;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.exp = insn_ptr;
 	  insn_ptr += utmp;
 	  break;
 
@@ -863,8 +889,9 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_sleb128 (insn_ptr, &stmp);
 	  offset = stmp * fs->data_align;
-	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
-	  fs->regs.reg[reg].loc.offset = offset;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
+	    = REG_SAVED_OFFSET;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
 	  break;
 
 	case DW_CFA_def_cfa_sf:
@@ -897,8 +924,9 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  offset = (_Unwind_Word) utmp * fs->data_align;
-	  fs->regs.reg[reg].how = REG_SAVED_OFFSET;
-	  fs->regs.reg[reg].loc.offset = -offset;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
+	    = REG_SAVED_OFFSET;
+	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = -offset;
 	  break;
 
 	default:
@@ -1052,7 +1080,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	 one frame to the next.  In this case, the stack pointer is never
 	 stored, so it has no saved address in the context.  What we do
 	 have is the CFA from the previous stack frame.  */
-      if (context->reg[fs->cfa_reg] == NULL)
+      if (_Unwind_GetGRPtr (context, fs->cfa_reg) == NULL)
 	cfa = context->cfa;
       else
 	cfa = (void *) (_Unwind_Ptr) _Unwind_GetGR (context, fs->cfa_reg);
@@ -1086,10 +1114,12 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
       case REG_UNSAVED:
 	break;
       case REG_SAVED_OFFSET:
-	context->reg[i] = cfa + fs->regs.reg[i].loc.offset;
+	_Unwind_SetGRPtr (context, i, (void *) (cfa + fs->regs.reg[i].loc.offset));
 	break;
       case REG_SAVED_REG:
-	context->reg[i] = orig_context.reg[fs->regs.reg[i].loc.reg];
+	_Unwind_SetGRPtr
+	  (context, i,
+	   _Unwind_GetGRPtr (&orig_context, fs->regs.reg[i].loc.reg));
 	break;
       case REG_SAVED_EXP:
 	{
@@ -1100,7 +1130,7 @@ uw_update_context_1 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	  exp = read_uleb128 (exp, &len);
 	  val = execute_stack_op (exp, exp + len, &orig_context,
 				  (_Unwind_Ptr) cfa);
-	  context->reg[i] = (void *) val;
+	  _Unwind_SetGRPtr (context, i, (void *) val);
 	}
 	break;
       }
@@ -1205,6 +1235,7 @@ uw_install_context_1 (struct _Unwind_Context *current,
     {
       void *c = current->reg[i];
       void *t = target->reg[i];
+
       if (t && c && t != c)
 	memcpy (c, t, dwarf_reg_size_table[i]);
     }
