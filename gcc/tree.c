@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2017,7 +2017,11 @@ substitute_in_expr (exp, f, r)
 						   f, r)));
 
 	case 2:
-	  if (code == RTL_EXPR || code == CONSTRUCTOR)
+	  /* An RTL_EXPR cannot contain a PLACEHOLDER_EXPR; a CONSTRUCTOR
+	     could, but we don't support it.  */
+	  if (code == RTL_EXPR)
+	    return exp;
+	  else if (code == CONSTRUCTOR)
 	    abort ();
 
 	  return fold (build (code, TREE_TYPE (exp),
@@ -2026,6 +2030,11 @@ substitute_in_expr (exp, f, r)
 						  f, r)));
 
 	case 3:
+	  /* It cannot be that anything inside a SAVE_EXPR contains a
+	     PLACEHOLDER_EXPR.  */
+	  if (code == SAVE_EXPR)
+	    return exp;
+
 	  if (code != COND_EXPR)
 	    abort ();
 
