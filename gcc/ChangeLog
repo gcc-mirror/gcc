@@ -1,5 +1,10 @@
 2000-04-14  Richard Henderson  <rth@cygnus.com>
 
+        * fold-const.c (extract_muldiv): Don't distribute and widen
+        multiply across plus for non-sizetype unsigned types.
+
+2000-04-14  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (find_auto_inc): Don't autoinc eliminable registers.
 	If the original source is dead in the incr insn, it's dead now.
 
