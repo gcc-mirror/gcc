@@ -1,5 +1,10 @@
 2001-04-06  Tom Tromey  <tromey@redhat.com>
 
+	* parse.y (analyze_clinit_body): Return true if the second operand
+	of a METHOD_EXPR is nonzero.
+
+2001-04-06  Tom Tromey  <tromey@redhat.com>
+
 	* Make-lang.in ($(srcdir)/java/parse-scan.c): Run bison from build
 	directory.
 	($(srcdir)/java/parse.c): Likewise.

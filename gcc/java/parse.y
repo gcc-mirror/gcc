@@ -7560,7 +7560,7 @@ maybe_generate_pre_expand_clinit (class_type)
 }
 
 /* Analyzes a method body and look for something that isn't a
-   MODIFY_EXPR. */
+   MODIFY_EXPR with a constant value.  */
 
 static int
 analyze_clinit_body (bbody)
@@ -7584,11 +7584,10 @@ analyze_clinit_body (bbody)
 	break;
 	
       case MODIFY_EXPR:
-	bbody = NULL_TREE;
-	break;
+	/* Return 0 if the operand is constant, 1 otherwise.  */
+	return ! TREE_CONSTANT (TREE_OPERAND (bbody, 1));
 
       default:
-	bbody = NULL_TREE;
 	return 1;
       }
   return 0;
