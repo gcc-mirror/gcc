@@ -1,3 +1,7 @@
+Fri Jan 22 07:43:01 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (tooldir): Replace with gcc_tooldir.
+
 Thu Jan 21 23:21:57 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.md (ashldi_const): Disable for !TARGET_5200.  Fix indention.
