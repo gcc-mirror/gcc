@@ -1,3 +1,17 @@
+1998-10-30  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl2.c (delete_sanity): Pass integer_zero_node, not
+	integer_two_node, to build_vec_delete.
+	* init.c (build_array_eh_cleanup): Remove.
+	(expand_vec_init_try_block): New function.
+	(expand_vec_init_catch_clause): Likewise.
+	(build_vec_delete_1): Don't deal with case that auto_delete_vec
+	might be integer_two_node anymore.
+	(expand_vec_init): Rework for initialization-correctness and
+	exception-correctness.
+	* typeck2.c (process_init_constructor): Make mutual exclusivity
+	of cases more obvious.
+	
 1998-10-29  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): OK, only warn if not lexing.

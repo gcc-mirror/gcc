@@ -1006,7 +1006,7 @@ process_init_constructor (type, init, elts)
 	  members = expr_tree_cons (NULL_TREE, next1, members);
 	}
     }
-  if (TREE_CODE (type) == RECORD_TYPE)
+  else if (TREE_CODE (type) == RECORD_TYPE)
     {
       register tree field;
 
@@ -1108,8 +1108,7 @@ process_init_constructor (type, init, elts)
 		     IDENTIFIER_POINTER (DECL_NAME (field)));
 	}
     }
-
-  if (TREE_CODE (type) == UNION_TYPE)
+  else if (TREE_CODE (type) == UNION_TYPE)
     {
       register tree field = TYPE_FIELDS (type);
       register tree next1;
