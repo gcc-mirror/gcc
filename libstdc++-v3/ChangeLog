@@ -1,3 +1,9 @@
+2003-12-20  Jerry Quinn  <jlquinn@optonline.net>
+
+	* docs/doxygen/TODO: Update.
+	* include/bits/locale_classes.h (locale, facet, id): Document.
+	* include/bits/locale_facets.tcc (has_facet, use_facet): Document.
+
 2003-12-19  Jason Merrill  <jason@redhat.com>
 
 	* config/cpu/cris/atomicity.h: Remove memory clobbers.

@@ -69,6 +69,18 @@ namespace std
 				__s2.data(), __s2.data() + __s2.length()) < 0);
     }
 
+  /**
+   *  @brief  Test for the presence of a facet.
+   *
+   *  has_facet tests the locale argument for the presence of the facet type
+   *  provided as the template parameter.  Facets derived from the facet
+   *  parameter will also return true.
+   *
+   *  @param  Facet  The facet type to test the presence of.
+   *  @param  locale  The locale to test.
+   *  @return  true if locale contains a facet of type Facet, else false.
+   *  @throw  std::bad_cast if locale doesn't contain the facet.
+  */
   template<typename _Facet>
     inline bool
     has_facet(const locale& __loc) throw()
@@ -78,6 +90,19 @@ namespace std
       return (__i < __loc._M_impl->_M_facets_size && __facets[__i]);
     }
 
+  /**
+   *  @brief  Return a facet.
+   *
+   *  use_facet looks for and returns a reference to a facet of type Facet
+   *  where Facet is the template parameter.  If has_facet(locale) is true,
+   *  there is a suitable facet to return.  It throws std::bad_cast if the
+   *  locale doesn't contain a facet of type Facet.
+   *
+   *  @param  Facet  The facet type to access.
+   *  @param  locale  The locale to use.
+   *  @return  Reference to facet of type Facet.
+   *  @throw  std::bad_cast if locale doesn't contain a facet of type Facet.
+  */
   template<typename _Facet>
     inline const _Facet&
     use_facet(const locale& __loc)
