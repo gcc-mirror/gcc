@@ -1,3 +1,11 @@
+2001-12-20  Richard Henderson  <rth@redhat.com>
+
+	* g++.old-deja/g++.eh/badalloc1.C (arena_size): New.
+	(arena): Use it.
+	(malloc): Correct allocation logic.  Abort if we fill up the
+	arena before initialization complete.
+	(realloc): Correct allocation logic.
+
 2001-12-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20011219-2.c: New test.
@@ -52,7 +60,7 @@ Mon Dec 17 16:54:56 2001  Nicola Pero  <nicola@brainstorm.co.uk>
 2001-12-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* g++.old-deja/g++.jason/template31.C: Remove templates for classes
-        std::__malloc_alloc_template<0> and
+	std::__malloc_alloc_template<0> and
 	std::__default_alloc_template<false, 0>.
 
 Thu Dec 13 10:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
@@ -117,13 +125,13 @@ Thu Dec 13 10:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-10-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/builtin-types-compatible-p.c: New.
+	* gcc.c-torture/execute/builtin-types-compatible-p.c: New.
 
-        * gcc.dg/builtin-choose-expr.c: New.
+	* gcc.dg/builtin-choose-expr.c: New.
 
 2001-12-07  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-2.c: New.
+	* gcc.dg/altivec-2.c: New.
 
 2001-12-07  Richard Henderson  <rth@redhat.com>
 
@@ -281,7 +289,7 @@ Fri Nov 23 15:55:44 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-11-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-1.c: Fix typo.
+	* gcc.dg/altivec-1.c: Fix typo.
 
 2001-11-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -306,7 +314,7 @@ Fri Nov 23 15:55:44 2001  Jeffrey A Law  (law@cygnus.com)
 
 2001-11-19  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/altivec-1.c: New.
+	* gcc.dg/altivec-1.c: New.
 
 2001-11-19  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -434,7 +442,7 @@ Fri Nov 23 15:55:44 2001  Jeffrey A Law  (law@cygnus.com)
 2001-11-01  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* gcc.c-torture/compile/20010327-1.c: Use __SIZE_TYPE__ instead
-        of unsigned long.
+	of unsigned long.
 
 2001-10-30  Jakub Jelinek  <jakub@redhat.com>
 
@@ -663,7 +671,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-09-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/980223.c: Change type of addr from long
+	* gcc.c-torture/execute/980223.c: Change type of addr from long
 	to char *.
 
 2001-09-15  Hans-Peter Nilsson  <hp@axis.com>
@@ -769,7 +777,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-08-25  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.dg/asm-names.c (ymain): New.
+	* gcc.dg/asm-names.c (ymain): New.
 
 2001-08-22  Geoffrey Keating  <geoffk@redhat.com>
 
@@ -788,7 +796,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-08-21  Aldy Hernandez  <aldyh@redhat.com>
 
-        * gcc.c-torture/execute/divmod-1.c: Convert to ANSI.
+	* gcc.c-torture/execute/divmod-1.c: Convert to ANSI.
 
 2001-08-20  Janis Johnson  <janis187@us.ibm.com>
 
@@ -896,7 +904,7 @@ Mon Oct 29 21:19:53 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 	* g77.dg/ffixed-line-length-7.f
 	* g77.dg/ffixed-line-length-72.f
 	* g77.dg/ffixed-line-length-none.f
-        * g77.dg/ffree-form-1.f
+	* g77.dg/ffree-form-1.f
 	* g77.dg/fno-backslash.f
 	* g77.dg/fno-f90-1.f
 	* g77.dg/fno-fixed-form-1.f
