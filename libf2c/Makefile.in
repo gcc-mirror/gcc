@@ -81,6 +81,7 @@ FLAGS_TO_PASS= \
 	WARN_CFLAGS='$(WARN_CFLAGS)' \
 	CFLAGS='$(CFLAGS)' \
 	CPPFLAGS='$(CPPFLAGS)' \
+	DESTDIR='$(DESTDIR)' \
 	AR='$(AR)' \
 	RANLIB='$(RANLIB)' \
 	prefix='$(prefix)' \
@@ -214,21 +215,21 @@ check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install: all
-	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(glibcpp_toolexeclibdir)
-	$(LIBTOOL) --mode=install $(INSTALL) $(LIBG2C) $(glibcpp_toolexeclibdir)
-	$(INSTALL_DATA) libfrtbegin.a $(glibcpp_toolexeclibdir)
-	$(RANLIB) $(glibcpp_toolexeclibdir)/libfrtbegin.a
-	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
+	$(SHELL) $(toplevel_srcdir)/mkinstalldirs $(DESTDIR)$(glibcpp_toolexeclibdir)
+	$(LIBTOOL) --mode=install $(INSTALL) $(LIBG2C) $(DESTDIR)$(glibcpp_toolexeclibdir)
+	$(INSTALL_DATA) libfrtbegin.a $(DESTDIR)$(glibcpp_toolexeclibdir)
+	$(RANLIB) $(DESTDIR)$(glibcpp_toolexeclibdir)/libfrtbegin.a
+	$(INSTALL_DATA) g2c.h $(DESTDIR)$(libsubdir)/include/g2c.h
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
-	@-$(LIBTOOL) --mode=finish $(glibcpp_toolexeclibdir)
+	@-$(LIBTOOL) --mode=finish $(DESTDIR)$(glibcpp_toolexeclibdir)
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 uninstall:
-	rm -f $(libsubdir)/include/g2c.h
-	rm -f $(glibcpp_toolexeclibdir)/libfrtbegin.a
-	$(LIBTOOL) --mode=uninstall rm -f $(glibcpp_toolexeclibdir)$(LIBG2C_BASE).la
+	rm -f $(DESTDIR)$(libsubdir)/include/g2c.h
+	rm -f $(DESTDIR)$(glibcpp_toolexeclibdir)/libfrtbegin.a
+	$(LIBTOOL) --mode=uninstall rm -f $(DESTDIR)$(glibcpp_toolexeclibdir)$(LIBG2C_BASE).la
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
 
 mostlyclean:

@@ -1,3 +1,13 @@
+2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* include/Makefile.am (install-data-local): Prepend
+	$(DESTDIR) to destination paths in all (un)installation
+	commands.  Use ${c_base_builddir} and ${std_builddir}
+	as destination subdirectories to achieve consistency with
+	preceding mkinstalldirs commands.  No effect because both
+	variables contain "." only.
+	* include/Makefile.in: Regenerate.
+
 2003-01-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (stamp-*): Add checks for existing stamps.

@@ -484,32 +484,32 @@ ${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
 # the rest are taken from the original source tree.
 gxx_include_dir = @gxx_include_dir@
 install-data-local:
-	$(mkinstalldirs) ${gxx_include_dir}
-	$(mkinstalldirs) ${gxx_include_dir}/${bits_builddir}
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${bits_builddir}
 	for file in ${bits_headers}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${bits_builddir}; done
-	$(mkinstalldirs) ${gxx_include_dir}/${backward_builddir}
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${bits_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${backward_builddir}
 	for file in ${backward_headers}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${backward_builddir}; done
-	$(mkinstalldirs) ${gxx_include_dir}/${ext_builddir}
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${backward_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${ext_builddir}
 	for file in ${ext_headers}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${ext_builddir}; done
-	$(mkinstalldirs) ${gxx_include_dir}/${c_base_builddir}
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${ext_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${c_base_builddir}
 	for file in ${c_base_headers_rename}; do \
-	  $(INSTALL_DATA) ${c_base_builddir}/$${file} ${gxx_include_dir}; done
+	  $(INSTALL_DATA) ${c_base_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${c_base_builddir}; done
 	c_base_headers_extra_install='$(c_base_headers_extra)';\
 	for file in $$c_base_headers_extra_install; do \
-	  $(INSTALL_DATA) $$file ${gxx_include_dir}/${bits_builddir}; done
+	  $(INSTALL_DATA) $$file $(DESTDIR)${gxx_include_dir}/${bits_builddir}; done
 	c_compatibility_headers_install='$(c_compatibility_headers_extra)';\
 	for file in $$c_compatibility_headers_install; do \
-	  $(INSTALL_DATA) $$file ${gxx_include_dir}; done
-	$(mkinstalldirs) ${gxx_include_dir}/${std_builddir}
+	  $(INSTALL_DATA) $$file $(DESTDIR)${gxx_include_dir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers_rename}; do \
-	  $(INSTALL_DATA) ${std_builddir}/$${file} ${gxx_include_dir}; done
-	$(mkinstalldirs) ${gxx_include_dir}/${target_builddir}
+	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${target_builddir}
 	for file in ${target_headers} ${target_headers_extra} \
 	 ${thread_target_headers}; do \
-	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${target_builddir}; done
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${target_builddir}; done
 
 # By adding these files here, automake will remove them for 'make clean'
 #CLEANFILES = ${allstamps} 

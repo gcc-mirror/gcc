@@ -1,3 +1,9 @@
+2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Makefile.in (FLAGS_TO_PASS): Also pass DESTDIR.
+	(install-libs, install-headers): Prepend $(DESTDIR) to
+	destination paths in all (un)installation commands.
+
 2002-12-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* thr-objc.c: Include coretypes.h and tm.h.
