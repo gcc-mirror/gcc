@@ -678,6 +678,13 @@ finish_for_cond (tree cond, tree for_stmt)
 void
 finish_for_expr (tree expr, tree for_stmt)
 {
+  /* If EXPR is an overloaded function, issue an error; there is no
+     context available to use to perform overload resolution.  */
+  if (expr && type_unknown_p (expr))
+    {
+      cxx_incomplete_type_error (expr, TREE_TYPE (expr));
+      expr = error_mark_node;
+    }
   FOR_EXPR (for_stmt) = expr;
 }
 
