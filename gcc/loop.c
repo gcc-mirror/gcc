@@ -3603,6 +3603,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
   not_every_iteration = 0;
   loop_depth = 0;
+  maybe_multiple = 0;
   p = scan_start;
   while (1)
     {
@@ -3683,8 +3684,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		}
 
 	      record_giv (v, p, src_reg, dest_reg, mult_val, add_val, benefit,
-			  DEST_REG, not_every_iteration, NULL_PTR, loop_start,
-			  loop_end);
+			  DEST_REG, not_every_iteration, maybe_multiple,
+			  NULL_PTR, loop_start, loop_end);
 
 	    }
 	}
@@ -3694,8 +3695,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       /* This resulted in worse code on a VAX 8600.  I wonder if it
 	 still does.  */
       if (GET_CODE (p) == INSN)
-	find_mem_givs (PATTERN (p), p, not_every_iteration, loop_start,
-		       loop_end);
+	find_mem_givs (PATTERN (p), p, not_every_iteration, maybe_multiple,
+		       loop_start, loop_end);
 #endif
 
       /* Update the status of whether giv can derive other givs.  This can
@@ -3703,6 +3704,49 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
 	|| GET_CODE (p) == CODE_LABEL)
 	update_giv_derive (p);
+
+      /* Past CODE_LABEL, we get to insns that may be executed multiple
+	 times.  The only way we can be sure that they can't is if every
+	 every jump insn between here and the end of the loop either
+	 returns, exits the loop, is a forward jump, or is a jump
+	 to the loop start.  */
+
+      if (GET_CODE (p) == CODE_LABEL)
+	{
+	  rtx insn = p;
+
+	  maybe_multiple = 0;
+
+	  while (1)
+	    {
+	      insn = NEXT_INSN (insn);
+	      if (insn == scan_start)
+		break;
+	      if (insn == end)
+		{
+		  if (loop_top != 0)
+		    insn = loop_top;
+		  else
+		    break;
+		  if (insn == scan_start)
+		    break;
+		}
+
+	      if (GET_CODE (insn) == JUMP_INSN
+		  && GET_CODE (PATTERN (insn)) != RETURN
+		  && (! condjump_p (insn)
+		      || (JUMP_LABEL (insn) != 0
+			  && JUMP_LABEL (insn) != scan_start
+			  && (INSN_UID (JUMP_LABEL (insn)) >= max_uid_for_loop
+			      || INSN_UID (insn) >= max_uid_for_loop
+			      || (INSN_LUID (JUMP_LABEL (insn))
+				  < INSN_LUID (insn))))))
+		{
+		  maybe_multiple = 1;
+		  break;
+		}
+	    }
+	}
 
       /* Past a jump, we get to insns for which we can't count
 	 on whether they will be executed during each iteration.  */
@@ -4331,13 +4375,15 @@ valid_initial_value_p (x, insn, call_seen, loop_start)
 /* Scan X for memory refs and check each memory address
    as a possible giv.  INSN is the insn whose pattern X comes from.
    NOT_EVERY_ITERATION is 1 if the insn might not be executed during
-   every loop iteration.  */
+   every loop iteration.  MAYBE_MULTIPLE is 1 if the insn might be executed
+   more thanonce in each loop iteration.  */
 
 static void
-find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
+find_mem_givs (x, insn, not_every_iteration, maybe_multiple, loop_start,
+	       loop_end)
      rtx x;
      rtx insn;
-     int not_every_iteration;
+     int not_every_iteration, maybe_multiple;
      rtx loop_start, loop_end;
 {
   register int i, j;
@@ -4384,7 +4430,7 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
 
 	    record_giv (v, insn, src_reg, addr_placeholder, mult_val,
 			add_val, benefit, DEST_ADDR, not_every_iteration,
-			&XEXP (x, 0), loop_start, loop_end);
+			maybe_multiple, &XEXP (x, 0), loop_start, loop_end);
 
 	    v->mem_mode = GET_MODE (x);
 	  }
@@ -4400,12 +4446,12 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      find_mem_givs (XEXP (x, i), insn, not_every_iteration, loop_start,
-		     loop_end);
+      find_mem_givs (XEXP (x, i), insn, not_every_iteration, maybe_multiple,
+		     loop_start, loop_end);
     else if (fmt[i] == 'E')
       for (j = 0; j < XVECLEN (x, i); j++)
 	find_mem_givs (XVECEXP (x, i, j), insn, not_every_iteration,
-		       loop_start, loop_end);
+		       maybe_multiple, loop_start, loop_end);
 }
 
 /* Fill in the data about one biv update.
@@ -4522,7 +4568,8 @@ record_biv (v, insn, dest_reg, inc_val, mult_val,
 
 static void
 record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
-	    type, not_every_iteration, location, loop_start, loop_end)
+	    type, not_every_iteration, maybe_multiple, location, loop_start,
+	    loop_end)
      struct induction *v;
      rtx insn;
      rtx src_reg;
@@ -4530,7 +4577,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
      rtx mult_val, add_val;
      int benefit;
      enum g_types type;
-     int not_every_iteration;
+     int not_every_iteration, maybe_multiple;
      rtx *location;
      rtx loop_start, loop_end;
 {
@@ -4549,7 +4596,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->location = location;
   v->cant_derive = 0;
   v->combined_with = 0;
-  v->maybe_multiple = 0;
+  v->maybe_multiple = maybe_multiple;
   v->maybe_dead = 0;
   v->derive_adjustment = 0;
   v->same = 0;
