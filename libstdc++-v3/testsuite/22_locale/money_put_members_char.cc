@@ -74,7 +74,7 @@ void test01()
   // total EPA budget FY 2002
   const string digits1("720000000000");
 
-  // est. cost, national missle "defense", expressed as a loss in USD 2001
+  // est. cost, national missile "defense", expressed as a loss in USD 2001
   const string digits2("-10000000000000");  
 
   // not valid input
@@ -219,7 +219,7 @@ void test02()
   // total EPA budget FY 2002
   const long double  digits1 = 720000000000;
 
-  // est. cost, national missle "defense", expressed as a loss in USD 2001
+  // est. cost, national missile "defense", expressed as a loss in USD 2001
   const long double digits2 = -10000000000000;  
 
   // input less than frac_digits

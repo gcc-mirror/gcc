@@ -2,6 +2,12 @@
 
 	* include/bits/locale_facets.tcc: Conditionalize use of strtold.
 
+2001-09-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* testsuite/22_locale/money_get_members_char.cc: Fixed typo in comment.
+	* testsuite/22_locale/money_put_members_char.cc: Likewise.
+	* testsuite/22_locale/money_put_members_wchar_t.cc: Likewise.
+
 2001-09-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Implement std::money_get.
