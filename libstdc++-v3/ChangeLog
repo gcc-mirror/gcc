@@ -1,3 +1,13 @@
+2001-01-23  Chris Demetriou  <cgd@broadcom.com>
+
+	* libsupc++/exception_support.cc (__terminate_func): Remove
+	declaration.
+	(__terminate_func_ptr): New typedef.
+	(__terminate, __terminate_set_func): New extern function
+	prototypes.
+	(std::terminate): Use __terminate function.
+	(std::set_terminate): Use __terminate_set_func function.
+
 2001-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.target: Just use os_include_dir always.
