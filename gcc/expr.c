@@ -174,7 +174,9 @@ static void clear_by_pieces_1	PROTO((rtx (*) (), enum machine_mode,
 				       struct clear_by_pieces *));
 static int is_zeros_p		PROTO((tree));
 static int mostly_zeros_p	PROTO((tree));
-static void store_constructor	PROTO((tree, rtx, int));
+static void store_constructor_field PROTO((rtx, int, int, enum machine_mode,
+					   tree, tree, int, int));
+static void store_constructor	PROTO((tree, rtx, int, int));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int, int));
 static tree save_noncopied_parts PROTO((tree, tree));
@@ -3593,7 +3595,7 @@ mostly_zeros_p (exp)
 /* Helper function for store_constructor.
    TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
    TYPE is the type of the CONSTRUCTOR, not the element type.
-   CLEARED is as for store_constructor.
+   ALIGN and CLEARED are as for store_constructor.
 
    This provides a recursive shortcut back to store_constructor when it isn't
    necessary to go through store_field.  This is so that we can pass through
@@ -3602,11 +3604,12 @@ mostly_zeros_p (exp)
 
 static void
 store_constructor_field (target, bitsize, bitpos,
-			 mode, exp, type, cleared)
+			 mode, exp, type, align, cleared)
      rtx target;
      int bitsize, bitpos;
      enum machine_mode mode;
      tree exp, type;
+     int align;
      int cleared;
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
@@ -3620,20 +3623,21 @@ store_constructor_field (target, bitsize, bitpos,
 	target = change_address (target, VOIDmode,
 				 plus_constant (XEXP (target, 0),
 						bitpos / BITS_PER_UNIT));
-      store_constructor (exp, target, cleared);
+      store_constructor (exp, target, align, cleared);
     }
   else
-    store_field (target, bitsize, bitpos, mode, exp,
-		 VOIDmode, 0, TYPE_ALIGN (type) / BITS_PER_UNIT,
+    store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0, 
+		 (align + BITS_PER_UNIT - 1) / BITS_PER_UNIT,
 		 int_size_in_bytes (type));
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
    TARGET is either a REG or a MEM.
+   ALIGN is the maximum known alignment for TARGET, in bits.
    CLEARED is true if TARGET is known to have been zero'd.  */
 
 static void
-store_constructor (exp, target, cleared)
+store_constructor (exp, target, align, cleared)
      tree exp;
      rtx target;
      int cleared;
@@ -3686,7 +3690,7 @@ store_constructor (exp, target, cleared)
 	{
 	  if (! cleared)
 	    clear_storage (target, expr_size (exp),
-			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+			   (align + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
 
 	  cleared = 1;
 	}
@@ -3762,8 +3766,11 @@ store_constructor (exp, target, cleared)
 	      RTX_UNCHANGING_P (to_rtx) = 1;
 	    }
 
-	  store_constructor_field (to_rtx, bitsize, bitpos,
-				   mode, TREE_VALUE (elt), type, cleared);
+	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
+				   TREE_VALUE (elt), type, 
+				   MIN (align,
+					DECL_ALIGN (TREE_PURPOSE (elt))),
+				   cleared);
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
@@ -3823,7 +3830,7 @@ store_constructor (exp, target, cleared)
 	{
 	  if (! cleared)
 	    clear_storage (target, expr_size (exp),
-			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+			   (align + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
 	  cleared = 1;
 	}
       else
@@ -3842,6 +3849,7 @@ store_constructor (exp, target, cleared)
 	  int bitpos;
 	  int unsignedp;
 	  tree value = TREE_VALUE (elt);
+	  int align = TYPE_ALIGN (TREE_TYPE (value));
 	  tree index = TREE_PURPOSE (elt);
 	  rtx xtarget = target;
 
@@ -3877,8 +3885,8 @@ store_constructor (exp, target, cleared)
 		  for (; lo <= hi; lo++)
 		    {
 		      bitpos = lo * TREE_INT_CST_LOW (TYPE_SIZE (elttype));
-		      store_constructor_field (target, bitsize, bitpos,
-					       mode, value, type, cleared);
+		      store_constructor_field (target, bitsize, bitpos, mode,
+					       value, type, align, cleared);
 		    }
 		}
 	      else
@@ -3917,7 +3925,7 @@ store_constructor (exp, target, cleared)
 		  addr = gen_rtx (PLUS, Pmode, XEXP (target, 0), pos_rtx);
 		  xtarget = change_address (target, mode, addr);
 		  if (TREE_CODE (value) == CONSTRUCTOR)
-		    store_constructor (value, xtarget, cleared);
+		    store_constructor (value, xtarget, align, cleared);
 		  else
 		    store_expr (value, xtarget, 0);
 
@@ -3964,8 +3972,8 @@ store_constructor (exp, target, cleared)
 			  * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
 	      else
 		bitpos = (i * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
-	      store_constructor_field (target, bitsize, bitpos,
-				       mode, value, type, cleared);
+	      store_constructor_field (target, bitsize, bitpos, mode, value,
+				       type, align, cleared);
 	    }
 	}
     }
@@ -5550,7 +5558,7 @@ expand_expr (exp, target, tmode, modifier)
 	      RTX_UNCHANGING_P (target) = 1;
 	    }
 
-	  store_constructor (exp, target, 0);
+	  store_constructor (exp, target, TYPE_ALIGN (TREE_TYPE (exp)), 0);
 	  return target;
 	}
 
