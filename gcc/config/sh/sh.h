@@ -1213,6 +1213,66 @@ extern struct rtx_def *sh_builtin_saveregs ();
     }								\
 }
 
+/* A C compound statement that attempts to replace X, which is an address
+   that needs reloading, with a valid memory address for an operand of
+   mode MODE.  WIN is a C statement label elsewhere in the code.
+
+   Like for LEGITIMIZE_ADDRESS, for the SH we try to get a normal form
+   of the address.  That will allow inheritance of the address reloads.  */
+
+#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	\
+{									\
+  if (GET_CODE (X) == PLUS						\
+      && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
+      && GET_CODE (XEXP (X, 1)) == CONST_INT				\
+      && BASE_REGISTER_RTX_P (XEXP (X, 0))				\
+      && ! (TARGET_SH3E && MODE == SFmode))				\
+    {									\
+      rtx index_rtx = XEXP (X, 1);					\
+      HOST_WIDE_INT offset = INTVAL (index_rtx), offset_base;		\
+      rtx sum;								\
+									\
+      /* Instead of offset_base 128..131 use 124..127, so that		\
+	 simple add suffices.  */					\
+      if (offset > 127)							\
+	{								\
+	  offset_base = ((offset + 4) & ~60) - 4;			\
+	}								\
+      else								\
+	offset_base = offset & ~60;					\
+      /* Sometimes the normal form does not suit DImode.  We		\
+	 could avoid that by using smaller ranges, but that		\
+	 would give less optimized code when SImode is			\
+	 prevalent.  */							\
+      if (GET_MODE_SIZE (MODE) + offset - offset_base <= 64)		\
+	{								\
+	  sum = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
+			 GEN_INT (offset_base));			\
+	  X = gen_rtx (PLUS, Pmode, sum, GEN_INT (offset - offset_base));\
+	  push_reload (sum, NULL_RTX, &XEXP (X, 0), NULL_PTR,	\
+		       BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM),	\
+		       (TYPE));						\
+	  goto WIN;							\
+	}								\
+    }									\
+  /* We must re-recognize what we created before.  */			\
+  else if (GET_CODE (X) == PLUS						\
+	   && (GET_MODE_SIZE (MODE) == 4 || GET_MODE_SIZE (MODE) == 8)	\
+	   && GET_CODE (XEXP (X, 0)) == PLUS				\
+	   && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
+	   && BASE_REGISTER_RTX_P (XEXP (XEXP (X, 0), 0))		\
+	   && GET_CODE (XEXP (X, 1)) == CONST_INT			\
+	   && ! (TARGET_SH3E && MODE == SFmode))			\
+    {									\
+      /* Because this address is so complex, we know it must have	\
+	 been created by LEGITIMIZE_RELOAD_ADDRESS before; thus,	\
+	 it is already unshared, and needs no further unsharing.  */	\
+      push_reload (XEXP ((X), 0), NULL_RTX, &XEXP ((X), 0), NULL_PTR,	\
+		   BASE_REG_CLASS, Pmode, VOIDmode, 0, 0, (OPNUM), (TYPE));\
+      goto WIN;								\
+    }									\
+}
+
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.
 

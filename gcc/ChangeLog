@@ -1,3 +1,7 @@
+Mon Apr 27 17:22:48 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
+
 Mon Apr 27 08:55:23 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* system.h (abort): If abort is not defined, and neither is
