@@ -933,7 +933,6 @@ yyprint (file, yychar, yylval)
     case IDENTIFIER_DEFN:
     case TYPENAME_DEFN:
     case PTYPENAME_DEFN:
-    case TYPENAME_ELLIPSIS:
     case SCSPEC:
     case PRE_PARSED_CLASS_DECL:
       t = yylval.ttype;
