@@ -1636,7 +1636,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
    which set the argument registers into the delay slot of the millicode
    call -- thus they act more like traditional CALL_INSNs.
 
-   get_attr_type will try to recognize the given insn, so make sure to
+   get_attr_is_sfunc will try to recognize the given insn, so make sure to
    filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
    in particular.  */
 
@@ -1645,14 +1645,14 @@ extern struct rtx_def *sh_builtin_saveregs ();
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
     && GET_CODE (PATTERN (X)) != CLOBBER	\
-    && get_attr_type (X) == TYPE_SFUNC))
+    && get_attr_is_sfunc (X)))
 
 #define INSN_REFERENCES_ARE_DELAYED(X) 		\
   ((GET_CODE (X) == INSN			\
     && GET_CODE (PATTERN (X)) != SEQUENCE	\
     && GET_CODE (PATTERN (X)) != USE		\
     && GET_CODE (PATTERN (X)) != CLOBBER	\
-    && get_attr_type (X) == TYPE_SFUNC))
+    && get_attr_is_sfunc (X)))
 
 /* Compute the cost of an address.  For the SH, all valid addresses are
    the same cost.  */
