@@ -5085,8 +5085,11 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 			  TREE_TYPE (val));
 	    }
 
-	  /* We don't change val to from_obj here because that breaks
-	     implicit typename for destructor calls.  */
+	  /* We don't change val to from_obj if got_object depends on
+	     template parms because that breaks implicit typename for
+	     destructor calls.  */
+	  if (! uses_template_parms (got_object))
+	    val = got_object;
 	}
 
       if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)

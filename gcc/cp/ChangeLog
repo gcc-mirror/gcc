@@ -1,5 +1,8 @@
 1998-07-24  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (lookup_name_real): OK, do return the from_obj value
+	unless got_object depends on template parms.
+
 	* parse.y (nested_name_specifier_1): Pull out the TYPE_MAIN_VARIANT.
 
 	* pt.c (coerce_template_parms): Also complain about local enums.
