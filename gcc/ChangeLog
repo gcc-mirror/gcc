@@ -1,5 +1,9 @@
 2004-10-25  Alexandre Oliva  <aoliva@redhat.com>
 
+	* config/frv/linux.h (TARGET_C99_FUNCTIONS): Define to 0.
+
+2004-10-25  Alexandre Oliva  <aoliva@redhat.com>
+
 	* config/frv/frv.md (movdi, movdf): Handle wide-constant splits
 	with wider-than-32-bit HOST_WIDE_INTs.
 

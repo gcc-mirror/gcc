@@ -71,4 +71,19 @@ asm (TEXT_SECTION_ASM_OP);
 #undef Twrite
 #define Twrite __write
 
+/* uClibc doesn't support many of the C90-reserved C99-defined math
+   functions.  Make sure we don't implicitly generate them unless C99
+   support is explicitly requested.  This will affect both frv-linux
+   and frv-uclinux.  Even though the glibc, the primary library for
+   frv-linux, would enable better code to be generated with
+   TARGET_C99_FUNCTIONS defined to 1, uClinux can be used as the
+   library for frv-linux as well, and we'd better have that work
+   correctly.  Maybe we move this to a uclibc.h header in the future,
+   and use that for frv-uclinux and frv-linux-uclibc?  Define it here
+   for now, such that we can still get exactly the same code out of
+   both frv-linux-gcc and frv-uclinux-gcc, when feeding them the same
+   preprocessed sources.  */
+#undef TARGET_C99_FUNCTIONS
+#define TARGET_C99_FUNCTIONS 0
+
 #endif /* __FRV_LINUX_H__ */
