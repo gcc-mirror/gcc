@@ -1,5 +1,10 @@
 Mon Aug 25 14:30:02 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* input.c (sub_getch): Eventually give up and release the input file.
+
+	* decl.c (cp_finish_decl): If #p i/i, put inline statics in the
+	right place.
+
 	* call.c (joust): Tweak message.
 
 Sat Aug 23 18:02:59 1997  Mark Mitchell  <mmitchell@usa.net>

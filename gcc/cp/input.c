@@ -158,7 +158,13 @@ sub_getch ()
       if (input->offset >= input->length)
 	{
 	  my_friendly_assert (putback_char == -1, 223);
-	  return EOF;
+	  ++(input->offset);
+	  if (input->offset - input->length < 64)
+	    return EOF;
+
+	  /* We must be stuck in an error-handling rule; give up.  */
+	  end_input ();
+	  return getch ();
 	}
       return (unsigned char)input->str[input->offset++];
     }

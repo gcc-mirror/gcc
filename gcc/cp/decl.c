@@ -6580,10 +6580,15 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	  && DECL_THIS_INLINE (current_function_decl)
 	  && DECL_PUBLIC (current_function_decl))
 	{
+	  if (DECL_INTERFACE_KNOWN (current_function_decl))
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_EXTERNAL (decl) = DECL_EXTERNAL (current_function_decl);
+	    }
 	  /* We can only do this if we can use common or weak, and we
 	     can't if it has been initialized and we don't support weak.  */
-	  if (DECL_INITIAL (decl) == NULL_TREE
-	      || DECL_INITIAL (decl) == error_mark_node)
+	  else if (DECL_INITIAL (decl) == NULL_TREE
+		   || DECL_INITIAL (decl) == error_mark_node)
 	    {
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_COMMON (decl) = 1;
