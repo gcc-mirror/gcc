@@ -1,3 +1,7 @@
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/compile/20011217-1.c: New test.
+
 2001-12-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* testsuite/gcc.dg/20011214-1.c: New.

@@ -1,3 +1,14 @@
+2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.def (COMPOUND_LITERAL_EXPR): Contain a DECL_STMT, not
+	a DECL directly.
+	* c-common.h (COMPOUND_LITERAL_EXPR_DECL_STMT): New.
+	(COMPOUND_LITERAL_EXPR_DECL): Adjust definition.
+	* c-decl.c (build_compound_literal): Put the decl inside a
+	DECL_STMT.
+	* doc/c-tree.texi (COMPOUND_LITERAL_EXPR): Update documentation.
+	Fixes PR c/5105.
+
 2001-12-16  Aldy Hernandez  <aldyh@redhat.com>
 
         * config.gcc: Add powerpc-*-eabisimaltivec*.
