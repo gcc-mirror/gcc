@@ -1,5 +1,9 @@
 2003-10-30  Jan Hubicka  <jh@suse.cz>
 
+	* real.c (encode_ieee_extended): Back out previous patch.
+
+2003-10-30  Jan Hubicka  <jh@suse.cz>
+
 	* real.c (encode_ieee_extended): Initialize whole array.
 	* reg-stack.c (move_for_stack_reg0: Use always XFmode.
 	* i386-modes.def: Change definitions of TFmode and XFmode.
