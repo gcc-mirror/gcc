@@ -1,5 +1,7 @@
 Mon Mar 23 23:49:47 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* cse.c (rtx_cost): Only call CONST_COSTS if it is defined.
+
 	* stmt.c (unroll_block_trees): Free block_vector if needed.
 
 Mon Mar 23 23:26:42 1998  Philippe De Muyter  <phdm@macqel.be>
