@@ -3330,6 +3330,8 @@ case_index_expr_type ()
 
 /* Accumulate one case or default label inside a case or switch statement.
    VALUE is the value of the case (a null pointer, for a default label).
+   The function CONVERTER, when applied to arguments T and V,
+   converts the value V to the type T.
 
    If not currently inside a case or switch statement, return 1 and do
    nothing.  The caller will print a language-specific error message.
@@ -3342,8 +3344,9 @@ case_index_expr_type ()
    Extended to handle range statements.  */
 
 int
-pushcase (value, label, duplicate)
+pushcase (value, converter, label, duplicate)
      register tree value;
+     tree (*converter) PROTO((tree, tree));
      register tree label;
      tree *duplicate;
 {
@@ -3369,7 +3372,7 @@ pushcase (value, label, duplicate)
 
   /* Convert VALUE to the type in which the comparisons are nominally done.  */
   if (value != 0)
-    value = convert (nominal_type, value);
+    value = (*converter) (nominal_type, value);
 
   /* If this is the first label, warn if any insns have been emitted.  */
   if (case_stack->data.case_stmt.seenlabel == 0)
@@ -3450,8 +3453,9 @@ pushcase (value, label, duplicate)
    4 means the specified range was empty.  */
 
 int
-pushcase_range (value1, value2, label, duplicate)
+pushcase_range (value1, value2, converter, label, duplicate)
      register tree value1, value2;
+     tree (*converter) PROTO((tree, tree));
      register tree label;
      tree *duplicate;
 {
@@ -3499,11 +3503,11 @@ pushcase_range (value1, value2, label, duplicate)
   /* Convert VALUEs to type in which the comparisons are nominally done.  */
   if (value1 == 0)  /* Negative infinity. */
     value1 = TYPE_MIN_VALUE(index_type);
-  value1 = convert (nominal_type, value1);
+  value1 = (*converter) (nominal_type, value1);
 
   if (value2 == 0)  /* Positive infinity. */
     value2 = TYPE_MAX_VALUE(index_type);
-  value2 = convert (nominal_type, value2);
+  value2 = (*converter) (nominal_type, value2);
 
   /* Fail if these values are out of range.  */
   if (! int_fits_type_p (value1, index_type))
@@ -3518,7 +3522,7 @@ pushcase_range (value1, value2, label, duplicate)
 
   /* If the bounds are equal, turn this into the one-value case.  */
   if (tree_int_cst_equal (value1, value2))
-    return pushcase (value1, label, duplicate);
+    return pushcase (value1, converter, label, duplicate);
 
   /* Find the elt in the chain before which to insert the new value,
      to keep the chain sorted in increasing order.
