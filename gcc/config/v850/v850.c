@@ -45,15 +45,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Function prototypes for stupid compilers:  */
 static void const_double_split
-  PROTO ((rtx, HOST_WIDE_INT *, HOST_WIDE_INT *));
-static int  const_costs_int        PROTO ((HOST_WIDE_INT, int));
-static void substitute_ep_register PROTO ((rtx, rtx, int, int, rtx *, rtx *));
-static int  push_data_area         PROTO ((v850_data_area));
-static int  pop_data_area          PROTO ((v850_data_area));
-static int  parse_ghs_pragma_token PROTO ((char *));
-static int  ep_memory_offset       PROTO ((enum machine_mode, int));
-static int  mark_current_function_as_interrupt PROTO ((void));
-static void v850_set_data_area     PROTO ((tree, v850_data_area));
+  PARAMS ((rtx, HOST_WIDE_INT *, HOST_WIDE_INT *));
+static int  const_costs_int        PARAMS ((HOST_WIDE_INT, int));
+static void substitute_ep_register PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
+static int  push_data_area         PARAMS ((v850_data_area));
+static int  pop_data_area          PARAMS ((v850_data_area));
+static int  parse_ghs_pragma_token PARAMS ((char *));
+static int  ep_memory_offset       PARAMS ((enum machine_mode, int));
+static int  mark_current_function_as_interrupt PARAMS ((void));
+static void v850_set_data_area     PARAMS ((tree, v850_data_area));
 
 /* True if the current function has anonymous arguments.  */
 int current_function_anonymous_args;
@@ -88,7 +88,7 @@ void
 override_options ()
 {
   int i;
-  extern int atoi PROTO ((const char *));
+  extern int atoi PARAMS ((const char *));
 
   /* Parse -m{s,t,z}da=nnn switches */
   for (i = 0; i < (int)SMALL_MEMORY_max; i++)
@@ -2926,8 +2926,8 @@ parse_ghs_pragma_token (string)
 /* Handle the parsing of an entire GHS pragma.  */
 int
 v850_handle_pragma (p_getc, p_ungetc, name)
-     int (*  p_getc) PROTO ((void));
-     void (* p_ungetc) PROTO ((int));
+     int (*  p_getc) PARAMS ((void));
+     void (* p_ungetc) PARAMS ((int));
      char *  name;
 {
   /* Parse characters in the input stream until:

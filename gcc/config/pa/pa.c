@@ -42,20 +42,20 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "tm_p.h"
 
-static void restore_unscaled_index_insn_codes		PROTO((rtx));
-static void record_unscaled_index_insn_codes		PROTO((rtx));
-static void pa_combine_instructions			PROTO((rtx));
-static int pa_can_combine_p	PROTO((rtx, rtx, rtx, int, rtx, rtx, rtx));
-static int forward_branch_p				PROTO((rtx));
-static int shadd_constant_p				PROTO((int));
-static void pa_add_gc_roots                             PROTO((void));
-static void mark_deferred_plabels                       PROTO((void *));
-static void compute_zdepwi_operands			PROTO((unsigned HOST_WIDE_INT, unsigned *));
-static int compute_movstrsi_length			PROTO((rtx));
-static void remove_useless_addtr_insns			PROTO((rtx, int));
-static void store_reg					PROTO((int, int, int));
-static void load_reg					PROTO((int, int, int));
-static void set_reg_plus_d				PROTO((int, int, int));
+static void restore_unscaled_index_insn_codes		PARAMS ((rtx));
+static void record_unscaled_index_insn_codes		PARAMS ((rtx));
+static void pa_combine_instructions			PARAMS ((rtx));
+static int pa_can_combine_p	PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
+static int forward_branch_p				PARAMS ((rtx));
+static int shadd_constant_p				PARAMS ((int));
+static void pa_add_gc_roots                             PARAMS ((void));
+static void mark_deferred_plabels                       PARAMS ((void *));
+static void compute_zdepwi_operands			PARAMS ((unsigned HOST_WIDE_INT, unsigned *));
+static int compute_movstrsi_length			PARAMS ((rtx));
+static void remove_useless_addtr_insns			PARAMS ((rtx, int));
+static void store_reg					PARAMS ((int, int, int));
+static void load_reg					PARAMS ((int, int, int));
+static void set_reg_plus_d				PARAMS ((int, int, int));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -4049,7 +4049,7 @@ output_deferred_plabels (file)
    Keep track of which ones we have used.  */
 
 enum millicodes { remI, remU, divI, divU, mulI, mulU, end1000 };
-static void import_milli			PROTO((enum millicodes));
+static void import_milli			PARAMS ((enum millicodes));
 static char imported[(int)end1000];
 static const char * const milli_names[] = {"remI", "remU", "divI", "divU", "mulI", "mulU"};
 static char import_string[] = ".IMPORT $$....,MILLICODE";

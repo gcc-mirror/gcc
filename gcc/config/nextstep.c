@@ -46,8 +46,8 @@ extern char *get_directive_line ();
 
 int
 handle_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc) PROTO ((void));
-     void (* p_ungetc) PROTO ((int));
+     int (*  p_getc) PARAMS ((void));
+     void (* p_ungetc) PARAMS ((int));
      char * pname;
 {
   int retval = 0;
