@@ -3436,7 +3436,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
       if (GET_CODE (XEXP (arg->stack_slot, 0)) == PLUS)
 	upper_bound = -INTVAL (XEXP (XEXP (arg->stack_slot, 0), 1)) + 1;
       else
-	abort ();
+	upper_bound = 0;
 
       lower_bound = upper_bound - arg->size.constant;
 #else
