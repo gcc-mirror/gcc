@@ -1486,7 +1486,9 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	   $(INSTALL_DATA) `basename $$file` $$shelllibsubdir/include/`basename $$file`; \
 	   chmod a-x $$shelllibsubdir/include/`basename $$file`; \
 	done
-	if [ -f $(includedir)/assert.h ] && ! grep "This is GCC's version of assert.h." $(includedir)/assert.h; \
+# Put assert.h in /usr/local/include, so it won't override GNU libc's assert.h.
+# Don't replace the assert.h already there if it is not from GCC.
+	if [ -f $(includedir)/assert.h ] && ! grep "__eprintf" $(includedir)/assert.h; \
 	then true; \
 	else \
 	  rm -f $(includedir)/assert.h; \
