@@ -177,7 +177,11 @@ private:
   friend jobject _Jv_AllocObject (jclass, jint);
   friend jobjectArray _Jv_NewObjectArray (jsize, jclass, jobject);
   friend jobject _Jv_NewPrimArray (jclass, jint);
-  friend jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID);
+
+  friend jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID,
+					   jboolean);
+  friend jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID,
+					    jboolean);
   friend jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);
 
   friend jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);
@@ -265,18 +269,5 @@ private:
   // initialization.
   java::lang::Thread *thread;
 };
-
-
-extern inline jint
-JvNumMethods (jclass klass)
-{
-  return klass->method_count;
-}
-
-extern inline jmethodID
-JvGetFirstMethod (jclass klass)
-{
-  return &klass->methods[0];
-}
 
 #endif /* __JAVA_LANG_CLASS_H__ */

@@ -1,5 +1,45 @@
 2000-01-26  Tom Tromey  <tromey@cygnus.com>
 
+	* gcj/method.h (JvNumMethods): Moved from Class.h.
+	(JvGetFirstMethod): Likewise.
+	* java/lang/Class.h (Object): Updated decl of
+	_Jv_JNI_ToReflectedField.
+	(Object): Added _Jv_JNI_ToReflectedMethod as a friend.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (java/lang/reflect/Field.h): Added `jboolean'
+	argument of _Jv_JNI_ToReflectedField.
+	(java/lang/reflect/Constructor.h): Added _Jv_JNI_ToReflectedMethod
+	as a friend.
+	(java/lang/reflect/Method.h): Likewise.
+	* include/jni.h (class _Jv_JNIEnv): Added `klass' member.  Use
+	__GCJ_JNI_IMPL__.
+	(jweak): New typedef.
+	(struct JNINativeInterface): Correctly declare remaining entries.
+	* jni.cc: Include Class.h, ClassLoader.h.
+	(_Jv_JNI_FindClass): New function.
+	(_Jv_JNI_DefineClass): New function.
+	(_Jv_JNI_conversion_call): New function.
+	(_Jv_JNI_FindClass): Use current class loader to find class.
+	(_Jv_JNI_ExceptionCheck): New function.
+	(_Jv_JNI_FromReflectedField): Now static.
+	(MethodClass): New define.
+	(_Jv_JNI_FromReflectedMethod): New function.
+	(_Jv_JNI_ToReflectedMethod): Likewise.
+	Include Method.h.
+	(_Jv_JNI_IsAssignableFrom): Renamed.
+	(_Jv_JNI_GetStringRegion): New function.
+	Include StringIndexOutOfBoundsException.h.
+	(_Jv_JNI_GetStringUTFRegion): New function.
+	(_Jv_JNIFunctions): Updated for new functions.
+	(_Jv_JNI_GetPrimitiveArrayCritical): New function
+	(_Jv_JNI_ReleasePrimitiveArrayCritical): Likewise.
+	(_Jv_JNI_GetStringCritical): New function.
+	(_Jv_JNI_ReleaseStringCritical): Likewise.
+	(get_throwable): Removed.
+	(GCJ_JV_JNIENV_FRIEND): Removed.
+	(__GCJ_JNI_IMPL__): Define.
+	Include method.h.
+
 	* resolve.cc (get_ffi_type_from_signature): Handle case where
 	boolean is an int.
 
