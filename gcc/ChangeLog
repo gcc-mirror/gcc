@@ -1,5 +1,9 @@
 2004-04-18  Mark Mitchell  <mark@codesourcery.com>
 
+	PR other/14918
+	* doc/invoke.texi (-fprofile-generate): Document requirement to
+	use -fprofile-generate when linking.
+
 	* doc/extend.texi (Strong Using): Warn users against using this
 	feature.
 
