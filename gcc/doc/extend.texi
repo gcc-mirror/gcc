@@ -4474,6 +4474,45 @@ if (__builtin_expect (ptr != NULL, 1))
 when testing pointer or floating-point values.
 @end deftypefn
 
+@deftypefn {Built-in Function} void __builtin_prefetch (void *@var{addr}, int @var{rw}, int @var{locality})
+This function is used to minimize cache-miss latency by moving data into
+a cache before it is accessed.
+You can insert calls to @code{__builtin_prefetch} into code for which
+you know addresses of data in memory that is likely to be accessed soon.
+If the target supports them, data prefetch instructions will be generated.
+If the prefetch is done early enough before the access then the data will
+be in the cache by the time it is accessed.
+
+The value of @var{addr} is the address of the memory to prefetch.
+The value of @var{rw} is a compile-time constant one or zero; one
+means that the prefetch is preparing for a write to the memory address.
+The value @var{locality} must be a compile-time constant integer between
+zero and three.  A value of zero means that the data has no temporal
+locality, so it need not be left in the cache after the access.  A value
+of three means that the data has a high degree of temporal locality and
+should be left in all levels of cache possible.  Values of one and two
+mean, respectively, a low or moderate degree of temporal locality.
+
+@smallexample
+for (i = 0; i < n; i++)
+  @{
+    a[i] = a[i] + b[i];
+    __builtin_prefetch (&a[i+j], 1, 1);
+    __builtin_prefetch (&b[i+j], 0, 1);
+    /* ... */
+  @}
+@end smallexample
+
+Data prefetch does not generate faults if @var{addr} is invalid, but 
+the address expression itself must be valid.  For example, a prefetch
+of @code{p->next} will not fault if @code{p->next} is not a valid
+address, but evaluation will fault if @code{p} is not a valid address.
+
+If the target does not support data prefetch, the address expression
+is evaluated if it includes side effects but no other code is generated
+and GCC does not issue a warning.
+@end deftypefn
+
 @node Pragmas
 @section Pragmas Accepted by GCC
 @cindex pragmas
