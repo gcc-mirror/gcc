@@ -1,3 +1,7 @@
+2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* zconf.h: Define NO_vsnprintf on Solaris 2.5.1.
+
 2004-10-11  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/14856:
