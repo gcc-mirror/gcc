@@ -1450,9 +1450,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldwx %1(0,%2),%0\";
+    return \"ldwx %1(%2),%0\";
   else
-    return \"ldwx %2(0,%1),%0\";
+    return \"ldwx %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1469,9 +1469,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldwx %2(0,%1),%0\";
+    return \"ldwx %2(%1),%0\";
   else
-    return \"ldwx %1(0,%2),%0\";
+    return \"ldwx %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1488,8 +1488,8 @@
   "*
 {
   if (INTVAL (operands[2]) < 0)
-    return \"ldwm %2(0,%1),%0\";
-  return \"ldws,mb %2(0,%1),%0\";
+    return \"ldwm %2(%1),%0\";
+  return \"ldws,mb %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1504,8 +1504,8 @@
   "*
 {
   if (INTVAL (operands[1]) < 0)
-    return \"stwm %r2,%1(0,%0)\";
-  return \"stws,mb %r2,%1(0,%0)\";
+    return \"stwm %r2,%1(%0)\";
+  return \"stws,mb %r2,%1(%0)\";
 }"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -1520,8 +1520,8 @@
   "*
 {
   if (INTVAL (operands[2]) > 0)
-    return \"ldwm %2(0,%1),%0\";
-  return \"ldws,ma %2(0,%1),%0\";
+    return \"ldwm %2(%1),%0\";
+  return \"ldws,ma %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1536,8 +1536,8 @@
   "*
 {
   if (INTVAL (operands[2]) > 0)
-    return \"stwm %r1,%2(0,%0)\";
-  return \"stws,ma %r1,%2(0,%0)\";
+    return \"stwm %r1,%2(%0)\";
+  return \"stws,ma %r1,%2(%0)\";
 }"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
@@ -1785,9 +1785,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldhx %1(0,%2),%0\";
+    return \"ldhx %1(%2),%0\";
   else
-    return \"ldhx %2(0,%1),%0\";
+    return \"ldhx %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1804,9 +1804,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldhx %2(0,%1),%0\";
+    return \"ldhx %2(%1),%0\";
   else
-    return \"ldhx %1(0,%2),%0\";
+    return \"ldhx %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1826,9 +1826,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldhx %1(0,%2),%0\";
+    return \"ldhx %1(%2),%0\";
   else
-    return \"ldhx %2(0,%1),%0\";
+    return \"ldhx %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1847,9 +1847,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldhx %2(0,%1),%0\";
+    return \"ldhx %2(%1),%0\";
   else
-    return \"ldhx %1(0,%2),%0\";
+    return \"ldhx %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1861,7 +1861,7 @@
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldhs,mb %2(0,%1),%0"
+  "ldhs,mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -1875,7 +1875,7 @@
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldhs,mb %2(0,%1),%0"
+  "ldhs,mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -1886,7 +1886,7 @@
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
   ""
-  "sths,mb %r2,%1(0,%0)"
+  "sths,mb %r2,%1(%0)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -1947,9 +1947,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldbx %1(0,%2),%0\";
+    return \"ldbx %1(%2),%0\";
   else
-    return \"ldbx %2(0,%1),%0\";
+    return \"ldbx %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1966,9 +1966,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldbx %2(0,%1),%0\";
+    return \"ldbx %2(%1),%0\";
   else
-    return \"ldbx %1(0,%2),%0\";
+    return \"ldbx %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -1988,9 +1988,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldbx %1(0,%2),%0\";
+    return \"ldbx %1(%2),%0\";
   else
-    return \"ldbx %2(0,%1),%0\";
+    return \"ldbx %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2009,9 +2009,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldbx %2(0,%1),%0\";
+    return \"ldbx %2(%1),%0\";
   else
-    return \"ldbx %1(0,%2),%0\";
+    return \"ldbx %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2030,9 +2030,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"ldbx %1(0,%2),%0\";
+    return \"ldbx %1(%2),%0\";
   else
-    return \"ldbx %2(0,%1),%0\";
+    return \"ldbx %2(%1),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2051,9 +2051,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"ldbx %2(0,%1),%0\";
+    return \"ldbx %2(%1),%0\";
   else
-    return \"ldbx %1(0,%2),%0\";
+    return \"ldbx %1(%2),%0\";
 }"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
@@ -2064,7 +2064,7 @@
 			 (match_operand:SI 2 "int5_operand" "L"))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldbs,mb %2(0,%1),%0"
+  "ldbs,mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -2076,7 +2076,7 @@
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldbs,mb %2(0,%1),%0"
+  "ldbs,mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -2087,7 +2087,7 @@
 				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
-  "ldbs,mb %2(0,%1),%0"
+  "ldbs,mb %2(%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
@@ -2098,7 +2098,7 @@
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
   ""
-  "stbs,mb %r2,%1(0,%0)"
+  "stbs,mb %r2,%1(%0)"
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
@@ -2305,9 +2305,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"flddx %1(0,%2),%0\";
+    return \"flddx %1(%2),%0\";
   else
-    return \"flddx %2(0,%1),%0\";
+    return \"flddx %2(%1),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2324,9 +2324,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"flddx %2(0,%1),%0\";
+    return \"flddx %2(%1),%0\";
   else
-    return \"flddx %1(0,%2),%0\";
+    return \"flddx %1(%2),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2343,9 +2343,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"fstdx %0,%1(0,%2)\";
+    return \"fstdx %0,%1(%2)\";
   else
-    return \"fstdx %0,%2(0,%1)\";
+    return \"fstdx %0,%2(%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2362,9 +2362,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"fstdx %0,%2(0,%1)\";
+    return \"fstdx %0,%2(%1)\";
   else
-    return \"fstdx %0,%1(0,%2)\";
+    return \"fstdx %0,%1(%2)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2610,9 +2610,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"fldwx %1(0,%2),%0\";
+    return \"fldwx %1(%2),%0\";
   else
-    return \"fldwx %2(0,%1),%0\";
+    return \"fldwx %2(%1),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2629,9 +2629,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"fldwx %2(0,%1),%0\";
+    return \"fldwx %2(%1),%0\";
   else
-    return \"fldwx %1(0,%2),%0\";
+    return \"fldwx %1(%2),%0\";
 }"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2648,9 +2648,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[2] == hard_frame_pointer_rtx
       || operands[2] == stack_pointer_rtx)
-    return \"fstwx %0,%1(0,%2)\";
+    return \"fstwx %0,%1(%2)\";
   else
-    return \"fstwx %0,%2(0,%1)\";
+    return \"fstwx %0,%2(%1)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2667,9 +2667,9 @@
      pseudos that don't get hard registers.  Deal with it.  */
   if (operands[1] == hard_frame_pointer_rtx
       || operands[1] == stack_pointer_rtx)
-    return \"fstwx %0,%2(0,%1)\";
+    return \"fstwx %0,%2(%1)\";
   else
-    return \"fstwx %0,%1(0,%2)\";
+    return \"fstwx %0,%1(%2)\";
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -5039,7 +5039,7 @@
    (use (mem:SI (match_operand:SI 0 "register_operand" "r")))
    (use (mem:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "fdc 0(0,%0)\;fdc 0(0,%1)\;sync"
+  "fdc 0(%0)\;fdc 0(%1)\;sync"
   [(set_attr "type" "multi")
    (set_attr "length" "12")])
 
@@ -5051,7 +5051,7 @@
    (clobber (match_operand:SI 3 "register_operand" "=&r"))
    (clobber (match_operand:SI 4 "register_operand" "=&r"))]
   ""
-  "mfsp %%sr0,%4\;ldsid (0,%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
+  "mfsp %%sr0,%4\;ldsid (%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
   [(set_attr "type" "multi")
    (set_attr "length" "52")])
 

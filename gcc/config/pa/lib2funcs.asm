@@ -50,7 +50,7 @@ __gcc_plt_call
 	.CALLINFO
 	.ENTRY
 	; Our return address comes in %r31, not %r2!
-	stw %r31,-8(0,%r30)
+	stw %r31,-8(%r30)
 
 	; An inline version of dyncall so we don't have to worry
 	; about long calls to millicode, PIC and other complexities.
@@ -63,7 +63,7 @@ L$foo
         mtsp %r1,%sr0
         ble 0(%sr0,%r22)
 	copy %r31,%r2
-	ldw -8(0,%r30),%r2
+	ldw -8(%r30),%r2
 
 	; We're going to be returning to a stack address, so we
 	; need to do an intra-space return.

@@ -1320,15 +1320,15 @@ extern union tree_node *current_function_decl;
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
   {							\
-    fputs ("\tldw	36(0,%r22),%r21\n", FILE);	\
+    fputs ("\tldw	36(%r22),%r21\n", FILE);	\
     fputs ("\tbb,>=,n	%r21,30,.+16\n", FILE);	\
     fputs ("\tdepi	0,31,2,%r21\n", FILE);		\
-    fputs ("\tldw	4(0,%r21),%r19\n", FILE);	\
-    fputs ("\tldw	0(0,%r21),%r21\n", FILE);	\
-    fputs ("\tldsid	(0,%r21),%r1\n", FILE);	\
+    fputs ("\tldw	4(%r21),%r19\n", FILE);	\
+    fputs ("\tldw	0(%r21),%r21\n", FILE);	\
+    fputs ("\tldsid	(%r21),%r1\n", FILE);	\
     fputs ("\tmtsp	%r1,%sr0\n", FILE);		\
     fputs ("\tbe	0(%sr0,%r21)\n", FILE);	\
-    fputs ("\tldw	40(0,%r22),%r29\n", FILE);	\
+    fputs ("\tldw	40(%r22),%r29\n", FILE);	\
     fputs ("\t.word	0\n", FILE);			\
     fputs ("\t.word	0\n", FILE);			\
   }
@@ -2429,7 +2429,7 @@ DTORS_SECTION_FUNCTION
   switch (GET_CODE (addr))						\
     {									\
     case REG:								\
-      fprintf (FILE, "0(0,%s)", reg_names [REGNO (addr)]);		\
+      fprintf (FILE, "0(%s)", reg_names [REGNO (addr)]);		\
       break;								\
     case PLUS:								\
       if (GET_CODE (XEXP (addr, 0)) == CONST_INT)			\
@@ -2438,7 +2438,7 @@ DTORS_SECTION_FUNCTION
 	offset = INTVAL (XEXP (addr, 1)), base = XEXP (addr, 0);	\
       else								\
 	abort ();							\
-      fprintf (FILE, "%d(0,%s)", offset, reg_names [REGNO (base)]);	\
+      fprintf (FILE, "%d(%s)", offset, reg_names [REGNO (base)]);	\
       break;								\
     case LO_SUM:							\
       if (!symbolic_operand (XEXP (addr, 1)))				\
@@ -2455,7 +2455,7 @@ DTORS_SECTION_FUNCTION
       fputs (")", FILE);						\
       break;								\
     case CONST_INT:							\
-      fprintf (FILE, "%d(0,0)", INTVAL (addr));				\
+      fprintf (FILE, "%d(%r0)", INTVAL (addr));				\
       break;								\
     default:								\
       output_addr_const (FILE, addr);					\
