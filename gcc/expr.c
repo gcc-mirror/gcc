@@ -9154,8 +9154,8 @@ do_tablejump (index, mode, range, table_label, default_label)
      or equal to the minimum value of the range and less than or equal to
      the maximum value of the range.  */
 
-  emit_cmp_insn (range, index, LTU, NULL_RTX, mode, 1, 0);
-  emit_jump_insn (gen_bltu (default_label));
+  emit_cmp_insn (index, range, GTU, NULL_RTX, mode, 1, 0);
+  emit_jump_insn (gen_bgtu (default_label));
 
   /* If index is in range, it must fit in Pmode.
      Convert to Pmode so we can index with it.  */
