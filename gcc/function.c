@@ -3433,6 +3433,9 @@ assign_parms (fndecl, second_time)
 	      else if (PARM_BOUNDARY % BITS_PER_WORD != 0)
 		abort ();
 
+	      if (TREE_READONLY (parm))
+		RTX_UNCHANGING_P (stack_parm) = 1;
+
 	      move_block_from_reg (REGNO (entry_parm),
 				   validize_mem (stack_parm),
 				   size_stored / UNITS_PER_WORD,
