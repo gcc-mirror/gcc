@@ -1,3 +1,8 @@
+2003-05-22  Bud Davis  <bdavis9659@comcast.net>
+
+	* com.c (ffecom_sym_transform_): Error out on unallocatable
+	storage after type is set.
+
 2003-05-18  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* intdoc.in: Fix documentation of IDATE.

@@ -7408,16 +7408,16 @@ ffecom_sym_transform_ (ffesymbol s)
 	    ffestorag st = ffesymbol_storage (s);
 	    tree type;
 
-	    if ((st != NULL)
-		&& (ffestorag_size (st) == 0))
+	    type = ffecom_type_localvar_ (s, bt, kt);
+
+	    if (type == error_mark_node)
 	      {
 		t = error_mark_node;
 		break;
 	      }
 
-	    type = ffecom_type_localvar_ (s, bt, kt);
-
-	    if (type == error_mark_node)
+	    if ((st != NULL)
+		&& (ffestorag_size (st) == 0))
 	      {
 		t = error_mark_node;
 		break;
