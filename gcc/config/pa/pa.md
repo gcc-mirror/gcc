@@ -4804,11 +4804,11 @@
 ;; We want to split this up during scheduling since we want both insns
 ;; to schedule independently.
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-			  (match_operand:DF 2 "register_operand" "f"))
-		 (match_operand:DF 3 "register_operand" "f")))
-   (set (match_operand:DF 4 "register_operand" "=&f")
+  [(set (match_operand:DF 0 "register_operand" "")
+	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "")
+			  (match_operand:DF 2 "register_operand" ""))
+		 (match_operand:DF 3 "register_operand" "")))
+   (set (match_operand:DF 4 "register_operand" "")
 	(mult:DF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
@@ -4833,11 +4833,11 @@
 ;; We want to split this up during scheduling since we want both insns
 ;; to schedule independently.
 (define_split
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-			  (match_operand:SF 2 "register_operand" "f"))
-		 (match_operand:SF 3 "register_operand" "f")))
-   (set (match_operand:SF 4 "register_operand" "=&f")
+  [(set (match_operand:SF 0 "register_operand" "")
+	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "")
+			  (match_operand:SF 2 "register_operand" ""))
+		 (match_operand:SF 3 "register_operand" "")))
+   (set (match_operand:SF 4 "register_operand" "")
 	(mult:SF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
@@ -4879,10 +4879,10 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-			 (match_operand:DF 2 "register_operand" "f"))))
-   (set (match_operand:DF 3 "register_operand" "=&f")
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (mult:DF (match_operand:DF 1 "register_operand" "")
+			 (match_operand:DF 2 "register_operand" ""))))
+   (set (match_operand:DF 3 "register_operand" "")
 	(mult:DF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 3) (mult:DF (match_dup 1) (match_dup 2)))
@@ -4903,10 +4903,10 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-			 (match_operand:SF 2 "register_operand" "f"))))
-   (set (match_operand:SF 3 "register_operand" "=&f")
+  [(set (match_operand:SF 0 "register_operand" "")
+	(neg:SF (mult:SF (match_operand:SF 1 "register_operand" "")
+			 (match_operand:SF 2 "register_operand" ""))))
+   (set (match_operand:SF 3 "register_operand" "")
 	(mult:SF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 3) (mult:SF (match_dup 1) (match_dup 2)))
@@ -4949,11 +4949,11 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
-				  (match_operand:DF 2 "register_operand" "f")))
-		 (match_operand:DF 3 "register_operand" "f")))
-   (set (match_operand:DF 4 "register_operand" "=&f")
+  [(set (match_operand:DF 0 "register_operand" "")
+	(plus:DF (neg:DF (mult:DF (match_operand:DF 1 "register_operand" "")
+				  (match_operand:DF 2 "register_operand" "")))
+		 (match_operand:DF 3 "register_operand" "")))
+   (set (match_operand:DF 4 "register_operand" "")
 	(mult:DF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
@@ -4976,11 +4976,11 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
-				  (match_operand:SF 2 "register_operand" "f")))
-		 (match_operand:SF 3 "register_operand" "f")))
-   (set (match_operand:SF 4 "register_operand" "=&f")
+  [(set (match_operand:SF 0 "register_operand" "")
+	(plus:SF (neg:SF (mult:SF (match_operand:SF 1 "register_operand" "")
+				  (match_operand:SF 2 "register_operand" "")))
+		 (match_operand:SF 3 "register_operand" "")))
+   (set (match_operand:SF 4 "register_operand" "")
 	(mult:SF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
@@ -5003,11 +5003,11 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(minus:DF (match_operand:DF 3 "register_operand" "f")
-		  (mult:DF (match_operand:DF 1 "register_operand" "f")
-			   (match_operand:DF 2 "register_operand" "f"))))
-   (set (match_operand:DF 4 "register_operand" "=&f")
+  [(set (match_operand:DF 0 "register_operand" "")
+	(minus:DF (match_operand:DF 3 "register_operand" "")
+		  (mult:DF (match_operand:DF 1 "register_operand" "")
+			   (match_operand:DF 2 "register_operand" ""))))
+   (set (match_operand:DF 4 "register_operand" "")
 	(mult:DF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 4) (mult:DF (match_dup 1) (match_dup 2)))
@@ -5030,11 +5030,11 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(minus:SF (match_operand:SF 3 "register_operand" "f")
-		  (mult:SF (match_operand:SF 1 "register_operand" "f")
-			   (match_operand:SF 2 "register_operand" "f"))))
-   (set (match_operand:SF 4 "register_operand" "=&f")
+  [(set (match_operand:SF 0 "register_operand" "")
+	(minus:SF (match_operand:SF 3 "register_operand" "")
+		  (mult:SF (match_operand:SF 1 "register_operand" "")
+			   (match_operand:SF 2 "register_operand" ""))))
+   (set (match_operand:SF 4 "register_operand" "")
 	(mult:SF (match_dup 1) (match_dup 2)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 4) (mult:SF (match_dup 1) (match_dup 2)))
@@ -5053,9 +5053,9 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(neg:DF (abs:DF (match_operand:DF 1 "register_operand" "f"))))
-   (set (match_operand:DF 2 "register_operand" "=&f") (abs:DF (match_dup 1)))]
+  [(set (match_operand:DF 0 "register_operand" "")
+	(neg:DF (abs:DF (match_operand:DF 1 "register_operand" ""))))
+   (set (match_operand:DF 2 "register_operand" "") (abs:DF (match_dup 1)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 2) (abs:DF (match_dup 1)))
    (set (match_dup 0) (neg:DF (abs:DF (match_dup 1))))]
@@ -5072,9 +5072,9 @@
    (set_attr "length" "8")])
 
 (define_split
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(neg:SF (abs:SF (match_operand:SF 1 "register_operand" "f"))))
-   (set (match_operand:SF 2 "register_operand" "=&f") (abs:SF (match_dup 1)))]
+  [(set (match_operand:SF 0 "register_operand" "")
+	(neg:SF (abs:SF (match_operand:SF 1 "register_operand" ""))))
+   (set (match_operand:SF 2 "register_operand" "") (abs:SF (match_dup 1)))]
   "! TARGET_SOFT_FLOAT && TARGET_PA_20"
   [(set (match_dup 2) (abs:SF (match_dup 1)))
    (set (match_dup 0) (neg:SF (abs:SF (match_dup 1))))]
