@@ -2190,8 +2190,8 @@ rest_of_decl_compilation (tree decl,
 	 is seen.  But at end of compilation, do output code for them.  */
       if (at_end || !DECL_DEFER_OUTPUT (decl))
 	{
-	  if (flag_unit_at_a_time && TREE_CODE (decl) != FUNCTION_DECL
-	      && top_level)
+	  if (flag_unit_at_a_time && !cgraph_global_info_ready
+	      && TREE_CODE (decl) != FUNCTION_DECL && top_level)
 	    cgraph_varpool_finalize_decl (decl);
 	  else
 	    assemble_variable (decl, top_level, at_end, 0);
