@@ -8019,6 +8019,7 @@ static void
 reload_cse_delete_noop_set (insn, value)
      rtx insn, value;
 {
+  bool purge = BLOCK_FOR_INSN (insn)->end == insn;
   if (value)
     {
       PATTERN (insn) = gen_rtx_USE (VOIDmode, value);
@@ -8027,6 +8028,8 @@ reload_cse_delete_noop_set (insn, value)
     }
   else
     delete_insn (insn);
+  if (purge)
+    purge_dead_edges (BLOCK_FOR_INSN (insn));
 }
 
 /* See whether a single set SET is a noop.  */
