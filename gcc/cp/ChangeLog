@@ -1,5 +1,8 @@
 Fri Sep 26 00:22:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* search.c (get_matching_virtual): Notice virtual bases when sorrying
+	about covariant returns.
+
 	* parse.y (member_init): Also imply typename here.  Remove ancient
 	extension for initializing base members.
 
