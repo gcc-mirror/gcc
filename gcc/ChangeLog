@@ -1,3 +1,7 @@
+2000-06-29  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* flow.c (flow_depth_first_order_compute): Fix algorithm.
+
 2000-06-28  Philipp Thomas  <pthomas@suse.de>
 
 	* c-decl.c : Mark strings for translation.
