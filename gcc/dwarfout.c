@@ -551,6 +551,13 @@ static void retry_incomplete_types	PARAMS ((void));
 #define MACINFO_BEGIN_LABEL	"*.L_macinfo_b"
 #endif
 
+#ifndef DEBUG_ARANGES_BEGIN_LABEL
+#define DEBUG_ARANGES_BEGIN_LABEL "*.L_debug_aranges_begin"
+#endif
+#ifndef DEBUG_ARANGES_END_LABEL
+#define DEBUG_ARANGES_END_LABEL "*.L_debug_aranges_end"
+#endif
+
 #ifndef DIE_BEGIN_LABEL_FMT
 #define DIE_BEGIN_LABEL_FMT	"*.L_D%u"
 #endif
@@ -5778,6 +5785,11 @@ dwarfout_init (asm_out_file, main_input_filename)
     
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
+      ASM_OUTPUT_DWARF_DELTA4 (asm_out_file,
+			       DEBUG_ARANGES_END_LABEL,
+			       DEBUG_ARANGES_BEGIN_LABEL);
+      ASM_OUTPUT_LABEL (asm_out_file, DEBUG_ARANGES_BEGIN_LABEL);
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 1);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, DEBUG_BEGIN_LABEL);
       ASM_OUTPUT_POP_SECTION (asm_out_file);
     }
@@ -5983,6 +5995,7 @@ dwarfout_finish ()
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
 
+      ASM_OUTPUT_LABEL (asm_out_file, DEBUG_ARANGES_END_LABEL);
       ASM_OUTPUT_POP_SECTION (asm_out_file);
     }
 
