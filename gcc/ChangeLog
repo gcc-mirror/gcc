@@ -1,3 +1,8 @@
+1999-12-10  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* config/arm/arm.md (*mulsidi3adddi, *umulsidi3adddi): New patterns
+	for long long multiply-accumulate.
+
 1999-12-10  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (insert_loop_mem): Undo last change.
