@@ -1,3 +1,8 @@
+2002-03-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/compile/20020304-1.c: New test case
+	(from PR c/5830). 
+
 2002-02-20  Release Manager
 
 	* GCC 3.0.4 Released.
