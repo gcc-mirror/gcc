@@ -1,5 +1,4 @@
-/* { dg-do run } */
-/* { dg-options "-O2" } */
+/* PR tree-optimization/20601 */
 extern void abort (void);
 extern void exit (int);
 
