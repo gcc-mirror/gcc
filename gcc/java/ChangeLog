@@ -1,3 +1,11 @@
+2003-05-13  Richard Henderson  <rth@redhat.com>
+
+	* class.c (layout_class_method): Set DECL_EXTERNAL.
+	* decl.c (java_mark_decl_local, java_mark_class_local): New.
+	* java-tree.h (java_mark_class_local): Declare.
+	* jcf-parse.c (parse_class_file): Use it.
+	* parse.y (java_expand_classes): Likewise.
+
 2003-05-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* Make-lang.in (java/parse.o, java/parse-scan.o): Depend on input.h.
