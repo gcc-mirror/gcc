@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -274,7 +274,7 @@ static int redirect_with_delay_slots_safe_p PROTO ((rtx, rtx, rtx));
 static int redirect_with_delay_list_safe_p PROTO ((rtx, rtx, rtx));
 
 /* Given X, some rtl, and RES, a pointer to a `struct resource', mark
-   which resources are references by the insn.  If INCLUDE_CALLED_ROUTINE
+   which resources are references by the insn.  If INCLUDE_DELAYED_EFFECTS
    is TRUE, resources used by the called routine will be included for
    CALL_INSNs.  */
 
@@ -487,9 +487,10 @@ mark_referenced_resources (x, res, include_delayed_effects)
       }
 }
 
-/* Given X, a part of an insn, and a pointer to a `struct resource', RES,
-   indicate which resources are modified by the insn. If INCLUDE_CALLED_ROUTINE
-   is nonzero, also mark resources potentially set by the called routine.
+/* Given X, a part of an insn, and a pointer to a `struct resource',
+   RES, indicate which resources are modified by the insn. If
+   INCLUDE_DELAYED_EFFECTS is nonzero, also mark resources potentially
+   set by the called routine.
 
    If IN_DEST is nonzero, it means we are inside a SET.  Otherwise,
    objects are being referenced instead of set.
@@ -740,7 +741,7 @@ resource_conflicts_p (res1, res2)
 }
 
 /* Return TRUE if any resource marked in RES, a `struct resources', is
-   referenced by INSN.  If INCLUDE_CALLED_ROUTINE is set, return if the called
+   referenced by INSN.  If INCLUDE_DELAYED_EFFECTS is set, return if the called
    routine is using those resources.
 
    We compute this by computing all the resources referenced by INSN and
@@ -762,7 +763,7 @@ insn_references_resource_p (insn, res, include_delayed_effects)
 }
 
 /* Return TRUE if INSN modifies resources that are marked in RES.
-   INCLUDE_CALLED_ROUTINE is set if the actions of that routine should be
+   INCLUDE_DELAYED_EFFECTS is set if the actions of that routine should be
    included.   CC0 is only modified if it is explicitly set; see comments
    in front of mark_set_resources for details.  */
 
@@ -3480,7 +3481,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
   /* If our thread is the end of subroutine, we can't get any delay
      insns from that.  */
   if (thread == 0)
-    return 0;
+      return delay_list;
 
   /* If this is an unconditional branch, nothing is needed at the
      opposite thread.  Otherwise, compute what is needed there.  */
@@ -3636,6 +3637,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 		    INSN_FROM_TARGET_P (temp) = 1;
 
 		  delay_list = add_to_delay_list (temp, delay_list);
+
+		  mark_set_resources (trial, &opposite_needed, 0, 1);
 
 		  if (slots_to_fill == ++(*pslots_filled))
 		    {
