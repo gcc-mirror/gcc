@@ -23,6 +23,13 @@ AC_PREREQ(2.12.1)
 AC_INIT(ftell_.c)
 AC_CONFIG_HEADER(config.h)
 
+# These defines are necessary to get 64-bit file size support.
+
+AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
+# The following is needed by irix6.2 so that struct timeval is declared.
+AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Get Single Unix Specification semantics])
+AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
+
 dnl Checks for programs.
 
 dnl FIXME AC_PROG_CC wants CC to be able to link things, but it may
@@ -200,11 +207,6 @@ AC_DEFINE(NO_EOF_CHAR_CHECK, 1, [Always defined.])
 AC_TYPE_OFF_T
 
 AC_DEFINE(Skip_f2c_Undefs, 1, [Define to skip f2c undefs.])
-
-# These defines are necessary to get 64-bit file size support.
-
-AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
-AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
 
 AC_OUTPUT(Makefile)
 
