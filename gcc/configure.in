@@ -2819,11 +2819,12 @@ changequote([,])dnl
 	ns32k-*-openbsd*)
 		# Nothing special
 		;;
-	pyramid-*-*)
-		cpu_type=pyr
-		xmake_file=pyr/x-pyr
-		use_collect2=yes
-		;;
+# This has not been updated to GCC 2.
+#	pyramid-*-*)
+#		cpu_type=pyr
+#		xmake_file=pyr/x-pyr
+#		use_collect2=yes
+#		;;
 	romp-*-aos*)
 		use_collect2=yes
 		;;

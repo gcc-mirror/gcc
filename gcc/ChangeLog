@@ -1,3 +1,13 @@
+Sun Sep  5 17:34:33 1999  Richard Henderson  <rth@cygnus.com>
+
+	* clipper/clipper.c (clipper_va_start): Fix typos.
+
+	* pyr/pyr.c (pyr_build_va_list, pyr_va_start, pyr_va_arg): New stubs.
+	* spur/spur.c (spur_build_va_list, spur_va_start): New stubs.
+	(spur_va_arg): New stub.
+
+	* configure.in: Comment out pyramid.
+
 Sun Sep  5 19:11:01 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* i386.h (MASK_{DEBUG_{ADDR,ARG},INTEL_SYNTAX}): Move so these

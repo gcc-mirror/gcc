@@ -325,3 +325,62 @@ big_immediate_operand (op, mode)
 {
   return (GET_CODE (op) == CONST_INT);
 }
+
+/* ??? None of the original definitions ever worked for stdarg.h, and
+   the port never updated for gcc2.  Quoting bits of the old va-spur.h
+   for historical interest.  */
+
+tree
+spur_build_va_list ()
+{
+  typedef struct {
+    int __pnt;
+    char *__regs;
+    char *__stack;
+  } va_list;
+}
+
+void
+spur_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg ATTRIBUTE_UNUSED;
+{
+struct __va_struct { char __regs[20]; };
+
+#define va_alist __va_regs, __va_stack
+#define va_dcl struct __va_struct __va_regs; int __va_stack; 
+
+#define va_start(pvar) \
+     ((pvar).__pnt = 0, (pvar).__regs = __va_regs.__regs, \
+      (pvar).__stack = (char *) &__va_stack)
+}
+
+rtx
+spur_va_arg (valist, type)
+     tree valist, type;
+{
+#define va_arg(pvar,type)						   \
+__extension__								   \
+    (*({  type *__va_result;						   \
+        if ((pvar).__pnt >= 20) {					   \
+           __va_result = ( (type *) ((pvar).__stack + (pvar).__pnt - 20)); \
+	   (pvar).__pnt += (sizeof(type) + 7) & ~7;			   \
+	}								   \
+	else if ((pvar).__pnt + sizeof(type) > 20) {			   \
+	   __va_result = (type *) (pvar).__stack;			   \
+	   (pvar).__pnt = 20 + ( (sizeof(type) + 7) & ~7);		   \
+	}								   \
+	else if (sizeof(type) == 8) {					   \
+	   union {double d; int i[2];} __u;				   \
+	   __u.i[0] = *(int *) ((pvar).__regs + (pvar).__pnt);		   \
+	   __u.i[1] = *(int *) ((pvar).__regs + (pvar).__pnt + 4);	   \
+	   __va_result = (type *) &__u;					   \
+	   (pvar).__pnt += 8;						   \
+	}								   \
+	else {								   \
+	   __va_result = (type *) ((pvar).__regs + (pvar).__pnt);	   \
+	   (pvar).__pnt += (sizeof(type) + 3) & ~3;			   \
+	}								   \
+	__va_result; }))
+}
