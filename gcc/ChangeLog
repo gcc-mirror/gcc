@@ -1,3 +1,8 @@
+2003-12-08  Jan Hubicka  <jh@suse.cz>
+
+	* unwind-pe.h (read_uleb128): Fix handling of large values
+	(read_sleb128): Fix handling of large values
+
 2003-12-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/10060
