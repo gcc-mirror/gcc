@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.190 1996/11/16 00:19:07 karl Exp karl $
+%% $Id: texinfo.tex,v 2.191 1996/11/16 00:20:09 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 1996 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.190 $
+\deftexinfoversion$Revision: 2.191 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1315,16 +1315,21 @@ where each line of input produces a line of output.}
 {
 \catcode`\-=\active
 \catcode`\_=\active
+\catcode`\|=\active
 \global\def\code{\begingroup \catcode`\-=\active \let-\codedash \catcode`\_=\active \let_\codeunder \codex}
 % The following is used by \doprintindex to insure that long function names
 % wrap around.  It is necessary for - and _ to be active before the index is
 % read from the file, as \entry parses the arguments long before \code is
 % ever called.  -- mycroft
-\global\def\indexbreaks{\catcode`\-=\active \let-\realdash \catcode`\_=\active \let_\realunder}
+% _ is always active; and it shouldn't be \let = to an _ that is a
+% subscript character anyway. Then, @cindex @samp{_} (for example)
+% fails.  --karl
+\global\def\indexbreaks{%
+  \catcode`\-=\active \let-\realdash
+}
 }
 
 \def\realdash{-}
-\def\realunder{_}
 \def\codedash{-\discretionary{}{}{}}
 \def\codeunder{\normalunderscore\discretionary{}{}{}}
 \def\codex #1{\tclose{#1}\endgroup}
@@ -2062,7 +2067,16 @@ July\or August\or September\or October\or November\or December\fi
  % In either case we will make \leftskip=\multitablecolspace:
 \leftskip=\multitablecolspace
 \fi
-\noindent##\multistrut}\cr%
+ % Ignoring space at the beginning and end avoids an occasional spurious
+ % blank line, when TeX decides to break the line at the space before the
+ % box from the multistrut, so the strut ends up on a line by itself.
+ % For example:
+ % @multitable @columnfractions .11 .89
+ % @item @code{#}
+ % @tab Legal holiday which is valid in major parts of the whole country.
+ % Is automatically provided with highlighing sequences respectively marking
+ % characters.
+ \noindent\ignorespaces##\unskip\multistrut}\cr
  % \everycr will reset column counter, \colcount, at the end of
  % each line. Every column  entry will cause \colcount to advance by one. 
  % The table preamble
@@ -4373,8 +4387,12 @@ width0pt\relax} \fi
 
 % Don't bother with the trickery in plain.tex to not require the
 % footnote text as a parameter.  Our footnotes don't need to be so general.
+% 
+% Oh yes, they do; otherwise, @ifset and anything else that uses
+% \parseargline fail inside footnotes because the tokens are fixed when
+% the footnote is read.  --karl, 16nov96.
 %
-\long\gdef\footnotezzz#1{\insert\footins{%
+\long\gdef\footnotezzz{\insert\footins\bgroup
   % We want to typeset this text as a normal paragraph, even if the
   % footnote reference occurs in (for example) a display environment.
   % So reset some parameters.
@@ -4396,8 +4414,13 @@ width0pt\relax} \fi
   % expands into a box, it must come within the paragraph, lest it
   % provide a place where TeX can split the footnote.
   \footstrut
-  #1\strut}%
+  \futurelet\next\fo@t
 }
+\def\fo@t{\ifcat\bgroup\noexpand\next \let\next\f@@t
+  \else\let\next\f@t\fi \next}
+\def\f@@t{\bgroup\aftergroup\@foot\let\next}
+\def\f@t#1{#1\@foot}
+\def\@foot{\strut\egroup}
 
 }%end \catcode `\@=11
 
