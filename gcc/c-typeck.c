@@ -76,8 +76,12 @@ static void warning_init		PARAMS ((const char *));
 static tree digest_init			PARAMS ((tree, tree, int, int));
 static void output_init_element		PARAMS ((tree, tree, tree, int));
 static void output_pending_init_elements PARAMS ((int));
+static int set_designator		PARAMS ((int));
+static void push_range_stack		PARAMS ((tree));
 static void add_pending_init		PARAMS ((tree, tree));
-static int pending_init_member		PARAMS ((tree));
+static void set_nonincremental_init	PARAMS ((void));
+static void set_nonincremental_init_from_string	PARAMS ((tree));
+static tree find_init_member		PARAMS ((tree));
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)  */
@@ -4410,7 +4414,7 @@ store_init_value (decl, init)
   /* Digest the specified initializer into an expression.  */
 
   value = digest_init (type, init, TREE_STATIC (decl),
-		       TREE_STATIC (decl) || pedantic);
+		       TREE_STATIC (decl) || (pedantic && !flag_isoc99));
 
   /* Store the expression if valid; else report error.  */
 
@@ -4769,10 +4773,7 @@ digest_init (type, init, require_constant, constructor_constant)
 	}
       else if (require_constant
 	       && initializer_constant_valid_p (inside_init, TREE_TYPE (inside_init)) == 0)
-	{
-	  error_init ("initializer element is not computable at load time");
-	  inside_init = error_mark_node;
-	}
+	pedwarn ("initializer element is not computable at load time");
 
       return inside_init;
     }
@@ -4868,11 +4869,6 @@ static tree constructor_fields;
    at which to store the next element we get.  */
 static tree constructor_index;
 
-/* For an ARRAY_TYPE, this is the end index of the range
-   to initialize with the next element, or NULL in the ordinary case
-   where the element is used just once.  */
-static tree constructor_range_end;
-
 /* For an ARRAY_TYPE, this is the maximum index.  */
 static tree constructor_max_index;
 
@@ -4891,6 +4887,10 @@ static tree constructor_bit_index;
    this is the list of elements so far (in reverse order,
    most recent first).  */
 static tree constructor_elements;
+
+/* 1 if constructor should be incrementally stored into a constructor chain,
+   0 if all the elements should be kept in AVL tree.  */
+static int constructor_incremental;
 
 /* 1 if so far this constructor's elements are all compile-time constants.  */
 static int constructor_constant;
@@ -4943,6 +4943,12 @@ static const char *constructor_asmspec;
 /* Nonzero if this is an initializer for a top-level decl.  */
 static int constructor_top_level;
 
+/* Nesting depth of designator list.  */
+static int designator_depth;
+
+/* Nonzero if there were diagnosed errors in this designator list.  */
+static int designator_errorneous;
+
 
 /* This stack has a level for each implicit or explicit level of
    structuring in the initializer, including the outermost one.  It
@@ -4954,7 +4960,6 @@ struct constructor_stack
   tree type;
   tree fields;
   tree index;
-  tree range_end;
   tree max_index;
   tree unfilled_index;
   tree unfilled_fields;
@@ -4971,9 +4976,25 @@ struct constructor_stack
   char implicit;
   char erroneous;
   char outer;
+  char incremental;
 };
 
 struct constructor_stack *constructor_stack;
+
+/* This stack represents designators from some range designator up to
+   the last designator in the list.  */
+
+struct constructor_range_stack
+{
+  struct constructor_range_stack *next, *prev;
+  struct constructor_stack *stack;
+  tree range_start;
+  tree index;
+  tree range_end;
+  tree fields;
+};
+
+struct constructor_range_stack *constructor_range_stack;
 
 /* This stack records separate initializers that are nested.
    Nested initializers can't happen in ANSI C, but GNU C allows them
@@ -4985,6 +5006,7 @@ struct initializer_stack
   tree decl;
   const char *asmspec;
   struct constructor_stack *constructor_stack;
+  struct constructor_range_stack *constructor_range_stack;
   tree elements;
   struct spelling *spelling;
   struct spelling *spelling_base;
@@ -5018,6 +5040,7 @@ start_init (decl, asmspec_tree, top_level)
   p->require_constant_value = require_constant_value;
   p->require_constant_elements = require_constant_elements;
   p->constructor_stack = constructor_stack;
+  p->constructor_range_stack = constructor_range_stack;
   p->elements = constructor_elements;
   p->spelling = spelling;
   p->spelling_base = spelling_base;
@@ -5036,7 +5059,7 @@ start_init (decl, asmspec_tree, top_level)
     {
       require_constant_value = TREE_STATIC (decl);
       require_constant_elements
-	= ((TREE_STATIC (decl) || pedantic)
+	= ((TREE_STATIC (decl) || (pedantic && !flag_isoc99))
 	   /* For a scalar, you can always use any value to initialize,
 	      even within braces.  */
 	   && (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
@@ -5053,6 +5076,7 @@ start_init (decl, asmspec_tree, top_level)
     }
 
   constructor_stack = 0;
+  constructor_range_stack = 0;
 
   missing_braces_mentioned = 0;
 
@@ -5083,12 +5107,16 @@ finish_init ()
       free (q);
     }
 
+  if (constructor_range_stack)
+    abort ();
+
   /* Pop back to the data of the outer initializer (if any).  */
   constructor_decl = p->decl;
   constructor_asmspec = p->asmspec;
   require_constant_value = p->require_constant_value;
   require_constant_elements = p->require_constant_elements;
   constructor_stack = p->constructor_stack;
+  constructor_range_stack = p->constructor_range_stack;
   constructor_elements = p->elements;
   spelling = p->spelling;
   spelling_base = p->spelling_base;
@@ -5119,7 +5147,6 @@ really_start_incremental_init (type)
   p->type = constructor_type;
   p->fields = constructor_fields;
   p->index = constructor_index;
-  p->range_end = constructor_range_end;
   p->max_index = constructor_max_index;
   p->unfilled_index = constructor_unfilled_index;
   p->unfilled_fields = constructor_unfilled_fields;
@@ -5133,6 +5160,7 @@ really_start_incremental_init (type)
   p->replacement_value = 0;
   p->implicit = 0;
   p->outer = 0;
+  p->incremental = constructor_incremental;
   p->next = 0;
   constructor_stack = p;
 
@@ -5142,6 +5170,9 @@ really_start_incremental_init (type)
   constructor_elements = 0;
   constructor_pending_elts = 0;
   constructor_type = type;
+  constructor_incremental = 1;
+  designator_depth = 0;
+  designator_errorneous = 0;
 
   if (TREE_CODE (constructor_type) == RECORD_TYPE
       || TREE_CODE (constructor_type) == UNION_TYPE)
@@ -5157,7 +5188,6 @@ really_start_incremental_init (type)
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
-      constructor_range_end = 0;
       if (TYPE_DOMAIN (constructor_type))
 	{
 	  constructor_max_index
@@ -5187,13 +5217,14 @@ really_start_incremental_init (type)
 /* Push down into a subobject, for initialization.
    If this is for an explicit set of braces, IMPLICIT is 0.
    If it is because the next element belongs at a lower level,
-   IMPLICIT is 1.  */
+   IMPLICIT is 1 (or 2 if the push is because of designator list).  */
 
 void
 push_init_level (implicit)
      int implicit;
 {
   struct constructor_stack *p;
+  tree value = NULL_TREE;
 
   /* If we've exhausted any levels that didn't have braces,
      pop them now.  */
@@ -5210,11 +5241,22 @@ push_init_level (implicit)
 	break;
     }
 
+  /* Unless this is an explicit brace, we need to preserve previous
+     content if any.  */
+  if (implicit)
+    {
+      if ((TREE_CODE (constructor_type) == RECORD_TYPE
+	   || TREE_CODE (constructor_type) == UNION_TYPE)
+	  && constructor_fields)
+	value = find_init_member (constructor_fields);
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+	value = find_init_member (constructor_index);
+    }
+
   p = (struct constructor_stack *) xmalloc (sizeof (struct constructor_stack));
   p->type = constructor_type;
   p->fields = constructor_fields;
   p->index = constructor_index;
-  p->range_end = constructor_range_end;
   p->max_index = constructor_max_index;
   p->unfilled_index = constructor_unfilled_index;
   p->unfilled_fields = constructor_unfilled_fields;
@@ -5228,6 +5270,7 @@ push_init_level (implicit)
   p->replacement_value = 0;
   p->implicit = implicit;
   p->outer = 0;
+  p->incremental = constructor_incremental;
   p->next = constructor_stack;
   constructor_stack = p;
 
@@ -5235,7 +5278,13 @@ push_init_level (implicit)
   constructor_simple = 1;
   constructor_depth = SPELLING_DEPTH ();
   constructor_elements = 0;
+  constructor_incremental = 1;
   constructor_pending_elts = 0;
+  if (!implicit)
+    {
+      designator_depth = 0;
+      designator_errorneous = 0;
+    }
 
   /* Don't die if an entire brace-pair level is superfluous
      in the containing level.  */
@@ -5269,7 +5318,18 @@ push_init_level (implicit)
       return;
     }
 
-  if (implicit && warn_missing_braces && !missing_braces_mentioned)
+  if (value && TREE_CODE (value) == CONSTRUCTOR)
+    {
+      constructor_constant = TREE_CONSTANT (value);
+      constructor_simple = TREE_STATIC (value);
+      constructor_elements = TREE_OPERAND (value, 1);
+      if (constructor_elements
+	  && (TREE_CODE (constructor_type) == RECORD_TYPE
+	      || TREE_CODE (constructor_type) == ARRAY_TYPE))
+	set_nonincremental_init ();
+    }
+
+  if (implicit == 1 && warn_missing_braces && !missing_braces_mentioned)
     {
       missing_braces_mentioned = 1;
       warning_init ("missing braces around initializer");
@@ -5289,7 +5349,6 @@ push_init_level (implicit)
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
-      constructor_range_end = 0;
       if (TYPE_DOMAIN (constructor_type))
 	{
 	  constructor_max_index
@@ -5307,6 +5366,13 @@ push_init_level (implicit)
 	constructor_index = bitsize_zero_node;
 
       constructor_unfilled_index = constructor_index;
+      if (value && TREE_CODE (value) == STRING_CST)
+	{
+	  /* We need to split the char/wchar array into individual
+	     characters, so that we don't have to special case it
+	     everywhere.  */
+	  set_nonincremental_init_from_string (value);
+	}
     }
   else
     {
@@ -5363,7 +5429,7 @@ pop_init_level (implicit)
 	  else if (pedantic)
 	    pedwarn_init ("initialization of a flexible array member");
 
-          /* We have already issued an error message for the existance
+	  /* We have already issued an error message for the existance
 	     of a flexible array member not at the end of the structure.
 	     Discard the initializer so that we do not abort later.  */
 	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)
@@ -5373,7 +5439,7 @@ pop_init_level (implicit)
 	{
 	  warning_init ("deprecated initialization of zero-length array");
 
-          /* We must be initializing the last member of a top-level struct.  */
+	  /* We must be initializing the last member of a top-level struct.  */
 	  if (TREE_CHAIN (constructor_fields) != NULL_TREE)
 	    {
 	      error_init ("initialization of zero-length array before end of structure");
@@ -5391,21 +5457,22 @@ pop_init_level (implicit)
       && TREE_CODE (constructor_type) == RECORD_TYPE
       && constructor_unfilled_fields)
     {
-      /* Do not warn for flexible array members or zero-length arrays.  */
-      while (constructor_unfilled_fields
-	     && (! DECL_SIZE (constructor_unfilled_fields)
-		 || integer_zerop (DECL_SIZE (constructor_unfilled_fields))))
-	constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
+	/* Do not warn for flexible array members or zero-length arrays.  */
+	while (constructor_unfilled_fields
+	       && (! DECL_SIZE (constructor_unfilled_fields)
+		   || integer_zerop (DECL_SIZE (constructor_unfilled_fields))))
+	  constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
 
-      if (constructor_unfilled_fields)
-	{
-	  push_member_name (constructor_unfilled_fields);
-	  warning_init ("missing initializer");
-	  RESTORE_SPELLING_DEPTH (constructor_depth);
-	}
+	if (constructor_unfilled_fields)
+	  {
+	    push_member_name (constructor_unfilled_fields);
+	    warning_init ("missing initializer");
+	    RESTORE_SPELLING_DEPTH (constructor_depth);
+	  }
     }
 
   /* Now output all pending elements.  */
+  constructor_incremental = 1;
   output_pending_init_elements (1);
 
   /* Pad out the end of the structure.  */
@@ -5423,7 +5490,8 @@ pop_init_level (implicit)
 	 the element, after verifying there is just one.  */
       if (constructor_elements == 0)
 	{
-	  error_init ("empty scalar initializer");
+	  if (!constructor_erroneous)
+	    error_init ("empty scalar initializer");
 	  constructor = error_mark_node;
 	}
       else if (TREE_CHAIN (constructor_elements) != 0)
@@ -5452,7 +5520,6 @@ pop_init_level (implicit)
   constructor_type = p->type;
   constructor_fields = p->fields;
   constructor_index = p->index;
-  constructor_range_end = p->range_end;
   constructor_max_index = p->max_index;
   constructor_unfilled_index = p->unfilled_index;
   constructor_unfilled_fields = p->unfilled_fields;
@@ -5461,6 +5528,7 @@ pop_init_level (implicit)
   constructor_constant = p->constant;
   constructor_simple = p->simple;
   constructor_erroneous = p->erroneous;
+  constructor_incremental = p->incremental;
   constructor_pending_elts = p->pending_elts;
   constructor_depth = p->depth;
   RESTORE_SPELLING_DEPTH (constructor_depth);
@@ -5477,6 +5545,97 @@ pop_init_level (implicit)
   return constructor;
 }
 
+/* Common handling for both array range and field name designators.
+   ARRAY argument is non-zero for array ranges.  Returns zero for success.  */
+
+static int
+set_designator (array)
+     int array;
+{
+  tree subtype;
+  enum tree_code subcode;
+
+  /* Don't die if an entire brace-pair level is superfluous
+     in the containing level.  */
+  if (constructor_type == 0)
+    return 1;
+
+  /* If there were errors in this designator list already, bail out silently.  */
+  if (designator_errorneous)
+    return 1;
+
+  if (!designator_depth)
+    {
+      if (constructor_range_stack)
+	abort ();
+
+      /* Designator list starts at the level of closest explicit
+	 braces.  */
+      while (constructor_stack->implicit)
+	process_init_element (pop_init_level (1));
+      return 0;
+    }
+
+  if (constructor_no_implicit)
+    {
+      error_init ("initialization designators may not nest");
+      return 1;
+    }
+
+  if (TREE_CODE (constructor_type) == RECORD_TYPE
+      || TREE_CODE (constructor_type) == UNION_TYPE)
+    {
+      subtype = TREE_TYPE (constructor_fields);
+      if (subtype != error_mark_node)
+	subtype = TYPE_MAIN_VARIANT (subtype);
+    }
+  else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    {
+      subtype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
+    }
+  else
+    abort ();
+
+  subcode = TREE_CODE (subtype);
+  if (array && subcode != ARRAY_TYPE)
+    {
+      error_init ("array index in non-array initializer");
+      return 1;
+    }
+  else if (!array && subcode != RECORD_TYPE && subcode != UNION_TYPE)
+    {
+      error_init ("field name not in record or union initializer");
+      return 1;
+    }
+
+  push_init_level (2);
+  return 0;
+}
+
+/* If there are range designators in designator list, push a new designator
+   to constructor_range_stack.  RANGE_END is end of such stack range or
+   NULL_TREE if there is no range designator at this level.  */
+
+static void
+push_range_stack (range_end)
+     tree range_end;
+{
+  struct constructor_range_stack *p;
+
+  p = (struct constructor_range_stack *)
+      ggc_alloc (sizeof (struct constructor_range_stack));
+  p->prev = constructor_range_stack;
+  p->next = 0;
+  p->fields = constructor_fields;
+  p->range_start = constructor_index;
+  p->index = constructor_index;
+  p->stack = constructor_stack;
+  p->range_end = range_end;
+  if (constructor_range_stack)
+    constructor_range_stack->next = p;
+  constructor_range_stack = p;
+}
+
 /* Within an array initializer, specify the next index to be initialized.
    FIRST is that index.  If LAST is nonzero, then initialize a range
    of indices, running from FIRST through LAST.  */
@@ -5485,6 +5644,11 @@ void
 set_init_index (first, last)
      tree first, last;
 {
+  if (set_designator (1))
+    return;
+
+  designator_errorneous = 1;
+
   while ((TREE_CODE (first) == NOP_EXPR
 	  || TREE_CODE (first) == CONVERT_EXPR
 	  || TREE_CODE (first) == NON_LVALUE_EXPR)
@@ -5504,18 +5668,34 @@ set_init_index (first, last)
     error_init ("nonconstant array index in initializer");
   else if (last != 0 && TREE_CODE (last) != INTEGER_CST)
     error_init ("nonconstant array index in initializer");
-  else if (! constructor_unfilled_index)
+  else if (TREE_CODE (constructor_type) != ARRAY_TYPE)
     error_init ("array index in non-array initializer");
-  else if (tree_int_cst_lt (first, constructor_unfilled_index))
-    error_init ("duplicate array index in initializer");
+  else if (constructor_max_index
+	   && tree_int_cst_lt (constructor_max_index, first))
+    error_init ("array index in initializer exceeds array bounds");
   else
     {
       constructor_index = convert (bitsizetype, first);
 
       if (last != 0 && tree_int_cst_lt (last, first))
-	error_init ("empty index range in initializer");
-      else
-	constructor_range_end = last ? convert (bitsizetype, last) : 0;
+	{
+	  error_init ("empty index range in initializer");
+	  last = 0;
+	}
+      else if (last)
+	{
+	  last = convert (bitsizetype, last);
+	  if (constructor_max_index != 0
+	      && tree_int_cst_lt (constructor_max_index, last))
+	    {
+	      error_init ("array index range in initializer exceeds array bounds");
+	      last = 0;
+	    }
+	}
+      designator_depth++;
+      designator_errorneous = 0;
+      if (constructor_range_stack || last)
+	push_range_stack (last);
     }
 }
 
@@ -5526,18 +5706,22 @@ set_init_label (fieldname)
      tree fieldname;
 {
   tree tail;
-  int passed = 0;
 
-  /* Don't die if an entire brace-pair level is superfluous
-     in the containing level.  */
-  if (constructor_type == 0)
+  if (set_designator (0))
     return;
 
+  designator_errorneous = 1;
+
+  if (TREE_CODE (constructor_type) != RECORD_TYPE
+      && TREE_CODE (constructor_type) != UNION_TYPE)
+    {
+      error_init ("field name not in record or union initializer");
+      return;
+    }
+    
   for (tail = TYPE_FIELDS (constructor_type); tail;
        tail = TREE_CHAIN (tail))
     {
-      if (tail == constructor_unfilled_fields)
-	passed = 1;
       if (DECL_NAME (tail) == fieldname)
 	break;
     }
@@ -5545,11 +5729,14 @@ set_init_label (fieldname)
   if (tail == 0)
     error ("unknown field `%s' specified in initializer",
 	   IDENTIFIER_POINTER (fieldname));
-  else if (!passed)
-    error ("field `%s' already initialized",
-	   IDENTIFIER_POINTER (fieldname));
   else
-    constructor_fields = tail;
+    {
+      constructor_fields = tail;
+      designator_depth++;
+      designator_errorneous = 0;
+      if (constructor_range_stack)
+	push_range_stack (NULL_TREE);
+    }
 }
 
 /* Add a new initializer to the tree of pending initializers.  PURPOSE
@@ -5572,24 +5759,36 @@ add_pending_init (purpose, value)
 	  p = *q;
 	  if (tree_int_cst_lt (purpose, p->purpose))
 	    q = &p->left;
-	  else if (p->purpose != purpose)
+	  else if (tree_int_cst_lt (p->purpose, purpose))
 	    q = &p->right;
 	  else
-	    abort ();
+	    {
+	      if (TREE_SIDE_EFFECTS (p->value))
+		warning_init ("initialized field with side-effects overwritten");
+	      p->value = value;
+	      return;
+	    }
 	}
     }
   else
     {
+      tree bitpos;
+
+      bitpos = bit_position (purpose);
       while (*q != NULL)
 	{
 	  p = *q;
-	  if (tree_int_cst_lt (bit_position (purpose),
-			       bit_position (p->purpose)))
+	  if (tree_int_cst_lt (bitpos, bit_position (p->purpose)))
 	    q = &p->left;
 	  else if (p->purpose != purpose)
 	    q = &p->right;
 	  else
-	    abort ();
+	    {
+	      if (TREE_SIDE_EFFECTS (p->value))
+		warning_init ("initialized field with side-effects overwritten");
+	      p->value = value;
+	      return;
+	    }
 	}
     }
 
@@ -5758,41 +5957,178 @@ add_pending_init (purpose, value)
     }
 }
 
-/* Return nonzero if FIELD is equal to the index of a pending initializer.  */
+/* Build AVL tree from a sorted chain.  */
 
-static int
-pending_init_member (field)
+static void
+set_nonincremental_init ()
+{
+  tree chain;
+
+  if (TREE_CODE (constructor_type) != RECORD_TYPE
+      && TREE_CODE (constructor_type) != ARRAY_TYPE)
+    return;
+
+  for (chain = constructor_elements; chain; chain = TREE_CHAIN (chain))
+    add_pending_init (TREE_PURPOSE (chain), TREE_VALUE (chain));
+  constructor_elements = 0;
+  if (TREE_CODE (constructor_type) == RECORD_TYPE)
+    {
+      constructor_unfilled_fields = TYPE_FIELDS (constructor_type);
+      /* Skip any nameless bit fields at the beginning.  */
+      while (constructor_unfilled_fields != 0
+	     && DECL_C_BIT_FIELD (constructor_unfilled_fields)
+	     && DECL_NAME (constructor_unfilled_fields) == 0)
+	constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
+      
+    }
+  else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    {
+      if (TYPE_DOMAIN (constructor_type))
+	constructor_unfilled_index
+	    = convert (bitsizetype,
+		       TYPE_MIN_VALUE (TYPE_DOMAIN (constructor_type)));
+      else
+	constructor_unfilled_index = bitsize_zero_node;
+    }
+  constructor_incremental = 0;
+}
+
+/* Build AVL tree from a string constant.  */
+
+static void
+set_nonincremental_init_from_string (str)
+     tree str;
+{
+  tree value, purpose, type;
+  HOST_WIDE_INT val[2];
+  const char *p, *end;
+  int byte, wchar_bytes, charwidth, bitpos;
+
+  if (TREE_CODE (constructor_type) != ARRAY_TYPE)
+    abort ();
+
+  if (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (str)))
+      == TYPE_PRECISION (char_type_node))
+    wchar_bytes = 1;
+  else if (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (str)))
+	   == TYPE_PRECISION (wchar_type_node))
+    wchar_bytes = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
+  else
+    abort ();
+
+  charwidth = TYPE_PRECISION (char_type_node);
+  type = TREE_TYPE (constructor_type);
+  p = TREE_STRING_POINTER (str);
+  end = p + TREE_STRING_LENGTH (str);
+
+  for (purpose = bitsize_zero_node;
+       p < end && !tree_int_cst_lt (constructor_max_index, purpose);
+       purpose = size_binop (PLUS_EXPR, purpose, bitsize_one_node))
+    {
+      if (wchar_bytes == 1)
+	{
+	  val[1] = (unsigned char) *p++;
+	  val[0] = 0;
+	}
+      else
+	{
+	  val[0] = 0;
+	  val[1] = 0;
+	  for (byte = 0; byte < wchar_bytes; byte++)
+	    {
+	      if (BYTES_BIG_ENDIAN)
+		bitpos = (wchar_bytes - byte - 1) * charwidth;
+	      else
+		bitpos = byte * charwidth;
+	      val[bitpos < HOST_BITS_PER_WIDE_INT]
+		|= ((unsigned HOST_WIDE_INT) ((unsigned char) *p++))
+		   << (bitpos % HOST_BITS_PER_WIDE_INT);
+	    }
+	}
+
+      if (!TREE_UNSIGNED (type))
+	{
+	  bitpos = ((wchar_bytes - 1) * charwidth) + HOST_BITS_PER_CHAR;
+	  if (bitpos < HOST_BITS_PER_WIDE_INT)
+	    {
+	      if (val[1] & (((HOST_WIDE_INT) 1) << (bitpos - 1)))
+		{
+		  val[1] |= ((HOST_WIDE_INT) -1) << bitpos;
+		  val[0] = -1;
+		}
+	    }
+	  else if (bitpos == HOST_BITS_PER_WIDE_INT)
+	    {
+	      if (val[1] < 0)
+	        val[0] = -1;
+	    }
+	  else if (val[0] & (((HOST_WIDE_INT) 1)
+			     << (bitpos - 1 - HOST_BITS_PER_WIDE_INT)))
+	    val[0] |= ((HOST_WIDE_INT) -1)
+		      << (bitpos - HOST_BITS_PER_WIDE_INT);
+	}
+
+      value = build_int_2 (val[1], val[0]);
+      TREE_TYPE (value) = type;
+      add_pending_init (purpose, value);
+    }
+
+  constructor_incremental = 0;
+}
+
+/* Return value of FIELD in pending initializer or zero if the field was
+   not initialized yet.  */
+
+static tree
+find_init_member (field)
      tree field;
 {
   struct init_node *p;
 
-  p = constructor_pending_elts;
   if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
-      while (p)
-	{
-	  if (field == p->purpose)
-	    return 1;
-	  else if (tree_int_cst_lt (field, p->purpose))
-	    p = p->left;
-	  else
-	    p = p->right;
-	}
-    }
-  else
-    {
-      while (p)
-	{
-	  if (field == p->purpose)
-	    return 1;
-	  else if (tree_int_cst_lt (bit_position (field),
-				    bit_position (p->purpose)))
-	    p = p->left;
-	  else
-	    p = p->right;
-	}
-    }
+      if (constructor_incremental
+	  && tree_int_cst_lt (field, constructor_unfilled_index))
+	set_nonincremental_init ();
 
+      p = constructor_pending_elts;
+      while (p)
+	{
+	  if (tree_int_cst_lt (field, p->purpose))
+	    p = p->left;
+	  else if (tree_int_cst_lt (p->purpose, field))
+	    p = p->right;
+	  else
+	    return p->value;
+	}
+    }
+  else if (TREE_CODE (constructor_type) == RECORD_TYPE)
+    {
+      tree bitpos = bit_position (field);
+
+      if (constructor_incremental
+	  && (!constructor_unfilled_fields
+	      || tree_int_cst_lt (bitpos,
+				  bit_position (constructor_unfilled_fields))))
+	set_nonincremental_init ();
+
+      p = constructor_pending_elts;
+      while (p)
+	{
+	  if (field == p->purpose)
+	    return p->value;
+	  else if (tree_int_cst_lt (bitpos, bit_position (p->purpose)))
+	    p = p->left;
+	  else
+	    p = p->right;
+	}
+    }
+  else if (TREE_CODE (constructor_type) == UNION_TYPE)
+    {
+      if (constructor_elements
+	  && TREE_PURPOSE (constructor_elements) == field)
+	return TREE_VALUE (constructor_elements);
+    }
   return 0;
 }
 
@@ -5811,8 +6147,6 @@ output_init_element (value, type, field, pending)
      tree value, type, field;
      int pending;
 {
-  int duplicate = 0;
-
   if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
       || (TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 	  && !(TREE_CODE (value) == STRING_CST
@@ -5840,90 +6174,111 @@ output_init_element (value, type, field, pending)
     }
   else if (require_constant_elements
 	   && initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
-    {
-      error_init ("initializer element is not computable at load time");
-      value = error_mark_node;
-    }
+    pedwarn ("initializer element is not computable at load time");
 
-  /* If this element duplicates one on constructor_pending_elts,
-     print a message and ignore it.  Don't do this when we're
-     processing elements taken off constructor_pending_elts,
-     because we'd always get spurious errors.  */
-  if (pending)
+  /* If this field is empty (and not at the end of structure),
+     don't do anything other than checking the initializer.  */
+  if (field
+      && (TREE_TYPE (field) == error_mark_node
+	  || (COMPLETE_TYPE_P (TREE_TYPE (field))
+	      && integer_zerop (TYPE_SIZE (TREE_TYPE (field)))
+	      && (TREE_CODE (constructor_type) == ARRAY_TYPE
+		  || TREE_CHAIN (field)))))
+    return;
+
+  if (value == error_mark_node)
     {
-      if (TREE_CODE (constructor_type) == RECORD_TYPE
-	  || TREE_CODE (constructor_type) == UNION_TYPE
-	  || TREE_CODE (constructor_type) == ARRAY_TYPE)
-	{
-	  if (pending_init_member (field))
-	    {
-	      error_init ("duplicate initializer");
-	      duplicate = 1;
-	    }
-	}
+      constructor_erroneous = 1;
+      return;
     }
 
   /* If this element doesn't come next in sequence,
      put it on constructor_pending_elts.  */
   if (TREE_CODE (constructor_type) == ARRAY_TYPE
-      && ! tree_int_cst_equal (field, constructor_unfilled_index))
+      && (!constructor_incremental
+	  || !tree_int_cst_equal (field, constructor_unfilled_index)))
     {
-      if (! duplicate)
-	add_pending_init (field,
-			  digest_init (type, value, require_constant_value, 
-				       require_constant_elements));
+      if (constructor_incremental
+	  && tree_int_cst_lt (field, constructor_unfilled_index))
+	set_nonincremental_init ();
+
+      add_pending_init (field,
+			digest_init (type, value, require_constant_value, 
+				     require_constant_elements));
+      return;
     }
   else if (TREE_CODE (constructor_type) == RECORD_TYPE
-	   && field != constructor_unfilled_fields)
+	   && (!constructor_incremental
+	       || field != constructor_unfilled_fields))
     {
       /* We do this for records but not for unions.  In a union,
 	 no matter which field is specified, it can be initialized
 	 right away since it starts at the beginning of the union.  */
-      if (!duplicate)
-	add_pending_init (field,
-			  digest_init (type, value, require_constant_value, 
-				       require_constant_elements));
+      if (constructor_incremental)
+	{
+	  if (!constructor_unfilled_fields)
+	    set_nonincremental_init ();
+	  else
+	    {
+	      tree bitpos, unfillpos;
+
+	      bitpos = bit_position (field);
+	      unfillpos = bit_position (constructor_unfilled_fields);
+
+	      if (tree_int_cst_lt (bitpos, unfillpos))
+		set_nonincremental_init ();
+	    }
+	}
+
+      add_pending_init (field,
+			digest_init (type, value, require_constant_value, 
+				     require_constant_elements));
+      return;
     }
-  else
+  else if (TREE_CODE (constructor_type) == UNION_TYPE
+	   && constructor_elements)
     {
-      /* Otherwise, output this element either to
-	 constructor_elements or to the assembler file.  */
+      if (TREE_SIDE_EFFECTS (TREE_VALUE (constructor_elements)))
+	warning_init ("initialized field with side-effects overwritten");
 
-      if (!duplicate)
-	{
-	  if (field && TREE_CODE (field) == INTEGER_CST)
-	    field = copy_node (field);
-	  constructor_elements
-	    = tree_cons (field, digest_init (type, value,
-					     require_constant_value, 
-					     require_constant_elements),
-			 constructor_elements);
-	}
-
-      /* Advance the variable that indicates sequential elements output.  */
-      if (TREE_CODE (constructor_type) == ARRAY_TYPE)
-	constructor_unfilled_index
-	  = size_binop (PLUS_EXPR, constructor_unfilled_index,
-			bitsize_one_node);
-      else if (TREE_CODE (constructor_type) == RECORD_TYPE)
-	{
-	  constructor_unfilled_fields
-	    = TREE_CHAIN (constructor_unfilled_fields);
-
-	  /* Skip any nameless bit fields.  */
-	  while (constructor_unfilled_fields != 0
-		 && DECL_C_BIT_FIELD (constructor_unfilled_fields)
-		 && DECL_NAME (constructor_unfilled_fields) == 0)
-	    constructor_unfilled_fields =
-	      TREE_CHAIN (constructor_unfilled_fields);
-	}
-      else if (TREE_CODE (constructor_type) == UNION_TYPE)
-	constructor_unfilled_fields = 0;
-
-      /* Now output any pending elements which have become next.  */
-      if (pending)
-	output_pending_init_elements (0);
+      /* We can have just one union field set.  */
+      constructor_elements = 0;
     }
+
+  /* Otherwise, output this element either to
+     constructor_elements or to the assembler file.  */
+
+  if (field && TREE_CODE (field) == INTEGER_CST)
+    field = copy_node (field);
+  constructor_elements
+    = tree_cons (field, digest_init (type, value,
+				     require_constant_value, 
+				     require_constant_elements),
+		 constructor_elements);
+
+  /* Advance the variable that indicates sequential elements output.  */
+  if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+    constructor_unfilled_index
+      = size_binop (PLUS_EXPR, constructor_unfilled_index,
+		    bitsize_one_node);
+  else if (TREE_CODE (constructor_type) == RECORD_TYPE)
+    {
+      constructor_unfilled_fields
+	= TREE_CHAIN (constructor_unfilled_fields);
+
+      /* Skip any nameless bit fields.  */
+      while (constructor_unfilled_fields != 0
+	     && DECL_C_BIT_FIELD (constructor_unfilled_fields)
+	     && DECL_NAME (constructor_unfilled_fields) == 0)
+	constructor_unfilled_fields =
+	  TREE_CHAIN (constructor_unfilled_fields);
+    }
+  else if (TREE_CODE (constructor_type) == UNION_TYPE)
+    constructor_unfilled_fields = 0;
+
+  /* Now output any pending elements which have become next.  */
+  if (pending)
+    output_pending_init_elements (0);
 }
 
 /* Output any pending elements which have become next.
@@ -5999,18 +6354,23 @@ output_pending_init_elements (all)
       else if (TREE_CODE (constructor_type) == RECORD_TYPE
 	       || TREE_CODE (constructor_type) == UNION_TYPE)
 	{
+	  tree ctor_unfilled_bitpos, elt_bitpos;
+
 	  /* If the current record is complete we are done.  */
 	  if (constructor_unfilled_fields == 0)
 	    break;
-	  if (elt->purpose == constructor_unfilled_fields)
+
+	  ctor_unfilled_bitpos = bit_position (constructor_unfilled_fields);
+	  elt_bitpos = bit_position (elt->purpose);
+	  /* We can't compare fields here because there might be empty
+	     fields in between.  */
+	  if (tree_int_cst_equal (elt_bitpos, ctor_unfilled_bitpos))
 	    {
-	      output_init_element (elt->value,
-				   TREE_TYPE (constructor_unfilled_fields),
-				   constructor_unfilled_fields,
-				   0);
+	      constructor_unfilled_fields = elt->purpose;
+	      output_init_element (elt->value, TREE_TYPE (elt->purpose),
+				   elt->purpose, 0);
 	    }
-	  else if (tree_int_cst_lt (bit_position (constructor_unfilled_fields),
-				    bit_position (elt->purpose)))
+	  else if (tree_int_cst_lt (ctor_unfilled_bitpos, elt_bitpos))
 	    {
 	      /* Advance to the next smaller node.  */
 	      if (elt->left)
@@ -6036,9 +6396,8 @@ output_pending_init_elements (all)
 		    elt = elt->parent;
 		  elt = elt->parent;
 		  if (elt
-		      && (tree_int_cst_lt
-			  (bit_position (constructor_unfilled_fields),
-			   bit_position (elt->purpose))))
+		      && (tree_int_cst_lt (ctor_unfilled_bitpos,
+					   bit_position (elt->purpose))))
 		    {
 		      next = elt->purpose;
 		      break;
@@ -6081,6 +6440,9 @@ process_init_element (value)
   tree orig_value = value;
   int string_flag = value != 0 && TREE_CODE (value) == STRING_CST;
 
+  designator_depth = 0;
+  designator_errorneous = 0;
+
   /* Handle superfluous braces around string cst as in
      char x[] = {"foo"}; */
   if (string_flag
@@ -6122,6 +6484,10 @@ process_init_element (value)
       else
 	break;
     }
+
+  /* In the case of [LO ... HI] = VALUE, only evaluate VALUE once.  */
+  if (constructor_range_stack)
+    value = save_expr (value);
 
   while (1)
     {
@@ -6191,9 +6557,8 @@ process_init_element (value)
 		 && DECL_C_BIT_FIELD (constructor_fields)
 		 && DECL_NAME (constructor_fields) == 0)
 	    constructor_fields = TREE_CHAIN (constructor_fields);
-	  break;
 	}
-      if (TREE_CODE (constructor_type) == UNION_TYPE)
+      else if (TREE_CODE (constructor_type) == UNION_TYPE)
 	{
 	  tree fieldtype;
 	  enum tree_code fieldcode;
@@ -6252,9 +6617,8 @@ process_init_element (value)
 	    }
 
 	  constructor_fields = 0;
-	  break;
 	}
-      if (TREE_CODE (constructor_type) == ARRAY_TYPE)
+      else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
 	{
 	  tree elttype = TYPE_MAIN_VARIANT (TREE_TYPE (constructor_type));
 	  enum tree_code eltcode = TREE_CODE (elttype);
@@ -6285,61 +6649,93 @@ process_init_element (value)
 	      break;
 	    }
 
-	  /* In the case of [LO .. HI] = VALUE, only evaluate VALUE once.  */
-	  if (constructor_range_end)
+	  /* Now output the actual element.  */
+	  if (value)
 	    {
-	      if (constructor_max_index != 0
-		  && tree_int_cst_lt (constructor_max_index, 
-				      constructor_range_end))
-		{
-		  pedwarn_init ("excess elements in array initializer");
-		  constructor_range_end = constructor_max_index;
-		}
-
-	      value = save_expr (value);
+	      push_array_bounds (tree_low_cst (constructor_index, 0));
+	      output_init_element (value, elttype, constructor_index, 1);
+	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
 
-	  /* Now output the actual element.
-	     Ordinarily, output once.
-	     If there is a range, repeat it till we advance past the range.  */
-	  do
-	    {
-	      if (value)
-		{
-		  push_array_bounds (tree_low_cst (constructor_index, 0));
-		  output_init_element (value, elttype, constructor_index, 1);
-		  RESTORE_SPELLING_DEPTH (constructor_depth);
-		}
+	  constructor_index
+	    = size_binop (PLUS_EXPR, constructor_index, bitsize_one_node);
 
-	      constructor_index
-		= size_binop (PLUS_EXPR, constructor_index, bitsize_one_node);
-
-	      if (! value)
-		/* If we are doing the bookkeeping for an element that was
-		   directly output as a constructor, we must update
-		   constructor_unfilled_index.  */
-		constructor_unfilled_index = constructor_index;
-	    }
-	  while (! (constructor_range_end == 0
-		    || tree_int_cst_lt (constructor_range_end,
-					constructor_index)));
-
-	  break;
+	  if (! value)
+	    /* If we are doing the bookkeeping for an element that was
+	       directly output as a constructor, we must update
+	       constructor_unfilled_index.  */
+	    constructor_unfilled_index = constructor_index;
 	}
 
       /* Handle the sole element allowed in a braced initializer
 	 for a scalar variable.  */
-      if (constructor_fields == 0)
+      else if (constructor_fields == 0)
 	{
 	  pedwarn_init ("excess elements in scalar initializer");
 	  break;
 	}
+      else
+	{
+	  if (value)
+	    output_init_element (value, constructor_type, NULL_TREE, 1);
+	  constructor_fields = 0;
+	}
 
-      if (value)
-	output_init_element (value, constructor_type, NULL_TREE, 1);
-      constructor_fields = 0;
+      /* Handle range initializers either at this level or anywhere higher
+	 in the designator stack.  */
+      if (constructor_range_stack)
+	{
+	  struct constructor_range_stack *p, *range_stack;
+	  int finish = 0;
+
+	  range_stack = constructor_range_stack;
+	  constructor_range_stack = 0;
+	  while (constructor_stack != range_stack->stack)
+	    {
+	      if (!constructor_stack->implicit)
+		abort ();
+	      process_init_element (pop_init_level (1));
+	    }
+	  for (p = range_stack;
+	       !p->range_end || tree_int_cst_equal (p->index, p->range_end);
+	       p = p->prev)
+	    {
+	      if (!constructor_stack->implicit)
+		abort ();
+	      process_init_element (pop_init_level (1));
+	    }
+
+	  p->index = size_binop (PLUS_EXPR, p->index, bitsize_one_node);
+	  if (tree_int_cst_equal (p->index, p->range_end) && !p->prev)
+	    finish = 1;
+
+	  while (1)
+	    {
+	      constructor_index = p->index;
+	      constructor_fields = p->fields;
+	      if (finish && p->range_end && p->index == p->range_start)
+		{
+		  finish = 0;
+		  p->prev = 0;
+		}
+	      p = p->next;
+	      if (!p)
+		break;
+	      push_init_level (2);
+	      p->stack = constructor_stack;
+	      if (p->range_end && tree_int_cst_equal (p->index, p->range_end))
+		p->index = p->range_start;
+	    }
+
+	  if (!finish)
+	    constructor_range_stack = range_stack;
+	  continue;
+	}
+
       break;
     }
+
+  constructor_range_stack = 0;
 }
 
 /* Build an asm-statement, whose components are a CV_QUALIFIER, a

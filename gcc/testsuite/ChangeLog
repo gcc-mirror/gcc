@@ -1,3 +1,11 @@
+2001-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20000801-3.x: Remove.
+	* gcc.dg/c90-init-1.c: New test.
+	* gcc.dg/c99-init-1.c: New test.
+	* gcc.dg/c99-init-2.c: New test.
+	* gcc.dg/gnu99-init-1.c: New test.
+
 2001-01-12  Richard Earnshaw <rearnsha@arm.com>
 
 	* lib/f-torture.exp (f_torture_compile): Prune the warnings before

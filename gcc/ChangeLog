@@ -1,3 +1,49 @@
+2001-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (store_init_value): Don't require constant initializer
+	elements with -pedantic -std=c99.
+	(digest_init): Change error about non-constant initializer elements
+	into pedwarn.
+	(constructor_range_end): Remove.
+	(constructor_incremental, designator_depth,
+	designator_errorneous): New variables.
+	(struct constructor_stack): Remove range_end, add incremental.
+	(struct constructor_range_stack, constructor_range_stack): New.
+	(struct initializer_stack): Add constructor_range_stack.
+	(finish_init): Set it.
+	(start_init): Likewise.  require_constant_elements for non-static
+	trees only if not flag_isoc99.
+	(really_start_incremental_init): Remove constructor_range_end, add
+	constructor_incremental.
+	(pop_init_level): Likewise.
+	(push_init_level): Likewise.  If implicit and the subobject had some
+	value set already, preinitialize the level with it.
+	Warn about missing braces only if not pushing due to designators.
+	(set_designator, push_range_stack): New functions.
+	(set_init_label): Use them.
+	(set_init_index): Likewise.  Remove constructor_range_end.
+	Error if designator index is outside of array bounds.
+	(add_pending_init): Compare values of purpose index trees, not the
+	trees themselves.  Allow overwriting of already initialized element.
+	Issue a warning if it had side-effects.
+	(set_nonincremental_init, set_nonincremental_init_from_string): New
+	functions.
+	(pending_init_member): Rename to...
+	(find_init_member): ...this function.  Call set_nonincremental_init
+	if necessary.  Compare values of purpose index trees, not the trees
+	themselves.  Return the actual value, not just non-zero if something
+	is found.
+	(output_init_element): Remove checks for duplicates.
+	If field has zero size, only check the initializer for correctness.
+	Call set_nonincremental_init if necessary.  Push RECORD/ARRAY into AVL
+	if constructor_incremental is zero.  Change error about initializers
+	not computable at load time into pedwarn.
+	(output_pending_init_elements): Compare bit positions, not
+	FIELD_DECLs to take into account zero-sized fields.
+	(process_init_element): Use constructor_range_stack to fill all
+	ranges in the designator lists from current level up.
+	* extend.texi: Update documentation for labeled elements.
+
 2001-01-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* calls.c (emit_library_call_value_1): Add USEs and CLOBBERs
