@@ -750,7 +750,9 @@ rtx_cost (x, outer_code)
 #ifdef RTX_COSTS
       RTX_COSTS (x, code, outer_code);
 #endif 
+#ifdef CONST_COSTS
       CONST_COSTS (x, code, outer_code);
+#endif
 
     default:
 #ifdef DEFAULT_RTX_COSTS
