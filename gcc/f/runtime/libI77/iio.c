@@ -139,7 +139,8 @@ integer e_wsfi(Void)
 	f__init &= ~2;
 	n = en_fio();
 	f__fmtbuf = NULL;
-	if(f__icnum >= f__svic->icirnum)
+	if(f__icnum >= f__svic->icirnum
+	|| !f__recpos && f__icnum)
 		return(n);
 	while(f__recpos++ < f__svic->icirlen)
 		*f__icptr++ = ' ';

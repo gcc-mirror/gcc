@@ -72,8 +72,8 @@ main (int argc, char **argv __attribute__ ((unused)))
   if (argc != 1)
     {
       fprintf (stderr, "\
-Usage: intdoc > intdoc.texi
-  Collects and dumps documentation on g77 intrinsics
+Usage: intdoc > intdoc.texi\n\
+  Collects and dumps documentation on g77 intrinsics\n\
   to the file named intdoc.texi.\n");
       exit (1);
     }
@@ -179,14 +179,14 @@ struct cc_pair { ffeintrinImp imp; char *text; };
 static char *descriptions[FFEINTRIN_imp] = { 0 };
 static struct cc_pair cc_descriptions[] = {
 #define DEFDOC(IMP,SUMMARY,DESCRIPTION) { FFEINTRIN_imp ## IMP, DESCRIPTION },
-#include "intdoc.h"
+#include "intdoc.h0"
 #undef DEFDOC
 };
 
 static char *summaries[FFEINTRIN_imp] = { 0 };
 static struct cc_pair cc_summaries[] = {
 #define DEFDOC(IMP,SUMMARY,DESCRIPTION) { FFEINTRIN_imp ## IMP, SUMMARY },
-#include "intdoc.h"
+#include "intdoc.h0"
 #undef DEFDOC
 };
 
@@ -312,11 +312,11 @@ static void
 dumpgen (int menu, char *name, char *name_uc, ffeintrinGen gen)
 {
   size_t i;
-  int total;
+  int total = 0;
 
   if (!menu)
     {
-      for (total = 0, i = 0; i < ARRAY_SIZE (gens[gen].specs); ++i)
+      for (i = 0; i < ARRAY_SIZE (gens[gen].specs); ++i)
 	{
 	  if (gens[gen].specs[i] != FFEINTRIN_specNONE)
 	    ++total;
@@ -457,12 +457,12 @@ dumpimp (int menu, char *name, char *name_uc, size_t genno, ffeintrinFamily fami
 
   if (imp == FFEINTRIN_impNONE)
     {
-      printf ("
-This intrinsic is not yet implemented.
-The name is, however, reserved as an intrinsic.
-Use @samp{EXTERNAL %s} to use this name for an
-external procedure.
-
+      printf ("\n\
+This intrinsic is not yet implemented.\n\
+The name is, however, reserved as an intrinsic.\n\
+Use @samp{EXTERNAL %s} to use this name for an\n\
+external procedure.\n\
+\n\
 ",
 	      name);
       return;
@@ -472,9 +472,9 @@ external procedure.
   subr = (c[0] == '-');
   colon = (c[2] == ':') ? 2 : 3;
 
-  printf ("
-@noindent
-@example
+  printf ("\n\
+@noindent\n\
+@example\n\
 %s%s(",
 	  (subr ? "CALL " : ""), name);
 
@@ -497,8 +497,9 @@ external procedure.
 		argc, argc);
     }
 
-  printf (")
-@end example\n
+  printf (")\n\
+@end example\n\
+\n\
 ");
 
   if (!subr)
@@ -522,7 +523,7 @@ external procedure.
 	}
 
       printf ("\
-@noindent
+@noindent\n\
 %s: ", name);
       print_type_string (c);
       printf (" function");
@@ -536,20 +537,20 @@ external procedure.
 	  || (arg_info[0] == '*') || (arg_info[0] == 'n') || (arg_info[0] == 'p'))
 	    ++arg_info;
 	  if ((arg_info[0] == 'F') || (arg_info[0] == 'N'))
-	    printf (".
-The exact type is @samp{REAL(KIND=1)} when argument @var{%s} is
-any type other than @code{COMPLEX}, or when it is @code{COMPLEX(KIND=1)}.
-When @var{%s} is any @code{COMPLEX} type other than @code{COMPLEX(KIND=1)},
-this intrinsic is valid only when used as the argument to
+	    printf (".\n\
+The exact type is @samp{REAL(KIND=1)} when argument @var{%s} is\n\
+any type other than @code{COMPLEX}, or when it is @code{COMPLEX(KIND=1)}.\n\
+When @var{%s} is any @code{COMPLEX} type other than @code{COMPLEX(KIND=1)},\n\
+this intrinsic is valid only when used as the argument to\n\
 @code{REAL()}, as explained below.\n\n",
 		    arg_string,
 		    arg_string);
 	  else
-	    printf (".
-This intrinsic is valid when argument @var{%s} is
-@code{COMPLEX(KIND=1)}.
-When @var{%s} is any other @code{COMPLEX} type,
-this intrinsic is valid only when used as the argument to
+	    printf (".\n\
+This intrinsic is valid when argument @var{%s} is\n\
+@code{COMPLEX(KIND=1)}.\n\
+When @var{%s} is any other @code{COMPLEX} type,\n\
+this intrinsic is valid only when used as the argument to\n\
 @code{REAL()}, as explained below.\n\n",
 		    arg_string,
 		    arg_string);
@@ -557,7 +558,7 @@ this intrinsic is valid only when used as the argument to
 #if 0
       else if ((c[0] == 'I')
 	       && (c[1] == 'p'))
-	printf (", the exact type being wide enough to hold a pointer
+	printf (", the exact type being wide enough to hold a pointer\n\
 on the target system (typically @code{INTEGER(KIND=1)} or @code{INTEGER(KIND=4)}).\n\n");
 #endif
       else if ((c[1] == '=')
@@ -583,10 +584,10 @@ on the target system (typically @code{INTEGER(KIND=1)} or @code{INTEGER(KIND=4)}
 		   && ((arg_info[0] == 'C')
 		       || (arg_info[0] == 'F')
 		       || (arg_info[0] == 'N')))
-	    printf (".
-The exact type depends on that of argument @var{%s}---if @var{%s} is
-@code{COMPLEX}, this function's type is @code{REAL}
-with the same @samp{KIND=} value as the type of @var{%s}.
+	    printf (".\n\
+The exact type depends on that of argument @var{%s}---if @var{%s} is\n\
+@code{COMPLEX}, this function's type is @code{REAL}\n\
+with the same @samp{KIND=} value as the type of @var{%s}.\n\
 Otherwise, this function's type is the same as that of @var{%s}.\n\n",
 		    arg_string, arg_string, arg_string, arg_string);
 	  else
@@ -595,7 +596,7 @@ Otherwise, this function's type is the same as that of @var{%s}.\n\n",
 	}
       else if ((c[1] == '=')
 	       && (c[colon + 1] == '*'))
-	printf (", the exact type being the result of cross-promoting the
+	printf (", the exact type being the result of cross-promoting the\n\
 types of all the arguments.\n\n");
       else if (c[1] == '=')
 	assert ("?0:?:" == NULL);
@@ -613,7 +614,7 @@ types of all the arguments.\n\n");
       int elements;
 
       printf ("\
-@noindent
+@noindent\n\
 @var{");
       for (; ; ++argc)
 	{
@@ -875,12 +876,12 @@ types of all the arguments.\n\n");
 	  break;
 
 	case 'g':
-	  printf ("@samp{*@var{label}}, where @var{label} is the label
+	  printf ("@samp{*@var{label}}, where @var{label} is the label\n\
 of an executable statement");
 	  break;
 
 	case 's':
-	  printf ("Signal handler (@code{INTEGER FUNCTION} or @code{SUBROUTINE})
+	  printf ("Signal handler (@code{INTEGER FUNCTION} or @code{SUBROUTINE})\n\
 or dummy/global @code{INTEGER(KIND=1)} scalar");
 	  break;
 
@@ -965,7 +966,7 @@ or dummy/global @code{INTEGER(KIND=1)} scalar");
     }
 
   printf ("\
-@noindent
+@noindent\n\
 Intrinsic groups: ");
   switch (family)
     {
@@ -1021,8 +1022,8 @@ Intrinsic groups: ");
       char *c = descriptions[imp];
 
       printf ("\
-@noindent
-Description:
+@noindent\n\
+Description:\n\
 \n");
 
       while (c[0] != '\0')

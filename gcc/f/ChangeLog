@@ -1,3 +1,92 @@
+Tue Aug 26 05:59:21 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* ansify.c (main): Make sure readers of stdout know
+	it's derived from stdin; omit comment text; get source
+	line numbers in future stderr output to be correct.
+
+Tue Aug 26 01:36:01 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Fix 970825-0.f:
+	* stb.c (ffestb_R5284_): Allow OPEN_PAREN after closing
+	SLASH as well as NAME.
+
+Mon Aug 25 23:48:17 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Changes to allow g77 docs to be built entirely from scratch
+	using any ANSI C compiler, not requiring GNU C:
+	* Make-lang.in ($(srcdir)/f/intdoc.texi): "Pipe" new
+	location of intrinsic documentation data base, f/intdoc.in,
+	through new `ansify' program to append `\n\' to quoted
+	newlines, into f/intdoc.h0.  Do appropriate cleanups.  Explain.
+	(f77.mostlyclean): Add f/ansify and f/intdoc.h0 to cleanups.
+	* f/ansify.c: New program.
+	* f/intdoc.c: Fix so it conforms to ANSI C.
+	#include f/intdoc.h0 instead of f/intdoc.h.
+	Avoid some warnings.
+	* f/intdoc.h, f/intdoc.in: Rename the former to the latter; no
+	changes made to the content in this patch!
+	* f/intrin.h (ffeintrinFamily): Fix to conform to ANSI C.
+
+Sun Aug 24 06:52:48 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Fix up g77 compiler data base for libf2c routines:
+	* com-rt.def (FFECOM_gfrtSIGNAL): Change return type to
+	FTNINT to match actual code.
+
+	* com.c (ffecomRttype_): Replace FFECOM_rttypeINT_ with
+	FFECOM_rttypeFTNINT_.
+	Add and fix up comments.
+	(ffecom_make_gfrt_, ffecom_gfrt_basictype,
+	ffecom_gfrt_kindtype): Replace FFECOM_rttypeINT_ with
+	FFECOM_rttypeFTNINT_; add FFECOM_rttypeDOUBLEREAL_.
+
+Wed Aug 20 17:18:40 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* global.c (ffeglobal_ref_progunit_): It's okay to have
+	a different CHARACTER*n length for a reference if the
+	existing length is for another reference, not a definition.
+
+Mon Aug 18 14:27:18 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Fix 970814-0.f:
+	* global.c (ffeglobal_new_progunit_): Distinguish
+	between previously defined, versus inferred, filewide
+	when it comes to diagnostics.
+
+	Fix 970816-1.f:
+	* global.c (ffeglobal_ref_progunit_): Change BDATA into EXT
+	right at the beginning, so EXTERNAL FOO followed later
+	by SUBROUTINE FOO is not diagnosed.
+
+	Fix 970813-0.f:
+	* com-rt.def (FFECOM_gfrtALARM): Returns `integer', not
+	`void'.
+
+Sun Aug 17 03:32:44 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	Fix up problems when virtual memory exhausted:
+	* malloc.c (malloc_new_): Use gcc's xmalloc(), so we
+	print a nicer message when malloc returns no memory.
+	(malloc_resize_): Ditto for xrealloc().
+
+	* Make-lang.in, Makefile.in: Comment out lines containing
+	just formfeeds.
+
+Sat Aug 16 19:41:33 1997  Craig Burley  <burley@gnu.ai.mit.edu>
+
+	* com.c (ffecom_make_gfrt_): For rttypeREAL_F2C_, return
+	double_type_node; for rttypeREAL_GNU_, return
+	_real_type_node.
+
+1997-08-13  Dave Love  <d.love@dl.ac.uk>
+
+	* config-lang.in (diff_excludes): Add some hints about known
+	problematic platforms.
+
+1997-08-13  Dave Love  <d.love@dl.ac.uk>
+
+	* intdoc.h: Document `alarm'.
+
 Mon Aug 11 21:19:22 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
 	* Make-lang.in ($(RUNTIMESTAGESTUFF)): Add

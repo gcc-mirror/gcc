@@ -42,7 +42,7 @@ typedef enum
     FFEINTRIN_familyFVZ,	/* in both f2c and VAX/VMS FORTRAN. */
     FFEINTRIN_familyF2U,	/* libf2c/libU77 UNIX system intrinsics. */
     FFEINTRIN_familyBADU77,	/* libU77 UNIX system intrinsics with bad form. */
-    FFEINTRIN_family,
+    FFEINTRIN_family
   } ffeintrinFamily;
 
 typedef enum

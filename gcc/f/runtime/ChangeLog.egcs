@@ -9,17 +9,3 @@ Mon Aug 25 23:26:05 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 	(stamp-libi77, stamp-libf77, stamp-libu77): New.
 	(stamp-lib): Only depend on stamp-libi77 stamp-libf77
 	stamp-libu77
-
-Mon Aug 25 01:40:01 1997  Jim Wilson  (wilson@cygnus.com)
-
-	* configure.in: Always make sure RANLIB_TEST is set.
-	* configure: Rebuilt.
-
-Fri Aug 22 08:55:12 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* Makefile.in (UOBJ): Include symlnk.
-
-Wed Aug 20 23:18:46 1997  Mumit Khan  (khan@xraylith.wisc.edu)
-
-	* Makefile.in (UOBJ): Include mclock. 
-

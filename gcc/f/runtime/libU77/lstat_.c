@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
 /* lstat isn't posix */

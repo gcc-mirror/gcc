@@ -332,11 +332,33 @@ $(srcdir)/f/g77.info: f/g77.texi f/bugs.texi f/install.texi f/news.texi f/intdoc
 $(srcdir)/f/g77.dvi: f/g77.texi f/bugs.texi f/install.texi f/news.texi f/intdoc.texi
 	cd $(srcdir)/f; $(TEXI2DVI) g77.texi
 
-$(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.h f/intrin.def f/intrin.h
+# This dance is all about producing accurate documentation for g77's
+# intrinsics with minimum fuss.  f/ansify appends "\n\" to C strings
+# so ANSI C compilers can compile f/intdoc.h -- gcc can compile f/intdoc.in
+# directly, if f/intdoc.c #include'd that, but we don't want to force
+# people to install gcc just to build the documentation.  We use the
+# C format for f/intdoc.in in the first place to allow a fairly "free",
+# but widely known format for documentation -- basically anyone who knows
+# how to write texinfo source and enclose it in C constants can handle
+# it, and f/ansify allows them to not even end lines with "\n\".  So,
+# essentially, the C preprocessor and compiler are used to enter the
+# document snippets into a data base via name lookup, rather than duplicating
+# that kind of code here.  And we use f/intdoc.c instead of straight
+# texinfo in the first place so that as much information as possible
+# contained in f/intrin.def can be inserted directly and reliably into
+# the documentation.  That's better than replicating it, because it
+# reduces the likelihood of discrepancies between the docs and the compiler
+# itself, which uses f/intrin.def; in fact, many bugs in f/intrin.def have
+# been found only upon reading the documentation that was automatically
+# produced from it.
+$(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c f/intrin.def f/intrin.h
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) \
+	      `echo $(srcdir)/f/ansify.c | sed 's,^\./,,'` -o f/ansify
+	f/ansify < $(srcdir)/f/intdoc.in > f/intdoc.h0 $(srcdir)/f/intdoc.in
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -I./f \
 	      `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc
 	f/intdoc > $(srcdir)/f/intdoc.texi
-	rm f/intdoc
+	rm f/intdoc f/ansify f/intdoc.h0
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
@@ -503,7 +525,7 @@ f77.uninstall:
 
 f77.mostlyclean:
 	-rm -f f/*$(objext)
-	-rm -f f/fini f/f771 f/stamp-str f/str-*.h f/str-*.j f/intdoc
+	-rm -f f/fini f/f771 f/stamp-str f/str-*.h f/str-*.j f/intdoc f/ansify f/intdoc.h0
 	-case $(srcdir) in \
 	/*) cd f/runtime; $(MAKE) -f $(srcdir)/f/runtime/Makefile.in mostlyclean;; \
 	*) cd f/runtime; $(MAKE) -f ../../$(srcdir)/f/runtime/Makefile.in mostlyclean;; \
