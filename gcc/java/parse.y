@@ -7837,11 +7837,13 @@ build_outer_field_access (id, decl)
 {
   tree access = NULL_TREE;
   tree ctx = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (current_class)));
+  tree decl_ctx = DECL_CONTEXT (decl);
 
-  /* If decl's class is the direct outer class of the current_class,
-     build the access as `this$<n>.<field>'. Note that we will break
-     the `private' barrier if we're not emitting bytecodes. */
-  if (ctx == DECL_CONTEXT (decl) 
+  /* If the immediate enclosing context of the current class is the
+     field decl's class or inherits from it; build the access as
+     `this$<n>.<field>'. Note that we will break the `private' barrier
+     if we're not emitting bytecodes. */
+  if ((ctx == decl_ctx || inherits_from_p (ctx, decl_ctx))
       && (!FIELD_PRIVATE (decl) || !flag_emit_class_files ))
     {
       tree thisn = build_current_thisn (current_class);
@@ -7857,14 +7859,14 @@ build_outer_field_access (id, decl)
       /* Now we chain the required number of calls to the access$0 to
 	 get a hold to the enclosing instance we need, and then we
 	 build the field access. */
-      access = build_access_to_thisn (current_class, DECL_CONTEXT (decl), lc);
+      access = build_access_to_thisn (current_class, decl_ctx, lc);
 
       /* If the field is private and we're generating bytecode, then
          we generate an access method */
       if (FIELD_PRIVATE (decl) && flag_emit_class_files )
 	{
 	  tree name = build_outer_field_access_methods (decl);
-	  access = build_outer_field_access_expr (lc, DECL_CONTEXT (decl),
+	  access = build_outer_field_access_expr (lc, decl_ctx,
 						  name, access, NULL_TREE);
 	}
       /* Otherwise we use `access$(this$<j>). ... access$(this$<i>).<field>'.
@@ -7898,8 +7900,15 @@ outer_field_access_p (type, decl)
     {
       if (type == DECL_CONTEXT (decl))
 	return 1;
+
       if (!DECL_CONTEXT (TYPE_NAME (type)))
-	break;
+	{
+	  /* Before we give up, see whether the field is inherited from
+	     the enclosing context we're considering. */
+	  if (inherits_from_p (type, DECL_CONTEXT (decl)))
+	    return 1;
+	  break;
+	}
     }
 
   return 0;
@@ -8221,8 +8230,13 @@ build_access_to_thisn (from, to, lc)
 	  access = build_method_invocation (access0_wfl, access);
 	  access = make_qualified_primary (cn, access, lc);
 	}
-      
-      from = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (from)));
+
+      /* if FROM isn't an inter class, that's fine, we've done
+         enough. What we're looking for can be accessed from there. */
+      from = DECL_CONTEXT (TYPE_NAME (from));
+      if (!from)
+	break;
+      from = TREE_TYPE (from);
     }
   return access;
 }
