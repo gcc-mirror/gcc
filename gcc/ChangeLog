@@ -1,3 +1,12 @@
+Sun Jan 10 14:04:51 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md: (in_annul_slot_3): Allow unarycc and binarycc
+	operations in 3rd annulled delay slot.
+	(*lshrqi3_const_set): Disallow c constraint for operand0.
+	(modhi3+1, modhi3+2): Set attribute type to multi.
+	* config/c4x/c4x.c (c4x_S_constraint): Removed space in middle of 
+	!= operator.
+
 Sat Jan  9 11:44:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gansidecl.h: Allow attribute unused on labels only when we are
