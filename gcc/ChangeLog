@@ -1,3 +1,10 @@
+2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
+
+	* config/m68k/m68k.h (TARGET_SWITCHES/TARGET_OPTIONS):
+	Add missing doc strings.
+	* config/m68k/linux-aout.h (SUBTARGET_SWITCHES): Likewise.
+	* config/m68k/linux.h (SUBTARGET_SWITCHES): Likewise.
+
 2001-07-30  H.J. Lu <hjl@gnu.org>
 
 	* config/mips/linux.h (CPLUSPLUS_CPP_SPEC): Add -D_GNU_SOURCE.

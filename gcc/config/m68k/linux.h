@@ -42,7 +42,8 @@ Boston, MA 02111-1307, USA.  */
 #define STRICT_ALIGNMENT 0
 
 #undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES	{"ieee-fp", 0},
+#define SUBTARGET_SWITCHES	{"ieee-fp", 0, \
+  N_("Use IEEE math for fp comparisons")},
 
 /* Here are four prefixes that are used by asm_fprintf to
    facilitate customization for alternate assembler syntaxes.

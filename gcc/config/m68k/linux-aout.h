@@ -41,7 +41,8 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES	{"ieee-fp", 0},
+#define SUBTARGET_SWITCHES	{"ieee-fp", 0, \
+  N_("Use IEEE math for fp comparisons") },
 
 #undef ASM_SPEC
 #define ASM_SPEC \
