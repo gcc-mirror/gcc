@@ -1,3 +1,7 @@
+Thu Dec  3 15:56:50 1998  Per Bothner  <bothner@cygnus.com>
+
+	* parse,y (patch_synchronized_statement):  Set CAN_COMPLETE_NORMALLY.
+
 Thu Dec  3 15:08:30 1998  Per Bothner  <bothner@cygnus.com>
 
 	* jcf-dump.c (main):  Fix error message.
