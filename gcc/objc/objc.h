@@ -1,5 +1,5 @@
 /* Basic data types for Objective C.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,21 +22,30 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    the resulting executable to be covered by the GNU General Public License.
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
- 
 
 #ifndef __objc_INCLUDE_GNU
 #define __objc_INCLUDE_GNU
 
-/* If someone is using a c++ compiler then adjust the types in the
-   file back to C.  */
-#ifdef __cplusplus
-extern "C" {
+
+/*
+** Hash-cache or sparse arrays?
+*/ 
+#define OBJC_SPARSE_LOOKUP 	/* use sparse-arrays for lookup */
+/* #define OBJC_HASH_LOOKUP */ /* use hash-cache for lookup */
+
+#ifdef OBJC_SPARSE_LOOKUP
+extern const char* __objc_sparse_lookup_id;
 #endif
 
-#include  "record.h"
-
-/* This duplicates the beginning of object.h.
-   Except that we use Class_t for a pointer, whereas it uses Class.  */
+#ifdef OBJC_HASH_LOOKUP
+extern const char* __objc_hash_lookup_id;
+#endif
+
+
+#include <stddef.h>
+#include <stdarg.h>
+#include <stdio.h>
+
 
 #define nil (id)0                               /* id of Nil instance */
 #define Nil (Class_t)0                          /* id of Nil class */
@@ -48,21 +57,41 @@ typedef char  BOOL;
 #define NO    (BOOL)0
 
 
-/* Definition of a selector.  Selectors are really of type char*. The
-   run-time hashes the string's address to locate the method.  If the
-   method isn't in the hash table then a search is made through the
-   class hierarchy using strcmp to locate the method.  */
-typedef void *SEL;
+/* For functions which return Method_t */
+#define METHOD_NULL	(Method_t)0
 
-/* ObjC uses this typedef for untyped instances.  */
 
+
+/*
+** Definition of a selector.  Selectors are really of type unsigned int.
+** The runtime does this mapping from SEL's to names internally in the
+** sel_... operations.  You should never use the fact that it is actually
+** an integer, since other Objective-C implementations use other conventions.
+*/
+typedef void* SEL;
+
+/*
+** ObjC uses this typedef for untyped instances.
+*/
 typedef struct objc_object {
   struct objc_class*  class_pointer;
 } *id;
 
-/* Prototype for method functions. */
 typedef id (*IMP)(id, SEL, ...); 
-
+
+/*
+** Method descriptor returned by introspective Object methods.
+** This is really just the first part of the more complete objc_method
+** structure defined below and used internally by the runtime.
+*/
+struct objc_method_description
+{
+    SEL name;			/* this is a selector, not a string */
+    char *types;		/* type encoding */
+};
+
+
+
 /* Filer types used to describe Ivars and Methods.  */
 #define _C_ID       '@'
 #define _C_CLASS    '#'
@@ -82,6 +111,7 @@ typedef id (*IMP)(id, SEL, ...);
 #define _C_UNDEF    '?'
 #define _C_PTR      '^'
 #define _C_CHARPTR  '*'
+#define _C_ATOM     '%'
 #define _C_ARY_B    '['
 #define _C_ARY_E    ']'
 #define _C_UNION_B  '('
@@ -89,33 +119,23 @@ typedef id (*IMP)(id, SEL, ...);
 #define _C_STRUCT_B '{'
 #define _C_STRUCT_E '}'
 
-/* These definitions are masks used with the "info" member variable in
-   the lass and meta class structures.  */
-#define CLS_CLASS         0x1L                  /* The structure is of type
-                                                  class (Class_t). */
-#define CLS_META          0x2L                  /* The structure is of type
-                                                  meta class (MetaClass_t). */
-#define CLS_INITIALIZED   0x4L                  /* Class is initialized. A
-                                                  +initialize method is the
-                                                  first message sent to a
-                                                  class.  It isn't guaranteed
-                                                  to be sent only once. */
-#define CLS_RTI           0x8L                  /* The class has been initialized
-						   within the run time library. */
 
-/* Set this variable nonzero to print a line describing each
-   message that is sent.  */
+
+/*
+** Set this variable nonzero to print a line describing each
+** message that is sent.
+*/
 extern BOOL objc_trace;
 
 
 /*
- * Whereas a Module (defined further down) is the root (typically) of a file,
- * a Symtab is the root of the class and category definitions within the
- * module.  
- *
- * A Symtab contains a variable length array of pointers to classes and
- * categories  defined in the module. 
- */
+** Whereas a Module (defined further down) is the root (typically) of a file,
+** a Symtab is the root of the class and category definitions within the
+** module.  
+** 
+** A Symtab contains a variable length array of pointers to classes and
+** categories  defined in the module. 
+*/
 typedef struct objc_symtab {
   unsigned long sel_ref_cnt;                     /* Unknown. */
   SEL       *refs;                              /* Unknown. */
@@ -132,14 +152,14 @@ typedef struct objc_symtab {
 
 
 /*
- * The compiler generates one of these structures for each module that
- * composes the executable (eg main.m).  
- *
- * This data structure is the root of the definition tree for the module.  
- *
- * A collect program runs between ld stages and creates a ObjC ctor array. 
- * That array holds a pointer to each module structure of the executable. 
- */
+** The compiler generates one of these structures for each module that
+** composes the executable (eg main.m).  
+** 
+** This data structure is the root of the definition tree for the module.  
+** 
+** A collect program runs between ld stages and creates a ObjC ctor array. 
+** That array holds a pointer to each module structure of the executable. 
+*/
 typedef struct objc_module {
   unsigned long version;                        /* Compiler revision. */
   unsigned long size;                           /* sizeof(Module). */
@@ -155,9 +175,9 @@ typedef struct objc_module {
 
 
 /*
- * The compiler generates one of these structures for a class that has
- * instance variables defined in its specification. 
- */
+** The compiler generates one of these structures for a class that has
+** instance variables defined in its specification. 
+*/
 typedef struct objc_ivar* Ivar_t;
 typedef struct objc_ivar_list {
   int   ivar_count;                             /* Number of structures (Ivar) 
@@ -182,13 +202,13 @@ typedef struct objc_ivar_list {
 
 
 /*
- * The compiler generates one (or more) of these structures for a class that
- * has methods defined in its specification. 
- *
- * The implementation of a class can be broken into separate pieces in a file
- * and categories can break them across modules. To handle this problem is a
- * singly linked list of methods. 
- */
+** The compiler generates one (or more) of these structures for a class that
+** has methods defined in its specification. 
+** 
+** The implementation of a class can be broken into separate pieces in a file
+** and categories can break them across modules. To handle this problem is a
+** singly linked list of methods. 
+*/
 typedef struct objc_method Method;
 typedef Method* Method_t;
 typedef struct objc_method_list {
@@ -201,7 +221,7 @@ typedef struct objc_method_list {
     SEL         method_name;                  /* This variable is the method's 
                                                 name.  It is a char*. 
                                                   The unique integer passed to 
-                                                objc_msgSend is a char* too.  
+                                                objc_msg_send is a char* too.  
                                                 It is compared against 
                                                 method_name using strcmp. */
     const char* method_types;                 /* Description of the method's
@@ -214,47 +234,52 @@ typedef struct objc_method_list {
 } MethodList, *MethodList_t;
 
 
-/*
- * The compiler generates one of these structures for each class.  
- *
- * This structure is the definition for meta classes. By definition a meta
- * class is the class's class.  Its most relevant contribution is that its
- * method list contain the class's factory methods. 
- *
- * This structure is generated by the compiler in the executable and used by
- * the run-time during normal messaging operations.  Therefore some members
- * change type. The compiler generates "char* const" and places a string in
- * the following member variables:  class_pointer and super_class. 
- */
-typedef struct objc_metaClass {     
-  struct objc_metaClass*  class_pointer;      /* Pointer to Object meta class. */
-  struct objc_metaClass*  super_class;        /* Pointer to meta class's
-                                                super class. NULL for 
-                                                Object. */
-  const char*             name;               /* Name of the meta class. */
-  long                    version;            /* Unknown. */
-  long                    info;               /* Bit mask.  See class masks 
-                                                defined above. */
-  long                    instance_size;      /* Always 0 except for Object.
-                                                Should be ignored. */
-  IvarList_t              ivars;              /* Always NULL except for 
-                                                Object.  Should be ignored. */
-  MethodList_t            methods;            /* Linked List of factory methods 
-                                                for the class. */
-  struct record **        cache;              /* Pointer to factory method dispatch table. */
-} MetaClass, *MetaClass_t;
+#include <objc/sarray.h>
 
+#ifdef OBJC_HASH_LOOKUP
 
 /*
- * The compiler generates one of these structures for each class.  
- *
- * This structure is the definition for classes. 
- *
- * This structure is generated by the compiler in the executable and used by
- * the run-time during normal messaging operations.  Therefore some members
- * change type. The compiler generates "char* const" and places a string in
- * the following member variables:  super_class. 
- */
+** This data structure is used for the hash lookup mechanism.  When
+** enabled, the runtime keeps a such cache of buckets for each class.
+*/
+typedef struct objc_cache* Cache_t;
+typedef struct objc_bucket* Bucket_t;
+typedef struct objc_bucket Bucket;
+struct objc_cache {
+  unsigned int mask;		/* total = mask+1 */
+  unsigned int occupied;
+  struct objc_bucket {
+    SEL method_selector;
+    IMP method_imp;
+  } buckets[1];
+} Cache;
+
+#endif
+
+/*
+** The compiler generates one of these structures for each class.  
+**
+** This structure is the definition for meta classes. By definition a meta
+** class is the class's class.  Its most relevant contribution is that its
+** method list contain the class's factory methods. 
+**
+** This structure is generated by the compiler in the executable and used by
+** the run-time during normal messaging operations.  Therefore some members
+** change type. The compiler generates "char* const" and places a string in
+** the following member variables:  class_pointer and super_class. 
+*/
+typedef struct objc_class *MetaClass_t;
+
+/*
+** The compiler generates one of these structures for each class.  
+** 
+** This structure is the definition for classes. 
+** 
+** This structure is generated by the compiler in the executable and used by
+** the run-time during normal messaging operations.  Therefore some members
+** change type. The compiler generates "char* const" and places a string in
+** the following member variables:  super_class. 
+*/
 typedef struct objc_class {     
   MetaClass_t         class_pointer;          /* Pointer to the class's
                                                 meta class. */
@@ -279,14 +304,91 @@ typedef struct objc_class {
   MethodList_t        methods;                /* Linked list of instance
                                                 methods defined for the 
                                                 class. */
-  struct record **    cache;                  /* Pointer to instance method dispatch table. */
-} Class, *Class_t;
+#ifdef OBJC_HASH_LOOKUP
+  Cache_t	     cache;                   /* Pointer to method cache */
+#else
+  struct sarray *    dtable;                  /* Pointer to instance 
+					         method dispatch table. */  
+#endif
+
+  struct objc_class* subclass_list;           /* Subclasses */
+  struct objc_class* sibling_class;
+
+  struct objc_protocol_list *protocols;	      /* Protocols conformed to */
+
+} Class, *Class_t, MetaClass;
+
+/* Protocol support */
+
+#ifndef __OBJC__
+typedef struct objc_protocol {
+  char *protocol_name;
+  struct objc_protocol_list *protocol_list;
+  struct objc_method_description_list *instance_methods, *class_methods; 
+} Protocol; 
+
+#else
+
+@class Protocol;
+#endif 
+
+struct objc_protocol_list {
+  struct objc_protocol_list *next;
+  int count;
+  Protocol *list[1];
+};
 
 
 /*
- * The compiler generates one of these structures for each category.  A class
- * may have many categories and contain both instance and factory methods.  
- */
+** This is used to assure consistent access to the info field of 
+** classes
+*/
+#ifndef HOST_BITS_PER_LONG
+#define HOST_BITS_PER_LONG  (sizeof(long)*8)
+#endif 
+
+#define __CLS_INFO(cls) ((cls)->info)
+#define __CLS_ISINFO(cls, mask) ((__CLS_INFO(cls)&mask)==mask)
+#define __CLS_SETINFO(cls, mask) (__CLS_INFO(cls) |= mask)
+
+/* The structure is of type MetaClass_t */
+#define _CLS_META 0x2L
+#define CLS_ISMETA(cls) ((cls)&&__CLS_ISINFO(cls, _CLS_META))
+
+
+/* The structure is of type Class_t */
+#define _CLS_CLASS 0x1L
+#define CLS_ISCLASS(cls) ((cls)&&__CLS_ISINFO(cls, _CLS_CLASS))
+
+/*
+** The class is initialized within the runtime.  This means that 
+** it has had correct super and sublinks assigned
+*/
+#define _CLS_RESOLV 0x8L
+#define CLS_ISRESOLV(cls) __CLS_ISINFO(cls, _CLS_RESOLV)
+#define CLS_SETRESOLV(cls) __CLS_SETINFO(cls, _CLS_RESOLV)
+
+/*
+** The class has been send a +initialize message or a such is not 
+** defined for this class
+*/
+#define _CLS_INITIALIZED 0x04L
+#define CLS_ISINITIALIZED(cls) __CLS_ISINFO(cls, _CLS_INITIALIZED)
+#define CLS_SETINITIALIZED(cls) __CLS_SETINFO(cls, _CLS_INITIALIZED)
+
+/*
+** The class number of this class.  This must be the same for both the 
+** class and it's meta class object
+*/
+#define CLS_GETNUMBER(cls) (__CLS_INFO(cls) >> (HOST_BITS_PER_LONG/2))
+#define CLS_SETNUMBER(cls, num) \
+  ({ assert(CLS_GETNUMBER(cls)==0); \
+     __CLS_SETINFO(cls, ((num) << (HOST_BITS_PER_LONG/2))); })
+
+/*
+** The compiler generates one of these structures for each category.  A class
+** may have many categories and contain both instance and factory methods.  
+*/
 typedef struct objc_category {
   const char*   category_name;                /* Name of the category.  Name
                                                 contained in the () of the
@@ -301,52 +403,92 @@ typedef struct objc_category {
                                                 methods defined in the
                                                 category.  NULL indicates no
                                                 class methods defined. */
+  struct objc_protocol_list *protocols;	      /* List of Protocols 
+					         conformed to */
 } Category, *Category_t;
+
+/*
+** Well...
+*/
+
+typedef struct objc_typed_stream TypedStream;
 
 
 /*
- * Structure used when a message is send to a class's super class.  The
- * compiler generates one of these structures and passes it to
- * objc_msgSuper. 
- */
+** Structure used when a message is send to a class's super class.  The
+** compiler generates one of these structures and passes it to
+** objc_msg_super.
+*/
 typedef struct objc_super {
-  id      receiver;                           /* Id of the object sending
+  id      self;                           /* Id of the object sending
                                                 the message. */
   Class_t class;                              /* Object's super class. */
 } Super, *Super_t;
 
-/*
- * _objc_alloc points to the function, called through class_createInstance,
- * used to allocate memory for new instances. 
- */
-extern id (*_objc_alloc)(Class_t);
-/*
- * _objc_dealloc points to the function, called through object_dispose, used to
- * free instances. 
- */
-extern id (*_objc_dealloc)(id);
-/*
- * _objc_realloc points to the function, called through object_realloc, used to
- * reallocate memory for an object 
- */
-extern id (*_objc_realloc)(id, unsigned int);
+IMP objc_msg_lookup_super(Super_t super, SEL sel);
 
-/*
- * _objc_copy points to the function, called through object_copy,
- * used to create an exact copy of an object. 
- */
-extern  id (*_objc_copy)(id);
+typedef void* retval_t;		/* return value */
+typedef void(*apply_t)(void);	/* function pointer */
 
-/*
- * _objc_error points to the function that the run-time system calls
- * to handle an error.  By default, it prints formatted error messages to the
- * standard error stream and calls abort to produce a core file. 
- */
-extern void (*_objc_error)(id object, const char *fmt, va_list ap);
+#if defined(REG_ARGS) || defined(STACK_ARGS)
 
+typedef struct {
+  char* arg_pointer;
+#ifdef STRUCT_RETURN
+  void* struct_return;
+#endif
+#ifdef REG_ARGS
+  void* regs[2];
+#endif
+} *arglist_t;
 
-#ifdef __cplusplus
+#ifdef REG_ARGS
+#define __objc_frame_receiver(FRAME)  (FRAME)->regs[0]
+#define __objc_frame_selector(FRAME)  ((SEL)(FRAME)->regs[1])
+
+#else
+#define __objc_frame_receiver(FRAME) ((id*)(FRAME)->arg_pointer)[0]
+#define __objc_frame_selector(FRAME) ((SEL*)(FRAME)->arg_pointer)[1]
+#endif
+#else
+
+typedef void* arglist_t;
+
+#endif
+
+retval_t objc_msg_sendv(id, SEL, size_t, arglist_t);
+
+#ifdef __OBJC__
+
+static id nil_method(id rcv, SEL op, ...) { return rcv; }
+
+#ifdef OBJC_HASH_LOOKUP
+
+#include <objc/cache.h>
+
+extern __inline__ IMP
+objc_msg_lookup(id receiver, SEL op)
+{
+  if(receiver)
+    return cache_get(receiver->class_pointer, op);
+  else
+    return nil_method;
 }
+
+#else /* not OBJC_HASH_LOOKUP => OBJC_SPARSE_LOOKUP */
+
+extern __inline__ IMP
+objc_msg_lookup(id receiver, SEL op)
+{
+  if(receiver)
+    return sarray_get(receiver->class_pointer->dtable, (unsigned int) op);
+  else
+    return nil_method;
+}
+#endif /* not OBJC_HASH_LOOKUP */
+
+#else
+ IMP objc_msg_lookup(id, SEL);
 #endif
 
 
