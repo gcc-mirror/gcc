@@ -1,3 +1,11 @@
+2002-04-04  Mark Wielaard  <mark@klomp.org>
+
+	* mauve-libgcj: Add JLS1.0 and JLS1.1 tags, ignore Character.unicode
+	test.
+	* testsuite/libjava.mauve/xfails: Remove working tests DoubleTest,
+	FloatTest and ObjectStreamClass. Add FAIL for Introspector.jdk11 tests
+	that depend on awt code and BufferedByteOutputStream.interrupt.
+
 2002-04-04  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/util/Arrays.java (qsort): Fix off-by-one errors and use of
