@@ -1,3 +1,10 @@
+2000-09-12  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	From Joern Rennecke:
+	* local-alloc.c (update_equiv_regs): If there is no REG_EQUAL note
+	on an insn and function_invariant_p returns nonzero for the source,
+	add a REG_EQUAL note.
+
 Thu Sep 14 00:51:57 EDT 2000  John Wehle  (john@feith.com)
 
 	* alias.c (memrefs_conflict_p): An ADDRESSOF doesn't

@@ -787,6 +787,13 @@ update_equiv_regs ()
 
       note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
+      /* cse sometimes generates function invariants, but doesn't put a
+	 REG_EQUAL note on the insn.  Since this note would be redundant,
+         there's no point creating it earlier than here.  */
+      if (! note && function_invariant_p (src))
+	REG_NOTES (insn)
+	  = note = gen_rtx_EXPR_LIST (REG_EQUAL, src, REG_NOTES (insn));
+
       if (REG_N_SETS (regno) != 1
 	  && (! note
 	      || ! function_invariant_p (XEXP (note, 0))
