@@ -1,3 +1,9 @@
+2004-07-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/15345
+	PR c/16450
+	* gcc.dg/torture/nested-fn-1.c: New test.
+
 2004-07-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/16559
