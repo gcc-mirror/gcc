@@ -663,6 +663,11 @@ extern struct rtx_def *function_arg();
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.
 
+   We used to allow reg+reg addresses for QImode and HImode; however,
+   they tended to cause the register allocator to run out of registers.
+   Basically, an indexed load/store always keeps 2 data and one address
+   register live, which is just too many for this machine.  */
+
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
    except for CONSTANT_ADDRESS_P which is actually machine-independent.  */
 
@@ -691,10 +696,6 @@ extern struct rtx_def *function_arg();
       if (base != 0 && index != 0)			\
 	{						\
 	  if (GET_CODE (index) == CONST_INT)		\
-	    goto ADDR;					\
-	  if (GET_CODE (index) == REG			\
-	      && REG_OK_FOR_INDEX_P (index)		\
-	      && GET_MODE_SIZE (MODE) <= word_mode)	\
 	    goto ADDR;					\
 	}						\
     }							\
