@@ -35,6 +35,9 @@
 	* cfghooks.c (verify_flow_info): Remove local variable
 	num_bb_notes.
 
+	* cfgrtl.c (rtl_verify_flow_info_1): Remove local variable
+	last_bb_seen.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
