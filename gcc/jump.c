@@ -155,7 +155,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
      int noop_moves;
      int after_regscan;
 {
-  register rtx insn, next, note;
+  register rtx insn, next;
   int changed;
   int old_max_reg;
   int first = 1;

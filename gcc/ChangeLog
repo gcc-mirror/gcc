@@ -1,3 +1,10 @@
+Wed Nov 25 00:48:29 1998  Graham  <grahams@rcp.co.uk>
+
+	* reload1.c (reload): Remove unused variable.
+	(reload_reg_free_for_value_p): Add missing parameter definition.
+
+	* jump.c (jump_optimize): Remove unused variable.
+
 Wed Nov 25 00:07:11 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (graph.o): Depend on $(RTL_H), not rtl.h.
