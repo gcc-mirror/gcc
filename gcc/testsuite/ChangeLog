@@ -1,3 +1,15 @@
+2004-11-06  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/anon-struct-6.c, gcc.dg/anon-struct-7.c,
+	gcc.dg/anon-struct-8.c, gcc.dg/bitfld-10.c, gcc.dg/bitfld-11.c,
+	gcc.dg/bitfld-12.c, gcc.dg/func-outside-1.c,
+	gcc.dg/func-outside-2.c, gcc.dg/label-decl-1.c,
+	gcc.dg/label-decl-2.c, gcc.dg/label-decl-3.c,
+	gcc.dg/label-decl-4.c, gcc.dg/struct-empty-1.c,
+	gcc.dg/struct-empty-2.c, gcc.dg/struct-empty-3.c,
+	gcc.dg/struct-semi-1.c, gcc.dg/struct-semi-2.c,
+	gcc.dg/struct-semi-3.c: New tests.
+
 2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/nothrow1.C: Use -42 instead of 42.
