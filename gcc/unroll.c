@@ -1094,16 +1094,13 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  /* Set unroll type to MODULO now.  */
 	  unroll_type = UNROLL_MODULO;
 	  loop_preconditioned = 1;
-#ifdef HAIFA
-	  if (loop_n_iterations > 0)
-	    loop_unroll_iter[ loop_number(loop_start, loop_end) ]
-	      = (loop_n_iterations
-		  - loop_n_iterations % (abs_inc * unroll_number));
-	  else
-	    /* inform loop.c about the new initial value */
-	    loop_start_value[loop_number(loop_start, loop_end)] = initial_value;
-#endif
 
+#ifdef HAIFA
+	  /* Fix the initial value for the loop as needed.  */
+	  if (loop_n_iterations <= 0)
+	    loop_start_value [loop_number (loop_start, loop_end)]
+	      = initial_value;
+#endif
 	}
     }
 
@@ -1118,13 +1115,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   /* At this point, we are guaranteed to unroll the loop.  */
 
-#ifdef HAIFA
-  /* inform loop.c about the factor of unrolling */
+  /* Keep track of the unroll factor for each loop.  */
   if (unroll_type == UNROLL_COMPLETELY)
-    loop_unroll_factor[ loop_number(loop_start, loop_end) ] = -1;
+    loop_unroll_factor [loop_number (loop_start, loop_end)] = -1;
   else
-    loop_unroll_factor[ loop_number(loop_start, loop_end) ] = unroll_number;
-#endif  /* HAIFA */
+    loop_unroll_factor [loop_number (loop_start, loop_end)] = unroll_number;
 
 
   /* For each biv and giv, determine whether it can be safely split into
