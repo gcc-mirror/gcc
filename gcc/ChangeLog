@@ -1,5 +1,8 @@
 Fri Apr 14 18:07:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* print-rtl.c (print_rtx, case NOTE): Don't blow up if NOTE_BASIC_BLOCK
+	not yet set.
+
 	* expr.c (reload.h): Now included.
 	(emit_block_move): Set volatile_ok when checking for movstr.
 	(emit_move_1): Check for replacements in addresses in multi-word case.
