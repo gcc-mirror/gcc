@@ -862,6 +862,57 @@ if [ \! -z "$file_to_fix" ]; then
   fi
 fi
 
+# Remove useless extern keyword from struct forward declarations in
+# <sys/stream.h> and <sys/strsubr.h>
+
+file=sys/stream.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e 's/extern struct \(stdata\|strevent\);/struct \1;/' $file_to_fix > /tmp/$base 
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    echo No change needed in $file_to_fix
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
+file=sys/strsubr.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Checking $file_to_fix
+  sed -e 's/extern struct \(strbuf\|uio\|thread\|proc\);/struct \1;/' $file_to_fix > /tmp/$base 
+  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    echo No change needed in $file_to_fix
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base ${LIB}/$file
+  fi
+  rm -f /tmp/$base
+fi
+
 # Convert functions to prototype form, and fix arg names in <sys/stat.h>.
 
 file=sys/stat.h
