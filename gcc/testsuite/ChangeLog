@@ -1,5 +1,7 @@
 2005-02-01  Janis Johnson  <janis187@us.ibm.com>
 
+	* g++.old-deja/g++.other/init5.C: Remove xfail for powerpc-linux.
+
 	* gcc.dg/tree-ssa/20040204-1.c: Remove powerpc from xfail list.
 
 	* g++.dg/eh/simd-2.C: Check for AltiVec HW support at runtime.
