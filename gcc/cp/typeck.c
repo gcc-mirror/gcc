@@ -1969,8 +1969,11 @@ build_class_member_access_expr (tree object, tree member,
 	  my_friendly_assert (object != error_mark_node,
 			      20020801);
 	}
-      
-      /* Issue a warning about access a member of a NULL object.  */
+
+      /* Complain about other invalid uses of offsetof, even though they will
+	 give the right answer.  Note that we complain whether or not they
+	 actually used the offsetof macro, since there's no way to know at this
+	 point.  So we just give a warning, instead of a pedwarn.  */
       if (null_object_p && CLASSTYPE_NON_POD_P (object_type))
 	{
 	  warning ("invalid access to non-static data member `%D' of NULL object", 
