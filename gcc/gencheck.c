@@ -44,7 +44,7 @@ usage (void)
 int
 main (int argc, char **argv ATTRIBUTE_UNUSED)
 {
-  int i;
+  int i, j;
 
   switch (argc)
     {
@@ -60,10 +60,18 @@ main (int argc, char **argv ATTRIBUTE_UNUSED)
   puts ("#ifndef GCC_TREE_CHECK_H");
   puts ("#define GCC_TREE_CHECK_H\n");
 
+  /* Print macros for checks based on each of the tree code names.  However,
+     since we include the tree nodes from all languages, we must check
+     for duplicate names to avoid defining the same macro twice.  */
   for (i = 0; tree_codes[i]; i++)
     {
-      printf ("#define %s_CHECK(t)\tTREE_CHECK (t, %s)\n",
-	      tree_codes[i], tree_codes[i]);
+      for (j = 0; j < i; j++)
+	if (strcmp (tree_codes[i], tree_codes[j]) == 0)
+	  break;
+
+      if (i == j)
+	printf ("#define %s_CHECK(t)\tTREE_CHECK (t, %s)\n",
+		tree_codes[i], tree_codes[i]);
     }
 
   puts ("\n#endif /* GCC_TREE_CHECK_H */");
