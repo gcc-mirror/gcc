@@ -1,3 +1,12 @@
+2002-06-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (STAGESTUFF): Add s-gtype, gt-*.h, gtype-*.h,
+	and gtype-desc.c.
+	(mostlyclean): Delete specs.h, options.h, gencheck.h here...
+	(distclean): ... not here.  But do delete all testsuite/*.log,
+	testsuite/*.sum files here.  Delete mkheaders.  Delete
+	po/*.gmo and the testsuite directory in a split tree build.
+
 2002-06-10  Jeffrey Law  <law@redhat.com>
 
 	* alias.c (static_reg_base_value): New to hold RTL for
@@ -19,7 +28,7 @@
 	RTL object.
 
 2002-06-10  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	* Makefile.in (ssa.o): Add dependency on $(RTL_H), which was missing.
 
 2002-06-10  Richard Sandiford  <rsandifo@redhat.com>
@@ -56,17 +65,17 @@
 
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
 
-	* configure.in (remaining_languages_check): 
-	Added check that all languages specified were found. 
+	* configure.in (remaining_languages_check):
+	Added check that all languages specified were found.
 	Exit if not found. Previous behaviour was silent failure.
 	* configure: Regenerated.
 
 2002-06-10  Tim Josling  <tej@melbpc.org.au>
- 
+
          First steps to making treelang documentation compliant, based on
 	 instructions in sourcebuild.texi. Also add to gcc.c list of
 	 default languages.
-	
+
 	* doc/contrib.texi: Add self as contributor of treelang.
 
 	* doc/frontends.texi: Add mention of treelang.
