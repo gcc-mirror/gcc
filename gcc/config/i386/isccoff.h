@@ -12,9 +12,9 @@
   "%{!shlib:%{posix:%{pg:mcrtp1.o%s}%{!pg:%{p:mcrtp1.o%s}%{!p:crtp0.o%s}}}\
    %{!posix:%{pg:mcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}\
    %{p:-L/lib/libp} %{pg:-L/lib/libp}}}\
-   %{shlib:%{posix:crtp1.o%s}%{!posix:crt1.o%s}} "
-
-#define ENDFILE_SPEC "crtn.o%s"
+   %{shlib:%{posix:crtp1.o%s}%{!posix:crt1.o%s}} crtbegin.o%s"
+  
+#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
 /* Library spec */
 #undef LIB_SPEC
