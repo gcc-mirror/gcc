@@ -1,3 +1,8 @@
+Sun Jul 25 21:40:33 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.texi: More changes related to list conversion.
+	* invoke.texi: Likewise.
+
 Sun Jul 25 18:15:39 1999  Richard Henderson  <rth@cygnus.com>
 
 	* builtins.c (expand_builtin_saveregs): Remove static, remove exp
