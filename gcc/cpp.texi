@@ -881,6 +881,14 @@ This macro expands to the constant 1, to signify that this is ANSI
 Standard C@.  (Whether that is actually true depends on what C compiler
 will operate on the output from the preprocessor.)
 
+On some hosts, system include files use a different convention, where
+@samp{__STDC__} is normally 0, but is 1 if the user specifies strict
+conformance to the C Standard.  The preprocessor follows the host convention
+when processing system include files, but when processing user files it follows
+the usual GNU C convention.
+
+This macro is not defined if the @samp{-traditional} option is used.
+
 @item __STDC_VERSION__
 @findex __STDC_VERSION__
 This macro expands to the C Standard's version number,
@@ -890,6 +898,8 @@ This signifies which version of the C Standard the preprocessor conforms to.
 Like @samp{__STDC__}, whether this version number is accurate
 for the entire implementation depends on what C compiler
 will operate on the output from the preprocessor.
+
+This macro is not defined if the @samp{-traditional} option is used.
 
 @item __GNUC__
 @findex __GNUC__
@@ -2732,6 +2742,10 @@ Like @samp{-dM} except in two respects: it does @emph{not} include the
 predefined macros, and it outputs @emph{both} the @samp{#define}
 directives and the result of preprocessing.  Both kinds of output go to
 the standard output file.
+
+@item -dI
+@findex -dI
+Output @samp{#include} directives in addition to the result of preprocessing.
 
 @item -M [-MG]
 @findex -M

@@ -1,6 +1,6 @@
 /* real.c - implementation of REAL_ARITHMETIC, REAL_VALUE_ATOF,
    and support for XFmode IEEE extended real floating point arithmetic.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
 
 This file is part of GNU CC.
@@ -20,9 +20,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "config.h"
 #include <stdio.h>
 #include <errno.h>
-#include "config.h"
 #include "tree.h"
 
 #ifndef errno
@@ -209,7 +209,7 @@ unknown arithmetic type
 #if HOST_BITS_PER_LONG >= EMULONG_SIZE
 #define EMULONG long
 #else
-#if HOST_BITS_PER_LONG_LONG >= EMULONG_SIZE
+#if HOST_BITS_PER_LONGLONG >= EMULONG_SIZE
 #define EMULONG long long int
 #else
 /*  You will have to modify this program to have a smaller unit size.  */
@@ -406,15 +406,19 @@ static void eremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       unsigned EMUSHORT *));
 static void eiremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void mtherr	PROTO((char *, int));
+#ifdef DEC
 static void dectoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void etodec	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void todec	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
+#endif
+#ifdef IBM
 static void ibmtoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       enum machine_mode));
 static void etoibm	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       enum machine_mode));
 static void toibm	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       enum machine_mode));
+#endif
 static void make_nan	PROTO((unsigned EMUSHORT *, int, enum machine_mode));
 static void uditoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void ditoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));

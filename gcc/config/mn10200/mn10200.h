@@ -566,7 +566,7 @@ extern struct rtx_def *function_arg();
 #define TRAMPOLINE_TEMPLATE(FILE)			\
   do {							\
     fprintf (FILE, "\t.byte 0xfd\n");			\
-    fprintf (FILE, "\t.byte 0x03\n");			\
+    fprintf (FILE, "\t.byte 0x00\n");			\
     fprintf (FILE, "\t.byte 0x00\n");			\
     fprintf (FILE, "\tmov (a3),a0\n");			\
     fprintf (FILE, "\tadd -4,a3\n");			\

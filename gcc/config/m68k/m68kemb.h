@@ -43,7 +43,7 @@
   -Amachine(mc68000)"
 
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
-   profiling, or libg.a
+   profiling, or libg.a.  */
 
 #define LIB_SPEC "-lc"
 

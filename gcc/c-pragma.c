@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "except.h"
 #include "function.h"

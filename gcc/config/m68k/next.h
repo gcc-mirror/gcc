@@ -172,7 +172,7 @@ Boston, MA 02111-1307, USA.  */
    Previously, references to labels generated pc-relative addressing modes
    while references to symbol names generated absolute addressing modes.  */
 
-#undef	GO_IF_INDEXABLE_BASE(X, ADDR)
+#undef	GO_IF_INDEXABLE_BASE
 #define GO_IF_INDEXABLE_BASE(X, ADDR)	\
 { if (LEGITIMATE_BASE_REG_P (X)) goto ADDR; }
 

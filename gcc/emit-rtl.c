@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
    is the kind of rtx's they make and what arguments they use.  */
 
 #include "config.h"
+#include <stdio.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -48,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "regs.h"
 #include "insn-config.h"
+#include "recog.h"
 #include "real.h"
 #include "obstack.h"
 
@@ -57,8 +59,6 @@ Boston, MA 02111-1307, USA.  */
 #include "bc-typecd.h"
 #include "bc-optab.h"
 #include "bc-emit.h"
-
-#include <stdio.h>
 
 /* Opcode names */
 #ifdef BCDEBUG_PRINT_CODE
@@ -809,6 +809,26 @@ gen_lowpart_common (mode, x)
       return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
     }
 #endif
+
+  /* We need an extra case for machines where HOST_BITS_PER_WIDE_INT is the
+     same as sizeof (double), such as the alpha.  We only handle the
+     REAL_ARITHMETIC case, which is easy.  Testing HOST_BITS_PER_WIDE_INT
+     is not strictly necessary, but is done to restrict this code to cases
+     where it is known to work.  */
+#ifdef REAL_ARITHMETIC
+  else if (mode == SFmode
+	   && GET_CODE (x) == CONST_INT
+	   && GET_MODE_BITSIZE (mode) * 2 == HOST_BITS_PER_WIDE_INT)
+    {
+      REAL_VALUE_TYPE r;
+      HOST_WIDE_INT i;
+
+      i = INTVAL (x);
+      r = REAL_VALUE_FROM_TARGET_SINGLE (i);
+      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
+    }
+#endif
+
   /* Similarly, if this is converting a floating-point value into a
      single-word integer.  Only do this is the host and target parameters are
      compatible.  */
@@ -938,6 +958,8 @@ gen_lowpart (mode, x)
 
       return change_address (x, mode, plus_constant (XEXP (x, 0), offset));
     }
+  else if (GET_CODE (x) == ADDRESSOF)
+    return gen_lowpart (mode, force_reg (GET_MODE (x), x));
   else
     abort ();
 }
@@ -1424,7 +1446,8 @@ gen_label_rtx ()
 
   label = (output_bytecode
 	   ? gen_rtx (CODE_LABEL, VOIDmode, NULL, bc_get_bytecode_label ())
-	   : gen_rtx (CODE_LABEL, VOIDmode, 0, 0, 0, label_num++, NULL_PTR));
+	   : gen_rtx (CODE_LABEL, VOIDmode, 0, NULL_RTX,
+		      NULL_RTX, label_num++, NULL_PTR));
 
   LABEL_NUSES (label) = 0;
   return label;
@@ -1441,7 +1464,7 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
 		       pops_args, stack_slots, forced_labels, function_flags,
 		       outgoing_args_size, original_arg_vector,
 		       original_decl_initial, regno_rtx, regno_flag,
-		       regno_align)
+		       regno_align, parm_reg_stack_loc)
      rtx first_insn, first_parm_insn;
      int first_labelno, last_labelno, max_parm_regnum, max_regnum, args_size;
      int pops_args;
@@ -1454,6 +1477,7 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
      rtvec regno_rtx;
      char *regno_flag;
      char *regno_align;
+     rtvec parm_reg_stack_loc;
 {
   rtx header = gen_rtx (INLINE_HEADER, VOIDmode,
 			cur_insn_uid++, NULL_RTX,
@@ -1463,7 +1487,8 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
 			stack_slots, forced_labels, function_flags,
 			outgoing_args_size, original_arg_vector,
 			original_decl_initial,
-			regno_rtx, regno_flag, regno_align);
+			regno_rtx, regno_flag, regno_align,
+			parm_reg_stack_loc);
   return header;
 }
 
@@ -1653,6 +1678,10 @@ copy_rtx_if_shared (orig)
 	  x->used = 1;
 	  return x;
 	}
+      break;
+
+    default:
+      break;
     }
 
   /* This rtx may not be shared.  If it has already been seen,
@@ -1742,6 +1771,9 @@ reset_used_flags (x)
     case BARRIER:
       /* The chain of insns is not being copied.  */
       return;
+      
+    default:
+      break;
     }
 
   x->used = 0;
@@ -3176,6 +3208,7 @@ gen_sequence ()
      (Now that we cache SEQUENCE expressions, it isn't worth special-casing
      the case of an empty list.)  */
   if (len == 1
+      && ! RTX_FRAME_RELATED_P (first_insn)
       && (GET_CODE (first_insn) == INSN
 	  || GET_CODE (first_insn) == JUMP_INSN
 	  /* Don't discard the call usage field.  */

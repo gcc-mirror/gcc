@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for AT&T we32000 Family.
    Contributed by John Wehle (john@feith1.uucp)
-   Copyright (C) 1991-1992 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "real.h"
 

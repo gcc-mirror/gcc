@@ -1,5 +1,5 @@
 /* OSF/rose half-pic support functions.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -32,9 +32,9 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HALF_PIC_INIT
 
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
-#include <stdio.h>
 #include "obstack.h"
 
 #define obstack_chunk_alloc xmalloc

@@ -69,16 +69,6 @@ Boston, MA 02111-1307, USA.  */
 /* and define a local equivalent (sort of) for unlink */
 #define unlink remove
 
-/* Specify the list of include file directories.  */
-#define INCLUDE_DEFAULTS \
-{									\
-  { "GNU_GXX_INCLUDE:", 1, 1 },						\
-  { "GNU_CC_INCLUDE:", 0, 0 },	/* GNU includes */			\
-  { "SYS$SYSROOT:[SYSLIB.]", 0, 0 }, /* VAX-11 "C" includes */		\
-  { ".", 0, 1 },		/* Make normal VMS filespecs work.  */	\
-  { 0, 0, 0 }								\
-}
-
 /* Used by the preprocessor to limit size of disk I/O chunks.
    64K - 1 is the maximum supported by VAXCRTL.  Amounts in excess
    of 35 blocks will bypass the VMS V6.x VIOC [Virtual I/O Cache],
@@ -165,6 +155,8 @@ Boston, MA 02111-1307, USA.  */
 #define current_function_uses_const_pool	curfunc_uses_const_pool
 #define current_function_uses_pic_offset_table	curfunc_uses_pic_offset_table
 #define dbxout_resume_previous_source_file	dbxout_resume_previous_src_file
+#define expand_builtin_extract_return_addr	expand_builtin_extract_ret_addr
+#define expand_builtin_set_return_addr_reg	expand_builtin_set_ret_addr_reg
 #define expand_start_loop_continue_elsewhere	expnd_start_loop_cont_elsewhere
 #define flag_schedule_insns_after_reload	flag_sched_insns_after_reload
 #define get_dynamic_handler_chain_libfunc	get_dynamic_hndlr_chain_libfunc

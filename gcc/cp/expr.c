@@ -21,11 +21,15 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
 #include "expr.h"
 #include "cp-tree.h"
+
+static tree extract_aggr_init PROTO((tree, tree));
+static tree extract_scalar_init PROTO((tree, tree));
 
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 

@@ -26,10 +26,10 @@ Boston, MA 02111-1307, USA.  */
    We also output the assembler code for constants stored in memory
    and are responsible for combining constants with the same value.  */
 
+#include "config.h"
 #include <stdio.h>
 #include <setjmp.h>
 /* #include <stab.h> */
-#include "config.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -170,6 +170,9 @@ static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
   , in_bss
 #endif
+#ifdef EH_FRAME_SECTION_ASM_OP
+  , in_eh_frame
+#endif
 #ifdef EXTRA_SECTIONS
   , EXTRA_SECTIONS
 #endif
@@ -279,10 +282,6 @@ named_section (decl, name, reloc)
 
   if (in_section != in_named || strcmp (name, in_named_name))
     {
-      in_named_name = obstack_alloc (&permanent_obstack, strlen (name) + 1);
-      strcpy (in_named_name, name);
-      in_section = in_named;
-    
 #ifdef ASM_OUTPUT_SECTION_NAME
       ASM_OUTPUT_SECTION_NAME (asm_out_file, decl, name, reloc);
 #else
@@ -291,6 +290,10 @@ named_section (decl, name, reloc)
 	 already have flagged this as an error.  */
       abort ();
 #endif
+
+      in_named_name = obstack_alloc (&permanent_obstack, strlen (name) + 1);
+      strcpy (in_named_name, name);
+      in_section = in_named;
     }
 }
 
@@ -401,6 +404,18 @@ asm_output_aligned_bss (file, decl, name, size, align)
 
 #endif /* BSS_SECTION_ASM_OP */
 
+#ifdef EH_FRAME_SECTION_ASM_OP
+void
+eh_frame_section ()
+{
+  if (in_section != in_eh_frame)
+    {
+      fprintf (asm_out_file, "%s\n", EH_FRAME_SECTION_ASM_OP);
+      in_section = in_eh_frame;
+    }
+} 
+#endif
+
 /* Switch to the section for function DECL.
 
    If DECL is NULL_TREE, switch to the text section.
@@ -461,15 +476,15 @@ variable_section (decl, reloc)
 void
 exception_section ()
 {
+#if defined (EXCEPTION_SECTION)
+  EXCEPTION_SECTION ();
+#else
 #ifdef ASM_OUTPUT_SECTION_NAME
   named_section (NULL_TREE, ".gcc_except_table", 0);
 #else
   if (flag_pic)
     data_section ();
   else
-#if defined (EXCEPTION_SECTION)
-    EXCEPTION_SECTION ();
-#else
     readonly_data_section ();
 #endif
 #endif
@@ -1413,11 +1428,16 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	      }
 	    else
 	      {
+#ifdef ASM_OUTPUT_ALIGNED_DECL_COMMON
+		ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, decl, name, size,
+						   DECL_ALIGN (decl));
+#else
 #ifdef ASM_OUTPUT_ALIGNED_COMMON
 		ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, name, size,
 					   DECL_ALIGN (decl));
 #else
 		ASM_OUTPUT_COMMON (asm_out_file, name, size, rounded);
+#endif
 #endif
 	      }
 	}
@@ -1457,11 +1477,16 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	      }
 	    else
 	      {
+#ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
+		ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name, size,
+						  DECL_ALIGN (decl));
+#else
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
 		ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size,
 					  DECL_ALIGN (decl));
 #else
 		ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+#endif
 #endif
 	      }
 	}
@@ -1863,10 +1888,15 @@ assemble_static_space (size)
     }
   else
     {
+#ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
+      ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, NULL_TREE, name, size,
+				  BIGGEST_ALIGNMENT);
+#else
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
       ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, BIGGEST_ALIGNMENT);
 #else
       ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+#endif
 #endif
     }
   return x;
@@ -2177,7 +2207,7 @@ immed_double_const (i0, i1, mode)
 
   push_obstacks_nochange ();
   rtl_in_saveable_obstack ();
-  r = gen_rtx (CONST_DOUBLE, mode, 0, i0, i1);
+  r = gen_rtx (CONST_DOUBLE, mode, NULL_RTX, i0, i1);
   pop_obstacks ();
 
   /* Don't touch const_double_chain in nested function; see force_const_mem.
@@ -2506,6 +2536,9 @@ const_hash (exp)
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return const_hash (TREE_OPERAND (exp, 0)) * 7 + 2;
+      
+    default:
+      abort ();
     }
 
   /* Compute hashing function */
@@ -2693,6 +2726,9 @@ compare_constant_1 (exp, p)
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       return compare_constant_1 (TREE_OPERAND (exp, 0), p);
+
+    default:
+      abort ();
     }
 
   /* Compare constant contents.  */
@@ -3247,14 +3283,20 @@ init_const_rtx_hash_table ()
 /* Save and restore status for a nested function.  */
 
 void
-save_varasm_status (p)
+save_varasm_status (p, context)
      struct function *p;
+     tree context;
 {
   p->const_rtx_hash_table = const_rtx_hash_table;
   p->const_rtx_sym_hash_table = const_rtx_sym_hash_table;
   p->first_pool = first_pool;
   p->last_pool = last_pool;
   p->pool_offset = pool_offset;
+  p->const_double_chain = const_double_chain;
+
+  /* If we are pushing to toplevel, we can't reuse const_double_chain.  */
+  if (context == NULL_TREE)
+    const_double_chain = 0;
 }
 
 void
@@ -3266,6 +3308,7 @@ restore_varasm_status (p)
   first_pool = p->first_pool;
   last_pool = p->last_pool;
   pool_offset = p->pool_offset;
+  const_double_chain = p->const_double_chain;
 }
 
 enum kind { RTX_DOUBLE, RTX_INT };
@@ -3368,6 +3411,9 @@ decode_rtx_const (mode, x, value)
 	   for the sake of addresses of library routines.
 	   For a LABEL_REF, compare labels.  */
 	value->un.addr.base = XEXP (value->un.addr.base, 0);
+	
+      default:
+	break;
       }
 }
 
@@ -3798,6 +3844,13 @@ mark_constants (x)
 	find_pool_constant (x)->mark = 1;
       return;
     }
+  /* Never search inside a CONST_DOUBLE, because CONST_DOUBLE_MEM may be
+     a MEM, but does not constitute a use of that MEM.  This is particularly
+     important inside a nested function, because CONST_DOUBLE_MEM may be
+     a reference to a MEM in the parent's constant pool.  See the comment
+     in force_const_mem.  */
+  else if (GET_CODE (x) == CONST_DOUBLE)
+    return;
 
   /* Insns may appear inside a SEQUENCE.  Only check the patterns of
      insns, not any notes that may be attached.  We don't want to mark
@@ -3894,7 +3947,7 @@ output_addressed_constants (exp)
       }
       break;
 
-    case ERROR_MARK:
+    default:
       break;
     }
   return reloc;
@@ -4030,6 +4083,9 @@ output_constant (exp, size)
       else
 	error ("unknown set constructor type");
       return;
+
+    default:
+      break; /* ??? */
     }
 
   if (size > 0)
@@ -4397,7 +4453,7 @@ output_constructor (exp, size)
 		    }
 
 		  /* Now get the bits from the appropriate constant word.  */
-		  if (shift < HOST_BITS_PER_INT)
+		  if (shift < HOST_BITS_PER_WIDE_INT)
 		    value = TREE_INT_CST_LOW (val);
 		  else if (shift < 2 * HOST_BITS_PER_WIDE_INT)
 		    {

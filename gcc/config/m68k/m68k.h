@@ -1052,11 +1052,20 @@ while(0)
     }
 #else /* !__mcf5200__ */
 #if defined(MACHINE_STATE_m68010_up)
+#ifdef __HPUX_ASM__
+/* HPUX assembler does not accept %ccr.  */
+#define MACHINE_STATE_SAVE(id)		\
+    {					\
+      asm ("move.w %cc,-(%sp)");	\
+      asm ("movm.l &0xc0c0,-(%sp)");	\
+    }
+#else /* ! __HPUX_ASM__ */
 #define MACHINE_STATE_SAVE(id)		\
     {					\
       asm ("move.w %ccr,-(%sp)");	\
       asm ("movm.l &0xc0c0,-(%sp)");	\
     }
+#endif /* __HPUX_ASM__ */
 #else /* !MACHINE_STATE_m68010_up */
 #define MACHINE_STATE_SAVE(id)		\
     {					\
@@ -1103,11 +1112,20 @@ while(0)
       asm ("add.l 20,%sp");		\
     }
 #else /* !__mcf5200__ */
+#ifdef __HPUX_ASM__
+/* HPUX assembler does not accept %ccr.  */
+#define MACHINE_STATE_RESTORE(id)	\
+    {					\
+      asm ("movm.l (%sp)+,&0x0303");	\
+      asm ("move.w (%sp)+,%cc");	\
+    }
+#else /* ! __HPUX_ASM__ */
 #define MACHINE_STATE_RESTORE(id)	\
     {					\
       asm ("movm.l (%sp)+,&0x0303");	\
       asm ("move.w (%sp)+,%ccr");	\
     }
+#endif /* __HPUX_ASM__ */
 #endif /* __mcf5200__ */
 #else /* !MOTOROLA */
 #if defined(__mcf5200__)
@@ -1770,6 +1788,18 @@ __transfer_from_trampoline ()					\
    18 to 25, not 16 to 23 as they do in the compiler.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) ((REGNO) < 16 ? (REGNO) : (REGNO) + 2)
+
+/* Before the prologue, RA is at 0(%sp).  */
+#define INCOMING_RETURN_ADDR_RTX \
+  gen_rtx (MEM, VOIDmode, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM))
+
+/* We must not use the DBX register numbers for the DWARF 2 CFA column
+   numbers because that maps to numbers beyond FIRST_PSEUDO_REGISTER.
+   Instead use the identity mapping.  */
+#define DWARF_FRAME_REGNUM(REG) REG
+
+/* Before the prologue, the top of the frame is at 4(%sp).  */
+#define INCOMING_FRAME_SP_OFFSET 4
 
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */

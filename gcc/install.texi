@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,95,96 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,95,96,97 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -609,7 +609,7 @@ just @samp{@var{cpu}-@var{system}}, if it is not needed.  For example,
 Here is a list of system types:
 
 @quotation
-386bsd, aix, acis, amigados, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
+386bsd, aix, acis, amigaos, aos, aout, aux, bosx, bsd, clix, coff, ctix, cxux,
 dgux, dynix, ebmon, ecoff, elf, esix, freebsd, hms, genix, gnu, linux-gnu,
 hiux, hpux, iris, irix, isc, luna, lynxos, mach, minix, msdos, mvs,
 netbsd, newsos, nindy, ns, osf, osfrose, ptx, riscix, riscos, rtu, sco, sim,
@@ -759,6 +759,10 @@ To avoid this behavior, specify @samp{-gstabs+} and use GDB instead of
 DBX.  DEC is now aware of this problem with the assembler and hopes to
 provide a fix shortly.
 
+@item arc-*-elf
+Argonaut ARC processor.
+This configuration is intended for embedded systems.
+
 @item arm-*-aout
 Advanced RISC Machines ARM-family processors.  These are often used in
 embedded applications.  There are no standard Unix configurations.
@@ -855,6 +859,8 @@ output from GNU CC.
 @end ignore
 
 @item h8300-*-*
+Hitachi H8/300 series of processors.
+
 The calling convention and structure layout has changed in release 2.6.
 All code must be recompiled.  The calling convention now passes the
 first three arguments in function calls in registers.  Structures are no
@@ -909,18 +915,26 @@ link with GNU malloc instead of the malloc that comes with the system.
 Use this configuration for SCO release 3.2 version 4.
 
 @item i386-*-sco3.2v5*
-Use this for SCO Open Server Release 5.0.  GNU CC can generate ELF
-binaries (if you specify @samp{-melf}) or COFF binaries (the default).
-If you are going to build your compiler in ELF mode (once you have
-bootstrapped the first stage compiler) you @strong{must} specify
-@samp{-melf} as part of CC, @emph{not} CFLAGS.  You should
-use some variant of: @samp{CC="stage1/xgcc -melf" CFLAGS="-Bstage1/"} etc.
-If you do not do this, the boostrap will generate completely bogus versions
-of libgcc.a generated.
+Use this for the SCO OpenServer Release family including 5.0.0, 5.0.2, 
+5.0.4, Internet FastStart 1.0, and Internet FastStart 1.1.
+
+GNU CC can generate ELF binaries (if you specify @samp{-melf}) or COFF 
+binaries (the default).  If you are going to build your compiler in ELF 
+mode (once you have bootstrapped the first stage compiler) you 
+@strong{must} specify @samp{-melf} as part of @code{CC},
+@emph{not} @code{CFLAGS}, for example as
+@samp{CC="stage1/xgcc -melf -Bstage1/" }.  If you do not do this, the
+bootstrap will generate incorrect versions of @file{libgcc.a}.
 
 You must have TLS597 (from ftp.sco.com/TLS) installed for ELF
 binaries to work correctly. Note that Open Server 5.0.2 @emph{does}
 need TLS597 installed.
+
+@emph{NOTE:} You must follow the instructions about invoking
+@samp{make bootstrap} because the native OpenServer compiler builds
+a @file{cc1plus} that will not correctly parse many valid C++ programs.
+You must do a @samp{make bootstrap} if you are building with the native
+compiler.
 
 @item i386-*-isc
 It may be a good idea to link with GNU malloc instead of the malloc that
@@ -959,7 +973,7 @@ See @ref{Sun Install}, for information on installing GNU CC on Sun
 systems.
 
 @item i[345]86-*-winnt3.5
-This version requires a GAS that has not let been released.  Until it
+This version requires a GAS that has not yet been released.  Until it
 is, you can get a prebuilt binary version via anonymous ftp from
 @file{cs.washington.edu:pub/gnat} or @file{cs.nyu.edu:pub/gnat}. You
 must also use the Microsoft header files from the Windows NT 3.5 SDK.
@@ -1027,7 +1041,8 @@ COFF format object files and executables;  otherwise GNU CC will use the
 installed tools, which produce @file{a.out} format executables.
 
 @item m32r-*-elf
-Embedded M32R system.
+Mitsubishi M32R processor.
+This configuration is intended for embedded systems.
 
 @item m68000-hp-bsd
 HP 9000 series 200 running BSD.  Note that the C compiler that comes
@@ -1064,7 +1079,7 @@ the following procedure might work.  We are unable to test it.
 
 @enumerate
 @item
-Comment out the @samp{#include "config.h"} line on line 37 of
+Comment out the @samp{#include "config.h"} line near the start of
 @file{cccp.c} and do @samp{make cpp}.  This makes a preliminary version
 of GNU cpp.
 

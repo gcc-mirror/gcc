@@ -174,7 +174,9 @@ Operand numbers must be chosen consecutively counting from zero in
 each instruction pattern.  There may be only one @code{match_operand}
 expression in the pattern for each operand number.  Usually operands
 are numbered in the order of appearance in @code{match_operand}
-expressions.
+expressions.  In the case of a @code{define_expand}, any operand numbers
+used only in @code{match_dup} expressions have higher values than all
+other operand numbers.
 
 @var{predicate} is a string that is the name of a C function that accepts two
 arguments, an expression and a machine mode.  During matching, the
@@ -2390,8 +2392,16 @@ nonlocal gotos and a @code{reg} in the other two cases.
 
 @cindex @code{allocate_stack} instruction pattern
 @item @samp{allocate_stack}
-Subtract (or add if @code{STACK_GROWS_DOWNWARD} is undefined) operand 0 from
+Subtract (or add if @code{STACK_GROWS_DOWNWARD} is undefined) operand 1 from
 the stack pointer to create space for dynamically allocated data.
+
+Store the resultant pointer to this space into operand 0.  If you
+are allocating space from the main stack, do this by emitting a
+move insn to copy @code{virtual_stack_dynamic_rtx} to operand 0.
+If you are allocating the space elsewhere, generate code to copy the
+location of the space to operand 0.  In the latter case, you must
+ensure this space gets freed when the correspoinding space on the main
+stack is free.
 
 Do not define this pattern if all that must be done is the subtraction.
 Some machines require other operations such as stack probes or

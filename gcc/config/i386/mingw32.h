@@ -33,15 +33,62 @@ Boston, MA 02111-1307, USA. */
   -D__cdecl=__attribute__((__cdecl__)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
+/* Specific a different directory for the standard include files.  */
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/usr/mingw32/include"
+
+#define STANDARD_INCLUDE_COMPONENT "MINGW32"
+
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
 #undef LIB_SPEC
-#define LIB_SPEC "%{windows:-luser32 -lgdi32 -lcomdlg32} -lkernel32"
+#define LIB_SPEC \
+"%{mwindows:-luser32 -lgdi32 -lcomdlg32} -lkernel32 -ladvapi32 -lshell32"
 
-/* Include in the Windows32 API libraries with libgcc */
+/* Include in the mingw32 libraries with libgcc */
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC "-lmingw32 -lgcc -lmoldname -lcrtdll"
 
 /* Specify a different entry point when linking a DLL */
 #undef LINK_SPEC
-#define LINK_SPEC "%{windows:--subsystem windows} %{dll:--dll -e _DllMainCRTStartup@12}"
+#define LINK_SPEC \
+"%{mwindows:--subsystem windows} %{dll:--dll -e _DllMainCRTStartup@12}"
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%{dll:dllcrt1%O%s} %{!dll:crt1%O%s}"
+
+#undef PATH_SEPARATOR
+#define PATH_SEPARATOR ';'
+
+/* Output STRING, a string representing a filename, to FILE.  We canonicalize
+   it to be in MS-DOS format.  */
+#define OUTPUT_QUOTED_STRING(FILE, STRING) \
+do {						\
+  char c;					\
+						\
+  putc ('\"', asm_file);			\
+  if (STRING[1] == ':'				\
+      && (STRING[2] == '/' || STRING[2] == '\\')) \
+    {						\
+      putc ('/', asm_file);			\
+      putc ('/', asm_file);			\
+      putc (*string, asm_file);			\
+      string += 2;				\
+    }						\
+						\
+  while ((c = *string++) != 0)			\
+    {						\
+      if (c == '\\')				\
+	c = '/';				\
+						\
+      if (c == '\"')				\
+	putc ('\\', asm_file);			\
+      putc (c, asm_file);			\
+    }						\
+						\
+  putc ('\"', asm_file);			\
+} while (0)
+
+/* Dwarf2 exception information does not work on this system for some
+   unknown reason, so turn it off.  */
+#undef INCOMING_RETURN_ADDR_RTX

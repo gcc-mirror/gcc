@@ -1,5 +1,5 @@
 /* Analyze RTL for C-Compiler
-   Copyright (C) 1987, 88, 9-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,10 +20,14 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 
-void note_stores ();
-int reg_set_p ();
+static int rtx_addr_can_trap_p	PROTO((rtx));
+
+
+/* Forward declarations */
+static int jmp_uses_reg_or_mem		PROTO((rtx));
 
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
@@ -105,6 +109,9 @@ rtx_varies_p (x)
       /* The operand 0 of a LO_SUM is considered constant
 	 (in fact is it related specifically to operand 1).  */
       return rtx_varies_p (XEXP (x, 1));
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -117,7 +124,7 @@ rtx_varies_p (x)
 
 /* Return 0 if the use of X as an address in a MEM can cause a trap.  */
 
-int
+static int
 rtx_addr_can_trap_p (x)
      register rtx x;
 {
@@ -149,6 +156,9 @@ rtx_addr_can_trap_p (x)
 
     case LO_SUM:
       return rtx_addr_can_trap_p (XEXP (x, 1));
+      
+    default:
+      break;
     }
 
   /* If it isn't one of the case above, it can cause a trap.  */
@@ -274,6 +284,9 @@ reg_mentioned_p (reg, in)
     case CONST_DOUBLE:
       /* These are kept unique for a given value.  */
       return 0;
+      
+    default:
+      break;
     }
 
   if (GET_CODE (reg) == code && rtx_equal_p (reg, in))
@@ -364,13 +377,13 @@ reg_referenced_p (x, body)
 			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
 	  && reg_overlap_mentioned_p (x, SET_DEST (body)))
 	return 1;
-      break;
+      return 0;
 
     case ASM_OPERANDS:
       for (i = ASM_OPERANDS_INPUT_LENGTH (body) - 1; i >= 0; i--)
 	if (reg_overlap_mentioned_p (x, ASM_OPERANDS_INPUT (body, i)))
 	  return 1;
-      break;
+      return 0;
 
     case CALL:
     case USE:
@@ -385,10 +398,11 @@ reg_referenced_p (x, body)
       for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
 	if (reg_referenced_p (x, XVECEXP (body, 0, i)))
 	  return 1;
-      break;
+      return 0;
+      
+    default:
+      return 0;
     }
-
-  return 0;
 }
 
 /* Nonzero if register REG is referenced in an insn between
@@ -439,7 +453,7 @@ static int reg_set_flag;
 
 static void
 reg_set_p_1 (x, pat)
-     rtx x;
+     rtx x, pat;
 {
   /* We don't want to return 1 if X is a MEM that contains a register
      within REG_SET_REG.  */
@@ -517,6 +531,9 @@ modified_between_p (x, start, end)
 
     case REG:
       return reg_set_between_p (x, start, end);
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -569,6 +586,9 @@ modified_in_p (x, insn)
 
     case REG:
       return reg_set_p (x, insn);
+
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -749,6 +769,9 @@ refers_to_regno_p (regno, endregno, x, loc)
 	return 0;
       x = SET_SRC (x);
       goto repeat;
+
+    default:
+      break;
     }
 
   /* X does not match, so try its subexpressions.  */
@@ -1404,6 +1427,9 @@ volatile_insn_p (x)
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
+
+    default:
+      break;
     }
 
   /* Recursively scan the operands of this expression.  */
@@ -1467,6 +1493,9 @@ volatile_refs_p (x)
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
+
+    default:
+      break;
     }
 
   /* Recursively scan the operands of this expression.  */
@@ -1539,6 +1568,9 @@ side_effects_p (x)
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
+
+    default:
+      break;
     }
 
   /* Recursively scan the operands of this expression.  */
@@ -1607,16 +1639,20 @@ may_trap_p (x)
     case MOD:
     case UDIV:
     case UMOD:
-      if (! CONSTANT_P (XEXP (x, 1)))
+      if (! CONSTANT_P (XEXP (x, 1))
+	  || GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
 	return 1;
       /* This was const0_rtx, but by not using that,
 	 we can link this file into other programs.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT && INTVAL (XEXP (x, 1)) == 0)
 	return 1;
+      break;
+
     case EXPR_LIST:
       /* An EXPR_LIST is used to represent a function call.  This
 	 certainly may trap.  */
       return 1;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
@@ -1675,6 +1711,9 @@ inequality_comparisons_p (x)
     case GE:
     case GEU:
       return 1;
+      
+    default:
+      break;
     }
 
   len = GET_RTX_LENGTH (code);
@@ -1830,6 +1869,9 @@ replace_regs (x, reg_map, nregs, replace_dest)
 
       SET_SRC (x) = replace_regs (SET_SRC (x), reg_map, nregs, 0);
       return x;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -1846,4 +1888,95 @@ replace_regs (x, reg_map, nregs, replace_dest)
 	}
     }
   return x;
+}
+
+/* Return 1 if X, the SRC_SRC of  SET of (pc) contain a REG or MEM that is
+   not in the constant pool and not in the condition of an IF_THEN_ELSE.  */
+
+static int
+jmp_uses_reg_or_mem (x)
+     rtx x;
+{
+  enum rtx_code code = GET_CODE (x);
+  int i, j;
+  char *fmt;
+
+  switch (code)
+    {
+    case CONST:
+    case LABEL_REF:
+    case PC:
+      return 0;
+
+    case REG:
+      return 1;
+
+    case MEM:
+      return ! (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)));
+
+    case IF_THEN_ELSE:
+      return (jmp_uses_reg_or_mem (XEXP (x, 1))
+	      || jmp_uses_reg_or_mem (XEXP (x, 2)));
+
+    case PLUS:  case MINUS:  case MULT:
+      return (jmp_uses_reg_or_mem (XEXP (x, 0))
+	      || jmp_uses_reg_or_mem (XEXP (x, 1)));
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e'
+	  && jmp_uses_reg_or_mem (XEXP (x, i)))
+	return 1;
+
+      if (fmt[i] == 'E')
+	for (j = 0; j < XVECLEN (x, i); j++)
+	  if (jmp_uses_reg_or_mem (XVECEXP (x, i, j)))
+	    return 1;
+    }
+
+  return 0;
+}
+
+/* Return nonzero if INSN is an indirect jump (aka computed jump).
+
+   Tablejumps and casesi insns are not considered indirect jumps;
+   we can recognize them by a (use (lael_ref)).  */
+
+int
+computed_jump_p (insn)
+     rtx insn;
+{
+  int i;
+  if (GET_CODE (insn) == JUMP_INSN)
+    {
+      rtx pat = PATTERN (insn);
+      int computed_jump = 0;
+
+      if (GET_CODE (pat) == PARALLEL)
+	{
+	  int len = XVECLEN (pat, 0);
+	  int has_use_labelref = 0;
+
+	  for (i = len - 1; i >= 0; i--)
+	    if (GET_CODE (XVECEXP (pat, 0, i)) == USE
+		&& (GET_CODE (XEXP (XVECEXP (pat, 0, i), 0))
+		    == LABEL_REF))
+	      has_use_labelref = 1;
+
+	  if (! has_use_labelref)
+	    for (i = len - 1; i >= 0; i--)
+	      if (GET_CODE (XVECEXP (pat, 0, i)) == SET
+		  && SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
+		  && jmp_uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
+		return 1;
+	}
+      else if (GET_CODE (pat) == SET
+	       && SET_DEST (pat) == pc_rtx
+	       && jmp_uses_reg_or_mem (SET_SRC (pat)))
+	return 1;
+    }
+  return 0;
 }

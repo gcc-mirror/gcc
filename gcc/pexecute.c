@@ -23,11 +23,14 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
+#ifdef IN_GCC
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <errno.h>
 
 #ifdef IN_GCC
-#include "config.h"
 #include "gansidecl.h"
 /* ??? Need to find a suitable header file.  */
 #define PEXECUTE_FIRST   1
@@ -217,11 +220,17 @@ pwait (pid, status, flags)
 
 #endif /* MSDOS */
 
-#if defined (_WIN32) && !defined (__CYGWIN32__)
+#if defined (_WIN32)
 
 #include <process.h>
 extern int _spawnv ();
 extern int _spawnvp ();
+
+#ifdef __CYGWIN32__
+
+#define fix_argv(argvec) (argvec)
+
+#else
 
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
    to remove the outermost set of double quotes from all arguments.  */
@@ -243,7 +252,7 @@ fix_argv (argvec)
         {
           if (temp[j] == '"')
             {
-              newtemp = xmalloc (len + 2);
+              newtemp = (char *) xmalloc (len + 2);
               strncpy (newtemp, temp, j);
               newtemp [j] = '\\';
               strncpy (&newtemp [j+1], &temp [j], len-j);
@@ -259,6 +268,8 @@ fix_argv (argvec)
 
   return (const char * const *) argvec;
 }
+
+#endif /* ! defined (__CYGWIN32__) */
 
 int
 pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
@@ -396,7 +407,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 	  /* See if we have an argument that needs fixing.  */
 	  if (strchr(argv[i], '/'))
 	    {
-	      tmpname = xmalloc (256);
+	      tmpname = (char *) xmalloc (256);
 	      mpwify_filename (argv[i], tmpname);
 	      argv[i] = tmpname;
 	    }
@@ -421,7 +432,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       /* See if we have an argument that needs fixing.  */
       if (strchr(argv[i], '/'))
 	{
-	  tmpname = xmalloc (256);
+	  tmpname = (char *) xmalloc (256);
 	  mpwify_filename (argv[i], tmpname);
 	  argv[i] = tmpname;
 	}
@@ -478,7 +489,7 @@ pfinish ()
 
 /* include for Unix-like environments but not for Dos-like environments */
 #if ! defined (__MSDOS__) && ! defined (OS2) && ! defined (MPW) \
-    && (defined (__CYGWIN32__) || ! defined (_WIN32))
+    && ! defined (_WIN32)
 
 #ifdef VMS
 #define vfork() (decc$$alloc_vfork_blocks() >= 0 ? \

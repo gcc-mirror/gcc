@@ -28,11 +28,15 @@ Written by Per Bothner 1994.  */
 #include "cpplib.h"
 
 extern char *xmalloc PARAMS ((unsigned));
-extern char *xrealloc PARAMS ((char *, unsigned));
+extern char *xrealloc PARAMS ((void *, unsigned));
 
 #ifdef MULTIBYTE_CHARS
 #include <stdlib.h>
 #include <locale.h>
+#endif
+
+#if HAVE_LIMITS_H
+# include <limits.h>
 #endif
 
 #include <stdio.h>
@@ -126,16 +130,34 @@ static long right_shift ();
 #define SKIP_OPERAND 8
 /*#define UNSIGNEDP 16*/
 
-#ifndef HOST_BITS_PER_WIDE_INT
+/* Find the largest host integer type and set its size and type.
+   Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
+#ifndef HOST_WIDE_INT
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+#  define HOST_WIDE_INT intmax_t
+# else
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
+       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#   define HOST_WIDE_INT int
+#  else
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
+       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#   define HOST_WIDE_INT long
+#  else
+#   define HOST_WIDE_INT long long
+#  endif
+#  endif
+# endif
 #endif
 
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif
+
+#ifndef HOST_BITS_PER_WIDE_INT
+#define HOST_BITS_PER_WIDE_INT (CHAR_BIT * sizeof (HOST_WIDE_INT))
 #endif
 
 struct operation {
@@ -367,7 +389,7 @@ cpp_lex (pfile, skip_evaluation)
 	  {
 	    if (c == '\\')
 	      {
-		c = cpp_parse_escape (pfile, &ptr);
+		c = cpp_parse_escape (pfile, (char **) &ptr);
 		if (width < HOST_BITS_PER_INT
 		  && (unsigned) c >= (1 << width))
 		    cpp_pedwarn (pfile,
@@ -406,7 +428,7 @@ cpp_lex (pfile, skip_evaluation)
 	  {
 	    int num_bits = num_chars * width;
 
-	    if (cpp_lookup (pfile, "__CHAR_UNSIGNED__",
+	    if (cpp_lookup (pfile, (U_CHAR *)"__CHAR_UNSIGNED__",
 			    sizeof ("__CHAR_UNSIGNED__")-1, -1)
 		|| ((result >> (num_bits - 1)) & 1) == 0)
 		op.value

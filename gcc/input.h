@@ -1,7 +1,6 @@
 /* Declarations for variables relating to reading the source file.
    Used by parsers, lexical analyzers, and error message routines.
-
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -37,6 +36,7 @@ struct file_stack
     char *name;
     struct file_stack *next;
     int line;
+    int indent_level;
   };
 
 /* Stack of currently pending input files.

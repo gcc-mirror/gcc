@@ -199,3 +199,6 @@ do {								\
 	     TREE_CODE (DECL) == FUNCTION_DECL			\
 	     ? "discard" : "same_size");			\
 } while (0)
+
+#undef ASM_COMMENT_START
+#define ASM_COMMENT_START " #"

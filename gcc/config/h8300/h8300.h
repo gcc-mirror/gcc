@@ -351,7 +351,7 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS  			\
 {      0,		/* No regs      */	\
-   0x0ff,		/* GENERAL_REGS */    	\
+   0x2ff,		/* GENERAL_REGS */    	\
    0x100,		/* MAC_REGS */    	\
    0x3ff,		/* ALL_REGS 	*/	\
 }
@@ -780,7 +780,9 @@ struct rtx_def *function_arg();
 #define REG_OK_FOR_INDEX_P(X) 0
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X) 1
+/* Don't use REGNO_OK_FOR_BASE_P here because it uses reg_renumber.  */
+#define REG_OK_FOR_BASE_P(X) \
+	(REGNO (X) >= FIRST_PSEUDO_REGISTER || REGNO (X) != 8)
 #define REG_OK_FOR_INDEX_P_STRICT(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 #define REG_OK_FOR_BASE_P_STRICT(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 #define STRICT 0
@@ -862,9 +864,7 @@ struct rtx_def *function_arg();
    has an effect that depends on the machine mode it is used for.
 
    On the H8/300, the predecrement and postincrement address depend thus
-   (the amount of decrement or increment being the length of the operand)
-   and all indexed address depend thus (because the index scale factor
-   is the length of the operand).  */
+   (the amount of decrement or increment being the length of the operand).  */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL) \
   if (GET_CODE (ADDR) == POST_INC || GET_CODE (ADDR) == PRE_DEC) goto LABEL;
@@ -986,7 +986,7 @@ h8300_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 /* Tell final.c how to eliminate redundant test instructions.  */
 
 /* Here we define machine-dependent flags and fields in cc_status
-   (see `conditions.h').  No extra ones are needed for the vax.  */
+   (see `conditions.h').  No extra ones are needed for the h8300.  */
 
 /* Store in cc_status the expressions
    that the condition codes will describe
@@ -1347,7 +1347,7 @@ do { char dstr[30];					\
 #define PRINT_OPERAND(FILE, X, CODE)  print_operand(FILE,X,CODE)
 
 /* Print a memory operand whose address is X, on file FILE.
-   This uses a function in output-vax.c.  */
+   This uses a function in h8300.c.  */
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 

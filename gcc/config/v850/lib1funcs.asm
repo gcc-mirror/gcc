@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL entire file v850/law */
 /* libgcc1 routines for NEC V850.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
@@ -1158,7 +1157,7 @@ __save_r6_r9:
 	.align	2
 	.globl	__save_interrupt
 	.type	__save_interrupt,@function
-	/* Save registers r1, r5 on stack and load up with expected values */
+	/* Save registers r1, r4 on stack and load up with expected values */
 	/* Note, 12 bytes of stack have already been allocated. */
 	/* Called via:	jalr __save_interrupt,r10 */
 __save_interrupt:
@@ -1180,9 +1179,9 @@ __save_interrupt:
 __return_interrupt:
 	ld.w	0[sp],ep
 	ld.w	4[sp],gp
-	ld.w	8[ep],r1
-	ld.w	12[ep],r10
-	add	12,sp
+	ld.w	8[sp],r1
+ 	ld.w	12[sp],r10
+	add	16,sp
 	reti
 	.size	__return_interrupt,.-__return_interrupt
 #endif /* L_save_interrupt */
@@ -1268,4 +1267,3 @@ __restore_all_interrupt:
 	jmp	[r10]
 	.size	__restore_all_interrupt,.-__restore_all_interrupt
 #endif /* L_save_all_interrupt */
-/* END CYGNUS LOCAL */

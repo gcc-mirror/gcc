@@ -1,5 +1,5 @@
 /* ANSI and traditional C compatability macros.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -43,14 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #define PVPROTO(ARGS)		()
 #define VPROTO(ARGS)            (va_alist) va_dcl
 #define VA_START(va_list,var)  va_start(va_list)
-#endif
-#endif
-
-#ifndef STDIO_PROTO
-#ifdef BUFSIZ
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
 #endif
 #endif
 

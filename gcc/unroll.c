@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -147,13 +147,14 @@ struct _factor { int factor, count; } factors[NUM_FACTORS]
 enum unroll_types { UNROLL_COMPLETELY, UNROLL_MODULO, UNROLL_NAIVE };
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"
 #include "integrate.h"
 #include "regs.h"
+#include "recog.h"
 #include "flags.h"
 #include "expr.h"
-#include <stdio.h>
 #include "loop.h"
 
 /* This controls which loops are unrolled, and by how much we unroll
@@ -1469,10 +1470,11 @@ calculate_giv_inc (pattern, src_insn, regno)
       if (GET_CODE (increment) == LO_SUM)
 	increment = XEXP (increment, 1);
       else if (GET_CODE (increment) == IOR
-	       || GET_CODE (increment) == ASHIFT)
+	       || GET_CODE (increment) == ASHIFT
+	       || GET_CODE (increment) == PLUS)
 	{
 	  /* The rs6000 port loads some constants with IOR.
-	     The alpha port loads some constants with ASHIFT.  */
+	     The alpha port loads some constants with ASHIFT and PLUS.  */
 	  rtx second_part = XEXP (increment, 1);
 	  enum rtx_code code = GET_CODE (increment);
 
@@ -1487,6 +1489,8 @@ calculate_giv_inc (pattern, src_insn, regno)
 
 	  if (code == IOR)
 	    increment = GEN_INT (INTVAL (increment) | INTVAL (second_part));
+	  else if (code == PLUS)
+	    increment = GEN_INT (INTVAL (increment) + INTVAL (second_part));
 	  else
 	    increment = GEN_INT (INTVAL (increment) << INTVAL (second_part));
 	}
@@ -3561,6 +3565,10 @@ remap_split_bivs (x)
       if (REGNO (x) < max_reg_before_loop
 	  && reg_iv_type[REGNO (x)] == BASIC_INDUCT)
 	return reg_biv_class[REGNO (x)]->biv->src_reg;
+      break;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);

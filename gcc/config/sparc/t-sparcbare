@@ -1,4 +1,4 @@
-# configuration file for a bare sparc cpu, aout format files
+# configuration file for a bare sparc cpu
 
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = sparc/lb1spc.asm

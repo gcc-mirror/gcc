@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel 80386
    running FreeBSD.
-   Copyright (C) 1988, 1992, 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Poul-Henning Kamp <phk@login.dkuug.dk>
 
 This file is part of GNU CC.
@@ -224,9 +224,9 @@ do {                                                                    \
 #ifdef FREEBSD_NATIVE
 
 #define INCLUDE_DEFAULTS { \
-	{ "/usr/include", 0 }, \
-	{ "/usr/include/g++", 1 }, \
-	{ 0, 0} \
+	{ "/usr/include", 0, 0, 0 }, \
+	{ "/usr/include/g++", "G++", 1, 1 }, \
+	{ 0, 0, 0, 0} \
 	}
 
 #undef MD_EXEC_PREFIX

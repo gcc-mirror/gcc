@@ -1,7 +1,7 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989, 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
@@ -21,8 +21,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "flags.h"
 #include "tree.h"
 #include "c-tree.h"

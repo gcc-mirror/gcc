@@ -1,5 +1,5 @@
 /* Subroutines used by or related to instruction recognition.
-   Copyright (C) 1987, 1988, 1991-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 91-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,8 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include "rtl.h"
 #include <stdio.h>
+#include "rtl.h"
 #include "insn-config.h"
 #include "insn-attr.h"
 #include "insn-flags.h"
@@ -43,8 +43,7 @@ Boston, MA 02111-1307, USA.  */
 /* Import from final.c: */
 extern rtx alter_subreg ();
 
-int strict_memory_address_p ();
-int memory_address_p ();
+static rtx *find_single_use_1 PROTO((rtx, rtx *));
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
@@ -505,6 +504,9 @@ validate_replace_rtx_1 (loc, from, to, object)
 	}
 
       break;
+      
+    default:
+      break;
     }
       
   fmt = GET_RTX_FORMAT (code);
@@ -627,6 +629,9 @@ find_single_use_1 (dest, loc)
     case MEM:
     case SUBREG:
       return find_single_use_1 (dest, &XEXP (x, 0));
+      
+    default:
+      break;
     }
 
   /* If it wasn't one of the common cases above, check each expression and
@@ -819,10 +824,18 @@ general_operand (op, mode)
       register rtx y = XEXP (op, 0);
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
+      if (GET_CODE (y) == ADDRESSOF)
+	return 1;
       /* Use the mem's mode, since it will be reloaded thus.  */
       mode = GET_MODE (op);
       GO_IF_LEGITIMATE_ADDRESS (mode, y, win);
     }
+
+  /* Pretend this is an operand for now; we'll run force_operand
+     on its replacement in fixup_var_refs_1.  */
+  if (code == ADDRESSOF)
+    return 1;
+
   return 0;
 
  win:
@@ -1058,6 +1071,9 @@ memory_address_p (mode, addr)
      enum machine_mode mode;
      register rtx addr;
 {
+  if (GET_CODE (addr) == ADDRESSOF)
+    return 1;
+  
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
   return 0;
 

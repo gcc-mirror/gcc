@@ -1,5 +1,5 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -213,6 +214,7 @@ rtx chkr_check_addr_libfunc;
 rtx chkr_set_right_libfunc;
 rtx chkr_copy_bitmap_libfunc;
 rtx chkr_check_exec_libfunc;
+rtx chkr_check_str_libfunc;
 
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
@@ -2959,6 +2961,9 @@ emit_float_lib_cmp (x, y, comparison)
       case LE:
 	libfunc = lehf2_libfunc;
 	break;
+
+      default:
+	break;
       }
   else if (mode == SFmode)
     switch (comparison)
@@ -2985,6 +2990,9 @@ emit_float_lib_cmp (x, y, comparison)
 
       case LE:
 	libfunc = lesf2_libfunc;
+	break;
+
+      default:
 	break;
       }
   else if (mode == DFmode)
@@ -3013,6 +3021,9 @@ emit_float_lib_cmp (x, y, comparison)
       case LE:
 	libfunc = ledf2_libfunc;
 	break;
+
+      default:
+	break;
       }
   else if (mode == XFmode)
     switch (comparison)
@@ -3040,6 +3051,9 @@ emit_float_lib_cmp (x, y, comparison)
       case LE:
 	libfunc = lexf2_libfunc;
 	break;
+
+      default:
+	break;
       }
   else if (mode == TFmode)
     switch (comparison)
@@ -3066,6 +3080,9 @@ emit_float_lib_cmp (x, y, comparison)
 
       case LE:
 	libfunc = letf2_libfunc;
+	break;
+
+      default:
 	break;
       }
   else
@@ -4379,6 +4396,7 @@ init_optabs ()
   chkr_set_right_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_set_right");
   chkr_copy_bitmap_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_copy_bitmap");
   chkr_check_exec_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_exec");
+  chkr_check_str_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_str");
 
 #ifdef INIT_TARGET_OPTABS
   /* Allow the target to add more libcalls or rename some, etc.  */

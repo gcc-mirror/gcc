@@ -34,8 +34,8 @@ Boston, MA 02111-1307, USA.  */
    Most of the complexity is in heuristics to decide when it is worth
    while to do these things.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "obstack.h"
 #include "expr.h"
@@ -258,7 +258,9 @@ static void count_loop_regs_set ();
 static void note_addr_stored ();
 static int loop_reg_used_before_p ();
 static void scan_loop ();
+#if 0
 static void replace_call_address ();
+#endif
 static rtx skip_consec_insns ();
 static int libcall_benefit ();
 static void ignore_some_movables ();
@@ -741,11 +743,9 @@ scan_loop (loop_start, end, nregs)
 		  && n_times_set[REGNO (SET_DEST (set))] == 1
 		  && ! side_effects_p (SET_SRC (set))
 		  && ! find_reg_note (p, REG_RETVAL, NULL_RTX)
-#ifdef SMALL_REGISTER_CLASSES
-		  && ! (SMALL_REGISTER_CLASSES
-			&& GET_CODE (SET_SRC (set)) == REG
-			&& REGNO (SET_SRC (set)) < FIRST_PSEUDO_REGISTER)
-#endif
+		  && (! SMALL_REGISTER_CLASSES
+		      || (! (GET_CODE (SET_SRC (set)) == REG
+			     && REGNO (SET_SRC (set)) < FIRST_PSEUDO_REGISTER)))
 		  /* This test is not redundant; SET_SRC (set) might be
 		     a call-clobbered register and the life of REGNO
 		     might span a call.  */
@@ -1008,6 +1008,9 @@ record_excess_regs (in_this, not_in_this, output)
 	  && ! reg_mentioned_p (in_this, not_in_this))
 	*output = gen_rtx (EXPR_LIST, VOIDmode, in_this, *output);
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -1095,6 +1098,9 @@ reg_in_basic_block_p (insn, reg)
 	case BARRIER:
 	  /* It's the end of the basic block, so we lose.  */
 	  return 0;
+	  
+	default:
+	  break;
 	}
     }
 
@@ -1251,7 +1257,9 @@ combine_movables (movables, nregs)
 	bzero (matched_regs, nregs);
 	matched_regs[regno] = 1;
 
-	for (m1 = movables; m1; m1 = m1->next)
+	/* We want later insns to match the first one.  Don't make the first
+	   one match any later ones.  So start this loop at m->next.  */
+	for (m1 = m->next; m1; m1 = m1->next)
 	  if (m != m1 && m1->match == 0 && n_times_used[m1->regno] == 1
 	      /* A reg used outside the loop mustn't be eliminated.  */
 	      && !m1->global
@@ -2043,6 +2051,9 @@ replace_call_address (x, reg, addr)
 	abort ();
       XEXP (x, 0) = addr;
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -2091,6 +2102,9 @@ count_nonfixed_reads (x)
     case MEM:
       return ((invariant_p (XEXP (x, 0)) != 1)
 	      + count_nonfixed_reads (XEXP (x, 0)));
+      
+    default:
+      break;
     }
 
   value = 0;
@@ -2272,6 +2286,8 @@ find_and_verify_loops (f)
 	    current_loop = loop_outer_loop[current_loop];
 	    break;
 
+	  default:
+	    break;
 	  }
 
       /* Note that this will mark the NOTE_INSN_LOOP_END note as being in the
@@ -2806,6 +2822,10 @@ invariant_p (x)
       /* Don't mess with insns declared volatile.  */
       if (MEM_VOLATILE_P (x))
 	return 0;
+      break;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -3961,7 +3981,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 			      other_giv = tv;
 			  }
 		      if (! tv && other_giv
-			  && REGNO (other_giv->dest_reg) <= max_reg_before_loop
+			  && REGNO (other_giv->dest_reg) < max_reg_before_loop
 			  && (REGNO_LAST_UID (REGNO (other_giv->dest_reg))
 			      == INSN_UID (v->insn))
 			  && INSN_LUID (v->insn) < INSN_LUID (bl->biv->insn))
@@ -4278,14 +4298,8 @@ valid_initial_value_p (x, insn, call_seen, loop_start)
   /* Don't use call-clobbered registers across a call which clobbers it.  On
      some machines, don't use any hard registers at all.  */
   if (REGNO (x) < FIRST_PSEUDO_REGISTER
-      && (
-#ifdef SMALL_REGISTER_CLASSES
-          SMALL_REGISTER_CLASSES
-#else
-	  0
-#endif
-	    || (call_used_regs[REGNO (x)] && call_seen))
-      )
+      && (SMALL_REGISTER_CLASSES
+	  || (call_used_regs[REGNO (x)] && call_seen)))
     return 0;
 
   /* Don't use registers that have been clobbered before the start of the
@@ -4356,8 +4370,11 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
 
 	    v->mem_mode = GET_MODE (x);
 	  }
-	return;
       }
+      return;
+
+    default:
+      break;
     }
 
   /* Recursively scan the subexpressions for other mem refs.  */
@@ -4777,8 +4794,7 @@ check_final_value (v, loop_start, loop_end)
 		      break;
 		    }
 		}
-	      else if (GET_CODE (PATTERN (p)) == SET
-		       && SET_DEST (PATTERN (p)) == v->src_reg)
+	      else if (reg_set_p (v->src_reg, PATTERN (p)))
 		biv_increment_seen = 1;
 	      else if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
 		last_giv_use = p;
@@ -5433,6 +5449,9 @@ simplify_giv_expr (x, benefit)
 	      tem = gen_rtx (MINUS, mode, tem, v->derive_adjustment);
 	    return simplify_giv_expr (tem, benefit);
 	  }
+
+	default:
+	  break;
 	}
 
       /* Fall through to general case.  */
@@ -6047,21 +6066,47 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	    fprintf (loop_dump_stream, "Can reverse loop\n");
 
 	  /* Now check other conditions:
-	     initial_value must be zero,
-	     final_value % add_val == 0, so that when reversed, the
-	     biv will be zero on the last iteration.
+
+	     The increment must be a constant and the comparison code
+	     must be LT. 
 
 	     This test can probably be improved since +/- 1 in the constant
 	     can be obtained by changing LT to LE and vice versa; this is
 	     confusing.  */
 
-	  if (comparison && bl->initial_value == const0_rtx
+	  if (comparison
 	      && GET_CODE (XEXP (comparison, 1)) == CONST_INT
 	      /* LE gets turned into LT */
-	      && GET_CODE (comparison) == LT
-	      && (INTVAL (XEXP (comparison, 1))
-		  % INTVAL (bl->biv->add_val)) == 0)
+	      && GET_CODE (comparison) == LT)
 	    {
+	      HOST_WIDE_INT add_val, comparison_val;
+	      rtx initial_value;
+
+	      add_val = INTVAL (bl->biv->add_val);
+	      comparison_val = INTVAL (XEXP (comparison, 1));
+	      initial_value = bl->initial_value;
+		
+	      /* Normalize the initial value if it has no other use
+		 except as a counter.  This will allow a few more loops
+		 to be reversed.  */
+	      if (no_use_except_counting)
+		{
+		  comparison_val = comparison_val - INTVAL (bl->initial_value);
+		  initial_value = const0_rtx;
+		}
+
+	      /* If the initial value is not zero, or if the comparison
+		 value is not an exact multiple of the increment, then we
+		 can not reverse this loop.  */
+	      if (initial_value != const0_rtx
+		  || (comparison_val % add_val) != 0)
+		return 0;
+
+	      /* Reset these in case we normalized the initial value
+		 and comparison value above.  */
+	      bl->initial_value = initial_value;
+	      XEXP (comparison, 1) = GEN_INT (comparison_val);
+
 	      /* Register will always be nonnegative, with value
 		 0 on last iteration if loop reversed */
 
@@ -6574,6 +6619,9 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 	if (v->giv_type == DEST_ADDR && v->location == &XEXP (x, 0))
 	  return 1;
       break;
+
+    default:
+      break;
     }
 
   /* See if any subexpression fails elimination.  */
@@ -6890,6 +6938,9 @@ get_condition (jump, earliest)
 	case GEU:
 	  if (uconst_val != 0)
 	    code = GTU, op1 = GEN_INT (uconst_val - 1);
+	  break;
+
+	default:
 	  break;
 	}
     }

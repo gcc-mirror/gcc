@@ -1,5 +1,5 @@
 /* Language-specific hook definitions for C front end.
-   Copyright (C) 1991, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -137,7 +137,6 @@ void
 finish_file ()
 {
   extern tree static_ctors, static_dtors;
-  extern tree get_file_function_name ();
   extern tree build_function_call                 PROTO((tree, tree));
   tree void_list_node = build_tree_list (NULL_TREE, void_type_node);
 #ifndef ASM_OUTPUT_CONSTRUCTOR

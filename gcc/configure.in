@@ -22,7 +22,7 @@
 
 # Initialization and defaults
 AC_INIT(tree.c)
-AC_CONFIG_HEADER(config.h:config.in)
+AC_CONFIG_HEADER(auto-config.h:config.in)
 
 native_prefix=/usr
 remove=rm
@@ -121,23 +121,27 @@ esac
 # Determine the host, build, and target systems
 AC_CANONICAL_SYSTEM
 
-# Find some useful tools
-AC_PROG_AWK
-AC_PROG_LEX
-AC_PROG_LN_S
-AC_PROG_RANLIB
-AC_PROG_YACC
-AC_PROG_INSTALL
-
 # Find the native compiler
 AC_PROG_CC
 AC_PROG_MAKE_SET
 
-AC_CHECK_HEADERS(stddef.h string.h strings.h stdlib.h time.h unistd.h)
+# Find some useful tools
+AC_PROG_AWK
+AC_PROG_LEX
+AC_PROG_RANLIB
+AC_PROG_YACC
+AC_PROG_INSTALL
+
+AC_CHECK_HEADERS(inttypes.h limits.h stddef.h string.h strings.h stdlib.h time.h unistd.h)
 
 GCC_NEED_DECLARATION(malloc)
 GCC_NEED_DECLARATION(realloc)
+GCC_NEED_DECLARATION(calloc)
 GCC_NEED_DECLARATION(free)
+
+AC_DECL_SYS_SIGLIST
+
+AC_CHECK_FUNCS(strerror)
 
 # File extensions
 manext='.1'
@@ -275,21 +279,31 @@ for machine in $build $host $target; do
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
 		;;
-	alpha*-*-linux-gnu*)
+	alpha*-*-linux-gnulibc1*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
 		target_cpu_default="MASK_GAS"
-		gas=no
-		tmake_file="t-linux alpha/t-linux"
+		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
-		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gas=yes gnu_ld=yes
  		if [[ x$enable_threads = xyes ]]; then
  			thread_file='posix'
  		fi
 		;;
-	alpha*-dec-osf[[456789]]*)
+	alpha*-*-linux-gnu*)
+		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
+		xm_file="${xm_file} alpha/xm-linux.h"
+		target_cpu_default="MASK_GAS"
+		tmake_file="t-linux alpha/t-linux"
+		xmake_file=none
+		fixincludes=Makefile.in
+		gas=yes gnu_ld=yes
+ 		if [[ x$enable_threads = xyes ]]; then
+ 			thread_file='posix'
+ 		fi
+		;;
+	alpha*-dec-osf*)
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -300,51 +314,24 @@ for machine in $build $host $target; do
 		fi
 		broken_install=yes
 		use_collect2=yes
-		# Some versions of OSF4 (specifically X4.0-9 296.7) have
-		# a broken tar, so we use cpio instead.
 		case $machine in
-		  alpha*-dec-osf4*)
+		  *-*-osf1.2)
+		    tm_file="${tm_file} alpha/osf12.h alpha/osf2or3.h"
+		    ;;
+		  *-*-osf[[23]]*)
+		    tm_file="${tm_file} alpha/osf2or3.h"
+		    ;;
+		  *-*-osf4*)
+		    # Some versions of OSF4 (specifically X4.0-9 296.7) have
+		    # a broken tar, so we use cpio instead.
 		    install_headers_dir=install-headers-cpio
 		    ;;
 		esac
-		;;
-	alpha*-dec-osf[[23]]*)
-		tm_file="${tm_file} alpha/osf2or3.h"
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		broken_install=yes
-		use_collect2=yes
-		;;
-	alpha*-dec-osf1.2)
-		tm_file="${tm_file} alpha/osf12.h"
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		broken_install=yes
-		use_collect2=yes
-		;;
-	alpha*-*-osf*)
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		broken_install=yes
-		use_collect2=yes
+		case $machine in
+		  *-*-osf4.0[[b-z]] | *-*-osf4.[[1-9]]*)
+		    target_cpu_default=MASK_SUPPORT_ARCH
+		    ;;
+		esac
 		;;
 	alpha*-*-winnt3*)
 		tm_file="${tm_file} alpha/win-nt.h"
@@ -368,6 +355,9 @@ for machine in $build $host $target; do
 		xm_file="${xm_file} alpha/xm-vms.h"
 		tmake_file=alpha/t-vms
 		fixincludes=Makefile.in
+		;;
+	arc-*-elf*)
+		extra_parts="crtinit.o crtfini.o"
 		;;
 	arm-*-coff* | armel-*-coff*)
 		tm_file=arm/coff.h
@@ -401,9 +391,9 @@ for machine in $build $host $target; do
 	arm-*-netbsd*)
 		tm_file=arm/netbsd.h
 		xm_file=arm/xm-netbsd.h
-		tmake_file=arm/t-netbsd
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		tmake_file="t-netbsd arm/t-netbsd"
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		use_collect2=yes
 		;;
 	arm-*-linux-gnuaout*)		# ARM Linux
@@ -418,6 +408,7 @@ for machine in $build $host $target; do
 		;;
 	arm-*-aout)
 		tm_file=arm/aout.h
+		tmake_file=arm/t-bare
 		;;
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
@@ -741,8 +732,8 @@ for machine in $build $host $target; do
 	i[[3456]]86-*-freebsdelf*)
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
 		xm_file=i386/xm-freebsd.h
-		# On FreeBSD, the headers are already ok.
-		fixincludes=Makefile.in
+		# On FreeBSD, the headers are already ok, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
 		gas=yes
 		gnu_ld=yes
@@ -751,15 +742,15 @@ for machine in $build $host $target; do
 	i[[3456]]86-*-freebsd*)
 		tm_file=i386/freebsd.h
 		xm_file=i386/xm-freebsd.h
-		# On FreeBSD, the headers are already ok.
-		fixincludes=Makefile.in
+		# On FreeBSD, the headers are already ok, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
 		;;
 	i[[3456]]86-*-netbsd*)
 		tm_file=i386/netbsd.h
 		xm_file=i386/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
 	i[[3456]]86-*-coff*)
@@ -943,7 +934,7 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-sol2
 		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
-		fixincludes=fixinc.svr4
+		fixincludes=fixinc.math
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
@@ -1432,8 +1423,8 @@ for machine in $build $host $target; do
 	m68k-*-netbsd*)
 		tm_file=m68k/netbsd.h
 		xm_file=m68k/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
 	m68k-*-sysv3*)			# Motorola m68k's running system V.3
@@ -1739,8 +1730,8 @@ for machine in $build $host $target; do
 	mips-dec-netbsd*)                  # Decstation running NetBSD
 		tm_file=mips/netbsd.h
 		xm_file=mips/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		if [[ x$prefix = xNONE ]]; then
 			prefix=$native_prefix
@@ -2000,6 +1991,14 @@ for machine in $build $host $target; do
 		tm_file=mips/rtems64.h
 		tmake_file="mips/t-ecoff t-rtems"
 		;;
+	mipstx39el-*-elf*)
+		tm_file="mips/r3900.h mips/elfl.h mips/abi64.h libgloss.h"
+		tmake_file=mips/t-ecoff
+		;;
+	mipstx39-*-elf*)
+		tm_file="mips/r3900.h mips/elf.h mips/abi64.h libgloss.h"
+		tmake_file=mips/t-ecoff
+		;;
 	mips-*-*)				# Default MIPS RISC-OS 4.0.
 		if [[ x$stabs = xyes ]]; then
 			tm_file="${tm_file} dbx.h"
@@ -2075,8 +2074,8 @@ for machine in $build $host $target; do
 	ns32k-pc532-netbsd*)
 		tm_file=ns32k/netbsd.h
 		xm_file=ns32k/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
         pdp11-*-bsd)
@@ -2229,7 +2228,7 @@ for machine in $build $host $target; do
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
 		xmake_file=rs6000/x-sysv4
-		fixincludes=fixinc.svr4
+		fixincludes=fixinc.math
 		extra_headers=ppc-asm.h
 		;;
 	rs6000-ibm-aix3.[[01]]*)
@@ -2281,6 +2280,11 @@ for machine in $build $host $target; do
 		tm_file=sh/elf.h
 		float_format=sh
 		;;
+	sh-*-rtems*)
+		tmake_file="sh/t-sh t-rtems"
+		tm_file=sh/rtems.h
+		float_format=sh
+		;;
 	sh-*-*)
 		float_format=sh
 		;;
@@ -2300,24 +2304,29 @@ for machine in $build $host $target; do
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
 		xm_file=sparc/xm-netbsd.h
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		;;
 	sparc-*-bsd*)
 		tm_file=sparc/bsd.h
 		;;
+	sparc-*-elf*)
+		tm_file="sparc/sol2.h libgloss.h"
+		tmake_file=sparc/t-sparcbare
+		float_format=i128
+		;;
 	sparc-*-linux-gnuaout*)		# Sparc's running Linux, a.out
-		xm_file=sparc/xm-linux.h
+		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnulibc1*)		 # Sparc's running Linux
-		xm_file=sparc/xm-linux.h # with ELF format using the
-		xmake_file=x-linux	 # Linux C library 5.
+	sparc-*-linux-gnulibc1*)	# Sparc's running Linux, libc5
+		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
+		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -2325,9 +2334,9 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnu*)			 # Sparc's running Linux
-		xm_file=sparc/xm-linux.h # with ELF format using glibc 2
-		xmake_file=x-linux	 # aka the Linux C library 6.
+	sparc-*-linux-gnu*)		# Sparc's running Linux, libc6
+		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
+		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
@@ -2359,7 +2368,8 @@ for machine in $build $host $target; do
 		tmake_file=sparc/t-sol2
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
-		fixincludes=fixinc.svr4
+		fixincludes=fixinc.math
+		float_format=i128
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
@@ -2374,6 +2384,9 @@ for machine in $build $host $target; do
 		tm_file=sparc/sunos4.h
 		tmake_file=sparc/t-sunos41
 		use_collect2=yes
+		if [[ x$gas = xyes ]]; then
+			tm_file="${tm_file} sparc/sun4gas.h"
+		fi
 		;;
 	sparc-*-sunos3*)
 		tm_file=sparc/sun4o3.h
@@ -2413,6 +2426,14 @@ for machine in $build $host $target; do
 		tm_file=sparc/sp64-elf.h
 		extra_parts="crtbegin.o crtend.o"
 		;;
+	sparc64-*-linux*)		# 64-bit Sparc's running Linux
+		tmake_file=sparc/t-sp64
+		xm_file="sparc/xm-sp64.h sparc/xm-linux.h"
+		tm_file=sparc/linux64.h
+		xmake_file=x-linux
+		fixincludes=Makefile.in	# On Linux, the headers are ok already.
+		gnu_ld=yes
+		;;
 # This hasn't been upgraded to GCC 2.
 #	tahoe-harris-*)			# Harris tahoe, using COFF.
 #		tm_file=tahoe/harris.h
@@ -2424,6 +2445,16 @@ for machine in $build $host $target; do
 #		cpu_type=gmicro
 #		use_collect2=yes
 #		;;
+	v850-*-*)
+		cpu_type=v850
+		tm_file="v850/v850.h"
+		xm_file="v850/xm-v850.h"
+		if [[ x$stabs = xyes ]]
+		then
+			tm_file="${tm_file} dbx.h"
+		fi
+		use_collect2=no
+		;;
 	vax-*-bsd*)			# vaxen running BSD
 		use_collect2=yes
 		float_format=vax
@@ -2436,8 +2467,8 @@ for machine in $build $host $target; do
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
 		xm_file="${xm_file} xm-netbsd.h"
-		# On NetBSD, the headers are already okay.
-		fixincludes=Makefile.in
+		# On NetBSD, the headers are already okay, except for math.h.
+		fixincludes=fixinc.math
 		tmake_file=t-netbsd
 		float_format=vax
 		;;
@@ -2512,8 +2543,14 @@ for machine in $build $host $target; do
 		;;
 	alpha*-*-*)
 		case $machine in
+			alphaev6*)
+				target_cpu_default2="MASK_CPU_EV6|MASK_BXW|MASK_CIX|MASK_MAX"
+				;;
+			alphapca56*)
+				target_cpu_default2="MASK_CPU_EV5|MASK_BWX|TASK_MAX"
+				;;
 			alphaev56*)
-				target_cpu_default2="MASK_CPU_EV5|MASK_BYTE_OPS"
+				target_cpu_default2="MASK_CPU_EV5|MASK_BWX"
 				;;
 			alphaev5*)
 				target_cpu_default2="MASK_CPU_EV5"
@@ -2556,7 +2593,7 @@ for machine in $build $host $target; do
 			  | xrios1 | xrios2 | xrsc | xrsc1 \
 			  | x601 | x602 | x603 | x603e | x604 | x604e | x620 \
 			  | x403 | x505 | x801 | x821 | x823 | x860)
-				target_cpu_default2="'\"$with_cpu\"'"
+				target_cpu_default2="\"$with_cpu\""
 				;;
 
 			xyes | xno)
@@ -2711,10 +2748,11 @@ fi
 # Set up the header files.
 # $links is the list of header files to create.
 # $vars is the list of shell variables with file names to include.
-# config2.h is the old config.h.  It is included by the new config.h which
-# created from config.in.  The goal is to simplify the transition to autoconf.
+# auto-conf.h is the file containing items generated by autoconf and is
+# the first file included by config.h.
+host_xm_file="auto-config.h ${host_xm_file}"
 vars="host_xm_file tm_file xm_file build_xm_file"
-links="config2.h tm.h tconfig.h hconfig.h"
+links="config.h tm.h tconfig.h hconfig.h"
 
 rm -f config.bak
 if [[ -f config.status ]]; then mv -f config.status config.bak; fi
@@ -2750,7 +2788,7 @@ version=`sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/' < ${srcdir}/version.c`
 
 # Are we using gcc as the native compiler?
 case $host in
-*linux*)	# All Linux's use gcc as the native compiler.
+*linux* | *cygwin32* | *mingw32*)
 	if [[ x$prefix = xNONE ]]; then
 		prefix=$native_prefix
 	fi
@@ -2798,6 +2836,7 @@ then
 	cc_set_by_configure="\$(CC)"
 	stage_prefix_set_by_configure="\$(STAGE_PREFIX)"
 else
+	symbolic_link="cp -p"
 	cc_set_by_configure="\`case '\$(CC)' in stage*) echo '\$(CC)' | sed -e 's|stage|../stage|g';; *) echo '\$(CC)';; esac\`"
 	stage_prefix_set_by_configure="\`case '\$(STAGE_PREFIX)' in stage*) echo '\$(STAGE_PREFIX)' | sed -e 's|stage|../stage|g';; *) echo '\$(STAGE_PREFIX)';; esac\`"
 fi
@@ -3070,6 +3109,7 @@ AC_SUBST(will_use_collect2)
 AC_SUBST(maybe_use_collect2)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(stage_prefix_set_by_configure)
+AC_SUBST(symbolic_link)
 
 AC_SUBST_FILE(target_overrides)
 AC_SUBST_FILE(host_overrides)
@@ -3114,9 +3154,29 @@ AC_OUTPUT($all_outputs,
 [
 . $srcdir/configure.lang
 case x$CONFIG_HEADERS in
-xconfig.h:config.in)
+xauto-config.h:config.in)
 echo > cstamp-h ;;
 esac
+# If the host supports symlinks, point stage[1234] at ../stage[1234] so
+# bootstrapping and the installation procedure can still use
+# CC="stage1/xgcc -Bstage1/".  If the host doesn't support symlinks,
+# FLAGS_TO_PASS has been modified to solve the problem there.
+# This is virtually a duplicate of what happens in configure.lang; we do
+# an extra check to make sure this only happens if ln -s can be used.
+if [[ "$symbolic_link" = "ln -s" ]]; then
+ for d in .. ${subdirs} ; do
+   if [[ $d != .. ]]; then
+	STARTDIR=`pwd`
+	cd $d
+	for t in stage1 stage2 stage3 stage4 include
+	do
+		rm -f $t
+		$symbolic_link ../$t $t 2>/dev/null
+	done
+	cd $STARTDIR
+   fi
+ done
+else true ; fi
 ],
 [
 host='${host}'
@@ -3138,6 +3198,7 @@ version='${version}'
 local_prefix='${local_prefix}'
 build_install_headers_dir='${build_install_headers_dir}'
 build_exeext='${build_exeext}'
+out_file='${out_file}'
 gdb_needs_out_file_path='${gdb_needs_out_file_path}'
 SET_MAKE='${SET_MAKE}'
 build_broken_install='${build_broken_install}'

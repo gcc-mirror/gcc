@@ -190,6 +190,8 @@ in the following sections.
 \-Wformat
 .RI \-Wid\-clash\- len
 \-Wimplicit
+\-Wimplicit\-int
+\-Wimplicit\-function\-declaration
 \-Winline
 \-Wmain
 \-Wmissing\-prototypes
@@ -1717,8 +1719,14 @@ An unsigned value is compared against zero with `\|\c
 \&\|'.
 .PP
 .TP
+.B \-Wimplicit-int
+Warn whenever a declaration does not specify a type.
+.TP
+.B \-Wimplicit-function-declaration
+Warn whenever a function is used before being declared.
+.TP
 .B \-Wimplicit
-Warn whenever a function or parameter is implicitly declared.
+Same as -Wimplicit-int and -Wimplicit-function-declaration.
 .TP
 .B \-Wmain
 Warn if the

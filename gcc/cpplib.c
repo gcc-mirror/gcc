@@ -80,11 +80,16 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #endif /* USG */
 #endif /* not VMS */
 
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+
 /* This defines "errno" properly for VMS, and gives us EACCES.  */
 #include <errno.h>
 
 extern char *index ();
 extern char *rindex ();
+extern char *update_path ();
 
 #ifndef O_RDONLY
 #define O_RDONLY 0
@@ -95,18 +100,26 @@ extern char *rindex ();
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 
-/* Find the largest host integer type and set its size and type.  */
+/* Find the largest host integer type and set its size and type.
+   Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
-#ifndef HOST_BITS_PER_WIDE_INT
-
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
-#endif
-
+#ifndef HOST_WIDE_INT
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+#  define HOST_WIDE_INT intmax_t
+# else
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
+       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#   define HOST_WIDE_INT int
+#  else
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
+       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#   define HOST_WIDE_INT long
+#  else
+#   define HOST_WIDE_INT long long
+#  endif
+#  endif
+# endif
 #endif
 
 #ifndef S_ISREG
@@ -242,36 +255,35 @@ struct cpp_pending {
 
 /* Forward declarations.  */
 
-extern char *xmalloc ();
+char *xmalloc ();
+void cpp_fatal ();
+void cpp_file_line_for_message PARAMS ((cpp_reader *, char *, int, int));
+void cpp_hash_cleanup PARAMS ((cpp_reader *));
+void cpp_message ();
+void cpp_print_containing_files PARAMS ((cpp_reader *));
 
 static void add_import ();
 static void append_include_chain ();
-static void make_undef ();
 static void make_assertion ();
 static void path_include ();
 static void initialize_builtins ();
 static void initialize_char_syntax ();
-static void dump_arg_n ();
-static void dump_defn_1 ();
 extern void delete_macro ();
+#if 0
 static void trigraph_pcp ();
+#endif
 static int finclude ();
 static void validate_else ();
 static int comp_def_part ();
 #ifdef abort
 extern void fancy_abort ();
 #endif
-static void pipe_closed ();
-static void print_containing_files ();
 static int lookup_import ();
 static int redundant_include_p ();
 static is_system_include ();
 static struct file_name_map *read_name_map ();
 static char *read_filename_string ();
 static int open_include_file ();
-static int check_preconditions ();
-static void pcfinclude ();
-static void pcstring_used ();
 static int check_macro_name ();
 static int compare_defs ();
 static int compare_token_lists ();
@@ -352,6 +364,7 @@ struct file_name_list
 /* The */
 static struct default_include {
   char *fname;			/* The name of the directory.  */
+  char *component;		/* The component containing the directory */
   int cplusplus;		/* Only look here if we're compiling C++.  */
   int cxx_aware;		/* Includes in this directory don't need to
 				   be wrapped in extern "C" when compiling
@@ -362,40 +375,43 @@ static struct default_include {
 #else
   = {
     /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },
-    { OLD_GPLUSPLUS_INCLUDE_DIR, 1, 1 },
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
+    { OLD_GPLUSPLUS_INCLUDE_DIR, 0, 1, 1 },
 #ifdef CROSS_COMPILE
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, 0, 0 },
+    { CROSS_INCLUDE_DIR, "GCC",0, 0 },
 #ifdef TOOL_INCLUDE_DIR
     /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, 0, 1 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1 },
 #endif
 #else /* not CROSS_COMPILE */
 #ifdef LOCAL_INCLUDE_DIR
     /* This should be /usr/local/include and should come before
        the fixincludes-fixed header files.  */
-    { LOCAL_INCLUDE_DIR, 0, 1 },
+    { LOCAL_INCLUDE_DIR, 0, 0, 1 },
 #endif
 #ifdef TOOL_INCLUDE_DIR
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, 0, 1 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 1 },
 #endif
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
-    { SYSTEM_INCLUDE_DIR, 0, 0 },
+    { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
 #endif
-    { STANDARD_INCLUDE_DIR, 0, 0 },
+#ifndef STANDARD_INCLUDE_COMPONENT
+#define STANDARD_INCLUDE_COMPONENT 0
+#endif
+    { STANDARD_INCLUDE_DIR, STANDARD_INCLUDE_COMPONENT, 0, 0 },
 #endif /* not CROSS_COMPILE */
-    { 0, 0, 0 }
+    { 0, 0, 0, 0 }
     };
 #endif /* no INCLUDE_DEFAULTS */
 
@@ -407,15 +423,15 @@ struct directive {
   char *name;			/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
   char command_reads_line;      /* One if rest of line is read by func.  */
-  char traditional_comments;	/* Nonzero: keep comments if -traditional.  */
-  char pass_thru;		/* Copy preprocessed directive to output file.*/
 };
+
+#define IS_INCLUDE_DIRECTIVE_TYPE(t) (T_INCLUDE <= (t) && (t) <= T_IMPORT)
 
 /* Here is the actual list of #-directives, most-often-used first.
    The initialize_builtins function assumes #define is the very first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE, 0, 1},
+  {  6, do_define, "define", T_DEFINE},
   {  5, do_xifdef, "ifdef", T_IFDEF, 1},
   {  6, do_xifdef, "ifndef", T_IFNDEF, 1},
   {  7, do_include, "include", T_INCLUDE, 1},
@@ -428,9 +444,9 @@ static struct directive directive_table[] = {
   {  5, do_undef, "undef", T_UNDEF},
   {  5, do_error, "error", T_ERROR},
   {  7, do_warning, "warning", T_WARNING},
-  {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 1},
+  {  6, do_pragma, "pragma", T_PRAGMA},
   {  4, do_line, "line", T_LINE, 1},
-  {  5, do_ident, "ident", T_IDENT, 1, 0, 1},
+  {  5, do_ident, "ident", T_IDENT, 1},
 #ifdef SCCS_DIRECTIVE
   {  4, do_sccs, "sccs", T_SCCS},
 #endif
@@ -510,7 +526,7 @@ quote_string (pfile, src)
 	  CPP_PUTC_Q (pfile, c);
 	else
 	  {
-	    sprintf (CPP_PWRITTEN (pfile), "\\%03o", c);
+	    sprintf ((char *)CPP_PWRITTEN (pfile), "\\%03o", c);
 	    CPP_ADJUST_WRITTEN (pfile, 4);
 	  }
 	break;
@@ -981,7 +997,7 @@ copy_rest_of_line (pfile)
 	  break;
 	case '/':
 	  nextc = PEEKC();
-	  if (nextc == '*' || (opts->cplusplus_comments && nextc == '*'))
+	  if (nextc == '*' || (opts->cplusplus_comments && nextc == '/'))
 	    goto scan_directive_token;
 	  break;
 	case '\f':
@@ -1091,7 +1107,7 @@ handle_directive (pfile)
     {
       /* Nonzero means do not delete comments within the directive.
          #define needs this when -traditional.  */
-	int comments = CPP_TRADITIONAL (pfile) && kt->traditional_comments; 
+	int comments = CPP_TRADITIONAL (pfile) && kt->type == T_DEFINE;
 	int save_put_out_comments = CPP_OPTIONS (pfile)->put_out_comments;
 	CPP_OPTIONS (pfile)->put_out_comments = comments;
 	after_ident = CPP_WRITTEN (pfile);
@@ -1099,37 +1115,39 @@ handle_directive (pfile)
 	CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
     }
 
-  /* For #pragma and #define, we may want to pass through the directive.
+  /* We may want to pass through #define, #pragma, and #include.
      Other directives may create output, but we don't want the directive
-     itself out, so we pop it now.  For example #include may write a #line
-     command (see comment in do_include), and conditionals may emit
+     itself out, so we pop it now.  For example conditionals may emit
      #failed ... #endfailed stuff.  But note that popping the buffer
      means the parameters to kt->func may point after pfile->limit
      so these parameters are invalid as soon as something gets appended
      to the token_buffer.  */
 
   line_end = CPP_PWRITTEN (pfile);
-  if (!kt->pass_thru && kt->type != T_DEFINE)
+  if (! (kt->type == T_DEFINE
+	 || kt->type == T_PRAGMA
+	 || (IS_INCLUDE_DIRECTIVE_TYPE (kt->type)
+	     && CPP_OPTIONS (pfile)->dump_includes)))
     CPP_SET_WRITTEN (pfile, old_written);
 
   (*kt->func) (pfile, kt, pfile->token_buffer + after_ident, line_end);
-  if (kt->pass_thru
-      || (kt->type == T_DEFINE
-	  && CPP_OPTIONS (pfile)->dump_macros == dump_definitions))
+
+  if (kt->type == T_DEFINE)
     {
-      /* Just leave the entire #define in the output stack.  */
+      if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
+	{
+	  /* Skip "#define". */
+	  U_CHAR *p = pfile->token_buffer + old_written + 7;
+
+	  SKIP_WHITE_SPACE (p);
+	  while (is_idchar[*p]) p++;
+	  pfile->limit = p;
+	  CPP_PUTC (pfile, '\n');
+	}
+      else if (CPP_OPTIONS (pfile)->dump_macros != dump_definitions)
+	CPP_SET_WRITTEN (pfile, old_written);
     }
-  else if (kt->type == T_DEFINE
-	   && CPP_OPTIONS (pfile)->dump_macros == dump_names)
-    {
-      U_CHAR *p = pfile->token_buffer + old_written + 7;  /* Skip "#define". */
-      SKIP_WHITE_SPACE (p);
-      while (is_idchar[*p]) p++;
-      pfile->limit = p;
-      CPP_PUTC (pfile, '\n');
-    }
-  else if (kt->type == T_DEFINE)
-    CPP_SET_WRITTEN (pfile, old_written);
+
  done_a_directive:
   return 1;
 
@@ -2133,7 +2151,7 @@ output_line_command (pfile, conditional, file_change)
     CPP_PUTS_Q (pfile, sharp_line, sizeof(sharp_line)-1);
   }
 
-  sprintf (CPP_PWRITTEN (pfile), "%d ", line);
+  sprintf ((char *) CPP_PWRITTEN (pfile), "%ld ", line);
   CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
 
   quote_string (pfile, ip->nominal_fname); 
@@ -2377,6 +2395,12 @@ special_symbol (hp, pfile)
   case T_CONST:
       buf = (char *) alloca (4 * sizeof (int));
       sprintf (buf, "%d", hp->value.ival);
+#ifdef STDC_0_IN_SYSTEM_HEADERS
+      if (ip->system_header_p
+	  && hp->length == 8 && bcmp (hp->name, "__STDC__", 8) == 0
+	  && ! cpp_lookup (pfile, (U_CHAR *) "__STRICT_ANSI__", -1, -1))
+	strcpy (buf, "0");
+#endif
 #if 0
       if (pcp_inside_if && pcp_outfile)
 	/* Output a precondition for this macro use */
@@ -2391,7 +2415,7 @@ special_symbol (hp, pfile)
 	adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
 
 	buf = (char *) alloca (10);
-	sprintf (buf, "%d", line);
+	sprintf (buf, "%ld", line);
       }
       break;
 
@@ -2498,26 +2522,26 @@ static void
 initialize_builtins (pfile)
      cpp_reader *pfile;
 {
-  install ("__LINE__", -1, T_SPECLINE, 0, 0, -1);
-  install ("__DATE__", -1, T_DATE, 0, 0, -1);
-  install ("__FILE__", -1, T_FILE, 0, 0, -1);
-  install ("__BASE_FILE__", -1, T_BASE_FILE, 0, 0, -1);
-  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, 0, -1);
-  install ("__VERSION__", -1, T_VERSION, 0, 0, -1);
+  install ((U_CHAR *)"__LINE__", -1, T_SPECLINE, 0, 0, -1);
+  install ((U_CHAR *)"__DATE__", -1, T_DATE, 0, 0, -1);
+  install ((U_CHAR *)"__FILE__", -1, T_FILE, 0, 0, -1);
+  install ((U_CHAR *)"__BASE_FILE__", -1, T_BASE_FILE, 0, 0, -1);
+  install ((U_CHAR *)"__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, 0, -1);
+  install ((U_CHAR *)"__VERSION__", -1, T_VERSION, 0, 0, -1);
 #ifndef NO_BUILTIN_SIZE_TYPE
-  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, 0, -1);
+  install ((U_CHAR *)"__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, 0, -1);
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, 0, -1);
+  install ((U_CHAR *)"__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, 0, -1);
 #endif
-  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, 0, -1);
-  install ("__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE, 0, 0, -1);
-  install ("__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, 0, 0, -1);
-  install ("__TIME__", -1, T_TIME, 0, 0, -1);
+  install ((U_CHAR *)"__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, 0, -1);
+  install ((U_CHAR *)"__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE, 0, 0, -1);
+  install ((U_CHAR *)"__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, 0, 0, -1);
+  install ((U_CHAR *)"__TIME__", -1, T_TIME, 0, 0, -1);
   if (!CPP_TRADITIONAL (pfile))
-    install ("__STDC__", -1, T_CONST, STDC_VALUE, 0, -1);
+    install ((U_CHAR *)"__STDC__", -1, T_CONST, STDC_VALUE, 0, -1);
   if (CPP_OPTIONS (pfile)->objc)
-    install ("__OBJC__", -1, T_CONST, 1, 0, -1);
+    install ((U_CHAR *)"__OBJC__", -1, T_CONST, 1, 0, -1);
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
 /*  install ("__GNUC__", -1, T_CONST, 2, 0, -1);  */
@@ -2809,7 +2833,7 @@ macroexpand (pfile, hp)
 		      else
 			{
 			  CPP_RESERVE (pfile, 4);
-			  sprintf (CPP_PWRITTEN (pfile), "\\%03o",
+			  sprintf ((char *)CPP_PWRITTEN (pfile), "\\%03o",
 				   (unsigned int) c);
 			  CPP_ADJUST_WRITTEN (pfile, 4);
 			}
@@ -3728,7 +3752,7 @@ do_line (pfile, keyword)
   /* The Newline at the end of this line remains to be processed.
      To put the next line at the specified line number,
      we must store a line number now that is one less.  */
-  new_lineno = atoi (pfile->token_buffer + old_written) - 1;
+  new_lineno = atoi ((char *)(pfile->token_buffer + old_written)) - 1;
   CPP_SET_WRITTEN (pfile, old_written);
 
   /* NEW_LINENO is one less than the actual line number here.  */
@@ -3948,7 +3972,7 @@ do_once (pfile)
   return 0;
 }
 
-/* #ident has already been copied to the output file, so just ignore it.  */
+/* Report program identification.  */
 
 static int
 do_ident (pfile, keyword, buf, limit)
@@ -4136,7 +4160,7 @@ eval_if_expression (pfile, buf, length)
   HOST_WIDE_INT value;
   long old_written = CPP_WRITTEN (pfile);
 
-  save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, 0, -1);
+  save_defined = install ((U_CHAR *)"defined", -1, T_SPEC_DEFINED, 0, 0, -1);
   pfile->pcp_inside_if = 1;
 
   value = cpp_parse_expr (pfile);
@@ -5887,6 +5911,7 @@ cpp_start_read (pfile, fname)
 	    nstore[endp-startp] = '\0';
 
 	  include_defaults[num_dirs].fname = savestring (nstore);
+	  include_defaults[num_dirs].component = 0;
 	  include_defaults[num_dirs].cplusplus = opts->cplusplus;
 	  include_defaults[num_dirs].cxx_aware = 1;
 	  num_dirs++;
@@ -5953,7 +5978,7 @@ cpp_start_read (pfile, fname)
 	  = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
 	new->control_macro = 0;
 	new->c_system_include_path = !p->cxx_aware;
-	new->fname = p->fname;
+	new->fname = update_path (p->fname, p->component);
 	new->got_name_map = 0;
 	append_include_chain (pfile, new, new);
 	if (opts->first_system_include == 0)
@@ -6077,8 +6102,12 @@ cpp_start_read (pfile, fname)
 	deps_output (pfile, "-", ':');
       else
 	{
-	  char *p, *q;
-	  int len;
+	  char *p, *q, *r;
+	  int len, x;
+	  static char *known_suffixes[] = { ".c", ".C", ".s", ".S", ".m",
+				     ".cc", ".cxx", ".cpp", ".cp",
+				     ".c++", 0
+				   };
 
 	  /* Discard all directory prefixes from filename.  */
 	  if ((q = rindex (opts->in_fname, '/')) != NULL
@@ -6097,27 +6126,21 @@ cpp_start_read (pfile, fname)
 	  /* Output P, but remove known suffixes.  */
 	  len = strlen (p);
 	  q = p + len;
-	  if (len >= 2
-	      && p[len - 2] == '.'
-	      && index("cCsSm", p[len - 1]))
-	    q = p + (len - 2);
-	  else if (len >= 3
-		   && p[len - 3] == '.'
-		   && p[len - 2] == 'c'
-		   && p[len - 1] == 'c')
-	    q = p + (len - 3);
-	  else if (len >= 4
-		   && p[len - 4] == '.'
-		   && p[len - 3] == 'c'
-		   && p[len - 2] == 'x'
-		   && p[len - 1] == 'x')
-	    q = p + (len - 4);
-	  else if (len >= 4
-		   && p[len - 4] == '.'
-		   && p[len - 3] == 'c'
-		   && p[len - 2] == 'p'
-		   && p[len - 1] == 'p')
-	    q = p + (len - 4);
+	  /* Point to the filename suffix.  */
+	  r = rindex (p, '.');
+	  /* Compare against the known suffixes.  */
+	  x = 0;
+	  while (known_suffixes[x] != 0)
+	    {
+	      if (strncmp (known_suffixes[x], r, q - r) == 0)
+		{
+		  /* Make q point to the bit we're going to overwrite
+		     with an object suffix.  */
+		  q = r;
+		  break;
+		}
+	      x++;
+	    }
 
 	  /* Supply our own suffix.  */
 #ifndef VMS
@@ -6574,6 +6597,9 @@ cpp_handle_options (pfile, argc, argv)
 	      break;
 	    case 'D':
 	      opts->dump_macros = dump_definitions;
+	      break;
+	    case 'I':
+	      opts->dump_includes = 1;
 	      break;
 	    }
 	  }
@@ -7483,11 +7509,7 @@ extern int errno;
 #ifndef VMS
 #ifndef HAVE_STRERROR
 extern int sys_nerr;
-#if defined(bsd4_4)
-extern const char *const sys_errlist[];
-#else
 extern char *sys_errlist[];
-#endif
 #else	/* HAVE_STRERROR */
 char *strerror ();
 #endif

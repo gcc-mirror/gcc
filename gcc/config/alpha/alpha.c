@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -95,10 +95,13 @@ static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 /* Compute the size of the save area in the stack.  */
 static void alpha_sa_mask	PROTO((unsigned long *imaskP,
 				       unsigned long *fmaskP));
-/* Strip type information.  */
-#define CURRENT_FUNCTION_ARGS_INFO  \
-(TARGET_OPEN_VMS ? current_function_args_info & 0xff \
- : current_function_args_info)
+
+/* Get the number of args of a function in one of two ways.  */
+#ifdef OPEN_VMS
+#define NUM_ARGS current_function_args_info.num_args
+#else
+#define NUM_ARGS current_function_args_info
+#endif
 
 /* Parse target option strings. */
 
@@ -106,21 +109,42 @@ void
 override_options ()
 {
   alpha_cpu
-    = TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4;
+    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
+      : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
 
   if (alpha_cpu_string)
     {
       if (! strcmp (alpha_cpu_string, "ev4")
 	  || ! strcmp (alpha_cpu_string, "21064"))
-	alpha_cpu = PROCESSOR_EV4;
+	{
+	  alpha_cpu = PROCESSOR_EV4;
+	  target_flags &= ~ (MASK_BWX | MASK_CIX | MASK_MAX);
+	}
       else if (! strcmp (alpha_cpu_string, "ev5")
 	       || ! strcmp (alpha_cpu_string, "21164"))
-	alpha_cpu = PROCESSOR_EV5;
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags &= ~ (MASK_BWX | MASK_CIX | MASK_MAX);
+	}
       else if (! strcmp (alpha_cpu_string, "ev56")
 	       || ! strcmp (alpha_cpu_string, "21164a"))
 	{
 	  alpha_cpu = PROCESSOR_EV5;
-	  target_flags |= MASK_BYTE_OPS;
+	  target_flags |= MASK_BWX;
+	  target_flags &= ~ (MASK_CIX | MASK_MAX);
+	}
+      else if (! strcmp (alpha_cpu_string, "pca56")
+	       || ! strcmp (alpha_cpu_string, "21164PC"))
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags |= MASK_BWX | MASK_MAX;
+	  target_flags &= ~ MASK_CIX;
+	}
+      else if (! strcmp (alpha_cpu_string, "ev6")
+	       || ! strcmp (alpha_cpu_string, "21264"))
+	{
+	  alpha_cpu = PROCESSOR_EV6;
+	  target_flags |= MASK_BWX | MASK_CIX | MASK_MAX;
 	}
       else
 	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
@@ -476,7 +500,7 @@ input_operand (op, mode)
 	return 1;
       /* ... fall through ... */
     case MEM:
-      return ((TARGET_BYTE_OPS || (mode != HImode && mode != QImode))
+      return ((TARGET_BWX || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));
 
     case CONST_DOUBLE:
@@ -1312,12 +1336,12 @@ print_operand (file, x, code)
 
     case ',':
       /* Generates single precision instruction suffix.  */
-      fprintf (file, "%c", (TARGET_FLOAT_VAX?'f':'s'));
+      fprintf (file, "%c", (TARGET_FLOAT_VAX ? 'f' : 's'));
       break;
 
     case '-':
       /* Generates double precision instruction suffix.  */
-      fprintf (file, "%c", (TARGET_FLOAT_VAX?'g':'t'));
+      fprintf (file, "%c", (TARGET_FLOAT_VAX ? 'g' : 't'));
       break;
 
     case 'r':
@@ -1544,9 +1568,9 @@ alpha_builtin_saveregs (arglist)
 
   /* Compute the current position into the args, taking into account
      both registers and memory.  Both of these are already included in
-     current_function_args_info.  */
+     NUM_ARGS.  */
 
-  argsize = GEN_INT (CURRENT_FUNCTION_ARGS_INFO * UNITS_PER_WORD);
+  argsize = GEN_INT (NUM_ARGS * UNITS_PER_WORD);
 
   /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base up by 48,
      storing fp arg registers in the first 48 bytes, and the integer arg
@@ -1559,10 +1583,10 @@ alpha_builtin_saveregs (arglist)
 
   if (TARGET_OPEN_VMS)
     addr = plus_constant (virtual_incoming_args_rtx,
-			  CURRENT_FUNCTION_ARGS_INFO <= 5 + stdarg
+			  NUM_ARGS <= 5 + stdarg
 			  ? UNITS_PER_WORD : - 6 * UNITS_PER_WORD);
   else
-    addr = (CURRENT_FUNCTION_ARGS_INFO <= 5 + stdarg
+    addr = (NUM_ARGS <= 5 + stdarg
 	    ? plus_constant (virtual_incoming_args_rtx,
 			     6 * UNITS_PER_WORD)
 	    : plus_constant (virtual_incoming_args_rtx,
@@ -1621,15 +1645,45 @@ alpha_builtin_saveregs (arglist)
     }
 }
 
+#if OPEN_VMS
+#define REG_PV 27
+#define REG_RA 26
+#else
+#define REG_RA 26
+#endif
+
+/* Find the current function's return address.
+
+   ??? It would be better to arrange things such that if we would ordinarily
+   have been a leaf function and we didn't spill the hard reg that we
+   wouldn't have to save the register in the prolog.  But it's not clear
+   how to get the right information at the right time.  */
+
+static rtx alpha_return_addr_rtx;
+
+rtx
+alpha_return_addr ()
+{
+  rtx ret;
+
+  if ((ret = alpha_return_addr_rtx) == NULL)
+    {
+      alpha_return_addr_rtx = ret = gen_reg_rtx (Pmode);
+
+      emit_insn_after (gen_rtx (SET, VOIDmode, ret,
+			        gen_rtx (REG, Pmode, REG_RA)),
+		       get_insns ());
+    }
+
+  return ret;
+}
+
 /* This page contains routines that are used to determine what the function
    prologue and epilogue code will do and write them out.  */
 
 /* Compute the size of the save area in the stack.  */
 
 #if OPEN_VMS
-
-#define REG_PV 27
-#define REG_RA 26
 
 /* These variables are used for communication between the following functions.
    They indicate various things about the current function being compiled
@@ -1861,150 +1915,6 @@ add_long_const (file, c, in_reg, out_reg, temp_reg)
 
 #if OPEN_VMS
 
-/* 
-   Quick and dirty vmskrunch routine to ensure symbols are within the
-   64 bytes limit imposed by VMS.
-
-   This is written specifically for GNAT, and may not work for C++.
-
-   This routine duplicates every symbol passed to it whether it is too
-   long or not, which is a waste of space, fix later.
-*/
-#include <string.h>
-char*
-vmskrunch (name)
-     char *name;
-{
-  char *foo;
-  int max = 60; /* Allow for the ..xx extension */
-  int len, tlen;
-
-  if (name[0] == '*')
-    return (&name[1]);
-
-  len = tlen = strlen (name);
-  foo = xstrdup (name);
-
-  /* Don't muck with the ..xx extenstion */
-  if ((foo [tlen-4] == '.') && (foo [tlen-3] == '.'))
-    {
-      max = max + 4;
-      if (tlen > max)
-	{
-	  foo [tlen-4] = 0;
-	  len = len - 4;
-	  max = max - 4;
-	}
-    }
-
-  if (len > max)
-    {
-      char *bar;
-      int i, j, slen, nlen, xlen, chopchar;
-
-      nlen = len;
-
-      /* Change all _ and . characters to spaces, if thats enough then quit.
-	 For example: "foobar__foo__bar" becomes "foobar  foo  bar" */
-
-      for (i = 0; bar = index (foo, '_'); i++)
-	*bar = ' ';
-      nlen = nlen - i;
-
-      for (i = 0; bar = index (foo, '.'); i++)
-	*bar = ' ';
-      nlen = nlen - i;
-
-      for (i = 0; bar = index (foo, '$'); i++)
-	*bar = ' ';
-      nlen = nlen - i;
-
-      /* Iteratively make blank the rightmost non-blank character on the
-	 longest leftmost substring delmited by blanks, until it's short
-	 enough. For example: "foobar  foo  bar" becomes, successively:
-	 "fooba   foo bar"
-	 "foob    foo bar"
-	 "foo     foo bar"
-	 "fo      foo bar"
-	 "fo      fo  bar"
-	 "fo      fo  ba "
-	 "f       fo  ba "
-	 "f       f   ba "
-	 "f       f   b  "
-	 etc.  */
-
-      while (nlen > max)
-	{
-	  j = 0;
-	  xlen = 0;
-
-	  while (foo[j])
-	    {
-	      /* Find first non-blank */
-	      if (foo[j])
-		for (i = j; foo[i]==' ' && foo[i]; i++)
-		  ;
-
-	      /* Find the first blank */
-	      j = i;
-	      if (foo[j])
-		for (i = j + 1; foo[i] != ' ' && foo[i]; i++)
-		  ;
-
-	      /* If this substring is the longest so far, remember the
-		 position of the character to chop off. */
-	      slen = i - j;
-	      if (slen > xlen)
-		{
-		  chopchar = i - 1;
-		  xlen = slen;
-		}
-
-	      j = i;
-	    }
-
-	  /* Try to avoid chopping uppercase suffix letters */
-	  if (isupper (foo [chopchar]))
-	    {
-	      for (i = chopchar;
-		   isupper (foo[i]) && foo[i] != ' ' && i >= 0;
-		   i--)
-		;
-	      if (islower (foo[i]))
-		chopchar = i;
-	    }
-	  foo [chopchar] = ' ';
-	  nlen--;
-	}
-
-      /* Put the ..xx extension back */
-      if (len != tlen)
-	{
-	  foo [len] = '.';
-	  len = len + 4;
-	}
-
-      /* Collapse all the blanks */
-      j = 0;
-      for (i = 0; foo[i]; i++)
-	if (foo[i] != ' ')
-	  foo[j++] = foo[i];
-      foo[j] = 0;
-
-      return foo;
-    }
-
-  /* Put back the ..xx extension */
-  if (len != tlen)
-    {
-      foo [len] = '.';
-      len = len + 4;
-    }
-
-  free (foo);
-  return name;
-}
-
 /* On vms we have two kinds of functions:
 
    - stack frame (PROC_STACK)
@@ -2035,7 +1945,7 @@ output_prolog (file, size)
   /* Offset during register save.  */
   int reg_offset;
   /* Label for the procedure entry.  */
-  char entry_label[70];
+  char *entry_label = (char *) alloca (strlen (alpha_function_name) + 5);
   int i;
 
   sa_size = alpha_sa_size ();
@@ -2048,7 +1958,7 @@ output_prolog (file, size)
   fprintf (file, "\t.ent ");
   assemble_name (file, alpha_function_name);
   fprintf (file, "\n");
-  sprintf (entry_label, "%.64s..en", alpha_function_name);
+  sprintf (entry_label, "%s..en", alpha_function_name);
   ASM_OUTPUT_LABEL (file, entry_label);
   inside_function = TRUE;
 
@@ -2296,6 +2206,19 @@ output_epilog (file, size)
 
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+
+  alpha_return_addr_rtx = 0;
+}
+
+int
+vms_valid_decl_attribute_p (decl, attributes, identifier, args)
+     tree decl;
+     tree attributes;
+     tree identifier;
+     tree args;
+{
+  if (is_attribute_p ("overlaid", identifier))
+    return (args == NULL_TREE);
 }
 
 #else /* !OPEN_VMS */
@@ -2618,6 +2541,8 @@ output_epilog (file, size)
 
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+
+  alpha_return_addr_rtx = 0;
 }
 #endif /* !OPEN_VMS */
 
@@ -3057,46 +2982,39 @@ check_float_value (mode, d, overflow)
 
 #if OPEN_VMS
 
-void *
-function_arg (cum, mode, type, named)
-    CUMULATIVE_ARGS *cum;
-    enum machine_mode mode;
-    tree type;
-    int named;
+/* Return the VMS argument type corresponding to MODE.  */
+
+enum avms_arg_type
+alpha_arg_type (mode)
+     enum machine_mode mode;
 {
-  int arg;
-
-  if (mode == VOIDmode)		/* final call, return argument information  */
-    {
-      return GEN_INT (*cum);
-    }
-
-  arg = *cum & 0xff;
-
   switch (mode)
     {
-      case SFmode:
-	*cum |= (((TARGET_FLOAT_VAX)?1:4) << ((arg * 3)+8));      /* 4 = AI$K_AR_FS, IEEE single */
-        break;
-      case DFmode:
-        *cum |= (((TARGET_FLOAT_VAX)?3:5) << ((arg * 3)+8));      /* 5 = AI$K_AR_FT, IEEE double */
-        break;
-      case TFmode:
-        *cum |= (7 << ((arg * 3)+8));        /* 5 = AI$K_AR_FT, IEEE double */
-        break;
-      default:
-        break;
+    case SFmode:
+      return TARGET_FLOAT_VAX ? FF : FS;
+    case DFmode:
+      return TARGET_FLOAT_VAX ? FD : FT;
+    default:
+      return I64;
     }
-
-  return (arg < 6 && ! MUST_PASS_IN_STACK (mode, type)
-	 ? gen_rtx(REG, mode,
-		   (*cum & 0xff) + 16 + ((TARGET_FPREGS
-			  && (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-			      || GET_MODE_CLASS (mode) == MODE_FLOAT))
-			 * 32))
-	 : 0);
 }
 
+/* Return an rtx for an integer representing the VMS Argument Information
+   register value.  */
+
+struct rtx_def *
+alpha_arg_info_reg_val (cum)
+     CUMULATIVE_ARGS cum;
+{
+  unsigned HOST_WIDE_INT regval = cum.num_args;
+  int i;
+
+  for (i = 0; i < 6; i++)
+    regval |= ((int) cum.atypes[i]) << (i * 3 + 8);
+
+  return GEN_INT (regval);
+}
+
 /* Structure to collect function names for final output
    in link section.  */
 

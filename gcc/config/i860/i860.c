@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel 860
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
    Derived from sparc.c.
 
    Written by Richard Stallman (rms@ai.mit.edu).
@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "flags.h"
 #include "rtl.h"
 #include "regs.h"
@@ -37,8 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "recog.h"
 #include "insn-attr.h"
-
-#include <stdio.h>
 
 static rtx find_addr_reg ();
 

@@ -20,13 +20,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <time.h>
 #include <ctype.h>
 
 #include "assert.h"
-#include "config.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1938,7 +1939,7 @@ m88k_begin_prologue (stream, size)
      int size;
 {
   if (TARGET_OMIT_LEAF_FRAME_POINTER && ! quiet_flag && leaf_function_p ())
-    fprintf (stderr, "$");\
+    fprintf (stderr, "$");
 
   m88k_prologue_done = 1;	/* it's ok now to put out ln directives */
 }
@@ -2610,6 +2611,7 @@ m88k_builtin_saveregs (arglist)
 
   /* Allocate the va_list constructor */
   block = assign_stack_local (BLKmode, 3 * UNITS_PER_WORD, BITS_PER_WORD);
+  MEM_IN_STRUCT_P (block) = 1;
   RTX_UNCHANGING_P (block) = 1;
   RTX_UNCHANGING_P (XEXP (block, 0)) = 1;
 

@@ -23,7 +23,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "rs6000/xm-rs6000.h"
 
-#define HAVE_STRERROR
 #define HAVE_RUSAGE
 #define HAVE_FILE_H
 #define EXECUTABLE_SUFFIX ".exe"

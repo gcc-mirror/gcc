@@ -35,6 +35,8 @@ typedef char * __gnuc_va_list;
    __gnuc_va_list.  */
 #if defined (_STDARG_H) || defined (_VARARGS_H)
 
+#ifndef _VA_MIPS_H_ENUM
+#define _VA_MIPS_H_ENUM
 enum {
   __no_type_class = -1,
   __void_type_class,
@@ -57,6 +59,7 @@ enum {
   __file_type_class,
   __lang_type_class
 };
+#endif
 
 /* In GCC version 2, we want an ellipsis at the end of the declaration
    of the argument list.  GCC version 1 can't parse it.  */

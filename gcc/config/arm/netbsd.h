@@ -50,7 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
--Dunix -Driscbsd -Darm32 -D__arm32__ -D__NetBSD__ \
+-Dunix -Driscbsd -Darm32 -D__arm32__ -D__arm__ -D__NetBSD__ \
 -Asystem(unix) -Asystem(NetBSD) -Acpu(arm) -Amachine(arm)"
 
 /* Define _POSIX_SOURCE if necessary.  */
@@ -96,6 +96,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   fprintf(STREAM, "\tmov\t%sip, %slr\n", REGISTER_PREFIX, REGISTER_PREFIX); \
   fprintf(STREAM, "\tbl\tmcount\n");					    \
 }
+
+/* On the ARM `@' introduces a comment, so we must use something else
+   for .type directives.  */
+#undef TYPE_OPERAND_FMT
+#define TYPE_OPERAND_FMT "%%%s"
 
 /* VERY BIG NOTE : Change of structure alignment for RiscBSD.
    There are consequences you should be aware of...

@@ -239,6 +239,7 @@ extern int target_flags;
 int rtl_dump = 0;
 int rtl_dump_and_exit = 0;
 int jump_opt_dump = 0;
+int addressof_dump = 0;
 int cse_dump = 0;
 int loop_dump = 0;
 int cse2_dump = 0;
@@ -733,6 +734,11 @@ char *lang_options[] =
   "-Wno-format",
   "-Wimport",
   "-Wno-import",
+  "-Wimplicit-function-declaration",
+  "-Wno-implicit-function-declaration",
+  "-Werror-implicit-function-declaration",
+  "-Wimplicit-int",
+  "-Wno-implicit-int",
   "-Wimplicit",
   "-Wno-implicit",
   "-Wmain",
@@ -864,6 +870,7 @@ FILE *asm_out_file;
 FILE *aux_info_file;
 FILE *rtl_dump_file;
 FILE *jump_opt_dump_file;
+FILE *addressof_dump_file;
 FILE *cse_dump_file;
 FILE *loop_dump_file;
 FILE *cse2_dump_file;
@@ -1028,6 +1035,8 @@ fatal_insn (message, insn)
     fflush (rtl_dump_file);
   if (jump_opt_dump_file)
     fflush (jump_opt_dump_file);
+  if (addressof_dump_file)
+    fflush (addressof_dump_file);
   if (cse_dump_file)
     fflush (cse_dump_file);
   if (loop_dump_file)
@@ -1851,14 +1860,17 @@ xmalloc (size)
   return value;
 }
 
-/* Same as `realloc' but report error if no memory available.  */
+/* Same as `realloc' but report error if no memory available.  
+   Also handle null PTR even if the vendor realloc gets it wrong.  */
 
 char *
 xrealloc (ptr, size)
      char *ptr;
      int size;
 {
-  char *result = (char *) realloc (ptr, size);
+  char *result = (ptr
+		  ? (char *) realloc (ptr, size)
+		  : (char *) malloc (size));
   if (!result)
     fatal ("virtual memory exhausted");
   return result;
@@ -2018,6 +2030,9 @@ output_quoted_string (asm_file, string)
      FILE *asm_file;
      char *string;
 {
+#ifdef OUTPUT_QUOTED_STRING
+  OUTPUT_QUOTED_STRING (asm_file, string);
+#else
   char c;
 
   putc ('\"', asm_file);
@@ -2028,6 +2043,7 @@ output_quoted_string (asm_file, string)
       putc (c, asm_file);
     }
   putc ('\"', asm_file);
+#endif
 }
 
 /* Output a file name in the form wanted by System V.  */
@@ -2189,6 +2205,10 @@ compile_file (name)
   /* If jump_opt dump desired, open the output file.  */
   if (jump_opt_dump)
     jump_opt_dump_file = open_dump_file (dump_base_name, ".jump");
+
+  /* If addressof dump desired, open the output file.  */
+  if (addressof_dump)
+    addressof_dump_file = open_dump_file (dump_base_name, ".addressof");
 
   /* If cse dump desired, open the output file.  */
   if (cse_dump)
@@ -2385,6 +2405,10 @@ compile_file (name)
   if (write_symbols == DWARF_DEBUG)
     TIMEVAR (symout_time, dwarfout_init (asm_out_file, main_input_filename));
 #endif
+#ifdef DWARF2_UNWIND_INFO
+  if (dwarf2out_do_frame ())
+    dwarf2out_frame_init ();
+#endif
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
     TIMEVAR (symout_time, dwarf2out_init (asm_out_file, main_input_filename));
@@ -2519,8 +2543,7 @@ compile_file (name)
     /* Now that all possible functions have been output, we can dump
        the exception table.  */
 
-    if (exception_table_p ())
-      output_exception_table ();
+    output_exception_table ();
 
     for (i = 0; i < len; i++)
       {
@@ -2635,6 +2658,11 @@ compile_file (name)
 	     });
 #endif
 
+#ifdef DWARF2_UNWIND_INFO
+  if (dwarf2out_do_frame ())
+    dwarf2out_frame_finish ();
+#endif
+
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
     TIMEVAR (symout_time,
@@ -2676,6 +2704,9 @@ compile_file (name)
 
   if (jump_opt_dump)
     fclose (jump_opt_dump_file);
+
+  if (addressof_dump)
+    fclose (addressof_dump_file);
 
   if (cse_dump)
     fclose (cse_dump_file);
@@ -2940,6 +2971,18 @@ rest_of_compilation (decl)
 	 functions containing nested functions since the nested function
 	 data is in our non-saved obstack.  */
 
+      /* If this is a nested inline, remove ADDRESSOF now so we can
+	 finish compiling ourselves.  Otherwise, wait until EOF.
+	 We have to do this because the purge_addressof transformation
+	 changes the DECL_RTL for many variables, which confuses integrate.  */
+      if (inlineable)
+	{
+	  if (decl_function_context (decl))
+	    purge_addressof (insns);
+	  else
+	    DECL_DEFER_OUTPUT (decl) = 1;
+	}
+
       if (! current_function_contains_functions
 	  && (DECL_DEFER_OUTPUT (decl)
 	      || (DECL_INLINE (decl)
@@ -3132,6 +3175,18 @@ rest_of_compilation (decl)
 	       fflush (cse_dump_file);
 	     });
 
+  purge_addressof (insns);
+  reg_scan (insns, max_reg_num (), 1);
+
+  if (addressof_dump)
+    TIMEVAR (dump_time,
+	     {
+	       fprintf (addressof_dump_file, "\n;; Function %s\n\n",
+			(*decl_printable_name) (decl, 2));
+	       print_rtl (addressof_dump_file, insns);
+	       fflush (addressof_dump_file);
+	     });
+
   if (loop_dump)
     TIMEVAR (dump_time,
 	     {
@@ -3268,7 +3323,7 @@ rest_of_compilation (decl)
   if (flow_dump)
     TIMEVAR (dump_time,
 	     {
-	       print_rtl (flow_dump_file, insns);
+	       print_rtl_with_bb (flow_dump_file, insns);
 	       fflush (flow_dump_file);
 	     });
 
@@ -3285,7 +3340,7 @@ rest_of_compilation (decl)
 	       fprintf (combine_dump_file, "\n;; Function %s\n\n",
 			(*decl_printable_name) (decl, 2));
 	       dump_combine_stats (combine_dump_file);
-	       print_rtl (combine_dump_file, insns);
+	       print_rtl_with_bb (combine_dump_file, insns);
 	       fflush (combine_dump_file);
 	     });
 
@@ -3312,7 +3367,7 @@ rest_of_compilation (decl)
   if (sched_dump)
     TIMEVAR (dump_time,
 	     {
-	       print_rtl (sched_dump_file, insns);
+	       print_rtl_with_bb (sched_dump_file, insns);
 	       fflush (sched_dump_file);
 	     });
 
@@ -3335,7 +3390,7 @@ rest_of_compilation (decl)
 			(*decl_printable_name) (decl, 2));
 	       dump_flow_info (local_reg_dump_file);
 	       dump_local_alloc (local_reg_dump_file);
-	       print_rtl (local_reg_dump_file, insns);
+	       print_rtl_with_bb (local_reg_dump_file, insns);
 	       fflush (local_reg_dump_file);
 	     });
 
@@ -3364,7 +3419,7 @@ rest_of_compilation (decl)
     TIMEVAR (dump_time,
 	     {
 	       dump_global_regs (global_reg_dump_file);
-	       print_rtl (global_reg_dump_file, insns);
+	       print_rtl_with_bb (global_reg_dump_file, insns);
 	       fflush (global_reg_dump_file);
 	     });
 
@@ -3403,7 +3458,7 @@ rest_of_compilation (decl)
       if (sched2_dump)
 	TIMEVAR (dump_time,
 		 {
-		   print_rtl (sched2_dump_file, insns);
+		   print_rtl_with_bb (sched2_dump_file, insns);
 		   fflush (sched2_dump_file);
 		 });
     }
@@ -3431,7 +3486,7 @@ rest_of_compilation (decl)
 	     {
 	       fprintf (jump2_opt_dump_file, "\n;; Function %s\n\n",
 			(*decl_printable_name) (decl, 2));
-	       print_rtl (jump2_opt_dump_file, insns);
+	       print_rtl_with_bb (jump2_opt_dump_file, insns);
 	       fflush (jump2_opt_dump_file);
 	     });
 
@@ -3453,7 +3508,7 @@ rest_of_compilation (decl)
 		 {
 		   fprintf (dbr_sched_dump_file, "\n;; Function %s\n\n",
 			    (*decl_printable_name) (decl, 2));
-		   print_rtl (dbr_sched_dump_file, insns);
+		   print_rtl_with_bb (dbr_sched_dump_file, insns);
 		   fflush (dbr_sched_dump_file);
 		 });
 	}
@@ -3474,7 +3529,7 @@ rest_of_compilation (decl)
 	       {
 		 fprintf (stack_reg_dump_file, "\n;; Function %s\n\n",
 		          (*decl_printable_name) (decl, 2));
-		 print_rtl (stack_reg_dump_file, insns);
+		 print_rtl_with_bb (stack_reg_dump_file, insns);
 		 fflush (stack_reg_dump_file);
 	       });
     }
@@ -3745,6 +3800,7 @@ main (argc, argv, envp)
  		    flow_dump = 1;
  		    global_reg_dump = 1;
  		    jump_opt_dump = 1;
+ 		    addressof_dump = 1;
  		    jump2_opt_dump = 1;
  		    local_reg_dump = 1;
  		    loop_dump = 1;
@@ -3774,6 +3830,9 @@ main (argc, argv, envp)
 		    break;
 		  case 'j':
 		    jump_opt_dump = 1;
+		    break;
+		  case 'D':
+		    addressof_dump = 1;
 		    break;
 		  case 'J':
 		    jump2_opt_dump = 1;
@@ -4034,6 +4093,7 @@ main (argc, argv, envp)
 		      p = str + strlen (da->arg);
 		      if (*p && (*p < '0' || *p > '9'))
 			continue;
+		      len = p - str;
 		      q = p;
 		      while (*q && (*q >= '0' && *q <= '9'))
 			q++;
@@ -4058,8 +4118,10 @@ main (argc, argv, envp)
 			    {
 #ifdef DWARF2_DEBUGGING_INFO
 			      type = DWARF2_DEBUG;
-#elif defined DBX_DEBUGGING_INFO
+#else
+#ifdef DBX_DEBUGGING_INFO
 			      type = DBX_DEBUG;
+#endif
 #endif
 			    }
 			}
@@ -4158,6 +4220,15 @@ main (argc, argv, envp)
   OVERRIDE_OPTIONS;
 #endif
 
+  if (exceptions_via_longjmp == 2)
+    {
+#ifdef DWARF2_UNWIND_INFO
+      exceptions_via_longjmp = ! DWARF2_UNWIND_INFO;
+#else
+      exceptions_via_longjmp = 1;
+#endif
+    }
+
   if (profile_block_flag == 3)
     {
       warning ("`-ax' and `-a' are conflicting options. `-a' ignored.");
@@ -4208,11 +4279,13 @@ main (argc, argv, envp)
 	       lim - (char *) &environ);
       fflush (stderr);
 
+#ifndef __MSDOS__
 #ifdef USG
       system ("ps -l 1>&2");
 #else /* not USG */
       system ("ps v");
 #endif /* not USG */
+#endif
     }
 #endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN32) */
 

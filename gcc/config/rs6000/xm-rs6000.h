@@ -44,7 +44,11 @@ Boston, MA 02111-1307, USA.  */
 /* If not compiled with GNU C, use the C alloca and use only int bitfields.  */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
+#if __STDC__
+extern void *alloca ();
+#else
 extern char *alloca ();
+#endif
 #define	ONLY_INT_FIELDS
 #endif
 
@@ -59,10 +63,3 @@ extern char *alloca ();
    collect has a chance to see them, so scan the object files directly.  */
 #define COLLECT_EXPORT_LIST
 #endif
-
-#ifndef __STDC__
-extern char *malloc (), *realloc (), *calloc ();
-#else
-extern void *malloc (), *realloc (), *calloc ();
-#endif
-extern void free ();

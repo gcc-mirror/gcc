@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for
    Windows NT 3.x.
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu).
 
 This file is part of GNU CC.
@@ -51,7 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #undef INCLUDE_DEFAULTS
 #define INCLUDE_DEFAULTS				\
   {							\
-    { 0, 0, 0 }						\
+    { 0, 0, 0, 0 }						\
   }
 
 #undef STDC_VALUE

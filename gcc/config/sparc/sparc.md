@@ -272,6 +272,43 @@
 ;; The multiply unit has a latency of 5.
 (define_function_unit "tsc701_mul" 1 0
   (and (eq_attr "type" "imul")		(eq_attr "cpu" "tsc701")) 5 5)
+
+;; ----- The UltraSPARC-1 scheduling
+;; The Ultrasparc can issue 1 - 4 insns per cycle; here we assume
+;; four insns/cycle, and hence multiply all costs by four.
+
+;; Memory delivers its result in three cycles to IU, three cycles to FP
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "load,fpload")   (eq_attr "cpu" "ultrasparc")) 12 4)
+(define_function_unit "memory" 1 0
+  (and (eq_attr "type" "store,fpstore") (eq_attr "cpu" "ultrasparc"))  4 4)
+(define_function_unit "ieu" 1 0
+  (and (eq_attr "type" "ialu")          (eq_attr "cpu" "ultrasparc"))  1 2)
+(define_function_unit "ieu" 1 0
+  (and (eq_attr "type" "shift")         (eq_attr "cpu" "ultrasparc"))  1 4)
+(define_function_unit "ieu" 1 0
+  (and (eq_attr "type" "cmove")         (eq_attr "cpu" "ultrasparc"))  8 4)
+
+;; Timings; throughput/latency
+;; ?? FADD     1/3    add/sub, format conv, compar, abs, neg
+;; ?? FMUL     1/3
+;; ?? FDIVs    1/12
+;; ?? FDIVd    1/22
+;; ?? FSQRTs   1/12
+;; ?? FSQRTd   1/22
+
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fp")       (eq_attr "cpu" "ultrasparc")) 12 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpcmp")    (eq_attr "cpu" "ultrasparc"))  8 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpmul")    (eq_attr "cpu" "ultrasparc")) 12 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpdivs")   (eq_attr "cpu" "ultrasparc")) 48 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpdivd")   (eq_attr "cpu" "ultrasparc")) 88 2)
+(define_function_unit "fp" 1 0
+  (and (eq_attr "type" "fpsqrt")   (eq_attr "cpu" "ultrasparc")) 48 2)
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
@@ -1480,30 +1517,30 @@
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn "*sethi_si"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(high:SI (match_operand 1 "" "")))]
-  "check_pic (1)"
+(define_insn "pic_lo_sum_di"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (lo_sum:SI (match_operand:DI 1 "register_operand" "r")
+                   (unspec:SI [(match_operand:DI 2 "immediate_operand" "in")] 0)))]
+  "TARGET_ARCH64 && flag_pic"
+  "add %1,%%lo(%a2),%0"
+  [(set_attr "length" "1")])
+
+(define_insn "pic_sethi_di"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
+  "TARGET_ARCH64 && flag_pic && check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
 
-(define_insn "*sethi_hi"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(high:HI (match_operand 1 "" "")))]
-  "check_pic (1)"
-  "sethi %%hi(%a1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_insn "get_pc_sp32"
+(define_insn "get_pc_via_call"
   [(set (pc) (label_ref (match_operand 0 "" "")))
-   (set (reg:SI 15) (label_ref (match_dup 0)))]
-  "! TARGET_PTR64"
+   (set (reg:SI 15) (label_ref (match_operand 1 "" "")))]
+  ""
   "call %l0%#"
   [(set_attr "type" "uncond_branch")])
 
-(define_insn "get_pc_sp64"
+(define_insn "get_pc_via_rdpc"
   [(set (match_operand:DI 0 "register_operand" "=r") (pc))]
   "TARGET_PTR64"
   "rd %%pc,%0"
@@ -1564,6 +1601,24 @@
 				      (const_int 2)
 				      (const_int 5)))])
 
+(define_insn "*sethi_hi"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(high:HI (match_operand 1 "" "")))]
+  "check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+;; This must appear after the PIC sethi so that the PIC unspec will not
+;; be matched as part of the operand.
+(define_insn "*sethi_si"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(high:SI (match_operand 1 "" "")))]
+  "check_pic (1)"
+  "sethi %%hi(%a1),%0"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
 (define_insn "*lo_sum_di_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(lo_sum:DI (match_operand:DI 1 "register_operand" "0")
@@ -1574,7 +1629,12 @@
   /* Don't output a 64 bit constant, since we can't trust the assembler to
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
+    operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+  else if (GET_CODE (operands[2]) == CONST_INT
+	   && HOST_BITS_PER_WIDE_INT > 32
+	   && INTVAL (operands[2]) > 0xffffffff)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffffffff);
+
   return \"or %L1,%%lo(%a2),%L0\";
 }"
   ;; Need to set length for this arith insn because operand2
@@ -1593,7 +1653,12 @@
   /* Don't output a 64 bit constant, since we can't trust the assembler to
      handle it correctly.  */
   if (GET_CODE (operands[2]) == CONST_DOUBLE)
-    operands[2] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[2]));
+    operands[2] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
+  else if (GET_CODE (operands[2]) == CONST_INT
+	   && HOST_BITS_PER_WIDE_INT > 32
+	   && INTVAL (operands[2]) > 0xffffffff)
+    operands[2] = GEN_INT (INTVAL (operands[2]) & 0xffffffff);
+
   /* Note that we use add here.  This is important because Medium/Anywhere
      code model support depends on it.  */
   return \"add %1,%%lo(%a2),%0\";
@@ -1625,11 +1690,11 @@
   else if (GET_CODE (op1) == CONST_DOUBLE)
     {
       operands[0] = operand_subword (op0, 1, 0, DImode);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (op1));
+      operands[1] = GEN_INT (CONST_DOUBLE_LOW (op1));
       output_asm_insn (\"sethi %%hi(%a1),%0\", operands);
 
       operands[0] = operand_subword (op0, 0, 0, DImode);
-      operands[1] = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (op1));
+      operands[1] = GEN_INT (CONST_DOUBLE_HIGH (op1));
       return singlemove_string (operands);
     }
   else
@@ -1663,6 +1728,7 @@
   "TARGET_ARCH64 && check_pic (1)"
   "*
 {
+#if HOST_BITS_PER_WIDE_INT == 32
   rtx high, low;
   
   split_double (operands[1], &high, &low);
@@ -1682,6 +1748,26 @@
       if (low != const0_rtx)
 	output_asm_insn (\"sethi %%hi(%a1),%%g1; or %0,%%g1,%0\", operands);
     }
+#else
+  rtx op = operands[1];
+
+  if (! SPARC_SETHI_P (INTVAL(op)))
+    {
+      operands[1] = GEN_INT (INTVAL (op) >> 32);
+      output_asm_insn (singlemove_string (operands), operands);
+
+      output_asm_insn (\"sllx %0,32,%0\", operands);
+      if (INTVAL (op) & 0xffffffff)
+	{
+	  operands[1] = GEN_INT (INTVAL (op) & 0xffffffff);
+	  output_asm_insn (\"sethi %%hi(%a1),%%g1; or %0,%%g1,%0\", operands);
+	}
+    }
+  else
+    {
+      output_asm_insn (\"sethi %%hi(%a1),%0\", operands);
+    }
+#endif
 
   return \"\";
 }"
@@ -1691,21 +1777,27 @@
 ;; Most of the required support for the various code models is here.
 ;; We can do this because sparcs need the high insn to load the address.  We
 ;; just need to get high to do the right thing for each code model.  Then each
-;; uses the same "%X+%lo(...)" in the load/store insn.
+;; uses the same "%X+%lo(...)" in the load/store insn, though in the case of
+;; the medium/middle code model "%lo" is written "%l44".
 
-;; When TARGET_MEDLOW, assume that the upper 32 bits of symbol addresses are
+;; When TARGET_CM_MEDLOW, assume that the upper 32 bits of symbol addresses are
 ;; always 0.
-;; When TARGET_MEDANY, the text and data segments have a maximum size of 32
-;; bits and may be located anywhere.  MEDANY_BASE_REG contains the start
+;; When TARGET_CM_MEDMID, the executable must be in the low 16 TB of memory.
+;; This corresponds to the low 44 bits, and the %[hml]44 relocs are used.
+;; ??? Not implemented yet.
+;; When TARGET_CM_EMBMEDANY, the text and data segments have a maximum size of
+;; 31 bits and may be located anywhere.  EMBMEDANY_BASE_REG contains the start
 ;; address of the data segment, currently %g4.
-;; When TARGET_FULLANY, symbolic addresses are 64 bits.
+;; When TARGET_CM_MEDANY, the text and data segments have a maximum size of 31
+;; bits and may be located anywhere.  The maximum offset from any instruction
+;; to the label _GLOBAL_OFFSET_TABLE_ is 31 bits.
 
 (define_insn "*sethi_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "" "")))
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
-  "TARGET_MEDLOW && check_pic (1)"
+  "TARGET_CM_MEDLOW && check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -1713,7 +1805,7 @@
 (define_insn "*sethi_di_medium_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "sp64_medium_pic_operand" "")))]
-  "(TARGET_MEDLOW || TARGET_MEDANY) && check_pic (1)"
+  "(TARGET_CM_MEDLOW || TARGET_CM_EMBMEDANY) && check_pic (1)"
   "sethi %%hi(%a1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "1")])
@@ -1721,31 +1813,22 @@
 ;; WARNING: %0 gets %hi(%1)+%g4.
 ;;          You cannot OR in %lo(%1), it must be added in.
 
-(define_insn "*sethi_di_medany_data"
+(define_insn "*sethi_di_embmedany_data"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "data_segment_operand" "")))
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
-  "TARGET_MEDANY && check_pic (1)"
-  "sethi %%hi(%a1),%0; add %0,%%g4,%0"
+  "TARGET_CM_EMBMEDANY && check_pic (1)"
+  "sethi %%hi(%a1),%0; add %0,%_,%0"
   [(set_attr "type" "move")
    (set_attr "length" "2")])
 
-(define_insn "*sethi_di_medany_text"
+(define_insn "*sethi_di_embmedany_text"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(high:DI (match_operand 1 "text_segment_operand" "")))
   ;; The clobber is here because emit_move_sequence assumes the worst case.
    (clobber (reg:DI 1))]
-  "TARGET_MEDANY && check_pic (1)"
-  "sethi %%uhi(%a1),%%g1; or %%g1,%%ulo(%a1),%%g1; sllx %%g1,32,%%g1; sethi %%hi(%a1),%0; or %0,%%g1,%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "5")])
-
-(define_insn "*sethi_di_fullany"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(high:DI (match_operand 1 "" "")))
-   (clobber (reg:DI 1))]
-  "TARGET_FULLANY && check_pic (1)"
+  "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi %%uhi(%a1),%%g1; or %%g1,%%ulo(%a1),%%g1; sllx %%g1,32,%%g1; sethi %%hi(%a1),%0; or %0,%%g1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "5")])
@@ -1993,8 +2076,7 @@
 	return \"sethi %%hi(%a1),%0\";
       else
 	{
-	  operands[1] = gen_rtx (CONST_INT, VOIDmode,
-				 ~ INTVAL (operands[1]));
+	  operands[1] = GEN_INT (~INTVAL (operands[1]));
 	  output_asm_insn (\"sethi %%hi(%a1),%0\", operands);
 	  /* The low 10 bits are already zero, but invert the rest.
 	     Assemblers don't accept 0x1c00, so use -0x400 instead.  */
@@ -2661,7 +2743,7 @@
 				 (const_int 0)])
 		      (match_operand:TF 3 "register_operand" "e,0")
 		      (match_operand:TF 4 "register_operand" "0,e")))]
-  "TARGET_V9 && TARGET_FPU"
+  "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "@
    fmovq%C1 %x2,%3,%0
    fmovq%c1 %x2,%4,%0"
@@ -2772,7 +2854,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_16 = gen_rtx (CONST_INT, VOIDmode, 16);
+  rtx shift_16 = GEN_INT (16);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -2850,7 +2932,7 @@
   "
 {
   rtx temp = gen_reg_rtx (DImode);
-  rtx shift_48 = gen_rtx (CONST_INT, VOIDmode, 48);
+  rtx shift_48 = GEN_INT (48);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -2944,7 +3026,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_16 = gen_rtx (CONST_INT, VOIDmode, 16);
+  rtx shift_16 = GEN_INT (16);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -2974,7 +3056,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_24 = gen_rtx (CONST_INT, VOIDmode, 24);
+  rtx shift_24 = GEN_INT (24);
   int op1_subword = 0;
   int op0_subword = 0;
 
@@ -3011,7 +3093,7 @@
   "
 {
   rtx temp = gen_reg_rtx (SImode);
-  rtx shift_24 = gen_rtx (CONST_INT, VOIDmode, 24);
+  rtx shift_24 = GEN_INT (24);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -3041,7 +3123,7 @@
   "
 {
   rtx temp = gen_reg_rtx (DImode);
-  rtx shift_56 = gen_rtx (CONST_INT, VOIDmode, 56);
+  rtx shift_56 = GEN_INT (56);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -3071,7 +3153,7 @@
   "
 {
   rtx temp = gen_reg_rtx (DImode);
-  rtx shift_48 = gen_rtx (CONST_INT, VOIDmode, 48);
+  rtx shift_48 = GEN_INT (48);
   int op1_subword = 0;
 
   if (GET_CODE (operand1) == SUBREG)
@@ -3127,7 +3209,7 @@
   int pos = 32 - INTVAL (operands[2]) - len;
   unsigned mask = ((1 << len) - 1) << pos;
 
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, mask);
+  operands[1] = GEN_INT (mask);
   return \"andcc %0,%1,%%g0\";
 }")
 
@@ -3143,9 +3225,9 @@
 {
   int len = INTVAL (operands[1]);
   int pos = 64 - INTVAL (operands[2]) - len;
-  unsigned mask = ((1 << len) - 1) << pos;
+  unsigned HOST_WIDE_INT mask = (((unsigned HOST_WIDE_INT) 1 << len) - 1) << pos;
 
-  operands[1] = gen_rtx (CONST_INT, VOIDmode, mask);
+  operands[1] = GEN_INT (mask);
   return \"andcc %0,%1,%%g0\";
 }")
 
@@ -4063,7 +4145,7 @@
    (set (match_dup 0) (and:SI (not:SI (match_dup 3)) (match_dup 1)))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_insn "*and_not_di_sp32"
@@ -4149,7 +4231,7 @@
    (set (match_dup 0) (ior:SI (not:SI (match_dup 3)) (match_dup 1)))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_insn "*or_not_di_sp32"
@@ -4235,7 +4317,7 @@
    (set (match_dup 0) (not:SI (xor:SI (match_dup 3) (match_dup 1))))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 (define_split
@@ -4250,7 +4332,7 @@
    (set (match_dup 0) (xor:SI (match_dup 3) (match_dup 1)))]
   "
 {
-  operands[4] = gen_rtx (CONST_INT, VOIDmode, ~INTVAL (operands[2]));
+  operands[4] = GEN_INT (~INTVAL (operands[2]));
 }")
 
 ;; xnor patterns.  Note that (a ^ ~b) == (~a ^ b) == ~(a ^ b).
@@ -4818,7 +4900,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 31)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sll %1,%2,%0\";
@@ -4833,7 +4915,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 63)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return \"sllx %1,%2,%0\";
@@ -4866,7 +4948,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 31)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"sra %1,%2,%0\";
@@ -4881,7 +4963,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 63)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return \"srax %1,%2,%0\";
@@ -4895,7 +4977,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 31)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 31)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x1f);
 
   return \"srl %1,%2,%0\";
@@ -4910,7 +4992,7 @@
   "*
 {
   if (GET_CODE (operands[2]) == CONST_INT
-      && (unsigned) INTVAL (operands[2]) > 63)
+      && (unsigned HOST_WIDE_INT) INTVAL (operands[2]) > 63)
     operands[2] = GEN_INT (INTVAL (operands[2]) & 0x3f);
 
   return \"srlx %1,%2,%0\";
@@ -5038,9 +5120,9 @@
      means 6 on the sparc.  */
 #if 0
   if (operands[2])
-    nregs_rtx = gen_rtx (CONST_INT, VOIDmode, REGNO (operands[2]) - 8);
+    nregs_rtx = GEN_INT (REGNO (operands[2]) - 8);
   else
-    nregs_rtx = gen_rtx (CONST_INT, VOIDmode, 6);
+    nregs_rtx = GEN_INT (6);
 #else
   nregs_rtx = const0_rtx;
 #endif

@@ -1,5 +1,5 @@
 ;;- Machine description for the pdp11 for GNU C compiler
-;; Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+;; Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
 ;; Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 ;; This file is part of GNU CC.
@@ -682,20 +682,26 @@
 ;; let constraints only accept a register ...
 
 (define_expand "movstrhi"
-  [(parallel [(set (mem:BLK (match_operand:BLK 0 "general_operand" "=g,g"))
-		   (mem:BLK (match_operand:BLK 1 "general_operand" "g,g")))
+  [(parallel [(set (match_operand:BLK 0 "general_operand" "=g,g")
+		   (match_operand:BLK 1 "general_operand" "g,g"))
 	      (use (match_operand:HI 2 "arith_operand" "n,&mr"))
 	      (use (match_operand:HI 3 "immediate_operand" "i,i"))
 	      (clobber (match_scratch:HI 4 "=&r,X"))
-	      (clobber (match_dup 0))
-	      (clobber (match_dup 1))
+	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))
 	      (clobber (match_dup 2))])]
   "(TARGET_BCOPY_BUILTIN)"
   "
 {
-  operands[0] = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
-  operands[1] = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
-  operands[2] = force_not_mem (operands[2]);
+  operands[0]
+    = change_address (operands[0], VOIDmode,
+		      copy_to_mode_reg (Pmode, XEXP (operands[0], 0)));
+  operands[1]
+    = change_address (operands[1], VOIDmode,
+		      copy_to_mode_reg (Pmode, XEXP (operands[1], 0)));
+
+  operands[5] = XEXP (operands[0], 0);
+  operands[6] = XEXP (operands[1], 0);
 }")
 
 

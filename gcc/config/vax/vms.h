@@ -357,3 +357,13 @@ do {									\
 } while (0)
 
 #endif /* L__main */
+
+/* Specify the list of include file directories.  */
+#define INCLUDE_DEFAULTS \
+{									\
+  { "GNU_GXX_INCLUDE:", "G++", 1, 1 },					\
+  { "GNU_CC_INCLUDE:", "GCC", 0, 0 },	/* GNU includes */		\
+  { "SYS$SYSROOT:[SYSLIB.]", 0, 0, 0 }, /* VAX-11 "C" includes */	\
+  { ".", 0, 0, 1 },		/* Make normal VMS filespecs work.  */	\
+  { 0, 0, 0, 0 }							\
+}

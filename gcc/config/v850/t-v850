@@ -1,4 +1,3 @@
-# CYGNUS LOCAL entire file v850/law
 CROSS_LIBGCC1 = libgcc1-asm.a
 LIB1ASMSRC = v850/lib1funcs.asm
 LIB1ASMFUNCS	= _mulsi3 \
@@ -51,4 +50,3 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT_BIT_ORDER_MISMATCH' >>fp-bit.c
 	echo '#endif' 		>> fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-#END CYGNUS LOCAL

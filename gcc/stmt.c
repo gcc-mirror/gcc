@@ -445,6 +445,12 @@ struct label_chain
   struct label_chain *next;
   tree label;
 };
+
+
+/* Non-zero if we are using EH to handle cleanus.  */
+static int using_eh_for_cleanups_p = 0;
+
+
 static void expand_goto_internal	PROTO((tree, rtx, rtx));
 static void bc_expand_goto_internal	PROTO((enum bytecode_opcode,
 					       struct bc_label *, tree));
@@ -488,6 +494,12 @@ static struct case_node *case_tree2list	PROTO((case_node *, case_node *));
 extern rtx bc_allocate_local ();
 extern rtx bc_allocate_variable_array ();
 
+void
+using_eh_for_cleanups ()
+{
+  using_eh_for_cleanups_p = 1;
+}
+
 void
 init_stmt ()
 {
@@ -2855,6 +2867,10 @@ expand_return (retval)
 		expand_value_return (const0_rtx);
 		return;
 	      }
+	    break;
+
+	  default:
+	    break;
 	  }
     }
 #endif /* HAVE_return */
@@ -3260,7 +3276,8 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
   if (warn_unused)
     for (decl = vars; decl; decl = TREE_CHAIN (decl))
       if (! TREE_USED (decl) && TREE_CODE (decl) == VAR_DECL
-	  && ! DECL_IN_SYSTEM_HEADER (decl))
+	  && ! DECL_IN_SYSTEM_HEADER (decl)
+	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)) 
 	warning_with_decl (decl, "unused variable `%s'");
 
   if (thisblock->exit_label)
@@ -3972,7 +3989,8 @@ expand_decl_cleanup (decl, cleanup)
       /* If this was optimized so that there is no exception region for the
 	 cleanup, then mark the TREE_LIST node, so that we can later tell
 	 if we need to call expand_eh_region_end.  */
-      if (expand_eh_region_start_tree (decl, cleanup))
+      if (! using_eh_for_cleanups_p
+	  || expand_eh_region_start_tree (decl, cleanup))
 	TREE_ADDRESSABLE (t) = 1;
 
       if (cond_context)
@@ -4212,7 +4230,10 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
 void
 start_cleanup_deferal ()
 {
-  ++block_stack->data.block.conditional_code;
+  /* block_stack can be NULL if we are inside the parameter list.  It is
+     OK to do nothing, because cleanups aren't possible here.  */
+  if (block_stack)
+    ++block_stack->data.block.conditional_code;
 }
 
 /* Mark the end of a conditional region of code.  Because cleanup
@@ -4223,7 +4244,10 @@ start_cleanup_deferal ()
 void
 end_cleanup_deferal ()
 {
-  --block_stack->data.block.conditional_code;
+  /* block_stack can be NULL if we are inside the parameter list.  It is
+     OK to do nothing, because cleanups aren't possible here.  */
+  if (block_stack)
+    --block_stack->data.block.conditional_code;
 }
 
 /* Move all cleanups from the current block_stack

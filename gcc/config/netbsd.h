@@ -13,11 +13,11 @@
 #define GCC_INCLUDE_DIR "/usr/include"
 
 #undef INCLUDE_DEFAULTS
-#define INCLUDE_DEFAULTS		\
-  {					\
-    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },	\
-    { GCC_INCLUDE_DIR, 0, 0 },		\
-    { 0, 0, 0 }				\
+#define INCLUDE_DEFAULTS			\
+  {						\
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },	\
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },		\
+    { 0, 0, 0, 0 }				\
   }
 
 /* Under NetBSD, the normal location of the compiler back ends is the

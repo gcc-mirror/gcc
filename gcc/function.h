@@ -200,6 +200,7 @@ struct function
   struct pool_sym **const_rtx_sym_hash_table;
   struct pool_constant *first_pool, *last_pool;
   int pool_offset;
+  rtx const_double_chain;
 };
 
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
@@ -234,12 +235,24 @@ extern HOST_WIDE_INT get_frame_size PROTO((void));
 /* These variables hold pointers to functions to
    save and restore machine-specific data,
    in push_function_context and pop_function_context.  */
-extern void (*save_machine_status) ();
-extern void (*restore_machine_status) ();
+extern void (*save_machine_status) PROTO((struct function *));
+extern void (*restore_machine_status) PROTO((struct function *));
 
-/* Save and restore varasm.c status for a nested function.  */
-extern void save_varasm_status		PROTO((struct function *));
+/* Save and restore status information for a nested function.  */
+extern void save_tree_status		PROTO((struct function *, tree));
+extern void restore_tree_status		PROTO((struct function *, tree));
+extern void save_varasm_status		PROTO((struct function *, tree));
 extern void restore_varasm_status	PROTO((struct function *));
+extern void save_eh_status		PROTO((struct function *));
+extern void restore_eh_status		PROTO((struct function *));
+extern void save_stmt_status		PROTO((struct function *));
+extern void restore_stmt_status		PROTO((struct function *));
+extern void save_expr_status		PROTO((struct function *));
+extern void restore_expr_status		PROTO((struct function *));
+extern void save_emit_status		PROTO((struct function *));
+extern void restore_emit_status		PROTO((struct function *));
+extern void save_storage_status		PROTO((struct function *));
+extern void restore_storage_status	PROTO((struct function *));
 
 #ifdef rtx
 #undef rtx

@@ -94,7 +94,7 @@ in the following sections.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @smallexample
 -ansi  -fallow-single-precision  -fcond-mismatch  -fno-asm
--fno-builtin  -ffreestanding - fhosted  -fsigned-bitfields  -fsigned-char
+-fno-builtin  -ffreestanding  -fhosted  -fsigned-bitfields  -fsigned-char
 -funsigned-bitfields  -funsigned-char  -fwritable-strings
 -traditional  -traditional-cpp  -trigraphs
 @end smallexample
@@ -103,10 +103,11 @@ in the following sections.
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @smallexample
 -fall-virtual  -fdollars-in-identifiers  -felide-constructors
--fenum-int-equiv -fexternal-templates  -ffor-scope -fno-for-scope
--fhandle-signatures -fmemoize-lookups  -fno-default-inline -fno-gnu-keywords
--fnonnull-objects  -foperator-names  -fstrict-prototype -fthis-is-variable
--ftemplate-depth-@var{n} -nostdinc++ -traditional  +e@var{n}
+-fenum-int-equiv  -fexternal-templates  -ffor-scope  -fno-for-scope
+-fhandle-signatures  -fmemoize-lookups  -fname-mangling-version-@var{n}
+-fno-default-inline  -fno-gnu-keywords -fnonnull-objects -fguiding-decls
+-foperator-names  -fstrict-prototype  -fthis-is-variable
+-ftemplate-depth-@var{n}  -nostdinc++  -traditional  +e@var{n}
 @end smallexample
 
 @item Warning Options
@@ -114,16 +115,17 @@ in the following sections.
 @smallexample
 -fsyntax-only  -pedantic  -pedantic-errors
 -w  -W  -Wall  -Waggregate-return  -Wbad-function-cast
--Wcast-align -Wcast-qual  -Wchar-subscript  -Wcomment
+-Wcast-align  -Wcast-qual  -Wchar-subscript  -Wcomment
 -Wconversion  -Werror  -Wformat
--Wid-clash-@var{len}  -Wimplicit  -Wimport  -Winline
+-Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
+-Wimplicit-function-declarations -Wimport  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wnested-externs
--Wno-import  -Woverloaded-virtual -Wparentheses
--Wpointer-arith  -Wredundant-decls -Wreorder -Wreturn-type -Wshadow
--Wsign-compare -Wstrict-prototypes  -Wswitch  -Wsynth
+-Wno-import  -Woverloaded-virtual  -Wparentheses
+-Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type  -Wshadow
+-Wsign-compare  -Wstrict-prototypes  -Wswitch  -Wsynth
 -Wtemplate-debugging  -Wtraditional  -Wtrigraphs
--Wundef -Wuninitialized  -Wunused  -Wwrite-strings
+-Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
 @end smallexample
 
 @item Debugging Options
@@ -131,7 +133,7 @@ in the following sections.
 @smallexample
 -a  -ax  -d@var{letters}  -fpretend-float
 -fprofile-arcs  -ftest-coverage
--g  -g@var{level} -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2
+-g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2
 -ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name
 -print-prog-name=@var{program}  -print-search-dirs  -save-temps
@@ -144,8 +146,8 @@ in the following sections.
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
 -fdelayed-branch   -fexpensive-optimizations
 -ffast-math  -ffloat-store  -fforce-addr  -fforce-mem
--ffunction-sections -finline-functions
--fkeep-inline-functions -fno-default-inline
+-ffunction-sections  -finline-functions
+-fkeep-inline-functions  -fno-default-inline
 -fno-defer-pop  -fno-function-cse
 -fno-inline  -fno-peephole  -fomit-frame-pointer
 -frerun-cse-after-loop  -fschedule-insns
@@ -186,7 +188,7 @@ in the following sections.
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
 @smallexample
--B@var{prefix}  -I@var{dir}  -I-  -L@var{dir} -specs=@var{file}
+-B@var{prefix}  -I@var{dir}  -I-  -L@var{dir}  -specs=@var{file}
 @end smallexample
 
 @item Target Options
@@ -200,21 +202,23 @@ in the following sections.
 @xref{Submodel Options,,Hardware Models and Configurations}.
 @smallexample
 @emph{M680x0 Options}
--m68000  -m68020  -m68020-40  -m68020-60 -m68030  -m68040
--m68060  -m5200  -m68881 -mbitfield  -mc68000  -mc68020  -mfpa
+-m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
+-m68060  -m5200  -m68881  -mbitfield  -mc68000  -mc68020  -mfpa
 -mnobitfield  -mrtd  -mshort  -msoft-float  -malign-int
 
 @emph{VAX Options}
 -mg  -mgnu  -munix
 
 @emph{SPARC Options}
--mcpu=@var{cpu  type}
--mtune=@var{cpu  type}
+-mcpu=@var{cpu type}
+-mtune=@var{cpu type}
+-mcmodel=@var{code model}
+-malign-jumps=@var{num}  -malign-loops=@var{num}
+-malign-functions=@var{num}
+-m32  -m64
 -mapp-regs  -mbroken-saverestore  -mcypress  -mepilogue
--mflat  -mfpu  -mfullany  -mhard-float  -mhard-quad-float
--mimpure-text  -mint32  -mint64  -mlive-g0
--mlong32  -mlong64  -mmedlow  -mmedany
--mno-app-regs  -mno-epilogue
+-mflat  -mfpu  -mhard-float  -mhard-quad-float
+-mimpure-text  -mlive-g0  -mno-app-regs  -mno-epilogue
 -mno-flat  -mno-fpu  -mno-impure-text
 -mno-stack-bias  -mno-unaligned-doubles
 -msoft-float  -msoft-quad-float  -msparclite  -mstack-bias
@@ -235,11 +239,11 @@ in the following sections.
 -mstorem-bug  -muser-registers
 
 @emph{ARM Options}
--mapcs-frame -mapcs-26 -mapcs-32
--mlittle-endian -mbig-endian -mwords-little-endian
--mshort-load-bytes -mno-short-load-bytes
--msoft-float -mhard-float
--mbsd -mxopen -mno-symrename
+-mapcs-frame  -mapcs-26  -mapcs-32
+-mlittle-endian  -mbig-endian  -mwords-little-endian
+-mshort-load-bytes  -mno-short-load-bytes
+-msoft-float  -mhard-float
+-mbsd  -mxopen  -mno-symrename
 
 @emph{M32R/D Options}
 -mcode-model=@var{model type}  -msdata=@var{sdata type}
@@ -258,8 +262,8 @@ in the following sections.
 -mversion-03.00  -mwarn-passed-structs
 
 @emph{RS/6000 and PowerPC Options}
--mcpu=@var{cpu  type}
--mtune=@var{cpu  type}
+-mcpu=@var{cpu type}
+-mtune=@var{cpu type}
 -mpower  -mno-power  -mpower2  -mno-power2
 -mpowerpc  -mno-powerpc
 -mpowerpc-gpopt  -mno-powerpc-gpopt
@@ -275,7 +279,8 @@ in the following sections.
 -mtoc  -mno-toc  -mtraceback  -mno-traceback
 -mlittle  -mlittle-endian  -mbig  -mbig-endian
 -mcall-aix  -mcall-sysv  -mprototype  -mno-prototype
--msim  -mmvme  -memb  -msdata  -msdata=@var{opt}  -G @var{num}
+-msim  -mmvme  -mads  -myellowknife  -memb
+-msdata  -msdata=@var{opt}  -G @var{num}
 
 @emph{RT Options}
 -mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs
@@ -283,35 +288,36 @@ in the following sections.
 -mminimum-fp-blocks  -mnohc-struct-return
 
 @emph{MIPS Options}
--mabicalls  -mcpu=@var{cpu  type}  -membedded-data
+-mabicalls  -mcpu=@var{cpu type}  -membedded-data
 -membedded-pic  -mfp32  -mfp64  -mgas  -mgp32  -mgp64
--mgpopt  -mhalf-pic  -mhard-float  -mint64 -mips1
--mips2 -mips3  -mlong64  -mlong-calls  -mmemcpy
+-mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1
+-mips2  -mips3  -mlong64  -mlong-calls  -mmemcpy
 -mmips-as  -mmips-tfile  -mno-abicalls
 -mno-embedded-data  -mno-embedded-pic
 -mno-gpopt  -mno-long-calls
 -mno-memcpy  -mno-mips-tfile  -mno-rnames  -mno-stats
--mrnames -msoft-float
--m4650 -msingle-float -mmad
+-mrnames  -msoft-float
+-m4650  -msingle-float  -mmad
 -mstats  -EL  -EB  -G @var{num}  -nocpp
 
 @emph{i386 Options}
--m486  -m386 -mieee-fp  -mno-fancy-math-387
+-m486  -m386  -mieee-fp  -mno-fancy-math-387
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib
--mno-wide-multiply -mrtd -malign-double
--mreg-alloc=@var{list} -mregparm=@var{num}
--malign-jumps=@var{num} -malign-loops=@var{num}
+-mno-wide-multiply  -mrtd  -malign-double
+-mreg-alloc=@var{list}  -mregparm=@var{num}
+-malign-jumps=@var{num}  -malign-loops=@var{num}
 -malign-functions=@var{num}
 
 @emph{HPPA Options}
--mbig-switch -mdisable-fpregs  -mdisable-indexing -mfast-indirect-calls
--mgas  -mjump-in-delay -mlong-load-store -mno-big-switch -mno-disable-fpregs
--mno-disable-indexing -mno-fast-indirect-calls -mno-gas
+-mbig-switch  -mdisable-fpregs  -mdisable-indexing  -mfast-indirect-calls
+-mgas  -mjump-in-delay  -mlong-load-store  -mno-big-switch  -mno-disable-fpregs
+-mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas
 -mno-jump-in-delay
 -mno-long-load-store
--mno-portable-runtime -mno-soft-float -mno-space -mno-space-regs -msoft-float
+-mno-portable-runtime  -mno-soft-float  -mno-space  -mno-space-regs
+-msoft-float
 -mpa-risc-1-0  -mpa-risc-1-1  -mportable-runtime
--mschedule=@var{list} -mspace -mspace-regs
+-mschedule=@var{list}  -mspace  -mspace-regs
 
 @emph{Intel 960 Options}
 -m@var{cpu type}  -masm-compat  -mclean-linkage
@@ -325,22 +331,28 @@ in the following sections.
 
 @emph{DEC Alpha Options}
 -mfp-regs  -mno-fp-regs
--mno-soft-float -msoft-float
--mieee -mieee-with-inexact -mieee-conformant
--mfp-trap-mode -mfp-rounding-mode -mtrap-precision
+-mno-soft-float  -msoft-float
+-mieee  -mieee-with-inexact  -mieee-conformant
+-mfp-trap-mode  -mfp-rounding-mode  -mtrap-precision
 -mbuild-constants
 
 @emph{Clipper Options}
--mc300 -mc400
+-mc300  -mc400
 
 @emph{H8/300 Options}
--mrelax  -mh  -mint32  -malign-300
+-mrelax  -mh -ms -mint32  -malign-300
 
 @emph{SH Options}
 -m1  -m2  -m3  -m3e  -mb  -ml  -mrelax
 
 @emph{System V Options}
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
+
+@emph{V850 Options}
+-mlong-calls -mno-long-calls -mep -mno-ep
+-mprolog-function -mno-prolog-function -mspace
+-mtda=@var{n} -msda=@var{n} -mzda=@var{n}
+-mv850 -mbig-switch
 @end smallexample
 
 @item Code Generation Options
@@ -353,7 +365,7 @@ in the following sections.
 -fpcc-struct-return  -fpic  -fPIC
 -freg-struct-return  -fshared-data  -fshort-enums
 -fshort-double  -fvolatile  -fvolatile-global
--fverbose-asm -fpack-struct  -fstack-check  +e0  +e1
+-fverbose-asm  -fpack-struct  -fstack-check  +e0  +e1
 @end smallexample
 @end table
 
@@ -914,13 +926,17 @@ Cause template instantiations to obey @samp{#pragma interface} and
 to the location of the template definition.  @xref{Template
 Instantiation}, for more information.
 
+This option is deprecated.
+
 @item -falt-external-templates
 Similar to -fexternal-templates, but template instances are emitted or
 not according to the place where they are first instantiated.
 @xref{Template Instantiation}, for more information.
 
+This option is deprecated.
+
 @item -ffor-scope
-@item -fno-for-scope
+@itemx -fno-for-scope
 If -ffor-scope is specified, the scope of variables declared in
 a @i{for-init-statement} is limited to the @samp{for} loop itself,
 as specified by the draft C++ standard.
@@ -940,6 +956,18 @@ words as identifiers.  You can use the keywords @code{__classof__},
 @code{__headof__}, @code{__signature__}, @code{__sigof__}, and
 @code{__typeof__} instead.  @samp{-ansi} implies
 @samp{-fno-gnu-keywords}.
+
+@item -fguiding-decls
+Treat a function declaration with the same type as a potential function
+template instantiation as though it declares that instantiation, not a
+normal function.  If a definition is given for the function later in the
+translation unit (or another translation unit if the target supports
+weak symbols), that definition will be used; otherwise the template will
+be instantiated.  This behavior reflects the C++ language prior to
+September 1996, when guiding declarations were removed.
+
+This option implies @samp{-fname-mangling-version-0}, and will not work
+with other name mangling versions.
 
 @item -fno-implicit-templates
 Never emit code for templates which are instantiated implicitly (i.e. by
@@ -1017,6 +1045,17 @@ in C.  @samp{-pedantic} implies @samp{-fstrict-prototype} unless
 overridden with @samp{-fno-strict-prototype}.
 
 This flag no longer affects declarations with C++ linkage.
+
+@item -fname-mangling-version-@var{n}
+Control the way in which names are mangled.  Version 0 is compatible
+with versions of g++ before 2.8.  Version 1 is the default.  Version 1
+will allow correct mangling of function templates.  For example, 
+version 0 mangling does not mangle foo<int, double> and foo<int, char>
+given this declaration:
+
+@example
+template <class T, class U> void foo(T t);
+@end example
 
 @item -fno-nonnull-objects
 Don't assume that a reference is initialized to refer to a valid object.
@@ -1177,9 +1216,14 @@ Check calls to @code{printf} and @code{scanf}, etc., to make sure that
 the arguments supplied have types appropriate to the format string
 specified.
 
+@item -Wimplicit-int
+Warn when a declaration does not specify a type.
+
+@item -Wimplicit-function-declarations
+Warn whenever a function is used before being declared.
+
 @item -Wimplicit
-Warn whenever a function or parameter is implicitly declared,
-or when a type implicitly defaults to @code{int}.
+Same as @samp{-Wimplicit-int} @samp{-Wimplicit-function-declaration}.
 
 @item -Wmain
 Warn if the type of @samp{main} is suspicious.  @samp{main} should be a
@@ -1191,6 +1235,41 @@ Warn if parentheses are omitted in certain contexts, such
 as when there is an assignment in a context where a truth value
 is expected, or when operators are nested whose precedence people
 often get confused about.
+
+Also warn about constructions where there may be confusion to which
+@code{if} statement an @code{else} branch belongs.  Here is an example of
+such a case:
+
+@smallexample
+@{
+  if (a)
+    if (b)
+      foo ();
+  else
+    bar ();
+@}
+@end smallexample
+
+In C, every @code{else} branch belongs to the innermost possible @code{if}
+statement, which in this example is @code{if (b)}.  This is often not
+what the programmer expected, as illustrated in the above example by
+indentation the programmer chose.  When there is the potential for this
+confusion, GNU C will issue a warning when this flag is specified.
+To eliminate the warning, add explicit braces around the innermost
+@code{if} statement so there is no way the @code{else} could belong to
+the enclosing @code{if}.  The resulting code would look like this:
+
+@smallexample
+@{
+  if (a)
+    @{
+      if (b)
+        foo ();
+      else
+        bar ();
+    @}
+@}
+@end smallexample
 
 @item -Wreturn-type
 Warn whenever a function is defined with a return-type that defaults
@@ -1295,13 +1374,6 @@ Here the compiler will warn that the member initializers for @samp{i}
 and @samp{j} will be rearranged to match the declaration order of the
 members.
 
-@item -Wsign-compare
-@cindex warning for comparison of signed and unsigned values
-@cindex comparison of signed and unsigned values, warning
-@cindex signed and unsigned values, comparison warning
-Warn when a comparison between signed and unsigned values could produce
-an incorrect result when the signed value is converted to unsigned.
-
 @item -Wtemplate-debugging
 @cindex template debugging
 When using templates in a C++ program, warn if debugging is not yet
@@ -1376,6 +1448,11 @@ a declaration.  According to the C Standard, this usage is obsolescent.
 @item
 If @samp{-Wall} or @samp{-Wunused} is also specified, warn about unused
 arguments.
+
+@item
+A comparison between signed and unsigned values could produce an
+incorrect result when the signed value is converted to unsigned.
+(But do not warn if @samp{-Wno-sign-compare} is also specified.)
 
 @item
 An aggregate has a partly bracketed initializer.
@@ -1462,6 +1539,15 @@ Also, warn if a negative integer constant expression is implicitly
 converted to an unsigned type.  For example, warn about the assignment
 @code{x = -1} if @code{x} is unsigned.  But do not warn about explicit
 casts like @code{(unsigned) -1}.
+
+@item -Wsign-compare
+@cindex warning for comparison of signed and unsigned values
+@cindex comparison of signed and unsigned values, warning
+@cindex signed and unsigned values, comparison warning
+Warn when a comparison between signed and unsigned values could produce
+an incorrect result when the signed value is converted to unsigned.
+This warning is also enabled by @samp{-W}; to get the other warnings
+of @samp{-W} without this warning, use @samp{-W -Wno-sign-compare}.
 
 @item -Waggregate-return
 Warn if any functions that return structures or unions are defined or
@@ -2732,6 +2818,7 @@ that macro, which enables you to change the defaults.
 * H8/300 Options::
 * SH Options::
 * System V Options::
+* V850 Options::
 @end menu
 
 @node M680x0 Options
@@ -3000,17 +3087,28 @@ They have been replaced with @samp{-mcpu=xxx}.
 @item -mcpu=@var{cpu_type}
 Set architecture type and instruction scheduling parameters for machine
 type @var{cpu_type}.  Supported values for @var{cpu_type} are
-@samp{common}, @samp{cypress}, @samp{v8}, @samp{supersparc},
-@samp{sparclite}, @samp{f930}, @samp{f934},
-@samp{sparclet}, @samp{90c701}, @samp{v8plus}, @samp{v9},
-and @samp{ultrasparc}.  Specifying @samp{v9} is only supported on true
-64 bit targets.
+@samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc},
+@samp{sparclite}, @samp{f930}, @samp{f934}, @samp{sparclet}, @samp{tsc701},
+@samp{v8plus}, @samp{v9}, and @samp{ultrasparc}.
 
 @item -mtune=@var{cpu_type}
 Set the instruction scheduling parameters for machine type
 @var{cpu_type}, but do not set the architecture type as the option
 @samp{-mcpu=}@var{cpu_type} would.  The same values for
-@samp{-mcpu=}@var{cpu_type} are used for @samp{-tune=}@var{cpu_type}.
+@samp{-mcpu=}@var{cpu_type} are used for @samp{-mtune=}@var{cpu_type}.
+
+@item -malign-loops=@var{num}
+Align loops to a 2 raised to a @var{num} byte boundary.  If
+@samp{-malign-loops} is not specified, the default is 2.
+
+@item -malign-jumps=@var{num}
+Align instructions that are only jumped to to a 2 raised to a @var{num}
+byte boundary.  If @samp{-malign-jumps} is not specified, the default is 2.
+
+@item -malign-functions=@var{num}
+Align the start of functions to a 2 raised to @var{num} byte boundary.
+If @samp{-malign-functions} is not specified, the default is 2 if compiling
+for 32 bit sparc, and 5 if compiling for 64 bit sparc.
 
 @end table
 
@@ -3044,36 +3142,36 @@ on SPARC V9 processors in 64 bit environments.
 @item -mlittle-endian
 Generate code for a processor running in little-endian mode.
 
-@item -mmedlow
-Generate code for the Medium/Low code model: assume a 32 bit address space.
-Programs are statically linked, PIC is not supported.  Pointers are still
-64 bits.
+@item -m32
+@itemx -m64
+Generate code for a 32 bit or 64 bit environment.
+The 32 bit environment sets int, long and pointer to 32 bits.
+The 64 bit environment sets int to 32 bits and long and pointer
+to 64 bits.
 
-It is very likely that a future version of GCC will rename this option.
+@item -mcmodel=medlow
+Generate code for the Medium/Low code model: the program must be linked
+in the low 32 bits of the address space.  Pointers are 64 bits.
+Programs can be statically or dynamically linked.
 
-@item -mmedany
-Generate code for the Medium/Anywhere code model: assume a 32 bit text
-and a 32 bit data segment, both starting anywhere (determined at link time).
-Programs are statically linked, PIC is not supported.  Pointers are still
-64 bits.
+@item -mcmodel=medmid
+Generate code for the Medium/Middle code model: the program must be linked
+in the low 44 bits of the address space, the text segment must be less than
+2G bytes, and data segment must be within 2G of the text segment.
+Pointers are 64 bits.
 
-It is very likely that a future version of GCC will rename this option.
+@item -mcmodel=medany
+Generate code for the Medium/Anywhere code model: the program may be linked
+anywhere in the address space, the text segment must be less than
+2G bytes, and data segment must be within 2G of the text segment.
+Pointers are 64 bits.
 
-@item -mfullany
-Generate code for the Full/Anywhere code model: assume a full 64 bit
-address space.  PIC is not supported.
-
-It is very likely that a future version of GCC will rename this option.
-
-@item -mint64
-Types long and int are 64 bits.
-
-@item -mlong32
-Types long and int are 32 bits.
-
-@item -mlong64
-@itemx -mint32
-Type long is 64 bits, and type int is 32 bits.
+@item -mcmodel=embmedany
+Generate code for the Medium/Anywhere code model for embedded systems:
+assume a 32 bit text and a 32 bit data segment, both starting anywhere
+(determined at link time).  Register %g4 points to the base of the
+data segment.  Pointers still 64 bits.
+Programs are statically linked, PIC is not supported.
 
 @item -mstack-bias
 @itemx -mno-stack-bias
@@ -3967,7 +4065,7 @@ On System V.4 and embedded PowerPC systems compile code for the
 Linux-based GNU system.
 
 @item -mprototype
-@item -mno-prototype
+@itemx -mno-prototype
 On System V.4 and embedded PowerPC systems assume that all calls to
 variable argument functions are properly prototyped.  Otherwise, the
 compiler must insert an instruction before every non prototyped call to
@@ -3985,7 +4083,17 @@ configurations.
 
 @item -mmvme
 On embedded PowerPC systems, assume that the startup module is called
-@file{mvme-crt0.o} and the standard C libraries are @file{libmvme.a} and
+@file{crt0.o} and the standard C libraries are @file{libmvme.a} and
+@file{libc.a}.
+
+@item -mads
+On embedded PowerPC systems, assume that the startup module is called
+@file{crt0.o} and the standard C libraries are @file{libads.a} and
+@file{libc.a}.
+
+@item -myellowknife
+On embedded PowerPC systems, assume that the startup module is called
+@file{crt0.o} and the standard C libraries are @file{libyk.a} and
 @file{libc.a}.
 
 @item -memb
@@ -4443,7 +4551,7 @@ byte boundary.  If @samp{-malign-jumps} is not specified, the default is
 
 @item -malign-functions=@var{num}
 Align the start of functions to a 2 raised to @var{num} byte boundary.
-If @samp{-malign-jumps} is not specified, the default is 2 if optimizing
+If @samp{-malign-functions} is not specified, the default is 2 if optimizing
 for a 386, and 4 if optimizing for a 486.
 @end table
 
@@ -4817,6 +4925,9 @@ ld.info, Using ld}, for a fuller description.
 @item -mh
 Generate code for the H8/300H.
 
+@item -ms
+Generate code for the H8/S.
+
 @item -mint32
 Make @code{int} data 32 bits by default.
 
@@ -4884,6 +4995,61 @@ Look in the directory @var{dir} to find the M4 preprocessor.
 The assembler uses this option.
 @c This is supposed to go with a -Yd for predefined M4 macro files, but
 @c the generic assembler that comes with Solaris takes just -Ym.
+@end table
+
+@node V850 Options
+@subsection V850 Options
+@cindex V850 Options
+
+These @samp{-m} options are defined for V850 implementations:
+
+@table @code
+@item -mlong-calls
+@itemx -mno-long-calls
+Treat all calls as being far away (near).  If calls are assumed to be
+far away, the compiler will always load the functions address up into a
+register, and call indirect through the pointer.
+
+@item -mno-ep
+@item -mep
+Do not optimize (do optimize) basic blocks that use the same index
+pointer 4 or more times to copy pointer into the @code{ep} register, and
+use the shorter @code{sld} and @code{sst} instructions.  The @samp{-mep}
+option is on by default if you optimize.
+
+@item -mno-prolog-function
+@itemx -mprolog-function
+Do not use (do use) external functions to save and restore registers at
+the prolog and epilog of a function.  The external functions are slower,
+but use less code space if more than one function saves the same number
+of registers.  The @samp{-mprolog-function} option is on by default if
+you optimize.
+
+@item -mspace
+Try to make the code as small as possible.  At present, this just turns
+on the @samp{-mep} and @samp{-mprolog-function} options.
+
+@item -mtda=@var{n}
+Put static or global variables whose size is @var{n} bytes or less into
+the tiny data area that register @code{ep} points to.  The tiny data
+area can hold up to 256 bytes in total (128 bytes for byte references).
+
+@item -msda=@var{n}
+Put static or global variables whose size is @var{n} bytes or less into
+the small data area that register @code{gp} points to.  The small data
+area can hold up to 64 kilobytes.
+
+@item -mzda=@var{n}
+Put static or global variables whose size is @var{n} bytes or less into
+the first 32 kilobytes of memory.
+ 
+@item -mv850
+Specify that the target processor is the V850.
+
+@item -mbig-switch
+Generate code suitable for big switch tables.  Use this option only if
+the assembler/linker complain about out of range branches within a switch
+table.
 @end table
 
 @node Code Gen Options

@@ -1,6 +1,5 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997
-;;   Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -2049,18 +2048,20 @@
 ;; that anything generated as this insn will be recognized as one
 ;; and that it will not successfully combine with anything.
 (define_expand "movstrsi"
-  [(parallel [(set (mem:BLK (match_operand:BLK 0 "" ""))
-		   (mem:BLK (match_operand:BLK 1 "" "")))
-	      (clobber (match_dup 0))
-	      (clobber (match_dup 1))
+  [(parallel [(set (match_operand:BLK 0 "" "")
+		   (match_operand:BLK 1 "" ""))
+	      (clobber (match_dup 7))
+	      (clobber (match_dup 8))
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
+	      (clobber (match_dup 6))
 	      (use (match_operand:SI 2 "arith_operand" ""))
 	      (use (match_operand:SI 3 "const_int_operand" ""))])]
   ""
   "
 {
   int size, align;
+
   /* HP provides very fast block move library routine for the PA;
      this routine includes:
 
@@ -2093,22 +2094,25 @@
 
   /* If size/alignment > 8 (eg size is large in respect to alignment),
      then use the library routines.  */
-  if (size/align > 16)
+  if (size / align > 16)
     FAIL;
 
   /* This does happen, but not often enough to worry much about.  */
-  if (size/align < MOVE_RATIO)
+  if (size / align < MOVE_RATIO)
     FAIL;
   
   /* Fall through means we're going to use our block move pattern.  */
-  operands[0] = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
-  operands[1] = copy_to_mode_reg (SImode, XEXP (operands[1], 0));
+  operands[0]
+    = change_address (operands[0], VOIDmode,
+		      copy_to_mode_reg (SImode, XEXP (operands[0], 0)));
+  operands[1]
+    = change_address (operands[1], VOIDmode,
+		      copy_to_mode_reg (SImode, XEXP (operands[1], 0)));
   operands[4] = gen_reg_rtx (SImode);
   operands[5] = gen_reg_rtx (SImode);
-  emit_insn (gen_movstrsi_internal (operands[0], operands[1], operands[4],
-				     operands[5], operands[2], operands[3],
-				     gen_reg_rtx (SImode)));
-  DONE;
+  operands[6] = gen_reg_rtx (SImode);
+  operands[7] = XEXP (operands[0], 0);
+  operands[8] = XEXP (operands[1], 0);
 }")
 
 ;; The operand constraints are written like this to support both compile-time
@@ -4387,15 +4391,29 @@
 ;; begin and end.
 (define_insn "begin_brtab"
   [(const_int 1)]
-  "TARGET_GAS"
-  ".begin_brtab"
+  ""
+  "*
+{
+  /* Only GAS actually supports this pseudo-op.  */
+  if (TARGET_GAS)
+    return \".begin_brtab\";
+  else
+    return \"\";
+}"
   [(set_attr "type" "move")
    (set_attr "length" "0")])
 
 (define_insn "end_brtab"
   [(const_int 2)]
-  "TARGET_GAS"
-  ".end_brtab"
+  ""
+  "*
+{
+  /* Only GAS actually supports this pseudo-op.  */
+  if (TARGET_GAS)
+    return \".end_brtab\";
+  else
+    return \"\";
+}"
   [(set_attr "type" "move")
    (set_attr "length" "0")])
 
@@ -4811,8 +4829,8 @@
 ;; Clean up turds left by reload.
 (define_peephole
   [(set (match_operand 0 "reg_or_nonsymb_mem_operand" "")
-	(match_operand 1 "register_operand" "f"))
-   (set (match_operand 2 "register_operand" "f")
+	(match_operand 1 "register_operand" "fr"))
+   (set (match_operand 2 "register_operand" "fr")
 	(match_dup 0))]
   "! TARGET_SOFT_FLOAT
    && GET_CODE (operands[0]) == MEM
@@ -4820,6 +4838,9 @@
    && GET_MODE (operands[0]) == GET_MODE (operands[1])
    && GET_MODE (operands[0]) == GET_MODE (operands[2])
    && GET_MODE (operands[0]) == DFmode
+   && GET_CODE (operands[1]) == REG
+   && GET_CODE (operands[2]) == REG
+   && ! side_effects_p (XEXP (operands[0], 0))
    && REGNO_REG_CLASS (REGNO (operands[1]))
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
@@ -4847,9 +4868,9 @@
 }")
 
 (define_peephole
-  [(set (match_operand 0 "register_operand" "f")
+  [(set (match_operand 0 "register_operand" "fr")
 	(match_operand 1 "reg_or_nonsymb_mem_operand" ""))
-   (set (match_operand 2 "register_operand" "f")
+   (set (match_operand 2 "register_operand" "fr")
 	(match_dup 1))]
   "! TARGET_SOFT_FLOAT
    && GET_CODE (operands[1]) == MEM
@@ -4857,7 +4878,10 @@
    && GET_MODE (operands[0]) == GET_MODE (operands[1])
    && GET_MODE (operands[0]) == GET_MODE (operands[2])
    && GET_MODE (operands[0]) == DFmode
-   && REGNO_REG_CLASS (REGNO (operands[1]))
+   && GET_CODE (operands[0]) == REG
+   && GET_CODE (operands[2]) == REG
+   && ! side_effects_p (XEXP (operands[1], 0))
+   && REGNO_REG_CLASS (REGNO (operands[0]))
       == REGNO_REG_CLASS (REGNO (operands[2]))"
   "*
 {

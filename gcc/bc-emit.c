@@ -1,5 +1,5 @@
 /* Output bytecodes for GNU C-compiler.
-   Copyright (C) 1993, 1994, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #ifdef __STDC__
 #include <stdarg.h>
 #else
@@ -37,8 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "bc-opcode.h"
 #include "bc-typecd.h"
 #include "bi-run.h"
-
-#include <stdio.h>
 
 extern char *xmalloc (), *xrealloc ();
 

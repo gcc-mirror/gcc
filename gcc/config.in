@@ -1,17 +1,27 @@
 /* config.in.  Generated automatically from configure.in by autoheader.  */
-
-/* Include the old config.h as config2.h to simplify the transition
-   to autoconf.  */
-#include "config2.h"
-
 /* Whether malloc must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_MALLOC
 
 /* Whether realloc must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_REALLOC
 
+/* Whether calloc must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_CALLOC
+
 /* Whether free must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_FREE
+
+/* Define if `sys_siglist' is declared by <signal.h>.  */
+#undef SYS_SIGLIST_DECLARED
+
+/* Define if you have the strerror function.  */
+#undef HAVE_STRERROR
+
+/* Define if you have the <inttypes.h> header file.  */
+#undef HAVE_INTTYPES_H
+
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
 
 /* Define if you have the <stddef.h> header file.  */
 #undef HAVE_STDDEF_H

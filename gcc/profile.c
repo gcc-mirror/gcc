@@ -1,5 +1,5 @@
 /* Calculate branch probabilities, and basic block execution counts. 
-   Copyright (C) 1990, 1991, 1992, 1993, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
    Contributed by James E. Wilson, UC Berkeley/Cygnus Support;
    based on some ideas from Dain Samples of UC Berkeley.
    Further mangling by Bob Manson, Cygnus Support.
@@ -41,19 +41,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    achieve this, see Dain Sample's UC Berkeley thesis.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "flags.h"
 #include "insn-flags.h"
 #include "insn-config.h"
 #include "output.h"
-#include <stdio.h>
+#include "regs.h"
 #include "tree.h"
 #include "output.h"
 #include "gcov-io.h"
 
 extern char * xmalloc ();
 extern void free ();
-extern tree get_file_function_name ();
 
 /* One of these is dynamically created whenever we identify an arc in the
    function.  */
@@ -1515,7 +1515,6 @@ output_arc_profiler (arcno, insert_after)
   rtx mem_ref, add_ref;
   rtx sequence;
 
-#ifdef SMALL_REGISTER_CLASSES
   /* In this case, reload can use explicitly mentioned hard registers for
      reloads.  It is not safe to output profiling code between a call
      and the instruction that copies the result to a pseudo-reg.  This
@@ -1536,23 +1535,30 @@ output_arc_profiler (arcno, insert_after)
       rtx return_reg;
       rtx next_insert_after = next_nonnote_insn (insert_after);
 
-      if (GET_CODE (next_insert_after) == INSN)
-	{
-	  /* The first insn after the call may be a stack pop, skip it.  */
-	  if (GET_CODE (PATTERN (next_insert_after)) == SET
-	      && SET_DEST (PATTERN (next_insert_after)) == stack_pointer_rtx)
-	    next_insert_after = next_nonnote_insn (next_insert_after);
+      /* The first insn after the call may be a stack pop, skip it.  */
+      if (next_insert_after
+	  && GET_CODE (next_insert_after) == INSN
+	  && GET_CODE (PATTERN (next_insert_after)) == SET
+	  && SET_DEST (PATTERN (next_insert_after)) == stack_pointer_rtx)
+	next_insert_after = next_nonnote_insn (next_insert_after);
 
+      if (next_insert_after
+	  && GET_CODE (next_insert_after) == INSN)
+	{
 	  if (GET_CODE (PATTERN (insert_after)) == SET)
 	    return_reg = SET_DEST (PATTERN (insert_after));
 	  else
 	    return_reg = SET_DEST (XVECEXP (PATTERN (insert_after), 0, 0));
 
-	  if (reg_referenced_p (return_reg, PATTERN (next_insert_after)))
+	  /* Now, NEXT_INSERT_AFTER may be an instruction that uses the
+	     return value.  However, it could also be something else,
+	     like a CODE_LABEL, so check that the code is INSN.  */
+	  if (next_insert_after != 0
+	      && GET_RTX_CLASS (GET_CODE (next_insert_after)) == 'i'
+	      && reg_referenced_p (return_reg, PATTERN (next_insert_after)))
 	    insert_after = next_insert_after;
 	}
     }
-#endif
 
   start_sequence ();
 
@@ -1607,7 +1613,7 @@ output_func_start_profiler ()
 
   fndecl = build_decl (FUNCTION_DECL, fnname,
 		       build_function_type (void_type_node, NULL_TREE));
-  DECL_EXTERNAL (fndecl) = 1;
+  DECL_EXTERNAL (fndecl) = 0;
   TREE_PUBLIC (fndecl) = 1;
   DECL_ASSEMBLER_NAME (fndecl) = fnname;
   DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, void_type_node);

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC running Solaris 2
-   Copyright 1992, 1995, 1996 Free Software Foundation, Inc.
+   Copyright 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -25,14 +25,12 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
- "-Dsun -Dsparc -Dunix -D__svr4__ -D__SVR4 \
-  -Asystem(unix) -Asystem(svr4) -Acpu(sparc) -Amachine(sparc)\
-  -D__GCC_NEW_VARARGS__"
+"-Dsparc -Dsun -Dunix -D__svr4__ -D__SVR4 \
+-Asystem(unix) -Asystem(svr4)"
 
-#undef CPP_SPEC
-#define CPP_SPEC "\
+#undef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "\
 %{compat-bsd:-iwithprefixbefore ucbinclude -I/usr/ucbinclude} \
-%(cpp_cpu) \
 "
 
 /* The sun bundled assembler doesn't accept -Yd, (and neither does gas).
@@ -46,15 +44,19 @@ Boston, MA 02111-1307, USA.  */
 
 /* This is here rather than in sparc.h because it's not known what
    other assemblers will accept.  */
-#if TARGET_CPU_DEFAULT == TARGET_CPU_sparc64
-#undef ASM_DEFAULT_SPEC
-#define ASM_DEFAULT_SPEC "-xarch=v8plus"
+#if TARGET_CPU_DEFAULT == TARGET_CPU_v9
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plus"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
+#undef ASM_CPU_DEFAULT_SPEC
+#define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusa"
 #endif
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC "\
 %{mcpu=v8plus:-xarch=v8plus} \
-%{mcpu=ultrasparc:-xarch=v8plus} \
-%{!mcpu*:%(asm_default)} \
+%{mcpu=ultrasparc:-xarch=v8plusa} \
+%{!mcpu*:%(asm_cpu_default)} \
 "
 
 /* However it appears that Solaris 2.0 uses the same reg numbering as
@@ -172,3 +174,8 @@ Boston, MA 02111-1307, USA.  */
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
+
+/* But indicate that it isn't supported by the hardware.  */
+#define WIDEST_HARDWARE_FP_SIZE 64
+
+#define STDC_0_IN_SYSTEM_HEADERS

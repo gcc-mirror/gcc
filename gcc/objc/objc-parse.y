@@ -31,11 +31,12 @@ Boston, MA 02111-1307, USA.  */
 %expect 66
 
 %{
+#include "config.h"
+
 #include <stdio.h>
 #include <errno.h>
 #include <setjmp.h>
 
-#include "config.h"
 #include "tree.h"
 #include "input.h"
 #include "c-lex.h"
@@ -196,9 +197,11 @@ void yyerror ();
 %type <ttype> CLASSNAME OBJC_STRING OBJECTNAME
 
 %{
-/* Number of statements (loosely speaking) seen so far.  */
+/* Number of statements (loosely speaking) and compound statements 
+   seen so far.  */
 static int stmt_count;
-
+static int compstmt_count;
+  
 /* Input file and line number of the end of the body of last simple_if;
    used by the stmt-rule immediately after simple_if returns.  */
 static char *if_stmt_file;
@@ -445,7 +448,7 @@ unary_expr:
 	| sizeof unary_expr  %prec UNARY
 		{ skip_evaluation--;
 		  if (TREE_CODE ($2) == COMPONENT_REF
-		      && DECL_BIT_FIELD (TREE_OPERAND ($2, 1)))
+		      && DECL_C_BIT_FIELD (TREE_OPERAND ($2, 1)))
 		    error ("`sizeof' applied to a bit-field");
 		  $$ = c_sizeof (TREE_TYPE ($2)); }
 	| sizeof '(' typename ')'  %prec HYPERUNARY
@@ -1658,9 +1661,11 @@ compstmt_or_error:
 	| error compstmt
 	;
 
-compstmt: '{' '}'
+compstmt_start: '{' { compstmt_count++; }
+
+compstmt: compstmt_start '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
-	| '{' pushlevel maybe_label_decls decls xstmts '}'
+	| compstmt_start pushlevel maybe_label_decls decls xstmts '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), 1, 0);
 		  $$ = poplevel (1, 1, 0);
@@ -1668,7 +1673,7 @@ compstmt: '{' '}'
 		    pop_momentary_nofree ();
 		  else
 		    pop_momentary (); }
-	| '{' pushlevel maybe_label_decls error '}'
+	| compstmt_start pushlevel maybe_label_decls error '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
 		  $$ = poplevel (kept_level_p (), 0, 0);
@@ -1676,7 +1681,7 @@ compstmt: '{' '}'
 		    pop_momentary_nofree ();
 		  else
 		    pop_momentary (); }
-	| '{' pushlevel maybe_label_decls stmts '}'
+	| compstmt_start pushlevel maybe_label_decls stmts '}'
 		{ emit_line_note (input_filename, lineno);
 		  expand_end_bindings (getdecls (), kept_level_p (), 0);
 		  $$ = poplevel (kept_level_p (), 0, 0);
@@ -1689,8 +1694,8 @@ compstmt: '{' '}'
 /* Value is number of statements counted as of the closeparen.  */
 simple_if:
 	  if_prefix lineno_labeled_stmt
-/* Make sure expand_end_cond is run once
-   for each call to expand_start_cond.
+/* Make sure c_expand_end_cond is run once
+   for each call to c_expand_start_cond.
    Otherwise a crash is likely.  */
 	| if_prefix error
 	;
@@ -1698,7 +1703,8 @@ simple_if:
 if_prefix:
 	  IF '(' expr ')'
 		{ emit_line_note ($<filename>-1, $<lineno>0);
-		  expand_start_cond (truthvalue_conversion ($3), 0);
+		  c_expand_start_cond (truthvalue_conversion ($3), 0, 
+				       compstmt_count);
 		  $<itype>$ = stmt_count;
 		  if_stmt_file = $<filename>-1;
 		  if_stmt_line = $<lineno>0;
@@ -1711,6 +1717,7 @@ if_prefix:
 do_stmt_start:
 	  DO
 		{ stmt_count++;
+		  compstmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  /* See comment in `while' alternative, above.  */
 		  emit_nop ();
@@ -1773,15 +1780,15 @@ stmt:
 		  iterator_expand ($1);
 		  clear_momentary (); }
 	| simple_if ELSE
-		{ expand_start_else ();
+		{ c_expand_start_else ();
 		  $<itype>1 = stmt_count;
 		  position_after_white_space (); }
 	  lineno_labeled_stmt
-		{ expand_end_cond ();
+		{ c_expand_end_cond ();
 		  if (extra_warnings && stmt_count == $<itype>1)
 		    warning ("empty body in an else-statement"); }
 	| simple_if %prec IF
-		{ expand_end_cond ();
+		{ c_expand_end_cond ();
 		  /* This warning is here instead of in simple_if, because we
 		     do not want a warning if an empty if is followed by an
 		     else statement.  Increment stmt_count so we don't
@@ -1789,11 +1796,11 @@ stmt:
 		  if (extra_warnings && stmt_count++ == $<itype>1)
 		    warning_with_file_and_line (if_stmt_file, if_stmt_line,
 						"empty body in an if-statement"); }
-/* Make sure expand_end_cond is run once
-   for each call to expand_start_cond.
+/* Make sure c_expand_end_cond is run once
+   for each call to c_expand_start_cond.
    Otherwise a crash is likely.  */
 	| simple_if ELSE error
-		{ expand_end_cond (); }
+		{ c_expand_end_cond (); }
 	| WHILE
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 running Solaris 2
-   Copyright (C) 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com).
 
 This file is part of GNU CC.
@@ -90,3 +90,4 @@ Boston, MA 02111-1307, USA.  */
    || (CHAR) == 'h' \
    || (CHAR) == 'z')
 
+#define STDC_0_IN_SYSTEM_HEADERS

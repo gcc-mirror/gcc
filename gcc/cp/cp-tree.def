@@ -91,7 +91,7 @@ DEFTREECODE (TYPENAME_TYPE, "typename_type", "t", 0)
 
 /* Index into a template parameter list.  This parameter must not be a
    type.  */
-DEFTREECODE (TEMPLATE_CONST_PARM, "template_const_parm", "c", 2)
+DEFTREECODE (TEMPLATE_CONST_PARM, "template_const_parm", "c", 3)
 
 /* A thunk is a stub function.
 

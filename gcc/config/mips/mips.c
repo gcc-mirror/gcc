@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for MIPS
-   Copyright (C) 1989, 90, 91, 93-95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 93-96, 1997 Free Software Foundation, Inc.
    Contributed by A. Lichnewsky, lich@inria.inria.fr.
    Changes by Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
@@ -27,6 +27,9 @@ Boston, MA 02111-1307, USA.  */
    be replaced with something better designed.  */
 
 #include "config.h"
+
+#include <stdio.h>
+
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -42,7 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #undef MAX			/* sys/param.h may also define these */
 #undef MIN
 
-#include <stdio.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -3208,7 +3210,9 @@ function_arg (cum, mode, type, named)
 		    % BITS_PER_WORD == 0))
 	      break;
 
-	  if (! field)
+	  /* If the whole struct fits a DFmode register,
+	     we don't need the PARALLEL.  */
+	  if (! field || mode == DFmode)
 	    ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
 	  else
 	    {
@@ -3221,11 +3225,6 @@ function_arg (cum, mode, type, named)
 
 	      /* ??? If this is a packed structure, then the last hunk won't
 		 be 64 bits.  */
-
-	      /* ??? If this is a structure with a single double field,
-		 it would be more convenient to return (REG:DI %fX) than
-		 a parallel.  However, we would have to modify the mips
-		 backend to allow DImode values in fp registers.  */
 
 	      chunks = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_WORD;
 	      if (chunks + *arg_words + bias > MAX_ARGS_IN_REGISTERS)
@@ -3479,8 +3478,10 @@ override_options ()
   if (mips_abi == ABI_32)
     target_flags &= ~ (MASK_FLOAT64|MASK_64BIT);
 
-  /* In the EABI in 64 bit mode, longs and pointers are 64 bits.  */
-  if (mips_abi == ABI_EABI && TARGET_64BIT)
+  /* In the EABI in 64 bit mode, longs and pointers are 64 bits.  Likewise
+   for the SGI Irix6 N64 ABI.  */
+  if ((mips_abi == ABI_EABI && TARGET_64BIT)
+      || mips_abi == ABI_64)
     target_flags |= MASK_LONG64;
 
   /* ??? This doesn't work yet, so don't let people try to use it.  */
@@ -3555,6 +3556,8 @@ override_options ()
 	case '3':
 	  if (!strcmp (p, "3000") || !strcmp (p, "3k") || !strcmp (p, "3K"))
 	    mips_cpu = PROCESSOR_R3000;
+	  else if (!strcmp (p, "3900"))
+	    mips_cpu = PROCESSOR_R3900;
 	  break;
 
 	case '4':
@@ -4855,8 +4858,10 @@ compute_frame_size (size)
   /* The gp reg is caller saved in the 32 bit ABI, so there is no need
      for leaf routines (total_size == extra_size) to save the gp reg.
      The gp reg is callee saved in the 64 bit ABI, so all routines must
-     save the gp reg.  */
-  if (total_size == extra_size && (mips_abi == ABI_32 || mips_abi == ABI_EABI))
+     save the gp reg.  This is not a leaf routine if -p, because of the
+     call to mcount.  */
+  if (total_size == extra_size && (mips_abi == ABI_32 || mips_abi == ABI_EABI)
+      && ! profile_flag)
     total_size = extra_size = 0;
   else if (TARGET_ABICALLS)
     {
@@ -4989,7 +4994,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\t%s\t%s,%s,%s\n",
@@ -5006,12 +5012,14 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  if (file == (FILE *)0)
 	    {
 	      insn = emit_move_insn (base_reg_rtx, GEN_INT (gp_offset));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
@@ -5106,7 +5114,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\t%s\t%s,%s,%s\n",
@@ -5123,12 +5132,14 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  if (file == (FILE *)0)
 	    {
 	      insn = emit_move_insn (base_reg_rtx, GEN_INT (fp_offset));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
@@ -5204,29 +5215,35 @@ function_prologue (file, size)
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
-  fputs ("\t.ent\t", file);
-  assemble_name (file, fnname);
-  fputs ("\n", file);
+  if (!flag_inhibit_size_directive)
+    {
+      fputs ("\t.ent\t", file);
+      assemble_name (file, fnname);
+      fputs ("\n", file);
+    }
 
   assemble_name (file, fnname);
   fputs (":\n", file);
 #endif
 
-  fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
-	   reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
-	   tsize,
-	   reg_names[31 + GP_REG_FIRST],
-	   current_frame_info.var_size,
-	   current_frame_info.num_gp,
-	   current_frame_info.num_fp,
-	   current_function_outgoing_args_size,
-	   current_frame_info.extra_size);
+  if (!flag_inhibit_size_directive)
+    {
+      fprintf (file, "\t.frame\t%s,%d,%s\t\t# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
+	      reg_names[ (frame_pointer_needed) ? FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM ],
+	      tsize,
+	      reg_names[31 + GP_REG_FIRST],
+	      current_frame_info.var_size,
+	      current_frame_info.num_gp,
+	      current_frame_info.num_fp,
+	      current_function_outgoing_args_size,
+	      current_frame_info.extra_size);
 
-  fprintf (file, "\t.mask\t0x%08lx,%d\n\t.fmask\t0x%08lx,%d\n",
-	   current_frame_info.mask,
-	   current_frame_info.gp_save_offset,
-	   current_frame_info.fmask,
-	   current_frame_info.fp_save_offset);
+      fprintf (file, "\t.mask\t0x%08lx,%d\n\t.fmask\t0x%08lx,%d\n",
+	       current_frame_info.mask,
+	       current_frame_info.gp_save_offset,
+	       current_frame_info.fmask,
+	       current_frame_info.fp_save_offset);
+    }
 
   if (TARGET_ABICALLS && mips_abi == ABI_32)
     {
@@ -5241,6 +5258,9 @@ function_prologue (file, size)
 		   sp_str, sp_str, tsize);
 	  fprintf (file, "\t.cprestore %d\n", current_frame_info.args_size);
 	}
+
+      if (dwarf2out_do_frame ())
+	dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, tsize);
     }
 }
 
@@ -5467,9 +5487,12 @@ function_epilogue (file, size)
      exactly matches the name used in ASM_DECLARE_FUNCTION_NAME.  */
   fnname = XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0);
 
-  fputs ("\t.end\t", file);
-  assemble_name (file, fnname);
-  fputs ("\n", file);
+  if (!flag_inhibit_size_directive)
+    {
+      fputs ("\t.end\t", file);
+      assemble_name (file, fnname);
+      fputs ("\n", file);
+    }
 #endif
 
   if (TARGET_STATS)

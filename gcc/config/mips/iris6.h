@@ -30,9 +30,8 @@ Boston, MA 02111-1307, USA.  */
 #include "mips/iris5.h"
 #include "mips/abi64.h"
 
-/* For Irix 6, -mips3 implies TARGET_LONG64.  */
-#undef TARGET_LONG64
-#define TARGET_LONG64		(mips_abi == ABI_64)
+/* For Irix 6, -mabi=64 implies TARGET_LONG64.  */
+/* This is handled in override_options.  */
 
 #undef SUBTARGET_CC1_SPEC
 #define SUBTARGET_CC1_SPEC "%{static: -mno-abicalls}"
@@ -248,6 +247,10 @@ Boston, MA 02111-1307, USA.  */
 #define DTORS_SECTION_ASM_OP \
   (TARGET_LONG64 ? ".section\t.dtors,1,2,0,8" : ".section\t.dtors,1,2,0,4")
 #endif /* defined (CRT_BEGIN) || defined (CRT_END) */
+
+/* dwarf2out will handle padding this data properly.  We definitely don't
+   want it 8-byte aligned on n32.  */
+#define EH_FRAME_SECTION_ASM_OP ".section\t.eh_frame,1,2,0,1"
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
@@ -496,18 +499,18 @@ do {									 \
          %{!pg:%{p:/usr/lib32/mips3/nonshared/mcrt1.o%s \
              /usr/lib32/mips3/nonshared/libprof1.a%s} \
            %{!p:/usr/lib32/mips3/nonshared/crt1.o%s}}}}}} \
-   %{mabi=n32: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
+   crtbegin.o%s"
+
+#undef LIB_SPEC
+#define LIB_SPEC \
+  "%{mabi=n32: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
      -L/usr/lib32} \
    %{mabi=64: %{mips4:-L/usr/lib64/mips4} %{!mips4:-L/usr/lib64/mips3} \
      -L/usr/lib64} \
    %{!mabi*: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
      -L/usr/lib32} \
-   crtbegin.o%s"
-
-#undef LIB_SPEC
-#define LIB_SPEC "\
-%{!shared: \
-  -dont_warn_unused %{p:libprof1.a%s}%{pg:libprof1.a%s} -lc -warn_unused}"
+   %{!shared: \
+     -dont_warn_unused %{p:libprof1.a%s}%{pg:libprof1.a%s} -lc -warn_unused}"
 
 /* Avoid getting two warnings for libgcc.a everytime we link.  */
 #undef LIBGCC_SPEC
@@ -538,5 +541,5 @@ do {									 \
 %{!static: \
   %{!shared: %{!non_shared: %{!call_shared: -call_shared -no_unresolved}}}} \
 %{rpath} -init __do_global_ctors -fini __do_global_dtors \
-%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors} \
+%{shared:-hidden_symbol __do_global_ctors,__do_global_dtors,__EH_FRAME_BEGIN__} \
 -_SYSTYPE_SVR4 %{mabi=32: -32}%{mabi=n32: -n32}%{mabi=64: -64} %{!mabi*: -n32}"

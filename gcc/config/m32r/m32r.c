@@ -1,4 +1,4 @@
-/* Subroutines used for code generation on the M32R/D cpu.
+/* Subroutines used for code generation on the Mitsubishi M32R cpu.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "regs.h"
@@ -1655,7 +1655,7 @@ m32r_print_operand (file, x, code)
       break;
 
     case 'U' :
-      /* FIXME: wip */
+      /* ??? wip */
       /* Output a load/store with update indicator if appropriate.  */
       if (GET_CODE (x) == MEM)
 	{

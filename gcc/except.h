@@ -1,5 +1,5 @@
 /* Exception Handling interface routines.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -139,8 +139,6 @@ extern rtx catch_clauses;
 
 #endif
 
-struct function;
-
 /* Toplevel initialization for EH.  */
 
 extern void init_eh				PROTO((void));
@@ -148,14 +146,6 @@ extern void init_eh				PROTO((void));
 /* Initialization for the per-function EH data.  */
 
 extern void init_eh_for_function		PROTO((void));
-
-/* Saves the current per-function EH data into P.  */
-
-extern void save_eh_status			PROTO((struct function *p));
-
-/* Restores the per-function EH data from P.  */
-
-extern void restore_eh_status			PROTO((struct function *p));
 
 /* Adds an EH table entry for EH entry number N. Called from
    final_scan_insn for NOTE_INSN_EH_REGION_BEG.  */
@@ -280,4 +270,17 @@ extern int protect_cleanup_actions_with_terminate;
 
 #ifdef TREE_CODE
 extern tree protect_with_terminate		PROTO((tree));
+#endif
+
+/* Various hooks for the DWARF 2 __throw routine.  */
+
+void expand_builtin_unwind_init		PROTO((void));
+rtx expand_builtin_dwarf_fp_regnum	PROTO((void));
+rtx expand_builtin_eh_stub		PROTO((void));
+#ifdef TREE_CODE
+rtx expand_builtin_frob_return_addr	PROTO((tree));
+rtx expand_builtin_extract_return_addr	PROTO((tree));
+void expand_builtin_set_return_addr_reg PROTO((tree));
+void expand_builtin_set_eh_regs		PROTO((tree, tree));
+rtx expand_builtin_dwarf_reg_size	PROTO((tree, rtx));
 #endif

@@ -45,7 +45,9 @@ struct token  {
   YYSTYPE	yylval;
 };
 
-static int do_aggr ();
+static int do_aggr PROTO((void));
+static int probe_obstack PROTO((struct obstack *, tree, unsigned int));
+static void scan_tokens PROTO((int));
 
 /* From lex.c: */
 /* the declaration found for the last IDENTIFIER token read in.
@@ -227,8 +229,6 @@ peekyylex ()
   scan_tokens (0);
   return nth_token (0)->yychar;
 }
-
-extern tree snarf_defarg ();
 
 int
 yylex ()

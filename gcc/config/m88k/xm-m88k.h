@@ -48,7 +48,9 @@ Boston, MA 02111-1307, USA.  */
 /* The 88open BCS (and ABI) environment doesn't support BSD features
    (vfork, getrusage), so use USG.  The Omron Luna/88k is BSD though.  */
 #ifndef luna88k
+#ifndef USG
 #define USG
+#endif
 #define NO_SYS_SIGLIST
 #endif
 

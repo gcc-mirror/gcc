@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Sparc running System V.4
-   Copyright (C) 1991, 1992, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com).
 
@@ -52,9 +52,7 @@ Boston, MA 02111-1307, USA.  */
    the Sparc running svr4.  __svr4__ is our extension.  */
 
 #define CPP_PREDEFINES \
-  "-Dsparc -Dunix -D__svr4__ \
-   -Asystem(unix) -Asystem(svr4) -Acpu(sparc) -Amachine(sparc) \
-   -D__GCC_NEW_VARARGS__"
+"-Dsparc -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4)"
 
 /* The native assembler can't compute differences between symbols in different
    sections when generating pic code, so we must put jump tables in the
@@ -77,11 +75,6 @@ Boston, MA 02111-1307, USA.  */
     const_section ();				\
 }
 
-/* This is the string used to begin an assembly language comment for the
-   Sparc/svr4 assembler.  */
-
-#define ASM_COMMENT_START "!"
-
 /* Define the names of various pseudo-op used by the Sparc/svr4 assembler.
    Note that many of these are different from the typical pseudo-ops used
    by most svr4 assemblers.  That is probably due to a (misguided?) attempt
@@ -91,6 +84,7 @@ Boston, MA 02111-1307, USA.  */
 #define STRING_ASM_OP		".asciz"
 #define COMMON_ASM_OP		".common"
 #define SKIP_ASM_OP		".skip"
+#define UNALIGNED_DOUBLE_INT_ASM_OP ".uaxword"
 #define UNALIGNED_INT_ASM_OP	".uaword"
 #define UNALIGNED_SHORT_ASM_OP	".uahalf"
 #define PUSHSECTION_ASM_OP	".pushsection"
@@ -179,6 +173,8 @@ do { ASM_OUTPUT_ALIGN ((FILE), Pmode == SImode ? 2 : 3);		\
 #define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc,#write"
 #undef DTORS_SECTION_ASM_OP
 #define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc,#write"
+#undef EH_FRAME_SECTION_ASM_OP
+#define EH_FRAME_SECTION_ASM_OP ".section\t\".eh_frame\",#alloc,#write"
 
 /* A C statement to output something to the assembler file to switch to section
    NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
@@ -196,44 +192,6 @@ do {									\
   else									\
     fprintf (FILE, ".section\t\"%s\",#alloc,#write\n", (NAME));		\
 } while (0)
-
-/* This is how to output assembly code to define a `float' constant.
-   We always have to use a .long pseudo-op to do this because the native
-   SVR4 ELF assembler is buggy and it generates incorrect values when we
-   try to use the .float pseudo-op instead.  */
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-do { long value;							\
-     REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);			\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value);			\
-   } while (0)
-
-/* This is how to output assembly code to define a `double' constant.
-   We always have to use a pair of .long pseudo-ops to do this because
-   the native SVR4 ELF assembler is buggy and it generates incorrect
-   values when we try to use the the .double pseudo-op instead.  */
-
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-do { long value[2];							\
-     REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);			\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[0]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[1]);		\
-   } while (0)
-
-/* This is how to output an assembler line defining a `long double'
-   constant.  */
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
-do { long value[4];							\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), value);			\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[0]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[1]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[2]);		\
-     fprintf((FILE), "\t%s\t0x%x\n", ASM_LONG, value[3]);		\
-   } while (0)
 
 /* Output assembler code to FILE to initialize this source file's
    basic block profiling info, if that has not already been done.  */
@@ -241,12 +199,8 @@ do { long value[4];							\
 #undef FUNCTION_BLOCK_PROFILER
 #define FUNCTION_BLOCK_PROFILER(FILE, LABELNO)  \
   do { \
-    if (TARGET_MEDANY) \
-      fprintf (FILE, "\tsethi %%hi(.LLPBX0),%%o0\n\tor %%0,%%lo(.LLPBX0),%%o0\n\tld [%s+%%o0],%%o1\n\ttst %%o1\n\tbne .LLPY%d\n\tadd %%o0,%s,%%o0\n\tcall __bb_init_func\n\tnop\nLPY%d:\n", \
-	       MEDANY_BASE_REG, (LABELNO), MEDANY_BASE_REG, (LABELNO)); \
-    else \
-      fprintf (FILE, "\tsethi %%hi(.LLPBX0),%%o0\n\tld [%%lo(.LLPBX0)+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%%lo(.LLPBX0),%%o0\n\tcall __bb_init_func\n\tnop\nLPY%d:\n", \
-	       (LABELNO), (LABELNO)); \
+    fprintf (FILE, "\tsethi %%hi(.LLPBX0),%%o0\n\tld [%%lo(.LLPBX0)+%%o0],%%o1\n\ttst %%o1\n\tbne LPY%d\n\tadd %%o0,%%lo(.LLPBX0),%%o0\n\tcall __bb_init_func\n\tnop\nLPY%d:\n", \
+	     (LABELNO), (LABELNO)); \
   } while (0)
 
 /* Output assembler code to FILE to increment the entry-count for
@@ -256,13 +210,9 @@ do { long value[4];							\
 #define BLOCK_PROFILER(FILE, BLOCKNO) \
 { \
   int blockn = (BLOCKNO); \
-  if (TARGET_MEDANY) \
-    fprintf (FILE, "\tsethi %%hi(.LLPBX2+%d),%%g1\n\tor %%g1,%%lo(.LLPBX2+%d),%%g1\n\tld [%%g1+%s],%%g2\n\tadd %%g2,1,%%g2\n\tst %%g2,[%%g1+%s]\n", \
-	     4 * blockn, 4 * blockn, MEDANY_BASE_REG, MEDANY_BASE_REG); \
-  else \
-    fprintf (FILE, "\tsethi %%hi(.LLPBX2+%d),%%g1\n\tld [%%lo(.LLPBX2+%d)+%%g1],%%g2\n\
+  fprintf (FILE, "\tsethi %%hi(.LLPBX2+%d),%%g1\n\tld [%%lo(.LLPBX2+%d)+%%g1],%%g2\n\
 \tadd %%g2,1,%%g2\n\tst %%g2,[%%lo(.LLPBX2+%d)+%%g1]\n", \
-	     4 * blockn, 4 * blockn, 4 * blockn); \
+	   4 * blockn, 4 * blockn, 4 * blockn); \
 }
 
 /* A C statement (sans semicolon) to output to the stdio stream

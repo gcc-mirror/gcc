@@ -306,12 +306,16 @@ extern int ix86_arch;
 #ifdef __STDC__
 #if TARGET_CPU_DEFAULT == 1
 #define CPP_CPU_DEFAULT "-Di486"
-#elif TARGET_CPU_DEFAULT == 2
+#else
+#if TARGET_CPU_DEFAULT == 2
 #define CPP_CPU_DEFAULT "-Di586"
-#elif TARGET_CPU_DEFAULT == 3
+#else
+#if TARGET_CPU_DEFAULT == 3
 #define CPP_CPU_DEFAULT "-Di686"
 #else
 #define CPP_CPU_DEFAULT ""
+#endif
+#endif
 #endif /* TARGET_CPU_DEFAULT */
 
 #define CPP_CPU_SPEC "\
@@ -2366,6 +2370,12 @@ number as al, and ax.
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx (MEM, VOIDmode, gen_rtx (REG, VOIDmode, STACK_POINTER_REGNUM))
 
+/* After the prologue, RA is at -4(AP) in the current frame.  */
+#define RETURN_ADDR_RTX(COUNT, FRAME)					\
+  ((COUNT) == 0								\
+   ? gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, arg_pointer_rtx, GEN_INT(-4)))\
+   : gen_rtx (MEM, Pmode, gen_rtx (PLUS, Pmode, (FRAME), GEN_INT(4))))
+
 /* PC is dbx register 8; let's use that column for RA. */
 #define DWARF_FRAME_RETURN_COLUMN 	8
 
@@ -2616,7 +2626,6 @@ extern char *qi_high_reg_name[];
    we can use for operand syntax in the extended asm */
 
 #define ASM_OPERAND_LETTER '#'
-
 #define RET return ""
 #define AT_SP(mode) (gen_rtx (MEM, (mode), stack_pointer_rtx))
 

@@ -1,5 +1,5 @@
 /* Generate code to initialize optabs from machine description.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -354,6 +354,7 @@ main (argc, argv)
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"insn-flags.h\"\n");

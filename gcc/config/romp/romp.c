@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on ROMP.
-   Copyright (C) 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 1993, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"

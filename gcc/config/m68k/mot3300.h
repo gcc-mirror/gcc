@@ -433,10 +433,8 @@ do { long l;					\
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-  if ((LOG) == 1)			\
-    fprintf (FILE, "\t%s\n", ALIGN_ASM_OP);	\
-  else if ((LOG) != 0)			\
-    abort ();
+  if ((LOG) >= 1)			\
+    fprintf (FILE, "\t%s\n", ALIGN_ASM_OP);
 
 #ifndef USE_GAS
 #define SKIP_ASM_OP	"space"

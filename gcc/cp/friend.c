@@ -19,11 +19,19 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "rtl.h"
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
+
+static void add_friend PROTO((tree, tree));
+static void add_friends PROTO((tree, tree, tree));
 
 /* Friend data structures:
 

@@ -176,14 +176,14 @@ typedef struct rtx_def
    PARALLEL expressions.  */
 
 typedef struct rtvec_def{
-  unsigned num_elem;		/* number of elements */
+  int num_elem;		/* number of elements */
   rtunion elem[1];
 } *rtvec;
 
 #define NULL_RTVEC (rtvec) 0
 
 #define GET_NUM_ELEM(RTVEC)		((RTVEC)->num_elem)
-#define PUT_NUM_ELEM(RTVEC, NUM)	((RTVEC)->num_elem = (unsigned) NUM)
+#define PUT_NUM_ELEM(RTVEC, NUM)	((RTVEC)->num_elem = (NUM))
 
 #define RTVEC_ELT(RTVEC, I)  ((RTVEC)->elem[(I)].rtx)
 
@@ -437,10 +437,17 @@ extern char *note_insn_name[];
    to hold these things.  That happens to be true.  */
 
 /* For static or external objects.  */
-#define BYTECODE_LABEL(X) (XEXP ((X), 0))
+#define BYTECODE_LABEL(X) (XSTR ((X), 0))
 
 /* For goto labels inside bytecode functions.  */
 #define BYTECODE_BC_LABEL(X) (*(struct bc_label **) &XEXP ((X), 1))
+
+/* The original regno this ADDRESSOF was built for.  */
+#define ADDRESSOF_REGNO(RTX) ((RTX)->fld[1].rtint)
+
+/* The variable in the register we took the address of.  */
+#define ADDRESSOF_DECL(X) ((tree) XEXP ((X), 2))
+#define SET_ADDRESSOF_DECL(X, T) (XEXP ((X), 2) = (rtx) (T))
 
 /* In jump.c, each JUMP_INSN can point to a label that it can jump to,
    so that if the JUMP_INSN is deleted, the label's LABEL_NUSES can
@@ -606,6 +613,7 @@ extern char *note_insn_name[];
 #define INLINE_REGNO_REG_RTX(RTX) ((RTX)->fld[16].rtvec)
 #define INLINE_REGNO_POINTER_FLAG(RTX) ((RTX)->fld[17].rtstr)
 #define INLINE_REGNO_POINTER_ALIGN(RTX) ((RTX)->fld[18].rtstr)
+#define PARMREG_STACK_LOC(RTX) ((RTX)->fld[19].rtvec)
 
 /* In FUNCTION_FLAGS we save some variables computed when emitting the code
    for the function and which must be `or'ed into the current flag values when
@@ -668,7 +676,7 @@ extern rtx gen_rtx			PVPROTO((enum rtx_code,
 						 enum machine_mode, ...));
 extern rtvec gen_rtvec			PVPROTO((int, ...));
 
-extern rtx read_rtx			STDIO_PROTO((FILE *));
+extern rtx read_rtx			PROTO((FILE *));
 
 #if 0
 /* At present, don't prototype xrealloc, since all of the callers don't
@@ -686,18 +694,9 @@ extern char *permalloc			PROTO((int));
 extern void free			PROTO((void *));
 extern rtx rtx_alloc			PROTO((RTX_CODE));
 extern rtvec rtvec_alloc		PROTO((int));
-extern rtx find_reg_note		PROTO((rtx, enum reg_note, rtx));
-extern rtx find_regno_note		PROTO((rtx, enum reg_note, int));
-extern int find_reg_fusage		PROTO((rtx, enum rtx_code, rtx));
-extern int find_regno_fusage		PROTO((rtx, enum rtx_code, int));
-extern HOST_WIDE_INT get_integer_term	PROTO((rtx));
-extern rtx get_related_value		PROTO((rtx));
-extern rtx single_set			PROTO((rtx));
-extern rtx find_last_value		PROTO((rtx, rtx *, rtx));
 extern rtx copy_rtx			PROTO((rtx));
 extern rtx copy_rtx_if_shared		PROTO((rtx));
 extern rtx copy_most_rtx		PROTO((rtx, rtx));
-extern rtx replace_rtx			PROTO((rtx, rtx, rtx));
 extern rtvec gen_rtvec_v		PROTO((int, rtx *));
 extern rtvec gen_rtvec_vv		PROTO((int, rtunion *));
 extern rtx gen_reg_rtx			PROTO((enum machine_mode));
@@ -705,7 +704,7 @@ extern rtx gen_label_rtx		PROTO((void));
 extern rtx gen_inline_header_rtx	PROTO((rtx, rtx, int, int, int, int,
 					       int, int, rtx, rtx, int, int,
 					       rtvec, rtx,
-					       rtvec, char *, char *));
+					       rtvec, char *, char *, rtvec));
 extern rtx gen_lowpart_common		PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart			PROTO((enum machine_mode, rtx));
 extern rtx gen_lowpart_if_possible	PROTO((enum machine_mode, rtx));
@@ -774,7 +773,6 @@ extern rtx prev_label			PROTO((rtx));
 extern rtx next_label			PROTO((rtx));
 extern rtx next_cc0_user		PROTO((rtx));
 extern rtx prev_cc0_setter		PROTO((rtx));
-extern rtx reg_set_last			PROTO((rtx, rtx));
 extern rtx next_nondeleted_insn		PROTO((rtx));
 extern enum rtx_code reverse_condition	PROTO((enum rtx_code));
 extern enum rtx_code swap_condition	PROTO((enum rtx_code));
@@ -800,9 +798,48 @@ extern rtx gen_jump			PROTO((rtx));
 extern rtx gen_beq			PROTO((rtx));
 extern rtx gen_bge			PROTO((rtx));
 extern rtx gen_ble			PROTO((rtx));
+extern rtx gen_mem_addressof		PROTO((rtx, union tree_node *));
 extern rtx eliminate_constant_term	PROTO((rtx, rtx *));
 extern rtx expand_complex_abs		PROTO((enum machine_mode, rtx, rtx, int));
 extern enum machine_mode choose_hard_reg_mode PROTO((int, int));
+
+/* Functions in rtlanal.c */
+
+extern int rtx_unstable_p		PROTO((rtx));
+extern int rtx_varies_p			PROTO((rtx));
+extern int rtx_addr_varies_p		PROTO((rtx));
+extern HOST_WIDE_INT get_integer_term	PROTO((rtx));
+extern rtx get_related_value		PROTO((rtx));
+extern int reg_mentioned_p		PROTO((rtx, rtx));
+extern int reg_referenced_p		PROTO((rtx, rtx));
+extern int reg_used_between_p		PROTO((rtx, rtx, rtx));
+extern int reg_referenced_between_p	PROTO((rtx, rtx, rtx));
+extern int reg_set_between_p		PROTO((rtx, rtx, rtx));
+extern int modified_between_p		PROTO((rtx, rtx, rtx));
+extern int no_labels_between_p		PROTO((rtx, rtx));
+extern int modified_in_p		PROTO((rtx, rtx));
+extern int reg_set_p			PROTO((rtx, rtx));
+extern rtx single_set			PROTO((rtx));
+extern rtx find_last_value		PROTO((rtx, rtx *, rtx));
+extern int refers_to_regno_p		PROTO((int, int, rtx, rtx *));
+extern int reg_overlap_mentioned_p	PROTO((rtx, rtx));
+extern void note_stores			PROTO((rtx, void (*)()));
+extern rtx reg_set_last			PROTO((rtx, rtx));
+extern int rtx_equal_p			PROTO((rtx, rtx));
+extern int dead_or_set_p		PROTO((rtx, rtx));
+extern int dead_or_set_regno_p		PROTO((rtx, int));
+extern rtx find_reg_note		PROTO((rtx, enum reg_note, rtx));
+extern rtx find_regno_note		PROTO((rtx, enum reg_note, int));
+extern int find_reg_fusage		PROTO((rtx, enum rtx_code, rtx));
+extern int find_regno_fusage		PROTO((rtx, enum rtx_code, int));
+extern void remove_note			PROTO((rtx, rtx));
+extern int side_effects_p		PROTO((rtx));
+extern int volatile_refs_p		PROTO((rtx));
+extern int volatile_insn_p		PROTO((rtx));
+extern int may_trap_p			PROTO((rtx));
+extern int inequality_comparison_p	PROTO((rtx));
+extern rtx replace_rtx			PROTO((rtx, rtx, rtx));
+extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
    Always at least 3, since the combiner could put that many togetherm
@@ -817,7 +854,6 @@ extern enum reg_class reg_preferred_class PROTO((int));
 extern enum reg_class reg_alternate_class PROTO((int));
 
 extern rtx get_first_nonparm_insn	PROTO((void));
-extern rtx replace_regs			PROTO((rtx, rtx *, int, int));
 
 /* Standard pieces of rtx, to be substituted directly into things.  */
 extern rtx pc_rtx;
@@ -959,3 +995,6 @@ extern char *regno_pointer_align;
    know what `enum tree_code' means.  */
 
 extern int rtx_to_tree_code	PROTO((enum rtx_code));
+
+extern int computed_jump_p	PROTO((rtx));
+

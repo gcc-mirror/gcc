@@ -115,8 +115,8 @@ Boston, MA 02111-1307, USA.  */
    The HP-PA can conditionally nullify insns, providing a similar
    effect to the ARM, differing mostly in which insn is "in charge".   */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "insn-config.h"
 #include "conditions.h"
@@ -4492,8 +4492,7 @@ dbr_schedule (first, file)
   else
     SET_HARD_REG_BIT (end_of_function_needs.regs, STACK_POINTER_REGNUM);
 
-  if (current_function_return_rtx != 0
-      && GET_CODE (current_function_return_rtx) == REG)
+  if (current_function_return_rtx != 0)
     mark_referenced_resources (current_function_return_rtx,
 			       &end_of_function_needs, 1);
 

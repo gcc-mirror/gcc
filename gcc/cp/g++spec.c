@@ -1,8 +1,17 @@
+#include "config.h"
+
 #include <sys/types.h>
 #include <stdio.h>
 
-#include "config.h"
 #include "gansidecl.h"
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 
 /* This bit is set if we saw a `-xfoo' language specification.  */
 #define LANGSPEC	(1<<1)

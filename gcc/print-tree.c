@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1990, 91, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -541,9 +541,8 @@ print_node (file, prefix, node, indent)
     case '2':
     case 'r':
     case 's':
-      switch (TREE_CODE (node))
+      if (TREE_CODE (node) == BIND_EXPR)
 	{
-	case BIND_EXPR:
 	  print_node (file, "vars", TREE_OPERAND (node, 0), indent + 4);
 	  print_node (file, "body", TREE_OPERAND (node, 1), indent + 4);
 	  print_node (file, "block", TREE_OPERAND (node, 2), indent + 4);
@@ -570,6 +569,8 @@ print_node (file, prefix, node, indent)
 	  break;
 	case RTL_EXPR:
 	  first_rtl = 0;
+	default:
+	  break;
 	}
       for (i = 0; i < len; i++)
 	{
@@ -689,6 +690,10 @@ print_node (file, prefix, node, indent)
 	case OP_IDENTIFIER:
 	  print_node (file, "op1", TREE_PURPOSE (node), indent + 4);
 	  print_node (file, "op2", TREE_VALUE (node), indent + 4);
+	  break;
+
+	default:
+	  break;
 	}
 
       break;

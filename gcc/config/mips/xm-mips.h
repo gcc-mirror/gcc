@@ -64,7 +64,11 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 
+#ifdef __STDC__
+extern void * alloca ();
+#else
 extern char * alloca ();
+#endif
 
 /* for the emacs version of alloca */
 #define STACK_DIRECTION	-1

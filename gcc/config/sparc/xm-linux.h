@@ -1,5 +1,5 @@
 /* Configuration for GCC for SPARC running Linux.
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eddie C. Dost (ecd@skynet.be)
 
 This file is part of GNU CC.
@@ -19,5 +19,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <sparc/xm-sparc.h>
+#ifndef inhibit_libc
+#include <alloca.h>
+#include <stdlib.h>
+#include <string.h>
+#endif
+
 #include <xm-linux.h>

@@ -56,20 +56,20 @@ extern void shorten_branches	PROTO((rtx));
    for the new function.  The label for the function and associated
    assembler pseudo-ops have already been output in
    `assemble_start_function'.  */
-extern void final_start_function  STDIO_PROTO((rtx, FILE *, int));
+extern void final_start_function  PROTO((rtx, FILE *, int));
 
 /* Output assembler code for the end of a function.
    For clarity, args are same as those of `final_start_function'
    even though not all of them are needed.  */
-extern void final_end_function  STDIO_PROTO((rtx, FILE *, int));
+extern void final_end_function  PROTO((rtx, FILE *, int));
 
 /* Output assembler code for some insns: all or part of a function.  */
-extern void final		STDIO_PROTO((rtx, FILE *, int, int));
+extern void final		PROTO((rtx, FILE *, int, int));
 
 /* The final scan for one insn, INSN.  Args are same as in `final', except
    that INSN is the insn being scanned.  Value returned is the next insn to
    be scanned.  */
-extern rtx final_scan_insn	STDIO_PROTO((rtx, FILE *, int, int, int));
+extern rtx final_scan_insn	PROTO((rtx, FILE *, int, int, int));
 
 /* Replace a SUBREG with a REG or a MEM, based on the thing it is a
    subreg of.  */
@@ -93,12 +93,11 @@ extern void output_address	PROTO((rtx));
 /* Print an integer constant expression in assembler syntax.
    Addition and subtraction are the only arithmetic
    that may appear in these expressions.  */
-extern void output_addr_const STDIO_PROTO((FILE *, rtx));
+extern void output_addr_const PROTO((FILE *, rtx));
 
 /* Output a string of assembler code, substituting numbers, strings
    and fixed syntactic prefixes.  */
-extern void asm_fprintf		STDIO_PROTO(PVPROTO((FILE *file,
-						     char *p, ...)));
+extern void asm_fprintf		PROTO(PVPROTO((FILE *file, char *p, ...)));
 
 /* Split up a CONST_DOUBLE or integer constant rtx into two rtx's for single
    words.  */
@@ -119,8 +118,8 @@ extern void leaf_renumber_regs_insn PROTO((rtx));
 extern void allocate_for_life_analysis	PROTO((void));
 extern int regno_uninitialized		PROTO((int));
 extern int regno_clobbered_at_setjmp	PROTO((int));
-extern void dump_flow_info		STDIO_PROTO((FILE *));
-extern void flow_analysis		STDIO_PROTO((rtx, int, FILE *));
+extern void dump_flow_info		PROTO((FILE *));
+extern void flow_analysis		PROTO((rtx, int, FILE *));
 #endif
 
 /* Functions in varasm.c.  */
@@ -257,7 +256,7 @@ extern void assemble_label		PROTO((char *));
    Otherwise NAME is transformed in an implementation-defined way
    (usually by the addition of an underscore).
    Many macros in the tm file are defined to call this function.  */
-extern void assemble_name		STDIO_PROTO((FILE *, char *));
+extern void assemble_name		PROTO((FILE *, char *));
 
 #ifdef RTX_CODE
 /* Assemble the integer constant X into an object of SIZE bytes.

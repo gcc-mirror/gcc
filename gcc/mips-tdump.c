@@ -1,5 +1,5 @@
 /* Read and manage MIPS symbol tables from object modules.
-   Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by hartzell@boulder.colorado.edu,
    Rewritten by meissner@osf.org.
 
@@ -20,13 +20,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "config.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/file.h>
 #include <time.h>
 #include <fcntl.h>
 #include <errno.h>
-#include "config.h"
 
 #ifdef index
 #undef index

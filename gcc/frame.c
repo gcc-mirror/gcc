@@ -35,6 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 
 #ifdef DWARF2_UNWIND_INFO
+#include "gansidecl.h"
 #include "dwarf2.h"
 #include "frame.h"
 #include <stddef.h>
@@ -542,7 +543,8 @@ __deregister_frame (void *begin)
 	  struct object *ob = *p;
 	  *p = (*p)->next;
 
-	  if (ob->fde_array)
+	  /* If we've run init_frame for this object, free the FDE array.  */
+	  if (ob->pc_begin)
 	    free (ob->fde_array);
 	  free (ob);
 
@@ -598,7 +600,7 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
   /* Then the insns in the FDE up to our target PC.  */
   end = next_fde (f);
   pc = f->pc_begin;
-  while (insn < end && pc < pc_target)
+  while (insn < end && pc <= pc_target)
     insn = execute_cfa_insn (insn, &state, &info, &pc);
 
   memcpy (state_in, &state.s, sizeof (state.s));

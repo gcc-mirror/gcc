@@ -20,6 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -119,6 +120,10 @@ plus_constant_wide (x, c)
 	return gen_rtx (PLUS, mode,
 			XEXP (x, 0),
 			plus_constant (XEXP (x, 1), c));
+      break;
+      
+    default:
+      break;
     }
 
   if (c != 0)
@@ -317,7 +322,9 @@ convert_memory_address (to_mode, x)
       return x;
 
     case LABEL_REF:
-      return gen_rtx (LABEL_REF, to_mode, XEXP (x, 0));
+      temp = gen_rtx (LABEL_REF, to_mode, XEXP (x, 0));
+      LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
+      return temp;
 
     case SYMBOL_REF:
       temp = gen_rtx (SYMBOL_REF, to_mode, XSTR (x, 0));
@@ -342,6 +349,10 @@ convert_memory_address (to_mode, x)
 	return gen_rtx (GET_CODE (x), to_mode, 
 			convert_memory_address (to_mode, XEXP (x, 0)),
 			convert_memory_address (to_mode, XEXP (x, 1)));
+      break;
+      
+    default:
+      break;
     }
 
   return convert_modes (to_mode, from_mode,
@@ -398,6 +409,9 @@ memory_address (mode, x)
      register rtx x;
 {
   register rtx oldx = x;
+
+  if (GET_CODE (x) == ADDRESSOF)
+    return x;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   if (GET_MODE (x) == ptr_mode)
@@ -740,6 +754,9 @@ promote_mode (type, mode, punsignedp, for_call)
       unsignedp = POINTERS_EXTEND_UNSIGNED;
       break;
 #endif
+      
+    default:
+      break;
     }
 
   *punsignedp = unsignedp;
@@ -879,6 +896,8 @@ emit_stack_save (save_level, psave, after)
 	}
       break;
 #endif
+    default:
+      break;
     }
 
   /* If there is no save area and we have to allocate one, do so.  Otherwise
@@ -959,6 +978,8 @@ emit_stack_restore (save_level, sa, after)
 	fcn = gen_restore_stack_nonlocal;
       break;
 #endif
+    default:
+      break;
     }
 
   if (sa != 0)
@@ -1090,38 +1111,39 @@ allocate_dynamic_stack_space (size, target, known_align)
 
   mark_reg_pointer (target, known_align / BITS_PER_UNIT);
 
-#ifndef STACK_GROWS_DOWNWARD
-  emit_move_insn (target, virtual_stack_dynamic_rtx);
-#endif
-
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
-     stack pointer.  */
+     stack pointer, such as acquiring the space by calling malloc().  */
 #ifdef HAVE_allocate_stack
   if (HAVE_allocate_stack)
     {
-      enum machine_mode mode
-	= insn_operand_mode[(int) CODE_FOR_allocate_stack][0];
-
-      size = convert_modes (mode, ptr_mode, size, 1);
+      enum machine_mode mode;
 
       if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][0]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][0])
+		(target, Pmode)))
+	target = copy_to_mode_reg (Pmode, target);
+      mode = insn_operand_mode[(int) CODE_FOR_allocate_stack][1];
+      size = convert_modes (mode, ptr_mode, size, 1);
+      if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][1]
+	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][1])
 		(size, mode)))
 	size = copy_to_mode_reg (mode, size);
 
-      emit_insn (gen_allocate_stack (size));
+      emit_insn (gen_allocate_stack (target, size));
     }
   else
 #endif
     {
+#ifndef STACK_GROWS_DOWNWARD
+      emit_move_insn (target, virtual_stack_dynamic_rtx);
+#endif
       size = convert_modes (Pmode, ptr_mode, size, 1);
       anti_adjust_stack (size);
-    }
-
 #ifdef STACK_GROWS_DOWNWARD
   emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
+    }
 
   if (MUST_ALIGN)
     {
@@ -1275,6 +1297,10 @@ probe_stack_range (first, size)
       emit_jump (end_lab);
       emit_note (NULL_PTR, NOTE_INSN_LOOP_END);
       emit_label (end_lab);
+
+      /* If will be doing stupid optimization, show test_addr is still live. */
+      if (obey_regdecls)
+	emit_insn (gen_rtx (USE, VOIDmode, test_addr));
 
       emit_stack_probe (last_addr);
     }

@@ -114,7 +114,7 @@ do {									\
 #define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL) \
     ASM_OUTPUT_LABEL(STREAM, NAME)
 
-#define ARM_OUTPUT_LABEL(STREAM,NAME)	\
+#define ASM_OUTPUT_LABEL(STREAM,NAME)	\
 do {					\
   assemble_name (STREAM,NAME);		\
   fputs (":\n", STREAM);		\
@@ -224,10 +224,15 @@ do { char dstr[30];							\
    assemble_name ((STREAM), (NAME)),		     			\
    fprintf(STREAM, ", %d\t%s %d\n", ROUNDED, ASM_COMMENT_START, SIZE))
 
-/* Output a local common block.  /bin/as can't do this, so hack a `.space' into
-   the bss segment.  Note that this is *bad* practice.  */
-#define ASM_OUTPUT_ALIGNED_LOCAL(STREAM,NAME,SIZE,ALIGN)  \
-  output_lcomm_directive (STREAM, NAME, SIZE, ALIGN)
+/* Output a local common block.  /bin/as can't do this, so hack a
+   `.space' into the bss segment.  Note that this is *bad* practice.  */
+#define ASM_OUTPUT_ALIGNED_LOCAL(STREAM,NAME,SIZE,ALIGN)		\
+  do {									\
+    bss_section ();							\
+    ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	\
+    ASM_OUTPUT_LABEL (STREAM, NAME);					\
+    fprintf (STREAM, "\t.space\t%d\n", SIZE);				\
+  } while (0)
 
 /* Output a zero-initialized block.  */
 #define ASM_OUTPUT_ALIGNED_BSS(STREAM,DECL,NAME,SIZE,ALIGN) \

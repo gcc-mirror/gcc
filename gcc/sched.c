@@ -117,8 +117,8 @@ Boston, MA 02111-1307, USA.  */
    other NOTE insns are grouped in their same relative order at the
    beginning of basic blocks that have been scheduled.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "basic-block.h"
 #include "regs.h"
@@ -324,7 +324,7 @@ static void sched_note_set		PROTO((int, rtx, int));
 static int rank_for_schedule		PROTO((rtx *, rtx *));
 static void swap_sort			PROTO((rtx *, int));
 static void queue_insn			PROTO((rtx, int));
-static int birthing_insn		PROTO((rtx));
+static int birthing_insn_p		PROTO((rtx));
 static void adjust_priority		PROTO((rtx));
 static int schedule_insn		PROTO((rtx, rtx *, int, int));
 static int schedule_select		PROTO((rtx *, int, int, FILE *));
@@ -735,34 +735,30 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	return 1;
     }
 
-  if (GET_CODE (x) == GET_CODE (y))
-    switch (GET_CODE (x))
-      {
-      case MULT:
-	{
-	  /* Handle cases where we expect the second operands to be the
-	     same, and check only whether the first operand would conflict
-	     or not.  */
-	  rtx x0, y0;
-	  rtx x1 = canon_rtx (XEXP (x, 1));
-	  rtx y1 = canon_rtx (XEXP (y, 1));
-	  if (! rtx_equal_for_memref_p (x1, y1))
-	    return 1;
-	  x0 = canon_rtx (XEXP (x, 0));
-	  y0 = canon_rtx (XEXP (y, 0));
-	  if (rtx_equal_for_memref_p (x0, y0))
-	    return (xsize == 0 || ysize == 0
-		    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
+  if (GET_CODE (x) == GET_CODE (y) && GET_CODE (x) == MULT)
+    {
+      /* Handle cases where we expect the second operands to be the
+	 same, and check only whether the first operand would conflict
+	 or not.  */
+      rtx x0, y0;
+      rtx x1 = canon_rtx (XEXP (x, 1));
+      rtx y1 = canon_rtx (XEXP (y, 1));
+      if (! rtx_equal_for_memref_p (x1, y1))
+	return 1;
+      x0 = canon_rtx (XEXP (x, 0));
+      y0 = canon_rtx (XEXP (y, 0));
+      if (rtx_equal_for_memref_p (x0, y0))
+	return (xsize == 0 || ysize == 0
+		|| (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
 
-	  /* Can't properly adjust our sizes.  */
-	  if (GET_CODE (x1) != CONST_INT)
-	    return 1;
-	  xsize /= INTVAL (x1);
-	  ysize /= INTVAL (x1);
-	  c /= INTVAL (x1);
-	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
-	}
-      }
+      /* Can't properly adjust our sizes.  */
+      if (GET_CODE (x1) != CONST_INT)
+	return 1;
+      xsize /= INTVAL (x1);
+      ysize /= INTVAL (x1);
+      c /= INTVAL (x1);
+      return memrefs_conflict_p (xsize, x0, ysize, y0, c);
+    }
 
   if (CONSTANT_P (x))
     {
@@ -2024,6 +2020,9 @@ sched_analyze_2 (x, insn)
       sched_analyze_2 (XEXP (x, 0), insn);
       sched_analyze_1 (x, insn);
       return;
+      
+    default:
+      break;
     }
 
   /* Other cases: walk the insn.  */
@@ -4363,6 +4362,7 @@ update_flow_info (notes, first, last, orig_insn)
 		  /* ??? This won't handle multiple word registers correctly,
 		     but should be good enough for now.  */
 		  if (REG_NOTE_KIND (note) == REG_UNUSED
+		      && GET_CODE (XEXP (note, 0)) != SCRATCH
 		      && ! dead_or_set_p (insn, XEXP (note, 0)))
 		    PUT_REG_NOTE_KIND (note, REG_DEAD);
 
@@ -4670,21 +4670,29 @@ update_flow_info (notes, first, last, orig_insn)
 
       for (insn = first; ; insn = NEXT_INSN (insn))
 	{
-	  set = single_set (insn);
-	  if (set)
+	  rtx pat = PATTERN (insn);
+	  int i = GET_CODE (pat) == PARALLEL ? XVECLEN (pat, 0) : 0;
+	  set = pat;
+	  for (;;)
 	    {
-	      if (GET_CODE (SET_DEST (set)) == REG
-		  && REGNO (SET_DEST (set)) == REGNO (orig_dest))
+	      if (GET_CODE (set) == SET)
 		{
-		  found_orig_dest = 1;
-		  break;
+		  if (GET_CODE (SET_DEST (set)) == REG
+		      && REGNO (SET_DEST (set)) == REGNO (orig_dest))
+		    {
+		      found_orig_dest = 1;
+		      break;
+		    }
+		  else if (GET_CODE (SET_DEST (set)) == SUBREG
+			   && SUBREG_REG (SET_DEST (set)) == orig_dest)
+		    {
+		      found_split_dest = 1;
+		      break;
+		    }
 		}
-	      else if (GET_CODE (SET_DEST (set)) == SUBREG
-		       && SUBREG_REG (SET_DEST (set)) == orig_dest)
-		{
-		  found_split_dest = 1;
-		  break;
-		}
+	      if (--i < 0)
+		break;
+	      set = XVECEXP (pat, 0, i);
 	    }
 
 	  if (insn == last)
@@ -4784,7 +4792,7 @@ schedule_insns (dump_file)
   /* Create an insn here so that we can hang dependencies off of it later.  */
   sched_before_next_call
     = gen_rtx (INSN, VOIDmode, 0, NULL_RTX, NULL_RTX,
-	       NULL_RTX, 0, NULL_RTX, 0);
+	       NULL_RTX, 0, NULL_RTX, NULL_RTX);
 
   /* Initialize the unused_*_lists.  We can't use the ones left over from
      the previous function, because gcc has freed that memory.  We can use

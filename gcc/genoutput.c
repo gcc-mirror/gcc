@@ -180,6 +180,8 @@ output_prologue ()
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
+  printf ("#include \"flags.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"hard-reg-set.h\"\n");
@@ -191,7 +193,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"insn-codes.h\"\n\n");
   printf ("#include \"recog.h\"\n\n");
 
-  printf ("#include <stdio.h>\n");
   printf ("#include \"output.h\"\n");
 }
 
@@ -514,6 +515,9 @@ scan_operands (part, this_address_p, this_strict_low)
     case STRICT_LOW_PART:
       scan_operands (XEXP (part, 0), 0, 1);
       return;
+      
+    default:
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (part));

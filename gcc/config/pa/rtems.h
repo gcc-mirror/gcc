@@ -24,7 +24,3 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dhppa -DPWB -Acpu(hppa) -Amachine(hppa) \
    -Drtems -D__rtems__ -Asystem(rtems)"
-
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  { "rtems", 0 },

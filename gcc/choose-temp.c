@@ -22,6 +22,10 @@ Boston, MA 02111-1307, USA.  */
 /* This file lives in at least two places: libiberty and gcc.
    Don't change one without the other.  */
 
+#ifdef IN_GCC
+#include "config.h"
+#endif
+
 #ifndef NO_SYS_FILE_H
 #include <sys/types.h>
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
@@ -36,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>	/* May get P_tmpdir.  */
 
 #ifdef IN_GCC
-#include "config.h"
 #include "gansidecl.h"
 extern char *xmalloc ();
 #else

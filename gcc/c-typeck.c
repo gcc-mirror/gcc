@@ -261,6 +261,12 @@ common_type (t1, t2)
 	  return build_type_attribute_variant (t1, attributes);
 	}
 
+      /* Likewise, prefer long double to double even if same size.  */
+      if (TYPE_MAIN_VARIANT (t1) == long_double_type_node
+	  || TYPE_MAIN_VARIANT (t2) == long_double_type_node)
+	return build_type_attribute_variant (long_double_type_node,
+					     attributes);
+
       /* Otherwise prefer the unsigned one.  */
 
       if (TREE_UNSIGNED (t1))
@@ -506,6 +512,9 @@ comptypes (type1, type2)
     case RECORD_TYPE:
       if (maybe_objc_comptypes (t1, t2, 0) == 1)
 	val = 1;
+      break;
+
+    default:
       break;
     }
   return attrval == 2 && val == 1 ? 2 : val;
@@ -1008,13 +1017,14 @@ default_conversion (exp)
       type = type_for_size (MAX (TYPE_PRECISION (type),
 				 TYPE_PRECISION (integer_type_node)),
 			    ((flag_traditional
-			      || TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node))
+			      || (TYPE_PRECISION (type)
+				  >= TYPE_PRECISION (integer_type_node)))
 			     && TREE_UNSIGNED (type)));
       return convert (type, exp);
     }
 
   if (TREE_CODE (exp) == COMPONENT_REF
-      && DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
+      && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1)))
     {
       tree width = DECL_SIZE (TREE_OPERAND (exp, 1));
       HOST_WIDE_INT low = TREE_INT_CST_LOW (width);
@@ -1242,6 +1252,9 @@ build_component_ref (datum, component)
 	(TREE_OPERAND (datum, 0),
 	 build_component_ref (TREE_OPERAND (datum, 1), component),
 	 build_component_ref (TREE_OPERAND (datum, 2), component));
+
+    default:
+      break;
     }
 
   /* See if there is a field or component with name COMPONENT.  */
@@ -1573,6 +1586,8 @@ build_function_call (function, params)
 	if (coerced_params == 0)
 	  return integer_zero_node;
 	return build_unary_op (ABS_EXPR, TREE_VALUE (coerced_params), 0);
+      default:
+	break;
       }
 
   {
@@ -2333,6 +2348,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	    pedwarn ("comparison between pointer and integer");
 	}
       break;
+      
+    default:
+      break;
     }
 
   if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
@@ -2477,7 +2495,8 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	  converted = 1;
 	  resultcode = xresultcode;
 
-	  if (warn_sign_compare && skip_evaluation == 0)
+	  if ((warn_sign_compare < 0 ? extra_warnings : warn_sign_compare != 0)
+	      && skip_evaluation == 0)
 	    {
 	      int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
 	      int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
@@ -3111,6 +3130,9 @@ build_unary_op (code, xarg, noconvert)
 	  TREE_CONSTANT (addr) = 1;
 	return addr;
       }
+
+    default:
+      break;
     }
 
   if (!errstring)
@@ -3179,17 +3201,16 @@ lvalue_p (ref)
     case PARM_DECL:
     case RESULT_DECL:
     case ERROR_MARK:
-      if (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
-	  && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
-	return 1;
-      break;
+      return (TREE_CODE (TREE_TYPE (ref)) != FUNCTION_TYPE
+	      && TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE);
 
     case BIND_EXPR:
     case RTL_EXPR:
-      if (TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE)
-	return 1;
+      return TREE_CODE (TREE_TYPE (ref)) == ARRAY_TYPE;
+
+    default:
+      return 0;
     }
-  return 0;
 }
 
 /* Return nonzero if REF is an lvalue valid for this language;
@@ -3221,7 +3242,12 @@ unary_complex_lvalue (code, arg)
   if (TREE_CODE (arg) == COMPOUND_EXPR)
     {
       tree real_result = build_unary_op (code, TREE_OPERAND (arg, 1), 0);
-      pedantic_lvalue_warning (COMPOUND_EXPR);
+
+      /* If this returns a function type, it isn't really being used as
+	 an lvalue, so don't issue a warning about it.  */
+      if (TREE_CODE (TREE_TYPE (arg)) != FUNCTION_TYPE)
+	pedantic_lvalue_warning (COMPOUND_EXPR);
+
       return build (COMPOUND_EXPR, TREE_TYPE (real_result),
 		    TREE_OPERAND (arg, 0), real_result);
     }
@@ -3230,6 +3256,9 @@ unary_complex_lvalue (code, arg)
   if (TREE_CODE (arg) == COND_EXPR)
     {
       pedantic_lvalue_warning (COND_EXPR);
+      if (TREE_CODE (TREE_TYPE (arg)) != FUNCTION_TYPE)
+	pedantic_lvalue_warning (COMPOUND_EXPR);
+
       return (build_conditional_expr
 	      (TREE_OPERAND (arg, 0),
 	       build_unary_op (code, TREE_OPERAND (arg, 1), 0),
@@ -3871,6 +3900,8 @@ build_modify_expr (lhs, modifycode, rhs)
 		      /* But cast it to void to avoid an "unused" error.  */
 		      convert (void_type_node, rhs), cond);
       }
+    default:
+      break;
     }
 
   /* If a binary op has been requested, combine the old LHS value with the RHS
@@ -3912,6 +3943,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	pedantic_lvalue_warning (CONVERT_EXPR);
 	return convert (TREE_TYPE (lhs), result);
       }
+      
+    default:
+      break;
     }
 
   /* Now we have handled acceptable kinds of LHS that are not truly lvalues.
@@ -4425,9 +4459,10 @@ initializer_constant_valid_p (value, endtype)
 	  return null_pointer_node;
 	return 0;
       }
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* If VALUE is a compound expr all of whose expressions are constant, then
@@ -6615,6 +6650,9 @@ c_expand_return (retval)
 		  && ! TREE_STATIC (inner)
 		  && DECL_CONTEXT (inner) == current_function_decl)
 		warning ("function returns address of local variable");
+	      break;
+
+	    default:
 	      break;
 	    }
 

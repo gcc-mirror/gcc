@@ -320,7 +320,7 @@ used, or when the compiler is built as a cross compiler.
 
 @findex INIT_ENVIRONMENT
 @item INIT_ENVIRONMENT
-Define this macro as a C string constant if you with to set environment
+Define this macro as a C string constant if you wish to set environment
 variables for programs called by the driver, such as the assembler and
 loader.  The driver passes the value of this macro to @code{putenv} to
 initialize the necessary environment variables.
@@ -354,11 +354,17 @@ try when searching for header files.
 Cross compilers do not use this macro and do not search either
 @file{/usr/include} or its replacement.
 
+@findex STANDARD_INCLUDE_COMPONENT
+@item STANDARD_INCLUDE_COMPONENT
+The ``component'' corresponding to @code{STANDARD_INCLUDE_DIR}.
+See @code{INCLUDE_DEFAULTS}, below, for the description of components.
+If you do not define this macro, no component is used.
+
 @findex INCLUDE_DEFAULTS
 @item INCLUDE_DEFAULTS
 Define this macro if you wish to override the entire default search path
-for include files.  The default search path includes
-@code{GCC_INCLUDE_DIR}, @code{LOCAL_INCLUDE_DIR},
+for include files.  For a native compiler, the default search path
+usually consists of @code{GCC_INCLUDE_DIR}, @code{LOCAL_INCLUDE_DIR},
 @code{SYSTEM_INCLUDE_DIR}, @code{GPLUSPLUS_INCLUDE_DIR}, and
 @code{STANDARD_INCLUDE_DIR}.  In addition, @code{GPLUSPLUS_INCLUDE_DIR}
 and @code{GCC_INCLUDE_DIR} are defined automatically by @file{Makefile},
@@ -366,19 +372,28 @@ and specify private search areas for GCC.  The directory
 @code{GPLUSPLUS_INCLUDE_DIR} is used only for C++ programs.
 
 The definition should be an initializer for an array of structures.
-Each array element should have two elements: the directory name (a
-string constant) and a flag for C++-only directories.  Mark the end of
-the array with a null element.  For example, here is the definition used
-for VMS:
+Each array element should have four elements: the directory name (a
+string constant), the component name, and flag for C++-only directories,
+and a flag showing that the includes in the directory don't need to be
+wrapped in @code{extern @samp{C}} when compiling C++.  Mark the end of
+the array with a null element.
+
+The component name denotes what GNU package the include file is part of,
+if any, in all upper-case letters.  For example, it might be @samp{GCC}
+or @samp{BINUTILS}.  If the package is part of the a vendor-supplied
+operating system, code the component name as @samp{0}.
+
+
+For example, here is the definition used for VAX/VMS:
 
 @example
 #define INCLUDE_DEFAULTS \
 @{                                       \
-  @{ "GNU_GXX_INCLUDE:", 1@},             \
-  @{ "GNU_CC_INCLUDE:", 0@},              \
-  @{ "SYS$SYSROOT:[SYSLIB.]", 0@},        \
-  @{ ".", 0@},                            \
-  @{ 0, 0@}                               \
+  @{ "GNU_GXX_INCLUDE:", "G++", 1, 1@},   \
+  @{ "GNU_CC_INCLUDE:", "GCC", 0, 0@},    \
+  @{ "SYS$SYSROOT:[SYSLIB.]", 0, 0, 0@},  \
+  @{ ".", 0, 0, 0@},                      \
+  @{ 0, 0, 0, 0@}                         \
 @}
 @end example
 @end table
@@ -982,6 +997,20 @@ supported machines, new codes should be defined for them.
 The ordering of the component words of floating point values stored in
 memory is controlled by @code{FLOAT_WORDS_BIG_ENDIAN} for the target
 machine and @code{HOST_FLOAT_WORDS_BIG_ENDIAN} for the host.
+
+@findex DEFAULT_VTABLE_THUNKS
+@item DEFAULT_VTABLE_THUNKS
+GNU CC supports two ways of implementing C++ vtables:  traditional or with
+so-called ``thunks''.  The flag @samp{-fvtable-thunk} chooses between them.
+Define this macro to be a C expression for the default value of that flag.
+If @code{DEFAULT_VTABLE_THUNKS} is 0, GNU CC uses the traditional
+implementation by default.  The ``thunk'' implementation is more efficient
+(especially if you have provided an implementation of
+@code{ASM_OUTPUT_MI_THUNK}, see @ref{Function Entry}), but is not binary
+compatible with code compiled using the traditional implementation.  
+If you are writing a new ports, define @code{DEFAULT_VTABLE_THUNKS} to 1.
+
+If you do not define this macro, the default for @samp{-fvtable-thunk} is 0.
 @end table
 
 @node Type Layout
@@ -1063,6 +1092,14 @@ words.
 A C expression for the size in bits of the type @code{long double} on
 the target machine.  If you don't define this, the default is two
 words.
+
+@findex WIDEST_HARDWARE_FP_SIZE
+@item WIDEST_HARDWARE_FP_SIZE
+A C expression for the size in bits of the widest floating-point format
+supported by the hardware.  If you define this macro, you must specify a
+value less than or equal to the value of @code{LONG_DOUBLE_TYPE_SIZE}.
+If you do not define this macro, the value of @code{LONG_DOUBLE_TYPE_SIZE}
+is the default.
 
 @findex DEFAULT_SIGNED_CHAR
 @item DEFAULT_SIGNED_CHAR
@@ -1375,30 +1412,21 @@ are equivalent, a suitable definition is
 #define HARD_REGNO_MODE_OK(REGNO, MODE) 1
 @end smallexample
 
-It is not necessary for this macro to check for the numbers of fixed
-registers, because the allocation mechanism considers them to be always
-occupied.
+You need not include code to check for the numbers of fixed registers,
+because the allocation mechanism considers them to be always occupied.
 
 @cindex register pairs
 On some machines, double-precision values must be kept in even/odd
-register pairs.  The way to implement that is to define this macro
-to reject odd register numbers for such modes.
-
-@ignore
-@c I think this is not true now
-GNU CC assumes that it can always move values between registers and
-(suitably addressed) memory locations.  If it is impossible to move a
-value of a certain mode between memory and certain registers, then
-@code{HARD_REGNO_MODE_OK} must not allow this mode in those registers.
-@end ignore
+register pairs.  You can implement that by defining this macro to reject
+odd register numbers for such modes.
 
 The minimum requirement for a mode to be OK in a register is that the
 @samp{mov@var{mode}} instruction pattern support moves between the
-register and any other hard register for which the mode is OK; and that
-moving a value into the register and back out not alter it.
+register and other hard register in the same class and that moving a
+value into the register and back out not alter it.
 
-Since the same instruction used to move @code{SImode} will work for all
-narrower integer modes, it is not necessary on any machine for
+Since the same instruction used to move @code{word_mode} will work for
+all narrower integer modes, it is not necessary on any machine for
 @code{HARD_REGNO_MODE_OK} to distinguish between these modes, provided
 you define patterns @samp{movhi}, etc., to take advantage of this.  This
 is useful because of the interaction between @code{HARD_REGNO_MODE_OK}
@@ -1436,14 +1464,19 @@ be used unless some pattern's constraint asks for one.
 
 @findex MODES_TIEABLE_P
 @item MODES_TIEABLE_P (@var{mode1}, @var{mode2})
-A C expression that is nonzero if it is desirable to choose register
-allocation so as to avoid move instructions between a value of mode
-@var{mode1} and a value of mode @var{mode2}.
+A C expression that is nonzero if a value of mode
+@var{mode1} is accessable in mode @var{mode2} without copying.
 
 If @code{HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and
-@code{HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are ever different
-for any @var{r}, then @code{MODES_TIEABLE_P (@var{mode1},
-@var{mode2})} must be zero.
+@code{HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always the same for
+any @var{r}, then @code{MODES_TIEABLE_P (@var{mode1}, @var{mode2})}
+should be nonzero.  If they differ for any @var{r}, you should define
+this macro to return zero unless some other mechanism ensures the
+accessability of the value in a narrower mode.
+
+You should define this macro to return nonzero in as many cases as
+possible since doing so will allow GNU CC to perform better register
+allocation.
 @end table
 
 @node Leaf Functions
@@ -2132,6 +2165,10 @@ address for the frame @var{count} steps up from the current frame, after
 the prologue.  @var{frameaddr} is the frame pointer of the @var{count}
 frame, or the frame pointer of the @var{count} @minus{} 1 frame if
 @code{RETURN_ADDR_IN_PREVIOUS_FRAME} is defined.
+
+The value of the expression must always be the correct address when
+@var{count} is zero, but may be @code{NULL_RTX} if there is not way to
+determine the return address of other frames.
 
 @findex RETURN_ADDR_IN_PREVIOUS_FRAME
 @item RETURN_ADDR_IN_PREVIOUS_FRAME
@@ -4678,7 +4715,7 @@ Decode @var{sym_name} and store the real name part in @var{var}, sans
 the characters that encode section info.  Define this macro if
 @code{ENCODE_SECTION_INFO} alters the symbol's name string.
 
-@findex UNIQUE_SECTION_P (@var{decl})
+@findex UNIQUE_SECTION_P
 @item UNIQUE_SECTION_P (@var{decl})
 A C expression which evaluates to true if @var{decl} should be placed
 into a unique section for some target-specific reason.  If you do not
@@ -4857,6 +4894,14 @@ the stdio stream @var{stream}.
 
 This macro need not be defined if the standard form of output
 for the file format in use is appropriate.
+
+@findex OUTPUT_QUOTED_STRING
+@item OUTPUT_QUOTED_STRING (@var{stream}, @var{name})
+A C statement to output the string @var{string} to the stdio stream
+@var{stream}.  If you do not call the function @code{output_quoted_string}
+in your config files, GNU CC will only call it to output filenames to
+the assembler source.  So you can use it to canonicalize the format
+of the filename using this macro.
 
 @findex ASM_OUTPUT_SOURCE_LINE
 @item ASM_OUTPUT_SOURCE_LINE (@var{stream}, @var{line})
@@ -5114,6 +5159,15 @@ place of @code{ASM_OUTPUT_COMMON}, and gives you more flexibility in
 handling the required alignment of the variable.  The alignment is specified
 as the number of bits.
 
+@findex ASM_OUTPUT_ALIGNED_DECL_COMMON
+@item ASM_OUTPUT_ALIGNED_DECL_COMMON (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
+Like @code{ASM_OUTPUT_ALIGNED_COMMON} except that @var{decl} of the
+variable to be output, if there is one, or @code{NULL_TREE} if there
+is not corresponding variable.  If you define this macro, GNU CC wil use it
+in place of both @code{ASM_OUTPUT_COMMON} and
+@code{ASM_OUTPUT_ALIGNED_COMMON}.  Define this macro when you need to see
+the variable's decl in order to chose what to output.
+
 @findex ASM_OUTPUT_SHARED_COMMON
 @item ASM_OUTPUT_SHARED_COMMON (@var{stream}, @var{name}, @var{size}, @var{rounded})
 If defined, it is similar to @code{ASM_OUTPUT_COMMON}, except that it
@@ -5138,7 +5192,8 @@ variables are output.  This macro exists to properly support languages like
 @code{c++} which do not have @code{common} data.  However, this macro currently
 is not defined for all targets.  If this macro and
 @code{ASM_OUTPUT_ALIGNED_BSS} are not defined then @code{ASM_OUTPUT_COMMON}
-or @code{ASM_OUTPUT_ALIGNED_COMMON} is used.
+or @code{ASM_OUTPUT_ALIGNED_COMMON} or
+@code{ASM_OUTPUT_ALIGNED_DECL_COMMON} is used.
 
 @findex ASM_OUTPUT_ALIGNED_BSS
 @item ASM_OUTPUT_ALIGNED_BSS (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
@@ -5178,6 +5233,16 @@ separate, explicit argument.  If you define this macro, it is used in
 place of @code{ASM_OUTPUT_LOCAL}, and gives you more flexibility in
 handling the required alignment of the variable.  The alignment is specified
 as the number of bits.
+
+@findex ASM_OUTPUT_ALIGNED_DECL_LOCAL
+@item ASM_OUTPUT_ALIGNED_DECL_LOCAL (@var{stream}, @var{decl}, @var{name}, @var{size}, @var{alignment})
+Like @code{ASM_OUTPUT_ALIGNED_DECL} except that @var{decl} of the
+variable to be output, if there is one, or @code{NULL_TREE} if there
+is not corresponding variable.  If you define this macro, GNU CC wil use it
+in place of both @code{ASM_OUTPUT_DECL} and
+@code{ASM_OUTPUT_ALIGNED_DECL}.  Define this macro when you need to see
+the variable's decl in order to chose what to output.
+
 
 @findex ASM_OUTPUT_SHARED_LOCAL
 @item ASM_OUTPUT_SHARED_LOCAL (@var{stream}, @var{name}, @var{size}, @var{rounded})
@@ -5287,15 +5352,15 @@ format provides support for this concept, such as the @samp{COMDAT}
 section flags in the Microsoft Windows PE/COFF format, and this support
 requires changes to @var{decl}, such as putting it in a separate section.
 
-@findex SUPPORTS_WEAK
-@item SUPPORTS_WEAK
+@findex SUPPORTS_ONE_ONLY
+@item SUPPORTS_ONE_ONLY
 A C expression which evaluates to true if the target supports one-only
 semantics.
 
 If you don't define this macro, @file{varasm.c} provides a default
 definition.  If @code{MAKE_DECL_ONE_ONLY} is defined, the default
 definition is @samp{1}; otherwise, it is @samp{0}.  Define this macro if
-you want to control weak symbol support with a compiler flag, or if
+you want to control one-only symbol support with a compiler flag, or if
 setting the @code{DECL_ONE_ONLY} flag is enough to mark a declaration to
 be emitted as one-only.
 
@@ -5977,6 +6042,26 @@ A C expression to output text to mark the end of an exception region.
 
 This macro need not be defined on most platforms.
 
+@findex EXCEPTION_SECTION
+@item EXCEPTION_SECTION ()
+A C expression to switch to the section in which the main
+exception table is to be placed (@pxref{Sections}).  The default is a
+section named @code{.gcc_except_table} on machines that support named
+sections via @code{ASM_OUTPUT_SECTION_NAME}, otherwise if @samp{-fpic}
+or @samp{-fPIC} is in effect, the @code{data_section}, otherwise the
+@code{readonly_data_section}.
+
+@findex EH_FRAME_SECTION_ASM_OP
+@item EH_FRAME_SECTION_ASM_OP
+If defined, a C string constant for the assembler operation to switch to
+the section for exception handling frame unwind information.  If not
+defined, GNU CC will provide a default definition if the target supports
+named sections.  @file{crtstuff.c} uses this macro to switch to the
+appropriate section.
+
+You should define this symbol if your target supports DWARF 2 frame
+unwind information and the default definition does not work.
+
 @findex OMIT_EH_TABLE
 @item OMIT_EH_TABLE ()
 A C expression that is nonzero if the normal exception table output
@@ -6001,6 +6086,23 @@ for details on when to define this, and how.
 @item MASK_RETURN_ADDR
 An rtx used to mask the return address found via RETURN_ADDR_RTX, so
 that it does not contain any extraneous set bits in it.
+
+@findex DWARF2_UNWIND_INFO
+@item DWARF2_UNWIND_INFO
+Define this macro to 0 if your target supports DWARF 2 frame unwind
+information, but it does not yet work with exception handling.
+Otherwise, if your target supports this information (if it defines
+@samp{INCOMING_RETURN_ADDR_RTX} and either @samp{UNALIGNED_INT_ASM_OP}
+or @samp{OBJECT_FORMAT_ELF}), GCC will provide a default definition of
+1.
+
+If this macro is defined to 1, the DWARF 2 unwinder will be the default
+exception handling mechanism; otherwise, setjmp/longjmp will be used by
+default.
+
+If this macro is defined to anything, the DWARF 2 unwinder will be used
+instead of inline unwinders and __unwind_function in the non-setjmp case.
+
 @end table
 
 @node Alignment Output
@@ -7042,7 +7144,7 @@ and @code{INIT_SECTION_ASM_OP} is not defined, a default
 Define this if your @code{exit} function needs to do something
 besides calling an external function @code{_cleanup} before
 terminating with @code{_exit}.  The @code{EXIT_BODY} macro is
-only needed if netiher @code{HAVE_ATEXIT} nor
+only needed if neither @code{HAVE_ATEXIT} nor
 @code{INIT_SECTION_ASM_OP} are defined.
 
 @findex INSN_SETS_ARE_DELAYED

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Pyramid 90x, 9000, and MIServer Series.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,8 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Some output-actions in pyr.md need these.  */
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"

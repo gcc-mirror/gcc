@@ -6,6 +6,6 @@ X_CFLAGS = -O -mstandard -mlegend
 BOOT_CFLAGS = -O2 -g -mstandard -mlegend $(CFLAGS)
 CLIB = -lw32
 RANLIB = true
-INSTALL_HEADERS = 
+USER_H = $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
 STMP_FIXPROTO = 
 

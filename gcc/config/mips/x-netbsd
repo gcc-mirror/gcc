@@ -3,7 +3,8 @@ STMP_FIXPROTO =
 
 # We don't need GCC's own include files.
 USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/varargs.h \
-	 $(srcdir)/ginclude/va-mips.h
+	 $(srcdir)/ginclude/va-mips.h $(EXTRA_HEADERS) $(LANG_EXTRA_HEADERS)
+
 XLIMITS_H =
 
 # We don't need even the files GCC insists we need.

@@ -33,8 +33,8 @@ Boston, MA 02111-1307, USA.  */
    are used also for allocating many other kinds of objects
    by all passes of the compiler.  */
 
-#include <setjmp.h>
 #include "config.h"
+#include <setjmp.h>
 #include "flags.h"
 #include "tree.h"
 #include "except.h"
@@ -72,6 +72,10 @@ struct obstack maybepermanent_obstack;
    functions that are compiled in the middle of compiling other functions.  */
 
 struct simple_obstack_stack *toplev_inline_obstacks;
+
+/* Former elements of toplev_inline_obstacks that have been recycled.  */
+
+struct simple_obstack_stack *extra_inline_obstacks;
 
 /* This is a list of function_maybepermanent_obstacks for inline functions
    nested in the current function that were compiled in the middle of
@@ -373,12 +377,22 @@ save_tree_status (p, context)
 	  head = &f->inline_obstacks;
 	}
 
-      current = ((struct simple_obstack_stack *)
-		 xmalloc (sizeof (struct simple_obstack_stack)));
+      if (context == NULL_TREE && extra_inline_obstacks)
+	{
+	  current = extra_inline_obstacks;
+	  extra_inline_obstacks = current->next;
+	}
+      else
+	{
+	  current = ((struct simple_obstack_stack *)
+		     xmalloc (sizeof (struct simple_obstack_stack)));
 
-      current->obstack = (struct obstack *) xmalloc (sizeof (struct obstack));
+	  current->obstack
+	    = (struct obstack *) xmalloc (sizeof (struct obstack));
+	  gcc_obstack_init (current->obstack);
+	}
+
       function_maybepermanent_obstack = current->obstack;
-      gcc_obstack_init (function_maybepermanent_obstack);
 
       current->next = *head;
       *head = current;
@@ -403,8 +417,9 @@ save_tree_status (p, context)
    This is used after a nested function.  */
 
 void
-restore_tree_status (p)
+restore_tree_status (p, context)
      struct function *p;
+     tree context;
 {
   all_types_permanent = p->all_types_permanent;
   momentary_stack = p->momentary_stack;
@@ -419,6 +434,29 @@ restore_tree_status (p)
      the compilation of a nested function if we expect it to survive
      past the nested function's end.  */
   obstack_free (function_maybepermanent_obstack, maybepermanent_firstobj);
+
+  /* If we were compiling a toplevel function, we can free this space now.  */
+  if (context == NULL_TREE)
+    {
+      obstack_free (&temporary_obstack, temporary_firstobj);
+      obstack_free (&momentary_obstack, momentary_function_firstobj);
+    }
+
+  /* If we were compiling a toplevel function that we don't actually want
+     to save anything from, return the obstack to the pool.  */
+  if (context == NULL_TREE
+      && obstack_empty_p (function_maybepermanent_obstack))
+    {
+      struct simple_obstack_stack *current, **p = &toplev_inline_obstacks;
+
+      while ((*p)->obstack != function_maybepermanent_obstack)
+	p = &((*p)->next);
+      current = *p;
+      *p = current->next;
+
+      current->next = extra_inline_obstacks;
+      extra_inline_obstacks = current;
+    }
 
   obstack_free (function_obstack, 0);
   free (function_obstack);
@@ -695,6 +733,16 @@ savealloc (size)
      int size;
 {
   return (char *) obstack_alloc (saveable_obstack, size);
+}
+
+/* Allocate SIZE bytes in the expression obstack
+   and return a pointer to them.  */
+
+char *
+expralloc (size)
+     int size;
+{
+  return (char *) obstack_alloc (expression_obstack, size);
 }
 
 /* Print out which obstack an object is in.  */
@@ -1994,6 +2042,20 @@ build_decl_list (parm, value)
   return node;
 }
 
+/* Similar, but build on the expression_obstack.  */
+
+tree
+build_expr_list (parm, value)
+     tree parm, value;
+{
+  register tree node;
+  register struct obstack *ambient_obstack = current_obstack;
+  current_obstack = expression_obstack;
+  node = build_tree_list (parm, value);
+  current_obstack = ambient_obstack;
+  return node;
+}
+
 /* Return a newly created TREE_LIST node whose
    purpose and value fields are PARM and VALUE
    and whose TREE_CHAIN is CHAIN.  */
@@ -2035,6 +2097,20 @@ decl_tree_cons (purpose, value, chain)
   register tree node;
   register struct obstack *ambient_obstack = current_obstack;
   current_obstack = &temp_decl_obstack;
+  node = tree_cons (purpose, value, chain);
+  current_obstack = ambient_obstack;
+  return node;
+}
+
+/* Similar, but build on the expression_obstack.  */
+
+tree
+expr_tree_cons (purpose, value, chain)
+     tree purpose, value, chain;
+{
+  register tree node;
+  register struct obstack *ambient_obstack = current_obstack;
+  current_obstack = expression_obstack;
   node = tree_cons (purpose, value, chain);
   current_obstack = ambient_obstack;
   return node;
@@ -2226,9 +2302,10 @@ staticp (arg)
       if (TREE_CODE (TYPE_SIZE (TREE_TYPE (arg))) == INTEGER_CST
 	  && TREE_CODE (TREE_OPERAND (arg, 1)) == INTEGER_CST)
 	return staticp (TREE_OPERAND (arg, 0));
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Wrap a SAVE_EXPR around EXPR, if appropriate.
@@ -2372,6 +2449,9 @@ unsave_expr_now (expr)
     case METHOD_CALL_EXPR:
       first_rtl = 3;
       break;
+
+    default:
+      break;
     }
 
   switch (TREE_CODE_CLASS (code))
@@ -2406,6 +2486,7 @@ contains_placeholder_p (exp)
      tree exp;
 {
   register enum tree_code code = TREE_CODE (exp);
+  int result;
 
   /* If we have a WITH_RECORD_EXPR, it "cancels" any PLACEHOLDER_EXPR
      in it since it is supplying a value for it.  */
@@ -2423,6 +2504,13 @@ contains_placeholder_p (exp)
 	 here will be valid.  */
       return contains_placeholder_p (TREE_OPERAND (exp, 0));
 
+    case 'x':
+      if (code == TREE_LIST)
+	return (contains_placeholder_p (TREE_VALUE (exp))
+		|| (TREE_CHAIN (exp) != 0
+		    && contains_placeholder_p (TREE_CHAIN (exp))));
+      break;
+					
     case '1':
     case '2':  case '<':
     case 'e':
@@ -2442,8 +2530,24 @@ contains_placeholder_p (exp)
 		  || contains_placeholder_p (TREE_OPERAND (exp, 2)));
 
 	case SAVE_EXPR:
-	   return (SAVE_EXPR_RTL (exp) == 0
-		   && contains_placeholder_p (TREE_OPERAND (exp, 0)));
+	  /* If we already know this doesn't have a placeholder, don't
+	     check again.  */
+	  if (SAVE_EXPR_NOPLACEHOLDER (exp) || SAVE_EXPR_RTL (exp) != 0)
+	    return 0;
+
+	  SAVE_EXPR_NOPLACEHOLDER (exp) = 1;
+	  result = contains_placeholder_p (TREE_OPERAND (exp, 0));
+	  if (result)
+	    SAVE_EXPR_NOPLACEHOLDER (exp) = 0;
+
+	  return result;
+
+	case CALL_EXPR:
+	  return (TREE_OPERAND (exp, 1) != 0
+		  && contains_placeholder_p (TREE_OPERAND (exp, 1)));
+
+	default:
+	  break;
 	}
 
       switch (tree_code_length[(int) code])
@@ -2453,16 +2557,20 @@ contains_placeholder_p (exp)
 	case 2:
 	  return (contains_placeholder_p (TREE_OPERAND (exp, 0))
 		  || contains_placeholder_p (TREE_OPERAND (exp, 1)));
+	default:
+	  return 0;
 	}
-    }
 
-  return 0;
+    default:
+      return 0;
+    }
 }
 
 /* Given a tree EXP, a FIELD_DECL F, and a replacement value R,
    return a tree with all occurrences of references to F in a
    PLACEHOLDER_EXPR replaced by R.   Note that we assume here that EXP
-   contains only arithmetic expressions.  */
+   contains only arithmetic expressions or a CALL_EXPR with a
+   PLACEHOLDER_EXPR occurring only in its arglist.  */
 
 tree
 substitute_in_expr (exp, f, r)
@@ -2472,7 +2580,7 @@ substitute_in_expr (exp, f, r)
 {
   enum tree_code code = TREE_CODE (exp);
   tree op0, op1, op2;
-  tree new = 0;
+  tree new;
   tree inner;
 
   switch (TREE_CODE_CLASS (code))
@@ -2484,7 +2592,18 @@ substitute_in_expr (exp, f, r)
     case 'x':
       if (code == PLACEHOLDER_EXPR)
 	return exp;
-      break;
+      else if (code == TREE_LIST)
+	{
+	  op0 = (TREE_CHAIN (exp) == 0
+		 ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
+	  op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
+	  if (op0 == TREE_CHAIN (exp) || op1 == TREE_VALUE (exp))
+	    return exp;
+
+	  return tree_cons (TREE_PURPOSE (exp), op0, op1);
+	}
+
+      abort ();
 
     case '1':
     case '2':
@@ -2522,7 +2641,17 @@ substitute_in_expr (exp, f, r)
 	  if (code == SAVE_EXPR)
 	    return exp;
 
-	  if (code != COND_EXPR)
+	  else if (code == CALL_EXPR)
+	    {
+	      op1 = substitute_in_expr (TREE_OPERAND (exp, 1), f, r);
+	      if (op1 == TREE_OPERAND (exp, 1))
+		return exp;
+
+	      return build (code, TREE_TYPE (exp),
+			    TREE_OPERAND (exp, 0), op1, NULL_TREE);
+	    }
+
+	  else if (code != COND_EXPR)
 	    abort ();
 
 	  op0 = substitute_in_expr (TREE_OPERAND (exp, 0), f, r);
@@ -2533,6 +2662,10 @@ substitute_in_expr (exp, f, r)
 	    return exp;
 
 	  new = fold (build (code, TREE_TYPE (exp), op0, op1, op2));
+	  break;
+
+	default:
+	  abort ();
 	}
 
       break;
@@ -2584,12 +2717,15 @@ substitute_in_expr (exp, f, r)
 
 	  new = fold (build1 (code, TREE_TYPE (exp), op0));
 	  break;
-	}
-    }
 
-  /* If it wasn't one of the cases we handle, give up.  */
-  if (new == 0)
-    abort ();
+	default:
+	  abort ();
+	}
+      break;
+      
+    default:
+      abort ();
+    }
 
   TREE_READONLY (new) = TREE_READONLY (exp);
   return new;
@@ -3069,18 +3205,20 @@ build_type_attribute_variant (ttype, attribute)
 
       switch (TREE_CODE (ntype))
         {
-	  case FUNCTION_TYPE:
-	    hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
-	    break;
-	  case ARRAY_TYPE:
-	    hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
-	    break;
-	  case INTEGER_TYPE:
-	    hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
-	    break;
-	  case REAL_TYPE:
-	    hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
-	    break;
+	case FUNCTION_TYPE:
+	  hashcode += TYPE_HASH (TYPE_ARG_TYPES (ntype));
+	  break;
+	case ARRAY_TYPE:
+	  hashcode += TYPE_HASH (TYPE_DOMAIN (ntype));
+	  break;
+	case INTEGER_TYPE:
+	  hashcode += TYPE_HASH (TYPE_MAX_VALUE (ntype));
+	  break;
+	case REAL_TYPE:
+	  hashcode += TYPE_HASH (TYPE_PRECISION (ntype));
+	  break;
+	default:
+	  break;
         }
 
       ntype = type_hash_canon (hashcode, ntype);
@@ -3747,6 +3885,9 @@ simple_cst_equal (t1, t2)
     case CONST_DECL:
     case FUNCTION_DECL:
       return 0;
+      
+    default:
+      break;
     }
 
   /* This general rule works for most tree codes.  All exceptions should be
@@ -3774,9 +3915,10 @@ simple_cst_equal (t1, t2)
 	    return cmp;
 	}
       return cmp;
-    }
 
-  return -1;
+    default:
+      return -1;
+    }
 }
 
 /* Constructors for pointer, array and function types.
@@ -3817,7 +3959,12 @@ build_pointer_type (to_type)
 
 /* Create a type of integers to be the TYPE_DOMAIN of an ARRAY_TYPE.
    MAXVAL should be the maximum value in the domain
-   (one less than the length of the array).  */
+   (one less than the length of the array).
+
+   The maximum value that MAXVAL can have is INT_MAX for a HOST_WIDE_INT.
+   We don't enforce this limit, that is up to caller (e.g. language front end).
+   The limit exists because the result is a signed type and we don't handle
+   sizes that use more than one HOST_WIDE_INT.  */
 
 tree
 build_index_type (maxval)
@@ -4423,15 +4570,45 @@ decl_type_context (decl)
   return NULL_TREE;
 }
 
+/* Print debugging information about the size of the
+   toplev_inline_obstacks.  */
+
+void
+print_inline_obstack_statistics ()
+{
+  struct simple_obstack_stack *current = toplev_inline_obstacks;
+  int n_obstacks = 0;
+  int n_alloc = 0;
+  int n_chunks = 0;
+
+  for (; current; current = current->next, ++n_obstacks)
+    {
+      struct obstack *o = current->obstack;
+      struct _obstack_chunk *chunk = o->chunk;
+
+      n_alloc += o->next_free - chunk->contents;
+      chunk = chunk->prev;
+      ++n_chunks;
+      for (; chunk; chunk = chunk->prev, ++n_chunks)
+	n_alloc += chunk->limit - &chunk->contents[0];
+    }
+  fprintf (stderr, "inline obstacks: %d obstacks, %d bytes, %d chunks\n",
+	   n_obstacks, n_alloc, n_chunks);
+}
+
+/* Print debugging information about the obstack O, named STR.  */
+
 void
 print_obstack_statistics (str, o)
      char *str;
      struct obstack *o;
 {
   struct _obstack_chunk *chunk = o->chunk;
-  int n_chunks = 0;
+  int n_chunks = 1;
   int n_alloc = 0;
 
+  n_alloc += o->next_free - chunk->contents;
+  chunk = chunk->prev;
   while (chunk)
     {
       n_chunks += 1;
@@ -4441,6 +4618,10 @@ print_obstack_statistics (str, o)
   fprintf (stderr, "obstack %s: %d bytes, %d chunks\n",
 	   str, n_alloc, n_chunks);
 }
+
+/* Print debugging information about tree nodes generated during the compile,
+   and any language-specific information.  */
+
 void
 dump_tree_statistics ()
 {
@@ -4466,6 +4647,12 @@ dump_tree_statistics ()
 #else
   fprintf (stderr, "(No per-node statistics)\n");
 #endif
+  print_obstack_statistics ("permanent_obstack", &permanent_obstack);
+  print_obstack_statistics ("maybepermanent_obstack", &maybepermanent_obstack);
+  print_obstack_statistics ("temporary_obstack", &temporary_obstack);
+  print_obstack_statistics ("momentary_obstack", &momentary_obstack);
+  print_obstack_statistics ("temp_decl_obstack", &temp_decl_obstack);
+  print_inline_obstack_statistics ();
   print_lang_statistics ();
 }
 

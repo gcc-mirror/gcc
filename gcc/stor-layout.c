@@ -306,11 +306,7 @@ layout_record (rec)
      tree rec;
 {
   register tree field;
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  unsigned record_align = MAX (STRUCTURE_SIZE_BOUNDARY, TYPE_ALIGN (rec));
-#else
   unsigned record_align = MAX (BITS_PER_UNIT, TYPE_ALIGN (rec));
-#endif
   /* These must be laid out *after* the record is.  */
   tree pending_statics = NULL_TREE;
   /* Record size so far is CONST_SIZE + VAR_SIZE bits,
@@ -324,6 +320,11 @@ layout_record (rec)
      that we know VAR_SIZE has.  */
   register int var_align = BITS_PER_UNIT;
 
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    record_align = MAX (record_align, STRUCTURE_SIZE_BOUNDARY);
+#endif
 
   for (field = TYPE_FIELDS (rec); field; field = TREE_CHAIN (field))
     {
@@ -389,7 +390,7 @@ layout_record (rec)
 	      int type_align = TYPE_ALIGN (TREE_TYPE (field));
 	      if (maximum_field_alignment != 0)
 		type_align = MIN (type_align, maximum_field_alignment);
-	      else if (TYPE_PACKED (rec))
+	      else if (DECL_PACKED (field))
 		type_align = MIN (type_align, BITS_PER_UNIT);
 
 	      record_align = MAX (record_align, type_align);
@@ -463,11 +464,15 @@ layout_record (rec)
 
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
-	  else if (TYPE_PACKED (rec))
+	  /* ??? This test is opposite the test in the containing if
+	     statement, so this code is unreachable currently.  */
+	  else if (DECL_PACKED (field))
 	    type_align = MIN (type_align, BITS_PER_UNIT);
 
 	  /* A bit field may not span the unit of alignment of its type.
 	     Advance to next boundary if necessary.  */
+	  /* ??? This code should match the code above for the
+	     PCC_BITFIELD_TYPE_MATTERS case.  */
 	  if (const_size / type_align
 	      != (const_size + field_size - 1) / type_align)
 	    const_size = CEIL (const_size, type_align) * type_align;
@@ -563,17 +568,19 @@ layout_union (rec)
      tree rec;
 {
   register tree field;
-#ifdef STRUCTURE_SIZE_BOUNDARY
-  unsigned union_align = STRUCTURE_SIZE_BOUNDARY;
-#else
   unsigned union_align = BITS_PER_UNIT;
-#endif
 
   /* The size of the union, based on the fields scanned so far,
      is max (CONST_SIZE, VAR_SIZE).
      VAR_SIZE may be null; then CONST_SIZE by itself is the size.  */
   register int const_size = 0;
   register tree var_size = 0;
+
+#ifdef STRUCTURE_SIZE_BOUNDARY
+  /* Packed structures don't need to have minimum size.  */
+  if (! TYPE_PACKED (rec))
+    union_align = STRUCTURE_SIZE_BOUNDARY;
+#endif
 
   /* If this is a QUAL_UNION_TYPE, we want to process the fields in
      the reverse order in building the COND_EXPR that denotes its
@@ -690,6 +697,11 @@ layout_type (type)
       /* This kind of type is the responsibility
 	 of the language-specific code.  */
       abort ();
+
+    case BOOLEAN_TYPE:  /* Used for Java, Pascal, and Chill. */
+      if (TYPE_PRECISION (type) == 0)
+	TYPE_PRECISION (type) = 1; /* default to one byte/boolean. */
+      /* ... fall through ... */
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
@@ -941,18 +953,7 @@ layout_type (type)
 	}
       break;
 
-    /* Pascal and Chill types */
-    case BOOLEAN_TYPE:		 /* store one byte/boolean for now.  */
-      TYPE_MODE (type) = QImode;
-      TYPE_SIZE (type) = size_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      TYPE_PRECISION (type) = 1;
-      TYPE_ALIGN (type) = GET_MODE_ALIGNMENT (TYPE_MODE (type));
-      if (TREE_CODE (TYPE_MIN_VALUE (type)) == INTEGER_CST
-	  && tree_int_cst_sgn (TYPE_MIN_VALUE (type)) >= 0)
- 	TREE_UNSIGNED (type) = 1;
-      break;
-
-    case SET_TYPE:
+    case SET_TYPE:  /* Used by Chill and Pascal. */
       if (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST
 	  || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST)
 	abort();

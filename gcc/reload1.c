@@ -19,8 +19,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "obstack.h"
 #include "insn-config.h"
@@ -159,7 +159,7 @@ HARD_REG_SET forbidden_regs;
 /* This reg set indicates registers that are not good for spill registers.
    They will not be used to complete groups of spill registers.  This includes
    all fixed registers, registers that may be eliminated, and, if
-   SMALL_REGISTER_CLASSES is not defined, registers explicitly used in the rtl.
+   SMALL_REGISTER_CLASSES is zero, registers explicitly used in the rtl.
 
    (spill_reg_order prevents these registers from being used to start a
    group.)  */
@@ -399,9 +399,12 @@ static void reload_cse_invalidate_mem	PROTO((rtx));
 static void reload_cse_invalidate_rtx	PROTO((rtx, rtx));
 static int reload_cse_regno_equal_p	PROTO((int, rtx, enum machine_mode));
 static int reload_cse_noop_set_p	PROTO((rtx, rtx));
-static void reload_cse_simplify_set	PROTO((rtx, rtx));
+static int reload_cse_simplify_set	PROTO((rtx, rtx));
+static int reload_cse_simplify_operands	PROTO((rtx));
 static void reload_cse_check_clobber	PROTO((rtx, rtx));
 static void reload_cse_record_set	PROTO((rtx, rtx));
+static void reload_cse_delete_death_notes	PROTO((rtx));
+static void reload_cse_no_longer_dead	PROTO((int, enum machine_mode));
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -465,7 +468,6 @@ init_reload ()
      but that is hard to determine.  */
   reload_address_base_reg_class = BASE_REG_CLASS;
   reload_address_index_reg_class = INDEX_REG_CLASS;
-#ifdef SMALL_REGISTER_CLASSES
   if (SMALL_REGISTER_CLASSES)
     {
       int regno;
@@ -511,7 +513,6 @@ init_reload ()
 	}
     indexok:;
     }
-#endif /* SMALL_REGISTER_CLASSES */
 }
 
 /* Main entry point for the reload pass.
@@ -637,10 +638,8 @@ reload (first, global, dumpfile)
   cannot_omit_stores = (char *) alloca (max_regno);
   bzero (cannot_omit_stores, max_regno);
 
-#ifdef SMALL_REGISTER_CLASSES
   if (SMALL_REGISTER_CLASSES)
     CLEAR_HARD_REG_SET (forbidden_regs);
-#endif
 
   /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
      Also find all paradoxical subregs and find largest such for each pseudo.
@@ -820,9 +819,7 @@ reload (first, global, dumpfile)
      rtl as a spill register.  But on some, we have to.  Those will have
      taken care to keep the life of hard regs as short as possible.  */
 
-#ifdef SMALL_REGISTER_CLASSES
   if (! SMALL_REGISTER_CLASSES)
-#endif
     COPY_HARD_REG_SET (forbidden_regs, bad_spill_regs);
 
   /* Spill any hard regs that we know we can't eliminate.  */
@@ -1092,7 +1089,6 @@ reload (first, global, dumpfile)
 	      if (num_eliminable)
 		did_elimination = eliminate_regs_in_insn (insn, 0);
 
-#ifdef SMALL_REGISTER_CLASSES
 	      /* Set avoid_return_reg if this is an insn
 		 that might use the value of a function call.  */
 	      if (SMALL_REGISTER_CLASSES && GET_CODE (insn) == CALL_INSN)
@@ -1105,8 +1101,7 @@ reload (first, global, dumpfile)
 		  else
 		    after_call = 0;
 		}
-	      else if (SMALL_REGISTER_CLASSES
-		       && after_call != 0
+	      else if (SMALL_REGISTER_CLASSES && after_call != 0
 		       && !(GET_CODE (PATTERN (insn)) == SET
 			    && SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
 		{
@@ -1114,7 +1109,6 @@ reload (first, global, dumpfile)
 		    avoid_return_reg = after_call;
 		  after_call = 0;
 		}
-#endif /* SMALL_REGISTER_CLASSES */
 
 	      /* Analyze the instruction.  */
 	      find_reloads (insn, 0, spill_indirect_levels, global,
@@ -1459,7 +1453,6 @@ reload (first, global, dumpfile)
 		    }
 		}
 
-#ifdef SMALL_REGISTER_CLASSES
 	      /* If this insn stores the value of a function call,
 		 and that value is in a register that has been spilled,
 		 and if the insn needs a reload in a class
@@ -1528,7 +1521,6 @@ reload (first, global, dumpfile)
 			      }
 			  }
 		}
-#endif /* SMALL_REGISTER_CLASSES */
 
 	      /* For each class, collect maximum need of any insn.  */
 
@@ -1824,7 +1816,6 @@ reload (first, global, dumpfile)
 			}
 		    }
 		  /* We can't complete a group, so start one.  */
-#ifdef SMALL_REGISTER_CLASSES
 		  /* Look for a pair neither of which is explicitly used.  */
 		  if (SMALL_REGISTER_CLASSES && i == FIRST_PSEUDO_REGISTER)
 		    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -1849,7 +1840,6 @@ reload (first, global, dumpfile)
 			    && ! regs_explicitly_used[j + 1])
 			  break;
 		      }
-#endif
 		  /* Now try any group at all
 		     whose registers are not in bad_spill_regs.  */
 		  if (i == FIRST_PSEUDO_REGISTER)
@@ -2761,6 +2751,9 @@ set_label_offsets (x, insn, initial_p)
 	  else if (GET_CODE (tem) != PC && GET_CODE (tem) != RETURN)
 	    break;
 	  return;
+
+	default:
+	  break;
 	}
 
       /* If we reach here, all eliminations must be at their initial
@@ -2768,6 +2761,10 @@ set_label_offsets (x, insn, initial_p)
       for (p = reg_eliminate; p < &reg_eliminate[NUM_ELIMINABLE_REGS]; p++)
 	if (p->offset != p->initial_offset)
 	  p->can_eliminate = 0;
+      break;
+      
+    default:
+      break;
     }
 }
 
@@ -2832,6 +2829,15 @@ eliminate_regs (x, mem_mode, insn, storing)
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     case RETURN:
+      return x;
+
+    case ADDRESSOF:
+      /* This is only for the benefit of the debugging backends, which call
+	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
+	 removed after CSE.  */
+      new = eliminate_regs (XEXP (x, 0), 0, insn, 0);
+      if (GET_CODE (new) == MEM)
+	return XEXP (new, 0);
       return x;
 
     case REG:
@@ -3278,6 +3284,12 @@ eliminate_regs (x, mem_mode, insn, storing)
       return x;
 
     case MEM:
+      /* This is only for the benefit of the debugging backends, which call
+	 eliminate_regs on DECL_RTL; any ADDRESSOFs in the actual insns are
+	 removed after CSE.  */
+      if (GET_CODE (XEXP (x, 0)) == ADDRESSOF)
+	return eliminate_regs (XEXP (XEXP (x, 0), 0), 0, insn, 0);
+
       /* Our only special processing is to pass the mode of the MEM to our
 	 recursive call and copy the flags.  While we are here, handle this
 	 case more efficiently.  */
@@ -3292,6 +3304,9 @@ eliminate_regs (x, mem_mode, insn, storing)
 	}
       else
 	return x;
+      
+    default:
+      break;
     }
 
   /* Process each of our operands recursively.  If any have changed, make a
@@ -3755,12 +3770,9 @@ scan_paradoxical_subregs (x)
   switch (code)
     {
     case REG:
-#ifdef SMALL_REGISTER_CLASSES
-      if (SMALL_REGISTER_CLASSES
-	  && REGNO (x) < FIRST_PSEUDO_REGISTER
+      if (SMALL_REGISTER_CLASSES && REGNO (x) < FIRST_PSEUDO_REGISTER
 	  && REG_USERVAR_P (x))
 	SET_HARD_REG_BIT (forbidden_regs, REGNO (x));
-#endif
       return;
 
     case CONST_INT:
@@ -3780,6 +3792,9 @@ scan_paradoxical_subregs (x)
 	reg_max_ref_width[REGNO (SUBREG_REG (x))]
 	  = GET_MODE_SIZE (GET_MODE (x));
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -3872,14 +3887,12 @@ order_regs_for_reload (global)
       else if (regs_explicitly_used[i])
 	{
 	  hard_reg_n_uses[i].uses += large + 1;
-	  /* ??? We are doing this here because of the potential that
-	     bad code may be generated if a register explicitly used in
-	     an insn was used as a spill register for that insn.  But
-	     not using these are spill registers may lose on some machine.
-	     We'll have to see how this works out.  */
-#ifdef SMALL_REGISTER_CLASSES
 	  if (! SMALL_REGISTER_CLASSES)
-#endif
+	    /* ??? We are doing this here because of the potential
+	     that bad code may be generated if a register explicitly
+	     used in an insn was used as a spill register for that
+	     insn.  But not using these are spill registers may lose
+	     on some machine.  We'll have to see how this works out.  */
 	    SET_HARD_REG_BIT (bad_spill_regs, i);
 	}
     }
@@ -4031,7 +4044,6 @@ reload_as_needed (first, live_known)
 	  rtx avoid_return_reg = 0;
 	  rtx oldpat = PATTERN (insn);
 
-#ifdef SMALL_REGISTER_CLASSES
 	  /* Set avoid_return_reg if this is an insn
 	     that might use the value of a function call.  */
 	  if (SMALL_REGISTER_CLASSES && GET_CODE (insn) == CALL_INSN)
@@ -4044,8 +4056,7 @@ reload_as_needed (first, live_known)
 	      else
 		after_call = 0;
 	    }
-	  else if (SMALL_REGISTER_CLASSES
-		   && after_call != 0
+	  else if (SMALL_REGISTER_CLASSES && after_call != 0
 		   && !(GET_CODE (PATTERN (insn)) == SET
 			&& SET_DEST (PATTERN (insn)) == stack_pointer_rtx))
 	    {
@@ -4053,7 +4064,6 @@ reload_as_needed (first, live_known)
 		avoid_return_reg = after_call;
 	      after_call = 0;
 	    }
-#endif /* SMALL_REGISTER_CLASSES */
 
 	  /* If this is a USE and CLOBBER of a MEM, ensure that any
 	     references to eliminable registers have been removed.  */
@@ -4120,13 +4130,11 @@ reload_as_needed (first, live_known)
 		 Record the choices of reload reg in reload_reg_rtx.  */
 	      choose_reload_regs (insn, avoid_return_reg);
 
-#ifdef SMALL_REGISTER_CLASSES
 	      /* Merge any reloads that we didn't combine for fear of 
 		 increasing the number of spill registers needed but now
 		 discover can be safely merged.  */
 	      if (SMALL_REGISTER_CLASSES)
 		merge_assigned_reloads (insn);
-#endif
 
 	      /* Generate the insns to reload operands into or out of
 		 their reload regs.  */
@@ -5258,7 +5266,6 @@ choose_reload_regs (insn, avoid_return_reg)
       CLEAR_HARD_REG_SET (reload_reg_used_in_outaddr_addr[i]);
     }
 
-#ifdef SMALL_REGISTER_CLASSES
   /* Don't bother with avoiding the return reg
      if we have no mandatory reload that could use it.  */
   if (SMALL_REGISTER_CLASSES && avoid_return_reg)
@@ -5281,7 +5288,6 @@ choose_reload_regs (insn, avoid_return_reg)
       if (!do_avoid)
 	avoid_return_reg = 0;
     }
-#endif /* SMALL_REGISTER_CLASSES */
 
 #if 0  /* Not needed, now that we can always retry without inheritance.  */
   /* See if we have more mandatory reloads than spill regs.
@@ -5292,11 +5298,7 @@ choose_reload_regs (insn, avoid_return_reg)
      unless it is equal to reload_in or reload_out, count such reloads.  */
 
   {
-    int tem = 0;
-#ifdef SMALL_REGISTER_CLASSES
-    if (SMALL_REGISTER_CLASSES)
-      tem = (avoid_return_reg != 0);
-#endif
+    int tem = SMALL_REGISTER_CLASSES? (avoid_return_reg != 0): 0;
     for (j = 0; j < n_reloads; j++)
       if (! reload_optional[j]
 	  && (reload_in[j] != 0 || reload_out[j] != 0 || reload_secondary_p[j])
@@ -5309,7 +5311,6 @@ choose_reload_regs (insn, avoid_return_reg)
   }
 #endif
 
-#ifdef SMALL_REGISTER_CLASSES
   /* Don't use the subroutine call return reg for a reload
      if we are supposed to avoid it.  */
   if (SMALL_REGISTER_CLASSES && avoid_return_reg)
@@ -5323,7 +5324,6 @@ choose_reload_regs (insn, avoid_return_reg)
 	if (spill_reg_order[r] >= 0)
 	  SET_HARD_REG_BIT (reload_reg_used, r);
     }
-#endif /* SMALL_REGISTER_CLASSES */
 
   /* In order to be certain of getting the registers we need,
      we must sort the reloads into order of increasing register class.
@@ -5876,7 +5876,7 @@ choose_reload_regs (insn, avoid_return_reg)
     }
 }
 
-/* If SMALL_REGISTER_CLASSES are defined, we may not have merged two
+/* If SMALL_REGISTER_CLASSES is non-zero, we may not have merged two
    reloads of the same item for fear that we might not have enough reload
    registers. However, normally they will get the same reload register
    and hence actually need not be loaded twice.  
@@ -5888,8 +5888,6 @@ choose_reload_regs (insn, avoid_return_reg)
    merge all the reloads and set the resulting reload to RELOAD_OTHER.
    This will not increase the number of spill registers needed and will
    prevent redundant code.  */
-
-#ifdef SMALL_REGISTER_CLASSES
 
 static void
 merge_assigned_reloads (insn)
@@ -5964,7 +5962,7 @@ merge_assigned_reloads (insn)
 	}
     }
 }	    
-#endif /* SMALL_RELOAD_CLASSES */
+
 
 /* Output insns to reload values in and out of the chosen reload regs.  */
 
@@ -7535,6 +7533,9 @@ count_occurrences (x, find)
       if (SET_DEST (x) == find)
 	return count_occurrences (SET_SRC (x), find);
       break;
+      
+    default:
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (code);
@@ -7581,6 +7582,13 @@ static rtx *reg_values;
    new one each time through a loop in that function.  */
 
 static rtx invalidate_regno_rtx;
+
+/* This is a set of registers for which we must remove REG_DEAD notes in
+   previous insns, because our modifications made them invalid.  That can
+   happen if we introduced the register into the current insn, or we deleted
+   the current insn which used to set the register.  */
+
+static HARD_REG_SET no_longer_dead_regs;
 
 /* Invalidate any entries in reg_values which depend on REGNO,
    including those for REGNO itself.  This is called if REGNO is
@@ -7699,7 +7707,10 @@ reload_cse_mem_conflict_p (mem_base, val)
       if (GET_MODE (mem_base) == BLKmode
 	  || GET_MODE (val) == BLKmode)
 	return 1;
-      return anti_dependence (val, mem_base);
+      if (anti_dependence (val, mem_base))
+	return 1;
+      /* The address may contain nested MEMs.  */
+      break;
 
     default:
       break;
@@ -7781,6 +7792,55 @@ reload_cse_invalidate_rtx (dest, ignore)
     reload_cse_invalidate_mem (dest);
 }
 
+/* Possibly delete death notes on the insns before INSN if modifying INSN
+   extended the lifespan of the registers.  */
+
+static void
+reload_cse_delete_death_notes (insn)
+     rtx insn;
+{
+  int dreg;
+
+  for (dreg = 0; dreg < FIRST_PSEUDO_REGISTER; dreg++)
+    {
+      rtx trial;
+
+      if (! TEST_HARD_REG_BIT (no_longer_dead_regs, dreg))
+	continue;
+
+      for (trial = prev_nonnote_insn (insn);
+	   (trial
+	    && GET_CODE (trial) != CODE_LABEL
+	    && GET_CODE (trial) != BARRIER);
+	   trial = prev_nonnote_insn (trial))
+	{
+	  if (find_regno_note (trial, REG_DEAD, dreg))
+	    {
+	      remove_death (dreg, trial);
+	      break;
+	    }
+	}
+    }
+}
+
+/* Record that the current insn uses hard reg REGNO in mode MODE.  This
+   will be used in reload_cse_delete_death_notes to delete prior REG_DEAD
+   notes for this register.  */
+
+static void
+reload_cse_no_longer_dead (regno, mode)
+     int regno;
+     enum machine_mode mode;
+{
+  int nregs = HARD_REGNO_NREGS (regno, mode);
+  while (nregs-- > 0)
+    {
+      SET_HARD_REG_BIT (no_longer_dead_regs, regno);
+      regno++;
+    }
+}
+
+
 /* Do a very simple CSE pass over the hard registers.
 
    This function detects no-op moves where we happened to assign two
@@ -7791,7 +7851,12 @@ reload_cse_invalidate_rtx (dest, ignore)
    This function also detects cases where we load a value from memory
    into two different registers, and (if memory is more expensive than
    registers) changes it to simply copy the first register into the
-   second register.  */
+   second register.  
+
+   Another optimization is performed that scans the operands of each
+   instruction to see whether the value is already available in a
+   hard register.  It then replaces the operand with the hard register
+   if possible, much like an optional reload would.  */
 
 void
 reload_cse_regs (first)
@@ -7849,6 +7914,8 @@ reload_cse_regs (first)
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
 
+      CLEAR_HARD_REG_SET (no_longer_dead_regs);
+
       /* If this is a call instruction, forget anything stored in a
 	 call clobbered register, or, if this is not a const call, in
 	 memory.  */
@@ -7865,22 +7932,32 @@ reload_cse_regs (first)
       body = PATTERN (insn);
       if (GET_CODE (body) == SET)
 	{
+	  int count = 0;
 	  if (reload_cse_noop_set_p (body, insn))
 	    {
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
+	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
 	      continue;
 	    }
 
-	  reload_cse_simplify_set (body, insn);
+	  /* It's not a no-op, but we can try to simplify it.  */
+	  CLEAR_HARD_REG_SET (no_longer_dead_regs);
+	  count += reload_cse_simplify_set (body, insn);
+
+	  if (count > 0 && apply_change_group ())
+	    reload_cse_delete_death_notes (insn);
+	  else if (reload_cse_simplify_operands (insn))
+	    reload_cse_delete_death_notes (insn);
+	    
 	  reload_cse_record_set (body, body);
 	}
       else if (GET_CODE (body) == PARALLEL)
 	{
-	  int delete;
+	  int count = 0;
 
 	  /* If every action in a PARALLEL is a noop, we can delete
              the entire PARALLEL.  */
@@ -7894,10 +7971,22 @@ reload_cse_regs (first)
 	      PUT_CODE (insn, NOTE);
 	      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (insn) = 0;
+	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
 	      continue;
 	    }
+	  
+	  /* It's not a no-op, but we can try to simplify it.  */
+	  CLEAR_HARD_REG_SET (no_longer_dead_regs);
+	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
+	    if (GET_CODE (XVECEXP (body, 0, i)) == SET)
+	      count += reload_cse_simplify_set (XVECEXP (body, 0, i), insn);
+
+	  if (count > 0 && apply_change_group ())
+	    reload_cse_delete_death_notes (insn);
+	  else if (reload_cse_simplify_operands (insn))
+	    reload_cse_delete_death_notes (insn);
 
 	  /* Look through the PARALLEL and record the values being
              set, if possible.  Also handle any CLOBBERs.  */
@@ -8063,34 +8152,22 @@ reload_cse_noop_set_p (set, insn)
 
   /* If we can delete this SET, then we need to look for an earlier
      REG_DEAD note on DREG, and remove it if it exists.  */
-  if (ret)
+  if (ret && dreg >= 0)
     {
       if (! find_regno_note (insn, REG_UNUSED, dreg))
-	{
-	  rtx trial;
-
-	  for (trial = prev_nonnote_insn (insn);
-	       (trial
-		&& GET_CODE (trial) != CODE_LABEL
-		&& GET_CODE (trial) != BARRIER);
-	       trial = prev_nonnote_insn (trial))
-	    {
-	      if (find_regno_note (trial, REG_DEAD, dreg))
-		{
-		  remove_death (dreg, trial);
-		  break;
-		}
-	    }
-	}
+	reload_cse_no_longer_dead (dreg, dest_mode);
     }
 
   return ret;
 }
 
 /* Try to simplify a single SET instruction.  SET is the set pattern.
-   INSN is the instruction it came from. */
+   INSN is the instruction it came from.
+   This function only handles one case: if we set a register to a value
+   which is not a register, we try to find that value in some other register
+   and change the set into a register copy.  */
 
-static void
+static int
 reload_cse_simplify_set (set, insn)
      rtx set;
      rtx insn;
@@ -8101,22 +8178,18 @@ reload_cse_simplify_set (set, insn)
   enum reg_class dclass;
   register int i;
 
-  /* We only handle one case: if we set a register to a value which is
-     not a register, we try to find that value in some other register
-     and change the set into a register copy.  */
-
   dreg = true_regnum (SET_DEST (set));
   if (dreg < 0)
-    return;
+    return 0;
 
   src = SET_SRC (set);
   if (side_effects_p (src) || true_regnum (src) >= 0)
-    return;
+    return 0;
 
   /* If memory loads are cheaper than register copies, don't change
      them.  */
   if (GET_CODE (src) == MEM && MEMORY_MOVE_COST (GET_MODE (src)) < 2)
-    return;
+    return 0;
 
   dest_mode = GET_MODE (SET_DEST (set));
   dclass = REGNO_REG_CLASS (dreg);
@@ -8132,38 +8205,252 @@ reload_cse_simplify_set (set, insn)
 	  pop_obstacks ();
 
 	  validated = validate_change (insn, &SET_SRC (set),
-				       gen_rtx (REG, dest_mode, i), 0);
+				       gen_rtx (REG, dest_mode, i), 1);
 
 	  /* Go back to the obstack we are using for temporary
              storage.  */
 	  push_obstacks (&reload_obstack, &reload_obstack);
 
-	  if (validated)
+	  if (validated && ! find_regno_note (insn, REG_UNUSED, i))
 	    {
-	      /* We need to look for an earlier REG_DEAD note on I,
-		 and remove it if it exists.  */
-	      if (! find_regno_note (insn, REG_UNUSED, i))
-		{
-		  rtx trial;
-
-		  for (trial = prev_nonnote_insn (insn);
-		       (trial
-			&& GET_CODE (trial) != CODE_LABEL
-			&& GET_CODE (trial) != BARRIER);
-		       trial = prev_nonnote_insn (trial))
-		    {
-		      if (find_regno_note (trial, REG_DEAD, i))
-			{
-			  remove_death (i, trial);
-			  break;
-			}
-		    }
-		}
-
-	      return;
+	      reload_cse_no_longer_dead (i, dest_mode);
+	      return 1;
 	    }
 	}
     }
+  return 0;
+}
+
+/* Try to replace operands in INSN with equivalent values that are already
+   in registers.  This can be viewed as optional reloading.  
+ 
+   For each non-register operand in the insn, see if any hard regs are
+   known to be equivalent to that operand.  Record the alternatives which
+   can accept these hard registers.  Among all alternatives, select the
+   ones which are better or equal to the one currently matching, where
+   "better" is in terms of '?' and '!' constraints.  Among the remaining
+   alternatives, select the one which replaces most operands with
+   hard registers.  */
+
+static int
+reload_cse_simplify_operands (insn)
+     rtx insn;
+{
+#ifdef REGISTER_CONSTRAINTS
+  int insn_code_number, n_operands, n_alternatives;
+  int i,j;
+
+  char *constraints[MAX_RECOG_OPERANDS];
+  
+  /* Vector recording how bad an alternative is.  */
+  int *alternative_reject;
+  /* Vector recording how many registers can be introduced by choosing
+     this alternative.  */
+  int *alternative_nregs;
+  /* Array of vectors recording, for each operand and each alternative,
+     which hard register to substitute, or -1 if the operand should be
+     left as it is.  */
+  int *op_alt_regno[MAX_RECOG_OPERANDS];
+  /* Array of alternatives, sorted in order of decreasing desirability.  */
+  int *alternative_order;
+  
+  /* Find out some information about this insn.  */
+  insn_code_number = recog_memoized (insn);
+  /* We don't modify asm instructions.  */
+  if (insn_code_number < 0)
+    return 0;
+
+  n_operands = insn_n_operands[insn_code_number];
+  n_alternatives = insn_n_alternatives[insn_code_number];
+  
+  if (n_alternatives == 0 || n_operands == 0)
+    return;
+  insn_extract (insn);
+
+  /* Figure out which alternative currently matches.  */
+  if (! constrain_operands (insn_code_number, 1))
+    abort ();
+
+  alternative_reject = (int *) alloca (n_alternatives * sizeof (int));
+  alternative_nregs = (int *) alloca (n_alternatives * sizeof (int));
+  alternative_order = (int *) alloca (n_alternatives * sizeof (int));
+  bzero ((char *)alternative_reject, n_alternatives * sizeof (int));
+  bzero ((char *)alternative_nregs, n_alternatives * sizeof (int));
+
+  for (i = 0; i < n_operands; i++)
+    {
+      enum machine_mode mode;
+      int regno;
+      char *p;
+
+      op_alt_regno[i] = (int *) alloca (n_alternatives * sizeof (int));
+      for (j = 0; j < n_alternatives; j++)
+	op_alt_regno[i][j] = -1;
+
+      p = constraints[i] = insn_operand_constraint[insn_code_number][i];
+      mode = insn_operand_mode[insn_code_number][i];
+
+      /* Add the reject values for each alternative given by the constraints
+	 for this operand.  */
+      j = 0;
+      while (*p != '\0')
+	{
+	  char c = *p++;
+	  if (c == ',')
+	    j++;
+	  else if (c == '?')
+	    alternative_reject[j] += 3;
+	  else if (c == '!')
+	    alternative_reject[j] += 300;
+	}
+
+      /* We won't change operands which are already registers.  We
+	 also don't want to modify output operands.  */
+      regno = true_regnum (recog_operand[i]);
+      if (regno >= 0
+	  || constraints[i][0] == '='
+	  || constraints[i][0] == '+')
+	continue;
+
+      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	{
+	  int class = (int) NO_REGS;
+
+	  if (! reload_cse_regno_equal_p (regno, recog_operand[i], mode))
+	    continue;
+
+	  /* We found a register equal to this operand.  Now look for all
+	     alternatives that can accept this register and have not been
+	     assigned a register they can use yet.  */
+	  j = 0;
+	  p = constraints[i];
+	  for (;;)
+	    {
+	      char c = *p++;
+	      
+	      switch (c)
+		{
+		case '=':  case '+':  case '?':
+		case '#':  case '&':  case '!':
+		case '*':  case '%':  
+		case '0':  case '1':  case '2':  case '3':  case '4':
+		case 'm':  case '<':  case '>':  case 'V':  case 'o':
+		case 'E':  case 'F':  case 'G':  case 'H':
+		case 's':  case 'i':  case 'n':
+		case 'I':  case 'J':  case 'K':  case 'L':
+		case 'M':  case 'N':  case 'O':  case 'P':
+#ifdef EXTRA_CONSTRAINT
+		case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
+#endif
+		case 'p': case 'X':
+		  /* These don't say anything we care about.  */
+		  break;
+
+		case 'g': case 'r':
+		  class = reg_class_subunion[(int) class][(int) GENERAL_REGS];
+		  break;
+
+		default:
+		  class
+		    = reg_class_subunion[(int) class][(int) REG_CLASS_FROM_LETTER (c)];
+		  break;
+
+		case ',': case '\0':
+		  /* See if REGNO fits this alternative, and set it up as the
+		     replacement register if we don't have one for this
+		     alternative yet.  */
+		  if (op_alt_regno[i][j] == -1
+		      && reg_fits_class_p (gen_rtx (REG, mode, regno), class,
+					   0, mode))
+		    {
+		      alternative_nregs[j]++;
+		      op_alt_regno[i][j] = regno;
+		    }
+		  j++;
+		  break;
+		}
+
+	      if (c == '\0')
+		break;
+	    }
+	}
+    }
+
+  /* Record all alternatives which are better or equal to the currently
+     matching one in the alternative_order array.  */
+  for (i = j = 0; i < n_alternatives; i++)
+    if (alternative_reject[i] <= alternative_reject[which_alternative])
+      alternative_order[j++] = i;
+  n_alternatives = j;
+
+  /* Sort it.  Given a small number of alternatives, a dumb algorithm
+     won't hurt too much.  */
+  for (i = 0; i < n_alternatives - 1; i++)
+    {
+      int best = i;
+      int best_reject = alternative_reject[alternative_order[i]];
+      int best_nregs = alternative_nregs[alternative_order[i]];
+      int tmp;
+
+      for (j = i + 1; j < n_alternatives; j++)
+	{
+	  int this_reject = alternative_reject[alternative_order[j]];
+	  int this_nregs = alternative_nregs[alternative_order[j]];
+
+	  if (this_reject < best_reject
+	      || (this_reject == best_reject && this_nregs < best_nregs))
+	    {
+	      best = j;
+	      best_reject = this_reject;
+	      best_nregs = this_nregs;
+	    }
+	}
+      
+      tmp = alternative_order[best];
+      alternative_order[best] = alternative_order[i];
+      alternative_order[i] = tmp;
+    }
+  
+  /* Substitute the operands as determined by op_alt_regno for the best
+     alternative.  */
+  j = alternative_order[0];
+  CLEAR_HARD_REG_SET (no_longer_dead_regs);
+
+  /* Pop back to the real obstacks while changing the insn.  */
+  pop_obstacks ();
+
+  for (i = 0; i < n_operands; i++)
+    {
+      enum machine_mode mode = insn_operand_mode[insn_code_number][i];
+      if (op_alt_regno[i][j] == -1)
+	continue;
+
+      reload_cse_no_longer_dead (op_alt_regno[i][j], mode);
+      validate_change (insn, recog_operand_loc[i],
+		       gen_rtx (REG, mode, op_alt_regno[i][j]), 1);
+    }
+
+  for (i = insn_n_dups[insn_code_number] - 1; i >= 0; i--)
+    {
+      int op = recog_dup_num[i];
+      enum machine_mode mode = insn_operand_mode[insn_code_number][op];
+
+      if (op_alt_regno[op][j] == -1)
+	continue;
+
+      reload_cse_no_longer_dead (op_alt_regno[op][j], mode);
+      validate_change (insn, recog_dup_loc[i],
+		       gen_rtx (REG, mode, op_alt_regno[op][j]), 1);
+    }
+
+  /* Go back to the obstack we are using for temporary
+     storage.  */
+  push_obstacks (&reload_obstack, &reload_obstack);
+
+  return apply_change_group ();
+#else
+  return 0;
+#endif
 }
 
 /* These two variables are used to pass information from

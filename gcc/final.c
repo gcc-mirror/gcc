@@ -284,10 +284,14 @@ static void add_bb		PROTO((FILE *));
 static int add_bb_string	PROTO((char *, int));
 static void output_source_line	PROTO((FILE *, rtx));
 static rtx walk_alter_subreg	PROTO((rtx));
-static int alter_cond		PROTO((rtx));
 static void output_asm_name	PROTO((void));
 static void output_operand	PROTO((rtx, int));
+#ifdef LEAF_REGISTERS
 static void leaf_renumber_regs	PROTO((rtx));
+#endif
+#ifdef HAVE_cc0
+static int alter_cond		PROTO((rtx));
+#endif
 
 extern char *getpwd ();
 
@@ -455,11 +459,16 @@ end_final (filename)
 	    ASM_OUTPUT_SHARED_LOCAL (asm_out_file, name, size, rounded);
 	  else
 #endif
+#ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
+	    ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, NULL_TREE, name, size,
+					      BIGGEST_ALIGNMENT);
+#else
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
 	    ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size,
 				      BIGGEST_ALIGNMENT);
 #else
 	    ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+#endif
 #endif
 	}
 
@@ -672,6 +681,10 @@ get_attr_length (insn)
 	    length += get_attr_length (XVECEXP (body, 0, i));
 	else
 	  length = insn_default_length (insn);
+	break;
+
+      default:
+	break;
       }
 
 #ifdef ADJUST_INSN_LENGTH
@@ -734,6 +747,8 @@ shorten_branches (first)
       if (GET_CODE (insn) == NOTE || GET_CODE (insn) == BARRIER
 	  || GET_CODE (insn) == CODE_LABEL)
 	continue;
+      if (INSN_DELETED_P (insn))
+	continue;
 
       body = PATTERN (insn);
       if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
@@ -746,9 +761,12 @@ shorten_branches (first)
 	  insn_lengths[uid] = (XVECLEN (body, GET_CODE (body) == ADDR_DIFF_VEC)
 			       * GET_MODE_SIZE (GET_MODE (body)));
 
-	  /* Account for possible alignment.  */
-	  insn_lengths[uid]
-	    += unitsize - (insn_current_address & (unitsize - 1));
+	  /* We don't know what address the ADDR_VEC/ADDR_DIFF_VEC will end
+	     up at after branch shortening.  As a result, it is impossible
+	     to determine how much padding we need at this point.  Therefore,
+	     assume worst possible alignment.  */
+	  insn_lengths[uid] += unitsize - 1;
+
 #else
 	  ;
 #endif
@@ -951,9 +969,9 @@ final_start_function (first, file, optimize)
     last_linenum = high_block_linenum = high_function_linenum
       = NOTE_LINE_NUMBER (first);
 
-#ifdef DWARF2_DEBUGGING_INFO
+#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
   /* Output DWARF definition of the function.  */
-  if (write_symbols == DWARF2_DEBUG)
+  if (dwarf2out_do_frame ())
     dwarf2out_begin_prologue ();
 #endif
 
@@ -987,6 +1005,11 @@ final_start_function (first, file, optimize)
   if (profile_flag)
     profile_function (file);
 #endif /* PROFILE_BEFORE_PROLOGUE */
+
+#if defined (DWARF2_UNWIND_INFO) && defined (HAVE_prologue)
+  if (dwarf2out_do_frame ())
+    dwarf2out_frame_debug (NULL_RTX);
+#endif
 
 #ifdef FUNCTION_PROLOGUE
   /* First output the function prologue: code to set up the stack frame.  */
@@ -1138,8 +1161,8 @@ final_end_function (first, file, optimize)
     dwarfout_end_epilogue ();
 #endif
 
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
+#if defined (DWARF2_UNWIND_INFO) || defined (DWARF2_DEBUGGING_INFO)
+  if (dwarf2out_do_frame ())
     dwarf2out_end_epilogue ();
 #endif
 
@@ -1260,11 +1283,6 @@ final (first, file, optimize, prescan)
 
   last_ignored_compare = 0;
   new_block = 1;
-
-#if defined (DWARF2_DEBUGGING_INFO) && defined (HAVE_prologue)
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_frame_debug (NULL_RTX);
-#endif
 
   check_exception_handler_labels ();
 
@@ -1585,6 +1603,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	 is true.  */	 
       if (NEXT_INSN (insn))
 	ASM_OUTPUT_ALIGN_CODE (file);
+#endif
+#if defined (DWARF2_UNWIND_INFO) && !defined (ACCUMULATE_OUTGOING_ARGS)
+	/* If we push arguments, we need to check all insns for stack
+	   adjustments.  */
+	if (dwarf2out_do_frame ())
+	  dwarf2out_frame_debug (insn);
 #endif
       break;
 
@@ -2029,9 +2053,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 		      PUT_CODE (insn, NOTE);
 		      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 		      NOTE_SOURCE_FILE (insn) = 0;
-		      break;
 		    }
 		}
+		break;
+
+	      default:
+		break;
 	      }
 	  }
 
@@ -2167,11 +2194,20 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	output_asm_insn (template, recog_operand);
 
-#if defined (DWARF2_DEBUGGING_INFO) && defined (HAVE_prologue)
+#if defined (DWARF2_UNWIND_INFO)
+#if !defined (ACCUMULATE_OUTGOING_ARGS)
+	/* If we push arguments, we need to check all insns for stack
+	   adjustments.  */
+	if (dwarf2out_do_frame ())
+	  dwarf2out_frame_debug (insn);
+#else
+#if defined (HAVE_prologue)
 	/* If this insn is part of the prologue, emit DWARF v2
 	   call frame info.  */
-	if (write_symbols == DWARF2_DEBUG && RTX_FRAME_RELATED_P (insn))
+	if (RTX_FRAME_RELATED_P (insn) && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn);
+#endif
+#endif
 #endif
 
 #if 0
@@ -2306,6 +2342,9 @@ walk_alter_subreg (x)
 
     case SUBREG:
       return alter_subreg (x);
+      
+    default:
+      break;
     }
 
   return x;
@@ -2364,6 +2403,9 @@ alter_cond (cond)
 	PUT_CODE (cond, NE);
 	value = 2;
 	break;
+	
+      default:
+	break;
       }
 
   if (cc_status.flags & CC_NOT_NEGATIVE)
@@ -2390,6 +2432,9 @@ alter_cond (cond)
 	PUT_CODE (cond, NE);
 	value = 2;
 	break;
+	
+      default:
+	break;
       }
 
   if (cc_status.flags & CC_NO_OVERFLOW)
@@ -2412,19 +2457,15 @@ alter_cond (cond)
       case LTU:
 	/* Jump becomes no-op.  */
 	return -1;
+	
+      default:
+	break;
       }
 
   if (cc_status.flags & (CC_Z_IN_NOT_N | CC_Z_IN_N))
     switch (GET_CODE (cond))
       {
-      case LE:
-      case LEU:
-      case GE:
-      case GEU:
-      case LT:
-      case LTU:
-      case GT:
-      case GTU:
+      default:
 	abort ();
 
       case NE:
@@ -2461,6 +2502,9 @@ alter_cond (cond)
       case GE:
 	PUT_CODE (cond, GEU);
 	value = 2;
+	break;
+
+      default:
 	break;
       }
 
