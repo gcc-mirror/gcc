@@ -1,3 +1,8 @@
+2005-03-25  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/19888
+	* g++.old-deja/g++.eh/badalloc1.C: increase arena_size on hpux.
+
 2005-03-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* gcc.dg/20050325-1.c: Fix a typo.
