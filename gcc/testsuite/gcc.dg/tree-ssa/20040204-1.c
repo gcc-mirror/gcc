@@ -33,4 +33,4 @@ void test55 (int x, int y)
    that the && should be emitted (based on BRANCH_COST).  Fix this
    by teaching dom to look through && and register all components
    as true.  */
-/* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "link_error" 0 "optimized" { xfail { ! powerpc*-*-* } } } } */
