@@ -1,3 +1,7 @@
+2003-07-25  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-decl.c (c_static_assembler_name): Remove TREE_STATIC test.
+
 2003-07-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (is_ev64_opaque_type): Only check pointer

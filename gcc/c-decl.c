@@ -6790,7 +6790,7 @@ void
 c_static_assembler_name (tree decl)
 {
   if (num_in_fnames == 1
-      && TREE_STATIC (decl) && !TREE_PUBLIC (decl) && DECL_CONTEXT (decl)
+      && !TREE_PUBLIC (decl) && DECL_CONTEXT (decl)
       && TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL)
     SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
   else
