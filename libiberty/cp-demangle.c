@@ -3540,7 +3540,7 @@ cp_demangle_type (type_name, result)
      dyn_string_t result;
 {
   status_t status;
-  demangling_t dm = demangling_new (type_name);
+  demangling_t dm = demangling_new (type_name, DMGL_GNU_V3);
   
   if (dm == NULL)
     return STATUS_ALLOCATION_FAILED;
