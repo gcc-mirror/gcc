@@ -4285,6 +4285,7 @@ assign_parms (tree fndecl)
   /* Total space needed so far for args on the stack,
      given as a constant and a tree-expression.  */
   struct args_size stack_args_size;
+  HOST_WIDE_INT extra_pretend_bytes = 0;
   tree fntype = TREE_TYPE (fndecl);
   tree fnargs = DECL_ARGUMENTS (fndecl), orig_fnargs;
   /* This is used for the arg pointer when referring to stack args.  */
@@ -4569,15 +4570,19 @@ assign_parms (tree fndecl)
 		 bits.  We must preserve this invariant by rounding
 		 CURRENT_FUNCTION_PRETEND_ARGS_SIZE up to a stack
 		 boundary.  */
+
+	      /* We assume at most one partial arg, and it must be the first
+	         argument on the stack.  */
+	      if (extra_pretend_bytes || current_function_pretend_args_size)
+		abort ();
+
 	      pretend_bytes = partial * UNITS_PER_WORD;
 	      current_function_pretend_args_size
 		= CEIL_ROUND (pretend_bytes, STACK_BYTES);
 
-	      /* If PRETEND_BYTES != CURRENT_FUNCTION_PRETEND_ARGS_SIZE,
-		 insert the padding before the start of the first pretend
-		 argument.  */
-	      stack_args_size.constant
-		= (current_function_pretend_args_size - pretend_bytes);
+	      /* We want to align relative to the actual stack pointer, so
+	         don't include this in the stack size until later.  */
+	      extra_pretend_bytes = current_function_pretend_args_size;
 	    }
 	}
 #endif
@@ -4586,6 +4591,13 @@ assign_parms (tree fndecl)
       locate_and_pad_parm (promoted_mode, passed_type, in_regs,
 			   entry_parm ? partial : 0, fndecl,
 			   &stack_args_size, &locate);
+      /* Adjust offsets to include pretend args, unless this is the
+         split arg.  */
+      if (pretend_bytes == 0)
+	{
+	  locate.slot_offset.constant += extra_pretend_bytes;
+	  locate.offset.constant += extra_pretend_bytes;
+	}
 
       {
 	rtx offset_rtx;
@@ -4661,7 +4673,7 @@ assign_parms (tree fndecl)
 #endif
 	  )
 	{
-	  stack_args_size.constant += pretend_bytes + locate.size.constant;
+	  stack_args_size.constant += locate.size.constant;
 	  if (locate.size.var)
 	    ADD_PARM_SIZE (stack_args_size, locate.size.var);
 	}
@@ -5273,6 +5285,8 @@ assign_parms (tree fndecl)
 
   last_parm_insn = get_last_insn ();
 
+  /* We have aligned all the args, so add space for the pretend args.  */
+  stack_args_size.constant += extra_pretend_bytes;
   current_function_args_size = stack_args_size.constant;
 
   /* Adjust function incoming argument size for alignment and

@@ -1,3 +1,7 @@
+2004-02-27  Paul Brook  <paul@codesourcery.com>
+
+	* function.c (assign_parms): Don't count pretend args for alignment.
+
 2004-02-27  Richard Henderson  <rth@redhat.com>
 
 	* passes.c: New file.
