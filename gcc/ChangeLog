@@ -1,3 +1,10 @@
+2004-01-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config.gcc (mips-sgi-irix6*o32): Removed.
+	* config/mips/iris6-o32-as.h: Likewise.
+	* config/mips/iris6-o32-gas.h: Likewise.
+	* config/mips/iris6-o32.h: Likewise.
+
 2004-01-22  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (function_arg): Generalize logic so that it

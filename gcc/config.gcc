@@ -1,5 +1,5 @@
 # GCC target-specific configuration file.
-# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003
+# Copyright 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 # Free Software Foundation, Inc.
 
 #This file is part of GCC.
@@ -1439,34 +1439,6 @@ mcore-*-elf)
 mcore-*-pe*)
 	tm_file="svr3.h dbxcoff.h ${tm_file} mcore/mcore-pe.h"
 	tmake_file=mcore/t-mcore-pe
-	use_fixproto=yes
-	;;
-mips-sgi-irix6*o32)		# SGI System V.4., IRIX 6, O32 ABI
-	tm_file="${tm_file} mips/iris5.h"
-	if test x$gas = xyes
-	then
-		tm_file="${tm_file} mips/sdb.h mips/iris5gas.h mips/iris6-o32-gas.h"
-		if test x$stabs = xyes
-		then
-			tm_file="${tm_file} dbx.h mips/dbxmdebug.h"
-		fi
-		tmake_file=mips/t-iris5-gas
-	else
-		tm_file="${tm_file} mips/iris6-o32-as.h"
-		tmake_file=mips/t-iris5-as
-	fi
-	tm_file="${tm_file} mips/iris6-o32.h"
-	tmake_file="${tmake_file} mips/t-iris mips/t-iris5-6"
-	target_cpu_default="MASK_ABICALLS"
-	# mips-tfile doesn't work yet
-	# See comment in mips/iris5.h file.
-	if test x$gas = xno
-	then
-		use_collect2=yes
-	fi
-#	if test x$enable_threads = xyes; then
-#		thread_file='irix'
-#	fi
 	use_fixproto=yes
 	;;
 mips-sgi-irix6*)		# SGI System V.4., IRIX 6
