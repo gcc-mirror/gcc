@@ -2791,6 +2791,8 @@ import_export_decl (decl)
 	  /* Always make artificials weak.  */
 	  if (DECL_ARTIFICIAL (decl) && flag_weak)
 	    comdat_linkage (decl);
+	  else
+	    maybe_make_one_only (decl);
 	}
       else
 	comdat_linkage (decl);
