@@ -212,10 +212,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef OBSD_HAS_DECLARE_FUNCTION_SIZE
 /* Declare the size of a function.  */
 #undef ASM_DECLARE_FUNCTION_SIZE
-#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
-  do {									\
-    if (!flag_inhibit_size_directive)					\
-      ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME, ".");			\
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
+  do {								\
+    if (!flag_inhibit_size_directive)				\
+      ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
   } while (0)
 #endif
 

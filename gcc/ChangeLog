@@ -1,3 +1,16 @@
+2002-07-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* defaults.h (ASM_OUTPUT_MEASURED_SIZE): Take only two
+	arguments.  Always use ".-symbol" as expression argument.
+	* doc/tm.texi: Update to match.  Document requirement for
+	".size symbol, .-symbol" to be acceptable to assembler.
+
+	* config/elfos.h, config/netbsd-aout.h, config/openbsd.h,
+	config/arm/elf.h, config/avr/avr.h, config/cris/aout.h,
+	config/i386/freebsd-aout.h, config/i386/sco5.h,
+	config/ip2k/ip2k.h, config/m88k/m88k.h, config/xtensa/elf.h,
+	config/xtensa/linux.h:  Update uses of ASM_OUTPUT_MEASURED_SIZE.
+
 2002-07-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gengtype-lex.c): Fix error in last change.
@@ -34,7 +47,7 @@
 	[HONOR_SNANS]: New macro.
 
 	* toplev.c [flag_signaling_nans]: Initialize to false.
-        (f_options): Add processing for "-fsignaling-nans".
+	(f_options): Add processing for "-fsignaling-nans".
 	(set_fast_math_flags): Clear flag_signaling_nans with -ffast-math.
 	(process_options): flag_signaling_nans implies flag_trapping_math.
 
@@ -50,8 +63,8 @@
 
 	* rtlanal.c: #include real.c for TARGET_FLOAT_FORMAT definitions
 	required by HONOR_SNANS.  (may_trap_p): Floating point DIV, MOD,
-	UDIV, UMOD, GE, GT, LE, LT and COMPARE may always trap with 
-	-fsignaling_nans.  EQ and NE only trap for flag_signaling_nans 
+	UDIV, UMOD, GE, GT, LE, LT and COMPARE may always trap with
+	-fsignaling_nans.  EQ and NE only trap for flag_signaling_nans
 	not flag_trapping_math (i.e. HONOR_SNANS but not HONOR_NANS).
 
 	* doc/invoke.texi: Document new -fsignaling-nans compiler option.
@@ -239,7 +252,7 @@ Thu Jul 25 10:23:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-07-25  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* c-common.c (c_sizeof_or_alignof_type): Take a third argument for
-	complaining. 
+	complaining.
 	* c-common.h (c_sizeof): Adjust definition.
 	(c_alignof): Likewise.
 	* c-tree.h (c_sizeof_nowarn): Now macro.
@@ -274,7 +287,7 @@ Thu Jul 25 10:23:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/rs6000/eabi.h: Define TARGET_SPE_ABI, TARGET_SPE,
 	TARGET_ISEL, and TARGET_FPRS.
-	
+
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
 	-mabi=spe, -mabi=no-spe, and -misel=.
 
@@ -289,7 +302,7 @@ Thu Jul 25 10:23:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(*ne0): Same.
 	(negsf2): Change to expand and rename old pattern to *negsf2.
 	(abssf2): Change to expand and rename old pattern to *abssf2.
-	
+
 	New expanders: fix_truncsfsi2, floatunssisf2, floatsisf2,
 	fixunssfsi2.
 
@@ -406,7 +419,7 @@ Thu Jul 25 10:23:41 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(rs6000_builtins): Add SPE builtins.
 
 	* testsuite/gcc.dg/ppc-spe.c: New.
-	
+
 	* config/rs6000/eabispe.h: New.
 
 	* config/rs6000/spe.h: New.
@@ -587,7 +600,7 @@ Tue Jul 23 21:49:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(LARGEST_EXPONENT_IS_NORMAL): Ditto.
 	(VAX_HALFWORD_ORDER): Define (1 for DEC VAX, 0 otherwise).
 	(TARGET_G_FLOAT): Default to 0 if not defined.
-	(ieeetoe): New, common routine to convert target format floats 
+	(ieeetoe): New, common routine to convert target format floats
 	to internal form.
 	(e24toe, e53toe): Change to use ieeetoe, distinguish DEC
 	vs. others.
@@ -787,7 +800,7 @@ Mon Jul 22 15:27:25 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	* gengenrtl.c (gencode): Don't define obstack_alloc_rtx.
 	* function.c (SYMBOL__MAIN): Remove definition.
 	* global.c (SET_CONFLICT, REGBITP, ALLOCNO_LIVE_P): Remove.
-	* predict.c (PROB_NEVER, PROB_LIKELY, PROB_UNLIKELY): Remove.	
+	* predict.c (PROB_NEVER, PROB_LIKELY, PROB_UNLIKELY): Remove.
 	* profile.c (GCOV_INDEX_TO_BB): Remove.
 	* sched-rgn.c (ABS_VALUE, MIN_DIFF_PRIORITY, MIN_PROB_DIFF): Remove.
 	* simplify-rtx.c (FIXED_BASE_PLUS_P): Remove.
@@ -830,7 +843,7 @@ Sun Jul 21 21:36:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-07-21  Andreas Jaeger  <aj@suse.de>
 
-        * reload1.c (fixup_abnormal_edges): Remove unused variable.
+	* reload1.c (fixup_abnormal_edges): Remove unused variable.
 
 2002-07-21  Bernd Schmidt  <bernds@redhat.com>
 

@@ -1969,14 +1969,7 @@ do {								\
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
   do {									\
     if (!flag_inhibit_size_directive)					\
-      {									\
-        char label[256];						\
-	static int labelno;						\
-	labelno++;							\
-	ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);		\
-	ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), label);		\
-      }									\
+      ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);				\
   } while (0)
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM any text necessary for declaring the size of a function

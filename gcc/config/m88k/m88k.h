@@ -1866,18 +1866,8 @@ do {									 \
 #undef	ASM_DECLARE_FUNCTION_SIZE
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
   do {									\
-    if (DECLARE_ASM_NAME)						\
-      {									\
-	if (!flag_inhibit_size_directive)				\
-	  {								\
-	    char label[256];						\
-	    static int labelno = 0;					\
-	    labelno++;							\
-	    ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
-	    ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	    ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), label);		\
-	  }								\
-      }									\
+    if (DECLARE_ASM_NAME && !flag_inhibit_size_directive)		\
+      ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);				\
   } while (0)
 
 /* This is how to output the definition of a user-level label named NAME,

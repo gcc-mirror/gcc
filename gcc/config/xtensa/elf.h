@@ -112,16 +112,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
   do								\
     {								\
       if (!flag_inhibit_size_directive)				\
-	{							\
-	  char label[256];					\
-	  static int labelno;					\
-	  							\
-	  labelno++;						\
-	  							\
-	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
-	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
-	  ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME, label);	\
-	}							\
+	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
       XTENSA_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL);		\
     }								\
   while (0)

@@ -150,7 +150,7 @@ do {									\
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
   do {									\
     if (TARGET_ELF && !flag_inhibit_size_directive)			\
-      ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), ".");			\
+      ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);				\
   } while (0)
 
 #undef ASM_DECLARE_OBJECT_NAME
