@@ -1,3 +1,8 @@
+Fri Aug  8 17:07:36 1997  Stan Cox  <coxs@dg-rtp.dg.com>
+
+	* m88k.c (m88k_expand_prologue): Set MEM_IN_STRUCT_P of va_list
+	template.
+
 Tue Sep  9 09:12:17 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (print_value): Fix last change.
