@@ -39,6 +39,8 @@ exception statement from your version. */
 package java.net;
 
 import gnu.java.net.URLParseError;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -123,6 +125,9 @@ public final class URL implements Serializable
 {
   private static final String DEFAULT_SEARCH_PATH =
     "gnu.java.net.protocol|gnu.inet";
+
+  // Cached System ClassLoader
+  private static ClassLoader systemClassLoader;
 
   /**
    * The name of the protocol for this URL.
@@ -890,36 +895,39 @@ public final class URL implements Serializable
 	// Finally loop through our search path looking for a match.
 	StringTokenizer pkgPrefix = new StringTokenizer(ph_search_path, "|");
 
+	// Cache the systemClassLoader
+	if (systemClassLoader == null)
+	  {
+	    systemClassLoader = (ClassLoader) AccessController.doPrivileged
+	      (new PrivilegedAction() {
+		  public Object run() {
+		    return ClassLoader.getSystemClassLoader();
+		  }
+		});
+	  }
+
 	do
 	  {
-	    String clsName =
-	      (pkgPrefix.nextToken() + "." + protocol + ".Handler");
-
 	    try
 	      {
-		Object obj = Class.forName(clsName).newInstance();
-
-		if (! (obj instanceof URLStreamHandler))
-		  continue;
-		else
-		  ph = (URLStreamHandler) obj;
+		// Try to get a class from the system/application
+		// classloader, initialize it, make an instance
+		// and try to cast it to a URLStreamHandler.
+		String clsName =
+		  (pkgPrefix.nextToken() + "." + protocol + ".Handler");
+		Class c = Class.forName(clsName, true, systemClassLoader);
+		ph = (URLStreamHandler) c.newInstance();
 	      }
-	    catch (Exception e)
-	      {
-		// Can't instantiate; handler still null,
-		// go on to next element.
-	      }
+	    catch (Throwable t) { /* ignored */ }
 	  }
-	 while ((! (ph instanceof URLStreamHandler))
-	        && pkgPrefix.hasMoreTokens());
+	 while (ph == null && pkgPrefix.hasMoreTokens());
       }
 
     // Update the hashtable with the new protocol handler.
     if (ph != null && cache_handlers)
-      if (ph instanceof URLStreamHandler)
-	ph_cache.put(protocol, ph);
-      else
-	ph = null;
+      ph_cache.put(protocol, ph);
+    else
+      ph = null;
 
     return ph;
   }
