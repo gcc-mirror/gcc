@@ -833,3 +833,6 @@
 (define_predicate "cmpsi_operand"
   (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "cmpsi_operand_1")))
+
+(define_predicate "compare_operator"
+  (match_code "compare"))
