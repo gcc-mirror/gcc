@@ -1,3 +1,8 @@
+2001-07-26  Kazu Hirata  <kazu@hxi.com>
+
+	* regmove.c (regmove_optimize): Don't replace a reg with
+	another reg of a different mode.
+
 2001-07-26  Andrew MacLeod  <amacleod@redhat.com>
 
 	* params.def (PARAM_MAX_PENDING_LIST_LENGTH): Add parameter to 
