@@ -7231,12 +7231,6 @@ This macro is effective only in a native compiler; @command{collect2} as
 part of a cross compiler always uses @command{nm} for the target machine.
 @end defmac
 
-@defmac COLLECT_PARSE_FLAG (@var{flag})
-Define this macro to be C code that examines @command{collect2} command
-line option @var{flag} and performs special actions if
-@command{collect2} needs to behave differently depending on @var{flag}.
-@end defmac
-
 @defmac REAL_NM_FILE_NAME
 Define this macro as a C string constant containing the file name to use
 to execute @command{nm}.  The default is to search the path normally for

@@ -1,3 +1,10 @@
+2004-10-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* collect2.c (COLLECT_PARSE_FLAG): Remove.
+	(main): Remove a reference to COLLECT_PARSE_FLAG
+	* system.h: Poison COLLECT_PARSE_FLAG.
+	* doc/tm.texi (COLLECT_PARSE_FLAG): Remove.
+
 2004-10-01  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/crti.asm: Give _init and _fini function type.
