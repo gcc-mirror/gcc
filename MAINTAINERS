@@ -191,14 +191,11 @@ Laurent Guerby					guerby@acm.org
 Olivier Hainque					hainque@act-europe.fr
 Andrew Haley					aph@redhat.com
 Stuart Hastings					stuart@apple.com
-Aldy Hernandez					aldyh@redhat.com
 Matthew Hiller					hiller@redhat.com
 Manfred Hollstein				mhollstein@redhat.com
 Andreas Jaeger					aj@suse.de
 Fariborz Jahanian				fjahanian@apple.com
-Jakub Jelinek					jakub@redhat.com
 Dale Johannesen 				dalej@apple.com
-Kean Johnston					jkj@sco.com
 Klaus Kaempf					kkaempf@progis.de
 Brendan Kehoe					brendan@zen.org
 Mumit Khan					khan@xraylith.wisc.edu
@@ -217,11 +214,9 @@ Martin v. Löwis					loewis@informatik.hu-berlin.de
 HJ Lu						hjl@lucon.org
 Andrew Macleod					amacleod@redhat.com
 Vladimir Makarov				vmakarov@redhat.com
-Michael Matz					matz@suse.de
 Greg McGary					gkm@gnu.org
 Adam Megacz					adam@xwt.org
 Alan Modra					amodra@bigpond.net.au
-Toon Moene					toon@moene.indiv.nluug.nl
 Catherine Moore					clm@redhat.com
 Adam Nemet					anemet@lnxw.com
 Nathanael Nerode				neroden@gcc.gnu.org
@@ -247,7 +242,6 @@ Richard Sandiford				rsandifo@redhat.com
 Roger Sayle					roger@eyesopen.com
 Andreas Schwab					schwab@suse.de
 Svein Seldal                                    svein.seldal@solidas.com
-Stan Shebs					shebs@apple.com
 Franz Sirl					franz.sirl-kernel@lauterbach.com
 Danny Smith					dannysmith@users.sourceforge.net
 Michael Sokolov					msokolov@ivan.Harhan.ORG
@@ -257,7 +251,6 @@ Mike Stump					mrs@apple.com
 Jeff Sturm					jsturm@gcc.gnu.org
 Ian Taylor					ian@zembu.com
 Michael Tiemann					tiemann@redhat.com
-Philipp Thomas					pthomas@suse.de
 Kresten Krab Thorup				krab@gcc.gnu.org
 Andreas Tobler					andreast@gcc.gnu.org
 Jonathan Wakely					redi@gcc.gnu.org
