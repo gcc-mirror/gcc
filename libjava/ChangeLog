@@ -1,3 +1,8 @@
+2001-08-06  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/InputStreamReader.java (refill): Only call refill on
+	BufferedInputStream when appropriate constraints are met.
+
 2001-08-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/StringWriter.java: Merged with Classpath.
