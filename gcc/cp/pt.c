@@ -5452,12 +5452,7 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
     {
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
-	{
-	  tree r = build_ptrmemfunc_type
-	    (tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, complain, in_decl));
-	  return cp_build_qualified_type_real (r, TYPE_QUALS (t),
-					       complain);
-	}
+	return tsubst (TYPE_PTRMEMFUNC_FN_TYPE (t), args, complain, in_decl);
 
       /* else fall through */
     case ENUMERAL_TYPE:
@@ -6150,7 +6145,7 @@ tsubst_function_type (t, args, complain, in_decl)
   /* The TYPE_CONTEXT is not used for function/method types.  */
   my_friendly_assert (TYPE_CONTEXT (t) == NULL_TREE, 0);
 
-  /* Substitue the return type.  */
+  /* Substitute the return type.  */
   return_type = tsubst (TREE_TYPE (t), args, complain, in_decl);
   if (return_type == error_mark_node)
     return error_mark_node;
@@ -6565,7 +6560,7 @@ tsubst (t, args, complain, in_decl)
       {
 	enum tree_code code;
 
-	if (type == TREE_TYPE (t))
+	if (type == TREE_TYPE (t) && TREE_CODE (type) != METHOD_TYPE)
 	  return t;
 
 	code = TREE_CODE (t);
@@ -6604,7 +6599,11 @@ tsubst (t, args, complain, in_decl)
 	    return error_mark_node;
 	  }
 	else if (code == POINTER_TYPE)
-	  r = build_pointer_type (type);
+	  {
+	    r = build_pointer_type (type);
+	    if (TREE_CODE (type) == METHOD_TYPE)
+	      r = build_ptrmemfunc_type (r);
+	  }
 	else
 	  r = build_reference_type (type);
 	r = cp_build_qualified_type_real (r, TYPE_QUALS (t), complain);
@@ -6632,7 +6631,30 @@ tsubst (t, args, complain, in_decl)
 			r);
 	    return error_mark_node;
 	  }
-	return build_offset_type (r, type);
+	if (TREE_CODE (type) == REFERENCE_TYPE)
+	  {
+	    if (complain)
+	      error ("creating pointer to member reference type `%T'", type);
+	    
+	    return error_mark_node;
+	  }
+	my_friendly_assert (TREE_CODE (type) != METHOD_TYPE, 20011231);
+	if (TREE_CODE (type) == FUNCTION_TYPE)
+	  /* This is really a method type. The cv qualifiers of the
+	     this pointer should _not_ be determined by the cv
+	     qualifiers of the class type.  They should be held
+	     somewhere in the FUNCTION_TYPE, but we don't do that at
+	     the moment.  Consider
+	        typedef void (Func) () const;
+
+		template <typename T1> void Foo (Func T1::*);
+
+	      */
+	  return build_cplus_method_type (TYPE_MAIN_VARIANT (r),
+					  TREE_TYPE (type),
+					  TYPE_ARG_TYPES (type));
+	else
+	  return build_offset_type (r, type);
       }
     case FUNCTION_TYPE:
     case METHOD_TYPE:

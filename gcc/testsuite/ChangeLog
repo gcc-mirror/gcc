@@ -1,5 +1,8 @@
 2002-01-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/template/ptrmem1.C: New test.
+	* g++.dg/template/ptrmem2.C: New test.
+
 	* g++.dg/template/ntp.C: New test.
 
 	* g++.dg/other/component1.C: New test.
