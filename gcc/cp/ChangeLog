@@ -1,3 +1,12 @@
+Thu Nov 17 20:11:24 1994  Doug Evans  <dje@cygnus.com>
+
+	* cp/Make-lang.in (CXX_INSTALL_NAME) Use program_transform_name.
+	(GXX_INSTALL_NAME) Likewise.
+	(CXX_CROSS_NAME) Use program_transform_cross_name.
+	(GXX_CROSS_NAME) Likewise.
+	(c++.install-man): Use program_transform_name on g++.1.
+	(c++.uninstall): Likewise.
+
 Thu Nov  3 18:48:19 1994  Paul Eggert  <eggert@twinsun.com>
 
 	* Makefile.in (spew.o, lex.o, pt.o):
