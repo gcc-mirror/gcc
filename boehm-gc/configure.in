@@ -153,6 +153,9 @@ case "$host" in
  alpha*-*-*)
     machdep="alpha_mach_dep.lo"
     ;;
+ i?86-*-solaris2.[[89]]*)
+    AC_DEFINE(SOLARIS25_PROC_VDB_BUG_FIXED)
+    ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
     AC_DEFINE(STACKBASE, __stackbase)

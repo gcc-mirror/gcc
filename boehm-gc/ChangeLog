@@ -1,3 +1,16 @@
+2001-09-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* solaris_threads.c (MAX_ORIG_STACK_SIZE) [I386]: Provide special
+	Solaris 2/Intel definition.
+	
+	* configure.in (i?86-*-solaris2.[89]*): Define
+	SOLARIS25_PROC_VDB_BUG_FIXED.
+	* include/private/gcconfig.h [I386 && SUNOS5]: Use it.
+	* configure: Regenerate.
+
+	* include/private/gcconfig.h [I386 && SUNOS5] (DATASTART): Use _etext.
+	(DATAEND): Define using _end.
+
 2001-09-11  Per Bothner  <per@bothner.com>
 
 	* include/Makefile.am:  New file.  It defines include_HEADERS.
