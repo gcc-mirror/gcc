@@ -440,7 +440,8 @@ try_forward_edges (mode, b)
 	  int edge_probability = e->probability;
 	  int edge_frequency;
 
-	  if (threaded)
+	  /* Don't force if target is exit block.  */
+	  if (threaded && target != EXIT_BLOCK_PTR)
 	    {
 	      notice_new_block (redirect_edge_and_branch_force (e, target));
 	      if (rtl_dump_file)
