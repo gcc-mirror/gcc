@@ -135,11 +135,12 @@ namespace std
     // encoding of the various categories in /usr/include/ctype.h.
     const size_t __bitmasksize = 15; 
     for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
-      {
-	const mask __bit = static_cast<mask>(1 << __bitcur);
-	if (__m & __bit)
-	  __ret |= iswctype(__c, _M_convert_to_wmask(__bit));
-      }
+      if (__m & _M_bit[__bitcur]
+	  && iswctype(__c, _M_wmask[__bitcur]))
+	{
+	  __ret = true;
+	  break;
+	}
     return __ret;    
   }
   
@@ -154,11 +155,8 @@ namespace std
 	const size_t __bitmasksize = 15; 
 	mask __m = 0;
 	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
-	  { 
-	    const mask __bit = static_cast<mask>(1 << __bitcur);
-	    if (iswctype(*__lo, _M_convert_to_wmask(__bit)))
-	      __m |= __bit;
-	  }
+	  if (iswctype(*__lo, _M_wmask[__bitcur]))
+	    __m |= _M_bit[__bitcur];
 	*__vec = __m;
       }
     return __hi;
@@ -258,6 +256,12 @@ namespace std
     for (size_t __i = 0;
 	 __i < sizeof(_M_widen) / sizeof(wint_t); ++__i)
       _M_widen[__i] = btowc(__i);
+
+    for (size_t __i = 0; __i <= 15; ++__i)
+      { 
+	_M_bit[__i] = static_cast<mask>(1 << __i);
+	_M_wmask[__i] = _M_convert_to_wmask(_M_bit[__i]);
+      }  
   }
 #endif //  _GLIBCXX_USE_WCHAR_T
 }

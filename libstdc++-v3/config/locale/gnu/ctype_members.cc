@@ -139,12 +139,12 @@ namespace std
     bool __ret = false;
     const size_t __bitmasksize = 11; 
     for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
-      {
-	const mask __bit = static_cast<mask>(_ISbit(__bitcur));
-	if (__m & __bit)
-	  __ret |= __iswctype_l(__c, _M_convert_to_wmask(__bit), 
-				_M_c_locale_ctype); 
-      }
+      if (__m & _M_bit[__bitcur]
+	  && __iswctype_l(__c, _M_wmask[__bitcur], _M_c_locale_ctype))
+	{
+	  __ret = true;
+	  break;
+	}
     return __ret;    
   }
   
@@ -152,19 +152,15 @@ namespace std
   ctype<wchar_t>::
   do_is(const wchar_t* __lo, const wchar_t* __hi, mask* __vec) const
   {
-    for (;__lo < __hi; ++__vec, ++__lo)
+    for (; __lo < __hi; ++__vec, ++__lo)
       {
 	// Highest bitmask in ctype_base == 10, but extra in "C"
 	// library for blank.
 	const size_t __bitmasksize = 11; 
 	mask __m = 0;
 	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
-	  { 
-	    const mask __bit = static_cast<mask>(_ISbit(__bitcur));
-	    if (__iswctype_l(*__lo, _M_convert_to_wmask(__bit), 
-			     _M_c_locale_ctype))
-	      __m |= __bit;
-	  }
+	  if (__iswctype_l(*__lo, _M_wmask[__bitcur], _M_c_locale_ctype))
+	    __m |= _M_bit[__bitcur];
 	*__vec = __m;
       }
     return __hi;
@@ -279,6 +275,12 @@ namespace std
     for (size_t __i = 0;
 	 __i < sizeof(_M_widen) / sizeof(wint_t); ++__i)
       _M_widen[__i] = btowc(__i);
+
+    for (size_t __i = 0; __i <= 11; ++__i)
+      { 
+	_M_bit[__i] = static_cast<mask>(_ISbit(__i));
+	_M_wmask[__i] = _M_convert_to_wmask(_M_bit[__i]);
+      }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);
 #endif

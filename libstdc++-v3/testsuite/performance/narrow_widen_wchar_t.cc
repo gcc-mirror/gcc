@@ -35,7 +35,7 @@ int main()
 
   time_counter time;
   resource_counter resource;
-  wchar_t bufwc[] = L"M'innamoravo di tutto (Fabrizio De Andre')";
+  wchar_t bufwc[] = L"Mi innamoravo di tutto (Fabrizio De Andre')";
   char bufc[sizeof(bufwc) / sizeof(wchar_t)];
 
   locale loc;
