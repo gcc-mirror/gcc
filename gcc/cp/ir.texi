@@ -1466,6 +1466,7 @@ The @code{WHILE_BODY} is the body of the loop.
 @tindex CALL_EXPR
 @tindex CONSTRUCTOR
 @tindex STMT_EXPR
+@tindex BIND_EXPR
 @tindex LOOP_EXPR
 @tindex EXIT_EXPR
 @tindex ARRAY_REF
@@ -1818,6 +1819,13 @@ such an expression.  The @code{STMT_EXPR_STMT} gives the statement
 contained in the expression; this is always a @code{COMPOUND_STMT}.  The
 value of the expression is the value of the last sub-statement in the
 @code{COMPOUND_STMT}.
+
+@item BIND_EXPR
+These nodes represent local blocks.  The first operand is a list of
+temporary variables, connected via their @code{TREE_CHAIN} field.  These
+will never require cleanups.  The scope of these variables is just the
+body of the @code{BIND_EXPR}.  The body of the @code{BIND_EXPR} is the
+second operand.
 
 @item LOOP_EXPR
 These nodes represent ``infinite'' loops.  The @code{LOOP_EXPR_BODY}
