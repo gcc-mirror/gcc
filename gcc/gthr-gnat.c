@@ -26,8 +26,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-
 #include "gthr-gnat.h"
+
+#pragma GCC visibility push(default)
 
 #ifdef __cplusplus
 #define UNUSED(x)
@@ -79,3 +80,5 @@ __gthread_mutex_unlock (__gthread_mutex_t * UNUSED (mutex))
   __gnat_task_unlock ();
   return 0;
 }
+
+#pragma GCC visibility pop

@@ -1,3 +1,31 @@
+2004-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* gthr-gnat.c: Add visibility #pragmas.
+	* gthr-gnat.h : Likewise.
+	* gthr.h: Likewise.
+	* libgcc2.c (__ffsSI2): Move prototype to libgcc2.h.
+	(__ffsDI2): Likewise.
+	(__clzSI2): Likewise.
+	(__ctzSI2): Likewise.
+	(__ctzDI2): Likewise.
+	(__popcountSI2): Likewise.
+	(__popcountDI2): Likewise.
+	(__paritySI2): Likewise.
+	(__parityDI2): Likewise.
+	* libgcc2.h: Add visibility #pragmas.
+	(__clzDI2): Add prototype.
+	(__clzSI2): Likewise.
+	(__ctzSI2): Likewise.
+	(__ffsDI2): Likewise.
+	(__ffsSI2): Likewise.
+	(__ctzDI2): Likewise.
+	(__popcountSI2): Likewise.
+	(__popcountDI2): Likewise.
+	(__paritySI2): Likewise.
+	(__parityDI2): Likewise.
+	* unwind-dw2-fde.h: Add visibility #pragmas.
+	* unwind.h: Likewise.
+
 2004-08-03  David Edelsohn  <edelsohn@gnu.org>
 	    Dale Johannesen  <dalej@apple.com>
 	    Roger Sayle  <roger@eyesopen.com>
