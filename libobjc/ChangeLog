@@ -1,3 +1,25 @@
+2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Clean up handling of
+	--enable-version-specific-runtime-libs and related variables;
+	replace 'if test' with 'case' where reasonable.  Fix comments.
+	Remove useless libstdcxx_interface.
+	* configure: Regenerate.
+
+	* configure.in: Use _GCC_TOPLEV_NONCANONICAL_TARGET.
+	Replace uses of target_alias with target_noncanonical.
+	* aclocal.m4: Include ../config/acx.m4.
+	* configure: Regenerate.
+	* Makefile.in: Replace uses of target_alias with target_noncanonical.
+	Fix copyright statement.
+
+	* configure.in: Hand-inline bulky, confusing macros from
+	aclocal.m4.  Replace references to "GNU Objective C" with "GCC".
+	Update copyright notice.  Remove stuff for automake, which isn't
+	used in this directory.  Remove emacs local variables.
+	* aclocal.m4: Remove hand-inlined macros.  Update copyright notice.
+	* configure: Regenerate.
+
 2004-03-16  Manfred Hollstein  <mh@suse.com>
 
 	* Makefile.in, configure.in, configure: Update copyright years.
