@@ -29,6 +29,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "tm_p.h"
 #include "flags.h"
+#include "basic-block.h"
 
 /* Forward declarations */
 static int global_reg_mentioned_p_1 PARAMS ((rtx *, void *));
@@ -36,6 +37,8 @@ static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
 static int computed_jump_p_1	PARAMS ((rtx));
 static void parms_set 		PARAMS ((rtx, rtx, void *));
+static bool hoist_test_store		PARAMS ((rtx, rtx, regset));
+static void hoist_update_store		PARAMS ((rtx, rtx *, rtx, rtx));
 
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
@@ -3255,4 +3258,267 @@ keep_with_call_p (insn)
 	}
     }
   return false;
+}
+
+/* Return true when store to register X can be hoisted to the place
+   with LIVE registers (can be NULL).  Value VAL contains destination
+   whose value will be used.  */
+
+static bool
+hoist_test_store (x, val, live)
+     rtx x, val;
+     regset live;
+{
+  if (GET_CODE (x) == SCRATCH)
+    return true;
+
+  if (rtx_equal_p (x, val))
+    return true;
+
+  /* Allow subreg of X in case it is not writting just part of multireg pseudo.
+     Then we would need to update all users to care hoisting the store too.
+     Caller may represent that by specifying whole subreg as val.  */
+
+  if (GET_CODE (x) == SUBREG && rtx_equal_p (SUBREG_REG (x), val))
+    {
+      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) > UNITS_PER_WORD
+	  && GET_MODE_BITSIZE (GET_MODE (x)) <
+	  GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))))
+	return false;
+      return true;
+    }
+  if (GET_CODE (x) == SUBREG)
+    x = SUBREG_REG (x);
+
+  /* Anything except register store is not hoistable.  This includes the
+     partial stores to registers.  */
+
+  if (!REG_P (x))
+    return false;
+
+  /* Pseudo registers can be allways replaced by another pseudo to avoid
+     the side effect, for hard register we must ensure that they are dead.
+     Eventually we may want to add code to try turn pseudos to hards, but it
+     is unlikely usefull.  */
+
+  if (REGNO (x) < FIRST_PSEUDO_REGISTER)
+    {
+      int regno = REGNO (x);
+      int n = HARD_REGNO_NREGS (regno, GET_MODE (x));
+
+      if (!live)
+	return false;
+      if (REGNO_REG_SET_P (live, regno))
+	return false;
+      while (--n > 0)
+	if (REGNO_REG_SET_P (live, regno + n))
+	  return false;
+    }
+  return true;
+}
+
+
+/* Return true if INSN can be hoisted to place with LIVE hard registers
+   (LIVE can be NULL when unknown).  VAL is expected to be stored by the insn
+   and used by the hoisting pass.  */
+
+bool
+can_hoist_insn_p (insn, val, live)
+     rtx insn, val;
+     regset live;
+{
+  rtx pat = PATTERN (insn);
+  int i;
+
+  /* It probably does not worth the complexity to handle multiple
+     set stores.  */
+  if (!single_set (insn))
+    return false;
+  /* We can move CALL_INSN, but we need to check that all caller clobbered
+     regs are dead.  */
+  if (GET_CODE (insn) == CALL_INSN)
+    return false;
+  /* In future we will handle hoisting of libcall sequences, but
+     give up for now.  */
+  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+    return false;
+  switch (GET_CODE (pat))
+    {
+    case SET:
+      if (!hoist_test_store (SET_DEST (pat), val, live))
+	return false;
+      break;
+    case USE:
+      /* USES do have sick semantics, so do not move them.  */
+      return false;
+      break;
+    case CLOBBER:
+      if (!hoist_test_store (XEXP (pat, 0), val, live))
+	return false;
+      break;
+    case PARALLEL:
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx x = XVECEXP (pat, 0, i);
+	  switch (GET_CODE (x))
+	    {
+	    case SET:
+	      if (!hoist_test_store (SET_DEST (x), val, live))
+		return false;
+	      break;
+	    case USE:
+	      /* We need to fix callers to really ensure availability
+	         of all values inisn uses, but for now it is safe to prohibit
+		 hoisting of any insn having such a hiden uses.  */
+	      return false;
+	      break;
+	    case CLOBBER:
+	      if (!hoist_test_store (SET_DEST (x), val, live))
+		return false;
+	      break;
+	    default:
+	      break;
+	    }
+	}
+      break;
+    default:
+      abort ();
+    }
+  return true;
+}
+
+/* Update store after hoisting - replace all stores to pseudo registers
+   by new ones to avoid clobbering of values except for store to VAL that will
+   be updated to NEW.  */
+
+static void
+hoist_update_store (insn, xp, val, new)
+     rtx insn, *xp, val, new;
+{
+  rtx x = *xp;
+
+  if (GET_CODE (x) == SCRATCH)
+    return;
+
+  if (GET_CODE (x) == SUBREG && SUBREG_REG (x) == val)
+    validate_change (insn, xp,
+		     simplify_gen_subreg (GET_MODE (x), new, GET_MODE (new),
+					  SUBREG_BYTE (x)), 1);
+  if (rtx_equal_p (x, val))
+    {
+      validate_change (insn, xp, new, 1);
+      return;
+    }
+  if (GET_CODE (x) == SUBREG)
+    {
+      xp = &SUBREG_REG (x);
+      x = *xp;
+    }
+
+  if (!REG_P (x))
+    abort ();
+
+  /* We've verified that hard registers are dead, so we may keep the side
+     effect.  Otherwise replace it by new pseudo.  */
+  if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
+    validate_change (insn, xp, gen_reg_rtx (GET_MODE (x)), 1);
+  REG_NOTES (insn)
+    = alloc_EXPR_LIST (REG_UNUSED, *xp, REG_NOTES (insn));
+}
+
+/* Create a copy of INSN after AFTER replacing store of VAL to NEW
+   and each other side effect to pseudo register by new pseudo register.  */
+
+rtx
+hoist_insn_after (insn, after, val, new)
+     rtx insn, after, val, new;
+{
+  rtx pat;
+  int i;
+  rtx note;
+
+  insn = emit_copy_of_insn_after (insn, after);
+  pat = PATTERN (insn);
+
+  /* Remove REG_UNUSED notes as we will re-emit them.  */
+  while ((note = find_reg_note (insn, REG_UNUSED, NULL_RTX)))
+    remove_note (insn, note);
+
+  /* To get this working callers must ensure to move everything referenced
+     by REG_EQUAL/REG_EQUIV notes too.  Lets remove them, it is probably
+     easier.  */
+  while ((note = find_reg_note (insn, REG_EQUAL, NULL_RTX)))
+    remove_note (insn, note);
+  while ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)))
+    remove_note (insn, note);
+
+  /* Remove REG_DEAD notes as they might not be valid anymore in case
+     we create redundancy.  */
+  while ((note = find_reg_note (insn, REG_DEAD, NULL_RTX)))
+    remove_note (insn, note);
+  switch (GET_CODE (pat))
+    {
+    case SET:
+      hoist_update_store (insn, &SET_DEST (pat), val, new);
+      break;
+    case USE:
+      break;
+    case CLOBBER:
+      hoist_update_store (insn, &XEXP (pat, 0), val, new);
+      break;
+    case PARALLEL:
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx x = XVECEXP (pat, 0, i);
+	  switch (GET_CODE (x))
+	    {
+	    case SET:
+	      hoist_update_store (insn, &SET_DEST (x), val, new);
+	      break;
+	    case USE:
+	      break;
+	    case CLOBBER:
+	      hoist_update_store (insn, &SET_DEST (x), val, new);
+	      break;
+	    default:
+	      break;
+	    }
+	}
+      break;
+    default:
+      abort ();
+    }
+  if (!apply_change_group ())
+    abort ();
+
+  return insn;
+}
+
+rtx
+hoist_insn_to_edge (insn, e, val, new)
+     rtx insn, val, new;
+     edge e;
+{
+  rtx new_insn;
+
+  /* We cannot insert instructions on an abnormal critical edge.
+     It will be easier to find the culprit if we die now.  */
+  if ((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e))
+    abort ();
+
+  /* Do not use emit_insn_on_edge as we want to preserve notes and similar
+     stuff.  We also emit CALL_INSNS and firends.  */
+  if (e->insns == NULL_RTX)
+    {
+      start_sequence ();
+      emit_note (NULL, NOTE_INSN_DELETED);
+    }
+  else
+    push_to_sequence (e->insns);
+
+  new_insn = hoist_insn_after (insn, get_last_insn (), val, new);
+
+  e->insns = get_insns ();
+  end_sequence ();
+  return new_insn;
 }

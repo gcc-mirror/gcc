@@ -729,6 +729,9 @@ extern bool mark_dfs_back_edges		PARAMS ((void));
 extern void set_edge_can_fallthru_flag	PARAMS ((void));
 extern void update_br_prob_note		PARAMS ((basic_block));
 extern void fixup_abnormal_edges	PARAMS ((void));
+extern bool can_hoist_insn_p		PARAMS ((rtx, rtx, regset));
+extern rtx hoist_insn_after		PARAMS ((rtx, rtx, rtx, rtx));
+extern rtx hoist_insn_to_edge		PARAMS ((rtx, edge, rtx, rtx));
 
 /* In dominance.c */
 
