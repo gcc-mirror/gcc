@@ -1,3 +1,13 @@
+Thu Oct  5 16:16:57 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcc.c: Move data on prefixes forward in file and reorganize.
+	(md_exec_prefix, md_startfile_prefix, md_startfile_prefix_1):
+	Always define, but make null if no value.
+	(static_specs): Add "md_exec_prefix", "md_startfile_prefix",
+	and "md_startfile_prefix_1".
+	(main): Check whether md_exec_prefix and the others are the
+	null string rather than whether the macro is defined.
+
 Thu Oct  5 19:04:18 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* (convert_move): Use zero_extendpsisi2 to do an unsigned extension

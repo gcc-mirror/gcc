@@ -1065,6 +1065,104 @@ skip_whitespace (p)
 
   return p;
 }
+/* Structures to keep track of prefixes to try when looking for files.  */
+
+struct prefix_list
+{
+  char *prefix;               /* String to prepend to the path.  */
+  struct prefix_list *next;   /* Next in linked list.  */
+  int require_machine_suffix; /* Don't use without machine_suffix.  */
+  /* 2 means try both machine_suffix and just_machine_suffix.  */
+  int *used_flag_ptr;	      /* 1 if a file was found with this prefix.  */
+  int priority;		      /* Sort key - priority within list */
+};
+
+struct path_prefix
+{
+  struct prefix_list *plist;  /* List of prefixes to try */
+  int max_len;                /* Max length of a prefix in PLIST */
+  const char *name;           /* Name of this list (used in config stuff) */
+};
+
+/* List of prefixes to try when looking for executables.  */
+
+static struct path_prefix exec_prefixes = { 0, 0, "exec" };
+
+/* List of prefixes to try when looking for startup (crt0) files.  */
+
+static struct path_prefix startfile_prefixes = { 0, 0, "startfile" };
+
+/* List of prefixes to try when looking for include files.  */
+
+static struct path_prefix include_prefixes = { 0, 0, "include" };
+
+/* Suffix to attach to directories searched for commands.
+   This looks like `MACHINE/VERSION/'.  */
+
+static const char *machine_suffix = 0;
+
+/* Suffix to attach to directories searched for commands.
+   This is just `MACHINE/'.  */
+
+static const char *just_machine_suffix = 0;
+
+/* Adjusted value of GCC_EXEC_PREFIX envvar.  */
+
+static const char *gcc_exec_prefix;
+
+/* Default prefixes to attach to command names.  */
+
+#ifdef CROSS_COMPILE  /* Don't use these prefixes for a cross compiler.  */
+#undef MD_EXEC_PREFIX
+#undef MD_STARTFILE_PREFIX
+#undef MD_STARTFILE_PREFIX_1
+#endif
+
+/* If no prefixes defined, use the null string, which will disable them.  */
+#ifndef MD_EXEC_PREFIX
+#define MD_EXEC_PREFIX ""
+#endif
+#ifndef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX ""
+#endif
+#ifndef MD_STARTFILE_PREFIX_1
+#define MD_STARTFILE_PREFIX_1 ""
+#endif
+
+/* Supply defaults for the standard prefixes.  */
+
+#ifndef STANDARD_EXEC_PREFIX
+#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc-lib/"
+#endif
+#ifndef STANDARD_STARTFILE_PREFIX
+#define STANDARD_STARTFILE_PREFIX "/usr/local/lib/"
+#endif
+#ifndef TOOLDIR_BASE_PREFIX
+#define TOOLDIR_BASE_PREFIX "/usr/local/"
+#endif
+#ifndef STANDARD_BINDIR_PREFIX
+#define STANDARD_BINDIR_PREFIX "/usr/local/bin"
+#endif
+
+static const char *standard_exec_prefix = STANDARD_EXEC_PREFIX;
+static const char *standard_exec_prefix_1 = "/usr/lib/gcc/";
+static const char *md_exec_prefix = MD_EXEC_PREFIX;
+
+static const char *md_startfile_prefix = MD_STARTFILE_PREFIX;
+static const char *md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
+static const char *standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
+static const char *standard_startfile_prefix_1 = "/lib/";
+static const char *standard_startfile_prefix_2 = "/usr/lib/";
+
+static const char *tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
+static const char *tooldir_prefix;
+
+static const char *standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
+
+/* Subdirectory to use for locating libraries.  Set by
+   set_multilib_dir based on the compilation options.  */
+
+static const char *multilib_dir;
 
 /* Structure to keep track of the specs that have been defined so far.
    These are accessed using %(specname) or %[specname] in a compiler
@@ -1118,6 +1216,9 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("multilib_exclusions",	&multilib_exclusions),
   INIT_STATIC_SPEC ("linker",			&linker_name_spec),
   INIT_STATIC_SPEC ("link_libgcc",		&link_libgcc_spec),
+  INIT_STATIC_SPEC ("md_exec_prefix",		&md_exec_prefix),
+  INIT_STATIC_SPEC ("md_startfile_prefix",	&md_startfile_prefix),
+  INIT_STATIC_SPEC ("md_startfile_prefix_1",	&md_startfile_prefix_1),
 };
 
 #ifdef EXTRA_SPECS		/* additional specs needed */
@@ -1279,99 +1380,6 @@ static int signal_count;
 
 static const char *programname;
 
-/* Structures to keep track of prefixes to try when looking for files.  */
-
-struct prefix_list
-{
-  char *prefix;               /* String to prepend to the path.  */
-  struct prefix_list *next;   /* Next in linked list.  */
-  int require_machine_suffix; /* Don't use without machine_suffix.  */
-  /* 2 means try both machine_suffix and just_machine_suffix.  */
-  int *used_flag_ptr;	      /* 1 if a file was found with this prefix.  */
-  int priority;		      /* Sort key - priority within list */
-};
-
-struct path_prefix
-{
-  struct prefix_list *plist;  /* List of prefixes to try */
-  int max_len;                /* Max length of a prefix in PLIST */
-  const char *name;           /* Name of this list (used in config stuff) */
-};
-
-/* List of prefixes to try when looking for executables.  */
-
-static struct path_prefix exec_prefixes = { 0, 0, "exec" };
-
-/* List of prefixes to try when looking for startup (crt0) files.  */
-
-static struct path_prefix startfile_prefixes = { 0, 0, "startfile" };
-
-/* List of prefixes to try when looking for include files.  */
-
-static struct path_prefix include_prefixes = { 0, 0, "include" };
-
-/* Suffix to attach to directories searched for commands.
-   This looks like `MACHINE/VERSION/'.  */
-
-static const char *machine_suffix = 0;
-
-/* Suffix to attach to directories searched for commands.
-   This is just `MACHINE/'.  */
-
-static const char *just_machine_suffix = 0;
-
-/* Adjusted value of GCC_EXEC_PREFIX envvar.  */
-
-static const char *gcc_exec_prefix;
-
-/* Default prefixes to attach to command names.  */
-
-#ifdef CROSS_COMPILE  /* Don't use these prefixes for a cross compiler.  */
-#undef MD_EXEC_PREFIX
-#undef MD_STARTFILE_PREFIX
-#undef MD_STARTFILE_PREFIX_1
-#endif
-
-#ifndef STANDARD_EXEC_PREFIX
-#define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc-lib/"
-#endif /* !defined STANDARD_EXEC_PREFIX */
-
-static const char *standard_exec_prefix = STANDARD_EXEC_PREFIX;
-static const char *standard_exec_prefix_1 = "/usr/lib/gcc/";
-#ifdef MD_EXEC_PREFIX
-static const char *md_exec_prefix = MD_EXEC_PREFIX;
-#endif
-
-#ifndef STANDARD_STARTFILE_PREFIX
-#define STANDARD_STARTFILE_PREFIX "/usr/local/lib/"
-#endif /* !defined STANDARD_STARTFILE_PREFIX */
-
-#ifdef MD_STARTFILE_PREFIX
-static const char *md_startfile_prefix = MD_STARTFILE_PREFIX;
-#endif
-#ifdef MD_STARTFILE_PREFIX_1
-static const char *md_startfile_prefix_1 = MD_STARTFILE_PREFIX_1;
-#endif
-static const char *standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
-static const char *standard_startfile_prefix_1 = "/lib/";
-static const char *standard_startfile_prefix_2 = "/usr/lib/";
-
-#ifndef TOOLDIR_BASE_PREFIX
-#define TOOLDIR_BASE_PREFIX "/usr/local/"
-#endif
-static const char *tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
-static const char *tooldir_prefix;
-
-#ifndef STANDARD_BINDIR_PREFIX
-#define STANDARD_BINDIR_PREFIX "/usr/local/bin"
-#endif
-static const char *standard_bindir_prefix = STANDARD_BINDIR_PREFIX;
-
-/* Subdirectory to use for locating libraries.  Set by
-   set_multilib_dir based on the compilation options.  */
-
-static const char *multilib_dir;
-
 /* Clear out the vector of arguments (after a command is executed).  */
 
 static void
@@ -5339,22 +5347,21 @@ main (argc, argv)
   /* If not cross-compiling, look for startfiles in the standard places.  */
   if (*cross_compile == '0')
     {
-#ifdef MD_EXEC_PREFIX
-      add_prefix (&exec_prefixes, md_exec_prefix, "GCC",
-		  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
-      add_prefix (&startfile_prefixes, md_exec_prefix, "GCC",
-		  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
-#endif
+      if (*md_exec_prefix)
+	{
+	  add_prefix (&exec_prefixes, md_exec_prefix, "GCC",
+		      PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+	  add_prefix (&startfile_prefixes, md_exec_prefix, "GCC",
+		      PREFIX_PRIORITY_LAST, 0, NULL_PTR);
+	}
 
-#ifdef MD_STARTFILE_PREFIX
-      add_prefix (&startfile_prefixes, md_startfile_prefix, "GCC",
-		  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
-#endif
+      if (*md_startfile_prefix)
+	add_prefix (&startfile_prefixes, md_startfile_prefix, "GCC",
+		    PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 
-#ifdef MD_STARTFILE_PREFIX_1
-      add_prefix (&startfile_prefixes, md_startfile_prefix_1, "GCC",
-		  PREFIX_PRIORITY_LAST, 0, NULL_PTR);
-#endif
+      if (*md_startfile_prefix_1)
+	add_prefix (&startfile_prefixes, md_startfile_prefix_1, "GCC",
+		    PREFIX_PRIORITY_LAST, 0, NULL_PTR);
 
       /* If standard_startfile_prefix is relative, base it on
 	 standard_exec_prefix.  This lets us move the installed tree
