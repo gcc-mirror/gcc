@@ -255,6 +255,27 @@ __ashrdi3 (u, b)
 }
 #endif
 
+#ifdef L_ffsdi2
+DItype
+__ffsdi2 (u)
+     DItype u;
+{
+  DIunion uu, w;
+  uu.ll = u;
+  w.s.high = 0;
+  w.s.low = ffs (uu.s.low);
+  if (w.s.low != 0)
+    return w;
+  w.s.low = ffs (uu.s.high);
+  if (w.s.low != 0)
+    {
+      w.s.low += BITS_PER_UNIT * sizeof (SItype);
+      return w;
+    }
+  return w;
+}
+#endif
+
 #ifdef L_muldi3
 DItype
 __muldi3 (u, v)
