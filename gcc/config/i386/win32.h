@@ -71,7 +71,7 @@ Boston, MA 02111-1307, USA. */
 #undef CPP_SPEC
 #define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
   %{!mcygwin:-iwithprefixbefore include/mingw32 -D__MINGW32__}    \
-  %{mcygwin:-D__CYGWIN32__}"
+  %{mcygwin:-D__CYGWIN32__ -D__CYGWIN__}"
 
 /* We have to dynamic link to get to the system DLLs.  All of libc, libm and
    the Unix stuff is in cygwin.dll.  The import library is called

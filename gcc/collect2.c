@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "demangle.h"
 #include "obstack.h"
-#ifdef __CYGWIN32__
+#ifdef __CYGWIN__
 #include <process.h>
 #endif
 
@@ -1721,7 +1721,7 @@ collect_execute (prog, argv, redir)
   if (argv[0] == 0)
     fatal ("cannot find `%s'", prog);
 
-#ifndef __CYGWIN32__
+#ifndef __CYGWIN__
   pid = vfork ();
   if (pid == -1)
     fatal_perror (VFORK_STRING);

@@ -3668,10 +3668,10 @@ for machine in $build $host $target; do
 		xmake_file=i386/x-vsta
 		;;
 	i[34567]86-*-win32)
-		xm_file="${xm_file} i386/xm-cygwin32.h"
-		tmake_file=i386/t-cygwin32
+		xm_file="${xm_file} i386/xm-cygwin.h"
+		tmake_file=i386/t-cygwin
 		tm_file=i386/win32.h
-		xmake_file=i386/x-cygwin32
+		xmake_file=i386/x-cygwin
 		extra_objs=winnt.o
 		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
@@ -3679,11 +3679,11 @@ for machine in $build $host $target; do
 		fi
 		exeext=.exe
 		;;
-	i[34567]86-*-pe | i[34567]86-*-cygwin32)
-		xm_file="${xm_file} i386/xm-cygwin32.h"
-		tmake_file=i386/t-cygwin32
-		tm_file=i386/cygwin32.h
-		xmake_file=i386/x-cygwin32
+	i[34567]86-*-pe | i[34567]86-*-cygwin*)
+		xm_file="${xm_file} i386/xm-cygwin.h"
+		tmake_file=i386/t-cygwin
+		tm_file=i386/cygwin.h
+		xmake_file=i386/x-cygwin
 		extra_objs=winnt.o
 		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
@@ -3694,9 +3694,9 @@ for machine in $build $host $target; do
 	i[34567]86-*-mingw32*)
 		tm_file=i386/mingw32.h
 		xm_file="${xm_file} i386/xm-mingw32.h"
-		tmake_file="i386/t-cygwin32 i386/t-mingw32"
+		tmake_file="i386/t-cygwin i386/t-mingw32"
 		extra_objs=winnt.o
-		xmake_file=i386/x-cygwin32
+		xmake_file=i386/x-cygwin
 		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
 			thread_file='win32'
@@ -4976,11 +4976,11 @@ for machine in $build $host $target; do
 		fi
 		extra_headers=ppc-asm.h
 		;;
-	powerpcle-*-pe | powerpcle-*-cygwin32)
-		tm_file=rs6000/cygwin32.h
-		xm_file="rs6000/xm-cygwin32.h ${xm_file}"
+	powerpcle-*-pe | powerpcle-*-cygwin*)
+		tm_file=rs6000/cygwin.h
+		xm_file="rs6000/xm-cygwin.h ${xm_file}"
 		tmake_file=rs6000/t-winnt
-		xmake_file=rs6000/x-cygwin32
+		xmake_file=rs6000/x-cygwin
 #		extra_objs=pe.o
 		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
