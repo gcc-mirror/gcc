@@ -1,3 +1,12 @@
+Sun Feb 28 00:50:28 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (fold_rtx): Update comments for (const (minus (label) (label)))
+	case.
+	(cse_insn): Avoid creating a bogus REG_EQUAL note for
+	(const (minus (label) (label)))
+	(record_jump_cond): Fix mismatched paren in comment.
+	
 Sat Feb 27 22:48:38 1999  H.J. Lu  (hjl@gnu.org)
 			  Jeffrey A Law  (law@cygnus.com)
 
