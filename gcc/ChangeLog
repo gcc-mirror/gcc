@@ -1,3 +1,16 @@
+2002-04-09  Alan Modra  <amodra@bigpond.net.au>
+
+	* configure.in (auto-build.h): Use target_alias and build_alias
+	when running configure.
+	(gcc_cv_as): Use $target_alias in directory searchs rather than
+	$target.  Heed program_prefix and program_transform_name.  Search
+	for gas in cross-compiler case too.  "test -x" rather than "test -f".
+	(gcc_cv_ld): Likewise.
+	(gcc_cv_nm): Set for cross compilers too.  Heed program_prefix and
+	program_transform_name.
+	(gcc_cv_objdump): Likewise.
+	* configure: Regenerate.
+
 2002-04-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/t-mmix (TARGET_LIBGCC2_CFLAGS): Don't -Dinhibit_libc
