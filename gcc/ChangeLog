@@ -1,4 +1,12 @@
+Wed Feb 18 07:32:11 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* m68k.h (MACHINE_STATE_{SAVE,RESTORE} [MOTOROLA]): Add %# and %/;
+	add : to make them into extended asms.
+
 Wed Feb 18 07:08:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (find_reloads): Always convert address reload for
+	non-reloaded operand to RELOAD_FOR_OPERAND_ADDRESS.
 
 	* emit-rtl.c (hard-reg-set.h): Include.
 	(get_lowpart_common): Don't make new REG for hard reg in a 
