@@ -473,9 +473,11 @@ java::lang::String::getBytes (jstring enc)
     {
       converter->setOutput(buffer, bufpos);
       int converted = converter->write(this, offset, todo, NULL);
+      bufpos = converter->count;
       if (converted == 0)
 	{
-	  jbyteArray newbuffer = JvNewByteArray(2 * buflen);
+	  buflen *= 2;
+	  jbyteArray newbuffer = JvNewByteArray(buflen);
 	  memcpy (elements (newbuffer), elements (buffer), bufpos);
 	  buffer = newbuffer;
 	}
@@ -487,8 +489,8 @@ java::lang::String::getBytes (jstring enc)
     }
   if (bufpos == buflen)
     return buffer;
-  jbyteArray result = JvNewByteArray(buflen);
-  memcpy (elements (result), elements (buffer), buflen);
+  jbyteArray result = JvNewByteArray(bufpos);
+  memcpy (elements (result), elements (buffer), bufpos);
   return result;
 }
 
