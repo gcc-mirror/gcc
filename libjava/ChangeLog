@@ -1,3 +1,8 @@
+2004-09-09  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am: Don't try to include deps.mk.
+	* Makefile.in: Regenerated.
+
 2004-09-08  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* configure.ac (AC_CONFIG_COMMANDS): Don't create subdirectories and

@@ -3140,8 +3140,6 @@ texinfo: TexinfoDoclet.class
 ## Dependency tracking madness.
 ##
 
--include deps.mk
-
 ## This is an evil hack to work around an automake limitation.  We
 ## need to ensure that all CNI headers are built, not just the ones used
 ## internally by libgcj. We can't make the .o files depend on nat_headers, 
