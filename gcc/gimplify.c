@@ -1744,9 +1744,25 @@ gimplify_call_expr (tree *expr_p, tree *pre_p, bool want_value)
 	}
 
       if (DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_START)
-	/* Avoid gimplifying the second argument to va_start, which needs
-	   to be the plain PARM_DECL.  */
-	return gimplify_arg (&TREE_VALUE (TREE_OPERAND (*expr_p, 1)), pre_p);
+        {
+	  tree arglist = TREE_OPERAND (*expr_p, 1);
+	  
+	  if (!arglist || !TREE_CHAIN (arglist))
+	    {
+	      error ("too few arguments to function %<va_start%>");
+	      *expr_p = build_empty_stmt ();
+	      return GS_OK;
+	    }
+	  
+	  if (fold_builtin_next_arg (TREE_CHAIN (arglist)))
+	    {
+	      *expr_p = build_empty_stmt ();
+	      return GS_OK;
+	    }
+	  /* Avoid gimplifying the second argument to va_start, which needs
+	     to be the plain PARM_DECL.  */
+	  return gimplify_arg (&TREE_VALUE (TREE_OPERAND (*expr_p, 1)), pre_p);
+	}
     }
 
   /* There is a sequence point before the call, so any side effects in
