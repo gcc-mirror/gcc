@@ -177,14 +177,17 @@ acx_cv_cc_gcc_supports_ada=no
 # has not been installed.  This is fixed in 2.95.4, 3.0.2, and 3.1.
 # Therefore we must check for the error message as well as an
 # unsuccessful exit.
+# Other compilers, like HP Tru64 UNIX cc, exit successfully when
+# given a .adb file, but produce no object file.  So we must check
+# if an object file was really produced to guard against this.
 errors=`(${CC} -c conftest.adb) 2>&1 || echo failure`
-if test x"$errors" = x; then
+if test x"$errors" = x && test -f conftest.$ac_objext; then
   acx_cv_cc_gcc_supports_ada=yes
   break
 fi
 rm -f conftest.*])
 
-if test x$GNATBIND != xno && test x$acx_cv_gcc_supports_ada != xno; then
+if test x$GNATBIND != xno && test x$acx_cv_cc_gcc_supports_ada != xno; then
   have_gnat=yes
 else
   have_gnat=no

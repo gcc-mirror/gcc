@@ -1,3 +1,9 @@
+2004-04-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* acx.m4 (ACX_PROG_GNAT): Check if ${CC} produces object file for
+	Ada compilation.
+	Fix acx_cv_cc_gcc_supports_ada spelling.
+
 2004-03-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR ada/14131
