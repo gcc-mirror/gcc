@@ -85,11 +85,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{pic-none:   -mno-half-pic} \
+%{fpic:	      -mno-half-pic} \
+%{fPIC:	      -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
 %{pic-extern: -mhalf-pic} \
 %{pic-calls:  -mhalf-pic} \
 %{pic-names*: -mhalf-pic} \
-%{!pic-*:     -mhalf-pic}"
+%{!pic-*: %{!fpic: %{!fPIC: -mhalf-pic}}}"
 
 #undef	ASM_SPEC
 #define ASM_SPEC       ""
@@ -152,11 +154,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    `high' expressions and `const' arithmetic expressions, in
    addition to `const_int' and `const_double' expressions.  */
 
+#define CONSTANT_ADDRESS_P_ORIG(X)					\
+  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+   || GET_CODE (X) == HIGH)
+
 #undef	CONSTANT_ADDRESS_P
 #define CONSTANT_ADDRESS_P(X)                                           \
-  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
-   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
-   || GET_CODE (X) == HIGH) && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
+  ((CONSTANT_ADDRESS_P_ORIG (X)) && (!HALF_PIC_P () || !HALF_PIC_ADDRESS_P (X)))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
@@ -173,29 +178,50 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address. */
 
+#define GO_IF_LEGITIMATE_ADDRESS_ORIG(MODE, X, ADDR)			\
+{									\
+  if (CONSTANT_ADDRESS_P (X)						\
+      && (! flag_pic || LEGITIMATE_PIC_OPERAND_P (X)))			\
+    goto ADDR;								\
+  GO_IF_INDEXING (X, ADDR);						\
+  if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))		\
+    {									\
+      rtx x0 = XEXP (X, 0);						\
+      if (! flag_pic || ! SYMBOLIC_CONST (XEXP (X, 1)))			\
+	{ GO_IF_INDEXING (x0, ADDR); }					\
+      else if (x0 == pic_offset_table_rtx)				\
+	goto ADDR;							\
+      else if (GET_CODE (x0) == PLUS)					\
+	{								\
+	  if (XEXP (x0, 0) == pic_offset_table_rtx)			\
+	    { GO_IF_INDEXABLE_BASE (XEXP (x0, 1), ADDR); }		\
+	  if (XEXP (x0, 1) == pic_offset_table_rtx)			\
+	    { GO_IF_INDEXABLE_BASE (XEXP (x0, 0), ADDR); }		\
+	}								\
+    }									\
+}
+
 #undef	GO_IF_LEGITIMATE_ADDRESS
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
 {									\
-  if (CONSTANT_P (X))							\
+  if (! HALF_PIC_P ())							\
     {									\
-      if (! HALF_PIC_P () || ! HALF_PIC_ADDRESS_P (X))			\
-	goto ADDR;							\
+      GO_IF_LEGITIMATE_ADDRESS_ORIG(MODE, X, ADDR);			\
     }									\
   else									\
     {									\
-      GO_IF_INDEXING (X, ADDR);						\
+      if (CONSTANT_P (X) && ! HALF_PIC_ADDRESS_P (X))			\
+	goto ADDR;							\
 									\
+      GO_IF_INDEXING (X, ADDR);						\
       if (GET_CODE (X) == PLUS)						\
 	{								\
 	  rtx x1 = XEXP (X, 1);						\
 									\
-	  if (CONSTANT_P (x1))						\
+	  if (CONSTANT_P (x1) && ! HALF_PIC_ADDRESS_P (x1))		\
 	    {								\
-	      if (! HALF_PIC_P () || ! HALF_PIC_ADDRESS_P (x1))		\
-		{							\
-		  rtx x0 = XEXP (X, 0);					\
-		  GO_IF_INDEXING (x0, ADDR);				\
-		}							\
+	      rtx x0 = XEXP (X, 0);					\
+	      GO_IF_INDEXING (x0, ADDR);				\
 	    }								\
 	}								\
     }									\
