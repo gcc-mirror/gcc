@@ -562,7 +562,7 @@ initialize_inlined_parameters (id, args, fn)
 	}
 
       /* See if we need to clean up the declaration.  */
-      cleanup = maybe_build_cleanup (var);
+      cleanup = (*lang_hooks.maybe_build_cleanup) (var);
       if (cleanup) 
 	{
 	  tree cleanup_stmt;

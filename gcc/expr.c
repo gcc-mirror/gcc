@@ -8379,7 +8379,8 @@ expand_expr (exp, target, tmode, modifier)
 		   built here.  */
 
 		if (TREE_OPERAND (exp, 2) == 0)
-		  TREE_OPERAND (exp, 2) = maybe_build_cleanup (slot);
+		  TREE_OPERAND (exp, 2)
+		    = (*lang_hooks.maybe_build_cleanup) (slot);
 		cleanups = TREE_OPERAND (exp, 2);
 	      }
 	  }

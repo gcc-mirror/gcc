@@ -1,3 +1,7 @@
+Mon Mar 25 19:27:11 2002  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (maybe_build_cleanup): Remove.
+
 2002-03-23  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c (ffecom_check_size_overflow_): Add a test

@@ -1565,17 +1565,6 @@ java_dup_lang_specific_decl (node)
   DECL_LANG_SPECIFIC (node) = x;
 }
 
-/* If DECL has a cleanup, build and return that cleanup here.
-   This is a callback called by expand_expr.  */
-
-tree
-maybe_build_cleanup (decl)
-  tree decl ATTRIBUTE_UNUSED;
-{
-  /* There are no cleanups in Java (I think).  */
-  return NULL_TREE;
-}
-
 void
 give_name_to_locals (jcf)
      JCF *jcf;

@@ -14381,17 +14381,6 @@ mark_addressable (exp)
       }
 }
 
-/* If DECL has a cleanup, build and return that cleanup here.
-   This is a callback called by expand_expr.  */
-
-tree
-maybe_build_cleanup (decl)
-     tree decl UNUSED;
-{
-  /* There are no cleanups in Fortran.  */
-  return NULL_TREE;
-}
-
 /* Exit a binding level.
    Pop the level off, and restore the state of the identifier-decl mappings
    that were in effect when this level was entered.
