@@ -230,7 +230,7 @@ struct tree_common
 #define TREE_ADDRESSABLE(NODE) ((NODE)->common.addressable_flag)
 
 /* In a VAR_DECL, nonzero means allocate static storage.
-   In a FUNCTION_DECL, currently nonzero if function has been defined.
+   In a FUNCTION_DECL, nonzero if function has been defined.
    In a CONSTRUCTOR, nonzero means allocate static storage.  */
 #define TREE_STATIC(NODE) ((NODE)->common.static_flag)
 
@@ -305,7 +305,8 @@ struct tree_common
    This is interesting in an inline function, since it might not need
    to be compiled separately.
    Nonzero in a RECORD_TYPE, UNION_TYPE or ENUMERAL_TYPE
-   if the sdb debugging info for the type has been written.  */
+   if the sdb debugging info for the type has been written.
+   In a BLOCK node, nonzero if reorder_blocks has already seen this block.  */
 #define TREE_ASM_WRITTEN(NODE) ((NODE)->common.asm_written_flag)
 
 /* Nonzero in a _DECL if the name is used in its scope.
@@ -318,10 +319,13 @@ struct tree_common
    in the raising of an exception.  Not implemented yet.  */
 #define TREE_RAISES(NODE) ((NODE)->common.raises_flag)
 
-/* These are currently used in classes in C++.  */
+/* Used in classes in C++.  */
 #define TREE_PRIVATE(NODE) ((NODE)->common.private_flag)
+/* Used in classes in C++.
+   In a BLOCK node, this is BLOCK_HANDLER_BLOCK.  */
 #define TREE_PROTECTED(NODE) ((NODE)->common.protected_flag)
 
+/* These flags are available for each language front end to use internally.  */
 #define TREE_LANG_FLAG_0(NODE) ((NODE)->common.lang_flag_0)
 #define TREE_LANG_FLAG_1(NODE) ((NODE)->common.lang_flag_1)
 #define TREE_LANG_FLAG_2(NODE) ((NODE)->common.lang_flag_2)
@@ -413,7 +417,6 @@ struct tree_complex
 
 #define IDENTIFIER_LENGTH(NODE) ((NODE)->identifier.length)
 #define IDENTIFIER_POINTER(NODE) ((NODE)->identifier.pointer)
-#define IDENTIFIER_VIRTUAL_P(NODE) TREE_LANG_FLAG_1(NODE)
 
 struct tree_identifier
 {
@@ -532,6 +535,7 @@ struct tree_exp
 /* Means this type is const-qualified.  */
 #define TYPE_READONLY(NODE) ((NODE)->common.readonly_flag)
 
+/* These flags are available for each language front end to use internally.  */
 #define TYPE_LANG_FLAG_0(NODE) ((NODE)->type.lang_flag_0)
 #define TYPE_LANG_FLAG_1(NODE) ((NODE)->type.lang_flag_1)
 #define TYPE_LANG_FLAG_2(NODE) ((NODE)->type.lang_flag_2)
