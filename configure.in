@@ -20,6 +20,7 @@
 
 sinclude(config/acx.m4)
 sinclude(config/gcc-version.m4)
+sinclude(config/gxx-include-dir.m4)
 
 AC_INIT(move-if-change)
 AC_PREREQ(2.13)
@@ -1963,22 +1964,7 @@ fi
 target_configargs="--cache-file=./config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
 
 # provide a proper gxx_include_dir.
-# Note, if you change the default, make sure to fix both here and in
-# the gcc and libstdc++-v3 subdirectories.
-# Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
-case "${with_gxx_include_dir}" in
-  yes)
-    AC_MSG_ERROR([--with-gxx-include-dir=[[dir]] requires a directory])
-    ;;
-  no | "")
-    case "${enable_version_specific_runtime_libs}" in
-      yes) gxx_include_dir='${libsubdir}/include/c++' ;;
-      *)
-	libstdcxx_incdir=c++/${gcc_version}
-        gxx_include_dir='${prefix}/include/'${libstdcxx_incdir} ;;
-    esac ;;
-  *) gxx_include_dir=${with_gxx_include_dir} ;;
-esac
+TL_AC_GXX_INCLUDE_DIR
 
 FLAGS_FOR_TARGET=
 case " $target_configdirs " in
@@ -2154,8 +2140,6 @@ AC_SUBST(BUILD_PREFIX_1)
 AC_SUBST(tooldir)
 AC_SUBST(build_tooldir)
 AC_SUBST(GDB_TK)
-AC_SUBST(gxx_include_dir)
-AC_SUBST(libstdcxx_incdir)
 
 # Build module lists & subconfigure args.
 AC_SUBST(build_configargs)

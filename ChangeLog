@@ -1,5 +1,11 @@
 2004-12-03  Richard Sandiford  <rsandifo@redhat.com>
 
+	* configure.in: Include config/gxx-include-dir.m4.  Use
+	TL_AC_GXX_INCLUDE_DIR.  Remove some now-redundant AC_SUBSTs.
+	* configure: Regenerate.
+
+2004-12-03  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config.if: Delete.
 	* configure.in: Set libstdcxx_incdir directly.
 	* configure: Regenerate.
