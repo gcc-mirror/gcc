@@ -1,5 +1,5 @@
 /* Compute register class preferences for pseudo-registers.
-   Copyright (C) 1987, 88, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92, 93, 94, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -978,7 +978,7 @@ regclass (f, nregs)
 	  
 	  /* If we don't add any classes, nothing to try.  */
 	  if (alt == best)
-	    alt = (int) NO_REGS;
+	    alt = NO_REGS;
 
 	  /* We cast to (int) because (char) hits bugs in some compilers.  */
 	  prefclass[i] = (int) best;
