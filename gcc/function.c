@@ -7349,10 +7349,13 @@ handle_epilogue_set (set, p)
 
   /* Next handle the case where we are setting SP's equivalent register.
      If we already have a value to set it to, abort.  We could update, but
-     there seems little point in handling that case.  */
-  else if (p->sp_equiv_reg != 0 && reg_set_p (p->sp_equiv_reg, set))
+     there seems little point in handling that case.  Note that we have
+     to allow for the case where we are setting the register set in
+     the previous part of a PARALLEL inside a single insn.  But use the
+     old offset for any updates within this insn.  */
+  else if (p->new_sp_equiv_reg != 0 && reg_set_p (p->new_sp_equiv_reg, set))
     {
-      if (!rtx_equal_p (p->sp_equiv_reg, SET_DEST (set))
+      if (!rtx_equal_p (p->new_sp_equiv_reg, SET_DEST (set))
 	  || p->equiv_reg_src != 0)
 	abort ();
       else
