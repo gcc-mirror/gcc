@@ -1,3 +1,7 @@
+Wed Nov 10 21:24:19 1999  Jason Eckhardt  <jle@cygnus.com>
+
+	* config/pa/pa.h (MASK_RETURN_ADDR): Change 0xfffffffc to -4.
+
 Wed Nov 10 15:56:16 1999  Jeffrey A Law  (law@cygnus.com)
 
         * dwarf2out.c (add_AT_location_description): Allow
