@@ -1,3 +1,7 @@
+Wed Mar  6 19:08:03 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (verify_flow_info): Accept RESX as EH edge source.
+
 Wed Mar  6 18:14:43 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfgcleanup.c (mentions_nonequal_regs): New function.
