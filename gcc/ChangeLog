@@ -1,3 +1,15 @@
+Sun Oct 26 11:41:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (output_call_frame_info): The CIE pointer is now a 32
+ 	bit PC-relative offset.  The exception range table pointer is now in
+ 	the CIE.
+	* frame.c (dwarf_cie, dwarf_fde): Rename CIE_pointer to CIE_delta.
+	(count_fdes, add_fdes, get_cie): Adjust.
+	(cie_info, extract_cie_info, __frame_state_for): Adjust eh_ptr uses.
+
+	From H.J. Lu:
+	* frame.c (count_fdes, add_fdes): Skip linked once FDE entries.
+
 Sun Oct 26 11:52:01 1997  Richard Henderson  <rth@cygnus.com>
 
 	* alias.c (memrefs_conflict_p): Treat arg_pointer_rtx just
