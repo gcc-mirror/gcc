@@ -1,3 +1,8 @@
+2005-03-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* MAINTAINERS (Various Maintainers): Remove self.
+	(Write After Approval): Add self.
+
 2005-03-26  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* MAINTAINERS (Various Maintainers): Add self.

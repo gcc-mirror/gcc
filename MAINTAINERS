@@ -131,7 +131,6 @@ cpplib			Per Bothner		per@bothner.com
 cpplib			Zack Weinberg		zack@codesourcery.com
 libgcj			Tom Tromey		tromey@redhat.com
 libgcj			Bryce McKinlay		bryce@gcc.gnu.org
-libgcj			Thomas Fitzsimmons	fitzsim@redhat.com
 libobjc			Nicola Pero		n.pero@mi.flashnet.it
 libobjc			Andrew Pinski		pinskia@physics.uc.edu
 alias analysis		John Carr		jfc@mit.edu
@@ -229,6 +228,7 @@ Mohan Embar					gnustuff@thisiscool.com
 Marc Espie					espie@cvs.openbsd.org
 Ansgar Esztermann				ansgar@thphy.uni-duesseldorf.de
 Doug Evans					dje@transmeta.com
+Thomas Fitzsimmons				fitzsim@redhat.com
 Brian Ford					ford@vss.fsi.com
 Kaveh Ghazi					ghazi@caip.rutgers.edu
 Matthew Gingell					gingell@gnat.com
