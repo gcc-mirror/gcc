@@ -1,3 +1,11 @@
+2004-07-14  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (expand_sdiv_pow2): New function to expand signed division
+	by a positive power of two, split out from expand_divmod.  Provide
+	an alternate implementation when shifts are expensive.  Lower the
+	threshold for using a branchless implementation to BRANCH_COST >= 2.
+	(expand_divmod): Call expand_sdiv_pow2 for suitable divisions.
+
 2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-dfa.c (make_rename_temp): *Really* work just

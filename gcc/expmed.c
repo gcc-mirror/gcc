@@ -52,6 +52,7 @@ static rtx extract_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, int);
 static void do_cmp_and_jump (rtx, rtx, enum rtx_code, enum machine_mode, rtx);
 static rtx expand_smod_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
+static rtx expand_sdiv_pow2 (enum machine_mode, rtx, HOST_WIDE_INT);
 
 /* Nonzero means divides or modulus operations are relatively cheap for
    powers of two, so don't use branches; emit the operation instead.
@@ -3170,6 +3171,53 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
   emit_label (label);
   return result;
 }
+
+/* Expand signed division of OP0 by a power of two D in mode MODE.
+   This routine is only called for positive values of D.  */
+
+static rtx
+expand_sdiv_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
+{
+  rtx temp, label;
+  tree shift;
+  int logd;
+
+  logd = floor_log2 (d);
+  shift = build_int_2 (logd, 0);
+
+  if (d == 2 && BRANCH_COST >= 1)
+    {
+      temp = gen_reg_rtx (mode);
+      temp = emit_store_flag (temp, LT, op0, const0_rtx, mode, 0, 1);
+      temp = expand_binop (mode, add_optab, temp, op0, NULL_RTX,
+			   0, OPTAB_LIB_WIDEN);
+      return expand_shift (RSHIFT_EXPR, mode, temp, shift, NULL_RTX, 0);
+    }
+
+  if (BRANCH_COST >= 2)
+    {
+      int ushift = GET_MODE_BITSIZE (mode) - logd;
+
+      temp = gen_reg_rtx (mode);
+      temp = emit_store_flag (temp, LT, op0, const0_rtx, mode, 0, -1);
+      if (shift_cost[mode][ushift] > COSTS_N_INSNS (1))
+	temp = expand_binop (mode, and_optab, temp, GEN_INT (d - 1),
+			     NULL_RTX, 0, OPTAB_LIB_WIDEN);
+      else
+	temp = expand_shift (RSHIFT_EXPR, mode, temp,
+			     build_int_2 (ushift, 0), NULL_RTX, 1);
+      temp = expand_binop (mode, add_optab, temp, op0, NULL_RTX,
+			   0, OPTAB_LIB_WIDEN);
+      return expand_shift (RSHIFT_EXPR, mode, temp, shift, NULL_RTX, 0);
+    }
+
+  label = gen_label_rtx ();
+  temp = copy_to_mode_reg (mode, op0);
+  do_cmp_and_jump (temp, const0_rtx, GE, mode, label);
+  expand_inc (temp, GEN_INT (d - 1));
+  emit_label (label);
+  return expand_shift (RSHIFT_EXPR, mode, temp, shift, NULL_RTX, 0);
+}
 
 /* Emit the code to divide OP0 by OP1, putting the result in TARGET
    if that is convenient, and returning where the result is.
@@ -3582,38 +3630,7 @@ expand_divmod (int rem_flag, enum tree_code code, enum machine_mode mode,
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
-		    lgup = floor_log2 (abs_d);
-		    if (BRANCH_COST < 1 || (abs_d != 2 && BRANCH_COST < 3))
-		      {
-			rtx label = gen_label_rtx ();
-			rtx t1;
-
-			t1 = copy_to_mode_reg (compute_mode, op0);
-			do_cmp_and_jump (t1, const0_rtx, GE,
-					 compute_mode, label);
-			expand_inc (t1, gen_int_mode (abs_d - 1,
-						      compute_mode));
-			emit_label (label);
-			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t1,
-						 build_int_2 (lgup, 0),
-						 tquotient, 0);
-		      }
-		    else
-		      {
-			rtx t1, t2, t3;
-			t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
-					   build_int_2 (size - 1, 0),
-					   NULL_RTX, 0);
-			t2 = expand_shift (RSHIFT_EXPR, compute_mode, t1,
-					   build_int_2 (size - lgup, 0),
-					   NULL_RTX, 1);
-			t3 = force_operand (gen_rtx_PLUS (compute_mode,
-							  op0, t2),
-					    NULL_RTX);
-			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t3,
-						 build_int_2 (lgup, 0),
-						 tquotient, 0);
-		      }
+		    quotient = expand_sdiv_pow2 (compute_mode, op0, abs_d);
 
 		    /* We have computed OP0 / abs(OP1).  If OP1 is negative,
 		       negate the quotient.  */
