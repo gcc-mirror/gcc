@@ -6408,6 +6408,8 @@ allocate_struct_function (tree fndecl)
   DECL_SAVED_INSNS (fndecl) = cfun;
   cfun->decl = fndecl;
 
+  current_function_name = (*lang_hooks.decl_printable_name) (fndecl, 2);
+
   result = DECL_RESULT (fndecl);
   if (aggregate_value_p (result, fndecl))
     {

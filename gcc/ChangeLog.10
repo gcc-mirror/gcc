@@ -147,20 +147,6 @@
 
 2003-12-30  Steven Bosscher  <steven@gcc.gnu.org>
 
-	* Makefile.in (graph.o): Add dependencies on TREE_H and langhooks.h
-	(gcse.c): Add dependency on langhooks.h
-	* function.h (struct function): Remove the `name' field.
-	(current_function_name): Do not define.
-	* function.c (allocate_struct_function): Don't initialize the `name'
-	field.
-	* gcse.c (gcse_main, one_classic_gcse_pass, one_cprop_pass,
-	one_pre_gcse_pass, bypass_jumps): Replace all occurences of
-	current_function_name with lang_hooks.decl_printable_name calls.
-	* graph.h (start_fct, start_bb, node_data, draw_edge, end_fct):
-	Likewise.
-
-2003-12-30  Steven Bosscher  <steven@gcc.gnu.org>
-
 	Backport from tree-ssa (relevant changes only):
 	2003-12-18  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 

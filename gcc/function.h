@@ -183,6 +183,9 @@ struct function GTY(())
 
   /* For function.c.  */
 
+  /* Name of this function.  */
+  const char *name;
+
   /* Points to the FUNCTION_DECL of this function.  */
   tree decl;
 
@@ -531,6 +534,7 @@ extern int virtuals_instantiated;
 extern int trampolines_created;
 
 /* For backward compatibility... eventually these should all go away.  */
+#define current_function_name (cfun->name)
 #define current_function_pops_args (cfun->pops_args)
 #define current_function_returns_struct (cfun->returns_struct)
 #define current_function_returns_pcc_struct (cfun->returns_pcc_struct)
