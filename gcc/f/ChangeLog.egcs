@@ -1,3 +1,12 @@
+Sun Feb  1 12:43:49 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* com.c (ffecom_tree_canonize_ptr_): Place bitsizetype typed expr
+	as first agument in MULT_EXPR.
+	Use bitsize_int (0L, 0L) as zero for bitsizes.
+	(ffecom_tree_canonize_ref_):
+	Use bitsize_int (0L, 0L) as zero for bitsizes.
+	(ffecom_init_0): Use set_sizetype.
+
 Sun Feb  1 02:26:58 1998  Richard Henderson  <rth@cygnus.com>
 
 	* runtime directory -- moved into "libfc2" in the toplevel
