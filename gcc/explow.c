@@ -578,15 +578,19 @@ force_reg (mode, x)
      enum machine_mode mode;
      rtx x;
 {
-  register rtx temp, insn;
+  register rtx temp, insn, set;
 
   if (GET_CODE (x) == REG)
     return x;
   temp = gen_reg_rtx (mode);
   insn = emit_move_insn (temp, x);
+
   /* Let optimizers know that TEMP's value never changes
-     and that X can be substituted for it.  */
-  if (CONSTANT_P (x))
+     and that X can be substituted for it.  Don't get confused
+     if INSN set something else (such as a SUBREG of TEMP).  */
+  if (CONSTANT_P (x)
+      && (set = single_set (insn)) != 0
+      && SET_DEST (set) == temp)
     {
       rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
