@@ -1,3 +1,7 @@
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
+	* com.c (finish_function): Don't init can_reach_end.
+
 Sun Oct  1 11:43:44 2000  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (lang_mark_false_label_stack): Remove.
