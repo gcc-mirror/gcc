@@ -1,3 +1,8 @@
+2003-08-27  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcov.c (typedef struct arc_info): New field cs_count.
+	(accumulate_line_counts): Find cycles correctly.
+
 2003-08-27  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (struct machine_function): Remove member

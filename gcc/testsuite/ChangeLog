@@ -1,3 +1,7 @@
+2003-08-27  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.misc-tests/gcov-10b.c: New test.
+
 2003-08-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/opt/ptrmem3.C: New test.

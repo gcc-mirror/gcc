@@ -82,6 +82,8 @@ typedef struct arc_info
 
   /* transition counts.  */
   gcov_type count;
+  /* used in cycle search, so that we do not clobber original counts.  */
+  gcov_type cs_count;
 
   unsigned int count_valid : 1;
   unsigned int on_tree : 1;
@@ -1622,6 +1624,10 @@ accumulate_line_counts (source_t *src)
 		  if (flag_branches)
 		    add_branch_counts (&src->coverage, arc);
 		}
+
+	      /* Initialize the cs_count.  */
+	      for (arc = block->succ; arc; arc = arc->succ_next)
+		arc->cs_count = arc->count;
 	    }
 
 	  /* Find the loops. This uses the algorithm described in
@@ -1638,7 +1644,8 @@ accumulate_line_counts (source_t *src)
 
 	     For each loop we find, locate the arc with the smallest
 	     transition count, and add that to the cumulative
-	     count. Remove the arc from consideration.  */
+	     count.  Decrease flow over the cycle and remove the arc
+	     from consideration.  */
 	  for (block = line->u.blocks; block; block = block->chain)
 	    {
 	      block_t *head = block;
@@ -1664,25 +1671,33 @@ accumulate_line_counts (source_t *src)
 		  if (dst == block)
 		    {
 		      /* Found a closing arc.  */
-		      gcov_type cycle_count = arc->count;
+		      gcov_type cycle_count = arc->cs_count;
 		      arc_t *cycle_arc = arc;
 		      arc_t *probe_arc;
 
 		      /* Locate the smallest arc count of the loop.  */
 		      for (dst = head; (probe_arc = dst->u.cycle.arc);
 			   dst = probe_arc->src)
-			if (cycle_count > probe_arc->count)
+			if (cycle_count > probe_arc->cs_count)
 			  {
-			    cycle_count = probe_arc->count;
+			    cycle_count = probe_arc->cs_count;
 			    cycle_arc = probe_arc;
 			  }
 
 		      count += cycle_count;
 		      cycle_arc->cycle = 1;
+
+		      /* Remove the flow from the cycle.  */
+		      arc->cs_count -= cycle_count;
+		      for (dst = head; (probe_arc = dst->u.cycle.arc);
+			   dst = probe_arc->src)
+			probe_arc->cs_count -= cycle_count;
+
 		      /* Unwind to the cyclic arc.  */
 		      while (head != cycle_arc->src)
 			{
 			  arc = head->u.cycle.arc;
+			  head->u.cycle.arc = NULL;
 			  head = arc->src;
 			}
 		      /* Move on.  */
