@@ -1130,8 +1130,8 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 	     resolve the overloading.  */
 	  if (TREE_TYPE (converted_operand) == unknown_type_node)
 	    {
-	      error ("type of asm operand `%E' could not be determined", 
-			TREE_VALUE (t));
+	      error ("type of asm operand %qE could not be determined", 
+                     TREE_VALUE (t));
 	      converted_operand = error_mark_node;
 	    }
 	  TREE_VALUE (t) = converted_operand;
@@ -1263,10 +1263,10 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
     {
       if (current_function_decl 
 	  && DECL_STATIC_FUNCTION_P (current_function_decl))
-	cp_error_at ("invalid use of member `%D' in static member function",
+	cp_error_at ("invalid use of member %qD in static member function",
 		     decl);
       else
-	cp_error_at ("invalid use of non-static data member `%D'", decl);
+	cp_error_at ("invalid use of non-static data member %qD", decl);
       error ("from this location");
 
       return error_mark_node;
@@ -1305,7 +1305,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 
 	  if (!access_type)
 	    {
-	      cp_error_at ("object missing in reference to `%D'", decl);
+	      cp_error_at ("object missing in reference to %qD", decl);
 	      error ("from this location");
 	      return error_mark_node;
 	    }
@@ -1886,7 +1886,7 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
       if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (object), 
 						      destructor))
 	{
-	  error ("`%E' is not of type `%T'", object, destructor);
+	  error ("%qE is not of type %qT", object, destructor);
 	  return error_mark_node;
 	}
     }
@@ -2024,10 +2024,10 @@ check_template_template_default_arg (tree argument)
 	     that the user is using a template instantiation.  */
 	  if (CLASSTYPE_TEMPLATE_INFO (t) 
 	      && CLASSTYPE_TEMPLATE_INSTANTIATION (t))
-	    error ("invalid use of type `%T' as a default value for a "
+	    error ("invalid use of type %qT as a default value for a "
 	           "template template-parameter", t);
 	  else
-	    error ("invalid use of `%D' as a default value for a template "
+	    error ("invalid use of %qD as a default value for a template "
 	           "template-parameter", argument);
 	}
       else
@@ -2048,7 +2048,7 @@ begin_class_definition (tree t)
 
   if (processing_template_parmlist)
     {
-      error ("definition of `%#T' inside template parameter list", t);
+      error ("definition of %q#T inside template parameter list", t);
       return error_mark_node;
     }
   /* A non-implicit typename comes from code like:
@@ -2059,7 +2059,7 @@ begin_class_definition (tree t)
      This is erroneous.  */
   else if (TREE_CODE (t) == TYPENAME_TYPE)
     {
-      error ("invalid definition of qualified type `%T'", t);
+      error ("invalid definition of qualified type %qT", t);
       t = error_mark_node;
     }
 
@@ -2073,8 +2073,8 @@ begin_class_definition (tree t)
      that's an error.  */
   if (COMPLETE_TYPE_P (t))
     {
-      error ("redefinition of `%#T'", t);
-      cp_error_at ("previous definition of `%#T'", t);
+      error ("redefinition of %q#T", t);
+      cp_error_at ("previous definition of %q#T", t);
       return error_mark_node;
     }
 
@@ -2259,7 +2259,7 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
     {
       if (cp_type_quals (base) != 0)
         {
-          error ("base class `%T' has cv qualifiers", base);
+          error ("base class %qT has cv qualifiers", base);
           base = TYPE_MAIN_VARIANT (base);
         }
       result = build_tree_list (access, base);
@@ -2304,19 +2304,19 @@ qualified_name_lookup_error (tree scope, tree name, tree decl)
   if (TYPE_P (scope))
     {
       if (!COMPLETE_TYPE_P (scope))
-	error ("incomplete type `%T' used in nested name specifier", scope);
+	error ("incomplete type %qT used in nested name specifier", scope);
       else if (TREE_CODE (decl) == TREE_LIST)
 	{
-	  error ("reference to `%T::%D' is ambiguous", scope, name);
+	  error ("reference to %<%T::%D%> is ambiguous", scope, name);
 	  print_candidates (decl);
 	}
       else
-	error ("`%D' is not a member of `%T'", name, scope);
+	error ("%qD is not a member of %qT", name, scope);
     }
   else if (scope != global_namespace)
-    error ("`%D' is not a member of `%D'", name, scope);
+    error ("%qD is not a member of %qD", name, scope);
   else
-    error ("`::%D' has not been declared", name);
+    error ("%<::%D%> has not been declared", name);
 }
 	      
 /* ID_EXPRESSION is a representation of parsed, but unprocessed,
@@ -2439,7 +2439,7 @@ finish_id_expression (tree id_expression,
 	  && !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (decl))) 
 	{
 	  if (!allow_non_integral_constant_expression_p)
-	    error ("template parameter `%D' of type `%T' is not allowed in "
+	    error ("template parameter %qD of type %qT is not allowed in "
 		   "an integral constant expression because it is not of "
 		   "integral or enumeration type", decl, TREE_TYPE (decl));
 	  *non_integral_constant_expression_p = true;
@@ -2583,7 +2583,7 @@ finish_id_expression (tree id_expression,
 	{
 	  if (!allow_non_integral_constant_expression_p)
 	    {
-	      error ("`%D' cannot appear in a constant-expression", decl);
+	      error ("%qD cannot appear in a constant-expression", decl);
 	      return error_mark_node;
 	    }
 	  *non_integral_constant_expression_p = true;
@@ -2591,18 +2591,18 @@ finish_id_expression (tree id_expression,
       
       if (TREE_CODE (decl) == NAMESPACE_DECL)
 	{
-	  error ("use of namespace `%D' as expression", decl);
+	  error ("use of namespace %qD as expression", decl);
 	  return error_mark_node;
 	}
       else if (DECL_CLASS_TEMPLATE_P (decl))
 	{
-	  error ("use of class template `%T' as expression", decl);
+	  error ("use of class template %qT as expression", decl);
 	  return error_mark_node;
 	}
       else if (TREE_CODE (decl) == TREE_LIST)
 	{
 	  /* Ambiguous reference to base members.  */
-	  error ("request for member `%D' is ambiguous in "
+	  error ("request for member %qD is ambiguous in "
 		 "multiple inheritance lattice", id_expression);
 	  print_candidates (decl);
 	  return error_mark_node;
@@ -2665,8 +2665,8 @@ finish_id_expression (tree id_expression,
 		{
 		  error ("use of %s from containing function",
 			 (TREE_CODE (decl) == VAR_DECL
-			  ? "`auto' variable" : "parameter"));
-		  cp_error_at ("  `%#D' declared here", decl);
+			  ? "%<auto%> variable" : "parameter"));
+		  cp_error_at ("  %q#D declared here", decl);
 		  return error_mark_node;
 		}
 	    }
@@ -2717,7 +2717,7 @@ finish_typeof (tree expr)
 
   if (!type || type == unknown_type_node)
     {
-      error ("type of `%E' is unknown", expr);
+      error ("type of %qE is unknown", expr);
       return error_mark_node;
     }
 

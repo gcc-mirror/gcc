@@ -234,7 +234,7 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	binfo = NULL_TREE;
 	if (!(access & ba_quiet))
 	  {
-	    error ("`%T' is an ambiguous base of `%T'", base, t);
+	    error ("%qT is an ambiguous base of %qT", base, t);
 	    binfo = error_mark_node;
 	  }
 	break;
@@ -252,7 +252,7 @@ lookup_base (tree t, tree base, base_access access, base_kind *kind_ptr)
 	  {
 	    if (!(access & ba_quiet))
 	      {
-		error ("`%T' is an inaccessible base of `%T'", base, t);
+		error ("%qT is an inaccessible base of %qT", base, t);
 		binfo = error_mark_node;
 	      }
 	    else
@@ -1740,14 +1740,14 @@ check_final_overrider (tree overrider, tree basefn)
     {
       if (fail == 1)
 	{
-	  cp_error_at ("invalid covariant return type for `%#D'", overrider);
-	  cp_error_at ("  overriding `%#D'", basefn);
+	  cp_error_at ("invalid covariant return type for %q#D", overrider);
+	  cp_error_at ("  overriding %q#D", basefn);
 	}
       else
 	{
-	  cp_error_at ("conflicting return type specified for `%#D'",
+	  cp_error_at ("conflicting return type specified for %q#D",
 		       overrider);
-	  cp_error_at ("  overriding `%#D'", basefn);
+	  cp_error_at ("  overriding %q#D", basefn);
 	}
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
@@ -1756,8 +1756,8 @@ check_final_overrider (tree overrider, tree basefn)
   /* Check throw specifier is at least as strict.  */
   if (!comp_except_specs (base_throw, over_throw, 0))
     {
-      cp_error_at ("looser throw specifier for `%#F'", overrider);
-      cp_error_at ("  overriding `%#F'", basefn);
+      cp_error_at ("looser throw specifier for %q#F", overrider);
+      cp_error_at ("  overriding %q#F", basefn);
       DECL_INVALID_OVERRIDER_P (overrider) = 1;
       return 0;
     }
@@ -1850,8 +1850,8 @@ look_for_overrides_r (tree type, tree fndecl)
 	{
 	  /* A static member function cannot match an inherited
 	     virtual member function.  */
-	  cp_error_at ("`%#D' cannot be declared", fndecl);
-	  cp_error_at ("  since `%#D' declared in base class", fn);
+	  cp_error_at ("%q#D cannot be declared", fndecl);
+	  cp_error_at ("  since %q#D declared in base class", fn);
 	}
       else
 	{
