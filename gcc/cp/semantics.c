@@ -2470,9 +2470,14 @@ genrtl_start_function (fn)
       if (!current_function_cannot_inline)
 	current_function_cannot_inline = cp_function_chain->cannot_inline;
 
-      /* We don't need the saved data anymore.  */
-      free (DECL_SAVED_FUNCTION_DATA (fn));
-      DECL_SAVED_FUNCTION_DATA (fn) = NULL;
+      /* We don't need the saved data anymore.  Unless this is an inline
+         function; we need the named return value info for
+         cp_copy_res_decl_for_inlining.  */
+      if (! DECL_INLINE (fn))
+	{
+	  free (DECL_SAVED_FUNCTION_DATA (fn));
+	  DECL_SAVED_FUNCTION_DATA (fn) = NULL;
+	}
     }
 
   /* Keep track of how many functions we're presently expanding.  */
