@@ -1,6 +1,31 @@
 2003-06-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/PlainSocketImpl.java:
+	Reformatted.
+	(PlainSocketImpl): Merged class documentaion with classpath.
+	(in): Moved.
+	(out): Moved.
+	(PlainSocketImpl): New empty constructor.
+	(finalize): Moved.
+	(setOption): Merged documentation from classpath.
+	(getOption): Likewise.
+	(create): Likewise.
+	(connect): Likewise.
+	(bind): Likewise.
+	(listen): Likewise.
+	(accept): Likewise.
+	(available): Likewise.
+	(close): Likewise.
+	(read): Likewise.
+	(write): Likewise.
+	(getInputStream): Made synchronozed to get sure that only one stream
+	object can be created for this socket, merged documentation from
+	classpath.
+	(getOutputStream): Likewise.
+
+2003-06-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/PlainSocketImpl.java:
 	Reformatting.
 	(static): New implicit method.
 	(read): Made package private.
