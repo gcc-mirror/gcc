@@ -330,6 +330,7 @@ static int invalidate_mems_from_autoinc (rtx *, void *);
 static void invalidate_mems_from_set (struct propagate_block_info *, rtx);
 static void clear_log_links (sbitmap);
 static int count_or_remove_death_notes_bb (basic_block, int);
+static void allocate_bb_life_data (void);
 
 /* Return the INSN immediately following the NOTE_INSN_BASIC_BLOCK
    note associated with the BLOCK.  */
@@ -1402,9 +1403,9 @@ initialize_uninitialized_subregs (void)
 /* Subroutines of life analysis.  */
 
 /* Allocate the permanent data structures that represent the results
-   of life analysis.  Not static since used also for stupid life analysis.  */
+   of life analysis.  */
 
-void
+static void
 allocate_bb_life_data (void)
 {
   basic_block bb;
