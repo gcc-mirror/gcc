@@ -1,5 +1,11 @@
 2000-11-30  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	2000-01-12  Bernd Schmidt  <bernds@redhat.co.uk>
+	* reload1.c (reload_reg_unavailable): New static variable.
+	(reload_reg_free_p): Test it.
+	(reload_reg_free_for_value_p): Test it instead of reload_reg_used.
+	(choose_reload_regs_init): Compute it.
+
 	Thu Jul  6 18:30:36 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* reload.c (push_reload): When seeing if can reuse a register,
 	check extra registers against widest of INMODE and OUTMODE.
