@@ -300,7 +300,14 @@ EOF
 	echo `echo ${UNAME_MACHINE}|sed -e 's,/.*$,,'`-unknown-gnu`echo ${UNAME_RELEASE}|sed -e 's,/.*$,,'`
 	exit 0 ;;
     *:Linux:*:*)
-	# Determine whether the default compiler is a.out or elf
+	# Systems without a BFD linker
+	if test -d /usr/lib/ldscripts/. ; then
+	  :
+	else
+	  echo "${UNAME_MACHINE}-unknown-linuxoldld"
+	  exit 0
+	fi
+ 	# Determine whether the default compiler is a.out or elf
 	cat >dummy.c <<EOF
 main(argc, argv)
 int argc;
