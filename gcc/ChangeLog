@@ -1,3 +1,7 @@
+2003-11-21  Mark Wielaard  <mark@klomp.org>
+
+	* doc/invoke.texi (-O2): Doesn't enable -fweb.
+
 2003-11-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Mention dV and dZ.

@@ -3686,7 +3686,7 @@ also turns on the following optimization flags:
 -fpeephole2 @gol
 -freorder-blocks  -freorder-functions @gol
 -fstrict-aliasing @gol
--funit-at-a-time -fweb @gol
+-funit-at-a-time @gol
 -falign-functions  -falign-jumps @gol
 -falign-loops  -falign-labels}
 
