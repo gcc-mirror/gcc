@@ -9169,7 +9169,6 @@ rs6000_stack_info ()
   enum rs6000_abi abi;
   int ehrd_size;
   int total_raw_size;
-  static int insn_chain_scanned = -1;
 
   /* Zero all fields portably.  */
   info = zero_info;
@@ -9177,9 +9176,11 @@ rs6000_stack_info ()
   if (TARGET_SPE)
     {
       /* Cache value so we don't rescan instruction chain over and over.  */
-      if (insn_chain_scanned < 0)
-	insn_chain_scanned = (int) spe_func_has_64bit_regs_p ();
-      info_ptr->spe_64bit_regs_used = insn_chain_scanned;
+      if (cfun->machine->insn_chain_scanned_p == 0)
+	{
+	  cfun->machine->insn_chain_scanned_p = 1;
+	  info_ptr->spe_64bit_regs_used = (int) spe_func_has_64bit_regs_p ();
+	}
     }
 
   /* Select which calling sequence.  */
