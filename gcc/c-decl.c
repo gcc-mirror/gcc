@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1857,6 +1857,14 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	      && TREE_PUBLIC (olddecl)
 	      && !TREE_PUBLIC (newdecl))
 	    warning_with_decl (newdecl, "static declaration for `%s' follows non-static");
+
+	  /* If warn_traditional, warn when a non-static function
+	     declaration follows a static one. */
+	  if (warn_traditional
+	      && TREE_CODE (olddecl) == FUNCTION_DECL
+	      && !TREE_PUBLIC (olddecl)
+	      && TREE_PUBLIC (newdecl))
+	    warning_with_decl (newdecl, "non-static declaration for `%s' follows static");
 
 	  /* Warn when const declaration follows a non-const
 	     declaration, but not for functions.  */
