@@ -1,5 +1,24 @@
 2003-04-17  Richard Henderson  <rth@redhat.com>
 
+	* config/v850/v850.c (print_operand): Use SYMBOL_REF_[ZST]DA.
+	(print_operand_address): Likewise.
+	(ep_memory_operand): Likewise.
+	(special_symbolref_operand): Likewise.
+	(v850_encode_data_area): Use SYMBOL_REF_FLAGS.
+	(v850_encode_section_info): Call default_encode_section_info.
+	(v850_strip_name_encoding): Remove.
+	* config/v850/v850.h (EXTRA_CONSTRAINT): Use SYMBOL_REF_[ZST]DA.
+	(ASM_OUTPUT_LABELREF): Remove.
+	(ZDA_NAME_FLAG_CHAR, ZDA_NAME_P): Remove.
+	(SDA_NAME_FLAG_CHAR, SDA_NAME_P): Remove.
+	(TDA_NAME_FLAG_CHAR, TDA_NAME_P): Remove.
+	(ENCODED_NAME_P): Remove.
+	(SYMBOL_FLAG_ZDA, SYMBOL_REF_ZDA_P): New.
+	(SYMBOL_FLAG_SDA, SYMBOL_REF_SDA_P): New.
+	(SYMBOL_FLAG_TDA, SYMBOL_REF_TDA_P): New.
+
+2003-04-17  Richard Henderson  <rth@redhat.com>
+
 	* config/stormy16/stormy16.c (xstormy16_encode_section_info): Kill.
 	* config/stormy16/stormy16.h (ASM_OUTPUT_SYMBOL_REF): Use
 	SYMBOL_REF_FUNCTION_P.
