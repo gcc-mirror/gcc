@@ -187,10 +187,8 @@ EOF
 	else
 		IBM_ARCH=powerpc
 	fi
-	if grep bos410 /usr/include/stdio.h >/dev/null 2>&1; then
-		IBM_REV=4.1
-	elif grep bos411 /usr/include/stdio.h >/dev/null 2>&1; then
-		IBM_REV=4.1.1
+	if [ -x /usr/bin/oslevel ] ; then
+		IBM_REV=`/usr/bin/oslevel`
 	else
 		IBM_REV=4.${UNAME_RELEASE}
 	fi
