@@ -67,8 +67,7 @@
 #ifndef _GLIBCPP_MEM_LIMITS
 // Don't do memory limits.
 extern void
-__set_testsuite_memlimit(float x = 0)
-{ }
+__set_testsuite_memlimit(float x = 0);
 
 #else
 

@@ -314,7 +314,8 @@ test_file()
     # and harder as we try compiling at, say, top of the hour; we would
     # eventually have to calculate time_t anyhow.  Or 3) just grab two
     # time_t's (no more overhead than grabbing two date(1)'s).
-    compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME"
+    our_libs="-L$TEST_DIR -lv3test"
+    compiler_invocation="$LTCXX $S_FLAG $SRC_NAME -o $EXENAME $our_libs"
     echo $compiler_invocation >> compile.out 2>&1
     COMP_TIME_START=$($TIMER_COMMAND)
     $compiler_invocation >> compile.out 2>&1
