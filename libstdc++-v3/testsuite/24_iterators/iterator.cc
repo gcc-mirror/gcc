@@ -577,6 +577,17 @@ wrong_stuff()
    return failures;
 }
 
+// libstdc++/6642
+int
+test6642()
+{
+   std::string s;
+   std::string::iterator it = s.begin();
+   std::string::const_iterator cit = s.begin();
+
+   return it - cit;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -589,6 +600,8 @@ main(int argc, char **argv)
    failures += reverse_stuff();
 
    failures += wrong_stuff();
+
+   failures += test6642();
 
 #ifdef DEBUG_ASSERT
    assert (failures == 0);

@@ -1,3 +1,12 @@
+2002-07-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/6642
+	* include/bits/stl_iterator.h
+	(__normal_iterator::operator-(const __normal_iterator&)):
+	Make non-member, as already happens for the comparison
+	operators in accord with DR179 (Ready).
+	* testsuite/24_iterators/iterator.cc: Add test from the PR.
+
 2002-07-02  Phil Edwards  <pme@gcc.gnu.org>
 
 	PR libstdc++/7173
