@@ -1,3 +1,11 @@
+2005-01-03  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/19236
+	* config/i386/i386.c (log1psf2): Change mode of operands[0,1]
+	to SFmode.
+	(log1pdf2): Change mode of operands[0,1] to DFmode.
+
+
 2005-01-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.h (SPARC_RELAXED_ORDERING): Define to false.
