@@ -1,3 +1,8 @@
+2005-03-21  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/20147	
+	* g++.dg/ext/stmtexpr4.C: New test.
+
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/bitfld-14.c, gcc.dg/enum3.c: New tests.
