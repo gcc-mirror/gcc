@@ -3217,6 +3217,30 @@ nonmemory_no_elim_operand (op, mode)
   return GET_CODE (op) == CONST_INT || register_operand (op, mode);
 }
 
+/* Return false if this is any eliminable register or stack register,
+   otherwise work like register_operand.  */
+
+int
+index_register_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  rtx t = op;
+  if (GET_CODE (t) == SUBREG)
+    t = SUBREG_REG (t);
+  if (!REG_P (t))
+    return 0;
+  if (t == arg_pointer_rtx
+      || t == frame_pointer_rtx
+      || t == virtual_incoming_args_rtx
+      || t == virtual_stack_vars_rtx
+      || t == virtual_stack_dynamic_rtx
+      || REGNO (t) == STACK_POINTER_REGNUM)
+    return 0;
+
+  return general_operand (op, mode);
+}
+
 /* Return true if op is a Q_REGS class register.  */
 
 int

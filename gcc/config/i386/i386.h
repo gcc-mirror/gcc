@@ -3173,6 +3173,7 @@ do {						\
   {"general_no_elim_operand", {CONST_INT, CONST_DOUBLE, CONST,		\
 			SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM}},	\
   {"nonmemory_no_elim_operand", {CONST_INT, REG, SUBREG}},		\
+  {"index_register_operand", {SUBREG, REG}},				\
   {"q_regs_operand", {SUBREG, REG}},					\
   {"non_q_regs_operand", {SUBREG, REG}},				\
   {"fcmov_comparison_operator", {EQ, NE, LTU, GTU, LEU, GEU, UNORDERED, \
