@@ -222,6 +222,38 @@ match_level_1 (gfc_expr ** result)
 }
 
 
+/* As a GNU extension we support an expanded level-2 expression syntax.
+   Via this extension we support (arbitrary) nesting of unary plus and
+   minus operations following unary and binary operators, such as **.
+   The grammar of section 7.1.1.3 is effectively rewitten as:
+
+	R704  mult-operand     is level-1-expr [ power-op ext-mult-operand ]
+	R704' ext-mult-operand is add-op ext-mult-operand
+			       or mult-operand
+	R705  add-operand      is add-operand mult-op ext-mult-operand
+			       or mult-operand
+	R705' ext-add-operand  is add-op ext-add-operand
+			       or add-operand
+	R706  level-2-expr     is [ level-2-expr ] add-op ext-add-operand
+			       or add-operand
+ */
+
+static match match_ext_mult_operand (gfc_expr ** result);
+static match match_ext_add_operand (gfc_expr ** result);
+
+
+static int
+match_add_op (void)
+{
+
+  if (next_operator (INTRINSIC_MINUS))
+    return -1;
+  if (next_operator (INTRINSIC_PLUS))
+    return 1;
+  return 0;
+}
+
+
 static match
 match_mult_operand (gfc_expr ** result)
 {
@@ -241,7 +273,7 @@ match_mult_operand (gfc_expr ** result)
 
   where = *gfc_current_locus ();
 
-  m = match_mult_operand (&exp);
+  m = match_ext_mult_operand (&exp);
   if (m == MATCH_NO)
     gfc_error ("Expected exponent in expression at %C");
   if (m != MATCH_YES)
@@ -261,6 +293,46 @@ match_mult_operand (gfc_expr ** result)
   r->where = where;
   *result = r;
 
+  return MATCH_YES;
+}
+
+
+static match
+match_ext_mult_operand (gfc_expr ** result)
+{
+  gfc_expr *all, *e;
+  locus where;
+  match m;
+  int i;
+
+  where = *gfc_current_locus ();
+  i = match_add_op ();
+
+  if (i == 0)
+    return match_mult_operand (result);
+
+  if (gfc_notify_std (GFC_STD_GNU, "Extension: Unary operator following"
+		      " arithmetic operator (use parentheses) at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  m = match_ext_mult_operand (&e);
+  if (m != MATCH_YES)
+    return m;
+
+  if (i == -1)
+    all = gfc_uminus (e);
+  else
+    all = gfc_uplus (e);
+
+  if (all == NULL)
+    {
+      gfc_free_expr (e);
+      return MATCH_ERROR;
+    }
+
+  all->where = where;
+  *result = all;
   return MATCH_YES;
 }
 
@@ -295,7 +367,7 @@ match_add_operand (gfc_expr ** result)
 
       where = *gfc_current_locus ();
 
-      m = match_mult_operand (&e);
+      m = match_ext_mult_operand (&e);
       if (m == MATCH_NO)
 	{
 	  gfc_set_locus (&old_loc);
@@ -329,15 +401,43 @@ match_add_operand (gfc_expr ** result)
 }
 
 
-static int
-match_add_op (void)
+static match
+match_ext_add_operand (gfc_expr ** result)
 {
+  gfc_expr *all, *e;
+  locus where;
+  match m;
+  int i;
 
-  if (next_operator (INTRINSIC_MINUS))
-    return -1;
-  if (next_operator (INTRINSIC_PLUS))
-    return 1;
-  return 0;
+  where = *gfc_current_locus ();
+  i = match_add_op ();
+
+  if (i == 0)
+    return match_add_operand (result);
+
+  if (gfc_notify_std (GFC_STD_GNU, "Extension: Unary operator following"
+		      " arithmetic operator (use parentheses) at %C")
+      == FAILURE)
+    return MATCH_ERROR;
+
+  m = match_ext_add_operand (&e);
+  if (m != MATCH_YES)
+    return m;
+
+  if (i == -1)
+    all = gfc_uminus (e);
+  else
+    all = gfc_uplus (e);
+
+  if (all == NULL)
+    {
+      gfc_free_expr (e);
+      return MATCH_ERROR;
+    }
+
+  all->where = where;
+  *result = all;
+  return MATCH_YES;
 }
 
 
@@ -354,12 +454,17 @@ match_level_2 (gfc_expr ** result)
   where = *gfc_current_locus ();
   i = match_add_op ();
 
-  m = match_add_operand (&e);
-  if (i != 0 && m == MATCH_NO)
+  if (i != 0)
     {
-      gfc_error (expression_syntax);
-      m = MATCH_ERROR;
+      m = match_ext_add_operand (&e);
+      if (m == MATCH_NO)
+	{
+	  gfc_error (expression_syntax);
+	  m = MATCH_ERROR;
+	}
     }
+  else
+    m = match_add_operand (&e);
 
   if (m != MATCH_YES)
     return m;
@@ -391,7 +496,7 @@ match_level_2 (gfc_expr ** result)
       if (i == 0)
 	break;
 
-      m = match_add_operand (&e);
+      m = match_ext_add_operand (&e);
       if (m == MATCH_NO)
 	gfc_error (expression_syntax);
       if (m != MATCH_YES)

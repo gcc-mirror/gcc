@@ -1,3 +1,13 @@
+2004-05-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/13912
+	* matchexp.c: Allow unary operators after arithmetic operators
+	as a GNU extension.
+	(match_ext_mult_operand, match_ext_add_operand): New functions.
+	(match_mult_operand): Tweak to call match_ext_mult_operand.
+	(match_add_operand): Tweak to call match_ext_mult_operand.
+	(match_level_2): Rearrange to call match_ext_add_operand.
+
 2004-05-25  Paul Brook  <paul@codesourcery.com>
 
 	* expr.c (check_inquiry): Remove bogus tests.
