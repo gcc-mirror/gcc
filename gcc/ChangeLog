@@ -1,5 +1,14 @@
 2001-12-08  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.md (VUNSPEC_PREFETCH): Delete constant definition.
+	(prefetch): Rewrite using PREFETCH RTL primitive.
+	* arm.h (arm_builtins): Delete ARM_BUILTIN_PREFETCH).
+	* arm.c (arm_init_builtins): Don't initialize a builtin for
+	__builtin_prefetch here.
+	(arm_expand_builtin): Dont expand __builtin_prefetch here.
+
+2001-12-08  Richard Earnshaw  <rearnsha@arm.com>
+
 	* final.c (cleanup_subreg_operands):  Use recog_data.operand_loc
 	in test for a subreg.
 

@@ -88,8 +88,6 @@
 			;   a 32-bit object.
    (VUNSPEC_POOL_8   7) ; `pool-entry(8)'.  An entry in the constant pool for
 			;   a 64-bit object.
-   (VUNSPEC_PREFETCH 8) ; `pld' insn to prefetch a cache line:
-			;   operand 0 is the address to fetch.
   ]
 )
 
@@ -9173,10 +9171,11 @@
 ;; V5E instructions.
 
 (define_insn "prefetch"
-  [(unspec_volatile
-    [(match_operand:SI 0 "offsettable_memory_operand" "o")] VUNSPEC_PREFETCH)]
+  [(prefetch (match_operand:SI 0 "address_operand" "p")
+	     (match_operand:SI 1 "" "")
+	     (match_operand:SI 2 "" ""))]
   "TARGET_ARM && arm_arch5e"
-  "pld\\t%0")
+  "pld\\t[%0]")
 
 ;; General predication pattern
 
