@@ -625,11 +625,8 @@ global_conflicts ()
 	register regset old = basic_block_live_at_start[b];
 	int ax = 0;
 
-#ifdef HARD_REG_SET
-	hard_regs_live = old[0];
-#else
-	COPY_HARD_REG_SET (hard_regs_live, old);
-#endif
+	COPY_HARD_REG_SET (hard_regs_live, old[0]);
+
 	for (offset = 0, i = 0; offset < regset_size; offset++)
 	  if (old[offset] == 0)
 	    i += REGSET_ELT_BITS;
