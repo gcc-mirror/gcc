@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX version 4.3.
-   Copyright (C) 1998 Free Software Foundation, Inc.
-   Contributed by David Edelsohn (edelsohn@mhpcc.edu).
+   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Contributed by David Edelsohn (edelsohn@gnu.org).
 
 This file is part of GNU CC.
 
@@ -83,6 +83,7 @@ do {									\
 %{mcpu=603: -m603} \
 %{mcpu=603e: -m603} \
 %{mcpu=604: -m604} \
+%{mcpu=604e: -m604} \
 %{mcpu=620: -mppc} \
 %{mcpu=821: -mppc} \
 %{mcpu=860: -mppc}"
