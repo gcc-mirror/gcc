@@ -1627,18 +1627,13 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	if (asm_noperands (body) >= 0)
 	  {
 	    int noperands = asm_noperands (body);
-	    rtx *ops;
+	    rtx *ops = (rtx *) alloca (noperands * sizeof (rtx));
 	    char *string;
 
 	    /* There's no telling what that did to the condition codes.  */
 	    CC_STATUS_INIT;
 	    if (prescan > 0)
 	      break;
-
-	    /* alloca won't do here, since only return from `final'
-	       would free it.  */
-	    if (noperands > 0)
-	      ops = (rtx *) xmalloc (noperands * sizeof (rtx));
 
 	    if (! app_on)
 	      {
@@ -1652,11 +1647,10 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    /* Inhibit aborts on what would otherwise be compiler bugs.  */
 	    insn_noperands = noperands;
 	    this_is_asm_operands = insn;
+
 	    /* Output the insn using them.  */
 	    output_asm_insn (string, ops);
 	    this_is_asm_operands = 0;
-	    if (noperands > 0)
-	      free (ops);
 	    break;
 	  }
 
