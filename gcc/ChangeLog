@@ -1,5 +1,9 @@
 Sat Jul 31 04:10:01 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.c (compute_frame_size): Use STARTINg_FRAME_OFFSET instead
+	of depending on a magic constant value.  Update comments.
+	(hppa_expand_prologue): Similarly.
+
 	* pa.md (reload_indi, reload_outdi): Allow any register for the
 	original reload register.
 

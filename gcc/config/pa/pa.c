@@ -2593,10 +2593,14 @@ compute_frame_size (size, fregs_live)
   extern int current_function_outgoing_args_size;
   int i, fsize;
 
-  /* 8 is space for frame pointer + filler. If any frame is allocated
-     we need to add this in because of STARTING_FRAME_OFFSET. */
-  fsize = size + (size || frame_pointer_needed ? 8 : 0);
+  /* Space for frame pointer + filler. If any frame is allocated
+     we need to add this in because of STARTING_FRAME_OFFSET.
 
+     Similar code also appears in hppa_expand_prologue.  Change both
+     of them at the same time.  */
+  fsize = size + (size || frame_pointer_needed ? STARTING_FRAME_OFFSET : 0);
+
+  /* Account for space used by the callee general register saves.  */
   for (i = 18; i >= 3; i--)
     if (regs_ever_live[i])
       fsize += UNITS_PER_WORD;
@@ -2604,16 +2608,25 @@ compute_frame_size (size, fregs_live)
   /* Round the stack.  */
   fsize = (fsize + 7) & ~7;
 
+  /* Account for space used by the callee floating point register saves.  */
   for (i = 66; i >= 48; i -= 2)
     if (regs_ever_live[i] || regs_ever_live[i + 1])
       {
 	if (fregs_live)
 	  *fregs_live = 1;
 
+	/* We always save both halves of the FP register, so always
+	   increment the frame size by 8 bytes.  */
 	fsize += 8;
       }
 
+  /* The various ABIs include space for the outgoing parameters in the
+     size of the current function's stack frame.  */
   fsize += current_function_outgoing_args_size;
+
+  /* Allocate space for the fixed frame marker.  This space must be
+     allocated for any function that makes calls or otherwise allocates
+     stack space.  */
   if (! leaf_function_p () || fsize)
     fsize += 32;
   return (fsize + STACK_BOUNDARY - 1) & ~(STACK_BOUNDARY - 1);
@@ -2703,7 +2716,15 @@ hppa_expand_prologue()
   gr_saved = 0;
   fr_saved = 0;
   save_fregs = 0;
-  local_fsize =  size + (size || frame_pointer_needed ? 8 : 0);
+
+  /* Allocate space for frame pointer + filler. If any frame is allocated
+     we need to add this in because of STARTING_FRAME_OFFSET.
+
+     Similar code also appears in compute_frame_size.  Change both
+     of them at the same time.  */
+  local_fsize = size + (size || frame_pointer_needed
+			? STARTING_FRAME_OFFSET : 0);
+
   actual_fsize = compute_frame_size (size, &save_fregs);
 
   /* Compute a few things we will use often.  */
