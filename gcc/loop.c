@@ -3230,7 +3230,7 @@ loop_invariant_p (loop, x)
 	 since the reg might be set by initialization within the loop.  */
 
       if ((x == frame_pointer_rtx || x == hard_frame_pointer_rtx
-	   || x == arg_pointer_rtx)
+	   || x == arg_pointer_rtx || x == pic_offset_table_rtx)
 	  && ! current_function_has_nonlocal_goto)
 	return 1;
 
