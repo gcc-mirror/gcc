@@ -1,3 +1,24 @@
+2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/11250
+	* c-parse.in (init): Change to exprtype.
+	(primary): Set original_code for STRING to STRING_CST.
+	Call maybe_warn_string_init for compound literals.
+	(initdcl, notype_initdcl): Call maybe_warn_string_init.
+	(initval): Update.
+	* c-tree.h (maybe_warn_string_init): New.
+	(pop_init_level, process_init_element): Use struct c_expr.
+	(struct c_expr): Update comment.
+	* c-typeck.c (maybe_warn_string_init): New function.
+	(digest_init): Call it.  Additional parameter strict_string.  All
+	callers changed.
+	(output_init_element): Likewise.
+	(struct constructor_stack): Use struct c_expr for
+	replacement_value.
+	(really_start_incremental_init, push_init_level): Update.
+	(pop_init_level): Update.  Return struct c_expr.
+	(process_init_level): Update.  Take struct c_expr argument.
+
 2004-07-21  David S. Miller  <davem@nuts.davemloft.net>
 
 	* config/sparc/sparc.c (sparc_rtx_costs): Fix typo in previous

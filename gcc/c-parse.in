@@ -204,7 +204,8 @@ do {									\
 %type <ttype> offsetof_member_designator
 
 %type <ttype> scspec SCSPEC STATIC TYPESPEC TYPE_QUAL maybe_volatile
-%type <ttype> initdecls notype_initdecls initdcl notype_initdcl init
+%type <ttype> initdecls notype_initdecls initdcl notype_initdcl
+%type <exprtype> init
 %type <ttype> simple_asm_expr maybeasm asm_stmt asm_argument
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
@@ -631,7 +632,7 @@ primary:
 	| CONSTANT
 		{ $$.value = $1; $$.original_code = ERROR_MARK; }
 	| STRING
-		{ $$.value = $1; $$.original_code = ERROR_MARK; }
+		{ $$.value = $1; $$.original_code = STRING_CST; }
 	| FUNC_NAME
 		{ $$.value = fname_decl (C_RID_CODE ($1), $1);
 		  $$.original_code = ERROR_MARK; }
@@ -640,9 +641,11 @@ primary:
 		  $2 = groktypename ($2);
 		  really_start_incremental_init ($2); }
 	  initlist_maybe_comma '}'  %prec UNARY
-		{ tree constructor = pop_init_level (0);
+		{ struct c_expr init = pop_init_level (0);
+		  tree constructor = init.value;
 		  tree type = $2;
 		  finish_init ();
+		  maybe_warn_string_init (type, init);
 
 		  if (pedantic && ! flag_isoc99)
 		    pedwarn ("ISO C90 forbids compound literals");
@@ -1391,7 +1394,8 @@ initdcl:
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
-		  finish_decl ($<ttype>5, $6, $2); }
+		  maybe_warn_string_init (TREE_TYPE ($<ttype>5), $6);
+		  finish_decl ($<ttype>5, $6.value, $2); }
 	| declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0,
 				       chainon ($3, all_prefix_attributes));
@@ -1407,7 +1411,8 @@ notype_initdcl:
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_init ();
-		  finish_decl ($<ttype>5, $6, $2); }
+		  maybe_warn_string_init (TREE_TYPE ($<ttype>5), $6);
+		  finish_decl ($<ttype>5, $6.value, $2); }
 	| notype_declarator maybeasm maybe_attribute
 		{ tree d = start_decl ($1, current_declspecs, 0,
 				       chainon ($3, all_prefix_attributes));
@@ -1476,13 +1481,13 @@ scspec:
 
 init:
 	expr_no_commas
-		{ $$ = $1.value; }
+		{ $$ = $1; }
 	| '{'
 		{ really_start_incremental_init (NULL_TREE); }
 	  initlist_maybe_comma '}'
 		{ $$ = pop_init_level (0); }
 	| error
-		{ $$ = error_mark_node; }
+		{ $$.value = error_mark_node; $$.original_code = ERROR_MARK; }
 	;
 
 /* `initlist_maybe_comma' is the guts of an initializer in braces.  */
@@ -1522,7 +1527,7 @@ initval:
 	  initlist_maybe_comma '}'
 		{ process_init_element (pop_init_level (0)); }
 	| expr_no_commas
-		{ process_init_element ($1.value); }
+		{ process_init_element ($1); }
 	| error
 	;
 
