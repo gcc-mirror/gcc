@@ -1,3 +1,9 @@
+2004-08-03  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/16790
+	* fold-const.c (extract_muldiv_1) <NOP_EXPR>: Disallow local
+	truncations, not just global truncations.
+
 2004-08-03  Andrew Pinski  <apinski@apple.com>
 
 	PR bootstrap/16865
