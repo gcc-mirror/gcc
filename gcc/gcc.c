@@ -100,6 +100,11 @@ compilation is specified by a string called a "spec".  */
 #define NULL 0
 #endif
 
+/* Define O_RDONLY if the system hasn't defined it for us. */
+#ifndef O_RDONLY
+#define O_RDONLY 0
+#endif
+
 #ifndef GENERIC_PTR
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
 #define GENERIC_PTR void *
@@ -1045,7 +1050,7 @@ read_specs (filename)
     fprintf (stderr, "Reading specs from %s\n", filename);
 
   /* Open and stat the file.  */
-  desc = open (filename, 0, 0);
+  desc = open (filename, O_RDONLY, 0);
   if (desc < 0)
     pfatal_with_name (filename);
   if (stat (filename, &statbuf) < 0)
