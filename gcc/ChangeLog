@@ -1,3 +1,54 @@
+2004-09-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa-loop-ivopts.c: New file.
+	* Makefile.in (tree-ssa-loop-ivopts.c): Add.
+	* cfgloop.h (target_avail_regs, target_res_regs, target_small_cost,
+	target_pres_cost, target_spill_cost): Declare.
+	* cfgloopanal.c (avail_regs, res_regs, small_cost, pres_cost,
+	spill_cost): Renamed to ...
+	(target_avail_regs, target_res_regs, target_small_cost,
+	target_pres_cost, target_spill_cost): ... and exported.
+	(init_set_costs, global_cost_for_size): Work with renamed variables.
+	* common.opt (flag_ivopts): New flag.
+	* expr.c (expand_expr_real_1): Handle SSA_NAME case.  Handle
+	REF_ORIGINAL.
+	* gimplify.c (struct gimplify_ctx): Add into_ssa field.
+	(internal_get_tmp_var, gimplify_modify_expr, gimplify_expr): Support
+	generating SSA form.
+	(force_gimple_operand): New function.
+	* timevar.def (TV_TREE_LOOP_IVOPTS): New timevar.
+	* tree-cfg.c (stmt_bsi): New function.
+	* params.def (PARAM_IV_CONSIDER_ALL_CANDIDATES_BOUND,
+	PARAM_IV_MAX_CONSIDERED_USES): New.
+	* tree-flow.h (stmt_bsi, tree_ssa_iv_optimize, split_loop_exit_edge,
+	bsi_insert_on_edge_immediate_loop. standard_iv_increment_position,
+	ip_end_pos, ip_normal_pos, force_gimple_operand): Declare.
+	* tree-gimple.c (is_gimple_formal_tmp_var): Accept ssa names.
+	* tree-nested.c (build_addr): Export.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_iv_optimize.
+	* tree-pass.h (pass_iv_optimize): Declare.
+	* tree-ssa-loop-im.c (for_each_index): Handle REALPART_EXPR and
+	IMAGPART_EXPR.
+	* tree-ssa-loop-manip.c (create_iv): Force the base to be acceptable
+	as a phi node argument.
+	(split_loop_exit_edge, bsi_insert_on_edge_immediate_loop,
+	ip_end_pos, ip_normal_pos, standard_iv_increment_position): New
+	functions.
+	* tree-ssa-loop-niter.c (zero_p, unsigned_type_for): Export.
+	* tree-ssa-loop.c (tree_ssa_loop_ivopts, gate_tree_ssa_loop_ivopts,
+	pass_iv_optimize): New pass.
+	* tree-ssa-operands.c (get_indirect_ref_operands): Handle REF_ORIGINAL.
+	* tree-ssanames.c (release_ssa_name): Allow calling with var = NULL.
+	* tree.c (build_int_cst_type, cst_and_fits_in_hwi): New functions.
+	* tree.h (REF_ORIGINAL): New macro.
+	(build_int_cst_type, unsigned_type_for, zero_p,
+	cst_and_fits_in_hwi, build_addr): Declare.
+	* doc/invoke.texi (-fivopts): Document.
+	(PARAM_IV_CONSIDER_ALL_CANDIDATES_BOUND,
+	PARAM_IV_MAX_CONSIDERED_USES): Document.
+	* doc/passes.texi: Document induction variable optimizations pass.
+
 2004-09-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-attrs.def (ATTR_NOTHROW_SENTINEL_1): New.

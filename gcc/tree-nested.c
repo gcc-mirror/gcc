@@ -153,7 +153,7 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
 
 /* Take the address of EXP.  Mark it for addressability as necessary.  */
 
-static tree
+tree
 build_addr (tree exp)
 {
   tree base = exp;

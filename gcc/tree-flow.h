@@ -414,6 +414,7 @@ typedef struct {
 static inline block_stmt_iterator bsi_start (basic_block);
 static inline block_stmt_iterator bsi_last (basic_block);
 static inline block_stmt_iterator bsi_after_labels (basic_block);
+block_stmt_iterator stmt_for_bsi (tree);
 static inline bool bsi_end_p (block_stmt_iterator);
 static inline void bsi_next (block_stmt_iterator *);
 static inline void bsi_prev (block_stmt_iterator *);
@@ -637,6 +638,7 @@ bool empty_block_p (basic_block);
 void tree_ssa_lim (struct loops *);
 void canonicalize_induction_variables (struct loops *);
 void tree_unroll_loops_completely (struct loops *);
+void tree_ssa_iv_optimize (struct loops *);
 
 void number_of_iterations_cond (tree, tree, tree, enum tree_code, tree, tree,
 				struct tree_niter_desc *);
@@ -653,6 +655,12 @@ void loop_commit_inserts (void);
 bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 void create_iv (tree, tree, tree, struct loop *, block_stmt_iterator *, bool,
 		tree *, tree *);
+void split_loop_exit_edge (edge);
+basic_block bsi_insert_on_edge_immediate_loop (edge, tree);
+void standard_iv_increment_position (struct loop *, block_stmt_iterator *,
+				     bool *);
+basic_block ip_end_pos (struct loop *);
+basic_block ip_normal_pos (struct loop *);
 
 /* In tree-ssa-loop-im.c  */
 /* The possibilities of statement movement.  */
@@ -710,6 +718,10 @@ void insert_edge_copies (tree stmt, basic_block bb);
 /* In tree-ssa-operands.c  */
 extern void build_ssa_operands (tree, stmt_ann_t, stmt_operands_p, 
 				stmt_operands_p);
+
+/* In gimplify.c  */
+
+tree force_gimple_operand (tree, tree *, bool, tree);
 
 #include "tree-flow-inline.h"
 

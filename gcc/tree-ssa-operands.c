@@ -1295,6 +1295,18 @@ get_indirect_ref_operands (tree stmt, tree expr, int flags)
   /* Stores into INDIRECT_REF operands are never killing definitions.  */
   flags &= ~opf_kill_def;
 
+  if (REF_ORIGINAL (expr))
+    {
+      enum tree_code ocode = TREE_CODE (REF_ORIGINAL (expr));
+
+      /* If we originally accessed part of a structure, we do it still.  */
+      if (ocode == ARRAY_REF
+	  || ocode == COMPONENT_REF
+	  || ocode == REALPART_EXPR
+	  || ocode == IMAGPART_EXPR)
+	flags &= ~opf_kill_def;
+    }
+
   if (SSA_VAR_P (ptr))
     {
       struct ptr_info_def *pi = NULL;

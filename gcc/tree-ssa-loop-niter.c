@@ -54,7 +54,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Returns true if ARG is either NULL_TREE or constant zero.  */
 
-static bool
+bool
 zero_p (tree arg)
 {
   if (!arg)
@@ -86,7 +86,7 @@ inverse (tree x, tree mask)
 
 /* Returns unsigned variant of TYPE.  */
 
-static tree
+tree
 unsigned_type_for (tree type)
 {
   return make_unsigned_type (TYPE_PRECISION (type));

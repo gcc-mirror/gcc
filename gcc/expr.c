@@ -6462,6 +6462,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	return temp;
       }
 
+    case SSA_NAME:
+      return expand_expr_real_1 (SSA_NAME_VAR (exp), target, tmode, modifier,
+				 NULL);
+
     case PARM_DECL:
     case VAR_DECL:
       /* If a static var's type was incomplete when the decl was written,
@@ -6743,6 +6747,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case INDIRECT_REF:
       {
 	tree exp1 = TREE_OPERAND (exp, 0);
+	tree orig;
 
 	if (modifier != EXPAND_WRITE)
 	  {
@@ -6756,7 +6761,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
 	op0 = memory_address (mode, op0);
 	temp = gen_rtx_MEM (mode, op0);
-	set_mem_attributes (temp, exp, 0);
+
+	orig = REF_ORIGINAL (exp);
+	if (!orig)
+	  orig = exp;
+	set_mem_attributes (temp, orig, 0);
 
 	return temp;
       }
