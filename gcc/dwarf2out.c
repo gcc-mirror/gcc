@@ -7487,7 +7487,7 @@ output_file_names ()
       int dir_idx = dirs[files[file_idx].dir_idx].dir_idx;
 
       dw2_asm_output_nstring (files[file_idx].path + dirs[dir_idx].length, -1,
-			      "File Entry: 0x%x", i);
+			      "File Entry: 0x%lx", (unsigned long) i);
 
       /* Include directory index.  */
       dw2_asm_output_data_uleb128 (dirs[dir_idx].used, NULL);
