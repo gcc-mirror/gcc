@@ -37,7 +37,7 @@ public class Modifier
   public static final int STRICT    = 0x800;
 
   // This is only used by the C++ code, so it is not public.
-  static final int ALL_FLAGS = 0x7ff;
+  static final int ALL_FLAGS = 0xfff;
 
   public static boolean isAbstract (int mod)
   {

@@ -165,4 +165,5 @@ public class Throwable implements Serializable
   private String detailMessage;
 
   private transient byte stackTrace[];
+  private static final long serialVersionUID = -3042686055658047285L;
 }

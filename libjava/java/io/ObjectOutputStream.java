@@ -54,7 +54,7 @@ import gnu.java.lang.reflect.TypeSignature;
 
    Using default serialization, information about the class of an
    object is written, all of the non-transient, non-static fields of
-   the object are written, if any of these fields are objects, the are
+   the object are written, if any of these fields are objects, they are
    written out in the same manner.
 
    An object is only written out the first time it is encountered.  If

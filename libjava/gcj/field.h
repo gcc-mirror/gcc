@@ -13,6 +13,7 @@ details.  */
 
 #include <java/lang/Class.h>
 #include <java/lang/reflect/Field.h>
+#include <java/lang/reflect/Modifier.h>
 
 #define _Jv_FIELD_UNRESOLVED_FLAG	0x8000
 #define	_Jv_FIELD_CONSTANT_VALUE	0x4000
@@ -74,8 +75,11 @@ struct _Jv_Field
     return type;
   }
 
-  // FIXME - may need to mask off internal flags.
-  int getModifiers() { return flags; }
+  // Need to mask off all unknown/internal flags before returning.
+  int getModifiers()
+  {
+    return flags & java::lang::reflect::Modifier::ALL_FLAGS;
+  }
 
 #ifdef COMPACT_FIELDS
   _Jv_Utf8Const * getNameUtf8Const (jclass cls)

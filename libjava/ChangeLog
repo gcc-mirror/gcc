@@ -1,3 +1,22 @@
+2000-07-27  Warren Levy  <warrenl@cygnus.com>
+
+	* mauve-libgcj: Activated serialization tests.
+	* gcj/field.h (getModifiers): Mask off unknown flags.
+	* gnu/java/security/provider/SHA.java (munch): Reset buffer to 0 so
+	spurious bits don't cause discrepancies.
+	* java/io/ObjectOutputStream.java: Fixed typo in comment.
+	* java/io/ObjectStreamClass.java: Fixed typos in comments.
+	(lookup): Applied patch from Brian Jones <cbj@gnu.org> to optimize.
+	(hasClassInitializer): Call getDeclaredMethod instead of getMethod.
+	* java/lang/Throwable.java (serialVersionUID): New field.
+	* java/lang/reflect/Modifier.java (ALL_FLAGS): Preserve STRICT if used.
+	* java/lang/reflect/natConstructor.cc (getModifiers): Mask off
+	unknown flags.
+	* java/lang/reflect/natMethod.cc: Ditto.
+	* java/security/Key.java (serialVersionUID): Removed field for now.
+	* java/security/interfaces/DSAPrivateKey.java (serialVersionUID): Ditto.
+	* java/security/interfaces/DSAPublicKey.java (serialVersionUID): Ditto.
+
 2000-07-22  Tom Tromey  <tromey@cygnus.com>
 
 	* java/awt/geom/RectangularShape.java (getPathIterator):

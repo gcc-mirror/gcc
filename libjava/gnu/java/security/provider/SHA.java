@@ -1,5 +1,5 @@
 /* SHA.java -- Class implementing the SHA-1 algorithm as specified in [1].
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -198,6 +198,10 @@ public class SHA extends MessageDigest implements Cloneable
     H2 += C;
     H3 += D;
     H4 += E;
+
+    // Reset W by clearing it.
+    for (int t = 0; t < 80; ++ t)
+      W[t] = 0;
   }
   
   public Object clone ()

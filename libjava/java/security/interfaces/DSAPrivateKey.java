@@ -22,7 +22,7 @@ import java.math.BigInteger;
 public interface DSAPrivateKey extends DSAKey, PrivateKey
 {
   // FIXME: need to set this at some point when serialization is implemented.
-  public static final long serialVersionUID = 0;
+  // public static final long serialVersionUID = 0L;
 
   public BigInteger getX();
 }

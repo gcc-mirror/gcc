@@ -1,6 +1,6 @@
 /* ObjectStreamClass.java -- Class used to write class information
    about serialized objects.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,7 @@ public class ObjectStreamClass implements Serializable
   /**
      Returns the <code>ObjectStreamClass</code> for <code>cl</code>.
      If <code>cl</code> is null, or is not <code>Serializable</code>,
-     null is returned.  <code>ObjectStreamClass</code>'s are memoized;
+     null is returned.  <code>ObjectStreamClass</code>'s are memorized;
      later calls to this method with the same class will return the
      same <code>ObjectStreamClass</code> object and no recalculation
      will be done.
@@ -62,13 +62,13 @@ public class ObjectStreamClass implements Serializable
   {
     if (cl == null)
       return null;
+    if (! (Serializable.class).isAssignableFrom (cl))
+      return null;
 
     ObjectStreamClass osc = (ObjectStreamClass)classLookupTable.get (cl);
 
     if (osc != null)
       return osc;
-    else if (! (Serializable.class).isAssignableFrom (cl))
-      return null;
     else
     {
       osc = new ObjectStreamClass (cl);
@@ -161,7 +161,7 @@ public class ObjectStreamClass implements Serializable
   // private void writeObject (ObjectOutputStream)
   //
   // This method is used by the class to override default
-  // serialization behaivior.
+  // serialization behavior.
   boolean hasWriteMethod ()
   {
     return (flags & ObjectStreamConstants.SC_WRITE_METHOD) != 0;
@@ -396,7 +396,7 @@ public class ObjectStreamClass implements Serializable
     calculateOffsets ();
   }
 
-  // Sets uid be serial version UID defined by class, or if that
+  // Sets uid to be serial version UID defined by class, or if that
   // isn't present, calculates value of serial version UID.
   private void setUID (Class cl)
   {
@@ -603,7 +603,7 @@ public class ObjectStreamClass implements Serializable
     try
       {
 	Class classArgs[] = {};
-	m = clazz.getMethod ("<clinit>", classArgs);
+	m = clazz.getDeclaredMethod ("<clinit>", classArgs);
       }
     catch (java.lang.NoSuchMethodException e)
       {

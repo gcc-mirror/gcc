@@ -182,7 +182,8 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
 jint
 java::lang::reflect::Method::getModifiers ()
 {
-  return _Jv_FromReflectedMethod (this)->accflags;
+  // Ignore all unknown flags.
+  return _Jv_FromReflectedMethod (this)->accflags & Modifier::ALL_FLAGS;
 }
 
 jstring
