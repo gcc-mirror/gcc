@@ -1,3 +1,8 @@
+Thu Apr 27 17:25:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (block_end:): If the collected block doesn't feature a
+ 	statement, insert an empty statement.
+
 2000-04-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (fold_constant_for_init): Let VAR_DECL and FIELD_DECL be
