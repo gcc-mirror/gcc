@@ -279,7 +279,7 @@ namespace std
       const _CharT* __lit = __lc->_M_atoms_in;
  
       // NB: Iff __basefield == 0, this can change based on contents.
-      ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
+      const ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
       if (__basefield == ios_base::oct)
         __base = 8;
       else if (__basefield == ios_base::hex)
@@ -315,8 +315,8 @@ namespace std
 	      if (__basefield == 0)
 		{	      
 		  const bool __x = __traits_type::eq(__c, __lit[_S_ix]);
-		  const bool __X = __traits_type::eq(__c, __lit[_S_iX]);
-		  if ((__x || __X) && __beg != __end)
+		  if ((__x || __traits_type::eq(__c, __lit[_S_iX]))
+		      && __beg != __end)
 		    {
 		      __xtrc += __x ? _S_atoms_in[_S_ix] : _S_atoms_in[_S_iX];
 		      ++__pos;
@@ -337,8 +337,8 @@ namespace std
 	      __c = *(++__beg); 
 
 	      const bool __x = __traits_type::eq(__c, __lit[_S_ix]);
-	      const bool __X = __traits_type::eq(__c, __lit[_S_iX]);
-	      if ((__x || __X) && __beg != __end)
+	      if ((__x || __traits_type::eq(__c, __lit[_S_iX]))
+		  && __beg != __end)
 		{
 		  __xtrc += __x ? _S_atoms_in[_S_ix] : _S_atoms_in[_S_iX];
 		  ++__pos;
@@ -349,11 +349,7 @@ namespace std
 
       // At this point, base is determined. If not hex, only allow
       // base digits as valid input.
-      size_t __len;
-      if (__base == 16)
-	__len = _S_iend;
-      else
-	__len = __base;
+      const size_t __len = __base == 16 ? _S_iend : __base;
 
       // Extract.
       string __found_grouping;
@@ -721,8 +717,8 @@ namespace std
       // Don't write base if already 0.
       const bool __showbase = (__flags & ios_base::showbase) && __v;
       const ios_base::fmtflags __basefield = __flags & ios_base::basefield;
-      _CharT* __buf = __out + __size - 1;
-      _CharT* __bufend = __out + __size;
+      _CharT* const __bufend = __out + __size;
+      _CharT* __buf = __bufend - 1;
 
       if (__builtin_expect(__basefield != ios_base::oct &&
 			   __basefield != ios_base::hex, true))
@@ -771,8 +767,7 @@ namespace std
 	      *__buf-- = __lit[__num_base::_S_odigits];
 	    }
 	}
-      int __ret = __bufend - __buf - 1;
-      return __ret;
+      return __bufend - __buf - 1;
     }
 
   template<typename _CharT, typename _OutIter>
@@ -822,14 +817,15 @@ namespace std
 	const _CharT* __lit = __lc->_M_atoms_out;
 
  	// Long enough to hold hex, dec, and octal representations.
-	int __ilen = 4 * sizeof(_ValueT);
+	const int __ilen = 4 * sizeof(_ValueT);
 	_CharT* __cs = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) 
 							     * __ilen));
+
 	// [22.2.2.2.2] Stage 1, numeric conversion to character.
 	// Result is returned right-justified in the buffer.
 	int __len;
 	__len = __int_to_char(&__cs[0], __ilen, __v, __lit, __io.flags());
-	__cs = __cs + __ilen - __len;
+	__cs += __ilen - __len;
 	
 	// Add grouping, if necessary. 
 	_CharT* __cs2;
@@ -871,7 +867,7 @@ namespace std
       //282. What types does numpunct grouping refer to?
       // Add grouping, if necessary. 
       _CharT* __p2;
-      int __declen = __p ? __p - __cs : __len;
+      const int __declen = __p ? __p - __cs : __len;
       __p2 = std::__add_grouping(__new, __sep, __grouping.c_str(),
 				 __grouping.c_str() + __grouping.size(),
 				 __cs, __cs + __declen);
@@ -1396,12 +1392,12 @@ namespace std
       if (*__beg != __ctype.widen('-'))
 	{
 	  __p = __intl ? __mpt.pos_format() : __mpf.pos_format();
-	  __sign =__intl ? __mpt.positive_sign() : __mpf.positive_sign();
+	  __sign = __intl ? __mpt.positive_sign() : __mpf.positive_sign();
 	}
       else
 	{
 	  __p = __intl ? __mpt.neg_format() : __mpf.neg_format();
-	  __sign =__intl ? __mpt.negative_sign() : __mpf.negative_sign();
+	  __sign = __intl ? __mpt.negative_sign() : __mpf.negative_sign();
 	  ++__beg;
 	}
       
@@ -1434,8 +1430,8 @@ namespace std
 		{
 		  // Have to pad zeros in the decimal position.
 		  __value = string_type(__beg, __end);
-		  int __paddec = __frac - (__end - __beg);
-		  char_type __zero = __ctype.widen('0');
+		  const int __paddec = __frac - (__end - __beg);
+		  const char_type __zero = __ctype.widen('0');
 		  __value.insert(__value.begin(), __paddec, __zero);
 		  __value.insert(__value.begin(), __d);
 		  __beg = __end;
