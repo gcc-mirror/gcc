@@ -69,16 +69,3 @@ java::io::ObjectInputStream::callConstructor (jclass klass, jobject obj)
 				+ m->offset);
   _Jv_CallAnyMethodA (obj, JvPrimClass (void), meth, false, arg_types, NULL);
 }
-  
-java::lang::reflect::Field *
-java::io::ObjectInputStream::getField (jclass klass, jstring name)
-{
-  return klass->getPrivateField (name);
-}
-
-java::lang::reflect::Method *
-java::io::ObjectInputStream::getMethod (jclass klass, jstring name, 
-					JArray<jclass> *arg_types)
-{
-  return klass->getPrivateMethod (name, arg_types);
-}
