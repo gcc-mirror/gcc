@@ -1,3 +1,7 @@
+2002-04-23  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/freebsd.h(OBJECT_FORMAT_ELF): Define.
+
 Tue Apr 23 14:24:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_output_addr_diff_elt): Avoid x86_64 binutils bug
