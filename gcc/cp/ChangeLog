@@ -1,3 +1,8 @@
+1998-12-07  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cp/decl2.c: s/data/opts/ when initializing cpp_reader 
+          structure.
+	
 1998-12-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (build_typename_type): Set DECL_ARTIFICIAL.
