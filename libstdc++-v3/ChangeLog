@@ -1,5 +1,10 @@
 2003-08-26  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/run_doxygen:  Shell fixes.  Remove hardcoded local
+	pathnames from generated tag file.
+
+2003-08-26  Phil Edwards  <pme@gcc.gnu.org>
+
 	* Makefile.am:  Add comment.
 	* acinclude.m4 (GLIBCXX_CONFIGURE):  Set new glibcxx_SUBDIRS and
 	SUBDIRS variables.
