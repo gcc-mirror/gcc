@@ -692,6 +692,9 @@ build_dynamic_cast_1 (type, expr)
 	}
     }
 
+  cp_error ("dynamic_cast from non-polymorphic type `%#T'", exprtype);
+  return error_mark_node;
+
  fail:
   cp_error ("cannot dynamic_cast `%E' (of type `%#T') to type `%#T'",
 	    expr, exprtype, type);
