@@ -19,6 +19,8 @@ AC_SUBST(release_VERSION)
 libtool_VERSION=4:1:0
 AC_SUBST(libtool_VERSION)
 
+GLIBCPP_TOPREL_CONFIGURE
+
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 # AC 2.5x sets target_alias iff the user specified --target, but we use it
 # everywhere, so we set it here just to be sure.  In AC 2.13

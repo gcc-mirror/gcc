@@ -29,6 +29,8 @@ AC_CONFIG_HEADER(config.h)
 # exported.
 ORIGINAL_LD_FOR_MULTILIBS=$LD
 
+GLIBCPP_TOPREL_CONFIGURE
+
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$target}
 AC_SUBST(target_alias)
