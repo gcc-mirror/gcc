@@ -2610,13 +2610,19 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
   moptab = unsignedp ? umul_widen_optab : smul_widen_optab;
   if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
       && mul_widen_cost[(int) wider_mode] < max_cost)
-    goto try;
+    {
+      op1 = force_reg (mode, op1);
+      goto try;
+    } 
 
   /* Try widening the mode and perform a non-widening multiplication.  */
   moptab = smul_optab;
   if (smul_optab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
       && mul_cost[(int) wider_mode] + shift_cost[size-1] < max_cost)
-    goto try;
+    {
+      op1 = wide_op1;
+      goto try;
+    }
 
   /* Try widening multiplication of opposite signedness, and adjust.  */
   moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
@@ -2624,7 +2630,8 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
       && (mul_widen_cost[(int) wider_mode]
 	  + 2 * shift_cost[size-1] + 4 * add_cost < max_cost))
     {
-      tem = expand_binop (wider_mode, moptab, op0, wide_op1,
+      rtx regop1 = force_reg (mode, op1);
+      tem = expand_binop (wider_mode, moptab, op0, regop1,
 			  NULL_RTX, ! unsignedp, OPTAB_WIDEN);
       if (tem != 0)
 	{
@@ -2642,15 +2649,22 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
 
  try:
   /* Pass NULL_RTX as target since TARGET has wrong mode.  */
-  tem = expand_binop (wider_mode, moptab, op0, wide_op1,
+  tem = expand_binop (wider_mode, moptab, op0, op1,
 		      NULL_RTX, unsignedp, OPTAB_WIDEN);
   if (tem == 0)
     return 0;
 
   /* Extract the high half of the just generated product.  */
-  tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
-		      build_int_2 (size, 0), NULL_RTX, 1);
-  return convert_modes (mode, wider_mode, tem, unsignedp);
+  if (mode == word_mode)
+    {
+      return gen_highpart (mode, tem);
+    }
+  else
+    {
+      tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
+			  build_int_2 (size, 0), NULL_RTX, 1);
+      return convert_modes (mode, wider_mode, tem, unsignedp);
+    }
 }
 
 /* Emit the code to divide OP0 by OP1, putting the result in TARGET
