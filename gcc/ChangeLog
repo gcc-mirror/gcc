@@ -1,3 +1,7 @@
+2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-format.c (CPLUSPLUS_STD_VER): Define to STD_C94.
+
 2001-10-01  Jim Wilson  <wilson@redhat.com>
 
 	* sched-deps.c (add_dependence): When elide conditional dependence,

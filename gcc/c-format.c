@@ -497,7 +497,7 @@ enum format_std_version
 
 /* The C standard version C++ is treated as equivalent to
    or inheriting from, for the purpose of format features supported.  */
-#define CPLUSPLUS_STD_VER	STD_C89
+#define CPLUSPLUS_STD_VER	STD_C94
 /* The C standard version we are checking formats against when pedantic.  */
 #define C_STD_VER		((int)(c_language == clk_cplusplus	  \
 				 ? CPLUSPLUS_STD_VER			  \
