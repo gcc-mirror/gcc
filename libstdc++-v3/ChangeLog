@@ -1,3 +1,11 @@
+2003-10-14  Carlo Wood  <carlo@alinoe.com>
+
+	PR libstdc++/12600
+	* include/bits/demangle.h (session<Allocator>::
+	  decode_unqualified_name(string_type& output)): Fail on a
+	  <operator-name> when decoding <template-argument>.
+	* testsuite/demangle/regression/cw-15.cc: New.
+
 2003-10-14  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11480

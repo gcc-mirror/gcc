@@ -1938,48 +1938,41 @@ namespace __gnu_cxx
       session<Allocator>::decode_unqualified_name(string_type& output)
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_unqualified_name");
-	if (isdigit(current()))
+	if (M_inside_template_args)
 	{
-	  if (!M_inside_template_args)
-	  {
-	    bool recursive_unqualified_name = (&M_function_name == &output);
-	    // This can be a recursive call when we are decoding
-	    // an <operator-name> that is a cast operator for a some
-	    // <unqualified-name>; for example "operator Foo()".
-	    // In that case this is thus not a ctor or dtor and we
-	    // are not interested in updating M_function_name.
-	    if (!recursive_unqualified_name)
-	      M_function_name.clear();
-	    M_name_is_template = false;
-	    M_name_is_cdtor = false;
-	    M_name_is_conversion_operator = false;
-	    if (!decode_source_name(M_function_name))
-	      _GLIBCXX_DEMANGLER_FAILURE;
-	    if (!recursive_unqualified_name)
-	      output += M_function_name;
-	  }
-	  else if (!decode_source_name(output))
+	  if (!decode_source_name(output))
 	    _GLIBCXX_DEMANGLER_FAILURE;
-	  _GLIBCXX_DEMANGLER_RETURN;
 	}
-	if (islower(current()))
+	else if (isdigit(current()))
 	{
-	  if (!M_inside_template_args)
-	  {
+	  bool recursive_unqualified_name = (&M_function_name == &output);
+	  // This can be a recursive call when we are decoding
+	  // an <operator-name> that is a cast operator for a some
+	  // <unqualified-name>; for example "operator Foo()".
+	  // In that case this is thus not a ctor or dtor and we
+	  // are not interested in updating M_function_name.
+	  if (!recursive_unqualified_name)
 	    M_function_name.clear();
-	    M_name_is_template = false;
-	    M_name_is_cdtor = false;
-	    M_name_is_conversion_operator = false;
-	    if (!decode_operator_name(M_function_name))
-	      _GLIBCXX_DEMANGLER_FAILURE;
-	    output += M_function_name;
-	  }
-	  _GLIBCXX_DEMANGLER_RETURN;
-	}
-	if (current() == 'C' || current() == 'D')
-	{
-	  if (M_inside_template_args)
+	  M_name_is_template = false;
+	  M_name_is_cdtor = false;
+	  M_name_is_conversion_operator = false;
+	  if (!decode_source_name(M_function_name))
 	    _GLIBCXX_DEMANGLER_FAILURE;
+	  if (!recursive_unqualified_name)
+	    output += M_function_name;
+	}
+	else if (islower(current()))
+	{
+	  M_function_name.clear();
+	  M_name_is_template = false;
+	  M_name_is_cdtor = false;
+	  M_name_is_conversion_operator = false;
+	  if (!decode_operator_name(M_function_name))
+	    _GLIBCXX_DEMANGLER_FAILURE;
+	  output += M_function_name;
+	}
+	else if (current() == 'C' || current() == 'D')
+	{
 	  // <ctor-dtor-name> ::=
 	  //   C1	# complete object (in-charge) constructor
 	  //   C2	# base object (not-in-charge) constructor
@@ -2005,9 +1998,10 @@ namespace __gnu_cxx
 	  M_name_is_cdtor = true;
 	  eat_current();
 	  output += M_function_name;
-	  _GLIBCXX_DEMANGLER_RETURN;
 	}
-	_GLIBCXX_DEMANGLER_FAILURE;
+	else
+	  _GLIBCXX_DEMANGLER_FAILURE;
+	_GLIBCXX_DEMANGLER_RETURN;
       }
 
     // <unscoped-name> ::=
