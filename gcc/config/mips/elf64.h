@@ -95,3 +95,35 @@ do {								\
   else								\
     fprintf (F, "\t.section %s,\"aw\",@progbits\n", (NAME));	\
 } while (0)
+
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)                            \
+ do { fputc ( '\t', FILE);                                            \
+      assemble_name (FILE, LABEL1);                                   \
+      fputs ( " = ", FILE);                                           \
+      assemble_name (FILE, LABEL2);                                   \
+      fputc ( '\n', FILE);                                            \
+ } while (0)
+
+/* Note about .weak vs. .weakext
+   The mips native assemblers support .weakext, but not .weak.
+   mips-elf gas supports .weak, but not .weakext.
+   mips-elf gas has been changed to support both .weak and .weakext,
+   but until that support is generally available, the 'if' below
+   should serve. */
+
+#define ASM_WEAKEN_LABEL(FILE,NAME) ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,0)
+#define ASM_OUTPUT_WEAK_ALIAS(FILE,NAME,VALUE)	\
+ do {						\
+  if (TARGET_GAS)                               \
+      fputs ("\t.weak\t", FILE);		\
+  else                                          \
+      fputs ("\t.weakext\t", FILE);		\
+  assemble_name (FILE, NAME);			\
+  if (VALUE)					\
+    {						\
+      fputc (' ', FILE);			\
+      assemble_name (FILE, VALUE);		\
+    }						\
+  fputc ('\n', FILE);				\
+ } while (0)
+

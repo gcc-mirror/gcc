@@ -1,3 +1,11 @@
+Wed Apr 29 15:06:42 1998  Gavin Koch  <gavin@cygnus.com>
+
+	* config/mips/elf.h (ASM_OUTPUT_DEF,ASM_WEAKEN_LABEL,
+	ASM_OUTPUT_WEAK_ALIAS): Define.
+	* config/mips/elf64.h: Same.
+	* config/mips/r3900.h (ASM_OUTPUT_DEF,SUPPORTS_WEAK,
+	ASM_WEAKEN_LABEL): Removed.
+
 Wed Apr 29 10:53:29 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* calls.c (expand_call): Bump the length limit on the specially
