@@ -1,3 +1,7 @@
+2004-08-30  Jason Merrill  <jason@redhat.com>
+
+	* gthr-posix.h: Add #pragma weaks.
+
 2004-08-30  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.c (GCOV_CHECK): Use gcc_assert when available.
