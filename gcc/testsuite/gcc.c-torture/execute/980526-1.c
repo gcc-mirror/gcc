@@ -29,7 +29,9 @@ static void do2(void){
 }
  
 int main(void){
+#ifndef NO_LABEL_VALUES
   do1();
   do2();
+#endif
   exit(0);
 }
