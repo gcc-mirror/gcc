@@ -129,11 +129,12 @@ public abstract class URLStreamHandler
     
     if (spec.regionMatches (start, "//", 0, 2))
       {
+	String genuineHost;
 	int hostEnd;
-	int colon;
+	int colon, at_host;
 
 	start += 2;
-	int slash = spec.indexOf('/', start);
+	int slash = spec.indexOf ('/', start);
 	if (slash >= 0) 
 	  hostEnd = slash;
         else
@@ -141,24 +142,37 @@ public abstract class URLStreamHandler
 
 	host = spec.substring (start, hostEnd);
 	
+	// We first need a genuine host name (with userinfo).
+	// So we check for '@': if it's present check the port in the
+	// section after '@' in the other case check it in the full string.
+	// P.S.: We don't care having '@' at the beginning of the string.
+	if ((at_host = host.indexOf ('@')) >= 0)
+	  genuineHost = host.substring (at_host);
+	else
+	  genuineHost = host;
+
 	// Look for optional port number.  It is valid for the non-port
 	// part of the host name to be null (e.g. a URL "http://:80").
 	// TBD: JDK 1.2 in this case sets host to null rather than "";
 	// this is undocumented and likely an unintended side effect in 1.2
 	// so we'll be simple here and stick with "". Note that
 	// "http://" or "http:///" produce a "" host in JDK 1.2.
-	if ((colon = host.indexOf(':')) >= 0)
+	if ((colon = genuineHost.indexOf (':')) >= 0)
 	  {
 	    try
 	      {
-		port = Integer.parseInt(host.substring(colon + 1));
+		port = Integer.parseInt (genuineHost.substring (colon + 1));
 	      }
 	    catch (NumberFormatException e)
 	      {
 		; // Ignore invalid port values; port is already set to u's
 		  // port.
 	      }
-	    host = host.substring(0, colon);
+	    // Now we must cut the port number in the original string.
+	    if (at_host >= 0)
+	      host = host.substring (0, at_host + colon);
+	    else
+	      host = host.substring (0, colon);
 	  }
 	file = null;
 	start = hostEnd;
@@ -451,7 +465,7 @@ public abstract class URLStreamHandler
    */
   protected String toExternalForm(URL u)
   {
-    String protocol, host, file, ref;
+    String protocol, host, file, ref, user;
     int port;
 
     protocol = u.getProtocol();
@@ -465,6 +479,7 @@ public abstract class URLStreamHandler
     port = u.getPort();
     file = u.getFile();
     ref = u.getRef();
+    user = u.getUserInfo();
 
     // Guess a reasonable size for the string buffer so we have to resize
     // at most once.
@@ -479,7 +494,10 @@ public abstract class URLStreamHandler
 
     if (host.length() != 0)
       {
-        sb.append("//").append(host);
+	sb.append("//");
+	if (user != null && !"".equals(user))
+	  sb.append(user).append('@');
+	sb.append(host);
 
         // Append port if port was in URL spec.
         if (port >= 0)
