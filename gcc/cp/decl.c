@@ -9169,6 +9169,18 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
 
   if (decl && TREE_CODE (decl) == TYPE_DECL)
     {
+      /* Look for invalid nested type:
+	   class C {
+	     class C {};
+	   };  */
+      if (scope == ts_current && DECL_SELF_REFERENCE_P (decl))
+	{
+	  error ("%qD has the same name as the class in which it is "
+		 "declared",
+		 decl);
+	  return error_mark_node;
+	}
+
       /* Two cases we need to consider when deciding if a class
 	 template is allowed as an elaborated type specifier:
 	 1. It is a self reference to its own class.
