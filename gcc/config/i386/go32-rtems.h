@@ -31,5 +31,10 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dunix -Di386 -DGO32 -DMSDOS -Drtems -D__rtems__ \
   -Asystem(unix) -Asystem(msdos) -Acpu(i386) -Amachine(i386) -Asystem(rtems)"
 
+/* Generate calls to memcpy, memcmp and memset.  */
+#ifndef TARGET_MEM_FUNCTIONS
+#define TARGET_MEM_FUNCTIONS
+#endif
+
 /* end of i386/go32-rtems.h */
 

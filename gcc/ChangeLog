@@ -1,3 +1,15 @@
+Wed Mar 25 01:06:49 1998  Joel Sherrill (joel@OARcorp.com)
+
+	* config/i386/go32-rtems.h: Defined TARGET_MEM_FUNCTIONS.
+	* config/i386/rtems.h: Likewise.
+	* config/i960/rtems.h: Likewise.
+	* config/m68k/rtems.h: Likewise.
+	* config/mips/rtems64.h: Likewise.
+	* config/pa/rtems.h: Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/sh/rtems.h: Likewise.
+	* config/sparc/rtems.h: Likewise.
+
 Wed Mar 25 00:57:26 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* pa.c (emit_move_sequence): If in reload, call find_replacement.

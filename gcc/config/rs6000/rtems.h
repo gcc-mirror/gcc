@@ -27,4 +27,9 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-DPPC -Drtems -D__rtems__ \
    -Asystem(rtems) -Acpu(powerpc) -Amachine(powerpc)"
 
-/* end of powerpc-rtems.h */
+/* Generate calls to memcpy, memcmp and memset.  */
+#ifndef TARGET_MEM_FUNCTIONS
+#define TARGET_MEM_FUNCTIONS
+#endif
+
+/* end of rs6000/rtems.h */
