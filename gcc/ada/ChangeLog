@@ -1,3 +1,7 @@
+2004-07-14  Andreas Schwab  <schwab@suse.de>
+
+	* trans.c (gnat_init_stmt_group): Remove duplicate definition.
+
 2004-07-13  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c: (gnat_to_gnu_entity, object case): Convert initializer to

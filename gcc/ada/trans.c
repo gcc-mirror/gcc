@@ -297,28 +297,6 @@ gnat_init_stmt_group ()
   REAL_ARITHMETIC (dconstmp5, RDIV_EXPR, dconstm1, dconst2);
 }
 
-/* Perform initializations for this module.  */
-
-void
-gnat_init_stmt_group ()
-{
-  /* Initialize ourselves.  */
-  init_code_table ();
-  start_stmt_group ();
-
-  global_stmt_group = current_stmt_group;
-
-  /* Enable GNAT stack checking method if needed */
-  if (!Stack_Check_Probes_On_Target)
-    set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
-
-  if (Exception_Mechanism == Front_End_ZCX)
-    abort ();
-
-  REAL_ARITHMETIC (dconstp5, RDIV_EXPR, dconst1, dconst2);
-  REAL_ARITHMETIC (dconstmp5, RDIV_EXPR, dconstm1, dconst2);
-}
-
 /* This function is the driver of the GNAT to GCC tree transformation
    process.  It is the entry point of the tree transformer.  GNAT_NODE is the
    root of some GNAT tree.  Return the root of the corresponding GCC tree.
