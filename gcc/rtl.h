@@ -357,6 +357,9 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 
 /* ACCESS MACROS for particular fields of insns.  */
 
+/* Determines whether X is an insn.  */
+#define INSN_P(X)       (GET_RTX_CLASS (GET_CODE(X)) == 'i')
+
 /* Holds a unique number for each insn.
    These are not necessarily sequentially increasing.  */
 #define INSN_UID(INSN)  XINT(INSN, 0)
@@ -981,6 +984,12 @@ extern const char * const note_insn_name[];
 
 /* For a NOTE_INSN_LIVE note, the original basic block number.  */
 #define RANGE_LIVE_ORIG_BLOCK(INSN) (XINT (INSN, 1))
+
+/* Determine if the insn is a PHI node.  */
+#define PHI_NODE_P(X)				\
+  (X && GET_CODE (X) == INSN			\
+   && GET_CODE (PATTERN (X)) == SET		\
+   && GET_CODE (SET_SRC (PATTERN (X))) == PHI)
 
 /* Nonzero if we need to distinguish between the return value of this function
    and the return value of a function called by this function.  This helps
@@ -1793,6 +1802,11 @@ extern int stack_regs_mentioned		PARAMS ((rtx insn));
 /* In ssa.c */
 extern void convert_to_ssa		PARAMS ((void));
 extern void convert_from_ssa		PARAMS ((void));
+typedef int (*successor_phi_fn)         PARAMS ((rtx, int, int, void *));
+extern int for_each_successor_phi       PARAMS ((int bb,
+						 successor_phi_fn,
+						 void *));
+extern int in_ssa_form;
 
 /* In toplev.c */
 

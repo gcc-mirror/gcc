@@ -317,6 +317,7 @@ static void notice_stack_pointer_modification_1 PARAMS ((rtx, rtx, void *));
 static void notice_stack_pointer_modification PARAMS ((rtx));
 static void mark_reg			PARAMS ((rtx, void *));
 static void mark_regs_live_at_end	PARAMS ((regset));
+static int set_phi_alternative_reg      PARAMS ((rtx, int, int, void *));
 static void calculate_global_regs_live	PARAMS ((sbitmap, sbitmap, int));
 static void propagate_block		PARAMS ((basic_block, regset,
 						 regset, int));
@@ -2486,6 +2487,15 @@ life_analysis (f, nregs, file, remove_dead_code)
 #endif
   int flags;
   sbitmap all_blocks;
+
+  /* Dead code elimination changes basic block structure and therefore
+     breaks the SSA phi representation.  Particularly, a phi node
+     can have an alternative value for each incoming block, referenced
+     by the block number.  Removing dead code can bump entire blocks
+     and therefore cause blocks to be renumbered, invalidating the
+     numbering of phi alternatives.  */
+  if (remove_dead_code && in_ssa_form)
+    abort ();
  
   /* Record which registers will be eliminated.  We use this in
      mark_used_regs.  */
@@ -2960,6 +2970,22 @@ mark_regs_live_at_end (set)
   diddle_return_value (mark_reg, set);
 }
 
+/* Callback function for for_each_successor_phi.  DATA is a regset.
+   Sets the SRC_REGNO, the regno of the phi alternative for phi node
+   INSN, in the regset.  */
+
+static int
+set_phi_alternative_reg (insn, dest_regno, src_regno, data)
+     rtx insn ATTRIBUTE_UNUSED;
+     int dest_regno ATTRIBUTE_UNUSED;
+     int src_regno;
+     void *data;
+{
+  regset live = (regset) data;
+  SET_REGNO_REG_SET (live, src_regno);
+  return 0;
+}
+
 /* Propagate global life info around the graph of basic blocks.  Begin
    considering blocks with their corresponding bit set in BLOCKS_IN. 
    BLOCKS_OUT is set for every block that was changed.  */
@@ -3019,6 +3045,13 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	  basic_block sb = e->dest;
 	  IOR_REG_SET (new_live_at_end, sb->global_live_at_start);
 	}
+
+      /* Regs used in phi nodes are not included in
+	 global_live_at_start, since they are live only along a
+	 particular edge.  Set those regs that are live because of a
+	 phi node alternative corresponding to this particular block.  */
+      for_each_successor_phi (bb->index, &set_phi_alternative_reg, 
+			      new_live_at_end);
 
       if (bb == ENTRY_BLOCK_PTR)
 	{
@@ -4688,6 +4721,13 @@ mark_used_regs (needed, live, x, flags, insn)
 	break;
       }
 
+    case PHI:
+      /* We _do_not_ want to scan operands of phi nodes.  Operands of
+	 a phi function are evaluated only when control reaches this
+	 block along a particular edge.  Therefore, regs that appear
+	 as arguments to phi should not be added to the global live at
+	 start.  */
+      return;
 
     default:
       break;
