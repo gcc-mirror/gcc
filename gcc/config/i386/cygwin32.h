@@ -30,6 +30,29 @@ Boston, MA 02111-1307, USA. */
 #include "i386/gas.h"
 #include "dbxcoff.h"
 
+/* Augment TARGET_SWITCHES with the cygwin/no-cygwin options. */
+#define MASK_WIN32 0x40000000 /* Use -lming32 interface */
+#define MASK_CYGWIN  0x20000000 /* Use -lcygwin interface */
+#define MASK_WINDOWS 0x10000000 /* Use windows interface */
+#define MASK_DLL     0x08000000 /* Use dll interface    */
+#define MASK_NOP_FUN_DLLIMPORT 0x20000 /* Ignore dllimport for functions */
+
+#define TARGET_WIN32             (target_flags & MASK_WIN32)
+#define TARGET_CYGWIN            (target_flags & MASK_CYGWIN)
+#define TARGET_WINDOWS           (target_flags & MASK_WINDOWS)
+#define TARGET_DLL               (target_flags & MASK_DLL)
+#define TARGET_NOP_FUN_DLLIMPORT (target_flags & MASK_NOP_FUN_DLLIMPORT)
+
+#undef  SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+{ "no-cygwin",                       MASK_WIN32 }, \
+{ "cygwin",                          MASK_CYGWIN },  \
+{ "windows",                         MASK_WINDOWS }, \
+{ "dll",                             MASK_DLL },     \
+{ "nop-fun-dllimport",               MASK_NOP_FUN_DLLIMPORT }, \
+{ "no-nop-fun-dllimport",            MASK_NOP_FUN_DLLIMPORT },
+
+
 /* Support the __declspec keyword by turning them into attributes.
    We currently only support: dllimport and dllexport.
    Note that the current way we do this may result in a collision with
@@ -43,14 +66,27 @@ Boston, MA 02111-1307, USA. */
 #endif
 
 #define CPP_PREDEFINES "-Di386 -D_WIN32 \
-  -D__CYGWIN32__ -DWINNT  -D_X86_=1 -D__STDC__=1\
+  -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
   -D__declspec(x)=__attribute__((x)) \
   -Asystem(winnt) -Acpu(i386) -Amachine(i386)"
 
+/* Normally, -lgcc is not needed since everything in it is in the DLL, but we
+   want to allow things to be added to it when installing new versions of
+   GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
+   by calling the init function from the prologue. */
+
+#undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%{mdll: %{!mno-cygwin:dllcrt0%O%s} \
+                                %{mno-cygwin:dllcrt1%O%s}} \
+                        %{!mdll: %{!mno-cygwin:crt0%O%s} \
+                                 %{mno-cygwin:crt1%O%s} %{pg:gcrt0%O%s}}"
+
 #undef CPP_SPEC
-#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE} \
+  %{!mno-cygwin:-D__CYGWIN32__ -D__CYGWIN__} \
+  %{mno-cygwin:-iwithprefixbefore include/mingw32 -D__MINGW32__=0.2}"
 
 /* We have to dynamic link to get to the system DLLs.  All of libc, libm and
    the Unix stuff is in cygwin.dll.  The import library is called
@@ -59,36 +95,25 @@ Boston, MA 02111-1307, USA. */
    ld, but that doesn't work just yet.  */
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{pg:-lgmon} -lcygwin %{mwindows:-luser32 -lgdi32 -lcomdlg32}\
-   -lkernel32 -ladvapi32 -lshell32"
+#define LIB_SPEC "%{pg:-lgmon} \
+                  %{!mno-cygwin:-lcygwin} \
+                  %{mno-cygwin:-lmingw32 -lmoldname -lcrtdll} \
+                  %{mwindows:-luser32 -lgdi32 -lcomdlg32} \
+		  -lkernel32 -ladvapi32 -lshell32"
 
-#define LINK_SPEC "%{mwindows:--subsystem windows}"
+#define LINK_SPEC "%{mwindows:--subsystem windows} \
+                   %{mdll:--dll -e _DllMainCRTStartup@12}"
 
-/* Normally, -lgcc is not needed since everything in it is in the DLL, but we
-   want to allow things to be added to it when installing new versions of
-   GCC without making a new CYGWIN.DLL, so we leave it.  Profiling is handled
-   by calling the init function from the prologue. */
-
-#undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{pg:gcrt0%O%s} crt0%O%s"
 
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 #define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE_SIZE 16
 #define WCHAR_TYPE "short unsigned int"
+
 #define HAVE_ATEXIT 1
 
 
-/* Ignore dllimport for functions.  */
-#define TARGET_NOP_FUN_DLLIMPORT (target_flags & 0x20000)
-
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES 			\
-  { "nop-fun-dllimport",	 0x20000 },	\
-  { "no-nop-fun-dllimport",	-0x20000 },	\
-  { "windows",			 0x0     },
-
 /* Enable parsing of #pragma pack(push,<n>) and #pragma pack(pop).  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP 1
 
