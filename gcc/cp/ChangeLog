@@ -1,5 +1,7 @@
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (reshape_init): Tweak handling of character arrays.
+
 	PR c++/8218
 	* cp-tree.h (lang_type_class): Add contains_empty_class_p.
 	(CLASSTYPE_CONTAINS_EMPTY_CLASS_P): New macro.
