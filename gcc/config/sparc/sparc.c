@@ -5420,6 +5420,42 @@ sparc_emit_float_lib_cmp (x, y, comparison)
     }
 }
 
+/* Generate an unsigned DImode to FP conversion.  This is the same code
+   optabs would emit if we didn't have TFmode patterns.  */
+
+void
+sparc_emit_floatunsdi (operands)
+     rtx operands[2];
+{
+  rtx neglab, donelab, i0, i1, f0, in, out;
+  enum machine_mode mode;
+
+  out = operands[0];
+  in = force_reg (DImode, operands[1]);
+  mode = GET_MODE (out);
+  neglab = gen_label_rtx ();
+  donelab = gen_label_rtx ();
+  i0 = gen_reg_rtx (DImode);
+  i1 = gen_reg_rtx (DImode);
+  f0 = gen_reg_rtx (mode);
+
+  emit_cmp_and_jump_insns (in, const0_rtx, LT, const0_rtx, DImode, 0, neglab);
+
+  emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_FLOAT (mode, in)));
+  emit_jump_insn (gen_jump (donelab));
+  emit_barrier ();
+
+  emit_label (neglab);
+
+  emit_insn (gen_lshrdi3 (i0, in, const1_rtx));
+  emit_insn (gen_anddi3 (i1, in, const1_rtx));
+  emit_insn (gen_iordi3 (i0, i0, i1));
+  emit_insn (gen_rtx_SET (VOIDmode, f0, gen_rtx_FLOAT (mode, i0)));
+  emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_PLUS (mode, f0, f0)));
+
+  emit_label (donelab);
+}
+
 /* Return the string to output a conditional branch to LABEL, testing
    register REG.  LABEL is the operand number of the label; REG is the
    operand number of the reg.  OP is the conditional expression.  The mode
