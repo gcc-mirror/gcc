@@ -1190,6 +1190,8 @@
 	return \"s%P2addq %r1,0,%0\";
     case 1:
       return \"sll %r1,%2,%0\";
+    default:
+      abort();
     }
 }"
   [(set_attr "type" "iadd,shift")])

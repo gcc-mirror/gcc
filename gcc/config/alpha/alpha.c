@@ -21,8 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
-#include <ctype.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -40,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "except.h"
 #include "function.h"
+#include "toplev.h"
 
 /* External data.  */
 extern char *version_string;
@@ -358,7 +358,7 @@ reg_or_8bit_operand (op, mode)
 int
 cint8_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (op) < 0x100);
@@ -399,7 +399,7 @@ sext_add_operand (op, mode)
 int
 const48_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) == 4 || INTVAL (op) == 8));
@@ -444,7 +444,7 @@ or_operand (op, mode)
 int
 mode_width_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) == 8 || INTVAL (op) == 16
@@ -457,7 +457,7 @@ mode_width_operand (op, mode)
 int
 mode_mask_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
 #if HOST_BITS_PER_WIDE_INT == 32
   if (GET_CODE (op) == CONST_DOUBLE)
@@ -484,7 +484,7 @@ mode_mask_operand (op, mode)
 int
 mul8_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) INTVAL (op) < 64
@@ -613,7 +613,7 @@ input_operand (op, mode)
 int
 current_file_function_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF
 	  && ! profile_flag && ! profile_block_flag
@@ -675,7 +675,7 @@ alpha_swapped_comparison_operator (op, mode)
 int
 signed_comparison_operator (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -694,7 +694,7 @@ signed_comparison_operator (op, mode)
 int
 divmod_operator (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -797,7 +797,7 @@ reg_or_unaligned_mem_operand (op, mode)
 int
 any_memory_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == MEM
 	  || (GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == REG)
@@ -2428,7 +2428,7 @@ alpha_init_expanders ()
 rtx
 alpha_return_addr (count, frame)
      int count;
-     rtx frame;
+     rtx frame ATTRIBUTE_UNUSED;
 {
   rtx init;
 
@@ -2815,7 +2815,7 @@ print_operand (file, x, code)
 
 struct rtx_def *
 alpha_builtin_saveregs (arglist)
-     tree arglist;
+     tree arglist ATTRIBUTE_UNUSED;
 {
   rtx block, addr, dest, argsize;
   tree fntype = TREE_TYPE (current_function_decl);
@@ -3053,8 +3053,8 @@ alpha_using_fp ()
 
 int
 vms_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl;
-     tree attributes;
+     tree decl ATTRIBUTE_UNUSED;
+     tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
      tree args;
 {
@@ -3346,7 +3346,7 @@ void
 alpha_start_function (file, fnname, decl)
      FILE *file;
      char *fnname;
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
   unsigned long imask = 0;
   unsigned long fmask = 0;
@@ -3435,7 +3435,9 @@ alpha_start_function (file, fnname, decl)
       fprintf (file, "\t.frame $%d,", vms_unwind_regno);
       fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 	       frame_size >= (1l << 31) ? 0 : frame_size);
-      fprintf (file, ",$26,%d\n", reg_offset);
+      fputs (",$26,", file);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, reg_offset);
+      fputs ("\n", file);
     }
   else if (!flag_inhibit_size_directive)
     {
@@ -3453,9 +3455,9 @@ alpha_start_function (file, fnname, decl)
       if (imask)
         /* ??? Does VMS care if mask contains ra?  The old code did'nt
            set it, so I don't here.  */
-	fprintf (file, "\t.mask 0x%x,0\n", imask & ~(1L << REG_RA));
+	fprintf (file, "\t.mask 0x%lx,0\n", imask & ~(1L << REG_RA));
       if (fmask)
-	fprintf (file, "\t.fmask 0x%x,0\n", fmask);
+	fprintf (file, "\t.fmask 0x%lx,0\n", fmask);
       if (!vms_is_stack_procedure)
 	fprintf (file, "\t.fp_save $%d\n", vms_save_fp_regno);
     }
@@ -3463,7 +3465,7 @@ alpha_start_function (file, fnname, decl)
     {
       if (imask)
 	{
-	  fprintf (file, "\t.mask 0x%x,", imask);
+	  fprintf (file, "\t.mask 0x%lx,", imask);
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 		   frame_size >= (1l << 31) ? 0 : reg_offset - frame_size);
 	  putc ('\n', file);
@@ -3475,7 +3477,7 @@ alpha_start_function (file, fnname, decl)
 
       if (fmask)
 	{
-	  fprintf (file, "\t.fmask 0x%x,", fmask);
+	  fprintf (file, "\t.fmask 0x%lx,", fmask);
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
 		   frame_size >= (1l << 31) ? 0 : reg_offset - frame_size);
 	  putc ('\n', file);
@@ -3487,9 +3489,6 @@ alpha_start_function (file, fnname, decl)
      plain text.  */
   if (!TARGET_OPEN_VMS && !TARGET_WINDOWS_NT)
     {
-      rtx lab;
-      char *name;
-
       alpha_function_needs_gp = alpha_does_function_need_gp ();
       if (alpha_function_needs_gp)
 	fputs ("\tldgp $29,0($27)\n", file);
@@ -3725,7 +3724,7 @@ void
 alpha_end_function (file, fnname, decl)
      FILE *file;
      char *fnname;
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
   /* End the function.  */
   if (!flag_inhibit_size_directive)
@@ -4181,7 +4180,7 @@ int
 check_float_value (mode, d, overflow)
      enum machine_mode mode;
      REAL_VALUE_TYPE *d;
-     int overflow;
+     int overflow ATTRIBUTE_UNUSED;
 {
 
   if (TARGET_IEEE || TARGET_IEEE_CONFORMANT || TARGET_IEEE_WITH_INEXACT)
@@ -4371,8 +4370,8 @@ alpha_write_linkage (stream)
 
 void
 alpha_need_linkage (name, is_local)
-     char *name;
-     int is_local;
+     char *name ATTRIBUTE_UNUSED;
+     int is_local ATTRIBUTE_UNUSED;
 {
 }
 
