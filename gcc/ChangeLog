@@ -1,5 +1,10 @@
 2000-01-25  Richard Henderson  <rth@cygnus.com>
 
+	* sparc.c (output_cbranch): Fix accidental squashing of the
+	fp branch pre-delay nop.
+
+2000-01-25  Richard Henderson  <rth@cygnus.com>
+
 	* tree.def (UNNE_EXPR): Remove.
 	* c-typeck.c (build_binary_op): Don't handle it.
 	* expr.c (expand_expr, do_jump, do_store_flag): Likewise.
