@@ -1,5 +1,9 @@
 2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
 
+        * reload1.c (forget_old_reloads_1): Do not use subreg offset.
+
+2002-05-15  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/rs6000.md ("altivec_mtvscr"): Set VSCR register.
         ("altivec_mfvscr"): Read from VSCR.
 

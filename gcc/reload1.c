@@ -4098,23 +4098,21 @@ forget_old_reloads_1 (x, ignored, data)
 {
   unsigned int regno;
   unsigned int nr;
-  int offset = 0;
 
   /* note_stores does give us subregs of hard regs,
      subreg_regno_offset will abort if it is not a hard reg.  */
   while (GET_CODE (x) == SUBREG)
     {
-      offset += subreg_regno_offset (REGNO (SUBREG_REG (x)),
-				     GET_MODE (SUBREG_REG (x)),
-				     SUBREG_BYTE (x),
-				     GET_MODE (x));
+      /* We ignore the subreg offset when calculating the regno,
+	 because we are using the entire underlying hard register
+	 below.  */
       x = SUBREG_REG (x);
     }
 
   if (GET_CODE (x) != REG)
     return;
 
-  regno = REGNO (x) + offset;
+  regno = REGNO (x);
 
   if (regno >= FIRST_PSEUDO_REGISTER)
     nr = 1;
