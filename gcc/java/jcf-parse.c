@@ -64,7 +64,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
     text = (JCF)->read_ptr; \
     save = text[LENGTH]; \
     text[LENGTH] = 0; \
-    (JCF)->cpool.data[INDEX].t = get_identifier (text); \
+    (JCF)->cpool.data[INDEX].t = get_identifier ((const char *) text); \
     text[LENGTH] = save; \
     JCF_SKIP (JCF, LENGTH); } while (0)
 
@@ -273,7 +273,8 @@ get_constant (JCF *jcf, int index)
     case CONSTANT_Long:
       {
 	unsigned HOST_WIDE_INT num = JPOOL_UINT (jcf, index);
-	HOST_WIDE_INT lo, hi;
+	unsigned HOST_WIDE_INT lo;
+	HOST_WIDE_INT hi;
 	lshift_double (num, 0, 32, 64, &lo, &hi, 0);
 	num = JPOOL_UINT (jcf, index+1);
 	add_double (lo, hi, num, 0, &lo, &hi);
@@ -411,7 +412,7 @@ give_name_to_class (JCF *jcf, int i)
       tree this_class;
       int j = JPOOL_USHORT1 (jcf, i);
       /* verify_constant_pool confirmed that j is a CONSTANT_Utf8. */
-      tree class_name = unmangle_classname (JPOOL_UTF_DATA (jcf, j),
+      tree class_name = unmangle_classname ((const char *) JPOOL_UTF_DATA (jcf, j),
 					    JPOOL_UTF_LENGTH (jcf, j));
       this_class = lookup_class (class_name);
       input_filename = DECL_SOURCE_FILE (TYPE_NAME (this_class));
@@ -439,11 +440,11 @@ get_class_constant (JCF *jcf, int i)
     {
       int name_index = JPOOL_USHORT1 (jcf, i);
       /* verify_constant_pool confirmed that name_index is a CONSTANT_Utf8. */
-      const char *name = JPOOL_UTF_DATA (jcf, name_index);
+      const char *name = (const char *) JPOOL_UTF_DATA (jcf, name_index);
       int nlength = JPOOL_UTF_LENGTH (jcf, name_index);
 
       if (name[0] == '[')  /* Handle array "classes". */
-	  type = TREE_TYPE (parse_signature_string (name, nlength));
+	  type = TREE_TYPE (parse_signature_string ((const unsigned char *) name, nlength));
       else
         { 
           tree cname = unmangle_classname (name, nlength);

@@ -264,7 +264,7 @@ java_new_lexer (FILE *finput, const char *encoding)
 	      in[1] = 0xbb;
 	      in[2] = 0xbf;
 
-	      inp = in;
+	      inp = (char *) in;
 	      inc = 3;
 	      outp = (char *) &result;
 	      outc = 2;
@@ -377,7 +377,7 @@ java_read_char (java_lexer *lex)
 	      in_save = inbytesleft;
 	      out_save = out_count;
 	      inp = &lex->buffer[lex->first];
-	      outp = &lex->out_buffer[lex->out_last];
+	      outp = (char *) &lex->out_buffer[lex->out_last];
 	      ir = iconv (lex->handle, (ICONV_CONST char **) &inp,
 			  &inbytesleft, &outp, &out_count);
 
@@ -2031,7 +2031,7 @@ cxx_keyword_p (const char *name, int length)
     {
       int kwl = strlen (cxx_keywords[mid]);
       int min_length = kwl > length ? length : kwl;
-      int r = utf8_cmp (name, min_length, cxx_keywords[mid]);
+      int r = utf8_cmp ((const unsigned char *) name, min_length, cxx_keywords[mid]);
 
       if (r == 0)
 	{

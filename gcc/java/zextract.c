@@ -264,7 +264,7 @@ find_zip_file_start (int fd, long offset)
   if (read (fd, buffer, LREC_SIZE + 4) != LREC_SIZE + 4)
     return -1;
 
-  if (buffer[0] != 'P' || strncmp (&buffer[1], LOCAL_HDR_SIG, 3))
+  if (buffer[0] != 'P' || strncmp ((const char *) &buffer[1], LOCAL_HDR_SIG, 3))
     return -1;
 
   filename_length = makeword (&buffer[4 + L_FILENAME_LENGTH]);
@@ -287,8 +287,8 @@ read_zip_archive (ZipFile *zipf)
     return -1;
   if (read (zipf->fd, buffer, ECREC_SIZE+4) != ECREC_SIZE+4)
     return -2;
-  zipf->count = makeword(&buffer[TOTAL_ENTRIES_CENTRAL_DIR]);
-  zipf->dir_size = makelong(&buffer[SIZE_CENTRAL_DIRECTORY]);
+  zipf->count = makeword((const uch *) &buffer[TOTAL_ENTRIES_CENTRAL_DIR]);
+  zipf->dir_size = makelong((const uch *) &buffer[SIZE_CENTRAL_DIRECTORY]);
 #define ALLOC xmalloc
   /* Allocate 1 more to allow appending '\0' to last filename. */
   zipf->central_directory = ALLOC (zipf->dir_size+1);
@@ -306,9 +306,9 @@ read_zip_archive (ZipFile *zipf)
   printf ("total_entries_central_dir = %d\n",
         makeword(&buffer[TOTAL_ENTRIES_CENTRAL_DIR]));
   printf ("size_central_directory = %d\n",
-        makelong(&buffer[SIZE_CENTRAL_DIRECTORY]));
+        makelong((const uch *) &buffer[SIZE_CENTRAL_DIRECTORY]));
   printf ("offset_start_central_directory = %d\n",
-        makelong(&buffer[OFFSET_START_CENTRAL_DIRECTORY]));
+        makelong((const uch *) &buffer[OFFSET_START_CENTRAL_DIRECTORY]));
   printf ("zipfile_comment_length = %d\n",
         makeword(&buffer[ZIPFILE_COMMENT_LENGTH]));
 #endif
@@ -319,11 +319,11 @@ read_zip_archive (ZipFile *zipf)
     {
       ZipDirectory *zipd = (ZipDirectory*)(dir_ptr + dir_last_pad);
       int compression_method = (int) dir_ptr[4+C_COMPRESSION_METHOD];
-      long size = makelong (&dir_ptr[4+C_COMPRESSED_SIZE]);
-      long uncompressed_size = makelong (&dir_ptr[4+C_UNCOMPRESSED_SIZE]);
-      long filename_length = makeword (&dir_ptr[4+C_FILENAME_LENGTH]);
-      long extra_field_length = makeword (&dir_ptr[4+C_EXTRA_FIELD_LENGTH]);
-      long file_offset = makelong (&dir_ptr[4+C_RELATIVE_OFFSET_LOCAL_HEADER]);
+      long size = makelong ((const uch *) &dir_ptr[4+C_COMPRESSED_SIZE]);
+      long uncompressed_size = makelong ((const uch *) &dir_ptr[4+C_UNCOMPRESSED_SIZE]);
+      long filename_length = makeword ((const uch *) &dir_ptr[4+C_FILENAME_LENGTH]);
+      long extra_field_length = makeword ((const uch *) &dir_ptr[4+C_EXTRA_FIELD_LENGTH]);
+      long file_offset = makelong ((const uch *) &dir_ptr[4+C_RELATIVE_OFFSET_LOCAL_HEADER]);
       int unpadded_direntry_length;
       if ((dir_ptr-zipf->central_directory)+filename_length+CREC_SIZE+4>zipf->dir_size)
 	return -1;
