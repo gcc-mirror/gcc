@@ -36,9 +36,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 
 extern char *language_string;
+extern int profile_block_flag;
 
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
+
+/* Target cpu type */
+
+enum processor_type rs6000_cpu;
+char *rs6000_cpu_string;
 
 /* Set to non-zero by "fix" operation to indicate that itrunc and
    uitrunc must be defined.  */
@@ -54,6 +60,63 @@ static int trunc_defined;
 
 rtx rs6000_compare_op0, rs6000_compare_op1;
 int rs6000_compare_fp_p;
+
+/* Override command line options.  Mostly we process the processor
+   type and sometimes adjust other TARGET_ options.  */
+
+void
+rs6000_override_options ()
+{
+  int i;
+
+  static struct ptt
+    {
+      char *name;		/* Canonical processor name.  */
+      enum processor_type processor; /* Processor type enum value.  */
+      int target_enable;	/* Target flags to enable.  */
+      int target_disable;	/* Target flags to disable.  */
+    } processor_target_table[]
+      = {{"all", PROCESSOR_DEFAULT,
+	    0, MASK_POWER | MASK_POWERPC | MASK_POWERPC64},
+	 {"rios", PROCESSOR_RIOS,
+	    MASK_POWER, MASK_POWERPC | MASK_POWERPC64},
+	 {"rios2", PROCESSOR_RIOS2,
+	    MASK_POWER, MASK_POWERPC | MASK_POWERPC64},
+	 {"601", PROCESSOR_PPC601,
+	    MASK_POWER | MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWERPC64},
+	 {"603", PROCESSOR_PPC603,
+	    MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWER | MASK_POWERPC64},
+	 {"604", PROCESSOR_PPC604,
+	    MASK_POWERPC | MASK_NEW_MNEMONICS, MASK_POWER | MASK_POWERPC64},
+	 {"620", PROCESSOR_PPC620,
+	    MASK_POWERPC | MASK_POWERPC64 | MASK_NEW_MNEMONICS, MASK_POWER}};
+
+  int ptt_size = sizeof (processor_target_table) / sizeof (struct ptt);
+
+  profile_block_flag = 0;
+
+  /* Identify the processor type */
+  if (rs6000_cpu_string == 0)
+    rs6000_cpu = PROCESSOR_DEFAULT;
+  else
+    {
+      for (i = 0; i < ptt_size; i++)
+	if (! strcmp (rs6000_cpu_string, processor_target_table[i].name))
+	  {
+	    rs6000_cpu = processor_target_table[i].processor;
+	    target_flags |= processor_target_table[i].target_enable;
+	    target_flags &= ~processor_target_table[i].target_disable;
+	    break;
+	  }
+
+      if (i == ptt_size)
+	{
+	  error ("bad value (%s) for -mcpu= switch", rs6000_cpu_string);
+	  rs6000_cpu_string = "default";
+	  rs6000_cpu = PROCESSOR_DEFAULT;
+	}
+    }
+}
 
 /* Return non-zero if this function is known to have a null epilogue.  */
 
