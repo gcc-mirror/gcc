@@ -1,3 +1,7 @@
+Thu May 14 23:12:44 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Update for egcs-1.0.3 release.
+
 Fri May  8 01:04:43 1998  Mark Kettenis <kettenis@phys.uva.nl>
 
 	* objc/thr-posix.c (__objc_mutex_allocate): Allocate
