@@ -1,3 +1,7 @@
+Thu May 14 13:35:53 1998  Cyrille Comar  <comar@gnat.com>
+
+	* Makefile.in (STAGESTUFF): Add s-under.
+
 Wed May 13 17:38:35 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (simplify_comparison, case AND): Don't commute AND
