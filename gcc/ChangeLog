@@ -1,3 +1,7 @@
+2003-07-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* opts.c (wrap_help): Use unsigned int, not size_t.
+
 2003-07-08  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.h (HAVE_AS_DWARF2_DEBUG_LINE): Don't define
