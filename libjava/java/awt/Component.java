@@ -1306,8 +1306,6 @@ public abstract class Component implements ImageObserver, MenuContainer,
 
   private void processPaintEvent(PaintEvent event)
   {
-    ComponentPeer peer = getPeer();
-	
     // Can't do graphics without peer
     if (peer == null)
       return;
@@ -1319,10 +1317,10 @@ public abstract class Component implements ImageObserver, MenuContainer,
     switch (event.id)
       {
       case PaintEvent.PAINT:
-	if (peer != null) paint(gfx);
+	paint(gfx);
 	break;
       case PaintEvent.UPDATE:
-	if (peer != null) update(gfx);
+	update(gfx);
 	break;
       default:
 	throw new IllegalArgumentException("unknown paint event");

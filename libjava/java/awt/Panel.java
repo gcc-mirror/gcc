@@ -32,8 +32,8 @@ public class Panel extends Container
 
   public void addNotify()
   {
-    if (getPeer() == null)
-      peer = (ComponentPeer) getToolkit().createPanel(this);
+    if (peer == null)
+      peer = getToolkit().createPanel(this);
     super.addNotify();
   }
 }
