@@ -1,5 +1,15 @@
 2003-10-29  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java
+	(equals): Remove redundant obj == null check.
+	* java/net/SocketPermission.java
+	(equals): Likewise.
+	* java/net/URL.java
+	(equals): Likewise.
+	(getURLStreamHandler): Likewise.
+
+2003-10-29  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/natPlainDatagramSocketImplPosix.cc
 	(setOption): Directly return if no error occured.
 	* gnu/java/net/natPlainSocketImplPosix.cc

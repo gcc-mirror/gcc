@@ -451,7 +451,7 @@ public final class URL implements Serializable
    */
   public boolean equals (Object obj)
   {
-    if (obj == null || ! (obj instanceof URL))
+    if (! (obj instanceof URL))
       return false;
 
     return ph.equals (this, (URL) obj);
@@ -829,8 +829,7 @@ public final class URL implements Serializable
                 // Can't instantiate; handler still null, go on to next element.
               }
           }
-	while ((ph == null ||
-		!(ph instanceof URLStreamHandler))
+	while ((! (ph instanceof URLStreamHandler))
                && pkgPrefix.hasMoreTokens());
       }
 

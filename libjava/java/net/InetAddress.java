@@ -476,8 +476,7 @@ public class InetAddress implements Serializable
    */
   public boolean equals (Object obj)
   {
-    if (obj == null
-        || ! (obj instanceof InetAddress))
+    if (! (obj instanceof InetAddress))
       return false;
     
     // "The Java Class Libraries" 2nd edition says "If a machine has
