@@ -1398,6 +1398,11 @@ follow_ssa_edge_in_condition_phi (struct loop *loop,
 
   for (i = 1; i < PHI_NUM_ARGS (condition_phi); i++)
     {
+      /* Quickly give up when the evolution of one of the branches is
+	 not known.  */
+      if (*evolution_of_loop == chrec_dont_know)
+	return true;
+
       if (!follow_ssa_edge_in_condition_phi_branch (i, loop, condition_phi,
 						    halting_phi,
 						    &evolution_of_branch,
