@@ -1846,6 +1846,8 @@ get_type_decl (t)
     return t;
   if (TYPE_P (t))
     return TYPE_STUB_DECL (t);
+  if (t == error_mark_node)
+    return t;
   
   my_friendly_abort (42);
 
