@@ -4780,8 +4780,19 @@ digest_init (type, init, require_constant, constructor_constant)
     {
       if (code == POINTER_TYPE)
 	inside_init = default_function_array_conversion (inside_init);
-      else if (code == ARRAY_TYPE && TREE_CODE (inside_init) != STRING_CST
-	       && TREE_CODE (inside_init) != CONSTRUCTOR)
+
+      if (require_constant && !flag_isoc99
+	  && TREE_CODE (inside_init) == COMPOUND_LITERAL_EXPR)
+	{
+	  /* As an extension, allow initializing objects with static storage
+	     duration with compound literals (which are then treated just as
+	     the brace enclosed list they contain).  */
+	  tree decl = COMPOUND_LITERAL_EXPR_DECL (inside_init);
+	  inside_init = DECL_INITIAL (decl);
+	}
+
+      if (code == ARRAY_TYPE && TREE_CODE (inside_init) != STRING_CST
+	  && TREE_CODE (inside_init) != CONSTRUCTOR)
 	{
 	  error_init ("array initialized from non-constant array expression");
 	  return error_mark_node;
