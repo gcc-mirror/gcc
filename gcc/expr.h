@@ -920,10 +920,6 @@ extern HOST_WIDE_INT get_frame_alias_set PARAMS ((void));
 extern void record_base_value		PARAMS ((unsigned int, rtx, int));
 extern void record_alias_subset         PARAMS ((HOST_WIDE_INT,
 						 HOST_WIDE_INT));
-#ifdef TREE_CODE
-extern HOST_WIDE_INT get_alias_set		PARAMS ((tree));
-extern HOST_WIDE_INT lang_get_alias_set		PARAMS ((tree));
-#endif
 extern HOST_WIDE_INT new_alias_set		PARAMS ((void));
 
 /* Functions from expr.c:  */
