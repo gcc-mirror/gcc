@@ -735,34 +735,30 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	return 1;
     }
 
-  if (GET_CODE (x) == GET_CODE (y))
-    switch (GET_CODE (x))
-      {
-      case MULT:
-	{
-	  /* Handle cases where we expect the second operands to be the
-	     same, and check only whether the first operand would conflict
-	     or not.  */
-	  rtx x0, y0;
-	  rtx x1 = canon_rtx (XEXP (x, 1));
-	  rtx y1 = canon_rtx (XEXP (y, 1));
-	  if (! rtx_equal_for_memref_p (x1, y1))
-	    return 1;
-	  x0 = canon_rtx (XEXP (x, 0));
-	  y0 = canon_rtx (XEXP (y, 0));
-	  if (rtx_equal_for_memref_p (x0, y0))
-	    return (xsize == 0 || ysize == 0
-		    || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
+  if (GET_CODE (x) == GET_CODE (y) && GET_CODE (x) == MULT)
+    {
+      /* Handle cases where we expect the second operands to be the
+	 same, and check only whether the first operand would conflict
+	 or not.  */
+      rtx x0, y0;
+      rtx x1 = canon_rtx (XEXP (x, 1));
+      rtx y1 = canon_rtx (XEXP (y, 1));
+      if (! rtx_equal_for_memref_p (x1, y1))
+	return 1;
+      x0 = canon_rtx (XEXP (x, 0));
+      y0 = canon_rtx (XEXP (y, 0));
+      if (rtx_equal_for_memref_p (x0, y0))
+	return (xsize == 0 || ysize == 0
+		|| (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0));
 
-	  /* Can't properly adjust our sizes.  */
-	  if (GET_CODE (x1) != CONST_INT)
-	    return 1;
-	  xsize /= INTVAL (x1);
-	  ysize /= INTVAL (x1);
-	  c /= INTVAL (x1);
-	  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
-	}
-      }
+      /* Can't properly adjust our sizes.  */
+      if (GET_CODE (x1) != CONST_INT)
+	return 1;
+      xsize /= INTVAL (x1);
+      ysize /= INTVAL (x1);
+      c /= INTVAL (x1);
+      return memrefs_conflict_p (xsize, x0, ysize, y0, c);
+    }
 
   if (CONSTANT_P (x))
     {
@@ -2024,6 +2020,9 @@ sched_analyze_2 (x, insn)
       sched_analyze_2 (XEXP (x, 0), insn);
       sched_analyze_1 (x, insn);
       return;
+      
+    default:
+      break;
     }
 
   /* Other cases: walk the insn.  */
