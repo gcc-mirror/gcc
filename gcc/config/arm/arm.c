@@ -587,13 +587,13 @@ arm_override_options ()
   arm_arch4         = (insn_flags & FL_ARCH4) != 0;
   arm_arch5         = (insn_flags & FL_ARCH5) != 0;
   arm_is_xscale     = (insn_flags & FL_XSCALE) != 0;
-  
+
   arm_ld_sched      = (tune_flags & FL_LDSCHED) != 0;
   arm_is_strong     = (tune_flags & FL_STRONG) != 0;
   thumb_code	    = (TARGET_ARM == 0);
   arm_is_6_or_7     = (((tune_flags & (FL_MODE26 | FL_MODE32))
 		       && !(tune_flags & FL_ARCH4))) != 0;
-  
+
   /* Default value for floating point code... if no co-processor
      bus, then schedule for emulated floating point.  Otherwise,
      assume the user has an FPA.
@@ -1647,7 +1647,7 @@ arm_return_in_memory (type)
 	 a register are not allowed.  */
       if (RETURN_IN_MEMORY (TREE_TYPE (field)))
 	return 1;
-      
+
       /* Now check the remaining fields, if any.  Only bitfields are allowed,
 	 since they are not addressable.  */
       for (field = TREE_CHAIN (field);
@@ -6906,6 +6906,9 @@ arm_compute_save_reg_mask ()
 	      && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)))
     save_reg_mask |= 1 << LR_REGNUM;
 
+  if (cfun->machine->lr_save_eliminated)
+    save_reg_mask &= ~ (1 << LR_REGNUM);
+
   return save_reg_mask;
 }
 
@@ -7204,6 +7207,9 @@ output_arm_prologue (f, frame_size)
 	       frame_pointer_needed,
 	       current_function_anonymous_args);
 
+  if (cfun->machine->lr_save_eliminated)
+    asm_fprintf (f, "\t%@ link register save eliminated.\n");
+
 #ifdef AOF_ASSEMBLER
   if (flag_pic)
     asm_fprintf (f, "\tmov\t%r, %r\n", IP_REGNUM, PIC_OFFSET_TABLE_REGNUM);
@@ -7217,7 +7223,7 @@ arm_output_epilogue (really_return)
      int really_return;
 {
   int reg;
-  unsigned long live_regs_mask;
+  unsigned long saved_regs_mask;
   unsigned long func_type;
   /* If we need this, then it will always be at least this much.  */
   int floats_offset = 12;
@@ -7255,11 +7261,11 @@ arm_output_epilogue (really_return)
        be doing a return,  so we can't tail-call.  */
     abort ();
   
-  live_regs_mask = arm_compute_save_reg_mask ();
+  saved_regs_mask = arm_compute_save_reg_mask ();
   
   /* Compute how far away the floats will be.  */
   for (reg = 0; reg <= LAST_ARM_REGNUM; reg ++)
-    if (live_regs_mask & (1 << reg))
+    if (saved_regs_mask & (1 << reg))
       floats_offset += 4;
   
   if (frame_pointer_needed)
@@ -7309,27 +7315,27 @@ arm_output_epilogue (really_return)
 			 FP_REGNUM, floats_offset);
 	}
 
-      /* live_regs_mask should contain the IP, which at the time of stack
+      /* saved_regs_mask should contain the IP, which at the time of stack
 	 frame generation actually contains the old stack pointer.  So a
 	 quick way to unwind the stack is just pop the IP register directly
 	 into the stack pointer.  */
-      if ((live_regs_mask & (1 << IP_REGNUM)) == 0)
+      if ((saved_regs_mask & (1 << IP_REGNUM)) == 0)
 	abort ();
-      live_regs_mask &= ~ (1 << IP_REGNUM);
-      live_regs_mask |=   (1 << SP_REGNUM);
+      saved_regs_mask &= ~ (1 << IP_REGNUM);
+      saved_regs_mask |=   (1 << SP_REGNUM);
 
-      /* There are two registers left in live_regs_mask - LR and PC.  We
+      /* There are two registers left in saved_regs_mask - LR and PC.  We
 	 only need to restore the LR register (the return address), but to
 	 save time we can load it directly into the PC, unless we need a
 	 special function exit sequence, or we are not really returning.  */
       if (really_return && ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL)
 	/* Delete the LR from the register mask, so that the LR on
 	   the stack is loaded into the PC in the register mask.  */
-	live_regs_mask &= ~ (1 << LR_REGNUM);
+	saved_regs_mask &= ~ (1 << LR_REGNUM);
       else
-	live_regs_mask &= ~ (1 << PC_REGNUM);
+	saved_regs_mask &= ~ (1 << PC_REGNUM);
       
-      print_multi_reg (f, "ldmea\t%r", FP_REGNUM, live_regs_mask);
+      print_multi_reg (f, "ldmea\t%r", FP_REGNUM, saved_regs_mask);
     }
   else
     {
@@ -7385,15 +7391,15 @@ arm_output_epilogue (really_return)
       if (ARM_FUNC_TYPE (func_type) == ARM_FT_NORMAL
 	  && really_return
 	  && current_function_pretend_args_size == 0
-	  && regs_ever_live [LR_REGNUM])
+	  && saved_regs_mask & (1 << LR_REGNUM))
 	{
-	  live_regs_mask &= ~ (1 << LR_REGNUM);
-	  live_regs_mask |=   (1 << PC_REGNUM);
+	  saved_regs_mask &= ~ (1 << LR_REGNUM);
+	  saved_regs_mask |=   (1 << PC_REGNUM);
 	}
 
       /* Load the registers off the stack.  If we only have one register
 	 to load use the LDR instruction - it is faster.  */
-      if (live_regs_mask == (1 << LR_REGNUM))
+      if (saved_regs_mask == (1 << LR_REGNUM))
 	{
 	  /* The excpetion handler ignores the LR, so we do
 	     not really need to load it off the stack.  */
@@ -7402,8 +7408,8 @@ arm_output_epilogue (really_return)
 	  else
 	    asm_fprintf (f, "\tldr\t%r, [%r], #4\n", LR_REGNUM, SP_REGNUM);
 	}
-      else if (live_regs_mask)
-	print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, live_regs_mask);
+      else if (saved_regs_mask)
+	print_multi_reg (f, "ldmfd\t%r!", SP_REGNUM, saved_regs_mask);
 
       if (current_function_pretend_args_size)
 	{
@@ -7452,7 +7458,7 @@ arm_output_epilogue (really_return)
 	   here.  */
 	;
       else if (current_function_pretend_args_size == 0
-	       && regs_ever_live [LR_REGNUM])
+	       && (saved_regs_mask & (1 << LR_REGNUM)))
 	/* Similarly we may have been able to load LR into the PC
 	   even if we did not create a stack frame.  */
 	;
@@ -7879,6 +7885,14 @@ arm_expand_prologue ()
      scheduling in the prolog.  */
   if (profile_flag || profile_block_flag || TARGET_NO_SCHED_PRO)
     emit_insn (gen_blockage ());
+
+  /* If the link register is being kept alive, with the return address in it,
+     then make sure that it does not get reused by the ce2 pass.  */
+  if ((live_regs_mask & (1 << LR_REGNUM)) == 0)
+    {
+      emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, LR_REGNUM)));
+      cfun->machine->lr_save_eliminated = 1;
+    }
 }
 
 /* If CODE is 'd', then the X is a condition operand and the instruction

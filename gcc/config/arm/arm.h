@@ -1444,6 +1444,8 @@ typedef struct machine_function
   int far_jump_used;
   /* Records if ARG_POINTER was ever live.  */
   int arg_pointer_live;
+  /* Records if the save of LR has been eliminated.  */
+  int lr_save_eliminated;
   /* Records the type of the current function.  */
   unsigned long func_type;
 }
