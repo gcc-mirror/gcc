@@ -276,7 +276,6 @@ m68hc11_override_options ()
       m68hc11_tmp_regs_class = D_REGS;
       if (m68hc11_soft_reg_count == 0 && !TARGET_M6812)
 	m68hc11_soft_reg_count = "4";
-      target_flags &= ~MASK_LONG_CALLS;
     }
 
   /* Configure for a 68hc12 processor.  */

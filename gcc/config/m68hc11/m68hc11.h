@@ -1549,7 +1549,7 @@ do {                                                                    \
       fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
       putc ('\n', FILE);				\
       							\
-      if (TARGET_M6812 && current_function_far)		\
+      if (current_function_far)                         \
         {						\
           fprintf (FILE, "\t.far\t");			\
 	  assemble_name (FILE, NAME);			\
@@ -1628,6 +1628,10 @@ do {                                                                    \
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
+/* For the support of memory banks we need addresses that indicate
+   the page number.  */
+#define DWARF2_ADDR_SIZE 4
 
 /* The prefix for local labels.  You should be able to define this as
    an empty string, or any arbitrary string (such as ".", ".L%", etc)
