@@ -545,11 +545,17 @@ build_method_call (instance, name, parms, basetype_path, flags)
   else if (DECL_P (name))
     name = DECL_NAME (name);
   if (has_template_args)
-    fn = lookup_fnfields (object_type, name, /*protect=*/0);
+    fn = lookup_fnfields (object_type, name, /*protect=*/2);
   else
-    fn = lookup_member (object_type, name, /*protect=*/0, 
-			/*want_type=*/0);
+    fn = lookup_member (object_type, name, /*protect=*/2, /*want_type=*/0);
   
+  if (fn && TREE_CODE (fn) == TREE_LIST && !BASELINK_P (fn))
+    {
+      error ("request for member `%D' is ambiguos", name);
+      print_candidates (fn);
+      return error_mark_node;
+    }
+
   /* If the name could not be found, issue an error.  */
   if (!fn)
     {

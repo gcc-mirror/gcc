@@ -1,3 +1,8 @@
+2002-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_method_call): Issue a more helpful error message
+	about ambiguous method names.
+
 2002-08-02  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.c (build_shared_int_cst): Make cache file scope, and
