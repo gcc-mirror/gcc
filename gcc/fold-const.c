@@ -8105,6 +8105,8 @@ tree_expr_nonnegative_p (tree t)
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case NON_LVALUE_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
+    case FLOAT_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0));
     case RTL_EXPR:
       return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
 
@@ -8141,6 +8143,15 @@ tree_expr_nonnegative_p (tree t)
 	      case BUILT_IN_FLOOR:
 	      case BUILT_IN_FLOORF:
 	      case BUILT_IN_FLOORL:
+	      case BUILT_IN_NEARBYINT:
+	      case BUILT_IN_NEARBYINTF:
+	      case BUILT_IN_NEARBYINTL:
+	      case BUILT_IN_ROUND:
+	      case BUILT_IN_ROUNDF:
+	      case BUILT_IN_ROUNDL:
+	      case BUILT_IN_TRUNC:
+	      case BUILT_IN_TRUNCF:
+	      case BUILT_IN_TRUNCL:
 		return tree_expr_nonnegative_p (TREE_VALUE (arglist));
 
 	      case BUILT_IN_POW:

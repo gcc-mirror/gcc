@@ -4748,3 +4748,49 @@ real_powi (r, mode, x, n)
   return inexact;
 }
 
+/* Round X to the nearest integer not larger in absolute value, i.e.
+   towards zero, placing the result in R in mode MODE.  */
+
+void
+real_trunc (r, mode, x)
+     REAL_VALUE_TYPE *r;
+     enum machine_mode mode;
+     const REAL_VALUE_TYPE *x;
+{
+  do_fix_trunc (r, x);
+  if (mode != VOIDmode)
+    real_convert (r, mode, r);
+}
+
+/* Round X to the largest integer not greater in value, i.e. round
+   down, placing the result in R in mode MODE.  */
+
+void
+real_floor (r, mode, x)
+     REAL_VALUE_TYPE *r;
+     enum machine_mode mode;
+     const REAL_VALUE_TYPE *x;
+{
+  do_fix_trunc (r, x);
+  if (! real_identical (r, x) && r->sign)
+    do_add (r, r, &dconstm1, 0);
+  if (mode != VOIDmode)
+    real_convert (r, mode, r);
+}
+
+/* Round X to the smallest integer not less then argument, i.e. round
+   up, placing the result in R in mode MODE.  */
+
+void
+real_ceil (r, mode, x)
+     REAL_VALUE_TYPE *r;
+     enum machine_mode mode;
+     const REAL_VALUE_TYPE *x;
+{
+  do_fix_trunc (r, x);
+  if (! real_identical (r, x) && ! r->sign)
+    do_add (r, r, &dconst1, 0);
+  if (mode != VOIDmode)
+    real_convert (r, mode, r);
+}
+

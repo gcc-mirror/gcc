@@ -375,4 +375,15 @@ extern bool real_powi			PARAMS ((REAL_VALUE_TYPE *,
 						 const REAL_VALUE_TYPE *,
 						 HOST_WIDE_INT));
 
+/* Standard round to integer value functions.  */
+extern void real_trunc	PARAMS ((REAL_VALUE_TYPE *,
+				 enum machine_mode,
+				 const REAL_VALUE_TYPE *));
+extern void real_floor	PARAMS ((REAL_VALUE_TYPE *,
+				 enum machine_mode,
+				 const REAL_VALUE_TYPE *));
+extern void real_ceil	PARAMS ((REAL_VALUE_TYPE *,
+				 enum machine_mode,
+				 const REAL_VALUE_TYPE *));
+
 #endif /* ! GCC_REAL_H */

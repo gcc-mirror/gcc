@@ -1,3 +1,8 @@
+2003-07-03  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-25.c: New testcase.
+	* gcc.dg/builtins-26.c: New testcase.
+
 2003-07-03  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/compat/vector-defs.h: New file.
