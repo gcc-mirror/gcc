@@ -40,6 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "cfglayout.h"
 #include "sched-int.h"
+#include "target.h"
 
 /* The number of insns to be scheduled in total.  */
 static int target_n_insns;
@@ -89,14 +90,7 @@ init_ready_list (ready)
      Count number of insns in the target block being scheduled.  */
   for (insn = NEXT_INSN (prev_head); insn != next_tail; insn = NEXT_INSN (insn))
     {
-      rtx next;
-
-      if (! INSN_P (insn))
-	continue;
-      next = NEXT_INSN (insn);
-
-      if (INSN_DEP_COUNT (insn) == 0
-	  && (! INSN_P (next) || SCHED_GROUP_P (next) == 0))
+      if (INSN_DEP_COUNT (insn) == 0)
 	ready_add (ready, insn);
       if (!(SCHED_GROUP_P (insn)))
 	target_n_insns++;
@@ -221,6 +215,9 @@ schedule_ebb (head, tail)
 
   /* Compute INSN_DEPEND.  */
   compute_forward_dependences (head, tail);
+
+  if (targetm.sched.dependencies_evaluation_hook)
+    targetm.sched.dependencies_evaluation_hook (head, tail);
 
   /* Set priorities.  */
   n_insns = set_priorities (head, tail);

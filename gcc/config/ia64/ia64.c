@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "tm_p.h"
+#include "hashtab.h"
 
 /* This is used for communication between ASM_OUTPUT_LABEL and
    ASM_OUTPUT_LABELREF.  */
@@ -103,6 +104,12 @@ int ia64_tls_size = 22;
 /* String used with the -mtls-size= option.  */
 const char *ia64_tls_size_string;
 
+/* Which cpu are we scheduling for.  */
+enum processor_type ia64_tune;
+
+/* String used with the -tune= option.  */
+const char *ia64_tune_string;
+
 /* Determines whether we run our final scheduling pass or not.  We always
    avoid the normal second scheduling pass.  */
 static int ia64_flag_schedule_insns2;
@@ -111,7 +118,19 @@ static int ia64_flag_schedule_insns2;
    sections.  */
 
 unsigned int ia64_section_threshold;
+
+/* The following variable is used by the DFA insn scheduler.  The value is
+   TRUE if we do insn bundling instead of insn scheduling.  */
+int bundling_p = 0;
+
 
+static int ia64_use_dfa_pipeline_interface PARAMS ((void));
+static int ia64_first_cycle_multipass_dfa_lookahead PARAMS ((void));
+static void ia64_dependencies_evaluation_hook PARAMS ((rtx, rtx));
+static void ia64_init_dfa_pre_cycle_insn PARAMS ((void));
+static rtx ia64_dfa_pre_cycle_insn PARAMS ((void));
+static int ia64_first_cycle_multipass_dfa_lookahead_guard PARAMS ((rtx));
+static int ia64_dfa_new_cycle PARAMS ((FILE *, int, rtx, int, int, int *));
 static rtx gen_tls_get_addr PARAMS ((void));
 static rtx gen_thread_pointer PARAMS ((void));
 static int find_gr_spill PARAMS ((int));
@@ -132,6 +151,7 @@ static void fix_range PARAMS ((const char *));
 static struct machine_function * ia64_init_machine_status PARAMS ((void));
 static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
+static void final_emit_insn_group_barriers PARAMS ((FILE *));
 static void emit_predicate_relation_info PARAMS ((void));
 static bool ia64_in_small_data_p PARAMS ((tree));
 static void ia64_encode_section_info PARAMS ((tree, int));
@@ -157,11 +177,30 @@ static int ia64_issue_rate PARAMS ((void));
 static int ia64_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static void ia64_sched_init PARAMS ((FILE *, int, int));
 static void ia64_sched_finish PARAMS ((FILE *, int));
-static int ia64_internal_sched_reorder PARAMS ((FILE *, int, rtx *,
-						int *, int, int));
+static int ia64_dfa_sched_reorder PARAMS ((FILE *, int, rtx *, int *,
+					   int, int));
 static int ia64_sched_reorder PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_sched_reorder2 PARAMS ((FILE *, int, rtx *, int *, int));
 static int ia64_variable_issue PARAMS ((FILE *, int, rtx, int));
+
+static struct bundle_state *get_free_bundle_state PARAMS ((void));
+static void free_bundle_state PARAMS ((struct bundle_state *));
+static void initiate_bundle_states PARAMS ((void));
+static void finish_bundle_states PARAMS ((void));
+static unsigned bundle_state_hash PARAMS ((const void *));
+static int bundle_state_eq_p PARAMS ((const void *, const void *));
+static int insert_bundle_state PARAMS ((struct bundle_state *));
+static void initiate_bundle_state_table PARAMS ((void));
+static void finish_bundle_state_table PARAMS ((void));
+static int try_issue_nops PARAMS ((struct bundle_state *, int));
+static int try_issue_insn PARAMS ((struct bundle_state *, rtx));
+static void issue_nops_and_insn PARAMS ((struct bundle_state *, int,
+					 rtx, int));
+static int get_max_pos PARAMS ((state_t));
+static int get_template PARAMS ((state_t, int));
+
+static rtx get_next_important_insn PARAMS ((rtx, rtx));
+static void bundling PARAMS ((FILE *, int, rtx, rtx));
 
 static void ia64_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
@@ -243,6 +282,27 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_SCHED_REORDER ia64_sched_reorder
 #undef TARGET_SCHED_REORDER2
 #define TARGET_SCHED_REORDER2 ia64_sched_reorder2
+
+#undef TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK
+#define TARGET_SCHED_DEPENDENCIES_EVALUATION_HOOK ia64_dependencies_evaluation_hook
+
+#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE ia64_use_dfa_pipeline_interface
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD ia64_first_cycle_multipass_dfa_lookahead
+
+#undef TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN
+#define TARGET_SCHED_INIT_DFA_PRE_CYCLE_INSN ia64_init_dfa_pre_cycle_insn
+#undef TARGET_SCHED_DFA_PRE_CYCLE_INSN
+#define TARGET_SCHED_DFA_PRE_CYCLE_INSN ia64_dfa_pre_cycle_insn
+
+#undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD
+#define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD_GUARD\
+  ia64_first_cycle_multipass_dfa_lookahead_guard
+
+#undef TARGET_SCHED_DFA_NEW_CYCLE
+#define TARGET_SCHED_DFA_NEW_CYCLE ia64_dfa_new_cycle
 
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
@@ -4209,6 +4269,23 @@ ia64_init_machine_status ()
 void
 ia64_override_options ()
 {
+  static struct pta
+    {
+      const char *const name;		/* processor name or nickname.  */
+      const enum processor_type processor;
+    }
+  const processor_alias_table[] =
+    {
+      {"itanium", PROCESSOR_ITANIUM},
+      {"itanium1", PROCESSOR_ITANIUM},
+      {"merced", PROCESSOR_ITANIUM},
+      {"itanium2", PROCESSOR_ITANIUM2},
+      {"mckinley", PROCESSOR_ITANIUM2},
+    };
+
+  int const pta_size = ARRAY_SIZE (processor_alias_table);
+  int i;
+
   if (TARGET_AUTO_PIC)
     target_flags |= MASK_CONST_GP;
 
@@ -4237,6 +4314,19 @@ ia64_override_options ()
 	ia64_tls_size = tmp;
     }
 
+  if (!ia64_tune_string)
+    ia64_tune_string = "itanium2";
+
+  for (i = 0; i < pta_size; i++)
+    if (! strcmp (ia64_tune_string, processor_alias_table[i].name))
+      {
+	ia64_tune = processor_alias_table[i].processor;
+	break;
+      }
+
+  if (i == pta_size)
+    error ("bad value (%s) for -tune= switch", ia64_tune_string);
+
   ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
   flag_schedule_insns_after_reload = 0;
 
@@ -4249,19 +4339,8 @@ ia64_override_options ()
     real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
 }
 
-static enum attr_itanium_requires_unit0 ia64_safe_itanium_requires_unit0 PARAMS((rtx));
 static enum attr_itanium_class ia64_safe_itanium_class PARAMS((rtx));
 static enum attr_type ia64_safe_type PARAMS((rtx));
-
-static enum attr_itanium_requires_unit0
-ia64_safe_itanium_requires_unit0 (insn)
-     rtx insn;
-{
-  if (recog_memoized (insn) >= 0)
-    return get_attr_itanium_requires_unit0 (insn);
-  else
-    return ITANIUM_REQUIRES_UNIT0_NO;
-}
 
 static enum attr_itanium_class
 ia64_safe_itanium_class (insn)
@@ -5096,7 +5175,10 @@ group_barrier_needed_p (insn)
       abort ();
     }
 
-  if (first_instruction)
+  if (first_instruction && INSN_P (insn)
+      && ia64_safe_itanium_class (insn) != ITANIUM_CLASS_IGNORE
+      && GET_CODE (PATTERN (insn)) != USE
+      && GET_CODE (PATTERN (insn)) != CLOBBER)
     {
       need_barrier = 0;
       first_instruction = 0;
@@ -5229,6 +5311,7 @@ emit_all_insn_group_barriers (dump, insns)
 	}
     }
 }
+
 
 static int errata_find_address_regs PARAMS ((rtx *, void *));
 static void errata_emit_nops PARAMS ((rtx));
@@ -5374,92 +5457,92 @@ fixup_errata ()
     }
 }
 
-/* Instruction scheduling support.  */
-/* Describe one bundle.  */
 
-struct bundle
-{
-  /* Zero if there's no possibility of a stop in this bundle other than
-     at the end, otherwise the position of the optional stop bit.  */
-  int possible_stop;
-  /* The types of the three slots.  */
-  enum attr_type t[3];
-  /* The pseudo op to be emitted into the assembler output.  */
-  const char *name;
-};
+/* Instruction scheduling support.  */
 
 #define NR_BUNDLES 10
 
-/* A list of all available bundles.  */
+/* A list of names of all available bundles.  */
 
-static const struct bundle bundle[NR_BUNDLES] =
+static const char *bundle_name [NR_BUNDLES] =
 {
-  { 2, { TYPE_M, TYPE_I, TYPE_I }, ".mii" },
-  { 1, { TYPE_M, TYPE_M, TYPE_I }, ".mmi" },
-  { 0, { TYPE_M, TYPE_F, TYPE_I }, ".mfi" },
-  { 0, { TYPE_M, TYPE_M, TYPE_F }, ".mmf" },
+  ".mii",
+  ".mmi",
+  ".mfi",
+  ".mmf",
 #if NR_BUNDLES == 10
-  { 0, { TYPE_B, TYPE_B, TYPE_B }, ".bbb" },
-  { 0, { TYPE_M, TYPE_B, TYPE_B }, ".mbb" },
+  ".bbb",
+  ".mbb",
 #endif
-  { 0, { TYPE_M, TYPE_I, TYPE_B }, ".mib" },
-  { 0, { TYPE_M, TYPE_M, TYPE_B }, ".mmb" },
-  { 0, { TYPE_M, TYPE_F, TYPE_B }, ".mfb" },
-  /* .mfi needs to occur earlier than .mlx, so that we only generate it if
-     it matches an L type insn.  Otherwise we'll try to generate L type
-     nops.  */
-  { 0, { TYPE_M, TYPE_L, TYPE_X }, ".mlx" }
-};
-
-/* Describe a packet of instructions.  Packets consist of two bundles that
-   are visible to the hardware in one scheduling window.  */
-
-struct ia64_packet
-{
-  const struct bundle *t1, *t2;
-  /* Precomputed value of the first split issue in this packet if a cycle
-     starts at its beginning.  */
-  int first_split;
-  /* For convenience, the insn types are replicated here so we don't have
-     to go through T1 and T2 all the time.  */
-  enum attr_type t[6];
-};
-
-/* An array containing all possible packets.  */
-#define NR_PACKETS (NR_BUNDLES * NR_BUNDLES)
-static struct ia64_packet packets[NR_PACKETS];
-
-/* Map attr_type to a string with the name.  */
-
-static const char *const type_names[] =
-{
-  "UNKNOWN", "A", "I", "M", "F", "B", "L", "X", "S"
+  ".mib",
+  ".mmb",
+  ".mfb",
+  ".mlx"
 };
 
 /* Nonzero if we should insert stop bits into the schedule.  */
+
 int ia64_final_schedule = 0;
 
-static int itanium_split_issue PARAMS ((const struct ia64_packet *, int));
+/* Codes of the corrsponding quieryied units: */
+
+static int _0mii_, _0mmi_, _0mfi_, _0mmf_;
+static int _0bbb_, _0mbb_, _0mib_, _0mmb_, _0mfb_, _0mlx_;
+
+static int _1mii_, _1mmi_, _1mfi_, _1mmf_;
+static int _1bbb_, _1mbb_, _1mib_, _1mmb_, _1mfb_, _1mlx_;
+
+static int pos_1, pos_2, pos_3, pos_4, pos_5, pos_6;
+
+/* The following variable value is an insn group barrier.  */
+
+static rtx dfa_stop_insn;
+
+/* The following variable value is the last issued insn.  */
+
+static rtx last_scheduled_insn;
+
+/* The following variable value is size of the DFA state.  */
+
+static size_t dfa_state_size;
+
+/* The following variable value is pointer to a DFA state used as
+   temporary variable.  */
+
+static state_t temp_dfa_state = NULL;
+
+/* The following variable value is DFA state after issuing the last
+   insn.  */
+
+static state_t prev_cycle_state = NULL;
+
+/* The following array element values are TRUE if the corresponding
+   insn reuqires to add stop bits before it.  */
+
+static char *stops_p;
+
+/* The following variable is used to set up the mentioned above array.  */
+
+static int stop_before_p = 0;
+
+/* The following variable value is length of the arrays `clocks' and
+   `add_cycles'. */
+
+static int clocks_length;
+
+/* The following array element values are cycles on which the
+   corresponding insn will be issued.  The array is used only for
+   Itanium1.  */
+
+static int *clocks;
+
+/* The following array element values are numbers of cycles should be
+   added to improve insn scheduling for MM_insns for Itanium1.  */
+
+static int *add_cycles;
+
 static rtx ia64_single_set PARAMS ((rtx));
-static int insn_matches_slot PARAMS ((const struct ia64_packet *, enum attr_type, int, rtx));
 static void ia64_emit_insn_before PARAMS ((rtx, rtx));
-static void maybe_rotate PARAMS ((FILE *));
-static void finish_last_head PARAMS ((FILE *, int));
-static void rotate_one_bundle PARAMS ((FILE *));
-static void rotate_two_bundles PARAMS ((FILE *));
-static void nop_cycles_until PARAMS ((int, FILE *));
-static void cycle_end_fill_slots PARAMS ((FILE *));
-static int packet_matches_p PARAMS ((const struct ia64_packet *, int, int *));
-static int get_split PARAMS ((const struct ia64_packet *, int));
-static int find_best_insn PARAMS ((rtx *, enum attr_type *, int,
-				   const struct ia64_packet *, int));
-static void find_best_packet PARAMS ((int *, const struct ia64_packet **,
-				      rtx *, enum attr_type *, int));
-static int itanium_reorder PARAMS ((FILE *, rtx *, rtx *, int));
-static void dump_current_packet PARAMS ((FILE *));
-static void schedule_stop PARAMS ((FILE *));
-static rtx gen_nop_type PARAMS ((enum attr_type));
-static void ia64_emit_nops PARAMS ((void));
 
 /* Map a bundle number to its pseudo-op.  */
 
@@ -5467,55 +5550,9 @@ const char *
 get_bundle_name (b)
      int b;
 {
-  return bundle[b].name;
+  return bundle_name[b];
 }
 
-/* Compute the slot which will cause a split issue in packet P if the
-   current cycle begins at slot BEGIN.  */
-
-static int
-itanium_split_issue (p, begin)
-     const struct ia64_packet *p;
-     int begin;
-{
-  int type_count[TYPE_S];
-  int i;
-  int split = 6;
-
-  if (begin < 3)
-    {
-      /* Always split before and after MMF.  */
-      if (p->t[0] == TYPE_M && p->t[1] == TYPE_M && p->t[2] == TYPE_F)
-	return 3;
-      if (p->t[3] == TYPE_M && p->t[4] == TYPE_M && p->t[5] == TYPE_F)
-	return 3;
-      /* Always split after MBB and BBB.  */
-      if (p->t[1] == TYPE_B)
-	return 3;
-      /* Split after first bundle in MIB BBB combination.  */
-      if (p->t[2] == TYPE_B && p->t[3] == TYPE_B)
-	return 3;
-    }
-
-  memset (type_count, 0, sizeof type_count);
-  for (i = begin; i < split; i++)
-    {
-      enum attr_type t0 = p->t[i];
-      /* An MLX bundle reserves the same units as an MFI bundle.  */
-      enum attr_type t = (t0 == TYPE_L ? TYPE_F
-			  : t0 == TYPE_X ? TYPE_I
-			  : t0);
-
-      /* Itanium can execute up to 3 branches, 2 floating point, 2 memory, and
-	 2 integer per cycle.  */
-      int max = (t == TYPE_B ? 3 : 2);
-      if (type_count[t] == max)
-	return i;
-
-      type_count[t]++;
-    }
-  return split;
-}
 
 /* Return the maximum number of instructions a cpu can issue.  */
 
@@ -5563,206 +5600,19 @@ ia64_adjust_cost (insn, link, dep_insn, cost)
      rtx insn, link, dep_insn;
      int cost;
 {
-  enum attr_type dep_type;
   enum attr_itanium_class dep_class;
   enum attr_itanium_class insn_class;
-  rtx dep_set, set, src, addr;
 
-  if (GET_CODE (PATTERN (insn)) == CLOBBER
-      || GET_CODE (PATTERN (insn)) == USE
-      || GET_CODE (PATTERN (dep_insn)) == CLOBBER
-      || GET_CODE (PATTERN (dep_insn)) == USE
-      /* @@@ Not accurate for indirect calls.  */
-      || GET_CODE (insn) == CALL_INSN
-      || ia64_safe_type (insn) == TYPE_S)
-    return 0;
+  if (REG_NOTE_KIND (link) != REG_DEP_OUTPUT)
+    return cost;
 
-  if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT
-      || REG_NOTE_KIND (link) == REG_DEP_ANTI)
-    return 0;
-
-  dep_type = ia64_safe_type (dep_insn);
-  dep_class = ia64_safe_itanium_class (dep_insn);
   insn_class = ia64_safe_itanium_class (insn);
-
-  /* Compares that feed a conditional branch can execute in the same
-     cycle.  */
-  dep_set = ia64_single_set (dep_insn);
-  set = ia64_single_set (insn);
-
-  if (dep_type != TYPE_F
-      && dep_set
-      && GET_CODE (SET_DEST (dep_set)) == REG
-      && PR_REG (REGNO (SET_DEST (dep_set)))
-      && GET_CODE (insn) == JUMP_INSN)
+  dep_class = ia64_safe_itanium_class (dep_insn);
+  if (dep_class == ITANIUM_CLASS_ST || dep_class == ITANIUM_CLASS_STF
+      || insn_class == ITANIUM_CLASS_ST || insn_class == ITANIUM_CLASS_STF)
     return 0;
-
-  if (dep_set && GET_CODE (SET_DEST (dep_set)) == MEM)
-    {
-      /* ??? Can't find any information in the documenation about whether
-	 a sequence
-	   st [rx] = ra
-	   ld rb = [ry]
-	 splits issue.  Assume it doesn't.  */
-      return 0;
-    }
-
-  src = set ? SET_SRC (set) : 0;
-  addr = 0;
-  if (set)
-    {
-      if (GET_CODE (SET_DEST (set)) == MEM)
-	addr = XEXP (SET_DEST (set), 0);
-      else if (GET_CODE (SET_DEST (set)) == SUBREG
-	       && GET_CODE (SUBREG_REG (SET_DEST (set))) == MEM)
-	addr = XEXP (SUBREG_REG (SET_DEST (set)), 0);
-      else
-	{
-	  addr = src;
-	  if (GET_CODE (addr) == UNSPEC && XVECLEN (addr, 0) > 0)
-	    addr = XVECEXP (addr, 0, 0);
-	  while (GET_CODE (addr) == SUBREG || GET_CODE (addr) == ZERO_EXTEND)
-	    addr = XEXP (addr, 0);
-	  if (GET_CODE (addr) == MEM)
-	    addr = XEXP (addr, 0);
-	  else
-	    addr = 0;
-	}
-    }
-
-  if (addr && GET_CODE (addr) == POST_MODIFY)
-    addr = XEXP (addr, 0);
-
-  set = ia64_single_set (dep_insn);
-
-  if ((dep_class == ITANIUM_CLASS_IALU
-       || dep_class == ITANIUM_CLASS_ILOG
-       || dep_class == ITANIUM_CLASS_LD)
-      && (insn_class == ITANIUM_CLASS_LD
-	  || insn_class == ITANIUM_CLASS_ST))
-    {
-      if (! addr || ! set)
-	abort ();
-      /* This isn't completely correct - an IALU that feeds an address has
-	 a latency of 1 cycle if it's issued in an M slot, but 2 cycles
-	 otherwise.  Unfortunately there's no good way to describe this.  */
-      if (reg_overlap_mentioned_p (SET_DEST (set), addr))
-	return cost + 1;
-    }
-
-  if ((dep_class == ITANIUM_CLASS_IALU
-       || dep_class == ITANIUM_CLASS_ILOG
-       || dep_class == ITANIUM_CLASS_LD)
-      && (insn_class == ITANIUM_CLASS_MMMUL
-	  || insn_class == ITANIUM_CLASS_MMSHF
-	  || insn_class == ITANIUM_CLASS_MMSHFI))
-    return 3;
-
-  if (dep_class == ITANIUM_CLASS_FMAC
-      && (insn_class == ITANIUM_CLASS_FMISC
-	  || insn_class == ITANIUM_CLASS_FCVTFX
-	  || insn_class == ITANIUM_CLASS_XMPY))
-    return 7;
-
-  if ((dep_class == ITANIUM_CLASS_FMAC
-       || dep_class == ITANIUM_CLASS_FMISC
-       || dep_class == ITANIUM_CLASS_FCVTFX
-       || dep_class == ITANIUM_CLASS_XMPY)
-      && insn_class == ITANIUM_CLASS_STF)
-    return 8;
-
-  /* Intel docs say only LD, ST, IALU, ILOG, ISHF consumers have latency 4,
-     but HP engineers say any non-MM operation.  */
-  if ((dep_class == ITANIUM_CLASS_MMMUL
-       || dep_class == ITANIUM_CLASS_MMSHF
-       || dep_class == ITANIUM_CLASS_MMSHFI)
-      && insn_class != ITANIUM_CLASS_MMMUL
-      && insn_class != ITANIUM_CLASS_MMSHF
-      && insn_class != ITANIUM_CLASS_MMSHFI)
-    return 4;
 
   return cost;
-}
-
-/* Describe the current state of the Itanium pipeline.  */
-static struct
-{
-  /* The first slot that is used in the current cycle.  */
-  int first_slot;
-  /* The next slot to fill.  */
-  int cur;
-  /* The packet we have selected for the current issue window.  */
-  const struct ia64_packet *packet;
-  /* The position of the split issue that occurs due to issue width
-     limitations (6 if there's no split issue).  */
-  int split;
-  /* Record data about the insns scheduled so far in the same issue
-     window.  The elements up to but not including FIRST_SLOT belong
-     to the previous cycle, the ones starting with FIRST_SLOT belong
-     to the current cycle.  */
-  enum attr_type types[6];
-  rtx insns[6];
-  int stopbit[6];
-  /* Nonzero if we decided to schedule a stop bit.  */
-  int last_was_stop;
-} sched_data;
-
-/* Temporary arrays; they have enough elements to hold all insns that
-   can be ready at the same time while scheduling of the current block.
-   SCHED_READY can hold ready insns, SCHED_TYPES their types.  */
-static rtx *sched_ready;
-static enum attr_type *sched_types;
-
-/* Determine whether an insn INSN of type ITYPE can fit into slot SLOT
-   of packet P.  */
-
-static int
-insn_matches_slot (p, itype, slot, insn)
-     const struct ia64_packet *p;
-     enum attr_type itype;
-     int slot;
-     rtx insn;
-{
-  enum attr_itanium_requires_unit0 u0;
-  enum attr_type stype = p->t[slot];
-
-  if (insn)
-    {
-      u0 = ia64_safe_itanium_requires_unit0 (insn);
-      if (u0 == ITANIUM_REQUIRES_UNIT0_YES)
-	{
-	  int i;
-	  for (i = sched_data.first_slot; i < slot; i++)
-	    if (p->t[i] == stype
-		|| (stype == TYPE_F && p->t[i] == TYPE_L)
-		|| (stype == TYPE_I && p->t[i] == TYPE_X))
-	      return 0;
-	}
-      if (GET_CODE (insn) == CALL_INSN)
-	{
-	  /* Reject calls in multiway branch packets.  We want to limit
-	     the number of multiway branches we generate (since the branch
-	     predictor is limited), and this seems to work fairly well.
-	     (If we didn't do this, we'd have to add another test here to
-	     force calls into the third slot of the bundle.)  */
-	  if (slot < 3)
-	    {
-	      if (p->t[1] == TYPE_B)
-		return 0;
-	    }
-	  else
-	    {
-	      if (p->t[4] == TYPE_B)
-		return 0;
-	    }
-	}
-    }
-
-  if (itype == stype)
-    return 1;
-  if (itype == TYPE_A)
-    return stype == TYPE_M || stype == TYPE_I;
-  return 0;
 }
 
 /* Like emit_insn_before, but skip cycle_display notes.
@@ -5775,166 +5625,40 @@ ia64_emit_insn_before (insn, before)
   emit_insn_before (insn, before);
 }
 
-/* When rotating a bundle out of the issue window, insert a bundle selector
-   insn in front of it.  DUMP is the scheduling dump file or NULL.  START
-   is either 0 or 3, depending on whether we want to emit a bundle selector
-   for the first bundle or the second bundle in the current issue window.
-
-   The selector insns are emitted this late because the selected packet can
-   be changed until parts of it get rotated out.  */
+/* The following function marks insns who produce addresses for load
+   and store insns.  Such insns will be placed into M slots because it
+   decrease latency time for Itanium1 (see function
+   `ia64_produce_address_p' and the DFA descriptions).  */
 
 static void
-finish_last_head (dump, start)
-     FILE *dump;
-     int start;
+ia64_dependencies_evaluation_hook (head, tail)
+     rtx head, tail;
 {
-  const struct ia64_packet *p = sched_data.packet;
-  const struct bundle *b = start == 0 ? p->t1 : p->t2;
-  int bundle_type = b - bundle;
-  rtx insn;
-  int i;
-
-  if (! ia64_final_schedule)
-    return;
-
-  for (i = start; sched_data.insns[i] == 0; i++)
-    if (i == start + 3)
-      abort ();
-  insn = sched_data.insns[i];
-
-  if (dump)
-    fprintf (dump, "//    Emitting template before %d: %s\n",
-	     INSN_UID (insn), b->name);
-
-  ia64_emit_insn_before (gen_bundle_selector (GEN_INT (bundle_type)), insn);
-}
-
-/* We can't schedule more insns this cycle.  Fix up the scheduling state
-   and advance FIRST_SLOT and CUR.
-   We have to distribute the insns that are currently found between
-   FIRST_SLOT and CUR into the slots of the packet we have selected.  So
-   far, they are stored successively in the fields starting at FIRST_SLOT;
-   now they must be moved to the correct slots.
-   DUMP is the current scheduling dump file, or NULL.  */
-
-static void
-cycle_end_fill_slots (dump)
-     FILE *dump;
-{
-  const struct ia64_packet *packet = sched_data.packet;
-  int slot, i;
-  enum attr_type tmp_types[6];
-  rtx tmp_insns[6];
-
-  memcpy (tmp_types, sched_data.types, 6 * sizeof (enum attr_type));
-  memcpy (tmp_insns, sched_data.insns, 6 * sizeof (rtx));
-
-  for (i = slot = sched_data.first_slot; i < sched_data.cur; i++)
-    {
-      enum attr_type t = tmp_types[i];
-      if (t != ia64_safe_type (tmp_insns[i]))
-	abort ();
-      while (! insn_matches_slot (packet, t, slot, tmp_insns[i]))
-	{
-	  if (slot > sched_data.split)
-	    abort ();
-	  if (dump)
-	    fprintf (dump, "// Packet needs %s, have %s\n",
-		     type_names[packet->t[slot]], type_names[t]);
-	  sched_data.types[slot] = packet->t[slot];
-	  sched_data.insns[slot] = 0;
-	  sched_data.stopbit[slot] = 0;
-
-	  /* ??? TYPE_L instructions always fill up two slots, but we don't
-	     support TYPE_L nops.  */
-	  if (packet->t[slot] == TYPE_L)
-	    abort ();
-
-	  slot++;
-	}
-
-      /* Do _not_ use T here.  If T == TYPE_A, then we'd risk changing the
-	 actual slot type later.  */
-      sched_data.types[slot] = packet->t[slot];
-      sched_data.insns[slot] = tmp_insns[i];
-      sched_data.stopbit[slot] = 0;
-      slot++;
-
-      /* TYPE_L instructions always fill up two slots.  */
-      if (t == TYPE_L)
-	{
-	  sched_data.types[slot] = packet->t[slot];
-	  sched_data.insns[slot] = 0;
-	  sched_data.stopbit[slot] = 0;
-	  slot++;
-	}
-    }
-
-  /* This isn't right - there's no need to pad out until the forced split;
-     the CPU will automatically split if an insn isn't ready.  */
-#if 0
-  while (slot < sched_data.split)
-    {
-      sched_data.types[slot] = packet->t[slot];
-      sched_data.insns[slot] = 0;
-      sched_data.stopbit[slot] = 0;
-      slot++;
-    }
-#endif
-
-  sched_data.first_slot = sched_data.cur = slot;
-}
-
-/* Bundle rotations, as described in the Itanium optimization manual.
-   We can rotate either one or both bundles out of the issue window.
-   DUMP is the current scheduling dump file, or NULL.  */
-
-static void
-rotate_one_bundle (dump)
-     FILE *dump;
-{
-  if (dump)
-    fprintf (dump, "// Rotating one bundle.\n");
-
-  finish_last_head (dump, 0);
-  if (sched_data.cur > 3)
-    {
-      sched_data.cur -= 3;
-      sched_data.first_slot -= 3;
-      memmove (sched_data.types,
-	       sched_data.types + 3,
-	       sched_data.cur * sizeof *sched_data.types);
-      memmove (sched_data.stopbit,
-	       sched_data.stopbit + 3,
-	       sched_data.cur * sizeof *sched_data.stopbit);
-      memmove (sched_data.insns,
-	       sched_data.insns + 3,
-	       sched_data.cur * sizeof *sched_data.insns);
-      sched_data.packet
-	= &packets[(sched_data.packet->t2 - bundle) * NR_BUNDLES];
-    }
-  else
-    {
-      sched_data.cur = 0;
-      sched_data.first_slot = 0;
-    }
-}
-
-static void
-rotate_two_bundles (dump)
-     FILE *dump;
-{
-  if (dump)
-    fprintf (dump, "// Rotating two bundles.\n");
-
-  if (sched_data.cur == 0)
-    return;
-
-  finish_last_head (dump, 0);
-  if (sched_data.cur > 3)
-    finish_last_head (dump, 3);
-  sched_data.cur = 0;
-  sched_data.first_slot = 0;
+  rtx insn, link, next, next_tail;
+  
+  next_tail = NEXT_INSN (tail);
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      insn->call = 0;
+  for (insn = head; insn != next_tail; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+	&& ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IALU)
+      {
+	for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
+	  {
+	    next = XEXP (link, 0);
+	    if ((ia64_safe_itanium_class (next) == ITANIUM_CLASS_ST
+		 || ia64_safe_itanium_class (next) == ITANIUM_CLASS_STF)
+		&& ia64_st_address_bypass_p (insn, next))
+	      break;
+	    else if ((ia64_safe_itanium_class (next) == ITANIUM_CLASS_LD
+		      || ia64_safe_itanium_class (next)
+		      == ITANIUM_CLASS_FLD)
+		     && ia64_ld_address_bypass_p (insn, next))
+	      break;
+	  }
+	insn->call = link != 0;
+      }
 }
 
 /* We're beginning a new block.  Initialize data structures as necessary.  */
@@ -5943,520 +5667,34 @@ static void
 ia64_sched_init (dump, sched_verbose, max_ready)
      FILE *dump ATTRIBUTE_UNUSED;
      int sched_verbose ATTRIBUTE_UNUSED;
-     int max_ready;
+     int max_ready ATTRIBUTE_UNUSED;
 {
-  static int initialized = 0;
-
-  if (! initialized)
-    {
-      int b1, b2, i;
-
-      initialized = 1;
-
-      for (i = b1 = 0; b1 < NR_BUNDLES; b1++)
-	{
-	  const struct bundle *t1 = bundle + b1;
-	  for (b2 = 0; b2 < NR_BUNDLES; b2++, i++)
-	    {
-	      const struct bundle *t2 = bundle + b2;
-
-	      packets[i].t1 = t1;
-	      packets[i].t2 = t2;
-	    }
-	}
-      for (i = 0; i < NR_PACKETS; i++)
-	{
-	  int j;
-	  for (j = 0; j < 3; j++)
-	    packets[i].t[j] = packets[i].t1->t[j];
-	  for (j = 0; j < 3; j++)
-	    packets[i].t[j + 3] = packets[i].t2->t[j];
-	  packets[i].first_split = itanium_split_issue (packets + i, 0);
-	}
-	
-    }
-
+#ifdef ENABLE_CHECKING
+  rtx insn;
+  
+  if (reload_completed)
+    for (insn = NEXT_INSN (current_sched_info->prev_head);
+	 insn != current_sched_info->next_tail;
+	 insn = NEXT_INSN (insn))
+      if (SCHED_GROUP_P (insn))
+	abort ();
+#endif
+  last_scheduled_insn = NULL_RTX;
   init_insn_group_barriers ();
-
-  memset (&sched_data, 0, sizeof sched_data);
-  sched_types = (enum attr_type *) xmalloc (max_ready
-					    * sizeof (enum attr_type));
-  sched_ready = (rtx *) xmalloc (max_ready * sizeof (rtx));
-}
-
-/* See if the packet P can match the insns we have already scheduled.  Return
-   nonzero if so.  In *PSLOT, we store the first slot that is available for
-   more instructions if we choose this packet.
-   SPLIT holds the last slot we can use, there's a split issue after it so
-   scheduling beyond it would cause us to use more than one cycle.  */
-
-static int
-packet_matches_p (p, split, pslot)
-     const struct ia64_packet *p;
-     int split;
-     int *pslot;
-{
-  int filled = sched_data.cur;
-  int first = sched_data.first_slot;
-  int i, slot;
-
-  /* First, check if the first of the two bundles must be a specific one (due
-     to stop bits).  */
-  if (first > 0 && sched_data.stopbit[0] && p->t1->possible_stop != 1)
-    return 0;
-  if (first > 1 && sched_data.stopbit[1] && p->t1->possible_stop != 2)
-    return 0;
-
-  for (i = 0; i < first; i++)
-    if (! insn_matches_slot (p, sched_data.types[i], i,
-			     sched_data.insns[i]))
-      return 0;
-  for (i = slot = first; i < filled; i++)
-    {
-      while (slot < split)
-	{
-	  if (insn_matches_slot (p, sched_data.types[i], slot,
-				 sched_data.insns[i]))
-	    break;
-	  slot++;
-	}
-      if (slot == split)
-	return 0;
-      slot++;
-    }
-
-  if (pslot)
-    *pslot = slot;
-  return 1;
-}
-
-/* A frontend for itanium_split_issue.  For a packet P and a slot
-   number FIRST that describes the start of the current clock cycle,
-   return the slot number of the first split issue.  This function
-   uses the cached number found in P if possible.  */
-
-static int
-get_split (p, first)
-     const struct ia64_packet *p;
-     int first;
-{
-  if (first == 0)
-    return p->first_split;
-  return itanium_split_issue (p, first);
-}
-
-/* Given N_READY insns in the array READY, whose types are found in the
-   corresponding array TYPES, return the insn that is best suited to be
-   scheduled in slot SLOT of packet P.  */
-
-static int
-find_best_insn (ready, types, n_ready, p, slot)
-     rtx *ready;
-     enum attr_type *types;
-     int n_ready;
-     const struct ia64_packet *p;
-     int slot;
-{
-  int best = -1;
-  int best_pri = 0;
-  while (n_ready-- > 0)
-    {
-      rtx insn = ready[n_ready];
-      if (! insn)
-	continue;
-      if (best >= 0 && INSN_PRIORITY (ready[n_ready]) < best_pri)
-	break;
-      /* If we have equally good insns, one of which has a stricter
-	 slot requirement, prefer the one with the stricter requirement.  */
-      if (best >= 0 && types[n_ready] == TYPE_A)
-	continue;
-      if (insn_matches_slot (p, types[n_ready], slot, insn))
-	{
-	  best = n_ready;
-	  best_pri = INSN_PRIORITY (ready[best]);
-
-	  /* If there's no way we could get a stricter requirement, stop
-	     looking now.  */
-	  if (types[n_ready] != TYPE_A
-	      && ia64_safe_itanium_requires_unit0 (ready[n_ready]))
-	    break;
-	  break;
-	}
-    }
-  return best;
-}
-
-/* Select the best packet to use given the current scheduler state and the
-   current ready list.
-   READY is an array holding N_READY ready insns; TYPES is a corresponding
-   array that holds their types.  Store the best packet in *PPACKET and the
-   number of insns that can be scheduled in the current cycle in *PBEST.  */
-
-static void
-find_best_packet (pbest, ppacket, ready, types, n_ready)
-     int *pbest;
-     const struct ia64_packet **ppacket;
-     rtx *ready;
-     enum attr_type *types;
-     int n_ready;
-{
-  int first = sched_data.first_slot;
-  int best = 0;
-  int lowest_end = 6;
-  const struct ia64_packet *best_packet = NULL;
-  int i;
-
-  for (i = 0; i < NR_PACKETS; i++)
-    {
-      const struct ia64_packet *p = packets + i;
-      int slot;
-      int split = get_split (p, first);
-      int win = 0;
-      int first_slot, last_slot;
-      int b_nops = 0;
-
-      if (! packet_matches_p (p, split, &first_slot))
-	continue;
-
-      memcpy (sched_ready, ready, n_ready * sizeof (rtx));
-
-      win = 0;
-      last_slot = 6;
-      for (slot = first_slot; slot < split; slot++)
-	{
-	  int insn_nr;
-
-	  /* Disallow a degenerate case where the first bundle doesn't
-	     contain anything but NOPs!  */
-	  if (first_slot == 0 && win == 0 && slot == 3)
-	    {
-	      win = -1;
-	      break;
-	    }
-
-	  insn_nr = find_best_insn (sched_ready, types, n_ready, p, slot);
-	  if (insn_nr >= 0)
-	    {
-	      sched_ready[insn_nr] = 0;
-	      last_slot = slot;
-	      win++;
-	    }
-	  else if (p->t[slot] == TYPE_B)
-	    b_nops++;
-	}
-      /* We must disallow MBB/BBB packets if any of their B slots would be
-	 filled with nops.  */
-      if (last_slot < 3)
-	{
-	  if (p->t[1] == TYPE_B && (b_nops || last_slot < 2))
-	    win = -1;
-	}
-      else
-	{
-	  if (p->t[4] == TYPE_B && (b_nops || last_slot < 5))
-	    win = -1;
-	}
-
-      if (win > best
-	  || (win == best && last_slot < lowest_end))
-	{
-	  best = win;
-	  lowest_end = last_slot;
-	  best_packet = p;
-	}
-    }
-  *pbest = best;
-  *ppacket = best_packet;
-}
-
-/* Reorder the ready list so that the insns that can be issued in this cycle
-   are found in the correct order at the end of the list.
-   DUMP is the scheduling dump file, or NULL.  READY points to the start,
-   E_READY to the end of the ready list.  MAY_FAIL determines what should be
-   done if no insns can be scheduled in this cycle: if it is zero, we abort,
-   otherwise we return 0.
-   Return 1 if any insns can be scheduled in this cycle.  */
-
-static int
-itanium_reorder (dump, ready, e_ready, may_fail)
-     FILE *dump;
-     rtx *ready;
-     rtx *e_ready;
-     int may_fail;
-{
-  const struct ia64_packet *best_packet;
-  int n_ready = e_ready - ready;
-  int first = sched_data.first_slot;
-  int i, best, best_split, filled;
-
-  for (i = 0; i < n_ready; i++)
-    sched_types[i] = ia64_safe_type (ready[i]);
-
-  find_best_packet (&best, &best_packet, ready, sched_types, n_ready);
-
-  if (best == 0)
-    {
-      if (may_fail)
-	return 0;
-      abort ();
-    }
-
-  if (dump)
-    {
-      fprintf (dump, "// Selected bundles: %s %s (%d insns)\n",
-	       best_packet->t1->name,
-	       best_packet->t2 ? best_packet->t2->name : NULL, best);
-    }
-
-  best_split = itanium_split_issue (best_packet, first);
-  packet_matches_p (best_packet, best_split, &filled);
-
-  for (i = filled; i < best_split; i++)
-    {
-      int insn_nr;
-
-      insn_nr = find_best_insn (ready, sched_types, n_ready, best_packet, i);
-      if (insn_nr >= 0)
-	{
-	  rtx insn = ready[insn_nr];
-	  memmove (ready + insn_nr, ready + insn_nr + 1,
-		   (n_ready - insn_nr - 1) * sizeof (rtx));
-	  memmove (sched_types + insn_nr, sched_types + insn_nr + 1,
-		   (n_ready - insn_nr - 1) * sizeof (enum attr_type));
-	  ready[--n_ready] = insn;
-	}
-    }
-
-  sched_data.packet = best_packet;
-  sched_data.split = best_split;
-  return 1;
-}
-
-/* Dump information about the current scheduling state to file DUMP.  */
-
-static void
-dump_current_packet (dump)
-     FILE *dump;
-{
-  int i;
-  fprintf (dump, "//    %d slots filled:", sched_data.cur);
-  for (i = 0; i < sched_data.first_slot; i++)
-    {
-      rtx insn = sched_data.insns[i];
-      fprintf (dump, " %s", type_names[sched_data.types[i]]);
-      if (insn)
-	fprintf (dump, "/%s", type_names[ia64_safe_type (insn)]);
-      if (sched_data.stopbit[i])
-	fprintf (dump, " ;;");
-    }
-  fprintf (dump, " :::");
-  for (i = sched_data.first_slot; i < sched_data.cur; i++)
-    {
-      rtx insn = sched_data.insns[i];
-      enum attr_type t = ia64_safe_type (insn);
-      fprintf (dump, " (%d) %s", INSN_UID (insn), type_names[t]);
-    }
-  fprintf (dump, "\n");
-}
-
-/* Schedule a stop bit.  DUMP is the current scheduling dump file, or
-   NULL.  */
-
-static void
-schedule_stop (dump)
-     FILE *dump;
-{
-  const struct ia64_packet *best = sched_data.packet;
-  int i;
-  int best_stop = 6;
-
-  if (dump)
-    fprintf (dump, "// Stop bit, cur = %d.\n", sched_data.cur);
-
-  if (sched_data.cur == 0)
-    {
-      if (dump)
-	fprintf (dump, "//   At start of bundle, so nothing to do.\n");
-
-      rotate_two_bundles (NULL);
-      return;
-    }
-
-  for (i = -1; i < NR_PACKETS; i++)
-    {
-      /* This is a slight hack to give the current packet the first chance.
-	 This is done to avoid e.g. switching from MIB to MBB bundles.  */
-      const struct ia64_packet *p = (i >= 0 ? packets + i : sched_data.packet);
-      int split = get_split (p, sched_data.first_slot);
-      const struct bundle *compare;
-      int next, stoppos;
-
-      if (! packet_matches_p (p, split, &next))
-	continue;
-
-      compare = next > 3 ? p->t2 : p->t1;
-
-      stoppos = 3;
-      if (compare->possible_stop)
-	stoppos = compare->possible_stop;
-      if (next > 3)
-	stoppos += 3;
-
-      if (stoppos < next || stoppos >= best_stop)
-	{
-	  if (compare->possible_stop == 0)
-	    continue;
-	  stoppos = (next > 3 ? 6 : 3);
-	}
-      if (stoppos < next || stoppos >= best_stop)
-	continue;
-
-      if (dump)
-	fprintf (dump, "//   switching from %s %s to %s %s (stop at %d)\n",
-		 best->t1->name, best->t2->name, p->t1->name, p->t2->name,
-		 stoppos);
-
-      best_stop = stoppos;
-      best = p;
-    }
-
-  sched_data.packet = best;
-  cycle_end_fill_slots (dump);
-  while (sched_data.cur < best_stop)
-    {
-      sched_data.types[sched_data.cur] = best->t[sched_data.cur];
-      sched_data.insns[sched_data.cur] = 0;
-      sched_data.stopbit[sched_data.cur] = 0;
-      sched_data.cur++;
-    }
-  sched_data.stopbit[sched_data.cur - 1] = 1;
-  sched_data.first_slot = best_stop;
-
-  if (dump)
-    dump_current_packet (dump);
-}
-
-/* If necessary, perform one or two rotations on the scheduling state.  
-   This should only be called if we are starting a new cycle.  */
-
-static void
-maybe_rotate (dump)
-     FILE *dump;
-{
-  cycle_end_fill_slots (dump);
-  if (sched_data.cur == 6)
-    rotate_two_bundles (dump);
-  else if (sched_data.cur >= 3)
-    rotate_one_bundle (dump);
-  sched_data.first_slot = sched_data.cur;
-}
-
-/* The clock cycle when ia64_sched_reorder was last called.  */
-static int prev_cycle;
-
-/* The first insn scheduled in the previous cycle.  This is the saved
-   value of sched_data.first_slot.  */
-static int prev_first;
-
-/* Emit NOPs to fill the delay between PREV_CYCLE and CLOCK_VAR.  Used to
-   pad out the delay between MM (shifts, etc.) and integer operations.  */
-
-static void
-nop_cycles_until (clock_var, dump)
-     int clock_var;
-     FILE *dump;
-{
-  int prev_clock = prev_cycle;
-  int cycles_left = clock_var - prev_clock;
-  bool did_stop = false;
-
-  /* Finish the previous cycle; pad it out with NOPs.  */
-  if (sched_data.cur == 3)
-    {
-      sched_emit_insn (gen_insn_group_barrier (GEN_INT (3)));
-      did_stop = true;
-      maybe_rotate (dump);
-    }
-  else if (sched_data.cur > 0)
-    {
-      int need_stop = 0;
-      int split = itanium_split_issue (sched_data.packet, prev_first);
-
-      if (sched_data.cur < 3 && split > 3)
-	{
-	  split = 3;
-	  need_stop = 1;
-	}
-
-      if (split > sched_data.cur)
-	{
-	  int i;
-	  for (i = sched_data.cur; i < split; i++)
-	    {
-	      rtx t = sched_emit_insn (gen_nop_type (sched_data.packet->t[i]));
-	      sched_data.types[i] = sched_data.packet->t[i];
-	      sched_data.insns[i] = t;
-	      sched_data.stopbit[i] = 0;
-	    }
-	  sched_data.cur = split;
-	}
-
-      if (! need_stop && sched_data.cur > 0 && sched_data.cur < 6
-	  && cycles_left > 1)
-	{
-	  int i;
-	  for (i = sched_data.cur; i < 6; i++)
-	    {
-	      rtx t = sched_emit_insn (gen_nop_type (sched_data.packet->t[i]));
-	      sched_data.types[i] = sched_data.packet->t[i];
-	      sched_data.insns[i] = t;
-	      sched_data.stopbit[i] = 0;
-	    }
-	  sched_data.cur = 6;
-	  cycles_left--;
-	  need_stop = 1;
-	}
-
-      if (need_stop || sched_data.cur == 6)
-	{
-	  sched_emit_insn (gen_insn_group_barrier (GEN_INT (3)));
-	  did_stop = true;
-	}
-      maybe_rotate (dump);
-    }
-
-  cycles_left--;
-  while (cycles_left > 0)
-    {
-      sched_emit_insn (gen_bundle_selector (GEN_INT (0)));
-      sched_emit_insn (gen_nop_type (TYPE_M));
-      sched_emit_insn (gen_nop_type (TYPE_I));
-      if (cycles_left > 1)
-	{
-	  sched_emit_insn (gen_insn_group_barrier (GEN_INT (2)));
-	  cycles_left--;
-	}
-      sched_emit_insn (gen_nop_type (TYPE_I));
-      sched_emit_insn (gen_insn_group_barrier (GEN_INT (3)));
-      did_stop = true;
-      cycles_left--;
-    }
-
-  if (did_stop)
-    init_insn_group_barriers ();
 }
 
 /* We are about to being issuing insns for this clock cycle.
    Override the default sort algorithm to better slot instructions.  */
 
 static int
-ia64_internal_sched_reorder (dump, sched_verbose, ready, pn_ready,
-		    reorder_type, clock_var)
-     FILE *dump ATTRIBUTE_UNUSED;
-     int sched_verbose ATTRIBUTE_UNUSED;
+ia64_dfa_sched_reorder (dump, sched_verbose, ready, pn_ready,
+			clock_var, reorder_type)
+     FILE *dump;
+     int sched_verbose;
      rtx *ready;
      int *pn_ready;
-     int reorder_type, clock_var;
+     int clock_var  ATTRIBUTE_UNUSED;
+     int reorder_type;
 {
   int n_asms;
   int n_ready = *pn_ready;
@@ -6464,151 +5702,82 @@ ia64_internal_sched_reorder (dump, sched_verbose, ready, pn_ready,
   rtx *insnp;
 
   if (sched_verbose)
-    {
-      fprintf (dump, "// ia64_sched_reorder (type %d):\n", reorder_type);
-      dump_current_packet (dump);
-    }
-
-  /* Work around the pipeline flush that will occurr if the results of
-     an MM instruction are accessed before the result is ready.  Intel
-     documentation says this only happens with IALU, ISHF, ILOG, LD,
-     and ST consumers, but experimental evidence shows that *any* non-MM
-     type instruction will incurr the flush.  */
-  if (reorder_type == 0 && clock_var > 0 && ia64_final_schedule)
-    {
-      for (insnp = ready; insnp < e_ready; insnp++)
-	{
-	  rtx insn = *insnp, link;
-	  enum attr_itanium_class t = ia64_safe_itanium_class (insn);
-
-	  if (t == ITANIUM_CLASS_MMMUL
-	      || t == ITANIUM_CLASS_MMSHF
-	      || t == ITANIUM_CLASS_MMSHFI)
-	    continue;
-
-	  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-	    if (REG_NOTE_KIND (link) == 0)
-	      {
-		rtx other = XEXP (link, 0);
-		enum attr_itanium_class t0 = ia64_safe_itanium_class (other);
-		if (t0 == ITANIUM_CLASS_MMSHF || t0 == ITANIUM_CLASS_MMMUL)
-		  {
-		    nop_cycles_until (clock_var, sched_verbose ? dump : NULL);
-		    goto out;
-		  }
-	      }
-	}
-    }
- out:
-
-  prev_first = sched_data.first_slot;
-  prev_cycle = clock_var;
+    fprintf (dump, "// ia64_dfa_sched_reorder (type %d):\n", reorder_type);
 
   if (reorder_type == 0)
-    maybe_rotate (sched_verbose ? dump : NULL);
-
-  /* First, move all USEs, CLOBBERs and other crud out of the way.  */
-  n_asms = 0;
-  for (insnp = ready; insnp < e_ready; insnp++)
-    if (insnp < e_ready)
-      {
-	rtx insn = *insnp;
-	enum attr_type t = ia64_safe_type (insn);
-	if (t == TYPE_UNKNOWN)
+    {
+      /* First, move all USEs, CLOBBERs and other crud out of the way.  */
+      n_asms = 0;
+      for (insnp = ready; insnp < e_ready; insnp++)
+	if (insnp < e_ready)
 	  {
-	    if (GET_CODE (PATTERN (insn)) == ASM_INPUT
-		|| asm_noperands (PATTERN (insn)) >= 0)
+	    rtx insn = *insnp;
+	    enum attr_type t = ia64_safe_type (insn);
+	    if (t == TYPE_UNKNOWN)
 	      {
-		rtx lowest = ready[n_asms];
-		ready[n_asms] = insn;
-		*insnp = lowest;
-		n_asms++;
-	      }
-	    else
-	      {
-		rtx highest = ready[n_ready - 1];
-		ready[n_ready - 1] = insn;
-		*insnp = highest;
-		if (ia64_final_schedule && group_barrier_needed_p (insn))
+		if (GET_CODE (PATTERN (insn)) == ASM_INPUT
+		    || asm_noperands (PATTERN (insn)) >= 0)
 		  {
-		    schedule_stop (sched_verbose ? dump : NULL);
-		    sched_data.last_was_stop = 1;
-		    maybe_rotate (sched_verbose ? dump : NULL);
+		    rtx lowest = ready[n_asms];
+		    ready[n_asms] = insn;
+		    *insnp = lowest;
+		    n_asms++;
 		  }
-
-		return 1;
+		else
+		  {
+		    rtx highest = ready[n_ready - 1];
+		    ready[n_ready - 1] = insn;
+		    *insnp = highest;
+		    return 1;
+		  }
 	      }
 	  }
-      }
-  if (n_asms < n_ready)
-    {
-      /* Some normal insns to process.  Skip the asms.  */
-      ready += n_asms;
-      n_ready -= n_asms;
-    }
-  else if (n_ready > 0)
-    {
-      /* Only asm insns left.  */
-      if (ia64_final_schedule && group_barrier_needed_p (ready[n_ready - 1]))
+
+      if (n_asms < n_ready)
 	{
-	  schedule_stop (sched_verbose ? dump : NULL);
-	  sched_data.last_was_stop = 1;
-	  maybe_rotate (sched_verbose ? dump : NULL);
+	  /* Some normal insns to process.  Skip the asms.  */
+	  ready += n_asms;
+	  n_ready -= n_asms;
 	}
-      cycle_end_fill_slots (sched_verbose ? dump : NULL);
-      return 1;
+      else if (n_ready > 0)
+	return 1;
     }
 
   if (ia64_final_schedule)
     {
+      int deleted = 0;
       int nr_need_stop = 0;
 
       for (insnp = ready; insnp < e_ready; insnp++)
 	if (safe_group_barrier_needed_p (*insnp))
 	  nr_need_stop++;
-
-      /* Schedule a stop bit if
-          - all insns require a stop bit, or
-          - we are starting a new cycle and _any_ insns require a stop bit.
-         The reason for the latter is that if our schedule is accurate, then
-         the additional stop won't decrease performance at this point (since
-	 there's a split issue at this point anyway), but it gives us more
-         freedom when scheduling the currently ready insns.  */
-      if ((reorder_type == 0 && nr_need_stop)
-	  || (reorder_type == 1 && n_ready == nr_need_stop))
-	{
-	  schedule_stop (sched_verbose ? dump : NULL);
-	  sched_data.last_was_stop = 1;
-	  maybe_rotate (sched_verbose ? dump : NULL);
-	  if (reorder_type == 1)
-	    return 0;
-	}
-      else
-	{
-	  int deleted = 0;
-	  insnp = e_ready;
-	  /* Move down everything that needs a stop bit, preserving relative
-	     order.  */
-	  while (insnp-- > ready + deleted)
-	    while (insnp >= ready + deleted)
-	      {
-		rtx insn = *insnp;
-		if (! safe_group_barrier_needed_p (insn))
-		  break;
-		memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
-		*ready = insn;
-		deleted++;
-	      }
-	  n_ready -= deleted;
-	  ready += deleted;
-	  if (deleted != nr_need_stop)
-	    abort ();
-	}
+      
+      if (reorder_type == 1 && n_ready == nr_need_stop)
+	return 0;
+      if (reorder_type == 0)
+	return 1;
+      insnp = e_ready;
+      /* Move down everything that needs a stop bit, preserving
+	 relative order.  */
+      while (insnp-- > ready + deleted)
+	while (insnp >= ready + deleted)
+	  {
+	    rtx insn = *insnp;
+	    if (! safe_group_barrier_needed_p (insn))
+	      break;
+	    memmove (ready + 1, ready, (insnp - ready) * sizeof (rtx));
+	    *ready = insn;
+	    deleted++;
+	  }
+      n_ready -= deleted;
+      ready += deleted;
     }
 
-  return itanium_reorder (sched_verbose ? dump : NULL,
-			  ready, e_ready, reorder_type == 1);
+  return 1;
 }
+
+/* We are about to being issuing insns for this clock cycle.  Override
+   the default sort algorithm to better slot instructions.  */
 
 static int
 ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, clock_var)
@@ -6618,8 +5787,8 @@ ia64_sched_reorder (dump, sched_verbose, ready, pn_ready, clock_var)
      int *pn_ready;
      int clock_var;
 {
-  return ia64_internal_sched_reorder (dump, sched_verbose, ready,
-				      pn_ready, 0, clock_var);
+  return ia64_dfa_sched_reorder (dump, sched_verbose, ready,
+				 pn_ready, clock_var, 0);
 }
 
 /* Like ia64_sched_reorder, but called after issuing each insn.
@@ -6633,121 +5802,10 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
      int *pn_ready;
      int clock_var;
 {
-  if (sched_data.last_was_stop)
-    return 0;
-
-  /* Detect one special case and try to optimize it.
-     If we have 1.M;;MI 2.MIx, and slots 2.1 (M) and 2.2 (I) are both NOPs,
-     then we can get better code by transforming this to 1.MFB;; 2.MIx.  */
-  if (sched_data.first_slot == 1
-      && sched_data.stopbit[0]
-      && ((sched_data.cur == 4
-	   && (sched_data.types[1] == TYPE_M || sched_data.types[1] == TYPE_A)
-	   && (sched_data.types[2] == TYPE_I || sched_data.types[2] == TYPE_A)
-	   && (sched_data.types[3] != TYPE_M && sched_data.types[3] != TYPE_A))
-	  || (sched_data.cur == 3
-	      && (sched_data.types[1] == TYPE_M
-		  || sched_data.types[1] == TYPE_A)
-	      && (sched_data.types[2] != TYPE_M
-		  && sched_data.types[2] != TYPE_I
-		  && sched_data.types[2] != TYPE_A))))
-      
-    {
-      int i, best;
-      rtx stop = sched_data.insns[1];
-
-      /* Search backward for the stop bit that must be there.  */
-      while (1)
-	{
-	  int insn_code;
-
-	  stop = PREV_INSN (stop);
-	  if (GET_CODE (stop) != INSN)
-	    abort ();
-	  insn_code = recog_memoized (stop);
-
-	  /* Ignore .pred.rel.mutex.
-
-	     ??? Update this to ignore cycle display notes too
-	     ??? once those are implemented  */
-	  if (insn_code == CODE_FOR_pred_rel_mutex
-	      || insn_code == CODE_FOR_prologue_use)
-	    continue;
-
-	  if (insn_code == CODE_FOR_insn_group_barrier)
-	    break;
-	  abort ();
-	}
-
-      /* Adjust the stop bit's slot selector.  */
-      if (INTVAL (XVECEXP (PATTERN (stop), 0, 0)) != 1)
-	abort ();
-      XVECEXP (PATTERN (stop), 0, 0) = GEN_INT (3);
-
-      sched_data.stopbit[0] = 0;
-      sched_data.stopbit[2] = 1;
-
-      sched_data.types[5] = sched_data.types[3];
-      sched_data.types[4] = sched_data.types[2];
-      sched_data.types[3] = sched_data.types[1];
-      sched_data.insns[5] = sched_data.insns[3];
-      sched_data.insns[4] = sched_data.insns[2];
-      sched_data.insns[3] = sched_data.insns[1];
-      sched_data.stopbit[5] = sched_data.stopbit[4] = sched_data.stopbit[3] = 0;
-      sched_data.cur += 2;
-      sched_data.first_slot = 3;
-      for (i = 0; i < NR_PACKETS; i++)
-	{
-	  const struct ia64_packet *p = packets + i;
-	  if (p->t[0] == TYPE_M && p->t[1] == TYPE_F && p->t[2] == TYPE_B)
-	    {
-	      sched_data.packet = p;
-	      break;
-	    }
-	}
-      rotate_one_bundle (sched_verbose ? dump : NULL);
-
-      best = 6;
-      for (i = 0; i < NR_PACKETS; i++)
-	{
-	  const struct ia64_packet *p = packets + i;
-	  int split = get_split (p, sched_data.first_slot);
-	  int next;
-
-	  /* Disallow multiway branches here.  */
-	  if (p->t[1] == TYPE_B)
-	    continue;
-
-	  if (packet_matches_p (p, split, &next) && next < best)
-	    {
-	      best = next;
-	      sched_data.packet = p;
-	      sched_data.split = split;
-	    }
-	}
-      if (best == 6)
-	abort ();
-    }
-
-  if (*pn_ready > 0)
-    {
-      int more = ia64_internal_sched_reorder (dump, sched_verbose,
-					      ready, pn_ready, 1,
-					      clock_var);
-      if (more)
-	return more;
-      /* Did we schedule a stop?  If so, finish this cycle.  */
-      if (sched_data.cur == sched_data.first_slot)
-	return 0;
-    }
-
-  if (sched_verbose)
-    fprintf (dump, "//   Can't issue more this cycle; updating type array.\n");
-
-  cycle_end_fill_slots (sched_verbose ? dump : NULL);
-  if (sched_verbose)
-    dump_current_packet (dump);
-  return 0;
+  if (ia64_tune == PROCESSOR_ITANIUM && reload_completed && last_scheduled_insn)
+    clocks [INSN_UID (last_scheduled_insn)] = clock_var;
+  return ia64_dfa_sched_reorder (dump, sched_verbose, ready, pn_ready,
+				 clock_var, 1);
 }
 
 /* We are about to issue INSN.  Return the number of insns left on the
@@ -6755,63 +5813,914 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 
 static int
 ia64_variable_issue (dump, sched_verbose, insn, can_issue_more)
-     FILE *dump;
-     int sched_verbose;
-     rtx insn;
+     FILE *dump ATTRIBUTE_UNUSED;
+     int sched_verbose ATTRIBUTE_UNUSED;
+     rtx insn ATTRIBUTE_UNUSED;
      int can_issue_more ATTRIBUTE_UNUSED;
 {
-  enum attr_type t = ia64_safe_type (insn);
-
-  if (sched_data.last_was_stop)
+  last_scheduled_insn = insn;
+  memcpy (prev_cycle_state, curr_state, dfa_state_size);
+  if (reload_completed)
     {
-      int t = sched_data.first_slot;
-      if (t == 0)
-	t = 3;
-      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (t)), insn);
-      init_insn_group_barriers ();
-      sched_data.last_was_stop = 0;
+      if (group_barrier_needed_p (insn))
+	abort ();
+      if (GET_CODE (insn) == CALL_INSN)
+	init_insn_group_barriers ();
+      stops_p [INSN_UID (insn)] = stop_before_p;
+      stop_before_p = 0;
     }
-
-  if (t == TYPE_UNKNOWN)
-    {
-      if (sched_verbose)
-	fprintf (dump, "// Ignoring type %s\n", type_names[t]);
-      if (GET_CODE (PATTERN (insn)) == ASM_INPUT
-	  || asm_noperands (PATTERN (insn)) >= 0)
-	{
-	  /* This must be some kind of asm.  Clear the scheduling state.  */
-	  rotate_two_bundles (sched_verbose ? dump : NULL);
-	  if (ia64_final_schedule)
-	    group_barrier_needed_p (insn);
-	}
-      return 1;
-    }
-
-  /* This is _not_ just a sanity check.  group_barrier_needed_p will update
-     important state info.  Don't delete this test.  */
-  if (ia64_final_schedule
-      && group_barrier_needed_p (insn))
-    abort ();
-
-  sched_data.stopbit[sched_data.cur] = 0;
-  sched_data.insns[sched_data.cur] = insn;
-  sched_data.types[sched_data.cur] = t;
-
-  sched_data.cur++;
-  if (sched_verbose)
-    fprintf (dump, "// Scheduling insn %d of type %s\n",
-	     INSN_UID (insn), type_names[t]);
-
-  if (GET_CODE (insn) == CALL_INSN && ia64_final_schedule)
-    {
-      schedule_stop (sched_verbose ? dump : NULL);
-      sched_data.last_was_stop = 1;
-    }
-
   return 1;
 }
 
-/* Free data allocated by ia64_sched_init.  */
+/* We are choosing insn from the ready queue.  Return nonzero if INSN
+   can be chosen.  */
+
+static int
+ia64_first_cycle_multipass_dfa_lookahead_guard (insn)
+     rtx insn;
+{
+  if (insn == NULL_RTX || !INSN_P (insn))
+    abort ();
+  return (!reload_completed
+	  || !safe_group_barrier_needed_p (insn));
+}
+
+/* The following variable value is pseudo-insn used by the DFA insn
+   scheduler to change the DFA state when the simulated clock is
+   increased.  */
+
+static rtx dfa_pre_cycle_insn;
+
+/* We are about to being issuing INSN.  Return nonzero if we can not
+   issue it on given cycle CLOCK and return zero if we should not sort
+   the ready queue on the next clock start.  */
+
+static int
+ia64_dfa_new_cycle (dump, verbose, insn, last_clock, clock, sort_p)
+     FILE *dump;
+     int verbose;
+     rtx insn;
+     int last_clock, clock;
+     int *sort_p;
+{
+  int setup_clocks_p = FALSE;
+
+  if (insn == NULL_RTX || !INSN_P (insn))
+    abort ();
+  if ((reload_completed && safe_group_barrier_needed_p (insn))
+      || (last_scheduled_insn
+	  && (GET_CODE (last_scheduled_insn) == CALL_INSN
+	      || GET_CODE (PATTERN (last_scheduled_insn)) == ASM_INPUT
+	      || asm_noperands (PATTERN (last_scheduled_insn)) >= 0)))
+    {
+      init_insn_group_barriers ();
+      if (verbose && dump)
+	fprintf (dump, "//    Stop should be before %d%s\n", INSN_UID (insn),
+		 last_clock == clock ? " + cycle advance" : "");
+      stop_before_p = 1;
+      if (last_clock == clock)
+	{
+	  state_transition (curr_state, dfa_stop_insn);
+	  if (TARGET_EARLY_STOP_BITS)
+	    *sort_p = (last_scheduled_insn == NULL_RTX
+		       || GET_CODE (last_scheduled_insn) != CALL_INSN);
+	  else
+	    *sort_p = 0;
+	  return 1;
+	}
+      else if (reload_completed)
+	setup_clocks_p = TRUE;
+      memcpy (curr_state, prev_cycle_state, dfa_state_size);
+      state_transition (curr_state, dfa_stop_insn);
+      state_transition (curr_state, dfa_pre_cycle_insn);
+      state_transition (curr_state, NULL);
+    }
+  else if (reload_completed)
+    setup_clocks_p = TRUE;
+  if (setup_clocks_p && ia64_tune == PROCESSOR_ITANIUM)
+    {
+      enum attr_itanium_class c = ia64_safe_itanium_class (insn);
+      
+      if (c != ITANIUM_CLASS_MMMUL && c != ITANIUM_CLASS_MMSHF)
+	{
+	  rtx link;
+	  int d = -1;
+	  
+	  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+	    if (REG_NOTE_KIND (link) == 0)
+	      {
+		enum attr_itanium_class dep_class;
+		rtx dep_insn = XEXP (link, 0);
+		
+		dep_class = ia64_safe_itanium_class (dep_insn);
+		if ((dep_class == ITANIUM_CLASS_MMMUL
+		     || dep_class == ITANIUM_CLASS_MMSHF)
+		    && last_clock - clocks [INSN_UID (dep_insn)] < 4
+		    && (d < 0
+			|| last_clock - clocks [INSN_UID (dep_insn)] < d))
+		  d = last_clock - clocks [INSN_UID (dep_insn)];
+	      }
+	  if (d >= 0)
+	    add_cycles [INSN_UID (insn)] = 3 - d;
+	}
+    }
+  return 0;
+}
+
+
+
+/* The following page contains abstract data `bundle states' which are
+   used for bundling insns (inserting nops and template generation).  */
+
+/* The following describes state of insn bundling.  */
+
+struct bundle_state
+{
+  /* Unique bundle state number to identify them in the debugging
+     output  */
+  int unique_num;
+  rtx insn;     /* corresponding insn, NULL for the 1st and the last state  */
+  /* number nops before and after the insn  */
+  short before_nops_num, after_nops_num;
+  int insn_num; /* insn number (0 - for initial state, 1 - for the 1st
+                   insn */
+  int cost;     /* cost of the state in cycles */
+  int accumulated_insns_num; /* number of all previous insns including
+				nops.  L is considered as 2 insns */
+  int branch_deviation; /* deviation of previous branches from 3rd slots  */
+  struct bundle_state *next;  /* next state with the same insn_num  */
+  struct bundle_state *originator; /* originator (previous insn state)  */
+  /* All bundle states are in the following chain.  */
+  struct bundle_state *allocated_states_chain;
+  /* The DFA State after issuing the insn and the nops.  */
+  state_t dfa_state;
+};
+
+/* The following is map insn number to the corresponding bundle state.  */
+
+static struct bundle_state **index_to_bundle_states;
+
+/* The unique number of next bundle state.  */
+
+static int bundle_states_num;
+
+/* All allocated bundle states are in the following chain.  */
+
+static struct bundle_state *allocated_bundle_states_chain;
+
+/* All allocated but not used bundle states are in the following
+   chain.  */
+
+static struct bundle_state *free_bundle_state_chain;
+
+
+/* The following function returns a free bundle state.  */
+
+static struct bundle_state *
+get_free_bundle_state ()
+{
+  struct bundle_state *result;
+
+  if (free_bundle_state_chain != NULL)
+    {
+      result = free_bundle_state_chain;
+      free_bundle_state_chain = result->next;
+    }
+  else
+    {
+      result = xmalloc (sizeof (struct bundle_state));
+      result->dfa_state = xmalloc (dfa_state_size);
+      result->allocated_states_chain = allocated_bundle_states_chain;
+      allocated_bundle_states_chain = result;
+    }
+  result->unique_num = bundle_states_num++;
+  return result;
+  
+}
+
+/* The following function frees given bundle state.  */
+
+static void
+free_bundle_state (state)
+     struct bundle_state *state;
+{
+  state->next = free_bundle_state_chain;
+  free_bundle_state_chain = state;
+}
+
+/* Start work with abstract data `bundle states'.  */
+
+static void
+initiate_bundle_states ()
+{
+  bundle_states_num = 0;
+  free_bundle_state_chain = NULL;
+  allocated_bundle_states_chain = NULL;
+}
+
+/* Finish work with abstract data `bundle states'.  */
+
+static void
+finish_bundle_states ()
+{
+  struct bundle_state *curr_state, *next_state;
+
+  for (curr_state = allocated_bundle_states_chain;
+       curr_state != NULL;
+       curr_state = next_state)
+    {
+      next_state = curr_state->allocated_states_chain;
+      free (curr_state->dfa_state);
+      free (curr_state);
+    }
+}
+
+/* Hash table of the bundle states.  The key is dfa_state and insn_num
+   of the bundle states.  */
+
+static htab_t bundle_state_table;
+
+/* The function returns hash of BUNDLE_STATE.  */
+
+static unsigned
+bundle_state_hash (bundle_state)
+     const void *bundle_state;
+{
+  const struct bundle_state *state = (struct bundle_state *) bundle_state;
+  unsigned result, i;
+
+  for (result = i = 0; i < dfa_state_size; i++)
+    result += (((unsigned char *) state->dfa_state) [i]
+	       << ((i % CHAR_BIT) * 3 + CHAR_BIT));
+  return result + state->insn_num;
+}
+
+/* The function returns nonzero if the bundle state keys are equal.  */
+
+static int
+bundle_state_eq_p (bundle_state_1, bundle_state_2)
+     const void *bundle_state_1;
+     const void *bundle_state_2;
+{
+  const struct bundle_state * state1 = (struct bundle_state *) bundle_state_1;
+  const struct bundle_state * state2 = (struct bundle_state *) bundle_state_2;
+
+  return (state1->insn_num == state2->insn_num
+	  && memcmp (state1->dfa_state, state2->dfa_state,
+		     dfa_state_size) == 0);
+}
+
+/* The function inserts the BUNDLE_STATE into the hash table.  The
+   function returns nonzero if the bundle has been inserted into the
+   table.  The table contains the best bundle state with given key.  */
+
+static int
+insert_bundle_state (bundle_state)
+     struct bundle_state *bundle_state;
+{
+  void **entry_ptr;
+
+  entry_ptr = htab_find_slot (bundle_state_table, bundle_state, 1);
+  if (*entry_ptr == NULL)
+    {
+      bundle_state->next = index_to_bundle_states [bundle_state->insn_num];
+      index_to_bundle_states [bundle_state->insn_num] = bundle_state;
+      *entry_ptr = (void *) bundle_state;
+      return TRUE;
+    }
+  else if (bundle_state->cost < ((struct bundle_state *) *entry_ptr)->cost
+	   || (bundle_state->cost == ((struct bundle_state *) *entry_ptr)->cost
+	       && (((struct bundle_state *)*entry_ptr)->accumulated_insns_num
+		   > bundle_state->accumulated_insns_num
+		   || (((struct bundle_state *)
+			*entry_ptr)->accumulated_insns_num
+		       == bundle_state->accumulated_insns_num
+		       && ((struct bundle_state *)
+			   *entry_ptr)->branch_deviation
+		       > bundle_state->branch_deviation))))
+		   
+    {
+      struct bundle_state temp;
+
+      temp = *(struct bundle_state *) *entry_ptr;
+      *(struct bundle_state *) *entry_ptr = *bundle_state;
+      ((struct bundle_state *) *entry_ptr)->next = temp.next;
+      *bundle_state = temp;
+    }
+  return FALSE;
+}
+
+/* Start work with the hash table.  */
+
+static void
+initiate_bundle_state_table ()
+{
+  bundle_state_table = htab_create (50, bundle_state_hash, bundle_state_eq_p,
+				    (htab_del) 0);
+}
+
+/* Finish work with the hash table.  */
+
+static void
+finish_bundle_state_table ()
+{
+  htab_delete (bundle_state_table);
+}
+
+
+
+/* The following variable is a insn `nop' used to check bundle states
+   with different number of inserted nops.  */
+
+static rtx ia64_nop;
+
+/* The following function tries to issue NOPS_NUM nops for the current
+   state without advancing processor cycle.  If it failed, the
+   function returns FALSE and frees the current state.  */
+
+static int
+try_issue_nops (curr_state, nops_num)
+     struct bundle_state *curr_state;
+     int nops_num;
+{
+  int i;
+
+  for (i = 0; i < nops_num; i++)
+    if (state_transition (curr_state->dfa_state, ia64_nop) >= 0)
+      {
+	free_bundle_state (curr_state);
+	return FALSE;
+      }
+  return TRUE;
+}
+
+/* The following function tries to issue INSN for the current
+   state without advancing processor cycle.  If it failed, the
+   function returns FALSE and frees the current state.  */
+
+static int
+try_issue_insn (curr_state, insn)
+     struct bundle_state *curr_state;
+     rtx insn;
+{
+  if (insn && state_transition (curr_state->dfa_state, insn) >= 0)
+    {
+      free_bundle_state (curr_state);
+      return FALSE;
+    }
+  return TRUE;
+}
+
+/* The following function tries to issue BEFORE_NOPS_NUM nops and INSN
+   starting with ORIGINATOR without advancing processor cycle.  If
+   TRY_BUNDLE_END_P is TRUE, the function also tries to issue nops to
+   fill all bundle. If it was successful, the function creates new
+   bundle state and insert into the hash table and into
+   `index_to_bundle_states'.  */
+
+static void
+issue_nops_and_insn (originator, before_nops_num, insn, try_bundle_end_p)
+     struct bundle_state *originator;
+     int before_nops_num;
+     rtx insn;
+     int try_bundle_end_p;
+{
+  struct bundle_state *curr_state;
+
+  curr_state = get_free_bundle_state ();
+  memcpy (curr_state->dfa_state, originator->dfa_state, dfa_state_size);
+  curr_state->insn = insn;
+  curr_state->insn_num = originator->insn_num + 1;
+  curr_state->cost = originator->cost;
+  curr_state->originator = originator;
+  curr_state->before_nops_num = before_nops_num;
+  curr_state->after_nops_num = 0;
+  curr_state->accumulated_insns_num
+    = originator->accumulated_insns_num + before_nops_num;
+  curr_state->branch_deviation = originator->branch_deviation;
+  if (insn == NULL_RTX)
+    abort ();
+  else if (INSN_CODE (insn) == CODE_FOR_insn_group_barrier)
+    {
+      if (GET_MODE (insn) == TImode)
+	abort ();
+      if (!try_issue_nops (curr_state, before_nops_num))
+	return;
+      if (!try_issue_insn (curr_state, insn))
+	return;
+      memcpy (temp_dfa_state, curr_state->dfa_state, dfa_state_size);
+      if (state_transition (temp_dfa_state, dfa_pre_cycle_insn) >= 0
+	  && curr_state->accumulated_insns_num % 3 != 0)
+	{
+	  free_bundle_state (curr_state);
+	  return;
+	}
+    }
+  else if (GET_MODE (insn) != TImode)
+    {
+      if (!try_issue_nops (curr_state, before_nops_num))
+	return;
+      if (!try_issue_insn (curr_state, insn))
+	return;
+      if (GET_CODE (PATTERN (insn)) != ASM_INPUT
+	  && asm_noperands (PATTERN (insn)) < 0)
+	curr_state->accumulated_insns_num++;
+      if (ia64_safe_type (insn) == TYPE_L)
+	curr_state->accumulated_insns_num++;
+    }
+  else
+    {
+      state_transition (curr_state->dfa_state, dfa_pre_cycle_insn);
+      state_transition (curr_state->dfa_state, NULL);
+      curr_state->cost++;
+      if (!try_issue_nops (curr_state, before_nops_num))
+	return;
+      if (!try_issue_insn (curr_state, insn))
+	return;
+      if (GET_CODE (PATTERN (insn)) != ASM_INPUT
+	  && asm_noperands (PATTERN (insn)) < 0)
+	curr_state->accumulated_insns_num++;
+      if (ia64_safe_type (insn) == TYPE_L)
+	curr_state->accumulated_insns_num++;
+    }
+  if (ia64_safe_type (insn) == TYPE_B)
+    curr_state->branch_deviation
+      += 2 - (curr_state->accumulated_insns_num - 1) % 3;
+  if (try_bundle_end_p && curr_state->accumulated_insns_num % 3 != 0)
+    {
+      if (insert_bundle_state (curr_state))
+	{
+	  state_t dfa_state;
+	  struct bundle_state *curr_state1;
+	  struct bundle_state *allocated_states_chain;
+
+	  curr_state1 = get_free_bundle_state ();
+	  dfa_state = curr_state1->dfa_state;
+	  allocated_states_chain = curr_state1->allocated_states_chain;
+	  *curr_state1 = *curr_state;
+	  curr_state1->dfa_state = dfa_state;
+	  curr_state1->allocated_states_chain = allocated_states_chain;
+	  memcpy (curr_state1->dfa_state, curr_state->dfa_state,
+		  dfa_state_size);
+	  curr_state = curr_state1;
+	}
+      if (!try_issue_nops (curr_state,
+			   3 - curr_state->accumulated_insns_num % 3))
+	return;
+      curr_state->after_nops_num
+	= 3 - curr_state->accumulated_insns_num % 3;
+      curr_state->accumulated_insns_num
+	+= 3 - curr_state->accumulated_insns_num % 3;
+    }
+  if (!insert_bundle_state (curr_state))
+    free_bundle_state (curr_state);
+  return;
+}
+
+/* The following function returns position in the two window bundle
+   for given STATE.  */
+
+static int
+get_max_pos (state)
+     state_t state;
+{
+  if (cpu_unit_reservation_p (state, pos_6))
+    return 6;
+  else if (cpu_unit_reservation_p (state, pos_5))
+    return 5;
+  else if (cpu_unit_reservation_p (state, pos_4))
+    return 4;
+  else if (cpu_unit_reservation_p (state, pos_3))
+    return 3;
+  else if (cpu_unit_reservation_p (state, pos_2))
+    return 2;
+  else if (cpu_unit_reservation_p (state, pos_1))
+    return 1;
+  else
+    return 0;
+}
+
+/* The function returns code of a possible template for given position
+   and state.  The function should be called only with 2 values of
+   position equal to 3 or 6.  */
+
+static int
+get_template (state, pos)
+     state_t state;
+     int pos;
+{
+  switch (pos)
+    {
+    case 3:
+      if (cpu_unit_reservation_p (state, _0mii_))
+	return 0;
+      else if (cpu_unit_reservation_p (state, _0mmi_))
+	return 1;
+      else if (cpu_unit_reservation_p (state, _0mfi_))
+	return 2;
+      else if (cpu_unit_reservation_p (state, _0mmf_))
+	return 3;
+      else if (cpu_unit_reservation_p (state, _0bbb_))
+	return 4;
+      else if (cpu_unit_reservation_p (state, _0mbb_))
+	return 5;
+      else if (cpu_unit_reservation_p (state, _0mib_))
+	return 6;
+      else if (cpu_unit_reservation_p (state, _0mmb_))
+	return 7;
+      else if (cpu_unit_reservation_p (state, _0mfb_))
+	return 8;
+      else if (cpu_unit_reservation_p (state, _0mlx_))
+	return 9;
+      else
+	abort ();
+    case 6:
+      if (cpu_unit_reservation_p (state, _1mii_))
+	return 0;
+      else if (cpu_unit_reservation_p (state, _1mmi_))
+	return 1;
+      else if (cpu_unit_reservation_p (state, _1mfi_))
+	return 2;
+      else if (_1mmf_ >= 0 && cpu_unit_reservation_p (state, _1mmf_))
+	return 3;
+      else if (cpu_unit_reservation_p (state, _1bbb_))
+	return 4;
+      else if (cpu_unit_reservation_p (state, _1mbb_))
+	return 5;
+      else if (cpu_unit_reservation_p (state, _1mib_))
+	return 6;
+      else if (cpu_unit_reservation_p (state, _1mmb_))
+	return 7;
+      else if (cpu_unit_reservation_p (state, _1mfb_))
+	return 8;
+      else if (cpu_unit_reservation_p (state, _1mlx_))
+	return 9;
+      else
+	abort ();
+    default:
+      abort ();
+    }
+}
+
+/* The following function returns an insn important for insn bundling
+   followed by INSN and before TAIL.  */
+
+static rtx
+get_next_important_insn (insn, tail)
+     rtx insn, tail;
+{
+  for (; insn && insn != tail; insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+	&& ia64_safe_itanium_class (insn) != ITANIUM_CLASS_IGNORE
+	&& GET_CODE (PATTERN (insn)) != USE
+	&& GET_CODE (PATTERN (insn)) != CLOBBER)
+      return insn;
+  return NULL_RTX;
+}
+
+/* The following function does insn bundling.  Bundling algorithm is
+   based on dynamic programming.  It tries to insert different number of
+   nop insns before/after the real insns.  At the end of EBB, it chooses the
+   best alternative and then, moving back in EBB, inserts templates for
+   the best alternative.  The algorithm is directed by information
+   (changes of simulated processor cycle) created by the 2nd insn
+   scheduling.  */
+
+static void
+bundling (dump, verbose, prev_head_insn, tail)
+     FILE *dump;
+     int verbose;
+     rtx prev_head_insn, tail;
+{
+  struct bundle_state *curr_state, *next_state, *best_state;
+  rtx insn, next_insn;
+  int insn_num;
+  int i, bundle_end_p;
+  int pos, max_pos, template0, template1;
+  rtx b;
+  rtx nop;
+  enum attr_type type;
+
+  insn_num = 0;
+  for (insn = NEXT_INSN (prev_head_insn);
+       insn && insn != tail;
+       insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      insn_num++;
+  if (insn_num == 0)
+    return;
+  bundling_p = 1;
+  dfa_clean_insn_cache ();
+  initiate_bundle_state_table ();
+  index_to_bundle_states = xmalloc ((insn_num + 2)
+				    * sizeof (struct bundle_state *));
+  /* First (forward) pass -- generates states. */
+  curr_state = get_free_bundle_state ();
+  curr_state->insn = NULL;
+  curr_state->before_nops_num = 0;
+  curr_state->after_nops_num = 0;
+  curr_state->insn_num = 0;
+  curr_state->cost = 0;
+  curr_state->accumulated_insns_num = 0;
+  curr_state->branch_deviation = 0;
+  curr_state->next = NULL;
+  curr_state->originator = NULL;
+  state_reset (curr_state->dfa_state);
+  index_to_bundle_states [0] = curr_state;
+  insn_num = 0;
+  for (insn = NEXT_INSN (prev_head_insn);
+       insn != tail;
+       insn = NEXT_INSN (insn))
+    if (INSN_P (insn)
+	&& (ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IGNORE
+	    || GET_CODE (PATTERN (insn)) == USE
+	    || GET_CODE (PATTERN (insn)) == CLOBBER)
+	&& GET_MODE (insn) == TImode)
+      {
+	PUT_MODE (insn, VOIDmode);
+	for (next_insn = NEXT_INSN (insn);
+	     next_insn != tail;
+	     next_insn = NEXT_INSN (next_insn))
+	  if (INSN_P (next_insn)
+	      && ia64_safe_itanium_class (next_insn) != ITANIUM_CLASS_IGNORE
+	      && GET_CODE (PATTERN (next_insn)) != USE
+	      && GET_CODE (PATTERN (next_insn)) != CLOBBER)
+	    {
+	      PUT_MODE (next_insn, TImode);
+	      break;
+	    }
+      }
+  for (insn = get_next_important_insn (NEXT_INSN (prev_head_insn), tail);
+       insn != NULL_RTX;
+       insn = next_insn)
+    {
+      if (!INSN_P (insn)
+	  || ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IGNORE
+	  || GET_CODE (PATTERN (insn)) == USE
+	  || GET_CODE (PATTERN (insn)) == CLOBBER)
+	abort ();
+      next_insn = get_next_important_insn (NEXT_INSN (insn), tail);
+      insn_num++;
+      index_to_bundle_states [insn_num] = NULL;
+      for (curr_state = index_to_bundle_states [insn_num - 1];
+	   curr_state != NULL;
+	   curr_state = next_state)
+	{
+	  pos = curr_state->accumulated_insns_num % 3;
+	  type = ia64_safe_type (insn);
+	  next_state = curr_state->next;
+	  bundle_end_p
+	    = (next_insn == NULL_RTX
+	       || (GET_MODE (next_insn) == TImode
+		   && INSN_CODE (insn) != CODE_FOR_insn_group_barrier));
+	  if (type == TYPE_F || type == TYPE_B || type == TYPE_L
+	      || type == TYPE_S
+	      /* We need to insert 2 Nops for cases like M_MII.  */
+	      || (type == TYPE_M && ia64_tune == PROCESSOR_ITANIUM
+		  && !bundle_end_p && pos == 1))
+	    issue_nops_and_insn (curr_state, 2, insn, bundle_end_p);
+	  issue_nops_and_insn (curr_state, 1, insn, bundle_end_p);
+	  issue_nops_and_insn (curr_state, 0, insn, bundle_end_p);
+	}
+      if (index_to_bundle_states [insn_num] == NULL)
+	abort ();
+      for (curr_state = index_to_bundle_states [insn_num];
+	   curr_state != NULL;
+	   curr_state = curr_state->next)
+	if (verbose >= 2 && dump)
+	  {
+	    struct DFA_chip
+	    {
+	      unsigned short one_automaton_state;
+	      unsigned short oneb_automaton_state;
+	      unsigned short two_automaton_state;
+	      unsigned short twob_automaton_state;
+	    };
+	    
+	    fprintf
+	      (dump,
+	       "//    Bundle state %d (orig %d, cost %d, nops %d/%d, insns %d, branch %d, state %d) for %d\n",
+	       curr_state->unique_num,
+	       (curr_state->originator == NULL
+		? -1 : curr_state->originator->unique_num),
+	       curr_state->cost,
+	       curr_state->before_nops_num, curr_state->after_nops_num,
+	       curr_state->accumulated_insns_num, curr_state->branch_deviation,
+	       (ia64_tune == PROCESSOR_ITANIUM
+		? ((struct DFA_chip *) curr_state->dfa_state)->oneb_automaton_state
+		: ((struct DFA_chip *) curr_state->dfa_state)->twob_automaton_state),
+	       INSN_UID (insn));
+	  }
+    }
+  if (index_to_bundle_states [insn_num] == NULL)
+    abort ();
+  /* Finding state with a minimal cost:  */
+  best_state = NULL;
+  for (curr_state = index_to_bundle_states [insn_num];
+       curr_state != NULL;
+       curr_state = curr_state->next)
+    if (curr_state->accumulated_insns_num % 3 == 0
+	&& (best_state == NULL || best_state->cost > curr_state->cost
+	    || (best_state->cost == curr_state->cost
+		&& (curr_state->accumulated_insns_num
+		    < best_state->accumulated_insns_num
+		    || (curr_state->accumulated_insns_num
+			== best_state->accumulated_insns_num
+			&& curr_state->branch_deviation
+			< best_state->branch_deviation)))))
+      best_state = curr_state;
+  /* Second (backward) pass: adding nops and templates:  */
+  insn_num = best_state->before_nops_num;
+  template0 = template1 = -1;
+  for (curr_state = best_state;
+       curr_state->originator != NULL;
+       curr_state = curr_state->originator)
+    {
+      insn = curr_state->insn;
+      insn_num++;
+      if (verbose >= 2 && dump)
+	{
+	  struct DFA_chip
+	  {
+	    unsigned short one_automaton_state;
+	    unsigned short oneb_automaton_state;
+	    unsigned short two_automaton_state;
+	    unsigned short twob_automaton_state;
+	  };
+	  
+	  fprintf
+	    (dump,
+	     "//    Best %d (orig %d, cost %d, nops %d/%d, insns %d, branch %d, state %d) for %d\n",
+	     curr_state->unique_num,
+	     (curr_state->originator == NULL
+	      ? -1 : curr_state->originator->unique_num),
+	     curr_state->cost,
+	     curr_state->before_nops_num, curr_state->after_nops_num,
+	     curr_state->accumulated_insns_num, curr_state->branch_deviation,
+	     (ia64_tune == PROCESSOR_ITANIUM
+	      ? ((struct DFA_chip *) curr_state->dfa_state)->oneb_automaton_state
+	      : ((struct DFA_chip *) curr_state->dfa_state)->twob_automaton_state),
+	     INSN_UID (insn));
+	}
+      max_pos = get_max_pos (curr_state->dfa_state);
+      if (max_pos == 6 || (max_pos == 3 && template0 < 0))
+	{
+	  pos = max_pos;
+	  if (max_pos == 3)
+	    template0 = get_template (curr_state->dfa_state, 3);
+	  else
+	    {
+	      template1 = get_template (curr_state->dfa_state, 3);
+	      template0 = get_template (curr_state->dfa_state, 6);
+	    }
+	}
+      if (max_pos > 3 && template1 < 0)
+	{
+	  if (pos > 3)
+	    abort ();
+	  template1 = get_template (curr_state->dfa_state, 3);
+	  pos += 3;
+	}
+      for (i = 0; i < curr_state->after_nops_num; i++)
+	{
+	  nop = gen_nop ();
+	  emit_insn_after (nop, insn);
+	  pos--;
+	  if (pos < 0)
+	    abort ();
+	  if (pos % 3 == 0)
+	    {
+	      if (template0 < 0)
+		abort ();
+	      b = gen_bundle_selector (GEN_INT (template0));
+	      ia64_emit_insn_before (b, nop);
+	      template0 = template1;
+	      template1 = -1;
+	    }
+	}
+      if (INSN_CODE (insn) != CODE_FOR_insn_group_barrier
+	  && GET_CODE (PATTERN (insn)) != ASM_INPUT
+	  && asm_noperands (PATTERN (insn)) < 0)
+	pos--;
+      if (ia64_safe_type (insn) == TYPE_L)
+	pos--;
+      if (pos < 0)
+	abort ();
+      if (pos % 3 == 0
+	  && INSN_CODE (insn) != CODE_FOR_insn_group_barrier
+	  && GET_CODE (PATTERN (insn)) != ASM_INPUT
+	  && asm_noperands (PATTERN (insn)) < 0)
+	{
+	  if (template0 < 0)
+	    abort ();
+	  b = gen_bundle_selector (GEN_INT (template0));
+	  ia64_emit_insn_before (b, insn);
+	  b = PREV_INSN (insn);
+	  insn = b;
+	  template0 = template1;
+	  template1 = -1;
+	}
+      for (i = 0; i < curr_state->before_nops_num; i++)
+	{
+	  nop = gen_nop ();
+	  ia64_emit_insn_before (nop, insn);
+	  nop = PREV_INSN (insn);
+	  insn = nop;
+	  pos--;
+	  if (pos < 0)
+	    abort ();
+	  if (pos % 3 == 0)
+	    {
+	      if (template0 < 0)
+		abort ();
+	      b = gen_bundle_selector (GEN_INT (template0));
+	      ia64_emit_insn_before (b, insn);
+	      b = PREV_INSN (insn);
+	      insn = b;
+	      template0 = template1;
+	      template1 = -1;
+	    }
+	}
+    }
+  if (ia64_tune == PROCESSOR_ITANIUM)
+    /* Insert additional cycles for MM-insns: */
+    for (insn = get_next_important_insn (NEXT_INSN (prev_head_insn), tail);
+	 insn != NULL_RTX;
+	 insn = next_insn)
+      {
+	if (!INSN_P (insn)
+	    || ia64_safe_itanium_class (insn) == ITANIUM_CLASS_IGNORE
+	    || GET_CODE (PATTERN (insn)) == USE
+	    || GET_CODE (PATTERN (insn)) == CLOBBER)
+	  abort ();
+	next_insn = get_next_important_insn (NEXT_INSN (insn), tail);
+	if (INSN_UID (insn) < clocks_length && add_cycles [INSN_UID (insn)])
+	  {
+	    rtx last;
+	    int i, j, n;
+	    int pred_stop_p;
+	    
+	    last = prev_active_insn (insn);
+	    pred_stop_p = recog_memoized (last) == CODE_FOR_insn_group_barrier;
+	    if (pred_stop_p)
+	      last = prev_active_insn (last);
+	    n = 0;
+	    for (;; last = prev_active_insn (last))
+	      if (recog_memoized (last) == CODE_FOR_bundle_selector)
+		{
+		  template0 = XINT (XVECEXP (PATTERN (last), 0, 0), 0);
+		  if (template0 == 9)
+		    PATTERN (last)
+		      = gen_bundle_selector (GEN_INT (2)); /* -> MFI */
+		  break;
+		}
+	      else if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
+		n++;
+	    if ((pred_stop_p && n == 0) || n > 2
+		|| (template0 == 9 && n != 0))
+	      abort ();
+	    for (j = 3 - n; j > 0; j --)
+	      ia64_emit_insn_before (gen_nop (), insn);
+	    add_cycles [INSN_UID (insn)]--;
+	    if (!pred_stop_p || add_cycles [INSN_UID (insn)])
+	      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
+				     insn);
+	    if (pred_stop_p)
+	      add_cycles [INSN_UID (insn)]--;
+	    for (i = add_cycles [INSN_UID (insn)]; i > 0; i--)
+	      {
+		/* Insert .MII bundle.  */
+		ia64_emit_insn_before (gen_bundle_selector (GEN_INT (0)),
+				       insn);
+		ia64_emit_insn_before (gen_nop (), insn);
+		ia64_emit_insn_before (gen_nop (), insn);
+		if (i > 1)
+		  {
+		    ia64_emit_insn_before
+		      (gen_insn_group_barrier (GEN_INT (3)), insn);
+		    i--;
+		  }
+		ia64_emit_insn_before (gen_nop (), insn);
+		ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
+				       insn);
+	      }
+	    ia64_emit_insn_before (gen_bundle_selector (GEN_INT (template0)),
+				   insn);
+	    for (j = n; j > 0; j --)
+	      ia64_emit_insn_before (gen_nop (), insn);
+	    if (pred_stop_p)
+	      ia64_emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
+				     insn);
+	  }
+      }
+  free (index_to_bundle_states);
+  finish_bundle_state_table ();
+  bundling_p = 0;
+  dfa_clean_insn_cache ();
+}
+
+/* The following function is called at the end of scheduling BB or
+   EBB.  After reload, it inserts stop bits and does insn bundling.  */
 
 static void
 ia64_sched_finish (dump, sched_verbose)
@@ -6820,10 +6729,220 @@ ia64_sched_finish (dump, sched_verbose)
 {
   if (sched_verbose)
     fprintf (dump, "// Finishing schedule.\n");
-  rotate_two_bundles (NULL);
-  free (sched_types);
-  free (sched_ready);
+  if (!reload_completed)
+    return;
+  if (reload_completed)
+    {
+      final_emit_insn_group_barriers (dump);
+      bundling (dump, sched_verbose, current_sched_info->prev_head,
+		current_sched_info->next_tail);
+      if (sched_verbose && dump)
+	fprintf (dump, "//    finishing %d-%d\n",
+		 INSN_UID (NEXT_INSN (current_sched_info->prev_head)),
+		 INSN_UID (PREV_INSN (current_sched_info->next_tail)));
+      
+      return;
+    }
 }
+
+/* The following function inserts stop bits in scheduled BB or EBB.  */
+
+static void
+final_emit_insn_group_barriers (dump)
+     FILE *dump ATTRIBUTE_UNUSED;
+{
+  rtx insn;
+  int need_barrier_p = 0;
+  rtx prev_insn = NULL_RTX;
+
+  init_insn_group_barriers ();
+
+  for (insn = NEXT_INSN (current_sched_info->prev_head);
+       insn != current_sched_info->next_tail;
+       insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) == BARRIER)
+	{
+	  rtx last = prev_active_insn (insn);
+
+	  if (! last)
+	    continue;
+	  if (GET_CODE (last) == JUMP_INSN
+	      && GET_CODE (PATTERN (last)) == ADDR_DIFF_VEC)
+	    last = prev_active_insn (last);
+	  if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
+	    emit_insn_after (gen_insn_group_barrier (GEN_INT (3)), last);
+
+	  init_insn_group_barriers ();
+	  need_barrier_p = 0;
+	  prev_insn = NULL_RTX;
+	}
+      else if (INSN_P (insn))
+	{
+	  if (recog_memoized (insn) == CODE_FOR_insn_group_barrier)
+	    {
+	      init_insn_group_barriers ();
+	      need_barrier_p = 0;
+	      prev_insn = NULL_RTX;
+	    }
+	  else if (need_barrier_p || group_barrier_needed_p (insn))
+	    {
+	      if (TARGET_EARLY_STOP_BITS)
+		{
+		  rtx last;
+		  
+		  for (last = insn;
+		       last != current_sched_info->prev_head;
+		       last = PREV_INSN (last))
+		    if (INSN_P (last) && GET_MODE (last) == TImode
+			&& stops_p [INSN_UID (last)])
+		      break;
+		  if (last == current_sched_info->prev_head)
+		    last = insn;
+		  last = prev_active_insn (last);
+		  if (last
+		      && recog_memoized (last) != CODE_FOR_insn_group_barrier)
+		    emit_insn_after (gen_insn_group_barrier (GEN_INT (3)),
+				     last);
+		  init_insn_group_barriers ();
+		  for (last = NEXT_INSN (last);
+		       last != insn;
+		       last = NEXT_INSN (last))
+		    if (INSN_P (last))
+		      group_barrier_needed_p (last);
+		}
+	      else
+		{
+		  emit_insn_before (gen_insn_group_barrier (GEN_INT (3)),
+				    insn);
+		  init_insn_group_barriers ();
+		}
+	      group_barrier_needed_p (insn);
+	      prev_insn = NULL_RTX;
+	    }
+	  else if (recog_memoized (insn) >= 0)
+	    prev_insn = insn;
+	  need_barrier_p = (GET_CODE (insn) == CALL_INSN
+			    || GET_CODE (PATTERN (insn)) == ASM_INPUT
+			    || asm_noperands (PATTERN (insn)) >= 0);
+	}
+    }
+}
+
+
+
+/* If the following function returns TRUE, we will use the the DFA
+   insn scheduler.  */
+
+static int
+ia64_use_dfa_pipeline_interface ()
+{
+  return 1;
+}
+
+/* If the following function returns TRUE, we will use the the DFA
+   insn scheduler.  */
+
+static int
+ia64_first_cycle_multipass_dfa_lookahead ()
+{
+  return (reload_completed ? 6 : 4);
+}
+
+/* The following function initiates variable `dfa_pre_cycle_insn'.  */
+
+static void
+ia64_init_dfa_pre_cycle_insn ()
+{
+  if (temp_dfa_state == NULL)
+    {
+      dfa_state_size = state_size ();
+      temp_dfa_state = xmalloc (dfa_state_size);
+      prev_cycle_state = xmalloc (dfa_state_size);
+    }
+  dfa_pre_cycle_insn = make_insn_raw (gen_pre_cycle ());
+  PREV_INSN (dfa_pre_cycle_insn) = NEXT_INSN (dfa_pre_cycle_insn) = NULL_RTX;
+  recog_memoized (dfa_pre_cycle_insn);
+  dfa_stop_insn = make_insn_raw (gen_insn_group_barrier (GEN_INT (3)));
+  PREV_INSN (dfa_stop_insn) = NEXT_INSN (dfa_stop_insn) = NULL_RTX;
+  recog_memoized (dfa_stop_insn);
+}
+
+/* The following function returns the pseudo insn DFA_PRE_CYCLE_INSN
+   used by the DFA insn scheduler.  */
+
+static rtx
+ia64_dfa_pre_cycle_insn ()
+{
+  return dfa_pre_cycle_insn;
+}
+
+/* The following function returns TRUE if PRODUCER (of type ilog or
+   ld) produces address for CONSUMER (of type st or stf). */
+
+int
+ia64_st_address_bypass_p (producer, consumer)
+     rtx producer;
+     rtx consumer;
+{
+  rtx dest, reg, mem;
+
+  if (producer == NULL_RTX || consumer == NULL_RTX)
+    abort ();
+  dest = ia64_single_set (producer);
+  if (dest == NULL_RTX || (reg = SET_DEST (dest)) == NULL_RTX
+      || (GET_CODE (reg) != REG && GET_CODE (reg) != SUBREG))
+    abort ();
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  dest = ia64_single_set (consumer);
+  if (dest == NULL_RTX || (mem = SET_DEST (dest)) == NULL_RTX
+      || GET_CODE (mem) != MEM)
+    abort ();
+  return reg_mentioned_p (reg, mem);
+}
+
+/* The following function returns TRUE if PRODUCER (of type ilog or
+   ld) produces address for CONSUMER (of type ld or fld). */
+
+int
+ia64_ld_address_bypass_p (producer, consumer)
+     rtx producer;
+     rtx consumer;
+{
+  rtx dest, src, reg, mem;
+
+  if (producer == NULL_RTX || consumer == NULL_RTX)
+    abort ();
+  dest = ia64_single_set (producer);
+  if (dest == NULL_RTX || (reg = SET_DEST (dest)) == NULL_RTX
+      || (GET_CODE (reg) != REG && GET_CODE (reg) != SUBREG))
+    abort ();
+  if (GET_CODE (reg) == SUBREG)
+    reg = SUBREG_REG (reg);
+  src = ia64_single_set (consumer);
+  if (src == NULL_RTX || (mem = SET_SRC (src)) == NULL_RTX)
+    abort ();
+  if (GET_CODE (mem) == UNSPEC && XVECLEN (mem, 0) > 0)
+    mem = XVECEXP (mem, 0, 0);
+  while (GET_CODE (mem) == SUBREG || GET_CODE (mem) == ZERO_EXTEND)
+    mem = XEXP (mem, 0);
+  if (GET_CODE (mem) != MEM)
+    abort ();
+  return reg_mentioned_p (reg, mem);
+}
+
+/* The following function returns TRUE if INSN produces address for a
+   load/store insn.  We will place such insns into M slot because it
+   decreases its latency time. */
+
+int
+ia64_produce_address_p (insn)
+     rtx insn;
+{
+  return insn->call;
+}
+
 
 /* Emit pseudo-ops for the assembler to describe predicate relations.
    At present this assumes that we only consider predicate pairs to
@@ -6887,111 +7006,6 @@ emit_predicate_relation_info ()
     }
 }
 
-/* Generate a NOP instruction of type T.  We will never generate L type
-   nops.  */
-
-static rtx
-gen_nop_type (t)
-     enum attr_type t;
-{
-  switch (t)
-    {
-    case TYPE_M:
-      return gen_nop_m ();
-    case TYPE_I:
-      return gen_nop_i ();
-    case TYPE_B:
-      return gen_nop_b ();
-    case TYPE_F:
-      return gen_nop_f ();
-    case TYPE_X:
-      return gen_nop_x ();
-    default:
-      abort ();
-    }
-}
-
-/* After the last scheduling pass, fill in NOPs.  It's easier to do this
-   here than while scheduling.  */
-
-static void
-ia64_emit_nops ()
-{
-  rtx insn;
-  const struct bundle *b = 0;
-  int bundle_pos = 0;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      rtx pat;
-      enum attr_type t;
-      pat = INSN_P (insn) ? PATTERN (insn) : const0_rtx;
-      if (GET_CODE (pat) == USE || GET_CODE (pat) == CLOBBER)
-	continue;
-      if ((GET_CODE (pat) == UNSPEC && XINT (pat, 1) == UNSPEC_BUNDLE_SELECTOR)
-	  || GET_CODE (insn) == CODE_LABEL)
-	{
-	  if (b)
-	    while (bundle_pos < 3)
-	      {
-		emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
-		bundle_pos++;
-	      }
-	  if (GET_CODE (insn) != CODE_LABEL)
-	    b = bundle + INTVAL (XVECEXP (pat, 0, 0));
-	  else
-	    b = 0;
-	  bundle_pos = 0;
-	  continue;
-	}
-      else if (GET_CODE (pat) == UNSPEC_VOLATILE
-	       && XINT (pat, 1) == UNSPECV_INSN_GROUP_BARRIER)
-	{
-	  int t = INTVAL (XVECEXP (pat, 0, 0));
-	  if (b)
-	    while (bundle_pos < t)
-	      {
-		emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
-		bundle_pos++;
-	      }
-	  continue;
-	}
-
-      if (bundle_pos == 3)
-	b = 0;
-
-      if (b && INSN_P (insn))
-	{
-	  t = ia64_safe_type (insn);
-	  if (asm_noperands (PATTERN (insn)) >= 0
-	      || GET_CODE (PATTERN (insn)) == ASM_INPUT)
-	    {
-	      while (bundle_pos < 3)
-		{
-		  emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
-		  bundle_pos++;
-		}
-	      continue;
-	    }
-
-	  if (t == TYPE_UNKNOWN)
-	    continue;
-	  while (bundle_pos < 3)
-	    {
-	      if (t == b->t[bundle_pos]
-		  || (t == TYPE_A && (b->t[bundle_pos] == TYPE_M
-				      || b->t[bundle_pos] == TYPE_I)))
-		break;
-
-	      emit_insn_before (gen_nop_type (b->t[bundle_pos]), insn);
-	      bundle_pos++;
-	    }
-	  if (bundle_pos < 3)
-	    bundle_pos++;
-	}
-    }
-}
-
 /* Perform machine dependent operations on the rtl chain INSNS.  */
 
 void
@@ -7014,14 +7028,91 @@ ia64_reorg (insns)
     {
       timevar_push (TV_SCHED2);
       ia64_final_schedule = 1;
+
+      initiate_bundle_states ();
+      ia64_nop = make_insn_raw (gen_nop ());
+      PREV_INSN (ia64_nop) = NEXT_INSN (ia64_nop) = NULL_RTX;
+      recog_memoized (ia64_nop);
+      clocks_length = get_max_uid () + 1;
+      stops_p = (char *) xmalloc (clocks_length);
+      memset (stops_p, 0, clocks_length);
+      if (ia64_tune == PROCESSOR_ITANIUM)
+	{
+	  clocks = (int *) xmalloc (clocks_length * sizeof (int));
+	  memset (clocks, 0, clocks_length * sizeof (int));
+	  add_cycles = (int *) xmalloc (clocks_length * sizeof (int));
+	  memset (add_cycles, 0, clocks_length * sizeof (int));
+	}
+      if (ia64_tune == PROCESSOR_ITANIUM2)
+	{
+	  pos_1 = get_cpu_unit_code ("2_1");
+	  pos_2 = get_cpu_unit_code ("2_2");
+	  pos_3 = get_cpu_unit_code ("2_3");
+	  pos_4 = get_cpu_unit_code ("2_4");
+	  pos_5 = get_cpu_unit_code ("2_5");
+	  pos_6 = get_cpu_unit_code ("2_6");
+	  _0mii_ = get_cpu_unit_code ("2b_0mii.");
+	  _0mmi_ = get_cpu_unit_code ("2b_0mmi.");
+	  _0mfi_ = get_cpu_unit_code ("2b_0mfi.");
+	  _0mmf_ = get_cpu_unit_code ("2b_0mmf.");
+	  _0bbb_ = get_cpu_unit_code ("2b_0bbb.");
+	  _0mbb_ = get_cpu_unit_code ("2b_0mbb.");
+	  _0mib_ = get_cpu_unit_code ("2b_0mib.");
+	  _0mmb_ = get_cpu_unit_code ("2b_0mmb.");
+	  _0mfb_ = get_cpu_unit_code ("2b_0mfb.");
+	  _0mlx_ = get_cpu_unit_code ("2b_0mlx.");
+	  _1mii_ = get_cpu_unit_code ("2b_1mii.");
+	  _1mmi_ = get_cpu_unit_code ("2b_1mmi.");
+	  _1mfi_ = get_cpu_unit_code ("2b_1mfi.");
+	  _1mmf_ = get_cpu_unit_code ("2b_1mmf.");
+	  _1bbb_ = get_cpu_unit_code ("2b_1bbb.");
+	  _1mbb_ = get_cpu_unit_code ("2b_1mbb.");
+	  _1mib_ = get_cpu_unit_code ("2b_1mib.");
+	  _1mmb_ = get_cpu_unit_code ("2b_1mmb.");
+	  _1mfb_ = get_cpu_unit_code ("2b_1mfb.");
+	  _1mlx_ = get_cpu_unit_code ("2b_1mlx.");
+	}
+      else
+	{
+	  pos_1 = get_cpu_unit_code ("1_1");
+	  pos_2 = get_cpu_unit_code ("1_2");
+	  pos_3 = get_cpu_unit_code ("1_3");
+	  pos_4 = get_cpu_unit_code ("1_4");
+	  pos_5 = get_cpu_unit_code ("1_5");
+	  pos_6 = get_cpu_unit_code ("1_6");
+	  _0mii_ = get_cpu_unit_code ("1b_0mii.");
+	  _0mmi_ = get_cpu_unit_code ("1b_0mmi.");
+	  _0mfi_ = get_cpu_unit_code ("1b_0mfi.");
+	  _0mmf_ = get_cpu_unit_code ("1b_0mmf.");
+	  _0bbb_ = get_cpu_unit_code ("1b_0bbb.");
+	  _0mbb_ = get_cpu_unit_code ("1b_0mbb.");
+	  _0mib_ = get_cpu_unit_code ("1b_0mib.");
+	  _0mmb_ = get_cpu_unit_code ("1b_0mmb.");
+	  _0mfb_ = get_cpu_unit_code ("1b_0mfb.");
+	  _0mlx_ = get_cpu_unit_code ("1b_0mlx.");
+	  _1mii_ = get_cpu_unit_code ("1b_1mii.");
+	  _1mmi_ = get_cpu_unit_code ("1b_1mmi.");
+	  _1mfi_ = get_cpu_unit_code ("1b_1mfi.");
+	  _1mmf_ = get_cpu_unit_code ("1b_1mmf.");
+	  _1bbb_ = get_cpu_unit_code ("1b_1bbb.");
+	  _1mbb_ = get_cpu_unit_code ("1b_1mbb.");
+	  _1mib_ = get_cpu_unit_code ("1b_1mib.");
+	  _1mmb_ = get_cpu_unit_code ("1b_1mmb.");
+	  _1mfb_ = get_cpu_unit_code ("1b_1mfb.");
+	  _1mlx_ = get_cpu_unit_code ("1b_1mlx.");
+	}
       schedule_ebbs (rtl_dump_file);
+      finish_bundle_states ();
+      if (ia64_tune == PROCESSOR_ITANIUM)
+	{
+	  free (add_cycles);
+	  free (clocks);
+	}
+      free (stops_p);
+      emit_insn_group_barriers (rtl_dump_file, insns);
+
       ia64_final_schedule = 0;
       timevar_pop (TV_SCHED2);
-
-      /* This relies on the NOTE_INSN_BASIC_BLOCK notes to be in the same
-	 place as they were during scheduling.  */
-      emit_insn_group_barriers (rtl_dump_file, insns);
-      ia64_emit_nops ();
     }
   else
     emit_all_insn_group_barriers (rtl_dump_file, insns);

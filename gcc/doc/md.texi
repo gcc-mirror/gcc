@@ -5586,16 +5586,23 @@ which the unit is bound.  The automaton should be described in
 construction @code{define_automaton}.  You should give
 @dfn{automaton-name}, if there is a defined automaton.
 
+The assignment of units to automata are constrained by the uses of the
+units in insn reservations.  The most important constraint is: if a
+unit reservation is present on a particular cycle of an alternative
+for an insn reservation, then some unit from the same automaton must
+be present on the same cycle for the other alternatives of the insn
+reservation.  The rest of the constraints are mentioned in the
+description of the subsequent constructions.
+
 @findex define_query_cpu_unit
 @cindex querying function unit reservations
 The following construction describes CPU functional units analogously
-to @code{define_cpu_unit}.  If we use automata without their
-minimization, the reservation of such units can be queried for an
-automaton state.  The instruction scheduler never queries reservation
-of functional units for given automaton state.  So as a rule, you
-don't need this construction.  This construction could be used for
-future code generation goals (e.g. to generate @acronym{VLIW} insn
-templates).
+to @code{define_cpu_unit}.  The reservation of such units can be
+queried for an automaton state.  The instruction scheduler never
+queries reservation of functional units for given automaton state.  So
+as a rule, you don't need this construction.  This construction could
+be used for future code generation goals (e.g. to generate
+@acronym{VLIW} insn templates).
 
 @smallexample
 (define_query_cpu_unit @var{unit-names} [@var{automaton-name}])
@@ -5744,7 +5751,9 @@ of insn @samp{store} (not a stored value).
 
 @findex exclusion_set
 @findex presence_set
+@findex final_presence_set
 @findex absence_set
+@findex final_absence_set
 @cindex VLIW
 @cindex RISC
 Usually the following three constructions are used to describe
@@ -5754,12 +5763,18 @@ used for @acronym{RISC} processors too.
 
 @smallexample
 (exclusion_set @var{unit-names} @var{unit-names})
-(presence_set @var{unit-names} @var{unit-names})
-(absence_set @var{unit-names} @var{unit-names})
+(presence_set @var{unit-names} @var{patterns})
+(final_presence_set @var{unit-names} @var{patterns})
+(absence_set @var{unit-names} @var{patterns})
+(final_absence_set @var{unit-names} @var{patterns})
 @end smallexample
 
 @var{unit-names} is a string giving names of functional units
 separated by commas.
+
+@var{patterns} is a string giving patterns of functional units
+separated by comma.  Currently pattern is is one unit or units
+separated by white-spaces.
 
 The first construction (@samp{exclusion_set}) means that each
 functional unit in the first string can not be reserved simultaneously
@@ -5771,21 +5786,74 @@ point insns or only double floating point insns.
 
 The second construction (@samp{presence_set}) means that each
 functional unit in the first string can not be reserved unless at
-least one of units whose names are in the second string is reserved.
-This is an asymmetric relation.  For example, it is useful for
-description that @acronym{VLIW} @samp{slot1} is reserved after
-@samp{slot0} reservation.
+least one of pattern of units whose names are in the second string is
+reserved.  This is an asymmetric relation.  For example, it is useful
+for description that @acronym{VLIW} @samp{slot1} is reserved after
+@samp{slot0} reservation.  We could describe it by the following
+construction
 
-The third construction (@samp{absence_set}) means that each functional
-unit in the first string can be reserved only if each unit whose name
-is in the second string is not reserved.  This is an asymmetric
-relation (actually @samp{exclusion_set} is analogous to this one but
-it is symmetric).  For example, it is useful for description that
-@acronym{VLIW} @samp{slot0} can not be reserved after @samp{slot1} or
-@samp{slot2} reservation.
+@smallexample
+(presence_set "slot1" "slot0")
+@end smallexample
+
+Or @samp{slot1} is reserved only after @samp{slot0} and unit @samp{b0}
+reservation.  In this case we could write
+
+@smallexample
+(presence_set "slot1" "slot0 b0")
+@end smallexample
+
+The third construction (@samp{final_presence_set}) is analogous to
+@samp{presence_set}.  The difference between them is when checking is
+done.  When an instruction is issued in given automaton state
+reflecting all current and planned unit reservations, the automaton
+state is changed.  The first state is a source state, the second one
+is a result state.  Checking for @samp{presence_set} is done on the
+source state reservation, checking for @samp{final_presence_set} is
+done on the result reservation.  This construction is useful to
+describe a reservation which is actually two subsequent reservations.
+For example, if we use
+
+@smallexample
+(presence_set "slot1" "slot0")
+@end smallexample
+
+the following insn will be never issued (because @samp{slot1} requires
+@samp{slot0} which is absent in the source state).
+
+@smallexample
+(define_reservation "insn_and_nop" "slot0 + slot1")
+@end smallexample
+
+but it can be issued if we use analogous @samp{final_presence_set}.
+
+The forth construction (@samp{absence_set}) means that each functional
+unit in the first string can be reserved only if each pattern of units
+whose names are in the second string is not reserved.  This is an
+asymmetric relation (actually @samp{exclusion_set} is analogous to
+this one but it is symmetric).  For example, it is useful for
+description that @acronym{VLIW} @samp{slot0} can not be reserved after
+@samp{slot1} or @samp{slot2} reservation.  We could describe it by the
+following construction
+
+@smallexample
+(absence_set "slot2" "slot0, slot1")
+@end smallexample
+
+Or @samp{slot2} can not be reserved if @samp{slot0} and unit @samp{b0}
+are reserved or @samp{slot1} and unit @samp{b1} are reserved.  In
+this case we could write
+
+@smallexample
+(absence_set "slot2" "slot0 b0, slot1 b1")
+@end smallexample
 
 All functional units mentioned in a set should belong to the same
 automaton.
+
+The last construction (@samp{final_absence_set}) is analogous to
+@samp{absence_set} but checking is done on the result (state)
+reservation.  See comments for @samp{final_presence_set}.
 
 @findex automata_option
 @cindex deterministic finite state automaton
@@ -5804,8 +5872,8 @@ code.  Currently there are the following options:
 @itemize @bullet
 @item
 @dfn{no-minimization} makes no minimization of the automaton.  This is
-only worth to do when we are going to query CPU functional unit
-reservations in an automaton state.
+only worth to do when we are debugging the description and need to
+look more accurately at reservations of states.
 
 @item
 @dfn{time} means printing additional time statistics about

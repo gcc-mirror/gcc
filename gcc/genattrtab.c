@@ -6115,8 +6115,16 @@ from the machine description file `md'.  */\n\n");
 	  gen_presence_set (desc);
 	  break;
 	  
+	case FINAL_PRESENCE_SET:
+	  gen_final_presence_set (desc);
+	  break;
+	  
 	case ABSENCE_SET:
 	  gen_absence_set (desc);
+	  break;
+	  
+	case FINAL_ABSENCE_SET:
+	  gen_final_absence_set (desc);
 	  break;
 	  
 	case DEFINE_AUTOMATON:

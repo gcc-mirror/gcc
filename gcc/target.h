@@ -177,6 +177,11 @@ struct gcc_target
     int (* reorder)  PARAMS ((FILE *, int, rtx *, int *, int));
     int (* reorder2) PARAMS ((FILE *, int, rtx *, int *, int));
 
+    /* The following member value is a pointer to a function called
+       after evaluation forward dependencies of insns in chain given
+       by two parameter values (head and tail correspondingly).  */
+    void (* dependencies_evaluation_hook) PARAMS ((rtx, rtx));
+
     /* The following member value is a pointer to a function returning
        nonzero if we should use DFA based scheduling.  The default is
        to use the old pipeline scheduler.  */
@@ -206,6 +211,25 @@ struct gcc_target
        try to choose ready insn which permits to start maximum number of
        insns on the same cycle.  */
     int (* first_cycle_multipass_dfa_lookahead) PARAMS ((void));
+    /* The following member value is pointer to a function controlling
+       what insns from the ready insn queue will be considered for the
+       multipass insn scheduling.  If the hook returns zero for insn
+       passed as the parameter, the insn will be not chosen to be
+       issued.  */
+    int (* first_cycle_multipass_dfa_lookahead_guard) PARAMS ((rtx));
+    /* The following member value is pointer to a function called by
+       the insn scheduler before issuing insn passed as the third
+       parameter on given cycle.  If the hook returns nonzero, the
+       insn is not issued on given processors cycle.  Instead of that,
+       the processor cycle is advanced.  If the value passed through
+       the last parameter is zero, the insn ready queue is not sorted
+       on the new cycle start as usually.  The first parameter passes
+       file for debugging output.  The second one passes the scheduler
+       verbose level of the debugging output.  The forth and the fifth
+       parameter values are correspondingly processor cycle on which
+       the previous insn has been issued and the current processor
+       cycle.  */
+    int (* dfa_new_cycle) PARAMS ((FILE *, int, rtx, int, int, int *));
     /* The values of the following members are pointers to functions
        used to improve the first cycle multipass scheduling by
        inserting nop insns.  dfa_scheduler_bubble gives a function
