@@ -120,11 +120,7 @@ Boston, MA 02111-1307, USA. */
   %{shared|mdll: %{mno-cygwin:" MINGW_LIBS " mingw/dllcrt2%O%s}}\
   %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " mingw/crt2%O%s}\
   %{pg:gcrt0%O%s}}}\
-  crtbegin%O%s\
 "
-
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC "crtend%O%s"
 
 /* Normally, -lgcc is not needed since everything in it is in the DLL, but we
    want to allow things to be added to it when installing new versions of

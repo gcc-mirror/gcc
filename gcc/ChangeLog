@@ -1,3 +1,8 @@
+2001-10-12  Christopher Faylor  <cgf@redhat.com>
+
+	* config/i386/cygwin.h: Revert erroneous checkin of crtbegin and
+	ENDFILE_SPEC definition.
+
 2001-10-12  Kazu Hirata  <kazu@hxi.com>
 
 	* gthr-dce.h: Fix comment formatting.
