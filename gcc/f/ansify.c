@@ -27,7 +27,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define die_unless(c) \
   do if (!(c)) \
     { \
-      fprintf (stderr, "%s:%lu: %s\n", argv[1], input_line, #c); \
+      fprintf (stderr, "%s:%lu: %s\n", argv[1], lineno, #c); \
       die (); \
     } \
   while(0)

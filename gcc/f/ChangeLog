@@ -1,3 +1,7 @@
+2003-05-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* ansify.c (die_unless): Revert lineno change here.
+
 2003-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 
  	* lex.c (ffelex_file_pop_): Adjust file_stack member use.
