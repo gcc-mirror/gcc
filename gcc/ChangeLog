@@ -1,3 +1,8 @@
+2003-12-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_output_external): Replace checks for
+	specific builtin-in functions with a check for DECL_BUILTIN_IN.
+
 2003-12-02  Richard Henderson  <rth@redhat.com>
 
         * rtl.h (PUT_CODE, PUT_MODE): Remove ENUM_BITFIELD cast.

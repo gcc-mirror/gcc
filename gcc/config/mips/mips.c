@@ -5566,12 +5566,7 @@ mips_output_external (FILE *file ATTRIBUTE_UNUSED, tree decl, const char *name)
 
   if (TARGET_IRIX && mips_abi == ABI_32
       && TREE_CODE (decl) == FUNCTION_DECL
-      /* ??? Don't include alloca, since gcc will always expand it
-	 inline.  If we don't do this, the C++ library fails to build.  */
-      && strcmp (name, "alloca")
-      /* ??? Don't include __builtin_next_arg, because then gcc will not
-	 bootstrap under Irix 5.1.  */
-      && strcmp (name, "__builtin_next_arg"))
+      && !DECL_BUILT_IN (decl))
     {
       p = (struct extern_list *) ggc_alloc (sizeof (struct extern_list));
       p->next = extern_head;
