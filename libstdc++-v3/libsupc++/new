@@ -76,18 +76,18 @@ namespace std
  *  Placement new and delete signatures (take a memory address argument,
  *  does nothing) may not be replaced by a user's program.
 */
-void *operator new(std::size_t) throw (std::bad_alloc);
-void *operator new[](std::size_t) throw (std::bad_alloc);
-void operator delete(void *) throw();
-void operator delete[](void *) throw();
-void *operator new(std::size_t, const std::nothrow_t&) throw();
-void *operator new[](std::size_t, const std::nothrow_t&) throw();
-void operator delete(void *, const std::nothrow_t&) throw();
-void operator delete[](void *, const std::nothrow_t&) throw();
+void* operator new(std::size_t) throw (std::bad_alloc);
+void* operator new[](std::size_t) throw (std::bad_alloc);
+void operator delete(void*) throw();
+void operator delete[](void*) throw();
+void* operator new(std::size_t, const std::nothrow_t&) throw();
+void* operator new[](std::size_t, const std::nothrow_t&) throw();
+void operator delete(void*, const std::nothrow_t&) throw();
+void operator delete[](void*, const std::nothrow_t&) throw();
 
 // Default placement versions of operator new.
-inline void *operator new(std::size_t, void *place) throw() { return place; }
-inline void *operator new[](std::size_t, void *place) throw() { return place; }
+inline void* operator new(std::size_t, void* __p) throw() { return __p; }
+inline void* operator new[](std::size_t, void* __p) throw() { return __p; }
 //@}
 } // extern "C++"
 

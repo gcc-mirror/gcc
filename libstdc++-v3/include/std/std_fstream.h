@@ -74,18 +74,21 @@ namespace std
 
     protected:
       // Data Members:
+      // MT lock inherited from libio or other low-level io library.
+      __c_lock          	_M_lock;
+
       // External buffer.
-      __file_type* 		_M_file;
+      __file_type 		_M_file;
 
       // Current and beginning state type for codecvt.
       __state_type		_M_state_cur;
       __state_type 		_M_state_beg;
 
-      // MT lock inherited from libio or other low-level io library.
-      __c_lock          	_M_lock;
-
       // Set iff _M_buf is allocated memory from _M_allocate_internal_buffer..
       bool			_M_buf_allocated;
+      
+      // Stack-based buffer for unbuffered input.
+      char_type			_M_unbuf[4];
 
       // XXX Needed?
       bool			_M_last_overflowed;
@@ -95,7 +98,7 @@ namespace std
       basic_filebuf();
 
       // Non-standard ctor:
-      basic_filebuf(__c_file_type* __f, ios_base::openmode __mode,
+      basic_filebuf(__c_file* __f, ios_base::openmode __mode,
 		    int_type __s = static_cast<int_type>(BUFSIZ));
 
       // Non-standard member:
@@ -111,7 +114,7 @@ namespace std
 
       // Members:
       bool
-      is_open() const { return _M_file ? _M_file->is_open() : false; }
+      is_open() const { return _M_file.is_open(); }
 
       __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);
@@ -125,13 +128,6 @@ namespace std
 
       void
       _M_destroy_internal_buffer();
-
-      void
-      _M_allocate_pback_buffer();
-
-      // Create __file_type object and initialize it properly.
-      void
-      _M_allocate_file();
 
       // Overridden virtual functions:
       virtual streamsize
@@ -191,16 +187,16 @@ namespace std
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
-	if (__testput && !_M_file->sync())
+	if (__testput && !_M_file.sync())
 	  {
 	    // Need to restore current position. This interpreted as
 	    // the position of the external byte sequence (_M_file)
 	    // plus the offset in the current internal buffer
 	    // (_M_out_beg - _M_out_cur)
-	    streamoff __cur = _M_file->seekoff(0, ios_base::cur);
+	    streamoff __cur = _M_file.seekoff(0, ios_base::cur);
 	    off_type __off = _M_out_cur - _M_out_beg;
 	    _M_really_overflow();
-	    _M_file->seekpos(__cur + __off);
+	    _M_file.seekpos(__cur + __off);
 	  }
 	_M_last_overflowed = false;
 	return 0;

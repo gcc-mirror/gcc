@@ -206,12 +206,13 @@ namespace std
     }
 
   void
-  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char*)
+  locale::facet::_S_create_c_locale(__c_locale& __cloc, const char*, 
+				    __c_locale)
   { __cloc = NULL; }
 
   void
-  locale::facet::_S_destroy_c_locale(__c_locale&)
-  { }
+  locale::facet::_S_destroy_c_locale(__c_locale& __cloc)
+  { __cloc = NULL; }
 
   __c_locale
   locale::facet::_S_clone_c_locale(__c_locale&)

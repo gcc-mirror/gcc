@@ -1,6 +1,6 @@
 // std::moneypunct implementation details, generic version -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -51,9 +51,9 @@ namespace std
       _M_decimal_point = '.';
       _M_thousands_sep = ',';
       _M_grouping = "";
-      _M_curr_symbol = string_type();
-      _M_positive_sign = string_type();
-      _M_negative_sign = string_type();
+      _M_curr_symbol = "";
+      _M_positive_sign = "";
+      _M_negative_sign = "";
       _M_frac_digits = 0;
       _M_pos_format = money_base::_S_default_pattern;
       _M_neg_format = money_base::_S_default_pattern;
@@ -67,13 +67,21 @@ namespace std
       _M_decimal_point = '.';
       _M_thousands_sep = ',';
       _M_grouping = "";
-      _M_curr_symbol = string_type();
-      _M_positive_sign = string_type();
-      _M_negative_sign = string_type();
+      _M_curr_symbol = "";
+      _M_positive_sign = "";
+      _M_negative_sign = "";
       _M_frac_digits = 0;
       _M_pos_format = money_base::_S_default_pattern;
       _M_neg_format = money_base::_S_default_pattern;
     }
+
+  template<> 
+    moneypunct<char, true>::~moneypunct()
+    { }
+
+  template<> 
+    moneypunct<char, false>::~moneypunct()
+    { }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
@@ -84,9 +92,9 @@ namespace std
       _M_decimal_point = L'.';
       _M_thousands_sep = L',';
       _M_grouping = "";
-      _M_curr_symbol = string_type();
-      _M_positive_sign = string_type();
-      _M_negative_sign = string_type();
+      _M_curr_symbol = L"";
+      _M_positive_sign = L"";
+      _M_negative_sign = L"";
       _M_frac_digits = 0;
       _M_pos_format = money_base::_S_default_pattern;
       _M_neg_format = money_base::_S_default_pattern;
@@ -100,12 +108,20 @@ namespace std
       _M_decimal_point = L'.';
       _M_thousands_sep = L',';
       _M_grouping = "";
-      _M_curr_symbol = string_type();
-      _M_positive_sign = string_type();
-      _M_negative_sign = string_type();
+      _M_curr_symbol = L"";
+      _M_positive_sign = L"";
+      _M_negative_sign = L"";
       _M_frac_digits = 0;
       _M_pos_format = money_base::_S_default_pattern;
       _M_neg_format = money_base::_S_default_pattern;
     }
+
+  template<> 
+    moneypunct<wchar_t, true>::~moneypunct()
+    { }
+
+  template<> 
+    moneypunct<wchar_t, false>::~moneypunct()
+    { }
 #endif
 }

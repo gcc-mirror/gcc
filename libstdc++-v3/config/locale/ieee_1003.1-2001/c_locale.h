@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,10 +40,5 @@
 
 namespace std
 {
-  typedef __locale_t		__c_locale;
+  typedef int*			__c_locale;
 }
-
-
-
-
-

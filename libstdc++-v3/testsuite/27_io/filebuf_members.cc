@@ -185,9 +185,9 @@ void test_05()
   scratch_file.close();
 
   scratch_file.open("SCRATCH", std::ios::in);
+  if (!scratch_file)
+    VERIFY( false );
   scratch_file.close();
-
-  VERIFY(scratch_file);
 }
 
 int

@@ -43,13 +43,18 @@
 #pragma GCC system_header
 
 #include <ctime>	// For struct tm
-#ifdef _GLIBCPP_USE_WCHAR_T
-# include <cwctype>	// For wctype_t
-#endif 
+#include <cwctype>	// For wctype_t
 #include <ios>		// For ios_base
 
 namespace std
 {
+  // NB: Don't instantiate required wchar_t facets if no wchar_t support.
+#ifdef _GLIBCPP_USE_WCHAR_T
+# define  _GLIBCPP_NUM_FACETS 28
+#else
+# define  _GLIBCPP_NUM_FACETS 14
+#endif
+
   // 22.2.1.1  Template class ctype
   // Include host and configuration specific ctype enums for ctype_base.
   #include <bits/ctype_base.h>
@@ -169,10 +174,10 @@ namespace std
       typedef _CharT 		  	char_type;
       typedef typename ctype::mask 	mask;
 
+      static locale::id 	       	id;
+
       explicit 
       ctype(size_t __refs = 0) : __ctype_abstract_base<_CharT>(__refs) { }
-
-      static locale::id 	       	id;
 
    protected:
       virtual 
@@ -458,9 +463,9 @@ namespace std
     private:
       char_type 			_M_decimal_point;
       char_type 			_M_thousands_sep;
-      string 				_M_grouping;
-      string_type 			_M_truename;
-      string_type 			_M_falsename;
+      const char* 			_M_grouping;
+      const char_type* 			_M_truename;
+      const char_type*			_M_falsename;
 
     public:
       explicit 
@@ -493,7 +498,7 @@ namespace std
 
     protected:
       virtual 
-      ~numpunct() { }
+      ~numpunct();
 
       virtual char_type    
       do_decimal_point() const
@@ -517,17 +522,23 @@ namespace std
 
       // For use at construction time only.
       void 
-      _M_initialize_numpunct(__c_locale __cloc = NULL);
+      _M_initialize_numpunct(__c_locale __cloc = _S_c_locale);
     };
 
   template<typename _CharT>
     locale::id numpunct<_CharT>::id;
 
   template<> 
+    numpunct<char>::~numpunct();
+
+  template<> 
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  template<> 
+    numpunct<wchar_t>::~numpunct();
+
   template<> 
     void
     numpunct<wchar_t>::_M_initialize_numpunct(__c_locale __cloc);
@@ -813,7 +824,7 @@ namespace std
       explicit 
       collate(size_t __refs = 0)
       : locale::facet(__refs)
-      { _M_c_locale_collate = _S_clone_c_locale(_S_c_locale); }
+      { _M_c_locale_collate = _S_c_locale; }
 
       // Non-standard.
       explicit 
@@ -836,15 +847,18 @@ namespace std
       
       // Used to abstract out _CharT bits in virtual member functions, below.
       int
-      _M_compare_helper(const _CharT*, const _CharT*) const;
+      _M_compare(const _CharT*, const _CharT*) const;
 
       size_t
-      _M_transform_helper(_CharT*, const _CharT*, size_t) const;
+      _M_transform(_CharT*, const _CharT*, size_t) const;
 
   protected:
       virtual
       ~collate() 
-      { _S_destroy_c_locale(_M_c_locale_collate); }
+      {
+	if (_M_c_locale_collate != _S_c_locale)
+	  _S_destroy_c_locale(_M_c_locale_collate); 
+      }
 
       virtual int  
       do_compare(const _CharT* __lo1, const _CharT* __hi1,
@@ -863,21 +877,20 @@ namespace std
   // Specializations.
   template<>
     int 
-    collate<char>::_M_compare_helper(const char*, const char*) const;
+    collate<char>::_M_compare(const char*, const char*) const;
 
   template<>
     size_t
-    collate<char>::_M_transform_helper(char*, const char*, size_t) const;
+    collate<char>::_M_transform(char*, const char*, size_t) const;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<>
     int 
-    collate<wchar_t>::_M_compare_helper(const wchar_t*, const wchar_t*) const;
+    collate<wchar_t>::_M_compare(const wchar_t*, const wchar_t*) const;
 
   template<>
     size_t
-    collate<wchar_t>::_M_transform_helper(wchar_t*, const wchar_t*,
-					  size_t) const;
+    collate<wchar_t>::_M_transform(wchar_t*, const wchar_t*, size_t) const;
 #endif
 
   template<typename _CharT>
@@ -891,7 +904,8 @@ namespace std
       collate_byname(const char* __s, size_t __refs = 0)
       : collate<_CharT>(__refs) 
       { 
-	_S_destroy_c_locale(_M_c_locale_collate);
+	if (_M_c_locale_collate != _S_c_locale)
+	  _S_destroy_c_locale(_M_c_locale_collate);
 	_S_create_c_locale(_M_c_locale_collate, __s); 
       }
 
@@ -991,8 +1005,8 @@ namespace std
       { _M_initialize_timepunct(__cloc); }
 
       void
-      _M_put_helper(_CharT* __s, size_t __maxlen, const _CharT* __format, 
-		    const tm* __tm) const;
+      _M_put(_CharT* __s, size_t __maxlen, const _CharT* __format, 
+	     const tm* __tm) const;
 
       void
       _M_date_formats(const _CharT** __date) const
@@ -1085,21 +1099,20 @@ namespace std
 
     protected:
       virtual 
-      ~__timepunct()
-      {
-	if (_M_c_locale_timepunct)
-	  _S_destroy_c_locale(_M_c_locale_timepunct); 
-      }
+      ~__timepunct();
 
       // For use at construction time only.
       void 
-      _M_initialize_timepunct(__c_locale __cloc = NULL);
+      _M_initialize_timepunct(__c_locale __cloc = _S_c_locale);
     };
 
   template<typename _CharT>
     locale::id __timepunct<_CharT>::id;
 
   // Specializations.
+  template<>
+    __timepunct<char>::~__timepunct();
+
   template<> 
     const char*
     __timepunct<char>::_S_timezones[14];
@@ -1110,10 +1123,12 @@ namespace std
 
   template<>
     void
-    __timepunct<char>::_M_put_helper(char*, size_t, const char*, 
-				     const tm*) const;
+    __timepunct<char>::_M_put(char*, size_t, const char*, const tm*) const;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    __timepunct<wchar_t>::~__timepunct();
+
   template<> 
     const wchar_t*
     __timepunct<wchar_t>::_S_timezones[14];
@@ -1124,8 +1139,8 @@ namespace std
 
   template<>
     void
-    __timepunct<wchar_t>::_M_put_helper(wchar_t*, size_t, const wchar_t*, 
-					const tm*) const;
+    __timepunct<wchar_t>::_M_put(wchar_t*, size_t, const wchar_t*, 
+				 const tm*) const;
 #endif
 
   // Generic.
@@ -1322,19 +1337,19 @@ namespace std
       typedef _CharT 			char_type;
       typedef basic_string<_CharT> 	string_type;
 
-      static const bool intl = _Intl;
-      static locale::id id;
+      static const bool 		intl = _Intl;
+      static locale::id 		id;
 
     private:
-      char_type 	_M_decimal_point;
-      char_type 	_M_thousands_sep;
-      string 		_M_grouping;
-      string_type 	_M_curr_symbol;
-      string_type 	_M_positive_sign;
-      string_type 	_M_negative_sign;
-      int 		_M_frac_digits;
-      pattern 		_M_pos_format;
-      pattern 		_M_neg_format;
+      const char* 			_M_grouping;
+      char_type 			_M_decimal_point;
+      char_type 			_M_thousands_sep;
+      const char_type* 			_M_curr_symbol;
+      const char_type*			_M_positive_sign;
+      const char_type*			_M_negative_sign;
+      int 				_M_frac_digits;
+      pattern 				_M_pos_format;
+      pattern 				_M_neg_format;
 
     public:
       explicit 
@@ -1383,7 +1398,7 @@ namespace std
 
     protected:
       virtual 
-      ~moneypunct() { }
+      ~moneypunct();
 
       virtual char_type
       do_decimal_point() const
@@ -1423,7 +1438,7 @@ namespace std
 
       // For use at construction time only.
        void 
-       _M_initialize_moneypunct(__c_locale __cloc = NULL);
+       _M_initialize_moneypunct(__c_locale __cloc = _S_c_locale);
     };
 
   template<typename _CharT, bool _Intl>
@@ -1431,6 +1446,12 @@ namespace std
 
   template<typename _CharT, bool _Intl>
     const bool moneypunct<_CharT, _Intl>::intl;
+
+  template<>
+    moneypunct<char, true>::~moneypunct();
+
+  template<>
+    moneypunct<char, false>::~moneypunct();
 
   template<> 
     void
@@ -1441,6 +1462,12 @@ namespace std
     moneypunct<char, false>::_M_initialize_moneypunct(__c_locale __cloc);
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    moneypunct<wchar_t, true>::~moneypunct();
+
+  template<>
+    moneypunct<wchar_t, false>::~moneypunct();
+
   template<> 
     void
     moneypunct<wchar_t, true>::_M_initialize_moneypunct(__c_locale __cloc);
@@ -1586,7 +1613,7 @@ namespace std
       explicit 
       messages(size_t __refs = 0) 
       : locale::facet(__refs), _M_name_messages("C")
-      { _M_c_locale_messages = _S_clone_c_locale(_S_c_locale); }
+      { _M_c_locale_messages = _S_c_locale; }
 
       // Non-standard.
       explicit 
@@ -1616,7 +1643,10 @@ namespace std
     protected:
       virtual 
       ~messages()
-       { _S_destroy_c_locale(_M_c_locale_messages); }
+       { 
+	 if (_M_c_locale_messages != _S_c_locale)
+	   _S_destroy_c_locale(_M_c_locale_messages); 
+       }
 
       virtual catalog 
       do_open(const basic_string<char>&, const locale&) const;
@@ -1699,7 +1729,8 @@ namespace std
       : messages<_CharT>(__refs) 
       { 
 	_M_name_messages = __s;
-	_S_destroy_c_locale(_M_c_locale_messages);
+	if (_M_c_locale_messages != _S_c_locale)
+	  _S_destroy_c_locale(_M_c_locale_messages);
 	_S_create_c_locale(_M_c_locale_messages, __s); 
       }
 

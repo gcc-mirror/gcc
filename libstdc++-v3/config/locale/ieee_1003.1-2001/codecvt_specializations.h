@@ -39,10 +39,6 @@
   // Define this here to codecvt.cc can have _S_max_size definition.
 #define _GLIBCPP_USE___ENC_TRAITS 1
 
-#if _GLIBCPP_USE_SHADOW_HEADERS
-  using _C_legacy::CODESET;
-#endif
-
   // Extension to use icov for dealing with character encodings,
   // including conversions and comparisons between various character
   // sets.  This object encapsulates data that may need to be shared between
@@ -81,23 +77,6 @@
     {
       memset(_M_int_enc, 0, _S_max_size);
       memset(_M_ext_enc, 0, _S_max_size);
-    }
-
-    explicit __enc_traits(const locale& __loc)
-    : _M_in_desc(0), _M_out_desc(0), _M_ext_bom(0), _M_int_bom(0)
-    {
-      // __intc_end = whatever we are using internally, which is
-      // UCS4 (linux, solaris) 
-      // UCS2 == UNICODE  (microsoft, java, aix, whatever...)
-      // XXX Currently don't know how to get this data from target system...
-      strcpy(_M_int_enc, "UCS4");
-
-      // __extc_end = external codeset in current locale
-      // XXX There has got to be a better way to do this.
-      __c_locale __cloc;
-      locale::facet::_S_create_c_locale(__cloc, __loc.name().c_str());
-      strcpy(_M_ext_enc, __nl_langinfo_l(CODESET, __cloc));
-      locale::facet::_S_destroy_c_locale(__cloc);
     }
 
     explicit __enc_traits(const char* __int, const char* __ext, 

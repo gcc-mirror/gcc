@@ -47,20 +47,11 @@
 #include <climits>		// For CHAR_BIT
 #include <cctype>		// For isspace, etc.
 #include <string> 		// For string.
-#include <vector>		// For vector.
 #include <bits/functexcept.h>
-
 #include <bits/atomicity.h>
 
 namespace std
 {
-  // NB: Don't instantiate required wchar_t facets if no wchar_t support.
-#ifdef _GLIBCPP_USE_WCHAR_T
-# define  _GLIBCPP_NUM_FACETS 28
-#else
-# define  _GLIBCPP_NUM_FACETS 14
-#endif
-
   // 22.1.1 Locale
   class locale;
 
@@ -225,7 +216,7 @@ namespace std
     locale(const locale& __other) throw();
 
     explicit  
-    locale(const char* __std_name);
+    locale(const char* __s);
 
     locale(const locale& __base, const char* __s, category __cat);
 
@@ -277,7 +268,6 @@ namespace std
     static _Impl* 	_S_global;  
 
     static const size_t	_S_num_categories = 6;
-    static const size_t _S_num_facets = _GLIBCPP_NUM_FACETS;
 
     explicit 
     locale(_Impl*) throw();
@@ -301,9 +291,6 @@ namespace std
   class locale::_Impl
   {
   public:
-    // Types.
-    typedef vector<facet*, allocator<facet*> > 	__vec_facet;
-
     // Friends.
     friend class locale;
     friend class locale::facet;
@@ -319,8 +306,9 @@ namespace std
   private:
     // Data Members.
     _Atomic_word			_M_references;
-    __vec_facet 			_M_facets;
-    string 				_M_names[_S_num_categories];
+    facet** 				_M_facets;
+    size_t 				_M_facets_size;
+    const char* 			_M_names[_S_num_categories];
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_numeric[];
     static const locale::id* const 	_S_id_collate[];
@@ -346,15 +334,22 @@ namespace std
     }
 
     _Impl(const _Impl&, size_t);
-    _Impl(string __name, size_t);
+    _Impl(const char*, size_t);
+    _Impl(facet**, size_t, bool);
+
    ~_Impl() throw();
+
+    _Impl(const _Impl&);  // Not defined.
+
+    void 
+    operator=(const _Impl&);  // Not defined.
 
     inline bool
     _M_check_same_name()
     {
       bool __ret = true;
-      for (size_t i = 0; i < _S_num_categories - 1; ++i)
-	__ret &= _M_names[i] == _M_names[i + 1];
+      for (size_t i = 0; __ret && i < _S_num_categories - 1; ++i)
+	__ret &= (strcmp(_M_names[i], _M_names[i + 1]) == 0);
       return __ret;
     }
 
@@ -388,11 +383,10 @@ namespace std
   // 22.1.1.1.2  Class locale::facet
   class locale::facet
   {
+  private:
     friend class locale;
     friend class locale::_Impl;
-    friend class __enc_traits;
 
-  private:
     _Atomic_word _M_references;
 
   protected:
@@ -407,7 +401,8 @@ namespace std
     ~facet();
 
     static void
-    _S_create_c_locale(__c_locale& __cloc, const char* __s);
+    _S_create_c_locale(__c_locale& __cloc, const char* __s, 
+		       __c_locale __old = 0);
 
     static __c_locale
     _S_clone_c_locale(__c_locale& __cloc);
@@ -447,18 +442,29 @@ namespace std
     // function (even an inline) would be undefined.
     mutable size_t 		_M_index;
 
-    // Last id number assigned
+    // Last id number assigned.
     static _Atomic_word 	_S_highwater;   
 
     void 
-    operator=(const id&);  // not defined
+    operator=(const id&);  // Not defined.
 
-    id(const id&);  // not defined
+    id(const id&);  // Not defined.
 
   public:
     // NB: This class is always a static data member, and thus can be
     // counted on to be zero-initialized.
     id();
+
+    size_t
+    _M_id() const
+    {
+      if (!_M_index)
+	{
+	  __exchange_and_add(&_S_highwater, 1);
+	  _M_index = _S_highwater;
+	}
+      return _M_index - 1;
+    }
   };
 
   template<typename _Facet>
