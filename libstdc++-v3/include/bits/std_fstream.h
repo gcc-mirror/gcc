@@ -86,7 +86,7 @@ namespace std
       basic_filebuf();
 
       // Non-standard ctor:
-      basic_filebuf(__c_file_type* __f, ios_base::openmode __mode);
+      basic_filebuf(__c_file_type* __f, bool __s, ios_base::openmode __mode);
  
       virtual 
       ~basic_filebuf() 

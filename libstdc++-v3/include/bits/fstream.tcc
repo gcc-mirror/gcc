@@ -90,15 +90,22 @@ namespace std
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
-    basic_filebuf(__c_file_type* __f, ios_base::openmode __mode)
+    basic_filebuf(__c_file_type* __f, bool __s, ios_base::openmode __mode)
     : __streambuf_type(),  _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
     {
       _M_filebuf_init();
       _M_file->sys_open(__f, __mode);
       if (this->is_open())
-	_M_mode = __mode;
-   }
+	{
+	  _M_mode = __mode;
+	  if (!__s)
+	    {
+	      _M_allocate_buffers();
+	      _M_set_indeterminate();
+	    }
+	}
+    }
 
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::__filebuf_type* 

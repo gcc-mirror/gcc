@@ -133,63 +133,61 @@ namespace std
   ios_base::failure::what() const throw()
   { return _M_name; }
 
+  void
+  ios_base::Init::_S_ios_create(bool __sync)
+  {
+    // NB: The file std_iostream.h creates the four standard files
+    // with NULL buffers. At this point, we swap out these
+    new (&cout) ostream(new filebuf(stdout, __sync, ios_base::out));
+    new (&cin) istream(new filebuf(stdin, __sync, ios_base::in));
+    new (&cerr) ostream(new filebuf(stderr, __sync, ios_base::out));
+    new (&clog) ostream(cerr.rdbuf());
+    cin.tie(&cout);
+    cerr.flags(ios_base::unitbuf);
+    
+#ifdef _GLIBCPP_USE_WCHAR_T
+    new (&wcout) wostream( new wfilebuf(stdout, __sync, ios_base::out));
+    new (&wcin) wistream(new wfilebuf(stdin, __sync, ios_base::in));
+    new (&wcerr) wostream(new wfilebuf(stderr, __sync, ios_base::out));
+    new (&wclog) wostream(wcerr.rdbuf());
+    wcin.tie(&wcout);
+    wcerr.flags(ios_base::unitbuf);
+#endif
+  }
+
   ios_base::Init::Init()
   {
     if (++_S_ios_base_init == 1)
       {
-	// NB: std_iostream.h creates the four standard files with
-	// NULL buffers. At this point, we swap out these placeholder
-	// objects for the properly-constructed ones
-       	_M_cout = new filebuf(stdout, ios_base::out);
-	_M_cin = new filebuf(stdin, ios_base::in);
-	_M_cerr = new filebuf(stderr, ios_base::out);
-	new (&cout) ostream(_M_cout);
-	new (&cin) istream(_M_cin);
-	new (&cerr) ostream(_M_cerr);
-	new (&clog) ostream(_M_cerr);
-	cin.tie(&cout);
-	cerr.flags(ios_base::unitbuf);
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-	_M_wcout = new wfilebuf(stdout, ios_base::out);
-	_M_wcin = new wfilebuf(stdin, ios_base::in);
-	_M_wcerr = new wfilebuf(stderr, ios_base::out);
-	new (&wcout) wostream(_M_wcout);
-	new (&wcin) wistream(_M_wcin);
-	new (&wcerr) wostream(_M_wcerr);
-	new (&wclog) wostream(_M_wcerr);
-	wcin.tie(&wcout);
-	wcerr.flags(ios_base::unitbuf);
-#endif
+	// Standard streams default to synced with "C" operations.
 	ios_base::Init::_S_synced_with_stdio = true;
+	_S_ios_create(ios_base::Init::_S_synced_with_stdio);
       }
+  }
+
+  void
+  ios_base::Init::_S_ios_destroy()
+  {
+    cout.flush();
+    cerr.flush();
+    clog.flush();
+    delete cout.rdbuf();
+    delete cin.rdbuf();
+    delete cerr.rdbuf();
+#ifdef _GLIBCPP_USE_WCHAR_T
+    wcout.flush();
+    wcerr.flush();
+    wclog.flush();
+    delete wcout.rdbuf();
+    delete wcin.rdbuf();
+    delete wcerr.rdbuf();
+#endif
   }
 
   ios_base::Init::~Init()
   {
     if (--_S_ios_base_init == 0)
-      {
-	cout.flush();
-	cerr.flush();
-	clog.flush();
-	delete _M_cout;
-	delete _M_cin;
-	delete _M_cerr;
-	_M_cout = NULL;
-	_M_cin = NULL;
-	_M_cerr = NULL;
-#ifdef _GLIBCPP_USE_WCHAR_T
-	wcout.flush();
-	wcerr.flush();
-	wclog.flush();
-	delete _M_wcout;
-	delete _M_wcin;
-	delete _M_wcerr;
-	_M_wcout = NULL;
-	_M_wcin = NULL;
-	_M_wcerr = NULL;
-#endif
-      }
+      _S_ios_destroy();
   } 
 
   // 27.4.2.5  ios_base storage functions
@@ -323,31 +321,11 @@ namespace std
     // currently synchronized.
     if (!__sync && __ret)
       {
-#if 0
-	// no longer need to do this
-	// Need to dispose of the buffers created at initialization.
-	__ioinit._M_cout->~filebuf();
-	__ioinit._M_cin->~filebuf();
-	__ioinit._M_cerr->~filebuf();
-	__ioinit._M_cout = new filebuf();
-	__ioinit._M_cin = new filebuf();
-	__ioinit._M_cerr = new filebuf();
-	__ioinit._M_cout->open("stdout", ios_base::out);
-	__ioinit._M_cin->open("stdin", ios_base::in);
-	__ioinit._M_cerr->open("stderr", ios_base::out);
-	cout.rdbuf(__ioinit._M_cout);
-	cin.rdbuf(__ioinit._M_cin);
-	cerr.rdbuf(__ioinit._M_cerr);
-	cerr.flags(ios_base::unitbuf);
-	clog.rdbuf(__ioinit._M_cerr);
-#endif
-#ifdef _GLIBCPP_USE_WCHAR_T
-#endif
 	ios_base::Init::_S_synced_with_stdio = false;
+	ios_base::Init::_S_ios_destroy();
+	ios_base::Init::_S_ios_create(ios_base::Init::_S_synced_with_stdio);
       }
-    
     return __ret; 
   }
-
 }  // namespace std
 
