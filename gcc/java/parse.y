@@ -5745,6 +5745,7 @@ do_resolve_class (enclosing, class_type, decl, cl)
 {
   tree new_class_decl = NULL_TREE, super = NULL_TREE;
   tree saved_enclosing_type = enclosing ? TREE_TYPE (enclosing) : NULL_TREE;
+  tree decl_result;
   struct hash_table _ht, *circularity_hash = &_ht;
 
   /* This hash table is used to register the classes we're going
@@ -5841,9 +5842,32 @@ do_resolve_class (enclosing, class_type, decl, cl)
       if (check_pkg_class_access (TYPE_NAME (class_type), cl, true))
         return NULL_TREE;
     }
-  
+
   /* 6- Last call for a resolution */
-  return IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
+  decl_result = IDENTIFIER_CLASS_VALUE (TYPE_NAME (class_type));
+
+  /* The final lookup might have registered a.b.c into a.b$c If we
+     failed at the first lookup, progressively change the name if
+     applicable and use the matching DECL instead. */
+  if (!decl_result && QUALIFIED_P (TYPE_NAME (class_type)))
+    {
+      tree name = TYPE_NAME (class_type);
+      char *separator;
+      do {
+
+       /* Reach the last '.', and if applicable, replace it by a `$' and
+          see if this exists as a type. */
+       if ((separator = strrchr (IDENTIFIER_POINTER (name), '.')))
+         {
+           int c = *separator;
+           *separator = '$';
+           name = get_identifier (IDENTIFIER_POINTER (name));
+           *separator = c;
+           decl_result = IDENTIFIER_CLASS_VALUE (name);
+         }
+      } while (!decl_result && separator);
+    }
+  return decl_result;
 }
 
 static tree
