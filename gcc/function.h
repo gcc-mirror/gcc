@@ -150,6 +150,7 @@ struct function
   char *maybepermanent_firstobj;
   char *temporary_firstobj;
   char *momentary_firstobj;
+  char *momentary_function_firstobj;
   struct obstack *current_obstack;
   struct obstack *function_obstack;
   struct obstack *function_maybepermanent_obstack;
