@@ -1,5 +1,10 @@
 2004-07-25  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	PR target/15202
+	* pa.md (movdi, movsi, movhi, movqi): Support move from shift amount
+	register to general register for DI, SI, HI and QI modes.  Remove
+	move to shift amount register in DF mode.
+
 	PR rtl-optimization/14782
 	* pa.c (emit_move_sequence): Use SFmode for 4-byte modes when doing
 	the address checks for secondary reloads for loads from and stores
