@@ -1,3 +1,10 @@
+2003-06-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-format.c (dynamic_format_types): New pointer for dynamic data.
+	(find_length_info_modifier_index, init_dynamic_asm_fprintf_info):
+	New functions split out of...
+	(handle_format_attribute): ...here.
+
 2003-06-16  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (REG_CLASS_FROM_LETTER): Change to:
