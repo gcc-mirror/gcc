@@ -1,3 +1,7 @@
+2002-09-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* com.c (union lang_tree_node): Add chain_next option.
+
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
 	* target.c (ffetarget_real1): Don't pass FFETARGET_ATOF_

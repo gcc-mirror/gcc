@@ -889,7 +889,7 @@ struct tree_exp GTY(())
   struct tree_common common;
   int complexity;
   tree GTY ((special ("tree_exp"), 
-	     length ("TREE_CODE_LENGTH (TREE_CODE ((tree) &%h))"))) 
+	     desc ("TREE_CODE ((tree) &%0)"))) 
     operands[1];
 };
 
