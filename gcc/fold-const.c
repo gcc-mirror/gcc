@@ -11126,6 +11126,7 @@ fold_unary_to_constant (enum tree_code code, tree type, tree op0)
     case FIX_TRUNC_EXPR:
     case FIX_FLOOR_EXPR:
     case FIX_CEIL_EXPR:
+    case FIX_ROUND_EXPR:
       return fold_convert_const (code, type, op0);
 
     case NEGATE_EXPR:
