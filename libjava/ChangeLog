@@ -1,5 +1,9 @@
 2003-12-04  Michael Koch  <konqueror@gmx.de>
 
+	* boehm.cc (_Jv_MarkObj): Access hack_signers field.
+
+2003-12-04  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/DatagramPacket.java
 	(length): Made packge-private to make it accessible via CNI.
 	(maxlen): New field.
