@@ -1513,9 +1513,12 @@ generate_element_zero (struct sra_elt *elt, tree *list_p)
 static void
 generate_element_init (struct sra_elt *elt, tree init, tree *list_p)
 {
-  enum tree_code init_code = TREE_CODE (init);
+  enum tree_code init_code;
   struct sra_elt *sub;
   tree t;
+
+  STRIP_USELESS_TYPE_CONVERSION (init);
+  init_code = TREE_CODE (init);
 
   if (elt->is_scalar)
     {
