@@ -41,7 +41,7 @@ ARFLAGS = rc
 RANLIB = @RANLIB@
 @SET_MAKE@
 
-SHELL = /bin/sh
+SHELL = @SHELL@
 
 #### End of system configuration section. ####
 
