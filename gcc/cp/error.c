@@ -1591,6 +1591,11 @@ dump_expr (t, nop)
       OB_PUTID (TREE_OPERAND (t, 0));
       break;
 
+    case ARROW_EXPR:
+      dump_expr (TREE_OPERAND (t, 0), nop);
+      OB_PUTS ("->");
+      break;
+
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
       if (TREE_CODE (t) == SIZEOF_EXPR)

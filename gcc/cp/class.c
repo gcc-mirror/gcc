@@ -5530,6 +5530,9 @@ is_empty_class (type)
 {
   tree t;
 
+  if (type == error_mark_node)
+    return 0;
+
   if (! IS_AGGR_TYPE (type))
     return 0;
 
