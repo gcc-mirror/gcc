@@ -217,6 +217,9 @@ struct machine_function GTY(())
   /* Size of stack frame.  */
   HOST_WIDE_INT frame_size;
 
+  /* Literal pool base register.  */
+  rtx base_reg;
+
   /* Some local-dynamic TLS symbol name.  */
   const char *some_ld_name;
 };
@@ -236,10 +239,11 @@ static int get_some_local_dynamic_name_1 (rtx *, void *);
 static int reg_used_in_mem_p (int, rtx);
 static int addr_generation_dependency_p (rtx, rtx);
 static int s390_split_branches (void);
+static void annotate_constant_pool_refs (rtx *x);
 static void find_constant_pool_ref (rtx, rtx *);
 static void replace_constant_pool_ref (rtx *, rtx, rtx);
 static rtx find_ltrel_base (rtx);
-static void replace_ltrel_base (rtx *, rtx);
+static void replace_ltrel_base (rtx *);
 static void s390_optimize_prolog (bool);
 static int find_unused_clobbered_reg (void);
 static void s390_frame_info (int, int);
@@ -2069,9 +2073,11 @@ s390_expand_plus_operand (register rtx target, register rtx src,
 static int
 s390_decompose_address (register rtx addr, struct s390_address *out)
 {
+  HOST_WIDE_INT offset = 0;
   rtx base = NULL_RTX;
   rtx indx = NULL_RTX;
   rtx disp = NULL_RTX;
+  rtx orig_disp;
   int pointer = FALSE;
   int base_ptr = FALSE;
   int indx_ptr = FALSE;
@@ -2119,16 +2125,69 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
   else
     disp = addr;		/* displacement */
 
+  /* Extract integer part of displacement.  */
+  orig_disp = disp;
+  if (disp)
+    {
+      if (GET_CODE (disp) == CONST_INT)
+	{
+	  offset = INTVAL (disp);
+	  disp = NULL_RTX;
+	}
+      else if (GET_CODE (disp) == CONST
+	       && GET_CODE (XEXP (disp, 0)) == PLUS
+	       && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT)
+	{
+	  offset = INTVAL (XEXP (XEXP (disp, 0), 1));
+	  disp = XEXP (XEXP (disp, 0), 0);
+	}
+    }
+
+  /* Strip off CONST here to avoid special case tests later.  */
+  if (disp && GET_CODE (disp) == CONST)
+    disp = XEXP (disp, 0);
+
+  /* We can convert literal pool addresses to
+     displacements by basing them off the base register.  */
+  if (disp && GET_CODE (disp) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (disp))
+    {
+      /* Either base or index must be free to hold the base register.  */
+      if (!base)
+        base = gen_rtx_REG (Pmode, BASE_REGISTER);
+      else if (!indx)
+        indx = gen_rtx_REG (Pmode, BASE_REGISTER);
+      else
+        return FALSE;
+
+      /* Mark up the displacement.  */
+      disp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, disp),
+			     UNSPEC_LTREL_OFFSET);
+    }
 
   /* Validate base register.  */
   if (base)
     {
       if (GET_CODE (base) == UNSPEC)
-        {
-          if (XVECLEN (base, 0) != 1 || XINT (base, 1) != UNSPEC_LTREL_BASE)
+	switch (XINT (base, 1))
+	  {
+	  case UNSPEC_LTREF:
+	    if (!disp)
+	      disp = gen_rtx_UNSPEC (Pmode, 
+				     gen_rtvec (1, XVECEXP (base, 0, 0)),
+				     UNSPEC_LTREL_OFFSET);
+	    else
+	      return FALSE;
+
+	    base = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    break;
+
+	  case UNSPEC_LTREL_BASE:
+	    base = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    break;
+
+	  default:
 	    return FALSE;
-	  base = gen_rtx_REG (Pmode, BASE_REGISTER);
-	}
+	  }
 
       if (GET_CODE (base) != REG || GET_MODE (base) != Pmode)
 	return FALSE;
@@ -2149,11 +2208,26 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
   if (indx)
     {
       if (GET_CODE (indx) == UNSPEC)
-        {
-          if (XVECLEN (indx, 0) != 1 || XINT (indx, 1) != UNSPEC_LTREL_BASE)
+	switch (XINT (indx, 1))
+	  {
+	  case UNSPEC_LTREF:
+	    if (!disp)
+	      disp = gen_rtx_UNSPEC (Pmode, 
+				     gen_rtvec (1, XVECEXP (indx, 0, 0)),
+				     UNSPEC_LTREL_OFFSET);
+	    else
+	      return FALSE;
+
+	    indx = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    break;
+
+	  case UNSPEC_LTREL_BASE:
+	    indx = gen_rtx_REG (Pmode, BASE_REGISTER);
+	    break;
+
+	  default:
 	    return FALSE;
-	  indx = gen_rtx_REG (Pmode, BASE_REGISTER);
-	}
+	  }
 
       if (GET_CODE (indx) != REG || GET_MODE (indx) != Pmode)
 	return FALSE;
@@ -2180,106 +2254,63 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
     }
 
   /* Validate displacement.  */
-  if (disp)
+  if (!disp)
     {
-      /* Allow integer constant in range.  */
-      if (GET_CODE (disp) == CONST_INT)
-        {
-	  /* If the argument pointer is involved, the displacement will change
-	     later anyway as the argument pointer gets eliminated.  This could
-	     make a valid displacement invalid, but it is more likely to make
-	     an invalid displacement valid, because we sometimes access the
-	     register save area via negative offsets to the arg pointer.
-	     Thus we don't check the displacement for validity here.  If after
-	     elimination the displacement turns out to be invalid after all,
-	     this is fixed up by reload in any case.  */
-	  if (base != arg_pointer_rtx && indx != arg_pointer_rtx)
-	    {
-	      if (!DISP_IN_RANGE (INTVAL (disp)))
-	        return FALSE;
-	    }
-        }
+      /* If the argument pointer is involved, the displacement will change
+	 later anyway as the argument pointer gets eliminated.  This could
+	 make a valid displacement invalid, but it is more likely to make
+	 an invalid displacement valid, because we sometimes access the
+	 register save area via negative offsets to the arg pointer.
+	 Thus we don't check the displacement for validity here.  If after
+	 elimination the displacement turns out to be invalid after all,
+	 this is fixed up by reload in any case.  */
+      if (base != arg_pointer_rtx && indx != arg_pointer_rtx)
+	if (!DISP_IN_RANGE (offset))
+	  return FALSE;
+    }
+  else
+    {
+      /* All the special cases are pointers.  */
+      pointer = TRUE;
 
       /* In the small-PIC case, the linker converts @GOT
          and @GOTNTPOFF offsets to possible displacements.  */
-      else if (GET_CODE (disp) == CONST
-               && GET_CODE (XEXP (disp, 0)) == UNSPEC
-               && (XINT (XEXP (disp, 0), 1) == UNSPEC_GOT
-		   || XINT (XEXP (disp, 0), 1) == UNSPEC_GOTNTPOFF))
+      if (GET_CODE (disp) == UNSPEC
+          && (XINT (disp, 1) == UNSPEC_GOT
+	      || XINT (disp, 1) == UNSPEC_GOTNTPOFF)
+	  && offset == 0
+	  && flag_pic == 1)
         {
-          if (flag_pic != 1)
-            return FALSE;
-
-	  pointer = TRUE;
+	  ;
         }
 
-      /* Accept chunkfied literal pool symbol references.  */
-      else if (GET_CODE (disp) == CONST
-               && GET_CODE (XEXP (disp, 0)) == MINUS
-               && GET_CODE (XEXP (XEXP (disp, 0), 0)) == LABEL_REF
-               && GET_CODE (XEXP (XEXP (disp, 0), 1)) == LABEL_REF)
+      /* Accept chunkified literal pool symbol references.  */
+      else if (GET_CODE (disp) == MINUS
+               && GET_CODE (XEXP (disp, 0)) == LABEL_REF
+               && GET_CODE (XEXP (disp, 1)) == LABEL_REF)
         {
-	  pointer = TRUE;
+	  ;
         }
 
-      /* Likewise if a constant offset is present.  */
-      else if (GET_CODE (disp) == CONST
-               && GET_CODE (XEXP (disp, 0)) == PLUS
-               && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT
-               && GET_CODE (XEXP (XEXP (disp, 0), 0)) == MINUS
-               && GET_CODE (XEXP (XEXP (XEXP (disp, 0), 0), 0)) == LABEL_REF
-               && GET_CODE (XEXP (XEXP (XEXP (disp, 0), 0), 1)) == LABEL_REF)
+      /* Accept literal pool references.  */
+      else if (GET_CODE (disp) == UNSPEC
+	       && XINT (disp, 1) == UNSPEC_LTREL_OFFSET)
         {
-	  pointer = TRUE;
+	  orig_disp = gen_rtx_CONST (Pmode, disp);
+	  if (offset)
+	    {
+	      /* If we have an offset, make sure it does not
+		 exceed the size of the constant pool entry.  */
+	      rtx sym = XVECEXP (disp, 0, 0);
+	      if (offset >= GET_MODE_SIZE (get_pool_mode (sym)))
+		return FALSE;
+
+              orig_disp = plus_constant (orig_disp, offset);
+	    }
         }
 
-      /* We can convert literal pool addresses to
-         displacements by basing them off the base register.  */
       else
-        {
-          /* In some cases, we can accept an additional
-             small constant offset.  Split these off here.  */
-
-          unsigned int offset = 0;
-
-          if (GET_CODE (disp) == CONST
-              && GET_CODE (XEXP (disp, 0)) == PLUS
-              && GET_CODE (XEXP (XEXP (disp, 0), 1)) == CONST_INT)
-            {
-              offset = INTVAL (XEXP (XEXP (disp, 0), 1));
-              disp = XEXP (XEXP (disp, 0), 0);
-            }
-
-          /* Now we must have a literal pool address.  */
-          if (GET_CODE (disp) != SYMBOL_REF
-              || !CONSTANT_POOL_ADDRESS_P (disp))
-            return FALSE;
-
-          /* If we have an offset, make sure it does not
-             exceed the size of the constant pool entry.  */
-          if (offset && offset >= GET_MODE_SIZE (get_pool_mode (disp)))
-            return FALSE;
-
-          /* Either base or index must be free to
-             hold the base register.  */
-          if (base && indx)
-            return FALSE;
-
-          /* Convert the address.  */
-          if (base)
-            indx = gen_rtx_REG (Pmode, BASE_REGISTER);
-          else
-            base = gen_rtx_REG (Pmode, BASE_REGISTER);
-
-          disp = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, disp),
-				 UNSPEC_LTREL_OFFSET);
-          disp = gen_rtx_CONST (Pmode, disp);
-
-          if (offset)
-            disp = plus_constant (disp, offset);
-
-	  pointer = TRUE;
-        }
+	return FALSE;
     }
 
   if (!base && !indx)
@@ -2289,7 +2320,7 @@ s390_decompose_address (register rtx addr, struct s390_address *out)
     {
       out->base = base;
       out->indx = indx;
-      out->disp = disp;
+      out->disp = orig_disp;
       out->pointer = pointer;
     }
 
@@ -4058,6 +4089,7 @@ s390_split_branches (void)
 	  tmp = force_const_mem (Pmode, *label);
 	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, tmp), insn);
 	  INSN_ADDRESSES_NEW (tmp, -1);
+	  annotate_constant_pool_refs (&PATTERN (tmp));
 
 	  target = temp_reg;
 	}
@@ -4070,8 +4102,10 @@ s390_split_branches (void)
 	  target = force_const_mem (Pmode, target);
 	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, target), insn);
 	  INSN_ADDRESSES_NEW (tmp, -1);
+	  annotate_constant_pool_refs (&PATTERN (tmp));
 
-          target = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (target, 0)),
+          target = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, XEXP (target, 0),
+							cfun->machine->base_reg),
 				   UNSPEC_LTREL_BASE);
 	  target = gen_rtx_PLUS (Pmode, temp_reg, target);
 	}
@@ -4083,11 +4117,115 @@ s390_split_branches (void)
   return new_literal;
 }
 
+/* Annotate every literal pool reference in X by an UNSPEC_LTREF expression.
+   Fix up MEMs as required.  */
 
-/* Find a literal pool symbol referenced in RTX X, and store
-   it at REF.  Will abort if X contains references to more than
-   one such pool symbol; multiple references to the same symbol
-   are allowed, however.
+static void
+annotate_constant_pool_refs (rtx *x)
+{
+  int i, j;
+  const char *fmt;
+
+  if (GET_CODE (*x) == SYMBOL_REF
+      && CONSTANT_POOL_ADDRESS_P (*x))
+    abort ();
+
+  /* Literal pool references can only occur inside a MEM ...  */
+  if (GET_CODE (*x) == MEM)
+    {
+      rtx memref = XEXP (*x, 0);
+
+      if (GET_CODE (memref) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (memref))
+	{
+	  rtx base = cfun->machine->base_reg;
+	  rtx addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, memref, base),
+				     UNSPEC_LTREF);
+
+	  *x = replace_equiv_address (*x, addr);
+	  return;
+	}
+
+      if (GET_CODE (memref) == CONST
+	  && GET_CODE (XEXP (memref, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (memref, 0), 1)) == CONST_INT
+	  && GET_CODE (XEXP (XEXP (memref, 0), 0)) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (XEXP (memref, 0), 0)))
+	{
+	  HOST_WIDE_INT off = INTVAL (XEXP (XEXP (memref, 0), 1));
+	  rtx sym = XEXP (XEXP (memref, 0), 0);
+	  rtx base = cfun->machine->base_reg;
+	  rtx addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, sym, base),
+				     UNSPEC_LTREF);
+
+	  *x = replace_equiv_address (*x, plus_constant (addr, off));
+	  return;
+	}
+    }
+
+  /* ... or a load-address type pattern.  */
+  if (GET_CODE (*x) == SET)
+    {
+      rtx addrref = SET_SRC (*x);
+
+      if (GET_CODE (addrref) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (addrref))
+	{
+	  rtx base = cfun->machine->base_reg;
+	  rtx addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, addrref, base),
+				     UNSPEC_LTREF);
+
+	  SET_SRC (*x) = addr;
+	  return;
+	}
+
+      if (GET_CODE (addrref) == CONST
+	  && GET_CODE (XEXP (addrref, 0)) == PLUS
+	  && GET_CODE (XEXP (XEXP (addrref, 0), 1)) == CONST_INT
+	  && GET_CODE (XEXP (XEXP (addrref, 0), 0)) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (XEXP (addrref, 0), 0)))
+	{
+	  HOST_WIDE_INT off = INTVAL (XEXP (XEXP (addrref, 0), 1));
+	  rtx sym = XEXP (XEXP (addrref, 0), 0);
+	  rtx base = cfun->machine->base_reg;
+	  rtx addr = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, sym, base),
+				     UNSPEC_LTREF);
+
+	  SET_SRC (*x) = plus_constant (addr, off);
+	  return;
+	}
+    }
+
+  /* Annotate LTREL_BASE as well.  */
+  if (GET_CODE (*x) == UNSPEC
+      && XINT (*x, 1) == UNSPEC_LTREL_BASE)
+    {
+      rtx base = cfun->machine->base_reg;
+      *x = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, XVECEXP (*x, 0, 0), base),
+				  UNSPEC_LTREL_BASE);
+      return;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (*x));
+  for (i = GET_RTX_LENGTH (GET_CODE (*x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+        {
+          annotate_constant_pool_refs (&XEXP (*x, i));
+        }
+      else if (fmt[i] == 'E')
+        {
+          for (j = 0; j < XVECLEN (*x, i); j++)
+            annotate_constant_pool_refs (&XVECEXP (*x, i, j));
+        }
+    }
+}
+
+
+/* Find an annotated literal pool symbol referenced in RTX X, 
+   and store it at REF.  Will abort if X contains references to 
+   more than one such pool symbol; multiple references to the same
+   symbol are allowed, however.
 
    The rtx pointed to by REF must be initialized to NULL_RTX
    by the caller before calling this routine.  */
@@ -4109,11 +4247,21 @@ find_constant_pool_ref (rtx x, rtx *ref)
 
   if (GET_CODE (x) == SYMBOL_REF
       && CONSTANT_POOL_ADDRESS_P (x))
+    abort ();
+
+  if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_LTREF)
     {
+      rtx sym = XVECEXP (x, 0, 0);
+      if (GET_CODE (sym) != SYMBOL_REF
+	  || !CONSTANT_POOL_ADDRESS_P (sym))
+	abort ();
+
       if (*ref == NULL_RTX)
-        *ref = x;
-      else if (*ref != x)
-        abort();
+	*ref = sym;
+      else if (*ref != sym)
+	abort ();
+
+      return;
     }
 
   fmt = GET_RTX_FORMAT (GET_CODE (x));
@@ -4131,11 +4279,11 @@ find_constant_pool_ref (rtx x, rtx *ref)
     }
 }
 
-/* Replace every reference to the literal pool symbol REF
-   in X by the address ADDR.  Fix up MEMs as required.  */
+/* Replace every reference to the annotated literal pool 
+   symbol REF in X by its base plus OFFSET.  */
 
 static void
-replace_constant_pool_ref (rtx *x, rtx ref, rtx addr)
+replace_constant_pool_ref (rtx *x, rtx ref, rtx offset)
 {
   int i, j;
   const char *fmt;
@@ -4143,48 +4291,23 @@ replace_constant_pool_ref (rtx *x, rtx ref, rtx addr)
   if (*x == ref)
     abort ();
 
-  /* Literal pool references can only occur inside a MEM ...  */
-  if (GET_CODE (*x) == MEM)
+  if (GET_CODE (*x) == UNSPEC
+      && XINT (*x, 1) == UNSPEC_LTREF
+      && XVECEXP (*x, 0, 0) == ref)
     {
-      rtx memref = XEXP (*x, 0);
-
-      if (memref == ref)
-	{
-	  *x = replace_equiv_address (*x, addr);
-	  return;
-	}
-
-      if (GET_CODE (memref) == CONST
-	  && GET_CODE (XEXP (memref, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (memref, 0), 1)) == CONST_INT
-	  && XEXP (XEXP (memref, 0), 0) == ref)
-	{
-	  HOST_WIDE_INT off = INTVAL (XEXP (XEXP (memref, 0), 1));
-	  *x = replace_equiv_address (*x, plus_constant (addr, off));
-	  return;
-	}
+      *x = gen_rtx_PLUS (Pmode, XVECEXP (*x, 0, 1), offset);
+      return;
     }
 
-  /* ... or a load-address type pattern.  */
-  if (GET_CODE (*x) == SET)
+  if (GET_CODE (*x) == PLUS
+      && GET_CODE (XEXP (*x, 1)) == CONST_INT
+      && GET_CODE (XEXP (*x, 0)) == UNSPEC
+      && XINT (XEXP (*x, 0), 1) == UNSPEC_LTREF
+      && XVECEXP (XEXP (*x, 0), 0, 0) == ref)
     {
-      rtx addrref = SET_SRC (*x);
-
-      if (addrref == ref)
-	{
-	  SET_SRC (*x) = addr;
-	  return;
-	}
-
-      if (GET_CODE (addrref) == CONST
-	  && GET_CODE (XEXP (addrref, 0)) == PLUS
-	  && GET_CODE (XEXP (XEXP (addrref, 0), 1)) == CONST_INT
-	  && XEXP (XEXP (addrref, 0), 0) == ref)
-	{
-	  HOST_WIDE_INT off = INTVAL (XEXP (XEXP (addrref, 0), 1));
-	  SET_SRC (*x) = plus_constant (addr, off);
-	  return;
-	}
+      rtx addr = gen_rtx_PLUS (Pmode, XVECEXP (XEXP (*x, 0), 0, 1), offset);
+      *x = plus_constant (addr, INTVAL (XEXP (*x, 1)));
+      return;
     }
 
   fmt = GET_RTX_FORMAT (GET_CODE (*x));
@@ -4192,12 +4315,12 @@ replace_constant_pool_ref (rtx *x, rtx ref, rtx addr)
     {
       if (fmt[i] == 'e')
         {
-          replace_constant_pool_ref (&XEXP (*x, i), ref, addr);
+          replace_constant_pool_ref (&XEXP (*x, i), ref, offset);
         }
       else if (fmt[i] == 'E')
         {
           for (j = 0; j < XVECLEN (*x, i); j++)
-            replace_constant_pool_ref (&XVECEXP (*x, i, j), ref, addr);
+            replace_constant_pool_ref (&XVECEXP (*x, i, j), ref, offset);
         }
     }
 }
@@ -4238,10 +4361,10 @@ find_ltrel_base (rtx x)
   return NULL_RTX;
 }
 
-/* Replace any occurrence of UNSPEC_LTREL_BASE in X with BASE.  */
+/* Replace any occurrence of UNSPEC_LTREL_BASE in X with its base.  */
 
 static void
-replace_ltrel_base (rtx *x, rtx base)
+replace_ltrel_base (rtx *x)
 {
   int i, j;
   const char *fmt;
@@ -4249,7 +4372,7 @@ replace_ltrel_base (rtx *x, rtx base)
   if (GET_CODE (*x) == UNSPEC
       && XINT (*x, 1) == UNSPEC_LTREL_BASE)
     {
-      *x = base;
+      *x = XVECEXP (*x, 0, 1);
       return;
     }
 
@@ -4258,12 +4381,12 @@ replace_ltrel_base (rtx *x, rtx base)
     {
       if (fmt[i] == 'e')
         {
-          replace_ltrel_base (&XEXP (*x, i), base);
+          replace_ltrel_base (&XEXP (*x, i));
         }
       else if (fmt[i] == 'E')
         {
           for (j = 0; j < XVECLEN (*x, i); j++)
-            replace_ltrel_base (&XVECEXP (*x, i, j), base);
+            replace_ltrel_base (&XVECEXP (*x, i, j));
         }
     }
 }
@@ -4302,11 +4425,11 @@ struct constant_pool
 };
 
 static struct constant_pool * s390_mainpool_start (void);
-static void s390_mainpool_finish (struct constant_pool *, rtx base_reg);
+static void s390_mainpool_finish (struct constant_pool *);
 static void s390_mainpool_cancel (struct constant_pool *);
 
-static struct constant_pool * s390_chunkify_start (rtx base_reg);
-static void s390_chunkify_finish (struct constant_pool *, rtx base_reg);
+static struct constant_pool * s390_chunkify_start (void);
+static void s390_chunkify_finish (struct constant_pool *);
 static void s390_chunkify_cancel (struct constant_pool *);
 
 static struct constant_pool *s390_start_pool (struct constant_pool **, rtx);
@@ -4560,8 +4683,9 @@ s390_mainpool_start (void)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (GET_CODE (insn) == INSN
-	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	  && XINT (PATTERN (insn), 1) == UNSPECV_MAIN_POOL)
+	  && GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (SET_SRC (PATTERN (insn))) == UNSPEC_VOLATILE
+	  && XINT (SET_SRC (PATTERN (insn)), 1) == UNSPECV_MAIN_POOL)
 	{
 	  if (pool->pool_insn)
 	    abort ();
@@ -4599,12 +4723,12 @@ s390_mainpool_start (void)
 
 /* POOL holds the main literal pool as collected by s390_mainpool_start.
    Modify the current function to output the pool constants as well as
-   the pool register setup instruction.  BASE_REG is the register to
-   be used as pool base register.  */
+   the pool register setup instruction.  */
 
 static void
-s390_mainpool_finish (struct constant_pool *pool, rtx base_reg)
+s390_mainpool_finish (struct constant_pool *pool)
 {
+  rtx base_reg = SET_DEST (PATTERN (pool->pool_insn));
   rtx insn;
 
   /* If the pool is empty, we're done.  */
@@ -4684,7 +4808,7 @@ s390_mainpool_finish (struct constant_pool *pool, rtx base_reg)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
-	replace_ltrel_base (&PATTERN (insn), base_reg);
+	replace_ltrel_base (&PATTERN (insn));
 
       if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
         {
@@ -4694,7 +4818,6 @@ s390_mainpool_finish (struct constant_pool *pool, rtx base_reg)
             {
               addr = s390_find_constant (pool, get_pool_constant (pool_ref),
                                                get_pool_mode (pool_ref));
-              addr = gen_rtx_PLUS (Pmode, base_reg, addr);
               replace_constant_pool_ref (&PATTERN (insn), pool_ref, addr);
               INSN_CODE (insn) = -1;
             }
@@ -4718,14 +4841,13 @@ s390_mainpool_cancel (struct constant_pool *pool)
 }
 
 
-/* Chunkify the literal pool.  BASE_REG is to be used as pool
-   register.  */
+/* Chunkify the literal pool.  */
 
 #define S390_POOL_CHUNK_MIN	0xc00
 #define S390_POOL_CHUNK_MAX	0xe00
 
 static struct constant_pool *
-s390_chunkify_start (rtx base_reg)
+s390_chunkify_start (void)
 {
   struct constant_pool *curr_pool = NULL, *pool_list = NULL;
   int extra_size = 0;
@@ -4952,7 +5074,8 @@ s390_chunkify_start (rtx base_reg)
 
   for (curr_pool = pool_list; curr_pool; curr_pool = curr_pool->next)
     {
-      rtx new_insn = gen_reload_base (base_reg, curr_pool->label);
+      rtx new_insn = gen_reload_base (cfun->machine->base_reg, 
+				      curr_pool->label);
       rtx insn = curr_pool->first_insn;
       INSN_ADDRESSES_NEW (emit_insn_before (new_insn, insn), -1);
     }
@@ -4966,7 +5089,8 @@ s390_chunkify_start (rtx base_reg)
 	struct constant_pool *pool = s390_find_pool (pool_list, insn);
 	if (pool)
 	  {
-	    rtx new_insn = gen_reload_base (base_reg, pool->label);
+	    rtx new_insn = gen_reload_base (cfun->machine->base_reg, 
+					    pool->label);
 	    INSN_ADDRESSES_NEW (emit_insn_after (new_insn, insn), -1);
 	  }
       }
@@ -4985,11 +5109,10 @@ s390_chunkify_start (rtx base_reg)
 
 /* POOL_LIST is a chunk list as prepared by s390_chunkify_start.
    After we have decided to use this list, finish implementing
-   all changes to the current function as required.  BASE_REG is
-   to be used as pool base register.  */
+   all changes to the current function as required.  */
 
 static void
-s390_chunkify_finish (struct constant_pool *pool_list, rtx base_reg)
+s390_chunkify_finish (struct constant_pool *pool_list)
 {
   struct constant_pool *curr_pool = NULL;
   rtx insn;
@@ -5000,7 +5123,7 @@ s390_chunkify_finish (struct constant_pool *pool_list, rtx base_reg)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
-	replace_ltrel_base (&PATTERN (insn), base_reg);
+	replace_ltrel_base (&PATTERN (insn));
 
       curr_pool = s390_find_pool (pool_list, insn);
       if (!curr_pool)
@@ -5014,7 +5137,6 @@ s390_chunkify_finish (struct constant_pool *pool_list, rtx base_reg)
             {
               addr = s390_find_constant (curr_pool, get_pool_constant (pool_ref),
                                                     get_pool_mode (pool_ref));
-              addr = gen_rtx_PLUS (Pmode, base_reg, addr);
               replace_constant_pool_ref (&PATTERN (insn), pool_ref, addr);
               INSN_CODE (insn) = -1;
             }
@@ -5273,19 +5395,12 @@ s390_optimize_prolog (bool base_used)
 static void
 s390_reorg (void)
 {
-  rtx base_reg = gen_rtx_REG (Pmode, BASE_REGISTER);
   bool base_used = false;
   bool pool_overflow = false;
 
   /* Make sure all splits have been performed; splits after
      machine_dependent_reorg might confuse insn length counts.  */
   split_all_insns_noflow ();
-
-
-  /* In small leaf functions, try to use an unused call-clobbered
-     register as base register to avoid save/restore overhead.  */
-  if (current_function_is_leaf && !regs_ever_live[5])
-    base_reg = gen_rtx_REG (Pmode, 5);
 
 
   /* Install the main literal pool and the associated base
@@ -5335,7 +5450,7 @@ s390_reorg (void)
 
       /* If literal pool overflowed, start to chunkify it.  */
       if (pool_overflow)
-        pool = s390_chunkify_start (base_reg);
+        pool = s390_chunkify_start ();
 
       /* Split out-of-range branches.  If this has created new
 	 literal pool entries, cancel current chunk list and
@@ -5354,13 +5469,13 @@ s390_reorg (void)
       /* If we made it up to here, both conditions are satisfied.
 	 Finish up literal pool related changes.  */
       if ((pool_overflow || pool->size > 0)
-	   && REGNO (base_reg) == BASE_REGISTER)
+	   && REGNO (cfun->machine->base_reg) == BASE_REGISTER)
 	base_used = true;
 
       if (pool_overflow)
-	s390_chunkify_finish (pool, base_reg);
+	s390_chunkify_finish (pool);
       else
-	s390_mainpool_finish (pool, base_reg);
+	s390_mainpool_finish (pool);
 
       break;
     }
@@ -5649,49 +5764,47 @@ restore_gprs (rtx base, int offset, int first, int last)
   return insn;
 }
 
-/* Emit code to load the GOT register.  If MAYBE_DEAD is true,
-   annotate generated insns with REG_MAYBE_DEAD notes.  */
+/* Return insn sequence to load the GOT register.  */
 
 static GTY(()) rtx got_symbol;
-void
-s390_load_got (int maybe_dead)
+rtx
+s390_load_got (void)
 {
+  rtx insns;
+
   if (!got_symbol)
     {
       got_symbol = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
       SYMBOL_REF_FLAGS (got_symbol) = SYMBOL_FLAG_LOCAL;
     }
 
+  start_sequence ();
+
   if (TARGET_CPU_ZARCH)
     {
-      rtx insn = emit_move_insn (pic_offset_table_rtx, got_symbol);
-      if (maybe_dead)
-        REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
-                                             REG_NOTES (insn));
+      emit_move_insn (pic_offset_table_rtx, got_symbol);
     }
   else
     {
-      rtx offset, insn;
+      rtx offset;
 
       offset = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got_symbol),
 			       UNSPEC_LTREL_OFFSET);
       offset = gen_rtx_CONST (Pmode, offset);
       offset = force_const_mem (Pmode, offset);
 
-      insn = emit_move_insn (pic_offset_table_rtx, offset);
-      if (maybe_dead)
-	REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
-					     REG_NOTES (insn));
+      emit_move_insn (pic_offset_table_rtx, offset);
 
       offset = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (offset, 0)),
 			       UNSPEC_LTREL_BASE);
       offset = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, offset);
 
-      insn = emit_move_insn (pic_offset_table_rtx, offset);
-      if (maybe_dead)
-	REG_NOTES(insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
-					     REG_NOTES (insn));
+      emit_move_insn (pic_offset_table_rtx, offset);
     }
+
+  insns = get_insns ();
+  end_sequence ();
+  return insns;
 }
 
 /* Expand the prologue into a bunch of separate insns.  */
@@ -5712,6 +5825,17 @@ s390_emit_prologue (void)
       || regs_ever_live[RETURN_REGNUM])
     cfun->machine->save_return_addr_p = 1;
 
+  /* Decide which register to use as literal pool base.  In small leaf 
+     functions, try to use an unused call-clobbered register as base 
+     register to avoid save/restore overhead.  */
+
+  if (current_function_is_leaf && !regs_ever_live[5])
+    cfun->machine->base_reg = gen_rtx_REG (Pmode, 5);
+  else
+    cfun->machine->base_reg = gen_rtx_REG (Pmode, BASE_REGISTER);
+
+  regs_ever_live[REGNO (cfun->machine->base_reg)] = 1;
+
   /* Compute frame info.  Note that at this point, we assume the base 
      register and -on S/390- the return register always need to be saved.
      This is done because the usage of these registers might change even 
@@ -5726,6 +5850,17 @@ s390_emit_prologue (void)
   regs_ever_live[RETURN_REGNUM] = !TARGET_CPU_ZARCH 
 				  || cfun->machine->save_return_addr_p;
   regs_ever_live[STACK_POINTER_REGNUM] = cfun->machine->frame_size > 0;
+
+  /* Annotate all constant pool references to let the scheduler know
+     they implicitly use the base register.  */
+
+  push_topmost_sequence ();
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn))
+      annotate_constant_pool_refs (&PATTERN (insn));
+
+  pop_topmost_sequence ();
 
   /* Choose best register to use for temp use within prologue.
      See below for why TPF must use the register 1.  */
@@ -5744,7 +5879,7 @@ s390_emit_prologue (void)
 
   /* Dummy insn to mark literal pool slot.  */
 
-  emit_insn (gen_main_pool ());
+  emit_insn (gen_main_pool (cfun->machine->base_reg));
 
   /* Save fprs for variable args.  */
 
@@ -5790,6 +5925,7 @@ s390_emit_prologue (void)
 	    frame_off = force_const_mem (Pmode, frame_off);
 
           insn = emit_insn (gen_add2_insn (stack_pointer_rtx, frame_off));
+	  annotate_constant_pool_refs (&PATTERN (insn));
 	}
 
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -5854,7 +5990,19 @@ s390_emit_prologue (void)
   /* Set up got pointer, if needed.  */
 
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
-    s390_load_got(true);
+    {
+      rtx insns = s390_load_got ();
+
+      for (insn = insns; insn; insn = NEXT_INSN (insn))
+	{
+	  annotate_constant_pool_refs (&PATTERN (insn));
+
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, NULL_RTX,
+						REG_NOTES (insn));
+	}
+
+      emit_insn (insns);
+    }
 
   if (TARGET_TPF_PROFILING)
     {
@@ -5965,6 +6113,7 @@ s390_emit_epilogue (bool sibcall)
 	    frame_off = force_const_mem (Pmode, frame_off);
 
 	  insn = emit_insn (gen_add2_insn (frame_pointer, frame_off));
+	  annotate_constant_pool_refs (&PATTERN (insn));
 	}
     }
 
@@ -6043,12 +6192,6 @@ s390_emit_epilogue (bool sibcall)
 	      emit_move_insn (return_reg, addr);
 	    }
 	}
-
-      /* ??? As references to the base register are not made
-	 explicit in insn RTX code, we have to add a barrier here
-	 to prevent incorrect scheduling.  */
-
-      emit_insn (gen_blockage());
 
       insn = restore_gprs (frame_pointer, offset,
 			   cfun->machine->first_restore_gpr,

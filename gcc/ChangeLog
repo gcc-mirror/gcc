@@ -1,3 +1,31 @@
+2004-06-27  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_load_got): Update prototype.
+	* config/s390/s390.c (struct machine_function): Add member base_reg.
+	(s390_decompose_address): Accept UNSPEC_LTREF.  Simplify logic.
+	(s390_split_branches): Annotate late pool references.
+	(annotate_constant_pool_refs): New function.
+	(find_constant_pool_ref): Work on annotated pool references.
+	(replace_constant_pool_ref): Likewise.  Use explicit base.
+	(replace_ltrel_base): Use explicit base.
+	(s390_mainpool_start): Reflect main_pool pattern change.
+	(s390_mainpool_finish): Use base register from main_pool.
+	Update calls to replace_ltrel_base and replace_constant_pool_ref.
+	(s390_chunkify_start): Use base_reg from struct machine_function.
+	(s390_chunkify_finish): Remove base_reg argument.  Update calls
+	to replace_ltrel_base and replace_constant_pool_ref.
+	(s390_reorg): Don't decide upon base register.  Update calls.
+	(s390_load_got): Remove MAYBE_DEAD handling.  Do not emit insns
+	but return sequence instead.
+	(s390_emit_prologue): Decide upon base register to use.  Annotate
+	all literal pool references.  Adapt to main_pool pattern change.
+	Update s390_load_got call; move MAYBE_DEAD handling here.
+	(s390_emit_epilogue): Annotate late literal pool references.
+	Remove barrier before register restore instruction.
+	* config/s390/s390.md (UNSPEC_LTREF): New constant.
+	("builtin_setjmp_receiver"): Update s390_load_got call.
+	("main_pool"): Explicitly reference base register.
+
 2004-06-27  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold) <BIT_IOR_EXPR>: Optimize ~X|X and X|~X as -1.
