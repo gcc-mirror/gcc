@@ -1,3 +1,9 @@
+2002-05-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* config/os/gnu-linux/bits/os_defines.h (__glibcpp_long_bits): Define
+	to 64 for hppa 64-bit port.
+	(__glibcpp_long_double_bits): Define to 64 for all hppa ports.
+
 2002-05-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (enable_symvers): Quote $LD.
