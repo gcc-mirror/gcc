@@ -24,13 +24,23 @@ AC_CACHE_VAL(gcc_cv_decl_needed_$1,
 #define index strchr
 #endif],
 [char *(*pfn) = (char *(*)) $1],
-gcc_cv_decl_needed_$1=no, gcc_cv_decl_needed_$1=yes)])
-AC_MSG_RESULT($gcc_cv_decl_needed_$1)
-if test $gcc_cv_decl_needed_$1 = yes; then
+eval "gcc_cv_decl_needed_$1=no", eval "gcc_cv_decl_needed_$1=yes")])
+if eval "test \"`echo '$gcc_cv_decl_needed_'$1`\" = yes"; then
+  AC_MSG_RESULT(yes)
   gcc_tr_decl=NEED_DECLARATION_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
   AC_DEFINE_UNQUOTED($gcc_tr_decl)
+else
+  AC_MSG_RESULT(no)
 fi
 ])dnl
+
+dnl Check multiple functions to see whether each needs a declaration.
+AC_DEFUN(GCC_NEED_DECLARATIONS,
+[for ac_func in $1
+do
+GCC_NEED_DECLARATION($ac_func)
+done
+])
 
 dnl See if symbolic links work and if not, try to substitute either hard links or simple copy.
 AC_DEFUN(GCC_PROG_LN_S,
