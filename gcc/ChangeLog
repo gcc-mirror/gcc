@@ -1,3 +1,8 @@
+2002-10-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* unroll.c (copy_loop_body): Remove REG_EQUAL note attached to
+	copied instruction if the note is not loop invariant.
+
 2002-10-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* gcc/ginclude/stddef.h: Support the FreeBSD 5 typedef system.

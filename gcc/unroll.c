@@ -2033,6 +2033,13 @@ copy_loop_body (loop, copy_start, copy_end, map, exit_label, last_iteration,
 	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
 	  INSN_SCOPE (copy) = INSN_SCOPE (insn);
 
+	  /* If there is a REG_EQUAL note present whose value
+	     is not loop invariant, then delete it, since it
+	     may cause problems with later optimization passes.  */
+	  if ((tem = find_reg_note (copy, REG_EQUAL, NULL_RTX))
+	      && !loop_invariant_p (loop, XEXP (tem, 0)))
+	    remove_note (copy, tem);
+
 #ifdef HAVE_cc0
 	  /* If this insn is setting CC0, it may need to look at
 	     the insn that uses CC0 to see what type of insn it is.
