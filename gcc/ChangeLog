@@ -1,3 +1,8 @@
+Sat Jun  7 15:20:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (stageprofile_build): Kill redundant target.
+	* i386.c (mdep_reorg): Don't pad jumps for Athlon.
+
 2003-06-07  Andreas Jaeger  <aj@suse.de>
 
 	* doc/tm.texi (Costs): Remove DONT_REDUCE_ADDR documentation.
