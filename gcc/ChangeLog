@@ -1,3 +1,9 @@
+2004-10-08  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/spe.h (atosfix16, atosfix32, atosfix64, atoufix16,
+	atoufix32, atoufix64, strtosfix16, strtosfix32, strtosfix64,
+	strtoufix16, strtoufix32, strtoufix64): Declare.
+
 2004-10-08  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-lex.c (interpret_float): Give a pedwarn rather than a warning
