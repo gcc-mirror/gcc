@@ -29,10 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #include "splay-tree.h"
 #include "varray.h"
 
-#ifndef __GNUC__
-#error "You should be using 'make bootstrap' -- see installation instructions"
-#endif
-
 #include "c-common.h"
 #include "name-lookup.h"
 

@@ -1,3 +1,8 @@
+2003-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in (cp-warn): Add $(STRICT_WARN).
+	* cp-tree.h: Don't insist on having GNUC.
+
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
 	* cvt.c (ocp_convert): Only abort if we try to convert an object
