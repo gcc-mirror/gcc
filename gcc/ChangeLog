@@ -1,3 +1,16 @@
+2001-01-10  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_free_machine_status): New.
+	(override_options): Install it.
+	(alpha_mark_machine_status): Verify machine non-null.
+	* config/i386/i386.c (ix86_free_machine_status): New.
+	(override_options): Install it.
+	(ix86_init_machine_status): Use xcalloc.
+	(ix86_mark_machine_status): Verify machine non-null.
+	* config/ia64/ia64.c (ia64_free_machine_status): New.
+	(ia64_override_options): Install it.
+	(ia64_mark_machine_status): Verify machine non-null.
+
 Wed Jan 10 11:34:39 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* function.c (instantiate_virtual_regs): Instantiate virtual

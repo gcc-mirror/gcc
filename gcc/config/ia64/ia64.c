@@ -115,6 +115,7 @@ static void fix_range PARAMS ((const char *));
 static void ia64_add_gc_roots PARAMS ((void));
 static void ia64_init_machine_status PARAMS ((struct function *));
 static void ia64_mark_machine_status PARAMS ((struct function *));
+static void ia64_free_machine_status PARAMS ((struct function *));
 static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_all_insn_group_barriers PARAMS ((FILE *, rtx));
 static void emit_predicate_relation_info PARAMS ((void));
@@ -3663,11 +3664,23 @@ static void
 ia64_mark_machine_status (p)
      struct function *p;
 {
-  ggc_mark_rtx (p->machine->ia64_eh_epilogue_sp);
-  ggc_mark_rtx (p->machine->ia64_eh_epilogue_bsp);
-  ggc_mark_rtx (p->machine->ia64_gp_save);
+  struct machine_function *machine = p->machine;
+
+  if (machine)
+    {
+      ggc_mark_rtx (machine->ia64_eh_epilogue_sp);
+      ggc_mark_rtx (machine->ia64_eh_epilogue_bsp);
+      ggc_mark_rtx (machine->ia64_gp_save);
+    }
 }
 
+static void
+ia64_free_machine_status (p)
+     struct function *p;
+{
+  free (p->machine);
+  p->machine = NULL;
+}
 
 /* Handle TARGET_OPTIONS switches.  */
 
@@ -3690,6 +3703,7 @@ ia64_override_options ()
 
   init_machine_status = ia64_init_machine_status;
   mark_machine_status = ia64_mark_machine_status;
+  free_machine_status = ia64_free_machine_status;
 
   ia64_add_gc_roots ();
 }
