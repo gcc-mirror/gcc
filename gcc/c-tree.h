@@ -303,7 +303,8 @@ extern void shadow_tag                          PROTO((tree));
 extern void shadow_tag_warned                   PROTO((tree, int));
 extern tree start_enum                          PROTO((tree));
 extern int  start_function                      PROTO((tree, tree, tree, int));
-extern tree start_decl                          PROTO((tree, tree, int));
+extern tree start_decl                          PROTO((tree, tree, int,
+						       tree, tree));
 extern tree start_struct                        PROTO((enum tree_code, tree));
 extern void store_parm_decls                    PROTO((void));
 extern tree xref_tag                            PROTO((enum tree_code, tree));
