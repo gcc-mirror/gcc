@@ -1121,7 +1121,7 @@ reload (first, global, dumpfile)
 	   recompute flow information anyway.  */
 	if (optimize && flag_schedule_insns_after_reload)
 	  {
-	    rtx last, first;
+	    rtx last;
 
 	    last = try_split (PATTERN (insn), insn, 1);
 
@@ -5078,6 +5078,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
      enum reload_type type;
      rtx value, out;
      int reloadnum;
+     int ignore_address_reloads;
 {
   int time1;
   int i;
