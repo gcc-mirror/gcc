@@ -1,5 +1,9 @@
 2000-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (tsubst): Don't layout type, if it's error_mark.
+
+2000-07-06  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (instantiate_pending_templates): Reset template level.
 
 2000-07-05  Jason Merrill  <jason@redhat.com>
