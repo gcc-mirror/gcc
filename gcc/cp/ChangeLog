@@ -1,5 +1,16 @@
 2002-12-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/8727
+	* cp-tree.h (lang_type_class): Add typeinfo_var.
+	(CLASSTYPE_TYPEINFO_VAR): New macro.
+	* rtti.c (get_tinfo_decl): Use it.
+
+	PR c++/8663
+	* init.c (expand_member_init): Always get the main variant of a
+	base class.
+
+2002-12-01  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/8332
 	PR c++/8493
 	* decl.c (cxx_init_decl_processing): Use size_type_node, not

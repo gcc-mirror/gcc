@@ -1,3 +1,11 @@
+2002-12-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8727
+	* g++.dg/inherit/typeinfo1.C: New test.
+	
+	PR c++/8663
+	* g++.dg/inherit/typedef1.C: New test.
+
 2002-11-30  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8332
