@@ -811,12 +811,18 @@
    ldbu %0,%1"
   [(set_attr "type" "shift,ld")])
 
-(define_insn "zero_extendqisi2"
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
-  ""
+  "! TARGET_BYTE_OPS"
   "zapnot %1,1,%0"
   [(set_attr "type" "shift")])
+
+(define_expand "zero_extendqisi2"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extend:SI (match_operand:QI 1 "register_operand" "")))]
+  ""
+  "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -827,12 +833,18 @@
    ldbu %0,%1"
   [(set_attr "type" "shift,ld")])
 
-(define_insn "zero_extendqidi2"
+(define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
-  ""
+  "! TARGET_BYTE_OPS"
   "zapnot %1,1,%0"
   [(set_attr "type" "shift")])
+  
+(define_expand "zero_extendqidi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extend:DI (match_operand:QI 1 "register_operand" "")))]
+  ""
+  "")
   
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -843,12 +855,18 @@
    ldwu %0,%1"
   [(set_attr "type" "shift,ld")])
 
-(define_insn "zero_extendhisi2"
+(define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:HI 1 "register_operand" "r")))]
-  ""
+  "! TARGET_BYTE_OPS"
   "zapnot %1,3,%0"
   [(set_attr "type" "shift")])
+
+(define_expand "zero_extendhisi2"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(zero_extend:SI (match_operand:HI 1 "register_operand" "")))]
+  ""
+  "")
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -859,12 +877,18 @@
    ldwu %0,%1"
   [(set_attr "type" "shift,ld")])
 
-(define_insn "zero_extendhidi2"
+(define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:HI 1 "register_operand" "r")))]
   ""
   "zapnot %1,3,%0"
   [(set_attr "type" "shift")])
+
+(define_expand "zero_extendhidi2"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(zero_extend:DI (match_operand:HI 1 "register_operand" "")))]
+  ""
+  "")
 
 (define_insn "zero_extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -983,7 +1007,7 @@
 
 (define_expand "extendqihi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "reg_or_unaligned_mem_operand" "")
+	(ashift:DI (match_operand:QI 1 "some_operand" "")
 		   (const_int 56)))
    (set (match_operand:HI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
@@ -991,9 +1015,16 @@
   ""
   "
 {
-  /* If we have a MEM (must be unaligned), extend to DImode (which we do
+  if (TARGET_BYTE_OPS)
+    {
+      emit_insn (gen_extendqihi2x (operands[0],
+				   force_reg (QImode, operands[1])));
+      DONE;
+    }
+ 
+ /* If we have an unaligned MEM, extend to DImode (which we do
      specially) and then copy to the result.  */
-  if (GET_CODE (operands[1]) == MEM)
+  if (unaligned_memory_operand (operands[1], HImode))
     {
       rtx temp = gen_reg_rtx (DImode);
 
@@ -1003,27 +1034,48 @@
     }
 
   operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, operands[1]);
+  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_insn "extendqidi2x"
-  [(set (match_operand:DI 0 "register_operand" "r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (match_operand:QI 1 "register_operand" "r")))]
   "TARGET_BYTE_OPS"
   "sextb %1,%0"
-  [(set_attr "type" "shift")])	;; not sure what class this belongs to
+  [(set_attr "type" "shift")])
 
 (define_insn "extendhidi2x"
-  [(set (match_operand:DI 0 "register_operand" "r")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (match_operand:HI 1 "register_operand" "r")))]
   "TARGET_BYTE_OPS"
   "sextw %1,%0"
   [(set_attr "type" "shift")])
 
+(define_insn "extendqisi2x"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  "TARGET_BYTE_OPS"
+  "sextb %1,%0"
+  [(set_attr "type" "shift")])
+
+(define_insn "extendhisi2x"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_BYTE_OPS"
+  "sextw %1,%0"
+  [(set_attr "type" "shift")])
+
+(define_insn "extendqihi2x"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
+  "TARGET_BYTE_OPS"
+  "sextb %1,%0"
+  [(set_attr "type" "shift")])
+
 (define_expand "extendqisi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "reg_or_unaligned_mem_operand" "")
+	(ashift:DI (match_operand:QI 1 "some_operand" "")
 		   (const_int 56)))
    (set (match_operand:SI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
@@ -1031,9 +1083,16 @@
   ""
   "
 {
-  /* If we have a MEM (must be unaligned), extend to a DImode form of
+  if (TARGET_BYTE_OPS)
+    {
+      emit_insn (gen_extendqisi2x (operands[0],
+				   force_reg (QImode, operands[1])));
+      DONE;
+    }
+
+  /* If we have an unaligned MEM, extend to a DImode form of
      the result (which we do specially).  */
-  if (GET_CODE (operands[1]) == MEM)
+  if (unaligned_memory_operand (operands[1], QImode))
     {
       rtx temp = gen_reg_rtx (DImode);
 
@@ -1043,13 +1102,13 @@
     }
 
   operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, operands[1]);
+  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_expand "extendqidi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:QI 1 "reg_or_unaligned_mem_operand" "")
+	(ashift:DI (match_operand:QI 1 "some_operand" "")
 		   (const_int 56)))
    (set (match_operand:DI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
@@ -1060,19 +1119,12 @@
 
   if (TARGET_BYTE_OPS)
     {
-      rtx temp = operands[1];
-
-      if (GET_CODE (operands[1]) == MEM)
-	{
-	  temp = gen_reg_rtx (QImode);
-	  emit_insn (gen_movqi (temp, operands[1]));
-	}
-
-      emit_insn (gen_extendqidi2x (operands[0], temp));
+      emit_insn (gen_extendqidi2x (operands[0],
+				   force_reg (QImode, operands[1])));
       DONE;
     }
 
-  if (GET_CODE (operands[1]) == MEM)
+  if (unaligned_memory_operand (operands[1], QImode))
     {
       rtx seq
 	= gen_unaligned_extendqidi (operands[0],
@@ -1083,13 +1135,13 @@
       DONE;
     }
 
-  operands[1] = gen_lowpart (DImode, operands[1]);
+  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_expand "extendhisi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "reg_or_unaligned_mem_operand" "")
+	(ashift:DI (match_operand:HI 1 "some_operand" "")
 		   (const_int 48)))
    (set (match_operand:SI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
@@ -1097,9 +1149,16 @@
   ""
   "
 {
-  /* If we have a MEM (must be unaligned), extend to a DImode form of
+  if (TARGET_BYTE_OPS)
+    {
+      emit_insn (gen_extendhisi2x (operands[0],
+				   force_reg (HImode, operands[1])));
+      DONE;
+    }
+
+  /* If we have an unaligned MEM, extend to a DImode form of
      the result (which we do specially).  */
-  if (GET_CODE (operands[1]) == MEM)
+  if (unaligned_memory_operand (operands[1], HImode))
     {
       rtx temp = gen_reg_rtx (DImode);
 
@@ -1109,13 +1168,13 @@
     }
 
   operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, operands[1]);
+  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
   operands[2] = gen_reg_rtx (DImode);
 }")
 
 (define_expand "extendhidi2"
   [(set (match_dup 2)
-	(ashift:DI (match_operand:HI 1 "reg_or_unaligned_mem_operand" "")
+	(ashift:DI (match_operand:HI 1 "some_operand" "")
 		   (const_int 48)))
    (set (match_operand:DI 0 "register_operand" "")
 	(ashiftrt:DI (match_dup 2)
@@ -1126,19 +1185,12 @@
 
   if (TARGET_BYTE_OPS)
     {
-      rtx temp = operands[1];
-
-      if (GET_CODE (operands[1]) == MEM)
-	{
-	  temp = gen_reg_rtx (HImode);
-	  emit_insn (gen_movhi (temp, operands[1]));
-	}
-
-      emit_insn (gen_extendhidi2x (operands[0], temp));
+      emit_insn (gen_extendhidi2x (operands[0],
+				   force_reg (HImode, operands[1])));
       DONE;
     }
 
-  if (GET_CODE (operands[1]) == MEM)
+  if (unaligned_memory_operand (operands[1], HImode))
     {
       rtx seq
 	= gen_unaligned_extendhidi (operands[0],
@@ -1149,7 +1201,7 @@
       DONE;
     }
 
-  operands[1] = gen_lowpart (DImode, operands[1]);
+  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
   operands[2] = gen_reg_rtx (DImode);
 }")
 
@@ -3965,15 +4017,16 @@
 	  && ! reg_or_0_operand (operands[1], QImode))
 	operands[1] = force_reg (QImode, operands[1]);
 
-      if (! CONSTANT_P (operands[1]) || input_operand (operands[1], QImode))
-	;
-      else if (GET_CODE (operands[1]) == CONST_INT)
+      if (GET_CODE (operands[1]) == CONST_INT
+	       && ! input_operand (operands[1], QImode))
 	{
-	  operands[1]
-	    = alpha_emit_set_const (operands[0], QImode, INTVAL (operands[1]), 3);
+	  operands[1] = alpha_emit_set_const (operands[0], QImode,
+					      INTVAL (operands[1]), 3);
+
 	  if (rtx_equal_p (operands[0], operands[1]))
 	    DONE;
 	}
+
       goto def;
     }
 
@@ -4076,18 +4129,18 @@
 	  && ! reg_or_0_operand (operands[1], HImode))
 	operands[1] = force_reg (HImode, operands[1]);
 
-      if (! CONSTANT_P (operands[1]) || input_operand (operands[1], HImode))
-	;
-      else if (GET_CODE (operands[1]) == CONST_INT)
+      if (GET_CODE (operands[1]) == CONST_INT
+	       && ! input_operand (operands[1], HImode))
 	{
-	  operands[1]
-	    = alpha_emit_set_const (operands[0], HImode, INTVAL (operands[1]), 3);
+	  operands[1] = alpha_emit_set_const (operands[0], HImode,
+					      INTVAL (operands[1]), 3);
+
 	  if (rtx_equal_p (operands[0], operands[1]))
 	    DONE;
 	}
+
       goto def;
     }
-
 
   /* If the output is not a register, the input must be.  */
   if (GET_CODE (operands[0]) == MEM)
@@ -4184,7 +4237,7 @@
   [(parallel [(match_operand:QI 0 "register_operand" "=r")
 	      (match_operand:QI 1 "unaligned_memory_operand" "m")
 	      (match_operand:TI 2 "register_operand" "=&r")])]
-  ""
+  "! TARGET_BYTE_OPS"
   "
 { extern rtx get_unaligned_address ();
   rtx addr = get_unaligned_address (operands[1], 0);
@@ -4206,7 +4259,7 @@
   [(parallel [(match_operand:HI 0 "register_operand" "=r")
 	      (match_operand:HI 1 "unaligned_memory_operand" "m")
 	      (match_operand:TI 2 "register_operand" "=&r")])]
-  ""
+  "! TARGET_BYTE_OPS"
   "
 { extern rtx get_unaligned_address ();
   rtx addr = get_unaligned_address (operands[1], 0);
@@ -4228,7 +4281,7 @@
   [(parallel [(match_operand:QI 0 "any_memory_operand" "=m")
 	      (match_operand:QI 1 "register_operand" "r")
 	      (match_operand:TI 2 "register_operand" "=&r")])]
-  ""
+  "! TARGET_BYTE_OPS"
   "
 { extern rtx get_unaligned_address ();
 
@@ -4267,7 +4320,7 @@
   [(parallel [(match_operand:HI 0 "any_memory_operand" "=m")
 	      (match_operand:HI 1 "register_operand" "r")
 	      (match_operand:TI 2 "register_operand" "=&r")])]
-  ""
+  "! TARGET_BYTE_OPS"
   "
 { extern rtx get_unaligned_address ();
 
