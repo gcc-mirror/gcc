@@ -49,7 +49,7 @@ static char *qi_high_reg_name[] = QI_HIGH_REGISTER_NAMES;
 enum reg_class regclass_map[FIRST_PSEUDO_REGISTER] =
 {
   /* ax, dx, cx, bx */
-  AREG, DREG, CREG, Q_REGS,
+  AREG, DREG, CREG, BREG,
   /* si, di, bp, sp */
   SIREG, DIREG, INDEX_REGS, GENERAL_REGS,
   /* FP registers */

@@ -309,13 +309,16 @@ extern int target_flags;
    in a smaller-numbered class.
 
    For any two classes, it is very desirable that there be another
-   class that represents their union.  */
-   
+   class that represents their union.
+
+   It might seem that class BREG is unnecessary, since no useful 386
+   opcode needs reg %ebx.  But some systems pass args to the OS in ebx,
+   and the "b" register constraint is useful in asms for syscalls.  */
 
 enum reg_class
 {
   NO_REGS,
-  AREG, DREG, CREG,
+  AREG, DREG, CREG, BREG,
   Q_REGS,			/* %eax %ebx %ecx %edx */
   SIREG, DIREG,
   INDEX_REGS,			/* %eax %ebx %ecx %edx %esi %edi %ebp */
@@ -331,7 +334,7 @@ enum reg_class
 
 #define REG_CLASS_NAMES \
 {  "NO_REGS",				\
-   "AREG", "DREG", "CREG",		\
+   "AREG", "DREG", "CREG", "BREG",	\
    "Q_REGS",				\
    "SIREG", "DIREG",			\
    "INDEX_REGS",			\
@@ -346,7 +349,7 @@ enum reg_class
 
 #define REG_CLASS_CONTENTS \
 {      0,							\
-     0x1,    0x2,  0x4,		/* AREG, DREG, CREG */		\
+     0x1,    0x2,  0x4,	 0x8,	/* AREG, DREG, CREG, BREG */	\
      0xf,			/* Q_REGS */			\
     0x10,   0x20,		/* SIREG, DIREG */		\
  0x1007f,			/* INDEX_REGS */		\
@@ -409,6 +412,7 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    (C) == 't' ? FP_TOP_REG :		\
    (C) == 'u' ? FP_SECOND_REG :		\
    (C) == 'a' ? AREG :			\
+   (C) == 'b' ? BREG :			\
    (C) == 'c' ? CREG :			\
    (C) == 'd' ? DREG :			\
    (C) == 'D' ? DIREG :			\
