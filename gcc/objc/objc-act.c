@@ -49,6 +49,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include <string.h>
+#include "output.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -191,6 +192,12 @@ static tree synth_id_with_class_suffix		PROTO((char *, tree));
 /* From expr.c */
 extern int apply_args_register_offset           PROTO((int));
 
+static void generate_static_references		PROTO((void));
+static int check_methods_accessible		PROTO((tree, tree,
+						       int));
+static void encode_aggregate_within		PROTO((tree, int, int,
+					               char, char));
+
 /* We handle printing method names ourselves for ObjC */
 extern char *(*decl_printable_name) ();
 
@@ -229,6 +236,8 @@ enum string_section
 };
 
 static tree add_objc_string			PROTO((tree,
+						       enum string_section));
+static tree get_objc_string_decl		PROTO((tree,
 						       enum string_section));
 static tree build_objc_string_decl		PROTO((tree,
 						       enum string_section));
@@ -1820,7 +1829,7 @@ get_objc_string_decl (ident, section)
 /* Output references to all statically allocated objects.  Return the DECL
    for the array built.  */
 
-static tree
+static void
 generate_static_references ()
 {
   tree decls = NULL_TREE, ident, decl_spec, expr_decl, expr = NULL_TREE;
