@@ -1,5 +1,8 @@
 Wed Oct 20 22:57:58 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* sparc.md (movsf_const_intreg): If splitting, length must be > 1.
+	(movdf_const_intreg_sp64): Similarly.
+
 	* local-alloc.c (update_equiv_regs): Check the correct insn
 	for pre-existing REG_EQUIV notes.
 
