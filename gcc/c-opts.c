@@ -1418,6 +1418,7 @@ finish_options (void)
 	}
     }
 
+  include_cursor = 0;
   push_command_line_include ();
 }
 
@@ -1438,7 +1439,6 @@ push_command_line_include (void)
 
   if (include_cursor == deferred_count)
     {
-      free (deferred_opts);
       /* Restore the line map from <command line>.  */
       cpp_change_file (parse_in, LC_RENAME, main_input_filename);
       /* -Wunused-macros should only warn about macros defined hereafter.  */
