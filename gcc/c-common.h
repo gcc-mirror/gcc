@@ -503,7 +503,6 @@ extern const char *fname_as_string		PARAMS ((int));
 extern tree fname_decl				PARAMS ((unsigned, tree));
 extern const char *fname_string			PARAMS ((unsigned));
 
-extern tree decl_attributes			PARAMS ((tree *, tree, int));
 extern void init_function_format_info		PARAMS ((void));
 extern void check_function_format		PARAMS ((int *, tree, tree, tree));
 extern void set_Wformat				PARAMS ((int));

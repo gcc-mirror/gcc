@@ -1,3 +1,7 @@
+Sat Sep 22 09:15:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Make-lang.in (CXX_C_OBJS): Add attribs.o.
+
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
 	* class.c (set_vindex): Mind TARGET_VTABLE_USES_DESCRIPTORS.

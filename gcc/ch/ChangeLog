@@ -1,3 +1,7 @@
+Sat Sep 22 09:15:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Make-lang.in (cc1chill): Add attribs.o.
+
 2001-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tree.c (TYPE_HASH): Moved to ../tree.h.
