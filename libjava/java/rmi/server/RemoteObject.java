@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* RemoteObject.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,18 +37,14 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-import java.io.Serializable;
-import java.rmi.Remote;
-import java.rmi.NoSuchObjectException;
-import java.rmi.UnmarshalException;
-import java.rmi.server.RemoteRef;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
-import java.lang.ClassNotFoundException;
-import java.lang.InstantiationException;
-import java.lang.IllegalAccessException;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.rmi.NoSuchObjectException;
+import java.rmi.Remote;
+import java.rmi.UnmarshalException;
 
 public abstract class RemoteObject
 	implements Remote, Serializable {

@@ -1,5 +1,6 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+/* UnicastConnection.java --
+   Copyright (c) 1996, 1997, 1998, 1999, 2002, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,19 +36,17 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.rmi.server;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectInput;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.net.ServerSocket;
 import java.rmi.RemoteException;
 
 public class UnicastConnection 

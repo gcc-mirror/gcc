@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* ObjID.java
+   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,10 +41,8 @@ import java.io.Serializable;
 import java.io.ObjectOutput;
 import java.io.ObjectInput;
 import java.io.IOException;
-import java.lang.Math;
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.util.Random;
 
 public final class ObjID
 	implements Serializable {

@@ -1,5 +1,5 @@
-/* RMIClassLoaderSpi.java
-  Copyright (c) 2002 Free Software Foundation, Inc.
+/* RMIClassLoaderSpi.java --
+   Copyright (c) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 

@@ -36,15 +36,16 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.rmi.rmic;
 
 import gnu.java.rmi.server.RMIHashes;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.HashSet;

@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* LogStream.java --
+   Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,6 @@ package java.rmi.server;
 
 import java.io.PrintStream;
 import java.io.OutputStream;
-import java.io.IOException;
 
 /**
  * @deprecated
