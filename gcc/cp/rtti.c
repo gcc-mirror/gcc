@@ -785,6 +785,7 @@ expand_class_desc (tdecl, type)
 	  field = lookup_field (type, get_identifier (name), 0, 0);
 	  offset = size_binop (FLOOR_DIV_EXPR, 
 		DECL_FIELD_BITPOS (field), size_int (BITS_PER_UNIT));
+	  offset = convert (sizetype, offset);
 	}
       else
 	offset = BINFO_OFFSET (binfo);

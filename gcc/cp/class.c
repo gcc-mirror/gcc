@@ -606,11 +606,12 @@ tree
 get_vfield_offset (binfo)
      tree binfo;
 {
-  return size_binop (PLUS_EXPR,
-		     size_binop (FLOOR_DIV_EXPR,
-				 DECL_FIELD_BITPOS (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))),
-				 size_int (BITS_PER_UNIT)),
-		     BINFO_OFFSET (binfo));
+  tree tmp
+    = size_binop (FLOOR_DIV_EXPR,
+		  DECL_FIELD_BITPOS (CLASSTYPE_VFIELD (BINFO_TYPE (binfo))),
+		  size_int (BITS_PER_UNIT));
+  tmp = convert (sizetype, tmp);
+  return size_binop (PLUS_EXPR, tmp, BINFO_OFFSET (binfo));
 }
 
 /* Get the offset to the start of the original binfo that we derived

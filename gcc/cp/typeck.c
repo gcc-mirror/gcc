@@ -1403,6 +1403,7 @@ c_sizeof (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		  size_int (TYPE_PRECISION (char_type_node)));
+  t = convert (sizetype, t);
   /* size_binop does not put the constant in range, so do it now.  */
   if (TREE_CODE (t) == INTEGER_CST && force_fit_type (t, 0))
     TREE_CONSTANT_OVERFLOW (t) = TREE_OVERFLOW (t) = 1;
@@ -1460,6 +1461,7 @@ c_sizeof_nowarn (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		  size_int (TYPE_PRECISION (char_type_node)));
+  t = convert (sizetype, t);
   force_fit_type (t, 0);
   return t;
 }
@@ -3537,6 +3539,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	      delta21 = CLASSTYPE_VFIELD (TYPE_METHOD_BASETYPE (TREE_TYPE (type1)));
 	      delta21 = DECL_FIELD_BITPOS (delta21);
 	      delta21 = size_binop (FLOOR_DIV_EXPR, delta21, size_int (BITS_PER_UNIT));
+	      delta21 = convert (sizetype, delta21);
 	    }
 	  else
 	    index1 = integer_neg_one_node;
@@ -4092,6 +4095,7 @@ build_component_addr (arg, argtype, msg)
       tree offset = size_binop (EASY_DIV_EXPR, DECL_FIELD_BITPOS (field),
 				size_int (BITS_PER_UNIT));
       int flag = TREE_CONSTANT (rval);
+      offset = convert (sizetype, offset);
       rval = fold (build (PLUS_EXPR, argtype,
 			  rval, cp_convert (argtype, offset)));
       TREE_CONSTANT (rval) = flag;
@@ -4746,9 +4750,10 @@ unary_complex_lvalue (code, arg)
 
 	  /* Add in the offset to the field.  */
 	  offset = size_binop (PLUS_EXPR, offset,
-			       size_binop (EASY_DIV_EXPR,
-					   DECL_FIELD_BITPOS (t),
-					   size_int (BITS_PER_UNIT)));
+			       convert (sizetype,
+					size_binop (EASY_DIV_EXPR,
+						    DECL_FIELD_BITPOS (t),
+						    size_int (BITS_PER_UNIT))));
 
 	  /* We offset all pointer to data members by 1 so that we can
 	     distinguish between a null pointer to data member and the first
