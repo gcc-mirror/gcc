@@ -1,3 +1,9 @@
+2003-11-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12796
+	* g++.dg/template/crash13.C: Adjust expected error location.
+	* g++.old-deja/g++.brendan/ns1.C: Likewise.
+
 2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
 	* g++.dg/bprob/bprob.exp: Disable test on arm-elf configs.

@@ -10,9 +10,9 @@ template<typename, typename T=void> struct A
 };
 
 template <typename T> struct C
-{				// { dg-error "not a base type" }
+{
     typedef typename A<T>::B X;
-    X::Y;
+    X::Y;			// { dg-error "not a base type" }
 };
 
 C<void> c;			// { dg-error "instantiated" }

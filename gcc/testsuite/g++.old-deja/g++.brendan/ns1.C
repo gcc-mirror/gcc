@@ -12,7 +12,7 @@ class C
 };
 
 class D2 : public B 
-{ // { dg-error "" } type C is not a base type for type D2
-  using B::f;  // ok: B is a base of D
-  using C::g;  // error: C isn't a base of D2
+{
+  using B::f;  // ok: B is a base of D2
+  using C::g;  // { dg-error "not a base type" }
 };
