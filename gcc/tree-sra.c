@@ -184,7 +184,8 @@ type_can_be_decomposed_p (tree type)
     return false;
 
   /* The type must have a definite nonzero size.  */
-  if (TYPE_SIZE (type) == NULL || integer_zerop (TYPE_SIZE (type)))
+  if (TYPE_SIZE (type) == NULL || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
+      || integer_zerop (TYPE_SIZE (type)))
     goto fail;
 
   /* The type must be a non-union aggregate.  */
