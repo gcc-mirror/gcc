@@ -188,6 +188,7 @@ static void sanitize_cpp_opts PARAMS ((void));
   OPT("Wwrite-strings",		CL_ALL,   OPT_Wwrite_strings)		     \
   OPT("ansi",			CL_ALL,   OPT_ansi)			     \
   OPT("d",                      CL_ALL | CL_JOINED, OPT_d)		     \
+  OPT("fabi-version=",          CL_CXX | CL_JOINED, OPT_fabi_version)        \
   OPT("faccess-control",	CL_CXX,   OPT_faccess_control)		     \
   OPT("fall-virtual",		CL_CXX,   OPT_fall_virtual)		     \
   OPT("falt-external-templates",CL_CXX,   OPT_falt_external_templates)	     \
@@ -342,6 +343,7 @@ missing_arg (opt_index)
     {
     case OPT_Wformat_eq:
     case OPT_d:
+    case OPT_fabi_version:
     case OPT_fbuiltin_:
     case OPT_fdump:
     case OPT_fname_mangling:
@@ -1012,6 +1014,10 @@ c_common_decode_option (argc, argv)
     case OPT_fvtable_thunks:
     case OPT_fxref:
       warning ("switch \"%s\" is no longer supported", argv[0]);
+      break;
+
+    case OPT_fabi_version:
+      flag_abi_version = read_integral_parameter (arg, argv[0], 1);
       break;
 
     case OPT_faccess_control:

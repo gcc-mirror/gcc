@@ -1,3 +1,10 @@
+2002-09-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/abi/bitfield6.C: New test.
+	* g++.dg/abi/bitfield7.C: New test.
+	* g++.dg/abi/bitfield8.C: New test.
+	* g++.dg/abi/vbase11.C: New test.
+
 2002-09-22  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* gcc.dg/20020219-1.c: Add "-mdisable-indexing" option for target

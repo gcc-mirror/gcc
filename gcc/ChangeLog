@@ -1,3 +1,12 @@
+2002-09-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (flag_abi_version): New variable.
+	* c-common.h (flag_abi_version): Declare it.
+	* c-opts.c (missing_arg): Add -fabi-version.
+	(c_common_decode_option): Process -fabi-version.
+	* doc/invoke.texi (-fabi-version): Document it.
+	(-Wabi): Add information about bit-fields in unions.
+	
 2002-09-22  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/mips/netbsd.h (SUBTARGET_ASM_SPEC): Always pass -KPIC
