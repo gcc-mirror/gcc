@@ -1,3 +1,7 @@
+1999-12-15  Jason Merrill  <jason@casey.cygnus.com>
+
+	* stmt.c (expand_decl): Expand upper bound of a dynamic array.
+
 1999-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* expr.c (emit_group_load): Use dst mode if src is VOIDmode.

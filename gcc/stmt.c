@@ -3817,6 +3817,12 @@ expand_decl (decl)
 	  stack_block_stack = thisblock;
 	}
 
+      /* In function-at-a-time mode, variable_size doesn't expand this,
+	 so do it now.  */
+      if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type))
+	expand_expr (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
+		     const0_rtx, VOIDmode, 0);
+
       /* Compute the variable's size, in bytes.  */
       size = expand_expr (size_binop (CEIL_DIV_EXPR,
 				      DECL_SIZE (decl),
