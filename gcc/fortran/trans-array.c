@@ -2905,7 +2905,6 @@ gfc_trans_auto_array_allocation (tree decl, gfc_symbol * sym, tree fnbody)
   tree fndecl;
   tree size;
   tree offset;
-  tree args;
   bool onstack;
 
   assert (!(sym->attr.pointer || sym->attr.allocatable));
