@@ -355,11 +355,12 @@ calls_function_1 (exp, which)
    CALL_INSN_FUNCTION_USAGE information.  */
 
 rtx
-prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
+prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen, sibcallp)
      rtx funexp;
      tree fndecl;
      rtx *call_fusage;
      int reg_parm_seen;
+     int sibcallp;
 {
   rtx static_chain_value = 0;
 
@@ -377,7 +378,7 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
     funexp = ((SMALL_REGISTER_CLASSES && reg_parm_seen)
 	      ? force_not_mem (memory_address (FUNCTION_MODE, funexp))
 	      : memory_address (FUNCTION_MODE, funexp));
-  else
+  else if (! sibcallp)
     {
 #ifndef NO_FUNCTION_CSE
       if (optimize && ! flag_no_function_cse)
@@ -3038,7 +3039,7 @@ expand_call (exp, target, ignore)
 	}
 
       funexp = prepare_call_address (funexp, fndecl, &call_fusage,
-				     reg_parm_seen);
+				     reg_parm_seen, pass == 0);
 
       load_register_parameters (args, num_actuals, &call_fusage, flags);
 
@@ -4005,7 +4006,7 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
   else
     argnum = 0;
 
-  fun = prepare_call_address (fun, NULL_TREE, &call_fusage, 0);
+  fun = prepare_call_address (fun, NULL_TREE, &call_fusage, 0, 0);
 
   /* Now load any reg parms into their regs.  */
 

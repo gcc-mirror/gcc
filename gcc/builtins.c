@@ -1138,7 +1138,7 @@ expand_builtin_apply (function, arguments, argsize)
     }
 
   /* All arguments and registers used for the call are set up by now!  */
-  function = prepare_call_address (function, NULL_TREE, &call_fusage, 0);
+  function = prepare_call_address (function, NULL_TREE, &call_fusage, 0, 0);
 
   /* Ensure address is valid.  SYMBOL_REF is already valid, so no need,
      and we don't want to load it into a register as an optimization,

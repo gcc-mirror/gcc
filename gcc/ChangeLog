@@ -1,11 +1,19 @@
+2001-07-17  Richard Henderson  <rth@redhat.com>
+
+	* calls.c (prepare_call_address): New parameter SIBCALLP.  If true,
+	don't force the function address into a register.
+	(expand_call, emit_library_call_value_1): Update callers.
+	* builtins.c (expand_builtin_apply): Likewise.
+	* expr.h (prepare_call_address): Update decl.
+
 2001-07-17  Chandrakala Chavva  <cchavva@redhat.com>
 
-        * config.gcc: For *-*-chorusos triplet, get chorus.h file from
-        config directory.
-        * config/i386/chorus.h: Move up.
-        * config/sparc/chorus.h: Likewise.
-        * config/rs6000/chorus.h: Likewise.
-        * config/chorus.h: Moved here.
+	* config.gcc: For *-*-chorusos triplet, get chorus.h file from
+	config directory.
+	* config/i386/chorus.h: Move up.
+	* config/sparc/chorus.h: Likewise.
+	* config/rs6000/chorus.h: Likewise.
+	* config/chorus.h: Moved here.
 
 2001-07-17  Andreas Schwab  <schwab@suse.de>
  
