@@ -1,3 +1,8 @@
+2004-12-13  Kazuhiro Inaoka <inaoka.kazuhiro@renesas.com>
+
+	* config/m32r/t-linux (SHLIB_MAPFILES): Add libgcc-glibc.ver to
+	the list rather than replacing the existing value.
+
 2004-12-13  Richard Henderson  <rth@redhat.com>
 
 	* cfg.c (dump_flow_info): Don't dump pseudo info after reload.
