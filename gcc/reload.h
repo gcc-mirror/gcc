@@ -1,6 +1,6 @@
 /* Communication between reload.c and reload1.c.
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -385,3 +385,7 @@ extern void cleanup_subreg_operands PARAMS ((rtx));
 /* Debugging support.  */
 extern void debug_reload_to_stream PARAMS ((FILE *));
 extern void debug_reload PARAMS ((void));
+
+/* Compute the actual register we should reload to, in case we're
+   reloading to/from a register that is wider than a word.  */
+extern rtx reload_adjust_reg_for_mode PARAMS ((rtx, enum machine_mode));

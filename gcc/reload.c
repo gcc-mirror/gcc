@@ -2137,10 +2137,10 @@ operands_match_p (x, y)
 	 (reg:SI 1) will be considered the same register.  */
       if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
 	  && i < FIRST_PSEUDO_REGISTER)
-	i += (GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD) - 1;
+	i += HARD_REGNO_NREGS (i, GET_MODE (x)) - 1;
       if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (GET_MODE (y)) > UNITS_PER_WORD
 	  && j < FIRST_PSEUDO_REGISTER)
-	j += (GET_MODE_SIZE (GET_MODE (y)) / UNITS_PER_WORD) - 1;
+	j += HARD_REGNO_NREGS (j, GET_MODE (y)) - 1;
 
       return i == j;
     }
@@ -5954,7 +5954,7 @@ subst_reloads (insn)
 	     do the wrong thing if RELOADREG is multi-word.  RELOADREG
 	     will always be a REG here.  */
 	  if (GET_MODE (reloadreg) != r->mode && r->mode != VOIDmode)
-	    reloadreg = gen_rtx_REG (r->mode, REGNO (reloadreg));
+	    reloadreg = reload_adjust_reg_for_mode (reloadreg, r->mode);
 
 	  /* If we are putting this into a SUBREG and RELOADREG is a
 	     SUBREG, we would be making nested SUBREGs, so we have to fix
@@ -6932,6 +6932,26 @@ regno_clobbered_p (regno, insn, mode, sets)
     }
 
   return 0;
+}
+
+/* Find the low part, with mode MODE, of a hard regno RELOADREG.  */
+rtx
+reload_adjust_reg_for_mode (reloadreg, mode)
+     rtx reloadreg;
+     enum machine_mode mode;
+{
+  int regno;
+
+  if (GET_MODE (reloadreg) == mode)
+    return reloadreg;
+
+  regno = REGNO (reloadreg);
+
+  if (WORDS_BIG_ENDIAN)
+    regno += HARD_REGNO_NREGS (regno, GET_MODE (reloadreg))
+      - HARD_REGNO_NREGS (regno, mode);
+
+  return gen_rtx_REG (mode, regno);
 }
 
 static const char *const reload_when_needed_name[] =
