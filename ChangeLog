@@ -1,5 +1,12 @@
 2004-04-26  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.def (flags_to_pass): Remove *dir variables that
+	are passed to the modules via TOPLEVEL_CONFIGURE_ARGUMENTS,
+	as well as prefix and exec_prefix.
+	* Makefile.in: Regenerate.
+
+2004-04-26  Paolo Bonzini  <bonzini@gnu.org>
+
         * configure.in: Invoke ACX_PROG_CMP_IGNORE_INITIAL.
         * configure: Regenerate.
         * config/acx.m4: Mutuate ACX_PROG_CMP_IGNORE_INITIAL from gcc.
