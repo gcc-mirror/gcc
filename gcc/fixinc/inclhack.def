@@ -523,9 +523,10 @@ fix = {
 fix = {
     hackname  = aix_syswait;
     files     = sys/wait.h;
+    select    = "^extern pid_t wait3\\(\\);\n";
     select    = "bos325,";
-    sed    = "/^extern pid_t wait3();$/i\\\n"
-             "struct rusage;\n";
+    c_fix     = format;
+    c_fix_arg = "struct rusage;\n%0";
     test_text = "/* bos325, */\nextern pid_t wait3();";
 };
 
@@ -768,7 +769,7 @@ fix = {
     sed      = "1i\\\n"
                "#ifdef __cplusplus\\\n"
                "#include <stdlib.h>\\\n"
-               "#endif\n";
+               "#endif /* BROKEN_ASSERT_STDLIB_CHECK fix stamp */\n";
     test_text = "extern void exit ( int );";
 };
 
@@ -831,7 +832,9 @@ fix = {
     select = 'include.*"\.\./machine/';
     sed    = "s,\"../machine/inline.h\",<machine/inline.h>,";
     sed    = "s,\"../machine/psl.h\",<machine/psl.h>,";
-    test_text = '# include "../machine/fumble.h"';
+    test_text = '# include "../machine/inline.h"' "\n"
+                '# include "../machine/dontfix.h"' "\n"
+                '# include "../machine/psl.h"';
 };
 
 
@@ -842,8 +845,8 @@ fix = {
     hackname  = hp_sysfile;
     files     = sys/file.h;
     select    = "HPUX_SOURCE";
-    sed      = 's/(\.\.\.)/(struct file *, ...)/';
-    test_text = "extern void foo(...); /* bad varargs */";
+    sed       = 's/(\.\.\.)/(struct file *, ...)/';
+    test_text = "extern void foo(...); /* HPUX_SOURCE - bad varargs */";
 };
 
 
@@ -865,11 +868,12 @@ fix = {
     sed      = "1i\\\n"
                "#ifdef __cplusplus\\\n"
                "extern \"C\" {\\\n"
-               "#endif\\\n\n";
+               "#endif /* CXX_UNREADY_CHECK */\\\n\n";
     sed      = "$a\\\n"
                "#ifdef __cplusplus\\\n"
                "}\\\n"
-               "#endif\n";
+               "#endif /* CXX_UNREADY_CHECK */\n";
+    test_text = "extern void* malloc( size_t );";
 };
 
 
@@ -956,7 +960,7 @@ fix = {
     files  = "sys/fcntl.h";
     files  = "sys/dirent.h";
 
-    select = "!defined\(__STDC__\) && !defined\(_POSIX_SOURCE\)";
+    select = '!defined\(__STDC__\) && !defined\(_POSIX_SOURCE\)';
 
     sed    = "s/!defined(__STDC__) && !defined(_POSIX_SOURCE)/"
                "!defined(_POSIX_SOURCE)/";
@@ -978,14 +982,15 @@ fix = {
  *  _IO might be: _IO DESIO BSD43__IO with W, R, WR, C, ... suffixes.
  */
 fix = {
-    hackname  = io_use_quotes;
-    select  = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*\\( *[^,']";
+    hackname  = io_quotes_use;
+    select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*"
+                "\\( *[^,']";
     c_fix     = char_macro_use;
     c_fix_arg = "IO";
 };
 
 fix = {
-    hackname  = io_def_quotes;
+    hackname  = io_quotes_def;
     select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\1'";
     c_fix     = char_macro_def;
     c_fix_arg = "IO";
@@ -993,18 +998,27 @@ fix = {
  
  
 /*
- *  Same deal for CTRL() macros.
+ *  Fix various macros used to define ioctl numbers.  The traditional
+ *  syntax was
+ *  #define _CTRL(n, x) (('n'<<8)+x)
+ *  #define TIOCFOO _CTRL(T, 1)
+ *  but this does not work with the C standard, which disallows macro
+ *  expansion inside strings.  We have to rewrite it thus:
+ *  #define _CTRL(n, x) ((n<<8)+x)
+ *  #define TIOCFOO  _CTRL('T', 1)
+ *  The select expressions match too much, but the c_fix code is cautious.
+ *
  *  CTRL might be: CTRL _CTRL ISCTRL BSD43_CTRL ...
  */
 fix = {
-    hackname  = ctrl_use_quotes;
+    hackname  = ctrl_quotes_use;
     select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
     c_fix     = char_macro_use;
     c_fix_arg = "CTRL";
 };
   
 fix = {
-    hackname  = ctrl_def_quotes;
+    hackname  = ctrl_quotes_def;
     select    = "define[ \t]+[A-Z0-9_]+CTRL\\(([a-zA-Z]).*'\\1'";
     c_fix     = char_macro_def;
     c_fix_arg = "CTRL";

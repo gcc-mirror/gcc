@@ -71,7 +71,7 @@ fixincl.x | */fixincl.x )
   if (${AG} --help > /dev/null 2>&1)
   then
     echo AutoGen-ing fixincl.x
-    $AG -T fixincl.tpl -b fixincl inclhack.def
+    $AG inclhack.def
   else
     echo "AutoGen does not appear to be correctly installed."
     echo "Please download and install:"
