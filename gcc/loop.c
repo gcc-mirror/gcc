@@ -2847,7 +2847,12 @@ invariant_p (x)
 
 	 We don't know the loop bounds here though, so just fail for all
 	 labels.  */
-      if (flag_unroll_loops)
+      /* ??? This is also necessary if flag_rerun_loop_opt is true, because in
+	 this case we may be doing loop unrolling the second time we run loop,
+	 and hence the first loop run also needs this check.  There is no way
+	 to check here whether the second run will actually do loop unrolling
+	 though, as that info is in a local var in rest_of_compilation.  */
+      if (flag_unroll_loops || flag_rerun_loop_opt)
 	return 0;
       else
 	return 1;
