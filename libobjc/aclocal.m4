@@ -10,6 +10,7 @@ dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
 sinclude(../config/acx.m4)
+sinclude(../config/no-executables.m4)
 
 sinclude(../libtool.m4)
 dnl The lines below arrange for aclocal not to bring an installed
