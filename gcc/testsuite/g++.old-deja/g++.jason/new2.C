@@ -1,5 +1,5 @@
 // PRMS Id: 6267
-// Special g++ Options: -fthis-is-variable
+// Special g++ Options: -fthis-is-variable -fno-exceptions
 
 struct A {
   int i;
