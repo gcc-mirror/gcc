@@ -1,3 +1,8 @@
+2003-06-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11041
+	* g++.dg/init/ref7.C: New test.
+
 2003-06-19  Matt Austern  <austern@apple.com>
 
 	PR c++/11228
