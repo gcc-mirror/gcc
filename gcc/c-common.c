@@ -3411,11 +3411,24 @@ c_get_alias_set (t)
 	 `I *' are different types.  So, we have to pick a canonical
 	 representative.  We do this below.
 	 
-	 Note that this approach is actually more conservative that it
-	 needs to be.  In particular, `const int *' and `int *' should
-	 be in different alias sets, but this approach puts them in
-	 the same alias set.  */
+	 Technically, this approach is actually more conservative that
+	 it needs to be.  In particular, `const int *' and `int *'
+	 chould be in different alias sets, according to the C and C++
+	 standard, since their types are not the same, and so,
+	 technically, an `int **' and `const int **' cannot point at
+	 the same thing.
 
+         But, the standard is wrong.  In particular, this code is
+	 legal C++:
+
+            int *ip;
+            int **ipp = &ip;
+            const int* const* cipp = &ip;
+
+         And, it doesn't make sense for that to be legal unless you
+	 can dereference IPP and CIPP.  So, we ignore cv-qualifiers on
+	 the pointed-to types.  This issue has been reported to the
+	 C++ committee.  */
       t = TYPE_MAIN_VARIANT (TREE_TYPE (type));
       t = ((TREE_CODE (type) == POINTER_TYPE)
 	   ? build_pointer_type (t) : build_reference_type (t));
