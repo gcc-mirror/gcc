@@ -356,7 +356,7 @@ build_up_reference (type, arg, flags)
       /* Create a new temporary variable.  */
       tree targ = arg;
       if (toplevel_bindings_p ())
-	arg = get_temp_name (argtype, 1);
+	arg = get_temp_name (argtype);
       else
 	{
 	  arg = pushdecl (build_decl (VAR_DECL, NULL_TREE, argtype));
