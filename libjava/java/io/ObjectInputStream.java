@@ -101,6 +101,7 @@ public class ObjectInputStream extends InputStream
     this.nextOID = baseWireHandle;
     this.objectLookupTable = new Hashtable ();
     this.validators = new Vector ();
+    this.classLookupTable = new Hashtable();
     setBlockDataMode (true);
     readStreamHeader ();
   }
@@ -417,6 +418,22 @@ public class ObjectInputStream extends InputStream
     return ret_val;
   }
 
+  /**
+   * This method reads a class descriptor from the real input stream
+   * and use these data to create a new instance of ObjectStreamClass.
+   * Fields are sorted and ordered for the real read which occurs for
+   * each instance of the described class. Be aware that if you call that
+   * method you must ensure that the stream is synchronized, in the other
+   * case it may be completely desynchronized.
+   *
+   * @return A new instance of ObjectStreamClass containing the freshly
+   * created descriptor.
+   * @throws ClassNotFoundException if the required class to build the
+   * descriptor has not been found in the system.
+   * @throws IOException An input/output error occured.
+   * @throws InvalidClassException If there was a compatibility problem
+   * between the class present in the system and the serialized class.
+   */
   protected ObjectStreamClass readClassDescriptor ()
     throws ClassNotFoundException, IOException
   {
@@ -443,19 +460,41 @@ public class ObjectInputStream extends InputStream
 	dumpElementln (field_name);
 	String class_name;
 		  
+	// If the type code is an array or an object we must
+	// decode a String here. In the other case we convert
+	// the type code and pass it to ObjectStreamField.
+	// Type codes are decoded by gnu.java.lang.reflect.TypeSignature.
 	if (type_code == 'L' || type_code == '[')
 	  class_name = (String)readObject ();
 	else
 	  class_name = String.valueOf (type_code);
 		  
-	// There're many cases you can't get java.lang.Class from
-	// typename if your context class loader can't load it,
-	// then use typename to construct the field
 	fields[i] =
-	  new ObjectStreamField (field_name, class_name);
+	  new ObjectStreamField(field_name, class_name, currentLoader());
       }
 	      
+    /* Now that fields have been read we may resolve the class
+     * (and read annotation if needed). */
     Class clazz = resolveClass(osc);
+    
+    for (int i = 0; i < field_count; i++)
+      {
+	Field f;
+	
+	try
+	  {
+	    f = clazz.getDeclaredField(fields[i].getName());
+	    if (f != null && !f.getType().equals(fields[i].getType()))
+	      throw new InvalidClassException
+		("invalid field type for " + fields[i].getName() + " in class "
+		 + name + " (requested was \"" + fields[i].getType()
+		 + " and found \"" + f.getType() + "\")"); 
+	  }
+	catch (NoSuchFieldException _)
+	  {
+	  }
+      }
+
     boolean oldmode = setBlockDataMode (true);
     osc.setClass (clazz, lookupClass(clazz.getSuperclass()));
     classLookupTable.put(clazz, osc);
@@ -487,10 +526,13 @@ public class ObjectInputStream extends InputStream
     throws ClassNotFoundException, IOException, NotActiveException
   {
     if (this.currentObject == null || this.currentObjectStreamClass == null)
-      throw new NotActiveException ("defaultReadObject called by non-active class and/or object");
+      throw new NotActiveException("defaultReadObject called by non-active"
+				   + " class and/or object");
 
     if (fieldsAlreadyRead)
-      throw new NotActiveException ("defaultReadObject called but fields already read from stream (by defaultReadObject or readFields)");
+      throw new NotActiveException("defaultReadObject called but fields "
+				   + "already read from stream (by "
+				   + "defaultReadObject or readFields)");
 
     boolean oldmode = setBlockDataMode(false);
     readFields (this.currentObject, this.currentObjectStreamClass);
@@ -523,10 +565,12 @@ public class ObjectInputStream extends InputStream
     throws InvalidObjectException, NotActiveException
   {
     if (this.currentObject == null || this.currentObjectStreamClass == null)
-      throw new NotActiveException ("registerValidation called by non-active class and/or object");
+      throw new NotActiveException ("registerValidation called by non-active "
+				    +"class and/or object");
 
     if (validator == null)
-      throw new InvalidObjectException ("attempt to add a null ObjectInputValidation object");
+      throw new InvalidObjectException ("attempt to add a null "
+					+"ObjectInputValidation object");
 
     this.validators.addElement (new ValidatorAndPriority (validator,
 							  priority));
@@ -555,6 +599,14 @@ public class ObjectInputStream extends InputStream
     return Class.forName(osc.getName(), true, currentLoader());
   }
 
+  /**
+   * This method invokes the method currentClassLoader for the
+   * current security manager (or build an empty one if it is not
+   * present).
+   *
+   * @return The most recent non-system ClassLoader on the execution stack.
+   * @see java.lang.SecurityManager#currentClassLoader()
+   */
   private ClassLoader currentLoader()
   {
     SecurityManager sm = System.getSecurityManager ();
@@ -590,8 +642,8 @@ public class ObjectInputStream extends InputStream
    * Reconstruct class hierarchy the same way
    * {@link java.io.ObjectStreamClass.getObjectStreamClasses(java.lang.Class)} does
    * but using lookupClass instead of ObjectStreamClass.lookup. This
-   * dup is necessary localize the lookup table. Hopefully some future rewritings will
-   * be able to prevent this.
+   * dup is necessary localize the lookup table. Hopefully some future
+   * rewritings will be able to prevent this.
    *
    * @param clazz This is the class for which we want the hierarchy.
    *
@@ -774,52 +826,142 @@ public class ObjectInputStream extends InputStream
 
   public boolean readBoolean () throws IOException
   {
-    return this.dataInputStream.readBoolean ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 1)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    boolean value = this.dataInputStream.readBoolean ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public byte readByte () throws IOException
   {
-    return this.dataInputStream.readByte ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 1)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    byte value = this.dataInputStream.readByte ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public int readUnsignedByte () throws IOException
   {
-    return this.dataInputStream.readUnsignedByte ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 1)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    int value = this.dataInputStream.readUnsignedByte ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public short readShort () throws IOException
   {
-    return this.dataInputStream.readShort ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 2)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    short value = this.dataInputStream.readShort ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public int readUnsignedShort () throws IOException
   {
-    return this.dataInputStream.readUnsignedShort ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 2)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    int value = this.dataInputStream.readUnsignedShort ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public char readChar () throws IOException
   {
-    return this.dataInputStream.readChar ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 2)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    char value = this.dataInputStream.readChar ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public int readInt () throws IOException
   {
-    return this.dataInputStream.readInt ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 4)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    int value = this.dataInputStream.readInt ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public long readLong () throws IOException
   {
-    return this.dataInputStream.readLong ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 8)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    long value = this.dataInputStream.readLong ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public float readFloat () throws IOException
   {
-    return this.dataInputStream.readFloat ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 4)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    float value = this.dataInputStream.readFloat ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public double readDouble () throws IOException
   {
-    return this.dataInputStream.readDouble ();
+    boolean switchmode = true;
+    boolean oldmode = this.readDataFromBlock;
+    if (!oldmode || this.blockDataBytes - this.blockDataPosition >= 8)
+      switchmode = false;
+    if (switchmode)
+      oldmode = setBlockDataMode (true);
+    double value = this.dataInputStream.readDouble ();
+    if (switchmode)
+      setBlockDataMode (oldmode);
+    return value;
   }
 
   public void readFully (byte data[]) throws IOException
@@ -893,14 +1035,31 @@ public class ObjectInputStream extends InputStream
       throws IOException, IllegalArgumentException;
   }
 
+  /**
+   * This method should be called by a method called 'readObject' in the
+   * deserializing class (if present). It cannot (and should not)be called
+   * outside of it. Its goal is to read all fields in the real input stream
+   * and keep them accessible through the {@link #GetField} class. Calling
+   * this method will not alterate the deserializing object.
+   *
+   * @return A valid freshly created 'GetField' instance to get access to
+   * the deserialized stream.
+   * @throws IOException An input/output exception occured. 
+   * @throws ClassNotFoundException 
+   * @throws NotActiveException
+   */
   public GetField readFields ()
     throws IOException, ClassNotFoundException, NotActiveException
   {
     if (this.currentObject == null || this.currentObjectStreamClass == null)
       throw new NotActiveException ("readFields called by non-active class and/or object");
 
+    if (prereadFields != null)
+      return prereadFields;
+
     if (fieldsAlreadyRead)
-      throw new NotActiveException ("readFields called but fields already read from stream (by defaultReadObject or readFields)");
+      throw new NotActiveException ("readFields called but fields already read from"
+				    + " stream (by defaultReadObject or readFields)");
 
     final ObjectStreamClass clazz = this.currentObjectStreamClass;
     final byte[] prim_field_data = new byte[clazz.primFieldSize];
@@ -915,7 +1074,7 @@ public class ObjectInputStream extends InputStream
       objs[i] = readObject ();
     setBlockDataMode (oldmode);
 
-    return new GetField ()
+    prereadFields = new GetField()
       {
 	public ObjectStreamClass getObjectStreamClass ()
 	{
@@ -925,7 +1084,31 @@ public class ObjectInputStream extends InputStream
 	public boolean defaulted (String name)
 	  throws IOException, IllegalArgumentException
 	{
-	  return clazz.getField (name) == null;
+	  ObjectStreamField f = clazz.getField(name);
+	  
+	  /* First if we have a serialized field use the descriptor */
+	  if (f != null)
+	    {
+	      /* It is in serialPersistentFields but setClass tells us
+	       * it should not be set. This value is defaulted.
+	       */
+	      if (f.isPersistent() && !f.isToSet())
+		return true;
+	      
+	      return false;
+	    }
+
+	  /* This is not a serialized field. There should be
+	   * a default value only if the field really exists.
+	   */
+	  try
+	    {
+	      return (clazz.forClass().getDeclaredField (name) != null);
+	    }
+	  catch (NoSuchFieldException e)
+	    {
+	      throw new IllegalArgumentException (e.getMessage());
+	    }
 	}
 
 	public boolean get (String name, boolean defvalue)
@@ -1067,24 +1250,76 @@ public class ObjectInputStream extends InputStream
 	  throws IllegalArgumentException
 	{
 	  ObjectStreamField field = clazz.getField (name);
+	  boolean illegal = false;
 
-	  if (field == null)
-	    return null;
+	  try
+	    {
+	      try
+		{
+		  Class field_type = field.getType();
+		  
+		  if (type == field_type ||
+		      (type == null && !field_type.isPrimitive()))
+		    {
+		      /* See defaulted */
+		      return field;
+		    }
+	 
+		  illegal = true;
+		  throw new IllegalArgumentException
+		    ("Field requested is of type "
+		     + field_type.getName()
+		     + ", but requested type was "
+		     + (type == null ?  "Object" : type.getName()));
+		}
+	      catch (NullPointerException _)
+		{
+		  /* Here we catch NullPointerException, because it may
+		     only come from the call 'field.getType()'. If field
+		     is null, we have to return null and classpath ethic
+		     say we must try to avoid 'if (xxx == null)'.
+		  */
+		}
+	      catch (IllegalArgumentException e)
+		{
+		  throw e;
+		}
+	      
+	      return null;
+	    }
+	  finally
+	    {
+	      /* If this is an unassigned field we should return
+	       * the default value.
+	       */
+	      if (!illegal && field != null && !field.isToSet() && field.isPersistent())
+		return null;
 
-	  Class field_type = field.getType ();
-
-	  if (type == field_type ||
-	      (type == null && ! field_type.isPrimitive ()))
-	    return field;
-
-	  throw new IllegalArgumentException ("Field requested is of type "
-					      + field_type.getName ()
-					      + ", but requested type was "
-					      + (type == null ?
-						 "Object" : type.getName ()));
+	      /* We do not want to modify transient fields. They should
+	       * be left to 0.
+	       */
+	      try
+		{
+		  Field f = clazz.forClass().getDeclaredField (name);
+		  if (Modifier.isTransient(f.getModifiers()))
+		    throw new IllegalArgumentException
+		      ("no such field (non transient) " + name);
+		  if (field == null && f.getType() != type)
+		    throw new IllegalArgumentException
+		      ("Invalid requested type for field " + name);
+		}
+	      catch (NoSuchFieldException e)
+		{
+		  if (field == null)
+		    throw new IllegalArgumentException(e.getMessage());
+		}
+	       
+	    }
 	}
       };
 
+    fieldsAlreadyRead = true;
+    return prereadFields;
   }
 
   /**
@@ -1334,6 +1569,15 @@ public class ObjectInputStream extends InputStream
 	      }
 	  }
 
+	if (stream_field.getOffset() < 0)
+	  {
+	    default_initialize = true;
+	    set_value = false;
+	  }
+	
+	if (!stream_field.isToSet()) 
+	  set_value = false;
+
 	try
 	  {
 	    if (type == Boolean.TYPE)
@@ -1485,10 +1729,24 @@ public class ObjectInputStream extends InputStream
     return ClassLoader.getSystemClassLoader ();
   }
 
-  private static Field getField (Class klass, String name)
+  /**
+   * This method tries to access a precise field called in the
+   * specified class. Before accessing the field, it tries to
+   * gain control on this field. If the field is either declared as 
+   * not persistent or transient then it returns null
+   * immediately.
+   *
+   * @param klass Class to get the field from.
+   * @param name Name of the field to access.
+   * @return Field instance representing the requested field.
+   * @throws NoSuchFieldException if the field does not exist.
+   */
+  private Field getField(Class klass, String name)
     throws java.lang.NoSuchFieldException
   {
     final Field f = klass.getDeclaredField(name);
+    ObjectStreamField sf = lookupClass(klass).getField(name);
+    
     AccessController.doPrivileged(new PrivilegedAction()
       {
 	public Object run()
@@ -1497,6 +1755,14 @@ public class ObjectInputStream extends InputStream
 	  return null;
 	}
       });
+
+    /* We do not want to modify transient fields. They should
+     * be left to 0.
+     * N.B.: Not valid if the field is in serialPersistentFields. 
+     */
+    if (Modifier.isTransient(f.getModifiers()) && !sf.isPersistent())
+      return null;
+   
     return f;
   }
 
@@ -1546,6 +1812,9 @@ public class ObjectInputStream extends InputStream
 	throw new IOException ("Failure invoking readObject() on " +
 			       klass + ": " + x.getClass().getName());
       }
+
+    // Invalidate fields which has been read through readFields.
+    prereadFields = null;
   }
     
   private native Object allocateObject (Class clazz)
@@ -1829,6 +2098,7 @@ public class ObjectInputStream extends InputStream
   private boolean fieldsAlreadyRead;
   private Vector validators;
   private Hashtable classLookupTable;
+  private GetField prereadFields;
 
   private static boolean dump;
 

@@ -1,3 +1,18 @@
+2003-12-23  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/io/ObjectInputStream.java
+	(getField): Handle transient and non persistent fields.
+	(readClassDescriptor): Better error handling, use the right
+	class loader.
+	(readFields): Fields marked as not present in the stream
+	or not to be set are not read and set.
+	* java/io/ObjectInputStream.java
+	(readFields): Changed implementation of GetField.
+	(readClassDescriptor): Documented.
+	* java/io/ObjectOutputStream.java
+	(writeClassDescriptor): Added condition when to write class super
+	class information.
+
 2003-12-22  Fernando Nasser  <fnasser@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkChoicePeer.java (postItemEvent): Rename to...
