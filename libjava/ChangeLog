@@ -11,7 +11,6 @@
 	* java/text/DateFormatSymbols.java (equals): Now private.
 	* java/text/DecimalFormatSymbols.java (safeGetChar): Now private.
 	* java/util/BitSet.java: Class no longer final.
-	* java/util/Set.java (toArray(Object[])): New method.
 
 2000-12-04  Warren Levy  <warrenl@redhat.com>
 
