@@ -760,6 +760,7 @@ copy_src_to_dest (insn, src, dest, old_max_uid)
   if (GET_CODE (src) == REG
       && REG_LIVE_LENGTH (REGNO (src)) > 0
       && GET_CODE (dest) == REG
+      && !RTX_UNCHANGING_P (dest)
       && REG_LIVE_LENGTH (REGNO (dest)) > 0
       && (set = single_set (insn)) != NULL_RTX
       && !reg_mentioned_p (dest, SET_SRC (set))
