@@ -1,6 +1,17 @@
 2003-10-15  Michael Koch  <konqueror@gmx.de>
 
 	* java/text/RuleBasedCollator.java
+	(RuleBasedCollator): Moved around, documentation added.
+	(compare): Documentation added.
+	(equals): Likewise.
+	(getCollationElementIterator): Likewise.
+	(getCollationKey): Likewise.
+	(getRules): Likewise.
+	(hashCode): Likewise.
+
+2003-10-15  Michael Koch  <konqueror@gmx.de>
+
+	* java/text/RuleBasedCollator.java
 	(CollationElement): Renamed from RBCElement and moved into
 	RuledBasedCollator as inner class.
 
