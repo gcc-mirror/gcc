@@ -7,13 +7,13 @@ Libjava License.  Please consult the file "LIBJAVA_LICENSE" for
 details.  */
 
 package java.awt;
+import java.awt.peer.ComponentPeer;
+import java.awt.peer.LabelPeer;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date April 12, 2000
  */
-
-/* Status: addNotify() not written.  */
 
 public class Label extends Component
 {
@@ -41,7 +41,7 @@ public class Label extends Component
 
   public void addNotify ()
   {
-    // FIXME
+    peer = (ComponentPeer) getToolkit ().createLabel (this);
   }
 
   public int getAlignment ()
@@ -64,11 +64,21 @@ public class Label extends Component
     if (alignment != CENTER && alignment != LEFT && alignment != RIGHT)
       throw new IllegalArgumentException ();
     this.alignment = alignment;
+    if (peer != null)
+      {
+	LabelPeer lp = (LabelPeer) peer;
+	lp.setAlignment (alignment);
+      }
   }
 
   public void setText (String text)
   {
     this.text = text;
+    if (peer != null)
+      {
+	LabelPeer lp = (LabelPeer) peer;
+	lp.setText (text);
+      }
   }
 
   private String text;

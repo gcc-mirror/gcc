@@ -1,3 +1,38 @@
+2000-07-30  Tom Tromey  <tromey@cygnus.com>
+
+	* java/awt/Container.java (remove(int)): Wrote.
+	(remove(Component)): Wrote.
+	(add(Component)): Wrote.
+	(add(Component,int)): Wrote.
+	(removeAll): Wrote.
+	(addNotify): Set our own peer.
+	* java/awt/Scrollbar.java (listeners): Changed type.
+	(Scrollbar): Don't initialize listeners.
+	(addNotify): Wrote.
+	(setValue): Call setValues.
+	(setMinimum): Likewise.
+	(setMaxPriority): Likewise.
+	(setVisibleAmount): Likewise.
+	(setValues): Wrote.
+	(setUnitIncrement): Forward to peer.
+	(setLineIncrement): Call setUnitIncrement.
+	(setPageIncrement): Call setBlockIncrement.
+	(setBlockIncrement): Forward to peer.
+	(addAdjustmentListener): Rewrote.
+	(removeAdjustmentListener): Rewrote.
+	(processAdjustmentEvent): Rewrote.
+	(paramString): Wrote.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added Button.java.
+	* java/awt/Button.java: New file.
+	* java/awt/Toolkit.java (createLabel): Declare.
+	(createButton): Likewise.
+	(createScrollbar): Likewise.
+	(createContainer): Likewise.
+	* java/awt/Label.java (addNotify): Wrote.
+	(setAlignment): Call setAlignment in the peer.
+	(setText): Call setText in the peer.
+
 2000-07-28  Warren Levy  <warrenl@cygnus.com>
 
 	* java/io/ObjectOutputStream.java (writeObject): Per spec, call

@@ -8,8 +8,8 @@ details.  */
 
 package java.awt;
 import java.awt.event.*;
-import java.util.Vector;
-import java.util.Enumeration;
+import java.awt.peer.ScrollbarPeer;
+import java.awt.peer.ComponentPeer;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -47,14 +47,13 @@ public class Scrollbar extends Component implements Adjustable
     this.minimum = minimum;
     this.maximum = maximum;
     this.unit = 1;
-    this.listeners = new Vector ();
 
     this.block = 0; // FIXME
   }
 
   public void addNotify ()
   {
-    // FIXME
+    peer = (ComponentPeer) getToolkit ().createScrollbar (this);
   }
 
   public int getOrientation ()
@@ -76,11 +75,7 @@ public class Scrollbar extends Component implements Adjustable
 
   public void setValue (int value)
   {
-    if (value < minimum)
-      value = minimum;
-    else if (value > maximum)
-      value = maximum;
-    this.value = value;
+    setValues (value, visible, minimum, maximum);
   }
 
   public int getMinimum ()
@@ -90,8 +85,7 @@ public class Scrollbar extends Component implements Adjustable
 
   public void setMinimum (int minimum)
   {
-    // FIXME: what if it is > max?
-    this.minimum = minimum;
+    setValues (value, visible, minimum, maximum);
   }
 
   public int getMaximum ()
@@ -101,8 +95,7 @@ public class Scrollbar extends Component implements Adjustable
 
   public void setMaximum (int maximum)
   {
-    // FIXME: what if it is < min?
-    this.maximum = maximum;
+    setValues (value, visible, minimum, maximum);
   }
 
   public int getVisibleAmount ()
@@ -117,17 +110,23 @@ public class Scrollbar extends Component implements Adjustable
 
   public void setVisibleAmount (int visible)
   {
-    this.visible = visible;
+    setValues (value, visible, minimum, maximum);
   }
 
   public void setUnitIncrement (int v)
   {
     unit = v;
+    if (peer != null)
+      {
+	ScrollbarPeer sp = (ScrollbarPeer) peer;
+	sp.setLineIncrement (v);
+      }
   }
 
+  /** @deprecated */
   public void setLineIncrement (int v)
   {
-    unit = v;
+    setUnitIncrement (v);
   }
 
   public int getUnitIncrement ()
@@ -143,11 +142,16 @@ public class Scrollbar extends Component implements Adjustable
   public void setBlockIncrement (int v)
   {
     block = v;
+    if (peer != null)
+      {
+	ScrollbarPeer sp = (ScrollbarPeer) peer;
+	sp.setPageIncrement (v);
+      }
   }
 
   public void setPageIncrement (int v)
   {
-    block = v;
+    setBlockIncrement (v);
   }
 
   public int getBlockIncrement ()
@@ -163,22 +167,33 @@ public class Scrollbar extends Component implements Adjustable
   public synchronized void setValues (int value, int visible,
 				      int minimum, int maximum)
   {
-    // fixme;
+    if (maximum < minimum)
+      maximum = minimum;
+    if (value < minimum)
+      value = minimum;
+    if (value > maximum)
+      value = maximum;
+
+    this.value = value;
+    this.visible = visible;
+    this.minimum = minimum;
+    this.maximum = maximum;
+
+    if (peer != null)
+      {
+	ScrollbarPeer sp = (ScrollbarPeer) peer;
+	sp.setValues (value, visible, minimum, maximum);
+      }
   }
 
   public void addAdjustmentListener (AdjustmentListener l)
   {
-    if (l != null)
-      {
-	listeners.addElement (l);
-	enableEvents (0);	// FIXME
-      }
+    listeners = AWTEventMulticaster.add (listeners, l);
   }
 
   public void removeAdjustmentListener (AdjustmentListener l)
   {
-    if (l != null)
-      listeners.remove (l);
+    listeners = AWTEventMulticaster.add (listeners, l);
   }
 
   protected void processEvent (AWTEvent e)
@@ -191,20 +206,23 @@ public class Scrollbar extends Component implements Adjustable
 
   protected void processAdjustmentEvent (AdjustmentEvent e)
   {
-    Enumeration en = listeners.elements ();
-    while (en.hasMoreElements ())
-      {
-	AdjustmentListener l = (AdjustmentListener) en.nextElement ();
-	l.adjustmentValueChanged (e);
-      }
+    if (listeners != null)
+      listeners.adjustmentValueChanged (e);
   }
 
   protected String paramString ()
   {
-    return null;		// FIXME
+    return ("Scrollbar["
+	    + ((orientation == VERTICAL) ? "VERTICAL" : "HORIZONTAL") + ","
+	    + value + ","
+	    + visible + ","
+	    + minimum + ","
+	    + maximum + ","
+	    + unit + ","
+	    + block + "]");
   }
 
-  private Vector listeners;
+  private AdjustmentListener listeners;
   private int orientation;
   private int value;
   private int visible;

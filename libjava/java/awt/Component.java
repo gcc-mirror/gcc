@@ -112,6 +112,7 @@ public abstract class Component implements ImageObserver, MenuContainer,
   }
   
   /** @deprecated */
+  // However, Classpath's Gtk peers rely on it.
   public java.awt.peer.ComponentPeer getPeer()
   {
     return peer;
