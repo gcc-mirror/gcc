@@ -108,8 +108,8 @@ install:
 	if [ -z "$(MULTISUBDIR)" ]; then \
 	  if [ "$(_G_CONFIG_H)" != "" ]; then \
 	    if [ x$(enable_version_specific_runtime_libs) = xyes ]; then \
-	      rm -f $(gxx_include_dir)/include/_G_config.h ; \
-	      $(INSTALL_DATA) _G_config.h $(gxx_include_dir)/include/_G_config.h || exit 1; \
+	      rm -f $(gxx_include_dir)/_G_config.h ; \
+	      $(INSTALL_DATA) _G_config.h $(gxx_include_dir)/_G_config.h || exit 1; \
 	    else \
 	      rm -f $(tooldir)/include/_G_config.h ; \
 	      $(INSTALL_DATA) _G_config.h $(tooldir)/include/_G_config.h || exit 1; \
