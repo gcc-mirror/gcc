@@ -276,7 +276,8 @@ public abstract class SocketImpl implements SocketOptions
    */
   public String toString()
   {
-    return "[addr=" + address
+    return "[addr=" + ((address == null) ? "0.0.0.0/0.0.0.0" :
+ 		       address.toString())
 	    + ",port=" + port
 	    + ",localport=" + localport + "]";
   }

@@ -1,3 +1,8 @@
+2003-08-01  Stephen Crawley <crawley@dstc.edu.au>
+
+	* java/net/SocketImpl.java (toString): Display the remote address
+	of an unconnected server socket as "0.0.0.0/0.0.0.0".
+
 2003-08-01  Sascha Brawer  <brawer@dandelis.ch>
 
 	* javax/swing/border/BevelBorder.java,
