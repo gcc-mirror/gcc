@@ -1,5 +1,10 @@
 2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.h (BCT_CHECK_LOOP_ITERATIONS): Remove.
+	(HAVE_GAS_HIDDEN): Undefine as interim measure.
+	
+2004-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.c (c4x_legitimate_address_p):  Invalidate direct
 	memory references if TARGET_EXPOSE_LDP nonzero.
 
