@@ -276,6 +276,7 @@ getruntime.o: config.h $(INCDIR)/libiberty.h
 hex.o: $(INCDIR)/libiberty.h
 floatformat.o: $(INCDIR)/floatformat.h
 mkstemps.o: config.h
+md5.o: config.h
 objalloc.o: config.h $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
 partition.o: config.h $(INCDIR)/partition.h
