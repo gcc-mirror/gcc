@@ -1642,7 +1642,7 @@ emit_block_move (x, y, size, align)
 		 actual mode mask.  */
 	      && ((GET_CODE (size) == CONST_INT
 		   && ((unsigned HOST_WIDE_INT) INTVAL (size)
-		       <= GET_MODE_MASK (mode)))
+		       <= (GET_MODE_MASK (mode) >> 1)))
 		  || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
 	      && (insn_operand_predicate[(int) code][0] == 0
 		  || (*insn_operand_predicate[(int) code][0]) (x, BLKmode))
@@ -2137,7 +2137,7 @@ clear_storage (object, size, align)
 		     definitely be less than the actual mode mask.  */
 		  && ((GET_CODE (size) == CONST_INT
 		       && ((unsigned HOST_WIDE_INT) INTVAL (size)
-			   <= GET_MODE_MASK (mode)))
+			   <= (GET_MODE_MASK (mode) >> 1)))
 		      || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
 		  && (insn_operand_predicate[(int) code][0] == 0
 		      || (*insn_operand_predicate[(int) code][0]) (object,
@@ -2640,6 +2640,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			      INTVAL (size), align);
 	      goto ret;
 	    }
+
 	  /* Try the most limited insn first, because there's no point
 	     including more than one in the machine description unless
 	     the more limited one has some advantage.  */
