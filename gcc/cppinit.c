@@ -1470,6 +1470,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  /* fall through */
 	case OPT_pedantic:
  	  CPP_OPTION (pfile, pedantic) = 1;
+	  CPP_OPTION (pfile, warn_endif_labels) = 1;
 	  break;
 	case OPT_trigraphs:
  	  CPP_OPTION (pfile, trigraphs) = 1;
@@ -1837,10 +1838,6 @@ cpp_post_options (pfile)
        || CPP_OPTION (pfile, deps_file)
        || CPP_OPTION (pfile, deps_phony_targets)))
     cpp_fatal (pfile, "you must additionally specify either -M or -MM");
-
-  /* Some things should always be on in pedantic mode.  */
-  if (CPP_OPTION (pfile, pedantic) == 1)
-    CPP_OPTION (pfile, warn_endif_labels) = 1;
 }
 
 /* Set up dependency-file output.  On exit, if print_deps is non-zero

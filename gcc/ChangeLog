@@ -1,4 +1,10 @@
 2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinit.c (cpp_handle_option): Set warn_endif_labels if
+	-pedantic here...
+	(cpp_post_options): ... not here.
+
+2002-03-24  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
 	Removal of separate preprocessor cpp0.
