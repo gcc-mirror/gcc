@@ -221,7 +221,7 @@ case $basic_machine in
 	      | sparc64-* | sparcv9-* | sparc86x-* | mips64-* | mipsel-* \
 	      | mips64el-* | mips64orion-* | mips64orionel-*  \
 	      | mipstx39-* | mipstx39el-* \
-	      | f301-*)
+	      | f301-* | armv-*-*)
 		;;
 	m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | h8500-* | d10v-*) # CYGNUS LOCAL
 		;;
@@ -563,6 +563,10 @@ case $basic_machine in
 	netbsd386)
 		basic_machine=i386-unknown		# CYGNUS LOCAL
 		os=-netbsd
+		;;
+	netwinder)
+		basic_machine=armv4l-corel
+		os=-linux
 		;;
 	news | news700 | news800 | news900)
 		basic_machine=m68k-sony
@@ -1036,6 +1040,9 @@ else
 case $basic_machine in
 	*-acorn)
 		os=-riscix1.2
+		;;
+	arm*-corel)
+		os=-linux
 		;;
 	arm*-semi)
 		os=-aout

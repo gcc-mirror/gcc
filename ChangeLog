@@ -7,6 +7,14 @@ Wed Feb 17 01:38:59 1999  H.J. Lu  (hjl@gnu.org)
 	* Makefile.in (REALLY_SET_LIB_PATH): Append $$$(RPATH_ENVVAR)
 	only if it is not empty.
 
+1999-02-17  Nick Clifton  <nickc@cygnus.com>
+
+	Patch from: Scott Bambrough <scottb@corelcomputer.com>
+	
+	* config.guess: Modified to recognize uname's armv* syntax. 
+
+	* config.sub: Modified to recognize uname's armv* syntax.
+
 Sun Feb  7 18:01:54 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	
 	* configure.in (*-*-cygwin32*): Use config/mh-cygwin instead of
