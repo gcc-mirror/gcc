@@ -371,6 +371,11 @@ static int max_uid;
 
 #define INSN_CUID(INSN) (uid_cuid[INSN_UID (INSN)])
 
+/* Nonzero if this pass has made changes, and therefore it's
+   worthwhile to run the garbage collector.  */
+
+static int cse_altered;
+
 /* Nonzero if cse has altered conditional jump insns
    in such a way that jump optimization should be redone.  */
 
@@ -5313,6 +5318,7 @@ cse_insn (insn, libcall_insn)
       /* If we made a change, recompute SRC values.  */
       if (src != sets[i].src)
         {
+	  cse_altered = 1;
           do_not_record = 0;
           hash_arg_in_memory = 0;
 	  sets[i].src = src;
@@ -6784,6 +6790,7 @@ cse_main (f, nregs, after_loop, file)
   insn = f;
   while (insn)
     {
+      cse_altered = 0;
       cse_end_of_basic_block (insn, &val, flag_cse_follow_jumps, after_loop,
 			      flag_cse_skip_blocks);
 
@@ -6834,7 +6841,7 @@ cse_main (f, nregs, after_loop, file)
 	  cse_jumps_altered |= old_cse_jumps_altered;
 	}
 
-      if (ggc_p)
+      if (ggc_p && cse_altered)
 	ggc_collect ();
 
 #ifdef USE_C_ALLOCA
