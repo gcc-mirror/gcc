@@ -256,7 +256,7 @@ typedef tree (*walk_tree_fn)                    PARAMS ((tree *,
 
 extern stmt_tree current_stmt_tree              PARAMS ((void));
 extern void begin_stmt_tree                     PARAMS ((tree *));
-extern void add_stmt				PARAMS ((tree));
+extern tree add_stmt				PARAMS ((tree));
 extern void finish_stmt_tree                    PARAMS ((tree *));
 
 extern int statement_code_p                     PARAMS ((enum tree_code));
@@ -267,6 +267,18 @@ extern tree walk_stmt_tree			PARAMS ((tree *,
 extern void prep_stmt                           PARAMS ((tree));
 extern void (*lang_expand_stmt)                 PARAMS ((tree));
 extern void expand_stmt                         PARAMS ((tree));
+
+/* LAST_TREE contains the last statement parsed.  These are chained
+   together through the TREE_CHAIN field, but often need to be
+   re-organized since the parse is performed bottom-up.  This macro
+   makes LAST_TREE the indicated SUBSTMT of STMT.  */
+
+#define RECHAIN_STMTS(stmt, substmt)		\
+  do {						\
+    substmt = TREE_CHAIN (stmt);		\
+    TREE_CHAIN (stmt) = NULL_TREE;		\
+    last_tree = stmt;				\
+  } while (0)
 
 /* The variant of the C language being processed.  Each C language
    front-end defines this variable.  */
@@ -457,6 +469,7 @@ extern tree simple_type_promotes_to		PARAMS ((tree));
    of a case label, respectively. */
 #define CASE_LOW(NODE)          TREE_OPERAND (CASE_LABEL_CHECK (NODE), 0)
 #define CASE_HIGH(NODE)         TREE_OPERAND (CASE_LABEL_CHECK (NODE), 1)
+#define CASE_LABEL_DECL(NODE)   TREE_OPERAND (CASE_LABEL_CHECK (NODE), 2)
 
 /* GOTO_STMT accessor. This gives access to the label associated with
    a goto statement. */
@@ -570,7 +583,7 @@ extern void genrtl_break_stmt                   PARAMS ((void));
 extern void genrtl_continue_stmt                PARAMS ((void));
 extern void genrtl_scope_stmt                   PARAMS ((tree));
 extern void genrtl_switch_stmt                  PARAMS ((tree));
-extern void genrtl_case_label                   PARAMS ((tree, tree));
+extern void genrtl_case_label                   PARAMS ((tree));
 extern void genrtl_compound_stmt                PARAMS ((tree));
 extern void genrtl_asm_stmt                     PARAMS ((tree, tree,
 							 tree, tree,
@@ -589,10 +602,9 @@ extern void emit_local_var                      PARAMS ((tree));
 extern void make_rtl_for_local_static           PARAMS ((tree));
 extern tree expand_cond                         PARAMS ((tree));
 extern void c_expand_return			PARAMS ((tree));
-extern tree c_expand_start_case			PARAMS ((tree));
 extern void do_case				PARAMS ((tree, tree));
 extern tree build_stmt                          PARAMS ((enum tree_code, ...));
-extern tree build_case_label                    PARAMS ((tree, tree));
+extern tree build_case_label                    PARAMS ((tree, tree, tree));
 extern tree build_continue_stmt                 PARAMS ((void));
 extern tree build_break_stmt                    PARAMS ((void));
 extern tree build_return_stmt                   PARAMS ((tree));
@@ -619,6 +631,8 @@ extern tree default_conversion                  PARAMS ((tree));
 extern tree common_type                         PARAMS ((tree, tree));
 
 extern tree expand_tree_builtin                 PARAMS ((tree, tree, tree));
+
+extern tree decl_constant_value		PARAMS ((tree));
 
 /* Hook currently used only by the C++ front end to reset internal state
    after entering or leaving a header file.  */

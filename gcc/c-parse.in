@@ -1879,13 +1879,11 @@ stmt:
                   stmt_count++;
 		  genrtl_continue_stmt (); }
 	| RETURN ';'
-                { tree return_stmt = build_return_stmt (NULL_TREE);
-                  stmt_count++;
-		  genrtl_return_stmt (RETURN_EXPR(return_stmt)); }
+                { stmt_count++;
+		  c_expand_return (NULL_TREE); }
 	| RETURN expr ';'
-                { tree return_stmt = build_return_stmt ($2);
-                  stmt_count++;
-		  genrtl_return_stmt (RETURN_EXPR(return_stmt)); }
+                { stmt_count++;
+		  c_expand_return ($2); }
 	| ASM_KEYWORD maybe_type_qual '(' expr ')' ';'
 		{ stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
@@ -1943,20 +1941,14 @@ stmt:
    also at the end of a compound statement.  */
 
 label:	  CASE expr_no_commas ':'
-                { tree case_label_tree = build_case_label ($2, NULL_TREE);
-		  stmt_count++;
-		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
-		}
+                { stmt_count++;
+		  do_case ($2, NULL_TREE); }
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
-                { tree case_label_tree = build_case_label ($2, $4);
-		  stmt_count++;
-		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
-		}
+                { stmt_count++;
+		  do_case ($2, $4); }
 	| DEFAULT ':'
-                { tree case_label_tree = build_case_label (NULL_TREE, NULL_TREE);
-		  stmt_count++;
-		  genrtl_case_label(CASE_LOW(case_label_tree), CASE_HIGH(case_label_tree));
-		}
+                { stmt_count++;
+		  do_case (NULL_TREE, NULL_TREE); }
 	| identifier save_filename save_lineno ':' maybe_attribute
 		{ tree label = define_label ($2, $3, $1);
 		  stmt_count++;

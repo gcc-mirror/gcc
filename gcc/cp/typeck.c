@@ -6839,56 +6839,7 @@ check_return_expr (retval)
   return retval;
 }
 
-/* Expand a C `return' statement.
-   RETVAL is the expression for what to return,
-   or a null pointer for `return;' with no value.
-
-   C++: upon seeing a `return', we must call destructors on all
-   variables in scope which had constructors called on them.
-   This means that if in a destructor, the base class destructors
-   must be called before returning.
-
-   The RETURN statement in C++ has initialization semantics.  */
-
-void
-c_expand_return (retval)
-     tree retval;
-{
-  if (!retval)
-    expand_null_return ();
-  else
-    {
-      expand_start_target_temps ();
-      expand_return (retval);
-      expand_end_target_temps ();
-    }
-}
 
-/* Start a C switch statement, testing expression EXP.
-   Return EXP if it is valid, an error node otherwise.  */
-
-tree
-c_expand_start_case (exp)
-     tree exp;
-{
-  tree type;
-  tree index;
-
-  type = TREE_TYPE (exp);
-  index = get_unwidened (exp, NULL_TREE);
-  /* We can't strip a conversion from a signed type to an unsigned,
-     because if we did, int_fits_type_p would do the wrong thing
-     when checking case values for being in range,
-     and it's too hard to do the right thing.  */
-  if (TREE_UNSIGNED (TREE_TYPE (exp))
-      == TREE_UNSIGNED (TREE_TYPE (index)))
-    exp = index;
-
-  expand_start_case (1, exp, type, "switch statement");
-
-  return exp;
-}
-
 /* Returns non-zero if the pointer-type FROM can be converted to the
    pointer-type TO via a qualification conversion.  If CONSTP is -1,
    then we return non-zero if the pointers are similar, and the

@@ -240,8 +240,6 @@ struct nesting
 	  tree index_expr;
 	  /* Type that INDEX_EXPR should be converted to.  */
 	  tree nominal_type;
-	  /* Number of range exprs in case statement.  */
-	  int num_ranges;
 	  /* Name of this kind of statement, for warnings.  */
 	  const char *printname;
 	  /* Used to save no_line_numbers till we see the first case label.
@@ -421,7 +419,6 @@ static int node_has_high_bound		PARAMS ((case_node_ptr, tree));
 static int node_is_bounded		PARAMS ((case_node_ptr, tree));
 static void emit_jump_if_reachable	PARAMS ((rtx));
 static void emit_case_nodes		PARAMS ((rtx, case_node_ptr, rtx, tree));
-static int add_case_node		PARAMS ((tree, tree, tree, tree *));
 static struct case_node *case_tree2list	PARAMS ((case_node *, case_node *));
 static void mark_cond_nesting           PARAMS ((struct nesting *));
 static void mark_loop_nesting           PARAMS ((struct nesting *));
@@ -4426,7 +4423,6 @@ expand_start_case (exit_flag, expr, type, printname)
   thiscase->data.case_stmt.index_expr = expr;
   thiscase->data.case_stmt.nominal_type = type;
   thiscase->data.case_stmt.default_label = 0;
-  thiscase->data.case_stmt.num_ranges = 0;
   thiscase->data.case_stmt.printname = printname;
   thiscase->data.case_stmt.line_number_status = force_line_numbers ();
   case_stack = thiscase;
@@ -4464,7 +4460,6 @@ expand_start_case_dummy ()
   thiscase->data.case_stmt.start = 0;
   thiscase->data.case_stmt.nominal_type = 0;
   thiscase->data.case_stmt.default_label = 0;
-  thiscase->data.case_stmt.num_ranges = 0;
   case_stack = thiscase;
   nesting_stack = thiscase;
   start_cleanup_deferral ();
@@ -4580,21 +4575,7 @@ pushcase (value, converter, label, duplicate)
 	  || ! int_fits_type_p (value, index_type)))
     return 3;
 
-  /* Fail if this is a duplicate or overlaps another entry.  */
-  if (value == 0)
-    {
-      if (case_stack->data.case_stmt.default_label != 0)
-	{
-	  *duplicate = case_stack->data.case_stmt.default_label;
-	  return 2;
-	}
-      case_stack->data.case_stmt.default_label = label;
-    }
-  else
-    return add_case_node (value, value, label, duplicate);
-
-  expand_label (label);
-  return 0;
+  return add_case_node (value, value, label, duplicate);
 }
 
 /* Like pushcase but this case applies to all values between VALUE1 and
@@ -4670,13 +4651,32 @@ pushcase_range (value1, value2, converter, label, duplicate)
    into case_stack->data.case_stmt.case_list.  Use an AVL tree to avoid
    slowdown for large switch statements.  */
 
-static int
+int
 add_case_node (low, high, label, duplicate)
      tree low, high;
      tree label;
      tree *duplicate;
 {
   struct case_node *p, **q, *r;
+
+  /* If there's no HIGH value, then this is not a case range; it's
+     just a simple case label.  But that's just a degenerate case
+     range.  */
+  if (!high)
+    high = low;
+
+  /* Handle default labels specially.  */
+  if (!high && !low)
+    {
+      if (case_stack->data.case_stmt.default_label != 0)
+	{
+	  *duplicate = case_stack->data.case_stmt.default_label;
+	  return 2;
+	}
+      case_stack->data.case_stmt.default_label = label;
+      expand_label (label);
+      return 0;
+    }
 
   q = &case_stack->data.case_stmt.case_list;
   p = *q;
@@ -4709,14 +4709,10 @@ add_case_node (low, high, label, duplicate)
   r->low = copy_node (low);
 
   /* If the bounds are equal, turn this into the one-value case.  */
-
   if (tree_int_cst_equal (low, high))
     r->high = r->low;
   else
-    {
-      r->high = copy_node (high);
-      case_stack->data.case_stmt.num_ranges++;
-    }
+    r->high = copy_node (high);
 
   r->code_label = label;
   expand_label (label);

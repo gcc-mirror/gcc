@@ -4329,35 +4329,6 @@ finish_decl_parsing (decl)
     }
 }
 
-tree
-check_cp_case_value (value)
-     tree value;
-{
-  if (value == NULL_TREE)
-    return value;
-
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  STRIP_TYPE_NOPS (value);
-  value = decl_constant_value (value);
-  STRIP_TYPE_NOPS (value);
-  value = fold (value);
-
-  if (TREE_CODE (value) != INTEGER_CST
-      && value != error_mark_node)
-    {
-      cp_error ("case label `%E' does not reduce to an integer constant",
-		value);
-      value = error_mark_node;
-    }
-  else
-    /* Promote char or short to int.  */
-    value = default_conversion (value);
-
-  constant_expression_warning (value);
-
-  return value;
-}
-
 /* Return 1 if root encloses child. */
 
 static int

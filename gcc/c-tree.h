@@ -268,6 +268,7 @@ extern void set_init_label			PARAMS ((tree));
 extern void process_init_element		PARAMS ((tree));
 extern void pedwarn_c99				PARAMS ((const char *, ...))
 							ATTRIBUTE_PRINTF_1;
+extern tree c_expand_start_case                 PARAMS ((tree));
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */

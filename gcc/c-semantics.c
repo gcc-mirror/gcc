@@ -58,7 +58,7 @@ begin_stmt_tree (t)
 
 /* T is a statement.  Add it to the statement-tree.  */
 
-void
+tree
 add_stmt (t)
      tree t;
 {
@@ -68,6 +68,7 @@ add_stmt (t)
   /* When we expand a statement-tree, we must know whether or not the
      statements are full-expresions.  We record that fact here.  */
   STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p ();
+  return t;
 }
 
 /* Remove declarations of internal variables that are not used from a
@@ -434,14 +435,23 @@ build_return_stmt (expr)
   return (build_stmt (RETURN_STMT, expr));
 }
 
-/* Generate the RTL for EXPR, which is a RETURN_STMT. */
+/* Generate the RTL for STMT, which is a RETURN_STMT. */
 
 void
-genrtl_return_stmt (expr)
-     tree expr;
+genrtl_return_stmt (stmt)
+     tree stmt;
 {
+  tree expr = RETURN_EXPR (stmt);
+
   emit_line_note (input_filename, lineno);
-  c_expand_return (expr);
+  if (!expr)
+    expand_null_return ();
+  else
+    {
+      expand_start_target_temps ();
+      expand_return (expr);
+      expand_end_target_temps ();
+    }
 }
 
 /* Generate the RTL for T, which is a FOR_STMT. */
@@ -547,40 +557,38 @@ genrtl_switch_stmt (t)
   genrtl_do_pushlevel ();
  
   cond = expand_cond (SWITCH_COND (t));
-  if (cond != error_mark_node)
-    {
-      emit_line_note (input_filename, lineno);
-      c_expand_start_case (cond);
-    }
-  else
+  if (cond == error_mark_node)
     /* The code is in error, but we don't want expand_end_case to
        crash. */
-    c_expand_start_case (boolean_false_node);
+    cond = boolean_false_node;
 
+  emit_line_note (input_filename, lineno);
+  expand_start_case (1, cond, TREE_TYPE (cond), "switch statement");
   expand_stmt (SWITCH_BODY (t));
-
   expand_end_case (cond);
 }
 
 /* Create a CASE_LABEL tree node and return it. */
 
 tree
-build_case_label (low_value, high_value)
+build_case_label (low_value, high_value, label_decl)
      tree low_value;
      tree high_value;
+     tree label_decl;
 {
-  return build_stmt (CASE_LABEL, low_value, high_value);
+  return build_stmt (CASE_LABEL, low_value, high_value, label_decl);
 }
 
 
 /* Generate the RTL for a CASE_LABEL. */
 
 void 
-genrtl_case_label (low_value, high_value)
-     tree low_value;
-     tree high_value;
+genrtl_case_label (case_label)
+     tree case_label;
 {
-  do_case (low_value, high_value);
+  tree duplicate;
+  add_case_node (CASE_LOW (case_label), CASE_HIGH (case_label), 
+		 CASE_LABEL_DECL (case_label), &duplicate);
 }
 
 /* Generate the RTL for T, which is a COMPOUND_STMT. */
@@ -677,7 +685,7 @@ expand_stmt (t)
       switch (TREE_CODE (t))
 	{
 	case RETURN_STMT:
-	  genrtl_return_stmt (RETURN_EXPR (t));
+	  genrtl_return_stmt (t);
 	  break;
 
 	case EXPR_STMT:
@@ -721,7 +729,7 @@ expand_stmt (t)
 	  break;
 
 	case CASE_LABEL:
-	  genrtl_case_label (CASE_LOW (t), CASE_HIGH (t));
+	  genrtl_case_label (t);
 	  break;
 
 	case LABEL_STMT:
