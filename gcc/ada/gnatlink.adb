@@ -1278,7 +1278,8 @@ procedure Gnatlink is
          Write_Eol;
          Write_Str ("GNATLINK ");
          Write_Str (Gnat_Version_String);
-         Write_Str (" Copyright 1995-2004 Free Software Foundation, Inc");
+         Write_Eol;
+         Write_Str ("Copyright 1995-2004 Free Software Foundation, Inc");
          Write_Eol;
       end if;
    end Write_Header;

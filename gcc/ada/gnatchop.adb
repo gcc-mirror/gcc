@@ -1145,10 +1145,10 @@ procedure Gnatchop is
                --  tools write to standard output ???
 
                Put (Standard_Error, "GNATCHOP ");
-               Put (Standard_Error, Gnatvsn.Gnat_Version_String);
+               Put_Line (Standard_Error, Gnatvsn.Gnat_Version_String);
                Put_Line
                  (Standard_Error,
-                  " Copyright 1998-2004, Ada Core Technologies Inc.");
+                  "Copyright 1998-2004, Ada Core Technologies Inc.");
 
             when 'w' =>
                Overwrite_Files := True;
