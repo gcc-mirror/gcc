@@ -1,3 +1,7 @@
+Sun Dec 6 03:40:13 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Dec  6 07:49:29 1998  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* gcc.texi (Bug Reporting): 40Kb is a soft limit, larger
