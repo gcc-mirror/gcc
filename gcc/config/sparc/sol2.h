@@ -173,3 +173,5 @@ Boston, MA 02111-1307, USA.  */
 /* Define for support of TFmode long double and REAL_ARITHMETIC.
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
+
+#define STDC_0_IN_SYSTEM_HEADERS
