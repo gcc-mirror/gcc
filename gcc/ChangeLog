@@ -1,3 +1,8 @@
+2002-11-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (anonymous and:QI pattern): Use 'n'
+	instead of 'O' for the constraint for the second operand.
+
 2002-11-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8391
