@@ -25,10 +25,6 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
-/* Define if your processor stores words with the most significant
-   byte first (like Motorola and SPARC, unlike Intel and VAX).  */
-#undef WORDS_BIGENDIAN
-
 /* Define this if you want extra debugging */
 #undef FFI_DEBUG
 
@@ -42,32 +38,42 @@
 /* Define this is you do not want support for the raw API.  */
 #undef FFI_NO_RAW_API
 
-/* The number of bytes in a double.  */
-#undef SIZEOF_DOUBLE
-
-/* The number of bytes in a float.  */
-#undef SIZEOF_FLOAT
-
-/* The number of bytes in a int.  */
-#undef SIZEOF_INT
-
-/* The number of bytes in a long.  */
-#undef SIZEOF_LONG
-
-/* The number of bytes in a long double.  */
-#undef SIZEOF_LONG_DOUBLE
-
-/* The number of bytes in a long long.  */
-#undef SIZEOF_LONG_LONG
-
-/* The number of bytes in a short.  */
-#undef SIZEOF_SHORT
-
-/* The number of bytes in a void *.  */
-#undef SIZEOF_VOID_P
-
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
 
-/* Define if your assembler and linker support unaligned PC relative relocs.  */
+/* The number of bytes in type short */
+#undef SIZEOF_SHORT
+
+/* The number of bytes in type int */
+#undef SIZEOF_INT
+
+/* The number of bytes in type long */
+#undef SIZEOF_LONG
+
+/* The number of bytes in type long long */
+#undef SIZEOF_LONG_LONG
+
+/* The number of bytes in type float */
+#undef SIZEOF_FLOAT
+
+/* The number of bytes in type double */
+#undef SIZEOF_DOUBLE
+
+/* The number of bytes in type long double */
+#undef SIZEOF_LONG_DOUBLE
+
+/* The number of bytes in type void * */
+#undef SIZEOF_VOID_P
+
+/* whether byteorder is bigendian */
+#undef WORDS_BIGENDIAN
+
+/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
+#undef BYTEORDER
+
+/* Define if your assembler and linker support unaligned PC relative relocs. */
 #undef HAVE_AS_SPARC_UA_PCREL
+
+/* Define if your assembler supports .register. */
+#undef HAVE_AS_REGISTER_PSEUDO_OP
+

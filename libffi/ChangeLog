@@ -1,3 +1,12 @@
+2003-05-07  Jeff Sturm  <jsturm@one-point.com>
+
+	Fixes PR bootstrap/10656
+	* configure.in (HAVE_AS_REGISTER_PSEUDO_OP): Test assembler
+	support for .register pseudo-op.
+	* src/sparc/v8.S: Use it.
+	* fficonfig.h.in: Rebuilt.
+	* configure: Rebuilt.
+
 2003-04-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/Makefile.in: Regenerate.
