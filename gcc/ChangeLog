@@ -1,3 +1,7 @@
+2003-03-19  Nick Clifton  <nickc@redhat.com>
+
+	* config/mcore/mcore.h (CPP_SPEC): Remove trailing semi-colon.
+
 2003-03-18  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR 10062
