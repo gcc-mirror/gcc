@@ -40,6 +40,13 @@
 
 #define _GLIBCPP_C_LOCALE_GNU 1
 
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
+namespace __gnu_cxx
+{
+  extern "C" __typeof(uselocale) __uselocale;
+}
+#endif
+
 namespace std
 {
   typedef __locale_t		__c_locale;
@@ -47,12 +54,13 @@ namespace std
   template<typename _Tv>
     int
     __convert_from_v(char* __out, const int __size, const char* __fmt,
+#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
 		     _Tv __v, const __c_locale& __cloc, int __prec = -1)
     {
-      int __ret;
-#if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-      __c_locale __old = __uselocale(__cloc);
+      __c_locale __old = __gnu_cxx::__uselocale(__cloc);
 #else
+		     _Tv __v, const __c_locale&, int __prec = -1)
+    {
       char* __old = setlocale(LC_ALL, NULL);
       char* __sav = static_cast<char*>(malloc(strlen(__old) + 1));
       if (__sav)
@@ -60,6 +68,7 @@ namespace std
       setlocale(LC_ALL, "C");
 #endif
 
+      int __ret;
 #ifdef _GLIBCPP_USE_C99
       if (__prec >= 0)
         __ret = snprintf(__out, __size, __fmt, __prec, __v);
@@ -73,7 +82,7 @@ namespace std
 #endif
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-      __uselocale(__old);
+      __gnu_cxx::__uselocale(__old);
 #else
       setlocale(LC_ALL, __sav);
       free(__sav);

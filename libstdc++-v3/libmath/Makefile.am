@@ -34,12 +34,11 @@ libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 
 libmath_la_SOURCES = stubs.c
 
-LINK = \
-	$(LIBTOOL) --tag CC --mode=link "$(CCLD)" \
-	$(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
-
 # Use common includes from acinclude.m4/GLIBCPP_EXPORT_INCLUDES
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 
 INCLUDES = \
 	$(TOPLEVEL_INCLUDES) 
+
+# Only compiling "C" sources in this directory.
+LIBTOOL = @LIBTOOL@ --tag CC
