@@ -320,7 +320,7 @@ int lhs_lshift_cint_operand ();
 #define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
   if (GET_MODE_CLASS (MODE) == MODE_INT	\
       && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)  	\
-    (MODE) = SImode;
+    (MODE) = word_mode;
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
@@ -1206,12 +1206,12 @@ extern union tree_node *current_function_decl;
   emit_move_insn (gen_rtx_MEM (Pmode, start_addr), (CXT));		\
   /* fdc and fic only use registers for the address to flush,		\
      they do not accept integer displacements.  */ 			\
-  start_addr = force_reg (SImode, (TRAMP));				\
-  end_addr = force_reg (SImode, plus_constant ((TRAMP), 32));		\
+  start_addr = force_reg (Pmode, (TRAMP));				\
+  end_addr = force_reg (Pmode, plus_constant ((TRAMP), 32));		\
   emit_insn (gen_dcacheflush (start_addr, end_addr));			\
-  end_addr = force_reg (SImode, plus_constant (start_addr, 32));	\
+  end_addr = force_reg (Pmode, plus_constant (start_addr, 32));	\
   emit_insn (gen_icacheflush (start_addr, end_addr, start_addr,		\
-			      gen_reg_rtx (SImode), gen_reg_rtx (SImode)));\
+			      gen_reg_rtx (Pmode), gen_reg_rtx (Pmode)));\
 }
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
@@ -1631,7 +1631,7 @@ extern struct rtx_def *hppa_legitimize_address ();
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode SImode
+#define Pmode word_mode
 
 /* Add any extra modes needed to represent the condition code.
 
