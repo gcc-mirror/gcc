@@ -1,3 +1,11 @@
+2005-03-22  Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/20577
+	* include/bits/stl_algobase.h (iter_swap): Only delegate iter_swap
+	to swap when the iterator's reference_type is a reference to its
+	value_type.
+	* testsuite/25_algorithms/iter_swap/20577.cc: New.
+
 2005-03-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/20352
