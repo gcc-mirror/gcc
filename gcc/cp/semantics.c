@@ -2528,8 +2528,6 @@ static void
 genrtl_finish_function (fn)
      tree fn;
 {
-  int returns_null;
-  int returns_value;
   tree no_return_label = NULL_TREE;
 
 #if 0
@@ -2630,14 +2628,6 @@ genrtl_finish_function (fn)
   /* Generate rtl for function exit.  */
   expand_function_end (input_filename, lineno, 1);
 
-  /* So we can tell if jump_optimize sets it to 1.  */
-  can_reach_end = 0;
-
-  /* Before we call rest_of_compilation (which will pop the
-     CURRENT_FUNCTION), we must save these values.  */
-  returns_null = current_function_returns_null;
-  returns_value = current_function_returns_value;
-
   /* If this is a nested function (like a template instantiation that
      we're compiling in the midst of compiling something else), push a
      new GC context.  That will keep local variables on the stack from
@@ -2683,25 +2673,6 @@ genrtl_finish_function (fn)
      static duration objects.  */
   if (DECL_STATIC_DESTRUCTOR (fn))
     static_dtors = tree_cons (NULL_TREE, fn, static_dtors);
-
-  if (DECL_NAME (DECL_RESULT (fn)))
-    returns_value |= can_reach_end;
-  else
-    returns_null |= can_reach_end;
-
-  if (TREE_THIS_VOLATILE (fn) && returns_null)
-    warning ("`noreturn' function does return");
-  else if (returns_null
-	   && TREE_CODE (TREE_TYPE (TREE_TYPE (fn))) != VOID_TYPE)
-    {
-      /* Always complain if there's just no return statement.  */
-      if (!returns_value)
-	warning ("no return statement in function returning non-void");
-      else if (warn_return_type || pedantic)
-	/* If this function returns non-void and control can drop through,
-	       complain.  */
-	warning ("control reaches end of non-void function");
-    }
 
   --function_depth;
 
