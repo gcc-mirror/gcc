@@ -129,11 +129,11 @@ struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 enum processor_type ix86_cpu;
 
 /* which instruction set architecture to use.  */
-int ix86_isa;
+int ix86_arch;
 
 /* Strings to hold which cpu and instruction set architecture  to use.  */
 char *ix86_cpu_string;		/* for -mcpu=<xxx> */
-char *ix86_isa_string;		/* for -misa=<xxx> */
+char *ix86_arch_string;		/* for -march=<xxx> */
 
 /* Register allocation order */
 char *i386_reg_alloc_order;
@@ -178,8 +178,7 @@ override_options ()
       int target_enable;	/* Target flags to enable.  */
       int target_disable;	/* Target flags to disable.  */
     } processor_target_table[]
-      = {{PROCESSOR_COMMON_STRING, PROCESSOR_COMMON, &i486_cost, 0, 0},
-	   {PROCESSOR_I386_STRING, PROCESSOR_I386, &i386_cost, 0, 0},
+      = {{PROCESSOR_I386_STRING, PROCESSOR_I386, &i386_cost, 0, 0},
 	   {PROCESSOR_I486_STRING, PROCESSOR_I486, &i486_cost, 0, 0},
 	   {PROCESSOR_I586_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
 	   {PROCESSOR_PENTIUM_STRING, PROCESSOR_PENTIUM, &pentium_cost, 0, 0},
@@ -218,13 +217,16 @@ override_options ()
     }
 
   /* Get the architectural level.  */
-  if (ix86_isa_string == (char *)0)
-      ix86_isa_string = PROCESSOR_DEFAULT_STRING;
+  if (ix86_cpu_string == (char *)0 && ix86_arch_string == (char *)0)
+    {
+      ix86_arch_string = PROCESSOR_PENTIUM_STRING;
+      ix86_cpu_string = PROCESSOR_DEFAULT_STRING;
+    }
 
   for (i = 0; i < ptt_size; i++)
-    if (! strcmp (ix86_isa_string, processor_target_table[i].name))
+    if (! strcmp (ix86_arch_string, processor_target_table[i].name))
       {
-	ix86_isa = processor_target_table[i].processor;
+	ix86_arch = processor_target_table[i].processor;
 	if (ix86_cpu_string == (char *)0)
 	  ix86_cpu_string = processor_target_table[i].name;
 	break;
@@ -232,17 +234,17 @@ override_options ()
 
   if (i == ptt_size)
     {
-      error ("bad value (%s) for -misa= switch", ix86_isa_string);
-      ix86_isa_string = PROCESSOR_DEFAULT_STRING;
-      ix86_isa = PROCESSOR_DEFAULT;
+      error ("bad value (%s) for -march= switch", ix86_arch_string);
+      ix86_arch_string = PROCESSOR_DEFAULT_STRING;
+      ix86_arch = PROCESSOR_DEFAULT;
     }
 
   for (j = 0; j < ptt_size; j++)
     if (! strcmp (ix86_cpu_string, processor_target_table[j].name))
       {
 	ix86_cpu = processor_target_table[j].processor;
-	if (i > j && (int)ix86_isa >= (int)PROCESSOR_PENTIUMPRO)
-	  error ("-mcpu=%s does not support -march=%s", ix86_cpu_string, ix86_isa_string);
+	if (i > j && (int)ix86_arch >= (int)PROCESSOR_PENTIUMPRO)
+	  error ("-mcpu=%s does not support -march=%s", ix86_cpu_string, ix86_arch_string);
 
 	target_flags |= processor_target_table[j].target_enable;
 	target_flags &= ~processor_target_table[j].target_disable;
@@ -1700,6 +1702,8 @@ ix86_unary_operator_ok (code, mode, operands)
 
 
 static rtx pic_label_rtx;
+static char pic_label_name [256];
+static int pic_label_no = 0;
 
 /* This function generates code for -fpic that loads %ebx with
    with the return address of the caller and then returns.  */
@@ -1717,9 +1721,17 @@ asm_output_function_prefix (file, name)
   /* deep branch prediction favors having a return for every call */
   if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
     {
+      tree prologue_node;
+
       if (pic_label_rtx == 0)
+	{
       pic_label_rtx = (rtx) gen_label_rtx ();
-      ASM_OUTPUT_INTERNAL_LABEL (file, "L", CODE_LABEL_NUMBER (pic_label_rtx));
+	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
+	  LABEL_NAME (pic_label_rtx) = pic_label_name;
+	}
+      prologue_node = make_node (FUNCTION_DECL);
+      DECL_RESULT (prologue_node) = 0;
+      ASM_DECLARE_FUNCTION_NAME (file, pic_label_name, prologue_node);
       output_asm_insn ("movl (%1),%0", xops);
       output_asm_insn ("ret", xops);
     }
@@ -1741,7 +1753,10 @@ function_prologue (file, size)
 
   /* pic references don't explicitly mention pic_offset_table_rtx */
   if (TARGET_SCHEDULE_PROLOGUE)
-    return;
+    {
+      pic_label_rtx = 0;
+      return;
+    }
   
   xops[0] = stack_pointer_rtx;
   xops[1] = frame_pointer_rtx;
@@ -1787,12 +1802,11 @@ function_prologue (file, size)
   if (pic_reg_used && TARGET_DEEP_BRANCH_PREDICTION)
     {
       xops[0] = pic_offset_table_rtx;
-      if (pic_label_rtx == 0)
-	pic_label_rtx = (rtx) gen_label_rtx ();
-      xops[1] = pic_label_rtx;
+      xops[1] = gen_rtx (SYMBOL_REF, Pmode, LABEL_NAME (pic_label_rtx));
 
       output_asm_insn (AS1 (call,%P1), xops);
       output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
+      pic_label_rtx = 0;
     }
   else if (pic_reg_used)
     {
@@ -1874,10 +1888,14 @@ ix86_expand_prologue ()
     {
       xops[0] = pic_offset_table_rtx;
       if (pic_label_rtx == 0)
+	{
 	pic_label_rtx = (rtx) gen_label_rtx ();
-      xops[1] = pic_label_rtx;
+	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
+	  LABEL_NAME (pic_label_rtx) = pic_label_name;
+	}
+      xops[1] = gen_rtx (MEM, QImode, gen_rtx (SYMBOL_REF, Pmode, LABEL_NAME (pic_label_rtx)));
 
-      emit_insn (gen_prologue_get_pc (xops[0], gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
+      emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
       emit_insn (gen_prologue_set_got (xops[0], 
 		 gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
 		 gen_rtx (CONST_INT, Pmode, CODE_LABEL_NUMBER(xops[1]))));
