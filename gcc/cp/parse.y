@@ -2402,7 +2402,8 @@ component_decl_list:
 		     in this binding level.  Make sure that the chain
 		     of what we're trying to add isn't the item itself
 		     (which can happen with what pushdecl's doing).  */
-		  if ($2 != NULL_TREE && $2 != void_type_node)
+		  if ($2 != NULL_TREE && $2 != void_type_node
+		      && $2 != error_mark_node)
 		    {
 		      if (TREE_CHAIN ($2) != $$)
 			$$ = chainon ($$, $2);

@@ -1,3 +1,7 @@
+1998-09-22  Mark Mitchell  <mark@markmitchell.com>
+
+	* parse.y (component_decl_list): Improve error-recovery.
+
 1998-09-22  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
         * decl.c (make_typename_type): Move error to point where name
