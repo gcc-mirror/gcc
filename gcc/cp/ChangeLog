@@ -1,3 +1,10 @@
+Wed Mar  4 12:11:53 1998  Michael Tiemann  <tiemann@axon.cygnus.com>
+
+	* rtti.c (get_tinfo_fn_dynamic): If this function is called an
+	FLAG_RTTI is unset, initialize type info machinery and continue
+	with FLAG_RTTI enabled.
+	(get_typeid): Ditto.
+
 Wed Mar  4 11:47:55 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (unary_complex_lvalue): &D::i has type B::* if i comes
