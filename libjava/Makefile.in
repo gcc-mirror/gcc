@@ -334,11 +334,13 @@ java/awt/AWTError.java \
 java/awt/AWTEvent.java \
 java/awt/AWTEventMulticaster.java \
 java/awt/AWTException.java \
+java/awt/AWTPermission.java \
 java/awt/ActiveEvent.java \
 java/awt/Adjustable.java \
 java/awt/BorderLayout.java \
 java/awt/Button.java \
 java/awt/Canvas.java \
+java/awt/CardLayout.java \
 java/awt/Checkbox.java \
 java/awt/CheckboxGroup.java \
 java/awt/CheckboxMenuItem.java \
@@ -1310,9 +1312,10 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/applet/AppletStub.P .deps/java/applet/AudioClip.P \
 .deps/java/awt/AWTError.P .deps/java/awt/AWTEvent.P \
 .deps/java/awt/AWTEventMulticaster.P .deps/java/awt/AWTException.P \
-.deps/java/awt/ActiveEvent.P .deps/java/awt/Adjustable.P \
-.deps/java/awt/BorderLayout.P .deps/java/awt/Button.P \
-.deps/java/awt/Canvas.P .deps/java/awt/Checkbox.P \
+.deps/java/awt/AWTPermission.P .deps/java/awt/ActiveEvent.P \
+.deps/java/awt/Adjustable.P .deps/java/awt/BorderLayout.P \
+.deps/java/awt/Button.P .deps/java/awt/Canvas.P \
+.deps/java/awt/CardLayout.P .deps/java/awt/Checkbox.P \
 .deps/java/awt/CheckboxGroup.P .deps/java/awt/CheckboxMenuItem.P \
 .deps/java/awt/Choice.P .deps/java/awt/Color.P \
 .deps/java/awt/Component.P .deps/java/awt/ComponentOrientation.P \
