@@ -1,3 +1,7 @@
+Sun Nov 23 13:01:48 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Nov 22 18:58:20 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* pa-hpux10.h (NEW_HP_ASSEMBLER): Define.
