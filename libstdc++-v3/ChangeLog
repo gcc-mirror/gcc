@@ -1,3 +1,9 @@
+2004-02-17  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
+	num_get<>::_M_extract_int, money_get<>::do_get): Simplify
+	grouping fidelity conditional.
+
 2004-02-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_filebuf/overflow/char/13858.cc:
