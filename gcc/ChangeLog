@@ -1,3 +1,11 @@
+2002-08-01  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* c-common.c (cb_register_builtins): Set
+	__FINITE_MATH_ONLY__ to 1 if -ffinite-math-only
+	is given, and to 0 otherwise.
+	* combine.c (simplify_if_then_else): HONOR_NANS
+	implies FLOAT_MODE_P.
+
 2002-08-01  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppinit.c (COMMAND_LINE_OPTIONS): Remove OPT_dollar.
