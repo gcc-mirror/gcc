@@ -1,6 +1,15 @@
+2002-05-23  Richard Henderson  <rth@redhat.com>
+
+	* genemit.c (gen_insn): Print file:lineno comment before function.
+	(main): likewise.
+	* gensupport.c (struct queue_elem): Add filename member.
+	(queue_pattern): Initialize it; update all callers.
+	(process_include): Don't free filename.
+	(read_md_rtx): Set read_rtx_filename.
+
 2002-05-23  Hans Boehm  <Hans_Boehm@hp.com>
-	* config/ia64/linux.h (IA64_GATE_AREA_END): Adjust for 64K
-	pages.
+
+	* config/ia64/linux.h (IA64_GATE_AREA_END): Adjust for 64K pages.
 
 2002-05-23  Richard Henderson  <rth@redhat.com>
 

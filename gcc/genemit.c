@@ -59,7 +59,7 @@ static void max_operand_1		PARAMS ((rtx));
 static int max_operand_vec		PARAMS ((rtx, int));
 static void print_code			PARAMS ((RTX_CODE));
 static void gen_exp			PARAMS ((rtx, enum rtx_code, char *));
-static void gen_insn			PARAMS ((rtx));
+static void gen_insn			PARAMS ((rtx, int));
 static void gen_expand			PARAMS ((rtx));
 static void gen_split			PARAMS ((rtx));
 static void output_add_clobbers		PARAMS ((void));
@@ -297,8 +297,9 @@ gen_exp (x, subroutine_type, used)
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
 
 static void
-gen_insn (insn)
+gen_insn (insn, lineno)
      rtx insn;
+     int lineno;
 {
   int operands;
   int i;
@@ -382,6 +383,8 @@ gen_insn (insn)
      to be recognized.  */
   if (XSTR (insn, 0)[0] == 0 || XSTR (insn, 0)[0] == '*')
     return;
+
+  printf ("/* %s:%d */\n", read_rtx_filename, lineno);
 
   /* Find out how many operands this function has,
      and also whether any of them have register constraints.  */
@@ -838,7 +841,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"ggc.h\"\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");
-  printf ("#define DONE return (_val = gen_sequence (), end_sequence (), _val)\n");
+  printf ("#define DONE return (_val = gen_sequence (), end_sequence (), _val)\n\n");
 
   /* Read the machine description.  */
 
@@ -852,25 +855,28 @@ from the machine description file `md'.  */\n\n");
 
       switch (GET_CODE (desc))
 	{
-	  case DEFINE_INSN:
-	      gen_insn (desc);
-	      break;
+	case DEFINE_INSN:
+	  gen_insn (desc, line_no);
+	  break;
 
-	  case DEFINE_EXPAND:
-	      gen_expand (desc);
-	      break;
+	case DEFINE_EXPAND:
+	  printf ("/* %s:%d */\n", read_rtx_filename, line_no);
+	  gen_expand (desc);
+	  break;
 
-	  case DEFINE_SPLIT:
-	      gen_split (desc);
-	      break;
+	case DEFINE_SPLIT:
+	  printf ("/* %s:%d */\n", read_rtx_filename, line_no);
+	  gen_split (desc);
+	  break;
 
-	  case DEFINE_PEEPHOLE2:
-	      gen_split (desc);
-	      break;
+	case DEFINE_PEEPHOLE2:
+	  printf ("/* %s:%d */\n", read_rtx_filename, line_no);
+	  gen_split (desc);
+	  break;
 
-	  default:
-	      break;
-	 }
+	default:
+	  break;
+	}
       ++insn_index_number;
     }
 
