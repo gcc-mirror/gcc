@@ -6,6 +6,7 @@ $flnm = f$enviroment("PROCEDURE")     ! get current procedure name
 $set default 'f$parse(flnm,,,"DEVICE")''f$parse(flnm,,,"DIRECTORY")'
 $ !
 $set symbol/scope=(nolocal,noglobal)
+$if f$trnlnm("IFILE$").nes."" then close/noLog ifile$
 $ !
 $ echo = "write sys$output"
 $ !
@@ -60,6 +61,10 @@ $	!crude hack to allow compiling from [.cp] subdirectory
 $ if f$search("config-vax.h") .nes. "" then delete config-vax.h;*
 $ copy [.config.vax]vax.h []config-vax.h
 $ echo "Linked `config-vax.h' to `[.config.vax]vax.h' for `tm.h'."
+$ !
+$ call make_lang_incl "options.h"
+$ !
+$ call make_lang_incl "specs.h"
 $ !
 $ if f$search("md.") .nes. "" then delete md..*
 $ copy [.config.vax]vax.md []md.
@@ -396,8 +401,32 @@ $!
 $!
 $!
 $ if f$search("config.status") .nes. "" then delete config.status.*
-$ open/write file config.status
-$ write file "Links are now set up for use with a vax running VMS."
-$ close file
+$ create config.status
+Links are now set up for use with a vax running VMS.
 $ type config.status
 $ echo ""
+$!
+$ exit
+$
+$!
+$! Constuct a header file based on subdirectory contents
+$!
+$make_lang_incl: subroutine
+$  if f$search(p1).nes."" then delete 'p1';*
+$  create 'p1'	!empty file with ordinary text-file attributes
+$  open/Append ifile$ 'p1'
+$  write ifile$ "/* ''p1' */"
+$  hfile = f$search("[]''p1'")
+$  topdir = f$parse(hfile,,,"DIRECTORY") - "]"
+$lang_incl_loop:
+$  hfile = f$search("[.*]lang-''p1'")
+$  if hfile.eqs."" then goto lang_incl_done
+$  dir = f$parse(hfile,,,"DIRECTORY") - "]"
+$! convert absolute path to relative one, yielding "[.subdir]"
+$  dir = "[" + f$edit(dir - topdir,"LOWERCASE") + "]"
+$  write ifile$ "#include ""''dir'lang-''p1'"""
+$  goto lang_incl_loop
+$lang_incl_done:
+$  close ifile$
+$  echo "Created `''p1''."
+$ endsubroutine !make_lang_incl
