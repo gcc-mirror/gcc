@@ -1273,7 +1273,7 @@ mmix_expand_builtin_va_arg (valist, type)
   if (type == error_mark_node
       || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
       || TREE_OVERFLOW (type_size))
-    /* Presumable an error; the size isn't computable.  A message has
+    /* Presumably an error; the size isn't computable.  A message has
        supposedly been emitted elsewhere.  */
     rounded_size = size_zero_node;
   else
@@ -1302,30 +1302,38 @@ mmix_expand_builtin_va_arg (valist, type)
    }
  else if (!integer_zerop (rounded_size))
    {
-     /* If the size is less than a register, the we need to pad the
-        address by adding the difference.  */
-     tree addend
-       = fold (build (COND_EXPR, sizetype,
-		      fold (build (GT_EXPR, sizetype,
-				   rounded_size,
-				   align)),
-		      size_zero_node,
-		      fold (build (MINUS_EXPR, sizetype,
-				   rounded_size,
-				   type_size))));
-     tree addr_tree1
-       = fold (build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree, addend));
+     if (!really_constant_p (type_size))
+       /* Varying-size types come in by reference.  */
+       addr_tree
+	 = build1 (INDIRECT_REF, build_pointer_type (type), addr_tree);
+     else
+       {
+	 /* If the size is less than a register, then we need to pad the
+	    address by adding the difference.  */
+	 tree addend
+	   = fold (build (COND_EXPR, sizetype,
+			  fold (build (GT_EXPR, sizetype,
+				       rounded_size,
+				       align)),
+			  size_zero_node,
+			  fold (build (MINUS_EXPR, sizetype,
+				       rounded_size,
+				       type_size))));
+	 tree addr_tree1
+	   = fold (build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree,
+			  addend));
 
-     /* If this type is larger than what fits in a register, then it is
-	passed by reference.  */
-     addr_tree
-       = fold (build (COND_EXPR, TREE_TYPE (addr_tree1),
-		      fold (build (GT_EXPR, sizetype,
-				   rounded_size,
-				   ptr_size)),
-		      build1 (INDIRECT_REF, build_pointer_type (type),
-			      addr_tree1),
-		      addr_tree1));
+	 /* If this type is larger than what fits in a register, then it
+	    is passed by reference.  */
+	 addr_tree
+	   = fold (build (COND_EXPR, TREE_TYPE (addr_tree1),
+			  fold (build (GT_EXPR, sizetype,
+				       rounded_size,
+				       ptr_size)),
+			  build1 (INDIRECT_REF, build_pointer_type (type),
+				  addr_tree1),
+			  addr_tree1));
+       }
    }
 
   addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);

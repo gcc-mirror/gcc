@@ -1,3 +1,14 @@
+2002-04-06  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/t-mmix (TARGET_LIBGCC2_CFLAGS): Don't -Dinhibit_libc
+	here.
+
+	* config/mmix/mmix.h (INITIAL_ELIMINATION_OFFSET): Remove spurious
+	semicolon.
+
+	* config/mmix/mmix.c (mmix_expand_builtin_va_arg): Variable-size
+	types come in by-reference.  Fix typo in comment.
+
 2002-04-05  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/freebsd.h (ENDFILE_SPEC): Add crtfastmath bits.
