@@ -191,12 +191,11 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public native Constructor getConstructor(Class[] args)
-    throws NoSuchMethodException, SecurityException;
+    throws NoSuchMethodException;
 
   // This is used to implement getConstructors and
   // getDeclaredConstructors.
-  private native Constructor[] _getConstructors (boolean declared)
-    throws SecurityException;
+  private native Constructor[] _getConstructors (boolean declared);
 
   /**
    * Get all the public constructors of this class. This returns an array of
@@ -211,7 +210,6 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public Constructor[] getConstructors()
-    throws SecurityException
   {
     return _getConstructors(false);
   }
@@ -231,7 +229,7 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public native Constructor getDeclaredConstructor(Class[] args)
-    throws NoSuchMethodException, SecurityException;
+    throws NoSuchMethodException;
 
   /**
    * Get all the declared member classes and interfaces in this class, but
@@ -245,7 +243,7 @@ public final class Class implements Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public native Class[] getDeclaredClasses() throws SecurityException;
+  public native Class[] getDeclaredClasses();
 
   /**
    * Get all the declared constructors of this class. This returns an array of
@@ -260,7 +258,6 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public Constructor[] getDeclaredConstructors()
-    throws SecurityException
   {
     return _getConstructors(true);
   }
@@ -279,7 +276,7 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public native Field getDeclaredField(String fieldName)
-    throws NoSuchFieldException, SecurityException;
+    throws NoSuchFieldException;
 
   /**
    * Get all the declared fields in this class, but not those inherited from
@@ -325,7 +322,7 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public Method getDeclaredMethod(String methodName, Class[] args)
-    throws NoSuchMethodException, SecurityException
+    throws NoSuchMethodException
   {
     memberAccessCheck(Member.DECLARED);
 
@@ -354,7 +351,7 @@ public final class Class implements Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public native Method[] getDeclaredMethods () throws SecurityException;
+  public native Method[] getDeclaredMethods();
  
   /**
    * If this is a nested or inner class, return the class that declared it.
@@ -367,7 +364,7 @@ public final class Class implements Serializable
   public native Class getDeclaringClass ();
 
   private native Field getField (String fieldName, int hash)
-    throws NoSuchFieldException, SecurityException;
+    throws NoSuchFieldException;
 
   /**
    * Get a public field declared or inherited in this class, where name is
@@ -385,7 +382,7 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public Field getField(String fieldName)
-    throws NoSuchFieldException, SecurityException
+    throws NoSuchFieldException
   {
     memberAccessCheck(Member.PUBLIC);
     Field field = getField(fieldName, fieldName.hashCode());
@@ -491,7 +488,7 @@ public final class Class implements Serializable
    * @since 1.1
    */
   public Method getMethod(String methodName, Class[] args)
-    throws NoSuchMethodException, SecurityException
+    throws NoSuchMethodException
   {
     memberAccessCheck(Member.PUBLIC);
 
@@ -522,7 +519,7 @@ public final class Class implements Serializable
    * @throws SecurityException if the security check fails
    * @since 1.1
    */
-  public native Method[] getMethods () throws SecurityException;
+  public native Method[] getMethods();
 
   /**
    * Get the modifiers of this class.  These can be decoded using Modifier,
