@@ -126,7 +126,7 @@ extern int target_flags;
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
 
-/* If bit field type is int, dont let it cross an int,
+/* If bit field type is int, don't let it cross an int,
    and give entire struct the alignment of an int.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 

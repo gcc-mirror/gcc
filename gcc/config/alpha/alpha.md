@@ -297,7 +297,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
 ;; EV6 has two symmetric pairs ("clusters") of two asymetric integer units
 ;; ("upper" and "lower"), yielding pipe names U0, U1, L0, L1.
 
-;; Conditional moves decompose into two independant primitives, each
+;; Conditional moves decompose into two independent primitives, each
 ;; taking one cycle.  Since ev6 is out-of-order, we can't see anything
 ;; but two cycles.
 (define_function_unit "ev6_ebox" 4 0

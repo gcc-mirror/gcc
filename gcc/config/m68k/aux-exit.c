@@ -47,7 +47,7 @@ struct atexit_fn_block
 };
 
 
-/* staticly allocate the first block */
+/* statically allocate the first block */
 static struct atexit_fn_block atexit_fns;
 static struct atexit_fn_block *current_block = &atexit_fns;
 

@@ -1418,7 +1418,7 @@ init_cumulative_args (cum, fntype, libname)
 }
 
 /* x86-64 register passing impleemntation.  See x86-64 ABI for details.  Goal
-   of this code is to classify each 8bytes of incomming argument by the register
+   of this code is to classify each 8bytes of incoming argument by the register
    class and assign registers accordingly.  */
 
 /* Return the union class of CLASS1 and CLASS2.
@@ -3801,7 +3801,7 @@ ix86_compute_frame_layout (frame)
 
   /* Do some sanity checking of stack_alignment_needed and
      preferred_alignment, since i386 port is the only using those features
-     that may break easilly.  */
+     that may break easily.  */
 
   if (size && !stack_alignment_needed)
     abort ();
@@ -4696,7 +4696,7 @@ legitimate_address_p (mode, addr, strict)
 
 	     This code is nonsensical, but results in addressing
 	     GOT table with pic_offset_table_rtx base.  We can't
-	     just refuse it easilly, since it gets matched by
+	     just refuse it easily, since it gets matched by
 	     "addsi3" pattern, that later gets split to lea in the
 	     case output register differs from input.  While this
 	     can be handled by separate addsi pattern for this case
@@ -12133,7 +12133,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
 }
 
 /* Store OPERAND to the memory after reload is completed.  This means
-   that we can't easilly use assign_stack_local.  */
+   that we can't easily use assign_stack_local.  */
 rtx
 ix86_force_to_memory (mode, operand)
      enum machine_mode mode;

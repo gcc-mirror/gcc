@@ -731,7 +731,7 @@ extern int arm_is_6_or_7;
 /* Setting STRUCTURE_SIZE_BOUNDARY to 32 produces more efficient code, but the
    value set in previous versions of this toolchain was 8, which produces more
    compact structures.  The command line option -mstructure_size_boundary=<n>
-   can be used to change this value.  For compatability with the ARM SDK
+   can be used to change this value.  For compatibility with the ARM SDK
    however the value should be left at 32.  ARM SDT Reference Manual (ARM DUI
    0020D) page 2-20 says "Structures are aligned on word boundaries".  */
 #define STRUCTURE_SIZE_BOUNDARY arm_structure_size_boundary

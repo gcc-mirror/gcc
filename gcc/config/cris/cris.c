@@ -1608,7 +1608,7 @@ cris_initial_frame_pointer_offset ()
 {
   int regno;
 
-  /* Initial offset is 0 if we dont have a frame pointer.  */
+  /* Initial offset is 0 if we don't have a frame pointer.  */
   int offs = 0;
 
   /* And 4 for each register pushed.  */

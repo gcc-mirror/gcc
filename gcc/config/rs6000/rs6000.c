@@ -6926,7 +6926,7 @@ rs6000_output_function_epilogue (file, size)
 	 is 0.  C++ is 9.  No number defined for Obj-C, so use the
 	 value for C for now.  There is no official value for Java,
          although IBM appears to be using 13.  There is no official value
-	 for Chill, so we've choosen 44 pseudo-randomly.  */
+	 for Chill, so we've chosen 44 pseudo-randomly.  */
       if (! strcmp (language_string, "GNU C")
 	  || ! strcmp (language_string, "GNU Objective-C"))
 	i = 0;

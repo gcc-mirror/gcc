@@ -1085,7 +1085,7 @@ fr30_move_double (operands)
 	}
     }
   else
-    /* This should have been prevented by the contraints on movdi_insn.  */
+    /* This should have been prevented by the constraints on movdi_insn.  */
     abort ();
   
   val = gen_sequence ();

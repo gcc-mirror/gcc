@@ -2394,7 +2394,7 @@ while (0)
    stored in a register.  This macro is only called when TYPE is a
    scalar type.
 
-   On i386 it is sometimes usefull to promote HImode and QImode
+   On i386 it is sometimes useful to promote HImode and QImode
    quantities to SImode.  The choice depends on target type.  */
 
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE) 		\

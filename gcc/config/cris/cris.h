@@ -608,7 +608,7 @@ extern int target_flags;
 /* Node: Allocation Order */
 
 /* We need this on CRIS, because call-used regs should be used first,
-   (so we dont need to push).  Else start using registers from r0 and up.
+   (so we don't need to push).  Else start using registers from r0 and up.
     This preference is mainly because if we put call-used-regs from r0
    and up, then we can't use movem to push the rest, (which have to be
    saved if we use them, and movem has to start with r0).

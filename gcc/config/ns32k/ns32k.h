@@ -236,7 +236,7 @@ while (0)
    crossing a page boundary cause unpredictable results.  */
 #define STRICT_ALIGNMENT 1
 
-/* If bit field type is int, dont let it cross an int,
+/* If bit field type is int, don't let it cross an int,
    and give entire struct the alignment of an int.  */
 /* Required on the 386 since it doesn't have a full set of bitfield insns.
    (There is no signed extv insn.)  */
