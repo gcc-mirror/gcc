@@ -1,3 +1,10 @@
+1999-11-12 11:47 -0800  Zack Weinberg  <zack@bitmover.com>
+
+	* genextract.c (record_insn_name): New function.
+	(get_insn_name): No longer a stub.
+	(main): Call record_insn_name for each insn.  After each label
+	written, print the insn name in a comment.
+
 Fri Nov 12 13:45:02 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* output.h (const_section, init_section, fini_section): Add
