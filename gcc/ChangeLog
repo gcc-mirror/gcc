@@ -1,3 +1,8 @@
+1999-11-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (push_decl_scope): Still use decl_scope_depth - 1
+	for the common case.
+
 1999-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* explow.c (hard_function_value): Add outgoing argument.

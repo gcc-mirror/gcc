@@ -7550,7 +7550,7 @@ push_decl_scope (scope)
       || containing_scope == NULL_TREE
       /* Ignore namespaces for the moment.  */
       || TREE_CODE (containing_scope) == NAMESPACE_DECL)
-    decl_scope_table[decl_scope_depth].previous = -1;
+    decl_scope_table[decl_scope_depth].previous = decl_scope_depth - 1;
   else
     {
       /* We need to search for the containing_scope.  If we don't find it,
