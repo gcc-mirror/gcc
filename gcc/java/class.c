@@ -2338,8 +2338,7 @@ layout_class_method (tree this_class, tree super_class,
       tree super_method = lookup_argument_method (super_class, method_name,
 						  method_sig);
       if (super_method != NULL_TREE
-	  && ! METHOD_DUMMY (super_method)
-	  && ! DECL_ARTIFICIAL (super_method))
+	  && ! METHOD_DUMMY (super_method))
         {
 	  method_override = true;
 	  if (! METHOD_PUBLIC (super_method) && 
@@ -2358,7 +2357,8 @@ layout_class_method (tree this_class, tree super_class,
 	  tree method_index = get_method_index (super_method);
 	  set_method_index (method_decl, method_index);
 	  if (method_index == NULL_TREE 
-	      && !CLASS_FROM_SOURCE_P (this_class))
+	      && !CLASS_FROM_SOURCE_P (this_class)
+	      && ! DECL_ARTIFICIAL (super_method))
 	    error ("%Jnon-static method '%D' overrides static method",
                    method_decl, method_decl);
 	}
