@@ -1408,21 +1408,42 @@ int cprop() {
 
 	c=0; char_max=0;
 	c++;
-	if (setjmp(lab)==0) { /* Yields char_max */
-		while (c>char_max) {
-			char_max=c;
-			c++;
-		}
+	if (bits_per_byte <= 16) {
+	     if (setjmp(lab)==0) { /* Yields char_max */
+		  while (c>char_max) {
+		       char_max=c;
+		       c++;
+		  }
+	     } else {
+		  Vprintf("%sCharacter overflow generates a trap!%s\n",
+			  co, oc);
+	     }
+	     c=0; char_min=0;
+	     c--;
+	     if (setjmp(lab)==0) { /* Yields char_min */
+		  while (c<char_min) {
+		       char_min=c;
+		       c--;
+		  }
+	     }
 	} else {
-		Vprintf("%sCharacter overflow generates a trap!%s\n", co, oc);
-	}
-	c=0; char_min=0;
-	c--;
-	if (setjmp(lab)==0) { /* Yields char_min */
-		while (c<char_min) {
-			char_min=c;
-			c--;
-		}
+	     /* An exhaustive search here is impracticable ;-)  */
+	     c = (1 << (bits_per_byte - 1)) - 1;
+	     char_max = c;
+	     c++;
+	     if (c > char_max)
+		  char_max = ~0;
+	     c = 0;
+	     char_min = 0;
+	     c--;
+	     if (c < char_min) {
+		  c = (1 << (bits_per_byte - 1)) - 1;
+		  c = -c;
+		  char_min = c;
+		  c--;
+		  if (c < char_min)
+		       char_min = c;
+	     }
 	}
 	if (c_signed && char_min == 0) {
 		Vprintf("%sBEWARE! Chars are pseudo-unsigned:%s\n", co, oc);
