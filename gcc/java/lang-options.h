@@ -52,3 +52,5 @@ DEFINE_LANG_NAME ("Java")
     N_("Warn if .class files are out of date") },
   { "-fforce-classes-archive-check", 
     N_("Always check for non gcj generated classes archives") },
+  { "-fno-optimize-static-class-initialization",
+    N_("Never optimize static class initialization code") },

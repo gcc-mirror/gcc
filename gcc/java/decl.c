@@ -49,8 +49,6 @@ static tree push_jvm_slot PARAMS ((int, tree));
 static tree lookup_name_current_level PARAMS ((tree));
 static tree push_promoted_type PARAMS ((const char *, tree));
 static struct binding_level *make_binding_level PARAMS ((void));
-static bool emit_init_test_initialization PARAMS ((struct hash_entry *,
-						      hash_table_key));
 static tree create_primitive_vtable PARAMS ((const char *));
 static tree check_local_named_variable PARAMS ((tree, tree, int, int *));
 static tree check_local_unnamed_variable PARAMS ((tree, tree, tree));
@@ -1639,35 +1637,6 @@ build_result_decl (fndecl)
   return (DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, restype));
 }
 
-/* Called for every element in DECL_FUNCTION_INIT_TEST_TABLE in order
-   to emit initialization code for each test flag.  */
-
-static bool
-emit_init_test_initialization (entry, key)
-  struct hash_entry *entry;
-  hash_table_key key ATTRIBUTE_UNUSED;
-{
-  struct init_test_hash_entry *ite = (struct init_test_hash_entry *) entry;
-  tree klass = build_class_ref ((tree) entry->key);
-  expand_decl (ite->init_test_decl);
-
-  /* We initialize the class init check variable by looking at the
-     `state' field of the class to see if it is already initialized.
-     This makes things a bit faster if the class is already
-     initialized, which should be the common case.  */
-  expand_expr_stmt
-    (build (MODIFY_EXPR, boolean_type_node, 
-	    ite->init_test_decl,
-	    build (GE_EXPR, boolean_type_node,
-		   build (COMPONENT_REF, byte_type_node,
-			  build1 (INDIRECT_REF, class_type_node, klass),
-			  lookup_field (&class_type_node,
-					get_identifier ("state"))),
-		   build_int_2 (JV_STATE_DONE, 0))));
-
-  return true;
-}
-
 void
 complete_start_java_method (fndecl)
   tree fndecl;
@@ -1679,11 +1648,6 @@ complete_start_java_method (fndecl)
 
       /* Set up parameters and prepare for return, for the function.  */
       expand_function_start (fndecl, 0);
-
-      /* Emit initialization code for test flags.  */
-      if (! always_initialize_class_p)
-	hash_traverse (&DECL_FUNCTION_INIT_TEST_TABLE (fndecl),
-		       emit_init_test_initialization, 0);
     }
 
 #if 0
@@ -1871,6 +1835,9 @@ lang_mark_tree (t)
 	  ggc_mark_tree (ld->function_decl_body);
 	  ggc_mark_tree (ld->called_constructor);
 	  ggc_mark_tree (ld->inner_access);
+	  ggc_mark_tree_hash_table (&ld->init_test_table);
+	  ggc_mark_tree_hash_table (&ld->ict);
+	  ggc_mark_tree_hash_table (&ld->smic);
 	}
     }
   else if (TYPE_P (t))

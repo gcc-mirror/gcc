@@ -1,3 +1,56 @@
+2001-08-08  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* check-init.c (flags.h): Include
+	(check_init): Don't report uninitialized static class
+	initialization flags, don't free bit index when doing static class
+	initialization optimization.
+	(check_for_initialization): Return type changed to `unsigned int.'
+	(attach_initialized_static_class): New function.
+	* class.c (add_method_1): Create the initialized static class
+	table if necessary.
+	(finish_class): Always emit deferred inline methods.
+	* decl.c (emit_init_test_initialization): Moved to expr.c
+	(complete_start_java_method): Don't traverse
+	DECL_FUNCTION_INIT_TEST_TABLE.
+	(lang_mark_tree): Mark hash tables in function decls.
+	* expr.c (emit_init_test_initialization): Moved from decl.c.
+	(build_class_init): Create LAG_DECL_SPECIFIC for the static class
+	initialization flag, set DECL_CONTEXT and
+	LOCAL_CLASS_INITIALIZATION_FLAG.
+	(java_lang_expand_expr): Emit initialization code for static class
+	initialized flags when entering block, if necessary.
+	* gcj.texi (-fno-optimize-static-class-initialization): Documented.
+	* java-tree.h (flag_optimize_sci): New global variable declaration.
+	(DECL_FUNCTION_INITIALIZED_CLASS_TABLE): New macro.
+	(DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND): Likewise.
+	(LOCAL_FINAL_P): Fixed typo in comment.
+	(FINAL_VARIABLE_P): Likewise.
+	(LOCAL_CLASS_INITIALIZATIO_FLAG): New macro.
+	(LOCAL_CLASS_INITIALIZATIO_FLAG_P): Likewise.
+	(struct lang_decl): New fields `ict', `smic' and `cif.'
+	(check_for_initialization): New returned value for global.
+	(attach_initialized_static_class): New global function.
+	(STATIC_CLASS_INIT_OPT_P): New macro.
+	* lang-options.h (-fno-optimize-static-class-initialization): New flag.
+	* lang.c (java_decode_option): Handle
+	`-fno-optimize-static-class-initialization'
+	* parse.y (start_complete_expand_method): New function.
+	(java_expand_method_bodies): Likewise.
+	(attach_init_test_initialization_flags): Likewise.
+	(adjust_init_test_initialization): Likewise.
+	(emit_test_initialization): Likewise.
+	(java_complete_expand_methods): Nullify abstract and native method
+	bodies.
+	(java_complete_expand_method): New locals `fbody', `block_body'
+	and `exception_copy.' Reorganized: directly return on empty method
+	bodies, call `start_complete_expand_method', remember definitely
+	initialized static class in function, don't expand method bodies.
+	(java_expand_classes): Call `java_expand_method_bodies' before
+	`finish_class' when compiling to native.
+	(resolve_expression_name): Use `orig' after building outer class
+	field access.
+	(patch_invoke): Remember static method invokations.
+
 2001-08-06  Richard Henderson  <rth@redhat.com>
 
         * class.c (emit_register_classes): Pass a symbol_ref and priority
