@@ -164,7 +164,8 @@ do {									\
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
   do { fputs (".comm ", (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), ",%d\n", (SIZE)); } while (0)
+       fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n",\
+		(SIZE)); } while (0)
 
 /* Override the standard rs6000 definition.  */
 

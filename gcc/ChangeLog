@@ -1,5 +1,6 @@
 Mon May 12 15:57:54 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
+	* rs6000/darwin.h (ASM_OUTPUT_COMMON): Accept HOST_WIDE_INT
 	* mips/elf.h (ASM_OUTPUT_ALIGNED_BSS): Fix warning.
 	* mips/mips.h (ASM_OUTPUT_SKIP):  Fix typo in the previous patch.
 
