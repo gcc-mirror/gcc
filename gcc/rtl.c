@@ -181,7 +181,8 @@ char *reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "REG_WAS_0",
 			  "REG_NONNEG", "REG_NO_CONFLICT", "REG_UNUSED",
 			  "REG_CC_SETTER", "REG_CC_USER", "REG_LABEL",
 			  "REG_DEP_ANTI", "REG_DEP_OUTPUT", "REG_BR_PROB",
-			  "REG_EXEC_COUNT", "REG_NOALIAS" };
+			  "REG_EXEC_COUNT", "REG_NOALIAS", "REG_SAVE_AREA",
+			  "REG_BR_PRED" };
 
 /* Allocate an rtx vector of N elements.
    Store the length, and initialize all elements to zero.  */
