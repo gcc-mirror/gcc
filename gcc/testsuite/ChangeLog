@@ -1,3 +1,8 @@
+2000-10-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/noncompile/init-2.c: Tweak to deal with multiple errors
+	on the same line.
+
 2000-10-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/eh2.C: New test.
