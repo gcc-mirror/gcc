@@ -1,3 +1,9 @@
+2001-12-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/other/linkage1.C: New test.
+	* g++.old-deja/g++.brendan/err-msg2.C: Alter to avoid two
+	specifiers.
+
 2001-12-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/concat.c: New test.

@@ -9603,6 +9603,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   int explicit_int = 0;
   int explicit_char = 0;
   int defaulted_int = 0;
+  int extern_langp = 0;
+  
   tree typedef_decl = NULL_TREE;
   const char *name;
   tree typedef_type = NULL_TREE;
@@ -10043,6 +10045,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    }
 		  else if (RIDBIT_SETP (i, specbits))
 		    pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
+		  if (i == (int)RID_EXTERN
+		      && TREE_PURPOSE (spec) == error_mark_node)
+		    /* This extern was part of a language linkage.  */
+		    extern_langp = 1;
 		  RIDBIT_SET (i, specbits);
 		  goto found;
 		}
@@ -10318,7 +10324,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   if (RIDBIT_ANY_SET (specbits))
     {
       if (RIDBIT_SETP (RID_STATIC, specbits)) nclasses++;
-      if (RIDBIT_SETP (RID_EXTERN, specbits)) nclasses++;
+      if (RIDBIT_SETP (RID_EXTERN, specbits) && !extern_langp) nclasses++;
       if (decl_context == PARM && nclasses > 0)
 	error ("storage class specifiers invalid in parameter declarations");
       if (RIDBIT_SETP (RID_TYPEDEF, specbits))
@@ -10329,6 +10335,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	}
       if (RIDBIT_SETP (RID_AUTO, specbits)) nclasses++;
       if (RIDBIT_SETP (RID_REGISTER, specbits)) nclasses++;
+      if (!nclasses && !friendp && extern_langp)
+	nclasses++;
     }
 
   /* Give error if `virtual' is used outside of class declaration.  */
