@@ -4093,7 +4093,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	     we don't have to do anything.  */
 	  if (normalizep == 0 || normalizep == STORE_FLAG_VALUE)
 	    ;
-	  else if (normalizep == - STORE_FLAG_VALUE)
+	  /* STORE_FLAG_VALUE might be the most negative number, so write
+	     the comparison this way to avoid a compiler-time warning.  */
+	  else if (- normalizep == STORE_FLAG_VALUE)
 	    op0 = expand_unop (compare_mode, neg_optab, op0, subtarget, 0);
 
 	  /* We don't want to use STORE_FLAG_VALUE < 0 below since this
