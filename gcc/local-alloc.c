@@ -253,9 +253,9 @@ static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void update_equiv_regs	PROTO((void));
 static void block_alloc		PROTO((int));
 static int qty_sugg_compare    	PROTO((int, int));
-static int qty_sugg_compare_1	PROTO((int *, int *));
+static int qty_sugg_compare_1	PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static int qty_compare    	PROTO((int, int));
-static int qty_compare_1	PROTO((int *, int *));
+static int qty_compare_1	PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static int combine_regs		PROTO((rtx, rtx, int, int, rtx, int));
 static int reg_meets_class_p	PROTO((int, enum reg_class));
 static int reg_classes_overlap_p PROTO((enum reg_class, enum reg_class,
@@ -1604,51 +1604,37 @@ block_alloc (b)
    the same algorithm in both local- and global-alloc can speed up execution
    of some programs by as much as a factor of three!  */
 
+/* Note that the quotient will never be bigger than
+   the value of floor_log2 times the maximum number of
+   times a register can occur in one insn (surely less than 100).
+   Multiplying this by 10000 can't overflow.
+   QTY_CMP_PRI is also used by qty_sugg_compare.  */
+
+#define QTY_CMP_PRI(q)		\
+  ((int) (((double) (floor_log2 (qty_n_refs[q]) * qty_n_refs[q] * qty_size[q]) \
+	  / (qty_death[q] - qty_birth[q])) * 10000))
+
 static int
 qty_compare (q1, q2)
      int q1, q2;
 {
-  /* Note that the quotient will never be bigger than
-     the value of floor_log2 times the maximum number of
-     times a register can occur in one insn (surely less than 100).
-     Multiplying this by 10000 can't overflow.  */
-  register int pri1
-    = (((double) (floor_log2 (qty_n_refs[q1]) * qty_n_refs[q1] * qty_size[q1])
-	/ (qty_death[q1] - qty_birth[q1]))
-       * 10000);
-  register int pri2
-    = (((double) (floor_log2 (qty_n_refs[q2]) * qty_n_refs[q2] * qty_size[q2])
-	/ (qty_death[q2] - qty_birth[q2]))
-       * 10000);
-  return pri2 - pri1;
+  return QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
 }
 
 static int
-qty_compare_1 (q1, q2)
-     int *q1, *q2;
+qty_compare_1 (q1p, q2p)
+     const GENERIC_PTR q1p;
+     const GENERIC_PTR q2p;
 {
-  register int tem;
+  register int q1 = *(int *)q1p, q2 = *(int *)q2p;
+  register int tem = QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
 
-  /* Note that the quotient will never be bigger than
-     the value of floor_log2 times the maximum number of
-     times a register can occur in one insn (surely less than 100).
-     Multiplying this by 10000 can't overflow.  */
-  register int pri1
-    = (((double) (floor_log2 (qty_n_refs[*q1]) * qty_n_refs[*q1]
-		  * qty_size[*q1])
-	/ (qty_death[*q1] - qty_birth[*q1]))
-       * 10000);
-  register int pri2
-    = (((double) (floor_log2 (qty_n_refs[*q2]) * qty_n_refs[*q2]
-		  * qty_size[*q2])
-	/ (qty_death[*q2] - qty_birth[*q2]))
-       * 10000);
+  if (tem != 0)
+    return tem;
 
-  tem = pri2 - pri1;
-  if (tem != 0) return tem;
   /* If qtys are equally good, sort by qty number,
      so that the results of qsort leave nothing to chance.  */
-  return *q1 - *q2;
+  return q1 - q2;
 }
 
 /* Compare two quantities' priority for getting real registers.  This version
@@ -1658,71 +1644,45 @@ qty_compare_1 (q1, q2)
    number of preferences have the highest priority.  Of those, we use the same
    algorithm as above.  */
 
+#define QTY_CMP_SUGG(q)		\
+  (qty_phys_num_copy_sugg[q]		\
+    ? qty_phys_num_copy_sugg[q]	\
+    : qty_phys_num_sugg[q] * FIRST_PSEUDO_REGISTER)
+
 static int
 qty_sugg_compare (q1, q2)
      int q1, q2;
 {
-  register int sugg1 = (qty_phys_num_copy_sugg[q1]
-			? qty_phys_num_copy_sugg[q1]
-			: qty_phys_num_sugg[q1] * FIRST_PSEUDO_REGISTER);
-  register int sugg2 = (qty_phys_num_copy_sugg[q2]
-			? qty_phys_num_copy_sugg[q2]
-			: qty_phys_num_sugg[q2] * FIRST_PSEUDO_REGISTER);
-  /* Note that the quotient will never be bigger than
-     the value of floor_log2 times the maximum number of
-     times a register can occur in one insn (surely less than 100).
-     Multiplying this by 10000 can't overflow.  */
-  register int pri1
-    = (((double) (floor_log2 (qty_n_refs[q1]) * qty_n_refs[q1] * qty_size[q1])
-	/ (qty_death[q1] - qty_birth[q1]))
-       * 10000);
-  register int pri2
-    = (((double) (floor_log2 (qty_n_refs[q2]) * qty_n_refs[q2] * qty_size[q2])
-	/ (qty_death[q2] - qty_birth[q2]))
-       * 10000);
+  register int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
 
-  if (sugg1 != sugg2)
-    return sugg1 - sugg2;
+  if (tem != 0)
+    return tem;
   
-  return pri2 - pri1;
+  return QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
 }
 
 static int
-qty_sugg_compare_1 (q1, q2)
-     int *q1, *q2;
+qty_sugg_compare_1 (q1p, q2p)
+     const GENERIC_PTR q1p;
+     const GENERIC_PTR q2p;
 {
-  register int sugg1 = (qty_phys_num_copy_sugg[*q1]
-			? qty_phys_num_copy_sugg[*q1]
-			: qty_phys_num_sugg[*q1] * FIRST_PSEUDO_REGISTER);
-  register int sugg2 = (qty_phys_num_copy_sugg[*q2]
-			? qty_phys_num_copy_sugg[*q2]
-			: qty_phys_num_sugg[*q2] * FIRST_PSEUDO_REGISTER);
+  register int q1 = *(int *)q1p, q2 = *(int *)q2p;
+  register int tem = QTY_CMP_SUGG (q1) - QTY_CMP_SUGG (q2);
 
-  /* Note that the quotient will never be bigger than
-     the value of floor_log2 times the maximum number of
-     times a register can occur in one insn (surely less than 100).
-     Multiplying this by 10000 can't overflow.  */
-  register int pri1
-    = (((double) (floor_log2 (qty_n_refs[*q1]) * qty_n_refs[*q1]
-		  * qty_size[*q1])
-	/ (qty_death[*q1] - qty_birth[*q1]))
-       * 10000);
-  register int pri2
-    = (((double) (floor_log2 (qty_n_refs[*q2]) * qty_n_refs[*q2]
-		  * qty_size[*q2])
-	/ (qty_death[*q2] - qty_birth[*q2]))
-       * 10000);
+  if (tem != 0)
+    return tem;
 
-  if (sugg1 != sugg2)
-    return sugg1 - sugg2;
-  
-  if (pri1 != pri2)
-    return pri2 - pri1;
+  tem = QTY_CMP_PRI (q2) - QTY_CMP_PRI (q1);
+  if (tem != 0)
+    return tem;
 
   /* If qtys are equally good, sort by qty number,
      so that the results of qsort leave nothing to chance.  */
-  return *q1 - *q2;
+  return q1 - q2;
 }
+
+#undef QTY_CMP_SUGG
+#undef QTY_CMP_PRI
 
 /* Attempt to combine the two registers (rtx's) USEDREG and SETREG.
    Returns 1 if have done so, or 0 if cannot.
