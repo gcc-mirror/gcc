@@ -811,6 +811,14 @@ find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
 			  && INSN_UID (label) != 0
 			  && BLOCK_NUM (label) == j)
 			{
+			  int k;
+
+			  /* The deleted blocks still show up in the cfg,
+			     so we must set basic_block_drops_in for blocks
+			     I to J inclusive to keep the cfg accurate.  */
+			  for (k = i; k <= j; k++)
+			    basic_block_drops_in[k] = 1;
+
 			  PUT_CODE (insn, NOTE);
 			  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 			  NOTE_SOURCE_FILE (insn) = 0;
