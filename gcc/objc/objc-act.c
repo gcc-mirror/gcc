@@ -939,7 +939,7 @@ get_static_reference (interface, protocols)
 
       /* Look up protocols and install in lang specific list.  Note
 	 that the protocol list can have a different lifetime than T!  */
-      TYPE_PROTOCOL_LIST (t) = lookup_and_install_protocols (protocols);
+      SET_TYPE_PROTOCOL_LIST (t, lookup_and_install_protocols (protocols));
 
       /* This forces a new pointer type to be created later
 	 (in build_pointer_type)...so that the new template
@@ -988,7 +988,7 @@ get_object_reference (protocols)
       TYPE_NEXT_VARIANT (m) = t;
 
       /* Look up protocols...and install in lang specific list */
-      TYPE_PROTOCOL_LIST (t) = lookup_and_install_protocols (protocols);
+      SET_TYPE_PROTOCOL_LIST (t, lookup_and_install_protocols (protocols));
 
       /* This forces a new pointer type to be created later
 	 (in build_pointer_type)...so that the new template

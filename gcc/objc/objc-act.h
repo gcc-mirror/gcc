@@ -90,7 +90,7 @@ tree build_encode_expr				PARAMS ((tree));
    CATEGORY_INTERFACE_TYPE, CATEGORY_IMPLEMENTATION_TYPE,
    PROTOCOL_INTERFACE_TYPE */
 #define CLASS_NAME(CLASS) ((CLASS)->type.name)
-#define CLASS_SUPER_NAME(CLASS) ((CLASS)->type.context)
+#define CLASS_SUPER_NAME(CLASS) (TYPE_CHECK (CLASS)->type.context)
 #define CLASS_IVARS(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 0)
 #define CLASS_RAW_IVARS(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 1)
 #define CLASS_NST_METHODS(CLASS) ((CLASS)->type.minval)
@@ -105,7 +105,11 @@ tree build_encode_expr				PARAMS ((tree));
 #define PROTOCOL_CLS_METHODS(CLASS) ((CLASS)->type.maxval)
 #define PROTOCOL_FORWARD_DECL(CLASS) TREE_VEC_ELT (TYPE_BINFO (CLASS), 1)
 #define PROTOCOL_DEFINED(CLASS) TREE_USED (CLASS)
-#define TYPE_PROTOCOL_LIST(TYPE) ((TYPE)->type.context)
+#define TYPE_PROTOCOL_LIST(TYPE)					\
+  ((!TYPE_CHECK (TYPE)->type.context					\
+    || TREE_CODE ((TYPE)->type.context) == TRANSLATION_UNIT_DECL)	\
+   ? NULL_TREE : (TYPE)->type.context)
+#define SET_TYPE_PROTOCOL_LIST(TYPE, P) (TYPE_CHECK (TYPE)->type.context = (P))
 
 /* Set by `continue_class' and checked by `is_public'.  */
 
