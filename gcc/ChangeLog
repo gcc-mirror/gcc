@@ -1,3 +1,7 @@
+Tue May 15 13:51:32 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (apply_change_group): Avoid unneeded validating.
+
 2001-05-14  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (num_insns_constant_wide): Constants are sign-extended.
