@@ -1,3 +1,8 @@
+Fri Apr 21 13:30:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cse.c (cse_insn): In (set REG0 REG1) case, remove a REG_EQUAL
+	note for REG1.
+
 2000-04-21  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (struct arg, struct arglist): Const-ify strings.
