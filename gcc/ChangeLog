@@ -1,5 +1,10 @@
 2001-11-25  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.md (peephole2): New peephole2 to optimize
+	address computations.
+
+2001-11-25  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/m68hc11.c (d_register_operand): Must accept
 	register b (low part of d).
 
