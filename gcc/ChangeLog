@@ -1,5 +1,13 @@
 2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* builtins.c (expand_builtin_return_addr,
+	expand_builtin_longjmp, expand_builtin_trap): Make them static.
+	* expr.h: Remove the prototypes for expand_builtin_longjmp and
+	expand_builtin_trap.
+	* tree.h: Remove the prototype for expand_builtin_return_addr.
+
+2004-11-04  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* tree-cfg.c (find_taken_edge): Reject VAL begin NULL.
 	* tree-ssa-ccp.c (visit_cond_stmt): Don't call find_taken_edge
 	with VAL being NULL.
