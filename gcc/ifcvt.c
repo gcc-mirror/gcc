@@ -74,7 +74,7 @@ static int count_bb_insns		PARAMS ((basic_block));
 static rtx first_active_insn		PARAMS ((basic_block));
 static int last_active_insn_p		PARAMS ((basic_block, rtx));
 
-static int cond_exec_process_insns	PARAMS ((rtx, rtx, rtx, int));
+static int cond_exec_process_insns	PARAMS ((rtx, rtx, rtx, rtx, int));
 static rtx cond_exec_get_condition	PARAMS ((rtx));
 static int cond_exec_process_if_block	PARAMS ((basic_block, basic_block,
 						 basic_block, basic_block));
@@ -179,10 +179,11 @@ last_active_insn_p (bb, insn)
    insns were processed.  */
 
 static int
-cond_exec_process_insns (start, end, test, mod_ok)
+cond_exec_process_insns (start, end, test, prob_val, mod_ok)
      rtx start;			/* first insn to look at */
      rtx end;			/* last insn to look at */
      rtx test;			/* conditional execution test */
+     rtx prob_val;		/* probability of branch taken.  */
      int mod_ok;		/* true if modifications ok last insn.  */
 {
   int must_be_last = FALSE;
@@ -211,6 +212,11 @@ cond_exec_process_insns (start, end, test, mod_ok)
       validate_change (insn, &PATTERN (insn),
 		       gen_rtx_COND_EXEC (VOIDmode, copy_rtx (test),
 					  PATTERN (insn)), 1);
+
+      if (GET_CODE (insn) == CALL_INSN && prob_val)
+	validate_change (insn, &REG_NOTES (insn),
+			 alloc_EXPR_LIST (REG_BR_PROB, prob_val,
+					  REG_NOTES (insn)), 1);
 
     insn_done:
       if (insn == end)
@@ -267,6 +273,8 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
   int then_mod_ok;		/* whether conditional mods are ok in THEN */
   rtx true_expr;		/* test for else block insns */
   rtx false_expr;		/* test for then block insns */
+  rtx true_prob_val;		/* probability of else block */
+  rtx false_prob_val;		/* probability of then block */
   int n_insns;
 
   /* Find the conditional jump to the ELSE or JOIN part, and isolate
@@ -324,6 +332,15 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
 			       GET_MODE (true_expr), XEXP (true_expr, 0),
 			       XEXP (true_expr, 1));
 
+  true_prob_val = find_reg_note (test_bb->end, REG_BR_PROB, NULL_RTX);
+  if (true_prob_val)
+    {
+      true_prob_val = XEXP (true_prob_val, 0);
+      false_prob_val = GEN_INT (REG_BR_PROB_BASE - INTVAL (true_prob_val));
+    }
+  else
+    false_prob_val = NULL_RTX;
+
   /* For IF-THEN-ELSE blocks, we don't allow modifications of the test
      on then THEN block.  */
   then_mod_ok = (else_bb == NULL_BLOCK);
@@ -333,12 +350,12 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
 
   if (then_end
       && ! cond_exec_process_insns (then_start, then_end,
-				    false_expr, then_mod_ok))
+				    false_expr, false_prob_val, then_mod_ok))
     goto fail;
 
   if (else_bb
       && ! cond_exec_process_insns (else_start, else_end,
-				    true_expr, TRUE))
+				    true_expr, true_prob_val, TRUE))
     goto fail;
 
   if (! apply_change_group ())
@@ -1792,15 +1809,24 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 	 All that's left is making sure the insns involved can actually
 	 be predicated.  */
 
-      rtx cond;
+      rtx cond, prob_val;
 
       cond = cond_exec_get_condition (jump);
-      if (reversep)
-	cond = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond)),
-			       GET_MODE (cond), XEXP (cond, 0),
-			       XEXP (cond, 1));
 
-      if (! cond_exec_process_insns (head, end, cond, 0))
+      prob_val = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
+      if (prob_val)
+	prob_val = XEXP (prob_val, 0);
+
+      if (reversep)
+	{
+	  cond = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond)),
+			         GET_MODE (cond), XEXP (cond, 0),
+			         XEXP (cond, 1));
+	  if (prob_val)
+	    prob_val = GEN_INT (REG_BR_PROB_BASE - INTVAL (prob_val));
+	}
+
+      if (! cond_exec_process_insns (head, end, cond, prob_val, 0))
 	goto cancel;
 
       earliest = jump;
