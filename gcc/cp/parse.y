@@ -49,10 +49,6 @@ char *language_string = "GNU C++";
 extern tree void_list_node;
 extern struct obstack permanent_obstack;
 
-#ifndef errno
-extern int errno;
-#endif
-
 extern int end_of_file;
 
 /* Like YYERROR but do call yyerror.  */

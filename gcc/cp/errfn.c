@@ -20,8 +20,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
    
 #include "config.h"
-#include "tree.h"
 #include "system.h"
+#include "tree.h"
 
 /* cp_printer is the type of a function which converts an argument into
    a string for digestion by printf.  The cp_printer function should deal
