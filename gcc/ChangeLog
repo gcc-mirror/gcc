@@ -1,3 +1,8 @@
+2001-06-13  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (add_minipool_backward_ref): Check that the
+	entire object will be reachable in the constant pool.
+
 2001-06-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* NEWS: Remove.

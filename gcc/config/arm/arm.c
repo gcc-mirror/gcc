@@ -5460,7 +5460,11 @@ add_minipool_backward_ref (fix)
      than the one we are trying to add.  */
   Mnode *        min_mp = NULL;
   /* This can be negative, since it is only a constraint.  */
-  HOST_WIDE_INT  min_address = fix->address - fix->backwards;
+  /* If the object to be inserted into the pool is larger than
+     a single word, we need to take into account that all words
+     must be reachable. */
+  HOST_WIDE_INT  min_address = fix->address - fix->backwards 
+    + (fix->fix_size - 4);
   Mnode *        mp;
 
   /* If we can't reach the current pool from this insn, or if we can't
