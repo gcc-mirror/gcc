@@ -1,3 +1,11 @@
+Tue Aug 22 20:34:52 2000  Kaz Kojima <kkojima@rr.iij4u.or.jp>
+
+	* config/sh/sh.md (cmpeqdi_t splitter): Fix a reverse testing.
+
+	* config/sh/sh.c (prepare_scc_operands): Apply force_reg to
+	sh_compare_op1 when the mode is DImode and sh_compare_op1 isn't
+	const0_rtx.
+
 2000-08-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/lib1funcs.asm (__umodsi3): Before performing any

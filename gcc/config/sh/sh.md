@@ -636,7 +636,7 @@
 			   (match_operand:DI 1 "arith_reg_or_0_operand" "N,r")))]
   "reload_completed"
   [(set (reg:SI 18) (eq:SI (match_dup 2) (match_dup 3)))
-   (set (pc) (if_then_else (ne (reg:SI 18) (const_int 0))
+   (set (pc) (if_then_else (eq (reg:SI 18) (const_int 0))
 			   (label_ref (match_dup 6))
 			   (pc)))
    (set (reg:SI 18) (eq:SI (match_dup 4) (match_dup 5)))
