@@ -1,3 +1,7 @@
+2003-10-18  Jan Hubicka  <jh@suse.cz>
+
+	* integrate.c (copy_decl_for_inlining): Fix copying of copies.
+
 2003-10-18  Roger Sayle  <roger@eyesopen.com>
 
 	* libgcc.texi: Group multi-word types, such as "long double" and

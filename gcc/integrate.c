@@ -381,7 +381,10 @@ copy_decl_for_inlining (tree decl, tree from_fn, tree to_fn)
 
   /* Set the DECL_ABSTRACT_ORIGIN so the debugging routines know what
      declaration inspired this copy.  */
-  DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
+  if (DECL_ABSTRACT_ORIGIN (decl))
+    DECL_ABSTRACT_ORIGIN (copy) = DECL_ABSTRACT_ORIGIN (decl);
+  else
+    DECL_ABSTRACT_ORIGIN (copy) = DECL_ORIGIN (decl);
 
   /* The new variable/label has no RTL, yet.  */
   if (!TREE_STATIC (copy) && !DECL_EXTERNAL (copy))
