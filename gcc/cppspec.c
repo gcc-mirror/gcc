@@ -194,7 +194,8 @@ lang_specific_driver (errfn, in_argc, in_argv, in_added_libraries)
   if (new_argc == argc)
     return;
 
-  new_argv = (char **) xmalloc (new_argc * sizeof(char *));
+  /* One more slot for a terminating null.  */
+  new_argv = (char **) xmalloc ((new_argc + 1) * sizeof(char *));
 
   new_argv[0] = argv[0];
   j = 1;
@@ -218,8 +219,9 @@ lang_specific_driver (errfn, in_argc, in_argv, in_added_libraries)
     }
 
   if (read_stdin)
-    new_argv[j] = "-";
+    new_argv[j++] = "-";
 
+  new_argv[j] = NULL;
   *in_argc = new_argc;
   *in_argv = new_argv;
 } 
