@@ -1,5 +1,5 @@
 /* { dg-options "-O3" } */
-/* { dg-do compiler } */
+/* { dg-do compile } */
 
 void foo();
 struct A { ~A(){ foo(); } };
