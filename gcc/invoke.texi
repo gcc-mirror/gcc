@@ -124,11 +124,11 @@ in the following sections.
 -Wlarger-than-@var{len}  -Wlong-long
 -Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wmultichar  -Wnested-externs  -Wno-import  
--Wold-style-cast  -Woverloaded-virtual  -Wparentheses
--Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type
--Wshadow  -Wsign-compare  -Wstrict-prototypes  -Wswitch
--Wsynth  -Wtemplate-debugging  -Wtraditional  -Wtrigraphs
--Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
+-Wno-non-template-friend -Wold-style-cast  -Woverloaded-virtual  
+-Wparentheses -Wpointer-arith  -Wredundant-decls  -Wreorder  
+-Wreturn-type -Wshadow  -Wsign-compare  -Wstrict-prototypes  
+-Wswitch -Wsynth  -Wtemplate-debugging  -Wtraditional  
+-Wtrigraphs -Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
 -Wunknown-pragmas
 @end smallexample
 
@@ -1184,6 +1184,8 @@ have meanings only for C++ programs:
 Do not assume @samp{inline} for functions defined inside a class scope.
 @xref{Optimize Options,,Options That Control Optimization}.
 
+@item -Wno-non-template-friend
+@xref{Warning Options,,Options to Request or Suppress Warnings}.
 @item -Wold-style-cast
 @itemx -Woverloaded-virtual
 @itemx -Wtemplate-debugging
@@ -1674,6 +1676,22 @@ cases where multiple declaration is valid and changes nothing.
 
 @item -Wnested-externs
 Warn if an @code{extern} declaration is encountered within an function.
+
+@item -Wno-non-template-friend
+Disable warnings when non-templatized friend functions are declared
+within a template. With the advent of explicit template specification
+support in g++, if the name of the friend is an unqualified-id (ie,
+@samp{friend foo(int)}), the C++ language specification demands that the
+friend declare or define an ordinary, nontemplate function. (Section
+14.5.3). Before g++ implemented explicit specification, unqualified-ids
+could be interpreted as a particular specialization of a templatized
+function. Because this non-conforming behavior is no longer the default
+behavior for g++, @samp{-Wnon-template-friend} allows the compiler to
+check existing code for potential trouble spots, and is on by default.
+This new compiler behavior can also be turned off with the flag
+@samp{-fguiding-decls}, which activates the older, non-specification
+compiler code, or with @samp{-Wno-non-template-friend} which keeps the
+conformant compiler code but disables the helpful warning.
 
 @item -Winline
 Warn if a function can not be inlined, and either it was declared as inline,
