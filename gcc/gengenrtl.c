@@ -119,6 +119,9 @@ accessor_from_format (c)
 
     case 'B':
       return "XBBDEF";
+
+    default:
+      abort ();
     }
 }
 
