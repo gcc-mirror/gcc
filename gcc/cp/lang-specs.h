@@ -1,5 +1,5 @@
 /* Definitions for specs for C++.
-   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -38,12 +38,14 @@ Boston, MA 02111-1307, USA.  */
      %{!E:%{!M:%{!MM:\
        %{save-temps:cpp0 -lang-c++ -D_GNU_SOURCE \
 		    %{!no-gcc:-D__GNUG__=%v1}\
+		    %{!fno-exceptions:-D__EXCEPTIONS}\
 		    %{!fno-new-abi:-D__GXX_ABI_VERSION=100}\
 		    %{ansi:-D__STRICT_ANSI__ -trigraphs -$}\
 		    %(cpp_options) %b.ii \n}\
       cc1plus %{save-temps:-fpreprocessed %b.ii}\
               %{!save-temps:%(cpp_options)\
 			    %{!no-gcc:-D__GNUG__=%v1} -D_GNU_SOURCE \
+			    %{!fno-exceptions:-D__EXCEPTIONS}\
 			    %{!fno-new-abi:-D__GXX_ABI_VERSION=100}\
 			    %{ansi:-D__STRICT_ANSI__}}\
        %{ansi:-trigraphs -$}\
