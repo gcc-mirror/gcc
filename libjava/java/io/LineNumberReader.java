@@ -374,37 +374,22 @@ public class LineNumberReader extends BufferedReader
     *
     * @exception IOException If an error occurs
     */
-  public long skip(long count) throws IOException
+  public long skip (long count) throws IOException
   {
     if (count <= 0)
       return 0;
-    long to_do = count;
-    do
+
+    int skipped;
+    
+    for (skipped = 0; skipped < count; skipped++)
       {
-	int ch = read();
-	if (ch < 0)
-	  break;
-	to_do--;
-	if (ch == '\n' || ch == '\r')
-	  lineNumber++;
-	else
-	  {
-	    long fence = pos + to_do;
-	    if (limit < fence)
-	      fence = limit;
-	    int end = pos;
-	    for (; end < fence; end++)
-	      {
-		char endch = buffer[end];
-		if (endch == '\n' || endch == '\r')
-		  break;
-	      }
-	    to_do -= end - pos;
-	    pos = end;
-	  }
+        int ch = read();
+
+        if (ch < 0)
+          break;
       }
-    while (to_do > 0);
-    return count - to_do;
+
+    return skipped;
   }
 }
 
