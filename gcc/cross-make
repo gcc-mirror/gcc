@@ -10,8 +10,5 @@ SYSTEM_HEADER_DIR = $(tooldir)/sys-include
 # Don't try to compile the things we can't compile.
 ALL = all.cross
 
-# Use cross-compiler version of float.h.
-FLOAT_H = $(CROSS_FLOAT_H)
-
 # Don't install assert.h in /usr/local/include.
 assertdir = $(tooldir)/include
