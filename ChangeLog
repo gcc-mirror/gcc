@@ -1,3 +1,9 @@
+2003-07-29  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config-ml.in:  Use ac_configure_args directly instead of
+	ml_arguments.  Only set ml_norecursion if --no[-]recursion is
+	actually seen.
+
 2003-07-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Use 'mkinstalldirs' rather than 'mkdir' when
