@@ -4228,15 +4228,11 @@ linemarkers.  @xref{Preprocessor Output}.
 @item -C
 Do not discard comments.  All comments are passed through to the output
 file, except for comments in processed directives, which are deleted
-along with the directive.  Comments appearing in the expansion list of a
-macro will be preserved, and appear in place wherever the macro is
-invoked.
+along with the directive.
 
-You should be prepared for side effects when using @option{-C}; it causes
-the preprocessor to treat comments as tokens in their own right.  For
-example, macro redefinitions that were trivial when comments were
-replaced by a single space might become significant when comments are
-retained.  Also, comments appearing at the start of what would be a
+You should be prepared for side effects when using @option{-C}; it
+causes the preprocessor to treat comments as tokens in their own right.
+For example, comments appearing at the start of what would be a
 directive line have the effect of turning that line into an ordinary
 source line, since the first token on the line is no longer a @samp{#}.
 

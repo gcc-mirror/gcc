@@ -1329,7 +1329,6 @@ _cpp_create_definition (pfile, node)
   else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
     cpp_pedwarn (pfile, "ISO C requires whitespace after the macro name");
 
-  pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
   saved_cur_token = pfile->cur_token;
 
   if (macro->fun_like)
