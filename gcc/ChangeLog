@@ -1,3 +1,11 @@
+Tue May 16 12:17:31 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.h (PREFERRED_RELOAD_CLASS): Do not prefer DATA_REGS
+	if X has VOIDmode either.
+	(LIMIT_RELOAD_CLASS): Similarly.
+
+	* mn10200.md (indirect_jump, tablejump): Use "register_operand",
+	not "general_operand" to match the processor's capabilities.
 
 2000-05-16  Bruce Korb  <bkorb@gnu.org>
 

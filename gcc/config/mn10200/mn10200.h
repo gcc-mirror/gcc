@@ -298,11 +298,11 @@ enum reg_class {
    in some cases it is preferable to use a more restrictive class.  */
 
 #define PREFERRED_RELOAD_CLASS(X,CLASS) \
-  ((GET_MODE (X) != PSImode) ? DATA_REGS : CLASS)
+  ((GET_MODE (X) != PSImode && GET_MODE (X) != VOIDmode) ? DATA_REGS : CLASS)
 
 /* We want to use DATA_REGS for anything that is not PSImode.  */
 #define LIMIT_RELOAD_CLASS(MODE, CLASS) \
-  ((MODE != PSImode) ? DATA_REGS : CLASS)
+  ((MODE != PSImode && MODE != VOIDmode) ? DATA_REGS : CLASS)
 
 /* We have/need secondary reloads on the mn10200.  Mostly to deal
    with problems using address registers.  */
