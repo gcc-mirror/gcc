@@ -5,6 +5,9 @@
 
 #include "i386/gstabs.h"
 
+/* Get perform_* macros to build libgcc.a.  */
+#include "i386/perform.h"
+
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -D____386BSD____ -D__386BSD__ -DBSD_NET2"
 
@@ -57,82 +60,6 @@
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-/* Defines to be able to build libgcc.a with GCC.
-   These are the same as in i386mach.h.  */
-
-/* It might seem that these are not important, since gcc 2 will never
-   call libgcc for these functions.  But programs might be linked with
-   code compiled by gcc 1, and then these will be used.  */
-
-/* The arg names used to be a and b, but `a' appears inside strings
-   and that confuses non-ANSI cpp.  */
-
-#define perform_udivsi3(arg0,arg1)					\
-{									\
-  register int dx asm("dx");						\
-  register int ax asm("ax");						\
-									\
-  dx = 0;								\
-  ax = arg0;								\
-  asm ("divl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1), "d" (dx)); \
-  return ax;								\
-}
-
-#define perform_divsi3(arg0,arg1)					\
-{									\
-  register int dx asm("dx");						\
-  register int ax asm("ax");						\
-									\
-  ax = arg0;								\
-  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1)); \
-  return ax;								\
-}
-
-#define perform_umodsi3(arg0,arg1)					\
-{									\
-  register int dx asm("dx");						\
-  register int ax asm("ax");						\
-									\
-  dx = 0;								\
-  ax = arg0;								\
-  asm ("divl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1), "d" (dx)); \
-  return dx;								\
-}
-
-#define perform_modsi3(arg0,arg1)					\
-{									\
-  register int dx asm("dx");						\
-  register int ax asm("ax");						\
-									\
-  ax = arg0;								\
-  asm ("cltd\n\tidivl %3" : "=a" (ax), "=d" (dx) : "a" (ax), "g" (arg1)); \
-  return dx;								\
-}
-
-
-#define perform_fixdfsi(arg0)						\
-{									\
-  auto unsigned short ostatus;						\
-  auto unsigned short nstatus;						\
-  auto int ret;								\
-  auto double tmp;							\
-									\
-  &ostatus;			/* guarantee these land in memory */	\
-  &nstatus;								\
-  &ret;									\
-  &tmp;									\
-									\
-  asm volatile ("fnstcw %0" : "=m" (ostatus));				\
-  nstatus = ostatus | 0x0c00;						\
-  asm volatile ("fldcw %0" : /* no outputs */ : "m" (nstatus));		\
-  tmp = arg0;								\
-  asm volatile ("fldl %0" : /* no outputs */ : "m" (tmp));		\
-  asm volatile ("fistpl %0" : "=m" (ret));				\
-  asm volatile ("fldcw %0" : /* no outputs */ : "m" (ostatus));		\
-									\
-  return ret;								\
-}
-
 /* The following macros are stolen from i386v4.h */
 /* These have to be defined to get PIC code correct */
 
