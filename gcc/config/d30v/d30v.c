@@ -2891,8 +2891,8 @@ d30v_print_operand (stream, x, letter)
       letter = 'T';
       /* FALLTHRU */
 
-    case 'F':	/* Print an appropriate suffix for a false comparision.  */
-    case 'T':	/* Print an appropriate suffix for a true  comparision.  */
+    case 'F':	/* Print an appropriate suffix for a false comparison.  */
+    case 'T':	/* Print an appropriate suffix for a true  comparison.  */
       /* Note that the sense of appropriate suffix is for conditional execution
 	 and opposite of what branches want.  Branches just use the inverse
 	 operation.  */
