@@ -3041,7 +3041,7 @@ fi
 if [[ x$enable_haifa = x ]]
 then
   case $target in
-    alpha*-* | hppa1.?-* | powerpc*-* | rs6000-* | *sparc-* | m32r*-*)
+    alpha*-* | hppa1.?-* | powerpc*-* | rs6000-* | *sparc*-* | m32r*-*)
       enable_haifa=yes;;
   esac
 fi
