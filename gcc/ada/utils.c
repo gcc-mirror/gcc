@@ -425,7 +425,7 @@ gnat_define_builtin (const char *name, tree type,
   TREE_PUBLIC (decl) = 1;
   if (library_name)
     SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
-  make_decl_rtl (decl, NULL);
+  make_decl_rtl (decl);
   gnat_pushdecl (decl, Empty);
   DECL_BUILT_IN_CLASS (decl) = BUILT_IN_NORMAL;
   DECL_FUNCTION_CODE (decl) = function_code;
@@ -1731,7 +1731,7 @@ begin_subprog_body (tree subprog_decl)
        param_decl = TREE_CHAIN (param_decl))
     DECL_CONTEXT (param_decl) = subprog_decl;
 
-  make_decl_rtl (subprog_decl, NULL);
+  make_decl_rtl (subprog_decl);
 
   /* We handle pending sizes via the elaboration of types, so we don't need to
      save them.  This causes them to be marked as part of the outer function

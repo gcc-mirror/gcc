@@ -1,3 +1,9 @@
+2004-08-06  Andreas Schwab  <schwab@suse.de>
+
+	* utils.c (gnat_define_builtin): Remove second parameter of
+	make_decl_rtl.
+	(begin_subprog_body): Likewise.
+
 2004-07-26  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* sem_util.adb (Requires_Transient_Scope): Temporarily disable
