@@ -1439,7 +1439,7 @@ init_gcc_specs (obstack, shared_name, static_name, eh_name)
 #ifdef LINK_EH_SPEC
   sprintf (buffer, "%s}}}", static_name);
 #else
-  sprintf (buffer, "%s %s}}}", shared_name, static_name);
+  sprintf (buffer, "%s}}}", shared_name);
 #endif
   obstack_grow (obstack, buffer, strlen (buffer));
   /* Otherwise, use the static version.  */
