@@ -59,9 +59,9 @@ extern tree global_namespace;
 
 extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
 
-/* Don't use garbage collection.  */
+/* Use garbage collection.  */
 
-int ggc_p = 0;
+int ggc_p = 1;
 
 /* Obstack used for remembering local class declarations (like
    enums and static (const) members.  */
@@ -204,6 +204,7 @@ static void push_cp_function_context PROTO((struct function *));
 static void pop_cp_function_context PROTO((struct function *));
 static void mark_binding_level PROTO((void *));
 static void mark_cp_function_context PROTO((struct function *));
+static void mark_saved_scope PROTO((void *));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
