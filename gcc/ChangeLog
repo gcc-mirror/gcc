@@ -1,3 +1,24 @@
+2001-01-10  Nick Clifton  <nickc@redhat.com>
+
+	* function.h (save_machine_status): Delete.
+	(restore_machine_status): Delete.
+	Amend comment describing {init|mark|free}_machine_status.
+
+	* function.c (save_machine_status): Delete.
+	(restore_machine_status): Delete.
+	Amend comment describing {init|mark|free}_machine_status.
+	(push_function_context_to): Remove invocation of
+	save_machine_status.
+	(pop_function_context_from): Remove invocation of
+	restore_machine_status.
+
+	* emit-rtl.c (init_emit_once): Amend comment describing
+	{init|mark|free}_machine_status. 
+
+	* tm.texi (Per-Function Data): New node.  Describe the
+	INIT_EXPANDERS macro and the {init|mark|free}_machine_status
+	function pointers.
+
 2001-01-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinit.c (OPT_g): Remove.

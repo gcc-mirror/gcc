@@ -44,7 +44,7 @@ and the Info entries for @file{gcc}, @file{cpp}, @file{g77}, @file{as},
 @c man end
 @c man begin BUGS
 For instructions on reporting bugs, see
-@w{@uref{http://gcc.gnu.org/bugs.html}}.  Use of the @command{gccbug}
+@w{@uref{http://gcc.gnu.org/bugs.html}}.  Use of the @code{gccbug}
 script to report bugs is recommended.
 @c man end
 @c man begin AUTHOR
@@ -85,7 +85,7 @@ options for compiling C++ programs.
 
 @cindex grouping options
 @cindex options, grouping
-The @command{gcc} program accepts options and file names as operands.  Many
+The @code{gcc} program accepts options and file names as operands.  Many
 options have multi-letter names; therefore multiple single-letter options
 may @emph{not} be grouped: @samp{-dr} is very different from @w{@samp{-d
 -r}}.
@@ -701,18 +701,18 @@ handled according to their file name suffixes (as they are if @samp{-x}
 has not been used at all).
 
 @item -pass-exit-codes
-Normally the @command{gcc} program will exit with the code of 1 if any
+Normally the @code{gcc} program will exit with the code of 1 if any
 phase of the compiler returns a non-success return code.  If you specify
-@samp{-pass-exit-codes}, the @command{gcc} program will instead return with
+@samp{-pass-exit-codes}, the @code{gcc} program will instead return with
 numerically highest error produced by any phase that returned an error
 indication.
 @end table
 
 If you only want some of the stages of compilation, you can use
-@samp{-x} (or filename suffixes) to tell @command{gcc} where to start, and
+@samp{-x} (or filename suffixes) to tell @code{gcc} where to start, and
 one of the options @samp{-c}, @samp{-S}, or @samp{-E} to say where
-@command{gcc} is to stop.  Note that some combinations (for example,
-@samp{-x cpp-output -E}) instruct @command{gcc} to do nothing at all.
+@code{gcc} is to stop.  Note that some combinations (for example,
+@samp{-x cpp-output -E}) instruct @code{gcc} to do nothing at all.
 
 @table @gcctabopt
 @item -c
@@ -771,10 +771,10 @@ no trouble.
 
 @item --help
 Print (on the standard output) a description of the command line options
-understood by @command{gcc}.  If the @option{-v} option is also specified
-then @option{--help} will also be passed on to the various processes
-invoked by @command{gcc}, so that they can display the command line options
-they accept.  If the @option{-W} option is also specified then command
+understood by @code{gcc}.  If the @code{-v} option is also specified
+then @code{--help} will also be passed on to the various processes
+invoked by @code{gcc}, so that they can display the command line options
+they accept.  If the @code{-W} option is also specified then command
 line options which have no documentation associated with them will also
 be displayed.
 
@@ -793,7 +793,7 @@ C++ source files conventionally use one of the suffixes @samp{.C},
 preprocessed C++ files use the suffix @samp{.ii}.  GCC recognizes
 files with these names and compiles them as C++ programs even if you
 call the compiler the same way as for compiling C programs (usually with
-the name @command{gcc}).
+the name @code{gcc}).
 
 @findex g++
 @findex c++
@@ -801,12 +801,12 @@ However, C++ programs often require class libraries as well as a
 compiler that understands the C++ language---and under some
 circumstances, you might want to compile programs from standard input,
 or otherwise without a suffix that flags them as C++ programs.
-@command{g++} is a program that calls GCC with the default language
+@code{g++} is a program that calls GCC with the default language
 set to C++, and automatically specifies linking against the C++
-library.  On many systems, @command{g++} is also
-installed with the name @command{c++}.
+library.  On many systems, @code{g++} is also
+installed with the name @code{c++}.
 
-@cindex invoking @command{g++}
+@cindex invoking @code{g++}
 When you compile C++ programs, you may specify many of the same
 command-line options that you use for compiling programs in any
 language; or command-line options meaningful for C and related
@@ -871,7 +871,7 @@ possible values are
 
 @table @samp
 @item iso9899:1990
-Same as @option{-ansi}
+Same as @code{-ansi}
 
 @item iso9899:199409
 ISO C as modified in amend. 1
@@ -881,10 +881,10 @@ ISO C99.  Note that this standard is not yet fully supported; see
 @w{@uref{http://gcc.gnu.org/c99status.html}} for more information.
 
 @item c89
-same as @option{-std=iso9899:1990}
+same as @code{-std=iso9899:1990}
 
 @item c99
-same as @option{-std=iso9899:1999}
+same as @code{-std=iso9899:1999}
 
 @item gnu89
 default, iso9899:1990 + gnu extensions
@@ -893,20 +893,20 @@ default, iso9899:1990 + gnu extensions
 iso9899:1999 + gnu extensions
 
 @item iso9899:199x
-same as @option{-std=iso9899:1999}, deprecated
+same as @code{-std=iso9899:1999}, deprecated
 
 @item c9x
-same as @option{-std=iso9899:1999}, deprecated
+same as @code{-std=iso9899:1999}, deprecated
 
 @item gnu9x
-same as @option{-std=gnu99}, deprecated
+same as @code{-std=gnu99}, deprecated
 
 @end table
 
 Even when this option is not specified, you can still use some of the
 features of newer standards in so far as they do not conflict with
 previous C standards.  For example, you may use @code{__restrict__} even
-when @option{-std=c99} is not specified.
+when @code{-std=c99} is not specified.
 
 @xref{Standards,,Language Standards Supported by GCC}, for details of
 these standard versions.
@@ -2436,7 +2436,7 @@ Include function returns in frequency count.
 @item __bb_trace__
 Write the sequence of basic blocks executed to file @file{bbtrace.gz}.
 The file will be compressed using the program @samp{gzip}, which must
-exist in your @env{PATH}.  On systems without the @samp{popen}
+exist in your @code{PATH}.  On systems without the @samp{popen}
 function, the file will be named @file{bbtrace} and will not be
 compressed.  @strong{Profiling for even a few seconds on these systems
 will produce a very large file.}  Note: @code{__bb_hidecall__} and
@@ -2696,7 +2696,7 @@ This is useful when gcc prints the error message
 @samp{installation problem, cannot exec cpp0: No such file or directory}.
 To resolve this you either need to put @file{cpp0} and the other compiler
 components where gcc expects to find them, or you can set the environment
-variable @env{GCC_EXEC_PREFIX} to the directory where you installed them.
+variable @code{GCC_EXEC_PREFIX} to the directory where you installed them.
 Don't forget the trailing '/'.
 @xref{Environment Variables}.
 @end table
@@ -2982,7 +2982,7 @@ register tying.  This is especially helpful on machines with two-operand
 instructions.  GCC enables this optimization by default with @samp{-O2}
 or higher.
 
-Note @option{-fregmove} and @option{-foptimize-register-move} are the same
+Note @code{-fregmove} and @code{-foptimize-register-move} are the same
 optimization.
 
 @item -fdelayed-branch
@@ -3077,7 +3077,7 @@ Disable any machine-specific peephole optimizations.
 @item -fbranch-probabilities
 After running a program compiled with @samp{-fprofile-arcs}
 (@pxref{Debugging Options,, Options for Debugging Your Program or
-@command{gcc}}), you can compile it a second time using
+@code{gcc}}), you can compile it a second time using
 @samp{-fbranch-probabilities}, to improve optimizations based on
 guessing the path a branch might take.
 
@@ -3325,7 +3325,7 @@ file to stdout normally.  If no @samp{-MF} switch is given, CPP sends
 the rules to stdout and suppresses normal preprocessed output.
 
 Another way to specify output of a @code{make} rule is by setting
-the environment variable @env{DEPENDENCIES_OUTPUT} (@pxref{Environment
+the environment variable @code{DEPENDENCIES_OUTPUT} (@pxref{Environment
 Variables}).
 
 @item -MG
@@ -3474,8 +3474,8 @@ Trigraph support is not popular, so many compilers do not implement it
 properly.  Portable code should not rely on trigraphs being either
 converted or ignored.
 
-@item -Wp,@var{option}
-Pass @var{option} as an option to the preprocessor.  If @var{option}
+@item -Wp@var{option}
+Pass @code{option} as an option to the preprocessor.  If @samp{option}
 contains commas, it is split into multiple options at the commas.
 @end table
 
@@ -3486,7 +3486,7 @@ contains commas, it is split into multiple options at the commas.
 You can pass options to the assembler.
 
 @table @gcctabopt
-@item -Wa,@var{option}
+@item -Wa@var{option}
 Pass @var{option} as an option to the assembler.  If @var{option}
 contains commas, it is split into multiple options at the commas.
 @end table
@@ -3548,13 +3548,13 @@ link an Objective C program.
 
 @item -nostartfiles
 Do not use the standard system startup files when linking.
-The standard system libraries are used normally, unless @option{-nostdlib}
-or @option{-nodefaultlibs} is used.
+The standard system libraries are used normally, unless @code{-nostdlib}
+or @code{-nodefaultlibs} is used.
 
 @item -nodefaultlibs
 Do not use the standard system libraries when linking.
 Only the libraries you specify will be passed to the linker.
-The standard startup files are used normally, unless @option{-nostartfiles}
+The standard startup files are used normally, unless @code{-nostartfiles}
 is used.  The compiler may generate calls to memcmp, memset, and memcpy
 for System V (and ISO C) environments or to bcopy and bzero for
 BSD environments.  These entries are usually resolved by entries in
@@ -3593,7 +3593,7 @@ other standard libraries.  In other words, when you specify @samp{-nostdlib}
 or @samp{-nodefaultlibs} you should usually specify @samp{-lgcc} as well.
 This ensures that you have no unresolved references to internal GCC
 library subroutines.  (For example, @samp{__main}, used to ensure C++
-constructors will be called; @pxref{Collect2,,@command{collect2}}.)
+constructors will be called; @pxref{Collect2,,@code{collect2}}.)
 
 @item -s
 Remove all symbol table and relocation information from the executable.
@@ -3651,7 +3651,7 @@ For example, to pass @samp{-assert definitions}, you must write
 @samp{-Xlinker "-assert definitions"}, because this passes the entire
 string as a single argument, which is not what the linker expects.
 
-@item -Wl,@var{option}
+@item -Wl@var{option}
 Pass @var{option} as an option to the linker.  If @var{option} contains
 commas, it is split into multiple options at the commas.
 
@@ -3720,7 +3720,7 @@ was not specified, the driver tries two standard prefixes, which are
 @file{/usr/lib/gcc/} and @file{/usr/local/lib/gcc-lib/}.  If neither of
 those results in a file name that is found, the unmodified program
 name is searched for using the directories specified in your
-@env{PATH} environment variable.
+@code{PATH} environment variable.
 
 @samp{-B} prefixes that effectively specify directory names also apply
 to libraries in the linker, because the compiler translates these
@@ -3735,7 +3735,7 @@ standard prefixes above are tried, and that is all.  The file is left
 out of the link if it is not found by those means.
 
 Another way to specify a prefix much like the @samp{-B} prefix is to use
-the environment variable @env{GCC_EXEC_PREFIX}.  @xref{Environment
+the environment variable @code{GCC_EXEC_PREFIX}.  @xref{Environment
 Variables}.
 
 @item -specs=@var{file}
@@ -3752,7 +3752,7 @@ are processed in order, from left to right.
 @node Spec Files
 @section Specifying subprocesses and the switches to pass to them
 @cindex Spec Files
-@command{gcc} is a driver program.  It performs its job by invoking a
+@code{gcc} is a driver program.  It performs its job by invoking a
 sequence of other programs to do the work of compiling, assembling and
 linking.  GCC interprets its command-line parameters and uses these to
 deduce which programs it should invoke, and which command-line options
@@ -3824,7 +3824,7 @@ suffix directive can be one of the following:
 @table @code
 @item @@@var{language}
 This says that the suffix is an alias for a known @var{language}.  This is
-similar to using the @option{-x} command-line switch to GCC to specify a
+similar to using the @code{-x} command-line switch to GCC to specify a
 language explicitly.  For example:
 
 @smallexample
@@ -4233,7 +4233,7 @@ file @file{80386} is a link to the file @file{i386v}, then @samp{-b
 80386} becomes an alias for @samp{-b i386v}.
 
 In one respect, the @samp{-b} or @samp{-V} do not completely change
-to a different compiler: the top-level driver program @command{gcc}
+to a different compiler: the top-level driver program @code{gcc}
 that you originally invoked continues to run and invoke the other
 executables (preprocessor, compiler per se, assembler and linker)
 that do the real work.  However, since no real work is done in the
@@ -4258,9 +4258,9 @@ however: the default version and target machine.  Therefore, you can
 install different instances of the driver program, compiled for
 different targets or versions, under different names.
 
-For example, if the driver for version 2.0 is installed as @command{ogcc}
-and that for version 2.1 is installed as @command{gcc}, then the command
-@command{gcc} will use version 2.1 by default, while @command{ogcc} will use
+For example, if the driver for version 2.0 is installed as @code{ogcc}
+and that for version 2.1 is installed as @code{gcc}, then the command
+@code{gcc} will use version 2.1 by default, while @code{ogcc} will use
 2.0 by default.  However, you can choose either version with either
 command with the @samp{-V} option.
 
@@ -6019,12 +6019,12 @@ header to indicate that @samp{eabi} extended relocations are used.
 @itemx -mno-eabi
 On System V.4 and embedded PowerPC systems do (do not) adhere to the
 Embedded Applications Binary Interface (eabi) which is a set of
-modifications to the System V.4 specifications.  Selecting @option{-meabi}
+modifications to the System V.4 specifications.  Selecting @code{-meabi}
 means that the stack is aligned to an 8 byte boundary, a function
 @code{__eabi} is called to from @code{main} to set up the eabi
 environment, and the @samp{-msdata} option can use both @code{r2} and
 @code{r13} to point to two separate small data areas.  Selecting
-@option{-mno-eabi} means that the stack is aligned to a 16 byte boundary,
+@code{-mno-eabi} means that the stack is aligned to a 16 byte boundary,
 do not call an initialization function from @code{main}, and the
 @samp{-msdata} option will only use @code{r13} to point to a single
 small data area.  The @samp{-meabi} option is on by default if you
@@ -6821,7 +6821,7 @@ These @samp{-m} options are defined for the DEC Alpha implementations:
 @item -mno-soft-float
 @itemx -msoft-float
 Use (do not use) the hardware floating-point instructions for
-floating-point operations.  When @option{-msoft-float} is specified,
+floating-point operations.  When @code{-msoft-float} is specified,
 functions in @file{libgcc1.c} will be used to perform floating-point
 operations.  Unless they are replaced by routines that emulate the
 floating-point operations, or compiled in such a way as to call such
@@ -6836,12 +6836,12 @@ required to have floating-point registers.
 @item -mfp-reg
 @itemx -mno-fp-regs
 Generate code that uses (does not use) the floating-point register set.
-@option{-mno-fp-regs} implies @option{-msoft-float}.  If the floating-point
+@code{-mno-fp-regs} implies @code{-msoft-float}.  If the floating-point
 register set is not used, floating point operands are passed in integer
 registers as if they were integers and floating-point results are passed
 in $0 instead of $f0.  This is a non-standard calling sequence, so any
 function with a floating-point argument or return value called by code
-compiled with @option{-mno-fp-regs} must also be compiled with that
+compiled with @code{-mno-fp-regs} must also be compiled with that
 option.
 
 A typical use of this option is building a kernel that does not use,
@@ -6859,7 +6859,7 @@ during compilation.  The option is a shorthand for: @samp{-D_IEEE_FP
 code is less efficient but is able to correctly support denormalized
 numbers and exceptional IEEE values such as not-a-number and plus/minus
 infinity.  Other Alpha compilers call this option
-@option{-ieee_with_no_inexact}.
+@code{-ieee_with_no_inexact}.
 
 @item -mieee-with-inexact
 @c overfull hbox here --bob 22 jul96
@@ -7165,7 +7165,7 @@ Comply with the calling conventions defined by Hitachi.
 
 @item -mnomacsave
 Mark the @code{MAC} register as call-clobbered, even if
-@option{-mhitachi} is given.
+@code{-mhitachi} is given.
 
 @item -misize
 Dump instruction size and location in the assembly code.
@@ -7175,7 +7175,7 @@ This option is deprecated.  It pads structures to multiple of 4 bytes,
 which is incompatible with the SH ABI.
 
 @item -mspace
-Optimize for space instead of speed.  Implied by @option{-Os}.
+Optimize for space instead of speed.  Implied by @code{-Os}.
 
 @item -mprefergot
 When generating position-independent code, emit function calls using
@@ -7207,12 +7207,12 @@ Identify the versions of each tool used by the compiler, in a
 Refrain from adding @code{.ident} directives to the output file (this is
 the default).
 
-@item -YP,@var{dirs}
+@item -YP@var{dirs}
 Search the directories @var{dirs}, and no others, for libraries
 specified with @samp{-l}.
 
-@item -Ym,@var{dir}
-Look in the directory @var{dir} to find the M4 preprocessor.
+@item -Ym@var{dir}
+Look in the directory @samp{dir} to find the M4 preprocessor.
 The assembler uses this option.
 @c This is supposed to go with a -Yd for predefined M4 macro files, but
 @c the generic assembler that comes with Solaris takes just -Ym.
@@ -7720,7 +7720,7 @@ disable this option if you are compiling older C++ programs that don't
 use exception handling.
 
 @item -funwind-tables
-Similar to @option{-fexceptions}, except that it will just generate any needed
+Similar to @code{-fexceptions}, except that it will just generate any needed
 static data, but will not affect the generated code in any other way.
 You will normally not enable this option; instead, a language processor
 that needs this handling would enable it on your behalf.
@@ -7780,10 +7780,10 @@ Do not output global initializations (such as C++ constructors and
 destructors) in the form used by the GNU linker (on systems where the GNU
 linker is the standard method of handling them).  Use this option when
 you want to use a non-GNU linker, which also requires using the
-@command{collect2} program to make sure the system linker includes
-constructors and destructors.  (@command{collect2} is included in the GCC
-distribution.)  For systems which @emph{must} use @command{collect2}, the
-compiler driver @command{gcc} is configured to do this automatically.
+@code{collect2} program to make sure the system linker includes
+constructors and destructors.  (@code{collect2} is included in the GCC
+distribution.)  For systems which @emph{must} use @code{collect2}, the
+compiler driver @code{gcc} is configured to do this automatically.
 
 @item -finhibit-size-directive
 Don't output a @code{.size} assembler directive, or anything else that
@@ -8070,7 +8070,7 @@ in turn take precedence over those specified by the configuration of GCC.
 @xref{Driver}.
 @end ifset
 
-@table @env
+@table @code
 @item LANG
 @itemx LC_CTYPE
 @c @itemx LC_COLLATE
@@ -8091,29 +8091,29 @@ in turn take precedence over those specified by the configuration of GCC.
 These environment variables control the way that GCC uses
 localization information that allow GCC to work with different
 national conventions.  GCC inspects the locale categories
-@env{LC_CTYPE} and @env{LC_MESSAGES} if it has been configured to do
+@code{LC_CTYPE} and @code{LC_MESSAGES} if it has been configured to do
 so.  These locale categories can be set to any value supported by your
 installation.  A typical value is @samp{en_UK} for English in the United
 Kingdom.
 
-The @env{LC_CTYPE} environment variable specifies character
+The @code{LC_CTYPE} environment variable specifies character
 classification.  GCC uses it to determine the character boundaries in
 a string; this is needed for some multibyte encodings that contain quote
 and escape characters that would otherwise be interpreted as a string
 end or escape.
 
-The @env{LC_MESSAGES} environment variable specifies the language to
+The @code{LC_MESSAGES} environment variable specifies the language to
 use in diagnostic messages.
 
-If the @env{LC_ALL} environment variable is set, it overrides the value
-of @env{LC_CTYPE} and @env{LC_MESSAGES}; otherwise, @env{LC_CTYPE}
-and @env{LC_MESSAGES} default to the value of the @env{LANG}
+If the @code{LC_ALL} environment variable is set, it overrides the value
+of @code{LC_CTYPE} and @code{LC_MESSAGES}; otherwise, @code{LC_CTYPE}
+and @code{LC_MESSAGES} default to the value of the @code{LANG}
 environment variable.  If none of these variables are set, GCC
 defaults to traditional C English behavior.
 
 @item TMPDIR
 @findex TMPDIR
-If @env{TMPDIR} is set, it specifies the directory to use for temporary
+If @code{TMPDIR} is set, it specifies the directory to use for temporary
 files.  GCC uses temporary files to hold the output of one stage of
 compilation which is to be used as input to the next stage: for example,
 the output of the preprocessor, which is the input to the compiler
@@ -8121,18 +8121,18 @@ proper.
 
 @item GCC_EXEC_PREFIX
 @findex GCC_EXEC_PREFIX
-If @env{GCC_EXEC_PREFIX} is set, it specifies a prefix to use in the
+If @code{GCC_EXEC_PREFIX} is set, it specifies a prefix to use in the
 names of the subprograms executed by the compiler.  No slash is added
 when this prefix is combined with the name of a subprogram, but you can
 specify a prefix that ends with a slash if you wish.
 
-If @env{GCC_EXEC_PREFIX} is not set, GNU CC will attempt to figure out
+If @code{GCC_EXEC_PREFIX} is not set, GNU CC will attempt to figure out
 an appropriate prefix to use based on the pathname it was invoked with.
 
 If GCC cannot find the subprogram using the specified prefix, it
 tries looking in the usual places for the subprogram.
 
-The default value of @env{GCC_EXEC_PREFIX} is
+The default value of @code{GCC_EXEC_PREFIX} is
 @file{@var{prefix}/lib/gcc-lib/} where @var{prefix} is the value
 of @code{prefix} when you ran the @file{configure} script.
 
@@ -8144,7 +8144,7 @@ used for linking.
 In addition, the prefix is used in an unusual way in finding the
 directories to search for header files.  For each of the standard
 directories whose name normally begins with @samp{/usr/local/lib/gcc-lib}
-(more precisely, with the value of @env{GCC_INCLUDE_DIR}), GCC tries
+(more precisely, with the value of @code{GCC_INCLUDE_DIR}), GCC tries
 replacing that beginning with the specified prefix to produce an
 alternate directory name.  Thus, with @samp{-Bfoo/}, GCC will search
 @file{foo/bar} where it would normally search @file{/usr/local/lib/bar}.
@@ -8153,17 +8153,17 @@ come next.
 
 @item COMPILER_PATH
 @findex COMPILER_PATH
-The value of @env{COMPILER_PATH} is a colon-separated list of
-directories, much like @env{PATH}.  GCC tries the directories thus
+The value of @code{COMPILER_PATH} is a colon-separated list of
+directories, much like @code{PATH}.  GCC tries the directories thus
 specified when searching for subprograms, if it can't find the
-subprograms using @env{GCC_EXEC_PREFIX}.
+subprograms using @code{GCC_EXEC_PREFIX}.
 
 @item LIBRARY_PATH
 @findex LIBRARY_PATH
-The value of @env{LIBRARY_PATH} is a colon-separated list of
-directories, much like @env{PATH}.  When configured as a native compiler,
+The value of @code{LIBRARY_PATH} is a colon-separated list of
+directories, much like @code{PATH}.  When configured as a native compiler,
 GCC tries the directories thus specified when searching for special
-linker files, if it can't find them using @env{GCC_EXEC_PREFIX}.  Linking
+linker files, if it can't find them using @code{GCC_EXEC_PREFIX}.  Linking
 using GCC also uses these directories when searching for ordinary
 libraries for the @samp{-l} option (but directories specified with
 @samp{-L} come first).
@@ -8177,7 +8177,7 @@ libraries for the @samp{-l} option (but directories specified with
 @c @itemx OBJCPLUS_INCLUDE_PATH
 These environment variables pertain to particular languages.  Each
 variable's value is a colon-separated list of directories, much like
-@env{PATH}.  When GCC searches for header files, it tries the
+@code{PATH}.  When GCC searches for header files, it tries the
 directories listed in the variable for the language you are using, after
 the directories specified with @samp{-I} but before the standard header
 file directories.
@@ -8191,7 +8191,7 @@ output looks much like the output from the @samp{-M} option
 (@pxref{Preprocessor Options}), but it goes to a separate file, and is
 in addition to the usual results of compilation.
 
-The value of @env{DEPENDENCIES_OUTPUT} can be just a file name, in
+The value of @code{DEPENDENCIES_OUTPUT} can be just a file name, in
 which case the Make rules are written to that file, guessing the target
 name from the source file name.  Or the value can have the form
 @samp{@var{file} @var{target}}, in which case the rules are written to
@@ -8204,7 +8204,7 @@ This variable is used to pass locale information to the compiler. One way in
 which this information is used is to determine the character set to be used
 when character literals, string literals and comments are parsed in C and C++.
 When the compiler is configured to allow multibyte characters,
-the following values for @env{LANG} are recognized:
+the following values for @code{LANG} are recognized:
 
 @table @samp
 @item C-JIS
@@ -8215,7 +8215,7 @@ Recognize SJIS characters.
 Recognize EUCJP characters.
 @end table
 
-If @env{LANG} is not defined, or if it has some other value, then the
+If @code{LANG} is not defined, or if it has some other value, then the
 compiler will use mblen and mbtowc as defined by the default locale to
 recognize and translate multibyte characters.
 @end table

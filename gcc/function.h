@@ -556,14 +556,14 @@ extern HOST_WIDE_INT get_frame_size	PARAMS ((void));
 /* Likewise, but for a different than the current function.  */
 extern HOST_WIDE_INT get_func_frame_size	PARAMS ((struct function *));
 
-/* These variables hold pointers to functions to
-   save and restore machine-specific data,
-   in push_function_context and pop_function_context.  */
+/* These variables hold pointers to functions to create and destroy
+   target specific, per-function data structures.  */
 extern void (*init_machine_status)	PARAMS ((struct function *));
-extern void (*mark_machine_status)	PARAMS ((struct function *));
-extern void (*save_machine_status)	PARAMS ((struct function *));
-extern void (*restore_machine_status)	PARAMS ((struct function *));
 extern void (*free_machine_status)	PARAMS ((struct function *));
+/* This variable holds a pointer to a function to register any
+   data items in the target specific, per-function data structure
+   that will need garbage collection.  */
+extern void (*mark_machine_status)	PARAMS ((struct function *));
 
 /* Likewise, but for language-specific data.  */
 extern void (*init_lang_status)         PARAMS ((struct function *));
