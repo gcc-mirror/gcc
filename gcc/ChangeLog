@@ -1,3 +1,8 @@
+2004-01-26  Jeff Law  <law@redhat.com>
+
+	* doc/contrib.texi: Minor cleanup for Paolo Carlini's entry.  Add
+	acute accents for Petur Runolfsson's entry.
+
 2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/pdp11/pdp11.c (TARGET_STRUCT_VALUE_RTX): New.
