@@ -311,7 +311,7 @@ extern void assemble_name		PARAMS ((FILE *, const char *));
 extern int assemble_integer		PARAMS ((rtx, int, int));
 extern int assemble_eh_integer		PARAMS ((rtx, int, int));
 
-#ifdef EMUSHORT
+#ifdef REAL_VALUE_TYPE
 /* Assemble the floating-point constant D into an object of size MODE.  */
 extern void assemble_real		PARAMS ((REAL_VALUE_TYPE,
 					       enum machine_mode));
