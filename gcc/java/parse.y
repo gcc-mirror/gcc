@@ -100,6 +100,7 @@ static int find_in_imports PROTO ((tree));
 static int check_pkg_class_access PROTO ((tree, tree));
 static tree resolve_package PROTO ((tree, tree *));
 static tree lookup_package_type PROTO ((char *, int));
+static tree lookup_package_type_and_set_next PROTO ((char *, int, tree *));
 static tree resolve_class PROTO ((tree, tree, tree));
 static void declare_local_variables PROTO ((int, tree, tree));
 static void source_start_java_method PROTO ((tree));
@@ -3542,6 +3543,12 @@ finish_method_declaration (method_body)
       method_body = NULL_TREE;
     }
 
+  if (flag_emit_class_files && method_body 
+      && TREE_CODE (method_body) == NOP_EXPR 
+      && TREE_TYPE (current_function_decl) 
+      && TREE_TYPE (TREE_TYPE (current_function_decl)) == void_type_node)
+    method_body = build1 (RETURN_EXPR, void_type_node, NULL);
+    
   BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (current_function_decl)) = method_body;
   maybe_absorb_scoping_blocks ();
   /* Exit function's body */
@@ -5237,6 +5244,7 @@ static tree
 resolve_package (pkg, next)
      tree pkg, *next;
 {
+  tree current;
   tree type_name = NULL_TREE;
   char *name = IDENTIFIER_POINTER (EXPR_WFL_NODE (pkg));
 
@@ -5256,9 +5264,63 @@ resolve_package (pkg, next)
       *next = TREE_CHAIN (TREE_CHAIN (EXPR_WFL_QUALIFICATION (pkg)));
       type_name = lookup_package_type (name, 9);
     }
-  else
-    return NULL_TREE;		/* FIXME, search all imported packages. */
 
+  /* If we found something here, return */
+  if (type_name)
+    return type_name; 
+
+  *next = EXPR_WFL_QUALIFICATION (pkg);
+
+  /* Try the current package. */
+  if (ctxp->package && !strncmp (name, IDENTIFIER_POINTER (ctxp->package),  
+				 IDENTIFIER_LENGTH (ctxp->package)))
+    {
+      type_name = 
+	lookup_package_type_and_set_next (name, 
+					  IDENTIFIER_LENGTH (ctxp->package), 
+					  next );
+      if (type_name)
+	return type_name;
+    }
+
+  /* Search in imported package */
+  for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
+    {
+      tree current_pkg_name = EXPR_WFL_NODE (TREE_PURPOSE (current));
+      int len = IDENTIFIER_LENGTH (current_pkg_name);
+      if (!strncmp (name, IDENTIFIER_POINTER (current_pkg_name), len))
+	{
+	  tree left, dummy;
+	  
+	  breakdown_qualified (&left, &dummy, current_pkg_name);
+	  len = IDENTIFIER_LENGTH (left);
+	  type_name = lookup_package_type_and_set_next (name, len, next);
+	  if (type_name)
+	    break;
+	}
+    }
+
+  return type_name;
+}
+
+static tree
+lookup_package_type_and_set_next (name, len, next)
+     char *name;
+     int len;
+     tree *next;
+{
+  char *ptr;
+  tree type_name = lookup_package_type (name, len);
+
+  if (!type_name)
+    return NULL;
+  
+  ptr = IDENTIFIER_POINTER (type_name);
+  while (ptr && (ptr = strchr (ptr, '.'))) 
+    {
+      *next = TREE_CHAIN (*next);
+      ptr++;
+    }
   return type_name;
 }
 
@@ -6872,18 +6934,36 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	 as a MethodName. We need to qualify what's before */
       qualify_ambiguous_name (wfl);
 
-      /* Package resolution are erroneous */
+      /* Package resolution */
       if (RESOLVE_PACKAGE_NAME_P (wfl))
 	{
-	  tree remainder;
-	  breakdown_qualified (&remainder, NULL, EXPR_WFL_NODE (wfl));
-	  parse_error_context (wfl, "Can't search method `%s' in package "
-			       "`%s'",IDENTIFIER_POINTER (identifier),
-			       IDENTIFIER_POINTER (remainder));
-	  PATCH_METHOD_RETURN_ERROR ();
+	  tree next, decl, name = resolve_package (wfl, &next);
+	  
+	  if (!name)
+	    {
+	      tree remainder;
+	      breakdown_qualified (&remainder, NULL, EXPR_WFL_NODE (wfl));
+	      parse_error_context (wfl, "Can't search method `%s' in package "
+				   "`%s'",IDENTIFIER_POINTER (identifier),
+				   IDENTIFIER_POINTER (remainder));
+	      PATCH_METHOD_RETURN_ERROR ();
+	    }
+	  RESOLVE_PACKAGE_NAME_P (wfl) = 0;
+	  if ((decl = resolve_no_layout (name, QUAL_WFL (next))))
+	    {
+	      QUAL_RESOLUTION (EXPR_WFL_QUALIFICATION (wfl)) = decl;
+	      RESOLVE_EXPRESSION_NAME_P (wfl) = 0;
+	      RESOLVE_TYPE_NAME_P (wfl) = 1;
+	    }
+	  else
+	    {
+	      RESOLVE_EXPRESSION_NAME_P (wfl) = 1;
+	      RESOLVE_TYPE_NAME_P (wfl) = 0;
+	    }
 	}
+
       /* We're resolving a call from a type */
-      else if (RESOLVE_TYPE_NAME_P (wfl))
+      if (RESOLVE_TYPE_NAME_P (wfl))
 	{
 	  tree decl = QUAL_RESOLUTION (EXPR_WFL_QUALIFICATION (wfl));
 	  tree name = DECL_NAME (decl);
@@ -7630,7 +7710,6 @@ qualify_ambiguous_name (id)
 	/* Do one more interation to set things up */
 	super_found = again = 1;
       }
-
   } while (again);
   
   /* If name appears within the scope of a location variable
@@ -8108,7 +8187,7 @@ java_complete_lhs (node)
 	    return node;
 	  /* Keep line number information somewhere were it doesn't
 	     disrupt the completion process. */
-	  if (flag_emit_xref)
+	  if (flag_emit_xref && TREE_CODE (node) != CALL_EXPR)
 	    {
 	      EXPR_WFL_NODE (wfl) = TREE_OPERAND (node, 1);
 	      TREE_OPERAND (node, 1) = wfl;
