@@ -31,7 +31,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    '<' for codes for comparison expressions.
    '1' for codes for unary arithmetic expressions.
    '2' for codes for binary arithmetic expressions.
-   's' for codes for expressions with inherent side effects.
+   's' for codes for "statement" expressions, which have side-effects,
+       but usually no interesting value.
    'e' for codes for other kinds of expressions.  */
 
 /* For `r', `e', `<', `1', `2', and `s' nodes, which use struct
@@ -780,16 +781,7 @@ DEFTREECODE (TRY_CATCH_EXPR, "try_catch_expr", 'e', 2)
 
 /* Evaluate the first operand.
    The second operand is a cleanup expression which is evaluated
-   before an exit (normal, exception, or jump out) from this expression.
-
-   Like a CLEANUP_POINT_EXPR/WITH_CLEANUP_EXPR combination, but those
-   always copy the cleanup expression where needed.  In contrast,
-   TRY_FINALLY_EXPR generates a jump to a cleanup subroutine.
-   (At least conceptually; the optimizer could inline the cleanup
-   subroutine in the same way it could inline normal subroutines.)
-   TRY_FINALLY_EXPR should be used when the cleanup is actual statements
-   in the source of the current function (which people might want to
-   set breakpoints in).  */
+   on any exit (normal, exception, or jump out) from this expression.  */
 DEFTREECODE (TRY_FINALLY_EXPR, "try_finally", 'e', 2)
 
 /* Used internally for cleanups in the implementation of TRY_FINALLY_EXPR.
