@@ -6048,12 +6048,12 @@ expand_operands (tree exp0, tree exp1, rtx target, rtx *op0, rtx *op1,
 }
 
 
-/* A subroutine of expand_expr.  Evaluate the address of EXP.
+/* A subroutine of expand_expr_addr_expr.  Evaluate the address of EXP.
    The TARGET, TMODE and MODIFIER arguments are as for expand_expr.  */
 
 static rtx
-expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
-		       enum expand_modifier modifier)
+expand_expr_addr_expr_1 (tree exp, rtx target, enum machine_mode tmode,
+		         enum expand_modifier modifier)
 {
   rtx result, subtarget;
   tree inner, offset;
@@ -6080,7 +6080,7 @@ expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
 
     case CONST_DECL:
       /* Recurse and make the output_constant_def clause above handle this.  */
-      return expand_expr_addr_expr (DECL_INITIAL (exp), target,
+      return expand_expr_addr_expr_1 (DECL_INITIAL (exp), target,
 				    tmode, modifier);
 
     case REALPART_EXPR:
@@ -6140,7 +6140,7 @@ expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
   gcc_assert (inner != exp);
 
   subtarget = offset || bitpos ? NULL_RTX : target;
-  result = expand_expr_addr_expr (inner, subtarget, tmode, modifier);
+  result = expand_expr_addr_expr_1 (inner, subtarget, tmode, modifier);
 
   if (tmode == VOIDmode)
     {
@@ -6180,6 +6180,33 @@ expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
 
   return result;
 }
+
+/* A subroutine of expand_expr.  Evaluate EXP, which is an ADDR_EXPR.
+   The TARGET, TMODE and MODIFIER arguments are as for expand_expr.  */
+
+static rtx
+expand_expr_addr_expr (tree exp, rtx target, enum machine_mode tmode,
+		       enum expand_modifier modifier)
+{
+  enum machine_mode rmode;
+  rtx result;
+
+  result = expand_expr_addr_expr_1 (TREE_OPERAND (exp, 0), target,
+				    tmode, modifier);
+
+  /* Despite expand_expr claims concerning ignoring TMODE when not
+     strictly convenient, stuff breaks if we don't honor it.  */
+  if (tmode == VOIDmode)
+    tmode = TYPE_MODE (TREE_TYPE (exp));
+  rmode = GET_MODE (result);
+  if (rmode == VOIDmode)
+    rmode = tmode;
+  if (rmode != tmode)
+    result = convert_memory_address (tmode, result);
+ 
+  return result;
+}
+
 
 /* expand_expr: generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
@@ -8064,8 +8091,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return const0_rtx;
 
     case ADDR_EXPR:
-      return expand_expr_addr_expr (TREE_OPERAND (exp, 0), target,
-				    tmode, modifier);
+      return expand_expr_addr_expr (exp, target, tmode, modifier);
 
     /* COMPLEX type for Extended Pascal & Fortran  */
     case COMPLEX_EXPR:
