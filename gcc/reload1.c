@@ -7244,13 +7244,19 @@ gen_reload (out, in, opnum, type)
 	     its validity determination, i.e., the way it would after reload
 	     has completed.  */
 	  if (constrain_operands (code, 1))
-	    return insn;
+	    {
+	      /* Add a REG_EQUIV note so that find_equiv_reg can find it.  */
+	      REG_NOTES (insn)
+		= gen_rtx (EXPR_LIST, REG_EQUIV, in, REG_NOTES (insn));
+	      return insn;
+	    }
 	}
 
       delete_insns_since (last);
 
       gen_reload (out, op1, opnum, type);
-      emit_insn (gen_add2_insn (out, op0));
+      insn = emit_insn (gen_add2_insn (out, op0));
+      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_EQUIV, in, REG_NOTES (insn));
     }
 
 #ifdef SECONDARY_MEMORY_NEEDED
