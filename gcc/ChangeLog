@@ -1,3 +1,8 @@
+2001-07-13  H.J. Lu  (hjl@gnu.org)
+
+	* config/elfos.h (UNIQUE_SECTION): Enable .bss section with
+	the correct patch.
+
 2001-07-13  Geoffrey Keating  <geoffk@redhat.com>
 
 	Revert H.J. Lu's UNIQUE_SECTION patch of 2001-07-13.
