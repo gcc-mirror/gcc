@@ -1,3 +1,11 @@
+2004-06-10  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin): Fall back to library function call for
+	conj, conjf, conjl, creal, crealf, creall, cimag, cimagf and cimagl.
+	(fold_builtin_1): Lower built-ins BUILT_IN_CONJ{,F,L} to CONJ_EXPR,
+	BUILT_IN_CREAL{,F,L} to REALPART_EXPR, and BUILT_IN_CIMAG{,F,L} to
+	IMAGPART_EXPR respectively.
+
 2004-06-10  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (dump_table): New argument start.  Changed caller.
