@@ -1,3 +1,7 @@
+2001-07-24  Phil Edwards  <pme@sources.redhat.com>
+
+	* semantics.c (finish_this_expr):  Remove unused code.
+
 2001-07-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Simplify rtti, now we've only one ABI.
