@@ -1,3 +1,7 @@
+Wed Jul 10 18:48:55 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_init_mmx_sse_builtins): Fix thinko.
+
 2002-07-10  Jeffrey A Law  <law@redhat.com>
 
         * mn10200.c (expand_epilogue): Fix test to determine which scratch
@@ -1191,6 +1195,7 @@ Thu Jun 20 00:26:53 2002  Denis Chertykov  <denisc@overta.ru>
 	at start of buffer.
 	* gcc.c (trad_capable_cpp): Use cc1 always.
 
+>>>>>>> 1.14808
 2002-06-20  Jeffrey Law  <law@redhat.com>
 
 	* i386.h (TARGET_DEFAULT): Do not turn on frame pointer
