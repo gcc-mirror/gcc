@@ -2149,7 +2149,7 @@ compstmt_contents_nonempty:
 
 compstmt_primary_start:
 	'(' '{'
-		{ if (current_function_decl == 0)
+		{ if (last_tree == NULL)
 		    {
 		      error ("braced-group within expression allowed only inside a function");
 		      YYERROR;

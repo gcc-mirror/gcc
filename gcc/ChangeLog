@@ -1,3 +1,9 @@
+2004-10-14  Richard Henderson  <rth@redhat.com>
+
+	PR c/17023
+	* c-parse.in (compstmt_primary_start): Check last_tree non-null,
+	not current_function_decl non-null.
+
 2004-10-14  Roger Sayle  <roger@eyesopen.com>
 
 	PR other/17361
