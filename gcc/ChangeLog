@@ -1,3 +1,9 @@
+2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Richard Henderson  <rth@redhat.com>
+
+	PR target/10114 and PR target/10084
+	* dwarf2out.c (mem_loc_descriptor): Handle LO_SUM.
+
 2003-03-27  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (adddi_er_high_l): Valid only after reload.
