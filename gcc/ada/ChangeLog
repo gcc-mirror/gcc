@@ -1,3 +1,19 @@
+2004-09-21  Robert Dewar  <dewar@gnat.com>
+
+	* decl.c (gnat_to_gnu_type, case E_Modular_Integer_Type): Wrap modular
+	packed array types in both little- and big-endian cases. This change
+	ensures that we no longer count on the unused bits being initialized
+	for such types (and in particular ensures that equality testing will
+	only read the relevant bits).
+	Change name TYPE_LEFT_JUSTIFIED_MODULAR_P to TYPE_JUSTIFIED_MODULAR_P
+	These changes mean that we no longer need to initialize small packed
+	arrays.
+	(gnat_to_gnu_entity) <E_Record_Subtype>: Apply the same
+	optimization to an LJM field as to its parent field.
+
+	* ada-tree.h, trans.c, utils.c, utils2.c:
+	Change name TYPE_LEFT_JUSTIFIED_MODULAR_P to TYPE_JUSTIFIED_MODULAR_P
+
 2004-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* utils.c (gnat_finalize): Remove.

@@ -112,7 +112,7 @@ tree
 get_base_type (tree type)
 {
   if (TREE_CODE (type) == RECORD_TYPE
-      && TYPE_LEFT_JUSTIFIED_MODULAR_P (type))
+      && TYPE_JUSTIFIED_MODULAR_P (type))
     type = TREE_TYPE (TYPE_FIELDS (type));
 
   while (TREE_TYPE (type)
@@ -601,7 +601,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 
   if (operation_type
       && TREE_CODE (operation_type) == RECORD_TYPE
-      && TYPE_LEFT_JUSTIFIED_MODULAR_P (operation_type))
+      && TYPE_JUSTIFIED_MODULAR_P (operation_type))
     operation_type = TREE_TYPE (TYPE_FIELDS (operation_type));
 
   if (operation_type
@@ -631,9 +631,9 @@ build_binary_op (enum tree_code op_code, tree result_type,
 		      || POINTER_TYPE_P (TREE_TYPE
 					 (TREE_OPERAND (left_operand, 0)))))
 		 || (((TREE_CODE (left_type) == RECORD_TYPE
-		       /* Don't remove conversions to left-justified modular
+		       /* Don't remove conversions to justified modular
 			  types. */
-		       && !TYPE_LEFT_JUSTIFIED_MODULAR_P (left_type))
+		       && !TYPE_JUSTIFIED_MODULAR_P (left_type))
 		      || TREE_CODE (left_type) == ARRAY_TYPE)
 		     && ((TREE_CODE (TREE_TYPE
 				     (TREE_OPERAND (left_operand, 0)))
@@ -661,13 +661,13 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	 type, which we must not remove.  */
       while (TREE_CODE (right_operand) == VIEW_CONVERT_EXPR
 	     && ((TREE_CODE (right_type) == RECORD_TYPE
-		  && !TYPE_LEFT_JUSTIFIED_MODULAR_P (right_type)
+		  && !TYPE_JUSTIFIED_MODULAR_P (right_type)
 		  && !TYPE_ALIGN_OK (right_type)
 		  && !TYPE_IS_FAT_POINTER_P (right_type))
 		 || TREE_CODE (right_type) == ARRAY_TYPE)
 	     && (((TREE_CODE (TREE_TYPE (TREE_OPERAND (right_operand, 0)))
 		   == RECORD_TYPE)
-		  && !(TYPE_LEFT_JUSTIFIED_MODULAR_P
+		  && !(TYPE_JUSTIFIED_MODULAR_P
 		       (TREE_TYPE (TREE_OPERAND (right_operand, 0))))
 		  && !(TYPE_ALIGN_OK
 		       (TREE_TYPE (TREE_OPERAND (right_operand, 0))))
@@ -803,10 +803,10 @@ build_binary_op (enum tree_code op_code, tree result_type,
 			       TREE_OPERAND (right_operand, 0)),
 		       integer_zero_node);
 
-      /* If either object is a left-justified modular types, get the
+      /* If either object is a justified modular types, get the
 	 fields from within.  */
       if (TREE_CODE (left_type) == RECORD_TYPE
-	  && TYPE_LEFT_JUSTIFIED_MODULAR_P (left_type))
+	  && TYPE_JUSTIFIED_MODULAR_P (left_type))
 	{
 	  left_operand = convert (TREE_TYPE (TYPE_FIELDS (left_type)),
 				  left_operand);
@@ -815,7 +815,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	}
 
       if (TREE_CODE (right_type) == RECORD_TYPE
-	  && TYPE_LEFT_JUSTIFIED_MODULAR_P (right_type))
+	  && TYPE_JUSTIFIED_MODULAR_P (right_type))
 	{
 	  right_operand = convert (TREE_TYPE (TYPE_FIELDS (right_type)),
 				  right_operand);
@@ -1039,7 +1039,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
   if (operation_type
       && TREE_CODE (operation_type) == RECORD_TYPE
-      && TYPE_LEFT_JUSTIFIED_MODULAR_P (operation_type))
+      && TYPE_JUSTIFIED_MODULAR_P (operation_type))
     operation_type = TREE_TYPE (TYPE_FIELDS (operation_type));
 
   if (operation_type

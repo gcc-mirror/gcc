@@ -1341,9 +1341,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
       /* If the type we are dealing with is to represent a packed array,
 	 we need to have the bits left justified on big-endian targets
-	 (see exp_packd.ads).  We build a record with a bitfield of the
-	 appropriate size to achieve this.  */
-      if (Is_Packed_Array_Type (gnat_entity) && BYTES_BIG_ENDIAN)
+	 and right justified on little-endian targets.  We also need to
+	 ensure that when the value is read (e.g. for comparison of two
+	 such values), we only get the good bits, since the unused bits
+	 are uninitialized.  Both goals are accomplished by wrapping the
+	 modular value in an enclosing struct.  */
+	if (Is_Packed_Array_Type (gnat_entity))
 	{
 	  tree gnu_field_type = gnu_type;
 	  tree gnu_field;
@@ -1362,7 +1365,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 					 gnu_field_type, gnu_type, 1, 0, 0, 0);
 
 	  finish_record_type (gnu_type, gnu_field, false, false);
-	  TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_type) = 1;
+	  TYPE_JUSTIFIED_MODULAR_P (gnu_type) = 1;
 	  SET_TYPE_ADA_SIZE (gnu_type, bitsize_int (esize));
 	}
 
@@ -2108,7 +2111,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	  while (TREE_CODE (gnu_inner_type) == RECORD_TYPE
-		 && (TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_inner_type)
+		 && (TYPE_JUSTIFIED_MODULAR_P (gnu_inner_type)
 		     || TYPE_IS_PADDING_P (gnu_inner_type)))
 	    gnu_inner_type = TREE_TYPE (TYPE_FIELDS (gnu_inner_type));
 
@@ -2164,7 +2167,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		   nreverse (TYPE_ACTUAL_BOUNDS (gnu_inner_type)));
 
 	      if (TREE_CODE (gnu_type) == RECORD_TYPE
-		  && TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_type))
+		  && TYPE_JUSTIFIED_MODULAR_P (gnu_type))
 		TREE_TYPE (TYPE_FIELDS (gnu_type)) = gnu_inner_type;
 	    }
 	}
@@ -2631,9 +2634,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 		    /* If there was a component clause, the field types must be
 		       the same for the type and subtype, so copy the data from
-		       the old field to avoid recomputation here.  */
+		       the old field to avoid recomputation here.  Also if the
+		       field is justified modular and the optimization in
+		       gnat_to_gnu_field was applied.  */
 		    if (Present (Component_Clause
-				 (Original_Record_Component (gnat_field))))
+				 (Original_Record_Component (gnat_field)))
+			|| (TREE_CODE (gnu_field_type) == RECORD_TYPE
+			    && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type)
+			    && TREE_TYPE (TYPE_FIELDS (gnu_field_type))
+			       == TREE_TYPE (gnu_old_field)))
 		      {
 			gnu_size = DECL_SIZE (gnu_old_field);
 			gnu_field_type = TREE_TYPE (gnu_old_field);
@@ -4650,8 +4659,8 @@ make_packable_type (tree type)
      the alignment to try for an integral type.  For QUAL_UNION_TYPE,
      also copy the size.  */
   TYPE_NAME (new_type) = TYPE_NAME (type);
-  TYPE_LEFT_JUSTIFIED_MODULAR_P (new_type)
-    = TYPE_LEFT_JUSTIFIED_MODULAR_P (type);
+  TYPE_JUSTIFIED_MODULAR_P (new_type)
+    = TYPE_JUSTIFIED_MODULAR_P (type);
   TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
 
   if (TREE_CODE (type) == RECORD_TYPE)
@@ -5021,15 +5030,15 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     gnu_size = validate_size (Esize (gnat_field), gnu_field_type,
 			      gnat_field, FIELD_DECL, false, true);
 
-  /* If the field's type is left-justified modular, the wrapper can prevent
+  /* If the field's type is justified modular, the wrapper can prevent
      packing so we make the field the type of the inner object unless the
      situation forbids it. We may not do that when the field is addressable_p,
      typically because in that case this field may later be passed by-ref for
-     a formal argument expecting the left justification.  The condition below
+     a formal argument expecting the justification.  The condition below
      is then matching the addressable_p code for COMPONENT_REF.  */
   if (!Is_Aliased (gnat_field) && flag_strict_aliasing
       && TREE_CODE (gnu_field_type) == RECORD_TYPE
-      && TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_field_type))
+      && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type))
     gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
   /* If we are packing this record, have a specified size that's smaller than
@@ -5175,12 +5184,12 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
     gnu_pos = NULL_TREE;
   else
     {
-      /* Unless this field is aliased, we can remove any left-justified
+      /* Unless this field is aliased, we can remove any justified
 	 modular type since it's only needed in the unchecked conversion
 	 case, which doesn't apply here.  */
       if (!needs_strict_alignment
 	  && TREE_CODE (gnu_field_type) == RECORD_TYPE
-	  && TYPE_LEFT_JUSTIFIED_MODULAR_P (gnu_field_type))
+	  && TYPE_JUSTIFIED_MODULAR_P (gnu_field_type))
 	gnu_field_type = TREE_TYPE (TYPE_FIELDS (gnu_field_type));
 
       gnu_field_type
