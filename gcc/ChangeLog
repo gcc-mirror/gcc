@@ -5,6 +5,9 @@ Fri Oct  2 01:33:30 1998  Jim Wilson  <wilson@cygnus.com>
 
 Fri Oct  2 01:31:54 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* regclass.c (reg_scan_mark_refs): Return immediately if passed a
+	NULL_RTX as an argument.
+
 	* gcc.texi: Fix version # that somehow slipped through.
 
 Fri Oct  2 01:24:19 1998  Geoff Keating  <geoffk@ozemail.com.au>
