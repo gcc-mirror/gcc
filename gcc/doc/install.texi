@@ -2800,6 +2800,13 @@ stop such warnings by installing the GNU linker.
 It would be nice to extend GAS to produce the gp tables, but they are
 optional, and there should not be a warning about their absence.
 
+The libstdc++ atomic locking routines for MIPS targets requires MIPS II
+and later.  A patch went in just after the GCC 3.3 release to
+make @samp{mips*-*-*} use the generic implementation instead.  You can also
+configure for @samp{mipsel-elf} as a workaround.  The
+@samp{mips*-*-linux*} target continues to use the MIPS II routines.  More
+work on this is expected in future releases.
+
 @heading @anchor{mips-sgi-irix5}mips-sgi-irix5
 
 This configuration has considerable problems, which will be fixed in a
