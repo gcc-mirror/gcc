@@ -1,3 +1,8 @@
+2003-12-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/13371
+	* typeck.c (build_modify_expr): Stabilize lhs if we're narrowing.
+
 2003-12-18  Richard Henderson  <rth@redhat.com>
 
 	* cp-tree.h (struct lang_type_header): Remove __extension__.
