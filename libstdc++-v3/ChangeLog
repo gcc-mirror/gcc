@@ -1,3 +1,16 @@
+2001-11-22  Stephen M. Webb  <stephen@bregmasoft.com>
+
+        * testsuite/23_containers/list_capacity.cc: New file.
+        * testsuite/23_containers/list_ctor.cc: New file.
+        * testsuite/23_containers/list_modifiers.cc: New file.
+        * testsuite/23_containers/list_operators.cc: New file.
+
+2001-11-22  Stephen M. Webb  <stephen@bregmasoft.com>
+
+	* include/bits/stl_list.h: Reformatted according to C++STYLE rules.
+	(size): Replaced nonstandard distance() call with the standard one.
+	(transfer): Uglified to _M_transfer.
+
 2001-11-21  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/4548
