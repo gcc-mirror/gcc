@@ -260,7 +260,7 @@ lhd_decl_printable_name (decl, verbosity)
    completely handled within this function, it should set *SUBTREES to
    0, so that generic handling isn't attempted.  For language-specific
    tree codes, generic handling would abort(), so make sure it is set
-   properly.  Both SUBTREES and *SUBTREES is guaranteed to be non-zero
+   properly.  Both SUBTREES and *SUBTREES is guaranteed to be nonzero
    when the function is called.  */
 
 tree
@@ -376,7 +376,7 @@ lhd_tree_inlining_anon_aggr_type_p (t)
 
 /* lang_hooks.tree_inlining.start_inlining and end_inlining perform any
    language-specific bookkeeping necessary for processing
-   FN. start_inlining returns non-zero if inlining should proceed, zero if
+   FN. start_inlining returns nonzero if inlining should proceed, zero if
    not.
 
    For instance, the C++ version keeps track of template instantiations to
@@ -408,7 +408,7 @@ lhd_tree_inlining_convert_parm_for_inlining (parm, value, fndecl)
 }
 
 /* lang_hooks.tree_dump.dump_tree:  Dump language-specific parts of tree
-   nodes.  Returns non-zero if it does not want the usual dumping of the
+   nodes.  Returns nonzero if it does not want the usual dumping of the
    second argument.  */
 
 int

@@ -109,7 +109,7 @@ extern void print_containing_files
 /* Returns the map a given map was included from.  */
 #define INCLUDED_FROM(SET, MAP) (&(SET)->maps[(MAP)->included_from])
 
-/* Non-zero if the map is at the bottom of the include stack.  */
+/* Nonzero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)
 
 /* The current line map.  Saves a call to lookup_line if the caller is

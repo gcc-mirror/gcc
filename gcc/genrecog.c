@@ -1200,7 +1200,7 @@ maybe_both_true_1 (d1, d2)
    D1 and D2.  Otherwise, return 1 (it may be that there is an RTL that
    can match both or just that we couldn't prove there wasn't such an RTL).
 
-   TOPLEVEL is non-zero if we are to only look at the top level and not
+   TOPLEVEL is nonzero if we are to only look at the top level and not
    recursively descend.  */
 
 static int
@@ -1677,7 +1677,7 @@ find_afterward (head, real_afterward)
 
 /* Assuming that the state of argument is denoted by OLDPOS, take whatever
    actions are necessary to move to NEWPOS.  If we fail to move to the
-   new state, branch to node AFTERWARD if non-zero, otherwise return.
+   new state, branch to node AFTERWARD if nonzero, otherwise return.
 
    Failure to move to the new state can only occur if we are trying to
    match multiple insns and we try to step past the end of the stream.  */

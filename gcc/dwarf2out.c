@@ -1160,7 +1160,7 @@ static dw_cfa_location cfa_temp;
   had better be the one we think we're using for this purpose.
 
   Except: If the register being saved is the CFA register, and the
-  offset is non-zero, we are saving the CFA, so we assume we have to
+  offset is nonzero, we are saving the CFA, so we assume we have to
   use DW_CFA_def_cfa_expression.  If the offset is 0, we assume that
   the intent is to save the value of SP from the previous frame.
 
@@ -3260,7 +3260,7 @@ limbo_die_node;
 #define ASM_COMMENT_START ";#"
 #endif
 
-/* Define a macro which returns non-zero for a TYPE_DECL which was
+/* Define a macro which returns nonzero for a TYPE_DECL which was
    implicitly generated for a tagged type.
 
    Note that unlike the gcc front end (which generates a NULL named
@@ -3846,7 +3846,7 @@ type_main_variant (type)
   return type;
 }
 
-/* Return non-zero if the given type node represents a tagged type.  */
+/* Return nonzero if the given type node represents a tagged type.  */
 
 static inline int
 is_tagged_type (type)
@@ -7439,7 +7439,7 @@ root_type (type)
     }
 }
 
-/* Given a pointer to an arbitrary ..._TYPE tree node, return non-zero if the
+/* Given a pointer to an arbitrary ..._TYPE tree node, return nonzero if the
    given input type is a Dwarf "fundamental" type.  Otherwise return null.  */
 
 static inline int

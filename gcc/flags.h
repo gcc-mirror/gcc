@@ -657,7 +657,7 @@ extern int flag_gcse_sm;
 
 extern int flag_eliminate_dwarf2_dups;
 
-/* Non-zero means to collect statistics which might be expensive
+/* Nonzero means to collect statistics which might be expensive
    and to print them when we are done.  */
 extern int flag_detailed_statistics;
 

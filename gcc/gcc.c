@@ -234,7 +234,7 @@ modify_target[] = MODIFY_TARGET_NAME;
 #endif
 
 /* The number of errors that have occurred; the link phase will not be
-   run if this is non-zero.  */
+   run if this is nonzero.  */
 static int error_count = 0;
 
 /* Greatest exit code of sub-processes that has been encountered up to
@@ -2151,7 +2151,7 @@ clear_failure_queue ()
 
 /* Build a list of search directories from PATHS.
    PREFIX is a string to prepend to the list.
-   If CHECK_DIR_P is non-zero we ensure the directory exists.
+   If CHECK_DIR_P is nonzero we ensure the directory exists.
    This is used mostly by putenv_from_prefixes so we use `collect_obstack'.
    It is also used by the --print-search-dirs flag.  */
 

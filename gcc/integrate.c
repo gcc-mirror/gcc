@@ -1295,7 +1295,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
    Copying is done in two passes, first the insns and then their REG_NOTES.
 
-   If static_chain_value is non-zero, it represents the context-pointer
+   If static_chain_value is nonzero, it represents the context-pointer
    register for the function.  */
 
 static void

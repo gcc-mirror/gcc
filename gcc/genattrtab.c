@@ -2093,7 +2093,7 @@ expand_units ()
 	     fill the unit given the minimum issue delay.  FILL-TIME is the
 	     constant "MIN (ISSUE-DELAY (*,*)) * (SIMULTANEITY - 1)", and
 	     the simultaneity constraint is "READY-COST (E) - FILL-TIME"
-	     if SIMULTANEITY is non-zero and zero otherwise.
+	     if SIMULTANEITY is nonzero and zero otherwise.
 
 	     Thus, BLOCKAGE (E,C) when SIMULTANEITY is zero is
 
@@ -4315,7 +4315,7 @@ count_alternatives (exp)
   return 0;
 }
 
-/* Returns non-zero if the given expression contains an EQ_ATTR with the
+/* Returns nonzero if the given expression contains an EQ_ATTR with the
    `alternative' attribute.  */
 
 static int
@@ -4348,7 +4348,7 @@ compares_alternatives_p (exp)
   return 0;
 }
 
-/* Returns non-zero is INNER is contained in EXP.  */
+/* Returns nonzero is INNER is contained in EXP.  */
 
 static int
 contained_in_p (inner, exp)
@@ -4558,7 +4558,7 @@ gen_unit (def, lineno)
 /* Given a piece of RTX, print a C expression to test its truth value.
    We use AND and IOR both for logical and bit-wise operations, so
    interpret them as logical unless they are inside a comparison expression.
-   The first bit of FLAGS will be non-zero in that case.
+   The first bit of FLAGS will be nonzero in that case.
 
    Set the second bit of FLAGS to make references to attribute values use
    a cached local variable instead of calling a function.  */
@@ -5488,7 +5488,7 @@ write_indent (indent)
 }
 
 /* Write a subroutine that is given an insn that requires a delay slot, a
-   delay slot ordinal, and a candidate insn.  It returns non-zero if the
+   delay slot ordinal, and a candidate insn.  It returns nonzero if the
    candidate can be placed in the specified delay slot of the insn.
 
    We can write as many as three subroutines.  `eligible_for_delay'
@@ -5807,7 +5807,7 @@ next_comma_elt (pstr)
 }
 
 /* Return a `struct attr_desc' pointer for a given named attribute.  If CREATE
-   is non-zero, build a new attribute, if one does not exist.  */
+   is nonzero, build a new attribute, if one does not exist.  */
 
 static struct attr_desc *
 find_attr (name, create)

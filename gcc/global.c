@@ -951,7 +951,7 @@ prune_preferences ()
    of a long enough stretch of hard regs none of which conflicts with ALLOCNO.
    The registers marked in PREFREGS are tried first.
 
-   LOSERS, if non-zero, is a HARD_REG_SET indicating registers that cannot
+   LOSERS, if nonzero, is a HARD_REG_SET indicating registers that cannot
    be used for this allocation.
 
    If ALT_REGS_P is zero, consider only the preferred class of ALLOCNO's reg.

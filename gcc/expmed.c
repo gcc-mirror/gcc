@@ -54,7 +54,7 @@ static rtx extract_split_bit_field	PARAMS ((rtx, unsigned HOST_WIDE_INT,
 static void do_cmp_and_jump		PARAMS ((rtx, rtx, enum rtx_code,
 						 enum machine_mode, rtx));
 
-/* Non-zero means divides or modulus operations are relatively cheap for
+/* Nonzero means divides or modulus operations are relatively cheap for
    powers of two, so don't use branches; emit the operation instead.
    Usually, this will mean that the MD file will emit non-branch
    sequences.  */
@@ -4170,7 +4170,7 @@ make_tree (type, x)
    MODE is the machine mode for the computation.
    X and MULT must have mode MODE.  ADD may have a different mode.
    So can X (defaults to same as MODE).
-   UNSIGNEDP is non-zero to do unsigned multiplication.  */
+   UNSIGNEDP is nonzero to do unsigned multiplication.  */
 
 bool
 const_mult_add_overflow_p (x, mult, add, mode, unsignedp)
@@ -4208,7 +4208,7 @@ const_mult_add_overflow_p (x, mult, add, mode, unsignedp)
    MODE is the machine mode for the computation.
    X and MULT must have mode MODE.  ADD may have a different mode.
    So can X (defaults to same as MODE).
-   UNSIGNEDP is non-zero to do unsigned multiplication.
+   UNSIGNEDP is nonzero to do unsigned multiplication.
    This may emit insns.  */
 
 rtx
@@ -4622,7 +4622,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   if (code == EQ || code == NE)
     {
       /* For EQ or NE, one way to do the comparison is to apply an operation
-	 that converts the operand into a positive number if it is non-zero
+	 that converts the operand into a positive number if it is nonzero
 	 or zero if it was originally zero.  Then, for EQ, we subtract 1 and
 	 for NE we negate.  This puts the result in the sign bit.  Then we
 	 normalize with a shift, if needed.
