@@ -1,3 +1,8 @@
+Sun Sep 10 14:30:28 EDT 2000  John Wehle  (john@feith.com)
+
+	* alias.c (find_base_term): Handle ADDRESSOF.
+	(memrefs_conflict_p): An ADDRESSOF doesn't conflict.
+
 2000-09-10  Denis Chertykov  <denisc@overta.ru>
 
 	* genoutput.c (output_insn_data): Translate <NEWLINE> to \n\ while

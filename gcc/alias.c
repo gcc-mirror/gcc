@@ -1131,6 +1131,9 @@ find_base_term (x)
     case LABEL_REF:
       return x;
 
+    case ADDRESSOF:
+      return REG_BASE_VALUE (stack_pointer_rtx);
+
     default:
       return 0;
     }
@@ -1453,6 +1456,9 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 	ysize = -1;
       return memrefs_conflict_p (xsize, x, ysize, XEXP (y, 0), c);
     }
+
+  if (GET_CODE (x) == ADDRESSOF || GET_CODE (y) == ADDRESSOF)
+    return xsize <= 0 || ysize <= 0;
 
   if (CONSTANT_P (x))
     {
