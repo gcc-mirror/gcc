@@ -329,6 +329,7 @@ static tree build_dot_class_method PARAMS ((tree));
 static tree build_dot_class_method_invocation PARAMS ((tree));
 static void create_new_parser_context PARAMS ((int));
 static void mark_parser_ctxt PARAMS ((void *));
+static tree maybe_build_class_init_for_field PARAMS ((tree, tree));
 
 /* Number of error found so far. */
 int java_error_count; 
@@ -8855,8 +8856,8 @@ resolve_expression_name (id, orig)
 	      /* Otherwise build what it takes to access the field */
 	      access = build_field_ref ((fs ? NULL_TREE : current_this),
 					DECL_CONTEXT (decl), name);
-	      if (fs && !flag_emit_class_files && !flag_emit_xref)
-		access = build_class_init (DECL_CONTEXT (access), access);
+	      if (fs)
+		access = maybe_build_class_init_for_field (decl, access);
 	      /* We may be asked to save the real field access node */
 	      if (orig)
 		*orig = access;
@@ -8939,29 +8940,16 @@ resolve_field_access (qual_wfl, field_decl, field_type)
     field_ref = decl;
   else if (JDECL_P (decl))
     {
-      int static_final_found = 0;
       if (!type_found)
 	type_found = DECL_CONTEXT (decl);
-      is_static = JDECL_P (decl) && FIELD_STATIC (decl);
-      if (CLASS_FINAL_VARIABLE_P (decl)
-	  && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))
-	  && DECL_INITIAL (decl))
-	{
-	  /* When called on a FIELD_DECL of the right (primitive)
-	     type, java_complete_tree will try to substitue the decl
-	     for it's initial value. */
-	  field_ref = java_complete_tree (decl);
-	  static_final_found = 1;
-	}
-      else
-	field_ref = build_field_ref ((is_static && !flag_emit_xref? 
-				      NULL_TREE : where_found), 
-				     type_found, DECL_NAME (decl));
+      is_static = FIELD_STATIC (decl);
+      field_ref = build_field_ref ((is_static && !flag_emit_xref? 
+				    NULL_TREE : where_found), 
+				   type_found, DECL_NAME (decl));
       if (field_ref == error_mark_node)
 	return error_mark_node;
-      if (is_static && !static_final_found 
-	  && !flag_emit_class_files && !flag_emit_xref)
-	field_ref = build_class_init (DECL_CONTEXT (decl), field_ref);
+      if (is_static)
+	field_ref = maybe_build_class_init_for_field (decl, field_ref);
     }
   else
     field_ref = decl;
@@ -15489,6 +15477,29 @@ patch_conditional_expr (node, wfl_cond, wfl_op1)
   return node;
 }
 
+/* Wrap EXPR with code to initialize DECL's class, if appropriate. */
+
+static tree
+maybe_build_class_init_for_field (decl, expr)
+    tree decl, expr;
+{
+  tree clas = DECL_CONTEXT (decl);
+  if (flag_emit_class_files || flag_emit_xref)
+    return expr;
+
+  if (TREE_CODE (decl) == VAR_DECL && FIELD_STATIC (decl)
+      && FIELD_FINAL (decl))
+    {
+      tree init = DECL_INITIAL (decl);
+      if (init != NULL_TREE)
+	init = fold_constant_for_init (init, decl);
+      if (init != NULL_TREE && CONSTANT_VALUE_P (init))
+	return expr;
+    }
+
+  return build_class_init (clas, expr);
+}
+
 /* Try to constant fold NODE.
    If NODE is not a constant expression, return NULL_EXPR.
    CONTEXT is a static final VAR_DECL whose initializer we are folding. */
@@ -15501,11 +15512,13 @@ fold_constant_for_init (node, context)
   tree op0, op1, val;
   enum tree_code code = TREE_CODE (node);
 
-  if (code == STRING_CST || code == INTEGER_CST || code == REAL_CST)
-    return node;
-
   switch (code)
     {
+    case STRING_CST:
+    case INTEGER_CST:
+    case REAL_CST:
+      return node;
+
     case PLUS_EXPR:
     case MINUS_EXPR:
     case MULT_EXPR:

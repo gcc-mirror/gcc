@@ -2885,11 +2885,7 @@ generate_classfile (clas, state)
 			      build_java_signature (TREE_TYPE (part)));
       PUT2(i);
       have_value = DECL_INITIAL (part) != NULL_TREE 
-	&& FIELD_STATIC (part)
-	&& (TREE_CODE (DECL_INITIAL (part)) == STRING_CST
-	    || (TREE_CODE (DECL_INITIAL (part)) == INTEGER_CST
-		&& TREE_CODE (TREE_TYPE (DECL_INITIAL (part))) != POINTER_TYPE)
-	    || TREE_CODE (DECL_INITIAL (part)) == REAL_CST);
+	&& FIELD_STATIC (part) && CONSTANT_VALUE_P (DECL_INITIAL (part));
       if (have_value)
 	attr_count++;
 

@@ -829,6 +829,13 @@ struct lang_identifier
 	   ggc_alloc_cleared (sizeof (struct lang_decl_var)));	\
     }
 
+/* A ConstantExpression, after folding and name resolution. */
+#define CONSTANT_VALUE_P(NODE) \
+  (TREE_CODE (NODE) == STRING_CST \
+   || (TREE_CODE (NODE) == INTEGER_CST \
+       && TREE_CODE (TREE_TYPE (NODE)) != POINTER_TYPE) \
+   || TREE_CODE (NODE) == REAL_CST)
+
 /* For a local VAR_DECL, holds the index into a words bitstring that
    specifies if this decl is definitively assigned.
    A DECL_BIT_INDEX of -1 means we no longer care. */
