@@ -1,3 +1,11 @@
+2000-07-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* calls.c (stored_args_map): New variable.
+	(check_sibcall_argument_overlap_1): New.
+	(check_sibcall_argument_overlap): New.
+	(expand_call): Initialize stored_args_map.
+	Call check_sibcall_argument_overlap.
+
 2000-07-13  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixfixes.c: move EXIT_BROKEN to header, add sub-expr max count

@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "tm_p.h"
 #include "timevar.h"
+#include "sbitmap.h"
 
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #define ACCUMULATE_OUTGOING_ARGS 0
@@ -145,6 +146,13 @@ static char *stack_usage_map;
 /* Size of STACK_USAGE_MAP.  */
 static int highest_outgoing_arg_in_use;
 
+/* A bitmap of virtual-incoming stack space.  Bit is set if the corresponding
+   stack location's tail call argument has been already stored into the stack.
+   This bitmap is used to prevent sibling call optimization if function tries
+   to use parent's incoming argument slots when they have been already
+   overwritten with tail call arguments.  */
+static sbitmap stored_args_map;
+
 /* stack_arg_under_construction is nonzero when an argument may be
    initialized with a constructor call (including a C function that
    returns a BLKmode struct) and expand_call must take special action
@@ -215,6 +223,9 @@ static int special_function_p			PARAMS ((tree, int));
 static int flags_from_decl_or_type 		PARAMS ((tree));
 static rtx try_to_integrate			PARAMS ((tree, tree, rtx,
 							 int, tree, rtx));
+static int check_sibcall_argument_overlap_1	PARAMS ((rtx));
+static int check_sibcall_argument_overlap	PARAMS ((rtx, struct arg_data *));
+
 static int combine_pending_stack_adjustment_and_call
                                                 PARAMS ((int, struct args_size *, int));
 
@@ -1917,6 +1928,95 @@ combine_pending_stack_adjustment_and_call (unadjusted_args_size,
   return adjustment;
 }
 
+/* Scan X expression if it does not dereference any argument slots
+   we already clobbered by tail call arguments (as noted in stored_args_map
+   bitmap).
+   Return non-zero if X expression dereferences such argument slots,
+   zero otherwise.  */
+
+static int
+check_sibcall_argument_overlap_1 (x)
+     rtx x;
+{
+  RTX_CODE code;
+  int i, j;
+  unsigned int k;
+  const char *fmt;
+
+  if (x == NULL_RTX)
+    return 0;
+
+  code = GET_CODE (x);
+
+  if (code == MEM)
+    {
+      if (XEXP (x, 0) == current_function_internal_arg_pointer)
+	i = 0;
+      else if (GET_CODE (XEXP (x, 0)) == PLUS &&
+	       XEXP (XEXP (x, 0), 0) ==
+		 current_function_internal_arg_pointer &&
+	       GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	i = INTVAL (XEXP (XEXP (x, 0), 1));
+      else
+	return 0;
+
+      for (k = 0; k < GET_MODE_SIZE (GET_MODE (x)); k++)
+	if (i + k < stored_args_map->n_bits
+	    && TEST_BIT (stored_args_map, i + k))
+	  return 1;
+
+      return 0;
+    }
+
+  /* Scan all subexpressions. */
+  fmt = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++, fmt++)
+    {
+      if (*fmt == 'e')
+        {
+          if (check_sibcall_argument_overlap_1 (XEXP (x, i)))
+            return 1;
+        }
+      else if (*fmt == 'E')
+        {
+          for (j = 0; j < XVECLEN (x, i); j++)
+            if (check_sibcall_argument_overlap_1 (XVECEXP (x, i, j)))
+              return 1;
+        }
+    }
+  return 0;
+
+}
+
+/* Scan sequence after INSN if it does not dereference any argument slots
+   we already clobbered by tail call arguments (as noted in stored_args_map
+   bitmap).  Add stack slots for ARG to stored_args_map bitmap afterwards.
+   Return non-zero if sequence after INSN dereferences such argument slots,
+   zero otherwise.  */
+
+static int
+check_sibcall_argument_overlap (insn, arg)
+     rtx insn;
+     struct arg_data *arg;
+{     
+  int low, high;
+
+  if (insn == NULL_RTX)
+    insn = get_insns ();
+  else
+    insn = NEXT_INSN (insn);
+
+  for (; insn; insn = NEXT_INSN (insn))
+    if (INSN_P (insn) &&
+	check_sibcall_argument_overlap_1 (PATTERN (insn)))
+      break;
+
+  low = arg->offset.constant;
+  for (high = low + arg->size.constant; low < high; low++)
+    SET_BIT (stored_args_map, low);
+  return insn != NULL_RTX;
+}
+
 /* Generate all the code for a function call
    and return an rtx for its value.
    Store the value in TARGET (specified as an rtx) if convenient.
@@ -2589,7 +2689,11 @@ expand_call (exp, target, ignore)
       /* The argument block when performing a sibling call is the
          incoming argument block.  */
       if (pass == 0)
-	argblock = virtual_incoming_args_rtx;
+	{
+	  argblock = virtual_incoming_args_rtx;
+	  stored_args_map = sbitmap_alloc (args_size.constant);
+	  sbitmap_zero (stored_args_map);
+	}
 
       /* If we have no actual push instructions, or shouldn't use them,
 	 make space for all args right now.  */
@@ -2840,8 +2944,15 @@ expand_call (exp, target, ignore)
 
       for (i = 0; i < num_actuals; i++)
 	if (args[i].reg == 0 || args[i].pass_on_stack)
-	  store_one_arg (&args[i], argblock, flags,
-			 adjusted_args_size.var != 0, reg_parm_stack_space);
+	  {
+	    rtx before_arg = get_last_insn ();
+
+	    store_one_arg (&args[i], argblock, flags,
+			   adjusted_args_size.var != 0, reg_parm_stack_space);
+	    if (pass == 0 &&
+		check_sibcall_argument_overlap (before_arg, &args[i]))
+	      sibcall_failure = 1;
+	  }
 
       /* If we have a parm that is passed in registers but not in memory
 	 and whose alignment does not permit a direct copy into registers,
@@ -2855,8 +2966,15 @@ expand_call (exp, target, ignore)
       if (reg_parm_seen)
 	for (i = 0; i < num_actuals; i++)
 	  if (args[i].partial != 0 && ! args[i].pass_on_stack)
-	    store_one_arg (&args[i], argblock, flags,
-			   adjusted_args_size.var != 0, reg_parm_stack_space);
+	    {
+	      rtx before_arg = get_last_insn ();
+
+	      store_one_arg (&args[i], argblock, flags,
+			     adjusted_args_size.var != 0, reg_parm_stack_space);
+	      if (pass == 0 &&
+		  check_sibcall_argument_overlap (before_arg, &args[i]))
+		sibcall_failure = 1;
+	    }
 
 #ifdef PREFERRED_STACK_BOUNDARY
       /* If we pushed args in forward order, perform stack alignment
@@ -3234,6 +3352,8 @@ expand_call (exp, target, ignore)
 	      args[i].aligned_regs = 0;
 	      args[i].stack = 0;
 	    }
+
+	  sbitmap_free (stored_args_map);
 	}
       else
 	normal_call_insns = insns;
