@@ -1,5 +1,7 @@
 2004-09-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* search.c (get_pure_virtuals): Remove unused variables.
+
 	* cp-tree.h (struct lang_decl_flags): Remove
 	needs_final_overrider.
 	(DECL_NEEDS_FINAL_OVERRIDER_P): Remove.

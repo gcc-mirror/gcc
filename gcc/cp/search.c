@@ -1890,10 +1890,6 @@ dfs_get_pure_virtuals (tree binfo, void *data)
 void
 get_pure_virtuals (tree type)
 {
-  unsigned ix;
-  tree binfo;
-  VEC (tree) *vbases;
-
   /* Clear the CLASSTYPE_PURE_VIRTUALS list; whatever is already there
      is going to be overridden.  */
   CLASSTYPE_PURE_VIRTUALS (type) = NULL_TREE;
