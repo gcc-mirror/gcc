@@ -1,3 +1,7 @@
+2004-11-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/expr/unary1.C, g++.dg/expr/unary2.C: New tests.
+
 2004-11-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/17344
