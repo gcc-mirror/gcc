@@ -99,6 +99,13 @@ extern int target_flags;
 
 #define TARGET_NO_BSS (target_flags & 2)
 
+/* Force gcc to only use instructions which are safe when compiling kernels.
+   Specifically, avoid using add instructions with dp (r27) as an argument.
+   Use addil instructions instead.  Doing so avoids a nasty bug in the 
+   HPUX linker.  When HP fixes their linker take this option out.  */
+
+#define TARGET_KERNEL (target_flags & 4)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -111,6 +118,7 @@ extern int target_flags;
    {"pa-risc-1-0", -1},	\
    {"pa-risc-1-1", 1},	\
    {"no-bss", 2},	\
+   {"kernel", 4},	\
    { "", TARGET_DEFAULT}}
 
 #define TARGET_DEFAULT 0
@@ -1197,13 +1205,13 @@ extern union tree_node *current_function_decl;
     (X) = gen_rtx (LO_SUM, Pmode,				\
 		   copy_to_mode_reg (Pmode, gen_rtx (HIGH, Pmode, X)), X); \
   else if (GET_CODE (X) == SYMBOL_REF)				\
-    (X) = gen_rtx (LO_SUM, Pmode,				\
-		   copy_to_mode_reg (Pmode,			\
-				     gen_rtx (PLUS, Pmode,	\
-					      copy_to_mode_reg (Pmode,\
-								gen_rtx (HIGH, Pmode, X)),\
-					      gen_rtx (REG, Pmode, 27))),\
-		   X);						\
+    {								\
+      rtx temp2 = gen_reg_rtx (Pmode);				\
+      emit_insn (gen_rtx (SET, VOIDmode, temp2, 		\
+			  gen_rtx (PLUS, Pmode, gen_rtx (REG, Pmode, 27),\
+				   gen_rtx (HIGH, Pmode, X))));	\
+      (X) = gen_rtx (LO_SUM, Pmode, temp2, X);	 		\
+    }								\
   if (memory_address_p (MODE, X))				\
     goto WIN;}
 
