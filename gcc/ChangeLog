@@ -1,3 +1,7 @@
+Wed Mar 22 11:44:50 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c: re-install Mar 16 emit_library_call merge.
+
 2000-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (mem_min_alignment): If not optimizing,
