@@ -1,3 +1,8 @@
+2003-07-20  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure.in:  Cache the results of testing for cmp's capabilities.
+	* configure:  Regenerate.
+
 2003-07-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR debug/11279
