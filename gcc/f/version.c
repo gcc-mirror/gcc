@@ -1,1 +1,1 @@
-const char *ffe_version_string = "0.5.25 19991206 (experimental)";
+const char *ffe_version_string = "0.5.25 19991207 (experimental)";
