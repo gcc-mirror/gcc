@@ -1,7 +1,5 @@
 # Host Makefile fragment for NEC MIPS SVR4.
 
-# Define SYSV as -DSYSV if you are using a System V operating system.
-SYSV = -DSYSV -DSVR4
 RANLIB = true
 
 # NEC -lX11 needs some other libraries.

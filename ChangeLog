@@ -1,5 +1,7 @@
 2002-04-29  Nathanael Nerode  <neroden@doctormoo.dyndns.org>
 
+	* configure.in: delete reference to absent file
+
 	* configure.in: replace '[' with 'test'
 
 	* configure.in: Eliminate references to gash.

@@ -1,7 +1,5 @@
 # Host configuration file for an NCR 3000 (i486/SVR4) system.
 
-# Define SYSV as -DSYSV if you are using a System V operating system.
-SYSV = -DSYSV -DSVR4
 RANLIB = true
 
 # The l flag generates a warning from the SVR4 archiver, remove it.

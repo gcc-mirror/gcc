@@ -1,5 +1,3 @@
 # Host configuration file for an NCR 3000 (i486/SVR43) system.
 
-# Define SYSV as -DSYSV if you are using a System V operating system.
-SYSV = -DSYSV -DSVR4
 RANLIB = true
