@@ -5349,6 +5349,7 @@ package body Exp_Ch4 is
 
       function Is_Procedure_Actual (N : Node_Id) return Boolean is
          Par : Node_Id := Parent (N);
+
       begin
          while Present (Par)
            and then Nkind (Par) not in N_Statement_Other_Than_Procedure_Call
@@ -5448,8 +5449,9 @@ package body Exp_Ch4 is
       --       with generating the error message).
 
       if not Is_Packed (Typ) then
-         --  apply transformation for actuals of a function call, where
-         --  Expand_Actuals is not used.
+
+         --  Apply transformation for actuals of a function call,
+         --  where Expand_Actuals is not used.
 
          if Nkind (Parent (N)) = N_Function_Call
            and then Is_Possibly_Unaligned_Slice (N)

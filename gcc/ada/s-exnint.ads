@@ -36,9 +36,6 @@
 package System.Exn_Int is
 pragma Pure (Exn_Int);
 
-   function Exn_Integer
-     (Left  : Integer;
-      Right : Natural)
-      return  Integer;
+   function Exn_Integer (Left : Integer; Right : Natural) return Integer;
 
 end System.Exn_Int;

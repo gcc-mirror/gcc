@@ -547,8 +547,9 @@ package body Exp_Ch6 is
 
             Var := Make_Var (Expression (Actual));
 
-            Crep  := not Same_Representation
-                       (Etype (Formal), Etype (Expression (Actual)));
+            Crep := not Same_Representation
+                          (Etype (Formal), Etype (Expression (Actual)));
+
          else
             V_Typ := Etype (Actual);
             Var   := Make_Var (Actual);
@@ -1528,8 +1529,16 @@ package body Exp_Ch6 is
          if Validity_Checks_On then
             if Ekind (Formal) = E_In_Parameter
               and then Validity_Check_In_Params
-              and then Is_Entity_Name (Actual)
             then
+               --  If the actual is an indexed component of a packed
+               --  type, it has not been expanded yet. It will be
+               --  copied in the validity code that follows, and has
+               --  to be expanded appropriately, so reanalyze it.
+
+               if Nkind (Actual) = N_Indexed_Component then
+                  Set_Analyzed (Actual, False);
+               end if;
+
                Ensure_Valid (Actual);
 
             elsif Ekind (Formal) = E_In_Out_Parameter

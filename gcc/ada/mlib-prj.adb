@@ -576,7 +576,7 @@ package body MLib.Prj is
                      for W in Unit_Data.First_With .. Unit_Data.Last_With loop
                         Afile := Withs.Table (W).Afile;
 
-                        if Library_ALIs.Get (Afile)
+                        if Afile /= No_Name and then Library_ALIs.Get (Afile)
                           and then not Processed_ALIs.Get (Afile)
                         then
                            if not Interface_ALIs.Get (Afile) then
@@ -811,9 +811,10 @@ package body MLib.Prj is
 
             declare
                Binder_Package : constant Package_Id :=
-                 Value_Of
-                   (Name        => Name_Binder,
-                    In_Packages => Data.Decl.Packages);
+                                  Value_Of
+                                    (Name        => Name_Binder,
+                                     In_Packages => Data.Decl.Packages);
+
             begin
                if Binder_Package /= No_Package then
                   declare
@@ -823,20 +824,26 @@ package body MLib.Prj is
                                      In_Arrays =>
                                        Packages.Table
                                          (Binder_Package).Decl.Arrays);
-                     Switches : Variable_Value :=
-                                  Value_Of
-                                    (Index => Name_Ada, In_Array => Defaults);
-                     Switch : String_List_Id := Nil_String;
-                  begin
-                     if not Switches.Default then
-                        Switch := Switches.Values;
+                     Switches : Variable_Value := Nil_Variable_Value;
 
-                        while Switch /= Nil_String loop
-                           Add_Argument
-                             (Get_Name_String
-                                (String_Elements.Table (Switch).Value));
-                           Switch := String_Elements.Table (Switch).Next;
-                        end loop;
+                     Switch : String_List_Id := Nil_String;
+
+                  begin
+                     if Defaults /= No_Array_Element then
+                        Switches :=
+                          Value_Of
+                            (Index => Name_Ada, In_Array => Defaults);
+
+                        if not Switches.Default then
+                           Switch := Switches.Values;
+
+                           while Switch /= Nil_String loop
+                              Add_Argument
+                                (Get_Name_String
+                                   (String_Elements.Table (Switch).Value));
+                              Switch := String_Elements.Table (Switch).Next;
+                           end loop;
+                        end if;
                      end if;
                   end;
                end if;

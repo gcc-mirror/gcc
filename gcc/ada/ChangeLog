@@ -1,3 +1,48 @@
+2003-12-01  Nicolas Setton  <setton@act-europe.fr>
+
+	* a-except.adb (Raise_Current_Excep): Add a pragma Inspection_Point,
+	so that the debugger can reliably access the value of the parameter,
+	and therefore is able to display the exception name when an exception
+	breakpoint is reached.
+
+2003-12-01  Thomas Quinot  <quinot@act-europe.fr>
+
+	* fmap.adb: Fix typo in warning message.
+
+	* g-socket.ads, g-socket.adb: Make Free a visible instance of
+	Ada.Unchecked_Deallocation (no need to wrap it in a subprogram).
+
+2003-12-01  Vincent Celier  <celier@gnat.com>
+
+	* mlib-prj.adb (Build_Library.Process): Do not check a withed unit if
+	ther is no Afile.
+	(Build_Library): Get the switches only if Default_Switches is declared
+	in package Binder.
+
+2003-12-01  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch6.adb (Expand_Actuals): When applying validity checks to
+	actuals that are indexed components, reanalyze actual to ensure that
+	packed array references are properly expanded.
+
+	* sem_ch5.adb (Diagnose_Non_Variable_Lhs): Add special case for
+	attempted assignment to a discriminant.
+
+2003-12-01  Robert Dewar  <dewar@gnat.com>
+
+	* rtsfind.adb, exp_ch4.adb, s-exnint.ads, s-exnint.adb: Minor
+	reformatting.
+
+	* switch-c.adb: Minor reformatting of comments
+
+2003-12-01  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* Makefile.in: Clean ups.
+
+2003-12-01  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-12-01  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* 5wsystem.ads: Disable zero cost exception, not ready yet.
