@@ -1,3 +1,10 @@
+Wed Mar 24 15:44:12 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r.c (init_idents): Accept both NAME and __NAME__
+	versions of attribute names and values.
+	(m32r_valid_machine_decl_attribute): Ditto.
+	(m32r_encode_section_info): Ditto.
+
 Wed Mar 24 21:42:15 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (choose_reload_regs): If output-reloading for a
