@@ -9149,7 +9149,8 @@ gen_block_die (stmt, context_die, depth)
 
   /* Ignore blocks never really used to make RTL.  */
 
-  if (stmt == NULL_TREE || !TREE_USED (stmt) || !TREE_ASM_WRITTEN (stmt))
+  if (stmt == NULL_TREE || !TREE_USED (stmt)
+      || (!TREE_ASM_WRITTEN (stmt) && !BLOCK_ABSTRACT (stmt)))
     return;
 
   /* Determine the "ultimate origin" of this block.  This block may be an
