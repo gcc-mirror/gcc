@@ -387,15 +387,26 @@ do {								\
 
 /* Definitions for register eliminations.
 
-   We have two registers that can be eliminated on the SH.  First, the
+   We have three registers that can be eliminated on the SH.  First, the
    frame pointer register can often be eliminated in favor of the stack
    pointer register.  Secondly, the argument pointer register can always be
-   eliminated; it is replaced with either the stack or frame pointer.  */
+   eliminated; it is replaced with either the stack or frame pointer.
+   Third, there is the retuen address pointer, which can also be replaced
+   with either the stack or the frame pointer.  */
 
 /* This is an array of structures.  Each structure initializes one pair
    of eliminable registers.  The "from" register number is given first,
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.  */
+
+/* If you add any registers here that are not actually hard registers,
+   and that have any alternative of elimination that doesn't always
+   apply, you need to amend calc_live_regs to exclude it, because
+   reload spills all eliminable registers where it sees an
+   can_eliminate == 0 entry, thus making them 'live' .
+   If you add any hard registers that can be eliminated in different
+   ways, you have to patch reload to spill them only when all alternatives
+   of elimination fail.  */
 
 #define ELIMINABLE_REGS						\
 {{ FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},			\
