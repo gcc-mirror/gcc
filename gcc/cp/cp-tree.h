@@ -933,9 +933,18 @@ enum languages { lang_c, lang_cplusplus, lang_java };
    != NULL_TREE)
 
 /* Gives the visibility specification for a class type.  */
-#define CLASSTYPE_VISIBILITY(TYPE)		DECL_VISIBILITY (TYPE_NAME (TYPE))
-#define CLASSTYPE_VISIBILITY_SPECIFIED(TYPE)	DECL_VISIBILITY_SPECIFIED (TYPE_NAME (TYPE))
+#define CLASSTYPE_VISIBILITY(TYPE)		\
+	DECL_VISIBILITY (TYPE_NAME (TYPE))
+#define CLASSTYPE_VISIBILITY_SPECIFIED(TYPE)	\
+	DECL_VISIBILITY_SPECIFIED (TYPE_NAME (TYPE))
 
+typedef struct tree_pair_s GTY (())
+{
+  tree purpose;
+  tree value;
+} tree_pair_s;
+typedef tree_pair_s *tree_pair_p;
+DEF_VEC_O (tree_pair_s);
 
 /* This is a few header flags for 'struct lang_type'.  Actually,
    all but the first are used only for lang_type_class; they
@@ -1020,7 +1029,7 @@ struct lang_type_class GTY(())
   unsigned dummy : 8;
 
   tree primary_base;
-  tree vcall_indices;
+  VEC (tree_pair_s) *vcall_indices;
   tree vtables;
   tree typeinfo_var;
   VEC (tree) *vbases;
@@ -1432,11 +1441,11 @@ struct lang_type GTY(())
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)
 
-/* A TREE_LIST of the vcall indices associated with the class NODE.
-   The TREE_PURPOSE of each node is a FUNCTION_DECL for a virtual
-   function.  The TREE_VALUE is the index into the virtual table where
-   the vcall offset for that function is stored, when NODE is a
-   virtual base.  */
+/* A VEC(tree_pair_s) of the vcall indices associated with the class
+   NODE.  The PURPOSE of each element is a FUNCTION_DECL for a virtual
+   function.  The VALUE is the index into the virtual table where the
+   vcall offset for that function is stored, when NODE is a virtual
+   base.  */
 #define CLASSTYPE_VCALL_INDICES(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->vcall_indices)
 
