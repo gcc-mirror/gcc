@@ -1246,6 +1246,8 @@ extern char *xmalloc ();
 extern char *xrealloc ();
 #endif
 
+extern char *xstrdup			PROTO((char *));
+
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern char *savealloc			PROTO((int));
