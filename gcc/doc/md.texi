@@ -5629,11 +5629,11 @@ full-word result.
 For many machines, multiple types of branch instructions are provided, each
 for different length branch displacements.  In most cases, the assembler
 will choose the correct instruction to use.  However, when the assembler
-cannot do so, GCC can when a special attribute, the @samp{length}
+cannot do so, GCC can when a special attribute, the @code{length}
 attribute, is defined.  This attribute must be defined to have numeric
 values by specifying a null string in its @code{define_attr}.
 
-In the case of the @samp{length} attribute, two additional forms of
+In the case of the @code{length} attribute, two additional forms of
 arithmetic terms are allowed in test expressions:
 
 @table @code
@@ -5653,7 +5653,7 @@ current insn is to be computed.
 @cindex @code{addr_vec}, length of
 @cindex @code{addr_diff_vec}, length of
 For normal insns, the length will be determined by value of the
-@samp{length} attribute.  In the case of @code{addr_vec} and
+@code{length} attribute.  In the case of @code{addr_vec} and
 @code{addr_diff_vec} insn patterns, the length is computed as
 the number of vectors multiplied by the size of each vector.
 

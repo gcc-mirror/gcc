@@ -1,3 +1,7 @@
+2005-02-10  Steven Bosscher  <stevenb@suse.de>
+
+	* doc/md.texi: Replace @samp{length} with @code{length}.
+
 2005-02-09  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/18687
