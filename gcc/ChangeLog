@@ -1,3 +1,15 @@
+Tue Nov 30 14:58:14 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/mn10200/mn10200.h (PREDICATE_CODES): Add
+	psimode_truncation_operand.
+
+	* config/mn10200/mn10200.c (psimode_truncation_operand): New
+	function.  Return true if the operand is either a MEM valid
+	for a PSImode address or not a MEM at all.
+
+	* config/mn10200/mn10200.md (truncsipsi2): Use
+	psimode_truncation_operand.
+
 1999-11-30  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* flow.c (flow_nodes_print, flow_loops_cfg_dump): New functions.

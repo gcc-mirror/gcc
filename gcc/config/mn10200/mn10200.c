@@ -875,6 +875,19 @@ constant_memory_operand (op, mode)
   return GET_CODE (op) == MEM && CONSTANT_ADDRESS_P (XEXP (op, 0));
 }
 
+/* Return true if OP is valid for a psi mode truncation operand.
+   It must either be a memory operand which is valid for a PSImode
+   address, or if it is not a memory operand at all.  */
+int
+psimode_truncation_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (general_operand (op, mode)
+	  && (GET_CODE (op) != MEM
+	      || memory_address_p (PSImode, XEXP (op, 0))));
+}
+
 /* What (if any) secondary registers are needed to move IN with mode
    MODE into a register from in register class CLASS. 
 

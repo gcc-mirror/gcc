@@ -1063,6 +1063,8 @@ do { char dstr[30];					\
 #define PREDICATE_CODES							\
   {"call_address_operand",	{ SYMBOL_REF, REG }},			\
   {"constant_memory_operand",	{ MEM }},				\
+  {"psimode_truncation_operand",{ PLUS, CONST_INT, CONST_DOUBLE, CONST,	\
+				  SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM }},\
   {"extendpsi_operand",		{ PLUS, CONST_INT, CONST_DOUBLE, CONST,	\
 				  SYMBOL_REF, LABEL_REF, SUBREG, REG, MEM }}, \
   {"nshift_operator",		{ ASHIFTRT, LSHIFTRT, ASHIFT }},
@@ -1078,5 +1080,6 @@ extern enum reg_class secondary_reload_class ();
 extern char *emit_a_shift ();
 extern char *output_tst ();
 extern int extendpsi_operand ();
+extern int psimode_truncation_operand ();
 extern struct rtx_def *zero_dreg;
 extern struct rtx_def *zero_areg;
