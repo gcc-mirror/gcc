@@ -4613,10 +4613,8 @@ check_modifiers_consistency (flags)
 
   acc_count = 0;
   cl = NULL_TREE;
-  THIS_MODIFIER_ONLY (flags, ACC_FINAL, FINAL_TK - PUBLIC_TK,
-		      acc_count, cl);
-  THIS_MODIFIER_ONLY (flags, ACC_VOLATILE, VOLATILE_TK - PUBLIC_TK,
-		      acc_count, cl);
+  THIS_MODIFIER_ONLY (flags, ACC_FINAL, FINAL_TK, acc_count, cl);
+  THIS_MODIFIER_ONLY (flags, ACC_VOLATILE, VOLATILE_TK, acc_count, cl);
   if (acc_count > 1)
     parse_error_context (cl,
 			 "Inconsistent member declaration.  At most one of `final' or `volatile' may be specified");

@@ -1,3 +1,8 @@
+Tue Jun  6 11:39:05 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
+
+	* parse.y (check_modifiers_consistency): Don't subtract out
+	`PUBLIC_TK' from argument to THIS_MODIFIER_ONLY.
+
 2000-06-04  Philipp Thomas  <pthomas@suse.de>
 
 	* Makefile.in (INTLLIBS): New.
