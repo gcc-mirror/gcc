@@ -1,3 +1,10 @@
+Wed Oct 13 01:46:14 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Wed Oct 13 01:44:29 1999  Carol LePage  <carolo@hal.com>
+	* configure.in (sparc-hal-solaris2*): Fix xm_file, xm_defines,
+	float_format and thread_file definitions.
+	* configure: Rebuilt.
+
 Tue Oct 12 17:09:38 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c (main): Do preliminary link on AIX if rflag.
