@@ -9601,10 +9601,7 @@ resolve_qualified_expression_name (tree wfl, tree *found_decl,
 	     instantiation using a primary qualified by a `new' */
 	  RESTORE_THIS_AND_CURRENT_CLASS;
 
-	  /* EH check. No check on access$<n> functions */
-	  if (location
-	      && !OUTER_FIELD_ACCESS_IDENTIFIER_P
-	            (DECL_NAME (current_function_decl)))
+	  if (location)
 	    {
 	      tree arguments = NULL_TREE;
 	      if (TREE_CODE (qual_wfl) == CALL_EXPR
@@ -15782,6 +15779,10 @@ check_thrown_exceptions (int location, tree decl, tree this_expr)
 {
   tree throws;
   int is_array_call = 0;
+
+  /* Skip check within generated methods, such as access$<n>.  */
+  if (OUTER_FIELD_ACCESS_IDENTIFIER_P (DECL_NAME (current_function_decl)))
+    return;
 
   if (this_expr != NULL_TREE
       && TREE_CODE (TREE_TYPE (this_expr)) == POINTER_TYPE
