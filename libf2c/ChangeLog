@@ -1,5 +1,8 @@
 Sun Apr 11 23:30:42 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
+	* libU77/dtime_.c: Handle all variants of WIN32.
+	* libU77/etime_.c: Likewise.
+
 	* libU77/aclocal.m4: New file.
 	* libU77/configure.in (LIBU77_HAVE_STRUCT_TIMEZONE): Add test.
 	* libU77/acconfig.h (HAVE_STRUCT_TIMEZONE): Add macro.
