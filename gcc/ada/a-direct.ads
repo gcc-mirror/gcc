@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004 Free Software Foundation, Inc.               --
+--          Copyright (C) 2004-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived for use with GNAT from AI-00248,  which is --
 -- expected to be a part of a future expected revised Ada Reference Manual. --
@@ -304,10 +304,10 @@ package Ada.Directories is
    --  Starts a search in the directory entry in the directory named by
    --  Directory for entries matching Pattern. Pattern represents a file name
    --  matching pattern. If Pattern is null, all items in the directory are
-   --  matched; otherwise, the interpretation of Pattern is
-   --  implementation-defined. Only items which match Filter will be returned.
-   --  After a successful call on Start_Search, the object Search may have
-   --  entries available, but it may have no entries available if no files or
+   --  matched; otherwise, the interpretation of Pattern is implementation-
+   --  defined. Only items which match Filter will be returned. After a
+   --  successful call on Start_Search, the object Search may have entries
+   --  available, but it may have no entries available if no files or
    --  directories match Pattern and Filter. The exception Name_Error is
    --  propagated if the string given by Directory does not identify an
    --  existing directory, or if Pattern does not allow the identification of
@@ -317,7 +317,10 @@ package Ada.Directories is
 
    procedure End_Search (Search : in out Search_Type);
    --  Ends the search represented by Search. After a successful call on
-   --  End_Search, the object Search will have no entries available.
+   --  End_Search, the object Search will have no entries available. Note
+   --  that is is not necessary to call End_Search if the call to Start_Search
+   --  was unsuccessful and raised an exception (but it is harmless to make
+   --  the call in this case)>
 
    function More_Entries (Search : Search_Type) return Boolean;
    --  Returns True if more entries are available to be returned by a call
