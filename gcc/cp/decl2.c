@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -143,10 +143,6 @@ static tree decl_namespace_list;
    just make their values `void'.   */
 
 int flag_cond_mismatch;
-
-/* Nonzero means give `double' the same size as `float'.  */
-
-int flag_short_double;
 
 /* Nonzero means don't recognize the keyword `asm'.  */
 
@@ -452,11 +448,6 @@ int max_tinst_depth = 50;
    template functions with identical types, but different template
    arguments.  */
 int name_mangling_version = 2;
-
-/* Nonzero if wchar_t should be `unsigned short' instead of whatever it
-   would normally be, for use with WINE.  */
-
-int flag_short_wchar;
 
 /* Nonzero if squashed mangling is to be performed. 
    This uses the B and K codes to reference previously seen class types 

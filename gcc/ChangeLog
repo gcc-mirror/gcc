@@ -1,3 +1,17 @@
+2001-01-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (SIZE_TYPE, WCHAR_TYPE): Define.
+	(flag_short_double, flag_short_wchar): Define.
+	(c_common_nodes_and_builtins): Create many tree nodes shared
+	between C and C++ here instead of in cp/decl.c and ...
+	* c-decl.c (init_decl_processing): ... here.
+	(SIZE_TYPE, WCHAR_TYPE): Don't define.
+	(flag_short_double, flag_short_wchar): Don't define.
+	(record_builtin_type): New function.
+	(build_void_list_node): New function.
+	* c-common.h (flag_short_double, flag_short_wchar,
+	record_builtin_type, build_void_list_node): Declare.
+
 Thu Jan  4 21:09:47 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* integrate.c (expand_inline_function): Don't put a virtual

@@ -351,6 +351,14 @@ extern c_language_kind c_language;
 
 extern int flag_const_strings;
 
+/* Nonzero means give `double' the same size as `float'.  */
+
+extern int flag_short_double;
+
+/* Nonzero means give `wchar_t' the same size as `short'.  */
+
+extern int flag_short_wchar;
+
 /* Warn about *printf or *scanf format/argument anomalies. */
 
 extern int warn_format;
@@ -463,6 +471,9 @@ extern int warn_long_long;
 extern tree (*make_fname_decl)                  PARAMS ((tree, const char *, int));
 
 extern tree identifier_global_value		PARAMS ((tree));
+extern void record_builtin_type			PARAMS ((enum rid,
+							 const char *, tree));
+extern tree build_void_list_node		PARAMS ((void));
 
 extern void declare_function_name		PARAMS ((void));
 extern void decl_attributes			PARAMS ((tree, tree, tree));
