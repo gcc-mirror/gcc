@@ -1,3 +1,9 @@
+Sun Feb 22 17:24:53 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* config.shared: Bring back changes from Ian and Fred that were
+	accidentally clobbered.  Should eliminate the need for Dave's
+	recent change.
+
 Tue Feb 17 21:56:25 1998  H.J. Lu  (hjl@gnu.org)
 
 	* config/linux.mt (IO_OBJECTS): Add iogetline.o.
@@ -33,6 +39,11 @@ Fri Feb  6 01:35:56 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 	(.C.o): Dito.
 	(.cc.o): Dito.
 	(stamp-picdir): Dito.
+
+Thu Feb  5 17:41:26 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* config.shared (LIBS): Change to -L../../libstdc++ (was -L../libstdc++)
+	if ${DOING_GPERF} is true.
 
 1998-01-20  Andreas Schwab  (schwab@issan.informatik.uni-dortmund.de)
 
@@ -107,7 +118,16 @@ Fri Jan 16 00:48:03 1998  Manfred Hollstein  <manfred@lts.sel.alcatel.de>
 
 	* config.shared (FLAGS_TO_PASS): Add SHELL.
 
-Tue Jan 13 21:30:33 1998  H.J. Lu  (hjl@gnu.org)
+Thu Jan 15 00:21:58 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in: For *-*-cygwin32*, add a -I for winsup to both
+	XCINCLUDES and XCXXINCLUDES.
+	* config.shared: Use ${host_includes} when setting CXXINCLUDES in
+	the DOING_LIBGXX case.
+	* Makefile.in (_G_config.h): Pass $(CINCLUDES) in CC and
+	$(CXXINCLUDES) in CXX when running gen-params.
+
+Tue Jan 13 21:32:08 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in (CHECK_SUBDIRS): Set to testsuite only if
 	${srcdir}/../gcc exists.
@@ -117,6 +137,13 @@ Tue Jan 13 21:30:33 1998  H.J. Lu  (hjl@gnu.org)
 
 	* tests/configure.in (CHECK): Set to "check-iostream
 	check-stdio" if ${srcdir}/../../gcc doesn't exists.
+
+Thu Jan  8 18:09:03 1998  Fred Fish  <fnf@cygnus.com>
+
+	* config.shared (THIS_FILE): Really found via TOLIBIO instead
+	of TOLIBCXX, which is empty when configuring gperf.
+	(LIBS): When linking gperf, find libstdc++ relative to TO_TOPDIR
+	instead of hardcoded "../".
 
 1997-12-12  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
