@@ -50,7 +50,7 @@ struct tree_opt_pass
   struct tree_opt_pass *next;
 
   /* Static pass number, used as a fragment of the dump file name.  */
-  unsigned int static_pass_number;
+  int static_pass_number;
 
   /* The timevar id associated with this pass.  */
   /* ??? Ideally would be dynamically assigned.  */
