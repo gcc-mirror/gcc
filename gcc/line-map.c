@@ -93,7 +93,10 @@ add_line_map (set, reason, from_line, to_file, to_line)
   return map;
 }
 
-/* Translate a logical line number into a (source file, line) pair.  */
+/* Given a logical line, returns the map from which the corresponding
+   (source file, line) pair can be deduced.  Since the set is built
+   chronologically, the logical lines are monotonic increasing, and so
+   the list is sorted and we can use a binary search.  */
 
 struct line_map *
 lookup_line (set, line)

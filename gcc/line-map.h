@@ -44,7 +44,11 @@ struct line_maps
   unsigned int used;
 };
 
-/* Reason for adding a line change with add_line_map ().  */
+/* Reason for adding a line change with add_line_map ().  LC_ENTER is
+   when including a new file, e.g. a #include directive in C.
+   LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
+   name or line number changes for neither of the above reasons
+   (e.g. a #line directive in C).  */
 enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
 
 /* Initialize a line map set.  */
@@ -56,7 +60,7 @@ extern void free_line_maps
   PARAMS ((struct line_maps *));
 
 /* Add a mapping of logical source line to physical source file and
-   line number.  Ther text pointed to by TO_FILE must have a lifetime
+   line number.  The text pointed to by TO_FILE must have a lifetime
    at least as long as the final call to lookup_line ().
 
    FROM_LINE should be monotonic increasing across calls to this
@@ -80,7 +84,8 @@ extern struct line_map *lookup_line
 /* Non-zero if the map is at the bottom of the include stack.  */
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)
 
-/* The current line map.  */
+/* The current line map.  Saves a call to lookup_line if the caller is
+   sure he is in the scope of the current map.  */
 #define CURRENT_LINE_MAP(MAPS) ((MAPS)->maps + (MAPS)->used - 1)
 
 #endif /* !GCC_LINE_MAP_H  */
