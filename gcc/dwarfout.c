@@ -5246,7 +5246,10 @@ dwarfout_line (filename, line)
      register char *filename;
      register unsigned line;
 {
-  if (debug_info_level >= DINFO_LEVEL_NORMAL)
+  if (debug_info_level >= DINFO_LEVEL_NORMAL
+      /* We can't emit line number info for functions in separate sections,
+	 because the assembler can't subtract labels in different sections.  */
+      && DECL_SECTION_NAME (current_function_decl) == NULL_TREE)
     {
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
       static unsigned last_line_entry_num = 0;
