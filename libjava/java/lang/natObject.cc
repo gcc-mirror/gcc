@@ -691,7 +691,7 @@ alloc_heavy(obj_addr_t addr, hash_entry *he)
   _Jv_MutexInit (&(hl -> si.mutex));
   _Jv_CondInit (&(hl -> si.condition));
 # if defined (_Jv_HaveCondDestroy) || defined (_Jv_HaveMutexDestroy)
-    si->init = true;  // needed ?
+    hl->si.init = true;  // needed ?
 # endif
   hl -> next = he -> heavy_locks;
   he -> heavy_locks = hl;
