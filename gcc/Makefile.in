@@ -2323,7 +2323,7 @@ $(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/extend.texi \
 	 $(docdir)/service.texi $(docdir)/standards.texi \
 	 $(docdir)/trouble.texi $(docdir)/vms.texi $(docdir)/configterms.texi \
 	 $(docdir)/fragments.texi $(docdir)/hostconfig.texi \
-	 $(docdir)/include/linux-and-gnu.texi $(docdir)/interface.texi \
+	 $(docdir)/gnu.texi $(docdir)/interface.texi \
 	 $(docdir)/makefile.texi $(docdir)/passes.texi \
 	 $(docdir)/portability.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gcc.info doc/gcc.texi
@@ -2348,7 +2348,7 @@ gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install-old.texi \
 	 $(docdir)/service.texi $(docdir)/standards.texi \
 	 $(docdir)/trouble.texi $(docdir)/vms.texi $(docdir)/configterms.texi \
 	 $(docdir)/fragments.texi $(docdir)/hostconfig.texi \
-	 $(docdir)/include/linux-and-gnu.texi $(docdir)/interface.texi \
+	 $(docdir)/gnu.texi $(docdir)/interface.texi \
 	 $(docdir)/makefile.texi $(docdir)/passes.texi \
 	 $(docdir)/portability.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gcc.texi

@@ -265,7 +265,7 @@ bugs.  It corresponds to GCC version 3.1.
 @end ifset
 
 * Funding::         How to help assure funding for free software.
-* GNU/Linux::       Linux and the GNU Project
+* GNU Project::     The GNU Project and GNU/Linux.
 
 * Copying::         GNU General Public License says
                      how you can copy and share GCC.
@@ -322,7 +322,7 @@ bugs.  It corresponds to GCC version 3.1.
 
 @include funding.texi
 
-@include linux-and-gnu.texi
+@include gnu.texi
 
 @include gpl.texi
 

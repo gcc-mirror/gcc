@@ -1,3 +1,10 @@
+2001-11-16  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/include/linux-and-gnu.texi: Remove.
+	* doc/gnu.texi: New.
+	* doc/gcc.texi: Include gnu.texi instead of linux-and-gnu.texi.
+	* Makefile.in ($(docdir)/gcc.info, gcc.dvi): Update dependencies.
+
 2001-11-16  Kazu Hirata  <kazu@hxi.com>
 
 	* config/a29k/a29k.c: Fix comment formatting.
