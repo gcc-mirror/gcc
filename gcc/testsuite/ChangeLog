@@ -1,3 +1,8 @@
+2002-04-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc.dg/wint_t-1.c: Mark excess errors for mmix-knuth-mmixware.
+	* gcc.dg/wchar_t-1.c: Ditto.
+
 2002-04-02  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20020402-1.c: New test.
