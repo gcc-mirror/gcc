@@ -1,5 +1,7 @@
 Sat Jan  9 08:19:14 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* toplev.c (rest_of_compilation): Set cse_not_expected earlier.
+
 	* optabs.c (emit_conditional_move): Undo canonicalization previously
 	done by get_condition.
 
