@@ -45,6 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "toplev.h"
 #include "cselib.h"
+#include "params.h"
 #include "tm_p.h"
 #include "target.h"
 
@@ -1464,7 +1465,7 @@ try_crossjump_bb (mode, bb)
 {
   edge e, e2, nexte2, nexte, fallthru;
   bool changed;
-  int n = 0;
+  int n = 0, max;
 
   /* Nothing to do if there is not at least two incoming edges.  */
   if (!bb->pred || !bb->pred->pred_next)
@@ -1473,11 +1474,13 @@ try_crossjump_bb (mode, bb)
   /* It is always cheapest to redirect a block that ends in a branch to
      a block that falls through into BB, as that adds no branches to the
      program.  We'll try that combination first.  */
-  for (fallthru = bb->pred; fallthru; fallthru = fallthru->pred_next, n++)
+  fallthru = NULL;
+  max = PARAM_VALUE (PARAM_MAX_CROSSJUMP_EDGES);
+  for (e = bb->pred; e ; e = e->pred_next, n++)
     {
-      if (fallthru->flags & EDGE_FALLTHRU)
-	break;
-      if (n > 100)
+      if (e->flags & EDGE_FALLTHRU)
+	fallthru = e;
+      if (n > max)
 	return false;
     }
 
