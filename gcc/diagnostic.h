@@ -226,17 +226,17 @@ struct diagnostic_context
 
 /* Client supplied function used to decode formats.  Can operate on both
  `output_buffer *' and `diagnostic_context *'.  */
-#define diagnostic_format_decoder(DC) ((output_buffer *)DC)->format_decoder
+#define diagnostic_format_decoder(DC) ((output_buffer *)(DC))->format_decoder
 
 /* Prefixing rule used in formatting a diagnostic message.  Accepts both
    `output_buffer *' and `diagnostic_context *'.  */
 #define diagnostic_prefixing_rule(DC) \
-   ((output_buffer *)DC)->state.prefixing_rule
+   ((output_buffer *)(DC))->state.prefixing_rule
 
 /* Maximum characters per line in automatic line wrapping mode.
    Zero means don't wrap lines. */
 #define diagnostic_line_cutoff(DC) \
-   ((output_buffer *)DC)->state.ideal_maximum_length
+   ((output_buffer *)(DC))->state.ideal_maximum_length
 
 /* This diagnostic context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
@@ -248,7 +248,7 @@ extern output_buffer *diagnostic_buffer;
 
 /* The total count of a KIND of diagnostics meitted so far.  */
 #define diagnostic_kind_count(DC, DK) \
-   ((output_buffer *)DC)->state.diagnostic_count[(int) DK]
+   ((output_buffer *)(DC))->state.diagnostic_count[(int) (DK)]
 
 /* The number of errors that have been issued so far.  Ideally, these
    would take an output_buffer as an argument.  */
