@@ -1,3 +1,8 @@
+2000-03-13  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* stmt.c (expand_end_case): RANGE may be signed, and when checking
+	whether it is too large we must also verify that it isn't negative.
+
 2000-03-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md: Remove all traces of TARGET_LIVE_G0.

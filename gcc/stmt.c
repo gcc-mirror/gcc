@@ -5402,6 +5402,9 @@ expand_end_case (orig_index)
 
       else if (count < CASE_VALUES_THRESHOLD
 	       || compare_tree_int (range, 10 * count) > 0
+	       /* RANGE may be signed, and really large ranges will show up
+		  as negative numbers.  */
+	       || compare_tree_int (range, 0) < 0
 #ifndef ASM_OUTPUT_ADDR_DIFF_ELT
 	       || flag_pic
 #endif
