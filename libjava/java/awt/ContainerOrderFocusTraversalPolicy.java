@@ -104,6 +104,33 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
     if (root == null)
       throw new IllegalArgumentException ();
 
+    if (!root.isVisible ()
+        || !root.isDisplayable ())
+      return null;
+
+    if (accept (root))
+      return root;
+
+    Component[] componentArray = root.getComponents ();
+    
+    for (int i = 0; i < componentArray.length; i++)
+      {
+        Component component = componentArray [i];
+	
+        if (component instanceof Container)
+          {
+            Component result = getLastComponent ((Container) component);
+
+            if (result != null)
+              return result;
+          }
+        else
+          {
+            if (accept (component))
+              return component;
+          }
+      }
+
     return null;
   }
 
@@ -117,6 +144,33 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
     if (root == null)
       throw new IllegalArgumentException ();
 
+    if (!root.isVisible ()
+        || !root.isDisplayable ())
+      return null;
+
+    if (accept (root))
+      return root;
+
+    Component[] componentArray = root.getComponents ();
+    
+    for (int i = componentArray.length - 1; i >= 0; i++)
+      {
+        Component component = componentArray [i];
+	
+        if (component instanceof Container)
+          {
+            Component result = getLastComponent ((Container) component);
+
+            if (result != null)
+              return result;
+          }
+        else
+          {
+            if (accept (component))
+              return component;
+          }
+      }
+
     return null;
   }
 
@@ -127,15 +181,12 @@ public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy
    */
   public Component getDefaultComponent(Container root)
   {
-    if (root == null)
-      throw new IllegalArgumentException ();
-
-    return null;
+    return getFirstComponent (root);
   }
 
   public void setImplicitDownCycleTraversal(boolean value)
   {
-    boolean implicitDownCycleTraversal = value;
+    implicitDownCycleTraversal = value;
   }
 
   public boolean getImplicitDownCycleTraversal()
