@@ -3333,12 +3333,26 @@
   rtx word1 = change_address (operands[1], DFmode,
 			      plus_constant_for_output (XEXP (word0, 0), 8));
   rtx dest1, dest2;
+  int self_reference = reg_mentioned_p (operands[0],
+                                        XEXP (XEXP (word1, 0), 0));
 
   /* Ugly, but gen_highpart will crap out here for 32-bit targets.  */
   dest1 = gen_rtx_SUBREG (DFmode, operands[0], WORDS_BIG_ENDIAN == 0);
   dest2 = gen_rtx_SUBREG (DFmode, operands[0], WORDS_BIG_ENDIAN != 0);
-  emit_insn (gen_movdf (dest1, word0));
-  emit_insn (gen_movdf (dest2, word1));
+
+  /* Now output, ordering such that we don't clobber any registers
+     mentioned in the address.  */
+  if (self_reference != 0
+      && WORDS_BIG_ENDIAN)
+    {
+      emit_insn (gen_movdf (dest2, word1));
+      emit_insn (gen_movdf (dest1, word0));
+    }
+  else
+   {
+      emit_insn (gen_movdf (dest1, word0));
+      emit_insn (gen_movdf (dest2, word1));
+   }
   DONE;
 }")
 
