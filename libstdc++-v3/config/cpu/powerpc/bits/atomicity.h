@@ -22,18 +22,12 @@
 
 typedef int _Atomic_word;
 
-#if BROKEN_PPC_ASM_CR0
-# define __ATOMICITY_INLINE /* nothing */
-#else
-# define __ATOMICITY_INLINE inline
-#endif
-
-static __ATOMICITY_INLINE _Atomic_word
+static inline _Atomic_word
 __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
   _Atomic_word __tmp, __res;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:	lwarx	%0,0,%2
 	add%I3	%1,%0,%3
 	stwcx.	%1,0,%2
@@ -42,12 +36,12 @@ __exchange_and_add (volatile _Atomic_word* __mem, int __val)
   return __res;
 }
 
-static __ATOMICITY_INLINE void
+static inline void
 __attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word *__mem, int __val)
 {
   _Atomic_word __tmp;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:	lwarx	%0,0,%1
 	add%I2	%0,%0,%2
 	stwcx.	%0,0,%1
@@ -55,12 +49,12 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
 " : "=&b"(__tmp) : "r" (__mem), "Ir"(__val) : "cr0", "memory");
 }
 
-static __ATOMICITY_INLINE int
+static inline int
 __attribute__ ((__unused__))
 __compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
 {
   int __res;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:	lwarx	%0,0,%1
 	sub%I2c.	%0,%0,%2
 	cntlzw	%0,%0
@@ -72,12 +66,12 @@ __compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
   return __res >> 5;
 }
 
-static __ATOMICITY_INLINE long
+static inline long
 __attribute__ ((__unused__))
 __always_swap (volatile long *__p, long int __newval)
 {
   long __res;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:	lwarx	%0,0,%1
 	stwcx.	%2,0,%1
 	bne-	0b
@@ -85,12 +79,12 @@ __always_swap (volatile long *__p, long int __newval)
   return __res;
 }
 
-static __ATOMICITY_INLINE int
+static inline int
 __attribute__ ((__unused__))
 __test_and_set (volatile long *__p, long int __newval)
 {
   int __res;
-  __asm__ ("\
+  __asm__ __volatile__ ("\
 0:	lwarx	%0,0,%1
 	cmpwi	%0,0
 	bne-	1f
@@ -102,3 +96,4 @@ __test_and_set (volatile long *__p, long int __newval)
 }
 
 #endif /* atomicity.h */
+
