@@ -1,3 +1,8 @@
+Sat Jan  5 01:35:29 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c: Include tm_p.h
+	(mark_effect): Fix handling of hard register; fix handling of SET
+
 2002-01-04  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (anonymous patterns): Check that
