@@ -230,6 +230,7 @@ static void lookup_cfa			PARAMS ((dw_cfa_location *));
 static void reg_save			PARAMS ((const char *, unsigned,
 						 unsigned, long));
 static void initial_return_save		PARAMS ((rtx));
+static long stack_adjust_offset		PARAMS ((rtx));
 static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PARAMS ((int));
 static void dwarf2out_stack_adjust	PARAMS ((rtx));
@@ -1096,7 +1097,8 @@ initial_return_save (rtl)
 /* Given a SET, calculate the amount of stack adjustment it
    contains. */
 
-static long stack_adjust_offset (pattern)
+static long
+stack_adjust_offset (pattern)
   rtx pattern;
 {
   rtx src = SET_SRC (pattern);
