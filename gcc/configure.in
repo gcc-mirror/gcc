@@ -544,7 +544,7 @@ fi
 dnl Disabled until we have a complete test for buggy enum bitfields.
 dnl gcc_AC_C_ENUM_BF_UNSIGNED
 
-AC_CHECK_FUNCS(strtoul bsearch popen \
+AC_CHECK_FUNCS(strtoul bsearch popen times clock \
 	strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
 	fputs_unlocked getrusage iconv nl_langinfo lstat)
@@ -591,7 +591,7 @@ saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include"
 gcc_AC_CHECK_DECLS(getenv atol sbrk abort atof getcwd getwd \
 	strsignal putc_unlocked fputs_unlocked strstr environ errno \
-	malloc realloc calloc free basename getopt, , ,[
+	malloc realloc calloc free basename getopt clock, , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
@@ -602,6 +602,40 @@ gcc_AC_CHECK_DECLS(getrlimit setrlimit getrusage, , ,[
 #include <sys/resource.h>
 #endif
 ])
+
+gcc_AC_CHECK_DECLS(times, , ,[
+#include "ansidecl.h"
+#include "system.h"
+#ifdef HAVE_SYS_TIMES_H
+#include <sys/times.h>
+#endif
+])
+
+# More time-related stuff.
+AC_CACHE_CHECK(for struct tms, ac_cv_struct_tms, [
+AC_TRY_COMPILE([
+#include "ansidecl.h"
+#include "system.h"
+#ifdef HAVE_SYS_TIMES_H
+#include <sys/times.h>
+#endif
+], [struct tms tms;], ac_cv_struct_tms=yes, ac_cv_struct_tms=no)])
+if test $ac_cv_struct_tms = yes; then
+  AC_DEFINE(HAVE_STRUCT_TMS, 1,
+  [Define if <sys/times.h> defines struct tms.])
+fi
+
+# use gcc_cv_* here because this doesn't match the behavior of AC_CHECK_TYPE.
+# revisit after autoconf 2.50.
+AC_CACHE_CHECK(for clock_t, gcc_cv_type_clock_t, [
+AC_TRY_COMPILE([
+#include "ansidecl.h"
+#include "system.h"
+], [clock_t x;], gcc_cv_type_clock_t=yes, gcc_cv_type_clock_t=no)])
+if test $gcc_cv_type_clock_t = yes; then
+  AC_DEFINE(HAVE_CLOCK_T, 1,
+  [Define if <time.h> defines clock_t.])
+fi
 
 # Restore CFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.
 CFLAGS="$saved_CFLAGS"

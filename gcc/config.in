@@ -101,6 +101,9 @@
 /* Define if you have the bsearch function.  */
 #undef HAVE_BSEARCH
 
+/* Define if you have the clock function.  */
+#undef HAVE_CLOCK
+
 /* Define if you have the dcgettext function.  */
 #undef HAVE_DCGETTEXT
 
@@ -187,6 +190,9 @@
 
 /* Define if you have the sysconf function.  */
 #undef HAVE_SYSCONF
+
+/* Define if you have the times function.  */
+#undef HAVE_TIMES
 
 /* Define if you have the <argz.h> header file.  */
 #undef HAVE_ARGZ_H
@@ -417,6 +423,9 @@
 #undef HAVE_DECL_GETOPT
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_CLOCK
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETRLIMIT
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
@@ -424,6 +433,15 @@
 
 /* Define to 1 if we found this declaration otherwise define to 0. */
 #undef HAVE_DECL_GETRUSAGE
+
+/* Define to 1 if we found this declaration otherwise define to 0. */
+#undef HAVE_DECL_TIMES
+
+/* Define if <sys/times.h> defines struct tms. */
+#undef HAVE_STRUCT_TMS
+
+/* Define if <time.h> defines clock_t. */
+#undef HAVE_CLOCK_T
 
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
