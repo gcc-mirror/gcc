@@ -160,6 +160,10 @@ struct bb_info_list {
 
 static struct bb_info_list *bb_graph_list = 0;
 
+/* Modification time of data files. */
+
+static time_t bb_file_time;
+
 /* Name and file pointer of the input file for the basic block graph.  */
 
 static char *bbg_file_name;
@@ -212,10 +216,14 @@ static int output_long_names = 0;
 
 static int output_function_summary = 0;
 
-/* Object directory file prefix.  This is the directory where .bb and .bbg
-   files are looked for, if non-zero.  */
+/* Object directory file prefix.  This is the directory/file
+   where .bb and .bbg files are looked for, if non-zero.  */
 
 static char *object_directory = 0;
+
+/* Preserve all pathname components. Needed when object files and
+   source files are in subdirectories.  */
+static int preserve_paths = 0;
 
 /* Output the number of times a branch was taken as opposed to the percentage
    of times it was taken.  Turned on by the -c option */
@@ -238,6 +246,7 @@ static void solve_program_flow_graph PARAMS ((struct bb_info_list *));
 static void calculate_branch_probs PARAMS ((struct bb_info_list *, int,
 					    struct arcdata **, int));
 static void function_summary PARAMS ((void));
+static const char *format_hwint PARAMS ((HOST_WIDEST_INT, HOST_WIDEST_INT, int));
 
 extern int main PARAMS ((int, char **));
 
@@ -304,7 +313,8 @@ print_usage (error_p)
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
                                     source files\n");
   fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
-  fnotice (file, "  -o, --object-directory OBJDIR   Search for object files in OBJDIR\n");
+  fnotice (file, "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n");
+  fnotice (file, "  -p, --preserve-paths            Preserve all pathname components\n");
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
 	   GCCBUGURL);
   exit (status);
@@ -332,7 +342,9 @@ static const struct option options[] =
   { "no-output",            no_argument,       NULL, 'n' },
   { "long-file-names",      no_argument,       NULL, 'l' },
   { "function-summaries",   no_argument,       NULL, 'f' },
-  { "object-directory",     required_argument, NULL, 'o' }
+  { "preserve-paths",       no_argument,       NULL, 'p' },
+  { "object-directory",     required_argument, NULL, 'o' },
+  { "object-file",          required_argument, NULL, 'o' },
 };
 
 /* Parse the command line.  */
@@ -344,7 +356,7 @@ process_args (argc, argv)
 {
   int opt;
 
-  while ((opt = getopt_long (argc, argv, "hvbclnfo:", options, NULL)) != -1)
+  while ((opt = getopt_long (argc, argv, "hvbclnfo:p", options, NULL)) != -1)
     {
       switch (opt)
 	{
@@ -372,6 +384,9 @@ process_args (argc, argv)
 	case 'o':
 	  object_directory = optarg;
 	  break;
+	case 'p':
+	  preserve_paths = 1;
+	  break;
 	default:
 	  print_usage (true);
 	  /* print_usage will exit.  */
@@ -385,77 +400,66 @@ process_args (argc, argv)
 }
 
 
-/* Find and open the .bb, .da, and .bbg files.  */
+/* Find and open the .bb, .da, and .bbg files. If OBJECT_DIRECTORY is
+   not specified, these are looked for in the current directory, and
+   named from the basename of the input_file_name sans extension. If
+   OBJECT_DIRECTORY is specified and is a directory, the files are in
+   that directory, but named from the basename of the input_file_name,
+   sans extension. Otherwise OBJECT_DIRECTORY is taken to be the name
+   of the object *file*, and the data files are named from that.  */
 
 static void
 open_files ()
 {
-  int count, objdir_count;
   char *cptr;
-
-  /* Determine the names of the .bb, .bbg, and .da files.  Strip off the
-     extension, if any, and append the new extensions.  */
-  count = strlen (input_file_name);
-  if (object_directory)
-    objdir_count = strlen (object_directory);
-  else
-    objdir_count = 0;
-
-  da_file_name = xmalloc (count + objdir_count + 4);
-  bb_file_name = xmalloc (count + objdir_count + 4);
-  bbg_file_name = xmalloc (count + objdir_count + 5);
-
-  if (object_directory)
+  char *name;
+  int length = strlen (input_file_name);
+  int base;
+  
+  if (object_directory && object_directory[0])
     {
-      strcpy (da_file_name, object_directory);
-      strcpy (bb_file_name, object_directory);
-      strcpy (bbg_file_name, object_directory);
+      struct stat status;
 
-      if (object_directory[objdir_count - 1] != '/')
-	{
-	  strcat (da_file_name, "/");
-	  strcat (bb_file_name, "/");
-	  strcat (bbg_file_name, "/");
-	}
-
+      length += strlen (object_directory) + 2;
+      name = xmalloc (length);
+      name[0] = 0;
+      
+      base = !stat (object_directory, &status) && S_ISDIR (status.st_mode);
+      strcat (name, object_directory);
+      if (base && name[strlen (name) - 1] != '/')
+	strcat (name, "/");
+    }
+  else
+    {
+      name = xmalloc (length + 1);
+      name[0] = 0;
+      base = 1;
+    }
+  
+  if (base)
+    {
+      /* Append source file name */
       cptr = strrchr (input_file_name, '/');
-      if (cptr)
-	{
-	  strcat (da_file_name, cptr + 1);
-	  strcat (bb_file_name, cptr + 1);
-	  strcat (bbg_file_name, cptr + 1);
-	}
-      else
-	{
-	  strcat (da_file_name, input_file_name);
-	  strcat (bb_file_name, input_file_name);
-	  strcat (bbg_file_name, input_file_name);
-	}
+      cptr = cptr ? cptr + 1 : input_file_name;
+
+      strcat (name, cptr);
     }
-  else
-    {
-      strcpy (da_file_name, input_file_name);
-      strcpy (bb_file_name, input_file_name);
-      strcpy (bbg_file_name, input_file_name);
-    }
-
-  cptr = strrchr (bb_file_name, '.');
+  /* Remove the extension. */
+  cptr = strrchr (name, '.');
   if (cptr)
-    strcpy (cptr, ".bb");
-  else
-    strcat (bb_file_name, ".bb");
+    *cptr = 0;
+  
+  length = strlen (name);
+  da_file_name = xmalloc (length + 4);
+  bb_file_name = xmalloc (length + 4);
+  bbg_file_name = xmalloc (length + 5);
 
-  cptr = strrchr (da_file_name, '.');
-  if (cptr)
-    strcpy (cptr, ".da");
-  else
-    strcat (da_file_name, ".da");
-
-  cptr = strrchr (bbg_file_name, '.');
-  if (cptr)
-    strcpy (cptr, ".bbg");
-  else
-    strcat (bbg_file_name, ".bbg");
+  strcpy (da_file_name, name);
+  strcpy (bb_file_name, name);
+  strcpy (bbg_file_name, name);
+  strcpy (da_file_name + length, ".da");
+  strcpy (bb_file_name + length, ".bb");
+  strcpy (bbg_file_name + length, ".bbg");
 
   bb_file = fopen (bb_file_name, "rb");
   if (bb_file == NULL)
@@ -464,6 +468,21 @@ open_files ()
       exit (FATAL_EXIT_CODE);
     }
 
+  bbg_file = fopen (bbg_file_name, "rb");
+  if (bbg_file == NULL)
+    {
+      fnotice (stderr, "Could not open program flow graph file %s.\n",
+	       bbg_file_name);
+      exit (FATAL_EXIT_CODE);
+    }
+  
+  {
+    struct stat status;
+
+    if (!fstat (fileno (bb_file), &status))
+      bb_file_time = status.st_mtime;
+  }
+  
   /* If none of the functions in the file were executed, then there won't
      be a .da file.  Just assume that all counts are zero in this case.  */
   da_file = fopen (da_file_name, "rb");
@@ -471,14 +490,6 @@ open_files ()
     {
       fnotice (stderr, "Could not open data file %s.\n", da_file_name);
       fnotice (stderr, "Assuming that all execution counts are zero.\n");
-    }
-
-  bbg_file = fopen (bbg_file_name, "rb");
-  if (bbg_file == NULL)
-    {
-      fnotice (stderr, "Could not open program flow graph file %s.\n",
-	       bbg_file_name);
-      exit (FATAL_EXIT_CODE);
     }
 
   /* Check for empty .bbg file.  This indicates that there is no executable
@@ -554,7 +565,6 @@ read_profile (function_name, cfg_checksum, instr_arcs)
   int function_name_buffer_len;
 
   profile = xmalloc (sizeof (gcov_type) * instr_arcs);
-  rewind (da_file);
   function_name_buffer_len = strlen (function_name) + 1;
   function_name_buffer = xmalloc (function_name_buffer_len + 1);
 
@@ -564,6 +574,7 @@ read_profile (function_name, cfg_checksum, instr_arcs)
   if (!da_file)
     return profile;
 
+  rewind (da_file);
   while (1)
     {
       long magic, extra_bytes;
@@ -1100,15 +1111,64 @@ calculate_branch_probs (current_graph, block_num, branch_probs, last_line_num)
     }
 }
 
+/* Format a HOST_WIDE_INT as either a percent ratio, or absolute
+   count.  If dp >= 0, format TOP/BOTTOM * 100 to DP decimal places.
+   If DP is zero, no decimal point is printed. Only print 100% when
+   TOP==BOTTOM and only print 0% when TOP=0.  If dp < 0, then simply
+   format TOP.  Return pointer to a static string.  */
+
+static char const *
+format_hwint (top, bottom, dp)
+     HOST_WIDEST_INT top, bottom;
+     int dp;
+{
+  static char buffer[20];
+  
+  if (dp >= 0)
+    {
+      float ratio = bottom ? (float)top / bottom : 0;
+      int ix;
+      unsigned limit = 100;
+      unsigned percent;
+  
+      for (ix = dp; ix--; )
+	limit *= 10;
+      
+      percent = (unsigned) (ratio * limit);
+      if (!percent && top)
+	percent = 1;
+      else if (percent == limit && top != bottom)
+	percent = limit - 1;
+      ix = sprintf (buffer, "%.*u%%", dp + 1, percent);
+      if (dp)
+	{
+	  dp++;
+	  do
+	    {
+	      buffer[ix+1] = buffer[ix];
+	      ix--;
+	    }
+	  while (dp--);
+	  buffer[ix + 1] = '.';
+	}
+    }
+  else
+    sprintf (buffer, HOST_WIDEST_INT_PRINT_DEC, top);
+  
+  return buffer;
+}
+
+
 /* Output summary info for a function.  */
 
 static void
 function_summary ()
 {
   if (function_source_lines)
-    fnotice (stdout, "%6.2f%% of %d source lines executed in function %s\n",
-	     (((double) function_source_lines_executed / function_source_lines)
-	      * 100), function_source_lines, function_name);
+    fnotice (stdout, "%s of %d source lines executed in function %s\n",
+	     format_hwint (function_source_lines_executed,
+			   function_source_lines, 2),
+	     function_source_lines, function_name);
   else
     fnotice (stdout, "No executable source lines in function %s\n",
 	     function_name);
@@ -1117,20 +1177,23 @@ function_summary ()
     {
       if (function_branches)
 	{
-	  fnotice (stdout, "%6.2f%% of %d branches executed in function %s\n",
-		   (((double) function_branches_executed / function_branches)
-		    * 100), function_branches, function_name);
+	  fnotice (stdout, "%s of %d branches executed in function %s\n",
+		   format_hwint (function_branches_executed,
+				 function_branches, 2),
+		   function_branches, function_name);
 	  fnotice (stdout,
-		"%6.2f%% of %d branches taken at least once in function %s\n",
-		   (((double) function_branches_taken / function_branches)
-		    * 100), function_branches, function_name);
+		"%s of %d branches taken at least once in function %s\n",
+		   format_hwint (function_branches_taken,
+				 function_branches, 2),
+		   function_branches, function_name);
 	}
       else
 	fnotice (stdout, "No branches in function %s\n", function_name);
       if (function_calls)
-	fnotice (stdout, "%6.2f%% of %d calls executed in function %s\n",
-		 (((double) function_calls_executed / function_calls)
-		  * 100), function_calls, function_name);
+	fnotice (stdout, "%s of %d calls executed in function %s\n",
+		 format_hwint (function_calls_executed,
+			       function_calls, 2),
+		 function_calls, function_name);
       else
 	fnotice (stdout, "No calls in function %s\n", function_name);
     }
@@ -1185,21 +1248,7 @@ output_data ()
 
   for (s_ptr = sources; s_ptr; s_ptr = s_ptr->next)
     {
-      /* If this is a relative file name, and an object directory has been
-	 specified, then make it relative to the object directory name.  */
-      if (! IS_ABSOLUTE_PATHNAME (s_ptr->name)
-	  && object_directory != 0
-	  && *object_directory != '\0')
-	{
-	  int objdir_count = strlen (object_directory);
-	  source_file_name = xmalloc (objdir_count + strlen (s_ptr->name) + 2);
-	  strcpy (source_file_name, object_directory);
-	  if (object_directory[objdir_count - 1] != '/')
-	    source_file_name[objdir_count++] = '/';
-	  strcpy (source_file_name + objdir_count, s_ptr->name);
-	}
-      else
-	source_file_name = s_ptr->name;
+      source_file_name = s_ptr->name;
 
       line_counts = (gcov_type *) xcalloc (sizeof (gcov_type), s_ptr->maxlineno);
       line_exists = xcalloc (1, s_ptr->maxlineno);
@@ -1376,9 +1425,10 @@ output_data ()
 
       if (total_source_lines)
 	fnotice (stdout,
-		 "%6.2f%% of %d source lines executed in file %s\n",
-		 (((double) total_source_lines_executed / total_source_lines)
-		  * 100), total_source_lines, source_file_name);
+		 "%s of %d source lines executed in file %s\n",
+		 format_hwint (total_source_lines_executed,
+			       total_source_lines, 2),
+		 total_source_lines, source_file_name);
       else
 	fnotice (stdout, "No executable source lines in file %s\n",
 		 source_file_name);
@@ -1387,20 +1437,22 @@ output_data ()
 	{
 	  if (total_branches)
 	    {
-	      fnotice (stdout, "%6.2f%% of %d branches executed in file %s\n",
-		       (((double) total_branches_executed / total_branches)
-			* 100), total_branches, source_file_name);
+	      fnotice (stdout, "%s of %d branches executed in file %s\n",
+		       format_hwint (total_branches_executed,
+				     total_branches, 2),
+		       total_branches, source_file_name);
 	      fnotice (stdout,
-		    "%6.2f%% of %d branches taken at least once in file %s\n",
-		       (((double) total_branches_taken / total_branches)
-			* 100), total_branches, source_file_name);
+		       "%s of %d branches taken at least once in file %s\n",
+		       format_hwint (total_branches_taken,
+				     total_branches, 2),
+		       total_branches, source_file_name);
 	    }
 	  else
 	    fnotice (stdout, "No branches in file %s\n", source_file_name);
 	  if (total_calls)
-	    fnotice (stdout, "%6.2f%% of %d calls executed in file %s\n",
-		     (((double) total_calls_executed / total_calls)
-		      * 100), total_calls, source_file_name);
+	    fnotice (stdout, "%s of %d calls executed in file %s\n",
+		     format_hwint (total_calls_executed, total_calls, 2),
+		     total_calls, source_file_name);
 	  else
 	    fnotice (stdout, "No calls in file %s\n", source_file_name);
 	}
@@ -1410,51 +1462,70 @@ output_data ()
 	  /* Now the statistics are ready.  Read in the source file one line
 	     at a time, and output that line to the gcov file preceded by
 	     its execution count if non zero.  */
+	  char const *retval;
 
-	  source_file = fopen (source_file_name, "r");
-	  if (source_file == NULL)
+	  /* Generate an output file name. LONG_OUTPUT_NAMES and
+	     PRESERVE_PATHS affect name generation. With
+	     preserve_paths we create a filename from all path
+	     components of the source file, replacing '/' with '#',
+	     without it we simply take the basename component. With
+	     long_output_names we prepend the processed name of the
+	     input file to each output name (except when the current
+	     source file is the input file, so you don't get a double
+	     concatenation). The two components are separated by
+	     '##'. Also '.' filename components are removed and '..'
+	     components are renamed to '^'. */
+	  gcov_file_name = xmalloc (strlen (source_file_name)
+				    + strlen (input_file_name) + 10);
+	  gcov_file_name[0] = 0;
+	  if (output_long_names && strcmp (source_file_name, input_file_name))
 	    {
-	      fnotice (stderr, "Could not open source file %s.\n",
-		       source_file_name);
-	      free (line_counts);
-	      free (line_exists);
-	      continue;
+	      /* Generate the input filename part.  */
+	      cptr = preserve_paths ? NULL : strrchr (input_file_name, '/');
+	      cptr = cptr ? cptr + 1 : input_file_name;
+	      strcat (gcov_file_name, cptr);
+	      strcat (gcov_file_name, "##");
 	    }
+	  /* Generate the source filename part. */
+	  cptr = preserve_paths ? NULL : strrchr (source_file_name, '/');
+	  cptr = cptr ? cptr + 1 : source_file_name;
+	  strcat (gcov_file_name, cptr);
 
-	  count = strlen (source_file_name);
-	  cptr = strrchr (s_ptr->name, '/');
-	  if (cptr)
-	    cptr = cptr + 1;
-	  else
-	    cptr = s_ptr->name;
-	  if (output_long_names && strcmp (cptr, input_file_name))
+	  if (preserve_paths)
 	    {
-	      gcov_file_name = xmalloc (count + 7 + strlen (input_file_name));
-
-	      cptr = strrchr (input_file_name, '/');
-	      if (cptr)
-		strcpy (gcov_file_name, cptr + 1);
-	      else
-		strcpy (gcov_file_name, input_file_name);
-
-	      strcat (gcov_file_name, ".");
-
-	      cptr = strrchr (source_file_name, '/');
-	      if (cptr)
-		strcat (gcov_file_name, cptr + 1);
-	      else
-		strcat (gcov_file_name, source_file_name);
+	      /* Convert '/' to '#', remove '/./', convert '/../' to
+		 '/^/' */
+	      char *prev;
+	      
+	      for (cptr = gcov_file_name;
+		   (cptr = strchr ((prev = cptr), '/'));)
+		{
+		  unsigned shift = 0;
+		  
+		  if (prev + 1 == cptr && prev[0] == '.')
+		    {
+		      /* Remove '.' */
+		      shift = 2;
+		    }
+		  else if (prev + 2 == cptr
+			   && prev[0] == '.' && prev[1] == '.')
+		    {
+		      /* Convert '..' */
+		      shift = 1;
+		      prev[1] = '^';
+		    }
+		  else
+		    *cptr++ = '#';
+		  if (shift)
+		    {
+		      cptr = prev;
+		      do
+			prev[0] = prev[shift];
+		      while (*prev++);
+		    }
+		}
 	    }
-	  else
-	    {
-	      gcov_file_name = xmalloc (count + 6);
-	      cptr = strrchr (source_file_name, '/');
-	      if (cptr)
-		strcpy (gcov_file_name, cptr + 1);
-	      else
-		strcpy (gcov_file_name, source_file_name);
-	    }
-
+	  
 	  /* Don't strip off the ending for compatibility with tcov, since
 	     this results in confusion if there is more than one file with
 	     the same basename, e.g. tmp.c and tmp.h.  */
@@ -1466,7 +1537,6 @@ output_data ()
 	    {
 	      fnotice (stderr, "Could not open output file %s.\n",
 		       gcov_file_name);
-	      fclose (source_file);
 	      free (line_counts);
 	      free (line_exists);
 	      continue;
@@ -1474,44 +1544,61 @@ output_data ()
 
 	  fnotice (stdout, "Creating %s.\n", gcov_file_name);
 
-	  for (count = 1; count < s_ptr->maxlineno; count++)
+	  fprintf (gcov_file, "%9s:%5d:Source:%s\n", "-", 0, source_file_name);
+	  fprintf (gcov_file, "%9s:%5d:Object:%s\n", "-", 0, bb_file_name);
+	  
+	  source_file = fopen (source_file_name, "r");
+	  if (source_file == NULL)
+	    fnotice (stderr, "Could not open source file %s.\n",
+		     source_file_name);
+	  else
 	    {
-	      char *retval;
-	      int len;
+	      struct stat status;
 
-	      retval = fgets (string, STRING_SIZE, source_file);
-
-	      /* For lines which don't exist in the .bb file, print nothing
-		 before the source line.  For lines which exist but were never
-		 executed, print ###### before the source line.  Otherwise,
-		 print the execution count before the source line.  */
+	      if (!fstat (fileno (source_file), &status)
+		  && status.st_mtime > bb_file_time)
+		{
+		  fnotice (stderr, "Warning: source file %s is newer than %s\n",
+			   source_file_name, bb_file_name);
+		  fprintf (gcov_file, "%9s:%5d:Source is newer than compiler output\n", "-", 0);
+		}
+	    }
+	  
+	  for (retval = source_file ? "" : NULL, count = 1;
+	       count < s_ptr->maxlineno; count++)
+	    {
+	      /* For lines which don't exist in the .bb file, print
+		 '-' before the source line.  For lines which exist
+		 but were never executed, print '#####' before the source
+		 line.  Otherwise, print the execution count before
+		 the source line.  */
+	      
 	      /* There are 16 spaces of indentation added before the source
 		 line so that tabs won't be messed up.  */
-	      if (line_exists[count])
+	      fprintf (gcov_file, "%9s:%5ld:",
+		       !line_exists[count] ? "-"
+		       : !line_counts[count] ? "#####"
+		       : format_hwint (line_counts[count], 0, -1), count);
+	      
+	      if (retval)
 		{
-		  if (line_counts[count])
+		  do
 		    {
-		      char c[20];
-		      sprintf (c, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT)line_counts[count]);
-		      fprintf (gcov_file, "%12s    %s", c,
-			       string);
+		      retval = fgets (string, STRING_SIZE, source_file);
+		      if (!retval)
+			{
+			  fnotice (stderr,
+				   "Unexpected EOF while reading source file %s.\n",
+				   source_file_name);
+			  break;
+			}
+		      fputs (retval, gcov_file);
 		    }
-		  else
-		    fprintf (gcov_file, "      ######    %s", string);
+		  while (!retval[0] || retval[strlen (retval) - 1] != '\n');
 		}
-	      else
-		fprintf (gcov_file, "\t\t%s", string);
-
-	      /* In case the source file line is larger than our buffer, keep
-		 reading and outputting lines until we get a newline.  */
-	      len = strlen (string);
-	      while ((len == 0 || string[strlen (string) - 1] != '\n')
-		     && retval != NULL)
-		{
-		  retval = fgets (string, STRING_SIZE, source_file);
-		  fputs (string, gcov_file);
-		}
-
+	      if (!retval)
+		fputs ("??\n", gcov_file);
+	      
 	      if (output_branch_probs)
 		{
 		  for (i = 0, a_ptr = branch_probs[count]; a_ptr;
@@ -1520,95 +1607,53 @@ output_data ()
 		      if (a_ptr->call_insn)
 			{
 			  if (a_ptr->total == 0)
-			    fnotice (gcov_file, "call %d never executed\n", i);
-		            else
-			      {
-				if (output_branch_counts)
-				  {
-				    char c[20];
-				    sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
-					     a_ptr->total - a_ptr->hits);
-				    fnotice (gcov_file,
-					     "call %d returns = %s\n", i, c);
-				  }
-			        else
-				  {
-				    char c[20];
-				    sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
-					     100 - ((a_ptr->hits * 100)
-						    + (a_ptr->total >> 1))
-					     / a_ptr->total);
-				    fnotice (gcov_file,
-					     "call %d returns = %s%%\n", i, c);
-				  }
-			      }
+			    fnotice (gcov_file, "call   %2d: never executed\n", i);
+			  else
+			    fnotice
+			      (gcov_file, "call   %2d: returns %s\n", i,
+			       format_hwint (a_ptr->total - a_ptr->hits,
+					     a_ptr->total,
+					     -output_branch_counts));
 			}
 		      else
 			{
 			  if (a_ptr->total == 0)
-			    fnotice (gcov_file, "branch %d never executed\n",
+			    fnotice (gcov_file, "branch %2d: never executed\n",
 				     i);
 			  else
-			    {
-			      if (output_branch_counts)
-				{
-				  char c[20];
-				  sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
-					   a_ptr->hits);
-				  fnotice (gcov_file,
-					   "branch %d taken = %s\n", i, c);
-				}
-			      else
-				{
-				  char c[20];
-				  sprintf (c, HOST_WIDEST_INT_PRINT_DEC,
-					   ((a_ptr->hits * 100)
-					    + (a_ptr->total >> 1))
-					   / a_ptr->total);
-				  fnotice (gcov_file,
-					   "branch %d taken = %s%%\n", i, c);
-				}
-			    }
+			    fnotice
+			      (gcov_file, "branch %2d: taken %s\n", i,
+			       format_hwint (a_ptr->hits, a_ptr->total,
+					     -output_branch_counts));
 			}
 		   }
 	      }
-
-	      /* Gracefully handle errors while reading the source file.  */
-	      if (retval == NULL)
-		{
-		  fnotice (stderr,
-			   "Unexpected EOF while reading source file %s.\n",
-			   source_file_name);
-		  break;
-		}
 	    }
 
 	  /* Handle all remaining source lines.  There may be lines
 	     after the last line of code.  */
+	  if (retval)
+	    {
+	      for (; (retval = fgets (string, STRING_SIZE, source_file));
+		   count++)
+		{
+		  fprintf (gcov_file, "%9s:%5ld:%s", "-", count, retval);
 
-	  {
-	    char *retval = fgets (string, STRING_SIZE, source_file);
-	    while (retval != NULL)
-	      {
-		int len;
+		  while (!retval[0] || retval[strlen (retval) - 1] != '\n')
+		    {
+		      retval = fgets (string, STRING_SIZE, source_file);
+		      if (!retval)
+			break;
+		      fputs (retval, gcov_file);
+		    }
+		}
+	    }
 
-		fprintf (gcov_file, "\t\t%s", string);
-
-		/* In case the source file line is larger than our buffer, keep
-		   reading and outputting lines until we get a newline.  */
-		len = strlen (string);
-		while ((len == 0 || string[strlen (string) - 1] != '\n')
-		       && retval != NULL)
-		  {
-		    retval = fgets (string, STRING_SIZE, source_file);
-		    fputs (string, gcov_file);
-		  }
-
-		retval = fgets (string, STRING_SIZE, source_file);
-	      }
-	  }
-
-	  fclose (source_file);
+	  if (source_file)
+	    fclose (source_file);
+	  if (ferror (gcov_file))
+	    fnotice (stderr, "Error writing output file %s.\n",
+		     gcov_file_name);
 	  fclose (gcov_file);
 	}
 

@@ -1,10 +1,11 @@
-@c Copyright (C) 1996, 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
+@c Copyright (C) 1996, 1997, 1999, 2000, 2001,
+@c 2002 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
 @ignore
 @c man begin COPYRIGHT
-Copyright @copyright{} 1996, 1997, 1999, 2000, 2001 Free Software Foundation, Inc.
+Copyright @copyright{} 1996, 1997, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -47,12 +48,13 @@ test code coverage in your programs.
 @c man begin DESCRIPTION
 
 @command{gcov} is a test coverage program.  Use it in concert with GCC
-to analyze your programs to help create more efficient, faster
-running code.  You can use @command{gcov} as a profiling tool to help
-discover where your optimization efforts will best affect your code.  You
-can also use @command{gcov} along with the other profiling tool,
-@command{gprof}, to assess which parts of your code use the greatest amount
-of computing time.
+to analyze your programs to help create more efficient, faster running
+code and to discover untested parts of your program.  You can use
+@command{gcov} as a profiling tool to help discover where your
+optimization efforts will best affect your code.  You can also use
+@command{gcov} along with the other profiling tool, @command{gprof}, to
+assess which parts of your code use the greatest amount of computing
+time.
 
 Profiling tools help you analyze your code's performance.  Using a
 profiler such as @command{gcov} or @command{gprof}, you can find out some
@@ -117,10 +119,13 @@ gcov @r{[}@var{options}@r{]} @var{sourcefile}
 @ignore
 @c man begin SYNOPSIS
 gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
-     [@option{-b}|@option{--branch-probabilities}] [@option{-c}|@option{--branch-counts}]
-     [@option{-n}|@option{--no-output}] [@option{-l}|@option{--long-file-names}]
+     [@option{-b}|@option{--branch-probabilities}]
+     [@option{-c}|@option{--branch-counts}]
+     [@option{-n}|@option{--no-output}]
+     [@option{-l}|@option{--long-file-names}]
+     [@option{-p}|@option{--preserve-paths}]
      [@option{-f}|@option{--function-summaries}]
-     [@option{-o}|@option{--object-directory} @var{directory}] @var{sourcefile}
+     [@option{-o}|@option{--object-directory} @var{directory|file}] @var{sourcefile}
 @c man end
 @c man begin SEEALSO
 gpl(7), gfdl(7), fsf-funding(7), gcc(1) and the Info entry for @file{gcc}.
@@ -159,31 +164,70 @@ Do not create the @command{gcov} output file.
 Create long file names for included source files.  For example, if the
 header file @file{x.h} contains code, and was included in the file
 @file{a.c}, then running @command{gcov} on the file @file{a.c} will produce
-an output file called @file{a.c.x.h.gcov} instead of @file{x.h.gcov}.
+an output file called @file{a.c##x.h.gcov} instead of @file{x.h.gcov}.
 This can be useful if @file{x.h} is included in multiple source files.
+
+@item -p
+@itemx --preserve-paths
+Preserve complete path information in the names of generated
+@file{.gcov} files. Without this option, just the filename component is
+used. With this option, all directories are used, with '/' characters
+translated to '#' characters, '.' directory components removed and '..'
+components renamed to '^'. This is useful if sourcefiles are in several
+different directories. It also affects the @samp{-l} option.
 
 @item -f
 @itemx --function-summaries
 Output summaries for each function in addition to the file level summary.
 
-@item -o @var{directory}
+@item -o @var{directory|file}
 @itemx --object-directory @var{directory}
-The directory where the object files live.  Gcov will search for @file{.bb},
-@file{.bbg}, and @file{.da} files in this directory.
+@itemx --object-file @var{file}
+Specify either the directory containing the gcov data files, or the
+object path name. The @file{.bb}, @file{.bbg}, and
+@file{.da} data files are searched for using this option. If a directory
+is specified, the data files are in that directory and named after the
+source file name, without its extension. If a file is specified here,
+the data files are named after that file, without its extension. If this
+option is not supplied, it defaults to the current directory.
+
 @end table
 
-@need 3000
+Gcov should be run with the current directory the same as that when you
+invoked the compiler. Otherwise it will not be able to locate the source
+files. Gcov produces files called @file{@var{mangledname}.gcov} in the
+current directory. These contain the coverage information of the source
+file they correspond to. One @file{.gcov} file is produced for each
+source file containing code, which was compiled to produce the data
+files. The @file{.gcov} files contain the ':' separated fields along
+with program source code. The format is
+
+@smallexample
+@var{execution_count}:@var{line_number}:@var{source line text}
+@end smallexample
+
+Additional block information may succeed each line, when requested by
+command line option. The @var{execution_count} is @samp{-} for lines
+containing no code and @samp{#####} for lines which were never
+executed. Some lines of information at the start have @var{line_number}
+of zero.
+
+When printing percentages, 0% and 100% are only printed when the values
+are @emph{exactly} 0% and 100% respectively. Other values which would
+conventionally be rounded to 0% or 100% are instead printed as the
+nearest non-boundary value.
+
 When using @command{gcov}, you must first compile your program with two
 special GCC options: @samp{-fprofile-arcs -ftest-coverage}.
 This tells the compiler to generate additional information needed by
 gcov (basically a flow graph of the program) and also includes
 additional code in the object files for generating the extra profiling
 information needed by gcov.  These additional files are placed in the
-directory where the source code is located.
+directory where the object file is located.
 
 Running the program will cause profile output to be generated.  For each
 source file compiled with @option{-fprofile-arcs}, an accompanying @file{.da}
-file will be placed in the source directory.
+file will be placed in the object file directory.
 
 Running @command{gcov} with your program's source file names as arguments
 will now produce a listing of the code along with frequency of execution
@@ -194,7 +238,7 @@ is what you see when you use the basic @command{gcov} facility:
 $ gcc -fprofile-arcs -ftest-coverage tmp.c
 $ a.out
 $ gcov tmp.c
- 87.50% of 8 source lines executed in file tmp.c
+90.00% of 10 source lines executed in file tmp.c
 Creating tmp.c.gcov.
 @end smallexample
 
@@ -202,20 +246,25 @@ The file @file{tmp.c.gcov} contains output from @command{gcov}.
 Here is a sample:
 
 @smallexample
-                main()
-                @{
-           1      int i, total;
-
-           1      total = 0;
-
-          11      for (i = 0; i < 10; i++)
-          10        total += i;
-
-           1      if (total != 45)
-      ######        printf ("Failure\n");
-                  else
-           1        printf ("Success\n");
-           1    @}
+        -:    0:Source:tmp.c
+        -:    0:Object:tmp.bb
+        -:    1:#include <stdio.h>
+        -:    2:
+        -:    3:int main (void)
+        1:    4:@{
+        1:    5:  int i, total;
+        -:    6:  
+        1:    7:  total = 0;
+        -:    8:  
+       11:    9:  for (i = 0; i < 10; i++)
+       10:   10:    total += i;
+        -:   11:  
+        1:   12:  if (total != 45)
+    #####:   13:    printf ("Failure\n");
+        -:   14:  else
+        1:   15:    printf ("Success\n");
+        1:   16:  return 0;
+        1:   17:@}
 @end smallexample
 
 @need 450
@@ -223,37 +272,42 @@ When you use the @option{-b} option, your output looks like this:
 
 @smallexample
 $ gcov -b tmp.c
- 87.50% of 8 source lines executed in file tmp.c
- 80.00% of 5 branches executed in file tmp.c
- 80.00% of 5 branches taken at least once in file tmp.c
- 50.00% of 2 calls executed in file tmp.c
+90.00% of 10 source lines executed in file tmp.c
+80.00% of 5 branches executed in file tmp.c
+80.00% of 5 branches taken at least once in file tmp.c
+50.00% of 2 calls executed in file tmp.c
 Creating tmp.c.gcov.
 @end smallexample
 
 Here is a sample of a resulting @file{tmp.c.gcov} file:
 
 @smallexample
-                main()
-                @{
-           1      int i, total;
-
-           1      total = 0;
-
-          11      for (i = 0; i < 10; i++)
-branch 0 taken = 91%
-branch 1 taken = 100%
-branch 2 taken = 100%
-          10        total += i;
-
-           1      if (total != 45)
-branch 0 taken = 100%
-      ######        printf ("Failure\n");
-call 0 never executed
-branch 1 never executed
-                  else
-           1        printf ("Success\n");
-call 0 returns = 100%
-           1    @}
+        -:    0:Source:tmp.c
+        -:    0:Object:tmp.bb
+        -:    1:#include <stdio.h>
+        -:    2:
+        -:    3:int main (void)
+        1:    4:@{
+        1:    5:  int i, total;
+        -:    6:  
+        1:    7:  total = 0;
+        -:    8:  
+       11:    9:  for (i = 0; i < 10; i++)
+branch  0: taken 90%
+branch  1: taken 100%
+branch  2: taken 100%
+       10:   10:    total += i;
+        -:   11:  
+        1:   12:  if (total != 45)
+branch  0: taken 100%
+    #####:   13:    printf ("Failure\n");
+call    0: never executed
+branch  1: never executed
+        -:   14:  else
+        1:   15:    printf ("Success\n");
+call    0: returns 100%
+        1:   16:  return 0;
+        1:   17:@}
 @end smallexample
 
 For each basic block, a line is printed after the last line of the basic
@@ -286,11 +340,11 @@ provide more accurate long-term information over a large number of
 program runs.
 
 The data in the @file{.da} files is saved immediately before the program
-exits.  For each source file compiled with @option{-fprofile-arcs}, the profiling
-code first attempts to read in an existing @file{.da} file; if the file
-doesn't match the executable (differing number of basic block counts) it
-will ignore the contents of the file.  It then adds in the new execution
-counts and finally writes the data to the file.
+exits.  For each source file compiled with @option{-fprofile-arcs}, the
+profiling code first attempts to read in an existing @file{.da} file; if
+the file doesn't match the executable (differing number of basic block
+counts) it will ignore the contents of the file.  It then adds in the
+new execution counts and finally writes the data to the file.
 
 @node Gcov and Optimization
 @section Using @command{gcov} with GCC Optimization
@@ -319,10 +373,10 @@ the @command{gcov} output looks like this if you compiled the program with
 optimization:
 
 @smallexample
-      100  if (a != b)
-      100    c = 1;
-      100  else
-      100    c = 0;
+      100:   12:if (a != b)
+      100:   13:  c = 1;
+      100:   14:else
+      100:   15:  c = 0;
 @end smallexample
 
 The output shows that this block of code, combined by optimization,
