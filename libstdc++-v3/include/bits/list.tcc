@@ -1,6 +1,6 @@
 // List implementation (out of line) -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -120,18 +120,18 @@ namespace __gnu_norm
     operator=(const list& __x)
     {
       if (this != &__x)
-      {
-        iterator __first1 = begin();
-        iterator __last1 = end();
-        const_iterator __first2 = __x.begin();
-        const_iterator __last2 = __x.end();
-        while (__first1 != __last1 && __first2 != __last2)
-          *__first1++ = *__first2++;
-        if (__first2 == __last2)
-          erase(__first1, __last1);
-        else
-          insert(__last1, __first2, __last2);
-      }
+	{
+	  iterator __first1 = begin();
+	  iterator __last1 = end();
+	  const_iterator __first2 = __x.begin();
+	  const_iterator __last2 = __x.end();
+	  while (__first1 != __last1 && __first2 != __last2)
+	    *__first1++ = *__first2++;
+	  if (__first2 == __last2)
+	    erase(__first1, __last1);
+	  else
+	    insert(__last1, __first2, __last2);
+	}
       return *this;
     }
   
@@ -191,7 +191,8 @@ namespace __gnu_norm
     {
       iterator __first = begin();
       iterator __last = end();
-      if (__first == __last) return;
+      if (__first == __last)
+	return;
       iterator __next = __first;
       while (++__next != __last)
       {
@@ -245,19 +246,21 @@ namespace __gnu_norm
         list * __counter;
 
         do
-        {
-          __carry.splice(__carry.begin(), *this, begin());
-
-          for(__counter = &__tmp[0];
-              (__counter != __fill) && !__counter->empty();
-              ++__counter)
-          {
-            __counter->merge(__carry);
-            __carry.swap(*__counter);
-          }
-          __carry.swap(*__counter);
-          if (__counter == __fill) ++__fill;
-        } while ( !empty() );
+	  {
+	    __carry.splice(__carry.begin(), *this, begin());
+	    
+	    for(__counter = &__tmp[0];
+		(__counter != __fill) && !__counter->empty();
+		++__counter)
+	      {
+		__counter->merge(__carry);
+		__carry.swap(*__counter);
+	      }
+	    __carry.swap(*__counter);
+	    if (__counter == __fill)
+	      ++__fill;
+	  }
+	while ( !empty() );
 
         for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
           __counter->merge( *(__counter-1) );
@@ -277,7 +280,8 @@ namespace __gnu_norm
         {
           iterator __next = __first;
           ++__next;
-          if (__pred(*__first)) _M_erase(__first);
+          if (__pred(*__first))
+	    _M_erase(__first);
           __first = __next;
         }
       }
@@ -332,39 +336,41 @@ namespace __gnu_norm
   
   template<typename _Tp, typename _Alloc>
     template <typename _StrictWeakOrdering>
-    void
-    list<_Tp,_Alloc>::
-    sort(_StrictWeakOrdering __comp)
-    {
-      // Do nothing if the list has length 0 or 1.
-      if (this->_M_node._M_next != &this->_M_node && 
-	  this->_M_node._M_next->_M_next != &this->_M_node)
+      void
+      list<_Tp,_Alloc>::
+      sort(_StrictWeakOrdering __comp)
       {
-        list __carry;
-        list __tmp[64];
-        list * __fill = &__tmp[0];
-        list * __counter;
-
-        do
-        {
-          __carry.splice(__carry.begin(), *this, begin());
-
-          for(__counter = &__tmp[0];
-              (__counter != __fill) && !__counter->empty();
-              ++__counter)
-          {
-            __counter->merge(__carry, __comp);
-            __carry.swap(*__counter);
-          }
-          __carry.swap(*__counter);
-          if (__counter == __fill) ++__fill;
-        } while ( !empty() );
-        
-        for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
-          __counter->merge( *(__counter-1), __comp );
-        swap( *(__fill-1) );
+	// Do nothing if the list has length 0 or 1.
+	if (this->_M_node._M_next != &this->_M_node
+	    && this->_M_node._M_next->_M_next != &this->_M_node)
+	  {
+	    list __carry;
+	    list __tmp[64];
+	    list * __fill = &__tmp[0];
+	    list * __counter;
+	    
+	    do
+	      {
+		__carry.splice(__carry.begin(), *this, begin());
+		
+		for(__counter = &__tmp[0];
+		    (__counter != __fill) && !__counter->empty();
+		    ++__counter)
+		  {
+		    __counter->merge(__carry, __comp);
+		    __carry.swap(*__counter);
+		  }
+		__carry.swap(*__counter);
+		if (__counter == __fill)
+		  ++__fill;
+	      }
+	    while ( !empty() );
+	    
+	    for (__counter =  &__tmp[1]; __counter != __fill; ++__counter)
+	      __counter->merge( *(__counter-1), __comp );
+	    swap( *(__fill-1) );
+	  }
       }
-    }
 } // namespace __gnu_norm
 
 #endif /* _LIST_TCC */

@@ -1,6 +1,6 @@
 // Iterators -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -137,7 +137,8 @@ namespace std
        *  @return  @c current, the %iterator used for underlying work.
       */
       iterator_type 
-      base() const { return current; }
+      base() const
+      { return current; }
 
       /**
        *  @return  TODO
@@ -157,7 +158,8 @@ namespace std
        *  @doctodo
       */
       pointer 
-      operator->() const { return &(operator*()); }
+      operator->() const
+      { return &(operator*()); }
 
       /**
        *  @return  TODO
@@ -256,7 +258,8 @@ namespace std
        *  @doctodo
       */
       reference 
-      operator[](difference_type __n) const { return *(*this + __n); }  
+      operator[](difference_type __n) const
+      { return *(*this + __n); }  
     }; 
  
   //@{
@@ -364,15 +367,18 @@ namespace std
 
       /// Simply returns *this.
       back_insert_iterator& 
-      operator*() { return *this; }
+      operator*()
+      { return *this; }
 
       /// Simply returns *this.  (This %iterator does not "move".)
       back_insert_iterator& 
-      operator++() { return *this; }
+      operator++()
+      { return *this; }
 
       /// Simply returns *this.  (This %iterator does not "move".)
       back_insert_iterator
-      operator++(int) { return *this; }
+      operator++(int)
+      { return *this; }
     };
 
   /**
@@ -435,15 +441,18 @@ namespace std
 
       /// Simply returns *this.
       front_insert_iterator& 
-      operator*() { return *this; }
+      operator*()
+      { return *this; }
 
       /// Simply returns *this.  (This %iterator does not "move".)
       front_insert_iterator& 
-      operator++() { return *this; }
+      operator++()
+      { return *this; }
 
       /// Simply returns *this.  (This %iterator does not "move".)
       front_insert_iterator 
-      operator++(int) { return *this; }
+      operator++(int)
+      { return *this; }
     };
 
   /**
@@ -528,15 +537,18 @@ namespace std
 
       /// Simply returns *this.
       insert_iterator& 
-      operator*() { return *this; }
+      operator*()
+      { return *this; }
 
       /// Simply returns *this.  (This %iterator does not "move".)
       insert_iterator& 
-      operator++() { return *this; }
+      operator++()
+      { return *this; }
 
       /// Simply returns *this.  (This %iterator does not "move".)
       insert_iterator& 
-      operator++(int) { return *this; }
+      operator++(int)
+      { return *this; }
     };
   
   /**
@@ -578,12 +590,12 @@ namespace __gnu_cxx
       
     public:
       typedef typename iterator_traits<_Iterator>::iterator_category
-                                                               iterator_category;
+                                                             iterator_category;
       typedef typename iterator_traits<_Iterator>::value_type  value_type;
       typedef typename iterator_traits<_Iterator>::difference_type 	
-      							       difference_type;
-      typedef typename iterator_traits<_Iterator>::reference   reference;
-      typedef typename iterator_traits<_Iterator>::pointer     pointer;
+                                                             difference_type;
+      typedef typename iterator_traits<_Iterator>::reference reference;
+      typedef typename iterator_traits<_Iterator>::pointer   pointer;
 
       __normal_iterator() : _M_current(_Iterator()) { }
 
@@ -592,28 +604,41 @@ namespace __gnu_cxx
 
       // Allow iterator to const_iterator conversion
       template<typename _Iter>
-      inline __normal_iterator(const __normal_iterator<_Iter, _Container>& __i)
+        inline __normal_iterator(const __normal_iterator<_Iter,
+				 _Container>& __i)
 	: _M_current(__i.base()) { }
 
       // Forward iterator requirements
       reference
-      operator*() const { return *_M_current; }
+      operator*() const
+      { return *_M_current; }
       
       pointer
-      operator->() const { return _M_current; }
+      operator->() const
+      { return _M_current; }
       
       __normal_iterator&
-      operator++() { ++_M_current; return *this; }
+      operator++()
+      {
+	++_M_current;
+	return *this;
+      }
       
       __normal_iterator
-      operator++(int) { return __normal_iterator(_M_current++); }
+      operator++(int)
+      { return __normal_iterator(_M_current++); }
       
       // Bidirectional iterator requirements
       __normal_iterator&
-      operator--() { --_M_current; return *this; }
+      operator--()
+      {
+	--_M_current;
+	return *this;
+      }
       
       __normal_iterator
-      operator--(int) { return __normal_iterator(_M_current--); }
+      operator--(int)
+      { return __normal_iterator(_M_current--); }
       
       // Random access iterator requirements
       reference
@@ -637,7 +662,8 @@ namespace __gnu_cxx
       { return __normal_iterator(_M_current - __n); }
       
       const _Iterator& 
-      base() const { return _M_current; }
+      base() const
+      { return _M_current; }
     };
 
   // Note: In what follows, the left- and right-hand-side iterators are
@@ -650,93 +676,93 @@ namespace __gnu_cxx
   
   // Forward iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline bool
-  operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
-	     const __normal_iterator<_IteratorR, _Container>& __rhs)
-  { return __lhs.base() == __rhs.base(); }
+    inline bool
+    operator==(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	       const __normal_iterator<_IteratorR, _Container>& __rhs)
+    { return __lhs.base() == __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-  inline bool
-  operator==(const __normal_iterator<_Iterator, _Container>& __lhs,
-             const __normal_iterator<_Iterator, _Container>& __rhs)
-  { return __lhs.base() == __rhs.base(); }
+    inline bool
+    operator==(const __normal_iterator<_Iterator, _Container>& __lhs,
+	       const __normal_iterator<_Iterator, _Container>& __rhs)
+    { return __lhs.base() == __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline bool
-  operator!=(const __normal_iterator<_IteratorL, _Container>& __lhs,
-	     const __normal_iterator<_IteratorR, _Container>& __rhs)
-  { return __lhs.base() != __rhs.base(); }
+    inline bool
+    operator!=(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	       const __normal_iterator<_IteratorR, _Container>& __rhs)
+    { return __lhs.base() != __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-  inline bool
-  operator!=(const __normal_iterator<_Iterator, _Container>& __lhs,
-             const __normal_iterator<_Iterator, _Container>& __rhs)
-  { return __lhs.base() != __rhs.base(); }
+    inline bool
+    operator!=(const __normal_iterator<_Iterator, _Container>& __lhs,
+	       const __normal_iterator<_Iterator, _Container>& __rhs)
+    { return __lhs.base() != __rhs.base(); }
 
   // Random access iterator requirements
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline bool 
-  operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
-	    const __normal_iterator<_IteratorR, _Container>& __rhs)
-  { return __lhs.base() < __rhs.base(); }
+    inline bool 
+    operator<(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	      const __normal_iterator<_IteratorR, _Container>& __rhs)
+    { return __lhs.base() < __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-  inline bool
-  operator<(const __normal_iterator<_Iterator, _Container>& __lhs,
-             const __normal_iterator<_Iterator, _Container>& __rhs)
-  { return __lhs.base() < __rhs.base(); }
+    inline bool
+    operator<(const __normal_iterator<_Iterator, _Container>& __lhs,
+	      const __normal_iterator<_Iterator, _Container>& __rhs)
+    { return __lhs.base() < __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline bool
-  operator>(const __normal_iterator<_IteratorL, _Container>& __lhs,
-	    const __normal_iterator<_IteratorR, _Container>& __rhs)
-  { return __lhs.base() > __rhs.base(); }
+    inline bool
+    operator>(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	      const __normal_iterator<_IteratorR, _Container>& __rhs)
+    { return __lhs.base() > __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-  inline bool
-  operator>(const __normal_iterator<_Iterator, _Container>& __lhs,
-	    const __normal_iterator<_Iterator, _Container>& __rhs)
-  { return __lhs.base() > __rhs.base(); }
+    inline bool
+    operator>(const __normal_iterator<_Iterator, _Container>& __lhs,
+	      const __normal_iterator<_Iterator, _Container>& __rhs)
+    { return __lhs.base() > __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline bool
-  operator<=(const __normal_iterator<_IteratorL, _Container>& __lhs,
-	     const __normal_iterator<_IteratorR, _Container>& __rhs)
-  { return __lhs.base() <= __rhs.base(); }
+    inline bool
+    operator<=(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	       const __normal_iterator<_IteratorR, _Container>& __rhs)
+    { return __lhs.base() <= __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-  inline bool
-  operator<=(const __normal_iterator<_Iterator, _Container>& __lhs,
-	     const __normal_iterator<_Iterator, _Container>& __rhs)
-  { return __lhs.base() <= __rhs.base(); }
+    inline bool
+    operator<=(const __normal_iterator<_Iterator, _Container>& __lhs,
+	       const __normal_iterator<_Iterator, _Container>& __rhs)
+    { return __lhs.base() <= __rhs.base(); }
 
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline bool
-  operator>=(const __normal_iterator<_IteratorL, _Container>& __lhs,
-	     const __normal_iterator<_IteratorR, _Container>& __rhs)
-  { return __lhs.base() >= __rhs.base(); }
+    inline bool
+    operator>=(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	       const __normal_iterator<_IteratorR, _Container>& __rhs)
+    { return __lhs.base() >= __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-  inline bool
-  operator>=(const __normal_iterator<_Iterator, _Container>& __lhs,
-	     const __normal_iterator<_Iterator, _Container>& __rhs)
-  { return __lhs.base() >= __rhs.base(); }
+    inline bool
+    operator>=(const __normal_iterator<_Iterator, _Container>& __lhs,
+	       const __normal_iterator<_Iterator, _Container>& __rhs)
+    { return __lhs.base() >= __rhs.base(); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // According to the resolution of DR179 not only the various comparison
   // operators but also operator- must accept mixed iterator/const_iterator
   // parameters.
   template<typename _IteratorL, typename _IteratorR, typename _Container>
-  inline typename __normal_iterator<_IteratorL, _Container>::difference_type
-  operator-(const __normal_iterator<_IteratorL, _Container>& __lhs,
-	     const __normal_iterator<_IteratorR, _Container>& __rhs)
-  { return __lhs.base() - __rhs.base(); }
+    inline typename __normal_iterator<_IteratorL, _Container>::difference_type
+    operator-(const __normal_iterator<_IteratorL, _Container>& __lhs,
+	      const __normal_iterator<_IteratorR, _Container>& __rhs)
+    { return __lhs.base() - __rhs.base(); }
 
   template<typename _Iterator, typename _Container>
-  inline __normal_iterator<_Iterator, _Container>
-  operator+(typename __normal_iterator<_Iterator, _Container>::difference_type __n,
-	    const __normal_iterator<_Iterator, _Container>& __i)
-  { return __normal_iterator<_Iterator, _Container>(__i.base() + __n); }
+    inline __normal_iterator<_Iterator, _Container>
+    operator+(typename __normal_iterator<_Iterator, _Container>::difference_type
+	      __n, const __normal_iterator<_Iterator, _Container>& __i)
+    { return __normal_iterator<_Iterator, _Container>(__i.base() + __n); }
 } // namespace __gnu_cxx
 
 #endif 

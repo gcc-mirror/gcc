@@ -108,7 +108,8 @@ namespace __gnu_norm
     {
       // concept requirements
       __glibcxx_class_requires(_Key, _SGIAssignableConcept)
-      __glibcxx_class_requires4(_Compare, bool, _Key, _Key, _BinaryFunctionConcept)
+      __glibcxx_class_requires4(_Compare, bool, _Key, _Key,
+				_BinaryFunctionConcept)
 	
 	public:
       // typedefs:
@@ -142,7 +143,8 @@ namespace __gnu_norm
 
       // allocation/deallocation
       ///  Default constructor creates no elements.
-      set() : _M_t(_Compare(), allocator_type()) {}
+      set()
+      : _M_t(_Compare(), allocator_type()) {}
 
       /**
        *  @brief  Default constructor creates no elements.
@@ -152,7 +154,7 @@ namespace __gnu_norm
        */
       explicit set(const _Compare& __comp,
 		   const allocator_type& __a = allocator_type())
-	: _M_t(__comp, __a) {}
+      : _M_t(__comp, __a) {}
 
       /**
        *  @brief  Builds a %set from a range.
@@ -164,9 +166,9 @@ namespace __gnu_norm
        *  otherwise (where N is distance(first,last)).
        */
       template<class _InputIterator>
-      set(_InputIterator __first, _InputIterator __last)
-	: _M_t(_Compare(), allocator_type())
-      { _M_t.insert_unique(__first, __last); }
+        set(_InputIterator __first, _InputIterator __last)
+        : _M_t(_Compare(), allocator_type())
+        { _M_t.insert_unique(__first, __last); }
 
       /**
        *  @brief  Builds a %set from a range.
@@ -180,10 +182,11 @@ namespace __gnu_norm
        *  otherwise (where N is distance(first,last)).
        */
       template<class _InputIterator>
-      set(_InputIterator __first, _InputIterator __last, const _Compare& __comp,
-	  const allocator_type& __a = allocator_type())
+        set(_InputIterator __first, _InputIterator __last,
+	    const _Compare& __comp,
+	    const allocator_type& __a = allocator_type())
 	: _M_t(__comp, __a)
-      { _M_t.insert_unique(__first, __last); }
+        { _M_t.insert_unique(__first, __last); }
 
       /**
        *  @brief  Set copy constructor.
@@ -192,7 +195,8 @@ namespace __gnu_norm
        *  The newly-created %set uses a copy of the allocation object used
        *  by @a x.
        */
-      set(const set<_Key,_Compare,_Alloc>& __x) : _M_t(__x._M_t) {}
+      set(const set<_Key,_Compare,_Alloc>& __x)
+      : _M_t(__x._M_t) { }
       
       /**
        *  @brief  Set assignment operator.
@@ -201,7 +205,8 @@ namespace __gnu_norm
        *  All the elements of @a x are copied, but unlike the copy constructor,
        *  the allocator object is not copied.
        */
-      set<_Key,_Compare,_Alloc>& operator=(const set<_Key, _Compare, _Alloc>& __x)
+      set<_Key,_Compare,_Alloc>&
+      operator=(const set<_Key, _Compare, _Alloc>& __x)
       { 
 	_M_t = __x._M_t; 
 	return *this;
@@ -210,45 +215,66 @@ namespace __gnu_norm
       // accessors:
 
       ///  Returns the comparison object with which the %set was constructed.
-      key_compare key_comp() const { return _M_t.key_comp(); }
+      key_compare
+      key_comp() const
+      { return _M_t.key_comp(); }
       ///  Returns the comparison object with which the %set was constructed.
-      value_compare value_comp() const { return _M_t.key_comp(); }
+      value_compare
+      value_comp() const
+      { return _M_t.key_comp(); }
       ///  Returns the allocator object with which the %set was constructed.
-      allocator_type get_allocator() const { return _M_t.get_allocator(); }
+      allocator_type
+      get_allocator() const
+      { return _M_t.get_allocator(); }
 
       /**
        *  Returns a read/write iterator that points to the first element in the
        *  %set.  Iteration is done in ascending order according to the keys.
        */
-      iterator begin() const { return _M_t.begin(); }
+      iterator
+      begin() const
+      { return _M_t.begin(); }
 
       /**
        *  Returns a read/write iterator that points one past the last element in
        *  the %set.  Iteration is done in ascending order according to the keys.
        */
-      iterator end() const { return _M_t.end(); }
+      iterator
+      end() const
+      { return _M_t.end(); }
 
       /**
-       *  Returns a read/write reverse iterator that points to the last element in
-       *  the %set.  Iteration is done in descending order according to the keys.
+       *  Returns a read/write reverse iterator that points to the last element
+       *  in the %set.  Iteration is done in descending order according to the
+       *  keys.
        */
-      reverse_iterator rbegin() const { return _M_t.rbegin(); } 
+      reverse_iterator
+      rbegin() const
+      { return _M_t.rbegin(); } 
 
       /**
-       *  Returns a read-only (constant) reverse iterator that points to the last
-       *  pair in the %map.  Iteration is done in descending order according to
-       *  the keys.
+       *  Returns a read-only (constant) reverse iterator that points to the
+       *  last pair in the %map.  Iteration is done in descending order
+       *  according to the keys.
        */
-      reverse_iterator rend() const { return _M_t.rend(); }
+      reverse_iterator
+      rend() const
+      { return _M_t.rend(); }
 
       ///  Returns true if the %set is empty.
-      bool empty() const { return _M_t.empty(); }
+      bool
+      empty() const
+      { return _M_t.empty(); }
 
       ///  Returns the size of the %set.
-      size_type size() const { return _M_t.size(); }
+      size_type
+      size() const
+      { return _M_t.size(); }
 
       ///  Returns the maximum size of the %set.
-      size_type max_size() const { return _M_t.max_size(); }
+      size_type
+      max_size() const
+      { return _M_t.max_size(); }
 
       /**
        *  @brief  Swaps data with another %set.
@@ -261,15 +287,17 @@ namespace __gnu_norm
        *  Note that the global std::swap() function is specialized such that
        *  std::swap(s1,s2) will feed to this function.
        */
-      void swap(set<_Key,_Compare,_Alloc>& __x) { _M_t.swap(__x._M_t); }
+      void
+      swap(set<_Key,_Compare,_Alloc>& __x)
+      { _M_t.swap(__x._M_t); }
 
       // insert/erase
       /**
        *  @brief Attempts to insert an element into the %set.
        *  @param  x  Element to be inserted.
        *  @return  A pair, of which the first element is an iterator that points
-       *           to the possibly inserted element, and the second is a bool that
-       *           is true if the element was actually inserted.
+       *           to the possibly inserted element, and the second is a bool
+       *           that is true if the element was actually inserted.
        *
        *  This function attempts to insert an element into the %set.  A %set
        *  relies on unique keys and thus an element is only inserted if it is
@@ -277,9 +305,10 @@ namespace __gnu_norm
        *
        *  Insertion requires logarithmic time.
        */
-      pair<iterator,bool> insert(const value_type& __x)
+      pair<iterator,bool>
+      insert(const value_type& __x)
       { 
-	pair<typename _Rep_type::iterator, bool> __p = _M_t.insert_unique(__x); 
+	pair<typename _Rep_type::iterator, bool> __p = _M_t.insert_unique(__x);
 	return pair<iterator, bool>(__p.first, __p.second);
       }
 
@@ -302,7 +331,8 @@ namespace __gnu_norm
        *
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
-      iterator insert(iterator __position, const value_type& __x)
+      iterator
+      insert(iterator __position, const value_type& __x)
       {
 	typedef typename _Rep_type::iterator _Rep_iterator;
 	return _M_t.insert_unique((_Rep_iterator&)__position, __x);
@@ -317,7 +347,8 @@ namespace __gnu_norm
        *  Complexity similar to that of the range constructor.
        */
       template<class _InputIterator>
-      void insert(_InputIterator __first, _InputIterator __last)
+      void
+      insert(_InputIterator __first, _InputIterator __last)
       { _M_t.insert_unique(__first, __last); }
       
       /**
@@ -329,7 +360,8 @@ namespace __gnu_norm
        *  that if the element is itself a pointer, the pointed-to memory is not
        *  touched in any way.  Managing the pointer is the user's responsibilty.
        */
-      void erase(iterator __position)
+      void
+      erase(iterator __position)
       { 
 	typedef typename _Rep_type::iterator _Rep_iterator;
 	_M_t.erase((_Rep_iterator&)__position); 
@@ -346,11 +378,13 @@ namespace __gnu_norm
        *  the element is itself a pointer, the pointed-to memory is not touched
        *  in any way.  Managing the pointer is the user's responsibilty.
        */
-      size_type erase(const key_type& __x) { return _M_t.erase(__x); }
+      size_type
+      erase(const key_type& __x) { return _M_t.erase(__x); }
 
       /**
        *  @brief Erases a [first,last) range of elements from a %set.
-       *  @param  first  Iterator pointing to the start of the range to be erased.
+       *  @param  first  Iterator pointing to the start of the range to be
+       *                 erased.
        *  @param  last  Iterator pointing to the end of the range to be erased.
        *
        *  This function erases a sequence of elements from a %set.
@@ -358,7 +392,8 @@ namespace __gnu_norm
        *  the element is itself a pointer, the pointed-to memory is not touched
        *  in any way.  Managing the pointer is the user's responsibilty.
        */
-      void erase(iterator __first, iterator __last)
+      void
+      erase(iterator __first, iterator __last)
       {
 	typedef typename _Rep_type::iterator _Rep_iterator;
 	_M_t.erase((_Rep_iterator&)__first, (_Rep_iterator&)__last); 
@@ -370,7 +405,9 @@ namespace __gnu_norm
        *  pointed-to memory is not touched in any way.  Managing the pointer is
        *  the user's responsibilty.
        */
-      void clear() { _M_t.clear(); }
+      void
+      clear()
+      { _M_t.clear(); }
 
       // set operations:
 
@@ -382,7 +419,8 @@ namespace __gnu_norm
        *  This function only makes sense for multisets; for set the result will
        *  either be 0 (not present) or 1 (present).
        */
-      size_type count(const key_type& __x) const
+      size_type
+      count(const key_type& __x) const
       { return _M_t.find(__x) == _M_t.end() ? 0 : 1; }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -399,8 +437,13 @@ namespace __gnu_norm
        *  pointing to the sought after element.  If unsuccessful it returns the
        *  past-the-end ( @c end() ) iterator.
        */
-      iterator find(const key_type& __x) { return _M_t.find(__x); }
-      const_iterator find(const key_type& __x) const { return _M_t.find(__x); }
+      iterator
+      find(const key_type& __x)
+      { return _M_t.find(__x); }
+
+      const_iterator
+      find(const key_type& __x) const
+      { return _M_t.find(__x); }
       //@}
 
       //@{
@@ -415,9 +458,12 @@ namespace __gnu_norm
        *  pointing to the first element that has a greater value than given key
        *  or end() if no such element exists.
        */
-      iterator lower_bound(const key_type& __x)
+      iterator
+      lower_bound(const key_type& __x)
       { return _M_t.lower_bound(__x); }
-      const_iterator lower_bound(const key_type& __x) const
+      
+      const_iterator
+      lower_bound(const key_type& __x) const
       { return _M_t.lower_bound(__x); }
       //@}
 
@@ -428,9 +474,12 @@ namespace __gnu_norm
        *  @return Iterator pointing to the first element
        *          greater than key, or end().
        */
-      iterator upper_bound(const key_type& __x)
+      iterator
+      upper_bound(const key_type& __x)
       { return _M_t.upper_bound(__x); }
-      const_iterator upper_bound(const key_type& __x) const
+
+      const_iterator
+      upper_bound(const key_type& __x) const
       { return _M_t.upper_bound(__x); }
       //@}
 
@@ -450,16 +499,22 @@ namespace __gnu_norm
        *
        *  This function probably only makes sense for multisets.
        */
-      pair<iterator,iterator> equal_range(const key_type& __x)
+      pair<iterator,iterator>
+      equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
-      pair<const_iterator,const_iterator> equal_range(const key_type& __x) const
+      
+      pair<const_iterator,const_iterator>
+      equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
       //@}
 
       template<class _K1, class _C1, class _A1>
-      friend bool operator== (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
+        friend bool
+        operator== (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
+      
       template<class _K1, class _C1, class _A1>
-      friend bool operator< (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
+        friend bool
+        operator< (const set<_K1,_C1,_A1>&, const set<_K1,_C1,_A1>&);
     };
 
 
@@ -508,8 +563,7 @@ namespace __gnu_norm
     inline bool
     operator>(const set<_Key,_Compare,_Alloc>& __x, 
 	      const set<_Key,_Compare,_Alloc>& __y)
-  { return __y < __x; }
-
+    { return __y < __x; }
 
   ///  Returns !(y < x)
   template<class _Key, class _Compare, class _Alloc>

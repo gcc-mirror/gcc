@@ -1,6 +1,6 @@
 // Types used in iterator implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -82,9 +82,11 @@ namespace std
   struct output_iterator_tag {};
   /// Forward iterators support a superset of input iterator operations.
   struct forward_iterator_tag : public input_iterator_tag {};
-  /// Bidirectional iterators support a superset of forward iterator operations.
+  /// Bidirectional iterators support a superset of forward iterator
+  /// operations.
   struct bidirectional_iterator_tag : public forward_iterator_tag {};
-  /// Random-access iterators support a superset of bidirectional iterator operations.
+  /// Random-access iterators support a superset of bidirectional iterator
+  /// operations.
   struct random_access_iterator_tag : public bidirectional_iterator_tag {};
   //@}
 
