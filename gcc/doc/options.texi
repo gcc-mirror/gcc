@@ -144,6 +144,7 @@ The options-processing script will automatically allocate a unique
 bit for the option and set the macro @code{MASK_@var{name}} to the
 appropriate bitmask.  It will also declare a @code{TARGET_@var{name}}
 macro that has the value 1 when the option is active and 0 otherwise.
+You can disable this behavior using @code{MaskExists}.
 
 @item InverseMask(@var{othername})
 @itemx InverseMask(@var{othername}, @var{thisname})
@@ -151,6 +152,15 @@ The option is the inverse of another option that has the
 @code{Mask(@var{othername})} property.  If @var{thisname} is given,
 the options-processing script will declare a @code{TARGET_@var{thisname}}
 macro that is 1 when the option is active and 0 otherwise.
+
+@item MaskExists
+The mask specified by the @code{Mask} property already exists.
+No @code{MASK} or @code{TARGET} definitions should be added to
+@file{options.h} in response to this option record.
+
+The main purpose of this property is to support synonymous options.
+The first option should use @samp{Mask(@var{name})} and the others
+should use @samp{Mask(@var{name}) MaskExists}.
 
 @item Report
 The state of the option should be printed by @option{-fverbose-asm}.

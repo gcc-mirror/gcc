@@ -70,7 +70,7 @@ for (i = 0; i < n_opts; i++) {
 masknum = 0
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])
-	if (name != "")
+	if (name != "" && !flag_set_p("MaskExists", flags[i]))
 		print "#define MASK_" name " (1 << " masknum++ ")"
 }
 if (masknum > 31)
@@ -79,7 +79,7 @@ print ""
 
 for (i = 0; i < n_opts; i++) {
 	name = opt_args("Mask", flags[i])
-	if (name != "")
+	if (name != "" && !flag_set_p("MaskExists", flags[i]))
 		print "#define TARGET_" name \
 		      " ((target_flags & MASK_" name ") != 0)"
 }

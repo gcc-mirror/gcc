@@ -1,4 +1,10 @@
-2005-03-20  Richard Sandiford  <rsandifo@redhat.com>
+2005-03-30  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/options.texi: Document the new MaskExists flag.
+	* opth-gen.awk: Don't output MASK and TARGET macros for Mask(...)
+	if the option has the MaskExists flag.
+
+2005-03-30  Richard Sandiford  <rsandifo@redhat.com>
 
 	* opt-functions.awk (flag_set_p, test_flag): New functions.
 	(switch_flags): Use them.
