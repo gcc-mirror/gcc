@@ -1,3 +1,14 @@
+2004-08-25  Steven Bosscher  <stevenb@suse.de>
+
+	* cse.c (cse_around_loop, cse_check_loop_start,
+	cse_set_around_loop): Remove.
+	(cse_basic_block): Remove the around_loop argument.
+	(cse_end_of_basic_block): Remove the after_loop argument.
+	(cse_main): Likewise.
+	* rtl.h (cse_main): Update prototype.
+	* passes.c (rest_of_handle_cse, rest_of_handle_cse2,
+	rest_of_handle_gcse): Update cse_main calls.
+
 2004-08-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h  (build_int_cst): New, sign extended constant.
