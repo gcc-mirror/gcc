@@ -2,6 +2,8 @@ Tue Jan 12 01:30:19 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.c (rtx_alloc): Use memset instead of inline loop.
 
+	* recog.h (recog_op_alt): Declare extern.
+
 Tue Jan 12 00:23:31 1999  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (purge_addressof_1): If the note accesses a mem+addressof

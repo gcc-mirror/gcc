@@ -163,7 +163,7 @@ extern char recog_operand_address_p[];
 
 /* Contains a vector of operand_alternative structures for every operand.
    Set up by preprocess_constraints.  */
-struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
+extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALTERNATIVES];
 
 /* Access the output function for CODE.  */
 
