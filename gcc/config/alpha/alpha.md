@@ -785,26 +785,19 @@
 }"
   [(set_attr "type" "iaddlog,shiftcm")])
 
-;; This is the same as (sign_extend (shift X [123])).
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashiftrt:DI (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
-				(match_operand:DI 2 "const_int_operand" "i"))
-		     (const_int 32)))]
-  "INTVAL (operands[2]) >= 33 && INTVAL (operands[2]) <= 35"
+	(sign_extend:DI
+	 (subreg:SI (ashift:DI (match_operand:DI 1 "reg_or_0_operand" "rJ")
+			       (match_operand:DI 2 "const_int_operand" "P"))
+		    0)))]
+  "INTVAL (operands[2]) >= 1 && INTVAL (operands[2]) <= 3"
   "*
 {
-  switch (INTVAL (operands[2]))
-    {
-    case 33:
-      return \"addl %r1,%r1,%0\";
-    case 34:
-      return \"s4addl %r1,0,%0\";
-    case 35:
-      return \"s8addl %r1,0,%0\";
-    default:
-      abort ();
-    }
+  if (operands[2] == const1_rtx)
+    return \"addl %r1,%r1,%0\";
+  else
+    return \"s%P2addl %r1,0,%0\";
 }"
   [(set_attr "type" "iaddlog")])
 			  
