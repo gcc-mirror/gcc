@@ -601,7 +601,7 @@ __ia64_nonlocal_goto:
 	mov r19=ar.rsc
 	adds r2=8,in2
 	ld8 r12=[in2],16
-	mov.ret.sptk.few.dc.dc rp = r33, .L0
+	mov.ret.sptk rp = r33, .L0
 	;;
 	flushrs
 	ld8 r16=[r2],16

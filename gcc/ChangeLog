@@ -1,3 +1,8 @@
+Fri Apr 14 10:54:22 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/lib1funcs.asm (__ia64_nonlocal_goto): Drop obsolete
+	completers from mov.ret instruction.
+
 2000-04-14  Richard Henderson  <rth@cygnus.com>
 
         * fold-const.c (extract_muldiv): Don't distribute and widen
