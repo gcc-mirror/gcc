@@ -3041,12 +3041,34 @@ void
 delete_jump (insn)
      rtx insn;
 {
-  register rtx x = PATTERN (insn);
+  register rtx set = single_set (insn);
 
-  if (GET_CODE (x) == SET
-      && GET_CODE (SET_DEST (x)) == PC)
-    {
+  if (set && GET_CODE (SET_DEST (set)) == PC)
+    delete_computation (insn);
+}
+
+/* Delete INSN and recursively delete insns that compute values used only
+   by INSN.  This uses the REG_DEAD notes computed during flow analysis.
+   If we are running before flow.c, we need do nothing since flow.c will
+   delete dead code.  We also can't know if the registers being used are
+   dead or not at this point.
+
+   Otherwise, look at all our REG_DEAD notes.  If a previous insn does
+   nothing other than set a register that dies in this insn, we can delete
+   that insn as well.
+
+   On machines with CC0, if CC0 is used in this insn, we may be able to
+   delete the insn that set it.  */
+
+void
+delete_computation (insn)
+     rtx insn;
+{
+  rtx note, next;
+
 #ifdef HAVE_cc0
+  if (reg_referenced_p (cc0_rtx, insn))
+    {
       rtx prev = prev_nonnote_insn (insn);
       /* We assume that at this stage
 	 CC's are always set explicitly
@@ -3059,34 +3081,14 @@ delete_jump (insn)
 	{
 	  if (sets_cc0_p (PATTERN (prev)) > 0
 	      && !FIND_REG_INC_NOTE (prev, NULL_RTX))
-	    delete_insn (prev);
+	    delete_computation (prev);
 	  else
 	    /* Otherwise, show that cc0 won't be used.  */
 	    REG_NOTES (prev) = gen_rtx (EXPR_LIST, REG_UNUSED,
 					cc0_rtx, REG_NOTES (prev));
 	}
-#endif
-      /* Now delete the jump insn itself.  */
-      delete_computation (insn);
     }
-}
-
-/* Delete INSN and recursively delete insns that compute values used only
-   by INSN.  This uses the REG_DEAD notes computed during flow analysis.
-   If we are running before flow.c, we need do nothing since flow.c will
-   delete dead code.  We also can't know if the registers being used are
-   dead or not at this point.
-
-   Otherwise, look at all our REG_DEAD notes.  If a previous insn does
-   nothing other than set a register that dies in this insn, we can delete
-   that insn as well.  */
-
-void
-delete_computation (insn)
-     rtx insn;
-{
-#ifndef HAVE_cc0
-  rtx note, next;
+#endif
 
   for (note = REG_NOTES (insn); note; note = next)
     {
@@ -3157,7 +3159,7 @@ delete_computation (insn)
 	    }
 	}
     }
-#endif /* Don't HAVE_cc0 */
+
   delete_insn (insn);
 }
 
