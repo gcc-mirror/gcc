@@ -1273,9 +1273,8 @@ __mfu_unregister (void *ptr, size_t sz, int type)
           }
 
         /* Manage the object cemetary.  */
-        if (__mf_opts.persistent_count > 0 &&
-            old_obj->type >= 0 &&
-            old_obj->type <= __MF_TYPE_MAX_CEM)
+        if (__mf_opts.persistent_count > 0
+	    && (unsigned) old_obj->type <= __MF_TYPE_MAX_CEM)
           {
             old_obj->deallocated_p = 1;
             old_obj->dealloc_pc = (uintptr_t) __builtin_return_address (0);
