@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.198 1997/05/05 21:06:33 karl Exp karl $
+%% $Id: texinfo.tex,v 2.200 1997/05/21 21:17:50 karl Exp $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -36,7 +36,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.198 $
+\deftexinfoversion$Revision: 2.200 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1890,7 +1890,7 @@ July\or August\or September\or October\or November\or December\fi
 \def\itemizeitem{%
 \advance\itemno by 1
 {\let\par=\endgraf \smallbreak}%
-\ifhmode \errmessage{\in hmode at itemizeitem}\fi
+\ifhmode \errmessage{In hmode at itemizeitem}\fi
 {\parskip=0in \hskip 0pt
 \hbox to 0pt{\hss \itemcontents\hskip \itemmargin}%
 \vadjust{\penalty 1200}}%
@@ -3685,16 +3685,17 @@ width0pt\relax} \fi
 
 % Definitions of (, ) and & used in args for functions.
 % This is the definition of ( outside of all parentheses.
-\gdef\oprm#1 {{\rm\char`\(}#1 \bf \let(=\opnested %
-\global\advance\parencount by 1 }
+\gdef\oprm#1 {{\rm\char`\(}#1 \bf \let(=\opnested
+  \global\advance\parencount by 1
+}
 %
 % This is the definition of ( when already inside a level of parens.
 \gdef\opnested{\char`\(\global\advance\parencount by 1 }
 %
 \gdef\clrm{% Print a paren in roman if it is taking us back to depth of 0.
-% also in that case restore the outer-level definition of (.
-\ifnum \parencount=1 {\rm \char `\)}\sl \let(=\oprm \else \char `\) \fi
-\global\advance \parencount by -1 }
+  % also in that case restore the outer-level definition of (.
+  \ifnum \parencount=1 {\rm \char `\)}\sl \let(=\oprm \else \char `\) \fi
+  \global\advance \parencount by -1 }
 % If we encounter &foo, then turn on ()-hacking afterwards
 \gdef\amprm#1 {{\rm\&#1}\let(=\oprm \let)=\clrm\ }
 %
@@ -3702,8 +3703,11 @@ width0pt\relax} \fi
 } % End of definition inside \activeparens
 %% These parens (in \boldbrax) actually are a little bolder than the
 %% contained text.  This is especially needed for [ and ]
-\def\opnr{{\sf\char`\(}} \def\clnr{{\sf\char`\)}} \def\ampnr{\&}
-\def\lbrb{{\bf\char`\[}} \def\rbrb{{\bf\char`\]}}
+\def\opnr{{\sf\char`\(}\global\advance\parencount by 1 }
+\def\clnr{{\sf\char`\)}\global\advance\parencount by -1 }
+\def\ampnr{\&}
+\def\lbrb{{\bf\char`\[}}
+\def\rbrb{{\bf\char`\]}}
 
 % First, defname, which formats the header line itself.
 % #1 should be the function name.
@@ -3880,7 +3884,7 @@ width0pt\relax} \fi
 \hyphenchar\tensl=0
 #1%
 \hyphenchar\tensl=45
-\ifnum\parencount=0 \else \errmessage{unbalanced parens in @def arguments}\fi%
+\ifnum\parencount=0 \else \errmessage{Unbalanced parentheses in @def}\fi%
 \interlinepenalty=10000
 \advance\rightskip by 0pt plus 1fil
 \endgraf\penalty 10000\vskip -\parskip\penalty 10000%
