@@ -813,6 +813,9 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
     wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
   
+    dnl Do quick checks for things injected into std:: by the c_std headers.
+    AC_CHECK_FUNCS(fgetwc, fgetws)
+
     AC_MSG_CHECKING([for ISO C99 wchar_t support])
     if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
        && test x"$ac_wfuncs" = xyes; then

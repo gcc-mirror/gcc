@@ -34,8 +34,6 @@
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 
-#include <bits/c++config.h>
-
 #pragma GCC system_header
 #include_next <ctype.h>
 

@@ -44,7 +44,7 @@
 #undef atoi
 #undef atol
 #undef strtod
-//#undef strtof
+#undef strtof
 #undef strtol
 #undef strtoul
 #undef rand
@@ -88,7 +88,9 @@ namespace std
   using ::atoi;
   using ::atol;
   using ::strtod;
-  //  using ::strtof;
+#if _GLIBCPP_HAVE_STRTOF
+  using ::strtof;
+#endif
   using ::strtol;
   using ::strtoul;
   using ::rand;
