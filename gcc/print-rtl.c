@@ -64,7 +64,7 @@ print_rtx (in_rtx)
   if (sawclose)
     {
       fprintf (outfile, "\n%s",
-	       (spaces + (sizeof spaces - indent * 2)));
+	       (spaces + (sizeof spaces - 1 - indent * 2)));
       sawclose = 0;
     }
 
@@ -132,7 +132,7 @@ print_rtx (in_rtx)
 	if (sawclose)
 	  {
 	    fprintf (outfile, "\n%s",
-		     (spaces + (sizeof spaces - indent * 2)));
+		     (spaces + (sizeof spaces - 1 - indent * 2)));
 	    sawclose = 0;
 	  }
 	fprintf (outfile, "[ ");
@@ -149,7 +149,7 @@ print_rtx (in_rtx)
 	  }
 	if (sawclose)
 	  fprintf (outfile, "\n%s",
-		   (spaces + (sizeof spaces - indent * 2)));
+		   (spaces + (sizeof spaces - 1 - indent * 2)));
 
 	fprintf (outfile, "] ");
 	sawclose = 1;
