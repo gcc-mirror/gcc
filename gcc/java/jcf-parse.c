@@ -101,14 +101,15 @@ static void jcf_parse PARAMS ((struct JCF*));
 static void load_inner_classes PARAMS ((tree));
 
 /* Mark (for garbage collection) all the tree nodes that are
-   referenced from JCF's constant pool table. */
+   referenced from JCF's constant pool table. Do that only if the JCF
+   hasn't been marked finished.  */
 
 static void
 ggc_mark_jcf (elt)
      void **elt;
 {
   JCF *jcf = *(JCF**) elt;
-  if (jcf != NULL)
+  if (jcf != NULL && !jcf->finished)
     {
       CPool *cpool = &jcf->cpool;
       int size = CPOOL_COUNT(cpool);
