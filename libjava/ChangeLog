@@ -1,5 +1,10 @@
 2003-12-04  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/FilePermission.java:
+	Import used classes explicitely.
+
+2003-12-04  Michael Koch  <konqueror@gmx.de>
+
 	* java/beans/BeanDescriptor.java,
 	java/beans/EventSetDescriptor.java,
 	java/beans/FeatureDescriptor.java,
