@@ -889,9 +889,8 @@ default_conversion (exp)
       type = TREE_TYPE (exp);
     }
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  if (TREE_CODE (exp) == NON_LVALUE_EXPR)
-    exp = TREE_OPERAND (exp, 0);
+  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
+  STRIP_NOPS (exp);
 
   /* Normally convert enums to int,
      but convert wide enums to something wider.  */
@@ -1774,9 +1773,8 @@ build_function_call (function, params)
   register tree coerced_params;
   tree name = NULL_TREE;
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  if (TREE_CODE (function) == NON_LVALUE_EXPR)
-    function = TREE_OPERAND (function, 0);
+  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
+  STRIP_NOPS (function);
 
   /* Convert anything with function type to a pointer-to-function.  */
   if (TREE_CODE (function) == FUNCTION_DECL)
@@ -1907,6 +1905,8 @@ convert_arguments (typelist, values, name)
 	}
 
       /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
+      /* Do not use STRIP_NOPS here!  We do not want an enumerator with value 0
+	 to convert automatically to a pointer.  */
       if (TREE_CODE (val) == NON_LVALUE_EXPR)
 	val = TREE_OPERAND (val, 0);
 
@@ -2225,11 +2225,9 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
   code0 = TREE_CODE (type0);
   code1 = TREE_CODE (type1);
 
-  /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
-  if (TREE_CODE (op0) == NON_LVALUE_EXPR)
-    op0 = TREE_OPERAND (op0, 0);
-  if (TREE_CODE (op1) == NON_LVALUE_EXPR)
-    op1 = TREE_OPERAND (op1, 0);
+  /* Strip NON_LVALUE_EXPRs, etc., since we aren't using as an lvalue.  */
+  STRIP_NOPS (op0);
+  STRIP_NOPS (op1);
 
   /* If an error was already reported for one of the arguments,
      avoid reporting another error.  */
@@ -3761,6 +3759,8 @@ build_modify_expr (lhs, modifycode, rhs)
     return error_mark_node;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
+  /* Do not use STRIP_NOPS here.  We do not want an enumerator
+     whose value is 0 to count as a null pointer constant.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
 
@@ -3920,6 +3920,8 @@ convert_for_assignment (type, rhs, errtype, funname, parmnum)
   register enum tree_code coder;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
+  /* Do not use STRIP_NOPS here.  We do not want an enumerator
+     whose value is 0 to count as a null pointer constant.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);
 
@@ -4507,6 +4509,8 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
     return init;
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
+  /* Do not use STRIP_NOPS here.  We do not want an enumerator
+     whose value is 0 to count as a null pointer constant.  */
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     inside_init = TREE_OPERAND (init, 0);
 
