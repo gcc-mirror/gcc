@@ -522,16 +522,16 @@ int flag_omit_frame_pointer = 0;
 
 int flag_function_sections = 0;
 
+/* ... and similar for data.  */
+ 
+int flag_data_sections = 0;
+
 /* Nonzero to inhibit use of define_optimization peephole opts.  */
 
 int flag_no_peephole = 0;
 
 /* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
    operations in the interest of optimization.  For example it allows
-/* ... and similar for data.  */
- 
-int flag_data_sections = 0;
-
    GCC to assume arguments to sqrt are nonnegative numbers, allowing
    faster code for sqrt to be generated.  */
 
