@@ -1,3 +1,7 @@
+Sun Mar 8 02:17:42 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Mar  7 00:54:15 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (is_cfg_nonregular): Change return type to
