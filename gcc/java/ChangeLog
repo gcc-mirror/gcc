@@ -1,3 +1,7 @@
+2004-01-28  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (build_field_ref): Widen field offset.
+
 2004-01-27  Andrew Haley  <aph@redhat.com>
 
 	java/13273
