@@ -218,11 +218,11 @@ elif test x$withval != xno; then
 fi])
 
 # Use cpplib+cppmain for the preprocessor, but don't link it with the compiler.
-cpp_main=cccp
+cpp_main=cppmain
 AC_ARG_ENABLE(cpplib,
-[  --enable-cpplib         use cpplib for the C preprocessor.],
-if test x$enable_cpplib != xno; then
-  cpp_main=cppmain
+[  --disable-cpplib        use the old isolated C preprocessor.],
+if test x$enable_cpplib = xno; then
+  cpp_main=cccp
 fi)
 
 # Link cpplib into the compiler proper, for C/C++/ObjC.
