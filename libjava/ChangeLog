@@ -1,5 +1,46 @@
 2004-04-21  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/classpath/ServiceFactory.java,
+	gnu/classpath/ServiceProviderLoadingAction.java,
+	javax/imageio/ImageReader.java,
+	javax/imageio/ImageTranscoder.java,
+	javax/imageio/ImageWriter.java,
+	javax/imageio/package.html,
+	javax/imageio/spi/IIOServiceProvider.java,
+	javax/imageio/spi/ImageInputStreamSpi.java,
+	javax/imageio/spi/ImageOutputStreamSpi.java,
+	javax/imageio/spi/ImageReaderWriterSpi.java,
+	javax/imageio/spi/ImageTranscoderSpi.java,
+	javax/imageio/spi/RegisterableService.java,
+	javax/imageio/spi/ServiceRegistry.java,
+	javax/imageio/spi/package.html,
+	javax/imageio/stream/IIOByteBuffer.java,
+	javax/imageio/stream/ImageInputStream.java,
+	javax/imageio/stream/ImageOutputStream.java,
+	javax/imageio/stream/package.html:
+	New files.
+	* Makefile.am
+	(ordinary_java_source_files): Added
+	gnu/classpath/ServiceFactory.java and
+	gnu/classpath/ServiceProviderLoadingAction.java.
+	(javax_source_files): Added
+	javax/imageio/ImageReader.java,
+	javax/imageio/ImageTranscoder.java,
+	javax/imageio/ImageWriter.java,
+	javax/imageio/spi/IIOServiceProvider.java,
+	javax/imageio/spi/ImageInputStreamSpi.java,
+	javax/imageio/spi/ImageOutputStreamSpi.java,
+	javax/imageio/spi/ImageReaderWriterSpi.java,
+	javax/imageio/spi/ImageTranscoderSpi.java,
+	javax/imageio/spi/RegisterableService.java,
+	javax/imageio/spi/ServiceRegistry.java,
+	javax/imageio/stream/IIOByteBuffer.java,
+	javax/imageio/stream/ImageInputStream.java and
+	javax/imageio/stream/ImageOutputStream.java.
+	* Makefile.in: Regenerated.
+
+2004-04-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Properties.java
 	(load): Fix wrongly merged fix.
 
