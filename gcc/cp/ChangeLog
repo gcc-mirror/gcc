@@ -1,3 +1,12 @@
+2005-03-09  Paolo Carlini  <pcarlini@suse.de>
+
+	PR c++/16859	
+	* decl.c (complete_array_type): In pedantic mode, return
+	3 for an empty initializer list as the initializer for an
+	array of unknown bound (8.5.1/4).
+	(maybe_deduce_size_from_array_init): Fix final test to use
+	the above.
+
 2005-03-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/20186
