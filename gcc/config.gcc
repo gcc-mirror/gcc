@@ -276,17 +276,9 @@ alpha*-*-*)
 	cpu_type=alpha
 	need_64bit_hwint=yes
 	;;
-strongarm*-*-*)
+arm*-*-* | strongarm*-*-* | ep9312*-*-* | xscale-*-*)
 	cpu_type=arm
-	;;
-arm*-*-*)
-	cpu_type=arm
-	;;
-ep9312*-*-*)
-	cpu_type=arm
-	;;
-xscale-*-*)
-	cpu_type=arm
+	extra_headers="mmintrin.h"
 	;;
 i[34567]86-*-*)
 	cpu_type=i386
@@ -1255,8 +1247,8 @@ ip2k-*-elf)
 	;;
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
-	extra_parts="crtinit.o crtfini.o"
-	;;
+	extra_parts="crtinit.o crtfini.o m32rx/crtinit.o m32rx/crtfini.o"
+ 	;;	;;
 # m68hc11 and m68hc12 share the same machine description.
 m68hc11-*-*|m6811-*-*)
 	tm_file="dbxelf.h elfos.h m68hc11/m68hc11.h"
@@ -2198,7 +2190,7 @@ alpha*-*-*)
 		fi
 	fi
 	;;
-arm*-*-*)
+arm*-*-* | xscale-*-*)
 	case "x$with_cpu" in
 		x)
 			# The most generic
@@ -2210,7 +2202,7 @@ arm*-*-*)
 		xarm[236789] | xarm250 | xarm[67][01]0 \
 		| xarm7m | xarm7dm | xarm7dmi | xarm[79]tdmi \
 		| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
-		| xxscale \
+		| xxscale | xiwmmxt \
 		| xep9312 \
 		| xstrongarm | xstrongarm110 | xstrongarm1100)
 			target_cpu_default2="TARGET_CPU_$with_cpu"
