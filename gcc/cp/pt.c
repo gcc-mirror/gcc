@@ -1133,7 +1133,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 				       member_specialization,
 				       1);
 	    
-      if (tmpl)
+      if (tmpl && tmpl != error_mark_node)
 	{
 	  if (explicit_instantiation)
 	    {
