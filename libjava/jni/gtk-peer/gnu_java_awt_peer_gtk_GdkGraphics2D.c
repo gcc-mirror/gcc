@@ -36,6 +36,7 @@
    exception statement from your version. */
 
 #include "gtkpeer.h"
+#include "gdkfont.h"
 #include "gnu_java_awt_peer_gtk_GdkGraphics2D.h"
 #include <gdk/gdktypes.h>
 #include <gdk/gdkprivate.h>
@@ -45,6 +46,8 @@
 #include <gdk-pixbuf/gdk-pixdata.h>
 
 #include <cairo.h>
+#include <cairo-xlib.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -198,9 +201,9 @@ init_graphics2d_as_renderable (struct graphics2d *gr)
   vis = gdk_x11_visual_get_xvisual (gdk_drawable_get_visual (gr->drawable));
   g_assert (vis != NULL);
   
-  gr->surface = cairo_surface_create_for_drawable (dpy, draw, vis, 
-						   CAIRO_FORMAT_ARGB32,
-						   DefaultColormap (dpy, DefaultScreen (dpy)));
+  gr->surface = cairo_xlib_surface_create (dpy, draw, vis, 
+					   CAIRO_FORMAT_ARGB32,
+					   DefaultColormap (dpy, DefaultScreen (dpy)));
   g_assert (gr->surface != NULL);
   g_assert (gr->cr != NULL);
   cairo_set_target_surface (gr->cr, gr->surface);
@@ -378,8 +381,8 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_gdkDrawDrawable
   gc = gdk_gc_new (dst->drawable);
   g_assert (gc != NULL);
 
-  gdk_draw_drawable(dst->drawable, gc, src->drawable,
-		    0, 0, x, y, width, height);
+  gdk_draw_drawable(dst->drawable, gc, src->drawable, 
+ 		    0, 0, x, y, width, height); 
 
   g_object_unref (gc);
 
@@ -474,7 +477,6 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_dispose
     g_object_unref (gr->drawbuf); 
 
   g_object_unref (gr->drawable);
-  free (gr);
 
   if (gr->pattern)
     cairo_surface_destroy (gr->pattern);
@@ -483,6 +485,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_dispose
     free (gr->pattern_pixels);
 
   if (gr->debug) printf ("disposed of graphics2d\n");
+  free (gr);
 
   gdk_threads_leave ();
 }
@@ -662,6 +665,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_drawPixels
 
   begin_drawing_operation (gr);
 
+  
  {
    cairo_surface_t *surf = cairo_surface_create_for_image ((char *)jpixels, 
 							   CAIRO_FORMAT_ARGB32, 
@@ -670,8 +674,9 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_drawPixels
    cairo_show_surface (gr->cr, surf, w, h);
    cairo_surface_destroy (surf);
  }
+  
 
-  end_drawing_operation (gr);
+ end_drawing_operation (gr);
 
   (*env)->ReleaseIntArrayElements (env, jarr, jpixels, 0);
 
@@ -721,6 +726,82 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetMatrix
     cairo_matrix_destroy (mat);
   }
   update_pattern_transform (gr);
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetFont 
+   (JNIEnv *env, jobject obj, jobject font)
+{
+  struct graphics2d *gr = NULL;
+  struct peerfont *pfont = NULL;
+  cairo_font_t *ft = NULL;
+  FT_Face face = NULL;
+
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+
+  pfont = (struct peerfont *)NSA_GET_FONT_PTR (env, font);
+  g_assert (pfont != NULL);
+
+  gdk_threads_enter ();
+
+  face = pango_ft2_font_get_face (pfont->font);
+  g_assert (face != NULL);
+
+  ft = cairo_ft_font_create_for_ft_face (face);
+  g_assert (ft != NULL);
+
+  if (gr->debug) printf ("cairo_set_font '%s'\n", 
+			 face->family_name);
+  
+  cairo_set_font (gr->cr, ft);
+
+  cairo_scale_font (gr->cr, 
+		    pango_font_description_get_size (pfont->desc) / 
+		    (double)PANGO_SCALE);
+
+  cairo_font_destroy (ft);
+
+  gdk_threads_leave ();
+}
+
+JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoShowGlyphs
+   (JNIEnv *env, jobject obj, jintArray jcodes, jfloatArray jposns, jint nglyphs)
+{
+  struct graphics2d *gr = NULL;
+  cairo_glyph_t *glyphs = NULL;
+  jfloat *posns = NULL;
+  jint *codes = NULL;
+  jint i;
+
+  gr = (struct graphics2d *) NSA_GET_G2D_PTR (env, obj);
+  g_assert (gr != NULL);
+
+  if (gr->debug) printf ("cairo_show_glyphs (%d glyphs)\n", nglyphs);
+
+  glyphs = malloc (sizeof(cairo_glyph_t) * nglyphs);
+  g_assert (glyphs);
+
+  codes = (*env)->GetIntArrayElements (env, jcodes, NULL);  
+  g_assert (codes != NULL);
+
+  posns = (*env)->GetFloatArrayElements (env, jposns, NULL);  
+  g_assert (posns != NULL);
+
+  for (i = 0; i < nglyphs; ++i)
+    {
+      glyphs[i].index = codes[i];
+      glyphs[i].x = (double) posns[2*i];
+      glyphs[i].y = (double) posns[2*i + 1];
+    }
+
+  (*env)->ReleaseIntArrayElements (env, jcodes, codes, 0);
+  (*env)->ReleaseFloatArrayElements (env, jposns, posns, 0);
+
+  begin_drawing_operation (gr);
+  cairo_show_glyphs (gr->cr, glyphs, nglyphs);
+  end_drawing_operation (gr);
+
+  free(glyphs);
 }
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics2D_cairoSetOperator 
