@@ -1804,7 +1804,7 @@ while (0)
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
-    return flag_pic && SYMBOLIC_CONST (RTX) ? 2 : 0;		\
+    return flag_pic && SYMBOLIC_CONST (RTX) ? 2 : 1;		\
 								\
   case CONST_DOUBLE:						\
     {								\
@@ -1817,6 +1817,9 @@ while (0)
 	     code == 2 ? 1 :					\
 			 2;					\
     }
+
+/* Delete the definition here when TOPLEVEL_COSTS_N_INSNS gets added to cse.c */
+#define TOPLEVEL_COSTS_N_INSNS(N) {total = COSTS_N_INSNS (N); break;}
 
 /* Like `CONST_COSTS' but applies to nonconstant RTL expressions.
    This can be used, for example, to indicate how costly a multiply
@@ -1836,10 +1839,10 @@ while (0)
 	HOST_WIDE_INT value = INTVAL (XEXP (X, 1));			\
 									\
 	if (value == 1)							\
-	  return COSTS_N_INSNS (ix86_cost->add);				\
+	  return COSTS_N_INSNS (ix86_cost->add) + rtx_cost(XEXP (X, 0));\
 									\
 	if (value == 2 || value == 3)					\
-	  return COSTS_N_INSNS (ix86_cost->lea);				\
+	  return COSTS_N_INSNS (ix86_cost->lea) + rtx_cost(XEXP (X, 0));\
       }									\
     /* fall through */							\
 		  							\
@@ -1847,9 +1850,22 @@ while (0)
   case ASHIFTRT:							\
   case LSHIFTRT:							\
   case ROTATERT:							\
-    return COSTS_N_INSNS ((GET_CODE (XEXP (X, 1)) == CONST_INT)		\
-				? ix86_cost->shift_const			\
-				: ix86_cost->shift_var);			\
+    if (GET_MODE (XEXP (X, 0)) == DImode)				\
+      {									\
+	if (GET_CODE (XEXP (X, 1)) == CONST_INT)			\
+	  if (INTVAL (XEXP (X, 1)) > 32)					\
+	    return COSTS_N_INSNS(ix86_cost->shift_const + 2);		\
+	  else								\
+	    return COSTS_N_INSNS(ix86_cost->shift_const * 2);		\
+	return ((GET_CODE (XEXP (X, 1)) == AND				\
+		 ? COSTS_N_INSNS(ix86_cost->shift_var * 2)		\
+		 : COSTS_N_INSNS(ix86_cost->shift_var * 6 + 2))		\
+		+ rtx_cost(XEXP (X, 0)));				\
+      }									\
+    return COSTS_N_INSNS (GET_CODE (XEXP (X, 1)) == CONST_INT		\
+			  ? ix86_cost->shift_const			\
+			  : ix86_cost->shift_var)			\
+      + rtx_cost(XEXP (X, 0));						\
 									\
   case MULT:								\
     if (GET_CODE (XEXP (X, 1)) == CONST_INT)				\
@@ -1857,25 +1873,36 @@ while (0)
 	unsigned HOST_WIDE_INT value = INTVAL (XEXP (X, 1));		\
 	int nbits = 0;							\
 									\
+	if (value == 2)							\
+	  return COSTS_N_INSNS (ix86_cost->add) + rtx_cost(XEXP (X, 0));\
+									\
+	if (value == 4 || value == 8)					\
+	  return COSTS_N_INSNS (ix86_cost->lea) + rtx_cost(XEXP (X, 0));\
+									\
 	while (value != 0)						\
 	  {								\
 	    nbits++;							\
 	    value >>= 1;						\
 	  } 								\
 									\
+	if (nbits == 1)							\
+	  return COSTS_N_INSNS (ix86_cost->shift_const)			\
+	    + rtx_cost(XEXP (X, 0));					\
+									\
 	return COSTS_N_INSNS (ix86_cost->mult_init			\
-			      + nbits * ix86_cost->mult_bit);		\
+			      + nbits * ix86_cost->mult_bit)		\
+	  + rtx_cost(XEXP (X, 0));					\
       }									\
 									\
     else			/* This is arbitrary */			\
-      return COSTS_N_INSNS (ix86_cost->mult_init				\
-			    + 7 * ix86_cost->mult_bit);			\
+      TOPLEVEL_COSTS_N_INSNS (ix86_cost->mult_init			\
+			      + 7 * ix86_cost->mult_bit);		\
 									\
   case DIV:								\
   case UDIV:								\
   case MOD:								\
   case UMOD:								\
-    return COSTS_N_INSNS (ix86_cost->divide);				\
+    TOPLEVEL_COSTS_N_INSNS (ix86_cost->divide);				\
 									\
   case PLUS:								\
     if (GET_CODE (XEXP (X, 0)) == REG					\
@@ -1888,9 +1915,15 @@ while (0)
   case IOR:								\
   case XOR:								\
   case MINUS:								\
+    if (GET_MODE (X) == DImode)						\
+      return COSTS_N_INSNS (ix86_cost->add) * 2				\
+	+ (rtx_cost (XEXP (X, 0)) << (GET_MODE (XEXP (X, 0)) != DImode))\
+	+ (rtx_cost (XEXP (X, 1)) << (GET_MODE (XEXP (X, 1)) != DImode));\
   case NEG:								\
   case NOT:								\
-    return COSTS_N_INSNS (ix86_cost->add);
+    if (GET_MODE (X) == DImode)						\
+      TOPLEVEL_COSTS_N_INSNS (ix86_cost->add * 2)			\
+    TOPLEVEL_COSTS_N_INSNS (ix86_cost->add)
 
 
 /* An expression giving the cost of an addressing mode that contains
