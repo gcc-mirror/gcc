@@ -2720,19 +2720,41 @@ store_constructor (exp, target)
 	  int bitsize;
 	  int bitpos;
 	  int unsignedp;
+	  tree index = TREE_PURPOSE (elt);
+	  rtx xtarget = target;
 
 	  mode = TYPE_MODE (elttype);
 	  bitsize = GET_MODE_BITSIZE (mode);
 	  unsignedp = TREE_UNSIGNED (elttype);
 
-	  bitpos = (i * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
+	  if (index != 0 && TREE_CODE (index) != INTEGER_CST)
+	    {
+	      /* We don't currently allow variable indices in a
+		 C initializer, but let's try here to support them.  */
+	      rtx pos_rtx, addr, xtarget;
+	      tree position;
 
-	  store_field (target, bitsize, bitpos, mode, TREE_VALUE (elt),
-		       /* The alignment of TARGET is
-			  at least what its type requires.  */
-		       VOIDmode, 0,
-		       TYPE_ALIGN (type) / BITS_PER_UNIT,
-		       int_size_in_bytes (type));
+	      position = size_binop (MULT_EXPR, index, TYPE_SIZE (elttype));
+	      pos_rtx = expand_expr (position, 0, VOIDmode, 0);
+	      addr = gen_rtx (PLUS, Pmode, XEXP (target, 0), pos_rtx);
+	      xtarget = change_address (target, mode, addr);
+	      store_expr (TREE_VALUE (elt), xtarget, 0);
+	    }
+	  else
+	    {
+	      if (index != 0)
+		bitpos = (TREE_INT_CST_LOW (index)
+			  * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
+	      else
+		bitpos = (i * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
+
+	      store_field (xtarget, bitsize, bitpos, mode, TREE_VALUE (elt),
+			   /* The alignment of TARGET is
+			      at least what its type requires.  */
+			   VOIDmode, 0,
+			   TYPE_ALIGN (type) / BITS_PER_UNIT,
+			   int_size_in_bytes (type));
+	    }
 	}
     }
 
@@ -4013,7 +4035,8 @@ expand_expr (exp, target, tmode, modifier)
 		  {
 		    tree elem = CONSTRUCTOR_ELTS (init);
 
-		    while (elem && i--)
+		    while (elem
+			   && !tree_int_cst_equal (TREE_PURPOSE (elem), index))
 		      elem = TREE_CHAIN (elem);
 		    if (elem)
 		      return expand_expr (fold (TREE_VALUE (elem)), target,
