@@ -1,3 +1,21 @@
+1999-08-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (start_handler_parms): New function.
+	(expand_start_catch_block): Take only one parameter.
+	(start_handler_parms): New function.
+	* decl.c (start_handler_parms): Define it.
+	* except.c (process_start_catch_block): Take only one parameter.
+	Don't call grokdeclarator here.
+	(expand_start_catch_block): Don't call grokdeclarator here,
+	either.
+	* parse.y (handler_args): Adjust call to
+	expand_start_catch_block.  Use start_handler_parms.
+	* pt.c (push_template_decl_real): Make permanent lists have
+	permanent elements.
+	(tsubst_expr): Adjust calls to expand_start_catch_block
+	appropriately.
+	* semantics.c (expand_stmt): Likewise.
+	
 1999-08-29  Alex Samuel  <samuel@codesourcery.com>
 
 	* pt.c (push_template_decl_real): Use template declaration from
