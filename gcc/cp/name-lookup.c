@@ -2295,7 +2295,10 @@ do_local_using_decl (tree decl, tree scope, tree name)
 	push_local_binding (name, newval, PUSH_USING);
     }
   if (newtype)
-    set_identifier_type_value (name, newtype);
+    {
+      push_local_binding (name, newtype, PUSH_USING);
+      set_identifier_type_value (name, newtype);
+    }
 }
 
 /* Return the type that should be used when TYPE's name is preceded
@@ -4462,11 +4465,15 @@ lookup_arg_dependent (tree name, tree fns, tree args)
      we found were brought into the current namespace via a using
      declaration, we have not really checked the namespace from which
      they came.  Therefore, we check all namespaces here -- unless the
-     function we have is from the current namespace.  */
+     function we have is from the current namespace.  Even then, we
+     must check all namespaces if the function is a local
+     declaration; any other declarations present at namespace scope
+     should be visible during argument-dependent lookup.  */
   if (fns)
     fn = OVL_CURRENT (fns);
   if (fn && TREE_CODE (fn) == FUNCTION_DECL 
-      && CP_DECL_CONTEXT (fn) != current_decl_namespace ())
+      && (CP_DECL_CONTEXT (fn) != current_decl_namespace ()
+	  || DECL_LOCAL_FUNCTION_P (fn)))
     k.namespaces = NULL_TREE;
   else
     /* Setting NAMESPACES is purely an optimization; it prevents
@@ -4823,7 +4830,6 @@ push_to_top_level (void)
   s->bindings = b;
   s->need_pop_function_context = need_pop;
   s->function_decl = current_function_decl;
-  s->last_parms = last_function_parms;
 
   scope_chain = s;
   current_function_decl = NULL_TREE;
@@ -4861,7 +4867,6 @@ pop_from_top_level (void)
   if (s->need_pop_function_context)
     pop_function_context_from (NULL_TREE);
   current_function_decl = s->function_decl;
-  last_function_parms = s->last_parms;
   timevar_pop (TV_NAME_LOOKUP);
 }
 

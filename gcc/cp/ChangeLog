@@ -1,3 +1,42 @@
+2004-03-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_op_delete_call): Do not forget the placement
+	arguments when iterating through mutiple delete operators.
+
+	* cp-tree.h (svaed_scope): Remove last_parms.
+	(NEW_DELETE_OPNAME_P): New macro.
+	(last_function_parms): Remove.
+	(do_friend): Adjust prototype.
+	* decl.c (grokparms): Return the PARM_DECLs directly, rather than
+	using last_function_parms.
+	(grokfndecl): Take the PARM_DECLs as an argument, rather than
+	using last_function_parms.
+	(grokdeclarator): Adjust accordingly.  Do not form METHOD_TYPEs
+	for class-specific operator new and operator delete.
+	(grok_op_properties): Do not look for allocation functions with
+	METHOD_TYPEs.
+	(start_function): Use DECL_ARGUMENTS instead of
+	last_function_parms.
+	* decl.h (last_function_parms): Do not declare.
+	* decl2.c (grokclassfn): Do not use last_function_parms.
+	* friend.c (do_friend): Remove parmdecls parameter.
+	* name-lookup.c (push_to_top_level): Do not save last_function_parms.
+	(pop_from_top_level): Do not restore it.
+	* pt.c (check_explicit_specialization): Do not adjust
+	last_function_parms.
+
+	* name-lookup.c (do_local_using_decl): Create a local binding for
+	types brought in via using declarations.
+
+	* name-lookup.c (lookup_arg_dependent): Handle block-scope
+	function declarations correctly.
+
+	* semantics.c (finish_id_expression): Correct handling of
+	conversion operators to dependent types.
+
+	* typeck.c (lookup_destructor): Allow the use of destructors from
+	base classes.
+	
 2004-03-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14545

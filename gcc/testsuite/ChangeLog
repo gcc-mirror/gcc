@@ -1,3 +1,20 @@
+2004-03-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/init/placement3.C: New test.
+
+	* g++.dg/template/spec13.C: New test.
+	
+	* g++.dg/lookup/using11.C: New test.
+	
+	* g++.dg/lookup/koenig3.C: New test.
+
+	* g++.dg/template/operator2.C: New test.
+	
+	* g++.dg/expr/dtor3.C: New test.
+	* g++.old-deja/g++.brendan/crash15.C: Remove incorrect dg-error
+	marker.
+	* g++.old-deja/g++.law/visibility28.C: Likewise.
+
 2004-03-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14545
