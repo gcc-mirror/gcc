@@ -680,30 +680,28 @@
 ;; instruction.  We check the opcode against the mode of the CC value.
 ;; validate_condition_mode is an assertion.
 (define_predicate "branch_comparison_operator"
-  (and (match_code "eq,ne,le,lt,ge,gt,leu,ltu,geu,gtu,unordered,ordered,unge,unle")
-       (and (match_operand 0 "comparison_operator")
-	    (and (match_test "GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC")
-		 (match_test "validate_condition_mode (GET_CODE (op),
-						       GET_MODE (XEXP (op, 0))),
-			      1")))))
+   (and (match_operand 0 "comparison_operator")
+	(and (match_test "GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC")
+	     (match_test "validate_condition_mode (GET_CODE (op),
+						   GET_MODE (XEXP (op, 0))),
+			  1"))))
 
 ;; Return 1 if OP is a comparison operation that is valid for an SCC insn --
 ;; it must be a positive comparison.
 (define_predicate "scc_comparison_operator"
-  (and (match_code "eq,lt,gt,ltu,gtu,unordered")
-       (match_operand 0 "branch_comparison_operator")))
+  (and (match_operand 0 "branch_comparison_operator")
+       (match_code "eq,lt,gt,ltu,gtu,unordered")))
 
 ;; Return 1 if OP is a comparison operation that is valid for a branch
 ;; insn, which is true if the corresponding bit in the CC register is set.
 (define_predicate "branch_positive_comparison_operator"
-  (and (match_code "eq,lt,gt,ltu,gtu,unordered")
-       (match_operand 0 "branch_comparison_operator")))
+  (and (match_operand 0 "branch_comparison_operator")
+       (match_code "eq,lt,gt,ltu,gtu,unordered")))
 
 ;; Return 1 is OP is a comparison operation that is valid for a trap insn.
 (define_predicate "trap_comparison_operator"
-  (and (match_code "eq,ne,le,lt,ge,gt,leu,ltu,geu,gtu")
-       (match_test "(mode == VOIDmode || mode == GET_MODE (op))
-		    && COMPARISON_P (op)")))
+   (and (match_operand 0 "comparison_operator")
+	(match_code "eq,ne,le,lt,ge,gt,leu,ltu,geu,gtu")))
 
 ;; Return 1 if OP is a load multiple operation, known to be a PARALLEL.
 (define_predicate "load_multiple_operation"

@@ -1,3 +1,13 @@
+2005-03-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/predicates.md (branch_comparison_operator): Remove
+	redundant match_code test.
+	(scc_comparison_operator): Swap match_operand and match_code
+	tests.
+	(branch_positive_comparison_operator): Same.
+	(trap_comparison_operator): Use comparison_operator and swap with
+	match_code test.
+
 2005-03-06  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	PR target/20288
