@@ -1,5 +1,7 @@
 2000-05-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* bits/generic_shadow.h: Remaining _C_Shadow -> _C_shadow fix.
+	
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG): Add strtoull checks...
 
 2000-05-31 Steven King <sxking@uswest.net>
