@@ -1,3 +1,7 @@
+1998-11-16  Benjamin Kosnik  <bkoz@haight.constant.com>
+
+        * cplus-dem.c (demangle_fund_type): Add demangling for C9x types.
+
 Thu Nov 19 22:15:50 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mpw.c (mpw_access): Add missing parens.
