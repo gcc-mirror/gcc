@@ -53,9 +53,8 @@ crtbegin.o%s"
 #define PUT_SDB_SIZE(a)                                       \
 do {                                                  \
   extern FILE *asm_out_text_file;                     \
-  fprintf (asm_out_text_file, "\t.esize\t");          \
-  fprintf (asm_out_text_file, HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT) (a)); \
-  fprintf (asm_out_text_file, ";");                   \
+  fprintf (asm_out_text_file, "\t.esize\t" HOST_WIDE_INT_PRINT_DEC ";", \
+ 	   (HOST_WIDE_INT) (a));		      \
 } while (0)
 
 #undef PUT_SDB_TYPE

@@ -3940,9 +3940,7 @@ ia64_print_operand (file, x, code)
 	    break;
 	  }
 
-	putc (',', file);
-	putc (' ', file);
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, value);
+	fprintf (file, ", " HOST_WIDE_INT_PRINT_DEC, value);
 	return;
       }
 
@@ -7512,12 +7510,8 @@ process_set (asm_out_file, pat)
 	  if (op0 == dest && GET_CODE (op1) == CONST_INT)
 	    {
 	      if (INTVAL (op1) < 0)
-		{
-		  fputs ("\t.fframe ", asm_out_file);
-		  fprintf (asm_out_file, HOST_WIDE_INT_PRINT_DEC,
-			   -INTVAL (op1));
-		  fputc ('\n', asm_out_file);
-		}
+		fprintf (asm_out_file, "\t.fframe "HOST_WIDE_INT_PRINT_DEC"\n",
+			 -INTVAL (op1));
 	      else
 		process_epilogue ();
 	    }

@@ -5077,15 +5077,15 @@ output_div_insn (operands, unsignedp, insn)
 	}
       if (unsignedp)
 	{
-	  sprintf (buf, "$$divU_");
-	  sprintf (buf + 7, HOST_WIDE_INT_PRINT_DEC, INTVAL (operands[0]));
+	  sprintf (buf, "$$divU_" HOST_WIDE_INT_PRINT_DEC,
+		   INTVAL (operands[0]));
 	  return output_millicode_call (insn,
 					gen_rtx_SYMBOL_REF (SImode, buf));
 	}
       else
 	{
-	  sprintf (buf, "$$divI_");
-	  sprintf (buf + 7, HOST_WIDE_INT_PRINT_DEC, INTVAL (operands[0]));
+	  sprintf (buf, "$$divI_" HOST_WIDE_INT_PRINT_DEC,
+		   INTVAL (operands[0]));
 	  return output_millicode_call (insn,
 					gen_rtx_SYMBOL_REF (SImode, buf));
 	}
@@ -7195,25 +7195,20 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 	      fprintf (file, "\tmtsp %%r1,%%sr0\n");
 	      fprintf (file, "\tbe 0(%%sr0,%%r22)\n\tldo ");
 	    }
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-	  fprintf (file, "(%%r26),%%r26\n");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC "(%%r26),%%r26\n", delta);
 	}
       else
-	{
-	  fprintf (file, "\tb %s\n\tldo ", target_name);
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-	  fprintf (file, "(%%r26),%%r26\n");
-	}
+	fprintf (file, "\tb %s\n\tldo " HOST_WIDE_INT_PRINT_DEC
+		 "(%%r26),%%r26\n",
+		 target_name, delta);
     }
   else
     {
       if (!TARGET_64BIT && !TARGET_PORTABLE_RUNTIME && flag_pic)
 	{
-	  fprintf (file, "\taddil L'");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-	  fprintf (file, ",%%r26\n\tldo R'");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-	  fprintf (file, "(%%r1),%%r26\n");
+	  fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC
+		   ",%%r26\n\tldo R'" HOST_WIDE_INT_PRINT_DEC "(%%r1),%%r26\n",
+		   delta, delta);
 	  fprintf (file, "\taddil LT'%s,%%r19\n", lab);
 	  fprintf (file, "\tldw RT'%s(%%r1),%%r22\n", lab);
 	  fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
@@ -7231,13 +7226,9 @@ pa_asm_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
 	    }
 	}
       else
-	{
-	  fprintf (file, "\taddil L'");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-	  fprintf (file, ",%%r26\n\tb %s\n\tldo R'", target_name);
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
-	  fprintf (file, "(%%r1),%%r26\n");
-	}
+	fprintf (file, "\taddil L'" HOST_WIDE_INT_PRINT_DEC
+		 ",%%r26\n\tb %s\n\tldo R'" HOST_WIDE_INT_PRINT_DEC
+		 "(%%r1),%%r26\n", delta, target_name, delta);
     }
     
   fprintf (file, "\t.EXIT\n\t.PROCEND\n");

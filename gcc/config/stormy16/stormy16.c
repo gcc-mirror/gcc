@@ -1661,10 +1661,7 @@ xstormy16_print_operand_address (file, address)
   if (post_inc)
     fputs ("++", file);
   if (offset != 0)
-    {
-      fputc (',', file);
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
-    }
+    fprintf (file, "," HOST_WIDE_INT_PRINT_DEC, offset);
   fputc (')', file);
 }
 
@@ -1695,8 +1692,7 @@ xstormy16_print_operand (file, x, code)
 	if (l == -1)
 	  output_operand_lossage ("`B' operand has multiple bits set");
 	
-	fputs (IMMEDIATE_PREFIX, file);
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, l);
+	fprintf (file, IMMEDIATE_PREFIX HOST_WIDE_INT_PRINT_DEC, l);
 	return;
       }
 
@@ -1725,8 +1721,7 @@ xstormy16_print_operand (file, x, code)
 	if (code == 'O')
 	  xx = -xx;
 	
-	fputs (IMMEDIATE_PREFIX, file);
-	fprintf (file, HOST_WIDE_INT_PRINT_DEC, xx - 1);
+	fprintf (file, IMMEDIATE_PREFIX HOST_WIDE_INT_PRINT_DEC, xx - 1);
 	return;
       }
 

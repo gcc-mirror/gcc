@@ -1827,8 +1827,7 @@ do { 									\
       fputs (")", FILE);						\
       break;								\
     case CONST_INT:							\
-      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, INTVAL (addr));		\
-      fprintf (FILE, "(%%r0)");						\
+      fprintf (FILE, HOST_WIDE_INT_PRINT_DEC "(%%r0)", INTVAL (addr));	\
       break;								\
     default:								\
       output_addr_const (FILE, addr);					\

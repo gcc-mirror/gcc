@@ -7222,10 +7222,9 @@ sparc_flat_function_prologue (file, size)
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset\t");
-	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
-	      fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
-		       t1_str, sp_str, t1_str, sp_str);
+	      fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
+		       ", %s\n\tsub\t%s, %s, %s\n",
+		       size, t1_str, sp_str, t1_str, sp_str);
 	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n",
@@ -7283,10 +7282,9 @@ sparc_flat_function_prologue (file, size)
 	    }
 	  else
 	    {
-	      fprintf (file, "\tset\t");
-	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size1);
-	      fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
-		       t1_str, sp_str, t1_str, sp_str);
+	      fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
+		       ", %s\n\tsub\t%s, %s, %s\n",
+		       size1, t1_str, sp_str, t1_str, sp_str);
 	      if (gmask & HARD_FRAME_POINTER_MASK)
 		{
 		  fprintf (file, "\tst\t%s, [%s+%d]\n\tadd\t%s, %s, %s\t%s# set up frame pointer\n",
@@ -7321,10 +7319,9 @@ sparc_flat_function_prologue (file, size)
 				   gmask & ~(HARD_FRAME_POINTER_MASK | RETURN_ADDR_MASK),
 				   current_frame_info.fmask,
 				   "st", "std", -size1);
-	  fprintf (file, "\tset\t");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, size - size1);
-	  fprintf (file, ", %s\n\tsub\t%s, %s, %s\n",
-		   t1_str, sp_str, t1_str, sp_str);
+	  fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
+		   ", %s\n\tsub\t%s, %s, %s\n",
+		   size - size1, t1_str, sp_str, t1_str, sp_str);
 	  if (dwarf2out_do_frame ())
 	    if (! (gmask & HARD_FRAME_POINTER_MASK))
 	      dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, size);
@@ -7383,11 +7380,8 @@ sparc_flat_function_epilogue (file, size)
 	 delay slot if not otherwise filled by the reload sequence.  */
 
       if (size > 4095)
-        {
-	  fprintf (file, "\tset\t");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
-	  fprintf (file, ", %s\n", t1_str);
-	}
+	fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC ", %s\n",
+		 size, t1_str);
 
       if (frame_pointer_needed)
 	{
@@ -7413,10 +7407,9 @@ sparc_flat_function_epilogue (file, size)
 	  /* Offset to register save area from %sp.  */
 	  reg_offset = size1 - reg_offset;
 
-	  fprintf (file, "\tset\t");
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, size1);
-	  fprintf (file, ", %s\n\tadd\t%s, %s, %s\n",
-		   t1_str, sp_str, t1_str, sp_str);
+	  fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC
+		   ", %s\n\tadd\t%s, %s, %s\n",
+		   size1, t1_str, sp_str, t1_str, sp_str);
 	}
 
       /* We must restore the frame pointer and return address reg first
@@ -7446,11 +7439,8 @@ sparc_flat_function_epilogue (file, size)
 	{
 	  size -= size1;
 	  if (size > 4095)
-	    {
-	      fprintf (file, "\tset\t");
-	      fprintf (file, HOST_WIDE_INT_PRINT_DEC, size);
-	      fprintf (file, ", %s\n", t1_str);
-	    }
+	    fprintf (file, "\tset\t" HOST_WIDE_INT_PRINT_DEC ", %s\n",
+		     size, t1_str);
 	}
 
       if (current_function_returns_struct)

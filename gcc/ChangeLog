@@ -1,5 +1,26 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alpha.c (print_operand_address, alpha_start_function,
+	unicosmk_output_ssib): Use string concatentation on
+	HOST_WIDE_INT_PRINT_* format specifier to collapse multiple
+	function calls into one.
+	* arm.c (arm_print_operand): Likewise.
+	* cris.c (cris_asm_output_mi_thunk): Likewise.
+	* frv.c (frv_asm_output_mi_thunk): Likewise.
+	* ia64.c (ia64_print_operand, process_set): Likewise.
+	* m68k.c (m68k_output_function_epilogue, m68k_output_mi_thunk):
+	Likewise.
+	* mips/iris5gas.h (PUT_SDB_SIZE): Likewise.
+	* mips.h (PUT_SDB_INT_VAL, PUT_SDB_SIZE): Likewise.
+	* pa.c (output_div_insn, pa_asm_output_mi_thunk): Likewise.
+	* pa.h (PRINT_OPERAND_ADDRESS): Likewise.
+	* rs6000.c (rs6000_va_start, print_operand_address): Likewise.
+	* s390.c (s390_assemble_integer): Likewise.
+	* sparc.c (sparc_flat_function_prologue,
+	sparc_flat_function_epilogue): Likewise. 
+	* stormy16.c (xstormy16_print_operand_address, xstormy16_print_operand): Likewise.
+	* vax.c (vax_output_mi_thunk): Likewise.
+
 	* frv.c (frv_print_operand_memory_reference): Fix format specifier
 	warning.
 	(frv_rtx_costs): Mark parameter with ATTRIBUTE_UNUSED.

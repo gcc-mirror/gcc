@@ -6112,10 +6112,7 @@ print_operand_address (file, addr)
 	}
 
       if (offset)
-	{
-	  fputc ('+', file);
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
-	}
+	fprintf (file, "+" HOST_WIDE_INT_PRINT_DEC, offset);
       
       addr = XEXP (addr, 0);
       if (GET_CODE (addr) == REG)
@@ -6159,8 +6156,7 @@ print_operand_address (file, addr)
   else
     abort ();
 
-  fprintf (file, HOST_WIDE_INT_PRINT_DEC, offset);
-  fprintf (file, "($%d)", basereg);
+  fprintf (file, HOST_WIDE_INT_PRINT_DEC "($%d)", offset, basereg);
 }
 
 /* Emit RTL insns to initialize the variable parts of a trampoline at
@@ -7692,23 +7688,17 @@ alpha_start_function (file, fnname, decl)
   if (TARGET_ABI_UNICOSMK)
     ;
   else if (TARGET_ABI_OPEN_VMS)
-    {
-      fprintf (file, "\t.frame $%d,", vms_unwind_regno);
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-	       frame_size >= (1UL << 31) ? 0 : frame_size);
-      fputs (",$26,", file);
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, reg_offset);
-      fputs ("\n", file);
-    }
+    fprintf (file, "\t.frame $%d," HOST_WIDE_INT_PRINT_DEC ",$26,"
+	     HOST_WIDE_INT_PRINT_DEC "\n",
+	     vms_unwind_regno,
+	     frame_size >= (1UL << 31) ? 0 : frame_size,
+	     reg_offset);
   else if (!flag_inhibit_size_directive)
-    {
-      fprintf (file, "\t.frame $%d,",
-	       (frame_pointer_needed
-		? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM));
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-	       frame_size >= (1UL << 31) ? 0 : frame_size);
-      fprintf (file, ",$26,%d\n", current_function_pretend_args_size);
-    }
+    fprintf (file, "\t.frame $%d," HOST_WIDE_INT_PRINT_DEC ",$26,%d\n",
+	     (frame_pointer_needed
+	      ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM),
+	     frame_size >= (1UL << 31) ? 0 : frame_size,
+	     current_function_pretend_args_size);
 
   /* Describe which registers were spilled.  */
   if (TARGET_ABI_UNICOSMK)
@@ -7728,10 +7718,8 @@ alpha_start_function (file, fnname, decl)
     {
       if (imask)
 	{
-	  fprintf (file, "\t.mask 0x%lx,", imask);
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
+	  fprintf (file, "\t.mask 0x%lx," HOST_WIDE_INT_PRINT_DEC "\n", imask,
 		   frame_size >= (1UL << 31) ? 0 : reg_offset - frame_size);
-	  putc ('\n', file);
 
 	  for (i = 0; i < 32; ++i)
 	    if (imask & (1UL << i))
@@ -7739,12 +7727,8 @@ alpha_start_function (file, fnname, decl)
 	}
 
       if (fmask)
-	{
-	  fprintf (file, "\t.fmask 0x%lx,", fmask);
-	  fprintf (file, HOST_WIDE_INT_PRINT_DEC,
-		   frame_size >= (1UL << 31) ? 0 : reg_offset - frame_size);
-	  putc ('\n', file);
-	}
+	fprintf (file, "\t.fmask 0x%lx," HOST_WIDE_INT_PRINT_DEC "\n", fmask,
+		 frame_size >= (1UL << 31) ? 0 : reg_offset - frame_size);
     }
 
 #if TARGET_ABI_OPEN_VMS
@@ -10067,14 +10051,12 @@ unicosmk_output_ssib (file, fnname)
   for (x = machine->first_ciw; x; x = XEXP (x, 1))
     {
       ciw = XEXP (x, 0);
-      fprintf (file, "\t.quad\t");
 #if HOST_BITS_PER_WIDE_INT == 32
-      fprintf (file, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+      fprintf (file, "\t.quad\t" HOST_WIDE_INT_PRINT_DOUBLE_HEX "\n",
 	       CONST_DOUBLE_HIGH (ciw), CONST_DOUBLE_LOW (ciw));
 #else
-      fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (ciw));
+      fprintf (file, "\t.quad\t" HOST_WIDE_INT_PRINT_HEX "\n", INTVAL (ciw));
 #endif
-      fprintf (file, "\n");
     }
 }
 
