@@ -23472,7 +23472,7 @@ done
 
 
   # Export file names for ABI checking.
-  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_triplet}/baseline_symbols.txt"
+  baseline_file="${glibcpp_srcdir}/config/abi/${abi_baseline_pair}/baseline_symbols.txt"
   
 
     case "$target" in
@@ -23649,10 +23649,9 @@ else
   GLIBCPP_TEST_WCHAR_T_TRUE='#'
   GLIBCPP_TEST_WCHAR_T_FALSE=
 fi	
-# Don't do ABI checking unless native.
 
 
-if ${GLIBCPP_IS_CROSS_COMPILING} && test "$enable_abi_check" = yes ; then
+if test "$enable_abi_check" = yes; then
   GLIBCPP_BUILD_ABI_CHECK_TRUE=
   GLIBCPP_BUILD_ABI_CHECK_FALSE='#'
 else
@@ -23724,7 +23723,7 @@ glibcpp_prefixdir=${prefix}
 
 # Process the option --with-gxx-include-dir=<path to include-files directory>
 echo $ac_n "checking for --with-gxx-include-dir""... $ac_c" 1>&6
-echo "configure:23728: checking for --with-gxx-include-dir" >&5
+echo "configure:23727: checking for --with-gxx-include-dir" >&5
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
   withval="$with_gxx_include_dir"
@@ -23748,7 +23747,7 @@ echo "$ac_t""$gxx_include_dir" 1>&6
 
 # Process the option "--enable-version-specific-runtime-libs"
 echo $ac_n "checking for --enable-version-specific-runtime-libs""... $ac_c" 1>&6
-echo "configure:23752: checking for --enable-version-specific-runtime-libs" >&5
+echo "configure:23751: checking for --enable-version-specific-runtime-libs" >&5
 # Check whether --enable-version-specific-runtime-libs or --disable-version-specific-runtime-libs was given.
 if test "${enable_version_specific_runtime_libs+set}" = set; then
   enableval="$enable_version_specific_runtime_libs"
@@ -23799,7 +23798,7 @@ if test x"$glibcpp_toolexecdir" = x"no"; then
 fi
 
 echo $ac_n "checking for install location""... $ac_c" 1>&6
-echo "configure:23803: checking for install location" >&5
+echo "configure:23802: checking for install location" >&5
 echo "$ac_t""$gxx_include_dir" 1>&6
 
 
