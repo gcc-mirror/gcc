@@ -1,3 +1,8 @@
+1998-10-25  Mark Mitchell  <mark@markmitchell.com>
+
+	* cplus-dem.c (gnu_special): Fix handling of virtual tables in
+	anonymous namespaces.
+	
 1998-10-23  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (work_stuff): Replace const_type and volatile_type
@@ -14,7 +19,7 @@
 	(demangle_template_value_parm): Likewise.
 	(do_type): Likewise.
 	(demangle_fund_type)): Likewise.
-	
+
 Thu Oct 22 19:58:43 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* splay-tree.c (splay_tree_foreach_helper): Make definition static
