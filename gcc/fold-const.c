@@ -7182,6 +7182,34 @@ fold (tree expr)
       if (tem)
 	return tem;
 
+      /* If we have (A & C) == D where D & ~C != 0, convert this into 0.
+	 Similarly for NE_EXPR.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && TREE_CODE (arg0) == BIT_AND_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  tree dandnotc = fold (build (BIT_ANDTC_EXPR, TREE_TYPE (arg0),
+				       arg1, TREE_OPERAND (arg0, 1)));
+	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
+	  if (!integer_zerop (dandnotc))
+	    return omit_one_operand (type, rslt, arg0);
+	}
+
+      /* If we have (A | C) == D where C & ~D != 0, convert this into 0.
+	 Similarly for NE_EXPR.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && TREE_CODE (arg0) == BIT_IOR_EXPR
+	  && TREE_CODE (arg1) == INTEGER_CST
+	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
+	{
+	  tree candnotd = fold (build (BIT_ANDTC_EXPR, TREE_TYPE (arg0),
+				       TREE_OPERAND (arg0, 1), arg1));
+	  tree rslt = code == EQ_EXPR ? integer_zero_node : integer_one_node;
+	  if (!integer_zerop (candnotd))
+	    return omit_one_operand (type, rslt, arg0);
+	}
+
       /* If X is unsigned, convert X < (1 << Y) into X >> Y == 0
 	 and similarly for >= into !=.  */
       if ((code == LT_EXPR || code == GE_EXPR)
