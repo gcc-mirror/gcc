@@ -2753,22 +2753,30 @@ topdir=`pwd`
 cd $holddir
 
 # Conditionalize the makefile for this host machine.
-host_overrides=/dev/null
+# Make-host contains the concatenation of all host makefile fragments
+# [there can be more than one].  This file is built by configure.frag.
+host_overrides=Make-host
 dep_host_xmake_file=
-if [[ x"$host_xmake_file" != x -a -f ${srcdir}/config/$host_xmake_file ]]
-then
-	host_overrides=$srcdir/config/$host_xmake_file
-	dep_host_xmake_file="\$(srcdir)/config/$host_xmake_file"
-fi
+for f in .. ${host_xmake_file}
+do
+	if [[ -f ${srcdir}/config/$f ]]
+	then
+		dep_host_xmake_file="${dep_host_xmake_file} ${srcdir}/config/$f"
+	fi
+done
 
 # Conditionalize the makefile for this target machine.
-target_overrides=/dev/null
+# Make-target contains the concatenation of all host makefile fragments
+# [there can be more than one].  This file is built by configure.frag.
+target_overrides=Make-target
 dep_tmake_file=
-if [[ x"$tmake_file" != x -a -f ${srcdir}/config/$tmake_file ]]
-then
-	target_overrides=$srcdir/config/$tmake_file
-	dep_tmake_file="\$(srcdir)/config/$tmake_file"
-fi
+for f in .. ${tmake_file}
+do
+	if [[ -f ${srcdir}/config/$f ]]
+	then
+		dep_tmake_file="${dep_tmake_file} ${srcdir}/config/$f"
+	fi
+done
 
 # If the host doesn't support symlinks, modify CC in
 # FLAGS_TO_PASS so CC="stage1/xgcc -Bstage1/" works.
@@ -2982,8 +2990,8 @@ do
 	echo "lang.$t: $x" >> Make-hooks
 done
 
-# Process the language fragments
-${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs"
+# Process the language and host/target makefile fragments.
+${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
 
 # Substitute configuration variables
 AC_SUBST(subdirs)
