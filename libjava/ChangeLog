@@ -1,3 +1,30 @@
+2005-02-16  Andrew Haley  <aph@redhat.com>
+
+	* gnu/gcj/runtime/PersistentByteMap.java (name, values, fc): new
+	fields.
+	(PersistentByteMap): Set name
+	Magic number changed to 0x67636a64 ("gcjd").
+	(init): Force the map to be prime.
+	(emptyPersistentByteMap): File name was a string, now a File.
+	(addBytes): Share srings between entries.
+	(stringTableSize): New method.
+	(capacity): Scale by load factor.
+	(force): New method.
+	(getFile): New method.
+	(close): New method.
+	(putAll): New method.
+	(ByteWrapper): New class.
+	* gnu/gcj/tools/gcj_dbtool/Main.java (verbose): New field.
+	(main): Guess the average string size as 32, not 64.
+	Copy a database before modifying it, so that we can update a
+	database in a running system.
+	If a database isn't big enough, resize it.
+	"-m": new option: merges databases.
+	"-a": Create a new detabase if it doesn't exist.
+	(usage): Correct, add new option.
+	(addJar): Copy a database before modifying it.
+	(resizeMap): New method.
+
 2005-02-15  David Daney <ddaney@avtrex.com>
 	    Bryce McKinlay  <mckinlay@redhat.com>
 	    

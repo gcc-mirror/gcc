@@ -1,4 +1,4 @@
-/* Copyright (C) 2004  Free Software Foundation
+/* Copyright (C) 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -11,13 +11,15 @@ package gnu.gcj.tools.gcj_dbtool;
 
 import gnu.gcj.runtime.PersistentByteMap;
 import java.io.*;
+import java.nio.channels.*;
 import java.util.*;
 import java.util.jar.*;
 import java.security.MessageDigest;
-import java.math.BigInteger;
 
 public class Main
 {
+  static private boolean verbose = false;
+
   public static void main (String[] s)
   {
     insist (s.length >= 1);
@@ -29,7 +31,7 @@ public class Main
 			   + ") "
 			   + System.getProperty("java.vm.version"));
 	System.out.println();
-	System.out.println("Copyright 2004 Free Software Foundation, Inc.");
+	System.out.println("Copyright 2004, 2005 Free Software Foundation, Inc.");
 	System.out.println("This is free software; see the source for copying conditions.  There is NO");
 	System.out.println("warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
 	return;
@@ -42,26 +44,14 @@ public class Main
 
     if (s[0].equals("-n"))
       {
+	// Create a new database.
 	insist (s.length >= 2 && s.length <= 3);
 
 	int capacity = 32749;
 
 	if (s.length == 3)
-	  {
-	    // The user has explicitly provided a size for the table.
-	    // We're going to make that size prime.  This isn't
-	    // strictly necessary but it can't hurt.
-
-	    BigInteger size = new BigInteger(s[2], 10);
-	    BigInteger two = BigInteger.ONE.add(BigInteger.ONE);
-
-	    if (size.getLowestSetBit() != 0) // A hard way to say isEven()
-	      size = size.add(BigInteger.ONE);
-
-	    while (! size.isProbablePrime(10))
-	      size = size.add(two);
-
-	    capacity = size.intValue();
+	  {	    
+	    capacity = Integer.parseInt(s[2]);
 
 	    if (capacity <= 2)
 	      {
@@ -73,7 +63,8 @@ public class Main
 	try
 	  {
 	    PersistentByteMap b 
-	      = PersistentByteMap.emptyPersistentByteMap (s[1], capacity, capacity*64);
+	      = PersistentByteMap.emptyPersistentByteMap(new File(s[1]), 
+							 capacity, capacity*32);
 	  }
 	catch (Exception e)
 	  {
@@ -86,18 +77,26 @@ public class Main
 
     if (s[0].equals("-a"))
       {
+	// Add a jar file to a database, creating it if necessary.
+	// Copies the database, adds the jar file to the copy, and
+	// then renames the new database over the old.
 	try
 	  {
 	    insist (s.length == 4);
-	    File jar = new File(s[2]);
-	    PersistentByteMap b 
-	      = new PersistentByteMap(new File(s[1]), 
-				      PersistentByteMap.AccessMode.READ_WRITE);
+	    File database = new File(s[1]);
+	    database = database.getAbsoluteFile();
+	    File jar = new File(s[2]);	
+	    PersistentByteMap map; 
+	    if (database.isFile())
+	      map = new PersistentByteMap(database, 
+					  PersistentByteMap.AccessMode.READ_ONLY);
+	    else
+	      map = PersistentByteMap.emptyPersistentByteMap(database, 
+							     100, 100*32);
 	    File soFile = new File(s[3]);
 	    if (! soFile.isFile())
 	      throw new IllegalArgumentException(s[3] + " is not a file");
-	    
-	    addJar(jar, b, soFile);
+ 	    map = addJar(jar, map, soFile);
 	  }
 	catch (Exception e)
 	  {
@@ -110,6 +109,7 @@ public class Main
 
     if (s[0].equals("-t"))
       {
+	// Test
 	try
 	  {
 	    insist (s.length == 2);
@@ -142,8 +142,60 @@ public class Main
 	return;
       }
 	 
+    if (s[0].equals("-m"))
+      {
+	// Merge databases.
+	insist (s.length >= 3);
+	try
+	  {
+	    File database = new File(s[1]);
+	    database = database.getAbsoluteFile();
+	    File temp = File.createTempFile(database.getName(), "", 
+					    database.getParentFile());
+	    	
+	    int newSize = 0;
+	    int newStringTableSize = 0;
+	    PersistentByteMap[] sourceMaps = new PersistentByteMap[s.length - 2];
+	    // Scan all the input files, calculating worst case string
+	    // table and hash table use.
+	    for (int i = 2; i < s.length; i++)
+	      {
+		PersistentByteMap b 
+		  = new PersistentByteMap(new File(s[i]),
+					  PersistentByteMap.AccessMode.READ_ONLY);
+		newSize += b.size();
+		newStringTableSize += b.stringTableSize();
+		sourceMaps[i - 2] = b;
+	      }
+	    
+	    newSize *= 1.5; // Scaling the new size by 1.5 results in
+			    // fewer collisions.
+	    PersistentByteMap map 
+	      = PersistentByteMap.emptyPersistentByteMap
+	        (temp, newSize, newStringTableSize);
+
+	    for (int i = 0; i < sourceMaps.length; i++)
+	      {
+		if (verbose)
+		  System.err.println("adding " + sourceMaps[i].size() 
+				     + " elements from "
+				     + sourceMaps[i].getFile());
+		map.putAll(sourceMaps[i]);
+	      }
+	    map.close();
+	    temp.renameTo(database);
+	  }
+	catch (Exception e)
+	  {
+	    e.printStackTrace();
+	    System.exit(3);
+	  }
+	return;
+      }
+
     if (s[0].equals("-l"))
       {
+	// List a database.
 	insist (s.length == 2);
 	try
 	  {
@@ -180,6 +232,7 @@ public class Main
 
     if (s[0].equals("-d"))
       {
+	// For testing only: fill the byte map with random data.
 	insist (s.length == 2);
 	try
 	  {    
@@ -225,20 +278,49 @@ public class Main
        + "  Usage: \n"
        + "    gcj-dbtool -n file.gcjdb [size]     - Create a new gcj map database\n"
        + "    gcj-dbtool -a file.gcjdb file.jar file.so\n"
-       + "            - Add the contents of file.jar to the database\n"
+       + "            - Add the contents of file.jar to a new gcj map database\n"
        + "    gcj-dbtool -t file.gcjdb            - Test a gcj map database\n"
-       + "    gcj-dbtool -l file.gcjdb            - List a gcj map database\n");
+       + "    gcj-dbtool -l file.gcjdb            - List a gcj map database\n"
+       + "    gcj-dbtool -m dest.gcjdb [source.gcjdb]...\n"
+       + "             - Merge gcj map databases into dest\n"
+       + "               Replaces dest\n"
+       + "               To add to dest, include dest in the list of sources");
   }
-      
 
-  private static void addJar(File f, PersistentByteMap b, File soFile)
-   throws Exception
+  // Add a jar to a map.  This copies the map first and returns a
+  // different map that contains the data.  The original map is
+  // closed.
+
+  private static PersistentByteMap 
+  addJar(File f, PersistentByteMap b, File soFile)
+    throws Exception
   {
     MessageDigest md = MessageDigest.getInstance("MD5");
 
     JarFile jar = new JarFile (f);
+
+    int count = 0;
+    {
+      Enumeration entries = jar.entries();      
+      while (entries.hasMoreElements())
+	{
+	  JarEntry classfile = (JarEntry)entries.nextElement();
+	  if (classfile.getName().endsWith(".class"))
+	    count++;
+	}
+    }
+
+    if (verbose)
+      System.err.println("adding " + count + " elements from "
+			 + f + " to " + b.getFile());
+    
+    // Maybe resize the destination map.  We're allowing plenty of
+    // extra space by using a loadFactor of 2.  
+    b = resizeMap(b, (b.size() + count) * 2, true);
+
     Enumeration entries = jar.entries();
 
+    byte[] soFileName = soFile.getCanonicalPath().getBytes("UTF-8");
     while (entries.hasMoreElements())
       {
 	JarEntry classfile = (JarEntry)entries.nextElement();
@@ -259,12 +341,41 @@ public class Main
 					 + classfile.getName());
 		pos += len;
 	      }
-	    b.put(md.digest(data), 
-		  soFile.getCanonicalPath().getBytes());
+	    b.put(md.digest(data), soFileName);
 	  }
-      }	      
+      }
+    return b;
   }    
 
+  // Resize a map by creating a new one with the same data and
+  // renaming it.  If close is true, close the original map.
+
+  static PersistentByteMap resizeMap(PersistentByteMap m, int newCapacity, boolean close)
+    throws IOException, IllegalAccessException
+  {
+    newCapacity = Math.max(m.capacity(), newCapacity);
+    File name = m.getFile();
+    File copy = File.createTempFile(name.getName(), "", name.getParentFile());
+    try
+      {
+	PersistentByteMap dest 
+	  = PersistentByteMap.emptyPersistentByteMap
+	  (copy, newCapacity, newCapacity*32);
+	dest.putAll(m);
+	dest.force();
+	if (close)
+	  m.close();
+	copy.renameTo(name);
+	return dest;
+      }
+    catch (Exception e)
+      {
+	copy.delete();
+      }
+    return null;
+  }
+    
+	 
   static String bytesToString(byte[] b)
   {
     StringBuffer hexBytes = new StringBuffer();
