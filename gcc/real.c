@@ -3261,8 +3261,23 @@ encode_ibm_extended (fmt, buf, r)
       u = *r;
       clear_significand_below (&u, SIGNIFICAND_BITS - 53);
 
-      /* v = remainder containing additional 53 bits of significand.  */
-      do_add (&v, r, &u, 1);
+      normalize (&u);
+      /* If the upper double is zero, we have a denormal double, so
+	 move it to the first double and leave the second as zero.  */
+      if (u.class == rvc_zero)
+	{
+	  v = u;
+	  u = *r;
+	  normalize (&u);
+	}
+      else
+	{
+	  /* v = remainder containing additional 53 bits of significand.  */
+	  do_add (&v, r, &u, 1);
+	  round_for_format (&ieee_double_format, &v);
+	}
+
+      round_for_format (&ieee_double_format, &u);
 
       encode_ieee_double (&ieee_double_format, &buf[0], &u);
       encode_ieee_double (&ieee_double_format, &buf[2], &v);
@@ -3299,7 +3314,7 @@ const struct real_format ibm_extended_format =
     2,
     1,
     53 + 53,
-    -1021,
+    -1021 + 53,
     1024,
     -1,
     true,
