@@ -97,6 +97,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "recog.h"
 #include "real.h"
+#include "toplev.h"
 
 /* It is not safe to use ordinary gen_lowpart in combine.
    Use gen_lowpart_for_combine instead.  See comments there.  */

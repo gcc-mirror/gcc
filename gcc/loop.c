@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "loop.h"
 #include "except.h"
+#include "toplev.h"
 
 /* Vector mapping INSN_UIDs to luids.
    The luids are like uids but increase monotonically always.

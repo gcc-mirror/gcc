@@ -70,6 +70,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "recog.h"
 #include "output.h"
+#include "toplev.h"
 
 /* Next quantity number available for allocation.  */
 
