@@ -167,7 +167,7 @@ case $basic_machine in
 		| 1750a | dsp16xx | pdp11 \
 		| mips64 | mipsel | mips64el | mips64orion | mips64orionel \
 		| mipstx39 | mipstx39el \
-		| sparc | sparclet | sparclite | sparc64 | sparcv9 | v850)
+		| sparc | sparclet | sparclite | sparc64 | sparcv9 | v850 x4x)
 		basic_machine=$basic_machine-unknown
 		;;
 	m88110 | m680[01234]0 | m683?2 | m68360 | z8k | v70 | h8500 | w65) # CYGNUS LOCAL
@@ -858,6 +858,10 @@ case $basic_machine in
 	pmac | pmac-mpw)				# CYGNUS LOCAL
 		basic_machine=powerpc-apple
 		;;
+ 	c4x*)
+ 		basic_machine=c4x-none
+ 		os=-coff
+  		;;
 	*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
 		exit 1

@@ -560,6 +560,9 @@ case "${target}" in
   arm-*-riscix*)
     noconfigdirs="$noconfigdirs ld target-libgloss"
     ;;
+  c4x-*-*)
+    noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio target-librx target-libgloss"
+    ;;
   thumb-*-coff)
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
