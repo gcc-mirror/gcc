@@ -1,6 +1,7 @@
 // SAX DTD handler.
+// http://www.saxproject.org
 // No warranty; no copyright -- use this as you will.
-// $Id: DTDHandler.java,v 1.1 2000/10/02 02:43:17 sboag Exp $
+// $Id: DTDHandler.java,v 1.5.2.4 2002/01/29 21:34:14 dbrownell Exp $
 
 package org.xml.sax;
 
@@ -10,6 +11,8 @@ package org.xml.sax;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>If a SAX application needs information about notations and
@@ -27,7 +30,10 @@ package org.xml.sax;
  * of the order in which the notations and unparsed entities were
  * declared; however, all DTD events must be reported after the
  * document handler's startDocument event, and before the first
- * startElement event.</p>
+ * startElement event.
+ * (If the {@link org.xml.sax.ext.LexicalHandler LexicalHandler} is
+ * used, these events must also be reported before the endDTD event.)
+ * </p>
  *
  * <p>It is up to the application to store the information for 
  * future use (perhaps in a hash table or object tree).
@@ -37,11 +43,9 @@ package org.xml.sax;
  * notation corresponding with the attribute value.</p>
  *
  * @since SAX 1.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
- * @see org.xml.sax.Parser#setDTDHandler
- * @see org.xml.sax.HandlerBase 
+ * @author David Megginson
+ * @version 2.0.1 (sax2r2)
+ * @see org.xml.sax.XMLReader#setDTDHandler
  */
 public interface DTDHandler {
     
@@ -50,7 +54,10 @@ public interface DTDHandler {
      * Receive notification of a notation declaration event.
      *
      * <p>It is up to the application to record the notation for later
-     * reference, if necessary.</p>
+     * reference, if necessary;
+     * notations may appear as attribute values and in unparsed entity
+     * declarations, and are sometime used with processing instruction
+     * target names.</p>
      *
      * <p>At least one of publicId and systemId must be non-null.
      * If a system identifier is present, and it is a URL, the SAX
@@ -68,7 +75,7 @@ public interface DTDHandler {
      * @exception org.xml.sax.SAXException Any SAX exception, possibly
      *            wrapping another exception.
      * @see #unparsedEntityDecl
-     * @see org.xml.sax.AttributeList
+     * @see org.xml.sax.Attributes
      */
     public abstract void notationDecl (String name,
 				       String publicId,
@@ -82,7 +89,9 @@ public interface DTDHandler {
      * <p>Note that the notation name corresponds to a notation
      * reported by the {@link #notationDecl notationDecl} event.  
      * It is up to the application to record the entity for later 
-     * reference, if necessary.</p>
+     * reference, if necessary;
+     * unparsed entities may appear as attribute values. 
+     * </p>
      *
      * <p>If the system identifier is a URL, the parser must resolve it
      * fully before passing it to the application.</p>
@@ -93,9 +102,9 @@ public interface DTDHandler {
      * @param publicId The entity's public identifier, or null if none
      *        was given.
      * @param systemId The entity's system identifier.
-     * @param notation name The name of the associated notation.
+     * @param notationName The name of the associated notation.
      * @see #notationDecl
-     * @see org.xml.sax.AttributeList
+     * @see org.xml.sax.Attributes
      */
     public abstract void unparsedEntityDecl (String name,
 					     String publicId,

@@ -1,6 +1,7 @@
 // SAX default handler base class.
+// http://www.saxproject.org
 // No warranty; no copyright -- use this as you will.
-// $Id: HandlerBase.java,v 1.1 2000/10/02 02:43:17 sboag Exp $
+// $Id: HandlerBase.java,v 1.3.2.3 2002/01/29 21:34:14 dbrownell Exp $
 
 package org.xml.sax;
 
@@ -10,6 +11,8 @@ package org.xml.sax;
  * <blockquote>
  * <em>This module, both source code and documentation, is in the
  * Public Domain, and comes with <strong>NO WARRANTY</strong>.</em>
+ * See <a href='http://www.saxproject.org'>http://www.saxproject.org</a>
+ * for further information.
  * </blockquote>
  *
  * <p>This class implements the default behaviour for four SAX1
@@ -32,9 +35,8 @@ package org.xml.sax;
  *             {@link org.xml.sax.helpers.DefaultHandler DefaultHandler}
  *             class.
  * @since SAX 1.0
- * @author David Megginson, 
- *         <a href="mailto:sax@megginson.com">sax@megginson.com</a>
- * @version 2.0
+ * @author David Megginson
+ * @version 2.0.1 (sax2r2)
  * @see org.xml.sax.EntityResolver
  * @see org.xml.sax.DTDHandler
  * @see org.xml.sax.DocumentHandler
@@ -58,7 +60,7 @@ public class HandlerBase
      * in a subclass to do special translations such as catalog lookups
      * or URI redirection.</p>
      *
-     * @param publicId The public identifier, or null if none is
+     * @param publicId The public identifer, or null if none is
      *                 available.
      * @param systemId The system identifier provided in the XML 
      *                 document.

@@ -2252,6 +2252,7 @@ org/xml/sax/helpers/AttributesImpl.java \
 org/xml/sax/helpers/DefaultHandler.java \
 org/xml/sax/helpers/LocatorImpl.java \
 org/xml/sax/helpers/NamespaceSupport.java \
+org/xml/sax/helpers/NewInstance.java \
 org/xml/sax/helpers/ParserAdapter.java \
 org/xml/sax/helpers/ParserFactory.java \
 org/xml/sax/helpers/XMLFilterImpl.java \
