@@ -388,7 +388,7 @@ common_type (t1, t2)
 		    {
 		      TREE_VALUE (n) = TREE_VALUE (p2);
 		      if (pedantic)
-			pedwarn ("function types not truly compatible in ANSI C");
+			pedwarn ("function types not truly compatible in ISO C");
 		      goto parm_done;
 		    }
 	      }
@@ -402,7 +402,7 @@ common_type (t1, t2)
 		    {
 		      TREE_VALUE (n) = TREE_VALUE (p1);
 		      if (pedantic)
-			pedwarn ("function types not truly compatible in ANSI C");
+			pedwarn ("function types not truly compatible in ISO C");
 		      goto parm_done;
 		    }
 	      }
@@ -1318,9 +1318,9 @@ build_array_ref (array, index)
       if (pedantic && !lvalue_p (array))
 	{
 	  if (DECL_REGISTER (array))
-	    pedwarn ("ANSI C forbids subscripting `register' array");
+	    pedwarn ("ISO C forbids subscripting `register' array");
 	  else
-	    pedwarn ("ANSI C forbids subscripting non-lvalue array");
+	    pedwarn ("ISO C89 forbids subscripting non-lvalue array");
 	}
 
       if (pedantic)
@@ -1329,7 +1329,7 @@ build_array_ref (array, index)
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
 	  if (TREE_CODE (foo) == VAR_DECL && DECL_REGISTER (foo))
-	    pedwarn ("ANSI C forbids subscripting non-lvalue array");
+	    pedwarn ("ISO C89 forbids subscripting non-lvalue array");
 	}
 
       type = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (array)));
@@ -2198,13 +2198,13 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		 whose value is 0 but which isn't a valid null ptr const.  */
 	      if (pedantic && (!integer_zerop (op0) || op0 != orig_op0)
 		  && TREE_CODE (tt1) == FUNCTION_TYPE)
-		pedwarn ("ANSI C forbids comparison of `void *' with function pointer");
+		pedwarn ("ISO C forbids comparison of `void *' with function pointer");
 	    }
 	  else if (VOID_TYPE_P (tt1))
 	    {
 	      if (pedantic && (!integer_zerop (op1) || op1 != orig_op1)
 		  && TREE_CODE (tt0) == FUNCTION_TYPE)
-		pedwarn ("ANSI C forbids comparison of `void *' with function pointer");
+		pedwarn ("ISO C forbids comparison of `void *' with function pointer");
 	    }
 	  else
 	    pedwarn ("comparison of distinct pointer types lacks a cast");
@@ -2244,7 +2244,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	      result_type = common_type (type0, type1);
 	      if (pedantic 
 		  && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
-		pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
+		pedwarn ("ISO C forbids ordered comparisons of pointers to functions");
 	    }
 	  else
 	    {
@@ -2272,7 +2272,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		pedwarn ("comparison of complete and incomplete pointers");
 	      else if (pedantic 
 		       && TREE_CODE (TREE_TYPE (type0)) == FUNCTION_TYPE)
-		pedwarn ("ANSI C forbids ordered comparisons of pointers to functions");
+		pedwarn ("ISO C forbids ordered comparisons of pointers to functions");
 	    }
 	  else
 	    {
@@ -3057,7 +3057,7 @@ build_unary_op (code, xarg, noconvert)
 	case FIX_ROUND_EXPR:
 	case FIX_CEIL_EXPR:
 	  if (pedantic)
-	    pedwarn ("ANSI C forbids the address of a cast expression");
+	    pedwarn ("ISO C forbids the address of a cast expression");
 	  return convert (build_pointer_type (TREE_TYPE (arg)),
 			  build_unary_op (ADDR_EXPR, TREE_OPERAND (arg, 0),
 					  0));
@@ -3268,13 +3268,13 @@ pedantic_lvalue_warning (code)
     switch (code)
       {
       case COND_EXPR:
-	pedwarn ("ANSI C forbids use of conditional expressions as lvalues");
+	pedwarn ("ISO C forbids use of conditional expressions as lvalues");
 	break;
       case COMPOUND_EXPR:
-	pedwarn ("ANSI C forbids use of compound expressions as lvalues");
+	pedwarn ("ISO C forbids use of compound expressions as lvalues");
 	break;
       default:
-	pedwarn ("ANSI C forbids use of cast expressions as lvalues");
+	pedwarn ("ISO C forbids use of cast expressions as lvalues");
 	break;
       }
 }
@@ -3490,7 +3490,7 @@ build_conditional_expr (ifexp, op1, op2)
   else if (code1 == VOID_TYPE || code2 == VOID_TYPE)
     {
       if (pedantic && (code1 != VOID_TYPE || code2 != VOID_TYPE))
-	pedwarn ("ANSI C forbids conditional expr with only one void side");
+	pedwarn ("ISO C forbids conditional expr with only one void side");
       result_type = void_type_node;
     }
   else if (code1 == POINTER_TYPE && code2 == POINTER_TYPE)
@@ -3506,13 +3506,13 @@ build_conditional_expr (ifexp, op1, op2)
       else if (VOID_TYPE_P (TREE_TYPE (type1)))
 	{
 	  if (pedantic && TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C forbids conditional expr between `void *' and function pointer");
+	    pedwarn ("ISO C forbids conditional expr between `void *' and function pointer");
 	  result_type = qualify_type (type1, type2);
 	}
       else if (VOID_TYPE_P (TREE_TYPE (type2)))
 	{
 	  if (pedantic && TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
-	    pedwarn ("ANSI C forbids conditional expr between `void *' and function pointer");
+	    pedwarn ("ISO C forbids conditional expr between `void *' and function pointer");
 	  result_type = qualify_type (type2, type1);
 	}
       else
@@ -3684,7 +3684,7 @@ build_c_cast (type, expr)
 	{
 	  if (TREE_CODE (type) == RECORD_TYPE
 	      || TREE_CODE (type) == UNION_TYPE)
-	    pedwarn ("ANSI C forbids casting nonscalar to the same type");
+	    pedwarn ("ISO C forbids casting nonscalar to the same type");
 	}
     }
   else if (TREE_CODE (type) == UNION_TYPE)
@@ -3705,7 +3705,7 @@ build_c_cast (type, expr)
 	  tree t;
 
 	  if (pedantic)
-	    pedwarn ("ANSI C forbids casts to union type");
+	    pedwarn ("ISO C forbids casts to union type");
 	  if (TYPE_NAME (type) != 0)
 	    {
 	      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
@@ -4164,7 +4164,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 	    }
 	  
 	  if (pedantic && ! DECL_IN_SYSTEM_HEADER (fundecl))
-	    pedwarn ("ANSI C prohibits argument conversion to union type");
+	    pedwarn ("ISO C prohibits argument conversion to union type");
 
 	  return build1 (NOP_EXPR, type, rhs);
 	}
@@ -4193,7 +4193,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		      which are not ANSI null ptr constants.  */
 		   && (!integer_zerop (rhs) || TREE_CODE (rhs) == NOP_EXPR)
 		   && TREE_CODE (ttl) == FUNCTION_TYPE)))
-	    warn_for_assignment ("ANSI forbids %s between function pointer and `void *'",
+	    warn_for_assignment ("ISO C forbids %s between function pointer and `void *'",
 				 errtype, funname, parmnum);
 	  /* Const and volatile mean something different for function types,
 	     so the usual warnings are not appropriate.  */
@@ -5609,7 +5609,7 @@ set_init_index (first, last)
       else
 	{
 	  if (pedantic)
-	    pedwarn ("ANSI C forbids specifying element to initialize");
+	    pedwarn ("ISO C89 forbids specifying element to initialize");
 
 	  constructor_range_end = last ? convert (bitsizetype, last) : 0;
 	}
@@ -5649,7 +5649,7 @@ set_init_label (fieldname)
     {
       constructor_fields = tail;
       if (pedantic)
-	pedwarn ("ANSI C forbids specifying structure member to initialize");
+	pedwarn ("ISO C89 forbids specifying structure member to initialize");
     }
 }
 
@@ -6740,7 +6740,7 @@ c_expand_start_case (exp)
 	  && ! in_system_header
 	  && (type == long_integer_type_node
 	      || type == long_unsigned_type_node))
-	warning ("`long' switch expression not converted to `int' in ANSI C");
+	warning ("`long' switch expression not converted to `int' in ISO C");
 
       exp = default_conversion (exp);
       type = TREE_TYPE (exp);

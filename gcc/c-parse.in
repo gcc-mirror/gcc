@@ -277,7 +277,7 @@ end ifobjc
 %%
 program: /* empty */
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids an empty source file");
+		    pedwarn ("ISO C forbids an empty source file");
 		  finish_file ();
 		}
 	| extdefs
@@ -320,7 +320,7 @@ end ifobjc
 datadef:
 	  setspecs notype_initdecls ';'
 		{ if (pedantic)
-		    error ("ANSI C forbids data definition with no type or storage class");
+		    error ("ISO C forbids data definition with no type or storage class");
 		  else if (!flag_traditional)
 		    warning ("data definition has no type or storage class"); 
 
@@ -343,7 +343,7 @@ datadef:
 	| error '}'
 	| ';'
 		{ if (pedantic)
-		    pedwarn ("ANSI C does not allow extra `;' outside of a function"); }
+		    pedwarn ("ISO C does not allow extra `;' outside of a function"); }
 	;
 
 fndef:
@@ -459,7 +459,7 @@ unary_expr:
 	| ANDAND identifier
 		{ tree label = lookup_label ($2);
 		  if (pedantic)
-		    pedwarn ("ANSI C forbids `&&'");
+		    pedwarn ("ISO C forbids `&&'");
 		  if (label == 0)
 		    $$ = null_pointer_node;
 		  else
@@ -479,7 +479,7 @@ unary_expr:
 		  else
 		    {
 		      if (pedantic)
-			pedwarn ("ANSI C forbids `&...'");
+			pedwarn ("ISO C forbids `&...'");
 		      $$ = tree_last (DECL_ARGUMENTS (current_function_decl));
 		      $$ = build_unary_op (ADDR_EXPR, $$, 0);
 		    } }
@@ -531,7 +531,7 @@ cast_expr:
 		  finish_init ();
 
 		  if (pedantic && ! flag_isoc99)
-		    pedwarn ("ANSI C forbids constructor expressions");
+		    pedwarn ("ISO C89 forbids constructor expressions");
 		  if (TYPE_NAME (type) != 0)
 		    {
 		      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
@@ -600,7 +600,7 @@ expr_no_commas:
 		  $$ = build_conditional_expr ($1, $4, $7); }
 	| expr_no_commas '?'
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids omitting the middle term of a ?: expression");
+		    pedwarn ("ISO C forbids omitting the middle term of a ?: expression");
 		  /* Make sure first operand is calculated only once.  */
 		  $<ttype>2 = save_expr ($1);
 		  $1 = truthvalue_conversion (default_conversion ($<ttype>2));
@@ -648,7 +648,7 @@ primary:
 	| compstmt_primary_start compstmt_nostart ')'
 		{ tree rtl_exp;
 		  if (pedantic)
-		    pedwarn ("ANSI C forbids braced-groups within expressions");
+		    pedwarn ("ISO C forbids braced-groups within expressions");
 		  pop_iterator_stack ();
 		  pop_label_level ();
 		  rtl_exp = expand_end_stmt_expr ($1);
@@ -769,7 +769,7 @@ old_style_parm_decls:
 		/* ... is used here to indicate a varargs function.  */
 		{ c_mark_varargs ();
 		  if (pedantic)
-		    pedwarn ("ANSI C does not permit use of `varargs.h'"); }
+		    pedwarn ("ISO C does not permit use of `varargs.h'"); }
 	;
 
 /* The following are analogous to lineno_decl, decls and decl
@@ -1112,7 +1112,7 @@ init:
 initlist_maybe_comma:
 	  /* empty */
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids empty initializer braces"); }
+		    pedwarn ("ISO C forbids empty initializer braces"); }
 	| initlist1 maybecomma
 	;
 
@@ -1164,7 +1164,7 @@ end ifc
 nested_function:
 	  declarator
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids nested functions");
+		    pedwarn ("ISO C forbids nested functions");
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
@@ -1190,7 +1190,7 @@ nested_function:
 notype_nested_function:
 	  notype_declarator
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids nested functions");
+		    pedwarn ("ISO C forbids nested functions");
 
 		  push_function_context ();
 		  if (! start_function (current_declspecs, $1,
@@ -1442,7 +1442,7 @@ component_decl:
 		     structs or unions (which is [a] useful and [b] supports 
 		     MS P-SDK).  */
 		  if (pedantic)
-		    pedwarn ("ANSI C doesn't support unnamed structs/unions");
+		    pedwarn ("ISO C doesn't support unnamed structs/unions");
 
 		  $$ = grokfield($3, $4, NULL, current_declspecs, NULL_TREE);
 		  current_declspecs = TREE_VALUE (declspec_stack);
@@ -1456,7 +1456,7 @@ component_decl:
 		  declspec_stack = TREE_CHAIN (declspec_stack); }
 	| nonempty_type_quals
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids member declarations with no members");
+		    pedwarn ("ISO C forbids member declarations with no members");
 		  shadow_tag($1);
 		  $$ = NULL_TREE; }
 	| error
@@ -1570,7 +1570,7 @@ stmts:
 	lineno_stmt_or_labels
 		{
 		  if (pedantic && $1)
-		    pedwarn ("ANSI C forbids label at end of compound statement");
+		    pedwarn ("ISO C forbids label at end of compound statement");
 		}
 	;
 
@@ -1608,7 +1608,7 @@ maybe_label_decls:
 	  /* empty */
 	| label_decls
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids label declarations"); }
+		    pedwarn ("ISO C forbids label declarations"); }
 	;
 
 label_decls:
@@ -1919,7 +1919,7 @@ stmt:
 		}
 	| GOTO '*' expr ';'
 		{ if (pedantic)
-		    pedwarn ("ANSI C forbids `goto *expr;'");
+		    pedwarn ("ISO C forbids `goto *expr;'");
 		  stmt_count++;
 		  emit_line_note ($<filename>-1, $<lineno>0);
 		  expand_computed_goto (convert (ptr_type_node, $3)); }
@@ -2072,7 +2072,7 @@ parmlist_1:
 	| parms ';'
 		{ tree parm;
 		  if (pedantic)
-		    pedwarn ("ANSI C forbids forward parameter declarations");
+		    pedwarn ("ISO C forbids forward parameter declarations");
 		  /* Mark the forward decls as such.  */
 		  for (parm = getdecls (); parm; parm = TREE_CHAIN (parm))
 		    TREE_ASM_WRITTEN (parm) = 1;
@@ -2095,7 +2095,7 @@ parmlist_2:  /* empty */
 		     it caused problems with the code in expand_builtin which
 		     tries to verify that BUILT_IN_NEXT_ARG is being used
 		     correctly.  */
-		  error ("ANSI C requires a named argument before `...'");
+		  error ("ISO C requires a named argument before `...'");
 		}
 	| parms
 		{ $$ = get_parm_info (1); }

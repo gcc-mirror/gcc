@@ -1135,7 +1135,7 @@ documented_lang_options[] =
      used here is to only describe those options which are not
      enabled by default.  */
 
-  { "-ansi", "Compile just for ANSI C" },
+  { "-ansi", "Compile just for ISO C89" },
   { "-fallow-single-precision",
     "Do not promote floats to double if using -traditional" },
   { "-std= ", "Determine language standard"},
@@ -1236,7 +1236,7 @@ documented_lang_options[] =
   { "-Wno-unknown-pragmas", "" },
   { "-Wstrict-prototypes", "Warn about non-prototyped function decls" },
   { "-Wno-strict-prototypes", "" },
-  { "-Wtraditional", "Warn about constructs whose meaning change in ANSI C"},
+  { "-Wtraditional", "Warn about constructs whose meaning change in ISO C"},
   { "-Wno-traditional", "" },
   { "-Wtrigraphs", "Warn when trigraphs are encountered" },
   { "-Wno-trigraphs", "" },
@@ -3741,7 +3741,7 @@ display_help ()
 
   printf (_("  -O[number]              Set optimisation level to [number]\n"));
   printf (_("  -Os                     Optimise for space rather than speed\n"));
-  printf (_("  -pedantic               Issue warnings needed by strict compliance to ANSI C\n"));
+  printf (_("  -pedantic               Issue warnings needed by strict compliance to ISO C\n"));
   printf (_("  -pedantic-errors        Like -pedantic except that errors are produced\n"));
   printf (_("  -w                      Suppress warnings\n"));
   printf (_("  -W                      Enable extra warnings\n"));
