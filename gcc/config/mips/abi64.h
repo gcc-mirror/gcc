@@ -63,16 +63,10 @@ Boston, MA 02111-1307, USA.  */
 #define MAX_ARGS_IN_REGISTERS	(mips_abi == ABI_32 ? 4 : 8)
 
 #undef REG_PARM_STACK_SPACE
-#if 0
-/* ??? This is necessary in order for the ABI_32 support to work.  However,
-   expr.c (emit_push_insn) has no support for a REG_PARM_STACK_SPACE
-   definition that returns zero.  That would have to be fixed before this
-   can be enabled.  */
 #define REG_PARM_STACK_SPACE(FNDECL) 					 \
   (mips_abi == ABI_32							 \
    ? (MAX_ARGS_IN_REGISTERS*UNITS_PER_WORD) - FIRST_PARM_OFFSET (FNDECL) \
    : 0)
-#endif
 
 #define FUNCTION_ARG_PADDING(MODE, TYPE)				\
   (! BYTES_BIG_ENDIAN							\
