@@ -1364,7 +1364,9 @@ _Jv_JNI_GetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array,
 				 jsize start, jsize len,
 				 T *buf)
 {
-  if (start < 0 || len >= array->length || start + len >= array->length)
+  // The cast to unsigned lets us save a comparison.
+  if (start < 0 || len < 0
+      || (unsigned long) (start + len) >= (unsigned long) array->length)
     {
       try
 	{
@@ -1389,7 +1391,9 @@ static void
 _Jv_JNI_SetPrimitiveArrayRegion (JNIEnv *env, JArray<T> *array, 
 				 jsize start, jsize len, T *buf)
 {
-  if (start < 0 || len >= array->length || start + len >= array->length)
+  // The cast to unsigned lets us save a comparison.
+  if (start < 0 || len < 0
+      || (unsigned long) (start + len) >= (unsigned long) array->length)
     {
       try
 	{
@@ -1432,7 +1436,8 @@ _Jv_JNI_MonitorEnter (JNIEnv *env, jobject obj)
 {
   try
     {
-      return _Jv_MonitorEnter (obj);
+      _Jv_MonitorEnter (obj);
+      return 0;
     }
   catch (jthrowable t)
     {
@@ -1446,7 +1451,8 @@ _Jv_JNI_MonitorExit (JNIEnv *env, jobject obj)
 {
   try
     {
-      return _Jv_MonitorExit (obj);
+      _Jv_MonitorExit (obj);
+      return 0;
     }
   catch (jthrowable t)
     {
