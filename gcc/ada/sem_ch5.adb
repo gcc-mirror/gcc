@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -484,7 +484,7 @@ package body Sem_Ch5 is
 
       procedure Non_Static_Choice_Error (Choice : Node_Id);
       --  Error routine invoked by the generic instantiation below when
-      --  the case statment has a non static choice.
+      --  the case statement has a non static choice.
 
       procedure Process_Statements (Alternative : Node_Id);
       --  Analyzes all the statements associated to a case alternative.

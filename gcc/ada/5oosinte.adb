@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision$
+--                             $Revision: 1.3 $
 --                                                                          --
 --            Copyright (C) 1991-2001 Florida State University              --
 --                                                                          --
@@ -58,7 +58,7 @@ package body System.OS_Interface is
    --  Although the OS uses a 32-bit integer representing milliseconds
    --  as timer value that doesn't work for us since 32 bits are not
    --  enough for absolute timing. Also it is useful to use better
-   --  intermediate precision when adding/substracting timing intervals.
+   --  intermediate precision when adding/subtracting timing intervals.
    --  So we use the standard Ada Duration type which is implemented using
    --  microseconds.
 

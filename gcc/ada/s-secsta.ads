@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.21 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-1999 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -89,7 +89,7 @@ package System.Secondary_Stack is
    procedure SS_Info;
    --  Debugging procedure used to print out secondary Stack allocation
    --  information. This procedure is generic in order to avoid a direct
-   --  dependance on a particular IO package.
+   --  dependence on a particular IO package.
 
 private
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.2 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1991-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -66,7 +66,7 @@ package body System.Interrupt_Management is
    end Initialize_Interrupts;
 
 begin
-   --  "Reserve" all the interrupts, except those that are explicitely defined
+   --  "Reserve" all the interrupts, except those that are explicitly defined
 
    for J in Interrupt_ID'Range loop
       Reserve (J) := True;

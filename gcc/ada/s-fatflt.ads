@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $                              --
+--                            $Revision: 1.1 $                              --
 --                                                                          --
 --   Copyright (C) 1992,1993,1994,1995,1996 Free Software Foundation, Inc.  --
 --                                                                          --
@@ -41,7 +41,7 @@ with System.Fat_Gen;
 package System.Fat_Flt is
 pragma Pure (Fat_Flt);
 
-   --  Note the only entity from this package that is acccessed by Rtsfind
+   --  Note the only entity from this package that is accessed by Rtsfind
    --  is the name of the package instantiation. Entities within this package
    --  (i.e. the individual floating-point attribute routines) are accessed
    --  by name using selected notation.

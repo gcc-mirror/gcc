@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.4 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --              Copyright (C) 2001 Free Software Foundation, Inc.           --
 --                                                                          --
@@ -313,7 +313,7 @@ package body GNAT.Registry is
    exception
       when Registry_Error =>
 
-         --  An error occured, the key was not found
+         --  An error occurred, the key was not found
 
          return False;
    end Key_Exists;

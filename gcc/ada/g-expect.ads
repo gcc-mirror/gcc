@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.8 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
@@ -206,7 +206,7 @@ package GNAT.Expect is
    function Get_Pid
      (Descriptor : Process_Descriptor)
       return       Process_Id;
-   --  Return the process id assocated with a given process descriptor.
+   --  Return the process id associated with a given process descriptor.
 
    --------------------
    -- Adding filters --

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.51 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -344,7 +344,7 @@ private
 
       Self : aliased File_Type;
       --  Set to point to the containing Text_AFCB block. This is used to
-      --  implement the Current_{Error,Input,Ouput} functions which return
+      --  implement the Current_{Error,Input,Output} functions which return
       --  a File_Access, the file access value returned is a pointer to
       --  the Self field of the corresponding file.
 

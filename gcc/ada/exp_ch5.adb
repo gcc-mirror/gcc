@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -2588,7 +2588,7 @@ package body Exp_Ch5 is
          --  already being returned with the stack pointer depressed and no
          --  further processing is required except to set the By_Ref flag to
          --  ensure that gigi does not attempt an extra unnecessary copy.
-         --  (actually not just unncessary but harmfully wrong in the case
+         --  (actually not just unnecessary but harmfully wrong in the case
          --  of a controlled type, where gigi does not know how to do a copy).
 
          if Requires_Transient_Scope (T)

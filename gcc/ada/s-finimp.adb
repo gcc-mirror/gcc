@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.48 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -105,10 +105,10 @@ package body System.Finalization_Implementation is
                     Object.My_Address - Object'Address;
 
       procedure Ptr_Adjust (Ptr : in out Finalizable_Ptr);
-      --  Substract the offset to the pointer
+      --  Subtract the offset to the pointer
 
       procedure Reverse_Adjust (P : Finalizable_Ptr);
-      --  Ajust the components in the reverse order in which they are stored
+      --  Adjust the components in the reverse order in which they are stored
       --  on the finalization list. (Adjust and Finalization are not done in
       --  the same order)
 
@@ -437,10 +437,10 @@ package body System.Finalization_Implementation is
       P : Finalizable_Ptr := L;
       Q : Finalizable_Ptr;
 
-      type Fake_Exception_Occurence is record
+      type Fake_Exception_Occurrence is record
          Id : Exception_Id;
       end record;
-      type Ptr is access all Fake_Exception_Occurence;
+      type Ptr is access all Fake_Exception_Occurrence;
 
       --  Let's get the current exception before starting to finalize in
       --  order to check if we are in the abort case if an exception is

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.14 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -142,7 +142,7 @@ package Ada.Wide_Text_IO is
    -- Buffer control --
    --------------------
 
-   --  Note: The paramter file is in out in the RM, but as pointed out
+   --  Note: The parameter file is in out in the RM, but as pointed out
    --  in <<95-5166.a Tucker Taft 95-6-23>> this is clearly an oversight.
 
    procedure Flush (File : in File_Type);

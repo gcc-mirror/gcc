@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -258,7 +258,7 @@ package body Sem_Ch8 is
 
    --    a) The defining occurrence for a package holds a flag -In_Use- to
    --    indicate that it is currently in the scope of a use clause. If a
-   --    redundant use clause is encountered, then the corresponding occurence
+   --    redundant use clause is encountered, then the corresponding occurrence
    --    of the package name is flagged -Redundant_Use-.
 
    --    b) On exit from a scope, the use clauses in its declarative part are
@@ -281,14 +281,14 @@ package body Sem_Ch8 is
    --  with the presence of two separate definitions for private types: the
    --  first is the private type declaration, and second is the full type
    --  declaration. It is important that all references to the type point to
-   --  the same defining occurence, namely the first one. To enforce the two
+   --  the same defining occurrence, namely the first one. To enforce the two
    --  separate views of the entity, the corresponding information is swapped
    --  between the two declarations. Outside of the package, the defining
-   --  occurence only contains the private declaration information, while in
+   --  occurrence only contains the private declaration information, while in
    --  the private part and the body of the package the defining occurrence
    --  contains the full declaration. To simplify the swap, the defining
    --  occurrence that currently holds the private declaration points to the
-   --  full declaration. During semantic processing the defining occurence
+   --  full declaration. During semantic processing the defining occurrence
    --  also points to a list of private dependents, that is to say access
    --  types or composite types whose designated types or component types are
    --  subtypes or derived types of the private type in question. After the

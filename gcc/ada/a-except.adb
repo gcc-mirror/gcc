@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.119 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -334,7 +334,7 @@ package body Ada.Exceptions is
      (X    : Exception_Occurrence)
       return String;
    --  Returns an image of the complete call chain associated with an
-   --  exception occurence in its most basic form, that is as a raw sequence
+   --  exception occurrence in its most basic form, that is as a raw sequence
    --  of hexadecimal binary addresses.
 
    function Tailored_Exception_Traceback

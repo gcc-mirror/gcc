@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.6 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -400,7 +400,7 @@ package Einfo is
 --       for finalization purposes, The block entity has an implicit label
 --       declaration in the enclosing declarative part, and has otherwise
 --       no direct connection in the tree with the block statement. The
---       link is to the identifier (which is an occurence of the entity)
+--       link is to the identifier (which is an occurrence of the entity)
 --       and not to the block_statement itself, because the statement may
 --       be rewritten, e.g. in the process of removing dead code.
 
@@ -2466,7 +2466,7 @@ package Einfo is
 --    Parameter_Mode (synthesized)
 --       Applies to formal parameter entities. This is a synonym for Ekind,
 --       used when obtaining the formal kind of a formal parameter (the result
---       is one of E_[In/Out/In_Out]_Paramter)
+--       is one of E_[In/Out/In_Out]_Parameter)
 
 --    Parent_Subtype (Node19)
 --       Present in E_Record_Type. Points to the subtype to use for a

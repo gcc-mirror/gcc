@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --            Copyright (C) 1998-2001 Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -312,7 +312,7 @@ procedure Gnatchop is
       EOL     : EOL_String;
       Success : in out Boolean);
    --  If Success is True on entry, writes a source reference pragma using
-   --  the chop file from Info, and the given line number. On return Sucess
+   --  the chop file from Info, and the given line number. On return Success
    --  indicates whether the write succeeded. If Success is False on entry,
    --  or if the global flag Source_References is False, then the call to
    --  Write_Source_Reference_Pragma has no effect. EOL indicates the end
@@ -813,7 +813,7 @@ procedure Gnatchop is
          end if;
 
          --  If not in compilation mode combine current unit with any
-         --  preceeding configuration pragmas.
+         --  preceding configuration pragmas.
 
          if not Compilation_Mode
            and then Unit.Last > First_Unit

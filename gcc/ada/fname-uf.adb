@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.6 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -138,7 +138,7 @@ package body Fname.UF is
       N : Int;
 
    begin
-      --  Null or error name means that some previous error occured
+      --  Null or error name means that some previous error occurred
       --  This is an unrecoverable error, so signal it.
 
       if Uname <= Error_Name then

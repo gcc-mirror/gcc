@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.5 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -101,7 +101,7 @@ package body Make is
    --  The elements comprised between Q.First and Q_Front - 1 are the
    --  elements that have been enqueued and then dequeued, while the
    --  elements between Q_Front and Q.Last - 1 are the elements currently
-   --  in the Q. When the Q is intialized Q_Front = Q.First = Q.Last.
+   --  in the Q. When the Q is initialized Q_Front = Q.First = Q.Last.
    --  After Compile_Sources has terminated its execution, Q_Front = Q.Last
    --  and the elements contained between Q.Front and Q.Last-1 are those that
    --  were explored and thus marked by Compile_Sources. Whenever the Q is

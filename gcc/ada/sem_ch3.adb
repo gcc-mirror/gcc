@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.10 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -96,7 +96,7 @@ package body Sem_Ch3 is
    --  process an implicit derived full type for a type derived from a private
    --  type (in that case the subprograms must only be derived for the private
    --  view of the type).
-   --  ??? These flags need a bit of re-examination and re-documentaion:
+   --  ??? These flags need a bit of re-examination and re-documentation:
    --  ???  are they both necessary (both seem related to the recursion)?
 
    procedure Build_Derived_Access_Type
@@ -204,7 +204,7 @@ package body Sem_Ch3 is
    --  procedures for the type where Discrim is a discriminant. Discriminals
    --  are not used during semantic analysis, and are not fully defined
    --  entities until expansion. Thus they are not given a scope until
-   --  intialization procedures are built.
+   --  initialization procedures are built.
 
    function Build_Discriminant_Constraints
      (T           : Entity_Id;
@@ -3942,7 +3942,7 @@ package body Sem_Ch3 is
    --  o The discriminants specified by a new KNOWN_DISCRIMINANT_PART, if
    --    there is one;
 
-   --  o Otherwise, each discriminant of the parent type (implicitely
+   --  o Otherwise, each discriminant of the parent type (implicitly
    --    declared in the same order with the same specifications). In this
    --    case, the discriminants are said to be "inherited", or if unknown in
    --    the parent are also unknown in the derived type.
@@ -4130,7 +4130,7 @@ package body Sem_Ch3 is
    --  Then the above transformation turns this into
 
    --             type Der_Base is new Base with null record;
-   --             --  procedure P (X : Base) is implicitely inherited here
+   --             --  procedure P (X : Base) is implicitly inherited here
    --             --  as procedure P (X : Der_Base).
 
    --             subtype Der is Der_Base (2);
@@ -9850,7 +9850,7 @@ package body Sem_Ch3 is
             Set_Corresponding_Discriminant (New_C, Old_C);
             Build_Discriminal (New_C);
 
-         --  If we are explicitely inheriting a girder discriminant it will be
+         --  If we are explicitly inheriting a girder discriminant it will be
          --  completely hidden.
 
          elsif Girder_Discrim then

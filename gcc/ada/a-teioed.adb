@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.18 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -741,7 +741,7 @@ package body Ada.Text_IO.Editing is
 
       --  Processing the radix and sign expansion separately
       --  would require lots of copying--the string and some of its
-      --  indicies--without really simplifying the logic.  The cases are:
+      --  indices--without really simplifying the logic.  The cases are:
 
       --  1) Expand $, replace '.' with Radix_Point
       --  2) No currency expansion, replace '.' with Radix_Point

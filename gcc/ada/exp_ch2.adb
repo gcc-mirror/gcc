@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.64 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -47,7 +47,7 @@ package body Exp_Ch2 is
    -----------------------
 
    procedure Expand_Discriminant (N : Node_Id);
-   --  An occurence of a discriminant within a discriminated type is replaced
+   --  An occurrence of a discriminant within a discriminated type is replaced
    --  with the corresponding discriminal, that is to say the formal parameter
    --  of the initialization procedure for the type that is associated with
    --  that particular discriminant. This replacement is not performed for

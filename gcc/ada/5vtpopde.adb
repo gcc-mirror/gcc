@@ -47,7 +47,7 @@ package body System.Task_Primitives.Operations.DEC is
    use type Interfaces.C.int;
 
    --  The FAB_RAB_Type specifieds where the context field (the calling
-   --  task) is stored.  Other fields defined for FAB_RAB arent' need and
+   --  task) is stored.  Other fields defined for FAB_RAB aren't need and
    --  so are ignored.
    type FAB_RAB_Type is
    record

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --           Copyright (C) 1997-2001, Ada Core Technologies, Inc.           --
 --                                                                          --
@@ -70,7 +70,7 @@ with Memroot; use Memroot;
 procedure Gnatmem is
 
    ------------------------------------------------
-   --  Potentially Target Dependant Subprograms. --
+   --  Potentially Target Dependent Subprograms. --
    ------------------------------------------------
 
    function Get_Current_TTY return String;

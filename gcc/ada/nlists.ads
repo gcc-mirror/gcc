@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.31 $                             --
+--                            $Revision: 1.1 $                             --
 --                                                                          --
 --          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -328,7 +328,7 @@ package Nlists is
    procedure Allocate_List_Tables (N : Node_Id);
    --  Called when nodes table is expanded to include node N. This call
    --  makes sure that list structures internal to Nlists are adjusted
-   --  apropriately to reflect this increase in the size of the nodes table.
+   --  appropriately to reflect this increase in the size of the nodes table.
 
    function Next_Node_Address return System.Address;
    function Prev_Node_Address return System.Address;

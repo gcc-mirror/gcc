@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1235,7 +1235,7 @@ package body Exp_Ch4 is
 
       --  Note that this does *not* fix the array concatenation bug when the
       --  low bound is Integer'first sibce that bug comes from the pointer
-      --  derefencing an unconstrained array. An there we need a constraint
+      --  dereferencing an unconstrained array. An there we need a constraint
       --  check to make sure the length of the concatenated array is ok. ???
 
       Insert_Action (Cnode, Func_Body, Suppress => All_Checks);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -123,7 +123,7 @@ procedure Gnatmain is
    --  Displays Program followed by the arguments in Args
 
    function Index (Char : Character; Str : String) return Natural;
-   --  Returns the first occurence of Char in Str.
+   --  Returns the first occurrence of Char in Str.
    --  Returns 0 if Char is not in Str.
 
    procedure Scan_Arg (Argv : String; And_Save : Boolean);

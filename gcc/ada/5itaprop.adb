@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision$
+--                             $Revision: 1.2 $
 --                                                                          --
 --             Copyright (C) 1991-2001, Florida State University            --
 --                                                                          --
@@ -336,7 +336,7 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    --  Note: mutexes and cond_variables needed per-task basis are
-   --        initialized in Intialize_TCB and the Storage_Error is
+   --        initialized in Initialize_TCB and the Storage_Error is
    --        handled. Other mutexes (such as All_Tasks_Lock, Memory_Lock...)
    --        used in RTS is initialized before any status change of RTS.
    --        Therefore rasing Storage_Error in the following routines

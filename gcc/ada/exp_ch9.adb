@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -4216,7 +4216,7 @@ package body Exp_Ch9 is
    begin
       --  As described above, The entry alternative is transformed into a
       --  block that contains the gnulli call, and possibly assignment
-      --  statments for in-out parameters. The gnulli call may itself be
+      --  statements for in-out parameters. The gnulli call may itself be
       --  rewritten into a transient block if some unconstrained parameters
       --  require it. We need to retrieve the call to complete its parameter
       --  list.
@@ -4690,7 +4690,7 @@ package body Exp_Ch9 is
 
             when N_Subprogram_Body =>
 
-               --  Exclude funtions created to analyze defaults.
+               --  Exclude functions created to analyze defaults.
 
                if not Is_Eliminated (Defining_Entity (Op_Body)) then
                   New_Op_Body :=
@@ -4783,7 +4783,7 @@ package body Exp_Ch9 is
          Next (Op_Body);
       end loop;
 
-      --  Finally, create the body of the funtion that maps an entry index
+      --  Finally, create the body of the function that maps an entry index
       --  into the corresponding body index, except when there is no entry,
       --  or in a ravenscar-like profile (no abort, no entry queue, 1 entry)
 

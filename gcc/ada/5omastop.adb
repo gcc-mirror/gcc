@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                            (Version for x86)                             --
 --                                                                          --
---                            $Revision: 1.7 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --           Copyright (C) 1999-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
@@ -471,7 +471,7 @@ package body System.Machine_State_Operations is
          return To_Address (MS.eip);
       else
          --  When doing a call the return address is pushed to the stack.
-         --  We want to return the call point address, so we substract
+         --  We want to return the call point address, so we subtract
          --  Asm_Call_Size from the return address. This value is set
          --  to 5 as an asm call takes 5 bytes on x86 architectures.
 

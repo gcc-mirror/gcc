@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.117 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1419,7 +1419,7 @@ package body Exp_Ch11 is
               Make_Defining_Identifier (Loc,
                 Chars => New_Internal_Name ('T'));
 
-            --  Set the constructed type as global, since we wil be
+            --  Set the constructed type as global, since we will be
             --  referencing the object that is of this type globally
 
             Set_Is_Statically_Allocated (Dtyp);

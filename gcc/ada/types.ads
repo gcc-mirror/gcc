@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -445,7 +445,7 @@ pragma Preelaborate (Types);
 
    No_List : constant List_Id := List_High_Bound;
    --  Used to indicate absence of a list. Note that the value is zero, which
-   --  is the same as Empty, which is helpful in intializing nodes where a
+   --  is the same as Empty, which is helpful in initializing nodes where a
    --  value of zero can represent either an empty node or an empty list.
 
    Error_List : constant List_Id := List_Low_Bound;

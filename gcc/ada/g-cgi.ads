@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.9 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --              Copyright (C) 2000 Ada Core Technologies, Inc.              --
 --                                                                          --
@@ -133,7 +133,7 @@ package GNAT.CGI is
      (Auth_Type,
       Content_Length,
       Content_Type,
-      Document_Root,          --  Web server dependant
+      Document_Root,          --  Web server dependent
       Gateway_Interface,
       HTTP_Accept,
       HTTP_Accept_Encoding,
@@ -151,26 +151,26 @@ package GNAT.CGI is
       Query_String,
       Remote_Addr,
       Remote_Host,
-      Remote_Port,            --  Web server dependant
+      Remote_Port,            --  Web server dependent
       Remote_Ident,
       Remote_User,
       Request_Method,
-      Request_URI,            --  Web server dependant
-      Script_Filename,        --  Web server dependant
+      Request_URI,            --  Web server dependent
+      Script_Filename,        --  Web server dependent
       Script_Name,
-      Server_Addr,            --  Web server dependant
-      Server_Admin,           --  Web server dependant
+      Server_Addr,            --  Web server dependent
+      Server_Admin,           --  Web server dependent
       Server_Name,
       Server_Port,
       Server_Protocol,
-      Server_Signature,       --  Web server dependant
+      Server_Signature,       --  Web server dependent
       Server_Software);
    --  CGI metavariables that are set by the Web server during program
    --  execution. All these variables are part of the restricted CGI runtime
    --  environment and can be read using Metavariable service. The detailed
    --  meanings of these metavariables are out of the scope of this
    --  description. Please refer to http://www.w3.org/CGI/ for a description
-   --  of the CGI specification. Some metavariables are Web server dependant
+   --  of the CGI specification. Some metavariables are Web server dependent
    --  and are not described in the cited document.
 
    procedure Put_Header

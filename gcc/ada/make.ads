@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.21 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -167,7 +167,7 @@ package Make is
    --    In_Place_Mode when True save library/object files in their object
    --    directory if they already exist; otherwise, in the source directory.
    --
-   --    Initialize_ALI_Data set it to True when you want to intialize ALI
+   --    Initialize_ALI_Data set it to True when you want to initialize ALI
    --    data-structures. This is what you should do most of the time.
    --    (especially the first time around when you call this routine).
    --    This parameter is set to False to preserve previously recorded
@@ -238,7 +238,7 @@ package Make is
    --     Then xref_tab.adb and types.adb are inserted in the Q if they are not
    --     already marked.
    --     Note that there is no file listed under W unchecked_deallocation%s
-   --     so no generic body should ever be explicitely compiled (unless the
+   --     so no generic body should ever be explicitly compiled (unless the
    --     Main_Source at the start was a generic body).
    --
    --  4. Repeat steps 2 and 3 above until the Q is empty

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision$
+--                             $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -91,7 +91,7 @@ package body System.Tasking.Debug is
       Width  : Integer;
       Buffer : Buffer_Ptr);
    --  Put TCB pointer T, (coded in hexadecimal) into Buffer
-   --  right-justififed in Width characters.
+   --  right-justified in Width characters.
 
    procedure Put
      (N      : Integer_Address;

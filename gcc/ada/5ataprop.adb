@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---                             $Revision: 1.60 $
+--                             $Revision: 1.1 $
 --                                                                          --
 --             Copyright (C) 1991-2001, Florida State University            --
 --                                                                          --
@@ -220,7 +220,7 @@ package body System.Task_Primitives.Operations is
    ---------------------
 
    --  Note: mutexes and cond_variables needed per-task basis are
-   --        initialized in Intialize_TCB and the Storage_Error is
+   --        initialized in Initialize_TCB and the Storage_Error is
    --        handled. Other mutexes (such as All_Tasks_Lock, Memory_Lock...)
    --        used in RTS is initialized before any status change of RTS.
    --        Therefore rasing Storage_Error in the following routines
@@ -738,7 +738,7 @@ package body System.Task_Primitives.Operations is
         (Attributes'Access, Adjusted_Stack_Size);
       pragma Assert (Result = 0);
 
-      --  Set the scheduling parameters explicitely, since this is the only
+      --  Set the scheduling parameters explicitly, since this is the only
       --  way to force the OS to take the scope attribute into account
 
       Result := pthread_attr_setinheritsched

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.72 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1996-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -93,7 +93,7 @@ procedure Gnatlink is
      Table_Initial        => 20,
      Table_Increment      => 100,
      Table_Name           => "Gnatlink.Response_File_Objects");
-   --  This table collects the objects file that are to be put in the reponse
+   --  This table collects the objects file that are to be put in the response
    --  file. Only application objects are collected there (see details in
    --  Linker_Objects table comments)
 

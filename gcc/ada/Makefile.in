@@ -793,7 +793,7 @@ SO_OPTS=-Wl,-soname,
 # gnatlib-shared-dual
 GNATLIB_SHARED=gnatlib-shared-default
 
-# default value for gnatmake's target dependant file
+# default value for gnatmake's target dependent file
 MLIB_TGT=mlib-tgt
 
 # $(filter-out PATTERN...,TEXT) removes all PATTERN words from TEXT.
@@ -2610,16 +2610,16 @@ utils2.o : utils2.c $(CONFIG_H) $(TREE_H) $(srcdir)/../flags.h ada.h types.h \
    atree.h nlists.h elists.h sinfo.h einfo.h namet.h snames.h stringt.h \
    uintp.h fe.h $(ADA_TREE_H) gigi.h
 
-# specific rules for tools needing target dependant sources
+# specific rules for tools needing target dependent sources
 # for each such source (e.g. mlib-tgt.adb) a link from the target
 # specific name to the default name is defined in the subdir "tools". 
 # This subdir is added at the beginning of the source path fore the compilation
-# of this unit. Here are the step for adding a new target dependant source:
+# of this unit. Here are the step for adding a new target dependent source:
 #   - create a Macro with the default name for the source (e.g. mlib-tgt)
-#   - change the value if this Macro in each target-dependant section of this 
+#   - change the value if this Macro in each target-dependent section of this 
 #     Makefile (close to LIBGNAT_TARGET_PAIRS defs) if there is a
 #     specific version of the file for this section
-#   - Add a link from target dependant version to the default name in "tools"
+#   - Add a link from target dependent version to the default name in "tools"
 #      (see stamp-tool_src_dir target)
 #   - Add a specific target for the object in order to compile with
 #     "tools" on the source path (see mlib-tgt)

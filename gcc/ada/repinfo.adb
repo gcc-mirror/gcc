@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.36 $
+--                            $Revision: 1.1 $
 --                                                                          --
 --          Copyright (C) 1999-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -104,7 +104,7 @@ package body Repinfo is
    -----------------------
 
    Unit_Casing : Casing_Type;
-   --  Indentifier casing for current unit
+   --  Identifier casing for current unit
 
    procedure Spaces (N : Natural);
    --  Output given number of spaces

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.5 $                              --
+--                            $Revision: 1.1 $                              --
 --                                                                          --
 --          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -33,7 +33,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package manages the shared/persistant storage required for
+--  This package manages the shared/persistent storage required for
 --  full implementation of variables in Shared_Passive packages, more
 --  precisely variables whose enclosing dynamic scope is a shared
 --  passive package. This implementation is specific to GNAT and GLADE

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -4868,7 +4868,7 @@ package body Exp_Ch3 is
       if For_Body then
          return Make_Subprogram_Body (Loc, Spec, Empty_List, Empty);
 
-      --  For the case of _Input and _Ouput applied to an abstract type,
+      --  For the case of _Input and _Output applied to an abstract type,
       --  generate abstract specifications. These will never be called,
       --  but we need the slots allocated in the dispatching table so
       --  that typ'Class'Input and typ'Class'Output will work properly.

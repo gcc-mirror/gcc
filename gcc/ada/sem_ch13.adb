@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.3 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -3438,7 +3438,7 @@ package body Sem_Ch13 is
 
       --  For enumeration types, we must check each literal to see if the
       --  representation is the same. Note that we do not permit enumeration
-      --  reprsentation clauses for Character and Wide_Character, so these
+      --  representation clauses for Character and Wide_Character, so these
       --  cases were already dealt with.
 
       elsif Is_Enumeration_Type (T1) then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision$
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -703,7 +703,7 @@ package body Sem_Ch10 is
          if Nkind (Item) = N_With_Clause then
 
             --  Skip analyzing with clause if no unit, nothing to do (this
-            --  happens for a with that references a non-existant unit)
+            --  happens for a with that references a non-existent unit)
 
             if Present (Library_Unit (Item)) then
                Analyze (Item);
@@ -998,7 +998,7 @@ package body Sem_Ch10 is
    begin
       Check_Stub_Level (N);
 
-      --  First occurence of name may have been as an incomplete type.
+      --  First occurrence of name may have been as an incomplete type.
 
       if Present (Nam) and then Ekind (Nam) = E_Incomplete_Type then
          Nam := Full_View (Nam);
@@ -1364,7 +1364,7 @@ package body Sem_Ch10 is
    begin
       Check_Stub_Level (N);
 
-      --  First occurence of name may have been as an incomplete type.
+      --  First occurrence of name may have been as an incomplete type.
 
       if Present (Nam) and then Ekind (Nam) = E_Incomplete_Type then
          Nam := Full_View (Nam);

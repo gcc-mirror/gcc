@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision: 1.2 $
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -455,7 +455,7 @@ package Sem_Util is
    function Is_Selector_Name (N : Node_Id) return Boolean;
    --  Given an N_Identifier node N, determines if it is a Selector_Name.
    --  As described in Sinfo, Selector_Names are special because they
-   --  represent use of the N_Identifier node for a true identifer, when
+   --  represent use of the N_Identifier node for a true identifier, when
    --  normally such nodes represent a direct name.
 
    function Is_Statement (N : Node_Id) return Boolean;
@@ -540,7 +540,7 @@ package Sem_Util is
       Report  : Boolean;
       Success : out Boolean);
    --  Reorders lists of actuals according to names of formals, value returned
-   --  in Success indicates sucess of reordering. For more details, see body.
+   --  in Success indicates success of reordering. For more details, see body.
    --  Errors are reported only if Report is set to True.
 
    procedure Note_Possible_Modification (N : Node_Id);
