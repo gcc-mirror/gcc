@@ -46,9 +46,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some types used by the DWARF 2 spec.  */
 
-typedef unsigned int uword __attribute__ ((mode (SI)));
-typedef unsigned int uaddr __attribute__ ((mode (pointer)));
-typedef int saddr __attribute__ ((mode (pointer)));
+typedef          int  sword __attribute__ ((mode (SI)));
+typedef unsigned int  uword __attribute__ ((mode (SI)));
+typedef unsigned int  uaddr __attribute__ ((mode (pointer)));
+typedef          int  saddr __attribute__ ((mode (pointer)));
 typedef unsigned char ubyte;
 
 /* The first few fields of a CIE.  The CIE_id field is 0xffffffff for a CIE,
@@ -57,7 +58,7 @@ typedef unsigned char ubyte;
 
 struct dwarf_cie {
   uword length;
-  uaddr CIE_id;
+  sword CIE_id;
   ubyte version;
   char augmentation[0];
 } __attribute__ ((packed, aligned (__alignof__ (void *))));
@@ -66,7 +67,7 @@ struct dwarf_cie {
 
 struct dwarf_fde {
   uword length;
-  struct dwarf_cie* CIE_pointer;
+  sword CIE_delta;
   void* pc_begin;
   uaddr pc_range;
 } __attribute__ ((packed, aligned (__alignof__ (void *))));
@@ -92,6 +93,7 @@ static struct object *objects;
 
 struct cie_info {
   char *augmentation;
+  void *eh_ptr;
   int code_align;
   int data_align;
   unsigned ra_regno;
@@ -217,8 +219,8 @@ count_fdes (fde *this_fde)
 
   for (count = 0; this_fde->length != 0; this_fde = next_fde (this_fde))
     {
-      /* Skip CIEs.  */
-      if ((uaddr)(this_fde->CIE_pointer) == (uaddr)-1)
+      /* Skip CIEs and linked once FDE entries.  */
+      if (this_fde->CIE_delta == 0 || this_fde->pc_range == 0)
 	continue;
 
       ++count;
@@ -237,8 +239,8 @@ add_fdes (fde *this_fde, fde **array, size_t *i_ptr,
 
   for (; this_fde->length != 0; this_fde = next_fde (this_fde))
     {
-      /* Skip CIEs.  */
-      if ((uaddr)(this_fde->CIE_pointer) == (uaddr)-1)
+      /* Skip CIEs and linked once FDE entries.  */
+      if (this_fde->CIE_delta == 0 || this_fde->pc_range == 0)
 	continue;
 
       fde_insert (array, i++, this_fde);
@@ -332,6 +334,12 @@ find_fde (void *pc)
   return 0;
 }
 
+static inline struct dwarf_cie *
+get_cie (fde *f)
+{
+  return ((void *)&f->CIE_delta) - f->CIE_delta;
+}
+
 /* Extract any interesting information from the CIE for the translation
    unit F belongs to.  */
 
@@ -341,14 +349,22 @@ extract_cie_info (fde *f, struct cie_info *c)
   void *p;
   int i;
 
-  c->augmentation = f->CIE_pointer->augmentation;
+  c->augmentation = get_cie (f)->augmentation;
 
   if (strcmp (c->augmentation, "") != 0
-      && strcmp (c->augmentation, "e") != 0
+      && strcmp (c->augmentation, "eh") != 0
       && c->augmentation[0] != 'z')
     return 0;
 
   p = c->augmentation + strlen (c->augmentation) + 1;
+
+  if (strcmp (c->augmentation, "eh") == 0)
+    {
+      c->eh_ptr = read_pointer (p);
+      p += sizeof (void *);
+    }
+  else
+    c->eh_ptr = 0;
 
   p = decode_uleb128 (p, &c->code_align);
   p = decode_sleb128 (p, &c->data_align);
@@ -576,9 +592,10 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
 
   memset (&state, 0, sizeof (state));
   state.s.retaddr_column = info.ra_regno;
+  state.s.eh_ptr = info.eh_ptr;
 
   /* First decode all the insns in the CIE.  */
-  end = next_fde ((fde*) f->CIE_pointer);
+  end = next_fde ((fde*) get_cie (f));
   while (insn < end)
     insn = execute_cfa_insn (insn, &state, &info, 0);
 
@@ -589,11 +606,6 @@ __frame_state_for (void *pc_target, struct frame_state *state_in)
       int i;
       insn = decode_uleb128 (insn, &i);
       insn += i;
-    }
-  else if (strcmp (info.augmentation, "e") == 0)
-    {
-      state.s.eh_ptr = read_pointer (insn);
-      insn += sizeof (void *);
     }
 
   /* Then the insns in the FDE up to our target PC.  */
