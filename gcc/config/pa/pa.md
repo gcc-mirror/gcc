@@ -1051,19 +1051,39 @@
 			      (const_int 1)
 			      (match_operand:SI 1 "uint5_operand" ""))
 	     (const_int 0))
-	 (match_operand 2 "pc_or_label_operand" "")
-	 (match_operand 3 "pc_or_label_operand" "")))]
+	 (label_ref (match_operand 2 "" ""))
+	 (pc)))]
   ""
   "*
 {
   return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn),
-			 (operands[3] != pc_rtx),
-			 insn, 0);
+			 get_attr_length (insn), 0, insn, 0);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (ne (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "uint5_operand" ""))
+	     (const_int 0))
+	 (pc)
+	 (label_ref (match_operand 2 "" ""))))]
+  ""
+  "*
+{
+  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
+			 get_attr_length (insn), 1, insn, 0);
+}"
+[(set_attr "type" "cbranch")
+ (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 		      (const_int 8188))
            (const_int 4)
 	   (const_int 8)))])
@@ -1075,19 +1095,39 @@
 			      (const_int 1)
 			      (match_operand:SI 1 "uint5_operand" ""))
 	     (const_int 0))
-	 (match_operand 2 "pc_or_label_operand" "")
-	 (match_operand 3 "pc_or_label_operand" "")))]
+	 (label_ref (match_operand 2 "" ""))
+	 (pc)))]
   ""
   "*
 {
   return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
-			 get_attr_length (insn),
-			 (operands[3] != pc_rtx),
-			 insn, 1);
+			 get_attr_length (insn), 0, insn, 1);
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
+		      (const_int 8188))
+           (const_int 4)
+	   (const_int 8)))])
+
+(define_insn ""
+  [(set (pc)
+	(if_then_else
+	 (eq (zero_extract:SI (match_operand:SI 0 "register_operand" "r")
+			      (const_int 1)
+			      (match_operand:SI 1 "uint5_operand" ""))
+	     (const_int 0))
+	 (pc)
+	 (label_ref (match_operand 2 "" ""))))]
+  ""
+  "*
+{
+  return output_bb (operands, INSN_ANNULLED_BRANCH_P (insn),
+			 get_attr_length (insn), 1, insn, 1);
+}"
+[(set_attr "type" "cbranch")
+ (set (attr "length")
+    (if_then_else (lt (abs (minus (match_dup 2) (plus (pc) (const_int 8))))
 		      (const_int 8188))
            (const_int 4)
 	   (const_int 8)))])
