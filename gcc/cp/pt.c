@@ -7323,7 +7323,8 @@ tsubst_qualified_id (tree qualified_id, tree args,
   else
     expr = name;
 
-  my_friendly_assert (!dependent_type_p (scope), 20030729);
+  if (dependent_type_p (scope))
+    return build_nt (SCOPE_REF, scope, expr);
   
   if (!BASELINK_P (name) && !DECL_P (expr))
     {
@@ -7735,9 +7736,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   complain ^= stmt_expr;
   if (t == NULL_TREE || t == error_mark_node)
     return t;
-
-  if (processing_template_decl)
-    return tsubst_copy (t, args, complain, in_decl);
 
   if (!STATEMENT_CODE_P (TREE_CODE (t)))
     return tsubst_copy_and_build (t, args, complain, in_decl,

@@ -1,3 +1,14 @@
+2004-03-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14324
+	* g++.dg/abi/mangle21.C: New test.
+
+	PR c++/14260
+	* g++.dg/parse/constructor2.C: New test.
+
+	PR c++/14337
+	* g++.dg/template/sfinae1.C: New test.
+
 2004-02-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR middle-end/13448

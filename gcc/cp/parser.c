@@ -10539,7 +10539,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      /* See if it names ctor, dtor or conv.  */
 	      if (TREE_CODE (unqualified_name) == BIT_NOT_EXPR
 		  || IDENTIFIER_TYPENAME_P (unqualified_name)
-		  || constructor_name_p (unqualified_name, class_type))
+		  || constructor_name_p (unqualified_name, class_type)
+		  || (TREE_CODE (unqualified_name) == TYPE_DECL
+		      && same_type_p (TREE_TYPE (unqualified_name),
+				      class_type)))
 		*ctor_dtor_or_conv_p = -1;
 	    }
 
