@@ -1,3 +1,7 @@
+2000-08-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-lex.c (yylex): Don't allow integer suffixes 'LUL', 'Ll', 'lL'.
+
 2000-08-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/mips/mips.c: Fix compile time warning messages.
