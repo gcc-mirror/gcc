@@ -1,3 +1,8 @@
+Thu Dec  2 18:59:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* combine.c (try_combine): Before fixing up LOG_LINKS for the
+	i3_subst_into_i2 case, check that GET_CODE (PATTERN (i2)) == PARALLEL.
+
 1999-12-02  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* invoke.texi: Document the mips option -mno-crt0

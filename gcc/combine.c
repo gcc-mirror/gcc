@@ -2448,19 +2448,22 @@ try_combine (i3, i2, i1)
 
     if (i3_subst_into_i2)
       {
-	for (i = 0; i < XVECLEN (PATTERN (i2), 0); i++)
-	  if (GET_CODE (SET_DEST (XVECEXP (PATTERN (i2), 0, i))) == REG
-	      && SET_DEST (XVECEXP (PATTERN (i2), 0, i)) != i2dest
-	      && ! find_reg_note (i2, REG_UNUSED,
-				  SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
-	    for (temp = NEXT_INSN (i2);
-		 temp && (this_basic_block == n_basic_blocks - 1
-			  || BLOCK_HEAD (this_basic_block) != temp);
-		 temp = NEXT_INSN (temp))
-	      if (temp != i3 && GET_RTX_CLASS (GET_CODE (temp)) == 'i')
-		for (link = LOG_LINKS (temp); link; link = XEXP (link, 1))
-		  if (XEXP (link, 0) == i2)
-		    XEXP (link, 0) = i3;
+	if (GET_CODE (PATTERN (i2)) == PARALLEL)
+	  {
+	    for (i = 0; i < XVECLEN (PATTERN (i2), 0); i++)
+	      if (GET_CODE (SET_DEST (XVECEXP (PATTERN (i2), 0, i))) == REG
+		  && SET_DEST (XVECEXP (PATTERN (i2), 0, i)) != i2dest
+		  && ! find_reg_note (i2, REG_UNUSED,
+				      SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
+		for (temp = NEXT_INSN (i2);
+		     temp && (this_basic_block == n_basic_blocks - 1
+			      || BLOCK_HEAD (this_basic_block) != temp);
+		     temp = NEXT_INSN (temp))
+		  if (temp != i3 && GET_RTX_CLASS (GET_CODE (temp)) == 'i')
+		    for (link = LOG_LINKS (temp); link; link = XEXP (link, 1))
+		      if (XEXP (link, 0) == i2)
+			XEXP (link, 0) = i3;
+	  }
 
 	if (i3notes)
 	  {
