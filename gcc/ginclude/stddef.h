@@ -8,6 +8,8 @@
      && !defined(__need_ptrdiff_t) && !defined(__need_NULL))
 #define _STDDEF_H
 #define _STDDEF_H_
+/* snaroff@next.com says the NeXT needs this.  */
+#define _ANSI_STDDEF_H
 #endif
 
 #ifndef __sys_stdtypes_h
