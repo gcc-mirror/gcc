@@ -42,6 +42,9 @@ static int have_peephole2_flag;
 /* Maximum number of insns seen in a split.  */
 static int max_insns_per_split = 1;
 
+/* Maximum number of input insns for peephole2.  */
+static int max_insns_per_peep2;
+
 static int clobbers_seen_this_insn;
 static int dup_operands_seen_this_insn;
 
@@ -239,6 +242,26 @@ gen_peephole (peep)
     walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
 }
 
+static void
+gen_peephole2 (peep)
+     rtx peep;
+{
+  int i, n;
+
+  /* Look through the patterns that are matched
+     to compute the maximum operand number.  */
+  for (i = XVECLEN (peep, 0) - 1; i >= 0; --i)
+    walk_insn_part (XVECEXP (peep, 0, i), 1, 0);
+
+  /* Look at the number of insns this insn can be matched from.  */
+  for (i = XVECLEN (peep, 0) - 1, n = 0; i >= 0; --i)
+    if (GET_CODE (XVECEXP (peep, 0, i)) != MATCH_DUP
+	&& GET_CODE (XVECEXP (peep, 0, i)) != MATCH_SCRATCH)
+      n++;
+  if (n > max_insns_per_peep2)
+    max_insns_per_peep2 = n;
+}
+
 extern int main PARAMS ((int, char **));
 
 int
@@ -289,7 +312,7 @@ from the machine description file `md'.  */\n\n");
 
 	  case DEFINE_PEEPHOLE2:
 	    have_peephole2_flag = 1;
-	    gen_split (desc);
+	    gen_peephole2 (desc);
 	    break;
 
 	  case DEFINE_PEEPHOLE:
@@ -302,9 +325,8 @@ from the machine description file `md'.  */\n\n");
 	}
     }
 
-  printf ("\n#define MAX_RECOG_OPERANDS %d\n", max_recog_operands + 1);
-
-  printf ("\n#define MAX_DUP_OPERANDS %d\n", max_dup_operands);
+  printf ("#define MAX_RECOG_OPERANDS %d\n", max_recog_operands + 1);
+  printf ("#define MAX_DUP_OPERANDS %d\n", max_dup_operands);
 
   /* This is conditionally defined, in case the user writes code which emits
      more splits than we can readily see (and knows s/he does it).  */
@@ -328,7 +350,10 @@ from the machine description file `md'.  */\n\n");
     printf ("#define HAVE_peephole 1\n");
 
   if (have_peephole2_flag)
-    printf ("#define HAVE_peephole2 1\n");
+    {
+      printf ("#define HAVE_peephole2 1\n");
+      printf ("#define MAX_INSNS_PER_PEEP2 %d\n", max_insns_per_peep2);
+    }
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

@@ -1,5 +1,34 @@
 2000-05-27  Richard Henderson  <rth@cygnus.com>
 
+	* Makefile.in (recog.o): Don't depend on resource.h.
+	* recog.c: Don't include resource.h.
+	(recog_last_allowed_insn): Remove.
+	(recog_next_insn): Remove.
+	(struct peep2_insn_data): New.
+	(peep2_insn_data, peep2_current): New.
+	(peep2_next_insn): New.
+	(peep2_regno_dead_p, peep2_reg_dead_p): New.
+	(peep2_find_free_register): New.
+	(peephole2_optimize): Track life information by insn as we go.
+	* recog.h: Update declarations.
+	* resource.c (find_free_register, reg_dead_p): Remove.
+	* resource.h: Remove their declarations.
+	* toplev.c: Include hard-reg-set.h before recog.h.
+
+	* genconfig.c (max_insns_per_peep2): New.
+	(gen_peephole2): New.
+	(main): Call it.
+	* genemit.c (output_peephole2_scratches): Generate calls to
+	peep2_find_free_register; adjust surrounding code.
+	(main): Have insn-emit.c include hard-reg-set.h before recog.h.
+	* genrecog.c (change_state): Don't track last_insn.
+	(write_action): Write into *_pmatch_len before accepting.
+	(write_tree): Adjust peephole2_insns and subroutines to match.
+
+	* config/i386/i386.md (all peepholes): Use peep2_regno_dead_p.
+
+2000-05-27  Richard Henderson  <rth@cygnus.com>
+
 	* function.c (thread_prologue_epilogue_insns): Don't move the
 	line note at the head of the chain.  Only force a lineno note
 	before the end of block 0.

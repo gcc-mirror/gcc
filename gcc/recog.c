@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "basic-block.h"
 #include "output.h"
-#include "resource.h"
 
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD
@@ -2682,100 +2681,340 @@ split_all_insns (upd_life)
 }
 
 #ifdef HAVE_peephole2
-/* This is the last insn we'll allow recog_next_insn to consider.  */
-static rtx recog_last_allowed_insn;
+struct peep2_insn_data
+{
+  rtx insn;
+  regset live_before;
+};
 
-/* Return the Nth non-note insn after INSN, or return NULL_RTX if it does
-   not exist.  Used by the recognizer to find the next insn to match in a
-   multi-insn pattern.  */
+static struct peep2_insn_data peep2_insn_data[MAX_INSNS_PER_PEEP2 + 1];
+static int peep2_current;
+
+/* A non-insn marker indicating the last insn of the block.
+   The live_before regset for this element is correct, indicating
+   global_live_at_end for the block.  */
+#define PEEP2_EOB	pc_rtx
+
+/* Return the Nth non-note insn after `current', or return NULL_RTX if it
+   does not exist.  Used by the recognizer to find the next insn to match
+   in a multi-insn pattern.  */
+
 rtx
-recog_next_insn (insn, n)
-     rtx insn;
+peep2_next_insn (n)
      int n;
 {
-  if (insn != NULL_RTX)
+  if (n >= MAX_INSNS_PER_PEEP2 + 1)
+    abort ();
+
+  n += peep2_current;
+  if (n >= MAX_INSNS_PER_PEEP2 + 1)
+    n -= MAX_INSNS_PER_PEEP2 + 1;
+
+  if (peep2_insn_data[n].insn == PEEP2_EOB)
+    return NULL_RTX;
+  return peep2_insn_data[n].insn;
+}
+
+/* Return true if REGNO is dead before the Nth non-note insn
+   after `current'.  */
+
+int
+peep2_regno_dead_p (ofs, regno)
+     int ofs;
+     int regno;
+{
+  if (ofs >= MAX_INSNS_PER_PEEP2 + 1)
+    abort ();
+
+  ofs += peep2_current;
+  if (ofs >= MAX_INSNS_PER_PEEP2 + 1)
+    ofs -= MAX_INSNS_PER_PEEP2 + 1;
+
+  if (peep2_insn_data[ofs].insn == NULL_RTX)
+    abort ();
+
+  return ! REGNO_REG_SET_P (peep2_insn_data[ofs].live_before, regno);
+}
+
+/* Similarly for a REG.  */
+
+int
+peep2_reg_dead_p (ofs, reg)
+     int ofs;
+     rtx reg;
+{
+  int regno, n;
+
+  if (ofs >= MAX_INSNS_PER_PEEP2 + 1)
+    abort ();
+
+  ofs += peep2_current;
+  if (ofs >= MAX_INSNS_PER_PEEP2 + 1)
+    ofs -= MAX_INSNS_PER_PEEP2 + 1;
+
+  if (peep2_insn_data[ofs].insn == NULL_RTX)
+    abort ();
+
+  regno = REGNO (reg);
+  n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+  while (--n >= 0)
+    if (REGNO_REG_SET_P (peep2_insn_data[ofs].live_before, regno + n))
+      return 0;
+  return 1;
+}
+
+/* Try to find a hard register of mode MODE, matching the register class in
+   CLASS_STR, which is available at the beginning of insn CURRENT_INSN and
+   remains available until the end of LAST_INSN.  LAST_INSN may be NULL_RTX,
+   in which case the only condition is that the register must be available
+   before CURRENT_INSN.
+   Registers that already have bits set in REG_SET will not be considered.
+
+   If an appropriate register is available, it will be returned and the
+   corresponding bit(s) in REG_SET will be set; otherwise, NULL_RTX is
+   returned.  */
+
+rtx
+peep2_find_free_register (from, to, class_str, mode, reg_set)
+     int from, to;
+     const char *class_str;
+     enum machine_mode mode;
+     HARD_REG_SET *reg_set;
+{
+  static int search_ofs;
+  enum reg_class class;
+  HARD_REG_SET live;
+  int i;
+
+  if (from >= MAX_INSNS_PER_PEEP2 + 1 || to >= MAX_INSNS_PER_PEEP2 + 1)
+    abort ();
+
+  from += peep2_current;
+  if (from >= MAX_INSNS_PER_PEEP2 + 1)
+    from -= MAX_INSNS_PER_PEEP2 + 1;
+  to += peep2_current;
+  if (to >= MAX_INSNS_PER_PEEP2 + 1)
+    to -= MAX_INSNS_PER_PEEP2 + 1;
+
+  if (peep2_insn_data[from].insn == NULL_RTX)
+    abort ();
+  REG_SET_TO_HARD_REG_SET (live, peep2_insn_data[from].live_before);
+
+  while (from != to)
     {
-      while (n > 0)
+      HARD_REG_SET this_live;
+
+      if (++from >= MAX_INSNS_PER_PEEP2 + 1)
+	from = 0;
+      if (peep2_insn_data[from].insn == NULL_RTX)
+	abort ();
+      REG_SET_TO_HARD_REG_SET (this_live, peep2_insn_data[from].live_before);
+      IOR_HARD_REG_SET (live, this_live);
+    }
+
+  class = (class_str[0] == 'r' ? GENERAL_REGS
+	   : REG_CLASS_FROM_LETTER (class_str[0]));
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      int raw_regno, regno, success, j;
+
+      /* Distribute the free registers as much as possible.  */
+      raw_regno = search_ofs + i;
+      if (raw_regno >= FIRST_PSEUDO_REGISTER)
+	raw_regno -= FIRST_PSEUDO_REGISTER;
+#ifdef REG_ALLOC_ORDER
+      regno = reg_alloc_order[raw_regno];
+#else
+      regno = raw_regno;
+#endif
+
+      /* Don't allocate fixed registers.  */
+      if (fixed_regs[regno])
+	continue;
+      /* Make sure the register is of the right class.  */
+      if (! TEST_HARD_REG_BIT (reg_class_contents[class], regno))
+	continue;
+      /* And can support the mode we need.  */
+      if (! HARD_REGNO_MODE_OK (regno, mode))
+	continue;
+      /* And that we don't create an extra save/restore.  */
+      if (! call_used_regs[regno] && ! regs_ever_live[regno])
+	continue;
+      /* And we don't clobber traceback for noreturn functions.  */
+      if ((regno == FRAME_POINTER_REGNUM || regno == HARD_FRAME_POINTER_REGNUM)
+	  && (! reload_completed || frame_pointer_needed))
+	continue;
+
+      success = 1;
+      for (j = HARD_REGNO_NREGS (regno, mode) - 1; j >= 0; j--)
 	{
-	  if (insn == recog_last_allowed_insn)
-	    return NULL_RTX;
+	  if (TEST_HARD_REG_BIT (*reg_set, regno + j)
+	      || TEST_HARD_REG_BIT (live, regno + j))
+	    {
+	      success = 0;
+	      break;
+	    }
+	}
+      if (success)
+	{
+	  for (j = HARD_REGNO_NREGS (regno, mode) - 1; j >= 0; j--)
+	    SET_HARD_REG_BIT (*reg_set, regno + j);
 
-	  insn = NEXT_INSN (insn);
-	  if (insn == NULL_RTX)
-	    break;
+	  /* Start the next search with the next register.  */
+	  if (++raw_regno >= FIRST_PSEUDO_REGISTER)
+	    raw_regno = 0;
+	  search_ofs = raw_regno;
 
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	    n -= 1;
+	  return gen_rtx_REG (mode, regno);
 	}
     }
 
-  return insn;
+  search_ofs = 0;
+  return NULL_RTX;
 }
 
 /* Perform the peephole2 optimization pass. */
+
 void
 peephole2_optimize (dump_file)
      FILE *dump_file ATTRIBUTE_UNUSED;
 {
+  regset_head rs_heads[MAX_INSNS_PER_PEEP2 + 2];
   rtx insn, prev;
-  int i, changed;
+  regset live;
+  int i, b;
+#ifdef HAVE_conditional_execution
   sbitmap blocks;
+  int changed;
+#endif
 
-  /* ??? TODO: Arrange with resource.c to start at bb->global_live_at_end
-     and backtrack insn by insn as we proceed through the block.  In this
-     way we'll not need to keep searching forward from the beginning of 
-     basic blocks to find register life info.  */
+  /* Initialize the regsets we're going to use.  */
+  for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
+    peep2_insn_data[i].live_before = INITIALIZE_REG_SET (rs_heads[i]);
+  live = INITIALIZE_REG_SET (rs_heads[i]);
 
-  init_resource_info (NULL);
-
+#ifdef HAVE_conditional_execution
   blocks = sbitmap_alloc (n_basic_blocks);
   sbitmap_zero (blocks);
   changed = 0;
+#else
+  count_or_remove_death_notes (NULL, 1);
+#endif
 
-  for (i = n_basic_blocks - 1; i >= 0; --i)
+  for (b = n_basic_blocks - 1; b >= 0; --b)
     {
-      basic_block bb = BASIC_BLOCK (i);
+      basic_block bb = BASIC_BLOCK (b);
+      struct propagate_block_info *pbi;
 
-      /* Since we don't update life info until the very end, we can't
-	 allow matching instructions that we've replaced before.  Walk
-	 backward through the basic block so that we don't have to 
-	 care about subsequent life info; recog_last_allowed_insn to
-	 restrict how far forward we will allow the match to proceed.  */
+      /* Indicate that all slots except the last holds invalid data.  */
+      for (i = 0; i < MAX_INSNS_PER_PEEP2; ++i)
+	peep2_insn_data[i].insn = NULL_RTX;
 
-      recog_last_allowed_insn = NEXT_INSN (bb->end);
+      /* Indicate that the last slot contains live_after data.  */
+      peep2_insn_data[MAX_INSNS_PER_PEEP2].insn = PEEP2_EOB;
+      peep2_current = MAX_INSNS_PER_PEEP2;
+
+      /* Start up propagation.  */
+      COPY_REG_SET (live, bb->global_live_at_end);
+      COPY_REG_SET (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
+
+#ifdef HAVE_conditional_execution
+      pbi = init_propagate_block_info (bb, live, NULL, 0);
+#else
+      pbi = init_propagate_block_info (bb, live, NULL, PROP_DEATH_NOTES);
+#endif
+
       for (insn = bb->end; ; insn = prev)
 	{
 	  prev = PREV_INSN (insn);
 	  if (INSN_P (insn))
 	    {
-	      rtx try, last_insn;
+	      rtx try;
+	      int match_len;
 
-	      try = peephole2_insns (PATTERN (insn), insn, &last_insn);
+	      /* Record this insn.  */
+	      if (--peep2_current < 0)
+		peep2_current = MAX_INSNS_PER_PEEP2;
+	      peep2_insn_data[peep2_current].insn = insn;
+	      propagate_one_insn (pbi, insn);
+	      COPY_REG_SET (peep2_insn_data[peep2_current].live_before, live);
+
+	      /* Match the peephole.  */
+	      try = peephole2_insns (PATTERN (insn), insn, &match_len);
 	      if (try != NULL)
 		{
-		  flow_delete_insn_chain (insn, last_insn);
+		  i = match_len + peep2_current;
+		  if (i >= MAX_INSNS_PER_PEEP2 + 1)
+		    i -= MAX_INSNS_PER_PEEP2 + 1;
+
+		  /* Replace the old sequence with the new.  */
+		  flow_delete_insn_chain (insn, peep2_insn_data[i].insn);
 		  try = emit_insn_after (try, prev);
 
-		  if (last_insn == bb->end)
+		  /* Adjust the basic block boundaries.  */
+		  if (peep2_insn_data[i].insn == bb->end)
 		    bb->end = try;
 		  if (insn == bb->head)
 		    bb->head = NEXT_INSN (prev);
 
-		  recog_last_allowed_insn = NEXT_INSN (prev);
-		  SET_BIT (blocks, i);
+#ifdef HAVE_conditional_execution
+		  /* With conditional execution, we cannot back up the
+		     live information so easily, since the conditional
+		     death data structures are not so self-contained.
+		     So record that we've made a modification to this
+		     block and update life information at the end.  */
+		  SET_BIT (blocks, b);
 		  changed = 1;
+
+		  for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
+		    peep2_insn_data[i].insn = NULL_RTX;
+		  peep2_insn_data[peep2_current].insn = PEEP2_EOB;
+#else
+		  /* Back up lifetime information past the end of the
+		     newly created sequence.  */
+		  if (++i >= MAX_INSNS_PER_PEEP2 + 1)
+		    i = 0;
+		  COPY_REG_SET (live, peep2_insn_data[i].live_before);
+
+		  /* Update life information for the new sequence.  */
+		  do
+		    {
+		      if (INSN_P (try))
+			{
+			  if (--i < 0)
+			    i = MAX_INSNS_PER_PEEP2;
+			  peep2_insn_data[i].insn = try;
+			  propagate_one_insn (pbi, try);
+			  COPY_REG_SET (peep2_insn_data[i].live_before, live);
+			}
+		      try = PREV_INSN (try);
+		    }
+		  while (try != prev);
+
+		  /* ??? Should verify that LIVE now matches what we
+		     had before the new sequence.  */
+
+		  peep2_current = i;
+#endif
 		}
 	    }
 
 	  if (insn == bb->head)
 	    break;
 	}
+
+      free_propagate_block_info (pbi);
     }
 
-  free_resource_info ();
+  for (i = 0; i < MAX_INSNS_PER_PEEP2 + 1; ++i)
+    FREE_REG_SET (peep2_insn_data[i].live_before);
+  FREE_REG_SET (live);
 
-  compute_bb_for_insn (get_max_uid ());
+#ifdef HAVE_conditional_execution
   count_or_remove_death_notes (blocks, 1);
   update_life_info (blocks, UPDATE_LIFE_LOCAL, PROP_DEATH_NOTES);
-}
+  sbitmap_free (blocks);
 #endif
+}
+#endif /* HAVE_peephole2 */

@@ -50,6 +50,3 @@ extern void incr_ticks_for_insn		PARAMS ((rtx));
 extern void mark_end_of_function_resources PARAMS ((rtx, int));
 extern void init_resource_info		PARAMS ((rtx));
 extern void free_resource_info		PARAMS ((void));
-extern rtx find_free_register		PARAMS ((rtx, rtx, const char *, int,
-					       HARD_REG_SET *));
-extern int reg_dead_p			PARAMS ((rtx, rtx));
