@@ -1,3 +1,16 @@
+Tue Aug 19 02:26:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (is_subseq): New fn.
+	(compare_ics): Use it.
+
+	* repo.c (finish_repo): Don't crash on no args.
+
+	* parse.y (named_complex_class_head_sans_basetype): Handle
+ 	explicit global scope.
+	* decl2.c (handle_class_head): New fn.
+
+	* pt.c (unify): Add CONST_DECL case.
+
 Thu Aug 14 10:05:13 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* rtti.c (permanent_obstack): Fix decl to not be a pointer.

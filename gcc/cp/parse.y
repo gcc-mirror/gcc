@@ -2280,16 +2280,17 @@ named_complex_class_head_sans_basetype:
 	  aggr nested_name_specifier identifier
 		{
 		  current_aggr = $1;
-		  if (TREE_CODE ($3) == TYPE_DECL)
-		    $$ = $3;
-		  else
-		    {
-		      cp_error ("`%T' does not have a nested type named `%D'",
-				$2, $3);
-		      $$ = xref_tag
-			(current_aggr, make_anon_name (), NULL_TREE, 1);
-		      $$ = TYPE_MAIN_DECL ($$);
-		    }
+		  $$ = handle_class_head ($1, $2, $3);
+		}
+	| aggr global_scope nested_name_specifier identifier
+		{
+		  current_aggr = $1;
+		  $$ = handle_class_head ($1, $3, $4);
+		}
+	| aggr global_scope identifier
+		{
+		  current_aggr = $1;
+		  $$ = handle_class_head ($1, NULL_TREE, $3);
 		}
 	| aggr template_type
 		{ current_aggr = $$; $$ = $2; }

@@ -5452,6 +5452,31 @@ compare_qual (ics1, ics2)
   return 0;
 }
 
+/* Determine whether standard conversion sequence ICS1 is a proper
+   subsequence of ICS2.  We assume that a conversion of the same code
+   between the same types indicates a subsequence.  */
+
+static int
+is_subseq (ics1, ics2)
+     tree ics1, ics2;
+{
+  for (;;)
+    {
+      ics2 = TREE_OPERAND (ics2, 0));
+
+      if (TREE_CODE (ics2) == TREE_CODE (ics1)
+	  && comptypes (TREE_TYPE (ics2), TREE_TYPE (ics1), 1)
+	  && comptypes (TREE_TYPE (TREE_OPERAND (ics2, 0)),
+			TREE_TYPE (TREE_OPERAND (ics1, 0)), 1))
+	return 1;
+
+      if (TREE_CODE (ics2) == USER_CONV
+	  || TREE_CODE (ics2) == AMBIG_CONV
+	  || TREE_CODE (ics2) == IDENTITY_CONV)
+	return 0;
+    }
+}
+
 /* Compare two implicit conversion sequences according to the rules set out in
    [over.ics.rank].  Return values:
 
@@ -5549,7 +5574,14 @@ compare_ics (ics1, ics2)
 #endif
 
   if (TREE_CODE (main1) != TREE_CODE (main2))
-    return 0;
+    {
+      /* ...if S1  is  a  proper  subsequence  of  S2  */
+      if (is_subseq (main1, main2))
+	return 1;
+      if (is_subseq (main2, main1))
+	return -1;
+      return 0;
+    }
 
   if (TREE_CODE (main1) == PTR_CONV || TREE_CODE (main1) == PMEM_CONV
       || TREE_CODE (main1) == REF_BIND || TREE_CODE (main1) == BASE_CONV)
