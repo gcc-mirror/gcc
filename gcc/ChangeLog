@@ -1,3 +1,11 @@
+2002-05-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* timevar.c: Fix formatting.
+	* tlink.c: Likewise.
+	* toplev.c: Likewise.
+	* tree-dump.c: Likewise.
+	* tree-inline.c: Likewise.
+
 2002-05-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppinit.c (cpp_post_options): If preprocessed, turn off
