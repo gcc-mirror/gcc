@@ -1,3 +1,8 @@
+2002-04-19	Joel Sherrill <joel@OARcorp.com>
+
+	* config/rtems.h (STARTFILE_SPEC, ENDFILE_SPEC): Fix for non-ELF
+	targets.
+
 2002-04-19  Tom Tromey  <tromey@redhat.com>
 
 	* doc/install.texi (Specific): Update status of Solaris 2.8.
