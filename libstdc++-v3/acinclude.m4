@@ -1425,6 +1425,36 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 
 
 dnl
+dnl Check to see if building and using a C++ precompiled header can be done.
+dnl
+dnl GLIBCPP_CHECK_PCH
+dnl
+dnl If it looks like it may work, flip bits on in include/Makefile.am
+dnl
+AC_DEFUN(GLIBCPP_CHECK_PCH, [
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-Werror -Winvalid-pch -Wno-deprecated -x c++-header'
+
+  AC_MSG_CHECKING([for compiler that seems to compile .gch files])
+  if test x${glibcpp_pch_comp+set} != xset; then
+    AC_CACHE_VAL(glibcpp_pch_comp, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>
+		     ],
+                     [ $1(0);],
+                     [glibcpp_pch_comp=yes], [glibcpp_pch_comp=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT([$glibcpp_pch_comp])
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AM_CONDITIONAL(GLIBCPP_BUILD_PCH, test "$glibcpp_pch_comp" = yes)
+])
+
+dnl
 dnl Setup to use the gcc gthr.h thread-specific memory and mutex model.
 dnl We must stage the required headers so that they will be installed
 dnl with the library (unlike libgcc, the STL implementation is provided
