@@ -34,11 +34,12 @@
 #include <bits/c++config.h>
 #include <memory>
 #include <vector>
-#include <ostream>
-#include <map>
 
 namespace std
 {
+  template class allocator<char>;
+  template class allocator<wchar_t>;
+
   template class __malloc_alloc_template<0>;
 
 #ifndef __USE_MALLOC

@@ -945,7 +945,7 @@ namespace std
   // which are defined via explicit instantiations elsewhere.  
   // NB: This syntax is a GNU extension.
   extern template class basic_string<char>;
-   extern template 
+  extern template 
     basic_istream<char>& 
     operator>>(basic_istream<char>&, string&);
   extern template 
