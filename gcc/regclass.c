@@ -100,11 +100,8 @@ static char initial_call_used_regs[] = CALL_USED_REGISTERS;
    what is really call clobbered, and is used when defining 
    regs_invalidated_by_call.  */
 
-char call_really_used_regs[] = 
 #ifdef CALL_REALLY_USED_REGISTERS
-				CALL_REALLY_USED_REGISTERS;
-#else
-				CALL_USED_REGISTERS;
+char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #endif
   
 /* Indexed by hard register number, contains 1 for registers that are
@@ -476,7 +473,13 @@ init_reg_sets_1 ()
       else if (i == PIC_OFFSET_TABLE_REGNUM && flag_pic)
 	;
 #endif
-      else if (call_really_used_regs[i] || global_regs[i])
+      else if (0
+#ifdef CALL_REALLY_USED_REGS
+	       || call_really_used_regs[i]
+#else
+	       || call_used_regs[i]
+#endif
+	       || global_regs[i])
 	SET_HARD_REG_BIT (regs_invalidated_by_call, i);
     }
 
@@ -759,8 +762,10 @@ fix_register (name, fixed, call_used)
 	{
 	  fixed_regs[i] = fixed;
 	  call_used_regs[i] = call_used;
+#ifdef CALL_REALLY_USED_REGS
 	  if (fixed == 0)
 	    call_really_used_regs[i] = call_used;
+#endif
 	}
     }
   else
