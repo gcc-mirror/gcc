@@ -23,7 +23,7 @@ typedef struct {
 } __va_saved_regs;
 
 typedef struct {
-#if defined(__SVR4__) || defined(__alliant__)
+#if defined(__SVR4__) || defined(__svr4__) || defined(__alliant__)
   unsigned	__ireg_used;	/* How many int regs consumed 'til now? */
   unsigned	__freg_used;	/* How many flt regs consumed 'til now? */
   long		*__reg_base;	/* Address of where we stored the regs. */
