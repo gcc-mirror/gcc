@@ -5642,19 +5642,22 @@ finish_enum (enumtype, values)
 
   /* Calculate the maximum value of any enumerator in this type.  */
 
-  for (pair = values; pair; pair = TREE_CHAIN (pair))
-    {
-      tree value = TREE_VALUE (pair);
-      if (pair == values)
-	minnode = maxnode = TREE_VALUE (pair);
-      else
-	{
-	  if (tree_int_cst_lt (maxnode, value))
-	    maxnode = value;
-	  if (tree_int_cst_lt (value, minnode))
-	    minnode = value;
-	}
-    }
+  if (values == error_mark_node)
+    minnode = maxnode = integer_zero_node;
+  else
+    for (pair = values; pair; pair = TREE_CHAIN (pair))
+      {
+	tree value = TREE_VALUE (pair);
+	if (pair == values)
+	  minnode = maxnode = TREE_VALUE (pair);
+	else
+	  {
+	    if (tree_int_cst_lt (maxnode, value))
+	      maxnode = value;
+	    if (tree_int_cst_lt (value, minnode))
+	      minnode = value;
+	  }
+      }
 
   TYPE_MIN_VALUE (enumtype) = minnode;
   TYPE_MAX_VALUE (enumtype) = maxnode;
@@ -5700,24 +5703,27 @@ finish_enum (enumtype, values)
   /* An enum can have some negative values; then it is signed.  */
   TREE_UNSIGNED (enumtype) = tree_int_cst_sgn (minnode) >= 0;
 
-  /* Change the type of the enumerators to be the enum type.
-     Formerly this was done only for enums that fit in an int,
-     but the comment said it was done only for enums wider than int.
-     It seems necessary to do this for wide enums,
-     and best not to change what's done for ordinary narrower ones.  */
-  for (pair = values; pair; pair = TREE_CHAIN (pair))
+  if (values != error_mark_node)
     {
-      TREE_TYPE (TREE_PURPOSE (pair)) = enumtype;
-      DECL_SIZE (TREE_PURPOSE (pair)) = TYPE_SIZE (enumtype);
-      if (TREE_CODE (TREE_PURPOSE (pair)) != FUNCTION_DECL)
-	DECL_ALIGN (TREE_PURPOSE (pair)) = TYPE_ALIGN (enumtype);
+      /* Change the type of the enumerators to be the enum type.
+	 Formerly this was done only for enums that fit in an int,
+	 but the comment said it was done only for enums wider than int.
+	 It seems necessary to do this for wide enums,
+	 and best not to change what's done for ordinary narrower ones.  */
+      for (pair = values; pair; pair = TREE_CHAIN (pair))
+	{
+	  TREE_TYPE (TREE_PURPOSE (pair)) = enumtype;
+	  DECL_SIZE (TREE_PURPOSE (pair)) = TYPE_SIZE (enumtype);
+	  if (TREE_CODE (TREE_PURPOSE (pair)) != FUNCTION_DECL)
+	    DECL_ALIGN (TREE_PURPOSE (pair)) = TYPE_ALIGN (enumtype);
+	}
+
+      /* Replace the decl nodes in VALUES with their names.  */
+      for (pair = values; pair; pair = TREE_CHAIN (pair))
+	TREE_PURPOSE (pair) = DECL_NAME (TREE_PURPOSE (pair));
+
+      TYPE_VALUES (enumtype) = values;
     }
-
-  /* Replace the decl nodes in VALUES with their names.  */
-  for (pair = values; pair; pair = TREE_CHAIN (pair))
-    TREE_PURPOSE (pair) = DECL_NAME (TREE_PURPOSE (pair));
-
-  TYPE_VALUES (enumtype) = values;
 
   /* Fix up all variant types of this enum type.  */
   for (tem = TYPE_MAIN_VARIANT (enumtype); tem; tem = TYPE_NEXT_VARIANT (tem))
