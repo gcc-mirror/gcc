@@ -479,10 +479,14 @@ static void push_entry		PROTO ((struct eh_stack *, struct eh_entry*));
 static void receive_exception_label PROTO ((rtx));
 static int new_eh_region_entry	PROTO ((int, rtx));
 static int find_func_region	PROTO ((int));
+static int find_func_region_from_symbol PROTO ((rtx));
 static void clear_function_eh_region PROTO ((void));
 static void process_nestinfo	PROTO ((int, eh_nesting_info *, int *));
 
 rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
+static void emit_cleanup_handler PROTO ((struct eh_entry *));
+static int eh_region_from_symbol PROTO((rtx));
+
 
 /* Various support routines to manipulate the various data structures
    used by the exception handling code.  */
@@ -590,6 +594,7 @@ push_eh_entry (stack)
   else
     entry->outer_context = create_rethrow_ref (CODE_LABEL_NUMBER (rlab));
   entry->rethrow_label = entry->outer_context;
+  entry->goto_entry_p = 0;
 
   node->entry = entry;
   node->chain = stack->top;
@@ -705,10 +710,8 @@ static int current_func_eh_entry = 0;
 
 #define SIZE_FUNC_EH(X)   (sizeof (struct func_eh_entry) * X)
 
-/* Add a new eh_entry for this function, and base it off of the information
-   in the EH_ENTRY parameter. A NULL parameter is invalid. 
-   OUTER_CONTEXT is a label which is used for rethrowing. The number
-   returned is an number which uniquely identifies this exception range. */
+/* Add a new eh_entry for this function.  The number returned is an
+   number which uniquely identifies this exception range. */
 
 static int 
 new_eh_region_entry (note_eh_region, rethrow) 
@@ -754,6 +757,12 @@ add_new_handler (region, newhandler)
      struct handler_info *newhandler;
 {
   struct handler_info *last;
+
+  /* If find_func_region returns -1, callers might attempt to pass us
+     this region number.  If that happens, something has gone wrong;
+     -1 is never a valid region.  */
+  if (region == -1)
+    abort ();
 
   newhandler->next = NULL;
   last = function_eh_regions[region].handlers;
@@ -883,7 +892,7 @@ get_new_handler (handler, typeinfo)
 
 
 /* Find the index in function_eh_regions associated with a NOTE region. If
-   the region cannot be found, a -1 is returned. This should never happen! */
+   the region cannot be found, a -1 is returned.  */
 
 static int 
 find_func_region (insn_region)
@@ -960,7 +969,7 @@ duplicate_eh_handlers (old_note_eh_region, new_note_eh_region, map)
 
 
 /* Given a rethrow symbol, find the EH region number this is for. */
-int 
+static int 
 eh_region_from_symbol (sym)
      rtx sym;
 {
@@ -973,6 +982,14 @@ eh_region_from_symbol (sym)
   return -1;
 }
 
+/* Like find_func_region, but using the rethrow symbol for the region
+   rather than the region number itself.  */
+static int
+find_func_region_from_symbol (sym)
+     rtx sym;
+{
+  return find_func_region (eh_region_from_symbol (sym));
+}
 
 /* When inlining/unrolling, we have to map the symbols passed to
    __rethrow as well. This performs the remap. If a symbol isn't foiund,
@@ -1475,6 +1492,7 @@ expand_eh_region_end (handler)
      tree handler;
 {
   struct eh_entry *entry;
+  struct eh_node *node;
   rtx note;
   int ret, r;
 
@@ -1523,6 +1541,21 @@ expand_eh_region_end (handler)
 
       expand_end_bindings (NULL_TREE, 0, 0);
     }
+
+  /* Go through the goto handlers in the queue, emitting their
+     handlers if we now have enough information to do so.  */
+  for (node = ehqueue.head; node; node = node->chain)
+    if (node->entry->goto_entry_p 
+	&& node->entry->outer_context == entry->rethrow_label)
+      emit_cleanup_handler (node->entry);
+
+  /* We can't emit handlers for goto entries until their scopes are
+     complete because we don't know where they need to rethrow to,
+     yet.  */
+  if (entry->finalization != integer_zero_node 
+      && (!entry->goto_entry_p 
+	  || find_func_region_from_symbol (entry->outer_context) != -1))
+    emit_cleanup_handler (entry);
 }
 
 /* End the EH region for a goto fixup.  We only need them in the region-based
@@ -1535,6 +1568,8 @@ expand_fixup_region_start ()
     return;
 
   expand_eh_region_start ();
+  /* Mark this entry as the entry for a goto.  */
+  ehstack.top->entry->goto_entry_p = 1;
 }
 
 /* End the EH region for a goto fixup.  CLEANUP is the cleanup we just
@@ -1636,33 +1671,14 @@ expand_leftover_cleanups ()
 {
   struct eh_entry *entry;
 
-  while ((entry = dequeue_eh_entry (&ehqueue)) != 0)
+  for (entry = dequeue_eh_entry (&ehqueue); 
+       entry;
+       entry = dequeue_eh_entry (&ehqueue))
     {
-      rtx prev;
-
-      /* A leftover try block. Shouldn't be one here.  */
+      /* A leftover try bock.  Shouldn't be one here.  */
       if (entry->finalization == integer_zero_node)
 	abort ();
 
-      /* Output the label for the start of the exception handler.  */
-
-      receive_exception_label (entry->exception_handler_label);
-
-      /* register a handler for this cleanup region */
-      add_new_handler (
-        find_func_region (CODE_LABEL_NUMBER (entry->exception_handler_label)), 
-        get_new_handler (entry->exception_handler_label, NULL));
-
-      /* And now generate the insns for the handler.  */
-      expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
-
-      prev = get_last_insn ();
-      if (prev == NULL || GET_CODE (prev) != BARRIER)
-	/* Emit code to throw to the outer context if we fall off
-	   the end of the handler.  */
-	expand_rethrow (entry->outer_context);
-
-      do_pending_stack_adjust ();
       free (entry);
     }
 }
@@ -1764,6 +1780,56 @@ end_catch_handler ()
   catchstack.top->entry->false_label = NULL_RTX;
 }
 
+/* Emit the handler specified by ENTRY.  */
+
+static void
+emit_cleanup_handler (entry)
+  struct eh_entry *entry;
+{
+  rtx prev;
+  rtx handler_insns;
+
+  /* Put these handler instructions in a sequence.  */
+  do_pending_stack_adjust ();
+  start_sequence ();
+
+  /* Emit the label for the cleanup handler for this region, and
+     expand the code for the handler.
+     
+     Note that a catch region is handled as a side-effect here; for a
+     try block, entry->finalization will contain integer_zero_node, so
+     no code will be generated in the expand_expr call below. But, the
+     label for the handler will still be emitted, so any code emitted
+     after this point will end up being the handler.  */
+      
+  receive_exception_label (entry->exception_handler_label);
+
+  /* register a handler for this cleanup region */
+  add_new_handler (find_func_region (CODE_LABEL_NUMBER (entry->exception_handler_label)), 
+		   get_new_handler (entry->exception_handler_label, NULL));
+
+  /* And now generate the insns for the cleanup handler.  */
+  expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
+
+  prev = get_last_insn ();
+  if (prev == NULL || GET_CODE (prev) != BARRIER)
+    /* Code to throw out to outer context when we fall off end of the
+       handler. We can't do this here for catch blocks, so it's done
+       in expand_end_all_catch instead.  */
+    expand_rethrow (entry->outer_context);
+
+  /* Finish this sequence.  */
+  do_pending_stack_adjust ();
+  handler_insns = get_insns ();
+  end_sequence ();
+
+  /* And add it to the CATCH_CLAUSES.  */
+  push_to_sequence (catch_clauses);
+  emit_insns (handler_insns);
+  catch_clauses = get_insns ();
+  end_sequence ();
+}
+
 /* Generate RTL for the start of a group of catch clauses. 
 
    It is responsible for starting a new instruction sequence for the
@@ -1802,48 +1868,15 @@ expand_start_all_catch ()
      the handlers in this handler-seq.  */
   start_sequence ();
 
-  entry = dequeue_eh_entry (&ehqueue);
-  for ( ; entry->finalization != integer_zero_node;
-                                 entry = dequeue_eh_entry (&ehqueue))
-    {
-      rtx prev;
-
-      /* Emit the label for the cleanup handler for this region, and
-	 expand the code for the handler. 
-
-	 Note that a catch region is handled as a side-effect here;
-	 for a try block, entry->finalization will contain
-	 integer_zero_node, so no code will be generated in the
-	 expand_expr call below. But, the label for the handler will
-	 still be emitted, so any code emitted after this point will
-	 end up being the handler.  */
-      
-      receive_exception_label (entry->exception_handler_label);
-
-      /* register a handler for this cleanup region */
-      add_new_handler (
-        find_func_region (CODE_LABEL_NUMBER (entry->exception_handler_label)), 
-        get_new_handler (entry->exception_handler_label, NULL));
-
-      /* And now generate the insns for the cleanup handler.  */
-      expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
-
-      prev = get_last_insn ();
-      if (prev == NULL || GET_CODE (prev) != BARRIER)
-	/* Code to throw out to outer context when we fall off end
-	   of the handler. We can't do this here for catch blocks,
-	   so it's done in expand_end_all_catch instead.  */
-	expand_rethrow (entry->outer_context);
-
-      do_pending_stack_adjust ();
-      free (entry);
-    }
+  for (entry = dequeue_eh_entry (&ehqueue); 
+       entry->finalization != integer_zero_node;
+       entry = dequeue_eh_entry (&ehqueue))
+    free (entry);
 
   /* At this point, all the cleanups are done, and the ehqueue now has
      the current exception region at its head. We dequeue it, and put it
      on the catch stack. */
-
-    push_entry (&catchstack, entry);
+  push_entry (&catchstack, entry);
 
   /* If we are not doing setjmp/longjmp EH, because we are reordered
      out of line, we arrange to rethrow in the outer context.  We need to
@@ -1935,6 +1968,10 @@ expand_rethrow (label)
 	  label = last_rethrow_symbol;
 	emit_library_call (rethrow_libfunc, 0, VOIDmode, 1, label, Pmode);
 	region = find_func_region (eh_region_from_symbol (label));
+	/* If the region is -1, it doesn't exist yet.  We should be
+	   trying to rethrow there yet.  */
+	if (region == -1)
+	  abort ();
 	function_eh_regions[region].rethrow_ref = 1;
 
 	/* Search backwards for the actual call insn.  */
