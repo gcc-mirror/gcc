@@ -1,3 +1,10 @@
+2000-11-10  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/codecvt.h (__iconv_adaptor):  New adaptor function,
+	  courtesy of Alexandre Oliva, to handle const/non-const signatures.
+	  (codecvt::do_out):  Use.
+	  (codecvt::do_in):  And here.
+
 2000-11-10  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* include/bits/cpp_type_traits.h: Fix typos.  Adjust formatting.

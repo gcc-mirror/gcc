@@ -372,6 +372,19 @@ namespace std
     locale::id 
     codecvt<_InternT, _ExternT, __enc_traits>::id;
 
+  // This adaptor works around the signature problems of the second
+  // argument to iconv():  SUSv2 and others use 'const char**', but glibc 2.2
+  // uses 'char**', which is what the standard is (apparently) due to use
+  // in the future.  Using this adaptor, g++ will do the work for us.
+  template<typename _T>
+    inline size_t
+    __iconv_adaptor(size_t(*iconv_func)(iconv_t, _T, size_t *, char**, size_t*),
+                    iconv_t cd, char **inbuf, size_t *inbytesleft,
+                    char **outbuf, size_t *outbytesleft)
+    {
+      return iconv_func (cd, (_T)inbuf, inbytesleft, outbuf, outbytesleft);
+    }
+
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
     codecvt<_InternT, _ExternT, __enc_traits>::
@@ -393,7 +406,7 @@ namespace std
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  const char* __cfrom;
+	  char* __cfrom;
 	  size_t __conv;
 
 	  // Some encodings need a byte order marker as the first item
@@ -408,14 +421,16 @@ namespace std
 	      intern_type __cfixed[__size + 1];
 	      __cfixed[0] = static_cast<intern_type>(__int_bom);
 	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
-	      __cfrom = reinterpret_cast<const char*>(__cfixed);
-	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
+                                        &__flen, &__cto, &__tlen); 
 	    }
 	  else
 	    {
 	      intern_type* __cfixed = const_cast<intern_type*>(__from);
-	      __cfrom = reinterpret_cast<const char*>(__cfixed);
-	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
+                                       &__flen, &__cto, &__tlen); 
 	    }
 
 	  if (__conv != size_t(-1))
@@ -456,7 +471,8 @@ namespace std
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  size_t __conv = iconv(*__desc, NULL, NULL, &__cto, &__tlen); 
+	  size_t __conv = __iconv_adaptor(iconv,*__desc, NULL, NULL,
+                                          &__cto, &__tlen); 
 	  
 	  if (__conv != size_t(-1))
 	    {
@@ -495,7 +511,7 @@ namespace std
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  const char* __cfrom;
+	  char* __cfrom;
 	  size_t __conv;
 
 	  // Some encodings need a byte order marker as the first item
@@ -510,14 +526,16 @@ namespace std
 	      extern_type __cfixed[__size + 1];
 	      __cfixed[0] = static_cast<extern_type>(__ext_bom);
 	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
-	      __cfrom = reinterpret_cast<const char*>(__cfixed);
-	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
+                                       &__flen, &__cto, &__tlen); 
 	    }
 	  else
 	    {
 	      extern_type* __cfixed = const_cast<extern_type*>(__from);
-	      __cfrom = reinterpret_cast<const char*>(__cfixed);
-	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
+	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
+                                       &__flen, &__cto, &__tlen); 
 	    }
 
 	  
