@@ -1,3 +1,9 @@
+1999-03-03  Craig Burley  <craig@jcb-sc.com>
+
+	* libU77/vxtidate_.c (G77_vxtidate_0): Truncate
+	year to last two digits (i.e. modulo 100), as per
+	documentation and (documented) Y2K non-compliance.
+
 1999-02-20  Craig Burley  <craig@jcb-sc.com>
 
 	From Krister Walfridsson <cato@df.lth.se>:
