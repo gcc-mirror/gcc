@@ -545,12 +545,7 @@ extern int target_flags;
    *Do not examine `write_symbols' in this macro!* The debugging options are
    *not supposed to alter the generated code.  */
 
-/* -frename-registers seems to abort on d30v, turn off until fixed.  */
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) 				\
-do {									\
-  if (LEVEL >= 3)							\
-    flag_rename_registers = 0;						\
-} while (0)
+/* #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) */
 
 /* Define this macro if debugging can be performed even without a frame
    pointer.  If this macro is defined, GNU CC will turn on the
