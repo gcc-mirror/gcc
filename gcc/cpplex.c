@@ -2011,19 +2011,6 @@ cpp_interpret_charconst (pfile, token, pchars_seen, unsignedp)
   #error BUFF_SIZE_UPPER_BOUND must be at least as large as MIN_BUFF_SIZE!
 #endif
 
-struct dummy
-{
-  char c;
-  union
-  {
-    double d;
-    int *p;
-  } u;
-};
-
-#define DEFAULT_ALIGNMENT (offsetof (struct dummy, u))
-#define CPP_ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
-
 /* Create a new allocation buffer.  Place the control block at the end
    of the buffer, so that buffer overflows will cause immediate chaos.  */
 static _cpp_buff *
@@ -2035,7 +2022,7 @@ new_buff (len)
 
   if (len < MIN_BUFF_SIZE)
     len = MIN_BUFF_SIZE;
-  len = CPP_ALIGN (len, DEFAULT_ALIGNMENT);
+  len = CPP_ALIGN (len);
 
   base = xmalloc (len + sizeof (_cpp_buff));
   result = (_cpp_buff *) (base + len);

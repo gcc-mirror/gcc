@@ -70,7 +70,6 @@ static cpp_token *alloc_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static cpp_token *lex_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static bool warn_of_redefinition PARAMS ((cpp_reader *, const cpp_hashnode *,
 					  const cpp_macro *));
-static int save_parameter PARAMS ((cpp_reader *, cpp_macro *, cpp_hashnode *));
 static int parse_params PARAMS ((cpp_reader *, cpp_macro *));
 static void check_trad_stringification PARAMS ((cpp_reader *,
 						const cpp_macro *,
@@ -1197,8 +1196,8 @@ _cpp_free_definition (h)
 
 /* Save parameter NODE to the parameter list of macro MACRO.  Returns
    zero on success, non-zero if the parameter is a duplicate.  */
-static int
-save_parameter (pfile, macro, node)
+bool
+_cpp_save_parameter (pfile, macro, node)
      cpp_reader *pfile;
      cpp_macro *macro;
      cpp_hashnode *node;
@@ -1255,7 +1254,7 @@ parse_params (pfile, macro)
 	    }
 	  prev_ident = 1;
 
-	  if (save_parameter (pfile, macro, token->val.node))
+	  if (_cpp_save_parameter (pfile, macro, token->val.node))
 	    return 0;
 	  continue;
 
@@ -1277,7 +1276,8 @@ parse_params (pfile, macro)
 	  macro->variadic = 1;
 	  if (!prev_ident)
 	    {
-	      save_parameter (pfile, macro, pfile->spec_nodes.n__VA_ARGS__);
+	      _cpp_save_parameter (pfile, macro,
+				   pfile->spec_nodes.n__VA_ARGS__);
 	      pfile->state.va_args_ok = 1;
 	      if (! CPP_OPTION (pfile, c99) && CPP_OPTION (pfile, pedantic))
 		cpp_error (pfile, DL_PEDWARN,
