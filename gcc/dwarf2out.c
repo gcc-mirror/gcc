@@ -9105,24 +9105,7 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	    REAL_VALUE_TYPE rv;
 
 	    REAL_VALUE_FROM_CONST_DOUBLE (rv, rtl);
-	    switch (mode)
-	      {
-	      case SFmode:
-		REAL_VALUE_TO_TARGET_SINGLE (rv, array[0]);
-		break;
-
-	      case DFmode:
-		REAL_VALUE_TO_TARGET_DOUBLE (rv, array);
-		break;
-
-	      case XFmode:
-	      case TFmode:
-		REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, array);
-		break;
-
-	      default:
-		abort ();
-	      }
+	    real_to_target (array, &rv, mode);
 
 	    add_AT_float (die, DW_AT_const_value, length, array);
 	  }

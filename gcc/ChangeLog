@@ -1,5 +1,7 @@
 2003-09-29  Zack Weinberg  <zack@codesourcery.com>
 
+	* dwarf2out.c (add_const_value_attribute): Use real_to_target.
+
 	* varasm.c (assemble_real): Use real_to_target directly,
 	calculate the number of significant elements of the result
 	array and write them out in a loop, instead of using a giant
