@@ -1733,45 +1733,49 @@ duplicate_decls (tree newdecl, tree olddecl)
 }
 
 
-/* Check whether decl-node DECL shadows an existing declaration.  */
+/* Check whether decl-node NEW_DECL shadows an existing declaration.  */
 static void
-warn_if_shadowing (tree decl)
+warn_if_shadowing (tree new_decl)
 {
   struct c_binding *b;
 
   /* Shadow warnings wanted?  */
   if (!warn_shadow
       /* No shadow warnings for internally generated vars.  */
-      || DECL_IS_BUILTIN (decl)
+      || DECL_IS_BUILTIN (new_decl)
       /* No shadow warnings for vars made for inlining.  */
-      || DECL_FROM_INLINE (decl)
+      || DECL_FROM_INLINE (new_decl)
       /* Don't warn about the parm names in function declarator
 	 within a function declarator.  It would be nice to avoid
 	 warning in any function declarator in a declaration, as
 	 opposed to a definition, but there is no way to tell
 	 it's not a definition at this point.  */
-      || (TREE_CODE (decl) == PARM_DECL && current_scope->outer->parm_flag))
+      || (TREE_CODE (new_decl) == PARM_DECL && current_scope->outer->parm_flag))
     return;
 
   /* Is anything being shadowed?  Invisible decls do not count.  */
-  for (b = I_SYMBOL_BINDING (DECL_NAME (decl)); b; b = b->shadowed)
-    if (b->decl && b->decl != decl && !b->invisible)
+  for (b = I_SYMBOL_BINDING (DECL_NAME (new_decl)); b; b = b->shadowed)
+    if (b->decl && b->decl != new_decl && !b->invisible)
       {
-	tree old = b->decl;
+	tree old_decl = b->decl;
 
-	if (TREE_CODE (old) == PARM_DECL)
-	  warning ("%Jdeclaration of '%D' shadows a parameter", decl, decl);
-	else if (DECL_FILE_SCOPE_P (old))
+	if (TREE_CODE (old_decl) == PARM_DECL)
+	  warning ("%Jdeclaration of '%D' shadows a parameter",
+		   new_decl, new_decl);
+	else if (DECL_FILE_SCOPE_P (old_decl))
 	  warning ("%Jdeclaration of '%D' shadows a global declaration",
-		   decl, decl);
-	else if (TREE_CODE (old) == FUNCTION_DECL && DECL_BUILT_IN (old))
+		   new_decl, new_decl);
+	else if (TREE_CODE (old_decl) == FUNCTION_DECL
+		 && DECL_BUILT_IN (old_decl))
 	  warning ("%Jdeclaration of '%D' shadows a built-in function",
-		   decl, decl);
+		   new_decl, new_decl);
 	else
-	  warning ("%Jdeclaration of '%D' shadows a previous local", decl, decl);
+	  warning ("%Jdeclaration of '%D' shadows a previous local",
+		   new_decl, new_decl);
 
-	if (TREE_CODE (old) != FUNCTION_DECL || !DECL_BUILT_IN (old))
-	  warning ("%Jshadowed declaration is here", old);
+	if (TREE_CODE (old_decl) != FUNCTION_DECL
+	    || ! DECL_BUILT_IN (old_decl))
+	  warning ("%Jshadowed declaration is here", old_decl);
 
 	break;
       }

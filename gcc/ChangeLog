@@ -1,5 +1,15 @@
 2004-07-26  Bernardo Innocenti  <bernie@develer.com>
 
+	* c-common.c (disable_builtin_function): Rename variable n to
+	new_disabled_builtin.
+	* c-decl.c (duplicate_decls): Rename parameter decl to new_decl.
+	Rename local variable old to old_decl.
+	* gensupport.c (shift_output_template): Rename parameter old to src.
+	* simplify-rtx.c (simplify_replace_rtx): Rename parameter oldx to
+	old_rtx and newx to new_rtx.
+
+2004-07-26  Bernardo Innocenti  <bernie@develer.com>
+
 	* Makefile.in (C_PRAGMA_H): New variable to track dependencies
 	of c-pragma.h.
 	* c-pragma.h (c_lex, c_lex_with_flags): Change returntype to
