@@ -1,3 +1,8 @@
+2003-07-04  Gawain Bolton  <gbolton@free.fr>
+
+	* include/bits/stl_tree.h: Performance and memory usage
+	improvements.
+
 2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
 
 	* Makefile.am: Replace PWD with PWD_COMMAND.
