@@ -1,3 +1,175 @@
+Tue Nov 10 12:34:03 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (is_compiled_class): Call safe_layout_class for class
+ 	compiled from source.
+	* conver.h (convert_to_integer, convert_to_real,
+ 	convert_to_pointer): Added prototypes.
+	* decl.c (init_decl_processing): Non longer push the decls of
+ 	`methodtable', `constants', `Class', `Field', `dispatchTable'
+ 	`jexception' and `Method'.
+	* expr.c (build_invokeinterface): New function.
+	(expand_invoke): static variable CLASS_IDENT now in
+ 	build_invokeinterface. Use build_invokeinterface.
+	(expand_java_field_op): Moved code to inline
+ 	java.lang.PRIMTYPE.TYPE into a function.
+	(build_primtype_type_ref): New function.
+	* java-tree.def (INSTANCEOF_EXPR): New tree code.
+	* java-tree.h (CLASS_METHOD_CHECKED_P, METHOD_DEPRECATED,
+ 	FIELD_DEPRECATED, CLASS_DEPRECATED): New flag macros.
+	(DECL_CONSTRUCTOR_P): Fixed typo in comment.
+	(DECL_LOCAL_STATIC_VALUE): New macro.
+	(build_invokeinterface, build_primtype_type_ref): New function
+ 	prototypes.
+	(java_parse_abort_on_error): Macro rewritten.
+	* jcf-parse.c (current_method): Add comment to declaration.
+	(parse_zip_file_entries, process_zip_dir, void parse_source_file):
+ 	Function prototypes fixed.
+	(jcf_parse_source): push/pop parser context. save/restore global.
+	(parse_source_file): Fixed leading comment. Now take a
+ 	IDENTIFIER_NODE as an argument. Doesn't check methods, layout
+ 	classes and pop the parser context anymore.
+	(yyparse): Push parser context, save globals, parse the source
+ 	file, restore globals and pop the parser context when processing a
+ 	source file.
+	* jcf.h (VERBOSE_SKELETON): Replaces SOURCE_FRONTEND_DEBUG define.
+	* lex.c (java_parse_doc_section): New function.
+	(java_lex): Call java_parse_doc_section when appropriate. Build an
+ 	operator around INSTANCEOF_TK.
+	* lex.h (java_lineterminator, java_sprint_unicode,
+ 	java_unicode_2_utf8, java_lex_error, java_store_unicode):
+ 	Prototypes rewritten.
+	(java_parse_escape_sequence, java_letter_or_digit_p,
+ 	java_parse_doc_section, java_parse_end_comment, java_get_unicode,
+ 	java_read_unicode, java_store_unicode, java_read_char,
+ 	java_allocate_new_line, java_unget_unicode, java_sneak_unicode):
+ 	Added function prototypes.
+	* parse.h (VERBOSE_SKELETON): Replaces SOURCE_FRONTEND_DEBUG
+ 	define.
+	(JNULLP_TYPE_P, CHECK_METHODS, CHECK_DEPRECATED, REGISTER_IMPORT):
+ 	New macros
+	(struct parser_ctxt): New fields: deprecated,
+ 	current_parsed_class_un, gclass_list.
+	(fix_method_argument_names, issue_warning_error_from_context,
+ 	resolve_package, lookup_package_type): New function prototypes.
+	(resolve_expression_name): Fixed function prototype.
+	(find_applicable_accessible_methods_list): Fixed indentation, added
+	extra argument in prototype.
+	(check_final_assignment, build_null_of_type, check_deprecation,
+ 	check_method_redefinition, reset_method_name,
+ 	java_check_regular_methods, java_check_abstract_methods,
+ 	maybe_build_primttype_type_ref): New function prototype.
+	* parse.y (conver.h): Include.
+	(INSTANCEOF_TK): Tagged <operator>.
+	(single_type_import_declaration): Use REGISTER_IMPORT macro.
+	(relational_expression:): Build binop for instanceof.
+	(java_push_parser_context): Remember ctxp->gclass_list across
+ 	contexts.
+	(java_pop_parser_context): Simply return if no context
+ 	exists. Remember gclass_list across contexts.
+	(issue_warning_error_from_context): New function.
+	(parse_error_context): Don't setup ctxp->elc here. Call
+ 	issue_warning_error_from_context instead.
+	(parse_warning_context): Likewise.
+	(maybe_create_class_interface_decl): Removed DECL_ARTIFICIAL
+ 	setup. Link new class/interface to ctxp->gclass_list.
+	(add_superinterfaces): Register interface as incomplete if not
+ 	loaded.
+	(create_class): Remember class unqualified name in
+ 	ctxp->current_parsed_class_un. Check class deprecation.
+	(register_fields): Check field deprecation. Remember static final
+ 	field value in DECL_LOCAL_STATIC_VALUE. Changed comment in part
+ 	processing INIT.
+	(method_header): New local variable ORIG_ARG. Use unqualified
+ 	current class name for check on constructor errors. Promote return
+ 	type if of record type. Argument list fix moved in
+ 	fix_method_argument_names, called here. Check method deprecation.
+	(fix_method_argument_names): New function.
+	(method_declarator): Promote record typed arguments.
+	(safe_layout_class): Check class methods before layout.
+	(java_complete_class): Compute field layout when patched.
+	(do_resolve_class): Try to load class after having it renamed
+ 	after the package name.
+	(get_printable_method_name): Use DECL_CONTEXT.
+	(reset_method_name): New function.
+	(check_method_redefinition): Use reset_method_name.
+	(java_check_regular_methods): New local variable
+ 	SAVED_FOUND_WFL. Temporarily reinstall overriding/hiding method
+ 	names for error report. Check for compile-time error when method
+ 	found has default (package) access.
+	(java_check_abstract_methods): Now takes an interface DECL node as
+ 	an argument. Also reinstall real name on unchecked
+ 	overriding/hiding methods for error report.
+	(java_check_methods): Fixed leading comment. Get classes to verify
+ 	from ctxp->gclass_list. Use CHECK_METHODS macro and set
+ 	CLASS_METHOD_CHECKED_P on class verification.
+	(lookup_java_method2): Get real method name if necessary.
+	(find_in_imports): Don't check package class access here.
+	(resolve_package, lookup_package_type): New functions.
+	(java_layout_classes): Fixed leading comment. Take classes to be
+ 	laid out from ctxp->gclass_list.
+	(java_complete_expand_methods): Don't expand native and abstract
+ 	methods.
+	(java_expand_classes): New function.
+	(resolve_expression_name): Use additional argument ORIG.  Retrieve
+ 	values of static final field of primitive types.
+	(resolve_field_access): Handles static final field of promotive
+ 	type.
+	(resolve_qualified_expression_name): Handle STRING_CST as
+ 	primaries and package name resolution. Check deprecation on found
+ 	decls. Set where_found and type_found on non static field resolved
+ 	during qualification. Layout non primitive field decl types.
+	(check_deprecation): New function.
+	(maybe_access_field): Simplified.
+	(patch_method_invocation_stmt): Local variable CLASS_TYPE
+ 	removed. Reverse method's argument when primary is a type. Don't
+ 	use CLASS_TYPE to report problems, use IDENTIFIER_WFL
+ 	instead. Include abstract class in the list of class searchable
+ 	for constructors. Use DECL_CONTEXT of found method for access
+ 	checks. Check method deprecation.
+	(patch_invoke): Pay extra care to NEW_CLASS_EXPR type call when
+ 	converting arguments. Handle INVOKE_INTERFACE.
+	(lookup_method_invoke): Search constructor using existing
+ 	infrastructure (don't rely on lookup_java_constructor anymore).
+	(find_applicable_accessible_methods_list): Extra argument flag
+ 	LC. Now include constructor in the search.
+	(qualify_ambiguous_name): Conditional expression are primaries.
+	(not_initialized_as_it_should_p): static final are always
+ 	initialized.
+	(java_complete_tree): Pass extra NULL argument to
+ 	resolve_expression_name. Stricter test to carry on patching
+ 	assignments. New case for INSTANCEOF_EXPR.
+	(complete_function_arguments): Inline PRIMTYPE.TYPE read access.
+	(check_final_assignment, maybe_build_primttype_type_ref): New
+ 	functions.
+	(patch_assignment): Detect resolved static finals and carry normal
+ 	assignment error check on them. Inline PRIMTYPE.TYPE read access.
+	(try_builtin_assignconv): Access constant 0 on all primitive
+ 	types.
+	(valid_builtin_assignconv_identity_widening_p): Accept identical
+ 	types. Accept all promoted type on int type.
+	(valid_ref_assignconv_cast_p): Accept a null pointer to be
+ 	assigned to a reference.
+	(valid_method_invocation_conversion_p): Accept to check null
+ 	pointers.
+	(build_binop): Merge declaration and initialization of local
+ 	variable BINOP.
+	(patch_binop): New case for INSTANCEOF_EXPR. NE_EXPR to accept all
+ 	numeric types. Improved validity test for qualify operators on
+ 	references.
+	(patch_unaryop): Broadened rejection test for PREDECREMENT_EXPR
+ 	and PREINCREMENT_EXPR. Also detect resolved static finals of a
+ 	primitive type and issue the appropriate error message.
+	(resolve_type_during_patch): Mark class loaded when resolved.
+	(patch_cast): Allow null to be cased to reference types.
+	(build_null_of_type): New function.
+	(patch_array_ref): Handle array on references correctly.
+	(patch_return): Removed unused local variable MODIFY. Force
+ 	boolean to be returned as integers. Allows null to be returned by
+ 	a function returning a reference.
+	* typeck.c (convert_to_integer, convert_to_real,
+ 	convert_to_pointer): Prototypes moved to convert.h
+	(lookup_argument_method): Use method real name, if necessary.
+
 1998-10-30  Tom Tromey  <tromey@cygnus.com>
 
 	* class.c (build_class_ref): Changed name of primitive classes to

@@ -1431,6 +1431,32 @@ build_invokevirtual (dtable, method)
   return func;
 }
 
+tree
+build_invokeinterface (dtable, method_name, method_signature)
+     tree dtable, method_name, method_signature;
+{
+  static tree class_ident = NULL_TREE;
+  tree lookup_arg;
+
+  /* We expand invokeinterface here.  _Jv_LookupInterfaceMethod() will
+     ensure that the selected method exists, is public and not
+     abstract nor static.  */
+	    
+  if (class_ident == NULL_TREE)
+    class_ident = get_identifier ("class");
+  
+  dtable = build1 (INDIRECT_REF, dtable_type, dtable);
+  dtable = build (COMPONENT_REF, class_ptr_type, dtable,
+		  lookup_field (&dtable_type, class_ident));
+  lookup_arg = build_tree_list (NULL_TREE, build_utf8_ref (method_signature));
+  lookup_arg = tree_cons (NULL_TREE, dtable,
+			  tree_cons (NULL_TREE, build_utf8_ref (method_name),
+				     lookup_arg));
+  return build (CALL_EXPR, ptr_type_node, 
+		build_address_of (soft_lookupinterfacemethod_node),
+		lookup_arg, NULL_TREE);
+}
+  
 /* Expand one of the invoke_* opcodes.
    OCPODE is the specific opcode.
    METHOD_REF_INDEX is an index into the constant pool.
@@ -1448,8 +1474,6 @@ expand_invoke (opcode, method_ref_index, nargs)
     (current_jcf, COMPONENT_REF_CLASS_INDEX(&current_jcf->cpool, method_ref_index));
   char *self_name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (self_type)));
   tree call, func, method, arg_list, method_type;
-
-  static tree class_ident = NULL_TREE;
 
   if (! CLASS_LOADED_P (self_type))
     {
@@ -1522,30 +1546,7 @@ expand_invoke (opcode, method_ref_index, nargs)
       if (opcode == OPCODE_invokevirtual)
 	func = build_invokevirtual (dtable, method);
       else
-	{
-	  /* We expand invokeinterface here.
-	     _Jv_LookupInterfaceMethod() will ensure that the selected
-	     method exists, is public and not abstract nor static.  */
-	    
-	  tree lookup_arg;
-
-	  if (class_ident == NULL_TREE)
-	    class_ident = get_identifier ("class");
-
-	  dtable = build1 (INDIRECT_REF, dtable_type, dtable);
-	  dtable = build (COMPONENT_REF, class_ptr_type, dtable,
-			  lookup_field (&dtable_type, class_ident));
-	  lookup_arg = build_tree_list (NULL_TREE,
-					build_utf8_ref (method_signature));
-	  lookup_arg = tree_cons (NULL_TREE, dtable,
-				  tree_cons (NULL_TREE,
-					     build_utf8_ref (method_name),
-					     lookup_arg));
-	  func = build (CALL_EXPR,
-			ptr_type_node,
-			build_address_of (soft_lookupinterfacemethod_node),
-			lookup_arg, NULL_TREE);
-	}
+	func = build_invokeinterface (dtable, method_name, method_signature);
     }
   func = build1 (NOP_EXPR, build_pointer_type (method_type), func);
   call = build (CALL_EXPR, TREE_TYPE (method_type), func, arg_list, NULL_TREE);
@@ -1615,29 +1616,10 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
       && field_type == class_ptr_type
       && strncmp (self_name, "java.lang.", 10) == 0)
     {
-      char *class_name = self_name+10;
-      tree typ;
-      if (strcmp(class_name, "Byte") == 0)
-	typ = byte_type_node;
-      else if (strcmp(class_name, "Short") == 0)
-	typ = short_type_node;
-      else if (strcmp(class_name, "Integer") == 0)
-	typ = int_type_node;
-      else if (strcmp(class_name, "Long") == 0)
-	typ = long_type_node;
-      else if (strcmp(class_name, "Float") == 0)
-	typ = float_type_node;
-      else if (strcmp(class_name, "Boolean") == 0)
-	typ = boolean_type_node;
-      else if (strcmp(class_name, "Char") == 0)
-	typ = char_type_node;
-      else if (strcmp(class_name, "Void") == 0)
-	typ = void_type_node;
-      else
-	typ = NULL_TREE;
-      if (typ != NULL_TREE)
+      tree typ = build_primtype_type_ref (self_name);
+      if (typ)
 	{
-	  push_value (build_class_ref (typ));
+	  push_value (typ);
 	  return;
 	}
     }
@@ -1670,6 +1652,36 @@ expand_java_field_op (is_static, is_putting, field_ref_index)
     }
   else
     push_value (field_ref);
+}
+
+tree
+build_primtype_type_ref (self_name)
+    char *self_name;
+{
+  char *class_name = self_name+10;
+  tree typ;
+  if (strncmp(class_name, "Byte", 4) == 0)
+    typ = byte_type_node;
+  else if (strncmp(class_name, "Short", 5) == 0)
+    typ = short_type_node;
+  else if (strncmp(class_name, "Integer", 7) == 0)
+    typ = int_type_node;
+  else if (strncmp(class_name, "Long", 4) == 0)
+    typ = long_type_node;
+  else if (strncmp(class_name, "Float", 5) == 0)
+    typ = float_type_node;
+  else if (strncmp(class_name, "Boolean", 7) == 0)
+    typ = boolean_type_node;
+  else if (strncmp(class_name, "Char", 4) == 0)
+    typ = char_type_node;
+  else if (strncmp(class_name, "Void", 4) == 0)
+    typ = void_type_node;
+  else
+    typ = NULL_TREE;
+  if (typ != NULL_TREE)
+    return build_class_ref (typ);
+  else
+    return NULL_TREE;
 }
 
 void

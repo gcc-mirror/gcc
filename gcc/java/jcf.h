@@ -248,7 +248,7 @@ extern int jcf_unexpected_eof PROTO ((JCF*, int));
 /* Debug macros, for the front end */
 
 extern int quiet_flag;
-#ifdef SOURCE_FRONTEND_DEBUG
+#ifdef VERBOSE_SKELETON
 #undef SOURCE_FRONTEND_DEBUG
 #define SOURCE_FRONTEND_DEBUG(X)				\
   {if (!quiet_flag) {printf ("* "); printf X; putchar ('\n');} }

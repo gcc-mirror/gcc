@@ -56,6 +56,7 @@ struct JCF;
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
 
    Usage of TYPE_LANG_FLAG_?:
+   0: CLASS_METHOD_CHECKED_P (in RECORD_TYPE)
    1: TYPE_ARRAY_P (in RECORD_TYPE).
    2: CLASS_LOADED_P (in RECORD_TYPE).
    3: CLASS_FROM_SOURCE_P (in RECORD_TYPE).
@@ -64,6 +65,9 @@ struct JCF;
    6: CLASS_HAS_FINIT_P (in RECORD_TYPE)
 
    Usage of DECL_LANG_FLAG_?:
+   0: METHOD_DEPRECATED (in FUNCTION_DECL).
+      FIELD_DEPRECATED (in FIELD_DECL).
+      CLASS_DEPRECATED (in TYPE_DECL).
    1: METHOD_PUBLIC (in FUNCTION_DECL).
       FIELD_PUBLIC (in FIELD_DECL).
       CLASS_PUBLIC (in TYPE_DECL).
@@ -85,7 +89,7 @@ struct JCF;
       LABEL_CHANGED (in LABEL_DECL)
       CLASS_SUPER (in TYPE_DECL, ACC_SUPER flag)
       INITIALIZED_P (in FIELD_DECL, VAR_DECL, PARM_DECL)
-   7: DECL_CONSTRUCTOR_P (in FUNCTION_DECL)
+   7: DECL_CONSTRUCTOR_P (in FUNCTION_DECL).
 */
 
 /* True if the class whose TYPE_BINFO this is has a superclass.
@@ -396,6 +400,9 @@ struct lang_identifier
    slot_number in decl_map. */
 #define DECL_LOCAL_SLOT_CHAIN(NODE) \
   (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->slot_chain)
+/* For a static field seen from the parser, it holds its associated
+   value, the one returned when the field is looked up. */
+#define DECL_LOCAL_STATIC_VALUE(NODE) DECL_LOCAL_SLOT_CHAIN (NODE)
 
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
 struct lang_decl
@@ -501,6 +508,7 @@ extern tree lookup_name PROTO ((tree));
 extern tree build_known_method_ref PROTO ((tree, tree, tree, tree, tree));
 extern tree build_class_init PROTO ((tree, tree));
 extern tree build_invokevirtual PROTO ((tree, tree));
+extern tree build_invokeinterface PROTO ((tree, tree, tree));
 extern tree invoke_build_dtable PROTO ((int, tree));
 extern tree build_field_ref PROTO ((tree, tree, tree));
 extern void pushdecl_force_head PROTO ((tree));
@@ -533,6 +541,7 @@ extern int alloc_name_constant PROTO ((int, tree));
 extern void emit_register_classes PROTO (());
 extern void lang_init_source PROTO ((int));
 extern void write_classfile PROTO ((tree));
+extern tree build_primtype_type_ref PROTO ((char *));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
@@ -569,6 +578,13 @@ extern void write_classfile PROTO ((tree));
 #define CLASS_INTERFACE(DECL) DECL_LANG_FLAG_4 (DECL)
 #define CLASS_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define CLASS_SUPER(DECL) DECL_LANG_FLAG_6 (DECL)
+
+/* @deprecated marker flag on methods, fields and classes */
+
+#define METHOD_DEPRECATED(DECL) DECL_LANG_FLAG_0 (DECL)
+#define FIELD_DEPRECATED(DECL) DECL_LANG_FLAG_0 (DECL)
+#define CLASS_DEPRECATED(DECL) DECL_LANG_FLAG_0 (DECL)
+#define DECL_DEPRECATED(DECL) DECL_LANG_FLAG_0 (DECL)
 
 /* The number of virtual methods in this class's dispatch table.
  Does not include initial two dummy entries (one points to the
@@ -656,6 +672,9 @@ extern tree *type_map;
 /* Given an array type, give the type of the elements. */
 /* FIXME this use of TREE_TYPE conflicts with something or other. */
 #define TYPE_ARRAY_ELEMENT(ATYPE) TREE_TYPE(ATYPE)
+
+/* True if methods in class TYPE have been checked.  */
+#define CLASS_METHOD_CHECKED_P(TYPE) TYPE_LANG_FLAG_0 (TYPE)
 
 /* True if class TYPE has been loaded. */
 #define CLASS_LOADED_P(TYPE) TYPE_LANG_FLAG_2 (TYPE)
@@ -795,13 +814,12 @@ extern tree *type_map;
 
 /* Make the current function where this macro is invoked report error
    messages and and return, if any */
-#define java_parse_abort_on_error()		\
-  {						\
-     extern int java_error_count;		\
-     if (java_error_count)			\
-       {					\
-         java_report_errors ();			\
-	 java_pop_parser_context (0);		\
-	 return;				\
-       }					\
+#define java_parse_abort_on_error()					\
+  {									\
+     extern int java_error_count;					\
+     if (java_error_count)						\
+       {								\
+         java_report_errors ();						\
+	 return;							\
+       }								\
    }
