@@ -1,3 +1,12 @@
+2004-07-12  Andrew Pinski  <apinski@apple.com>
+
+	PR c++/16475
+	Revert:
+	2004-07-07  H.J. Lu  <hongjiu.lu@intel.com>
+		PR c++/16276
+		* rtti.c (emit_tinfo_decl): Turn off DECL_ONE_ONLY if typeinfo
+		is not public.
+
 2004-07-12  Eric Christopher  <echristo@redhat.com>
 
 	* parser.c (cp_parser_class_head): Remove unused variable.
