@@ -374,9 +374,9 @@ print_operand (file, x, code)
      char code;
 {
   if (code == '$')
-    PUT_IMMEDIATE_PREFIX(file);
+    PUT_IMMEDIATE_PREFIX (file);
   else if (code == '?')
-    PUT_EXTERNAL_PREFIX(file);
+    PUT_EXTERNAL_PREFIX (file);
   else if (GET_CODE (x) == REG)
     fprintf (file, "%s", reg_names[REGNO (x)]);
   else if (GET_CODE (x) == MEM)
@@ -422,6 +422,11 @@ print_operand (file, x, code)
 	  u.i[0] = CONST_DOUBLE_LOW (x); u.i[1] = CONST_DOUBLE_HIGH (x);
 	  PUT_IMMEDIATE_PREFIX (file);
 #ifdef SEQUENT_ASM
+	  /* We have no way of winning if we can't get the bits
+	     for a sequent floating point number.  */
+#if HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
+	  abort ();
+#endif
 	  {
 	    union { float f; long l; } uu;
 	    uu.f = u.d;
@@ -434,7 +439,10 @@ print_operand (file, x, code)
     }
   else
     {
-      PUT_IMMEDIATE_PREFIX(file);
+#ifndef NO_IMMEDIATE_PREFIX_IF_SYMBOLIC
+      if (GET_CODE (x) == CONST_INT)
+#endif
+	PUT_IMMEDIATE_PREFIX(file);
       output_addr_const (file, x);
     }
 }
@@ -656,9 +664,15 @@ print_operand_address (file, addr)
       if (GET_CODE (indexexp) != REG || REGNO (indexexp) >= 8)
 	abort ();
 
+#ifdef UTEK_ASM
+      fprintf (file, "[%c`%s]",
+	       scales[scale],
+	       reg_names[REGNO (indexexp)]);
+#else
       fprintf (file, "[%s:%c]",
 	       reg_names[REGNO (indexexp)],
 	       scales[scale]);
+#endif
     }
 }
 
