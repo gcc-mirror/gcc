@@ -19,23 +19,20 @@ long foo(void) {
   Obj *objrcvr;
   Obj <Proto> *objrcvr2;
 
-  receiver += [receiver someValue]; /* { dg-warning "invalid receiver type .long int." } */
-/* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 22 } */
-/* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 22 } */
-/* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 22 } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 22 } */
+  /* NB: Since 'receiver' is an invalid ObjC message receiver, the compiler
+     should warn but then search for methods as if we were messaging 'id'.  */
 
+  receiver += [receiver someValue]; /* { dg-warning "invalid receiver type .long int." } */
   receiver += [receiver anotherValue]; /* { dg-warning "invalid receiver type .long int." } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 28 } */
-  
+
   receiver += [(Obj *)receiver someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 31 } */
+/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 28 } */
 
   receiver += [(Obj *)receiver anotherValue];
   receiver += [(Obj <Proto> *)receiver someValue];
   receiver += [(Obj <Proto> *)receiver anotherValue];
   receiver += [objrcvr someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 37 } */
+/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 34 } */
 
   receiver += [objrcvr anotherValue];
   receiver += [(Obj <Proto> *)objrcvr someValue];
@@ -43,9 +40,13 @@ long foo(void) {
   receiver += [objrcvr2 someValue];
   receiver += [objrcvr2 anotherValue];
   receiver += [(Obj *)objrcvr2 someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
-/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 45 } */
+/* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 42 } */
 
   receiver += [(Obj *)objrcvr2 anotherValue];
 
   return receiver;
 }
+
+/* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 0 } */
+/* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 0 } */
+/* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 0 } */

@@ -1,3 +1,11 @@
+2004-10-25  David Ayers  <d.ayers@inode.at>
+
+	* c-common.h: Remove RID_ID.
+	* c-parse.in: Remove OBJECTNAME and references to RID_ID.
+	(typespec_reserved_attr): Add rule for TYPENAME
+	non_empty_protocolrefs.
+	(yylexname): Remove special handling of RID_ID.
+
 2004-10-25  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/invoke.texi (-fcrossjumping): Not enabled at -O.

@@ -1,3 +1,18 @@
+2004-10-25  David Ayers  <d.ayers@inode.at>
+	    Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/call-super-2.m: Add messages to 'Class <Proto>'; update
+	diagnostics when messaging 'id <Proto>'.
+	* objc.dg/class-protocol-1.m: New test.
+	* objc.dg/desig-init-1.m: Add message to an invalid receiver using
+	a non-existent method signature.
+	* objc.dg/method-5.m, objc.dg/method-6.m, objc.dg/proto-hier-1.m:
+	Update diagnostics when messaging with non-existent method signature.
+	* objc.dg/proto-hier-2.m: Adjust wording of diagnostic.
+	* objc.dg/proto-lossage-1.m, objc.dg/proto-lossage-4.m: Messages to
+	invalid receivers are now resolved as if messaging 'id'; remove
+	extraneous diagnostics.
+
 2004-10-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16667

@@ -866,8 +866,8 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
       && TREE_CODE (rhs) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (rhs)) == RECORD_TYPE)
     {
-      int lhs_is_proto = IS_PROTOCOL_QUALIFIED_ID (lhs);
-      int rhs_is_proto = IS_PROTOCOL_QUALIFIED_ID (rhs);
+      int lhs_is_proto = IS_PROTOCOL_QUALIFIED_UNTYPED (lhs);
+      int rhs_is_proto = IS_PROTOCOL_QUALIFIED_UNTYPED (rhs);
 
       if (lhs_is_proto)
         {
@@ -878,6 +878,11 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 	  /* <Protocol> = <Protocol>  */
 	  if (rhs_is_proto)
 	    {
+	      /* Class <Protocol> != id <Protocol>;
+		 id <Protocol> != Class <Protocol>  */
+	      if (IS_ID (lhs) != IS_ID (rhs))
+		return 0;
+
 	      rproto_list = TYPE_PROTOCOL_LIST (rhs);
 
 	      if (!reflexive)
@@ -942,6 +947,10 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 	      tree rname = OBJC_TYPE_NAME (TREE_TYPE (rhs));
 	      tree rinter;
 
+	      /* Class <Protocol> != <class> *  */
+	      if (IS_CLASS (lhs))
+		return 0;
+
 	      /* Make sure the protocol is supported by the object on
 		 the rhs.  */
 	      for (lproto = lproto_list; lproto; lproto = TREE_CHAIN (lproto))
@@ -985,15 +994,15 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 		}
 	      return 1;
 	    }
-	  /* <Protocol> = id */
+	  /* id <Protocol> = id; Class <Protocol> = id */
 	  else if (objc_is_object_id (TREE_TYPE (rhs)))
 	    {
 	      return 1;
 	    }
-	  /* <Protocol> = Class */
+	  /* id <Protocol> != Class; Class <Protocol> = Class */
 	  else if (objc_is_class_id (TREE_TYPE (rhs)))
 	    {
-	      return 0;
+	      return IS_CLASS (lhs);
 	    }
 	  /* <Protocol> = ?? : let comptypes decide.  */
           return -1;
@@ -1003,6 +1012,10 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 	  /* <class> * = <Protocol> */
 	  if (TYPED_OBJECT (TREE_TYPE (lhs)))
 	    {
+	      /* <class> * != Class <Protocol> */
+	      if (IS_CLASS (rhs))
+		return 0;
+
 	      if (reflexive)
 		{
 		  tree rname = OBJC_TYPE_NAME (TREE_TYPE (lhs));
@@ -1062,15 +1075,15 @@ objc_comptypes (tree lhs, tree rhs, int reflexive)
 	      else
 		return 0;
 	    }
-	  /* id = <Protocol> */
+	  /* id = id <Protocol>; id = Class <Protocol> */
 	  else if (objc_is_object_id (TREE_TYPE (lhs)))
 	    {
 	      return 1;
 	    }
-	  /* Class = <Protocol> */
+	  /* Class != id <Protocol>; Class = Class <Protocol> */
 	  else if (objc_is_class_id (TREE_TYPE (lhs)))
 	    {
-	      return 0;
+	      return IS_CLASS (rhs);
 	    }
 	  /* ??? = <Protocol> : let comptypes decide */
 	  else
@@ -2714,7 +2727,8 @@ objc_is_id (tree type)
 
   /* NB: This function may be called before the ObjC front-end has
      been initialized, in which case OBJC_OBJECT_TYPE will (still) be NULL.  */
-  return (objc_object_type && type && (IS_ID (type) || IS_CLASS (type))
+  return (objc_object_type && type
+	  && (IS_ID (type) || IS_CLASS (type) || IS_SUPER (type))
 	  ? type
 	  : NULL_TREE); 
 }
@@ -5567,25 +5581,35 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
     {
       if (!rtype)
 	rtype = xref_tag (RECORD_TYPE, class_tree);
-      else if (IS_ID (rtype))
+      else
 	{
+	  class_tree = (IS_CLASS (rtype) ? objc_class_name : NULL_TREE);
 	  rprotos = TYPE_PROTOCOL_LIST (rtype);
 	  rtype = NULL_TREE;
 	}
-      else
-	{
-	  class_tree = objc_class_name;
-	  OBJC_SET_TYPE_NAME (rtype, class_tree);
-	}
 
       if (rprotos)
-	method_prototype
-	  = lookup_method_in_protocol_list (rprotos, sel_name,
-					    class_tree != NULL_TREE);
-      if (!method_prototype && !rprotos)
-	method_prototype
-	  = lookup_method_in_hash_lists (sel_name,
-					 class_tree != NULL_TREE);
+	{
+	  /* If messaging 'id <Protos>' or 'Class <Proto>', first search
+	     in protocols themselves for the method prototype.  */
+	  method_prototype
+	    = lookup_method_in_protocol_list (rprotos, sel_name,
+					      class_tree != NULL_TREE);
+
+	  /* If messaging 'Class <Proto>' but did not find a class method
+	     prototype, search for an instance method instead, and warn
+	     about having done so.  */
+	  if (!method_prototype && !rtype && class_tree != NULL_TREE)
+	    {
+	      method_prototype
+		= lookup_method_in_protocol_list (rprotos, sel_name, 0);
+
+	      if (method_prototype)
+		warning ("found `-%s' instead of `+%s' in protocol(s)",
+			 IDENTIFIER_POINTER (sel_name),
+			 IDENTIFIER_POINTER (sel_name));
+	    }
+	}
     }
   else
     {
@@ -5642,9 +5666,27 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 	{
 	  warning ("invalid receiver type `%s'",
 		   gen_type_name (orig_rtype));
+	  /* After issuing the "invalid receiver" warning, perform method
+	     lookup as if we were messaging 'id'.  */
 	  rtype = rprotos = NULL_TREE;
 	}
     }	
+
+
+  /* For 'id' or 'Class' receivers, search in the global hash table
+     as a last resort.  For all receivers, warn if protocol searches
+     have failed.  */
+  if (!method_prototype)
+    {
+      if (rprotos)
+	warning ("`%c%s' not found in protocol(s)",
+		 (class_tree ? '+' : '-'),
+		 IDENTIFIER_POINTER (sel_name));
+
+      if (!rtype)
+	method_prototype
+	  = lookup_method_in_hash_lists (sel_name, class_tree != NULL_TREE);
+    }
 
   if (!method_prototype)
     {
@@ -5655,10 +5697,14 @@ objc_finish_message_expr (tree receiver, tree sel_name, tree method_params)
 		 IDENTIFIER_POINTER (OBJC_TYPE_NAME (rtype)),
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
-      if (rprotos)
-	warning ("`%c%s' not implemented by protocol(s)",
+      /* If we are messaging an 'id' or 'Class' object and made it here,
+	 then we have failed to find _any_ instance or class method,
+	 respectively.  */
+      else
+	warning ("no `%c%s' method found",
 		 (class_tree ? '+' : '-'),
 		 IDENTIFIER_POINTER (sel_name));
+
       if (!warn_missing_methods)
 	{
 	  warning ("(Messages without a matching method signature");
@@ -6160,13 +6206,16 @@ objc_add_method (tree class, tree method, int is_class)
       add_method_to_hash_list (nst_method_hash_list, method);
 
       /* Instance methods in root classes (and categories thereof)
-	 may acts as class methods as a last resort. */
+	 may act as class methods as a last resort.  We also add
+	 instance methods listed in @protocol declarations to
+	 the class hash table, on the assumption that @protocols
+	 may be adopted by root classes or categories.  */
       if (TREE_CODE (class) == CATEGORY_INTERFACE_TYPE
 	  || TREE_CODE (class) == CATEGORY_IMPLEMENTATION_TYPE)
 	class = lookup_interface (CLASS_NAME (class));
 
-      if (TREE_CODE (class) != PROTOCOL_INTERFACE_TYPE
-	  && !CLASS_SUPER_NAME (class))
+      if (TREE_CODE (class) == PROTOCOL_INTERFACE_TYPE
+	  || !CLASS_SUPER_NAME (class))
 	add_method_to_hash_list (cls_method_hash_list, method);
     }
 
