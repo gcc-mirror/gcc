@@ -1,6 +1,6 @@
 // RB tree implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -708,7 +708,7 @@ namespace std
 	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
     {
       return __x.size() == __y.size()
-	     && equal(__x.begin(), __x.end(), __y.begin());
+	     && std::equal(__x.begin(), __x.end(), __y.begin());
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -717,8 +717,8 @@ namespace std
     operator<(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
 	      const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
     {
-      return lexicographical_compare(__x.begin(), __x.end(), 
-				     __y.begin(), __y.end());
+      return std::lexicographical_compare(__x.begin(), __x.end(), 
+					  __y.begin(), __y.end());
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -892,39 +892,29 @@ namespace std
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     insert_unique(iterator __position, const _Val& __v)
     {
-      if (__position._M_node == _M_leftmost())
+      if (__position._M_node == _M_end()
+	  || __position._M_node == _M_rightmost())
 	{
-	  // begin()
 	  if (size() > 0
-	      && _M_impl._M_key_compare(_KeyOfValue()(__v), 
-					_S_key(__position._M_node)))
-	    return _M_insert(__position._M_node, __position._M_node, __v);
-	  // First argument just needs to be non-null.
-	  else
-	    return insert_unique(__v).first;
-	}
-      else if (__position._M_node == _M_end())
-	{
-	  // end()
-	  if (_M_impl._M_key_compare(_S_key(_M_rightmost()), 
-				     _KeyOfValue()(__v)))
+	      && _M_impl._M_key_compare(_S_key(_M_rightmost()), 
+					_KeyOfValue()(__v)))
 	    return _M_insert(0, _M_rightmost(), __v);
 	  else
 	    return insert_unique(__v).first;
 	}
       else
 	{
-	  iterator __before = __position;
-	  --__before;
-	  if (_M_impl._M_key_compare(_S_key(__before._M_node), 
+	  iterator __after = __position;
+	  ++__after;
+	  if (_M_impl._M_key_compare(_S_key(__position._M_node), 
 				     _KeyOfValue()(__v))
 	      && _M_impl._M_key_compare(_KeyOfValue()(__v),
-					_S_key(__position._M_node)))
+					_S_key(__after._M_node)))
 	    {
-	      if (_S_right(__before._M_node) == 0)
-		return _M_insert(0, __before._M_node, __v);
+	      if (_S_right(__position._M_node) == 0)
+		return _M_insert(0, __position._M_node, __v);
 	      else
-		return _M_insert(__position._M_node, __position._M_node, __v);
+		return _M_insert(__after._M_node, __after._M_node, __v);
 	      // First argument just needs to be non-null.
 	    }
 	  else
@@ -938,39 +928,29 @@ namespace std
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     insert_equal(iterator __position, const _Val& __v)
     {
-      if (__position._M_node == _M_leftmost())
+      if (__position._M_node == _M_end()
+	  || __position._M_node == _M_rightmost())
 	{
-	  // begin()
 	  if (size() > 0
-	      && !_M_impl._M_key_compare(_S_key(__position._M_node),
-					 _KeyOfValue()(__v)))
-	    return _M_insert(__position._M_node, __position._M_node, __v);
-	  // first argument just needs to be non-null
-	  else
-	    return insert_equal(__v);
-	}
-      else if (__position._M_node == _M_end())
-	{
-	  // end()
-	  if (!_M_impl._M_key_compare(_KeyOfValue()(__v), 
-				      _S_key(_M_rightmost())))
+	      && !_M_impl._M_key_compare(_KeyOfValue()(__v), 
+					 _S_key(_M_rightmost())))
 	    return _M_insert(0, _M_rightmost(), __v);
 	  else
 	    return insert_equal(__v);
 	}
       else
 	{
-	  iterator __before = __position;
-	  --__before;
+	  iterator __after = __position;
+	  ++__after;
 	  if (!_M_impl._M_key_compare(_KeyOfValue()(__v), 
-				      _S_key(__before._M_node))
-	      && !_M_impl._M_key_compare(_S_key(__position._M_node),
+				      _S_key(__position._M_node))
+	      && !_M_impl._M_key_compare(_S_key(__after._M_node),
 					 _KeyOfValue()(__v)))
 	    {
-	      if (_S_right(__before._M_node) == 0)
-		return _M_insert(0, __before._M_node, __v);
+	      if (_S_right(__position._M_node) == 0)
+		return _M_insert(0, __position._M_node, __v);
 	      else
-		return _M_insert(__position._M_node, __position._M_node, __v);
+		return _M_insert(__after._M_node, __after._M_node, __v);
 	      // First argument just needs to be non-null.
 	    }
 	  else

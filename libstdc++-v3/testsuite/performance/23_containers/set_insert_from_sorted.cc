@@ -34,7 +34,7 @@ static const unsigned max_size = 1000000; // avoid excessive swap file use!
 static const unsigned iterations = 10;    // make results less random while
 static const unsigned step = 50000;       // keeping the total time reasonable
 
-// libstdc++/19422
+// libstdc++/19433
 int main()
 {
   using namespace std;
@@ -53,10 +53,16 @@ int main()
       ostringstream oss;
       oss << count;
 
-      // measure set construction time (linear in count (Table 69))
       start_counters(time, resource);
       for (unsigned i = 0; i != iterations; ++i)
-	the_set(v.begin(), v.begin() + count);
+	{
+	  the_set test_set;
+	  the_set::iterator iter = test_set.end();
+
+	  // each insert in amortized constant time (Table 69)
+	  for (unsigned j = 0; j != count; ++j)
+	    iter = test_set.insert(iter, v[j]);
+	}
       stop_counters(time, resource);
       report_performance(__FILE__, oss.str(), time, resource);
       clear_counters(time, resource);
