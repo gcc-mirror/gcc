@@ -1,3 +1,9 @@
+2003-03-23  Daniel Jacobowitz  <drow@mvista.com>
+
+	Fix PR target/9797.
+	* stmt.c (expand_decl_init): Call push_temp_slots () and
+	pop_temp_slots ().
+
 2003-03-23  Richard Henderson  <rth@redhat.com>
      
         * cfgcleanup.c (try_optimize_cfg): Allow merging of tablejumps
