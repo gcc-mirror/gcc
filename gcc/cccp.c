@@ -3318,6 +3318,8 @@ handle_directive (ip, op)
 		*cp++ = *xp++;
 		SKIP_WHITE_SPACE (xp);
 	      }
+	    } else {
+	      *cp++ = *xp++;
 	    }
 	    break;
 
@@ -3325,7 +3327,7 @@ handle_directive (ip, op)
 	  case '\"':
 	    {
 	      register U_CHAR *bp1
-		= skip_quoted_string (xp - 1, limit, ip->lineno, 0, 0, 0);
+		= skip_quoted_string (xp - 1, bp, ip->lineno, 0, 0, 0);
 	      while (xp != bp1)
 		if (*xp == '\\') {
 		  if (*++xp != '\n')
