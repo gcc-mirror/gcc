@@ -42,7 +42,7 @@ void test01()
   locale loc_c = locale::classic();
   locale loc_hk("en_HK");
   locale loc_fr("fr_FR@euro");
-  locale loc_de("de_DE");
+  locale loc_de("de_DE@euro");
   VERIFY( loc_c != loc_de );
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
@@ -123,7 +123,7 @@ void test01()
   // now try with showbase, to get currency symbol in format
   iss.setf(ios_base::showbase);
 
-  iss.str(L"7.200.000.000,00 DEM ");
+  iss.str(L"7.200.000.000,00 EUR ");
   iterator_type is_it06(iss);
   wstring result6;
   ios_base::iostate err06 = ios_base::goodbit;
@@ -131,7 +131,7 @@ void test01()
   VERIFY( result6 == digits1 );
   VERIFY( err06 == ios_base::eofbit );
 
-  iss.str(L"7.200.000.000,00 DEM  "); // Extra space.
+  iss.str(L"7.200.000.000,00 EUR  "); // Extra space.
   iterator_type is_it07(iss);
   wstring result7;
   ios_base::iostate err07 = ios_base::goodbit;
@@ -139,7 +139,7 @@ void test01()
   VERIFY( result7 == digits1 );
   VERIFY( err07 == ios_base::goodbit );
 
-  iss.str(L"7.200.000.000,00 DM"); 
+  iss.str(L"7.200.000.000,00 \x20ac"); 
   iterator_type is_it08(iss);
   wstring result8;
   ios_base::iostate err08 = ios_base::goodbit;
@@ -218,7 +218,7 @@ void test02()
   locale loc_c = locale::classic();
   locale loc_hk("en_HK");
   locale loc_fr("fr_FR@euro");
-  locale loc_de("de_DE");
+  locale loc_de("de_DE@euro");
   VERIFY( loc_c != loc_de );
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
@@ -326,12 +326,12 @@ void test04()
 {
 #ifdef _GLIBCPP_HAVE_SETENV 
   // Set the global locale to non-"C".
-  std::locale loc_de("de_DE");
+  std::locale loc_de("de_DE@euro");
   std::locale::global(loc_de);
 
-  // Set LANG environment variable to de_DE.
+  // Set LANG environment variable to de_DE@euro.
   const char* oldLANG = getenv("LANG");
-  if (!setenv("LANG", "de_DE", 1))
+  if (!setenv("LANG", "de_DE@euro", 1))
     {
       test01();
       test02();
