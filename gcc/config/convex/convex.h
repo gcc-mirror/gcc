@@ -96,6 +96,11 @@ extern char *output_call ();
 #define TARGET_DEFAULT 0
 #endif
 
+/* Convex ships /tmp as a separate file system - thus it
+   usually has more free space than /usr/tmp */
+
+#define P_tmpdir	"/tmp/"
+
 /* Allow $ in identifiers. */
 
 #define DOLLARS_IN_IDENTIFIERS 2
@@ -399,7 +404,7 @@ enum reg_class {
 /* The standard Convex call, with arg count word, includes popping the
    args as part of the call template.  We optionally omit the arg count
    word and let gcc combine the arg pops. */
-#define RETURN_POPS_ARGS(FUNTYPE,SIZE) (TARGET_ARGCOUNT)
+#define RETURN_POPS_ARGS(FUNTYPE, SIZE) (TARGET_ARGCOUNT ? (SIZE) : 0)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -840,6 +845,12 @@ enum reg_class {
    no longer contain unusual constructs.  */
 
 #define ASM_APP_OFF ";NO_APP\n"
+
+/* Output something following the gcc2_compiled tag to keep that label from
+   hiding a real function name for tools like adb and prof. */
+
+#define ASM_IDENTIFY_GCC(FILE) \
+  fprintf (FILE, "gcc2_compiled.:\n\tds.h 0\n");
 
 /* Alignment with Convex's assembler goes like this:
    .text can be .aligned up to a halfword.

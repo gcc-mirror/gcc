@@ -714,7 +714,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(and:DI (match_operand:DI 1 "register_operand" "%0")
 		(match_operand:DI 2 "immediate_operand" "Fn")))]
-  "GET_CODE (operands[2]) == CONST_INT
+  "(GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0)
    || (GET_CODE (operands[2]) == CONST_DOUBLE
        && CONST_DOUBLE_HIGH (operands[2]) == -1)"
   "and %2,%0")
@@ -753,7 +753,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(ior:DI (match_operand:DI 1 "register_operand" "%0")
 		(match_operand:DI 2 "immediate_operand" "Fn")))]
-  "GET_CODE (operands[2]) == CONST_INT
+  "(GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0)
    || (GET_CODE (operands[2]) == CONST_DOUBLE
        && CONST_DOUBLE_HIGH (operands[2]) == 0)"
   "or %2,%0")
@@ -792,7 +792,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(xor:DI (match_operand:DI 1 "register_operand" "%0")
 		(match_operand:DI 2 "immediate_operand" "Fn")))]
-  "GET_CODE (operands[2]) == CONST_INT
+  "(GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0)
    || (GET_CODE (operands[2]) == CONST_DOUBLE
        && CONST_DOUBLE_HIGH (operands[2]) == 0)"
   "xor %2,%0")
@@ -1032,9 +1032,18 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     {
       int rshift = INTVAL (operands[2]);
-      operands[3] =
-	force_reg (DImode, immed_double_const (1 << (63 - rshift),
-					       1 << (31 - rshift), DImode));
+      if (rshift < 0)
+	operands[3] = force_reg (DImode, immed_double_const (0, 0, DImode));
+      else if (rshift < 32)
+	operands[3] =
+	  force_reg (DImode,
+		     immed_double_const (0, 1 << (31 - rshift), DImode));
+      else if (rshift < 64)
+	operands[3] =
+	  force_reg (DImode,
+		     immed_double_const (1 << (63 - rshift), 0, DImode));
+      else
+	operands[3] = force_reg (DImode, immed_double_const (0, 0, DImode));
     }
   else
     {
@@ -1291,14 +1300,14 @@
 
 (define_insn "call"
   [(call (match_operand:QI 0 "memory_operand" "m")
-	 (match_operand:SI 1 "general_operand" "g"))]
+	 (match_operand 1 "" "g"))]
   ""
   "* return output_call (insn, operands[0], operands[1]);")
 
 (define_insn "call_value"
   [(set (match_operand 0 "" "=g")
 	(call (match_operand:QI 1 "memory_operand" "m")
-	      (match_operand:SI 2 "general_operand" "g")))]
+	      (match_operand 2 "" "g")))]
   ""
   "* return output_call (insn, operands[1], operands[2]);")
 
