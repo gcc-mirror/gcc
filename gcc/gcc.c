@@ -5792,6 +5792,8 @@ main (argc, argv)
 
       notice ("Configured with: %s\n", configuration_arguments);
 
+      notice ("Thread model: %s\n", thread_model);
+
       /* compiler_version is truncated at the first space when initialized
 	 from version string, so truncate version_string at the first space
 	 before comparing.  */
