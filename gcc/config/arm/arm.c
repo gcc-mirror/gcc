@@ -292,9 +292,7 @@ arm_override_options ()
 	  target_flags |= ARM_FLAG_APCS_32;
 	}
       
-      if (TARGET_APCS_32)
-	sought |= FL_MODE32;
-      else
+      if (! TARGET_APCS_32)
 	sought |= FL_MODE26;
 
       if (sought != 0)
