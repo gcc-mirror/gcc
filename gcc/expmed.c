@@ -49,11 +49,19 @@ int mult_is_very_cheap;
 
 static int sdiv_pow2_cheap, smod_pow2_cheap;
 
+/* For compilers that support multiple targets with different word sizes,
+   MAX_BITS_PER_WORD contains the biggest value of BITS_PER_WORD.  An example
+   is the H8/300(H) compiler.  */
+
+#ifndef MAX_BITS_PER_WORD
+#define MAX_BITS_PER_WORD BITS_PER_WORD
+#endif
+
 /* Cost of various pieces of RTL.  */
 static int add_cost, mult_cost, negate_cost, zero_cost;
-static int shift_cost[BITS_PER_WORD];
-static int shiftadd_cost[BITS_PER_WORD];
-static int shiftsub_cost[BITS_PER_WORD];
+static int shift_cost[MAX_BITS_PER_WORD];
+static int shiftadd_cost[MAX_BITS_PER_WORD];
+static int shiftsub_cost[MAX_BITS_PER_WORD];
 
 void
 init_expmed ()
@@ -1790,10 +1798,6 @@ enum alg_code { alg_zero, alg_m, alg_shift,
    alg_sub_t2_m		total := total * coeff - multiplicand;
 
    The first operand must be either alg_zero or alg_m.  */
-
-#ifndef MAX_BITS_PER_WORD
-#define MAX_BITS_PER_WORD BITS_PER_WORD
-#endif
 
 struct algorithm
 {
