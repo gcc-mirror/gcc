@@ -1,5 +1,9 @@
 2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* gcc.dg/uninit-E.c: Add forgotten dg-warning marker.
+
+2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	* gcc.dg/uninit-D.c: New Test.
 	* gcc.dg/uninit-E.c: New Test.
 	* gcc.dg/uninit-F.c: New Test.
