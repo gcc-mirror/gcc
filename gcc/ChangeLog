@@ -1,3 +1,11 @@
+2002-09-15  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/mips/netbsd.h (TARGET_OS_CPP_BUILTINS): Add
+	MIPS ABI CPP macros.
+	(TARGET_CPU_CPP_BUILTINS): Redefine.
+	(SUBTARGET_EXTRA_SPECS): Remove subtarget_endian_default.
+	(SUBTARGET_ENDIAN_DEFAULT_SPEC): Remove.
+
 2002-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ia64/aix.h (TARGET_OS_CPP_BUILTINS): Fix typo.
