@@ -166,8 +166,6 @@ static rtx first_insn_after_basic_block_note
   PARAMS ((basic_block));
 static void compute_dominance_frontiers_1
   PARAMS ((sbitmap *frontiers, int *idom, int bb, sbitmap done));
-static void compute_dominance_frontiers
-  PARAMS ((sbitmap *frontiers, int *idom));
 static void find_evaluations_1
   PARAMS ((rtx dest, rtx set, void *data));
 static void find_evaluations
@@ -558,7 +556,7 @@ compute_dominance_frontiers_1 (frontiers, idom, bb, done)
       }
 }
 
-static void
+void
 compute_dominance_frontiers (frontiers, idom)
      sbitmap *frontiers;
      int *idom;

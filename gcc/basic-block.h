@@ -290,6 +290,9 @@ extern int flow_delete_block		PARAMS ((basic_block));
 extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
 						 basic_block));
+extern void dump_edge_info		PARAMS ((FILE *, edge, int));
+extern void clear_edges			PARAMS ((void));
+extern void mark_critical_edges		PARAMS ((void));
 
 /* Structure to hold information for each natural loop.  */
 struct loop
