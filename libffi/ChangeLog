@@ -1,3 +1,70 @@
+2003-09-04  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* Makefile.am: Add dejagnu test framework. Fixes PR other/11411.
+	* Makefile.in: Rebuilt.
+	* configure.in: Add dejagnu test framework.
+	* configure: Rebuilt.
+
+	* testsuite/Makefile.am: New file.
+	* testsuite/Makefile.in: Built
+	* testsuite/lib/libffi-dg.exp: New file. 
+	* testsuite/config/default.exp: Likewise.
+	* testsuite/libffi.call/call.exp: Likewise.
+	* testsuite/libffi.call/ffitest.h: Likewise.
+	* testsuite/libffi.call/closure_fn0.c: Likewise.
+	* testsuite/libffi.call/closure_fn1.c: Likewise.
+	* testsuite/libffi.call/closure_fn2.c: Likewise.
+	* testsuite/libffi.call/closure_fn3.c: Likewise.
+	* testsuite/libffi.call/cls_1_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_3_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_4_1byte.c: Likewise.
+	* testsuite/libffi.call/cls_2byte.c: Likewise.
+	* testsuite/libffi.call/cls_3byte1.c: Likewise.
+	* testsuite/libffi.call/cls_3byte2.c: Likewise.
+	* testsuite/libffi.call/cls_4byte.c: Likewise.
+	* testsuite/libffi.call/cls_5byte.c: Likewise.
+	* testsuite/libffi.call/cls_6byte.c: Likewise.
+	* testsuite/libffi.call/cls_7byte.c: Likewise.
+	* testsuite/libffi.call/cls_8byte.c: Likewise.
+	* testsuite/libffi.call/cls_12byte.c: Likewise.
+	* testsuite/libffi.call/cls_16byte.c: Likewise.
+	* testsuite/libffi.call/cls_20byte.c: Likewise.
+	* testsuite/libffi.call/cls_24byte.c: Likewise.
+	* testsuite/libffi.call/cls_double.c: Likewise.
+	* testsuite/libffi.call/cls_float.c: Likewise.
+	* testsuite/libffi.call/cls_uchar.c: Likewise.
+	* testsuite/libffi.call/cls_uint.c: Likewise.
+	* testsuite/libffi.call/cls_ulonglong.c: Likewise.
+	* testsuite/libffi.call/cls_ushort.c: Likewise.
+	* testsuite/libffi.call/float.c: Likewise.
+	* testsuite/libffi.call/float1.c: Likewise.
+	* testsuite/libffi.call/float2.c: Likewise.
+	* testsuite/libffi.call/many.c: Likewise.
+	* testsuite/libffi.call/many_win32.c: Likewise.
+	* testsuite/libffi.call/nested_struct.c: Likewise.
+	* testsuite/libffi.call/nested_struct1.c: Likewise.
+	* testsuite/libffi.call/pyobjc-tc.c: Likewise.
+	* testsuite/libffi.call/problem1.c: Likewise.
+	* testsuite/libffi.call/promotion.c: Likewise.
+	* testsuite/libffi.call/return_ll.c: Likewise.
+	* testsuite/libffi.call/return_sc.c: Likewise.
+	* testsuite/libffi.call/return_uc.c: Likewise.
+	* testsuite/libffi.call/strlen.c: Likewise.
+	* testsuite/libffi.call/strlen_win32.c: Likewise.
+	* testsuite/libffi.call/struct1.c: Likewise.
+	* testsuite/libffi.call/struct2.c: Likewise.
+	* testsuite/libffi.call/struct3.c: Likewise.
+	* testsuite/libffi.call/struct4.c: Likewise.
+	* testsuite/libffi.call/struct5.c: Likewise.
+	* testsuite/libffi.call/struct6.c: Likewise.
+	* testsuite/libffi.call/struct7.c: Likewise.
+	* testsuite/libffi.call/struct8.c: Likewise.
+	* testsuite/libffi.call/struct9.c: Likewise.	
+	* testsuite/libffi.special/special.exp: New file.
+	* testsuite/libffi.special/ffitestcxx.h: Likewise.
+	* testsuite/libffi.special/unwindtest.cc: Likewise.
+
+	
 2003-08-13  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* src/sh/ffi.c (OFS_INT16): Set 0 for little endian case.  Update
