@@ -808,6 +808,7 @@ char *lang_options[] =
 
   /* This is for GNAT and is temporary.  */
   "-gnat",
+  "-I",
   0
 };
 
