@@ -30,7 +30,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static const char *c_init PARAMS ((const char *));
 static void c_init_options PARAMS ((void));
-static void c_post_options PARAMS ((void));
 
 /* ### When changing hooks, consider if ObjC needs changing too!! ### */
 
@@ -45,7 +44,7 @@ static void c_post_options PARAMS ((void));
 #undef LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION c_decode_option
 #undef LANG_HOOKS_POST_OPTIONS
-#define LANG_HOOKS_POST_OPTIONS c_post_options
+#define LANG_HOOKS_POST_OPTIONS c_common_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
 #undef LANG_HOOKS_SAFE_FROM_P
@@ -154,13 +153,6 @@ const char *const tree_code_name[] = {
 #include "c-common.def"
 };
 #undef DEFTREECODE
-
-/* Post-switch processing.  */
-static void
-c_post_options ()
-{
-  c_common_post_options ();
-}
 
 static void
 c_init_options ()
