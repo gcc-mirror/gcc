@@ -131,8 +131,9 @@ static void print_full_cxx_name PARAMS ((FILE*, JCF*, int, int, int,
 static void decompile_method PARAMS ((FILE*, JCF*, int));
 static void add_class_decl PARAMS ((FILE*, JCF*, JCF_u2));
 
-static int java_float_finite PARAMS ((jfloat));
-static int java_double_finite PARAMS ((jdouble));
+static void jni_print_float PARAMS ((FILE *, jfloat));
+static void jni_print_double PARAMS ((FILE *, jdouble));
+
 static void print_name PARAMS ((FILE *, JCF *, int));
 static void print_base_classname PARAMS ((FILE *, JCF *, int));
 static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
@@ -243,38 +244,54 @@ static int decompiled = 0;
 
 #include "jcf-reader.c"
 
-/* Some useful constants.  */
-#define F_NAN_MASK 0x7f800000
-#if (1 == HOST_FLOAT_WORDS_BIG_ENDIAN) && ! defined (HOST_WORDS_BIG_ENDIAN)
-#define D_NAN_MASK 0x000000007ff00000LL
-#else
-#define D_NAN_MASK 0x7ff0000000000000LL
-#endif
-
-/* Return 1 if F is not Inf or NaN.  */
-static int
-java_float_finite (f)
-     jfloat f;
+/* Print a single-precision float, suitable for parsing by g++.  */
+static void
+jni_print_float (FILE *stream, jfloat f)
 {
-  union Word u;
-  u.f = f;
-
-  /* We happen to know that F_NAN_MASK will match all NaN values, and
-     also positive and negative infinity.  That's why we only need one
-     test here.  See The Java Language Specification, section 20.9.  */
-  return (u.i & F_NAN_MASK) != F_NAN_MASK;
+  /* It'd be nice to use __builtin_nan/__builtin_inf here but they don't
+     work in data initializers.  FIXME.  */
+  if (JFLOAT_FINITE (f))
+    {
+      fputs (" = ", stream);
+      if (f.negative)
+	putc ('-', stream);
+      if (f.exponent)
+	fprintf (stream, "0x1.%.6xp%+df",
+		 ((unsigned int)f.mantissa) << 1,
+		 f.exponent - JFLOAT_EXP_BIAS);
+      else
+	/* Exponent of 0x01 is -125; exponent of 0x00 is *also* -125,
+	   because the implicit leading 1 bit is no longer present.  */
+	fprintf (stream, "0x0.%.6xp%+df",
+		 ((unsigned int)f.mantissa) << 1,
+		 f.exponent + 1 - JFLOAT_EXP_BIAS);
+    }
+  fputs (";\n", stream);
 }
 
-/* Return 1 if D is not Inf or NaN.  */
-static int
-java_double_finite (d)
-     jdouble d;
+/* Print a double-precision float, suitable for parsing by g++.  */
+static void
+jni_print_double (FILE *stream, jdouble f)
 {
-  union DWord u;
-  u.d = d;
-
-  /* Now check for all NaNs.  */
-  return (u.l & D_NAN_MASK) != D_NAN_MASK;
+  /* It'd be nice to use __builtin_nan/__builtin_inf here but they don't
+     work in data initializers.  FIXME.  */
+  if (JDOUBLE_FINITE (f))
+    {
+      fputs (" = ", stream);
+      if (f.negative)
+	putc ('-', stream);
+      if (f.exponent)
+	fprintf (stream, "0x1.%.5x%.8xp%+d",
+		 f.mantissa0, f.mantissa1,
+		 f.exponent - JDOUBLE_EXP_BIAS);
+      else
+	/* Exponent of 0x001 is -1022; exponent of 0x000 is *also* -1022,
+	   because the implicit leading 1 bit is no longer present.  */
+	fprintf (stream, "0x0.%.5x%.8xp%+d",
+		 f.mantissa0, f.mantissa1,
+		 f.exponent + 1 - JDOUBLE_EXP_BIAS);
+    }
+  fputs (";\n", stream);
 }
 
 /* Print a character, appropriately mangled for JNI.  */
@@ -756,10 +773,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		jfloat fnum = JPOOL_FLOAT (jcf, current_field_value);
 		fputs ("const jfloat ", out);
 		print_field_name (out, jcf, name_index, 0);
-		if (! java_float_finite (fnum))
-		  fputs (";\n", out);
-		else
-		  fprintf (out, " = %.10g;\n",  fnum);
+		jni_print_float (out, fnum);
 	      }
 	      break;
 	    case CONSTANT_Double:
@@ -767,10 +781,7 @@ DEFUN(print_field_info, (stream, jcf, name_index, sig_index, flags),
 		jdouble dnum = JPOOL_DOUBLE (jcf, current_field_value);
 		fputs ("const jdouble ", out);
 		print_field_name (out, jcf, name_index, 0);
-		if (! java_double_finite (dnum))
-		  fputs (";\n", out);
-		else
-		  fprintf (out, " = %.17g;\n",  dnum);
+		jni_print_double (out, dnum);
 	      }
 	      break;
 	    default:

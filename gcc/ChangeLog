@@ -1,3 +1,7 @@
+2003-03-28  Loren James Rittle  <ljrittle@acm.org>
+
+        * doc/install.texi (*-*-freebsd*): Update with known status.
+
 2003-03-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md ("literal_pool_31"): Output pool anchor 

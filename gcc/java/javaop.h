@@ -57,21 +57,26 @@ typedef int32                   jint;
 typedef int64                   jlong;
 typedef void*                   jref;
 
-/* A 32-bit IEEE single-precision float. */
-#ifndef jfloat 
-#define jfloat float
-#endif
+/* A 32-bit big-endian IEEE single-precision float. */
+typedef struct _jfloat {
+  unsigned int negative : 1;
+  unsigned int exponent : 8;
+  unsigned int mantissa : 23;
+} jfloat;
+#define JFLOAT_FINITE(f) ((f).exponent != 0xFF)
+#define JFLOAT_QNAN_MASK 0x400000
+#define JFLOAT_EXP_BIAS 0x7f
 
-/* A 32-bit IEEE double-precision float. */
-#ifndef jdouble
-#define jdouble double
-#endif
-
-union Word {
-  jint i;
-  jfloat f;
-  void *p;
-};
+/* A 32-bit big-endian IEEE double-precision float. */
+typedef struct _jdouble {
+  unsigned int negative : 1;
+  unsigned int exponent : 11;
+  unsigned int mantissa0: 20;
+  unsigned int mantissa1: 32;
+} jdouble;
+#define JDOUBLE_FINITE(f) ((f).exponent != 0x7FF)
+#define JDOUBLE_QNAN_MASK 0x80000  /* apply to mantissa0 */
+#define JDOUBLE_EXP_BIAS 0x3ff
 
 /* A jword is an unsigned integral type big enough for a 32-bit jint
    or jfloat *or* a pointer.  It is the type appropriate for stack
@@ -104,9 +109,14 @@ union Word {
 
 static inline jfloat
 WORD_TO_FLOAT(jword w)
-{ union Word wu;
-  wu.i = w;
-  return wu.f;
+{
+  jfloat f;
+
+  f.negative = (w & 0x80000000) >> 31;
+  f.exponent = (w & 0x7f800000) >> 23;
+  f.mantissa = (w & 0x007fffff);
+
+  return f;
 } 
 
 /* Sign extend w.  If the host on which this cross-compiler runs uses
@@ -128,21 +138,17 @@ WORDS_TO_LONG(jword hi, jword lo)
   return ((jlong) hi << 32) | ((jlong)lo & (((jlong)1 << 32) -1));
 }
 
-union DWord {
-  jdouble d;
-  jlong l;
-  jword w[2];
-};
-
 static inline jdouble
 WORDS_TO_DOUBLE(jword hi, jword lo)
-{ union DWord wu;
-#if (1 == HOST_FLOAT_WORDS_BIG_ENDIAN)
-  wu.l = WORDS_TO_LONG(lo, hi);
-#else
-  wu.l = WORDS_TO_LONG(hi, lo);
-#endif
-  return wu.d;
+{
+  jdouble d;
+
+  d.negative  = (hi & 0x80000000) >> 31;
+  d.exponent  = (hi & 0x7ff00000) >> 20;
+  d.mantissa0 = (hi & 0x000fffff);
+  d.mantissa1 = lo;
+
+  return d;
 } 
 
 /* If PREFIX_CHAR is the first character of the Utf8 encoding of a character,

@@ -1,3 +1,23 @@
+2003-03-28  Zack Weinberg  <zack@codesourcery.com>
+
+	PR bootstrap/10216
+        * javaop.h (jfloat, jdouble): Make them structures mirroring
+        the bit fields of IEEE float and double respectively.
+        (JFLOAT_FINITE, JFLOAT_QNAN_MASK, JFLOAT_EXP_BIAS,
+        JDOUBLE_FINITE, JDOUBLE_QNAN_MASK, JDOUBLE_EXP_BIAS): New.
+        (union Word, union DWord): Delete.
+        (WORD_TO_FLOAT, WORDS_TO_DOUBLE): Update to match.
+
+        * gjavah.c (java_float_finite, java_double_finite, F_NAN_MASK,
+        D_NAN_MASK): Delete.
+        (jni_print_float, jni_print_double): New.  Generate
+        hexadecimal floating constants.
+        (print_field_info): Use jni_print_float/double.
+
+        * jcf-dump.c: Include math.h.  Use ldexp/frexp to assemble
+        finite floating point numbers for output; special case
+        non-finite floats.
+
 2003-03-12  Andrew Haley  <aph.redhat.com@littlepinkcloud.com>
 
 	* gjavah.c (is_first_data_member): New global variable.
