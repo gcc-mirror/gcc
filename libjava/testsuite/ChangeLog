@@ -1,5 +1,9 @@
 2000-02-12  Anthony Green  <green@cygnus.com>
 
+	* libjava.compile/comment.java: New file.
+
+2000-02-12  Anthony Green  <green@cygnus.com>
+
 	* libjava.compile/assignment.java: New file.
 
 2000-02-12  Anthony Green  <green@cygnus.com>
