@@ -1915,11 +1915,14 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       else if (TREE_CODE (t) == ARRAY_REF)
 	{
 	  tree off_tree = size_zero_node;
+	  /* We can't modify t, because we use it at the end of the
+	     function.  */
+	  tree t2 = t;
 
 	  do
 	    {
-	      tree index = TREE_OPERAND (t, 1);
-	      tree array = TREE_OPERAND (t, 0);
+	      tree index = TREE_OPERAND (t2, 1);
+	      tree array = TREE_OPERAND (t2, 0);
 	      tree domain = TYPE_DOMAIN (TREE_TYPE (array));
 	      tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
 	      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array)));
@@ -1936,7 +1939,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		 WITH_RECORD_EXPR; if the component size is, pass our
 		 component to one.  */
 	      if (CONTAINS_PLACEHOLDER_P (index))
-		index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, t);
+		index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, t2);
 	      if (CONTAINS_PLACEHOLDER_P (unit_size))
 		unit_size = build (WITH_RECORD_EXPR, sizetype,
 				   unit_size, array);
@@ -1947,28 +1950,28 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 					    index,
 					    unit_size)),
 			       off_tree));
-	      t = TREE_OPERAND (t, 0);
+	      t2 = TREE_OPERAND (t2, 0);
 	    }
-	  while (TREE_CODE (t) == ARRAY_REF);
+	  while (TREE_CODE (t2) == ARRAY_REF);
 
-	  if (DECL_P (t))
+	  if (DECL_P (t2))
 	    {
-	      expr = t;
+	      expr = t2;
 	      offset = NULL;
 	      if (host_integerp (off_tree, 1))
 		{
 		  HOST_WIDE_INT ioff = tree_low_cst (off_tree, 1);
 		  HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
-		  align = DECL_ALIGN (t);
+		  align = DECL_ALIGN (t2);
 		  if (aoff && (unsigned HOST_WIDE_INT) aoff < align)
 	            align = aoff;
 		  offset = GEN_INT (ioff);
 		  apply_bitpos = bitpos;
 		}
 	    }
-	  else if (TREE_CODE (t) == COMPONENT_REF)
+	  else if (TREE_CODE (t2) == COMPONENT_REF)
 	    {
-	      expr = component_ref_for_mem_expr (t);
+	      expr = component_ref_for_mem_expr (t2);
 	      if (host_integerp (off_tree, 1))
 		{
 		  offset = GEN_INT (tree_low_cst (off_tree, 1));
@@ -1978,10 +1981,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 		 the size we got from the type?  */
 	    }
 	  else if (flag_argument_noalias > 1
-		   && TREE_CODE (t) == INDIRECT_REF
-		   && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
+		   && TREE_CODE (t2) == INDIRECT_REF
+		   && TREE_CODE (TREE_OPERAND (t2, 0)) == PARM_DECL)
 	    {
-	      expr = t;
+	      expr = t2;
 	      offset = NULL;
 	    }
 	}
