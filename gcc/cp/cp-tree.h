@@ -1068,7 +1068,7 @@ struct lang_decl
 #define DECL_NEXT_METHOD(NODE) (DECL_LANG_SPECIFIC(NODE)->next_method)
 
 /* In a VAR_DECL for a variable declared in a for statement,
-   this is the shadowed variable. */
+   this is the shadowed (local) variable. */
 #define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(NODE)
 
 /* Points back to the decl which caused this lang_decl to be allocated.  */
