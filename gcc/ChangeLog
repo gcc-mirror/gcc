@@ -1,5 +1,12 @@
 2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
 
+	* config/mips/mips.h (asm_file_name, g_switch_set,
+	g_switch_value): Remove.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Remove
+	unnecessary extern declarations.
+
+2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
+
 	* config/frv/frv.h: Remove declaration of g_switch_value.
 	* config/m32r/m32r.h: Remove declaration of g_switch_value.
 	* config/m68hc11/m68hc11.c: Remove declaration of asm_file_name.

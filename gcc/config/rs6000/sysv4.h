@@ -170,9 +170,6 @@ extern const char *rs6000_tls_size_string; /* For -mtls-size= */
 
 #define SUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
-  extern unsigned HOST_WIDE_INT g_switch_value;				\
-  extern int g_switch_set;						\
-									\
   if (!g_switch_set)							\
     g_switch_value = SDATA_DEFAULT_SIZE;				\
 									\
