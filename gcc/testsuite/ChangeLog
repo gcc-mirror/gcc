@@ -1,5 +1,7 @@
 2003-10-13  Geoffrey Keating  <geoffk@apple.com>
 
+	* g77.f-torture/execute/980520-1.x: XFAIL at -O0.
+
 	* gcc.dg/asm-names.c: Use scan-assembler-not rather
 	than linker trickery.
 
