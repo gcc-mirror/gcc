@@ -1663,20 +1663,15 @@ yylex ()
 		c = GETC();
 	      }
 
-	    /* If the constant is not long long and it won't fit in an
-	       unsigned long, or if the constant is long long and won't fit
-	       in an unsigned long long, then warn that the constant is out
-	       of range.  */
+	    /* If the constant won't fit in an unsigned long long,
+	       then warn that the constant is out of range.  */
 
 	    /* ??? This assumes that long long and long integer types are
 	       a multiple of 8 bits.  This better than the original code
 	       though which assumed that long was exactly 32 bits and long
 	       long was exactly 64 bits.  */
 
-	    if (spec_long_long)
-	      bytes = TYPE_PRECISION (long_long_integer_type_node) / 8;
-	    else
-	      bytes = TYPE_PRECISION (long_integer_type_node) / 8;
+	    bytes = TYPE_PRECISION (long_long_integer_type_node) / 8;
 
 	    warn = overflow;
 	    for (i = bytes; i < TOTAL_PARTS; i++)
@@ -1743,7 +1738,9 @@ yylex ()
 		else if (! spec_unsigned && !spec_long_long
 			 && int_fits_type_p (yylval.ttype, long_integer_type_node))
 		  ansi_type = long_integer_type_node;
-		else if (! spec_long_long)
+		else if (! spec_long_long
+			 && int_fits_type_p (yylval.ttype,
+					     long_unsigned_type_node))
 		  ansi_type = long_unsigned_type_node;
 		else if (! spec_unsigned
 			 && int_fits_type_p (yylval.ttype,
@@ -1767,8 +1764,9 @@ yylex ()
 		  warning ("width of integer constant may change on other systems with -traditional");
 	      }
 
-	    if (!flag_traditional && !int_fits_type_p (yylval.ttype, type)
-		&& !warn)
+	    if (pedantic && !flag_traditional && !spec_long_long && !warn
+		&& (TYPE_PRECISION (long_integer_type_node)
+		    < TYPE_PRECISION (type)))
 	      pedwarn ("integer constant out of range");
 
 	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
