@@ -27,6 +27,8 @@ details.  */
 #include <java/lang/StringBuffer.h>
 #include <java/lang/Process.h>
 #include <java/lang/ConcreteProcess.h>
+#include <java/lang/ClassLoader.h>
+#include <gnu/gcj/runtime/StackTrace.h>
 
 #include <jni.h>
 
@@ -161,18 +163,56 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
   using namespace java::lang;
 #ifdef USE_LTDL
   jint len = _Jv_GetStringUTFLength (path);
-  char buf[len + 1 + 3];
+  char buf[len + 1 + strlen (_Jv_platform_solib_prefix)
+	   + strlen (_Jv_platform_solib_suffix)];
   int offset = 0;
-#ifndef WIN32
-  // On Unix boxes, prefix library name with `lib', for loadLibrary.
   if (do_search)
     {
-      strcpy (buf, "lib");
-      offset = 3;
+      strcpy (buf, _Jv_platform_solib_prefix);
+      offset = strlen (_Jv_platform_solib_prefix);
     }
-#endif
   jsize total = JvGetStringUTFRegion (path, 0, path->length(), &buf[offset]);
   buf[offset + total] = '\0';
+
+  char *lib_name = buf;
+
+  if (do_search)
+    {
+      ClassLoader *sys = ClassLoader::getSystemClassLoader();
+      ClassLoader *look = NULL;
+      gnu::gcj::runtime::StackTrace *t = new gnu::gcj::runtime::StackTrace(10);
+      for (int i = 0; i < 10; ++i)
+	{
+	  jclass klass = t->classAt(i);
+	  if (klass != NULL)
+	    {
+	      ClassLoader *loader = klass->getClassLoaderInternal();
+	      if (loader != NULL && loader != sys)
+		{
+		  look = loader;
+		  break;
+		}
+	    }
+	}
+      if (look != NULL)
+	{
+	  // Don't include solib prefix in string passed to
+	  // findLibrary.
+	  jstring name = look->findLibrary(JvNewStringUTF(&buf[offset]));
+	  if (name != NULL)
+	    {
+	      len = _Jv_GetStringUTFLength (name);
+	      lib_name = (char *) _Jv_AllocBytes(len + 1);
+	      total = JvGetStringUTFRegion (name, 0,
+					    name->length(), lib_name);
+	      lib_name[total] = '\0';
+	      // Don't append suffixes any more; we have the full file
+	      // name.
+	      do_search = false;
+	    }
+	}
+    }
+
   lt_dlhandle h;
   // FIXME: make sure path is absolute.
   {
@@ -180,7 +220,7 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
     // concurrent modification by class registration calls which may be run
     // during the dlopen().
     JvSynchronize sync (&java::lang::Class::class$);
-    h = do_search ? lt_dlopenext (buf) : lt_dlopen (buf);
+    h = do_search ? lt_dlopenext (lib_name) : lt_dlopen (lib_name);
   }
   if (h == NULL)
     {
@@ -602,19 +642,9 @@ java::lang::Runtime::nativeGetLibname (jstring pathname, jstring libname)
 #endif
     }
 
-  // FIXME: use platform function here.
-#ifndef WIN32
-  sb->append (JvNewStringLatin1 ("lib"));
-#endif
-
+  sb->append (JvNewStringLatin1 (_Jv_platform_solib_prefix));
   sb->append(libname);
-
-  // FIXME: use platform function here.
-#ifdef WIN32
-  sb->append (JvNewStringLatin1 ("dll"));
-#else
-  sb->append (JvNewStringLatin1 ("so"));
-#endif
+  sb->append (JvNewStringLatin1 (_Jv_platform_solib_suffix));
 
   return sb->toString();
 }

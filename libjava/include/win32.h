@@ -22,6 +22,10 @@ details.  */
 
 #include <io.h>
 
+// Prefix and suffix for shared libraries.
+#define _Jv_platform_solib_prefix ""
+#define _Jv_platform_solib_suffix ".dll"
+
 #ifndef DISBALE_JAVA_NET
 
 // these errors cannot occur on Win32

@@ -40,6 +40,10 @@ details.  */
 #include <gcj/cni.h>
 #include <java/util/Properties.h>
 
+// Prefix and suffix for shared libraries.
+#define _Jv_platform_solib_prefix "lib"
+#define _Jv_platform_solib_suffix ".so"
+
 #ifndef DISABLE_JAVA_NET
 #include <java/net/InetAddress.h>
 #endif
