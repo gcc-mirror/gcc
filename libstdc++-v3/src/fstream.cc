@@ -53,7 +53,12 @@ namespace std
 	    {
 	      _M_pback_destroy();
 	      if (_M_in_cur < _M_in_end)
-		return traits_type::to_int_type(*_M_in_cur);
+		{
+		  __ret = traits_type::to_int_type(*_M_in_cur);
+		  if (__bump)
+		    _M_in_cur_move(1);
+		  return __ret;
+		}
 	    }
 
 	  // Sync internal and external buffers.
@@ -128,7 +133,12 @@ namespace std
 	    {
 	      _M_pback_destroy();
 	      if (_M_in_cur < _M_in_end)
-		return traits_type::to_int_type(*_M_in_cur);
+		{
+		  __ret = traits_type::to_int_type(*_M_in_cur);
+		  if (__bump)
+		    _M_in_cur_move(1);
+	  	  return __ret;
+		}
 	    }
 
 	  // Sync internal and external buffers.
