@@ -2543,10 +2543,12 @@ pa_adjust_insn_length (insn, length)
 	  && ! forward_branch_p (insn))
 	return 1;
       /* Adjust dbra insn with short backwards conditional branch with
-	 unfilled delay slot -- only for case where counter is in a register. */
+	 unfilled delay slot -- only for case where counter is in a 
+	 general register register. */
       else if (GET_CODE (pat) == PARALLEL
 	       && GET_CODE (XVECEXP (pat, 0, 1)) == SET
 	       && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == REG
+ 	       && ! FP_REG_P (XEXP (XVECEXP (pat, 0, 1), 0)) 
 	       && length == 1
 	       && ! forward_branch_p (insn))
 	return 1;
@@ -3250,10 +3252,18 @@ output_cbranch (operands, nullify, length, negated, insn)
   rtx *operands;
   int nullify, length, negated;
   rtx insn;
-{ 
+{
   static char buf[100];
   int useskip = 0;
 
+  /* A conditional branch to the following instruction (eg the delay slot) is
+     asking for a disaster.  This can happen when not optimizing.
+
+     In such cases it is safe to emit nothing.  */
+
+  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+    return "";
+  
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
   if (length == 2 && dbr_sequence_length () == 0)
@@ -3343,10 +3353,18 @@ output_bb (operands, nullify, length, negated, insn, which)
   int nullify, length, negated;
   rtx insn;
   int which;
-{ 
+{
   static char buf[100];
   int useskip = 0;
 
+  /* A conditional branch to the following instruction (eg the delay slot) is
+     asking for a disaster.  I do not think this can happen as this pattern
+     is only used when optimizing; jump optimization should eliminate the 
+     jump.  But be prepared just in case.  */
+     
+  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+    return "";
+  
   /* If this is a long branch with its delay slot unfilled, set `nullify'
      as it can nullify the delay slot and save a nop.  */
   if (length == 2 && dbr_sequence_length () == 0)
@@ -3440,6 +3458,197 @@ output_bb (operands, nullify, length, negated, insn, which)
     }
   return buf;
 }
+
+/* Return the output template for emitting a dbra type insn.
+
+   Note it may perform some output operations on its own before
+   returning the final output string.  */
+char *
+output_dbra (operands, insn, which_alternative)
+     rtx *operands;
+     rtx insn;
+     int which_alternative;
+{
+
+  /* A conditional branch to the following instruction (eg the delay slot) is
+     asking for a disaster.  Be prepared!  */
+
+  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+    {
+      if (which_alternative == 0)
+	return "ldo %1(%0),%0";
+      else if (which_alternative == 1)
+	{
+	  output_asm_insn ("fstws %0,-16(0,%%r30)",operands);
+	  output_asm_insn ("ldw -16(0,%%r30),%4",operands);
+	  output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(0,%%r30)", operands);
+	  return "fldws -16(0,%%r30),%0";
+	}
+      else
+	{
+	  output_asm_insn ("ldw %0,%4", operands);
+	  return "ldo %1(%4),%4\n\tstw %4,%0";
+	}
+    }
+
+  if (which_alternative == 0)
+    {
+      int nullify = INSN_ANNULLED_BRANCH_P (insn);
+      int length = get_attr_length (insn);
+
+      /* If this is a long branch with its delay slot unfilled, set `nullify'
+	 as it can nullify the delay slot and save a nop.  */
+      if (length == 2 && dbr_sequence_length () == 0)
+	nullify = 1;
+
+      /* If this is a short forward conditional branch which did not get
+	 its delay slot filled, the delay slot can still be nullified.  */
+      if (! nullify && length == 1 && dbr_sequence_length () == 0)
+	nullify = forward_branch_p (insn);
+
+      /* Handle short versions first.  */
+      if (length == 1 && nullify)
+	return "addib,%C2,n %1,%0,%3";
+      else if (length == 1 && ! nullify)
+	return "addib,%C2 %1,%0,%3";
+      else if (length == 2)
+	{
+	  /* Handle weird backwards branch with a fulled delay slot 
+	     which is nullified.  */
+	  if (dbr_sequence_length () != 0
+	      && ! forward_branch_p (insn)
+	      && nullify)
+	    return "addib,%N2,n %1,%0,.+12\n\tbl %3,0";
+	  
+	  /* Handle normal cases.  */  
+	  if (nullify)
+	    return "addi,%N2 %1,%0,%0\n\tbl,n %3,0";
+	  else
+	    return "addi,%N2 %1,%0,%0\n\tbl %3,0";
+	}
+      else
+	abort();
+    }
+  /* Deal with gross reload from FP register case.  */
+  else if (which_alternative == 1)
+    {
+      /* Move loop counter from FP register to MEM then into a GR,
+	 increment the GR, store the GR into MEM, and finally reload
+	 the FP register from MEM from within the branch's delay slot.  */ 
+      output_asm_insn ("fstws %0,-16(0,%%r30)\n\tldw -16(0,%%r30),%4",operands);
+      output_asm_insn ("ldo %1(%4),%4\n\tstw %4,-16(0,%%r30)", operands);
+      if (get_attr_length (insn) == 6)
+	return "comb,%S2 0,%4,%3\n\tfldws -16(0,%%r30),%0";
+      else
+	return "comclr,%B2 0,%4,0\n\tbl %3,0\n\tfldws -16(0,%%r30),%0";
+    }
+  /* Deal with gross reload from memory case.  */
+  else
+    {
+      /* Reload loop counter from memory, the store back to memory
+	 happens in the branch's delay slot.   */
+      output_asm_insn ("ldw %0,%4", operands);
+      if (get_attr_length (insn) == 3)
+	return "addib,%C2 %1,%4,%3\n\tstw %4,%0";
+      else
+	return "addi,%N2 %1,%4,%0\n\tbl %3,0\n\tstw %4,%0";
+    }
+}
+
+/* Return the output template for emitting a dbra type insn.
+
+   Note it may perform some output operations on its own before
+   returning the final output string.  */
+char *
+output_movb (operands, insn, which_alternative, reverse_comparison)
+     rtx *operands;
+     rtx insn;
+     int which_alternative;
+     int reverse_comparison;
+{
+
+  /* A conditional branch to the following instruction (eg the delay slot) is
+     asking for a disaster.  Be prepared!  */
+
+  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+    {
+      if (which_alternative == 0)
+	return "copy %1,%0";
+      else if (which_alternative == 1)
+	{
+	  output_asm_insn ("fstws %1,-16(0,%%r30)",operands);
+	  return "fldws -16(0,%%r30),%0";
+	}
+      else
+	return "stw %1,%0";
+    }
+
+  /* Support the second variant.  */
+  if (reverse_comparison)
+    PUT_CODE (operands[2], reverse_condition (GET_CODE (operands[2])));
+
+  if (which_alternative == 0)
+    {
+      int nullify = INSN_ANNULLED_BRANCH_P (insn);
+      int length = get_attr_length (insn);
+
+      /* If this is a long branch with its delay slot unfilled, set `nullify'
+	 as it can nullify the delay slot and save a nop.  */
+      if (length == 2 && dbr_sequence_length () == 0)
+	nullify = 1;
+
+      /* If this is a short forward conditional branch which did not get
+	 its delay slot filled, the delay slot can still be nullified.  */
+      if (! nullify && length == 1 && dbr_sequence_length () == 0)
+	nullify = forward_branch_p (insn);
+
+      /* Handle short versions first.  */
+      if (length == 1 && nullify)
+	return "movb,%C2,n %1,%0,%3";
+      else if (length == 1 && ! nullify)
+	return "movb,%C2 %1,%0,%3";
+      else if (length == 2)
+	{
+	  /* Handle weird backwards branch with a fulled delay slot 
+	     which is nullified.  */
+	  if (dbr_sequence_length () != 0
+	      && ! forward_branch_p (insn)
+	      && nullify)
+	    return "movb,%N2,n %1,%0,.+12\n\ttbl %3,0";
+	  
+	  /* Handle normal cases.  */  
+	  if (nullify)
+	    return "or,%N2 %1,%%r0,%0\n\tbl,n %3,0";
+	  else
+	    return "or,%N2 %1,%%r0,%0\n\tbl %3,0";
+	}
+      else
+	abort();
+    }
+  /* Deal with gross reload from FP register case.  */
+  else if (which_alternative == 1)
+    {
+      /* Move loop counter from FP register to MEM then into a GR,
+	 increment the GR, store the GR into MEM, and finally reload
+	 the FP register from MEM from within the branch's delay slot.  */ 
+      output_asm_insn ("fstws %1,-16(0,%%r30)",operands);
+      if (get_attr_length (insn) == 3)
+	return "comb,%S2 0,%1,%3\n\tfldws -16(0,%%r30),%0";
+      else
+	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tfldws -16(0,%%r30),%0";
+    }
+  /* Deal with gross reload from memory case.  */
+  else
+    {
+      /* Reload loop counter from memory, the store back to memory
+	 happens in the branch's delay slot.   */
+      if (get_attr_length (insn) == 2)
+	return "comb,%S2 0,%1,%3\n\tstw %1,%0";
+      else
+	return "comclr,%B2 0,%1,0\n\tbl %3,0\n\tstw %1,%0";
+    }
+}
+
 
 extern struct obstack *saveable_obstack;
 
@@ -3601,5 +3810,24 @@ forward_branch_p (insn)
     }
 
   return (insn == label);
+}
+
+/* Return 1 if OP is an equality comparison, else return 0.  */
+int
+eq_neq_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
+}
+
+/* Return 1 if OP is an operator suitable for use in a movb instruction.  */
+int
+movb_comparison_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (GET_CODE (op) == EQ || GET_CODE (op) == NE
+	  || GET_CODE (op) == LT || GET_CODE (op) == GE);
 }
 
