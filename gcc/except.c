@@ -1013,6 +1013,7 @@ expand_eh_region_start_tree (decl, cleanup)
     }
 
   expand_eh_region_start_for_decl (decl);
+  ehstack.top->entry->finalization = cleanup;
 
   return 0;
 }
@@ -1136,6 +1137,57 @@ expand_eh_region_end (handler)
       /* Maybe do this to prevent jumping in and so on...  */
       expand_end_bindings (NULL_TREE, 0, 0);
     }
+}
+
+/* End the EH region for a goto fixup.  We only need them in the region-based
+   EH scheme.  */
+
+void
+expand_fixup_region_start ()
+{
+  if (! doing_eh (0) || exceptions_via_longjmp)
+    return;
+
+  expand_eh_region_start ();
+}
+
+/* End the EH region for a goto fixup.  CLEANUP is the cleanup we just
+   expanded; to avoid running it twice if it throws, we look through the
+   ehqueue for a matching region and rethrow from its outer_context.  */
+
+void
+expand_fixup_region_end (cleanup)
+     tree cleanup;
+{
+  tree t;
+  struct eh_node *node;
+  int yes;
+
+  if (! doing_eh (0) || exceptions_via_longjmp)
+    return;
+
+  for (node = ehstack.top; node && node->entry->finalization != cleanup; )
+    node = node->chain;
+  if (node == 0)
+    for (node = ehqueue.head; node && node->entry->finalization != cleanup; )
+      node = node->chain;
+  if (node == 0)
+    abort ();
+
+  yes = suspend_momentary ();
+
+  t = build (RTL_EXPR, void_type_node, NULL_RTX, const0_rtx);
+  TREE_SIDE_EFFECTS (t) = 1;
+  do_pending_stack_adjust ();
+  start_sequence_for_rtl_expr (t);
+  expand_internal_throw (node->entry->outer_context);
+  do_pending_stack_adjust ();
+  RTL_EXPR_SEQUENCE (t) = get_insns ();
+  end_sequence ();
+
+  resume_momentary (yes);
+
+  expand_eh_region_end (t);
 }
 
 /* If we are using the setjmp/longjmp EH codegen method, we emit a
