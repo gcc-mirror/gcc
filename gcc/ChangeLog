@@ -1,3 +1,23 @@
+2003-06-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* function.h (struct emit_status): Remove x_last_linenum,
+	x_last_filename. Add x_last_location.
+	* rtl.h: #include "input.h".
+	(NOTE_DATA): New.
+	* cfglayout.c (duplicate_insn_chain): Use emit_line_note for line
+	number notes.
+	* emit-rtl.c (last_linenum, last_filename): Remove.
+	(last_location): New.
+	(emit_line_note_after): LINE must always be >= 0.
+	(emit_line_note): Likewise. Check not duplicate here...
+	(emit_note): ... rather than here.
+	(emit_line_note_force, force_next_line_note, init_emit): Adjust.
+	* integrate.c (expand_inline_function): Use emit_line_note for
+	line number notes.
+	(copy_insn_list): Likewise.
+	* unroll.c (copy_loop_body): Likewise.
+	* Makefile.in (RTL_H): Add input.h.
+
 2003-06-16  Richard Sandiford  <rsandifo@redhat.com>
 
 	* optabs.c (emit_libcall_block): Don't hoist insns past a label.
@@ -86,8 +106,7 @@
 	* c.opt: Specify languages.
 	* opts.h: Remove languages.
 	* opts.sh: Recognise front-end defined languages.
-doc:
-	* sourcebuild.texi: Update.
+	* doc/sourcebuild.texi: Update.
 
 2003-06-15  Andreas Jaeger  <aj@suse.de>
 

@@ -631,7 +631,7 @@ LANGHOOKS_DEF_H = langhooks-def.h $(HOOKS_H)
 TARGET_DEF_H = target-def.h $(HOOKS_H)
 MACHMODE_H = machmode.h machmode.def @extra_modes_file@
 RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H)
-RTL_H = $(RTL_BASE_H) genrtl.h
+RTL_H = $(RTL_BASE_H) genrtl.h input.h
 PARAMS_H = params.h params.def
 TREE_H = tree.h tree.def $(MACHMODE_H) tree-check.h version.h builtins.def \
           input.h

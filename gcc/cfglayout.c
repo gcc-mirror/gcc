@@ -1023,7 +1023,8 @@ duplicate_insn_chain (from, to)
 	      abort ();
 	      break;
 	    case NOTE_INSN_REPEATED_LINE_NUMBER:
-	      emit_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
+	      emit_line_note (NOTE_SOURCE_FILE (insn),
+			      NOTE_LINE_NUMBER (insn));
 	      break;
 
 	    default:
@@ -1031,7 +1032,8 @@ duplicate_insn_chain (from, to)
 		abort ();
 	      /* It is possible that no_line_number is set and the note
 	         won't be emitted.  */
-	      emit_note (NOTE_SOURCE_FILE (insn), NOTE_LINE_NUMBER (insn));
+	      emit_line_note (NOTE_SOURCE_FILE (insn),
+			      NOTE_LINE_NUMBER (insn));
 	    }
 	  break;
 	default:
