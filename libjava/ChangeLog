@@ -1,5 +1,12 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/FileDescriptor.java
+	(in, out, err): Added javadoc.
+	(static): Merged loading code.
+	(fd, position): Moved around.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/doc-files/BitwiseXORComposite-1.png:
 	New file.
 
