@@ -1,5 +1,5 @@
 /* Emit RTL for the GNU C-Compiler expander.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "expr.h"
 #include "regs.h"
+#include "hard-reg-set.h"
 #include "insn-config.h"
 #include "recog.h"
 #include "real.h"
@@ -671,16 +672,25 @@ gen_lowpart_common (mode, x)
 	    : gen_rtx (SUBREG, mode, SUBREG_REG (x), SUBREG_WORD (x)));
   else if (GET_CODE (x) == REG)
     {
-      /* If the register is not valid for MODE, return 0.  If we don't
-	 do this, there is no way to fix up the resulting REG later.  
-	 But we do do this if the current REG is not valid for its
+      /* If the register is not valid for MODE, return 0.  If we don't do
+	 this, there is no way to fix up the resulting REG later. Likewise if
+	 this register is of a class that cannot change size and we are trying
+	 to do that.  But we allow it if the current REG is not valid for its
 	 mode.  This latter is a kludge, but is required due to the
 	 way that parameters are passed on some machines, most
 	 notably Sparc.  */
       if (REGNO (x) < FIRST_PSEUDO_REGISTER
-	  && ! HARD_REGNO_MODE_OK (REGNO (x) + word, mode)
+	  && (! HARD_REGNO_MODE_OK (REGNO (x) + word, mode)
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+	      || (GET_MODE_SIZE (mode) != GET_MODE_SIZE (GET_MODE (x))
+		  && (TEST_HARD_REG_BIT 
+		      (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
+		       REGNO (x))))
+#endif
+	      )
 	  && HARD_REGNO_MODE_OK (REGNO (x), GET_MODE (x)))
 	return 0;
+
       else if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	       /* integrate.c can't handle parts of a return value register. */
 	       && (! REG_FUNCTION_VALUE_P (x)
