@@ -1,3 +1,8 @@
+Thu Jun 18 17:30:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads): Don't narrow scope of RELOAD_OTHER to
+	RELOAD_FOR_INSN.
+
 Thu Jun 18 09:36:50 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (c-lang.o): Depend on output.h.

@@ -3574,11 +3574,13 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	 a SCRATCH).  In this case, we only need have the reload live 
 	 through the insn itself, but not for any of our input or output
 	 reloads. 
+	 But we must not accidentally narrow the scope of an existing
+	 RELOAD_OTHER reload - leave these alone.
 
 	 In any case, anything needed to address this operand can remain
 	 however they were previously categorized.  */
 
-      if (goal_alternative_earlyclobber[i])
+      if (goal_alternative_earlyclobber[i] && operand_type[i] != RELOAD_OTHER)
 	operand_type[i]
 	  = (find_reg_note (insn, REG_UNUSED, recog_operand[i])
 	     ? RELOAD_FOR_INSN : RELOAD_OTHER);
