@@ -1635,7 +1635,7 @@ output_move_const_into_data_reg (operands)
 	unsigned u = i;
 
 	operands[1] = GEN_INT ((u << 16) | (u >> 16));
-#if defined (MOTOROLA) && !defined (CRDS)
+#if defined (MOTOROLA)
 	return "moveq%.l %1,%0\n\tswap %0";
 #else
 	return "moveq %1,%0\n\tswap %0";
