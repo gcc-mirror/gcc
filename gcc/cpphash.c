@@ -29,6 +29,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #undef abort
 
+static unsigned int hashf	  PARAMS ((const U_CHAR *, int));
 static int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *,
 					  int, int));
 static void push_macro_expansion PARAMS ((cpp_reader *,
@@ -91,38 +92,35 @@ struct argdata
 /* Return hash function on name.  must be compatible with the one
    computed a step at a time, elsewhere  */
 
-int
-hashf (name, len, hashsize)
-     register const U_CHAR *name;
+static unsigned int
+hashf (s, len)
+     register const U_CHAR *s;
      register int len;
-     int hashsize;
 {
-  register int r = 0;
+  unsigned int n = len;
+  unsigned int r = 0;
 
-  while (len--)
-    r = HASHSTEP (r, *name++);
-
-  return MAKE_POS (r) % hashsize;
+  do
+    r = r * 67 + (*s++ - 113);
+  while (--n);
+  return r + len;
 }
 
 /* Find the most recent hash node for name "name" (ending with first
    non-identifier char) installed by cpp_install
 
    If LEN is >= 0, it is the length of the name.
-   Otherwise, compute the length by scanning the entire name.
-
-   If HASH is >= 0, it is the precomputed hash code.
-   Otherwise, compute the hash code.  */
+   Otherwise, compute the length by scanning the entire name.  */
 
 HASHNODE *
-cpp_lookup (pfile, name, len, hash)
-     cpp_reader *pfile ATTRIBUTE_UNUSED;
+cpp_lookup (pfile, name, len)
+     cpp_reader *pfile;
      const U_CHAR *name;
      int len;
-     int hash;
 {
   register const U_CHAR *bp;
   register HASHNODE *bucket;
+  register unsigned int hash;
 
   if (len < 0)
     {
@@ -130,8 +128,7 @@ cpp_lookup (pfile, name, len, hash)
       len = bp - name;
     }
 
-  if (hash < 0)
-    hash = hashf (name, len, HASHSIZE);
+  hash = hashf (name, len) % HASHSIZE;
 
   bucket = pfile->hashtab[hash];
   while (bucket)
@@ -183,7 +180,7 @@ delete_macro (hp)
 	  free (ap);
 	}
       if (d->nargs >= 0)
-	free (d->args.argnames);
+	free (d->argnames);
       free (d);
     }
 
@@ -204,17 +201,17 @@ delete_macro (hp)
    Otherwise, compute the hash code.  */
 
 HASHNODE *
-cpp_install (pfile, name, len, type, value, hash)
+cpp_install (pfile, name, len, type, value)
      cpp_reader *pfile;
      const U_CHAR *name;
      int len;
      enum node_type type;
      const char *value;
-     int hash;
 {
   register HASHNODE *hp;
   register int i, bucket;
   register const U_CHAR *p;
+  unsigned int hash;
 
   if (len < 0)
     {
@@ -224,8 +221,7 @@ cpp_install (pfile, name, len, type, value, hash)
       len = p - name;
     }
 
-  if (hash < 0)
-    hash = hashf (name, len, HASHSIZE);
+  hash = hashf (name, len) % HASHSIZE;
 
   i = sizeof (HASHNODE) + len + 1;
   hp = (HASHNODE *) xmalloc (i);
@@ -582,10 +578,9 @@ static char rest_extension[] = "...";
    as for do_define.  */
 
 MACRODEF
-create_definition (buf, limit, pfile, predefinition)
+create_definition (buf, limit, pfile)
      U_CHAR *buf, *limit;
      cpp_reader *pfile;
-     int predefinition;
 {
   U_CHAR *bp;			/* temp ptr into input buffer */
   U_CHAR *symname;		/* remember where symbol name starts */
@@ -701,24 +696,24 @@ create_definition (buf, limit, pfile, predefinition)
       defn = collect_expansion (pfile, bp, limit, argno, arg_ptrs);
       defn->rest_args = rest_args;
 
-      /* Now set defn->args.argnames to the result of concatenating
+      /* Now set defn->argnames to the result of concatenating
          the argument names in reverse order
          with comma-space between them.  */
-      defn->args.argnames = (U_CHAR *) xmalloc (arglengths + 1);
+      defn->argnames = (U_CHAR *) xmalloc (arglengths + 1);
       {
 	struct arglist *temp;
 	int i = 0;
 	for (temp = arg_ptrs; temp; temp = temp->next)
 	  {
-	    bcopy (temp->name, &defn->args.argnames[i], temp->length);
+	    bcopy (temp->name, &defn->argnames[i], temp->length);
 	    i += temp->length;
 	    if (temp->next != 0)
 	      {
-		defn->args.argnames[i++] = ',';
-		defn->args.argnames[i++] = ' ';
+		defn->argnames[i++] = ',';
+		defn->argnames[i++] = ' ';
 	      }
 	  }
-	defn->args.argnames[i] = 0;
+	defn->argnames[i] = 0;
       }
     }
   else
@@ -741,14 +736,12 @@ create_definition (buf, limit, pfile, predefinition)
 	}
       /* now everything from bp before limit is the definition.  */
       defn = collect_expansion (pfile, bp, limit, -1, NULL_PTR);
-      defn->args.argnames = (U_CHAR *) "";
+      defn->argnames = (U_CHAR *) "";
     }
 
   defn->line = line;
   defn->file = file;
 
-  /* OP is null if this is a predefinition */
-  defn->predefined = predefinition;
   mdef.defn = defn;
   mdef.symnam = symname;
   mdef.symlen = sym_length;
@@ -1504,7 +1497,7 @@ compare_defs (pfile, d1, d2)
   if (d1->nargs != d2->nargs)
     return 1;
   if (CPP_PEDANTIC (pfile)
-      && strcmp ((char *) d1->args.argnames, (char *) d2->args.argnames))
+      && strcmp ((char *) d1->argnames, (char *) d2->argnames))
     return 1;
   for (a1 = d1->pattern, a2 = d2->pattern; a1 && a2;
        a1 = a1->next, a2 = a2->next)
@@ -1607,7 +1600,7 @@ dump_definition (pfile, macro)
   else
     {
       struct reflist *r;
-      unsigned char *argnames = (unsigned char *) xstrdup (defn->args.argnames);
+      unsigned char *argnames = (unsigned char *) xstrdup (defn->argnames);
       unsigned char **argv = (unsigned char **) alloca (defn->nargs *
 							sizeof(char *));
       int *argl = (int *) alloca (defn->nargs * sizeof(int));

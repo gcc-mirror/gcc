@@ -33,7 +33,6 @@ typedef unsigned char U_CHAR;
 typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
-typedef struct hashnode cpp_hashnode;
 
 enum cpp_token {
   CPP_EOF = -1,
@@ -140,6 +139,9 @@ struct file_name_map_list;
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active. */
 
+struct hashnode;
+typedef struct hashnode HASHNODE;
+
 struct cpp_reader
 {
   parse_underflow_t get_token;
@@ -167,7 +169,7 @@ struct cpp_reader
 
   /* Hash table of macros and assertions.  See cpphash.c */
 #define HASHSIZE 1403
-  struct hashnode **hashtab;
+  HASHNODE **hashtab;
 
   /* Hash table of other included files.  See cppfiles.c */
 #define ALL_INCLUDE_HASHSIZE 71
@@ -603,66 +605,6 @@ enum node_type {
  T_UNUSED	/* Used for something not defined.  */
  };
 
-/* Structure returned by create_definition */
-typedef struct macrodef MACRODEF;
-struct macrodef
-{
-  struct definition *defn;
-  const U_CHAR *symnam;
-  int symlen;
-};
-
-/* Structure allocated for every #define.  For a simple replacement
-   such as
-   	#define foo bar ,
-   nargs = -1, the `pattern' list is null, and the expansion is just
-   the replacement text.  Nargs = 0 means a functionlike macro with no args,
-   e.g.,
-       #define getchar() getc (stdin) .
-   When there are args, the expansion is the replacement text with the
-   args squashed out, and the reflist is a list describing how to
-   build the output from the input: e.g., "3 chars, then the 1st arg,
-   then 9 chars, then the 3rd arg, then 0 chars, then the 2nd arg".
-   The chars here come from the expansion.  Whatever is left of the
-   expansion after the last arg-occurrence is copied after that arg.
-   Note that the reflist can be arbitrarily long---
-   its length depends on the number of times the arguments appear in
-   the replacement text, not how many args there are.  Example:
-   #define f(x) x+x+x+x+x+x+x would have replacement text "++++++" and
-   pattern list
-     { (0, 1), (1, 1), (1, 1), ..., (1, 1), NULL }
-   where (x, y) means (nchars, argno). */
-
-typedef struct definition DEFINITION;
-struct definition {
-  int nargs;
-  int length;			/* length of expansion string */
-  int predefined;		/* True if the macro was builtin or */
-				/* came from the command line */
-  unsigned char *expansion;
-  int line;			/* Line number of definition */
-  const char *file;		/* File of definition */
-  char rest_args;		/* Nonzero if last arg. absorbs the rest */
-  struct reflist {
-    struct reflist *next;
-    char stringify;		/* nonzero if this arg was preceded by a
-				   # operator. */
-    char raw_before;		/* Nonzero if a ## operator before arg. */
-    char raw_after;		/* Nonzero if a ## operator after arg. */
-    char rest_args;		/* Nonzero if this arg. absorbs the rest */
-    int nchars;			/* Number of literal chars to copy before
-				   this arg occurrence.  */
-    int argno;			/* Number of arg to substitute (origin-0) */
-  } *pattern;
-  union {
-    /* Names of macro args, concatenated in reverse order
-       with comma-space between them.
-       The only use of this is that we warn on redefinition
-       if this differs between the old and new definitions.  */
-    unsigned char *argnames;
-  } args;
-};
-
 /* Character classes.
    If the definition of `numchar' looks odd to you, please look up the
    definition of a pp-number in the C standard [section 6.4.8 of C99] */
@@ -744,14 +686,12 @@ extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    unsigned char *, long));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
+extern HASHNODE *cpp_lookup PARAMS ((cpp_reader *, const U_CHAR *, int));
 
-extern cpp_hashnode *cpp_lookup PARAMS ((cpp_reader *, const unsigned char *,
-					 int, int));
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern void cpp_options_init PARAMS ((cpp_options *));
 extern int cpp_start_read PARAMS ((cpp_reader *, char *));
 extern int cpp_read_check_assertion PARAMS ((cpp_reader *));
-extern int scan_decls PARAMS ((cpp_reader *, int, char **));
 extern void skip_rest_of_line PARAMS ((cpp_reader *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 
@@ -778,11 +718,6 @@ extern int finclude			PARAMS ((cpp_reader *, int,
 extern void deps_output			PARAMS ((cpp_reader *,
 						const char *, int));
 extern struct include_hash *include_hash PARAMS ((cpp_reader *, const char *, int));
-
-#ifndef INCLUDE_LEN_FUDGE
-#define INCLUDE_LEN_FUDGE 0
-#endif
-
 
 #ifdef __cplusplus
 }
