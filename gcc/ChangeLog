@@ -1,3 +1,7 @@
+Mon Apr 27 15:53:30 EDT 1998 Andrew MacLeod <amacleod@cygnus.com>
+
+	* cplus-dem.c (demangle_qualified): Replace missing else.
+
 Mon Apr 27 20:22:08 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (gen_ashift_hi): Don't make SUBREG of a SUBREG.

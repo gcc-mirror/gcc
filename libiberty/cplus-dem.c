@@ -2324,7 +2324,7 @@ demangle_qualified (work, mangled, result, isfuncname, append)
 	  success = do_type (work, mangled, &temp);
 	  if (!success) break;
 	}
-      if (*mangled[0] == 'K')
+      else if (*mangled[0] == 'K')
 	{
           int idx;
           (*mangled)++;
