@@ -32,16 +32,16 @@ if [isnative] then {
 	    if [ string match "*64*" $file_string ] {
 		set native_cflags "-64"
 	    }
-	    if [ string match "N32" $file_string ] {
+	    if [ string match "*N32*" $file_string ] {
 		set native_cflags "-n32"
 	    }
 	}
 
 	catch { exec rm -f linkage-y.o }
-	send_log "cc -c $srcdir/$subdir/linkage-y.c >&/dev/null\n"
+	send_log "cc -c $native_cflags $srcdir/$subdir/linkage-y.c >&/dev/null\n"
 	catch { exec cc -c $native_cflags "$srcdir/$subdir/linkage-y.c" >&/dev/null }
 	if ![file exists "linkage-y.o"] then {
-	    send_log "c89 -c $srcdir/$subdir/linkage-y.c >&/dev/null\n"
+	    send_log "c89 -c $native_cflags $srcdir/$subdir/linkage-y.c >&/dev/null\n"
 	    catch { exec c89 -c $native_cflags "$srcdir/$subdir/linkage-y.c" >&/dev/null }
 	}
 	if [file exists "linkage-y.o"] then {
