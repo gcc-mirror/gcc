@@ -1,3 +1,17 @@
+Fri Nov  5 01:24:37 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* global.c (CONFLICTP, SET_CONFLICT): Avoid signed division.
+	(mirror_conflicts): New function.
+	(global_alloc): Call it.
+	(expand_preferences): Remove redundant CONFLICTP test.
+	(find_reg, dump_conflicts): Likewise.
+	(prune_preferences): Process conflicts one word at a time.
+
+Fri Nov  5 01:05:21 1999  Richard Henderson <rth@cygnus.com>
+
+	* global.c (build_insn_chain): Use EXECUTE_IF_SET_IN_BITMAP
+	instead of an explicit loop.
+
 Thu Nov  4 23:07:14 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* cse.c (cse_insn): Revert Oct 31 change.  When computing src_elt,
