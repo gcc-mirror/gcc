@@ -23,18 +23,12 @@ AC_PREREQ(2.13)
 AC_INIT(objc/objc.h)
 AC_CONFIG_HEADER(config.h)
 
-if test "${srcdir}" = "." ; then
-  if test "${with_target_subdir}" != "." ; then
-    topsrcdir=${with_multisrctop}../..
-  else
-    topsrcdir=${with_multisrctop}..
-  fi
-else
-  topsrcdir=${srcdir}/..
-fi
-dnl This is needed for a multilibbed build in the source tree so
-dnl that install-sh and config.sub get found.
-AC_CONFIG_AUX_DIR($topsrcdir)
+AC_CANONICAL_SYSTEM
+target_alias=${target_alias-$target}
+AC_SUBST(target_alias)
+
+GLIBCPP_CONFIGURE(.)
+GLIBCPP_EXPORT_INSTALL_INFO
 
 # If the language specific compiler does not exist, but the "gcc" directory 
 # does, we do not build anything. Note, $r is set by the top-level Makefile.
@@ -66,14 +60,15 @@ fi
 
 dnl Checks for programs.
 
-dnl FIXME AC_PROG_CC wants CC to be able to link things, but it may
-dnl not be able to.
-define([AC_PROG_CC_WORKS],[])
+# Disable shared libs by default
+AC_DISABLE_SHARED
+# Enable Win32 DLL on MS Windows - FIXME 
+AC_LIBTOOL_WIN32_DLL 
 
-# For ObjC we'll set CC to point at the built gcc, but this will get it into
-# the makefiles
-AC_PROG_CC
+AC_PROG_LIBTOOL
 
+dnl These should be inherited in the recursive make, but ensure they are
+dnl defined:
 test "$AR" || AR=ar
 AC_SUBST(AR)
 if test "$RANLIB"; then :
@@ -82,23 +77,7 @@ else
   AC_PROG_RANLIB
 fi
 AC_PROG_INSTALL
-
-# We need AC_EXEEXT to keep automake happy in cygnus mode.  However,
-# at least currently, we never actually build a program, so we never
-# need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
-# fails, because we are probably configuring with a cross compiler
-# which cant create executables.  So we include AC_EXEEXT to keep
-# automake happy, but we dont execute it, since we dont care about
-# the result.
-if false; then
-  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
-  # to nothing, so nothing would remain between `then' and `fi' if it
-  # were not for the `:' below.
-  :
-  AC_EXEEXT
-fi
-
-dnl Checks for libraries.
+AC_PROG_MAKE_SET
 
 dnl Checks for header files.
 # Sanity check for the cross-compilation case:
@@ -125,13 +104,6 @@ fi])
 GTHREAD_FLAGS=$objc_cv_gthread_flags
 AC_SUBST(GTHREAD_FLAGS)
 
-# Disable shared libs by default
-AC_DISABLE_SHARED
-# Enable Win32 DLL on MS Windows - FIXME 
-AC_LIBTOOL_WIN32_DLL 
-# Use libtool
-AC_PROG_LIBTOOL
-
 AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc       enable the use of Boehm's garbage collector with
                           the GNU Objective-C runtime.],
@@ -146,12 +118,12 @@ AC_SUBST(OBJC_BOEHM_GC)
 
 # We need multilib support, but only if configuring for the target.
 AC_OUTPUT(Makefile,
-[test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
+ [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 if test -n "$CONFIG_FILES"; then
   if test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile
-    . ${topsrcdir}/config-ml.in
+    . ${toplevel_srcdir}/config-ml.in
   fi
 fi],
 srcdir=${srcdir}
@@ -160,9 +132,10 @@ target=${target}
 with_target_subdir=${with_target_subdir}
 with_multisubdir=${with_multisubdir}
 ac_configure_args="--enable-multilib ${ac_configure_args}"
+toplevel_srcdir=${toplevel_srcdir}
 CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
-topsrcdir=${topsrcdir}
 )
+
 
 dnl Local Variables:
 dnl comment-start: "dnl "
