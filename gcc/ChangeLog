@@ -1,5 +1,20 @@
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (cmp_operands): Renamed from branch_cmp.
+	(branch_type): Delete.
+	(gen_conditional_branch, gen_conditional_move)
+	(mips_gen_conditional_trap): Update after name change.  Get the
+	comparison mode from cmp_operands[0].
+	* config/mips/mips.h (cmp_type, branch_type): Delete.
+	(cmp_operands): Renamed from branch_cmp.
+	* config/mips/mips.md (cmpsi, cmpdi, cmpsf, cmpdf): Update after
+	name change.  Don't set branch_type.
+	(seq, sne, sgt, sge, slt, sle, sgtu, sgeu, sltu, sleu): Check the
+	mode class of cmp_operands[0] rather than branch_type.  Update after
+	name change.
+
+2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (mips_rtx_costs): In mips16 code, set the cost
 	of 0...255 to 0 when inside a SET.
 

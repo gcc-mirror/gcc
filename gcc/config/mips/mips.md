@@ -5456,9 +5456,8 @@ dsrl\t%3,%3,1\n\
 
 ;; Flow here is rather complex:
 ;;
-;;  1)	The cmp{si,di,sf,df} routine is called.  It deposits the
-;;	arguments into the branch_cmp array, and the type into
-;;	branch_type.  No RTL is generated.
+;;  1)	The cmp{si,di,sf,df} routine is called.  It deposits the arguments
+;;	into cmp_operands[] but generates no RTL.
 ;;
 ;;  2)	The appropriate branch define_expand is called, which then
 ;;	creates the appropriate RTL for the comparison and branch.
@@ -5476,9 +5475,8 @@ dsrl\t%3,%3,1\n\
 		    (match_operand:SI 1 "arith_operand")))]
   ""
 {
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = operands[1];
-  branch_type = CMP_SI;
+  cmp_operands[0] = operands[0];
+  cmp_operands[1] = operands[1];
   DONE;
 })
 
@@ -5488,9 +5486,8 @@ dsrl\t%3,%3,1\n\
 		    (match_operand:DI 1 "arith_operand")))]
   "TARGET_64BIT"
 {
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = operands[1];
-  branch_type = CMP_DI;
+  cmp_operands[0] = operands[0];
+  cmp_operands[1] = operands[1];
   DONE;
 })
 
@@ -5500,9 +5497,8 @@ dsrl\t%3,%3,1\n\
 		    (match_operand:DF 1 "register_operand")))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = operands[1];
-  branch_type = CMP_DF;
+  cmp_operands[0] = operands[0];
+  cmp_operands[1] = operands[1];
   DONE;
 })
 
@@ -5512,9 +5508,8 @@ dsrl\t%3,%3,1\n\
 		    (match_operand:SF 1 "register_operand")))]
   "TARGET_HARD_FLOAT"
 {
-  branch_cmp[0] = operands[0];
-  branch_cmp[1] = operands[1];
-  branch_type = CMP_SF;
+  cmp_operands[0] = operands[0];
+  cmp_operands[1] = operands[1];
   DONE;
 })
 
@@ -6018,10 +6013,10 @@ dsrl\t%3,%3,1\n\
 	       (match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (EQ, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (EQ, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6070,10 +6065,10 @@ dsrl\t%3,%3,1\n\
 	       (match_dup 2)))]
   "!TARGET_MIPS16"
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (NE, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (NE, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6101,10 +6096,10 @@ dsrl\t%3,%3,1\n\
 	       (match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (GT, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (GT, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6150,10 +6145,10 @@ dsrl\t%3,%3,1\n\
 	       (match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (GE, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (GE, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6163,10 +6158,10 @@ dsrl\t%3,%3,1\n\
 	       (match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (LT, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (LT, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6222,10 +6217,10 @@ dsrl\t%3,%3,1\n\
 	       (match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (LE, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (LE, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6289,10 +6284,10 @@ dsrl\t%3,%3,1\n\
 		(match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (GTU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (GTU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6338,10 +6333,10 @@ dsrl\t%3,%3,1\n\
                 (match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (GEU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (GEU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6351,10 +6346,10 @@ dsrl\t%3,%3,1\n\
 		(match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (LTU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (LTU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
@@ -6410,10 +6405,10 @@ dsrl\t%3,%3,1\n\
 		(match_dup 2)))]
   ""
 {
-  if (branch_type != CMP_SI && (!TARGET_64BIT || branch_type != CMP_DI))
+  if (GET_MODE_CLASS (GET_MODE (cmp_operands[0])) != MODE_INT)
     FAIL;
 
-  gen_int_relational (LEU, operands[0], branch_cmp[0], branch_cmp[1], NULL);
+  gen_int_relational (LEU, operands[0], cmp_operands[0], cmp_operands[1], NULL);
   DONE;
 })
 
