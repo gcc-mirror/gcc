@@ -31,7 +31,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef RETURN_IN_MEMORY
 #define RETURN_IN_MEMORY(TYPE) \
-  (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE(TYPE) == UNION_TYPE)
+  (TYPE_MODE (TYPE) == BLKmode \
+   || TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE(TYPE) == UNION_TYPE)
 
 /* Define which macros to predefine.  __svr4__ is our extension.  */
 /* This used to define X86, but james@bigtex.cactus.org says that

@@ -552,7 +552,8 @@ enum reg_class { NO_REGS, R0_REGS, R15_REGS, BASE_REGS, GENERAL_REGS,
    type DImode is returned in memory.  */
 
 #define RETURN_IN_MEMORY(type) \
-  (TARGET_HC_STRUCT_RETURN && TYPE_MODE (type) == DImode)
+  (TYPE_MODE (type) == BLKmode \
+   || (TARGET_HC_STRUCT_RETURN && TYPE_MODE (type) == DImode))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.

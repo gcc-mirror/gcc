@@ -673,7 +673,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    are integers whose size is larger than 64 bits.  */
 
 #define RETURN_IN_MEMORY(TYPE) \
-  (TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE  \
+  (TYPE_MODE (TYPE) == BLKmode \
+   || TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE (TYPE) == UNION_TYPE  \
    || (TREE_CODE (TYPE) == INTEGER_TYPE && TYPE_PRECISION (TYPE) > 64))
 
 /* 1 if N is a possible register number for a function value

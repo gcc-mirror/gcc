@@ -999,11 +999,12 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Disable the promotion of some structures and unions to registers. */
 #define RETURN_IN_MEMORY(TYPE) \
-  ((TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE(TYPE) == UNION_TYPE) \
-   && !(TYPE_MODE (TYPE) == SImode \
-	|| (TYPE_MODE (TYPE) == BLKmode \
-	    && TYPE_ALIGN (TYPE) == BITS_PER_WORD \
-	    && int_size_in_bytes (TYPE) == UNITS_PER_WORD)))
+  (TYPE_MODE (TYPE) == BLKmode \
+   || ((TREE_CODE (TYPE) == RECORD_TYPE || TREE_CODE(TYPE) == UNION_TYPE) \
+       && !(TYPE_MODE (TYPE) == SImode \
+	    || (TYPE_MODE (TYPE) == BLKmode \
+		&& TYPE_ALIGN (TYPE) == BITS_PER_WORD \
+		&& int_size_in_bytes (TYPE) == UNITS_PER_WORD))))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */

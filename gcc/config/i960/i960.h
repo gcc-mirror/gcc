@@ -814,10 +814,11 @@ extern struct rtx_def *i960_function_arg ();
 #define FUNCTION_VALUE(TYPE, FUNC) \
   gen_rtx (REG, TYPE_MODE (TYPE), 0)
 
-/* Force objects larger than 16 bytes to be returned in memory, since we
-   only have 4 registers available for return values.  */
+/* Force aggregates and objects larger than 16 bytes to be returned in memory,
+   since we only have 4 registers available for return values.  */
 
-#define RETURN_IN_MEMORY(TYPE) (int_size_in_bytes (TYPE) > 16)
+#define RETURN_IN_MEMORY(TYPE) \
+  (TYPE_MODE (TYPE) == BLKmode || int_size_in_bytes (TYPE) > 16)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.

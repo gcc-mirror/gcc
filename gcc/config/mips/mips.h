@@ -1759,11 +1759,12 @@ extern struct mips_frame_info current_frame_info;
    always returned.  Here TYPE will be a C expression of type
    `tree', representing the data type of the value.
 
-   Note that values of mode `BLKmode' are returned in memory
-   regardless of this macro.  Also, the option `-fpcc-struct-return'
+   Note that values of mode `BLKmode' must be explicitly
+   handled by this macro.  Also, the option `-fpcc-struct-return'
    takes effect regardless of this macro.  On most systems, it is
    possible to leave the macro undefined; this causes a default
-   definition to be used, whose value is the constant 0.
+   definition to be used, whose value is the constant 1 for BLKmode
+   values, and 0 otherwise.
 
    GCC normally converts 1 byte structures into chars, 2 byte
    structs into shorts, and 4 byte structs into ints, and returns
@@ -1771,7 +1772,8 @@ extern struct mips_frame_info current_frame_info;
    to give us MIPS cc compatibility.  */
 
 #define RETURN_IN_MEMORY(TYPE)	\
-  ((TREE_CODE (TYPE) == RECORD_TYPE) || (TREE_CODE (TYPE) == UNION_TYPE))
+  ((TYPE_MODE (TYPE) == BLKmode) \
+   || (TREE_CODE (TYPE) == RECORD_TYPE) || (TREE_CODE (TYPE) == UNION_TYPE))
 
 
 /* A code distinguishing the floating point format of the target
