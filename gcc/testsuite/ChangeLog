@@ -1,3 +1,8 @@
+2002-02-25  Kazu Hirata  <kazu@hxi.com>
+
+	* gcc.c-torture/execute/960416-1.x: New.
+	* gcc.c-torture/execute/divconst-3.x: Likewise.
+
 2002-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20020224-1.c: New test.
