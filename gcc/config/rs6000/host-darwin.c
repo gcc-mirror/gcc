@@ -170,8 +170,8 @@ darwin_rs6000_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
       || sizeof (pch_address_space) % pagesize != 0)
     abort ();
   
-  result = (addr == pch_address_space && sz <= sizeof (pch_address_space));
-  if (! result)
+  ret = (addr == pch_address_space && sz <= sizeof (pch_address_space));
+  if (! ret)
     sz = 0;
 
   /* Round the size to a whole page size.  Normally this is a no-op.  */
@@ -188,7 +188,7 @@ darwin_rs6000_gt_pch_use_address (void *addr, size_t sz, int fd, size_t off)
   ret = mmap_result == (void *) MAP_FAILED;
 
   /* Sanity check for broken MAP_FIXED.  */
-  if (ret && mmap_result != base)
+  if (ret && mmap_result != addr)
     abort ();
 
   return ret;

@@ -1,3 +1,8 @@
+2003-03-12  Andrew Pinski  <apinski@apple.com>
+
+	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_use_address):
+	Use ret instead of result. Use addr instead of base.
+
 2004-03-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi (*-ibm-aix*): Document assembler and achiver
