@@ -7504,6 +7504,8 @@ source_end_java_method ()
       lineno = DECL_SOURCE_LINE_LAST (fndecl);
       expand_function_end (input_filename, lineno, 0);
 
+      DECL_SOURCE_LINE (fndecl) = DECL_SOURCE_LINE_FIRST (fndecl);
+
       /* Run the optimizers and output assembler code for this function. */
       rest_of_compilation (fndecl);
     }
