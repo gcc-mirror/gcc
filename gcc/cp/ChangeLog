@@ -1,3 +1,17 @@
+2000-08-25  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (tree_formatting_info): New data type.
+	(tree_being_formatted): New macro.
+	(tree_formatting_flags): Likewise.
+	(put_whitespace): Likewise.
+	(print_tree_identifier): Likewise.
+	(print_identifier): Likewise.
+	(cp_tree_printer, print_function_argument_list, print_declaration,
+	print_expression, print_function_declaration,
+	print_function_parameter, print_type, print_cv_qualifier): New
+	functions. 
+	(init_error): Initialize lang_printer.
+
 2000-08-24  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (build_ptrmemfunc): Just reinterpret if there's no
