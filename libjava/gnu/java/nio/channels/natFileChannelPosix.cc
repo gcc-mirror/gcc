@@ -380,7 +380,7 @@ jint
 FileChannelImpl::available (void)
 {
 #if defined (FIONREAD) || defined (HAVE_SELECT) || defined (HAVE_FSTAT)
-  long num = 0;
+  int num = 0;
   int r = 0;
   bool num_set = false;
 
@@ -423,7 +423,7 @@ FileChannelImpl::available (void)
 	  && S_ISREG (sb.st_mode)
 	  && (where = lseek (fd, 0, SEEK_CUR)) != (off_t) -1)
 	{
-	  num = (long) (sb.st_size - where);
+	  num = (int) (sb.st_size - where);
 	  num_set = true;
 	}
     }
