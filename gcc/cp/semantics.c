@@ -2237,7 +2237,7 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
 #ifdef PCC_STATIC_STRUCT_RETURN  
   if (!AGGR_INIT_VIA_CTOR_P (aggr_init_expr) && aggregate_value_p (type))
     {
-      int old_ac;
+      int old_ac = flag_access_control;
 
       flag_access_control = 0;
       call_expr = build_aggr_init (slot, call_expr, LOOKUP_ONLYCONVERTING);
