@@ -1,3 +1,23 @@
+2004-06-30  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/16161
+	* decl.c (gfc_match_type_spec): Rename second argument to
+	'implicit_flag', reverse meaning. Don't match_char_spec if
+	'implicit_flag' is set. Rename to ...
+	(match_type_spec): ... this.
+	(gfc_match_implicit_none, match_implicit_range): Move here
+	from match.c.
+	(gfc_match_implicit): Move here from match.c, try to
+	match_char_len if match_implicit_range doesn't succeed for
+	CHARACTER implicits. Call renamed fucntion match_type_spec.
+	(gfc_match_data_decl, match_prefix): Call renamed function
+	match_type_spec.
+	* match.c (gfc_match_implicit_none, match_implicit_range,
+	gfc_match_implicit): Move to decl.c.
+	* match.h (gfc_match_implicit_none, gfc_match_implicit):
+	Move protoypes to section 'decl.c'.
+	(gfc_match_type_spec): Remove prototype.
+
 2004-06-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* decl.c, interface.c, symbol.c, trans-common.c: Add 2004 to 
