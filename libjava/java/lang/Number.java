@@ -1,5 +1,5 @@
-/* java.lang.Number
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+/* Number.java =- abstract superclass of numeric objects
+   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -41,54 +41,91 @@ package java.lang;
 import java.io.Serializable;
 
 /**
- ** Number is a generic superclass of all the numeric classes, namely
- ** <code>Byte</code>, <code>Short</code>, <code>Integer</code>,
- ** <code>Long</code>, <code>Float</code>, and <code>Double</code>.
- **
- ** It provides ways to convert from any one value to any other.
- **
- ** @author Paul Fisher
- ** @author John Keiser
- ** @author Warren Levy
- ** @since JDK1.0
- **/
+ * Number is a generic superclass of all the numeric classes, including
+ * the wrapper classes {@link Byte}, {@link Short}, {@link Integer},
+ * {@link Long}, {@link Float}, and {@link Double}.  Also worth mentioning
+ * are the classes in {@link java.math}.
+ *
+ * It provides ways to convert numeric objects to any primitive.
+ *
+ * @author Paul Fisher
+ * @author John Keiser
+ * @author Warren Levy
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @since 1.0
+ * @status updated to 1.4
+ */
 public abstract class Number implements Serializable
 {
-  /** Return the value of this <code>Number</code> as a <code>byte</code>.
-   ** @return the value of this <code>Number</code> as a <code>byte</code>.
-   **/
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -8742448824652078965L;
+
+  /**
+   * Table for calculating digits, used in Character, Long, and Integer.
+   */
+  static final char[] digits = {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z'
+  };
+
+  /**
+   * The basic constructor (often called implicitly).
+   */
+  public Number()
+  {
+  }
+
+  /**
+   * Return the value of this <code>Number</code> as an <code>int</code>.
+   *
+   * @return the int value
+   */
+  public abstract int intValue();
+
+  /**
+   * Return the value of this <code>Number</code> as a <code>long</code>.
+   *
+   * @return the long value
+   */
+  public abstract long longValue();
+
+  /**
+   * Return the value of this <code>Number</code> as a <code>float</code>.
+   *
+   * @return the float value
+   */
+  public abstract float floatValue();
+
+  /**
+   * Return the value of this <code>Number</code> as a <code>float</code>.
+   *
+   * @return the double value
+   */
+  public abstract double doubleValue();
+
+  /**
+   * Return the value of this <code>Number</code> as a <code>byte</code>.
+   *
+   * @return the byte value
+   * @since 1.1
+   */
   public byte byteValue()
   {
     return (byte) intValue();
   }
 
-  /** Return the value of this <code>Number</code> as a <code>short</code>.
-   ** @return the value of this <code>Number</code> as a <code>short</code>.
-   **/
+  /**
+   * Return the value of this <code>Number</code> as a <code>short</code>.
+   *
+   * @return the short value
+   * @since 1.1
+   */
   public short shortValue()
   {
     return (short) intValue();
   }
-
-  /** Return the value of this <code>Number</code> as an <code>int</code>.
-   ** @return the value of this <code>Number</code> as an <code>int</code>.
-   **/
-  public abstract int intValue();
-
-  /** Return the value of this <code>Number</code> as a <code>long</code>.
-   ** @return the value of this <code>Number</code> as a <code>long</code>.
-   **/
-  public abstract long longValue();
-
-  /** Return the value of this <code>Number</code> as a <code>float</code>.
-   ** @return the value of this <code>Number</code> as a <code>float</code>.
-   **/
-  public abstract float floatValue();
-
-  /** Return the value of this <code>Number</code> as a <code>float</code>.
-   ** @return the value of this <code>Number</code> as a <code>float</code>.
-   **/
-  public abstract double doubleValue();
-
-  private static final long serialVersionUID = -8742448824652078965L;
 }

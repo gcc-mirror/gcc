@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -110,6 +110,12 @@ public final class String implements Serializable, Comparable, CharSequence
   public String (char[] data, int offset, int count)
   {
     init(data, offset, count, false);
+  }
+
+  // This is used by Integer.toString(int,int).
+  String (char[] data, int offset, int count, boolean dont_copy)
+  {
+    init(data, offset, count, dont_copy);
   }
 
   public String (byte[] byteArray)

@@ -1,3 +1,18 @@
+2002-06-13  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natString.cc (init): Handle case where DONT_COPY is
+	true and OFFSET!=0.
+	* java/lang/String.java (String(char[],int,int,boolean): New
+	constructor.
+	* java/lang/Long.java: Imported new version from Classpath.
+	* java/lang/Number.java: Likewise.
+	* java/lang/Integer.java: Likewise.
+	* java/lang/Long.java: Likewise.
+	* java/lang/Float.java: Likewise.
+	* java/lang/Boolean.java: Likewise.
+	* java/lang/Double.java: Likewise.
+	* java/lang/Void.java: Likewise.
+
 2002-06-12  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/natFilePosix.cc (getCanonicalPath): Treat "" like ".".
