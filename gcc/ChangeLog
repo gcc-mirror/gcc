@@ -1,3 +1,8 @@
+2004-05-15  Thomas Quinot  <quinot@act-europe.fr>
+
+	* prefix.c (update_path): Replace PREFIX with KEY only
+	when it matches a full directory name in PATH.
+
 2004-05-15  Richard Earnshaw  <reanrsha@arm.com>
 
 	* arm.h (TARGET_APCS_32): Delete.
