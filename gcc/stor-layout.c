@@ -485,7 +485,7 @@ relayout_decl (tree decl)
 /* Hook for a front-end function that can modify the record layout as needed
    immediately before it is finalized.  */
 
-void (*lang_adjust_rli) (record_layout_info) = 0;
+static void (*lang_adjust_rli) (record_layout_info) = 0;
 
 void
 set_lang_adjust_rli (void (*f) (record_layout_info))

@@ -11,6 +11,8 @@
 
 	* sched-deps.c (cache_size): Make it static.
 
+	* stor-layout.c (lang_adjust_rli): Make it static.
+
 2005-03-08  Julian Brown  <julian@codesourcery.com>
 
 	* config/elfos.h (MAKE_DECL_ONE_ONLY): Redefined to stop DECL_WEAK
