@@ -303,9 +303,13 @@ sparc_override_options ()
     }
 
   /* If -mfpu or -mno-fpu was explicitly used, don't override with
-     the processor default.  */
+     the processor default.  Clear MASK_FPU_SET to avoid confusing
+     the reverse mapping from switch values to names.  */
   if (TARGET_FPU_SET)
-    target_flags = (target_flags & ~MASK_FPU) | fpu;
+    {
+      target_flags = (target_flags & ~MASK_FPU) | fpu;
+      target_flags &= ~MASK_FPU_SET;
+    }
 
   /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
   if (TARGET_V9 && TARGET_ARCH32)

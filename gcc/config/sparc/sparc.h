@@ -569,10 +569,10 @@ extern int target_flags;
 #define TARGET_SWITCHES  \
   { {"fpu", MASK_FPU | MASK_FPU_SET,			"Use hardware fp" },		\
     {"no-fpu", -MASK_FPU,				"Do not use hardware fp" },	\
-    {"no-fpu", MASK_FPU_SET,				"Do not use hardware fp" },	\
+    {"no-fpu", MASK_FPU_SET,				NULL, },	\
     {"hard-float", MASK_FPU | MASK_FPU_SET,		"Use hardware fp" },		\
     {"soft-float", -MASK_FPU,				"Do not use hardware fp" },	\
-    {"soft-float", MASK_FPU_SET,			"Do not use hardware fp" },	\
+    {"soft-float", MASK_FPU_SET,			NULL },	\
     {"epilogue", MASK_EPILOGUE,				"Use FUNCTION_EPILOGUE" },	\
     {"no-epilogue", -MASK_EPILOGUE,			"Do not use FUNCTION_EPILOGUE" }, 	\
     {"unaligned-doubles", MASK_UNALIGNED_DOUBLES,	"Assume possible double misalignment" },\
