@@ -1,5 +1,16 @@
 2002-05-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
+	* config.gcc (tm_file): Prefix pa/pa-700.h to tm_file list for PA1.0
+	architecture and pa/pa-7100.h for PA1.1 architecture, respectively.
+	* pa/pa.c (override_options): Use TARGET_SCHED_DEFAULT to select
+	default scheduling model.
+	* pa/pa.h (TARGET_SCHED_DEFAULT): Define if not defined to "8000".
+	* pa/pa-700.h (TARGET_SCHED_DEFAULT): New file for "700" scheduling.
+	* pa/pa-7100.h (TARGET_SCHED_DEFAULT): New file for "7100" scheduling.
+	* doc/install.texi (hppa*-*-*): Document default scheduling.
+
+2002-05-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
 	* pa.c (following_call): Check TARGET_JUMP_IN_DELAY.
 
 2002-05-31  Jason Thorpe  <thorpej@wasabisystems.com>

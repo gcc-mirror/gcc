@@ -208,6 +208,10 @@ extern int target_flags;
 #define TARGET_CPU_DEFAULT 0
 #endif
 
+#ifndef TARGET_SCHED_DEFAULT
+#define TARGET_SCHED_DEFAULT "8000"
+#endif
+
 #define TARGET_OPTIONS			\
 {					\
   { "schedule=",	&pa_cpu_string, "Specify CPU for scheduling purposes" },\
