@@ -2491,7 +2491,7 @@ for machine in $build $host $target; do
 		fi
 		use_collect2=yes
 		;;
-	rs6000-ibm-aix4.[[12]].* | powerpc-ibm-aix4.[[12]].*)
+	rs6000-ibm-aix4.[[12]]* | powerpc-ibm-aix4.[[12]]*)
 		tm_file=rs6000/aix41.h
 		if [[ x$host != x$target ]]
 		then
