@@ -697,6 +697,7 @@ static void delete_store		PARAMS ((struct ls_expr *,
 						 basic_block));
 static void free_store_memory		PARAMS ((void));
 static void store_motion		PARAMS ((void));
+static void free_insn_expr_list_list	PARAMS ((rtx *));
 static void clear_modify_mem_tables	PARAMS ((void));
 static void free_modify_mem_tables	PARAMS ((void));
 
@@ -2388,6 +2389,7 @@ canon_list_insert (dest, unused1, v_insn)
      void * v_insn;
 {
   rtx dest_addr, insn;
+  int bb;
 
   while (GET_CODE (dest) == SUBREG
       || GET_CODE (dest) == ZERO_EXTRACT
@@ -2405,12 +2407,13 @@ canon_list_insert (dest, unused1, v_insn)
   dest_addr = get_addr (XEXP (dest, 0));
   dest_addr = canon_rtx (dest_addr);
   insn = (rtx) v_insn;  
+  bb = BLOCK_NUM (insn);
 
-  canon_modify_mem_list[BLOCK_NUM (insn)] = 
-    alloc_INSN_LIST (dest_addr, canon_modify_mem_list[BLOCK_NUM (insn)]);
-  canon_modify_mem_list[BLOCK_NUM (insn)] = 
-    alloc_INSN_LIST (dest, canon_modify_mem_list[BLOCK_NUM (insn)]);
-  bitmap_set_bit (canon_modify_mem_list_set, BLOCK_NUM (insn));
+  canon_modify_mem_list[bb] = 
+    alloc_EXPR_LIST (VOIDmode, dest_addr, canon_modify_mem_list[bb]);
+  canon_modify_mem_list[bb] = 
+    alloc_EXPR_LIST (VOIDmode, dest, canon_modify_mem_list[bb]);
+  bitmap_set_bit (canon_modify_mem_list_set, bb);
 }
 
 /* Record memory modification information for INSN.  We do not actually care
@@ -2421,23 +2424,24 @@ static void
 record_last_mem_set_info (insn)
      rtx insn;
 {
+  int bb = BLOCK_NUM (insn);
+
   /* load_killed_in_block_p will handle the case of calls clobbering
      everything.  */
-  modify_mem_list[BLOCK_NUM (insn)] = 
-    alloc_INSN_LIST (insn, modify_mem_list[BLOCK_NUM (insn)]);
-  bitmap_set_bit (modify_mem_list_set, BLOCK_NUM (insn));
+  modify_mem_list[bb] = alloc_INSN_LIST (insn, modify_mem_list[bb]);
+  bitmap_set_bit (modify_mem_list_set, bb);
 
   if (GET_CODE (insn) == CALL_INSN)
     {
       /* Note that traversals of this loop (other than for free-ing)
 	 will break after encountering a CALL_INSN.  So, there's no
 	 need to insert a pair of items, as canon_list_insert does.  */
-      canon_modify_mem_list[BLOCK_NUM (insn)] = 
-        alloc_INSN_LIST (insn, canon_modify_mem_list[BLOCK_NUM (insn)]);
-      bitmap_set_bit (canon_modify_mem_list_set, BLOCK_NUM (insn));
+      canon_modify_mem_list[bb] = 
+        alloc_INSN_LIST (insn, canon_modify_mem_list[bb]);
+      bitmap_set_bit (canon_modify_mem_list_set, bb);
     }
   else
-    note_stores (PATTERN (insn), canon_list_insert, (void*) insn );
+    note_stores (PATTERN (insn), canon_list_insert, (void*) insn);
 }
 
 /* Called from compute_hash_table via note_stores to handle one
@@ -2713,6 +2717,27 @@ next_set (regno, expr)
   return expr;
 }
 
+/* Like free_INSN_LIST_list or free_EXPR_LIST_list, except that the node
+   types may be mixed.  */
+
+static void
+free_insn_expr_list_list (listp)
+     rtx *listp;
+{
+  rtx list, next;
+
+  for (list = *listp; list ; list = next)
+    {
+      next = XEXP (list, 1);
+      if (GET_CODE (list) == EXPR_LIST)
+	free_EXPR_LIST_node (list);
+      else
+	free_INSN_LIST_node (list);
+    }
+
+  *listp = NULL;
+}
+
 /* Clear canon_modify_mem_list and modify_mem_list tables.  */
 static void
 clear_modify_mem_tables ()
@@ -2720,14 +2745,13 @@ clear_modify_mem_tables ()
   int i;
 
   EXECUTE_IF_SET_IN_BITMAP
-    (canon_modify_mem_list_set, 0, i,
-     free_INSN_LIST_list (modify_mem_list + i));
-  bitmap_clear (canon_modify_mem_list_set);
+    (modify_mem_list_set, 0, i, free_INSN_LIST_list (modify_mem_list + i));
+  bitmap_clear (modify_mem_list_set);
 
   EXECUTE_IF_SET_IN_BITMAP
     (canon_modify_mem_list_set, 0, i,
-     free_INSN_LIST_list (canon_modify_mem_list + i));
-  bitmap_clear (modify_mem_list_set);
+     free_insn_expr_list_list (canon_modify_mem_list + i));
+  bitmap_clear (canon_modify_mem_list_set);
 }
 
 /* Release memory used by modify_mem_list_set and canon_modify_mem_list_set.  */

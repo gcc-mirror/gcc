@@ -1,3 +1,12 @@
+2002-04-22  Richard Henderson  <rth@redhat.com>
+
+	* alias.c (canon_true_dependence): Special case (mem:blk (scratch)).
+
+	* gcse.c (free_insn_expr_list_list): New.
+	(clear_modify_mem_tables): Use it.  Fix bit set usage.
+	(canon_list_insert): Use EXPR_LISTs for expressions.
+	(record_last_mem_set_info): Factor BLOCK_NUM (insn).
+
 2002-04-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h: (LIBPATH_SPEC, LIBPATH_ARCH31_SPEC,
