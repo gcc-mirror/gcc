@@ -4388,9 +4388,8 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 		   || TREE_CODE (TREE_TYPE (d)) == TEMPLATE_TYPE_PARM))
 	      || TREE_CODE (d) == CONST_DECL)
 	    break;
-	  /* Don't inject TYPE_NESTED_NAMEs.  */
-	  else if (TREE_MANGLED (DECL_NAME (d))
-		   || IDENTIFIER_TEMPLATE (DECL_NAME (d)))
+	  /* Don't inject cache decls.  */
+	  else if (IDENTIFIER_TEMPLATE (DECL_NAME (d)))
 	    continue;
 	  DECL_TEMPLATE_INJECT (CLASSTYPE_TI_TEMPLATE (t))
 	    = tree_cons (NULL_TREE, d,

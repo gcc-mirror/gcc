@@ -108,6 +108,7 @@ empty_parms ()
    In some contexts, they are treated just like IDENTIFIER,
    but they can also serve as typespecs in declarations.  */
 %token TYPENAME
+%token SELFNAME
 
 /* Reserved words that specify storage class.
    yylval contains an IDENTIFIER_NODE which indicates which one.  */
@@ -160,7 +161,7 @@ empty_parms ()
 %nonassoc IF
 %nonassoc ELSE
 
-%left IDENTIFIER TYPENAME PTYPENAME SCSPEC TYPESPEC TYPE_QUAL ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
+%left IDENTIFIER TYPENAME SELFNAME PTYPENAME SCSPEC TYPESPEC TYPE_QUAL ENUM AGGR ELLIPSIS TYPEOF SIGOF OPERATOR NSNAME TYPENAME_KEYWORD
 
 %left '{' ',' ';'
 
@@ -191,7 +192,7 @@ empty_parms ()
 %type <code> unop
 
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
-%type <ttype> paren_expr_or_null nontrivial_exprlist
+%type <ttype> paren_expr_or_null nontrivial_exprlist SELFNAME
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
 %type <ttype> typed_declspecs reserved_declspecs boolean.literal
 %type <ttype> typed_typespecs reserved_typespecquals
@@ -230,7 +231,7 @@ empty_parms ()
 %token <ttype> TYPENAME_ELLIPSIS PTYPENAME
 %token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
 %token <ttype> PRE_PARSED_CLASS_DECL
-%type <ttype> fn.def1 /* Not really! */
+%type <ttype> fn.def1 /* Not really! */ component_constructor_declarator
 %type <ttype> fn.def2 return_id fn.defpen constructor_declarator
 %type <itype> ctor_initializer_opt
 %type <ttype> named_class_head named_class_head_sans_basetype
@@ -552,7 +553,7 @@ fndef:
 	;
 
 constructor_declarator:
-	  nested_name_specifier type_name '(' 
+	  nested_name_specifier SELFNAME '(' 
 		{
 		  $$ = build_parse_node (SCOPE_REF, $1, $2);
 		  if ($1 != current_class_type)
@@ -563,7 +564,7 @@ constructor_declarator:
 		}
 	  parmlist ')' type_quals
 		{ $$ = build_parse_node (CALL_EXPR, $<ttype>4, $5, $7); }
-	| nested_name_specifier type_name LEFT_RIGHT type_quals
+	| nested_name_specifier SELFNAME LEFT_RIGHT type_quals
 		{
 		  $$ = build_parse_node (SCOPE_REF, $1, $2);
 		  if ($1 != current_class_type)
@@ -573,7 +574,7 @@ constructor_declarator:
 		    }
 		  $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $4);
 		}
-	| global_scope nested_name_specifier type_name '(' 
+	| global_scope nested_name_specifier SELFNAME '(' 
 		{
 		  $$ = build_parse_node (SCOPE_REF, $2, $3);
 		  if ($2 != current_class_type)
@@ -584,7 +585,7 @@ constructor_declarator:
 		}
 	 parmlist ')' type_quals
 		{ $$ = build_parse_node (CALL_EXPR, $<ttype>5, $6, $8); }
-	| global_scope nested_name_specifier type_name LEFT_RIGHT type_quals
+	| global_scope nested_name_specifier SELFNAME LEFT_RIGHT type_quals
 		{
 		  $$ = build_parse_node (SCOPE_REF, $2, $3);
 		  if ($2 != current_class_type)
@@ -630,26 +631,27 @@ fn.def1:
 		  $$ = NULL_TREE; }
 	;
 
+component_constructor_declarator:
+	  SELFNAME '(' parmlist ')' type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $1, $3, $5); }
+	| SELFNAME LEFT_RIGHT type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $1, empty_parms (), $3); }
+	;
+
 /* more C++ complexity.  See component_decl for a comment on the
    reduce/reduce conflict introduced by these rules.  */
 fn.def2:
-	  typed_declspecs '(' parmlist ')' type_quals exception_specification_opt
+	  declmods component_constructor_declarator exception_specification_opt
 		{ tree specs = strip_attrs ($1);
-		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs), $3, $5);
-		  $$ = start_method (TREE_CHAIN (specs), $$, $6);
+		  $$ = start_method (specs, $2, $3);
 		 rest_of_mdef:
 		  if (! $$)
 		    YYERROR1;
 		  if (yychar == YYEMPTY)
 		    yychar = YYLEX;
 		  reinit_parse_for_method (yychar, $$); }
-	| typed_declspecs LEFT_RIGHT type_quals exception_specification_opt
-		{ tree specs = strip_attrs ($1);
-		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs),
-					 empty_parms (), $3);
-		  $$ = start_method (TREE_CHAIN (specs), $$, $4);
-		  goto rest_of_mdef;
-		}
+	| component_constructor_declarator exception_specification_opt
+		{ $$ = start_method (NULL_TREE, $1, $2); goto rest_of_mdef; }
 	| typed_declspecs declarator exception_specification_opt
 		{ tree specs = strip_attrs ($1);
 		  $$ = start_method (specs, $2, $3); goto rest_of_mdef; }
@@ -757,6 +759,7 @@ member_init: '(' nonnull_exprlist ')'
 identifier:
 	  IDENTIFIER
 	| TYPENAME
+	| SELFNAME
 	| PTYPENAME
 	| NSNAME
 	;
@@ -818,6 +821,18 @@ template_type:
 		    $$ = TYPE_STUB_DECL ($$);
 		}
 	| TYPENAME '<' template_close_bracket
+		{
+		  $$ = lookup_template_class ($1, NULL_TREE, NULL_TREE);
+		  if ($$ != error_mark_node)
+		    $$ = TYPE_STUB_DECL ($$);
+		}
+	| SELFNAME  '<' template_arg_list template_close_bracket
+		{
+		  $$ = lookup_template_class ($1, $3, NULL_TREE);
+		  if ($$ != error_mark_node)
+		    $$ = TYPE_STUB_DECL ($$);
+		}
+	| SELFNAME '<' template_close_bracket
 		{
 		  $$ = lookup_template_class ($1, NULL_TREE, NULL_TREE);
 		  if ($$ != error_mark_node)
@@ -1192,6 +1207,7 @@ notype_unqualified_id:
 unqualified_id:
 	  notype_unqualified_id
 	| TYPENAME
+	| SELFNAME
 	;
 
 expr_or_declarator:
@@ -2305,6 +2321,10 @@ base_class:
 
 base_class.1:
 	  complete_type_name
+	| TYPENAME_KEYWORD nested_name_specifier identifier
+		{ $$ = TYPE_MAIN_DECL (make_typename_type ($2, $3)); }
+	| TYPENAME_KEYWORD global_scope nested_name_specifier identifier
+		{ $$ = TYPE_MAIN_DECL (make_typename_type ($3, $4)); }
 	| SIGOF '(' expr ')'
 		{
 		  if (current_aggr == signature_type_node)
@@ -2574,34 +2594,13 @@ component_decl_1:
 	   should "A::foo" be declared as a function or "A::bar" as a data
 	   member? In other words, is "bar" an after_type_declarator or a
 	   parmlist? */
-	| typed_declspecs '(' parmlist ')' type_quals exception_specification_opt maybeasm maybe_attribute maybe_init
+	| declmods component_constructor_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ tree specs, attrs;
 		  split_specs_attrs ($1, &specs, &attrs);
-		  if (TREE_VALUE (specs) == current_class_type)
-		    {
-		      if (TREE_CHAIN (specs) == NULL_TREE)
-		        specs = get_decl_list (current_class_name);
-		      else
-		        TREE_VALUE (specs) = current_class_name;
-		    } 
-		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs),
-					 $3, $5);
-		  $$ = grokfield ($$, TREE_CHAIN (specs), $6, $9, $7,
-				  build_tree_list ($8, attrs)); }
-	| typed_declspecs LEFT_RIGHT type_quals exception_specification_opt maybeasm maybe_attribute maybe_init
-		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
-		  if (TREE_VALUE (specs) == current_class_type)
-		    {
-		      if (TREE_CHAIN (specs) == NULL_TREE)
-		        specs = get_decl_list (current_class_name);
-		      else
-		        TREE_VALUE (specs) = current_class_name;
-		    } 
-		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs),
-					 empty_parms (), $3);
-		  $$ = grokfield ($$, TREE_CHAIN (specs), $4, $7, $5,
-				  build_tree_list ($6, attrs)); }
+		  $$ = grokfield ($2, specs, $3, $6, $4,
+				  build_tree_list ($5, attrs)); }
+	| component_constructor_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
+		{ $$ = grokfield ($$, NULL_TREE, $2, $5, $3, $4); }
 	| using_decl
 		{ $$ = do_class_using_decl ($1); }
 	;
@@ -2808,7 +2807,6 @@ complete_type_name:
 		    {
 		      if (current_class_type
 			  && TYPE_BEING_DEFINED (current_class_type)
-			  && ! TREE_MANGLED ($1)
 			  && ! IDENTIFIER_CLASS_VALUE ($1))
 			{
 			  /* Be sure to get an inherited typedef.  */
@@ -2826,16 +2824,7 @@ complete_type_name:
 	| global_scope type_name
 		{
 		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    {
-		      if (current_class_type
-			  && TYPE_BEING_DEFINED (current_class_type)
-			  && ! TREE_MANGLED ($2)
-			  && ! IDENTIFIER_CLASS_VALUE ($2))
-			/* Be sure to get an inherited typedef.  */
-			$$ = lookup_name ($2, 1);
-		      else
-		        $$ = identifier_typedecl_value ($2);
-		    }
+		    $$ = identifier_typedecl_value ($2);
 		  else
 		    $$ = $2;
 		  got_scope = NULL_TREE;
@@ -2948,6 +2937,7 @@ functional_cast:
 
 type_name:
 	  TYPENAME
+	| SELFNAME
 	| template_type %prec EMPTY
 	;
 
@@ -2962,14 +2952,22 @@ nested_name_specifier:
 nested_name_specifier_1:
 	  TYPENAME SCOPE
 		{
-		  $$ = lastiddecl;
-		  /* Remember that this name has been used in the class
-		     definition, as per [class.scope0] */
-		  if (current_class_type
-		      && TYPE_BEING_DEFINED (current_class_type)
-		      && ! TREE_MANGLED ($1)
-		      && ! IDENTIFIER_CLASS_VALUE ($1))
-		    pushdecl_class_level ($$);
+		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
+		    {
+		      $$ = lastiddecl;
+		      /* Remember that this name has been used in the class
+			 definition, as per [class.scope0] */
+		      if (current_class_type
+			  && TYPE_BEING_DEFINED (current_class_type)
+			  && ! IDENTIFIER_CLASS_VALUE ($1))
+			pushdecl_class_level ($$);
+		    }
+		  got_scope = $$ = TREE_TYPE ($$);
+		}
+	| SELFNAME SCOPE
+		{
+		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
+		    $$ = lastiddecl;
 		  got_scope = $$ = TREE_TYPE ($$);
 		}
 	| NSNAME SCOPE
@@ -2992,16 +2990,7 @@ complex_type_name:
 	  global_scope type_name
 		{
 		  if (TREE_CODE ($2) == IDENTIFIER_NODE)
-		    {
-		      if (current_class_type
-			  && TYPE_BEING_DEFINED (current_class_type)
-			  && ! TREE_MANGLED ($2)
-			  && ! IDENTIFIER_CLASS_VALUE ($2))
-			/* Be sure to get an inherited typedef.  */
-			$$ = lookup_name ($2, 1);
-		      else
-		        $$ = identifier_typedecl_value ($2);
-		    }
+		    $$ = identifier_typedecl_value ($2);
 		  else
 		    $$ = $2;
 		  got_scope = NULL_TREE;
@@ -3674,6 +3663,8 @@ label_colon:
 	| PTYPENAME ':'
 		{ goto do_label; }
 	| TYPENAME ':'
+		{ goto do_label; }
+	| SELFNAME ':'
 		{ goto do_label; }
 	;
 

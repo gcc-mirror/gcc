@@ -234,6 +234,14 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	return temp;
       }
 
+    case VEC_INIT_EXPR:
+      return expand_expr
+	(expand_vec_init
+	 (NULL_TREE, TREE_OPERAND (exp, 0),
+	  build_binary_op (MINUS_EXPR, TREE_OPERAND (exp, 2),
+			   integer_one_node, 1),
+	  TREE_OPERAND (exp, 1), 0), target, tmode, modifier);
+
     default:
       break;
     }

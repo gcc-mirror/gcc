@@ -1819,7 +1819,7 @@ make_thunk (function, delta)
       DECL_INITIAL (thunk) = function;
       THUNK_DELTA (thunk) = delta;
       DECL_EXTERNAL (thunk) = 1;
-      TREE_PUBLIC (thunk) = 1;
+      TREE_PUBLIC (thunk) = 0;
       /* So that finish_file can write out any thunks that need to be: */
       pushdecl_top_level (thunk);
     }
@@ -1831,12 +1831,12 @@ emit_thunk (thunk_fndecl)
   tree thunk_fndecl;
 {
   rtx insns;
-  char *fnname;
   char buffer[250];
   tree argp;
   struct args_size stack_args_size;
   tree function = TREE_OPERAND (DECL_INITIAL (thunk_fndecl), 0);
   int delta = THUNK_DELTA (thunk_fndecl);
+  char *fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
   int tem;
   int failure = 0;
 
@@ -1856,16 +1856,14 @@ emit_thunk (thunk_fndecl)
 
   TREE_ASM_WRITTEN (thunk_fndecl) = 1;
 
-  if (! TREE_PUBLIC (function))
-    TREE_PUBLIC (thunk_fndecl) = 0;
-  if (DECL_EXTERNAL (function))
-    return;
-  DECL_EXTERNAL (thunk_fndecl) = 0;
-
   decl_printable_name = thunk_printable_name;
   if (current_function_decl)
     abort ();
   current_function_decl = thunk_fndecl;
+#ifdef ASM_OUTPUT_MI_THUNK
+  assemble_start_function (thunk_fndecl, fnname);
+  ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);
+#else
   init_function_start (thunk_fndecl, input_filename, lineno);
   pushlevel (0);
   expand_start_bindings (1);
@@ -2031,12 +2029,9 @@ emit_thunk (thunk_fndecl)
 
   /* Now turn the rtl into assembler code.  */
 
-    {
-      char *fnname = XSTR (XEXP (DECL_RTL (thunk_fndecl), 0), 0);
-      assemble_start_function (thunk_fndecl, fnname);
-      final (insns, asm_out_file, optimize, 0);
-      assemble_end_function (thunk_fndecl, fnname);
-    };
+  assemble_start_function (thunk_fndecl, fnname);
+  final (insns, asm_out_file, optimize, 0);
+  assemble_end_function (thunk_fndecl, fnname);
 
  exit_rest_of_compilation:
 
@@ -2047,6 +2042,7 @@ emit_thunk (thunk_fndecl)
   resume_temporary_allocation ();
 
   decl_printable_name = save_decl_printable_name;
+#endif /* ASM_OUTPUT_MI_THUNK */
   current_function_decl = 0;
 }
 

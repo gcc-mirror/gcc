@@ -291,6 +291,7 @@ yylex ()
 	  switch (tmp_token.yychar)
 	    {
 	    case TYPENAME:
+	    case SELFNAME:
 	      lastiddecl = identifier_typedecl_value (tmp_token.yylval.ttype);
 	      if (lastiddecl != trrr)
 		{

@@ -1296,7 +1296,7 @@ find_scoped_type (type, inner_name, inner_types)
       if (TREE_PURPOSE (tags) == inner_name)
 	{
 	  if (inner_types == NULL_TREE)
-	    return DECL_NESTED_TYPENAME (TYPE_NAME (TREE_VALUE (tags)));
+	    return TYPE_NAME (TREE_VALUE (tags));
 	  return resolve_scope_to_name (TREE_VALUE (tags), inner_types);
 	}
       tags = TREE_CHAIN (tags);
@@ -1308,7 +1308,7 @@ find_scoped_type (type, inner_name, inner_types)
       {
 	/* Code by raeburn.  */
 	if (inner_types == NULL_TREE)
-	  return DECL_NESTED_TYPENAME (tags);
+	  return tags;
 	return resolve_scope_to_name (TREE_TYPE (tags), inner_types);
       }
 
@@ -1569,6 +1569,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
   tree last;
   int pass;
   tree access = access_public_node;
+  tree orig_basetype = basetype_path ? BINFO_TYPE (basetype_path) : NULL_TREE;
 
   /* Range of cases for vtable optimization.  */
   enum vtable_needs { not_needed, maybe_needed, unneeded, needed };
@@ -2416,21 +2417,23 @@ build_method_call (instance, name, parms, basetype_path, flags)
   if (TREE_CODE (fntype) == METHOD_TYPE && static_call_context
       && !DECL_CONSTRUCTOR_P (function))
     {
-      /* Let's be nice to the user for now, and give reasonable
-	 default behavior.  */
+      /* Let's be nasty to the user now, and give reasonable
+	 error messages.  */
       instance_ptr = current_class_decl;
       if (instance_ptr)
 	{
 	  if (basetype != current_class_type)
 	    {
-	      tree binfo = get_binfo (basetype, current_class_type, 1);
-	      if (binfo == NULL_TREE)
-		{
-		  error_not_base_type (function, current_class_type);
-		  return error_mark_node;
-		}
-	      else if (basetype == error_mark_node)
+	      if (basetype == error_mark_node)
 		return error_mark_node;
+	      else 
+                {
+		  if (orig_basetype != NULL_TREE)
+		    error_not_base_type (orig_basetype, current_class_type);
+		  else
+		    error_not_base_type (function, current_class_type);
+                  return error_mark_node;
+                }
 	    }
 	}
       /* Only allow a static member function to call another static member

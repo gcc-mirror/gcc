@@ -150,7 +150,7 @@ int warn_implicit = 1;
 
 int warn_ctor_dtor_privacy = 1;
 
-/* True if we want to implement vtbvales using "thunks".
+/* True if we want to implement vtables using "thunks".
    The default is off now, but will be on later. */
 
 int flag_vtable_thunks;
@@ -2448,6 +2448,11 @@ mark_vtable_entries (decl)
       TREE_ADDRESSABLE (fn) = 1;
       if (DECL_LANG_SPECIFIC (fn) && DECL_ABSTRACT_VIRTUAL_P (fn))
 	TREE_OPERAND (fnaddr, 0) = fn = abort_fndecl;
+      if (TREE_CODE (fn) == THUNK_DECL && DECL_EXTERNAL (fn))
+	{
+	  DECL_EXTERNAL (fn) = 0;
+	  emit_thunk (fn);
+	}
       mark_used (fn);
     }
 }
@@ -3187,11 +3192,9 @@ finish_file ()
 
   for (vars = getdecls (); vars; vars = TREE_CHAIN (vars))
     {
-      if (TREE_CODE (vars) == THUNK_DECL)
-	emit_thunk (vars);
-      else if (TREE_CODE (vars) == FUNCTION_DECL
-	       && ! DECL_INTERFACE_KNOWN (vars)
-	       && DECL_C_STATIC (vars))
+      if (TREE_CODE (vars) == FUNCTION_DECL
+	  && ! DECL_INTERFACE_KNOWN (vars)
+	  && DECL_C_STATIC (vars))
 	TREE_PUBLIC (vars) = 0;
     }
 

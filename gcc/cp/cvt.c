@@ -133,6 +133,8 @@ cp_convert_to_pointer (type, expr)
 
       if (TYPE_MAIN_VARIANT (type) != intype
 	  && TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE
+	  && IS_AGGR_TYPE (TREE_TYPE (type))
+	  && IS_AGGR_TYPE (TREE_TYPE (intype))
 	  && TREE_CODE (TREE_TYPE (intype)) == RECORD_TYPE)
 	{
 	  enum tree_code code = PLUS_EXPR;
@@ -281,6 +283,8 @@ convert_to_pointer_force (type, expr)
 
       if (TYPE_MAIN_VARIANT (type) != intype
 	  && TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE
+	  && IS_AGGR_TYPE (TREE_TYPE (type))
+	  && IS_AGGR_TYPE (TREE_TYPE (intype))
 	  && TREE_CODE (TREE_TYPE (intype)) == RECORD_TYPE)
 	{
 	  enum tree_code code = PLUS_EXPR;

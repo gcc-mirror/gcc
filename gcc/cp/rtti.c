@@ -320,6 +320,18 @@ throw_bad_cast ()
   return d;
 }
 
+/* Check whether TEST is null before returning RESULT.  If TEST is used in
+   RESULT, it must have previously had a save_expr applied to it.  */
+
+tree ifnonnull (test, result)
+     tree test, result;
+{
+  return build (COND_EXPR, TREE_TYPE (result),
+		build (EQ_EXPR, boolean_type_node, test, integer_zero_node),
+		convert (TREE_TYPE (result), integer_zero_node),
+		result);
+}
+
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
    paper.  */
 
@@ -406,6 +418,7 @@ build_dynamic_cast (type, expr)
   /* Otherwise *exprtype must be a polymorphic class (have a vtbl).  */
   if (TYPE_VIRTUAL_P (TREE_TYPE (exprtype)))
     {
+      tree expr1;
       /* if TYPE is `void *', return pointer to complete object.  */
       if (tc == POINTER_TYPE
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
@@ -416,15 +429,18 @@ build_dynamic_cast (type, expr)
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (expr, 0))) == RECORD_TYPE)
 	    return build1 (NOP_EXPR, type, expr);
 
-	  expr = build_headof (expr);
-	  if (TREE_TYPE (expr) != type)
-	    expr = build1 (NOP_EXPR, type, expr);
-	  return expr;
+	  /* Since expr is used twice below, save it.  */
+	  expr = save_expr (expr);
+
+	  expr1 = build_headof (expr);
+	  if (TREE_TYPE (expr1) != type)
+	    expr1 = build1 (NOP_EXPR, type, expr1);
+	  return ifnonnull (expr, expr1);
 	}
       else
 	{
 	  tree retval;
-          tree result, td1, td2, td3, elems, expr1, expr2;
+          tree result, td1, td2, td3, elems, expr2;
 
  	  /* If we got here, we can't convert statically.  Therefore,
 	     dynamic_cast<D&>(b) (b an object) cannot succeed.  */
@@ -522,7 +538,7 @@ build_dynamic_cast (type, expr)
 
 	  /* Now back to the type we want from a void*. */
 	  result = convert (type, result);
-          return result;
+          return ifnonnull (expr, result);
 	}
     }
 
@@ -603,7 +619,6 @@ expand_class_desc (tdecl, type)
      tree tdecl;
      tree type;
 {
-  tree tname = TYPE_NESTED_NAME (type);
   tree name_string;
   tree fn, tmp;
   char *name;

@@ -1955,56 +1955,6 @@ set_identifier_type_value (id, type)
   set_identifier_type_value_with_scope (id, type, inner_binding_level);
 }
 
-/* Subroutine "set_nested_typename" builds the nested-typename of
-   the type decl in question.  (Argument CLASSNAME can actually be
-   a function as well, if that's the smallest containing scope.)  */
-
-void
-set_nested_typename (decl, classname, name, type)
-     tree decl, classname, name, type;
-{
-  char *buf;
-  my_friendly_assert (TREE_CODE (decl) == TYPE_DECL, 136);
-
-  /* No need to do this for anonymous names, since they're unique.  */
-  if (ANON_AGGRNAME_P (name))
-    {
-      DECL_NESTED_TYPENAME (decl) = name;
-      return;
-    }
-
-  if (classname == NULL_TREE)
-    classname = get_identifier ("");
-
-  my_friendly_assert (TREE_CODE (classname) == IDENTIFIER_NODE, 137);
-  my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 138);
-  buf = (char *) alloca (4 + IDENTIFIER_LENGTH (classname)
-			 + IDENTIFIER_LENGTH (name));
-  sprintf (buf, "%s::%s", IDENTIFIER_POINTER (classname),
-	   IDENTIFIER_POINTER (name));
-  DECL_NESTED_TYPENAME (decl) = get_identifier (buf);
-  TREE_MANGLED (DECL_NESTED_TYPENAME (decl)) = 1;
-
-  /* Create an extra decl so that the nested name will have a type value
-     where appropriate.  */
-  {
-    tree nested, type_decl;
-    nested = DECL_NESTED_TYPENAME (decl);
-    type_decl = build_decl (TYPE_DECL, nested, type);
-    DECL_NESTED_TYPENAME (type_decl) = nested;
-    SET_DECL_ARTIFICIAL (type_decl);
-    /* Mark the TYPE_DECL node created just above as a gratuitous one so that
-       dwarfout.c will know not to generate a TAG_typedef DIE for it, and
-       sdbout.c won't try to output a .def for "::foo".  */
-    DECL_IGNORED_P (type_decl) = 1;
-
-    /* Remove this when local classes are fixed.  */
-    SET_IDENTIFIER_TYPE_VALUE (nested, type);
-
-    pushdecl_nonclass_level (type_decl);
-  }
-}
-
 /* Pop off extraneous binding levels left over due to syntax errors.
 
    We don't pop past namespaces, as they might be valid.  */
@@ -2138,19 +2088,6 @@ pushtag (name, type, globalize)
 		}
 
 	      TYPE_CONTEXT (type) = DECL_CONTEXT (d);
-
-	      if (context == NULL_TREE)
-		/* Non-nested class.  */
-		set_nested_typename (d, NULL_TREE, name, type);
-	      else if (context && TREE_CODE (context) == FUNCTION_DECL)
-		/* Function-nested class.  */
-		set_nested_typename (d, DECL_ASSEMBLER_NAME (c_decl),
-				     name, type);
-	      else /* if (context && IS_AGGR_TYPE (context)) */
-		/* Class-nested class.  */
-		set_nested_typename (d, DECL_NESTED_TYPENAME (c_decl),
-				     name, type);
-
 	      DECL_ASSEMBLER_NAME (d)
 		= get_identifier (build_overload_name (type, 1, 1));
 	    }
@@ -2681,8 +2618,6 @@ duplicate_decls (newdecl, olddecl)
       register tree newtype = TREE_TYPE (newdecl);
       register tree oldtype = TREE_TYPE (olddecl);
 
-      DECL_NESTED_TYPENAME (newdecl) = DECL_NESTED_TYPENAME (olddecl);
-
       if (newtype != error_mark_node && oldtype != error_mark_node
 	  && TYPE_LANG_SPECIFIC (newtype) && TYPE_LANG_SPECIFIC (oldtype))
 	{
@@ -3160,12 +3095,6 @@ pushdecl (x)
 	    }
 	  my_friendly_assert (TREE_CODE (name) == TYPE_DECL, 140);
 
-	  /* Don't set nested_typename on template type parms, for instance.
-	     Any artificial decls that need DECL_NESTED_TYPENAME will have it
-	     set in pushtag.  */
-	  if (! DECL_NESTED_TYPENAME (x) && ! DECL_ARTIFICIAL (x))
-	    set_nested_typename (x, current_class_type != NULL_TREE ? TYPE_NESTED_NAME (current_class_type) : current_class_name, DECL_NAME (x), type);
-
 	  if (type != error_mark_node
 	      && TYPE_NAME (type)
 	      && TYPE_IDENTIFIER (type))
@@ -3486,12 +3415,6 @@ pushdecl_class_level (x)
       if (TREE_CODE (x) == TYPE_DECL)
 	{
 	  set_identifier_type_value (name, TREE_TYPE (x));
-
-	  /* Don't set nested_typename on template type parms, for instance.
-	     Any artificial decls that need DECL_NESTED_TYPENAME will have it
-	     set in pushtag.  */
-	  if (! DECL_NESTED_TYPENAME (x) && ! DECL_ARTIFICIAL (x))
-	    set_nested_typename (x, current_class_type != NULL_TREE ? TYPE_NESTED_NAME (current_class_type) : current_class_name, name, TREE_TYPE (x));
 	}
     }
   return x;
@@ -4105,8 +4028,7 @@ lookup_tag (form, name, binding_level, thislevel_only)
       else
 	for (tail = level->tags; tail; tail = TREE_CHAIN (tail))
 	  {
-	    if (TREE_PURPOSE (tail) == name
-		|| TYPE_NESTED_NAME (TREE_VALUE (tail)) == name)
+	    if (TREE_PURPOSE (tail) == name)
 	      {
 		enum tree_code code = TREE_CODE (TREE_VALUE (tail));
 		/* Should tighten this up; it'll probably permit
@@ -4327,7 +4249,12 @@ tree
 make_typename_type (context, name)
      tree context, name;
 {
-  tree t, d, i;
+  tree t, d;
+
+  if (TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
+  else if (TREE_CODE (name) != IDENTIFIER_NODE)
+    my_friendly_abort (2000);
 
   if (! current_template_parms
       || ! uses_template_parms (context))
@@ -4345,16 +4272,12 @@ make_typename_type (context, name)
     push_obstacks (&permanent_obstack, &permanent_obstack);
   t = make_lang_type (TYPENAME_TYPE);
   d = build_decl (TYPE_DECL, name, t);
-  i = make_anon_name ();
   if (current_template_parms)
     pop_obstacks ();
 
   TYPE_CONTEXT (t) = context;
   TYPE_MAIN_DECL (TREE_TYPE (d)) = d;
   DECL_CONTEXT (d) = context;
-  DECL_NESTED_TYPENAME (d) = i;
-  IDENTIFIER_LOCAL_VALUE (i) = d;
-  TREE_TYPE (i) = t;
 
   return t;
 }
@@ -4396,6 +4319,8 @@ lookup_name_real (name, prefer_type, nonclass)
 	{
 	  if (type == error_mark_node)
 	    return error_mark_node;
+	  if (TREE_CODE (type) == TYPENAME_TYPE && TREE_TYPE (type))
+	    type = TREE_TYPE (type);
 
 	  type = complete_type (type);
 
@@ -4436,6 +4361,18 @@ lookup_name_real (name, prefer_type, nonclass)
 	}
       else
 	val = NULL_TREE;
+
+#if 0
+      if (got_scope && current_template_parms
+	  && uses_template_parms (got_scope)
+	  && val && TREE_CODE (val) == TYPE_DECL
+	  && ! DECL_ARTIFICIAL (val))
+	{
+	  tree t = make_typename_type (got_scope, DECL_NAME (val));
+	  TREE_TYPE (t) = TREE_TYPE (val);
+	  val = TYPE_MAIN_DECL (t);
+	}
+#endif
 
       if (got_scope)
 	goto done;
@@ -8992,14 +8929,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	  {
 	    tree d = TYPE_NAME (type), c = DECL_CONTEXT (d);
 
-	    if (!c)
-	      set_nested_typename (d, NULL_TREE, declarator, type);
-	    else if (TREE_CODE (c) == FUNCTION_DECL)
-	      set_nested_typename (d, DECL_ASSEMBLER_NAME (c),
-				   declarator, type);
-	    else
-	      set_nested_typename (d, TYPE_NESTED_NAME (c), declarator, type);
-
 	    DECL_ASSEMBLER_NAME (d) = DECL_NAME (d);
 	    DECL_ASSEMBLER_NAME (d)
 	      = get_identifier (build_overload_name (type, 1, 1));
@@ -10251,6 +10180,7 @@ xref_tag (code_type_node, name, binfo, globalize)
   int temp = 0;
   register tree ref, t;
   struct binding_level *b = inner_binding_level;
+  int got_type = 0;
 
   tag_code = (enum tag_types) TREE_INT_CST_LOW (code_type_node);
   switch (tag_code)
@@ -10275,7 +10205,8 @@ xref_tag (code_type_node, name, binfo, globalize)
   if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
     {
       t = name;
-      name = TYPE_NESTED_NAME (t);
+      name = TYPE_IDENTIFIER (t);
+      got_type = 1;
     }
   else
     t = IDENTIFIER_TYPE_VALUE (name);
@@ -10289,11 +10220,11 @@ xref_tag (code_type_node, name, binfo, globalize)
 	  cp_pedwarn ("redeclaration of template type-parameter `%T'", name);
 	  cp_pedwarn_at ("  previously declared here", t);
 	}
-      /* If we know we are defining this tag, only look it up in this scope
-       * and don't try to find it as a type. */
-      if (t && TYPE_CONTEXT (t) && TREE_MANGLED (name))
+      if (t && TYPE_CONTEXT (t) && got_type)
 	ref = t;
       else
+	/* If we know we are defining this tag, only look it up in this scope
+	 * and don't try to find it as a type. */
       	ref = lookup_tag (code, name, b, 1);
     }
   else
@@ -10478,6 +10409,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 	basetype = TREE_TYPE (basetype);
       if (!basetype
 	  || (TREE_CODE (basetype) != RECORD_TYPE
+	      && TREE_CODE (basetype) != TYPENAME_TYPE
 	      && TREE_CODE (basetype) != TEMPLATE_TYPE_PARM))
 	{
 	  cp_error ("base type `%T' fails to be a struct or class type",
@@ -10487,6 +10419,7 @@ xref_basetypes (code_type_node, name, ref, binfo)
 #if 1
       /* This code replaces similar code in layout_basetypes.  */
       else if (TREE_CODE (basetype) != TEMPLATE_TYPE_PARM
+	       && TREE_CODE (basetype) != TYPENAME_TYPE
 	       && TYPE_SIZE (complete_type (basetype)) == NULL_TREE)
 	{
 	  cp_error ("base class `%T' has incomplete type", basetype);

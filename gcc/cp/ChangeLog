@@ -1,13 +1,82 @@
-Wed Apr 17 15:20:10 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+Thu Apr 18 08:56:54 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (make_typename_type): Handle getting a TYPE_DECL for a
+ 	name.
+	* parse.y (base_class.1): Allow 'typename foo::bar'.
+
+	* lex.c (check_newline): Remove #pragma code that plays with the
+ 	input stream, since we now deal with tokens.  Clear nextchar when
+ 	we're done.
+	(handle_cp_pragma): Use real_yylex.
+	(handle_sysv_pragma): Don't do skipline here.  Only call real_yylex
+	in one place.
+
+	* lex.c (check_for_missing_semicolon): Handle SELFNAME.
+
+	* lex.c (handle_cp_pragma): Fix "#pragma implementation".
+
+Wed Apr 17 16:51:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y: New token SELFNAME for potential constructor.
+	* spew.c (yylex): Handle it.
+	* lex.c (identifier_type): Produce it.
+
+	* parse.y (complete_type_name): In :: case, don't push class binding.
+	(complex_type_name): Ditto.
+
+Wed Apr 17 15:02:40 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_reinterpret_cast): Handle pointer to member
+ 	functions.
+
+Wed Apr 17 12:28:26 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* lex.c (handle_cp_pragma): New function, with decl, doing the cc1plus
-	pragmas.
+ 	pragmas.
 	(check_newline): Put the vtable/unit/implementation/interface pragma
-	code into handle_cp_pragma, replacing it with a call.
+ 	code into handle_cp_pragma, replacing it with a call.
 	(handle_sysv_pragma): Give int return type, and take FINPUT and TOKEN
-	args.  Get the next token after handling the pragma token.
+ 	args.  Get the next token after handling the pragma token.
+
+Wed Apr 17 10:28:34 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (cp_convert_to_pointer): Avoid doing base analysis on pmfs.
+	(convert_to_pointer_force): Ditto.
+
+	* init.c (build_new): Fix array new without -fcheck-new.
+
+Tue Apr 16 13:44:58 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h, call.c, class.c, decl.c, parse.y, pt.c, rtti.c,
+	tree.c: Lose TYPE_NESTED_NAME.
+
+	* parse.y (nested_name_specifier_1): Don't treat non-identifiers
+	as identifiers.
+
+	* tree.def: Add VEC_INIT_EXPR.
+	* expr.c (cplus_expand_expr): Handle it.
+	* init.c (build_new): Use it instead of the RTL_EXPR nastiness and
+ 	the extra file-scope symbol nastiness.
+
+Mon Apr 15 16:21:29 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (make_thunk): Thunks are static.
+	(emit_thunk): Use ASM_OUTPUT_MI_THUNK if it's defined.
+
+	* decl2.c (mark_vtable_entries): Emit thunks as needed.
+	(finish_file): Don't emit them here.
+
+Sun Apr 14 11:34:39 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* rtti.c (build_dynamic_cast): Handle null pointers.
+	(ifnonnull): New function.
 
 Fri Apr 12 09:08:27 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* call.c (build_method_call): Remember the original basetype we
+ 	were called with. Give an error message instead of trying
+ 	(incorrectly) to call a non-static member function through a
+ 	non-inherited class.
 
 	* search.c (expand_upcast_fixups): Mark the new fixup as
 	DECL_ARTIFICIAL.
