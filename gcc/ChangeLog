@@ -1,3 +1,12 @@
+2004-06-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree-nested.c (build_addr): Merge real/imagpart with
+	handled_component_p.
+	(convert_nonlocal_reference, convert_local_reference): Process extra
+	args to COMPONENT_REF and ARRAY_REF.
+	* tree-outof-ssa.c (discover_nonconstant_array_refs_r): Check for
+	lower bound and field offset being constant.
+
 2004-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR wrong-code/16129
