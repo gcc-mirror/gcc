@@ -1,5 +1,8 @@
 2002-04-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* g77.dg/bprob/bprob.exp: Skip for mmix-*-* and cris-*-*.
+	* g++.dg/bprob/bprob.exp, gcc.misc-tests/bprob.exp: Ditto.
+
 	* g77.dg/f77-edit-i-in.f: xfail for mmix-knuth-mmixware.
 	* g77.f-torture/execute/io0.x, g77.f-torture/execute/io1.x,
 	g77.f-torture/execute/20001201.x,

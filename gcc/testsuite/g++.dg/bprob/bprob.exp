@@ -17,6 +17,13 @@
 # Test the functionality of programs compiled with profile-directed block
 # ordering using -fprofile-arcs followed by -fbranch-probabilities.
 
+# Some targets don't have any implementation of __bb_init_func or are
+# missing other needed machinery.
+if { [istarget mmix-*-*]
+     || [istarget cris-*-*] } {
+    return
+}
+
 # The procedures in profopt.exp need these parameters.
 set tool g++
 set profile_option -fprofile-arcs

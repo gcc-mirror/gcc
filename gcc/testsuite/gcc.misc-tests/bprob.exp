@@ -1,4 +1,4 @@
-#   Copyright (C) 2001 Free Software Foundation, Inc.
+#   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,13 @@
 
 # Test the functionality of programs compiled with profile-directed block
 # ordering using -fprofile-arcs followed by -fbranch-probabilities.
+
+# Some targets don't have any implementation of __bb_init_func or are
+# missing other needed machinery.
+if { [istarget mmix-*-*]
+     || [istarget cris-*-*] } {
+    return
+}
 
 # The procedures in profopt.exp need these parameters.
 set tool gcc
