@@ -297,7 +297,7 @@ extern void i386_pe_unique_section (TREE, int);
   do									\
     {									\
       if (TREE_CODE (DECL) == FUNCTION_DECL)				\
-	i386_pe_record_external_function (NAME);			\
+	i386_pe_record_external_function ((DECL), (NAME));		\
     }									\
   while (0)
 
@@ -345,7 +345,7 @@ extern void i386_pe_unique_section (TREE, int);
 
 /* External function declarations.  */
 
-extern void i386_pe_record_external_function (const char *);
+extern void i386_pe_record_external_function (tree, const char *);
 extern void i386_pe_declare_function_type (FILE *, const char *, int);
 extern void i386_pe_record_exported_symbol (const char *, int);
 extern void i386_pe_file_end (void);

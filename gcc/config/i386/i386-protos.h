@@ -234,7 +234,7 @@ extern int i386_pe_dllexport_name_p (const char *);
 extern int i386_pe_dllimport_name_p (const char *);
 extern void i386_pe_unique_section (tree, int);
 extern void i386_pe_declare_function_type (FILE *, const char *, int);
-extern void i386_pe_record_external_function (const char *);
+extern void i386_pe_record_external_function (tree, const char *);
 extern void i386_pe_record_exported_symbol (const char *, int);
 extern void i386_pe_asm_file_end (FILE *);
 extern void i386_pe_encode_section_info (tree, rtx, int);
