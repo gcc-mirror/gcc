@@ -59,6 +59,8 @@ do {  \
    be imported as an ENTRY symbol.  */
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
+  pa_hpux_asm_output_external ((FILE), (DECL), (NAME))
+#define ASM_OUTPUT_EXTERNAL_REAL(FILE, DECL, NAME) \
   do { fputs ("\t.IMPORT ", FILE);					\
        assemble_name_raw (FILE, NAME);					\
        if (FUNCTION_NAME_P (NAME))     					\
