@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.9 $
+--                            $Revision: 1.10 $
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -449,14 +449,10 @@ package body Make is
    --  Set to True after having scanned the file_name for
    --  switch "-o file_name"
 
-   File_Name_Seen : Boolean := False;
-   --  Set to true after having seen at least one file name.
-   --  Used in Scan_Make_Arg only, but must be a global variable.
-
    type Make_Program_Type is (None, Compiler, Binder, Linker);
 
    Program_Args : Make_Program_Type := None;
-   --  Used to indicate if we are scanning gcc, gnatbind, or gnatbl
+   --  Used to indicate if we are scanning gnatmake, gcc, gnatbind, or gnatbind
    --  options within the gnatmake command line.
    --  Used in Scan_Make_Arg only, but must be a global variable.
 
@@ -4089,17 +4085,14 @@ package body Make is
       elsif (Argv (1) = Switch_Character or else Argv (1) = '-')
         and then (Argv (2 .. Argv'Last) = "cargs"
                    or else Argv (2 .. Argv'Last) = "bargs"
-                   or else Argv (2 .. Argv'Last) = "largs")
+                    or else Argv (2 .. Argv'Last) = "largs"
+                    or else Argv (2 .. Argv'Last) = "margs")
       then
-         if not File_Name_Seen then
-            Fail ("-cargs, -bargs, -largs ",
-                  "must appear after unit or file name");
-         end if;
-
          case Argv (2) is
             when 'c' => Program_Args := Compiler;
             when 'b' => Program_Args := Binder;
             when 'l' => Program_Args := Linker;
+            when 'm' => Program_Args := None;
 
             when others =>
                raise Program_Error;
@@ -4458,7 +4451,6 @@ package body Make is
       --  If not a switch it must be a file name
 
       else
-         File_Name_Seen := True;
          Set_Main_File_Name (Argv);
       end if;
    end Scan_Make_Arg;

@@ -1,3 +1,8 @@
+2002-04-04  Laurent Guerby  <guerby@acm.org>
+
+	* make.adb: Implement -margs, remove restriction about file name placement.
+	* makeusg.adb: Documentation update.
+
 2002-03-11  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (.NOTPARALLEL): Add fake tag.
