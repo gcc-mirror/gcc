@@ -4871,7 +4871,8 @@ fold (expr)
 	       && real_zerop (arg1))
 	return non_lvalue (convert (type, arg0));
       /* x+(-0) equals x, even for IEEE.  */
-      else if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
+      else if (TREE_CODE (arg1) == REAL_CST
+	       && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (arg1)))
 	return non_lvalue (convert (type, arg0));
 
      bit_rotate:

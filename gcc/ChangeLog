@@ -1,3 +1,7 @@
+Tue Oct 19 01:26:48 1999  Alasdair Baird <alasdair@wildcat.demon.co.uk>
+
+	* fold-const.c (fold): Fix thinko in x+(-0) -> x transformation.
+
 Mon Oct 18 15:19:41 1999  Richard Henderson  <rth@cygnus.com>
 
 	* basic-block.h (set_block_num): Declare.
