@@ -94,16 +94,19 @@ BEGIN {
   print "cat <<'"'"'EOF'"'"' |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
-$1 ~ /\/configure$/ {
-    srcdir = $1;
-    gsub(/\/configure$/, "", srcdir);
+$0 ~ /^(|# )[^ ]*\/configure / {
+    configflags = $0 " ";
+    gsub(/^# /, "", configflags);
+    srcdir = configflags;
+    gsub(/\/configure .*/, "", srcdir);
     printf "LAST_UPDATED: ";
     system("tail -1 " srcdir "/LAST_UPDATED");
     print "";
 
-    $1 = "configure flags:"; configflags = $0;
-    gsub(/--with-gcc-version-trigger=[^ ]* /, "", configflags);
-    gsub(/ --norecursion/, "", configflags)
+    gsub(/^[^ ]*\/configure /, "configure flags: ", configflags);
+    gsub(/ --with-gcc-version-trigger=[^ ]* /, " ", configflags);
+    gsub(/ --norecursion /, " ", configflags);
+    gsub(/ $/, "", configflags);
 }
 /^Running target / { print ""; print; }
 /^Target / { if (host != "") next; else host = $3; }
