@@ -680,12 +680,8 @@ extern int rs6000_pic_labelno;
 #define	ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   asm_fprintf (FILE, "%L%s", PREFIX)
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-
-#define	ASM_GLOBALIZE_LABEL(FILE,NAME)	\
-  do { fputs ("\t.globl ", FILE);	\
-       assemble_name (FILE, NAME); putc ('\n', FILE);} while (0)
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP "\t.globl "
 
 /* This says how to output assembler code to declare an
    uninitialized internal linkage data object.  Under SVR4,

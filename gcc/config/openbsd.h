@@ -175,10 +175,12 @@ Boston, MA 02111-1307, USA.  */
 #undef TYPE_ASM_OP
 #undef SIZE_ASM_OP
 #undef SET_ASM_OP
+#undef GLOBAL_ASM_OP
 
 #define TYPE_ASM_OP	"\t.type\t"
 #define SIZE_ASM_OP	"\t.size\t"
 #define SET_ASM_OP	"\t.set\t"
+#define GLOBAL_ASM_OP	"\t.globl\t"
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  */
@@ -273,14 +275,6 @@ do {									 \
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
        fputc ('\n', FILE); } while (0)
 #endif
-
-/* Tell the assembler that a symbol is global.  */
-#ifndef ASM_GLOBALIZE_LABEL
-#define ASM_GLOBALIZE_LABEL(FILE,NAME) \
-  do { fputs ("\t.globl\t", FILE); assemble_name (FILE, NAME); \
-       fputc ('\n', FILE); } while(0)
-#endif
-
 
 /* Storage layout.  */
 

@@ -1542,14 +1542,8 @@ typedef struct xtensa_args {
       goto FAIL;							\
   } while (0)
 
-/* This is how to output a command to make the user-level label named NAME
-   defined for reference from other files.  */
-#define ASM_GLOBALIZE_LABEL(STREAM, NAME)				\
-  do {									\
-    fputs ("\t.global\t", STREAM);					\
-    assemble_name (STREAM, NAME);					\
-    fputs ("\n", STREAM);						\
-  } while (0)
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP "\t.global\t"
 
 /* This says how to define a global common symbol.  */
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			\

@@ -3003,11 +3003,8 @@ while (0)
   if ((LOG) != 0)			\
     fprintf ((FILE), "\t.align %d\n", (LOG))
 
-/* Output a globalising directive for a label.  */
-#define ASM_GLOBALIZE_LABEL(STREAM,NAME)	\
-  (fprintf ((STREAM), "\t.global\t"),		\
-   assemble_name ((STREAM), (NAME)),		\
-   fputc ('\n', (STREAM)))
+/* Globalizing directive for a label.  */
+#define GLOBAL_ASM_OP "\t.global\t"
 
 /* #define ASM_OUTPUT_CASE_END(STREAM,NUM,TABLE)	    */
 
