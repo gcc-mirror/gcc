@@ -2021,7 +2021,7 @@ instantiate_decls_1 (let, valid_only)
     instantiate_decls_1 (t, valid_only);
 }
 
-/* Subroutine of the preceeding procedures: Given RTL representing a
+/* Subroutine of the preceding procedures: Given RTL representing a
    decl and the size of the object, do any instantiation required.
 
    If VALID_ONLY is non-zero, it means that the RTL should only be

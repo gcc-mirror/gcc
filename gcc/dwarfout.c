@@ -1851,7 +1851,7 @@ field_byte_offset (decl)
      for the declared type of the field) which it can possibly use, subject
      to the condition that there is still enough available space remaining
      in the containing object (when allocated at the selected point) to
-     fully accomodate all of the bits of the bit-field itself.
+     fully accommodate all of the bits of the bit-field itself.
 
      This simple rule makes it obvious why GCC allocates 8 bytes for each
      object of the structure type shown above.  When looking for a place to
@@ -1932,16 +1932,16 @@ location_attribute (rtl)
      don't do that.  Instead we output a zero-length location descriptor
      value as part of the location attribute.
 
-     A variable which has been optimized out of existance will have a
+     A variable which has been optimized out of existence will have a
      DECL_RTL value which denotes a pseudo-reg.
 
      Currently, in some rare cases, variables can have DECL_RTL values
      which look like (MEM (REG pseudo-reg#)).  These cases are due to
      bugs elsewhere in the compiler.  We treat such cases
-     as if the variable(s) in question had been optimized out of existance.
+     as if the variable(s) in question had been optimized out of existence.
 
      Note that in all cases where we wish to express the fact that a
-     variable has been optimized out of existance, we do not simply
+     variable has been optimized out of existence, we do not simply
      suppress the generation of the entire location attribute because
      the absence of a location attribute in certain kinds of DIEs is
      used to indicate something else entirely... i.e. that the DIE
