@@ -2046,7 +2046,11 @@ expand_stmt (t)
 	    if (TREE_CODE (decl) == VAR_DECL)
 	      DECL_DEAD_FOR_LOCAL (decl) = 0;
 	    maybe_push_decl (decl);
-	    cp_finish_decl (decl, DECL_INITIAL (decl), NULL_TREE, 0, 0);
+	    if (TREE_CODE (decl) == VAR_DECL && !TREE_STATIC (decl))
+	      {
+		maybe_inject_for_scope_var (decl);
+		initialize_local_var (decl, DECL_INITIAL (decl), 0);
+	      }
 	  }
 	resume_momentary (i);
       }
