@@ -1,3 +1,9 @@
+2004-05-07 Fariborz Jahanian <fjahanian@apple.com>
+	* config/rs6000/rs6000.c (rs6000_mixed_function_arg):
+	Generate appropriate parallels for vector arguments
+	passed to vararg functions. (function_arg): make the call
+	to rs6000_mixed_function_arg for vector args as needed.
+	
 2004-05-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_va_arg): Fix calculation of osize for
