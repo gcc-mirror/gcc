@@ -1,3 +1,10 @@
+Fri Nov  9 23:16:45 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (ffe_print_identifier): Rename.
+	(LANG_HOOKS_PRINT_IDENTIFIER): Override.
+	(lang_print_xnode, print_lang_decl, print_lang_statistics,
+	print_lang_type, set_yydebug): Remove.
+
 2001-11-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* g77spec.c (lang_specific_driver): Adjust behavior of -v and

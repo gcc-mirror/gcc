@@ -2956,13 +2956,7 @@ extern int lang_attribute_common;
 
 extern int mark_addressable		PARAMS ((tree));
 extern void incomplete_type_error	PARAMS ((tree, tree));
-extern void print_lang_statistics	PARAMS ((void));
 extern tree truthvalue_conversion	PARAMS ((tree));
-#ifdef BUFSIZ
-extern void print_lang_decl		PARAMS ((FILE *, tree, int));
-extern void print_lang_type		PARAMS ((FILE *, tree, int));
-extern void print_lang_identifier	PARAMS ((FILE *, tree, int));
-#endif
 extern int global_bindings_p		PARAMS ((void));
 extern void insert_block		PARAMS ((tree));
 
@@ -2971,9 +2965,6 @@ extern void save_for_inline		PARAMS ((tree));
 extern void set_decl_abstract_flags	PARAMS ((tree, int));
 extern void output_inline_function	PARAMS ((tree));
 extern void set_decl_origin_self	PARAMS ((tree));
-
-/* In front end.  */
-extern void set_yydebug			PARAMS ((int));
 
 /* In stor-layout.c */
 extern void fixup_signed_type		PARAMS ((tree));
@@ -3022,10 +3013,6 @@ extern tree case_index_expr_type	PARAMS ((void));
 extern HOST_WIDE_INT all_cases_count	PARAMS ((tree, int *));
 extern void check_for_full_enumeration_handling PARAMS ((tree));
 extern void declare_nonlocal_label	PARAMS ((tree));
-#ifdef BUFSIZ
-extern void lang_print_xnode 		PARAMS ((FILE *, tree, int));
-#endif
-
 
 /* If KIND=='I', return a suitable global initializer (constructor) name.
    If KIND=='D', return a suitable global clean-up (destructor) name.  */

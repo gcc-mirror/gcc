@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 
 void
-print_lang_decl (file, node, indent)
+cxx_print_decl (file, node, indent)
      FILE *file;
      tree node;
      int indent;
@@ -66,7 +66,7 @@ print_lang_decl (file, node, indent)
 }
 
 void
-print_lang_type (file, node, indent)
+cxx_print_type (file, node, indent)
      FILE *file;
      register tree node;
      int indent;
@@ -158,7 +158,7 @@ print_lang_type (file, node, indent)
 }
 
 void
-print_lang_identifier (file, node, indent)
+cxx_print_identifier (file, node, indent)
      FILE *file;
      tree node;
      int indent;
@@ -173,7 +173,7 @@ print_lang_identifier (file, node, indent)
 }
 
 void
-lang_print_xnode (file, node, indent)
+cxx_print_xnode (file, node, indent)
      FILE *file;
      tree node;
      int indent;

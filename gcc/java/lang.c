@@ -203,6 +203,8 @@ static int dependency_tracking = 0;
 #define LANG_HOOKS_INIT_OPTIONS java_init_options
 #undef LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION java_decode_option
+#undef LANG_HOOKS_SET_YYDEBUG
+#define LANG_HOOKS_SET_YYDEBUG java_set_yydebug
 
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -740,45 +742,4 @@ java_init_options ()
   flag_bounds_check = 1;
   flag_exceptions = 1;
   flag_non_call_exceptions = 1;
-}
-
-/* Hooks for print_node.  */
-
-void
-print_lang_decl (file, node, indent)
-     FILE *file __attribute ((__unused__));
-     tree node __attribute ((__unused__));
-     int indent __attribute ((__unused__));
-{
-}
-
-void
-print_lang_type (file, node, indent)
-     FILE *file __attribute ((__unused__));
-     tree node __attribute ((__unused__));
-     int indent __attribute ((__unused__));
-{
-}
-
-void
-print_lang_identifier (file, node, indent)
-     FILE *file __attribute ((__unused__));
-     tree node __attribute ((__unused__));
-     int indent __attribute ((__unused__));
-{
-}
-
-void
-print_lang_statistics ()
-{
-}
-
-/* used by print-tree.c */
-
-void
-lang_print_xnode (file, node, indent)
-     FILE *file __attribute ((__unused__));
-     tree node __attribute ((__unused__));
-     int indent __attribute ((__unused__));
-{
 }

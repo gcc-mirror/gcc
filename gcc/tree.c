@@ -45,6 +45,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hashtab.h"
 #include "output.h"
 #include "target.h"
+#include "langhooks.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -4424,7 +4425,7 @@ dump_tree_statistics ()
 #endif
   print_obstack_statistics ("permanent_obstack", &permanent_obstack);
   print_type_hash_statistics ();
-  print_lang_statistics ();
+  (*lang_hooks.print_statistics) ();
 }
 
 #define FILE_FUNCTION_PREFIX_LEN 9

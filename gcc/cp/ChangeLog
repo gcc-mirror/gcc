@@ -1,3 +1,16 @@
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_PRINT_DECL, LANG_HOOKS_PRINT_TYPE,
+	LANG_HOOKS_PRINT_STATISTICS, LANG_HOOKS_PRINT_XNODE,
+	LANG_HOOKS_PRINT_IDENTIFIER, LANG_HOOKS_SET_YYDEBUG): Override.
+	* cp-tree.h (print_class_statistics): Remove.
+	(cxx_print_statistics, cxx_print_xnode, cxx_print_decl, cxx_print_type,
+	cxx_print_identifier, cxx_set_yydebug): New.
+	* lex.c (set_yydebug): Rename c_set_yydebug.
+	* ptree.c (print_lang_decl, print_lang_type, print_lang_identifier,
+	lang_print_xnode): Rename.
+	* tree.c (print_lang_statistics): Rename.
+
 2001-11-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* class.c (dump_array): Fix format specifier warning.

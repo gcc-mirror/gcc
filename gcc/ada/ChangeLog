@@ -1,5 +1,12 @@
 2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* misc.c (gnat_print_decl, gnat_print_type): Renamed.
+	(LANG_HOOKS_PRINT_DECL, LANG_HOOKS_PRINT_TYPE): Override.
+	(print_lang_statistics, lang_print_xnode, print_lang_identifier,
+	set_yydebug): Remove.
+
+2001-11-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* misc.c (LANG_HOOKS_NAME, LANG_HOOKS_IDENTIFIER_SIZE): Override.
 	(struct lang_hooks): Constify.
 	(language_string, lang_identify): Remove.

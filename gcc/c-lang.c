@@ -61,6 +61,10 @@ static int c_cannot_inline_tree_fn PARAMS ((tree *));
 #define LANG_HOOKS_POST_OPTIONS c_post_options
 #undef LANG_HOOKS_GET_ALIAS_SET
 #define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
+#undef LANG_HOOKS_PRINT_IDENTIFIER
+#define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
+#undef LANG_HOOKS_SET_YYDEBUG
+#define LANG_HOOKS_SET_YYDEBUG c_set_yydebug
 
 #undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
 #define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
@@ -132,21 +136,6 @@ c_init ()
   lang_missing_noreturn_ok_p = &c_missing_noreturn_ok_p;
 
   c_parse_init ();
-}
-
-void
-print_lang_statistics ()
-{
-}
-
-/* used by print-tree.c */
-
-void
-lang_print_xnode (file, node, indent)
-     FILE *file ATTRIBUTE_UNUSED;
-     tree node ATTRIBUTE_UNUSED;
-     int indent ATTRIBUTE_UNUSED;
-{
 }
 
 /* Used by c-lex.c, but only for objc.  */

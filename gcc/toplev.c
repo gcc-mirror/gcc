@@ -4045,7 +4045,7 @@ decode_d_option (arg)
 	rtl_dump_and_exit = 1;
 	break;
       case 'y':
-	set_yydebug (1);
+	(*lang_hooks.set_yydebug) (1);
 	break;
       case 'D':	/* These are handled by the preprocessor.  */
       case 'I':
