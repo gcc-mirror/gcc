@@ -23777,6 +23777,7 @@ STAMP = echo timestamp >
 STAGE1_CFLAGS=@stage1_cflags@
 STAGE1_LANGUAGES=@stage1_languages@
 
+# TODO: deal with OBJS-onestep
 configure-stage1-gcc:
 	echo configure-stage1-gcc > stage_last ; \
 	if [ -f stage1-gcc/Makefile ] ; then \
@@ -23789,11 +23790,12 @@ configure-stage1-gcc:
 	mv stage1-gcc gcc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
@@ -23837,6 +23839,7 @@ all-stage1-gcc: configure-stage1-gcc all-bootstrap
 	mv gcc stage1-gcc ; \
 	$(STAMP) all-stage1-gcc
 
+# TODO: Deal with STAGE_PREFIX (which is only for ada, incidentally)
 configure-stage2-gcc: all-stage1-gcc
 	echo configure-stage2-gcc > stage_last ; \
 	if [ -f stage2-gcc/Makefile ] ; then \
@@ -23847,13 +23850,15 @@ configure-stage2-gcc: all-stage1-gcc
 	fi ; \
 	[ -d stage2-gcc ] || mkdir stage2-gcc; \
 	mv stage2-gcc gcc ; \
+	mv stage1-gcc prev-gcc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
@@ -23881,6 +23886,7 @@ configure-stage2-gcc: all-stage1-gcc
 	  $(HOST_CONFIGARGS) $${srcdiroption} ; \
 	cd .. ; \
 	mv gcc stage2-gcc ; \
+	mv prev-gcc stage1-gcc ; \
 	$(STAMP) configure-stage2-gcc
 
 # Flags to pass to stage2 and later makes.
@@ -23901,7 +23907,6 @@ all-stage2-gcc: all-stage1-gcc configure-stage2-gcc
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) \
 		CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
-		BUILD_CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		STAGE_PREFIX=$$r/prev-gcc/ \
 		$(POSTSTAGE1_FLAGS_TO_PASS) || exit 1 ; \
@@ -23920,13 +23925,15 @@ configure-stage3-gcc: all-stage2-gcc
 	fi ; \
 	[ -d stage3-gcc ] || mkdir stage3-gcc; \
 	mv stage3-gcc gcc ; \
+	mv stage1-gcc prev-gcc ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	CONFIG_SHELL="$(SHELL)"; export CONFIG_SHELL; \
+	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	CC="$(CC)"; export CC; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
-	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
@@ -23954,12 +23961,8 @@ configure-stage3-gcc: all-stage2-gcc
 	  $(HOST_CONFIGARGS) $${srcdiroption} ; \
 	cd .. ; \
 	mv gcc stage3-gcc ; \
+	mv prev-gcc stage2-gcc ; \
 	$(STAMP) configure-stage3-gcc
-
-# Some files might not exist.  This is disabled 'cause it don't work.
-# cp prev-gcc/objc/objc-parse.c gcc/objc/objc-parse.c || true ; \
-# cp prev-gcc/java/parse.c gcc/java/parse.c || true ; \
-# cp prev-gcc/java/parse-scan.c gcc/java/parse-scan.c || true ; \
 
 all-stage3-gcc: all-stage2-gcc configure-stage3-gcc
 	echo all-stage3-gcc > stage_last ; \
@@ -23970,7 +23973,6 @@ all-stage3-gcc: all-stage2-gcc configure-stage3-gcc
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) \
 		CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
-		BUILD_CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/" \
 		STAGE_PREFIX=$$r/prev-gcc/ \
 		$(POSTSTAGE1_FLAGS_TO_PASS) || exit 1 ; \

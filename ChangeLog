@@ -1,3 +1,10 @@
+2004-03-22  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Clean up experimental top level bootstrap support:
+	note known problems; set CONFIG_SHELL; don't set BUILD_CC; relocate
+	prev-gcc in configure- targets as well as all- targets.
+	* Makefile.in: Regenerate.
+
 2004-03-21  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* compile: New file imported from automake.
