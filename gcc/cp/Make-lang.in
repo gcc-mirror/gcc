@@ -45,10 +45,12 @@ CXX_FLAGS_TO_PASS = \
 # Actual names to use when installing a native compiler.
 CXX_INSTALL_NAME = `t='$(program_transform_name)'; echo c++ | sed $$t`
 GXX_INSTALL_NAME = `t='$(program_transform_name)'; echo g++ | sed $$t`
+DEMANGLER_INSTALL_NAME = `t='$(program_transform_name)'; echo c++filt | sed $$t`
 
 # Actual names to use when installing a cross-compiler.
 CXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++ | sed $$t`
 GXX_CROSS_NAME = `t='$(program_transform_cross_name)'; echo g++ | sed $$t`
+DEMANGLER_CROSS_NAME = `t='$(program_transform_cross_name)'; echo c++filt | sed $$t`
 
 # The name to use for the demangler program.
 DEMANGLER_PROG = c++filt$(exeext)
@@ -225,8 +227,17 @@ c++.install-common:
 	    rm -f $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
 	    $(LN) $(bindir)/$(GXX_INSTALL_NAME)$(exeext) $(bindir)/$(CXX_INSTALL_NAME)$(exeext); \
 	  fi ; \
-	  rm -f $(bindir)/$(DEMANGLER_PROG) ; \
-	  $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_PROG) ; \
+	  if [ x$(DEMANGLER_PROG) != x ] && [ -x "$(DEMANGLER_PROG)" ]; then \
+	    if [ -f g++-cross$(exeext) ] ; then \
+	      rm -f $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
+	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
+	      chmod a+x $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext); \
+	    else \
+	      rm -f $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
+	      $(INSTALL_PROGRAM) $(DEMANGLER_PROG) $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
+	      chmod a+x $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext); \
+	    fi ; \
+	  fi ; \
 	fi
 
 c++.install-info:
@@ -249,6 +260,8 @@ c++.uninstall:
 	-rm -rf $(bindir)/$(CXX_CROSS_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GXX_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GXX_CROSS_NAME)$(exeext)
+	-rm -rf $(bindir)/$(DEMANGLER_INSTALL_NAME)$(exeext)
+	-rm -rf $(bindir)/$(DEMANGLER_CROSS_NAME)$(exeext)
 	-rm -rf $(mandir)/$(GXX_INSTALL_NAME)$(manext)
 	-rm -rf $(mandir)/$(GXX_CROSS_NAME)$(manext)
 #

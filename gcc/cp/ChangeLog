@@ -1,3 +1,11 @@
+Sat Feb 14 11:50:51 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Make-lang.in (DEMANGLER_INSTALL_NAME, DEMANGLER_CROSS_NAME): New 
+	macros.
+	(c++.install-common): Install c++filt properly as native or as cross
+	variant.
+	(c++.uninstall): Add c++filt.
+
 Fri Feb 13 14:55:37 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (standard_conversion): Fix multi-level ptr conversions.
