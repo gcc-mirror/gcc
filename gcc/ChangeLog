@@ -1,5 +1,9 @@
 2004-12-22  Richard Henderson  <rth@redhat.com>
 
+	* varasm.c (force_const_mem): Call set_mem_align.
+
+2004-12-22  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/predicates.md (sse_comparison_operator): Fix
 	typo in ieee test.
 	(arith_or_logical_operator): Downcase codes.
