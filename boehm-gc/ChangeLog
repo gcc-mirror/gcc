@@ -1,3 +1,10 @@
+2005-01-01  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* configure.ac (AC_CONFIG_HEADERS): Build both include/gc_config.h 
+	and include/gc_ext_config.h.
+	* include/gc_ext_config.h: New file. Define only THREAD_LOCAL_ALLOC.
+	* include/gc.h: Undef PACKAGE_* before including gc_config.h.
+
 2004-12-13  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure: Regenerate.

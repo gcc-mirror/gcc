@@ -468,7 +468,7 @@ else
   multilib_arg=
 fi
 
-AC_CONFIG_HEADERS([include/gc_config.h])
+AC_CONFIG_HEADERS([include/gc_config.h include/gc_ext_config.h])
 
 AC_CONFIG_FILES(Makefile include/Makefile)
 AC_OUTPUT
