@@ -883,6 +883,7 @@ convert_to_void (tree expr, const char *implicit)
 	   of an overloaded function, and this is not one of them.  */
 	pedwarn ("%s cannot resolve address of overloaded function",
 		    implicit ? implicit : "void cast");
+	expr = void_zero_node;
       }
     else if (implicit && probe == expr && is_overloaded_fn (probe))
       /* Only warn when there is no &.  */
