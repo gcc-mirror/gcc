@@ -1,3 +1,7 @@
+2001-03-03  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (output_call_frame_info): Fix augmentation length.
+
 Sat Mar  3 04:17:17 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* combine.c (try_combine): If split with mode-changed scratch
