@@ -197,7 +197,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
       return;
     }
 
-  num_args = argc + added + need_math;
+  /* Make sure to have room for the trailing NULL argument.  */
+  num_args = argc + added + need_math + 1;
   arglist = (char **) xmalloc (num_args * sizeof (char *));
 
   /* NOTE: We start at 1 now, not 0.  */

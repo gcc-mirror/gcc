@@ -1,3 +1,7 @@
+Mon Aug 23 22:17:20 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* g++spec.c (lang_specific_driver): Add room for NULL in arglist.
+
 1999-08-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* exception.cc (__cplus_type_matcher): Call __throw_type_match_rtti_2.
