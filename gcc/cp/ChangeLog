@@ -1,5 +1,16 @@
 1999-08-03  Nathan Sidwell  <nathan@acm.org>
 
+	* call.c (convert_arg_to_ellipsis): Use pod_type_p.
+	* cp-tree.h (struct lang_type): Added non_pod_class flag.
+	(CLASSTYPE_NON_POD_P): New macro to access it.
+	* class.c (finish_struct_1): Determine non-PODness.
+	Check for arrays of pointers (-Weffc++).
+	Remove array inspection duplicated code.
+	* tree.c (pod_type_p): Detect non-pod non-aggregate types.
+	Use CLASSTYPE_NON_POD_P.
+
+1999-08-03  Nathan Sidwell  <nathan@acm.org>
+
 	* class.c (duplicate_tag_error): Preserve template information.
 
 1999-08-03  Nathan Sidwell  <nathan@acm.org>

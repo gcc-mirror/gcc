@@ -802,6 +802,7 @@ struct lang_type
       unsigned is_partial_instantiation : 1;
       unsigned has_mutable : 1;
       unsigned com_interface : 1;
+      unsigned non_pod_class : 1;
       /* When adding a flag here, consider whether or not it ought to
 	 apply to a template instance if it applies to the template.
 	 If so, make sure to copy it in instantiate_class_template!  */
@@ -809,7 +810,7 @@ struct lang_type
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 10;
+      unsigned dummy : 9;
     } type_flags;
 
   int vsize;
@@ -1075,6 +1076,9 @@ struct lang_type
 /* Nonzero means that this type contains a mutable member */
 #define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_mutable)
 #define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
+
+/*  Nonzero means that this class type is a non-POD class.  */
+#define CLASSTYPE_NON_POD_P(NODE) (TYPE_LANG_SPECIFIC (NODE)->type_flags.non_pod_class)
 
 /* Nonzero means that this type is meant for communication via COM.  */
 #define CLASSTYPE_COM_INTERFACE(NODE) \
