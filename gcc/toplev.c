@@ -3371,6 +3371,7 @@ rest_of_compilation (decl)
 	     without updating life info can wind up with Wierd Stuff in
 	     global_live_at_end.  We then run sched1, which updates things
 	     properly, discovers the wierdness and aborts.  */
+	  allocate_bb_life_data ();
 	  update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
 			    PROP_DEATH_NOTES | PROP_KILL_DEAD_CODE
 			    | PROP_SCAN_DEAD_CODE);
