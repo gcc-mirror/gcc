@@ -2110,6 +2110,10 @@ insn_dead_p (pbi, x, call_ok, notes)
 {
   enum rtx_code code = GET_CODE (x);
 
+  /* Don't eliminate insns that may trap.  */
+  if (flag_non_call_exceptions && may_trap_p (x))
+    return 0;
+
 #ifdef AUTO_INC_DEC
   /* As flow is invoked after combine, we must take existing AUTO_INC
      expressions into account.  */
