@@ -3126,7 +3126,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 	  /* Rescan the block insn by insn to turn (a copy of) live_at_end
 	     into live_at_start.  */
 	  propagate_block (new_live_at_end, bb->head, bb->end,
-			   bb->local_set, i, flags);
+			   bb->local_set, bb->index, flags);
 
 	  /* If live_at start didn't change, no need to go farther.  */
 	  if (REG_SET_EQUAL_P (bb->global_live_at_start, new_live_at_end))

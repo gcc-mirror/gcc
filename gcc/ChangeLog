@@ -1,3 +1,4 @@
+
 Sun Oct 31 23:57:07 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc-page.c (struct page_entry): Remove save_num_free_objects.
@@ -22,6 +23,8 @@ Sun Oct 31 23:42:37 1999  Mark Mitchell  <mark@codesourcery.com>
 	pretend we are just being declared.
 
 Sun Oct 31 23:03:25 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (calculate_global_regs_live): Fix thinko.
 
         * integrate.c (expand_inline_function): Fix bugs in previous
         change from Oct 28, 1999.
