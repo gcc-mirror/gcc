@@ -353,6 +353,9 @@ common_type (t1, t2)
 	/* If both args specify argument types, we must merge the two
 	   lists, argument by argument.  */
 
+	pushlevel (0);
+	declare_parm_level (1);
+
 	len = list_length (p1);
 	newargs = 0;
 
@@ -411,6 +414,8 @@ common_type (t1, t2)
 	    TREE_VALUE (n) = common_type (TREE_VALUE (p1), TREE_VALUE (p2));
 	  parm_done: ;
 	  }
+
+	poplevel (0, 0, 0);
 
 	t1 = build_function_type (valtype, newargs);
 	/* ... falls through ...  */
