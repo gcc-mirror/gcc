@@ -1,3 +1,9 @@
+2003-10-21  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (f/g77.1): Honor $(docobjdir).
+	($(docobjdir)/g77.info): Replace $(srcdir)/doc with $(docdir).
+	(f/g77.dvi): Likewise.
+
 2003-10-21  Jan Hubicka  <jh@suse.cz>
 
 	* lex.c (ffelex_cfelex_): Initialize d.

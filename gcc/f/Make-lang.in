@@ -150,16 +150,16 @@ f77.tags: force
 
 info:: $(docobjdir)/g77.info
 dvi:: f/g77.dvi
-generated-manpages:: $(srcdir)/f/g77.1
+generated-manpages:: $(docobjdir)/g77.1
 
 # g77 documentation.
 $(docobjdir)/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
-		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
-		$(srcdir)/doc/include/gpl.texi \
-		$(srcdir)/doc/include/funding.texi \
-		$(srcdir)/doc/include/gcc-common.texi \
+		$(srcdir)/f/root.texi $(docdir)/include/fdl.texi \
+		$(docdir)/include/gpl.texi \
+		$(docdir)/include/funding.texi \
+		$(docdir)/include/gcc-common.texi \
 		stmp-docobjdir
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
@@ -169,17 +169,17 @@ $(docobjdir)/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/ffe.texi $(srcdir)/f/invoke.texi \
 		$(srcdir)/f/news.texi  $(srcdir)/f/intdoc.texi \
-		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
-		$(srcdir)/doc/include/gpl.texi \
-		$(srcdir)/doc/include/funding.texi \
-		$(srcdir)/doc/include/gcc-common.texi
+		$(srcdir)/f/root.texi $(docdir)/include/fdl.texi \
+		$(docdir)/include/gpl.texi \
+		$(docdir)/include/funding.texi \
+		$(docdir)/include/gcc-common.texi
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	cd f && $(TEXI2DVI) -I $$s/doc/include $$s/f/g77.texi
 
-$(srcdir)/f/g77.1: $(srcdir)/f/invoke.texi
+$(docobjdir)/g77.1: $(srcdir)/f/invoke.texi
 	-$(TEXI2POD) < $(srcdir)/f/invoke.texi > f/g77.pod; \
 	($(POD2MAN) --section=1 f/g77.pod > f/g77.1.T$$$$ && \
-	    mv -f f/g77.1.T$$$$ $(srcdir)/f/g77.1) || \
+	    mv -f f/g77.1.T$$$$ $(docobjdir)/g77.1) || \
 	    (rm -f f/g77.1.T$$$$ && exit 1); \
 	rm -f f/g77.pod; \
 
@@ -277,11 +277,11 @@ f77.install-man: $(GENERATED_MANPAGES) installdirs
 	-if [ -f f771$(exeext) ] ; then \
 	  if [ -f g77-cross$(exeext) ] ; then \
 	    rm -f $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(docobjdir)/g77.1 $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
 	    chmod a-x $(DESTDIR)$(man1dir)/$(G77_CROSS_NAME)$(man1ext); \
 	  else \
 	    rm -f $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
-	    $(INSTALL_DATA) $(srcdir)/f/g77.1 $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
+	    $(INSTALL_DATA) $(docobjdir)/g77.1 $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
 	    chmod a-x $(DESTDIR)$(man1dir)/$(G77_INSTALL_NAME)$(man1ext); \
 	  fi; \
 	else true; fi
