@@ -99,8 +99,11 @@
 #undef TARGET_64BIT
 #define TARGET_64BIT 0
  
-/* We don't need to generate entries in .fixup.  */
+/* We don't need to generate entries in .fixup, except when
+   -mrelocatable or -mrelocatable-lib is given.  */
 #undef RELOCATABLE_NEEDS_FIXUP
+#define RELOCATABLE_NEEDS_FIXUP \
+  (target_flags & target_flags_explicit & MASK_RELOCATABLE)
 
 #define TARGET_ASM_FILE_END file_end_indicate_exec_stack
 
