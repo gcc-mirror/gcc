@@ -1838,14 +1838,6 @@ integrate_decl_tree (let, map)
 	  subst_constants (&r, NULL_RTX, map, 1);
 	  SET_DECL_RTL (d, r);
 
-	  if (GET_CODE (r) == REG)
-	    REGNO_DECL (REGNO (r)) = d;
-	  else if (GET_CODE (r) == CONCAT)
-	    {
-	      REGNO_DECL (REGNO (XEXP (r, 0))) = d;
-	      REGNO_DECL (REGNO (XEXP (r, 1))) = d;
-	    }
-
 	  apply_change_group ();
 	}
 

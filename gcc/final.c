@@ -2622,12 +2622,7 @@ alter_subreg (xp)
       else if (GET_CODE (y) == REG)
 	{
 	  unsigned int regno = subreg_hard_regno (x, 1);
-	  PUT_CODE (x, REG);
-	  REGNO (x) = regno;
-	  ORIGINAL_REGNO (x) = ORIGINAL_REGNO (y);
-	  /* This field has a different meaning for REGs and SUBREGs.  Make
-	     sure to clear it!  */
-	  RTX_FLAG (x, used) = 0;
+	  *xp = gen_rtx_REG_offset (y, GET_MODE (x), regno, SUBREG_BYTE (x));
 	}
       else
 	abort ();
@@ -2893,11 +2888,8 @@ get_mem_expr_from_op (op, paddressp)
 
   *paddressp = 0;
 
-  if (op == NULL)
-    return 0;
-
-  if (GET_CODE (op) == REG && ORIGINAL_REGNO (op) >= FIRST_PSEUDO_REGISTER)
-    return REGNO_DECL (ORIGINAL_REGNO (op));
+  if (GET_CODE (op) == REG)
+    return REG_EXPR (op);
   else if (GET_CODE (op) != MEM)
     return 0;
 
@@ -2941,16 +2933,22 @@ output_asm_operand_names (operands, oporder, nops)
   for (i = 0; i < nops; i++)
     {
       int addressp;
-      tree expr = get_mem_expr_from_op (operands[oporder[i]], &addressp);
+      rtx op = operands[oporder[i]];
+      tree expr = get_mem_expr_from_op (op, &addressp);
 
+      fprintf (asm_out_file, "%c%s",
+	       wrote ? ',' : '\t', wrote ? "" : ASM_COMMENT_START);
+      wrote = 1;
       if (expr)
 	{
-	  fprintf (asm_out_file, "%c%s %s",
-		   wrote ? ',' : '\t', wrote ? "" : ASM_COMMENT_START,
+	  fprintf (asm_out_file, "%s",
 		   addressp ? "*" : "");
 	  print_mem_expr (asm_out_file, expr);
 	  wrote = 1;
 	}
+      else if (REG_P (op) && ORIGINAL_REGNO (op)
+	       && ORIGINAL_REGNO (op) != REGNO (op))
+	fprintf (asm_out_file, " tmp%i", ORIGINAL_REGNO (op));
     }
 }
 

@@ -2568,7 +2568,7 @@ simplify_subreg (outermode, op, innermode, byte)
       if (HARD_REGNO_MODE_OK (final_regno, outermode)
 	  || ! HARD_REGNO_MODE_OK (REGNO (op), innermode))
 	{
-	  rtx x = gen_rtx_REG (outermode, final_regno);
+	  rtx x = gen_rtx_REG_offset (op, outermode, final_regno, byte);
 
 	  /* Propagate original regno.  We don't have any way to specify
 	     the offset inside original regno, so do so only for lowpart.

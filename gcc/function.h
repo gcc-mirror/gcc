@@ -100,10 +100,6 @@ struct emit_status GTY(())
   unsigned char * GTY ((length ("%h.regno_pointer_align_length"))) 
     regno_pointer_align;
 
-  /* Indexed by pseudo register number, if nonzero gives the decl
-     corresponding to that register.  */
-  tree * GTY ((length ("%h.regno_pointer_align_length"))) regno_decl;
-
   /* Indexed by pseudo register number, gives the rtx for that pseudo.
      Allocated in parallel with regno_pointer_align. 
 
@@ -119,7 +115,6 @@ struct emit_status GTY(())
 #define seq_stack (cfun->emit->sequence_stack)
 
 #define REGNO_POINTER_ALIGN(REGNO) (cfun->emit->regno_pointer_align[REGNO])
-#define REGNO_DECL(REGNO) (cfun->emit->regno_decl[REGNO])
 
 struct expr_status GTY(())
 {

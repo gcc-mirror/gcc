@@ -419,7 +419,7 @@ adjust_field_rtx_def (t, opt)
   options_p nodot;
   int i;
   type_p rtx_tp, rtvec_tp, tree_tp, mem_attrs_tp, note_union_tp, scalar_tp;
-  type_p bitmap_tp, basic_block_tp;
+  type_p bitmap_tp, basic_block_tp, reg_attrs_tp;
 
   static const char * const rtx_name[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)   NAME ,
@@ -443,6 +443,7 @@ adjust_field_rtx_def (t, opt)
   rtvec_tp = create_pointer (find_structure ("rtvec_def", 0));
   tree_tp = create_pointer (find_structure ("tree_node", 1));
   mem_attrs_tp = create_pointer (find_structure ("mem_attrs", 0));
+  reg_attrs_tp = create_pointer (find_structure ("reg_attrs", 0));
   bitmap_tp = create_pointer (find_structure ("bitmap_element_def", 0));
   basic_block_tp = create_pointer (find_structure ("basic_block_def", 0));
   scalar_tp = create_scalar_type ("rtunion scalar", 14);
@@ -523,6 +524,8 @@ adjust_field_rtx_def (t, opt)
 		t = scalar_tp, subname = "rtint";
 	      else if (i == REG && aindex == 1)
 		t = scalar_tp, subname = "rtint";
+	      else if (i == REG && aindex == 2)
+		t = reg_attrs_tp, subname = "rtreg";
 	      else if (i == SCRATCH && aindex == 0)
 		t = scalar_tp, subname = "rtint";
 	      else if (i == BARRIER && aindex >= 3)

@@ -157,6 +157,10 @@ static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct mem_attrs)))
      htab_t mem_attrs_htab;
 
+/* A hash table storing register attribute structures.  */
+static GTY ((if_marked ("ggc_marked_p"), param_is (struct reg_attrs)))
+     htab_t reg_attrs_htab;
+
 /* A hash table storing all CONST_DOUBLEs.  */
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
      htab_t const_double_htab;
@@ -190,6 +194,10 @@ static int mem_attrs_htab_eq            PARAMS ((const void *,
 static mem_attrs *get_mem_attrs		PARAMS ((HOST_WIDE_INT, tree, rtx,
 						 rtx, unsigned int,
 						 enum machine_mode));
+static hashval_t reg_attrs_htab_hash    PARAMS ((const void *));
+static int reg_attrs_htab_eq            PARAMS ((const void *,
+						 const void *));
+static reg_attrs *get_reg_attrs		PARAMS ((tree, int));
 static tree component_ref_for_mem_expr	PARAMS ((tree));
 static rtx gen_const_vector_0		PARAMS ((enum machine_mode));
 
@@ -318,6 +326,60 @@ get_mem_attrs (alias, expr, offset, size, align, mode)
     {
       *slot = ggc_alloc (sizeof (mem_attrs));
       memcpy (*slot, &attrs, sizeof (mem_attrs));
+    }
+
+  return *slot;
+}
+
+/* Returns a hash code for X (which is a really a reg_attrs *).  */
+
+static hashval_t
+reg_attrs_htab_hash (x)
+     const void *x;
+{
+  reg_attrs *p = (reg_attrs *) x;
+
+  return ((p->offset * 1000) ^ (long) p->decl);
+}
+
+/* Returns non-zero if the value represented by X (which is really a
+   reg_attrs *) is the same as that given by Y (which is also really a
+   reg_attrs *).  */
+
+static int
+reg_attrs_htab_eq (x, y)
+     const void *x;
+     const void *y;
+{
+  reg_attrs *p = (reg_attrs *) x;
+  reg_attrs *q = (reg_attrs *) y;
+
+  return (p->decl == q->decl && p->offset == q->offset);
+}
+/* Allocate a new reg_attrs structure and insert it into the hash table if
+   one identical to it is not already in the table.  We are doing this for
+   MEM of mode MODE.  */
+
+static reg_attrs *
+get_reg_attrs (decl, offset)
+     tree decl;
+     int offset;
+{
+  reg_attrs attrs;
+  void **slot;
+
+  /* If everything is the default, we can just return zero.  */
+  if (decl == 0 && offset == 0)
+    return 0;
+
+  attrs.decl = decl;
+  attrs.offset = offset;
+
+  slot = htab_find_slot (reg_attrs_htab, &attrs, INSERT);
+  if (*slot == 0)
+    {
+      *slot = ggc_alloc (sizeof (reg_attrs));
+      memcpy (*slot, &attrs, sizeof (reg_attrs));
     }
 
   return *slot;
@@ -811,7 +873,7 @@ gen_reg_rtx (mode)
       return gen_rtx_CONCAT (mode, realpart, imagpart);
     }
 
-  /* Make sure regno_pointer_align, regno_decl, and regno_reg_rtx are large
+  /* Make sure regno_pointer_align, and regno_reg_rtx are large
      enough to have an element for this pseudo reg number.  */
 
   if (reg_rtx_no == f->emit->regno_pointer_align_length)
@@ -819,7 +881,6 @@ gen_reg_rtx (mode)
       int old_size = f->emit->regno_pointer_align_length;
       char *new;
       rtx *new1;
-      tree *new2;
 
       new = ggc_realloc (f->emit->regno_pointer_align, old_size * 2);
       memset (new + old_size, 0, old_size);
@@ -830,17 +891,76 @@ gen_reg_rtx (mode)
       memset (new1 + old_size, 0, old_size * sizeof (rtx));
       regno_reg_rtx = new1;
 
-      new2 = (tree *) ggc_realloc (f->emit->regno_decl,
-				   old_size * 2 * sizeof (tree));
-      memset (new2 + old_size, 0, old_size * sizeof (tree));
-      f->emit->regno_decl = new2;
-
       f->emit->regno_pointer_align_length = old_size * 2;
     }
 
   val = gen_raw_REG (mode, reg_rtx_no);
   regno_reg_rtx[reg_rtx_no++] = val;
   return val;
+}
+
+/* Generate an register with same attributes as REG,
+   but offsetted by OFFSET.  */
+
+rtx
+gen_rtx_REG_offset (reg, mode, regno, offset)
+     enum machine_mode mode;
+     unsigned int regno;
+     int offset;
+     rtx reg;
+{
+  rtx new = gen_rtx_REG (mode, regno);
+  REG_ATTRS (new) = get_reg_attrs (REG_EXPR (reg),
+		 		   REG_OFFSET (reg) + offset);
+  return new;
+}
+
+/* Set the decl for MEM to DECL.  */
+
+void
+set_reg_attrs_from_mem (reg, mem)
+     rtx reg;
+     rtx mem;
+{
+  if (MEM_OFFSET (mem) && GET_CODE (MEM_OFFSET (mem)) == CONST_INT)
+    REG_ATTRS (reg)
+      = get_reg_attrs (MEM_EXPR (mem), INTVAL (MEM_OFFSET (mem)));
+}
+
+/* Assign the RTX X to declaration T.  */
+void
+set_decl_rtl (t, x)
+     tree t;
+     rtx x;
+{
+  DECL_CHECK (t)->decl.rtl = x;
+
+  if (!x)
+    return;
+  /* For register, we maitain the reverse information too.  */
+  if (GET_CODE (x) == REG)
+    REG_ATTRS (x) = get_reg_attrs (t, 0);
+  else if (GET_CODE (x) == SUBREG)
+    REG_ATTRS (SUBREG_REG (x))
+      = get_reg_attrs (t, -SUBREG_BYTE (x));
+  if (GET_CODE (x) == CONCAT)
+    {
+      if (REG_P (XEXP (x, 0)))
+        REG_ATTRS (XEXP (x, 0)) = get_reg_attrs (t, 0);
+      if (REG_P (XEXP (x, 1)))
+	REG_ATTRS (XEXP (x, 1))
+	  = get_reg_attrs (t, GET_MODE_UNIT_SIZE (GET_MODE (XEXP (x, 0))));
+    }
+  if (GET_CODE (x) == PARALLEL)
+    {
+      int i;
+      for (i = 0; i < XVECLEN (x, 0); i++)
+	{
+	  rtx y = XVECEXP (x, 0, i);
+	  if (REG_P (XEXP (y, 0)))
+	    REG_ATTRS (XEXP (y, 0)) = get_reg_attrs (t, INTVAL (XEXP (y, 1)));
+	}
+    }
 }
 
 /* Identify REG (which may be a CONCAT) as a user register.  */
@@ -1919,6 +2039,19 @@ set_mem_attributes (ref, t, objectp)
      int objectp;
 {
   set_mem_attributes_minus_bitpos (ref, t, objectp, 0);
+}
+
+/* Set the decl for MEM to DECL.  */
+
+void
+set_mem_attrs_from_reg (mem, reg)
+     rtx mem;
+     rtx reg;
+{
+  MEM_ATTRS (mem)
+    = get_mem_attrs (MEM_ALIAS_SET (mem), REG_EXPR (reg),
+		     GEN_INT (REG_OFFSET (reg)),
+		     MEM_SIZE (mem), MEM_ALIGN (mem), GET_MODE (mem));
 }
 
 /* Set the alias set of MEM to SET.  */
@@ -5216,10 +5349,6 @@ init_emit ()
     = (rtx *) ggc_alloc_cleared (f->emit->regno_pointer_align_length
 				 * sizeof (rtx));
 
-  f->emit->regno_decl
-    = (tree *) ggc_alloc_cleared (f->emit->regno_pointer_align_length
-				  * sizeof (tree));
-
   /* Put copies of all the hard registers into regno_reg_rtx.  */
   memcpy (regno_reg_rtx,
 	  static_regno_reg_rtx,
@@ -5323,6 +5452,8 @@ init_emit_once (line_numbers)
 
   mem_attrs_htab = htab_create_ggc (37, mem_attrs_htab_hash,
 				    mem_attrs_htab_eq, NULL);
+  reg_attrs_htab = htab_create_ggc (37, reg_attrs_htab_hash,
+				    reg_attrs_htab_eq, NULL);
 
   no_line_numbers = ! line_numbers;
 

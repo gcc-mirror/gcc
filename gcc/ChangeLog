@@ -1,3 +1,34 @@
+Fri Jan 24 23:44:12 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* emit-rtl.c (reg_attrs_htab): New static variable.
+	(reg_attrs_htab_hash, reg_attrs_htab_eq, get_reg_attrs): New static
+	functions.
+	(reg_rtx): Do not maintain regno_decl.
+	(gen_rtx_REG_offset, set_reg_attrs_from_mem, set_delc_rtx,
+	set_mem_attrs_from_reg): New global function.
+	(init_emit): Do not initialize regno_decl.
+	(init_emit_once): initialize reg_attrs_htab.
+	* final.c (alter_subreg): Do not replace REG by SUBREG.
+	(gen_mem_expr_from_op): Improve output.
+	(output_asm_operands): Likewise.
+	* function.c (assign_params): Do not set REGNO_DECL.
+	* function.h (struct function): Kill regno_decl.
+	(REGNO_DECL): Kill.
+	* gengtype.c (adjust_field_rtx_def): Handle new field of reg.
+	* print_rtl.c (print_rtx): Output REG information.
+	* regclass.c (reg_scan_mark_refs): Update attrs.
+	* reload1.c (alter_reg): Likewise.
+	* simplify_rtx.c (simplify_subreg): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	* rtl.def (REG): Add new field.
+	* rtl.h (struct reg_attrs): New.
+	(rtunion_def): At rtreg.
+	(X0MEMATTR): Add checking.
+	(X0REGATTR, REG_ATTRS, REG_EXPR, REG_OFFSET): New macro.
+	(set_reg_attrs_from_mem, set_mem_attrs_from_reg, gen_rtx_REG_offset):
+	Declare.
+	* tree.h (SET_DECL_RTL): Call set_decl_rtl.
+
 2003-01-24  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c: Remove unused include of machmode.h.

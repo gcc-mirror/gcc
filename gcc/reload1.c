@@ -2081,9 +2081,10 @@ alter_reg (i, from_reg)
 
       /* If we have a decl for the original register, set it for the
 	 memory.  If this is a shared MEM, make a copy.  */
-      if (REGNO_DECL (i))
+      if (REG_EXPR (regno_reg_rtx[i])
+	  && TREE_CODE_CLASS (TREE_CODE (REG_EXPR (regno_reg_rtx[i]))) == 'd')
 	{
-	  rtx decl = DECL_RTL_IF_SET (REGNO_DECL (i));
+	  rtx decl = DECL_RTL_IF_SET (REG_EXPR (regno_reg_rtx[i]));
 
 	  /* We can do this only for the DECLs home pseudo, not for
 	     any copies of it, since otherwise when the stack slot
@@ -2094,7 +2095,7 @@ alter_reg (i, from_reg)
 	      if (from_reg != -1 && spill_stack_slot[from_reg] == x)
 		x = copy_rtx (x);
 
-	      set_mem_expr (x, REGNO_DECL (i));
+	      set_mem_attrs_from_reg (x, regno_reg_rtx[i]);
 	    }
 	}
 

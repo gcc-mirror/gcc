@@ -2520,7 +2520,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 	REG_POINTER (SET_DEST (x)) = 1;
 
       /* If this is setting a register from a register or from a simple
-	 conversion of a register, propagate REG_DECL.  */
+	 conversion of a register, propagate REG_EXPR.  */
       if (GET_CODE (dest) == REG)
 	{
 	  rtx src = SET_SRC (x);
@@ -2531,10 +2531,10 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 		 || (GET_CODE (src) == SUBREG && subreg_lowpart_p (src)))
 	    src = XEXP (src, 0);
 
-	  if (GET_CODE (src) == REG && REGNO_DECL (REGNO (src)) == 0)
-	    REGNO_DECL (REGNO (src)) = REGNO_DECL (REGNO (dest));
-	  else if (GET_CODE (src) == REG && REGNO_DECL (REGNO (dest)) == 0)
-	    REGNO_DECL (REGNO (dest)) = REGNO_DECL (REGNO (src));
+	  if (!REG_ATTRS (dest) && REG_P (src))
+	    REG_ATTRS (dest) = REG_ATTRS (src);
+	  if (!REG_ATTRS (dest) && GET_CODE (src) == MEM)
+	    set_reg_attrs_from_mem (dest, src);
 	}
 
       /* ... fall through ...  */

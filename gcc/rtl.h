@@ -103,6 +103,15 @@ typedef struct mem_attrs GTY(())
   unsigned int align;		/* Alignment of MEM in bits.  */
 } mem_attrs;
 
+/* Structure used to describe the attributes of a REG in similar way as
+   mem_attrs does for MEM above.  */
+
+typedef struct reg_attrs GTY(())
+{
+  tree decl;			/* decl corresponding to REG.  */
+  HOST_WIDE_INT offset;		/* Offset from start of DECL.  */
+} reg_attrs;
+
 /* Common union for an element of an rtx.  */
 
 union rtunion_def
@@ -120,6 +129,7 @@ union rtunion_def
   tree rttree;
   struct basic_block_def *bb;
   mem_attrs *rtmem;
+  reg_attrs *rtreg;
 };
 typedef union rtunion_def rtunion;
 
@@ -499,7 +509,8 @@ do {				\
 #define X0BBDEF(RTX, N)	   (RTL_CHECK1 (RTX, N, '0').bb)
 #define X0ADVFLAGS(RTX, N) (RTL_CHECK1 (RTX, N, '0').rt_addr_diff_vec_flags)
 #define X0CSELIB(RTX, N)   (RTL_CHECK1 (RTX, N, '0').rt_cselib)
-#define X0MEMATTR(RTX, N)  (RTL_CHECK1 (RTX, N, '0').rtmem)
+#define X0MEMATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, MEM).rtmem)
+#define X0REGATTR(RTX, N)  (RTL_CHECKC1 (RTX, N, REG).rtreg)
 
 #define XCWINT(RTX, N, C)     (RTL_CHECKC1 (RTX, N, C).rtwint)
 #define XCINT(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rtint)
@@ -1128,6 +1139,10 @@ do {						\
    in the block and provide defaults if none specified.  */
 #define MEM_ATTRS(RTX) X0MEMATTR (RTX, 1)
 
+/* The register attribute block.  We provide access macros for each value
+   in the block and provide defaults if none specified.  */
+#define REG_ATTRS(RTX) X0REGATTR (RTX, 2)
+
 /* For a MEM rtx, the alias set.  If 0, this MEM is not in any alias
    set, and may alias anything.  Otherwise, the MEM can only alias
    MEMs in the same alias set.  This value is set in a
@@ -1160,6 +1175,14 @@ do {						\
 (MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->align				\
  : (STRICT_ALIGNMENT && GET_MODE (RTX) != BLKmode			\
     ? GET_MODE_ALIGNMENT (GET_MODE (RTX)) : BITS_PER_UNIT))
+
+/* For a REG rtx, the decl it is known to refer to, if it is known to
+   refer to part of a DECL.  */
+#define REG_EXPR(RTX) (REG_ATTRS (RTX) == 0 ? 0 : REG_ATTRS (RTX)->decl)
+
+/* For a MEM rtx, the offset from the start of MEM_DECL, if known, as a
+   RTX that is always a CONST_INT.  */
+#define REG_OFFSET(RTX) (REG_ATTRS (RTX) == 0 ? 0 : REG_ATTRS (RTX)->offset)
 
 /* Copy the attributes that apply to memory locations from RHS to LHS.  */
 #define MEM_COPY_ATTRIBUTES(LHS, RHS)				\
@@ -1365,6 +1388,8 @@ extern rtx copy_insn			PARAMS ((rtx));
 extern rtx gen_int_mode			PARAMS ((HOST_WIDE_INT,
 						 enum machine_mode));
 extern rtx emit_copy_of_insn_after	PARAMS ((rtx, rtx));
+extern void set_reg_attrs_from_mem	PARAMS ((rtx, rtx));
+extern void set_mem_attrs_from_reg	PARAMS ((rtx, rtx));
 
 /* In rtl.c */
 extern rtx rtx_alloc			PARAMS ((RTX_CODE));
@@ -1382,6 +1407,8 @@ extern int rtx_equal_p                  PARAMS ((rtx, rtx));
 /* In emit-rtl.c */
 extern rtvec gen_rtvec_v		PARAMS ((int, rtx *));
 extern rtx gen_reg_rtx			PARAMS ((enum machine_mode));
+extern rtx gen_rtx_REG_offset		PARAMS ((rtx, enum machine_mode,
+						 unsigned int, int));
 extern rtx gen_label_rtx		PARAMS ((void));
 extern int subreg_hard_regno		PARAMS ((rtx, int));
 extern rtx gen_lowpart_common		PARAMS ((enum machine_mode, rtx));

@@ -3908,14 +3908,6 @@ expand_decl (decl)
 
       SET_DECL_RTL (decl, gen_reg_rtx (reg_mode));
 
-      if (GET_CODE (DECL_RTL (decl)) == REG)
-	REGNO_DECL (REGNO (DECL_RTL (decl))) = decl;
-      else if (GET_CODE (DECL_RTL (decl)) == CONCAT)
-	{
-	  REGNO_DECL (REGNO (XEXP (DECL_RTL (decl), 0))) = decl;
-	  REGNO_DECL (REGNO (XEXP (DECL_RTL (decl), 1))) = decl;
-	}
-
       mark_user_reg (DECL_RTL (decl));
 
       if (POINTER_TYPE_P (type))
