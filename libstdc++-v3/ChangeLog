@@ -1,3 +1,8 @@
+2000-11-16  Loren J. Rittle  <ljrittle@acm.org>
+
+        * include/bits/locale_facets.tcc (num_get<_CharT,
+          _InIter>::do_get(...)): Add missing typename keyword.
+
 2000-11-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Make 

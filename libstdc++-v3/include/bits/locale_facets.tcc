@@ -684,7 +684,8 @@ namespace std
       long double __ld;
       int __p = sscanf(__xtrc, __conv, &__ld);
       if (__p
-          && static_cast<__traits_type::int_type>(__p) != __traits_type::eof())
+          && static_cast<typename __traits_type::int_type>(__p)
+        != __traits_type::eof())
         __v = __ld;
       else
         __err |= ios_base::failbit;
