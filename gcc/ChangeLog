@@ -1,3 +1,38 @@
+2004-11-03  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-optimization/18009
+	* tree-vectorizer.h (enum dr_alignment_support): New type.
+	(MAX_NUMBER_OF_UNALIGNED_DATA_REFS): Removed.
+	(LOOP_UNALIGNED_DR): replaced with LOOP_VINFO_UNALIGNED_DR and holds a
+	single data_reference (instead of a varray of references).
+	* tree-vectorizer.c (new_loop_vec_info): Likewise.
+	(vect_gen_niters_for_prolog_loop): Likewise.
+	(vect_update_inits_of_drs): Likewise.
+
+	(vect_update_inits_of_drs): Setting of DR_MISALIGNMENT moved to
+	vect_enhance_data_refs_alignment.
+	(vect_do_peeling_for_alignment): Likewise.
+	(vect_enhance_data_refs_alignment): Decide if and by how much to peel;
+	this functionality used to be in vect_analyze_data_refs_alignment.
+	Also update DR_MISALIGNMENT due to peeling; this functionality used to
+	be in vect_update_inits_of_drs and vect_do_peeling_for_alignment).
+	(vect_analyze_data_refs_alignment): Decision on whether and by how much
+	to peel moved to vect_enhance_data_refs_alignment. Call 
+	vect_supportable_dr_alignment.
+
+	(vect_compute_data_ref_alignment): Set STMT_VINFO_VECTYPE.
+	(vect_compute_data_refs_alignment): Return bool. Consider return value
+	of vect_compute_data_ref_alignment and return true/false accordingly.
+	(vect_enhance_data_refs_alignment): Consider return value of 
+	vect_compute_data_refs_alignment and return true/false accordingly.
+
+	(vect_supportable_dr_alignment): New function.
+	(vectorizable_store): Call vect_supportable_dr_alignment.
+	(vectorizable_load): Call vect_supportable_dr_alignment. Alignment
+	support checks moved from here to vect_supportable_dr_alignment.
+
+	(vect_transform_loop): Avoid 80 columns overflow.
+
 2004-11-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* timevar.c (timevar_enable): Change from
