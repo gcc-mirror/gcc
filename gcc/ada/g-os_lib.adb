@@ -2157,7 +2157,11 @@ package body GNAT.OS_Lib is
       pragma Import (C, Dup2, "__gnat_dup2");
 
       Saved_Output : File_Descriptor;
-      Saved_Error  : File_Descriptor;
+      Saved_Error  : File_Descriptor := Invalid_FD;
+      --  We need to initialize Saved_Error to Invalid_FD to avoid
+      --  a compiler warning that this variable may be used before
+      --  it is initialized (which can not happen, but the compiler
+      --  is not smart enough to figure this out).
 
    begin
       --  Set standard output and error to the temporary file
