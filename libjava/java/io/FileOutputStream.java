@@ -52,10 +52,29 @@ import gnu.java.nio.FileChannelImpl;
  */
 public class FileOutputStream extends OutputStream
 {
-  // Instance variables.
   private FileDescriptor fd;
-  private FileChannel ch;
-  
+
+  private FileChannel ch; /* cached associated file-channel */
+
+  /**
+   * This method initializes a <code>FileOutputStream</code> object to write
+   * to the named file.  The file is created if it does not exist, and
+   * the bytes written are written starting at the beginning of the file if
+   * the <code>append</code> argument is <code>false</code> or at the end
+   * of the file if the <code>append</code> argument is true.
+   * <p>
+   * Before opening a file, a security check is performed by calling the
+   * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
+   * one exists) with the name of the file to be opened.  An exception is
+   * thrown if writing is not allowed. 
+   *
+   * @param name The name of the file this stream should write to
+   * @param append <code>true</code> to append bytes to the end of the file,
+   * or <code>false</code> to write bytes to the beginning
+   *
+   * @exception SecurityException If write access to the file is not allowed
+   * @exception FileNotFoundException If a non-security error occurs
+   */
   public FileOutputStream (String path, boolean append)
     throws SecurityException, FileNotFoundException
   {
@@ -67,12 +86,43 @@ public class FileOutputStream extends OutputStream
 				    : FileDescriptor.WRITE));
   }
 
+  /**
+   * This method initializes a <code>FileOutputStream</code> object to write
+   * to the named file.  The file is created if it does not exist, and
+   * the bytes written are written starting at the beginning of the file.
+   * <p>
+   * Before opening a file, a security check is performed by calling the
+   * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
+   * one exists) with the name of the file to be opened.  An exception is
+   * thrown if writing is not allowed. 
+   *
+   * @param name The name of the file this stream should write to
+   *
+   * @exception SecurityException If write access to the file is not allowed
+   * @exception FileNotFoundException If a non-security error occurs
+   */
   public FileOutputStream (String path)
     throws SecurityException, FileNotFoundException
   {
     this (path, false);
   }
 
+  /**
+   * This method initializes a <code>FileOutputStream</code> object to write
+   * to the specified <code>File</code> object.  The file is created if it 
+   * does not exist, and the bytes written are written starting at the 
+   * beginning of the file.
+   * <p>
+   * Before opening a file, a security check is performed by calling the
+   * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
+   * one exists) with the name of the file to be opened.  An exception is
+   * thrown if writing is not allowed. 
+   *
+   * @param file The <code>File</code> object this stream should write to
+   *
+   * @exception SecurityException If write access to the file is not allowed
+   * @exception FileNotFoundException If a non-security error occurs
+   */
   public FileOutputStream (File file)
     throws SecurityException, FileNotFoundException
   {
@@ -99,12 +149,28 @@ public class FileOutputStream extends OutputStream
    * @exception SecurityException If write access to the file is not allowed
    * @exception FileNotFoundException If a non-security error occurs
    */
-  public
-  FileOutputStream(File file, boolean append) throws FileNotFoundException
+  public FileOutputStream (File file, boolean append)
+    throws FileNotFoundException
   {
-    this(file.getPath(), append);
+    this (file.getPath(), append);
   }
 
+  /**
+   * This method initializes a <code>FileOutputStream</code> object to write
+   * to the file represented by the specified <code>FileDescriptor</code>
+   * object.  This method does not create any underlying disk file or
+   * reposition the file pointer of the given descriptor.  It assumes that
+   * this descriptor is ready for writing as is.
+   * <p>
+   * Before opening a file, a security check is performed by calling the
+   * <code>checkWrite</code> method of the <code>SecurityManager</code> (if
+   * one exists) with the specified <code>FileDescriptor</code> as an argument.
+   * An exception is thrown if writing is not allowed. 
+   *
+   * @param file The <code>FileDescriptor</code> this stream should write to
+   *
+   * @exception SecurityException If write access to the file is not allowed
+   */
   public FileOutputStream (FileDescriptor fdObj)
     throws SecurityException
   {
@@ -120,6 +186,14 @@ public class FileOutputStream extends OutputStream
     // mentioned in the JCL.
   }
 
+  /**
+   * This method returns a <code>FileDescriptor</code> object representing
+   * the file that is currently being written to
+   *
+   * @return A <code>FileDescriptor</code> object for this stream
+   *
+   * @exception IOException If an error occurs
+   */
   public final FileDescriptor getFD () throws IOException
   {
     if (! fd.valid())
@@ -127,16 +201,41 @@ public class FileOutputStream extends OutputStream
     return fd;
   }
 
+  /**
+   * This method writes a single byte of data to the file.  
+   *
+   * @param b The byte of data to write, passed as an <code>int</code>
+   *
+   * @exception IOException If an error occurs
+   */
   public void write (int b) throws IOException
   {
     fd.write (b);
   }
 
+  /**
+   * This method writes all the bytes in the specified array to the
+   * file.
+   *
+   * @param buf The array of bytes to write to the file
+   *
+   * @exception IOException If an error occurs
+   */
   public void write (byte[] b) throws IOException, NullPointerException
   {
     fd.write (b, 0, b.length);
   }
 
+  /**
+   * This method writes <code>len</code> bytes from the byte array 
+   * <code>buf</code> to the file starting at index <code>offset</code>.
+   *
+   * @param buf The array of bytes to write to the file
+   * @param offset The offset into the array to start writing bytes from
+   * @param len The number of bytes to write to the file
+   *
+   * @exception IOException If an error occurs
+   */
   public void write (byte[] b, int off, int len)
     throws IOException, NullPointerException, IndexOutOfBoundsException
   {
@@ -145,12 +244,25 @@ public class FileOutputStream extends OutputStream
     fd.write (b, off, len);
   }
 
+  /**
+   * This method closes the underlying file.  Any further attempts to
+   * write to this stream will likely generate an exception since the
+   * file is closed.
+   *
+   * @exception IOException If an error occurs
+   */
   public void close () throws IOException
   {
     if (fd.valid())
       fd.close();
   }
 
+  /**
+   * This method creates a java.nio.channels.FileChannel.
+   * Nio does not allow one to create a file channel directly.
+   * A file channel must be created by first creating an instance of
+   * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
+   */
   public FileChannel getChannel ()
   {
     synchronized (this)

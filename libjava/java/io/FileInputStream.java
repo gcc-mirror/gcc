@@ -52,7 +52,6 @@ import gnu.java.nio.FileChannelImpl;
  *
  * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Warren Levy <warrenl@cygnus.com>
- * @date October 28, 1998.  
  */
 public class FileInputStream extends InputStream
 {
@@ -224,9 +223,9 @@ public class FileInputStream extends InputStream
    *
    * @exception IOException If an error occurs.
    */
-  public int read(byte[] b) throws IOException
+  public int read(byte[] buf) throws IOException
   {
-    return fd.read(b, 0, b.length);
+    return read(buf, 0, buf.length);
   }
 
   /**
@@ -248,12 +247,14 @@ public class FileInputStream extends InputStream
    *
    * @exception IOException If an error occurs.
    */
-  public int read(byte[] b, int off, int len) throws IOException
+  public int read(byte[] buf, int offset, int len) throws IOException
   {
-    if (off < 0 || len < 0 || off + len > b.length)
+    if (offset < 0
+        || len < 0
+        || offset + len > buf.length)
       throw new ArrayIndexOutOfBoundsException();
 
-    return fd.read(b, off, len);
+    return fd.read(buf, offset, len);
   }
 
   /**
