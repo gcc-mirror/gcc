@@ -1,5 +1,5 @@
 /* Definitions for non-Linux based ARM systems using ELF
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
 This file is part of GNU CC.
@@ -68,22 +68,6 @@ rdata_section ()						\
       in_section = in_rdata;					\
     }								\
 }
-
-#define CTOR_LIST_BEGIN					\
-  asm (CTORS_SECTION_ASM_OP);				\
-  func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) }
-
-#define CTOR_LIST_END					\
-  asm (CTORS_SECTION_ASM_OP);				\
-  func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
-
-#define DTOR_LIST_BEGIN					\
-  asm (DTORS_SECTION_ASM_OP);				\
-  func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) }
-
-#define DTOR_LIST_END					\
-  asm (DTORS_SECTION_ASM_OP);				\
-  func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section

@@ -1,3 +1,9 @@
+2001-08-13  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/unknown-elf.h (CTOR_LIST_BEGIN, CTOR_LIST_END): Remove.
+	(DTOR_LIST_BEGIN, DTOR_LIST_END): Remove.
+	* config/arm/conix-elf.h: Likewise.
+
 2001-08-13  Geoffrey Keating  <geoffk@redhat.com>
 
 	* config/svr4.h (LINK_SPEC): Don't do -Wl, here, it is done

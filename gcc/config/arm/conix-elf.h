@@ -67,22 +67,6 @@ rdata_section ()						\
     }								\
 }
 
-#define CTOR_LIST_BEGIN					\
-asm (CTORS_SECTION_ASM_OP);				\
-func_ptr __CTOR_LIST__[1] = { (func_ptr) (-1) }
-
-#define CTOR_LIST_END					\
-asm (CTORS_SECTION_ASM_OP);				\
-func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
-
-#define DTOR_LIST_BEGIN					\
-asm (DTORS_SECTION_ASM_OP);				\
-func_ptr __DTOR_LIST__[1] = { (func_ptr) (-1) }
-
-#define DTOR_LIST_END					\
-asm (DTORS_SECTION_ASM_OP);				\
-func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
-
 /* Switch into a generic section.  */
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
