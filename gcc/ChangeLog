@@ -1,3 +1,11 @@
+2000-07-28  Philipp Thomas  <pthomas@suse.de>
+
+	* install.texi (--enable-nls): Change the description of the NLS
+	related configure options to match the current state.
+	(--with-included-gettext): Likewise.
+	(--enable-maintainer-mode): New description added.
+	* extend.texi (-fstrict-prototype): Add missing '.'.
+	
 2000-07-27  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (gen_decl_die): Don't call gen_abstract_function if
