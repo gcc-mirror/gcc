@@ -23,27 +23,31 @@
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
 ;; Uses of UNSPEC in this file:
-;;
-;;	0	arg_home
-;;	1	cttz
-;;	2	insxh
-;;	3	mskxh
-;;	5	cvtql
-;;	6	nt_lda
-;;	
+
+(define_constants
+  [(UNSPEC_ARG_HOME	0)
+   (UNSPEC_CTTZ		1)
+   (UNSPEC_INSXH	2)
+   (UNSPEC_MSKXH	3)
+   (UNSPEC_CVTQL	4)
+   (UNSPEC_NT_LDA	5)
+  ])
+
 ;; UNSPEC_VOLATILE:
-;;
-;;	0	imb
-;;	1	blockage
-;;	2	builtin_setjmp_receiver
-;;	3	builtin_longjmp
-;;	4	trapb
-;;	5	prologue_stack_probe_loop
-;;	6	realign
-;;	7	exception_receiver
-;;	8	prologue_mcount
-;;	9	prologue_ldgp_1
-;;	10	prologue_ldgp_2
+
+(define_constants
+  [(UNSPECV_IMB		0)
+   (UNSPECV_BLOCKAGE	1)
+   (UNSPECV_SETJMPR	2)	; builtin_setjmp_receiver
+   (UNSPECV_LONGJMP	3)	; builtin_longjmp
+   (UNSPECV_TRAPB	4)
+   (UNSPECV_PSPL	5)	; prologue_stack_probe_loop
+   (UNSPECV_REALIGN	6)
+   (UNSPECV_EHR		7)	; exception_receiver
+   (UNSPECV_MCOUNT	8)
+   (UNSPECV_LDGP1	9)
+   (UNSPECV_LDGP2	10)
+  ])
 
 ;; Processor type -- this attribute must exactly match the processor_type
 ;; enumeration in alpha.h.
@@ -1339,7 +1343,7 @@
 
 (define_expand "ffsdi2"
   [(set (match_dup 2)
-	(unspec:DI [(match_operand:DI 1 "register_operand" "")] 1))
+	(unspec:DI [(match_operand:DI 1 "register_operand" "")] UNSPEC_CTTZ))
    (set (match_dup 3)
 	(plus:DI (match_dup 2) (const_int 1)))
    (set (match_operand:DI 0 "register_operand" "")
@@ -1354,7 +1358,7 @@
 
 (define_insn "*cttz"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "r")] 1))]
+	(unspec:DI [(match_operand:DI 1 "register_operand" "r")] UNSPEC_CTTZ))]
   "TARGET_CIX"
   "cttz %1,%0"
   ; EV6 calls all mvi and cttz/ctlz/popc class imisc, so just 
@@ -1877,7 +1881,8 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
 		    (match_operand:DI 2 "mode_width_operand" "n")
-		    (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 2))]
+		    (match_operand:DI 3 "reg_or_8bit_operand" "rI")]
+		   UNSPEC_INSXH))]
   ""
   "ins%M2h %1,%3,%0"
   [(set_attr "type" "shift")])
@@ -1903,7 +1908,8 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_operand:DI 1 "register_operand" "r")
 		    (match_operand:DI 2 "mode_width_operand" "n")
-		    (match_operand:DI 3 "reg_or_8bit_operand" "rI")] 3))]
+		    (match_operand:DI 3 "reg_or_8bit_operand" "rI")]
+		   UNSPEC_MSKXH))]
   ""
   "msk%M2h %1,%3,%0"
   [(set_attr "type" "shift")])
@@ -2093,7 +2099,8 @@
 
 (define_insn "*cvtql"
   [(set (match_operand:SI 0 "register_operand" "=f")
-	(unspec:SI [(match_operand:DI 1 "reg_or_fp0_operand" "fG")] 5))]
+	(unspec:SI [(match_operand:DI 1 "reg_or_fp0_operand" "fG")]
+		   UNSPEC_CVTQL))]
   "TARGET_FP"
   "cvtql%` %R1,%0"
   [(set_attr "type" "fadd")
@@ -2108,7 +2115,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 2) (fix:DI (match_dup 1)))
-   (set (match_dup 3) (unspec:SI [(match_dup 2)] 5))
+   (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
    (set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "type" "fadd")
@@ -2122,7 +2129,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 2) (fix:DI (match_dup 1)))
-   (set (match_dup 3) (unspec:SI [(match_dup 2)] 5))
+   (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
    (set (match_dup 0) (match_dup 3))]
   ;; Due to REG_CANNOT_CHANGE_SIZE issues, we cannot simply use SUBREG.
   "operands[3] = gen_rtx_REG (SImode, REGNO (operands[2]));"
@@ -2157,7 +2164,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 2) (fix:DI (float_extend:DF (match_dup 1))))
-   (set (match_dup 3) (unspec:SI [(match_dup 2)] 5))
+   (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
    (set (match_dup 0) (match_dup 3))]
   ""
   [(set_attr "type" "fadd")
@@ -2172,7 +2179,7 @@
   "#"
   "&& reload_completed"
   [(set (match_dup 2) (fix:DI (float_extend:DF (match_dup 1))))
-   (set (match_dup 3) (unspec:SI [(match_dup 2)] 5))
+   (set (match_dup 3) (unspec:SI [(match_dup 2)] UNSPEC_CVTQL))
    (set (match_dup 0) (match_dup 3))]
   ;; Due to REG_CANNOT_CHANGE_SIZE issues, we cannot simply use SUBREG.
   "operands[3] = gen_rtx_REG (SImode, REGNO (operands[2]));"
@@ -4372,7 +4379,7 @@
 ;; all of memory.  This blocks insns from being moved across this point.
 
 (define_insn "blockage"
-  [(unspec_volatile [(const_int 0)] 1)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)]
   ""
   ""
   [(set_attr "length" "0")])
@@ -4561,7 +4568,7 @@
 ;; if we need a GP.  Use ibr instead since it has the same EV5 scheduling
 ;; characteristics.
 (define_insn "imb"
-  [(unspec_volatile [(const_int 0)] 0)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_IMB)]
   ""
   "call_pal 0x86"
   [(set_attr "type" "ibr")])
@@ -5820,7 +5827,8 @@
 
 (define_insn "prologue_stack_probe_loop"
   [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")
-		     (match_operand:DI 1 "register_operand" "r")] 5)]
+		     (match_operand:DI 1 "register_operand" "r")]
+		    UNSPECV_PSPL)]
   ""
   "*
 {
@@ -5850,19 +5858,19 @@
 ;; with them.
 
 (define_expand "prologue_ldgp"
-  [(unspec_volatile [(const_int 0)] 9)
-   (unspec_volatile [(const_int 0)] 10)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_LDGP1)
+   (unspec_volatile [(const_int 0)] UNSPECV_LDGP2)]
   ""
   "")
 
 (define_insn "*prologue_ldgp_1"
-  [(unspec_volatile [(const_int 0)] 9)]
-  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  [(unspec_volatile [(const_int 0)] UNSPECV_LDGP1)]
+  ""
   "ldgp $29,0($27)\\n$%~..ng:")
 
 (define_insn "*prologue_ldgp_2"
-  [(unspec_volatile [(const_int 0)] 10)]
-  "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
+  [(unspec_volatile [(const_int 0)] UNSPECV_LDGP2)]
+  ""
   "")
 
 ;; The _mcount profiling hook has special calling conventions, and
@@ -5870,7 +5878,7 @@
 ;; hide the fact this is a call at all.
 
 (define_insn "prologue_mcount"
-  [(unspec_volatile [(const_int 0)] 8)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_MCOUNT)]
   ""
   "lda $28,_mcount\;jsr $28,($28),_mcount"
   [(set_attr "type" "multi")
@@ -5906,7 +5914,8 @@
 (define_insn "nt_lda"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec:DI [(match_dup 0)
-		    (match_operand:DI 1 "const_int_operand" "n")] 6))]
+		    (match_operand:DI 1 "const_int_operand" "n")]
+		   UNSPEC_NT_LDA))]
   ""
   "lda %0,%1(%0)")
 
@@ -5940,27 +5949,28 @@
 ;; that register renaming cannot foil our cunning plan with $27.
 (define_insn "builtin_longjmp_internal"
   [(set (pc)
-	(unspec_volatile [(match_operand:DI 0 "register_operand" "c")] 3))]
+	(unspec_volatile [(match_operand:DI 0 "register_operand" "c")]
+			 UNSPECV_LONGJMP))]
   ""
   "jmp $31,(%0),0"
   [(set_attr "type" "ibr")])
 
 (define_insn "*builtin_setjmp_receiver_sub_label"
-  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] 2)]
+  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] UNSPECV_SETJMPR)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT && TARGET_AS_CAN_SUBTRACT_LABELS"
   "\\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)"
   [(set_attr "length" "8")
    (set_attr "type" "multi")])
 
 (define_insn "builtin_setjmp_receiver"
-  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] 2)]
+  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] UNSPECV_SETJMPR)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "br $29,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($29)"
   [(set_attr "length" "12")
    (set_attr "type" "multi")])
 
 (define_expand "exception_receiver"
-  [(unspec_volatile [(match_dup 0)] 7)]
+  [(unspec_volatile [(match_dup 0)] UNSPECV_EHR)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "
 {
@@ -5971,7 +5981,7 @@
 }")
 
 (define_insn "*exception_receiver_1"
-  [(unspec_volatile [(const_int 0)] 7)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_EHR)]
   "! TARGET_LD_BUGGY_LDGP"
   "ldgp $29,0($26)"
   [(set_attr "length" "8")
@@ -5982,7 +5992,8 @@
 ;; as dead code unless it is represented as a volatile unspec.
 
 (define_insn "*exception_receiver_2"
-  [(unspec_volatile [(match_operand:DI 0 "nonimmediate_operand" "r,m")] 7)]
+  [(unspec_volatile [(match_operand:DI 0 "nonimmediate_operand" "r,m")]
+		    UNSPECV_EHR)]
   "TARGET_LD_BUGGY_LDGP"
   "@
    mov %0,$29
@@ -5990,15 +6001,15 @@
   [(set_attr "type" "ilog,ild")])
 
 (define_expand "nonlocal_goto_receiver"
-  [(unspec_volatile [(const_int 0)] 1)
+  [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)
    (set (reg:DI 27) (mem:DI (reg:DI 29)))
-   (unspec_volatile [(const_int 0)] 1)
+   (unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)
    (use (reg:DI 27))]
   "TARGET_OPEN_VMS"
   "")
 
 (define_insn "arg_home"
-  [(unspec [(const_int 0)] 0)
+  [(unspec [(const_int 0)] UNSPEC_ARG_HOME)
    (use (reg:DI 1))
    (use (reg:DI 25))
    (use (reg:DI 16))
@@ -6026,7 +6037,7 @@
 ;; by alpha_reorg.
 
 (define_insn "trapb"
-  [(unspec_volatile [(const_int 0)] 4)]
+  [(unspec_volatile [(const_int 0)] UNSPECV_TRAPB)]
   ""
   "trapb"
   [(set_attr "type" "misc")])
@@ -6052,7 +6063,8 @@
   "unop")
 
 (define_insn "realign"
-  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")] 6)]
+  [(unspec_volatile [(match_operand 0 "immediate_operand" "i")]
+		    UNSPECV_REALIGN)]
   ""
   ".align %0 #realign")
 
