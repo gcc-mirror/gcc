@@ -1,3 +1,9 @@
+2004-03-11  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/14496
+	* config/mips/mips.h (UNITS_PER_FPVALUE): Fix value for
+	TARGET_SINGLE_FLOAT.
+
 2004-03-11  Kelley Cook  <kcook@gcc.gnu.org>
 
 	PR other/14536
