@@ -910,9 +910,8 @@ get_cse_reg_info (unsigned int regno)
 {
   struct cse_reg_info *p = &cse_reg_info_table[regno];
 
-  /* If we are looking for REGNO that is different from the last
-     look-up, make sure the entry for REGNO exists and has been
-     initialized.  */
+  /* If this entry has not been initialized, go ahead and initialize
+     it.  */
   if (p->timestamp != cse_reg_info_timestamp)
     get_cse_reg_info_1 (regno);
 
