@@ -15,6 +15,10 @@
 #undef LIB_SPEC
 #define LIB_SPEC "%{bsd:-lbsd-compat} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
+/* Standard include directory.  In GNU, "/usr" is a four-letter word.  */
+#undef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/include"
+
 
 /* We have atexit.  */
 #define HAVE_ATEXIT
