@@ -1,3 +1,8 @@
+2003-03-27  Glen Nakamura  <glen@imodulo.com>
+
+	PR opt/10087
+	* gcc.dg/20030324-1.c: New test.
+
 2003-03-27  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/10224
