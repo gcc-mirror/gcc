@@ -1,5 +1,11 @@
 2003-07-13  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/locale/LocaleInformation_de.java
+	* gnu/java/locale/LocaleInformation_en.java
+	* gnu/java/locale/LocaleInformation_nl.java
+
+2003-07-13  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/awt/EmbeddedWindow.java,
 	gnu/java/awt/EmbeddedWindowSupport.java,
 	gnu/java/awt/natEmbeddedWindow.cc:
