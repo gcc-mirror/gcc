@@ -342,6 +342,7 @@ get_tinfo_decl (type)
       TREE_STATIC (d) = 1;
       DECL_EXTERNAL (d) = 1;
       SET_DECL_ASSEMBLER_NAME (d, name);
+      DECL_COMDAT (d) = 1;
       cp_finish_decl (d, NULL_TREE, NULL_TREE, 0);
 
       pushdecl_top_level (d);
