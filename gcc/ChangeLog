@@ -1,3 +1,10 @@
+2004-07-14  Richard Henderson  <rth@redhat.com>
+
+	* config/arm/arm-protos.h (arm_va_arg): Remove.
+	* config/arm/arm.c (arm_va_arg): Remove.
+	(arm_init_expanders): Fix alignment of arg_pointer_rtx.
+	* config/arm/arm.h (EXPAND_BUILTIN_VA_ARG): Remove.
+
 2004-07-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (fix_range): New function to mark a range(s) of registers as
@@ -178,7 +185,7 @@
 	(mips_pass_by_reference): Rename from function_arg_pass_by_reference.
 	Handle mode sizes correctly.
 	* config/mips/mips.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
-        (FUNCTION_ARG_CALLEE_COPIES): Don't reference pass-by-ref.
+	(FUNCTION_ARG_CALLEE_COPIES): Don't reference pass-by-ref.
 	* config/mmix/mmix-protos.h (mmix_function_arg_pass_by_reference): Kill.
 	* config/mmix/mmix.c (TARGET_PASS_BY_REFERENCE): New.
 	(mmix_pass_by_reference): Rename from
@@ -192,7 +199,7 @@
 	* config/pa/pa.c (pa_pass_by_reference): New.
 	(TARGET_PASS_BY_REFERENCE): New.
 	* config/pa/pa.h (FUNCTION_ARG_PASS_BY_REFERENCE): Remove.
-        (FUNCTION_ARG_CALLEE_COPIES): True.
+	(FUNCTION_ARG_CALLEE_COPIES): True.
 	* config/rs6000/rs6000-protos.h (function_arg_pass_by_reference): Kill.
 	* config/rs6000/rs6000.c (TARGET_PASS_BY_REFERENCE): New.
 	(rs6000_pass_by_reference): Rename from function_arg_pass_by_reference.
@@ -297,14 +304,14 @@
 	side-effect of having a length greater or equal to 3.
 
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Lloyd Parkes  <lloyd@must-have-coffee.gen.nz>
+	    Lloyd Parkes  <lloyd@must-have-coffee.gen.nz>
 
 	PR target/15186
 	* config/sparc/sol2-bi.h (LINK_ARCH64_SPEC_BASE): Pass
 	/usr/ucblib/sparcv9 as -R path when -compat-bsd is specified.
 
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Martin Sebor  <sebor@roguewave.com>
+	    Martin Sebor  <sebor@roguewave.com>
 
 	PR target/12602
 	* doc/invoke.texi (SPARC options): Document -threads
@@ -732,9 +739,9 @@
 	* config/darwin.h (LINK_COMMAND_SPEC): Don't call c++filt.
 
 2004-07-10  Steve Kargl  <sgk@troutmask.apl.washington.edu>
-            James Morrison  <phython@gcc.gnu.org>
+	    James Morrison  <phython@gcc.gnu.org>
 
-        * doc/contrib.texi (Contributors): Add gfortran contributors and
+	* doc/contrib.texi (Contributors): Add gfortran contributors and
 	fix a couple of typos.
 
 2004-07-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>

@@ -2407,44 +2407,6 @@ arm_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 {
   return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
 }
-
-/* Implement va_arg.  */
-
-rtx
-arm_va_arg (tree valist, tree type)
-{
-  int align;
-
-  /* Variable sized types are passed by reference.  */
-  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-    {
-      rtx addr = std_expand_builtin_va_arg (valist, build_pointer_type (type));
-      return gen_rtx_MEM (ptr_mode, force_reg (Pmode, addr));
-    }
-
-  align = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
-  if (align > PARM_BOUNDARY)
-    {
-      tree mask;
-      tree t;
-
-      /* Maintain 64-bit alignment of the valist pointer by
-	 constructing:   valist = ((valist + (8 - 1)) & -8).  */
-      mask = build_int_2 (- (align / BITS_PER_UNIT), -1);
-      t = build_int_2 ((align / BITS_PER_UNIT) - 1, 0);
-      t = build (PLUS_EXPR,    TREE_TYPE (valist), valist, t);
-      t = build (BIT_AND_EXPR, TREE_TYPE (t), t, mask);
-      t = build (MODIFY_EXPR,  TREE_TYPE (valist), valist, t);
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-      /* This is to stop the combine pass optimizing
-	 away the alignment adjustment.  */
-      mark_reg_pointer (arg_pointer_rtx, PARM_BOUNDARY);
-    }
-
-  return std_expand_builtin_va_arg (valist, type);
-}
 
 /* Encode the current state of the #pragma [no_]long_calls.  */
 typedef enum
@@ -13159,6 +13121,12 @@ arm_init_expanders (void)
 {
   /* Arrange to initialize and mark the machine per-function status.  */
   init_machine_status = arm_init_machine_status;
+
+  /* This is to stop the combine pass optimizing away the alignment
+     adjustment of va_arg.  */
+  /* ??? It is claimed that this should not be necessary.  */
+  if (cfun)
+    mark_reg_pointer (arg_pointer_rtx, PARM_BOUNDARY);
 }
 
 

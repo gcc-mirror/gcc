@@ -1733,10 +1733,6 @@ typedef struct
     || (TARGET_IWMMXT_ABI		\
 	&& IN_RANGE ((REGNO), FIRST_IWMMXT_REGNUM, FIRST_IWMMXT_REGNUM + 9)))
 
-/* Implement `va_arg'.  */
-#define EXPAND_BUILTIN_VA_ARG(valist, type) \
-  arm_va_arg (valist, type)
-
 
 /* If your target environment doesn't prefix user functions with an
    underscore, you may wish to re-define this to prevent any conflicts.
