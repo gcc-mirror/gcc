@@ -1438,6 +1438,7 @@ BLOCK_PROFILER_CODE
 char *ctime ();
 
 #include "gbl-ctors.h"
+#include "gcov-io.h"
 
 static struct bb *bb_head;
 
@@ -1461,8 +1462,118 @@ static struct bb *bb_head;
 void
 __bb_exit_func (void)
 {
-  FILE *file = fopen ("bb.out", "a");
+  FILE *da_file, *file;
   long time_value;
+  int i;
+
+  if (bb_head == 0)
+    return;
+
+  i = strlen (bb_head->filename) - 3;
+
+  if (!strcmp (bb_head->filename+i, ".da"))
+    {
+      /* Must be -fprofile-arcs not -a.
+	 Dump data in a form that gcov expects.  */
+
+      struct bb *ptr;
+
+      for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
+	{
+	  /* If the file exists, and the number of counts in it is the same,
+	     then merge them in.  */
+	     
+	  if ((da_file = fopen (ptr->filename, "r")) != NULL)
+	    {
+	      long n_counts = 0;
+	      unsigned char tmp;
+	      int i;
+	      int ret = 0;
+
+	      
+	      if (__read_long (&n_counts, da_file, 8) != 0)
+		{
+		  fprintf (stderr, "arc profiling: Can't read output file %s.\n",
+			   ptr->filename);
+		  continue;
+		}
+
+	      if (n_counts == ptr->ncounts)
+		{
+		  int i;
+
+		  for (i = 0; i < n_counts; i++)
+		    {
+		      long v = 0;
+		      unsigned char tmp;
+		      int j;
+		      int ret = 0;
+
+		      if (__read_long (&v, da_file, 8) != 0)
+			{
+			  fprintf (stderr, "arc profiling: Can't read output file %s.\n",
+				   ptr->filename);
+			  break;
+			}
+		      ptr->counts[i] += v;
+		    }
+		}
+
+	      if (fclose (da_file) == EOF)
+		fprintf (stderr, "arc profiling: Error closing output file %s.\n",
+			 ptr->filename);
+	    }
+	  if ((da_file = fopen (ptr->filename, "w")) < 0)
+	    {
+	      fprintf (stderr, "arc profiling: Can't open output file %s.\n",
+		       ptr->filename);
+	      continue;
+	    }
+
+	  /* ??? Should first write a header to the file.  Perferably, a 4 byte
+	     magic number, 4 bytes containing the time the program was
+	     compiled, 4 bytes containing the last modification time of the
+	     source file, and 4 bytes indicating the compiler options used.
+
+	     That way we can easily verify that the proper source/executable/
+	     data file combination is being used from gcov.  */
+
+	  if (__write_long (ptr->ncounts, da_file, 8) != 0)
+	    {
+	      
+	      fprintf (stderr, "arc profiling: Error writing output file %s.\n",
+		       ptr->filename);
+	    }
+	  else
+	    {
+	      int j;
+	      long *count_ptr = ptr->counts;
+	      int ret = 0;
+	      for (j = ptr->ncounts; j > 0; j--)
+		{
+		  if (__write_long (*count_ptr, da_file, 8) != 0)
+		    {
+		      ret=1;
+		      break;
+		    }
+		  count_ptr++;
+		}
+	      if (ret)
+		fprintf (stderr, "arc profiling: Error writing output file %s.\n",
+			 ptr->filename);
+	    }
+	  
+	  if (fclose (da_file) == EOF)
+	    fprintf (stderr, "arc profiling: Error closing output file %s.\n",
+		     ptr->filename);
+	}
+
+      return;
+    }
+
+  /* Must be basic block profiling.  Emit a human readable output file.  */
+
+  file = fopen ("bb.out", "a");
 
   if (!file)
     perror ("bb.out");
@@ -1486,9 +1597,12 @@ __bb_exit_func (void)
       for (ptr = bb_head; ptr != (struct bb *) 0; ptr = ptr->next)
 	{
 	  int i;
-	  int func_p	= (ptr->nwords >= sizeof (struct bb) && ptr->nwords <= 1000);
+	  int func_p	= (ptr->nwords >= sizeof (struct bb)
+			   && ptr->nwords <= 1000
+			   && ptr->functions);
 	  int line_p	= (func_p && ptr->line_nums);
 	  int file_p	= (func_p && ptr->filenames);
+	  int addr_p	= (ptr->addresses != 0);
 	  long ncounts	= ptr->ncounts;
 	  long cnt_max  = 0;
 	  long line_max = 0;
@@ -1512,7 +1626,7 @@ __bb_exit_func (void)
 	      if (cnt_max < ptr->counts[i])
 		cnt_max = ptr->counts[i];
 
-	      if (addr_max < ptr->addresses[i])
+	      if (addr_p && addr_max < ptr->addresses[i])
 		addr_max = ptr->addresses[i];
 
 	      if (line_p && line_max < ptr->line_nums[i])
@@ -1543,10 +1657,13 @@ __bb_exit_func (void)
 	  for (i = 0; i < ncounts; i++)
 	    {
 	      fprintf (file,
-		       "    Block #%*d: executed %*ld time(s) address= 0x%.*lx",
+		       "    Block #%*d: executed %*ld time(s)",
 		       blk_len, i+1,
-		       cnt_len, ptr->counts[i],
-		       addr_len, ptr->addresses[i]);
+		       cnt_len, ptr->counts[i]);
+
+	      if (addr_p)
+		fprintf (file, " address= 0x%.*lx", addr_len,
+			 ptr->addresses[i]);
 
 	      if (func_p)
 		fprintf (file, " function= %-*s", func_len,
@@ -2937,6 +3054,7 @@ int atexit (func_ptr func)
    have to define our own exit routine which will get this to happen.  */
 
 extern void __do_global_dtors ();
+extern void __bb_exit_func ();
 extern void _cleanup ();
 extern void _exit () __attribute__ ((noreturn));
 
@@ -2958,6 +3076,9 @@ exit (int status)
 #else /* No NEED_ATEXIT */
   __do_global_dtors ();
 #endif /* No NEED_ATEXIT */
+#endif
+#ifndef inhibit_libc
+  __bb_exit_func ();
 #endif
 #ifdef EXIT_BODY
   EXIT_BODY;
