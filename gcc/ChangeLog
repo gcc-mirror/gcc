@@ -1,3 +1,8 @@
+2002-04-01  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_va_arg): Fix to handle arguments
+	for which MUST_PASS_IN_STACK is true (e.g., variable-sized types).
+
 2002-03-31  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/unwind-ia64.c (alloc_spill_area): Fix offset.
