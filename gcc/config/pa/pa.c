@@ -44,13 +44,6 @@ enum cmp_type hppa_branch_type;
 /* Set by the FUNCTION_PROFILER macro. */
 int hp_profile_labelno;
 
-/* Global variables set by FUNCTION_PROLOGUE.  */
-/* Size of frame.  Need to know this to emit return insns from
-   leaf procedures.  */
-int apparent_fsize;
-int actual_fsize;
-int local_fsize, save_fregs;
-
 /* Name of where we pretend to think the frame pointer points.
    Normally, this is "4", but if we are in a leaf procedure,
    this is "something(30)".  Will this work? */
@@ -1429,10 +1422,18 @@ print_ldw (file, r, disp, base)
 	     disp, r);
 }
 
+/* Global variables set by FUNCTION_PROLOGUE.  */
+/* Size of frame.  Need to know this to emit return insns from
+   leaf procedures.  */
+int apparent_fsize;
+int actual_fsize;
+int local_fsize, save_fregs;
+
 int
-compute_frame_size (size, leaf_function)
+compute_frame_size (size, leaf_function, fregs_live)
      int size;
      int leaf_function;
+     int *fregs_live;
 {
   extern int current_function_outgoing_args_size;
   int i;
@@ -1454,7 +1455,9 @@ compute_frame_size (size, leaf_function)
       for (i = 47; i >= 44; i--)
 	if (regs_ever_live[i])
 	  {
-	    actual_fsize += 8;  save_fregs++;
+	    actual_fsize += 8;
+	    if (fregs_live)
+	      *fregs_live = 1;
 	  }
     }
   else
@@ -1462,7 +1465,9 @@ compute_frame_size (size, leaf_function)
       for (i = 90; i >= 72; i -= 2)
 	if (regs_ever_live[i] || regs_ever_live[i + 1])
 	  {
-	    actual_fsize += 8;  save_fregs++;
+	    actual_fsize += 8;
+	    if (fregs_live)
+	      *fregs_live = 1;
 	  }
     }
   return actual_fsize + current_function_outgoing_args_size;
@@ -1479,7 +1484,8 @@ output_function_prologue (file, size, leaf_function)
   extern int current_function_returns_struct;
   int i, offset;
 
-  actual_fsize = compute_frame_size (size, leaf_function) + 32;
+  save_fregs = 0;
+  actual_fsize = compute_frame_size (size, leaf_function, &save_fregs) + 32;
   if (TARGET_SNAKE)
     actual_fsize = (actual_fsize + 63) & ~63;
 
