@@ -847,6 +847,8 @@ assign_stack_temp (mode, size, keep)
 	      p = (struct temp_slot *) oballoc (sizeof (struct temp_slot));
 	      p->in_use = p->addr_taken = 0;
 	      p->size = best_p->size - rounded_size;
+	      p->base_offset = best_p->base_offset + rounded_size;
+	      p->full_size = best_p->full_size - rounded_size;
 	      p->slot = gen_rtx (MEM, BLKmode,
 				 plus_constant (XEXP (best_p->slot, 0),
 						rounded_size));
@@ -942,12 +944,14 @@ combine_temp_slots ()
 		  {
 		    /* Q comes after P; combine Q into P.  */
 		    p->size += q->size;
+		    p->full_size += q->full_size;
 		    delete_q = 1;
 		  }
 		else if (q->base_offset + q->full_size == p->base_offset)
 		  {
 		    /* P comes after Q; combine P into Q.  */
 		    q->size += p->size;
+		    q->full_size += p->full_size;
 		    delete_p = 1;
 		    break;
 		  }
