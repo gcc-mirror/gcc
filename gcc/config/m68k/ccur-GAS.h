@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Concurrent 68k version.
-   Copyright (C) 1987, 1988, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1995, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #define SWITCHES_NEED_SPACES "oL"
 
 /* See m68k.h.  7 means 68020 with 68881.  */
-#define TARGET_DEFAULT (MASK_68040_ALSO|MASK_BITFIELD|MASK_68881|MASK_68020)
+#define TARGET_DEFAULT (MASK_68040|MASK_BITFIELD|MASK_68881|MASK_68020)
 
 #include "m68k/m68k.h"
 
