@@ -1,3 +1,7 @@
+2001-01-24  Ben Elliston  <bje@redhat.com>
+
+	* config/m32r/m32r.h (PREDICATE_CODES): Remove m32r_not_same_reg.
+
 2001-01-24  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (builtin_longjmp_internal): New.

@@ -2192,7 +2192,6 @@ enum m32r_function_type
 { "call_address_operand",	{ SYMBOL_REF, LABEL_REF, CONST }},	\
 { "extend_operand",		{ REG, SUBREG, MEM }},			\
 { "small_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
-{ "m32r_not_same_reg",		{ REG, SUBREG }},			\
 { "m32r_block_immediate_operand",{ CONST_INT }},			\
 { "large_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
 { "seth_add3_operand",		{ SYMBOL_REF, LABEL_REF, CONST }},
