@@ -7351,8 +7351,14 @@ known_cond (x, cond, reg, val)
   if (side_effects_p (x))
     return x;
 
-  if (cond == EQ && rtx_equal_p (x, reg) && !FLOAT_MODE_P (cond))
+  /* If either operand of the condition is a floating point value,
+     then we have to avoid collapsing an EQ comparison.  */
+  if (cond == EQ
+      && rtx_equal_p (x, reg)
+      && ! FLOAT_MODE_P (GET_MODE (x))
+      && ! FLOAT_MODE_P (GET_MODE (val)))
     return val;
+
   if (cond == UNEQ && rtx_equal_p (x, reg))
     return val;
 

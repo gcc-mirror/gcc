@@ -1,3 +1,8 @@
+Mon Dec 10 15:54:27 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c (known_cond): Check mode of each operand to determine
+	if COND is comparing floating point values.
+
 2001-12-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.h (processor_type): Add PPC405.
