@@ -1349,8 +1349,9 @@ final_start_function (rtx first ATTRIBUTE_UNUSED, FILE *file,
     }
 #endif
 
-  last_linenum = 0;
-  last_filename = 0;
+  last_filename = locator_file (prologue_locator);
+  last_linenum = locator_line (prologue_locator);
+
   high_block_linenum = high_function_linenum = last_linenum;
 
   (*debug_hooks->begin_prologue) (last_linenum, last_filename);

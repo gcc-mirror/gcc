@@ -1,3 +1,12 @@
+Mon Jul 14 23:14:28 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cfglayout.c (locator_file): Break out from ....
+	(insn_file): ... here.
+	(locator_line): Break out from ....
+	(insn_line): ... here.
+	* rtl.h (locator_file, locator_line): Declare.
+	(final_start_function): Set proper line/file info.
+
 2003-07-14  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.c (pp_c_unary_expression): A CONVERT_EXPR is
