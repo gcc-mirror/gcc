@@ -1,5 +1,11 @@
 2000-03-24  Warren Levy  <warrenl@cygnus.com>
 
+	* java/math/BigInteger.java(divide): Handle the special case when
+	dividing by 1 and the high bit of the dividend is set.
+	(setShiftRight): Handle case when count == 0.
+
+2000-03-24  Warren Levy  <warrenl@cygnus.com>
+
 	* java/awt/Font.java(isBold): Fix syntax error.
 	(isItalic): ditto.
 	* java/awt/Frame.java(postEvent): ditto.
