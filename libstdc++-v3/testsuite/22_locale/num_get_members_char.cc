@@ -236,6 +236,7 @@ void test01()
 }
 
 // 2002-01-10  David Seymour  <seymour_dj@yahoo.com>
+// libstdc++/5331
 void test02()
 {
   using namespace std;

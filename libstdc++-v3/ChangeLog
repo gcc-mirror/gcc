@@ -1,5 +1,6 @@
 2002-01-10  David Seymour  <seymour_dj@yahoo.com>
 
+	libstdc++/5331
 	* include/bits/locale_facets.h (num_get<>): Return advanced iterator
 	for _M_extract_float and _M_extract_int
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float)
