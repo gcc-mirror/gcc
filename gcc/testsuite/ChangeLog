@@ -1,3 +1,11 @@
+2000-12-14  Catherine Moore  <clm@redhat.com>
+
+	* gcc.c-torture/execute/920501-7.c: Check for NO_TRAMPOLINES.
+	* gcc.c-torture/execute/920612-2.c: Likewise.
+	* gcc.c-torture/execute/920428-2.c: Likewise.
+	* gcc-c-torture/execute/va-arg-11.c: Call exit.
+	* gcc.c-torture/execute/va-arg-21.c: Likewise.
+
 2000-12-13  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.dg/pack-test-1.c: Compile on powerpc*-*-eabi* too.
@@ -33,6 +41,7 @@
         * gcc.dg/cpp/redef2.c: Update.   
         * gcc.dg/cpp/skipping.c: New test. 
 
+>>>>>>> 1.929
 2000-12-07  Geoffrey Keating  <geoffk@redhat.com>
 
 	* g++.old-deja/g++.other/eh3.C: New testcase.
