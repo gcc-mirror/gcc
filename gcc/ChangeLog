@@ -1,5 +1,14 @@
 2004-10-19  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* expr.c (expand_assignment): Remove the last argument.
+	Change the return type to void.
+	* expr.h: Update the prototype of expand_assignment.
+	* function.c (assign_parm_setup_reg): Update a call to
+	expand_assignment.
+	* stmt.c (expand_asm_expr): Likewise.
+
+2004-10-19  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* expr.c (expand_expr_real_1) <MODIFY_EXPR>: Remove
 	unnecessary assignments to temp.  Return const0_rtx.
 
