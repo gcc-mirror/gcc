@@ -1,3 +1,14 @@
+Thu Apr  8 10:22:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (host_xm_file, build_xm_file): Include hwint.h.
+	Use case statements instead of "if test -a ... -a ... -a ..."
+
+	* machmode.h: Don't define HOST_WIDE_INT, etc. Wrap use of
+ 	HOST_WIDE_INT in #ifdef.
+
+	* mips.h: Include hwint.h instead of providing definitions for
+	HOST_WIDE_INT, etc.  Wrap uses of HOST_WIDE_INT in #ifdef.
+
 Thu Apr  8 06:16:14 EDT 1999  John Wehle  (john@feith.com)
 
 	* i386.md (truncdfsf2, truncxfsf2,

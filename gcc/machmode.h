@@ -24,20 +24,6 @@ Boston, MA 02111-1307, USA.  */
 /* Strictly speaking, this isn't the proper place to include these definitions,
    but this file is included by every GCC file. */
 
-/* Find the largest host integer type and set its size and type.  */
-
-#ifndef HOST_BITS_PER_WIDE_INT
-
-#if HOST_BITS_PER_LONG > HOST_BITS_PER_INT
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_LONG
-#define HOST_WIDE_INT long
-#else
-#define HOST_BITS_PER_WIDE_INT HOST_BITS_PER_INT
-#define HOST_WIDE_INT int
-#endif
-
-#endif
-
 /* Provide a default way to print an address in hex via printf.  */
 
 #ifndef HOST_PTR_PRINTF
@@ -49,69 +35,6 @@ Boston, MA 02111-1307, USA.  */
      : sizeof (long) == sizeof (char *) ? "%lx" : "%llx")
 # endif
 #endif /* ! HOST_PTR_PRINTF */
-
-/* Provide defaults for the way to print a HOST_WIDE_INT
-   in various manners.  */
-
-#ifndef HOST_WIDE_INT_PRINT_DEC
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#define HOST_WIDE_INT_PRINT_DEC "%d"
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#define HOST_WIDE_INT_PRINT_DEC "%ld"
-#else
-#define HOST_WIDE_INT_PRINT_DEC "%lld"
-#endif
-#endif
-#endif
-
-#ifndef HOST_WIDE_INT_PRINT_UNSIGNED
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#define HOST_WIDE_INT_PRINT_UNSIGNED "%u"
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#define HOST_WIDE_INT_PRINT_UNSIGNED "%lu"
-#else
-#define HOST_WIDE_INT_PRINT_UNSIGNED "%llu"
-#endif
-#endif
-#endif
-
-#ifndef HOST_WIDE_INT_PRINT_HEX
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#define HOST_WIDE_INT_PRINT_HEX "0x%x"
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#define HOST_WIDE_INT_PRINT_HEX "0x%lx"
-#else
-#define HOST_WIDE_INT_PRINT_HEX "0x%llx"
-#endif
-#endif
-#endif
-
-#ifndef HOST_WIDE_INT_PRINT_DOUBLE_HEX
-#if HOST_BITS_PER_WIDE_INT == 64
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%x%016x"
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%016lx"
-#else
-#define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%llx%016llx"
-#endif
-#endif
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-#define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%x%08x"
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-#define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%lx%08lx"
-#else
-#define HOST_WIDE_INT_PRINT_DOUBLE_HEX "0x%llx%08llx"
-#endif
-#endif
-#endif
-#endif
 
 /* Make an enum class that gives all the machine modes.  */
 
@@ -181,12 +104,16 @@ extern int mode_unit_size[];
 
 #define GET_MODE_BITSIZE(MODE)  (BITS_PER_UNIT * mode_size[(int) (MODE)])
 
+#ifdef HOST_WIDE_INT
+
 /* Get a bitmask containing 1 for all bits in a word
    that fit within mode MODE.  */
 
 extern unsigned HOST_WIDE_INT mode_mask_array[];
 
 #define GET_MODE_MASK(MODE) mode_mask_array[(int) (MODE)]
+
+#endif /* HOST_WIDE_INT */
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
