@@ -778,9 +778,9 @@ ereal_from_int (d, i, j)
 	high += 1;
     }
   eldexp (eone, HOST_BITS_PER_WIDE_INT, df);
-  ultoe (&high, dg);
+  ultoe ((unsigned HOST_WIDE_INT *) &high, dg);
   emul (dg, df, dg);
-  ultoe (&low, df);
+  ultoe ((unsigned HOST_WIDE_INT *) &low, df);
   eadd (df, dg, dg);
   if (sign)
     eneg (dg);
@@ -838,9 +838,9 @@ ereal_to_int (low, high, rr)
     }
   eldexp (eone, HOST_BITS_PER_WIDE_INT, df);
   ediv (df, d, dg);		/* dg = d / 2^32 is the high word */
-  euifrac (dg, high, dh);
+  euifrac (dg, (unsigned HOST_WIDE_INT *) high, dh);
   emul (df, dh, dg);		/* fractional part is the low word */
-  euifrac (dg, low, dh);
+  euifrac (dg, (unsigned HOST_WIDE_INT *)low, dh);
   if (s)
     {
       /* complement and add 1 */
@@ -1040,7 +1040,7 @@ etarsingle (r)
      REAL_VALUE_TYPE r;
 {
   unsigned EMUSHORT e[NE];
-  unsigned long l;
+  long l;
 
   GET_REAL (&r, e);
   etoe24 (e, e);
@@ -5533,32 +5533,26 @@ ereal_from_double (d)
 #if FLOAT_WORDS_BIG_ENDIAN
   s[0] = (unsigned EMUSHORT) (d[0] >> 16);
   s[1] = (unsigned EMUSHORT) d[0];
-  if (HOST_BITS_PER_WIDE_INT >= 64)
-    {
-      /* In this case the entire target double is contained in the
-         first array element.  The second element of the input is ignored.  */
-      s[2] = (unsigned EMUSHORT) (d[0] >> 48);
-      s[3] = (unsigned EMUSHORT) (d[0] >> 32);
-    }
-  else
-    {
-      s[2] = (unsigned EMUSHORT) (d[1] >> 16);
-      s[3] = (unsigned EMUSHORT) d[1];
-    }
+#if HOST_BITS_PER_WIDE_INT == 32
+  s[2] = (unsigned EMUSHORT) (d[1] >> 16);
+  s[3] = (unsigned EMUSHORT) d[1];
+#else
+  /* In this case the entire target double is contained in the
+     first array element.  The second element of the input is ignored.  */
+  s[2] = (unsigned EMUSHORT) (d[0] >> 48);
+  s[3] = (unsigned EMUSHORT) (d[0] >> 32);
+#endif
 #else
 /* Target float words are little-endian.  */
   s[0] = (unsigned EMUSHORT) d[0];
   s[1] = (unsigned EMUSHORT) (d[0] >> 16);
-  if (HOST_BITS_PER_WIDE_INT >= 64)
-    {
-      s[2] = (unsigned EMUSHORT) (d[0] >> 32);
-      s[3] = (unsigned EMUSHORT) (d[0] >> 48);
-    }
-  else
-    {
-      s[2] = (unsigned EMUSHORT) d[1];
-      s[3] = (unsigned EMUSHORT) (d[1] >> 16);
-    }
+#if HOST_BITS_PER_WIDE_INT == 32
+  s[2] = (unsigned EMUSHORT) d[1];
+  s[3] = (unsigned EMUSHORT) (d[1] >> 16);
+#else
+  s[2] = (unsigned EMUSHORT) (d[0] >> 32);
+  s[3] = (unsigned EMUSHORT) (d[0] >> 48);
+#endif
 #endif
   /* Convert target double to E-type. */
   e53toe (s, e);
