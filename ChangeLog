@@ -1,3 +1,8 @@
+2002-05-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* config.guess: Import 2002-03-20 version.
+	* config.sub: Import 2002-04-26 version.
+
 2002-05-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config-ml.in: Allow for PWDCMD to determine ML_POPDIR.
