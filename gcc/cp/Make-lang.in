@@ -157,21 +157,23 @@ new2.o: cc1plus $(srcdir)/cp/new2.cc
 
 # We want to update cplib2.txt if any of the source files change...
 cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready
-	if [ -f cc1plus ]; then \
-	  echo $(CXX_LIB2FUNCS) > cplib2.new; \
-	else \
-	  echo "" > cplib2.new; \
-	fi
+	case " $(LANGUAGES) " in \
+	*" "[cC]"++ "*) \
+	  echo $(CXX_LIB2FUNCS) > cplib2.new;; \
+	*) \
+	  echo "" > cplib2.new;; \
+	esac
 	mv -f cplib2.new cplib2.txt 
 
 # Or if it would be different.
 cplib2.ready: $(GCC_PASSES) $(LANGUAGES) $(LIBGCC2_DEPS) stmp-int-hdrs
 	@if [ -r cplib2.txt ]; then \
-	  if [ -f cc1plus ]; then \
-	    echo $(CXX_LIB2FUNCS) > cplib2.new; \
-	  else \
-	    echo "" > cplib2.new; \
-	  fi; \
+	  case " $(LANGUAGES) " in \
+	  *" "[cC]"++ "*) \
+	    echo $(CXX_LIB2FUNCS) > cplib2.new;; \
+	  *) \
+	    echo "" > cplib2.new;; \
+	  esac; \
 	  if cmp -s cplib2.new cplib2.txt; then true; else \
 	    touch cplib2.ready; \
 	  fi; \

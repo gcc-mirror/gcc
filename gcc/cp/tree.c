@@ -227,10 +227,8 @@ build_cplus_new (type, init)
   rval = build (NEW_EXPR, type,
 		TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), slot);
   TREE_SIDE_EFFECTS (rval) = 1;
-  TREE_ADDRESSABLE (rval) = 1;
   rval = build (TARGET_EXPR, type, slot, rval, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (rval) = 1;
-  TREE_ADDRESSABLE (rval) = 1;
 
   return rval;
 }
