@@ -307,7 +307,7 @@ $(srcdir)/f/NEWS: f/news0.texi f/news.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D NEWSONLY --no-header --no-split \
 	  --no-validate -o NEWS news0.texi
 
-f77.rebuilt: $(srcdir)/f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
+f77.rebuilt: f/g77.info $(srcdir)/f/BUGS $(srcdir)/f/INSTALL \
   $(srcdir)/f/NEWS 
 
 #
