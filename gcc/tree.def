@@ -193,17 +193,15 @@ DEFTREECODE (FILE_TYPE, "file_type", "t", 0)
    TYPE_SEP		  Expression for units from one elt to the next.
    TYPE_SEP_UNIT	  Number of bits in a unit for previous.
  The field TYPE_POINTER_TO (TREE_TYPE (array_type)) is always nonzero
- and holds the type to coerce a value of that array type to in C.  */
+ and holds the type to coerce a value of that array type to in C.
+ TYPE_STRING_FLAG indicates a string (in contrast to an array of chars)
+ in languages (such as Chill) that make a distinction. */
 /* Array types in C or Pascal */
 DEFTREECODE (ARRAY_TYPE, "array_type", "t", 0)
 
 /* Types of sets for Pascal.  Special fields are the same as
    in an array type.  The target type is always a boolean type.  */
 DEFTREECODE (SET_TYPE, "set_type", "t", 0)
-
-/* Not known whether Pascal really needs this
-   or what it should contain.  */
-DEFTREECODE (STRING_TYPE, "string_type", "t", 0)
 
 /* Struct in C, or record in Pascal.  */
 /* Special fields:
