@@ -176,6 +176,7 @@ GCC_3.0 {
   _Unwind_SjLj_Resume
 }
 
+%inherit GCC_3.3 GCC_3.0
 GCC_3.3 {
   _Unwind_FindEnclosingFunction
 }
