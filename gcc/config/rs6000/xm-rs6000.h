@@ -59,3 +59,10 @@ extern char *alloca ();
    collect has a chance to see them, so scan the object files directly.  */
 #define COLLECT_EXPORT_LIST
 #endif
+
+#ifndef __STDC__
+extern char *malloc (), *realloc (), *calloc ();
+#else
+extern void *malloc (), *realloc (), *calloc ();
+#endif
+extern void free ();
