@@ -359,7 +359,7 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
 # Even if ALLOCA is set, don't use it if compiling with GCC.
-USE_ALLOCA= ` case "${CC}" in "${OLDCC}") echo "" ${ALLOCA} ;; esac `
+USE_ALLOCA= ` case "${CC}" in "${OLDCC}") echo "${ALLOCA}" ;; esac `
 USE_HOST_ALLOCA= ` case "${HOST_CC}"@"${HOST_ALLOCA}" in "${OLDCC}"@?*) echo ${HOST_PREFIX}${HOST_ALLOCA} ;; esac `
 USE_HOST_MALLOC= ` case "${HOST_MALLOC}" in ?*) echo ${HOST_PREFIX}${HOST_MALLOC} ;; esac `
 USE_HOST_OBSTACK= ` case "${HOST_OBSTACK}" in ?*) echo ${HOST_PREFIX}${HOST_OBSTACK} ;; esac `
@@ -421,15 +421,12 @@ FLAGS_TO_PASS = \
 	"BISONFLAGS=$(BISONFLAGS)" \
 	"CC=set-by-configure" \
 	"CFLAGS=$(CFLAGS)" \
-	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LEX=$(LEX)" \
 	"LEXFLAGS=$(LEXFLAGS)" \
 	"MAKEINFO=$(MAKEINFO)" \
 	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
-	"MALLOC=$(MALLOC)" \
-	"OBSTACK=$(OBSTACK)" \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"RANLIB_TEST_FOR_TARGET=$(RANLIB_TEST_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
