@@ -237,6 +237,8 @@ main (int argc, char **argv)
 	    if (encoding == NULL || *encoding == '\0')
 	      encoding = DEFAULT_ENCODING;
 
+            input_filename = filename;
+            input_line = 0;
 	    java_init_lex (finput, encoding);
 	    ctxp->filename = filename;
 	    yyparse ();
