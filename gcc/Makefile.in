@@ -685,24 +685,24 @@ GTM_H     = tm.h      $(tm_file_list)
 TM_H      = $(GTM_H) insn-constants.h insn-flags.h
 
 # Variables for version information.
-BASEVER   = $(srcdir)/BASE-VER  # 4.x.y
-DEVPHASE  = $(srcdir)/DEV-PHASE # experimental, prerelease, ""
-DATESTAMP = $(srcdir)/DATESTAMP # YYYYMMDD or empty
+BASEVER     := $(srcdir)/BASE-VER  # 4.x.y
+DEVPHASE    := $(srcdir)/DEV-PHASE # experimental, prerelease, ""
+DATESTAMP   := $(srcdir)/DATESTAMP # YYYYMMDD or empty
 
-BASEVER_c   = $(shell cat $(BASEVER))
-DEVPHASE_c  = $(shell cat $(DEVPHASE))
-DATESTAMP_c = $(shell cat $(DATESTAMP))
+BASEVER_c   := $(shell cat $(BASEVER))
+DEVPHASE_c  := $(shell cat $(DEVPHASE))
+DATESTAMP_c := $(shell cat $(DATESTAMP))
 
-version     = $(BASEVER_c)
+version     := $(BASEVER_c)
 
 # For use in version.c - double quoted strings, with appropriate
 # surrounding punctuation and spaces, and with the datestamp and
 # development phase collapsed to the empty string in release mode
 # (i.e. if DEVPHASE_c is empty).  The space immediately after the
 # comma in the $(if ...) constructs is significant - do not remove it.
-BASEVER_s   = "\"$(BASEVER_c)\""
-DEVPHASE_s  = "\"$(if $(DEVPHASE_c), ($(DEVPHASE_c)))\""
-DATESTAMP_s = "\"$(if $(DEVPHASE_c), $(DATESTAMP_c))\""
+BASEVER_s   := "\"$(BASEVER_c)\""
+DEVPHASE_s  := "\"$(if $(DEVPHASE_c), ($(DEVPHASE_c)))\""
+DATESTAMP_s := "\"$(if $(DEVPHASE_c), $(DATESTAMP_c))\""
 
 # Shorthand variables for dependency lists.
 TARGET_H = $(TM_H) target.h insn-modes.h
@@ -3424,6 +3424,13 @@ install-include-dir: installdirs
 	mkdir $(DESTDIR)$(libsubdir)/include
 	-chmod a+rx $(DESTDIR)$(libsubdir)/include
 
+# Create or recreate the install-tools include file directory.
+itoolsdir = $(libexecsubdir)/install-tools
+itoolsdatadir = $(libsubdir)/install-tools
+install-itoolsdirs: installdirs
+	$(mkinstalldirs) $(DESTDIR)$(itoolsdatadir)/include
+	$(mkinstalldirs) $(DESTDIR)$(itoolsdir)
+
 # Install the include directory using tar.
 install-headers-tar: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 # We use `pwd`/include instead of just include to problems with CDPATH
@@ -3446,10 +3453,8 @@ install-headers-cpio: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 install-headers-cp: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir
 	cp -p -r include $(DESTDIR)$(libsubdir)
 
-itoolsdir = $(libexecsubdir)/install-tools
-itoolsdatadir = $(libsubdir)/install-tools
 # Install supporting files for fixincludes to be run later.
-install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-include-dir \
+install-mkheaders: stmp-int-hdrs $(STMP_FIXPROTO) install-itoolsdirs \
   macro_list xlimits.h
 	for file in $(USER_H); do \
 	  realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
