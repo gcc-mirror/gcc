@@ -1412,15 +1412,21 @@ of comparison.  The result is computed without overflow, as if with
 infinite precision.
 
 Of course, machines can't really subtract with infinite precision.
-However, they can pretend to do so when only the sign of the
-result will be used, which is the case when the result is stored
-in the condition code.   And that is the only way this kind of expression
-may validly be used: as a value to be stored in the condition codes.
+However, they can pretend to do so when only the sign of the result will
+be used, which is the case when the result is stored in the condition
+code.  And that is the @emph{only} way this kind of expression may
+validly be used: as a value to be stored in the condition codes, either
+@code{(cc0)} or a register. @xref{Comparisons}.
 
-The mode @var{m} is not related to the modes of @var{x} and @var{y},
-but instead is the mode of the condition code value.  If @code{(cc0)}
-is used, it is @code{VOIDmode}.  Otherwise it is some mode in class
-@code{MODE_CC}, often @code{CCmode}.  @xref{Condition Code}.
+The mode @var{m} is not related to the modes of @var{x} and @var{y}, but
+instead is the mode of the condition code value.  If @code{(cc0)} is
+used, it is @code{VOIDmode}.  Otherwise it is some mode in class
+@code{MODE_CC}, often @code{CCmode}.  @xref{Condition Code}.  If @var{m}
+is @code{VOIDmode} or @code{CCmode}, the operation returns sufficient
+information (in an unspecified format) so that any comparison operator
+can be applied to the result of the @code{COMPARE} operation.  For other
+modes in class @code{MODE_CC}, the operation only returns a subset of
+this information.
 
 Normally, @var{x} and @var{y} must have the same mode.  Otherwise,
 @code{compare} is valid only if the mode of @var{x} is in class
