@@ -1,5 +1,8 @@
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc: Move use_fixproto=no from generic vxworks clause to
+	specific one.
+
 	* config.gcc (powerpc-*-gnu-gnualtivec*): Disable fixproto
 	(accidentally missed in last pass).
 
