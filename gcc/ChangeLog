@@ -1,3 +1,8 @@
+2005-02-07  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR other/17135
+	* doc/invoke.texi: Correct documentation of -freorder-functions.
+
 2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR other/14402
