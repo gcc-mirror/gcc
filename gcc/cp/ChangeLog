@@ -1,3 +1,9 @@
+2003-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/11614
+	* decl.c (grokdeclarator): Recognize a flexible array based on the
+	type, not the form of the declarator.
+
 2003-08-20  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (simplify_aggr_init_expr): Split out from
