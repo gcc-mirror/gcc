@@ -76,6 +76,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "lex.h"
 #include "malloc.h"
 #include "real.h"
+#include "toplev.h"
 
 /* Externals defined here. */
 

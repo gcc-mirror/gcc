@@ -3842,7 +3842,7 @@ reload_as_needed (live_known)
 
   for (chain = reload_insn_chain; chain; chain = chain->next)
     {
-      rtx prev;
+      rtx prev = 0;
       rtx insn = chain->insn;
       rtx old_next = NEXT_INSN (insn);
 

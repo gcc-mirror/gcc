@@ -1,3 +1,10 @@
+2003-01-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ra-colorize.c (colorize_one_web): Initialize variable.
+	* regmove.c (fixup_match_1): Likewise.
+	* reload1.c (reload_as_needed): Likewise.
+	* sdbout.c (SET_KNOWN_TYPE_TAG): Add cast.
+
 2003-01-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloop.c (flow_loops_find): Fix handling of abnormal edges.

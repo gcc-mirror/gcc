@@ -41,6 +41,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "debug.h"
 #include "assert.h"
+#include "tm_p.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
