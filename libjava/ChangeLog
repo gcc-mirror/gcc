@@ -1,3 +1,14 @@
+2003-10-26  Mark Wielaard  <mark@klomp.org>
+
+	Reported by Helmer Kraemer <hkraemer@freenet.de>
+	* java/util/jar/JarInputStream.java (readManifest): Don't call
+	closeEntry().
+
+	* java/util/zip/DeflaterOutputStream.java (inbufWrite): New method.
+	(finish): Use inbufWrite().
+	(write(int)): Likewise.
+	(write(byte[],int,int)): Likewise.
+
 2003-10-26  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/lang/reflect/AccessibleObject.java (secureSetAccessible):

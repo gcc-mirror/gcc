@@ -116,7 +116,6 @@ public class JarInputStream extends ZipInputStream
 	  }
 	firstEntry = (JarEntry) super.getNextEntry();
       }
-    closeEntry();
 
     if (verify)
       {
