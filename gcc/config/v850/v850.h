@@ -191,7 +191,7 @@ extern int target_flags;
    { "no-app-regs",              MASK_NO_APP_REGS, 			\
        				N_("Do not use registers r2 and r5") }, \
    { "strict-align",             MASK_STRICT_ALIGN,			\
-				N_("Enfore strict alignment") },        \
+				N_("Enforce strict alignment") },       \
    { "no-strict-align",         -MASK_STRICT_ALIGN, "" },		\
    { "big-switch",		 MASK_BIG_SWITCH, 			\
        				N_("Use 4 byte entries in switch tables") },\

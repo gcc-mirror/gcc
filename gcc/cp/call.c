@@ -2959,7 +2959,7 @@ build_operator_new_call (tree fnname, tree args, tree *size, tree *cookie_size)
 	error ("no matching function for call to `%D(%A)'",
 	       DECL_NAME (OVL_CURRENT (fns)), args);
       else
-	error ("call of overlopaded `%D(%A)' is ambiguous",
+	error ("call of overloaded `%D(%A)' is ambiguous",
 	       DECL_NAME (OVL_CURRENT (fns)), args);
       if (candidates)
 	print_z_candidates (candidates);
