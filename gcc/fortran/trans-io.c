@@ -147,7 +147,7 @@ static enum { READ, WRITE, IOLENGTH } last_dt;
 	 get_identifier (stringize(name)), pchar_type_node);		\
   ioparm_ ## name ## _len = gfc_add_field_to_struct			\
         (&(TYPE_FIELDS (ioparm_type)), ioparm_type,			\
-	 get_identifier (stringize(name) "_len"), gfc_int4_type_node)
+	 get_identifier (stringize(name) "_len"), gfc_charlen_type_node)
 
 
 /* Create function decls for IO library functions.  */
@@ -181,11 +181,11 @@ gfc_build_io_library_fndecls (void)
   ADD_FIELD (opened, gfc_pint4_type_node);
   ADD_FIELD (number, gfc_pint4_type_node);
   ADD_FIELD (named, gfc_pint4_type_node);
-  ADD_FIELD (rec, gfc_pint4_type_node);
+  ADD_FIELD (rec, gfc_int4_type_node);
   ADD_FIELD (nextrec, gfc_pint4_type_node);
   ADD_FIELD (size, gfc_pint4_type_node);
 
-  ADD_FIELD (recl_in, gfc_pint4_type_node);
+  ADD_FIELD (recl_in, gfc_int4_type_node);
   ADD_FIELD (recl_out, gfc_pint4_type_node);
 
   ADD_FIELD (iolength, gfc_pint4_type_node);
