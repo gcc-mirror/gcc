@@ -1270,20 +1270,6 @@ namespace std
 		}
 	}
 
-      // Need to get the rest of the sign characters, if they exist.
-      const char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
-      if (__sign.size() > 1)
-	{
-	  const size_type __len = __sign.size();
-	  size_type __i = 1;
-	  for (; __c != __eof && __i < __len; ++__i)
-	    while (__beg != __end && __c != __sign[__i])
-	      __c = *(++__beg);
-	  
-	  if (__i != __len)
-	    __testvalid = false;
-	}
-
       const char_type __zero = __ctype.widen('0');
 
       // Strip leading zeros.
@@ -1321,6 +1307,20 @@ namespace std
 	}
       else
 	__testvalid = false;
+
+      // Need to get the rest of the sign characters, if they exist.
+      const char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
+      if (__sign.size() > 1)
+	{
+	  const size_type __len = __sign.size();
+	  size_type __i = 1;
+	  for (; __c != __eof && __i < __len; ++__i)
+	    while (__beg != __end && __c != __sign[__i])
+	      __c = *(++__beg);
+	  
+	  if (__i != __len)
+	    __testvalid = false;
+	}
 
       // Iff no more characters are available.      
       if (__c == __eof)

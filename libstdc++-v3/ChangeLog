@@ -1,5 +1,11 @@
 2003-10-24  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (money_get::do_get(...,
+	string_type&): Move an if block, thus minimizing the amount
+	of code processed anyway when __tmp_units.size() == 0.
+
+2003-10-24  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc
 	(time_get<>::_M_extract_via_format): Deal with case 'C' too,
 	equivalent to 'y'.
