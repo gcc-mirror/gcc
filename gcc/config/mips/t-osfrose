@@ -1,4 +1,3 @@
-ALL		= Makefile start.encap libgcc.a
 EXTRA_PASSES	= ld
 EXTRA_OBJS	= halfpic.o
 LIMITS_H	=
