@@ -1414,10 +1414,12 @@ static void
 finish_struct_bits (tree t)
 {
   int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (t));
-
+  tree variants;
+  
   /* Fix up variants (if any).  */
-  tree variants = TYPE_NEXT_VARIANT (t);
-  while (variants)
+  for (variants = TYPE_NEXT_VARIANT (t);
+       variants;
+       variants = TYPE_NEXT_VARIANT (variants))
     {
       /* These fields are in the _TYPE part of the node, not in
 	 the TYPE_LANG_SPECIFIC component, so they are not shared.  */
@@ -1430,7 +1432,8 @@ finish_struct_bits (tree t)
       TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (variants) 
 	= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t);
       TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
-      TYPE_USES_VIRTUAL_BASECLASSES (variants) = TYPE_USES_VIRTUAL_BASECLASSES (t);
+      TYPE_USES_VIRTUAL_BASECLASSES (variants)
+	= TYPE_USES_VIRTUAL_BASECLASSES (t);
       
       TYPE_BINFO (variants) = TYPE_BINFO (t);
 
@@ -1440,8 +1443,6 @@ finish_struct_bits (tree t)
       TYPE_FIELDS (variants) = TYPE_FIELDS (t);
       TYPE_SIZE (variants) = TYPE_SIZE (t);
       TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
-      
-      variants = TYPE_NEXT_VARIANT (variants);
     }
 
   if (n_baseclasses && TYPE_POLYMORPHIC_P (t))
@@ -4290,33 +4291,20 @@ propagate_binfo_offsets (tree binfo, tree offset)
   /* Find the primary base class.  */
   primary_binfo = get_primary_binfo (binfo);
 
+  if (primary_binfo && BINFO_PRIMARY_BASE_OF (primary_binfo) == binfo)
+    propagate_binfo_offsets (primary_binfo, offset);
+  
   /* Scan all of the bases, pushing the BINFO_OFFSET adjust
      downwards.  */
-  for (i = -1; i < BINFO_N_BASE_BINFOS (binfo); ++i)
+  for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); ++i)
     {
-      tree base_binfo;
+      tree base_binfo = BINFO_BASE_BINFO (binfo, i);
+      
+      /* Don't do the primary base twice.  */
+      if (base_binfo == primary_binfo)
+	continue;
 
-      /* On the first time through the loop, do the primary base.
-	 Because the primary base need not be an immediate base, we
-	 must handle the primary base specially.  */
-      if (i == -1) 
-	{
-	  if (!primary_binfo) 
-	    continue;
-
-	  base_binfo = primary_binfo;
-	}
-      else
-	{
-	  base_binfo = BINFO_BASE_BINFO (binfo, i);
-	  /* Don't do the primary base twice.  */
-	  if (base_binfo == primary_binfo)
-	    continue;
-	}
-
-      /* Skip virtual bases that aren't our canonical primary base.  */
-      if (BINFO_VIRTUAL_P (base_binfo)
-	  && BINFO_PRIMARY_BASE_OF (base_binfo) != binfo)
+      if (BINFO_VIRTUAL_P (base_binfo))
 	continue;
 
       propagate_binfo_offsets (base_binfo, offset);
