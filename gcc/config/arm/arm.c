@@ -214,9 +214,6 @@ static bool arm_cookie_has_size (void);
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST arm_adjust_cost
 
-#undef  TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
-
 #undef TARGET_ENCODE_SECTION_INFO
 #ifdef ARM_PE
 #define TARGET_ENCODE_SECTION_INFO  arm_pe_encode_section_info

@@ -281,47 +281,6 @@ DEF_RTL_EXPR(DEFINE_EXPAND, "define_expand", "sEss", RTX_EXTRA)
    requirements for delay slots.  */
 DEF_RTL_EXPR(DEFINE_DELAY, "define_delay", "eE", RTX_EXTRA)
 
-/* Define a set of insns that requires a function unit.  This means that
-   these insns produce their result after a delay and that there may be
-   restrictions on the number of insns of this type that can be scheduled
-   simultaneously.
-
-   More than one DEFINE_FUNCTION_UNIT can be specified for a function unit.
-   Each gives a set of operations and associated delays.  The first three
-   operands must be the same for each operation for the same function unit.
-
-   All delays are specified in cycles.
-
-   1st operand: Name of function unit (mostly for documentation)
-   2nd operand: Number of identical function units in CPU
-   3rd operand: Total number of simultaneous insns that can execute on this
-		function unit; 0 if unlimited.
-   4th operand: Condition involving insn attribute, that, if true, specifies
-		those insns that this expression applies to.
-   5th operand: Constant delay after which insn result will be
-		available.
-   6th operand: Delay until next insn can be scheduled on the function unit
-		executing this operation.  The meaning depends on whether or
-		not the next operand is supplied.
-   7th operand: If this operand is not specified, the 6th operand gives the
-		number of cycles after the instruction matching the 4th
-		operand begins using the function unit until a subsequent
-		insn can begin.  A value of zero should be used for a
-		unit with no issue constraints.  If only one operation can
-		be executed a time and the unit is busy for the entire time,
-		the 3rd operand should be specified as 1, the 6th operand
-		should be specified as 0, and the 7th operand should not
-		be specified.
-
-		If this operand is specified, it is a list of attribute
-		expressions.  If an insn for which any of these expressions
-		is true is currently executing on the function unit, the
-		issue delay will be given by the 6th operand.  Otherwise,
-		the insn can be immediately scheduled (subject to the limit
-		on the number of simultaneous operations executing on the
-		unit.)  */
-DEF_RTL_EXPR(DEFINE_FUNCTION_UNIT, "define_function_unit", "siieiiV", RTX_EXTRA)
-
 /* Define attribute computation for `asm' instructions.  */
 DEF_RTL_EXPR(DEFINE_ASM_ATTRIBUTES, "define_asm_attributes", "V", RTX_EXTRA)
 

@@ -1,3 +1,79 @@
+2004-07-19  Paolo Bonzini  <bonzini@gnu.org>
+
+	* genattr.c (struct range, struct function_unit,
+	write_units, extend_range, init_range): Remove them.
+	(main): Remove code dealing with DEFINE_FUNCTION_UNIT.
+	Output "#define INSN_SCHEDULING" here.
+	* genattrtab.c (struct range, struct function_unit_op,
+	struct function_unit, struct dimension, enum operator,
+	operate_exp, expand_units, simplify_knowing,
+	encode_units_mask, simplify_by_exploding,
+	find_and_mark_used_attributes, unmark_used_attributes,
+	add_values_to_cover, increment_current_value,
+	test_for_current_value, simplify_with_current_value,
+	simplify_with_current_value_aux, gen_unit,
+	write_unit_name, write_function_unit_info,
+	write_complex_function, write_toplevel_expr,
+	find_single_value, extend_range): Remove.
+	(write_attr_get): Do not handle common_av->value
+	being an FFS.
+	(struct attr_desc): Remove func_units_p and blockage_p.
+	(write_attr_valueq): Do not handle them.
+	(find_attr): Do not clear them.
+	(make_internal_attr): Do not initialize them.
+	(main): Remove code dealing with DEFINE_FUNCTION_UNIT.
+	* sched-vis.c (init_target_units, insn_print_units,
+	init_block_visualization, print_block_visualization,
+	visualize_scheduled_insns, visualize_no_unit,
+	visualize_stall_cycles, visualize_alloc,
+	visualize_free, target_units, get_visual_tbl_length,
+	MAX_VISUAL_LINES, INSN_LEN, n_visual_lines,
+	visual_tbl_line_length, visual_tbl, n_vis_no_unit,
+	MAX_VISUAL_NO_UNIT, vis_no_unit): Remove.
+	* haifa-sched.c (blockage_range, clear_units,
+	schedule_unit, actual_hazard, potential_hazard,
+	insn_unit, unit_last_insn, unit_tick,
+	actual_hazard_this_instance, potential_hazard,
+	schedule_unit, max_insn_queue_index_value): Remove.
+	(MAX_INSN_QUEUE_INDEX): Removed, renamed throughout to
+	max_insn_queue_index.
+	* rtl.def (DEFINE_FUNCTION_UNIT): Remove.
+	* doc/md.texi (Processor pipeline description): Remove
+	references to old pipeline descriptions.
+	(Automaton pipeline description): Merge with the above.
+	(Old pipeline description, Comparison of the two descriptions):
+	Remove.
+
+	* bt-load.c (migrate_btr_def): Remove references to
+	use_pipeline_interface.
+	* haifa-sched.c (insn_cost, schedule_insn,
+	schedule_block, advance_one_cycle, sched_init,
+	queue_to_ready, sched_finish): Likewise.
+	* modulo-sched.c (sms_schedule, advance_one_cycle,
+	ps_has_conflicts): Likewise.
+	* sched-rgn.c (init_ready): Likewise.
+	(debug_dependencies): Likewise, and remove an "if (1)".
+	* target.h (use_dfa_pipeline_interface): Remove.
+	* config/alpha/alpha.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/arc/arc.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/arm/arm.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/c4x/c4x.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/frv/frv.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/i386/i386.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/ia64/ia64.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/iq2000/iq2000.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/m32r/m32r.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/mcore/mcore.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/mips/mips.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/pa/pa.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/rs6000/rs6000.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/s390/s390.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/sh/sh.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/sparc/sparc.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/v850/v850.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* config/xtensa/xtensa.c (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+	* doc/tm.texi (TARGET_USE_DFA_PIPELINE_INTERFACE): Remove.
+
 2004-07-19  Roger Sayle  <roger@eyesopen.com>
 
 	* rtlanal.c (reg_set_p): Add check for regs_invalidated_by_call.

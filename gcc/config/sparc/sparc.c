@@ -389,8 +389,6 @@ enum processor_type sparc_cpu;
 #define TARGET_SCHED_ISSUE_RATE sparc_issue_rate
 #undef TARGET_SCHED_INIT
 #define TARGET_SCHED_INIT sparc_sched_init
-#undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
 #undef TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD
 #define TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD sparc_use_sched_lookahead
 
