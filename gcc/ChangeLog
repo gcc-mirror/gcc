@@ -1,3 +1,9 @@
+2001-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_expand_int_movcc): If overlap between
+	out and comparison sequence has been detected, put result into
+	proper temporary pseudo.
+
 2001-04-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (dwarf2out_finish): Forcibly return to the data

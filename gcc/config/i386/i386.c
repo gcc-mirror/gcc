@@ -5629,7 +5629,7 @@ ix86_expand_int_movcc (operands)
 	       * Size 5 - 8.
 	       */
 	      if (ct)
-	        emit_insn (gen_addsi3 (out, out, GEN_INT (ct)));
+	        emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
 	    }
 	  else if (cf == -1)
 	    {
@@ -5640,7 +5640,7 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8.
 	       */
-	      emit_insn (gen_iorsi3 (out, out, GEN_INT (ct)));
+	      emit_insn (gen_iorsi3 (tmp, tmp, GEN_INT (ct)));
 	    }
 	  else if (diff == -1 && ct)
 	    {
@@ -5654,7 +5654,7 @@ ix86_expand_int_movcc (operands)
 	       */
 	      emit_insn (gen_one_cmplsi2 (tmp, tmp));
 	      if (cf)
-	        emit_insn (gen_addsi3 (out, out, GEN_INT (cf)));
+	        emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (cf)));
 	    }
 	  else
 	    {
@@ -5666,9 +5666,9 @@ ix86_expand_int_movcc (operands)
 	       *
 	       * Size 8 - 11.
 	       */
-	      emit_insn (gen_andsi3 (out, out, GEN_INT (cf - ct)));
+	      emit_insn (gen_andsi3 (tmp, tmp, GEN_INT (cf - ct)));
 	      if (ct)
-	        emit_insn (gen_addsi3 (out, out, GEN_INT (ct)));
+	        emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (ct)));
 	    }
 
 	  if (tmp != out)
