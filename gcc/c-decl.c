@@ -1391,6 +1391,18 @@ duplicate_decls (newdecl, olddecl)
           /* Accept the return type of the new declaration if same modes.  */
 	  tree oldreturntype = TREE_TYPE (TREE_TYPE (olddecl));
 	  tree newreturntype = TREE_TYPE (TREE_TYPE (newdecl));
+
+	  /* Make sure we put the new type in the same obstack as the old ones.
+	     If the old types are not both in the same obstack, use the
+	     permanent one.  */
+	  if (TYPE_OBSTACK (oldtype) == TYPE_OBSTACK (newtype))
+	    push_obstacks (TYPE_OBSTACK (oldtype), TYPE_OBSTACK (oldtype));
+	  else
+	    {
+	      push_obstacks_nochange ();
+	      end_temporary_allocation ();
+	    }
+
           if (TYPE_MODE (oldreturntype) == TYPE_MODE (newreturntype))
             {
 	      /* Function types may be shared, so we can't just modify
@@ -1425,6 +1437,8 @@ duplicate_decls (newdecl, olddecl)
 	      if (types_match)
 		TREE_TYPE (olddecl) = newtype;
 	    }
+
+	  pop_obstacks ();
 	}
       if (!types_match)
 	{
