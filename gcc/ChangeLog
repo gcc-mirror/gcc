@@ -1,3 +1,8 @@
+2004-02-05  SUGIOKA Toshinobu  <sugioka@itonet.co.jp>
+
+	* config/sh/t-linux (SHLIB_INSTALL): Prepend $$(DESTDIR)
+	to $$(slibdir) in the installation commands.
+
 2004-02-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* reload.c (refers_to_regno_for_reload_p): Index hard_regno_nregs
