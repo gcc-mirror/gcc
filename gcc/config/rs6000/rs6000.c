@@ -468,6 +468,26 @@ reg_or_mem_operand (op, mode)
   return gpc_reg_operand (op, mode) || memory_operand (op, mode);
 }
 
+/* Return 1 if the operand is a general register or memory operand without
+   pre-inc or pre_dec which produces invalid form of PowerPC lwa
+   instruction.  */
+
+int
+lwa_operand (op, mode)
+     register rtx op;
+     register enum machine_mode mode;
+{
+  rtx inner = op;
+
+  if (reload_completed && GET_CODE (inner) == SUBREG)
+    inner = SUBREG_REG (inner);
+    
+  return gpc_reg_operand (inner, mode)
+    || (memory_operand (inner, mode)
+	&& GET_CODE (XEXP (inner, 0)) != PRE_INC
+	&& GET_CODE (XEXP (inner, 0)) != PRE_DEC);
+}
+
 /* Return 1 if the operand, used inside a MEM, is a valid first argument
    to CALL.  This is a SYMBOL_REF or a pseudo-register, which will be
    forced to lr.  */
