@@ -2276,6 +2276,7 @@ compile_file (name)
     tree *vec = (tree *) alloca (sizeof (tree) * len);
     int i;
     tree decl;
+    int reconsider = 1;
 
     /* Process the decls in reverse order--earliest first.
        Put them into VEC from back to front, then take out from front.  */
@@ -2293,10 +2294,21 @@ compile_file (name)
 	if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0
 	    && incomplete_decl_finalize_hook != 0)
 	  (*incomplete_decl_finalize_hook) (decl);
+      }
 
-	if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
-	    && ! TREE_ASM_WRITTEN (decl))
+    /* Now emit any global variables or functions that we have been putting
+       off.  We need to loop in case one of the things emitted here
+       references another one which comes earlier in the list.  */
+    while (reconsider)
+      {
+	reconsider = 0;
+	for (i = 0; i < len; i++)
 	  {
+	    decl = vec[i];
+
+	    if (TREE_ASM_WRITTEN (decl) || DECL_EXTERNAL (decl))
+	      continue;
+
 	    /* Don't write out static consts, unless we still need them.
 
 	       We also keep static consts if not optimizing (for debugging).
@@ -2321,30 +2333,40 @@ compile_file (name)
 	       to force a constant to be written if and only if it is
 	       defined in a main file, as opposed to an include file. */
 
-	    if (! TREE_READONLY (decl)
-		|| TREE_PUBLIC (decl)
-		|| !optimize
-		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	      rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
-	    else
-	      /* Cancel the RTL for this decl so that, if debugging info
-		 output for global variables is still to come,
-		 this one will be omitted.  */
-	      DECL_RTL (decl) = NULL;
-	  }
+	    if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
+		&& (! TREE_READONLY (decl)
+		    || TREE_PUBLIC (decl)
+		    || !optimize
+		    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+	      {
+		reconsider = 1;
+		rest_of_decl_compilation (decl, NULL_PTR, 1, 1);
+	      }
 
-	if (TREE_CODE (decl) == FUNCTION_DECL
-	    && ! TREE_ASM_WRITTEN (decl)
-	    && DECL_INITIAL (decl) != 0
-	    && DECL_SAVED_INSNS (decl) != 0
-	    && (flag_keep_inline_functions
-		|| TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	    && ! DECL_EXTERNAL (decl))
-	  {
-	    temporary_allocation ();
-	    output_inline_function (decl);
-	    permanent_allocation (1);
+	    if (TREE_CODE (decl) == FUNCTION_DECL
+		&& DECL_INITIAL (decl) != 0
+		&& DECL_SAVED_INSNS (decl) != 0
+		&& (flag_keep_inline_functions
+		    || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
+	      {
+		reconsider = 1;
+		temporary_allocation ();
+		output_inline_function (decl);
+		permanent_allocation (1);
+	      }
 	  }
+      }
+
+    for (i = 0; i < len; i++)
+      {
+	decl = vec[i];
+
+	if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl)
+	    && ! TREE_ASM_WRITTEN (decl))
+	  /* Cancel the RTL for this decl so that, if debugging info
+	     output for global variables is still to come,
+	     this one will be omitted.  */
+	  DECL_RTL (decl) = NULL;
 
 	/* Warn about any function
 	   declared static but not defined.
