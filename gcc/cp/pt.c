@@ -6076,6 +6076,8 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	TREE_TYPE (r) = void_type_node;
 	DECL_INITIAL (r)
 	  = tsubst_copy (DECL_INITIAL (t), args, complain, in_decl);
+	DECL_NAME (r)
+	  = tsubst_copy (DECL_NAME (t), args, complain, in_decl);
 	TREE_CHAIN (r) = NULL_TREE;
       }
       break;
