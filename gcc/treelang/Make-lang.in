@@ -59,7 +59,7 @@ GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 
 TREE_GENERATED = $(parsedir)/treelang/lex.c $(parsedir)/treelang/parse.c \
   $(parsedir)/treelang/parse.h $(parsedir)/treelang/parse.output \
-  $(parsedir)/treelang/TAGS
+  $(parsedir)/treelang/TAGS $(parsedir)/treelang/TAGS.sub
 
 TREE_EXES = tree1
 
@@ -147,7 +147,8 @@ treelang.start.encap:
 treelang.rest.encap:
 
 treelang.tags: force
-	cd $(srcdir)/treelang; etags *.y *.l *.c *.h
+	cd $(srcdir)/treelang; etags -o TAGS.sub *.y *.l *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
 
 info:: $(docobjdir)/treelang.info
 dvi:: $(docobjdir)/treelang.dvi
