@@ -2666,6 +2666,14 @@ schedule_block (b, file)
   reg_pending_sets_all = 0;
   clear_units ();
 
+#if 0
+  /* We used to have code to avoid getting parameters moved from hard
+     argument registers into pseudos.
+
+     However, it was removed when it proved to be of marginal benefit and
+     caused problems because of different notions of what the "head" insn
+     was.  */
+
   /* Remove certain insns at the beginning from scheduling,
      by advancing HEAD.  */
 
@@ -2696,6 +2704,7 @@ schedule_block (b, file)
 	  head = NEXT_INSN (head);
 	}
     }
+#endif
 
   /* Don't include any notes or labels at the beginning of the
      basic block, or notes at the ends of basic blocks.  */
