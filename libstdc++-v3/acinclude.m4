@@ -1412,6 +1412,50 @@ AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
 
 
 dnl
+dnl Check for template specializations for the 'long double' type extension.
+dnl
+dnl GLIBCPP_ENABLE_LONG_DOUBLE
+dnl --enable-long-long defines _GLIBCPP_USE_LONG_DOUBLE
+dnl --disable-long-long leaves _GLIBCPP_USE_LONG_DOUBLE undefined
+dnl  +  Usage:  GLIBCPP_ENABLE_LONG_DOUBLE[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
+dnl       defaults to `no'.
+dnl  +  If 'long long' stuff is not available, ignores DEFAULT and sets `no'.
+dnl
+dnl GLIBCPP_ENABLE_LONG_DOUBLE
+AC_DEFUN(GLIBCPP_ENABLE_LONG_DOUBLE, [dnl
+  define([GLIBCPP_ENABLE_LONG_DOUBLE_DEFAULT], ifelse($1, yes, yes, no))dnl
+
+  AC_ARG_ENABLE(long-double,
+  changequote(<<, >>)dnl
+  <<--enable-long-double      turns on 'long double' [default=>>GLIBCPP_ENABLE_LONG_LONG_DEFAULT],
+  changequote([, ])dnl
+  [case "$enableval" in
+   yes) enable_long_double=yes ;;
+   no)  enable_long_double=no ;;
+   *)   AC_MSG_ERROR([Unknown argument to enable/disable long double]) ;;
+   esac],
+  enable_long_double=GLIBCPP_ENABLE_LONG_DOUBLE_DEFAULT)dnl
+
+  # Check for the existance of functions used if long double is enabled.
+  AC_CHECK_FUNC(cosl,,ac_cosl=no)
+  AC_CHECK_FUNC(sinl,,ac_sinl=no)
+
+  AC_MSG_CHECKING([for enabled long double])
+  if test x"$ac_cosl" = xno || test x"$ac_sinl" = xno; then 
+    enable_long_double=no; 
+  fi; 
+  AC_MSG_RESULT($enable_long_double)
+
+  dnl Option parsed, now set things appropriately
+  case "$enable_long_double" in
+    yes)  AC_DEFINE(_GLIBCPP_USE_LONG_DOUBLE)
+          ;;
+  esac
+])
+
+
+dnl
 dnl Check for whether or not to do shadowed C headers.
 dnl
 dnl GLIBCPP_ENABLE_SHADOW

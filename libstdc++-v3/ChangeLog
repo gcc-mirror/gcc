@@ -1,5 +1,13 @@
 2000-10-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_DOUBLE): New macro.
+	* aclocal.m4: Regenerate.
+	* configure.in: Use it.
+	* configure: Regenerate.
+	* src/complexl.cc: Fixup.
+	* include/c_std/bits/std_cmath.h: Fixup.
+	* include/c/bits/std_cmath.h: Fixup.
+	
 	* docs/links.html: Add links to defects list, standards FAQ.
 
 	* testsuite/21_strings/ctor_copy_dtor.cc (test01): Disable tests

@@ -3,6 +3,9 @@
 // Include support for 'long long' and 'unsigned long long'.
 #undef _GLIBCPP_USE_LONG_LONG
 
+// Include support for 'long double'.
+#undef _GLIBCPP_USE_LONG_DOUBLE
+
 // Include support for shadow headers, ie --enable-cshadow-headers.
 #undef _GLIBCPP_USE_SHADOW_HEADERS
 

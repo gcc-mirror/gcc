@@ -330,7 +330,7 @@ namespace _C_legacy {
   inline double 
   _CPP_tanh_capture(double __x) { return tanh(__x); }
 
-
+#ifdef _GLIBCPP_USE_LONG_DOUBLE
 #if _GLIBCPP_HAVE_ACOSL
   inline long double 
   _CPP_acos_capture(long double __x) { return acosl(__x); }
@@ -535,9 +535,7 @@ namespace _C_legacy {
   inline long double 
   _CPP_tanh_capture(long double __x) { return tanh(static_cast<double>(__x)); }
 #endif
-
-  namespace _C_shadow { }
-
+#endif // _GLIBCPP_USE_LONG_DOUBLE
 } // namespace _C_legacy
 
 # undef abs
@@ -720,6 +718,7 @@ namespace std {
   inline double 
   tanh(double __x) { return _C_legacy::_CPP_tanh_capture(__x); }
 
+#ifdef _GLIBCPP_USE_LONG_DOUBLE
   inline long double 
   abs(long double __x) { return _C_legacy::_CPP_fabs_capture(__x); }
 
@@ -797,6 +796,8 @@ namespace std {
 
   inline long double 
   tanh(long double __x) { return _C_legacy::_CPP_tanh_capture(__x); }
+#endif // _GLIBCPP_USE_LONG_DOUBLE
+
 } // namespace std
 
 # undef _IN_C_LEGACY_
