@@ -627,14 +627,7 @@ scan_loop (loop, flags)
      the arrays, if necessary, in load_mems_recount_loop_regs_set.  */
   regs->size = regs->num + loop_info->mems_idx + 16;
   regs->array = (struct loop_reg *) 
-    xmalloc (regs->size * sizeof (*regs->array));
-
-  for (i = 0; i < regs->num; i++)
-    {
-      regs->array[i].set_in_loop = 0;
-      regs->array[i].may_not_optimize = 0;
-      regs->array[i].single_usage = NULL_RTX;
-    }
+    xcalloc (regs->size, sizeof (*regs->array));
 
   count_loop_regs_set (loop, &insn_count);
 
@@ -8724,9 +8717,12 @@ load_mems_and_recount_loop_regs_set (loop, insn_count)
 	  /* Grow the array.  */
 	  regs->array = (struct loop_reg *)
 	    xrealloc (regs->array, regs->size * sizeof (*regs->array));
+
+	  memset (regs->array + old_nregs, 0,
+		  (regs->size - old_nregs) * sizeof (*regs->array));
 	}
 
-      for (i = 0; i < regs->num; i++)
+      for (i = 0; i < old_nregs; i++)
 	{
 	  regs->array[i].set_in_loop = 0;
 	  regs->array[i].may_not_optimize = 0;
