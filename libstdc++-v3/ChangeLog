@@ -1,3 +1,15 @@
+2003-05-05  Loren J. Rittle  <ljrittle@acm.org>
+	    (Inspired by an alternate patch from Danny Smith.)
+
+	* include/bits/stl_threads.h (_Atomic_swap): Kill it...
+	(_Swap_lock_struct<>): ...and the horse it rode in on.
+	* src/globals.cc (_Swap_lock_struct<>): Likewise.
+	* include/ext/stl_rope.h (_Rope_RopeRep<>::_M_c_string_lock): New
+	member to support...
+	* include/ext/ropeimpl.h (rope<>::c_str): Follow *all* memory
+	visibility rules related to POSIX threads.
+	* testsuite/thread/pthread7-rope.cc: New test.
+
 2003-05-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/21_strings/basic_string/find/char/3.cc: New
