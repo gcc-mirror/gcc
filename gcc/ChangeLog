@@ -1,3 +1,9 @@
+Sun Nov 16 23:01:40 1997  J. Kean Johnston  <jkj@sco.com>
+
+	* i386/sco5.h (ASM_OUTPUT_ALIGNED_BSS): Define.
+	(SELECT_RTX_SECTION): Define.
+	(LIBGCC_SPEC, LIB_SPEC): Do the right thing for PIC.
+
 Sun Nov 16 22:47:03 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (compare, compare-lean): Define $stage for each
