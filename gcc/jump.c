@@ -118,7 +118,7 @@ static void find_cross_jump		PARAMS ((rtx, rtx, int, rtx *, rtx *));
 static void do_cross_jump		PARAMS ((rtx, rtx, rtx));
 static int jump_back_p			PARAMS ((rtx, rtx));
 static int tension_vector_labels	PARAMS ((rtx, int));
-static void mark_jump_label		PARAMS ((rtx, rtx, int));
+static void mark_jump_label		PARAMS ((rtx, rtx, int, int));
 static void delete_computation		PARAMS ((rtx));
 static void delete_from_jump_chain	PARAMS ((rtx));
 static int delete_labelref_insn		PARAMS ((rtx, rtx, int));
@@ -2272,7 +2272,7 @@ mark_all_labels (f, cross_jump)
   for (insn = f; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
-	mark_jump_label (PATTERN (insn), insn, cross_jump);
+	mark_jump_label (PATTERN (insn), insn, cross_jump, 0);
 	if (! INSN_DELETED_P (insn) && GET_CODE (insn) == JUMP_INSN)
 	  {
 	    if (JUMP_LABEL (insn) != 0 && simplejump_p (insn))
@@ -2771,7 +2771,7 @@ duplicate_loop_exit_test (loop_start)
 	  if (reg_map)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
 	  
-	  mark_jump_label (PATTERN (copy), copy, 0);
+	  mark_jump_label (PATTERN (copy), copy, 0, 0);
 	  
 	  /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
 	     make them.  */
@@ -2789,7 +2789,7 @@ duplicate_loop_exit_test (loop_start)
 	  copy = emit_jump_insn_before (copy_insn (PATTERN (insn)), loop_start);
 	  if (reg_map)
 	    replace_regs (PATTERN (copy), reg_map, max_reg, 1);
-	  mark_jump_label (PATTERN (copy), copy, 0);
+	  mark_jump_label (PATTERN (copy), copy, 0, 0);
 	  if (REG_NOTES (insn))
 	    {
 	      REG_NOTES (copy) = copy_insn_1 (REG_NOTES (insn));
@@ -2832,7 +2832,7 @@ duplicate_loop_exit_test (loop_start)
       if (! first_copy)
 	first_copy = copy;
 
-      mark_jump_label (PATTERN (copy), copy, 0);
+      mark_jump_label (PATTERN (copy), copy, 0, 0);
       if (INSN_UID (copy) < max_jump_chain
 	  && INSN_UID (JUMP_LABEL (copy)) < max_jump_chain)
 	{
@@ -3862,10 +3862,11 @@ tension_vector_labels (x, idx)
    two labels distinct if they are separated by only USE or CLOBBER insns.  */
 
 static void
-mark_jump_label (x, insn, cross_jump)
+mark_jump_label (x, insn, cross_jump, in_mem)
      register rtx x;
      rtx insn;
      int cross_jump;
+     int in_mem;
 {
   register RTX_CODE code = GET_CODE (x);
   register int i;
@@ -3878,17 +3879,22 @@ mark_jump_label (x, insn, cross_jump)
     case REG:
     case SUBREG:
     case CONST_INT:
-    case SYMBOL_REF:
     case CONST_DOUBLE:
     case CLOBBER:
     case CALL:
       return;
 
     case MEM:
+      in_mem = 1;
+      break;
+
+    case SYMBOL_REF:
+      if (!in_mem)
+        return;
+
       /* If this is a constant-pool reference, see if it is a label.  */
-      if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
-	mark_jump_label (get_pool_constant (XEXP (x, 0)), insn, cross_jump);
+      if (CONSTANT_POOL_ADDRESS_P (x))
+        mark_jump_label (get_pool_constant (x), insn, cross_jump, in_mem);
       break;
 
     case LABEL_REF:
@@ -3974,7 +3980,8 @@ mark_jump_label (x, insn, cross_jump)
 	  int eltnum = code == ADDR_DIFF_VEC ? 1 : 0;
 
 	  for (i = 0; i < XVECLEN (x, eltnum); i++)
-	    mark_jump_label (XVECEXP (x, eltnum, i), NULL_RTX, cross_jump);
+	    mark_jump_label (XVECEXP (x, eltnum, i), NULL_RTX, 
+                    cross_jump, in_mem);
 	}
       return;
       
@@ -3986,12 +3993,12 @@ mark_jump_label (x, insn, cross_jump)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	mark_jump_label (XEXP (x, i), insn, cross_jump);
+	mark_jump_label (XEXP (x, i), insn, cross_jump, in_mem);
       else if (fmt[i] == 'E')
 	{
 	  register int j;
 	  for (j = 0; j < XVECLEN (x, i); j++)
-	    mark_jump_label (XVECEXP (x, i, j), insn, cross_jump);
+	    mark_jump_label (XVECEXP (x, i, j), insn, cross_jump, in_mem);
 	}
     }
 }

@@ -1,3 +1,8 @@
+2000-02-04  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* jump.c (mark_jump_label): Add in_mem param, check SYMBOL_REFs
+	when in_mem is set.  Update all callers.
+
 2000-02-04  Richard Henderson  <rth@cygnus.com>
 
 	* i386/openbsd.h (INT_ASM_OP): Define.
