@@ -5234,6 +5234,16 @@ which defines (equates) the symbol @var{name} to have the value @var{value}.
 
 If SET_ASM_OP is defined, a default definition is provided which is
 correct for most systems.
+
+@findex ASM_OUTPUT_WEAK_ALIAS
+@item ASM_OUTPUT_WEAK_ALIAS (@var{stream}, @var{name}, @var{value})
+A C statement to output to the stdio stream @var{stream} assembler code
+which defines (equates) the weak symbol @var{name} to have the value
+@var{value}.
+
+Define this macro if the target only supports weak aliases; define
+ASM_OUTPUT_DEF instead if possible.
+
 @findex OBJC_GEN_METHOD_LABEL
 @item OBJC_GEN_METHOD_LABEL (@var{buf}, @var{is_inst}, @var{class_name}, @var{cat_name}, @var{sel_name})
 Define this macro to override the default assembler names used for
