@@ -823,7 +823,9 @@ prepare_scc_operands (code)
 	}
 
       sh_compare_op0 = force_reg (SImode, sh_compare_op0);
-      if (code != EQ && code != NE && sh_compare_op1 != const0_rtx)
+      if (code != EQ && code != NE
+	  && (sh_compare_op1 != const0_rtx
+	      || code == GTU  || code == GEU || code == LTU || code == LEU))
 	sh_compare_op1 = force_reg (SImode, sh_compare_op1);
 
       emit_insn (gen_rtx (SET, VOIDmode,
@@ -2013,7 +2015,8 @@ from_compare (operands, code)
     {
       /* Force args into regs, since we can't use constants here */
       sh_compare_op0 = force_reg (SImode, sh_compare_op0);
-      if (sh_compare_op1 != const0_rtx)
+      if (sh_compare_op1 != const0_rtx
+	  || code == GTU  || code == GEU || code == LTU || code == LEU)
 	sh_compare_op1 = force_reg (SImode, sh_compare_op1);
     }
   operands[1] = sh_compare_op0;
