@@ -2985,7 +2985,7 @@ lookup_template_class (d1, arglist, in_decl, context)
 {
   tree template = NULL_TREE, parmlist;
   char *mangled_name;
-  tree id, t, id_context;
+  tree id, t;
 
   if (TREE_CODE (d1) == IDENTIFIER_NODE)
     {
@@ -3030,12 +3030,6 @@ lookup_template_class (d1, arglist, in_decl, context)
   else
     my_friendly_abort (272);
 
-  /* A namespace is used as context only for mangling.
-     Template IDs with namespace context are found 
-     in the global binding level.  */
-  if (context != NULL_TREE && TREE_CODE (context) == NAMESPACE_DECL)
-    context = global_namespace;
-
   /* With something like `template <class T> class X class X { ... };'
      we could end up with D1 having nothing but an IDENTIFIER_LOCAL_VALUE.
      We don't want to do that, but we have to deal with the situation, so
@@ -3043,15 +3037,8 @@ lookup_template_class (d1, arglist, in_decl, context)
   if (! template)
     return error_mark_node;
 
-  /* We need an id_context to get the mangling right. If this is a
-     nested template, use the context. If it is global, retrieve the
-     context from the template.  */
-  if (context && TREE_CODE (context) != NAMESPACE_DECL)
-    id_context = context;
-  else
-    id_context = DECL_CONTEXT (template);
-  if (id_context == NULL_TREE)
-    id_context = global_namespace;
+  if (context == NULL_TREE)
+    context = global_namespace;
 
   if (TREE_CODE (template) != TEMPLATE_DECL)
     {
@@ -3154,7 +3141,7 @@ lookup_template_class (d1, arglist, in_decl, context)
       mangled_name = mangle_class_name_for_template (IDENTIFIER_POINTER (d1),
 						     parmlist,
 						     arglist_for_mangling,
-						     id_context);
+						     context);
       id = get_identifier (mangled_name);
       IDENTIFIER_TEMPLATE (id) = d1;
 

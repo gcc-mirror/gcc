@@ -4136,15 +4136,9 @@ current_decl_namespace ()
     return TREE_PURPOSE (decl_namespace_list);
 
   if (current_class_type)
-    if (CLASSTYPE_USE_TEMPLATE (current_class_type))
-      result = decl_namespace (CLASSTYPE_TI_TEMPLATE (current_class_type));
-    else
-      result = decl_namespace (TYPE_STUB_DECL (current_class_type));
+    result = decl_namespace (TYPE_STUB_DECL (current_class_type));
   else if (current_function_decl)
-    if (DECL_USE_TEMPLATE (current_function_decl))
-      result = decl_namespace (DECL_TI_TEMPLATE (current_function_decl));
-    else
-      result = decl_namespace (current_function_decl);
+    result = decl_namespace (current_function_decl);
   else 
     result = current_namespace;
   return result;
