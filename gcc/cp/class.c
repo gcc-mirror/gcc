@@ -1527,7 +1527,13 @@ handle_using_decl (using_decl, t)
   if (name == constructor_name (ctype)
       || name == constructor_name_full (ctype))
     {
-      cp_error_at ("using-declaration for constructor", using_decl);
+      cp_error_at ("`%D' names constructor", using_decl);
+      return;
+    }
+  if (name == constructor_name (t)
+      || name == constructor_name_full (t))
+    {
+      cp_error_at ("`%D' invalid in `%T'", using_decl, t);
       return;
     }
 
@@ -1567,16 +1573,16 @@ handle_using_decl (using_decl, t)
 	   the same name already present in the current class.  */;
       else
 	{
-	  cp_error ("`%D' invalid in `%#T'", using_decl, t);
+	  cp_error_at ("`%D' invalid in `%#T'", using_decl, t);
 	  cp_error_at ("  because of local method `%#D' with same name",
 		       OVL_CURRENT (old_value));
 	  return;
 	}
     }
-  else
+  else if (!DECL_ARTIFICIAL (old_value))
     {
-      cp_error ("`%D' invalid in `%#T'", using_decl, t);
-      cp_error_at ("  because of local field `%#D' with same name", old_value);
+      cp_error_at ("`%D' invalid in `%#T'", using_decl, t);
+      cp_error_at ("  because of local member `%#D' with same name", old_value);
       return;
     }
   
