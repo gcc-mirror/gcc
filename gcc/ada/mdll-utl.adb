@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -308,53 +308,60 @@ package body MDLL.Utl is
    begin
       --  dlltool
 
-      Dlltool_Exec := OS_Lib.Locate_Exec_On_Path (Dlltool_Name);
-
       if Dlltool_Exec = null then
-         Exceptions.Raise_Exception
-           (Tools_Error'Identity, Dlltool_Name & " not found in path");
+         Dlltool_Exec := OS_Lib.Locate_Exec_On_Path (Dlltool_Name);
 
-      elsif Verbose then
-         Text_IO.Put_Line ("using " & Dlltool_Exec.all);
+         if Dlltool_Exec = null then
+            Exceptions.Raise_Exception
+              (Tools_Error'Identity, Dlltool_Name & " not found in path");
+
+         elsif Verbose then
+            Text_IO.Put_Line ("using " & Dlltool_Exec.all);
+         end if;
       end if;
 
       --  gcc
 
-      Gcc_Exec     := OS_Lib.Locate_Exec_On_Path (Gcc_Name);
-
       if Gcc_Exec = null then
-         Exceptions.Raise_Exception
-           (Tools_Error'Identity, Gcc_Name & " not found in path");
+         Gcc_Exec := OS_Lib.Locate_Exec_On_Path (Gcc_Name);
 
-      elsif Verbose then
-         Text_IO.Put_Line ("using " & Gcc_Exec.all);
+         if Gcc_Exec = null then
+            Exceptions.Raise_Exception
+              (Tools_Error'Identity, Gcc_Name & " not found in path");
+
+         elsif Verbose then
+            Text_IO.Put_Line ("using " & Gcc_Exec.all);
+         end if;
       end if;
 
       --  gnatbind
 
-      Gnatbind_Exec     := OS_Lib.Locate_Exec_On_Path (Gnatbind_Name);
-
       if Gnatbind_Exec = null then
-         Exceptions.Raise_Exception
-           (Tools_Error'Identity, Gnatbind_Name & " not found in path");
+         Gnatbind_Exec := OS_Lib.Locate_Exec_On_Path (Gnatbind_Name);
 
-      elsif Verbose then
-         Text_IO.Put_Line ("using " & Gnatbind_Exec.all);
+         if Gnatbind_Exec = null then
+            Exceptions.Raise_Exception
+              (Tools_Error'Identity, Gnatbind_Name & " not found in path");
+
+         elsif Verbose then
+            Text_IO.Put_Line ("using " & Gnatbind_Exec.all);
+         end if;
       end if;
 
       --  gnatlink
 
-      Gnatlink_Exec     := OS_Lib.Locate_Exec_On_Path (Gnatlink_Name);
-
       if Gnatlink_Exec = null then
-         Exceptions.Raise_Exception
-           (Tools_Error'Identity, Gnatlink_Name & " not found in path");
+         Gnatlink_Exec := OS_Lib.Locate_Exec_On_Path (Gnatlink_Name);
 
-      elsif Verbose then
-         Text_IO.Put_Line ("using " & Gnatlink_Exec.all);
-         Text_IO.New_Line;
+         if Gnatlink_Exec = null then
+            Exceptions.Raise_Exception
+              (Tools_Error'Identity, Gnatlink_Name & " not found in path");
+
+         elsif Verbose then
+            Text_IO.Put_Line ("using " & Gnatlink_Exec.all);
+            Text_IO.New_Line;
+         end if;
       end if;
-
    end Locate;
 
 end MDLL.Utl;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -785,6 +785,7 @@ pragma Preelaborate (Types);
      PE_Potentially_Blocking_Operation,
      PE_Stubbed_Subprogram_Called,
      PE_Unchecked_Union_Restriction,
+     PE_Illegal_RACW_E_4_18,
 
      SE_Empty_Storage_Pool,
      SE_Explicit_Raise,
@@ -798,7 +799,7 @@ pragma Preelaborate (Types);
 
    subtype RT_PE_Exceptions is RT_Exception_Code range
      PE_Access_Before_Elaboration ..
-     PE_Unchecked_Union_Restriction;
+     PE_Illegal_RACW_E_4_18;
 
    subtype RT_SE_Exceptions is RT_Exception_Code range
      SE_Empty_Storage_Pool ..

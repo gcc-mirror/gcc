@@ -35,6 +35,7 @@ with Fname.UF; use Fname.UF;
 with Gnatvsn;  use Gnatvsn;
 with Hostparm; use Hostparm;
 with Makeusg;
+with Makeutl;  use Makeutl;
 with MLib.Prj;
 with MLib.Tgt; use MLib.Tgt;
 with MLib.Utl;
@@ -47,7 +48,6 @@ with Output;   use Output;
 with Prj;      use Prj;
 with Prj.Com;
 with Prj.Env;
-with Prj.Ext;
 with Prj.Pars;
 with Prj.Util;
 with SFN_Scan;
@@ -180,30 +180,6 @@ package body Make is
      Table_Name           => "Make.Q");
    --  This is the actual Q.
 
-   --  Package Mains is used to store the mains specified on the command line
-   --  and to retrieve them when a project file is used, to verify that the
-   --  files exist and that they belong to a project file.
-
-   package Mains is
-
-      --  Mains are stored in a table. An index is used to retrieve the mains
-      --  from the table.
-
-      procedure Add_Main (Name : String);
-      --  Add one main to the table
-
-      procedure Delete;
-      --  Empty the table
-
-      procedure Reset;
-      --  Reset the index to the beginning of the table
-
-      function Next_Main return String;
-      --  Increase the index and return the next main.
-      --  If table is exhausted, return an empty string.
-
-   end Mains;
-
    --  The following instantiations and variables are necessary to save what
    --  is found on the command line, in case there is a project file specified.
 
@@ -270,19 +246,6 @@ package body Make is
      Table_Initial        => 10,
      Table_Increment      => 100,
      Table_Name           => "Make.Library_Projs");
-
-   type Linker_Options_Data is record
-      Project : Project_Id;
-      Options : String_List_Id;
-   end record;
-
-   package Linker_Opts is new Table.Table (
-     Table_Component_Type => Linker_Options_Data,
-     Table_Index_Type     => Integer,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 10,
-     Table_Increment      => 100,
-     Table_Name           => "Make.Linker_Opts");
 
    --  Two variables to keep the last binder and linker switch index
    --  in tables Binder_Switches and Linker_Switches, before adding
@@ -588,16 +551,6 @@ package body Make is
    --  Check what steps (Compile, Bind, Link) must be executed.
    --  Set the step flags accordingly.
 
-   function Is_External_Assignment (Argv : String) return Boolean;
-   --  Verify that an external assignment switch is syntactically correct.
-   --  Correct forms are
-   --      -Xname=value
-   --      -X"name=other value"
-   --  Assumptions: 'First = 1, Argv (1 .. 2) = "-X"
-   --  When this function returns True, the external assignment has
-   --  been entered by a call to Prj.Ext.Add, so that in a project
-   --  file, External ("name") will return "value".
-
    function In_Ada_Lib_Dir  (File : File_Name_Type) return Boolean;
    --  Get directory prefix of this file and get lib mark stored in name
    --  table for this directory. Then check if an Ada lib mark has been set.
@@ -627,16 +580,6 @@ package body Make is
    --  name without the extension, then, if Allow_ALI is True, the name with
    --  the extension ".ali". If there is no switches for either names, try the
    --  default switches for Ada. If all failed, return No_Variable_Value.
-
-   procedure Test_If_Relative_Path
-     (Switch             : in out String_Access;
-      Parent             : String_Access;
-      Including_L_Switch : Boolean := True);
-   --  Test if Switch is a relative search path switch.
-   --  If it is, fail if Parent is null, otherwise prepend the path with
-   --  Parent. This subprogram is only called when using project files.
-   --  For gnatbind switches, Including_L_Switch is False, because the
-   --  argument of the -L switch is not a path.
 
    function Is_In_Object_Directory
      (Source_File   : File_Name_Type;
@@ -3562,16 +3505,21 @@ package body Make is
                                       Normalize_Pathname
                                         (Real_Path.all,
                                          Case_Sensitive => False);
+                                    Proj_Path : constant String :=
+                                      Normalize_Pathname
+                                        (Project_Path,
+                                         Case_Sensitive => False);
+
                                  begin
                                     Free (Real_Path);
 
                                     --  Fail if it is not the correct path
 
-                                    if Normed_Path /= Project_Path then
+                                    if Normed_Path /= Proj_Path then
                                        if Verbose_Mode then
                                           Write_Str (Normed_Path);
                                           Write_Str (" /= ");
-                                          Write_Line (Project_Path);
+                                          Write_Line (Proj_Path);
                                        end if;
 
                                        Make_Failed
@@ -4963,7 +4911,7 @@ package body Make is
                There_Are_Libraries  : Boolean := False;
                Linker_Switches_Last : constant Integer := Linker_Switches.Last;
                Path_Option : constant String_Access :=
-                               MLib.Tgt.Linker_Library_Path_Option;
+                               MLib.Linker_Library_Path_Option;
                Current : Natural;
                Proj2   : Project_Id;
                Depth   : Natural;
@@ -5118,95 +5066,14 @@ package body Make is
                   --  other than the main project
 
                   declare
-                     Linker_Package : Package_Id;
-                     Options : Variable_Value;
+                     Linker_Options : constant String_List :=
+                       Linker_Options_Switches (Main_Project);
 
                   begin
-                     Linker_Opts.Init;
-
-                     for Index in 1 .. Projects.Last loop
-                        if Index /= Main_Project then
-                           Linker_Package :=
-                             Prj.Util.Value_Of
-                               (Name => Name_Linker,
-                                In_Packages =>
-                                  Projects.Table (Index).Decl.Packages);
-                           Options :=
-                             Prj.Util.Value_Of
-                               (Name => Name_Ada,
-                                Attribute_Or_Array_Name => Name_Linker_Options,
-                                In_Package => Linker_Package);
-
-                           --  If attribute is present, add the project with
-                           --  the attribute to table Linker_Opts.
-
-                           if Options /= Nil_Variable_Value then
-                              Linker_Opts.Increment_Last;
-                              Linker_Opts.Table (Linker_Opts.Last) :=
-                                (Project => Index, Options => Options.Values);
-                           end if;
-                        end if;
-                     end loop;
-                  end;
-
-                  declare
-                     Opt1    : Linker_Options_Data;
-                     Opt2    : Linker_Options_Data;
-                     Depth   : Natural;
-                     Options : String_List_Id;
-                     Option  : Name_Id;
-                  begin
-                     --  Sort the project by increasing depths
-
-                     for Index in 1 .. Linker_Opts.Last loop
-                        Opt1 := Linker_Opts.Table (Index);
-                        Depth := Projects.Table (Opt1.Project).Depth;
-
-                        for J in Index + 1 .. Linker_Opts.Last loop
-                           Opt2 := Linker_Opts.Table (J);
-
-                           if
-                             Projects.Table (Opt2.Project).Depth < Depth
-                           then
-                              Linker_Opts.Table (Index) := Opt2;
-                              Linker_Opts.Table (J) := Opt1;
-                              Opt1 := Opt2;
-                              Depth :=
-                                Projects.Table (Opt1.Project).Depth;
-                           end if;
-                        end loop;
-
-                        --  If Dir_Path has not been computed for this project,
-                        --  do it now.
-
-                        if Projects.Table (Opt1.Project).Dir_Path = null then
-                           Projects.Table (Opt1.Project).Dir_Path :=
-                             new String'
-                               (Get_Name_String
-                                  (Projects.Table (Opt1.Project). Directory));
-                        end if;
-
-                        Options := Opt1.Options;
-
-                        --  Add each of the options to the linker switches
-
-                        while Options /= Nil_String loop
-                           Option := String_Elements.Table (Options).Value;
-                           Options := String_Elements.Table (Options).Next;
-                           Linker_Switches.Increment_Last;
-                           Linker_Switches.Table (Linker_Switches.Last) :=
-                             new String'(Get_Name_String (Option));
-
-                           --  Object files and -L switches specified with
-                           --  relative paths and must be converted to
-                           --  absolute paths.
-
-                           Test_If_Relative_Path
-                             (Switch =>
-                                Linker_Switches.Table (Linker_Switches.Last),
-                              Parent => Projects.Table (Opt1.Project).Dir_Path,
-                              Including_L_Switch => True);
-                        end loop;
+                     for Option in Linker_Options'Range loop
+                        Linker_Switches.Increment_Last;
+                        Linker_Switches.Table (Linker_Switches.Last) :=
+                          Linker_Options (Option);
                      end loop;
                   end;
                end if;
@@ -5781,9 +5648,9 @@ package body Make is
       Marking_Label := 1;
    end Initialize;
 
-   -----------------------------------
-   -- Insert_Project_Sources_Into_Q --
-   -----------------------------------
+   ----------------------------
+   -- Insert_Project_Sources --
+   ----------------------------
 
    procedure Insert_Project_Sources
      (The_Project  : Project_Id;
@@ -5961,47 +5828,6 @@ package body Make is
       Q.Table (Q.Last).Unit := Source_Unit;
       Q.Increment_Last;
    end Insert_Q;
-
-   ----------------------------
-   -- Is_External_Assignment --
-   ----------------------------
-
-   function Is_External_Assignment (Argv : String) return Boolean is
-      Start     : Positive := 3;
-      Finish    : Natural := Argv'Last;
-      Equal_Pos : Natural;
-
-   begin
-      if Argv'Last < 5 then
-         return False;
-
-      elsif Argv (3) = '"' then
-         if Argv (Argv'Last) /= '"' or else Argv'Last < 7 then
-            return False;
-         else
-            Start := 4;
-            Finish := Argv'Last - 1;
-         end if;
-      end if;
-
-      Equal_Pos := Start;
-
-      while Equal_Pos <= Finish and then Argv (Equal_Pos) /= '=' loop
-         Equal_Pos := Equal_Pos + 1;
-      end loop;
-
-      if Equal_Pos = Start
-        or else Equal_Pos >= Finish
-      then
-         return False;
-
-      else
-         Prj.Ext.Add
-           (External_Name => Argv (Start .. Equal_Pos - 1),
-            Value         => Argv (Equal_Pos + 1 .. Finish));
-         return True;
-      end if;
-   end Is_External_Assignment;
 
    ---------------------
    -- Is_In_Obsoleted --
@@ -6244,68 +6070,6 @@ package body Make is
 
       Set_Standard_Error;
    end List_Depend;
-
-   -----------
-   -- Mains --
-   -----------
-
-   package body Mains is
-
-      package Names is new Table.Table
-        (Table_Component_Type => File_Name_Type,
-         Table_Index_Type     => Integer,
-         Table_Low_Bound      => 1,
-         Table_Initial        => 10,
-         Table_Increment      => 100,
-         Table_Name           => "Make.Mains.Names");
-      --  The table that stores the main
-
-      Current : Natural := 0;
-      --  The index of the last main retrieved from the table
-
-      --------------
-      -- Add_Main --
-      --------------
-
-      procedure Add_Main (Name : String) is
-      begin
-         Name_Len := 0;
-         Add_Str_To_Name_Buffer (Name);
-         Names.Increment_Last;
-         Names.Table (Names.Last) := Name_Find;
-      end Add_Main;
-
-      ------------
-      -- Delete --
-      ------------
-
-      procedure Delete is
-      begin
-         Names.Set_Last (0);
-         Reset;
-      end Delete;
-
-      ---------------
-      -- Next_Main --
-      ---------------
-
-      function Next_Main return String is
-      begin
-         if Current >= Names.Last then
-            return "";
-
-         else
-            Current := Current + 1;
-            return Get_Name_String (Names.Table (Current));
-         end if;
-      end Next_Main;
-
-      procedure Reset is
-      begin
-         Current := 0;
-      end Reset;
-
-   end Mains;
 
    ----------
    -- Mark --
@@ -6979,6 +6743,7 @@ package body Make is
             --  unless we are dealing with a debug switch (starts with 'd')
 
          elsif Argv (2) /= 'd'
+           and then Argv (2) /= 'e'
            and then Argv (2 .. Argv'Last) /= "C"
            and then Argv (2 .. Argv'Last) /= "F"
            and then Argv (2 .. Argv'Last) /= "M"
@@ -7099,85 +6864,6 @@ package body Make is
       return Switches;
    end Switches_Of;
 
-   ---------------------------
-   -- Test_If_Relative_Path --
-   ---------------------------
-
-   procedure Test_If_Relative_Path
-     (Switch             : in out String_Access;
-      Parent             : String_Access;
-      Including_L_Switch : Boolean := True)
-   is
-   begin
-      if Switch /= null then
-
-         declare
-            Sw : String (1 .. Switch'Length);
-            Start : Positive;
-
-         begin
-            Sw := Switch.all;
-
-            if Sw (1) = '-' then
-               if Sw'Length >= 3
-                 and then (Sw (2) = 'A'
-                           or else Sw (2) = 'I'
-                           or else (Including_L_Switch and then Sw (2) = 'L'))
-               then
-                  Start := 3;
-
-                  if Sw = "-I-" then
-                     return;
-                  end if;
-
-               elsif Sw'Length >= 4
-                 and then (Sw (2 .. 3) = "aL"
-                           or else Sw (2 .. 3) = "aO"
-                           or else Sw (2 .. 3) = "aI")
-               then
-                  Start := 4;
-
-               else
-                  return;
-               end if;
-
-               --  Because relative path arguments to --RTS= may be relative
-               --  to the search directory prefix, those relative path
-               --  arguments are not converted.
-
-               if not Is_Absolute_Path (Sw (Start .. Sw'Last)) then
-                  if Parent = null or else Parent'Length = 0 then
-                     Make_Failed
-                       ("relative search path switches (""",
-                        Sw,
-                        """) are not allowed");
-
-                  else
-                     Switch :=
-                       new String'
-                         (Sw (1 .. Start - 1) &
-                          Parent.all &
-                          Directory_Separator &
-                          Sw (Start .. Sw'Last));
-                  end if;
-               end if;
-
-            else
-               if not Is_Absolute_Path (Sw) then
-                  if Parent = null or else Parent'Length = 0 then
-                     Make_Failed
-                       ("relative paths (""", Sw, """) are not allowed");
-
-                  else
-                     Switch :=
-                       new String'(Parent.all & Directory_Separator & Sw);
-                  end if;
-               end if;
-            end if;
-         end;
-      end if;
-   end Test_If_Relative_Path;
-
    -----------
    -- Usage --
    -----------
@@ -7225,6 +6911,7 @@ package body Make is
 begin
    --  Make sure that in case of failure, the temp files will be deleted
 
-   Prj.Com.Fail := Make_Failed'Access;
-   MLib.Fail    := Make_Failed'Access;
+   Prj.Com.Fail    := Make_Failed'Access;
+   MLib.Fail       := Make_Failed'Access;
+   Makeutl.Do_Fail := Make_Failed'Access;
 end Make;

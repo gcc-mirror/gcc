@@ -31,6 +31,7 @@ with Errout;   use Errout;
 with Exp_Ch2;  use Exp_Ch2;
 with Exp_Util; use Exp_Util;
 with Elists;   use Elists;
+with Eval_Fat; use Eval_Fat;
 with Freeze;   use Freeze;
 with Lib;      use Lib;
 with Nlists;   use Nlists;
@@ -186,6 +187,14 @@ package body Checks is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Apply_Float_Conversion_Check
+     (Ck_Node    : Node_Id;
+      Target_Typ : Entity_Id);
+   --  The checks on a conversion from a floating-point type to an integer
+   --  type are delicate. They have to be performed before conversion, they
+   --  have to raise an exception when the operand is a NaN, and rounding must
+   --  be taken into account to determine the safe bounds of the operand.
 
    procedure Apply_Selected_Length_Checks
      (Ck_Node    : Node_Id;
@@ -1346,6 +1355,186 @@ package body Checks is
       end if;
    end Apply_Divide_Check;
 
+   ----------------------------------
+   -- Apply_Float_Conversion_Check --
+   ----------------------------------
+
+   --  Let F and I be the source and target types of the conversion.
+   --  The Ada standard specifies that a floating-point value X is rounded
+   --  to the nearest integer, with halfway cases being rounded away from
+   --  zero. The rounded value of X is checked against I'Range.
+
+   --  The catch in the above paragraph is that there is no good way
+   --  to know whether the round-to-integer operation resulted in
+   --  overflow. A remedy is to perform a range check in the floating-point
+   --  domain instead, however:
+   --      (1)  The bounds may not be known at compile time
+   --      (2)  The check must take into account possible rounding.
+   --      (3)  The range of type I may not be exactly representable in F.
+   --      (4)  The end-points I'First - 0.5 and I'Last + 0.5 may or may
+   --           not be in range, depending on the sign of  I'First and I'Last.
+   --      (5)  X may be a NaN, which will fail any comparison
+
+   --  The following steps take care of these issues converting X:
+   --      (1) If either I'First or I'Last is not known at compile time, use
+   --          I'Base instead of I in the next three steps and perform a
+   --          regular range check against I'Range after conversion.
+   --      (2) If I'First - 0.5 is representable in F then let Lo be that
+   --          value and define Lo_OK as (I'First > 0). Otherwise, let Lo be
+   --          F'Machine (T) and let Lo_OK be (Lo >= I'First). In other words,
+   --          take one of the closest floating-point numbers to T, and see if
+   --          it is in range or not.
+   --      (3) If I'Last + 0.5 is representable in F then let Hi be that value
+   --          and define Hi_OK as (I'Last < 0). Otherwise, let Hi be
+   --          F'Rounding (T) and let Hi_OK be (Hi <= I'Last).
+   --      (4) Raise CE when (Lo_OK and X < Lo) or (not Lo_OK and X <= Lo)
+   --                     or (Hi_OK and X > Hi) or (not Hi_OK and X >= Hi)
+
+   procedure Apply_Float_Conversion_Check
+     (Ck_Node    : Node_Id;
+      Target_Typ : Entity_Id)
+   is
+      LB          : constant Node_Id := Type_Low_Bound (Target_Typ);
+      HB          : constant Node_Id := Type_High_Bound (Target_Typ);
+      Loc         : constant Source_Ptr := Sloc (Ck_Node);
+      Expr_Type   : constant Entity_Id  := Base_Type (Etype (Ck_Node));
+      Target_Base : constant Entity_Id  := Implementation_Base_Type
+                                             (Target_Typ);
+      Max_Bound   : constant Uint := UI_Expon
+                                       (Machine_Radix (Expr_Type),
+                                        Machine_Mantissa (Expr_Type) - 1) - 1;
+      --  Largest bound, so bound plus or minus half is a machine number of F
+
+      Ifirst,
+      Ilast     : Uint;         --  Bounds of integer type
+      Lo, Hi    : Ureal;        --  Bounds to check in floating-point domain
+      Lo_OK,
+      Hi_OK     : Boolean;      --  True iff Lo resp. Hi belongs to I'Range
+
+      Lo_Chk,
+      Hi_Chk    : Node_Id;      --  Expressions that are False iff check fails
+
+      Reason    : RT_Exception_Code;
+
+   begin
+      if not Compile_Time_Known_Value (LB)
+          or not Compile_Time_Known_Value (HB)
+      then
+         declare
+            --  First check that the value falls in the range of the base
+            --  type, to prevent overflow during conversion and then
+            --  perform a regular range check against the (dynamic) bounds.
+
+            Par : constant Node_Id := Parent (Ck_Node);
+
+            pragma Assert (Target_Base /= Target_Typ);
+            pragma Assert (Nkind (Par) = N_Type_Conversion);
+
+            Temp : constant Entity_Id :=
+                    Make_Defining_Identifier (Loc,
+                      Chars => New_Internal_Name ('T'));
+
+         begin
+            Apply_Float_Conversion_Check (Ck_Node, Target_Base);
+            Set_Etype (Temp, Target_Base);
+
+            Insert_Action (Parent (Par),
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Temp,
+                Object_Definition => New_Occurrence_Of (Target_Typ, Loc),
+                Expression => New_Copy_Tree (Par)),
+                Suppress => All_Checks);
+
+            Insert_Action (Par,
+              Make_Raise_Constraint_Error (Loc,
+                Condition =>
+                  Make_Not_In (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Temp, Loc),
+                    Right_Opnd => New_Occurrence_Of (Target_Typ, Loc)),
+                Reason => CE_Range_Check_Failed));
+            Rewrite (Par, New_Occurrence_Of (Temp, Loc));
+
+            return;
+         end;
+      end if;
+
+      --  Get the bounds of the target type
+
+      Ifirst := Expr_Value (LB);
+      Ilast  := Expr_Value (HB);
+
+      --  Check against lower bound
+
+      if abs (Ifirst) < Max_Bound then
+         Lo := UR_From_Uint (Ifirst) - Ureal_Half;
+         Lo_OK := (Ifirst > 0);
+      else
+         Lo := Machine (Expr_Type, UR_From_Uint (Ifirst), Round_Even, Ck_Node);
+         Lo_OK := (Lo >= UR_From_Uint (Ifirst));
+      end if;
+
+      if Lo_OK then
+
+         --  Lo_Chk := (X >= Lo)
+
+         Lo_Chk := Make_Op_Ge (Loc,
+                     Left_Opnd => Duplicate_Subexpr_No_Checks (Ck_Node),
+                     Right_Opnd => Make_Real_Literal (Loc, Lo));
+
+      else
+         --  Lo_Chk := (X > Lo)
+
+         Lo_Chk := Make_Op_Gt (Loc,
+                     Left_Opnd => Duplicate_Subexpr_No_Checks (Ck_Node),
+                     Right_Opnd => Make_Real_Literal (Loc, Lo));
+      end if;
+
+      --  Check against higher bound
+
+      if abs (Ilast) < Max_Bound then
+         Hi := UR_From_Uint (Ilast) + Ureal_Half;
+         Hi_OK := (Ilast < 0);
+      else
+         Hi := Machine (Expr_Type, UR_From_Uint (Ilast), Round_Even, Ck_Node);
+         Hi_OK := (Hi <= UR_From_Uint (Ilast));
+      end if;
+
+      if Hi_OK then
+
+         --  Hi_Chk := (X <= Hi)
+
+         Hi_Chk := Make_Op_Le (Loc,
+                     Left_Opnd => Duplicate_Subexpr_No_Checks (Ck_Node),
+                     Right_Opnd => Make_Real_Literal (Loc, Hi));
+
+      else
+         --  Hi_Chk := (X < Hi)
+
+         Hi_Chk := Make_Op_Lt (Loc,
+                     Left_Opnd => Duplicate_Subexpr_No_Checks (Ck_Node),
+                     Right_Opnd => Make_Real_Literal (Loc, Hi));
+      end if;
+
+      --  If the bounds of the target type are the same as those of the
+      --  base type, the check is an overflow check as a range check is
+      --  not performed in these cases.
+
+      if Expr_Value (Type_Low_Bound (Target_Base)) = Ifirst
+        and then Expr_Value (Type_High_Bound (Target_Base)) = Ilast
+      then
+         Reason := CE_Overflow_Check_Failed;
+      else
+         Reason := CE_Range_Check_Failed;
+      end if;
+
+      --  Raise CE if either conditions does not hold
+
+      Insert_Action (Ck_Node,
+        Make_Raise_Constraint_Error (Loc,
+          Condition => Make_Op_Not (Loc, Make_Op_And (Loc, Lo_Chk, Hi_Chk)),
+          Reason    => Reason));
+   end Apply_Float_Conversion_Check;
+
    ------------------------
    -- Apply_Length_Check --
    ------------------------
@@ -1918,9 +2107,14 @@ package body Checks is
             --  and no floating point type is involved in the type conversion
             --  then fixed point values must be read as integral values.
 
+            Float_To_Int : constant Boolean :=
+                             Is_Floating_Point_Type (Expr_Type)
+                               and then Is_Integer_Type (Target_Type);
+
          begin
             if not Overflow_Checks_Suppressed (Target_Base)
               and then not In_Subrange_Of (Expr_Type, Target_Base, Conv_OK)
+              and then not Float_To_Int
             then
                Set_Do_Overflow_Check (N);
             end if;
@@ -1928,8 +2122,12 @@ package body Checks is
             if not Range_Checks_Suppressed (Target_Type)
               and then not Range_Checks_Suppressed (Expr_Type)
             then
-               Apply_Scalar_Range_Check
-                 (Expr, Target_Type, Fixed_Int => Conv_OK);
+               if Float_To_Int then
+                  Apply_Float_Conversion_Check (Expr, Target_Type);
+               else
+                  Apply_Scalar_Range_Check
+                    (Expr, Target_Type, Fixed_Int => Conv_OK);
+               end if;
             end if;
          end;
 
@@ -2193,162 +2391,214 @@ package body Checks is
 
    procedure Null_Exclusion_Static_Checks (N : Node_Id) is
       K                  : constant Node_Kind := Nkind (N);
-      Expr               : Node_Id;
       Typ                : Entity_Id;
       Related_Nod        : Node_Id;
       Has_Null_Exclusion : Boolean := False;
 
-      --  Following declarations and subprograms are just used to qualify the
-      --  error messages
-
       type Msg_Kind is (Components, Formals, Objects);
       Msg_K : Msg_Kind := Objects;
+      --  Used by local subprograms to generate precise error messages
 
-      procedure Must_Be_Initialized;
-      procedure Null_Not_Allowed;
+      procedure Check_Must_Be_Access
+        (Typ                : Entity_Id;
+         Has_Null_Exclusion : Boolean);
+      --  ??? local subprograms must have comment on spec
 
-      -------------------------
-      -- Must_Be_Initialized --
-      -------------------------
+      procedure Check_Already_Null_Excluding_Type
+        (Typ                : Entity_Id;
+         Has_Null_Exclusion : Boolean;
+         Related_Nod        : Node_Id);
+      --  ??? local subprograms must have comment on spec
 
-      procedure Must_Be_Initialized is
+      procedure Check_Must_Be_Initialized
+        (N           : Node_Id;
+         Related_Nod : Node_Id);
+      --  ??? local subprograms must have comment on spec
+
+      procedure Check_Null_Not_Allowed (N : Node_Id);
+      --  ??? local subprograms must have comment on spec
+
+      --  ??? following bodies lack comments
+
+      --------------------------
+      -- Check_Must_Be_Access --
+      --------------------------
+
+      procedure Check_Must_Be_Access
+        (Typ                : Entity_Id;
+         Has_Null_Exclusion : Boolean)
+      is
       begin
-         case Msg_K is
-            when Components =>
-               Error_Msg_N
-                 ("(Ada 0Y) null-excluding components must be initialized",
-                  Related_Nod);
+         if Has_Null_Exclusion
+           and then not Is_Access_Type (Typ)
+         then
+            Error_Msg_N ("(Ada 0Y) must be an access type", Related_Nod);
+         end if;
+      end Check_Must_Be_Access;
 
-            when Formals =>
-               Error_Msg_N
-                 ("(Ada 0Y) null-excluding formals must be initialized",
-                  Related_Nod);
+      ---------------------------------------
+      -- Check_Already_Null_Excluding_Type --
+      ---------------------------------------
 
-            when Objects =>
-               Error_Msg_N
-                 ("(Ada 0Y) null-excluding objects must be initialized",
-                  Related_Nod);
-         end case;
-      end Must_Be_Initialized;
-
-      ----------------------
-      -- Null_Not_Allowed --
-      ----------------------
-
-      procedure Null_Not_Allowed is
+      procedure Check_Already_Null_Excluding_Type
+        (Typ                : Entity_Id;
+         Has_Null_Exclusion : Boolean;
+         Related_Nod        : Node_Id)
+      is
       begin
-         case Msg_K is
-            when Components =>
-               Error_Msg_N
-                 ("(Ada 0Y) NULL not allowed in null-excluding components",
-                  Expr);
+         if Has_Null_Exclusion
+           and then Can_Never_Be_Null (Typ)
+         then
+            Error_Msg_N
+              ("(Ada 0Y) already a null-excluding type", Related_Nod);
+         end if;
+      end Check_Already_Null_Excluding_Type;
 
-            when Formals =>
-               Error_Msg_N
-                 ("(Ada 0Y) NULL not allowed in null-excluding formals",
-                  Expr);
+      -------------------------------
+      -- Check_Must_Be_Initialized --
+      -------------------------------
 
-            when Objects =>
-               Error_Msg_N
-                 ("(Ada 0Y) NULL not allowed in null-excluding objects",
-                  Expr);
-         end case;
-      end Null_Not_Allowed;
+      procedure Check_Must_Be_Initialized
+        (N           : Node_Id;
+         Related_Nod : Node_Id)
+      is
+         Expr        : constant Node_Id := Expression (N);
+
+      begin
+         pragma Assert (Nkind (N) = N_Component_Declaration
+                          or else Nkind (N) = N_Object_Declaration);
+
+         if not Present (Expr) then
+            case Msg_K is
+               when Components =>
+                  Error_Msg_N
+                    ("(Ada 0Y) null-excluding components must be initialized",
+                     Related_Nod);
+
+               when Formals =>
+                  Error_Msg_N
+                    ("(Ada 0Y) null-excluding formals must be initialized",
+                     Related_Nod);
+
+               when Objects =>
+                  Error_Msg_N
+                    ("(Ada 0Y) null-excluding objects must be initialized",
+                     Related_Nod);
+            end case;
+         end if;
+      end Check_Must_Be_Initialized;
+
+      ----------------------------
+      -- Check_Null_Not_Allowed --
+      ----------------------------
+
+      procedure Check_Null_Not_Allowed (N : Node_Id) is
+         Expr : constant Node_Id := Expression (N);
+
+      begin
+         if Present (Expr)
+           and then Nkind (Expr) = N_Null
+         then
+            case Msg_K is
+               when Components =>
+                  Error_Msg_N
+                    ("(Ada 0Y) NULL not allowed in null-excluding components",
+                     Expr);
+
+               when Formals =>
+                  Error_Msg_N
+                    ("(Ada 0Y) NULL not allowed in null-excluding formals",
+                     Expr);
+
+               when Objects =>
+                  Error_Msg_N
+                    ("(Ada 0Y) NULL not allowed in null-excluding objects",
+                     Expr);
+            end case;
+         end if;
+      end Check_Null_Not_Allowed;
 
    --  Start of processing for Null_Exclusion_Static_Checks
 
    begin
       pragma Assert (K = N_Component_Declaration
-                     or else K = N_Parameter_Specification
-                     or else K = N_Object_Declaration
-                     or else K = N_Discriminant_Specification
-                     or else K = N_Allocator);
-
-      Expr := Expression (N);
+                       or else K = N_Parameter_Specification
+                       or else K = N_Object_Declaration
+                       or else K = N_Discriminant_Specification
+                       or else K = N_Allocator);
 
       case K is
          when N_Component_Declaration =>
-            Msg_K               := Components;
-            Has_Null_Exclusion  := Null_Exclusion_Present
-                                     (Component_Definition (N));
-            Typ                 := Etype (Subtype_Indication
-                                           (Component_Definition (N)));
-            Related_Nod         := Subtype_Indication
-                                     (Component_Definition (N));
+            Msg_K := Components;
+
+            if not Present (Access_Definition (Component_Definition (N))) then
+               Has_Null_Exclusion  := Null_Exclusion_Present
+                                        (Component_Definition (N));
+               Typ := Etype (Subtype_Indication (Component_Definition (N)));
+               Related_Nod := Subtype_Indication (Component_Definition (N));
+               Check_Must_Be_Access (Typ, Has_Null_Exclusion);
+               Check_Already_Null_Excluding_Type
+                 (Typ, Has_Null_Exclusion, Related_Nod);
+               Check_Must_Be_Initialized (N, Related_Nod);
+            end if;
+
+            Check_Null_Not_Allowed (N);
 
          when N_Parameter_Specification =>
-            Msg_K              := Formals;
+            Msg_K := Formals;
             Has_Null_Exclusion := Null_Exclusion_Present (N);
-            Typ                := Entity (Parameter_Type (N));
-            Related_Nod        := Parameter_Type (N);
+            Typ := Entity (Parameter_Type (N));
+            Related_Nod := Parameter_Type (N);
+            Check_Must_Be_Access (Typ, Has_Null_Exclusion);
+            Check_Already_Null_Excluding_Type
+              (Typ, Has_Null_Exclusion, Related_Nod);
+            Check_Null_Not_Allowed (N);
 
          when N_Object_Declaration =>
-            Msg_K              := Objects;
+            Msg_K := Objects;
             Has_Null_Exclusion := Null_Exclusion_Present (N);
-            Typ                := Entity (Object_Definition (N));
-            Related_Nod        := Object_Definition (N);
+            Typ := Entity (Object_Definition (N));
+            Related_Nod := Object_Definition (N);
+            Check_Must_Be_Access (Typ, Has_Null_Exclusion);
+            Check_Already_Null_Excluding_Type
+              (Typ, Has_Null_Exclusion, Related_Nod);
+            Check_Must_Be_Initialized (N, Related_Nod);
+            Check_Null_Not_Allowed (N);
 
          when N_Discriminant_Specification =>
-            Msg_K              := Components;
+            Msg_K := Components;
 
-            if Nkind (Discriminant_Type (N)) = N_Access_Definition then
-
-               --  This case is special. We do not want to carry out some of
-               --  the null-excluding checks. Reason: the analysis of the
-               --  access_definition propagates the null-excluding attribute
-               --  to the can_never_be_null entity attribute (and thus it is
-               --  wrong to check it now)
-
-               Has_Null_Exclusion := False;
-            else
+            if Nkind (Discriminant_Type (N)) /= N_Access_Definition then
                Has_Null_Exclusion := Null_Exclusion_Present (N);
+               Typ := Etype (Defining_Identifier (N));
+               Related_Nod := Discriminant_Type (N);
+               Check_Must_Be_Access (Typ, Has_Null_Exclusion);
+               Check_Already_Null_Excluding_Type
+                 (Typ, Has_Null_Exclusion, Related_Nod);
             end if;
 
-            Typ                := Etype (Defining_Identifier (N));
-            Related_Nod        := Discriminant_Type (N);
+            Check_Null_Not_Allowed (N);
 
          when N_Allocator =>
-            Msg_K              := Objects;
+            Msg_K := Objects;
             Has_Null_Exclusion := Null_Exclusion_Present (N);
-            Typ                := Etype (Expr);
+            Typ := Etype (Expression (N));
 
-            if Nkind (Expr) = N_Qualified_Expression then
-               Related_Nod     := Subtype_Mark (Expr);
+            if Nkind (Expression (N)) = N_Qualified_Expression then
+               Related_Nod := Subtype_Mark (Expression (N));
             else
-               Related_Nod     := Expr;
+               Related_Nod := Expression (N);
             end if;
+
+            Check_Must_Be_Access (Typ, Has_Null_Exclusion);
+            Check_Already_Null_Excluding_Type
+              (Typ, Has_Null_Exclusion, Related_Nod);
+            Check_Null_Not_Allowed (N);
 
          when others =>
             pragma Assert (False);
             null;
       end case;
-
-      --  Check that the entity was already decorated
-
-      pragma Assert (Typ /= Empty);
-
-      if Has_Null_Exclusion
-        and then not Is_Access_Type (Typ)
-      then
-         Error_Msg_N ("(Ada 0Y) must be an access type", Related_Nod);
-
-      elsif Has_Null_Exclusion
-        and then Can_Never_Be_Null (Typ)
-      then
-         Error_Msg_N
-           ("(Ada 0Y) already a null-excluding type", Related_Nod);
-
-      elsif (Nkind (N) = N_Component_Declaration
-             or else Nkind (N) = N_Object_Declaration)
-        and not Present (Expr)
-      then
-         Must_Be_Initialized;
-
-      elsif Present (Expr)
-        and then Nkind (Expr) = N_Null
-      then
-         Null_Not_Allowed;
-      end if;
    end Null_Exclusion_Static_Checks;
 
    ----------------------------------

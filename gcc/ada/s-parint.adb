@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                   (Dummy body for non-distributed case)                  --
 --                                                                          --
---          Copyright (C) 1995-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,20 +162,6 @@ package body System.Partition_Interface is
       null;
    end Get_Unique_Remote_Pointer;
 
-   ------------
-   -- Launch --
-   ------------
-
-   procedure Launch
-     (Rsh_Command  : in String;
-      Name_Is_Host : in Boolean;
-      General_Name : in String;
-      Command_Line : in String)
-   is
-   begin
-      null;
-   end Launch;
-
    -----------
    -- Lower --
    -----------
@@ -194,17 +180,6 @@ package body System.Partition_Interface is
 
       return T;
    end Lower;
-
-   ------------------------------------
-   -- Raise_Program_Error_For_E_4_18 --
-   ------------------------------------
-
-   procedure Raise_Program_Error_For_E_4_18 is
-   begin
-      Ada.Exceptions.Raise_Exception
-        (Program_Error'Identity,
-        "Illegal usage of remote access to class-wide type. See RM E.4(18)");
-   end Raise_Program_Error_For_E_4_18;
 
    -------------------------------------
    -- Raise_Program_Error_Unknown_Tag --

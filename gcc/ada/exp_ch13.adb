@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -93,7 +93,6 @@ package body Exp_Ch13 is
 
             declare
                Decl : constant Node_Id := Declaration_Node (Ent);
-
             begin
                if Nkind (Decl) = N_Object_Declaration
                   and then Present (Expression (Decl))

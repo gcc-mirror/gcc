@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,14 +89,20 @@ package body Ada.Calendar is
    --  TM.all cannot be represented.
 
    --  The following constants are used in adjusting Ada dates so that they
-   --  fit into the range that can be handled by Unix (1970 - 2038). The trick
-   --  is that the number of days in any four year period in the Ada range of
-   --  years (1901 - 2099) has a constant number of days. This is because we
-   --  have the special case of 2000 which, contrary to the normal exception
-   --  for centuries, is a leap year after all.
+   --  fit into a 56 year range that can be handled by Unix (1970 included -
+   --  2026 excluded). Dates that are not in this 56 year range are shifted
+   --  by multiples of 56 years to fit in this range
+   --  The trick is that the number of days in any four year period in the Ada
+   --  range of years (1901 - 2099) has a constant number of days. This is
+   --  because we have the special case of 2000 which, contrary to the normal
+   --  exception for centuries, is a leap year after all.
+   --  56 has been chosen, because it is not only a multiple of 4, but also
+   --  a multiple of 7. Thus two dates 56 years apart fall on the same day of
+   --  the week, and the Daylight Saving Time change dates are usually the same
+   --  for these two years.
 
    Unix_Year_Min : constant := 1970;
-   Unix_Year_Max : constant := 2038;
+   Unix_Year_Max : constant := 2026;
 
    Ada_Year_Min : constant := 1901;
    Ada_Year_Max : constant := 2099;
@@ -106,9 +112,10 @@ package body Ada.Calendar is
    Days_In_Month : constant array (Month_Number) of Day_Number :=
                      (31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 
-   Days_In_4_Years     : constant := 365 * 3 + 366;
-   Seconds_In_4_Years  : constant := 86_400 * Days_In_4_Years;
-   Seconds_In_4_YearsD : constant Duration := Duration (Seconds_In_4_Years);
+   Days_In_4_Years      : constant := 365 * 3 + 366;
+   Seconds_In_4_Years   : constant := 86_400 * Days_In_4_Years;
+   Seconds_In_56_Years  : constant := Seconds_In_4_Years * 14;
+   Seconds_In_56_YearsD : constant := Duration (Seconds_In_56_Years);
 
    ---------
    -- "+" --
@@ -270,15 +277,6 @@ package body Ada.Calendar is
       LowD  : constant Duration := Duration (Low);
       HighD : constant Duration := Duration (High);
 
-      --  The following declare the maximum duration value that can be
-      --  successfully converted to a 32-bit integer suitable for passing
-      --  to the localtime_r function. Note that we cannot assume that the
-      --  localtime_r function expands to accept 64-bit input on a 64-bit
-      --  machine, but we can count on a 32-bit range on all machines.
-
-      Max_Time  : constant := 2 ** 31 - 1;
-      Max_TimeD : constant Duration := Duration (Max_Time);
-
       --  Finally the actual variables used in the computation
 
       D                : Duration;
@@ -309,21 +307,21 @@ package body Ada.Calendar is
       --  EPOCH through EPOCH + N seconds). N is in practice 2 ** 31 - 1.
 
       --  If we have a value outside this range, then we first adjust it
-      --  to be in the required range by adding multiples of four years.
+      --  to be in the required range by adding multiples of 56 years.
       --  For the range we are interested in, the number of days in any
-      --  consecutive four year period is constant. Then we do the split
+      --  consecutive 56 year period is constant. Then we do the split
       --  on the adjusted value, and readjust the years value accordingly.
 
       Year_Val := 0;
 
       while D < 0.0 loop
-         D := D + Seconds_In_4_YearsD;
-         Year_Val := Year_Val - 4;
+         D := D + Seconds_In_56_YearsD;
+         Year_Val := Year_Val - 56;
       end loop;
 
-      while D > Max_TimeD loop
-         D := D - Seconds_In_4_YearsD;
-         Year_Val := Year_Val + 4;
+      while D >= Seconds_In_56_YearsD loop
+         D := D - Seconds_In_56_YearsD;
+         Year_Val := Year_Val + 56;
       end loop;
 
       --  Now we need to take the value D, which is now non-negative, and
@@ -435,18 +433,19 @@ package body Ada.Calendar is
       TM_Val.tm_mon  := Month - 1;
 
       --  For the year, we have to adjust it to a year that Unix can handle.
-      --  We do this in four year steps, since the number of days in four
-      --  years is constant, so the timezone effect on the conversion from
-      --  local time to GMT is unaffected.
+      --  We do this in 56 year steps, since the number of days in 56 years
+      --  is constant, so the timezone effect on the conversion from local
+      --  time to GMT is unaffected; also the DST change dates are usually
+      --  not modified.
 
-      while Year_Val <= Unix_Year_Min loop
-         Year_Val := Year_Val + 4;
-         Duration_Adjust := Duration_Adjust - Seconds_In_4_YearsD;
+      while Year_Val < Unix_Year_Min loop
+         Year_Val := Year_Val + 56;
+         Duration_Adjust := Duration_Adjust - Seconds_In_56_YearsD;
       end loop;
 
       while Year_Val >= Unix_Year_Max loop
-         Year_Val := Year_Val - 4;
-         Duration_Adjust := Duration_Adjust + Seconds_In_4_YearsD;
+         Year_Val := Year_Val - 56;
+         Duration_Adjust := Duration_Adjust + Seconds_In_56_YearsD;
       end loop;
 
       TM_Val.tm_year := Year_Val - 1900;

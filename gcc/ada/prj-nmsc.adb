@@ -52,9 +52,14 @@ with GNAT.HTable;
 
 package body Prj.Nmsc is
 
-   Error_Report    : Put_Line_Access := null;
+   Error_Report : Put_Line_Access := null;
+   --  Set to point to error reporting procedure
 
-   ALI_Suffix : constant String := ".ali";
+   ALI_Suffix   : constant String := ".ali";
+   --  File suffix for ali files
+
+   Object_Suffix : constant String := Get_Object_Suffix.all;
+   --  File suffix for object files
 
    type Name_Location is record
       Name     : Name_Id;
@@ -92,6 +97,33 @@ package body Prj.Nmsc is
    --  several times, and to avoid cycles that may be introduced by symbolic
    --  links.
 
+   type Unit_Info is record
+      Kind : Spec_Or_Body;
+      Unit : Name_Id;
+   end record;
+   No_Unit : constant Unit_Info := (Specification, No_Name);
+
+   package Ada_Naming_Exceptions is new GNAT.HTable.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Unit_Info,
+      No_Element => No_Unit,
+      Key        => Name_Id,
+      Hash       => Hash,
+      Equal      => "=");
+   --  A hash table to store naming exceptions for Ada
+
+   function Hash (Unit : Unit_Info) return Header_Num;
+
+   package Reverse_Ada_Naming_Exceptions is new GNAT.HTable.Simple_HTable
+     (Header_Num => Header_Num,
+      Element    => Name_Id,
+      No_Element => No_Name,
+      Key        => Unit_Info,
+      Hash       => Hash,
+      Equal      => "=");
+   --  A table to check if a unit with an exceptional name will hide
+   --  a source with a file name following the naming convention.
+
    function ALI_File_Name (Source : String) return String;
    --  Return the ALI file name corresponding to a source.
 
@@ -105,6 +137,34 @@ package body Prj.Nmsc is
       Unit : out Name_Id);
    --  Check that a name is a valid Ada unit name.
 
+   procedure Check_For_Source
+     (File_Name        : Name_Id;
+      Path_Name        : Name_Id;
+      Project          : Project_Id;
+      Data             : in out Project_Data;
+      Location         : Source_Ptr;
+      Language         : Other_Programming_Language;
+      Suffix           : String;
+      Naming_Exception : Boolean);
+   --  Check if a file in a source directory is a source for a specific
+   --  language other than Ada.
+
+   procedure Check_Naming_Scheme
+     (Data    : in out Project_Data;
+      Project : Project_Id);
+   --  Check the naming scheme part of Data
+
+   function Check_Project
+     (P            : Project_Id;
+      Root_Project : Project_Id;
+      Extending    : Boolean) return Boolean;
+   --  Returns True if P is Root_Project or, if Extending is True, a project
+   --  extended by Root_Project.
+
+   function Compute_Directory_Last (Dir : String) return Natural;
+   --  Return the index of the last significant character in Dir. This is used
+   --  to avoid duplicates '/' at the end of directory names
+
    procedure Error_Msg
      (Project       : Project_Id;
       Msg           : String;
@@ -112,6 +172,28 @@ package body Prj.Nmsc is
    --  Output an error message. If Error_Report is null, simply call
    --  Prj.Err.Error_Msg. Otherwise, disregard Flag_Location and use
    --  Error_Report.
+
+   procedure Find_Sources
+     (Project      : Project_Id;
+      Data         : in out Project_Data;
+      For_Language : Programming_Language;
+      Follow_Links : Boolean := False);
+   --  Find all the sources in all of the source directories of a project for
+   --  a specified language.
+
+   procedure Free_Ada_Naming_Exceptions;
+   --  Free the internal hash tables used for checking naming exceptions
+
+   procedure Get_Mains (Project : Project_Id; Data : in out Project_Data);
+   --  Get the mains of a project from attribute Main, if it exists, and put
+   --  them in the project data.
+
+   procedure Get_Sources_From_File
+     (Path     : String;
+      Location : Source_Ptr;
+      Project  : Project_Id);
+   --  Get the list of sources from a text file and put them in hash table
+   --  Source_Names.
 
    procedure Get_Unit
      (Canonical_File_Name : Name_Id;
@@ -129,21 +211,6 @@ package body Prj.Nmsc is
    --  Returns True if the string Suffix cannot be used as
    --  a spec suffix, a body suffix or a separate suffix.
 
-   procedure Record_Source
-     (File_Name       : Name_Id;
-      Path_Name       : Name_Id;
-      Project         : Project_Id;
-      Data            : in out Project_Data;
-      Location        : Source_Ptr;
-      Current_Source  : in out String_List_Id;
-      Source_Recorded : in out Boolean;
-      Trusted_Mode    : Boolean);
-   --  Put a unit in the list of units of a project, if the file name
-   --  corresponds to a valid unit name.
-
-   procedure Show_Source_Dirs (Project : Project_Id);
-   --  List all the source directories of a project.
-
    procedure Locate_Directory
      (Name    : Name_Id;
       Parent  : Name_Id;
@@ -158,429 +225,46 @@ package body Prj.Nmsc is
    --  Returns the path name of a (non project) file.
    --  Returns an empty string if file cannot be found.
 
+   procedure Prepare_Ada_Naming_Exceptions
+     (List : Array_Element_Id;
+      Kind : Spec_Or_Body);
+   --  Prepare the internal hash tables used for checking naming exceptions
+   --  for Ada. Insert all elements of List in the tables.
+
    function Project_Extends
      (Extending : Project_Id;
       Extended  : Project_Id) return Boolean;
    --  Returns True if Extending is extending directly or indirectly Extended.
 
-   procedure Check_Naming_Scheme
-     (Data    : in out Project_Data;
-      Project : Project_Id);
-   --  Check the naming scheme part of Data
-
-   type Unit_Info is record
-      Kind : Spec_Or_Body;
-      Unit : Name_Id;
-   end record;
-   No_Unit : constant Unit_Info := (Specification, No_Name);
-
-   package Naming_Exceptions is new GNAT.HTable.Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Unit_Info,
-      No_Element => No_Unit,
-      Key        => Name_Id,
-      Hash       => Hash,
-      Equal      => "=");
-
-   function Hash (Unit : Unit_Info) return Header_Num;
-
-   package Reverse_Naming_Exceptions is new GNAT.HTable.Simple_HTable
-     (Header_Num => Header_Num,
-      Element    => Name_Id,
-      No_Element => No_Name,
-      Key        => Unit_Info,
-      Hash       => Hash,
-      Equal      => "=");
-   --  A table to check if a unit with an exceptional name will hide
-   --  a source with a file name following the naming convention.
-
-   procedure Prepare_Naming_Exceptions
-     (List : Array_Element_Id;
-      Kind : Spec_Or_Body);
-   --  Prepare the internal hash tables used for checking naming exceptions.
-   --  Insert all elements of List in the tables.
-
-   procedure Free_Naming_Exceptions;
-   --  Free the internal hash tables used for checking naming exceptions
-
-   function Compute_Directory_Last (Dir : String) return Natural;
-   --  Return the index of the last significant character in Dir. This is used
-   --  to avoid duplicates '/' at the end of directory names
-
-   ----------------------------
-   -- Compute_Directory_Last --
-   ----------------------------
-
-   function Compute_Directory_Last (Dir : String) return Natural is
-   begin
-      if Dir'Length > 1
-        and then (Dir (Dir'Last - 1) = Directory_Separator
-                  or else Dir (Dir'Last - 1) = '/')
-      then
-         return Dir'Last - 1;
-      else
-         return Dir'Last;
-      end if;
-   end Compute_Directory_Last;
-
-   -------------------------------
-   -- Prepare_Naming_Exceptions --
-   -------------------------------
-
-   procedure Prepare_Naming_Exceptions
-     (List : Array_Element_Id;
-      Kind : Spec_Or_Body)
-   is
-      Current : Array_Element_Id := List;
-      Element : Array_Element;
-
-   begin
-      while Current /= No_Array_Element loop
-         Element := Array_Elements.Table (Current);
-
-         if Element.Index /= No_Name then
-            Naming_Exceptions.Set
-              (Element.Value.Value,
-               (Kind => Kind, Unit => Element.Index));
-            Reverse_Naming_Exceptions.Set
-              ((Kind => Kind, Unit => Element.Index),
-               Element.Value.Value);
-         end if;
-
-         Current := Element.Next;
-      end loop;
-   end Prepare_Naming_Exceptions;
-
-   ----------
-   -- Hash --
-   ----------
-
-   function Hash (Unit : Unit_Info) return Header_Num is
-   begin
-      return Header_Num (Unit.Unit mod 2048);
-   end Hash;
-
-   ----------------------------
-   -- Free_Naming_Exceptions --
-   ----------------------------
-
-   procedure Free_Naming_Exceptions is
-   begin
-      Naming_Exceptions.Reset;
-      Reverse_Naming_Exceptions.Reset;
-   end Free_Naming_Exceptions;
-
-   -------------------------
-   -- Check_Naming_Scheme --
-   -------------------------
-
-   procedure Check_Naming_Scheme
-     (Data    : in out Project_Data;
-      Project : Project_Id)
-   is
-      Naming_Id : constant Package_Id :=
-                    Util.Value_Of (Name_Naming, Data.Decl.Packages);
-
-      Naming : Package_Element;
-
-      procedure Check_Unit_Names (List : Array_Element_Id);
-      --  Check that a list of unit names contains only valid names.
-
-      ----------------------
-      -- Check_Unit_Names --
-      ----------------------
-
-      procedure Check_Unit_Names (List : Array_Element_Id) is
-         Current   : Array_Element_Id := List;
-         Element   : Array_Element;
-         Unit_Name : Name_Id;
-
-      begin
-         --  Loop through elements of the string list
-
-         while Current /= No_Array_Element loop
-            Element := Array_Elements.Table (Current);
-
-            --  Put file name in canonical case
-
-            Get_Name_String (Element.Value.Value);
-            Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-            Element.Value.Value := Name_Find;
-
-            --  Check that it contains a valid unit name
-
-            Get_Name_String (Element.Index);
-            Check_Ada_Name (Name_Buffer (1 .. Name_Len), Unit_Name);
-
-            if Unit_Name = No_Name then
-               Err_Vars.Error_Msg_Name_1 := Element.Index;
-               Error_Msg
-                 (Project,
-                  "{ is not a valid unit name.",
-                  Element.Value.Location);
-
-            else
-               if Current_Verbosity = High then
-                  Write_Str ("    Unit (""");
-                  Write_Str (Get_Name_String (Unit_Name));
-                  Write_Line (""")");
-               end if;
-
-               Element.Index := Unit_Name;
-               Array_Elements.Table (Current) := Element;
-            end if;
-
-            Current := Element.Next;
-         end loop;
-      end Check_Unit_Names;
-
-   --  Start of processing for Check_Naming_Scheme
-
-   begin
-      --  If there is a package Naming, we will put in Data.Naming what is in
-      --  this package Naming.
-
-      if Naming_Id /= No_Package then
-         Naming := Packages.Table (Naming_Id);
-
-         if Current_Verbosity = High then
-            Write_Line ("Checking ""Naming"" for Ada.");
-         end if;
-
-         declare
-            Bodies : constant Array_Element_Id :=
-                       Util.Value_Of (Name_Body, Naming.Decl.Arrays);
-
-            Specs : constant Array_Element_Id :=
-                      Util.Value_Of (Name_Spec, Naming.Decl.Arrays);
-
-         begin
-            if Bodies /= No_Array_Element then
-
-               --  We have elements in the array Body_Part
-
-               if Current_Verbosity = High then
-                  Write_Line ("Found Bodies.");
-               end if;
-
-               Data.Naming.Bodies := Bodies;
-               Check_Unit_Names (Bodies);
-
-            else
-               if Current_Verbosity = High then
-                  Write_Line ("No Bodies.");
-               end if;
-            end if;
-
-            if Specs /= No_Array_Element then
-
-               --  We have elements in the array Specs
-
-               if Current_Verbosity = High then
-                  Write_Line ("Found Specs.");
-               end if;
-
-               Data.Naming.Specs := Specs;
-               Check_Unit_Names (Specs);
-
-            else
-               if Current_Verbosity = High then
-                  Write_Line ("No Specs.");
-               end if;
-            end if;
-         end;
-
-         --  We are now checking if variables Dot_Replacement, Casing,
-         --  Spec_Suffix, Body_Suffix and/or Separate_Suffix
-         --  exist.
-
-         --  For each variable, if it does not exist, we do nothing,
-         --  because we already have the default.
-
-         --  Check Dot_Replacement
-
-         declare
-            Dot_Replacement : constant Variable_Value :=
-                                Util.Value_Of
-                                  (Name_Dot_Replacement,
-                                   Naming.Decl.Attributes);
-
-         begin
-            pragma Assert (Dot_Replacement.Kind = Single,
-                           "Dot_Replacement is not a single string");
-
-            if not Dot_Replacement.Default then
-               Get_Name_String (Dot_Replacement.Value);
-
-               if Name_Len = 0 then
-                  Error_Msg
-                    (Project,
-                     "Dot_Replacement cannot be empty",
-                     Dot_Replacement.Location);
-
-               else
-                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-                  Data.Naming.Dot_Replacement := Name_Find;
-                  Data.Naming.Dot_Repl_Loc := Dot_Replacement.Location;
-               end if;
-            end if;
-         end;
-
-         if Current_Verbosity = High then
-            Write_Str  ("  Dot_Replacement = """);
-            Write_Str  (Get_Name_String (Data.Naming.Dot_Replacement));
-            Write_Char ('"');
-            Write_Eol;
-         end if;
-
-         --  Check Casing
-
-         declare
-            Casing_String : constant Variable_Value :=
-                              Util.Value_Of
-                                (Name_Casing, Naming.Decl.Attributes);
-
-         begin
-            pragma Assert (Casing_String.Kind = Single,
-                           "Casing is not a single string");
-
-            if not Casing_String.Default then
-               declare
-                  Casing_Image : constant String :=
-                                   Get_Name_String (Casing_String.Value);
-               begin
-                  declare
-                     Casing : constant Casing_Type := Value (Casing_Image);
-                  begin
-                     Data.Naming.Casing := Casing;
-                  end;
-
-               exception
-                  when Constraint_Error =>
-                     if Casing_Image'Length = 0 then
-                        Error_Msg
-                          (Project,
-                           "Casing cannot be an empty string",
-                           Casing_String.Location);
-
-                     else
-                        Name_Len := Casing_Image'Length;
-                        Name_Buffer (1 .. Name_Len) := Casing_Image;
-                        Err_Vars.Error_Msg_Name_1 := Name_Find;
-                        Error_Msg
-                          (Project,
-                           "{ is not a correct Casing",
-                           Casing_String.Location);
-                     end if;
-               end;
-            end if;
-         end;
-
-         if Current_Verbosity = High then
-            Write_Str  ("  Casing = ");
-            Write_Str  (Image (Data.Naming.Casing));
-            Write_Char ('.');
-            Write_Eol;
-         end if;
-
-         --  Check Spec_Suffix
-
-         declare
-            Ada_Spec_Suffix : constant Variable_Value :=
-                                Prj.Util.Value_Of
-                                 (Index => Name_Ada,
-                                  In_Array => Data.Naming.Spec_Suffix);
-
-         begin
-            if Ada_Spec_Suffix.Kind = Single
-              and then Get_Name_String (Ada_Spec_Suffix.Value) /= ""
-            then
-               Data.Naming.Current_Spec_Suffix := Ada_Spec_Suffix.Value;
-               Data.Naming.Spec_Suffix_Loc := Ada_Spec_Suffix.Location;
-
-            else
-               Data.Naming.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
-            end if;
-         end;
-
-         if Current_Verbosity = High then
-            Write_Str  ("  Spec_Suffix = """);
-            Write_Str  (Get_Name_String (Data.Naming.Current_Spec_Suffix));
-            Write_Char ('"');
-            Write_Eol;
-         end if;
-
-         --  Check Body_Suffix
-
-         declare
-            Ada_Body_Suffix : constant Variable_Value :=
-              Prj.Util.Value_Of
-              (Index => Name_Ada,
-               In_Array => Data.Naming.Body_Suffix);
-
-         begin
-            if Ada_Body_Suffix.Kind = Single
-              and then Get_Name_String (Ada_Body_Suffix.Value) /= ""
-            then
-               Data.Naming.Current_Body_Suffix := Ada_Body_Suffix.Value;
-               Data.Naming.Body_Suffix_Loc := Ada_Body_Suffix.Location;
-
-            else
-               Data.Naming.Current_Body_Suffix := Default_Ada_Body_Suffix;
-            end if;
-         end;
-
-         if Current_Verbosity = High then
-            Write_Str  ("  Body_Suffix = """);
-            Write_Str  (Get_Name_String (Data.Naming.Current_Body_Suffix));
-            Write_Char ('"');
-            Write_Eol;
-         end if;
-
-         --  Check Separate_Suffix
-
-         declare
-            Ada_Sep_Suffix : constant Variable_Value :=
-                               Prj.Util.Value_Of
-                                 (Variable_Name => Name_Separate_Suffix,
-                                  In_Variables  => Naming.Decl.Attributes);
-
-         begin
-            if Ada_Sep_Suffix.Default then
-               Data.Naming.Separate_Suffix :=
-                 Data.Naming.Current_Body_Suffix;
-
-            else
-               if Get_Name_String (Ada_Sep_Suffix.Value) = "" then
-                  Error_Msg
-                    (Project,
-                     "Separate_Suffix cannot be empty",
-                     Ada_Sep_Suffix.Location);
-
-               else
-                  Data.Naming.Separate_Suffix := Ada_Sep_Suffix.Value;
-                  Data.Naming.Sep_Suffix_Loc  := Ada_Sep_Suffix.Location;
-               end if;
-            end if;
-         end;
-
-         if Current_Verbosity = High then
-            Write_Str  ("  Separate_Suffix = """);
-            Write_Str  (Get_Name_String (Data.Naming.Separate_Suffix));
-            Write_Char ('"');
-            Write_Eol;
-         end if;
-
-         --  Check if Data.Naming is valid
-
-         Check_Ada_Naming_Scheme (Project, Data.Naming);
-
-      else
-         Data.Naming.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
-         Data.Naming.Current_Body_Suffix := Default_Ada_Body_Suffix;
-         Data.Naming.Separate_Suffix     := Default_Ada_Body_Suffix;
-      end if;
-   end Check_Naming_Scheme;
+   procedure Record_Ada_Source
+     (File_Name       : Name_Id;
+      Path_Name       : Name_Id;
+      Project         : Project_Id;
+      Data            : in out Project_Data;
+      Location        : Source_Ptr;
+      Current_Source  : in out String_List_Id;
+      Source_Recorded : in out Boolean;
+      Follow_Links    : Boolean);
+   --  Put a unit in the list of units of a project, if the file name
+   --  corresponds to a valid unit name.
+
+   procedure Record_Other_Sources
+     (Project           : Project_Id;
+      Data              : in out Project_Data;
+      Language          : Programming_Language;
+      Naming_Exceptions : Boolean);
+   --  Record the sources of a language in a project.
+   --  When Naming_Exceptions is True, mark the found sources as such, to
+   --  later remove those that are not named in a list of sources.
+
+   procedure Show_Source_Dirs (Project : Project_Id);
+   --  List all the source directories of a project.
+
+   function Suffix_For
+     (Language : Programming_Language;
+      Naming   : Naming_Data) return Name_Id;
+   --  Get the suffix for the source of a language from a package naming.
+   --  If not specified, return the default for the language.
 
    ---------------
    -- Ada_Check --
@@ -589,19 +273,12 @@ package body Prj.Nmsc is
    procedure Ada_Check
      (Project      : Project_Id;
       Report_Error : Put_Line_Access;
-      Trusted_Mode : Boolean)
+      Follow_Links : Boolean)
    is
       Data         : Project_Data;
       Languages    : Variable_Value := Nil_Variable_Value;
 
       Extending    : Boolean := False;
-
-      function Check_Project (P : Project_Id) return Boolean;
-      --  Returns True if P is Project or a project extended by Project
-
-      procedure Find_Sources;
-      --  Find all the sources in all of the source directories
-      --  of a project.
 
       procedure Get_Path_Names_And_Record_Sources;
       --  Find the path names of the source files in the Source_Names table
@@ -617,157 +294,6 @@ package body Prj.Nmsc is
          Specs       : Boolean);
       --  Check that individual naming conventions apply to immediate
       --  sources of the project; if not, issue a warning.
-
-      -------------------
-      -- Check_Project --
-      -------------------
-
-      function Check_Project (P : Project_Id) return Boolean is
-      begin
-         if P = Project then
-            return True;
-         elsif Extending then
-            declare
-               Data : Project_Data := Projects.Table (Project);
-
-            begin
-               while Data.Extends /= No_Project loop
-                  if P = Data.Extends then
-                     return True;
-                  end if;
-
-                  Data := Projects.Table (Data.Extends);
-               end loop;
-            end;
-         end if;
-
-         return False;
-      end Check_Project;
-
-      ------------------
-      -- Find_Sources --
-      ------------------
-
-      procedure Find_Sources is
-         Source_Dir      : String_List_Id := Data.Source_Dirs;
-         Element         : String_Element;
-         Dir             : Dir_Type;
-         Current_Source  : String_List_Id := Nil_String;
-         Source_Recorded : Boolean := False;
-
-      begin
-         if Current_Verbosity = High then
-            Write_Line ("Looking for sources:");
-         end if;
-
-         --  For each subdirectory
-
-         while Source_Dir /= Nil_String loop
-            begin
-               Source_Recorded := False;
-               Element := String_Elements.Table (Source_Dir);
-               if Element.Value /= No_Name then
-                  Get_Name_String (Element.Display_Value);
-                  declare
-                     Source_Directory : constant String :=
-                        Name_Buffer (1 .. Name_Len) & Directory_Separator;
-                     Dir_Last  : constant Natural :=
-                        Compute_Directory_Last (Source_Directory);
-
-                  begin
-                     if Current_Verbosity = High then
-                        Write_Str ("Source_Dir = ");
-                        Write_Line (Source_Directory);
-                     end if;
-
-                     --  We look to every entry in the source directory
-
-                     Open (Dir, Source_Directory
-                             (Source_Directory'First .. Dir_Last));
-
-                     --  Canonical_Case_File_Name (Source_Directory);
-
-                     loop
-                        Read (Dir, Name_Buffer, Name_Len);
-
-                        if Current_Verbosity = High then
-                           Write_Str  ("   Checking ");
-                           Write_Line (Name_Buffer (1 .. Name_Len));
-                        end if;
-
-                        exit when Name_Len = 0;
-
-                        declare
-                           File_Name : constant Name_Id := Name_Find;
-                           Path      : constant String :=
-                                  Normalize_Pathname
-                                    (Name      => Name_Buffer (1 .. Name_Len),
-                                     Directory => Source_Directory
-                                       (Source_Directory'First .. Dir_Last),
-                                     Resolve_Links => False,
-                                     Case_Sensitive => True);
-                           Path_Name : Name_Id;
-
-                        begin
-                           if Trusted_Mode or else Is_Regular_File (Path) then
-                              Name_Len := Path'Length;
-                              Name_Buffer (1 .. Name_Len) := Path;
-                              Path_Name := Name_Find;
-
-                              --  We attempt to register it as a source.
-                              --  However, there is no error if the file
-                              --  does not contain a valid source.
-                              --  But there is an error if we have a
-                              --  duplicate unit name.
-
-                              Record_Source
-                                (File_Name       => File_Name,
-                                 Path_Name       => Path_Name,
-                                 Project         => Project,
-                                 Data            => Data,
-                                 Location        => No_Location,
-                                 Current_Source  => Current_Source,
-                                 Source_Recorded => Source_Recorded,
-                                 Trusted_Mode    => Trusted_Mode);
-                           end if;
-                        end;
-                     end loop;
-
-                     Close (Dir);
-                  end;
-               end if;
-
-            exception
-               when Directory_Error =>
-                  null;
-            end;
-
-            if Source_Recorded then
-               String_Elements.Table (Source_Dir).Flag := True;
-            end if;
-
-            Source_Dir := Element.Next;
-         end loop;
-
-         if Current_Verbosity = High then
-            Write_Line ("end Looking for sources.");
-         end if;
-
-         --  If we have looked for sources and found none, then
-         --  it is an error, except if it is an extending project.
-         --  If a non extending project is not supposed to contain
-         --  any source, then we never call Find_Sources.
-
-         if Current_Source /= Nil_String then
-            Data.Sources_Present := True;
-
-         elsif Data.Extends = No_Project then
-            Error_Msg
-              (Project,
-               "there are no Ada sources in this project",
-               Data.Location);
-         end if;
-      end Find_Sources;
 
       ---------------------------------------
       -- Get_Path_Names_And_Record_Sources --
@@ -792,7 +318,8 @@ package body Prj.Nmsc is
          Source_Recorded : Boolean := False;
 
       begin
-         --  We look in all source directories for this file name
+         --  We look in all source directories for the file names in the
+         --  hash table Source_Names
 
          while Source_Dir /= Nil_String loop
             Source_Recorded := False;
@@ -837,7 +364,7 @@ package body Prj.Nmsc is
 
                      --  Register the source if it is an Ada compilation unit..
 
-                     Record_Source
+                     Record_Ada_Source
                        (File_Name       => Name,
                         Path_Name       => Path,
                         Project         => Project,
@@ -845,7 +372,7 @@ package body Prj.Nmsc is
                         Location        => NL.Location,
                         Current_Source  => Current_Source,
                         Source_Recorded => Source_Recorded,
-                        Trusted_Mode    => Trusted_Mode);
+                        Follow_Links    => Follow_Links);
                   end if;
                end loop;
 
@@ -895,54 +422,13 @@ package body Prj.Nmsc is
         (Path     : String;
          Location : Source_Ptr)
       is
-         File           : Prj.Util.Text_File;
-         Line           : String (1 .. 250);
-         Last           : Natural;
-         Source_Name    : Name_Id;
-
       begin
-         if Current_Verbosity = High then
-            Write_Str  ("Opening """);
-            Write_Str  (Path);
-            Write_Line (""".");
-         end if;
+         --  Get the list of sources from the file and put them in hash table
+         --  Source_Names.
 
-         --  We open the file
+         Get_Sources_From_File (Path, Location, Project);
 
-         Prj.Util.Open (File, Path);
-
-         if not Prj.Util.Is_Valid (File) then
-            Error_Msg (Project, "file does not exist", Location);
-         else
-            Source_Names.Reset;
-
-            while not Prj.Util.End_Of_File (File) loop
-               Prj.Util.Get_Line (File, Line, Last);
-
-               --  If the line is not empty and does not start with "--",
-               --  then it should contain a file name. However, if the
-               --  file name does not exist, it may be for another language
-               --  and we don't fail.
-
-               if Last /= 0
-                 and then (Last = 1 or else Line (1 .. 2) /= "--")
-               then
-                  Name_Len := Last;
-                  Name_Buffer (1 .. Name_Len) := Line (1 .. Last);
-                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-                  Source_Name := Name_Find;
-                  Source_Names.Set
-                    (K => Source_Name,
-                     E =>
-                       (Name     => Source_Name,
-                        Location => Location,
-                        Found    => False));
-               end if;
-            end loop;
-
-            Prj.Util.Close (File);
-
-         end if;
+         --  Look in the source directories to find those sources
 
          Get_Path_Names_And_Record_Sources;
 
@@ -991,7 +477,8 @@ package body Prj.Nmsc is
 
                if Specs then
                   if not Check_Project
-                    (The_Unit_Data.File_Names (Specification).Project)
+                    (The_Unit_Data.File_Names (Specification).Project,
+                     Project, Extending)
                   then
                      Error_Msg
                        (Project,
@@ -1001,7 +488,8 @@ package body Prj.Nmsc is
 
                else
                   if not Check_Project
-                    (The_Unit_Data.File_Names (Com.Body_Part).Project)
+                    (The_Unit_Data.File_Names (Com.Body_Part).Project,
+                     Project, Extending)
                   then
                      Error_Msg
                        (Project,
@@ -1060,8 +548,8 @@ package body Prj.Nmsc is
 
       Check_Naming_Scheme (Data, Project);
 
-      Prepare_Naming_Exceptions (Data.Naming.Bodies, Body_Part);
-      Prepare_Naming_Exceptions (Data.Naming.Specs,  Specification);
+      Prepare_Ada_Naming_Exceptions (Data.Naming.Bodies, Body_Part);
+      Prepare_Ada_Naming_Exceptions (Data.Naming.Specs,  Specification);
 
       --  If we have source directories, then find the sources
 
@@ -1085,6 +573,7 @@ package body Prj.Nmsc is
                            Util.Value_Of
                              (Name_Locally_Removed_Files,
                               Data.Decl.Attributes);
+
 
             begin
                pragma Assert
@@ -1147,7 +636,8 @@ package body Prj.Nmsc is
                      Get_Path_Names_And_Record_Sources;
                   end;
 
-                  --  No source_files specified.
+                  --  No source_files specified
+
                   --  We check Source_List_File has been specified.
 
                elsif not Source_List_File.Default then
@@ -1178,17 +668,17 @@ package body Prj.Nmsc is
 
                else
                   --  Neither Source_Files nor Source_List_File has been
-                  --  specified.
-                  --  Find all the files that satisfy
-                  --  the naming scheme in all the source directories.
+                  --  specified. Find all the files that satisfy the naming
+                  --  scheme in all the source directories.
 
-                  Find_Sources;
+                  Find_Sources (Project, Data, Lang_Ada, Follow_Links);
                end if;
 
                --  If there are sources that are locally removed, mark them as
                --  such in the Units table.
 
                if not Locally_Removed.Default then
+
                   --  Sources can be locally removed only in extending
                   --  project files.
 
@@ -1463,7 +953,8 @@ package body Prj.Nmsc is
                                         (Com.Body_Part).Path /= Slash
                            then
                               if Check_Project
-                                 (The_Unit_Data.File_Names (Body_Part).Project)
+                                (The_Unit_Data.File_Names (Body_Part).Project,
+                                 Project, Extending)
                               then
                                  --  There is a body for this unit.
                                  --  If there is no spec, we need to check
@@ -1515,7 +1006,8 @@ package body Prj.Nmsc is
                                          (Com.Specification).Path /= Slash
                               and then Check_Project
                                          (The_Unit_Data.File_Names
-                                            (Specification).Project)
+                                              (Specification).Project,
+                                          Project, Extending)
 
                            then
                               --  The unit is part of the project, it has
@@ -1546,6 +1038,7 @@ package body Prj.Nmsc is
                   --  Lib_Auto_Init accordingly.
 
                   if Lib_Auto_Init.Default then
+
                      --  If no attribute Library_Auto_Init is declared, then
                      --  set auto init only if it is supported.
 
@@ -1837,34 +1330,11 @@ package body Prj.Nmsc is
 
       --  Put the list of Mains, if any, in the project data
 
-      declare
-         Mains : constant Variable_Value :=
-                   Prj.Util.Value_Of (Name_Main, Data.Decl.Attributes);
-
-      begin
-         Data.Mains := Mains.Values;
-
-         --  If no Mains were specified, and if we are an extending
-         --  project, inherit the Mains from the project we are extending.
-
-         if Mains.Default then
-            if Data.Extends /= No_Project then
-               Data.Mains := Projects.Table (Data.Extends).Mains;
-            end if;
-
-         --  In a library project file, Main cannot be specified
-
-         elsif Data.Library then
-            Error_Msg
-              (Project,
-               "a library project file cannot have Main specified",
-               Mains.Location);
-         end if;
-      end;
+      Get_Mains (Project, Data);
 
       Projects.Table (Project) := Data;
 
-      Free_Naming_Exceptions;
+      Free_Ada_Naming_Exceptions;
    end Ada_Check;
 
    -------------------
@@ -2008,6 +1478,265 @@ package body Prj.Nmsc is
       end if;
    end Check_Ada_Name;
 
+   ----------------------
+   -- Check_For_Source --
+   ----------------------
+
+   procedure Check_For_Source
+     (File_Name        : Name_Id;
+      Path_Name        : Name_Id;
+      Project          : Project_Id;
+      Data             : in out Project_Data;
+      Location         : Source_Ptr;
+      Language         : Other_Programming_Language;
+      Suffix           : String;
+      Naming_Exception : Boolean)
+   is
+      Name : String := Get_Name_String (File_Name);
+      Real_Location : Source_Ptr := Location;
+
+   begin
+      Canonical_Case_File_Name (Name);
+
+      --  A file is a source of a language if Naming_Exception is True (case
+      --  of naming exceptions) or if its file name ends with the suffix.
+
+      if Naming_Exception or else
+        (Name'Length > Suffix'Length and then
+         Name (Name'Last - Suffix'Length + 1 .. Name'Last) = Suffix)
+      then
+         if Real_Location = No_Location then
+            Real_Location := Data.Location;
+         end if;
+
+         declare
+            Path : String := Get_Name_String (Path_Name);
+
+            Path_Id     : Name_Id;
+            --  The path name id (in canonical case)
+
+            File_Id     : Name_Id;
+            --  The file name id (in canonical case)
+
+            Obj_Id      : Name_Id;
+            --  The object file name
+
+            Obj_Path_Id : Name_Id;
+            --  The object path name
+
+            Dep_Id      : Name_Id;
+            --  The dependency file name
+
+            Dep_Path_Id : Name_Id;
+            --  The dependency path name
+
+            Dot_Pos     : Natural := 0;
+            --  Position of the last dot in Name
+
+            Source      : Other_Source;
+            Source_Id   : Other_Source_Id := Data.First_Other_Source;
+
+         begin
+            Canonical_Case_File_Name (Path);
+
+            --  Get the file name id
+
+            Name_Len := Name'Length;
+            Name_Buffer (1 .. Name_Len) := Name;
+            File_Id := Name_Find;
+
+            --  Get the path name id
+
+            Name_Len := Path'Length;
+            Name_Buffer (1 .. Name_Len) := Path;
+            Path_Id := Name_Find;
+
+            --  Find the position of the last dot
+
+            for J in reverse Name'Range loop
+               if Name (J) = '.' then
+                  Dot_Pos := J;
+                  exit;
+               end if;
+            end loop;
+
+            if Dot_Pos <= Name'First then
+               Dot_Pos := Name'Last + 1;
+            end if;
+
+            --  Compute the object file name
+
+            Get_Name_String (File_Id);
+            Name_Len := Dot_Pos - Name'First;
+
+            for J in Object_Suffix'Range loop
+               Name_Len := Name_Len + 1;
+               Name_Buffer (Name_Len) := Object_Suffix (J);
+            end loop;
+
+            Obj_Id := Name_Find;
+
+            --  Compute the object path name
+
+            Get_Name_String (Data.Object_Directory);
+
+            if Name_Buffer (Name_Len) /= Directory_Separator and then
+              Name_Buffer (Name_Len) /= '/'
+            then
+               Name_Len := Name_Len + 1;
+               Name_Buffer (Name_Len) := Directory_Separator;
+            end if;
+
+            Add_Str_To_Name_Buffer (Get_Name_String (Obj_Id));
+            Obj_Path_Id := Name_Find;
+
+            --  Compute the dependency file name
+
+            Get_Name_String (File_Id);
+            Name_Len := Dot_Pos - Name'First + 1;
+            Name_Buffer (Name_Len) := '.';
+            Name_Len := Name_Len + 1;
+            Name_Buffer (Name_Len) := 'd';
+            Dep_Id := Name_Find;
+
+            --  Compute the dependency path name
+
+            Get_Name_String (Data.Object_Directory);
+
+            if Name_Buffer (Name_Len) /= Directory_Separator and then
+              Name_Buffer (Name_Len) /= '/'
+            then
+               Name_Len := Name_Len + 1;
+               Name_Buffer (Name_Len) := Directory_Separator;
+            end if;
+
+            Add_Str_To_Name_Buffer (Get_Name_String (Dep_Id));
+            Dep_Path_Id := Name_Find;
+
+            --  Check if source is already in the list of source for this
+            --  project: it may have already been specified as a naming
+            --  exception for the same language or an other language, or they
+            --  may be two identical file names in different source
+            --  directories.
+
+            while Source_Id /= No_Other_Source loop
+               Source := Other_Sources.Table (Source_Id);
+               Source_Id := Source.Next;
+
+               if Source.File_Name = File_Id then
+                  --  Two sources of different languages cannot have the same
+                  --  file name.
+
+                  if Source.Language /= Language then
+                     Error_Msg_Name_1 := File_Name;
+                     Error_Msg
+                       (Project,
+                        "{ cannot be a source of several languages",
+                        Real_Location);
+                     return;
+
+                  --  No problem if a file has already been specified as
+                  --  a naming exception of this language.
+
+                  elsif Source.Path_Name = Path_Id then
+                     --  Reset the naming exception flag, if this is not a
+                     --  naming exception.
+
+                     if not Naming_Exception then
+                        Other_Sources.Table (Source_Id).Naming_Exception :=
+                          False;
+                     end if;
+
+                     return;
+
+                  --  There are several files with the same names, but the
+                  --  order of the source directories is known (no /**):
+                  --  only the first one encountered is kept, the other ones
+                  --  are ignored.
+
+                  elsif Data.Known_Order_Of_Source_Dirs then
+                     return;
+
+                  --  But it is an error if the order of the source directories
+                  --  is not known.
+
+                  else
+                     Error_Msg_Name_1 := File_Name;
+                     Error_Msg
+                       (Project,
+                        "{ is found in several source directories",
+                        Real_Location);
+                     return;
+                  end if;
+
+               --  Two sources with different file names cannot have the same
+               --  object file name.
+
+               elsif Source.Object_Name = Obj_Id then
+                  Error_Msg_Name_1 := File_Id;
+                  Error_Msg_Name_2 := Source.File_Name;
+                  Error_Msg_Name_3 := Obj_Id;
+                  Error_Msg
+                       (Project,
+                        "{ and { have the same object file {",
+                        Real_Location);
+                     return;
+               end if;
+            end loop;
+
+            if Current_Verbosity = High then
+               Write_Str ("      found ");
+               Write_Str (Lang_Display_Names (Language).all);
+               Write_Str (" source """);
+               Write_Str (Get_Name_String (File_Name));
+               Write_Line ("""");
+               Write_Str ("      object path = ");
+               Write_Line (Get_Name_String (Obj_Path_Id));
+            end if;
+
+            --  Create the Other_Source record
+            Source :=
+              (Language         => Language,
+               File_Name        => File_Id,
+               Path_Name        => Path_Id,
+               Source_TS        => File_Stamp (Path_Id),
+               Object_Name      => Obj_Id,
+               Object_Path      => Obj_Path_Id,
+               Object_TS        => File_Stamp (Obj_Path_Id),
+               Dep_Name         => Dep_Id,
+               Dep_Path         => Dep_Path_Id,
+               Dep_TS           => File_Stamp (Dep_Path_Id),
+               Naming_Exception => Naming_Exception,
+               Next             => No_Other_Source);
+
+            --  And add it to the Other_Sources table
+
+            Other_Sources.Increment_Last;
+            Other_Sources.Table (Other_Sources.Last) := Source;
+
+            --  There are sources of languages other than Ada in this project
+            Data.Sources_Present := True;
+
+            --  And there are sources of this language in this project
+
+            Data.Languages (Language) := True;
+
+            --  Add this source to the list of sources of languages other than
+            --  Ada of the project.
+
+            if Data.First_Other_Source = No_Other_Source then
+               Data.First_Other_Source := Other_Sources.Last;
+
+            else
+               Other_Sources.Table (Data.Last_Other_Source).Next :=
+                 Other_Sources.Last;
+            end if;
+
+            Data.Last_Other_Source  := Other_Sources.Last;
+         end;
+      end if;
+   end Check_For_Source;
+
    -----------------------------
    -- Check_Ada_Naming_Scheme --
    -----------------------------
@@ -2143,6 +1872,381 @@ package body Prj.Nmsc is
       end if;
    end Check_Ada_Naming_Scheme;
 
+   -------------------------
+   -- Check_Naming_Scheme --
+   -------------------------
+
+   procedure Check_Naming_Scheme
+     (Data    : in out Project_Data;
+      Project : Project_Id)
+   is
+      Naming_Id : constant Package_Id :=
+                    Util.Value_Of (Name_Naming, Data.Decl.Packages);
+
+      Naming : Package_Element;
+
+      procedure Check_Unit_Names (List : Array_Element_Id);
+      --  Check that a list of unit names contains only valid names.
+
+      ----------------------
+      -- Check_Unit_Names --
+      ----------------------
+
+      procedure Check_Unit_Names (List : Array_Element_Id) is
+         Current   : Array_Element_Id := List;
+         Element   : Array_Element;
+         Unit_Name : Name_Id;
+
+      begin
+         --  Loop through elements of the string list
+
+         while Current /= No_Array_Element loop
+            Element := Array_Elements.Table (Current);
+
+            --  Put file name in canonical case
+
+            Get_Name_String (Element.Value.Value);
+            Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+            Element.Value.Value := Name_Find;
+
+            --  Check that it contains a valid unit name
+
+            Get_Name_String (Element.Index);
+            Check_Ada_Name (Name_Buffer (1 .. Name_Len), Unit_Name);
+
+            if Unit_Name = No_Name then
+               Err_Vars.Error_Msg_Name_1 := Element.Index;
+               Error_Msg
+                 (Project,
+                  "{ is not a valid unit name.",
+                  Element.Value.Location);
+
+            else
+               if Current_Verbosity = High then
+                  Write_Str ("    Unit (""");
+                  Write_Str (Get_Name_String (Unit_Name));
+                  Write_Line (""")");
+               end if;
+
+               Element.Index := Unit_Name;
+               Array_Elements.Table (Current) := Element;
+            end if;
+
+            Current := Element.Next;
+         end loop;
+      end Check_Unit_Names;
+
+   --  Start of processing for Check_Naming_Scheme
+
+   begin
+      --  If there is a package Naming, we will put in Data.Naming what is in
+      --  this package Naming.
+
+      if Naming_Id /= No_Package then
+         Naming := Packages.Table (Naming_Id);
+
+         if Current_Verbosity = High then
+            Write_Line ("Checking ""Naming"" for Ada.");
+         end if;
+
+         declare
+            Bodies : constant Array_Element_Id :=
+                       Util.Value_Of (Name_Body, Naming.Decl.Arrays);
+
+            Specs : constant Array_Element_Id :=
+                      Util.Value_Of (Name_Spec, Naming.Decl.Arrays);
+
+         begin
+            if Bodies /= No_Array_Element then
+
+               --  We have elements in the array Body_Part
+
+               if Current_Verbosity = High then
+                  Write_Line ("Found Bodies.");
+               end if;
+
+               Data.Naming.Bodies := Bodies;
+               Check_Unit_Names (Bodies);
+
+            else
+               if Current_Verbosity = High then
+                  Write_Line ("No Bodies.");
+               end if;
+            end if;
+
+            if Specs /= No_Array_Element then
+
+               --  We have elements in the array Specs
+
+               if Current_Verbosity = High then
+                  Write_Line ("Found Specs.");
+               end if;
+
+               Data.Naming.Specs := Specs;
+               Check_Unit_Names (Specs);
+
+            else
+               if Current_Verbosity = High then
+                  Write_Line ("No Specs.");
+               end if;
+            end if;
+         end;
+
+         --  We are now checking if variables Dot_Replacement, Casing,
+         --  Spec_Suffix, Body_Suffix and/or Separate_Suffix
+         --  exist.
+
+         --  For each variable, if it does not exist, we do nothing,
+         --  because we already have the default.
+
+         --  Check Dot_Replacement
+
+         declare
+            Dot_Replacement : constant Variable_Value :=
+                                Util.Value_Of
+                                  (Name_Dot_Replacement,
+                                   Naming.Decl.Attributes);
+
+         begin
+            pragma Assert (Dot_Replacement.Kind = Single,
+                           "Dot_Replacement is not a single string");
+
+            if not Dot_Replacement.Default then
+               Get_Name_String (Dot_Replacement.Value);
+
+               if Name_Len = 0 then
+                  Error_Msg
+                    (Project,
+                     "Dot_Replacement cannot be empty",
+                     Dot_Replacement.Location);
+
+               else
+                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                  Data.Naming.Dot_Replacement := Name_Find;
+                  Data.Naming.Dot_Repl_Loc := Dot_Replacement.Location;
+               end if;
+            end if;
+         end;
+
+         if Current_Verbosity = High then
+            Write_Str  ("  Dot_Replacement = """);
+            Write_Str  (Get_Name_String (Data.Naming.Dot_Replacement));
+            Write_Char ('"');
+            Write_Eol;
+         end if;
+
+         --  Check Casing
+
+         declare
+            Casing_String : constant Variable_Value :=
+                              Util.Value_Of
+                                (Name_Casing, Naming.Decl.Attributes);
+
+         begin
+            pragma Assert (Casing_String.Kind = Single,
+                           "Casing is not a single string");
+
+            if not Casing_String.Default then
+               declare
+                  Casing_Image : constant String :=
+                                   Get_Name_String (Casing_String.Value);
+               begin
+                  declare
+                     Casing_Value : constant Casing_Type :=
+                                      Value (Casing_Image);
+                  begin
+                     --  Ignore Casing on platforms where file names are
+                     --  case-insensitive.
+
+                     if not File_Names_Case_Sensitive then
+                        Data.Naming.Casing := All_Lower_Case;
+
+                     else
+                        Data.Naming.Casing := Casing_Value;
+                     end if;
+                  end;
+
+               exception
+                  when Constraint_Error =>
+                     if Casing_Image'Length = 0 then
+                        Error_Msg
+                          (Project,
+                           "Casing cannot be an empty string",
+                           Casing_String.Location);
+
+                     else
+                        Name_Len := Casing_Image'Length;
+                        Name_Buffer (1 .. Name_Len) := Casing_Image;
+                        Err_Vars.Error_Msg_Name_1 := Name_Find;
+                        Error_Msg
+                          (Project,
+                           "{ is not a correct Casing",
+                           Casing_String.Location);
+                     end if;
+               end;
+            end if;
+         end;
+
+         if Current_Verbosity = High then
+            Write_Str  ("  Casing = ");
+            Write_Str  (Image (Data.Naming.Casing));
+            Write_Char ('.');
+            Write_Eol;
+         end if;
+
+         --  Check Spec_Suffix
+
+         declare
+            Ada_Spec_Suffix : constant Variable_Value :=
+                                Prj.Util.Value_Of
+                                 (Index => Name_Ada,
+                                  In_Array => Data.Naming.Spec_Suffix);
+
+         begin
+            if Ada_Spec_Suffix.Kind = Single
+              and then Get_Name_String (Ada_Spec_Suffix.Value) /= ""
+            then
+               Get_Name_String (Ada_Spec_Suffix.Value);
+               Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+               Data.Naming.Current_Spec_Suffix := Name_Find;
+               Data.Naming.Spec_Suffix_Loc := Ada_Spec_Suffix.Location;
+
+            else
+               Data.Naming.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
+            end if;
+         end;
+
+         if Current_Verbosity = High then
+            Write_Str  ("  Spec_Suffix = """);
+            Write_Str  (Get_Name_String (Data.Naming.Current_Spec_Suffix));
+            Write_Char ('"');
+            Write_Eol;
+         end if;
+
+         --  Check Body_Suffix
+
+         declare
+            Ada_Body_Suffix : constant Variable_Value :=
+              Prj.Util.Value_Of
+              (Index => Name_Ada,
+               In_Array => Data.Naming.Body_Suffix);
+
+         begin
+            if Ada_Body_Suffix.Kind = Single
+              and then Get_Name_String (Ada_Body_Suffix.Value) /= ""
+            then
+               Get_Name_String (Ada_Body_Suffix.Value);
+               Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+               Data.Naming.Current_Body_Suffix := Name_Find;
+               Data.Naming.Body_Suffix_Loc := Ada_Body_Suffix.Location;
+
+            else
+               Data.Naming.Current_Body_Suffix := Default_Ada_Body_Suffix;
+            end if;
+         end;
+
+         if Current_Verbosity = High then
+            Write_Str  ("  Body_Suffix = """);
+            Write_Str  (Get_Name_String (Data.Naming.Current_Body_Suffix));
+            Write_Char ('"');
+            Write_Eol;
+         end if;
+
+         --  Check Separate_Suffix
+
+         declare
+            Ada_Sep_Suffix : constant Variable_Value :=
+                               Prj.Util.Value_Of
+                                 (Variable_Name => Name_Separate_Suffix,
+                                  In_Variables  => Naming.Decl.Attributes);
+
+         begin
+            if Ada_Sep_Suffix.Default then
+               Data.Naming.Separate_Suffix :=
+                 Data.Naming.Current_Body_Suffix;
+
+            else
+               Get_Name_String (Ada_Sep_Suffix.Value);
+
+               if Name_Len = 0 then
+                  Error_Msg
+                    (Project,
+                     "Separate_Suffix cannot be empty",
+                     Ada_Sep_Suffix.Location);
+
+               else
+                  Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                  Data.Naming.Separate_Suffix := Name_Find;
+                  Data.Naming.Sep_Suffix_Loc  := Ada_Sep_Suffix.Location;
+               end if;
+            end if;
+         end;
+
+         if Current_Verbosity = High then
+            Write_Str  ("  Separate_Suffix = """);
+            Write_Str  (Get_Name_String (Data.Naming.Separate_Suffix));
+            Write_Char ('"');
+            Write_Eol;
+         end if;
+
+         --  Check if Data.Naming is valid
+
+         Check_Ada_Naming_Scheme (Project, Data.Naming);
+
+      else
+         Data.Naming.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
+         Data.Naming.Current_Body_Suffix := Default_Ada_Body_Suffix;
+         Data.Naming.Separate_Suffix     := Default_Ada_Body_Suffix;
+      end if;
+   end Check_Naming_Scheme;
+
+   -------------------
+   -- Check_Project --
+   -------------------
+
+   function Check_Project
+     (P            : Project_Id;
+      Root_Project : Project_Id;
+      Extending    : Boolean) return Boolean
+   is
+   begin
+      if P = Root_Project then
+         return True;
+
+      elsif Extending then
+         declare
+            Data : Project_Data := Projects.Table (Root_Project);
+
+         begin
+            while Data.Extends /= No_Project loop
+               if P = Data.Extends then
+                  return True;
+               end if;
+
+               Data := Projects.Table (Data.Extends);
+            end loop;
+         end;
+      end if;
+
+      return False;
+   end Check_Project;
+
+   ----------------------------
+   -- Compute_Directory_Last --
+   ----------------------------
+
+   function Compute_Directory_Last (Dir : String) return Natural is
+   begin
+      if Dir'Length > 1
+        and then (Dir (Dir'Last - 1) = Directory_Separator
+                  or else Dir (Dir'Last - 1) = '/')
+      then
+         return Dir'Last - 1;
+      else
+         return Dir'Last;
+      end if;
+   end Compute_Directory_Last;
+
    ---------------
    -- Error_Msg --
    ---------------
@@ -2237,6 +2341,249 @@ package body Prj.Nmsc is
       Error_Report (Error_Buffer (1 .. Error_Last), Project);
    end Error_Msg;
 
+   ------------------
+   -- Find_Sources --
+   ------------------
+
+   procedure Find_Sources
+     (Project      : Project_Id;
+      Data         : in out Project_Data;
+      For_Language : Programming_Language;
+      Follow_Links : Boolean := False)
+   is
+      Source_Dir      : String_List_Id := Data.Source_Dirs;
+      Element         : String_Element;
+      Dir             : Dir_Type;
+      Current_Source  : String_List_Id := Nil_String;
+      Source_Recorded : Boolean := False;
+
+   begin
+      if Current_Verbosity = High then
+         Write_Line ("Looking for sources:");
+      end if;
+
+      --  For each subdirectory
+
+      while Source_Dir /= Nil_String loop
+         begin
+            Source_Recorded := False;
+            Element := String_Elements.Table (Source_Dir);
+            if Element.Value /= No_Name then
+               Get_Name_String (Element.Display_Value);
+
+               declare
+                  Source_Directory : constant String :=
+                    Name_Buffer (1 .. Name_Len) & Directory_Separator;
+                  Dir_Last  : constant Natural :=
+                     Compute_Directory_Last (Source_Directory);
+
+               begin
+                  if Current_Verbosity = High then
+                     Write_Str ("Source_Dir = ");
+                     Write_Line (Source_Directory);
+                  end if;
+
+                  --  We look to every entry in the source directory
+
+                  Open (Dir, Source_Directory
+                               (Source_Directory'First .. Dir_Last));
+
+                  loop
+                     Read (Dir, Name_Buffer, Name_Len);
+
+                     if Current_Verbosity = High then
+                        Write_Str  ("   Checking ");
+                        Write_Line (Name_Buffer (1 .. Name_Len));
+                     end if;
+
+                     exit when Name_Len = 0;
+
+                     declare
+                        File_Name : constant Name_Id := Name_Find;
+                        Path      : constant String :=
+                          Normalize_Pathname
+                            (Name      => Name_Buffer (1 .. Name_Len),
+                             Directory => Source_Directory
+                               (Source_Directory'First .. Dir_Last),
+                             Resolve_Links => Follow_Links,
+                             Case_Sensitive => True);
+                        Path_Name : Name_Id;
+
+                     begin
+                        Name_Len := Path'Length;
+                        Name_Buffer (1 .. Name_Len) := Path;
+                        Path_Name := Name_Find;
+
+                        if For_Language = Lang_Ada then
+                           --  We attempt to register it as a source.
+                           --  However, there is no error if the file
+                           --  does not contain a valid source.
+                           --  But there is an error if we have a
+                           --  duplicate unit name.
+
+                           Record_Ada_Source
+                             (File_Name       => File_Name,
+                              Path_Name       => Path_Name,
+                              Project         => Project,
+                              Data            => Data,
+                              Location        => No_Location,
+                              Current_Source  => Current_Source,
+                              Source_Recorded => Source_Recorded,
+                              Follow_Links    => Follow_Links);
+
+                        else
+                           Check_For_Source
+                             (File_Name        => File_Name,
+                              Path_Name        => Path_Name,
+                              Project          => Project,
+                              Data             => Data,
+                              Location         => No_Location,
+                              Language         => For_Language,
+                              Suffix           =>
+                                Get_Name_String
+                                  (Data.Impl_Suffixes (For_Language)),
+                              Naming_Exception => False);
+                        end if;
+                     end;
+                  end loop;
+
+                  Close (Dir);
+               end;
+            end if;
+
+         exception
+            when Directory_Error =>
+               null;
+         end;
+
+         if Source_Recorded then
+            String_Elements.Table (Source_Dir).Flag := True;
+         end if;
+
+         Source_Dir := Element.Next;
+      end loop;
+
+      if Current_Verbosity = High then
+         Write_Line ("end Looking for sources.");
+      end if;
+
+      if For_Language = Lang_Ada then
+         --  If we have looked for sources and found none, then
+         --  it is an error, except if it is an extending project.
+         --  If a non extending project is not supposed to contain
+         --  any source, then we never call Find_Sources.
+
+         if Current_Source /= Nil_String then
+            Data.Sources_Present := True;
+
+         elsif Data.Extends = No_Project then
+            Error_Msg
+              (Project,
+               "there are no Ada sources in this project",
+               Data.Location);
+         end if;
+      end if;
+   end Find_Sources;
+
+   --------------------------------
+   -- Free_Ada_Naming_Exceptions --
+   --------------------------------
+
+   procedure Free_Ada_Naming_Exceptions is
+   begin
+      Ada_Naming_Exceptions.Reset;
+      Reverse_Ada_Naming_Exceptions.Reset;
+   end Free_Ada_Naming_Exceptions;
+
+   ---------------
+   -- Get_Mains --
+   ---------------
+
+   procedure Get_Mains (Project : Project_Id; Data : in out Project_Data) is
+      Mains : constant Variable_Value :=
+        Prj.Util.Value_Of (Name_Main, Data.Decl.Attributes);
+
+   begin
+      Data.Mains := Mains.Values;
+
+      --  If no Mains were specified, and if we are an extending
+      --  project, inherit the Mains from the project we are extending.
+
+      if Mains.Default then
+         if Data.Extends /= No_Project then
+            Data.Mains := Projects.Table (Data.Extends).Mains;
+         end if;
+
+      --  In a library project file, Main cannot be specified
+
+      elsif Data.Library then
+         Error_Msg
+           (Project,
+            "a library project file cannot have Main specified",
+            Mains.Location);
+      end if;
+   end Get_Mains;
+
+   ---------------------------
+   -- Get_Sources_From_File --
+   ---------------------------
+
+   procedure Get_Sources_From_File
+     (Path     : String;
+      Location : Source_Ptr;
+      Project  : Project_Id)
+   is
+      File           : Prj.Util.Text_File;
+      Line           : String (1 .. 250);
+      Last           : Natural;
+      Source_Name    : Name_Id;
+
+   begin
+      Source_Names.Reset;
+
+      if Current_Verbosity = High then
+         Write_Str  ("Opening """);
+         Write_Str  (Path);
+         Write_Line (""".");
+      end if;
+
+      --  Open the file
+
+      Prj.Util.Open (File, Path);
+
+      if not Prj.Util.Is_Valid (File) then
+         Error_Msg (Project, "file does not exist", Location);
+      else
+         --  Read the lines one by one
+
+         while not Prj.Util.End_Of_File (File) loop
+            Prj.Util.Get_Line (File, Line, Last);
+
+            --  A non empty, non comment line should contain a file name
+
+            if Last /= 0
+              and then (Last = 1 or else Line (1 .. 2) /= "--")
+            then
+               --  ??? we should check that there is no directory information
+
+               Name_Len := Last;
+               Name_Buffer (1 .. Name_Len) := Line (1 .. Last);
+               Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+               Source_Name := Name_Find;
+               Source_Names.Set
+                 (K => Source_Name,
+                  E =>
+                    (Name     => Source_Name,
+                     Location => Location,
+                     Found    => False));
+            end if;
+         end loop;
+
+         Prj.Util.Close (File);
+
+      end if;
+   end Get_Sources_From_File;
+
    --------------
    -- Get_Unit --
    --------------
@@ -2258,7 +2605,7 @@ package body Prj.Nmsc is
       ---------------------
 
       function Check_Exception (Canonical : Name_Id) return Boolean is
-         Info     : Unit_Info := Naming_Exceptions.Get (Canonical);
+         Info     : Unit_Info := Ada_Naming_Exceptions.Get (Canonical);
          VMS_Name : Name_Id;
 
       begin
@@ -2272,7 +2619,7 @@ package body Prj.Nmsc is
                   VMS_Name := Name_Find;
                end if;
 
-               Info := Naming_Exceptions.Get (VMS_Name);
+               Info := Ada_Naming_Exceptions.Get (VMS_Name);
             end if;
 
             if Info = No_Unit then
@@ -2513,6 +2860,15 @@ package body Prj.Nmsc is
 
       end;
    end Get_Unit;
+
+   ----------
+   -- Hash --
+   ----------
+
+   function Hash (Unit : Unit_Info) return Header_Num is
+   begin
+      return Header_Num (Unit.Unit mod 2048);
+   end Hash;
 
    -----------------------
    -- Is_Illegal_Suffix --
@@ -3609,6 +3965,330 @@ package body Prj.Nmsc is
       end if;
    end Locate_Directory;
 
+   ---------------------------
+   -- Other_Languages_Check --
+   ---------------------------
+
+   procedure Other_Languages_Check
+     (Project      : Project_Id;
+      Report_Error : Put_Line_Access) is
+
+      Data         : Project_Data;
+
+      Languages    : Variable_Value := Nil_Variable_Value;
+
+   begin
+      Language_Independent_Check (Project, Report_Error);
+
+      Error_Report := Report_Error;
+
+      Data      := Projects.Table (Project);
+      Languages := Prj.Util.Value_Of (Name_Languages, Data.Decl.Attributes);
+
+      Data.Sources_Present := Data.Source_Dirs /= Nil_String;
+
+      if Data.Sources_Present then
+         --  Check if languages other than Ada are specified in this project
+
+         if Languages.Default then
+            --  Attribute Languages is not specified. So, it defaults to
+            --  a project of language Ada only.
+
+            Data.Languages (Lang_Ada) := True;
+
+            --  No sources of languages other than Ada
+
+            Data.Sources_Present := False;
+
+         else
+            declare
+               Current        : String_List_Id := Languages.Values;
+               Element        : String_Element;
+               OK             : Boolean := False;
+            begin
+               --  Assumethat there is no language other than Ada specified.
+               --  If in fact there is at least one, we will set back
+               --  Sources_Present to True.
+
+               Data.Sources_Present := False;
+
+               --  Look through all the languages specified in attribute
+               --  Languages, if any
+
+               while Current /= Nil_String loop
+                  Element := String_Elements.Table (Current);
+                  Get_Name_String (Element.Value);
+                  To_Lower (Name_Buffer (1 .. Name_Len));
+                  OK := False;
+
+                  --  Check if it is a known language
+
+                  Lang_Loop : for Lang in Programming_Language loop
+                     if
+                       Name_Buffer (1 .. Name_Len) = Lang_Names (Lang).all
+                     then
+                        --  Yes, this is a known language
+
+                        OK := True;
+
+                        --  Indicate the presence of this language
+                        Data.Languages (Lang) := True;
+
+                        --  If it is a language other than Ada, indicate that
+                        --  there should be some sources of a language other
+                        --  than Ada.
+
+                        if Lang /= Lang_Ada then
+                           Data.Sources_Present := True;
+                        end if;
+
+                        exit Lang_Loop;
+                     end if;
+                  end loop Lang_Loop;
+
+                  --  We don't support this language: report an error
+
+                  if not OK then
+                     Error_Msg_Name_1 := Element.Value;
+                     Error_Msg
+                       (Project,
+                        "unknown programming language {",
+                        Element.Location);
+                  end if;
+
+                  Current := Element.Next;
+               end loop;
+            end;
+         end if;
+      end if;
+
+      --  If there may be some sources, look for them
+
+      if Data.Sources_Present then
+         --  Set Source_Present to False. It will be set back to True whenever
+         --  a source is found.
+
+         Data.Sources_Present := False;
+
+         for Lang in Other_Programming_Language loop
+            --  For each language (other than Ada) in the project file
+
+            if Data.Languages (Lang) then
+               --  Reset the indication that there are sources of this
+               --  language. It will be set back to True whenever we find a
+               --  source of the language.
+
+               Data.Languages (Lang) := False;
+
+               --  First, get the source suffix for the language
+
+               Data.Impl_Suffixes (Lang) := Suffix_For (Lang, Data.Naming);
+
+               --  Then, deal with the naming exceptions, if any
+
+               Source_Names.Reset;
+
+               declare
+                  Naming_Exceptions : constant Variable_Value :=
+                    Value_Of
+                      (Index => Lang_Name_Ids (Lang),
+                       In_Array => Data.Naming.Implementation_Exceptions);
+                  Element_Id : String_List_Id;
+                  Element    : String_Element;
+                  File_Id : Name_Id;
+                  Source_Found : Boolean := False;
+               begin
+                  --  If there are naming exceptions, look through them one
+                  --  by one.
+
+                  if Naming_Exceptions /= Nil_Variable_Value then
+                     Element_Id := Naming_Exceptions.Values;
+
+                     while Element_Id /= Nil_String loop
+                        Element := String_Elements.Table (Element_Id);
+                        Get_Name_String (Element.Value);
+                        Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+                        File_Id := Name_Find;
+
+                        --  Put each naming exception in the Source_Names
+                        --  hash table, but if there are repetition, don't
+                        --  bother after the first instance.
+
+                        if Source_Names.Get (File_Id) = No_Name_Location then
+                           Source_Found := True;
+                           Source_Names.Set
+                             (File_Id,
+                              (Name     => File_Id,
+                               Location => Element.Location,
+                               Found    => False));
+                        end if;
+
+                        Element_Id := Element.Next;
+                     end loop;
+
+                     --  If there is at least one naming exception, record
+                     --  those that are found in the source directories.
+
+                     if Source_Found then
+                        Record_Other_Sources
+                          (Project           => Project,
+                           Data              => Data,
+                           Language          => Lang,
+                           Naming_Exceptions => True);
+                     end if;
+
+                  end if;
+               end;
+
+               --  Now, check if a list of sources is declared either through
+               --  a string list (attribute Source_Files) or a text file
+               --  (attribute Source_List_File).
+               --  If a source list is declared, we will consider only those
+               --  naming exceptions that are on the list.
+
+               declare
+                  Sources : constant Variable_Value :=
+                    Util.Value_Of
+                      (Name_Source_Files,
+                       Data.Decl.Attributes);
+
+                  Source_List_File : constant Variable_Value :=
+                    Util.Value_Of
+                      (Name_Source_List_File,
+                       Data.Decl.Attributes);
+
+               begin
+                  pragma Assert
+                    (Sources.Kind = List,
+                     "Source_Files is not a list");
+
+                  pragma Assert
+                    (Source_List_File.Kind = Single,
+                     "Source_List_File is not a single string");
+
+                  if not Sources.Default then
+                     if not Source_List_File.Default then
+                        Error_Msg
+                          (Project,
+                           "?both variables source_files and " &
+                           "source_list_file are present",
+                           Source_List_File.Location);
+                     end if;
+
+                     --  Sources is a list of file names
+
+                     declare
+                        Current        : String_List_Id := Sources.Values;
+                        Element        : String_Element;
+                        Location       : Source_Ptr;
+                        Name           : Name_Id;
+
+                     begin
+                        Source_Names.Reset;
+
+                        --  Put all the sources in the Source_Names hash
+                        --  table.
+
+                        while Current /= Nil_String loop
+                           Element := String_Elements.Table (Current);
+                           Get_Name_String (Element.Value);
+                           Canonical_Case_File_Name
+                             (Name_Buffer (1 .. Name_Len));
+                           Name := Name_Find;
+
+                           --  If the element has no location, then use the
+                           --  location of Sources to report possible errors.
+
+                           if Element.Location = No_Location then
+                              Location := Sources.Location;
+
+                           else
+                              Location := Element.Location;
+                           end if;
+
+                           Source_Names.Set
+                             (K => Name,
+                              E =>
+                                (Name     => Name,
+                                 Location => Location,
+                                 Found    => False));
+
+                           Current := Element.Next;
+                        end loop;
+
+                        --  And look for their directories
+
+                        Record_Other_Sources
+                          (Project           => Project,
+                           Data              => Data,
+                           Language          => Lang,
+                           Naming_Exceptions => False);
+                     end;
+
+                     --  No source_files specified.
+                     --  We check if Source_List_File has been specified.
+
+                  elsif not Source_List_File.Default then
+
+                     --  Source_List_File is the name of the file
+                     --  that contains the source file names
+
+                     declare
+                        Source_File_Path_Name : constant String :=
+                          Path_Name_Of
+                            (Source_List_File.Value,
+                             Data.Directory);
+
+                     begin
+                        if Source_File_Path_Name'Length = 0 then
+                           Err_Vars.Error_Msg_Name_1 := Source_List_File.Value;
+                           Error_Msg
+                             (Project,
+                              "file with sources { does not exist",
+                              Source_List_File.Location);
+
+                        else
+                           --  Read the file, putting each source in the
+                           --  Source_Names hash table.
+
+                           Get_Sources_From_File
+                             (Source_File_Path_Name,
+                              Source_List_File.Location,
+                              Project);
+
+                           --  And look for their directories.
+
+                           Record_Other_Sources
+                             (Project           => Project,
+                              Data              => Data,
+                              Language          => Lang,
+                              Naming_Exceptions => False);
+                        end if;
+                     end;
+
+                  else
+                     --  Neither Source_Files nor Source_List_File has been
+                     --  specified. Find all the files that satisfy
+                     --  the naming scheme in all the source directories.
+                     --  All the naming exceptions that effectively exist are
+                     --  also part of the source of this language.
+
+                     Find_Sources (Project, Data, Lang);
+                  end if;
+
+               end;
+            end if;
+         end loop;
+      end if;
+
+      --  Finally, get the mains, if any
+
+      Get_Mains (Project, Data);
+
+      Projects.Table (Project) := Data;
+
+   end Other_Languages_Check;
+
    ------------------
    -- Path_Name_Of --
    ------------------
@@ -3634,6 +4314,36 @@ package body Prj.Nmsc is
       end if;
    end Path_Name_Of;
 
+   -------------------------------
+   -- Prepare_Ada_Naming_Exceptions --
+   -------------------------------
+
+   procedure Prepare_Ada_Naming_Exceptions
+     (List : Array_Element_Id;
+      Kind : Spec_Or_Body)
+   is
+      Current : Array_Element_Id := List;
+      Element : Array_Element;
+
+   begin
+      --  Traverse the list
+
+      while Current /= No_Array_Element loop
+         Element := Array_Elements.Table (Current);
+
+         if Element.Index /= No_Name then
+            Ada_Naming_Exceptions.Set
+              (Element.Value.Value,
+               (Kind => Kind, Unit => Element.Index));
+            Reverse_Ada_Naming_Exceptions.Set
+              ((Kind => Kind, Unit => Element.Index),
+               Element.Value.Value);
+         end if;
+
+         Current := Element.Next;
+      end loop;
+   end Prepare_Ada_Naming_Exceptions;
+
    ---------------------
    -- Project_Extends --
    ---------------------
@@ -3656,11 +4366,11 @@ package body Prj.Nmsc is
       end loop;
    end Project_Extends;
 
-   -------------------
-   -- Record_Source --
-   -------------------
+   -----------------------
+   -- Record_Ada_Source --
+   -----------------------
 
-   procedure Record_Source
+   procedure Record_Ada_Source
      (File_Name       : Name_Id;
       Path_Name       : Name_Id;
       Project         : Project_Id;
@@ -3668,7 +4378,7 @@ package body Prj.Nmsc is
       Location        : Source_Ptr;
       Current_Source  : in out String_List_Id;
       Source_Recorded : in out Boolean;
-      Trusted_Mode    : Boolean)
+      Follow_Links    : Boolean)
    is
       Canonical_File_Name : Name_Id;
       Canonical_Path_Name : Name_Id;
@@ -3691,7 +4401,7 @@ package body Prj.Nmsc is
          Canonical_Path : constant String :=
                             Normalize_Pathname
                               (Get_Name_String (Path_Name),
-                               Resolve_Links => not Trusted_Mode,
+                               Resolve_Links => Follow_Links,
                                Case_Sensitive => False);
       begin
          Name_Len := 0;
@@ -3722,7 +4432,7 @@ package body Prj.Nmsc is
 
          if not Needs_Pragma then
             Except_Name :=
-              Reverse_Naming_Exceptions.Get ((Unit_Kind, Unit_Name));
+              Reverse_Ada_Naming_Exceptions.Get ((Unit_Kind, Unit_Name));
 
             if Except_Name /= No_Name then
                if Current_Verbosity = High then
@@ -3881,7 +4591,180 @@ package body Prj.Nmsc is
             end if;
          end;
       end if;
-   end Record_Source;
+   end Record_Ada_Source;
+
+   --------------------------
+   -- Record_Other_Sources --
+   --------------------------
+
+   procedure Record_Other_Sources
+     (Project           : Project_Id;
+      Data              : in out Project_Data;
+      Language          : Programming_Language;
+      Naming_Exceptions : Boolean)
+   is
+      Source_Dir : String_List_Id := Data.Source_Dirs;
+      Element    : String_Element;
+      Path       : Name_Id;
+
+      Dir      : Dir_Type;
+      Canonical_Name : Name_Id;
+      Name_Str : String (1 .. 1_024);
+      Last     : Natural := 0;
+      NL       : Name_Location;
+
+      First_Error : Boolean := True;
+
+      Suffix : constant String :=
+        Get_Name_String (Data.Impl_Suffixes (Language));
+
+   begin
+      while Source_Dir /= Nil_String loop
+         Element := String_Elements.Table (Source_Dir);
+
+         declare
+            Dir_Path : constant String := Get_Name_String (Element.Value);
+         begin
+            if Current_Verbosity = High then
+               Write_Str ("checking directory """);
+               Write_Str (Dir_Path);
+               Write_Str (""" for ");
+
+               if Naming_Exceptions then
+                  Write_Str ("naming exceptions");
+
+               else
+                  Write_Str ("sources");
+               end if;
+
+               Write_Str (" of Language ");
+               Write_Line (Lang_Display_Names (Language).all);
+            end if;
+
+            Open (Dir, Dir_Path);
+
+            loop
+               Read (Dir, Name_Str, Last);
+               exit when Last = 0;
+
+               if Is_Regular_File
+                 (Dir_Path & Directory_Separator & Name_Str (1 .. Last))
+               then
+                  Name_Len := Last;
+                  Name_Buffer (1 .. Name_Len) := Name_Str (1 .. Last);
+                  Canonical_Name := Name_Find;
+                  NL := Source_Names.Get (Canonical_Name);
+
+                  if NL /= No_Name_Location then
+                     if NL.Found then
+                        if not Data.Known_Order_Of_Source_Dirs then
+                           Error_Msg_Name_1 := Canonical_Name;
+                           Error_Msg
+                             (Project,
+                              "{ is found in several source directories",
+                              NL.Location);
+                        end if;
+
+                     else
+                        NL.Found := True;
+                        Source_Names.Set (Canonical_Name, NL);
+                        Name_Len := Dir_Path'Length;
+                        Name_Buffer (1 .. Name_Len) := Dir_Path;
+                        Add_Char_To_Name_Buffer (Directory_Separator);
+                        Add_Str_To_Name_Buffer (Name_Str (1 .. Last));
+                        Path := Name_Find;
+
+                        Check_For_Source
+                          (File_Name        => Canonical_Name,
+                           Path_Name        => Path,
+                           Project          => Project,
+                           Data             => Data,
+                           Location         => NL.Location,
+                           Language         => Language,
+                           Suffix           => Suffix,
+                           Naming_Exception => Naming_Exceptions);
+                     end if;
+                  end if;
+               end if;
+            end loop;
+
+            Close (Dir);
+         end;
+
+         Source_Dir := Element.Next;
+      end loop;
+
+      if not Naming_Exceptions then
+
+         NL := Source_Names.Get_First;
+
+         --  It is an error if a source file name in a source list or
+         --  in a source list file is not found.
+
+         while NL /= No_Name_Location loop
+            if not NL.Found then
+               Err_Vars.Error_Msg_Name_1 := NL.Name;
+
+               if First_Error then
+                  Error_Msg
+                    (Project,
+                     "source file { cannot be found",
+                     NL.Location);
+                  First_Error := False;
+
+               else
+                  Error_Msg
+                    (Project,
+                     "\source file { cannot be found",
+                     NL.Location);
+               end if;
+            end if;
+
+            NL := Source_Names.Get_Next;
+         end loop;
+
+         --  Any naming exception of this language that is not in a list
+         --  of sources must be removed.
+
+         declare
+            Source_Id : Other_Source_Id := Data.First_Other_Source;
+            Prev_Id   : Other_Source_Id := No_Other_Source;
+            Source    : Other_Source;
+         begin
+            while Source_Id /= No_Other_Source loop
+               Source := Other_Sources.Table (Source_Id);
+
+               if Source.Language = Language
+                 and then Source.Naming_Exception
+               then
+                  if Current_Verbosity = High then
+                     Write_Str ("Naming exception """);
+                     Write_Str (Get_Name_String (Source.File_Name));
+                     Write_Str (""" is not in the list of sources,");
+                     Write_Line (" so it is removed.");
+                  end if;
+
+                  if Prev_Id = No_Other_Source then
+                     Data.First_Other_Source := Source.Next;
+
+                  else
+                     Other_Sources.Table (Prev_Id).Next := Source.Next;
+                  end if;
+
+                  Source_Id := Source.Next;
+
+                  if Source_Id = No_Other_Source then
+                     Data.Last_Other_Source := Prev_Id;
+                  end if;
+
+               else
+                  Prev_Id := Source_Id;
+                  Source_Id := Source.Next;
+               end if;
+            end loop;
+         end;
+      end if;
+   end Record_Other_Sources;
 
    ----------------------
    -- Show_Source_Dirs --
@@ -3903,5 +4786,35 @@ package body Prj.Nmsc is
 
       Write_Line ("end Source_Dirs.");
    end Show_Source_Dirs;
+
+   ----------------
+   -- Suffix_For --
+   ----------------
+
+   function Suffix_For
+     (Language : Programming_Language;
+      Naming   : Naming_Data) return Name_Id
+   is
+      Suffix : constant Variable_Value :=
+        Value_Of
+          (Index => Lang_Name_Ids (Language),
+           In_Array => Naming.Body_Suffix);
+   begin
+      --  If no suffix for this language is found in package Naming, use the
+      --  default.
+
+      if Suffix = Nil_Variable_Value then
+         Name_Len := 0;
+         Add_Str_To_Name_Buffer (Lang_Suffixes (Language).all);
+
+      --  Otherwise use the one specified
+
+      else
+         Get_Name_String (Suffix.Value);
+      end if;
+
+      Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
+      return Name_Find;
+   end Suffix_For;
 
 end Prj.Nmsc;

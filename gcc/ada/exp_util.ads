@@ -490,12 +490,13 @@ package Exp_Util is
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean;
    --  Determines if the given type, Typ, may require a large temporary
-   --  of the type that causes trouble if stack checking is enabled. The
-   --  result is True only if stack checking is enabled and the size of
-   --  the type is known at compile time and large, where large is defined
-   --  hueristically by the body of this routine. The purpose of this
-   --  routine is to help avoid generating troublesome temporaries that
-   --  intefere with the stack checking mechanism.
+   --  of the kind that causes back-end trouble if stack checking is enabled.
+   --  The result is True only the size of the type is known at compile time
+   --  and large, where large is defined heuristically by the body of this
+   --  routine. The purpose of this routine is to help avoid generating
+   --  troublesome temporaries that interfere with stack checking mechanism.
+   --  Note that the caller has to check whether stack checking is actually
+   --  enabled in order to guide the expansion (typically of a function call).
 
    procedure Remove_Side_Effects
      (Exp          : Node_Id;
@@ -505,14 +506,14 @@ package Exp_Util is
    --  if necessary by an equivalent subexpression that is guaranteed to be
    --  side effect free. This is done by extracting any actions that could
    --  cause side effects, and inserting them using Insert_Actions into the
-   --  tree to which Exp is attached. Exp must be analayzed and resolved
+   --  tree to which Exp is attached. Exp must be analyzed and resolved
    --  before the call and is analyzed and resolved on return. The Name_Req
    --  may only be set to True if Exp has the form of a name, and the
    --  effect is to guarantee that any replacement maintains the form of a
    --  name. If Variable_Ref is set to TRUE, a variable is considered as a
    --  side effect (used in implementing Force_Evaluation). Note: after a
-   --  call to Remove_Side_Effects, it is safe to use a call to
-   --  New_Copy_Tree to obtain a copy of the resulting expression.
+   --  call to Remove_Side_Effects, it is safe to call New_Copy_Tree to
+   --  obtain a copy of the resulting expression.
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean;
    --  Given the node for an N_Unchecked_Type_Conversion, return True

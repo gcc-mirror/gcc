@@ -190,15 +190,6 @@ package body MLib.Tgt is
       return No_Name;
    end Library_File_Name_For;
 
-   --------------------------------
-   -- Linker_Library_Path_Option --
-   --------------------------------
-
-   function Linker_Library_Path_Option return String_Access is
-   begin
-      return null;
-   end Linker_Library_Path_Option;
-
    ----------------
    -- Object_Ext --
    ----------------

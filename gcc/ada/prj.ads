@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -66,6 +66,103 @@ package Prj is
 
    Slash : Name_Id;
    --  "/", used as the path of locally removed files
+
+   type Languages_Processed is (Ada_Language, Other_Languages);
+   --  To specify how to process project files
+
+   type Programming_Language is
+     (Lang_Ada, Lang_C, Lang_C_Plus_Plus, Lang_Fortran);
+   --  The list of language supported
+
+   subtype Other_Programming_Language is
+      Programming_Language range Lang_C .. Programming_Language'Last;
+   type Languages_In_Project is array (Programming_Language) of Boolean;
+   No_Languages : constant Languages_In_Project := (others => False);
+
+   type Impl_Suffix_Array is array (Programming_Language) of Name_Id;
+   No_Impl_Suffixes : constant Impl_Suffix_Array := (others => No_Name);
+
+   Lang_Ada_Name         : aliased String := "ada";
+   Lang_C_Name           : aliased String := "c";
+   Lang_C_Plus_Plus_Name : aliased String := "c++";
+   Lang_Fortran_Name     : aliased String := "for";
+   Lang_Names : constant array (Programming_Language) of String_Access :=
+     (Lang_Ada         => Lang_Ada_Name        'Access,
+      Lang_C           => Lang_C_Name          'Access,
+      Lang_C_Plus_Plus => Lang_C_Plus_Plus_Name'Access,
+      Lang_Fortran     => Lang_Fortran_Name'Access);
+   --  Names of the supported programming languages, to be used after switch
+   --  -x when using a GCC compiler.
+
+   Lang_Name_Ids : array (Programming_Language) of Name_Id;
+   --  Initialized by Prj.Initialize
+
+   Lang_Ada_Display_Name         : aliased String := "Ada";
+   Lang_C_Display_Name           : aliased String := "C";
+   Lang_C_Plus_Plus_Display_Name : aliased String := "C++";
+   Lang_Fortran_Display_Name     : aliased String := "Fortran";
+   Lang_Display_Names :
+     constant array (Programming_Language) of String_Access :=
+       (Lang_Ada         => Lang_Ada_Display_Name        'Access,
+        Lang_C           => Lang_C_Display_Name          'Access,
+        Lang_C_Plus_Plus => Lang_C_Plus_Plus_Display_Name'Access,
+        Lang_Fortran     => Lang_Fortran_Display_Name'Access);
+   --  Names of the supported programming languages, to be used for display
+   --  purposes.
+
+   Ada_Impl_Suffix         : aliased String := ".adb";
+   C_Impl_Suffix           : aliased String := ".c";
+   C_Plus_Plus_Impl_Suffix : aliased String := ".cc";
+   Fortran_Impl_Suffix     : aliased String := ".for";
+   Lang_Suffixes : constant array (Programming_Language) of String_Access :=
+     (Lang_Ada         => Ada_Impl_Suffix        'Access,
+      Lang_C           => C_Impl_Suffix          'Access,
+      Lang_C_Plus_Plus => C_Plus_Plus_Impl_Suffix'Access,
+      Lang_Fortran     => Fortran_Impl_Suffix'Access);
+   --  Default extension of the sources of the different languages.
+
+   Lang_Suffix_Ids : array (Programming_Language) of Name_Id;
+   --  Initialized by Prj.Initialize
+
+   Gnatmake_String    : aliased String := "gnatmake";
+   Gcc_String         : aliased String := "gcc";
+   G_Plus_Plus_String : aliased String := "g++";
+   G77_String         : aliased String := "g77";
+   Default_Compiler_Names  :
+     constant array (Programming_Language) of String_Access :=
+     (Lang_Ada         => Gnatmake_String   'Access,
+      Lang_C           => Gcc_String        'Access,
+      Lang_C_Plus_Plus => G_Plus_Plus_String'Access,
+      Lang_Fortran     => G77_String        'Access);
+   --  Default names of the compilers for the supported languages.
+   --  Used when no IDE'Compiler_Command is specified for a language.
+   --  For Ada, specify the gnatmake executable.
+
+   type Other_Source_Id is new Nat;
+   No_Other_Source : constant Other_Source_Id := 0;
+   type Other_Source is record
+      Language         : Programming_Language; --  language of the source
+      File_Name        : Name_Id;              --  source file simple name
+      Path_Name        : Name_Id;              --  source full path name
+      Source_TS        : Time_Stamp_Type;      --  source file time stamp
+      Object_Name      : Name_Id;              --  object file simple name
+      Object_Path      : Name_Id;              --  object full path name
+      Object_TS        : Time_Stamp_Type;      --  object file time stamp
+      Dep_Name         : Name_Id;              --  dependency file simple name
+      Dep_Path         : Name_Id;              --  dependency full path name
+      Dep_TS           : Time_Stamp_Type;      --  dependency file time stamp
+      Naming_Exception : Boolean := False;     --  True if a naming exception
+      Next             : Other_Source_Id := No_Other_Source;
+   end record;
+
+   package Other_Sources is new Table.Table
+     (Table_Component_Type => Other_Source,
+      Table_Index_Type     => Other_Source_Id,
+      Table_Low_Bound      => 1,
+      Table_Initial        => 200,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Other_Sources");
+   --  The table for sources of languages other than Ada
 
    type Verbosity is (Default, Medium, High);
    --  Verbosity when parsing GNAT Project Files
@@ -347,6 +444,12 @@ package Prj is
    --  The following record describes a project file representation
 
    type Project_Data is record
+      Languages : Languages_In_Project := No_Languages;
+      --  Indicate the different languages of the source of this project
+
+      Impl_Suffixes : Impl_Suffix_Array := No_Impl_Suffixes;
+      --  The source suffixes of the different languages other than Ada
+
       First_Referred_By  : Project_Id := No_Project;
       --  The project, if any, that was the first to be known
       --  as importing or extending this project.
@@ -446,6 +549,22 @@ package Prj is
       Sources : String_List_Id := Nil_String;
       --  The list of all the source file names.
       --  Set by Prj.Nmsc.Check_Naming_Scheme.
+
+      First_Other_Source : Other_Source_Id := No_Other_Source;
+      Last_Other_Source  : Other_Source_Id := No_Other_Source;
+      --  Head and tail of the list of sources of languages other than Ada
+
+      Imported_Directories_Switches : Argument_List_Access := null;
+      --  List of the -I switches to be used when compiling sources of
+      --  languages other than Ada.
+
+      Include_Path : String_Access := null;
+      --  Value to be used as CPATH, when using a GCC, instead of a list of
+      --  -I switches.
+
+      Include_Data_Set : Boolean := False;
+      --  Set to True when Imported_Directories_Switches or Include_Path are
+      --  set.
 
       Source_Dirs : String_List_Id := Nil_String;
       --  The list of all the source directories.

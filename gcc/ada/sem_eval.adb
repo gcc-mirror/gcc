@@ -1954,6 +1954,7 @@ package body Sem_Eval is
          if Nkind (Operand) = N_Raise_Constraint_Error then
             Set_Raises_Constraint_Error (N);
          end if;
+
          return;
       end if;
 

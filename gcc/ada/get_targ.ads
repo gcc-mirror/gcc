@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -80,9 +80,6 @@ pragma Preelaborate (Get_Targ);
 
    function Get_Maximum_Alignment return Pos;
    pragma Import (C, Get_Maximum_Alignment, "get_target_maximum_alignment");
-
-   function Get_No_Dollar_In_Label return Boolean;
-   pragma Import (C, Get_No_Dollar_In_Label, "get_target_no_dollar_in_label");
 
    function Get_Float_Words_BE return Nat;
    pragma Import (C, Get_Float_Words_BE, "get_float_words_be");

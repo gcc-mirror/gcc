@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -214,7 +214,7 @@ package body Exp_Intr is
       Nam : Name_Id;
 
    begin
-      --  If the intrinsic subprogram is generic, gets its original name.
+      --  If the intrinsic subprogram is generic, gets its original name
 
       if Present (Parent (E))
         and then Present (Generic_Parent (Parent (E)))

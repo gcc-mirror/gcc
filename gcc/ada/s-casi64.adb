@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2002 Free Software Foundation, Inc.            --
+--          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,6 +34,12 @@
 with Unchecked_Conversion;
 
 package body System.Compare_Array_Signed_64 is
+
+   function "+" (Left, Right : Address) return Address;
+   pragma Import (Intrinsic, "+");
+   --  Provide addition operation on type Address (this may not be directly
+   --  available if type System.Address is non-private and the operations on
+   --  the type are made abstract to hide them from public users of System.
 
    type Word is range -2**63 .. 2**63 - 1;
    for Word'Size use 64;

@@ -278,7 +278,7 @@ procedure GNATCmd is
       There_Are_Libraries : in out Boolean)
    is
       Path_Option : constant String_Access :=
-                      MLib.Tgt.Linker_Library_Path_Option;
+                      MLib.Linker_Library_Path_Option;
 
    begin
       --  Case of library project
@@ -936,7 +936,7 @@ begin
             declare
                There_Are_Libraries  : Boolean := False;
                Path_Option : constant String_Access :=
-                               MLib.Tgt.Linker_Library_Path_Option;
+                               MLib.Linker_Library_Path_Option;
 
             begin
                Library_Paths.Set_Last (0);

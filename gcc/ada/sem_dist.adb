@@ -151,47 +151,6 @@ package body Sem_Dist is
       return End_String;
    end Full_Qualified_Name;
 
-   -----------------------
-   -- Get_Subprogram_Id --
-   -----------------------
-
-   function Get_Subprogram_Id (E : Entity_Id) return Int is
-      Current_Declaration : Node_Id;
-      Result              : Int := 0;
-
-   begin
-      pragma Assert
-        (Is_Remote_Call_Interface (Scope (E))
-           and then
-             (Nkind (Parent (E)) = N_Procedure_Specification
-                or else
-              Nkind (Parent (E)) = N_Function_Specification));
-
-      Current_Declaration :=
-        First (Visible_Declarations
-          (Package_Specification_Of_Scope (Scope (E))));
-
-      while Current_Declaration /= Empty loop
-         if Nkind (Current_Declaration) = N_Subprogram_Declaration
-           and then Comes_From_Source (Current_Declaration)
-         then
-            if Defining_Unit_Name
-                 (Specification (Current_Declaration)) = E
-            then
-               return Result;
-            end if;
-
-            Result := Result + 1;
-         end if;
-
-         Next (Current_Declaration);
-      end loop;
-
-      --  Error if we do not find it
-
-      raise Program_Error;
-   end Get_Subprogram_Id;
-
    ------------------------
    -- Is_All_Remote_Call --
    ------------------------
@@ -334,7 +293,6 @@ package body Sem_Dist is
       RS_Pkg_E              : Entity_Id;
       RAS_Type              : Entity_Id;
       Async_E               : Entity_Id;
-      Subp_Id               : Int;
       Attribute_Subp        : Entity_Id;
       Parameter             : Node_Id;
 
@@ -373,8 +331,6 @@ package body Sem_Dist is
       RS_Pkg_Specif := Parent (Remote_Subp_Decl);
       RS_Pkg_E := Defining_Entity (RS_Pkg_Specif);
 
-      Subp_Id := Get_Subprogram_Id (Remote_Subp);
-
       if Ekind (Remote_Subp) = E_Procedure
         and then Is_Asynchronous (Remote_Subp)
       then
@@ -392,7 +348,7 @@ package body Sem_Dist is
             New_List (
               Parameter,
               Make_String_Literal (Loc, Full_Qualified_Name (RS_Pkg_E)),
-              Make_Integer_Literal (Loc, Subp_Id),
+              Build_Subprogram_Id (Loc, Remote_Subp),
               New_Occurrence_Of (Async_E, Loc)));
 
       Rewrite (N, Tick_Access_Conv_Call);

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2003 Free Software Foundation, Inc.           --
+--           Copyright (C) 2003-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -277,15 +277,6 @@ package body MLib.Tgt is
          end;
       end if;
    end Library_File_Name_For;
-
-   --------------------------------
-   -- Linker_Library_Path_Option --
-   --------------------------------
-
-   function Linker_Library_Path_Option return String_Access is
-   begin
-      return new String'("-Wl,-R,");
-   end Linker_Library_Path_Option;
 
    ----------------
    -- Object_Ext --

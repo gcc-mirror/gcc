@@ -308,9 +308,6 @@ package body MLib.Prj is
       Libdecgnat_Needed : Boolean := False;
       --  On OpenVMS, set to True if library needs to be linked with libdecgnat
 
-      Check_Libdecgnat : Boolean := Hostparm.OpenVMS;
-      --  Set to False if package Dec is part of the library sources.
-
       Data : Project_Data := Projects.Table (For_Project);
 
       Object_Directory_Path : constant String :=
@@ -375,8 +372,7 @@ package body MLib.Prj is
       --  to link with -lgnarl (this is the case when there is a dependency
       --  on s-osinte.ads). On OpenVMS, set Libdecgnat_Needed if the ALI file
       --  indicates that there is a need to link with -ldecgnat (this is the
-      --  case when there is a dependency on dec.ads, except when it is the
-      --  DEC library, the one that contains package DEC).
+      --  case when there is a dependency on dec.ads).
 
       procedure Process (The_ALI : File_Name_Type);
       --  Check if the closure of a library unit which is or should be in the
@@ -509,16 +505,8 @@ package body MLib.Prj is
          Id       : ALI.ALI_Id;
 
       begin
-         --  On OpenVMS, if we have package DEC, it means this is the DEC lib:
-         --  no need to link with itself.
-
-         if Check_Libdecgnat and then ALI_File = "dec.ali" then
-            Check_Libdecgnat := False;
-            Libdecgnat_Needed := False;
-         end if;
-
          if not Libgnarl_Needed or
-           (Check_Libdecgnat and then (not Libdecgnat_Needed))
+           (Hostparm.OpenVMS and then (not Libdecgnat_Needed))
          then
             --  Scan the ALI file
 
@@ -535,7 +523,7 @@ package body MLib.Prj is
                           Read_Lines => "D");
             Free (Text);
 
-            --  Look for s-osinte.ads and dec.ads in the dependencies
+            --  Look for s-osinte.ads in the dependencies
 
             for Index in ALI.ALIs.Table (Id).First_Sdep ..
                          ALI.ALIs.Table (Id).Last_Sdep
@@ -543,7 +531,7 @@ package body MLib.Prj is
                if ALI.Sdep.Table (Index).Sfile = S_Osinte_Ads then
                   Libgnarl_Needed := True;
 
-               elsif Check_Libdecgnat and then
+               elsif Hostparm.OpenVMS and then
                      ALI.Sdep.Table (Index).Sfile = S_Dec_Ads
                then
                   Libdecgnat_Needed := True;
@@ -1950,10 +1938,7 @@ package body MLib.Prj is
       end if;
 
       Status := fclose (Fd);
-
-      --  It is safe to ignore any error when closing, because the file was
-      --  only opened for reading.
-
+      --  Is it really right to ignore any close error ???
    end Process_Binder_File;
 
    ------------------

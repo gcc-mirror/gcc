@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/Or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -102,9 +102,8 @@ package body System.Aux_DEC is
    function "-" (Left : Address; Right : Address) return Integer is
       pragma Unsuppress (All_Checks);
       --  Because this can raise Constraint_Error for 64-bit addresses
-
    begin
-      return Integer (From_A (Left - Right));
+      return Integer (From_A (Left) - From_A (Right));
    end "-";
 
    function "-" (Left : Address; Right : Integer) return Address is
@@ -120,7 +119,6 @@ package body System.Aux_DEC is
       type T_Ptr is access all Target;
       function To_T_Ptr is new Unchecked_Conversion (Address, T_Ptr);
       Ptr : constant T_Ptr := To_T_Ptr (A);
-
    begin
       return Ptr.all;
    end Fetch_From_Address;
@@ -133,7 +131,6 @@ package body System.Aux_DEC is
       type T_Ptr is access all Target;
       function To_T_Ptr is new Unchecked_Conversion (Address, T_Ptr);
       Ptr : constant T_Ptr := To_T_Ptr (A);
-
    begin
       Ptr.all := T;
    end Assign_To_Address;

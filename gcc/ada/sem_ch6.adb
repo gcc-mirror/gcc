@@ -4881,15 +4881,94 @@ package body Sem_Ch6 is
                  Parameter_Type (Param_Spec), Formal_Type);
             end if;
 
+            --  Ada 0Y (AI-231): Create and decorate an internal subtype
+            --  declaration corresponding to the null-excluding type of the
+            --  formal in the enclosing scope. In addition, replace the
+            --  parameter type of the formal to this internal subtype.
+
+            if Null_Exclusion_Present (Param_Spec) then
+               declare
+                  Loc   : constant Source_Ptr := Sloc (Param_Spec);
+
+                  Anon  : constant Entity_Id :=
+                            Make_Defining_Identifier (Loc,
+                              Chars => New_Internal_Name ('S'));
+
+                  Curr_Scope : constant Scope_Stack_Entry :=
+                                 Scope_Stack.Table (Scope_Stack.Last);
+
+                  Ptype : constant Node_Id := Parameter_Type (Param_Spec);
+                  Decl  : Node_Id;
+                  P     : Node_Id := Parent (Parent (Related_Nod));
+
+               begin
+                  Set_Is_Internal (Anon);
+
+                  Decl :=
+                    Make_Subtype_Declaration (Loc,
+                      Defining_Identifier      => Anon,
+                        Null_Exclusion_Present => True,
+                        Subtype_Indication     =>
+                          New_Occurrence_Of (Etype (Ptype), Loc));
+
+                  --  Propagate the null-excluding attribute to the new entity
+
+                  if Null_Exclusion_Present (Param_Spec) then
+                     Set_Null_Exclusion_Present (Param_Spec, False);
+                     Set_Can_Never_Be_Null (Anon);
+                  end if;
+
+                  Mark_Rewrite_Insertion (Decl);
+
+                  --  Insert the new declaration in the nearest enclosing scope
+
+                  while not Has_Declarations (P) loop
+                     P := Parent (P);
+                  end loop;
+
+                  Prepend (Decl, Declarations (P));
+
+                  Rewrite (Ptype, New_Occurrence_Of (Anon, Loc));
+                  Mark_Rewrite_Insertion (Ptype);
+
+                  --  Analyze the new declaration in the context of the
+                  --  enclosing scope
+
+                  Scope_Stack.Decrement_Last;
+                  Analyze (Decl);
+                  Scope_Stack.Append (Curr_Scope);
+
+                  Formal_Type := Anon;
+               end;
+            end if;
+
+            --  Ada 0Y (AI-231): Static checks
+
+            if Null_Exclusion_Present (Param_Spec)
+              or else Can_Never_Be_Null (Entity (Ptype))
+            then
+               Null_Exclusion_Static_Checks (Param_Spec);
+            end if;
+
          --  An access formal type
 
          else
             Formal_Type :=
               Access_Definition (Related_Nod, Parameter_Type (Param_Spec));
+
+            --  Ada 0Y (AI-254)
+
+            if Present (Access_To_Subprogram_Definition
+                         (Parameter_Type (Param_Spec)))
+              and then Protected_Present (Access_To_Subprogram_Definition
+                                           (Parameter_Type (Param_Spec)))
+            then
+               Formal_Type :=
+                 Replace_Anonymous_Access_To_Protected_Subprogram (Param_Spec);
+            end if;
          end if;
 
          Set_Etype (Formal, Formal_Type);
-
          Default := Expression (Param_Spec);
 
          if Present (Default) then
@@ -4948,19 +5027,6 @@ package body Sem_Ch6 is
 
                   Apply_Scalar_Range_Check (Default, Formal_Type);
                end if;
-
-            end if;
-
-            --  Ada 0Y (AI-231): Static checks
-
-            Ptype := Parameter_Type (Param_Spec);
-
-            if Extensions_Allowed
-              and then Nkind (Ptype) /= N_Access_Definition
-              and then (Null_Exclusion_Present (Parent (Formal))
-                        or else Can_Never_Be_Null (Entity (Ptype)))
-            then
-               Null_Exclusion_Static_Checks (Param_Spec);
             end if;
          end if;
 
@@ -5010,7 +5076,6 @@ package body Sem_Ch6 is
       T              : Entity_Id;
       First_Stmt     : Node_Id := Empty;
       AS_Needed      : Boolean;
-      Null_Exclusion : Boolean := False;
 
    begin
       --  If this is an emtpy initialization procedure, no need to create
@@ -5065,17 +5130,6 @@ package body Sem_Ch6 is
          then
             AS_Needed := True;
 
-         --  Ada 0Y (AI-231)
-
-         elsif Extensions_Allowed
-           and then Is_Access_Type (T)
-           and then Null_Exclusion_Present (Parent (Formal))
-           and then Nkind (Parameter_Type (Parent (Formal)))
-                    /= N_Access_Definition
-         then
-            AS_Needed      := True;
-            Null_Exclusion := True;
-
          --  All other cases do not need an actual subtype
 
          else
@@ -5086,40 +5140,7 @@ package body Sem_Ch6 is
          --  unconstrained discriminated records.
 
          if AS_Needed then
-
-            --  Ada 0Y (AI-231): Generate actual null-excluding subtype
-
-            if Extensions_Allowed
-              and then Null_Exclusion
-            then
-               declare
-                  Loc      : constant Source_Ptr := Sloc (Formal);
-                  Anon     : constant Entity_Id :=
-                               Make_Defining_Identifier (Loc,
-                                 New_Internal_Name ('S'));
-                  Ptype    : constant Node_Id
-                               := Parameter_Type (Parent (Formal));
-               begin
-                  --  T == Etype (Formal)
-                  Set_Is_Internal (Anon);
-                  Decl :=
-                    Make_Subtype_Declaration (Loc,
-                      Defining_Identifier      => Anon,
-                        Null_Exclusion_Present => True,
-                        Subtype_Indication     =>
-                          New_Occurrence_Of (Etype (Ptype), Loc));
-                  Mark_Rewrite_Insertion (Decl);
-                  Prepend (Decl, Declarations (Parent (N)));
-
-                  Rewrite (Ptype, New_Occurrence_Of (Anon, Loc));
-                  Mark_Rewrite_Insertion (Ptype);
-                  --   Set_Scope (Anon, Scope (Scope (Formal)));
-
-                  Set_Etype (Formal, Anon);
-                  Set_Null_Exclusion_Present (Parent (Formal), False);
-               end;
-
-            elsif Nkind (N) = N_Accept_Statement then
+            if Nkind (N) = N_Accept_Statement then
 
                --  If expansion is active, The formal is replaced by a local
                --  variable that renames the corresponding entry of the
@@ -5151,17 +5172,10 @@ package body Sem_Ch6 is
                Mark_Rewrite_Insertion (Decl);
             end if;
 
-            Analyze (Decl);
+            --  The declaration uses the bounds of an existing object,
+            --  and therefore needs no constraint checks.
 
-            --  Ada 0Y (AI-231): Previous analysis leaves the entity of the
-            --  null-excluding subtype declaration associated with the internal
-            --  scope; because this declaration has been inserted before the
-            --  subprogram we associate it now with the enclosing scope.
-
-            if Null_Exclusion then
-               Set_Scope (Defining_Identifier (Decl),
-                          Scope (Scope (Formal)));
-            end if;
+            Analyze (Decl, Suppress => All_Checks);
 
             --  We need to freeze manually the generated type when it is
             --  inserted anywhere else than in a declarative part.

@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2002-2003, Ada Core Technologies, Inc.           --
+--           Copyright (C) 2002-2004, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -307,15 +307,6 @@ package body MLib.Tgt is
          end;
       end if;
    end Library_File_Name_For;
-
-   --------------------------------
-   -- Linker_Library_Path_Option --
-   --------------------------------
-
-   function Linker_Library_Path_Option return String_Access is
-   begin
-      return null;
-   end Linker_Library_Path_Option;
 
    ----------------
    -- Object_Ext --

@@ -945,6 +945,16 @@ package body Lib is
         (Option => S, Unit => Current_Sem_Unit);
    end Store_Linker_Option_String;
 
+   -------------------------------
+   -- Synchronize_Serial_Number --
+   -------------------------------
+
+   procedure Synchronize_Serial_Number is
+      TSN : Int renames Units.Table (Current_Sem_Unit).Serial_Number;
+   begin
+      TSN := TSN + 1;
+   end Synchronize_Serial_Number;
+
    ---------------
    -- Tree_Read --
    ---------------

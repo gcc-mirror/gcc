@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1999-2003, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1999-2004, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,6 +25,7 @@
 ------------------------------------------------------------------------------
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Interfaces.C.Strings;
 
 with Hostparm;
 with Opt;
@@ -39,6 +40,9 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with System;
 
 package body MLib is
+
+   pragma Linker_Options ("link.o");
+   --  For run_path_option string.
 
    -------------------
    -- Build_Library --
@@ -285,13 +289,34 @@ package body MLib is
       end if;
    end Copy_ALI_Files;
 
+   --------------------------------
+   -- Linker_Library_Path_Option --
+   --------------------------------
+
+   function Linker_Library_Path_Option return String_Access is
+
+      Run_Path_Option_Ptr : Interfaces.C.Strings.chars_ptr;
+      pragma Import (C, Run_Path_Option_Ptr, "run_path_option");
+      --  Pointer to string representing the native linker option which
+      --  specifies the path where the dynamic loader should find shared
+      --  libraries. Equal to null string if this system doesn't support it.
+
+      S : constant String := Interfaces.C.Strings.Value (Run_Path_Option_Ptr);
+
+   begin
+      if S'Length = 0 then
+         return null;
+      else
+         return new String'(S);
+      end if;
+   end Linker_Library_Path_Option;
+
 --  Package elaboration
 
 begin
+   --  Copy_Attributes always fails on VMS
+
    if Hostparm.OpenVMS then
-
-      --  Copy_Attributes always fails on VMS
-
       Preserve := None;
    end if;
 end MLib;

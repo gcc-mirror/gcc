@@ -42,6 +42,7 @@ with Ada.Command_Line;     use Ada.Command_Line;
 with Ada.Exceptions;       use Ada.Exceptions;
 with GNAT.OS_Lib;          use GNAT.OS_Lib;
 with Interfaces.C_Streams; use Interfaces.C_Streams;
+with Interfaces.C.Strings; use Interfaces.C.Strings;
 with System.CRTL;
 
 procedure Gnatlink is
@@ -121,8 +122,6 @@ procedure Gnatlink is
    --  This table collects the arguments to be passed to compile the binder
    --  generated file.
 
-   subtype chars_ptr is System.Address;
-
    Gcc : String_Access := Program_Name ("gcc");
 
    Read_Mode  : constant String := "r" & ASCII.Nul;
@@ -183,9 +182,6 @@ procedure Gnatlink is
 
    procedure Process_Binder_File (Name : in String);
    --  Reads the binder file and extracts linker arguments.
-
-   function Value (chars : chars_ptr) return String;
-   --  Return NUL-terminated string chars as an Ada string.
 
    procedure Write_Header;
    --  Show user the program name, version and copyright.
@@ -652,18 +648,18 @@ procedure Gnatlink is
       RB_Nlast     : Integer;             -- Slice last index
       RB_Nfirst    : Integer;             -- Slice first index
 
-      Run_Path_Option_Ptr : Address;
+      Run_Path_Option_Ptr : Interfaces.C.Strings.chars_ptr;
       pragma Import (C, Run_Path_Option_Ptr, "run_path_option");
       --  Pointer to string representing the native linker option which
       --  specifies the path where the dynamic loader should find shared
       --  libraries. Equal to null string if this system doesn't support it.
 
-      Object_Library_Ext_Ptr : Address;
+      Object_Library_Ext_Ptr : Interfaces.C.Strings.chars_ptr;
       pragma Import (C, Object_Library_Ext_Ptr, "object_library_extension");
       --  Pointer to string specifying the default extension for
       --  object libraries, e.g. Unix uses ".a", VMS uses ".olb".
 
-      Object_File_Option_Ptr : Address;
+      Object_File_Option_Ptr : Interfaces.C.Strings.chars_ptr;
       pragma Import (C, Object_File_Option_Ptr, "object_file_option");
       --  Pointer to a string representing the linker option which specifies
       --  the response file.
@@ -1246,31 +1242,6 @@ procedure Gnatlink is
 
       Status := fclose (Fd);
    end Process_Binder_File;
-
-   -----------
-   -- Value --
-   -----------
-
-   function Value (chars : chars_ptr) return String is
-      function Strlen (chars : chars_ptr) return Natural;
-      pragma Import (C, Strlen);
-
-   begin
-      if chars = Null_Address then
-         return "";
-
-      else
-         declare
-            subtype Result_Type is String (1 .. Strlen (chars));
-
-            Result : Result_Type;
-            for Result'Address use chars;
-
-         begin
-            return Result;
-         end;
-      end if;
-   end Value;
 
    ------------------
    -- Write_Header --

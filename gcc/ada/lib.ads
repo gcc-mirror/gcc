@@ -527,6 +527,15 @@ package Lib is
    --  Increment Serial_Number field for current unit, and return the
    --  incremented value.
 
+   procedure Synchronize_Serial_Number;
+   --  This function increments the Serial_Number field for the current
+   --  unit but does not return the incremented value. This is used when
+   --  there is a situation where one path of control increments a serial
+   --  number (using Increment_Serial_Number), and the other path does not
+   --  and it is important to keep the serial numbers synchronized in the
+   --  two cases (e.g. when the references in a package and a client must
+   --  be kept consistent).
+
    procedure Replace_Linker_Option_String
      (S : String_Id; Match_String : String);
    --  Replace an existing Linker_Option if the prefix Match_String

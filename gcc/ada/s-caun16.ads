@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2002 Free Software Foundation, Inc.            --
+--          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,7 @@ package System.Compare_Array_Unsigned_16 is
      (Left      : System.Address;
       Right     : System.Address;
       Left_Len  : Natural;
-      Right_Len : Natural)
-      return      Integer;
+      Right_Len : Natural) return Integer;
    --  Compare the array starting at address Left of length Left_Len
    --  with the array starting at address Right of length Right_Len.
    --  The comparison is in the normal Ada semantic sense of array

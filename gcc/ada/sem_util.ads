@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -357,6 +357,9 @@ package Sem_Util is
    --  Task_Body_Procedure field from the corresponding task type
    --  declaration.
 
+   function Has_Declarations (N : Node_Id) return Boolean;
+   --  Determines if the node can have declarations
+
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
    --  infinities. Returns False if E is not a floating-point type.
@@ -468,8 +471,8 @@ package Sem_Util is
    --  an lvalue, but it can answer True when N is not an lvalue. An lvalue is
    --  defined as any expression which appears in a context where a name is
    --  required by the syntax, and the identity, rather than merely the value
-   --  of the node is needed (for example, the prefix of an attribute is in
-   --  this category).
+   --  of the node is needed (for example, the prefix of an Access attribute
+   --  is in this category).
 
    function Is_Library_Level_Entity (E : Entity_Id) return Boolean;
    --  A library-level declaration is one that is accessible from Standard,

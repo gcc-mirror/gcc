@@ -7,7 +7,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2003, Ada Core Technologies, Inc.             --
+--           Copyright (C) 2003-2004, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,14 +31,16 @@
 --  This is the AIX version of the body.
 
 with Ada.Strings.Fixed; use Ada.Strings.Fixed;
-with Ada.Text_IO; use Ada.Text_IO;
+with GNAT.OS_Lib;       use GNAT.OS_Lib;
+
 with MLib.Fil;
 with MLib.Utl;
-with Namet;  use Namet;
-with Osint;  use Osint;
+with Namet;    use Namet;
+with Osint;    use Osint;
 with Opt;
-with Output; use Output;
+with Output;   use Output;
 with Prj.Com;
+with Prj.Util; use Prj.Util;
 
 package body MLib.Tgt is
 
@@ -172,14 +174,13 @@ package body MLib.Tgt is
 
             if Thread_Options = null then
                declare
-                  File : Ada.Text_IO.File_Type;
+                  File : Text_File;
                   Line : String (1 .. 100);
                   Last : Natural;
 
                begin
                   Open
-                    (File, In_File,
-                     Include_Dir_Default_Prefix & "/s-osinte.ads");
+                    (File, Include_Dir_Default_Prefix & "/s-osinte.ads");
 
                   while not End_Of_File (File) loop
                      Get_Line (File, Line, Last);
@@ -297,10 +298,12 @@ package body MLib.Tgt is
 
       else
          declare
-            Lib_Dir : constant String :=
-              Get_Name_String (Projects.Table (Project).Library_Dir);
+            Lib_Dir  : constant String :=
+                         Get_Name_String
+                           (Projects.Table (Project).Library_Dir);
             Lib_Name : constant String :=
-              Get_Name_String (Projects.Table (Project).Library_Name);
+                         Get_Name_String
+                           (Projects.Table (Project).Library_Name);
 
          begin
             if Projects.Table (Project).Library_Kind = Static then
@@ -348,18 +351,6 @@ package body MLib.Tgt is
          end;
       end if;
    end Library_File_Name_For;
-
-   --------------------------------
-   -- Linker_Library_Path_Option --
-   --------------------------------
-
-   function Linker_Library_Path_Option return String_Access is
-   begin
-      --  On AIX, any path specify with an -L switch is automatically added
-      --  to the library path. So, nothing is needed here.
-
-      return null;
-   end Linker_Library_Path_Option;
 
    ----------------
    -- Object_Ext --

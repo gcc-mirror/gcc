@@ -3056,10 +3056,7 @@ package body Exp_Util is
 
    function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
    begin
-      if not Stack_Checking_Enabled then
-         return False;
-
-      elsif not Size_Known_At_Compile_Time (Typ) then
+      if not Size_Known_At_Compile_Time (Typ) then
          return False;
 
       elsif Esize (Typ) /= 0 and then Esize (Typ) <= 256 then
@@ -3785,7 +3782,9 @@ package body Exp_Util is
       --  in stack checking mode.
 
       elsif Size_Known_At_Compile_Time (Otyp)
-        and then not May_Generate_Large_Temp (Otyp)
+        and then
+          (not Stack_Checking_Enabled
+             or else not May_Generate_Large_Temp (Otyp))
         and then not (Is_Record_Type (Otyp) and then not Is_Constrained (Otyp))
       then
          return True;

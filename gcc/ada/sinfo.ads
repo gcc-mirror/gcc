@@ -2705,6 +2705,9 @@ package Sinfo is
 
       --  ACCESS_DEFINITION ::=
       --    [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
+      --  | ACCESS_TO_SUBPROGRAM_DEFINITION
+
+      --  Note: access to subprograms are an Ada 0Y (AI-254) extension
 
       --  N_Access_Definition
       --  Sloc points to ACCESS
@@ -2712,6 +2715,7 @@ package Sinfo is
       --  All_Present (Flag15)
       --  Constant_Present (Flag17)
       --  Subtype_Mark (Node4)
+      --  Access_To_Subprogram_Definition (Node3) (set to Empty if not present)
 
       -----------------------------------------
       -- 3.10.1  Incomplete Type Declaration --
@@ -4242,7 +4246,7 @@ package Sinfo is
 
       --  PRIVATE_TYPE_DECLARATION ::=
       --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART]
-      --      is [abstract] tagged] [limited] private;
+      --      is [[abstract] tagged] [limited] private;
 
       --  Note: TAGGED is not permitted in Ada 83 mode
 
@@ -6929,6 +6933,9 @@ package Sinfo is
    function Access_Definition
      (N : Node_Id) return Node_Id;    -- Node3
 
+   function Access_To_Subprogram_Definition
+     (N : Node_Id) return Node_Id;    -- Node3
+
    function Access_Types_To_Process
      (N : Node_Id) return Elist_Id;   -- Elist2
 
@@ -7719,6 +7726,9 @@ package Sinfo is
      (N : Node_Id; Val : Node_Id);            -- Node2
 
    procedure Set_Access_Definition
+     (N : Node_Id; Val : Node_Id);            -- Node3
+
+   procedure Set_Access_To_Subprogram_Definition
      (N : Node_Id; Val : Node_Id);            -- Node3
 
    procedure Set_Access_Types_To_Process
@@ -8514,6 +8524,7 @@ package Sinfo is
    pragma Inline (Accept_Handler_Records);
    pragma Inline (Accept_Statement);
    pragma Inline (Access_Definition);
+   pragma Inline (Access_To_Subprogram_Definition);
    pragma Inline (Access_Types_To_Process);
    pragma Inline (Actions);
    pragma Inline (Activation_Chain_Entity);
@@ -8775,6 +8786,7 @@ package Sinfo is
    pragma Inline (Set_Accept_Handler_Records);
    pragma Inline (Set_Accept_Statement);
    pragma Inline (Set_Access_Definition);
+   pragma Inline (Set_Access_To_Subprogram_Definition);
    pragma Inline (Set_Access_Types_To_Process);
    pragma Inline (Set_Actions);
    pragma Inline (Set_Activation_Chain_Entity);

@@ -557,8 +557,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       --  variable, then the caller can change it to an appropriate missing
       --  begin message if indeed the BEGIN is missing.
 
-      function P_Access_Definition                    return Node_Id;
-      function P_Access_Type_Definition               return Node_Id;
       function P_Array_Type_Definition                return Node_Id;
       function P_Basic_Declarative_Items              return List_Id;
       function P_Constraint_Opt                       return Node_Id;
@@ -575,6 +573,17 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Subtype_Mark                         return Node_Id;
       function P_Subtype_Mark_Resync                  return Node_Id;
       function P_Unknown_Discriminant_Part_Opt        return Boolean;
+
+      function P_Access_Definition
+        (Null_Exclusion_Present : Boolean) return Node_Id;
+      --  Ada 0Y (AI-231/AI-254): The caller parses the null-exclusion part
+      --  and indicates if it was present
+
+      function P_Access_Type_Definition
+        (Header_Already_Parsed : Boolean := False) return Node_Id;
+      --  Ada 0Y (AI-254): The formal is used to indicate if the caller has
+      --  parsed the null_exclusion part. In this case the caller has also
+      --  removed the ACCESS token
 
       procedure P_Component_Items (Decls : List_Id);
       --  Scan out one or more component items and append them to the
@@ -1267,7 +1276,6 @@ begin
                                        Operating_Mode;
 
                Save_Style_Check : constant Boolean := Style_Check;
-
 
             begin
                Operating_Mode := Check_Syntax;
