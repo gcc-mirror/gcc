@@ -1,3 +1,10 @@
+2004-10-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/16007
+	* doc/install.texi (*-*-solaris2*): Mention potential problem
+	with Sun assembler + GNU linker and C++ programs.
+	Document status of binutils 2.15 release.
+
 2004-10-06  Jan Hubicka  <jh@suse.cz>
 
 	* cse.c (cse_main): Kill push/pop context.
