@@ -344,6 +344,13 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
+/* The configure machinery invokes the assembler without options, which is
+   not how gcc invokes it.  Without options, the multi-target assembler
+   will probably be found, which is ELF by default.  To counter that, we
+   need to override ELF auto-host.h config stuff which we know collides
+   with a.out.  */
+#undef HAVE_GAS_HIDDEN
+
 
 /* Node: Alignment Output */
 

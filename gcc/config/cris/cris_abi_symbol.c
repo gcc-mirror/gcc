@@ -2,7 +2,7 @@
    Contributed by Axis Communications.
    Written by Hans-Peter Nilsson <hp@axis.se>, c:a 1992.
 
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -37,7 +37,8 @@ Boston, MA 02111-1307, USA.
    the executable file or object might be covered by the GNU General
    Public License.  */
 
-#include "config.h"
+#include "tconfig.h"
+#include "tm.h"
 
 #ifdef __AOUT__
 
