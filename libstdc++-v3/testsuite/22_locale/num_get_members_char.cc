@@ -1,6 +1,6 @@
 // 2001-11-21 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation
+// Copyright (C) 2001-2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -235,10 +235,39 @@ void test01()
 #endif
 }
 
+// 2002-01-10  David Seymour  <seymour_dj@yahoo.com>
+void test02()
+{
+  using namespace std;
+  bool test = true;
+
+  // Num_get works with other iterators besides streambuf output iterators
+  typedef string::const_iterator iter_type;
+  typedef num_get<char, iter_type> num_get_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  ios_base::iostate err = ios_base::goodbit;
+  const locale loc_c = locale::classic();
+
+  long i = 0;
+  const string str = "20000106 Elizabeth Durack";
+  istringstream iss; // need an ios, add my num_get facet
+  iss.imbue(locale(loc_c, new num_get_type));
+
+  // Iterator advanced, state, output.
+  const num_get_type& ng = use_facet<num_get_type>(iss.getloc());
+  iter_type end = ng.get(str.begin(), str.end(), iss, err, i);
+  string rem(end, str.end());
+
+  VERIFY( err == goodbit );
+  VERIFY( i == 20000106);
+  VERIFY( rem == " Elizabeth Durack" );
+}
 
 int main()
 {
   test01();
+  test02();
   return 0;
 }
 

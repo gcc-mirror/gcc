@@ -1,3 +1,11 @@
+2002-01-10  David Seymour  <seymour_dj@yahoo.com>
+
+	* include/bits/locale_facets.h (num_get<>): Return advanced iterator
+	for _M_extract_float and _M_extract_int
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float)
+	(num_get<>::_M_extract_int): Likewise, all callers changed
+	* testsuite/22_locale/num_get_members_char.cc: Testcase
+
 2002-01-09  Paolo Carlini <pcarlini@unitus.it>
 
         * libsupc++/exception (bad_exception): Add comment.
