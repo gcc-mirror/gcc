@@ -1098,6 +1098,10 @@ expand_call (exp, target, ignore)
 #ifdef REG_PARM_STACK_SPACE
       args_size.constant = MAX (args_size.constant,
 				reg_parm_stack_space);
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+      if (reg_parm_stack_space == 0)
+	args_size.constant = 0;
+#endif
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
       args_size.constant -= reg_parm_stack_space;
 #endif
