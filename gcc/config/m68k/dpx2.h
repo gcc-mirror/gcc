@@ -59,7 +59,7 @@
 #undef DO_GLOBAL_CTORS_BODY		/* don't use svr3.h version */
 #undef DO_GLOBAL_DTORS_BODY
 
-
+#if 0 /* Should be no need now that svr3.h defines BSS_SECTION_FUNCTION.  */
 /* 
  * svr3.h says to use BSS_SECTION_FUNCTION
  * but no one appears to, and there is
@@ -72,6 +72,7 @@
   INIT_SECTION_FUNCTION			\
   FINI_SECTION_FUNCTION
 #endif
+#endif /* 0 */
 
 #ifndef USE_GAS
 /*
