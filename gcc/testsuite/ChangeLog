@@ -1,3 +1,8 @@
+2004-01-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13883
+	* g++.dg/template/ctor3.C: New test.
+
 2004-01-28  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc.dg/proto-qual-1.m (ROUND, aligned_sizeof): New.

@@ -1,3 +1,9 @@
+2004-01-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13883
+	* mangle.c (write_encoding): Correct encoding of member template
+	constructors.
+
 2004-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13791

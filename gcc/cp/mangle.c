@@ -688,18 +688,25 @@ write_encoding (const tree decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       tree fn_type;
+      tree d;
 
       if (decl_is_template_id (decl, NULL))
-	fn_type = get_mostly_instantiated_function_type (decl);
+	{
+	  fn_type = get_mostly_instantiated_function_type (decl);
+	  d = NULL_TREE;
+	}
       else
-	fn_type = TREE_TYPE (decl);
+	{
+	  fn_type = TREE_TYPE (decl);
+	  d = decl;
+	}
 
       write_bare_function_type (fn_type, 
 				(!DECL_CONSTRUCTOR_P (decl)
 				 && !DECL_DESTRUCTOR_P (decl)
 				 && !DECL_CONV_FN_P (decl)
 				 && decl_is_template_id (decl, NULL)),
-				decl);
+				d);
     }
 }
 
