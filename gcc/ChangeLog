@@ -1,3 +1,8 @@
+2000-08-16  Niibe Yutaka  <gniibe@m17n.org>, Kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* config/sh/lib1funcs.asm (GLOBAL): Define.  Use for all
+	references to GLOBAL symbols.  Use LOCAL where appropriate.
+
 2000-08-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (*-ibm-aix4.[12]*): Delete test for gnu ld.  Always
