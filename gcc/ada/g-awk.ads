@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
---              Copyright (C) 2000 Ada Core Technologies, Inc.              --
+--           Copyright (C) 2000-2001 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -297,6 +297,7 @@ package GNAT.AWK is
    function Number_Of_Fields
      (Session : Session_Type := Current_Session)
       return    Count;
+   pragma Inline (Number_Of_Fields);
    --  Returns the number of fields in the current record. It returns 0 when
    --  no file is being processed.
 
@@ -309,6 +310,7 @@ package GNAT.AWK is
    function Number_Of_File_Lines
      (Session : Session_Type := Current_Session)
       return    Count;
+   pragma Inline (Number_Of_File_Lines);
    --  Returns the current line number in the processed file. It returns 0 when
    --  no file is being processed.
 
@@ -320,6 +322,7 @@ package GNAT.AWK is
    function Number_Of_Lines
      (Session : Session_Type := Current_Session)
       return    Count;
+   pragma Inline (Number_Of_Lines);
    --  Returns the number of line processed until now. This is equal to number
    --  of line in each already processed file plus FNR. It returns 0 when
    --  no file is being processed.
@@ -333,6 +336,7 @@ package GNAT.AWK is
    function Number_Of_Files
      (Session : Session_Type := Current_Session)
       return    Natural;
+   pragma Inline (Number_Of_Files);
    --  Returns the number of files associated with Session. This is the total
    --  number of files added with Add_File and Add_Files services.
 
@@ -523,10 +527,10 @@ package GNAT.AWK is
    --  This procedure can be used from a subprogram called by procedure Parse
    --  or by an instantiation of For_Every_Line (see below).
 
-
    function End_Of_Data
      (Session : Session_Type := Current_Session)
       return    Boolean;
+   pragma Inline (End_Of_Data);
    --  Returns True if there is no more data to be processed in Session. It
    --  means that the latest session's file is being processed and that
    --  there is no more data to be read in this file (End_Of_File is True).
@@ -534,6 +538,7 @@ package GNAT.AWK is
    function End_Of_File
      (Session : Session_Type := Current_Session)
       return    Boolean;
+   pragma Inline (End_Of_File);
    --  Returns True when there is no more data to be processed on the current
    --  session's file.
 
@@ -569,13 +574,6 @@ package GNAT.AWK is
    --  open.
 
 private
-   pragma Inline (End_Of_File);
-   pragma Inline (End_Of_Data);
-   pragma Inline (Number_Of_Fields);
-   pragma Inline (Number_Of_Lines);
-   pragma Inline (Number_Of_Files);
-   pragma Inline (Number_Of_File_Lines);
-
    type Session_Data;
    type Session_Data_Access is access Session_Data;
 
