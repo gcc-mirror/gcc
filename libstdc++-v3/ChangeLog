@@ -1,3 +1,12 @@
+2004-07-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/locale/cons/12658_thread.cc: Move/rename
+	to 12658_thread-1.cc and xfail.
+	* testsuite/22_locale/locale/cons/12658_thread-2.c: New, much
+	simpler version of 12658_thread-1.cc, still failing on 3_3 and
+	not failing on 3_4/mainline - both on single processor and
+	multiprocessor machines.
+
 2004-07-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/abi.html: Remove non-public qualification.

@@ -29,23 +29,16 @@ const int max_thread_count = 20;
 //const int max_loop_count = 1000000; // orig value
 const int max_loop_count = 100000;
 const int max_locales = 10;
- 
+std::locale loc[max_locales];
+
 void* thread_main(void*)
 {
   try
     {
-      std::locale loc_c = std::locale::classic();
-      std::locale loc[max_locales];
-      for (int j = 0; j < max_locales; ++j)
-	loc[j] = std::locale(j % 2 ? "en_US" : "fr_FR");
-      
       for (int i = 0; i < max_loop_count; ++i)
 	{
 	  int k = i % max_locales;
-	  loc[k] = std::locale::global(loc[k]);
-	  
-	  if (i % 37 == 0)
-	    loc[k] = loc[k].combine<std::ctype<char> >(loc_c);
+	  std::locale::global(loc[k]);
 	}
     }
   catch (...) { }
@@ -57,11 +50,14 @@ main()
 {
   pthread_t tid[max_thread_count];
   
+  for (int j = 0; j < max_locales; ++j)
+    loc[j] = std::locale(j % 2 ? "en_US" : "fr_FR");  
+
   for (int i = 0; i < max_thread_count; i++)
-    pthread_create (&tid[i], NULL, thread_main, 0);
+    pthread_create(&tid[i], NULL, thread_main, 0);
   
   for (int i = 0; i < max_thread_count; i++)
-    pthread_join (tid[i], NULL);
+    pthread_join(tid[i], NULL);
 
   return 0;
 }
