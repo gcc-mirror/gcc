@@ -57,7 +57,19 @@
 	* aclocal.m4: Regenerate.
 	* configure: Likewise.
 
-2002-03-20  Paolo Carlini  <pcarlini@unitus.it>
+2002-03-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS): Define
+	GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS to set LIBUNWIND_FLAG if
+	--enable-libunwind-exceptions is set.
+	* configure.in (GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS): Call new
+	macro to check for libunwind.
+	* configure: Regenerate.	
+	* src/Makefile.am (libstdc___la_LDFLAGS): Add
+	LIBUNWIND_FLAG to libstdc link line.
+	* src/Makefile.in: Regenerate.
+
+2002-03-18  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc
 	(money_put::do_put(long double)): Fix dimensioning of
@@ -69,6 +81,12 @@
 
 	* include/bits/locale_facets.tcc
 	(collate::do_transform): Simplify.
+
+2002-03-18  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCPP_CONFIGURE):  Make indentation/spacing uniform.
+	* configure.in:  Add comments pointing the way for autoconf 2.5x.
+	* aclocal.m4, config.h.in, configure:  Regenerate.
 
 2002-03-18  Philipp Thomas  <pthomas@suse.de>
 

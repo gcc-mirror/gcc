@@ -28,17 +28,11 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
 noinst_LTLIBRARIES = libmath.la
 
-EXTRA_LONG_DOUBLE_yes = signbitl.c
-
-EXTRA_DIST = $(EXTRA_LONG_DOUBLE_yes) 
-
-libmath_la_LIBADD = \
-	@LIBMATHOBJS@ \
-	$(EXTRA_LONG_DOUBLE_$(USE_COMPLEX_LONG_DOUBLE)) 
+libmath_la_LIBADD = @LIBMATHOBJS@ 
 
 libmath_la_DEPENDENCIES = $(libmath_la_LIBADD)
 
-libmath_la_SOURCES = signbit.c signbitf.c stubs.c
+libmath_la_SOURCES = stubs.c
 
 LINK = \
 	$(LIBTOOL) --tag CC --mode=link "$(CCLD)" \

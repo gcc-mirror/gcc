@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,12 +31,11 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-// Note: This is not a conforming implementation.
-
-#ifndef _CPP_CSETJMP
-#define _CPP_CSETJMP 1
+#ifndef _CSETJMP
+#define _CSETJMP 1
 
 #pragma GCC system_header
-#include <setjmp.h>
+
+#include_next <setjmp.h>
 
 #endif

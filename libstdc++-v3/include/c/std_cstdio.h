@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,12 +31,11 @@
 // ISO C++ 14882: 27.8.2  C Library files
 //
 
-// Note: This is not a conforming implementation.
-
-#ifndef _CPP_CSTDIO
-#define _CPP_CSTDIO 1
+#ifndef _CSTDIO
+#define _CSTDIO 1
 
 #pragma GCC system_header
-#include <stdio.h>
+
+#include_next <stdio.h>
 
 #endif

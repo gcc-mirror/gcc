@@ -15,9 +15,6 @@
 // Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
 #undef _GLIBCPP_USE_C99
 
-// Include support for shadow headers, ie --enable-cshadow-headers.
-#undef _GLIBCPP_USE_SHADOW_HEADERS
-
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCPP_USE_WCHAR_T
 
@@ -93,6 +90,15 @@
 // Define if LC_MESSAGES is available in <locale.h>.
 #undef HAVE_LC_MESSAGES
 
+/* Define if you have the __signbit function.  */
+#undef HAVE___SIGNBIT
+
+/* Define if you have the __signbitf function.  */
+#undef HAVE___SIGNBITF
+
+/* Define if you have the __signbitl function.  */
+#undef HAVE___SIGNBITL
+
 /* Define if you have the _acosf function.  */
 #undef HAVE__ACOSF
 
@@ -140,6 +146,9 @@
 
 /* Define if you have the _cosl function.  */
 #undef HAVE__COSL
+
+/* Define if you have the _expf function.  */
+#undef HAVE__EXPF
 
 /* Define if you have the _expl function.  */
 #undef HAVE__EXPL
@@ -336,6 +345,9 @@
 /* Define if you have the drand48 function.  */
 #undef HAVE_DRAND48
 
+/* Define if you have the expf function.  */
+#undef HAVE_EXPF
+
 /* Define if you have the expl function.  */
 #undef HAVE_EXPL
 
@@ -500,9 +512,6 @@
 
 /* Define if you have the setenv function.  */
 #undef HAVE_SETENV
-
-/* Define if you have the signbitl function.  */
-#undef HAVE_SIGNBITL
 
 /* Define if you have the sincos function.  */
 #undef HAVE_SINCOS

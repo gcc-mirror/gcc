@@ -84,7 +84,9 @@ else
 version_arg=
 endif
 
-libstdc___la_LDFLAGS = -version-info @libtool_VERSION@ -lm ${version_arg}
+libstdc___la_LDFLAGS = \
+	-version-info @libtool_VERSION@ ${version_arg} \
+	-lm @LIBUNWIND_FLAG@ 
 
 libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD) linker.map
 
