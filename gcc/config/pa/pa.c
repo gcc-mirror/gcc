@@ -377,13 +377,14 @@ move_operand (op, mode)
 
   op = XEXP (op, 0);
 
-  /* The LO_SUM part of a DLT reference is not considered a move_operand;
-     we must reject it here since it must be accepted by memory_address_p.  */
+  /* We consider a LO_SUM DLT reference a move_operand now since it has
+     been merged into the normal movsi/movdi patterns.  */
   if (GET_CODE (op) == LO_SUM
       && GET_CODE (XEXP (op, 0)) == REG
       && REG_OK_FOR_BASE_P (XEXP (op, 0))
-      && GET_CODE (XEXP (op, 1)) == UNSPEC)
-    return 0;
+      && GET_CODE (XEXP (op, 1)) == UNSPEC
+      && GET_MODE (op) == Pmode)
+    return 1;
 
   /* Since move_operand is only used for source operands, we can always
      allow scaled indexing!  */
@@ -3883,6 +3884,17 @@ print_operand (file, x, code)
 	}
       else
 	break;
+    case 'A':
+      {
+	rtx xoperands[2];
+
+	xoperands[0] = XEXP (XEXP (x, 0), 0);
+	xoperands[1] = XVECEXP (XEXP (XEXP (x, 0), 1), 0, 0);
+	output_global_address (file, xoperands[1], 0);
+        fprintf (file, "(%s)", reg_names [REGNO (xoperands[0])]);
+	return;
+      }
+
     case 'C':			/* Plain (C)ondition */
     case 'X':
       switch (GET_CODE (x))
