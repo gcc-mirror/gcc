@@ -10,6 +10,7 @@ void Java_martin_myNative(JNIEnv* env, jobject this, jstring s)
   jmethodID mid;
 
   printf("From C\n");
+  fflush(stdout);
 
   cls = (*env)->FindClass(env, "java/lang/System");
   if (cls == 0) {
