@@ -1,3 +1,8 @@
+2003-04-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (single_one_operand): Use GET_MODE_MASK.
+	(single_zero_operand): Likewise.
+
 2003-04-05  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (df.o):  Depend on alloc-pool.h, not obstack.h.
