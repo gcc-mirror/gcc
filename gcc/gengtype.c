@@ -83,8 +83,7 @@ xasprintf (const char *format, ...)
 /* The one and only TYPE_STRING.  */
 
 struct type string_type = {
-  TYPE_STRING, NULL, NULL, GC_USED
-  UNION_INIT_ZERO
+  TYPE_STRING, NULL, NULL, GC_USED, {0}
 };
 
 /* Lists of various things.  */
