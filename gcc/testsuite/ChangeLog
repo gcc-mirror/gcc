@@ -1,3 +1,8 @@
+2003-06-24  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/5754
+	* g++.dg/parse/crash6.C: New test.
+
 2003-06-23  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-24.c: New test case.
