@@ -3700,8 +3700,14 @@ tSCC zStrict_Ansi_NotName[] =
 tSCC zStrict_Ansi_NotSelect0[] =
        "^([ \t]*#[ \t]*if.*)(!__STDC__|__STDC__[ \t]*==[ \t]*0|__STDC__[ \t]*!=[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)(.*)";
 
-#define    STRICT_ANSI_NOT_TEST_CT  1
+/*
+ *  perform the C function call test
+ */
+tSCC zStrict_Ansi_NotFTst0[] = "stdc_0_in_system_headers";
+
+#define    STRICT_ANSI_NOT_TEST_CT  2
 static tTestDesc aStrict_Ansi_NotTests[] = {
+  { TT_FUNCTION, zStrict_Ansi_NotFTst0,   0 /* unused */ },
   { TT_EGREP,    zStrict_Ansi_NotSelect0, (regex_t*)NULL }, };
 
 /*
@@ -3736,8 +3742,14 @@ tSCC zStrict_Ansi_Not_CtdList[] =
 tSCC zStrict_Ansi_Not_CtdSelect0[] =
        "^([ \t]*[|&][|&][ \t(]*)(__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*0)(.*)";
 
-#define    STRICT_ANSI_NOT_CTD_TEST_CT  1
+/*
+ *  perform the C function call test
+ */
+tSCC zStrict_Ansi_Not_CtdFTst0[] = "stdc_0_in_system_headers";
+
+#define    STRICT_ANSI_NOT_CTD_TEST_CT  2
 static tTestDesc aStrict_Ansi_Not_CtdTests[] = {
+  { TT_FUNCTION, zStrict_Ansi_Not_CtdFTst0,   0 /* unused */ },
   { TT_EGREP,    zStrict_Ansi_Not_CtdSelect0, (regex_t*)NULL }, };
 
 /*
@@ -3771,8 +3783,14 @@ tSCC zStrict_Ansi_OnlyName[] =
 tSCC zStrict_Ansi_OnlySelect0[] =
        "^([ \t]*#[ \t]*if.*)(__STDC__[ \t]*!=[ \t]*0|__STDC__[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*==[ \t]*1|__STDC__[ \t]*-[ \t]*0[ \t]*!=[ \t]*0)(.*)";
 
-#define    STRICT_ANSI_ONLY_TEST_CT  1
+/*
+ *  perform the C function call test
+ */
+tSCC zStrict_Ansi_OnlyFTst0[] = "stdc_0_in_system_headers";
+
+#define    STRICT_ANSI_ONLY_TEST_CT  2
 static tTestDesc aStrict_Ansi_OnlyTests[] = {
+  { TT_FUNCTION, zStrict_Ansi_OnlyFTst0,   0 /* unused */ },
   { TT_EGREP,    zStrict_Ansi_OnlySelect0, (regex_t*)NULL }, };
 
 /*
