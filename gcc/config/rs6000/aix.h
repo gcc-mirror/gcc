@@ -194,15 +194,15 @@
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
 /* Enable AIX XL compiler calling convention breakage compatibility.  */
-#undef TARGET_XL_CALL
-#define MASK_XL_CALL		0x40000000
-#define	TARGET_XL_CALL		(target_flags & MASK_XL_CALL)
+#undef TARGET_XL_COMPAT
+#define MASK_XL_COMPAT		0x40000000
+#define	TARGET_XL_COMPAT	(target_flags & MASK_XL_COMPAT)
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES		\
-  {"xl-call", 		MASK_XL_CALL,					\
-   N_("Always pass floating-point arguments in memory") },		\
-  {"no-xl-call",	- MASK_XL_CALL,					\
-   N_("Don't always pass floating-point arguments in memory") },	\
+  {"xl-compat", 	MASK_XL_COMPAT,					\
+   N_("Conform more closely to IBM XLC semantics") },		\
+  {"no-xl-compat",	- MASK_XL_COMPAT,					\
+   N_("Default GCC semantics that differ from IBM XLC") },	\
   SUBSUBTARGET_SWITCHES
 #define SUBSUBTARGET_SWITCHES 
 
