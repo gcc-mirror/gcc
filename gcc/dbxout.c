@@ -907,15 +907,6 @@ dbxout_function_end (tree decl)
 {
   char lscope_label_name[100];
 
-  /* The N_FUN tag at the end of the function is a GNU extension,
-     which may be undesirable, and is unnecessary if we do not have
-     named sections.  */
-  if (!use_gnu_debug_info_extensions
-      || NO_DBX_FUNCTION_END
-      || !targetm.have_named_sections
-      || DECL_IGNORED_P (decl))
-    return;
-
   /* The Lscope label must be emitted even if we aren't doing anything
      else; dbxout_block needs it.  */
   function_section (current_function_decl);
@@ -926,6 +917,15 @@ dbxout_function_end (tree decl)
   ASM_GENERATE_INTERNAL_LABEL (lscope_label_name, "Lscope", scope_labelno);
   targetm.asm_out.internal_label (asm_out_file, "Lscope", scope_labelno);
   scope_labelno++;
+
+  /* The N_FUN tag at the end of the function is a GNU extension,
+     which may be undesirable, and is unnecessary if we do not have
+     named sections.  */
+  if (!use_gnu_debug_info_extensions
+      || NO_DBX_FUNCTION_END
+      || !targetm.have_named_sections
+      || DECL_IGNORED_P (decl))
+    return;
 
   /* By convention, GCC will mark the end of a function with an N_FUN
      symbol and an empty string.  */
