@@ -1136,7 +1136,12 @@ main (argc, argv)
 #endif
 
   p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && p[-1] != '/') --p;
+  while (p != argv[0] && p[-1] != '/'
+#ifdef DIR_SEPARATOR
+	 && p[-1] != DIR_SEPARATOR
+#endif
+	 )
+    --p;
   progname = p;
 
 #ifdef VMS
@@ -1627,7 +1632,11 @@ main (argc, argv)
   /* Some people say that CPATH should replace the standard include dirs,
      but that seems pointless: it comes before them, so it overrides them
      anyway.  */
+#ifdef WINNT
+  p = (char *) getenv ("Include");
+#else
   p = (char *) getenv ("CPATH");
+#endif
   if (p != 0 && ! no_standard_includes)
     path_include (p);
 
@@ -1979,7 +1988,11 @@ main (argc, argv)
       int len;
 
       /* Discard all directory prefixes from filename.  */
-      if ((q = rindex (in_fname, '/')) != NULL)
+      if ((q = rindex (in_fname, '/')) != NULL
+#ifdef DIR_SEPARATOR
+	  && (q = rindex (in_fname, DIR_SEPARATOR)) != NULL
+#endif
+	  )
 	++q;
       else
 	q = in_fname;
