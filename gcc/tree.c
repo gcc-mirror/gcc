@@ -363,7 +363,7 @@ restore_tree_status (p)
 /* Start allocating on the temporary (per function) obstack.
    This is done in start_function before parsing the function body,
    and before each initialization at top level, and to go back
-   to temporary allocation after doing end_temporary_allocation.  */
+   to temporary allocation after doing permanent_allocation.  */
 
 void
 temporary_allocation ()
