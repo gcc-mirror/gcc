@@ -632,6 +632,9 @@ read_scan_file (in_fname, argc, argv)
   options->inhibit_warnings = 1;
   options->inhibit_errors = 1;
 
+  if (! cpp_read_main_file (scan_in, in_fname, NULL))
+    exit (FATAL_EXIT_CODE);
+
   for (i = 0; i < argc; i += strings_processed)
     {
       strings_processed = 0;
@@ -669,8 +672,6 @@ read_scan_file (in_fname, argc, argv)
   register_include_chains (scan_in, NULL /* sysroot */, NULL /* iprefix */,
 			   true /* stdinc */, false /* cxx_stdinc */,
 			   false /* verbose */);
-  if (! cpp_read_main_file (scan_in, in_fname, NULL))
-    exit (FATAL_EXIT_CODE);
 
   cpp_rename_file (scan_in, "<built-in>");
   cpp_init_builtins (scan_in);
