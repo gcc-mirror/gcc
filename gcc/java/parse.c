@@ -16129,7 +16129,7 @@ array_constructor_check_entry (type, entry)
   
   if (new_value)
     {
-      new_value = maybe_build_primttype_type_ref (new_value, wfl_operator);
+      new_value = maybe_build_primttype_type_ref (new_value, wfl_value);
       TREE_VALUE (entry) = new_value;
     }
 
