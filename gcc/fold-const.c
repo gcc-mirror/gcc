@@ -1433,18 +1433,26 @@ const_binop (code, arg1, arg2, notrunc)
 			     const_binop (MULT_EXPR, r2, r2, notrunc),
 			     const_binop (MULT_EXPR, i2, i2, notrunc),
 			     notrunc);
-	    t = build_complex (const_binop (RDIV_EXPR,
-					    const_binop (PLUS_EXPR,
-							 const_binop (MULT_EXPR, r1, r2, notrunc),
-							 const_binop (MULT_EXPR, i1, i2, notrunc),
-							 notrunc),
-					    magsquared, notrunc),
-			       const_binop (RDIV_EXPR,
-					    const_binop (MINUS_EXPR,
-							 const_binop (MULT_EXPR, i1, r2, notrunc),
-							 const_binop (MULT_EXPR, r1, i2, notrunc),
-							 notrunc),
-					    magsquared, notrunc));
+
+	    t = build_complex
+	      (const_binop (INTEGRAL_TYPE_P (TREE_TYPE (r1))
+			    ? TRUNC_DIV_EXPR : RDIV_EXPR,
+			    const_binop (PLUS_EXPR,
+					 const_binop (MULT_EXPR, r1, r2,
+						      notrunc),
+					 const_binop (MULT_EXPR, i1, i2,
+						      notrunc),
+					 notrunc),
+			    magsquared, notrunc),
+	       const_binop (INTEGRAL_TYPE_P (TREE_TYPE (r1))
+			    ? TRUNC_DIV_EXPR : RDIV_EXPR,
+			    const_binop (MINUS_EXPR,
+					 const_binop (MULT_EXPR, i1, r2,
+						      notrunc),
+					 const_binop (MULT_EXPR, r1, i2,
+						      notrunc),
+					 notrunc),
+			    magsquared, notrunc));
 	  }
 	  break;
 
