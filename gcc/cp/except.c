@@ -1310,6 +1310,7 @@ expand_throw (exp)
 	      cleanup = lookup_fnfields (TYPE_BINFO (TREE_TYPE (object)),
 					 dtor_identifier, 0);
 	      cleanup = TREE_VALUE (cleanup);
+	      mark_used (cleanup);
 	      mark_addressable (cleanup);
 	      /* Pretend it's a normal function.  */
 	      cleanup = build1 (ADDR_EXPR, cleanup_type, cleanup);
