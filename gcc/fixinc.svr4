@@ -360,7 +360,7 @@ EOF
   rm -f /tmp/$base
 fi
 
-# Add some missing declarations to <sys/mman.h>.
+# Add a prototyped declaration of mmap to <sys/mman.h>.
 
 file=sys/mman.h
 base=`basename $file`
