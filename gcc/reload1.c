@@ -2031,7 +2031,7 @@ dump_needs (chain, dumpfile)
      struct insn_chain *chain;
      FILE *dumpfile;
 {
-  static char *reg_class_names[] = REG_CLASS_NAMES;
+  static const char * const reg_class_names[] = REG_CLASS_NAMES;
   int i;
   struct needs *n = &chain->need;
 
@@ -2051,7 +2051,7 @@ dump_needs (chain, dumpfile)
 	fprintf (dumpfile,
 		 ";; Need %d group%s (%smode) of class %s.\n",
 		 n->groups[i], n->groups[i] == 1 ? "" : "s",
-		 mode_name[(int) chain->group_mode[i]],
+		 GET_MODE_NAME(chain->group_mode[i]),
 		 reg_class_names[i]);
     }
 }
@@ -2292,7 +2292,7 @@ new_spill_reg (chain, i, class, nongroup, dumpfile)
 
   if (TEST_HARD_REG_BIT (bad_spill_regs, regno))
     {
-      static char *reg_class_names[] = REG_CLASS_NAMES;
+      static const char * const reg_class_names[] = REG_CLASS_NAMES;
 
       if (asm_noperands (PATTERN (chain->insn)) < 0)
 	{

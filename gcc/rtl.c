@@ -58,7 +58,7 @@ const char * const rtx_name[] = {
 
 #define DEF_MACHMODE(SYM, NAME, CLASS, SIZE, UNIT, WIDER)  NAME,
 
-char *mode_name[(int) MAX_MACHINE_MODE + 1] = {
+const char * const mode_name[(int) MAX_MACHINE_MODE + 1] = {
 #include "machmode.def"
 
 #ifdef EXTRA_CC_MODES
