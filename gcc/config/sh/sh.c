@@ -1,5 +1,5 @@
 /* Output routines for GCC for Hitachi Super-H.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,6 +23,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 
+#include <ctype.h>
 #include <stdio.h>
 
 #include "rtl.h"
@@ -2019,40 +2020,37 @@ initial_elimination_offset (from, to)
    compiler.  */
 
 int
-handle_pragma (file)
+handle_pragma (file, c)
      FILE *file;
+     int c;
 {
-  int c;
   char pbuf[200];
   int psize = 0;
 
-  c = getc (file);
   while (c == ' ' || c == '\t')
     c = getc (file);
 
-  if (c == '\n' || c == EOF)
-    return c;
-
-  while (psize < sizeof (pbuf) - 1 && c != '\n')
+  if (c != '\n' & c != EOF)
     {
-      pbuf[psize++] = c;
-      if (psize == 9 && strncmp (pbuf, "interrupt", 9) == 0)
+      while (psize < sizeof (pbuf) - 1
+	     && (isalpha (c) || c == '_'))
 	{
-	  pragma_interrupt = 1;
-	  return ' ';
+	  pbuf[psize++] = c;
+	  c = getc (file);
 	}
-      if (psize == 5 && strncmp (pbuf, "trapa", 5) == 0)
-	{
-	  pragma_interrupt = pragma_trapa = 1;
-	  return ' ';
-	}
-      if (psize == 15 && strncmp (pbuf, "nosave_low_regs", 15) == 0)
-	{
-	  pragma_nosave_low_regs = 1;
-	  return ' ';
-	}
-      c = getc (file);
+      pbuf[psize] = 0;
+
+      if (strcmp (pbuf, "interrupt") == 0)
+	pragma_interrupt = 1;
+      else if (strcmp (pbuf, "trapa") == 0)
+	pragma_interrupt = pragma_trapa = 1;
+      else if (strcmp (pbuf, "nosave_low_regs") == 0)
+	pragma_nosave_low_regs = 1;
+
+      while (c != '\n' && c != EOF)
+	c = getc (file);
     }
+
   return c;
 }
 

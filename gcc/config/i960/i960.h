@@ -119,7 +119,7 @@ Boston, MA 02111-1307, USA.  */
   fprintf (asm_out_file, "\t.type\t0x%x;", (A & 0xf) + 2 * (A & ~0xf))
 
 /* Handle pragmas for compatibility with Intel's compilers.  */
-#define HANDLE_PRAGMA(FILE) process_pragma (FILE)
+#define HANDLE_PRAGMA(FILE, CH) return process_pragma (FILE, CH)
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

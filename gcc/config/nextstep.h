@@ -1,6 +1,6 @@
 /* nextstep.h -- operating system specific defines to be used when
    targeting GCC for NeXTSTEP.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-93, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -240,7 +240,8 @@ Boston, MA 02111-1307, USA.  */
 /* How to parse #pragma's */
 
 #undef	HANDLE_PRAGMA
-#define HANDLE_PRAGMA(finput) handle_pragma (finput, &get_directive_line)
+#define HANDLE_PRAGMA(finput, ch) \
+  return handle_pragma (finput, ch, &get_directive_line)
 
 /* Give methods pretty symbol names on NeXT. */
 

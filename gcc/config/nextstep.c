@@ -1,5 +1,5 @@
 /* Functions for generic NeXT as target machine for GNU C compiler.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90-93, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,14 +35,17 @@ static int initial_optimize_flag;
 extern char *get_directive_line ();
 
 /* Called from check_newline via the macro HANDLE_PRAGMA.
-   FINPUT is the source file input stream.  */
+   FINPUT is the source file input stream.
+   CH is the first character after `#pragma'.
+   The result is the terminating character ('\n' or EOF).  */
 
-void
-handle_pragma (finput, get_line_function)
+int
+handle_pragma (finput, ch, get_line_function)
      FILE *finput;
+     int ch;
      char *(*get_line_function) ();
 {
-  register char *p = (*get_line_function) (finput);
+  register char *p;
 
   /* Record initial setting of optimize flag, so we can restore it.  */
   if (!pragma_initialized)
@@ -51,6 +54,11 @@ handle_pragma (finput, get_line_function)
       initial_optimize_flag = optimize;
     }
 
+  /* Nothing to do if #pragma is by itself.  */
+  if (ch == '\n' || ch == EOF)
+    return ch;
+
+  p = (*get_line_function) (finput);
   if (OPT_STRCMP ("CC_OPT_ON"))
     {
       optimize = 1, obey_regdecls = 0;
@@ -81,4 +89,7 @@ handle_pragma (finput, get_line_function)
     flag_writable_strings = 0;
   else if (OPT_STRCMP ("CC_NO_MACH_TEXT_SECTIONS"))
     flag_no_mach_text_sections = 1;
+
+  /* get_line_function must leave the last character read in FINPUT.  */
+  return getc (finput);
 }

@@ -548,57 +548,35 @@ eq_operator (x, mode)
    with this attribute may be safely used in an interrupt vector.  */
 
 int
-handle_pragma (file)
+handle_pragma (file, c)
      FILE *file;
+     int c;
 {
-  int c;
   char pbuf[20];
   int psize = 0;
 
-  c = getc (file);
   while (c == ' ' || c == '\t')
     c = getc (file);
 
-  if (c == '\n' || c == EOF)
-    return c;
-
-  /* The only pragmas we understand are interrupt and saveall.  */
-  while (psize < sizeof (pbuf) - 1
-	 && isalpha (c))
+  if (c != '\n' & c != EOF)
     {
-      pbuf[psize++] = c;
-      c = getc (file);
-    }
-  pbuf[psize] = 0;
-
-  if (strcmp (pbuf, "interrupt") == 0)
-    pragma_interrupt = 1;
-
-  if (strcmp (pbuf, "saveall") == 0)
-    pragma_saveall = 1;
-
-  /* ??? This is deprecated.  Delete for gcc 2.8.  */
-  if (strcmp (pbuf, "section") == 0)
-    {
-      static int printed_p = 0;
-      if (!printed_p)
-	{
-	  warning ("#pragma section is deprecated, use section attributes");
-	  printed_p = 1;
-	}
-      while (c && !isalpha (c))
-	c = getc (file);
-      psize = 0;
       while (psize < sizeof (pbuf) - 1
-	     && isalpha (c) || isdigit (c) || c == '_')
+	     && isalpha (c))
 	{
 	  pbuf[psize++] = c;
 	  c = getc (file);
 	}
       pbuf[psize] = 0;
-      named_section (NULL_TREE, pbuf);
+
+      if (strcmp (pbuf, "interrupt") == 0)
+	pragma_interrupt = 1;
+      else if (strcmp (pbuf, "saveall") == 0)
+	pragma_saveall = 1;
+
+      while (c != '\n' && c != EOF)
+	c = getc (file);
     }
-  ungetc (c, file);
+
   return c;
 }
 
