@@ -1,3 +1,8 @@
+2002-11-10  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.h (FUNCTION_ARG_CALLEE_COPIES): Define the same
+	as FUNCTION_ARG_PASS_BY_REFERENCE.
+
 2002-11-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (STARTING_FRAME_OFFSET): Change offset for TARGET_64BIT to 16.
