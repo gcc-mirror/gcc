@@ -12715,6 +12715,9 @@ patch_assignment (node, wfl_op1)
       && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type)))
     {
       tree array, store_check, base, index_expr;
+      
+      /* Save RHS so that it doesn't get re-evaluated by the store check. */ 
+      new_rhs = save_expr (new_rhs);
 
       /* Get the INDIRECT_REF. */
       array = TREE_OPERAND (TREE_OPERAND (lvalue, 0), 0);
