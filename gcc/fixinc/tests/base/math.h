@@ -82,6 +82,13 @@ extern int class();
 #endif  /* RS6000_DOUBLE_CHECK */
 
 
+#if defined( SCO_MATH_CHECK )
+#define __fp_class(a) \
+ __builtin_generic(a,"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify")
+
+#endif  /* SCO_MATH_CHECK */
+
+
 #if defined( STRICT_ANSI_NOT_CTD_CHECK )
 #if 1 && \
 && defined(mumbling) |& ( !defined(__STRICT_ANSI__)) \
