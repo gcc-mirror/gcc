@@ -3146,8 +3146,26 @@ fill_simple_delay_slots (first, non_jumps_p)
     return;
 
   slots_filled = 0;
-  needed = end_of_function_needs;
   CLEAR_RESOURCE (&set);
+
+  /* The frame pointer and stack pointer are needed at the beginning of
+     the epilogue, so instructions setting them can not be put in the
+     epilogue delay slot.  However, everything else needed at function
+     end is safe, so we don't want to use end_of_function_needs here.  */
+  CLEAR_RESOURCE (&needed);
+  if (frame_pointer_needed)
+    {
+      SET_HARD_REG_BIT (needed.regs, FRAME_POINTER_REGNUM);
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+      SET_HARD_REG_BIT (needed.regs, HARD_FRAME_POINTER_REGNUM);
+#endif
+#ifdef EXIT_IGNORE_STACK
+      if (! EXIT_IGNORE_STACK)
+#endif
+	SET_HARD_REG_BIT (needed.regs, STACK_POINTER_REGNUM);
+    }
+  else
+    SET_HARD_REG_BIT (needed.regs, STACK_POINTER_REGNUM);
 
   for (trial = get_last_insn (); ! stop_search_p (trial, 1);
        trial = PREV_INSN (trial))
@@ -3160,6 +3178,7 @@ fill_simple_delay_slots (first, non_jumps_p)
 
       if (! insn_references_resource_p (trial, &set, 1)
 	  && ! insn_sets_resource_p (trial, &needed, 1)
+	  && ! insn_sets_resource_p (trial, &set, 1)
 #ifdef HAVE_cc0
 	  /* Don't want to mess with cc0 here.  */
 	  && ! reg_mentioned_p (cc0_rtx, pat)
