@@ -78,7 +78,7 @@ package body System.OS_Interface is
       end if;
 
       return timespec'(tv_sec => S,
-        tv_nsec => long (Long_Long_Integer (F * 10#1#E9)));
+        tv_nsec => int32_t (Long_Long_Integer (F * 10#1#E9)));
    end To_Timespec;
 
    ----------------
@@ -86,11 +86,11 @@ package body System.OS_Interface is
    ----------------
 
    function To_Timeval (D : Duration) return struct_timeval is
-      S : long;
+      S : int32_t;
       F : Duration;
 
    begin
-      S := long (Long_Long_Integer (D));
+      S := int32_t (D);
       F := D - Duration (S);
 
       --  If F has negative value due to a round-up, adjust for positive F
@@ -101,8 +101,9 @@ package body System.OS_Interface is
          F := F + 1.0;
       end if;
 
-      return struct_timeval'(tv_sec => S,
-        tv_usec => long (Long_Long_Integer (F * 10#1#E6)));
+      return struct_timeval'
+               (Tv_Sec  => S,
+                tv_usec => int32_t (Long_Long_Integer (F * 10#1#E6)));
    end To_Timeval;
 
    -------------------
