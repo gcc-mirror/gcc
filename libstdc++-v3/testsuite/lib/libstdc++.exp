@@ -59,16 +59,16 @@ proc v3track { var n } {
 }
 
 # Called by v3-init below.  "Static" to this file.
-proc v3-copy-files {srcfiles dstdir} {
+proc v3-copy-files {srcfiles} {
     foreach f $srcfiles {
         if { [catch { set symlink [file readlink $f] } x] } then {
-            file copy -force $f $dstdir
+	    remote_download target $f
         } else {
             if { [regexp "^/" "$symlink"] } then {
-                file copy -force $symlink $dstdir
+		remote_download target $symlink
             } else {
                 set dirname [file dirname $f]
-                file copy -force $dirname/$symlink $dstdir
+		remote_download target $dirname/$symlink
             }
         }
     }
@@ -77,7 +77,7 @@ proc v3-copy-files {srcfiles dstdir} {
 # Called once, during runtest.exp setup.
 proc libstdc++_init { testfile } {
     global env
-    global srcdir outdir blddir objdir tool_root_dir
+    global srcdir blddir objdir tool_root_dir
     global cxx cxxflags
     global includes
     global gluefile wrap_flags
@@ -116,8 +116,8 @@ proc libstdc++_init { testfile } {
     set dg-do-what-default run
 
     # Copy any required data files.
-    v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"] $outdir
-    v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"] $outdir
+    v3-copy-files [glob -nocomplain "$srcdir/data/*.tst"]
+    v3-copy-files [glob -nocomplain "$srcdir/data/*.txt"]
 
     # Setup LD_LIBRARY_PATH so that libgcc_s, libstdc++ binaries can be found.
     # Find the existing LD_LIBRARY_PATH.
