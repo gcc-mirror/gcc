@@ -1,3 +1,14 @@
+2004-03-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/t-darwin (LIB2FUNCS_STATIC_EXTRA):
+	Add darwin-fpsave.asm, darwin-vecsave.asm,
+	and darwin-world.asm.
+	(TARGET_LIBGCC2_CFLAGS): Add -Wa,-force_cpusubtype_ALL
+	as the asm files contain altivec instructions.
+	* config/rs6000/darwin-fpsave.asm: New file.
+	* config/rs6000/darwin-vecsave.asm: New file.
+	* config/rs6000/darwin-world.asm: New file.
+
 2004-03-31  Zack Weinberg  <zack@codesourcery.com>
 
 	* gengtype-yacc.y (option, stringseq): Add missing
