@@ -1,3 +1,11 @@
+1998-02-22  Paul Eggert  <eggert@twinsun.com>
+
+	* config/sparc/sol2-sld.h (LINKER_DOES_NOT_WORK_WITH_DWARF2):
+	Define this new symbol.
+	(DWARF2_DEBUGGING_INFO, DWARF_DEBUGGING_INFO): Do not #undef.
+	* toplev.c (main): Do not default to DWARF2_DEBUG with -ggdb if
+	LINKER_DOES_NOT_WORK_WITH_DWARF2 is defined.
+
 Sun Feb 22 20:07:32 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* iris5.h (DWARF2_UNWIND_INFO): Define to 0.
