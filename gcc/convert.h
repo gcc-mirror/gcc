@@ -20,3 +20,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern tree convert_to_integer PROTO ((tree, tree));
 extern tree convert_to_pointer PROTO ((tree, tree));
 extern tree convert_to_real PROTO ((tree, tree));
+extern tree convert_to_complex PROTO ((tree, tree));
