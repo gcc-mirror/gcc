@@ -38,6 +38,7 @@ compilation is specified by a string called a "spec".  */
 #include "obstack.h"
 #include "intl.h"
 #include "prefix.h"
+#include "gcc.h"
 
 #ifdef VMS
 #define exit __posix_exit
@@ -190,7 +191,6 @@ static void clear_failure_queue PROTO((void));
 static int check_live_switch	PROTO((int, int));
 static const char *handle_braces PROTO((const char *));
 static char *save_string	PROTO((const char *, int));
-extern int do_spec		PROTO((const char *));
 static int do_spec_1		PROTO((const char *, int, const char *));
 static const char *find_file	PROTO((const char *));
 static int is_directory		PROTO((const char *, const char *, int));
@@ -205,8 +205,6 @@ static void pfatal_with_name	PROTO((const char *)) ATTRIBUTE_NORETURN;
 static void perror_with_name	PROTO((const char *));
 static void pfatal_pexecute	PROTO((const char *, const char *))
   ATTRIBUTE_NORETURN;
-static void fatal		PVPROTO((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static void error		PVPROTO((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 static void notice		PVPROTO((const char *, ...))
@@ -220,18 +218,6 @@ static int execute			PROTO ((void));
 static void unused_prefix_warnings	PROTO ((struct path_prefix *));
 static void clear_args			PROTO ((void));
 static void fatal_error			PROTO ((int));
-
-void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
-
-/* Called before processing to change/add/remove arguments. */
-extern void lang_specific_driver PROTO ((void (*) PVPROTO((const char *, ...)),
-					 int *, char ***, int *));
-
-/* Called before linking.  Returns 0 on success and -1 on failure. */
-extern int lang_specific_pre_link ();
-
-/* Number of extra output files that lang_specific_pre_link may generate. */
-extern int lang_specific_extra_outfiles;
 
 /* Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
@@ -503,7 +489,7 @@ static char *multilib_defaults;
 #define MULTILIB_DEFAULTS { "" }
 #endif
 
-static char *multilib_defaults_raw[] = MULTILIB_DEFAULTS;
+static const  char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 
 struct user_specs {
   struct user_specs *next;
@@ -1657,12 +1643,11 @@ read_specs (filename, main_p)
 			 (n_compilers + 2) * sizeof (struct compiler)));
 
 	  compilers[n_compilers].suffix = suffix;
-	  bzero ((char *) compilers[n_compilers].spec,
-		 sizeof compilers[n_compilers].spec);
+	  memset (compilers[n_compilers].spec, 0,
+		  sizeof compilers[n_compilers].spec);
 	  compilers[n_compilers].spec[0] = spec;
 	  n_compilers++;
-	  bzero ((char *) &compilers[n_compilers],
-		 sizeof compilers[n_compilers]);
+	  memset (&compilers[n_compilers], 0, sizeof compilers[n_compilers]);
 	}
 
       if (*suffix == 0)
@@ -2714,7 +2699,7 @@ process_command (argc, argv)
   translate_options (&argc, &argv);
 
   /* Do language-specific adjustment/addition of flags.  */
-  lang_specific_driver (fatal, &argc, &argv, &added_libraries);
+  lang_specific_driver (&argc, &argv, &added_libraries);
 
   /* Scan argv twice.  Here, the first time, just count how many switches
      there will be in their vector, and how many input files in theirs.
@@ -4914,26 +4899,26 @@ main (argc, argv)
       printf ("install: %s%s\n", standard_exec_prefix, machine_suffix);
       printf ("programs: %s\n", build_search_list (&exec_prefixes, "", 0));
       printf ("libraries: %s\n", build_search_list (&startfile_prefixes, "", 0));
-      exit (0);
+      return (0);
     }
 
   if (print_file_name)
     {
       printf ("%s\n", find_file (print_file_name));
-      exit (0);
+      return (0);
     }
 
   if (print_prog_name)
     {
       char *newname = find_a_file (&exec_prefixes, print_prog_name, X_OK);
       printf ("%s\n", (newname ? newname : print_prog_name));
-      exit (0);
+      return (0);
     }
 
   if (print_multi_lib)
     {
       print_multilib_info ();
-      exit (0);
+      return (0);
     }
 
   if (print_multi_directory)
@@ -4942,7 +4927,7 @@ main (argc, argv)
 	printf (".\n");
       else
 	printf ("%s\n", multilib_dir);
-      exit (0);
+      return (0);
     }
 
   if (print_help_list)
@@ -4954,7 +4939,7 @@ main (argc, argv)
 	  printf ("\nFor bug reporting instructions, please see:\n");
 	  printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>.\n");
 	  
-	  exit (0);
+	  return (0);
 	}
 
       /* We do not exit here.  Instead we have created a fake input file
@@ -4981,7 +4966,7 @@ main (argc, argv)
 		version_string, compiler_version);
 
       if (n_infiles == 0)
-	exit (0);
+	return (0);
     }
 
   if (n_infiles == added_libraries)
@@ -5146,9 +5131,7 @@ main (argc, argv)
       printf ("<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>\n");
     }
   
-  exit (error_count > 0 ? (signal_count ? 2 : 1) : 0);
-  /* NOTREACHED */
-  return 0;
+  return (error_count > 0 ? (signal_count ? 2 : 1) : 0);
 }
 
 /* Find the proper compilation spec for the file name NAME,
@@ -5208,8 +5191,9 @@ lookup_compiler (name, length, language)
 	      language = cp->spec[0] + 1;
 	      new = (struct compiler *) xmalloc (sizeof (struct compiler));
 	      new->suffix = cp->suffix;
-	      bcopy ((char *) lookup_compiler (NULL_PTR, 0, language)->spec,
-		     (char *) new->spec, sizeof new->spec);
+	      memcpy (new->spec,
+		      lookup_compiler (NULL_PTR, 0, language)->spec,
+		      sizeof new->spec);
 	      return new;
 	    }
 
@@ -5280,7 +5264,7 @@ fancy_abort ()
 
 /* Output an error message and exit */
 
-static void
+void
 fatal VPROTO((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES

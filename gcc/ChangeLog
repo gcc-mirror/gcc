@@ -1,3 +1,27 @@
+Sun Sep 12 23:28:20 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (gcc.o, gccspec.o, cppspec.o): Depend on gcc.h.
+
+	* gcc.h: New file.
+	(lang_specific_driver): Don't take a function pointer parameter.
+	All callers changed.
+
+	* gcc.c: Include gcc.h.
+	(do_spec, fancy_abort,lang_specific_driver,lang_specific_pre_link,
+	lang_specific_extra_outfiles, fatal): Don't declare.
+	(multilib_defaults_raw): Constify.
+	(read_specs): Call memset, rather than bzero.
+	(main): Call return, not exit.
+	(lookup_compiler): Call memcpy, not bcopy.
+	(fatal): Make extern.
+
+	* cppspec.c: Include gcc.h.
+	(lang_specific_driver): Initialize variable `quote'.  Constify a
+	char*.  All calls to the function pointer parameter now
+	explicitly call `fatal'.
+
+	* gccspec.c (lang_specific_driver): Include gcc.h.
+
 Sun Sep 12 19:52:10 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.c (note_invalid_constants): Use recog_data.operand_type

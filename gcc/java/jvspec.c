@@ -24,10 +24,8 @@ of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 #include "config.h"
-
 #include "system.h"
-
-#include "gansidecl.h"
+#include "gcc.h"
 
 /* Name of spec file.  */
 #define SPEC_FILE "libgcj.spec"
@@ -42,14 +40,8 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define CLASS_FILE_ARG	(1<<4)
 
 static char *find_spec_file	PROTO ((const char *));
-extern int do_spec		PROTO((char *));
-extern int lang_specific_pre_link PROTO((void));
-extern void lang_specific_driver PROTO ((void (*) (const char *, ...),
-					 int *, char ***, int *));
-extern char *input_filename;
-extern size_t input_filename_length;
 
-char *main_class_name = NULL;
+static const char *main_class_name = NULL;
 int lang_specific_extra_outfiles = 0;
 
 /* Once we have the proper support in jc1 (and gcc.c) working,
@@ -57,7 +49,7 @@ int lang_specific_extra_outfiles = 0;
    and *.class input files to be passed to a single jc1 invocation. */
 #define COMBINE_INPUTS 0
 
-char jvgenmain_spec[] =
+const char jvgenmain_spec[] =
   "jvgenmain %i %{!pipe:%u.i} |\n\
    cc1 %{!pipe:%U.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
@@ -92,8 +84,7 @@ find_spec_file (dir)
 }
 
 void
-lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
-     void (*fn) PROTO ((const char *, ...));
+lang_specific_driver (in_argc, in_argv, in_added_libraries)
      int *in_argc;
      char ***in_argv;
      int *in_added_libraries;
@@ -138,10 +129,11 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
 
   /* Used to track options that take arguments, so we don't go wrapping
      those with -xc++/-xnone.  */
-  char *quote = NULL;
+  const char *quote = NULL;
 
   /* The new argument list will be contained in this.  */
-  char **arglist;
+  char **real_arglist;
+  const char **arglist;
 
   /* Non-zero if we saw a `-xfoo' language specification on the
      command line.  Used to avoid adding our own -xc++ if the user
@@ -149,16 +141,16 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   int saw_speclang = 0;
 
   /* "-lm" or "-lmath" if it appears on the command line.  */
-  char *saw_math ATTRIBUTE_UNUSED = 0;
+  const char *saw_math ATTRIBUTE_UNUSED = 0;
 
   /* "-lc" if it appears on the command line.  */
-  char *saw_libc ATTRIBUTE_UNUSED = 0;
+  const char *saw_libc ATTRIBUTE_UNUSED = 0;
 
   /* "-lgcjgc" if it appears on the command line.  */
-  char *saw_gc ATTRIBUTE_UNUSED = 0;
+  const char *saw_gc ATTRIBUTE_UNUSED = 0;
 
   /* Saw `-l' option for the thread library.  */
-  char *saw_threadlib ATTRIBUTE_UNUSED = 0;
+  const char *saw_threadlib ATTRIBUTE_UNUSED = 0;
 
   /* Saw `-lgcj' on command line.  */
   int saw_libgcj ATTRIBUTE_UNUSED = 0;
@@ -337,7 +329,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
     }
 
   if (quote)
-    (*fn) ("argument to `%s' missing\n", quote);
+    fatal ("argument to `%s' missing\n", quote);
 
   num_args = argc + added;
   if (saw_C)
@@ -349,7 +341,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
       num_args += 2;  /* For -o NONE. */
 #endif
       if (saw_o)
-	(*fn) ("cannot specify both -C and -o");
+	fatal ("cannot specify both -C and -o");
     }
 #if COMBINE_INPUTS
   if (saw_o && java_files_count + (saw_C ? 0 : class_files_count) > 1)
@@ -385,7 +377,8 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   if (saw_g + saw_O == 0)
     num_args++;
   num_args++;
-  arglist = (char **) xmalloc ((num_args + 1) * sizeof (char *));
+  arglist = (const char **)
+    (real_arglist = (char **) xmalloc ((num_args + 1) * sizeof (char *)));
 
   for (i = 0, j = 0; i < argc; i++, j++)
     {
@@ -421,7 +414,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
       if (strncmp (argv[i], "-fmain=", 7) == 0)
 	{
 	  if (! will_link)
-	    (*fn) ("cannot specify `main' class when not linking");
+	    fatal ("cannot specify `main' class when not linking");
 	  --j;
 	  continue;
 	}
@@ -480,7 +473,7 @@ lang_specific_driver (fn, in_argc, in_argv, in_added_libraries)
   arglist[j] = NULL;
 
   *in_argc = j;
-  *in_argv = arglist;
+  *in_argv = real_arglist;
   *in_added_libraries = added_libraries;
 }
 
