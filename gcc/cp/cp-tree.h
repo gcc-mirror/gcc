@@ -1734,29 +1734,34 @@ struct lang_type GTY(())
 
 /* Accessor macros for the vfield slots in structures.  */
 
-/* The virtual function pointer fields that this type contains.  For a
-   vfield defined just for this class, or from a primary base, the
-   TREE_PURPOSE is NULL.  Otherwise, the TREE_PURPOSE is the BINFO for
-   the class containing the vfield.  The TREE_VALUE is the class where
-   the vfield was first defined.  */
+/* List of virtual table fields that this type contains (both the primary
+   and secondaries). The TREE_VALUE is the class type where the vtable
+   field was introduced. For a vtable field inherited from the primary
+   base, or introduced by this class, the TREE_PURPOSE is NULL. For
+   other vtable fields (those from non-primary bases), the
+   TREE_PURPOSE is the BINFO of the base through which the vtable was
+   inherited.  */
 #define CLASSTYPE_VFIELDS(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->vfields)
 
-/* Get the assoc info that caused this vfield to exist.  */
+/* Get the BINFO that introduced this vtable into the hierarchy (will
+   be NULL for those created at this level, or from a primary
+   hierarchy).  */
 #define VF_BINFO_VALUE(NODE) TREE_PURPOSE (NODE)
 
-/* Get that same information as a _TYPE.  */
+/* Get the TYPE that introduced this vtable into the hierarchy (always
+   non-NULL).  */
 #define VF_BASETYPE_VALUE(NODE) TREE_VALUE (NODE)
 
-/* Get the value of the top-most type dominating the non-`normal' vfields.  */
-#define VF_DERIVED_VALUE(NODE) \
-  (VF_BINFO_VALUE (NODE) ? BINFO_TYPE (VF_BINFO_VALUE (NODE)) : NULL_TREE)
+/* Accessor macros for the BINFO_VIRTUALS list. */
 
 /* The number of bytes by which to adjust the `this' pointer when
-   calling this virtual function.  */
+   calling this virtual function.  Subtract this value from the this
+   pointer. Always non-NULL, might be constant zero though. */
 #define BV_DELTA(NODE) (TREE_PURPOSE (NODE))
 
 /* If non-NULL, the vtable index at which to find the vcall offset
-   when calling this virtual function.  */
+   when calling this virtual function.  Add the value at that vtable
+   index to the this pointer.  */
 #define BV_VCALL_INDEX(NODE) (TREE_TYPE (NODE))
 
 /* The function to call.  */
