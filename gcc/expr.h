@@ -297,7 +297,6 @@ extern optab ior_optab;		/* Logical or */
 extern optab xor_optab;		/* Logical xor */
 extern optab ashl_optab;	/* Arithmetic shift left */
 extern optab ashr_optab;	/* Arithmetic shift right */
-extern optab lshl_optab;	/* Logical shift left */
 extern optab lshr_optab;	/* Logical shift right */
 extern optab rotl_optab;	/* Rotate left */
 extern optab rotr_optab;	/* Rotate right */
