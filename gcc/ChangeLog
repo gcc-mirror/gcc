@@ -7,7 +7,7 @@
 
 	PR target/12945
 	* coverage.c (coverage_counter_alloc): Set SYMBOL_FLAG_LOCAL for
-	for counter labels.
+	counter labels.
 	* config/mips/mips.c (INTERNAL_SYMBOL_P): Delete.
 	(mips_classify_symbol): Always treat SYMBOL_REF_FLAG as indicating
 	string constants if TARGET_MIPS16.  Use SYMBOL_REF_DECL to check
