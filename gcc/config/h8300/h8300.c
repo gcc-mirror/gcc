@@ -757,12 +757,8 @@ cond_string (code)
   switch (code)
     {
     case NE:
-      if (cc_prev_status.flags & CC_DONE_CBIT)
-	return "cs";
       return "ne";
     case EQ:
-      if (cc_prev_status.flags & CC_DONE_CBIT)
-	return "cc";
       return "eq";
     case GE:
       return "ge";
@@ -800,8 +796,7 @@ print_operand (file, x, code)
   /* This is used for communication between the 'P' and 'U' codes.  */
   static char *last_p;
 
-  /* This is used for communication between the 'Z' and 'Y' codes.  */
-  /* ??? 'V' and 'W' use it too.  */
+  /* This is used for communication between codes V,W,Z and Y.  */
   static int bitint;
 
   switch (code)
@@ -1081,7 +1076,7 @@ print_operand (file, x, code)
 	  switch (GET_MODE (x))
 	    {
 	    case QImode:
-#if 0				/* Is it asm ("mov.b %0,r2l", ...) */
+#if 0 /* Is it asm ("mov.b %0,r2l", ...) */
 	      fprintf (file, "%s", byte_reg (x, 0));
 #else /* ... or is it asm ("mov.b %0l,r2l", ...) */
 	      fprintf (file, "%s", names_big[REGNO (x)]);
@@ -1271,47 +1266,87 @@ notice_update_cc (body, insn)
   switch (get_attr_cc (insn))
     {
     case CC_NONE:
-      /* Insn does not affect the CC at all */
+      /* Insn does not affect CC at all.  */
       break;
 
     case CC_NONE_0HIT:
-      /* Insn does not change the CC, but the 0't operand has been changed.  */
-
+      /* Insn does not change CC, but the 0'th operand has been changed.  */
       if (cc_status.value1 != 0
 	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value1))
 	cc_status.value1 = 0;
-
+      /* ??? Is value2 ever set?.  */
       if (cc_status.value2 != 0
 	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value2))
 	cc_status.value2 = 0;
-
       break;
 
     case CC_SET:
-      /* Insn sets CC to recog_operand[0], but overflow is impossible.  */
+      /* Insn sets the Z,N flags of CC to recog_operand[0].
+	 V is always set to 0.  C may or may not be set to 0 but that's ok
+	 because alter_cond will change tests to use EQ/NE.  */
       CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_OVERFLOW;
+      cc_status.flags |= CC_OVERFLOW_0 | CC_NO_CARRY;
+      cc_status.value1 = recog_operand[0];
+      break;
+
+    case CC_SET_ZN_C0:
+      /* Insn sets the Z,N flags of CC to recog_operand[0].
+	 The V flag is unusable.  The C flag may or may not be known but
+	 that's ok because alter_cond will change tests to use EQ/NE.  */
+      CC_STATUS_INIT;
+      cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
       cc_status.value1 = recog_operand[0];
       break;
 
     case CC_COMPARE:
-      /* The insn is a compare instruction */
+      /* The insn is a compare instruction.  */
       CC_STATUS_INIT;
       cc_status.value1 = SET_SRC (body);
       break;
 
-    case CC_CBIT:
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_DONE_CBIT;
-      cc_status.value1 = 0;
-      break;
-
-    case CC_WHOOPS:
     case CC_CLOBBER:
-      /* Insn clobbers CC. */
+      /* Insn doesn't leave CC in a usable state.  */
       CC_STATUS_INIT;
       break;
     }
+}
+
+/* Return 1 if a previous compare needs to be re-issued.  This will happen
+   if the compare was deleted because the previous insn set it, but the
+   branch needs CC flags not set.
+
+   OP is the comparison being performed.  */
+
+int
+restore_compare_p (op)
+     rtx op;
+{
+  switch (GET_CODE (op))
+    {
+    case EQ:
+    case NE:
+      break;
+    case LT:
+    case LE:
+    case GT:
+    case GE:
+      if (cc_status.flags & CC_OVERFLOW_UNUSABLE)
+	return 1;
+      break;
+    case LTU:
+    case LEU:
+    case GTU:
+    case GEU:
+      /* If the carry flag isn't usable, the test should have been changed
+	 by alter_cond.  */
+      if (cc_status.flags & CC_NO_CARRY)
+	abort ();
+      break;
+    default:
+      abort ();
+    }
+
+  return 0;
 }
 
 /* Recognize valid operators for bit instructions */
@@ -1486,8 +1521,9 @@ enum shift_mode
     QIshift, HIshift, SIshift
   };
 
-/* For single bit shift insns, record assembler and whether the condition code
-   is valid afterwards.  */
+/* For single bit shift insns, record assembler and what bits of the
+   condition code are valid afterwards (represented as various CC_FOO
+   bits, 0 means CC isn't left in a usable state).  */
 
 struct shift_insn
 {
@@ -1507,19 +1543,19 @@ static const struct shift_insn shift_one[2][3][3] =
   {
 /* SHIFT_ASHIFT */
     {
-      { "shal %X0", 1 },
-      { "add.w %T0,%T0\t; shal.w", 1 },
+      { "shll %X0", CC_OVERFLOW_0 | CC_NO_CARRY },
+      { "add.w %T0,%T0\t; shal.w", CC_OVERFLOW_UNUSABLE | CC_NO_CARRY },
       { "add.w %f0,%f0\t; shal.l\n\taddx %y0,%y0\n\taddx %z0,%z0\t; end shal.l", 0 }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr %X0", 1 },
+      { "shlr %X0", CC_OVERFLOW_0 | CC_NO_CARRY },
       { "shlr %t0\t; shlr.w\n\trotxr %s0\t; end shlr.w", 0 },
       { "shlr %z0\t; shlr.l\n\trotxr %y0\n\trotxr %x0\n\trotxr %w0\t; end shlr.l", 0 }
     },
 /* SHIFT_ASHIFTRT */
     {
-      { "shar %X0", 1 },
+      { "shar %X0", CC_OVERFLOW_UNUSABLE | CC_NO_CARRY },
       { "shar %t0\t; shar.w\n\trotxr %s0\t; end shar.w", 0 },
       { "shar %z0\t; shar.l\n\trotxr %y0\n\trotxr %x0\n\trotxr %w0\t; end shar.l", 0 }
     }
@@ -1528,21 +1564,21 @@ static const struct shift_insn shift_one[2][3][3] =
   {
 /* SHIFT_ASHIFT */
     {
-      { "shal.b %X0", 1 },
-      { "shal.w %T0", 1 },
-      { "shal.l %S0", 1 }
+      { "shll.b %X0", CC_OVERFLOW_0 | CC_NO_CARRY },
+      { "shll.w %T0", CC_OVERFLOW_0 | CC_NO_CARRY },
+      { "shll.l %S0", CC_OVERFLOW_0 | CC_NO_CARRY }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr.b %X0", 1 },
-      { "shlr.w %T0", 1 },
-      { "shlr.l %S0", 1 }
+      { "shlr.b %X0", CC_OVERFLOW_0 | CC_NO_CARRY },
+      { "shlr.w %T0", CC_OVERFLOW_0 | CC_NO_CARRY },
+      { "shlr.l %S0", CC_OVERFLOW_0 | CC_NO_CARRY }
     },
 /* SHIFT_ASHIFTRT */
     {
-      { "shar.b %X0", 1 },
-      { "shar.w %T0", 1 },
-      { "shar.l %S0", 1 }
+      { "shar.b %X0", CC_OVERFLOW_UNUSABLE | CC_NO_CARRY },
+      { "shar.w %T0", CC_OVERFLOW_UNUSABLE | CC_NO_CARRY },
+      { "shar.l %S0", CC_OVERFLOW_UNUSABLE | CC_NO_CARRY }
     }
   }
 };
@@ -1911,7 +1947,10 @@ emit_a_shift (insn, operands)
 	  while (--n >= 0)
 	    output_asm_insn (assembler, operands);
 	  if (cc_valid)
-	    cc_status.value1 = operands[0];
+	    {
+	      cc_status.value1 = operands[0];
+	      cc_status.flags |= cc_valid;
+	    }
 	  return "";
 	case SHIFT_ROT_AND:
 	  {
@@ -1934,6 +1973,7 @@ emit_a_shift (insn, operands)
 		    sprintf (insn_buf, "and #%d,%%X0\t; end shift %d via rotate+and",
 			     mask, n);
 		    cc_status.value1 = operands[0];
+		    cc_status.flags |= CC_OVERFLOW_0 | CC_NO_CARRY;
 		    break;
 		  case HImode:
 		    sprintf (insn_buf, "and #%d,%%s0\n\tand #%d,%%t0\t; end shift %d via rotate+and",
@@ -1949,6 +1989,7 @@ emit_a_shift (insn, operands)
 			 "bwl"[shift_mode], mask,
 			 mode == QImode ? 'X' : mode == HImode ? 'T' : 'S');
 		cc_status.value1 = operands[0];
+		cc_status.flags |= CC_OVERFLOW_0 | CC_NO_CARRY;
 	      }
 	    output_asm_insn (insn_buf, operands);
 	    return "";
