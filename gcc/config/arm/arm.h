@@ -1800,7 +1800,11 @@ extern int arm_pic_register;
 	(! symbol_mentioned_p (X)				\
 	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
 	     || ! symbol_mentioned_p (get_pool_constant (X))))
- 
+     
+/* We need to know when we are making a constant pool; this determines
+   whether data needs to be in the GOT or can be referenced via a GOT
+   offset.  */
+extern int making_const_table;
 
 
 /* Condition code information. */
@@ -2019,20 +2023,33 @@ extern struct rtx_def *arm_compare_op0, *arm_compare_op1;
 		 GET_CODE (X) == POST_DEC ? "-" : "",			\
 		 GET_MODE_SIZE (output_memory_reference_mode));		\
     }									\
-  else output_addr_const(STREAM, X);					\
+  else output_addr_const (STREAM, X);					\
+									\
+    /* Mark symbols as position independent.  We only do this in the	\
+      .text segment, not in the .data segment. */			\
+    if (NEED_PLT_GOT && flag_pic && making_const_table &&		\
+    	(GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF))	\
+     {									\
+        if (GET_CODE (X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (X))	\
+          fprintf (STREAM, "(GOTOFF)");					\
+        else if (GET_CODE (X) == LABEL_REF)				\
+          fprintf (STREAM, "(GOTOFF)");					\
+        else								\
+          fprintf (STREAM, "(GOT)");					\
+     }									\
 }
 
 /* Handles PIC addr specially */
-#define OUTPUT_INT_ADDR_CONST(STREAM,X) \
+#define OUTPUT_INT_ADDR_CONST(STREAM,X) 				\
   {									\
-    if (flag_pic && GET_CODE(X) == CONST && is_pic(X))			\
+    if (flag_pic && GET_CODE (X) == CONST && is_pic (X))		\
       {									\
-	output_addr_const(STREAM, XEXP (XEXP (XEXP (X, 0), 0), 0));	\
-	fputs(" - (", STREAM);						\
-	output_addr_const(STREAM, XEXP (XEXP (XEXP (X, 0), 1), 0));	\
-	fputs(")", STREAM);						\
+	output_addr_const (STREAM, XEXP (XEXP (XEXP (X, 0), 0), 0));	\
+	fputs (" - (", STREAM);						\
+	output_addr_const (STREAM, XEXP (XEXP (XEXP (X, 0), 1), 0));	\
+	fputs (")", STREAM);						\
       }									\
-    else output_addr_const(STREAM, X);					\
+    else output_addr_const (STREAM, X);					\
   }
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
@@ -2042,7 +2059,7 @@ do {									\
   int mi_delta = (DELTA);						\
   char *mi_op = mi_delta < 0 ? "sub" : "add";				\
   int shift = 0;							\
-  int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))) \
+  int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION)))\
 		    ? 1 : 0);						\
   if (mi_delta < 0) mi_delta = -mi_delta;				\
   while (mi_delta != 0)							\

@@ -1,3 +1,13 @@
+Thu May 13 09:35:51 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	Based on patch by Scott Bambrough and Pat Beirne:
+	* config/arm/arm.c (making_const_table): New variable.
+	* config/arm/arm.h (making_const_table): Declare.
+	(OUTPUT_INT_ADDR_CONST): Mark symbols as position independent if
+	appropriate.
+	* config/arm/arm.md (consttable_4, consttable_8, consttable_end):
+	Keep track of when we are building the constant table.	
+
 Tue May 18 17:44:22 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/arm.c (arm_override_options): Fix erroneous warning

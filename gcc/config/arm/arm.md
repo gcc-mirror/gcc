@@ -6216,6 +6216,7 @@
   ""
   "*
 {
+  making_const_table = TRUE;
   switch (GET_MODE_CLASS (GET_MODE (operands[0])))
     {
     case MODE_FLOAT:
@@ -6238,6 +6239,7 @@
   ""
   "*
 {
+  making_const_table = TRUE;
   switch (GET_MODE_CLASS (GET_MODE (operands[0])))
     {
     case MODE_FLOAT:
@@ -6259,7 +6261,7 @@
   [(unspec_volatile [(const_int 0)] 4)]
   ""
   "*
-  /* Nothing to do (currently).  */
+  making_const_table = FALSE;
   return \"\";
 ")
 
