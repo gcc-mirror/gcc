@@ -638,7 +638,7 @@ struct rt_cargs {int gregs, fregs; };
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				\
   (! (NAMED) ? 0							\
-   : ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST)	\
+   : ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST) ? 0	\
    : USE_FP_REG(MODE,CUM) ? gen_rtx(REG, (MODE),(CUM.fregs) + 17)	\
    : (CUM).gregs < 4 ? gen_rtx(REG, (MODE), 2 + (CUM).gregs) : 0)
 
