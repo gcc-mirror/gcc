@@ -116,7 +116,7 @@ expand_lib (name)
 {
   char *lib, *lib_path;
 
-  lib = malloc (strlen (name) + 5);
+  lib = malloc (strlen (name) + 6);
   strcpy (lib, "lib");
   strcat (lib, name);
   strcat (lib, ".a");
@@ -195,7 +195,7 @@ main (argc, argv)
 	  int out_len;
 
 	  i++;
-	  out_len = strlen (argv[i]) + 9;
+	  out_len = strlen (argv[i]) + 10;
 	  buff = malloc (out_len);
 	  strcpy (buff, "-out:");
 	  strcat (buff, argv[i]);
@@ -213,7 +213,7 @@ main (argc, argv)
 	  new_len = strlen (&argv[i][2]);
 	  search_dirs_len = strlen (search_dirs);
 
-	  nbuff = malloc (new_len);
+	  nbuff = malloc (new_len + 1);
 	  strcpy (nbuff, &argv[i][2]);
 
 	  for (j = 0; j < new_len; j++)
