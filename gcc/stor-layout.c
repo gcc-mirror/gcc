@@ -1,6 +1,6 @@
 /* C-compiler utilities for types and variables storage layout
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1996, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -296,6 +296,29 @@ int_mode_for_mode (mode)
     }
 
   return mode;
+}
+
+/* Return the alignment of MODE. This will be bounded by 1 and
+   BIGGEST_ALIGNMENT.  */
+
+unsigned int
+get_mode_alignment (mode)
+     enum machine_mode mode;
+{
+  unsigned int alignment;
+
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
+      || GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+    alignment = GET_MODE_UNIT_SIZE (mode);
+  else
+    alignment = GET_MODE_SIZE (mode);
+
+  /* Extract the LSB of the size.  */
+  alignment = alignment & -alignment;
+  alignment *= BITS_PER_UNIT;
+
+  alignment = MIN (BIGGEST_ALIGNMENT, MAX (1, alignment));
+  return alignment;
 }
 
 /* Return the value of VALUE, rounded up to a multiple of DIVISOR.

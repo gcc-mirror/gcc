@@ -1,5 +1,8 @@
 2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* rtl.c (get_mode_alignment): Moved to...
+	* stor-layout.c: ... here.
+
 	* print-rtl.c (print_rtx): Don't print MEM details in
 	GENERATOR_FILEs.
 
