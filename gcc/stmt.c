@@ -3351,8 +3351,11 @@ expand_nl_goto_receivers (thisblock)
 }
 
 /* Generate RTL code to terminate a binding contour.
-   VARS is the chain of VAR_DECL nodes
-   for the variables bound in this contour.
+
+   VARS is the chain of VAR_DECL nodes for the variables bound in this
+   contour.  There may actually be other nodes in this chain, but any
+   nodes other than VAR_DECLS are ignored.
+
    MARK_ENDS is nonzero if we should put a note at the beginning
    and end of this binding contour.
 
@@ -3389,7 +3392,8 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
   if (warn_unused)
     for (decl = vars; decl; decl = TREE_CHAIN (decl))
-      if (! TREE_USED (decl) && TREE_CODE (decl) == VAR_DECL
+      if (TREE_CODE (decl) == VAR_DECL 
+	  && ! TREE_USED (decl)
 	  && ! DECL_IN_SYSTEM_HEADER (decl)
 	  && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)) 
 	warning_with_decl (decl, "unused variable `%s'");
@@ -3495,11 +3499,8 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
   if (obey_regdecls)
     for (decl = vars; decl; decl = TREE_CHAIN (decl))
-      {
-	rtx rtl = DECL_RTL (decl);
-	if (TREE_CODE (decl) == VAR_DECL && rtl != 0)
-	  use_variable (rtl);
-      }
+      if (TREE_CODE (decl) == VAR_DECL && DECL_RTL (decl))
+	use_variable (DECL_RTL (decl));
 
   /* Restore the temporary level of TARGET_EXPRs.  */
   target_temp_slot_level = thisblock->data.block.target_temp_slot_level;
