@@ -138,13 +138,13 @@ class Connection extends HttpURLConnection
     PrintWriter out = new PrintWriter(sock.getOutputStream());
 
     // Send request including any request properties that were set.
-    out.print(getRequestMethod() + " " + url.getFile() + " HTTP/1.0\n");
-    out.print("Host: " + url.getHost() + ":" + port + "\n");
+    out.print(getRequestMethod() + " " + url.getFile() + " HTTP/1.0\r\n");
+    out.print("Host: " + url.getHost() + ":" + port + "\r\n");
     Enumeration reqKeys = requestProperties.keys();
     Enumeration reqVals = requestProperties.elements();
     while (reqKeys.hasMoreElements())
-      out.print(reqKeys.nextElement() + ": " + reqVals.nextElement() + "\n");
-    out.print("\n");
+      out.print(reqKeys.nextElement() + ": " + reqVals.nextElement() + "\r\n");
+    out.print("\r\n");
     out.flush();    
     getHttpHeaders();
     connected = true;

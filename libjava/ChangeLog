@@ -1,3 +1,9 @@
+2003-10-13  Taras Judge  <taras.judge@shaw.ca>
+
+	PR libgcj/12592
+	* gnu/java/net/protocol/http/Connection.java (connect): Use \r\n,
+	not just \n.
+
 2003-10-13  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/File.java: Reformated.
