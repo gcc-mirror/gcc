@@ -96,7 +96,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/powerpc/ffi_darwin.c \
 		src/powerpc/darwin.S src/powerpc/aix.S \
 		src/powerpc/darwin_closure.S src/powerpc/aix_closures.S \
-		src/arm/ffi.c src/arm/sysv.S
+		src/arm/ffi.c src/arm/sysv.S \
+		src/s390/ffi.c src/s390/sysv.S
 
 
 VPATH = @srcdir@:@srcdir@/src:@srcdir@/src/@TARGETDIR@
@@ -174,6 +175,7 @@ TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S src/powerpc/ppc_closur
 TARGET_SRC_POWERPC_AIX = src/powerpc/ffi_darwin.c src/powerpc/aix.S src/powerpc/aix_closures.S
 TARGET_SRC_POWERPC_DARWIN = src/powerpc/ffi_darwin.c src/powerpc/darwin.S src/powerpc/darwin_closure.S
 TARGET_SRC_ARM = src/arm/sysv.S src/arm/ffi.c
+TARGET_SRC_S390 = src/s390/sysv.S src/s390/ffi.c
 
 libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 		src/raw_api.c src/java_raw_api.c
@@ -190,6 +192,7 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @POWERPC_AIX_TRUE@libffi_la_SOURCES = @POWERPC_AIX_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_AIX)
 @POWERPC_DARWIN_TRUE@libffi_la_SOURCES = @POWERPC_DARWIN_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_DARWIN)
 @ARM_TRUE@libffi_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
+@S390_TRUE@libffi_la_SOURCES = @S390_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_S390)
 @MIPS_GCC_TRUE@libffi_convenience_la_SOURCES = @MIPS_GCC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
 @MIPS_SGI_TRUE@libffi_convenience_la_SOURCES = @MIPS_SGI_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
 @X86_TRUE@libffi_convenience_la_SOURCES = @X86_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
@@ -202,6 +205,7 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @POWERPC_AIX_TRUE@libffi_convenience_la_SOURCES = @POWERPC_AIX_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_AIX)
 @POWERPC_DARWIN_TRUE@libffi_convenience_la_SOURCES = @POWERPC_DARWIN_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC_DARWIN)
 @ARM_TRUE@libffi_convenience_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
+@S390_TRUE@libffi_convenience_la_SOURCES = @S390_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_S390)
 
 AM_CFLAGS = -fexceptions
 
@@ -244,6 +248,9 @@ libffi_convenience_la_LIBADD =
 @MIPS_SGI_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
 @MIPS_SGI_TRUE@src/java_raw_api.lo src/mips/ffi.lo src/mips/o32.lo \
 @MIPS_SGI_TRUE@src/mips/n32.lo
+@S390_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@S390_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@S390_TRUE@src/s390/sysv.lo src/s390/ffi.lo
 @X86_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @X86_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @X86_TRUE@src/x86/ffi.lo src/x86/sysv.lo
@@ -285,6 +292,9 @@ libffi_la_LIBADD =
 @MIPS_SGI_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @MIPS_SGI_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @MIPS_SGI_TRUE@src/mips/ffi.lo src/mips/o32.lo src/mips/n32.lo
+@S390_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@S390_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@S390_TRUE@src/s390/sysv.lo src/s390/ffi.lo
 @X86_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @X86_TRUE@src/raw_api.lo src/java_raw_api.lo src/x86/ffi.lo \
 @X86_TRUE@src/x86/sysv.lo
@@ -579,8 +589,8 @@ distdir: $(DISTFILES)
 	-chmod 777 $(distdir)
 	$(mkinstalldirs) $(distdir)/src/alpha $(distdir)/src/arm \
 	   $(distdir)/src/m68k $(distdir)/src/mips \
-	   $(distdir)/src/powerpc $(distdir)/src/sparc \
-	   $(distdir)/src/x86
+	   $(distdir)/src/powerpc $(distdir)/src/s390 \
+	   $(distdir)/src/sparc $(distdir)/src/x86
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \

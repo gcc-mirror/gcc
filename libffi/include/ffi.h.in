@@ -251,6 +251,12 @@ typedef enum ffi_abi {
   FFI_DEFAULT_ABI = FFI_SYSV,
 #endif
 
+  /* ---- S390 --------------------- */
+#ifdef S390
+  FFI_SYSV,
+  FFI_DEFAULT_ABI = FFI_SYSV,
+#endif
+
   /* Leave this for debugging purposes */
   FFI_LAST_ABI
 
