@@ -3899,7 +3899,7 @@ sched_analyze (head, tail)
 	      add_dependence (insn, XEXP (x, 0), REG_DEP_ANTI);
 	      x = XEXP (x, 1);
 	    }
-	  LOG_LINKS (sched_before_next_call) = 0;
+	  free_INSN_LIST_list (&LOG_LINKS (sched_before_next_call));
 
 	  sched_analyze_insn (PATTERN (insn), insn, loop_notes);
 	  loop_notes = 0;
