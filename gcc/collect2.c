@@ -158,6 +158,10 @@ char *strerror();
 #define MY_ISCOFF(X) ISCOFF (X)
 #endif
 
+#ifdef XCOFF_DEBUGGING_INFO
+#define XCOFF_SCAN_LIBS
+#endif
+
 #endif /* OBJECT_FORMAT_COFF */
 
 #ifdef OBJECT_FORMAT_ROSE
@@ -196,7 +200,7 @@ char *strerror();
 #define SYMBOL__MAIN __main
 #endif
 
-#if defined (LDD_SUFFIX) || SUNOS4_SHARED_LIBRARIES
+#if defined (LDD_SUFFIX) || SUNOS4_SHARED_LIBRARIES || defined(XCOFF_SCAN_LIBS)
 #define SCAN_LIBRARIES
 #endif
 
@@ -2572,6 +2576,165 @@ scan_prog_file (prog_name, which_pass)
 
   (void) ldclose(ldptr);
 }
+
+#ifdef XCOFF_SCAN_LIBS
+/* Scan imported AIX libraries for GCC static ctors and dtors.
+   FIXME: it is possible to link an executable without the actual import
+	  library by using an "import file" - a text file listing symbols
+	  exported by a library.  To support this, we would have to scan
+	  import files as well as actual shared binaries to find GCC ctors.
+   TODO: use memory mapping instead of 'ld' routines, files are already
+	 memory mapped, but we could eliminate the extra in-memory copies.
+	 Is it worth the effort?  */
+
+static void
+scan_libraries (prog_name)
+     char *prog_name;
+{
+  LDFILE *ldptr;
+  SCNHDR ldsh;
+  static struct path_prefix libpath; /* we should only do this once */
+
+  if ((ldptr = ldopen (prog_name, ldptr)) == NULL)
+    fatal ("%s: can't open as COFF file", prog_name);
+      
+  if (!MY_ISCOFF (HEADER (ldptr).f_magic))
+    fatal ("%s: not a COFF file", prog_name);
+
+  /* find and read loader section */
+  if (ldnshread (ldptr, _LOADER, &ldsh))
+    {
+      LDHDR ldh;
+      char *impbuf;
+      int idx;
+      FSEEK (ldptr, ldsh.s_scnptr, BEGINNING);
+      FREAD (&ldh, sizeof ldh, 1, ldptr);
+      /* read import library list */
+      impbuf = alloca (ldh.l_istlen);
+      FSEEK (ldptr, ldh.l_impoff + ldsh.s_scnptr, BEGINNING);
+      FREAD (impbuf, ldh.l_istlen, 1, ldptr);
+      idx = strlen (impbuf) + 1;
+      idx += strlen (impbuf+idx) + 1;
+      if (debug)
+	fprintf (stderr, "LIBPATH=%s\n", impbuf);
+      prefix_from_string (impbuf, &libpath);
+      while (idx < ldh.l_istlen)
+	{
+	  char *implib = impbuf + idx;
+	  char *impmem = implib + strlen (implib) + 1;
+	  char *soname = 0;
+	  LDFILE *libptr = NULL;
+	  struct prefix_list *pl;
+	  ARCHDR ah;
+	  idx += strlen (implib) + 1;
+	  if (!implib[0])
+	    continue;
+	  idx += strlen (impmem) + 1;
+	  if (*implib == '/')
+	    {
+	      if (access (soname, R_OK) == 0)
+		soname = implib;
+	    }
+	  else
+	    {
+	      char *temp = alloca (libpath.max_len + strlen (implib) + 1);
+	      for (pl = libpath.plist; pl; pl = pl->next)
+		{
+		  strcpy (temp, pl->prefix);
+		  strcat (temp, implib);
+		  if (access (temp, R_OK) == 0)
+		    {
+		      soname = temp;
+		      break;
+		    }
+		}
+	    }
+	  if (!soname)
+	    {
+	      fatal ("%s: library not found", implib);
+	      continue;
+	    }
+	  if (debug)
+	    {
+	      if (impmem[0])
+		fprintf (stderr, "%s (%s)\n", soname, impmem);
+	      else
+		fprintf (stderr, "%s\n", soname);
+	    }
+	  ah.ar_name[0] = 0;
+	  do
+	    {
+	      /* scan imported shared objects for GCC GLOBAL ctors */
+	      short type;
+	      if ((libptr = ldopen (soname, libptr)) == NULL)
+		fatal ("%s: can't open import library", soname);
+	      if (TYPE (libptr) == ARTYPE)
+		{
+		  LDFILE *memptr;
+		  if (!impmem[0])
+		    fatal ("%s: no archive member specified", soname);
+		  ldahread (libptr, &ah);
+		  if (strcmp (ah.ar_name, impmem))
+		    continue;
+		}
+	      type = HEADER (libptr).f_magic;
+	      if (HEADER (libptr).f_flags & F_SHROBJ)
+		{
+		  SCNHDR soldsh;
+		  LDHDR soldh;
+		  long symcnt, i;
+		  char *ldstrings;
+		  LDSYM *lsyms;
+		  if (!ldnshread (libptr, _LOADER, &soldsh))
+		    fatal ("%s: not an import library", soname);
+		  FSEEK (libptr, soldsh.s_scnptr, BEGINNING);
+		  if (FREAD (&soldh, sizeof soldh, 1, libptr) != 1)
+		    fatal ("%s: can't read loader section", soname);
+		  /*fprintf (stderr, "\tscanning %s\n", soname);*/
+		  symcnt = soldh.l_nsyms;
+		  lsyms = alloca (symcnt * sizeof *lsyms);
+		  symcnt = FREAD (lsyms, sizeof *lsyms, symcnt, libptr);
+		  ldstrings = alloca (soldh.l_stlen);
+		  FSEEK (libptr, soldsh.s_scnptr+soldh.l_stoff, BEGINNING);
+		  FREAD (ldstrings, soldh.l_stlen, 1, libptr);
+		  for (i = 0; i < symcnt; ++i)
+		    {
+		      LDSYM *l = lsyms + i;
+		      if (LDR_EXPORT (*l))
+			{
+			  char *expname = 0;
+			  if (l->l_zeroes)
+			    expname = l->l_name;
+			  else if (l->l_offset < soldh.l_stlen)
+			    expname = ldstrings + l->l_offset;
+			  switch (is_ctor_dtor (expname))
+			    {
+			    case 3:
+			      if (debug)
+				fprintf (stderr, "\t%s\n", expname);
+			      add_to_list (&constructors, expname);
+			      break;
+
+			    case 4:
+			      add_to_list (&destructors, expname);
+			      break;
+
+			    default: /* not a constructor or destructor */
+			      continue;
+			    }
+			}
+		    }
+		}
+	      else
+		fprintf (stderr, "%s: type = %04X flags = %04X\n", 
+			 ah.ar_name, type, HEADER (libptr).f_flags);
+	    }
+	  while (ldclose (libptr) == FAILURE);
+	  /* printf (stderr, "closed %s\n", soname); */
+	}
+    }
+}
+#endif /* XCOFF_SCAN_LIBS */
 
 #endif /* OBJECT_FORMAT_COFF */
 
