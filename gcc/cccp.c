@@ -256,9 +256,9 @@ int traditional;
 
 int c89;
 
-/* Nonzero for the 199x C Standard.  */
+/* Nonzero for the 1999 C Standard.  */
 
-int c9x;
+int c99;
 
 /* Nonzero causes output not to be done,
    but directives such as #define that have side effects
@@ -581,7 +581,7 @@ static char rest_extension[] = "...";
 #define REST_EXTENSION_LENGTH	(sizeof (rest_extension) - 1)
 
 /* This is the implicit parameter name when using variable number of
-   parameters for macros using the ISO C 9x extension.  */
+   parameters for macros using the ISO C 99 extension.  */
 static char va_args_name[] = "__VA_ARGS__";
 #define VA_ARGS_NAME_LENGTH	(sizeof (va_args_name) - 1)
 
@@ -1128,8 +1128,8 @@ print_help ()
   printf ("  -lang-fortran	       Assume that the input sources are in Fortran\n");
   printf ("  -lang-chill               Assume that the input sources are in Chill\n");
   printf ("  -std=<std name>           Specify the conformance standard; one of:\n");
-  printf ("                            gnu89, gnu9x, c89, c9x, iso9899:1990,\n");
-  printf ("                            iso9899:199409, iso9899:199x\n");
+  printf ("                            gnu89, gnu99, c89, c99, iso9899:1990,\n");
+  printf ("                            iso9899:199409, iso9899:1999\n");
   printf ("  -+                        Allow parsing of C++ style features\n");
   printf ("  -w                        Inhibit warning messages\n");
   printf ("  -Wtrigraphs               Warn if trigraphs are encountered\n");
@@ -1445,19 +1445,19 @@ main (argc, argv)
 
       case 'l':
 	if (! strcmp (argv[i], "-lang-c"))
-	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c99 = 1, objc = 0;
 	else if (! strcmp (argv[i], "-lang-c89"))
 	  {
-	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c99 = 0, objc = 0;
 	    no_trigraphs = 0;
 	    pend_defs[2*i] = "__STRICT_ANSI__";
 	  }
 	else if (! strcmp (argv[i], "-lang-c++"))
-	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 0;
+	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c99 = 0, objc = 0;
 	else if (! strcmp (argv[i], "-lang-objc"))
-	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 1;
+	  cplusplus = 0, cplusplus_comments = 1, c89 = 0, c99 = 0, objc = 1;
 	else if (! strcmp (argv[i], "-lang-objc++"))
-	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c9x = 0, objc = 1;
+	  cplusplus = 1, cplusplus_comments = 1, c89 = 0, c99 = 0, objc = 1;
  	else if (! strcmp (argv[i], "-lang-asm"))
  	  lang_asm = 1;
 	else if (! strcmp (argv[i], "-lang-fortran"))
@@ -1473,24 +1473,24 @@ main (argc, argv)
       case 's':
 	if (!strcmp (argv[i], "-std=gnu89"))
 	  {
-	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c99 = 0, objc = 0;
 	  }
 	else if (!strcmp (argv[i], "-std=gnu9x")
 		 || !strcmp (argv[i], "-std=gnu99"))
 	  {
-	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c99 = 1, objc = 0;
 	    pend_defs[2*i+1] = "__STDC_VERSION__=199901L";
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:1990")
 		 || !strcmp (argv[i], "-std=c89"))
 	  {
-	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c99 = 0, objc = 0;
 	    no_trigraphs = 0;
 	    pend_defs[2*i] = "__STRICT_ANSI__";
 	  }
 	else if (!strcmp (argv[i], "-std=iso9899:199409"))
 	  {
-	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c9x = 0, objc = 0;
+	    cplusplus = 0, cplusplus_comments = 0, c89 = 1, c99 = 0, objc = 0;
 	    no_trigraphs = 0;
 	    pend_defs[2*i] = "__STRICT_ANSI__";
 	    pend_defs[2*i+1] = "__STDC_VERSION__=199409L";
@@ -1500,7 +1500,7 @@ main (argc, argv)
 		 || !strcmp (argv[i], "-std=c9x")
 		 || !strcmp (argv[i], "-std=c99"))
 	  {
-	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c9x = 1, objc = 0;
+	    cplusplus = 0, cplusplus_comments = 1, c89 = 0, c99 = 1, objc = 0;
 	    no_trigraphs = 0;
 	    pend_defs[2*i] = "__STRICT_ANSI__";
 	    pend_defs[2*i+1] = "__STDC_VERSION__=199901L";
@@ -5845,10 +5845,10 @@ create_definition (buf, limit, op)
 
       if (!is_idstart[*bp])
 	{
-	  if (c9x && limit - bp > (long) REST_EXTENSION_LENGTH
+	  if (c99 && limit - bp > (long) REST_EXTENSION_LENGTH
 	      && bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0)
 	    {
-	      /* This is the ISO C 9x way to write macros with variable
+	      /* This is the ISO C 99 way to write macros with variable
 		 number of arguments.  */
 	      rest_args = 1;
 	      temp->rest_args = 1;
@@ -5872,7 +5872,7 @@ create_definition (buf, limit, op)
       }
       if (bp == temp->name && rest_args == 1)
 	{
-	  /* This is the ISO C 9x style.  */
+	  /* This is the ISO C 99 style.  */
 	  temp->name = (U_CHAR *) va_args_name;
 	  temp->length = VA_ARGS_NAME_LENGTH;
 	}
@@ -5891,7 +5891,7 @@ create_definition (buf, limit, op)
 	SKIP_WHITE_SPACE (bp);
 	/* A comma at this point can only be followed by an identifier.  */
 	if (!is_idstart[*bp]
-	    && !(c9x && limit - bp > (long) REST_EXTENSION_LENGTH
+	    && !(c99 && limit - bp > (long) REST_EXTENSION_LENGTH
 		&&  bcmp (rest_extension, bp, REST_EXTENSION_LENGTH) == 0)) {
 	  error ("badly punctuated parameter list in `#define'");
 	  goto nope;

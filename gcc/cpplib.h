@@ -114,7 +114,7 @@ struct cpp_buffer
   parse_underflow_t underflow;
   parse_cleanup_t cleanup;
   void *data;
-  
+
   /* Value of if_stack at start of this file.
      Used to prohibit unmatched #endif (etc) in an include file.  */
   struct if_stack *if_stack;
@@ -185,7 +185,7 @@ struct cpp_reader
   /* Hash table of macros and assertions.  See cpphash.c */
 #define HASHSIZE 1403
   struct hashnode **hashtab;
-  
+
   /* Hash table of other included files.  See cppfiles.c */
 #define ALL_INCLUDE_HASHSIZE 71
   struct include_hash *all_include_files[ALL_INCLUDE_HASHSIZE];
@@ -465,9 +465,9 @@ struct cpp_options {
   /* Nonzero for the 1989 C Standard, including corrigenda and amendments.  */
   char c89;
 
-  /* Nonzero for the 199x C Standard, including corrigenda and amendments.  */
-  char c9x;
-  
+  /* Nonzero for the 1999 C Standard, including corrigenda and amendments.  */
+  char c99;
+
   /* Nonzero means give all the error messages the ANSI standard requires.  */
   char pedantic;
 
@@ -801,9 +801,8 @@ extern struct include_hash *include_hash PARAMS ((cpp_reader *, const char *, in
 #define INCLUDE_LEN_FUDGE 0
 #endif
 
-    
+
 #ifdef __cplusplus
 }
 #endif
 #endif /* __GCC_CPPLIB__ */
-
