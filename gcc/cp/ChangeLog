@@ -1,3 +1,11 @@
+2003-07-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7053
+	* pt.c (unregister_specialization): Rename to ...
+	(reregister_specialization): ... this.
+	(tsubst_friend_function): Use it.
+	(regenerate_decl_from_template): Likewise.
+
 2003-07-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11154
