@@ -558,17 +558,14 @@ expand_start_catch_block (declspecs, declarator)
 {
   tree decl;
 
-  if (processing_template_decl)
+  if (building_stmt_tree ())
     {
       if (declspecs)
 	{
 	  decl = grokdeclarator (declarator, declspecs, CATCHPARM,
 				 1, NULL_TREE);
 	  pushdecl (decl);
-	  decl = build_min_nt (DECL_STMT, copy_to_permanent (declarator),
-			       copy_to_permanent (declspecs),
-			       NULL_TREE);
-	  add_tree (decl);
+	  add_decl_stmt (decl);
 	}
       return;
     }
@@ -578,7 +575,6 @@ expand_start_catch_block (declspecs, declarator)
 
   process_start_catch_block (declspecs, declarator);
 }
-
 
 /* This function performs the expand_start_catch_block functionality for 
    exceptions implemented in the new style. __throw determines whether

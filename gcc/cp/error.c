@@ -1780,6 +1780,12 @@ dump_expr (t, nop)
       dump_decl (t, 0);
       break;
 
+    case STMT_EXPR:
+      /* We don't yet have a way of dumping statements in a
+	 human-readable format.  */
+      OB_PUTS ("{ ... }");
+      break;
+
     case BIND_EXPR:
       OB_PUTS ("{ ");
       dump_expr (TREE_OPERAND (t, 1), nop);
