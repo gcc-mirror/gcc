@@ -1,3 +1,7 @@
+Sat Jun  3 15:31:07 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* chill.texi (INFO-DIR-ENTRY): Fix chill entry.
+
 2000-06-02  Richard Henderson  <rth@cygnus.com>
 
 	* lang.c (lang_get_alias_set): New.
