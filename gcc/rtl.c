@@ -870,3 +870,14 @@ init_rtl ()
 	word_mode = mode;
     }
 }
+
+#ifdef memset
+gcc_memset (dest, value, len)
+     char *dest;
+     int value;
+     int len;
+{
+  while (len-- > 0)
+    *dest++ = value;
+}
+#endif /* memset */
