@@ -1,5 +1,16 @@
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cgraphunit.c (cgraph_mark_functions_to_output): Renable node
+	dumping for development builds.
+	* emit-rtl.c (verify_rtx_sharing): Give verbose failure for
+	development builds only.
+	* genattrtab.c (write_eligible_delay): Fix typo in previous
+	commit.
+	* tree.c (iterative_hash_expr): Replace gcc_unreachable with
+	gcc_assert.
+
+2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* gcse.c (INSN_CUID, insert_set_in_table, find_avail_set,
 	cprop_insn, do_local_cprop, local_cprop_pass, find_bypass_set,
 	process_insert_insn, insert_insn_end_bb, pre_insert_copy_insn,

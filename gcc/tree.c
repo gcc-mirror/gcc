@@ -4044,8 +4044,10 @@ iterative_hash_expr (tree t, hashval_t val)
 	  /* Decls we can just compare by pointer.  */
 	  val = iterative_hash_pointer (t, val);
 	}
-      else if (IS_EXPR_CODE_CLASS (class))
+      else
 	{
+	  gcc_assert (IS_EXPR_CODE_CLASS (class));
+	  
 	  val = iterative_hash_object (code, val);
 
 	  /* Don't hash the type, that can lead to having nodes which
@@ -4080,8 +4082,6 @@ iterative_hash_expr (tree t, hashval_t val)
 	    for (i = first_rtl_op (code) - 1; i >= 0; --i)
 	      val = iterative_hash_expr (TREE_OPERAND (t, i), val);
 	}
-      else
-	gcc_unreachable ();
       return val;
       break;
     }

@@ -776,9 +776,21 @@ cgraph_mark_functions_to_output (void)
 	  && !DECL_EXTERNAL (decl))
 	node->output = 1;
       else
-	/* We should've reclaimed all functions that are not needed.  */
-	gcc_assert (node->global.inlined_to || !DECL_SAVED_TREE (decl)
-		    || DECL_EXTERNAL (decl));
+	{
+	  /* We should've reclaimed all functions that are not needed.  */
+#ifdef ENABLE_CHECKING
+	  if (!node->global.inlined_to && DECL_SAVED_TREE (decl)
+	      && !DECL_EXTERNAL (decl))
+	    {
+	      dump_cgraph_node (stderr, node);
+	      internal_error ("failed to reclaim unneeded function");
+	    }
+#endif
+	  gcc_assert (node->global.inlined_to || !DECL_SAVED_TREE (decl)
+		      || DECL_EXTERNAL (decl));
+
+	}
+      
     }
 }
 

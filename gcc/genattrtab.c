@@ -4125,7 +4125,7 @@ write_eligible_delay (const char *kind)
   printf ("{\n");
   printf ("  rtx insn;\n");
   printf ("\n");
-  printf ("  gcc_assert (slot < %d)\n", max_slots);
+  printf ("  gcc_assert (slot < %d);\n", max_slots);
   printf ("\n");
   /* Allow dbr_schedule to pass labels, etc.  This can happen if try_split
      converts a compound instruction into a loop.  */

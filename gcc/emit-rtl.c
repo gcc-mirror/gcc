@@ -2260,15 +2260,18 @@ verify_rtx_sharing (rtx orig, rtx insn)
 
   /* This rtx may not be shared.  If it has already been seen,
      replace it with a copy of itself.  */
-
+#ifdef ENABLE_CHECKING
   if (RTX_FLAG (x, used))
     {
       error ("Invalid rtl sharing found in the insn");
       debug_rtx (insn);
       error ("Shared rtx");
       debug_rtx (x);
-      fatal_error ("Internal consistency failure");
+      internal_error ("Internal consistency failure");
     }
+#endif
+  gcc_assert (!RTX_FLAG (x, used));
+  
   RTX_FLAG (x, used) = 1;
 
   /* Now scan the subexpressions recursively.  */
@@ -2291,9 +2294,11 @@ verify_rtx_sharing (rtx orig, rtx insn)
 
 	      for (j = 0; j < len; j++)
 		{
-		  /* We allow sharing of ASM_OPERANDS inside single instruction.  */
+		  /* We allow sharing of ASM_OPERANDS inside single
+		     instruction.  */
 		  if (j && GET_CODE (XVECEXP (x, i, j)) == SET
-		      && GET_CODE (SET_SRC (XVECEXP (x, i, j))) == ASM_OPERANDS)
+		      && (GET_CODE (SET_SRC (XVECEXP (x, i, j)))
+			  == ASM_OPERANDS))
 		    verify_rtx_sharing (SET_DEST (XVECEXP (x, i, j)), insn);
 		  else
 		    verify_rtx_sharing (XVECEXP (x, i, j), insn);
