@@ -1,3 +1,7 @@
+2005-03-27  Gabriel Dos Reis  <gdr@integreable-solutions.net>
+
+	* ternary.h: Don't use PARAMS anymore.
+
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* md5.h: Remove definition and uses of __P.

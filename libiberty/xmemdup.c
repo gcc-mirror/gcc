@@ -31,10 +31,7 @@ allocated, the remaining memory is zeroed.
 #endif
 
 PTR
-xmemdup (input, copy_size, alloc_size)
-  const PTR input;
-  size_t copy_size;
-  size_t alloc_size;
+xmemdup (const PTR input, size_t copy_size, size_t alloc_size)
 {
   PTR output = xcalloc (1, alloc_size);
   return (PTR) memcpy (output, input, copy_size);

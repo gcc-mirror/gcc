@@ -16,17 +16,11 @@ nonstandard but common function @code{_doprnt}.
 */
 
 #include <ansidecl.h>
-#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #include <stdio.h>
 #undef vprintf
 int
-vprintf (format, ap)
-     const char *format;
-     va_list ap;
+vprintf (const char *format, va_list ap)
 {
   return vfprintf (stdout, format, ap);
 }

@@ -28,8 +28,7 @@ obtain memory.
 #include "libiberty.h"
 
 char *
-xstrdup (s)
-  const char *s;
+xstrdup (const char *s)
 {
   register size_t len = strlen (s) + 1;
   register char *ret = xmalloc (len);

@@ -22,11 +22,7 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #endif
 #include <ansidecl.h>
-#ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
 #if !defined (va_copy) && defined (__va_copy)
 # define va_copy(d,s)  __va_copy((d),(s))
 #endif
@@ -62,13 +58,10 @@ not be allocated, minus one is returned and @code{NULL} is stored in
 
 */
 
-static int int_vasprintf PARAMS ((char **, const char *, va_list));
+static int int_vasprintf (char **, const char *, va_list);
 
 static int
-int_vasprintf (result, format, args)
-     char **result;
-     const char *format;
-     va_list args;
+int_vasprintf (char **result, const char *format, va_list args)
 {
   const char *p = format;
   /* Add one to make sure that it is never zero, which might cause malloc
@@ -156,13 +149,11 @@ int_vasprintf (result, format, args)
 }
 
 int
-vasprintf (result, format, args)
-     char **result;
-     const char *format;
+vasprintf (char **result, const char *format,
 #if defined (_BSD_VA_LIST_) && defined (__FreeBSD__)
-     _BSD_VA_LIST_ args;
+           _BSD_VA_LIST_ args)
 #else
-     va_list args;
+           va_list args)
 #endif
 {
   return int_vasprintf (result, format, args);
@@ -170,7 +161,7 @@ vasprintf (result, format, args)
 
 #ifdef TEST
 static void ATTRIBUTE_PRINTF_1
-checkit VPARAMS ((const char *format, ...))
+checkit (const char *format, ...)
 {
   char *result;
   VA_OPEN (args, format);
@@ -187,10 +178,10 @@ checkit VPARAMS ((const char *format, ...))
   free (result);
 }
 
-extern int main PARAMS ((void));
+extern int main (void);
 
 int
-main ()
+main (void)
 {
   checkit ("%d", 0x12345678);
   checkit ("%200d", 5);

@@ -23,9 +23,7 @@ does the return value.  The third argument is unused in @libib{}.
 #endif
 
 pid_t
-waitpid (pid, stat_loc, options)
-     pid_t pid;
-     int *stat_loc, options;
+waitpid (pid_t pid, int *stat_loc, int options)
 {
   for (;;)
     {

@@ -31,20 +31,14 @@ memory was available.  The result is always NUL terminated.
 */
 
 #include "ansidecl.h"
-#ifdef ANSI_PROTOTYPES
 #include <stddef.h>
-#else
-#define size_t unsigned long
-#endif
 
-extern size_t	strlen PARAMS ((const char*));
-extern PTR	malloc PARAMS ((size_t));
-extern PTR	memcpy PARAMS ((PTR, const PTR, size_t));
+extern size_t	strlen (const char*);
+extern PTR	malloc (size_t);
+extern PTR	memcpy (PTR, const PTR, size_t);
 
 char *
-strndup(s, n)
-     const char *s;
-     size_t n;
+strndup (const char *s, size_t n)
 {
   char *result;
   size_t len = strlen (s);

@@ -58,8 +58,7 @@ was made to unlink the file because it is special.
 #endif
 
 int
-unlink_if_ordinary (name)
-  const char *name;
+unlink_if_ordinary (const char *name)
 {
   struct stat st;
 
