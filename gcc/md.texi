@@ -2303,9 +2303,9 @@ is no @samp{casesi} pattern.
 
 This pattern requires two operands: the address or offset, and a label
 which should immediately precede the jump table.  If the macro
-@code{CASE_VECTOR_PC_RELATIVE} is defined then the first operand is an
-offset which counts from the address of the table; otherwise, it is an
-absolute address to jump to.  In either case, the first operand has
+@code{CASE_VECTOR_PC_RELATIVE} evaluates to a nonzero value then the first
+operand is an offset which counts from the address of the table; otherwise,
+it is an absolute address to jump to.  In either case, the first operand has
 mode @code{Pmode}.
 
 The @samp{tablejump} insn is always the last insn before the jump
