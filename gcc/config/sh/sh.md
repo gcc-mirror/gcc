@@ -3331,22 +3331,24 @@
 	      (clobber (reg:SI 17))])]
   ""
   "
-if (flag_pic && ! TARGET_SH1 && ! flag_unroll_loops
-    && GET_CODE (operands[0]) == MEM
-    && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF)
-  {
-    rtx reg = gen_reg_rtx (SImode), lab = gen_label_rtx ();
+{
+  if (flag_pic && TARGET_SH2 && ! flag_unroll_loops
+      && GET_CODE (operands[0]) == MEM
+      && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF)
+    {
+      rtx reg = gen_reg_rtx (SImode), lab = gen_label_rtx ();
 
-    if (SYMBOL_REF_FLAG (XEXP (operands[0], 0)))
-      emit_insn (gen_sym_label2reg (reg, XEXP (operands[0], 0), lab));
-    else
-      emit_insn (gen_symPLT_label2reg (reg, XEXP (operands[0], 0), lab));
-    operands[0] = reg;
-    emit_call_insn (gen_calli_pcrel (operands[0], operands[1], lab));
-    DONE;
-  }
-else
-  operands[0] = force_reg (SImode, XEXP (operands[0], 0));")
+      if (SYMBOL_REF_FLAG (XEXP (operands[0], 0)))
+	emit_insn (gen_sym_label2reg (reg, XEXP (operands[0], 0), lab));
+      else
+	emit_insn (gen_symPLT_label2reg (reg, XEXP (operands[0], 0), lab));
+      operands[0] = reg;
+      emit_call_insn (gen_calli_pcrel (operands[0], operands[1], lab));
+      DONE;
+    }
+  else
+    operands[0] = force_reg (SImode, XEXP (operands[0], 0));
+}")
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "arith_reg_operand" "")
@@ -3356,23 +3358,25 @@ else
 	      (clobber (reg:SI 17))])]
   ""
   "
-if (flag_pic && ! TARGET_SH1 && ! flag_unroll_loops
-    && GET_CODE (operands[1]) == MEM
-    && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
-  {
-    rtx reg = gen_reg_rtx (SImode), lab = gen_label_rtx ();
+{
+  if (flag_pic && TARGET_SH2 && ! flag_unroll_loops
+      && GET_CODE (operands[1]) == MEM
+      && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF)
+    {
+      rtx reg = gen_reg_rtx (SImode), lab = gen_label_rtx ();
 
-    if (SYMBOL_REF_FLAG (XEXP (operands[1], 0)))
-      emit_insn (gen_sym_label2reg (reg, XEXP (operands[1], 0), lab));
-    else
-      emit_insn (gen_symPLT_label2reg (reg, XEXP (operands[1], 0), lab));
-    operands[1] = reg;
-    emit_call_insn (gen_call_valuei_pcrel (operands[0], operands[1],
-					   operands[2], lab));
-    DONE;
-  }
-else
-  operands[1] = force_reg (SImode, XEXP (operands[1], 0));")
+      if (SYMBOL_REF_FLAG (XEXP (operands[1], 0)))
+	emit_insn (gen_sym_label2reg (reg, XEXP (operands[1], 0), lab));
+      else
+	emit_insn (gen_symPLT_label2reg (reg, XEXP (operands[1], 0), lab));
+      operands[1] = reg;
+      emit_call_insn (gen_call_valuei_pcrel (operands[0], operands[1],
+					     operands[2], lab));
+      DONE;
+    }
+  else
+    operands[1] = force_reg (SImode, XEXP (operands[1], 0));
+}")
 
 (define_insn "indirect_jump"
   [(set (pc)
