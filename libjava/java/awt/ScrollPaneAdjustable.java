@@ -63,6 +63,8 @@ public class ScrollPaneAdjustable
   int blockIncrement = 1;
   AdjustmentListener adjustmentListener;
 
+  private transient boolean valueIsAdjusting = false;
+
   ScrollPaneAdjustable (ScrollPane sp, int orientation)
   {
     this.sp = sp;
@@ -175,5 +177,24 @@ public class ScrollPaneAdjustable
     throw new Error ("not implemented");
   }
 
+  /**
+   * Returns true if the value is in the process of changing.
+   *
+   * @since 1.4
+   */
+  public boolean getValueIsAdjusting ()
+  {
+    return valueIsAdjusting;
+  }
+
+  /**
+   * Sets the value of valueIsAdjusting.
+   *
+   * @since 1.4
+   */
+  public void setValueIsAdjusting (boolean valueIsAdjusting)
+  {
+    this.valueIsAdjusting = valueIsAdjusting;
+  }
 } // class ScrollPaneAdjustable
 

@@ -57,10 +57,14 @@ import java.util.ResourceBundle;
 public class Window extends Container
 {
   // Serialized fields, from Sun's serialization spec.
-  // private FocusManager focusMgr;  // FIXME: what is this?  
   private String warningString = null;
-  private int state = 0;
   private int windowSerializedDataVersion = 0; // FIXME
+  /** @since 1.2 */
+  // private FocusManager focusMgr;  // FIXME: what is this?  
+  /** @since 1.2 */
+  private int state = 0;
+  /** @since 1.4 */
+  private boolean focusableWindowState = true;
 
   private transient WindowListener windowListener;
   private transient WindowFocusListener windowFocusListener;
@@ -644,5 +648,44 @@ public class Window extends Container
     if (windowStateListener != null
         && event.getID () == WindowEvent.WINDOW_STATE_CHANGED)
       windowStateListener.windowStateChanged (event);
+  }
+
+  /**
+   * Returns whether this <code>Window</code> can get the focus or not.
+   *
+   * @since 1.4
+   */
+  public boolean isFocusableWindow ()
+  {
+    if (getFocusableWindowState () == false)
+      return false;
+
+    if (this instanceof Dialog
+        || this instanceof Frame)
+      return true;
+
+    // FIXME: Implement more possible cases for returning true.
+
+    return false;
+  }
+  
+  /**
+   * Returns the value of the focusableWindowState property.
+   * 
+   * @since 1.4
+   */
+  public boolean getFocusableWindowState ()
+  {
+    return focusableWindowState;
+  }
+
+  /**
+   * Sets the value of the focusableWindowState property.
+   * 
+   * @since 1.4
+   */
+  public void setFocusableWindowState (boolean focusableWindowState)
+  {
+    this.focusableWindowState = focusableWindowState;
   }
 }
