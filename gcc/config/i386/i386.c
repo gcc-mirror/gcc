@@ -748,7 +748,7 @@ override_options ()
 
   /* If we're doing fast math, we don't care about comparison order
      wrt NaNs.  This lets us use a shorter comparison sequence.  */
-  if (flag_fast_math)
+  if (flag_unsafe_math_optimizations)
     target_flags &= ~MASK_IEEE_FP;
 
   /* It makes no sense to ask for just SSE builtins, so MMX is also turned

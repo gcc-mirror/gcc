@@ -1446,6 +1446,7 @@ by type.  Explanations are in the following sections.
 -malign-double
 -ffloat-store  -fforce-mem  -fforce-addr  -fno-inline
 -ffast-math  -fstrength-reduce  -frerun-cse-after-loop
+-funsafe-math-optimizations -fno-trapping-math
 -fexpensive-optimizations  -fdelayed-branch
 -fschedule-insns  -fschedule-insn2  -fcaller-saves
 -funroll-loops  -funroll-all-loops
@@ -2779,6 +2780,22 @@ Note that if you are not optimizing, no functions can be expanded inline.
 @cindex conformance, IEEE 754
 Might allow some programs designed to not be too dependent
 on IEEE behavior for floating-point to run faster, or die trying.
+Sets @samp{-funsafe-math-optimizations}, and
+@samp{-fno-trapping-math}.
+
+@cindex -funsafe-math-optimizations option
+@cindex options, -funsafe-math-optimizations
+@item -funsafe-math-optimizations
+Allow optimizations that may be give incorrect results
+for certain IEEE inputs.
+
+@cindex -fno-trapping-math option
+@cindex options, -fno-trapping-math
+@item -fno-trapping-math
+Allow the compiler to assume that floating-point arithmetic
+will not generate traps on any inputs.  This is useful, for
+example, when running a program using IEEE "non-stop"
+floating-point arithmetic.
 
 @cindex -fstrength-reduce option
 @cindex options, -fstrength-reduce

@@ -1678,7 +1678,7 @@ alpha_emit_conditional_branch (code)
   if (alpha_compare.fp_p)
     {
       cmp_mode = DFmode;
-      if (flag_fast_math)
+      if (flag_unsafe_math_optimizations)
 	{
 	  /* When we are not as concerned about non-finite values, and we
 	     are comparing against zero, we can branch directly.  */
@@ -1879,7 +1879,7 @@ alpha_emit_conditional_move (cmp, mode)
     = (GET_MODE (op0) == VOIDmode ? DImode : GET_MODE (op0));
   enum machine_mode cmp_op_mode = fp_p ? DFmode : DImode;
   enum machine_mode cmov_mode = VOIDmode;
-  int local_fast_math = flag_fast_math;
+  int local_fast_math = flag_unsafe_math_optimizations;
   rtx tem;
 
   /* Zero the operands.  */

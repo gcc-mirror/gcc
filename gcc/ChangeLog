@@ -1,3 +1,51 @@
+2001-03-07  Brad Lucier  <lucier@math.purdue.edu>
+
+	* builtins.c (expand_builtin_mathfn): Check
+	flag_unsafe_math_optimizations, not flag_fast_math.
+	(expand_builtin): Likewise
+	* combine.c (combine_simplify_rtx): Likewise.
+	(simplify_if_then_else): Likewise.
+	* cse.c (fold_rtx): Likewise.
+	* flags.h: Remove flag_fast_math.  Add 
+	flag_unsafe_math_optimizations and flag_trapping_math.
+	* fold-const.c (negate_expr): Check
+	flag_unsafe_math_optimizations, not flag_fast_math.
+	(invert_truthvalue): Likewise.
+	(fold): Likewise.  Before associating operands, check that
+	code == MULT_EXPR, not code != MULT_EXPR.
+	* ifcvt.c (noce_try_minmax): Check
+	flag_unsafe_math_optimizations, not flag_fast_math.
+	(noce_operand_ok): Check flag_trapping_math, not flag_fast_math.
+	* invoke.texi: Document -funsafe-math-optimizations and
+	-fno-trapping-math.  Change documentation for -ffast-math.
+	* jump.c (reversed_comparison_code_parts): Likewise.
+	(rtx_equal_for_thread_p): Likewise.
+	* optabs.c (emit_conditional_move): Likewise.
+	* simplify-rtx.c (simplify_binary_operation): Likewise.
+	(simplify_relational_operation): Likewise.
+	(simplify_ternary_operation): Likewise.
+	* toplev.c: Remove flag_fast_math.  Add flag_trapping_math and
+	flag_unsafe_math_optimizations.  Remove fast-math entry from f_options.
+	Add trapping-math and unsafe-math-optimizations entries to f_options.
+	(set_fast_math_flags): New, sets flags for -ffast-math.
+	(set_no_fast_math_flags): New, sets flags for -fno-fast-math.
+	(decode_f_option): Add code to handle -ffast-math and -fno-fast-math.
+	* toplev.h: Declare set_fast_math_flags and set_no_fast_math_flags.
+
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Likewise.
+	(alpha_emit_conditional_move): Initialize local_fast_math to
+	flag_unsafe_math_optimizations, not flat_fast_math.
+	* config/c4x/c4x.c (c4x_override_options): Call set_fast_math_flags
+	instead of setting flag_fast_math to 1.
+	* config/convex/convex.md: Check flag_unsafe_math_optimizations,
+	not flag_fast_math.
+	* config/i386/i386.c (override_options): Likewise
+	* config/i386/i386.md: Likewise.
+	* config/m68k/m68k.md: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/rs6000/rs6000.c (validate_condition_mode): Likewise.
+	(rs6000_generate_compare): Likewise.
+
 2001-03-07  Laurynas Biveinis  <lauras@softhome.net>
 
         * Makefile.in: Set RANLIB to @RANLIB@.

@@ -1311,7 +1311,7 @@ negate_expr (t)
 
     case MINUS_EXPR:
       /* - (A - B) -> B - A  */
-      if (! FLOAT_TYPE_P (type) || flag_fast_math)
+      if (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
 	return convert (type,
 			fold (build (MINUS_EXPR, TREE_TYPE (t),
 				     TREE_OPERAND (t, 1),
@@ -2719,7 +2719,9 @@ invert_truthvalue (arg)
   if (TREE_CODE_CLASS (code) == '<')
     {
       if (FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
-	  && !flag_fast_math && code != NE_EXPR && code != EQ_EXPR)
+	  && !flag_unsafe_math_optimizations
+	  && code != NE_EXPR 
+	  && code != EQ_EXPR)
 	return build1 (TRUTH_NOT_EXPR, type, arg);
       else
 	return build (invert_tree_comparison (code), type,
@@ -5262,7 +5264,7 @@ fold (expr)
 
       /* Convert - (a - b) to (b - a) for non-floating-point.  */
       else if (TREE_CODE (arg0) == MINUS_EXPR
-	       && (! FLOAT_TYPE_P (type) || flag_fast_math))
+	       && (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations))
 	return build (MINUS_EXPR, type, TREE_OPERAND (arg0, 1),
 		      TREE_OPERAND (arg0, 0));
 
@@ -5457,7 +5459,7 @@ fold (expr)
 	}
       /* In IEEE floating point, x+0 may not equal x.  */
       else if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-		|| flag_fast_math)
+		|| flag_unsafe_math_optimizations)
 	       && real_zerop (arg1))
 	return non_lvalue (convert (type, arg0));
       /* x+(-0) equals x, even for IEEE.  */
@@ -5541,11 +5543,11 @@ fold (expr)
 	 parentheses.  Rather than remember where the parentheses were, we
 	 don't associate floats at all.  It shouldn't matter much.  However,
 	 associating multiplications is only very slightly inaccurate, so do
-	 that if -ffast-math is specified.  */
+	 that if -funsafe-math-optimizations is specified.  */
 
       if (! wins
 	  && (! FLOAT_TYPE_P (type)
-	      || (flag_fast_math && code != MULT_EXPR)))
+	      || (flag_unsafe_math_optimizations && code == MULT_EXPR)))
 	{
 	  tree var0, con0, lit0, var1, con1, lit1;
 
@@ -5622,7 +5624,7 @@ fold (expr)
 	}
 
       else if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || flag_fast_math)
+	       || flag_unsafe_math_optimizations)
 	{
 	  /* Except with IEEE floating point, 0-x equals -x.  */
 	  if (! wins && real_zerop (arg0))
@@ -5638,7 +5640,7 @@ fold (expr)
 	 Also note that operand_equal_p is always false if an operand
 	 is volatile.  */
 
-      if ((! FLOAT_TYPE_P (type) || flag_fast_math)
+      if ((! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
 	  && operand_equal_p (arg0, arg1, 0))
 	return convert (type, integer_zero_node);
 
@@ -5677,7 +5679,7 @@ fold (expr)
 	{
 	  /* x*0 is 0, except for IEEE floating point.  */
 	  if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	       || flag_fast_math)
+	       || flag_unsafe_math_optimizations)
 	      && real_zerop (arg1))
 	    return omit_one_operand (type, arg1, arg0);
 	  /* In IEEE floating point, x*1 is not equivalent to x for snans.
@@ -5834,12 +5836,12 @@ fold (expr)
 
       /* If ARG1 is a constant, we can convert this to a multiply by the
 	 reciprocal.  This does not have the same rounding properties,
-	 so only do this if -ffast-math.  We can actually always safely
-	 do it if ARG1 is a power of two, but it's hard to tell if it is
-	 or not in a portable manner.  */
+	 so only do this if -funsafe-math-optimizations.  We can actually
+	 always safely do it if ARG1 is a power of two, but it's hard to
+	 tell if it is or not in a portable manner.  */
       if (TREE_CODE (arg1) == REAL_CST)
 	{
-	  if (flag_fast_math
+	  if (flag_unsafe_math_optimizations
 	      && 0 != (tem = const_binop (code, build_real (type, dconst1),
 					  arg1, 0)))
 	    return fold (build (MULT_EXPR, type, arg0, tem));
@@ -6899,7 +6901,7 @@ fold (expr)
       if (TREE_CODE_CLASS (TREE_CODE (arg0)) == '<'
 	  && (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
 	      || ! FLOAT_TYPE_P (TREE_TYPE (TREE_OPERAND (arg0, 0)))
-	      || flag_fast_math)
+	      || flag_unsafe_math_optimizations)
 	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0),
 					     arg1, TREE_OPERAND (arg0, 1)))
 	{

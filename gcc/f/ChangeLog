@@ -1,8 +1,13 @@
+2001-03-07  Brad Lucier  <lucier@math.purdue.edu>
+
+	* g77.texi: Document new options -funsafe-math-optimizations
+	and -fno-trapping-math.  Revise documentation for -ffast-math.
+
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
-	* f/proj.h: Delete 'bool' type.  Don't include stddef.h here.
-	* f/com.c: Rename variables named 'true' and/or 'false'.
-	* f/intdoc.c: Delete 'bool' type.
+	* proj.h: Delete 'bool' type.  Don't include stddef.h here.
+	* com.c: Rename variables named 'true' and/or 'false'.
+	* intdoc.c: Delete 'bool' type.
 
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 

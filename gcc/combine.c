@@ -4021,7 +4021,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  && (! FLOAT_MODE_P (mode)
 	      /* x-y != -(y-x) with IEEE floating point.  */
 	      || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	      || flag_fast_math))
+	      || flag_unsafe_math_optimizations))
 	return gen_binary (MINUS, mode, XEXP (XEXP (x, 0), 1),
 			   XEXP (XEXP (x, 0), 0));
 
@@ -4189,7 +4189,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       /* In IEEE floating point, x-0 is not the same as x.  */
       if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
 	   || ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0)))
-	   || flag_fast_math)
+	   || flag_unsafe_math_optimizations)
 	  && XEXP (x, 1) == CONST0_RTX (GET_MODE (XEXP (x, 0))))
 	return XEXP (x, 0);
       break;
@@ -4777,12 +4777,12 @@ simplify_if_then_else (x)
 
   /* Convert a == b ? b : a to "a".  */
   if (true_code == EQ && ! side_effects_p (cond)
-      && (! FLOAT_MODE_P (mode) || flag_fast_math)
+      && (! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
       && rtx_equal_p (XEXP (cond, 0), false_rtx)
       && rtx_equal_p (XEXP (cond, 1), true_rtx))
     return false_rtx;
   else if (true_code == NE && ! side_effects_p (cond)
-	   && (! FLOAT_MODE_P (mode) || flag_fast_math)
+	   && (! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
 	   && rtx_equal_p (XEXP (cond, 0), true_rtx)
 	   && rtx_equal_p (XEXP (cond, 1), false_rtx))
     return true_rtx;
@@ -4810,7 +4810,7 @@ simplify_if_then_else (x)
 
   /* Look for MIN or MAX.  */
 
-  if ((! FLOAT_MODE_P (mode) || flag_fast_math)
+  if ((! FLOAT_MODE_P (mode) || flag_unsafe_math_optimizations)
       && comparison_p
       && rtx_equal_p (XEXP (cond, 0), true_rtx)
       && rtx_equal_p (XEXP (cond, 1), false_rtx)

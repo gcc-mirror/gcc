@@ -327,21 +327,27 @@ extern int flag_volatile_global;
 
 extern int flag_volatile_static;
 
-/* Nonzero allows GCC to violate some IEEE or ANSI rules regarding math
-   operations in the interest of optimization.  For example it allows
-   GCC to assume arguments to sqrt are nonnegative numbers, allowing
-   faster code for sqrt to be generated. */
-
-extern int flag_fast_math;
-
 /* Nonzero allows GCC to optimize sibling and tail recursive calls.  */
 
 extern int flag_optimize_sibling_calls;
 
 /* Nonzero means the front end generally wants `errno' maintained by math
-   operations, like built-in SQRT, unless overridden by flag_fast_math.  */
+   operations, like built-in SQRT.  */
 
 extern int flag_errno_math;
+
+/* Nonzero means that unsafe floating-point math optimizations are allowed
+   for the sake of speed.  IEEE compliance is not guaranteed, and operations
+   are allowed to assume that their arguments and results are "normal"
+   (e.g., nonnegative for SQRT).  */
+
+extern int flag_unsafe_math_optimizations;
+
+/* Zero means that floating-point math operations cannot generate a
+   (user-visible) trap.  This is the case, for example, in nonstop
+   IEEE 754 arithmetic.  */
+
+extern int flag_trapping_math;
 
 /* 0 means straightforward implementation of complex divide acceptable.
    1 means wide ranges of inputs must work for complex divide.
