@@ -1,3 +1,7 @@
+2005-01-01  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* include/boehm-gc.h: Include gc_ext_config.h, not gc_config.h.
+
 2004-12-31  Andreas Jaeger  <aj@suse.de>
 
 	* testsuite/lib/libjava.exp (libjava_find_gij): Handle multilibs.
