@@ -47,12 +47,22 @@ compilation is specified by a string called a "spec".  */
 #define X_OK 1
 #endif
 
+/* Define a generic NULL if one hasn't already been defined.  */
+
 #ifndef NULL
 #define NULL 0
 #endif
 
+#ifndef GENERIC_PTR
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define GENERIC_PTR void *
+#else
+#define GENERIC_PTR char *
+#endif
+#endif
+
 #ifndef NULL_PTR
-#define NULL_PTR (char *) NULL
+#define NULL_PTR ((GENERIC_PTR)0)
 #endif
 
 #ifdef USG
