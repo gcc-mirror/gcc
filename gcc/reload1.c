@@ -348,6 +348,7 @@ static int num_labels;
 
 struct hard_reg_n_uses { int regno; int uses; };
 
+static void dump_needs			PROTO((FILE *));
 static int calculate_needs_all_insns	PROTO((rtx, int));
 static int calculate_needs		PROTO((int, rtx, rtx, int));
 static int find_reload_regs		PROTO((int, FILE *));
@@ -367,6 +368,9 @@ static void alter_reg  			PROTO((int, int));
 static void set_label_offsets		PROTO((rtx, rtx, int));
 static int eliminate_regs_in_insn	PROTO((rtx, int));
 static void mark_not_eliminable		PROTO((rtx, rtx));
+static void set_initial_elim_offsets	PROTO((void));
+static void init_elim_table		PROTO((void));
+static void update_eliminables		PROTO((HARD_REG_SET *));
 static int spill_hard_reg		PROTO((int, int, FILE *, int));
 static void scan_paradoxical_subregs	PROTO((rtx));
 static int hard_reg_use_compare		PROTO((const GENERIC_PTR, const GENERIC_PTR));
@@ -749,46 +753,7 @@ reload (first, global, dumpfile)
 	scan_paradoxical_subregs (PATTERN (insn));
     }
 
-  /* Does this function require a frame pointer?  */
-
-  frame_pointer_needed = (! flag_omit_frame_pointer
-#ifdef EXIT_IGNORE_STACK
-			  /* ?? If EXIT_IGNORE_STACK is set, we will not save
-			     and restore sp for alloca.  So we can't eliminate
-			     the frame pointer in that case.  At some point,
-			     we should improve this by emitting the
-			     sp-adjusting insns for this case.  */
-			  || (current_function_calls_alloca
-			      && EXIT_IGNORE_STACK)
-#endif
-			  || FRAME_POINTER_REQUIRED);
-
-  num_eliminable = 0;
-
-  /* Initialize the table of registers to eliminate.  The way we do this
-     depends on how the eliminable registers were defined.  */
-#ifdef ELIMINABLE_REGS
-  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-    {
-      ep->can_eliminate = ep->can_eliminate_previous
-	= (CAN_ELIMINATE (ep->from, ep->to)
-	   && ! (ep->to == STACK_POINTER_REGNUM && frame_pointer_needed));
-    }
-#else
-  reg_eliminate[0].can_eliminate = reg_eliminate[0].can_eliminate_previous
-    = ! frame_pointer_needed;
-#endif
-
-  /* Count the number of eliminable registers and build the FROM and TO
-     REG rtx's.  Note that code in gen_rtx will cause, e.g.,
-     gen_rtx (REG, Pmode, STACK_POINTER_REGNUM) to equal stack_pointer_rtx.
-     We depend on this.  */
-  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-    {
-      num_eliminable += ep->can_eliminate;
-      ep->from_rtx = gen_rtx_REG (Pmode, ep->from);
-      ep->to_rtx = gen_rtx_REG (Pmode, ep->to);
-    }
+  init_elim_table ();
 
   num_labels = max_label_num () - get_first_label_num ();
 
@@ -903,12 +868,7 @@ reload (first, global, dumpfile)
   something_needs_elimination = 0;
   while (something_changed)
     {
-      rtx x;
       HOST_WIDE_INT starting_frame_size;
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      int previous_frame_pointer_needed = frame_pointer_needed;
-#endif
-      static char *reg_class_names[] = REG_CLASS_NAMES;
 
       something_changed = 0;
       bzero ((char *) max_needs, sizeof max_needs);
@@ -929,39 +889,8 @@ reload (first, global, dumpfile)
 
       starting_frame_size = get_frame_size ();
 
-      /* Reset all offsets on eliminable registers to their initial values.  */
-#ifdef ELIMINABLE_REGS
-      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-	{
-	  INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);
-	  ep->previous_offset = ep->offset
-	    = ep->max_offset = ep->initial_offset;
-	}
-#else
-#ifdef INITIAL_FRAME_POINTER_OFFSET
-      INITIAL_FRAME_POINTER_OFFSET (reg_eliminate[0].initial_offset);
-#else
-      if (!FRAME_POINTER_REQUIRED)
-	abort ();
-      reg_eliminate[0].initial_offset = 0;
-#endif
-      reg_eliminate[0].previous_offset = reg_eliminate[0].max_offset
-	= reg_eliminate[0].offset = reg_eliminate[0].initial_offset;
-#endif
-
-      num_not_at_initial_offset = 0;
-
-      bzero ((char *) &offsets_known_at[get_first_label_num ()], num_labels);
-
-      /* Set a known offset for each forced label to be at the initial offset
-	 of each elimination.  We do this because we assume that all
-	 computed jumps occur from a location where each elimination is
-	 at its initial offset.  */
-
-      for (x = forced_labels; x; x = XEXP (x, 1))
-	if (XEXP (x, 0))
-	  set_label_offsets (XEXP (x, 0), NULL_RTX, 1);
-
+      set_initial_elim_offsets ();
+      
       /* For each pseudo register that has an equivalent location defined,
 	 try to eliminate any eliminable registers (such as the frame pointer)
 	 assuming initial offsets for the replacement register, which
@@ -1040,25 +969,7 @@ reload (first, global, dumpfile)
 	something_changed = 1;
 
       if (dumpfile)
-	for (i = 0; i < N_REG_CLASSES; i++)
-	  {
-	    if (max_needs[i] > 0)
-	      fprintf (dumpfile,
-			 ";; Need %d reg%s of class %s (for insn %d).\n",
-		       max_needs[i], max_needs[i] == 1 ? "" : "s",
-		       reg_class_names[i], INSN_UID (max_needs_insn[i]));
-	    if (max_nongroups[i] > 0)
-	      fprintf (dumpfile,
-		       ";; Need %d nongroup reg%s of class %s (for insn %d).\n",
-		       max_nongroups[i], max_nongroups[i] == 1 ? "" : "s",
-		       reg_class_names[i], INSN_UID (max_nongroups_insn[i]));
-	    if (max_groups[i] > 0)
-	      fprintf (dumpfile,
-		       ";; Need %d group%s (%smode) of class %s (for insn %d).\n",
-		       max_groups[i], max_groups[i] == 1 ? "" : "s",
-		       mode_name[(int) group_mode[i]],
-		       reg_class_names[i], INSN_UID (max_groups_insn[i]));
-	  }
+	dump_needs (dumpfile);
 
       /* If we have caller-saves, set up the save areas and see if caller-save
 	 will need a spill register.  */
@@ -1086,84 +997,17 @@ reload (first, global, dumpfile)
 	    }
 	}
 
-      /* See if anything that happened changes which eliminations are valid.
-	 For example, on the Sparc, whether or not the frame pointer can
-	 be eliminated can depend on what registers have been used.  We need
-	 not check some conditions again (such as flag_omit_frame_pointer)
-	 since they can't have changed.  */
-
-      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-	if ((ep->from == HARD_FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED)
-#ifdef ELIMINABLE_REGS
-	    || ! CAN_ELIMINATE (ep->from, ep->to)
-#endif
-	    )
-	  ep->can_eliminate = 0;
-
-      /* Look for the case where we have discovered that we can't replace
-	 register A with register B and that means that we will now be
-	 trying to replace register A with register C.  This means we can
-	 no longer replace register C with register B and we need to disable
-	 such an elimination, if it exists.  This occurs often with A == ap,
-	 B == sp, and C == fp.  */
-
-      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-	{
-	  struct elim_table *op;
-	  register int new_to = -1;
-
-	  if (! ep->can_eliminate && ep->can_eliminate_previous)
+      {
+	HARD_REG_SET to_spill;
+	CLEAR_HARD_REG_SET (to_spill);
+	update_eliminables (&to_spill);
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	  if (TEST_HARD_REG_BIT (to_spill, i))
 	    {
-	      /* Find the current elimination for ep->from, if there is a
-		 new one.  */
-	      for (op = reg_eliminate;
-		   op < &reg_eliminate[NUM_ELIMINABLE_REGS]; op++)
-		if (op->from == ep->from && op->can_eliminate)
-		  {
-		    new_to = op->to;
-		    break;
-		  }
-
-	      /* See if there is an elimination of NEW_TO -> EP->TO.  If so,
-		 disable it.  */
-	      for (op = reg_eliminate;
-		   op < &reg_eliminate[NUM_ELIMINABLE_REGS]; op++)
-		if (op->from == new_to && op->to == ep->to)
-		  op->can_eliminate = 0;
-	    }
-	}
-
-      /* See if any registers that we thought we could eliminate the previous
-	 time are no longer eliminable.  If so, something has changed and we
-	 must spill the register.  Also, recompute the number of eliminable
-	 registers and see if the frame pointer is needed; it is if there is
-	 no elimination of the frame pointer that we can perform.  */
-
-      frame_pointer_needed = 1;
-      for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
-	{
-	  if (ep->can_eliminate && ep->from == FRAME_POINTER_REGNUM
-	      && ep->to != HARD_FRAME_POINTER_REGNUM)
-	    frame_pointer_needed = 0;
-
-	  if (! ep->can_eliminate && ep->can_eliminate_previous)
-	    {
-	      ep->can_eliminate_previous = 0;
-	      spill_hard_reg (ep->from, global, dumpfile, 1);
+	      spill_hard_reg (i, global, dumpfile, 1);
 	      something_changed = 1;
-	      num_eliminable--;
 	    }
-	}
-
-#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
-      /* If we didn't need a frame pointer last time, but we do now, spill
-	 the hard frame pointer.  */
-      if (frame_pointer_needed && ! previous_frame_pointer_needed)
-	{
-	  spill_hard_reg (HARD_FRAME_POINTER_REGNUM, global, dumpfile, 1);
-	  something_changed = 1;
-	}
-#endif
+      }
 
       /* If all needs are met, we win.  */
 
@@ -2253,6 +2097,33 @@ find_reload_regs (global, dumpfile)
   return something_changed;
 }
 
+static void
+dump_needs (dumpfile)
+     FILE *dumpfile;
+{
+  static char *reg_class_names[] = REG_CLASS_NAMES;
+  int i;
+
+  for (i = 0; i < N_REG_CLASSES; i++)
+    {
+      if (max_needs[i] > 0)
+	fprintf (dumpfile,
+		 ";; Need %d reg%s of class %s (for insn %d).\n",
+		 max_needs[i], max_needs[i] == 1 ? "" : "s",
+		 reg_class_names[i], INSN_UID (max_needs_insn[i]));
+      if (max_nongroups[i] > 0)
+	fprintf (dumpfile,
+		 ";; Need %d nongroup reg%s of class %s (for insn %d).\n",
+		 max_nongroups[i], max_nongroups[i] == 1 ? "" : "s",
+		 reg_class_names[i], INSN_UID (max_nongroups_insn[i]));
+      if (max_groups[i] > 0)
+	fprintf (dumpfile,
+		 ";; Need %d group%s (%smode) of class %s (for insn %d).\n",
+		 max_groups[i], max_groups[i] == 1 ? "" : "s",
+		 mode_name[(int) group_mode[i]],
+		 reg_class_names[i], INSN_UID (max_groups_insn[i]));
+    }
+}
 
 /* Nonzero if, after spilling reg REGNO for non-groups,
    it will still be possible to find a group if we still need one.  */
@@ -3719,6 +3590,178 @@ mark_not_eliminable (dest, x)
 	  = reg_eliminate[i].can_eliminate = 0;
 	num_eliminable--;
       }
+}
+
+/* Reset all offsets on eliminable registers to their initial values.  */
+static void
+set_initial_elim_offsets ()
+{
+  rtx x;
+
+#ifdef ELIMINABLE_REGS
+  struct elim_table *ep;
+
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      INITIAL_ELIMINATION_OFFSET (ep->from, ep->to, ep->initial_offset);
+      ep->previous_offset = ep->offset
+	= ep->max_offset = ep->initial_offset;
+    }
+#else
+#ifdef INITIAL_FRAME_POINTER_OFFSET
+  INITIAL_FRAME_POINTER_OFFSET (reg_eliminate[0].initial_offset);
+#else
+  if (!FRAME_POINTER_REQUIRED)
+    abort ();
+  reg_eliminate[0].initial_offset = 0;
+#endif
+  reg_eliminate[0].previous_offset = reg_eliminate[0].max_offset
+    = reg_eliminate[0].offset = reg_eliminate[0].initial_offset;
+#endif
+
+  num_not_at_initial_offset = 0;
+
+  bzero ((char *) &offsets_known_at[get_first_label_num ()], num_labels);
+
+  /* Set a known offset for each forced label to be at the initial offset
+     of each elimination.  We do this because we assume that all
+     computed jumps occur from a location where each elimination is
+     at its initial offset.  */
+
+  for (x = forced_labels; x; x = XEXP (x, 1))
+    if (XEXP (x, 0))
+      set_label_offsets (XEXP (x, 0), NULL_RTX, 1);
+}
+
+/* See if anything that happened changes which eliminations are valid.
+   For example, on the Sparc, whether or not the frame pointer can
+   be eliminated can depend on what registers have been used.  We need
+   not check some conditions again (such as flag_omit_frame_pointer)
+   since they can't have changed.  */
+
+static void
+update_eliminables (pset)
+     HARD_REG_SET *pset;
+{
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+  int previous_frame_pointer_needed = frame_pointer_needed;
+#endif
+  struct elim_table *ep;
+
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    if ((ep->from == HARD_FRAME_POINTER_REGNUM && FRAME_POINTER_REQUIRED)
+#ifdef ELIMINABLE_REGS
+	|| ! CAN_ELIMINATE (ep->from, ep->to)
+#endif
+	)
+      ep->can_eliminate = 0;
+
+  /* Look for the case where we have discovered that we can't replace
+     register A with register B and that means that we will now be
+     trying to replace register A with register C.  This means we can
+     no longer replace register C with register B and we need to disable
+     such an elimination, if it exists.  This occurs often with A == ap,
+     B == sp, and C == fp.  */
+
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      struct elim_table *op;
+      register int new_to = -1;
+
+      if (! ep->can_eliminate && ep->can_eliminate_previous)
+	{
+	  /* Find the current elimination for ep->from, if there is a
+	     new one.  */
+	  for (op = reg_eliminate;
+	       op < &reg_eliminate[NUM_ELIMINABLE_REGS]; op++)
+	    if (op->from == ep->from && op->can_eliminate)
+	      {
+		new_to = op->to;
+		break;
+	      }
+
+	  /* See if there is an elimination of NEW_TO -> EP->TO.  If so,
+	     disable it.  */
+	  for (op = reg_eliminate;
+	       op < &reg_eliminate[NUM_ELIMINABLE_REGS]; op++)
+	    if (op->from == new_to && op->to == ep->to)
+	      op->can_eliminate = 0;
+	}
+    }
+
+  /* See if any registers that we thought we could eliminate the previous
+     time are no longer eliminable.  If so, something has changed and we
+     must spill the register.  Also, recompute the number of eliminable
+     registers and see if the frame pointer is needed; it is if there is
+     no elimination of the frame pointer that we can perform.  */
+
+  frame_pointer_needed = 1;
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      if (ep->can_eliminate && ep->from == FRAME_POINTER_REGNUM
+	  && ep->to != HARD_FRAME_POINTER_REGNUM)
+	frame_pointer_needed = 0;
+
+      if (! ep->can_eliminate && ep->can_eliminate_previous)
+	{
+	  ep->can_eliminate_previous = 0;
+	  SET_HARD_REG_BIT (*pset, ep->from);
+	  num_eliminable--;
+	}
+    }
+
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+  /* If we didn't need a frame pointer last time, but we do now, spill
+     the hard frame pointer.  */
+  if (frame_pointer_needed && ! previous_frame_pointer_needed)
+    SET_HARD_REG_BIT (*pset, HARD_FRAME_POINTER_REGNUM);
+#endif
+}
+
+/* Initialize the table of registers to eliminate.  */
+static void
+init_elim_table ()
+{
+  struct elim_table *ep;
+
+  /* Does this function require a frame pointer?  */
+
+  frame_pointer_needed = (! flag_omit_frame_pointer
+#ifdef EXIT_IGNORE_STACK
+			  /* ?? If EXIT_IGNORE_STACK is set, we will not save
+			     and restore sp for alloca.  So we can't eliminate
+			     the frame pointer in that case.  At some point,
+			     we should improve this by emitting the
+			     sp-adjusting insns for this case.  */
+			  || (current_function_calls_alloca
+			      && EXIT_IGNORE_STACK)
+#endif
+			  || FRAME_POINTER_REQUIRED);
+
+  num_eliminable = 0;
+
+#ifdef ELIMINABLE_REGS
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      ep->can_eliminate = ep->can_eliminate_previous
+	= (CAN_ELIMINATE (ep->from, ep->to)
+	   && ! (ep->to == STACK_POINTER_REGNUM && frame_pointer_needed));
+    }
+#else
+  reg_eliminate[0].can_eliminate = reg_eliminate[0].can_eliminate_previous
+    = ! frame_pointer_needed;
+#endif
+
+  /* Count the number of eliminable registers and build the FROM and TO
+     REG rtx's.  Note that code in gen_rtx will cause, e.g.,
+     gen_rtx (REG, Pmode, STACK_POINTER_REGNUM) to equal stack_pointer_rtx.
+     We depend on this.  */
+  for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
+    {
+      num_eliminable += ep->can_eliminate;
+      ep->from_rtx = gen_rtx_REG (Pmode, ep->from);
+      ep->to_rtx = gen_rtx_REG (Pmode, ep->to);
+    }
 }
 
 /* Kick all pseudos out of hard register REGNO.
