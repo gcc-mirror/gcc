@@ -1,3 +1,10 @@
+2001-11-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* configure.in: AC_SUBST xm_defines.
+	* configure: Regenerate.
+	* Makefile.in: Set DEFINES=$(xm_defines) when building
+	tconfig.h.
+
 2001-09-15  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* c-common.c (c_promoting_integer_type_p): Handle ?Imode types.

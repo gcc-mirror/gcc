@@ -287,6 +287,7 @@ host_xm_file_list=@host_xm_file_list@
 host_xm_file=@host_xm_file@
 host_xm_defines=@host_xm_defines@
 xm_file=@xm_file@
+xm_defines=@xm_defines@
 lang_specs_files=@lang_specs_files@
 lang_options_files=@lang_options_files@
 lang_tree_files=@lang_tree_files@
@@ -913,7 +914,8 @@ cs-hconfig.h: Makefile
 	$(SHELL) $(srcdir)/mkconfig.sh hconfig.h
 
 cs-tconfig.h: Makefile $(CONFIG_H) except.h
-	HEADERS="$(xm_file)" DEFINES="" TARGET_CPU_DEFAULT="" \
+	HEADERS="$(xm_file)" DEFINES="$(xm_defines)" \
+	TARGET_CPU_DEFAULT="" \
 	$(SHELL) $(srcdir)/mkconfig.sh tconfig.h
 # ??? Need extra help to get this definition copied to where libgcc can
 # see it.  It shouldn't matter which compiler we use to get there.

@@ -7214,6 +7214,7 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 
 
+
 # Echo that links are built
 if test x$host = x$target
 then
@@ -7521,6 +7522,7 @@ s%@tm_file@%$tm_file%g
 s%@tm_p_file_list@%$tm_p_file_list%g
 s%@tm_p_file@%$tm_p_file%g
 s%@xm_file@%$xm_file%g
+s%@xm_defines@%$xm_defines%g
 s%@will_use_collect2@%$will_use_collect2%g
 s%@c_target_objs@%$c_target_objs%g
 s%@cxx_target_objs@%$cxx_target_objs%g
