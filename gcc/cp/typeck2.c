@@ -1553,7 +1553,7 @@ add_exception_specifier (list, spec, complain)
   else if (TREE_CODE (core) == TEMPLATE_TYPE_PARM)
     ok = 1;
   else
-    ok = TYPE_SIZE (core) != NULL_TREE;
+    ok = TYPE_SIZE (complete_type (core)) != NULL_TREE;
   
   if (ok)
     {
