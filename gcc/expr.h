@@ -218,12 +218,6 @@ do {							\
 tree split_complex_types (tree);
 tree split_complex_values (tree);
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.  */
-extern bool default_must_pass_in_stack (enum machine_mode, tree);
-#ifndef MUST_PASS_IN_STACK
-#define MUST_PASS_IN_STACK(MODE,TYPE) default_must_pass_in_stack(MODE, TYPE)
-#endif
-
 /* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.
    Normally move_insn, so Pmode stack pointer.  */
 

@@ -961,7 +961,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
  (((CUM).regs == (CRIS_MAX_ARGS_IN_REGS - 1)			\
-   && !MUST_PASS_IN_STACK (MODE, TYPE)				\
+   && !targetm.calls.must_pass_in_stack (MODE, TYPE)		\
    && CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) > 4			\
    && CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) <= 8)			\
   ? 1 : 0)
@@ -970,7 +970,7 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
    bytes long.  If you tweak this, don't forget to adjust
    cris_expand_builtin_va_arg.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
- (MUST_PASS_IN_STACK (MODE, TYPE)					\
+ (targetm.calls.must_pass_in_stack (MODE, TYPE)				\
   || CRIS_FUNCTION_ARG_SIZE (MODE, TYPE) > 8)				\
 
 /* Contrary to what you'd believe, defining FUNCTION_ARG_CALLEE_COPIES

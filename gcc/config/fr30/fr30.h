@@ -651,46 +651,13 @@ enum reg_class
 /*}}}*/ 
 /*{{{  Function Arguments in Registers.  */ 
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.
-   We cannot do so in the following cases:
-
-   - if the type has variable size
-   - if the type is marked as addressable (it is required to be constructed
-     into the stack)
-   - if the type is a structure or union.  */
-
-#define MUST_PASS_IN_STACK(MODE, TYPE)				\
-   (((MODE) == BLKmode)						\
-    || ((TYPE) != NULL						\
-         && TYPE_SIZE (TYPE) != NULL				\
-         && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
-	     || TREE_CODE (TYPE) == RECORD_TYPE			\
-	     || TREE_CODE (TYPE) == UNION_TYPE			\
-	     || TREE_CODE (TYPE) == QUAL_UNION_TYPE		\
-             || TREE_ADDRESSABLE (TYPE))))
-
 /* The number of register assigned to holding function arguments.  */
      
 #define FR30_NUM_ARG_REGS	 4
 
-/* A C expression that controls whether a function argument is passed in a
-   register, and which register.
-
-   The usual way to make the ANSI library `stdarg.h' work on a machine where
-   some arguments are usually passed in registers, is to cause nameless
-   arguments to be passed on the stack instead.  This is done by making
-   `FUNCTION_ARG' return 0 whenever NAMED is 0.
-
-   You may use the macro `MUST_PASS_IN_STACK (MODE, TYPE)' in the definition of
-   this macro to determine if this argument is of a type that must be passed in
-   the stack.  If `REG_PARM_STACK_SPACE' is not defined and `FUNCTION_ARG'
-   returns nonzero for such an argument, the compiler will abort.  If
-   `REG_PARM_STACK_SPACE' is defined, the argument will be computed in the
-   stack and then loaded into a register.  */
-     
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)			\
   (  (NAMED) == 0                    ? NULL_RTX			\
-   : MUST_PASS_IN_STACK (MODE, TYPE) ? NULL_RTX			\
+   : targetm.calls.must_pass_in_stack (MODE, TYPE) ? NULL_RTX	\
    : (CUM) >= FR30_NUM_ARG_REGS      ? NULL_RTX			\
    : gen_rtx_REG (MODE, CUM + FIRST_ARG_REGNUM))
 
@@ -727,18 +694,8 @@ enum reg_class
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 	\
   fr30_function_arg_partial_nregs (CUM, MODE, TYPE, NAMED)
 
-/* A C expression that indicates when an argument must be passed by reference.
-   If nonzero for an argument, a copy of that argument is made in memory and a
-   pointer to the argument is passed instead of the argument itself.  The
-   pointer is passed in whatever way is appropriate for passing a pointer to
-   that type.
-
-   On machines where `REG_PARM_STACK_SPACE' is not defined, a suitable
-   definition of this macro might be:
-        #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)  \
-          MUST_PASS_IN_STACK (MODE, TYPE)  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
-  MUST_PASS_IN_STACK (MODE, TYPE)
+  targetm.calls.must_pass_in_stack (MODE, TYPE)
 
 /* A C statement (sans semicolon) for initializing the variable CUM for the
    state at the beginning of the argument list.  The variable has type

@@ -259,16 +259,6 @@
 #define AGGREGATE_PADDING_FIXED TARGET_64BIT
 #define AGGREGATES_PAD_UPWARD_ALWAYS 0
 
-/* We don't want anything in the reg parm area being passed on the
-   stack.  */
-#define MUST_PASS_IN_STACK(MODE, TYPE)				\
-  ((TARGET_64BIT						\
-    && (TYPE) != 0						\
-    && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST		\
-	|| TREE_ADDRESSABLE (TYPE)))				\
-   || (!TARGET_64BIT						\
-       && default_must_pass_in_stack ((MODE), (TYPE))))
-
 /* Specify padding for the last element of a block move between
    registers and memory.  FIRST is nonzero if this is the only
    element.  */

@@ -179,7 +179,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #undef FUNCTION_ARG_ADVANCE
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)			\
-  if (MUST_PASS_IN_STACK (MODE, TYPE))					\
+  if (targetm.calls.must_pass_in_stack (MODE, TYPE))			\
     (CUM).num_args += 6;						\
   else									\
     {									\

@@ -578,7 +578,7 @@ mmix_function_arg (const CUMULATIVE_ARGS *argsp,
       : NULL_RTX;
 
   return (argsp->regs < MMIX_MAX_ARGS_IN_REGS
-	  && !MUST_PASS_IN_STACK (mode, type)
+	  && !targetm.calls.must_pass_in_stack (mode, type)
 	  && (GET_MODE_BITSIZE (mode) <= 64
 	      || argsp->lib
 	      || TARGET_LIBFUNC))
@@ -599,10 +599,10 @@ mmix_function_arg_pass_by_reference (const CUMULATIVE_ARGS *argsp,
 				     tree type,
 				     int named ATTRIBUTE_UNUSED)
 {
-  /* FIXME: Check: I'm not sure the MUST_PASS_IN_STACK check is
+  /* FIXME: Check: I'm not sure the must_pass_in_stack check is
      necessary.  */
   return
-    MUST_PASS_IN_STACK (mode, type)
+    targetm.calls.must_pass_in_stack (mode, type)
     || (MMIX_FUNCTION_ARG_SIZE (mode, type) > 8
 	&& !TARGET_LIBFUNC
 	&& !argsp->lib);

@@ -436,6 +436,8 @@ static tree sh_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 #define TARGET_STRICT_ARGUMENT_NAMING sh_strict_argument_naming
 #undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED sh_pretend_outgoing_varargs_named
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST sh_build_builtin_va_list
@@ -6316,7 +6318,7 @@ sh_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p,
   HOST_WIDE_INT size, rsize;
   tree tmp, pptr_type_node;
   tree addr, lab_over, result = NULL;
-  int pass_by_ref = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
+  int pass_by_ref = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
 
   if (pass_by_ref)
     type = build_pointer_type (type);

@@ -462,6 +462,12 @@ struct gcc_target
     /* Given a complex type T, return true if a parameter of type T
        should be passed as two scalars.  */
     bool (* split_complex_arg) (tree type);
+
+    /* Return true if type T, mode MODE, may not be passed in registers,
+       but must be passed on the stack.  */
+    /* ??? This predicate should be applied strictly after pass-by-reference.
+       Need audit to verify that this is the case.  */
+    bool (* must_pass_in_stack) (enum machine_mode mode, tree t);
   } calls;
 
   /* Functions specific to the C++ frontend.  */

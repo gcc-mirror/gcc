@@ -1725,14 +1725,6 @@ extern enum reg_class reg_class_from_letter[];
    On SHcompact, the call trampoline pops arguments off the stack.  */
 #define CALL_POPS_ARGS(CUM) (TARGET_SHCOMPACT ? (CUM).stack_regs * 8 : 0)
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.
-   Values that come in registers with inconvenient padding are stored
-   to memory at the function start.  */
-
-#define MUST_PASS_IN_STACK(MODE,TYPE)			\
-  ((TYPE) != 0						\
-   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
-       || TREE_ADDRESSABLE (TYPE)))
 /* Some subroutine macros specific to this machine.  */
 
 #define BASE_RETURN_VALUE_REG(MODE) \
@@ -2046,7 +2038,7 @@ struct sh_args {
    registers are passed by reference, so that an SHmedia trampoline
    loads them into the full 64-bits registers.  */
 #define FUNCTION_ARG_PASS_BY_REFERENCE(CUM,MODE,TYPE,NAMED) \
-  (MUST_PASS_IN_STACK ((MODE), (TYPE)) \
+  (targetm.calls.must_pass_in_stack ((MODE), (TYPE)) \
    || SHCOMPACT_BYREF ((CUM), (MODE), (TYPE), (NAMED)))
 
 #define SHCOMPACT_BYREF(CUM, MODE, TYPE, NAMED) \

@@ -738,6 +738,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 #define TARGET_SETUP_INCOMING_VARARGS mips_setup_incoming_varargs
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING mips_strict_argument_naming
+#undef TARGET_MUST_PASS_IN_STACK
+#define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3552,7 +3554,7 @@ mips_arg_info (const CUMULATIVE_ARGS *cum, enum machine_mode mode,
 	even_reg_p = true;
     }
 
-  if (mips_abi != ABI_EABI && MUST_PASS_IN_STACK (mode, type))
+  if (mips_abi != ABI_EABI && targetm.calls.must_pass_in_stack (mode, type))
     /* This argument must be passed on the stack.  Eat up all the
        remaining registers.  */
     info->reg_offset = MAX_ARGS_IN_REGISTERS;
@@ -4284,7 +4286,7 @@ mips_va_arg (tree valist, tree type)
 
       /* If arguments of type TYPE must be passed on the stack,
 	 set MIN_OFFSET to the offset of the first stack parameter.  */
-      if (!MUST_PASS_IN_STACK (TYPE_MODE (type), type))
+      if (!targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
 	min_offset = 0;
       else if (TARGET_NEWABI)
 	min_offset = current_function_pretend_args_size;

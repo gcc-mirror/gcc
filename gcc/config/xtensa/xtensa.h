@@ -774,22 +774,6 @@ typedef struct xtensa_args
       ? PARM_BOUNDARY							\
       : GET_MODE_ALIGNMENT (MODE)))
 
-/* Nonzero if we do not know how to pass TYPE solely in registers.
-   We cannot do so in the following cases:
-
-   - if the type has variable size
-   - if the type is marked as addressable (it is required to be constructed
-     into the stack)
-
-   This differs from the default in that it does not check if the padding
-   and mode of the type are such that a copy into a register would put it
-   into the wrong part of the register.  */
-
-#define MUST_PASS_IN_STACK(MODE, TYPE)					\
-  ((TYPE) != 0								\
-   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST			\
-       || TREE_ADDRESSABLE (TYPE)))
-
 /* Profiling Xtensa code is typically done with the built-in profiling
    feature of Tensilica's instruction set simulator, which does not
    require any compiler support.  Profiling code on a real (i.e.,

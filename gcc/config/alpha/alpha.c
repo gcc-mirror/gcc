@@ -5842,7 +5842,8 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
 	return alpha_arg_info_reg_val (cum);
 
       num_args = cum.num_args;
-      if (num_args >= 6 || MUST_PASS_IN_STACK (mode, type))
+      if (num_args >= 6
+	  || targetm.calls.must_pass_in_stack (mode, type))
 	return NULL_RTX;
     }
 #elif TARGET_ABI_UNICOSMK
@@ -5885,8 +5886,9 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
 
       size = ALPHA_ARG_SIZE (mode, type, named);
       num_args = cum.num_reg_words;
-      if (MUST_PASS_IN_STACK (mode, type)
-	  || cum.num_reg_words + size > 6 || cum.force_stack)
+      if (cum.force_stack
+	  || cum.num_reg_words + size > 6
+	  || targetm.calls.must_pass_in_stack (mode, type))
 	return NULL_RTX;
       else if (type && TYPE_MODE (type) == BLKmode)
 	{
@@ -5918,7 +5920,7 @@ function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode, tree type,
       /* VOID is passed as a special flag for "last argument".  */
       if (type == void_type_node)
 	basereg = 16;
-      else if (MUST_PASS_IN_STACK (mode, type))
+      else if (targetm.calls.must_pass_in_stack (mode, type))
 	return NULL_RTX;
       else if (FUNCTION_ARG_PASS_BY_REFERENCE (cum, mode, type, named))
 	basereg = 16;
@@ -6232,7 +6234,7 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
 
   /* If the type could not be passed in registers, skip the block
      reserved for the registers.  */
-  if (MUST_PASS_IN_STACK (TYPE_MODE (type), type))
+  if (targetm.calls.must_pass_in_stack (TYPE_MODE (type), type))
     {
       t = fold_convert (TREE_TYPE (offset), build_int_2 (6*8, 0));
       t = build (MODIFY_EXPR, TREE_TYPE (offset), offset,
@@ -9285,6 +9287,24 @@ alpha_use_linkage (rtx linkage ATTRIBUTE_UNUSED,
 
 #if TARGET_ABI_UNICOSMK
 
+/* This evaluates to true if we do not know how to pass TYPE solely in
+   registers.  This is the case for all arguments that do not fit in two
+   registers.  */
+
+static bool
+unicosmk_must_pass_in_stack (enum machine_mode mode, tree type)
+{
+  if (type == NULL)
+    return false;
+
+  if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    return true;
+  if (TREE_ADDRESSABLE (type))
+    return true;
+
+  return ALPHA_ARG_SIZE (mode, type, 0) > 2;
+}
+
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */
 
@@ -10078,6 +10098,8 @@ alpha_init_libfuncs (void)
 # define TARGET_ASM_UNIQUE_SECTION unicosmk_unique_section
 # undef TARGET_ASM_GLOBALIZE_LABEL
 # define TARGET_ASM_GLOBALIZE_LABEL hook_void_FILEptr_constcharptr
+# undef TARGET_MUST_PASS_IN_STACK
+# define TARGET_MUST_PASS_IN_STACK unicosmk_must_pass_in_stack
 #endif
 
 #undef TARGET_ASM_ALIGNED_HI_OP

@@ -1229,7 +1229,7 @@ xstormy16_function_arg (CUMULATIVE_ARGS cum, enum machine_mode mode,
 {
   if (mode == VOIDmode)
     return const0_rtx;
-  if (MUST_PASS_IN_STACK (mode, type)
+  if (targetm.calls.must_pass_in_stack (mode, type)
       || cum + XSTORMY16_WORD_SIZE (type, mode) > NUM_ARGUMENT_REGISTERS)
     return 0;
   return gen_rtx_REG (mode, cum + 2);
@@ -1325,7 +1325,7 @@ xstormy16_expand_builtin_va_arg (tree valist, tree type, tree *pre_p,
   count = build (COMPONENT_REF, TREE_TYPE (f_count), valist, f_count,
 		 NULL_TREE);
 
-  must_stack = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
+  must_stack = targetm.calls.must_pass_in_stack (TYPE_MODE (type), type);
   size_tree = round_up (size_in_bytes (type), UNITS_PER_WORD);
   gimplify_expr (&size_tree, pre_p, NULL, is_gimple_val, fb_rvalue);
   

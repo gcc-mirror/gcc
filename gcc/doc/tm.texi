@@ -3669,9 +3669,9 @@ where some arguments are usually passed in registers, is to cause
 nameless arguments to be passed on the stack instead.  This is done
 by making @code{FUNCTION_ARG} return 0 whenever @var{named} is 0.
 
-@cindex @code{MUST_PASS_IN_STACK}, and @code{FUNCTION_ARG}
+@cindex @code{TARGET_MUST_PASS_IN_STACK}, and @code{FUNCTION_ARG}
 @cindex @code{REG_PARM_STACK_SPACE}, and @code{FUNCTION_ARG}
-You may use the macro @code{MUST_PASS_IN_STACK (@var{mode}, @var{type})}
+You may use the hook @code{targetm.calls.must_pass_in_stack}
 in the definition of this macro to determine if this argument is of a
 type that must be passed in the stack.  If @code{REG_PARM_STACK_SPACE}
 is not defined and @code{FUNCTION_ARG} returns nonzero for such an
@@ -3680,12 +3680,12 @@ defined, the argument will be computed in the stack and then loaded into
 a register.
 @end defmac
 
-@defmac MUST_PASS_IN_STACK (@var{mode}, @var{type})
-Define as a C expression that evaluates to nonzero if we do not know how
-to pass TYPE solely in registers.  The file @file{expr.h} defines a
+@deftypefn {Target Hook} bool TARGET_MUST_PASS_IN_STACK (enum machine_mode @var{mode}, tree @var{type})
+This target hook should return @code{true} if we should not pass @var{type}
+solely in registers.  The file @file{expr.h} defines a
 definition that is usually appropriate, refer to @file{expr.h} for additional
 documentation.
-@end defmac
+@end deftypefn
 
 @defmac FUNCTION_INCOMING_ARG (@var{cum}, @var{mode}, @var{type}, @var{named})
 Define this macro if the target machine has ``register windows'', so
@@ -3734,7 +3734,7 @@ definition of this macro might be
 @smallexample
 #define FUNCTION_ARG_PASS_BY_REFERENCE\
 (CUM, MODE, TYPE, NAMED)  \
-  MUST_PASS_IN_STACK (MODE, TYPE)
+  targetm.calls.must_pass_in_stack (MODE, TYPE)
 @end smallexample
 @c this is *still* too long.  --mew 5feb93
 @end defmac

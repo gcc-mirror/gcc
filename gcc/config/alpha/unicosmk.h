@@ -124,15 +124,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define STACK_PARMS_IN_REG_PARM_AREA
 
-/* This evaluates to nonzero if we do not know how to pass TYPE solely in
-   registers. This is the case for all arguments that do not fit in two
-   registers.  */
-
-#define MUST_PASS_IN_STACK(MODE,TYPE)					\
-  ((TYPE) != 0                                          		\
-   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST      		\
-       || (TREE_ADDRESSABLE (TYPE) || ALPHA_ARG_SIZE (MODE, TYPE, 0) > 2)))
-
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
@@ -198,8 +189,9 @@ do {								\
 								\
   size = ALPHA_ARG_SIZE (MODE, TYPE, NAMED);			\
                                                                 \
-  if (size > 2 || MUST_PASS_IN_STACK (MODE, TYPE)		\
-      || (CUM).num_reg_words + size > 6)			\
+  if (size > 2							\
+      || (CUM).num_reg_words + size > 6				\
+      || targetm.calls.must_pass_in_stack (MODE, TYPE))		\
     (CUM).force_stack = 1;					\
                                                                 \
   if (! (CUM).force_stack)					\

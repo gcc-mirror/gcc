@@ -575,7 +575,7 @@ c4x_init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype, rtx libname)
 
 	  if ((mode = TYPE_MODE (type)))
 	    {
-	      if (! MUST_PASS_IN_STACK (mode, type))
+	      if (! targetm.calls.must_pass_in_stack (mode, type))
 		{
 		  /* Look for float, double, or long double argument.  */
 		  if (mode == QFmode || mode == HFmode)
@@ -612,7 +612,7 @@ c4x_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (! TARGET_MEMPARM 
       && named
       && type
-      && ! MUST_PASS_IN_STACK (mode, type))
+      && ! targetm.calls.must_pass_in_stack (mode, type))
     {
       /* Look for float, double, or long double argument.  */
       if (mode == QFmode || mode == HFmode)
@@ -678,7 +678,7 @@ c4x_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   if (! TARGET_MEMPARM 
       && named 
       && type
-      && ! MUST_PASS_IN_STACK (mode, type))
+      && ! targetm.calls.must_pass_in_stack (mode, type))
     {
       /* Look for float, double, or long double argument.  */
       if (mode == QFmode || mode == HFmode)
