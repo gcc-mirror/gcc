@@ -1,3 +1,11 @@
+2004-07-06  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert:
+	2004-06-24  Jason Merrill  <jason@redhat.com>
+	PR c++/16115
+	* decl.c (grokparms): Give the PARM_DECL reference type if the
+	parameter is passed by invisible reference.
+
 2004-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* cp-lang.c (cp_var_mod_type_p): Add extra arg.
