@@ -5738,7 +5738,7 @@ considered for the multipass insn scheduling.  If the hook returns
 zero for insn passed as the parameter, the insn will be not chosen to
 be issued.
 
-The default is that any ready insns can be choosen to be issued.
+The default is that any ready insns can be chosen to be issued.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_DFA_NEW_CYCLE (FILE *, int, rtx, int, int, int *)

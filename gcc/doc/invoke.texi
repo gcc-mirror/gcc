@@ -2485,7 +2485,7 @@ Subscripting an array which has been declared @samp{register}.
 Taking the address of a variable which has been declared @samp{register}.
 
 @item @r{(C++ only)}
-A base class is not initialized in a derived class' copy constrcutor.
+A base class is not initialized in a derived class' copy constructor.
 @end itemize
 
 @item -Wno-div-by-zero
@@ -3915,9 +3915,9 @@ sense when scheduling before register allocation, i.e.@: with
 @item -fsched2-use-superblocks
 @opindex fsched2-use-superblocks
 When schedulilng after register allocation, do use superblock scheduling
-algorithm.  Superblock scheduling allows motion acress basic block boundaries
+algorithm.  Superblock scheduling allows motion across basic block boundaries
 resulting on faster schedules.  This option is experimental, as not all machine
-descriptions used by GCC model the CPU closely enought to avoid unreliable
+descriptions used by GCC model the CPU closely enough to avoid unreliable
 results from the algorithm. 
 
 This only makes sense when scheduling after register allocation, i.e.@: with
@@ -3930,7 +3930,7 @@ allocation and additionally perform code duplication in order to increase the
 size of superblocks using tracer pass.  See @option{-ftracer} for details on
 trace formation.
 
-This mode should produce faster but singificantly longer programs.  Also
+This mode should produce faster but significantly longer programs.  Also
 without @code{-fbranch-probabilities} the traces constructed may not match the
 reality and hurt the performance.  This only makes
 sense when scheduling after register allocation, i.e.@: with
@@ -6386,7 +6386,7 @@ problems with invalid Maverick instruction combinations.  This option
 is only valid if the @option{-mcpu=ep9312} option has been used to
 enable generation of instructions for the Cirrus Maverick floating
 point co-processor.  This option is not enabled by default, since the
-problem is only present in older Maverick implemenations.  The default
+problem is only present in older Maverick implementations.  The default
 can be re-enabled by use of the @option{-mno-cirrus-fix-invalid-insns}
 switch.
 
