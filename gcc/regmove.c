@@ -2086,7 +2086,7 @@ stable_and_no_regs_but_for_p (x, src, dst)
 }
 
 /* Track stack adjustments and stack memory references.  Attempt to
-   reduce the number of stack adjustments by back-propogating across
+   reduce the number of stack adjustments by back-propagating across
    the memory references.
 
    This is intended primarily for use with targets that do not define
@@ -2096,7 +2096,7 @@ stable_and_no_regs_but_for_p (x, src, dst)
    (e.g. x86 fp regs) which would ordinarily have to be implemented
    as a sub/mov pair due to restrictions in calls.c.
 
-   Propogation stops when any of the insns that need adjusting are
+   Propagation stops when any of the insns that need adjusting are
    (a) no longer valid because we've exceeded their range, (b) a
    non-trivial push instruction, or (c) a call instruction.
 

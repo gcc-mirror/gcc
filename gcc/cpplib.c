@@ -352,7 +352,7 @@ _cpp_handle_directive (pfile, indented)
 	 does not cause '#define foo bar' to get executed when
 	 compiled with -save-temps, we recognize directives in
 	 -fpreprocessed mode only if the # is in column 1.  cppmacro.c
-	 puts a space in fron of any '#' at the start of a macro.  */
+	 puts a space in front of any '#' at the start of a macro.  */
       if (CPP_OPTION (pfile, preprocessed)
 	  && (indented || !(dir->flags & IN_I)))
 	{
@@ -790,7 +790,7 @@ do_line (pfile)
 
 /* Arrange the file_change callback.  pfile->line has changed to
    FILE_LINE of TO_FILE, for reason REASON.  SYSP is 1 for a system
-   header, 2 for a sytem header that needs to be extern "C" protected,
+   header, 2 for a system header that needs to be extern "C" protected,
    and zero otherwise.  */
 void
 _cpp_do_file_change (pfile, reason, to_file, file_line, sysp)

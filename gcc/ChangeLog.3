@@ -220,8 +220,8 @@ Tue Jun 27 12:14:12 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(attribute pent_pair): Compute using pent_prefix.
 	(all insn patterns): Set mode,modrm and immediate_length attributes where
 	needed.
-	(cmpsi patterns): Compute sizes propertly for test instruction.
-	(movsi, movhi patterns): Compute sizes propertly for eax shortcuts.
+	(cmpsi patterns): Compute sizes properly for test instruction.
+	(movsi, movhi patterns): Compute sizes properly for eax shortcuts.
 	(movstricthi_xor, movstrictqi_xor): New patterns.
 	(andsi/andhi): Use splitters to generate xor instructions.
 	(xorqi_ext_1): New pattern.
@@ -5186,7 +5186,7 @@ Sat Apr 29 01:18:45 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 Sat Apr 29 01:15:27 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
-	* calls.c (calls_function_1):  Propertly handle TREE_LIST expressions;
+	* calls.c (calls_function_1):  Properly handle TREE_LIST expressions;
 	use special_function_p to detect alloca.
 
 Fri Apr 28 16:30:33 2000  Marc Espie <espie@cvs.openbsd.org>
@@ -6789,7 +6789,7 @@ Wed Apr 12 15:54:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	!HAVE_cmpstrsi, do libcall when gen_strcmpsi fails.
 
 	* calls.c (expand_call): Do NO_DEFER_POP unconditionally once
-	stack is propertly aligned; add sanity checking for aligned
+	stack is properly aligned; add sanity checking for aligned
 	stack pointer.
 	(expand_library_call_value_1): Add sanity checking for aligned
 	stack pointer.
@@ -8325,7 +8325,7 @@ Mon Apr  3 00:02:59 2000  Brad Lucier <lucier@math.purdue.edu>
 	* toplev.c (rtl_dump, jump_opt_dump, etc): Remove.
 	(struct dump_file_info, enum dump_file_index, dump_file): New.
 	(open_dump_file): Take a dump_file_index not a suffix, and a decl
-	not a string.  Clean out file if we havn't yet done so.  Do nothing
+	not a string.  Clean out file if we haven't yet done so.  Do nothing
 	if the dump isn't enabled.
 	(close_dump_file): Do nothing if the dump isn't open.  Dump
 	graph data if requested.
@@ -9649,7 +9649,7 @@ Sun Mar 19 13:27:30 2000  Hans-Peter Nilsson  <hp@axis.com>
 
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
-	* emit-rtl.c (remove_unncessary_notes): Check that all
+	* emit-rtl.c (remove_unnecessary_notes): Check that all
 	NOTE_INSN_BLOCK_BEG and NOTE_INSN_BLOCK_END notes have an
 	associated NOTE_BLOCK.
 	* function.h (identify_blocks): Update comments.
@@ -11942,7 +11942,7 @@ Sat Mar  4 11:32:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* stmt.c (is_body_block): Move...
 	* dwarfout.c, dwarf2out.c: ...from here.
 	* tree.h: Declare it.
-	* emit-rtl.c (remove_unncessary_notes): Don't remove the body block.
+	* emit-rtl.c (remove_unnecessary_notes): Don't remove the body block.
 	* final.c (final_start_function): Do call remove_unnecessary_notes
 	when scheduling.
 
@@ -11990,7 +11990,7 @@ Sat Mar  4 11:32:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	remove_unnecessary_notes.
 	(debug_ignore_block): New fn.
 	* toplev.h: Declare it.
-	* emit-rtl.c (remove_unncessary_notes): Call it.
+	* emit-rtl.c (remove_unnecessary_notes): Call it.
 	* dwarf2out.c (dwarf2out_ignore_block): New fn.
 	* dwarf2out.h: Declare it.
 	* final.c (final_start_function): Don't call remove_unnecessary_notes
@@ -12408,7 +12408,7 @@ Mon Feb 28 11:34:43 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 2000-02-27  Mark Mitchell  <mark@codesourcery.com>
 
-	* emit-rtl.c (remove_unncessary_notes): Remove notes for empty
+	* emit-rtl.c (remove_unnecessary_notes): Remove notes for empty
 	blocks.
 	* final.c (next_block_index): Remove.
 	(max_block_depth): Likewise.
@@ -13327,7 +13327,7 @@ Sat Feb 12 01:44:26 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* config/arm/arm.c (arm_init_cumulative_args); New function:
 	Initlaise the CUMULATIE_ARGS strcuture for a function
-	defintion.
+	definition.
 	(arm_function_arg): New function: Determine where to place a
 	function's argument.  Also handles deciding the function's
 	call cookie.

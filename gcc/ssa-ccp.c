@@ -237,7 +237,7 @@ defs_to_varying (insn)
     }
 }
 
-/* Go through the expression, call the approriate evaluation routines
+/* Go through the expression, call the appropriate evaluation routines
    to attempt cprop */
 static void
 visit_expression (insn, block)

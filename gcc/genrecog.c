@@ -1665,7 +1665,7 @@ find_afterward (head, real_afterward)
 {
   struct decision *p, *q, *afterward;
 
-  /* We can't propogate alternatives across subroutine boundaries.
+  /* We can't propagate alternatives across subroutine boundaries.
      This is not incorrect, merely a minor optimization loss.  */
 
   p = head->first;

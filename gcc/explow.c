@@ -1287,7 +1287,7 @@ allocate_dynamic_stack_space (size, target, known_align)
   do_pending_stack_adjust ();
 
  /* We ought to be called always on the toplevel and stack ought to be aligned
-    propertly.  */
+    properly.  */
   if (stack_pointer_delta % (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT))
     abort ();
 

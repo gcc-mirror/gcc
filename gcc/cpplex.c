@@ -292,7 +292,7 @@ skip_block_comment (pfile)
 	    break;
 
 	  /* Warn about potential nested comments, but not if the '/'
-	     comes immediately before the true comment delimeter.
+	     comes immediately before the true comment delimiter.
 	     Don't bother to get it right across escaped newlines.  */
 	  if (CPP_OPTION (pfile, warn_comments)
 	      && buffer->cur + 1 < buffer->rlimit
@@ -817,7 +817,7 @@ _cpp_temp_token (pfile)
 
 /* Lex a token into RESULT (external interface).  Takes care of issues
    like directive handling, token lookahead, multiple include
-   opimisation and skipping.  */
+   optimization and skipping.  */
 const cpp_token *
 _cpp_lex_token (pfile)
      cpp_reader *pfile;

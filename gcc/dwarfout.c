@@ -1354,7 +1354,7 @@ static void retry_incomplete_types	PARAMS ((void));
    NOT issue a trailing newline. We define ASM_OUTPUT_DWARF_STRING_NEWLINE
    based on whether ASM_OUTPUT_DWARF_STRING is defined or not. If it is
    defined, we call it, then issue the line feed. If not, we supply a
-   default defintion of calling ASM_OUTPUT_ASCII */
+   default definition of calling ASM_OUTPUT_ASCII */
 
 #ifndef ASM_OUTPUT_DWARF_STRING
 #define ASM_OUTPUT_DWARF_STRING_NEWLINE(FILE,P) \
@@ -1912,7 +1912,7 @@ fundamental_type_code (type)
 	    const char *const name =
 	      IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
-	    /* Note that here we can run afowl of a serious bug in "classic"
+	    /* Note that here we can run afoul of a serious bug in "classic"
 	       svr4 SDB debuggers.  They don't seem to understand the
 	       FT_ext_prec_float type (even though they should).  */
 
@@ -1934,7 +1934,7 @@ fundamental_type_code (type)
 	if (TYPE_PRECISION (type) == FLOAT_TYPE_SIZE)
 	  return FT_float;
 
-	/* Note that here we can run afowl of a serious bug in "classic"
+	/* Note that here we can run afoul of a serious bug in "classic"
 	   svr4 SDB debuggers.  They don't seem to understand the
 	   FT_ext_prec_float type (even though they should).  */
 
@@ -5613,7 +5613,7 @@ output_decl (decl, containing_scope)
 
     case PARM_DECL:
      /* Force out the type of this formal, if it was not forced out yet.
-	Note that here we can run afowl of a bug in "classic" svr4 SDB.
+	Note that here we can run afoul of a bug in "classic" svr4 SDB.
 	It should be able to grok the presence of type DIEs within a list
 	of TAG_formal_parameter DIEs, but it doesn't.  */
 
@@ -5717,7 +5717,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	 future (i.e. later on within the current translation unit).
 	 So here we just ignore all file-scope function declarations
 	 which are not also definitions.  If and when the debugger needs
-	 to know something about these functions, it wil have to hunt
+	 to know something about these functions, it will have to hunt
 	 around and find the DWARF information associated with the
 	 *definition* of the function.
 

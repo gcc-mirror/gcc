@@ -149,7 +149,7 @@ extern void sjlj_emit_function_exit_after	PARAMS ((rtx));
 
 
 /* If non-NULL, this is a function that returns an expression to be
-   executed if an unhandled exception is propogated out of a cleanup
+   executed if an unhandled exception is propagated out of a cleanup
    region.  For example, in C++, an exception thrown by a destructor
    during stack unwinding is required to result in a call to
    `std::terminate', so the C++ version of this function returns a

@@ -1112,7 +1112,7 @@ cpp_finish (pfile)
 {
   /* cpplex.c leaves the final buffer on the stack.  This it so that
      it returns an unending stream of CPP_EOFs to the client.  If we
-     popped the buffer, we'd derefence a NULL buffer pointer and
+     popped the buffer, we'd dereference a NULL buffer pointer and
      segfault.  It's nice to allow the client to do worry-free excess
      cpp_get_token calls.  */
   while (pfile->buffer)

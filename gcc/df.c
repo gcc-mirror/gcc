@@ -954,8 +954,8 @@ df_def_record_1 (df, x, bb, insn)
 	 || GET_CODE (dst) == SIGN_EXTRACT
 	 || read_modify_subreg_p (dst))
     {
-      /* Strict low part allways contains SUBREG, but we don't want to make
-	 it appear outside, as whole register is allways considered.  */
+      /* Strict low part always contains SUBREG, but we don't want to make
+	 it appear outside, as whole register is always considered.  */
       if (GET_CODE (dst) == STRICT_LOW_PART)
 	{
 	  loc = &XEXP (dst, 0);
@@ -1334,7 +1334,7 @@ df_bb_reg_def_chain_create (df, bb)
   /* Perhaps the defs should be sorted using a depth first search
      of the CFG (or possibly a breadth first search).  We currently
      scan the basic blocks in reverse order so that the first defs
-     apprear at the start of the chain.  */
+     appear at the start of the chain.  */
 
   for (insn = bb->end; insn && insn != PREV_INSN (bb->head);
        insn = PREV_INSN (insn))
@@ -2531,7 +2531,7 @@ df_insn_mem_replace (df, bb, insn, mem, reg)
   args.replacement = reg;
   args.modified = 0;
 
-  /* Seach and replace all matching mems within insn.  */
+  /* Search and replace all matching mems within insn.  */
   for_each_rtx (&insn, df_rtx_mem_replace, &args);
 
   if (args.modified)

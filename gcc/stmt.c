@@ -3037,7 +3037,7 @@ expand_null_return ()
 
   /* If this function was declared to return a value, but we
      didn't, clobber the return registers so that they are not
-     propogated live to the rest of the function.  */
+     propagated live to the rest of the function.  */
   clobber_return_register ();
 
   expand_null_return_1 (last_insn);

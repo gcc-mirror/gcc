@@ -2177,7 +2177,7 @@ hash_scan_set (pat, insn, set_p)
 	  /* Don't GCSE if it has attached REG_EQUIV note.
 	     At this point this only function parameters should have
 	     REG_EQUIV notes and if the argument slot is used somewhere
-	     explicitely, it means address of parameter has been taken,
+	     explicitly, it means address of parameter has been taken,
 	     so we should not extend the lifetime of the pseudo.  */
 	  && ((note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) == 0
 	      || GET_CODE (XEXP (note, 0)) != MEM))

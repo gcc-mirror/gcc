@@ -1336,7 +1336,7 @@ constant_subword (op, offset, mode)
 	 ??? This is a potential portability problem and should
 	 be fixed at some point.
 
-	 We must excercise caution with the sign bit.  By definition there
+	 We must exercise caution with the sign bit.  By definition there
 	 are 32 significant bits in K; there may be more in a HOST_WIDE_INT.
 	 Consider a host with a 32-bit long and a 64-bit HOST_WIDE_INT.
 	 So we explicitly mask and sign-extend as necessary.  */
@@ -2837,7 +2837,7 @@ try_split (pat, trial, last)
 		    && !find_reg_note (insn, REG_BR_PROB, 0))
 		  {
 		    /* We can preserve the REG_BR_PROB notes only if exactly
-		       one jump is created, otherwise the machinde description
+		       one jump is created, otherwise the machine description
 		       is responsible for this step using
 		       split_branch_probability variable.  */
 		    if (njumps != 1)
@@ -3087,7 +3087,7 @@ add_insn_after (insn, after)
     {
       set_block_for_insn (insn, bb);
       /* Should not happen as first in the BB is always
-	 eigther NOTE or LABEL.  */
+	 either NOTE or LABEL.  */
       if (bb->end == after
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && GET_CODE (insn) != BARRIER
@@ -3154,7 +3154,7 @@ add_insn_before (insn, before)
     {
       set_block_for_insn (insn, bb);
       /* Should not happen as first in the BB is always
-	 eigther NOTE or LABEl.  */
+	 either NOTE or LABEl.  */
       if (bb->head == insn
 	  /* Avoid clobbering of structure when creating new BB.  */
 	  && GET_CODE (insn) != BARRIER
@@ -4668,7 +4668,7 @@ init_emit_once (line_numbers)
 #ifdef INIT_EXPANDERS
   /* This is to initialize {init|mark|free}_machine_status before the first
      call to push_function_context_to.  This is needed by the Chill front
-     end which calls push_function_context_to before the first cal to
+     end which calls push_function_context_to before the first call to
      init_function_start.  */
   INIT_EXPANDERS;
 #endif

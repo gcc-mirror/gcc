@@ -4588,7 +4588,7 @@ general_init (argv0)
 }
 
 /* Parse command line options and set default flag values, called
-   after language-independent option-independent intialization.  Do
+   after language-independent option-independent initialization.  Do
    minimal options processing.  Outputting diagnostics is OK, but GC
    and identifier hashtables etc. are not initialized yet.  */
 static void
@@ -4988,7 +4988,7 @@ lang_independent_init ()
   decl_printable_name = decl_name;
   lang_expand_expr = (lang_expand_expr_t) do_abort;
 
-  /* Set the language-dependent identifer size.  */
+  /* Set the language-dependent identifier size.  */
   tree_code_length[(int) IDENTIFIER_NODE]
     = ((lang_hooks.identifier_size - sizeof (struct tree_common))
        / sizeof (tree));

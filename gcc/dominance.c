@@ -28,7 +28,7 @@
    block I(X), called the immediate dominator of X, which is the parent of X
    in the dominator tree.
 
-   The algorithm computes this dominator tree implicitely by computing for
+   The algorithm computes this dominator tree implicitly by computing for
    each block its immediate dominator.  We use tree balancing and path
    compression, so its the O(e*a(e,v)) variant, where a(e,v) is the very
    slowly growing functional inverse of the Ackerman function.  */
@@ -89,7 +89,7 @@ struct dom_info
      number of that node in DFS order counted from 1.  This is an index
      into most of the other arrays in this structure.  */
   TBB *dfs_order;
-  /* If x is the DFS-index of a node which correspondends with an basic block,
+  /* If x is the DFS-index of a node which corresponds with an basic block,
      dfs_to_bb[x] is that basic block.  Note, that in our structure there are
      more nodes that basic blocks, so only dfs_to_bb[dfs_order[bb->index]]==bb
      is true for every basic block bb, but not the opposite.  */
@@ -523,7 +523,7 @@ calc_idoms (di, reverse)
       v--;
     }
 
-  /* Explicitely define the dominators.  */
+  /* Explicitly define the dominators.  */
   di->dom[1] = 0;
   for (v = 2; v <= di->nodes; v++)
     if (di->dom[v] != di->key[v])

@@ -2058,7 +2058,7 @@ init_ready_list (ready)
 	      {
 		rtx next;
 
-		/* Note that we havn't squirreled away the notes for
+		/* Note that we haven't squirreled away the notes for
 		   blocks other than the current.  So if this is a
 		   speculative insn, NEXT might otherwise be a note.  */
 		next = next_nonnote_insn (insn);
