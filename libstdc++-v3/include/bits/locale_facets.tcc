@@ -79,7 +79,6 @@ namespace std
    *  @param  Facet  The facet type to test the presence of.
    *  @param  locale  The locale to test.
    *  @return  true if locale contains a facet of type Facet, else false.
-   *  @throw  std::bad_cast if locale doesn't contain the facet.
   */
   template<typename _Facet>
     inline bool

@@ -1,5 +1,10 @@
 2004-03-06  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc: Tweak the comment preceding
+	has_facet: doesn't throw.
+
+2004-03-06  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/22_locale/money_get/get/char/1.cc: Clean up.
 	* testsuite/22_locale/money_get/get/char/2.cc: Likewise.
 	* testsuite/22_locale/money_get/get/char/3.cc: Likewise.
