@@ -2794,12 +2794,11 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 	}
       else
 	{
-	  register tree size = size_in_bytes (TREE_TYPE (pval));
 	  /* PUSH_ROUNDING has no effect on us, because
 	     emit_push_insn for BLKmode is careful to avoid it.  */
-	  excess = (arg->size.constant - TREE_INT_CST_LOW (size)
+	  excess = (arg->size.constant - int_size_in_bytes (TREE_TYPE (pval))
 		    + partial * UNITS_PER_WORD);
-	  size_rtx = expand_expr (size, NULL_RTX, VOIDmode, 0);
+	  size_rtx = expr_size (TREE_TYPE (pval));
 	}
 
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
