@@ -2017,6 +2017,31 @@ fix = {
 
 
 /*
+ * In netinet/in.h, the network byte swapping asm functions supported by the
+ * native cc compiler on PTX 1.x and 2.x are not supported by gcc.  Instead,
+ * include <sys/byteorder.h>, written out by fixincludes, which has
+ * these same routines written in an asm format supported by gcc.
+ */
+#ifdef PTX
+fix = {
+    hackname  = ptx_netswap;
+    files     = netinet/in.h;
+    sed       = "/#define NETSWAP/a\\\n"
+                "\\\n"
+                "#if defined (__GNUC__) || defined (__GNUG__)\\\n"
+                "#include <sys/byteorder.h>\\\n"
+                "#else  /* not __GNUC__ */\n";
+    sed       = "/#endif[ \t]*\\/\\* NETSWAP \\*\\//i\\\n"
+                "#endif /* not __GNUC__ */\n";
+    /* Half-hearted test case: I have no idea what the file this is really
+       supposed to operate on looks like. */
+    test_text = "#define NETSWAP\n"
+                "#endif /* NETSWAP */";
+};
+#endif
+
+
+/*
  * In pwd.h, PTX 1.x needs stdio.h included since FILE * was added in a
  * prototype later on in the file.  (It's not clear that this is
  * still true, and even if it is, FILE * may be added after this fix runs by
@@ -3442,6 +3467,8 @@ fix = {
 /*
  *  Fix multiple defines for NULL.  Sometimes, we stumble into \r\n
  *  terminated lines, so accommodate these.  Test both ways.
+ *  Don't bother to reproduce the \r\n termination, as GCC has to
+ *  recognize \n termination anyway.
  */
 fix = {
     hackname  = undefine_null;
@@ -3449,10 +3476,11 @@ fix = {
     bypass    = "#[ \t]*(ifn|un)def[ \t]+NULL($|[ \t\r])";
 
     c_fix     = format;
-    c_fix_arg = "#ifndef NULL%2\n#define NULL%1%2\n#endif%2\n";
-    c_fix_arg = "^#[ \t]*define[ \t]*[ \t]NULL([^\r\n]+)([\r]*)\n";
+    c_fix_arg = "#ifndef NULL\n#define NULL%1\n#endif\n";
+    c_fix_arg = "^#[ \t]*define[ \t]+NULL([^\r\n]+)[\r]*\n";
 
-    test_text = "#define NULL 0UL\r\n#define NULL\t((void*)0)\n";
+    test_text = "#define NULL 0UL\r\n"
+                "#define NULL\t((void*)0)\n";
 };
 
 /*
