@@ -1,3 +1,9 @@
+2004-11-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR ada/17986
+	* ada-tree.h (lang_tree_node): Set chain_next to be the chain of the
+	tree.
+
 2004-11-21  Andreas Jaeger  <aj@suse.de>
 
 	* stylesw.adb: Change Style_Check_Subprogram_Order to
