@@ -544,8 +544,8 @@ compiler that understands the C++ language---and under some
 circumstances, you might want to compile programs from standard input,
 or otherwise without a suffix that flags them as C++ programs.
 @code{g++} is a program that calls GNU CC with the default language
-set to C++, and automatically specifies linking against the GNU class
-library libg++.
+set to C++, and automatically specifies linking against the C++
+library.
 @cindex @code{g++ 1.@var{xx}}
 @cindex @code{g++}, separate compiler
 @cindex @code{g++} older version
@@ -993,7 +993,7 @@ Support virtual function calls for objects that exceed the size
 representable by a @samp{short int}.  Users should not use this flag by
 default; if you need to use it, the compiler will tell you so.  If you
 compile any of your code with this flag, you must compile @emph{all} of
-your code with this flag (including libg++, if you use it).
+your code with this flag (including the C++ library, if you use it).
 
 This flag is not useful when compiling with -fvtable-thunks.
 
@@ -1111,7 +1111,7 @@ conforming programs must not rely on a maximum depth greater than 17.
 @item -nostdinc++
 Do not search for header files in the standard directories specific to
 C++, but do still search the other standard directories.  (This option
-is used when building libg++.)
+is used when building the C++ library.)
 
 @item -traditional
 For C++ programs (in addition to the effects that apply to both C and
