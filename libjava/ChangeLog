@@ -1,5 +1,9 @@
 2004-01-29  Scott Gilbertson  <scottg@mantatest.com>
 
+	* gnu/awt/xlib/XCanvasPeer.java (handleEvent): Implemented.
+
+2004-01-29  Scott Gilbertson  <scottg@mantatest.com>
+
 	* Makefile.am: Added gnu/awt/xlib/XFontPeer.java.
 	* Makefile.in: Re-generated.
 	* gnu/awt/xlib/XFontPeer.java: New file.
