@@ -2647,20 +2647,28 @@ semi_or_error:
 methodproto:
 	  '+'
 		{
+		  /* Remember protocol qualifiers in prototypes.  */
+		  remember_protocol_qualifiers ();
 		  objc_inherit_code = CLASS_METHOD_DECL;
 		}
 	  methoddecl
 		{
+		  /* Forget protocol qualifiers here.  */
+		  forget_protocol_qualifiers ();
 		  add_class_method (objc_interface_context, $3);
 		}
 	  semi_or_error
 
 	| '-'
 		{
+		  /* Remember protocol qualifiers in prototypes.  */
+		  remember_protocol_qualifiers ();
 		  objc_inherit_code = INSTANCE_METHOD_DECL;
 		}
 	  methoddecl
 		{
+		  /* Forget protocol qualifiers here.  */
+		  forget_protocol_qualifiers ();
 		  add_instance_method (objc_interface_context, $3);
 		}
 	  semi_or_error
