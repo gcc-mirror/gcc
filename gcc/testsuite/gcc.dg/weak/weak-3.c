@@ -1,3 +1,4 @@
+/* { dg-require-weak "" } */
 /* { dg-do compile } */
 /* { dg-options "-fno-common" } */
 

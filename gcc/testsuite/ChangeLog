@@ -1,3 +1,17 @@
+2003-06-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/weak/weak.exp: Simplify.
+	* gcc.dg/weak/typeof-2.c: Use dg-require-weak.
+	* gcc.dg/weak/weak-1.c: Likewise.
+	* gcc.dg/weak/weak-2.c: Likewise.
+	* gcc.dg/weak/weak-3.c: Likewise.
+	* gcc.dg/weak/weak-4.c: Likewise.
+	* gcc.dg/weak/weak-5.c: Likewise.
+	* gcc.dg/weak/weak-6.c: Likewise.
+	* gcc.dg/weak/weak-7.c: Likewise.
+	* gcc.dg/weak/weak-8.c: Likewise.
+	* gcc.dg/weak/weak-9.c: Likewise.
+
 2003-06-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	gcc.c-torture/execute/20030606-1.c: New.
