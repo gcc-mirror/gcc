@@ -406,8 +406,15 @@ global_symbolic_reference_mentioned_p (op)
   register char *fmt;
   register int i;
 
-  if (GET_CODE (op) == SYMBOL_REF && ! SYMBOL_REF_FLAG (op))
-    return 1;
+  if (GET_CODE (op) == SYMBOL_REF)
+    {
+      if (! SYMBOL_REF_FLAG (op))
+	return 1;
+      else
+return 0;
+    }
+  else if (GET_CODE (op) != CONST)
+    return 0;
 
   fmt = GET_RTX_FORMAT (GET_CODE (op));
   for (i = GET_RTX_LENGTH (GET_CODE (op)) - 1; i >= 0; i--)
