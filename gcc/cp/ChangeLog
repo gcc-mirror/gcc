@@ -1,7 +1,7 @@
 1999-05-13  Per Bothner  <bothner@cygnus.com>
 
 	* class.c (push_lang_context):  Turn off DECL_IGNORED_P for
-	primitive Java types, if we actually see `extern "C"'.
+	primitive Java types, if we actually see `extern "Java"'.
 
 1999-05-10 18:21 -0400  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
