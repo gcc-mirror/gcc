@@ -399,9 +399,14 @@ int flag_short_double;
 
 int flag_no_asm;
 
-/* Nonzero means don't recognize the non-ANSI builtin functions.  */
+/* Nonzero means don't recognize any builtin functions.  */
 
 int flag_no_builtin;
+
+/* Nonzero means don't recognize the non-ANSI builtin functions.
+   -ansi sets this.  */
+
+int flag_no_nonansi_builtin;
 
 /* Nonzero means do some things the same way PCC does.  */
 
@@ -547,7 +552,7 @@ c_decode_option (p)
   else if (!strcmp (p, "-fident"))
     flag_no_ident = 0;
   else if (!strcmp (p, "-ansi"))
-    flag_no_asm = 1, flag_no_builtin = 1, dollars_in_ident = 0;
+    flag_no_asm = 1, flag_no_nonansi_builtin = 1, dollars_in_ident = 0;
   else if (!strcmp (p, "-Wimplicit"))
     warn_implicit = 1;
   else if (!strcmp (p, "-Wno-implicit"))
@@ -611,6 +616,10 @@ c_decode_option (p)
   else if (!strcmp (p, "-Wtrigraphs"))
     ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wno-trigraphs"))
+    ; /* cpp handles this one.  */
+  else if (!strcmp (p, "-Wimport"))
+    ; /* cpp handles this one.  */
+  else if (!strcmp (p, "-Wno-import"))
     ; /* cpp handles this one.  */
   else if (!strcmp (p, "-Wall"))
     {
@@ -1325,7 +1334,8 @@ duplicate_decls (newdecl, olddecl)
 	    warning_with_decl (newdecl,
 			       "`%s' declared inline after being called");
 	  if (TREE_CODE (olddecl) == FUNCTION_DECL
-	      && TREE_INLINE (olddecl) != TREE_INLINE (newdecl))
+	      && TREE_INLINE (olddecl) != TREE_INLINE (newdecl)
+	      && ! (TREE_EXTERNAL (olddecl) && TREE_EXTERNAL (newdecl)))
 	    warning_with_decl (newdecl,
 			       "`%s' declarations disagree about `inline'");
 	  /* It is nice to warn when a function is declared
@@ -2474,7 +2484,7 @@ init_decl_processing ()
 						    sizetype,
 						    endlink)),
 		    BUILT_IN_ALLOCA, "alloca");
-  if (! flag_no_builtin)
+  if (! flag_no_builtin && !flag_no_nonansi_builtin)
     {
       tree exit_type;
       temp = builtin_function ("alloca",
@@ -4177,11 +4187,18 @@ get_parm_info (void_at_end)
 				 saveable_tree_cons (NULL_TREE, void_type_node, NULL_TREE));
     }
 
-  /* Extract enumerator values and other non-parms declared with the parms.  */
+  /* Extract enumerator values and other non-parms declared with the parms.
+     Likewise any forward parm decls that didn't have real parm decls.  */
   for (decl = parms; decl; )
     {
       tree next = TREE_CHAIN (decl);
 
+      if (TREE_ASM_WRITTEN (decl))
+	{
+	  error_with_decl (decl, "no real declaration for parameter `%s'");
+	  TREE_CHAIN (decl) = new_parms;
+	  new_parms = decl;
+	}
       if (TREE_CODE (decl) != PARM_DECL)
 	{
 	  TREE_CHAIN (decl) = new_parms;

@@ -36,7 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  *
  *      code generation `options':
  *
- *      - OBJC_INT_SELECTORS, OBJC_NONUNIQUE_SELECTORS, NEXT_OBJC_RUNTIME
+ *      - OBJC_INT_SELECTORS, OBJC_SELECTORS_WITHOUT_LABELS, NEXT_OBJC_RUNTIME
  */
 
 #include <stdio.h>
@@ -238,7 +238,7 @@ static tree _OBJC_SYMBOLS_decl;
 static tree 	_OBJC_INSTANCE_VARIABLES_decl, _OBJC_CLASS_VARIABLES_decl;
 static tree 	_OBJC_INSTANCE_METHODS_decl, _OBJC_CLASS_METHODS_decl;
 static tree 	_OBJC_CLASS_decl, _OBJC_METACLASS_decl;
-#ifdef OBJC_NONUNIQUE_SELECTORS
+#ifdef OBJC_SELECTORS_WITHOUT_LABELS
 static tree 	_OBJC_SELECTOR_REFERENCES_decl;
 #endif
 static tree _OBJC_MODULES_decl;
@@ -565,7 +565,7 @@ synth_module_prologue ()
 
   /* extern SEL _OBJC_SELECTOR_REFERENCES[]; */
 
-#ifdef OBJC_NONUNIQUE_SELECTORS
+#ifdef OBJC_SELECTORS_WITHOUT_LABELS
   _OBJC_SELECTOR_REFERENCES_decl
     = create_builtin_decl (VAR_DECL, build_array_type (selector_type, NULLT),
 			   "_OBJC_SELECTOR_REFERENCES");
@@ -703,7 +703,7 @@ init_objc_symtab ()
 
   /* refs = { ..., _OBJC_SELECTOR_REFERENCES, ... } */
 
-#ifndef OBJC_NONUNIQUE_SELECTORS
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
   initlist = tree_cons (NULLT, build_int_2 (0, 0), initlist);
 #else
   if (sel_ref_chain)
@@ -1050,7 +1050,7 @@ build_msg_pool_reference (offset)
   return expr;
 }
 
-#ifndef OBJC_NONUNIQUE_SELECTORS
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
 static tree
 build_selector_reference (idx)
       int idx;
@@ -1100,7 +1100,7 @@ build_selector_translation_table ()
   tree sc_spec, decl_specs, expr_decl;
   tree chain, initlist = NULLT;
   int offset = 0;
-#ifndef OBJC_NONUNIQUE_SELECTORS
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
   tree decl, var_decl;
   int idx = 0;
   char buf[256];
@@ -1114,7 +1114,7 @@ build_selector_translation_table ()
     {
       tree expr;
 
-#ifndef OBJC_NONUNIQUE_SELECTORS
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
       sprintf (buf, "_OBJC_SELECTOR_REFERENCES_%d", idx);
       sc_spec = build_tree_list (NULLT, ridpointers[(int) RID_STATIC]);
 
@@ -1133,7 +1133,7 @@ build_selector_translation_table ()
       /* add one for the '\0' character */
       offset += IDENTIFIER_LENGTH (TREE_VALUE (chain)) + 1;
 
-#ifndef OBJC_NONUNIQUE_SELECTORS
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
       finish_decl (decl, expr, NULLT);
       idx++;
 #else
@@ -1141,7 +1141,7 @@ build_selector_translation_table ()
 #endif
     }
 
-#ifdef OBJC_NONUNIQUE_SELECTORS
+#ifdef OBJC_SELECTORS_WITHOUT_LABELS
   DECL_INITIAL (_OBJC_SELECTOR_REFERENCES_decl) = (tree) 1;
   initlist = build_nt (CONSTRUCTOR, NULLT, nreverse (initlist));
   finish_decl (_OBJC_SELECTOR_REFERENCES_decl, initlist, NULLT);
@@ -2623,7 +2623,7 @@ build_message_expr (mess)
   /* Build the parameters list for looking up the method.
      These are the object itself and the selector.  */
   
-#ifndef OBJC_NONUNIQUE_SELECTORS
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
   selector = build_selector_reference (selTransTbl_index);
 #else
   selector = build_array_ref (_OBJC_SELECTOR_REFERENCES_decl,
@@ -2895,7 +2895,7 @@ build_selector_expr (selnamelist)
 
   selTransTbl_index = add_selector_reference (selname);
 
-#ifndef OBJC_NONUNIQUE_SELECTORS
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
   return build_selector_reference (selTransTbl_index);
 #else
   /* synthesize a reference into the selector translation table */

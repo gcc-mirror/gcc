@@ -620,6 +620,11 @@ rtx_cost (x)
     case REG:
       return 1;
     case SUBREG:
+      /* If we can't tie these modes, make this expensive.  The larger
+	 the mode, the more expensive it is.  */
+      if (! MODES_TIEABLE_P (GET_MODE (x), GET_MODE (SUBREG_REG (x))))
+	return COSTS_N_INSNS (2
+			      + GET_MODE_SIZE (GET_MODE (x)) / UNITS_PER_WORD);
       return 2;
 #ifdef RTX_COSTS
       RTX_COSTS (x, code);
@@ -4036,7 +4041,7 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	      val &= (1 << INTVAL (op1)) - 1;
 	      /* If desired, propagate sign bit.  */
 	      if (code == SIGN_EXTRACT && (val & (1 << (INTVAL (op1) - 1))))
-		val |= ~ (1 << INTVAL (op1));
+		val |= ~ ((1 << INTVAL (op1)) - 1);
 	    }
 
 	  /* Clear the bits that don't belong in our mode,
@@ -4759,6 +4764,28 @@ equiv_constant (x)
 
   if (x != 0 && CONSTANT_P (x))
     return x;
+
+  /* If X is a MEM, try to fold it outside the context of any insn to see if
+     it might be equivalent to a constant.  That handles the case where it
+     is a constant-pool reference.  Then try to look it up in the hash table
+     in case it is something whose value we have seen before.  */
+
+  if (GET_CODE (x) == MEM)
+    {
+      struct table_elt *elt;
+
+      x = fold_rtx (x, 0);
+      if (CONSTANT_P (x))
+	return x;
+
+      elt = lookup (x, safe_hash (x, GET_MODE (x)) % NBUCKETS, GET_MODE (x));
+      if (elt == 0)
+	return 0;
+
+      for (elt = elt->first_same_value; elt; elt = elt->next_same_value)
+	if (elt->is_const && CONSTANT_P (elt->exp))
+	  return elt->exp;
+    }
 
   return 0;
 }
@@ -6191,10 +6218,10 @@ cse_insn (insn, in_libcall_block)
 			      || sets[i].inner_dest != SET_DEST (sets[i].rtl));
 	  }
 
-	/* If we have (set (subreg:m1 (reg:m2 foo) 0) (bar:m1)), M1 is wider
-	   than M2, and both M1 and M2 are a single word, we are also doing
-	   (set (reg:m2 foo) (subreg:m2 (bar:m1 0))) so make that equivalence
-	   as well.
+	/* If we have (set (subreg:m1 (reg:m2 foo) 0) (bar:m1)), M1 is no
+	   narrower than M2, and both M1 and M2 are the same number of words,
+	   we are also doing (set (reg:m2 foo) (subreg:m2 (bar:m1) 0)) so
+	   make that equivalence as well.
 
 	   However, BAR may have equivalences for which gen_lowpart_if_possible
 	   will produce a simpler value than gen_lowpart_if_possible applied to
@@ -6207,8 +6234,8 @@ cse_insn (insn, in_libcall_block)
 	   already entered SRC and DEST of the SET in the table.  */
 
 	if (GET_CODE (dest) == SUBREG
-	    && GET_MODE_SIZE (GET_MODE (dest)) <= UNITS_PER_WORD
-	    && GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) <= UNITS_PER_WORD
+	    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) / UNITS_PER_WORD
+		== GET_MODE_SIZE (GET_MODE (dest)) / UNITS_PER_WORD)
 	    && (GET_MODE_SIZE (GET_MODE (dest))
 		>= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))
 	    && sets[i].src_elt != 0)
@@ -6813,6 +6840,7 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
   rtx p = insn, q;
   int nsets = 0;
   int low_cuid = INSN_CUID (insn), high_cuid = INSN_CUID (insn);
+  rtx next = GET_RTX_CLASS (GET_CODE (insn)) == 'i' ? insn : next_real_insn (insn);
   int path_size = data->path_size;
   int path_entry = 0;
   int i;
@@ -6913,8 +6941,11 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
 	    {
 	      /* Don't allow ourself to keep walking around an
 		 always-executed loop.  */
-	      if (next_real_insn (q) == next_real_insn (insn))
-		break;
+	      if (next_real_insn (q) == next)
+		{
+		  p = NEXT_INSN (p);
+		  continue;
+		}
 
 	      /* Similarly, don't put a branch in our path more than once.  */
 	      for (i = 0; i < path_entry; i++)
@@ -6942,8 +6973,11 @@ cse_end_of_basic_block (insn, data, follow_jumps, after_loop, skip_blocks)
 	    {
 	      register rtx tmp;
 
-	      if (next_real_insn (q) == next_real_insn (insn))
-		break;
+	      if (next_real_insn (q) == next)
+		{
+		  p = NEXT_INSN (p);
+		  continue;
+		}
 
 	      for (i = 0; i < path_entry; i++)
 		if (data->path[i].branch == p)

@@ -1307,7 +1307,6 @@ extern int rs6000_trunc_used;
 			   main_input_filename, ".ro_");	\
 								\
   toc_section ();						\
-  bss_section ();						\
   if (write_symbols != NO_DEBUG)				\
     private_data_section ();					\
 }
@@ -1401,18 +1400,7 @@ toc_section ()						\
     fprintf (asm_out_file, "\t.toc\n");			\
 							\
   in_section = toc;					\
-}							\
-							\
-void							\
-bss_section ()						\
-{							\
-  if (in_section != bss)				\
-    {							\
-      fprintf (asm_out_file, "\t.csect %s[BS]\n",	\
-	       xcoff_bss_section_name);		\
-      in_section = bss;					\
-    }							\
-}							\
+}
 
 /* This macro produces the initial definition of a function name.
    On the RS/6000, we need to place an extra '.' in the function name and
@@ -1637,7 +1625,8 @@ bss_section ()						\
   "fr28", 60, "fr29", 61, "fr30", 62, "fr31", 63,	\
   /* no additional names for: mq, lr, ctr, ap */	\
   "cr0",  68, "cr1",  69, "cr2",  70, "cr3",  71,	\
-  "cr4",  72, "cr5",  73, "cr6",  74, "cr7",  75 }
+  "cr4",  72, "cr5",  73, "cr6",  74, "cr7",  75,	\
+  "cc",   68 }
 
 /* How to renumber registers for dbx and gdb.  */
 
@@ -1761,8 +1750,7 @@ bss_section ()						\
    to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
-  do { bss_section ();					\
-       fputs (".comm ", (FILE));			\
+  do { fputs (".comm ", (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
        fprintf ((FILE), ",%d\n", (SIZE)); } while (0)
 
@@ -1770,8 +1758,7 @@ bss_section ()						\
    to define a local common symbol.  */
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
-  do { bss_section ();					\
-       fputs (".lcomm ", (FILE));			\
+  do { fputs (".lcomm ", (FILE));			\
        RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
        fprintf ((FILE), ",%d,%s\n", (SIZE), xcoff_bss_section_name); \
      } while (0)

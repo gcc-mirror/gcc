@@ -369,10 +369,20 @@ do { union { float f; long l;} tem;			\
 	     XVECLEN (PATTERN (TABLE), 1) + 1, (PREFIX), (NUM),		\
 	     (PREFIX), (NUM), (PREFIX), (NUM))
 
-/* At end of a switch table, define LD%n iff the symbol LI%n was defined.  */
-#define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)		\
-  if (RTX_INTEGRATED_P (TABLE))				\
-    fprintf (FILE, "\tset LD%%%d,L%%%d-LI%%%d\n", (NUM), (NUM), (NUM))
+/* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
+   Some SGS assemblers have a bug such that "Lnnn-LInnn-2.b(pc,d0.l*2)"
+   fails to assemble.  Luckily "LDnnn(pc,d0.l*2)" produces the results
+   we want.  This difference can be accommodated by making the assembler
+   define such "LDnnn" to be either "Lnnn-LInnn-2.b", "Lnnn", or any other
+   string, as necessary.  This is accomplished via the ASM_OUTPUT_CASE_END
+   macro. */
+
+#define ASM_OUTPUT_CASE_END(FILE,NUM,TABLE)				\
+{ if (switch_table_difference_label_flag)				\
+    fprintf (FILE, "\tset LD%%%d,L%%%d-LI%%%d\n", (NUM), (NUM), (NUM))	\
+  switch_table_difference_label_flag = 0; }
+
+int switch_table_difference_label_flag;
 
 #define ASM_OUTPUT_OPCODE(FILE, PTR)			\
 { if ((PTR)[0] == 'j' && (PTR)[1] == 'b')		\
