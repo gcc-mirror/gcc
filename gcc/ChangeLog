@@ -1,3 +1,9 @@
+2004-04-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (expand_mult_highpart_adjust): Make OP1 valid for MODE.
+	(expand_mult_highpart_optab): Likewise.
+	(expand_mult_highpart): Make OP1 valid for WIDER_MODE, not MODE.
+
 2004-04-19  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm.md (fixuns_truncsfsi2, fixuns_truncdfsi2,
