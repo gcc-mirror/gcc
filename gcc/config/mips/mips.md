@@ -69,14 +69,19 @@
 		(const_string "yes")
 		(const_string "no")))
 
+;; Attribute describing the processor.  This attribute must match exactly
+;; with the processor_type enumeration in mips.h.
+
 ;; Attribute describing the processor
-(define_attr "cpu" "default,r3000,r4000,r6000"
-  (const
-   (cond [(eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_DEFAULT")) (const_string "default")
-	  (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R3000"))   (const_string "r3000")
-	  (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R4000"))   (const_string "r4000")
-	  (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R6000"))   (const_string "r6000")]
-	 (const_string "default"))))
+;; (define_attr "cpu" "default,r3000,r6000,r4000"
+;;   (const
+;;    (cond [(eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R3000"))   (const_string "r3000")
+;;           (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R4000"))   (const_string "r4000")
+;;           (eq (symbol_ref "mips_cpu") (symbol_ref "PROCESSOR_R6000"))   (const_string "r6000")]
+;;          (const_string "default"))))
+
+(define_attr "cpu" "default,r3000,r6000,r4000"
+  (const (symbol_ref "mips_cpu_attr")))
 
 ;; Attribute defining whether or not we can use the branch-likely instructions
 ;; (MIPS ISA level 2)
@@ -131,12 +136,12 @@
   (and (eq_attr "type" "load,pic") (eq_attr "cpu" "r3000"))
   2 0)
 
-(define_function_unit "memory"	 1 0 (eq_attr "type" "store") 1 0)
+(define_function_unit "memory"   1 0 (eq_attr "type" "store") 1 0)
 
-(define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp")	 2 0)
+(define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp") 2 0)
 
-(define_function_unit "transfer" 1 0 (eq_attr "type" "xfer")	 2 0)
-(define_function_unit "transfer" 1 0 (eq_attr "type" "hilo")	 3 0)
+(define_function_unit "transfer" 1 0 (eq_attr "type" "xfer") 2 0)
+(define_function_unit "transfer" 1 0 (eq_attr "type" "hilo") 3 0)
 
 (define_function_unit "imuldiv"  1 1
   (and (eq_attr "type" "imul") (eq_attr "cpu" "!r3000,r4000"))
@@ -174,11 +179,11 @@
   (and (eq_attr "type" "fadd") (eq_attr "cpu" "r6000"))
   3 6)
 
-(define_function_unit "fast" 1 1
+(define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "!r3000"))
   2 4)
 
-(define_function_unit "fast" 1 1
+(define_function_unit "adder" 1 1
   (and (eq_attr "type" "fabs,fneg") (eq_attr "cpu" "r3000"))
   1 2)
 
@@ -232,6 +237,33 @@
 
 (define_function_unit "sqrt" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 108)
 (define_function_unit "sqrt" 1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 224)
+
+
+;; The following functional units do not use the cpu type, and use
+;; much less memory in genattrtab.c.
+
+;; (define_function_unit "memory"   1 0 (eq_attr "type" "load,pic")                            3   0)
+;; (define_function_unit "memory"   1 0 (eq_attr "type" "store")                               1   0)
+;;       
+;; (define_function_unit "fp_comp"  1 0 (eq_attr "type" "fcmp")                                2   0)
+;;       
+;; (define_function_unit "transfer" 1 0 (eq_attr "type" "xfer")                                2   0)
+;; (define_function_unit "transfer" 1 0 (eq_attr "type" "hilo")                                3   0)
+;;   
+;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "imul")                               17  34)
+;; (define_function_unit "imuldiv"  1 1 (eq_attr "type" "idiv")                               38  76)
+;;   
+;; (define_function_unit "adder"    1 1 (eq_attr "type" "fadd")                                4   8)
+;; (define_function_unit "adder"    1 1 (eq_attr "type" "fabs,fneg")                           2   4)
+;;   
+;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "SF"))    7  14)
+;; (define_function_unit "mult"     1 1 (and (eq_attr "type" "fmul") (eq_attr "mode" "DF"))    8  16)
+;;   
+;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "SF"))   23  46)
+;; (define_function_unit "divide"   1 1 (and (eq_attr "type" "fdiv") (eq_attr "mode" "DF"))   36  72)
+;; 
+;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "SF"))  54 108)
+;; (define_function_unit "sqrt"     1 1 (and (eq_attr "type" "fsqrt") (eq_attr "mode" "DF")) 112 224)
 
 
 ;;
@@ -1833,8 +1865,8 @@ move\\t%0,%z4\\n\\
 }")
 
 (define_insn "movsi_internal"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*fs,*f,*f,*f,*R,*m,*x,*d")
-	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*fs,*d,*f,*R,*m,*f,*f,*d,*x"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,d,d,d,R,m,*d,*fz,*f,*f,*f,*R,*m,*x,*d")
+	(match_operand:SI 1 "general_operand" "d,S,IKL,Mnis,R,m,dJ,dJ,*fz,*d,*f,*R,*m,*f,*f,*d,*x"))]
   ""
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,pic,arith,arith,load,load,store,store,xfer,xfer,move,load,load,store,store,hilo,hilo")
@@ -1850,7 +1882,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movhi"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*f,*x,*d")
-	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fs,*d,*f,*d,*x"))]
+	(match_operand:HI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
   ""
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")
@@ -1866,7 +1898,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movqi"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=d,d,d,d,R,m,*d,*f,*f,*x,*d")
-	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fs,*d,*f,*d,*x"))]
+	(match_operand:QI 1 "general_operand"       "d,IK,R,m,dJ,dJ,*fz,*d,*f,*d,*x"))]
   ""
   "* return mips_move_1word (operands, insn, TRUE);"
   [(set_attr "type"	"move,arith,load,load,store,store,xfer,xfer,move,hilo,hilo")

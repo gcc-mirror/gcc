@@ -4248,7 +4248,7 @@ function_epilogue (file, size)
 	}
 
       fprintf (stderr,
-	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3ld reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d\n",
+	       "%-20s fp=%c leaf=%c alloca=%c setjmp=%c stack=%4ld arg=%3ld reg=%2d/%d delay=%3d/%3dL %3d/%3dJ refs=%3d/%3d/%3d",
 	       current_function_name,
 	       (frame_pointer_needed) ? 'y' : 'n',
 	       ((current_frame_info.mask & (1 << 31)) != 0) ? 'n' : 'y',
@@ -4260,6 +4260,14 @@ function_epilogue (file, size)
 	       dslots_load_total, dslots_load_filled,
 	       dslots_jump_total, dslots_jump_filled,
 	       num_refs[0], num_refs[1], num_refs[2]);
+
+      if (HALF_PIC_NUMBER_PTRS)
+	fprintf (stderr, " half-pic=%3d", HALF_PIC_NUMBER_PTRS);
+
+      if (HALF_PIC_NUMBER_REFS)
+	fprintf (stderr, " pic-ref=%3d", HALF_PIC_NUMBER_REFS);
+
+      fputc ('\n', stderr);
     }
 
   /* Reset state info for each function.  */
