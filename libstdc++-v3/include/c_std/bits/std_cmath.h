@@ -34,21 +34,13 @@
 #ifndef _CPP_CMATH
 #define _CPP_CMATH 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _MATH_NEED_C_LEGACY_
-# endif
-
 # include <bits/c++config.h>
 
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-#   include_next <math.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <math.h>
   }
 
 #if _GLIBCPP_HAVE_ACOSF
@@ -543,6 +535,9 @@ namespace _C_legacy {
   inline long double 
   _CPP_tanh_capture(long double __x) { return tanh(static_cast<double>(__x)); }
 #endif
+
+  namespace _C_shadow { }
+
 } // namespace _C_legacy
 
 # undef abs
@@ -802,252 +797,11 @@ namespace std {
 
   inline long double 
   tanh(long double __x) { return _C_legacy::_CPP_tanh_capture(__x); }
-
-  // From ISO/IEC 9899:1999
-  inline float 
-  absf(float __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline float 
-  acosf(float __x) { return _C_legacy::_CPP_acos_capture(__x); }
-
-  inline float 
-  asinf(float __x) { return _C_legacy::_CPP_asin_capture(__x); }
-
-  inline float 
-  atanf(float __x) { return _C_legacy::_CPP_atan_capture(__x); }
-
-  inline float 
-  atan2f(float __y, float __x) 
-  { return _C_legacy::_CPP_atan2_capture(__y, __x); }
-
-  inline float 
-  ceilf(float __x) { return _C_legacy::_CPP_ceil_capture(__x); }
-
-  inline float 
-  cosf(float __x) { return _C_legacy::_CPP_cos_capture(__x); }
-
-  inline float 
-  coshf(float __x) { return _C_legacy::_CPP_cosh_capture(__x); }
-
-  inline float 
-  expf(float __x) { return _C_legacy::_CPP_exp_capture(__x); }
-
-  inline float 
-  fabsf(float __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline float 
-  floorf(float __x) { return _C_legacy::_CPP_floor_capture(__x); }
-
-  inline float 
-  fmodf(float __x, float __y) 
-  { return _C_legacy::_CPP_fmod_capture(__x, __y); }
-
-  inline float 
-  frexpf(float __x, int* __exp) 
-  { return _C_legacy::_CPP_frexp_capture(__x, __exp); }
-
-  inline float 
-  ldexpf(float __x, int __exp)
-  { return _C_legacy::_CPP_ldexp_capture(__x, __exp); }
-
-  inline float 
-  logf(float __x) { return _C_legacy::_CPP_log_capture(__x); }
-
-  inline float 
-  log10f(float __x) { return _C_legacy::_CPP_log10_capture(__x); }
-
-  inline float 
-  modff(float __x, float* __iptr) 
-  { return _C_legacy::_CPP_modf_capture(__x, __iptr); }
-
-  inline float 
-  powf(float __x, float __y) { return _C_legacy::_CPP_pow_capture(__x, __y); }
-
-  float 
-  powf(float, int);
-
-  inline float 
-  sinf(float __x) { return _C_legacy::_CPP_sin_capture(__x); }
-
-  inline float 
-  sinhf(float __x) { return _C_legacy::_CPP_sinh_capture(__x); }
-
-  inline float 
-  sqrtf(float __x) { return _C_legacy::_CPP_sqrt_capture(__x); }
-
-  inline float 
-  tanf(float __x) { return _C_legacy::_CPP_tan_capture(__x); }
-
-  inline float 
-  tanhf(float __x) { return _C_legacy::_CPP_tanh_capture(__x); }
-
-  // From ISO/IEC 9899:1999
-  inline long double 
-  absl(long double __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline long double 
-  acosl(long double __x) { return _C_legacy::_CPP_acos_capture(__x); }
-
-  inline long double 
-  asinl(long double __x) { return _C_legacy::_CPP_asin_capture(__x); }
-
-  inline long double 
-  atanl(long double __x) { return _C_legacy::_CPP_atan_capture(__x); }
-
-  inline long double 
-  atan2l(long double __y, long double __x) 
-  { return _C_legacy::_CPP_atan2_capture(__y, __x); }
-
-  inline long double 
-  ceill(long double __x) { return _C_legacy::_CPP_ceil_capture(__x); }
-
-  inline long double 
-  cosl(long double __x) { return _C_legacy::_CPP_cos_capture(__x); }
-
-  inline long double 
-  coshl(long double __x) { return _C_legacy::_CPP_cosh_capture(__x); }
-
-  inline long double 
-  expl(long double __x) { return _C_legacy::_CPP_exp_capture(__x); }
-
-  inline long double 
-  fabsl(long double __x) { return _C_legacy::_CPP_fabs_capture(__x); }
-
-  inline long double 
-  floorl(long double __x) { return _C_legacy::_CPP_floor_capture(__x); }
-
-  inline long double 
-  fmodl(long double __x, long double __y) 
-  { return _C_legacy::_CPP_fmod_capture(__x, __y); }
-
-  inline long double 
-  frexpl(long double __x, int* __exp)
-  { return _C_legacy::_CPP_frexp_capture(__x, __exp); }
-
-  inline long double 
-  ldexpl(long double __x, int __exp)
-  { return _C_legacy::_CPP_ldexp_capture(__x, __exp); }
-
-  inline long double 
-  logl(long double __x) { return _C_legacy::_CPP_log_capture(__x); }
-
-  inline long double 
-  log10l(long double __x) { return _C_legacy::_CPP_log10_capture(__x); }
-
-  inline long double 
-  modfl(long double __x, long double* __iptr) 
-  { return _C_legacy::_CPP_modf_capture(__x, __iptr); }
-
-  inline long double 
-  powl(long double __x, long double __y)
-  { return _C_legacy::_CPP_pow_capture(__x, __y); }
-
-  long double 
-  powl(long double, int);
-
-  inline long double 
-  sinl(long double __x) { return _C_legacy::_CPP_sin_capture(__x); }
-
-  inline long double 
-  sinhl(long double __x) { return _C_legacy::_CPP_sinh_capture(__x); }
-
-  inline long double 
-  sqrtl(long double __x) { return _C_legacy::_CPP_sqrt_capture(__x); }
-
-  inline long double 
-  tanl(long double __x) { return _C_legacy::_CPP_tan_capture(__x); }
-
-  inline long double 
-  tanhl(long double __x) { return _C_legacy::_CPP_tanh_capture(__x); }
 } // namespace std
 
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::abs;
-  using std::acos;
-  using std::asin;
-  using std::atan;
-  using std::atan2;
-  using std::cos;
-  using std::sin;
-  using std::tan;
-  using std::cosh;
-  using std::sinh;
-  using std::tanh;
-  using std::exp;
-  using std::frexp;
-  using std::ldexp;
-  using std::log;
-  using std::log10;
-  using std::modf;
-  using std::pow;
-  using std::sqrt;
-  using std::ceil;
-  using std::fabs;
-  using std::floor;
-  using std::fmod;
-
-  // From ISO/IEC 9899:1999
-  using std::absf;
-  using std::acosf;
-  using std::asinf;
-  using std::atanf;
-  using std::atan2f;
-  using std::cosf;
-  using std::sinf;
-  using std::tanf;
-  using std::coshf;
-  using std::sinhf;
-  using std::tanhf;
-  using std::expf;
-  using std::frexpf;
-  using std::ldexpf;
-  using std::logf;
-  using std::log10f;
-  using std::modff;
-  using std::powf;
-  using std::sqrtf;
-  using std::ceilf;
-  using std::fabsf;
-  using std::floorf;
-  using std::fmodf;
-
-  // From ISO/IEC 9899:1999
-  using std::absl;
-  using std::acosl;
-  using std::asinl;
-  using std::atanl;
-  using std::atan2l;
-  using std::cosl;
-  using std::sinl;
-  using std::tanl;
-  using std::coshl;
-  using std::sinhl;
-  using std::tanhl;
-  using std::expl;
-  using std::frexpl;
-  using std::ldexpl;
-  using std::logl;
-  using std::log10l;
-  using std::modfl;
-  using std::powl;
-  using std::sqrtl;
-  using std::ceill;
-  using std::fabsl;
-  using std::floorl;
-  using std::fmodl;
-
-# ifdef _MATH_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _MATH_NEED_C_LEGACY_
-# endif /* _MATH_NEED_C_LEGACY_ */
-
-#endif  /*_CPP_CMATH*/
+#endif
 
 
 

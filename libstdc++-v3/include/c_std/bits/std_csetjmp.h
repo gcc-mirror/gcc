@@ -34,19 +34,11 @@
 #ifndef _CPP_CSETJMP
 #define _CPP_CSETJMP 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _SETJMP_NEED_C_LEGACY_
-# endif
-
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-#   include_next <setjmp.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <setjmp.h>
   }
   inline int 
   _CPP_setjmp_capture(jmp_buf __jb) { return setjmp(__jb); }
@@ -65,20 +57,7 @@ namespace std {
   
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::jmp_buf;
-  using std::longjmp;
-
-# ifdef _SETJMP_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _SETJMP_NEED_C_LEGACY_
-# endif /* _SETJMP_NEED_C_LEGACY_ */
-
-#endif /*_CPP_CSETJUMP*/
+#endif
 
 
 

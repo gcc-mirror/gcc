@@ -34,23 +34,15 @@
 #ifndef _CPP_CSTDIO
 #define _CPP_CSTDIO 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _STDIO_NEED_C_LEGACY_
-# endif
-
 # include <bits/std_cstddef.h>  
 # include <bits/std_cstdarg.h>  
 
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   undef __need_FILE
-#   pragma GCC system_header
-#   include_next <stdio.h>
+#     define _IN_C_LEGACY_
+#     undef __need_FILE
+#     pragma GCC system_header
+#     include_next <stdio.h>
   }
 
   typedef FILE _CPP_FILE_capture;
@@ -287,60 +279,5 @@ namespace std {
 
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::FILE;
-  using std::fpos_t; 
-
-  using std::remove;
-  using std::rename;
-  using std::tmpfile;
-  using std::tmpnam;
-  using std::fclose;
-  using std::fflush;
-  using std::fopen;
-  using std::freopen;
-  using std::setbuf;
-  using std::setvbuf;
-  using std::fprintf;
-  using std::fscanf;
-  using std::printf;
-  using std::scanf;
-  using std::sprintf;
-  using std::sscanf;
-  using std::vfprintf;
-  using std::vprintf;
-  using std::vsprintf;
-  using std::fgetc;
-  using std::fgets;
-  using std::fputc;
-  using std::fputs;
-  using std::getc;
-  using std::getchar;
-  using std::gets;
-  using std::putc;
-  using std::putchar;
-  using std::puts;
-  using std::ungetc;
-  using std::fread;
-  using std::fwrite;
-  using std::fgetpos;
-  using std::fseek;
-  using std::fsetpos;
-  using std::ftell;
-  using std::rewind;
-  using std::clearerr;
-  using std::feof;
-  using std::ferror;
-  using std::perror;
-
-# ifdef _STDIO_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _STDIO_NEED_C_LEGACY_
-# endif /* _STDIO_NEED_C_LEGACY_ */
-
-#endif /*_CPP_CSTDIO*/
+#endif
 

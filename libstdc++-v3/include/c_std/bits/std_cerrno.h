@@ -33,19 +33,11 @@
 #ifndef _CPP_CERRNO
 #define _CPP_CERRNO 1
 
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_
-#  define _ERRNO_NEED_C_LEGACY_
-# endif
-
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-#   include_next <errno.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <errno.h>
   }
 
   //  inline int& 
@@ -62,17 +54,5 @@ namespace std {
 
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::errno;
-
-# ifdef _ERRNO_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _ERRNO_NEED_C_LEGACY_
-# endif /* _ERRNO_NEED_C_LEGACY_ */
-
-#endif /*_CPP_CERRNO*/
+#endif
 

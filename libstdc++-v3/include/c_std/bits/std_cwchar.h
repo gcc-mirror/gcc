@@ -32,22 +32,13 @@
 
 #ifndef _CPP_CWCHAR
 # define _CPP_CWCHAR 1
-
-# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
-      // get out of the "legacy"
-    } // close extern "C"
-  }   // close namespace _C_legacy::
-#  undef _IN_C_LEGACY_  /* sub-included by a C header */
-#  define _WCHAR_NEED_C_LEGACY_
-# endif
-
 # include <bits/std_cstdio.h> 
 
 namespace _C_legacy {
   extern "C" {
-#   define _IN_C_LEGACY_
-#   pragma GCC system_header
-#   include_next <wchar.h>
+#     define _IN_C_LEGACY_
+#     pragma GCC system_header
+#     include_next <wchar.h>
   }
 
 #if 0
@@ -98,6 +89,7 @@ namespace _C_legacy {
 #endif
 } // namespace _C_legacy
 
+# undef wchar_t
 # undef wint_t
 # undef mbstate_t
 
@@ -162,7 +154,8 @@ namespace _C_legacy {
 # undef wcsrtombs
 
 namespace std {
-  using _C_legacy::wint_t;
+
+  using _C_legacy::wint_t; 
   using _C_legacy::mbstate_t;
 
 #if 0
@@ -274,91 +267,7 @@ namespace std {
 
 # undef _IN_C_LEGACY_
 
-  // Expose global C names, including non-standard ones, but shadow
-  // some names and types with the std:: C++ version.
-  using std::wint_t;
-  using std::mbstate_t;
-
-#if 0
-  using std::fwprintf;
-  using std::fwscanf;
-  using std::swprintf;
-  using std::swscanf;
-  using std::vfwprintf;
-  using std::vfwscanf;
-  using std::vswprintf;
-  using std::vswscanf;
-  using std::vwprintf;
-  using std::vwscanf;
-  using std::wprintf;
-  using std::wscanf;
-  using std::fgetwc;
-  using std::fgetws;
-  using std::fputwc;
-  using std::fputws;
-  using std::fwide;
-  using std::getwc;
-  using std::getwchar;
-  using std::putwc;
-  using std::putwchar;
-  using std::ungetwc;
 #endif
-
-  using std::wcstod;
-  using std::wcstof;
-  using std::wcstold;
-  using std::wcstol;
-  using std::wcstoll;
-  using std::wcstoul;
-  using std::wcstoull;
-  using std::wcscpy;
-  using std::wcsncpy;
-  using std::wcscat;
-  using std::wcsncat;
-
-#if 0
-  using std::wcsmp;
-#endif
-
-  using std::wcscoll;
-  using std::wcsncmp;
-  using std::wcsxfrm;
-  using std::wcschr;
-  using std::wcscspn;
-  using std::wcslen;
-  using std::wcspbrk;
-  using std::wcsrchr;
-  using std::wcsspn;
-  using std::wcsstr;
-  using std::wcstok;
-  using std::wmemchr;
-  using std::wmemcmp;
-  using std::wmemcpy;
-  using std::wmemmove;
-  using std::wmemset;
-
-#if 0
-  using std::wcsftime;
-#endif
-
-  using std::btowc;
-  using std::wctob;
-  using std::mbsinit;
-  using std::mbrlen;
-  using std::mbrtowc;
-  using std::wcrtomb;
-  using std::mbsrtowcs;
-  using std::wcsrtombs;
-
-# ifdef _WCHAR_NEED_C_LEGACY_
-  // dive back into the "swamp"
-  namespace _C_legacy {
-    extern "C" {
-#  define _IN_C_LEGACY_
-#  undef _WCHAR_NEED_C_LEGACY_
-# endif /* _WCHAR_NEED_C_LEGACY_ */
-
-#endif /*_CPP_CWCHAR*/
 
 
 
