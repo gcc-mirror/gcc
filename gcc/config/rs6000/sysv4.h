@@ -1,0 +1,218 @@
+/* Target definitions for GNU compiler for PowerPC running System V.4
+   Copyright (C) 1995, Free Software Foundation, Inc.
+   Contributed by Cygnus Support.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+#include "rs6000/powerpc.h"
+
+/* Don't generate XCOFF debugging information.  */
+
+#undef XCOFF_DEBUGGING_INFO
+
+/* Don't use the COFF object file format.  */
+
+#undef OBJECT_FORMAT_COFF
+
+/* The XCOFF support uses weird symbol suffixes, which we don't want
+   for ELF.  */
+
+#undef RS6000_OUTPUT_BASENAME
+#define RS6000_OUTPUT_BASENAME(FILE, NAME) assemble_name (FILE, NAME)
+
+/* Don't bother to output .extern pseudo-ops.  They are not needed by
+   ELF assemblers.  */
+
+#undef ASM_OUTPUT_EXTERNAL
+
+/* Undefine some things which are defined by the generic svr4.h.  */
+
+#undef ASM_FILE_END
+#undef ASM_OUTPUT_EXTERNAL_LIBCALL
+#undef READONLY_DATA_SECTION
+#undef SELECT_SECTION
+#undef ASM_DECLARE_FUNCTION_NAME
+
+/* Use the regular svr4 definitions.  */
+
+#include "svr4.h"
+
+/* Prefix and suffix to use to saving floating point */
+#undef	SAVE_FP_PREFIX
+#undef	SAVE_FP_SUFFIX
+#define	SAVE_FP_PREFIX "_savefpr_"
+#define SAVE_FP_SUFFIX "_l"
+
+/* Prefix and suffix to use to restoring floating point */
+#undef	RESTORE_FP_PREFIX
+#undef	RESTORE_FP_SUFFIX
+#define	RESTORE_FP_PREFIX "_restfpr_"
+#define RESTORE_FP_SUFFIX "_l"
+
+/* Type used for ptrdiff_t, as a string used in a declaration.  */
+#undef	PTRDIFF_TYPE
+#define PTRDIFF_TYPE "int"
+
+/* Type used for wchar_t, as a string used in a declaration.  */
+#undef	WCHAR_TYPE
+#define WCHAR_TYPE "short unsigned int"
+
+/* Width of wchar_t in bits.  */
+#undef	WCHAR_TYPE_SIZE
+#define WCHAR_TYPE_SIZE 16
+
+/* Align stack to 16 byte boundaries */
+#undef	STACK_BOUNDARY
+#define	STACK_BOUNDARY	128
+
+/* No data type wants to be aligned rounder than this.  */
+#undef	BIGGEST_ALIGNMENT
+#define BIGGEST_ALIGNMENT 128
+
+/* Use ELF style section commands.  */
+
+#undef TEXT_SECTION_ASM_OP
+#define TEXT_SECTION_ASM_OP	"\t.section\t\".text\""
+
+#undef DATA_SECTION_ASM_OP
+#define DATA_SECTION_ASM_OP	"\t.section\t\".data\""
+
+/* Besides the usual ELF sections, we need a toc section.  */
+#undef EXTRA_SECTIONS
+#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_toc
+
+#undef EXTRA_SECTION_FUNCTIONS
+#define EXTRA_SECTION_FUNCTIONS						\
+  CONST_SECTION_FUNCTION						\
+  CTORS_SECTION_FUNCTION						\
+  DTORS_SECTION_FUNCTION						\
+  TOC_SECTION_FUNCTION
+
+#define TOC_SECTION_FUNCTION						\
+void									\
+toc_section ()								\
+{									\
+  if (TARGET_MINIMAL_TOC)						\
+    {									\
+      static int toc_initialized = 0;					\
+									\
+      if (! toc_initialized)						\
+	{								\
+	  fprintf (asm_out_file, "%s\n", TOC_SECTION_ASM_OP);		\
+	  fprintf (asm_out_file, ".LCTOC0:\n");				\
+	  fprintf (asm_out_file, "\t.tc .LCTOC1\n");			\
+	  fprintf (asm_out_file, "%s\n", MINIMAL_TOC_SECTION_ASM_OP);	\
+	  fprintf (asm_out_file, ".LCTOC1:\n");				\
+	  toc_initialized = 1;						\
+	}								\
+    }									\
+									\
+  if (in_section != in_toc)						\
+    {									\
+      fprintf (asm_out_file, "%s\n",					\
+	       (TARGET_MINIMAL_TOC					\
+		? MINIMAL_TOC_SECTION_ASM_OP				\
+		: TOC_SECTION_ASM_OP));					\
+      in_section = in_toc;						\
+    }									\
+}
+
+#define TOC_SECTION_ASM_OP "\t.section\t.got,\"aw\""
+#define MINIMAL_TOC_SECTION_ASM_OP "\t.section\t.got1,\"aw\""
+
+/* Use the TOC section for TOC entries.  */
+
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE, X)		\
+{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X))	\
+    toc_section ();				\
+  else						\
+    const_section ();				\
+}
+
+/* These macros generate the special .type and .size directives which
+   are used to set the corresponding fields of the linker symbol table
+   entries in an ELF object file under SVR4.  These macros also output
+   the starting labels for the relevant functions/objects.  */
+
+/* Write the extra assembler code needed to declare a function properly.
+   Some svr4 assemblers need to also have something extra said about the
+   function's return value.  We allow for that here.  */
+
+extern void svr4_traceback ();
+
+#undef	ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
+  do {									\
+    fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);				\
+    assemble_name (FILE, NAME);						\
+    putc (',', FILE);							\
+    fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
+    putc ('\n', FILE);							\
+    svr4_traceback (FILE, NAME, DECL);					\
+    ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));			\
+    ASM_OUTPUT_LABEL(FILE, NAME);					\
+  } while (0)
+
+/* How to renumber registers for dbx and gdb.  */
+
+#define DBX_REGISTER_NUMBER(REGNO) (REGNO)
+
+/* svr4.h overrides ASM_OUTPUT_INTERNAL_LABEL.  */
+
+#undef ASM_OUTPUT_INTERNAL_LABEL_PREFIX
+#define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
+  fprintf (FILE, ".%s", PREFIX)
+
+/* Pass -mppc to the assembler, since that is what powerpc.h currently
+   implies.  */
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "-u -mppc %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
+/* This is the end of what might become sysv4.h.  */
+
+/* Allow stabs and dwarf, prefer dwarf.  */
+#define PREFERRED_DEBUGGING_TYPE DWARF_DEBUG
+#define	DBX_DEBUGGING_INFO
+#define	DWARF_DEBUGGING_INFO
+
+/* Line numbers are relative to the current function.  */
+
+#undef  ASM_OUTPUT_SOURCE_LINE
+#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
+  { static int sym_lineno = 1;				\
+    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",\
+	     line, sym_lineno, 				\
+	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), \
+	     sym_lineno);				\
+    sym_lineno += 1; }
+
+/* But, to make this work, we have to output the stabs for the function
+   name *first*...  */
+
+#define	DBX_FUNCTION_FIRST
+
+/* This is the end of what might become sysv4dbx.h.  */
+
+#undef TARGET_VERSION
+#define TARGET_VERSION fprintf (stderr, " (PowerPC System V.4)");
+
+/* FIXME: These should actually indicate PowerPC, when there is some
+   standard way of expressing that.  */
+#undef CPP_PREDEFINES
+#define CPP_PREDEFINES \
+  "-DPPC -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(powerpc)"
