@@ -1976,14 +1976,17 @@ namespace std
 		     _Tv __v, const __c_locale&, int __prec = -1)
     {
       int __ret;
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      char* __sav = static_cast<char*>(malloc(strlen(__old) + 1));
+      if (__sav)
+        strcpy(__sav, __old);
       setlocale(LC_ALL, "C");
       if (__prec >= 0)
         __ret = snprintf(__out, __size, __fmt, __prec, __v);
       else
         __ret = snprintf(__out, __size, __fmt, __v);
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      free(__sav);
       return __ret;
     }
 #else
@@ -1993,14 +1996,17 @@ namespace std
 		     const __c_locale&, int __prec = -1)
     {
       int __ret;
-      char* __old = strdup(setlocale(LC_ALL, NULL));
+      char* __old = setlocale(LC_ALL, NULL);
+      char* __sav = static_cast<char*>(malloc(strlen(__old) + 1));
+      if (__sav)
+        strcpy(__sav, __old);
       setlocale(LC_ALL, "C");
       if (__prec >= 0)
         __ret = sprintf(__out, __fmt, __prec, __v);
       else
         __ret = sprintf(__out, __fmt, __v);
-      setlocale(LC_ALL, __old);
-      free(__old);
+      setlocale(LC_ALL, __sav);
+      free(__sav);
       return __ret;
     }
 #endif
