@@ -4128,7 +4128,7 @@
   /* Long millicode call, but we are not generating PIC or portable runtime
      code.  */
   if (get_attr_length (insn) == 12)
-    return \"CALL\\tARGW0=GR\;ldil L%%$$dyncall,%%r2\;ble R%%$$dyncall(%%sr4,%%r2)\;copy %%r31,%%r2\";
+    return \".CALL\\tARGW0=GR\;ldil L%%$$dyncall,%%r2\;ble R%%$$dyncall(%%sr4,%%r2)\;copy %%r31,%%r2\";
 
   /* Long millicode call for portable runtime.  */
   if (get_attr_length (insn) == 20)
