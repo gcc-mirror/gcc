@@ -114,13 +114,14 @@ extern int target_flags;
 #define MASK_INLINE_ALL_STROPS	0x00002000	/* Inline stringops in all cases */
 #define MASK_NO_PUSH_ARGS	0x00004000	/* Use push instructions */
 #define MASK_ACCUMULATE_OUTGOING_ARGS 0x00008000/* Accumulate outgoing args */
-#define MASK_MMX		0x00010000	/* Support MMX regs/builtins */
-#define MASK_SSE		0x00020000	/* Support SSE regs/builtins */
-#define MASK_SSE2		0x00040000	/* Support SSE2 regs/builtins */
-#define MASK_128BIT_LONG_DOUBLE 0x00080000	/* long double size is 128bit */
-#define MASK_MIX_SSE_I387	0x00100000	/* Mix SSE and i387 instructions */
-#define MASK_64BIT		0x00200000	/* Produce 64bit code */
-#define MASK_NO_RED_ZONE	0x00400000	/* Do not use red zone */
+#define MASK_NO_ACCUMULATE_OUTGOING_ARGS 0x00010000
+#define MASK_MMX		0x00020000	/* Support MMX regs/builtins */
+#define MASK_SSE		0x00040000	/* Support SSE regs/builtins */
+#define MASK_SSE2		0x00080000	/* Support SSE2 regs/builtins */
+#define MASK_128BIT_LONG_DOUBLE 0x00100000	/* long double size is 128bit */
+#define MASK_MIX_SSE_I387	0x00200000	/* Mix SSE and i387 instructions */
+#define MASK_64BIT		0x00400000	/* Produce 64bit code */
+#define MASK_NO_RED_ZONE	0x00800000	/* Do not use red zone */
 
 /* Temporary codegen switches */
 #define MASK_INTEL_SYNTAX	0x00000200
@@ -212,6 +213,8 @@ extern const int x86_himode_math, x86_qimode_math, x86_promote_qi_regs;
 extern const int x86_promote_hi_regs, x86_integer_DFmode_moves;
 extern const int x86_add_esp_4, x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8;
 extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
+extern const int x86_accumulate_outgoing_args, x86_prologue_using_move;
+extern const int x86_epilogue_using_move;
 
 #define TARGET_USE_LEAVE (x86_use_leave & CPUMASK)
 #define TARGET_PUSH_MEMORY (x86_push_memory & CPUMASK)
@@ -247,6 +250,8 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 #define TARGET_INTEGER_DFMODE_MOVES (x86_integer_DFmode_moves & CPUMASK)
 #define TARGET_PARTIAL_REG_DEPENDENCY (x86_partial_reg_dependency & CPUMASK)
 #define TARGET_MEMORY_MISMATCH_STALL (x86_memory_mismatch_stall & CPUMASK)
+#define TARGET_PROLOGUE_USING_MOVE (x86_prologue_using_move & CPUMASK)
+#define TARGET_EPILOGUE_USING_MOVE (x86_epilogue_using_move & CPUMASK)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
