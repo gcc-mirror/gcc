@@ -1,3 +1,13 @@
+Tue Aug 11 22:42:01 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (define_insn addx_extend): Rename to
+	addx_extend_sp64, only allow when TARGET_ARCH64.
+	(define_insn addx_extend_sp32 and split): Version that works when
+	not TARGET_ARCH64.
+	(define_insn subx_extend): Likewise.
+	(define_split adddi3 and subdi3 with zero extension): Fixup and
+	correct bugs when not TARGET_ARCH64.
+
 Tue Aug 11 16:04:34 1998  John Carr  <jfc@mit.edu>
 
 	* except.c (set_exception_lang_code, set_exception_version_code):
