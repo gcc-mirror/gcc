@@ -43,23 +43,24 @@ void test01()
 
   unlink(name);  
   try_mkfifo(name, S_IRWXU);
-  
+  semaphore s1, s2;
+
   int child = fork();
   VERIFY( child != -1 );
 
   if (child == 0)
     {
-      sleep(1);
       FILE* file = fopen(name, "w");
       fputs("Whatever\n", file);
       fflush(file);
-      sleep(2);
+      s1.signal ();
+      s2.wait ();
       fclose(file);
       exit(0);
     }
   
   freopen(name, "r", stdin);
-  sleep(2);
+  s1.wait ();
 
   wint_t c1 = fgetwc(stdin);
   VERIFY( c1 != WEOF );
@@ -77,6 +78,7 @@ void test01()
   wint_t c5 = wcin.rdbuf()->sgetc();
   VERIFY( c5 != WEOF );
   VERIFY( c5 == c4 );
+  s2.signal ();
 }
 
 int main()

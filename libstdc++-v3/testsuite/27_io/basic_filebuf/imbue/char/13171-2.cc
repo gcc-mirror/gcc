@@ -39,6 +39,7 @@ void test01()
   const char* name = "tmp_fifo_13171-2";
   unlink(name);
   try_mkfifo(name, S_IRWXU);
+  semaphore s1, s2;
   
   int child = fork();
   if (child == 0)
@@ -47,7 +48,8 @@ void test01()
       fb.open(name, ios_base::out);
       fb.sputc('S');
       fb.pubsync();
-      sleep(2);
+      s1.signal ();
+      s2.wait ();
       fb.close();
       exit(0);
     }
@@ -55,12 +57,13 @@ void test01()
   filebuf fb;
   fb.pubimbue(loc_fr);
   fb.open(name, ios_base::in);
-  sleep(1);
+  s1.wait ();
   VERIFY( fb.is_open() );
   fb.pubimbue(loc_en);
   filebuf::int_type c = fb.sgetc();
   fb.close();
   VERIFY( c == 'S' );
+  s2.signal ();
 }
 
 int main()

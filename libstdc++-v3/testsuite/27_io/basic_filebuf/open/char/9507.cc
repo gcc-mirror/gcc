@@ -37,30 +37,33 @@ void test_06()
   using namespace __gnu_test;
   bool test __attribute__((unused)) = true;
   const char* name = "tmp_fifo2";
+  semaphore s1, s2;
 
   signal(SIGPIPE, SIG_IGN);
 
   unlink(name);
   try_mkfifo(name, S_IRWXU);
-	
+  
   if (!fork())
     {
       std::filebuf fbuf;
       fbuf.open(name, std::ios_base::in);
       fbuf.sgetc();
-      sleep(2);
+      s1.signal ();
       fbuf.close();
+      s2.wait ();
       exit(0);
     }
 
   std::filebuf fbuf;
-  sleep(1);
   std::filebuf* r = fbuf.open(name,
 			      std::ios_base::in 
 			      | std::ios_base::out
 			      | std::ios_base::ate);
+  s1.wait ();
   VERIFY( !fbuf.is_open() );
   VERIFY( r == NULL );
+  s2.signal ();
 }
 
 int

@@ -7927,9 +7927,11 @@ if $GLIBCXX_IS_NATIVE; then
 
 
 
+
+
 for ac_header in nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
   machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h gconv.h \
-  sys/types.h
+  sys/types.h sys/ipc.h sys/sem.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
