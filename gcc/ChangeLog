@@ -1,3 +1,9 @@
+2005-02-17  Roger Sayle  <roger@eyesopen.com>
+
+	PR tree-optimization/19917
+	* tree-eh.c (tree_could_trap_p): Consider calls to weak functions
+	to be potentially trapping.
+
 2005-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* libgcc2.c, tree-vect-analyze.c: Fix comment typos.

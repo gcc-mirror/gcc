@@ -1840,6 +1840,13 @@ tree_could_trap_p (tree expr)
 	return true;
       return false;
 
+    case CALL_EXPR:
+      t = get_callee_fndecl (expr);
+      /* Assume that calls to weak functions may trap.  */
+      if (!t || !DECL_P (t) || DECL_WEAK (t))
+	return true;
+      return false;
+
     default:
       /* Any floating arithmetic may trap.  */
       if (fp_operation && flag_trapping_math)
