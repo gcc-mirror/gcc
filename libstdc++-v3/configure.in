@@ -13,10 +13,10 @@ ORIGINAL_LD_FOR_MULTILIBS=$LD
 PACKAGE=libstdc++
 AC_SUBST(PACKAGE)
 # For typical GNU versioning info, format is MAJOR.MINOR.MICRO
-release_VERSION=3.1.0
+release_VERSION=3.1.1
 AC_SUBST(release_VERSION)
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=4:0:0
+libtool_VERSION=4:1:0
 AC_SUBST(libtool_VERSION)
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
