@@ -1865,7 +1865,8 @@ build_component_ref (datum, component, basetype_path, protect)
 			  fndecl = build_vfn_ref (&addr, datum, DECL_VINDEX (fndecl));
 			  TREE_TYPE (fndecl) = build_pointer_type (fntype);
 			}
-		      mark_used (fndecl);
+		      else
+			mark_used (fndecl);
 		      return build (OFFSET_REF, TREE_TYPE (fndecl), datum, fndecl);
 		    }
 		  if (access == access_protected_node)
@@ -5501,8 +5502,8 @@ build_c_cast (type, expr)
 	  || (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
 	      /* Don't do the default conversion if we want a
 		 pointer to a function.  */
-	      && TREE_CODE (type) != POINTER_TYPE
-	      && TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE)
+	      && ! (TREE_CODE (type) == POINTER_TYPE
+		    && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
 	  || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
 	value = default_conversion (value);

@@ -3449,7 +3449,31 @@ push_class_decls (type)
 	    {
 	      tree node = TREE_VALUE (new);
 
-	      while (TREE_CODE (node) == TREE_LIST)
+	      if (TREE_CODE (node) == TYPE_DECL
+		  && DECL_ARTIFICIAL (node)
+		  && IS_AGGR_TYPE (TREE_TYPE (node))
+		  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (node)))
+		{
+		  tree t = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (node));
+		  tree n = new;
+
+		  for (; n; n = TREE_CHAIN (n))
+		    {
+		      tree d = TREE_VALUE (n);
+		      if (TREE_CODE (d) == TYPE_DECL
+			  && DECL_ARTIFICIAL (node)
+			  && IS_AGGR_TYPE (TREE_TYPE (d))
+			  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (d))
+			  && CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d)) == t)
+			/* OK */;
+		      else
+			break;
+		    }
+
+		  if (n == NULL_TREE)
+		    new = t;
+		}
+	      else while (TREE_CODE (node) == TREE_LIST)
 		node = TREE_VALUE (node);
 	      id = DECL_NAME (node);
 	    }

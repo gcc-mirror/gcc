@@ -1,3 +1,25 @@
+Tue Jun  3 18:08:23 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (push_class_decls): A name which ambiguously refers to
+ 	several instantiations of the same template just refers to the
+ 	template.
+
+Tue Jun  3 12:30:40 1997  Benjamin Kosnik  <bkoz@cirdan.cygnus.com>
+
+	* decl.c (build_enumerator): fix problem with unsigned long
+	enumerated values being smashed to ints, causing overflow
+	when computing next enumerated value. (for enum values around
+	MAX_VAL).
+
+Mon Jun  2 17:40:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_component_ref): Only call mark_used on a decl.
+
+Thu May 29 15:54:17 1997  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* typeck.c (build_c_cast): Make the check for a ptr to function
+	more specific before possible default_conversion call.
+
 Thu May 29 13:02:06 1997  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (expand_exception_blocks): Simplify and fix and make
