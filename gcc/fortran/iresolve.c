@@ -31,6 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include <string.h>
 #include <stdarg.h>
+#include <assert.h>
 
 #include "gfortran.h"
 #include "intrinsic.h"
@@ -188,6 +189,7 @@ gfc_resolve_all (gfc_expr * f, gfc_expr * mask, gfc_expr * dim)
     {
       gfc_resolve_index (dim, 1);
       f->rank = mask->rank - 1;
+      f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
 
   f->value.function.name =
@@ -227,6 +229,7 @@ gfc_resolve_any (gfc_expr * f, gfc_expr * mask, gfc_expr * dim)
     {
       gfc_resolve_index (dim, 1);
       f->rank = mask->rank - 1;
+      f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
 
   f->value.function.name =
@@ -371,6 +374,7 @@ gfc_resolve_count (gfc_expr * f, gfc_expr * mask, gfc_expr * dim)
     {
       f->rank = mask->rank - 1;
       gfc_resolve_index (dim, 1);
+      f->shape = gfc_copy_shape_excluding (mask->shape, mask->rank, dim);
     }
 
   f->value.function.name =
@@ -388,6 +392,7 @@ gfc_resolve_cshift (gfc_expr * f, gfc_expr * array,
 
   f->ts = array->ts;
   f->rank = array->rank;
+  f->shape = gfc_copy_shape (array->shape, array->rank);
 
   if (shift->rank > 0)
     n = 1;
@@ -477,6 +482,7 @@ gfc_resolve_eoshift (gfc_expr * f, gfc_expr * array,
 
   f->ts = array->ts;
   f->rank = array->rank;
+  f->shape = gfc_copy_shape (array->shape, array->rank);
 
   n = 0;
   if (shift->rank > 0)
@@ -654,7 +660,7 @@ gfc_resolve_ishftc (gfc_expr * f, gfc_expr * i, gfc_expr * shift,
 
 
 void
-gfc_resolve_lbound (gfc_expr * f, gfc_expr * array ATTRIBUTE_UNUSED,
+gfc_resolve_lbound (gfc_expr * f, gfc_expr * array,
 		    gfc_expr * dim)
 {
   static char lbound[] = "__lbound";
@@ -662,7 +668,13 @@ gfc_resolve_lbound (gfc_expr * f, gfc_expr * array ATTRIBUTE_UNUSED,
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind ();
 
-  f->rank = (dim == NULL) ? 1 : 0;
+  if (dim == NULL)
+    {
+      f->rank = 1;
+      f->shape = gfc_get_shape (1);
+      mpz_init_set_ui (f->shape[0], array->rank);
+    }
+
   f->value.function.name = lbound;
 }
 
@@ -1259,6 +1271,12 @@ gfc_resolve_transpose (gfc_expr * f, gfc_expr * matrix)
 
   f->ts = matrix->ts;
   f->rank = 2;
+  if (matrix->shape)
+    {
+      f->shape = gfc_get_shape (2);
+      mpz_init_set (f->shape[0], matrix->shape[1]);
+      mpz_init_set (f->shape[1], matrix->shape[0]);
+    }
 
   switch (matrix->ts.type)
     {
@@ -1304,7 +1322,7 @@ gfc_resolve_trim (gfc_expr * f, gfc_expr * string)
 
 
 void
-gfc_resolve_ubound (gfc_expr * f, gfc_expr * array ATTRIBUTE_UNUSED,
+gfc_resolve_ubound (gfc_expr * f, gfc_expr * array,
 		    gfc_expr * dim)
 {
   static char ubound[] = "__ubound";
@@ -1312,7 +1330,13 @@ gfc_resolve_ubound (gfc_expr * f, gfc_expr * array ATTRIBUTE_UNUSED,
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind ();
 
-  f->rank = (dim == NULL) ? 1 : 0;
+  if (dim == NULL)
+    {
+      f->rank = 1;
+      f->shape = gfc_get_shape (1);
+      mpz_init_set_ui (f->shape[0], array->rank);
+    }
+
   f->value.function.name = ubound;
 }
 

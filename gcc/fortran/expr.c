@@ -330,6 +330,50 @@ gfc_copy_shape (mpz_t * shape, int rank)
 }
 
 
+/* Copy a shape array excluding dimension N, where N is an integer
+   constant expression.  Dimensions are numbered in fortran style --
+   starting with ONE.
+
+   So, if the original shape array contains R elements
+      { s1 ... sN-1  sN  sN+1 ... sR-1 sR}
+   the result contains R-1 elements:
+      { s1 ... sN-1  sN+1    ...  sR-1}
+
+   If anything goes wrong -- N is not a constant, its value is out
+   of range -- or anything else, just returns NULL.
+*/
+
+mpz_t *
+gfc_copy_shape_excluding (mpz_t * shape, int rank, gfc_expr * dim)
+{
+  mpz_t *new_shape, *s;
+  int i, n;
+
+  if (shape == NULL 
+      || rank <= 1
+      || dim == NULL
+      || dim->expr_type != EXPR_CONSTANT 
+      || dim->ts.type != BT_INTEGER)
+    return NULL;
+
+  n = mpz_get_si (dim->value.integer);
+  n--; /* Convert to zero based index */
+  if (n < 0 && n >= rank)
+    return NULL;
+
+  s = new_shape = gfc_get_shape (rank-1);
+
+  for (i = 0; i < rank; i++)
+    {
+      if (i == n)
+        continue;
+      mpz_init_set (*s, shape[i]);
+      s++;
+    }
+
+  return new_shape;
+}
+
 /* Given an expression pointer, return a copy of the expression.  This
    subroutine is recursive.  */
 

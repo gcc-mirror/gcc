@@ -1,3 +1,14 @@
+2004-08-08  Victor Leikehman  <lei@il.ibm.com>
+
+	* simplify.c (gfc_simplify_shape): Bugfix.
+	* expr.c (gfc_copy_shape_excluding): New function.
+	* gfortran.h (gfc_get_shape): Bugfix.
+	(gfc_copy_shape_excluding): Added declaration.
+	* iresolve.c (gfc_resolve_all, gfc_resolve_any, gfc_resolve_count,
+	gfc_resolve_cshift, gfc_resolve_eoshift, gfc_resolve_lbound,
+	gfc_resolve_ubound, gfc_resolve_transpose): Added compile
+	time resolution of shape.
+
 2004-08-06  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* intrinsic.c (add_subroutines): Add getenv and
