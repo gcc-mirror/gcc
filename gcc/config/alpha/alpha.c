@@ -6179,7 +6179,7 @@ set_frame_related_p (void)
 #define FRP(exp)  (start_sequence (), exp, set_frame_related_p ())
 
 /* Generates a store with the proper unwind info attached.  VALUE is
-   stored at BASE_REG+BASE_OFS.  If FRAME_BIAS is non-zero, then BASE_REG
+   stored at BASE_REG+BASE_OFS.  If FRAME_BIAS is nonzero, then BASE_REG
    contains SP+FRAME_BIAS, and that is the unwind info that should be
    generated.  If FRAME_REG != VALUE, then VALUE is being stored on
    behalf of FRAME_REG, and FRAME_REG should be present in the unwind.  */

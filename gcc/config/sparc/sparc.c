@@ -1644,7 +1644,7 @@ sparc_emit_set_const32 (rtx op0, rtx op1)
 
 
 /* Load OP1, a symbolic 64-bit constant, into OP0, a DImode register.
-   If TEMP is non-zero, we are forbidden to use any other scratch
+   If TEMP is nonzero, we are forbidden to use any other scratch
    registers.  Otherwise, we are allowed to generate them as needed.
 
    Note that TEMP may have TImode if the code model is TARGET_CM_MEDANY

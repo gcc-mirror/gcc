@@ -571,7 +571,7 @@
     (match_operand 0 "reg_or_pm1_operand")))
 
 ;; Return true if OP is a vector load from the constant pool with just
-;; the first element non-zero.
+;; the first element nonzero.
 (define_predicate "zero_extended_scalar_load_operand"
   (match_code "mem")
 {
