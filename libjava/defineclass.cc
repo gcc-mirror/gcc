@@ -776,9 +776,9 @@ _Jv_ClassReader::prepare_pool_entry (int index, unsigned char this_tag)
 			   name_index, type_index);
 
 	  if (this_tag == JV_CONSTANT_Fieldref)
-	    _Jv_VerifyFieldSignature (pool_data[type_index].utf8);
+	    verify_field_signature (pool_data[type_index].utf8);
 	  else
-	    _Jv_VerifyMethodSignature (pool_data[type_index].utf8);
+	    verify_method_signature (pool_data[type_index].utf8);
 
 	  _Jv_Utf8Const* name = pool_data[name_index].utf8;
 
@@ -1107,7 +1107,7 @@ void _Jv_ClassReader::handleField (int field_no,
     }
 
   if (verify)
-    _Jv_VerifyFieldSignature (sig);
+    verify_field_signature (sig);
 
   // field->type is really a jclass, but while it is still
   // unresolved we keep an _Jv_Utf8Const* instead.
@@ -1244,7 +1244,7 @@ void _Jv_ClassReader::handleMethod
       else
 	verify_identifier (method->name);
 
-      _Jv_VerifyMethodSignature (method->signature);
+      verify_method_signature (method->signature);
 
       for (int i = 0; i < mth_index; ++i)
 	{
