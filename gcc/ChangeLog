@@ -1,3 +1,8 @@
+2003-02-23  Hans-Peter Nilsson  <hp@axis.com>
+
+	* regmove.c (optimize_reg_copy_1): Do not replace a hard register
+	in an asm.
+
 2003-02-22  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	PR other/3782
