@@ -1,3 +1,11 @@
+2003-01-23  Mike Stump  <mrs@apple.com>
+
+	* regclass.c (init_reg_autoinc): New function.
+	(regclass): Move initialization of forbidden_inc_dec_class from
+ 	here...
+	(init_regs): to here.  Avoids reinitialization for each function,
+ 	saving compilation time.
+
 2003-02-04  Phil Edwards  <pme@gcc.gnu.org>
 
 	* doc/install.texi (*-*-linux-gnu):  Mention glibc requirements

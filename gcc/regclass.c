@@ -48,6 +48,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static void init_reg_sets_1	PARAMS ((void));
 static void init_reg_modes	PARAMS ((void));
+static void init_reg_autoinc	PARAMS ((void));
 
 /* If we have auto-increment or auto-decrement and we can have secondary
    reloads, we are not allowed to use classes requiring secondary
@@ -576,6 +577,8 @@ init_regs ()
   init_reg_sets_1 ();
 
   init_reg_modes ();
+
+  init_reg_autoinc ();
 }
 
 /* Initialize some fake stack-frame MEM references for use in
@@ -1141,37 +1144,18 @@ scan_one_insn (insn, pass)
   return insn;
 }
 
-/* This is a pass of the compiler that scans all instructions
-   and calculates the preferred class for each pseudo-register.
-   This information can be accessed later by calling `reg_preferred_class'.
-   This pass comes just before local register allocation.  */
+/* Initialize information about which register classes can be used for
+   pseudos that are auto-incremented or auto-decremented.  */
 
-void
-regclass (f, nregs, dump)
-     rtx f;
-     int nregs;
-     FILE *dump;
+static void
+init_reg_autoinc ()
 {
-  rtx insn;
-  int i;
-  int pass;
-
-  init_recog ();
-
-  costs = (struct costs *) xmalloc (nregs * sizeof (struct costs));
-
 #ifdef FORBIDDEN_INC_DEC_CLASSES
-
-  in_inc_dec = (char *) xmalloc (nregs);
-
-  /* Initialize information about which register classes can be used for
-     pseudos that are auto-incremented or auto-decremented.  It would
-     seem better to put this in init_reg_sets, but we need to be able
-     to allocate rtx, which we can't do that early.  */
+  int i;
 
   for (i = 0; i < N_REG_CLASSES; i++)
     {
-      rtx r = gen_rtx_REG (VOIDmode, 0);
+      rtx r = gen_rtx_raw_REG (VOIDmode, 0);
       enum machine_mode m;
       int j;
 
@@ -1211,6 +1195,32 @@ regclass (f, nregs, dump)
 		}
 	  }
     }
+#endif /* FORBIDDEN_INC_DEC_CLASSES */
+}
+
+/* This is a pass of the compiler that scans all instructions
+   and calculates the preferred class for each pseudo-register.
+   This information can be accessed later by calling `reg_preferred_class'.
+   This pass comes just before local register allocation.  */
+
+void
+regclass (f, nregs, dump)
+     rtx f;
+     int nregs;
+     FILE *dump;
+{
+  rtx insn;
+  int i;
+  int pass;
+
+  init_recog ();
+
+  costs = (struct costs *) xmalloc (nregs * sizeof (struct costs));
+
+#ifdef FORBIDDEN_INC_DEC_CLASSES
+
+  in_inc_dec = (char *) xmalloc (nregs);
+
 #endif /* FORBIDDEN_INC_DEC_CLASSES */
 
   /* Normally we scan the insns once and determine the best class to use for
