@@ -2014,7 +2014,6 @@ output_source_line (file, insn)
      FILE *file;
      rtx insn;
 {
-  char ltext_label_name[100];
   register char *filename = NOTE_SOURCE_FILE (insn);
 
   /* Remember filename for basic block profiling.
