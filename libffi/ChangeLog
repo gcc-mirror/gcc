@@ -1,3 +1,11 @@
+2004-09-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcj/17465
+	* testsuite/lib/libffi-dg.exp: Don't use global ld_library_path.
+	Set up LD_LIBRARY_PATH, SHLIB_PATH, LD_LIBRARYN32_PATH,
+	LD_LIBRARY64_PATH, LD_LIBRARY_PATH_32, LD_LIBRARY_PATH_64 and
+	DYLD_LIBRARY_PATH.
+
 2004-09-06  Release Manager
 
 	* GCC 3.4.2 released.
