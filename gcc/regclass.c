@@ -618,9 +618,11 @@ choose_hard_reg_mode (regno, nregs)
   if (found_mode != VOIDmode)
     return found_mode;
 
-  if (HARD_REGNO_NREGS (regno, CCmode) == nregs
-      && HARD_REGNO_MODE_OK (regno, CCmode))
-    return CCmode;
+  /* Iterate over all of the CCmodes.  */
+  for (mode = CCmode; mode < NUM_MACHINE_MODES; ++mode)
+    if (HARD_REGNO_NREGS (regno, mode) == nregs
+        && HARD_REGNO_MODE_OK (regno, mode))
+    return mode;
 
   /* We can't find a mode valid for this register.  */
   return VOIDmode;
