@@ -34,7 +34,6 @@ package Exp_Disp is
       (CW_Membership,
        DT_Entry_Size,
        DT_Prologue_Size,
-       Get_Expanded_Name,
        Get_External_Tag,
        Get_Prim_Op_Address,
        Get_RC_Offset,

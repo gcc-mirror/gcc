@@ -91,10 +91,6 @@ private
    --  Given the tag of an object and the tag associated to a type, return
    --  true if Obj is in Typ'Class.
 
-   function Get_Expanded_Name (T : Tag) return System.Address;
-   --  Retrieve the address of a null terminated string containing
-   --  the expanded name
-
    function Get_External_Tag (T : Tag) return System.Address;
    --  Retrieve the address of a null terminated string containing
    --  the external name
@@ -105,10 +101,6 @@ private
    --  Given a pointer to a dispatch Table (T) and a position in the DT
    --  this function returns the address of the virtual function stored
    --  in it (used for dispatching calls)
-
-   function Get_Inheritance_Depth (T : Tag) return Natural;
-   --  Given a pointer to a dispatch Table, retrieves the value representing
-   --  the depth in the inheritance tree (used for membership).
 
    function Get_RC_Offset (T : Tag) return SSE.Storage_Offset;
    --  Return the Offset of the implicit record controller when the object
@@ -160,13 +152,6 @@ private
    procedure Register_Tag (T : Tag);
    --  Insert the Tag and its associated external_tag in a table for the
    --  sake of Internal_Tag
-
-   procedure Set_Inheritance_Depth
-     (T     : Tag;
-      Value : Natural);
-   --  Given a pointer to a dispatch Table, stores the value representing
-   --  the depth in the inheritance tree (the second parameter). Used during
-   --  elaboration of the tagged type.
 
    procedure Set_Prim_Op_Address
      (T        : Tag;
@@ -249,8 +234,6 @@ private
    --  use in a minimal/no run-time environment for high integrity use.
 
    pragma Inline_Always (CW_Membership);
-   pragma Inline_Always (Get_Expanded_Name);
-   pragma Inline_Always (Get_Inheritance_Depth);
    pragma Inline_Always (Get_Prim_Op_Address);
    pragma Inline_Always (Get_RC_Offset);
    pragma Inline_Always (Get_Remotely_Callable);
@@ -260,7 +243,6 @@ private
    pragma Inline_Always (Register_Tag);
    pragma Inline_Always (Set_Expanded_Name);
    pragma Inline_Always (Set_External_Tag);
-   pragma Inline_Always (Set_Inheritance_Depth);
    pragma Inline_Always (Set_Prim_Op_Address);
    pragma Inline_Always (Set_RC_Offset);
    pragma Inline_Always (Set_Remotely_Callable);

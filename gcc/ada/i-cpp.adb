@@ -146,15 +146,6 @@ package body Interfaces.CPP is
       return Pos >= 0 and then TSD (Obj_Tag).Ancestor_Tags (Pos) = Typ_Tag;
    end CPP_CW_Membership;
 
-   ---------------------------
-   -- CPP_Get_Expanded_Name --
-   ---------------------------
-
-   function CPP_Get_Expanded_Name (T : Vtable_Ptr) return Address is
-   begin
-      return To_Address (TSD (T).Expanded_Name);
-   end CPP_Get_Expanded_Name;
-
    --------------------------
    -- CPP_Get_External_Tag --
    --------------------------
@@ -163,15 +154,6 @@ package body Interfaces.CPP is
    begin
       return To_Address (TSD (T).External_Tag);
    end CPP_Get_External_Tag;
-
-   -------------------------------
-   -- CPP_Get_Inheritance_Depth --
-   -------------------------------
-
-   function CPP_Get_Inheritance_Depth (T : Vtable_Ptr) return Natural is
-   begin
-      return TSD (T).Idepth;
-   end CPP_Get_Inheritance_Depth;
 
    -------------------------
    -- CPP_Get_Prim_Op_Address --
@@ -276,18 +258,6 @@ package body Interfaces.CPP is
    begin
       TSD (T).External_Tag := To_Cstring_Ptr (Value);
    end CPP_Set_External_Tag;
-
-   -------------------------------
-   -- CPP_Set_Inheritance_Depth --
-   -------------------------------
-
-   procedure CPP_Set_Inheritance_Depth
-     (T     : Vtable_Ptr;
-      Value : Natural)
-   is
-   begin
-      TSD (T).Idepth := Value;
-   end CPP_Set_Inheritance_Depth;
 
    -----------------------------
    -- CPP_Set_Prim_Op_Address --

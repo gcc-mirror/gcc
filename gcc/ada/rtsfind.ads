@@ -488,7 +488,6 @@ package Rtsfind is
      RE_DT_Entry_Size,                   -- Ada.Tags
      RE_DT_Prologue_Size,                -- Ada.Tags
      RE_External_Tag,                    -- Ada.Tags
-     RE_Get_Expanded_Name,               -- Ada.Tags
      RE_Get_External_Tag,                -- Ada.Tags
      RE_Get_Prim_Op_Address,             -- Ada.Tags
      RE_Get_RC_Offset,                   -- Ada.Tags
@@ -536,7 +535,6 @@ package Rtsfind is
      RE_CPP_CW_Membership,               -- Interfaces.CPP
      RE_CPP_DT_Entry_Size,               -- Interfaces.CPP
      RE_CPP_DT_Prologue_Size,            -- Interfaces.CPP
-     RE_CPP_Get_Expanded_Name,           -- Interfaces.CPP
      RE_CPP_Get_External_Tag,            -- Interfaces.CPP
      RE_CPP_Get_Prim_Op_Address,         -- Interfaces.CPP
      RE_CPP_Get_RC_Offset,               -- Interfaces.CPP
@@ -1590,7 +1588,6 @@ package Rtsfind is
      RE_DT_Entry_Size                    => Ada_Tags,
      RE_DT_Prologue_Size                 => Ada_Tags,
      RE_External_Tag                     => Ada_Tags,
-     RE_Get_Expanded_Name                => Ada_Tags,
      RE_Get_External_Tag                 => Ada_Tags,
      RE_Get_Prim_Op_Address              => Ada_Tags,
      RE_Get_RC_Offset                    => Ada_Tags,
@@ -1636,7 +1633,6 @@ package Rtsfind is
      RE_CPP_CW_Membership                => Interfaces_CPP,
      RE_CPP_DT_Entry_Size                => Interfaces_CPP,
      RE_CPP_DT_Prologue_Size             => Interfaces_CPP,
-     RE_CPP_Get_Expanded_Name            => Interfaces_CPP,
      RE_CPP_Get_External_Tag             => Interfaces_CPP,
      RE_CPP_Get_Prim_Op_Address          => Interfaces_CPP,
      RE_CPP_Get_RC_Offset                => Interfaces_CPP,
