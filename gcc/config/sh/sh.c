@@ -163,7 +163,8 @@ print_operand (stream, x, code)
   switch (code)
     {
     case '.':
-      if (final_sequence)
+      if (final_sequence
+	  && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
 	fprintf (stream, ".s");
       break;
     case '@':
@@ -428,6 +429,8 @@ output_movedouble (insn, operands, mode)
 
       if (GET_CODE (inside) == REG)
 	ptrreg = REGNO (inside);
+      else if (GET_CODE (inside) == SUBREG)
+	ptrreg = REGNO (SUBREG_REG (inside)) + SUBREG_WORD (inside);
       else if (GET_CODE (inside) == PLUS)
 	{
 	  ptrreg = REGNO (XEXP (inside, 0));
@@ -530,11 +533,17 @@ output_branch (logic, insn, operands)
 	/* The call to print_slot will clobber the operands.  */
 	rtx op0 = operands[0];
 
+	/* If the instruction in the delay slot is annulled (true), then
+	   there is no delay slot where we can put it now.  The only safe
+	   place for it is after the label.  */
+
 	if (final_sequence)
 	  {
-	    fprintf (asm_out_file, "\tb%c.s\tLF%d\n", logic ? 'f' : 't',
-		     label);
-	    print_slot (final_sequence);
+	    fprintf (asm_out_file, "\tb%c%s\tLF%d\n", logic ? 'f' : 't',
+		     INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
+		     ? "" : ".s", label);
+	    if (! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	      print_slot (final_sequence);
 	  }
 	else
 	  fprintf (asm_out_file, "\tb%c\tLF%d\n", logic ? 'f' : 't', label);
@@ -542,6 +551,10 @@ output_branch (logic, insn, operands)
 	output_asm_insn ("bra	%l0", &op0);
 	fprintf (asm_out_file, "\tnop\n");
 	fprintf (asm_out_file, "LF%d:\n", label);
+
+	if (final_sequence
+	    && INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	  print_slot (final_sequence);
       }
       return "";
 
@@ -553,19 +566,29 @@ output_branch (logic, insn, operands)
 	/* The call to print_slot will clobber the operands.  */
 	rtx op0 = operands[0];
 
+	/* If the instruction in the delay slot is annulled (true), then
+	   there is no delay slot where we can put it now.  The only safe
+	   place for it is after the label.  */
+
 	if (final_sequence)
 	  {
-	    fprintf (asm_out_file, "\tb%c.s\tLF%d\n", logic ? 'f' : 't',
-		     label);
-	    print_slot (final_sequence);
+	    fprintf (asm_out_file, "\tb%c%s\tLF%d\n", logic ? 'f' : 't',
+		     INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))
+		     ? "" : ".s", label);
+	    if (! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	      print_slot (final_sequence);
 	  }
 	else
 	  fprintf (asm_out_file, "\tb%c\tLF%d\n", logic ? 'f' : 't', label);
 
 	output_far_jump (insn, op0);
 	fprintf (asm_out_file, "LF%d:\n", label);
-	return "";
+
+	if (final_sequence
+	    && INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	  print_slot (final_sequence);
       }
+      return "";
     }
   return "bad";
 }
@@ -1520,7 +1543,8 @@ sh_expand_prologue ()
       for (i = 0; i < NPARM_REGS; i++)
 	{
 	  int rn = NPARM_REGS + FIRST_PARM_REG - i - 1;
-	  if (i > NPARM_REGS - current_function_args_info)
+	  if (i > (NPARM_REGS - current_function_args_info
+		   - current_function_varargs))
 	    break;
 	  push (rn);
 	  extra_push += 4;
