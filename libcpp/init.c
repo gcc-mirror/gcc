@@ -24,6 +24,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "internal.h"
 #include "mkdeps.h"
+#include "localedir.h"
 
 static void init_library (void);
 static void mark_named_operators (cpp_reader *);
