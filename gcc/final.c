@@ -2051,7 +2051,10 @@ output_asm_insn (template, operands)
 	     compilation.  This is useful for making local labels that are
 	     referred to more than once in a given insn.  */
 	  else if (*p == '=')
-	    fprintf (asm_out_file, "%d", insn_counter);
+	    {
+	      p++;
+	      fprintf (asm_out_file, "%d", insn_counter);
+	    }
 	  /* % followed by a letter and some digits
 	     outputs an operand in a special way depending on the letter.
 	     Letters `acln' are implemented directly.
