@@ -1,6 +1,6 @@
 /* Common subexpression elimination library for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -99,9 +99,13 @@ static int n_useless_values;
 /* Number of useless values before we remove them from the hash table.  */
 #define MAX_USELESS_VALUES 32
 
-/* This table maps from register number to values.  It does not contain
-   pointers to cselib_val structures, but rather elt_lists.  The purpose is
-   to be able to refer to the same register in different modes.  */
+/* This table maps from register number to values.  It does not
+   contain pointers to cselib_val structures, but rather elt_lists.
+   The purpose is to be able to refer to the same register in
+   different modes.  The first element of the list defines the mode in
+   which the register was set; if the mode is unknown or the value is
+   no longer valid in that mode, ELT will be NULL for the first
+   element.  */
 static GTY(()) varray_type reg_values;
 static GTY((deletable (""))) varray_type reg_values_old;
 #define REG_VALUES(I) VARRAY_ELT_LIST (reg_values, (I))
@@ -400,6 +404,25 @@ remove_useless_values ()
 
   if (n_useless_values != 0)
     abort ();
+}
+
+/* Return the mode in which a register was last set.  If X is not a
+   register, return its mode.  If the mode in which the register was
+   set is not known, or the value was already clobbered, return
+   VOIDmode.  */
+
+enum machine_mode
+cselib_reg_set_mode (x)
+     rtx x;
+{
+  if (GET_CODE (x) != REG)
+    return GET_MODE (x);
+
+  if (REG_VALUES (REGNO (x)) == NULL
+      || REG_VALUES (REGNO (x))->elt == NULL)
+    return VOIDmode;
+
+  return GET_MODE (REG_VALUES (REGNO (x))->elt->u.val_rtx);
 }
 
 /* Return nonzero if we can prove that X and Y contain the same value, taking
@@ -812,7 +835,10 @@ cselib_subst_to_values (x)
   switch (code)
     {
     case REG:
-      for (l = REG_VALUES (REGNO (x)); l; l = l->next)
+      l = REG_VALUES (REGNO (x));
+      if (l && l->elt == NULL)
+	l = l->next;
+      for (; l; l = l->next)
 	if (GET_MODE (l->elt->u.val_rtx) == GET_MODE (x))
 	  return l->elt->u.val_rtx;
 
@@ -909,7 +935,10 @@ cselib_lookup (x, mode, create)
       struct elt_list *l;
       unsigned int i = REGNO (x);
 
-      for (l = REG_VALUES (i); l; l = l->next)
+      l = REG_VALUES (i);
+      if (l && l->elt == NULL)
+	l = l->next;
+      for (; l; l = l->next)
 	if (mode == GET_MODE (l->elt->u.val_rtx))
 	  return l->elt;
 
@@ -927,8 +956,14 @@ cselib_lookup (x, mode, create)
       e = new_cselib_val (++next_unknown_value, GET_MODE (x));
       e->locs = new_elt_loc_list (e->locs, x);
       if (REG_VALUES (i) == 0)
-        VARRAY_PUSH_UINT (used_regs, i);
-      REG_VALUES (i) = new_elt_list (REG_VALUES (i), e);
+	{
+	  /* Maintain the invariant that the first entry of
+	     REG_VALUES, if present, must be the value used to set the
+	     register, or NULL.  */
+	  VARRAY_PUSH_UINT (used_regs, i);
+	  REG_VALUES (i) = new_elt_list (REG_VALUES (i), NULL);
+	}
+      REG_VALUES (i)->next = new_elt_list (REG_VALUES (i)->next, e);
       slot = htab_find_slot_with_hash (hash_table, x, e->value, INSERT);
       *slot = e;
       return e;
@@ -1011,17 +1046,28 @@ cselib_invalidate_regno (regno, mode)
 	  struct elt_loc_list **p;
 	  unsigned int this_last = i;
 
-	  if (i < FIRST_PSEUDO_REGISTER)
+	  if (i < FIRST_PSEUDO_REGISTER && v != NULL)
 	    this_last += HARD_REGNO_NREGS (i, GET_MODE (v->u.val_rtx)) - 1;
 
-	  if (this_last < regno)
+	  if (this_last < regno || v == NULL)
 	    {
 	      l = &(*l)->next;
 	      continue;
 	    }
 
 	  /* We have an overlap.  */
-	  unchain_one_elt_list (l);
+	  if (*l == REG_VALUES (i))
+	    {
+	      /* Maintain the invariant that the first entry of
+		 REG_VALUES, if present, must be the value used to set
+		 the register, or NULL.  This is also nice because
+		 then we won't push the same regno onto user_regs
+		 multiple times.  */
+	      (*l)->elt = NULL;
+	      l = &(*l)->next;
+	    }
+	  else
+	    unchain_one_elt_list (l);
 
 	  /* Now, we clear the mapping from value to reg.  It must exist, so
 	     this code will crash intentionally if it doesn't.  */
@@ -1213,9 +1259,6 @@ cselib_record_set (dest, src_elt, dest_addr_elt)
 
   if (dreg >= 0)
     {
-      if (REG_VALUES (dreg) == 0)
-        VARRAY_PUSH_UINT (used_regs, dreg);
-
       if (dreg < FIRST_PSEUDO_REGISTER)
 	{
 	  unsigned int n = HARD_REGNO_NREGS (dreg, GET_MODE (dest));
@@ -1224,7 +1267,20 @@ cselib_record_set (dest, src_elt, dest_addr_elt)
 	    max_value_regs = n;
 	}
 
-      REG_VALUES (dreg) = new_elt_list (REG_VALUES (dreg), src_elt);
+      if (REG_VALUES (dreg) == 0)
+	{
+	  VARRAY_PUSH_UINT (used_regs, dreg);
+	  REG_VALUES (dreg) = new_elt_list (REG_VALUES (dreg), src_elt);
+	}
+      else
+	{
+	  if (REG_VALUES (dreg)->elt == 0)
+	    REG_VALUES (dreg)->elt = src_elt;
+	  else
+	    /* The register should have been invalidated.  */
+	    abort ();
+	}
+
       if (src_elt->locs == 0)
 	n_useless_values--;
       src_elt->locs = new_elt_loc_list (src_elt->locs, dest);

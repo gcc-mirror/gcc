@@ -1,6 +1,6 @@
 /* Common subexpression elimination for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999 Free Software Foundation, Inc.
+   1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,6 +67,7 @@ extern void cselib_update_varray_sizes	PARAMS ((void));
 extern void cselib_init			PARAMS ((void));
 extern void cselib_finish		PARAMS ((void));
 extern void cselib_process_insn		PARAMS ((rtx));
+extern enum machine_mode cselib_reg_set_mode PARAMS ((rtx));
 extern int rtx_equal_for_cselib_p	PARAMS ((rtx, rtx));
 extern int references_value_p		PARAMS ((rtx, int));
 extern rtx cselib_subst_to_values	PARAMS ((rtx));
