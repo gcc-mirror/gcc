@@ -52,7 +52,7 @@ Boston, MA 02111-1307, USA.  */
    %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
    %{rpath*}"
 
-/* We allow $'s in identifiers unless -ansi is used .. */
+/* We allow $'s in identifiers unless -ansi is used ..  */
 
 #define DOLLARS_IN_IDENTIFIERS 2
 
@@ -87,7 +87,7 @@ Boston, MA 02111-1307, USA.  */
 #undef LONG_TYPE_SIZE
 #define LONG_TYPE_SIZE 32
 
-/* Pointer is 32 bits but the hardware has 64-bit addresses, sign extended. */
+/* Pointer is 32 bits but the hardware has 64-bit addresses, sign extended.  */
 #undef POINTER_SIZE
 #define POINTER_SIZE 32
 #define POINTERS_EXTEND_UNSIGNED 0
@@ -201,7 +201,7 @@ typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
    However, if NO registers need to be saved, don't allocate any space.
    This is not only because we won't need the space, but because AP includes
    the current_pretend_args_size and we don't want to mess up any
-   ap-relative addresses already made.   */
+   ap-relative addresses already made.  */
 
 #undef SETUP_INCOMING_VARARGS
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\

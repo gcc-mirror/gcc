@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Under FreeBSD/Alpha, the assembler does
-   nothing special with -pg. */
+   nothing special with -pg.  */
 
 #undef  FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO)				\

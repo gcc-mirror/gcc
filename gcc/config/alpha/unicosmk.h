@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #undef INT_TYPE_SIZE
 #define INT_TYPE_SIZE 64
 
-/* This is consistent with the definition Cray CC uses. */
+/* This is consistent with the definition Cray CC uses.  */
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #undef WCHAR_TYPE_SIZE
@@ -229,7 +229,7 @@ do {								\
 
 #undef FUNCTION_ARG_PADDING
 
-/* An argument is passed either entirely in registers or entirely on stack. */
+/* An argument is passed either entirely in registers or entirely on stack.  */
  
 #undef FUNCTION_ARG_PARTIAL_NREGS
 /* #define FUNCTION_ARG_PARTIAL_NREGS(CUM,MODE,TYPE,NAMED) 0 */
@@ -325,7 +325,7 @@ do { fprintf (FILE, "\tbr $1,0\n");			\
 
 /* Specify the machine mode that this machine uses for the index in the
    tablejump instruction. On Unicos/Mk, we don't support relative case
-   vectors yet, thus the entries should be absolute addresses. */ 
+   vectors yet, thus the entries should be absolute addresses.  */ 
 
 #undef CASE_VECTOR_MODE
 #define CASE_VECTOR_MODE DImode
@@ -401,7 +401,7 @@ ssib_section ()			\
 #undef ASM_FILE_END
 #define ASM_FILE_END(FILE)	unicosmk_asm_file_end (FILE)
 
-/* We take care of that in ASM_FILE_START. */
+/* We take care of that in ASM_FILE_START.  */
 
 #undef ASM_OUTPUT_SOURCE_FILENAME
 

@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* WinNT (and thus Interix) use unsigned int */
 #define SIZE_TYPE "unsigned int"
 
-/* Pointer is 32 bits but the hardware has 64-bit addresses, sign extended. */
+/* Pointer is 32 bits but the hardware has 64-bit addresses, sign extended.  */
 #undef POINTER_SIZE
 #define POINTER_SIZE 32
 #define POINTERS_EXTEND_UNSIGNED 0
@@ -73,7 +73,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
-   CXT is an RTX for the static chain value for the function.   */
+   CXT is an RTX for the static chain value for the function.  */
 
 #undef INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
