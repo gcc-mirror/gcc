@@ -24,12 +24,9 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 Cleanups to do:-
 
-o Check line numbers assigned to all errors.
 o Distinguish integers, floats, and 'other' pp-numbers.
 o Store ints and char constants as binary values.
 o New command-line assertion syntax.
-o Work towards functions in cpperror.c taking a message level parameter.
-  If we do this, merge the common code of do_warning and do_error.
 o Comment all functions, and describe macro expansion algorithm.
 o Move as much out of header files as possible.
 o Remove single quote pairs `', and some '', from diagnostics.
