@@ -1,5 +1,7 @@
 2000-05-29  Richard Henderson  <rth@cygnus.com>
 
+	* stor-layout.c (finalize_record_size): Fix typo.
+
 	* jump.c (redirect_jump): Don't emit NOTE_INSN_FUNCTION_END
 	if nlabel is null.
 
