@@ -1,3 +1,10 @@
+2005-04-06  Dale Johannesen  <dalej@apple.com>
+
+	* doc/invoke.texi (Optimization Options):  Remove
+	duplicate -fcse-follow-jumps.  Add -fweb.
+	(-ftree-lim):  Fix spelling (-ftree-loop-im, invariants).
+	(-fivcanon):  Fix spelling (-ftree-loop-ivcanon).
+
 2005-04-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (finish_decl): Apply pending #pragma weak regardless of
