@@ -11,7 +11,7 @@
 #endif
 
 #ifndef __sys_stdtypes_h
-/* This avoids lossage on Sunos but only if stdtypes.h comes first.
+/* This avoids lossage on SunOS but only if stdtypes.h comes first.
    There's no way to win with the other order!  Sun lossage.  */
 
 /* In case nobody has defined these types, but we aren't running under

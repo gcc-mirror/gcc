@@ -1965,7 +1965,7 @@ find_split_point (loc)
       /* If we have a PLUS whose second operand is a constant and the
 	 address is not valid, perhaps will can split it up using
 	 the machine-specific way to split large constants.  We use
-	 the first psuedo-reg (one of the virtual regs) as a placeholder;
+	 the first pseudo-reg (one of the virtual regs) as a placeholder;
 	 it will not remain in the result.  */
       if (GET_CODE (XEXP (x, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT

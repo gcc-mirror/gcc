@@ -838,7 +838,7 @@ check_attr_test (exp, is_const)
 	     so expressions using it can be permanent too.  */
 	  exp = attr_eq (XSTR (exp, 0), XSTR (exp, 1));
 
-	  /* It shouldn't be possible to simplfy the value given to a
+	  /* It shouldn't be possible to simplify the value given to a
 	     constant attribute, so don't expand this until it's time to
 	     write the test expression.  */	       
 	  if (attr->is_const)

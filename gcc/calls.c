@@ -442,7 +442,7 @@ expand_call (exp, target, ignore)
 #endif
 #endif
 
-  /* Size of the stack reserved for paramter registers.  */
+  /* Size of the stack reserved for parameter registers.  */
   int reg_parm_stack_space = 0;
 
   /* 1 if scanning parms front to back, -1 if scanning back to front.  */

@@ -1380,7 +1380,7 @@ scan_prog_file (prog_name, which_pass)
       load_cmd = load_end++;
       load_hdr = (load_union_t *) (obj + offset);
 
-      /* If modifing the program file, copy the header.  */
+      /* If modifying the program file, copy the header.  */
       if (rw)
 	{
 	  load_union_t *ptr = (load_union_t *) xmalloc (load_hdr->hdr.ldci_cmd_size);

@@ -50,7 +50,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #ifdef POSIX /* We should be able to define _POSIX_SOURCE unconditionally,
 		but some systems respond in buggy ways to it,
-		including Sunos 4.1.1.  Which we don't classify as POSIX.  */
+		including SunOS 4.1.1.  Which we don't classify as POSIX.  */
 /* In case this is a POSIX system with an ANSI C compiler,
    ask for definition of all POSIX facilities.  */
 #undef _POSIX_SOURCE

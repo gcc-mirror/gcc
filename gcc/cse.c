@@ -2881,6 +2881,30 @@ simplify_unary_operation (code, mode, op, op_mode)
 	    return 0;
 	  break;
 
+	case ZERO_EXTEND:
+	  if (op_mode == VOIDmode
+	      || GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_INT)
+	    return 0;
+
+	  hv = 0;
+	  lv = l1 & GET_MODE_MASK (op_mode);
+	  break;
+
+	case SIGN_EXTEND:
+	  if (op_mode == VOIDmode
+	      || GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_INT)
+	    return 0;
+	  else
+	    {
+	      lv = l1 & GET_MODE_MASK (op_mode);
+	      if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_INT
+		  && (lv & (1 << (GET_MODE_BITSIZE (op_mode) - 1))) != 0)
+		lv -= 1 << GET_MODE_BITSIZE (op_mode);
+
+	      hv = (lv < 0) ? ~0 : 0;
+	    }
+	  break;
+
 	case SQRT:
 	  return 0;
 
@@ -6775,7 +6799,7 @@ cse_around_loop (loop_start)
 
   /* If the last insn of the loop (the end test) was an NE comparison,
      we will interpret it as an EQ comparison, since we fell through
-     the loop.  Any equivalances resulting from that comparison are
+     the loop.  Any equivalences resulting from that comparison are
      therefore not valid and must be invalidated.  */
   if (last_jump_equiv_class)
     for (p = last_jump_equiv_class->first_same_value; p;
