@@ -48,6 +48,38 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Processor costs (relative to an add) */
+struct processor_costs size_cost = {	/* costs for tunning for size */
+  2,					/* cost of an add instruction */
+  3,					/* cost of a lea instruction */
+  2,					/* variable shift costs */
+  3,					/* constant shift costs */
+  3,					/* cost of starting a multiply */
+  0,					/* cost of multiply per each bit set */
+  3,					/* cost of a divide/mod */
+  0,					/* "large" insn */
+  2,					/* MOVE_RATIO */
+  2,					/* cost for loading QImode using movzbl */
+  {2, 2, 2},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {2, 2, 2},				/* cost of storing integer registers */
+  2,					/* cost of reg,reg fld/fst */
+  {2, 2, 2},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {2, 2, 2},				/* cost of loading integer registers */
+  3,					/* cost of moving MMX register */
+  {3, 3},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {3, 3},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  3,					/* cost of moving SSE register */
+  {3, 3, 3},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {3, 3, 3},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  3,					/* MMX or SSE register to integer */
+};
+/* Processor costs (relative to an add) */
 struct processor_costs i386_cost = {	/* 386 specific costs */
   1,					/* cost of an add instruction */
   1,					/* cost of a lea instruction */
@@ -798,7 +830,10 @@ override_options ()
 	error ("bad value (%s) for -mcpu= switch", ix86_cpu_string);
     }
 
-  ix86_cost = processor_target_table[ix86_cpu].cost;
+  if (optimize_size)
+    ix86_cost = &size_cost;
+  else
+    ix86_cost = processor_target_table[ix86_cpu].cost;
   target_flags |= processor_target_table[ix86_cpu].target_enable;
   target_flags &= ~processor_target_table[ix86_cpu].target_disable;
 
@@ -2664,11 +2699,12 @@ ix86_expand_prologue ()
   int use_mov = 0;
   HOST_WIDE_INT allocate;
 
-  if (TARGET_PROLOGUE_USING_MOVE && !optimize_size)
+  if (!optimize_size)
     {
       use_fast_prologue_epilogue
 	 = !expensive_function_p (FAST_PROLOGUE_INSN_COUNT);
-      use_mov = use_fast_prologue_epilogue;
+      if (TARGET_PROLOGUE_USING_MOVE)
+        use_mov = use_fast_prologue_epilogue;
     }
   ix86_compute_frame_layout (&frame);
 
@@ -2807,13 +2843,13 @@ ix86_expand_epilogue (style)
      and there is exactly one register to pop. This heruistic may need some
      tuning in future.  */
   if ((!sp_valid && frame.nregs <= 1)
-      || (TARGET_EPILOGUE_USING_MOVE && !optimize_size
+      || (TARGET_EPILOGUE_USING_MOVE
 	  && use_fast_prologue_epilogue
 	  && (frame.nregs > 1 || frame.to_allocate))
       || (frame_pointer_needed && !frame.nregs && frame.to_allocate)
-      || (frame_pointer_needed && TARGET_USE_LEAVE && !optimize_size
+      || (frame_pointer_needed && TARGET_USE_LEAVE
 	  && use_fast_prologue_epilogue && frame.nregs == 1)
-      || style == 2)
+      || current_function_calls_eh_return)
     {
       /* Restore registers.  We can use ebp or esp to address the memory
 	 locations.  If both are available, default to ebp, since offsets
@@ -2899,7 +2935,11 @@ ix86_expand_epilogue (style)
 	  }
       if (frame_pointer_needed)
 	{
-	  if (TARGET_64BIT)
+	  /* Leave results in shorter depdendancy chains on CPUs that are
+	     able to grok it fast.  */
+	  if (TARGET_USE_LEAVE)
+	    emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
+	  else if (TARGET_64BIT)
 	    emit_insn (gen_popdi1 (hard_frame_pointer_rtx));
 	  else
 	    emit_insn (gen_popsi1 (hard_frame_pointer_rtx));

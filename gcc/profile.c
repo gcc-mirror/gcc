@@ -530,6 +530,7 @@ branch_prob ()
   total_num_times_called++;
 
   flow_call_edges_add (NULL);
+  add_noreturn_fake_exit_edges ();
 
   /* We can't handle cyclic regions constructed using abnormal edges.
      To avoid these we replace every source of abnormal edge by a fake
