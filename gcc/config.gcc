@@ -2330,9 +2330,9 @@ fi
 			| arm7m | arm7dm | arm7dmi | arm[79]tdmi \
 			| arm70 | arm700i | arm710t | arm720 \
 			| arm720t | arm740t | arm710c | arm920 \
-			| arm920t | arm940t | arm9e | arm10tdmi \
+			| arm920t | arm926ejs | arm940t | arm9e | arm10tdmi \
 			| arm7100 | arm7500 | arm7500fe | arm810 \
-			| arm1020t \
+			| arm1026ejs | arm1020t | arm1136js | arm1136jfs \
 			| xscale | iwmmxt \
 			| ep9312 \
 			| strongarm | strongarm110 | strongarm11[01]0)
@@ -2348,7 +2348,7 @@ fi
 		case "$with_arch" in
 		"" \
 		| armv[2345] | armv2a | armv3m | armv4t | armv5t \
-		| armv5te | ep9312)
+		| armv5te | armv6j | ep9312)
 			# OK
 			;;
 		*)

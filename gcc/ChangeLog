@@ -1,3 +1,21 @@
+2003-10-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* config.gcc: Add support for arm926ejs, arm1026ejs, arm1136js,
+	arm1136jfs, and armv6j.
+	* config/arm/arm.c (FL_ARCH6J): New macro.
+	(FL_VFPV2): Likewise.
+	(all_cores): Add entries for arm926ejs, arm1026ejs, arm1136js,
+	and arm1136jfs.
+	(all_architectures): Add entry for armv6j.
+	(arm_override_options): Add entries for arm926ejs, arm1026ejs,
+	arm1136js, and arm1136jfs.
+	* config/arm/arm.h (TARGET_CPU_arm926ej_s): New macro.
+	(TARGET_CPU_arm1026ej_s): Likewise.
+	(TARGET_CPU_arm1136j_s): Likewise.
+	(TARGET_CPU_arm1136jf_s): Likewise.
+	* doc/invoke.texi: Document new ARM cores and architecture
+	variants.
+	
 2003-10-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (toplev.o): Add value-prof.h dependency.

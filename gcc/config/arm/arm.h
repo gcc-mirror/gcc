@@ -98,6 +98,10 @@
 #define TARGET_CPU_xscale       0x0100
 #define TARGET_CPU_ep9312	0x0200
 #define TARGET_CPU_iwmmxt	0x0400
+#define TARGET_CPU_arm926ej_s   0x0800
+#define TARGET_CPU_arm1026ej_s  0x1000
+#define TARGET_CPU_arm1136j_s   0x2000
+#define TARGET_CPU_arm1136jf_s  0x4000
 /* Configure didn't specify.  */
 #define TARGET_CPU_generic	0x8000
 
