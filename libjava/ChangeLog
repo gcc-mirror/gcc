@@ -1,3 +1,13 @@
+1999-10-01  Steve Chamberlain  <sac@pobox.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ZINCS): Define
+
+	* configure: Rebuilt.
+	* configure.in (ZLIBSPEC): Spell -lzgcj correctly.
+
+	* java/lang/ieeefp.h: Add definitions for picoJava.
+
 1999-10-01  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
