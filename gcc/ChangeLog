@@ -1,3 +1,8 @@
+Thu Oct 15 11:45:51 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config/i386/sco5.h (MAX_OFILE_ALIGNMENT):  Define.
+	(SELECT_SECTION): Resync with svr4.h.
+
 Thu Oct 15 12:42:13 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* loop.c (strength_reduce): Undo Oct 14 change marking bct_p
