@@ -1,5 +1,5 @@
 /* Target independent definitions for LynxOS.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -83,10 +83,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(file, line)		\
   { static int sym_lineno = 1;				\
-    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",	\
-	     line, sym_lineno, 				\
-	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), \
-	     sym_lineno);				\
+    fprintf (file, ".stabn 68,0,%d,.LM%d-",		\
+	     line, sym_lineno);				\
+    assemble_name (file,				\
+		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0)); \
+    fprintf (file, "\n.LM%d:\n", sym_lineno);		\
     sym_lineno += 1; }
 
 /* Handle #pragma pack and sometimes #pragma weak.  */
