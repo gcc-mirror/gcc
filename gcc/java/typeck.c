@@ -360,7 +360,7 @@ build_prim_array_type (element_type, length)
      tree element_type;
      HOST_WIDE_INT length;
 {
-  tree max_index = build_int_2 (length - 1, 0);
+  tree max_index = build_int_2 (length - 1, (0 == length ? -1 : 0));
   TREE_TYPE (max_index) = sizetype;
   return build_array_type (element_type, build_index_type (max_index));
 }
