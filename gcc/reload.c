@@ -4379,30 +4379,44 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 
   if (code == PLUS)
     {
-      register rtx op0 = XEXP (x, 0);
-      register rtx op1 = XEXP (x, 1);
-      register RTX_CODE code0 = GET_CODE (op0);
-      register RTX_CODE code1 = GET_CODE (op1);
+      register rtx orig_op0 = XEXP (x, 0);
+      register rtx orig_op1 = XEXP (x, 1);
+      register RTX_CODE code0 = GET_CODE (orig_op0);
+      register RTX_CODE code1 = GET_CODE (orig_op1);
+      register rtx op0 = orig_op0;
+      register rtx op1 = orig_op1;
+
+      if (GET_CODE (op0) == SUBREG)
+	{
+	  op0 = SUBREG_REG (op0);
+	  code0 = GET_CODE (op0);
+	}
+      if (GET_CODE (op1) == SUBREG)
+	{
+	  op1 = SUBREG_REG (op1);
+	  code1 = GET_CODE (op1);
+	}
+
       if (code0 == MULT || code0 == SIGN_EXTEND || code1 == MEM)
 	{
-	  find_reloads_address_1 (op0, 1, &XEXP (x, 0), opnum, type,
+	  find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
 				  ind_levels);
-	  find_reloads_address_1 (op1, 0, &XEXP (x, 1), opnum, type,
+	  find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
 				  ind_levels);
 	}
       else if (code1 == MULT || code1 == SIGN_EXTEND || code0 == MEM)
 	{
-	  find_reloads_address_1 (op0, 0, &XEXP (x, 0), opnum, type,
+	  find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
 				  ind_levels);
-	  find_reloads_address_1 (op1, 1, &XEXP (x, 1), opnum, type,
+	  find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
 				  ind_levels);
 	}
       else if (code0 == CONST_INT || code0 == CONST
 	       || code0 == SYMBOL_REF || code0 == LABEL_REF)
-	find_reloads_address_1 (op1, 0, &XEXP (x, 1), opnum, type, ind_levels);
+	find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type, ind_levels);
       else if (code1 == CONST_INT || code1 == CONST
 	       || code1 == SYMBOL_REF || code1 == LABEL_REF)
-	find_reloads_address_1 (op0, 0, &XEXP (x, 0), opnum, type, ind_levels);
+	find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type, ind_levels);
       else if (code0 == REG && code1 == REG)
 	{
 	  if (REG_OK_FOR_INDEX_P (op0)
@@ -4412,37 +4426,37 @@ find_reloads_address_1 (x, context, loc, opnum, type, ind_levels)
 	      && REG_OK_FOR_BASE_P (op0))
 	    return 0;
 	  else if (REG_OK_FOR_BASE_P (op1))
-	    find_reloads_address_1 (op0, 1, &XEXP (x, 0), opnum, type, 
+	    find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type, 
 				    ind_levels);
 	  else if (REG_OK_FOR_BASE_P (op0))
-	    find_reloads_address_1 (op1, 1, &XEXP (x, 1), opnum, type,
+	    find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
 				    ind_levels);
 	  else if (REG_OK_FOR_INDEX_P (op1))
-	    find_reloads_address_1 (op0, 0, &XEXP (x, 0), opnum, type,
+	    find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
 				    ind_levels);
 	  else if (REG_OK_FOR_INDEX_P (op0))
-	    find_reloads_address_1 (op1, 0, &XEXP (x, 1), opnum, type,
+	    find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
 				    ind_levels);
 	  else
 	    {
-	      find_reloads_address_1 (op0, 1, &XEXP (x, 0), opnum, type,
+	      find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
 				      ind_levels);
-	      find_reloads_address_1 (op1, 0, &XEXP (x, 1), opnum, type,
+	      find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
 				      ind_levels);
 	    }
 	}
       else if (code0 == REG)
 	{
-	  find_reloads_address_1 (op0, 1, &XEXP (x, 0), opnum, type,
+	  find_reloads_address_1 (orig_op0, 1, &XEXP (x, 0), opnum, type,
 				  ind_levels);
-	  find_reloads_address_1 (op1, 0, &XEXP (x, 1), opnum, type,
+	  find_reloads_address_1 (orig_op1, 0, &XEXP (x, 1), opnum, type,
 				  ind_levels);
 	}
       else if (code1 == REG)
 	{
-	  find_reloads_address_1 (op1, 1, &XEXP (x, 1), opnum, type,
+	  find_reloads_address_1 (orig_op1, 1, &XEXP (x, 1), opnum, type,
 				  ind_levels);
-	  find_reloads_address_1 (op0, 0, &XEXP (x, 0), opnum, type,
+	  find_reloads_address_1 (orig_op0, 0, &XEXP (x, 0), opnum, type,
 				  ind_levels);
 	}
     }
