@@ -1,3 +1,7 @@
+2003-09-28  Richard Henderson  <rth@redhat.com>
+
+	* trans.c (tree_transform): Update call to expand_asm_operands.
+
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
 	* trans.c, utils.c: Revert.

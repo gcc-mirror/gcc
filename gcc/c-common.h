@@ -1251,7 +1251,7 @@ extern tree build_return_stmt (tree);
    initializers and cleanups.  */
 #define COMPOUND_STMT_BODY_BLOCK(NODE)	TREE_LANG_FLAG_3 (NODE)
 
-extern void c_expand_asm_operands (tree, tree, tree, tree, int, const char *, int);
+extern void c_expand_asm_operands (tree, tree, tree, tree, int, location_t);
 
 /* These functions must be defined by each front-end which implements
    a variant of the C language.  They are used in c-common.c.  */

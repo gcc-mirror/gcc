@@ -1,3 +1,12 @@
+2003-09-28  Richard Henderson  <rth@redhat.com>
+
+	* stmt.c (expand_asm_operands): Take a location_t, instead of
+	individual file and line.
+	* c-typeck.c (c_expand_asm_operands): Likewise.
+	* tree.h (expand_asm_operands): Update decl.
+	* c-common.h (c_expand_asm_operands): Likewise.
+	* c-semantics (genrtl_asm_stmt): Update call.
+
 2003-09-28  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (legitimize_pic_address): Check

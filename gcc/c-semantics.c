@@ -749,7 +749,7 @@ genrtl_asm_stmt (tree cv_qualifier, tree string, tree output_operands,
   else
     c_expand_asm_operands (string, output_operands, input_operands,
 			   clobbers, cv_qualifier != NULL_TREE,
-			   input_filename, input_line);
+			   input_location);
 }
 
 /* Generate the RTL for a CLEANUP_STMT.  */
