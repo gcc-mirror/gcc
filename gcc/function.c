@@ -2950,6 +2950,12 @@ purge_addressof_1 (loc, insn, force, store)
       purge_addressof_1 (&SET_SRC (x), insn, force, 0);
       return;
     }
+  else if (code == CALL)
+    {
+      purge_addressof_1 (&XEXP (x, 0), insn, 1, 0);
+      purge_addressof_1 (&XEXP (x, 1), insn, force, 0);
+      return;
+    }
 
   /* Scan all subexpressions. */
   fmt = GET_RTX_FORMAT (code);
