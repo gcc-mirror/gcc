@@ -1193,12 +1193,10 @@ namespace std
 	const __cache_type* __lc = __uc(__loc);
 	const char_type* __lit = __lc->_M_atoms;
 
-	const money_base::pattern __p = __lc->_M_neg_format;
-
 	// Deduced sign.
 	bool __negative = false;
-	// True for more than one character long sign.
-	bool __long_sign = false;
+	// Sign size.
+	size_type __sign_size = 0;
 	// String of grouping info from thousands_sep plucked from __units.
 	string __grouping_tmp;
 	if (__lc->_M_use_grouping)
@@ -1218,48 +1216,44 @@ namespace std
 
 	const char_type* __lit_zero = __lit + _S_zero;
 	const char_type* __q;
-	for (int __i = 0; __beg != __end && __i < 4 && __testvalid; ++__i)
+	const money_base::pattern __p = __lc->_M_neg_format;	
+	for (int __i = 0; __i < 4 && __testvalid; ++__i)
 	  {
 	    const part __which = static_cast<part>(__p.field[__i]);
 	    switch (__which)
 	      {
 	      case money_base::symbol:
 		if (__io.flags() & ios_base::showbase
-		    || __i < 2 || __long_sign
+		    || __i < 2 || __sign_size > 1
 		    || ((static_cast<part>(__p.field[3]) != money_base::none)
 			&& __i == 2))
 		  {
 		    // According to 22.2.6.1.2, p2, symbol is required
-		    // if (__io.flags() & ios_base::showbase),
-		    // otherwise is optional and consumed only if
-		    // other characters are needed to complete the
-		    // format.
+		    // if (__io.flags() & ios_base::showbase), otherwise
+		    // is optional and consumed only if other characters
+		    // are needed to complete the format.
 		    const size_type __len = __lc->_M_curr_symbol_size;
 		    size_type __j = 0;
 		    for (; __beg != __end && __j < __len
 			   && *__beg == __lc->_M_curr_symbol[__j];
 			 ++__beg, ++__j);
-		    // When (__io.flags() & ios_base::showbase)
-		    // symbol is required.
 		    if (__j != __len && (__io.flags() & ios_base::showbase))
 		      __testvalid = false;
 		  }
 		break;
 	      case money_base::sign:
 		// Sign might not exist, or be more than one character long.
-		if (__lc->_M_positive_sign_size
+		if (__lc->_M_positive_sign_size && __beg != __end
 		    && *__beg == __lc->_M_positive_sign[0])
 		  {
-		    if (__lc->_M_positive_sign_size > 1)
-		      __long_sign = true;
+		    __sign_size = __lc->_M_positive_sign_size;
 		    ++__beg;
 		  }
-		else if (__lc->_M_negative_sign_size
+		else if (__lc->_M_negative_sign_size && __beg != __end
 			 && *__beg == __lc->_M_negative_sign[0])
 		  {
 		    __negative = true;
-		    if (__lc->_M_negative_sign_size > 1)
-		      __long_sign = true;		    
+		    __sign_size = __lc->_M_negative_sign_size;
 		    ++__beg;
 		  }
 		else if (__lc->_M_positive_sign_size
@@ -1307,6 +1301,8 @@ namespace std
 		    }
 		  else
 		    break;
+		if (__res.empty())
+		  __testvalid = false;
 		break;
 	      case money_base::space:
 	      case money_base::none:
@@ -1319,21 +1315,19 @@ namespace std
 	  }
 
 	// Need to get the rest of the sign characters, if they exist.
-	if (__long_sign)
+	if (__sign_size > 1 && __testvalid)
 	  {
 	    const char_type* __sign = __negative ? __lc->_M_negative_sign
 	                                         : __lc->_M_positive_sign;
-	    const size_type __len = __negative ? __lc->_M_negative_sign_size
-                                               : __lc->_M_positive_sign_size;
 	    size_type __i = 1;
-	    for (; __beg != __end && __i < __len
+	    for (; __beg != __end && __i < __sign_size
 		   && *__beg == __sign[__i]; ++__beg, ++__i);
 	    
-	    if (__i != __len)
+	    if (__i != __sign_size)
 	      __testvalid = false;
 	  }
 
-	if (__testvalid && __res.size())
+	if (__testvalid)
 	  {
 	    // Strip leading zeros.
 	    if (__res.size() > 1)
@@ -1365,8 +1359,6 @@ namespace std
 		&& __n != __lc->_M_frac_digits)
 	      __testvalid = false;
 	  }
-	else
-	  __testvalid = false;
 	
 	// Iff no more characters are available.
 	if (__beg == __end)
