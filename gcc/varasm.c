@@ -427,7 +427,7 @@ asm_output_aligned_bss (file, decl, name, size, align)
 
 #ifdef EH_FRAME_SECTION_ASM_OP
 void
-eh_frame_section (void)
+eh_frame_section ()
 {
   if (in_section != in_eh_frame)
     {

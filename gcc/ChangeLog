@@ -1,3 +1,7 @@
+2000-05-22  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* varasm.c (eh_frame_section): Revert change to argument list.
+
 Mon May 22 13:14:03 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* final.c (final_scan_insn, case NOTE_INSN_FUNCTION_BEG): Remove
