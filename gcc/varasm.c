@@ -3476,11 +3476,27 @@ initializer_constant_valid_p (tree value, tree endtype)
 	   || TREE_CODE (TREE_TYPE (value)) == RECORD_TYPE)
 	  && TREE_CONSTANT (value)
 	  && CONSTRUCTOR_ELTS (value))
-	return
-	  initializer_constant_valid_p (TREE_VALUE (CONSTRUCTOR_ELTS (value)),
-					endtype);
+	{
+	  tree elt;
+	  bool absolute = true;
 
-      return TREE_STATIC (value) ? null_pointer_node : 0;
+	  for (elt = CONSTRUCTOR_ELTS (value); elt; elt = TREE_CHAIN (elt))
+	    {
+	      tree reloc;
+	      value = TREE_VALUE (elt);
+	      reloc = initializer_constant_valid_p (value, TREE_TYPE (value));
+	      if (!reloc)
+		return NULL_TREE;
+	      if (reloc != null_pointer_node)
+		absolute = false;
+	    }
+	  /* For a non-absolute relocation, there is no single
+	     variable that can be "the variable that determines the
+	     relocation."  */
+	  return absolute ? null_pointer_node : error_mark_node;
+	}
+
+      return TREE_STATIC (value) ? null_pointer_node : NULL_TREE;
 
     case INTEGER_CST:
     case VECTOR_CST:
