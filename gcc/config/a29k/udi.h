@@ -21,13 +21,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "a29k/a29k.h"
 
-/* Output DBX (stabs) debugging information if doing -gstabs.  */
+/* Support -gstabs.  */
 
-#define DBX_DEBUGGING_INFO
-
-/* Generate SDB debugging information by default. */
-
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#include "dbxcoff.h"
 
 /* Support the ctors and dtors sections for g++.  */
 
