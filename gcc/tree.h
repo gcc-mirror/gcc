@@ -560,6 +560,10 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    when the node is a type).  */
 #define TREE_READONLY(NODE) ((NODE)->common.readonly_flag)
 
+/* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
+#define TREE_READONLY_DECL_P(NODE) \
+  (TREE_READONLY (NODE) && DECL_P (NODE))
+
 /* Value of expression is constant.
    Always appears in all ..._CST nodes.
    May also appear in an arithmetic expression, an ADDR_EXPR or a CONSTRUCTOR
@@ -1547,6 +1551,14 @@ struct tree_type
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
 
+/* In a FUNCTION_DECL, the saved representation of the body of the
+   entire function.  Usually a COMPOUND_STMT, but in C++ this may also
+   be a RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
+#define DECL_SAVED_TREE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.saved_tree)
+
+/* List of FUNCION_DECLs inlined into this function's body.  */
+#define DECL_INLINED_FNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.inlined_fns)
+
 /* Nonzero in a FUNCTION_DECL means this is a built-in function
    that is not specified by ansi C and that users are supposed to be allowed
    to redefine for any purpose whatever.  */
@@ -1768,6 +1780,13 @@ struct tree_decl
     tree t;
     int i;
   } u2;
+
+  /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
+  tree saved_tree;
+
+  /* In a FUNCTION_DECL, these are function data which is to be kept
+     as long as FUNCTION_DECL is kept.  */
+  tree inlined_fns;
 
   tree vindex;
   HOST_WIDE_INT pointer_alias_set;
@@ -3049,6 +3068,10 @@ extern void dwarf2out_return_save	PARAMS ((const char *, long));
 /* Entry point for saving the return address in a register.  */
 
 extern void dwarf2out_return_reg	PARAMS ((const char *, unsigned));
+
+/* The type of a function that walks over tree structure.  */
+
+typedef tree (*walk_tree_fn)		PARAMS ((tree *, int *, void *));
 
 
 /* Redefine abort to report an internal error w/o coredump, and

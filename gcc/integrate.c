@@ -77,8 +77,6 @@ typedef struct initial_value_struct {
   initial_value_pair *entries;
 } initial_value_struct;
 
-static bool function_attribute_inlinable_p PARAMS ((tree));
-
 static void setup_initial_hard_reg_value_integration PARAMS ((struct function *, struct inline_remap *));
 
 static rtvec initialize_for_inline	PARAMS ((tree));
@@ -129,7 +127,7 @@ get_label_from_map (map, i)
 
 /* Return false if the function FNDECL cannot be inlined on account of its
    attributes, true otherwise.  */
-static bool
+bool
 function_attribute_inlinable_p (fndecl)
      tree fndecl;
 {

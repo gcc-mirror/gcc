@@ -316,12 +316,6 @@ extern void (*lang_expand_function_end)         PARAMS ((void));
 extern int (*lang_missing_noreturn_ok_p)	PARAMS ((tree));
 
 
-/* The type of a function that walks over tree structure.  */
-
-typedef tree (*walk_tree_fn)                    PARAMS ((tree *,
-							 int *,
-							 void *));
-
 extern stmt_tree current_stmt_tree              PARAMS ((void));
 extern tree *current_scope_stmt_stack           PARAMS ((void));
 extern void begin_stmt_tree                     PARAMS ((tree *));
@@ -344,16 +338,8 @@ extern void mark_stmt_tree                      PARAMS ((void *));
    DECL_LANG_SPECIFIC field.  */
 
 struct c_lang_decl {
-  /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
-  tree saved_tree;
+  char dummy;
 };
-
-/* In a FUNCTION_DECL, the saved representation of the body of the
-   entire function.  Usually a COMPOUND_STMT, but in C++ this may also
-   be a RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
-#define DECL_SAVED_TREE(NODE)						    \
-  (((struct c_lang_decl *) DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))) \
-   ->saved_tree)
 
 /* In a FUNCTION_DECL for which DECL_BUILT_IN does not hold, this is
      the approximate number of statements in this function.  There is

@@ -22,6 +22,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "config.h"
 #include "system.h"
 #include "tree.h"
+#include "tree-inline.h"
 #include "flags.h"
 #include "toplev.h"
 #include "output.h"
@@ -3331,7 +3332,6 @@ void
 c_mark_lang_decl (c)
      struct c_lang_decl *c;
 {
-  ggc_mark_tree (c->saved_tree);
 }
 
 /* Mark F for GC.  */
@@ -3830,6 +3830,8 @@ c_common_lang_init ()
   /* If still "unspecified", make it match -fbounded-pointers.  */
   if (flag_bounds_check < 0)
     flag_bounds_check = flag_bounded_pointers;
+
+  lang_anon_aggr_type_p = anon_aggr_type_p;
 
   /* Special format checking options don't work without -Wformat; warn if
      they are used.  */

@@ -1,3 +1,26 @@
+2001-10-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* Makefile.in (OBJS): Added tree-inline.o.
+	(c-common.o): Depend on tree-inline.h.
+	(tree-inline.o): New target.
+	* c-common.c: Include tree-inline.h.
+	(c_mark_lang_decl): Don't mark saved_tree.
+	(c_common_lang_init): Set lang_anon_aggr_type_p.
+	* c-common.h (walk_tree_fn, DECL_SAVED_TREE): Moved to tree.h.
+	(struct c_lang_decl): Moved saved_tree to tree_decl.
+	* ggc-common.c: Mark saved_tree and inlined_fns of FUNCTION_DECLs.
+	* integrate.h (function_attribute_inlinable_p): Declare it.
+	* integrate.c (function_attribute_inlinable_p): Export it.
+	* tree-inline.c: New file.  Define variables declared in...
+	* tree-inline.h: New file.  Declare functions to be moved to
+	tree-inline.c.  Define macros and declare types and hooks for
+	language-specific tree inlining.
+	(flag_inline_trees): Moved definition from cp/decl2.c.
+	* tree.h (walk_tree_fn, DECL_SAVED_TREE): Moved from c-common.h.
+	(TREE_READONLY_DECL_P, DECL_INLINED_FNS): Moved from cp/cp-tree.h.
+	(struct tree_decl): Moved saved_tree from c_lang_decl and
+	inlined_fns from C++'s lang_decl.
+
 2001-10-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* Makefile.in (STAGE2_FLAGS_TO_PASS): Remove patches which
