@@ -11401,7 +11401,8 @@ java_complete_tree (node)
 	  /* fold_constant_for_init sometimes widen the original type
              of the constant (i.e. byte to int.) It's not desirable,
              especially if NODE is a function argument. */
-	  if (TREE_CODE (value) == INTEGER_CST
+	  if ((TREE_CODE (value) == INTEGER_CST
+	       || TREE_CODE (value) == REAL_CST)
 	      && TREE_TYPE (node) != TREE_TYPE (value))
 	    return convert (TREE_TYPE (node), value);
 	  else
@@ -11616,6 +11617,9 @@ java_complete_lhs (node)
 	  cn = fold_constant_for_init (DECL_INITIAL (TREE_OPERAND (cn, 1)),
 				       TREE_OPERAND (cn, 1));
 	}
+      /* Accept final locals too. */
+      else if (TREE_CODE (cn) == VAR_DECL && LOCAL_FINAL (cn))
+	cn = fold_constant_for_init (DECL_INITIAL (cn), cn);
 
       if (!TREE_CONSTANT (cn) && !flag_emit_xref)
 	{
@@ -11898,11 +11902,15 @@ java_complete_lhs (node)
 	  
 	  value = fold_constant_for_init (nn, nn);
 
-	  if (value != NULL_TREE)
+	  if (value != NULL_TREE &&
+	      (JPRIMITIVE_TYPE_P (TREE_TYPE (value)) || 
+	       (TREE_TYPE (value) == string_ptr_type_node &&
+		! flag_emit_class_files)))
 	    {
-	      tree type = TREE_TYPE (value);
-	      if (JPRIMITIVE_TYPE_P (type) || 
-		  (type == string_ptr_type_node && ! flag_emit_class_files))
+	      TREE_OPERAND (node, 1) = value;
+	      if (patch_assignment (node, wfl_op1, value) == error_mark_node)
+		return error_mark_node;
+	      else
 		return empty_stmt_node;
 	    }
 	  if (! flag_emit_class_files)
@@ -11986,6 +11994,9 @@ java_complete_lhs (node)
 	}
       else
 	{
+	  /* Can't assign to a (blank) final. */
+	  if (check_final_assignment (TREE_OPERAND (node, 0), wfl_op1))
+	    return error_mark_node;
 	  node = patch_assignment (node, wfl_op1, wfl_op2);
 	  /* Reorganize the tree if necessary. */
 	  if (flag && (!JREFERENCE_TYPE_P (TREE_TYPE (node)) 
@@ -12762,10 +12773,6 @@ patch_assignment (node, wfl_op1, wfl_op2)
   int error_found = 0;
   int lvalue_from_array = 0;
 
-  /* Can't assign to a (blank) final. */
-  if (check_final_assignment (lvalue, wfl_op1))
-    error_found = 1;
-
   EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (node);
 
   /* Lhs can be a named variable */
@@ -13491,8 +13498,8 @@ patch_binop (node, wfl_op1, wfl_op2)
 	      (TREE_CODE (op2) == INTEGER_CST &&
 	       ! TREE_INT_CST_LOW (op2)  && ! TREE_INT_CST_HIGH (op2))))
 	{
-	  parse_error_context (wfl_operator, "Arithmetic exception");
-	  error_found = 1;
+	  parse_warning_context (wfl_operator, "Evaluating this expression will result in an arithmetic exception being thrown.");
+	  TREE_CONSTANT (node) = 0;
 	}
 	  
       /* Change the division operator if necessary */
@@ -13500,9 +13507,11 @@ patch_binop (node, wfl_op1, wfl_op2)
 	TREE_SET_CODE (node, TRUNC_DIV_EXPR);
 
       /* Before divisions as is disapear, try to simplify and bail if
-         applicable, otherwise we won't perform even simple simplifications
-	 like (1-1)/3. */
-      if (code == RDIV_EXPR && TREE_CONSTANT (op1) && TREE_CONSTANT (op2))
+         applicable, otherwise we won't perform even simple
+         simplifications like (1-1)/3. We can't do that with floating
+         point number, folds can't handle them at this stage. */
+      if (code == RDIV_EXPR && TREE_CONSTANT (op1) && TREE_CONSTANT (op2)
+	  && JINTEGRAL_TYPE_P (op1) && JINTEGRAL_TYPE_P (op2))
 	{
 	  TREE_TYPE (node) = prom_type;
 	  node = fold (node);

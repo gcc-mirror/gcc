@@ -41,6 +41,27 @@
 
 	* jcf-dump.c (SPECIAL_IINC):  Remove unneeded casts to long.
 
+2001-08-30  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_assignment): Don't verify final re-assignment here.
+	(java_complete_lhs): Verify assignments to finals calling
+	patch_assignment. Verify re-assignments to finals before calling
+	patch_assignment.
+
+2001-08-29  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (java_complete_lhs): Allow final locals in CASE_EXPRs.
+	Fixes PR java/1413
+
+2001-08-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* lex.c (java_lex): new local found_hex_digits. Set and then used
+	in test to reject invalid hexadecimal numbers.
+	* parse.y (java_complete_tree): Prevent unwanted cast with
+	initialized floating point finals.
+	(patch_binop): Emit a warning when detecting a division by zero,
+	mark result not constant, don't simplify non integer division.
+
 2001-08-28  Per Bothner  <per@bothner.com>
 
 	* jcf-write.c  (generate_bytecode_insns):  For increments and
