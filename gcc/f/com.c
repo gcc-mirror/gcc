@@ -1,5 +1,6 @@
 /* com.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995-1999 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -7762,15 +7763,12 @@ ffecom_sym_transform_ (ffesymbol s)
 
 		finish_decl (t, initexpr, FALSE);
 
-		if ((st != NULL) && (DECL_SIZE (t) != error_mark_node))
+		if (st != NULL && DECL_SIZE (t) != error_mark_node)
 		  {
-		    tree size_tree;
-
-		    size_tree = size_binop (CEIL_DIV_EXPR,
-					    DECL_SIZE (t),
-					    size_int (BITS_PER_UNIT));
-		    assert (TREE_INT_CST_HIGH (size_tree) == 0);
-		    assert (TREE_INT_CST_LOW (size_tree) == ffestorag_size (st));
+		    assert (TREE_CODE (DECL_SIZE_UNIT (t)) == INTEGER_CST);
+		    assert (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (t)) == 0);
+		    assert (TREE_INT_CST_LOW (DECL_SIZE_UNIT (t))
+			    == ffestorag_size (st));
 		  }
 
 		resume_momentary (yes);
@@ -8826,15 +8824,10 @@ ffecom_transform_common_ (ffesymbol s)
 
   if (init)
     {
-      tree size_tree;
-
-      assert (DECL_SIZE (cbt) != NULL_TREE);
-      assert (TREE_CODE (DECL_SIZE (cbt)) == INTEGER_CST);
-      size_tree = size_binop (CEIL_DIV_EXPR,
-			      DECL_SIZE (cbt),
-			      size_int (BITS_PER_UNIT));
-      assert (TREE_INT_CST_HIGH (size_tree) == 0);
-      assert (TREE_INT_CST_LOW (size_tree)
+      assert (DECL_SIZE_UNIT (cbt) != NULL_TREE);
+      assert (TREE_CODE (DECL_SIZE_UNIT (cbt)) == INTEGER_CST);
+      assert (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (cbt)) == 0);
+      assert (TREE_INT_CST_LOW (DECL_SIZE_UNIT (cbt))
 	      == ffeglobal_common_size (g) + ffeglobal_common_pad (g));
     }
 
@@ -8966,13 +8959,9 @@ ffecom_transform_equiv_ (ffestorag eqst)
     ffestorag_set_init (eqst, ffebld_new_any ());
 
   {
-    tree size_tree;
-
-    size_tree = size_binop (CEIL_DIV_EXPR,
-			    DECL_SIZE (eqt),
-			    size_int (BITS_PER_UNIT));
-    assert (TREE_INT_CST_HIGH (size_tree) == 0);
-    assert (TREE_INT_CST_LOW (size_tree)
+    assert (TREE_CODE (DECL_SIZE_UNIT (eqt)) == INTEGER_CST);
+    assert (TREE_INT_CST_HIGH (DECL_SIZE_UNIT (eqt)) == 0);
+    assert (TREE_INT_CST_LOW (DECL_SIZE_UNIT (eqt))
 	    == ffestorag_size (eqst) + ffestorag_modulo (eqst));
   }
 
@@ -9120,7 +9109,7 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 
     case PARM_DECL:
       *decl = t;
-      *offset = bitsize_int (0L, 0L);
+      *offset = bitsize_int (0);
       break;
 
     case ADDR_EXPR:
@@ -9128,7 +9117,7 @@ ffecom_tree_canonize_ptr_ (tree *decl, tree *offset,
 	{
 	  /* A reference to COMMON.  */
 	  *decl = TREE_OPERAND (t, 0);
-	  *offset = bitsize_int (0L, 0L);
+	  *offset = bitsize_int (0);
 	  break;
 	}
       /* Fall through.  */
@@ -9249,7 +9238,7 @@ ffecom_tree_canonize_ref_ (tree *decl, tree *offset,
     case VAR_DECL:
     case PARM_DECL:
       *decl = t;
-      *offset = bitsize_int (0L, 0L);
+      *offset = bitsize_int (0);
       *size = TYPE_SIZE (TREE_TYPE (t));
       return;
 
@@ -13839,6 +13828,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	{
 	  /* Since the type is OLDDECL's, make OLDDECL's size go with.  */
 	  DECL_SIZE (newdecl) = DECL_SIZE (olddecl);
+	  DECL_SIZE_UNIT (newdecl) = DECL_SIZE_UNIT (olddecl);
 	  if (TREE_CODE (olddecl) != FUNCTION_DECL)
 	    if (DECL_ALIGN (olddecl) > DECL_ALIGN (newdecl))
 	      DECL_ALIGN (newdecl) = DECL_ALIGN (olddecl);
@@ -14145,23 +14135,6 @@ finish_decl (tree decl, tree init, bool is_top_level)
 	    }
 	  else
 	    DECL_INITIAL (decl) = error_mark_node;
-	}
-    }
-
-  /* If requested, warn about definitions of large data objects.  */
-
-  if (warn_larger_than
-      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
-      && !DECL_EXTERNAL (decl))
-    {
-      register tree decl_size = DECL_SIZE (decl);
-
-      if (decl_size && TREE_CODE (decl_size) == INTEGER_CST)
-	{
-	   unsigned units = TREE_INT_CST_LOW (decl_size) / BITS_PER_UNIT;
-
-	  if (units > larger_than_size)
-	    warning_with_decl (decl, "size of `%s' is %u bytes", units);
 	}
     }
 

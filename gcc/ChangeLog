@@ -1,3 +1,58 @@
+Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* c-common.c (decl_attributes): Set DECL_SIZE_UNIT.
+	* c-decl.c (duplicate_decls, finish_enum): Likewise.
+	(finish_decl): Remove -Wlarger-than code from here.
+	* flags.h (id_clash_len): Now int.
+	(larger_than_size): Now HOST_WIDE_INT.
+	* fold-const.c (size_int_wide): No more HIGH parm; NUMBER is signed.
+	Clean up checking to see if in table.
+	(make_bit_field_ref): Remove extra parm to bitsize_int.
+	* ggc-common.c (ggc_mark_tree_children): Mark DECL_SIZE_UNIT.
+	* print-tree.c (print_node): Print DECL_SIZE_UNIT and TYPE_SIZE_UNIT.
+	* stmt.c (expand_decl): Use DECL_SIZE_UNIT for stack checking size
+	and for computing size of decl.
+	* stor-layout.c (layout_decl): Set DECL_SIZE_UNIT.
+	Move -Wlarger-than code to here.
+	(layout_record): Remove extra arg to bitsize_int.
+	Set TYPE_BINFO_SIZE_UNIT.
+	(layout_union): Remove extra arg to bitsize_int.
+	Use proper type for size of QUAL_UNION.
+	(layout_type): Remove extra arg to bitsize_int.
+	* toplev.c (id_clash_len): Now int.
+	(larger_than_size): Now HOST_WIDE_INT.
+	(decode_W_option): Clean up id-clash and larger-than- cases.
+	* tree.c (get_identifier, maybe_get_identifier): Remove unneeded casts.
+	(expr_align, case FUNCTION_DECL): DECL_ALIGN is not defined.
+	* tree.h (BINFO_SIZE_UNIT, TYPE_BINFO_SIZE_UNIT, DECL_SIZE_UNIT): New.
+	(struct tree_decl): New field size_unit.
+	(size_int_wide): No HIGH operand; NUMBER is now signed.
+	(size_int_2): Deleted.
+	(size_int, bitsize_int): Don't use it and rework args.
+	* varasm.c (assemble_variable, output_constructor): Use DECL_SIZE_UNIT.
+	* ch/decl.c (layout_enum): Set DECL_SIZE_UNIT.	
+	* ch/satisfy.c (safe_satisfy_decl): Likewise.
+	* cp/class.c (build_primary_vtable, layout_vtable_decl): Likewise.
+	(avoid_overlap, build_base_field): Likewise.
+	(build_base_field, build_base_fields, is_empty_class): 
+	Test DECL_SIZE with integer_zero.
+	(layout_class_type): Set CLASSTYPE_SIZE_UNIT.
+	* cp/cp-tree.h (struct lang_type): New field size_unit.
+	(CLASSTYPE_SIZE_UNIT): New macro.
+	* cp/decl.c (init_decl_processing): Set DECL_SIZE_UNIT.
+	(cp_finish_decl): Delete -Wlarger-than processing.
+	* cp/optimize.c (remap_decl): Walk DECL_SIZE_UNIT.
+	* cp/pt.c (tsubst_decl): Set DECL_SIZE_UNIT.
+	* cp/tree.c (make_binfo): binfo vector is one entry longer.
+	(walk_tree): Walk DECL_SIZE_UNIT.
+	* f/com.c (ffecom_sym_transform): Use DECL_SIZE_UNIT.
+	(ffecom_transform_common_, ffecom_transform_equiv_): Likewise.
+	(duplicate_decls): Likewise.
+	(ffecom_tree_canonize_ptr_): Delete extra arg to bitsize_int.
+	(finish_decl): Delete -Wlarger-than processing.
+	* java/class.c (build_class_ref, push_super_field): Set DECL_SIZE_UNIT.
+	* java/constants.c (build_constants_constructor): Likewise.
+
 Fri Feb 18 20:01:58 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa/quadlib.asm (_U_QFgt, _U_Qfge): Fix flags for _U_Qfcmp call.

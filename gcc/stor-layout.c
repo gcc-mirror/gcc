@@ -1,5 +1,6 @@
 /* C-compiler utilities for types and variables storage layout
-   Copyright (C) 1987, 88, 92-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1996, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -265,7 +266,10 @@ layout_decl (decl, known_align)
   DECL_MODE (decl) = TYPE_MODE (type);
   TREE_UNSIGNED (decl) = TREE_UNSIGNED (type);
   if (DECL_SIZE (decl) == 0)
-    DECL_SIZE (decl) = TYPE_SIZE (type);
+    {
+      DECL_SIZE (decl) = TYPE_SIZE (type);
+      DECL_SIZE_UNIT (decl) = TYPE_SIZE_UNIT (type);
+    }
 
   if (code == FIELD_DECL && DECL_BIT_FIELD (decl))
     {
@@ -273,8 +277,13 @@ layout_decl (decl, known_align)
 	abort ();
 
       /* Size is specified in number of bits.  */
-      DECL_SIZE (decl) = bitsize_int (spec_size, 0);
+      DECL_SIZE (decl) = bitsize_int (spec_size);
+      if (spec_size % BITS_PER_UNIT == 0)
+	DECL_SIZE_UNIT (decl) = size_int (spec_size / BITS_PER_UNIT);
+      else
+	DECL_SIZE_UNIT (decl) = 0;
     }
+
   /* Force alignment required for the data type.
      But if the decl itself wants greater alignment, don't override that.
      Likewise, if the decl is packed, don't override it.  */
@@ -308,7 +317,8 @@ layout_decl (decl, known_align)
 	  DECL_ALIGN (decl) = MAX (GET_MODE_ALIGNMENT (xmode),
 				   DECL_ALIGN (decl));
 	  DECL_MODE (decl) = xmode;
-	  DECL_SIZE (decl) = bitsize_int (GET_MODE_BITSIZE (xmode), 0);
+	  DECL_SIZE (decl) = bitsize_int (GET_MODE_BITSIZE (xmode));
+	  DECL_SIZE_UNIT (decl) = size_int (GET_MODE_SIZE (xmode));
 	  /* This no longer needs to be accessed as a bit field.  */
 	  DECL_BIT_FIELD (decl) = 0;
 	}
@@ -317,15 +327,38 @@ layout_decl (decl, known_align)
   /* Turn off DECL_BIT_FIELD if we won't need it set.  */
   if (DECL_BIT_FIELD (decl) && TYPE_MODE (type) == BLKmode
       && known_align % TYPE_ALIGN (type) == 0
-      && DECL_SIZE (decl) != 0
-      && (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
-	  || (TREE_INT_CST_LOW (DECL_SIZE (decl)) % BITS_PER_UNIT) == 0)
+      && DECL_SIZE_UNIT (decl) != 0
       && DECL_ALIGN (decl) >= TYPE_ALIGN (type))
     DECL_BIT_FIELD (decl) = 0;
 
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
   if (DECL_SIZE (decl) != 0 && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
     DECL_SIZE (decl) = variable_size (DECL_SIZE (decl));
+  if (DECL_SIZE_UNIT (decl) != 0
+      && TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST)
+    DECL_SIZE_UNIT (decl) = variable_size (DECL_SIZE_UNIT (decl));
+
+  /* If requested, warn about definitions of large data objects.  */
+  if (warn_larger_than
+      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+      && ! DECL_EXTERNAL (decl))
+    {
+      tree size = DECL_SIZE_UNIT (decl);
+
+      if (size != 0 && TREE_CODE (size) == INTEGER_CST
+	  && (TREE_INT_CST_HIGH (size) != 0
+	      || TREE_INT_CST_LOW (size) > larger_than_size))
+	{
+	  int size_as_int = TREE_INT_CST_LOW (size);
+
+	  if (size_as_int == TREE_INT_CST_LOW (size)
+	      && TREE_INT_CST_HIGH (size) == 0)
+	    warning_with_decl (decl, "size of `%s' is %d bytes", size_as_int);
+	  else
+	    warning_with_decl (decl, "size of `%s' is larger than %d bytes",
+			       larger_than_size);
+	}
+    }
 }
 
 /* Lay out a RECORD_TYPE type (a C struct).
@@ -485,7 +518,7 @@ layout_record (rec)
 	    {
 	      if (const_size > 0)
 		var_size = size_binop (PLUS_EXPR, var_size,
-				       bitsize_int (const_size, 0L));
+				       bitsize_int (const_size));
 	      const_size = 0;
 	      var_size = round_up (var_size, desired_align);
 	      var_align = MIN (var_align, desired_align);
@@ -549,12 +582,12 @@ layout_record (rec)
 
       if (var_size && const_size)
 	DECL_FIELD_BITPOS (field)
-	  = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size, 0L));
+	  = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size));
       else if (var_size)
 	DECL_FIELD_BITPOS (field) = var_size;
       else
 	{
-	  DECL_FIELD_BITPOS (field) = bitsize_int (const_size, 0L);
+	  DECL_FIELD_BITPOS (field) = bitsize_int (const_size);
 
 	  /* If this field ended up more aligned than we thought it
 	     would be (we approximate this by seeing if its position
@@ -595,12 +628,12 @@ layout_record (rec)
      Round it up to a multiple of the record's alignment.  */
 
   if (var_size == NULL_TREE)
-    TYPE_SIZE (rec) = bitsize_int (const_size, 0L);
+    TYPE_SIZE (rec) = bitsize_int (const_size);
   else
     {
       if (const_size)
 	var_size
-	  = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size, 0L));
+	  = size_binop (PLUS_EXPR, var_size, bitsize_int (const_size));
       TYPE_SIZE (rec) = var_size;
     }
 
@@ -614,7 +647,13 @@ layout_record (rec)
   /* Record the un-rounded size in the binfo node.  But first we check
      the size of TYPE_BINFO to make sure that BINFO_SIZE is available.  */
   if (TYPE_BINFO (rec) && TREE_VEC_LENGTH (TYPE_BINFO (rec)) > 6)
-    TYPE_BINFO_SIZE (rec) = TYPE_SIZE (rec);
+    {
+      TYPE_BINFO_SIZE (rec) = TYPE_SIZE (rec);
+      TYPE_BINFO_SIZE_UNIT (rec)
+	= convert (sizetype,
+		   size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (rec),
+			       size_int (BITS_PER_UNIT)));
+    }
   
   {
     tree unpadded_size = TYPE_SIZE (rec);
@@ -718,7 +757,7 @@ layout_union (rec)
 	continue;
 
       layout_decl (field, 0);
-      DECL_FIELD_BITPOS (field) = bitsize_int (0L, 0L);
+      DECL_FIELD_BITPOS (field) = bitsize_int (0);
 
       /* Union must be at least as aligned as any field requires.  */
 
@@ -749,9 +788,9 @@ layout_union (rec)
 	    var_size = size_binop (MAX_EXPR, var_size, dsize);
 	}
       else if (TREE_CODE (rec) == QUAL_UNION_TYPE)
-	var_size = fold (build (COND_EXPR, sizetype, DECL_QUALIFIER (field),
+	var_size = fold (build (COND_EXPR, bitsizetype, DECL_QUALIFIER (field),
 				DECL_SIZE (field),
-				var_size ? var_size : bitsize_int (0L, 0L)));
+				var_size ? var_size : bitsize_int (0)));
       }
 
   if (TREE_CODE (rec) == QUAL_UNION_TYPE)
@@ -759,13 +798,14 @@ layout_union (rec)
 
   /* Determine the ultimate size of the union (in bytes).  */
   if (NULL == var_size)
-    TYPE_SIZE (rec) = bitsize_int (CEIL (const_size, BITS_PER_UNIT)
-				   * BITS_PER_UNIT, 0L);
+    TYPE_SIZE (rec)
+      = bitsize_int (CEIL (const_size, BITS_PER_UNIT) * BITS_PER_UNIT);
+
   else if (const_size == 0)
     TYPE_SIZE (rec) = var_size;
   else
     TYPE_SIZE (rec) = size_binop (MAX_EXPR, var_size,
-				  round_up (bitsize_int (const_size, 0L),
+				  round_up (bitsize_int (const_size),
 					    BITS_PER_UNIT));
 
   /* Determine the desired alignment.  */
@@ -839,13 +879,13 @@ layout_type (type)
 
       TYPE_MODE (type) = smallest_mode_for_size (TYPE_PRECISION (type),
 						 MODE_INT);
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
     case REAL_TYPE:
       TYPE_MODE (type) = mode_for_size (TYPE_PRECISION (type), MODE_FLOAT, 0);
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
@@ -856,7 +896,7 @@ layout_type (type)
 			 (TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 			  ? MODE_COMPLEX_INT : MODE_COMPLEX_FLOAT),
 			 0);
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)), 0L);
+      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
       break;
 
@@ -868,7 +908,7 @@ layout_type (type)
       break;
 
     case OFFSET_TYPE:
-      TYPE_SIZE (type) = bitsize_int (POINTER_SIZE, 0L);
+      TYPE_SIZE (type) = bitsize_int (POINTER_SIZE);
       TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE / BITS_PER_UNIT);
       TYPE_MODE (type) = ptr_mode;
       break;
@@ -876,14 +916,14 @@ layout_type (type)
     case FUNCTION_TYPE:
     case METHOD_TYPE:
       TYPE_MODE (type) = mode_for_size (2 * POINTER_SIZE, MODE_INT, 0);
-      TYPE_SIZE (type) = bitsize_int (2 * POINTER_SIZE, 0);
+      TYPE_SIZE (type) = bitsize_int (2 * POINTER_SIZE);
       TYPE_SIZE_UNIT (type) = size_int ((2 * POINTER_SIZE) / BITS_PER_UNIT);
       break;
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       TYPE_MODE (type) = ptr_mode;
-      TYPE_SIZE (type) = bitsize_int (POINTER_SIZE, 0L);
+      TYPE_SIZE (type) = bitsize_int (POINTER_SIZE);
       TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE / BITS_PER_UNIT);
       TREE_UNSIGNED (type) = 1;
       TYPE_PRECISION (type) = POINTER_SIZE;
@@ -1159,7 +1199,7 @@ layout_type (type)
 	  else
 	    TYPE_MODE (type) = mode_for_size (alignment, MODE_INT, 1);
 
-	  TYPE_SIZE (type) = bitsize_int (rounded_size, 0L);
+	  TYPE_SIZE (type) = bitsize_int (rounded_size);
 	  TYPE_SIZE_UNIT (type) = size_int (rounded_size / BITS_PER_UNIT);
 	  TYPE_ALIGN (type) = alignment;
 	  TYPE_PRECISION (type) = size_in_bits;

@@ -1,5 +1,6 @@
 /* Output variables, constants and external declarations, for GNU compiler.
-   Copyright (C) 1987, 88, 89, 92-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1418,14 +1419,12 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     {
       int size;
 
-      if (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
+      if (TREE_CODE (DECL_SIZE_UNIT (decl)) != INTEGER_CST)
 	goto finish;
 
-      /* This is better than explicit arithmetic, since it avoids overflow.  */
-      size_tree = size_binop (CEIL_DIV_EXPR,
-			      DECL_SIZE (decl), size_int (BITS_PER_UNIT));
-
+      size_tree = DECL_SIZE_UNIT (decl);
       size = TREE_INT_CST_LOW (size_tree);
+
       if (TREE_INT_CST_HIGH (size_tree) != 0
 	  || size != TREE_INT_CST_LOW (size_tree))
 	{
@@ -1435,7 +1434,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     }
 
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
-
   if (TREE_PUBLIC (decl) && DECL_NAME (decl)
       && ! first_global_object_name
       && ! (DECL_COMMON (decl) && (DECL_INITIAL (decl) == 0
@@ -4427,21 +4425,10 @@ output_constructor (exp, size)
 	  /* Determine size this element should occupy.  */
 	  if (field)
 	    {
-	      if (TREE_CODE (DECL_SIZE (field)) != INTEGER_CST)
+	      if (TREE_CODE (DECL_SIZE_UNIT (field)) != INTEGER_CST)
 		abort ();
-	      if (TREE_INT_CST_LOW (DECL_SIZE (field)) > 100000)
-		{
-		  /* This avoids overflow trouble.  */
-		  tree size_tree = size_binop (CEIL_DIV_EXPR,
-					       DECL_SIZE (field),
-					       size_int (BITS_PER_UNIT));
-		  fieldsize = TREE_INT_CST_LOW (size_tree);
-		}
-	      else
-		{
-		  fieldsize = TREE_INT_CST_LOW (DECL_SIZE (field));
-		  fieldsize = (fieldsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
-		}
+
+	      fieldsize = TREE_INT_CST_LOW (DECL_SIZE_UNIT (field));
 	    }
 	  else
 	    fieldsize = int_size_in_bytes (TREE_TYPE (TREE_TYPE (exp)));

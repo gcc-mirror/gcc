@@ -1,5 +1,6 @@
 /* Handle parameterized types (templates) for GNU C++.
-   Copyright (C) 1992, 93-97, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Written by Ken Raeburn (raeburn@cygnus.com) while at Watchmaker Computing.
    Rewritten by Jason Merrill (jason@cygnus.com).
 
@@ -5909,7 +5910,7 @@ tsubst_decl (t, args, type, in_decl)
 	   this variable; otherwise we run into circular dependencies.  */
 	DECL_INITIAL (r) = NULL_TREE;
 	DECL_RTL (r) = 0;
-	DECL_SIZE (r) = 0;
+	DECL_SIZE (r) = DECL_SIZE_UNIT (r) = 0;
 	copy_lang_decl (r);
 
 	/* For __PRETTY_FUNCTION__ we have to adjust the initializer.  */

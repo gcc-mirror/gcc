@@ -1,5 +1,6 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -6295,6 +6296,7 @@ init_decl_processing ()
       DECL_NAME (fields[3]) = delta2_identifier;
       DECL_MODE (fields[3]) = TYPE_MODE (delta_type_node);
       DECL_SIZE (fields[3]) = TYPE_SIZE (delta_type_node);
+      DECL_SIZE_UNIT (fields[3]) = TYPE_SIZE_UNIT (delta_type_node);
       TREE_UNSIGNED (fields[3]) = 0;
       TREE_CHAIN (fields[2]) = fields[3];
       vtable_entry_type = build_qualified_type (vtable_entry_type,
@@ -7108,7 +7110,7 @@ layout_var_decl (decl)
      `extern X x' for some incomplete type `X'.)  */
   if (!DECL_EXTERNAL (decl))
     complete_type (type);
-  if (!DECL_SIZE (decl)&& TYPE_SIZE (type))
+  if (!DECL_SIZE (decl) && TYPE_SIZE (type))
     layout_decl (decl, 0);
 
   if (!DECL_EXTERNAL (decl) && DECL_SIZE (decl) == NULL_TREE)
@@ -7867,24 +7869,6 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
     }
 
  finish_end:
-
-  /* If requested, warn about definitions of large data objects.  */
-
-  if (warn_larger_than
-      && ! processing_template_decl
-      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
-      && !DECL_EXTERNAL (decl))
-    {
-      register tree decl_size = DECL_SIZE (decl);
-
-      if (decl_size && TREE_CODE (decl_size) == INTEGER_CST)
-	{
-	  unsigned units = TREE_INT_CST_LOW (decl_size) / BITS_PER_UNIT;
-
-	  if (units > larger_than_size)
-	    warning_with_decl (decl, "size of `%s' is %u bytes", units);
-	}
-    }
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;

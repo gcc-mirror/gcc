@@ -1,5 +1,6 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992, 93-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -733,7 +734,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	      else
 		{
 		  TREE_TYPE (decl) = type = typefm;
-		  DECL_SIZE (decl) = 0;
+		  DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = 0;
 		  layout_decl (decl, 0);
 		}
 	    }

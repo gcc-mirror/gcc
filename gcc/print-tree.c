@@ -1,5 +1,6 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 91, 93-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -396,6 +397,8 @@ print_node (file, prefix, node, indent)
 	       DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
 
       print_node (file, "size", DECL_SIZE (node), indent + 4);
+      print_node (file, "unit size", DECL_SIZE_UNIT (node), indent + 4);
+      
       indent_to (file, indent + 3);
       if (TREE_CODE (node) != FUNCTION_DECL)
 	fprintf (file, " align %d", DECL_ALIGN (node));
@@ -478,6 +481,7 @@ print_node (file, prefix, node, indent)
       fprintf (file, " %s", GET_MODE_NAME(mode));
 
       print_node (file, "size", TYPE_SIZE (node), indent + 4);
+      print_node (file, "unit size", TYPE_SIZE_UNIT (node), indent + 4);
       indent_to (file, indent + 3);
 
       fprintf (file, " align %d", TYPE_ALIGN (node));

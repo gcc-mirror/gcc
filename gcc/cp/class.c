@@ -1,5 +1,6 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1987, 92-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1068,6 +1069,8 @@ build_primary_vtable (binfo, type)
       virtuals = copy_list (BINFO_VIRTUALS (binfo));
       TREE_TYPE (decl) = TREE_TYPE (BINFO_VTABLE (binfo));
       DECL_SIZE (decl) = TYPE_SIZE (TREE_TYPE (BINFO_VTABLE (binfo)));
+      DECL_SIZE_UNIT (decl)
+	= TYPE_SIZE_UNIT (TREE_TYPE (BINFO_VTABLE (binfo)));
 
       /* Now do rtti stuff.  */
       offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
@@ -2529,14 +2532,16 @@ layout_vtable_decl (binfo, n)
   /* We may have to grow the vtable.  */
   if (!same_type_p (TREE_TYPE (BINFO_VTABLE (binfo)), atype))
     {
-      TREE_TYPE (BINFO_VTABLE (binfo)) = atype;
-      DECL_SIZE (BINFO_VTABLE (binfo)) = 0;
-      layout_decl (BINFO_VTABLE (binfo), 0);
+      tree vtable = BINFO_VTABLE (binfo);
+
+      TREE_TYPE (vtable) = atype;
+      DECL_SIZE (vtable) = DECL_SIZE_UNIT (vtable) = 0;
+      layout_decl (vtable, 0);
+
       /* At one time the vtable info was grabbed 2 words at a time.  This
-	 fails on sparc unless you have 8-byte alignment.  (tiemann) */
-      DECL_ALIGN (BINFO_VTABLE (binfo))
-	= MAX (TYPE_ALIGN (double_type_node),
-	       DECL_ALIGN (BINFO_VTABLE (binfo)));
+	 fails on Sparc unless you have 8-byte alignment.  */
+      DECL_ALIGN (vtable) = MAX (TYPE_ALIGN (double_type_node),
+				 DECL_ALIGN (vtable));
     }
 }
 
@@ -4030,7 +4035,8 @@ avoid_overlap (decl, newdecl, empty_p)
        field = TREE_CHAIN (field))
     ;
 
-  DECL_SIZE (field) = integer_one_node;
+  DECL_SIZE (field) = bitsize_int (1);
+  DECL_SIZE_UNIT (field) = 0;
   /* The containing class cannot be empty; this field takes up space.  */
   *empty_p = 0;
 
@@ -4062,9 +4068,10 @@ build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_FIELD_CONTEXT (decl) = t;
   DECL_SIZE (decl) = CLASSTYPE_SIZE (basetype);
+  DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
   DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
   
-  if (flag_new_abi && DECL_SIZE (decl) == integer_zero_node)
+  if (flag_new_abi && integer_zerop (DECL_SIZE (decl)))
     {
       *saw_empty_p = 1;
       return decl;
@@ -4085,6 +4092,9 @@ build_base_field (t, binfo, empty_p, saw_empty_p, base_align)
       DECL_SIZE (decl)
 	= size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE (decl)),
 			 (int) (*base_align)));
+      DECL_SIZE_UNIT (decl)
+	= size_int (MAX (TREE_INT_CST_LOW (DECL_SIZE_UNIT (decl)),
+			 (int) *base_align / BITS_PER_UNIT));
     }
 
   return decl;
@@ -4156,17 +4166,15 @@ build_base_fields (rec, empty_p)
   if (flag_new_abi && saw_empty)
     for (decl = base_decls; decl; decl = TREE_CHAIN (decl))
       {
-	if (DECL_SIZE (decl) == integer_zero_node)
+	if (integer_zerop (DECL_SIZE (decl)))
 	  {
 	    /* First step through the following bases until we find
 	       an overlap or a non-empty base.  */
 	    for (nextdecl = TREE_CHAIN (decl); nextdecl;
 		 nextdecl = TREE_CHAIN (nextdecl))
-	      {
-		if (avoid_overlap (decl, nextdecl, empty_p)
-		    || DECL_SIZE (nextdecl) != integer_zero_node)
-		  goto nextbase;
-	      }
+	      if (avoid_overlap (decl, nextdecl, empty_p)
+		  || ! integer_zerop (DECL_SIZE (nextdecl)))
+		goto nextbase;
 
 	    /* If we're still looking, also check against the first
 	       field.  */
@@ -4822,12 +4830,22 @@ layout_class_type (t, empty_p, has_virtual_p,
   /* Remember the size and alignment of the class before adding
      the virtual bases.  */
   if (*empty_p && flag_new_abi)
-    CLASSTYPE_SIZE (t) = integer_zero_node;
+    {
+      CLASSTYPE_SIZE (t) = bitsize_int (0);
+      CLASSTYPE_SIZE_UNIT (t) = size_int (0);
+    }
   else if (flag_new_abi && TYPE_HAS_COMPLEX_INIT_REF (t)
 	   && TYPE_HAS_COMPLEX_ASSIGN_REF (t))
-    CLASSTYPE_SIZE (t) = TYPE_BINFO_SIZE (t);
+    {
+      CLASSTYPE_SIZE (t) = TYPE_BINFO_SIZE (t);
+      CLASSTYPE_SIZE_UNIT (t) = TYPE_BINFO_SIZE_UNIT (t);
+    }
   else
-    CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
+    {
+      CLASSTYPE_SIZE (t) = TYPE_SIZE (t);
+      CLASSTYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (t);
+    }
+
   CLASSTYPE_ALIGN (t) = TYPE_ALIGN (t);
 
   /* Set the TYPE_DECL for this type to contain the right
@@ -6217,7 +6235,7 @@ is_empty_class (type)
     return 0;
 
   if (flag_new_abi)
-    return CLASSTYPE_SIZE (type) == integer_zero_node;
+    return integer_zerop (CLASSTYPE_SIZE (type));
 
   if (TYPE_BINFO_BASETYPES (type))
     return 0;

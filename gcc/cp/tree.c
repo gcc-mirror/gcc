@@ -1,5 +1,6 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-98, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -845,7 +846,7 @@ make_binfo (offset, binfo, vtable, virtuals)
      tree offset, binfo;
      tree vtable, virtuals;
 {
-  tree new_binfo = make_tree_vec (7);
+  tree new_binfo = make_tree_vec (8);
   tree type;
 
   if (TREE_CODE (binfo) == TREE_VEC)
@@ -1268,6 +1269,7 @@ walk_tree (tp, func, data)
 		 refer to the declaration itself.  */
 	      WALK_SUBTREE (DECL_INITIAL (DECL_STMT_DECL (*tp)));
 	      WALK_SUBTREE (DECL_SIZE (DECL_STMT_DECL (*tp)));
+	      WALK_SUBTREE (DECL_SIZE_UNIT (DECL_STMT_DECL (*tp)));
 	    }
 
 	  WALK_SUBTREE (TREE_CHAIN (*tp));
