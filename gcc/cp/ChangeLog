@@ -1,3 +1,8 @@
+2003-07-24  Per Bothner  <pbothner@apple.com>
+
+	* decl.c (pushdecl_class_level):   Don't use push_srcloc/pop_srcloc
+	which causes errors messages to incorrectly mention included files.
+
 2003-07-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (convert_to_base_statically): Declare.

@@ -4209,10 +4209,11 @@ pushdecl_class_level (tree x)
 
       for (f = TYPE_FIELDS (TREE_TYPE (x)); f; f = TREE_CHAIN (f))
 	{
-	  push_srcloc (DECL_SOURCE_FILE (f), DECL_SOURCE_LINE (f));
+	  location_t save_location = input_location;
+	  input_location = DECL_SOURCE_LOCATION (f);
 	  if (!pushdecl_class_level (f))
 	    is_valid = false;
-	  pop_srcloc ();
+	  input_location = save_location;
 	}
     }
   timevar_pop (TV_NAME_LOOKUP);
