@@ -18,6 +18,7 @@
 ; Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 ; 02111-1307, USA.
 
+; See the GCC internals manual for a description of this file's format.
 
 ; Please try to keep this file in ASCII collating order.
 
@@ -605,9 +606,6 @@ Use the narrowest integer type possible for enumeration types
 fshort-wchar
 C ObjC C++ ObjC++
 Force the underlying type for \"wchar_t\" to be \"unsigned short\"
-
-fshow-column
-C ObjC C++ ObjC++
 
 fsigned-bitfields
 C ObjC C++ ObjC++
