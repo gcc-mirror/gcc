@@ -5753,7 +5753,7 @@ make_typename_type (context, name, complain)
 tree
 make_unbound_class_template (context, name, complain)
      tree context, name;
-     int complain;
+     tsubst_flags_t complain;
 {
   tree t;
   tree d;
@@ -5775,7 +5775,7 @@ make_unbound_class_template (context, name, complain)
 
       if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
 	{
-	  if (complain)
+	  if (complain & tf_error)
 	    error ("no class template named `%#T' in `%#T'", name, context);
 	  return error_mark_node;
 	}

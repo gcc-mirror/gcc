@@ -6793,7 +6793,7 @@ tsubst (t, args, complain, in_decl)
 	  }
 	if (TREE_CODE (type) == REFERENCE_TYPE)
 	  {
-	    if (complain)
+	    if (complain & tf_error)
 	      error ("creating pointer to member reference type `%T'", type);
 	    
 	    return error_mark_node;
