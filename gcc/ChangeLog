@@ -1,3 +1,10 @@
+2001-12-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.h (processor_type): Add PPC405.
+	(RTX_COSTS): Add PPC405.  Correct rs64 and ppc630 multiply costs.
+	* rs6000.md: Add PPC405 information.  Utilize imul2 and imul3 for
+	rios1, rs64, and ppc630 processors.
+
 2001-12-10  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (unaligned_extendhidi): Call gen_lowpart
