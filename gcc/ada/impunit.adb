@@ -122,7 +122,7 @@ package body Impunit is
      "a-nlelfu",    -- Ada.Numerics.Long_Elementary_Functions
      "a-nllcef",    -- Ada.Long_Long_Complex_Elementary_Functions
      "a-nllefu",    -- Ada.Numerics.Long_Long_Elementary_Functions
-     "a-nltcty",    -- Ada.Numerics.Long_Long_Complex_Types
+     "a-nllcty",    -- Ada.Numerics.Long_Long_Complex_Types
      "a-nscefu",    -- Ada.Short_Complex_Elementary_Functions
      "a-nscoty",    -- Ada.Numerics.Short_Complex_Types
      "a-nselfu",    -- Ada.Numerics.Short_Elementary_Functions

@@ -1,3 +1,8 @@
+2004-04-17  Laurent GUERBY <laurent@guerby.net>
+
+	PR ada/14988 (partial)
+	* impunit.adb: Fix typo.
+	
 2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Make-lang.in: Remove obsolete rts-none, rts-cert, install-rts-none,
