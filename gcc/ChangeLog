@@ -1,3 +1,7 @@
+1998-02-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* collect2.c (main): Still handle !do_collecting for non-AIX targets.
+
 Fri Feb 20 10:39:47 1998  Michael Tiemann  <michael@impact.tiemann.org>
 
 	* ginclude/va-mips.h (va_arg): Remove trailing space after '\'
