@@ -1,3 +1,15 @@
+2004-04-01  Alan Modra  <amodra@bigpond.net.au>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (init_gcc_specs): If HAVE_LD_AS_NEEDED, link with
+	-lgcc --as-needed -lgcc_s --no-as-needed by default.
+	* configure.ac (HAVE_LD_AS_NEEDED): Check for ld --as-needed.
+	* configure: Rebuilt.
+	* config.in: Rebuilt.
+	* Makefile.in (stage1-start): Copy also libgcc_s*$(SHLIB_EXT).
+	(stage2-start, stage3-start, stage4-start): Likewise.
+	(stageprofile-start, stagefeedback-start): Likewise.
+
 2004-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (DITF_CONVERSION_LIBFUNCS): Define to 0.
