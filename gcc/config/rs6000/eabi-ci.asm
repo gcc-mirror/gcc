@@ -44,11 +44,8 @@
 	.type	__GOT_START__,@object
 	.weak	_GLOBAL_OFFSET_TABLE_
 	.type	_GLOBAL_OFFSET_TABLE_,@object
-	.weak	_SDA_BASE_
-	.type	_SDA_BASE_,@object
 __GOT_START__:
 _GLOBAL_OFFSET_TABLE_:
-_SDA_BASE_:
 
 	.section ".got1","aw"
 	.globl	__GOT1_START__
@@ -78,7 +75,10 @@ __DTOR_LIST__:
 	.section ".sdata","aw"
 	.globl	__SDATA_START__
 	.type	__SDATA_START__,@object
+	.weak	_SDA_BASE_
+	.type	_SDA_BASE_,@object
 __SDATA_START__:
+_SDA_BASE_:
 
 	.section ".sbss","aw",@nobits
 	.globl	__SBSS_START__
@@ -86,12 +86,12 @@ __SDATA_START__:
 __SBSS_START__:
 
 	.section ".sdata2","aw"
-	.globl	_SDA2_BASE_
+	.weak	_SDA2_BASE_
 	.type	_SDA2_BASE_,@object
 	.globl	__SDATA2_START__
 	.type	__SDATA2_START__,@object
 __SDATA2_START__:
-_SDA2_BASE_ = .+32768
+_SDA2_BASE_:
 
 	.section ".sbss2","aw"
 	.globl	__SBSS2_START__
