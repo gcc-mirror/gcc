@@ -1,3 +1,14 @@
+2002-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5636
+	* tree.h (CLEANUP_EH_ONLY): New macro.
+	* stmt.c (expand_decl_cleanup_eh): New fn.
+	(expand_cleanups): Check CLEANUP_EH_ONLY.
+	* c-semantics.c (genrtl_decl_cleanup): Just take the CLEANUP_STMT.
+	Use expand_decl_cleanup_eh.
+	(expand_stmt): Adjust.
+	* c-common.h: Adjust prototype.
+
 2002-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_SPARC_UA_PCREL_HIDDEN): Test whether %r_disp32()

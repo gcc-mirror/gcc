@@ -1,5 +1,9 @@
 2002-04-03  Jason Merrill  <jason@redhat.com>
 
+	PR c++/5636
+	* semantics.c (nullify_returns_r): Just set CLEANUP_EH_ONLY on
+	cleanup for nrv.
+
 	PR c++/5104
 	* typeck.c (comptypes) [FUNCTION_TYPE]: Don't compare exception
 	specifiers.

@@ -2453,7 +2453,7 @@ nullify_returns_r (tp, walk_subtrees, data)
     RETURN_EXPR (*tp) = NULL_TREE;
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == nrv)
-    CLEANUP_EXPR (*tp) = NULL_TREE;
+    CLEANUP_EH_ONLY (*tp) = 1;
 
   /* Keep iterating.  */
   return NULL_TREE;
