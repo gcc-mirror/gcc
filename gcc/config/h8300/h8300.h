@@ -1109,7 +1109,7 @@ readonly_data() 						\
        && h8300_funcvec_function_p (DECL)) \
       || ((TREE_STATIC (DECL) || DECL_EXTERNAL (DECL)) \
 	  && TREE_CODE (DECL) == VAR_DECL \
-	  && h8300_tiny_data_p (DECL))) \
+	  && h8300_eightbit_data_p (DECL))) \
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
 /* How to refer to registers in assembler output.
