@@ -4542,6 +4542,9 @@ output_constant (exp, size, align)
 	error ("unknown set constructor type");
       return;
 
+    case ERROR_MARK:
+      return;
+
     default:
       abort ();
     }
