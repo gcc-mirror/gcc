@@ -501,6 +501,8 @@ build_overload_nested_name (decl)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
+      static int static_labelno;
+
       tree name = DECL_ASSEMBLER_NAME (decl);
       char *label;
 

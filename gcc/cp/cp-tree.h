@@ -674,7 +674,6 @@ struct language_function
   int returns_null;
   int parms_stored;
   int temp_name_counter;
-  int static_labelno;
   int in_function_try_handler;
   int x_expanding_p;
   int name_declared;
@@ -793,8 +792,6 @@ struct language_function
    a function.  Reset to 0 by start_function.  */
 
 #define temp_name_counter cp_function_chain->temp_name_counter
-
-#define static_labelno cp_function_chain->static_labelno
 
 /* Non-zero if we should generate RTL for functions that we process.
    When this is zero, we just accumulate tree structure, without
