@@ -471,6 +471,10 @@ extern int target_flags;
 #define INITIALIZE_PIC initialize_pic ()
 #define FINALIZE_PIC finalize_pic ()
 
+/* SOM ABI says that objects larger than 64 bits are returned in memory.  */
+#define RETURN_IN_MEMORY(TYPE)	\
+  (TYPE_MODE (TYPE) == BLKmode || int_size_in_bytes (TYPE) > 8)
+
 /* Register in which address to store a structure value
    is passed to a function.  */
 #define STRUCT_VALUE_REGNUM 28
