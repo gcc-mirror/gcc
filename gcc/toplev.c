@@ -1541,7 +1541,15 @@ v_pedwarn_with_decl (decl, s, ap)
      char *s;
      va_list ap;
 {
-  if (flag_pedantic_errors)
+  /* We don't want -pedantic-errors to cause the compilation to fail from
+     "errors" in system header files.  Sometimes fixincludes can't fix what's
+     broken (eg: unsigned char bitfields - fixing it may change the alignment
+     which will cause programs to mysteriously fail because the C library
+     or kernel uses the original layout).
+
+     ??? In fact, we may wish not to issue any message in this case.  */
+
+  if (flag_pedantic_errors && ! DECL_IN_SYSTEM_HEADER (decl))
     v_error_with_decl (decl, s, ap);
   else
     v_warning_with_decl (decl, s, ap);
