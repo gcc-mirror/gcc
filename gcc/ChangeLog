@@ -111,6 +111,8 @@
 
 2002-05-29  Jeff Law <law@redhat.com>
 
+	* pa.h (ASM_OUTPUT_MI_THUNK): Remove unwanted semi-colon.
+
 	* flow.c (propagate_one_insn): Do not remove a dead insn if it
 	contains a REG_RETVAL note.
 
