@@ -1,3 +1,15 @@
+2001-09-05  Phil Edwards  <pme@sources.redhat.com>
+
+	* Makefile.am:  The testsuite directory never needs to be made here.
+	* Makefile.in:  Regenerate.
+	* include/Makefile.in:  Regenerate.
+	* libio/Makefile.in:  Regenerate.
+	* libmath/Makefile.in:  Regenerate.
+	* libsupc++/Makefile.in:  Regenerate.
+	* po/Makefile.in:  Regenerate.
+	* src/Makefile.in:  Regenerate.
+	* testsuite/Makefile.in:  Regenerate.
+
 2001-08-30  Loren J. Rittle  <ljrittle@acm.org>
 
 	PR libstdc++/4082
@@ -571,9 +583,9 @@
 	* libmath/Makefile.am (libmath_la_SOURCES): Add stubs.c.
 	* libmath/Makefile.in: Regenerate.
 
-20010617 Release Manager
+2001-06-17 Release Manager
 
-        * GCC 3.0 Released.
+	* GCC 3.0 Released.
 
 2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -842,7 +854,7 @@
 	* include/bits/c++config: Cleanup threading configuration macros.
 	In particular, define __STL_GTHREADS macro which controls...
 	* include/bits/stl_threads.h: ...a brand new gthr.h-based
-        configuration here.
+	configuration here.
 
 	* config/c_io_stdio.h: Include staged gthr.h instead of local
 	thread configuration file.  Always use __gthread_mutex_t
@@ -1441,7 +1453,7 @@
 	
 2001-04-24  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-        * include/ext/slist: Include required header files. 
+	* include/ext/slist: Include required header files. 
 
 2001-04-23  Loren J. Rittle  <ljrittle@acm.org>
 
@@ -1930,7 +1942,7 @@
 2001-03-26  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
 	* libstdc++-v3/tests_flags.in: Change the order of libstdc++
-	  and libc
+	and libc
 
 2001-03-26  Benjamin Kosnik  <bkoz@redhat.com>
 

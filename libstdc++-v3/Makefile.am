@@ -35,13 +35,11 @@ mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 # compile time, execution time, and binary size.
 check-script: $(top_builddir)/mkcheck
 	-(chmod + $(top_builddir)/mkcheck; \
-	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
 	  cd testsuite; \
 	  @glibcpp_builddir@/mkcheck 0)
 
 check-script-install: $(top_builddir)/mkcheck
 	-(chmod + $(top_builddir)/mkcheck; \
-	  test -d testsuite || (mkdir testsuite; chmod u+w testsuite); \
 	  cd testsuite; \
 	  @glibcpp_builddir@/mkcheck 1)
 
