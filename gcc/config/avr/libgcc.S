@@ -143,8 +143,7 @@ __mulhi3_skip1:
 
 	lsr	r_arg1H		; gets LSB of multiplier
 	ror	r_arg1L
-	cp	r_arg1L,__zero_reg__
-	cpc	r_arg1H,__zero_reg__
+	sbiw	r_arg1L,0
 	brne	__mulhi3_loop	; exit if multiplier = 0
 __mulhi3_exit:
 	mov	r_arg1H,r_resH	; result to return register
