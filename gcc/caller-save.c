@@ -196,10 +196,10 @@ init_caller_save ()
 		&& reg_restore_code[i][j] != (enum insn_code)-1);
 	  if (ok)
 	    {
-	      insn_extract (saveinsn);
-	      ok = constrain_operands (reg_save_code[i][j], 1);
-	      insn_extract (restinsn);
-	      ok &= constrain_operands (reg_restore_code[i][j], 1);
+	      extract_insn (saveinsn);
+	      ok = constrain_operands (1);
+	      extract_insn (restinsn);
+	      ok &= constrain_operands (1);
 	    }
 
 	  if (! ok)

@@ -962,8 +962,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	   insn = pass ? PREV_INSN (insn) : NEXT_INSN (insn))
 	{
 	  rtx set;
-	  int insn_code_number;
-	  int operand_number, match_number;
+	  int op_no, match_no;
 
 	  if (GET_CODE (insn) == NOTE)
 	    {
@@ -1008,11 +1007,9 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		    }
 		}
 	    }
-#ifdef REGISTER_CONSTRAINTS
-	  insn_code_number
-	    = find_matches (insn, &match);
 
-	  if (insn_code_number < 0)
+#ifdef REGISTER_CONSTRAINTS
+	  if (find_matches (insn, &match) < 0)
 	    continue;
 
 	  /* Now scan through the operands looking for a source operand
@@ -1022,21 +1019,19 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	     If it dies there, then replace the dest in both operands with
 	     the source operand.  */
 
-	  for (operand_number = 0;
-	       operand_number < insn_n_operands[insn_code_number];
-	       operand_number++)
+	  for (op_no = 0; op_no < recog_n_operands; op_no++)
 	    {
 	      rtx src, dst, src_subreg;
 	      enum reg_class src_class, dst_class;
 
-	      match_number = match.with[operand_number];
+	      match_no = match.with[op_no];
 
 	      /* Nothing to do if the two operands aren't supposed to match.  */
-	      if (match_number < 0)
+	      if (match_no < 0)
 		continue;
 
-	      src = recog_operand[operand_number];
-	      dst = recog_operand[match_number];
+	      src = recog_operand[op_no];
+	      dst = recog_operand[match_no];
 
 	      if (GET_CODE (src) != REG)
 		continue;
@@ -1057,7 +1052,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
 	      if (REGNO (src) < FIRST_PSEUDO_REGISTER)
 		{
-		  if (match.commutative[operand_number] < operand_number)
+		  if (match.commutative[op_no] < op_no)
 		    regno_src_regno[REGNO (dst)] = REGNO (src);
 		  continue;
 		}
@@ -1065,28 +1060,28 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (REG_LIVE_LENGTH (REGNO (src)) < 0)
 		continue;
 
-	      /* operand_number/src must be a read-only operand, and
+	      /* op_no/src must be a read-only operand, and
 		 match_operand/dst must be a write-only operand.  */
-	      if (match.use[operand_number] != READ
-		  || match.use[match_number] != WRITE)
+	      if (match.use[op_no] != READ
+		  || match.use[match_no] != WRITE)
 		continue;
 
-	      if (match.early_clobber[match_number]
+	      if (match.early_clobber[match_no]
 		  && count_occurrences (PATTERN (insn), src) > 1)
 		continue;
 
 	      /* Make sure match_operand is the destination.  */
-	      if (recog_operand[match_number] != SET_DEST (set))
+	      if (recog_operand[match_no] != SET_DEST (set))
 		continue;
 
 	      /* If the operands already match, then there is nothing to do.  */
 	      /* But in the commutative case, we might find a better match.  */
 	      if (operands_match_p (src, dst)
-		  || (match.commutative[operand_number] >= 0
+		  || (match.commutative[op_no] >= 0
 		      && operands_match_p (recog_operand[match.commutative
-							 [operand_number]], dst)
+							 [op_no]], dst)
 		      && (replacement_quality (recog_operand[match.commutative
-							     [operand_number]])
+							     [op_no]])
 			  >= replacement_quality (src))))
 		continue;
 
@@ -1096,7 +1091,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		continue;
 	  
 	      if (fixup_match_1 (insn, set, src, src_subreg, dst, pass,
-				 operand_number, match_number,
+				 op_no, match_no,
 				 regmove_dump_file))
 		break;
 	    }
@@ -1121,11 +1116,10 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	}
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
-	  int insn_code_number = find_matches (insn, &match);
-	  int operand_number, match_number;
+	  int op_no, match_no;
 	  int success = 0;
-	  
-	  if (insn_code_number < 0)
+
+	  if (find_matches (insn, &match) < 0)
 	    continue;
 
 	  /* Now scan through the operands looking for a destination operand
@@ -1136,9 +1130,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
 	  copy_src = NULL_RTX;
 	  copy_dst = NULL_RTX;
-	  for (operand_number = 0;
-	       operand_number < insn_n_operands[insn_code_number];
-	       operand_number++)
+	  for (op_no = 0; op_no < recog_n_operands; op_no++)
 	    {
 	      rtx set, p, src, dst;
 	      rtx src_note, dst_note;
@@ -1146,14 +1138,14 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      enum reg_class src_class, dst_class;
 	      int length;
 
-	      match_number = match.with[operand_number];
+	      match_no = match.with[op_no];
 
 	      /* Nothing to do if the two operands aren't supposed to match.  */
-	      if (match_number < 0)
+	      if (match_no < 0)
 		continue;
 
-	      dst = recog_operand[match_number];
-	      src = recog_operand[operand_number];
+	      dst = recog_operand[match_no];
+	      src = recog_operand[op_no];
 
 	      if (GET_CODE (src) != REG)
 		continue;
@@ -1165,26 +1157,26 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
 	      /* If the operands already match, then there is nothing to do.  */
 	      if (operands_match_p (src, dst)
-		  || (match.commutative[operand_number] >= 0
-		      && operands_match_p (recog_operand[match.commutative[operand_number]], dst)))
+		  || (match.commutative[op_no] >= 0
+		      && operands_match_p (recog_operand[match.commutative[op_no]], dst)))
 		continue;
 
 	      set = single_set (insn);
 	      if (! set)
 		continue;
 
-	      /* match_number/dst must be a write-only operand, and
+	      /* match_no/dst must be a write-only operand, and
 		 operand_operand/src must be a read-only operand.  */
-	      if (match.use[operand_number] != READ
-		  || match.use[match_number] != WRITE)
+	      if (match.use[op_no] != READ
+		  || match.use[match_no] != WRITE)
 		continue;
 
-	      if (match.early_clobber[match_number]
+	      if (match.early_clobber[match_no]
 		  && count_occurrences (PATTERN (insn), src) > 1)
 		continue;
 
-	      /* Make sure match_number is the destination.  */
-	      if (recog_operand[match_number] != SET_DEST (set))
+	      /* Make sure match_no is the destination.  */
+	      if (recog_operand[match_no] != SET_DEST (set))
 		continue;
 
 	      if (REGNO (src) < FIRST_PSEUDO_REGISTER)
@@ -1252,11 +1244,11 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	      if (regmove_dump_file)
 		fprintf (regmove_dump_file,
 			 "Could fix operand %d of insn %d matching operand %d.\n",
-			 operand_number, INSN_UID (insn), match_number);
+			 op_no, INSN_UID (insn), match_no);
 
 	      /* Scan backward to find the first instruction that uses
 		 the input operand.  If the operand is set here, then
-		 replace it in both instructions with match_number.  */
+		 replace it in both instructions with match_no.  */
 
 	      for (length = 0, p = PREV_INSN (insn); p; p = PREV_INSN (p))
 		{
@@ -1304,7 +1296,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 			      validate_replace_rtx (dst, src, insn);
 			      /* Now make sure the dst is right.  */
 			      validate_change (insn,
-					       recog_operand_loc[match_number],
+					       recog_operand_loc[match_no],
 					       dst, 0);
 			    }
 			}
@@ -1384,7 +1376,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		  if (regmove_dump_file)
 		    fprintf (regmove_dump_file,
 			     "Fixed operand %d of insn %d matching operand %d.\n",
-			     operand_number, INSN_UID (insn), match_number);
+			     op_no, INSN_UID (insn), match_no);
 
 		  break;
 		}
@@ -1413,9 +1405,9 @@ regmove_optimize (f, nregs, regmove_dump_file)
     }
 }
 
-/* Returns the INSN_CODE for INSN if its pattern has matching constraints for
-   any operand.  Returns -1 if INSN can't be recognized, or if the alternative
-   can't be determined.
+/* Returns nonzero if INSN's pattern has matching constraints for any operand.
+   Returns 0 if INSN can't be recognized, or if the alternative can't be
+   determined.
 
    Initialize the info in MATCHP based on the constraints.  */
 
@@ -1425,39 +1417,33 @@ find_matches (insn, matchp)
      struct match *matchp;
 {
   int likely_spilled[MAX_RECOG_OPERANDS];
-  int operand_number;
-  int insn_code_number = recog_memoized (insn);
+  int op_no;
   int any_matches = 0;
 
-  if (insn_code_number < 0)
-    return -1;
-
-  insn_extract (insn);
-  if (! constrain_operands (insn_code_number, 0))
-    return -1;
+  extract_insn (insn);
+  if (! constrain_operands (0))
+    return 0;
 
   /* Must initialize this before main loop, because the code for
      the commutative case may set matches for operands other than
      the current one.  */
-  for (operand_number = insn_n_operands[insn_code_number];
-       --operand_number >= 0; )
-    matchp->with[operand_number] = matchp->commutative[operand_number] = -1;
+  for (op_no = recog_n_operands; --op_no >= 0; )
+    matchp->with[op_no] = matchp->commutative[op_no] = -1;
 
-  for (operand_number = 0; operand_number < insn_n_operands[insn_code_number];
-       operand_number++)
+  for (op_no = 0; op_no < recog_n_operands; op_no++)
     {
       char *p, c;
       int i = 0;
 
-      p = insn_operand_constraint[insn_code_number][operand_number];
+      p = recog_constraints[op_no];
 
-      likely_spilled[operand_number] = 0;
-      matchp->use[operand_number] = READ;
-      matchp->early_clobber[operand_number] = 0;
+      likely_spilled[op_no] = 0;
+      matchp->use[op_no] = READ;
+      matchp->early_clobber[op_no] = 0;
       if (*p == '=')
-	matchp->use[operand_number] = WRITE;
+	matchp->use[op_no] = WRITE;
       else if (*p == '+')
-	matchp->use[operand_number] = READWRITE;
+	matchp->use[op_no] = READWRITE;
 
       for (;*p && i < which_alternative; p++)
 	if (*p == ',')
@@ -1471,32 +1457,32 @@ find_matches (insn, matchp)
 	  case '+':
 	    break;
 	  case '&':
-	    matchp->early_clobber[operand_number] = 1;
+	    matchp->early_clobber[op_no] = 1;
 	    break;
 	  case '%':
-	    matchp->commutative[operand_number] = operand_number + 1;
-	    matchp->commutative[operand_number + 1] = operand_number;
+	    matchp->commutative[op_no] = op_no + 1;
+	    matchp->commutative[op_no + 1] = op_no;
 	    break;
 	  case '0': case '1': case '2': case '3': case '4':
 	  case '5': case '6': case '7': case '8': case '9':
 	    c -= '0';
-	    if (c < operand_number && likely_spilled[(unsigned char) c])
+	    if (c < op_no && likely_spilled[(unsigned char) c])
 	      break;
-	    matchp->with[operand_number] = c;
+	    matchp->with[op_no] = c;
 	    any_matches = 1;
-	    if (matchp->commutative[operand_number] >= 0)
-	      matchp->with[matchp->commutative[operand_number]] = c;
+	    if (matchp->commutative[op_no] >= 0)
+	      matchp->with[matchp->commutative[op_no]] = c;
 	    break;
 	  case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': case 'h':
 	  case 'j': case 'k': case 'l': case 'p': case 'q': case 't': case 'u':
 	  case 'v': case 'w': case 'x': case 'y': case 'z': case 'A': case 'B':
 	  case 'C': case 'D': case 'W': case 'Y': case 'Z':
 	    if (CLASS_LIKELY_SPILLED_P (REG_CLASS_FROM_LETTER (c)))
-	      likely_spilled[operand_number] = 1;
+	      likely_spilled[op_no] = 1;
 	    break;
 	  }
     }
-  return any_matches ? insn_code_number : -1;
+  return any_matches;
 }
 
 /* Try to replace output operand DST in SET, with input operand SRC.  SET is

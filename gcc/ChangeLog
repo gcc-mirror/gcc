@@ -1,3 +1,42 @@
+Wed Nov  4 22:16:36 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* recog.h (enum op_type): Define.
+	(constrain_operands): Adjust prototype.
+	(recog_op_type): Declare new variable.
+	* recog.c (recog_op_type): New variable.
+	(insn_invalid_p): Allow modifying an asm statement after reload.
+	(extract_insn): Set up recog_op_type.
+	(constrain_operands): Lose INSN_CODE_NUM arg.  All callers changed.
+	Don't compute operand types, use recog_op_type.
+	Use the information computed by extract_insn instead of the previous
+	method of finding it by insn code number.
+	* caller-save.c (init_caller_save): Use extract_insn, not insn_extract.
+	* reorg.c (fill_slots_from_thread): Likewise.
+	* reload1.c (reload_as_needed): Likewise.
+	(gen_reload): Likewise.
+	(inc_for_reload): Likewise.
+	(reload_cse_simplify_operands): Likewise.
+	Use the information computed by extract_insn instead of the previous
+	method of finding it by insn code number.
+	* genattrtab.c (write_attr_case): Generate call to extract_insn, not
+	insn_extract.
+	* final.c (final_scan_insn): Use extract_insn, not insn_extract.
+	(cleanup_operand_subregs): Use extract_insn, not insn_extract.
+	Use the information computed by extract_insn instead of the previous
+	method of finding it by insn code number.
+	* regmove.c (find_matches): Likewise.  Change meaning of the return
+	value to be nonzero if the optimization can be performed, zero if
+	not.  All callers changed.
+	Shorten some variable names to fix formatting problems.
+	(regmove_optimize): Shorten some variable names to fix formatting
+	problems.
+	Use the information computed by extract_insn instead of the previous
+	method of finding it by insn code number.
+	* regclass.c (scan_one_insn): Likewise.
+	(record_reg_classes): Don't compute operand types, use recog_op_type.
+	* reload.c (find_reloads): Lose CONSTRAINTS1 variable; use
+	recog_constraints instead.
+
 Wed Nov  4 21:37:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rtl.h (flow2_completed): Declare.

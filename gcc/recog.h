@@ -20,6 +20,13 @@ Boston, MA 02111-1307, USA.  */
 
 #include "gansidecl.h"
 
+/* Types of operands.  */
+enum op_type {
+  OP_IN,
+  OP_OUT,
+  OP_INOUT
+};
+
 extern void init_recog			PROTO((void));
 extern void init_recog_no_volatile	PROTO((void));
 extern int recog_memoized		PROTO((rtx));
@@ -28,7 +35,7 @@ extern int validate_change		PROTO((rtx, rtx *, rtx, int));
 extern int apply_change_group		PROTO((void));
 extern int num_validated_changes	PROTO((void));
 extern void cancel_changes		PROTO((int));
-extern int constrain_operands		PROTO((int, int));
+extern int constrain_operands		PROTO((int));
 extern int memory_address_p		PROTO((enum machine_mode, rtx));
 extern int strict_memory_address_p	PROTO((enum machine_mode, rtx));
 extern int validate_replace_rtx		PROTO((rtx, rtx, rtx));
@@ -102,6 +109,9 @@ extern enum machine_mode recog_operand_mode[];
 
 /* Indexed by N, gives the constraint string for operand N.  */
 extern char *recog_constraints[];
+
+/* Indexed by N, gives the type (in, out, inout) for operand N.  */
+extern enum op_type recog_op_type[];
 
 #ifndef REGISTER_CONSTRAINTS
 /* Indexed by N, nonzero if operand N should be an address.  */

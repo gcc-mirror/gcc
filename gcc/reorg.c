@@ -3875,8 +3875,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 				   insn);
 
 	  if (recog_memoized (ninsn) < 0
-	      || (insn_extract (ninsn),
-		  ! constrain_operands (INSN_CODE (ninsn), 1)))
+	      || (extract_insn (ninsn), ! constrain_operands (1)))
 	    {
 	      delete_insn (ninsn);
 	      return 0;

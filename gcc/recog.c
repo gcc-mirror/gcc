@@ -56,7 +56,8 @@ static int insn_invalid_p		PROTO((rtx));
 
 int volatile_ok;
 
-/* The following vectors hold the results from insn_extract.  */
+/* The next variables are set up by extract_insn.  The first four of them
+   are also set up during insn_extract.  */
 
 /* Indexed by N, gives value of operand N.  */
 rtx recog_operand[MAX_RECOG_OPERANDS];
@@ -72,9 +73,6 @@ rtx *recog_dup_loc[MAX_RECOG_OPERANDS];
    Nth duplicate-appearance of an operand.  */
 char recog_dup_num[MAX_RECOG_OPERANDS];
 
-
-/* The next variables are set up by extract_insn.  */
-
 /* The number of operands of the insn.  */
 int recog_n_operands;
 
@@ -89,6 +87,9 @@ enum machine_mode recog_operand_mode[MAX_RECOG_OPERANDS];
 
 /* Indexed by N, gives the constraint string for operand N.  */
 char *recog_constraints[MAX_RECOG_OPERANDS];
+
+/* Indexed by N, gives the type (in, out, inout) for operand N.  */
+enum op_type recog_op_type[MAX_RECOG_OPERANDS];
 
 #ifndef REGISTER_CONSTRAINTS
 /* Indexed by N, nonzero if operand N should be an address.  */
@@ -264,25 +265,17 @@ insn_invalid_p (insn)
   int icode = recog_memoized (insn);
   int is_asm = icode < 0 && asm_noperands (PATTERN (insn)) >= 0;
 
-  if (is_asm)
-    {
-      if (! check_asm_operands (PATTERN (insn)))
-	return 1;
-
-      /* Disallow modification of ASM_OPERANDS after reload; verifying the
-	 constraints is too difficult.  */
-      if (reload_completed)
-	return 1;
-    }
-  else if (icode < 0)
+  if (is_asm && ! check_asm_operands (PATTERN (insn)))
+    return 1;
+  if (! is_asm && icode < 0)
     return 1;
 
   /* After reload, verify that all constraints are satisfied.  */
   if (reload_completed)
     {
-      insn_extract (insn);
+      extract_insn (insn);
 
-      if (! constrain_operands (INSN_CODE (insn), 1))
+      if (! constrain_operands (1))
 	return 1;
     }
 
@@ -304,8 +297,7 @@ apply_change_group ()
      given a MEM and it still is a valid address, or if this is in insn
      and it is recognized.  In the latter case, if reload has completed,
      we also require that the operands meet the constraints for
-     the insn.  We do not allow modifying an ASM_OPERANDS after reload
-     has completed because verifying the constraints is too difficult.  */
+     the insn.  */
 
   for (i = 0; i < num_changes; i++)
     {
@@ -1807,13 +1799,18 @@ extract_insn (insn)
 	  recog_operand_mode[i] = insn_operand_mode[icode][i];
 	}
     }
+  for (i = 0; i < noperands; i++)
+    recog_op_type[i] = (recog_constraints[i][0] == '=' ? OP_OUT
+			: recog_constraints[i][0] == '+' ? OP_INOUT
+			: OP_IN);
 }
 
 #ifdef REGISTER_CONSTRAINTS
 
-/* Check the operands of an insn (found in recog_operands)
-   against the insn's operand constraints (found via INSN_CODE_NUM)
+/* Check the operands of an insn against the insn's operand constraints
    and return 1 if they are valid.
+   The information about the insn's operands, constraints, operand modes
+   etc. is obtained from the global variables set up by extract_insn.
 
    WHICH_ALTERNATIVE is set to a number which indicates which
    alternative of constraints was matched: 0 for the first alternative,
@@ -1843,40 +1840,35 @@ struct funny_match
 };
 
 int
-constrain_operands (insn_code_num, strict)
-     int insn_code_num;
+constrain_operands (strict)
      int strict;
 {
   char *constraints[MAX_RECOG_OPERANDS];
   int matching_operands[MAX_RECOG_OPERANDS];
-  enum op_type {OP_IN, OP_OUT, OP_INOUT} op_types[MAX_RECOG_OPERANDS];
   int earlyclobber[MAX_RECOG_OPERANDS];
   register int c;
-  int noperands = insn_n_operands[insn_code_num];
 
   struct funny_match funny_match[MAX_RECOG_OPERANDS];
   int funny_match_index;
-  int nalternatives = insn_n_alternatives[insn_code_num];
 
-  if (noperands == 0 || nalternatives == 0)
+  if (recog_n_operands == 0 || recog_n_alternatives == 0)
     return 1;
 
-  for (c = 0; c < noperands; c++)
+  for (c = 0; c < recog_n_operands; c++)
     {
-      constraints[c] = insn_operand_constraint[insn_code_num][c];
+      constraints[c] = recog_constraints[c];
       matching_operands[c] = -1;
-      op_types[c] = OP_IN;
     }
 
   which_alternative = 0;
 
-  while (which_alternative < nalternatives)
+  while (which_alternative < recog_n_alternatives)
     {
       register int opno;
       int lose = 0;
       funny_match_index = 0;
 
-      for (opno = 0; opno < noperands; opno++)
+      for (opno = 0; opno < recog_n_operands; opno++)
 	{
 	  register rtx op = recog_operand[opno];
 	  enum machine_mode mode = GET_MODE (op);
@@ -1912,6 +1904,8 @@ constrain_operands (insn_code_num, strict)
 	      case '!':
 	      case '*':
 	      case '%':
+	      case '=':
+	      case '+':
 		break;
 
 	      case '#':
@@ -1919,14 +1913,6 @@ constrain_operands (insn_code_num, strict)
 		   constraint checking is concerned.  */
 		while (*p && *p != ',')
 		  p++;
-		break;
-
-	      case '=':
-		op_types[opno] = OP_OUT;
-		break;
-
-	      case '+':
-		op_types[opno] = OP_INOUT;
 		break;
 
 	      case '&':
@@ -1973,8 +1959,8 @@ constrain_operands (insn_code_num, strict)
 		   strictly valid, i.e., that all pseudos requiring hard regs
 		   have gotten them.  */
 		if (strict <= 0
-		    || (strict_memory_address_p
-			(insn_operand_mode[insn_code_num][opno], op)))
+		    || (strict_memory_address_p (recog_operand_mode[opno],
+						 op)))
 		  win = 1;
 		break;
 
@@ -2154,18 +2140,18 @@ constrain_operands (insn_code_num, strict)
 	     operand.  */
 
 	  if (strict > 0)
-	    for (eopno = 0; eopno < noperands; eopno++)
+	    for (eopno = 0; eopno < recog_n_operands; eopno++)
 	      /* Ignore earlyclobber operands now in memory,
 		 because we would often report failure when we have
 		 two memory operands, one of which was formerly a REG.  */
 	      if (earlyclobber[eopno]
 		  && GET_CODE (recog_operand[eopno]) == REG)
-		for (opno = 0; opno < noperands; opno++)
+		for (opno = 0; opno < recog_n_operands; opno++)
 		  if ((GET_CODE (recog_operand[opno]) == MEM
-		       || op_types[opno] != OP_OUT)
+		       || recog_op_type[opno] != OP_OUT)
 		      && opno != eopno
 		      /* Ignore things like match_operator operands.  */
-		      && *insn_operand_constraint[insn_code_num][opno] != 0
+		      && *recog_constraints[opno] != 0
 		      && ! (matching_operands[opno] == eopno
 			    && operands_match_p (recog_operand[opno],
 						 recog_operand[eopno]))
@@ -2191,7 +2177,7 @@ constrain_operands (insn_code_num, strict)
   /* If we are about to reject this, but we are not to test strictly,
      try a very loose test.  Only return failure if it fails also.  */
   if (strict == 0)
-    return constrain_operands (insn_code_num, -1);
+    return constrain_operands (-1);
   else
     return 0;
 }
