@@ -5648,21 +5648,42 @@ find_reloads_subreg_address (x, force_replace, opnum, type,
 	      || ! rtx_equal_p (tem, reg_equiv_mem[regno]))
 	    {
 	      int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
+	      unsigned outer_size = GET_MODE_SIZE (GET_MODE (x));
+	      unsigned inner_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
 
 	      if (BYTES_BIG_ENDIAN)
 		{
-		  int size;
-
-		  size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
-		  offset += MIN (size, UNITS_PER_WORD);
-		  size = GET_MODE_SIZE (GET_MODE (x));
-		  offset -= MIN (size, UNITS_PER_WORD);
+		  offset += MIN (inner_size, UNITS_PER_WORD);
+		  offset -= MIN (outer_size, UNITS_PER_WORD);
 		}
 	      XEXP (tem, 0) = plus_constant (XEXP (tem, 0), offset);
 	      PUT_MODE (tem, GET_MODE (x));
+
+	      /* If this was a paradoxical subreg that we replaced, the
+		 resulting memory must be sufficiently aligned to allow
+		 us to widen the mode of the memory.  */
+	      if (outer_size > inner_size && STRICT_ALIGNMENT)
+		{
+		  rtx base;
+
+		  base = XEXP (tem, 0);
+		  if (GET_CODE (base) == PLUS)
+		    {
+		      if (GET_CODE (XEXP (base, 1)) == CONST_INT
+			  && INTVAL (XEXP (base, 1)) % outer_size != 0)
+			return x;
+		      base = XEXP (base, 0);
+		    }
+		  if (GET_CODE (base) != REG
+		      || (REGNO_POINTER_ALIGN (REGNO (base))
+			  < outer_size * BITS_PER_UNIT))
+		    return x;
+		}
+
 	      find_reloads_address (GET_MODE (tem), &tem, XEXP (tem, 0),
 				    &XEXP (tem, 0), opnum, ADDR_TYPE (type),
 				    ind_levels, insn);
+
 	      /* If this is not a toplevel operand, find_reloads doesn't see
 		 this substitution.  We have to emit a USE of the pseudo so
 		 that delete_output_reload can see it.  */

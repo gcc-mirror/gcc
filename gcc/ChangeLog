@@ -1,3 +1,8 @@
+2001-01-24  Richard Henderson  <rth@redhat.com>
+
+	* reload.c (find_reloads_subreg_address): Fail the substitution
+	if the resulting address is insufficiently aligned.
+
 2001-01-24  DJ Delorie  <dj@redhat.com>
 
 	* combine.c (combine_simplify_rtx): If the modes are all VOIDmode,
