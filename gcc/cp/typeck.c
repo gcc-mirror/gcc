@@ -4999,8 +4999,10 @@ mark_addressable (exp)
 	    && !DECL_ARTIFICIAL (x) && extra_warnings)
 	  cp_warning ("address requested for `%D', which is declared `register'",
 		      x);
-	put_var_into_stack (x);
 	TREE_ADDRESSABLE (x) = 1;
+	TREE_USED (x) = 1;
+	if (current_function && expanding_p)
+	  put_var_into_stack (x);
 	return 1;
 
       case FUNCTION_DECL:

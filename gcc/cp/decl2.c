@@ -2131,7 +2131,6 @@ finish_anon_union (anon_union_decl)
      tree anon_union_decl;
 {
   tree type = TREE_TYPE (anon_union_decl);
-  tree elems = NULL_TREE;
   tree main_decl;
   int public_p = TREE_PUBLIC (anon_union_decl);
   int static_p = TREE_STATIC (anon_union_decl);
@@ -2146,7 +2145,8 @@ finish_anon_union (anon_union_decl)
       return;
     }
 
-  main_decl = build_anon_union_vars (anon_union_decl, &elems, 
+  main_decl = build_anon_union_vars (anon_union_decl,
+				     &DECL_ANON_UNION_ELEMS (anon_union_decl),
 				     static_p, external_p);
 
   if (main_decl == NULL_TREE)
@@ -2159,11 +2159,12 @@ finish_anon_union (anon_union_decl)
     {
       make_decl_rtl (main_decl, 0, toplevel_bindings_p ());
       DECL_RTL (anon_union_decl) = DECL_RTL (main_decl);
+      expand_anon_union_decl (anon_union_decl, 
+			      NULL_TREE,
+			      DECL_ANON_UNION_ELEMS (anon_union_decl));
     }
-
-  /* The following call assumes that there are never any cleanups
-     for anonymous unions--a reasonable assumption.  */
-  expand_anon_union_decl (anon_union_decl, NULL_TREE, elems);
+  else
+    add_decl_stmt (anon_union_decl);
 }
 
 /* Finish processing a builtin type TYPE.  It's name is NAME,

@@ -116,7 +116,10 @@ Boston, MA 02111-1307, USA.  */
      calling the function.  The TREE_VALUE is the declaration for the 
      virtual function itself.  When CLASSTYPE_COM_INTERFACE_P does not
      hold, the first entry does not have a TREE_VALUE; it is just an
-     offset.  */ 
+     offset.
+
+   DECL_ARGUMENTS
+     For a VAR_DECL this is DECL_ANON_UNION_ELEMS.  */
 
 /* Language-specific tree checkers. */
 
@@ -2228,6 +2231,10 @@ extern int flag_new_for_scope;
   (CLASS_TYPE_P (NODE) && TYPE_LANG_SPECIFIC (NODE)->anon_aggr)
 #define SET_ANON_AGGR_TYPE_P(NODE)			\
   (TYPE_LANG_SPECIFIC (NODE)->anon_aggr = 1)
+
+/* For a VAR_DECL that is an anonymous union, these are the various
+   sub-variables that make up the anonymous union.  */
+#define DECL_ANON_UNION_ELEMS(NODE) DECL_ARGUMENTS ((NODE))
 
 #define UNKNOWN_TYPE LANG_TYPE
 

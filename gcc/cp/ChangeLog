@@ -1,3 +1,12 @@
+1999-09-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_ANON_UNION_ELEMS): New macro.
+	* decl2.c (finish_anon_union): Set DECL_ANON_UNION_ELEMS.
+	Don't call expand_anon_union_decl here
+	* semantics.c (exapnd_stmt): Call it here, instead.
+	* typeck.c (mark_addressable): Addressed variables are implicitly
+	used.
+	
 1999-09-23  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* cp-tree.h (VAR_OR_FUNCTION_DECL_CHECK): New macro.
