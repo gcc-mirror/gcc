@@ -212,7 +212,6 @@ procedure Gnatdll is
       procedure Add_File (Filename : in String) is
       begin
          if Is_Ali (Filename) then
-
             Check (Filename);
 
             --  Record it to generate the binder program when
@@ -222,7 +221,6 @@ procedure Gnatdll is
             A := A + 1;
 
          elsif Is_Obj (Filename) then
-
             Check (Filename);
 
             --  Just record this object file
@@ -474,7 +472,6 @@ procedure Gnatdll is
       end if;
 
    exception
-
       when Invalid_Switch    =>
          Raise_Exception
            (Syntax_Error'Identity,
@@ -484,7 +481,6 @@ procedure Gnatdll is
          Raise_Exception
            (Syntax_Error'Identity,
             Message => "No parameter for " & Full_Switch);
-
    end Parse_Command_Line;
 
    -------------------
@@ -493,7 +489,6 @@ procedure Gnatdll is
 
    procedure Check_Context is
    begin
-
       Check (To_String (Def_Filename));
 
       --  Check that each object file specified exists and raise exception
@@ -529,7 +524,6 @@ begin
       Check_Context;
 
       case Build_Mode is
-
          when Import_Lib =>
             MDLL.Build_Import_Library
               (To_String (Lib_Filename),
@@ -571,7 +565,6 @@ begin
    Set_Exit_Status (Success);
 
 exception
-
    when SE : Syntax_Error =>
       Put_Line ("Syntax error : " & Exception_Message (SE));
       New_Line;
@@ -585,5 +578,4 @@ exception
    when others =>
       Put_Line ("gnatdll: INTERNAL ERROR. Please report");
       Set_Exit_Status (Failure);
-
 end Gnatdll;

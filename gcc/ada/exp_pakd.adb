@@ -469,8 +469,7 @@ package body Exp_Pakd is
 
    function RJ_Unchecked_Convert_To
      (Typ  : Entity_Id;
-      Expr : Node_Id)
-      return Node_Id;
+      Expr : Node_Id) return Node_Id;
    --  The packed array code does unchecked conversions which in some cases
    --  may involve non-discrete types with differing sizes. The semantics of
    --  such conversions is potentially endian dependent, and the effect we
@@ -2410,8 +2409,7 @@ package body Exp_Pakd is
 
    function RJ_Unchecked_Convert_To
      (Typ  : Entity_Id;
-      Expr : Node_Id)
-      return Node_Id
+      Expr : Node_Id) return Node_Id
    is
       Source_Typ : constant Entity_Id := Etype (Expr);
       Target_Typ : constant Entity_Id := Typ;

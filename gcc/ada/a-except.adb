@@ -516,6 +516,10 @@ package body Ada.Exceptions is
    pragma Export (C, Rcheck_28, "__gnat_rcheck_28");
    pragma Export (C, Rcheck_29, "__gnat_rcheck_29");
 
+   --  None of these procedures ever returns (they raise an exception!). By
+   --  using pragma No_Return, we ensure that any junk code after the call,
+   --  such as normal return epilog stuff, can be eliminated).
+
    pragma No_Return (Rcheck_00);
    pragma No_Return (Rcheck_01);
    pragma No_Return (Rcheck_02);

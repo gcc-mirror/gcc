@@ -1614,7 +1614,7 @@ package Einfo is
 --       and packages. Set to Empty unless an export, import, or interface
 --       name pragma has explicitly specified an external name, in which
 --       case it references an N_String_Literal node for the specified
---       exteral name. In the case of exceptions, the field is set by
+--       external name. In the case of exceptions, the field is set by
 --       Import_Exception/Export_Exception (which can be used in OpenVMS
 --       versions only). Note that if this field is Empty, and Is_Imported
 --       or Is_Exported is set, then the default interface name is the name
