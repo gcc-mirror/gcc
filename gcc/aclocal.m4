@@ -686,7 +686,7 @@ AC_SUBST($1)dnl
 AC_DEFUN([AC_FUNC_MMAP_ANYWHERE],
 [AC_CHECK_HEADERS(unistd.h)
 AC_CHECK_FUNCS(getpagesize)
-AC_CACHE_CHECK(for working mmap from /dev/zero, ac_cv_func_mmap_zero,
+AC_CACHE_CHECK(for working mmap from /dev/zero, ac_cv_func_mmap_anywhere,
 [AC_TRY_RUN([
 /* Test by Richard Henderson and Alexandre Oliva.
    Check whether mmap from /dev/zero works. */
