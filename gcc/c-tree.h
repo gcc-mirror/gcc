@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 93, 94, 95, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -346,10 +346,8 @@ extern tree build_modify_expr                   PROTO((tree, enum tree_code,
 						       tree));
 extern tree initializer_constant_valid_p	PROTO((tree, tree));
 extern void store_init_value                    PROTO((tree, tree));
-extern void error_init				PROTO((char *, char *,
-						       char *));
-extern void pedwarn_init			PROTO((char *, char *,
-						       char *));
+extern void error_init				PROTO((char *));
+extern void pedwarn_init			PROTO((char *));
 extern void start_init				PROTO((tree, tree, int));
 extern void finish_init				PROTO((void));
 extern void really_start_incremental_init	PROTO((tree));
