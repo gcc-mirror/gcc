@@ -1,3 +1,10 @@
+2005-03-10  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/20312
+	* parse.y (checks_throws_clauses): Check exceptions list even when
+	the base class does not come from a source file being compiled.
+	(java_complete_lhs): Remove unused variable 'wfl'.
+
 2005-03-09  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/20338
