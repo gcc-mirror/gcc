@@ -215,9 +215,9 @@ struct binding_level
     /* Nonzero means make a BLOCK if this level has any subblocks.  */
     char keep_if_subblocks;
 
-    /* Number of decls in `names' that have incomplete
-       structure or union types.  */
-    int n_incomplete;
+    /* List of decls in `names' that have incomplete structure or
+       union types.  */
+    tree incomplete_list;
 
     /* A list of decls giving the (reversed) specified order of parms,
        not including any forward-decls in the parmlist.
@@ -244,7 +244,7 @@ static struct binding_level *global_binding_level;
 /* Binding level structures are initialized by copying this one.  */
 
 static struct binding_level clear_binding_level
-  = {NULL, NULL, NULL, NULL, NULL, NULL_BINDING_LEVEL, 0, 0, 0, 0, 0, 0,
+  = {NULL, NULL, NULL, NULL, NULL, NULL_BINDING_LEVEL, 0, 0, 0, 0, 0, NULL,
      NULL};
 
 /* Nonzero means unconditionally make a BLOCK for the next level pushed.  */
@@ -2392,7 +2392,7 @@ pushdecl (x)
 	    b->shadowed = tree_cons (name, oldlocal, b->shadowed);
 	}
 
-      /* Keep count of variables in this level with incomplete type.
+      /* Keep list of variables in this level with incomplete type.
 	 If the input is erroneous, we can have error_mark in the type
 	 slot (e.g. "f(void a, ...)") - that doesn't count as an
 	 incomplete type.  */
@@ -2405,7 +2405,7 @@ pushdecl (x)
 	    element = TREE_TYPE (element);
 	  if (TREE_CODE (element) == RECORD_TYPE
 	      || TREE_CODE (element) == UNION_TYPE)
-	    ++b->n_incomplete;
+	    b->incomplete_list = tree_cons (NULL_TREE, x, b->incomplete_list);
 	}
     }
 
@@ -2880,6 +2880,7 @@ mark_binding_level (arg)
       ggc_mark_tree (level->blocks);
       ggc_mark_tree (level->this_block);
       ggc_mark_tree (level->parm_order);
+      ggc_mark_tree (level->incomplete_list);
     }
 }
 
@@ -5691,11 +5692,14 @@ finish_struct (t, fieldlist, attributes)
   /* If this structure or union completes the type of any previous
      variable declaration, lay it out and output its rtl.  */
 
-  if (current_binding_level->n_incomplete != 0)
+  if (current_binding_level->incomplete_list != NULL_TREE)
     {
-      tree decl;
-      for (decl = current_binding_level->names; decl; decl = TREE_CHAIN (decl))
-	{
+      tree prev = NULL_TREE;
+
+      for (x = current_binding_level->incomplete_list; x; x = TREE_CHAIN (x))
+        {
+	  tree decl = TREE_VALUE (x);
+
 	  if (TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TYPE_MAIN_VARIANT (t)
 	      && TREE_CODE (decl) != TYPE_DECL)
 	    {
@@ -5705,8 +5709,11 @@ finish_struct (t, fieldlist, attributes)
 	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 	      if (! toplevel)
 		expand_decl (decl);
-	      if (--current_binding_level->n_incomplete == 0)
-		break;
+	      /* Unlink X from the incomplete list.  */
+	      if (prev)
+		TREE_CHAIN (prev) = TREE_CHAIN (x);
+	      else
+	        current_binding_level->incomplete_list = TREE_CHAIN (x);
 	    }
 	  else if (!COMPLETE_TYPE_P (TREE_TYPE (decl))
 		   && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
@@ -5725,8 +5732,11 @@ finish_struct (t, fieldlist, attributes)
 		      if (! toplevel)
 			expand_decl (decl);
 		    }
-		  if (--current_binding_level->n_incomplete == 0)
-		    break;
+		  /* Unlink X from the incomplete list.  */
+		  if (prev)
+		    TREE_CHAIN (prev) = TREE_CHAIN (x);
+		  else
+		    current_binding_level->incomplete_list = TREE_CHAIN (x);
 		}
 	    }
 	}
