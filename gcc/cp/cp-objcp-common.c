@@ -75,21 +75,36 @@ cxx_warn_unused_global_decl (tree decl)
 tree
 cp_expr_size (tree exp)
 {
-  if (CLASS_TYPE_P (TREE_TYPE (exp)))
+  tree type = TREE_TYPE (exp);
+
+  if (CLASS_TYPE_P (type))
     {
       /* The backend should not be interested in the size of an expression
 	 of a type with both of these set; all copies of such types must go
 	 through a constructor or assignment op.  */
-      gcc_assert (!TYPE_HAS_COMPLEX_INIT_REF (TREE_TYPE (exp))
-		  || !TYPE_HAS_COMPLEX_ASSIGN_REF (TREE_TYPE (exp))
+      gcc_assert (!TYPE_HAS_COMPLEX_INIT_REF (type)
+		  || !TYPE_HAS_COMPLEX_ASSIGN_REF (type)
 		  /* But storing a CONSTRUCTOR isn't a copy.  */
-		  || TREE_CODE (exp) == CONSTRUCTOR);
+		  || TREE_CODE (exp) == CONSTRUCTOR
+		  /* And, the gimplifier will sometimes make a copy of
+		     an aggregate.  In particular, for a case like:
+
+		        struct S { S(); };
+                        struct X { int a; S s; };
+                        X x = { 0 };
+
+                     the gimplifier will create a temporary with
+                     static storage duration, perform static
+                     initialization of the temporary, and then copy
+                     the result.  Since the "s" subobject is never
+                     constructed, this is a valid transformation.  */
+		  || CP_AGGREGATE_TYPE_P (type));
       
       /* This would be wrong for a type with virtual bases, but they are
 	 caught by the assert above.  */
-      return (is_empty_class (TREE_TYPE (exp))
+      return (is_empty_class (type)
 	      ? size_zero_node
-	      : CLASSTYPE_SIZE_UNIT (TREE_TYPE (exp)));
+	      : CLASSTYPE_SIZE_UNIT (type));
     }
   else
     /* Use the default code.  */
