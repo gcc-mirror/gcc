@@ -1,5 +1,9 @@
 2004-12-23  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/17595
+	* parser.c (cp_parser_error): Issue better messages about
+	#pragma in locations where it is not permitted.
+
 	PR c++/17413
 	* pt.c (check_instantiated_args): Remove bogus SFINAE code.
 

@@ -1784,6 +1784,12 @@ cp_parser_error (cp_parser* parser, const char* message)
       /* This diagnostic makes more sense if it is tagged to the line
 	 of the token we just peeked at.  */
       cp_lexer_set_source_position_from_token (token);
+      if (token->type == CPP_PRAGMA)
+	{
+	  error ("%<#pragma%> is not allowed here"); 
+	  cp_lexer_purge_token (parser->lexer);
+	  return;
+	}
       c_parse_error (message,
 		     /* Because c_parser_error does not understand
 			CPP_KEYWORD, keywords are treated like
