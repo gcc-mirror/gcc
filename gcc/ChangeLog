@@ -1,3 +1,8 @@
+Tue Oct 21 10:06:40 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.c (expand_epilogue): Rework to handle register restores
+	in "ret" and "retf" instructions correctly.
+
 Mon Oct 20 16:47:08 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* expmed.c (extract_bit_field): Don't make flag_force_mem disable
