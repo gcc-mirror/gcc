@@ -239,9 +239,9 @@ proc fortran-torture-execute { src } {
 	# integers, but that is obviously much harder than just regexping this.
 	# So maybe we should just avoid those in testcases.
 	if [target_info exists no_long_long] then {
-	    if [expr [search_for $src "integer\*8"] \
-	             +[search_for $src "integer *( *8 *)"] \
-	             +[search_for $src "integer *( *kind *= *8 *)"]] \
+	    if [expr [search_for_re $src "integer\*8"] \
+	             +[search_for_re $src "integer *( *8 *)"] \
+	             +[search_for_re $src "integer *( *kind *= *8 *)"]] \
 	      then {
 		untested "$testcase execution, $option"
 		continue
@@ -269,9 +269,9 @@ proc fortran-torture-execute { src } {
 
 
 #
-# search_for -- looks for a string match in a file
+# search_for_re -- looks for a string match in a file
 #
-proc search_for { file pattern } {
+proc search_for_re { file pattern } {
     set fd [open $file r]
     while { [gets $fd cur_line]>=0 } {
 	set lower [string tolower $cur_line]

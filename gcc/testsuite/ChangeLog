@@ -1,3 +1,8 @@
+2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	* lib/fortran-torture.exp: Rename proc search_for to 
+	search_for_re.
+
 2004-07-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/simd-5.x: New file.
