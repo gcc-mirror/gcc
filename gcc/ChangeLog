@@ -1,3 +1,13 @@
+2003-05-14  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/10764
+	* config/i386/i386.md (atan2df3, atan2sf3, atan2xf3, atan2tf3): 
+	Add an explicit clobber to show that UNSPEC_FPATAN clobbers st(1).
+	(*fyl2x_sfxf3, *fyl2x_dfxf3, *fyl2x_xf3, *fyl2x_tfxf3):  Likewise,
+	add an explicit clobber to show that UNSPEC_FYL2X clobbers st(1).
+	(logsf2, logdf2, logxf2, logtf2): Update expander patterns to match
+	the corresponding *fyl2x_?fxf3 instructions.
+
 2003-05-14  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_load_address): Force destination
