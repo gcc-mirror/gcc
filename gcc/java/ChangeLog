@@ -1,3 +1,8 @@
+2001-04-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jvspec.c (lang_specific_driver): Use concat in lieu of
+	xmalloc/sprintf.
+
 2001-04-20  Per Bothner  <per@bothner.com>
 
 	Fixes to compile multiple .class files at once.
