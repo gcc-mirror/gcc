@@ -1059,7 +1059,11 @@ representing the numeric day of the month @var{dd}, a three-character
 abbreviation of the month name @var{mmm} and the last two digits of
 the year @var{yy}, e.g.@: @samp{25-Nov-96}.
 
+@cindex Y2K compliance
+@cindex Year 2000 compliance
 This intrinsic is not recommended, due to the year 2000 approaching.
+Therefore, programs making use of this intrinsic
+might not be Year 2000 (Y2K) compliant.
 @xref{CTime Intrinsic (subroutine)}, for information on obtaining more digits
 for the current (or any) date.
 ")
@@ -1074,6 +1078,16 @@ The functions' value is equal to @samp{@var{@1@}(1) + @var{@1@}(2)}.
 
 Subsequent invocations of @samp{@0@()} return values accumulated since the
 previous invocation.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
@@ -1090,6 +1104,16 @@ The value of @var{@1@} is equal to @samp{@var{@2@}(1) + @var{@2@}(2)}.
 Subsequent invocations of @samp{@0@()} set values based on accumulations
 since the previous invocation.
 
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine.
 ")
@@ -1101,6 +1125,16 @@ as the function value,
 and the user and system components of this in @samp{@var{@1@}(1)}
 and @samp{@var{@1@}(2)} respectively.
 The functions' value is equal to @samp{@var{@1@}(1) + @var{@1@}(2)}.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 ")
 
 DEFDOC (ETIME_subr, "Get elapsed time for process.", "\
@@ -1110,6 +1144,16 @@ in @var{@1@},
 and the user and system components of this in @samp{@var{@2@}(1)}
 and @samp{@var{@2@}(2)} respectively.
 The value of @var{@1@} is equal to @samp{@var{@2@}(1) + @var{@2@}(2)}.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine.
@@ -1124,6 +1168,17 @@ Equivalent to:
 CTIME(TIME8())
 @end example
 
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
+
 @xref{CTime Intrinsic (function)}.
 ")
 
@@ -1136,6 +1191,17 @@ Equivalent to:
 @example
 CALL CTIME(@var{@1@}, TIME8())
 @end example
+
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
 
 @xref{CTime Intrinsic (subroutine)}.
 
@@ -1226,6 +1292,17 @@ Fills @var{@1@} with the numerical values at the current local time
 of day, month (in the range 1--12), and year in elements 1, 2, and 3,
 respectively.
 The year has four significant digits.
+
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
 ")
 
 DEFDOC (IDATE_vxt, "Get local time info (VAX/VMS).", "\
@@ -1234,7 +1311,20 @@ The month (in the range 1--12) is returned in @var{@1@},
 the day (in the range 1--7) in @var{@2@},
 and the year in @var{@3@} (in the range 0--99).
 
+@cindex Y2K compliance
+@cindex Year 2000 compliance
+@cindex wraparound, Y2K
+@cindex limits, Y2K
 This intrinsic is not recommended, due to the year 2000 approaching.
+Therefore, programs making use of this intrinsic
+might not be Year 2000 (Y2K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 2000.
+
+@xref{IDate Intrinsic (UNIX)}, for information on obtaining more digits
+for the current date.
 ")
 
 DEFDOC (ITIME, "Get local time of day.", "\
@@ -1246,9 +1336,16 @@ DEFDOC (MCLOCK, "Get number of clock ticks for process.", "\
 Returns the number of clock ticks since the start of the process.
 Supported on systems with @code{clock(3)} (q.v.).
 
+@cindex wraparound, timings
+@cindex limits, timings
 This intrinsic is not fully portable, such as to systems
 with 32-bit @code{INTEGER} types but supporting times
 wider than 32 bits.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 @xref{MClock8 Intrinsic}, for information on a
 similar intrinsic that might be portable to more
 GNU Fortran implementations, though to fewer
@@ -1262,12 +1359,18 @@ DEFDOC (MCLOCK8, "Get number of clock ticks for process.", "\
 Returns the number of clock ticks since the start of the process.
 Supported on systems with @code{clock(3)} (q.v.).
 
+@cindex wraparound, timings
+@cindex limits, timings
 @emph{Warning:} this intrinsic does not increase the range
 of the timing values over that returned by @code{clock(3)}.
 On a system with a 32-bit @code{clock(3)},
 @code{@0@} will return a 32-bit value,
 even though converted to an @samp{INTEGER(KIND=2)} value.
 That means overflows of the 32-bit value can still occur.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this
@@ -1283,16 +1386,44 @@ If the system does not support @code{clock(3)},
 DEFDOC (SECNDS, "Get local time offset since midnight.", "\
 Returns the local time in seconds since midnight minus the value
 @var{@1@}.
+
+@cindex wraparound, timings
+@cindex limits, timings
+This values returned by this intrinsic
+become numerically less than previous values
+(they wrap around) during a single run of the
+compiler program, under normal circumstances
+(such as running through the midnight hour).
 ")
 
 DEFDOC (SECOND_func, "Get CPU time for process in seconds.", "\
 Returns the process's runtime in seconds---the same value as the
 UNIX function @code{etime} returns.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 ")
 
 DEFDOC (SECOND_subr, "Get CPU time for process@99@in seconds.", "\
 Returns the process's runtime in seconds in @var{@1@}---the same value
 as the UNIX function @code{etime} returns.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic},
 for a standard equivalent.
@@ -1307,12 +1438,32 @@ isn't in general.
 @var{@3@} is the maximum value this can take, which isn't very useful
 in this implementation since it's just the maximum C @code{unsigned
 int} value.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 ")
 
 DEFDOC (CPU_TIME, "Get current CPU time.", "\
 Returns in @var{@1@} the current value of the system time.
 This implementation of the Fortran 95 intrinsic is just an alias for
 @code{second} @xref{Second Intrinsic (subroutine)}.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 ")
 
 DEFDOC (TIME8, "Get current time as time value.", "\
@@ -1321,12 +1472,18 @@ Returns the current time encoded as a long integer
 This value is suitable for passing to @code{CTIME},
 @code{GMTIME}, and @code{LTIME}.
 
+@cindex wraparound, timings
+@cindex limits, timings
 @emph{Warning:} this intrinsic does not increase the range
 of the timing values over that returned by @code{time(3)}.
 On a system with a 32-bit @code{time(3)},
 @code{@0@} will return a 32-bit value,
 even though converted to an @samp{INTEGER(KIND=2)} value.
 That means overflows of the 32-bit value can still occur.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this
@@ -1342,9 +1499,16 @@ Returns the current time encoded as an integer
 This value is suitable for passing to @code{CTIME},
 @code{GMTIME}, and @code{LTIME}.
 
+@cindex wraparound, timings
+@cindex limits, timings
 This intrinsic is not fully portable, such as to systems
 with 32-bit @code{INTEGER} types but supporting times
 wider than 32 bits.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 @xref{Time8 Intrinsic}, for information on a
 similar intrinsic that might be portable to more
 GNU Fortran implementations, though to fewer
@@ -2409,6 +2573,17 @@ DEFDOC (TIME_vxt, "Get the time as a character value.", "\
 Returns in @var{@1@} a character representation of the current time as
 obtained from @code{ctime(3)}.
 
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
+
 @xref{Fdate Intrinsic (subroutine)} for an equivalent routine.
 ")
 
@@ -2505,6 +2680,17 @@ The year, month of the year, day of the month, time difference in
 minutes from UTC, hour of the day, minutes of the hour and milliseconds
 of the second in successive values of the array.
 @end table
+
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
 
 On systems where a millisecond timer isn't available, the millisecond
 value is returned as zero.

@@ -133,7 +133,7 @@ DEFNAME	("DSQRT",	"dsqrt",	"DSqRt",	genNONE,	specDSQRT)
 DEFNAME	("DTAN",	"dtan",		"DTan",		genNONE,	specDTAN)
 DEFNAME	("DTAND",	"dtand",	"DTanD",	genNONE,	specDTAND)	/* VXT */
 DEFNAME	("DTANH",	"dtanh",	"DTanH",	genNONE,	specDTANH)
-DEFNAME	("DTIME",	"dtime",	"Dtime",	genDTIME,	specNONE)	/* UNIX */
+DEFNAME	("DTIME",	"dtime",	"DTime",	genDTIME,	specNONE)	/* UNIX */
 DEFNAME	("EOSHIFT",	"eoshift",	"EOShift",	genNONE,	specEOSHIFT)	/* F90 */
 DEFNAME	("EPSILON",	"epsilon",	"Epsilon",	genNONE,	specEPSILON)	/* F90 */
 DEFNAME	("ERF",		"erf",		"ErF",		genNONE,	specERF)	/* UNIX */
@@ -142,7 +142,7 @@ DEFNAME	("ETIME",	"etime",	"ETime",	genETIME,	specNONE)	/* UNIX */
 DEFNAME	("EXIT",	"exit",		"Exit",		genNONE,	specEXIT)	/* UNIX */
 DEFNAME	("EXP",		"exp",		"Exp",		genNONE,	specEXP)
 DEFNAME	("EXPONENT",	"exponent",	"Exponent",	genNONE,	specEXPONENT)	/* F90 */
-DEFNAME	("FDATE",	"fdate",	"Fdate",	genFDATE,	specNONE)	/* UNIX */
+DEFNAME	("FDATE",	"fdate",	"FDate",	genFDATE,	specNONE)	/* UNIX */
 DEFNAME	("FGET",	"fget",		"FGet",		genFGET,	specNONE)	/* UNIX */
 DEFNAME	("FGETC",	"fgetc",	"FGetC",	genFGETC,	specNONE)	/* UNIX */
 DEFNAME	("FLOAT",	"float",	"Float",	genNONE,	specFLOAT)
