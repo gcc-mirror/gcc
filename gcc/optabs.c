@@ -558,6 +558,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       optab otheroptab = binoptab == add_optab ? sub_optab : add_optab;
       int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       rtx carry_in, carry_out;
+      rtx xop0, xop1;
 
       /* We can handle either a 1 or -1 value for the carry.  If STORE_FLAG
 	 value is one of those, use it.  Otherwise, use 1 since it is the
@@ -569,11 +570,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 #endif
 
       /* Prepare the operands.  */
-      op0 = force_reg (mode, op0);
-      op1 = force_reg (mode, op1);
+      xop0 = force_reg (mode, op0);
+      xop1 = force_reg (mode, op1);
 
       if (target == 0 || GET_CODE (target) != REG
-	  || target == op0 || target == op1)
+	  || target == xop0 || target == xop1)
 	target = gen_reg_rtx (mode);
 
       /* Do the actual arithmetic.  */
@@ -581,8 +582,8 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	{
 	  int index = (WORDS_BIG_ENDIAN ? nwords - i - 1 : i);
 	  rtx target_piece = operand_subword (target, index, 1, mode);
-	  rtx op0_piece = operand_subword_force (op0, index, mode);
-	  rtx op1_piece = operand_subword_force (op1, index, mode);
+	  rtx op0_piece = operand_subword_force (xop0, index, mode);
+	  rtx op1_piece = operand_subword_force (xop1, index, mode);
 	  rtx x;
 
 	  /* Main add/subtract of the input operands.  */
@@ -641,7 +642,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	  
 	  temp = emit_move_insn (target, target);
 	  REG_NOTES (temp) = gen_rtx (EXPR_LIST, REG_EQUAL,
-				      gen_rtx (binoptab->code, mode, op0, op1),
+				      gen_rtx (binoptab->code, mode, xop0, xop1),
 				      REG_NOTES (temp));
 	  return target;
 	}
