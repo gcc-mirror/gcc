@@ -1,5 +1,5 @@
 /* Register renaming for the GNU compiler.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -219,9 +219,14 @@ regrename_optimize ()
       /* Don't clobber traceback for noreturn functions.  */
       if (frame_pointer_needed)
 	{
-	  SET_HARD_REG_BIT (unavailable, FRAME_POINTER_REGNUM);
+	  int i;
+	  
+	  for (i = HARD_REGNO_NREGS (FRAME_POINTER_REGNUM, Pmode); i--;)
+	    SET_HARD_REG_BIT (unavailable, FRAME_POINTER_REGNUM + i);
+	  
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	  SET_HARD_REG_BIT (unavailable, HARD_FRAME_POINTER_REGNUM);
+	  for (i = HARD_REGNO_NREGS (HARD_FRAME_POINTER_REGNUM, Pmode); i--;)
+	    SET_HARD_REG_BIT (unavailable, HARD_FRAME_POINTER_REGNUM + i);
 #endif
 	}
 
