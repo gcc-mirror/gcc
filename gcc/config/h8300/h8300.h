@@ -125,8 +125,12 @@ do {				\
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive
-   but a CALL with constant address is cheap.  */
-/* #define NO_FUNCTION_CSE */
+   but a CALL with constant address is cheap. 
+
+   Calls through a register are cheaper than calls to named
+   functions; however, the register pressure this causes makes
+   CSEing of function addresses generally a lose.  */
+#define NO_FUNCTION_CSE 
 
 /* Target machine storage layout */
 
@@ -319,12 +323,8 @@ do {				\
    For any two classes, it is very desirable that there be another
    class that represents their union.  */
    
-/* The h8 has only one kind of register, but we mustn't do byte by
-   byte operations on the sp, so we keep it as a different class */
-
 enum reg_class {
-  NO_REGS, LONG_REGS, GENERAL_REGS, SP_REG, SP_AND_G_REGS,
-  ALL_REGS, LIM_REG_CLASSES
+  NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
@@ -332,8 +332,7 @@ enum reg_class {
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
-{ "NO_REGS", "LONG_REGS", "GENERAL_REGS", "SP_REG", "SP_AND_G_REGS", \
-  "ALL_REGS", "LIM_REGS" }
+{ "NO_REGS", "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -341,22 +340,18 @@ enum reg_class {
 
 #define REG_CLASS_CONTENTS  			\
 {      0,		/* No regs      */	\
-   0x07f,               /* LONG_REGS    */      \
-   0x07f,		/* GENERAL_REGS */	\
-   0x080,		/* SP_REG       */     	\
-   0x0ff,		/* SP_AND_G_REGS */    	\
+   0x0ff,		/* GENERAL_REGS */    	\
    0x1ff,		/* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
-   or could index an array.  */
+   or could index an array.
 
-#define REGNO_REG_CLASS(REGNO)  \
-   ((REGNO) < 7  ? LONG_REGS  : \
-    (REGNO) == 7 ? SP_REG     : \
-    GENERAL_REGS)
+   ??? What about the ARG_POINTER_REGISTER? */
+
+#define REGNO_REG_CLASS(REGNO)  GENERAL_REGS
 
 /* The class value for index registers, and the one for base regs.  */
 
@@ -365,8 +360,7 @@ enum reg_class {
 
 /* Get reg_class from a letter such as appears in the machine description.  */
 
-#define REG_CLASS_FROM_LETTER(C) \
-  ((C) == 'a' ? (SP_REG) : (C) == 'l' ? (LONG_REGS) : (NO_REGS))
+#define REG_CLASS_FROM_LETTER(C) (NO_REGS)
 
 /* The letters I, J, K, L, M, N, O, P in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -1341,4 +1335,6 @@ do { char dstr[30];					\
 /* Declarations for functions used in insn-output.c.  */
 char *emit_a_shift ();
 int h8300_funcvec_function_p ();
-char *output_adds_subs();
+char *output_adds_subs ();
+char * output_simode_bld ();
+
