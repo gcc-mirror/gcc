@@ -961,6 +961,22 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   public abstract boolean inDaylightTime(Date date);
 
   /**
+   * Gets the daylight savings offset.  This is a positive offset in
+   * milliseconds with respect to standard time.  Typically this
+   * is one hour, but for some time zones this may be half an our.
+   * <p>The default implementation returns 3600000 milliseconds
+   * (one hour) if the time zone uses daylight savings time
+   * (as specified by {@link #useDaylightTime()}), otherwise
+   * it returns 0.
+   * @return the daylight savings offset in milliseconds.
+   * @since 1.4
+   */
+  public int getDSTSavings ()
+  {
+    return useDaylightTime () ? 3600000 : 0;
+  }
+
+  /**
    * Gets the TimeZone for the given ID.
    * @param ID the time zone identifier.
    * @return The time zone for the identifier or GMT, if no such time
