@@ -1,6 +1,6 @@
 typedef __WCHAR_TYPE__ wchar_t;
-wchar_t x[] = L"Ä";
-wchar_t y = L'Ä';
+wchar_t x[] = L"Ã„";
+wchar_t y = L'Ã„';
 extern void abort (void);
 extern void exit (int);
 
@@ -8,9 +8,9 @@ int main (void)
 {
   if (sizeof (x) / sizeof (wchar_t) != 2)
     abort ();
-  if (x[0] != L'Ä' || x[1] != L'\0')
+  if (x[0] != L'Ã„' || x[1] != L'\0')
     abort ();
-  if (y != L'Ä')
+  if (y != L'Ã„')
     abort ();
   exit (0);
 }
