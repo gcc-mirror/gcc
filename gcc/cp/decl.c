@@ -2926,7 +2926,7 @@ duplicate_decls (newdecl, olddecl)
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
 
       /* Lay the type out, unless already done.  */
-      if (oldtype != TREE_TYPE (newdecl)
+      if (newtype != CANONICAL_TYPE_VARIANT (oldtype)
 	  && TREE_TYPE (newdecl) != error_mark_node
 	  && !(processing_template_decl && uses_template_parms (newdecl)))
 	layout_type (TREE_TYPE (newdecl));

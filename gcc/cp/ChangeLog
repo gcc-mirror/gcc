@@ -1,5 +1,8 @@
 Sun May 17 12:32:08 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (duplicate_decls): Use CANONICAL_TYPE_VARIANT to compare
+	old and new types.
+
 	* pt.c (tsubst): Make sure that BINFO_TYPE of new binfos is the
 	canonical type.
 
