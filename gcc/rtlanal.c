@@ -992,17 +992,22 @@ reg_overlap_mentioned_p (x, in)
       return reg_mentioned_p (x, in);
 
     case PARALLEL:
-      if (GET_MODE (x) == BLKmode)
-	{
-	  register int i;
+      {
+	int i, n;
 
-	  /* If any register in here refers to it we return true.  */
-	  for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
-	    if (reg_overlap_mentioned_p (SET_DEST (XVECEXP (x, 0, i)), in))
-	      return 1;
-	  return 0;
-	}
-      break;
+	/* Check for a NULL entry, used to indicate that the parameter goes
+	   both on the stack and in registers.  */
+	if (XEXP (XVECEXP (x, 0, 0), 0))
+	  i = 0;
+	else
+	  i = 1;
+
+	/* If any register in here refers to it we return true.  */
+	for (n = XVECLEN (x, 0); i < n; ++i)
+	  if (reg_overlap_mentioned_p (XEXP (XVECEXP (x, 0, i), 0), in))
+	    return 1;
+	return 0;
+      }
 
     default:
       break;
