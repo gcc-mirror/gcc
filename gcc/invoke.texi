@@ -5255,6 +5255,15 @@ Do not permit (do permit) unaligned accesses.
 @item -mold-align
 Enable structure-alignment compatibility with Intel's gcc release version
 1.3 (based on gcc 1.37).  This option implies @samp{-mstrict-align}.
+
+@item -mlong-double-64
+Implement type @samp{long double} as 64-bit floating point numbers.
+Without the option @samp{long double} is implemented by 80-bit
+floating point numbers.  The only reason we have it because there is
+no 128-bit @samp{long double} support in @samp{fp-bit.c} yet.  So it
+is only useful for people using soft-float targets.  Otherwise, we
+should recommend against use of it.
+
 @end table
 
 @node DEC Alpha Options

@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 /* This file just exists to give specs for the 960 running on VxWorks.
    VxWorks does all the library stuff itself.  */
 
+#define MULTILIB_DEFAULTS { "msoft-float" }
+
 #undef LIB_SPEC
 #define LIB_SPEC ""
 
@@ -57,7 +59,8 @@ Boston, MA 02111-1307, USA.  */
 	%{mcf:-D__i960CF__ -D__i960_CF__}\
 	%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:\
 		%{!mcc:%{!mcf:-D__i960_CA -D__i960CA__ -DCPU=I960CA\
-			      %{mic*:-D__i960CA}}}}}}}}}"
+			      %{mic*:-D__i960CA}}}}}}}}}\
+	%{mlong-double-64:-D__LONG_DOUBLE_64__}"
 
 /* Default to -mca.  */
 
