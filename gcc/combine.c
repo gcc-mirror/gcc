@@ -1037,14 +1037,19 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 	return 0;
 
   /* If INSN contains anything volatile, or is an `asm' (whether volatile
-     or not), reject, unless nothing volatile comes between it and I3,
-     with the exception of SUCC.  */
+     or not), reject, unless nothing volatile comes between it and I3 */
 
   if (GET_CODE (src) == ASM_OPERANDS || volatile_refs_p (src))
-    for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
-      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-	  && p != succ && volatile_refs_p (PATTERN (p)))
-	return 0;
+    {
+      /* Make sure succ doesn't contain a volatile reference.  */
+      if (succ != 0 && volatile_refs_p (PATTERN (succ)))
+        return 0;
+  
+      for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
+        if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
+  	  && p != succ && volatile_refs_p (PATTERN (p)))
+  	return 0;
+    }
 
   /* If INSN is an asm, and DEST is a hard register, reject, since it has
      to be an explicit register variable, and was chosen for a reason.  */
