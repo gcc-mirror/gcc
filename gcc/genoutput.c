@@ -849,7 +849,6 @@ gen_split (split)
   d->n_alternatives = 0;
   d->template = 0;
   d->outfun = 0;
-  d->n_alternatives = 0;
 }
 
 char *
