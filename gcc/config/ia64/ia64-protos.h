@@ -43,59 +43,59 @@ extern int reg_or_22bit_operand PARAMS((rtx, enum machine_mode));
 extern int shift_count_operand PARAMS((rtx, enum machine_mode));
 extern int shift_32bit_count_operand PARAMS((rtx, enum machine_mode));
 extern int shladd_operand PARAMS((rtx, enum machine_mode));
+extern int fetchadd_operand PARAMS((rtx, enum machine_mode));
 extern int reg_or_fp01_operand PARAMS((rtx, enum machine_mode));
 extern int normal_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int adjusted_comparison_operator PARAMS((rtx, enum machine_mode));
 extern int call_multiple_values_operation PARAMS((rtx, enum machine_mode));
-#endif
-extern int ia64_rap_fp_offset PARAMS((void));
-extern unsigned int ia64_compute_frame_size PARAMS((int));
-extern void save_restore_insns PARAMS((int));
-extern void ia64_expand_prologue PARAMS((void));
-extern void ia64_expand_epilogue PARAMS((void));
-extern void ia64_function_prologue PARAMS((FILE *, int));
-extern void ia64_funtion_epilogue PARAMS((FILE *, int));
-extern int ia64_direct_return PARAMS((void));
+
+extern void ia64_expand_fetch_and_op PARAMS ((enum fetchop_code,
+					      enum machine_mode, rtx []));
+extern void ia64_expand_op_and_fetch PARAMS ((enum fetchop_code,
+					      enum machine_mode, rtx []));
+
+extern void ia64_print_operand_address PARAMS((FILE *, rtx));
+extern void ia64_print_operand PARAMS((FILE *, rtx, int));
+extern enum reg_class ia64_secondary_reload_class PARAMS((enum reg_class,
+							  enum machine_mode,
+							  rtx));
+extern void ia64_reorg PARAMS((rtx));
+#endif /* RTX_CODE */
+
 #ifdef TREE_CODE
-extern void ia64_setup_incoming_varargs PARAMS((CUMULATIVE_ARGS, int, tree,
-						int *, int));
 #ifdef RTX_CODE
 extern rtx ia64_function_arg PARAMS((CUMULATIVE_ARGS *, enum machine_mode,
 				     tree, int, int));
-extern void ia64_init_builtins PARAMS((void));
-extern rtx ia64_expand_builtin PARAMS((tree, rtx, rtx, enum machine_mode, int));
-#endif
+extern rtx ia64_expand_builtin PARAMS((tree, rtx, rtx,
+				       enum machine_mode, int));
+extern void ia64_va_start PARAMS((int, tree, rtx));
+extern rtx ia64_va_arg PARAMS((tree, tree));
+extern rtx ia64_function_value PARAMS((tree, tree));
+#endif /* RTX_CODE */
+
+extern void ia64_setup_incoming_varargs PARAMS((CUMULATIVE_ARGS, int, tree,
+						int *, int));
 extern int ia64_function_arg_partial_nregs PARAMS((CUMULATIVE_ARGS *,
 						   enum machine_mode,
 						   tree, int));
 extern void ia64_function_arg_advance PARAMS((CUMULATIVE_ARGS *,
 					      enum machine_mode,
 					      tree, int));
-#ifdef RTX_CODE
-extern void ia64_va_start PARAMS((int, tree, rtx));
-extern rtx ia64_va_arg PARAMS((tree, tree));
-#endif
 extern int ia64_return_in_memory PARAMS((tree));
-#ifdef RTX_CODE
-extern rtx ia64_function_value PARAMS((tree, tree));
-#endif
-#endif
-#ifdef RTX_CODE
-extern void ia64_print_operand_address PARAMS((FILE *, rtx));
-extern void ia64_print_operand PARAMS((FILE *, rtx, int));
-extern enum reg_class ia64_secondary_reload_class PARAMS((enum reg_class,
-							  enum machine_mode,
-							  rtx));
-#endif
-#ifdef TREE_CODE
-extern void ia64_asm_output_external PARAMS((FILE *, tree, char *));
-#endif
-extern void ia64_override_options PARAMS((void));
-#ifdef RTX_CODE
-extern void ia64_reorg PARAMS((rtx));
-#endif
-extern int ia64_epilogue_uses PARAMS((int));
-#ifdef TREE_CODE
+extern void ia64_asm_output_external PARAMS((FILE *, tree, const char *));
+
 extern int ia64_valid_type_attribute PARAMS((tree, tree, tree, tree));
 extern void ia64_encode_section_info PARAMS((tree));
-#endif
+#endif /* TREE_CODE */
+
+extern int ia64_epilogue_uses PARAMS((int));
+extern void ia64_expand_prologue PARAMS((void));
+extern void ia64_expand_epilogue PARAMS((void));
+extern int ia64_direct_return PARAMS((void));
+extern int ia64_rap_fp_offset PARAMS((void));
+extern void ia64_init_builtins PARAMS((void));
+extern void ia64_override_options PARAMS((void));
+extern unsigned int ia64_compute_frame_size PARAMS((int));
+extern void save_restore_insns PARAMS((int));
+extern void ia64_function_prologue PARAMS((FILE *, int));
+extern void ia64_funtion_epilogue PARAMS((FILE *, int));
