@@ -1,3 +1,14 @@
+2000-09-18  Will Cohen  <wcohen@redhat.com>
+
+	* extend.texi (Zero Length): State that static initializers for
+	zero-length arrays are not allowed.
+
+	* c-typeck.c (process_init_element): Flag initializers for zero
+	length arrays.
+
+	* tree.c (integer_all_onesp): Ignore TREE_INT_CST_HIGH if prec is
+	exactly HOST_BITS_PERWIDE_INT.
+
 2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (check_format_info): Properly save the argument
