@@ -290,6 +290,7 @@ static struct rusage rus, prus;
 
 /* Forward declaration for prototypes.  */
 struct path_prefix;
+struct prefix_list;
 
 static void init_spec (void);
 static void store_arg (const char *, int, int);
@@ -323,6 +324,7 @@ static const char *eval_spec_function (const char *, const char *);
 static const char *handle_spec_function (const char *);
 static char *save_string (const char *, int);
 static void set_collect_gcc_options (void);
+static void do_spec_path (struct prefix_list *, const char *, int, int, int, const char *, const char *);
 static int do_spec_1 (const char *, int, const char *);
 static int do_spec_2 (const char *);
 static void do_option_spec (const char *, const char *);
@@ -3309,9 +3311,8 @@ process_command (int argc, const char **argv)
 		nstore[endp - startp] = 0;
 	      add_prefix (&exec_prefixes, nstore, 0,
 			  PREFIX_PRIORITY_LAST, 0, NULL, 0);
-	      add_prefix (&include_prefixes,
-			  concat (nstore, "include", NULL),
-			  0, PREFIX_PRIORITY_LAST, 0, NULL, 0);
+	      add_prefix (&include_prefixes, nstore, 0,
+			  PREFIX_PRIORITY_LAST, 0, NULL, 0);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -3663,15 +3664,14 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		    && (IS_DIR_SEPARATOR (value[len - 1])))
 		  {
 		    if (len == 7)
-		      add_prefix (&include_prefixes, "include", NULL,
+		      add_prefix (&include_prefixes, "./", NULL,
 				  PREFIX_PRIORITY_B_OPT, 0, NULL, 0);
 		    else
 		      {
-			char * string = xmalloc (len + 1);
-
-			strncpy (string, value, len - 7);
-			strcpy (string + len - 7, "include");
-			add_prefix (&include_prefixes, string, NULL,
+		        char *string = xmalloc (len - 6);
+			memcpy (string, value, len - 7);
+			string[len - 7] = 0;
+		        add_prefix (&include_prefixes, string, NULL,
 				    PREFIX_PRIORITY_B_OPT, 0, NULL, 0);
 		      }
 		  }
@@ -3680,8 +3680,8 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B, 0);
 		add_prefix (&startfile_prefixes, value, NULL,
 			    PREFIX_PRIORITY_B_OPT, 0, &warn_B, 0);
-		add_prefix (&include_prefixes, concat (value, "include", NULL),
-			    NULL, PREFIX_PRIORITY_B_OPT, 0, NULL, 0);
+		add_prefix (&include_prefixes, value, NULL,
+			    PREFIX_PRIORITY_B_OPT, 0, NULL, 0);
 		n_switches++;
 	      }
 	      break;
@@ -4394,6 +4394,107 @@ do_self_spec (const char *spec)
     }
 }
 
+void
+do_spec_path (struct prefix_list *pl, const char *option,
+	      int omit_if_relative, int separate_options,
+	      int only_subdir,
+	      const char *dir_for_machine_suffix,
+	      const char *dir_for_no_suffix)
+{
+  static size_t bufsize = 0;
+  static char *buffer;
+  int idx;
+
+  /* Used on systems which record the specified -L dirs
+     and use them to search for dynamic linking.  */
+  /* Relative directories always come from -B,
+     and it is better not to use them for searching
+     at run time.  In particular, stage1 loses.  */
+  if (omit_if_relative
+      && !IS_ABSOLUTE_PATH (pl->prefix))
+    return;
+
+  /* Try subdirectory if there is one.  */
+  if (machine_suffix && dir_for_machine_suffix)
+    {
+      if (strlen (pl->prefix) + strlen (machine_suffix)
+	  >= bufsize)
+	bufsize = (strlen (pl->prefix)
+		  + strlen (machine_suffix)) * 2 + 1;
+      buffer = xrealloc (buffer, bufsize);
+      strcpy (buffer, pl->prefix);
+      strcat (buffer, machine_suffix);
+      if (is_directory (buffer, dir_for_machine_suffix, 1))
+	{
+	  do_spec_1 (option, separate_options, NULL);
+	  if (separate_options)
+	    do_spec_1 (" ", 0, NULL);
+	  do_spec_1 (buffer, 1, NULL);
+	  do_spec_1 (dir_for_machine_suffix, 1, NULL);
+	  /* Make this a separate argument.  */
+	  do_spec_1 (" ", 0, NULL);
+	}
+    }
+  if (!pl->require_machine_suffix && dir_for_no_suffix)
+    {
+      if (is_directory (pl->prefix, dir_for_no_suffix, 1))
+	{
+	  do_spec_1 (option, separate_options, NULL);
+	  if (separate_options)
+	    do_spec_1 (" ", 0, NULL);
+	  do_spec_1 (pl->prefix, 1, NULL);
+	  do_spec_1 (dir_for_no_suffix, 1, NULL);
+	  /* Make this a separate argument.  */
+	  do_spec_1 (" ", 0, NULL);
+	}
+    }
+
+  if (only_subdir)
+    return;
+
+  if (machine_suffix)
+    {
+      if (is_directory (pl->prefix, machine_suffix, 1))
+	{
+	  do_spec_1 (option, separate_options, NULL);
+	  if (separate_options)
+	    do_spec_1 (" ", 0, NULL);
+	  do_spec_1 (pl->prefix, 1, NULL);
+	  /* Remove slash from machine_suffix.  */
+	  if (strlen (machine_suffix) >= bufsize)
+	    bufsize = strlen (machine_suffix) * 2 + 1;
+	  buffer = xrealloc (buffer, bufsize);
+	  strcpy (buffer, machine_suffix);
+	  idx = strlen (buffer);
+	  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
+	    buffer[idx - 1] = 0;
+	  do_spec_1 (buffer, 1, NULL);
+	  /* Make this a separate argument.  */
+	  do_spec_1 (" ", 0, NULL);
+	}
+    }
+  if (!pl->require_machine_suffix)
+    {
+      if (is_directory (pl->prefix, "", 1))
+	{
+	  do_spec_1 (option, separate_options, NULL);
+	  if (separate_options)
+	    do_spec_1 (" ", 0, NULL);
+	  /* Remove slash from pl->prefix.  */
+	  if (strlen (pl->prefix) >= bufsize)
+	    bufsize = strlen (pl->prefix) * 2 + 1;
+	  buffer = xrealloc (buffer, bufsize);
+	  strcpy (buffer, pl->prefix);
+	  idx = strlen (buffer);
+	  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
+	    buffer[idx - 1] = 0;
+	  do_spec_1 (buffer, 1, NULL);
+	  /* Make this a separate argument.  */
+	  do_spec_1 (" ", 0, NULL);
+	}
+    }
+}
+
 /* Process the sub-spec SPEC as a portion of a larger spec.
    This is like processing a whole spec except that we do
    not initialize at the beginning and we do not supply a
@@ -4530,110 +4631,22 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	  case 'D':
 	    {
 	      struct prefix_list *pl = startfile_prefixes.plist;
-	      size_t bufsize = 100;
-	      char *buffer = xmalloc (bufsize);
-	      int idx;
 
 	      for (; pl; pl = pl->next)
 		{
-#ifdef RELATIVE_PREFIX_NOT_LINKDIR
-		  /* Used on systems which record the specified -L dirs
-		     and use them to search for dynamic linking.  */
-		  /* Relative directories always come from -B,
-		     and it is better not to use them for searching
-		     at run time.  In particular, stage1 loses.  */
-		  if (!IS_ABSOLUTE_PATH (pl->prefix))
-		    continue;
-#endif
-		  /* Try subdirectory if there is one.  */
-		  if (multilib_dir != NULL
-		      || (pl->os_multilib && multilib_os_dir != NULL))
-		    {
-		      const char *multi_dir;
+		  const char *no_suffix_multilib_dir;
 
-		      multi_dir = pl->os_multilib ? multilib_os_dir
-						  : multilib_dir;
-		      if (machine_suffix && multilib_dir)
-			{
-			  if (strlen (pl->prefix) + strlen (machine_suffix)
-			      >= bufsize)
-			    bufsize = (strlen (pl->prefix)
-				       + strlen (machine_suffix)) * 2 + 1;
-			  buffer = xrealloc (buffer, bufsize);
-			  strcpy (buffer, pl->prefix);
-			  strcat (buffer, machine_suffix);
-			  if (is_directory (buffer, multilib_dir, 1))
-			    {
-			      do_spec_1 ("-L", 0, NULL);
-#ifdef SPACE_AFTER_L_OPTION
-			      do_spec_1 (" ", 0, NULL);
+		  no_suffix_multilib_dir = pl->os_multilib ? multilib_os_dir
+					   : multilib_dir;
+		  /* Do not separate options, include non-multilibbed variant.  */
+		  do_spec_path (pl, "-L",
+#ifdef RELATIVE_PREFIX_NOT_LINKDIR
+				1,
+#else
+				0,
 #endif
-			      do_spec_1 (buffer, 1, NULL);
-			      do_spec_1 (multilib_dir, 1, NULL);
-			      /* Make this a separate argument.  */
-			      do_spec_1 (" ", 0, NULL);
-			    }
-			}
-		      if (!pl->require_machine_suffix)
-			{
-			  if (is_directory (pl->prefix, multi_dir, 1))
-			    {
-			      do_spec_1 ("-L", 0, NULL);
-#ifdef SPACE_AFTER_L_OPTION
-			      do_spec_1 (" ", 0, NULL);
-#endif
-			      do_spec_1 (pl->prefix, 1, NULL);
-			      do_spec_1 (multi_dir, 1, NULL);
-			      /* Make this a separate argument.  */
-			      do_spec_1 (" ", 0, NULL);
-			    }
-			}
-		    }
-		  if (machine_suffix)
-		    {
-		      if (is_directory (pl->prefix, machine_suffix, 1))
-			{
-			  do_spec_1 ("-L", 0, NULL);
-#ifdef SPACE_AFTER_L_OPTION
-			  do_spec_1 (" ", 0, NULL);
-#endif
-			  do_spec_1 (pl->prefix, 1, NULL);
-			  /* Remove slash from machine_suffix.  */
-			  if (strlen (machine_suffix) >= bufsize)
-			    bufsize = strlen (machine_suffix) * 2 + 1;
-			  buffer = xrealloc (buffer, bufsize);
-			  strcpy (buffer, machine_suffix);
-			  idx = strlen (buffer);
-			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
-			    buffer[idx - 1] = 0;
-			  do_spec_1 (buffer, 1, NULL);
-			  /* Make this a separate argument.  */
-			  do_spec_1 (" ", 0, NULL);
-			}
-		    }
-		  if (!pl->require_machine_suffix)
-		    {
-		      if (is_directory (pl->prefix, "", 1))
-			{
-			  do_spec_1 ("-L", 0, NULL);
-#ifdef SPACE_AFTER_L_OPTION
-			  do_spec_1 (" ", 0, NULL);
-#endif
-			  /* Remove slash from pl->prefix.  */
-			  if (strlen (pl->prefix) >= bufsize)
-			    bufsize = strlen (pl->prefix) * 2 + 1;
-			  buffer = xrealloc (buffer, bufsize);
-			  strcpy (buffer, pl->prefix);
-			  idx = strlen (buffer);
-			  if (IS_DIR_SEPARATOR (buffer[idx - 1]))
-			    buffer[idx - 1] = 0;
-			  do_spec_1 (buffer, 1, NULL);
-			  /* Make this a separate argument.  */
-			  do_spec_1 (" ", 0, NULL);
-			}
-		    }
+				0, 0, multilib_dir, no_suffix_multilib_dir);
 		}
-	      free (buffer);
 	    }
 	    break;
 
@@ -4885,13 +4898,8 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 		}
 
 	      for (; pl; pl = pl->next)
-		{
-		  do_spec_1 ("-isystem", 1, NULL);
-		  /* Make this a separate argument.  */
-		  do_spec_1 (" ", 0, NULL);
-		  do_spec_1 (pl->prefix, 1, NULL);
-		  do_spec_1 (" ", 0, NULL);
-		}
+		/* Separate options, don't include non-suffixed variant.  */
+		do_spec_path (pl, "-isystem", 0, 1, 1, "include", "include");
 	    }
 	    break;
 
