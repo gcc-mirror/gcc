@@ -1,3 +1,37 @@
+2004-08-12  David Daney  <ddaney@avtrex.com>
+
+	* testsuite/libjava.lang/Process_1.java: New test.
+	* testsuite/libjava.lang/Process_2.java: New test.
+	* testsuite/libjava.lang/Process_3.java: New test.
+	* testsuite/libjava.lang/Process_4.java: New test.
+	* testsuite/libjava.lang/Process_5.java: New test.
+	* testsuite/libjava.lang/Process_6.java: New test.
+	* testsuite/libjava.lang/Process_1.out: Expected result.
+	* testsuite/libjava.lang/Process_2.out: Expected result.
+	* testsuite/libjava.lang/Process_3.out: Expected result.
+	* testsuite/libjava.lang/Process_4.out: Expected result.
+	* testsuite/libjava.lang/Process_5.out: Expected result.
+	* testsuite/libjava.lang/Process_6.out: Expected result.
+
+2004-08-12  David Daney  <ddaney@avtrex.com>
+
+	PR libgcj/11801
+	* java/lang/PosixProcess.java: Rewrote.
+	* java/lang/natPosixProcess.cc: Rewrote.
+	* java/lang/Runtime.java (execInternal): Declare throws IOException.
+	* gcj/javaprims.h (ConcreteProcess$ProcessManager): Declare.
+	* posix-threads.cc (block_sigchld) New function.
+	(_Jv_ThreadRegister) Use it.
+	(_Jv_ThreadStart) Use it.
+	* configure.in (PLATFORM_INNER_NAT_HDRS): New AC_SUBST() used in...
+	* Makefile.am: ... to specify extra native headers.
+	* configure: Regenerated.
+	* include/config.h: Regenerated.
+	* Makefile.in: Regenerated.
+	* gcj/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
 2004-08-12  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16867
