@@ -165,8 +165,6 @@ extern int ix86_function_arg_boundary (enum machine_mode, tree);
 extern int ix86_return_in_memory (tree);
 extern void ix86_va_start (tree, rtx);
 extern rtx ix86_va_arg (tree, tree);
-extern void ix86_setup_incoming_varargs (CUMULATIVE_ARGS *,
-					 enum machine_mode, tree, int *, int);
 
 extern rtx ix86_force_to_memory (enum machine_mode, rtx);
 extern void ix86_free_from_memory (enum machine_mode);

@@ -1,5 +1,13 @@
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/i386/i386-protos.h: Remove the prototype for
+	ix86_setup_incoming_varargs.
+	* config/i386/i386.c (TARGET_SETUP_INCOMING_VARARGS): New.
+	(ix86_setup_incoming_varargs): Make it static.
+	* config/i386/i386.h (SETUP_INCOMING_VARARGS): Remove.
+
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* alloc-pool.c: Fix comment typos.
 	* builtin-types.def: Likewise.
 	* builtins.def: Likewise.
