@@ -341,8 +341,8 @@ get_constant (jcf, index)
 	for (str_len = 0; i > 0; str_len++)
 	  {
 	    int char_len = UT8_CHAR_LENGTH (*str);
-	    if (char_len < 0 || char_len > 2 || char_len > i)
-	      fatal ("bad string constant");
+	    if (char_len < 0 || char_len > 3 || char_len > i)
+ 	      fatal ("bad string constant");
 	    str += char_len;
 	    i -= char_len;
 	  }
@@ -368,7 +368,7 @@ get_constant (jcf, index)
 		char_value = (char_value << 6) | (*str++ & 0x3F);
 		break;
 	      case 3:
-		char_value = *str_ptr++ & 0x0F;
+		char_value = *str++ & 0x0F;
 		char_value = (char_value << 6) | (*str++ & 0x3F);
 		char_value = (char_value << 6) | (*str++ & 0x3F);
 		break;

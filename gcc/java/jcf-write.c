@@ -2561,9 +2561,13 @@ generate_bytecode_insns (exp, target, state)
 		  TREE_TYPE (TREE_TYPE (TREE_VALUE (TREE_OPERAND (exp, 1))));
 	      }
 	    index = find_methodref_index (&state->cpool, f);
-	    if (interface)
-	      DECL_CONTEXT (f) = saved_context;
 	    OP2 (index);
+	    if (interface)
+	      {
+		DECL_CONTEXT (f) = saved_context;
+		OP1 (nargs);
+		OP1 (0);
+	      }
 	    f = TREE_TYPE (TREE_TYPE (f));
 	    if (TREE_CODE (f) != VOID_TYPE)
 	      {
@@ -2572,11 +2576,6 @@ generate_bytecode_insns (exp, target, state)
 		  emit_pop (size, state);
 		else
 		  NOTE_PUSH (size);
-	      }
-	    if (interface)
-	      {
-		OP1 (nargs);
-		OP1 (0);
 	      }
 	    break;
 	  }

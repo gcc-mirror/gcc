@@ -535,27 +535,50 @@ typedef struct _jdeplist {
    java.lang.Object.  */
 #define SET_TYPE_FOR_RESOLUTION(TYPE, SAVE, CHAIN)			\
   {									\
-    tree returned_type;							\
+    tree _returned_type;						\
     (CHAIN) = 0;							\
     if (TREE_TYPE (GET_CPC ()) == object_type_node			\
-	&& TREE_CODE (TYPE) == EXPR_WITH_FILE_LOCATION 			\
+	&& TREE_CODE (TYPE) == EXPR_WITH_FILE_LOCATION			\
 	&& EXPR_WFL_NODE (TYPE) == unqualified_object_id_node)		\
       (TYPE) = object_type_node;					\
     else								\
       {									\
-	if (unresolved_type_p (type, &returned_type))			\
+	if (unresolved_type_p (type, &_returned_type))			\
 	  {								\
-	    if (returned_type)						\
-	      (TYPE) = returned_type;					\
+	    if (_returned_type)						\
+	      (TYPE) = _returned_type;					\
 	    else							\
 	      {								\
-		(SAVE) = (TYPE);					\
+	        tree _type;						\
+                WFL_STRIP_BRACKET (_type, TYPE);			\
+		(SAVE) = (_type);					\
 		(TYPE) = obtain_incomplete_type (TYPE);			\
 		CHAIN = 1;						\
 	      }								\
 	  }								\
       }									\
   }
+
+#define WFL_STRIP_BRACKET(TARGET, TYPE)					\
+{									\
+  tree __type = (TYPE);							\
+  if (TYPE && TREE_CODE (TYPE) == EXPR_WITH_FILE_LOCATION)		\
+    {									\
+      tree _node = EXPR_WFL_NODE (TYPE);				\
+      const char *_ptr = IDENTIFIER_POINTER (_node);			\
+      const char *_ref = _ptr;						\
+      while (_ptr[0] == '[')						\
+	  _ptr++;							\
+      if (_ref != _ptr)							\
+	{								\
+	  tree _new = copy_node (TYPE);					\
+	  EXPR_WFL_NODE (_new) = get_identifier (_ptr);			\
+	  __type = _new;						\
+	}								\
+    }									\
+  (TARGET) = __type;							\
+}
+
 /* Promote a type if it won't be registered as a patch */
 #define PROMOTE_RECORD_IF_COMPLETE(TYPE, IS_INCOMPLETE)		\
   {								\
