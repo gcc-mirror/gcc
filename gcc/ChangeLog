@@ -1,5 +1,11 @@
 2001-09-14  Nick Clifton  <nickc@cambridge.redhat.com>
 
+	* haifa-sched.c: Fix typo in FSF copyright statement.
+	* sched-deps.c: Fix typo in FSF copyright statement.
+	* sched-ebb.c: Fix typo in FSF copyright statement.
+	* sched-rgn.c: Fix typo in FSF copyright statement.
+	* sched-vis.c: Fix typo in FSF copyright statement.
+
 	* config.gcc: Move inclusion of arm elf specific header files
 	from the files themselves into the tm_file variable.  Make
 	sure that elfos.h is included before target specific elf
