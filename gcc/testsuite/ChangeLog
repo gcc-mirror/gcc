@@ -1,5 +1,10 @@
 1999-03-08  Craig Burley  <craig@jcb-sc.com>
 
+	* g77.f-torture/compile/19990305-0.f: New test.
+	* g77.f-torture/execute/19981119-0.f: New test.
+
+1999-03-08  Craig Burley  <craig@jcb-sc.com>
+
 	* g77.f-torture/execute/970625-2.f: call ABORT if final
 	result is not correct, instead of just printing it.
 	Add this checking via newly introduced obfuscation, to
