@@ -1011,8 +1011,8 @@
 ;; ??? A similar pattern for SF mode values would also be useful, but it
 ;; is not as easy to write.
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=?r,r,f,o")
-	(match_operand:DF 1 "" "?E,G,m,G"))]
+  [(set (match_operand:DF 0 "general_operand" "=?r,f,o")
+	(match_operand:DF 1 "" "?E,m,G"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
 {
@@ -1021,16 +1021,14 @@
     case 0:
       return output_move_double (operands);
     case 1:
-      return \"mov %%g0,%0\;mov %%g0,%R0\";
-    case 2:
       return output_fp_move_double (operands);
-    case 3:
+    case 2:
       operands[1] = adj_offsettable_operand (operands[0], 4);
       return \"st %%g0,%0\;st %%g0,%1\";
     }
 }"
-  [(set_attr "type" "load,move,fpload,store")
-   (set_attr "length" "3,2,3,3")])
+  [(set_attr "type" "load,fpload,store")
+   (set_attr "length" "3,3,3")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_operand" "")
