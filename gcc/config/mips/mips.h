@@ -3184,8 +3184,9 @@ while (0)
    : 12)
 
 /* ??? Fix this to be right for the R8000.  */
-#define MEMORY_MOVE_COST(MODE) \
-  ((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R6000) ? 6 : 4)
+#define MEMORY_MOVE_COST(MODE,CLASS,TO_P) \
+  (((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R6000) ? 6 : 4) \
+   + memory_move_secondary_cost ((MODE), (CLASS), (TO_P)))
 
 /* A C expression for the cost of a branch instruction.  A value of
    1 is the default; other values are interpreted relative to that.  */
