@@ -1,5 +1,7 @@
 1998-07-17  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (qualify_lookup): Tweak again.
+
 	* pt.c (lookup_template_class): Don't mess with the context of the
 	instantiation.
 	* decl2.c (current_decl_namespace): Remove special handling for
