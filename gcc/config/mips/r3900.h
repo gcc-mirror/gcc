@@ -38,13 +38,13 @@ Boston, MA 02111-1307, USA.  */
 
 /* by default (if not mips-something-else) produce code for the r3900 */
 #define SUBTARGET_CC1_SPEC "\
+%{!mips1:%{!mips2:%{!mips3:%{!mips4:%{!m4650:\
+  -mips1 -m3900 -mcpu=r3900 -mfp32 -mgp32}}}}} \
 %{mhard-float:%e-mhard-float not supported.} \
 %{msingle-float:%{msoft-float: \
   %e-msingle-float and -msoft-float can not both be specified.}}"
 
 #define TARGET_DEFAULT (MASK_SOFT_FLOAT | MASK_MIPS3900)
-#define MIPS_CPU_STRING_DEFAULT "R3900"
-#define MIPS_ISA_DEFAULT 1
 
 #define MULTILIB_DEFAULTS { "EB", "mips1", "msoft-float" }
 
