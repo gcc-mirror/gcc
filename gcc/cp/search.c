@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "output.h"
 #include "toplev.h"
-#include "varray.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -176,8 +175,6 @@ pop_search_level (obstack)
   return stack;
 }
 
-static tree _vptr_name;
-
 /* Variables for gathering statistics.  */
 #ifdef GATHER_STATISTICS
 static int n_fields_searched;
@@ -584,7 +581,7 @@ lookup_field_1 (type, name)
       field = TREE_CHAIN (field);
     }
   /* Not found.  */
-  if (name == _vptr_name)
+  if (name == vptr_identifier)
     {
       /* Give the user what s/he thinks s/he wants.  */
       if (TYPE_VIRTUAL_P (type))
@@ -2792,7 +2789,6 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr)
 
       if (fixup_insns)
 	{
-	  extern tree in_charge_identifier;
 	  tree in_charge_node = lookup_name (in_charge_identifier, 0);
 	  if (! in_charge_node)
 	    {
@@ -3140,7 +3136,7 @@ void
 init_search_processing ()
 {
   gcc_obstack_init (&search_obstack);
-  _vptr_name = get_identifier ("_vptr");
+  vptr_identifier = get_identifier ("_vptr");
 }
 
 void

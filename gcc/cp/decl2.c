@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #include "dwarf2out.h"
 #include "dwarfout.h"
 #include "splay-tree.h"
-#include "varray.h"
 #include "ggc.h"
 
 #if USE_CPPLIB
@@ -128,9 +127,8 @@ int at_eof;
 
 tree static_ctors, static_dtors;
 
-/* The current open namespace, and ::. */
+/* The :: namespace. */
 
-tree current_namespace;
 tree global_namespace;
 
 /* The stack for namespaces of current declarations. */
@@ -5276,4 +5274,10 @@ init_decl2 ()
 {
   ggc_add_tree_root (&decl_namespace_list, 1);
   ggc_add_tree_varray_root (&saved_inlines, 1);
+  ggc_add_tree_varray_root (&pending_statics, 1);
+  ggc_add_tree_varray_root (&ssdf_decls, 1);
+  ggc_add_tree_root (&ssdf_decl, 1);
+  ggc_add_tree_root (&priority_decl, 1);
+  ggc_add_tree_root (&initialize_p_decl, 1);
+  ggc_add_tree_root (&pending_vtables, 1);
 }

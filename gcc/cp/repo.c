@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "obstack.h"
 #include "toplev.h"
+#include "ggc.h"
 
 static tree repo_get_id PROTO((tree));
 static char *extract_string PROTO((char **));
@@ -307,6 +308,9 @@ init_repo (filename)
 
   if (! flag_use_repository)
     return;
+
+  ggc_add_tree_root (&pending_repo, 1);
+  ggc_add_tree_root (&original_repo, 1);
 
   open_repo_file (filename);
 

@@ -151,11 +151,6 @@ asm (TEXT_SECTION_ASM_OP);
      
      ===================================================================== */
 
-/* local globals for function calls
-   ====================================================================== */
-
-static tree Terminate;
-
 /* ====================================================================== */
 
 /* sets up all the global eh stuff that needs to be initialized at the
@@ -169,9 +164,9 @@ init_exception_processing ()
   
   if (flag_honor_std)
     push_namespace (get_identifier ("std"));
-  Terminate = auto_function (get_identifier ("terminate"),
-			     vtype, NOT_BUILT_IN);
-  TREE_THIS_VOLATILE (Terminate) = 1;
+  terminate_node = auto_function (get_identifier ("terminate"),
+				  vtype, NOT_BUILT_IN);
+  TREE_THIS_VOLATILE (terminate_node) = 1;
   if (flag_honor_std)
     pop_namespace ();
 
@@ -500,7 +495,7 @@ static tree
 build_terminate_handler ()
 {
   int yes = suspend_momentary ();
-  tree term = build_function_call (Terminate, NULL_TREE);
+  tree term = build_function_call (terminate_node, NULL_TREE);
   resume_momentary (yes);
   return term;
 }

@@ -50,11 +50,6 @@ static tree build_java_class_ref PROTO((tree));
 static void expand_cleanup_for_base PROTO((tree, tree));
 static tree get_temp_regvar PROTO((tree, tree));
 
-/* Cache the identifier nodes for the magic field of a new cookie.  */
-static tree nc_nelts_field_id;
-
-static tree minus_one;
-
 /* Set up local variable for this file.  MUST BE CALLED AFTER
    INIT_DECL_PROCESSING.  */
 
@@ -64,20 +59,19 @@ void init_init_processing ()
 {
   tree fields[1];
 
-  minus_one = build_int_2 (-1, -1);
+  minus_one_node = build_int_2 (-1, -1);
 
   /* Define the structure that holds header information for
      arrays allocated via operator new.  */
   BI_header_type = make_lang_type (RECORD_TYPE);
-  nc_nelts_field_id = get_identifier ("nelts");
-  fields[0] = build_lang_decl (FIELD_DECL, nc_nelts_field_id, sizetype);
+  nelts_identifier = get_identifier ("nelts");
+  fields[0] = build_lang_decl (FIELD_DECL, nelts_identifier, sizetype);
   finish_builtin_type (BI_header_type, "__new_cookie", fields,
 		       0, double_type_node);
   BI_header_size = size_in_bytes (BI_header_type);
 
-  ggc_add_tree_root (&current_base_init_list, 1);
-  ggc_add_tree_root (&current_member_init_list, 1);
-  ggc_add_tree_root (&minus_one, 1);
+  ggc_add_tree_root (&BI_header_type, 1);
+  ggc_add_tree_root (&BI_header_size, 1);
 }
 
 /* Subroutine of emit_base_init.  For BINFO, initialize all the
@@ -2107,10 +2101,6 @@ build_new (placement, decl, init, use_global_new)
   return rval;
 }
 
-/* If non-NULL, a POINTER_TYPE equivalent to (java::lang::Class*). */
-
-static tree jclass_node = NULL_TREE;
-
 /* Given a Java class, return a decl for the corresponding java.lang.Class. */
 
 static tree
@@ -2328,7 +2318,7 @@ build_new_1 (exp)
 					  build_pointer_type (BI_header_type),
 					  rval, extra), NULL_PTR);
       exp1 = build (MODIFY_EXPR, void_type_node,
-		    build_component_ref (cookie, nc_nelts_field_id,
+		    build_component_ref (cookie, nelts_identifier,
 					 NULL_TREE, 0),
 		    nelts);
       TREE_SIDE_EFFECTS (exp1) = 1;
@@ -2909,7 +2899,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
 
       if_stmt = begin_if_stmt ();
       finish_if_stmt_cond (build (NE_EXPR, boolean_type_node,
-				  iterator, minus_one),
+				  iterator, minus_one_node),
 			   if_stmt);
 
       /* Otherwise, loop through the elements.  */
@@ -3004,7 +2994,7 @@ build_vec_init (decl, base, maxindex, init, from_array)
 				    ptrdiff_type_node, 
 				    iterator,
 				    integer_one_node), 
-			     minus_one),
+			     minus_one_node),
 		      do_stmt);
 
       finish_then_clause (if_stmt);
@@ -3372,7 +3362,7 @@ build_vec_delete (base, maxindex, auto_delete_vec, auto_delete,
       tree cookie_addr = build (MINUS_EXPR, build_pointer_type (BI_header_type),
 				base, BI_header_size);
       tree cookie = build_indirect_ref (cookie_addr, NULL_PTR);
-      maxindex = build_component_ref (cookie, nc_nelts_field_id, NULL_TREE, 0);
+      maxindex = build_component_ref (cookie, nelts_identifier, NULL_TREE, 0);
       do
 	type = TREE_TYPE (type);
       while (TREE_CODE (type) == ARRAY_TYPE);
