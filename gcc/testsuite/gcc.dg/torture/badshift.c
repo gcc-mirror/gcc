@@ -1,8 +1,8 @@
 /* PR rtl-optimization/20532 */
 
 /* { dg-do run } */
-/* { dg-options "-O1" } */
-/* { dg-options "-march=i386 -O1" { target i?86-*-* } } */
+/* { dg-options "" } */
+/* { dg-options "-march=i386" { target i?86-*-* } } */
 
 /* We used to optimize the DImode shift-by-32 to zero because in combine
    we turned:
