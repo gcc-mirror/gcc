@@ -1,3 +1,8 @@
+Wed May  2 13:09:36 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (store_field): Do nothing except elaborate side-effects if
+	zero-bit field.
+
 2001-05-02  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* dwarf2out.c (mem_loc_descriptor): If a SYMBOL_REF is in the
