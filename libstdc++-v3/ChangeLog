@@ -1,3 +1,8 @@
+2001-02-19  Andreas Jaeger  <aj@suse.de>
+
+     	* config/cpu/sparc/sparc64/bits/atomicity.h (__compare_and_swap):
+	Fix typo.
+
 2001-02-16  Greg Bumgardner <bumgard@roguewave.com>
 
 	libstdc++/1734
