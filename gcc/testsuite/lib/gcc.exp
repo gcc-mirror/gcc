@@ -144,6 +144,7 @@ proc gcc_target_compile { source dest type options } {
     if [target_info exists gcc,timeout] {
 	lappend options "timeout=[target_info gcc,timeout]"
     }
+    lappend options "additional_flags=-fno-show-column"
     lappend options "compiler=$GCC_UNDER_TEST"
     set options [dg-additional-files-options $options $source]
     return [target_compile $source $dest $type $options]

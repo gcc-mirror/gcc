@@ -1,3 +1,7 @@
+2005-04-05  Per Bothner  <per@bothner.com>
+
+	* lib/gcc.exp: Always add -fno-show-column, for now.
+
 2005-04-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR testsuite/20767
