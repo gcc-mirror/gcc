@@ -853,7 +853,8 @@ mips_classify_constant (struct mips_constant_info *info, rtx x)
 	  x = XEXP (x, 0);
 	}
 
-      if (GET_CODE (x) == UNSPEC
+      if (TARGET_EXPLICIT_RELOCS
+	  && GET_CODE (x) == UNSPEC
 	  && mips_reloc_offset_ok_p (XINT (x, 1), info->offset))
 	{
 	  info->reloc = XINT (x, 1);

@@ -1,3 +1,8 @@
+2003-10-06  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (mips_classify_constant): Only allow UNSPECs
+	if TARGET_EXPLICIT_RELOCS.
+
 2003-10-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR bootstrap/12512
