@@ -1393,7 +1393,9 @@ mark_vtable_entries (tree decl)
     {
       tree fnaddr = TREE_VALUE (entries);
       tree fn;
-      
+
+      STRIP_NOPS (fnaddr);
+
       if (TREE_CODE (fnaddr) != ADDR_EXPR
 	  && TREE_CODE (fnaddr) != FDESC_EXPR)
 	/* This entry is an offset: a virtual base class offset, a
