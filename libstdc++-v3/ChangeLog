@@ -1,3 +1,13 @@
+2001-03-06  Nathan Myers  <ncm@cantrip.org> 
+	    Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_std/bits/std_cerrno.h: Don't define errno in std::.
+	* testsuite/17_intro/header_cerrno.cc (test01): New file.
+	* testsuite/17_intro/header_cassert.cc (test01): New file.
+	* testsuite/17_intro/header_cstddef.cc (test01): New file.
+	* testsuite/17_intro/header_csetjmp.cc (test01): New file.	
+	* testsuite/17_intro/header_cstdarg.cc (test01): New file.	
+
 2001-03-05  scott snyder  <snyder@fnal.gov>
 
 	libstdc++/2190
