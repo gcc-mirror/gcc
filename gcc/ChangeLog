@@ -1,3 +1,8 @@
+2002-05-25  Roger Sayle  <roger@eyesopen.com>
+
+	* simplify-rtx.c (simplify_gen_relational): Simplify the RTX
+	(cond (compare x y) 0) into the equivalent (cond x y).
+
 2002-05-25  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* toplev.c (output_clean_symbol_name): Use xstrdup.  Fix thinko.

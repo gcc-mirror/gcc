@@ -232,6 +232,10 @@ simplify_gen_relational (code, mode, cmp_mode, op0, op1)
   if ((tem = simplify_relational_operation (code, cmp_mode, op0, op1)) != 0)
     return tem;
 
+  /* If op0 is a compare, extract the comparison arguments from it.  */
+  if (GET_CODE (op0) == COMPARE && op1 == const0_rtx)
+    op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
+
   /* Put complex operands first and constants second.  */
   if (swap_commutative_operands_p (op0, op1))
     tem = op0, op0 = op1, op1 = tem, code = swap_condition (code);
