@@ -48,6 +48,19 @@ _Jv_platform_close_on_exec (jint)
   // Ignore.
 }
 
+/* Suspends the execution of the current thread for the specified
+   number of microseconds.  Tries to emulate the behaviour of usleep()
+   on UNIX and provides a granularity of 1 millisecond.  */
+inline void
+_Jv_platform_usleep (unsigned long usecs)
+{
+  if (usecs > 0UL)
+    {
+      unsigned long millis = ((usecs + 999UL) / 1000UL);
+      Sleep (millis);
+    }
+}
+
 #ifndef DISABLE_JAVA_NET
 
 static inline int
