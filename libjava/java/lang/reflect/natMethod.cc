@@ -466,7 +466,16 @@ _Jv_CallAnyMethodA (jobject obj,
 
   void *ncode;
 
-  if (is_virtual_call && ! Modifier::isFinal (meth->accflags))
+  // FIXME: If a vtable index is -1 at this point it is invalid, so we
+  // have to use the ncode.  
+  //
+  // This can happen because methods in final classes don't have
+  // vtable entries, but _Jv_isVirtualMethod() doesn't know that.  We
+  // could solve this problem by allocating a vtable index for methods
+  // in final classes.
+  if (is_virtual_call 
+      && ! Modifier::isFinal (meth->accflags)
+      && (_Jv_ushort)-1 != meth->index)
     {
       _Jv_VTable *vtable = *(_Jv_VTable **) obj;
       ncode = vtable->get_method (meth->index);
