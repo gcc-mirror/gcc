@@ -1,3 +1,8 @@
+2002-05-28  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* configure.in (noconfigdirs): Don't compile libiberty, libstdcxx
+	and libgcj for AVR.
+
 2002-05-23  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.
