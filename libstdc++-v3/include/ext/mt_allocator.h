@@ -488,8 +488,25 @@ namespace __gnu_cxx
     __mt_alloc<_Tp>::
     _S_initialize()
     {
-      if (_S_options._M_force_new)
-	return;
+      // This method is called on the first allocation (when _S_init is still
+      // false) to create the bins.
+      
+      // Ensure that the static initialization of _S_options has
+      // happened.  This depends on (a) _M_align == 0 being an invalid
+      // value that is only present at startup, and (b) the real
+      // static initialization that happens later not actually
+      // changing anything.
+      if (_S_options._M_align == 0) 
+        new (&_S_options) _Tune;
+  
+      // _M_force_new must not change after the first allocate(),
+      // which in turn calls this method, so if it's false, it's false
+      // forever and we don't need to return here ever again.
+      if (_S_options._M_force_new) 
+	{
+	  _S_init = true;
+	  return;
+	}
 
       // Calculate the number of bins required based on _M_max_bytes.
       // _S_bin_size is statically-initialized to one.
