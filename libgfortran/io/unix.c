@@ -28,7 +28,9 @@ Boston, MA 02111-1307, USA.  */
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
+#endif
 #include <string.h>
 #include <errno.h>
 
@@ -41,6 +43,14 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *) -1)
+#endif
+
+#ifndef PROT_READ
+#define PROT_READ 1
+#endif
+
+#ifndef PROT_WRITE
+#define PROT_WRITE 2
 #endif
 
 /* This implementation of stream I/O is based on the paper:

@@ -152,6 +152,7 @@ AC_TYPE_OFF_T
 AC_STDC_HEADERS
 AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h)
 AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
+AC_CHECK_HEADERS(sys/mman.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
 
 # Check for complex math functions
