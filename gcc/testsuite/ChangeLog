@@ -1,5 +1,9 @@
 2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* gcc.dg/i386-sse-8.c: Reset default options.
+
+2004-03-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* gcc.dg/charset/asm2.c: Allow 'parse error' instead of 'syntax error'
 	in the error message text.
 
