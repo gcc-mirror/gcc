@@ -23,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 
-#include <ctype.h>
 #include <stdio.h>
 
 #include "rtl.h"
@@ -85,7 +84,11 @@ int regno_reg_class[FIRST_PSEUDO_REGISTER] =
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   GENERAL_REGS, PR_REGS, T_REGS, NO_REGS,
-  MAC_REGS, MAC_REGS,
+  MAC_REGS, MAC_REGS, FPUL_REGS, NO_REGS,
+  FP0_REGS,FP_REGS, FP_REGS, FP_REGS,
+  FP_REGS, FP_REGS, FP_REGS, FP_REGS,
+  FP_REGS, FP_REGS, FP_REGS, FP_REGS,
+  FP_REGS, FP_REGS, FP_REGS, FP_REGS,
 };
 
 /* Provide reg_class from a letter such as appears in the machine
@@ -94,12 +97,12 @@ int regno_reg_class[FIRST_PSEUDO_REGISTER] =
 enum reg_class reg_class_from_letter[] =
 {
   /* a */ NO_REGS, /* b */ NO_REGS, /* c */ NO_REGS, /* d */ NO_REGS,
-  /* e */ NO_REGS, /* f */ NO_REGS, /* g */ NO_REGS, /* h */ NO_REGS,
+  /* e */ NO_REGS, /* f */ FP_REGS, /* g */ NO_REGS, /* h */ NO_REGS,
   /* i */ NO_REGS, /* j */ NO_REGS, /* k */ NO_REGS, /* l */ PR_REGS,
   /* m */ NO_REGS, /* n */ NO_REGS, /* o */ NO_REGS, /* p */ NO_REGS,
   /* q */ NO_REGS, /* r */ NO_REGS, /* s */ NO_REGS, /* t */ T_REGS,
-  /* u */ NO_REGS, /* v */ NO_REGS, /* w */ NO_REGS, /* x */ MAC_REGS,
-  /* y */ NO_REGS, /* z */ R0_REGS
+  /* u */ NO_REGS, /* v */ NO_REGS, /* w */ FP0_REGS, /* x */ MAC_REGS,
+  /* y */ FPUL_REGS, /* z */ R0_REGS
 };
 
 /* Print the operand address in x to the stream.  */
@@ -367,6 +370,8 @@ prepare_scc_operands (code)
 	  || code == GTU  || code == GEU || code == LTU || code == LEU))
     sh_compare_op1 = force_reg (mode, sh_compare_op1);
 
+  /* ??? This should be `mode' not `SImode' in the compare, but that would
+     require fixing the branch patterns too.  */
   emit_insn (gen_rtx (SET, VOIDmode, t_reg,
 		      gen_rtx (code, SImode, sh_compare_op0,
 			       sh_compare_op1)));
@@ -1212,6 +1217,12 @@ broken_move (insn)
 	 order bits end up as.  */
       && GET_MODE (SET_DEST (PATTERN (insn))) != QImode
       && CONSTANT_P (SET_SRC (PATTERN (insn)))
+      && ! (GET_CODE (SET_SRC (PATTERN (insn))) == CONST_DOUBLE
+	    && (fp_zero_operand (SET_SRC (PATTERN (insn)))
+		|| fp_one_operand (SET_SRC (PATTERN (insn))))
+	    && GET_CODE (SET_DEST (PATTERN (insn))) == REG
+	    && REGNO (SET_DEST (PATTERN (insn))) >= FIRST_FP_REG
+	    && REGNO (SET_DEST (PATTERN (insn))) <= LAST_FP_REG)
       && (GET_CODE (SET_SRC (PATTERN (insn))) != CONST_INT
 	  || ! CONST_OK_FOR_I (INTVAL (SET_SRC (PATTERN (insn))))))
     return 1;
@@ -1828,7 +1839,12 @@ push (rn)
      int rn;
 {
   rtx x;
-  x = emit_insn (gen_push (gen_rtx (REG, SImode, rn)));
+  if ((rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
+      || rn == FPUL_REG)
+    x = emit_insn (gen_push_e (gen_rtx (REG, SFmode, rn)));
+  else
+    x = emit_insn (gen_push (gen_rtx (REG, SImode, rn)));
+
   REG_NOTES (x) = gen_rtx (EXPR_LIST, REG_INC,
 			   gen_rtx(REG, SImode, STACK_POINTER_REGNUM), 0);
 }
@@ -1840,7 +1856,12 @@ pop (rn)
      int rn;
 {
   rtx x;
-  x = emit_insn (gen_pop (gen_rtx (REG, SImode, rn)));
+  if ((rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
+      || rn == FPUL_REG)
+    x = emit_insn (gen_pop_e (gen_rtx (REG, SFmode, rn)));
+  else
+    x = emit_insn (gen_pop (gen_rtx (REG, SImode, rn)));
+    
   REG_NOTES (x) = gen_rtx (EXPR_LIST, REG_INC,
 			   gen_rtx(REG, SImode, STACK_POINTER_REGNUM), 0);
 }
@@ -1849,13 +1870,16 @@ pop (rn)
    the number of bytes the insns take.  */
 
 static void
-push_regs (mask)
-     int mask;
+push_regs (mask, mask2)
+     int mask, mask2;
 {
   int i;
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+  for (i = 0; i < 32; i++)
     if (mask & (1 << i))
+      push (i);
+  for (i = 32; i < FIRST_PSEUDO_REGISTER; i++)
+    if (mask2 & (1 << (i - 32)))
       push (i);
 }
 
@@ -1867,27 +1891,29 @@ push_regs (mask)
    make sure that all the regs it clobbers are safe too.  */
 
 static int
-calc_live_regs (count_ptr)
+calc_live_regs (count_ptr, live_regs_mask2)
      int *count_ptr;
+     int *live_regs_mask2;
 {
   int reg;
   int live_regs_mask = 0;
   int count = 0;
 
+  *live_regs_mask2 = 0;
   for (reg = 0; reg < FIRST_PSEUDO_REGISTER; reg++)
     {
       if (pragma_interrupt && ! pragma_trapa)
 	{
-	  /* Normally, we must save all the regs ever live.
-	     If pragma_nosave_low_regs, then don't save any of the
-	     registers which are banked on the SH3.  */
+	  /* Need to save all the regs ever live.  */
 	  if ((regs_ever_live[reg]
 	       || (call_used_regs[reg] && regs_ever_live[PR_REG]))
 	      && reg != STACK_POINTER_REGNUM && reg != ARG_POINTER_REGNUM
-	      && reg != T_REG && reg != GBR_REG
-	      && ! (sh_cpu == CPU_SH3 && pragma_nosave_low_regs && reg < 8))
+	      && reg != T_REG && reg != GBR_REG)
 	    {
-	      live_regs_mask |= 1 << reg;
+	      if (reg >= 32)
+		*live_regs_mask2 |= 1 << (reg - 32);
+	      else
+		live_regs_mask |= 1 << reg;
 	      count++;
 	    }
 	}
@@ -1896,7 +1922,10 @@ calc_live_regs (count_ptr)
 	  /* Only push those regs which are used and need to be saved.  */
 	  if (regs_ever_live[reg] && ! call_used_regs[reg])
 	    {
-	      live_regs_mask |= (1 << reg);
+	      if (reg >= 32)
+		*live_regs_mask2 |= 1 << (reg - 32);
+	      else
+		live_regs_mask |= (1 << reg);
 	      count++;
 	    }
 	}
@@ -1913,7 +1942,8 @@ sh_expand_prologue ()
 {
   int live_regs_mask;
   int d, i;
-  live_regs_mask = calc_live_regs (&d);
+  int live_regs_mask2;
+  live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
@@ -1922,23 +1952,30 @@ sh_expand_prologue ()
   extra_push = 0;
 
   /* This is set by SETUP_VARARGS to indicate that this is a varargs
-     routine.  Clear it here so that the next function isn't affected.  */
+     routine.  Clear it here so that the next function isn't affected. */
   if (current_function_anonymous_args)
     {
       current_function_anonymous_args = 0;
 
-      /* Push arg regs as if they'd been provided by caller in stack.  */
-      for (i = 0; i < NPARM_REGS; i++)
-	{
-	  int rn = NPARM_REGS + FIRST_PARM_REG - i - 1;
-	  if (i > (NPARM_REGS - current_function_args_info
-		   - current_function_varargs))
-	    break;
-	  push (rn);
-	  extra_push += 4;
-	}
+      /* This is not used by the SH3E calling convention  */
+      if (!TARGET_SH3E)
+        {
+	  /* Push arg regs as if they'd been provided by caller in stack.  */
+	  for (i = 0; i < NPARM_REGS(SImode); i++)
+	    {
+	      int rn = NPARM_REGS(SImode) + FIRST_PARM_REG - i - 1;
+	      if (i > (NPARM_REGS(SImode) 
+		       - current_function_args_info.arg_count[(int) SH_ARG_INT]
+		       - current_function_varargs))
+		break;
+	      push (rn);
+	      extra_push += 4;
+	    }
+        }
     }
-  push_regs (live_regs_mask);
+
+  push_regs (live_regs_mask, live_regs_mask2);
+
   output_stack_adjust (-get_frame_size (), stack_pointer_rtx);
 
   if (frame_pointer_needed)
@@ -1951,7 +1988,8 @@ sh_expand_epilogue ()
   int live_regs_mask;
   int d, i;
 
-  live_regs_mask = calc_live_regs (&d);
+  int live_regs_mask2;
+  live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
 
   if (frame_pointer_needed)
     {
@@ -1970,7 +2008,9 @@ sh_expand_epilogue ()
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
       int j = (FIRST_PSEUDO_REGISTER - 1) - i;
-      if (live_regs_mask & (1 << j))
+      if (j < 32 && (live_regs_mask & (1 << j)))
+	pop (j);
+      else if (j >= 32 && (live_regs_mask2 & (1 << (j - 32))))
 	pop (j);
     }
 
@@ -1988,6 +2028,62 @@ function_epilogue (stream, size)
   pragma_interrupt = pragma_trapa = pragma_nosave_low_regs = 0;
 }
 
+rtx
+sh_builtin_saveregs (arglist)
+     tree arglist;
+{
+  tree fntype = TREE_TYPE (current_function_decl);
+  /* First unnamed integer register.  */
+  int first_intreg = current_function_args_info.arg_count[(int) SH_ARG_INT];
+  /* Number of integer registers we need to save.  */
+  int n_intregs = MAX (0, NPARM_REGS (SImode) - first_intreg);
+  /* First unnamed SFmode float reg */
+  int first_floatreg = current_function_args_info.arg_count[(int) SH_ARG_FLOAT];
+  /* Number of SFmode float regs to save.  */
+  int n_floatregs = MAX (0, NPARM_REGS (SFmode) - first_floatreg);
+  int ptrsize = GET_MODE_SIZE (Pmode);
+  rtx valist, regbuf, fpregs;
+  int bufsize, regno;
+
+  /* Allocate block of memory for the regs. */
+  /* ??? If n_intregs + n_floatregs == 0, should we allocate at least 1 byte?
+     Or can assign_stack_local accept a 0 SIZE argument?  */
+  bufsize = (n_intregs * UNITS_PER_WORD) + (n_floatregs * UNITS_PER_WORD);
+
+  regbuf = assign_stack_local (BLKmode, bufsize, 0);
+  MEM_IN_STRUCT_P (regbuf) = 1;
+
+  /* Save int args.
+     This is optimized to only save the regs that are necessary.  Explicitly
+     named args need not be saved.  */
+  if (n_intregs > 0)
+    move_block_from_reg (BASE_ARG_REG (SImode) + first_intreg,
+			 gen_rtx (MEM, BLKmode, 
+			 	plus_constant (XEXP (regbuf, 0),
+					n_floatregs * UNITS_PER_WORD)), 
+			 n_intregs, n_intregs * UNITS_PER_WORD);
+
+  /* Save float args.
+     This is optimized to only save the regs that are necessary.  Explicitly
+     named args need not be saved.
+     We explicitly build a pointer to the buffer because it halves the insn
+     count when not optimizing (otherwise the pointer is built for each reg
+     saved).  */
+
+  fpregs = gen_reg_rtx (Pmode);
+  emit_move_insn (fpregs, XEXP (regbuf, 0));
+  for (regno = first_floatreg; regno < NPARM_REGS (SFmode); regno ++)
+    emit_move_insn (gen_rtx (MEM, SFmode,
+			     plus_constant (fpregs,
+					    GET_MODE_SIZE (SFmode)
+					    * (regno - first_floatreg))),
+		    gen_rtx (REG, SFmode,
+			     BASE_ARG_REG (SFmode) + regno));
+
+  /* Return the address of the regbuf.  */
+  return XEXP (regbuf, 0);
+}
+
 /* Define the offset between two registers, one to be eliminated, and
    the other its replacement, at the start of a routine.  */
 
@@ -2000,7 +2096,9 @@ initial_elimination_offset (from, to)
   int total_saved_regs_space;
   int total_auto_space = get_frame_size ();
 
-  calc_live_regs (&regs_saved);
+  int live_regs_mask2;
+  calc_live_regs (&regs_saved, &live_regs_mask2);
+
   total_saved_regs_space = (regs_saved) * 4;
 
   if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
@@ -2138,6 +2236,7 @@ arith_reg_operand (op, mode)
       if (GET_CODE (op) == REG)
 	return (REGNO (op) != T_REG
 		&& REGNO (op) != PR_REG
+		&& REGNO (op) != FPUL_REG
 		&& REGNO (op) != MACH_REG
 		&& REGNO (op) != MACL_REG);
       return 1;
@@ -2192,60 +2291,35 @@ logical_operand (op, mode)
 
   return 0;
 }
-
-/* Determine where to put an argument to a function.
-   Value is zero to push the argument on the stack,
-   or a hard register in which to store the argument.
 
-   MODE is the argument's machine mode.
-   TYPE is the data type of the argument (as a tree).
-    This is null for libcalls where that information may
-    not be available.
-   CUM is a variable of type CUMULATIVE_ARGS which gives info about
-    the preceding args and about the function being called.
-   NAMED is nonzero if this argument is a named parameter
-    (otherwise it is an extra parameter matching an ellipsis).  */
-
-rtx
-sh_function_arg (cum, mode, type, named)
-     CUMULATIVE_ARGS cum;
-     enum machine_mode mode;
-     tree type;
-     int named;
-{
-  if (named)
-    {
-      int rr = (ROUND_REG (cum, mode));
-
-      if (rr < NPARM_REGS)
-	return ((type == 0 || ! TREE_ADDRESSABLE (type))
-		? gen_rtx (REG, mode, FIRST_PARM_REG + rr) : 0);
-    }
-  return 0;
-}
-
-/* For an arg passed partly in registers and partly in memory,
-   this is the number of registers used.
-   For args passed entirely in registers or entirely in memory, zero.
-   Any arg that starts in the first 4 regs but won't entirely fit in them
-   needs partial registers on the SH.  */
+/* Nonzero if OP is a floating point value with value 0.0.  */
 
 int
-sh_function_arg_partial_nregs (cum, mode, type, named)
-     CUMULATIVE_ARGS cum;
-     enum machine_mode mode;
-     tree type;
-     int named;
+fp_zero_operand (op)
+     rtx op;
 {
-  if (cum < NPARM_REGS)
-    {
-      if ((type == 0 || ! TREE_ADDRESSABLE (type))
-	  && (cum + (mode == BLKmode
-		     ? ROUND_ADVANCE (int_size_in_bytes (type))
-		     : ROUND_ADVANCE (GET_MODE_SIZE (mode))) - NPARM_REGS > 0))
-	return NPARM_REGS - cum;
-    }
-  return 0;
+  REAL_VALUE_TYPE r;
+
+  if (GET_MODE (op) != SFmode)
+    return 0;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+  return REAL_VALUES_EQUAL (r, dconst0);
+}
+
+/* Nonzero if OP is a floating point value with value 1.0.  */
+
+int
+fp_one_operand (op)
+     rtx op;
+{
+  REAL_VALUE_TYPE r;
+
+  if (GET_MODE (op) != SFmode)
+    return 0;
+
+  REAL_VALUE_FROM_CONST_DOUBLE (r, op);
+  return REAL_VALUES_EQUAL (r, dconst1);
 }
 
 /* Return non-zero if REG is not used after INSN.
