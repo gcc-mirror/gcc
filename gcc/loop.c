@@ -1939,6 +1939,7 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
       {
 	replace_regs (PATTERN (p), reg_map, nregs, 0);
 	replace_regs (REG_NOTES (p), reg_map, nregs, 0);
+	INSN_CODE (p) = -1;
       }
 }
 
@@ -3926,6 +3927,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       {
 	replace_regs (PATTERN (p), reg_map, max_reg_before_loop, 0);
 	replace_regs (REG_NOTES (p), reg_map, max_reg_before_loop, 0);
+	INSN_CODE (p) = -1;
       }
 
   /* Unroll loops from within strength reduction so that we can use the
