@@ -997,7 +997,7 @@ enum reg_class
 	      case MULT:  /* case UMULT: */ case DIV:      case UDIV: 	\
               /* and, or and xor set the cc's the wrong way !! */	\
 	      case AND:   case IOR:    case XOR:  			\
-              /* some shifts set the CC some don't. */			\
+              /* some shifts set the CC some don't.  */			\
               case ASHIFT: 	 case ASHIFTRT:  			\
                  do {} while (0);					\
               default:							\
@@ -1128,7 +1128,7 @@ enum reg_class
 
 /* Generate case label.  For HLASM we can change to the data CSECT
    and put the vectors out of the code body. The assembler just
-   concatenates CSECTs with the same name. */
+   concatenates CSECTs with the same name.  */
 
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, TABLE)			\
   fprintf (FILE, "\tDS\t0F\n");                                         \
@@ -1286,7 +1286,7 @@ enum reg_class
 
 /* Print operand XV (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and XV is null. */
+   For `%' followed by punctuation, CODE is the punctuation and XV is null.  */
 
 #define PRINT_OPERAND(FILE, XV, CODE)					\
 {									\
@@ -1575,7 +1575,7 @@ enum reg_class
 
 /* Print operand XV (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
-   For `%' followed by punctuation, CODE is the punctuation and XV is null. */
+   For `%' followed by punctuation, CODE is the punctuation and XV is null.  */
 
 #define PRINT_OPERAND(FILE, XV, CODE)					\
 {									\
@@ -1690,7 +1690,7 @@ enum reg_class
 		mvs_page_lit += 8;					\
 		fprintf (FILE, "=D'%s'", buf);				\
 	      }								\
-	    else /* VOIDmode !?!? strange but true ... */		\
+	    else /* VOIDmode !?!? strange but true ...  */		\
 	      {								\
 		mvs_page_lit += 8;					\
 		fprintf (FILE, "=XL8'%08X%08X'", 			\
@@ -1855,7 +1855,7 @@ abort(); \
 
 /* Generate internal label.  Since we can branch here from off page, we
    must reload the base register.  Note that internal labels are generated
-   for loops, goto's and case labels.   */
+   for loops, goto's and case labels.  */
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM) 			\
 {									\
@@ -1897,7 +1897,7 @@ abort(); \
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.
 
-   GAS requires the %cl argument, so override i386/unix.h. */
+   GAS requires the %cl argument, so override i386/unix.h.  */
 
 #undef SHIFT_DOUBLE_OMITS_COUNT
 #define SHIFT_DOUBLE_OMITS_COUNT 0
