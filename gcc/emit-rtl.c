@@ -1840,6 +1840,9 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
     mode = GET_MODE (memref);
   if (addr == 0)
     addr = XEXP (memref, 0);
+  if (mode == GET_MODE (memref) && addr == XEXP (memref, 0)
+      && (!validate || memory_address_p (mode, addr)))
+    return memref;
 
   if (validate)
     {
@@ -1866,15 +1869,29 @@ change_address_1 (rtx memref, enum machine_mode mode, rtx addr, int validate)
 rtx
 change_address (rtx memref, enum machine_mode mode, rtx addr)
 {
-  rtx new = change_address_1 (memref, mode, addr, 1);
+  rtx new = change_address_1 (memref, mode, addr, 1), size;
   enum machine_mode mmode = GET_MODE (new);
+  unsigned int align;
+
+  size = mmode == BLKmode ? 0 : GEN_INT (GET_MODE_SIZE (mmode));
+  align = mmode == BLKmode ? BITS_PER_UNIT : GET_MODE_ALIGNMENT (mmode);
+
+  /* If there are no changes, just return the original memory reference.  */
+  if (new == memref)
+    {
+      if (MEM_ATTRS (memref) == 0
+	  || (MEM_EXPR (memref) == NULL
+	      && MEM_OFFSET (memref) == NULL
+	      && MEM_SIZE (memref) == size
+	      && MEM_ALIGN (memref) == align))
+	return new;
+
+      new = gen_rtx_MEM (mmode, XEXP (memref, 0));
+      MEM_COPY_ATTRIBUTES (new, memref);
+    }
 
   MEM_ATTRS (new)
-    = get_mem_attrs (MEM_ALIAS_SET (memref), 0, 0,
-		     mmode == BLKmode ? 0 : GEN_INT (GET_MODE_SIZE (mmode)),
-		     (mmode == BLKmode ? BITS_PER_UNIT
-		      : GET_MODE_ALIGNMENT (mmode)),
-		     mmode);
+    = get_mem_attrs (MEM_ALIAS_SET (memref), 0, 0, size, align, mmode);
 
   return new;
 }
@@ -1894,6 +1911,11 @@ adjust_address_1 (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset,
   rtx memoffset = MEM_OFFSET (memref);
   rtx size = 0;
   unsigned int memalign = MEM_ALIGN (memref);
+
+  /* If there are no changes, just return the original memory reference.  */
+  if (mode == GET_MODE (memref) && !offset
+      && (!validate || memory_address_p (mode, addr)))
+    return memref;
 
   /* ??? Prefer to create garbage instead of creating shared rtl.
      This may happen even if offset is nonzero -- consider
@@ -1985,6 +2007,10 @@ offset_address (rtx memref, rtx offset, unsigned HOST_WIDE_INT pow2)
   update_temp_slot_address (XEXP (memref, 0), new);
   new = change_address_1 (memref, VOIDmode, new, 1);
 
+  /* If there are no changes, just return the original memory reference.  */
+  if (new == memref)
+    return new;
+
   /* Update the alignment to reflect the offset.  Reset the offset, which
      we don't know.  */
   MEM_ATTRS (new)
@@ -2028,6 +2054,10 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
   tree expr = MEM_EXPR (new);
   rtx memoffset = MEM_OFFSET (new);
   unsigned int size = GET_MODE_SIZE (mode);
+
+  /* If there are no changes, just return the original memory reference.  */
+  if (new == memref)
+    return new;
 
   /* If we don't know what offset we were at within the expression, then
      we can't know if we've overstepped the bounds.  */

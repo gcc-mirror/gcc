@@ -4624,10 +4624,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 				       highest_pow2_factor (offset));
 	    }
 
-	  /* If the constructor has been cleared, setting RTX_UNCHANGING_P
-	     on the MEM might lead to scheduling the clearing after the
-	     store.  */
-	  if (TREE_READONLY (field) && !cleared)
+	  if (TREE_READONLY (field))
 	    {
 	      if (GET_CODE (to_rtx) == MEM)
 		to_rtx = copy_rtx (to_rtx);

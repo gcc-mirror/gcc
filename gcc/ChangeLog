@@ -1,3 +1,55 @@
+2004-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/13424
+	Backport from mainline:
+
+	2004-01-29  Jakub Jelinek  <jakub@redhat.com>
+	* emit-rtl.c (change_address): Use XEXP (memref, 0) instead
+	of addr when creating MEM copy.
+
+	2004-01-28  Jakub Jelinek  <jakub@redhat.com>
+	* expr.c (store_constructor): Revert 2003-12-03 change.
+
+	* emit-rtl.c (change_address): Check also if MEM_ATTRS is set as
+	expected before returning early.  Avoid sharing RTL if they
+	need to be changed.
+
+	* config/i386/i386.c (ix86_expand_movstr): Rework rep_mov and strmov
+	handling so that memory attributes are preserved.  Don't call
+	ix86_set_move_mem_attrs.
+	(ix86_set_move_mem_attrs_1, ix86_set_move_mem_attrs): Removed.
+	(ix86_expand_clrstr): Rename src argument to
+	dst.  Rework rep_stos and strset handling so that memory attributes
+	are preserved.
+	(ix86_expand_strlen): Pass src argument to
+	ix86_expand_strlensi_unroll_1.  Rework strlenqi_1 handling so that
+	memory attributes are preserved.
+	(ix86_expand_strlensi_unroll_1): Add src argument.  Use
+	change_address instead of gen_rtx_MEM.
+	* config/i386/i386.md (strmov, strmov_singleop, rep_mov): New
+	expanders.
+	(strmovdi_rex64, strmovsi, strmovsi_rex64, strmovhi, strmovhi_rex64,
+	strmovqi, strmovqi_rex64): Remove.
+	(rep_mov*, strmov*): Prefix insn names with *.
+	(strset, strset_singleop, rep_stos): New expanders.
+	(strsetdi_rex64, strsetsi, strsetsi_rex64, strsethi, strsethi_rex64,
+	strsetqi, strsetqi_rex64): Remove.
+	(rep_stos*, strset*): Prefix insn names with *.
+	(rep_stosqi_rex64): Likewise.  Fix mode of dirflag reg from DImode
+	to SImode.
+	(cmpstrsi): Rework cmpstrqi_1 handling so that memory attributes
+	are preserved.
+	(cmpstrqi_nz_1, cmpstrqi_nz_rex_1, cmpstrqi_1, cmpstrqi_rex_1):
+	Prefix insn names with *.
+	(cmpstrqi_nz_1, cmpstrqi_1): New expanders.
+	(strlenqi_1, strlenqi_rex_1): Prefix insn names with *.
+	(strlenqi_1): New expander.
+	* config/i386/i386.h (ix86_set_move_mem_attrs): Remove prototype.
+
+	2004-01-24  Jan Hubicka  <jh@suse.cz>
+	* emit-rtl.c (change_address, adjust_address_1, offset_address,
+	widen_memory_access):  Return early when there is nothing to change.
+
 2004-02-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* configure.ac (gcc_cv_as_powerpc_mfcrf): Correct test for mfcr.
