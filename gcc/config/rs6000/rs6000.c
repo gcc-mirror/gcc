@@ -541,6 +541,13 @@ rs6000_override_options (default_cpu)
     }
 #endif
 
+#ifdef SUBTARGET_OVERRIDE_OPTIONS
+  SUBTARGET_OVERRIDE_OPTIONS;
+#endif
+#ifdef SUBSUBTARGET_OVERRIDE_OPTIONS
+  SUBSUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
   /* Set debug flags */
   if (rs6000_debug_name)
     {
@@ -594,13 +601,6 @@ rs6000_override_options (default_cpu)
      alternate names now.  */
   if (TARGET_REGNAMES)
     memcpy (rs6000_reg_names, alt_reg_names, sizeof (rs6000_reg_names));
-#endif
-
-#ifdef SUBTARGET_OVERRIDE_OPTIONS
-  SUBTARGET_OVERRIDE_OPTIONS;
-#endif
-#ifdef SUBSUBTARGET_OVERRIDE_OPTIONS
-  SUBSUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
   /* Set TARGET_AIX_STRUCT_RET last, after the ABI is determined.
