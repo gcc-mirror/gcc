@@ -53,6 +53,11 @@
 #define __unix__
 #endif
 
+#ifdef __APPLE__
+/* Work around the fact that gcc/cpp does not define "__unix__" on Darwin.  */
+#define __unix__
+#endif
+
 #ifdef _WIN32
 
 #include <windows.h>
