@@ -1497,9 +1497,10 @@ print-tree.o : print-tree.c $(CONFIG_H) system.h $(TREE_H) $(GGC_H)
 stor-layout.o : stor-layout.c $(CONFIG_H) system.h $(TREE_H) flags.h \
    function.h $(EXPR_H) $(RTL_H) toplev.h $(GGC_H)
 fold-const.o : fold-const.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h \
-   $(RTL_H) $(GGC_H)
-diagnostic.o : diagnostic.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) tm_p.h flags.h \
-   input.h insn-attr.h insn-codes.h insn-config.h toplev.h intl.h 
+   $(RTL_H) ggc.h
+diagnostic.o : diagnostic.c diagnostic.h \
+   $(CONFIG_H) system.h $(TREE_H) $(RTL_H) tm_p.h flags.h \
+   $(GGC_H) input.h insn-attr.h insn-codes.h insn-config.h toplev.h intl.h 
 toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    insn-codes.h insn-config.h intl.h $(RECOG_H) Makefile toplev.h dwarfout.h \
