@@ -1,3 +1,15 @@
+Wed Nov 17 17:39:48 MST 1999	Diego Novillo <dnovillo@cygnus.com>
+
+	* invoke.texi: Add documentation for -muninit-const-in-rodata.
+	* config/mips/mips.h (MASK_UNINIT_CONST_IN_RODATA): Define.
+	(TARGET_UNINIT_CONST_IN_RODATA): Define.
+	(text_section): Add switches -munint-const-in-rodata and
+	-mno-uninit-const-in-rodata.
+	(ASM_OUTPUT_COMMON): Remove.
+	(ASM_OUTPUT_ALIGNED_DECL_COMMON): Define. Check if uninitialized
+	const objects should be placed in read-only data. Otherwise declare
+	them in common.
+
 Wed Nov 17 16:38:32 1999  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Revert last change.
