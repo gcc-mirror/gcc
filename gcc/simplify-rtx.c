@@ -1338,11 +1338,17 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (GET_CODE (op1) == AND)
 	    {
 	     if (rtx_equal_p (op0, XEXP (op1, 0)))
-	       return simplify_gen_binary (AND, mode, op0,
-					   gen_rtx_NOT (mode, XEXP (op1, 1)));
+	       {
+		 tem = simplify_gen_unary (NOT, mode, XEXP (op1, 1),
+					   GET_MODE (XEXP (op1, 1)));
+		 return simplify_gen_binary (AND, mode, op0, tem);
+	       }
 	     if (rtx_equal_p (op0, XEXP (op1, 1)))
-	       return simplify_gen_binary (AND, mode, op0,
-					   gen_rtx_NOT (mode, XEXP (op1, 0)));
+	       {
+		 tem = simplify_gen_unary (NOT, mode, XEXP (op1, 0),
+					   GET_MODE (XEXP (op1, 0)));
+		 return simplify_gen_binary (AND, mode, op0, tem);
+	       }
 	   }
 	  break;
 

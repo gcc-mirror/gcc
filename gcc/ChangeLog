@@ -1,3 +1,8 @@
+2003-02-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* simplify-rtx.c (simplify_binary_operation): Simplify ~y when
+	(x - (x & y)) is found.
+
 2003-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Fix typo.
