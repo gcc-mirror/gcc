@@ -272,14 +272,14 @@ namespace std
       _M_narrow_ok = true;
     else
       _M_narrow_ok = false;
-    for (size_t __i = 0;
-	 __i < sizeof(_M_widen) / sizeof(wint_t); ++__i)
-      _M_widen[__i] = btowc(__i);
+    for (size_t __j = 0;
+	 __j < sizeof(_M_widen) / sizeof(wint_t); ++__j)
+      _M_widen[__j] = btowc(__j);
 
-    for (size_t __i = 0; __i <= 11; ++__i)
+    for (size_t __k = 0; __k <= 11; ++__k)
       { 
-	_M_bit[__i] = static_cast<mask>(_ISbit(__i));
-	_M_wmask[__i] = _M_convert_to_wmask(_M_bit[__i]);
+	_M_bit[__k] = static_cast<mask>(_ISbit(__k));
+	_M_wmask[__k] = _M_convert_to_wmask(_M_bit[__k]);
       }
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __uselocale(__old);

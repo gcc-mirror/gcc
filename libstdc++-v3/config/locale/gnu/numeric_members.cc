@@ -58,14 +58,16 @@ namespace std
 	  for (size_t __i = 0; __i < __num_base::_S_oend; ++__i)
 	    _M_data->_M_atoms_out[__i] = __num_base::_S_atoms_out[__i];
 
-	  for (size_t __i = 0; __i < __num_base::_S_iend; ++__i)
-	    _M_data->_M_atoms_in[__i] = __num_base::_S_atoms_in[__i];
+	  for (size_t __j = 0; __j < __num_base::_S_iend; ++__j)
+	    _M_data->_M_atoms_in[__j] = __num_base::_S_atoms_in[__j];
 	}
       else
 	{
 	  // Named locale.
-	  _M_data->_M_decimal_point = *(__nl_langinfo_l(DECIMAL_POINT, __cloc));
-	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(THOUSANDS_SEP, __cloc));
+	  _M_data->_M_decimal_point = *(__nl_langinfo_l(DECIMAL_POINT, 
+							__cloc));
+	  _M_data->_M_thousands_sep = *(__nl_langinfo_l(THOUSANDS_SEP, 
+							__cloc));
 
 	  // Check for NULL, which implies no grouping.
 	  if (_M_data->_M_thousands_sep == '\0')
@@ -111,9 +113,9 @@ namespace std
 	    _M_data->_M_atoms_out[__i] =
 	      static_cast<wchar_t>(__num_base::_S_atoms_out[__i]);
 
-	  for (size_t __i = 0; __i < __num_base::_S_iend; ++__i)
-	    _M_data->_M_atoms_in[__i] =
-	      static_cast<wchar_t>(__num_base::_S_atoms_in[__i]);
+	  for (size_t __j = 0; __j < __num_base::_S_iend; ++__j)
+	    _M_data->_M_atoms_in[__j] =
+	      static_cast<wchar_t>(__num_base::_S_atoms_in[__j]);
 	}
       else
 	{

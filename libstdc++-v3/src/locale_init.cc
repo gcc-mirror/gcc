@@ -260,8 +260,8 @@ namespace std
     _M_names = new (&name_vec) char*[_S_categories_size];
     _M_names[0] = new (&name_c[0]) char[2];
     std::memcpy(_M_names[0], locale::facet::_S_get_c_name(), 2);
-    for (size_t __i = 1; __i < _S_categories_size; ++__i)
-      _M_names[__i] = 0;
+    for (size_t __j = 1; __j < _S_categories_size; ++__j)
+      _M_names[__j] = 0;
 
     // This is needed as presently the C++ version of "C" locales
     // != data in the underlying locale model for __timepunct,
