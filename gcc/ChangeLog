@@ -1,3 +1,16 @@
+2003-06-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (LONG_LONG_TYPE_SIZE): Set to 64.
+	* config/h8300/t-h8300 (LIB1ASMFUNCS): Remove _floatdisf
+	_fixsfdi _fixunssfdi.
+	(LIB2FUNCS_EXTRA): Add entries for clzhi2, ctzhi2, parityhi2,
+	popcounthi2.
+	(TARGET_LIBGCC2_CFLAGS): Remove -DDI=SI.
+	* config/h8300/clzhi2.c: New.
+	* config/h8300/ctzhi2.c: Likewise.
+	* config/h8300/parityhi2.c: Likewise.
+	* config/h8300/popcounthi2.c: Likewise.
+
 Sun Jun  8 15:52:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (subsi_3_zext, sse2_nandv2di3): Fix predicates.
