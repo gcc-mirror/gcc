@@ -745,8 +745,7 @@ static struct user_specs *user_specs_head, *user_specs_tail;
   ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
    || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
    || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x' \
-   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V' \
-   || (CHAR) == 'B' || (CHAR) == 'b')
+   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'B' || (CHAR) == 'b')
 
 #ifndef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) DEFAULT_SWITCH_TAKES_ARG(CHAR)
@@ -1185,7 +1184,7 @@ translate_options (argcp, argvp)
 	    nskip += SWITCH_TAKES_ARG (c) - (p[1] != 0);
 	  else if (WORD_SWITCH_TAKES_ARG (p))
 	    nskip += WORD_SWITCH_TAKES_ARG (p);
-	  else if ((c == 'B' || c == 'b' || c == 'V' || c == 'x')
+	  else if ((c == 'B' || c == 'b' || c == 'x')
 		   && p[1] == 0)
 	    nskip += 1;
 	  else if (! strcmp (p, "Xlinker"))
@@ -3606,48 +3605,6 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	      verbose_flag++;
 	      break;
 
-	    case 'V':
-	      n_switches++;
-	      if (p[1] == 0 && i + 1 == argc)
-		fatal ("argument to `-V' is missing");
-	      if (p[1] == 0)
-		spec_version = argv[++i];
-	      else
-		spec_version = p + 1;
-	      compiler_version = spec_version;
-	      warn_std_ptr = &warn_std;
-
-	      /* Validate the version number.  Use the same checks
-		 done when inserting it into a spec.
-
-		 The format of the version string is
-		 ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
-	      {
-		const char *v = compiler_version;
-
-		/* Ignore leading non-digits.  i.e. "foo-" in "foo-2.7.2".  */
-		while (! ISDIGIT (*v))
-		  v++;
-
-		if (v > compiler_version && v[-1] != '-')
-		  fatal ("invalid version number format");
-
-		/* Set V after the first period.  */
-		while (ISDIGIT (*v))
-		  v++;
-
-		if (*v != '.')
-		  fatal ("invalid version number format");
-
-		v++;
-		while (ISDIGIT (*v))
-		  v++;
-
-		if (*v != 0 && *v != ' ' && *v != '.' && *v != '-')
-		  fatal ("invalid version number format");
-	      }
-	      break;
-
 	    case 'S':
 	    case 'c':
 	      if (p[1] == 0)
@@ -4005,7 +3962,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  else
 	    {
 	      char ch = switches[n_switches].part1[0];
-	      if (ch == 'V' || ch == 'b' || ch == 'B')
+	      if (ch == 'b' || ch == 'B')
 		switches[n_switches].validated = 1;
 	    }
 	  n_switches++;
