@@ -106,6 +106,7 @@ extern unsigned xtensa_current_frame_size;
   do {									\
     builtin_assert ("cpu=xtensa");					\
     builtin_assert ("machine=xtensa");					\
+    builtin_define ("__xtensa__");					\
     builtin_define ("__XTENSA__");					\
     builtin_define (TARGET_BIG_ENDIAN ? "__XTENSA_EB__" : "__XTENSA_EL__"); \
     if (!TARGET_HARD_FLOAT)						\

@@ -1,3 +1,7 @@
+2004-02-26  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (TARGET_CPU_CPP_BUILTINS): Define __xtensa__.
+
 2004-02-26  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* config/sparc/sparc-protos.h (sparc_emit_floatunsdi): Add 'mode'.
