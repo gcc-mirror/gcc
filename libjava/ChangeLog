@@ -1,3 +1,19 @@
+2001-09-30  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/DataInput.java:  Merge with Classpath.
+	* java/io/DataOutput.java:  Idem.
+	* java/io/FilenameFilter.java:  Idem.
+	* java/io/Serializable.java:  Idem.
+	* java/lang/Cloneable.java:  Idem.
+	* java/lang/Comparable.java:  Idem.
+	* java/lang/Runnable.java:  Idem.
+	* java/lang/reflect/Member.java:  Idem.
+	* java/net/ContentHandlerFactory.java:  Idem.
+	* java/net/FileNameMap.java:  Idem.
+	* java/net/SocketImplFactory.java:  Idem.
+	* java/net/SocketOptions.java:  Idem.
+	* java/net/URLStreamHandlerFactory.java:  Idem.
+
 2001-09-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Handle the case of
