@@ -8,6 +8,7 @@
 #include <iostream.h>
 #include <strstream.h>
 
+using namespace std;
 
 class BugStream : public ostrstream {
 public:

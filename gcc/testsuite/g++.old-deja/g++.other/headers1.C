@@ -41,7 +41,6 @@
 #include <stack>
 #include <stdexcept>
 #include <string>
-#include <strstream>
 #include <typeinfo>
 #include <utility>
 #include <valarray>

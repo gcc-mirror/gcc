@@ -1,6 +1,8 @@
 #include <stream.h>
 #include <strstream.h>
 
+using namespace std;
+
 int
 main(int, char* [])
 {

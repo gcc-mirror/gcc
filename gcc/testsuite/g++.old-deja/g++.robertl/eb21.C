@@ -2,6 +2,8 @@
 
 #include <strstream.h>
 
+using namespace std;
+
 /*----------------------------------------*/
 
 struct connection_t {
