@@ -2814,7 +2814,14 @@ tidy_fallthru_edge (e, b, c)
 	  NOTE_SOURCE_FILE (q) = 0;
 	}
       else
-	q = PREV_INSN (q);
+	{
+	  q = PREV_INSN (q);
+
+	  /* We don't want a block to end on a line-number note since that has
+	     the potential of changing the code between -g and not -g.  */
+	  while (GET_CODE (q) == NOTE && NOTE_LINE_NUMBER (q) >= 0)
+	    q = PREV_INSN (q);
+	}
 
       b->end = q;
     }
