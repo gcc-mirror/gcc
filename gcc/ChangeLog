@@ -1,3 +1,19 @@
+2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris6.h (NO_BUILTIN_WINT_TYPE): Define.
+	(WINT_TYPE): Override.
+	(WINT_TYPE_SIZE): Likewise.
+	(SUBTARGET_CPP_SIZE_SPEC): Define __WINT_TYPE__ as appropriate.
+
+	* config/sparc/sol2.h (WINT_TYPE): Define.
+	(WINT_TYPE_SIZE): Likewise.
+
+	* config/sparc/sol2-sld-64.h (NO_BUILTIN_WINT_TYPE): Define.
+	(WINT_TYPE): Override.
+	(WINT_TYPE_SIZE): Likewise.
+	(CPP_ARCH32_SPEC): Add __WINT_TYPE__ definition.
+	(CPP_ARCH64_SPEC): Likewise.
+
 2001-06-11  Richard Henderson  <rth@redhat.com>
 
 	* unwind-dw2-fde.c (__deregister_frame_info): Don't play games

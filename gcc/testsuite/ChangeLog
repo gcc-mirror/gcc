@@ -1,3 +1,8 @@
+2001-06-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gcc.dg/wchar_t-1.c: New file.
+	* gcc.dg/wint_t-1.c: Likewise.
+
 2001-06-11  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.law/code-gen5.C: Don't send raw pointers to assert.

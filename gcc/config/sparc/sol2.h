@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for SPARC running Solaris 2
-   Copyright 1992, 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright 1992, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -22,6 +23,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */
 #include "sparc/sysv4.h"
+
+/* Solaris 2 uses a wint_t different from the default. This is required
+   by the SCD 2.4.1, p. 6-83, Figure 6-66.  */
+#undef	WINT_TYPE
+#define	WINT_TYPE "long int"
+
+#undef	WINT_TYPE_SIZE
+#define	WINT_TYPE_SIZE BITS_PER_WORD
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
