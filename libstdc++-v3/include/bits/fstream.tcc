@@ -165,7 +165,6 @@ namespace std
       const bool __testin = this->_M_mode & ios_base::in;
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
-      const bool __testsync = this->_M_buf_size <= 1;
 
       if (__testin && this->is_open())
 	{
@@ -174,13 +173,100 @@ namespace std
 	  // For a stateful encoding (-1) the pending sequence might be just
 	  // shift and unshift prefixes with no actual character.
 	  if (__cvt.encoding() >= 0)
-	    __ret += _M_file.showmanyc_helper(__testsync) / __cvt.max_length();
+	    __ret += _M_file.showmanyc() / __cvt.max_length();
 	}
 
       _M_last_overflowed = false;	
       return __ret;
     }
   
+  template<typename _CharT, typename _Traits>
+    typename basic_filebuf<_CharT, _Traits>::int_type 
+    basic_filebuf<_CharT, _Traits>::_M_underflow(bool __bump)
+    {
+      int_type __ret = traits_type::eof();
+      const bool __testin = this->_M_mode & ios_base::in;
+      const bool __testout = this->_M_mode & ios_base::out;
+
+      if (__testin)
+	{
+	  // Check for pback madness, and if so swich back to the
+	  // normal buffers and jet outta here before expensive
+	  // fileops happen...
+	  if (_M_pback_init)
+	    _M_destroy_pback();
+
+	  if (this->_M_in_cur < this->_M_in_end)
+	    {
+	      __ret = traits_type::to_int_type(*this->_M_in_cur);
+	      if (__bump)
+		_M_move_in_cur(1);
+	      return __ret;
+	    }
+
+	  // Sync internal and external buffers.
+	  // NB: __testget -> __testput as _M_buf_unified here.
+	  if (this->_M_in_cur > this->_M_in_beg)
+	    {
+	      if (__testout)
+		_M_overflow();
+	      else if (this->_M_in_cur != _M_filepos)
+		_M_file.seekoff(this->_M_in_cur - _M_filepos, ios_base::cur, 
+				ios_base::in);
+	    }
+
+	  if (_M_buf_size)
+	    {
+	      streamsize __elen = 0;
+	      streamsize __ilen = 0;
+	      const locale __loc = this->getloc();
+	      const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
+	      if (__cvt.always_noconv())
+		{
+		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(this->_M_in_beg), _M_buf_size);
+		  __ilen = __elen;
+		}
+	      else
+		{
+		  char* __buf = static_cast<char*>(__builtin_alloca(_M_buf_size));
+		  __elen = _M_file.xsgetn(__buf, _M_buf_size);
+		  
+		  const char* __eend;
+		  char_type* __iend;
+		  codecvt_base::result __r;
+		  __r = __cvt.in(_M_state_cur, __buf, __buf + __elen, __eend, 
+				 this->_M_in_beg, 
+				 this->_M_in_beg + _M_buf_size, __iend);
+		  if (__r == codecvt_base::ok)
+		    __ilen = __iend - this->_M_in_beg;
+		  else if (__r == codecvt_base::noconv)
+		    {
+		      traits_type::copy(this->_M_in_beg,
+ 					reinterpret_cast<char_type*>(__buf), 
+					__elen);
+ 		      __ilen = __elen;
+		    }
+		  else 
+		    {
+		      // Unwind.
+		      __ilen = 0;
+		      _M_file.seekoff(-__elen, ios_base::cur, ios_base::in);
+		    }
+		}
+
+	      if (0 < __ilen)
+		{
+		  _M_set_determinate(__ilen);
+		  __ret = traits_type::to_int_type(*this->_M_in_cur);
+		  if (__bump)
+		    _M_move_in_cur(1);
+		}	   
+	    }
+	}
+      _M_last_overflowed = false;	
+      return __ret;
+    }
+
   template<typename _CharT, typename _Traits>
     typename basic_filebuf<_CharT, _Traits>::int_type 
     basic_filebuf<_CharT, _Traits>::
@@ -277,14 +363,12 @@ namespace std
     _M_convert_to_external(_CharT* __ibuf, streamsize __ilen,
 			   streamsize& __elen, streamsize& __plen)
     {
-      const bool __testsync = this->_M_buf_size <= 1;
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
 
       if (__cvt.always_noconv() && __ilen)
 	{
-	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), 
-				   __ilen, __testsync);
+	  __elen += _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
 	  __plen += __ilen;
 	}
       else
@@ -317,7 +401,7 @@ namespace std
 	  
 	  if (__blen)
 	    {
-	      __elen += _M_file.xsputn(__buf, __blen, __testsync);
+	      __elen += _M_file.xsputn(__buf, __blen);
 	      __plen += __blen;
 	    }
 	  
@@ -331,7 +415,7 @@ namespace std
 	      if (__r != codecvt_base::error)
 		{
 		  __rlen = __bend - __buf;
-		  __elen += _M_file.xsputn(__buf, __rlen, __testsync);
+		  __elen += _M_file.xsputn(__buf, __rlen);
 		  __plen += __rlen;
 		}
 	    }
@@ -346,7 +430,6 @@ namespace std
       int_type __ret = traits_type::eof();
       const bool __testput = this->_M_out_beg < this->_M_out_lim;
       const bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size;
-      const bool __testsync = this->_M_buf_size <= 1;
 
       if (__testput || __testunbuffered)
 	{
@@ -360,7 +443,7 @@ namespace std
 	  if (_M_filepos && _M_filepos != this->_M_out_beg)
 	    {
 	      off_type __off = this->_M_out_beg - _M_filepos;
-	      _M_file.seekoff(__off, ios_base::cur, __testsync);
+	      _M_file.seekoff(__off, ios_base::cur);
 	    }
 
 	  // Convert internal buffer to external representation, output.
@@ -434,7 +517,6 @@ namespace std
       pos_type __ret =  pos_type(off_type(-1)); 
       const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
       const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
-      const bool __testsync = this->_M_buf_size <= 1;
       
       int __width = 0;
       if (has_facet<__codecvt_type>(this->_M_buf_locale))
@@ -468,16 +550,14 @@ namespace std
 		__computed_off += this->_M_in_cur - _M_filepos;
 
 	      // Return pos_type(off_type(-1)) in case of failure.
-	      __ret = _M_file.seekoff(__computed_off, __way, __testsync, 
-				      __mode);
+	      __ret = _M_file.seekoff(__computed_off, __way, __mode);
 	      _M_set_indeterminate();
 	    }
 	  // NB: Need to do this in case _M_file in indeterminate
 	  // state, ie _M_file._offset == -1
 	  else
 	    {
-	      pos_type __tmp = _M_file.seekoff(__off, ios_base::cur, 
-					       __testsync, __mode);
+	      pos_type __tmp = _M_file.seekoff(__off, ios_base::cur, __mode);
 	      if (__tmp >= 0)
 		{
 		  // Seek successful.

@@ -76,28 +76,31 @@ void test05()
   fb_01.open(name_01, ios_base::in);
   fb_02.open(name_02, ios_base::out | ios_base::trunc);
   fb_03.open(name_03, ios_base::out | ios_base::in | ios_base::trunc); 
+
   strmof_1 = fb_01.in_avail();
-  strmof_2 = fb_02.in_avail();
-  strmof_1 = fb_03.in_avail(); 
-
   int_type c1 = fb_01.sbumpc();
-  int_type c2 = fb_02.sbumpc();
   int_type c3 = fb_01.sbumpc();
-  int_type c4 = fb_02.sbumpc();
-  int_type c5 = fb_03.sbumpc();
-
   int_type c6 = fb_01.sgetc();
-  int_type c7 = fb_02.sgetc();
   int_type c8 = fb_01.sgetc();
+
+  strmof_2 = fb_02.in_avail();
+  int_type c2 = fb_02.sbumpc();
+  int_type c4 = fb_02.sbumpc();
+  int_type c7 = fb_02.sgetc();
   int_type c9 = fb_02.sgetc();
+
+  strmof_1 = fb_03.in_avail(); 
+  int_type c5 = fb_03.sbumpc();
   c5 = fb_03.sgetc();
 
   // int_type snextc()
   // calls sbumpc and if sbumpc != eof, return sgetc
   c6 = fb_01.snextc();
-  c7 = fb_02.snextc();
   c6 = fb_01.snextc();
+
   c7 = fb_02.snextc();
+  c7 = fb_02.snextc();
+
   c5 = fb_03.snextc();
 
   // streamsize sgetn(char_type *s, streamsize n)

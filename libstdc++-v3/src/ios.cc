@@ -38,15 +38,24 @@
 #include <fstream>
 #include <bits/atomicity.h>
 #include <ext/stdio_filebuf.h>
+#include <ext/stdio_sync_filebuf.h>
 
 namespace __gnu_cxx
 {
   // Extern declarations for global objects in src/globals.cc.
+  extern stdio_sync_filebuf<char> buf_cout_sync;
+  extern stdio_sync_filebuf<char> buf_cin_sync;
+  extern stdio_sync_filebuf<char> buf_cerr_sync;
+
   extern stdio_filebuf<char> buf_cout;
   extern stdio_filebuf<char> buf_cin;
   extern stdio_filebuf<char> buf_cerr;
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  extern stdio_sync_filebuf<wchar_t> buf_wcout_sync;
+  extern stdio_sync_filebuf<wchar_t> buf_wcin_sync;
+  extern stdio_sync_filebuf<wchar_t> buf_wcerr_sync;
+
   extern stdio_filebuf<wchar_t> buf_wcout;
   extern stdio_filebuf<wchar_t> buf_wcin;
   extern stdio_filebuf<wchar_t> buf_wcerr;
@@ -153,50 +162,6 @@ namespace std
   ios_base::failure::what() const throw()
   { return _M_name; }
 
-  void
-  ios_base::Init::_S_create_buffers(bool __sync)
-  {
-    size_t __out_size = __sync ? 0 : static_cast<size_t>(BUFSIZ);
-    size_t __in_size = __sync ? 1 : static_cast<size_t>(BUFSIZ);
-
-    // Create stream buffers for the standard streams and use those
-    // buffers without destroying and recreating the streams.
-    new (&buf_cout) stdio_filebuf<char>(stdout, ios_base::out, __out_size);
-    new (&buf_cin) stdio_filebuf<char>(stdin, ios_base::in, __in_size);
-    new (&buf_cerr) stdio_filebuf<char>(stderr, ios_base::out, __out_size);
-    cout.rdbuf(&buf_cout);
-    cin.rdbuf(&buf_cin);
-    cerr.rdbuf(&buf_cerr);
-    clog.rdbuf(&buf_cerr);
-    
-#ifdef _GLIBCPP_USE_WCHAR_T
-    new (&buf_wcout) stdio_filebuf<wchar_t>(stdout, ios_base::out, __out_size);
-    new (&buf_wcin) stdio_filebuf<wchar_t>(stdin, ios_base::in, __in_size);
-    new (&buf_wcerr) stdio_filebuf<wchar_t>(stderr, ios_base::out, __out_size);
-    wcout.rdbuf(&buf_wcout);
-    wcin.rdbuf(&buf_wcin);
-    wcerr.rdbuf(&buf_wcerr);
-    wclog.rdbuf(&buf_wcerr);
-#endif
-  }
-
-  void
-  ios_base::Init::_S_destroy_buffers()
-  {
-    // Explicitly call dtors to free any memory that is dynamically
-    // allocated by filebuf ctor or member functions, but don't
-    // deallocate all memory by calling operator delete.
-    buf_cout.~stdio_filebuf();
-    buf_cin.~stdio_filebuf();
-    buf_cerr.~stdio_filebuf();
-
-#ifdef _GLIBCPP_USE_WCHAR_T
-    buf_wcout.~stdio_filebuf();
-    buf_wcin.~stdio_filebuf();
-    buf_wcerr.~stdio_filebuf();
-#endif
-  }
-
   ios_base::Init::Init()
   {
     if (_S_ios_base_init == 0)
@@ -204,25 +169,32 @@ namespace std
 	// Standard streams default to synced with "C" operations.
 	ios_base::Init::_S_synced_with_stdio = true;
 
-	// The standard streams are constructed once only and never destroyed.
-	// The stream buffers are set in _S_create_buffers below.
-	new (&cout) ostream(NULL);
-	new (&cin) istream(NULL);
-	new (&cerr) ostream(NULL);
-	new (&clog) ostream(NULL);
+	new (&buf_cout_sync) stdio_sync_filebuf<char>(stdout);
+	new (&buf_cin_sync) stdio_sync_filebuf<char>(stdin);
+	new (&buf_cerr_sync) stdio_sync_filebuf<char>(stderr);
+
+	// The standard streams are constructed once only and never
+	// destroyed.
+	new (&cout) ostream(&buf_cout_sync);
+	new (&cin) istream(&buf_cin_sync);
+	new (&cerr) ostream(&buf_cerr_sync);
+	new (&clog) ostream(&buf_cerr_sync);
 	cin.tie(&cout);
 	cerr.flags(ios_base::unitbuf);
 	
 #ifdef _GLIBCPP_USE_WCHAR_T
-	new (&wcout) wostream(NULL);
-	new (&wcin) wistream(NULL);
-	new (&wcerr) wostream(NULL);
-	new (&wclog) wostream(NULL);
+	new (&buf_wcout_sync) stdio_sync_filebuf<wchar_t>(stdout);
+	new (&buf_wcin_sync) stdio_sync_filebuf<wchar_t>(stdin);
+	new (&buf_wcerr_sync) stdio_sync_filebuf<wchar_t>(stderr);
+
+	new (&wcout) wostream(&buf_wcout_sync);
+	new (&wcin) wistream(&buf_wcin_sync);
+	new (&wcerr) wostream(&buf_wcerr_sync);
+	new (&wclog) wostream(&buf_wcerr_sync);
 	wcin.tie(&wcout);
 	wcerr.flags(ios_base::unitbuf);
 #endif
 
-	_S_create_buffers(ios_base::Init::_S_synced_with_stdio);
 	_S_ios_base_init = 1;
       }
     ++_S_ios_base_init;
@@ -389,8 +361,40 @@ namespace std
     if (!__sync && __ret)
       {
 	ios_base::Init::_S_synced_with_stdio = __sync;
-	ios_base::Init::_S_destroy_buffers();
-	ios_base::Init::_S_create_buffers(__sync);
+
+	// Explicitly call dtors to free any memory that is
+	// dynamically allocated by filebuf ctor or member functions,
+	// but don't deallocate all memory by calling operator delete.
+	buf_cout_sync.~stdio_sync_filebuf<char>();
+	buf_cin_sync.~stdio_sync_filebuf<char>();
+	buf_cerr_sync.~stdio_sync_filebuf<char>();
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+	buf_wcout_sync.~stdio_sync_filebuf<wchar_t>();
+	buf_wcin_sync.~stdio_sync_filebuf<wchar_t>();
+	buf_wcerr_sync.~stdio_sync_filebuf<wchar_t>();
+#endif
+
+	// Create stream buffers for the standard streams and use
+	// those buffers without destroying and recreating the
+	// streams.
+	new (&buf_cout) stdio_filebuf<char>(stdout, ios_base::out);
+	new (&buf_cin) stdio_filebuf<char>(stdin, ios_base::in);
+	new (&buf_cerr) stdio_filebuf<char>(stderr, ios_base::out);
+	cout.rdbuf(&buf_cout);
+	cin.rdbuf(&buf_cin);
+	cerr.rdbuf(&buf_cerr);
+	clog.rdbuf(&buf_cerr);
+    
+#ifdef _GLIBCPP_USE_WCHAR_T
+	new (&buf_wcout) stdio_filebuf<wchar_t>(stdout, ios_base::out);
+	new (&buf_wcin) stdio_filebuf<wchar_t>(stdin, ios_base::in);
+	new (&buf_wcerr) stdio_filebuf<wchar_t>(stderr, ios_base::out);
+	wcout.rdbuf(&buf_wcout);
+	wcin.rdbuf(&buf_wcin);
+	wcerr.rdbuf(&buf_wcerr);
+	wclog.rdbuf(&buf_wcerr);
+#endif
       }
     return __ret; 
   }

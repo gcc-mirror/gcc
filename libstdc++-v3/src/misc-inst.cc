@@ -38,6 +38,7 @@
 #include <algorithm>
 #include <vector>
 #include <bits/atomicity.h>
+#include <ext/stdio_sync_filebuf.h>
 
 namespace std
 {
@@ -73,9 +74,10 @@ namespace std
 #endif
 } // namespace std
 
-#ifdef _GLIBCPP_NEED_GENERIC_MUTEX
+
 namespace __gnu_cxx
 {
+#ifdef _GLIBCPP_NEED_GENERIC_MUTEX
 #ifdef __GTHREAD_MUTEX_INIT
   __gthread_mutex_t _Atomic_add_mutex = __GTHREAD_MUTEX_INIT;
 #else
@@ -87,6 +89,12 @@ namespace __gnu_cxx
     __GTHREAD_MUTEX_INIT_FUNCTION (&_Atomic_add_mutex);
   }
 #endif
-} // namespace __gnu_cxx
 #endif // _GLIBCPP_NEED_GLOBAL_MUTEX
+
+  template class stdio_sync_filebuf<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class stdio_sync_filebuf<wchar_t>;
+#endif
+} // namespace __gnu_cxx
+
 

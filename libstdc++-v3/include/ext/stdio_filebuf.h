@@ -35,6 +35,7 @@
 #define _EXT_STDIO_FILEBUF
 
 #pragma GCC system_header
+
 #include <fstream>
 
 namespace __gnu_cxx
@@ -59,10 +60,6 @@ namespace __gnu_cxx
       typedef typename traits_type::pos_type 		pos_type;
       typedef typename traits_type::off_type 		off_type;
       typedef std::size_t                               size_t;
-      
-    protected:
-      // Stack-based buffer for unbuffered input.
-      char_type			_M_unbuf[4];
       
     public:
       /**
@@ -125,11 +122,7 @@ namespace __gnu_cxx
 	{
 	  this->_M_mode = __mode;
 	  this->_M_buf_size = __size;
-	  if (__size > 0 && __size < 4)
-	    // Specify not to use an allocated buffer.
-	    this->_M_buf = _M_unbuf;
-	  else
-	    _M_allocate_internal_buffer();
+	  _M_allocate_internal_buffer();
 	  _M_set_indeterminate();
 	}
     }
@@ -144,14 +137,10 @@ namespace __gnu_cxx
 	{
 	  this->_M_mode = __mode;
 	  this->_M_buf_size = __size;
-	  if (__size > 0 && __size < 4)
-	    // Specify not to use an allocated buffer.
-	    this->_M_buf = _M_unbuf;
-	  else
-	    _M_allocate_internal_buffer();
+	  _M_allocate_internal_buffer();
 	  _M_set_indeterminate();
 	}
     }
 } // namespace __gnu_cxx
 
-#endif /* _EXT_STDIO_FILEBUF */
+#endif 

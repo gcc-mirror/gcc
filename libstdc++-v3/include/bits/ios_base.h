@@ -452,12 +452,6 @@ namespace std
       Init();
       ~Init();
       
-      static void
-      _S_create_buffers(bool __sync);
-      
-      static void
-      _S_destroy_buffers();
-
       // NB: Allows debugger applications use of the standard streams
       // from operator new. _S_ios_base_init must be incremented in
       // _S_ios_create _after_ initialization is completed.

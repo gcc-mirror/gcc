@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -205,7 +205,6 @@ sources = \
 	ctype.cc \
 	demangle.cc \
 	ext-inst.cc \
-	fstream.cc \
 	fstream-inst.cc \
 	functexcept.cc \
 	globals.cc \
@@ -306,9 +305,9 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libstdc___la_OBJECTS =  codecvt.lo complex_io.lo concept-inst.lo \
-ctype.lo demangle.lo ext-inst.lo fstream.lo fstream-inst.lo \
-functexcept.lo globals.lo io-inst.lo ios.lo istream-inst.lo limits.lo \
-locale.lo locale-inst.lo localename.lo misc-inst.lo ostream-inst.lo \
+ctype.lo demangle.lo ext-inst.lo fstream-inst.lo functexcept.lo \
+globals.lo io-inst.lo ios.lo istream-inst.lo limits.lo locale.lo \
+locale-inst.lo localename.lo misc-inst.lo ostream-inst.lo \
 sstream-inst.lo stdexcept.lo stl-inst.lo streambuf-inst.lo \
 string-inst.lo strstream.lo valarray-inst.lo wstring-inst.lo \
 codecvt_members.lo collate_members.lo ctype_members.lo \

@@ -306,11 +306,13 @@ namespace std
 
       // [documentation is inherited]
       virtual int_type
-      underflow();
+      underflow()
+      { return _M_underflow(false); }
 
       // [documentation is inherited]
       virtual int_type
-      uflow();
+      uflow()
+      { return _M_underflow(true); }
 
       // [documentation is inherited]
       virtual int_type
@@ -385,8 +387,6 @@ namespace std
       {
 	int __ret = 0;
 	const bool __testput = this->_M_out_beg < this->_M_out_lim;
-	// Sync with stdio.
-	const bool __sync = this->_M_buf_size <= 1;
 
 	// Make sure that the internal buffer resyncs its idea of
 	// the file position with the external file.
@@ -399,7 +399,7 @@ namespace std
 	    if (traits_type::eq_int_type(_M_overflow(), traits_type::eof()))
 	      __ret = -1;
 	    else if (__off)
-	      _M_file.seekoff(__off, ios_base::cur, __sync);
+	      _M_file.seekoff(__off, ios_base::cur);
 	  }
 	else
 	  _M_file.sync();
@@ -486,44 +486,6 @@ namespace std
 	_M_filepos = this->_M_buf + __off;
       }
     };
-
-  // Explicit specialization declarations, defined in src/fstream.cc.
-  template<> 
-    basic_filebuf<char>::int_type 
-    basic_filebuf<char>::_M_underflow(bool __bump);
-
-  template<>
-    basic_filebuf<char>::int_type
-    basic_filebuf<char>::underflow(); 
-
-  template<>
-    basic_filebuf<char>::int_type
-    basic_filebuf<char>::uflow(); 
-
- #ifdef _GLIBCPP_USE_WCHAR_T
-  template<> 
-    basic_filebuf<wchar_t>::int_type 
-    basic_filebuf<wchar_t>::_M_underflow(bool __bump);
-
-  template<>
-    basic_filebuf<wchar_t>::int_type
-    basic_filebuf<wchar_t>::underflow(); 
-
-  template<>
-    basic_filebuf<wchar_t>::int_type
-    basic_filebuf<wchar_t>::uflow(); 
- #endif
-
-  // Generic definitions do nothing.
-  template <typename _CharT, typename _Traits>
-    typename basic_filebuf<_CharT, _Traits>::int_type
-    basic_filebuf<_CharT, _Traits>::underflow() 
-    { return int_type(); }
-
-  template <typename _CharT, typename _Traits>
-    typename basic_filebuf<_CharT, _Traits>::int_type
-    basic_filebuf<_CharT, _Traits>::uflow() 
-    { return int_type(); }
 
   // [27.8.1.5] Template class basic_ifstream
   /**

@@ -1,6 +1,6 @@
 // 2003-05-01 Petur Runolfsson  <peturr02@ru.is>
 
-// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,36 +66,24 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <cwchar>
-#include <cwctype>
 #include <testsuite_hooks.h>
 
 // Include iostream last, just to make is as difficult as possible to
 // properly initialize the standard iostream objects.
 #include <iostream>
 
-// Make sure all the standard streams are defined.
-void
-test01()
+// libstdc++/2523
+void test02()
 {
-  bool test = true;
-
-  wchar_t array2[20];
-  typedef std::wios::traits_type wtraits_type;
-  wtraits_type::int_type wi = 15;
-  wtraits_type::copy(array2, L"testing istream", wi);
-  std::wcout << L"testing wcout" << std::endl;
-  std::wcerr << L"testing wcerr" << std::endl;
-  VERIFY( std::wcerr.flags() & std::ios_base::unitbuf );
-  std::wclog << L"testing wclog" << std::endl;
-  // std::wcin >> array2; // requires somebody to type something in.
-  VERIFY( std::wcin.tie() == &std::wcout );
+  using namespace std;
+  int i;
+  wcin >> i;
+  wcout << "i == " << i << endl;
 }
-
 
 int 
 main()
 {
-  test01();  
+  test02();
   return 0;
 }
