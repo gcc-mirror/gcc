@@ -33,12 +33,12 @@ compare_and_swap (volatile obj_addr_t *addr, obj_addr_t old,
   int ret;
 
   __asm__ __volatile__ (
-	   "0:    " _LARX "%0,0,%1 ;"
-	   "      xor. %0,%3,%0;"
-	   "      bne 1f;"
-	   "      " _STCX "%2,0,%1;"
-	   "      bne- 0b;"
-	   "1:    "
+	   "0:    " _LARX "%0,0,%1 \n"
+	   "      xor. %0,%3,%0\n"
+	   "      bne 1f\n"
+	   "      " _STCX "%2,0,%1\n"
+	   "      bne- 0b\n"
+	   "1:   \n"
 	: "=&r" (ret)
 	: "r" (addr), "r" (new_val), "r" (old)
 	: "cr0", "memory");
@@ -67,12 +67,12 @@ compare_and_swap_release (volatile obj_addr_t *addr, obj_addr_t old,
   __asm__ __volatile__ ("sync" : : : "memory");
 
   __asm__ __volatile__ (
-	   "0:    " _LARX "%0,0,%1 ;"
-	   "      xor. %0,%3,%0;"
-	   "      bne 1f;"
-	   "      " _STCX "%2,0,%1;"
-	   "      bne- 0b;"
-	   "1:    "
+	   "0:    " _LARX "%0,0,%1 \n"
+	   "      xor. %0,%3,%0\n"
+	   "      bne 1f\n"
+	   "      " _STCX "%2,0,%1\n"
+	   "      bne- 0b\n"
+	   "1:   \n"
 	: "=&r" (ret)
 	: "r" (addr), "r" (new_val), "r" (old)
 	: "cr0", "memory");
