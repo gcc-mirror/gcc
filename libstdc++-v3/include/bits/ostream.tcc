@@ -474,7 +474,7 @@ namespace std
 	{
 	  try 
 	    {
-	      streamsize __w = __out.width();
+	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
 	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * (__w + 1)));
 	      __pads[0] = __c;
 	      streamsize __len = 1;
@@ -510,7 +510,7 @@ namespace std
 	{
 	  try 
 	    {
-	      streamsize __w = __out.width();
+	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
 	      char* __pads = static_cast<char*>(__builtin_alloca(__w + 1));
 	      __pads[0] = __c;
 	      streamsize __len = 1;
@@ -545,7 +545,7 @@ namespace std
 	{
 	  try 
 	    {
-	      streamsize __w = __out.width();
+	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
 	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
 	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	      if (__w > __len)
@@ -594,7 +594,7 @@ namespace std
 	  try 
 	    {
 	      streamsize __len = static_cast<streamsize>(__clen);
-	      streamsize __w = __out.width();
+	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
 	      _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
 	      
 	      if (__w > __len)
@@ -632,7 +632,7 @@ namespace std
 	{
 	  try 
 	    {
-	      streamsize __w = __out.width();
+	      const streamsize __w = __out.width() > 0 ? __out.width() : 0;
 	      char* __pads = static_cast<char*>(__builtin_alloca(__w));
 	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 
@@ -671,7 +671,7 @@ namespace std
       if (__cerb)
 	{
 	  const _CharT* __s = __str.data();
-	  streamsize __w = __out.width();
+	  const streamsize __w = __out.width() > 0 ? __out.width() : 0;
 	  _CharT* __pads = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __w));
 	  streamsize __len = static_cast<streamsize>(__str.size());
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS

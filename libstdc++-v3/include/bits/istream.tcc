@@ -1021,7 +1021,7 @@ namespace std
 	    {
 	      // Figure out how many characters to extract.
 	      streamsize __num = __in.width();
-	      if (__num == 0)
+	      if (__num <= 0)
 		__num = numeric_limits<streamsize>::max();
 	      
 	      const __ctype_type& __ctype = use_facet<__ctype_type>(__in.getloc());
