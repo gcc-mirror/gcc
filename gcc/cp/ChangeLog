@@ -1,5 +1,7 @@
 1999-10-06  Mark Mitchell  <mark@codesourcery.com>
 
+	* dump.c (dequeue_and_dump): Dump all three operands to a COND_EXPR.
+
 	* cp-tree.h (CLASSTYPE_VFIELD): Remove.
 	* call.c (build_vfield_ref): Use TYPE_VFIELD, not
 	CLASSTYPE_VFIELD.
