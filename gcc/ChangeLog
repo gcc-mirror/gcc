@@ -1,3 +1,8 @@
+Tue Jun  2 22:17:26 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (expand_expr, case ADDR_EXPR): Handle taking the
+	address of an ADDRESSOF rtx.
+
 1998-06-02  Mike Stump  <mrs@wrs.com>
 
 	* expr.c (expand_builtin_setjmp): Handle BUILTIN_SETJMP_FRAME_VALUE.

@@ -7275,7 +7275,7 @@ expand_expr (exp, target, tmode, modifier)
 	    }
 
 	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
-		   || GET_CODE (op0) == CONCAT)
+		   || GET_CODE (op0) == CONCAT || GET_CODE (op0) == ADDRESSOF)
 	    {
 	      /* If this object is in a register, it must be not
 		 be BLKmode.  */
