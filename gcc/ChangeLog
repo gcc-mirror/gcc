@@ -1,3 +1,8 @@
+2001-07-09  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/t-h8300 (LIB1ASMFUNCS): Add _floatdisf and _fixsfdi.
+	* config/mn10200/t-mn10200 (LIB1ASMFUNCS): Likewise.
+
 2001-07-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/c-tree.texi: Document representation of attributes.
