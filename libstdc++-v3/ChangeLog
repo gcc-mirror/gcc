@@ -1,5 +1,22 @@
 2003-07-05  Phil Edwards  <pme@gcc.gnu.org>
 
+	* acinclude.m4 (GLIBCXX_ENABLE_SYMVERS):  Bump minimal version
+	requirement.  Add port_specific_symbol_file variable.
+	* configure.host:  Add docs for port_specific_symbol_file.
+	Clean up try_cpu block for x86.
+	* config/linker-map.gnu:  No more "last symbol can't have a
+	semicolon" kaka.  Add hook for port-specific symbols.
+	* src/Makefile.am:  Remove trailing whitespace.
+	(libstdc++-symbol.ver):  Detect the presence of port-specific
+	symbols, and add them accordingly.
+
+	* docs/html/17_intro/porting.texi:  Bring up to date.
+
+	* src/Makefile.in, aclocal.m4, configure,
+	docs/html/17_intro/porting.html:  Regenerated.
+
+2003-07-05  Phil Edwards  <pme@gcc.gnu.org>
+
 	* scripts/create_testsuite_files:  New file.
 	* testsuite/Makefile.am (all-local, check-performance):  Use it.
 	* testsuite/lib/libstdc++-v3-dg.exp (v3-computer-tests):  Remove.

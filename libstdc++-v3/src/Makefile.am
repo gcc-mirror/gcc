@@ -37,9 +37,16 @@ toolexeclib_LTLIBRARIES = libstdc++.la
 
 # Symbol versioning for shared libraries.
 if GLIBCXX_BUILD_VERSIONED_SHLIB
+port_specific_symbol_file = @port_specific_symbol_file@
 version_arg = -Wl,--version-script=libstdc++-symbol.ver
 libstdc++-symbol.ver:  ${glibcxx_srcdir}/@SYMVER_MAP@
-	@LN_S@  ${glibcxx_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
+	cp ${glibcxx_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver
+	if test "x${port_specific_symbol_file}" != x; then \
+	  sed -n '1,/DO NOT DELETE/p' $@ > tmp.top; \
+	  sed -n '/DO NOT DELETE/,$$p' $@ > tmp.bottom; \
+	  cat tmp.top $(port_specific_symbol_file) tmp.bottom > $@; \
+	  rm tmp.top tmp.bottom; \
+	fi
 else
 version_arg =
 libstdc++-symbol.ver:
@@ -106,7 +113,7 @@ time_members.cc: ${glibcxx_srcdir}/@CTIME_CC@
 # particular host, but with ad hoc naming rules.
 host_sources_extra = \
 	basic_file.cc \
-	c++locale.cc 
+	c++locale.cc
 
 c++locale.cc: ${glibcxx_srcdir}/@CLOCALE_CC@
 	@LN_S@ ${glibcxx_srcdir}/@CLOCALE_CC@ ./$@ || true
@@ -157,7 +164,7 @@ libstdc___la_DEPENDENCIES = libstdc++-symbol.ver $(libstdc___la_LIBADD)
 
 libstdc___la_LDFLAGS = \
 	-version-info @libtool_VERSION@ ${version_arg} \
-	-lm @LIBUNWIND_FLAG@ 
+	-lm @LIBUNWIND_FLAG@
 
 
 # Use special rules for the deprecated source files so that they find
@@ -188,13 +195,13 @@ demangle.o: demangle.cc
 # modified in a per-library or per-sub-library way.  Need to manually
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
-# as the occasion call for it. 
+# as the occasion calls for it.
 AM_CXXFLAGS = \
 	-fno-implicit-templates \
 	$(LIBSUPCXX_CXXFLAGS) \
 	$(WARN_CXXFLAGS) \
 	$(OPTIMIZE_CXXFLAGS) \
-	$(CONFIG_CXXFLAGS)  
+	$(CONFIG_CXXFLAGS)
 
 
 # libstdc++ libtool notes
@@ -216,7 +223,7 @@ AM_CXXFLAGS = \
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
 # attempt to infer which configuration to use
 LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) \
-	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS)
 
 # 3) We'd have a problem when building the shared libstdc++ object if
 # the rules automake generates would be used.  We cannot allow g++ to
@@ -234,13 +241,13 @@ all-local: build_debug
 install-data-local: install_debug
 else
 all-local:
-install-data-local: 
+install-data-local:
 endif
 
 debugdir = debug
 
 # Build parallel set of debug objects here.
-stamp-debug: 
+stamp-debug:
 	if test ! -d ${debugdir}; then \
 	  mkdir -p ${debugdir}; \
 	  (cd ${debugdir}; \
@@ -251,12 +258,12 @@ stamp-debug:
 	      -e 's/install-data-local: install_debug/install-data-local:/' \
 	  < ../Makefile > Makefile) ; \
 	fi; \
-	echo `date` > stamp-debug; 
+	echo `date` > stamp-debug;
 
 build_debug: stamp-debug
 	(cd ${debugdir} && $(MAKE) CXXFLAGS='@DEBUG_FLAGS@' all)
 
 # Install debug library here.
-install_debug: 
+install_debug:
 	(cd ${debugdir} && $(MAKE) \
 	toolexeclibdir=@glibcxx_toolexeclibdir@/debug install)

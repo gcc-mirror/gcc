@@ -9,7 +9,7 @@
 @setchapternewpage odd
 
 @copying
-Copyright @copyright{} 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright @copyright{} 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -74,6 +74,9 @@ In addition, you should try to verify that the C++ compiler generally
 works.  It is difficult to test the C++ compiler without a working
 library, but you should at least try some minimal test cases.
 
+(Note that what we think of as a ``target,'' the library refers to as
+a ``host.''  The comment at the top of @file{configure.in} explains why.)
+
 Here are the primary steps required to port the library:
 
 @menu
@@ -106,7 +109,7 @@ directory.  The important information is that there needs to be a
 directory under @file{config/os} to store the files for your operating
 system.
 
-You might have to change the @file{configure.target} file to ensure that
+You might have to change the @file{configure.host} file to ensure that
 your new directory is activated.  Look for the switch statement that sets
 @code{os_include_dir}, and add a pattern to handle your operating system
 if the default will not suffice.  The switch statement switches on only
@@ -150,45 +153,42 @@ need to define.  You will need to add them to the
 target.  It will not work to simply define these macros in
 @file{os_defines.h}.
 
-At this time, there are a few libstdc++-v3-specific macro which may be
-defined.  @code{_G_USING_THUNKS} may be defined to 0 to express that the
-port doesn't use thunks (although it is unclear that this is still
-useful since libio support isn't currently working and the g++ v3 ABI
-invalidates the assumption that some ports don't use thunks).
+At this time, there are a few libstdc++-v3-specific macros which may be
+defined:
 
-@code{_GLIBCPP_USE_C99_CHECK} may be defined to 1 to check C99
+@code{_GLIBCXX_USE_C99_CHECK} may be defined to 1 to check C99
 function declarations (which are not covered by specialization below)
 found in system headers against versions found in the library headers
 derived from the standard.
 
-@code{_GLIBCPP_USE_C99_DYNAMIC} may be defined to an expression that
+@code{_GLIBCXX_USE_C99_DYNAMIC} may be defined to an expression that
 yields 0 if and only if the system headers are exposing proper support
 for C99 functions (which are not covered by specialization below).  If
 defined, it must be 0 while bootstrapping the compiler/rebuilding the
 library.
 
-@code{_GLIBCPP_USE_C99_LONG_LONG_CHECK} may be defined to 1 to check
+@code{_GLIBCXX_USE_C99_LONG_LONG_CHECK} may be defined to 1 to check
 the set of C99 long long function declarations found in system headers
 against versions found in the library headers derived from the
 standard.
 
-@code{_GLIBCPP_USE_C99_LONG_LONG_DYNAMIC} may be defined to an
+@code{_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC} may be defined to an
 expression that yields 0 if and only if the system headers are
 exposing proper support for the set of C99 long long functions.  If
 defined, it must be 0 while bootstrapping the compiler/rebuilding the
 library.
 
-@code{_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC} may be defined to an
+@code{_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC} may be defined to an
 expression that yields 0 if and only if the system headers
 are exposing proper support for the related set of macros.  If defined,
 it must be 0 while bootstrapping the compiler/rebuilding the library.
 
-@code{_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_CHECK} may be defined
+@code{_GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_CHECK} may be defined
 to 1 to check the related set of function declarations found in system
 headers against versions found in the library headers derived from
 the standard.
 
-@code{_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC} may be defined
+@code{_GLIBCXX_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC} may be defined
 to an expression that yields 0 if and only if the system headers
 are exposing proper support for the related set of functions.  If defined,
 it must be 0 while bootstrapping the compiler/rebuilding the library.
@@ -197,8 +197,8 @@ Finally, you should bracket the entire file in an include-guard, like
 this:
 
 @example
-#ifndef _GLIBCPP_OS_DEFINES
-#define _GLIBCPP_OS_DEFINES
+#ifndef _GLIBCXX_OS_DEFINES
+#define _GLIBCXX_OS_DEFINES
 ...
 #endif
 @end example
@@ -222,14 +222,14 @@ setup files without explicit help.
 
 We recommend that for a target triplet @code{<CPU>-<vendor>-<OS>}, you
 name your configuration directory @file{config/cpu/<CPU>}.  If you do this,
-the configury will find the directory itself.  Otherwise you will need to
-edit the @file{configure.target} file and, in the switch statement that sets
+the configury will find the directory by itself.  Otherwise you will need to
+edit the @file{configure.host} file and, in the switch statement that sets
 @code{cpu_include_dir}, add a pattern to handle your chip.
 
 Note that some chip families share a single configuration directory, for
 example, @code{alpha}, @code{alphaev5}, and @code{alphaev6} all use the
 @file{config/cpu/alpha} directory, and there is an entry in the
-@file{configure.target} switch statement to handle this.
+@file{configure.host} switch statement to handle this.
 
 The @code{cpu_include_dir} sets default locations for the files controlling
 @ref{Thread safety} and @ref{Numeric limits}, if the defaults are not
@@ -474,14 +474,14 @@ see the @file{atomicity.h} file for IRIX or IA64.
 Alternatively, if the primitives are more closely related to the OS
 than they are to the CPU, you can put the @file{atomicity.h} file in
 the @ref{Operating system} directory instead.  In this case, you must
-edit @file{configure.target}, and in the switch statement that handles
+edit @file{configure.host}, and in the switch statement that handles
 operating systems, override the @code{ATOMICITYH} variable to point to
 the appropriate @code{os_include_dir}.  For examples of this approach,
 see the @file{atomicity.h} file for AIX.
 
 With those bits out of the way, you have to actually write
 @file{atomicity.h} itself.  This file should be wrapped in an
-include guard named @code{_BITS_ATOMICITY_H}.  It should define one
+include guard named @code{_GLIBCXX_ATOMICITY_H}.  It should define one
 type, and two functions.  
 
 The type is @code{_Atomic_word}.  Here is the version used on IRIX:
