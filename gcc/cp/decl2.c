@@ -362,7 +362,7 @@ int flag_weak = 1;
 /* Nonzero to use __cxa_atexit, rather than atexit, to register
    destructors for local statics and global objects.  */
 
-int flag_use_cxa_atexit;
+int flag_use_cxa_atexit = DEFAULT_USE_CXA_ATEXIT;
 
 /* Maximum template instantiation depth.  This limit is rather
    arbitrary, but it exists to limit the time it takes to notice

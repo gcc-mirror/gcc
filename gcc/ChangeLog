@@ -1,3 +1,12 @@
+2002-06-07  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in: Add --enable-__cxa_atexit.
+	* configure: Regenerated.
+	* config.in: Likewise.
+
+	* defaults.h (DEFAULT_USE_CXA_ATEXIT): New. Defined to be 0 if
+	not defined.
+
 2002-06-07  Gabriel Dos Reis  <gdr@merlin.nerim.net>
 
 	* diagnostic.c (diagnostic_build_prefix): Fix initialization.

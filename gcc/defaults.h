@@ -496,4 +496,10 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define UNLIKELY_EXECUTED_TEXT_SECTION_NAME "text.unlikely"
 #endif
 
+/* Determine whether __cxa_atexit, rather than atexit, is used to
+   register C++ destructors for local statics and global objects. */
+#ifndef DEFAULT_USE_CXA_ATEXIT
+#define DEFAULT_USE_CXA_ATEXIT 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */
