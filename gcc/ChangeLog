@@ -1,5 +1,10 @@
 2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
 
+	* doc/install.texi (--enable-shared): List package names
+	recognized by GCC.
+
+2001-06-13  Alexandre Oliva  <aoliva@redhat.com>
+
 	* doc/install.texi (ix86-*-solaris*): Removed, outdated.
 	(*-*-solaris*): Document problem in /bin/sh that affects
 	configuring libraries.
