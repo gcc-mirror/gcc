@@ -224,11 +224,15 @@ gnu/gcj/runtime/FirstThread.h: gnu/gcj/runtime/FirstThread.class libgcj.zip
 java/lang/Thread.h: java/lang/Thread.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 		-prepend 'class _Jv_JNIEnv;' \
-## Eww.
 		-prepend 'extern "Java" { namespace gnu { namespace gcj { namespace jni { class NativeThread; } } } };' \
+		-prepend '#define _JV_NOT_OWNER 1' \
+		-prepend '#define _JV_INTERRUPTED 2' \
 		-friend '_Jv_JNIEnv * _Jv_GetCurrentJNIEnv ();' \
 		-friend 'void _Jv_SetCurrentJNIEnv (_Jv_JNIEnv *env);' \
 		-friend 'class gnu::gcj::jni::NativeThread;' \
+		-friend 'int _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu, jlong millis, jint nanos);' \
+		-friend 'int _Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu);' \
+		-friend 'void _Jv_ThreadInterrupt (_Jv_Thread_t *data);' \
 		$(basename $<)
 
 java/lang/String.h: java/lang/String.class libgcj.zip
