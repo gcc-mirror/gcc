@@ -1,6 +1,10 @@
 2002-03-18  Jason Merrill  <jason@redhat.com>
 
-	PR c++/4003 - template/friend.C
+	PR c++/4377
+	* mangle.c (write_expression): Strip NOP_EXPRs sooner.  Also strip
+	NON_LVALUE_EXPRs.
+
+	PR c++/4003
 	* pt.c (tsubst_friend_function): Use decl_namespace_context.
 
 	PR c++/3948 -- C++ ABI change, followup to 2001-12-18 patch.
