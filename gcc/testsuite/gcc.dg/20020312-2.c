@@ -120,7 +120,7 @@ main()
      save and restore global registers.  Not possible when the PIC
      register is in a register window, of course.  On Darwin, you can't
      call library routines from non-PIC code.  */
-#if !defined (__sparc__) && !(defined(__MACH__) && defined(__POWERPC__))
+#if !defined (__sparc__) && !defined(__MACH__)
   if (reg)
     abort ();
 #endif

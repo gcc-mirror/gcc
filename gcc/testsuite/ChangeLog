@@ -1,3 +1,7 @@
+2005-03-23  Dale Johannesen  <dalej@apple.com>
+	
+	* gcc.dg/20020312-2.c:  Fix for non-PowerPC Darwin.
+
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.warn/compare1.C: Run with -Wno-deprecated.
