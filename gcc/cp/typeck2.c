@@ -1592,3 +1592,12 @@ report_case_error (code, type, new_value, old_value)
     }
 }
 #endif
+
+void
+check_for_new_type (string, inptree)
+     char *string;
+     flagged_type_tree inptree;
+{
+  if (pedantic && inptree.new_type_flag)
+    pedwarn ("ANSI C++ forbids defining types within %s",string);
+}

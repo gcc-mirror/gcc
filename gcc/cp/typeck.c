@@ -5460,7 +5460,8 @@ build_modify_expr (lhs, modifycode, rhs)
     case PREINCREMENT_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
 	lhs = build (TREE_CODE (lhs), TREE_TYPE (lhs),
-		     stabilize_reference (TREE_OPERAND (lhs, 0)));
+		     stabilize_reference (TREE_OPERAND (lhs, 0)),
+		     TREE_OPERAND (lhs, 1));
       return build (COMPOUND_EXPR, lhstype,
 		    lhs,
 		    build_modify_expr (TREE_OPERAND (lhs, 0),

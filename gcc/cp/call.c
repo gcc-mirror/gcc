@@ -2389,7 +2389,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
     synthesize_method (function);
 
   if (pedantic && DECL_THIS_INLINE (function) && ! DECL_ARTIFICIAL (function)
-       && ! DECL_INITIAL (function) && ! DECL_PENDING_INLINE_INFO (function))
+      && ! DECL_INITIAL (function) && ! DECL_PENDING_INLINE_INFO (function)
+      && ! (DECL_TEMPLATE_INFO (function)
+	    && TREE_LANG_FLAG_0 (DECL_TEMPLATE_INFO (function))))
     cp_warning ("inline function `%#D' called before definition", function);
 
   fntype = TREE_TYPE (function);
