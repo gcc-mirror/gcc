@@ -1,5 +1,13 @@
 2000-08-13  Geoff Keating  <geoffk@cygnus.com>
 
+	* lib/c-torture.exp (c-torture): Make
+	compiler_conditional_xfail_data global.
+	* lib/f-torture.exp (f-torture): Add in torture_eval_before_compile,
+	compiler_conditional_xfail_data machinery.
+	(f-torture-execute): Likewise.
+	* g77.c-torture/compile/20000629-1.x: The test only fails on x86,
+	and only when unrolling loops.
+
 	* gcc.dg/c99-array-lval-1.c: The test on line 14 now passes.
 
 2000-08-11  Nathan Sidwell  <nathan@codesourcery.com>
