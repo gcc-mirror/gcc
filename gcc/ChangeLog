@@ -1,3 +1,7 @@
+1999-12-03  Nathan Sidwell  <nathan@acm.org>
+
+	* frame.c (fde_split): Reimplement to avoid variable sized array.
+
 Thu Dec  2 18:59:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* combine.c (try_combine): Before fixing up LOG_LINKS for the
