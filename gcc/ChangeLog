@@ -1,3 +1,8 @@
+Mon Dec 29 14:37:31 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+	* mips/t-ecoff (CROSS_LIBGCC1): Define to libgcc1-asm.a.
+	(LIB1ASMSRC, LIB1ASMFUNCS): Define.
+
 Mon Dec 29 14:03:38 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (expand_expr): For {BITFIELD,COMPONENT,ARRAY}_REF, if the
