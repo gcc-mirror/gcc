@@ -1847,6 +1847,8 @@ find_exception_handler_labels ()
 	    warning ("mismatched EH region %d", NOTE_BLOCK_NUMBER (insn));
 	}
     }
+
+  free (labels);
 }
 
 /* Perform sanity checking on the exception_handler_labels list.
