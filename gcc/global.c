@@ -1761,7 +1761,7 @@ build_insn_chain (first)
   *p = 0;
 }
 
-/* Print debugging trace information if -greg switch is given,
+/* Print debugging trace information if -dg switch is given,
    showing the information on which the allocation decisions are based.  */
 
 static void
