@@ -850,6 +850,12 @@ lookup_objc_ivar (tree id ATTRIBUTE_UNUSED)
 
 /* Dummy routines called from c code. Save copying c-decl.c, c-common.c etc.  */
 
+tree
+objc_is_id (tree arg ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 void
 check_function_format (int *status ATTRIBUTE_UNUSED,
                        tree attrs ATTRIBUTE_UNUSED,
