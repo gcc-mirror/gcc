@@ -1,3 +1,8 @@
+2004-01-23  Loren J. Rittle  <ljrittle@acm.org>
+
+	libstdc++/13823
+	* testsuite/performance/allocator_map_thread.cc: New test.
+
 2004-01-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc
