@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
-   Copyright (C) 1991, 92, 93, 94, 95, 96, 98, 1999
+   Copyright (C) 1991, 92, 93, 94, 95, 96, 98, 99, 2000
    Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
@@ -42,7 +42,7 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "", TARGET_DEFAULT}}
+  { { "", TARGET_DEFAULT, 0}}
 
 #define TARGET_DEFAULT 0
 
@@ -226,9 +226,9 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 
 #define REG_CLASS_CONTENTS \
 {							\
- 0,			/* NO_REGS */		\
- 0x000017ff,		/* GENERAL_REGS */	\
- 0x0000ffff,		/* ALL_REGS */		\
+ {0},			/* NO_REGS */		\
+ {0x000017ff},		/* GENERAL_REGS */	\
+ {0x0000ffff},		/* ALL_REGS */		\
 }
 
 /* The same information, inverted:
@@ -810,7 +810,7 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 /* AT&T's assembler can't handle floating constants written as floating.
    However, when cross-compiling, always use that in case format differs.  */
 
-#ifdef CROSS_COMPILER
+#ifdef CROSS_COMPILE
 
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)	\
   fprintf (FILE, "\t.double 0r%.20g\n", (VALUE))
@@ -823,16 +823,16 @@ enum reg_class { NO_REGS, GENERAL_REGS,
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)	\
 do { union { double d; long l[2];} tem;				\
      tem.d = (VALUE);						\
-     fprintf (FILE, "\t.word 0x%x, 0x%x\n", tem.l[0], tem.l[1]);\
+     fprintf (FILE, "\t.word 0x%lx, 0x%lx\n", tem.l[0], tem.l[1]);\
    } while (0)
 
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)	\
 do { union { float f; long l;} tem;				\
      tem.f = (VALUE);						\
-     fprintf (FILE, "\t.word 0x%x\n", tem.l);			\
+     fprintf (FILE, "\t.word 0x%lx\n", tem.l);			\
    } while (0)
 
-#endif /* not CROSS_COMPILER */
+#endif /* not CROSS_COMPILE */
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
@@ -860,9 +860,9 @@ do { union { float f; long l;} tem;				\
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)  \
 do {							\
-  unsigned char *s;					\
+  const unsigned char *s;				\
   int i;						\
-  for (i = 0, s = (unsigned char *)(PTR); i < (LEN); s++, i++)	\
+  for (i = 0, s = (const unsigned char *)(PTR); i < (LEN); s++, i++)	\
     {							\
       if ((i % 8) == 0)					\
 	fprintf ((FILE),"%s\t.byte\t",(i?"\n":""));	\
@@ -907,7 +907,7 @@ do {							\
 /* The `space' pseudo in the text segment outputs nop insns rather than 0s,
    so we must output 0s explicitly in the text segment.  */
 
-#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
+#define ASM_OUTPUT_SKIP(FILE,SIZE) do { \
   if (in_text_section ())                                           	    \
     {									    \
       int i;								    \
@@ -923,7 +923,7 @@ do {							\
 	}								    \
     }									    \
   else									    \
-    fprintf ((FILE), "\t.set .,.+%u\n", (SIZE))
+    fprintf ((FILE), "\t.set .,.+%u\n", (SIZE)); } while (0)
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -981,8 +981,7 @@ do {							\
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) 0
 
 #define PRINT_OPERAND(FILE, X, CODE)  \
-{ int i;								\
-  if (GET_CODE (X) == REG)						\
+{ if (GET_CODE (X) == REG)						\
     fprintf (FILE, "%%%s", reg_names[REGNO (X)]);			\
   else if (GET_CODE (X) == MEM)						\
     output_address (XEXP (X, 0));					\
