@@ -4781,24 +4781,6 @@ fold (expr)
 		       TREE_OPERAND (TREE_OPERAND (t, 0), 0));
       return t;
 
-#if 0  /* This loses on &"foo"[0].  */
-    case ARRAY_REF:
-	{
-	  int i;
-
-	  /* Fold an expression like: "foo"[2] */
-	  if (TREE_CODE (arg0) == STRING_CST
-	      && TREE_CODE (arg1) == INTEGER_CST
-	      && compare_tree_int (arg1, TREE_STRING_LENGTH (arg0)) < 0)
-	    {
-	      t = build_int_2 (TREE_STRING_POINTER (arg0)[TREE_INT_CST_LOW (arg))], 0);
-	      TREE_TYPE (t) = TREE_TYPE (TREE_TYPE (arg0));
-	      force_fit_type (t, 0);
-	    }
-	}
-      return t;
-#endif /* 0 */
-
     case COMPONENT_REF:
       if (TREE_CODE (arg0) == CONSTRUCTOR)
 	{
