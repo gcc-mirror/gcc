@@ -1567,7 +1567,7 @@ extern const char leaf_reg_remap[];
 /* Offset from the argument pointer register value to the CFA.
    This is different from FIRST_PARM_OFFSET because the register window
    comes between the CFA and the arguments.  */
-#define ARG_POINTER_CFA_OFFSET(FNDECL)  SPARC_STACK_BIAS
+#define ARG_POINTER_CFA_OFFSET(FNDECL)  0
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.
