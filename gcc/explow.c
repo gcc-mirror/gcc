@@ -180,11 +180,6 @@ plus_constant_wide (x, c)
 	}
       break;
 
-    case LO_SUM:
-      return gen_rtx_LO_SUM (mode, XEXP (x, 0),
-			     plus_constant (XEXP (x, 1), c));
-
-      
     default:
       break;
     }
