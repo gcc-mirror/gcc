@@ -1,5 +1,8 @@
 Fri Nov  9 11:27:42 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* config/pa/milli64.S: Use %r25 and %r0 instead of arg1 and r0  
+	to work around limitations of certain versions of GAS.
+
 	* pa.md (mulsi3): Remove PA64 hack to work around SUBREG issues.
 	(muldi3): Update due to SUBREG_BYTE changes.
 	(casesi): Similarly.
