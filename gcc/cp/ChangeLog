@@ -1,6 +1,6 @@
 2003-04-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
-	* lang-options.h: Likewise.
+	* lang-options.h: Fix typo.
 
 2003-04-29  Mark Mitchell  <mark@codesourcery.com>
 
