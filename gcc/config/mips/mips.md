@@ -6322,12 +6322,23 @@ move\\t%0,%z4\\n\\
 	    emit_insn (RTVEC_ELT (adjust, i));
 	}
 
+      /* Handle Irix6 function calls that have multiple non-contiguous
+	 results.  */
+      if (GET_CODE (operands[0]) == PARALLEL)
+	{
+	  emit_call_insn (gen_call_value_multiple_internal2
+			  (XEXP (XVECEXP (operands[0], 0, 0), 0),
+			   operands[1], operands[2],
+			   XEXP (XVECEXP (operands[0], 0, 1), 0),
+			   gen_rtx (REG, SImode, GP_REG_FIRST + 31)));
+	  DONE;
+	}
+
       emit_call_insn (gen_call_value_internal1 (operands[0], operands[1], operands[2],
 					        gen_rtx (REG, SImode, GP_REG_FIRST + 31)));
 
       DONE;
     }
-
 }")
 
 (define_insn "call_value_internal1"
@@ -6446,6 +6457,45 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"call")
    (set_attr "mode"	"none")
    (set_attr "length"	"2")])
+
+;; ??? May eventually need all 6 versions of the call patterns with multiple
+;; return values.
+
+(define_insn "call_value_multiple_internal2"
+  [(set (match_operand 0 "register_operand" "=df")
+        (call (match_operand 1 "call_insn_operand" "m")
+              (match_operand 2 "" "i")))
+   (set (match_operand 3 "register_operand" "=df")
+        (call (match_dup 1)
+              (match_dup 2)))
+   (clobber (match_operand:SI 4 "register_operand" "=d"))]
+  "TARGET_ABICALLS && !TARGET_LONG_CALLS"
+  "*
+{
+  register rtx target = XEXP (operands[1], 0);
+
+  if (GET_CODE (target) == SYMBOL_REF)
+    return \"jal\\t%1\";
+
+  else if (GET_CODE (target) == CONST_INT)
+    {
+      operands[1] = target;
+      return \"li\\t%^,%1\\n\\tjal\\t%4,%^\";
+    }
+
+  else
+    {
+      operands[1] = target;
+      if (REGNO (target) != PIC_FUNCTION_ADDR_REGNUM)
+	return \"move\\t%^,%1\\n\\tjal\\t%4,%^\";
+      else
+	return \"jal\\t%4,%1\";
+    }
+}"
+  [(set_attr "type"	"call")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"2")])
+
 
 ;; Call subroutine returning any type.
 
