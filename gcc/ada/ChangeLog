@@ -1,3 +1,8 @@
+2004-10-26  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR ada/18228
+	* Makefile.in (darwin): Set soext to .dylib.
+
 2004-10-26  Vincent Celier  <celier@gnat.com>
 	    Thomas Quinot   <quinot@act-europe.fr>
 
