@@ -1,3 +1,8 @@
+2001-06-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/invoke.texi: Use more logical markup.  Use TeX quotes,
+	dashes and @dots{}.
+
 2001-06-12  Zack Weinberg  <zackw@stanford.edu>
 
 	* configure.in (ALL_LINGUAS): Set to nothing.
