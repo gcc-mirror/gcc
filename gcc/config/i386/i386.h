@@ -1924,10 +1924,11 @@ while (0)
     if (GET_MODE (XEXP (X, 0)) == DImode)				\
       {									\
 	if (GET_CODE (XEXP (X, 1)) == CONST_INT)			\
-	  if (INTVAL (XEXP (X, 1)) > 32)					\
-	    return COSTS_N_INSNS(ix86_cost->shift_const + 2);		\
-	  else								\
+	  {								\
+	    if (INTVAL (XEXP (X, 1)) > 32)				\
+	      return COSTS_N_INSNS(ix86_cost->shift_const + 2);		\
 	    return COSTS_N_INSNS(ix86_cost->shift_const * 2);		\
+	  }								\
 	return ((GET_CODE (XEXP (X, 1)) == AND				\
 		 ? COSTS_N_INSNS(ix86_cost->shift_var * 2)		\
 		 : COSTS_N_INSNS(ix86_cost->shift_var * 6 + 2))		\
@@ -2332,10 +2333,10 @@ extern struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 /* Table of additional register names to use in user input.  */
 
 #define ADDITIONAL_REGISTER_NAMES \
-{ "eax", 0, "edx", 1, "ecx", 2, "ebx", 3,	\
-  "esi", 4, "edi", 5, "ebp", 6, "esp", 7,	\
-  "al", 0, "dl", 1, "cl", 2, "bl", 3,		\
-  "ah", 0, "dh", 1, "ch", 2, "bh", 3 }
+{ { "eax", 0 }, { "edx", 1 }, { "ecx", 2 }, { "ebx", 3 },	\
+  { "esi", 4 }, { "edi", 5 }, { "ebp", 6 }, { "esp", 7 },	\
+  { "al", 0 }, { "dl", 1 }, { "cl", 2 }, { "bl", 3 },		\
+  { "ah", 0 }, { "dh", 1 }, { "ch", 2 }, { "bh", 3 } }
 
 /* Note we are omitting these since currently I don't know how
 to get gcc to use these, since they want the same but different
