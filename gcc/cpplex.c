@@ -78,6 +78,7 @@ static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static bool trigraph_p PARAMS ((cpp_reader *));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				  cppchar_t));
+static bool continue_after_nul PARAMS ((cpp_reader *));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
 				   const unsigned char *, cppchar_t *));
@@ -877,6 +878,48 @@ _cpp_lex_token (pfile)
   return result;
 }
 
+/* A NUL terminates the current buffer.  For ISO preprocessing this is
+   EOF, but for traditional preprocessing it indicates we need a line
+   refill.  Returns TRUE to continue preprocessing a new buffer, FALSE
+   to return a CPP_EOF to the caller.  */
+static bool
+continue_after_nul (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  bool more = false;
+  
+  buffer->saved_flags = BOL;
+  if (CPP_OPTION (pfile, traditional))
+    more = _cpp_read_logical_line_trad (pfile);
+  else
+    {
+      /* Stop parsing arguments with a CPP_EOF.  When we finally come
+	 back here, do the work of popping the buffer.  */
+      if (!pfile->state.parsing_args)
+	{
+	  if (buffer->cur != buffer->line_base)
+	    {
+	      /* Non-empty files should end in a newline.  Don't warn
+		 for command line and _Pragma buffers.  */
+	      if (!buffer->from_stage3)
+		cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
+	      handle_newline (pfile);
+	    }
+
+	  /* Similarly, finish an in-progress directive with CPP_EOF
+	     before popping the buffer.  */
+	  if (!pfile->state.in_directive && buffer->prev)
+	    {
+	      more = !buffer->return_at_eof;
+	      _cpp_pop_buffer (pfile);
+	    }
+	}
+    }
+
+  return more;
+}
+
 #define IF_NEXT_IS(CHAR, THEN_TYPE, ELSE_TYPE)	\
   do {						\
     if (get_effective_char (pfile) == CHAR)	\
@@ -927,30 +970,10 @@ _cpp_lex_direct (pfile)
       if (skip_whitespace (pfile, c))
 	goto skipped_white;
 
-      /* EOF.  */
+      /* End of buffer.  */
       buffer->cur--;
-      buffer->saved_flags = BOL;
-      if (!pfile->state.parsing_args)
-	{
-	  if (buffer->cur != buffer->line_base)
-	    {
-	      /* Non-empty files should end in a newline.  Don't warn
-		 for command line and _Pragma buffers.  */
-	      if (!buffer->from_stage3)
-		cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
-	      handle_newline (pfile);
-	    }
-
-	  /* Don't pop the last buffer.  */
-	  if (!pfile->state.in_directive && buffer->prev)
-	    {
-	      unsigned char stop = buffer->return_at_eof;
-
-	      _cpp_pop_buffer (pfile);
-	      if (!stop)
-		goto fresh_line;
-	    }
-	}
+      if (continue_after_nul (pfile))
+	goto fresh_line;
       result->type = CPP_EOF;
       break;
 

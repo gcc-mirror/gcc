@@ -510,7 +510,7 @@ cpp_create_reader (lang)
   /* Initialise the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
   init_line_maps (&pfile->line_maps);
-  pfile->line = 1;
+  pfile->trad_line = pfile->line = 1;
 
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
@@ -564,6 +564,9 @@ cpp_destroy (pfile)
 
   while (CPP_BUFFER (pfile) != NULL)
     _cpp_pop_buffer (pfile);
+
+  if (pfile->trad_out_base)
+    free (pfile->trad_out_base);
 
   if (pfile->macro_buffer)
     {
@@ -950,6 +953,9 @@ cpp_read_main_file (pfile, fname, table)
      of the front ends.  */
   if (CPP_OPTION (pfile, preprocessed))
     read_original_filename (pfile);
+  /* Overlay an empty buffer to seed traditional preprocessing.  */
+  else if (CPP_OPTION (pfile, traditional))
+    _cpp_overlay_buffer (pfile, U"", 0);
 
   return pfile->map->to_file;
 }
@@ -998,10 +1004,12 @@ cpp_finish_options (pfile)
       struct pending_option *p;
 
       _cpp_do_file_change (pfile, LC_RENAME, _("<built-in>"), 1, 0);
-      init_builtins (pfile);
+      if (!CPP_OPTION (pfile, traditional) /* REMOVEME */)
+	init_builtins (pfile);
       _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);
-      for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
-	(*p->handler) (pfile, p->arg);
+      if (!CPP_OPTION (pfile, traditional) /* REMOVEME */)
+	for (p = CPP_OPTION (pfile, pending)->directive_head; p; p = p->next)
+	  (*p->handler) (pfile, p->arg);
 
       /* Scan -imacros files after -D, -U, but before -include.
 	 pfile->next_include_file is NULL, so _cpp_pop_buffer does not
@@ -1195,6 +1203,7 @@ new_pending_directive (pend, text, handler)
   DEF_OPT("std=iso9899:199409",       0,      OPT_std_iso9899_199409)         \
   DEF_OPT("std=iso9899:1999",         0,      OPT_std_iso9899_1999)           \
   DEF_OPT("std=iso9899:199x",         0,      OPT_std_iso9899_199x)           \
+  DEF_OPT("traditional-cpp",	      0,      OPT_traditional_cpp)            \
   DEF_OPT("trigraphs",                0,      OPT_trigraphs)                  \
   DEF_OPT("v",                        0,      OPT_v)                          \
   DEF_OPT("version",                  0,      OPT_version)                    \
@@ -1443,6 +1452,9 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  break;
 	case OPT_remap:
 	  CPP_OPTION (pfile, remap) = 1;
+	  break;
+	case OPT_traditional_cpp:
+	  CPP_OPTION (pfile, traditional) = 1;
 	  break;
 	case OPT_iprefix:
 	  CPP_OPTION (pfile, include_prefix) = arg;
