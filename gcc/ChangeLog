@@ -1,3 +1,8 @@
+2003-05-01  DJ Delorie  <dj@redhat.com>
+
+	* reload.c (find_reloads): Also check that all of a multi-reg
+	value is in the class.
+
 2003-05-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* scan.h (lineno): Revert the rename here.
