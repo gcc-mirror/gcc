@@ -1,3 +1,7 @@
+Tue Jun 25 21:50:38 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/execute/simd-2.c: New test.
+
 2002-06-25  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/mi7.c, gcc.dg/cpp/mi7a.h, gcc.dg/cpp/mi7b.h,
