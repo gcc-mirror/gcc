@@ -552,7 +552,7 @@ public final class URL implements Serializable
    * Returns the query of the URL. This is the part of the file before the
    * '?'.
    *
-   * @ return the query part of the file, or null when there is no query part.
+   * @return the query part of the file, or null when there is no query part.
    */
   public String getQuery ()
   {

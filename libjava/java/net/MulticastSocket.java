@@ -136,7 +136,7 @@ public class MulticastSocket extends DatagramSocket
    *
    * @deprecated 1.2 Replaced by getTimeToLive()
    *
-   * @see Multicastsocket:getTimeToLive
+   * @see MulticastSocket#getTimeToLive()
    */
   public byte getTTL() throws IOException
   {
@@ -182,7 +182,7 @@ public class MulticastSocket extends DatagramSocket
    * 
    * @exception SocketException If an error occurs
    * 
-   * @see MulticastSocket:getNetworkInterface
+   * @see MulticastSocket#getNetworkInterface()
    * 
    * @since 1.4
    */
@@ -209,7 +209,7 @@ public class MulticastSocket extends DatagramSocket
    *
    * @exception SocketException If an error occurs
    *
-   * @see MulticastSocket:setNetworkInterface
+   * @see MulticastSocket#setNetworkInterface(NetworkInterface netIf)
    * 
    * @since 1.4
    */
@@ -277,7 +277,7 @@ public class MulticastSocket extends DatagramSocket
    *
    * @deprecated 1.2 Replaced by <code>setTimeToLive</code>
    *
-   * @see MulticastSocket:setTimeToLive
+   * @see MulticastSocket#setTimeToLive(int ttl)
    */
   public void setTTL(byte ttl) throws IOException
   {
@@ -360,8 +360,8 @@ public class MulticastSocket extends DatagramSocket
    * @exception SecurityException If a security manager exists and its
    * checkMulticast method doesn't allow the operation
    *
-   * @see MulticastSocket:setInterface
-   * @see MulticastSocket:setNetworkInterface
+   * @see MulticastSocket#setInterface(InetAddress addr)
+   * @see MulticastSocket#setNetworkInterface(NetworkInterface netIf)
    *
    * @since 1.4
    */
@@ -395,8 +395,8 @@ public class MulticastSocket extends DatagramSocket
    * @exception SecurityException If a security manager exists and its
    * checkMulticast method doesn't allow the operation
    *
-   * @see MulticastSocket:setInterface
-   * @see MulticastSocket:setNetworkInterface
+   * @see MulticastSocket#setInterface(InetAddress addr)
+   * @see MulticastSocket#setNetworkInterface(NetworkInterface netIf)
    *
    * @since 1.4
    */

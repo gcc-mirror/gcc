@@ -60,7 +60,7 @@ public abstract class URLConnection
    *
    * @param url The Object to create the URL connection to
    *
-   * @see URLConnection:connect
+   * @see URLConnection#connect()
    */
   protected URLConnection(URL url)
   {
@@ -472,8 +472,8 @@ public abstract class URLConnection
    * @exception IllegalStateException If already connected
    * @exception NullPointerException If key is null
    *
-   * @see URLConnection:getRequestProperty(String key)
-   * @see URLConnection:addRequestProperty(String key, String value)
+   * @see URLConnection#getRequestProperty(String key)
+   * @see URLConnection#addRequestProperty(String key, String value)
    */
   public void setRequestProperty(String key, String value)
   {
@@ -494,8 +494,8 @@ public abstract class URLConnection
    * @exception IllegalStateException If already connected
    * @exception NullPointerException If key is null
    * 
-   * @see URLConnection:getRequestProperty(String key)
-   * @see URLConnection:setRequestProperty(String key, String value)
+   * @see URLConnection#getRequestProperty(String key)
+   * @see URLConnection#setRequestProperty(String key, String value)
    * 
    * @since 1.4
    */
@@ -517,8 +517,8 @@ public abstract class URLConnection
    *
    * @exception IllegalStateException If already connected
    *
-   * @see URLConnection:setRequestProperty(String key, String value)
-   * @see URLConnection:addRequestProperty(String key, String value)
+   * @see URLConnection#setRequestProperty(String key, String value)
+   * @see URLConnection#addRequestProperty(String key, String value)
    * 
    * @return Value of the property.
    */
@@ -554,7 +554,7 @@ public abstract class URLConnection
    *
    * @deprecated 1.3 The method setRequestProperty should be used instead
    *
-   * @see URLConnection:setRequestProperty
+   * @see URLConnectionr#setRequestProperty(String key, String value)
    */
   public static void setDefaultRequestProperty(String key, String value)
   {
@@ -571,7 +571,7 @@ public abstract class URLConnection
    * 
    * @deprecated 1.3 The method getRequestProperty should be used instead
    *
-   * @see URLConnection:getRequestProperty
+   * @see URLConnection#getRequestProperty(String key)
    */
   public static String getDefaultRequestProperty(String key)
   {
