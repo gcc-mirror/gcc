@@ -10,7 +10,6 @@
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
 
-
 /* In VMS, __gnuc_va_list is simply char *; on OSF, it's a structure.  */
 
 #ifdef __VMS__
@@ -23,15 +22,18 @@ typedef struct {
 } __gnuc_va_list;
 #endif
 
-#endif /* not __GNUC_VA_LIST */
+#endif /* __GNUC_VA_LIST */
 
 /* If this is for internal libc use, don't define anything but
    __gnuc_va_list.  */
-#if defined (_STDARG_H) || defined (_VARARGS_H)
 
-#define va_list __gnuc_va_list
+#if !defined(__GNUC_VA_LIST_1) && (defined (_STDARG_H) || defined (_VARARGS_H))
+#define __GNUC_VA_LIST_1
+
 #define _VA_LIST
 #define _VA_LIST_
+
+typedef __gnuc_va_list va_list;
 
 #if !defined(_STDARG_H)
 
@@ -63,8 +65,6 @@ typedef struct {
 
 #endif /* _STDARG_H */
 
-#ifndef va_end
-
 #define va_end(__va)	((void) 0)
 
 /* Values returned by __builtin_classify_type.  */
@@ -91,8 +91,6 @@ enum {
   __file_type_class,
   __lang_type_class
 };
-
-#endif
 
 /* Note that parameters are always aligned at least to a word boundary
    (when passed) regardless of what GCC's __alignof__ operator says.  */
@@ -127,5 +125,4 @@ enum {
 /* Copy __gnuc_va_list into another variable of this type.  */
 #define __va_copy(dest, src) (dest) = (src)
 
-#endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
-
+#endif /* __GNUC_VA_LIST_1 */

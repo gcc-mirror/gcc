@@ -1,3 +1,16 @@
+Tue Feb 23 00:38:17 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Thu Sep  3 00:23:21 1998  Richard Henderson  <rth@cygnus.com>
+	* ginclude/va-alpha.h: Protect entire second portion of the
+	file against double inclusion.
+
+	Mon Aug 31 13:57:55 1998  Richard Henderson  <rth@cygnus.com>
+	* alpha/va_list.h: New file.
+	* alpha/x-alpha (EXTRA_HEADERS): New.  Add va_list.h.
+
+	Sat Aug  1 17:59:30 1998  Richard Henderson  <rth@cygnus.com>
+	* ginclude/va-alpha.h (va_list): Use a typedef, not a define.
+
 Sun Feb 21 20:35:10 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Wed Oct 28 22:58:35 1998  Jason Merrill  <jason@yorick.cygnus.com>
