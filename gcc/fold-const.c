@@ -1769,9 +1769,7 @@ operand_equal_p (arg0, arg1, only_const)
   /* Detect when real constants are equal.  */
   if (TREE_CODE (arg0) == TREE_CODE (arg1)
       && TREE_CODE (arg0) == REAL_CST)
-    return !bcmp ((char *) &TREE_REAL_CST (arg0),
-		  (char *) &TREE_REAL_CST (arg1),
-		  sizeof (REAL_VALUE_TYPE));
+    return REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), TREE_REAL_CST (arg1));
 
   if (only_const)
     return 0;
@@ -2715,7 +2713,8 @@ make_range (exp, pin_p, plow, phigh)
     {
       code = TREE_CODE (exp);
       arg0 = TREE_OPERAND (exp, 0), arg1 = TREE_OPERAND (exp, 1);
-      if (arg0 != 0 && tree_code_length[(int) code] > 0)
+      if (TREE_CODE_CLASS (code) == '<' || TREE_CODE_CLASS (code) == '1'
+	  || TREE_CODE_CLASS (code) == '2')
 	type = TREE_TYPE (arg0);
 
       switch (code)
@@ -2850,6 +2849,17 @@ make_range (exp, pin_p, plow, phigh)
 	}
 
       break;
+    }
+
+  /* If EXP is a constant, we can evaluate whether this is true or false.  */
+  if (TREE_CODE (exp) == INTEGER_CST)
+    {
+      in_p = in_p == (integer_onep (range_binop (GE_EXPR, integer_type_node,
+						 exp, 0, low, 0))
+		      && integer_onep (range_binop (LE_EXPR, integer_type_node,
+						    exp, 1, high, 1)));
+      low = high = 0;
+      exp = 0;
     }
 
   *pin_p = in_p, *plow = low, *phigh = high;
@@ -3053,11 +3063,15 @@ fold_range_test (exp)
     in0_p = ! in0_p, in1_p = ! in1_p;
 
   /* If both expressions are the same, if we can merge the ranges, and we
-     can build the range test, return it or it inverted.  */
-  if (operand_equal_p (lhs, rhs, 0)
+     can build the range test, return it or it inverted.  If one of the
+     ranges is always true or always false, consider it to be the same
+     expression as the other.  */
+  if ((lhs == 0 || rhs == 0 || operand_equal_p (lhs, rhs, 0))
       && merge_ranges (&in_p, &low, &high, in0_p, low0, high0,
 		       in1_p, low1, high1)
-      && 0 != (tem = (build_range_check (TREE_TYPE (exp), lhs,
+      && 0 != (tem = (build_range_check (TREE_TYPE (exp),
+					 lhs != 0 ? lhs
+					 : rhs != 0 ? rhs : integer_zero_node,
 					 in_p, low, high))))
     return or_op ? invert_truthvalue (tem) : tem;
 
@@ -4733,6 +4747,10 @@ fold (expr)
 	 must be evaluated.  */
       if (integer_zerop (arg1))
 	return omit_one_operand (type, arg1, arg0);
+      /* Likewise for first arg, but note that only the TRUTH_AND_EXPR
+	 case will be handled here.  */
+      if (integer_zerop (arg0))
+	return omit_one_operand (type, arg0, arg1);
 
     truth_andor:
       /* We only do these simplifications if we are optimizing.  */
@@ -4813,6 +4831,10 @@ fold (expr)
 	 evaluate first arg.  */
       if (TREE_CODE (arg1) == INTEGER_CST && ! integer_zerop (arg1))
 	return omit_one_operand (type, arg1, arg0);
+      /* Likewise for first arg, but note this only occurs here for
+	 TRUTH_OR_EXPR.  */
+      if (TREE_CODE (arg0) == INTEGER_CST && ! integer_zerop (arg0))
+	return omit_one_operand (type, arg0, arg1);
       goto truth_andor;
 
     case TRUTH_XOR_EXPR:
