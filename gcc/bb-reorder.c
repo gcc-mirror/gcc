@@ -211,7 +211,7 @@ skip_insns_after_block (bb)
   if (bb->index + 1 != n_basic_blocks)
     next_head = BASIC_BLOCK (bb->index + 1)->head;
 
-  for (last_insn = bb->end; (insn = NEXT_INSN (last_insn)); last_insn = insn)
+  for (last_insn = insn = bb->end; (insn = NEXT_INSN (insn)); )
     {
       if (insn == next_head)
 	break;
@@ -219,6 +219,7 @@ skip_insns_after_block (bb)
       switch (GET_CODE (insn))
 	{
 	case BARRIER:
+	  last_insn = insn;
 	  continue;
 
 	case NOTE:
@@ -226,11 +227,19 @@ skip_insns_after_block (bb)
 	    {
 	    case NOTE_INSN_LOOP_END:
 	    case NOTE_INSN_BLOCK_END:
+	      last_insn = insn;
+	      continue;
 	    case NOTE_INSN_DELETED:
 	    case NOTE_INSN_DELETED_LABEL:
 	      continue;
 
 	    default:
+	      /* Make line notes attached to the succesor block unless they
+	         are followed by something attached to predecesor block.
+	         These notes remained after removing code in the predecesor
+	         block and thus should be kept together.  */
+	      if (NOTE_LINE_NUMBER (insn) >= 0)
+		continue;
 	      break;
 	    }
 	  break;
@@ -242,6 +251,7 @@ skip_insns_after_block (bb)
 	          || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
 	    {
 	      insn = NEXT_INSN (insn);
+	      last_insn = insn;
 	      continue;
 	    }
           break;
@@ -501,6 +511,8 @@ emit_jump_to_block_after (bb, after)
       jump = emit_jump_insn_after (gen_jump (label), after);
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label) += 1;
+      if (basic_block_for_insn)
+	set_block_for_new_insns (jump, bb);
 
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Emitting jump to block %d (%d)\n",

@@ -1,3 +1,11 @@
+Sat Jul 14 02:58:38 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* bb-reorder.c (skip_insn_after_block): Get past the line number notes.
+
+	* flow.c (redirect_edge_and_branch_force, split_edge,
+	try_crossjump_to_edge): Use set_block_for_new_insns.
+	* bb-reorder.c (emit_jump_to_block_after): Call set_block_for_new_insns.
+
 2001-07-13  H.J. Lu  (hjl@gnu.org)
 
 	* config/elfos.h (UNIQUE_SECTION): Enable .bss section with

@@ -1897,7 +1897,7 @@ redirect_edge_and_branch_force (e, target)
       JUMP_LABEL (e->src->end) = label;
       LABEL_NUSES (label)++;
       if (basic_block_for_insn)
-	set_block_for_insn (e->src->end, e->src);
+	set_block_for_new_insns (e->src->end, e->src);
       emit_barrier_after (e->src->end);
       if (rtl_dump_file)
 	fprintf (rtl_dump_file,
@@ -1971,7 +1971,7 @@ redirect_edge_and_branch_force (e, target)
   JUMP_LABEL (new_bb->end) = label;
   LABEL_NUSES (label)++;
   if (basic_block_for_insn)
-    set_block_for_insn (new_bb->end, new_bb);
+    set_block_for_new_insns (new_bb->end, new_bb);
   emit_barrier_after (new_bb->end);
   return new_bb;
 }
@@ -2074,7 +2074,7 @@ split_edge (edge_in)
 				      jump_block->end);
 	  jump_block->end = pos;
 	  if (basic_block_for_insn)
-	    set_block_for_insn (pos, jump_block);
+	    set_block_for_new_insns (pos, jump_block);
 	  emit_barrier_after (pos);
 
 	  /* ... let jump know that label is in use, ...  */
@@ -3555,7 +3555,7 @@ try_crossjump_to_edge (mode, e1, e2)
   JUMP_LABEL (e1->src->end) = label;
   LABEL_NUSES (label)++;
   if (basic_block_for_insn)
-    set_block_for_insn (e1->src->end, e1->src);
+    set_block_for_new_insns (e1->src->end, e1->src);
 
   flow_delete_insn_chain (first, last);
 
