@@ -172,6 +172,7 @@ convert_to_integer (type, expr)
 
       switch (ex_form)
 	{
+#if 0
         case INTEGER_CST:
 	  if (TREE_UNSIGNED (type))
 	    {
@@ -195,6 +196,7 @@ convert_to_integer (type, expr)
 		}
 	    }
 	  break;
+#endif /* 0 */
 
 	case RSHIFT_EXPR:
 	  /* We can pass truncation down through right shifting
