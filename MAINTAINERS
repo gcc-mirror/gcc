@@ -92,7 +92,7 @@ darwin port		Stan Shebs		shebs@apple.com
 darwin port		Dale Johannesen		dalej@apple.com
 DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
-netbsd			Jason Thorpe		thorpej@wasabisystems.com
+netbsd			Jason Thorpe		thorpej@netbsd.org
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
 RTEMS Ports		Joel Sherrill		joel@oarcorp.com
