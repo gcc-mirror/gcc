@@ -1,5 +1,10 @@
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
+	* langhooks-def.h (lhd_staticp): Change return type from int to
+	bool in prototype to match definition.
+
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
 	* system.h (bool, true, false): Don't redefine as preprocessor macros
 	in C++.
 
