@@ -1258,7 +1258,7 @@ duplicate_decls (newdecl, olddecl)
 	   && TREE_CODE (TREE_TYPE (newtype)) == POINTER_TYPE
 	   && (DECL_IN_SYSTEM_HEADER (olddecl)
 	       || DECL_IN_SYSTEM_HEADER (newdecl))
-	   && ((TREE_TYPE (TREE_TYPE (newtype)) == void_type_node
+	   && ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (newtype))) == void_type_node
 		&& TYPE_ARG_TYPES (oldtype) == 0
 		&& self_promoting_args_p (TYPE_ARG_TYPES (newtype))
 		&& TREE_TYPE (TREE_TYPE (oldtype)) == char_type_node)
@@ -1266,12 +1266,12 @@ duplicate_decls (newdecl, olddecl)
 	       (TREE_TYPE (TREE_TYPE (newtype)) == char_type_node
 		&& TYPE_ARG_TYPES (newtype) == 0
 		&& self_promoting_args_p (TYPE_ARG_TYPES (oldtype))
-		&& TREE_TYPE (TREE_TYPE (oldtype)) == void_type_node)))
+		&& TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (oldtype))) == void_type_node)))
     {
       if (pedantic)
 	pedwarn_with_decl (newdecl, "conflicting types for `%s'");
       /* Make sure we keep void * as ret type, not char *.  */
-      if (TREE_TYPE (TREE_TYPE (oldtype)) == void_type_node)
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (oldtype))) == void_type_node)
 	TREE_TYPE (newdecl) = newtype = oldtype;
     }
   else if (!types_match
@@ -1304,7 +1304,8 @@ duplicate_decls (newdecl, olddecl)
 	    {
 	      register tree type = TREE_VALUE (t);
 
-	      if (TREE_CHAIN (t) == 0 && type != void_type_node)
+	      if (TREE_CHAIN (t) == 0
+		  && TYPE_MAIN_VARIANT (type) != void_type_node)
 		{
 		  error ("A parameter list with an ellipsis can't match");
 		  error ("an empty parameter name list declaration.");
@@ -1343,12 +1344,12 @@ duplicate_decls (newdecl, olddecl)
 	  for (parm = TYPE_ACTUAL_ARG_TYPES (oldtype),
 	       type = TYPE_ARG_TYPES (newtype),
 	       nargs = 1;
-	       (TREE_VALUE (parm) != void_type_node
-		|| TREE_VALUE (type) != void_type_node);
+	       (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) != void_type_node
+		|| TYPE_MAIN_VARIANT (TREE_VALUE (type)) != void_type_node);
 	       parm = TREE_CHAIN (parm), type = TREE_CHAIN (type), nargs++)
 	    {
-	      if (TREE_VALUE (parm) == void_type_node
-		  || TREE_VALUE (type) == void_type_node)
+	      if (TYPE_MAIN_VARIANT (TREE_VALUE (parm)) == void_type_node
+		  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 		{
 		  errmsg = "prototype for `%s' follows and number of arguments";
 		  break;
@@ -3724,7 +3725,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	  /* Check for some types that there cannot be arrays of.  */
 
-	  if (type == void_type_node)
+	  if (TYPE_MAIN_VARIANT (type) == void_type_node)
 	    {
 	      error ("declaration of `%s' as array of voids", name);
 	      type = error_mark_node;
@@ -3991,7 +3992,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
      We don't complain about parms either, but that is because
      a better error message can be made later.  */
 
-  if (type == void_type_node && decl_context != PARM)
+  if (TYPE_MAIN_VARIANT (type) == void_type_node && decl_context != PARM)
     {
       error ("variable or field `%s' declared void",
 	     IDENTIFIER_POINTER (declarator));
@@ -4128,7 +4129,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	    if (! strcmp (IDENTIFIER_POINTER (declarator), "main"))
 	      warning ("cannot inline function `main'");
-	    else if (last && TREE_VALUE (last) != void_type_node)
+	    else if (last && (TYPE_MAIN_VARIANT (TREE_VALUE (last))
+			      != void_type_node))
 	      warning ("inline declaration ignored for function with `...'");
 	    else
 	      /* Assume that otherwise the function can be inlined.  */
@@ -4350,7 +4352,7 @@ get_parm_info (void_at_end)
   /* Just `void' (and no ellipsis) is special.  There are really no parms.  */
   if (void_at_end && parms != 0
       && TREE_CHAIN (parms) == 0
-      && TREE_TYPE (parms) == void_type_node
+      && TYPE_MAIN_VARIANT (TREE_TYPE (parms)) == void_type_node
       && DECL_NAME (parms) == 0)
     {
       parms = NULL_TREE;
@@ -4411,7 +4413,7 @@ get_parm_info (void_at_end)
 #endif
 
 	types = saveable_tree_cons (NULL_TREE, TREE_TYPE (decl), types);
-	if (TREE_VALUE (types) == void_type_node && ! erred
+	if (TYPE_MAIN_VARIANT (TREE_VALUE (types)) == void_type_node && ! erred
 	    && DECL_NAME (decl) == 0)
 	  {
 	    error ("`void' in parameter list must be the entire list");
@@ -5289,7 +5291,7 @@ store_parm_decls ()
 	    {
 	      if (DECL_NAME (parm) == 0)
 		error_with_decl (parm, "parameter name omitted");
-	      else if (TREE_TYPE (parm) == void_type_node)
+	      else if (TYPE_MAIN_VARIANT (TREE_TYPE (parm)) == void_type_node)
 		{
 		  error_with_decl (parm, "parameter `%s' declared void");
 		  /* Change the type to error_mark_node so this parameter
@@ -5334,7 +5336,7 @@ store_parm_decls ()
 	  next = TREE_CHAIN (parm);
 	  if (DECL_NAME (parm) == 0)
 	    ;
-	  else if (TREE_TYPE (parm) == void_type_node)
+	  else if (TYPE_MAIN_VARIANT (TREE_TYPE (parm)) == void_type_node)
 	    ;
 	  else if (TREE_CODE (parm) != PARM_DECL)
 	    pushdecl (parm);
@@ -5389,7 +5391,7 @@ store_parm_decls ()
 	    }
 
 	  /* If the declaration says "void", complain and ignore it.  */
-	  if (found && TREE_TYPE (found) == void_type_node)
+	  if (found && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == void_type_node)
 	    {
 	      error_with_decl (found, "parameter `%s' declared void");
 	      TREE_TYPE (found) = integer_type_node;
@@ -5489,11 +5491,12 @@ store_parm_decls ()
 	  register tree type;
 	  for (parm = DECL_ARGUMENTS (fndecl),
 	       type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-	       parm || (type && TREE_VALUE (type) != void_type_node);
+	       parm || (type && (TYPE_MAIN_VARIANT (TREE_VALUE (type))
+				 != void_type_node));
 	       parm = TREE_CHAIN (parm), type = TREE_CHAIN (type))
 	    {
 	      if (parm == 0 || type == 0
-		  || TREE_VALUE (type) == void_type_node)
+		  || TYPE_MAIN_VARIANT (TREE_VALUE (type)) == void_type_node)
 		{
 		  error ("number of arguments doesn't match prototype");
 		  break;
@@ -5669,7 +5672,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
 	}
 
       /* If the declaration says "void", complain and ignore it.  */
-      if (found && TREE_TYPE (found) == void_type_node)
+      if (found && TYPE_MAIN_VARIANT (TREE_TYPE (found)) == void_type_node)
 	{
 	  error_with_decl (found, "parameter `%s' declared void");
 	  TREE_TYPE (found) = integer_type_node;
