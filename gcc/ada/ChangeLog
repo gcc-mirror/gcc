@@ -1,3 +1,9 @@
+2005-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (ada/treeprs.ads, ada/einfo.h, ada/sinfo.h,
+	ada/nmake.adb, ada/nmake.ads): Use unique subdirectories of
+	ada/bldtools to avoid make -jN failures.
+
 2005-03-08  Laurent Guerby <laurent@guerby.net>
 
 	* system-linux-sparc.ads: Fix typo in previous commit.

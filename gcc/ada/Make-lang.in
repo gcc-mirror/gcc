@@ -878,29 +878,29 @@ ada/b_gnatb.c : $(GNATBIND_OBJS) ada/gnatbind.o ada/interfac.o
 ada/b_gnatb.o : ada/b_gnatb.c
 
 ada/treeprs.ads : ada/treeprs.adt ada/sinfo.ads ada/xtreeprs.adb
-	-$(MKDIR) ada/bldtools
-	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q xtreeprs ; ./xtreeprs ../treeprs.ads )
+	-$(MKDIR) ada/bldtools/treeprs
+	$(CP) $^ ada/bldtools/treeprs
+	(cd ada/bldtools/treeprs; gnatmake -q xtreeprs ; ./xtreeprs ../../treeprs.ads )
 
 ada/einfo.h : ada/einfo.ads ada/einfo.adb ada/xeinfo.adb
-	-$(MKDIR) ada/bldtools
-	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q xeinfo ; ./xeinfo ../einfo.h )
+	-$(MKDIR) ada/bldtools/einfo
+	$(CP) $^ ada/bldtools/einfo
+	(cd ada/bldtools/einfo; gnatmake -q xeinfo ; ./xeinfo ../../einfo.h )
 
 ada/sinfo.h : ada/sinfo.ads ada/xsinfo.adb
-	-$(MKDIR) ada/bldtools
-	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q xsinfo ; ./xsinfo ../sinfo.h )
+	-$(MKDIR) ada/bldtools/sinfo
+	$(CP) $^ ada/bldtools/sinfo
+	(cd ada/bldtools/sinfo; gnatmake -q xsinfo ; ./xsinfo ../../sinfo.h )
 
 ada/nmake.adb : ada/sinfo.ads ada/nmake.adt ada/xnmake.adb
-	-$(MKDIR) ada/bldtools
-	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q xnmake ; ./xnmake -b ../nmake.adb )
+	-$(MKDIR) ada/bldtools/nmake_b
+	$(CP) $^ ada/bldtools/nmake_b
+	(cd ada/bldtools/nmake_b; gnatmake -q xnmake ; ./xnmake -b ../../nmake.adb )
 
 ada/nmake.ads :  ada/sinfo.ads ada/nmake.adt ada/xnmake.adb ada/nmake.adb
-	-$(MKDIR) ada/bldtools
-	$(CP) $^ ada/bldtools
-	(cd ada/bldtools; gnatmake -q xnmake ; ./xnmake -s ../nmake.ads )
+	-$(MKDIR) ada/bldtools/nmake_s
+	$(CP) $^ ada/bldtools/nmake_s
+	(cd ada/bldtools/nmake_s; gnatmake -q xnmake ; ./xnmake -s ../../nmake.ads )
 
 update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	ada/nmake.ads
