@@ -1,3 +1,11 @@
+2003-06-05  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (m32r-elf): Revert previous delta.
+        * config/m32r/t-m32r (crtinit.o): Fix rule to work with
+        multilibs.  Remove m32rx specific version.
+        (crtfini.o): Likewise.
+        (EXTRA_MULTILIB_PARTS): Define.
+        
 2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/md.texi (Machine Constraints): Correct the meaning of

@@ -26,30 +26,21 @@ CRTSTUFF_T_CFLAGS =
 
 # .init/.fini section routines
 
-crtinit.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	  -DCRT_INIT -finhibit-size-directive -fno-inline-functions \
-	  -g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -o crtinit.o
+$(T)crtinit.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) \
+	$(CRTSTUFF_T_CFLAGS) $(INCLUDES) -DCRT_INIT \
+	-finhibit-size-directive -fno-inline-functions -g0 \
+	-mmodel=medium -c $(srcdir)/config/m32r/initfini.c \
+	-o $(T)crtinit.o 
 
-crtfini.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	  -DCRT_FINI -finhibit-size-directive -fno-inline-functions \
-	  -g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -o crtfini.o
-
+$(T)crtfini.o: $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(MULTILIB_CFLAGS) \
+	$(CRTSTUFF_T_CFLAGS) $(INCLUDES) -DCRT_FINI \
+	-finhibit-size-directive -fno-inline-functions -g0 \
+	-mmodel=medium -c $(srcdir)/config/m32r/initfini.c \
+	-o $(T)crtfini.o 
 m32rx:
 	mkdir $@
-
-m32rx/crtinit.o: m32rx $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	-DCRT_INIT -finhibit-size-directive -fno-inline-functions \
-	-g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -m32rx \
-	-o m32rx/crtinit.o
-
-m32rx/crtfini.o: m32rx $(srcdir)/config/m32r/initfini.c $(GCC_PASSES) $(CONFIG_H)
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
-	-DCRT_FINI -finhibit-size-directive -fno-inline-functions \
-	-g0 -mmodel=medium -c $(srcdir)/config/m32r/initfini.c -m32rx \
-	-o m32rx/crtfini.o
 
 # -mmodel={small,medium} requires separate libraries.
 # We don't build libraries for the large model, instead we use the medium
@@ -64,6 +55,8 @@ MULTILIB_MATCHES = mmodel?medium=mmodel?large
 # SHN_M32R_SCOMMON.
 # This is important for objects referenced in system header files.
 MULTILIB_EXTRA_OPTS = msdata=sdata
+
+EXTRA_MULTILIB_PARTS = crtinit.o crtfini.o
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
