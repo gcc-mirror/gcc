@@ -1455,6 +1455,8 @@ as new information becomes available.
 @item
 @uref{#sparc-unknown-linux-gnulibc1,,sparc-unknown-linux-gnulibc1}
 @item
+@uref{#sparc-*-linux*,,sparc-*-linux*}
+@item
 @uref{#sparc64-*-*,,sparc64-*-*}
 @item
 @uref{#*-*-sysv*,,*-*-sysv*}
@@ -3244,6 +3246,17 @@ be due to a bug in @command{sh}.  You can probably get around it by running
 It has been reported that you might need
 @uref{ftp://ftp.yggdrasil.com/private/hjl,,binutils 2.8.1.0.23}
 for this platform, too.
+
+
+@html
+</p>
+<hr>
+@end html
+@heading @anchor{sparc-*-linux*}sparc-*-linux*
+
+GCC versions 3.0 and higher require binutils 2.11.2 and glibc 2.2.4
+or newer on this platform.  All earlier binutils and glibc
+releases mishandled unaligned relocations on @code{sparc-*-*} targets.
 
 
 @html
