@@ -1390,9 +1390,11 @@ source distribution):
 @end example
 
 At the moment, the GNAT library and several tools for GNAT are not built
-by @samp{make bootstrap}.  You have to invoke
+by @samp{make bootstrap}.  For a native build, you have to invoke
 @samp{make gnatlib_and_tools} in the @file{@var{objdir}/gcc}
 subdirectory before proceeding with the next steps.
+For a cross build, you need to invoke
+@samp{make gnatlib cross-gnattools ada.all.cross}.
 
 For example, you can build a native Ada compiler by issuing the
 following commands (assuming @command{make} is GNU make):
