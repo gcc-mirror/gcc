@@ -378,11 +378,24 @@ protect_from_queue (x, modify)
       /* Otherwise, recursively protect the subexpressions of all
 	 the kinds of rtx's that can contain a QUEUED.  */
       if (code == MEM)
-	XEXP (x, 0) = protect_from_queue (XEXP (x, 0), 0);
+	{
+	  rtx tem = protect_from_queue (XEXP (x, 0), 0);
+	  if (tem != XEXP (x, 0))
+	    {
+	      x = copy_rtx (x);
+	      XEXP (x, 0) = tem;
+	    }
+	}
       else if (code == PLUS || code == MULT)
 	{
-	  XEXP (x, 0) = protect_from_queue (XEXP (x, 0), 0);
-	  XEXP (x, 1) = protect_from_queue (XEXP (x, 1), 0);
+	  rtx new0 = protect_from_queue (XEXP (x, 0), 0);
+	  rtx new1 = protect_from_queue (XEXP (x, 1), 0);
+	  if (new0 != XEXP (x, 0) || new1 != XEXP (x, 1))
+	    {
+	      x = copy_rtx (x);
+	      XEXP (x, 0) = new0;
+	      XEXP (x, 1) = new1;
+	    }
 	}
       return x;
     }
@@ -1108,12 +1121,8 @@ convert_modes (mode, oldmode, x, unsignedp)
 {
   register rtx temp;
 
-  if (GET_MODE (x) != mode)
+  if (GET_MODE (x) != VOIDmode)
     oldmode = GET_MODE (x);
-  /* If X doesnt have a mode, and we didn't specify one, 
-     we have a potential bug, so crash now and get it fixed.  */
-  if (oldmode == VOIDmode)
-    abort ();
  
   /* If FROM is a SUBREG that indicates that we have already done at least
      the required extension, strip it.  */
@@ -7100,7 +7109,10 @@ expand_increment (exp, post)
   if (post)
     {
       /* We have a true reference to the value in OP0.
-	 If there is an insn to add or subtract in this mode, queue it.  */
+	 If there is an insn to add or subtract in this mode, queue it.
+	 Queueing the increment insn avoids the register shuffling
+	 that often results if we must increment now and first save
+	 the old value for subsequent use.  */
 
 #if 0  /* Turned off to avoid making extra insn for indexed memref.  */
       op0 = stabilize (op0);
