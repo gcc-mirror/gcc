@@ -1,3 +1,10 @@
+Fri Feb 25 18:00:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_expression_name): Use `orig' as a second
+ 	argument to resolve_field_access.
+	(resolve_field_access): Removed unecessary code when dealing with
+ 	static fields.
+
 2000-02-23  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_name): In JNI case, correctly quote string.

@@ -6532,7 +6532,7 @@ resolve_expression_name (id, orig)
       qualify_ambiguous_name (id);
       /* 15.10.1 Field Access Using a Primary and/or Expression Name */
       /* 15.10.2: Accessing Superclass Members using super */
-      return resolve_field_access (id, NULL, NULL);
+      return resolve_field_access (id, orig, NULL);
     }
 
   /* We've got an error here */
@@ -6605,21 +6605,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	return error_mark_node;
       if (is_static && !static_final_found 
 	  && !flag_emit_class_files && !flag_emit_xref)
-	{
-	  field_ref = build_class_init (type_found, field_ref);
-	  /* If the static field was identified by an expression that
-	     needs to be generated, make the field access a compound
-	     expression whose first part is the evaluation of the
-	     field selector part. */
-	  if (where_found && TREE_CODE (where_found) != TYPE_DECL 
-	      && TREE_CODE (where_found) != RECORD_TYPE)
-	    {
-	      tree type = QUAL_DECL_TYPE (field_ref);
-	      if (TREE_CODE (type) == RECORD_TYPE)
-		type = build_pointer_type (type);
-	      field_ref = build (COMPOUND_EXPR, type, where_found, field_ref);
-	    }
-	}
+	field_ref = build_class_init (type_found, field_ref);
     }
   else
     field_ref = decl;
