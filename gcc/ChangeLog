@@ -1,3 +1,43 @@
+2003-02-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (processor_type): Add PPC440.
+	* config/rs6000/rs6000.c (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE,
+	TARGET_SCHED_FIRST_CYCLE_MULTIPASS_DFA_LOOKAHEAD,
+	TARGET_SCHED_VARIABLE_ISSUE): Define.
+	(rs6000_use_dfa_pipeline_interface): New function.
+	(rs6000_multipass_dfa_lookahead): New Function.
+	(rs6000_variable_issue): New function.
+	(rs6000_adjust_cost): Add CMP and DELAYED_CR types.
+	(rs6000_issue_rate): Add PPC440.
+	* config/rs6000/rs6000.md (unspec list): Correct typo.
+	(attr "type"): Add load_ext, load_ext_u, load_ext_ux, load_u,
+	store_ux, store_u, fpload_ux, fpload_u, fpstore_ux, fpstore_u,
+	cmp, delayed_cr, mfcr, mtcr.
+	(automata_option): Set "ndfa".
+	(extendMMNN2): Update attributes.
+	(movcc_internal1): Discourage move to non-cr0.  Update
+	attributes.
+	(movMM_update): Update attributes.
+	(cmpMM_internal): Update attributes.
+	(sCC CR materialization): Update attributes.
+	(branch patterns): Do not discourage non-cr0.
+	(cr logical patterns): Prefer destructive register allocation.
+	Update attributes.
+	(movesi_from_cr): Update attribute.
+	(mtcrf_operation): Update attribute.
+	(mtcrfsi): Update attribute.
+	* config/rs6000/40x.md: New file.
+	* config/rs6000/603.md: New file.
+	* config/rs6000/6xx.md: New file.
+	* config/rs6000/7450.md: New file.
+	* config/rs6000/7xx.md: New file.
+	* config/rs6000/mpc.md: New file.
+	* config/rs6000/power4.md: New file.
+	* config/rs6000/rios1.md: New file.
+	* config/rs6000/rios2.md: New file.
+	* config/rs6000/rs64.md: New file.
+	[Some DFA descriptions based on work by Michael Hayes]
+
 2003-02-15  Richard Henderson  <rth@redhat.com>
 
 	* cfgcleanup.c: Include params.h.
