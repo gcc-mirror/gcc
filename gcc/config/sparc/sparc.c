@@ -2659,13 +2659,13 @@ print_operand (file, x, code)
     case 'Y':
       /* Adjust the operand to take into account a RESTORE operation.  */
       if (GET_CODE (x) != REG)
-	abort ();
-      if (REGNO (x) < 8)
+	output_operand_lossage ("Invalid %%Y operand");
+      else if (REGNO (x) < 8)
 	fputs (reg_names[REGNO (x)], file);
       else if (REGNO (x) >= 24 && REGNO (x) < 32)
 	fputs (reg_names[REGNO (x)-16], file);
       else
-	abort ();
+	output_operand_lossage ("Invalid %%Y operand");
       return;
     case 'R':
       /* Print out the second register name of a register pair or quad.
@@ -2704,7 +2704,7 @@ print_operand (file, x, code)
 	case IOR: fputs ("or", file); break;
 	case AND: fputs ("and", file); break;
 	case XOR: fputs ("xor", file); break;
-	default: abort ();
+	default: output_operand_lossage ("Invalid %%A operand");
 	}
       return;
 
@@ -2714,7 +2714,7 @@ print_operand (file, x, code)
 	case IOR: fputs ("orn", file); break;
 	case AND: fputs ("andn", file); break;
 	case XOR: fputs ("xnor", file); break;
-	default: abort ();
+	default: output_operand_lossage ("Invalid %%B operand");
 	}
       return;
 
