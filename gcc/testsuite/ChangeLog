@@ -1,3 +1,8 @@
+2002-11-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/strct-varg-1.x: Remove xfail on the
+	h8300 port.
+
 2002-11-27  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/bitfld-6.c: New test.
