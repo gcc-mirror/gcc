@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES							\
-  "-D__NetBSD__ -Asystem=unix -Asystem=NetBSD"
+  "-D__NetBSD__ -D_LP64 -Asystem=unix -Asystem=NetBSD"
 
 
 /* Show that we need a GP when profiling.  */
@@ -46,6 +46,7 @@ Boston, MA 02111-1307, USA.  */
    This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
    the alpha target.  */
 
+#undef LINK_SPEC
 #define LINK_SPEC							\
   "%{G*} %{relax:-relax}						\
    %{O*:-O3} %{!O*:-O1}							\
