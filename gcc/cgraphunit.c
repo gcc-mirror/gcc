@@ -219,7 +219,10 @@ cgraph_finalize_function (tree decl, bool nested)
   /* If not unit at a time, go ahead and emit everything we've found
      to be reachable at this time.  */
   if (!nested)
-    cgraph_assemble_pending_functions ();
+    {
+      if (!cgraph_assemble_pending_functions ())
+	ggc_collect ();
+    }
 
   /* If we've not yet emitted decl, tell the debug info about it.  */
   if (!TREE_ASM_WRITTEN (decl))
