@@ -106,6 +106,9 @@
 /* Define if you have the memset function.  */
 #undef HAVE_MEMSET
 
+/* Define if you have the mkstemps function.  */
+#undef HAVE_MKSTEMPS
+
 /* Define if you have the on_exit function.  */
 #undef HAVE_ON_EXIT
 
@@ -120,6 +123,9 @@
 
 /* Define if you have the rindex function.  */
 #undef HAVE_RINDEX
+
+/* Define if you have the sbrk function.  */
+#undef HAVE_SBRK
 
 /* Define if you have the sigsetmask function.  */
 #undef HAVE_SIGSETMASK
