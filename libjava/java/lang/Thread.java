@@ -10,8 +10,6 @@ details.  */
 
 package java.lang;
 
-import gnu.gcj.RawData;
-
 /**
  * @author Tom Tromey <tromey@cygnus.com>
  * @date August 24, 1998 
@@ -292,7 +290,7 @@ public class Thread implements Runnable
   private boolean startable_flag;
 
   // Our native data.
-  private RawData data;
+  private Object data;
 
   // Next thread number to assign.
   private static int nextThreadNumber = 0;

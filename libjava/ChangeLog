@@ -1,3 +1,10 @@
+2000-05-18  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Thread.java: Declare `data' as Object, not RawData.
+	* java/lang/natThread.java (initialize_native): Cast `data' to
+	jobject.
+	* gnu/gcj/RawData.java: Clarify documentation.
+
 2000-05-15  Andrew Haley  <aph@cygnus.com>
 
 	* include/ppc-signal.h: New file.

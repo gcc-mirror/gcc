@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -8,7 +8,8 @@ details.  */
 
 package gnu.gcj;
 
-/** A type uses to indicate pointers to non-Java data. */
+/** A type used to indicate special data used by native code that should not 
+    be marked by the garbage collector. */
 
 public final class RawData
 {

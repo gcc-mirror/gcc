@@ -23,7 +23,6 @@ details.  */
 #include <java/lang/IllegalThreadStateException.h>
 #include <java/lang/InterruptedException.h>
 #include <java/lang/NullPointerException.h>
-#include <gnu/gcj/RawData.h>
 
 #include <jni.h>
 
@@ -62,7 +61,7 @@ java::lang::Thread::initialize_native (void)
   // own finalizer then we will need to reinitialize this structure at
   // any "interesting" point.
   natThread *nt = (natThread *) _Jv_AllocBytes (sizeof (natThread));
-  data = reinterpret_cast<gnu::gcj::RawData *> (nt);
+  data = reinterpret_cast<jobject> (nt);
   _Jv_MutexInit (&nt->join_mutex);
   _Jv_CondInit (&nt->join_cond);
   _Jv_ThreadInitData (&nt->thread, this);
