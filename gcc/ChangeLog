@@ -1,3 +1,12 @@
+2004-11-24  David Edelsohn  <edelsohn@gnu.org>
+	    Paolo Bonzini  <bonzini@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_return_in_memory): Allow Altivec
+	vector modes without ALTIVEC_ABI.  Use GCC vector instead of
+	synthetic vector.
+	(rs6000_pass_by_reference): Split conditional into pieces.  Use
+	GCC vector instead of synthetic vector.
+
 2004-11-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree.c (recompute_tree_invarant_for_addr_expr): The address of a

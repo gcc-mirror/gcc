@@ -4641,6 +4641,12 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 	  || (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 8))
     return true;
 
+  /* Allow -maltivec -mabi=no-altivec without warning.  Altivec vector
+     modes only exist for GCC vector types if -maltivec.  */
+  if (TARGET_32BIT && !TARGET_ALTIVEC_ABI
+      && ALTIVEC_VECTOR_MODE (TYPE_MODE (type)))
+    return false;
+
   /* Return synthetic vectors in memory.  */
   if (TREE_CODE (type) == VECTOR_TYPE
       && int_size_in_bytes (type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
@@ -4648,7 +4654,7 @@ rs6000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
       static bool warned_for_return_big_vectors = false;
       if (!warned_for_return_big_vectors)
 	{
-	  warning ("synthetic vector returned by reference: "
+	  warning ("GCC vector returned by reference: "
 		   "non-standard ABI extension with no compatibility guarantee");
 	  warned_for_return_big_vectors = true;
 	}
@@ -5656,23 +5662,44 @@ function_arg_partial_nregs (CUMULATIVE_ARGS *cum, enum machine_mode mode,
 
 static bool
 rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-			  enum machine_mode mode ATTRIBUTE_UNUSED,
-			  tree type, bool named ATTRIBUTE_UNUSED)
+			  enum machine_mode mode, tree type,
+			  bool named ATTRIBUTE_UNUSED)
 {
-  if ((DEFAULT_ABI == ABI_V4
-       && ((type && AGGREGATE_TYPE_P (type))
-	   || mode == TFmode))
-      || (TARGET_32BIT && !TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
-      || (type && int_size_in_bytes (type) < 0))
+  if (DEFAULT_ABI == ABI_V4 && mode == TFmode)
     {
       if (TARGET_DEBUG_ARG)
-	fprintf (stderr, "function_arg_pass_by_reference\n");
+	fprintf (stderr, "function_arg_pass_by_reference: V4 long double\n");
+      return 1;
+    }
 
+  if (!type)
+    return 0;
+
+  if (DEFAULT_ABI == ABI_V4 && AGGREGATE_TYPE_P (type))
+    {
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, "function_arg_pass_by_reference: V4 aggregate\n");
+      return 1;
+    }
+
+  if (int_size_in_bytes (type) < 0)
+    {
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, "function_arg_pass_by_reference: variable size\n");
+      return 1;
+    }
+
+  /* Allow -maltivec -mabi=no-altivec without warning.  Altivec vector
+     modes only exist for GCC vector types if -maltivec.  */
+  if (TARGET_32BIT && !TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (mode))
+    {
+      if (TARGET_DEBUG_ARG)
+	fprintf (stderr, "function_arg_pass_by_reference: AltiVec\n");
       return 1;
     }
 
   /* Pass synthetic vectors in memory.  */
-  if (type && TREE_CODE (type) == VECTOR_TYPE
+  if (TREE_CODE (type) == VECTOR_TYPE
       && int_size_in_bytes (type) > (TARGET_ALTIVEC_ABI ? 16 : 8))
     {
       static bool warned_for_pass_big_vectors = false;
@@ -5680,7 +5707,7 @@ rs6000_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 	fprintf (stderr, "function_arg_pass_by_reference: synthetic vector\n");
       if (!warned_for_pass_big_vectors)
 	{
-	  warning ("synthetic vector passed by reference: "
+	  warning ("GCC vector passed by reference: "
 		   "non-standard ABI extension with no compatibility guarantee");
 	  warned_for_pass_big_vectors = true;
 	}
