@@ -1,3 +1,8 @@
+2003-10-09  Michael Koch  <konqueror@gmx.de>
+
+	* java/math/BigInteger.java
+	(add): Removed unused local variable len.
+
 2003-10-08  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkButtonPeer.java (handleEvent): Remove
