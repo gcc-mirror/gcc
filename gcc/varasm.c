@@ -969,15 +969,17 @@ assemble_start_function (decl, fnname)
     }
 
   /* Do any machine/system dependent processing of the function name */
-#ifdef ASM_DECLARE_FUNCTION_NAME
-  ASM_DECLARE_FUNCTION_NAME (asm_out_file, fnname, current_function_decl);
-#else
-  /* Standard thing is just output label for the function.  */
   if (output_bytecode)
     BC_OUTPUT_LABEL (asm_out_file, fnname);
   else
-    ASM_OUTPUT_LABEL (asm_out_file, fnname);
+    {
+#ifdef ASM_DECLARE_FUNCTION_NAME
+      ASM_DECLARE_FUNCTION_NAME (asm_out_file, fnname, current_function_decl);
+#else
+      /* Standard thing is just output label for the function.  */
+      ASM_OUTPUT_LABEL (asm_out_file, fnname);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
+    }
 }
 
 /* Output assembler code associated with defining the size of the
@@ -1470,16 +1472,18 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
     }
 
   /* Do any machine/system dependent processing of the object.  */
-#ifdef ASM_DECLARE_OBJECT_NAME
-  last_assemble_variable_decl = decl;
-  ASM_DECLARE_OBJECT_NAME (asm_out_file, name, decl);
-#else
-  /* Standard thing is just output label for the object.  */
   if (output_bytecode)
     BC_OUTPUT_LABEL (asm_out_file, name);
   else
-    ASM_OUTPUT_LABEL (asm_out_file, name);
+    {
+#ifdef ASM_DECLARE_OBJECT_NAME
+      last_assemble_variable_decl = decl;
+      ASM_DECLARE_OBJECT_NAME (asm_out_file, name, decl);
+#else
+      /* Standard thing is just output label for the object.  */
+      ASM_OUTPUT_LABEL (asm_out_file, name);
 #endif /* ASM_DECLARE_OBJECT_NAME */
+    }
 
   if (!dont_output_data)
     {
