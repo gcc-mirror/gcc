@@ -1365,6 +1365,49 @@ calculate_giv_inc (pattern, src_insn, regno)
   return increment;
 }
 
+/* Copy REG_NOTES, except for insn references, because not all insn_map
+   entries are valid yet.  We do need to copy registers now though, because
+   the reg_map entries can change during copying.  */
+
+static rtx
+initial_reg_note_copy (notes, map)
+     rtx notes;
+     struct inline_remap *map;
+{
+  rtx copy;
+
+  if (notes == 0)
+    return 0;
+
+  copy = rtx_alloc (GET_CODE (notes));
+  PUT_MODE (copy, GET_MODE (notes));
+
+  if (GET_CODE (notes) == EXPR_LIST)
+    XEXP (copy, 0) = copy_rtx_and_substitute (XEXP (notes, 0), map);
+  else if (GET_CODE (notes) == INSN_LIST)
+    /* Don't substitute for these yet.  */
+    XEXP (copy, 0) = XEXP (notes, 0);
+  else
+    abort ();
+
+  XEXP (copy, 1) = initial_reg_note_copy (XEXP (notes, 1), map);
+
+  return copy;
+}
+
+/* Fixup insn references in copied REG_NOTES.  */
+
+static void
+final_reg_note_copy (notes, map)
+     rtx notes;
+     struct inline_remap *map;
+{
+  rtx note;
+
+  for (note = notes; note; note = XEXP (note, 1))
+    if (GET_CODE (note) == INSN_LIST)
+      XEXP (note, 0) = map->insn_map[INSN_UID (XEXP (note, 0))];
+}
 
 /* Copy each instruction in the loop, substituting from map as appropriate.
    This is very similar to a loop in expand_inline_function.  */
@@ -1611,7 +1654,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      pattern = copy_rtx_and_substitute (pattern, map);
 	      copy = emit_insn (pattern);
 	    }
-	  /* REG_NOTES will be copied later.  */
+	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
 	  
 #ifdef HAVE_cc0
 	  /* If this insn is setting CC0, it may need to look at
@@ -1655,6 +1698,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	case JUMP_INSN:
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
 	  copy = emit_jump_insn (pattern);
+	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
 
 	  if (JUMP_LABEL (insn) == start_label && insn == copy_end
 	      && ! last_iteration)
@@ -1756,6 +1800,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	case CALL_INSN:
 	  pattern = copy_rtx_and_substitute (PATTERN (insn), map);
 	  copy = emit_call_insn (pattern);
+	  REG_NOTES (copy) = initial_reg_note_copy (REG_NOTES (insn), map);
 
 #ifdef HAVE_cc0
 	  if (cc0_insn)
@@ -1806,7 +1851,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
     }
   while (insn != copy_end);
   
-  /* Now copy the REG_NOTES.  */
+  /* Now finish coping the REG_NOTES.  */
   insn = copy_start;
   do
     {
@@ -1814,8 +1859,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
       if ((GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
 	   || GET_CODE (insn) == CALL_INSN)
 	  && map->insn_map[INSN_UID (insn)])
-	REG_NOTES (map->insn_map[INSN_UID (insn)])
-	  = copy_rtx_and_substitute (REG_NOTES (insn), map);
+	final_reg_note_copy (REG_NOTES (map->insn_map[INSN_UID (insn)]), map);
     }
   while (insn != copy_end);
 
