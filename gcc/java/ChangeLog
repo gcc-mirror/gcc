@@ -1,3 +1,15 @@
+2004-01-16  Andrew Haley  <aph@redhat.com>
+
+	PR java/13273:
+	* typeck.c (shallow_find_method): New.
+	(find_method_in_superclasses): New.
+	(find_method_in_interfaces): New.
+	(lookup_do): Rewrite.
+	* java-tree.h (SEARCH_ONLY_INTERFACE): Delete.
+
+	* jcf-parse.c (read_class): Save and restore output_class.
+	* decl.c (java_expand_body): Set output_class from fndecl.
+
 2004-01-15  Michael Chastain  <mec.gnu@mindspring.com>
 
 	* class.c (gen_indirect_dispatch_tables): Fix string length

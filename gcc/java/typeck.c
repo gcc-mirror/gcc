@@ -735,6 +735,92 @@ has_method (tree class, tree method_name)
 		    build_null_signature) != NULL_TREE;
 }
 
+/* Search in class SEARCHED_CLASS, but not its superclasses, for a
+   method matching METHOD_NAME and signature SIGNATURE.  A private
+   helper for lookup_do.  */
+static tree
+shallow_find_method (tree searched_class, int flags, tree method_name, 
+	     tree signature, tree (*signature_builder) (tree))
+{
+  tree method;
+  for (method = TYPE_METHODS (searched_class);
+       method != NULL_TREE;  method = TREE_CHAIN (method))
+    {
+      tree method_sig = (*signature_builder) (TREE_TYPE (method));
+      if (DECL_NAME (method) == method_name && method_sig == signature)
+	{
+	  /* If the caller requires a visible method, then we
+	     skip invisible methods here.  */
+	  if (! (flags & SEARCH_VISIBLE)
+	      || ! METHOD_INVISIBLE (method))
+	    return method;
+	}
+    }
+  return NULL_TREE;
+}
+
+/* Search in the superclasses of SEARCHED_CLASS for a method matching
+   METHOD_NAME and signature SIGNATURE.  A private helper for
+   lookup_do.  */
+static tree
+find_method_in_superclasses (tree searched_class, int flags, 
+			     tree method_name, 
+	     tree signature, tree (*signature_builder) (tree))
+{
+  tree klass;
+  for (klass = CLASSTYPE_SUPER (searched_class); klass != NULL_TREE;
+       klass = CLASSTYPE_SUPER (klass))
+    {
+      tree method;
+      method = shallow_find_method (klass, flags, method_name, 
+				    signature, signature_builder);
+      if (method != NULL_TREE)
+	return method;
+    }
+
+  return NULL_TREE;
+}
+
+/* Search in the interfaces of SEARCHED_CLASS and its superinterfaces
+   for a method matching METHOD_NAME and signature SIGNATURE.  A
+   private helper for lookup_do.  */
+static tree
+find_method_in_interfaces (tree searched_class, int flags, tree method_name, 
+	     tree signature, tree (*signature_builder) (tree))
+{
+  int i;
+  int interface_len = 
+    TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (searched_class)) - 1;
+
+  for (i = interface_len; i > 0; i--)
+    {
+      tree child = 
+	TREE_VEC_ELT (TYPE_BINFO_BASETYPES (searched_class), i);
+      tree iclass = BINFO_TYPE (child);
+	  
+      /* If the superinterface hasn't been loaded yet, do so now.  */
+      if (CLASS_FROM_SOURCE_P (iclass))
+	safe_layout_class (iclass);
+      else if (!CLASS_LOADED_P (iclass))
+	load_class (iclass, 1);
+	  
+      /* First, we look in ICLASS.  If that doesn't work we'll
+	 recursively look through all its superinterfaces.  */
+      tree method = shallow_find_method (iclass, flags, method_name, 
+					 signature, signature_builder);      
+      if (method != NULL_TREE)
+	return method;
+  
+      method = find_method_in_interfaces 
+	(iclass, flags, method_name, signature, signature_builder);
+      if (method != NULL_TREE)
+	return method;
+    }
+  
+  return NULL_TREE;
+}
+
+
 /* Search in class SEARCHED_CLASS (and its superclasses) for a method
    matching METHOD_NAME and signature SIGNATURE.  FLAGS control some
    parameters of the search.
@@ -745,9 +831,6 @@ has_method (tree class, tree method_name)
    SEARCH_SUPER means skip SEARCHED_CLASS and start with its
    superclass.
    
-   SEARCH_ONLY_INTERFACE means don't search ordinary classes, but
-   instead only search interfaces and superinterfaces.
-
    SEARCH_VISIBLE means skip methods for which METHOD_INVISIBLE is
    set.
 
@@ -759,74 +842,36 @@ lookup_do (tree searched_class, int flags, tree method_name,
 	   tree signature, tree (*signature_builder) (tree))
 {
   tree method;
-  int first_time = 1;
+    
+  if (searched_class == NULL_TREE)
+    return NULL_TREE;
 
-  /* If the incoming class is an interface, then we will only return
-     a method declared in an interface context.  */
-  if (searched_class != NULL_TREE
-      && CLASS_INTERFACE (TYPE_NAME (searched_class)))
-    flags |= SEARCH_ONLY_INTERFACE;
-
-  while (searched_class != NULL_TREE)
+  if (flags & SEARCH_SUPER)
     {
-      /* First search this class.  If we're only searching the
- 	 superclass, skip this.  */
-      if (! ((flags & SEARCH_SUPER) && first_time))
- 	{
- 	  for (method = TYPE_METHODS (searched_class);
- 	       method != NULL_TREE;  method = TREE_CHAIN (method))
- 	    {
- 	      tree method_sig = (*signature_builder) (TREE_TYPE (method));
- 	      if (DECL_NAME (method) == method_name && method_sig == signature)
-		{
-		  /* If the caller requires a visible method, then we
-		     skip invisible methods here.  */
-		  if (! (flags & SEARCH_VISIBLE)
-		      || ! METHOD_INVISIBLE (method))
-		    return method;
-		}
- 	    }
- 	}
-      first_time = 0;
-
-      /* Search interfaces, if required.  */
-      if ((flags & SEARCH_INTERFACE))
- 	{
- 	  int i;
- 	  int interface_len = 
- 	    TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (searched_class)) - 1;
-
- 	  for (i = interface_len; i > 0; i--)
- 	    {
- 	      tree child = 
- 		TREE_VEC_ELT (TYPE_BINFO_BASETYPES (searched_class), i);
- 	      tree iclass = BINFO_TYPE (child);
-
- 	      /* If the superinterface hasn't been loaded yet, do so now.  */
- 	      if (CLASS_FROM_SOURCE_P (iclass))
- 		safe_layout_class (iclass);
- 	      else if (!CLASS_LOADED_P (iclass))
- 		load_class (iclass, 1);
-
-	      /* Note that we don't care about SEARCH_VISIBLE here,
-		 since an interface can never have an invisible
-		 method.  */
- 	      method = lookup_do (iclass, SEARCH_INTERFACE,
-				  method_name, signature, signature_builder);
- 	      if (method != NULL_TREE) 
- 		return method;
- 	    }
- 	}
-
-      /* If we're only searching for interface methods, then we've
-	 already searched all the superinterfaces.  Our superclass is
-	 Object, but we don't want to search that.  */
-      if ((flags & SEARCH_ONLY_INTERFACE))
-	break;
       searched_class = CLASSTYPE_SUPER (searched_class);
+      if (searched_class == NULL_TREE)
+	return NULL_TREE;
     }
 
-  return NULL_TREE;
+  /* First look in our own methods.  */
+  method = shallow_find_method (searched_class, flags, method_name,
+				signature, signature_builder);  
+  if (method)
+    return method;
+
+  /* Then look in our superclasses.  */
+  if (! CLASS_INTERFACE (TYPE_NAME (searched_class)))
+    method = find_method_in_superclasses (searched_class, flags, method_name,
+					  signature, signature_builder);  
+  if (method)
+    return method;
+  
+  /* If that doesn't work, look in our interfaces.  */
+  if (flags & SEARCH_INTERFACE)
+    method = find_method_in_interfaces (searched_class, flags, method_name, 
+					signature, signature_builder);
+  
+  return method;
 }
 
 /* Search in class CLAS for a constructor matching METHOD_SIGNATURE.
