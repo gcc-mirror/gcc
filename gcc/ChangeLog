@@ -1,3 +1,7 @@
+2005-01-13  Ralf Corsepius <ralf.corsepius@rtems.org>
+
+	* config/i386/t-rtems-i386: Multilib on -mtune instead of -mcpu.
+
 2004-01-12  David Mosberger  <davidm@hpl.hp.com>
 	    James E Wilson  <wilson@specifixinc.com>
 
