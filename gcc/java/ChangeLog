@@ -1,3 +1,9 @@
+2002-03-05  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* builtins.c(cos_builtin): method_return_type ATTRIBUTE_UNUSED
+	* builtins.c(sin_builtin): Likewise
+	* builtins.c(sqrt_builtin): Likewise
+
 2002-03-03  Zack Weinberg  <zack@codesourcery.com>
 
 	* java/expr.c, java/jcf-parse.c, java/lex.c:
