@@ -1,3 +1,10 @@
+2000-12-26  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* bsearch.c: New file.
+	* configure.in (funcs): Add bsearch.
+	(AC_CHECK_FUNCS): Likewise.
+	* configure, config.in: Regenerate.
+
 2000-12-13  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* safe-ctype.c: #include "ansidecl.h".
