@@ -1,0 +1,35 @@
+# The name of each test starts with the architecture it requires.  Tests that
+# work on all variants start with "all".
+
+if {![istarget frv-*-*]} {
+    return 0
+}
+
+load_lib gcc-dg.exp
+
+# Find out which architecture is used by default.
+set mainarch "fr500"
+foreach flag [target_info multilib_flags] {
+    regexp "^-mcpu=(.*)" $flag dummy mainarch
+    if {$flag == "-mno-pack"} {
+	# -mno-pack disables media intrinsics.
+	return 0
+    }
+}
+
+# Set $archs to "all" plus the list of architectures we can test.
+set archs [list "all" $mainarch]
+switch $mainarch {
+    fr405 { lappend archs fr400 }
+    fr450 { lappend archs fr405 fr400 }
+}
+
+# Set $files to the list of files we can test.
+set files ""
+foreach arch $archs {
+    lappend files [lsort [glob -nocomplain $srcdir/$subdir/${arch}*.c]]
+}
+
+dg-init
+gcc-dg-runtest [eval concat $files] ""
+dg-finish
