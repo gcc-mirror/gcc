@@ -488,6 +488,7 @@ push_function_context_to (context)
   p->pops_args = current_function_pops_args;
   p->returns_struct = current_function_returns_struct;
   p->returns_pcc_struct = current_function_returns_pcc_struct;
+  p->returns_pointer = current_function_returns_pointer;
   p->needs_context = current_function_needs_context;
   p->calls_setjmp = current_function_calls_setjmp;
   p->calls_longjmp = current_function_calls_longjmp;
@@ -566,6 +567,7 @@ pop_function_context_from (context)
   current_function_pops_args = p->pops_args;
   current_function_returns_struct = p->returns_struct;
   current_function_returns_pcc_struct = p->returns_pcc_struct;
+  current_function_returns_pointer = p->returns_pointer;
   current_function_needs_context = p->needs_context;
   current_function_calls_setjmp = p->calls_setjmp;
   current_function_calls_longjmp = p->calls_longjmp;
