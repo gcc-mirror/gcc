@@ -1,3 +1,16 @@
+2000-11-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_strncmp, expand_builtin_strncpy): New
+	functions.
+	(expand_builtin): Handle BUILT_IN_STRNCPY and BUILT_IN_STRNCMP.
+
+	* builtins.def (BUILT_IN_STRNCPY, BUILT_IN_STRNCMP): New entries.
+
+	* c-common.c (c_common_nodes_and_builtins): Declare builtin
+	strncpy and strncmp.
+
+	* extend.texi (strncmp, strncpy): Document new builtins.
+
 2000-11-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/elfos.h (ASM_OUTPUT_SECTION_NAME): Use a hash table, not
