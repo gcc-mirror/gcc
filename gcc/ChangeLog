@@ -1,3 +1,10 @@
+2002-01-29  Richard Henderson  <rth@redhat.com>
+
+	* sched-int.h (struct deps_reg): Add uses_length, clobbers_length.
+	* sched-rgn.c (propagate_deps): Update them.
+	* sched-deps.c (sched_analyze_insn): Update them.  Flush the
+	clobbers list when either gets too long.
+
 2002-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.h (LIMIT_RELOAD_CLASS): Handle LEGACY_REGS

@@ -96,6 +96,8 @@ struct deps
       rtx uses;
       rtx sets;
       rtx clobbers;
+      int uses_length;
+      int clobbers_length;
     } *reg_last;
 
   /* Element N is set for each register that has any non-zero element
