@@ -1,3 +1,8 @@
+2001-12-04  Geert Bosch  <bosch@gnat.com>
+
+	* Makefile.in (update-sources): New target. 
+	For use by gcc_release script.
+
 2001-12-04  Ed Schonberg <schonber@gnat.com>
 
 	* sem_prag.adb (Analyze_Pragma, case Validity_Checks): do not treat as 

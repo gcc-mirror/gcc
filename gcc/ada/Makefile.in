@@ -2435,6 +2435,9 @@ nmake.ads :  sinfo.ads nmake.adt xnmake.adb
 	$(CP) $^ bldtools
 	(cd bldtools; gnatmake -q xnmake ; ./xnmake -s ../nmake.ads )
 
+update-sources : treeprs.ads einfo.h sinfo.h nmake.adb nmake.ads
+	$(CP) $^ $(srcdir)
+
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
 
