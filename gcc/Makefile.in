@@ -743,7 +743,7 @@ cstamp-h: config.in config.status
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
-config.status: configure version.c
+config.status: $(srcdir)/configure version.c
 	@if [ ! -f config.status ] ; then \
 	  echo You must configure gcc.  Look at the INSTALL file for details.; \
 	  false; \
