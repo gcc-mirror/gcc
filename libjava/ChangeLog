@@ -1,3 +1,13 @@
+2005-01-13  Michael Koch  <konqueror@gmx.de>
+
+	PR libgcj/17784
+	* java/lang/Thread.java
+	(Thread): Call checkAccess().
+	(stop): Fixed argument name to match javadoc.
+	* java/lang/natThread.cc
+	(interrupt): Call checkAccess().
+	(stop): Likewise.
+
 2005-01-11  Michael Koch  <konqueror@gmx.de>
 
 	PR libgcj/13972

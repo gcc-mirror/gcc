@@ -1,5 +1,5 @@
 /* Thread -- an independent thread of executable code
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation
 
 This file is part of GNU Classpath.
@@ -35,6 +35,7 @@ or based on this library.  If you modify this library, you may extend
 this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
+
 
 package java.lang;
 
@@ -321,6 +322,9 @@ public class Thread implements Runnable
 
   private Thread (Thread current, ThreadGroup g, Runnable r, String n)
   {
+    // Make sure the current thread may create a new thread.
+    checkAccess();
+    
     // The Class Libraries book says ``threadName cannot be null''.  I
     // take this to mean NullPointerException.
     if (n == null)
@@ -862,7 +866,7 @@ public class Thread implements Runnable
    * @see SecurityManager#checkPermission(Permission)
    * @deprecated unsafe operation, try not to use
    */
-  public final native void stop(Throwable e);
+  public final native void stop(Throwable t);
 
   /**
    * Suspend this Thread.  It will not come back, ever, unless it is resumed.
