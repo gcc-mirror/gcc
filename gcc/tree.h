@@ -727,6 +727,8 @@ struct tree_type
    In LABEL_DECL nodes, nonzero means that an error message about
    jumping into such a binding contour has been printed for this label.  */
 #define TREE_REGDECL(NODE) ((NODE)->decl.regdecl_flag)
+/* In a FIELD_DECL, indicates this field should be bit-packed.  */
+#define DECL_PACKED(NODE) ((NODE)->decl.regdecl_flag)
 
 /* Nonzero in a ..._DECL means this variable is ref'd from a nested function.
    For VAR_DECL nodes, PARM_DECL nodes, and FUNCTION_DECL nodes.
@@ -755,11 +757,9 @@ struct tree_type
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
 #define DECL_BUILT_IN(NODE) ((NODE)->decl.bit_field_flag)
 
-/* In a FUNCTION_DECL, indicates a method
-   for which each instance has a pointer.  */
+/* Used in VAR_DECLs to indicate that the variable is a vtable.
+   It is also used in FIELD_DECLs for vtable pointers.  */
 #define DECL_VIRTUAL_P(NODE) ((NODE)->decl.virtual_flag)
-/* In a FIELD_DECL, indicates this field should be bit-packed.  */
-#define DECL_PACKED(NODE) ((NODE)->decl.virtual_flag)
 
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) ((NODE)->decl.lang_flag_0)
