@@ -20,7 +20,7 @@ Fri Jun 25 11:06:32 1999  Craig Burley  <craig@jcb-sc.com>
 	* bugs.texi: Describe K(5)=10*3 NAMELIST-read bug.
 
 Mon Jun 21 12:40:17 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
- 
+
 	* g77.texi: Update links.
 
 Wed Jun 16 11:43:02 1999  Craig Burley  <craig@jcb-sc.com>
