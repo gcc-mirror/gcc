@@ -570,7 +570,7 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
-      *__s = char_type(NULL);
+      *__s = char_type();
       if (!_M_gcount)
 	this->setstate(ios_base::failbit);
       return *this;
@@ -670,7 +670,7 @@ namespace std
 		__throw_exception_again;
 	    }
 	}
-      *__s = char_type(NULL);
+      *__s = char_type();
       if (!_M_gcount)
 	this->setstate(ios_base::failbit);
       return *this;

@@ -1,3 +1,17 @@
+2001-06-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/3142
+	* include/bits/std_sstream.h: Add allocator_type, as per DR 251.
+
+	libstdc++/3141
+	* include/bits/istream.tcc (getline, get): Fix as per DR 243.
+
+	libstdc++/3140
+	* include/bits/std_bitset.h (bitset::set): Fix as per DR 186.
+
+	libstdc++/3139
+	* include/bits/limits_generic.h: Fix as per DR 184.
+
 2001-06-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	libstdc++/3126
