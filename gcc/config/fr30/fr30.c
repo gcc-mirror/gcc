@@ -123,8 +123,7 @@ static struct fr30_frame_info 	zero_frame_info;
 
 static void fr30_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					 tree, int *, int);
-static rtx fr30_pass_by_reference (tree, tree);
-static rtx fr30_pass_by_value (tree, tree);
+static tree fr30_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 #define FRAME_POINTER_MASK 	(1 << (FRAME_POINTER_REGNUM))
 #define RETURN_POINTER_MASK 	(1 << (RETURN_POINTER_REGNUM))
@@ -156,6 +155,8 @@ static rtx fr30_pass_by_value (tree, tree);
 
 #undef  TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS fr30_setup_incoming_varargs
+#undef  TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR fr30_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -712,74 +713,15 @@ fr30_function_arg_partial_nregs (CUMULATIVE_ARGS cum, enum machine_mode mode,
   return FR30_NUM_ARG_REGS - cum;
 }
 
-static rtx
-fr30_pass_by_reference (tree valist, tree type)
-{
-  tree type_ptr;
-  tree type_ptr_ptr;
-  tree t;
-  
-  type_ptr     = build_pointer_type (type);
-  type_ptr_ptr = build_pointer_type (type_ptr);
-  
-  t = build (POSTINCREMENT_EXPR, va_list_type_node, valist, build_int_2 (UNITS_PER_WORD, 0));
-  TREE_SIDE_EFFECTS (t) = 1;
-  t = build1 (NOP_EXPR, type_ptr_ptr, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  t = build1 (INDIRECT_REF, type_ptr, t);
-  
-  return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
-}
-
-static rtx
-fr30_pass_by_value (tree valist, tree type)
-{
-  HOST_WIDE_INT size = int_size_in_bytes (type);
-  HOST_WIDE_INT rsize;
-  rtx addr_rtx;
-  tree t;
-
-  if ((size % UNITS_PER_WORD) == 0)
-    {
-      t = build (POSTINCREMENT_EXPR, va_list_type_node, valist, build_int_2 (size, 0));
-      TREE_SIDE_EFFECTS (t) = 1;
-      
-      return expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
-    }
-
-  rsize = (size + UNITS_PER_WORD - 1) & - UNITS_PER_WORD;
-      
-  /* Care for bigendian correction on the aligned address.  */
-  t = build (PLUS_EXPR, ptr_type_node, valist, build_int_2 (rsize - size, 0));
-  addr_rtx = expand_expr (t, NULL_RTX, Pmode, EXPAND_NORMAL);
-  addr_rtx = copy_to_reg (addr_rtx);
-      
-  /* Increment AP.  */
-  t = build (PLUS_EXPR, va_list_type_node, valist, build_int_2 (rsize, 0));
-  t = build (MODIFY_EXPR, va_list_type_node, valist, t);
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-  
-  return addr_rtx;
-}
-
 /* Implement `va_arg'.  */
 
-rtx
-fr30_va_arg (tree valist, tree type)
+static tree
+fr30_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  HOST_WIDE_INT size;
-  
-  if (AGGREGATE_TYPE_P (type))
-    return fr30_pass_by_reference (valist, type);
-  
-  size = int_size_in_bytes (type);
-
-  if ((size % sizeof (int)) == 0
-      || size < 4)
-    return fr30_pass_by_value (valist, type);
-
-  return fr30_pass_by_reference (valist, type);
+  if (FUNCTION_ARG_PASS_BY_REFERENCE (dummy, TYPE_MODE (type), type, dummy))
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
+  else
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /*}}}*/
