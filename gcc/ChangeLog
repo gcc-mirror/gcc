@@ -1,3 +1,17 @@
+2001-07-14  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/pa/pa.c (emit_hpdiv_const): Return reg is r2 for 64-bit
+	millicode.
+	(insn_refs_are_delayed): Correct comment.
+	* config/pa/pa.h (INSN_REFERENCES_ARE_DELAYED): Likewise.
+	* config/pa/pa.md (mulsi3): If TARGET_64BIT, clobber r2
+	instead of r31.  Make associated insn !TARGET_64BIT, and
+	provide an additional 64-bit insn that clobbers r2.
+	(divsi3): Likewise.
+	(udivsi3): Likewise.
+	(modsi3): Likewise.
+	(umodsi3): Likewise.
+
 Sat Jul 14 02:58:38 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* bb-reorder.c (skip_insn_after_block): Get past the line number notes.

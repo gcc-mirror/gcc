@@ -4450,6 +4450,8 @@ emit_hpdiv_const (operands, unsignedp)
       && INTVAL (operands[2]) < 16
       && magic_milli[INTVAL (operands[2])])
     {
+      rtx ret = gen_rtx_REG (SImode, TARGET_64BIT ? 2 : 31);
+
       emit_move_insn (gen_rtx_REG (SImode, 26), operands[1]);
       emit
 	(gen_rtx
@@ -4463,7 +4465,7 @@ emit_hpdiv_const (operands, unsignedp)
 		     gen_rtx_CLOBBER (VOIDmode, operands[3]),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 26)),
 		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 25)),
-		     gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (SImode, 31)))));
+		     gen_rtx_CLOBBER (VOIDmode, ret))));
       emit_move_insn (operands[0], gen_rtx_REG (SImode, 29));
       return 1;
     }
@@ -6904,12 +6906,18 @@ pa_can_combine_p (new, anchor, floater, reversed, dest, src1, src2)
 
    Millicode calls always expect their arguments in the integer argument
    registers, and always return their result in %r29 (ret1).  They
-   are expected to clobber their arguments, %r1, %r29, and %r31 and
-   nothing else.
+   are expected to clobber their arguments, %r1, %r29, and the return
+   pointer which is %r31 on 32-bit and %r2 on 64-bit, and nothing else.
 
-   By considering this effects delayed reorg reorg can put insns
-   which set the argument registers into the delay slot of the millicode
-   call -- thus they act more like traditional CALL_INSNs.
+   This function tells reorg that the references to arguments and
+   millicode calls do not appear to happen until after the millicode call.
+   This allows reorg to put insns which set the argument registers into the
+   delay slot of the millicode call -- thus they act more like traditional
+   CALL_INSNs.
+
+   Note we can not consider side effects of the insn to be delayed because
+   the branch and link insn will clobber the return pointer.  If we happened
+   to use the return pointer in the delay slot of the call, then we lose.
 
    get_attr_type will try to recognize the given insn, so make sure to
    filter out things it will not accept -- SEQUENCE, USE and CLOBBER insns
