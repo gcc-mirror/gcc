@@ -1,3 +1,9 @@
+2004-09-16  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17501
+	* parser.c (cp_parser_nested_name_specifier): Do not resolve
+	typename types if the user explicitly said "typename".
+
 2004-09-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	* error.c (dump_decl): Make sure there is lang_specific info before 
