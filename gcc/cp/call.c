@@ -1,5 +1,5 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
+   Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2003, 
    1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
@@ -2476,11 +2476,51 @@ build_this (obj)
   return build_unary_op (ADDR_EXPR, obj, 0);
 }
 
-static void
-print_z_candidates (candidates)
-     struct z_candidate *candidates;
+/* Returns true iff functions are equivalent. Equivalent functions are
+   not '==' only if one is a function-local extern function or if
+   both are extern "C".  */
+
+static inline int
+equal_functions (fn1, fn2)
+     tree fn1;
+     tree fn2;
 {
-  const char *str = "candidates are:";
+  if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2)
+      || DECL_EXTERN_C_FUNCTION_P (fn1))
+    return decls_match (fn1, fn2);
+  return fn1 == fn2;
+}
+
+static void
+print_z_candidates (struct z_candidate *candidates)
+{
+  const char *str;
+  struct z_candidate *cand1;
+  struct z_candidate **cand2;
+
+  /* There may be duplicates in the set of candidates.  We put off
+     checking this condition as long as possible, since we have no way
+     to eliminate duplicates from a set of functions in less than n^2
+     time.  Now we are about to emit an error message, so it is more
+     permissible to go slowly.  */
+  for (cand1 = candidates; cand1; cand1 = cand1->next)
+    {
+      tree fn = cand1->fn;
+      /* Skip builtin candidates and conversion functions.  */
+      if (TREE_CODE (fn) != FUNCTION_DECL)
+	continue;
+      cand2 = &cand1->next;
+      while (*cand2)
+	{
+	  if (TREE_CODE ((*cand2)->fn) == FUNCTION_DECL
+	      && equal_functions (fn, (*cand2)->fn))
+	    *cand2 = (*cand2)->next;
+	  else
+	    cand2 = &(*cand2)->next;
+	}
+    }
+
+  str = "candidates are:";
   for (; candidates; candidates = candidates->next)
     {
       if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
@@ -5517,21 +5557,6 @@ add_warning (winner, loser)
   winner->warnings = tree_cons (NULL_TREE,
 				build_zc_wrapper (loser),
 				winner->warnings);
-}
-
-/* Returns true iff functions are equivalent. Equivalent functions are
-   not '==' only if one is a function-local extern function or if
-   both are extern "C".  */
-
-static inline int
-equal_functions (fn1, fn2)
-     tree fn1;
-     tree fn2;
-{
-  if (DECL_LOCAL_FUNCTION_P (fn1) || DECL_LOCAL_FUNCTION_P (fn2)
-      || DECL_EXTERN_C_FUNCTION_P (fn1))
-    return decls_match (fn1, fn2);
-  return fn1 == fn2;
 }
 
 /* Compare two candidates for overloading as described in

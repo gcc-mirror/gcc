@@ -1,3 +1,8 @@
+2003-03-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8700
+	* call.c (print_z_candidates): Avoid printing duplicates.
+
 2003-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/8660
