@@ -87,6 +87,8 @@ convert (type, expr)
     return fold (convert_to_pointer (type, e));
   if (code == REAL_TYPE)
     return fold (convert_to_real (type, e));
+  if (code == COMPLEX_TYPE)
+    return fold (convert_to_complex (type, e));
 
   error ("conversion to non-scalar type requested");
   return error_mark_node;
