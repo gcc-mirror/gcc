@@ -444,7 +444,7 @@
 		     UNSPEC_RSQRT1))]
   "TARGET_MIPS3D"
   "rsqrt1.<fmt>\t%0,%1"
-  [(set_attr "type" "frsqrt")
+  [(set_attr "type" "frsqrt1")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "mips_rsqrt2_<fmt>"
@@ -454,7 +454,7 @@
 		     UNSPEC_RSQRT2))]
   "TARGET_MIPS3D"
   "rsqrt2.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "frsqrt")
+  [(set_attr "type" "frsqrt2")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "mips_recip1_<fmt>"
@@ -463,7 +463,7 @@
 		     UNSPEC_RECIP1))]
   "TARGET_MIPS3D"
   "recip1.<fmt>\t%0,%1"
-  [(set_attr "type" "frdiv")
+  [(set_attr "type" "frdiv1")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "mips_recip2_<fmt>"
@@ -473,5 +473,5 @@
 		     UNSPEC_RECIP2))]
   "TARGET_MIPS3D"
   "recip2.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "frdiv")
+  [(set_attr "type" "frdiv2")
    (set_attr "mode" "<UNITMODE>")])

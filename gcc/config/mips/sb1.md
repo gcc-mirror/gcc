@@ -353,13 +353,25 @@
 
 (define_insn_reservation "ir_sb1_fpu_2pipes" 4
   (and (eq_attr "cpu" "sb1")
-       (and (eq_attr "type" "fmove,fadd,fmul,fabs,fneg,fcvt")
+       (and (eq_attr "type" "fmove,fadd,fmul,fabs,fneg,fcvt,frdiv1,frsqrt1")
 	    (eq_attr "sb1_fp_pipes" "two")))
   "sb1_fp1 | sb1_fp0")
 
 (define_insn_reservation "ir_sb1_fpu_1pipe" 4
   (and (eq_attr "cpu" "sb1")
-       (and (eq_attr "type" "fmove,fadd,fmul,fabs,fneg,fcvt")
+       (and (eq_attr "type" "fmove,fadd,fmul,fabs,fneg,fcvt,frdiv1,frsqrt1")
+	    (eq_attr "sb1_fp_pipes" "one")))
+  "sb1_fp1")
+
+(define_insn_reservation "ir_sb1_fpu_step2_2pipes" 8
+  (and (eq_attr "cpu" "sb1")
+       (and (eq_attr "type" "frdiv2,frsqrt2")
+	    (eq_attr "sb1_fp_pipes" "two")))
+  "sb1_fp1 | sb1_fp0")
+
+(define_insn_reservation "ir_sb1_fpu_step2_1pipe" 8
+  (and (eq_attr "cpu" "sb1")
+       (and (eq_attr "type" "frdiv2,frsqrt2")
 	    (eq_attr "sb1_fp_pipes" "one")))
   "sb1_fp1")
 
