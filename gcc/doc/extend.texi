@@ -3703,7 +3703,9 @@ The @var{level} argument must be a constant integer.
 
 On some machines it may be impossible to determine the return address of
 any function other than the current one; in such cases, or when the top
-of the stack has been reached, this function will return @code{0}.
+of the stack has been reached, this function will return @code{0} or a
+random value. In addition, @code{__builtin_frame_address} may be used
+to determine if the top of the stack has been reached.
 
 This function should only be used with a non-zero argument for debugging
 purposes.
@@ -3725,8 +3727,13 @@ has a dedicated frame pointer register, and the function has a frame,
 then @code{__builtin_frame_address} will return the value of the frame
 pointer register.
 
-The caveats that apply to @code{__builtin_return_address} apply to this
-function as well.
+On some machines it may be impossible to determine the frame address of
+any function other than the current one; in such cases, or when the top
+of the stack has been reached, this function will return @code{0} if
+the first frame pointer is properly initialized by the startup code.
+
+This function should only be used with a non-zero argument for debugging
+purposes.
 @end deftypefn
 
 @node Other Builtins

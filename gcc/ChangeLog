@@ -1,3 +1,8 @@
+2001-07-23  H.J. Lu  (hjl@gnu.org)
+
+	* doc/extend.texi: Update __builtin_return_address and
+	__builtin_frame_address.
+
 2001-07-23  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_expand_setcc): Don't use method 0
