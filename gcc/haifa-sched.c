@@ -3371,10 +3371,8 @@ sched_analyze_1 (x, insn)
 	  pending_mem = pending_read_mems;
 	  while (pending)
 	    {
-	      /* If a dependency already exists, don't create a new one.  */
-	      if (!find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-		if (anti_dependence (XEXP (pending_mem, 0), dest))
-		  add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
+	      if (anti_dependence (XEXP (pending_mem, 0), dest))
+		add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
 
 	      pending = XEXP (pending, 1);
 	      pending_mem = XEXP (pending_mem, 1);
@@ -3384,10 +3382,8 @@ sched_analyze_1 (x, insn)
 	  pending_mem = pending_write_mems;
 	  while (pending)
 	    {
-	      /* If a dependency already exists, don't create a new one.  */
-	      if (!find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-		if (output_dependence (XEXP (pending_mem, 0), dest))
-		  add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
+	      if (output_dependence (XEXP (pending_mem, 0), dest))
+		add_dependence (insn, XEXP (pending, 0), REG_DEP_OUTPUT);
 
 	      pending = XEXP (pending, 1);
 	      pending_mem = XEXP (pending_mem, 1);
@@ -3529,10 +3525,8 @@ sched_analyze_2 (x, insn)
 	pending_mem = pending_read_mems;
 	while (pending)
 	  {
-	    /* If a dependency already exists, don't create a new one.  */
-	    if (!find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-	      if (read_dependence (XEXP (pending_mem, 0), x))
-		add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
+	    if (read_dependence (XEXP (pending_mem, 0), x))
+	      add_dependence (insn, XEXP (pending, 0), REG_DEP_ANTI);
 
 	    pending = XEXP (pending, 1);
 	    pending_mem = XEXP (pending_mem, 1);
@@ -3542,11 +3536,9 @@ sched_analyze_2 (x, insn)
 	pending_mem = pending_write_mems;
 	while (pending)
 	  {
-	    /* If a dependency already exists, don't create a new one.  */
-	    if (!find_insn_list (XEXP (pending, 0), LOG_LINKS (insn)))
-	      if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
-		  x, rtx_varies_p))
-		add_dependence (insn, XEXP (pending, 0), 0);
+	    if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
+		x, rtx_varies_p))
+	      add_dependence (insn, XEXP (pending, 0), 0);
 
 	    pending = XEXP (pending, 1);
 	    pending_mem = XEXP (pending_mem, 1);
@@ -3819,6 +3811,9 @@ sched_analyze (head, tail)
     {
       if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN)
 	{
+	  /* Clear out the stale LOG_LINKS from flow.  */
+	  free_INSN_LIST_list (&LOG_LINKS (insn));
+
 	  /* Make each JUMP_INSN a scheduling barrier for memory references.  */
 	  if (GET_CODE (insn) == JUMP_INSN)
 	    last_pending_memory_flush
@@ -3832,6 +3827,9 @@ sched_analyze (head, tail)
 	  register int i;
 
 	  CANT_MOVE (insn) = 1;
+
+	  /* Clear out the stale LOG_LINKS from flow.  */
+	  free_INSN_LIST_list (&LOG_LINKS (insn));
 
 	  /* Any instruction using a hard register which may get clobbered
 	     by a call needs to be marked as dependent on this call.
@@ -7158,8 +7156,7 @@ add_branch_dependences (head, tail)
 	if (INSN_REF_COUNT (insn) != 0)
 	  continue;
 
-	if (!find_insn_list (last, LOG_LINKS (insn)))
-	  add_dependence (last, insn, REG_DEP_ANTI);
+	add_dependence (last, insn, REG_DEP_ANTI);
 	INSN_REF_COUNT (insn) = 1;
 
 	/* Skip over insns that are part of a group.  */
