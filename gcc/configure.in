@@ -658,8 +658,7 @@ for machine in $build $host $target; do
 		xm_file=i386/xm-netbsd.h
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
-		tmake_file=t-libc-ok
-		xmake_file=x-netbsd
+		tmake_file=t-netbsd
 		;;
 	i[[3456]]86-*-coff*)
 		tm_file=i386/i386-coff.h
@@ -1297,8 +1296,7 @@ for machine in $build $host $target; do
 		xm_file=m68k/xm-netbsd.h
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
-		tmake_file=t-libc-ok
-		xmake_file=x-netbsd
+		tmake_file=t-netbsd
 		;;
 	m68k-*-sysv3*)			# Motorola m68k's running system V.3
 		xm_file=m68k/xm-m68kv.h
@@ -1582,9 +1580,9 @@ for machine in $build $host $target; do
 	mips-dec-netbsd*)                  # Decstation running NetBSD
 		tm_file=mips/netbsd.h
 		xm_file=mips/xm-netbsd.h
-		xmake_file=x-netbsd
-		tmake_file=t-libc-ok
+		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
+		tmake_file=t-netbsd
 		prefix=$native_prefix
 		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
@@ -1906,10 +1904,9 @@ for machine in $build $host $target; do
 	ns32k-pc532-netbsd*)
 		tm_file=ns32k/netbsd.h
 		xm_file=ns32k/xm-netbsd.h
-		tmake_file=t-libc-ok
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
-		xmake_file=x-netbsd
+		tmake_file=t-netbsd
 		;;
         pdp11-*-bsd)
 		tm_file="${tm_file} pdp11/2bsd.h"
@@ -2129,8 +2126,7 @@ for machine in $build $host $target; do
 		xm_file=sparc/xm-netbsd.h
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
-		tmake_file=t-libc-ok
-		xmake_file=x-netbsd
+		tmake_file=t-netbsd
 		;;
 	sparc-*-bsd*)
 		tm_file=sparc/bsd.h
@@ -2252,10 +2248,9 @@ for machine in $build $host $target; do
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
 		xm_file="${xm_file} xm-netbsd.h"
-		tmake_file=t-libc-ok
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
-		xmake_file=x-netbsd
+		tmake_file=t-netbsd
 		float_format=vax
 		;;
 	vax-*-ultrix*)			# vaxen running ultrix
