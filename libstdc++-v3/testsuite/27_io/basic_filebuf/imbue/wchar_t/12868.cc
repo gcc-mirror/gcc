@@ -30,7 +30,7 @@ void test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  locale loc_is(__gnu_test::try_named_locale("is_IS"));
+  locale loc_is(__gnu_test::try_named_locale("is_IS.UTF-8"));
   
   {
     wofstream out("tmp_12868");

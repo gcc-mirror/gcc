@@ -1,4 +1,25 @@
 2003-11-26  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/13171
+	* include/bits/fstream.tcc (imbue): Relax the conditions under
+	which the function succeeds: allow for two consecutive calls with
+	the same name; state dependent encodings are ok even after open
+	if at the beginning of the file; don't check seekoff return value
+	(pipes, cin, cout, etc...)
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-1.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-3.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-4.cc: New.
+	* testsuite/27_io/basic_filebuf/imbue/char/2.cc: Tweak comment.
+	* testsuite/27_io/basic_filebuf/imbue/char/3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/2.cc: Tweak comment.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/3.cc: Likewise.
+
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/12868.cc: More
+	correctly use the UTF-8 locale appearing in the PR.
+
+2003-11-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.h
 	(__numpunct_cache<>::_M_cache): Avoid zeroing _M_grouping,

@@ -744,27 +744,22 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     imbue(const locale& __loc)
     {
-      if (this->getloc() != __loc)
+      bool __testfail = false;
+
+      if (this->is_open())
 	{
-	  bool __testfail = false;
-	  if (this->is_open())
-	    {
-	      const bool __testseek =
-		this->seekoff(0, ios_base::cur, this->_M_mode) ==
-		pos_type(off_type(-1));
-	      const bool __teststate =
-		__check_facet(_M_codecvt).encoding() == -1;
+	  const pos_type __ret = this->seekoff(0, ios_base::cur,
+					       this->_M_mode);
+	  const bool __teststate = __check_facet(_M_codecvt).encoding() == -1;
+	  __testfail = __teststate && __ret != pos_type(off_type(0));
+	}
 
-	      __testfail = __testseek || __teststate;
-	    }
-
-	  if (!__testfail)
-	    {
-	      if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
-		_M_codecvt = &use_facet<__codecvt_type>(__loc);
-	      else
-		_M_codecvt = 0;
-	    }
+      if (!__testfail)
+	{
+	  if (__builtin_expect(has_facet<__codecvt_type>(__loc), true))
+	    _M_codecvt = &use_facet<__codecvt_type>(__loc);
+	  else
+	    _M_codecvt = 0;
 	}
     }
 
