@@ -1,3 +1,10 @@
+2004-07-04  Steven Bosscher  <stevenb@suse.de>
+
+	* config/iq2000/iq2000.c (TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE):
+	Define.
+	* config/iq2000/iq2000.md: Translate old pipeline description to an
+	equivalent new one.
+
 2004-07-04  Roger Sayle  <roger@eyesopen.com>
 
 	* tree-ssa-ccp.c (set_rhs): Change function to return a bool.
