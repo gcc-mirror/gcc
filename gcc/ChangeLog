@@ -1,3 +1,9 @@
+Wed Jul 17 00:19:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (MACHINE_DEPENDENT_REORG): New macro.
+	* i386.c (x86_machine_dependent_reorg): New function.
+	* i386-protos.h (x86_machine_dependent_reorg): Declare.
+
 2002-07-16  Zack Weinberg  <zack@codesourcery.com>
 
 	* builtins.c (std_expand_builtin_va_start): Remove unused

@@ -13677,4 +13677,47 @@ x86_field_alignment (field, computed)
   return computed;
 }
 
+/* Implement machine specific optimizations.  
+   At the moment we implement single transformation: AMD Athlon works faster
+   when RET is not destination of conditional jump or directly preceeded
+   by other jump instruction.  We avoid the penalty by inserting NOP just
+   before the RET instructions in such cases.  */
+void
+x86_machine_dependent_reorg (first)
+     rtx first ATTRIBUTE_UNUSED;
+{
+  edge e;
+
+  if (!TARGET_ATHLON || !optimize || optimize_size)
+    return;
+  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+  {
+    basic_block bb = e->src;
+    rtx ret = bb->end;
+    rtx prev;
+    bool insert = false;
+
+    if (!returnjump_p (ret) || !maybe_hot_bb_p (bb))
+      continue;
+    prev = prev_nonnote_insn (ret);
+    if (prev && GET_CODE (prev) == CODE_LABEL)
+      {
+	edge e;
+	for (e = bb->pred; e; e = e->pred_next)
+	  if (EDGE_FREQUENCY (e) && e->src->index > 0
+	      && !(e->flags & EDGE_FALLTHRU))
+	    insert = 1;
+      }
+    if (!insert)
+      {
+	prev = prev_real_insn (ret);
+	if (prev && GET_CODE (prev) == JUMP_INSN
+	    && any_condjump_p (prev))
+	  insert = 1;
+      }
+    if (insert)
+      emit_insn_before (gen_nop (), ret);
+  }
+}
+
 #include "gt-i386.h"

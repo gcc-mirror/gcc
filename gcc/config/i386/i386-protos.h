@@ -209,6 +209,7 @@ extern int x86_field_alignment PARAMS ((tree, int));
 #endif
 
 extern rtx ix86_tls_get_addr PARAMS ((void));
+extern void x86_machine_dependent_reorg PARAMS ((rtx));
 
 /* In winnt.c  */
 extern void i386_pe_encode_section_info PARAMS ((tree, int));
