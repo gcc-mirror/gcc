@@ -3120,6 +3120,8 @@ peephole2_optimize (dump_file)
 			      = gen_rtx_EXPR_LIST (REG_NOTE_KIND (note),
 						   XEXP (note, 0),
 						   REG_NOTES (new_insn));
+			  default:
+			    /* Discard all other reg notes. */
 			    break;
 			  }
 

@@ -1,3 +1,7 @@
+2001-10-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* recog.c (peephole2_optimize): Add default case to switch.
+
 2001-10-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi (Sending Patches): Remove.
