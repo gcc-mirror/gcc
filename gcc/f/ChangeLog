@@ -1,3 +1,8 @@
+Fri Jun  4 10:09:50 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi (Missing Features): Add `Better Warnings'
+	item.
+
 Fri May 28 16:51:41 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi: Fix thinko.
