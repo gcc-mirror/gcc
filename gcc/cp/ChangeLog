@@ -1,3 +1,10 @@
+2004-09-09  Ziemowit Laski  <zlaski@apple.com>
+
+	* Make-lang.in (cp/typeck.o): Depend on c-common.h.
+	* typeck.c: Include c-common.h.
+	(comptypes): For RECORD_TYPEs, call objc_comptypes() and
+	return the result if nonnegative.
+
 2004-09-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl2.c (import_export_class)

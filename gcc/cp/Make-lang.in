@@ -240,7 +240,7 @@ cp/cp-objcp-common.o : cp/cp-objcp-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h 
 cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h output.h $(TM_P_H) \
    diagnostic.h gt-cp-typeck2.h
 cp/typeck.o: cp/typeck.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
-   diagnostic.h convert.h
+   diagnostic.h convert.h c-common.h
 cp/class.o: cp/class.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H) $(TARGET_H) convert.h
 cp/call.o: cp/call.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H) $(EXPR_H) \
      diagnostic.h intl.h gt-cp-call.h convert.h target.h
