@@ -327,7 +327,7 @@ public class ObjectStreamClass implements Serializable
 	i = 0; j = 0; k = 0;
 	while (i < fields.length && j < exportedFields.length)
 	  {
-	    int comp = fields[i].getName().compareTo(exportedFields[j].getName());
+	    int comp = fields[i].compareTo(exportedFields[j]);
 
 	    if (comp < 0)
 	      {
@@ -344,10 +344,27 @@ public class ObjectStreamClass implements Serializable
 		newFieldList[k] = exportedFields[j];
 		newFieldList[k].setPersistent(true);
 		newFieldList[k].setToSet(false);
+		try
+		  {
+		    newFieldList[k].lookupField(clazz);
+		    newFieldList[k].checkFieldType();
+		  }
+		catch (NoSuchFieldException _)
+		  {
+		  }
 		j++;
 	      }
 	    else
 	      {
+		try
+		  {
+		    exportedFields[j].lookupField(clazz);
+		    exportedFields[j].checkFieldType();
+		  }
+		catch (NoSuchFieldException _)
+		  {
+		  }
+
 		if (!fields[i].getType().equals(exportedFields[j].getType()))
 		  throw new InvalidClassException
 		    ("serialPersistentFields must be compatible with" +
@@ -554,6 +571,19 @@ outer:
 	    if (fields != null)
 	      {
 		Arrays.sort (fields);
+		// Retrieve field reference.
+		for (int i=0; i < fields.length; i++)
+		  {
+		    try
+		      {
+			fields[i].lookupField(cl);
+		      }
+		    catch (NoSuchFieldException _)
+		      {
+			fields[i].setToSet(false);
+		      }
+		  }
+		
 		calculateOffsets();
 		return;
 	      }
@@ -798,7 +828,7 @@ outer:
 
     fieldsArray = new ObjectStreamField[ o.length ];
     System.arraycopy(o, 0, fieldsArray, 0, o.length);
-    
+
     return fieldsArray;
   }
 

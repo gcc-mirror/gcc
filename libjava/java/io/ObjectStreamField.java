@@ -41,6 +41,8 @@ package java.io;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import gnu.java.lang.reflect.TypeSignature;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 /**
  * This class intends to describe the field of a class for the serialization
@@ -99,7 +101,7 @@ public class ObjectStreamField implements Comparable
  
   /**
    * There are many cases you can not get java.lang.Class from typename 
-   * if your context class loader cann not load it, then use typename to
+   * if your context class loader cannot load it, then use typename to
    * construct the field.
    *
    * @param name Name of the field to export.
@@ -292,7 +294,7 @@ public class ObjectStreamField implements Comparable
   }
 
   /**
-   * This methods returns true if the field is marked as to be
+   * This method returns true if the field is marked as to be
    * set.
    *
    * @return True if it is to be set, false in the other cases.
@@ -303,6 +305,49 @@ public class ObjectStreamField implements Comparable
     return toset;
   }
 
+  /**
+   * This method searches for its field reference in the specified class
+   * object. It requests privileges. If an error occurs the internal field
+   * reference is not modified.
+   *
+   * @throws NoSuchFieldException if the field name does not exist in this class.
+   * @throws SecurityException if there was an error requesting the privileges.
+   */
+  void lookupField(Class clazz) throws NoSuchFieldException, SecurityException
+  {
+    final Field f = clazz.getDeclaredField(name);
+    
+    AccessController.doPrivileged(new PrivilegedAction()
+      {
+	public Object run()
+	{
+	  f.setAccessible(true);
+	  return null;
+	}
+      });
+    
+    this.field = f;
+  }
+
+  /**
+   * This method check whether the field described by this
+   * instance of ObjectStreamField is compatible with the
+   * actual implementation of this field.
+   *
+   * @throws NullPointerException if this field does not exist
+   * in the real class.
+   * @throws InvalidClassException if the types are incompatible.
+   */
+  void checkFieldType() throws InvalidClassException
+  {
+    Class ftype = field.getType();
+
+    if (!ftype.isAssignableFrom(type))
+      throw new InvalidClassException
+	("invalid field type for " + name +
+	 " in class " + field.getDeclaringClass());
+  }
+
   public String toString ()
   {
     return "ObjectStreamField< " + type + " " + name + " >";
@@ -310,102 +355,102 @@ public class ObjectStreamField implements Comparable
 
   final void setBooleanField(Object obj, boolean val)
   {
-      try
+    try
       {
-	  field.setBoolean(obj, val);
+	field.setBoolean(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setByteField(Object obj, byte val)
   {
-      try
+    try
       {
-	  field.setByte(obj, val);
+	field.setByte(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setCharField(Object obj, char val)
   {
-      try
+    try
       {
-	  field.setChar(obj, val);
+	field.setChar(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setShortField(Object obj, short val)
   {
-      try
+    try
       {
-	  field.setShort(obj, val);
+	field.setShort(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setIntField(Object obj, int val)
   {
-      try
+    try
       {
-	  field.setInt(obj, val);
+	field.setInt(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setLongField(Object obj, long val)
   {
-      try
+    try
       {
-	  field.setLong(obj, val);
+	field.setLong(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setFloatField(Object obj, float val)
   {
-      try
+    try
       {
-	  field.setFloat(obj, val);
+	field.setFloat(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setDoubleField(Object obj, double val)
   {
-      try
+    try
       {
-	  field.setDouble(obj, val);
+	field.setDouble(obj, val);
       }
-      catch(IllegalAccessException x)
+    catch(IllegalAccessException x)
       {
-	  throw new InternalError(x.getMessage());
+	throw new InternalError(x.getMessage());
       }
   }
-
+  
   final void setObjectField(Object obj, Object val)
-  {
+  { 
     try
       {
 	field.set(obj, val);
