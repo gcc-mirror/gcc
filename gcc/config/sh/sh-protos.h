@@ -88,6 +88,7 @@ extern int arith_reg_or_0_operand PARAMS ((rtx, enum machine_mode));
 extern int logical_operand PARAMS ((rtx, enum machine_mode));
 extern int tertiary_reload_operand PARAMS ((rtx, enum machine_mode));
 extern int fpscr_operand PARAMS ((rtx, enum machine_mode));
+extern int fpul_operand PARAMS ((rtx, enum machine_mode));
 extern int commutative_float_operator PARAMS ((rtx, enum machine_mode));
 extern int noncommutative_float_operator PARAMS ((rtx, enum machine_mode));
 extern int binary_float_operator PARAMS ((rtx, enum machine_mode));
