@@ -1,5 +1,12 @@
 2002-11-18  Michael Koch <konqueror@gmx.de>
 
+	* Makefile.am (ordinary_java_source_files):
+	Added java/nio/ReadOnlyBufferException.java and
+	java/nio/channels/ClosedSelectorException.java.
+	* Makefile.in: Regenerated.
+
+2002-11-18  Michael Koch <konqueror@gmx.de>
+
 	* java/net/PlainSocketImpl.java: Reworked imports.
 	* java/net/ServerSocket.java
 	(ServerSocket): Create socket.
