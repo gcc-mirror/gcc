@@ -1,3 +1,8 @@
+Tue Sep 21 07:47:10 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (gc.o, gc_gc.o): Do not pass -fgnu-runtime to
+	the compiler when building C code.
+	
 Fri Aug  6 23:32:29 1999  Daniel Jacobowitz <drow@drow.them.org>
 
 	* Makefile.in (FLAGS_TO_PASS): Include prefix, exec_prefix,
