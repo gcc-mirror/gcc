@@ -1,4 +1,4 @@
-c { dg-do run }
+c { dg-do run { xfail mips-sgi-irix6* } } PR 16292
       program cabs_1
       complex      z0
       real         r0

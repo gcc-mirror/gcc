@@ -1,3 +1,8 @@
+2004-08-02  David Billinghurst
+
+	PR fortran/16292
+	* gfortran.dg/g77/cabs.f: xfail on mips-sgi-irix6*
+
 2004-08-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/ia64-got-1.c: New test case.
