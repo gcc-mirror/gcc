@@ -56,7 +56,7 @@ extern struct obstack *function_maybepermanent_obstack;
    all.  Assume 1 instruction for the call and 1.5 insns per argument.  */
 #define INTEGRATE_THRESHOLD(DECL) \
   (optimize_size \
-   ? (1 + (3 * list_length (DECL_ARGUMENTS (DECL)) / 2)) \
+   ? (1 + (3 * list_length (DECL_ARGUMENTS (DECL))) / 2) \
    : (8 * (8 + list_length (DECL_ARGUMENTS (DECL)))))
 #endif
 
