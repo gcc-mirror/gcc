@@ -59,7 +59,7 @@
 	(fold_binary): Optimize comparisons against widened operands if
 	the extension is represented by a CONVERT_EXPR, same as a NOP_EXPR.
 
-2005-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2005-03-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (struct_value_alias_set): New global variable.
 	(sparc_override_options): Initialize it.
