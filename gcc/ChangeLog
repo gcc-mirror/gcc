@@ -667,7 +667,6 @@ Mon Aug 14 18:51:44 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	value, and we make a new quantity, make sure that it won't be
 	mistaken by for a valid one by mention_regs.
 
->>>>>>> 1.7497
 2000-08-13  Ralf Gütlein <ralf.guetlein@aranea.de>
 
 	* h8300.md: Remove obsolete peepholes.
