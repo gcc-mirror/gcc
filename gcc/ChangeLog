@@ -1,3 +1,7 @@
+2000-05-20  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* mklibgcc.in: Restore rule to create ${dir}.
+
 Sat May 20 08:45:41 2000  H.J. Lu  <hjl@gnu.org>
 
 	* Makefile.in (libgcc.mk): Depend on xgcc$(exeext) for
