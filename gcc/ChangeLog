@@ -1,3 +1,8 @@
+2001-09-05  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* gcc.c: (process_command) Add parentheses around assignment 
+	used as truth value.
+
 2001-09-05  Richard Sandiford  <rsandifo@redhat.com>
 
  	* config/mips/mips.c (save_restore_insns): Don't mark any register
