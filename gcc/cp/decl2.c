@@ -953,14 +953,14 @@ grokfield (const cp_declarator *declarator,
   if (attrlist)
     cplus_decl_attributes (&value, attrlist, 0);
 
-  if (TREE_CODE (value) == VAR_DECL)
+  switch (TREE_CODE (value))
     {
+    case VAR_DECL:
       finish_static_data_member_decl (value, init, asmspec_tree, 
 				      flags);
       return value;
-    }
-  if (TREE_CODE (value) == FIELD_DECL)
-    {
+
+    case FIELD_DECL:
       if (asmspec)
 	error ("`asm' specifiers are not permitted on non-static data members");
       if (DECL_INITIAL (value) == error_mark_node)
@@ -969,9 +969,8 @@ grokfield (const cp_declarator *declarator,
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;
       return value;
-    }
-  if (TREE_CODE (value) == FUNCTION_DECL)
-    {
+
+    case  FUNCTION_DECL:
       if (asmspec)
 	set_user_assembler_name (value, asmspec);
       if (!DECL_FRIEND_P (value))
@@ -985,9 +984,10 @@ grokfield (const cp_declarator *declarator,
 
       DECL_IN_AGGR_P (value) = 1;
       return value;
+      
+    default:
+      gcc_unreachable ();
     }
-  abort ();
-  /* NOTREACHED */
   return NULL_TREE;
 }
 
@@ -1586,9 +1586,10 @@ maybe_emit_vtables (tree ctype)
 
       if (TREE_TYPE (DECL_INITIAL (vtbl)) == 0)
 	{
+	  tree expr = store_init_value (vtbl, DECL_INITIAL (vtbl));
+	  
 	  /* It had better be all done at compile-time.  */
-	  if (store_init_value (vtbl, DECL_INITIAL (vtbl)))
-	    abort ();
+	  gcc_assert (!expr);
 	}
 
       /* Write it out.  */

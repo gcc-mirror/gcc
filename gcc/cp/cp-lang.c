@@ -260,13 +260,13 @@ cp_expr_size (tree exp)
       /* The backend should not be interested in the size of an expression
 	 of a type with both of these set; all copies of such types must go
 	 through a constructor or assignment op.  */
-      if (TYPE_HAS_COMPLEX_INIT_REF (TREE_TYPE (exp))
-	  && TYPE_HAS_COMPLEX_ASSIGN_REF (TREE_TYPE (exp))
-	  /* But storing a CONSTRUCTOR isn't a copy.  */
-	  && TREE_CODE (exp) != CONSTRUCTOR)
-	abort ();
+      gcc_assert (!TYPE_HAS_COMPLEX_INIT_REF (TREE_TYPE (exp))
+		  || !TYPE_HAS_COMPLEX_ASSIGN_REF (TREE_TYPE (exp))
+		  /* But storing a CONSTRUCTOR isn't a copy.  */
+		  || TREE_CODE (exp) == CONSTRUCTOR);
+      
       /* This would be wrong for a type with virtual bases, but they are
-	 caught by the abort above.  */
+	 caught by the assert above.  */
       return (is_empty_class (TREE_TYPE (exp))
 	      ? size_zero_node
 	      : CLASSTYPE_SIZE_UNIT (TREE_TYPE (exp)));
@@ -289,7 +289,7 @@ cp_tree_size (enum tree_code code)
     case DEFAULT_ARG:		return sizeof (struct tree_default_arg);
     case OVERLOAD:		return sizeof (struct tree_overload);
     default:
-      abort ();
+      gcc_unreachable ();
     }
   /* NOTREACHED */
 }

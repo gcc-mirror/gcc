@@ -602,18 +602,20 @@ poplevel (int keep, int reverse, int functionbody)
 	}
       else
 	{
+	  tree name;
+	  
 	  /* Remove the binding.  */
 	  decl = link;
 
 	  if (TREE_CODE (decl) == TREE_LIST)
 	    decl = TREE_VALUE (decl);
+	  name = decl;
+	  
+	  if (TREE_CODE (name) == OVERLOAD)
+	    name = OVL_FUNCTION (name);
 
-	  if (DECL_P (decl))
-	    pop_binding (DECL_NAME (decl), decl);
-	  else if (TREE_CODE (decl) == OVERLOAD)
-	    pop_binding (DECL_NAME (OVL_FUNCTION (decl)), decl);
-	  else
-	    abort ();
+	  gcc_assert (DECL_P (name));
+	  pop_binding (DECL_NAME (name), decl);
 	}
     }
 
@@ -2702,8 +2704,7 @@ make_unbound_class_template (tree context, tree name, tsubst_flags_t complain)
     name = TYPE_IDENTIFIER (name);
   else if (DECL_P (name))
     name = DECL_NAME (name);
-  if (TREE_CODE (name) != IDENTIFIER_NODE)
-    abort ();
+  gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   if (!dependent_type_p (context)
       || currently_open_class (context))
@@ -4324,7 +4325,7 @@ reshape_init (tree type, tree *initp)
 	    }
 	}
       else
-	abort ();
+	gcc_unreachable ();
 
       /* The initializers were placed in reverse order in the
 	 CONSTRUCTOR.  */
@@ -6258,8 +6259,7 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     default:
-      abort ();
-      break;
+      gcc_unreachable ();
     }
 
   return type;
@@ -6493,7 +6493,7 @@ grokdeclarator (const cp_declarator *declarator,
 		break;
 
 	      default:
-		abort ();
+		gcc_unreachable ();
 	      }
 	    break;
 
@@ -6507,7 +6507,7 @@ grokdeclarator (const cp_declarator *declarator,
 	    break;
 
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 	}
       if (id_declarator->kind == cdk_id)
@@ -6982,7 +6982,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -7236,7 +7236,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -7619,10 +7619,8 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("unnamed variable or field declared void");
       else if (TREE_CODE (unqualified_id) == IDENTIFIER_NODE)
 	{
-	  if (IDENTIFIER_OPNAME_P (unqualified_id))
-	    abort ();
-	  else
-	    error ("variable or field `%s' declared void", name);
+	  gcc_assert (!IDENTIFIER_OPNAME_P (unqualified_id));
+	  error ("variable or field `%s' declared void", name);
 	}
       else
 	error ("variable or field declared void");
@@ -8524,7 +8522,7 @@ grok_op_properties (tree decl, int friendp, bool complain)
 #include "operators.def"
 #undef DEF_OPERATOR
 
-	abort ();
+	gcc_unreachable ();
       }
     while (0);
   gcc_assert (operator_code != LAST_CPLUS_TREE_CODE);
@@ -8694,7 +8692,7 @@ grok_op_properties (tree decl, int friendp, bool complain)
 		  break;
 
 		default:
-		  abort ();
+		  gcc_unreachable ();
 		}
 
 	      SET_OVERLOADED_OPERATOR_CODE (decl, operator_code);
@@ -8825,7 +8823,7 @@ tag_name (enum tag_types code)
     case enum_type:
       return "enum";
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -8946,7 +8944,7 @@ xref_tag (enum tag_types tag_code, tree name,
       code = ENUMERAL_TYPE;
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (! globalize)
@@ -9845,8 +9843,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	}
       if (DECL_HAS_VTT_PARM_P (decl1))
 	{
-	  if (DECL_NAME (t) != vtt_parm_identifier)
-	    abort ();
+	  gcc_assert (DECL_NAME (t) == vtt_parm_identifier);
 	  current_vtt_parm = t;
 	}
     }
@@ -10356,8 +10353,7 @@ finish_function (int flags)
   if (current_binding_level->kind != sk_function_parms)
     {
       /* Make sure we have already experienced errors.  */
-      if (errorcount == 0)
-	abort ();
+      gcc_assert (errorcount);
 
       /* Throw away the broken statement tree and extra binding
          levels.  */

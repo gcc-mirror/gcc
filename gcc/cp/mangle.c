@@ -373,12 +373,10 @@ add_substitution (tree node)
     for (i = VARRAY_ACTIVE_SIZE (G.substitutions); --i >= 0; )
       {
 	const tree candidate = VARRAY_TREE (G.substitutions, i);
-	if ((DECL_P (node) 
-	     && node == candidate)
-	    || (TYPE_P (node) 
-		&& TYPE_P (candidate) 
-		&& same_type_p (node, candidate)))
-	  abort ();
+	
+	gcc_assert (!(DECL_P (node) && node == candidate));
+	gcc_assert (!(TYPE_P (node) && TYPE_P (candidate) 
+		      && same_type_p (node, candidate)));
       }
   }
 #endif /* ENABLE_CHECKING */
@@ -832,14 +830,16 @@ write_unscoped_name (const tree decl)
       write_string ("St");
       write_unqualified_name (decl);
     }
-  /* If not, it should be either in the global namespace, or directly
-     in a local function scope.  */
-  else if (context == global_namespace 
-	   || context == NULL
-	   || TREE_CODE (context) == FUNCTION_DECL)
-    write_unqualified_name (decl);
-  else 
-    abort ();
+  else
+    {
+      /* If not, it should be either in the global namespace, or directly
+     	 in a local function scope.  */
+      gcc_assert (context == global_namespace 
+		  || context == NULL
+		  || TREE_CODE (context) == FUNCTION_DECL);
+      
+      write_unqualified_name (decl);
+    }
 }
 
 /* <unscoped-template-name> ::= <unscoped-name>
@@ -984,11 +984,12 @@ write_template_prefix (const tree node)
   /* Find the template decl.  */
   if (decl_is_template_id (decl, &template_info))
     template = TI_TEMPLATE (template_info);
-  else if (CLASSTYPE_TEMPLATE_ID_P (type))
-    template = TYPE_TI_TEMPLATE (type);
   else
-    /* Oops, not a template.  */
-    abort ();
+    {
+      gcc_assert (CLASSTYPE_TEMPLATE_ID_P (type));
+  
+      template = TYPE_TI_TEMPLATE (type);
+    }
 
   /* For a member template, though, the template name for the
      innermost name must have all the outer template levels
@@ -1325,16 +1326,18 @@ write_identifier (const char *identifier)
 static void
 write_special_name_constructor (const tree ctor)
 {
-  if (DECL_COMPLETE_CONSTRUCTOR_P (ctor)
-      /* Even though we don't ever emit a definition of the
-	 old-style destructor, we still have to consider entities
-	 (like static variables) nested inside it.  */
-      || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (ctor))
-    write_string ("C1");
-  else if (DECL_BASE_CONSTRUCTOR_P (ctor))
+  if (DECL_BASE_CONSTRUCTOR_P (ctor))
     write_string ("C2");
   else
-    abort ();
+    {
+      gcc_assert (DECL_COMPLETE_CONSTRUCTOR_P (ctor)
+		  /* Even though we don't ever emit a definition of
+		     the old-style destructor, we still have to
+		     consider entities (like static variables) nested
+		     inside it.  */
+		  || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (ctor));
+      write_string ("C1");
+    }
 }
 
 /* Handle destructor productions of non-terminal <special-name>.
@@ -1353,16 +1356,18 @@ write_special_name_destructor (const tree dtor)
 {
   if (DECL_DELETING_DESTRUCTOR_P (dtor))
     write_string ("D0");
-  else if (DECL_COMPLETE_DESTRUCTOR_P (dtor)
-	   /* Even though we don't ever emit a definition of the
-	      old-style destructor, we still have to consider entities
-	      (like static variables) nested inside it.  */
-	   || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (dtor))
-    write_string ("D1");
   else if (DECL_BASE_DESTRUCTOR_P (dtor))
     write_string ("D2");
   else
-    abort ();
+    {
+      gcc_assert (DECL_COMPLETE_DESTRUCTOR_P (dtor)
+		  /* Even though we don't ever emit a definition of
+	      	     the old-style destructor, we still have to
+	      	     consider entities (like static variables) nested
+	      	     inside it.  */
+		  || DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (dtor));
+      write_string ("D1");
+    }
 }
 
 /* Return the discriminator for ENTITY appearing inside
@@ -1590,7 +1595,7 @@ write_type (tree type)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
 
@@ -1706,11 +1711,8 @@ write_builtin_type (tree type)
 					       TYPE_UNSIGNED (type));
 	      if (type == t)
 		{
-		  if (TYPE_PRECISION (type) == 128)
-		    write_char (TYPE_UNSIGNED (type) ? 'o' : 'n');
-		  else
-		    /* Couldn't find this type.  */
-		    abort ();
+		  gcc_assert (TYPE_PRECISION (type) == 128);
+		  write_char (TYPE_UNSIGNED (type) ? 'o' : 'n');
 		}
 	      else
 		{
@@ -1731,11 +1733,11 @@ write_builtin_type (tree type)
       else if (type == long_double_type_node)
 	write_char ('e');
       else
-	abort ();
+	gcc_unreachable ();
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -2139,31 +2141,29 @@ write_expression (tree expr)
 static void
 write_template_arg_literal (const tree value)
 {
-  tree type = TREE_TYPE (value);
   write_char ('L');
-  write_type (type);
+  write_type (TREE_TYPE (value));
 
-  if (TREE_CODE (value) == CONST_DECL)
-    write_integer_cst (DECL_INITIAL (value));
-  else if (TREE_CODE (value) == INTEGER_CST)
+  switch (TREE_CODE (value))
     {
-      if (same_type_p (type, boolean_type_node))
-	{
-	  if (integer_zerop (value))
-	    write_unsigned_number (0);
-	  else if (integer_onep (value))
-	    write_unsigned_number (1);
-	  else 
-	    abort ();
-	}
-      else
-	write_integer_cst (value);
-    }
-  else if (TREE_CODE (value) == REAL_CST)
-    write_real_cst (value);
-  else
-    abort ();
+    case CONST_DECL:
+      write_integer_cst (DECL_INITIAL (value));
+      break;
+      
+    case INTEGER_CST:
+      gcc_assert (!same_type_p (TREE_TYPE (value), boolean_type_node)
+		  || integer_zerop (value) || integer_onep (value));
+      write_integer_cst (value);
+      break;
 
+    case REAL_CST:
+      write_real_cst (value);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  
   write_char ('E');
 }
 
@@ -2352,7 +2352,7 @@ write_template_param (const tree parm)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   write_char ('T');
@@ -2803,7 +2803,7 @@ write_java_integer_type_codes (const tree type)
   else if (type == java_boolean_type_node)
     write_char ('b');
   else
-    abort ();
+    gcc_unreachable ();
 }
 
 #include "gt-cp-mangle.h"

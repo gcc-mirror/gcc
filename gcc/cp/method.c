@@ -989,7 +989,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
       break;
     }
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Create the function.  */
@@ -1028,8 +1028,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_INLINE (fn) = 1;
-  if (TREE_USED (fn))
-    abort ();
+  gcc_assert (!TREE_USED (fn));
   
   return fn;
 }

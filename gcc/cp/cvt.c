@@ -284,12 +284,12 @@ cp_convert_to_pointer (tree type, tree expr, bool force)
       if (TYPE_PRECISION (intype) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
       expr = cp_convert (c_common_type_for_size (POINTER_SIZE, 0), expr);
-      /* Modes may be different but sizes should be the same.  */
-      if (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
-	  != GET_MODE_SIZE (TYPE_MODE (type)))
-	/* There is supposed to be some integral type
-	   that is the same width as a pointer.  */
-	abort ();
+      /* Modes may be different but sizes should be the same.  There
+	 is supposed to be some integral type that is the same width
+	 as a pointer.  */
+      gcc_assert (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
+		  == GET_MODE_SIZE (TYPE_MODE (type)));
+      
       return convert_to_pointer (type, expr);
     }
 
@@ -647,17 +647,18 @@ ocp_convert (tree type, tree expr, int convtype, int flags)
 	  /* Don't build a NOP_EXPR of class type.  Instead, change the
 	     type of the temporary.  Only allow this for cv-qual changes,
 	     though.  */
-	  if (!same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (e)),
-			    TYPE_MAIN_VARIANT (type)))
-	    abort ();
+	  gcc_assert (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (e)),
+				   TYPE_MAIN_VARIANT (type)));
 	  TREE_TYPE (e) = TREE_TYPE (TARGET_EXPR_SLOT (e)) = type;
 	  return e;
 	}
-      else if (TREE_ADDRESSABLE (type))
-	/* We shouldn't be treating objects of ADDRESSABLE type as rvalues.  */
-	abort ();
       else
-	return fold (build1 (NOP_EXPR, type, e));
+	{
+	  /* We shouldn't be treating objects of ADDRESSABLE type as
+	     rvalues.  */
+	  gcc_assert (!TREE_ADDRESSABLE (type));
+	  return fold (build1 (NOP_EXPR, type, e));
+	}
     }
 
   if (code == VOID_TYPE && (convtype & CONV_STATIC))

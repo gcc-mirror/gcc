@@ -687,7 +687,8 @@ retrofit_lang_decl (tree t)
     SET_DECL_LANGUAGE (t, lang_c);
   else if (current_lang_name == lang_name_java)
     SET_DECL_LANGUAGE (t, lang_java);
-  else abort ();
+  else
+    gcc_unreachable ();
 
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_decl] += 1;
@@ -826,6 +827,6 @@ cp_type_qual_from_rid (tree rid)
   else if (rid == ridpointers[(int) RID_RESTRICT])
     return TYPE_QUAL_RESTRICT;
 
-  abort ();
+  gcc_unreachable ();
   return TYPE_UNQUALIFIED;
 }

@@ -329,12 +329,10 @@ cp_genericize (tree fndecl)
   /* Fix up the types of parms passed by invisible reference.  */
   for (t = DECL_ARGUMENTS (fndecl); t; t = TREE_CHAIN (t))
     {
-      if (DECL_BY_REFERENCE (t))
-	abort ();
+      gcc_assert (!DECL_BY_REFERENCE (t));
       if (TREE_ADDRESSABLE (TREE_TYPE (t)))
 	{
-	  if (DECL_ARG_TYPE (t) == TREE_TYPE (t))
-	    abort ();
+	  gcc_assert (DECL_ARG_TYPE (t) != TREE_TYPE (t));
 	  TREE_TYPE (t) = DECL_ARG_TYPE (t);
 	  DECL_BY_REFERENCE (t) = 1;
 	  TREE_ADDRESSABLE (t) = 0;

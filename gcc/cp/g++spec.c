@@ -293,7 +293,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	      arglist[j++] = "-xc++-header";
 	      break;
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 	  arglist[j++] = argv[i];
 	  arglist[j] = "-xnone";
