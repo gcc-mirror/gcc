@@ -4334,7 +4334,11 @@ store_expr (tree exp, rtx target, int want_value)
 			 (want_value & 2
 			  ? BLOCK_OP_CALL_PARM : BLOCK_OP_NORMAL));
       else
-	emit_move_insn (target, temp);
+	{
+	  temp = force_operand (temp, target);
+	  if (temp != target)
+	    emit_move_insn (target, temp);
+	}
     }
 
   /* If we don't want a value, return NULL_RTX.  */

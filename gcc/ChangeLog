@@ -1,3 +1,8 @@
+2004-02-02  Richard Henderson  <rth@redhat.com>
+
+        PR target/13789
+        * expr.c (store_expr): Use force_operand before emit_move_insn.
+
 2004-02-02  Jeff Law  <law@redhat.com>
 	    Roger Sayle  <roger@eyesopen.com>
 
