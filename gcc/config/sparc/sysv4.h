@@ -171,9 +171,9 @@ do { ASM_OUTPUT_ALIGN ((FILE), 2);					\
 #define DATA_SECTION_ASM_OP	".section\t\".data\""
 #define BSS_SECTION_ASM_OP	".section\t\".bss\""
 #define CONST_SECTION_ASM_OP	".section\t\".rodata\""
-#define INIT_SECTION_ASM_OP	".section\t\".init\",#alloc"
-#define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc"
-#define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc"
+#define INIT_SECTION_ASM_OP	".section\t\".init\""
+#define CTORS_SECTION_ASM_OP    ".section\t\".ctors\",#alloc,#execinstr"
+#define DTORS_SECTION_ASM_OP    ".section\t\".dtors\",#alloc,#execinstr"
 
 /* Assemble generic sections.
    This is currently only used to support section attributes.  */
