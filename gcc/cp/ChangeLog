@@ -1,3 +1,7 @@
+2000-08-24  Greg McGary  <greg@mcgary.org>
+
+	* cp-tree.h (MAIN_NAME_P): Remove macro.
+
 2000-08-24  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (print_instantiation_context): Don't forget to flush the

@@ -376,11 +376,6 @@ typedef struct ptrmem_cst
     && DECL_NAME (NODE) != NULL_TREE			\
     && MAIN_NAME_P (DECL_NAME (NODE)))
 
-/* Returns non-zero iff ID_NODE is an IDENTIFIER_NODE whose name is
-   `main'.  */
-#define MAIN_NAME_P(ID_NODE) \
-   (strcmp (IDENTIFIER_POINTER (ID_NODE), "main") == 0)
-
 
 struct tree_binding
 {
@@ -3505,11 +3500,6 @@ extern varray_type local_classes;
   sprintf (wbuf, VBASE_NAME_FORMAT, TYPE_ASSEMBLER_NAME_STRING (TYPE));	\
   (BUF) = wbuf;								\
 } while (0)
-
-/* Returns non-zero iff ID_NODE is an IDENTIFIER_NODE whose name is
-   `main'.  */
-#define MAIN_NAME_P(ID_NODE) \
-   (strcmp (IDENTIFIER_POINTER (ID_NODE), "main") == 0)
 
 /* Returns non-zero iff NODE is a declaration for the global function
    `main'.  */
