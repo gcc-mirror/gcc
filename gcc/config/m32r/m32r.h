@@ -182,15 +182,15 @@ extern int target_flags;
 /*  { "relax",			TARGET_RELAX_MASK, "" },		\
     { "no-relax",		-TARGET_RELAX_MASK, "" },*/		\
     { "debug",			TARGET_DEBUG_MASK, 			\
-	"Display compile time statistics" },				\
+	N_("Display compile time statistics") },			\
     { "align-loops",		TARGET_ALIGN_LOOPS_MASK, 		\
-	"Align all loops to 32 byte boundary" },			\
+	N_("Align all loops to 32 byte boundary") },			\
     { "no-align-loops",		-TARGET_ALIGN_LOOPS_MASK, "" },		\
     { "issue-rate=1",		TARGET_ISSUE_RATE_MASK, 		\
-	"Only issue one instruction per cycle" },			\
+	N_("Only issue one instruction per cycle") },			\
     { "issue-rate=2",		-TARGET_ISSUE_RATE_MASK, "" },		\
     { "branch-cost=1",		TARGET_BRANCH_COST_MASK, 		\
-	"Prefer branches over conditional execution" },			\
+	N_("Prefer branches over conditional execution") },		\
     { "branch-cost=2",		-TARGET_BRANCH_COST_MASK, "" },		\
     SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT, "" }						\
@@ -205,8 +205,10 @@ extern const char * m32r_sdata_string;
 
 #define TARGET_OPTIONS							\
 {									\
-  { "model=", & m32r_model_string, "Code size: small, medium or large" },\
-  { "sdata=", & m32r_sdata_string, "Small data area: none, sdata, use" } \
+  { "model=", & m32r_model_string,					\
+    N_("Code size: small, medium or large") },				\
+  { "sdata=", & m32r_sdata_string,					\
+    N_("Small data area: none, sdata, use") }				\
   SUBTARGET_OPTIONS							\
 }
 

@@ -69,12 +69,18 @@ extern int target_flags;
 #endif
 
 #define TARGET_SWITCHES  \
-{ {"l",         LITTLE_ENDIAN_BIT, "Generate little endian data"           }, \
-  {"b",        -LITTLE_ENDIAN_BIT, "Generate big endian data"              }, \
-  {"t",         PJ_TEST_BIT,       "Turn on maintainer testing code"       }, \
-  {"ext",       EXTENSIONS_BIT,    "Enable Transmeta picoJava extensions"  }, \
-  {"no-ext",   -EXTENSIONS_BIT,    "Disable Transmeta picoJava extensions" }, \
-  {"no-reorg", -REORG_BIT,         "Disable reorganization pass"           }, \
+{ {"l",         LITTLE_ENDIAN_BIT,			\
+   N_("Generate little endian data")           },	\
+  {"b",        -LITTLE_ENDIAN_BIT,			\
+   N_("Generate big endian data")              },	\
+  {"t",         PJ_TEST_BIT,				\
+   N_("Turn on maintainer testing code")       },	\
+  {"ext",       EXTENSIONS_BIT,				\
+   N_("Enable Transmeta picoJava extensions")  },	\
+  {"no-ext",   -EXTENSIONS_BIT,				\
+   N_("Disable Transmeta picoJava extensions") },	\
+  {"no-reorg", -REORG_BIT,				\
+   N_("Disable reorganization pass")           },	\
   {"",          TARGET_DEFAULT,    0 }}
 
 /* Sometimes certain combinations of command options do not make

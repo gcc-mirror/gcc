@@ -1,3 +1,56 @@
+2000-06-27  Philipp Thomas  <pthomas@suse.de>
+
+	* 1750a.h: Mark help strings for options/switches for translation.
+	* a29k.h: Likewise.
+	* alpha.h: Likewise.
+	* arm.h: Likewise.
+	* pe.h: Likewise.
+	* riscix.h: Likewise.
+	* c4x.h: Likewise.
+	* clipper.h: Likewise.
+	* convex.h: Likewise. 
+	* elxsi.h: Likewise.
+	* fr30.h: Likewise.
+	* fx80.h: Likewise.
+	* h8300.h: Likewise.
+	* i370.h: Likewise.
+	* cygwin.h: Likewise.
+	* dgux.h: Likewise.
+	* djgpp.h: Likewise.
+	* i386.h: Likewise.
+	* osf1elf.h: Likewise.
+	* osfrose.h: Likewise.
+	* sco5.h: Likewise.
+	* win32.h: Likewise.
+	* i860.h: Likewise.
+	* paragon.h: Likewise.
+	* i960.h: Likewise.
+	* ia64.h: Likewise.
+	* m32r.h: Likewise.
+	* mcore.h: Likewise.
+	* mips.h: Likewise.
+	* mn10300.h: Likewise.
+	* ns32k.h: Likewise.
+	* pdp11.h: Likewise.
+	* pj.h: Likewise.
+	* aix.h: Likewise.
+	* aix41.h: Likewise.
+	* aix43.h: Likewise.
+	* beos.h: Likewise.
+	* rs6000.h: Likewise.
+	* sysv4.h: Likewise.
+	* linux.h: Likewise.
+	* linux64.h: Likewise.
+	* sp64-elf.h: Likewise.
+	* sparc.h: Likewise.
+	* splet.h: Likewise.
+	* v850.h: Likewise.
+	* convex.h (TARGET_SWITCHES): Provide descriptions and mark them
+	for translation.
+	* sp86x-aout.h: Remove bogus first definition of SUBTARGET_SWITCHES.
+	Properly document option and mark for translation.
+	* sp86x-elf.h: Likewise.
+
 2000-06-27  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	Add MMX and SSE registers to i386 machine description.

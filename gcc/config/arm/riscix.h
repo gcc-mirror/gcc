@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  ARM RISCiX version.
-   Copyright (C) 1993, 1994, 1995, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1997, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rwe11@cl.cam.ac.uk), based on original
 	      work by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
    	      and Martin Simmons (@harleqn.co.uk).
@@ -80,9 +81,9 @@ Boston, MA 02111-1307, USA.  */
    switches cc1 complains about them.  For the sake of argument lets allocate
    bit 31 of target flags for such options.  */
 #define SUBTARGET_SWITCHES						\
-  {"bsd",	   0x80000000, "Do symbol renaming for BSD"},		\
-  {"xopen",	   0x80000000, "Do symbol renaming for X/OPEN"},	\
-  {"no-symrename", 0x80000000, "Don't do symbol renaming"},
+  {"bsd",	   0x80000000, N_("Do symbol renaming for BSD")},	\
+  {"xopen",	   0x80000000, N_("Do symbol renaming for X/OPEN")},	\
+  {"no-symrename", 0x80000000, N_("Don't do symbol renaming")},
     
 
 /* Run-time Target Specification.  */

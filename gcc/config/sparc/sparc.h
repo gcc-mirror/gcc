@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1994, 1995, 1996, 1997, 1998, 1999
-   Free Software Foundation, Inc.
+   2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -574,46 +574,82 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { {"fpu", MASK_FPU | MASK_FPU_SET,			"Use hardware fp" },		\
-    {"no-fpu", -MASK_FPU,				"Do not use hardware fp" },	\
+  { {"fpu", MASK_FPU | MASK_FPU_SET,					\
+     N_("Use hardware fp") },						\
+    {"no-fpu", -MASK_FPU,						\
+     N_("Do not use hardware fp") },					\
     {"no-fpu", MASK_FPU_SET,				NULL, },	\
-    {"hard-float", MASK_FPU | MASK_FPU_SET,		"Use hardware fp" },		\
-    {"soft-float", -MASK_FPU,				"Do not use hardware fp" },	\
-    {"soft-float", MASK_FPU_SET,			NULL },	\
-    {"epilogue", MASK_EPILOGUE,				"Use FUNCTION_EPILOGUE" },	\
-    {"no-epilogue", -MASK_EPILOGUE,			"Do not use FUNCTION_EPILOGUE" }, 	\
-    {"unaligned-doubles", MASK_UNALIGNED_DOUBLES,	"Assume possible double misalignment" },\
-    {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES,	"Assume all doubles are aligned" }, \
-    {"impure-text", MASK_IMPURE_TEXT,			"Pass -assert pure-text to linker" }, \
-    {"no-impure-text", -MASK_IMPURE_TEXT,		"Do not pass -assert pure-text to linker" }, \
-    {"flat", MASK_FLAT,					"Use flat register window model" }, \
-    {"no-flat", -MASK_FLAT,				"Do not use flat register window model" }, \
-    {"app-regs", MASK_APP_REGS,				"Use ABI reserved registers" },	\
-    {"no-app-regs", -MASK_APP_REGS,			"Do not use ABI reserved registers" }, \
-    {"hard-quad-float", MASK_HARD_QUAD,			"Use hardware quad fp instructions" }, \
-    {"soft-quad-float", -MASK_HARD_QUAD,		"Do not use hardware quad fp instructions" }, \
-    {"v8plus", MASK_V8PLUS,				"Compile for v8plus ABI" },	\
-    {"no-v8plus", -MASK_V8PLUS,				"Do not compile for v8plus ABI" }, \
-    {"vis", MASK_VIS,					"Utilize Visual Instruction Set" }, \
-    {"no-vis", -MASK_VIS,				"Do not utilize Visual Instruction Set" }, \
+    {"hard-float", MASK_FPU | MASK_FPU_SET,				\
+     N_("Use hardware fp") },						\
+    {"soft-float", -MASK_FPU,						\
+     N_("Do not use hardware fp") },					\
+    {"soft-float", MASK_FPU_SET,			NULL },		\
+    {"epilogue", MASK_EPILOGUE,						\
+     N_("Use FUNCTION_EPILOGUE") },					\
+    {"no-epilogue", -MASK_EPILOGUE,					\
+     N_("Do not use FUNCTION_EPILOGUE") }, 				\
+    {"unaligned-doubles", MASK_UNALIGNED_DOUBLES,			\
+     N_("Assume possible double misalignment") },			\
+    {"no-unaligned-doubles", -MASK_UNALIGNED_DOUBLES,			\
+     N_("Assume all doubles are aligned") },				\
+    {"impure-text", MASK_IMPURE_TEXT,					\
+     N_("Pass -assert pure-text to linker") }, 				\
+    {"no-impure-text", -MASK_IMPURE_TEXT,				\
+     N_("Do not pass -assert pure-text to linker") }, 			\
+    {"flat", MASK_FLAT,							\
+     N_("Use flat register window model") }, 				\
+    {"no-flat", -MASK_FLAT,						\
+     N_("Do not use flat register window model") }, 			\
+    {"app-regs", MASK_APP_REGS,						\
+     N_("Use ABI reserved registers") },				\
+    {"no-app-regs", -MASK_APP_REGS,					\
+     N_("Do not use ABI reserved registers") }, 			\
+    {"hard-quad-float", MASK_HARD_QUAD,					\
+     N_("Use hardware quad fp instructions") }, 			\
+    {"soft-quad-float", -MASK_HARD_QUAD,				\
+     N_("Do not use hardware quad fp instructions") }, 			\
+    {"v8plus", MASK_V8PLUS,						\
+     N_("Compile for v8plus ABI") },					\
+    {"no-v8plus", -MASK_V8PLUS,						\
+     N_("Do not compile for v8plus ABI") }, 				\
+    {"vis", MASK_VIS,							\
+     N_("Utilize Visual Instruction Set") }, 				\
+    {"no-vis", -MASK_VIS,						\
+     N_("Do not utilize Visual Instruction Set") }, 			\
     /* ??? These are deprecated, coerced to -mcpu=.  Delete in 2.9.  */ \
-    {"cypress", 0,					"Optimize for Cypress processors" }, \
-    {"sparclite", 0,					"Optimize for SparcLite processors" }, \
-    {"f930", 0,						"Optimize for F930 processors" }, \
-    {"f934", 0,						"Optimize for F934 processors" }, \
-    {"v8", 0,						"Use V8 Sparc ISA" }, \
-    {"supersparc", 0,					"Optimize for SuperSparc processors" }, \
-    /* End of deprecated options.  */	\
-    {"ptr64", MASK_PTR64,				"Pointers are 64-bit" }, \
-    {"ptr32", -MASK_PTR64,				"Pointers are 32-bit" }, \
-    {"32", -MASK_64BIT,					"Use 32-bit ABI" }, \
-    {"64", MASK_64BIT,					"Use 64-bit ABI" }, \
-    {"stack-bias", MASK_STACK_BIAS,			"Use stack bias" }, \
-    {"no-stack-bias", -MASK_STACK_BIAS,			"Do not use stack bias" }, \
-    {"faster-structs", MASK_FASTER_STRUCTS,			"Use structs on stronger alignment for double-word copies" }, \
-    {"no-faster-structs", -MASK_FASTER_STRUCTS,		"Do not use structs on stronger alignment for double-word copies" }, \
-    {"relax", 0,					"Optimize tail call instructions in assembler and linker" }, \
-    {"no-relax", 0,					"Do not optimize tail call instructions in assembler or linker" }, \
+    {"cypress", 0,							\
+     N_("Optimize for Cypress processors") }, 				\
+    {"sparclite", 0,							\
+     N_("Optimize for SparcLite processors") }, 			\
+    {"f930", 0,								\
+     N_("Optimize for F930 processors") }, 				\
+    {"f934", 0,								\
+     N_("Optimize for F934 processors") }, 				\
+    {"v8", 0,								\
+     N_("Use V8 Sparc ISA") }, 						\
+    {"supersparc", 0,							\
+     N_("Optimize for SuperSparc processors") }, 			\
+    /* End of deprecated options.  */					\
+    {"ptr64", MASK_PTR64,						\
+     N_("Pointers are 64-bit") }, 					\
+    {"ptr32", -MASK_PTR64,						\
+     N_("Pointers are 32-bit") }, 					\
+    {"32", -MASK_64BIT,							\
+     N_("Use 32-bit ABI") }, 						\
+    {"64", MASK_64BIT,							\
+     N_("Use 64-bit ABI") }, 						\
+    {"stack-bias", MASK_STACK_BIAS,					\
+     N_("Use stack bias") }, 						\
+    {"no-stack-bias", -MASK_STACK_BIAS,					\
+     N_("Do not use stack bias") }, 					\
+    {"faster-structs", MASK_FASTER_STRUCTS,				\
+     N_("Use structs on stronger alignment for double-word copies") }, 	\
+    {"no-faster-structs", -MASK_FASTER_STRUCTS,				\
+     N_("Do not use structs on stronger alignment for double-word copies") }, \
+    {"relax", 0,							\
+     N_("Optimize tail call instructions in assembler and linker") },	\
+    {"no-relax", 0,							\
+     N_("Do not optimize tail call instructions in assembler or linker") }, \
     SUBTARGET_SWITCHES			\
     { "", TARGET_DEFAULT, ""}}
 
@@ -668,11 +704,14 @@ extern enum processor_type sparc_cpu;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
 #define TARGET_OPTIONS \
-{							\
-  { "cpu=",  &sparc_select[1].string, "Use features of and schedule code for given CPU" }, \
-  { "tune=", &sparc_select[2].string, "Schedule code for given CPU" }, \
-  { "cmodel=", &sparc_cmodel_string, "Use given Sparc code model" }, \
-  SUBTARGET_OPTIONS 					\
+{								\
+  { "cpu=",  &sparc_select[1].string,				\
+    N_("Use features of and schedule code for given CPU") },	\
+  { "tune=", &sparc_select[2].string,				\
+    N_("Schedule code for given CPU") },			\
+  { "cmodel=", &sparc_cmodel_string,				\
+    N_("Use given Sparc code model") },				\
+  SUBTARGET_OPTIONS 						\
 }
 
 /* This is meant to be redefined in target specific files.  */

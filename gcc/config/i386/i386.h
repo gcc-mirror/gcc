@@ -224,72 +224,77 @@ extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 #define TARGET_MMX ((target_flags & MASK_MMX) != 0)
 
 #define TARGET_SWITCHES							      \
-{ { "80387",			 MASK_80387, "Use hardware fp" },	      \
-  { "no-80387",			-MASK_80387, "Do not use hardware fp" },      \
-  { "hard-float",		 MASK_80387, "Use hardware fp" },	      \
-  { "soft-float",		-MASK_80387, "Do not use hardware fp" },      \
-  { "no-soft-float",		 MASK_80387, "Use hardware fp" },	      \
-  { "386",			 0, "Same as -mcpu=i386" },		      \
-  { "486",			 0, "Same as -mcpu=i486" },		      \
-  { "pentium",			 0, "Same as -mcpu=pentium" },		      \
-  { "pentiumpro",		 0, "Same as -mcpu=pentiumpro" },	      \
-  { "rtd",			 MASK_RTD, "Alternate calling convention" },  \
-  { "no-rtd",			-MASK_RTD, "Use normal calling convention" }, \
+{ { "80387",			 MASK_80387, N_("Use hardware fp") },	      \
+  { "no-80387",			-MASK_80387, N_("Do not use hardware fp") },  \
+  { "hard-float",		 MASK_80387, N_("Use hardware fp") },	      \
+  { "soft-float",		-MASK_80387, N_("Do not use hardware fp") },  \
+  { "no-soft-float",		 MASK_80387, N_("Use hardware fp") },	      \
+  { "386",			 0, N_("Same as -mcpu=i386") },		      \
+  { "486",			 0, N_("Same as -mcpu=i486") },		      \
+  { "pentium",			 0, N_("Same as -mcpu=pentium") },	      \
+  { "pentiumpro",		 0, N_("Same as -mcpu=pentiumpro") },	      \
+  { "rtd",			 MASK_RTD,				      \
+    N_("Alternate calling convention") },				      \
+  { "no-rtd",			-MASK_RTD,				      \
+    N_("Use normal calling convention") },				      \
   { "align-double",		 MASK_ALIGN_DOUBLE,			      \
-    "Align some doubles on dword boundary" },				      \
+    N_("Align some doubles on dword boundary") },			      \
   { "no-align-double",		-MASK_ALIGN_DOUBLE,			      \
-    "Align doubles on word boundary" },					      \
+    N_("Align doubles on word boundary") },				      \
   { "svr3-shlib",		 MASK_SVR3_SHLIB,			      \
-    "Uninitialized locals in .bss"  },					      \
+    N_("Uninitialized locals in .bss")  },				      \
   { "no-svr3-shlib",		-MASK_SVR3_SHLIB,			      \
-    "Uninitialized locals in .data" },					      \
+    N_("Uninitialized locals in .data") },				      \
   { "ieee-fp",			 MASK_IEEE_FP,				      \
-    "Use IEEE math for fp comparisons" },				      \
+    N_("Use IEEE math for fp comparisons") },				      \
   { "no-ieee-fp",		-MASK_IEEE_FP,				      \
-    "Do not use IEEE math for fp comparisons" },			      \
+    N_("Do not use IEEE math for fp comparisons") },			      \
   { "fp-ret-in-387",		 MASK_FLOAT_RETURNS,			      \
-    "Return values of functions in FPU registers" },			      \
+    N_("Return values of functions in FPU registers") },		      \
   { "no-fp-ret-in-387",		-MASK_FLOAT_RETURNS ,			      \
-    "Do not return values of functions in FPU registers"},		      \
+    N_("Do not return values of functions in FPU registers")},		      \
   { "no-fancy-math-387",	 MASK_NO_FANCY_MATH_387,		      \
-    "Do not generate sin, cos, sqrt for FPU" },				      \
+    N_("Do not generate sin, cos, sqrt for FPU") },			      \
   { "fancy-math-387",		-MASK_NO_FANCY_MATH_387,		      \
-     "Generate sin, cos, sqrt for FPU"},				      \
+     N_("Generate sin, cos, sqrt for FPU")},				      \
   { "omit-leaf-frame-pointer",	 MASK_OMIT_LEAF_FRAME_POINTER,		      \
-    "Omit the frame pointer in leaf functions" },			      \
+    N_("Omit the frame pointer in leaf functions") },			      \
   { "no-omit-leaf-frame-pointer",-MASK_OMIT_LEAF_FRAME_POINTER, "" },	      \
   { "debug-addr",		 MASK_DEBUG_ADDR, 0 /* undocumented */ },     \
   { "no-debug-addr",		-MASK_DEBUG_ADDR, 0 /* undocumented */ },     \
   { "debug-arg",		 MASK_DEBUG_ARG, 0 /* undocumented */ },      \
   { "no-debug-arg",		-MASK_DEBUG_ARG, 0 /* undocumented */ },      \
-  { "stack-arg-probe",		 MASK_STACK_PROBE, "Enable stack probing" },  \
+  { "stack-arg-probe",		 MASK_STACK_PROBE,			      \
+    N_("Enable stack probing") },					      \
   { "no-stack-arg-probe",	-MASK_STACK_PROBE, "" },		      \
   { "windows",			0, 0 /* undocumented */ },		      \
   { "dll",			0,  0 /* undocumented */ },		      \
   { "intel-syntax",		MASK_INTEL_SYNTAX,			      \
-    "Emit Intel syntax assembler opcodes" },				      \
+    N_("Emit Intel syntax assembler opcodes") },			      \
   { "no-intel-syntax",		-MASK_INTEL_SYNTAX, "" },		      \
   { "align-stringops",		-MASK_NO_ALIGN_STROPS,			      \
-    "Align destination of the string operations" },			      \
+    N_("Align destination of the string operations") },			      \
   { "no-align-stringops",	 MASK_NO_ALIGN_STROPS,			      \
-    "Do not align destination of the string operations" },		      \
+    N_("Do not align destination of the string operations") },		      \
   { "inline-all-stringops",	 MASK_INLINE_ALL_STROPS,		      \
-    "Inline all known string operations" },				      \
+    N_("Inline all known string operations") },				      \
   { "no-inline-all-stringops",	-MASK_INLINE_ALL_STROPS,		      \
-    "Do not inline all known string operations" },			      \
+    N_("Do not inline all known string operations") },			      \
   { "push-args",		-MASK_NO_PUSH_ARGS,			      \
-    "Use push instructions to save outgoing arguments" },		      \
+    N_("Use push instructions to save outgoing arguments") },		      \
   { "no-push-args",		MASK_NO_PUSH_ARGS,			      \
-    "Do not use push instructions to save outgoing arguments" },	      \
+    N_("Do not use push instructions to save outgoing arguments") },	      \
   { "accumulate-outgoing-args",	MASK_ACCUMULATE_OUTGOING_ARGS,		      \
-    "Use push instructions to save outgoing arguments" },		      \
+    N_("Use push instructions to save outgoing arguments") },		      \
   { "no-accumulate-outgoing-args",-MASK_ACCUMULATE_OUTGOING_ARGS,	      \
-    "Do not use push instructions to save outgoing arguments" },	      \
-  { "mmx",			 MASK_MMX, "Support MMX builtins" },          \
-  { "no-mmx",			-MASK_MMX, "Do not support MMX builtins" },   \
-  { "sse",			 MASK_SSE, "Support MMX and SSE builtins" },  \
+    N_("Do not use push instructions to save outgoing arguments") },	      \
+  { "mmx",			 MASK_MMX, N_("Support MMX builtins") },      \
+  { "no-mmx",			-MASK_MMX,				      \
+    N_("Do not support MMX builtins") },				      \
+  { "sse",			 MASK_SSE,				      \
+    N_("Support MMX and SSE builtins") },				      \
   { "no-sse",			-MASK_SSE,				      \
-    "Do not support MMX and SSE builtins" },				      \
+    N_("Do not support MMX and SSE builtins") },			      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}
 
@@ -322,24 +327,24 @@ extern int ix86_arch;
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS						\
 { { "cpu=",		&ix86_cpu_string,			\
-    "Schedule code for given CPU"},				\
+    N_("Schedule code for given CPU")},				\
   { "arch=",		&ix86_arch_string,			\
-    "Generate code for given CPU"},				\
+    N_("Generate code for given CPU")},				\
   { "reg-alloc=",	&ix86_reg_alloc_order,			\
-    "Control allocation order of integer registers" },		\
+    N_("Control allocation order of integer registers") },	\
   { "regparm=",		&ix86_regparm_string,			\
-    "Number of registers used to pass integer arguments" },	\
+    N_("Number of registers used to pass integer arguments") },	\
   { "align-loops=",	&ix86_align_loops_string,		\
-    "Loop code aligned to this power of 2" },			\
+    N_("Loop code aligned to this power of 2") },		\
   { "align-jumps=",	&ix86_align_jumps_string,		\
-    "Jump targets are aligned to this power of 2" },		\
+    N_("Jump targets are aligned to this power of 2") },	\
   { "align-functions=",	&ix86_align_funcs_string,		\
-    "Function starts are aligned to this power of 2" },		\
+    N_("Function starts are aligned to this power of 2") },	\
   { "preferred-stack-boundary=",				\
     &ix86_preferred_stack_boundary_string,			\
-    "Attempt to keep stack aligned to this power of 2" },	\
+    N_("Attempt to keep stack aligned to this power of 2") },	\
   { "branch-cost=",	&ix86_branch_cost_string,		\
-    "Branches are this expensive (1-5, arbitrary units)" },	\
+    N_("Branches are this expensive (1-5, arbitrary units)") },	\
   SUBTARGET_OPTIONS						\
 }
 

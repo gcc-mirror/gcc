@@ -51,45 +51,45 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-{   { "fpu", 1, "Use hardware floating point" },		\
-    { "soft-float", -1, "Do not use hardware floating point" }, \
-/* return float result in ac0 */				\
-    { "ac0", 2, "Return floating point results in ac0" },	\
-    { "no-ac0", -2, "Return floating point results in memory" },\
-/* is 11/40 */							\
-    { "40", 4, "Generate code for an 11/40" },			\
-    { "no-40", -4, "" },					\
-/* is 11/45 */							\
-    { "45", 8, "Generate code for an 11/45" },			\
-    { "no-45", -8, "" },					\
-/* is 11/10 */							\
-    { "10", -12, "Generate code for an 11/10" },		\
-/* use movstrhi for bcopy */					\
-    { "bcopy", 16, NULL },					\
-    { "bcopy-builtin", -16, NULL },				\
-/* use 32 bit for int */					\
-    { "int32", 32, "Use 32 bit int" },				\
-    { "no-int16", 32, "Use 32 bit int" },			\
-    { "int16", -32, "Use 16 bit int" },				\
-    { "no-int32", -32, "Use 16 bit int" },			\
-/* use 32 bit for float */					\
-    { "float32", 64, "Use 32 bit float" },			\
-    { "no-float64", 64, "Use 32 bit float" },			\
-    { "float64", -64, "Use 64 bit float" },			\
-    { "no-float32", -64, "Use 64 bit float" },			\
+{   { "fpu", 1, N_("Use hardware floating point") },			\
+    { "soft-float", -1, N_("Do not use hardware floating point") },	\
+/* return float result in ac0 */					\
+    { "ac0", 2, N_("Return floating point results in ac0") },		\
+    { "no-ac0", -2, N_("Return floating point results in memory") },	\
+/* is 11/40 */								\
+    { "40", 4, N_("Generate code for an 11/40") },			\
+    { "no-40", -4, "" },						\
+/* is 11/45 */								\
+    { "45", 8, N_("Generate code for an 11/45") },			\
+    { "no-45", -8, "" },						\
+/* is 11/10 */								\
+    { "10", -12, N_("Generate code for an 11/10") },			\
+/* use movstrhi for bcopy */						\
+    { "bcopy", 16, NULL },						\
+    { "bcopy-builtin", -16, NULL },					\
+/* use 32 bit for int */						\
+    { "int32", 32, N_("Use 32 bit int") },				\
+    { "no-int16", 32, N_("Use 32 bit int") },				\
+    { "int16", -32, N_("Use 16 bit int") },				\
+    { "no-int32", -32, N_("Use 16 bit int") },				\
+/* use 32 bit for float */						\
+    { "float32", 64, N_("Use 32 bit float") },				\
+    { "no-float64", 64, N_("Use 32 bit float") },			\
+    { "float64", -64, N_("Use 64 bit float") },				\
+    { "no-float32", -64, N_("Use 64 bit float") },			\
 /* allow abshi pattern? - can trigger "optimizations" which make code SLOW! */\
-    { "abshi", 128, NULL },					\
-    { "no-abshi", -128, NULL },					\
+    { "abshi", 128, NULL },						\
+    { "no-abshi", -128, NULL },						\
 /* is branching expensive - on a PDP, it's actually really cheap */ \
 /* this is just to play around and check what code gcc generates */ \
-    { "branch-expensive", 256, NULL }, 				\
-    { "branch-cheap", -256, NULL },				\
-/* split instruction and data memory? */ 			\
-    { "split", 1024, "Target has split I&D" },			\
-    { "no-split", -1024, "Target does not have split I&D" },	\
-/* UNIX assembler syntax?  */					\
-    { "unix-asm", 2048, "Use UNIX assembler syntax" },		\
-    { "dec-asm", -2048, "Use DEC assembler syntax" },		\
+    { "branch-expensive", 256, NULL }, 					\
+    { "branch-cheap", -256, NULL },					\
+/* split instruction and data memory? */ 				\
+    { "split", 1024, N_("Target has split I&D") },			\
+    { "no-split", -1024, N_("Target does not have split I&D") },	\
+/* UNIX assembler syntax?  */						\
+    { "unix-asm", 2048, N_("Use UNIX assembler syntax") },		\
+    { "dec-asm", -2048, N_("Use DEC assembler syntax") },		\
 /* default */			\
     { "", TARGET_DEFAULT, NULL}	\
 }

@@ -48,20 +48,26 @@ extern int target_flags;
 #define TARGET_DEFAULT 0
 #endif
 
-#define TARGET_SWITCHES \
-  { { "c1", 001 }, 	\
-    { "c2", 002 },	\
-    { "c32", 004 },	\
-    { "c34", 010 },	\
-    { "c38", 020 },	\
-    { "argcount", 0100 }, \
-    { "argcount-nop", 0200 }, \
-    { "no-argcount", -0300 }, \
-    { "volatile-cache", -0400 }, \
-    { "no-volatile-cache", 0400 }, \
-    { "volatile-nocache", 0400 }, \
-    { "long64", 01000 }, \
-    { "long32", -01000 }, \
+#define TARGET_SWITCHES							\
+  { { "c1", 001, N_("Generate code for c1") },				\
+    { "c2", 002, N_("Generate code for c2") },				\
+    { "c32", 004, N_("Generate code for c32") },			\
+    { "c34", 010, N_("Generate code for c34") },			\
+    { "c38", 020, N_("Generate code for c34") },			\
+    { "argcount", 0100,							\
+      N_("Use standard calling sequence, with arg count word")},	\
+    { "argcount-nop", 0200,						\
+      N_("Place arg count in a nop instruction (faster than push)") },	\
+    { "no-argcount", -0300,						\
+      N_("Don't push arg count, depend on symbol table") },		\
+    { "volatile-cache", -0400,						\
+      N_("Use data cache for volatile mem refs (default)") },		\
+    { "no-volatile-cache", 0400,					\
+      N_("Don't use data cache for volatile mem refs") },		\
+    { "volatile-nocache", 0400,						\
+      N_("Bypass data cache for volatile mem refs") },			\
+    { "long64", 01000, N_("Use 64-bit longs") },			\
+    { "long32", -01000, N_("Use cc- and libc-compatible 32-bit longs")},\
     { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
 /* Macros used in the machine description to test the flags.  */

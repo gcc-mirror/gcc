@@ -101,39 +101,39 @@ extern int target_flags;
 #define TARGET_SWITCHES							\
 {									\
   { "big-endian",	MASK_BIG_ENDIAN,				\
-      "Generate big endian code" },					\
+      N_("Generate big endian code") },					\
   { "little-endian",	-MASK_BIG_ENDIAN,				\
-      "Generate little endian code" },					\
+      N_("Generate little endian code") },				\
   { "gnu-as",		MASK_GNU_AS,					\
-      "Generate code for GNU as" },					\
+      N_("Generate code for GNU as") },					\
   { "no-gnu-as",	-MASK_GNU_AS,					\
-      "Generate code for Intel as" },					\
+      N_("Generate code for Intel as") },				\
   { "gnu-ld",		MASK_GNU_LD,					\
-      "Generate code for GNU ld" },					\
+      N_("Generate code for GNU ld") },					\
   { "no-gnu-ld",	-MASK_GNU_LD,					\
-      "Generate code for Intel ld" },					\
+      N_("Generate code for Intel ld") },				\
   { "no-pic",		MASK_NO_PIC,					\
-      "Generate code without GP reg" },					\
+      N_("Generate code without GP reg") },				\
   { "volatile-asm-stop", MASK_VOL_ASM_STOP,				\
-      "Emit stop bits before and after volatile extended asms" },	\
+      N_("Emit stop bits before and after volatile extended asms") },	\
   { "no-volatile-asm-stop", -MASK_VOL_ASM_STOP,				\
-      "Don't emit stop bits before and after volatile extended asms" },	\
+      N_("Don't emit stop bits before and after volatile extended asms") }, \
   { "a-step",		MASK_A_STEP,					\
-      "Emit code for Itanium (TM) processor A step"},			\
+      N_("Emit code for Itanium (TM) processor A step")},		\
   { "register-names",	MASK_REG_NAMES,					\
-      "Use in/loc/out register names"},					\
+      N_("Use in/loc/out register names")},				\
   { "no-sdata",		MASK_NO_SDATA,					\
-      "Disable use of sdata/scommon/sbss"},				\
+      N_("Disable use of sdata/scommon/sbss")},				\
   { "sdata",		-MASK_NO_SDATA,					\
-      "Enable use of sdata/scommon/sbss"},				\
+      N_("Enable use of sdata/scommon/sbss")},				\
   { "constant-gp",	MASK_CONST_GP,					\
-      "gp is constant (but save/restore gp on indirect calls)" },	\
+      N_("gp is constant (but save/restore gp on indirect calls)") },	\
   { "auto-pic",		MASK_AUTO_PIC,					\
-      "Generate self-relocatable code" },				\
+      N_("Generate self-relocatable code") },				\
   { "dwarf2-asm", 	MASK_DWARF2_ASM,				\
-      "Enable Dwarf 2 line debug info via GNU as"},			\
+      N_("Enable Dwarf 2 line debug info via GNU as")},			\
   { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\
-      "Disable Dwarf 2 line debug info via GNU as"},			\
+      N_("Disable Dwarf 2 line debug info via GNU as")},		\
   { "",			TARGET_DEFAULT | TARGET_CPU_DEFAULT,		\
       NULL }								\
 }
@@ -156,7 +156,7 @@ extern const char *ia64_fixed_range_string;
 #define TARGET_OPTIONS \
 {									\
   { "fixed-range=", 	&ia64_fixed_range_string,			\
-      "Specify range of registers to make fixed."},			\
+      N_("Specify range of registers to make fixed.")},			\
 }
 
 /* This macro is a C statement to print on `stderr' a string describing the

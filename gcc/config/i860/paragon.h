@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80860 running OSF/1AD
-   Copyright (C) 1991, 1996, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1996, 1999, 2000 Free Software Foundation, Inc.
    Based upon original work of Ron Guilmette (rfg@monkeys.com).
    Contributed by Andy Pfiffer (andyp@ssd.intel.com).
    Partially inspired by
@@ -25,10 +25,10 @@ Boston, MA 02111-1307, USA.  */
 
 #undef TARGET_SWITCHES
 #define TARGET_SWITCHES  \
-  { {"xp", 1, "Generate code which uses the FPU"},              \
-    {"noxp", -1, "Do not generate code which uses the FPU"},    \
-    {"xr", -1, "Do not generate code which uses the FPU"},      \
-    {"noieee", -1, "Do not generate code which uses the FPU"},	\
+  { {"xp", 1, N_("Generate code which uses the FPU")},              \
+    {"noxp", -1, N_("Do not generate code which uses the FPU")},    \
+    {"xr", -1, N_("Do not generate code which uses the FPU")},      \
+    {"noieee", -1, N_("Do not generate code which uses the FPU")},	\
     {"nx", 2, NULL},                  \
     { "", TARGET_DEFAULT, NULL}}
  

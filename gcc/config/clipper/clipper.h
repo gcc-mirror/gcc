@@ -36,9 +36,9 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES		\
-  { { "c400", 1, "Generate code for the C400" },		\
-    { "c300", -1, "Generate code for the C300" },		\
+#define TARGET_SWITCHES						\
+  { { "c400", 1, N_("Generate code for the C400") },		\
+    { "c300", -1, N_("Generate code for the C300") },		\
     { "", TARGET_DEFAULT, NULL} }
 
 #define TARGET_C400 1

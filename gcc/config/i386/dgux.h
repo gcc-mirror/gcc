@@ -1,5 +1,6 @@
 /* Target definitions for GNU compiler for Intel 80x86 running DG/ux
-   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1996, 1997, 1998, 2000
+   Free Software Foundation, Inc.
    Currently maintained by gcc@dg-rtp.dg.com.
 
 This file is part of GNU CC.
@@ -26,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.8 $"
+#define VERSION_INFO2   "$Revision: 1.9 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -57,12 +58,17 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-    { "standard",			 MASK_STANDARD, "Retain standard MXDB information" },          \
-    { "legend",				-MASK_NOLEGEND, "Retain legend information" },          \
-    { "no-legend",			 MASK_NOLEGEND, "" },          \
-    { "external-legend",		 MASK_EXTERNAL_LEGEND, "Generate external legend information" },   \
-    { "identify-revision", 		 MASK_IDENTIFY_REVISION, "Emit identifying info in .s file" }, \
-    { "warn-passed-structs", 		 MASK_WARN_PASS_STRUCT, "Warn when a function arg is a structure" },
+    { "standard",		MASK_STANDARD,			\
+      N_("Retain standard MXDB information") },			\
+    { "legend",			-MASK_NOLEGEND,			\
+      N_("Retain legend information") },          		\
+    { "no-legend",		MASK_NOLEGEND, "" },		\
+    { "external-legend",	MASK_EXTERNAL_LEGEND,		\
+      N_("Generate external legend information") },		\
+    { "identify-revision", 	MASK_IDENTIFY_REVISION,		\
+      N_("Emit identifying info in .s file") },			\
+    { "warn-passed-structs", 	MASK_WARN_PASS_STRUCT,		\
+      N_("Warn when a function arg is a structure") },
 
 #undef  DWARF_DEBUGGING_INFO
 #define DWARF_DEBUGGING_INFO

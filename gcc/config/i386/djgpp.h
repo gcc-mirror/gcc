@@ -137,7 +137,7 @@ ctor_section ()							\
 {								\
   if (in_section != in_ctor)					\
     {								\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
       in_section = in_ctor;					\
     }								\
 }
@@ -148,7 +148,7 @@ dtor_section ()							\
 {								\
   if (in_section != in_dtor)					\
     {								\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
       in_section = in_dtor;					\
     }								\
 }
@@ -222,8 +222,8 @@ dtor_section ()							\
 
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES 		\
-  { "bnu210", MASK_BNU210, "Enable weak symbol and enhanced C++ template support. Binutils 2.9.5.1 or higher required." }, \
-  { "no-bnu210", -MASK_BNU210, "Disable weak symbol and enhanced C++ template support." },
+  { "bnu210", MASK_BNU210, N_("Enable weak symbol and enhanced C++ template support. Binutils 2.9.5.1 or higher required.") }, \
+  { "no-bnu210", -MASK_BNU210, N_("Disable weak symbol and enhanced C++ template support.") },
 
 /* Weak symbols and .gnu.linkonce are only in the binutils snapshots
    and binutils-2.10.  So do it only when -mbnu210 is specified.  */

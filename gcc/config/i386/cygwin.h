@@ -46,14 +46,18 @@ Boston, MA 02111-1307, USA. */
 
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-{ "cygwin",		  MASK_CYGWIN, "Use the Cygwin interface" },  \
-{ "no-cygwin",		  MASK_WIN32, "Use the Mingw32 interface" }, \
-{ "windows",		  MASK_WINDOWS, "Create GUI application" }, \
-{ "console",		  -MASK_WINDOWS, "Create console application" }, \
-{ "dll",		  MASK_DLL, "Generate code for a DLL" },     \
-{ "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT, "Ignore dllimport for functions" }, \
+{ "cygwin",		  MASK_CYGWIN,					\
+  N_("Use the Cygwin interface") },					\
+{ "no-cygwin",		  MASK_WIN32,					\
+  N_("Use the Mingw32 interface") },					\
+{ "windows",		  MASK_WINDOWS, N_("Create GUI application") },	\
+{ "console",		  -MASK_WINDOWS,				\
+  N_("Create console application") }, 					\
+{ "dll",		  MASK_DLL, N_("Generate code for a DLL") },	\
+{ "nop-fun-dllimport",	  MASK_NOP_FUN_DLLIMPORT,			\
+  N_("Ignore dllimport for functions") }, 				\
 { "no-nop-fun-dllimport", -MASK_NOP_FUN_DLLIMPORT, "" }, \
-{ "threads",		  0, "Use Mingw-specific thread support" },
+{ "threads",		  0, N_("Use Mingw-specific thread support") },
 
 
 /* Support the __declspec keyword by turning them into attributes.

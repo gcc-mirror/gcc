@@ -196,29 +196,32 @@ extern enum alpha_fp_trap_mode alpha_fptm;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES							\
-  { {"no-soft-float", MASK_FP, "Use hardware fp"},			\
-    {"soft-float", - MASK_FP, "Do not use hardware fp"},		\
-    {"fp-regs", MASK_FPREGS, "Use fp registers"},			\
-    {"no-fp-regs", - (MASK_FP|MASK_FPREGS), "Do not use fp registers"},	\
-    {"alpha-as", -MASK_GAS, "Do not assume GAS"},			\
-    {"gas", MASK_GAS, "Assume GAS"},					\
+  { {"no-soft-float", MASK_FP, N_("Use hardware fp")},			\
+    {"soft-float", - MASK_FP, N_("Do not use hardware fp")},		\
+    {"fp-regs", MASK_FPREGS, N_("Use fp registers")},			\
+    {"no-fp-regs", - (MASK_FP|MASK_FPREGS),				\
+     N_("Do not use fp registers")},					\
+    {"alpha-as", -MASK_GAS, N_("Do not assume GAS")},			\
+    {"gas", MASK_GAS, N_("Assume GAS")},				\
     {"ieee-conformant", MASK_IEEE_CONFORMANT,				\
-     "Request IEEE-conformant math library routines (OSF/1)"},		\
+     N_("Request IEEE-conformant math library routines (OSF/1)")},	\
     {"ieee", MASK_IEEE|MASK_IEEE_CONFORMANT,				\
-     "Emit IEEE-conformant code, without inexact exceptions"},		\
+     N_("Emit IEEE-conformant code, without inexact exceptions")},	\
     {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT,	\
-     "Emit IEEE-conformant code, with inexact exceptions"},		\
+     N_("Emit IEEE-conformant code, with inexact exceptions")},		\
     {"build-constants", MASK_BUILD_CONSTANTS,				\
-     "Do not emit complex integer constants to read-only memory"},	\
-    {"float-vax", MASK_FLOAT_VAX, "Use VAX fp"},			\
-    {"float-ieee", -MASK_FLOAT_VAX, "Do not use VAX fp"},		\
-    {"bwx", MASK_BWX, "Emit code for the byte/word ISA extension"},	\
+     N_("Do not emit complex integer constants to read-only memory")},	\
+    {"float-vax", MASK_FLOAT_VAX, N_("Use VAX fp")},			\
+    {"float-ieee", -MASK_FLOAT_VAX, N_("Do not use VAX fp")},		\
+    {"bwx", MASK_BWX, N_("Emit code for the byte/word ISA extension")},	\
     {"no-bwx", -MASK_BWX, ""},						\
-    {"max", MASK_MAX, "Emit code for the motion video ISA extension"},	\
+    {"max", MASK_MAX,							\
+     N_("Emit code for the motion video ISA extension")},		\
     {"no-max", -MASK_MAX, ""},						\
-    {"fix", MASK_FIX, "Emit code for the fp move and sqrt ISA extension"}, \
+    {"fix", MASK_FIX,							\
+     N_("Emit code for the fp move and sqrt ISA extension")}, 		\
     {"no-fix", -MASK_FIX, ""},						\
-    {"cix", MASK_CIX, "Emit code for the counting ISA extension"},	\
+    {"cix", MASK_CIX, N_("Emit code for the counting ISA extension")},	\
     {"no-cix", -MASK_CIX, ""},						\
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT, ""} }
 
@@ -254,15 +257,15 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 #define TARGET_OPTIONS					\
 {							\
   {"cpu=",		&alpha_cpu_string,		\
-   "Generate code for a given CPU"},			\
+   N_("Generate code for a given CPU")},		\
   {"fp-rounding-mode=",	&alpha_fprm_string,		\
-   "Control the generated fp rounding mode"},		\
+   N_("Control the generated fp rounding mode")},	\
   {"fp-trap-mode=",	&alpha_fptm_string,		\
-   "Control the IEEE trap mode"},			\
+   N_("Control the IEEE trap mode")},			\
   {"trap-precision=",	&alpha_tp_string,		\
-   "Control the precision given to fp exceptions"},	\
+   N_("Control the precision given to fp exceptions")},	\
   {"memory-latency=",	&alpha_mlat_string,		\
-   "Tune expected memory latency"},			\
+   N_("Tune expected memory latency")},			\
 }
 
 /* Attempt to describe CPU characteristics to the preprocessor.  */

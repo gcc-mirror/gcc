@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for sparclite 86x w/o FPU.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,11 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_APP_REGS + MASK_EPILOGUE)
 
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-{"big-endian", -MASK_LITTLE_ENDIAN},		\
-{"little-endian", MASK_LITTLE_ENDIAN},		
-
 #undef ASM_SPEC
 #define ASM_SPEC "%{v:-v} %{mlittle-endian-data:--little-endian-data} %(asm_cpu)"
 
@@ -57,4 +52,4 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_LITTLE_ENDIAN_DATA (target_flags & MASK_LITTLE_ENDIAN)
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
-    { "little-endian-data",              MASK_LITTLE_ENDIAN },     
+    { "little-endian-data",              MASK_LITTLE_ENDIAN,	N_("Use little-endian byte order for data")},

@@ -99,28 +99,30 @@ extern int target_flags;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES							      \
-  { { "32081", 1, "Use hardware fp"},					      \
-    { "soft-float", -257, "Don't use hardware fp"},			      \
-    { "rtd", 2, "Alternative calling convention"},			      \
-    { "nortd", -2, "Use normal calling convention"},			      \
-    { "regparm", 4, "Pass some arguments in registers"},		      \
-    { "noregparm", -4, "Pass all arguments on stack"},			      \
-    { "32532", 24, "Optimize for 32532 cpu"},				      \
-    { "32332", 16, "Optimize for 32332 cpu"},				      \
-    { "32332", -8, 0},							      \
-    { "32032", -24, "Optimize for 32032"},				      \
-    { "sb", -32, "Register sb is zero. Use for absolute addressing"},	      \
-    { "nosb", 32, "Do not use register sb"},				      \
-    { "bitfield", -64, "Do not use bitfield instructions"},		      \
-    { "nobitfield", 64, "Use bitfield instructions"},			      \
-    { "himem", 128, "Generate code for high memory"},			      \
-    { "nohimem", -128, "Generate code for low memory"},			      \
-    { "32381", 256, "32381 fpu"},					      \
-    { "mult-add", 512, "Use multiply-accumulate fp instructions"},	      \
-    { "nomult-add", -512, "Do not use multiply-accumulate fp instructions" }, \
-    { "src", 1024, "\"Small register classes\" kludge"},		      \
-    { "nosrc", -1024, "No \"Small register classes\" kludge"},		      \
+#define TARGET_SWITCHES							\
+  { { "32081", 1, N_("Use hardware fp")},				\
+    { "soft-float", -257, N_("Don't use hardware fp")},			\
+    { "rtd", 2, N_("Alternative calling convention")},			\
+    { "nortd", -2, N_("Use normal calling convention")},		\
+    { "regparm", 4, N_("Pass some arguments in registers")},		\
+    { "noregparm", -4, N_("Pass all arguments on stack")},		\
+    { "32532", 24, N_("Optimize for 32532 cpu")},			\
+    { "32332", 16, N_("Optimize for 32332 cpu")},			\
+    { "32332", -8, 0},							\
+    { "32032", -24, N_("Optimize for 32032")},				\
+    { "sb", -32,							\
+      N_("Register sb is zero. Use for absolute addressing")},		\
+    { "nosb", 32, N_("Do not use register sb")},			\
+    { "bitfield", -64, N_("Do not use bitfield instructions")},		\
+    { "nobitfield", 64, N_("Use bitfield instructions")},		\
+    { "himem", 128, N_("Generate code for high memory")},		\
+    { "nohimem", -128, N_("Generate code for low memory")},		\
+    { "32381", 256, N_("32381 fpu")},					\
+    { "mult-add", 512, N_("Use multiply-accumulate fp instructions")},	\
+    { "nomult-add", -512,						\
+      N_("Do not use multiply-accumulate fp instructions") }, 		\
+    { "src", 1024, N_("\"Small register classes\" kludge")},		\
+    { "nosrc", -1024, N_("No \"Small register classes\" kludge")},	\
     { "", TARGET_DEFAULT, 0}}
 
 /* TARGET_DEFAULT is defined in encore.h, pc532.h, etc.  */

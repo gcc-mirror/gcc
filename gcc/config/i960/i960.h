@@ -235,94 +235,94 @@ extern int target_flags;
 
 #define TARGET_SWITCHES  \
   { {"sa", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
-       "Generate SA code"},						\
+       N_("Generate SA code")},						\
     {"sb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES|			\
 			TARGET_FLAG_COMPLEX_ADDR),			\
-       "Generate SB code"},						\
+       N_("Generate SB code")},						\
 /*  {"sc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
 			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	\
-       "Generate SC code"}, */						\
+       N_("Generate SC code")}, */					\
     {"ka", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
-       "Generate KA code"},						\
+       N_("Generate KA code")},						\
     {"kb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES|			\
 			TARGET_FLAG_COMPLEX_ADDR),			\
-       "Generate KB code"},						\
+       N_("Generate KB code")},						\
 /*  {"kc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
 			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	\
-       "Generate KC code"}, */						\
+       N_("Generate KC code")}, */					\
     {"ja", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
-       "Generate JA code"},						\
+       N_("Generate JA code")},						\
     {"jd", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
-       "Generate JD code"},						\
+       N_("Generate JD code")},						\
     {"jf", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES|			\
 			TARGET_FLAG_COMPLEX_ADDR),			\
-       "Generate JF code"},						\
+       N_("Generate JF code")},						\
     {"rp", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
-       "generate RP code"},						\
+       N_("generate RP code")},						\
     {"mc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
 			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	\
-       "Generate MC code"},						\
+       N_("Generate MC code")},						\
     {"ca", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|		\
 			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR),\
-       "Generate CA code"},						\
+       N_("Generate CA code")},						\
 /*  {"cb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_C_SERIES|			\
 			TARGET_FLAG_BRANCH_PREDICT|TARGET_FLAG_CODE_ALIGN),\
-       "Generate CB code"},						\
+       N_("Generate CB code")},						\
     {"cc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
 			TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
 			TARGET_FLAG_CODE_ALIGN),			\
-       "Generate CC code"}, */						\
+       N_("Generate CC code")}, */					\
     {"cf", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|		\
 			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR),\
-       "Generate CF code"},						\
+       N_("Generate CF code")},						\
     {"numerics", (TARGET_FLAG_NUMERICS),				\
-       "Use hardware floating point instructions"},			\
+       N_("Use hardware floating point instructions")},			\
     {"soft-float", -(TARGET_FLAG_NUMERICS),				\
-       "Use software floating point"},					\
+       N_("Use software floating point")},				\
     {"leaf-procedures", TARGET_FLAG_LEAFPROC,				\
-       "Use alternate leaf function entries"},				\
+       N_("Use alternate leaf function entries")},			\
     {"no-leaf-procedures", -(TARGET_FLAG_LEAFPROC),			\
-       "Do not use alternate leaf function entries"},			\
+       N_("Do not use alternate leaf function entries")},		\
     {"tail-call", TARGET_FLAG_TAILCALL,					\
-       "Perform tail call optimization"},				\
+       N_("Perform tail call optimization")},				\
     {"no-tail-call", -(TARGET_FLAG_TAILCALL),				\
-       "Do not perform tail call optimization"},			\
+       N_("Do not perform tail call optimization")},			\
     {"complex-addr", TARGET_FLAG_COMPLEX_ADDR, 				\
-       "Use complex addressing modes"},					\
+       N_("Use complex addressing modes")},				\
     {"no-complex-addr", -(TARGET_FLAG_COMPLEX_ADDR),			\
-       "Do not use complex addressing modes"},				\
+       N_("Do not use complex addressing modes")},			\
     {"code-align", TARGET_FLAG_CODE_ALIGN,				\
-       "Align code to 8 byte boundary"},				\
+       N_("Align code to 8 byte boundary")},				\
     {"no-code-align", -(TARGET_FLAG_CODE_ALIGN),			\
-       "Do not align code to 8 byte boundary"},				\
+       N_("Do not align code to 8 byte boundary")},			\
 /*  {"clean-linkage", (TARGET_FLAG_CLEAN_LINKAGE),			\
-       "Force use of prototypes"},					\
+       N_("Force use of prototypes")},					\
     {"no-clean-linkage", -(TARGET_FLAG_CLEAN_LINKAGE),			\
-       "Do not force use of prototypes"}, */				\
+       N_("Do not force use of prototypes")}, */			\
     {"ic-compat", TARGET_FLAG_IC_COMPAT2_0,				\
-       "Enable compatibility with iC960 v2.0"},				\
+       N_("Enable compatibility with iC960 v2.0")},			\
     {"ic2.0-compat", TARGET_FLAG_IC_COMPAT2_0,				\
-       "Enable compatibility with iC960 v2.0"},				\
+       N_("Enable compatibility with iC960 v2.0")},			\
     {"ic3.0-compat", TARGET_FLAG_IC_COMPAT3_0,				\
-       "Enable compatibility with iC960 v3.0"},				\
+       N_("Enable compatibility with iC960 v3.0")},			\
     {"asm-compat", TARGET_FLAG_ASM_COMPAT,				\
-       "Enable compatibility with ic960 assembler"},			\
+       N_("Enable compatibility with ic960 assembler")},		\
     {"intel-asm", TARGET_FLAG_ASM_COMPAT,				\
-       "Enable compatibility with ic960 assembler"},			\
+       N_("Enable compatibility with ic960 assembler")},		\
     {"strict-align", TARGET_FLAG_STRICT_ALIGN,				\
-       "Do not permit unaligned accesses"},				\
+       N_("Do not permit unaligned accesses")},				\
     {"no-strict-align", -(TARGET_FLAG_STRICT_ALIGN),			\
-       "Permit unaligned accesses"},					\
+       N_("Permit unaligned accesses")},				\
     {"old-align", (TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN),	\
-       "Layout types like Intel's v1.3 gcc"},				\
+       N_("Layout types like Intel's v1.3 gcc")},			\
     {"no-old-align", -(TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN),	\
-       "Do not layout types like Intel's v1.3 gcc"},			\
+       N_("Do not layout types like Intel's v1.3 gcc")},		\
     {"long-double-64", TARGET_FLAG_LONG_DOUBLE_64,			\
-       "Use 64 bit long doubles"},					\
+       N_("Use 64 bit long doubles")},					\
     {"link-relax", 0,							\
-       "Enable linker relaxation"},					\
+       N_("Enable linker relaxation")},					\
     {"no-link-relax", 0,						\
-       "Do not enable linker relaxation"},				\
+       N_("Do not enable linker relaxation")},				\
     SUBTARGET_SWITCHES                                                  \
     { "", TARGET_DEFAULT,						\
 	NULL}}

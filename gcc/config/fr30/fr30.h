@@ -79,12 +79,13 @@ Boston, MA 02111-1307, USA.  */
 /* This declaration should be present.  */
 extern int target_flags;
 
-#define TARGET_SWITCHES \
-{	\
-  { "small-model",      TARGET_SMALL_MODEL_MASK, "Assume small address space" }, \
-  { "no-small-model", - TARGET_SMALL_MODEL_MASK, "" },			 	 \
-  { "no-lsim",          0, "" },					 	 \
-  { "",                 TARGET_DEFAULT, "" }					 \
+#define TARGET_SWITCHES						\
+{								\
+  { "small-model",      TARGET_SMALL_MODEL_MASK,		\
+    N_("Assume small address space") },				\
+  { "no-small-model", - TARGET_SMALL_MODEL_MASK, "" },		\
+  { "no-lsim",          0, "" },				\
+  { "",                 TARGET_DEFAULT, "" }			\
 }
 
 #define TARGET_VERSION fprintf (stderr, " (fr30)");

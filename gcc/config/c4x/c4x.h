@@ -136,99 +136,99 @@
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
-#define TARGET_SWITCHES \
-{ { "small", SMALL_MEMORY_FLAG, \
-    "Small memory model" }, \
-  { "big", -SMALL_MEMORY_FLAG, \
-    "Big memory model" }, \
-  { "mpyi", MPYI_FLAG, \
-    "Use MPYI instruction for C3x" }, \
-  { "no-mpyi", -MPYI_FLAG, \
-    "Do not use MPYI instruction for C3x" }, \
-  { "fast-fix", FAST_FIX_FLAG, \
-    "Use fast but approximate float to integer conversion" }, \
-  { "no-fast-fix", -FAST_FIX_FLAG, \
-    "Use slow but accurate float to integer conversion" }, \
-  { "rpts", RPTS_FLAG, \
-    "Enable use of RTPS instruction" }, \
-  { "no-rpts", -RPTS_FLAG, \
-    "Disable use of RTPS instruction" }, \
-  { "rptb", RPTB_FLAG, \
-    "Enable use of RTPB instruction" }, \
-  { "no-rptb", -RPTB_FLAG, \
-    "Disable use of RTPB instruction" }, \
-  { "30", C30_FLAG, \
-    "Generate code for C30 CPU"}, \
-  { "31", C31_FLAG, \
-    "Generate code for C31 CPU"}, \
-  { "32", C32_FLAG, \
-    "Generate code for C32 CPU"}, \
-  { "33", C33_FLAG, \
-    "Generate code for C33 CPU"}, \
-  { "40", C40_FLAG, \
-    "Generate code for C40 CPU"}, \
-  { "44", C44_FLAG, \
-    "Generate code for C44 CPU"}, \
-  { "ti", TI_FLAG, \
-    "Emit code compatible with TI tools"}, \
-  { "no-ti", -TI_FLAG, \
-    "Emit code to use GAS extensions"}, \
-  { "paranoid", PARANOID_FLAG, \
-    "Save DP across ISR in small memory model" }, \
-  { "no-paranoid", -PARANOID_FLAG, \
-    "Don't save DP across ISR in small memory model" }, \
-  { "isr-dp-reload", PARANOID_FLAG, \
-    "Save DP across ISR in small memory model" }, \
-  { "no-isr-dp-reload", -PARANOID_FLAG, \
-    "Don't save DP across ISR in small memory model" }, \
-  { "memparm", MEMPARM_FLAG, \
-    "Pass arguments on the stack" }, \
-  { "regparm", -MEMPARM_FLAG,  \
-    "Pass arguments in registers" }, \
-  { "devel", DEVEL_FLAG, \
-    "Enable new features under development" }, \
-  { "no-devel", -DEVEL_FLAG, \
-    "Disable new features under development" }, \
-  { "bk", BK_FLAG, \
-    "Use the BK register as a general purpose register" }, \
-  { "no-bk", -BK_FLAG, \
-    "Do not allocate BK register" }, \
-  { "db", DB_FLAG, \
-    "Enable use of DB instruction" }, \
-  { "no-db", -DB_FLAG, \
-    "Disable use of DB instruction" }, \
-  { "debug", DEBUG_FLAG, \
-    "Enable debugging" }, \
-  { "no-debug", -DEBUG_FLAG, \
-    "Disable debugging" }, \
-  { "hoist", HOIST_FLAG, \
-    "Force constants into registers to improve hoisting" }, \
-  { "no-hoist", -HOIST_FLAG, \
-    "Don't force constants into registers" }, \
-  { "force", FORCE_FLAG, \
-    "Force RTL generation to emit valid 3 operand insns" }, \
-  { "no-force", -FORCE_FLAG, \
-    "Allow RTL generation to emit invalid 3 operand insns" }, \
-  { "loop-unsigned", LOOP_UNSIGNED_FLAG, \
-    "Allow unsigned interation counts for RPTB/DB" }, \
-  { "no-loop-unsigned", -LOOP_UNSIGNED_FLAG, \
-    "Disallow unsigned iteration counts for RPTB/DB" }, \
-  { "preserve-float", PRESERVE_FLOAT_FLAG, \
-    "Preserve all 40 bits of FP reg across call" }, \
-  { "no-preserve-float", -PRESERVE_FLOAT_FLAG, \
-    "Only preserve 32 bits of FP reg across call" }, \
-  { "parallel-insns", PARALLEL_INSN_FLAG, \
-    "Enable parallel instructions" }, \
-  { "no-parallel-insns", -PARALLEL_INSN_FLAG, \
-    "Disable parallel instructions" }, \
-  { "parallel-mpy", PARALLEL_MPY_FLAG, \
-    "Enable MPY||ADD and MPY||SUB instructions" }, \
-  { "no-parallel-mpy", -PARALLEL_MPY_FLAG, \
-    "Disable MPY||ADD and MPY||SUB instructions" }, \
-  { "aliases", ALIASES_FLAG, \
-    "Assume that pointers may be aliased" }, \
-  { "no-aliases", -ALIASES_FLAG, \
-    "Assume that pointers not aliased" }, \
+#define TARGET_SWITCHES							\
+{ { "small", SMALL_MEMORY_FLAG,						\
+    N_("Small memory model") },						\
+  { "big", -SMALL_MEMORY_FLAG,						\
+    N_("Big memory model") },						\
+  { "mpyi", MPYI_FLAG,							\
+    N_("Use MPYI instruction for C3x") },				\
+  { "no-mpyi", -MPYI_FLAG,						\
+    N_("Do not use MPYI instruction for C3x") },			\
+  { "fast-fix", FAST_FIX_FLAG,						\
+    N_("Use fast but approximate float to integer conversion") },	\
+  { "no-fast-fix", -FAST_FIX_FLAG,					\
+    N_("Use slow but accurate float to integer conversion") },		\
+  { "rpts", RPTS_FLAG,							\
+    N_("Enable use of RTPS instruction") },				\
+  { "no-rpts", -RPTS_FLAG,						\
+    N_("Disable use of RTPS instruction") },				\
+  { "rptb", RPTB_FLAG,							\
+    N_("Enable use of RTPB instruction") },				\
+  { "no-rptb", -RPTB_FLAG,						\
+    N_("Disable use of RTPB instruction") },				\
+  { "30", C30_FLAG,							\
+    N_("Generate code for C30 CPU")},					\
+  { "31", C31_FLAG,							\
+    N_("Generate code for C31 CPU")},					\
+  { "32", C32_FLAG,							\
+    N_("Generate code for C32 CPU")},					\
+  { "33", C33_FLAG,							\
+    N_("Generate code for C33 CPU")},					\
+  { "40", C40_FLAG,							\
+    N_("Generate code for C40 CPU")},					\
+  { "44", C44_FLAG,							\
+    N_("Generate code for C44 CPU")},					\
+  { "ti", TI_FLAG,							\
+    N_("Emit code compatible with TI tools")},				\
+  { "no-ti", -TI_FLAG,							\
+    N_("Emit code to use GAS extensions")},				\
+  { "paranoid", PARANOID_FLAG,						\
+    N_("Save DP across ISR in small memory model") },			\
+  { "no-paranoid", -PARANOID_FLAG,					\
+    N_("Don't save DP across ISR in small memory model") },		\
+  { "isr-dp-reload", PARANOID_FLAG,					\
+    N_("Save DP across ISR in small memory model") },			\
+  { "no-isr-dp-reload", -PARANOID_FLAG,					\
+    N_("Don't save DP across ISR in small memory model") },		\
+  { "memparm", MEMPARM_FLAG,						\
+    N_("Pass arguments on the stack") },				\
+  { "regparm", -MEMPARM_FLAG,						\
+    N_("Pass arguments in registers") },				\
+  { "devel", DEVEL_FLAG,						\
+    N_("Enable new features under development") },			\
+  { "no-devel", -DEVEL_FLAG,						\
+    N_("Disable new features under development") },			\
+  { "bk", BK_FLAG,							\
+    N_("Use the BK register as a general purpose register") },		\
+  { "no-bk", -BK_FLAG,							\
+    N_("Do not allocate BK register") },				\
+  { "db", DB_FLAG,							\
+    N_("Enable use of DB instruction") },				\
+  { "no-db", -DB_FLAG,							\
+    N_("Disable use of DB instruction") },				\
+  { "debug", DEBUG_FLAG,						\
+    N_("Enable debugging") },						\
+  { "no-debug", -DEBUG_FLAG,						\
+    N_("Disable debugging") },						\
+  { "hoist", HOIST_FLAG,						\
+    N_("Force constants into registers to improve hoisting") },		\
+  { "no-hoist", -HOIST_FLAG,						\
+    N_("Don't force constants into registers") },			\
+  { "force", FORCE_FLAG,						\
+    N_("Force RTL generation to emit valid 3 operand insns") },		\
+  { "no-force", -FORCE_FLAG,						\
+    N_("Allow RTL generation to emit invalid 3 operand insns") },	\
+  { "loop-unsigned", LOOP_UNSIGNED_FLAG,				\
+    N_("Allow unsigned interation counts for RPTB/DB") },		\
+  { "no-loop-unsigned", -LOOP_UNSIGNED_FLAG,				\
+    N_("Disallow unsigned iteration counts for RPTB/DB") },		\
+  { "preserve-float", PRESERVE_FLOAT_FLAG,				\
+    N_("Preserve all 40 bits of FP reg across call") },			\
+  { "no-preserve-float", -PRESERVE_FLOAT_FLAG,				\
+    N_("Only preserve 32 bits of FP reg across call") },		\
+  { "parallel-insns", PARALLEL_INSN_FLAG,				\
+    N_("Enable parallel instructions") },				\
+  { "no-parallel-insns", -PARALLEL_INSN_FLAG,				\
+    N_("Disable parallel instructions") },				\
+  { "parallel-mpy", PARALLEL_MPY_FLAG,					\
+    N_("Enable MPY||ADD and MPY||SUB instructions") },			\
+  { "no-parallel-mpy", -PARALLEL_MPY_FLAG,				\
+    N_("Disable MPY||ADD and MPY||SUB instructions") },			\
+  { "aliases", ALIASES_FLAG,						\
+    N_("Assume that pointers may be aliased") },			\
+  { "no-aliases", -ALIASES_FLAG,					\
+    N_("Assume that pointers not aliased") },				\
   { "", TARGET_DEFAULT, ""} }
 
 /* Default target switches.  */
@@ -312,11 +312,11 @@ extern int target_flags;
 
 extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
-#define TARGET_OPTIONS		\
-{ {"rpts=", &c4x_rpts_cycles_string, \
-   "Specify maximum number of iterations for RPTS" }, \
-  {"cpu=", &c4x_cpu_version_string, \
-   "Select CPU to generate code for" } }
+#define TARGET_OPTIONS						\
+{ {"rpts=", &c4x_rpts_cycles_string,				\
+   N_("Specify maximum number of iterations for RPTS") },	\
+  {"cpu=", &c4x_cpu_version_string,				\
+   N_("Select CPU to generate code for") } }
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
