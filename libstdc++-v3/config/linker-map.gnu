@@ -257,10 +257,6 @@ GLIBCXX_3.4.2 {
     _ZN9__gnu_cxx11__pool_base16_M_get_free_listE[jm];
     _ZN9__gnu_cxx11__pool_base12_M_get_mutexEv;
 
-    # destructors for abstract base classes
-    _ZNSt23__codecvt_abstract_baseI[cw]c11__mbstate_tED[01]Ev;
-    _ZNSt21__ctype_abstract_baseI[cw]ED[01]Ev;
-
 } GLIBCXX_3.4.1;
 
 # Symbols in the support library (libsupc++) have their own tag.
