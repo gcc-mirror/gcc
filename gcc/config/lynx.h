@@ -1,32 +1,52 @@
-/* Target independent definitions for LynxOS.  */
+/* Target independent definitions for LynxOS.
+   Copyright (C) 1993 Free Software Foundation, Inc.
 
-/* ??? The -C option may need to change to whatever option the GNU assembler
-   actually accepts.  */
-#undef ASM_SPEC
-#define ASM_SPEC "%{mcoff:-C}"
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+/* LynxOS is a multi-platform Unix, similar to SVR3, but not identical.
+   We can get quite a bit from generic svr3, but have to do some overrides. */
+
+#include "svr3.h"
+
+/* Define various macros, depending on the combination of flags. */
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{mthreads:-D_MULTITHREADED} %{mposix:-D_POSIX_SOURCE} %{msystem-v:-I/usr/include_v}"
+#define CPP_SPEC "%{mthreads:-D_MULTITHREADED}  \
+  %{mposix:-D_POSIX_SOURCE}  \
+  %{msystem-v:-I/usr/include_v}"
 
-/* Provide required defaults for linker switches.  */
-/* ??? The -k option may need to change to whatever option the GNU linker
-   actually accepts.  This is to produce COFF output.  */
-/* ??? The -V option may need to change to whatever option the GNU linker
-   actually accepts.  This is to produce System-V magic numbers.  */
-#undef LINK_SPEC
-#define LINK_SPEC "-P1000 %{msystem-v:-V} %{mcoff:-k}"
+/* No asm spec needed, since using GNU assembler always. */
+
+/* No linker spec needed, since using GNU linker always. */
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{mthreads:-L/lib/thread/} %{msystem-v:-lc_v} %{!msystem-v:%{mposix:-lc_p} -lc}"
+#define LIB_SPEC "%{mthreads:-L/lib/thread/}  \
+  %{msystem-v:-lc_v}  \
+  %{!msystem-v:%{mposix:-lc_p} -lc}"
+
+/* Set the appropriate names for the Lynx startfiles. */
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{p:%{mcoff:pinit1.o%s} %{!mcoff:pinit.o%s}} %{!p:%{msystem-v:%{mcoff:vinit1.o%s} %{!mcoff:vinit.o%s}} %{!msystem-v:%{mcoff:init1.o%s}%{!mcoff:init.o%s}}}"
+#define STARTFILE_SPEC "%{p:pinit1.o%s}%{!p:%{msystem-v:vinit1.o%s}%{!msystem-v:init1.o%s}}"
 
 #undef ENDFILE_SPEC
-#define ENDFILE_SPEC "%{mcoff:initn.o%s} %{p:_etext.o%s}"
+#define ENDFILE_SPEC "%{p:_etext.o%s}%{!p:initn.o%s}"
 
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+/* Override the svr3 versions. */
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -34,24 +54,46 @@
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 
-/* We want to output DBX debugging information.  */
+/* We want to output DBX (stabs) debugging information normally.  */
 
 #define DBX_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* We optionally want to be able to produce SDB debugging output so that
-   we can create debuggable SDB/coff files.  This won't be needed when
-   stabs-in-coff works.  */
+/* It is convenient to be able to generate standard coff debugging
+   if requested via -gcoff. */
 
 #define SDB_DEBUGGING_INFO
 
-/* Generate calls to memcpy, memcmp and memset.  */
+/* Be function-relative for block and source line stab directives. */
 
-#define TARGET_MEM_FUNCTIONS
+#define DBX_BLOCKS_FUNCTION_RELATIVE 1
+
+/* but, to make this work, functions must appear prior to line info */
+
+#define DBX_FUNCTION_FIRST
+
+/* Generate a blank trailing N_SO to mark the end of the .o file, since
+   we can't depend upon the linker to mark .o file boundaries with
+   embedded stabs.  */
+
+#define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
+  fprintf (FILE,							\
+	   "\t.text\n\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO)
+
+#undef  ASM_OUTPUT_SOURCE_LINE
+#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
+  { static int sym_lineno = 1;				\
+    fprintf (file, ".stabn 68,0,%d,.LM%d-%s\n.LM%d:\n",	\
+	     line, sym_lineno, 				\
+	     XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0), \
+	     sym_lineno);				\
+    sym_lineno += 1; }
 
 /* Handle #pragma pack and sometimes #pragma weak.  */
 
 #define HANDLE_SYSV_PRAGMA
+
+/* Some additional command-line options. */
 
 #define TARGET_THREADS	(target_flags & MASK_THREADS)
 #define MASK_THREADS	0x40000000
@@ -62,15 +104,11 @@
 #define TARGET_SYSTEM_V	(target_flags & MASK_SYSTEM_V)
 #define MASK_SYSTEM_V	0x10000000
 
-#define TARGET_COFF	(target_flags & MASK_COFF)
-#define MASK_COFF	0x08000000
-
 #undef SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
     {"threads",		MASK_THREADS},		\
     {"posix",		MASK_POSIX},		\
-    {"system-v",	MASK_SYSTEM_V},		\
-    {"coff",		MASK_COFF},
+    {"system-v",	MASK_SYSTEM_V},
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
 #define SUBTARGET_OVERRIDE_OPTIONS \
@@ -79,22 +117,55 @@
   if (TARGET_SYSTEM_V && TARGET_THREADS)			\
     warning ("-msystem-v and -mthreads are incompatible"); }
 
-/* Define this so that C++ destructors will use atexit.  */
+/* Define this so that C++ destructors will use atexit, since LynxOS
+   calls exit after main returns.  */
 
 #define HAVE_ATEXIT
 
-/* This is defined only so that we can find the assembler.  Everything else
-   is in /bin.  */
+/* Since init.o et al put all sorts of stuff into the init section,
+   we can't use the standard init section support in crtbegin.o. */
 
-#define MD_EXEC_PREFIX "/usr/local/lib/gcc-"
+#undef INIT_SECTION_ASM_OP
 
-/* ??? This is needed because /bin/ld does not handle -L options correctly.
-   This can be deleted if GNU ld is being used.  */
+#undef EXTRA_SECTIONS
+#define EXTRA_SECTIONS in_const, in_bss, in_ctors, in_dtors, in_fini,
 
-#define LINK_LIBGCC_SPECIAL_1
+#undef EXTRA_SECTION_FUNCTIONS
+#define EXTRA_SECTION_FUNCTIONS					\
+  CONST_SECTION_FUNCTION					\
+  BSS_SECTION_FUNCTION						\
+  CTORS_SECTION_FUNCTION					\
+  DTORS_SECTION_FUNCTION					\
+  FINI_SECTION_FUNCTION
 
-/* The Lynx linker considers __main to be a possible entry point, so we
-   must use a different name.  */
+#undef CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP	".section\t.ctors"
+#undef DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP	".section\t.dtors"
 
-#define NAME__MAIN "____main"
-#define SYMBOL__MAIN ____main
+#define INT_ASM_OP		".long"
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global constructors.  */
+#undef ASM_OUTPUT_CONSTRUCTOR
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
+  do {									\
+    ctors_section ();							\
+    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    assemble_name (FILE, NAME);						\
+    fprintf (FILE, "\n");						\
+  } while (0)
+
+/* A C statement (sans semicolon) to output an element in the table of
+   global destructors.  */
+#undef ASM_OUTPUT_DESTRUCTOR
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
+  do {									\
+    dtors_section ();                   				\
+    fprintf (FILE, "\t%s\t ", INT_ASM_OP);				\
+    assemble_name (FILE, NAME);              				\
+    fprintf (FILE, "\n");						\
+  } while (0)
+
+#undef DO_GLOBAL_CTORS_BODY
+#undef DO_GLOBAL_DTORS_BODY
