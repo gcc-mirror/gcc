@@ -1,3 +1,9 @@
+2003-12-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* calls.c (expand_call): Update comments.
+	* system.h (PRETEND_OUTGOING_VARARGS_NAMED): Poison.
+	* targhooks.c: Do not refer to PRETEND_OUTGOING_VARARGS_NAMED.
+
 2003-12-17  James E Wilson  <wilson@specifixinc.com>
 	    Roger Sayle  <roger@eyesopen.com>
 	

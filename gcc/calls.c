@@ -2413,15 +2413,16 @@ expand_call (tree exp, rtx target, int ignore)
      (If no anonymous args follow, the result of list_length is actually
      one too large.  This is harmless.)
 
-     If PRETEND_OUTGOING_VARARGS_NAMED is set and STRICT_ARGUMENT_NAMING is
-     zero, this machine will be able to place unnamed args that were
-     passed in registers into the stack.  So treat all args as named.
-     This allows the insns emitting for a specific argument list to be
-     independent of the function declaration.
+     If targetm.calls.pretend_outgoing_varargs_named() returns
+     nonzero, and STRICT_ARGUMENT_NAMING is zero, this machine will be
+     able to place unnamed args that were passed in registers into the
+     stack.  So treat all args as named.  This allows the insns
+     emitting for a specific argument list to be independent of the
+     function declaration.
 
-     If PRETEND_OUTGOING_VARARGS_NAMED is not set, we do not have any
-     reliable way to pass unnamed args in registers, so we must force
-     them into memory.  */
+     If targetm.calls.pretend_outgoing_varargs_named() returns zero,
+     we do not have any reliable way to pass unnamed args in
+     registers, so we must force them into memory.  */
 
   if ((targetm.calls.strict_argument_naming (&args_so_far)
        || ! targetm.calls.pretend_outgoing_varargs_named (&args_so_far))
