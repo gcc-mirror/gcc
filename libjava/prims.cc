@@ -9,16 +9,7 @@ Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
 
 #include <config.h>
-
-#ifdef WIN32
-#include <windows.h>
-#undef STRICT
-#endif /* WIN32 */
-
-#ifdef WIN32
-#undef __INSIDE_CYGWIN__
-#include <winsock.h>
-#endif /* WIN32 */
+#include <platform.h>
 
 #include <stdlib.h>
 #include <stdarg.h>
@@ -730,23 +721,6 @@ _Jv_ThisExecutable (const char *name)
       strcpy (_Jv_execName, name);
     }
 }
-
-#ifdef WIN32
-
-extern "C" int* win32_get_restart_frame (void *);
-
-LONG CALLBACK
-win32_exception_handler (LPEXCEPTION_POINTERS e)
-{
-  if (e->ExceptionRecord->ExceptionCode == EXCEPTION_ACCESS_VIOLATION)
-    _Jv_ThrowNullPointerException();
-  else if (e->ExceptionRecord->ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO)
-    throw new java::lang::ArithmeticException;
-  else
-    return EXCEPTION_CONTINUE_SEARCH;
-}
-
-#endif
 
 #ifndef DISABLE_GETENV_PROPERTIES
 
