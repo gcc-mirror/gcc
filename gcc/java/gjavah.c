@@ -650,7 +650,8 @@ decode_signature_piece (stream, signature, limit, need_space)
       while (*signature && *signature != ';')
 	{
 	  int ch = UTF8_GET (signature, limit);
-	  if (ch == '/')
+	  /* `$' is the separator for an inner class.  */
+	  if (ch == '/' || ch == '$')
 	    fputs ("::", stream);
 	  else
 	    jcf_print_char (stream, ch);
@@ -832,6 +833,52 @@ super_class_name (derived_jcf, len)
 
 
 
+/* We keep track of all the `#include's we generate, so we can avoid
+   duplicates.  */
+struct include
+{
+  char *name;
+  struct include *next;
+};
+
+/* List of all includes.  */
+static struct include *all_includes = NULL;
+
+/* Generate a #include.  */
+static void
+print_include (out, utf8, len)
+     FILE *out;
+     unsigned char *utf8;
+     int len;
+{
+  struct include *incl;
+
+  if (! out)
+    return;
+
+  if (len == -1)
+    len = strlen (utf8);
+
+  for (incl = all_includes; incl; incl = incl->next)
+    {
+      if (! strncmp (incl->name, utf8, len))
+	return;
+    }
+
+  incl = (struct include *) malloc (sizeof (struct include));
+  incl->name = malloc (len + 1);
+  strncpy (incl->name, utf8, len);
+  incl->name[len] = '\0';
+  incl->next = all_includes;
+  all_includes = incl;
+
+  fputs ("#include <", out);
+  jcf_print_utf8 (out, utf8, len);
+  fputs (".h>\n", out);
+}
+
+
+
 /* This is used to represent part of a package or class name.  */
 struct namelet
 {
@@ -975,27 +1022,47 @@ add_class_decl (out, jcf, signature)
   unsigned char *s = JPOOL_UTF_DATA (jcf, signature);
   int len = JPOOL_UTF_LENGTH (jcf, signature);
   int i;
+  /* Name of class we are processing.  */
+  int name_index = JPOOL_USHORT1 (jcf, jcf->this_class);
+  int tlen = JPOOL_UTF_LENGTH (jcf, name_index);
+  char *tname = JPOOL_UTF_DATA (jcf, name_index);
 
   for (i = 0; i < len; ++i)
     {
-      int start;
+      int start, saw_dollar;
+
+      /* If we see an array, then we include the array header.  */
+      if (s[i] == '[')
+	{
+	  print_include (out, "java-array", -1);
+	  continue;
+	}
+
       /* We're looking for `L<stuff>;' -- everything else is
 	 ignorable.  */
       if (s[i] != 'L')
 	continue;
+
+      saw_dollar = 0;
       for (start = ++i; i < len && s[i] != ';'; ++i)
 	{
-	  if (s[i] == '$' && out)
+	  if (! saw_dollar && s[i] == '$' && out)
 	    {
+	      saw_dollar = 1;
 	      /* If this class represents an inner class, then
-		 generate a `#include' for the outer class.  */
-	      fputs ("#include <", out);
-	      jcf_print_utf8 (out, &s[start], i - start);
-	      fputs (">\n", out);
+		 generate a `#include' for the outer class.  However,
+		 don't generate the include if the outer class is the
+		 class we are processing.  */
+	      if (i - start < tlen || strncmp (&s[start], tname, i - start))
+		print_include (out, &s[start], i - start);
+	      break;
 	    }
 	}
 
-      add_namelet (&s[start], &s[i], &root);
+      /* If we saw an inner class, then the generated #include will
+	 declare the class.  So in this case we needn't bother.  */
+      if (! saw_dollar)
+	add_namelet (&s[start], &s[i], &root);
     }
 }
 
@@ -1082,7 +1149,7 @@ DEFUN(process_file, (jcf, out),
       /* We do this to ensure that inline methods won't be `outlined'
 	 by g++.  This works as long as method and fields are not
 	 added by the user.  */
-      fprintf (out, "#pragma interface\n\n");
+      fprintf (out, "#pragma interface\n");
     }
 
   if (jcf->super_class && out)
@@ -1090,18 +1157,8 @@ DEFUN(process_file, (jcf, out),
       int super_length;
       unsigned char *supername = super_class_name (jcf, &super_length);
 
-      fputs ("#include <", out);
-      jcf_print_utf8 (out, supername, super_length);
-      fputs (".h>\n", out);
-
-      /* FIXME: If our superclass is Object, then we include
-	 java-array.h.  The right thing to do here is look at all the
-	 methods and fields and see if an array is in use.  Only then
-	 would we need to include java-array.h.  */
-      if (! utf8_cmp (supername, super_length, "java/lang/Object"))
-	fputs ("#include <java-array.h>\n", out);
-
       fputs ("\n", out);
+      print_include (out, supername, super_length);
     }
 
   /* We want to parse the methods first.  But we need to find where
@@ -1119,6 +1176,7 @@ DEFUN(process_file, (jcf, out),
 
   if (out)
     {
+      fputs ("\n", out);
       print_class_decls (out, jcf, jcf->this_class);
 
       for (i = 0; i < prepend_count; ++i)
