@@ -1,3 +1,7 @@
+2000-08-02  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (DECL_NEEDED_P): Tweak.
+
 2000-07-28  Jason Merrill  <jason@redhat.com>
 
 	* lang-specs.h: Use %i in rule for .ii files.
