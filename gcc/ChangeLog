@@ -1,3 +1,18 @@
+2005-02-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* PR target/19162
+	* arm.c (arm_apply_result_size): New function.
+	* arm.h (APPLY_RESULT_SIZE): Define.
+	* arm-protos.h (arm_apply_result_size): Add prototype.
+	* arm.md (RO_REGNUM, FPA_F0_REGNUM, FPA_F7_REGNUM): New constants.
+	(movxf): New expand.
+	(ldmsi_postinc4_thumb, stmsi_postinc4_thumb): New patterns for Thumb.
+	(call_value_symbol): Remove predicate for operand 0.
+	(call_value_insn, sibcall_value, sibcall_value_insn): Likewise.
+	(untyped_call): Rework to correclty return values for any type.
+	(untyped_return): New expand.
+	* fpa.md (movxf_fpa): Simplify and use sfm/lfm when appropriate.
+
 2005-02-16  Stan Shebs  <shebs@apple.com>
 
 	* config.gcc (powerpc-*-darwin*): Use fragment for Darwin 8 or later.

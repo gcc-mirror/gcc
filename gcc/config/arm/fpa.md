@@ -581,33 +581,31 @@
    (set_attr "neg_pool_range" "*,*,*,*,1008,*,*,1008,*,*,*")]
 )
 
-;; Saving and restoring the floating point registers in the prologue should
-;; be done in XFmode, even though we don't support that for anything else
-;; (Well, strictly it's 'internal representation', but that's effectively
-;; XFmode).
-
+;; We treat XFmode as meaning 'internal format'.  It's the right size and we
+;; don't use it for anything else.  We only support moving between FPA
+;; registers and moving an FPA register to/from memory.
 (define_insn "*movxf_fpa"
-  [(set (match_operand:XF 0 "nonimmediate_operand" "=f,f,f,m,f,r,r")
-	(match_operand:XF 1 "general_operand" "fG,H,m,f,r,f,r"))]
-  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA && reload_completed"
+  [(set (match_operand:XF 0 "nonimmediate_operand" "=f,f,m")
+	(match_operand:XF 1 "general_operand" "f,m,f"))]
+  "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_FPA
+   && (register_operand (operands[0], XFmode)
+       || register_operand (operands[1], XFmode))"
   "*
   switch (which_alternative)
     {
     default:
     case 0: return \"mvf%?e\\t%0, %1\";
-    case 1: return \"mnf%?e\\t%0, #%N1\";
-    case 2: return \"ldf%?e\\t%0, %1\";
-    case 3: return \"stf%?e\\t%1, %0\";
-    case 4: return output_mov_long_double_fpa_from_arm (operands);
-    case 5: return output_mov_long_double_arm_from_fpa (operands);
-    case 6: return output_mov_long_double_arm_from_arm (operands);
+    case 1: if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
+	      return \"ldf%?e\\t%0, %1\";
+	    return \"lfm%?\\t%0, 1, %1\";
+    case 2: if (arm_fpu_arch == FPUTYPE_FPA_EMU2)
+	      return \"stf%?e\\t%1, %0\";
+	    return \"sfm%?\\t%1, 1, %0\";
     }
   "
-  [(set_attr "length" "4,4,4,4,8,8,12")
+  [(set_attr "length" "4,4,4")
    (set_attr "predicable" "yes")
-   (set_attr "type" "ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")
-   (set_attr "pool_range" "*,*,1024,*,*,*,*")
-   (set_attr "neg_pool_range" "*,*,1004,*,*,*,*")]
+   (set_attr "type" "ffarith,f_load,f_store")]
 )
 
 (define_insn "*cmpsf_fpa"
@@ -749,4 +747,3 @@
    (set_attr "type" "ffarith")
    (set_attr "conds" "use")]
 )
-

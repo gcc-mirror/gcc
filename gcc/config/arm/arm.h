@@ -1617,6 +1617,10 @@ enum reg_class
    || (TARGET_ARM && ((REGNO) == FIRST_FPA_REGNUM)			\
        && TARGET_HARD_FLOAT_ABI && TARGET_FPA))
 
+/* Amount of memory needed for an untyped call to save all possible return
+   registers.  */
+#define APPLY_RESULT_SIZE arm_apply_result_size()
+
 /* How large values are returned */
 /* A C expression which can inhibit the returning of certain function values
    in registers, based on the type of value.  */

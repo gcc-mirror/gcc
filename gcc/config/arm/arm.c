@@ -2283,7 +2283,8 @@ arm_canonicalize_comparison (enum rtx_code code, rtx * op1)
 
 /* Define how to find the value returned by a function.  */
 
-rtx arm_function_value(tree type, tree func ATTRIBUTE_UNUSED)
+rtx
+arm_function_value(tree type, tree func ATTRIBUTE_UNUSED)
 {
   enum machine_mode mode;
   int unsignedp ATTRIBUTE_UNUSED;
@@ -2297,6 +2298,28 @@ rtx arm_function_value(tree type, tree func ATTRIBUTE_UNUSED)
   return LIBCALL_VALUE(mode);
 }
 
+/* Determine the amount of memory needed to store the possible return 
+   registers of an untyped call.  */
+int
+arm_apply_result_size (void)
+{
+  int size = 16;
+
+  if (TARGET_ARM)
+    {
+      if (TARGET_HARD_FLOAT_ABI)
+	{
+	  if (TARGET_FPA)
+	    size += 12;
+	  if (TARGET_MAVERICK)
+	    size += 8;
+	}
+      if (TARGET_IWMMXT_ABI)
+	size += 8;
+    }
+
+  return size;
+}
 
 /* Decide whether a type should be returned in memory (true)
    or in a register (false).  This is called by the macro
