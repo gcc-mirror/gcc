@@ -146,7 +146,7 @@ calls_alloca (exp)
 	register tree local;
 
 	for (local = BLOCK_VARS (exp); local; local = TREE_CHAIN (local))
-	  if (calls_alloca (DECL_INITIAL (local)))
+	  if (DECL_INITIAL (local) != 0 && calls_alloca (DECL_INITIAL (local)))
 	    return 1;
       }
       {
