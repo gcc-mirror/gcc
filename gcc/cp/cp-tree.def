@@ -116,9 +116,9 @@ DEFTREECODE (USING_DECL, "using_decl", "d", 0)
 
 DEFTREECODE (LOOKUP_EXPR, "lookup_expr", "e", 2)
 DEFTREECODE (MODOP_EXPR, "modop_expr", "e", 3)
-DEFTREECODE (CAST_EXPR, "cast_expr", "e", 1)
-DEFTREECODE (REINTERPRET_CAST_EXPR, "reinterpret_cast_expr", "e", 1)
-DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", "e", 1)
+DEFTREECODE (CAST_EXPR, "cast_expr", "1", 1)
+DEFTREECODE (REINTERPRET_CAST_EXPR, "reinterpret_cast_expr", "1", 1)
+DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", "1", 1)
 DEFTREECODE (ARROW_EXPR, "arrow_expr", "e", 1)
 DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", "e", 2)
 

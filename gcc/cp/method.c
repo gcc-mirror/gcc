@@ -364,7 +364,8 @@ build_overload_int (value)
 	OB_PUTC ('_');
       return;
     }
-  else if (uses_template_parms (value))
+  else if (current_template_parms
+	   && TREE_CODE (value) != INTEGER_CST)
     /* We don't ever want this output, but it's inconvenient not to
        be able to build the string.  This should cause assembler
        errors we'll notice.  */

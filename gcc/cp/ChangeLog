@@ -1,4 +1,79 @@
+Fri Mar  1 13:09:33 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_class_template): If we don't have a pattern
+ 	yet, that's OK.
+	(coerce_template_parms): If we see a local class, bail.
+
+	* decl.c (grok_reference_init): Make sure there's a type before
+ 	checking its code.
+
+	* pt.c (do_function_instantiation): Avoid crashing on invalid decls.
+	(push_template_decl): Ditto.
+
+	* parse.y (named_class_head): Set
+ 	CLASSTYPE_TEMPLATE_SPECIALIZATION here if we have basetypes.
+
+	* decl.c (xref_tag): Diagnose redeclaration of template
+ 	type-parameter name.
+
+	* error.c (dump_type): Handle anonymous template type parms.
+
+	* pt.c (instantiate_template): Use TYPE_MAIN_DECL instead of
+ 	TYPE_STUB_DECL.
+	(coerce_template_parms): Ditto.
+
+Thu Feb 29 16:26:01 1996  Mike Stump  <mrs@cygnus.com>
+
+	* class.c (instantiate_type, case {ARRAY,INDIRECT}_REF,
+	case ADDR_EXPR): Don't modify rhs if a subinstantiation fails.
+
+Thu Feb 29 08:20:25 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (instantiate_template): Take the MAIN_VARIANT of the type
+ 	before trying to get its STUB_DECL.
+	(coerce_template_parms): Ditto.
+
+	* parse.y (template_type_parm): If they didn't use 'class',
+ 	pretend they did after giving an error.
+
+	* pt.c (coerce_template_parms): Diagnose use of local class.
+
+	* decl.c (grok_reference_init): Use instantiate_type.
+
+	* error.c (dump_expr): Handle TEMPLATE_DECLs.
+
+	* parse.y (named_class_head): Diagnose mismatching types and tags.
+
+	* decl.c (pushdecl): Type decls and class templates clash with
+ 	artificial type decls, not hide them.
+
+	* decl.c (redeclaration_error_message): Diagnose redefinition of
+ 	templates properly.
+	(duplicate_decls): Diagnose disallowed overloads for template
+	functions, too.
+
+	* decl.c (start_decl): Call complete_type before checking for a
+ 	destructor.
+
+	* pt.c (tsubst): Use tsubst_expr on the elts of a VEC.
+
+	* decl.c (xref_tag): A TEMPLATE_TYPE_PARM is a match.
+
 Wed Feb 28 09:28:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (grok_op_properties): Don't check for operator++(int) in
+ 	a template.
+
+	* tree.c (perm_manip): Return a copy of variable and function
+ 	decls with external linkage.
+
+	* tree.def: Change some of the min tree codes to type "1".
+	* pt.c (uses_template_parms): Handle 'e's, return 1 for LOOKUP_EXPRs.
+	* method.c (build_overload_int): Emit something arbitrary for
+ 	anything but an INTEGER_CST if we're in a template.
+
+	* decl.c (cp_finish_decl): Call complete_type before deciding
+ 	whether or not to lay out the decl.
 
 	* lex.c (do_identifier): Check for DECL_INITIAL before using it.
 

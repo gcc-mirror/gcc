@@ -1625,6 +1625,10 @@ perm_manip (t)
 {
   if (TREE_PERMANENT (t))
     return t;
+  /* Support `void f () { extern int i; A<&i> a; }' */
+  if ((TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == FUNCTION_DECL)
+      && TREE_PUBLIC (t))
+    return copy_node (t);
   return NULL_TREE;
 }
 
