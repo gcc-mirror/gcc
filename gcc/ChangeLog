@@ -1,3 +1,9 @@
+Wed Nov 10 00:02:53 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * flow.c (compute_flow_dominators): No longer treat basic block 0
+        or (n_basic_blocks - 1) specially.  Clear the AUX field before
+        starting computation of doms/pdoms.  Fix initial state for pdoms.
+
 Wed Nov 10 03:58:08 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* Makefile.in ($(HOST_PREFIX_1)rtl.o): Update dependencies to

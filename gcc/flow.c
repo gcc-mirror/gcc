@@ -5339,15 +5339,23 @@ compute_flow_dominators (dominators, post_dominators)
 
   if (dominators)
     {
+      /* Clear the AUX field for each basic block.  */
+      for (bb = 0; bb < n_basic_blocks; bb++)
+	BASIC_BLOCK (bb)->aux = NULL;
+
+      /* We want a maximal solution, so initially assume everything dominates
+	 everything else.  */
       sbitmap_vector_ones (dominators, n_basic_blocks);
-      sbitmap_zero (dominators[0]);
-      SET_BIT (dominators[0], 0);
 
       /* Put the successors of the entry block on the worklist.  */
-      for (e = BASIC_BLOCK (0)->succ; e; e = e->succ_next)
+      for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
 	{
 	  *tos++ = e->dest;
-	  e->dest->aux = e;
+
+	  /* We use the block's aux field to track blocks which are in
+	     the worklist; we also use it to quickly determine which blocks
+	     are successors of the ENTRY block.  */
+	  e->dest->aux = ENTRY_BLOCK_PTR;
 	}
 
       /* Iterate until the worklist is empty.  */
@@ -5355,10 +5363,34 @@ compute_flow_dominators (dominators, post_dominators)
 	{
 	  /* Take the first entry off the worklist.  */
 	  basic_block b = *--tos;
-	  b->aux = NULL;
 	  bb = b->index;
 
-	  sbitmap_intersection_of_preds (temp_bitmap[bb], dominators, bb);
+	  /* Compute the intersection of the dominators of all the
+	     predecessor blocks.
+
+	     If one of the predecessor blocks is the ENTRY block, then the
+	     intersection of the dominators of the predecessor blocks is
+	     defined as the null set.  We can identify such blocks by the
+	     special value in the AUX field in the block structure.  */
+	  if (b->aux == ENTRY_BLOCK_PTR)
+	    {
+	      /* Do not clear the aux field for blocks which are
+		 successors of the ENTRY block.  That way we we never
+		 add them to the worklist again.
+
+		 The intersect of dominators of the preds of this block is
+		 defined as the null set.  */
+	      sbitmap_zero (temp_bitmap[bb]);
+	    }
+	  else
+	    {
+	      /* Clear the aux field of this block so it can be added to
+		 the worklist again if necessary.  */
+	      b->aux = NULL;
+	      sbitmap_intersection_of_preds (temp_bitmap[bb], dominators, bb);
+	    }
+
+	  /* Make sure each block always dominates itself.  */
 	  SET_BIT (temp_bitmap[bb], bb);
 
 	  /* If the out state of this block changed, then we need to
@@ -5380,15 +5412,23 @@ compute_flow_dominators (dominators, post_dominators)
 
   if (post_dominators)
     {
+      /* Clear the AUX field for each basic block.  */
+      for (bb = 0; bb < n_basic_blocks; bb++)
+	BASIC_BLOCK (bb)->aux = NULL;
+
+      /* We want a maximal solution, so initially assume everything post
+	 dominates everything else.  */
       sbitmap_vector_ones (post_dominators, n_basic_blocks);
-      sbitmap_zero (post_dominators[n_basic_blocks - 1]);
-      SET_BIT (post_dominators[n_basic_blocks - 1], 0);
 
       /* Put the predecessors of the exit block on the worklist.  */
-      for (e = BASIC_BLOCK (n_basic_blocks - 1)->pred; e; e = e->pred_next)
+      for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
 	{
 	  *tos++ = e->src;
-	  e->src->aux = e;
+
+	  /* We use the block's aux field to track blocks which are in
+	     the worklist; we also use it to quickly determine which blocks
+	     are predecessors of the EXIT block.  */
+	  e->src->aux = EXIT_BLOCK_PTR;
 	}
 
       /* Iterate until the worklist is empty.  */
@@ -5396,10 +5436,35 @@ compute_flow_dominators (dominators, post_dominators)
 	{
 	  /* Take the first entry off the worklist.  */
 	  basic_block b = *--tos;
-	  b->aux = NULL;
 	  bb = b->index;
 
-	  sbitmap_intersection_of_succs (temp_bitmap[bb], post_dominators, bb);
+	  /* Compute the intersection of the post dominators of all the
+	     successor blocks.
+
+	     If one of the successor blocks is the EXIT block, then the
+	     intersection of the dominators of the successor blocks is
+	     defined as the null set.  We can identify such blocks by the
+	     special value in the AUX field in the block structure.  */
+	  if (b->aux == EXIT_BLOCK_PTR)
+	    {
+	      /* Do not clear the aux field for blocks which are
+		 predecessors of the EXIT block.  That way we we never
+		 add them to the worklist again.
+
+		 The intersect of dominators of the succs of this block is
+		 defined as the null set.  */
+	      sbitmap_zero (temp_bitmap[bb]);
+	    }
+	  else
+	    {
+	      /* Clear the aux field of this block so it can be added to
+		 the worklist again if necessary.  */
+	      b->aux = NULL;
+	      sbitmap_intersection_of_succs (temp_bitmap[bb],
+					     post_dominators, bb);
+	    }
+
+	  /* Make sure each block always post dominates itself.  */
 	  SET_BIT (temp_bitmap[bb], bb);
 
 	  /* If the out state of this block changed, then we need to
