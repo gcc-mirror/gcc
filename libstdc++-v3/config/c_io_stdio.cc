@@ -160,13 +160,13 @@ namespace std {
     streamoff
     __basic_file<_CharT>::seekoff(streamoff __off, ios_base::seekdir __way, 
 				  ios_base::openmode /*__mode*/)
-   { return fseek(_M_cfile, __off, __way); }
+    { fseek(_M_cfile, __off, __way); return ftell(_M_cfile); }
 
   template<typename _CharT>
     streamoff
     __basic_file<_CharT>::seekpos(streamoff __pos, 
 				  ios_base::openmode /*__mode*/)
-   { return fseek(_M_cfile, __pos, ios_base::beg); }
+    { fseek(_M_cfile, __pos, ios_base::beg); return ftell(_M_cfile); }
 
   template<typename _CharT>
     int 
@@ -225,7 +225,7 @@ namespace std {
   template<typename _CharT>
     streamoff
     __basic_file<_CharT>::sys_seek(streamoff __pos, ios_base::seekdir __way)
-   { return fseek(_M_cfile, __pos, __way); }
+    { fseek(_M_cfile, __pos, __way); return ftell(_M_cfile); }
   
   // NB: Unused.
   template<typename _CharT>
