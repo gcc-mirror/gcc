@@ -366,7 +366,7 @@
 ;; Instruction canonicalization puts immediate operands second, which
 ;; is the reverse of what we want.
 
-(define_insn ""
+(define_insn "scc"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
 	(match_operator:SI 3 "comparison_operator"
 			   [(match_operand:SI 1 "register_operand" "r,r")
@@ -386,6 +386,67 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "2,2")])
 
+;; Combiner patterns for common operations performed with the output
+;; from an scc insn (negscc and incscc).  
+(define_insn "negscc"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(neg (match_operator:SI 3 "comparison_operator"
+	       [(match_operand:SI 1 "register_operand" "r,r")
+		(match_operand:SI 2  "arith11_operand" "r,I")])))]
+  ""
+  "*
+{
+  if (which_alternative == 0)
+    return \"comclr,%N3 %1,%2,%0\;ldi -1,%0\";
+  else
+    {
+      if (!(GET_CODE (operands[3]) == EQ || GET_CODE (operands[3]) == NE))
+	PUT_CODE (operands[3], reverse_relop (GET_CODE (operands[3])));
+      return \"comiclr,%N3 %2,%1,%0\;ldi -1,%0\";
+    }
+}"
+  [(set_attr "type" "binary")
+   (set_attr "length" "2")])
+
+;; add/sub the output from an scc with another operand.  This simply
+;; adds or subtracts 1 from the other operand.
+(define_insn "incscc"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+ 	(match_operator 5 "incscc_operator"
+ 	  [(match_operand:SI 1 "register_operand" "0,r")
+ 	   (match_operator:SI 4 "comparison_operator"
+ 	     [(match_operand:SI 2 "register_operand" "r,r")
+ 	      (match_operand:SI 3 "arith11_operand" "rI,rI")])]))]
+ 	     
+   ""
+   "*
+ {
+   if (GET_CODE (operands[3]) != CONST_INT)
+     output_asm_insn (\"comclr,%N4 %2,%3,0\", operands);
+   else
+     {
+       if (! (GET_CODE (operands[4]) == EQ || GET_CODE (operands[4]) == NE))
+ 	PUT_CODE (operands[4], reverse_relop (GET_CODE (operands[4])));
+       output_asm_insn (\"comiclr,%N4 %3,%2,0\", operands);
+     }
+   if (which_alternative == 0)
+     {
+      if (GET_CODE (operands[5]) == MINUS)
+	return \"addi -1,%0,%0\";
+      else
+	return \"addi 1,%0,%0\";
+     }
+   else
+     {
+      if (GET_CODE (operands[5]) == MINUS)
+	return \"addi,tr -1,%1,%0\;copy %1,%0\";
+      else
+	return \"addi,tr 1,%1,%0\;copy %1,%0\";
+     }
+ }"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "2,3")])
+ 
 ;; Conditionals
 
 (define_expand "beq"
@@ -714,6 +775,44 @@
   [(set_attr "type" "move")])
 
 ;;; Experimental
+
+(define_insn "cmov"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+        (if_then_else:SI
+	 (match_operator 5 "comparison_operator"
+                         [(match_operand:SI 3 "register_operand" "r,r")
+			  (match_operand:SI 4 "arith5_operand" "rL,rL")])
+         (match_operand:SI 1 "arith11_operand" "0,rI")
+         (match_operand:SI 2 "arith11_operand" "rI,0")))]
+  ""
+  "*
+{
+  if (GET_CODE (operands[4]) == CONST_INT)
+    {
+      if (! (GET_CODE (operands[5]) == EQ || GET_CODE (operands[5]) == NE))
+	PUT_CODE (operands[5], reverse_relop (GET_CODE (operands[5])));
+      output_asm_insn (\"comiclr,%C5 %4,%3,0\", operands);
+    }
+  else
+    output_asm_insn (\"comclr,%C5 %3,%4,0\", operands);
+  if (which_alternative == 0)
+    {
+      if (GET_CODE (operands[2]) == CONST_INT)
+	output_asm_insn (\"ldo %2(0),%0\", operands);
+      else 
+	output_asm_insn (\"copy %2,%0\", operands);
+    }
+  else
+    {
+      if (GET_CODE (operands[1]) == CONST_INT)
+	output_asm_insn (\"ldo %1(0),%0\", operands);
+      else 
+	output_asm_insn (\"copy %1,%0\", operands);
+    }
+  return \"\";
+}"
+  [(set_attr "type" "multi,multi")
+   (set_attr "length" "2,2")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "fp_reg_operand" "=fx")
