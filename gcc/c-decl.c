@@ -1624,6 +1624,17 @@ duplicate_decls (newdecl, olddecl)
 
   if (types_match)
     {
+      /* Make sure we put the new type in the same obstack as the old ones.
+	 If the old types are not both in the same obstack, use the permanent
+	 one.  */
+      if (TYPE_OBSTACK (oldtype) == TYPE_OBSTACK (newtype))
+	push_obstacks (TYPE_OBSTACK (oldtype), TYPE_OBSTACK (oldtype));
+      else
+	{
+	  push_obstacks_nochange ();
+	  end_temporary_allocation ();
+	}
+		       
       /* Merge the data types specified in the two decls.  */
       if (TREE_CODE (newdecl) != FUNCTION_DECL || !DECL_BUILT_IN (olddecl))
 	TREE_TYPE (newdecl)
@@ -1688,6 +1699,8 @@ duplicate_decls (newdecl, olddecl)
 	 are assigned.  */
       if (DECL_SECTION_NAME (newdecl) == NULL_TREE)
 	DECL_SECTION_NAME (newdecl) = DECL_SECTION_NAME (olddecl);
+
+      pop_obstacks ();
     }
   /* If cannot merge, then use the new type and qualifiers,
      and don't preserve the old rtl.  */
