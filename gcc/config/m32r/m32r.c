@@ -60,6 +60,14 @@ enum m32r_sdata m32r_sdata;
 /* Scheduler support */
 static int m32r_sched_odd_word_p;
 
+/* Machine-specific symbol_ref flags.  */
+#define SYMBOL_FLAG_MODEL_SHIFT		SYMBOL_FLAG_MACH_DEP_SHIFT
+#define SYMBOL_REF_MODEL(X) \
+  ((enum m32r_model) ((SYMBOL_REF_FLAGS (X) >> SYMBOL_FLAG_MODEL_SHIFT) & 3))
+
+/* For string literals, etc.  */
+#define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
+
 /* Forward declaration.  */
 static void  init_reg_tables			PARAMS ((void));
 static void  block_move_call			PARAMS ((rtx, rtx, rtx));
@@ -76,9 +84,8 @@ static int    m32r_sched_reorder   PARAMS ((FILE *, int, rtx *, int *, int));
 static int    m32r_variable_issue  PARAMS ((FILE *, int, rtx, int));
 static int    m32r_issue_rate	   PARAMS ((void));
 
-static void m32r_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 static void m32r_encode_section_info PARAMS ((tree, int));
-static const char *m32r_strip_name_encoding PARAMS ((const char *));
+static bool m32r_in_small_data_p PARAMS ((tree));
 static void init_idents PARAMS ((void));
 static bool m32r_rtx_costs PARAMS ((rtx, int, int, int *));
 
@@ -111,8 +118,8 @@ static bool m32r_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO m32r_encode_section_info
-#undef TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING m32r_strip_name_encoding
+#undef TARGET_IN_SMALL_DATA_P
+#define TARGET_IN_SMALL_DATA_P m32r_in_small_data_p
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32r_rtx_costs
@@ -332,55 +339,13 @@ m32r_handle_model_attribute (node, name, args, flags, no_add_attrs)
   return NULL_TREE;
 }
 
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
-
-static void
-m32r_select_section (decl, reloc, align)
-     tree decl;
-     int reloc;
-     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
-{
-  if (TREE_CODE (decl) == STRING_CST)
-    {
-      if (! flag_writable_strings)
-	readonly_data_section ();
-      else
-	data_section ();
-    }
-  else if (TREE_CODE (decl) == VAR_DECL)
-    {
-      if (SDATA_NAME_P (XSTR (XEXP (DECL_RTL (decl), 0), 0)))
-	sdata_section ();
-      else if ((flag_pic && reloc)
-	       || !TREE_READONLY (decl)
-	       || TREE_SIDE_EFFECTS (decl)
-	       || !DECL_INITIAL (decl)
-	       || (DECL_INITIAL (decl) != error_mark_node
-		   && !TREE_CONSTANT (DECL_INITIAL (decl))))
-	data_section ();
-      else
-	readonly_data_section ();
-    }
-  else
-    readonly_data_section ();
-}
-
 /* Encode section information of DECL, which is either a VAR_DECL,
    FUNCTION_DECL, STRING_CST, CONSTRUCTOR, or ???.
 
    For the M32R we want to record:
 
    - whether the object lives in .sdata/.sbss.
-     objects living in .sdata/.sbss are prefixed with SDATA_FLAG_CHAR
-
    - what code model should be used to access the object
-     small: recorded with no flag - for space efficiency since they'll
-            be the most common
-     medium: prefixed with MEDIUM_FLAG_CHAR
-     large: prefixed with LARGE_FLAG_CHAR
 */
 
 static void
@@ -388,124 +353,91 @@ m32r_encode_section_info (decl, first)
      tree decl;
      int first;
 {
-  char prefix = 0;
-  tree model = 0;
+  int extra_flags = 0;
+  tree model_attr;
+  enum m32r_model model;
 
-  if (!first)
+  default_encode_section_info (decl, first);
+
+  if (!DECL_P (decl))
     return;
 
-  switch (TREE_CODE (decl))
+  model_attr = lookup_attribute ("model", DECL_ATTRIBUTES (decl));
+  if (model_attr)
     {
-    case VAR_DECL :
-    case FUNCTION_DECL :
-      model = lookup_attribute ("model", DECL_ATTRIBUTES (decl));
-      break;
-    case STRING_CST :
-    case CONSTRUCTOR :
-      /* ??? document all others that can appear here */
-    default :
-      return;
-    }
+      tree id;
 
-  /* Only mark the object as being small data area addressable if
-     it hasn't been explicitly marked with a code model.
+      init_idents ();
 
-     The user can explicitly put an object in the small data area with the
-     section attribute.  If the object is in sdata/sbss and marked with a
-     code model do both [put the object in .sdata and mark it as being
-     addressed with a specific code model - don't mark it as being addressed
-     with an SDA reloc though].  This is ok and might be useful at times.  If
-     the object doesn't fit the linker will give an error.  */
+      id = TREE_VALUE (TREE_VALUE (model_attr));
 
-  if (! model)
-    {
-      if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd'
-	  && DECL_SECTION_NAME (decl) != NULL_TREE)
-	{
-	  char *name = (char *) TREE_STRING_POINTER (DECL_SECTION_NAME (decl));
-	  if (! strcmp (name, ".sdata") || ! strcmp (name, ".sbss"))
-	    {
-#if 0 /* ??? There's no reason to disallow this, is there?  */
-	      if (TREE_READONLY (decl))
-		error_with_decl (decl, "const objects cannot go in .sdata/.sbss");
-#endif
-	      prefix = SDATA_FLAG_CHAR;
-	    }
-	}
+      if (id == small_ident1 || id == small_ident2)
+	model = M32R_MODEL_SMALL;
+      else if (id == medium_ident1 || id == medium_ident2)
+	model = M32R_MODEL_MEDIUM;
+      else if (id == large_ident1 || id == large_ident2)
+	model = M32R_MODEL_LARGE;
       else
-	{
-	  if (TREE_CODE (decl) == VAR_DECL
-	      && ! TREE_READONLY (decl)
-	      && ! TARGET_SDATA_NONE)
-	    {
-	      int size = int_size_in_bytes (TREE_TYPE (decl));
-
-	      if (size > 0 && size <= g_switch_value)
-		prefix = SDATA_FLAG_CHAR;
-	    }
-	}
+	abort (); /* shouldn't happen */
     }
-
-  /* If data area not decided yet, check for a code model.  */
-  if (prefix == 0)
+  else
     {
-      if (model)
-	{
-	  tree id;
-	  
-	  init_idents ();
-
-	  id = TREE_VALUE (TREE_VALUE (model));
-
-	  if (id == small_ident1 || id == small_ident2)
-	    ; /* don't mark the symbol specially */
-	  else if (id == medium_ident1 || id == medium_ident2)
-	    prefix = MEDIUM_FLAG_CHAR;
-	  else if (id == large_ident1 || id == large_ident2)
-	    prefix = LARGE_FLAG_CHAR;
-	  else
-	    abort (); /* shouldn't happen */
-	}
+      if (TARGET_MODEL_SMALL)
+	model = M32R_MODEL_SMALL;
+      else if (TARGET_MODEL_MEDIUM)
+	model = M32R_MODEL_MEDIUM;
+      else if (TARGET_MODEL_LARGE)
+	model = M32R_MODEL_LARGE;
       else
-	{
-	  if (TARGET_MODEL_SMALL)
-	    ; /* don't mark the symbol specially */
-	  else if (TARGET_MODEL_MEDIUM)
-	    prefix = MEDIUM_FLAG_CHAR;
-	  else if (TARGET_MODEL_LARGE)
-	    prefix = LARGE_FLAG_CHAR;
-	  else
-	    abort (); /* shouldn't happen */
-	}
+	abort (); /* shouldn't happen */
     }
+  extra_flags |= model << SYMBOL_FLAG_MODEL_SHIFT;
 
-  if (prefix != 0)
-    {
-      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'
-                 ? TREE_CST_RTL (decl) : DECL_RTL (decl));
-      const char *str = XSTR (XEXP (rtl, 0), 0);
-      int len = strlen (str);
-      char *newstr = ggc_alloc (len + 2);
-
-      strcpy (newstr + 1, str);
-      *newstr = prefix;
-      /* Note - we cannot leave the string in the ggc_alloc'ed space.
-         It must reside in the stringtable's domain.  */
-      newstr = (char *) ggc_alloc_string (newstr, len + 2);
-
-      XSTR (XEXP (rtl, 0), 0) = newstr;
-    }
+  if (extra_flags)
+    SYMBOL_REF_FLAGS (XEXP (DECL_RTL (decl), 0)) |= extra_flags;
 }
 
-/* Undo the effects of the above.  */
+/* Only mark the object as being small data area addressable if
+   it hasn't been explicitly marked with a code model.
 
-static const char *
-m32r_strip_name_encoding (str)
-     const char *str;
+   The user can explicitly put an object in the small data area with the
+   section attribute.  If the object is in sdata/sbss and marked with a
+   code model do both [put the object in .sdata and mark it as being
+   addressed with a specific code model - don't mark it as being addressed
+   with an SDA reloc though].  This is ok and might be useful at times.  If
+   the object doesn't fit the linker will give an error.  */
+
+static bool
+m32r_in_small_data_p (decl)
+     tree decl;
 {
-  str += ENCODED_NAME_P (str);
-  str += *str == '*';
-  return str;
+  tree section;
+
+  if (TREE_CODE (decl) != VAR_DECL)
+    return false;
+
+  if (lookup_attribute ("model", DECL_ATTRIBUTES (decl)))
+    return false;
+
+  section = DECL_SECTION_NAME (decl);
+  if (section)
+    {
+      char *name = (char *) TREE_STRING_POINTER (section);
+      if (strcmp (name, ".sdata") == 0 || strcmp (name, ".sbss") == 0)
+	return true;
+    }
+  else
+    {
+      if (! TREE_READONLY (decl) && ! TARGET_SDATA_NONE)
+	{
+	  int size = int_size_in_bytes (TREE_TYPE (decl));
+
+	  if (size > 0 && size <= g_switch_value)
+	    return true;
+	}
+    }
+
+  return false;
 }
 
 /* Do anything needed before RTL is emitted for each function.  */
@@ -571,14 +503,14 @@ small_data_operand (op, mode)
     return 0;
 
   if (GET_CODE (op) == SYMBOL_REF)
-    return SDATA_NAME_P (XSTR (op, 0));
+    return SYMBOL_REF_SMALL_P (op);
 
   if (GET_CODE (op) == CONST
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
       && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
       && INT16_P (INTVAL (XEXP (XEXP (op, 0), 1))))
-    return SDATA_NAME_P (XSTR (XEXP (XEXP (op, 0), 0), 0));
+    return SYMBOL_REF_SMALL_P (XEXP (XEXP (op, 0), 0));
 
   return 0;
 }
@@ -590,27 +522,29 @@ addr24_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
+  rtx sym;
+
   if (GET_CODE (op) == LABEL_REF)
     return TARGET_ADDR24;
 
   if (GET_CODE (op) == SYMBOL_REF)
-    return (SMALL_NAME_P (XSTR (op, 0))
-	    || (TARGET_ADDR24
-		&& (CONSTANT_POOL_ADDRESS_P (op)
-		    || LIT_NAME_P (XSTR (op, 0)))));
+    sym = op;
+  else if (GET_CODE (op) == CONST
+	   && GET_CODE (XEXP (op, 0)) == PLUS
+	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
+	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
+	   && UINT24_P (INTVAL (XEXP (XEXP (op, 0), 1))))
+    sym = XEXP (XEXP (op, 0), 0);
+  else
+    return 0;
 
-  if (GET_CODE (op) == CONST
-      && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT
-      && UINT24_P (INTVAL (XEXP (XEXP (op, 0), 1))))
-    {
-      rtx sym = XEXP (XEXP (op, 0), 0);
-      return (SMALL_NAME_P (XSTR (sym, 0))
-	      || (TARGET_ADDR24
-		  && (CONSTANT_POOL_ADDRESS_P (sym)
-		      || LIT_NAME_P (XSTR (sym, 0)))));
-    }
+  if (SYMBOL_REF_MODEL (sym) == M32R_MODEL_SMALL)
+    return 1;
+
+  if (TARGET_ADDR24
+      && (CONSTANT_POOL_ADDRESS_P (sym)
+	  || LIT_NAME_P (XSTR (sym, 0))))
+    return 1;
 
   return 0;
 }
@@ -622,23 +556,23 @@ addr32_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
+  rtx sym;
+
   if (GET_CODE (op) == LABEL_REF)
     return TARGET_ADDR32;
 
   if (GET_CODE (op) == SYMBOL_REF)
-    return (! addr24_operand (op, mode)
-	    && ! small_data_operand (op, mode));
+    sym = op;
+  else if (GET_CODE (op) == CONST
+	   && GET_CODE (XEXP (op, 0)) == PLUS
+	   && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
+	   && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
+    sym = XEXP (XEXP (op, 0), 0);
+  else
+    return 0;
 
-  if (GET_CODE (op) == CONST
-      && GET_CODE (XEXP (op, 0)) == PLUS
-      && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
-    {
-      return (! addr24_operand (op, mode)
-	      && ! small_data_operand (op, mode));
-    }
-
-  return 0;
+  return (! addr24_operand (sym, mode)
+	  && ! small_data_operand (sym, mode));
 }
 
 /* Return 1 if OP is a function that can be called with the `bl' insn.  */
@@ -649,7 +583,7 @@ call26_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) == SYMBOL_REF)
-    return ! LARGE_NAME_P (XSTR (op, 0));
+    return SYMBOL_REF_MODEL (op) != M32R_MODEL_LARGE;
 
   return TARGET_CALL26;
 }
@@ -2384,12 +2318,7 @@ m32r_print_operand (file, x, code)
 
 	    split_double (x, &first, &second);
 	    x = WORDS_BIG_ENDIAN ? second : first;
-	    fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		     "0x%x",
-#else
-		     "0x%lx",
-#endif
+	    fprintf (file, HOST_WIDE_INT_PRINT_HEX,
 		     (code == 'B'
 		      ? INTVAL (x) & 0xffff
 		      : (INTVAL (x) >> 16) & 0xffff));
@@ -2441,13 +2370,7 @@ m32r_print_operand (file, x, code)
     case 'X' :
       /* Print a const_int in hex.  Used in comments.  */
       if (GET_CODE (x) == CONST_INT)
-	fprintf (file,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		 "0x%x",
-#else
-		 "0x%lx",
-#endif
-		 INTVAL (x));
+	fprintf (file, HOST_WIDE_INT_PRINT_HEX, INTVAL (x));
       return;
 
     case '#' :

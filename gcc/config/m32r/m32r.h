@@ -1468,96 +1468,13 @@ do {									\
 
 #define TEXT_SECTION_ASM_OP	"\t.section .text"
 #define DATA_SECTION_ASM_OP	"\t.section .data"
-#define RODATA_SECTION_ASM_OP	"\t.section .rodata"
 #define BSS_SECTION_ASM_OP	"\t.section .bss"
-#define SDATA_SECTION_ASM_OP	"\t.section .sdata"
-#define SBSS_SECTION_ASM_OP	"\t.section .sbss"
-/* This one is for svr4.h.  */
-#undef  READONLY_DATA_SECTION_ASM_OP
-#define READONLY_DATA_SECTION_ASM_OP	"\t.section .rodata"
-
-/* A list of names for sections other than the standard two, which are
-   `in_text' and `in_data'.  You need not define this macro
-   on a system with no other sections (that GCC needs to use).  */
-#undef  EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_sdata, in_sbss
-
-/* One or more functions to be defined in "varasm.c".  These
-   functions should do jobs analogous to those of `text_section' and
-   `data_section', for your additional sections.  Do not define this
-   macro if you do not define `EXTRA_SECTIONS'.  */
-#undef  EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS	\
-  SDATA_SECTION_FUNCTION	\
-  SBSS_SECTION_FUNCTION
-
-#define SDATA_SECTION_FUNCTION						\
-void									\
-sdata_section ()							\
-{									\
-  if (in_section != in_sdata)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SDATA_SECTION_ASM_OP);		\
-      in_section = in_sdata;						\
-    }									\
-}									\
-
-#define SBSS_SECTION_FUNCTION						\
-void									\
-sbss_section ()								\
-{									\
-  if (in_section != in_sbss)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", SBSS_SECTION_ASM_OP);		\
-      in_section = in_sbss;						\
-    }									\
-}									\
-
-#undef  TARGET_ASM_SELECT_SECTION
-#define TARGET_ASM_SELECT_SECTION  m32r_select_section
 
 /* Define this macro if jump tables (for tablejump insns) should be
    output in the text section, along with the assembler instructions.
    Otherwise, the readonly data section is used.
    This macro is irrelevant if there is no separate readonly data section.  */
 /*#define JUMP_TABLES_IN_TEXT_SECTION*/
-
-/* Define this macro if references to a symbol must be treated
-   differently depending on something about the variable or
-   function named by the symbol (such as what section it is in).
-
-   The macro definition, if any, is executed immediately after the
-   rtl for DECL or other node is created.
-   The value of the rtl will be a `mem' whose address is a
-   `symbol_ref'.
-
-   The usual thing for this macro to do is to store a flag in the
-   `symbol_ref' (such as `SYMBOL_REF_FLAG') or to store a modified
-   name string in the `symbol_ref' (if one bit is not enough
-   information).  */
-
-#define SDATA_FLAG_CHAR '@'
-/* Small objects are recorded with no prefix for space efficiency since
-   they'll be the most common.  This isn't the case if the user passes
-   -mmodel={medium|large} and one could choose to not mark symbols that
-   are the default, but that complicates things.  */
-/*#define SMALL_FLAG_CHAR '#'*/
-#define MEDIUM_FLAG_CHAR '%'
-#define LARGE_FLAG_CHAR '&'
-
-#define SDATA_NAME_P(NAME) (*(NAME) == SDATA_FLAG_CHAR)
-/*#define SMALL_NAME_P(NAME) (*(NAME) == SMALL_FLAG_CHAR)*/
-#define SMALL_NAME_P(NAME) (! ENCODED_NAME_P (NAME) && ! LIT_NAME_P (NAME))
-#define MEDIUM_NAME_P(NAME) (*(NAME) == MEDIUM_FLAG_CHAR)
-#define LARGE_NAME_P(NAME) (*(NAME) == LARGE_FLAG_CHAR)
-/* For string literals, etc.  */
-#define LIT_NAME_P(NAME) ((NAME)[0] == '*' && (NAME)[1] == '.')
-
-#define ENCODED_NAME_P(SYMBOL_NAME) \
-(SDATA_NAME_P (SYMBOL_NAME) \
- /*|| SMALL_NAME_P (SYMBOL_NAME)*/ \
- || MEDIUM_NAME_P (SYMBOL_NAME) \
- || LARGE_NAME_P (SYMBOL_NAME))
 
 /* PIC */
 
@@ -1621,12 +1538,6 @@ sbss_section ()								\
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.global\t"
-
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
-#undef  ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE, NAME) \
-  asm_fprintf (FILE, "%U%s", (*targetm.strip_name_encoding) (NAME))
 
 /* If -Os, don't force line number labels to begin at the beginning of
    the word; we still want the assembler to try to put things in parallel,

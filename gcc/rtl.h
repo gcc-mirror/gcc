@@ -1280,7 +1280,8 @@ do {						\
   ((SYMBOL_REF_FLAGS (RTX) & SYMBOL_FLAG_EXTERNAL) != 0)
 
 /* Subsequent bits are available for the target to use.  */
-#define SYMBOL_FLAG_MACH_DEP	(1 << 7)
+#define SYMBOL_FLAG_MACH_DEP_SHIFT	7
+#define SYMBOL_FLAG_MACH_DEP		(1 << SYMBOL_FLAG_MACH_DEP_SHIFT)
 
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */
