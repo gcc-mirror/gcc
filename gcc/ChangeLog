@@ -1,3 +1,9 @@
+2003-09-23  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/rs6000.c (function_arg_pass_by_reference): Don't
+	pass zero-size arrays by reference.
+	(rs6000_va_arg): Likewise.
+
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Set use_fixproto=no in each specific *-gnu*
