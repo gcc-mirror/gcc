@@ -276,7 +276,7 @@ c++.distdir:
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../tmp/cp >/dev/null 2>&1 || cp $$file ../tmp/cp; \
 	done
-	cd inc; \
+	cd cp/inc; \
 	for file in *[0-9a-zA-Z+]; do \
 	  ln $$file ../../tmp/cp/inc >/dev/null 2>&1 \
 	   || cp $$file ../../tmp/cp/inc; \
