@@ -1556,7 +1556,7 @@ calculate_giv_inc (pattern, src_insn, regno)
       /* SR sometimes computes the new giv value in a temp, then copies it
 	 to the new_reg.  */
       src_insn = PREV_INSN (src_insn);
-      pattern = PATTERN (src_insn);
+      pattern = single_set (src_insn);
       if (GET_CODE (SET_SRC (pattern)) != PLUS)
 	abort ();
 
@@ -1571,8 +1571,7 @@ calculate_giv_inc (pattern, src_insn, regno)
     {
       /* SR sometimes puts the constant in a register, especially if it is
 	 too big to be an add immed operand.  */
-      src_insn = PREV_INSN (src_insn);
-      increment = SET_SRC (PATTERN (src_insn));
+      increment = find_last_value (increment, &src_insn, NULL_RTX, 0);
 
       /* SR may have used LO_SUM to compute the constant if it is too large
 	 for a load immed operand.  In this case, the constant is in operand
@@ -1598,8 +1597,8 @@ calculate_giv_inc (pattern, src_insn, regno)
 	  rtx second_part = XEXP (increment, 1);
 	  enum rtx_code code = GET_CODE (increment);
 
-	  src_insn = PREV_INSN (src_insn);
-	  increment = SET_SRC (PATTERN (src_insn));
+	  increment = find_last_value (XEXP (increment, 0), 
+				       &src_insn, NULL_RTX, 0);
 	  /* Don't need the last insn anymore.  */
 	  delete_related_insns (get_last_insn ());
 
@@ -1642,7 +1641,7 @@ calculate_giv_inc (pattern, src_insn, regno)
 	  tries++;
 
 	  src_insn = PREV_INSN (src_insn);
-	  pattern = PATTERN (src_insn);
+	  pattern = single_set (src_insn);
 
 	  delete_related_insns (get_last_insn ());
 

@@ -1,5 +1,9 @@
 2001-11-03  Geoffrey Keating  <geoffk@redhat.com>
 
+	* unroll.c (calculate_giv_inc): Use find_last_value rather
+	than just hoping the last instruction is the right SET.
+	[Fixes 990604-1.c on stormy16.]
+
 	* config/stormy16/stormy16.h (LIB_SPEC): Don't supply any libgloss
 	library at all if -T is used.
 
