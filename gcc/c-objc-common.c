@@ -38,7 +38,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "tree-mudflap.h"
 #include "target.h"
-#include "cgraph.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *);
 
@@ -181,50 +180,6 @@ c_objc_common_init (void)
     }
 
   return true;
-}
-
-/* Synthesize a function which calls all the global ctors or global dtors
-   in this file.  */
-
-static void
-build_cdtor (int method_type, tree cdtors)
-{
-  tree body;
-
-  body = push_stmt_list ();
-
-  for (; cdtors; cdtors = TREE_CHAIN (cdtors))
-    add_stmt (build_function_call (TREE_VALUE (cdtors), NULL_TREE));
-
-  body = pop_stmt_list (body);
-
-  cgraph_build_static_cdtor (method_type, body);
-}
-
-/* Called at end of parsing, but before end-of-file processing.  */
-
-void
-c_objc_common_finish_file (void)
-{
-  if (pch_file)
-    c_common_write_pch ();
-
-  if (static_ctors)
-    {
-      build_cdtor ('I', static_ctors);
-      static_ctors = 0;
-    }
-  if (static_dtors)
-    {
-      build_cdtor ('D', static_dtors);
-      static_dtors = 0;
-    }
-
-  cgraph_finalize_compilation_unit ();
-  cgraph_optimize ();
-
-  if (flag_mudflap)
-    mudflap_finish_file ();
 }
 
 /* Called during diagnostic message formatting process to print a

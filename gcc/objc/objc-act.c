@@ -519,7 +519,6 @@ void
 finish_file (void)
 {
   mark_referenced_methods ();
-  c_objc_common_finish_file ();
 
   /* Finalize Objective-C runtime data.  No need to generate tables
      and code if only checking syntax.  */
@@ -1959,7 +1958,7 @@ generate_static_references (void)
 {
   tree decls = NULL_TREE, ident, decl_spec, expr_decl, expr = NULL_TREE;
   tree class_name, class, decl, initlist;
-  tree cl_chain, in_chain, type;
+  tree cl_chain, in_chain;
   int num_inst, num_class;
   char buf[256];
 
@@ -1982,6 +1981,7 @@ generate_static_references (void)
       decl = start_decl (expr_decl, decl_spec, 1, NULL_TREE);
       DECL_CONTEXT (decl) = 0;
       DECL_ARTIFICIAL (decl) = 1;
+      TREE_USED (decl) = 1;
 
       /* Output {class_name, ...}.  */
       class = TREE_VALUE (cl_chain);
@@ -2002,12 +2002,6 @@ generate_static_references (void)
 
       expr = objc_build_constructor (TREE_TYPE (decl), nreverse (initlist));
       finish_decl (decl, expr, NULL_TREE);
-      TREE_USED (decl) = 1;
-
-      type = build_array_type (build_pointer_type (void_type_node), 0);
-      decl = build_decl (VAR_DECL, ident, type);
-      TREE_USED (decl) = 1;
-      TREE_STATIC (decl) = 1;
       decls
 	= tree_cons (NULL_TREE, build_unary_op (ADDR_EXPR, decl, 1), decls);
     }
@@ -2026,6 +2020,7 @@ generate_static_references (void)
   expr = objc_build_constructor (TREE_TYPE (static_instances_decl),
 			    nreverse (decls));
   finish_decl (static_instances_decl, expr, NULL_TREE);
+  rest_of_decl_compilation (static_instances_decl, 0, 0, 0);
 }
 
 /* Output all strings.  */

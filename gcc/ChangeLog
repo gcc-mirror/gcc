@@ -1,5 +1,26 @@
 2004-07-08  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-decl.c (static_ctors, static_dtors): Make static.
+	(pop_file_scope): Call c_common_write_pch and
+	cgraph_finalize_compilation_unit here.
+	(build_cdtor): Moved here from c-objc-common.c; simplify.
+	(c_write_global_declarations_1): Clarify comment.
+	(c_write_global_declarations): Close the external scope before
+	doing anything else.  Call build_cdtor, cgraph_optimize, and
+	mudflap_finish_file here.
+	* c-lang.c (finish_file): Don't call c_objc_common_finish_file.
+	Clarify comment.
+	* c-objc-common.c: No need to include cgraph.h.
+	(build_cdtor): Moved to c-decl.c.
+	(c_objc_common_finish_file): Delete.
+	* c-tree.h: Update to match.
+	* objc/objc-act.c (finish_file): Don't call c_objc_common_finish_file.
+	(generate_static_references): Set TREE_USED before calling finish_decl.
+	Eliminate unnecessary dummy declaration.  Call rest_of_decl_compilation
+	on the static_instances_decl.
+
+2004-07-08  Zack Weinberg  <zack@codesourcery.com>
+
 	* c-decl.c (pop_scope): Do not set DECL_CONTEXT on file-scope
 	decls when there is only one input translation unit.
 	* langhooks.c (lhd_set_decl_assembler_name): Partially revert
