@@ -1,3 +1,13 @@
+2003-01-24  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c: Remove unused include of machmode.h.
+	(xtensa_emit_call, print_operand): Fix printf format strings
+	to avoid compile warnings.
+	(xtensa_function_prologue, xtensa_function_epilogue): Change type
+	of "size" argument to HOST_WIDE_INT to fix compile warnings.
+	* config/xtensa/xtensa-protos.h
+	(xtensa_function_prologue, xtensa_function_epilogue): Ditto.
+
 Fri Jan 24 23:03:32 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (DEF_BUILTIN): Accept 10 arguments.
