@@ -187,8 +187,8 @@ Boston, MA 02111-1307, USA.  */
    __enable_execute_stack also clears the insn cache. */
 
 #undef FINALIZE_TRAMPOLINE
-#define FINALIZE_TRAMPOLINE(TRAMP)
-  emit_library_call(gen_rtx(SYMBOL_REF, Pmode, "__enable_execute_stack"),
+#define FINALIZE_TRAMPOLINE(TRAMP) \
+  emit_library_call(gen_rtx(SYMBOL_REF, Pmode, "__enable_execute_stack"), \
 		    0, VOIDmode, 1, memory_address(SImode, (TRAMP)), Pmode)
 
 /* A C expression used to clear the instruction cache from 
