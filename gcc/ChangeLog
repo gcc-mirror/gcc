@@ -1,3 +1,15 @@
+Thu Nov 26 18:26:21 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+ 	* loop.h (precondition_loop_p): Added new mode argument.
+	* unroll.c (precondition_loop_p): Likewise.
+	(approx_final_value): Function deleted and subsumed
+ 	into loop_iterations.
+	(loop_find_equiv_value): New function.
+	(loop_iterations): Use loop_find_equiv_value to find increments
+	too large to be immediate constants.  Also use it to find terms
+	common to initial and final iteration values that can be removed.
+
+
 Thu Nov 26 18:05:04 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.h (struct loop_info): Define new structure.

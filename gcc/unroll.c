@@ -195,7 +195,6 @@ static void final_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void copy_loop_body PROTO((rtx, rtx, struct inline_remap *, rtx, int,
 				  enum unroll_types, rtx, rtx, rtx, rtx));
 void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
-static rtx approx_final_value PROTO((enum rtx_code, rtx, int *, int *));
 static int find_splittable_regs PROTO((enum unroll_types, rtx, rtx, rtx, int,
 				       unsigned HOST_WIDE_INT));
 static int find_splittable_givs PROTO((struct iv_class *, enum unroll_types,
@@ -849,12 +848,13 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   if (unroll_type == UNROLL_NAIVE && ! splitting_not_safe && strength_reduce_p)
     {
       rtx initial_value, final_value, increment;
+      enum machine_mode mode;
 
       if (precondition_loop_p (loop_start, loop_info,
-			       &initial_value, &final_value, &increment))
+			       &initial_value, &final_value, &increment,
+			       &mode))
 	{
 	  register rtx diff ;
-	  enum machine_mode mode;
 	  rtx *labels;
 	  int abs_inc, neg_inc;
 
@@ -885,21 +885,6 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	    }
 
 	  start_sequence ();
-
-	  /* Decide what mode to do these calculations in.  Choose the larger
-	     of final_value's mode and initial_value's mode, or a full-word if
-	     both are constants.  */
-	  mode = GET_MODE (final_value);
-	  if (mode == VOIDmode)
-	    {
-	      mode = GET_MODE (initial_value);
-	      if (mode == VOIDmode)
-		mode = word_mode;
-	    }
-	  else if (mode != GET_MODE (initial_value)
-		   && (GET_MODE_SIZE (mode)
-		       < GET_MODE_SIZE (GET_MODE (initial_value))))
-	    mode = GET_MODE (initial_value);
 
 	  /* Calculate the difference between the final and initial values.
 	     Final value may be a (plus (reg x) (const_int 1)) rtx.
@@ -1314,10 +1299,11 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
 int
 precondition_loop_p (loop_start, loop_info,
-		     initial_value, final_value, increment)
+		     initial_value, final_value, increment, mode)
      rtx loop_start;
      struct loop_info *loop_info;
      rtx *initial_value, *final_value, *increment;
+     enum machine_mode *mode;
 {
 
   if (loop_info->n_iterations > 0)
@@ -1325,6 +1311,7 @@ precondition_loop_p (loop_start, loop_info,
       *initial_value = const0_rtx;
       *increment = const1_rtx;
       *final_value = GEN_INT (loop_info->n_iterations);
+      *mode = word_mode;
 
       if (loop_dump_stream)
 	{
@@ -1429,6 +1416,21 @@ precondition_loop_p (loop_start, loop_info,
   *initial_value = loop_info->initial_value;
   *increment = loop_info->increment;
   *final_value = loop_info->final_value;
+
+  /* Decide what mode to do these calculations in.  Choose the larger
+     of final_value's mode and initial_value's mode, or a full-word if
+     both are constants.  */
+  *mode = GET_MODE (*final_value);
+  if (*mode == VOIDmode)
+    {
+      *mode = GET_MODE (*initial_value);
+      if (*mode == VOIDmode)
+	*mode = word_mode;
+    }
+  else if (*mode != GET_MODE (*initial_value)
+	   && (GET_MODE_SIZE (*mode)
+	       < GET_MODE_SIZE (GET_MODE (*initial_value))))
+    *mode = GET_MODE (*initial_value);
 
   /* Success! */
   if (loop_dump_stream)
@@ -2421,60 +2423,6 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
     }
 }
 
-/* Calculate the approximate final value of the iteration variable
-   which has an loop exit test with code COMPARISON_CODE and comparison value
-   of COMPARISON_VALUE.  Also returns an indication of whether the comparison
-   was signed or unsigned, and the direction of the comparison.  This info is
-   needed to calculate the number of loop iterations.  */
-
-static rtx
-approx_final_value (comparison_code, comparison_value, unsigned_p, compare_dir)
-     enum rtx_code comparison_code;
-     rtx comparison_value;
-     int *unsigned_p;
-     int *compare_dir;
-{
-  /* Calculate the final value of the induction variable.
-     The exact final value depends on the branch operator, and increment sign.
-     This is only an approximate value.  It will be wrong if the iteration
-     variable is not incremented by one each time through the loop, and
-     approx final value - start value % increment != 0.  */
-
-  *unsigned_p = 0;
-  switch (comparison_code)
-    {
-    case LEU:
-      *unsigned_p = 1;
-    case LE:
-      *compare_dir = 1;
-      return plus_constant (comparison_value, 1);
-    case GEU:
-      *unsigned_p = 1;
-    case GE:
-      *compare_dir = -1;
-      return plus_constant (comparison_value, -1);
-    case EQ:
-      /* Can not calculate a final value for this case.  */
-      *compare_dir = 0;
-      return 0;
-    case LTU:
-      *unsigned_p = 1;
-    case LT:
-      *compare_dir = 1;
-      return comparison_value;
-      break;
-    case GTU:
-      *unsigned_p = 1;
-    case GT:
-      *compare_dir = -1;
-      return comparison_value;
-    case NE:
-      *compare_dir = 0;
-      return comparison_value;
-    default:
-      abort ();
-    }
-}
 
 /* For each biv and giv, determine whether it can be safely split into
    a different variable for each unrolled copy of the loop body.  If it
@@ -3398,6 +3346,51 @@ final_giv_value (v, loop_start, loop_end, n_iterations)
 }
 
 
+/* Look back before LOOP_START for then insn that sets REG and return
+   the equivalent constant if there is a REG_EQUAL note otherwise just
+   the SET_SRC of REG.  */
+
+static rtx
+loop_find_equiv_value (loop_start, reg)
+     rtx loop_start;
+     rtx reg;
+{
+  rtx insn, set;
+  rtx ret;
+  
+  ret = reg;
+  for (insn = PREV_INSN (loop_start); insn ; insn = PREV_INSN (insn))
+    {
+      if (GET_CODE (insn) == CODE_LABEL)
+	break;
+      
+      else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+	       && reg_set_p (reg, insn))
+	{
+	  /* We found the last insn before the loop that sets the register.
+	     If it sets the entire register, and has a REG_EQUAL note,
+	     then use the value of the REG_EQUAL note.  */
+	  if ((set = single_set (insn))
+		  && (SET_DEST (set) == reg))
+	    {
+	      rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
+	      
+	      /* Only use the REG_EQUAL note if it is a constant.
+		 Other things, divide in particular, will cause
+		 problems later if we use them.  */
+	      if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST
+		  && CONSTANT_P (XEXP (note, 0)))
+		ret = XEXP (note, 0);
+	      else
+		ret = SET_SRC (set);
+	    }
+	  break;
+	}
+    }
+  return ret;
+}
+
+
 /* Calculate the number of loop iterations.  Returns the exact number of loop
    iterations if it can be calculated, otherwise returns zero.  */
 
@@ -3409,23 +3402,28 @@ loop_iterations (loop_start, loop_end, loop_info)
   rtx comparison, comparison_value;
   rtx iteration_var, initial_value, increment, final_value;
   enum rtx_code comparison_code;
-  HOST_WIDE_INT i;
+  HOST_WIDE_INT abs_inc;
+  unsigned HOST_WIDE_INT abs_diff;
+  int off_by_one;
   int increment_dir;
-  int unsigned_compare, compare_dir, final_larger;
-  unsigned long tempu;
+  int unsigned_p, compare_dir, final_larger;
   rtx last_loop_insn;
+
+  loop_info->n_iterations = 0;
+  loop_info->initial_value = 0;
+  loop_info->initial_equiv_value = 0;
+  loop_info->comparison_value = 0;
+  loop_info->final_value = 0;
+  loop_info->final_equiv_value = 0;
+  loop_info->increment = 0;
+  loop_info->iteration_var = 0;
+  loop_info->unroll_number = 1;
 
   /* First find the iteration variable.  If the last insn is a conditional
      branch, and the insn before tests a register value, make that the
      iteration variable.  */
   
-  loop_info->initial_value = 0;
-  loop_info->increment = 0;
-  loop_info->final_value = 0;
-  loop_info->iteration_var = 0;
-  loop_info->unroll_number = 2;
-
-  /* We used to use pren_nonnote_insn here, but that fails because it might
+  /* We used to use prev_nonnote_insn here, but that fails because it might
      accidentally get the branch for a contained loop if the branch for this
      loop was deleted.  We can only trust branches immediately before the
      loop_end.  */
@@ -3436,7 +3434,7 @@ loop_iterations (loop_start, loop_end, loop_info)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop unrolling: No final conditional branch found.\n");
+		 "Loop iterations: No final conditional branch found.\n");
       return 0;
     }
 
@@ -3451,7 +3449,7 @@ loop_iterations (loop_start, loop_end, loop_info)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop unrolling: Comparison not against register.\n");
+		 "Loop iterations: Comparison not against register.\n");
       return 0;
     }
 
@@ -3467,102 +3465,201 @@ loop_iterations (loop_start, loop_end, loop_info)
     /* iteration_info already printed a message.  */
     return 0;
 
+  unsigned_p = 0;
+  off_by_one = 0;
+  switch (comparison_code)
+    {
+    case LEU:
+      unsigned_p = 1;
+    case LE:
+      compare_dir = 1;
+      off_by_one = 1;
+      break;
+    case GEU:
+      unsigned_p = 1;
+    case GE:
+      compare_dir = -1;
+      off_by_one = -1;
+      break;
+    case EQ:
+      /* Cannot determine loop iterations with this case.  */
+      compare_dir = 0;
+      break;
+    case LTU:
+      unsigned_p = 1;
+    case LT:
+      compare_dir = 1;
+      break;
+    case GTU:
+      unsigned_p = 1;
+    case GT:
+      compare_dir = -1;
+    case NE:
+      compare_dir = 0;
+      break;
+    default:
+      abort ();
+    }
+
   /* If the comparison value is an invariant register, then try to find
      its value from the insns before the start of the loop.  */
 
+  final_value = comparison_value;
   if (GET_CODE (comparison_value) == REG && invariant_p (comparison_value))
     {
-      rtx insn, set;
-    
-      for (insn = PREV_INSN (loop_start); insn ; insn = PREV_INSN (insn))
-	{
-	  if (GET_CODE (insn) == CODE_LABEL)
-	    break;
-
-	  else if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-		   && reg_set_p (comparison_value, insn))
-	    {
-	      /* We found the last insn before the loop that sets the register.
-		 If it sets the entire register, and has a REG_EQUAL note,
-		 then use the value of the REG_EQUAL note.  */
-	      if ((set = single_set (insn))
-		  && (SET_DEST (set) == comparison_value))
-		{
-		  rtx note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-
-		  /* Only use the REG_EQUAL note if it is a constant.
-		     Other things, divide in particular, will cause
-		     problems later if we use them.  */
-		  if (note && GET_CODE (XEXP (note, 0)) != EXPR_LIST
-		      && CONSTANT_P (XEXP (note, 0)))
-		    comparison_value = XEXP (note, 0);
-		}
-	      break;
-	    }
-	}
+      final_value = loop_find_equiv_value (loop_start, comparison_value);
+      /* If we don't get an invariant final value, we are better
+	 off with the original register.  */
+      if (!invariant_p (final_value))
+	final_value = comparison_value;
     }
 
-  final_value = approx_final_value (comparison_code, comparison_value,
-				    &unsigned_compare, &compare_dir);
+  /* Calculate the approximate final value of the induction variable
+     (on the last successful iteration).  The exact final value
+     depends on the branch operator, and increment sign.  It will be
+     wrong if the iteration variable is not incremented by one each
+     time through the loop and (comparison_value + off_by_one -
+     initial_value) % increment != 0.
+     ??? Note that the final_value may overflow and thus final_larger
+     will be bogus.  A potentially infinite loop will be classified
+     as immediate, e.g. for (i = 0x7ffffff0; i <= 0x7fffffff; i++)  */
+  if (off_by_one)
+    final_value = plus_constant (final_value, off_by_one);
 
   /* Save the calculated values describing this loop's bounds, in case
      precondition_loop_p will need them later.  These values can not be
      recalculated inside precondition_loop_p because strength reduction
-     optimizations may obscure the loop's structure.  */
+     optimizations may obscure the loop's structure.  
 
-  loop_info->iteration_var = iteration_var;
+     These values are only required by precondition_loop_p and insert_bct
+     whenever the number of iterations cannot be computed at compile time.
+     Only the difference between final_value and initial_value is
+     important.  Note that final_value is only approximate.  */
   loop_info->initial_value = initial_value;
+  loop_info->comparison_value = comparison_value;
+  loop_info->final_value = plus_constant (comparison_value, off_by_one);
   loop_info->increment = increment;
-  loop_info->final_value = final_value;
+  loop_info->iteration_var = iteration_var;
   loop_info->comparison_code = comparison_code;
 
+  if (REG_P (initial_value))
+    {
+      rtx temp = final_value;
+
+      /* initial_value = reg1, final_value = reg2 + const, where reg1
+	 != reg2.  Try to find what reg1 is equivalent to.  Hopefully
+	 it will either be reg2 or reg2 plus a constant.  */
+      if (GET_CODE (temp) == PLUS)
+	temp = XEXP (temp, 0);
+      if (REG_P (temp) && REGNO (temp) != REGNO (initial_value))
+	initial_value = loop_find_equiv_value (loop_start, initial_value);
+    }
+
+  /* If have initial_value = reg + const1 and final_value = reg +
+     const2, then replace initial_value with const1 and final_value
+     with const2.  This should be safe since we are protected by the
+     initial comparison before entering the loop.  */
+  if ((GET_CODE (initial_value) == REG || GET_CODE (initial_value) == PLUS)
+      && (GET_CODE (final_value) == REG || GET_CODE (final_value) == PLUS))
+    {
+      rtx init_op0;
+      rtx fini_op0;
+      rtx init_op1;
+      rtx fini_op1;
+
+      if (GET_CODE (initial_value) == PLUS)
+	init_op1 = XEXP (initial_value, 1), init_op0 = XEXP (initial_value, 0);
+      else
+	init_op1 = const0_rtx, init_op0 = initial_value;
+
+      if (GET_CODE (final_value) == PLUS)
+	fini_op1 = XEXP (final_value, 1), fini_op0 = XEXP (final_value, 0);
+      else
+	fini_op1 = const0_rtx, fini_op0 = final_value;
+
+      /* Remove register common factor if present.  */
+      if (REG_P (init_op0) && init_op0 == fini_op0)
+	{
+	  initial_value = init_op1;
+	  final_value = fini_op1;
+	}
+      else if (REG_P (init_op0) && init_op0 == fini_op1)
+	{
+	  initial_value = init_op1;
+	  final_value = fini_op0;
+	}
+      else if (REG_P (init_op1) && init_op1 == fini_op0)
+	{
+	  initial_value = init_op0;
+	  final_value = fini_op1;
+	}
+      else if (REG_P (init_op1) && init_op1 == fini_op1)
+	{
+	  initial_value = init_op0;
+	  final_value = fini_op0;
+	}
+    }
+  loop_info->initial_equiv_value = initial_value;
+  loop_info->final_equiv_value = final_value;
+  
   if (increment == 0)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop unrolling: Increment value can't be calculated.\n");
+		 "Loop iterations: Increment value can't be calculated.\n");
       return 0;
     }
-  else if (GET_CODE (increment) != CONST_INT)
+
+  if (GET_CODE (increment) != CONST_INT)
+    {
+      increment = loop_find_equiv_value (loop_start, increment);
+
+      if (GET_CODE (increment) != CONST_INT)
+	{
+	  if (loop_dump_stream)
+	    {
+	      fprintf (loop_dump_stream,
+		       "Loop iterations: Increment value not constant ");
+	      print_rtl (loop_dump_stream, increment);
+	      fprintf (loop_dump_stream, ".\n");
+	    }
+	  return 0;
+	}
+      loop_info->increment = increment;
+    }
+
+  if (GET_CODE (initial_value) != CONST_INT)
+    {
+      if (loop_dump_stream)
+	{
+	  fprintf (loop_dump_stream,
+		   "Loop iterations: Initial value not constant ");
+	  print_rtl (loop_dump_stream, initial_value);
+	  fprintf (loop_dump_stream, ".\n");
+	}
+      return 0;
+    }
+  else if (comparison_code == EQ)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop unrolling: Increment value not constant.\n");
-      return 0;
-    }
-  else if (GET_CODE (initial_value) != CONST_INT)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Initial value not constant.\n");
-      return 0;
-    }
-  else if (final_value == 0)
-    {
-      if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: EQ comparison loop.\n");
+		 "Loop iterations: EQ comparison loop.\n");
       return 0;
     }
   else if (GET_CODE (final_value) != CONST_INT)
     {
       if (loop_dump_stream)
-	fprintf (loop_dump_stream,
-		 "Loop unrolling: Final value not constant.\n");
+	{
+	  fprintf (loop_dump_stream,
+		   "Loop iterations: Final value not constant ");
+	  print_rtl (loop_dump_stream, final_value);
+	  fprintf (loop_dump_stream, ".\n");
+	}
       return 0;
     }
 
-  /* ?? Final value and initial value do not have to be constants.
-     Only their difference has to be constant.  When the iteration variable
-     is an array address, the final value and initial value might both
-     be addresses with the same base but different constant offsets.
-     Final value must be invariant for this to work.
-
-     To do this, need some way to find the values of registers which are
-     invariant.  */
-
   /* Final_larger is 1 if final larger, 0 if they are equal, otherwise -1.  */
-  if (unsigned_compare)
+  if (unsigned_p)
     final_larger
       = ((unsigned HOST_WIDE_INT) INTVAL (final_value)
 	 > (unsigned HOST_WIDE_INT) INTVAL (initial_value))
@@ -3614,34 +3711,39 @@ loop_iterations (loop_start, loop_end, loop_info)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop unrolling: Not normal loop.\n");
+		 "Loop iterations: Not normal loop.\n");
       return 0;
     }
 
   /* Calculate the number of iterations, final_value is only an approximation,
-     so correct for that.  Note that tempu and loop_info->n_iterations are
+     so correct for that.  Note that abs_diff and n_iterations are
      unsigned, because they can be as large as 2^n - 1.  */
 
-  i = INTVAL (increment);
-  if (i > 0)
-    tempu = INTVAL (final_value) - INTVAL (initial_value);
-  else if (i < 0)
+  abs_inc = INTVAL (increment);
+  if (abs_inc > 0)
+    abs_diff = INTVAL (final_value) - INTVAL (initial_value);
+  else if (abs_inc < 0)
     {
-      tempu = INTVAL (initial_value) - INTVAL (final_value);
-      i = -i;
+      abs_diff = INTVAL (initial_value) - INTVAL (final_value);
+      abs_inc = -abs_inc;
     }
   else
     abort ();
 
-  /* For NE tests, make sure that the iteration variable won't miss the
-     final value.  If tempu mod i is not zero, then the iteration variable
-     will overflow before the loop exits, and we can not calculate the
-     number of iterations.  */
-  if (compare_dir == 0 && (tempu % i) != 0)
+  /* For NE tests, make sure that the iteration variable won't miss
+     the final value.  If abs_diff mod abs_incr is not zero, then the
+     iteration variable will overflow before the loop exits, and we
+     can not calculate the number of iterations.  */
+  if (compare_dir == 0 && (abs_diff % abs_inc) != 0)
     return 0;
 
-  return tempu / i + ((tempu % i) != 0);
+  /* Note that the number of iterations could be calculated using
+     (abs_diff + abs_inc - 1) / abs_inc, provided care was taken to
+     handle potential overflow of the summation.  */
+  loop_info->n_iterations = abs_diff / abs_inc + ((abs_diff % abs_inc) != 0);
+  return loop_info->n_iterations;
 }
+
 
 /* Replace uses of split bivs with their split pseudo register.  This is
    for original instructions which remain after loop unrolling without
