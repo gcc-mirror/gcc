@@ -578,7 +578,7 @@ more information, see @pxref{Classes}.
 
 @item UNKNOWN_TYPE
 This node is used to represent a type the knowledge of which is
-unsufficiant for a sound processing.
+insufficient for a sound processing.
 
 @item OFFSET_TYPE
 This node is used to represent a data member; for example a
@@ -1066,7 +1066,7 @@ An @code{OVERLOAD} node is not a declaration, so none of the
 @code{OVERLOAD} node in the list of overloaded functions.  The macros
 @code{OVL_CURRENT} and @code{OVL_NEXT} are actually polymorphic; you can
 use them to work with @code{FUNCTION_DECL} nodes as well as with
-overlods.  In the case of a @code{FUNCTION_DECL}, @code{OVL_CURRENT}
+overloads.  In the case of a @code{FUNCTION_DECL}, @code{OVL_CURRENT}
 will always return the function itself, and @code{OVL_NEXT} will always
 be @code{NULL_TREE}.
 
@@ -1087,13 +1087,13 @@ the @code{DECL_REAL_CONTEXT} for @code{f} will be the
 @code{RECORD_TYPE} for @code{C}.
 
 The @code{DECL_REAL_CONTEXT} and @code{DECL_CLASS_CONTEXT} are not
-availble in C; instead you should simply use @code{DECL_CONTEXT}.  In C,
+available in C; instead you should simply use @code{DECL_CONTEXT}.  In C,
 the @code{DECL_CONTEXT} for a function maybe another function.  This
 representation indicates that the GNU nested function extension is in
 use.  For details on the semantics of nested functions, see the GCC
 Manual.  The nested function can refer to local variables in its
 containing function.  Such references are not explicitly marked in the
-tree sturcture; back-ends must look at the @code{DECL_CONTEXT} for the
+tree structure; back-ends must look at the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL}.  If the @code{DECL_CONTEXT} for the
 referenced @code{VAR_DECL} is not the same as the function currently
 being processed, and neither @code{DECL_EXTERNAL} nor @code{DECL_STATIC}
@@ -1125,7 +1125,7 @@ function, and the back-end must take appropriate action.
 @findex DECL_DESTRUCTOR_P
 @findex DECL_OVERLOADED_OPERATOR_P
 @findex DECL_CONV_FN_P
-@findex DECL_ARTIFIICIAL
+@findex DECL_ARTIFICIAL
 @findex DECL_GLOBAL_CTOR_P
 @findex DECL_GLOBAL_DTOR_P
 @findex GLOBAL_INIT_PRIORITY
@@ -1222,7 +1222,7 @@ This macro holds if the function is a destructor.
 
 @item DECL_COMPLETE_DESTRUCTOR_P
 This predicate holds if the function is the destructor for an object a
-complet type.
+complete type.
 
 @item DECL_OVERLOADED_OPERATOR_P
 This macro holds if the function is an overloaded operator.
@@ -1652,7 +1652,7 @@ as if the @code{SCOPE_STMT} were not present at all.
 These statements represent the location to which control is transferred
 when an exception is thrown.  The @code{START_CATCH_TYPE} is the type of
 exception that will be caught by this handler; it is equal (by pointer
-equalit) to @code{CATCH_ALL_TYPE} if this handler is for all types.
+equality) to @code{CATCH_ALL_TYPE} if this handler is for all types.
 
 @item SUBOBJECT
 
@@ -2120,7 +2120,7 @@ always be present in the internal representation.
 @item CALL_EXPR
 These nodes are used to represent calls to functions, including
 non-static member functions.  The first operand is a pointer to the
-function to call; it is always an expresion whose type is a
+function to call; it is always an expression whose type is a
 @code{POINTER_TYPE}.  The second argument is a @code{TREE_LIST}.  The
 arguments to the call appear left-to-right in the list.  The
 @code{TREE_VALUE} of each list node contains the expression
@@ -2176,7 +2176,7 @@ non-zero, then the loop should be exited.  An @code{EXIT_EXPR} will only
 appear within a @code{LOOP_EXPR}.
 
 @item CLEANUP_POINT_EXPR
-These nodes represent full-expressions.  The single oeprand is an
+These nodes represent full-expressions.  The single operand is an
 expression to evaluate.  Any destructor calls engendered by the creation
 of temporaries during the evaluation of that expression should be
 performed immediately after the expression is evaluated.
@@ -2209,7 +2209,7 @@ storage is initialized to zero.
 A @code{SAVE_EXPR} represents an expression (possibly involving
 side-effects) that is used more than once.  The side-effects should
 occur only the first time the expression is evaluated.  Subsequent uses
-should juse reuse the computed value.  The first operand to the
+should just reuse the computed value.  The first operand to the
 @code{SAVE_EXPR} is the expression to evaluate.  The side-effects should
 be executed where the @code{SAVE_EXPR} is first encountered in a
 depth-first preorder traversal of the expression tree.
