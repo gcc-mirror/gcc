@@ -1,3 +1,7 @@
+2001-07-13  Kazu Hirata  <kazu@hxi.com>
+
+	* jump.c (reversed_comparison_code_parts): Fix comment typos.
+
 2001-07-13  H.J. Lu  (hjl@gnu.org)
 
 	* config/elfos.h (UNIQUE_SECTION): Enable .bss section.
