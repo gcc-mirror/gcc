@@ -129,6 +129,8 @@ INSTALL_DATA = @INSTALL_DATA@
 MAKEINFO = @MAKEINFO@
 MAKEINFOFLAGS =
 TEXI2DVI = texi2dvi
+TEXI2POD = $(srcdir)/../contrib/texi2pod.pl
+POD2MAN = pod2man --center="GNU" --release="gcc-$(version)" --section=1
 # For GNUmake: let us decide what gets passed to recursive makes.
 MAKEOVERRIDES =
 @SET_MAKE@
@@ -2171,6 +2173,13 @@ cpp.dvi: $(srcdir)/cpp.texi
 	texindex cpp.??
 	TEXINPUTS=${texidir}:$(srcdir):$$TEXINPUTS tex cpp.texi
 
+$(srcdir)/gcov.1: $(srcdir)/gcov.texi
+	$(TEXI2POD) < $(srcdir)/gcov.texi > gcov.pod
+	($(POD2MAN) gcov.pod > $(srcdir)/gcov.1.T$$$$ && \
+		mv -f $(srcdir)/gcov.1.T$$$$ $(srcdir)/gcov.1) || \
+		(rm -f $(srcdir)/gcov.1.T$$$$ && exit 1)
+	rm -f gcov.pod
+
 #
 # Deletion of files made during compilation.
 # There are four levels of this:
@@ -2265,6 +2274,7 @@ distclean: clean $(INTL_DISTCLEAN) lang.distclean
 	-rm -f cxxmain.c splay-tree.c obstack.c
 	-rm -f mklibgcc libgcc.map gccbug .gdbinit configargs.h
 	-rm -f c-tree.info c-tree.info-1 c-tree.info-2 c-tree.info-3
+	-rm -f gcov.pod
 	-rm -f fixinc/Makefile
 	-rmdir cp f java objc fixinc intl po 2>/dev/null
 
@@ -2299,6 +2309,7 @@ maintainer-clean:
 	-rm -f c-parse.y c-parse.c c-parse.output TAGS
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
+	-rm -f $(srcdir)/gcov.1
 #
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
@@ -2482,7 +2493,7 @@ install-info: doc installdirs lang.install-info
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
 
 # Install the man pages.
-install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cpp.1 lang.install-man
+install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cpp.1 $(srcdir)/gcov.1 lang.install-man
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
@@ -2494,6 +2505,8 @@ install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cpp.1 lang.install-man
 	fi
 	-rm -f $(man1dir)/cpp$(manext)
 	-$(INSTALL_DATA) $(srcdir)/cpp.1 $(man1dir)/cpp$(manext)
+	-rm -f $(man1dir)/gcov$(manext)
+	-$(INSTALL_DATA) $(srcdir)/gcov.1 $(man1dir)/gcov$(manext)
 	-chmod a-x $(man1dir)/cpp$(manext)
 
 # Install the library.
