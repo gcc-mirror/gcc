@@ -1,3 +1,8 @@
+2001-10-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/attr-noinline.c, gcc.dg/attr-used.c: New tests.
+	* gcc.dg/attr-invalid.c: Likewise.
+
 2001-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/gcc.dg/20011015-1.c: New test.
