@@ -6444,17 +6444,14 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
   else if (TREE_CODE (type) == COMPLEX_TYPE)
     {
       tree real_part, imag_part, real_temp;
+      tree post = NULL_TREE;
 
       real_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base, offset,
-					   pre_p, post_p);
-      append_to_statement_list (*post_p, pre_p);
-      *post_p = NULL;
-
+					   pre_p, &post);
       /* Copy the value into a temporary, lest the formal temporary
 	 be reused out from under us.  */
-      real_temp = create_tmp_var (TREE_TYPE (real_part), NULL);
-      t = build (MODIFY_EXPR, void_type_node, real_temp, real_part);
-      gimplify_and_add (t, pre_p);
+      real_temp = get_initialized_tmp_var (real_part, pre_p, &post);
+      append_to_statement_list (post, pre_p);
 
       imag_part = alpha_gimplify_va_arg_1 (TREE_TYPE (type), base, offset,
 					   pre_p, post_p);
@@ -6491,19 +6488,13 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset,
   return build_fold_indirect_ref (addr);
 }
 
-static void
-alpha_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
+static tree
+alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  tree valist, type, offset_field, base_field, offset, base, t;
+  tree offset_field, base_field, offset, base, t, r;
 
   if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
-    {
-      std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
-      return;
-    }
-
-  valist = TREE_OPERAND (*expr_p, 0);
-  type = TREE_TYPE (*expr_p);
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 
   base_field = TYPE_FIELDS (va_list_type_node);
   offset_field = TREE_CHAIN (base_field);
@@ -6525,12 +6516,14 @@ alpha_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
 
   /* Find the value.  Note that this will be a stable indirection, or
      a composite of stable indirections in the case of complex.  */
-  *expr_p = alpha_gimplify_va_arg_1 (type, base, offset, pre_p, post_p);
+  r = alpha_gimplify_va_arg_1 (type, base, offset, pre_p, post_p);
 
   /* Stuff the offset temporary back into its field.  */
   t = build (MODIFY_EXPR, void_type_node, offset_field,
 	     fold_convert (TREE_TYPE (offset_field), offset));
   gimplify_and_add (t, pre_p);
+
+  return r;
 }
 
 /* Builtins.  */

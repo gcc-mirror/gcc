@@ -274,7 +274,7 @@ static void ia64_vms_init_libfuncs (void)
 static tree ia64_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
 static rtx ia64_struct_value_rtx (tree, int);
-static void ia64_gimplify_va_arg (tree *, tree *, tree *);
+static tree ia64_gimplify_va_arg (tree, tree, tree *, tree *);
 
 
 /* Table of valid machine attributes.  */
@@ -3993,19 +3993,15 @@ ia64_va_arg (tree valist, tree type)
   return std_expand_builtin_va_arg (valist, type);
 }
 
-static void
-ia64_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
+static tree
+ia64_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  tree valist = TREE_OPERAND (*expr_p, 0);
-  tree type = TREE_TYPE (*expr_p);
-
   /* Variable sized types are passed by reference.  */
   if (TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
     {
-      TREE_TYPE (*expr_p) = build_pointer_type (type);
-      std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
-      *expr_p = build_fold_indirect_ref (*expr_p);
-      return;
+      tree ptrtype = build_pointer_type (type);
+      tree addr = std_gimplify_va_arg_expr (valist, ptrtype, pre_p, post_p);
+      return build_fold_indirect_ref (addr);
     }
 
   /* Aggregate arguments with alignment larger than 8 bytes start at
@@ -4023,7 +4019,7 @@ ia64_gimplify_va_arg (tree *expr_p, tree *pre_p, tree *post_p)
       gimplify_and_add (t, pre_p);
     }
 
-  std_gimplify_va_arg_expr (expr_p, pre_p, post_p);
+  return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* Return 1 if function return value returned in memory.  Return 0 if it is

@@ -1,3 +1,18 @@
+2004-06-10  Jason Merrill  <jason@redhat.com>
+
+	* target.h (struct gcc_target): Change gimplify_va_arg_expr 
+	hook signature.
+	* tree-gimple.h: Adjust.
+	* config/alpha/alpha.c (alpha_gimplify_va_arg): Adjust.
+	* config/i386/i386.c (ix86_gimplify_va_arg): Adjust.
+	Use fold_convert.
+	* config/ia64/ia64.c (ia64_gimplify_va_arg): Adjust.
+	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): Adjust.
+	Use COMPLEX_EXPR for complex numbers.  Use fold_convert.
+	* builtins.c (std_gimplify_va_arg_expr): Adjust.  Use fold_convert.
+	(gimplify_va_arg_expr): Return GS_ERROR in error case.
+	Gimplify valist rather than calling stabilize_va_list.
+
 2004-06-10  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* Makefile.in (df.o): Remove fibheap dependency.
@@ -189,7 +204,10 @@
 	(ia64_gimplify_va_arg): New fn.
 	* config/rs6000/rs6000.c (rs6000_gimplify_va_arg): New fn.
 	(TARGET_GIMPLIFY_VA_ARG_EXPR): Define.
+<<<<<<< ChangeLog
+=======
 	* config/sparc/sparc.c (sparc_gimplify_va_arg): New fn.
+>>>>>>> 2.3910
 	* alias.c (get_varargs_alias_set): Just return 0 for now.
 	
 	* c-objc-common.c (c_tree_printer): Improve handling of %T.
@@ -282,6 +300,15 @@
 
 2004-06-08  Richard Henderson  <rth@redhat.com>
 
+<<<<<<< ChangeLog
+	* gimple-low.c (struct lower_data): Replace the_return_label and
+	one_return_stmt with return_statements.
+	(lower_function_body): Process the entire list of return_statements.
+	(lower_return_expr): Check source value before unifying return_exprs.	
+	* gimplify.c (gimplify_return_expr): Force the use of a temporary
+	for !aggregate_value_p.
+	* tree-gimple.c: Update RETURN_EXPR grammer.
+=======
 	* gimple-low.c (struct lower_data): Replace the_return_label and
 	one_return_stmt with return_statements.
 	(lower_function_body): Process the entire list of return_statements.
@@ -289,6 +316,7 @@
 	* gimplify.c (gimplify_return_expr): Force the use of a temporary
 	for !aggregate_value_p.
 	* tree-gimple.c: Update RETURN_EXPR grammer.
+>>>>>>> 2.3910
 
 2004-06-08  Vladimir Makarov  <vmakarov@redhat.com>
 

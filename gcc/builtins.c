@@ -4364,23 +4364,18 @@ expand_builtin_va_arg (tree valist, tree type)
 
 /* Like std_expand_builtin_va_arg, but gimplify instead of expanding.  */
 
-void
-std_gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
+tree
+std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   tree addr, t, type_size = NULL;
   tree align, alignm1;
   tree rounded_size;
   HOST_WIDE_INT boundary;
-  tree valist = TREE_OPERAND (*expr_p, 0);
-  tree type = TREE_TYPE (*expr_p);
 
   /* Compute the rounded size of the type.  */
   align = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
   alignm1 = size_int (PARM_BOUNDARY / BITS_PER_UNIT - 1);
   boundary = FUNCTION_ARG_BOUNDARY (TYPE_MODE (type), type);
-
-  /* Reduce valist it so it's sharable with the postqueue.  */
-  gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
 
   /* va_list pointer is aligned to PARM_BOUNDARY.  If argument actually
      requires greater alignment, we must perform dynamic alignment.  */
@@ -4434,9 +4429,6 @@ std_gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
 							    type_size))))));
     }
 
-  addr = convert (build_pointer_type (type), addr);
-  *expr_p = build1 (INDIRECT_REF, type, addr);
-
   /* Compute new value for AP.  */
   if (! integer_zerop (rounded_size))
     {
@@ -4446,6 +4438,9 @@ std_gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
       gimplify_stmt (&t);
       append_to_statement_list (t, post_p);
     }
+
+  addr = fold_convert (build_pointer_type (type), addr);
+  return build_fold_indirect_ref (addr);
 }
 
 /* Return a dummy expression of type TYPE in order to keep going after an
@@ -4489,8 +4484,7 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
   if (TYPE_MAIN_VARIANT (want_va_type) != TYPE_MAIN_VARIANT (have_va_type))
     {
       error ("first argument to `va_arg' not of type `va_list'");
-      *expr_p = dummy_object (type);
-      return GS_ALL_DONE;
+      return GS_ERROR;
     }
 
   /* Generate a diagnostic for requesting data of a type that cannot
@@ -4528,14 +4522,27 @@ gimplify_va_arg_expr (tree *expr_p, tree *pre_p, tree *post_p)
     {
       /* Make it easier for the backends by protecting the valist argument
          from multiple evaluations.  */
-      valist = stabilize_va_list (valist, 0);
-      TREE_OPERAND (*expr_p, 0) = valist;
+      if (TREE_CODE (va_list_type_node) == ARRAY_TYPE)
+	{
+	  /* For this case, the backends will be expecting a pointer to
+	     TREE_TYPE (va_list_type_node), but it's possible we've
+	     actually been given an array (an actual va_list_type_node).
+	     So fix it.  */
+	  if (TREE_CODE (TREE_TYPE (valist)) == ARRAY_TYPE)
+	    {
+	      tree p1 = build_pointer_type (TREE_TYPE (va_list_type_node));
+	      valist = build_fold_addr_expr_with_type (valist, p1);
+	    }
+	  gimplify_expr (&valist, pre_p, post_p, is_gimple_val, fb_rvalue);
+	}
+      else
+	gimplify_expr (&valist, pre_p, post_p, is_gimple_min_lval, fb_lvalue);
 
       if (!targetm.calls.gimplify_va_arg_expr)
 	/* Once most targets are converted this should abort.  */
 	return GS_ALL_DONE;
 
-      targetm.calls.gimplify_va_arg_expr (expr_p, pre_p, post_p);
+      *expr_p = targetm.calls.gimplify_va_arg_expr (valist, type, pre_p, post_p);
       return GS_OK;
     }
 }
