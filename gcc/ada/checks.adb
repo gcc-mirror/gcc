@@ -467,7 +467,8 @@ package body Checks is
    ---------------------------
 
    procedure Apply_Alignment_Check (E : Entity_Id; N : Node_Id) is
-      AC   : constant Node_Id := Address_Clause (E);
+      AC   : constant Node_Id   := Address_Clause (E);
+      Typ  : constant Entity_Id := Etype (E);
       Expr : Node_Id;
       Loc  : Source_Ptr;
 
@@ -506,16 +507,28 @@ package body Checks is
       --  value is unacceptable at compile time.
 
       if Compile_Time_Known_Value (Expr)
-        and then Known_Alignment (E)
+        and then (Known_Alignment (E) or else Known_Alignment (Typ))
       then
-         if Expr_Value (Expr) mod Alignment (E) /= 0 then
-            Insert_Action (N,
-               Make_Raise_Program_Error (Loc,
-                 Reason => PE_Misaligned_Address_Value));
-            Error_Msg_NE
-              ("?specified address for& not " &
-               "consistent with alignment ('R'M 13.3(27))", Expr, E);
-         end if;
+         declare
+            AL : Uint := Alignment (Typ);
+
+         begin
+            --  The object alignment might be more restrictive than the
+            --  type alignment.
+
+            if Known_Alignment (E) then
+               AL := Alignment (E);
+            end if;
+
+            if Expr_Value (Expr) mod AL /= 0 then
+               Insert_Action (N,
+                  Make_Raise_Program_Error (Loc,
+                    Reason => PE_Misaligned_Address_Value));
+               Error_Msg_NE
+                 ("?specified address for& not " &
+                  "consistent with alignment ('R'M 13.3(27))", Expr, E);
+            end if;
+         end;
 
       --  Here we do not know if the value is acceptable, generate
       --  code to raise PE if alignment is inappropriate.
@@ -1807,7 +1820,7 @@ package body Checks is
       --  we only do this for discrete types, and not fixed-point or
       --  floating-point types.
 
-      --  The additional less-precise tests below catch these cases.
+      --  The additional less-precise tests below catch these cases
 
       --  Note: skip this if we are given a source_typ, since the point
       --  of supplying a Source_Typ is to stop us looking at the expression.
@@ -3628,7 +3641,7 @@ package body Checks is
       then
          return;
 
-      --  No check required on the left-hand side of an assignment.
+      --  No check required on the left-hand side of an assignment
 
       elsif Nkind (Parent (Expr)) = N_Assignment_Statement
         and then Expr = Name (Parent (Expr))
@@ -3887,7 +3900,7 @@ package body Checks is
    --  Start of processing for Find_Check
 
    begin
-      --  Establish default, to avoid warnings from GCC.
+      --  Establish default, to avoid warnings from GCC
 
       Check_Num := 0;
 
@@ -4256,7 +4269,7 @@ package body Checks is
       --         ..
       --       Source_Base_Type(Target_Type'Last))]
 
-      --  The conversions will always work and need no check.
+      --  The conversions will always work and need no check
 
       elsif In_Subrange_Of (Target_Type, Source_Base_Type) then
          Insert_Action (N,
@@ -6259,14 +6272,15 @@ package body Checks is
                         then
                            null;
 
-                        --  If null range, no check needed.
+                           --  If null range, no check needed
+
                         elsif
                           Compile_Time_Known_Value (High_Bound (Opnd_Index))
                             and then
                           Compile_Time_Known_Value (Low_Bound (Opnd_Index))
                             and then
-                             Expr_Value (High_Bound (Opnd_Index)) <
-                                 Expr_Value (Low_Bound (Opnd_Index))
+                              Expr_Value (High_Bound (Opnd_Index)) <
+                                  Expr_Value (Low_Bound (Opnd_Index))
                         then
                            null;
 
