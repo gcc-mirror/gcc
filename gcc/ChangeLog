@@ -1,3 +1,8 @@
+2002-08-01  Zack Weinberg  <zack@codesourcery.com>
+
+	* final.c (output_alternate_entry_point):
+	If ASM_OUTPUT_TYPE_DIRECTIVE is defined, use it.
+
 2002-08-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* objc/objc-act.c (encode_complete_bitfield): Add prototype and
@@ -45,7 +50,7 @@ cp:
 
 2002-07-31  Graham Stott  <grahams@btinternet.com>
 
-	* config/stormy16/stormy16.h (BSS_SECTION_ASM_OP): Add missing 
+	* config/stormy16/stormy16.h (BSS_SECTION_ASM_OP): Add missing
 	.section prefix.
 
 2002-07-31  Stan Shebs  <shebs@apple.com>
@@ -84,13 +89,13 @@ cp:
 2002-07-31  Graham Stott  <grahas@btinternet.com>
 
 	* config/rs6000/rs6000.c(rs6000_hash_constant): Fix
-	hash for LABEL_REF's. 
+	hash for LABEL_REF's.
 
 2002-07-31  Graham Stott  <grahams@btinternet.com>
 
 	* config/rs6000/rs6000.c (spe_init_builtins,
 	altivec_init_builtins, rs6000_common_init_builtins):
-	Replace ANSI with K&R function def. 
+	Replace ANSI with K&R function def.
 
 2002-07-31  David Edelsohn  <edelsohn@gnu.org>
 
@@ -126,7 +131,7 @@ cp:
 	(GLOBAL_ASM_OP): Define.
 
 	* m68hc11.h, m68k.h, m88k.h (ASM_GLOBALIZE_LABEL): Delete.
-	
+
 	* defaults.h (ASM_GLOBALIZE_LABEL): Provide a default.
 	* doc/tm.texi (ASM_GLOBALIZE_LABEL): Update docs.
 
@@ -165,7 +170,7 @@ cp:
 	* libgcc2.c: Expand macro DECLARE_LIBRARY_RENAMES if it is defined.
 	* config/fp-bit.c: Likewise.
 	* doc/tm.texi: Document it.
-			
+
 2002-07-30  David Edelsohn  <edelsohn@gnu.org>
 	    Zack Weinberg  <zack@codesourcery.com>
 
@@ -248,7 +253,7 @@ Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
 2002-07-29  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin):  Change the default behavior to
-	only issue an error if the builtin function doesn't have a 
+	only issue an error if the builtin function doesn't have a
 	fallback library call.  Remove several cases handled by the
 	new default.
 
@@ -290,7 +295,7 @@ Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	(pp_c_postfix_expression): Handle ABS_EXPR, COMPLEX_CST,
 	VECTOR_CST, CONSTRUCTOR.
 	(pp_c_unary_expression): Handle CONJ_EXPR, REALPART_EXPR,
-	IMAGPART_EXPR. 
+	IMAGPART_EXPR.
 	(pp_c_cast_expression): Handle FLOAT_EXPR.
 	(pp_c_assignment_expression): Handle INIT_EXPR.
 	(pp_c_expression): Update.
@@ -302,37 +307,37 @@ Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 2002-07-29  Eric Christopher  <echristo@redhat.com>
 
-       	* config/mips/elf.h: Remove ecoff.h and gofast includes.
-        (DWARF2_DEBUGGING_INFO, DBX_DEBUGGING_INFO): Define unconditionally.
-        (SDB_DEBUGGING_INFO): Undefine.
-        (PREFERRED_DEBUGGING_TYPE): Set to DWARF2_DEBUG.
+	* config/mips/elf.h: Remove ecoff.h and gofast includes.
+	(DWARF2_DEBUGGING_INFO, DBX_DEBUGGING_INFO): Define unconditionally.
+	(SDB_DEBUGGING_INFO): Undefine.
+	(PREFERRED_DEBUGGING_TYPE): Set to DWARF2_DEBUG.
 	(PUT_SDB_SIZE): Remove.
 	(SUBTARGET_ASM_DEBUGGING_SPEC): Redefine.
-       	(STARTFILE_SPEC): Add isa3264 define.
-       	* config/mips/elf64.h: Ditto.  Move TARGET_MEM_FUNCTIONS from here...
-       	* config/mips/ecoff.h: Remove. and here...
-       	* config/mips/iris3.h: and here...
-       	* config/mips/sni-svr4.h: and here...
-       	* config/mips/mips.h: To here. Remove OBJECT_FORMAT_ROSE ifdefs.
+	(STARTFILE_SPEC): Add isa3264 define.
+	* config/mips/elf64.h: Ditto.  Move TARGET_MEM_FUNCTIONS from here...
+	* config/mips/ecoff.h: Remove. and here...
+	* config/mips/iris3.h: and here...
+	* config/mips/sni-svr4.h: and here...
+	* config/mips/mips.h: To here. Remove OBJECT_FORMAT_ROSE ifdefs.
 	Add assembler -mmdebug options for non-dwarf debugging.
 	* config/mips/r3900.h: Remove debug info defines.
-       	* config/mips/isa32-linux.h: Remove, move functionality to config.gcc.
-       	* config/mips/isa3264.h: Ditto.
-       	* config/mips/t-isa3264: Fix up for file removal and gofast configure
-       	change.
-       	* config/mips/t-elf: Ditto.
-       	* config/mips/t-ecoff: Ditto.
-       	* config/mips/t-r3900: Ditto.
-       	* config/mips/t-iris5-6: Ditto.
-       	* config/mips/t-isa3264: Ditto.
-       	* config/mips/t-linux: Remove.
-       	* config/mips/t-netbsd: Remove.
-       	* config/mips/t-mips: New file.
-       	* config/mips/t-gofast: Ditto.
-       	* config/mips/netbsd.h: Remove unnecessary undefines.
-       	* config/mips/linux.h: Remove #include of mips.h.
-       	* config.gcc: Add mips.h include for elf targets. Remove tm_file
-       	for ecoff. Add gofast configure option for mips.
+	* config/mips/isa32-linux.h: Remove, move functionality to config.gcc.
+	* config/mips/isa3264.h: Ditto.
+	* config/mips/t-isa3264: Fix up for file removal and gofast configure
+	change.
+	* config/mips/t-elf: Ditto.
+	* config/mips/t-ecoff: Ditto.
+	* config/mips/t-r3900: Ditto.
+	* config/mips/t-iris5-6: Ditto.
+	* config/mips/t-isa3264: Ditto.
+	* config/mips/t-linux: Remove.
+	* config/mips/t-netbsd: Remove.
+	* config/mips/t-mips: New file.
+	* config/mips/t-gofast: Ditto.
+	* config/mips/netbsd.h: Remove unnecessary undefines.
+	* config/mips/linux.h: Remove #include of mips.h.
+	* config.gcc: Add mips.h include for elf targets. Remove tm_file
+	for ecoff. Add gofast configure option for mips.
 
 2002-07-29  Chris Demetriou  <cgd@broadcom.com>
 
