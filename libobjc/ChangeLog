@@ -1,3 +1,7 @@
+2000-09-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure: Rebuilt with new libtool.m4.
+
 Tue Aug 15 00:38:56 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* configure.in: Create a config.h file. Check for <sched.h>.
