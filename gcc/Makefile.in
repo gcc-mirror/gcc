@@ -2059,7 +2059,7 @@ distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
 diff:
 	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x objc-parse.y \
 	  -x cp-parse.c -x cp-parse.h -x cexp.c \
-	  -x objc-parse.c -x TAGS -x "gcc.??" -x "gcc.??z" -x gcc.aux \
+	  -x objc-parse.c -x TAGS -x "gcc.??" -x "gcc.??s" -x gcc.aux \
 	  -x "cpp.??s" -x "cpp.??" -x cpp.aux -x "cpp.info*" -x "gcc.info*" \
 	  gcc-$(oldversion) gcc-$(version) > diffs
 
