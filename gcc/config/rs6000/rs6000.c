@@ -3757,7 +3757,8 @@ rs6000_output_load_toc_table (file, reg)
 
 #else	/* !USING_SVR4_H */
   ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
-  asm_fprintf (file, "\t{l|lwz} %s,", reg_names[reg]);
+  asm_fprintf (file, TARGET_32BIT ? "\t{l|lwz} %s," : "\tld %s,",
+	       reg_names[reg]);
   assemble_name (file, buf);
   asm_fprintf (file, "(%s)\n", reg_names[2]);
 #endif /* USING_SVR4_H */
@@ -4428,12 +4429,24 @@ output_toc (file, x, labelno)
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, x);
       REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
-      if (TARGET_MINIMAL_TOC)
-	fprintf (file, "\t.long %ld\n\t.long %ld\n", k[0], k[1]);
+      if (TARGET_64BIT)
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fprintf (file, "\t.llong 0x%lx%08lx\n", k[0], k[1]);
+	  else
+	    fprintf (file, "\t.tc FD_%lx_%lx[TC],0x%lx%08lx\n",
+		     k[0], k[1], k[0] & 0xffffffff, k[1] & 0xffffffff);
+	  return;
+	}
       else
-	fprintf (file, "\t.tc FD_%lx_%lx[TC],%ld,%ld\n",
-		 k[0], k[1], k[0], k[1]);
-      return;
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fprintf (file, "\t.long %ld\n\t.long %ld\n", k[0], k[1]);
+	  else
+	    fprintf (file, "\t.tc FD_%lx_%lx[TC],%ld,%ld\n",
+		     k[0], k[1], k[0], k[1]);
+	  return;
+	}
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) == SFmode
 	   && ! (TARGET_NO_FP_IN_TOC && ! TARGET_MINIMAL_TOC))
@@ -4445,7 +4458,7 @@ output_toc (file, x, labelno)
       REAL_VALUE_TO_TARGET_SINGLE (rv, l);
 
       if (TARGET_MINIMAL_TOC)
-	fprintf (file, "\t.long %ld\n", l);
+	fprintf (file, TARGET_32BIT ? "\t.long %ld\n" : "\t.llong %ld\n", l);
       else
 	fprintf (file, "\t.tc FS_%lx[TC],%ld\n", l, l);
       return;
@@ -4475,12 +4488,25 @@ output_toc (file, x, labelno)
 	}
 #endif
 
-      if (TARGET_MINIMAL_TOC)
-	fprintf (file, "\t.long %ld\n\t.long %ld\n", (long)high, (long)low);
+      if (TARGET_64BIT)
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fprintf (file, "\t.llong 0x%lx%08lx\n", (long)high, (long)low);
+	  else
+	    fprintf (file, "\t.tc ID_%lx_%lx[TC],0x%lx%08lx\n",
+		     (long)high, (long)low, (long)high, (long)low);
+	  return;
+	}
       else
-	fprintf (file, "\t.tc ID_%lx_%lx[TC],%ld,%ld\n",
-		 (long)high, (long)low, (long)high, (long)low);
-      return;
+	{
+	  if (TARGET_MINIMAL_TOC)
+	    fprintf (file, "\t.long %ld\n\t.long %ld\n",
+		     (long)high, (long)low);
+	  else
+	    fprintf (file, "\t.tc ID_%lx_%lx[TC],%ld,%ld\n",
+		     (long)high, (long)low, (long)high, (long)low);
+	  return;
+	}
     }
 
   if (GET_CODE (x) == CONST)
@@ -4500,7 +4526,7 @@ output_toc (file, x, labelno)
 
   STRIP_NAME_ENCODING (real_name, name);
   if (TARGET_MINIMAL_TOC)
-    fputs ("\t.long ", file);
+    fputs (TARGET_32BIT ? "\t.long " : "\t.llong ", file);
   else
     {
       fprintf (file, "\t.tc %s", real_name);
@@ -4727,7 +4753,7 @@ output_function_profiler (file, labelno)
       ASM_OUTPUT_INTERNAL_LABEL (file, "LPC", labelno);
       if (TARGET_MINIMAL_TOC)
 	{
-	  fputs ("\t.long ", file);
+	  fputs (TARGET_32BIT ? "\t.long " : "\t.llong ", file);
 	  assemble_name (file, buf);
 	  putc ('\n', file);
 	}
@@ -4759,7 +4785,8 @@ output_function_profiler (file, labelno)
   /* Load location address into r3, and call mcount.  */
 
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPC", labelno);
-      asm_fprintf (file, "\t{l|lwz} %s,", reg_names[3]);
+      asm_fprintf (file, TARGET_32BIT ? "\t{l|lwz} %s," : "\tld %s,",
+		   reg_names[3]);
       assemble_name (file, buf);
       asm_fprintf (file, "(%s)\n\tbl %s\n\t%s\n",
 		   reg_names[2], RS6000_MCOUNT, RS6000_CALL_GLUE);
