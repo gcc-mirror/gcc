@@ -526,18 +526,7 @@ load_class (class_or_name, verbose)
     name = DECL_NAME (TYPE_NAME (class_or_name));
 
   if (read_class (name) == 0 && verbose)
-    {
-      error ("Cannot find file for class %s.",
-	     IDENTIFIER_POINTER (name));
-      if (TREE_CODE (class_or_name) == RECORD_TYPE)
-	TYPE_SIZE (class_or_name) = error_mark_node;
-#if 0
-      /* FIXME: what to do here?  */
-      if (!strcmp (classpath, DEFAULT_CLASS_PATH))
-	fatal ("giving up");
-#endif
-      return;
-    }
+    fatal ("Cannot find file for class %s.", IDENTIFIER_POINTER (name));
 }
 
 /* Parse a source file when JCF refers to a source file.  */
