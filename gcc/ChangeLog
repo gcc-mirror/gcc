@@ -1,3 +1,8 @@
+Fri Dec 31 19:10:31 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (update_temp_slot_address): Handle case where sum of
+	temporary address plus offset in register is a valid address.
+
 1999-12-30  Herman A.J. ten Brugge  <Haj.Ten.Brugge@net.HCC.nl>
 
         * genrecog.c (change_state) Corrected typo.

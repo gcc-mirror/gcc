@@ -978,12 +978,23 @@ update_temp_slot_address (old, new)
 
   p = find_temp_slot_from_address (old);
 
-  /* If we didn't find one, see if both OLD and NEW are a PLUS and if
-     there is a register in common between them.  If so, try a recursive
-     call on those values.  */
+  /* If we didn't find one, see if both OLD is a PLUS.  If so, and NEW
+     is a register, see if one operand of the PLUS is a temporary
+     location.  If so, NEW points into it.  Otherwise, if both OLD and
+     NEW are a PLUS and if there is a register in common between them.
+     If so, try a recursive call on those values.  */
   if (p == 0)
     {
-      if (GET_CODE (old) != PLUS || GET_CODE (new) != PLUS)
+      if (GET_CODE (old) != PLUS)
+	return;
+
+      if (GET_CODE (new) == REG)
+	{
+	  update_temp_slot_address (XEXP (old, 0), new);
+	  update_temp_slot_address (XEXP (old, 1), new);
+	  return;
+	}
+      else if (GET_CODE (new) != PLUS)
 	return;
 
       if (rtx_equal_p (XEXP (old, 0), XEXP (new, 0)))
