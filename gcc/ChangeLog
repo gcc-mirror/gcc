@@ -1,4 +1,7 @@
-Tue Nov  4 12:30:28 1997  Jim Wilson  <wilson@cygnus.com>
+Tue Nov  4 16:55:11 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.c (mips_expand_epilogue): Emit blockage insn before call to
+	save_restore_insns if no FP and GP will be restored.
 
 	* dwarf2out.c (expand_builtin_dwarf_reg_size): New variable mode.
 	Convert CCmode to word_mode before calling GET_MODE_SIZE.
