@@ -1,3 +1,6 @@
+// Test for obsolete specialization syntax.  Turn off -pedantic.
+// Special g++ Options:
+
 #include <iostream.h>
 #include <typeinfo>
 
@@ -14,11 +17,11 @@ A<T>::test(){
 }
 // Specialization declaration
 void                           
-A<double>::test();		// ERROR - not a specialization
+A<double>::test();
 
 // Specialization definition
 void
-A<double>::test(){		// ERROR - not a specialization
+A<double>::test(){
   cerr << "specialization for " << typeid(*this).name() << endl;
 }
 

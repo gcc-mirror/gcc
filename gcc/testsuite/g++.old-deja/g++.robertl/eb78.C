@@ -95,7 +95,7 @@ void
 UserClass::f(const String& filename) throw(BadFileName)
 {
   try {
-    File f(filename);
+    File f(filename);		// WARNING - unused
   }
   catch (const AccessViolation& e) {
     cout << "  FULLY recover from access-violation\n";

@@ -4,8 +4,8 @@
 template <class T> class Expr 
 {
 public :
-Expr(){};
-Expr(const T&){};
+  Expr(){};
+  Expr(const T&){};
 };
 
 template <class T >

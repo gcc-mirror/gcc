@@ -6,8 +6,8 @@ inline bool operator!=(const T& x, const T& y) {
 }
 
 enum T {
-  V1,
-};                           //ERROR - comma at end of enumerator list
+  V1
+};
 
 struct X {
   T      t : 31;
@@ -15,6 +15,6 @@ struct X {
 
 void
 f(X& v) {
-  if( v.t != V1 ) {
+  if( v.t != V1 ) {		// gets bogus error - address of bitfield
   }
 }
