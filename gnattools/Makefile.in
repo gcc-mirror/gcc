@@ -225,7 +225,7 @@ regnattools: $(GCC_DIR)/stamp-gnatlib
 # files that are among the sources
 # FIXME: This should be done in configure.
 RTS_DIR:=$(strip $(subst \,/,$(shell gnatls -v | grep adalib )))
-gnattools-cross: $(GCC_DIR)/stamp-tools $(GCC_DIR)/stamp-gnatlib
+gnattools-cross: $(GCC_DIR)/stamp-tools
 	# gnattools1-re
 	$(MAKE) -C $(GCC_DIR)/ada/tools -f ../Makefile \
 	  $(TOOLS_FLAGS_TO_PASS_CROSS) INCLUDES="" \
