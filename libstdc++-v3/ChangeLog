@@ -1,3 +1,9 @@
+2004-01-31  Per Bothner  <per@bothner.com>
+
+	* include/ext/mt_allocator.h
+	(__mt_alloc::_S_thread_freelist_mutex): Guard with
+	__GTHREAD_MUTEX_INIT.
+
 2004-01-31  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc (_Rep::_S_create): Minor tweak.
