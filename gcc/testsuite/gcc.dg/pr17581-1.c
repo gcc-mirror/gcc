@@ -2,6 +2,8 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
 
+void abort (void);
+
 int foo(int x)
 {
   unsigned long long tmp = 0;
