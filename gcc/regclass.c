@@ -553,7 +553,7 @@ memory_move_secondary_cost (mode, class, in)
 
 enum machine_mode
 choose_hard_reg_mode (regno, nregs)
-     int regno;
+     int regno ATTRIBUTE_UNUSED;
      int nregs;
 {
   enum machine_mode found_mode = VOIDmode, mode;

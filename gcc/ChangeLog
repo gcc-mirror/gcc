@@ -1,5 +1,17 @@
 2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* svr3.h (ASM_FILE_START): Wrap if-clause in squigly brackets.
+
+	* recog.c (memory_address_p): Mark parameter with ATTRIBUTE_UNUSED.
+
+	* regclass.c (choose_hard_reg_mode): Likewise.
+
+	* reload.c (find_valid_class, strict_memory_address_p): Likewise.
+
+	* reorg.c (optimize_skip): Wrap prototype in macro conditionals.
+
+2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* c-common.c: PROTO -> PARAMS.
 	* c-common.h: Likewise.
 	* c-decl.c: Likewise.
