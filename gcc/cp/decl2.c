@@ -2897,7 +2897,14 @@ setup_initp ()
   p = &static_aggregates;
   for (; *p; )
     {
-      t = value_member (TREE_VALUE (*p), static_aggregates_initp);
+      /* We check for symbol equivalence rather than identical decls
+	 because decl_attributes is run before duplicate_decls.
+	 XXX change to use DECL_MACHINE_ATTRIBUTES instead of
+	 static_aggregates_initp.  */
+      for (t = static_aggregates_initp; t; t = TREE_CHAIN (t))
+	if (DECL_ASSEMBLER_NAME (TREE_VALUE (t))
+	    == DECL_ASSEMBLER_NAME (TREE_VALUE (*p)))
+	  break;
 
       if (t)
 	{
