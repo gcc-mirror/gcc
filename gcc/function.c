@@ -483,6 +483,7 @@ free_after_compilation (f)
   f->x_tail_recursion_label = NULL;
   f->x_tail_recursion_reentry = NULL;
   f->x_arg_pointer_save_area = NULL;
+  f->x_clobber_return_insn = NULL;
   f->x_context_display = NULL;
   f->x_trampoline_list = NULL;
   f->x_parm_birth_insn = NULL;
