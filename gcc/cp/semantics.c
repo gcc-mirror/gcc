@@ -1597,7 +1597,11 @@ finish_unary_op_expr (code, expr)
      tree expr;
 {
   tree result = build_x_unary_op (code, expr);
-  if (code == NEGATE_EXPR && TREE_CODE (expr) == INTEGER_CST)
+  /* Inside a template, build_x_unary_op does not fold the
+     expression. So check whether the result is folded before
+     setting TREE_NEGATED_INT.  */
+  if (code == NEGATE_EXPR && TREE_CODE (expr) == INTEGER_CST
+      && TREE_CODE (result) == INTEGER_CST)
     TREE_NEGATED_INT (result) = 1;
   overflow_warning (result);
   return result;

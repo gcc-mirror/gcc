@@ -1,3 +1,13 @@
+1999-11-05  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* cp-tree.h (VAR_TEMPL_TYPE_OR_FUNCTION_DECL_CHECK): New macro.
+	(DECL_TEMPLATE_INFO): Use it.
+	* decl.c (warn_extern_redeclared_static): Do nothing for
+	TEMPLATE_DECLs.
+	* decl2.c (mark_used): Explicitly check for function or variable.
+	* semantics.c (finish_unary_op_expr): Check whether result is also
+	an INTEGER_CST.
+
 1999-11-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (typeck2.o): Depend on output.h.

@@ -2900,7 +2900,8 @@ warn_extern_redeclared_static (newdecl, olddecl)
 
   tree name;
 
-  if (TREE_CODE (newdecl) == TYPE_DECL)
+  if (TREE_CODE (newdecl) == TYPE_DECL 
+      || TREE_CODE (newdecl) == TEMPLATE_DECL)
     return;
   
   /* Don't get confused by static member functions; that's a different
