@@ -10005,20 +10005,12 @@ load_mems (const struct loop *loop)
 	}
     }
 
+  /* Now, we need to replace all references to the previous exit
+     label with the new one.  */
   if (label != NULL_RTX && end_label != NULL_RTX)
-    {
-      /* Now, we need to replace all references to the previous exit
-	 label with the new one.  */
-      replace_label_data rr;
-      rr.r1 = end_label;
-      rr.r2 = label;
-      rr.update_label_nuses = true;
-
-      for (p = loop->start; p != loop->end; p = NEXT_INSN (p))
-	{
-	  for_each_rtx (&p, replace_label, &rr);
-	}
-    }
+    for (p = loop->start; p != loop->end; p = NEXT_INSN (p))
+      if (GET_CODE (p) == JUMP_INSN && JUMP_LABEL (p) == end_label)
+	redirect_jump (p, label, false);
 
   cselib_finish ();
 }
