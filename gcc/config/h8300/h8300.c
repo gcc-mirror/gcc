@@ -330,6 +330,10 @@ h8300_init_once (void)
     }
 }
 
+/* Return the byte register name for a register rtx X.  B should be 0
+   if you want a lower byte register.  B should be 1 if you want an
+   upper byte register.  */
+
 static const char *
 byte_reg (rtx x, int b)
 {
@@ -567,6 +571,9 @@ h8300_expand_prologue (void)
   /* Leave room for locals.  */
   h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()));
 }
+
+/* Return nonzero if we can use "rts" for the function currently being
+   compiled.  */
 
 int
 h8300_can_use_return_insn_p (void)
@@ -913,6 +920,8 @@ bit_operand (rtx op, enum machine_mode mode)
 	  && EXTRA_CONSTRAINT (op, 'U'));
 }
 
+/* Return nonzero if OP is a MEM suitable for bit manipulation insns.  */
+
 int
 bit_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
@@ -1014,6 +1023,8 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode,
   return result;
 }
 
+/* Compute the cost of an and insn.  */
+
 static int
 h8300_and_costs (rtx x)
 {
@@ -1033,6 +1044,8 @@ h8300_and_costs (rtx x)
   return compute_logical_op_length (GET_MODE (x), operands) / 2;
 }
 
+/* Compute the cost of a shift insn.  */
+
 static int
 h8300_shift_costs (rtx x)
 {
@@ -1049,6 +1062,8 @@ h8300_shift_costs (rtx x)
   operands[3] = x;
   return compute_a_shift_length (NULL, operands) / 2;
 }
+
+/* Worker function for TARGET_RTX_COSTS.  */
 
 static bool
 h8300_rtx_costs (rtx x, int code, int outer_code, int *total)
@@ -1642,6 +1657,8 @@ h8300_initial_elimination_offset (int from, int to)
     abort ();
 }
 
+/* Worker function for RETURN_ADDR_RTX.  */
+
 rtx
 h8300_return_addr_rtx (int count, rtx frame)
 {
@@ -2089,6 +2106,8 @@ compute_mov_length (rtx *operands)
     }
 }
 
+/* Output an addition insn.  */
+
 const char *
 output_plussi (rtx *operands)
 {
@@ -2162,6 +2181,8 @@ output_plussi (rtx *operands)
     }
 }
 
+/* Compute the length of an addition insn.  */
+
 unsigned int
 compute_plussi_length (rtx *operands)
 {
@@ -2230,6 +2251,8 @@ compute_plussi_length (rtx *operands)
     }
 }
 
+/* Compute which flag bits are valid after an addition insn.  */
+
 int
 compute_plussi_cc (rtx *operands)
 {
@@ -2283,6 +2306,8 @@ compute_plussi_cc (rtx *operands)
     }
 }
 
+/* Output a logical insn.  */
+
 const char *
 output_logical_op (enum machine_mode mode, rtx *operands)
 {
@@ -2457,6 +2482,8 @@ output_logical_op (enum machine_mode mode, rtx *operands)
   return "";
 }
 
+/* Compute the length of a logical insn.  */
+
 unsigned int
 compute_logical_op_length (enum machine_mode mode, rtx *operands)
 {
@@ -2599,6 +2626,8 @@ compute_logical_op_length (enum machine_mode mode, rtx *operands)
     }
   return length;
 }
+
+/* Compute which flag bits are valid after a logical insn.  */
 
 int
 compute_logical_op_cc (enum machine_mode mode, rtx *operands)
@@ -3457,7 +3486,7 @@ h8300_shift_needs_scratch_p (int count, enum machine_mode mode)
 	  || (TARGET_H8300H && mode == SImode && count == 8));
 }
 
-/* Emit the assembler code for doing shifts.  */
+/* Output the assembler code for doing shifts.  */
 
 const char *
 output_a_shift (rtx *operands)
@@ -3611,6 +3640,8 @@ output_a_shift (rtx *operands)
     }
 }
 
+/* Count the number of assembly instructions in a string TEMPLATE.  */
+
 static unsigned int
 h8300_asm_insn_count (const char *template)
 {
@@ -3622,6 +3653,8 @@ h8300_asm_insn_count (const char *template)
 
   return count;
 }
+
+/* Compute the length of a shift insn.  */
 
 unsigned int
 compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
@@ -3770,6 +3803,8 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
 	}
     }
 }
+
+/* Compute which flag bits are valid after a shift insn.  */
 
 int
 compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
@@ -3943,7 +3978,7 @@ expand_a_rotate (rtx operands[])
   return 1;
 }
 
-/* Output rotate insns.  */
+/* Output a rotate insn.  */
 
 const char *
 output_a_rotate (enum rtx_code code, rtx *operands)
@@ -4051,6 +4086,8 @@ output_a_rotate (enum rtx_code code, rtx *operands)
 
   return "";
 }
+
+/* Compute the length of a rotate insn.  */
 
 unsigned int
 compute_a_rotate_length (rtx *operands)
@@ -4416,6 +4453,8 @@ h8300_encode_section_info (tree decl, rtx rtl, int first)
     SYMBOL_REF_FLAGS (XEXP (rtl, 0)) |= extra_flags;
 }
 
+/* Output a single-bit extraction.  */
+
 const char *
 output_simode_bld (int bild, rtx operands[])
 {
@@ -4542,6 +4581,9 @@ h8300_tiny_constant_address_p (rtx x)
     }
 
 }
+
+/* Return nonzero if ADDR1 and ADDR2 point to consecutive memory
+   locations that can be accessed as a 16-bit word.  */
 
 int
 byte_accesses_mergeable_p (rtx addr1, rtx addr2)
@@ -4758,6 +4800,8 @@ h8300_init_libfuncs (void)
   set_optab_libfunc (umod_optab, HImode, "__umodhi3");
 }
 
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+
 static bool
 h8300_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
