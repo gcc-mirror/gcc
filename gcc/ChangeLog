@@ -1,3 +1,9 @@
+2002-02-19  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR other/5718
+	* gcc.c (cpp_unique_options): Treat -o as indicating object file
+	only if not -E.  If -E, pass -o through to the preprocessor.
+
 2002-02-19  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h (REGNO_REG_CLASS): Replace a literal
