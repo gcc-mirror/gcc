@@ -1,3 +1,8 @@
+2003-10-29  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (movdf_softfloat64): Allow dummy ctr,ctr
+	moves.
+
 2003-10-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR target/11598
