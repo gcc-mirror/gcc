@@ -530,9 +530,6 @@ void GC_mark_from_mark_stack()
         case DS_PROC:
           GC_mark_stack_top_reg--;
           credit -= PROC_BYTES;
-#ifdef GC_DEBUG
-	  current_p = GC_debug_object_start(current_p);
-#endif
           GC_mark_stack_top_reg =
               (*PROC(descr))
               	    (current_p, GC_mark_stack_top_reg,

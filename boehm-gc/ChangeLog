@@ -1,3 +1,10 @@
+2000-09-04  Anthony Green  <green@redhat.com>
+
+	Fix for PR libgcj/230:
+	* mark.c (GC_mark_from_mark_stack): Remove call to
+	GC_debug_object_start.
+	* gc_priv.h (GC_debug_object_start): Remove prototype.
+
 2000-08-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcconfig.h [OSF1] (_end): Declare as `int'.

@@ -1772,10 +1772,6 @@ void GC_print_obj(/* ptr_t p */);
 			/* P points to somewhere inside an object with	*/
 			/* debugging info.  Print a human readable	*/
 			/* description of the object to stderr.		*/
-ptr_t GC_debug_object_start(/* ptr_t p */);
-			/* P points to the start of an object that may  */
-			/* have debug info at its head.  Return the     */
-			/* start of the real data.                      */
 extern void (*GC_check_heap)();
 			/* Check that all objects in the heap with 	*/
 			/* debugging info are intact.  Print 		*/
