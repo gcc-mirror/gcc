@@ -1830,7 +1830,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       sprintf (buffer, "%d", j);
       ASM_OPERANDS_INPUT_CONSTRAINT_EXP (body, ninputs - ninout + i)
-	= gen_rtx_ASM_INPUT (inout_mode[i], ggc_alloc_string (buffer, -1));
+	= gen_rtx_ASM_INPUT (inout_mode[i], ggc_strdup (buffer));
     }
 
   generating_concat_p = old_generating_concat_p;

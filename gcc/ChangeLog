@@ -1,3 +1,10 @@
+2003-06-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* dwarf2out.c (add_AT_string): Replace ggc_alloc_string (X,
+	-1) with ggc_strdup.
+	* stmt.c (expand_asm_operands): Likewise.
+	* config/rs6000/rs6000.md (builtin_setjmp_receiver): Likewise.
+
 2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/ip2k/ip2k.c (ip2k_reorg): Use INSN_P instead of its

@@ -4703,7 +4703,7 @@ add_AT_string (die, attr_kind, str)
   if (*slot == NULL)
     *slot = ggc_alloc_cleared (sizeof (struct indirect_string_node));
   node = (struct indirect_string_node *) *slot;
-  node->str = ggc_alloc_string (str, -1);
+  node->str = ggc_strdup (str);
   node->refcount++;
 
   attr->dw_attr_next = NULL;
