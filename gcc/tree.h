@@ -2212,6 +2212,12 @@ struct tree_type GTY(())
 #define DECL_NEEDS_TO_LIVE_IN_MEMORY_INTERNAL(DECL)		\
   DECL_CHECK (DECL)->decl.needs_to_live_in_memory
 
+/* Nonzero for a decl that cgraph has decided should be inlined into
+   at least one call site.  It is not meaningful to look at this
+   directly; always use cgraph_function_possibly_inlined_p.  */
+#define DECL_POSSIBLY_INLINED(DECL) \
+  FUNCTION_DECL_CHECK (DECL)->decl.possibly_inlined
+
 /* Enumerate visibility settings.  */
 
 enum symbol_visibility
@@ -2276,7 +2282,8 @@ struct tree_decl GTY(())
   unsigned lang_flag_7 : 1;
 
   unsigned needs_to_live_in_memory : 1;
-  /* 15 unused bits.  */
+  unsigned possibly_inlined : 1;
+  /* 14 unused bits.  */
 
   union tree_decl_u1 {
     /* In a FUNCTION_DECL for which DECL_BUILT_IN holds, this is

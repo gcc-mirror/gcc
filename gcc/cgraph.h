@@ -151,8 +151,6 @@ extern FILE *cgraph_dump_file;
 
 extern GTY(()) int cgraph_varpool_n_nodes;
 extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
-extern GTY((param_is (union tree_node))) htab_t cgraph_inline_hash;
-
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);

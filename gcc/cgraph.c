@@ -99,11 +99,6 @@ The varpool data structure:
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (struct cgraph_node))) htab_t cgraph_hash;
 
-/* We destructively update the callgraph during inlining, thus we need to
-   keep a separate table with information on whether inlining happened.
-   ??? Do this with a bit in the DECL instead of a hash table.  */
-htab_t cgraph_inline_hash;
-
 /* The linked list of cgraph nodes.  */
 struct cgraph_node *cgraph_nodes;
 
@@ -139,7 +134,8 @@ static int eq_node (const void *, const void *);
 static hashval_t
 hash_node (const void *p)
 {
-  return htab_hash_pointer (((struct cgraph_node *) p)->decl);
+  const struct cgraph_node *n = p;
+  return (hashval_t) DECL_UID (n->decl);
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
@@ -147,7 +143,8 @@ hash_node (const void *p)
 static int
 eq_node (const void *p1, const void *p2)
 {
-  return (void *)((struct cgraph_node *) p1)->decl == p2;
+  const struct cgraph_node *n1 = p1, *n2 = p2;
+  return DECL_UID (n1->decl) == DECL_UID (n2->decl);
 }
 
 /* Allocate new callgraph node and insert it into basic data structures.  */
@@ -171,8 +168,7 @@ cgraph_create_node (void)
 struct cgraph_node *
 cgraph_node (tree decl)
 {
-  struct cgraph_node *node;
-  struct cgraph_node **slot;
+  struct cgraph_node key, *node, **slot;
 
   if (TREE_CODE (decl) != FUNCTION_DECL)
     abort ();
@@ -180,9 +176,10 @@ cgraph_node (tree decl)
   if (!cgraph_hash)
     cgraph_hash = htab_create_ggc (10, hash_node, eq_node, NULL);
 
-  slot = (struct cgraph_node **)
-    htab_find_slot_with_hash (cgraph_hash, decl,
-			      htab_hash_pointer (decl), INSERT);
+  key.decl = decl;
+
+  slot = (struct cgraph_node **) htab_find_slot (cgraph_hash, &key, INSERT);
+
   if (*slot)
     return *slot;
 
@@ -323,9 +320,7 @@ cgraph_remove_node (struct cgraph_node *node)
     cgraph_nodes = node->next;
   if (node->next)
     node->next->previous = node->previous;
-  slot = 
-    htab_find_slot_with_hash (cgraph_hash, node->decl,
-			      htab_hash_pointer (node->decl), NO_INSERT);
+  slot = htab_find_slot (cgraph_hash, node, NO_INSERT);
   if (*slot == node)
     {
       if (node->next_clone)
@@ -526,35 +521,36 @@ dump_cgraph (FILE *f)
 /* Returns a hash code for P.  */
 
 static hashval_t
-cgraph_varpool_hash_node (const void *p)
+hash_varpool_node (const void *p)
 {
-  return htab_hash_pointer (((struct cgraph_varpool_node *) p)->decl);
+  const struct cgraph_varpool_node *n = p;
+  return (hashval_t) DECL_UID (n->decl);
 }
 
 /* Returns nonzero if P1 and P2 are equal.  */
 
 static int
-eq_cgraph_varpool_node (const void *p1, const void *p2)
+eq_varpool_node (const void *p1, const void *p2)
 {
-  return (void *)((struct cgraph_varpool_node *) p1)->decl == p2;
+  const struct cgraph_varpool_node *n1 = p1, *n2 = p2;
+  return DECL_UID (n1->decl) == DECL_UID (n2->decl);
 }
 
 /* Return cgraph_varpool node assigned to DECL.  Create new one when needed.  */
 struct cgraph_varpool_node *
 cgraph_varpool_node (tree decl)
 {
-  struct cgraph_varpool_node *node;
-  struct cgraph_varpool_node **slot;
+  struct cgraph_varpool_node key, *node, **slot;
 
   if (!DECL_P (decl) || TREE_CODE (decl) == FUNCTION_DECL)
     abort ();
 
   if (!cgraph_varpool_hash)
-    cgraph_varpool_hash = htab_create_ggc (10, cgraph_varpool_hash_node,
-				           eq_cgraph_varpool_node, NULL);
+    cgraph_varpool_hash = htab_create_ggc (10, hash_varpool_node,
+				           eq_varpool_node, NULL);
+  key.decl = decl;
   slot = (struct cgraph_varpool_node **)
-    htab_find_slot_with_hash (cgraph_varpool_hash, decl,
-			      htab_hash_pointer (decl), INSERT);
+    htab_find_slot (cgraph_varpool_hash, &key, INSERT);
   if (*slot)
     return *slot;
   node = ggc_alloc_cleared (sizeof (*node));
@@ -657,9 +653,7 @@ cgraph_function_possibly_inlined_p (tree decl)
 {
   if (!cgraph_global_info_ready)
     return (DECL_INLINE (decl) && !flag_really_no_inline);
-  if (!cgraph_inline_hash)
-    return false;
-  return (htab_find_slot (cgraph_inline_hash, decl, NO_INSERT) != NULL);
+  return DECL_POSSIBLY_INLINED (decl);
 }
 
 /* Create clone of E in the node N represented by CALL_EXPR the callgraph.  */

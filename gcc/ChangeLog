@@ -1,3 +1,32 @@
+2004-05-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-common.c (c_common_truthvalue_conversion): Handle
+	UNEQ_EXPR, UNLE_EXPR, UNGE_EXPR, UNLT_EXPR, UNGT_EXPR,
+	ORDERED_EXPR, and UNORDERED_EXPR as comparison operators,
+	i.e. set the type to truthvalue_type_node and return.
+
+2004-05-22  Zack Weinberg  <zack@codesourcery.com>
+
+       * tree.h (struct tree_decl): Add possibly_inlined bit.
+	(DECL_POSSIBLY_INLINED): New accessor macro.
+	* cgraph.h: Remove declaration of cgraph_inline_hash.
+	* cgraph.c: Remove definition of cgraph_inline_hash.
+	(hash_node): Revert to hashing DECL_UID.
+	(eq_node): Take two pointers to cgraph_node structures.
+	Compare DECL_UIDs.
+	(cgraph_remove_node): Pass the node directly to htab_find_slot.
+	(cgraph_varpool_hash_node): Rename hash_varpool_node;
+	hash on DECL_UID.
+	(eq_cgraph_varpool_node): Rename eq_varpool_node; take two
+	pointers to cgraph_varpool_node structures; compare DECL_UIDs.
+	(cgraph_node): Allocate a temporary node on the stack, fill in
+	its DECL field, and pass that to htab_find_slot.
+	(cgraph_varpool_node): Likewise.
+	(cgraph_function_possibly_inlined_p): If global info is ready,
+	return the DECL_POSSIBLY_INLINED bit.
+	* cgraphunit.c (cgraph_mark_inline_edge): Set DECL_POSSIBLY_INLINED
+	instead of mucking with cgraph_inline_hash.
+
 2004-05-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/contrib.texi: Add g77 contributors.
