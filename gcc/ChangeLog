@@ -1,3 +1,8 @@
+2003-04-22  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* function.c (purge_addressof_1): In (mem (addressof (reg))) case
+	for reg notes, if there are no substitutions, just use a SUBREG.
+
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (calls.o): Depend on except.h.
