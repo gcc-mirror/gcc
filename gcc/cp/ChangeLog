@@ -1,3 +1,9 @@
+2003-09-02  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 12161
+	* decl2.c (mark_used): Use ggc_push_context/ggc_pop_context.
+	* tree.c (cp_cannot_inline_tree_fn): Likewise.
+
 2003-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (finish_sizeof, finish_alignof): Remove.
