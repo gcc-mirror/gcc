@@ -713,7 +713,7 @@ not_both_true (d1, d2, toplevel)
 
       /* If the d2->position was lexically lower, swap.  */
       if (cmp > 0)
-	p1 = d1; d1 = d2; d2 = p1;
+	p1 = d1, d1 = d2, d2 = p1;
 
       if (d1->success.first == 0)
 	return 0;
