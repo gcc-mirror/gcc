@@ -409,7 +409,7 @@ make_reorder_chain_1 (bb, prev)
 	{
 	  if (e->flags & EDGE_FALLTHRU)
 	    e_fall = e;
-	  if (! (e->flags & EDGE_EH))
+	  else if (! (e->flags & EDGE_EH))
 	    e_taken = e;
 	}
 

@@ -1,3 +1,8 @@
+2001-07-10  Bernd Schmidt  <bernds@redhat.com>
+
+	* bb-reorder.c (make_reorder_chain_1): Correct branch/fallthru
+	edge detection.
+
 Tue Jul 10 07:27:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case COMPONENT_REF): Don't force using bitfield
