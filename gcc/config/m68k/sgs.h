@@ -385,9 +385,14 @@ do { union { float f; long l;} tem;			\
    size to be inserted into the object code so that disassemblers, for
    example, can identify that it is the start of a switch table. */
 
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE)		\
+  fprintf ((FILE), "\t%s &%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1));
+
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLE)			\
-    fprintf ((FILE), "\t%s &%d\n", SWBEG_ASM_OP, XVECLEN (PATTERN (TABLE), 1)); \
-    ASM_OUTPUT_INTERNAL_LABEL((FILE),(PREFIX),(NUM));
+  do {									\
+    ASM_OUTPUT_BEFORE_CASE_LABEL((FILE),(PREFIX),(NUM),(TABLE));	\
+    ASM_OUTPUT_INTERNAL_LABEL((FILE),(PREFIX),(NUM));			\
+  } while (0)
 
 /* At end of a switch table, define LDnnn iff the symbol LInnn was defined.
    Some SGS assemblers have a bug such that "Lnnn-LInnn-2.b(pc,d0.l*2)"
