@@ -1,3 +1,7 @@
+2004-12-13  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2004-11-29  Bryce McKinlay  <mckinlay@redhat.com>
 
 	PR libgcj/18699
