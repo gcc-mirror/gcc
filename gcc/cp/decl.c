@@ -4762,20 +4762,38 @@ define_label (filename, line, name)
 			&& !(DECL_INITIAL (new_decls) == NULL_TREE
 			     && pod_type_p (TREE_TYPE (new_decls))))
 		      {
-			if (! identified) 
+			/* This is really only important if we're crossing
+			   an initialization.  The POD stuff is just
+			   pedantry; why should it matter if the class
+			   contains a field of pointer to member type?  */
+			int problem = (DECL_INITIAL (new_decls)
+				       || (TYPE_NEEDS_CONSTRUCTING
+					   (TREE_TYPE (new_decls))));
+
+			if (! identified)
 			  {
-			    cp_error ("jump to label `%D'", decl);
-			    error_with_file_and_line (uses->filename_o_goto,
-						      uses->lineno_o_goto,
-						      "  from here");
+			    if (problem)
+			      {
+				cp_error ("jump to label `%D'", decl);
+				error_with_file_and_line
+				  (uses->filename_o_goto,
+				   uses->lineno_o_goto, "  from here");
+			      }
+			    else
+			      {
+				cp_pedwarn ("jump to label `%D'", decl);
+				pedwarn_with_file_and_line
+				  (uses->filename_o_goto,
+				   uses->lineno_o_goto, "  from here");
+			      }
 			    identified = 1;
 			}
-			if (DECL_INITIAL (new_decls)
-			    || TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (new_decls)))
+
+			if (problem)
 			  cp_error_at ("  crosses initialization of `%#D'",
 				       new_decls);
 			else
-			  cp_error_at ("  enters scope of non-POD `%#D'",
+			  cp_pedwarn_at ("  enters scope of non-POD `%#D'",
 					 new_decls);
 		      }
 		    new_decls = TREE_CHAIN (new_decls);

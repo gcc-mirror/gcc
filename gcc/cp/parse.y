@@ -205,6 +205,7 @@ empty_parms ()
 
 %type <ttype> declarator notype_declarator after_type_declarator
 %type <ttype> notype_declarator_intern absdcl_intern
+%type <ttype> after_type_declarator_intern
 %type <ttype> direct_notype_declarator direct_after_type_declarator
 %type <itype> components notype_components
 %type <ttype> component_decl component_decl_1 
@@ -1778,7 +1779,7 @@ declmods:
 		  TREE_STATIC ($$) = TREE_STATIC ($1); }
 	| declmods attributes
 		{ $$ = hash_tree_cons ($2, NULL_TREE, $1); }
-	| attributes
+	| attributes  %prec EMPTY
 		{ $$ = hash_tree_cons ($1, NULL_TREE, NULL_TREE); }
 	;
 
@@ -2731,21 +2732,48 @@ maybe_parmlist:
 	;
 
 /* A declarator that is allowed only after an explicit typespec.  */
+
+after_type_declarator_intern:
+	  after_type_declarator
+	| attributes after_type_declarator
+                {
+		  /* Provide support for '(' attributes '*' declarator ')'
+		     etc */
+		  $$ = decl_tree_cons ($1, $2, NULL_TREE);
+		}
+	;
+
 /* may all be followed by prec '.' */
 after_type_declarator:
-	  '*' nonempty_cv_qualifiers after_type_declarator  %prec UNARY
+	  '*' nonempty_cv_qualifiers after_type_declarator_intern  %prec UNARY
 		{ $$ = make_pointer_declarator ($2.t, $3); }
-	| '&' nonempty_cv_qualifiers after_type_declarator  %prec UNARY
+	| '&' nonempty_cv_qualifiers after_type_declarator_intern  %prec UNARY
 		{ $$ = make_reference_declarator ($2.t, $3); }
-	| '*' after_type_declarator  %prec UNARY
+	| '*' after_type_declarator_intern  %prec UNARY
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
-	| '&' after_type_declarator  %prec UNARY
+	| '&' after_type_declarator_intern  %prec UNARY
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
-	| ptr_to_mem cv_qualifiers after_type_declarator
+	| ptr_to_mem cv_qualifiers after_type_declarator_intern
 		{ tree arg = make_pointer_declarator ($2, $3);
 		  $$ = build_parse_node (SCOPE_REF, $1, arg);
 		}
 	| direct_after_type_declarator
+	;
+
+direct_after_type_declarator:
+	  direct_after_type_declarator maybe_parmlist cv_qualifiers exception_specification_opt  %prec '.'
+		{ $$ = make_call_declarator ($$, $2, $3, $4); }
+	| direct_after_type_declarator '[' nonmomentary_expr ']'
+		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
+	| direct_after_type_declarator '[' ']'
+		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
+	| '(' after_type_declarator_intern ')'
+		{ $$ = $2; }
+	| nested_name_specifier type_name  %prec EMPTY
+		{ push_nested_class ($1, 3);
+		  $$ = build_parse_node (SCOPE_REF, $$, $2);
+		  TREE_COMPLEXITY ($$) = current_class_depth; }
+	| type_name  %prec EMPTY
 	;
 
 nonnested_type:
@@ -2779,22 +2807,6 @@ complete_type_name:
 nested_type:
 	  nested_name_specifier type_name  %prec EMPTY
 		{ $$ = get_type_decl ($2); }
-	;
-
-direct_after_type_declarator:
-	  direct_after_type_declarator maybe_parmlist cv_qualifiers exception_specification_opt  %prec '.'
-		{ $$ = make_call_declarator ($$, $2, $3, $4); }
-	| direct_after_type_declarator '[' nonmomentary_expr ']'
-		{ $$ = build_parse_node (ARRAY_REF, $$, $3); }
-	| direct_after_type_declarator '[' ']'
-		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
-	| '(' after_type_declarator ')'
-		{ $$ = $2; }
-	| nested_name_specifier type_name  %prec EMPTY
-		{ push_nested_class ($1, 3);
-		  $$ = build_parse_node (SCOPE_REF, $$, $2);
-		  TREE_COMPLEXITY ($$) = current_class_depth; }
-	| type_name  %prec EMPTY
 	;
 
 /* A declarator allowed whether or not there has been

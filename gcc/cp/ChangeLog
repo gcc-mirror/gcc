@@ -1,3 +1,15 @@
+1999-04-15  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (after_type_declarator_intern): New nonterminal.
+	(after_type_declarator): Use it.
+	(direct_after_type_declarator): Likewise.  Move above 
+	nonnested_type to fix reduce/reduce conflict resolution.
+	(declmods): Reducing from just 'attributes' has EMPTY precedence.
+	* Makefile.in (CONFLICTS): Update.
+
+	* decl.c (define_label): Downgrade error for jumping over a
+	non-POD decl to pedwarn.
+
 1999-04-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (popclass): Change declaration.
