@@ -1,3 +1,9 @@
+2002-10-09  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/7353
+	* g++.dg/ext/typedef-init.C: New test.
+	* gcc.dg/typedef-init.c: New test.
+
 2002-10-06  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gcc.dg/cpp/_Pragma4.c: New test.

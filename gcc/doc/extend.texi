@@ -385,7 +385,6 @@ extensions, accepted by GCC in C89 mode and in C++.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
 * Nested Functions::    As in Algol and Pascal, lexical scoping of functions.
 * Constructing Calls::	Dispatching a call to another function.
-* Naming Types::        Giving a name to the type of some expression.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Lvalues::             Using @samp{?:}, @samp{,} and casts in lvalues.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
@@ -495,8 +494,7 @@ the value of an enumeration constant, the width of a bit-field, or
 the initial value of a static variable.
 
 If you don't know the type of the operand, you can still do this, but you
-must use @code{typeof} (@pxref{Typeof}) or type naming (@pxref{Naming
-Types}).
+must use @code{typeof} (@pxref{Typeof}).
 
 Statement expressions are not supported fully in G++, and their fate
 there is unclear.  (It is possible that they will become fully supported
@@ -845,29 +843,6 @@ the containing function.  You should specify, for @var{result}, a value
 returned by @code{__builtin_apply}.
 @end deftypefn
 
-@node Naming Types
-@section Naming an Expression's Type
-@cindex naming types
-
-You can give a name to the type of an expression using a @code{typedef}
-declaration with an initializer.  Here is how to define @var{name} as a
-type name for the type of @var{exp}:
-
-@example
-typedef @var{name} = @var{exp};
-@end example
-
-This is useful in conjunction with the statements-within-expressions
-feature.  Here is how the two together can be used to define a safe
-``maximum'' macro that operates on any arithmetic type:
-
-@example
-#define max(a,b) \
-  (@{typedef _ta = (a), _tb = (b);  \
-    _ta _a = (a); _tb _b = (b);     \
-    _a > _b ? _a : _b; @})
-@end example
-
 @cindex underscores in variables in macros
 @cindex @samp{_} in variables in macros
 @cindex local variables in macros
@@ -919,6 +894,21 @@ A @code{typeof}-construct can be used anywhere a typedef name could be
 used.  For example, you can use it in a declaration, in a cast, or inside
 of @code{sizeof} or @code{typeof}.
 
+@code{typeof} is often useful in conjunction with the
+statements-within-expressions feature.  Here is how the two together can
+be used to define a safe ``maximum'' macro that operates on any
+arithmetic type and evaluates each of its arguments exactly once:
+
+@example
+#define max(a,b) \
+  (@{ typeof (a) _a = (a); \
+      typeof (b) _b = (b); \
+    _a > _b ? _a : _b; @})
+@end example
+
+@noindent
+Some more examples of the use of @code{typeof}:
+
 @itemize @bullet
 @item
 This declares @code{y} with the type of what @code{x} points to.
@@ -967,6 +957,26 @@ array (pointer (char), 4) y;
 Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
 pointers to @code{char}.
 @end itemize
+
+@emph{Compatibility Note:} In addition to @code{typeof}, GCC 2 supported
+a more limited extension which permitted one to write
+
+@example
+typedef @var{T} = @var{expr};
+@end example
+
+@noindent
+with the effect of declaring @var{T} to have the type of the expression
+@var{expr}.  This extension does not work with GCC 3 (versions between
+3.0 and 3.2 will crash; 3.2.1 and later give an error).  Code which
+relies on it should be rewritten to use @code{typeof}:
+
+@example
+typedef typeof(@var{expr}) @var{T};
+@end example
+
+@noindent
+This will work with all versions of GCC@.
 
 @node Lvalues
 @section Generalized Lvalues
@@ -6170,12 +6180,12 @@ the minimum value of variables @var{i} and @var{j}.
 
 However, side effects in @code{X} or @code{Y} may cause unintended
 behavior.  For example, @code{MIN (i++, j++)} will fail, incrementing
-the smaller counter twice.  A GNU C extension allows you to write safe
-macros that avoid this kind of problem (@pxref{Naming Types,,Naming an
-Expression's Type}).  However, writing @code{MIN} and @code{MAX} as
-macros also forces you to use function-call notation for a
-fundamental arithmetic operation.  Using GNU C++ extensions, you can
-write @w{@samp{int min = i <? j;}} instead.
+the smaller counter twice.  The GNU C @code{typeof} extension allows you
+to write safe macros that avoid this kind of problem (@pxref{Typeof}).
+However, writing @code{MIN} and @code{MAX} as macros also forces you to
+use function-call notation for a fundamental arithmetic operation.
+Using GNU C++ extensions, you can write @w{@samp{int min = i <? j;}}
+instead.
 
 Since @code{<?} and @code{>?} are built into the compiler, they properly
 handle expressions with side-effects;  @w{@samp{int min = i++ <? j++;}}

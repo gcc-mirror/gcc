@@ -1,3 +1,16 @@
+2002-10-09  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/7353
+	* c-decl.c (start_decl): Unconditionally issue error for
+	'typedef foo = bar'.
+	(finish_decl): Remove special case for TYPE_DECL with initializer.
+
+	* doc/extend.texi: Delete "Naming Types" section.  Change all
+	cross-references to that section to refer to "Typeof" instead.
+	Add the useful safe-max()-macro example from "Naming Types" to
+	"Typeof", rewritten using that extension.  Add some compatibility
+	notes to "Typeof."
+
 2002-10-02  Richard Henderson  <rth@redhat.com>
 
 	PR opt/7124
@@ -19,7 +32,7 @@ Wed Oct  9 19:09:13 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	PR doc/7484
 	* doc/invoke.texi (Option Summary): List
 	-Wmissing-declarations as a C only option.
-	
+
 2002-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/t-linux64 (MULTILIB_OPTIONS): Remove
@@ -189,13 +202,13 @@ Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 	PR middle-end/7151
 	* config/sparc/sparc.md (movdi_insn_sp32_v9): Accept 'e' regs.
 	(movdi reg/reg split): Match only on sparc32, and v9 when int regs.
-	
+
 2002-10-01  David S. Miller  <davem@redhat.com>
 	    Jan Hubicka <jh@suse.cz>
-	
+
 	* reload1.c (gen_reload:SECONDARY_MEMORY_NEEDED): Handle SUBREG.
 	* reload.c (push_reload:SECONDARY_MEMORY_NEEDED): Likewise.
-	
+
 2002-09-30  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (REG_CLASS_NAMES, REG_CLASS_CONTENTS):

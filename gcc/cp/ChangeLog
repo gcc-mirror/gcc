@@ -1,3 +1,11 @@
+2002-10-09  Zack Weinberg  <zack@codesourcery.com>
+
+	PR c/7353
+	* decl.c (start_decl): Unconditionally issue error for
+	'typedef foo = bar'.
+	(cp_finish_decl): Remove special case for TYPE_DECL with initializer.
+	(grokdeclarator): Remove redundant error for 'typedef foo = bar'.
+
 2002-10-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7754
@@ -379,7 +387,7 @@
 2002-04-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5719
-	* decl.c (grok_op_properties): Assignment ops don't have to return 
+	* decl.c (grok_op_properties): Assignment ops don't have to return
 	by value. operator% should.
 
 2002-04-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
@@ -463,7 +471,7 @@
 	(finish_init_stmts): Set STMT_EXPR_NO_SCOPE.
 	* semantics.c (begin_gobal_stmt_expr): Adjust call to
 	expand_start_stmt_expr.
-	
+
 2002-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (register_dtor_fn): Pass the address of dso_handle, not
@@ -492,11 +500,11 @@
 
 	* typeck.c (type_after_usual_arithmetic_conversions):
 	If two types have the same variant, return immediately.
-	When two floating-point operands are the same precision: 
+	When two floating-point operands are the same precision:
 	  convert to float if one of the operands is float;
 	  if neither operand is one of the standard types, return the type
 	  of the first operand.
- 
+
 2002-04-12  Richard Sandiford  <rsandifo@redhat.com>
 
 	* decl.c (duplicate_decls): Don't try to unify an implicit typedef
@@ -554,7 +562,7 @@
 	set before checking it.
 
 	PR c++/6179
-	* method.c (implicitly_declare_fn): Pass unqualified type to 
+	* method.c (implicitly_declare_fn): Pass unqualified type to
 	synthesize_exception_spec.
 
 2002-04-03  Jason Merrill  <jason@redhat.com>
@@ -619,7 +627,7 @@
 	PR c++/4884
 	* call.c (build_op_delete_call): Allow for the fact the placement
 	may be a COMPOUND_EXPR.
-	
+
 2002-03-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5682
@@ -673,7 +681,7 @@
 
 2002-03-18  Ashif Harji  <asharji@uwaterloo.ca>
 
-	* lang-specs.h (compiler default_compilers): Add   
+	* lang-specs.h (compiler default_compilers): Add
 	-no-integrated-cpp flag to invoke an external cpp.
 
 2002-03-18  Jason Merrill  <jason@redhat.com>
@@ -790,7 +798,7 @@
 	with pointer to member conversions.
 
 2002-03-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
- 
+
 	* cp-tree.h (CLEAR_BINFO_MARKED): Make both parts of
 	conditional return void.
 
@@ -824,7 +832,7 @@
 	* decl.c (finish_function): Only warn about missing return
 	statement with -Wreturn-type.
 
-2002-02-24 Craig Rodrigues  <rodrigc@gcc.gnu.org> 
+2002-02-24 Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR c++/4093
 	* cp-tree.h (SET_BINFO_MARKED): Cast false part of condition
@@ -878,7 +886,7 @@
 
 2002-02-19  Jason Merrill  <jason@redhat.com>
 
-	ABI change: Mangle `void (A::*)() const' as 
+	ABI change: Mangle `void (A::*)() const' as
 	M1AKFvvE, not MK1AFvvE.
 	* mangle.c (write_function_type): Write cv-quals for member
 	function type here.
@@ -953,14 +961,14 @@
 	(coerce_template_template_parms, convert_template_argument,
 	coerce_template_parms, maybe_get_template_decl_from_type_decl,
 	lookup_template_class, tsubst_friend_function, tsubst_friend_class,
-	instantiate_class_template, tsubst_template_arg_vector, 
-	tsubst_template_parms, tsubst_aggr_type, tsubst_default_argument, 
+	instantiate_class_template, tsubst_template_arg_vector,
+	tsubst_template_parms, tsubst_aggr_type, tsubst_default_argument,
 	tsubst_decl, tsubst_arg_types, tsubst_function_type,
-	tsubst_call_declarator_parms, tsubst, tsubst_copy, tsubst_expr, 
+	tsubst_call_declarator_parms, tsubst, tsubst_copy, tsubst_expr,
 	instantiate_template, fn_type_unification,
-	resolve_overloaded_unification, verify_class_unification, 
-	unify, get_bindings_real, do_type_instantiation, 
-	regenerate_decl_from_template, instantiate_decl, 
+	resolve_overloaded_unification, verify_class_unification,
+	unify, get_bindings_real, do_type_instantiation,
+	regenerate_decl_from_template, instantiate_decl,
 	tsubst_initializer_list, tsubst_enum,
 	get_mostly_instantiated_function_type,
 	invalid_nontype_parm_type_p): Likewise.
@@ -1021,7 +1029,7 @@
 2002-02-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/4872
-	* decl.c (finish_function): Warn about a non-void function with 
+	* decl.c (finish_function): Warn about a non-void function with
 	no return statement and no abnormal exit.
 	* cp-tree.h (struct cp_language_function): Add returns_abnormally.
 	(current_function_returns_abnormally): New macro.
