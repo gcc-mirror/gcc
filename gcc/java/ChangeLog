@@ -2,6 +2,14 @@
 
 	* expr.c (build_java_arraystore_check): Fix formatting.
 
+2002-02-28  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	Fix for PR java/5758, java/5632:
+	* jcf-parse.c (load_class): Renamed local variable, consider `.' an
+	inner-class separator too.
+	* parse.y (do_resolve_class): New local `decl_result.'
+	Progressively build a name for what can have been loaded.
+
 2002-02-28  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* expr.c (java_array_data_offset): Removed function.
