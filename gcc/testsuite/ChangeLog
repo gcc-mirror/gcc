@@ -1,3 +1,7 @@
+2003-05-31  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.dg/ffree-form-2.f: XFAIL removed, because fixed.
+
 2003-05-31  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/fwrapv-1.c: New test case.
