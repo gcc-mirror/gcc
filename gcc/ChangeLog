@@ -1,3 +1,9 @@
+1999-12-27  Ian Lance Taylor  <ian@zembu.com>
+
+	* configure.in: Avoid [[ by using test and changequote.  Add
+	changequote required by 1999-12-14 change.
+	* configure: Rebuild.
+
 1999-12-27  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/mips/mips.h: Fix typo from 12/17/99 libgcc2 fix.

@@ -247,7 +247,7 @@ fi)
 # Enable Multibyte Characters for C/C++
 AC_ARG_ENABLE(c-mbchar,
 [  --enable-c-mbchar       Enable multibyte characters for C and C++.],
-if [[[ x$enable_c_mbchar != xno ]]]; then
+if test x$enable_c_mbchar != xno; then
   extra_c_flags="${extra_c_flags} -DMULTIBYTE_CHARS=1"
 fi)
   
@@ -286,7 +286,7 @@ esac
 AC_ARG_ENABLE(objc-gc,
 [  --enable-objc-gc	  enable the use of Boehm's garbage collector with
 			  the GNU Objective-C runtime.],
-if [[[ x$enable_objc_gc = xno ]]]; then
+if test x$enable_objc_gc = xno; then
 	objc_boehm_gc=''
 else
 	objc_boehm_gc=1
@@ -1042,14 +1042,14 @@ changequote([,])dnl
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		tmake_file=pa/t-pa
-		if [[ x$gas = xyes ]]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-#		if [[ x$enable_threads = x ]]; then
+#		if test x$enable_threads = x; then
 #		    enable_threads=$have_pthread_h
 #		fi
-# 		if [[ x$enable_threads = xyes ]]; then
+# 		if test x$enable_threads = xyes; then
 #			thread_file='dce'
 #			tmake_file="${tmake_file} pa/t-dce-thr"
 #		fi
@@ -1060,14 +1060,14 @@ changequote([,])dnl
 		tm_file="${tm_file} pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
-		if [[ x$gas = xyes ]]
+		if test x$gas = xyes
 		then
 			tm_file="${tm_file} pa/pa-gas.h"
 		fi
-#		if [[ x$enable_threads = x ]]; then
+#		if test x$enable_threads = x; then
 #		    enable_threads=$have_pthread_h
 #		fi
-# 		if [[ x$enable_threads = xyes ]]; then
+# 		if test x$enable_threads = xyes; then
 #			thread_file='dce'
 #			tmake_file="${tmake_file} pa/t-dce-thr"
 #		fi
@@ -1159,7 +1159,7 @@ changequote([,])dnl
 		gnu_ld=yes
 		gas=yes
 		elf=yes
-		if [[ x$enable_threads = xyes ]]; then
+		if test x$enable_threads = xyes; then
 			thread_file='posix'
 		fi
 		;;
@@ -3606,7 +3606,9 @@ changequote([,])dnl
 		;;
 	alpha*-*-*)
 		case $machine in
+changequote(,)dnl
 			alphaev6[78]*)
+changequote([,])dnl
 				target_cpu_default2="MASK_CPU_EV6|MASK_BWX|MASK_MAX|MASK_FIX|MASK_CIX"
 				;;
 			alphaev6*)
