@@ -6237,7 +6237,18 @@ from the machine description file `md'.  */\n\n");
     for (attr = attrs[i]; attr; attr = attr->next)
       {
 	if (! attr->is_special && ! attr->is_const)
-	  write_attr_get (attr);
+	  {
+	    int insn_alts_p;
+
+	    insn_alts_p
+	      = (attr->name [0] == '*'
+		 && strcmp (&attr->name [1], INSN_ALTS_FUNC_NAME) == 0);
+	    if (insn_alts_p)
+	      printf ("\n#if AUTOMATON_ALTS\n");
+	    write_attr_get (attr);
+	    if (insn_alts_p)
+	      printf ("#endif\n\n");
+	  }
       }
 
   /* Write out delay eligibility information, if DEFINE_DELAY present.

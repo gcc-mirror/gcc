@@ -1,3 +1,14 @@
+2003-01-20  Vladimir Makarov  <vmakarov@redhat.com>
+
+        * genattrtab.h (INSN_ALTS_FUNC_NAME): Move it from genautomata.c.
+	
+	* genautomata.c (INSN_ALTS_FUNC_NAME): Move it into genattrtab.h.
+
+	* genattr.c (main): Output default definition of AUTOMATON_ALTS.
+	Wrap up definition of `insn_alts'.
+
+	* genattrtab.c (main): Wrap up `insn_alts'.
+
 2003-01-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* collect2.c (ldgetname): Check HAVE_DECL_LDGETNAME before
