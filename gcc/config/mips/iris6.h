@@ -204,6 +204,10 @@ Boston, MA 02111-1307, USA.  */
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY 0
 
+/* A linker error can empirically be avoided by removing duplicate
+   library search directories.  */
+#define LINK_ELIMINATE_DUPLICATE_LDIRECTORIES 1
+
 #define POPSECTION_ASM_OP	"\t.popsection"
 
 #define DEBUG_INFO_SECTION	".debug_info,0x7000001e,0,0,1"

@@ -325,6 +325,12 @@ define this macro only if you need to completely redefine the command
 line for invoking the linker and there is no other way to accomplish
 the effect you need.
 
+@findex LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
+@item LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
+A nonzero value causes collect2 to remove duplicate -L<directory> search
+directories from linking commands.  Do not give it a nonzero value if
+removing duplicate search directories changes the linker's semantics.
+
 @findex MULTILIB_DEFAULTS
 @item MULTILIB_DEFAULTS
 Define this macro as a C expression for the initializer of an array of

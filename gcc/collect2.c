@@ -292,6 +292,9 @@ static void scan_prog_file	PARAMS ((const char *, enum pass));
 #ifdef SCAN_LIBRARIES
 static void scan_libraries	PARAMS ((const char *));
 #endif
+#if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
+static int is_in_args		PARAMS ((const char *, const char **, const char **));
+#endif
 #ifdef COLLECT_EXPORT_LIST
 static int is_in_list		PARAMS ((const char *, struct id *));
 static void write_aix_file	PARAMS ((FILE *, struct id *));
@@ -1177,6 +1180,13 @@ main (argc, argv)
        	    case 'L':
 	      add_prefix (&cmdline_lib_dirs, arg+2);
 	      break;
+#else 
+#if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
+	    case 'L':
+	      if (is_in_args (arg, (const char **) ld1_argv, ld1-1))
+		--ld1;
+	      break;
+#endif /* LINK_ELIMINATE_DUPLICATE_LDIRECTORIES */
 #endif
 
 	    case 'o':
@@ -1755,6 +1765,24 @@ write_list (stream, prefix, list)
       list = list->next;
     }
 }
+
+#if LINK_ELIMINATE_DUPLICATE_LDIRECTORIES
+/* Given a STRING, return nonzero if it occurs in the list in range
+   [ARGS_BEGIN,ARGS_END).  */
+
+static int
+is_in_args (string, args_begin, args_end)
+     const char *string;
+     const char **args_begin;
+     const char **args_end;
+{
+  const char **args_pointer;
+  for (args_pointer = args_begin; args_pointer != args_end; ++args_pointer)
+    if (strcmp (string, *args_pointer) == 0)
+      return 1;
+  return 0;
+}
+#endif /* LINK_ELIMINATE_DUPLICATE_LDIRECTORIES */
 
 #ifdef COLLECT_EXPORT_LIST
 /* This function is really used only on AIX, but may be useful.  */
