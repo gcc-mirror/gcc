@@ -1,3 +1,10 @@
+2003-07-26  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* Makefile.in (ifcvt.o): Depend on target.h
+	* ifcvt.c (target.h): Include.
+	(if_convert): Don't call mark_loop_exit_edges if we can't
+	modify jumps.
+
 2003-07-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Testing): Adjust required versions of DejaGnu.

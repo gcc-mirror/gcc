@@ -39,6 +39,7 @@
 #include "toplev.h"
 #include "tm_p.h"
 #include "cfgloop.h"
+#include "target.h"
 
 
 #ifndef HAVE_conditional_execution
@@ -3112,7 +3113,8 @@ if_convert (int x_life_data_ok)
   num_removed_blocks = 0;
   life_data_ok = (x_life_data_ok != 0);
 
-  mark_loop_exit_edges ();
+  if (! (* targetm.cannot_modify_jumps_p) ())
+    mark_loop_exit_edges ();
 
   /* Free up basic_block_for_insn so that we don't have to keep it
      up to date, either here or in merge_blocks.  */
