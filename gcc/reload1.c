@@ -9962,6 +9962,24 @@ static enum machine_mode reg_mode[FIRST_PSEUDO_REGISTER];
    reload_cse_move2add and move2add_note_store.  */
 static int move2add_luid;
 
+/* Generate a CONST_INT and force it in the range of MODE.  */
+static rtx
+gen_mode_int (mode, value)
+     enum machine_mode mode;
+     HOST_WIDE_INT value;
+{
+  HOST_WIDE_INT cval = value & GET_MODE_MASK (mode);
+  int width = GET_MODE_BITSIZE (mode);
+
+  /* If MODE is narrower than HOST_WIDE_INT and CVAL is a negative number,
+     sign extend it.  */
+  if (width > 0 && width < HOST_BITS_PER_WIDE_INT
+      && (cval & ((HOST_WIDE_INT) 1 << (width - 1))) != 0)
+    cval |= (HOST_WIDE_INT) -1 << width;
+
+  return GEN_INT (cval);
+}
+
 static void
 reload_cse_move2add (first)
      rtx first;
@@ -10013,8 +10031,9 @@ reload_cse_move2add (first)
 	      if (GET_CODE (src) == CONST_INT && reg_base_reg[regno] < 0)
 		{
 		  int success = 0;
-		  rtx new_src = GEN_INT (INTVAL (src)
-					 - INTVAL (reg_offset[regno]));
+		  rtx new_src
+		    = gen_mode_int (GET_MODE (reg),
+				    INTVAL (src) - INTVAL (reg_offset[regno]));
 		  /* (set (reg) (plus (reg) (const_int 0))) is not canonical;
 		     use (set (reg) (reg)) instead.
 		     We don't delete this insn, nor do we convert it into a
@@ -10059,8 +10078,10 @@ reload_cse_move2add (first)
 		      && GET_CODE (XEXP (SET_SRC (set), 1)) == CONST_INT)
 		    {
 		      rtx src3 = XEXP (SET_SRC (set), 1);
-		      rtx new_src = GEN_INT (INTVAL (src3)
-					     - INTVAL (reg_offset[regno]));
+		      rtx new_src
+			= gen_mode_int (GET_MODE (reg),
+					INTVAL (src3)
+					- INTVAL (reg_offset[regno]));
 		      int success = 0;
 
 		      if (new_src == const0_rtx)
