@@ -62,6 +62,10 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "frame.h"
 
+#ifndef CRT_CALL_STATIC_FUNCTION
+# define CRT_CALL_STATIC_FUNCTION(func) func ()
+#endif
+
 /* We do not want to add the weak attribute to the declarations of these
    routines in frame.h because that will cause the definition of these
    symbols to be weak as well.
@@ -213,7 +217,7 @@ static void __attribute__ ((__unused__))
 fini_dummy (void)
 {
   asm (FINI_SECTION_ASM_OP);
-  __do_global_dtors_aux ();
+  CRT_CALL_STATIC_FUNCTION (__do_global_dtors_aux);
 #ifdef FORCE_FINI_SECTION_ALIGN
   FORCE_FINI_SECTION_ALIGN;
 #endif
@@ -237,7 +241,7 @@ static void __attribute__ ((__unused__))
 init_dummy (void)
 {
   asm (INIT_SECTION_ASM_OP);
-  frame_dummy ();
+  CRT_CALL_STATIC_FUNCTION (frame_dummy);
 #ifdef FORCE_INIT_SECTION_ALIGN
   FORCE_INIT_SECTION_ALIGN;
 #endif
@@ -402,7 +406,7 @@ static void __attribute__ ((__unused__))
 init_dummy (void)
 {
   asm (INIT_SECTION_ASM_OP);
-  __do_global_ctors_aux ();
+  CRT_CALL_STATIC_FUNCTION (__do_global_ctors_aux);
 #ifdef FORCE_INIT_SECTION_ALIGN
   FORCE_INIT_SECTION_ALIGN;
 #endif
