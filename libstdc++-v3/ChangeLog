@@ -1,3 +1,14 @@
+2004-11-19  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_list.h (list::back, list::back const):
+	Don't decrement temporary.
+
+2004-11-19  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_deque.h (deque::front, deque::front const,
+	deque::back, deque::back const): Slightly tweak for stylistic
+	consistency.
+
 2004-11-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/26_numerics/numeric/sum_diff.cc: Use VERIFY.
