@@ -1,3 +1,9 @@
+2004-11-17  Ramana Radhakrishnan  <ramana.radhakrishnan@codito.com>
+
+	PR target/18263
+	* config/arc/lib1funcs.asm (___umulsidi3): Change use of cmp to the
+	equivalent on the A4.
+
 2004-11-16  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/18498
