@@ -1,3 +1,7 @@
+2003-05-03  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.h: Remove unecessary casts.  Misc cleanups.
+
 2003-05-03  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/10604
