@@ -1,7 +1,7 @@
 #! /bin/sh
 # Install modified versions of certain ANSI-incompatible
 # native System V Release 4 system include files.
-# Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1996, 1997, 1998 Free Software Foundation, Inc.
 # Contributed by Ron Guilmette (rfg@monkeys.com).
 #
 # This file is part of GNU CC.

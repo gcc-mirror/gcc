@@ -6,7 +6,7 @@
 #   Based on fixinc.svr4 script by Ron Guilmette (rfg@ncd.com) (SCO
 #   modifications by Ian Lance Taylor (ian@airs.com)).
 #
-# Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 #
 # This file is part of GNU CC.
 # 
