@@ -8,6 +8,8 @@
 #include "ansidecl.h"
 #include "libiberty.h"
 
+#include <sys/types.h> /* For size_t. */
+
 PTR
 xmemdup (input, copy_size, alloc_size)
   const PTR input;

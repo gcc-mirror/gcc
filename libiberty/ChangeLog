@@ -1,3 +1,7 @@
+Wed Sep  8 20:03:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* xmemdup.c: Include sys/types.h.
+
 1999-09-07  Jeff Garzik  <jgarzik@pobox.com>
 
 	* xmemdup.c: New xmemdup function.
