@@ -5376,7 +5376,8 @@ based on the existence of the first.  Here is a small example of its usage:
 
 @smallexample 
 *startfile:
-crt0%O%s %:if-exists(crti%O%s) %:if-exists-else(crtbeginT%O%s crtbegin%O%s)
+crt0%O%s %:if-exists(crti%O%s) \
+%:if-exists-else(crtbeginT%O%s crtbegin%O%s)
 @end smallexample
 @end table 
 
@@ -9737,74 +9738,56 @@ processors.
 @table @gcctabopt
 
 @item -mhardlit
-@itemx -mhardlit
 @itemx -mno-hardlit
-@opindex mhardlit
 @opindex mhardlit
 @opindex mno-hardlit
 Inline constants into the code stream if it can be done in two
 instructions or less.
 
 @item -mdiv
-@itemx -mdiv
 @itemx -mno-div
-@opindex mdiv
 @opindex mdiv
 @opindex mno-div
 Use the divide instruction.  (Enabled by default).
 
 @item -mrelax-immediate
-@itemx -mrelax-immediate
 @itemx -mno-relax-immediate
-@opindex mrelax-immediate
 @opindex mrelax-immediate
 @opindex mno-relax-immediate
 Allow arbitrary sized immediates in bit operations.
 
 @item -mwide-bitfields
-@itemx -mwide-bitfields
 @itemx -mno-wide-bitfields
-@opindex mwide-bitfields
 @opindex mwide-bitfields
 @opindex mno-wide-bitfields
 Always treat bit-fields as int-sized.
 
 @item -m4byte-functions
-@itemx -m4byte-functions
 @itemx -mno-4byte-functions
-@opindex m4byte-functions
 @opindex m4byte-functions
 @opindex mno-4byte-functions
 Force all functions to be aligned to a four byte boundary.
 
 @item -mcallgraph-data
-@itemx -mcallgraph-data
 @itemx -mno-callgraph-data
-@opindex mcallgraph-data
 @opindex mcallgraph-data
 @opindex mno-callgraph-data
 Emit callgraph information.
 
 @item -mslow-bytes
-@itemx -mslow-bytes
 @itemx -mno-slow-bytes
-@opindex mslow-bytes
 @opindex mslow-bytes
 @opindex mno-slow-bytes
 Prefer word access when reading byte quantities.
 
 @item -mlittle-endian
-@itemx -mlittle-endian
 @itemx -mbig-endian
-@opindex mlittle-endian
 @opindex mlittle-endian
 @opindex mbig-endian
 Generate code for a little endian target.
 
 @item -m210
-@itemx -m210
 @itemx -m340
-@opindex m210
 @opindex m210
 @opindex m340
 Generate code for the 210 processor.
