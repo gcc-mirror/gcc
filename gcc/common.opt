@@ -182,12 +182,17 @@ dumpbase
 Common Separate
 -dumpbase <file>	Set the file basename to be used for dumps
 
-fPIC
-Common Report Var(flag_pic,2)
-
-fPIE
-Common Report Var(flag_pie,2)
-
+; The version of the C++ ABI in use.  The following values are allowed:
+;
+; 0: The version of the ABI believed most conformant with the C++ ABI
+;    specification.  This ABI may change as bugs are discovered and fixed.
+;    Therefore, 0 will not necessarily indicate the same ABI in different
+;    versions of G++.
+;
+; 1: The version of the ABI first used in G++ 3.2.
+;
+; Additional positive integers will be assigned as new versions of
+; the ABI become the default version of the ABI.
 fabi-version=
 Common Joined UInteger Var(flag_abi_version) Init(2)
 
@@ -219,6 +224,13 @@ Align the start of loops
 falign-loops=
 Common RejectNegative Joined UInteger
 
+; This flag is only tested if alias checking is enabled.
+; 0 if pointer arguments may alias each other.  True in C.
+; 1 if pointer arguments may not alias each other but may alias
+;   global variables.
+; 2 if pointer arguments may not alias each other and may not
+;   alias global variables.  True in Fortran.
+;   The value is ignored if flag_alias_check is 0.
 fargument-alias
 Common Report Var(flag_argument_noalias,0)
 Specify that arguments may alias each other and globals
@@ -235,6 +247,10 @@ fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables)
 Generate unwind tables that are exact at each instruction boundary
 
+; -fcheck-bounds causes gcc to generate array bounds checks.
+; For C, C++ and ObjC: defaults off.
+; For Java: defaults to on.
+; For Fortran: defaults to off.
 fbounds-check
 Common Report Var(flag_bounds_check)
 Generate code to check bounds before indexing arrays
@@ -267,6 +283,9 @@ fcall-used-
 Common Joined RejectNegative
 -fcall-used-<register>	Mark <register> as being corrupted by function calls
 
+; Nonzero for -fcaller-saves: allocate values in regs that need to
+; be saved across function calls, if that produces overall better code.
+; Optional now, so people can test it.
 fcaller-saves
 Common Report Var(flag_caller_saves)
 Save registers around function calls
@@ -295,6 +314,8 @@ fdata-sections
 Common Report Var(flag_data_sections)
 Place data items into their own section
 
+; Nonzero for -fdefer-pop: don't pop args after each function call
+; instead save them up to pop many calls' args with one insns.
 fdefer-pop
 Common Report Var(flag_defer_pop)
 Defer popping functions args from stack until later
@@ -352,16 +373,23 @@ Common Joined RejectNegative
 
 ffloat-store
 Common Report Var(flag_float_store)
-Do not store floats in registers
+Don't allocate floats and doubles in extended-precision registers
 
+; Nonzero for -fforce-addr: load memory address into a register before
+; reference to memory.  This makes better cse but slower compilation.
 fforce-addr
 Common Report Var(flag_force_addr)
 Copy memory address constants into registers before use
 
+; Nonzero for -fforce-mem: load memory value into a register
+; before arithmetic on it.  This makes better cse but slower compilation.
 fforce-mem
 Common Report Var(flag_force_mem)
 Copy memory operands into registers before use
 
+; Nonzero means don't put addresses of constant functions in registers.
+; Used for compiling the Unix kernel, where strange substitutions are
+; done on the assembly output.
 ffunction-cse
 Common Report Var(flag_no_function_cse,0)
 Allow function addresses to be held in registers
@@ -396,6 +424,10 @@ fguess-branch-probability
 Common Report Var(flag_guess_branch_prob)
 Enable guessing of branch probabilities
 
+; Nonzero means ignore `#ident' directives.  0 means handle them.
+; Generate position-independent code for executables if possible
+; On SVR4 targets, it also controls whether or not to emit a
+; string identifying the compiler.
 fident
 Common Report Var(flag_no_ident,0)
 Process #ident directives
@@ -408,10 +440,19 @@ fif-conversion2
 Common Report Var(flag_if_conversion2)
 Perform conversion of conditional jumps to conditional execution
 
+; -finhibit-size-directive inhibits output of .size for ELF.
+; This is used only for compiling crtstuff.c,
+; and it may be extended to other effects
+; needed for crtstuff.c on other systems.
 finhibit-size-directive
 Common Report Var(flag_inhibit_size_directive)
 Do not generate .size directives
 
+; Nonzero means that functions declared `inline' will be treated
+; as `static'.  Prevents generation of zillions of copies of unused
+; static inline functions; instead, `inlines' are written out
+; only when actually used.  Used in conjunction with -g.  Also
+; does the right thing with #pragma interface.
 finline
 Common Report Var(flag_no_inline,0) Init(2)
 Pay attention to the \"inline\" keyword
@@ -459,6 +500,9 @@ fmem-report
 Common Report Var(mem_report)
 Report on permanent memory allocation
 
+; This will attempt to merge constant section constants, if 1 only
+; string constants and constants from constant pool, if 2 also constant
+; variables.
 fmerge-all-constants
 Common Report Var(flag_merge_constants,2) Init(1)
 Attempt to merge identical constants and constant variables
@@ -543,13 +587,21 @@ fpeephole2
 Common Report Var(flag_peephole2)
 Enable an RTL peephole pass before sched2
 
+fPIC
+Common Report Var(flag_pic,2)
+Generate position-independent code if possible (large mode)
+
+fPIE
+Common Report Var(flag_pie,2)
+Generate position-independent code for executables if possible (large mode)
+
 fpic
 Common Report Var(flag_pic,1) VarExists
-Generate position-independent code if possible
+Generate position-independent code if possible (small mode)
 
 fpie
 Common Report Var(flag_pie,1) VarExists
-Generate position-independent code for executables if possible
+Generate position-independent code for executables if possible (small mode)
 
 fprefetch-loop-arrays
 Common Report Var(flag_prefetch_loop_arrays)
@@ -658,6 +710,8 @@ fschedule-insns2
 Common Report Var(flag_schedule_insns_after_reload)
 Reschedule instructions after register allocation
 
+; sched_stalled_insns means that insns can be moved prematurely from the queue
+; of stalled insns into the ready list.
 fsched-stalled-insns
 Common Report Var(flag_sched_stalled_insns)
 Allow premature scheduling of queued insns
@@ -666,6 +720,10 @@ fsched-stalled-insns=
 Common RejectNegative Joined UInteger 
 -fsched-stalled-insns=<number>       Set number of queued insns that can be prematurely scheduled
 
+; sched_stalled_insns_dep controls how many recently scheduled cycles will
+; be examined for a dependency on a stalled insn that is candidate for
+; premature removal from the queue of stalled insns into the ready list (has
+; an effect only if the flag 'sched_stalled_insns' is set).
 fsched-stalled-insns-dep
 Common Report Var(flag_sched_stalled_insns_dep,1) Init(1)
 Set dependence distance checking in premature scheduling of queued insns
@@ -686,6 +744,8 @@ fsingle-precision-constant
 Common Report Var(flag_single_precision_constant)
 Convert floating point constants to single precision constants
 
+; Emit code to probe the stack, to help detect stack overflow; also
+; may cause large objects to be allocated dynamically.
 fstack-check
 Common Report Var(flag_stack_check)
 Insert stack checking code into the program
@@ -705,6 +765,10 @@ fstrength-reduce
 Common Report Var(flag_strength_reduce)
 Perform strength reduction optimizations
 
+; Nonzero if we should do (language-dependent) alias analysis.
+; Typically, this analysis will assume that expressions of certain
+; types do not alias expressions of certain other types.  Only used
+; if alias analysis (in general) is enabled.
 fstrict-aliasing
 Common Report Var(flag_strict_aliasing)
 Assume strict aliasing rules apply
@@ -733,6 +797,9 @@ ftracer
 Common Report Var(flag_tracer)
 Perform superblock formation via tail duplication
 
+; Zero means that floating-point math operations cannot generate a
+; (user-visible) trap.  This is the case, for example, in nonstop
+; IEEE 754 arithmetic.
 ftrapping-math
 Common Report Var(flag_trapping_math)
 Assume floating-point operations can trap
@@ -812,6 +879,10 @@ funroll-all-loops
 Common Report Var(flag_unroll_all_loops)
 Perform loop unrolling for all loops
 
+; Nonzero means that unsafe floating-point math optimizations are allowed
+; for the sake of speed.  IEEE compliance is not guaranteed, and operations
+; are allowed to assume that their arguments and results are "normal"
+; (e.g., nonnegative for SQRT).
 funsafe-math-optimizations
 Common Report Var(flag_unsafe_math_optimizations)
 Allow math optimizations that may violate IEEE or ISO standards
@@ -828,6 +899,12 @@ fvar-tracking
 Common Report Var(flag_var_tracking) VarExists
 Perform variable tracking
 
+; -fverbose-asm causes extra commentary information to be produced in
+; the generated assembly code (to make it more readable).  This option
+; is generally only of use to those who actually need to read the
+; generated assembly code (perhaps while debugging the compiler itself).
+; -fno-verbose-asm, the default, causes the extra information
+; to not be added and is useful when comparing two assembler files.
 fverbose-asm
 Common Report Var(flag_verbose_asm)
 Add extra commentary to assembler output
