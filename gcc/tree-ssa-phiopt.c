@@ -236,6 +236,8 @@ static void
 replace_phi_with_stmt (block_stmt_iterator bsi, basic_block bb,
 		       basic_block cond_block, tree phi, tree new)
 {
+  basic_block block_to_remove;
+
   /* Insert our new statement at the head of our block.  */
   bsi_insert_after (&bsi, new, BSI_NEW_STMT);
   
@@ -250,21 +252,23 @@ replace_phi_with_stmt (block_stmt_iterator bsi, basic_block bb,
   release_phi_node (phi);
   bb_ann (bb)->phi_nodes = NULL;
   
-  /* Disconnect the edge leading into the empty block.  That will
-     make the empty block unreachable and it will be removed later.  */
+  /* Remove the empty basic block.  */
   if (cond_block->succ->dest == bb)
     {
       cond_block->succ->flags |= EDGE_FALLTHRU;
       cond_block->succ->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      ssa_remove_edge (cond_block->succ->succ_next);
+
+      block_to_remove = cond_block->succ->succ_next->dest;
     }
   else
     {
       cond_block->succ->succ_next->flags |= EDGE_FALLTHRU;
       cond_block->succ->succ_next->flags
 	&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      ssa_remove_edge (cond_block->succ);
+
+      block_to_remove = cond_block->succ->dest;
     }
+  delete_basic_block (block_to_remove);
   
   /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
   bsi = bsi_last (cond_block);
