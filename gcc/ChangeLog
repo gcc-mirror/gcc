@@ -1,3 +1,9 @@
+Tue Jun  2 22:50:10 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* fold-const.c (fold, case EQ_EXPR): When folding VAR++ == CONST
+	or VAR-- == CONST construct a proper mask if VAR is a bitfield.
+	Cope with CONST being out of range for the bitfield.
+
 Tue Jun  2 22:28:31 1998  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
 	* expr.c (emit_move_insn_1): When moving complex values in several
