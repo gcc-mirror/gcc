@@ -117,7 +117,8 @@ java::util::zip::Inflater::inflate (jbyteArray buf, jint off, jint len)
       break;
 
     case Z_DATA_ERROR:
-      _Jv_Throw (new java::util::zip::DataFormatException);
+      _Jv_Throw (new java::util::zip::DataFormatException 
+                 (s->msg == NULL ? NULL : JvNewStringLatin1 (s->msg)));
       break;
 
     case Z_MEM_ERROR:
