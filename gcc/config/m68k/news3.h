@@ -1,4 +1,4 @@
-#include "news.h"
+#include "m68k/news.h"
 
 /* This is to be compatible with types.h.
    It was found to be necessary with Newsos 3.  */

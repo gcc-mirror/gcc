@@ -2,4 +2,4 @@
 
 #define TARGET_DEFAULT 5
 
-#include "sun3.h"
+#include "m68k/sun3.h"

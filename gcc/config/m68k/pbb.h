@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    converts the output of gas to coff containing stab debug symbols.
    (See vasta@apollo.com or mb@soldev.tti.com) */
 
-#include "m68k.h"
+#include "m68k/m68k.h"
 
 /* See m68k.h.  5 means 68020 without 68881.  */
 

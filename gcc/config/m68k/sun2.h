@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#include "m68k.h"
+#include "m68k/m68k.h"
 
 /* See m68k.h.  0 means 68000 with no 68881.  */
 

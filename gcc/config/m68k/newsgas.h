@@ -4,4 +4,4 @@
 
 #define USE_GAS
 
-#include "news.h"
+#include "m68k/news.h"

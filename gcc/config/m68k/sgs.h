@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SGS			/* Uses SGS assembler */
 #define SGS_CMP_ORDER		/* Takes cmp operands in reverse order */
 
-#include "m68k.h"
+#include "m68k/m68k.h"
 
 /* SGS specific assembler pseudo ops. */
 
