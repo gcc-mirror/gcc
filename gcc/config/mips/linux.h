@@ -23,6 +23,8 @@ Boston, MA 02111-1307, USA.  */
 /* US Software GOFAST library support.  */
 #define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
 
+#include "mips/mips.h"
+
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 
