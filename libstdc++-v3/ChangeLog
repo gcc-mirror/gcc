@@ -1,3 +1,8 @@
+2001-02-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* src/string-inst.cc (string::_M_replace): Explicitly instantiate.
+	(string::_S_construct): Likewise.
+
 2001-02-05  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* testsuite/config/default.exp: New file.
