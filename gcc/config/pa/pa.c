@@ -6496,6 +6496,89 @@ is_function_label_plus_const (op)
 	  && GET_CODE (XEXP (op, 1)) == CONST_INT);
 }
 
+/* Output assembly code for a thunk to FUNCTION.  */
+
+void
+pa_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
+     FILE *file;
+     tree thunk_fndecl;
+     int delta;
+     tree function;
+{
+  const char *target_name = XSTR (XEXP (DECL_RTL (function), 0), 0);
+  static unsigned int current_thunk_number;
+  char label[16];
+  char *lab;
+  ASM_GENERATE_INTERNAL_LABEL (label, "LTHN", current_thunk_number);
+  lab = (*targetm.strip_name_encoding) (label);
+  target_name = (*targetm.strip_name_encoding) (target_name);
+  /* FIXME: total_code_bytes is not handled correctly in files with
+     mi thunks.  */
+  pa_output_function_prologue (file, 0);
+  if (VAL_14_BITS_P (delta))
+    {
+      if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic)
+	{
+	  fprintf (file, "\taddil LT%%%s,%%r19\n", lab);
+	  fprintf (file, "\tldw RT%%%s(%%r1),%%r22\n", lab);
+	  fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
+	  fprintf (file, "\tbb,>=,n %%r22,30,.+16\n");
+	  fprintf (file, "\tdepi 0,31,2,%%r22\n");
+	  fprintf (file, "\tldw 4(%%sr0,%%r22),%%r19\n");
+	  fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
+	  fprintf (file, "\tldsid (%%sr0,%%r22),%%r1\n\tmtsp %%r1,%%sr0\n");
+	  fprintf (file, "\tbe 0(%%sr0,%%r22)\n\tldo ");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+	  fprintf (file, "(%%r26),%%r26\n");
+	}
+      else
+	{
+	  fprintf (file, "\tb %s\n\tldo ", target_name);
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+	  fprintf (file, "(%%r26),%%r26\n");
+	}
+    }
+  else
+    {
+      if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic)
+	{
+	  fprintf (file, "\taddil L%%");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+	  fprintf (file, ",%%r26\n\tldo R%%");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+	  fprintf (file, "(%%r1),%%r26\n");
+	  fprintf (file, "\taddil LT%%%s,%%r19\n", lab);
+	  fprintf (file, "\tldw RT%%%s(%%r1),%%r22\n", lab);
+	  fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
+	  fprintf (file, "\tbb,>=,n %%r22,30,.+16\n");
+	  fprintf (file, "\tdepi 0,31,2,%%r22\n");
+	  fprintf (file, "\tldw 4(%%sr0,%%r22),%%r19\n");
+	  fprintf (file, "\tldw 0(%%sr0,%%r22),%%r22\n");
+	  fprintf (file, "\tldsid (%%sr0,%%r22),%%r1\n\tmtsp %%r1,%%sr0\n");
+	  fprintf (file, "\tbe,n 0(%%sr0,%%r22)\n");
+	}
+      else
+	{
+	  fprintf (file, "\taddil L%%");
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+	  fprintf (file, ",%%r26\n\tb %s\n\tldo R%%", target_name);
+	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+	  fprintf (file, "(%%r1),%%r26\n");
+	}
+    }
+    
+  fprintf (file, "\t.EXIT\n\t.PROCEND\n");
+  if (! TARGET_64BIT && ! TARGET_PORTABLE_RUNTIME && flag_pic)
+    {
+      data_section ();
+      fprintf (file, "\t.align 4\n");
+      ASM_OUTPUT_INTERNAL_LABEL (file, "LTHN", current_thunk_number);
+      fprintf (file, "\t.word P%%%s\n", target_name);
+      function_section (thunk_fndecl);
+    }
+  current_thunk_number++;
+}
+
 /* Returns 1 if the 6 operands specified in OPERANDS are suitable for
    use in fmpyadd instructions.  */
 int

@@ -162,4 +162,6 @@ extern rtx function_arg PARAMS ((CUMULATIVE_ARGS *, enum machine_mode,
 extern int function_arg_partial_nregs PARAMS ((CUMULATIVE_ARGS *,
 					       enum machine_mode,
 					       tree, int));
+
+extern void pa_asm_output_mi_thunk PARAMS ((FILE *, tree, int, tree));
 #endif /* TREE_CODE */

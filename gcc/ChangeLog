@@ -1,3 +1,9 @@
+2002-05-29  Jeff Law <law@redhat.com>
+
+	* pa.h (ASM_OUTPUT_MI_THUNK): Move implementation into pa.c.
+	* pa.c (pa_asm_output_mi_thunk): New function.
+	* pa-protos.h (pa_asm_output_mi_thunk): Declare.
+
 2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
