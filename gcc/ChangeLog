@@ -1,3 +1,7 @@
+2004-07-28  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (function_arg_padding): Pad SFmode upwards.
+
 2004-07-24  Alexander Kabaev  <kan@freebsd.org>
 
 	* config/ia64/ia64.h (SUBTARGET_EXTRA_SPECS): Default to nothing.
