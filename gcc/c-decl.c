@@ -2144,7 +2144,8 @@ pushdecl (x)
 	      if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	        TYPE_NAME (TREE_TYPE (x)) = x;
             }
-          else if (TREE_TYPE (x) != error_mark_node)
+          else if (TREE_TYPE (x) != error_mark_node
+		   && DECL_ORIGINAL_TYPE (x) == NULL_TREE)
             {
               tree tt = TREE_TYPE (x);
 	      DECL_ORIGINAL_TYPE (x) = tt;
