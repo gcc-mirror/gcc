@@ -1,3 +1,31 @@
+2000-02-04  Tom Tromey  <tromey@cygnus.com>
+
+	* defineclass.cc (handleMethodsBegin): Allocate _Jv_MethodBase
+	pointers.
+	(handleMethodsEnd): Fixed error messages.  Create a _Jv_JNIMethod
+	if the method is native.
+	* resolve.cc (ncode): Don't handle native methods.
+	(_Jv_JNIMethod::ncode): New method.
+	(_Jv_PrepareClass): Handle native methods.
+	* jni.cc (call): Renamed from _Jv_JNI_conversion_call.
+	Include AbstractMethodError.h.
+	(add_char): New function.
+	(mangled_name): Likewise.
+	* include/java-interp.h (class _Jv_JNIMethod): New class.
+	(class _Jv_MethodBase): New class.
+	(class _Jv_InterpMethod): Derive from _Jv_MethodBase.
+	(_Jv_InterpClass): Changed `interpreted_methods' field to type
+	`_Jv_MethodBase'.
+
+	* include/jvm.h (_Jv_FindSymbolInExecutable): Declare.
+	* java/lang/natRuntime.cc (libraries_size, libraries_count,
+	libraries): New globals.
+	(add_library): New function.
+	(_Jv_FindSymbolInExecutable): New function.
+
+	* java/lang/natClassLoader.cc (initiated_classes, loaded_classes):
+	Now static.
+
 2000-02-04  Andrew Haley  <aph@cygnus.com>
 
 	* java/lang/Throwable.java (CPlusPlusDemangler): New class.

@@ -32,6 +32,7 @@ details.  */
 #include <java/lang/Throwable.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/StringIndexOutOfBoundsException.h>
+#include <java/lang/AbstractMethodError.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoSuchFieldError.h>
 #include <java/lang/NoSuchMethodError.h>
@@ -1204,15 +1205,101 @@ _Jv_JNI_FromReflectedMethod (JNIEnv *, jobject method)
 
 
 
+// Add a character to the buffer, encoding properly.
+static void
+add_char (char *buf, jchar c, int *here)
+{
+  if (c == '_')
+    {
+      buf[(*here)++] = '_';
+      buf[(*here)++] = '1';
+    }
+  else if (c == ';')
+    {
+      buf[(*here)++] = '_';
+      buf[(*here)++] = '2';
+    }
+  else if (c == '[')
+    {
+      buf[(*here)++] = '_';
+      buf[(*here)++] = '3';
+    }
+  else if (c == '/')
+    buf[(*here)++] = '_';
+  if ((c >= '0' && c <= '9')
+      || (c >= 'a' && c <= 'z')
+      || (c >= 'A' && c <= 'Z'))
+    buf[(*here)++] = (char) c;
+  else
+    {
+      // "Unicode" character.
+      buf[(*here)++] = '_';
+      buf[(*here)++] = '0';
+      for (int i = 0; i < 4; ++i)
+	{
+	  int val = c & 0x0f;
+	  buf[(*here) + 4 - i] = (val > 10) ? ('a' + val - 10) : ('0' + val);
+	  c >>= 4;
+	}
+      *here += 4;
+    }
+}
+
+// Compute a mangled name for a native function.  This computes the
+// long name, and also returns an index which indicates where a NUL
+// can be placed to create the short name.  This function assumes that
+// the buffer is large enough for its results.
+static void
+mangled_name (jclass klass, _Jv_Utf8Const *func_name,
+	      _Jv_Utf8Const *signature, char *buf, int *long_start)
+{
+  strcpy (buf, "Java_");
+  int here = 5;
+
+  // Add fully qualified class name.
+  jchar *chars = _Jv_GetStringChars (klass->getName ());
+  jint len = klass->getName ()->length ();
+  for (int i = 0; i < len; ++i)
+    add_char (buf, chars[i], &here);
+
+  // Don't use add_char because we need a literal `_'.
+  buf[here++] = '_';
+
+  const unsigned char *fn = (const unsigned char *) func_name->data;
+  const unsigned char *limit = fn + func_name->length;
+  for (int i = 0; ; ++i)
+    {
+      int ch = UTF8_GET (fn, limit);
+      if (ch < 0)
+	break;
+      add_char (buf, ch, &here);
+    }
+
+  // This is where the long signature begins.
+  *long_start = here;
+  buf[here++] = '_';
+  buf[here++] = '_';
+
+  const unsigned char *sig = (const unsigned char *) signature->data;
+  limit = sig + signature->length;
+  JvAssert (signature[0] == '(');
+  for (int i = 1; ; ++i)
+    {
+      int ch = UTF8_GET (sig, limit);
+      if (ch == ')' || ch < 0)
+	break;
+      add_char (buf, ch, &here);
+    }
+
+  buf[here] = '\0';
+}
+
 // This function is the stub which is used to turn an ordinary (CNI)
 // method call into a JNI call.
 void
-_Jv_JNI_conversion_call (ffi_cif *cif,
-			 void *ret,
-			 ffi_raw *args,
-			 void *__this)
+_Jv_JNIMethod::call (ffi_cif *cif, void *ret, ffi_raw *args, void *__this)
 {
-  _Jv_InterpMethod* _this = (_Jv_InterpMethod*)__this;
+  _Jv_JNIMethod* _this = (_Jv_JNIMethod *) __this;
 
   JNIEnv env;
   _Jv_JNI_LocalFrame *frame
@@ -1234,10 +1321,33 @@ _Jv_JNI_conversion_call (ffi_cif *cif,
   // now we assume a conservative GC, and we assume that the
   // references are on the stack somewhere.
 
-  ffi_raw_call (cif,
-		NULL, // FIXME: function pointer.
-		ret,
-		args);
+  // We cache the value that we find, of course, but if we don't find
+  // a value we don't cache that fact -- we might subsequently load a
+  // library which finds the function in question.
+  if (_this->function == NULL)
+    {
+      char buf[10 + 6 * (_this->self->name->length
+			 + _this->self->signature->length)];
+      int long_start;
+      mangled_name (_this->defining_class, _this->self->name,
+		    _this->self->signature, buf, &long_start);
+      char c = buf[long_start];
+      buf[long_start] = '\0';
+      _this->function = _Jv_FindSymbolInExecutable (buf);
+      if (_this->function == NULL)
+	{
+	  buf[long_start] = c;
+	  _this->function = _Jv_FindSymbolInExecutable (buf);
+	  if (_this->function == NULL)
+	    {
+	      jstring str = JvNewStringUTF (_this->self->name->data);
+	      JvThrow (new java::lang::AbstractMethodError (str));
+	    }
+	}
+    }
+
+  // The actual call to the JNI function.
+  ffi_raw_call (cif, (void (*) (...)) _this->function, ret, args);
 
   do
     {
