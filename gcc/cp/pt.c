@@ -5971,7 +5971,10 @@ tsubst_copy (t, args, in_decl)
       return tsubst (t, args, in_decl);
 
     case IDENTIFIER_NODE:
-      if (IDENTIFIER_TYPENAME_P (t))
+      if (IDENTIFIER_TYPENAME_P (t)
+	  /* Make sure it's not just a variable named `__opr', for instance,
+	     which can occur in some existing code.  */
+	  && TREE_TYPE (t))
 	return build_typename_overload
 	  (tsubst (TREE_TYPE (t), args, in_decl));
       else
