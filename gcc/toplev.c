@@ -2030,6 +2030,9 @@ output_quoted_string (asm_file, string)
      FILE *asm_file;
      char *string;
 {
+#ifdef OUTPUT_QUOTED_STRING
+  OUTPUT_QUOTED_STRING (asm_file, string);
+#else
   char c;
 
   putc ('\"', asm_file);
@@ -2040,6 +2043,7 @@ output_quoted_string (asm_file, string)
       putc (c, asm_file);
     }
   putc ('\"', asm_file);
+#endif
 }
 
 /* Output a file name in the form wanted by System V.  */
