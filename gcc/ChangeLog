@@ -1,5 +1,7 @@
 Tue Mar 24 10:44:11 1998  Nick Clifton  <nickc@cygnus.com>
 
+	* Makefile.in (gcov$(exeext)): Support .exe extension to gcov.
+
 	* collect2.c (find_a_file): Add debugging.
 	(find_a_file): Test for win32 style absolute paths if
 	DIR_SERPARATOR is defined.
