@@ -1,3 +1,9 @@
+Sat Jul  5 16:18:53 CEST 2003  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	Blame to Jan Hubicka  <jh@suse.cz>
+	* cfglayout.c (record_effective_endpoints): Split insns before
+	first basic block correctly.
+
 2003-07-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case COMPONENT_REF): When seeing if should use 
