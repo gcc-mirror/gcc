@@ -5682,14 +5682,14 @@ push_lang_context (name)
 	 (See record_builtin_java_type in decl.c.)  However, that causes
 	 incorrect debug entries if these types are actually used.
 	 So we re-enable debug output after extern "Java". */
-      DECL_IGNORED_P (java_byte_type_node) = 0;
-      DECL_IGNORED_P (java_short_type_node) = 0;
-      DECL_IGNORED_P (java_int_type_node) = 0;
-      DECL_IGNORED_P (java_long_type_node) = 0;
-      DECL_IGNORED_P (java_float_type_node) = 0;
-      DECL_IGNORED_P (java_double_type_node) = 0;
-      DECL_IGNORED_P (java_char_type_node) = 0;
-      DECL_IGNORED_P (java_boolean_type_node) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_byte_type_node)) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_short_type_node)) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_int_type_node)) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_long_type_node)) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_float_type_node)) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_double_type_node)) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_char_type_node)) = 0;
+      DECL_IGNORED_P (TYPE_NAME (java_boolean_type_node)) = 0;
     }
   else if (name == lang_name_c)
     {

@@ -5024,6 +5024,11 @@ check_goto (decl)
   tree bad;
   struct named_label_list *lab;
 
+  /* We can't know where a computed goto is jumping.  So we assume
+     that it's OK.  */
+  if (! DECL_P (decl))
+    return;
+
   /* If the label hasn't been defined yet, defer checking.  */
   if (! DECL_INITIAL (decl))
     {
