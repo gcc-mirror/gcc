@@ -1,3 +1,8 @@
+1999-04-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (check_template_shadow): Don't treat OVERLOADs as _DECL
+	nodes.  Tidy.
+
 1999-04-03  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (maybe_fixup_vptrs, build_class_init_list): Lose.
