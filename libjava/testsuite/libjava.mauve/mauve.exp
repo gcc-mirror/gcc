@@ -49,7 +49,7 @@ proc mauve_compute_uses {aName} {
 
 # Run all the Mauve tests.
 proc test_mauve {} {
-  global srcdir subdir env
+  global srcdir objdir subdir env
 
   if {! [info exists env(MAUVEDIR)]} then {
     verbose "MAUVEDIR not set; not running Mauve tests"
@@ -64,6 +64,26 @@ proc test_mauve {} {
   cd $srcdir
   set full_srcdir [pwd]
   cd $here/mauve-build
+
+    global env
+    global GCJ_UNDER_TEST
+    global TOOL_EXECUTABLE
+
+    if ![info exists GCJ_UNDER_TEST] {
+	if [info exists TOOL_EXECUTABLE] {
+	    set GCJ_UNDER_TEST $TOOL_EXECUTABLE;
+	} else {
+	    if [info exists env(GCJ)] {
+		set GCJ_UNDER_TEST env(GCJ)
+	    } else {
+		set GCJ_UNDER_TEST "[find_gcj]"
+	    }
+	}
+    }
+
+    # Append -B and -I so that libgcj.spec and libgcj.zip are found
+    # before they're installed.
+    set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$objdir/../libgcj.zip"
 
   if {[catch {system "$env(MAUVEDIR)/configure --with-gcj"} msg]} then {
     fail "Mauve configure"

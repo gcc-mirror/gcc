@@ -1,3 +1,17 @@
+1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* lib/libjava.exp (bytecompile_file): Use `env(SUN_JAVAC)', that
+	defaults to javac, as Sun-javac compiler or compatible.
+	(libjava_init): Get GCJ from environment if neither GCJ_UNDER_TEST 
+	nor TOOL_EXECUTABLE are set.  Set `original_ld_library_path' from
+	environment.
+	(libjava_arguments): Prepend `.' and `$srcdir/$subdir' to
+	CLASSPATH, for `support' sources.  Search for libgcj.spec in
+	`$objdir/..', by adding -B to GCJ_UNDER_TEST.  Append
+	original_ld_library_path to ld_library_path.
+	* libjava.mauve/mauve.exp (test_mauve): Set `env(GCJ)' from
+	GCJ_UNDER_TEST, calculated just like in libjava.exp.
+
 1999-07-06  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/Final.xfail: Output fails, not exec.
