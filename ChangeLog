@@ -1,3 +1,7 @@
+Fri Sep  5 16:11:28 1997  Joel Sherrill  (joel@OARcorp.com)
+
+        * configure.in (*-*-rtems*): Do not build libgloss for rtems.
+
 Fri Sep  5 12:27:17 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* config.sub: Handle v850-elf.

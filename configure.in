@@ -399,6 +399,9 @@ case "${target}" in
   *-*-netware)
     noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-librx target-newlib target-libiberty target-libgloss"
     ;;
+  *-*-rtems*)
+    noconfigdirs="$noconfigdirs target-libgloss"
+    ;;
   *-*-vxworks*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss"
     ;;
@@ -435,8 +438,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio target-librx target-libgloss"
     ;;
   hppa*-*-*elf* | \
-  hppa*-*-lites* | \
-  hppa*-*-rtems* )
+  hppa*-*-lites*)
     # Do configure ld/binutils/gas for this case.
     ;;
   hppa*-*-*)
