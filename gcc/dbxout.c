@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -161,8 +161,6 @@ static int have_used_extensions = 0;
    for the N_SO filename stabs label.  */
 
 static int source_label_number = 1;
-
-static int scope_labelno = 0;
 
 char *getpwd ();
 
@@ -333,7 +331,9 @@ void dbxout_types ();
 void dbxout_args ();
 void dbxout_symbol ();
 
+#ifndef NO_DBX_FUNCTION_END
 static void dbxout_function_end		PROTO((void));
+#endif
 static void dbxout_typedefs		PROTO((tree));
 static void dbxout_type_index		PROTO((tree));
 static void dbxout_continue		PROTO((void));
@@ -352,9 +352,11 @@ static void dbxout_finish_symbol	PROTO((tree));
 static void dbxout_block		PROTO((tree, int, tree));
 static void dbxout_really_begin_function PROTO((tree));
 
+#ifndef NO_DBX_FUNCTION_END
 static void
 dbxout_function_end ()
 {
+  static int scope_labelno = 0;
   char lscope_label_name[100];
   /* Convert Ltext into the appropriate format for local labels in case
      the system doesn't insert underscores in front of user generated
@@ -371,6 +373,7 @@ dbxout_function_end ()
   assemble_name (asmfile, XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));
   fprintf (asmfile, "\n");
 }
+#endif /* ! NO_DBX_FUNCTION_END */
 
 /* At the beginning of compilation, start writing the symbol table.
    Initialize `typevec' and output the standard data types of C.  */

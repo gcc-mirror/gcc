@@ -143,7 +143,9 @@ finish_file ()
   extern tree static_dtors;
 #endif
   extern tree build_function_call                 PROTO((tree, tree));
+#if !defined(ASM_OUTPUT_CONSTRUCTOR) || !defined(ASM_OUTPUT_DESTRUCTOR)
   tree void_list_node = build_tree_list (NULL_TREE, void_type_node);
+#endif
 #ifndef ASM_OUTPUT_CONSTRUCTOR
   if (static_ctors)
     {

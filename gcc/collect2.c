@@ -2045,6 +2045,7 @@ write_c_file_stat (stream, name)
 
 /* Write the constructor/destructor tables.  */
 
+#ifndef LD_INIT_SWITCH
 static void
 write_c_file_glob (stream, name)
      FILE *stream;
@@ -2108,6 +2109,7 @@ write_c_file_glob (stream, name)
   fprintf (stream, "extern entry_pt %s;\n", NAME__MAIN);
   fprintf (stream, "entry_pt *__main_reference = %s;\n\n", NAME__MAIN);
 }
+#endif /* ! LD_INIT_SWITCH */
 
 static void
 write_c_file (stream, name)

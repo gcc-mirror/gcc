@@ -1662,8 +1662,10 @@ try_combine (i3, i2, i1)
       && XEXP (SET_SRC (PATTERN (i3)), 1) == const0_rtx
       && rtx_equal_p (XEXP (SET_SRC (PATTERN (i3)), 0), i2dest))
     {
+#ifdef EXTRA_CC_MODES
       rtx *cc_use;
       enum machine_mode compare_mode;
+#endif
 
       newpat = PATTERN (i3);
       SUBST (XEXP (SET_SRC (newpat), 0), i2src);

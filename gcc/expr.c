@@ -7624,7 +7624,6 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   rtx lab1 = gen_label_rtx ();
   enum machine_mode sa_mode = Pmode, value_mode;
   rtx stack_save;
-  int i;
 
   value_mode = TYPE_MODE (integer_type_node);
 
@@ -7696,6 +7695,7 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
   if (fixed_regs[ARG_POINTER_REGNUM])
     {
 #ifdef ELIMINABLE_REGS
+      int i;
       static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
 
       for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
@@ -7729,7 +7729,9 @@ expand_builtin_setjmp (buf_addr, target, first_label, next_label)
       emit_insn (gen_nonlocal_goto_receiver ());
     else
 #endif
-      ; /* Nothing */
+      {
+	; /* Nothing */
+      }
 
   /* Set TARGET, and branch to the next-time-through label.  */
   emit_move_insn (target, gen_lowpart (GET_MODE (target), static_chain_rtx));

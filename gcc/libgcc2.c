@@ -392,7 +392,9 @@ __udiv_w_sdiv (USItype *rp, USItype a1, USItype a0, USItype d)
 /* If sdiv_qrnnd doesn't exist, define dummy __udiv_w_sdiv.  */
 USItype
 __udiv_w_sdiv (USItype *rp, USItype a1, USItype a0, USItype d)
-{}
+{
+  return 0;
+}
 #endif
 #endif
 
@@ -3291,7 +3293,6 @@ __sjpopnthrow ()
 {
   struct eh_context *eh = (*get_eh_context) ();
   void ***dhc = &eh->dynamic_handler_chain;
-  void *jmpbuf;
   void (*func)(void *, int);
   void *arg;
   void ***cleanup;
@@ -3598,7 +3599,6 @@ label:
   else
     {
       int i;
-      void *val;
 
       /* Unwind all the frames between this one and the handler by copying
 	 their saved register values into our register save slots.  */

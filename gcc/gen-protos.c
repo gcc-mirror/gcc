@@ -1,5 +1,5 @@
 /* gen-protos.c - massages a list of prototypes, for use by fixproto.
-   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1993, 94-96, 1998 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -147,7 +147,6 @@ main (argc, argv)
   FILE *outf = stdout;
   int i;
   sstring linebuf;
-  char **optr;
   struct fn_decl fn_decl;
 
   i = strlen (argv[0]);

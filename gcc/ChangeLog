@@ -1,3 +1,57 @@
+Wed Mar 18 09:56:26 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-lang.c (finish_file): Wrap variable `void_list_node' with macro
+	test !ASM_OUTPUT_CONSTRUCTOR || !ASM_OUTPUT_DESTRUCTOR.
+
+	* calls.c (emit_call_1): Wrap variable `already_popped' with macro
+	test !ACCUMULATE_OUTGOING_ARGS. 
+
+	* collect2.c (write_c_file_glob): Wrap function definition in
+	macro test !LD_INIT_SWITCH.
+
+	* combine.c (try_combine): Wrap variables `cc_use' and
+	`compare_mode' in macro test EXTRA_CC_MODES.
+
+	* cpplib.c (do_ident): Remove unused variable `len'.
+	(skip_if_group): Remove unused variables `at_beg_of_line' and
+	`after_ident'.
+	(cpp_get_token): Remove unused variable `dummy'.
+
+	* dbxout.c (scope_labelno): Move static variable definition inside
+	the one function scope where it is used.
+	(dbxout_function_end): Wrap prototype and definition in
+	macro test !NO_DBX_FUNCTION_END.
+
+	* dwarf2out.c (add_subscript_info): Wrap variable `dimension_number'
+	in macro test !MIPS_DEBUGGING_INFO.
+
+	* expr.c (expand_builtin_setjmp): Move declaration of variable `i'
+	into the scope where it is used.  Wrap empty else-statement body
+	in braces.
+
+	* fix-header.c: Fix typo in comment.
+	(inf_skip_spaces): Cast results of INF_UNGET to (void).
+	(check_protection, main): Likewise.
+
+	* flow.c (find_basic_blocks_1): Remove dangling comment text.
+
+	* function.c (contains): Wrap prototype and definition in macro
+	test HAVE_prologue || HAVE_epilogue.
+	(fixup_var_refs_1): Remove unused variable `width'.
+
+	* gen-protos.c (main): Remove unused variable `optr'.
+
+	* haifa-sched.c (debug_control_flow): Remove unused variable `j'.
+
+	* libgcc2.c (__udiv_w_sdiv): Provide dummy return value of 0.
+	(__sjpopnthrow): Remove unused variable `jmpbuf'.
+	(__throw): Remove unused variable `val'.
+
+	* protoize.c: Check for a previously existing definition before
+	defining *_OK macros. 
+
+	* scan-decls.c (scan_decls): Remove unused variable `old_written'.
+
 Tue Mar 17 00:45:48 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* vax.h (ADDR_VEC_ALIGN): Define.
