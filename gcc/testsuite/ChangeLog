@@ -1,3 +1,7 @@
+2003-03-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/ultrasp5.c: Fix options.
+
 2003-03-24  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/10197
