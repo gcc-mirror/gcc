@@ -51,10 +51,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "target.h"
 #include "loop.h"
 
-/* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE, 0.5,
-                   REAL_BB_FREQ_MAX.  */
+/* real constants: 0, 1, 1-1/REG_BR_PROB_BASE, REG_BR_PROB_BASE,
+		   1/REG_BR_PROB_BASE, 0.5, BB_FREQ_MAX.  */
 static REAL_VALUE_TYPE real_zero, real_one, real_almost_one, real_br_prob_base,
-		       real_one_half, real_bb_freq_max;
+		       real_inv_br_prob_base, real_one_half, real_bb_freq_max;
 
 /* Random guesstimation given names.  */
 #define PROB_VERY_UNLIKELY	(REG_BR_PROB_BASE / 10 - 1)
@@ -986,20 +986,25 @@ propagate_freq (loop)
 				     TYPE_MODE (double_type_node));
 		REAL_ARITHMETIC (tmp, MULT_EXPR, tmp,
 				 BLOCK_INFO (e->src)->frequency);
-		REAL_ARITHMETIC (tmp, RDIV_EXPR, tmp, real_br_prob_base);
+		REAL_ARITHMETIC (tmp, MULT_EXPR, tmp, real_inv_br_prob_base);
 		REAL_ARITHMETIC (frequency, PLUS_EXPR, frequency, tmp);
 	      }
 
-	  if (REAL_VALUES_LESS (real_almost_one, cyclic_probability))
-	    memcpy (&cyclic_probability, &real_almost_one, sizeof (real_zero));
+	  if (REAL_VALUES_IDENTICAL (cyclic_probability, real_zero))
+	    memcpy (&BLOCK_INFO (bb)->frequency, &frequency, sizeof (frequency));
+	  else
+	    {
+	      if (REAL_VALUES_LESS (real_almost_one, cyclic_probability))
+		memcpy (&cyclic_probability, &real_almost_one, sizeof (real_zero));
 
-	  /* BLOCK_INFO (bb)->frequency = frequency / (1 - cyclic_probability)
-	   */
+	      /* BLOCK_INFO (bb)->frequency = frequency / (1 - cyclic_probability)
+	       */
 
-	  REAL_ARITHMETIC (cyclic_probability, MINUS_EXPR, real_one,
+	      REAL_ARITHMETIC (cyclic_probability, MINUS_EXPR, real_one,
 			   cyclic_probability);
-	  REAL_ARITHMETIC (BLOCK_INFO (bb)->frequency,
-			   RDIV_EXPR, frequency, cyclic_probability);
+	      REAL_ARITHMETIC (BLOCK_INFO (bb)->frequency,
+			       RDIV_EXPR, frequency, cyclic_probability);
+	    }
 	}
 
       BLOCK_INFO (bb)->tovisit = 0;
@@ -1018,7 +1023,7 @@ propagate_freq (loop)
 	    REAL_ARITHMETIC (tmp, MULT_EXPR, tmp,
 			     BLOCK_INFO (bb)->frequency);
 	    REAL_ARITHMETIC (EDGE_INFO (e)->back_edge_prob,
-			     RDIV_EXPR, tmp, real_br_prob_base);
+			     MULT_EXPR, tmp, real_inv_br_prob_base);
 
 	  }
 
@@ -1149,11 +1154,9 @@ estimate_bb_frequencies (loops)
       REAL_VALUE_FROM_INT (real_br_prob_base, REG_BR_PROB_BASE, 0, double_mode);
       REAL_VALUE_FROM_INT (real_bb_freq_max, BB_FREQ_MAX, 0, double_mode);
       REAL_VALUE_FROM_INT (real_one_half, 2, 0, double_mode);
-
       REAL_ARITHMETIC (real_one_half, RDIV_EXPR, real_one, real_one_half);
-
-      REAL_ARITHMETIC (real_almost_one, RDIV_EXPR, real_one, real_br_prob_base);
-      REAL_ARITHMETIC (real_almost_one, MINUS_EXPR, real_one, real_almost_one);
+      REAL_ARITHMETIC (real_inv_br_prob_base, RDIV_EXPR, real_one, real_br_prob_base);
+      REAL_ARITHMETIC (real_almost_one, MINUS_EXPR, real_one, real_inv_br_prob_base);
 
       mark_dfs_back_edges ();
       /* Fill in the probability values in flowgraph based on the REG_BR_PROB
@@ -1197,8 +1200,8 @@ estimate_bb_frequencies (loops)
 	      REAL_VALUE_FROM_INT (EDGE_INFO (e)->back_edge_prob,
 				   e->probability, 0, double_mode);
 	      REAL_ARITHMETIC (EDGE_INFO (e)->back_edge_prob,
-			       RDIV_EXPR, EDGE_INFO (e)->back_edge_prob,
-			       real_br_prob_base);
+			       MULT_EXPR, EDGE_INFO (e)->back_edge_prob,
+			       real_inv_br_prob_base);
 	    }
 	}
 
@@ -1213,13 +1216,14 @@ estimate_bb_frequencies (loops)
 	  memcpy (&freq_max, &BLOCK_INFO (bb)->frequency,
 		  sizeof (freq_max));
 
+      REAL_ARITHMETIC (freq_max, RDIV_EXPR, real_bb_freq_max, freq_max);
+
       FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
 	{
 	  REAL_VALUE_TYPE tmp;
 
 	  REAL_ARITHMETIC (tmp, MULT_EXPR, BLOCK_INFO (bb)->frequency,
-			   real_bb_freq_max);
-	  REAL_ARITHMETIC (tmp, RDIV_EXPR, tmp, freq_max);
+			   freq_max);
 	  REAL_ARITHMETIC (tmp, PLUS_EXPR, tmp, real_one_half);
 	  bb->frequency = REAL_VALUE_UNSIGNED_FIX (tmp);
 	}
