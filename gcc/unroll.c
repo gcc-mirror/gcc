@@ -1692,23 +1692,28 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	     later passes of unroll_loop, if INSN had jump label set.  */
 	  if (JUMP_LABEL (insn))
 	    {
+	      rtx label = 0;
+
 	      /* Can't use the label_map for every insn, since this may be
 		 the backward branch, and hence the label was not mapped.  */
 	      if (GET_CODE (pattern) == SET)
 		{
 		  tem = SET_SRC (pattern);
 		  if (GET_CODE (tem) == LABEL_REF)
-		    JUMP_LABEL (copy) = XEXP (tem, 0);
+		    label = XEXP (tem, 0);
 		  else if (GET_CODE (tem) == IF_THEN_ELSE)
 		    {
 		      if (XEXP (tem, 1) != pc_rtx)
-			JUMP_LABEL (copy) = XEXP (XEXP (tem, 1), 0);
+			label = XEXP (XEXP (tem, 1), 0);
 		      else
-			JUMP_LABEL (copy) = XEXP (XEXP (tem, 2), 0);
+			label = XEXP (XEXP (tem, 2), 0);
 		    }
 		  else
 		    abort ();
 		}
+
+	      if (label && GET_CODE (label) == CODE_LABEL)
+		JUMP_LABEL (copy) = label;
 	      else
 		{
 		  /* An unrecognizable jump insn, probably the entry jump
