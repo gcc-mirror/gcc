@@ -1,3 +1,7 @@
+Mon Feb 28 22:11:12 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (DWARF_LINE_MIN_INSTR_LENGTH): Define.
+
 2000-02-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* xcoffout.c (xcoffout_begin_function): Fix typo in previous change.

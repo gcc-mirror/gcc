@@ -2258,3 +2258,5 @@ do {									\
 
 #define EMIT_MODE_SET(ENTITY, MODE, HARD_REGS_LIVE) \
   fpscr_set_from_mem ((MODE), (HARD_REGS_LIVE))
+
+#define DWARF_LINE_MIN_INSTR_LENGTH 2
