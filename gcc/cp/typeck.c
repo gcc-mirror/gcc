@@ -1487,9 +1487,10 @@ comp_target_parms (parms1, parms2)
 }
 
 tree
-cxx_sizeof_or_alignof_type (type, op)
+cxx_sizeof_or_alignof_type (type, op, complain)
      tree type;
      enum tree_code op;
+     int complain;
 {
   enum tree_code type_code;
   tree value;
@@ -1507,17 +1508,18 @@ cxx_sizeof_or_alignof_type (type, op)
 
   if (type_code == METHOD_TYPE)
     {
-      if (pedantic || warn_pointer_arith)
+      if (complain && (pedantic || warn_pointer_arith))
 	pedwarn ("invalid application of `%s' to a member function", op_name);
       value = size_one_node;
     }
   else if (type_code == OFFSET_TYPE)
     {
-      error ("invalid application of `%s' to non-static member", op_name);
+      if (complain)
+	error ("invalid application of `%s' to non-static member", op_name);
       value = size_zero_node;
     }
   else
-    value = c_sizeof_or_alignof_type (complete_type (type), op);
+    value = c_sizeof_or_alignof_type (complete_type (type), op, complain);
 
   return value;
 }
@@ -1554,41 +1556,6 @@ expr_sizeof (e)
   return cxx_sizeof (TREE_TYPE (e));
 }
   
-tree
-c_sizeof_nowarn (type)
-     tree type;
-{
-  enum tree_code code = TREE_CODE (type);
-  tree size;
-
-  if (code == FUNCTION_TYPE
-      || code == METHOD_TYPE
-      || code == VOID_TYPE
-      || code == ERROR_MARK)
-    size = size_one_node;
-  else
-    {
-      if (code == REFERENCE_TYPE)
-	type = TREE_TYPE (type);
-
-      if (!COMPLETE_TYPE_P (type))
-	size = size_zero_node;
-      else
-	/* Convert in case a char is more than one unit.  */
-	size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-			   size_int (TYPE_PRECISION (char_type_node)
-				     / BITS_PER_UNIT));
-    }
-
-  /* SIZE will have an integer type with TYPE_IS_SIZETYPE set.
-     TYPE_IS_SIZETYPE means that certain things (like overflow) will
-     never happen.  However, this node should really have type
-     `size_t', which is just a typedef for an ordinary integer type.  */
-  size = fold (build1 (NOP_EXPR, c_size_type_node, size));
-  my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (size)), 
-		      20001021);
-  return size;
-}
 
 /* Perform the array-to-pointer and function-to-pointer conversions
    for EXP.  
@@ -4377,7 +4344,7 @@ build_unary_op (code, xarg, noconvert)
 			  ((code == PREINCREMENT_EXPR
 			    || code == POSTINCREMENT_EXPR)
 			   ? "increment" : "decrement"), argtype);
-	    inc = c_sizeof_nowarn (TREE_TYPE (argtype));
+	    inc = cxx_sizeof_nowarn (TREE_TYPE (argtype));
 	  }
 	else
 	  inc = integer_one_node;

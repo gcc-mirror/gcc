@@ -3177,7 +3177,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	return void_zero_node;
 
       return build_op_delete_call
-	(DELETE_EXPR, addr, c_sizeof_nowarn (type),
+	(DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
 	 LOOKUP_NORMAL | (use_global_delete * LOOKUP_GLOBAL),
 	 NULL_TREE);
     }
@@ -3212,7 +3212,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  /* Build the call.  */
 	  do_delete = build_op_delete_call (DELETE_EXPR,
 					    addr,
-					    c_sizeof_nowarn (type),
+					    cxx_sizeof_nowarn (type),
 					    LOOKUP_NORMAL,
 					    NULL_TREE);
 	  /* Call the complete object destructor.  */
@@ -3223,7 +3223,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	{
 	  /* Make sure we have access to the member op delete, even though
 	     we'll actually be calling it from the destructor.  */
-	  build_op_delete_call (DELETE_EXPR, addr, c_sizeof_nowarn (type),
+	  build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
 				LOOKUP_NORMAL, NULL_TREE);
 	}
 

@@ -255,10 +255,10 @@ extern bool c_warn_unused_global_decl		PARAMS ((tree));
 			  ((CONST_P) ? TYPE_QUAL_CONST : 0) |	  \
 			  ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
 
+#define c_sizeof_nowarn(T)  c_sizeof_or_alignof_type (T, SIZEOF_EXPR, 0)
 /* in c-typeck.c */
 extern tree require_complete_type		PARAMS ((tree));
 extern int comptypes				PARAMS ((tree, tree));
-extern tree c_sizeof_nowarn			PARAMS ((tree));
 extern tree c_size_in_bytes                     PARAMS ((tree));
 extern bool c_mark_addressable			PARAMS ((tree));
 extern void c_incomplete_type_error		PARAMS ((tree, tree));
