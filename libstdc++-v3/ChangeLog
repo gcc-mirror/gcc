@@ -1,3 +1,8 @@
+2002-10-22  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/18_support/numeric_limits.cc (test_extrema<long double>):
+	Remove specialization for FreeBSD systems.
+
 2002-10-18  Loren J. Rittle  <ljrittle@acm.org>
 
 	* configure.target (freebsd*): Use abi_baseline_triplet.
