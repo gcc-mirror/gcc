@@ -1,3 +1,9 @@
+2004-01-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (ASM_OUTPUT_MAIN_SOURCE_FILENAME): Poison.
+	* toplev.c (output_file_directive): Don't use
+	ASM_OUTPUT_MAIN_SOURCE_FILENAME.
+
 2004-01-05  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* ggc-zone.c: Remove everything in #ifdef USING_MALLOC_PAGE_GROUPS

@@ -1425,16 +1425,12 @@ output_file_directive (FILE *asm_file, const char *input_name)
       na--;
     }
 
-#ifdef ASM_OUTPUT_MAIN_SOURCE_FILENAME
-  ASM_OUTPUT_MAIN_SOURCE_FILENAME (asm_file, na);
-#else
 #ifdef ASM_OUTPUT_SOURCE_FILENAME
   ASM_OUTPUT_SOURCE_FILENAME (asm_file, na);
 #else
   fprintf (asm_file, "\t.file\t");
   output_quoted_string (asm_file, na);
   fputc ('\n', asm_file);
-#endif
 #endif
 }
 
