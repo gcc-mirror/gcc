@@ -1,3 +1,7 @@
+Sat Jan 30 16:22:47 1999  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/990130-1.c: New test.
+
 Sat Jan 30 11:10:06 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.dg/990130-1.c: New test.
