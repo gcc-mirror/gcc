@@ -1,3 +1,8 @@
+Wed Dec 29 10:53:21 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.md (conditional zero): If op1 is a register, force it into
+	the same register as op0.
+
 1999-12-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (BINFO_BASETYPES): Improve documentation.
