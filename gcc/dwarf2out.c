@@ -3760,7 +3760,6 @@ static void init_file_table		PARAMS ((struct file_table *));
 static void add_incomplete_type		PARAMS ((tree));
 static void retry_incomplete_types	PARAMS ((void));
 static void gen_type_die_for_member	PARAMS ((tree, tree, dw_die_ref));
-static void gen_abstract_function	PARAMS ((tree));
 static rtx save_rtx			PARAMS ((rtx));
 static void splice_child_die		PARAMS ((dw_die_ref, dw_die_ref));
 static int file_info_cmp		PARAMS ((const void *, const void *));
@@ -9014,8 +9013,8 @@ add_bound_info (subrange_die, bound_attr, bound)
 	 We assume that a MEM rtx is safe because gcc wouldn't put the
 	 value there unless it was going to be used repeatedly in the
 	 function, i.e. for cleanups.  */
-      if (! optimize || (SAVE_EXPR_RTL (bound)
-			 && GET_CODE (SAVE_EXPR_RTL (bound)) == MEM))
+      if (SAVE_EXPR_RTL (bound)
+	  && (! optimize || GET_CODE (SAVE_EXPR_RTL (bound)) == MEM))
 	{
 	  register dw_die_ref ctx = lookup_decl_die (current_function_decl);
 	  register dw_die_ref decl_die = new_die (DW_TAG_variable, ctx);
@@ -9320,7 +9319,7 @@ add_abstract_origin_attribute (die, origin)
 	fn = TYPE_STUB_DECL (fn);
       fn = decl_function_context (fn);
       if (fn)
-	gen_abstract_function (fn);
+	dwarf2out_abstract_function (fn);
     }
 
   if (DECL_P (origin))
@@ -10022,8 +10021,8 @@ gen_type_die_for_member (type, member, context_die)
    of a function which we may later generate inlined and/or
    out-of-line instances of.  */
 
-static void
-gen_abstract_function (decl)
+void
+dwarf2out_abstract_function (decl)
      tree decl;
 {
   register dw_die_ref old_die = lookup_decl_die (decl);
@@ -10105,7 +10104,11 @@ gen_subprogram_die (decl, context_die)
       register unsigned file_index
 	= lookup_filename (&decl_file_table, DECL_SOURCE_FILE (decl));
 
-      if (get_AT_flag (old_die, DW_AT_declaration) != 1)
+      if (!get_AT_flag (old_die, DW_AT_declaration)
+	  /* We can have a normal definition following an inline one in the
+	     case of redefinition of GNU C extern inlines.
+	     It seems reasonable to use AT_specification in this case.  */
+	  && !get_AT_unsigned (old_die, DW_AT_inline))
 	{
 	  /* ??? This can happen if there is a bug in the program, for
 	     instance, if it has duplicate function definitions.  Ideally,
@@ -10175,15 +10178,17 @@ gen_subprogram_die (decl, context_die)
 
   if (declaration)
     {
-      if (! origin)
-	add_AT_flag (subr_die, DW_AT_declaration, 1);
+      if (!(old_die && get_AT_unsigned (old_die, DW_AT_inline)))
+	{
+	  add_AT_flag (subr_die, DW_AT_declaration, 1);
 
-      /* The first time we see a member function, it is in the context of
-         the class to which it belongs.  We make sure of this by emitting
-         the class first.  The next time is the definition, which is
-         handled above.  The two may come from the same source text.  */
-      if (DECL_CONTEXT (decl) || DECL_ABSTRACT (decl))
-	equate_decl_number_to_die (decl, subr_die);
+	  /* The first time we see a member function, it is in the context of
+	     the class to which it belongs.  We make sure of this by emitting
+	     the class first.  The next time is the definition, which is
+	     handled above.  The two may come from the same source text.  */
+	  if (DECL_CONTEXT (decl) || DECL_ABSTRACT (decl))
+	    equate_decl_number_to_die (decl, subr_die);
+	}
     }
   else if (DECL_ABSTRACT (decl))
     {
@@ -10206,7 +10211,7 @@ gen_subprogram_die (decl, context_die)
     }
   else if (!DECL_EXTERNAL (decl))
     {
-      if (origin == NULL_TREE)
+      if (!(old_die && get_AT_unsigned (old_die, DW_AT_inline)))
 	equate_decl_number_to_die (decl, subr_die);
 
       ASM_GENERATE_INTERNAL_LABEL (label_id, FUNC_BEGIN_LABEL,
@@ -10490,7 +10495,7 @@ gen_inlined_subroutine_die (stmt, context_die, depth)
       char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
       /* Emit info for the abstract instance first, if we haven't yet.  */
-      gen_abstract_function (decl);
+      dwarf2out_abstract_function (decl);
 
       add_abstract_origin_attribute (subr_die, decl);
       ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_BEGIN_LABEL,
@@ -11265,12 +11270,12 @@ gen_decl_die (decl, context_die)
 	 emit info for the abstract instance and set up to refer to it.  */
       if (DECL_INLINE (decl) && ! DECL_ABSTRACT (decl)
 	  && ! class_scope_p (context_die)
-	  /* gen_abstract_function won't emit a die if this is just a
+	  /* dwarf2out_abstract_function won't emit a die if this is just a
 	     declaration.  We must avoid setting DECL_ABSTRACT_ORIGIN in
 	     that case, because that works only if we have a die.  */
 	  && DECL_INITIAL (decl) != NULL_TREE)
 	{
-	  gen_abstract_function (decl);
+	  dwarf2out_abstract_function (decl);
 	  set_decl_origin_self (decl);
 	}
 
