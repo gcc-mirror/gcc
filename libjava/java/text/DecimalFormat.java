@@ -32,7 +32,6 @@ public class DecimalFormat extends NumberFormat
   private final int scanFix (String pattern, int index, StringBuffer buf,
 			     String patChars, DecimalFormatSymbols syms,
 			     boolean is_suffix)
-    throws ParseException
     {
       int len = pattern.length();
       buf.setLength(0);
@@ -65,7 +64,8 @@ public class DecimalFormat extends NumberFormat
 	  else if (is_suffix && c == syms.getPercent())
 	    {
 	      if (multiplierSet)
-		throw new ParseException ("multiplier already set", index);
+		throw new IllegalArgumentException ("multiplier already set " +
+						    "- index: " + index);
 	      multiplierSet = true;
 	      multiplier = 100;
 	      buf.append(c);
@@ -73,7 +73,8 @@ public class DecimalFormat extends NumberFormat
 	  else if (is_suffix && c == syms.getPerMill())
 	    {
 	      if (multiplierSet)
-		throw new ParseException ("multiplier already set", index);
+		throw new IllegalArgumentException ("multiplier already set " +
+						    "- index: " + index);
 	      multiplierSet = true;
 	      multiplier = 1000;
 	      buf.append(c);
@@ -95,7 +96,6 @@ public class DecimalFormat extends NumberFormat
   private final int scanFormat (String pattern, int index,
 				String patChars, DecimalFormatSymbols syms,
 				boolean is_positive)
-    throws ParseException
     {
       int max = pattern.length();
 
@@ -113,7 +113,8 @@ public class DecimalFormat extends NumberFormat
 	  if (c == syms.getDigit())
 	    {
 	      if (zeroCount > 0)
-		throw new ParseException ("digit mark following zero", index);
+		throw new IllegalArgumentException ("digit mark following " +
+						    "zero - index: " + index);
 	      ++countSinceGroup;
 	    }
 	  else if (c == syms.getZeroDigit())
@@ -163,8 +164,8 @@ public class DecimalFormat extends NumberFormat
 	      if (c == syms.getZeroDigit())
 		{
 		  if (hashCount > 0)
-		    throw new ParseException ("zero mark following digit",
-					      index);
+		    throw new IllegalArgumentException ("zero mark " +
+					"following digit - index: " + index);
 		  ++zeroCount;
 		}
 	      else if (c == syms.getDigit())
@@ -174,8 +175,8 @@ public class DecimalFormat extends NumberFormat
 	      else if (c != syms.getExponential()
 		       && c != syms.getPatternSeparator()
 		       && patChars.indexOf(c) != -1)
-		throw new ParseException ("unexpected special character",
-					  index);
+		throw new IllegalArgumentException ("unexpected special " +
+						"character - index: " + index);
 	      else
 		break;
 
@@ -208,12 +209,14 @@ public class DecimalFormat extends NumberFormat
 		{
 		  if (zeroCount > 0)
 		    throw new
-		      ParseException ("digit mark following zero in exponent",
-				      index);
+		      IllegalArgumentException ("digit mark following zero " +
+						"in exponent - index: " +
+						index);
 		}
 	      else if (patChars.indexOf(c) != -1)
-		throw new ParseException ("unexpected special character",
-					  index);
+		throw new IllegalArgumentException ("unexpected special " +
+						    "character - index: " +
+						    index);
 	      else
 		break;
 
@@ -253,7 +256,6 @@ public class DecimalFormat extends NumberFormat
 
   private final void applyPatternWithSymbols (String pattern,
 					      DecimalFormatSymbols syms)
-    throws ParseException
     {
       // Initialize to the state the parser expects.
       negativePrefix = "";
@@ -292,7 +294,8 @@ public class DecimalFormat extends NumberFormat
       else
 	{
 	  if (pattern.charAt(index) != syms.getPatternSeparator())
-	    throw new ParseException ("separator character expected", index);
+	    throw new IllegalArgumentException ("separator character " +
+						"expected - index: " + index);
 
 	  index = scanFix (pattern, index + 1, buf, patChars, syms, false);
 	  negativePrefix = buf.toString();
@@ -305,17 +308,26 @@ public class DecimalFormat extends NumberFormat
 	  negativeSuffix = buf.toString();
 
 	  if (index != pattern.length())
-	    throw new ParseException ("end of pattern expected", index);
+	    throw new IllegalArgumentException ("end of pattern expected " +
+						"- index: " + index);
 	}
     }
 
-  public void applyLocalizedPattern (String pattern) throws ParseException
+  public void applyLocalizedPattern (String pattern)
     {
+      // JCL p. 638 claims this throws a ParseException but p. 629
+      // contradicts this.  Empirical tests with patterns of "0,###.0"
+      // and "#.#.#" corroborate the p. 629 statement that an
+      // IllegalArgumentException is thrown.
       applyPatternWithSymbols (pattern, symbols);
     }
 
-  public void applyPattern (String pattern) throws ParseException
+  public void applyPattern (String pattern)
     {
+      // JCL p. 638 claims this throws a ParseException but p. 629
+      // contradicts this.  Empirical tests with patterns of "0,###.0"
+      // and "#.#.#" corroborate the p. 629 statement that an
+      // IllegalArgumentException is thrown.
       applyPatternWithSymbols (pattern, nonLocalizedSymbols);
     }
 
@@ -351,16 +363,7 @@ public class DecimalFormat extends NumberFormat
   public DecimalFormat (String pattern, DecimalFormatSymbols symbols)
     {
       this.symbols = symbols;
-      // The docs imply that the constructor turns a ParseException
-      // into an IllegalArgumentException.
-      try
-	{
-	  applyPattern (pattern);
-	}
-      catch (ParseException x)
-	{
-	  throw new IllegalArgumentException (x.getMessage());
-	}
+      applyPattern (pattern);
     }
 
   private final boolean equals (String s1, String s2)

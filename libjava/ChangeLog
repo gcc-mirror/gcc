@@ -7,6 +7,8 @@
 	IOException.
 	* java/text/Collator.java (CANONICAL_DECOMPOSITION): Fixed typo
 	in static field name.
+	* java/text/DecimalFormat.java: Throw IllegalArgumentException
+	throughout rather than ParseException.
 
 1999-06-09  Bryce McKinlay <bryce@albatross.co.nz>
 
