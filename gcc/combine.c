@@ -728,7 +728,7 @@ set_nonzero_bits_and_sign_copies (x, set)
 	      && INTVAL (src) > 0
 	      && 0 != (INTVAL (src)
 		       & ((HOST_WIDE_INT) 1
-			  << GET_MODE_BITSIZE (GET_MODE (x)))))
+			  << (GET_MODE_BITSIZE (GET_MODE (x)) - 1))))
 	    src = GEN_INT (INTVAL (src)
 			   | ((HOST_WIDE_INT) (-1)
 			      << GET_MODE_BITSIZE (GET_MODE (x))));
@@ -6559,7 +6559,7 @@ nonzero_bits (x, mode)
 	      && INTVAL (tem) > 0
 	      && 0 != (INTVAL (tem)
 		       & ((HOST_WIDE_INT) 1
-			  << GET_MODE_BITSIZE (GET_MODE (x)))))
+			  << (GET_MODE_BITSIZE (GET_MODE (x)) - 1))))
 	    tem = GEN_INT (INTVAL (tem)
 			   | ((HOST_WIDE_INT) (-1)
 			      << GET_MODE_BITSIZE (GET_MODE (x))));
@@ -6574,11 +6574,9 @@ nonzero_bits (x, mode)
     case CONST_INT:
 #ifdef SHORT_IMMEDIATES_SIGN_EXTEND
       /* If X is negative in MODE, sign-extend the value.  */
-      if (INTVAL (x) > 0
-	  && 0 != (INTVAL (x)
-		   & ((HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (GET_MODE (x)))))
-	return (INTVAL (x)
-		| ((HOST_WIDE_INT) (-1) << GET_MODE_BITSIZE (GET_MODE (x))));
+      if (INTVAL (x) > 0 && mode_width < BITS_PER_WORD
+	  && 0 != (INTVAL (x) & ((HOST_WIDE_INT) 1 << (mode_width - 1))))
+	return (INTVAL (x) | ((HOST_WIDE_INT) (-1) << mode_width));
 #endif
 
       return INTVAL (x);
