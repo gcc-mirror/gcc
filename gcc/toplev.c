@@ -66,6 +66,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "dwarf2asm.h"
 #include "integrate.h"
+#include "debug.h"
 
 #ifdef DWARF_DEBUGGING_INFO
 #include "dwarfout.h"
@@ -224,6 +225,10 @@ const char *dump_base_name;
    and set by `-m...' switches.  Must be defined in rtlanal.c.  */
 
 extern int target_flags;
+
+/* Debug hooks - dependent upon command line options.  */
+
+struct gcc_debug_hooks *debug_hooks;
 
 /* Describes a dump file.  */
 
@@ -2281,6 +2286,26 @@ compile_file (name)
 #endif
     } /* ! flag_syntax_only  */
 
+  /* Set up the debug hooks based on write_symbols.  Default to doing
+     nothing.  */
+  debug_hooks = &do_nothing_debug_hooks;  
+#if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
+  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+    debug_hooks = &dbx_debug_hooks;
+#endif
+#ifdef SDB_DEBUGGING_INFO
+  if (write_symbols == SDB_DEBUG)
+    debug_hooks = &sdb_debug_hooks;
+#endif
+#ifdef DWARF_DEBUGGING_INFO
+  if (write_symbols == DWARF_DEBUG)
+    debug_hooks = &dwarf_debug_hooks;
+#endif
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    debug_hooks = &dwarf2_debug_hooks;
+#endif
+
 #ifndef ASM_OUTPUT_SECTION_NAME
   if (flag_function_sections)
     {
@@ -2309,26 +2334,12 @@ compile_file (name)
   /* If dbx symbol table desired, initialize writing it
      and output the predefined types.  */
   timevar_push (TV_SYMOUT);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-    dbxout_init (asm_out_file, main_input_filename, getdecls ());
-#endif
-#ifdef SDB_DEBUGGING_INFO
-  if (write_symbols == SDB_DEBUG)
-    sdbout_init (asm_out_file, main_input_filename, getdecls ());
-#endif
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
-    dwarfout_init (asm_out_file, main_input_filename);
-#endif
 #ifdef DWARF2_UNWIND_INFO
   if (dwarf2out_do_frame ())
     dwarf2out_frame_init ();
 #endif
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_init (asm_out_file, main_input_filename);
-#endif
+
+  (*debug_hooks->init) (asm_out_file, main_input_filename);
   timevar_pop (TV_SYMOUT);
 
   /* Initialize yet another pass.  */
@@ -2401,25 +2412,12 @@ compile_file (name)
 
   /* Do dbx symbols.  */
   timevar_push (TV_SYMOUT);
-#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-  if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-    dbxout_finish (asm_out_file, main_input_filename);
-#endif
-
-#ifdef DWARF_DEBUGGING_INFO
-  if (write_symbols == DWARF_DEBUG)
-    dwarfout_finish ();
-#endif
-
 #ifdef DWARF2_UNWIND_INFO
   if (dwarf2out_do_frame ())
     dwarf2out_frame_finish ();
 #endif
 
-#ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG)
-    dwarf2out_finish ();
-#endif
+  (*debug_hooks->finish) (asm_out_file, main_input_filename);
   timevar_pop (TV_SYMOUT);
 
   /* Output some stuff at end of file if nec.  */

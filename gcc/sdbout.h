@@ -18,8 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void sdbout_init			PARAMS ((FILE *, const char *, tree));
-
 extern void sdbout_begin_function	PARAMS ((int));
 extern void sdbout_end_function		PARAMS ((int));
 
