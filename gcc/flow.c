@@ -354,15 +354,17 @@ static int maybe_add_dead_note		PROTO ((rtx, rtx, rtx));
 static int sets_reg_or_subreg		PROTO ((rtx, rtx));
 static void update_n_sets 		PROTO ((rtx, int));
 static void new_insn_dead_notes		PROTO ((rtx, rtx, rtx, rtx, rtx, rtx));
-#ifdef ENABLE_CHECKING
-static void verify_flow_info		PROTO ((void));
-#endif
 static void split_hard_reg_notes	PROTO ((rtx, rtx, rtx, rtx));
 static rtx find_insn_with_note		PROTO ((rtx, rtx, rtx));
 static void sets_reg_or_subreg_1	PROTO ((rtx, rtx));
 static rtx prepend_reg_notes		PROTO ((rtx, rtx));
 static void remove_edge			PROTO ((edge));
 static void remove_fake_successors	PROTO ((basic_block));
+
+/* This function is always defined so it can be called from the
+   debugger, and it is declared extern so we don't get warnings about
+   it being unused. */
+extern void verify_flow_info PROTO ((void));
 
 /* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register
@@ -6480,8 +6482,7 @@ replace_insns (first, last, first_new, notes)
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
 
-#ifdef ENABLE_CHECKING
-static void
+void
 verify_flow_info ()
 {
   const int max_uid = get_max_uid ();
@@ -6684,7 +6685,6 @@ verify_flow_info ()
       x = NEXT_INSN (x);
     }
 }
-#endif
 
 /* Functions to access an edge list with a vector representation.
    Enough data is kept such that given an index number, the 
