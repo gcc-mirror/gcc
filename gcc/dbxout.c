@@ -328,7 +328,6 @@ static void dbxout_finish (const char *);
 static void dbxout_start_source_file (unsigned, const char *);
 static void dbxout_end_source_file (unsigned);
 static void dbxout_typedefs (tree);
-static void dbxout_fptype_value (tree);
 static void dbxout_type_index (tree);
 #if DBX_CONTIN_LENGTH > 0
 static void dbxout_continue (void);
@@ -804,60 +803,6 @@ dbxout_finish (const char *filename ATTRIBUTE_UNUSED)
 #endif /* DBX_OUTPUT_MAIN_SOURCE_FILE_END */
 
   debug_free_queue ();
-}
-
-/* Output floating point type values used by the 'R' stab letter.
-   These numbers come from include/aout/stab_gnu.h in binutils/gdb.
-
-   There are only 3 real/complex types defined, and we need 7/6.
-   We use NF_SINGLE as a generic float type, and NF_COMPLEX as a generic
-   complex type.  Since we have the type size anyways, we don't really need
-   to distinguish between different FP types, we only need to distinguish
-   between float and complex.  This works fine with gdb.
-
-   We only use this for complex types, to avoid breaking backwards
-   compatibility for real types.  complex types aren't in ISO C90, so it is
-   OK if old debuggers don't understand the debug info we emit for them.  */
-
-/* ??? These are supposed to be IEEE types, but we don't check for that.
-   We could perhaps add additional numbers for non-IEEE types if we need
-   them.  */
-
-static void
-dbxout_fptype_value (tree type)
-{
-  char value = '0';
-  enum machine_mode mode = TYPE_MODE (type);
-
-  if (TREE_CODE (type) == REAL_TYPE)
-    {
-      if (mode == SFmode)
-	value = '1';
-      else if (mode == DFmode)
-	value = '2';
-      else if (mode == TFmode || mode == XFmode)
-	value = '6';
-      else
-	/* Use NF_SINGLE as a generic real type for other sizes.  */
-	value = '1';
-    }
-  else if (TREE_CODE (type) == COMPLEX_TYPE)
-    {
-      if (mode == SCmode)
-	value = '3';
-      else if (mode == DCmode)
-	value = '4';
-      else if (mode == TCmode || mode == XCmode)
-	value = '5';
-      else
-	/* Use NF_COMPLEX as a generic complex type for other sizes.  */
-	value = '3';
-    }
-  else
-    abort ();
-
-  putc (value, asmfile);
-  CHARS (1);
 }
 
 /* Output the index of a type.  */
@@ -1542,15 +1487,14 @@ dbxout_type (tree type, int full)
       break;
 
     case COMPLEX_TYPE:
-      /* Differs from the REAL_TYPE by its new data type number */
+      /* Differs from the REAL_TYPE by its new data type number.
+	 R3 is NF_COMPLEX.  We don't try to use any of the other NF_*
+	 codes since gdb doesn't care anyway.  */
 
       if (TREE_CODE (TREE_TYPE (type)) == REAL_TYPE)
 	{
-	  putc ('R', asmfile);
-	  CHARS (1);
-	  dbxout_fptype_value (type);
-	  putc (';', asmfile);
-	  CHARS (1);
+	  fputs ("R3;", asmfile);
+	  CHARS (3);
 	  print_wide_int (2 * int_size_in_bytes (TREE_TYPE (type)));
 	  fputs (";0;", asmfile);
 	  CHARS (3);
