@@ -2270,6 +2270,10 @@ do {									     \
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
+/* The cntlzw and cntlzd instructions return 32 and 64 for zero.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
+  ((VALUE) = ((MODE) == SImode ? 32 : 64))
+
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
