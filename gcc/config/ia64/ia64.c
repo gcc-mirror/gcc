@@ -8417,6 +8417,9 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   emit_note (NULL, NOTE_INSN_PROLOGUE_END);
 
   this = gen_rtx_REG (Pmode, IN_REG (0));
+  if (TARGET_ILP32)
+    emit_insn (gen_ptr_extend (this,
+			       gen_rtx_REG (ptr_mode, IN_REG (0))));
 
   /* Apply the constant offset, if required.  */
   if (delta)
@@ -8438,7 +8441,14 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
       rtx vcall_offset_rtx = GEN_INT (vcall_offset);
       rtx tmp = gen_rtx_REG (Pmode, 2);
 
-      emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
+      if (TARGET_ILP32)
+	{
+	  rtx t = gen_rtx_REG (ptr_mode, 2);
+	  emit_move_insn (t, gen_rtx_MEM (ptr_mode, this));
+	  emit_insn (gen_ptr_extend (tmp, t));
+	}
+      else
+	emit_move_insn (tmp, gen_rtx_MEM (Pmode, this));
 
       if (!CONST_OK_FOR_J (vcall_offset))
 	{
@@ -8448,7 +8458,11 @@ ia64_output_mi_thunk (file, thunk, delta, vcall_offset, function)
 	}
       emit_insn (gen_adddi3 (tmp, tmp, vcall_offset_rtx));
 
-      emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
+      if (TARGET_ILP32)
+	emit_move_insn (gen_rtx_REG (ptr_mode, 2), 
+			gen_rtx_MEM (ptr_mode, tmp));
+      else
+	emit_move_insn (tmp, gen_rtx_MEM (Pmode, tmp));
 
       emit_insn (gen_adddi3 (this, this, tmp));
     }
