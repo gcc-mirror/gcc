@@ -1217,18 +1217,23 @@ GLOBAL(ic_invalidate):
 	ocbwb	@r4
 	mova	0f,r0
 	mov.w	1f,r1
+/* Compute how many cache lines 0f is away from r4.  */
 	sub	r0,r4
 	and	r1,r4
-	add	#4,r4
+/* Prepare to branch to 0f plus the cache-line offset.  */
+	add	# 0f - 1f,r4
 	braf	r4
 	nop
 1:
 	.short	0x1fe0
-	nop
+	.p2align 5
+/* This must be aligned to the beginning of a cache line.  */
 0:
-	.rept	2048
+	.rept	256 /* There are 256 cache lines of 32 bytes.  */
 	rts
+	.rept	15
 	nop
+	.endr
 	.endr
 #endif /* SH4 */
 #endif /* L_ic_invalidate */
