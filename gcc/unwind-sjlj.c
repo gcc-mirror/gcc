@@ -182,7 +182,7 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
 /* Get the value of the CFA as saved in CONTEXT.  */
 
 _Unwind_Word
-_Unwind_GetCFA (struct _Unwind_Context *context)
+_Unwind_GetCFA (struct _Unwind_Context *context __attribute__((unused)))
 {
   /* ??? Ideally __builtin_setjmp places the CFA in the jmpbuf.  */
   return NULL;
@@ -223,7 +223,7 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context __attribute__((unused)) 
 }
 
 void *
-_Unwind_FindEnclosingFunction (void *pc)
+_Unwind_FindEnclosingFunction (void *pc __attribute__((unused)))
 {
   return NULL;
 }

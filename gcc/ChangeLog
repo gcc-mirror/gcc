@@ -1,3 +1,12 @@
+2003-10-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/mips/irix6-libc-compat.c (inet_makeaddr): Prototype.
+	* crtstuff.c (__do_global_ctors_1): Move prototype.
+	* unwind-dw2.c (NO_SIZE_OF_ENCODED_VALUE): Define when
+	appropriate.
+	* unwind-sjlj.c (_Unwind_GetCFA, _Unwind_FindEnclosingFunction):
+	Mark parameter with __attribute__((unused)).
+
 2003-10-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (pushdecl): Clarify comment.
