@@ -1512,6 +1512,7 @@ yylex ()
 	      }
 	    
 	    yylval.ttype = build_int_2 (low, high);
+	    TREE_TYPE (yylval.ttype) = long_long_unsigned_type_node;
 
 	    /* If warn_traditional, calculate both the ANSI type and the
 	       traditional type, then see if they disagree.
