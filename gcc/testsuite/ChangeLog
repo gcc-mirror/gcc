@@ -1,3 +1,7 @@
+2003-07-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/parse/non-dependent2.C: New test.
+
 2003-07-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* g++.dg/init/init-ref4.C: xfail on targets without 

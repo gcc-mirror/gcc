@@ -117,7 +117,7 @@ hack_identifier (tree value, tree name)
 
   type = TREE_TYPE (value);
   if (TREE_CODE (value) == FIELD_DECL)
-    value = finish_non_static_data_member (value, 
+    value = finish_non_static_data_member (value, current_class_ref,
 					   /*qualifying_scope=*/NULL_TREE);
   else if ((TREE_CODE (value) == FUNCTION_DECL
 	    && DECL_FUNCTION_MEMBER_P (value))

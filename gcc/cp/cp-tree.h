@@ -4129,7 +4129,7 @@ extern tree finish_label_stmt                   (tree);
 extern void finish_label_decl                   (tree);
 extern void finish_subobject                    (tree);
 extern tree finish_parenthesized_expr           (tree);
-extern tree finish_non_static_data_member       (tree, tree);
+extern tree finish_non_static_data_member       (tree, tree, tree);
 extern tree begin_stmt_expr                     (void);
 extern tree finish_stmt_expr                    (tree);
 extern tree perform_koenig_lookup               (tree, tree);
