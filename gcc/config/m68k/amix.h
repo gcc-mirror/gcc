@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Alter assembler syntax for fsgldiv and fsglmul.
    It is highly likely that this is a generic SGS m68k assembler dependency.
-   If so, it should eventually be handled in the m68ksgs.h ASM_OUTPUT_OPCODE
+   If so, it should eventually be handled in the m68k/sgs.h ASM_OUTPUT_OPCODE
    macro, like the other SGS assembler quirks.  -fnf */
 
 #define FSGLDIV_USE_S		/* Use fsgldiv.s, not fsgldiv.x */
@@ -87,7 +87,7 @@ do {									\
 	   BSS_ASM_OP, (NAME), (SIZE), MAX ((ALIGN) / BITS_PER_UNIT, 4)); \
 } while (0)
 
-/* This definition of ASM_OUTPUT_ASCII is the same as the one in m68ksgs.h,
+/* This definition of ASM_OUTPUT_ASCII is the same as the one in m68k/sgs.h,
    which has been overridden by the one in svr4.h.  However, we can't use
    the one in svr4.h because the amix assembler croaks on some of the
    strings that it emits (such as .string "\"%s\"\n"). */
