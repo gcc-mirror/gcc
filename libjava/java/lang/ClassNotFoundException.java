@@ -1,6 +1,5 @@
-/* ClassNotFoundException.java -- exception thrown when attempting to load
-   a class when no definition for the class can be found.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+/* ClassNotFoundException.java -- thrown when class definition cannot be found
+   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -8,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -39,137 +38,88 @@ exception statement from your version. */
 
 package java.lang;
 
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-
 /**
- * Exceptions may be thrown by one part of a Java program and caught
- * by another in order to deal with exceptional conditions.  This 
- * exception can by thrown by specific methods of <code>ClassLoader</code>
- * and <code>Class</code> when attempting to load a class when no definition
- * for the specified class can be found.
+ * Thrown when a class is requested by reflection, but the class definition
+ * cannot be found. This exception is often chained from another Throwable.
  *
- * @since JDK 1.0
- * 
  * @author Brian Jones
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Class#forName(String)
+ * @see ClassLoader#findSystemClass(String)
+ * @see ClassLoader#loadClass(String, boolean)
+ * @status updated to 1.4
  */
 public class ClassNotFoundException extends Exception
 {
-  static final long serialVersionUID = 9176873029745254542L;
-
-  private Throwable ex = null;
-  
   /**
-   * Create an exception without a message.
+   * Compatible with JDK 1.0+.
+   */
+  private static final long serialVersionUID = 9176873029745254542L;
+
+  /**
+   * The cause of this exception (duplicates the one stored in Throwable).
+   *
+   * @serial the exception cause
+   * @since 1.2
+   */
+  private final Throwable ex;
+
+  /**
+   * Create an exception without a message. Note that this initializes the
+   * cause to null.
    */
   public ClassNotFoundException()
-    {
-      super();
-    }
+  {
+    this(null, null);
+  }
 
   /**
-   * Create an exception with a message.
+   * Create an exception with a message. Note that this initializes the
+   * cause to null.
+   *
+   * @param s the message
    */
   public ClassNotFoundException(String s)
-    {
-      super(s);
-    }
+  {
+    this(s, null);
+  }
 
   /**
-   * Create an exception with a message and include the exception 
+   * Create an exception with a message and chain it to the exception
    * which occurred while loading the class.
    *
-   * @param ex the exception which occurred while loading the class
-   *
-   * @since JDK 1.2
+   * @param s the message
+   * @param ex the chained exception
+   * @since 1.2
    */
   public ClassNotFoundException(String s, Throwable ex)
-    {
-      super(s);
-      this.ex = ex;
-    }
+  {
+    super(s, ex);
+    this.ex = ex;
+  }
 
   /**
-   * Returns the exception which occurred while loading the class, 
-   * otherwise returns null.
-   * 
-   * @since JDK 1.2
+   * Returns the exception which occurred while loading the class,
+   * otherwise returns null. This is a legacy method; the preferred choice
+   * now is {@link Throwable#getCause()}.
+   *
+   * @return the cause of this exception
+   * @since 1.2
    */
   public Throwable getException()
-    {
-      return ex;
-    }
+  {
+    return ex;
+  }
 
   /**
-   * Print a stack trace of the exception that occurred.
+   * Returns the exception which occurred while loading the class,
+   * otherwise returns null.
+   *
+   * @return the cause of this exception
+   * @since 1.4
    */
-  public void printStackTrace()
-    {
-      if (ex == null)
-        {
-          super.printStackTrace();
-        }
-      else
-        {
-          ex.printStackTrace();
-        }
-    }
-
-  /**
-   * Print a stack trace of the exception that occurred to 
-   * the specified <code>PrintStream</code>.
-   */
-  public void printStackTrace(PrintStream ps)
-    {
-      if (ex == null)
-        {
-          super.printStackTrace(ps);
-        }
-      else
-        {
-          ex.printStackTrace(ps);
-        }
-    }
-
-  /**
-   * Print a stack trace of the exception that occurred to 
-   * the specified <code>PrintWriter</code>.
-   */
-  public void printStackTrace(PrintWriter pw)
-    {
-      if (ex == null)
-        {
-          super.printStackTrace(pw);
-        }
-      else
-        {
-          ex.printStackTrace(pw);
-        }
-    }
-
-  /**
-   * Serialize the object in a manner binary compatible with the JDK 1.2
-   */
-  private void writeObject(java.io.ObjectOutputStream s) 
-    throws IOException
-    {
-      ObjectOutputStream.PutField oFields;
-      oFields = s.putFields();
-      oFields.put("ex", this.ex);
-      s.writeFields(); 
-    }
-
-  /**
-   * Deserialize the object in a manner binary compatible with the JDK 1.2
-   */    
-  private void readObject(java.io.ObjectInputStream s)
-    throws IOException, ClassNotFoundException
-    {
-      ObjectInputStream.GetField oFields;
-      oFields = s.readFields();
-      ex = (Throwable)oFields.get("ex", (Throwable)null);
-    }
+  public Throwable getCause()
+  {
+    return ex;
+  }
 }

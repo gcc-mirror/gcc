@@ -1,5 +1,9 @@
 2002-06-17  Nathanael Nerode  <neroden@twcny.rr.com>
 
+	* java/lang/ClassNotFoundException.java: New Classpath version.
+
+2002-06-17  Nathanael Nerode  <neroden@twcny.rr.com>
+
 	* java/rmi/activation/ActivateFailedException.java: Remerge from
 	Classpath version.
 	* java/rmi/activation/ActivationException.java: Ditto.
