@@ -1,5 +1,10 @@
 2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/17676
+	* resolve.c (resolve_operator): Use correct operator name in message.
+
+2004-10-07  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* primary.c (match_boz_constant): Allow kind parameter suffixes.
 	Move standard warning further to the front.
 
