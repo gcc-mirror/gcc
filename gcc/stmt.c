@@ -2511,15 +2511,15 @@ expand_value_return (val)
 #ifdef PROMOTE_FUNCTION_RETURN
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
       int unsignedp = TREE_UNSIGNED (type);
+      enum machine_mode old_mode
+	= DECL_MODE (DECL_RESULT (current_function_decl));
       enum machine_mode mode
-	= promote_mode (type, DECL_MODE (DECL_RESULT (current_function_decl)),
-			&unsignedp, 1);
+	= promote_mode (type, old_mode, &unsignedp, 1);
 
-      if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
-	convert_move (return_reg, val, unsignedp);
-      else
+      if (mode != old_mode)
+	val = convert_modes (mode, old_mode, val, unsignedp);
 #endif
-	emit_move_insn (return_reg, val);
+      emit_move_insn (return_reg, val);
     }
   if (GET_CODE (return_reg) == REG
       && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)

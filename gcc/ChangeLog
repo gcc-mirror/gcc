@@ -1,3 +1,9 @@
+Fri Jan  7 14:40:05 2000  Richard Henderson  <rth@cygnus.com>
+
+	Thu Oct 28 18:06:50 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+        * stmt.c (expand_value_return): Correctly convert VAL when promoting
+	function return.
+
 Tue Jan  4 02:22:27 2000  Jeffrey A Law  (law@cygnus.com)
 
 	Mon Oct 18 18:50:51 1999  Andreas Schwab  <schwab@suse.de>
