@@ -1,3 +1,16 @@
+2003-12-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/13284
+	* include/bits/stl_algo.h (__random_number): Remove.
+	(random_shuffle): Use rand, as permitted by DR 395.
+	* include/ext/algorithm: Same.
+	* linkage.m4 (GLIBCXX_CHECK_STDLIB_SUPPORT): Remove lrand48.
+	* acconfig.h: Same.
+	* crossconfig.m4: Remove HAVE_DRAND48, HAVE_LRAND48.
+	* config.h.in: Regenerated.
+	* configure: Same.
+	* aclocal.m4: Same.
+	
 2003-12-04  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/12653

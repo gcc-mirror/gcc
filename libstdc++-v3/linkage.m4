@@ -371,7 +371,6 @@ dnl This might seem like overkill but experience has shown that it's not...
 dnl
 dnl Define HAVE_STRTOLD if "strtold" is declared and links
 dnl Define HAVE_STRTOF if "strtof" is declared and links
-dnl Define HAVE_LRAND48 if "lrand48" is declared and links
 dnl
 dnl GLIBCXX_CHECK_STDLIB_SUPPORT
 AC_DEFUN(GLIBCXX_CHECK_STDLIB_SUPPORT, [
@@ -381,7 +380,6 @@ AC_DEFUN(GLIBCXX_CHECK_STDLIB_SUPPORT, [
 
   GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtold)
   GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtof)
-  GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_0(lrand48)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 ])

@@ -63,9 +63,6 @@
 // Define if gthr-default.h exists (meaning that threading support is enabled).
 #undef HAVE_GTHR_DEFAULT
 
-// Define if lrand48 exists.
-#undef HAVE_DRAND48
-
 // Define if getpagesize exists.
 #undef HAVE_GETPAGESIZE
 

@@ -519,15 +519,15 @@ debug_headers = \
 	${debug_srcdir}/string \
 	${debug_srcdir}/vector
 
-@GLIBCXX_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
 
 # Some of the different "C" header models need extra files.
 # Some "C" header schemes require the "C" compatibility headers.
 # For --enable-cheaders=c_std
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_base_headers_extra = ${c_base_srcdir}/cmath.tcc
-@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
+@GLIBCXX_C_HEADERS_C_STD_FALSE@c_base_headers_extra = 
 
 @GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE@c_compatibility_headers_extra = ${c_compatibility_headers}
+@GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
 host_srcdir = ${glibcxx_srcdir}/$(OS_INC_SRCDIR)
 host_builddir = ./${host_alias}/bits
@@ -566,10 +566,10 @@ pch_input = ${host_builddir}/stdc++.h
 pch_output_builddir = ${host_builddir}/stdc++.h.gch
 pch_source = ${glibcxx_srcdir}/include/stdc++.h
 PCHFLAGS = -Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
-@GLIBCXX_BUILD_PCH_FALSE@pch_build = 
 @GLIBCXX_BUILD_PCH_TRUE@pch_build = ${pch_input}
-@GLIBCXX_BUILD_PCH_FALSE@pch_install = 
+@GLIBCXX_BUILD_PCH_FALSE@pch_build = 
 @GLIBCXX_BUILD_PCH_TRUE@pch_install = install-pch
+@GLIBCXX_BUILD_PCH_FALSE@pch_install = 
 
 # List of all timestamp files.  By keeping only one copy of this list, both
 # CLEANFILES and all-local are kept up-to-date.

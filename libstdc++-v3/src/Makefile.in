@@ -220,12 +220,12 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 
 # Cross compiler support.
 toolexeclib_LTLIBRARIES = libstdc++.la
+@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
 
 # Symbol versioning for shared libraries.
 @GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_arg = -Wl,--version-script=libstdc++-symbol.ver
-@GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_arg = 
-@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_dep = libstdc++-symbol.ver
 @GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE@version_dep = 
+@GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE@version_dep = libstdc++-symbol.ver
 
 # Source files linked in via configuration/make substitution for a
 # particular host.
