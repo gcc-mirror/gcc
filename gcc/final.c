@@ -307,7 +307,8 @@ end_final (filename)
 
       /* Make space for the table of counts.  */
       ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LPBX", 2);
-      assemble_zeros (INT_TYPE_SIZE / BITS_PER_UNIT * count_basic_blocks);
+      if (count_basic_blocks != 0)
+	assemble_zeros (INT_TYPE_SIZE / BITS_PER_UNIT * count_basic_blocks);
 
       /* Output the table of addresses.  */
       readonly_data_section ();
