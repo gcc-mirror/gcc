@@ -1,3 +1,17 @@
+2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
+
+	* fixinc/Makefile.in: Set SHELL.
+
+2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
+
+        * fixinc/fixincl.c (fix_with_system): Quote file names before
+	passing them to shell.
+		 
+2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
+
+        * Makefile.in: Use fix-header$(build_exeext) instead
+	of fix-header.
+
 Fri Mar 16 11:26:01 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h: Revert previously misapplied patch which
