@@ -4667,7 +4667,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
      int flags;
 {
   int regno_first = -1, regno_last = -1;
-  int not_dead = 0;
+  unsigned long not_dead = 0;
   int i;
 
   /* Modifying just one hardware register of a multi-reg value or just a
@@ -4698,7 +4698,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	     || GET_CODE (reg) == STRICT_LOW_PART);
       if (GET_CODE (reg) == MEM)
 	break;
-      not_dead = REGNO_REG_SET_P (pbi->reg_live, REGNO (reg));
+      not_dead = (unsigned long) REGNO_REG_SET_P (pbi->reg_live, REGNO (reg));
       /* Fall through.  */
 
     case REG:
@@ -4746,7 +4746,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 		    + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 		  < ((GET_MODE_SIZE (inner_mode)
 		      + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-		not_dead = REGNO_REG_SET_P (pbi->reg_live, regno_first);
+		not_dead = (unsigned long) REGNO_REG_SET_P (pbi->reg_live,
+							    regno_first);
 
 	      reg = SUBREG_REG (reg);
 	    }
@@ -4842,7 +4843,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	{
 	  for (i = regno_first; i <= regno_last; ++i)
 	    if (! mark_regno_cond_dead (pbi, i, cond))
-	      not_dead = 1;
+	      not_dead |= ((unsigned long) 1) << (i - regno_first);
 	}
 #endif
 
@@ -4955,7 +4956,6 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 
       /* Mark the register as being dead.  */
       if (some_was_live
-	  && ! not_dead
 	  /* The stack pointer is never dead.  Well, not strictly true,
 	     but it's very difficult to tell from here.  Hopefully
 	     combine_stack_adjustments will fix up the most egregious
@@ -4963,7 +4963,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	  && regno_first != STACK_POINTER_REGNUM)
 	{
 	  for (i = regno_first; i <= regno_last; ++i)
-	    CLEAR_REGNO_REG_SET (pbi->reg_live, i);
+	    if (!(not_dead & (((unsigned long) 1) << (i - regno_first))))
+	      CLEAR_REGNO_REG_SET (pbi->reg_live, i);
 	}
     }
   else if (GET_CODE (reg) == REG)
