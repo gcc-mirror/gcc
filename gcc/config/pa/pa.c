@@ -2046,9 +2046,10 @@ compute_frame_size (size, fregs_live)
      we need to add this in because of STARTING_FRAME_OFFSET. */
   fsize = size + (size || frame_pointer_needed ? 8 : 0);
 
-  /* We do not want to create holes in the callee registers that
-     get saved (confuses gdb), so once we know the highest we just
-     save all the ones below it, whether they're used or not.  */
+  /* We must leave enough space for all the callee saved registers
+     from 3 .. highest used callee save register since we don't
+     know if we're going to have an inline or out of line prologue
+     and epilogue.  */
   for (i = 18; i >= 3; i--)
     if (regs_ever_live[i])
       {
@@ -2059,9 +2060,10 @@ compute_frame_size (size, fregs_live)
   /* Round the stack.  */
   fsize = (fsize + 7) & ~7;
 
-  /* We do not want to create holes in the callee registers that
-     get saved (confuses gdb), so once we know the highest we just
-     save all the ones below it, whether they're used or not.  */
+  /* We must leave enough space for all the callee saved registers
+     from 3 .. highest used callee save register since we don't
+     know if we're going to have an inline or out of line prologue
+     and epilogue.  */
   for (i = 66; i >= 48; i -= 2)
     if (regs_ever_live[i] || regs_ever_live[i + 1])
       {
@@ -2371,12 +2373,9 @@ hppa_expand_prologue()
      was done earlier.  */
   if (frame_pointer_needed)
     {
-      int found_one = 0;
       for (i = 18, offset = local_fsize; i >= 4; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i]
-	    || found_one)
+	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    found_one = 1;
 	    store_reg (i, offset, FRAME_POINTER_REGNUM);
 	    offset += 4;
 	    gr_saved++;
@@ -2387,12 +2386,9 @@ hppa_expand_prologue()
   /* No frame pointer needed.  */
   else
     {
-      int found_one = 0;
       for (i = 18, offset = local_fsize - actual_fsize; i >= 3; i--)
-      	if (regs_ever_live[i] && ! call_used_regs[i]
-	    || found_one)
+      	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    found_one = 1;
 	    /* If merge_sp_adjust_with_store is nonzero, then we can
 	       optimize the first GR save.  */
 	    if (merge_sp_adjust_with_store)
@@ -2422,8 +2418,6 @@ hppa_expand_prologue()
   /* Floating point register store.  */
   if (save_fregs)
     {
-      int found_one = 0;
-
       /* First get the frame or stack pointer to the start of the FP register
 	 save area.  */
       if (frame_pointer_needed)
@@ -2434,10 +2428,8 @@ hppa_expand_prologue()
       /* Now actually save the FP registers.  */
       for (i = 66; i >= 48; i -= 2)
 	{
-	  if (regs_ever_live[i] || regs_ever_live[i + 1]
-	      || found_one)
+	  if (regs_ever_live[i] || regs_ever_live[i + 1])
 	    {
-	      found_one = 1;
 	      emit_move_insn (gen_rtx (MEM, DFmode,
 				       gen_rtx (POST_INC, DFmode, tmpreg)),
 			      gen_rtx (REG, DFmode, i));
@@ -2587,25 +2579,19 @@ hppa_expand_epilogue ()
   /* General register restores.  */
   if (frame_pointer_needed)
     {
-      int found_one = 0;
       for (i = 18, offset = local_fsize; i >= 4; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i]
-	    || found_one)
+	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    found_one = 1;
 	    load_reg (i, offset, FRAME_POINTER_REGNUM);
 	    offset += 4;
 	  }
     }
   else
     {
-      int found_one = 0;
       for (i = 18, offset = local_fsize - actual_fsize; i >= 3; i--)
 	{
-	  if (regs_ever_live[i] && ! call_used_regs[i]
-	      || found_one)
+	  if (regs_ever_live[i] && ! call_used_regs[i])
 	    {
-	      found_one = 1;
 	      /* Only for the first load.
 	         merge_sp_adjust_with_load holds the register load
 	         with which we will merge the sp adjustment.  */
@@ -2626,8 +2612,6 @@ hppa_expand_epilogue ()
   /* FP register restores.  */
   if (save_fregs)
     {
-      int found_one = 0;
-
       /* Adjust the register to index off of.  */
       if (frame_pointer_needed)
 	set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset);
@@ -2639,7 +2623,6 @@ hppa_expand_epilogue ()
 	{
 	  if (regs_ever_live[i] || regs_ever_live[i + 1])
 	    {
-	      found_one = 1;
 	      emit_move_insn (gen_rtx (REG, DFmode, i),
 			      gen_rtx (MEM, DFmode,
 				       gen_rtx (POST_INC, DFmode, tmpreg)));
