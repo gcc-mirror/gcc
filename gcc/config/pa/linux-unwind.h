@@ -86,7 +86,22 @@ pa32_fallback_frame_state (struct _Unwind_Context *context,
       off = 10 * 4;
     }
   else
-    return _URC_END_OF_STACK;
+    {
+      /* We may have to unwind through an alternate signal stack.
+	 We assume that the alignment of the alternate signal stack
+	 is BIGGEST_ALIGNMENT (i.e., that it has been allocated using
+	 malloc).  As a result, we can't distinguish trampolines
+	 used prior to 2.6.5-rc2-pa4.  However after 2.6.5-rc2-pa4,
+	 the return address of a signal trampoline will be on an odd
+	 word boundary and we can then determine the frame offset.  */
+      sp = (unsigned long)context->ra;
+      pc = (unsigned int *)sp;
+      if ((pc[0] == 0x34190000 || pc[0] == 0x34190002) && (sp & 4))
+	off = 5 * 4;
+      else
+	return _URC_END_OF_STACK;
+    }
+
   if (pc[1] != 0x3414015a
       || pc[2] != 0xe4008200
       || pc[3] != 0x08000240)
