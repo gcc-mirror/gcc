@@ -1,5 +1,8 @@
 2003-06-17  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/1255
+	* class.c (handle_using_decl): Robustify.
+
 	PR c++/11105
 	* cp-tree.h (DECL_CONV_FN_TYPE): New method.
 	* mangle.c (struct globals): Remove internal_mangling_p.
