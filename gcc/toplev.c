@@ -3562,14 +3562,13 @@ rest_of_compilation (decl)
   register rtx insns;
   int start_time = get_run_time ();
   int tem;
-  /* Nonzero if we have saved the original DECL_INITIAL of the function,
-     to be restored after we finish compiling the function
-     (for use when compiling inline calls to this function).  */
-  tree saved_block_tree = 0;
-  /* Likewise, for DECL_ARGUMENTS.  */
-  tree saved_arguments = 0;
   int failure = 0;
   int rebuild_label_notes_after_reload;
+
+  /* First, remove any notes we don't need.  That will make iterating
+     over the instruction sequence faster, and allow the garbage
+     collector to reclaim the memory used by the notes.  */
+  remove_unncessary_notes ();
 
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
@@ -3792,6 +3791,13 @@ rest_of_compilation (decl)
   if (ggc_p)
     ggc_collect ();
 
+  /* Jump optimization, and the removal of NULL pointer checks, may
+     have reduced the number of instructions substantially.  CSE, and
+     future passes, allocate arrays whose dimensions involve the maximum
+     instruction UID, so if we can reduce the maximum UID we'll save big on
+     memory.  */
+  renumber_insns ();
+
   /* Perform common subexpression elimination.
      Nonzero value from `cse_main' means that jumps were simplified
      and some code may now be unreachable, so do
@@ -3834,6 +3840,10 @@ rest_of_compilation (decl)
 	  if (graph_dump_format != no_graph)
 	    print_rtl_graph_with_bb (dump_base_name, ".02.cse", insns);
 	}
+
+      /* The second pass of jump optimization is likely to have
+         removed a bunch more instructions.  */
+      renumber_insns ();
     }
 
   purge_addressof (insns);
@@ -4454,18 +4464,6 @@ rest_of_compilation (decl)
   if (write_symbols == SDB_DEBUG)
     sdbout_types (NULL_TREE);
 #endif
-
-  /* Put back the tree of subblocks and list of arguments
-     from before we copied them.
-     Code generation and the output of debugging info may have modified
-     the copy, but the original is unchanged.  */
-
-  if (saved_block_tree != 0)
-    {
-      DECL_INITIAL (decl) = saved_block_tree;
-      DECL_ARGUMENTS (decl) = saved_arguments;
-      DECL_ABSTRACT_ORIGIN (decl) = NULL_TREE;
-    }
 
   reload_completed = 0;
   flow2_completed = 0;

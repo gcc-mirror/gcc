@@ -1,5 +1,12 @@
 Wed Nov  3 14:51:59 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
+	* rtl.h (renumber_insns): New function.
+	(remove_unnecessary_notes): Likewise.
+	* emit-rtl.c (renumber_insns): Define.
+	(remove_unncessary_notes): Likewise.
+	* toplev.c (rest_of_compilation): Remove dead code.
+	Use renumber_insns and remove_unncessary_notes.
+
 	* gcse.c (struct null_pointer_info): New type.
 	(get_bitmap_width): New function.
 	(current_block): Remove.
