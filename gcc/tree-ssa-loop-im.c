@@ -47,16 +47,6 @@ struct depend
   struct depend *next;
 };
 
-/* The possibilities of statement movement.  */
-
-enum move_pos
-{
-  MOVE_IMPOSSIBLE,		/* No movement -- side effect expression.  */
-  MOVE_PRESERVE_EXECUTION,	/* Must not cause the non-executed statement
-				   become executed -- memory accesses, ... */
-  MOVE_POSSIBLE			/* Unlimited movement.  */
-};
-
 /* The auxiliary data kept for each statement.  */
 
 struct lim_aux_data
@@ -170,7 +160,7 @@ for_each_index (tree *addr_p, bool (*cbck) (tree, tree *, void *), void *data)
    because it may trap), return MOVE_PRESERVE_EXECUTION.
    Otherwise return MOVE_IMPOSSIBLE.  */
 
-static enum move_pos
+enum move_pos
 movement_possibility (tree stmt)
 {
   tree lhs, rhs;

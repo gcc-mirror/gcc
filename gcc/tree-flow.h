@@ -654,6 +654,22 @@ bool for_each_index (tree *, bool (*) (tree, tree *, void *), void *);
 void create_iv (tree, tree, tree, struct loop *, block_stmt_iterator *, bool,
 		tree *, tree *);
 
+/* In tree-ssa-loop-im.c  */
+/* The possibilities of statement movement.  */
+
+enum move_pos
+  {
+    MOVE_IMPOSSIBLE,		/* No movement -- side effect expression.  */
+    MOVE_PRESERVE_EXECUTION,	/* Must not cause the non-executed statement
+				   become executed -- memory accesses, ... */
+    MOVE_POSSIBLE		/* Unlimited movement.  */
+  };
+extern enum move_pos movement_possibility (tree);
+
+/* In tree-if-conv.c  */
+bool tree_if_conversion (struct loop *, bool);
+
+
 /* In tree-flow-inline.h  */
 static inline int phi_arg_from_edge (tree, edge);
 static inline bool is_call_clobbered (tree);

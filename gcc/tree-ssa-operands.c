@@ -625,7 +625,6 @@ finalize_ssa_vuses (vuse_optype *old_ops_p)
   return vuse_ops;
 }
 
-
 /* Return a new v_must_def operand vector for STMT, comparing to OLD_OPS_P.  */
 
 static v_must_def_optype
@@ -1079,6 +1078,12 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 
     case CALL_EXPR:
       get_call_expr_operands (stmt, expr);
+      return;
+
+    case COND_EXPR:
+      get_expr_operands (stmt, &COND_EXPR_COND (expr), opf_none);
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none);
+      get_expr_operands (stmt, &TREE_OPERAND (expr, 2), opf_none);
       return;
 
     case MODIFY_EXPR:

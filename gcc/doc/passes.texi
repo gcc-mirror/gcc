@@ -385,6 +385,15 @@ The optimizations also use various utility functions contained in
 @file{tree-ssa-loop-manip.c}, @file{cfgloop.c}, @file{cfgloopanal.c} and
 @file{cfgloopmanip.c}.
 
+@item Tree level if-conversion for vectorizer
+
+This pass applies if-conversion to simple loops to help vectorizer.
+We identify if convertable loops, if-convert statements and merge
+basic blocks in one big block. The idea is to present loop in such
+form so that vectorizer can have one to one mapping between statements
+and available vector operations. This patch re-introduces COND_EXPR
+at GIMPLE level. This pass is located in @file{tree-if-conv.c}.
+
 @item Conditional constant propagation
 
 This pass relaxes a lattice of values in order to identify those

@@ -260,6 +260,9 @@ becomes
   a = T1;
 @end smallexample
 
+Tree level if-conversion pass re-introduces @code{?:} expression, if appropriate.
+It is used to vectorize loops with conditions using vector conditional operations.
+
 Note that in GIMPLE, @code{if} statements are also represented using
 @code{COND_EXPR}, as described below.
 
