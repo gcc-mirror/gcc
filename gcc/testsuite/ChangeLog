@@ -1,3 +1,8 @@
+2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17902
+	* g++.dg/opt/pr17902.C: New test.
+
 2004-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cpp/ident-1.c: Add dg-options "".
