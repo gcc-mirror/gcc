@@ -364,13 +364,14 @@ build_addr_func (function)
    (TYPE_PTRMEMFUNC_P) must be handled by our callers.  */
 
 tree
-build_call (function, result_type, parms)
-     tree function, result_type, parms;
+build_call (function, parms)
+     tree function, parms;
 {
   int is_constructor = 0;
   int nothrow;
   tree tmp;
   tree decl;
+  tree result_type;
 
   function = build_addr_func (function);
 
@@ -379,6 +380,8 @@ build_call (function, result_type, parms)
       sorry ("unable to call pointer to member function here");
       return error_mark_node;
     }
+
+  result_type = TREE_TYPE (TREE_TYPE (TREE_TYPE (function)));
 
   if (TREE_CODE (function) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (function, 0)) == FUNCTION_DECL)
@@ -394,8 +397,14 @@ build_call (function, result_type, parms)
   if (decl && DECL_CONSTRUCTOR_P (decl))
     is_constructor = 1;
 
-  if (decl)
-    my_friendly_assert (TREE_USED (decl), 990125);
+  if (decl && ! TREE_USED (decl))
+    {
+      /* We invoke build_call directly for several library functions.  */
+      if (DECL_ARTIFICIAL (decl))
+	mark_used (decl);
+      else
+	my_friendly_abort (990125);
+    }
 
   /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.
@@ -4157,7 +4166,7 @@ build_over_call (cand, args, flags)
 	return exp;
     }
 
-  fn = build_call (fn, TREE_TYPE (TREE_TYPE (TREE_TYPE (fn))), converted_args);
+  fn = build_call (fn, converted_args);
   if (TREE_CODE (TREE_TYPE (fn)) == VOID_TYPE)
     return fn;
   fn = require_complete_type (fn);

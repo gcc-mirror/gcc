@@ -45,7 +45,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern struct obstack permanent_obstack;
 
-static tree build_runtime_decl PARAMS((const char *, tree));
 static tree build_headof_sub PARAMS((tree));
 static tree build_headof PARAMS((tree));
 static tree get_tinfo_var PARAMS((tree));
@@ -165,35 +164,6 @@ build_headof (exp)
 		cp_convert (ptrdiff_type_node, offset));
 }
 
-/* Build a decl to a runtime entry point taking void and returning TYPE. 
-   Although the entry point may never return, making its return type
-   consistent is necessary.  */
-
-static tree
-build_runtime_decl (name, type)
-     const char *name;
-     tree type;
-{
-  tree d = get_identifier (name);
-  
-  if (IDENTIFIER_GLOBAL_VALUE (d))
-    d = IDENTIFIER_GLOBAL_VALUE (d);
-  else
-    {
-      type = build_function_type (type, void_list_node);
-      d = build_lang_decl (FUNCTION_DECL, d, type);
-      DECL_EXTERNAL (d) = 1;
-      TREE_PUBLIC (d) = 1;
-      DECL_ARTIFICIAL (d) = 1;
-      TREE_THIS_VOLATILE (d) = 1;
-      pushdecl_top_level (d);
-      make_function_rtl (d);
-    }
-
-  mark_used (d);
-  return d;
-}
-
 /* Get a bad_cast node for the program to throw...
 
    See libstdc++/exception.cc for __throw_bad_cast */
@@ -201,28 +171,27 @@ build_runtime_decl (name, type)
 static tree
 throw_bad_cast ()
 {
-  if (!throw_bad_cast_node)
-    throw_bad_cast_node = build_runtime_decl
-        ("__throw_bad_cast", ptr_type_node);
+  tree fn = get_identifier ("__throw_bad_cast");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
+  else
+    fn = push_throw_library_fn (fn, ptr_type_node);
   
-  return build_call (throw_bad_cast_node,
-                     TREE_TYPE (TREE_TYPE (throw_bad_cast_node)),
-                     NULL_TREE);
+  return build_call (fn, NULL_TREE);
 }
 
 static tree
 throw_bad_typeid ()
 {
-  if (!throw_bad_typeid_node)
-    throw_bad_typeid_node = build_runtime_decl
-        ("__throw_bad_typeid",
-         build_reference_type
-          (build_qualified_type
-            (type_info_type_node, TYPE_QUAL_CONST)));
+  tree fn = get_identifier ("__throw_bad_cast");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
+  else
+    fn = push_throw_library_fn (fn, build_reference_type
+				(build_qualified_type
+				 (type_info_type_node, TYPE_QUAL_CONST)));
 
-  return build_call (throw_bad_typeid_node,
-                     TREE_TYPE (TREE_TYPE (throw_bad_typeid_node)),
-                     NULL_TREE);
+  return build_call (fn, NULL_TREE);
 }
 
 /* Return a pointer to type_info function associated with the expression EXP.
@@ -420,17 +389,10 @@ get_tinfo_decl (type)
     {
       /* The tinfo decl is a function returning a reference to the type_info
          object.  */
-      d = build_lang_decl (FUNCTION_DECL, name, tinfo_decl_type);
-      DECL_EXTERNAL (d) = 1;
-      TREE_PUBLIC (d) = 1;
-      DECL_ARTIFICIAL (d) = 1;
-      TREE_NOTHROW (d) = 1;
+      d = push_library_fn (name, tinfo_decl_type);
       DECL_NOT_REALLY_EXTERN (d) = 1;
       SET_DECL_TINFO_FN_P (d);
       TREE_TYPE (name) = type;
-
-      pushdecl_top_level (d);
-      make_function_rtl (d);
       mark_inline_for_output (d);
     }
   else
@@ -468,7 +430,7 @@ tinfo_from_decl (expr)
   tree t;
   
   if (!new_abi_rtti_p ())
-    t = build_call (expr, TREE_TYPE (tinfo_decl_type), NULL_TREE);
+    t = build_call (expr, NULL_TREE);
   else if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
     t = build_indirect_ref (expr, NULL);
   else
@@ -814,24 +776,15 @@ build_dynamic_cast_1 (type, expr)
 	                  (NULL_TREE, ptrdiff_type_node, void_list_node))));
 	        }
 	      tmp = build_function_type (ptr_type_node, tmp);
-	      dcast_fn = build_lang_decl (FUNCTION_DECL,
-	                                  get_identifier (name),
-	                                  tmp);
-	      DECL_EXTERNAL (dcast_fn) = 1;
-	      TREE_PUBLIC (dcast_fn) = 1;
-	      DECL_ARTIFICIAL (dcast_fn) = 1;
-	      TREE_NOTHROW (dcast_fn) = 1;
-	      pushdecl (dcast_fn);
 	      if (new_abi_rtti_p ())
-	        /* We want its name mangling.  */
-	        set_mangled_name_for_decl (dcast_fn);
-	      make_function_rtl (dcast_fn);
+		/* We want its name mangling.  */
+		dcast_fn = build_cp_library_fn_ptr (name, tmp);
+	      else
+		dcast_fn = build_library_fn_ptr (name, tmp);
               pop_nested_namespace (ns);
               dynamic_cast_node = dcast_fn;
 	    }
-	  mark_used (dcast_fn);
-          result = build_call
-	    (dcast_fn, TREE_TYPE (TREE_TYPE (dcast_fn)), elems);
+          result = build_call (dcast_fn, elems);
 
 	  if (tc == REFERENCE_TYPE)
 	    {
@@ -912,19 +865,10 @@ expand_si_desc (tdecl, type)
 	 (NULL_TREE, const_string_type_node, tree_cons
 	  (NULL_TREE, build_pointer_type (type_info_type_node),
 	   void_list_node)));
-      tmp = build_function_type	(void_type_node, tmp);
-  
-      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+      fn = push_void_library_fn (fn, tmp);
     }
 
-  mark_used (fn);
-  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
+  fn = build_call (fn, elems);
   finish_expr_stmt (fn);
 }
 
@@ -1072,19 +1016,11 @@ expand_class_desc (tdecl, type)
 	 (NULL_TREE, const_string_type_node, tree_cons
 	  (NULL_TREE, build_pointer_type (base_desc_type_node), tree_cons
 	   (NULL_TREE, sizetype, void_list_node))));
-      tmp = build_function_type	(void_type_node, tmp);
-  
-      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+
+      fn = push_void_library_fn (fn, tmp);
     }
 
-  mark_used (fn);
-  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
+  fn = build_call (fn, elems);
   finish_expr_stmt (fn);
 }
 
@@ -1117,19 +1053,10 @@ expand_ptr_desc (tdecl, type)
 	 (NULL_TREE, const_string_type_node, tree_cons
 	  (NULL_TREE, build_pointer_type (type_info_type_node),
 	   void_list_node)));
-      tmp = build_function_type	(void_type_node, tmp);
-  
-      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+      fn = push_void_library_fn (fn, tmp);
     }
 
-  mark_used (fn);
-  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
+  fn = build_call (fn, elems);
   finish_expr_stmt (fn);
 }
 
@@ -1163,19 +1090,10 @@ expand_attr_desc (tdecl, type)
 	  (NULL_TREE, integer_type_node, tree_cons
 	   (NULL_TREE, build_pointer_type (type_info_type_node),
 	    void_list_node))));
-      tmp = build_function_type	(void_type_node, tmp);
-  
-      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+      fn = push_void_library_fn (fn, tmp);
     }
 
-  mark_used (fn);
-  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
+  fn = build_call (fn, elems);
   finish_expr_stmt (fn);
 }
 
@@ -1201,19 +1119,10 @@ expand_generic_desc (tdecl, type, fnname)
       tmp = tree_cons
 	(NULL_TREE, ptr_type_node, tree_cons
 	 (NULL_TREE, const_string_type_node, void_list_node));
-      tmp = build_function_type (void_type_node, tmp);
-  
-      fn = build_lang_decl (FUNCTION_DECL, fn, tmp);
-      DECL_EXTERNAL (fn) = 1;
-      TREE_PUBLIC (fn) = 1;
-      DECL_ARTIFICIAL (fn) = 1;
-      TREE_NOTHROW (fn) = 1;
-      pushdecl_top_level (fn);
-      make_function_rtl (fn);
+      fn = push_void_library_fn (fn, tmp);
     }
 
-  mark_used (fn);
-  fn = build_call (fn, TREE_TYPE (TREE_TYPE (fn)), elems);
+  fn = build_call (fn, elems);
   finish_expr_stmt (fn);
 }
 

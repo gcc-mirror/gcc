@@ -2156,7 +2156,7 @@ emit_thunk (thunk_fndecl)
     for (a = TREE_CHAIN (a); a; a = TREE_CHAIN (a))
       t = tree_cons (NULL_TREE, a, t);
     t = nreverse (t);
-    t = build_call (function, TREE_TYPE (TREE_TYPE (function)), t);
+    t = build_call (function, t);
     finish_return_stmt (t);
 
     expand_body (finish_function (lineno, 0));

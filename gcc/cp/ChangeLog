@@ -1,3 +1,27 @@
+2000-03-10  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl.c (push_overloaded_decl_1, auto_function, 
+	define_function): Lose.
+	(build_library_fn_1): New static fn.
+	(builtin_function): Use it.
+	(get_atexit_node): Use build_library_fn_ptr.
+	(build_library_fn, build_cp_library_fn, build_library_fn_ptr,
+	build_cp_library_fn_ptr, push_library_fn, push_cp_library_fn,
+	push_void_library_fn, push_throw_library_fn): New fns.
+	* cp-tree.h: Declare them.
+	(cp_tree_index): Remove CPTI_BAD_CAST, CPTI_BAD_TYPEID.
+	(throw_bad_cast_node, throw_bad_typeid_node): Lose.
+	* except.c (init_exception_processing, call_eh_info, do_pop_exception,
+	(expand_end_eh_spec, alloc_eh_object, expand_throw): Use above fns.
+	* rtti.c (build_runtime_decl): Lose.
+	(throw_bad_cast, throw_bad_typeid, get_tinfo_decl, 
+	build_dynamic_cast_1, expand_si_desc, expand_class_desc,
+	expand_ptr_desc, expand_attr_desc, expand_generic_desc): Use above fns.
+
+	* call.c (build_call): Remove result_type parm.
+	Call mark_used on unused artificial fns.
+	* init.c, method.c, typeck.c, except.c, rtti.c: Adjust.
+
 2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
 
 	* call.c (build_call): Set TREE_NOTHROW on the CALL_EXPR as

@@ -3046,8 +3046,8 @@ build_function_call_real (function, params, require_complete, flags)
     }
 
   /* C++ */
-  value_type = TREE_TYPE (fntype) ? TREE_TYPE (fntype) : void_type_node;
-  result = build_call (function, value_type, coerced_params);
+  result = build_call (function, coerced_params);
+  value_type = TREE_TYPE (result);
 
   if (require_complete)
     {
