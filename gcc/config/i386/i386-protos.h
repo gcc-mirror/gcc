@@ -149,7 +149,6 @@ extern void ix86_split_long_move PARAMS ((rtx[]));
 extern void ix86_split_ashldi PARAMS ((rtx *, rtx));
 extern void ix86_split_ashrdi PARAMS ((rtx *, rtx));
 extern void ix86_split_lshrdi PARAMS ((rtx *, rtx));
-extern int ix86_address_cost PARAMS ((rtx));
 extern rtx ix86_find_base_term PARAMS ((rtx));
 
 extern rtx assign_386_stack_local PARAMS ((enum machine_mode, int));

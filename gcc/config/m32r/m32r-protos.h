@@ -54,7 +54,6 @@ extern void   m32r_output_block_move 		PARAMS ((rtx, rtx *));
 extern void   m32r_expand_block_move 		PARAMS ((rtx *));
 extern void   m32r_print_operand		PARAMS ((FILE *, rtx, int));
 extern void   m32r_print_operand_address	PARAMS ((FILE *, rtx));
-extern int    m32r_address_cost 		PARAMS ((rtx));
 extern int    m32r_not_same_reg 		PARAMS ((rtx, rtx));
 
 #ifdef HAVE_MACHINE_MODES

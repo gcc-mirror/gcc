@@ -97,6 +97,7 @@ hppa_fpstore_bypass_p (out_insn, in_insn)
 #endif
 #endif
 
+static int hppa_address_cost PARAMS ((rtx));
 static bool hppa_rtx_costs PARAMS ((rtx, int, int, int *));
 static inline rtx force_mode PARAMS ((enum machine_mode, rtx));
 static void pa_combine_instructions PARAMS ((rtx));
@@ -223,6 +224,8 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS hppa_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST hppa_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1306,17 +1309,22 @@ hppa_legitimize_address (x, oldx, mode)
 
    It is no coincidence that this has the same structure
    as GO_IF_LEGITIMATE_ADDRESS.  */
-int
+
+static int
 hppa_address_cost (X)
      rtx X;
 {
-  if (GET_CODE (X) == PLUS)
+  switch (GET_CODE (X))
+    {
+    case REG:
+    case PLUS:
+    case LO_SUM:
       return 1;
-  else if (GET_CODE (X) == LO_SUM)
-    return 1;
-  else if (GET_CODE (X) == HIGH)
-    return 2;
-  return 4;
+    case HIGH:
+      return 2;
+    default:
+      return 4;
+    }
 }
 
 /* Compute a (partial) cost for rtx X.  Return true if the complete

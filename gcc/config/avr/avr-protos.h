@@ -104,7 +104,6 @@ extern const char *avr_out_sbxx_branch PARAMS ((rtx insn, rtx operands[]));
 
 extern enum reg_class preferred_reload_class PARAMS ((rtx x,
 						     enum reg_class class));
-extern int    avr_address_cost       PARAMS ((rtx x));
 extern int    extra_constraint       PARAMS ((rtx x, int c));
 extern rtx    legitimize_address     PARAMS ((rtx x, rtx oldx,
 					     enum machine_mode mode));

@@ -60,6 +60,7 @@ static void romp_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static void romp_encode_section_info PARAMS ((tree, int));
 static bool romp_rtx_costs PARAMS ((rtx, int, int, int *));
+static int romp_address_cost PARAMS ((rtx));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_FUNCTION_PROLOGUE
@@ -72,6 +73,8 @@ static bool romp_rtx_costs PARAMS ((rtx, int, int, int *));
 #define TARGET_ENCODE_SECTION_INFO romp_encode_section_info
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS romp_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST romp_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2164,4 +2167,24 @@ romp_rtx_costs (x, code, outer_code, total)
     default:
       return false;
     }
+}
+
+/* For the ROMP, everything is cost 0 except for addresses involving
+   symbolic constants, which are cost 1.  */
+
+static int
+romp_address_cost (x)
+     rtx x;
+{
+  return 
+  ((GET_CODE (x) == SYMBOL_REF
+    && ! CONSTANT_POOL_ADDRESS_P (x))
+   || GET_CODE (x) == LABEL_REF
+   || (GET_CODE (x) == CONST
+       && ! constant_pool_address_operand (x, Pmode))
+   || (GET_CODE (x) == PLUS
+       && ((GET_CODE (XEXP (x, 1)) == SYMBOL_REF
+	    && ! CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
+	   || GET_CODE (XEXP (x, 1)) == LABEL_REF
+	   || GET_CODE (XEXP (x, 1)) == CONST)));
 }

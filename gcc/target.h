@@ -321,6 +321,10 @@ struct gcc_target
      not necessarily defined at this point.  */
   bool (* rtx_costs) PARAMS ((rtx x, int code, int outer_code, int *total));
 
+  /* Compute the cost of X, used as an address.  Never called with
+     invalid addresses.  */
+  int (* address_cost) PARAMS ((rtx x));
+
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

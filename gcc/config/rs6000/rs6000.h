@@ -2291,18 +2291,6 @@ do {									     \
 
 #define SHIFT_COUNT_TRUNCATED (TARGET_POWER ? 1 : 0)
 
-/* Compute the cost of an address.  This is meant to approximate the size
-   and/or execution delay of an insn using that address.  If the cost is
-   approximated by the RTL complexity, including CONST_COSTS above, as
-   is usually the case for CISC machines, this macro should not be defined.
-   For aggressively RISCy machines, only one insn format is allowed, so
-   this macro should be a constant.  The value of this macro only matters
-   for valid addresses.
-
-   For the RS/6000, everything is cost 0.  */
-
-#define ADDRESS_COST(RTX) 0
-
 /* Adjust the length of an INSN.  LENGTH is the currently-computed length and
    should be adjusted to reflect any required changes.  This macro is used when
    there is some systematic length adjustment required that would be difficult

@@ -1153,12 +1153,6 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 #ifndef WIND_RIVER
 #define	TARGET_MEM_FUNCTIONS	1
 #endif
-
-/* The i960 offers addressing modes which are "as cheap as a register".
-   See i960.c (or gcc.texinfo) for details.  */
-
-#define ADDRESS_COST(RTX) \
-  (GET_CODE (RTX) == REG ? 1 : i960_address_cost (RTX))
 
 /* Control the assembler format that we output.  */
 

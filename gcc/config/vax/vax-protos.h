@@ -25,8 +25,6 @@ extern const char *rev_cond_name PARAMS ((rtx));
 extern void split_quadword_operands PARAMS ((rtx *, rtx *, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern int vax_float_literal PARAMS ((rtx));
-extern int vax_address_cost PARAMS ((rtx));
-extern int vax_rtx_cost PARAMS ((rtx));
 extern int reg_was_0_p PARAMS ((rtx, rtx));
 #endif /* RTX_CODE */
 

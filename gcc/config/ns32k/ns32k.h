@@ -1161,11 +1161,6 @@ __transfer_from_trampoline ()		\
    is a byte address (for indexing purposes)
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
-
-/* Compute the cost of address ADDRESS. */
-
-#define ADDRESS_COST(RTX) calc_address_cost (RTX)
-
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

@@ -1595,9 +1595,6 @@ do { 									\
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
-#define ADDRESS_COST(RTX) \
-  (GET_CODE (RTX) == REG ? 1 : hppa_address_cost (RTX))
-
 /* Compute extra cost of moving data between one register class
    and another.
 

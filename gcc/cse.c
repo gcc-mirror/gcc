@@ -896,7 +896,7 @@ address_cost (x, mode)
      rtx x;
      enum machine_mode mode;
 {
-  /* The ADDRESS_COST macro does not deal with ADDRESSOF nodes.  But,
+  /* The address_cost target hook does not deal with ADDRESSOF nodes.  But,
      during CSE, such nodes are present.  Using an ADDRESSOF node which
      refers to the address of a REG is a good thing because we can then
      turn (MEM (ADDRESSSOF (REG))) into just plain REG.  */
@@ -906,17 +906,22 @@ address_cost (x, mode)
 
   /* We may be asked for cost of various unusual addresses, such as operands
      of push instruction.  It is not worthwhile to complicate writing
-     of ADDRESS_COST macro by such cases.  */
+     of the target hook by such cases.  */
 
   if (!memory_address_p (mode, x))
     return 1000;
-#ifdef ADDRESS_COST
-  return ADDRESS_COST (x);
-#else
-  return rtx_cost (x, MEM);
-#endif
+
+  return (*targetm.address_cost) (x);
 }
 
+/* If the target doesn't override, compute the cost as with arithmetic.  */
+
+int
+default_address_cost (x)
+     rtx x;
+{
+  return rtx_cost (x, MEM);
+}
 
 static struct cse_reg_info *
 get_cse_reg_info (regno)

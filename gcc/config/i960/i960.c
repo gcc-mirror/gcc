@@ -51,6 +51,7 @@ static void i960_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
 static bool i960_rtx_costs PARAMS ((rtx, int, int, int *));
+static int i960_address_cost PARAMS ((rtx));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -110,6 +111,8 @@ static int ret_label = 0;
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS i960_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST i960_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -503,15 +506,13 @@ gen_compare_reg (code, x, y)
 
 /* ??? Try using just RTX_COST, i.e. not defining ADDRESS_COST.  */
 
-int
+static int
 i960_address_cost (x)
      rtx x;
 {
-#if 0
-  /* Handled before calling here.  */
   if (GET_CODE (x) == REG)
     return 1;
-#endif
+
   /* This is a MEMA operand -- it's free.  */
   if (GET_CODE (x) == CONST_INT
       && INTVAL (x) >= 0

@@ -90,7 +90,6 @@ extern void		mips_gen_conditional_trap PARAMS ((rtx *));
 extern void		mips_emit_fcc_reload PARAMS ((rtx, rtx, rtx));
 extern void		mips_set_return_address PARAMS ((rtx, rtx));
 extern void		machine_dependent_reorg PARAMS ((rtx));
-extern int		mips_address_cost PARAMS ((rtx));
 extern void		mips_count_memory_refs PARAMS ((rtx, int));
 extern HOST_WIDE_INT	mips_debugger_offset PARAMS ((rtx, HOST_WIDE_INT));
 extern int		mips_check_split PARAMS ((rtx, enum machine_mode));

@@ -73,6 +73,7 @@ static void   avr_asm_out_ctor PARAMS ((rtx, int));
 static void   avr_asm_out_dtor PARAMS ((rtx, int));
 static int default_rtx_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
 static bool avr_rtx_costs PARAMS ((rtx, int, int, int *));
+static int avr_address_cost PARAMS ((rtx));
 
 /* Allocate registers from r25 to r8 for parameters for function calls */
 #define FIRST_CUM_REG 26
@@ -231,6 +232,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS avr_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST avr_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5093,7 +5096,7 @@ avr_rtx_costs (x, code, outer_code, total)
 
 /* Calculate the cost of a memory address */
 
-int
+static int
 avr_address_cost (x)
      rtx x;
 {

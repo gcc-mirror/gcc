@@ -73,6 +73,7 @@ static void ns32k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ns32k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void ns32k_encode_section_info PARAMS ((tree, int));
 static bool ns32k_rtx_costs PARAMS ((rtx, int, int, int *));
+static int ns32k_address_cost PARAMS ((rtx));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -95,6 +96,8 @@ static bool ns32k_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ns32k_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST ns32k_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -559,28 +562,26 @@ int secondary_memory_needed (CLASS1, CLASS2, M)
 #endif
     
 
-/* ADDRESS_COST calls this.  This function is not optimal
+/* TARGET_ADDRESS_COST calls this.  This function is not optimal
    for the 32032 & 32332, but it probably is better than
    the default. */
 
-int
-calc_address_cost (operand)
+static int
+ns32k_address_cost (operand)
      rtx operand;
 {
-  int i;
   int cost = 0;
-  if (GET_CODE (operand) == MEM)
-    cost += 3;
-  if (GET_CODE (operand) == MULT)
-    cost += 2;
+
   switch (GET_CODE (operand))
     {
     case REG:
       cost += 1;
       break;
+
     case POST_DEC:
     case PRE_DEC:
       break;
+
     case CONST_INT:
       if (INTVAL (operand) <= 7 && INTVAL (operand) >= -8)
 	break;
@@ -597,18 +598,23 @@ calc_address_cost (operand)
     case CONST_DOUBLE:
       cost += 5;
       break;
+
     case MEM:
-      cost += calc_address_cost (XEXP (operand, 0));
+      cost += ns32k_address_cost (XEXP (operand, 0)) + 3;
       break;
+
     case MULT:
+      cost += 2;
+      /* FALLTHRU */
     case PLUS:
-      for (i = 0; i < GET_RTX_LENGTH (GET_CODE (operand)); i++)
-	{
-	  cost += calc_address_cost (XEXP (operand, i));
-	}
+      cost += ns32k_address_cost (XEXP (operand, 0));
+      cost += ns32k_address_cost (XEXP (operand, 1));
+      break;
+
     default:
       break;
     }
+
   return cost;
 }
 

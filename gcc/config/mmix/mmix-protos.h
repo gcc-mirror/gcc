@@ -95,7 +95,6 @@ extern void mmix_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern int mmix_constant_address_p PARAMS ((rtx));
 extern int mmix_legitimate_address PARAMS ((enum machine_mode, rtx, int));
 extern int mmix_legitimate_constant_p PARAMS ((rtx));
-extern int mmix_address_cost PARAMS ((rtx));
 extern void mmix_print_operand PARAMS ((FILE *, rtx, int));
 extern void mmix_print_operand_address PARAMS ((FILE *, rtx));
 extern void mmix_machine_dependent_reorg PARAMS ((rtx));

@@ -81,8 +81,6 @@ extern int c4x_hard_regno_rename_ok PARAMS ((unsigned int, unsigned int));
 extern struct rtx_def *c4x_legitimize_address PARAMS ((rtx,
 						       enum machine_mode));
 
-extern int c4x_address_cost PARAMS ((rtx));
-
 extern void c4x_print_operand PARAMS ((FILE *, rtx, int));
 
 extern void c4x_print_operand_address PARAMS ((FILE *, rtx));

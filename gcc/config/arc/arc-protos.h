@@ -34,7 +34,6 @@ extern const char *output_shift PARAMS ((rtx *));
 
 extern int symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int arc_double_limm_p PARAMS ((rtx));
-extern int arc_address_cost PARAMS ((rtx));
 extern int arc_eligible_for_epilogue_delay PARAMS ((rtx, int));
 extern void arc_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern void arc_print_operand PARAMS ((FILE *, rtx, int));

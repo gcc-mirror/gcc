@@ -22,7 +22,6 @@ Boston, MA 02111-1307, USA.  */
 /* Prototypes for functions in ns32k.c */
 
 #ifdef RTX_CODE
-extern int calc_address_cost PARAMS ((rtx));
 extern enum reg_class secondary_reload_class PARAMS ((enum reg_class,
 						      enum machine_mode, rtx));
 extern int reg_or_mem_operand PARAMS ((rtx, enum machine_mode));

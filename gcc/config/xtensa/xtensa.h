@@ -1281,10 +1281,6 @@ typedef struct xtensa_args {
    indexing purposes) so give the MEM rtx a words's mode.  */
 #define FUNCTION_MODE SImode
 
-/* An expression giving the cost of an addressing mode that
-   contains ADDRESS.  */
-#define ADDRESS_COST(ADDR) 1
-
 /* A C expression for the cost of moving data from a register in
    class FROM to one in class TO.  The classes are expressed using
    the enumeration values such as 'GENERAL_REGS'.  A value of 2 is

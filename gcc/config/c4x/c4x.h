@@ -1461,13 +1461,6 @@ CUMULATIVE_ARGS;
 
 /* Descripting Relative Cost of Operations.  */
 
-/* Compute the cost of an address.  This is meant to approximate the size
-   and/or execution delay of an insn using that address.  The value of this
-   macro only matters for valid addresses.  We handle the most common address
-   without a call to c4x_address_cost.  */
-
-#define ADDRESS_COST(ADDR) (REG_P (ADDR) ? 1 : c4x_address_cost (ADDR))
-
 #define	CANONICALIZE_COMPARISON(CODE, OP0, OP1)		\
 if (REG_P (OP1) && ! REG_P (OP0))			\
 {							\

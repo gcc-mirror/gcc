@@ -2197,49 +2197,6 @@ do {							\
 
 /* Describing Relative Costs of Operations */
 
-/* An expression giving the cost of an addressing mode that contains ADDRESS.
-   If not defined, the cost is computed from the ADDRESS expression and the
-   `CONST_COSTS' values.
-
-   For most CISC machines, the default cost is a good approximation of the true
-   cost of the addressing mode.  However, on RISC machines, all instructions
-   normally have the same length and execution time.  Hence all addresses will
-   have equal costs.
-
-   In cases where more than one form of an address is known, the form with the
-   lowest cost will be used.  If multiple forms have the same, lowest, cost,
-   the one that is the most complex will be used.
-
-   For example, suppose an address that is equal to the sum of a register and a
-   constant is used twice in the same basic block.  When this macro is not
-   defined, the address will be computed in a register and memory references
-   will be indirect through that register.  On machines where the cost of the
-   addressing mode containing the sum is no higher than that of a simple
-   indirect reference, this will produce an additional instruction and possibly
-   require an additional register.  Proper specification of this macro
-   eliminates this overhead for such machines.
-
-   Similar use of this macro is made in strength reduction of loops.
-
-   ADDRESS need not be valid as an address.  In such a case, the cost is not
-   relevant and can be any value; invalid addresses need not be assigned a
-   different cost.
-
-   On machines where an address involving more than one register is as cheap as
-   an address computation involving only one register, defining `ADDRESS_COST'
-   to reflect this can cause two registers to be live over a region of code
-   where only one would have been if `ADDRESS_COST' were not defined in that
-   manner.  This effect should be considered in the definition of this macro.
-   Equivalent costs should probably only be given to addresses with different
-   numbers of registers on machines with lots of registers.
-
-   This macro will normally either not be defined or be defined as a
-   constant.  */
-#define ADDRESS_COST(ADDRESS)			\
-  (GET_CODE (ADDRESS) == CONST_INT ? 2		\
-   : GET_CODE (ADDRESS) == PLUS ? 7		\
-   : 5)
-
 /* A C expression for the cost of moving data of mode MODE from a
    register in class FROM to one in class TO.  The classes are
    expressed using the enumeration values such as `GENERAL_REGS'.  A

@@ -1,3 +1,66 @@
+2003-01-28  Richard Henderson  <rth@redhat.com>
+
+	* target.h (targetm.address_cost): New.
+	* target-def.h (TARGET_ADDRESS_COST): New.
+	(TARGET_RTX_COSTS): Uncomment.  Oops.
+	* cse.c (address_cost): Use new target hook.
+	(default_address_cost): New.
+	* output.h (default_address_cost): Declare.
+	* hooks.c (hook_int_rtx_0): New.
+	* hooks.h (hook_int_rtx_0): Declare.
+	* loop.c (combine_givs_p): Remove if 0 code.
+	* system.h (ADDRESS_COST): Poison.
+
+	* config/alpha/alpha.c, config/alpha/alpha.h, config/d30v/d30v.c,
+	config/d30v/d30v.h, config/ia64/ia64.c, config/ia64/ia64.h,
+	config/m32r/m32r.c, config/m32r/m32r.h, config/mcore/mcore.c,
+	config/mcore/mcore.h, config/mmix/mmix.c, config/mmix/mmix.h,
+	config/rs6000/rs6000.c, config/rs6000/rs6000.h, config/sparc/sparc.c,
+	config/sparc/sparc.h, config/v850/v850.c, config/v850/v850.h,
+	config/xtensa/xtensa.c, config/xtensa/xtensa.h
+	(TARGET_ADDRESS_COST): Define as hook_int_rtx_0.
+	(ADDRESS_COST): Remove.
+
+	* config/arc/arc-protos.h, config/arc/arc.c, config/arc/arc.h,
+	config/avr/avr-protos.h, config/avr/avr.c, config/avr/avr.h,
+	config/c4x/c4x-protos.h, config/c4x/c4x.c, config/c4x/c4x.h,
+	config/dsp16xx/dsp16xx-protos.h, config/dsp16xx/dsp16xx.c,
+	config/dsp16xx/dsp16xx.h, config/i386/i386-protos.h,
+	config/i386/i386.c, config/i386/i386.h, config/i960/i960-protos.h,
+	config/i960/i960.c, config/i960/i960.h, config/ip2k/ip2k-protos.h,
+	config/ip2k/ip2k.c, config/ip2k/ip2k.h, config/mips/mips-protos.h,
+	config/mips/mips.c, config/mips/mips.h, 
+	config/m68hc11/m68hc11-protos.h, config/m68hc11/m68hc11.c,
+	config/m68hc11/m68hc11.h, config/ns32k/ns32k-protos.h, 
+	config/ns32k/ns32k.c, config/ns32k/ns32k.h, config/pa/pa-protos.h,
+	config/pa/pa.c, config/pa/pa.h, config/s390/s390-protos.h,
+	config/s390/s390.c, config/s390/s390.h, config/vax/vax-protos.h,
+	config/vax/vax.c, config/vax/vax.h
+	(foo_address_cost): Make static.
+	(TARGET_ADDRESS_COST): New.
+	(ADDRESS_COST): Remove.
+
+	* config/arm/arm.h, config/arm/arm.c, config/m88k/m88k.h,
+	config/m88k/m88k.c, config/romp/romp.h, config/romp/romp.c,
+	config/sh/sh.c, config/sh/sh.h, config/stormy16/stormy16.c,
+	config/stormy16/stormy16.h
+	(ADDRESS_COST): Move code ...
+	(foo_address_cost): ... here.
+	(TARGET_ADDRESS_COST): New.
+
+	* config/m32r/m32r.c (m32r_address_cost): Remove.
+	* config/m32r/m32r-protos.h: Update.
+
+	* config/mmix/mmix.c (mmix_address_cost): Remove.
+	* config/mmix/mmix-protos.h: Update.
+
+	* config/mn10300/mn10300.c (mn10300_address_cost_1): Rename from
+	mn10300_address_cost; move unsig allocation ...
+	(mn10300_address_cost): ... here.
+	(TARGET_ADDRESS_COST): New.
+	* config/mn10300/mn10300-protos.h: Update.
+	* config/mn10300/mn10300.h (ADDRESS_COST): Remove.
+
 2003-01-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* haifa-sched.c (schedule_insn): Return necessary cycle advance

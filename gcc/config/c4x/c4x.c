@@ -198,6 +198,7 @@ static int c4x_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static void c4x_encode_section_info PARAMS ((tree, int));
 static void c4x_globalize_label PARAMS ((FILE *, const char *));
 static bool c4x_rtx_costs PARAMS ((rtx, int, int, int *));
+static int c4x_address_cost PARAMS ((rtx));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -230,6 +231,8 @@ static bool c4x_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS c4x_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST c4x_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1699,7 +1702,7 @@ c4x_legitimize_address (orig, mode)
    if it is worthwhile storing a common address into a register. 
    Unfortunately, the C4x address cost depends on other operands.  */
 
-int 
+static int 
 c4x_address_cost (addr)
      rtx addr;
 {

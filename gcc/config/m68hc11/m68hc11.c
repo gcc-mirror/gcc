@@ -67,6 +67,7 @@ static int go_if_legitimate_address_internal PARAMS((rtx, enum machine_mode,
 static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
 static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
+static int m68hc11_address_cost PARAMS ((rtx));
 static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
 static int m68hc11_rtx_costs_1 PARAMS ((rtx, enum rtx_code, enum rtx_code));
 static bool m68hc11_rtx_costs PARAMS ((rtx, int, int, int *));
@@ -233,6 +234,8 @@ static int nb_soft_regs;
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m68hc11_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST m68hc11_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5226,7 +5229,7 @@ m68hc11_register_move_cost (mode, from, to)
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  */
 
-int
+static int
 m68hc11_address_cost (addr)
      rtx addr;
 {

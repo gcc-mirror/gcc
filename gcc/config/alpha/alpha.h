@@ -1416,11 +1416,6 @@ do {									     \
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)  \
 { if (GET_CODE (ADDR) == AND) goto LABEL; }
 
-/* Compute the cost of an address.  For the Alpha, all valid addresses are
-   the same cost.  */
-
-#define ADDRESS_COST(X)  0
-
 /* Machine-dependent reorg pass.  */
 #define MACHINE_DEPENDENT_REORG(X)	alpha_reorg(X)
 

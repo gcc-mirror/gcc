@@ -116,6 +116,8 @@ static bool m32r_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS m32r_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST hook_int_rtx_0
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1803,19 +1805,6 @@ m32r_rtx_costs (x, code, outer_code, total)
     default:
       return false;
     }
-}
-
-/* Provide the costs of an addressing mode that contains ADDR.
-   If ADDR is not a valid address, its cost is irrelevant.
-
-   This function is trivial at the moment.  This code doesn't live
-   in m32r.h so it's easy to experiment.  */
-
-int
-m32r_address_cost (addr)
-     rtx addr ATTRIBUTE_UNUSED;
-{
-  return 1;
 }
 
 /* Type of function DECL.

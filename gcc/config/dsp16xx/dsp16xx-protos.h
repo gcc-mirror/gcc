@@ -47,7 +47,6 @@ extern void print_operand PARAMS ((FILE *, rtx, int));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void output_dsp16xx_float_const PARAMS ((rtx *));
 extern void emit_1600_core_shift PARAMS ((enum rtx_code, rtx *, int));
-extern int dsp16xx_address_cost PARAMS ((rtx));
 extern int symbolic_address_p PARAMS ((rtx));
 extern int uns_comparison_operator PARAMS ((rtx, enum machine_mode));
 #endif /* RTX_CODE */

@@ -67,6 +67,7 @@ static int s390_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int s390_issue_rate PARAMS ((void));
 static int s390_use_dfa_pipeline_interface PARAMS ((void));
 static bool s390_rtx_costs PARAMS ((rtx, int, int, int *));
+static int s390_address_cost PARAMS ((rtx));
 
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -116,6 +117,8 @@ static bool s390_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS s390_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST s390_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1270,7 +1273,7 @@ s390_rtx_costs (x, code, outer_code, total)
 
 /* Return the cost of an address rtx ADDR.  */
 
-int
+static int
 s390_address_cost (addr)
      rtx addr;
 {

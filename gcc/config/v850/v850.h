@@ -1025,9 +1025,6 @@ do {									\
 #define CC_NO_CARRY CC_NO_OVERFLOW
 #define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
 
-/* All addressing modes have the same cost on the V850 series.  */
-#define ADDRESS_COST(ADDR) 1
-
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1

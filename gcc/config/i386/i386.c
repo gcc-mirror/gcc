@@ -840,6 +840,7 @@ struct ix86_address
 };
 
 static int ix86_decompose_address PARAMS ((rtx, struct ix86_address *));
+static int ix86_address_cost PARAMS ((rtx));
 static bool ix86_cannot_force_const_mem PARAMS ((rtx));
 
 static void ix86_encode_section_info PARAMS ((tree, int)) ATTRIBUTE_UNUSED;
@@ -999,6 +1000,8 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS ix86_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST ix86_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5275,7 +5278,7 @@ ix86_decompose_address (addr, out)
    the address into a reg and make a new pseudo.  But not if the address
    requires to two regs - that would mean more pseudos with longer
    lifetimes.  */
-int
+static int
 ix86_address_cost (x)
      rtx x;
 {

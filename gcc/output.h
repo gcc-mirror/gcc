@@ -530,3 +530,5 @@ extern bool default_valid_pointer_mode PARAMS ((enum machine_mode));
 extern void assemble_vtable_entry PARAMS ((struct rtx_def *, HOST_WIDE_INT));
 extern void assemble_vtable_inherit PARAMS ((struct rtx_def *,
 					     struct rtx_def *));
+
+extern int default_address_cost PARAMS ((rtx));

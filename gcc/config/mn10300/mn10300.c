@@ -55,6 +55,8 @@ Boston, MA 02111-1307, USA.  */
 				|| regs_ever_live[16] || regs_ever_live[17]))
 
 
+static int mn10300_address_cost_1 PARAMS ((rtx, int *));
+static int mn10300_address_cost PARAMS ((rtx));
 static bool mn10300_rtx_costs PARAMS ((rtx, int, int, int *));
 
 
@@ -64,6 +66,8 @@ static bool mn10300_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mn10300_rtx_costs
+#undef TARGET_ADDRESS_COST
+#define TARGET_ADDRESS_COST mn10300_address_cost
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1248,15 +1252,11 @@ legitimize_address (x, oldx, mode)
   return x;
 }
 
-int
-mn10300_address_cost (x, unsig)
+static int
+mn10300_address_cost_1 (x, unsig)
      rtx x;
      int *unsig;
 {
-  int _s = 0;
-  if (unsig == 0)
-    unsig = &_s;
-  
   switch (GET_CODE (x))
     {
     case REG:
@@ -1285,17 +1285,17 @@ mn10300_address_cost (x, unsig)
     case ASHIFT:
     case AND:
     case IOR:
-      return (mn10300_address_cost (XEXP (x, 0), unsig)
-	      + mn10300_address_cost (XEXP (x, 1), unsig));
+      return (mn10300_address_cost_1 (XEXP (x, 0), unsig)
+	      + mn10300_address_cost_1 (XEXP (x, 1), unsig));
 
     case EXPR_LIST:
     case SUBREG:
     case MEM:
-      return ADDRESS_COST (XEXP (x, 0));
+      return mn10300_address_cost (XEXP (x, 0));
 
     case ZERO_EXTEND:
       *unsig = 1;
-      return mn10300_address_cost (XEXP (x, 0), unsig);
+      return mn10300_address_cost_1 (XEXP (x, 0), unsig);
 
     case CONST_INT:
       if (INTVAL (x) == 0)
@@ -1317,7 +1317,7 @@ mn10300_address_cost (x, unsig)
       switch (GET_CODE (XEXP (x, 0)))
 	{
 	case MEM:
-	  return ADDRESS_COST (XEXP (x, 0));
+	  return mn10300_address_cost (XEXP (x, 0));
 
 	case REG:
 	  return 1;
@@ -1330,6 +1330,14 @@ mn10300_address_cost (x, unsig)
       abort ();
 
     }
+}
+
+static int
+mn10300_address_cost (x)
+     rtx x;
+{
+  int s = 0;
+  return mn10300_address_cost_1 (x, &s);
 }
 
 static bool
