@@ -1188,9 +1188,7 @@ reload (first, global)
 		&& (GET_CODE (XEXP (PATTERN (insn), 0)) != REG
 		    || ! REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))))
 	  {
-	    PUT_CODE (insn, NOTE);
-	    NOTE_SOURCE_FILE (insn) = 0;
-	    NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	    delete_insn (insn);
 	    continue;
 	  }
 
