@@ -5800,10 +5800,18 @@
 	      if (GET_MODE (operands[0]) != DImode)
 		operands[0] = gen_rtx_SUBREG (DImode, operands[0], 0);
 	    }
-	  else
+	  else if (TARGET_SHMEDIA64)
 	    {
 	      operands[0] = shallow_copy_rtx (operands[0]);
 	      PUT_MODE (operands[0], DImode);
+	    }
+	  else
+	    {
+	      rtx reg = gen_reg_rtx (DImode);
+
+	      operands[0] = copy_to_mode_reg (SImode, operands[0]);
+	      emit_insn (gen_extendsidi2 (reg, operands[0]));
+	      operands[0] = reg;
 	    }
 	}
       if (! target_reg_operand (operands[0], DImode))
@@ -6025,10 +6033,18 @@
 	      if (GET_MODE (operands[1]) != DImode)
 		operands[1] = gen_rtx_SUBREG (DImode, operands[1], 0);
 	    }
-	  else
+	  else if (TARGET_SHMEDIA64)
 	    {
 	      operands[1] = shallow_copy_rtx (operands[1]);
 	      PUT_MODE (operands[1], DImode);
+	    }
+	  else
+	    {
+	      rtx reg = gen_reg_rtx (DImode);
+
+	      operands[1] = copy_to_mode_reg (SImode, operands[1]);
+	      emit_insn (gen_extendsidi2 (reg, operands[1]));
+	      operands[1] = reg;
 	    }
 	}
       if (! target_reg_operand (operands[1], DImode))
