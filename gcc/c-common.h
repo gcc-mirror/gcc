@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
       SCOPE_BEGIN_P (in SCOPE_STMT)
       DECL_PRETTY_FUNCTION_P (in VAR_DECL)
       NEW_FOR_SCOPE_P (in FOR_STMT)
+      RETURN_NULLIFIED_P (in RETURN_STMT)
       ASM_INPUT_P (in ASM_STMT)
    1: C_DECLARED_LABEL_FLAG (in LABEL_DECL)
       STMT_IS_FULL_EXPR_P (in _STMT)
@@ -561,9 +562,11 @@ extern tree strip_array_types                   PARAMS ((tree));
 #define DO_COND(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
 #define DO_BODY(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
 
-/* RETURN_STMT accessor. This gives the expression associated with a
-   return statement. */
+/* RETURN_STMT accessors. These give the expression associated with a
+   return statement, and whether it should be ignored when expanding
+   (as opposed to inlining).  */
 #define RETURN_EXPR(NODE)       TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
+#define RETURN_NULLIFIED_P(NODE) TREE_LANG_FLAG_0 (RETURN_STMT_CHECK (NODE))
 
 /* EXPR_STMT accessor. This gives the expression associated with an
    expression statement. */

@@ -1773,6 +1773,7 @@ emit_block_move (x, y, size, align)
 	  DECL_EXTERNAL (fn) = 1;
 	  TREE_PUBLIC (fn) = 1;
 	  DECL_ARTIFICIAL (fn) = 1;
+	  TREE_NOTHROW (fn) = 1;
 	  make_decl_rtl (fn, NULL);
 	  assemble_external (fn);
 	}
@@ -2659,7 +2660,7 @@ clear_storage (object, size, align)
 
 	     For targets where libcalls and normal calls have different
 	     conventions for returning pointers, we could end up generating
-	      incorrect code.
+	     incorrect code.
 
 	     So instead of using a libcall sequence we build up a suitable
 	     CALL_EXPR and expand the call in the normal fashion.  */
@@ -2677,6 +2678,7 @@ clear_storage (object, size, align)
 	      DECL_EXTERNAL (fn) = 1;
 	      TREE_PUBLIC (fn) = 1;
 	      DECL_ARTIFICIAL (fn) = 1;
+	      TREE_NOTHROW (fn) = 1;
 	      make_decl_rtl (fn, NULL);
 	      assemble_external (fn);
 	    }
@@ -4547,7 +4549,7 @@ store_constructor (exp, target, align, cleared, size)
 
       /* If the constructor has fewer fields than the structure
 	 or if we are initializing the structure to mostly zeros,
-	 clear the whole structure first.  Don't do this is TARGET is
+	 clear the whole structure first.  Don't do this if TARGET is a
 	 register whose mode size isn't equal to SIZE since clear_storage
 	 can't handle this case.  */
       else if (size > 0

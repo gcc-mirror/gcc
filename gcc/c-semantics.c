@@ -460,7 +460,15 @@ void
 genrtl_return_stmt (stmt)
      tree stmt;
 {
-  tree expr = RETURN_EXPR (stmt);
+  tree expr;
+
+  /* If RETURN_NULLIFIED_P is set, the frontend has arranged to set up
+     the return value separately, so just return the return value
+     itself.  This is used for the C++ named return value optimization.  */
+  if (RETURN_NULLIFIED_P (stmt))
+    expr = DECL_RESULT (current_function_decl);
+  else
+    expr = RETURN_EXPR (stmt);
 
   emit_line_note (input_filename, lineno);
   if (!expr)

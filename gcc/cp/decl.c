@@ -285,13 +285,6 @@ struct named_label_list
 
 #define named_labels cp_function_chain->x_named_labels
 
-/* Set to 0 at beginning of a function definition, and whenever
-   a label (case or named) is defined.  Set to value of expression
-   returned from function when that value can be transformed into
-   a named return value.  */
-
-tree current_function_return_value;
-
 /* Nonzero means use the ISO C94 dialect of C.  */
 
 int flag_isoc94;
@@ -5153,7 +5146,6 @@ define_label (filename, line, name)
 	  ent->binding_level = current_binding_level;
 	}
       check_previous_gotos (decl);
-      current_function_return_value = NULL_TREE;
       return decl;
     }
 }
@@ -5255,7 +5247,6 @@ finish_case_label (low_value, high_value)
      own new (temporary) binding contour.  */
   for (p = current_binding_level; !(p->parm_flag); p = p->level_chain)
     p->more_cleanups_ok = 0;
-  current_function_return_value = NULL_TREE;
 
   return r;
 }
@@ -6624,7 +6615,6 @@ init_decl_processing ()
   ggc_add_tree_root (&lastiddecl, 1);
 
   ggc_add_tree_root (&last_function_parm_tags, 1);
-  ggc_add_tree_root (&current_function_return_value, 1);
   ggc_add_tree_root (&current_function_parm_tags, 1);
   ggc_add_tree_root (&last_function_parms, 1);
   ggc_add_tree_root (&error_mark_list, 1);
