@@ -194,7 +194,7 @@ public class Scrollbar extends Component implements Adjustable
 
   public void removeAdjustmentListener (AdjustmentListener l)
   {
-    listeners = AWTEventMulticaster.add (listeners, l);
+    listeners = AWTEventMulticaster.remove (listeners, l);
   }
 
   protected void processEvent (AWTEvent e)
