@@ -2191,18 +2191,17 @@ for machine in $build $host $target; do
 		;;
 	alpha*-*-linux-gnuecoff*)
 		tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
-		xm_defines=USE_BFD
 		target_cpu_default="MASK_GAS"
 		gas=no
 		xmake_file=none
 		gas=yes gnu_ld=yes
 		;;
 	alpha*-*-linux-gnulibc1*)
-		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
-		xm_defines=USE_BFD
+		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux alpha/t-crtbe"
 		extra_parts="crtbegin.o crtend.o"
+		fixincludes=fixinc.wrap
 		xmake_file=none
 		gas=yes gnu_ld=yes
  		if [ x$enable_threads = xyes ]; then
@@ -2210,8 +2209,7 @@ for machine in $build $host $target; do
  		fi
 		;;
 	alpha*-*-linux-gnu*)
-		tm_file="${tm_file} alpha/elf.h alpha/linux-elf.h alpha/linux.h"
-		xm_defines=USE_BFD
+		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-linux alpha/t-crtbe"
 		extra_parts="crtbegin.o crtend.o"
@@ -2222,6 +2220,16 @@ for machine in $build $host $target; do
  			thread_file='posix'
  		fi
 		;;
+	alpha*-*-netbsd*)
+		tm_file="${tm_file} alpha/elf.h alpha/netbsd.h alpha/netbsdl-elf.h"
+		target_cpu_default="MASK_GAS"
+		tmake_file="alpha/t-crtbe"
+		extra_parts="crtbegin.o crtend.o"
+		xmake_file=none
+		fixincludes=fixinc.wrap
+		gas=yes gnu_ld=yes
+		;;
+		
 	alpha*-dec-osf*)
 		if [ x$stabs = xyes ]
 		then
