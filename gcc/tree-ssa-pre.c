@@ -1819,9 +1819,8 @@ compute_avail (void)
     {
       if (default_def (param) != NULL)
 	{
-	  tree val;
 	  tree def = default_def (param);
-	  val = vn_lookup_or_add (def, NULL);
+	  vn_lookup_or_add (def, NULL);
 	  bitmap_insert_into_set (TMP_GEN (ENTRY_BLOCK_PTR), def);
 	  bitmap_value_insert_into_set (AVAIL_OUT (ENTRY_BLOCK_PTR), def);
 	}
@@ -2022,11 +2021,8 @@ static inline void
 mark_operand_necessary (tree op, VEC(tree_on_heap) **worklist)
 {
   tree stmt;
-  int ver;
 
   gcc_assert (op);
-
-  ver = SSA_NAME_VERSION (op);
 
   stmt = SSA_NAME_DEF_STMT (op);
   gcc_assert (stmt);
