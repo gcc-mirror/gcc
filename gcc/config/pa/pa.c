@@ -6897,11 +6897,7 @@ int
 following_call (insn)
      rtx insn;
 {
-  /* We do not place jumps into call delay slots when optimizing for the
-     PA8000 processor or when generating dwarf2 call frame information.  */
-  if (pa_cpu >= PROCESSOR_8000
-      || (! USING_SJLJ_EXCEPTIONS && flag_exceptions)
-      || flag_unwind_tables)
+  if (! TARGET_JUMP_IN_DELAY)
     return 0;
 
   /* Find the previous real insn, skipping NOTEs.  */

@@ -1,3 +1,7 @@
+2002-05-30  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.c (following_call): Check TARGET_JUMP_IN_DELAY.
+
 2002-05-31  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (ns32k-*-netbsd*): Set tm_file to
