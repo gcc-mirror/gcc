@@ -1,3 +1,7 @@
+2001-08-24  Jan van Male <jan.vanmale@fenk.wau.nl>
+
+	* docs/html/17_intro/C++STYLE:  Fix typo.
+
 2001-08-24  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/23_containers/howto.html:  Describe implementation of

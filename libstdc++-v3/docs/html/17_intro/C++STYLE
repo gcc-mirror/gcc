@@ -91,7 +91,7 @@ Notable areas of divergence from what may be previous local practice
   {
     space = _ISspace,
     print = _ISprint,
-    cntrl = _IScntrl,
+    cntrl = _IScntrl
   };
   -NOT-
   enum { space = _ISspace, print = _ISprint, cntrl = _IScntrl };
