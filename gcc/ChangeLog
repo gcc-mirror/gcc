@@ -1,3 +1,15 @@
+2003-10-29  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (function_arg_partial_nregs) [TARGET_ARCH64]:
+	Never return 1 for complex integral modes whose size is lesser or
+	equal to a word.
+	(function_arg_pass_by_reference) [TARGET_ARCH64]: Mention CTImode
+	in the comment.
+	(function_arg_advance) [TARGET_ARCH64]: Don't special-case complex
+	modes.
+	(sparc_va_arg) [TARGET_ARCH64]: Handle any types whose is greater
+	than 16 bytes by reference.
+
 2003-10-29  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/ia64/ia64.c (ia64_assemble_integer): Test POINTER_SIZE,
