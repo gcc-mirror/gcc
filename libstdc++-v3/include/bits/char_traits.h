@@ -1,6 +1,6 @@
 // Character Traits for use by standard string and iostream -*- C++ -*-
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -143,6 +143,7 @@ namespace std {
       not_eof(const int_type& __c)
       { return eq_int_type(__c, eof()) ? int_type(0) : __c; }
     };
+
 
   // 21.1.4  char_traits specializations
   template<>
@@ -297,7 +298,7 @@ namespace std {
       _Char_traits_match(_CharT const& __c) : _M_c(__c) { }
 
       bool 
-      operator()(_CharT const& __a) { return _Traits::eq(_M_c,__a); }
+      operator()(_CharT const& __a) { return _Traits::eq(_M_c, __a); }
     };
 
 } // namespace std
