@@ -683,12 +683,12 @@ struct lang_type
     {
       unsigned has_type_conversion : 1;
       unsigned has_init_ref : 1;
-      unsigned has_assignment : 1;
       unsigned has_default_ctor : 1;
       unsigned uses_multiple_inheritance : 1;
       unsigned const_needs_init : 1;
       unsigned ref_needs_init : 1;
       unsigned has_const_assign_ref : 1;
+      unsigned anon_union : 1;
 
       unsigned has_nonpublic_ctor : 2;
       unsigned has_nonpublic_assign_ref : 2;
@@ -721,22 +721,20 @@ struct lang_type
       unsigned has_opaque_typedecls : 1;
       unsigned sigtable_has_been_generated : 1;
       unsigned was_anonymous : 1;
-      unsigned has_real_assignment : 1;
       unsigned has_real_assign_ref : 1;
       unsigned has_const_init_ref : 1;
-
       unsigned has_complex_init_ref : 1;
+
       unsigned has_complex_assign_ref : 1;
       unsigned has_abstract_assign_ref : 1;
       unsigned non_aggregate : 1;
       unsigned is_partial_instantiation : 1;
       unsigned has_mutable : 1;
-      unsigned anon_union : 1;
 
       /* The MIPS compiler gets it wrong if this struct also
 	 does not fill out to a multiple of 4 bytes.  Add a
 	 member `dummy' with new bits if you go over the edge.  */
-      unsigned dummy : 9;
+      unsigned dummy : 11;
     } type_flags;
 
   int n_ancestors;
@@ -772,8 +770,8 @@ struct lang_type
   union tree_node *signature;
   union tree_node *signature_pointer_to;
   union tree_node *signature_reference_to;
-
   union tree_node *template_info;
+  tree befriending_classes;
 };
 
 /* Indicates whether or not (and how) a template was expanded for this class.
@@ -788,13 +786,6 @@ struct lang_type
 
 /* List of friends which were defined inline in this class definition.  */
 #define CLASSTYPE_INLINE_FRIENDS(NODE) (TYPE_NONCOPIED_PARTS (NODE))
-
-/* Nonzero for _CLASSTYPE means that the _CLASSTYPE either has
-   a special meaning for the assignment operator ("operator="),
-   or one of its fields (or base members) has a special meaning
-   defined.  */
-#define TYPE_HAS_ASSIGNMENT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_assignment)
-#define TYPE_HAS_REAL_ASSIGNMENT(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_real_assignment)
 
 /* Nonzero for _CLASSTYPE means that operator new and delete are defined,
    respectively.  */
@@ -1057,10 +1048,14 @@ struct lang_type
 /* Same, but cache a list whose value is the binfo of this type.  */
 #define CLASSTYPE_BINFO_AS_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->binfo_as_list)
 
-/* A list of class types with which this type is a friend.  The
+/* A list of class types of which this type is a friend.  The
    TREE_VALUE is normally a TYPE, but will be a TEMPLATE_DECL in the
    case of a template friend.  */
 #define CLASSTYPE_FRIEND_CLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->friend_classes)
+
+/* A list of the classes which grant friendship to this class.  */
+#define CLASSTYPE_BEFRIENDING_CLASSES(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE)->befriending_classes)
 
 /* Say whether this node was declared as a "class" or a "struct".  */
 #define CLASSTYPE_DECLARED_CLASS(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.declared_class)
@@ -1169,6 +1164,15 @@ struct lang_type
 /* The binding level associated with the namespace.  */
 #define NAMESPACE_LEVEL(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.level)
 
+
+/* If a DECL has DECL_LANG_SPECIFIC, it is either a lang_decl_flags or
+   a lang_decl (which has lang_decl_flags as its initial prefix).  A
+   FUNCTION_DECL, NAMESPACE_DECL, TYPE_DECL, or USING_DECL may have a
+   full lang_decl.  A FIELD_DECL, or a static data member VAR_DECL,
+   will have only lang_decl_flags.  Thus, one should only access the
+   members of lang_decl that are not in lang_decl_flags for DECLs that
+   are not FIELD_DECLs or VAR_DECLs.  */
+
 struct lang_decl_flags
 {
 #ifdef ONLY_INT_FIELDS
@@ -1215,6 +1219,7 @@ struct lang_decl
   struct lang_decl_flags decl_flags;
 
   tree main_decl_variant;
+  tree befriending_classes;
   struct pending_inline *pending_inline_info;
 };
 
@@ -1280,6 +1285,10 @@ struct lang_decl
    friend declaration, and should not be added to the list of
    member functions for this class.  */
 #define DECL_FRIEND_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.friend_attr)
+
+/* A TREE_LIST of the types which have befriended this FUNCTION_DECL.  */
+#define DECL_BEFRIENDING_CLASSES(NODE) \
+  (DECL_LANG_SPECIFIC(NODE)->befriending_classes)
 
 /* Nonzero for FUNCTION_DECL means that this decl is a static
    member function.  */
@@ -1822,6 +1831,8 @@ extern int flag_new_for_scope;
    the TREE_PUROSE will be the class type, and the TREE_VALUE will be
    NULL_TREE.  */
 #define DECL_FRIENDLIST(NODE)		(DECL_INITIAL (NODE))
+#define FRIEND_NAME(LIST) (TREE_PURPOSE (LIST))
+#define FRIEND_DECLS(LIST) (TREE_VALUE (LIST))
 
 /* The DECL_ACCESS, if non-NULL, is a TREE_LIST.  The TREE_PURPOSE of
    each node is a type; the TREE_VALUE is the access granted for this
@@ -2676,9 +2687,6 @@ extern tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
    class derived from the type pointed to (referred to) by TYPE1.  */
 #define same_or_base_type_p(type1, type2) \
   comptypes ((type1), (type2), COMPARE_BASE)
-
-#define FRIEND_NAME(LIST) (TREE_PURPOSE (LIST))
-#define FRIEND_DECLS(LIST) (TREE_VALUE (LIST))
 
 /* These macros are used to access a TEMPLATE_PARM_INDEX.  */
 #define TEMPLATE_PARM_IDX(NODE) (((template_parm_index*) NODE)->index)

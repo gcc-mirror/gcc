@@ -9,21 +9,77 @@
 // From: Alexandre Oliva <oliva@dcc.unicamp.br>
 // Date: 06 Mar 1998 01:43:18 -0300
 
+template <int*>
+class X {};
+
+template <typename T>
+void g();
+
+struct S;
+
+template <typename T>
+struct R;
 
 class B {
 protected:
   int i; // ERROR - in this context
-  static int j; // gets bogus error - XFAIL *-*-*
+  static int j;
 };
 
 class D : public B {
-    friend void f();
+  friend void f();
+  template <typename T>
+  friend void g();
+  friend struct S;
+  template <typename T>
+  friend struct R;
+};
+
+struct S {
+  void h();
+  X<&B::j> x;
+};
+
+template <typename T>
+struct R {
+  void h();
+  X<&B::j> x;
 };
 
 void f()
 {
     ((B*)0)->i = 3; // ERROR - protected
     ((D*)0)->i = 4;
-    B::j = 5;			// gets bogus error - XFAIL *-*-*
+    B::j = 5;
     D::j = 6;
 }
+
+template <typename T>
+void g()
+{
+    ((B*)0)->i = 3; // ERROR - protected
+    ((D*)0)->i = 4;
+    B::j = 5;
+    D::j = 6;
+}
+
+template void g<int>();
+
+void S::h()
+{
+  ((B*)0)->i = 3; // ERROR - protected
+  ((D*)0)->i = 4;
+  B::j = 5;
+  D::j = 6;
+}
+
+template <typename T>
+void R<T>::h() 
+{
+  ((B*)0)->i = 3; // ERROR - protected
+  ((D*)0)->i = 4;
+  B::j = 5;
+  D::j = 6;
+}
+
+template struct R<double>;

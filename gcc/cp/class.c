@@ -3808,7 +3808,6 @@ finish_struct_1 (t, warn_anon)
   if (! IS_SIGNATURE (t))
     CLASSTYPE_NON_AGGREGATE (t)
       = ! aggregate || has_virtual || TYPE_HAS_CONSTRUCTOR (t);
-  TYPE_HAS_REAL_ASSIGNMENT (t) |= TYPE_HAS_ASSIGNMENT (t);
   TYPE_HAS_REAL_ASSIGN_REF (t) |= TYPE_HAS_ASSIGN_REF (t);
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_USES_VIRTUAL_BASECLASSES (t);

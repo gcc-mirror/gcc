@@ -1,3 +1,33 @@
+1999-03-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type): Remove has_assignment and
+	has_real_assignment.  Add befriending_classes.
+	(TYPE_HAS_ASSIGNMENT): Remove.
+	(TYPE_HAS_REAL_ASSIGNMENT): Likewise.
+	(CLASSTYPE_BEFRIENDING_CLASSES): New macro.
+	(lang_decl): Document.
+	(DECL_BEFRIENDING_CLASSES): New macro.
+	(FRIEND_NAME): Move declaration to more obvious location.
+	(FRIEND_DECLS): Likewise.
+	* class.c (finish_struct_1): Don't use TYPE_HAS_REAL_ASSIGNMENT.
+	* decl.c (duplicate_decls): Copy DECL_BEFRIENDING_CLASSES.
+	(fixup_anonymous_union): Don't use TYPE_HAS_ASSIGNMENT.
+	(grok_op_properties): Likewise.
+	* friend.c (is_friend): Use FRIEND_NAME and FRIEND_DECLS.
+	(add_friend): Likewise.  Don't do weird things with assignment
+	operators.  Update DECL_BEFRIENDING_CLASSES.
+	(add_friends): Don't do weird things with assignment operators.
+	(make_friend_class): Likewise.  Update
+	CLASSTYPE_BEFRIENDING_CLASSES.
+	* pt.c (instantiate_class_template): Don't set
+	TYPE_HAS_ASSIGNMENT. 
+	(tsubst_copy): Substitute the TREE_TYPE for more unary
+	expressions.
+	* ptree.c (print_lang_type): Don't look at TYPE_HAS_ASSIGNMENT.
+	* search.c (protected_accessible_p): New function.
+	(friend_accessible_p): Likewise.
+	(accessible_p): Use them.
+	
 1999-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (convert_nontype_argument): Don't create things that aren't
