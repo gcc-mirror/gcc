@@ -319,12 +319,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
 	  /* See if this is a NOTE_INSN_LOOP_BEG followed by an unconditional
 	     jump.  Try to optimize by duplicating the loop exit test if so.
 	     This is only safe immediately after regscan, because it uses
-	     the values of regno_first_uid and regno_last_uid.  Don't do this
-	     if optimizing for size.  */
-
-	  if (! optimize_size
-	      && after_regscan
-	      && GET_CODE (insn) == NOTE
+	     the values of regno_first_uid and regno_last_uid.  */
+	  if (after_regscan && GET_CODE (insn) == NOTE
 	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
 	      && (temp1 = next_nonnote_insn (insn)) != 0
 	      && simplejump_p (temp1))

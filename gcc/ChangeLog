@@ -1,3 +1,7 @@
+Wed Nov 17 16:38:32 1999  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): Revert last change.
+
 Wed Nov 17 15:18:30 1999  Richard Henderson  <rth@cygnus.com>
 
 	* jump.c (jump_optimize_1): Don't try to duplicate the loop exit
