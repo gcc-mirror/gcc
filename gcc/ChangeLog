@@ -1,3 +1,20 @@
+1999-11-22  Bruce Korb  <autogen@linuxbox.com
+
+	* fixinc/mkfisinc.sh(i?86-*-linux): disable script, run fixincl exe
+	(mips-dec-bsd*): non-functional code
+	(alpha*-*-linux-gnu*): redundant, duplicated by "*-*-linux-gnu*"
+
+	* fixinc/inclhack.def(AAB_fd_zero_glibc_*):
+	added three replacement fixes
+	(no_double_slash): removed comments that are not (any longer) pertinent
+	(bad_lval): this fix currently runs against many files.
+	The comment seems to indicate that we should select for files
+	containing 'pragma extern_prefix'.
+
+	* fixinc/inclhack.sh:  regen
+	* fixinc/fixincl.x:  regen
+	* fixinc/fixincl.sh:  regen
+
 Fri Nov 12 14:08:40 1999  Andrew Haley  <aph@cygnus.com>
 
 	* emit-rtl.c (gen_sequence): Only return the pattern of an insn if

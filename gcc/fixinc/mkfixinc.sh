@@ -14,15 +14,11 @@ fixincludes="${target}"
 
 case $machine in
 	i[34567]86-*-linux-gnu*)
-		fixincludes=fixinc.x86-linux-gnu
+		:
 		;;
 
 	*-*-sysv4*)
 		fixincludes=fixinc.svr4
-		;;
-
-	mips-dec-bsd*)
-		:
 		;;
 
 	i[34567]86-*-sysv5* | \
@@ -62,7 +58,6 @@ case $machine in
 		fixincludes=fixinc.sco
 		;;
 
-	alpha*-*-linux-gnu* | \
 	alpha*-dec-vms* | \
 	arm-semi-aout | armel-semi-aout | \
 	arm-semi-aof | armel-semi-aof | \
