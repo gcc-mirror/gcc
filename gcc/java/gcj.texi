@@ -1171,9 +1171,7 @@ macros start with the @code{Jv} prefix, for example the function
 @code{JvNewObjectArray}.  This convention is used to avoid conflicts
 with other libraries.  Internal functions in CNI start with the prefix
 @code{_Jv_}.  You should not call these; if you find a need to, let us
-know and we will try to come up with an alternate solution.  (This
-manual lists @code{_Jv_AllocBytes} as an example; CNI should instead
-provide a @code{JvAllocBytes} function.)
+know and we will try to come up with an alternate solution.
 
 
 @subsection Limitations
@@ -1488,11 +1486,6 @@ using standard C++ overload resolution rules.
 java::util::Hashtable *ht = new java::util::Hashtable(120);
 @end example
 
-@deftypefun void* _Jv_AllocBytes (jsize @var{size})
-Allocates @var{size} bytes from the heap.  The memory is not scanned
-by the garbage collector but it freed if no references to it are discovered.
-@end deftypefun
-
 
 @node Arrays
 @section Arrays
@@ -1784,11 +1777,13 @@ jint
 @}
 @end example
 
-But this restriction can cause a problem so @acronym{CNI} includes the
+@subsection RawData
+
+The above restriction can be problematic, so @acronym{CNI} includes the
 @code{gnu.gcj.RawData} class.  The @code{RawData} class is a
 @dfn{non-scanned reference} type.  In other words variables declared
 of type @code{RawData} can contain any data and are not checked by the
-compiler in any way.
+compiler or memory manager in any way.
 
 This means that you can put C/C++ data structures (including classes)
 in your @acronym{CNI} classes, as long as you use the appropriate cast.
@@ -1825,6 +1820,30 @@ void
 @}
 @end example
 
+
+@subsection RawDataManaged
+
+@code{gnu.gcj.RawDataManaged} is another type used to indicate special data used 
+by native code. Unlike the @code{RawData} type, fields declared as 
+@code{RawDataManaged} will be "marked" by the memory manager and 
+considered for garbage collection.  
+
+Native data which is allocated using CNI's @code{JvAllocBytes()}
+function and stored in a @code{RawDataManaged} will be automatically 
+freed when the Java object it is associated with becomes unreachable.
+
+@subsection Native memory allocation
+
+@deftypefun void* JvAllocBytes (jsize @var{size})
+Allocates @var{size} bytes from the heap.  The memory returned is zeroed.
+This memory is not scanned for pointers by the garbage collector, but will 
+be freed if no references to it are discovered.
+
+This function can be useful if you need to associate some native data with a
+Java object. Using a CNI's special @code{RawDataManaged} type, native data 
+allocated with @code{JvAllocBytes} will be automatically freed when the Java 
+object itself becomes unreachable.
+@end deftypefun
 
 @node Exception Handling
 @section Exception Handling

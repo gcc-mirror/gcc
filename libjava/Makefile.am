@@ -2251,6 +2251,7 @@ gnu/classpath/ServiceFactory.java \
 gnu/classpath/ServiceProviderLoadingAction.java \
 gnu/gcj/Core.java \
 gnu/gcj/RawData.java \
+gnu/gcj/RawDataManaged.java \
 gnu/gcj/io/DefaultMimeTypes.java \
 gnu/gcj/io/MimeTypes.java \
 gnu/gcj/io/SimpleSHSStream.java	\

@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.lang;
 
 import gnu.gcj.RawData;
+import gnu.gcj.RawDataManaged;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
@@ -127,7 +128,7 @@ public class Thread implements Runnable
   RawData interp_frame;
 
   // Our native data - points to an instance of struct natThread.
-  private Object data;
+  private RawDataManaged data;
 
   /**
    * Allocates a new <code>Thread</code> object. This constructor has
