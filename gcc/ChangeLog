@@ -1,3 +1,7 @@
+2002-08-07  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppmacro.c (_cpp_builtin_macro_text): Remove unused variable.
+
 2002-08-07  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* configure.in (PREFIX_INCLUDE_DIR): Don't define if prefix and

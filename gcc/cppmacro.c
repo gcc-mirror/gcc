@@ -188,7 +188,6 @@ _cpp_builtin_macro_text (pfile, node)
 	 value 0.  */
     case BT_STDC:
       {
-	enum c_lang lang = CPP_OPTION (pfile, lang);
 	if (CPP_IN_SYSTEM_HEADER (pfile)
 	    && CPP_OPTION (pfile, stdc_0_in_system_headers)
 	    && !CPP_OPTION (pfile,std))
