@@ -1,3 +1,8 @@
+1999-12-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (calls.o): Depend on function.h.
+	(alias.o): Likewise.
+
 1999-12-21  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (emit_reload_insns): Break out code and variables into...
