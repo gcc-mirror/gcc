@@ -1598,7 +1598,7 @@ static void
 commit_one_edge_insertion (e)
      edge e;
 {
-  rtx before = NULL_RTX, after = NULL_RTX, insns, tmp;
+  rtx before = NULL_RTX, after = NULL_RTX, insns, tmp, last;
   basic_block bb;
 
   /* Pull the insns off the edge now since the edge might go away.  */
@@ -1675,37 +1675,38 @@ commit_one_edge_insertion (e)
       emit_insns_before (insns, before);
       if (before == bb->head)
 	bb->head = insns;
+
+      last = prev_nonnote_insn (before);
     }
   else
     {
-      rtx last = emit_insns_after (insns, after);
+      last = emit_insns_after (insns, after);
       if (after == bb->end)
-	{
-	  bb->end = last;
-
-	  if (GET_CODE (last) == JUMP_INSN)
-	    {
-	      if (returnjump_p (last))
-		{
-		  /* ??? Remove all outgoing edges from BB and add one
-		     for EXIT.  This is not currently a problem because
-		     this only happens for the (single) epilogue, which
-		     already has a fallthru edge to EXIT.  */
-
-		  e = bb->succ;
-		  if (e->dest != EXIT_BLOCK_PTR
-		      || e->succ_next != NULL
-		      || (e->flags & EDGE_FALLTHRU) == 0)
-		    abort ();
-		  e->flags &= ~EDGE_FALLTHRU;
-
-		  emit_barrier_after (last);
-		}
-	      else
-		abort ();
-	    }
-	}
+	bb->end = last;
     }
+
+  if (returnjump_p (last))
+    {
+      /* ??? Remove all outgoing edges from BB and add one for EXIT. 
+         This is not currently a problem because this only happens
+	 for the (single) epilogue, which already has a fallthru edge
+	 to EXIT.  */
+
+      e = bb->succ;
+      if (e->dest != EXIT_BLOCK_PTR
+	  || e->succ_next != NULL
+	  || (e->flags & EDGE_FALLTHRU) == 0)
+	abort ();
+      e->flags &= ~EDGE_FALLTHRU;
+
+      emit_barrier_after (last);
+      bb->end = last;
+
+      if (before)
+	flow_delete_insn (before);
+    }
+  else if (GET_CODE (last) == JUMP_INSN)
+    abort ();
 }
 
 /* Update the CFG for all queued instructions.  */
@@ -2027,11 +2028,14 @@ flow_delete_insn (insn)
 
   /* If deleting a jump, decrement the use count of the label.  Deleting
      the label itself should happen in the normal course of block merging.  */
-  if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
+  if (GET_CODE (insn) == JUMP_INSN
+      && JUMP_LABEL (insn)
+      && GET_CODE (JUMP_LABEL (insn)) == CODE_LABEL)
     LABEL_NUSES (JUMP_LABEL (insn))--;
 
   /* Also if deleting an insn that references a label.  */
-  else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX)
+  else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)) != NULL_RTX
+	   && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
     LABEL_NUSES (XEXP (note, 0))--;
 
   return next;

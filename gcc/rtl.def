@@ -421,9 +421,11 @@ DEF_RTL_EXPR(BARRIER, "barrier", "iuu", 'x')
 DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuu00iss", 'x')
      
 /* Say where in the code a source line starts, for symbol table's sake.
-   Contains a filename and a line number.  Line numbers <= 0 are special;
-   See enum note_insn in rtl.h.  */
-DEF_RTL_EXPR(NOTE, "note", "iuu0n", 'x')
+   Operand:
+   3: filename, if line number > 0, note-specific data otherwise.
+   4: line number if > 0, enum note_insn otherwise.
+   5: unique number if line number == note_insn_deleted_label.  */
+DEF_RTL_EXPR(NOTE, "note", "iuu0ni", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.
