@@ -1,5 +1,5 @@
 /* Generate code from machine description to recognize rtl as insns.
-   Copyright (C) 1987, 88, 92-95, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-95, 97-99, 2000 Free Software Foundation, Inc.
 
    This file is part of GNU CC.
 
@@ -1012,7 +1012,12 @@ maybe_both_true_2 (d1, d2)
 	{
 	  if (d2->type == DT_mode)
 	    {
-	      if (d1->u.pred.mode != d2->u.mode)
+	      if (d1->u.pred.mode != d2->u.mode
+		  /* The mode of an address_operand predicate is the
+		     mode of the memory, not the operand.  It can only
+		     be used for testing the predicate, so we must
+		     ignore it here.  */
+		  && strcmp (d1->u.pred.name, "address_operand") != 0)
 		return 0;
 	    }
 	  /* Don't check two predicate modes here, because if both predicates
