@@ -30,15 +30,8 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,compare,load,store,branch,cbranch,call,dyncall,address,fpload,fpstore,fpalu,fpcc,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,misc,milli"
+  "move,unary,binary,compare,load,store,branch,cbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,misc,milli"
   (const_string "binary"))
-
-;; Set true if insn uses call-clobbered intermediate register.
-(define_attr "use_clobbered" "false,true"
-  (if_then_else (and (eq_attr "type" "address")
-		     (match_operand 0 "clobbered_register" ""))
-	 	(const_string "true")
-		(const_string "false")))
 
 ;; Length (in # of insns).
 (define_attr "length" ""
@@ -49,8 +42,6 @@
 	 (eq_attr "type" "store,fpstore")
 	 (if_then_else (match_operand 0 "symbolic_memory_operand" "")
 		       (const_int 2) (const_int 1))
-
-	 (eq_attr "type" "address") (const_int 2)
 
 	 (eq_attr "type" "binary")
 	 (if_then_else (match_operand 2 "arith_operand" "")
@@ -68,47 +59,28 @@
 
 ;; Attributes for instruction and branch scheduling
 
-(define_attr "in_call_delay" "false,true"
-  (cond [(eq_attr "type" "branch,cbranch,call,dyncall,multi,milli")
-	 (const_string "false")
-	 
-	 (eq_attr "type" "load,fpload,store,fpstore")
-	 (if_then_else (eq_attr "length" "1")
-		       (const_string "true")
-		       (const_string "false"))
-	 
-	 (eq_attr "type" "address")
-	 (if_then_else (eq_attr "use_clobbered" "false")
-		       (const_string "true")
-		       (const_string "false"))]
-	
-	(if_then_else (eq_attr "length" "1")
-		      (const_string "true")
-		      (const_string "false"))))
+(define_delay (eq_attr "type" "call")
+  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
+
+(define_attr "in_branch_delay" "false,true"
+  (if_then_else (and (eq_attr "type" "!branch,cbranch,call,dyncall,multi,milli")
+		     (eq_attr "length" "1"))
+		(const_string "true")
+		(const_string "false")))
 
 (define_attr "in_milli_delay" "false,true"
   (cond [(eq_attr "length" "!1")
 	 (const_string "false")
 
-	 (eq_attr "type" "branch,cbranch,call,dyncall,milli")
+	 (eq_attr "type" "branch,cbranch,call,dyncall,multi,milli")
 	 (const_string "false")
 
 	 (ne (symbol_ref "use_milli_regs (insn)") (const_int 0))
 	 (const_string "false")]
 	(const_string "true")))
 
-(define_delay (eq_attr "type" "call")
-  [(eq_attr "in_call_delay" "true") (nil) (nil)])
-
-(define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!branch,cbranch,call,multi,milli")
-		     (eq_attr "length" "1"))
-		(const_string "true")
-		(const_string "false")))
-
 (define_delay (eq_attr "type" "branch")
-  [(eq_attr "in_branch_delay" "true")
-   (eq_attr "in_branch_delay" "true") (nil)])
+  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 (define_delay (eq_attr "type" "cbranch")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
@@ -2136,11 +2108,11 @@
   else
     {
       output_arg_descriptor (insn);
-      return \"bl %1,2\;nop\";
+      return \"bl %1,2%#\";
     }
 }"
- [(set_attr "type" "dyncall")
-  (set_attr "length" "3,2")])
+ [(set_attr "type" "dyncall,call")
+  (set_attr "length" "3,1")])
 
 (define_insn "nop"
   [(const_int 0)]
