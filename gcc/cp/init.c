@@ -2356,6 +2356,9 @@ build_new_1 (exp)
       rval = cp_convert (build_pointer_type (true_type), rval);
     }
 
+  if (rval == error_mark_node)
+    return error_mark_node;
+
   /*        unless an allocation function is declared with an empty  excep-
      tion-specification  (_except.spec_),  throw(), it indicates failure to
      allocate storage by throwing a bad_alloc exception  (clause  _except_,

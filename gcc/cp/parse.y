@@ -3536,10 +3536,10 @@ asm_operand:
 	;
 
 asm_clobbers:
-	  STRING
-		{ $$ = tree_cons (NULL_TREE, $$, NULL_TREE); }
-	| asm_clobbers ',' STRING
-		{ $$ = tree_cons (NULL_TREE, $3, $$); }
+	  string
+		{ $$ = tree_cons (NULL_TREE, combine_strings ($1), NULL_TREE);}
+	| asm_clobbers ',' string
+		{ $$ = tree_cons (NULL_TREE, combine_strings ($3), $1); }
 	;
 
 /* This is what appears inside the parens in a function declarator.

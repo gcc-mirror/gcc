@@ -3050,6 +3050,10 @@ decls_match (newdecl, olddecl)
 				DECL_TEMPLATE_PARMS (olddecl)))
 	return 0;
 
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl))
+	  != TREE_CODE (DECL_TEMPLATE_RESULT (olddecl)))
+	return 0;
+
       if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
 	types_match = 1;
       else
@@ -3499,9 +3503,6 @@ duplicate_decls (newdecl, olddecl)
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
-      if (! duplicate_decls (DECL_TEMPLATE_RESULT (newdecl),
-			     DECL_TEMPLATE_RESULT (olddecl)))
-	cp_error ("invalid redeclaration of %D", newdecl);
       TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
       DECL_TEMPLATE_SPECIALIZATIONS (olddecl)
 	= chainon (DECL_TEMPLATE_SPECIALIZATIONS (olddecl),
@@ -9341,7 +9342,7 @@ compute_array_index_type (name, size)
     }
 
   /* Normally, the array-bound will be a constant.  */
-  if (TREE_CONSTANT (size))
+  if (TREE_CODE (size) == INTEGER_CST)
     {
       /* Check to see if the array bound overflowed.  Make that an
 	 error, no matter how generous we're being.  */
@@ -9371,6 +9372,15 @@ compute_array_index_type (name, size)
 	  else
 	    cp_pedwarn ("ISO C++ forbids zero-size array");
 	}
+    }
+  else if (TREE_CONSTANT (size))
+    {
+      /* `(int) &fn' is not a valid array bound.  */
+      if (name)
+	cp_error ("size of array `%D' is not an integral constant-expression",
+		  name);
+      else
+	cp_error ("size of array is not an integral constant-expression");
     }
 
   /* Compute the index of the largest element in the array.  It is
