@@ -1,5 +1,11 @@
+Tue Oct 27 13:15:02 1998  Nick Clifton  <nickc@cygnus.com>
+	
+	* toplev.c (display_help): Ignore empty target specific
+	options, and if -W is also specified on the command line then
+	display undocumented options.
+	
 Tue Oct 27 16:11:43 1998  David Edelsohn  <edelsohn@mhpcc.edu>
-
+	
 	* collect2.c (aix64_flag): New variable.
 	(main, case 'b'): Parse it.
 	(GCC_CHECK_HDR): object magic number must match mode.

@@ -87,7 +87,7 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @smallexample
--c  -S  -E  -o @var{file}  -pipe  -v  -x @var{language}
+-c  -S  -E  -o @var{file}  -pipe  -v  --help  -x @var{language}
 @end smallexample
 
 @item C Language Options
@@ -558,6 +558,15 @@ Use pipes rather than temporary files for communication between the
 various stages of compilation.  This fails to work on some systems where
 the assembler is unable to read from a pipe; but the GNU assembler has
 no trouble.
+
+@item --help
+Print (on the standard output) a description of the command line options
+understood by @code{gcc}.  If the @code{-v} option is also specified
+then @code{--help} will also be passed on to the various processes
+invoked by @code{gcc}, so that they can display the command line options
+they accept.  If the @code{-W} option is also specified then command
+line options which have no documentation associated with them will also
+be displayed.
 @end table
 
 @node Invoking G++

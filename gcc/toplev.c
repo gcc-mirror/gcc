@@ -4079,7 +4079,12 @@ display_help ()
 	  char * option      = documented_lang_options[i].option;
 
 	  if (description == NULL)
-	    undoc = 1;
+	    {
+	      undoc = 1;
+
+	      if (extra_warnings)
+		printf ("  %-23.23s [undocumented]\n", option);
+	    }
 	  else if (* description == 0)
 	    continue;
 	  else if (option == NULL)
@@ -4119,10 +4124,15 @@ display_help ()
 	  char * option      = target_switches[i].name;
 	  char * description = target_switches[i].description;
 
-	  if (option == NULL)
+	  if (option == NULL || * option == 0)
 	    continue;
 	  else if (description == NULL)
-	    undoc = 1;
+	    {
+	      undoc = 1;
+	      
+	      if (extra_warnings)
+		printf ("  -m%-21.21s [undocumented]\n", option);
+	    }
 	  else if (* description != 0)
 	    doc += printf ("  -m%-21.21s %s\n", option, description);
 	}
@@ -4133,10 +4143,15 @@ display_help ()
 	  char * option      = target_options[i].prefix;
 	  char * description = target_options[i].description;
 
-	  if (option == NULL)
+	  if (option == NULL || * option == 0)
 	    continue;
 	  else if (description == NULL)
-	    undoc = 1;
+	    {
+	      undoc = 1;
+	      
+	      if (extra_warnings)
+		printf ("  -m%-21.21s [undocumented]\n", option);
+	    }
 	  else if (* description != 0)
 	    doc += printf ("  -m%-21.21s %s\n", option, description);
 	}
