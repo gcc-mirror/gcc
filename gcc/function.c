@@ -1333,7 +1333,7 @@ put_var_into_stack (tree decl, int rescan)
       && GET_CODE (XEXP (reg, 0)) == REG
       && REGNO (XEXP (reg, 0)) > LAST_VIRTUAL_REGISTER)
     {
-      reg = XEXP (reg, 0);
+      orig_reg = reg = XEXP (reg, 0);
       decl_mode = promoted_mode = GET_MODE (reg);
     }
 
