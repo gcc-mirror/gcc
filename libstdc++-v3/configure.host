@@ -126,9 +126,11 @@ case "${host_os}" in
     OPT_LDFLAGS="-Wl,-G"
     ;;
   aix4.*)
+    os_include_dir="os/generic"
     atomicity_include_dir="os/aix"
     ;;
   aix*)
+    os_include_dir="os/generic"
     atomicity_include_dir="cpu/generic"
     ;;
   bsd*)
