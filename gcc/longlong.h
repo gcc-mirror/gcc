@@ -764,11 +764,11 @@ UDItype __umulsidi3 (USItype, USItype);
 	     "g" ((USItype) (d)));					\
   (r) = __xx.__i.__l; (q) = __xx.__i.__h; })
 #define count_trailing_zeros(count,x) \
-  do {
-    __asm__ ("ffsd     %2,%0"                                          \
-            : "=r" ((USItype) (count))                                 \
-            : "0" ((USItype) 0),                                       \
-              "r" ((USItype) (x)));                                    \
+  do {									\
+    __asm__ ("ffsd     %2,%0"						\
+            : "=r" ((USItype) (count))					\
+            : "0" ((USItype) 0),					\
+              "r" ((USItype) (x)));					\
   } while (0)
 #endif /* __ns32000__ */
 
