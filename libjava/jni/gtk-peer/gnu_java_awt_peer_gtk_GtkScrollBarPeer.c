@@ -40,72 +40,14 @@ exception statement from your version. */
 #include "gnu_java_awt_peer_gtk_GtkComponentPeer.h"
 #include "gnu_java_awt_peer_gtk_GtkScrollbarPeer.h"
 
-struct range_scrollbar
-{
-  GtkRange *range;
-  jobject *scrollbar;
-};
-
-static void 
-post_change_event (GtkRange *range,
-		   struct range_scrollbar *rs)
-{
-  GtkAdjustment *adj;
-  adj = gtk_range_get_adjustment (range);
-  (*gdk_env)->CallVoidMethod (gdk_env, *(rs->scrollbar), postAdjustmentEventID,
-			      AWT_ADJUSTMENT_TRACK, (jint) adj->value);
-  
-}
-
-static void 
-post_adjustment_event (GtkRange *range, GtkScrollType scroll, 
-		       struct range_scrollbar *rs)
-{
-  jint type;
-  GtkAdjustment *adj;
-
-  adj = gtk_range_get_adjustment (range);
-
-  switch (scroll)
-    {
-    case GTK_SCROLL_STEP_UP:
-    case GTK_SCROLL_STEP_RIGHT:
-    case GTK_SCROLL_STEP_FORWARD:
-      type = AWT_ADJUSTMENT_UNIT_INCREMENT;
-      break;
-    case GTK_SCROLL_STEP_DOWN:
-    case GTK_SCROLL_STEP_LEFT:
-    case GTK_SCROLL_STEP_BACKWARD:
-      type = AWT_ADJUSTMENT_UNIT_DECREMENT;
-      break;
-    case GTK_SCROLL_PAGE_UP:
-    case GTK_SCROLL_PAGE_RIGHT:
-    case GTK_SCROLL_PAGE_FORWARD:
-      type = AWT_ADJUSTMENT_BLOCK_INCREMENT;
-      break;
-    case GTK_SCROLL_PAGE_DOWN:
-    case GTK_SCROLL_PAGE_LEFT:
-    case GTK_SCROLL_PAGE_BACKWARD:
-      type = AWT_ADJUSTMENT_BLOCK_DECREMENT;
-      break;
-    case GTK_SCROLL_JUMP:
-    case GTK_SCROLL_NONE:  /* Apparently generated when slider is dragged. */
-      type = AWT_ADJUSTMENT_TRACK;
-      break;
-    default: /* Can this happen?  If so, is this right? */
-      return;
-    }
-  
-  (*gdk_env)->CallVoidMethod (gdk_env, *(rs->scrollbar), postAdjustmentEventID,
-			      type, (jint) adj->value);
-}
+static void post_change_event (GtkRange *range, jobject peer);
 
 JNIEXPORT void JNICALL 
 Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create
 (JNIEnv *env, jobject obj, jint orientation, jint value, 
  jint min, jint max, jint step_incr, jint page_incr, jint visible_amount)
 {
-  GtkWidget *sb;
+  GtkWidget *scrollbar;
   GtkObject *adj;
 
   /* Create global reference and save it for future use */
@@ -113,16 +55,26 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_create
 
   gdk_threads_enter ();
   
-  adj = gtk_adjustment_new (value, min, max, 
-			    step_incr, page_incr, 
-			    visible_amount);
+  adj = gtk_adjustment_new ((gdouble) value,
+                            (gdouble) min,
+                            (gdouble) max,
+			    (gdouble) step_incr,
+                            (gdouble) page_incr,
+			    (gdouble) visible_amount);
 
-  sb = (orientation) ? gtk_vscrollbar_new (GTK_ADJUSTMENT (adj)) :
+  scrollbar = (orientation) ? gtk_vscrollbar_new (GTK_ADJUSTMENT (adj)) :
                        gtk_hscrollbar_new (GTK_ADJUSTMENT (adj));
+
+  GTK_RANGE (scrollbar)->round_digits = 0;
+  /* These calls seem redundant but they are not.  They clamp values
+     so that the slider's entirety is always between the two
+     steppers. */
+  gtk_range_set_range (GTK_RANGE (scrollbar), (gdouble) min, (gdouble) max);
+  gtk_range_set_value (GTK_RANGE (scrollbar), (gdouble) value);
 
   gdk_threads_leave ();
 
-  NSA_SET_PTR (env, obj, sb);
+  NSA_SET_PTR (env, obj, scrollbar);
 }
 
 JNIEXPORT void JNICALL
@@ -137,7 +89,7 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectJObject
 
   gtk_widget_realize (GTK_WIDGET (ptr));
 
-  connect_awt_hook (env, obj, 1, GTK_SCROLLBAR (ptr)->range);
+  connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
 
   gdk_threads_leave ();
 }
@@ -146,27 +98,14 @@ JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectSignals
   (JNIEnv *env, jobject obj)
 {
-  struct range_scrollbar *rs;
   void *ptr = NSA_GET_PTR (env, obj);
   jobject *gref = NSA_GET_GLOBAL_REF (env, obj);
   g_assert (gref);
 
-  rs = (struct range_scrollbar *) malloc (sizeof (struct range_scrollbar));
-
   gdk_threads_enter ();
 
-  gtk_widget_realize (GTK_WIDGET (ptr));
-
-  rs->range = GTK_RANGE (ptr);
-  rs->scrollbar = gref;
-
-  g_signal_connect (G_OBJECT (GTK_RANGE (ptr)), 
-		      "move-slider", 
-		      GTK_SIGNAL_FUNC (post_adjustment_event), rs);
-
-  g_signal_connect (G_OBJECT (GTK_RANGE (ptr)), 
-		      "value-changed", 
-		      GTK_SIGNAL_FUNC (post_change_event), rs);
+  g_signal_connect (G_OBJECT (ptr), "value-changed",
+                    G_CALLBACK (post_change_event), *gref);
 
   gdk_threads_leave ();
 
@@ -186,8 +125,8 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setLineIncrement
 
   gdk_threads_enter ();
 
-  adj = GTK_RANGE (ptr)->adjustment;
-  adj->step_increment = amount;
+  adj = gtk_range_get_adjustment (GTK_RANGE (ptr));
+  adj->step_increment = (gdouble) amount;
   gtk_adjustment_changed (adj);
 
   gdk_threads_leave ();
@@ -204,8 +143,8 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setPageIncrement
 
   gdk_threads_enter ();
 
-  adj = GTK_RANGE (ptr)->adjustment;
-  adj->page_increment = amount;
+  adj = gtk_range_get_adjustment (GTK_RANGE (ptr));
+  adj->page_increment = (gdouble) amount;
   gtk_adjustment_changed (adj);
 
   gdk_threads_leave ();
@@ -222,12 +161,22 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_setValues
 
   gdk_threads_enter ();
 
-  adj = GTK_RANGE (ptr)->adjustment;
-  adj->value = value;
-  adj->page_size = visible;
-  adj->lower = min;
-  adj->upper = max;
+  adj = gtk_range_get_adjustment (GTK_RANGE (ptr));
+  adj->page_size = (gdouble) visible;
+
+  gtk_range_set_range (GTK_RANGE (ptr), (gdouble) min, (gdouble) max);
+  gtk_range_set_value (GTK_RANGE (ptr), (gdouble) value);
+
   gtk_adjustment_changed (adj);
 
   gdk_threads_leave ();
+}
+
+static void
+post_change_event (GtkRange *range, jobject peer)
+{
+  GtkAdjustment *adj;
+  adj = gtk_range_get_adjustment (range);
+  (*gdk_env)->CallVoidMethod (gdk_env, peer, postAdjustmentEventID,
+                              AWT_ADJUSTMENT_TRACK, (jint) adj->value);
 }

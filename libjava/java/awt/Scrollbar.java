@@ -120,6 +120,11 @@ private AdjustmentListener adjustment_listeners;
 
 private transient boolean valueIsAdjusting = false;
 
+  /*
+   * The number used to generate the name returned by getName.
+   */
+  private static transient long next_scrollbar_number = 0;
+
 /*************************************************************************/
 
 /*
@@ -194,9 +199,8 @@ Scrollbar(int orientation, int value, int visibleAmount, int minimum,
   // Default is 1 according to online docs.
   lineIncrement = 1;
 
-  pageIncrement = (maximum - minimum) / 5;
-  if (pageIncrement == 0)
-    pageIncrement = 1;
+  // Default is 10 according to javadocs.
+  pageIncrement = 10;
 }
 
 /*************************************************************************/
@@ -394,14 +398,16 @@ setValues(int value, int visibleAmount, int minimum, int maximum)
   if (visibleAmount > maximum - minimum)
     visibleAmount = maximum - minimum;
 
+  ScrollbarPeer peer = (ScrollbarPeer) getPeer ();
+  if (peer != null
+      && (this.value != value || this.visibleAmount != visibleAmount
+          || this.minimum != minimum || this.maximum != maximum))
+    peer.setValues(value, visibleAmount, minimum, maximum);
+
   this.value = value;
   this.visibleAmount = visibleAmount;
   this.minimum = minimum;
   this.maximum = maximum;
-
-  ScrollbarPeer sp = (ScrollbarPeer)getPeer();
-  if (sp != null)
-    sp.setValues(value, visibleAmount, minimum, maximum);
 
   int range = maximum - minimum;
   if (lineIncrement > range)
@@ -411,8 +417,8 @@ setValues(int value, int visibleAmount, int minimum, int maximum)
       else
         lineIncrement = range;
 
-      if (sp != null)
-        sp.setLineIncrement(lineIncrement);
+      if (peer != null)
+        peer.setLineIncrement(lineIncrement);
     }
 
   if (pageIncrement > range)
@@ -422,8 +428,8 @@ setValues(int value, int visibleAmount, int minimum, int maximum)
       else
         pageIncrement = range;
 
-      if (sp != null)
-        sp.setPageIncrement(pageIncrement);
+      if (peer != null)
+        peer.setPageIncrement(pageIncrement);
     }
 }
 
@@ -503,9 +509,9 @@ setLineIncrement(int lineIncrement)
 
   this.lineIncrement = lineIncrement;
 
-  ScrollbarPeer sp = (ScrollbarPeer) getPeer ();
-  if (sp != null)
-    sp.setLineIncrement (this.lineIncrement);
+  ScrollbarPeer peer = (ScrollbarPeer) getPeer ();
+  if (peer != null)
+    peer.setLineIncrement (this.lineIncrement);
 }
 
 /*************************************************************************/
@@ -584,9 +590,9 @@ setPageIncrement(int pageIncrement)
 
   this.pageIncrement = pageIncrement;
 
-  ScrollbarPeer sp = (ScrollbarPeer) getPeer ();
-  if (sp != null)
-    sp.setPageIncrement (this.pageIncrement);
+  ScrollbarPeer peer = (ScrollbarPeer) getPeer ();
+  if (peer != null)
+    peer.setPageIncrement (this.pageIncrement);
 }
 
 /*************************************************************************/
@@ -745,6 +751,21 @@ paramString()
   public void setValueIsAdjusting (boolean valueIsAdjusting)
   {
     this.valueIsAdjusting = valueIsAdjusting;
+  }
+
+  /**
+   * Generate a unique name for this scroll bar.
+   *
+   * @return A unique name for this scroll bar.
+   */
+  String generateName ()
+  {
+    return "scrollbar" + getUniqueLong ();
+  }
+
+  private static synchronized long getUniqueLong ()
+  {
+    return next_scrollbar_number++;
   }
 } // class Scrollbar 
 

@@ -1,3 +1,26 @@
+2004-02-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* java/awt/Scrollbar.java (next_scrollbar_number): New field.
+	(Scrollbar (int, int, int, int, int)): Make default page
+	increment 10.
+	(setValues): Only call peer.setValues if one of the values has
+	changed.
+	(generateName): New method.
+	(getUniqueLong): New method.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c
+	(range_scrollbar): Remove structure.
+	(post_adjustment_event): Remove function.
+	(post_change_event): Accept jobject argument.
+	(create): Cast jints to gdoubles.  Round scrollbar values to the
+	nearest integer.  Clamp min, max and value settings.
+	(connectJObject): Connect hook to widget->window.
+	(connectSignals): Remove range_scrollbar structure variables.
+	Remove "move-slider" connection.  Pass global peer reference to
+	"value-changed" callback.
+	(setLineIncrement): Cast jint value to gdouble.
+	(setPageIncrement): Likewise.
+	(setValues): Likewise.  Clamp min, max and value settings.
+
 2004-02-05  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/AbstractCellEditor.java
