@@ -1,3 +1,0 @@
-@setfilename mini
-@nonsense
-@bye
