@@ -1,3 +1,12 @@
+1999-10-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cplus-dem.c (fancy_abort, demangle_integral_value,
+	demangle_arm_hp_template, recursively_demangle,
+	standard_symbol_characters, hp_symbol_characters, main): Add prototype.
+	(program_name, program_version, fatal): Constify a char*.
+	(usage, fatal): Mark with ATTRIBUTE_NORETURN.
+	(main): Call return, not exit.
+
 1999-09-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* choose-temp.c: Remove obsolete comment about gcc.
