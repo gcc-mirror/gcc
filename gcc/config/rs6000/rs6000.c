@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "conditions.h"
 #include "insn-flags.h"
-#include "output.h"
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
@@ -37,6 +36,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "except.h"
 #include "function.h"
+#include "output.h"
+#include "toplev.h"
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
@@ -420,8 +421,8 @@ direct_return ()
 
 int
 any_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
+     register rtx op ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -430,7 +431,7 @@ any_operand (op, mode)
 int
 count_register_operand(op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != REG)
     return 0;
@@ -449,7 +450,7 @@ count_register_operand(op, mode)
 int
 fpmem_operand(op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != REG)
     return 0;
@@ -470,7 +471,7 @@ fpmem_operand(op, mode)
 int
 short_cint_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) < 0x10000);
@@ -481,7 +482,7 @@ short_cint_operand (op, mode)
 int
 u_short_cint_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0);
@@ -492,7 +493,7 @@ u_short_cint_operand (op, mode)
 int
 non_short_cint_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000);
@@ -583,7 +584,7 @@ reg_or_cint_operand (op, mode)
 int
 got_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF
 	  || GET_CODE (op) == CONST
@@ -596,7 +597,7 @@ got_operand (op, mode)
 int
 got_no_const_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF);
 }
@@ -841,7 +842,7 @@ add_operand (op, mode)
 int
 non_add_cint_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000
@@ -868,7 +869,7 @@ logical_operand (op, mode)
 int
 non_logical_cint_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) != 0
@@ -905,7 +906,7 @@ mask_constant (c)
 int
 mask_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return GET_CODE (op) == CONST_INT && mask_constant (INTVAL (op));
 }
@@ -1066,7 +1067,7 @@ call_operand (op, mode)
 int
 current_file_function_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF
 	  && (SYMBOL_REF_FLAG (op)
@@ -1132,8 +1133,13 @@ input_operand (op, mode)
 
 int
 small_data_operand (op, mode)
+#if TARGET_ELF
      rtx op;
      enum machine_mode mode;
+#else
+     rtx op ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+#endif
 {
 #if TARGET_ELF
   rtx sym_ref, const_part;
@@ -1189,7 +1195,7 @@ void
 init_cumulative_args (cum, fntype, libname, incoming)
      CUMULATIVE_ARGS *cum;
      tree fntype;
-     rtx libname;
+     rtx libname ATTRIBUTE_UNUSED;
      int incoming;
 {
   static CUMULATIVE_ARGS zero_cumulative;
@@ -1524,10 +1530,10 @@ function_arg_partial_nregs (cum, mode, type, named)
 
 int
 function_arg_pass_by_reference (cum, mode, type, named)
-     CUMULATIVE_ARGS *cum;
-     enum machine_mode mode;
+     CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
       && type && AGGREGATE_TYPE_P (type))
@@ -1652,7 +1658,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 
 struct rtx_def *
 expand_builtin_saveregs (args)
-     tree args;
+     tree args ATTRIBUTE_UNUSED;
 {
   return virtual_incoming_args_rtx;
 }
@@ -1899,7 +1905,7 @@ expand_block_move (operands)
 int
 load_multiple_operation (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int count = XVECLEN (op, 0);
   int dest_regno;
@@ -1942,7 +1948,7 @@ load_multiple_operation (op, mode)
 int
 store_multiple_operation (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   int count = XVECLEN (op, 0) - 1;
   int src_regno;
@@ -1985,7 +1991,7 @@ store_multiple_operation (op, mode)
 int
 branch_comparison_operator (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
   enum machine_mode cc_mode;
@@ -2165,7 +2171,7 @@ addrs_ok_for_quad_peep (addr1, addr2)
 enum reg_class
 secondary_reload_class (class, mode, in)
      enum reg_class class;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
      rtx in;
 {
   int regno = true_regnum (in);
@@ -2534,7 +2540,7 @@ print_operand (file, x, code)
     case 'B':
       /* If the low-order bit is zero, write 'r'; otherwise, write 'l'
 	 for 64-bit mask direction.  */
-      putc ((INT_LOWPART(x) & 1 == 0 ? 'r' : 'l'), file);
+      putc (((INT_LOWPART(x) & 1) == 0 ? 'r' : 'l'), file);
 
     case 'C':
       /* This is an optional cror needed for LE or GE floating-point
@@ -3798,7 +3804,7 @@ rs6000_allocate_stack_space (file, size, copy_r12)
 void
 output_prolog (file, size)
      FILE *file;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
   int reg_size = info->reg_size;
@@ -4054,7 +4060,7 @@ output_prolog (file, size)
 void
 output_epilog (file, size)
      FILE *file;
-     int size;
+     int size ATTRIBUTE_UNUSED;
 {
   rs6000_stack_t *info = rs6000_stack_info ();
   char *load_reg = (TARGET_32BIT) ? "\t{l|lwz} %s,%d(%s)\n" : "\tld %s,%d(%s)\n";
@@ -4337,7 +4343,7 @@ output_epilog (file, size)
       /* Omit this list of longs, because there are no CTL anchors.  */
 
       /* Length of function name.  */
-      fprintf (file, "\t.short %d\n", strlen (fname));
+      fprintf (file, "\t.short %d\n", (int) strlen (fname));
 
       /* Function name.  */
       assemble_string (fname, strlen (fname));
@@ -4757,7 +4763,7 @@ int
 rs6000_adjust_cost (insn, link, dep_insn, cost)
      rtx insn;
      rtx link;
-     rtx dep_insn;
+     rtx dep_insn ATTRIBUTE_UNUSED;
      int cost;
 {
   if (! recog_memoized (insn))
@@ -4979,10 +4985,10 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
 int
 rs6000_valid_decl_attribute_p (decl, attributes, identifier, args)
-     tree decl;
-     tree attributes;
-     tree identifier;
-     tree args;
+     tree decl ATTRIBUTE_UNUSED;
+     tree attributes ATTRIBUTE_UNUSED;
+     tree identifier ATTRIBUTE_UNUSED;
+     tree args ATTRIBUTE_UNUSED;
 {
   return 0;
 }
@@ -4994,7 +5000,7 @@ rs6000_valid_decl_attribute_p (decl, attributes, identifier, args)
 int
 rs6000_valid_type_attribute_p (type, attributes, identifier, args)
      tree type;
-     tree attributes;
+     tree attributes ATTRIBUTE_UNUSED;
      tree identifier;
      tree args;
 {
@@ -5063,8 +5069,8 @@ rs6000_valid_type_attribute_p (type, attributes, identifier, args)
 
 int
 rs6000_comp_type_attributes (type1, type2)
-     tree type1;
-     tree type2;
+     tree type1 ATTRIBUTE_UNUSED;
+     tree type2 ATTRIBUTE_UNUSED;
 {
   return 1;
 }
@@ -5074,7 +5080,7 @@ rs6000_comp_type_attributes (type1, type2)
 
 void
 rs6000_set_default_type_attributes (type)
-     tree type;
+     tree type ATTRIBUTE_UNUSED;
 {
 }
 

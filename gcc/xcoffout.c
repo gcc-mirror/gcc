@@ -29,6 +29,8 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "rtl.h"
 #include "flags.h"
+#include "toplev.h"
+#include "output.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 
@@ -36,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include <dbxstclass.h>
 
 #include "xcoffout.h"
+#include "dbxout.h"
 
 #if defined (USG) || !defined (HAVE_STAB_H)
 #include "gstab.h"
