@@ -33,10 +33,6 @@
    calling convention.  */
 #define FLOAT_LIB_COMPARE_RETURNS_BOOL(MODE, COMPARISON) TARGET_BPABI
 
-/* Do not generate calls to any of the standard GCC functions in
-   libgcc when generating BPABI code.  */
-#define TARGET_LIBGCC_LIBFUNCS !TARGET_BPABI
-
 /* The BPABI integer comparision routines return { -1, 0, 1 }.  */
 #define TARGET_LIB_INT_CMP_BIASED !TARGET_BPABI
 
