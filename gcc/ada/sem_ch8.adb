@@ -29,6 +29,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
 with Fname;    use Fname;
 with Freeze;   use Freeze;
@@ -1102,10 +1103,11 @@ package body Sem_Ch8 is
       Save_AV     : constant Ada_Version_Type := Ada_Version;
       Nam         : constant Node_Id          := Name (N);
       New_S       : Entity_Id;
-      Old_S       : Entity_Id  := Empty;
+      Old_S       : Entity_Id                 := Empty;
       Rename_Spec : Entity_Id;
-      Is_Actual   : Boolean    := False;
-      Inst_Node   : Node_Id    := Empty;
+      Formal_Spec : constant Node_Id          := Corresponding_Formal_Spec (N);
+      Is_Actual   : constant Boolean          := Present (Formal_Spec);
+      Inst_Node   : Node_Id                   := Empty;
 
       function Original_Subprogram (Subp : Entity_Id) return Entity_Id;
       --  Find renamed entity when the declaration is a renaming_as_body
@@ -1167,8 +1169,75 @@ package body Sem_Ch8 is
       --  is missing an argument when it is analyzed.
 
       if Nkind (Nam) = N_Attribute_Reference then
-         Attribute_Renaming (N);
-         return;
+
+         --  In the case of an abstract formal subprogram association,
+         --  rewrite an actual given by a stream attribute as the name
+         --  of the corresponding stream primitive of the type.
+
+         if Is_Actual and then Is_Abstract (Formal_Spec) then
+            declare
+               Stream_Prim : Entity_Id;
+               Prefix_Type : constant Entity_Id := Entity (Prefix (Nam));
+
+            begin
+               --  The class-wide forms of the stream attributes are not
+               --  primitive dispatching operations (even though they
+               --  internally dispatch to a stream attribute).
+
+               if Is_Class_Wide_Type (Prefix_Type) then
+                  Error_Msg_N
+                    ("attribute must be a primitive dispatching operation",
+                     Nam);
+                  return;
+               end if;
+
+               --  Retrieve the primitive subprogram associated with the
+               --  attribute. This can only be a stream attribute, since
+               --  those are the only ones that are dispatching (and the
+               --  actual for an abstract formal subprogram must be a
+               --  dispatching operation).
+
+               case Attribute_Name (Nam) is
+                  when Name_Input  =>
+                     Stream_Prim :=
+                       Find_Prim_Op (Prefix_Type, TSS_Stream_Input);
+                  when Name_Output =>
+                     Stream_Prim :=
+                       Find_Prim_Op (Prefix_Type, TSS_Stream_Output);
+                  when Name_Read   =>
+                     Stream_Prim :=
+                       Find_Prim_Op (Prefix_Type, TSS_Stream_Read);
+                  when Name_Write  =>
+                     Stream_Prim :=
+                       Find_Prim_Op (Prefix_Type, TSS_Stream_Write);
+                  when others      =>
+                     Error_Msg_N
+                       ("attribute must be a primitive dispatching operation",
+                        Nam);
+                     return;
+               end case;
+
+               --  Rewrite the attribute into the name of its corresponding
+               --  primitive dispatching subprogram. We can then proceed with
+               --  the usual processing for subprogram renamings.
+
+               declare
+                  Prim_Name : constant Node_Id :=
+                                Make_Identifier (Sloc (Nam),
+                                  Chars => Chars (Stream_Prim));
+               begin
+                  Set_Entity (Prim_Name, Stream_Prim);
+                  Rewrite (Nam, Prim_Name);
+                  Analyze (Nam);
+               end;
+            end;
+
+         --  Normal processing for a renaming of an attribute
+
+         else
+            Attribute_Renaming (N);
+            return;
+         end if;
       end if;
 
       --  Check whether this declaration corresponds to the instantiation
@@ -1183,9 +1252,8 @@ package body Sem_Ch8 is
       --  is determined in Find_Renamed_Entity. If the entity is an operator,
       --  Find_Renamed_Entity applies additional visibility checks.
 
-      if Present (Corresponding_Formal_Spec (N)) then
-         Is_Actual := True;
-         Inst_Node := Unit_Declaration_Node (Corresponding_Formal_Spec (N));
+      if Is_Actual then
+         Inst_Node := Unit_Declaration_Node (Formal_Spec);
 
          if Is_Entity_Name (Nam)
            and then Present (Entity (Nam))
@@ -1477,9 +1545,7 @@ package body Sem_Ch8 is
             --  indicate that the renaming is an abstract dispatching operation
             --  with a controlling type.
 
-            if Is_Actual
-              and then Is_Abstract (Corresponding_Formal_Spec (N))
-            then
+            if Is_Actual and then Is_Abstract (Formal_Spec) then
                --  Mark the renaming as abstract here, so Find_Dispatching_Type
                --  see it as corresponding to a generic association for a
                --  formal abstract subprogram
@@ -1547,7 +1613,7 @@ package body Sem_Ch8 is
 
             if (Ekind (Old_S) = E_Procedure or else Ekind (Old_S) = E_Function)
               and then Is_Abstract (Old_S)
-              and then not Is_Abstract (Corresponding_Formal_Spec (N))
+              and then not Is_Abstract (Formal_Spec)
             then
                Error_Msg_N
                  ("abstract subprogram not allowed as generic actual", Nam);
@@ -2801,14 +2867,15 @@ package body Sem_Ch8 is
                Case_Str : constant String    := Name_Buffer (1 .. Name_Len);
                Case_Stm : constant Node_Id   := Parent (Parent (N));
                Case_Typ : constant Entity_Id := Etype (Expression (Case_Stm));
+               Case_Rtp : constant Entity_Id := Root_Type (Case_Typ);
 
                Lit : Node_Id;
 
             begin
                if Is_Enumeration_Type (Case_Typ)
-                 and then Case_Typ /= Standard_Character
-                 and then Case_Typ /= Standard_Wide_Character
-                 and then Case_Typ /= Standard_Wide_Wide_Character
+                 and then Case_Rtp /= Standard_Character
+                 and then Case_Rtp /= Standard_Wide_Character
+                 and then Case_Rtp /= Standard_Wide_Wide_Character
                then
                   Lit := First_Literal (Case_Typ);
                   Get_Name_String (Chars (Lit));

@@ -363,6 +363,7 @@ package body Impunit is
      "a-swunha",    -- Ada.Strings.Wide_Unbounded.Hash
      "a-szmzco",    -- Ada.Strings.Wide_Wide_Maps.Wide_Wide_Constants;
      "a-szunha",    -- Ada.Strings.Wide_Wide_Unbounded.Hash
+     "a-tgdico",    -- Ada.Tags.Generic_Dispatching_Constructor;
      "a-tiunio",    -- Ada.Text_IO.Unbounded_IO;
      "a-wwunio",    -- Ada.Wide_Text_IO.Wide_Unbounded_IO;
      "a-zttest",    -- Ada.Wide_Wide_Text_IO.Text_Streams

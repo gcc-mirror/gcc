@@ -212,6 +212,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-szunha$(objext) \
   a-szuzti$(objext) \
   a-tags$(objext) \
+  a-tgdico$(objext) \
   a-teioed$(objext) \
   a-textio$(objext) \
   a-ticoau$(objext) \

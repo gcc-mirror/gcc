@@ -607,6 +607,7 @@ package body Snames is
      "exception_message#" &
      "exception_name#" &
      "file#" &
+     "generic_dispatching_constructor#" &
      "import_address#" &
      "import_largest_value#" &
      "import_value#" &

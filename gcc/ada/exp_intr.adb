@@ -26,11 +26,13 @@
 
 with Atree;    use Atree;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Errout;   use Errout;
 with Exp_Ch4;  use Exp_Ch4;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Code; use Exp_Code;
+with Exp_Disp; use Exp_Disp;
 with Exp_Fixd; use Exp_Fixd;
 with Exp_Util; use Exp_Util;
 with Itypes;   use Itypes;
@@ -60,6 +62,13 @@ package body Exp_Intr is
 
    procedure Expand_Is_Negative (N : Node_Id);
    --  Expand a call to the intrinsic Is_Negative function
+
+   procedure Expand_Dispatching_Constructor_Call (N : Node_Id);
+   --  Expand a call to an instantiation of Generic_Dispatching_Constructor
+   --  into a dispatching call to the actual subprogram associated with the
+   --  Constructor formal subprogram, passing it the Parameters actual of
+   --  the call to the instantiation and dispatching based on call's Tag
+   --  parameter.
 
    procedure Expand_Exception_Call (N : Node_Id; Ent : RE_Id);
    --  Expand a call to Exception_Information/Message/Name. The first
@@ -95,6 +104,77 @@ package body Exp_Intr is
    --    Name_Line             - expand integer line number
    --    Name_Source_Location  - expand string of form file:line
    --    Name_Enclosing_Entity - expand string  with name of enclosing entity
+
+   -----------------------------------------
+   -- Expand_Dispatching_Constructor_Call --
+   -----------------------------------------
+
+   --  Transform a call to an instantiation of Generic_Dispatching_Constructor
+   --  of the form:
+
+   --     GDC_Instance (The_Tag, Parameters'Access)
+
+   --  to a class-wide conversion of a dispatching call to the actual
+   --  associated with the formal subprogram Construct, designating
+   --  The_Tag as the controlling tag of the call:
+
+   --     T'Class (Construct'Actual (Params)) -- Controlling tag is The_Tag
+
+   --  which will eventually be expanded to the following:
+
+   --     T'Class (The_Tag.all (Construct'Actual'Index).all (Params))
+
+   --  A class-wide membership test is also generated, preceding the call,
+   --  to ensure that the controlling tag denotes a type in T'Class.
+
+   procedure Expand_Dispatching_Constructor_Call (N : Node_Id) is
+      Loc        : constant Source_Ptr := Sloc (N);
+      Tag_Arg    : constant Node_Id    := First_Actual (N);
+      Param_Arg  : constant Node_Id    := Next_Actual (Tag_Arg);
+      Subp_Decl  : constant Node_Id    := Parent (Parent (Entity (Name (N))));
+      Inst_Pkg   : constant Node_Id    := Parent (Subp_Decl);
+      Act_Rename : constant Node_Id    :=
+                     Next (Next (First (Visible_Declarations (Inst_Pkg))));
+      Act_Constr : constant Entity_Id  := Entity (Name (Act_Rename));
+      Result_Typ : constant Entity_Id  := Class_Wide_Type (Etype (Act_Constr));
+      Cnstr_Call : Node_Id;
+
+   begin
+      --  Create the call to the actual Constructor function
+
+      Cnstr_Call :=
+        Make_Function_Call (Loc,
+          Name                   => New_Occurrence_Of (Act_Constr, Loc),
+          Parameter_Associations => New_List (Relocate_Node (Param_Arg)));
+
+      --  Establish its controlling tag from the tag passed to the instance
+
+      Set_Controlling_Argument (Cnstr_Call, Relocate_Node (Tag_Arg));
+
+      --  Rewrite and analyze the call to the instance as a class-wide
+      --  conversion of the call to the actual constructor.
+
+      Rewrite (N, Convert_To (Result_Typ, Cnstr_Call));
+      Analyze_And_Resolve (N, Etype (Act_Constr));
+
+      --  Generate a class-wide membership test to ensure that the call's tag
+      --  argument denotes a type within the class.
+
+      Insert_Action (N,
+        Make_Implicit_If_Statement (N,
+          Condition =>
+            Make_Op_Not (Loc,
+              Make_DT_Access_Action (Result_Typ,
+                 Action => CW_Membership,
+                 Args   => New_List (
+                   Duplicate_Subexpr (Tag_Arg),
+                   New_Reference_To (
+                     Node (First_Elmt (Access_Disp_Table (
+                                         Root_Type (Result_Typ)))), Loc)))),
+          Then_Statements =>
+            New_List (Make_Raise_Statement (Loc,
+                        New_Occurrence_Of (RTE (RE_Tag_Error), Loc)))));
+   end Expand_Dispatching_Constructor_Call;
 
    ---------------------------
    -- Expand_Exception_Call --
@@ -235,6 +315,9 @@ package body Exp_Intr is
 
       elsif Nam = Name_Exception_Name then
          Expand_Exception_Call (N, RE_Exception_Name_Simple);
+
+      elsif Nam = Name_Generic_Dispatching_Constructor then
+         Expand_Dispatching_Constructor_Call (N);
 
       elsif Nam = Name_Import_Address
               or else
