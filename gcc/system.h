@@ -404,10 +404,6 @@ extern void abort ();
 # endif
 #endif /* ! STRINGIFY */
 
-/* These macros are here in preparation for the use of gettext in egcs.  */
-#define _(String) String
-#define N_(String) String
-
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif

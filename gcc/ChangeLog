@@ -1,3 +1,10 @@
+Tue Feb  9 17:27:29 GMT 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* system.h (_, N_): Remove dummy i18n macros.
+	* protoize.c: Move inclusion of intl.h to after system.h.
+	* cexp.y: Include intl.h.
+	* cexp.c: Rebuilt.
+
 Tue Feb  9 16:52:22 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* gcc.c (convert_filename): Handle null filename argument.
