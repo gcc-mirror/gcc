@@ -658,13 +658,14 @@ arm*-*-eabi* | arm*-*-symbianelf* )
 	# TImode.
 	need_64bit_hwint=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
+	tmake_file="t-slibgcc-elf-ver arm/t-arm arm/t-arm-elf arm/t-bpabi"
 	case ${target} in
 	arm*-*-symbianelf*)
 	  tm_file="${tm_file} arm/symbian.h"
+	  tmake_file="${tmake_file} arm/t-symbian"
 	  ;;
 	esac
 	tm_file="${tm_file} arm/aout.h arm/arm.h"
-	tmake_file="t-slibgcc-elf-ver arm/t-arm arm/t-arm-elf arm/t-bpabi"
 	;;
 arm*-*-rtems*)
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h"
