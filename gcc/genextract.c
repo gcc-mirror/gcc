@@ -447,8 +447,6 @@ from the machine description file `md'.  */\n\n");
   printf ("extern rtx *recog_operand_loc[];\n");
   printf ("extern rtx *recog_dup_loc[];\n");
   printf ("extern char recog_dup_num[];\n");
-  printf ("extern\n#ifdef __GNUC__\n__volatile__\n#endif\n");
-  printf ("void fatal_insn_not_found ();\n\n");
 
   printf ("void\ninsn_extract (insn)\n");
   printf ("     rtx insn;\n");

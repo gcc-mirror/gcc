@@ -922,6 +922,10 @@ extern rtx output_constant_def		PROTO((union tree_node *));
 extern rtx immed_real_const		PROTO((union tree_node *));
 extern union tree_node *make_tree	PROTO((union tree_node *, rtx));
 
+/* Abort routines */
+extern void fatal_insn_not_found	PROTO((rtx));
+extern void fatal_insn			PROTO((char *, rtx));
+
 /* Define a default value for STORE_FLAG_VALUE.  */
 
 #ifndef STORE_FLAG_VALUE
