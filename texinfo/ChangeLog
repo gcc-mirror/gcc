@@ -1,102 +1,35 @@
-Tue Mar 17 10:33:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+Mon Feb  2 17:17:17 1998  Jason Molenda  (crash@bugshack.cygnus.com)
 
-	* Makefile.in (clean, distclean): Add 'info' explicitly.
+	* info/termdep.h (TIOCGETC): Don't define if we have termios.h.
+        From Robert Lipe.
 
-Tue Mar  3 10:05:46 1998  Jeffrey A Law  (law@cygnus.com)
+Tue Oct  7 11:14:04 1997  Michael Meissner  <meissner@cygnus.com>
 
-	* makeinfo/makeinfo.c (CommandTable): Fix braces in initializer.
+	* info/tilde.c (alloca): Don't redefine alloca as __builtin_alloca
+	if alloca was already defined.
 
-Tue Jan 13 21:34:23 1998  H.J. Lu  (hjl@gnu.org)
+Mon Oct  6 12:46:27 1997  Ian Lance Taylor  <ian@cygnus.com>
 
-	* libtxi/Makefile.in (AR_FLAGS): Defined as "rc".
+	* util/Makefile.am (bin_PROGRAMS): Remove install-info.
+	(noinst_PROGRAMS, install_inf_SOURCES): Define.
+	(install-exec-local): New target.
+	* util/Makefile.in: Rebuild.
+	* info/Makefile.in: Rebuild with current automake.
 
-Tue Dec  2 20:24:40 1997  Bruno Haible  <haible@ilog.fr>
+Wed Sep  3 12:44:18 1997  Ian Lance Taylor  <ian@cygnus.com>
 
-	* makeinfo/makeinfo.c (find_and_load, convert_from_stream):
-	Zero-terminate the file contents.
+	* po/Makefile.in.in: More --enable-maintainer-mode changes.
 
-Fri Oct 31 09:39:31 1997  Jeffrey A Law  (law@cygnus.com)
+Thu Aug 28 23:52:29 1997  Ian Lance Taylor  <ian@cygnus.com>
 
-	* Makefile.in (install targets): Add a dummy target for sunos make.
-	(SUBDIR): Remove 'info'.  It's unneeded.
+	* po/Makefile.in.in: Make automatic dependencies only run programs
+	if --enable-maintainer-mode.
 
-Wed Oct 29 22:56:46 1997 Robert Lipe  (robertl@dgii.com)
+Mon Aug 25 16:50:32 1997  Ian Lance Taylor  <ian@cygnus.com>
 
-	* info/termdep.h: If POSIX, #undef TIOCGETC for benefit of systems
-	that provide TIOCETC but not struct tchars.
-
-Wed Oct 15 09:49:57 1997  Richard Henderson  <rth@cygnus.com>
-
-	* info/man.c (find_man_formatter): Don't cast getenv(), but provide
-	a minimal declaration at top level.
-
-	* makeinfo/makeinfo.c: Don't redefine alloca if it is already defined.
-
-Tue Oct  7 16:27:34 1997  Manfred Hollstein  <manfred@s-direktnet.de>
-
-	* aclocal.m4: Substitute INSTALL.
-	* configure: Re-built.
-
-Tue Oct  7 10:25:22 1997  Manfred Hollstein  (manfred@lts.sel.alcatel.de)
-
-	* info/man.c (SIGCHLD): Define to SIGCLD if <sys/signal.h>
-	fails to provide it.
-
-Wed Sep 17 23:56:11 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* util/install-info.c: Only provide an external decl for strrchr
-	if HAVE_STRCHR is not defined.
-
-Mon Sep 15 22:53:01 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* aclocal.m4: Add replacement for AC_PROG_INSTALL.
-	* configure.in: Use EGCS_PROG_INSTALL.
-
-Tue Sep  9 23:16:35 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
-
-	* Makefile (all): Remove sub-all.
-	(stmp-sub-all): New target. Renamed from sub-all.
-	(info, texinfo): Also depend on stmp-sub-all.
-	(clean): Also remove stmp*.
-	(maintainer-clean): New target. Same as realclean.
-
-Fri Sep  5 09:07:33 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* install-sh: Delete duplicate install script.
-
-Tue Sep  2 22:25:34 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* Makefile.in (install, install-info, installdirs, uninstall): Make
-	these phony targets.
-
-Tue Sep  2 10:19:48 1997  Richard Henderson  <rth@cygnus.com>
-
-	* makeinfo/makeinfo.c: Maybe include <stdlib.h> for malloc et al.
-	* util/install-info.c: Include <string*.h>.
-	(my_strerror): Use strerror if available.
-
-Tue Aug 26 11:18:52 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* libtxi/Makefile.in: Add dependencies for memcpy, memmove and strdup.
-
-Mon Jul 28 17:26:48 1997  Rob Savoye  <rob@chinadoll.cygnus.com>
-
-	* aclocal.m4: Add CYGWIN and EXEEXT autoconf macros.
-        * configure.in: Use CYGWIN and EXEEXT autoconf macro to look for
-        win32 dependencies.
-        * configure: Regenerated with autoconf 2.12.
-        * Makefile.in: Add $(EXEEXT) to all executables.
-        * makeinfo/Makefile.in: Add $(EXEEXT) to all executables.
-        * util/Makefile.in: Add $(EXEEXT) to all executables.
-
-Mon May 26 12:44:43 1997  Ian Lance Taylor  <ian@cygnus.com>
-
-	* texinfo.tex: Update to newest FSF version (2.201).
-
-Fri Mar 14 15:05:17 1997  Karl Berry  <karl@cs.umb.edu>
-
-	* info/terminal.c (terminal_prep_terminal): Only use OCRNL and
-		ONLCR if they are defined.  Reported by many people.
+	* configure.in: Add AM_MAINTAINER_MODE and AM_EXEEXT.
+	* Makefile.in, */Makefile.in: Rebuild with automake --cygnus.
+	* configure: Rebuild with current autoconf.
 
 Wed Feb 12 11:15:16 1997  Michael Meissner  <meissner@cygnus.com>
 
@@ -110,22 +43,897 @@ Sat Jun 29 18:56:07 1996  Geoffrey Noer  <noer@cygnus.com>
 	crosses/natives
 	* configure: regenerate
 
-Wed Jun 26 12:48:10 1996  Jason Molenda  (crash@godzilla.cygnus.co.jp)
+Thu Jul 31 11:57:46 1997  Karl Berry  <karl@cs.umb.edu>
 
-	* Makefile.in (bindir, libdir, mandir, infodir): Use autoconf-set 
-	values.
-	* configure.in (AC_PREREQ): autoconf 2.5 or higher.
-	* configure: Rebuilt.
-	* emacs/Makefile.in (bindir, libdir, mandir, infodir): Use
-	autoconf-set values.
-	* info/Makefile.in (bindir, libdir, mandir, infodir): Use
-	autoconf-set values.
-	* libtxi/Makefile.in (bindir, libdir, mandir, infodir): Use
-	autoconf-set values.
-	* makeinfo/Makefile.in (bindir, libdir, mandir, infodir):
-	Use autoconf-set values.
-	* util/Makefile.in (bindir, libdir, mandir, infodir): Use 
-	autoconf-set values.
+	*  Version 3.11.
+
+	* info/man.c (reap_children): Declare status as int, not unsigned,
+		since that's what POSIX says the arg to wait should be.
+
+	* makeinfo/makeinfo.c (cm_uref, cm_email): Rewrite to do macro
+ 		expansion in the arguments.
+
+	* makeinfo/makeinfo.c (main): setlocale LC_MESSAGES and LC_TIME,
+		instead of LC_ALL.
+	From: Akim Demaille <demaille@inf.enst.fr>.
+
+	* makeinfo/makeinfo.c (cm_today): Let the %d %s %d be translated,
+		so other languages can change the order of day/month/year.
+	From: Akim Demaille <demaille@inf.enst.fr>.
+
+	* info/infomap.c: Doc fix.
+
+	* lib/system.h [!O_RDONLY]: Prefer <fcntl.h> to <sys/fcntl.h>.
+
+	* configure.in (AC_CHECK_HEADERS): Check for fcntl.h.
+
+	* doc/Makefile.am (install-data-local): Suggest tex/generic/dvips
+		for epsf.tex.
+	From: Tim Mooney <mooney@dogbert.cc.ndsu.NoDak.edu>.
+
+	* configure.in (TEXMF): Move check to block with other program
+ 		checks.
+
+Wed Jul 30 11:20:37 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (defun_internal): Allow extra text after
+		most @def... commands, for tzname[2] in libc.texinfo.
+
+	* info/info.c: Include indices.h.
+	* configure.in (AC_CHECK_HEADERS): Test for sys/wait.h, info/man.c
+ 		uses it.
+	From: Erick Branderhorst <Erick.Branderhorst@asml.nl>.
+
+Tue Jul 29 15:55:19 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* configure.in: Version 3.9j.
+
+	* info/terminal.c (output_character_function): Return int (the
+ 		arg), not void.
+
+	* info/infomap.c: Don't define term_kP as 'v', since that's undefined.
+	From: Tom Hageman <tom@basil.icce.rug.nl>.
+
+	* makeinfo/makeinfo.c: Parameterize some messages to avoid
+ 		duplicate translations.
+
+	* info/terminal.c: Only try to declare ospeed, PC, tputs, etc. if
+		we don't have <ncurses.h/termcap.h> or <termcap.h>.
+
+	* makeinfo/makeinfo.c (cm_email): New function, like cm_uref.
+
+Sun Jul 27 17:09:20 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* configure.in: Only check for <ncurses/termcap.h> if we're using
+		-lncurses.
+	From: Bo Johansson <bo.johansson@mbox2.swipnet.se>.
+
+	* info/dir.c (new_dir_file_p): Avoid automatic struct
+		initialization, SunOS 4 etc. cc can't handle it.
+	From: "Kaveh R. Ghazi" <ghazi@caip.rutgers.edu>.
+
+Sat Jul 26 15:08:13 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* Version 3.9i.
+
+	* configure.in: Check for termcap.h and ncurses/termcap.h.
+	From: bo.johansson@mbox2.swipnet.se.
+
+Fri Jul 25 14:09:05 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Document new second optional arg to email.
+
+	* info/infodoc.c: Document CTRL-x 0 as the way to get out of help.
+
+	* info/dir.c (maybe_build_dir_node): Really check for the same dir
+		file twice, not just by name.
+	(new_dir_file_p): New function.
+
+	* util/install-info.c: Tell them about --help in doc strings.
+
+Thu Jul 24 14:25:44 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* util/texindex.c (memory_error): Move to avoid incorrect implicit
+ 		decl.
+
+	* makeinfo/makeinfo.c,
+	* makeinfo/multi.c,
+	* util/install-info.c,
+	* util/texindex.c,
+	* info/tilde.c,
+	* info/man.c,
+	* info/gc.c,
+	* info/session.c (info_replace_key_to_typeahead): Remove unused
+         function,
+	* info/nodemenu.c,
+	* info/man.c,
+	* info/m-x.c,
+	* info/footnotes.c
+	* info/info.c
+	* info/indices.c,
+	* info/filesys.c: Parenthesize to avoid -Wall warnings
+	remove unused variables,
+	make return types explicit,
+	printf type corrections.
+
+	* lib/system.h: <ctype.h>: Include this.
+	* util/texindex.c,
+	* makeinfo/makeinfo.c,
+	* info/echo-area.c,
+	* info/display.c: ctype.h: Included in system.h now.
+
+	* info/echo-area.c: Parenthesize to avoid -Wall warnings.
+        (ctype.h): #include for isprint.
+	(echo_area_stack_depth): Remove unused function.
+	* info/display.c: Parenthesize to avoid -Wall warnings.
+        (ctype.h): #include for isprint.
+	* info/dir.c: Parenthesize to avoid -Wall warnings.
+	(build_dir_node_internal): Remove declaration of nonexistent function.
+	From: Erick Branderhorst <Erick.Branderhorst@asml.nl>.
+
+	* configure.in (TEXMF): Call texconfig to discover the default value,
+	for the sake of the warning in doc/Makefile.
+	From: Tim Mooney <mooney@dogbert.cc.ndsu.NoDak.edu>.
+
+	* doc/Makefile.am (TEXMF): New variable.
+        (install-data-local): Use it in warning.
+	From: Tim Mooney <mooney@dogbert.cc.ndsu.NoDak.edu>.
+
+	* info/session.c (initialize_info_session): Only call
+	terminal_prep_terminal if clear_screen is true.  Otherwise, failed
+        --index-searches prep the terminal but do not unprep it.
+	From: William Edward Webber <wew@yallara.cs.rmit.EDU.AU>.
+
+	* info/nodemenu.c: Doc fix.
+
+Mon Jul 21 17:11:09 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Comment out @smallbook and @set smallbook so
+ 		people at other sites can print it the way they want.
+	From: Thomas Walter <walter@pctc.chemie.uni-erlangen.de>
+
+Sun Jul 20 07:52:25 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* configure.in: 3.9h.
+
+	* doc/Makefile.am (install-info-am, distclean-aminfo): New targets
+		to avoid assuming info files are in srcdir.
+
+	* lib/system.h (xstrdup): Returns char *, not void *.
+
+	* doc/Makefile.am (.texi.info),
+	* doc/Makefile.am (texinfo): Don't run in $(srcdir).
+
+	* util/install-info.c (main): Remove unnecessary decl of strrchr.
+
+	* info/tilde.c: Include info.h (for config.h) before alloca stuff.
+
+	* makeinfo/makeinfo.c (validate_file): Rename `valid' to `valid_p'
+		to avoid conflict with SunOS 4 header files.
+	From: "Kaveh R. Ghazi" <ghazi@caip.rutgers.edu>.
+
+	* info/session.c (initialize_info_session): Call
+          terminal_prep_terminal here (before calling terminal_clear_screen).
+	(info_session): Instead of here.
+	From: William Edward Webber <wew@yallara.cs.rmit.EDU.AU>.
+
+	* Makefile.am (EXTRA_DIST): Add README-alpha.
+
+Sat Jul 19 13:50:27 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/terminal.c: Use `keypad transmit' sequence if it's defined:
+	(term_keypad_on, term_keypad_off): New statics.
+	(terminal_begin_using_terminal): If term_keypad_on, send it.
+	(terminal_end_using_terminal): If term_keypad_off, send it.
+	(terminal_initialize_terminal): Look up ks and ke termcap strings.
+	From: William Edward Webber <wew@yallara.cs.rmit.EDU.AU>.
+
+	* info/infomap.c (initialize_info_keymaps): Initialize hardwired
+ 		cases for arrow keys a la readline.  Found by John Eaton,
+ 		jwe@bevo.che.wisc.edu.
+
+	* makeinfo/makeinfo.c (output_pending_notes): Remove footnote
+        macro expansion code I #if 0'd out some time ago.  And doc fixes.
+
+	* Applied this patch:
+
+Sat Jul 19 16:29:01 1997  Karl Eichwalder  <ke@suse.de>
+
+	* info/info.c (main): setlocale, bindtextdomain, and textdomain.
+
+Fri Jul 18 10:02:18 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/Makefile.am (install-data-local),
+	* emacs/Makefile.am (install-data-local): Give subdir in warning.
+
+	* configure.in: Version 3.9f.
+
+	* doc/texinfo.texi: Correct \^ to @^.
+	From Andreas S.
+
+	* Merged these changes:
+
+1997-07-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* info/display.c (display_cursor_at_point): Flush ouput.
+
+1997-07-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* info/session.c (remember_window_and_node): Don't crash when the
+	current window has no current node.
+
+1997-07-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* util/texindex.c (usage): Translate the doc strings.
+	* makeinfo/makeinfo.c (cm_today): Translate the month names.
+	* info/variables.c (describe_variable): Translate the doc strings.
+	* info/nodes.h: Don't translate the strings defining the info format.
+
+1997-07-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* makeinfo/makeinfo.c (get_item_function): Remove superfluous call
+	to canon_white after get_rest_of_line.
+	(cm_end): Likewise.
+	(handle_variable): Likewise.
+	(cm_item): Likewise.
+	(cm_unmacro): Likewise.
+
+1997-07-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* info/nodemenu.c (list_visited_nodes): Don't clear the internal
+	flag, this and other functions depend on it.  Don't insist on
+	displaying the menu below the current window.
+
+1997-07-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* makeinfo/makeinfo.c (cm_uref): Fix memory leaks.
+	(cm_inforef): Likewise.  Handle empty cross reference name.
+
+1997-07-17  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* info/echo-area.c (ea_possible_completions): Check that the
+	current window can actually be split.
+
+Thu Jul 17 17:19:34 1997  Karl Berry  <karl@cs.umb.edu>
+
+	
+	* emacs/Makefile.am (*clean-lisp): Define, as Automake didn't.
+	From: Kenneth Stailey <kstailey@disclosure.com>.
+
+	* doc/Makefile.am: Do not distribute info.1.
+	* makeinfo/macros: Do not distribute this directory, it's merged
+		into the main documentation.
+	* doc/makeinfo.texi: Don't distribute this either, it's in the 
+		main manual.
+
+	* util/install-info.c: Use \n\ for multiline string constant.
+  		From: Tim Mooney <mooney@dogbert.cc.ndsu.NoDak.edu>.
+
+Wed Jul 16 15:29:50 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: @set must be after @setfilename, I guess.
+	Noted by Erick Branderhorst.
+
+	* Applied this change:
+
+Tue Nov 12 22:20:22 1996  John Eaton  <jwe@bevo.che.wisc.edu>
+
+	* makeinfo.c (INDEX_ALIST): Use two indices, read_index and
+	write_index, instead of just one.
+	(find_index_offset): If a match is found, return index to the
+	current INDEX_ALIST struct, not the index pointing to the list of
+	index entries.
+	(translate_index): Return read_index from the matching
+	INDEX_ALIST.
+	(undefindex): Delete the list of index elements pointed to by
+	read_index from the INDEX_ALIST that matches name.
+	(defindex): Initialize read_index and write_index.
+	(index_add_arg): Add entries to the list pointed to by write_index
+	from the INDEX_ALIST matching name.
+	(index_append): Delete unused function.
+	(cm_synindex): Don't merge indcies, just make the write_index for
+	redirectee the same as the write_index for redirector.
+
+Tue Jul 15 09:32:04 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Bump edition number for 2.24.
+
+	* util/Makefile.am (localedir): Define.
+
+	* info/window.h: Rename __window__ to window_struct.
+
+	* info/window.h,
+	* info/variables.h,
+	* info/search.h,
+	* info/man.h,
+	* info/info-utils.h,
+	* info/gc.h,
+	* info/footnotes.h,
+	* info/filesys.h,
+	* info/echo-area.h,
+	* info/display.h: Avoid leading _ in #define for #include protection.
+
+	* makeinfo/makeinfo.c: Version 1.68.
+	* info/info.c: Version 2.17.
+
+	* Most all files: Untabify.
+
+	* doc/Makefile.am (texinfo): Add explicit target.
+
+	* emacs/Makefile.am (noinst_LISP): Remove the obsolete
+		detexinfo.el (makeinfo --no-headers is better) and
+	        texnfo-tex.el (now handled by TeX modes in general).
+
+Mon Jul 14 15:21:03 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* util/texi2dvi: Update RCS file from 3.9 distribution.
+
+	* util/Makefile.am (EXTRA_DIST): Add update-info, from
+ 		rhawes@dmapub.dma.org
+
+Sun Jul 13 17:05:03 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/signals.c: Use RETSIGTYPE instead of hardwiring void.
+	From: "Jeffery L. JT Vogt" <lfm@atw.earthreach.com>.
+
+	* info/session.c (info_history_node): Rewrite as
+  	      info_kill_node (current_node).
+        (kill_node, read_nodename_to_kill): New functions from info_kill_node.
+	(info_kill_node): Now this just calls them.
+
+Fri Jul 11 11:56:58 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Fix `Conditionals' xref.
+
+Thu Jul 10 17:58:12 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/info.texi: Don't say SPC clears ? screen.
+
+Sun Jul  6 16:26:41 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/info-stnd.texi: Document --index-search.
+
+	* info/tilde.c,
+	* info/session.c: Remove redundant getenv decl.
+
+	* Installed following change:
+Tue Nov 12 14:44:00 1996  John W. Eaton  <jwe@bevo.che.wisc.edu>
+
+	* info/info.c (main): Handle new option, --index-search STRING.
+	(index_search_p, index_search_string): New static variables, used
+	to handle --index-search option.
+
+	* info/session.c (initialize_info_session): New arg,
+	clear_screen.  Change all callers.
+
+	* info/indices.h (do_info_index_search, index_intry_exists):
+	Provide declarations here.
+
+	* info/indices.c (do_info_index_search): New function, extracted
+	from info_index_search.
+	(info_index_search): Simply call do_info_index_search() with
+	search_string set to NULL.
+	(index_entry_exists): New function.
+
+Sat Jul  5 17:17:14 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Document @kbdinputstyle.
+
+	* makeinfo/makeinfo.c (kbdinputstyle): New command.
+	(cm_no_op_line_arg): New function.
+
+	* info/termdep.h (HAVE_TERMIOS_H) [NeXT]: #undef.  
+	From: Gregor Hoffleit <flight@mathi.uni-heidelberg.de> et al.
+
+Fri Jul  4 14:18:08 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/Makefile.am (EXTRA_DIST),
+	* util/Makefile.am (EXTRA_DIST),
+	* makeinfo/Makefile.am (EXTRA_DIST),
+	* lib/Makefile.am (EXTRA_DIST): Include README.
+
+	* doc/texinfo.texi (makeinfo options): Document --paragraph-indent
+ 		values more completely.
+	* makeinfo/makeinfo.c (set_paragraph_indent): Allow translated
+ 		asis or none, improve doc.
+ 	From ke.
+
+	* doc/Makefile.am (dist-info): New empty target so that we do not
+ 		distribute info files.
+ 	From Erick Branderhorst.
+
+	* doc/texinfo.texi (Invoking install-info): Document that the dir
+		file is created now if need be.
+	* Makefile.am (EXTRA_DIST): No longer need dir.
+	* util/install-info.c (ensure_dirfile_exists): New routine.
+	(main): Call it before trying to open dirfile for reading.
+
+	* doc/texinfo.texi: Document install-info --delete a little better.
+	* util/install-info.c: Set something_deleted when we delete a
+ 		normal line.
+	Bug from: Denis Kosygin <dkosygin@math.Princeton.EDU>.
+
+	* util/install-info.c: If no info dir entry, give warning and exit 0.
+
+Wed Jul  2 06:35:17 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* configure.in (ALL_LINGUAS): Add fr.
+
+	* makeinfo/makeinfo.h (insertion_type, insertion_type_names): Add
+		ifnot... entries. Alphabetize.
+
+Tue Jul  1 17:21:54 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (sort_index): Set defining_line and
+		input_filename so errors in index entries are reported at
+		the correct location.  From rms.
+
+	* makeinfo/makeinfo.c (cm_ifnothtml, etc.): Routines for new
+ 		commands.
+
+Sun Jun 29 09:44:01 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Document new @ifnot... commands, etc.
+	* doc/texinfo.texi: Document @image, etc.
+
+Thu Jun 26 17:57:37 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (cm_image): New routine for new command @image.
+	(cm_end): Move to better place, doesn't need its own page.
+	Doc fixes.
+
+Mon Jun 23 16:54:03 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* Makefile.am (SUBDIRS): Do intl first.
+
+	* doc/Makefile.am (EXTRA_DIST): Include epsf.tex.
+	(install-data-local): Suggest possible installation directory.
+	* epsf.tex: New file.
+
+Wed Jun 18 17:51:52 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Document texinfo.cnf.
+
+Sun Jun 15 14:37:58 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi (Command List): Various commands missing or
+		erroneous.
+	From: Karl_Heinz_Marbaise@p69.ks.fido.de.
+
+	* makeinfo/makeinfo.c: Oops, failed to break out of loop.
+
+	* util/texindex.c: Use <getopt.h> not "getopt.h".
+
+	* All source files: Merge gettext changes from Karl E.;
+	his ChangeLog entries below.
+
+Sat Jun 14 17:04:28 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* Makefile.am,
+	* makeinfo/Makefile.am: Doc fix.
+	* util/Makefile.am (EXTRA_DIST): Add texi2dvi.  From Karl E.
+
+Fri Jun 13 17:39:34 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c [WIN32]: Handle read bogosity and c:\
+		absolute paths.
+	From: Eric Hanchrow <erich@MICROSOFT.com>.
+
+	* configure.in (AC_CHECK_HEADERS): Check for pwd.h.
+	* info/tilde.c (pwd.h): Move #include to system.h.
+
+	* makeinfo/makeinfo.c (main): New option -P to prepend to search path.
+	From: Kenneth Stailey <kstailey@cvs.openbsd.org>.
+
+	* doc/texinfo.texi (Invoking makeinfo),
+	* doc/makeinfo.texi: Mention -P.
+
+Thu Jun 12 16:25:40 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/signals.h (SIGCHLD): #define as SIGCLD if undefined, for sysV68.
+	From: "Philippe De Muyter" <phdm%labauto1@ulb.ac.be>.
+
+	* util/install-info.c (O_RDONLY): Remove this stuff, it's in system.h.
+ 	(main): Handle existing entry in dir file having .info extension.
+	From: "Bradley C. Kuszmaul" <bradley@GRANITE.SYSTEMSX.CS.YALE.EDU>.
+
+	* makeinfo/makeinfo.c (get_char_len): Don't count 8-bit characters
+		as two chars in the output.
+	From: Sung-Hyun Nam <namsh@amuna.rms.lgic.co.kr>.
+
+Wed Jun 11 16:36:51 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi (Other Info Directories): Document new trailing
+ 		: in INFOPATH feature.
+
+	* info/info.c (main): Have trailing : in INFOPATH expand to the
+ 		default path.
+
+Fri Jun  6 13:22:02 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi (uref): New node for new command.
+
+Thu Jun  5 18:13:48 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (cm_uref): New function to accept optional
+		second argument.  Call it in command table.
+
+Sat Jun 14 10:54:16 1997  Karl Eichwalder  <ke@suse.de>
+
+	* mkinstalldirs: Update from automake-1.1p.
+
+	* configure.in: Touch po/ChangeLog (gettext needs it).
+
+Thu Jun 12 08:37:52 1997  Karl Eichwalder  <ke@ke.Central.DE>
+
+	* util/texindex.c: Include system.h, remove config.h.
+
+	* po/POTFILES.in: Fill it.
+
+	* makeinfo/multi.c: Include system.h.
+
+	* info/Makefile.am:
+	* makeinfo/Makefile.am:
+	* util/Makefile.am:
+ 	(localedir): Set. 
+	(INCLUDES): Add intl/ and LOCALEDIR.
+	(LDADD): Add @INTLLIBS@.
+
+	* makeinfo/makeinfo.c (main):
+	* util/texindex.c (main): 
+	* util/install-info.c (main):
+ 	setlocale, bindtextdomain, and textdomain.
+
+	* lib/system.h: Include locale.h and libintl.h.
+
+	* acconfig.h: Include libintl.h.
+	(_, N_): Define.
+	Add ENABLE_NLS, HAVE_CATGETS, HAVE_GETTEXT, HAVE_LC_MESSAGES,
+	HAVE_STPCPY for libintl.
+	Add @TOP@ and @BOTTOM@.
+
+	* configure.in (AM_GNU_GETTEXT): Add.
+	(AC_OUTPUT): Process Makefiles in intl/ and po/.
+	(ALL_LINGUAS): Available languages.
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Now use 1.1p.
+
+Wed Jun 11 17:05:37 1997  Karl Eichwalder  <ke@ke.Central.DE>
+
+	* Makefile.am (SUBDIRS): Add intl/ and po/ for NLS.
+
+	* run `gettextize -c' to get the i18n skeleton.
+
+Wed Jun  4 17:51:08 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (uref): New command, another alias for @code
+ 		for now.
+
+Wed Jun  4 02:02:33 1997  Miles Bader  <miles@gnu.ai.mit.edu>
+
+        * doc/texinfo.texi (email): { and } need @ escapes.
+
+Sun Jun  1 16:34:12 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi (itemx): @itemx should always follow @item.
+
+	* makeinfo/makeinfo.c (cm_item): Insert blank line if two
+		consecutive @item's.
+	From: Karl Eichwalder <ke@ke.central.de>.
+	Also various doc fixes.
+
+Tue May 27 17:20:44 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi (various): Document @deftypemethod.	
+	(email): @ should have been @@ in the example.
+	From: Mate Wierdl <mw@wierdlmpc.msci.memphis.edu>
+
+Mon May 26 16:56:26 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/multi.c (setup_multitable_parameters): Avoid use of %n
+		for sake of m68k-hp-bsd.
+	From: Derek L Davies <ddavies@world.std.com>.
+
+	* info/terminal.c (terminal_begin_using_terminal,
+        terminal_end_using_terminal): Call fflush and sleep to handle
+	cmdtool/shelltool with scrollbars.  Also ignore
+ 	SIGWINCH so we do not prematurely exit.  Move call.
+	(terminal_prep_terminal): Disable LNEXT (CTRL-V).
+	From: strube@physik3.gwdg.de (Hans Werner Strube).
+
+	* configure.in (AC_TYPE_SIGNAL): Check this.
+
+Sun May 25 16:49:58 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (discard_insertions): Take arg saying
+ 		whether ifinfo/ifset/etc. are ok.
+        (convert_from_loaded_file): At `finished', call discard_insertions.
+	(handle_variable_internal): Complain if we reach eof before the
+		@end for a false condition.
+	From: HERBERT@boevm4.vnet.ibm.com.
+
+	* info/Makefile.am (ginfo_SOURCES): Add doc.h.
+	* lib/Makefile.am (libtxi_a_SOURCES): Add system.h.
+
+Sat May 24 18:08:27 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c: Check that we have macro_expansion_filename
+ 		before using strcmp.
+
+Thu May 22 17:59:46 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/makeinfo.texi: Minimally document --force.
+
+	* makeinfo/makeinfo.c (--force): New option.
+	(-E): Allow stdout via `-'.
+	(convert_from_loaded_file): Unlink output files if errors and !force.
+
+Tue May 20 17:48:42 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c: Change all strdup calls to xstrdup.
+	(xmalloc, xrealloc, memory_error): Remove these functions, they're
+		in lib.
+	(set_paragraph_indent, cm_paragraph_indent): Move to misc page.
+	(cm_footnote): Expand macros in the arg for the macro expansion output.
+
+Fri May 16 17:26:59 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (cm_macro): Allocate an empty body if the
+ 		macro was empty.
+ 	(cm_unmacro): Allocate one more byte for the null.
+	From: Robert Hoehne <robert.hoehne@Mathematik.TU-Chemnitz.DE>.
+
+Sun May 11 17:51:21 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* makeinfo/makeinfo.c (cm_printindex): Fix calculation of the
+	length of an index line.
+
+Sun May 11 14:47:42 1997  Tom Tromey  <tromey@cygnus.com>
+
+	* makeinfo/makeinfo.c (main): Don't unconditionally run usage when
+	-e specified.
+
+Sun May 11 17:47:42 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (init_indices): Free the source for an @synindex.
+	(undefindex): Do not go further if the target was already freed.
+	(free_index): Do not free the node names, as init_tags already did.
+	(cm_synindex, index_add_arg): Improve error message.
+	(program_index, function_index, etc.): Remove these unused #defines.
+
+Tue May  6 17:53:37 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (init_internals): Do not free current_node,
+        it already is, at least when multiple input files are specified.
+	From: Karl Eichwalder <ke@ke.central.de>.
+
+Mon May  5 16:14:39 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Mention both alignment and non-alignment of
+ 		continuation description lines in menus (Arnold).
+
+Sun Apr 27 16:12:44 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (apply): Handle body being `\string'.
+	Also, avoid dereferencing a null pointer when a macro has no named
+	parameters.
+	From: Eli Zaretskii <eliz@is.elta.co.il>.
+
+	* makeinfo/makeinfo.c: Wording changes/fixes in warnings.
+
+	* info/session.c (info_get_input_char): Do not mix stdio with raw I/O.
+	From: Egil Kvaleberg <egilk@sn.no>.
+
+	From Tom Hageman <tom@basil.icce.rug.nl>.  These changes make
+        arrow keys work:
+	* info/infomap.c: Add arrow key bindings.
+        (keymap_bind_keyseq): New support function.
+	(initialize_info_keymaps): Use it.
+	(term_ku,term_kd,term_kl,term_kr): Remove explicit declarations;
+	use #include "terminal.h" instead.
+	* info/session.c (initialize_info_session): Unbuffer stdin.
+	(info_get_another_input_char): Fix bug in `ready' logic.
+	* info/terminal.h,
+	* info/terminal.c (term_kP, term_kN): New variables to hold
+ 		PageUp, PageDown key sequences.
+	  (terminal_initialize_terminal): Set them.
+       
+	* util/texindex.c (main),
+	* util/install-info.c (main),
+	* makeinfo/makeinfo.c (print_version_info),
+	* info/info.c (main): Use PACKAGE and VERSION from Automake for
+ 		printing version number.
+
+Sat Apr 26 19:19:46 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (get_until_in_line): Do not expand if
+		executing_string.
+	Also, free temporary strings.
+	Also, untabify entire file.
+
+	* doc/texinfo.texi: Many corrections from Arnold.
+
+Thu Apr 24 16:31:09 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/multi.c (draw_horizontal_separator): Account for indent
+ 		here also.  From Ulrich.
+
+Wed Apr 23 15:15:34 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (cm_today): Use time_t instead of long;
+ 		everyone else does.
+ 	(LOCALTIME_CAST): Remove kludge, we'll always use time_t now.
+
+	* info/Makefile.am (ginfo_SOURCES): Remove general.h, that got
+ 		merged into system.h.
+
+Mon Apr 21 17:13:25 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/multi.c (output_multitable_row): Account for
+ 	column_indent, both the global one and for each column.
+	(setup_multitable_parameters): Account for column_indent in the table
+	width in the columnfrac case, but don't bother with the template
+ 		case for now.
+
+Sun Apr 20 16:32:00 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (output_stream): Remove redundant
+        definition; it's in makeinfo.h,
+	and a vaxstation-ultrix4.3 fails to link because of the two defns.
+	From: Anders Olofsson <anders@kid025.ericsson.se>.
+
+	* makeinfo/makeinfo.c (expansion): Inhibit appending to the macro
+ 		expansion stream.
+ 	(get_until_in_line): Possibly expand the text.
+	Change caller in get_node_token to do the expansion,
+	all other calls to remain the same.
+
+	* makeinfo/makeinfo.c (cm_node): No need to call strlen to check
+ 		for the empty string.
+
+	* doc/texinfo.texi: Restore missing @c for initial comment.
+
+Fri Apr 18 17:41:36 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Mention that .info is unnecessary in the info
+		file name argument of an xref.
+
+	* doc/texinfo.texi: Mention texi2dvi -t instead of embedding
+ 		@smallbook or @afourpaper in the document source.
+
+Sun Apr 13 15:19:08 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* lib/system.h (_GNU_SOURCE): #define.
+
+Mon Apr  7 16:30:11 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/info.texi,
+	* doc/info-stnd.texi,
+	* doc/texinfo.texi: Do not make (dir) the previous ptr from the top node,
+	and tell people not to do that in the manual.
+	From: rmedina@kanojo.ivic.ve (Rodrigo Medina),
+	confirmed by rms.
+
+Fri Apr  4 16:30:33 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c: Move error page to top to avoid
+	prototypes, and do add prototypes for add_word_args and execute_string,
+	so we can use <stdarg.h>.
+
+	* info/makedoc.c,
+	* info/nodemenu.c: Use %ld instead of %d for file offsets.
+	* makeinfo/makeinfo.c (delete_macro): Decrement macro_list_len.
+	(get_macro_args): Decrement line number if see \n.
+	* utils/texindex.c (indexify): Use fputs instead of fprintf
+	for constant string.
+	From: Eli Zaretskii <eliz@is.elta.co.il>.
+
+Thu Apr  3 17:40:52 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* configure.in (AC_CHECK_HEADERS): No need to check for vararg.h
+	here, AC_FUNC_VPRINTF does it.
+	(AC_CHECK_FUNCS): Likewise for vsprintf and vfprintf.
+	* makeinfo/makeinfo.c (add_word_args, execute_string): Rewrite
+	like the error functions.
+
+Wed Apr  2 17:46:28 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* configure.in: Add AC_FUNC_VPRINTF.
+	* makeinfo/makeinfo.c (error, line_error, warning): Rewrite a la
+        error.c from the *utils to use <stdarg.h> if available.
+
+Tue Apr  1 11:48:40 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Tabs are a bad idea.
+
+	* doc/userdoc.texi,
+	* doc/info.texi: Untabify.
+
+Sun Mar 30 17:36:47 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (end_of_sentence_p): New function.
+	(add_char): Call it, instead of simply sentence_ender.
+	(post_sentence): New macro.
+	Also, remove some #include's now in system.h.
+	* lib/system.h [VMS]: #include <perror.h>, from makeinfo.
+
+Thu Mar 27 17:41:03 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/search.c (skip_node_characters): Do not arbitrarily
+	strip trailing period from end of node name; this is valid.
+
+Mon Mar 24 16:44:42 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* configure.in (AC_OUTPUT): Don't need to create stamp-h here,
+	tromey says AM_CONFIG_HEADER will do it.
+
+	* info/Makefile.am, util/Makefile.am, makeinfo/Makefile.am (INCLUDES):
+        Don't need -I.. (for config.h) or -I$(srcdir), says tromey.
+        Automake includes those already.
+
+Fri Mar 14 15:05:17 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/Makefile.am: Build as ginfo, install as info,
+	to avoid conflict with the standard info target.
+
+	* lib/system.h: New file.
+	* makeinfo/makeinfo.c (strerror): Remove declaration,
+	include system.h, remove other redundant #if stuff.
+	* info/general.h: Include system.h instead of doing common stuff.
+	* util/install-info.c (my_strerror): Remove this, use strerror,
+	include system.h.
+
+	* info/terminal.c (terminal_prep_terminal): Only use OCRNL and
+		ONLCR if they are defined.  Reported by many people.
+
+	* Installed:
+
+	Sun Dec  1 19:23:54 1996  Karl Eichwalder  <ke@ke.Central.DE>
+
+		* configure.in (TERMLIBS): Add ncurses.
+
+Thu Mar 13 13:59:45 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* lib/Makefile.am (libtxi_a_SOURCES): Add xstrdup.c.
+	* info/*.c: Use xstrdup instead of strdup everywhere.
+
+	* info/tilde.c: Do not include clib.h, move stdlib.h include to
+	* info/general.h: here.
+
+	* configure.in (AC_CONFIG_HEADER): Use this,
+	to avoid hugely long compile line with all the -D's.
+	* info/general.h: Include <config.h>.
+	
+	* emacs/Makefile.am (install, install-data): Do @echo
+	to tell the user to compile/install the elisp manually.
+	
+	* configure.in (AC_REPLACE_FUNCS): Move strerror check to here.
+	(AC_CHECK_FUNCS): From here.
+
+	* lib/strerror.c: New file, from enscript (et al.) distribution.
+
+Tue Mar 11 16:36:25 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/Makefile.am (info_SOURCES): Add doc.c, dribble.c, infodoc.c.
+	(LDADD): Add @TERMLIBS@.
+
+	* info/info.h: HANDLE_MAN_PAGES, NAMED_FUNCTIONS: Define these.
+
+	* info/filesys.h: Spurious ! when DEFAULT_INFOPATH is not defined.
+
+	* configure.in (AC_OUTPUT): Do lib first and doc last.
+
+	* info/echo-area.c,
+	* info/echo-area.h,
+	* info/info.h: Rename echo_area to echo-area.
+
+Mon Mar 10 17:59:05 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* */Makefile.am: Write Makefile.am files for Automake.
+	* doc: New subdirectory, move all manuals and texinfo.tex there.
+	* AUTHORS, THANKS, config.guess, config.sub, mkinstalldirs: New files,
+	required by Automake.
+	* lib/xmalloc.c: Move from info/.
 
 Fri Oct  4 07:49:49 1996  Karl Berry  <karl@cs.umb.edu>
 

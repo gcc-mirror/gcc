@@ -1,10 +1,10 @@
 /* termdep.h -- System things that terminal.c depends on.
-   $Id: termdep.h,v 1.2 1997/10/30 05:55:14 law Exp $
+   $Id: termdep.h,v 1.4 1998/03/24 18:06:50 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993, 96 Free Software Foundation, Inc.
+   Copyright (C) 1993, 96, 97 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,33 +22,21 @@
 
    Written by Brian Fox (bfox@ai.mit.edu). */
 
-#if !defined (_TERMDEP_H_)
-#  define _TERMDEP_H_
+#ifndef INFO_TERMDEP_H
+#define INFO_TERMDEP_H
 
-#if defined (HAVE_SYS_FCNTL_H)
-#  include <sys/fcntl.h>
-#else
-#  include <fcntl.h>
-#endif /* !HAVE_SYS_FCNTL_H */
-
-#if defined (HAVE_SYS_FILE_H)
-#  include <sys/file.h>
-#endif /* HAVE_SYS_FILE_H */
-
-#if defined (HAVE_STRINGS_H)
-#  include <strings.h>
-#else
-#  if defined (HAVE_STRING_H)
-#    include <string.h>
-#  endif
+/* NeXT supplies <termios.h> but it is broken.  Probably Autoconf should
+   have a separate test, but anyway ... */
+#ifdef NeXT
+#undef HAVE_TERMIOS_H
 #endif
 
-#if defined (HAVE_TERMIOS_H)
+#ifdef HAVE_TERMIOS_H
 #  include <termios.h>
-/* 
- * POSIX does not mandate that we have these and it may, in fact, be only
- * partially implemented 
- */
+ /*
+    POSIX does not mandate that we have these and it may, in fact, be only
+    partially implemented.
+  */
 #  undef TIOCGETC
 #else
 #  if defined (HAVE_TERMIO_H)
@@ -67,15 +55,8 @@
 #  endif /* !HAVE_TERMIO_H */
 #endif /* !HAVE_TERMIOS_H */
 
-#if defined (HAVE_SYS_TTOLD_H)
+#ifdef HAVE_SYS_TTOLD_H
 #  include <sys/ttold.h>
 #endif /* HAVE_SYS_TTOLD_H */
 
-#if !defined (HAVE_STRCHR)
-#  undef strchr
-#  undef strrchr
-#  define strchr index
-#  define strrchr rindex
-#endif /* !HAVE_STRCHR */
-
-#endif /* _TERMDEP_H_ */
+#endif /* not INFO_TERMDEP_H */
