@@ -1,0 +1,8 @@
+# Make assignments for compiling on NeXT with their compiler version.
+CC=cc -traditional-cpp
+OLDCC=cc -traditional-cpp
+
+libgcc2.a: stdarg.h
+
+stdarg.h:
+	cp $(srcdir)/gstdarg.h ./stdarg.h
