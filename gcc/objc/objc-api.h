@@ -136,7 +136,8 @@ typedef struct objc_module {
 
   Symtab_t    symtab;                           /* Pointer to the Symtab of
                                                   the module.  The Symtab
-                                                  holds an array of pointers to 
+                                                  holds an array of 
+						  pointers to 
                                                   the classes and categories 
                                                   defined in the module. */
 } Module, *Module_t;
