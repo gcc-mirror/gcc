@@ -1,5 +1,9 @@
 2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
 
+	* include/ext/stdio_filebuf.h:  Add header guards.  Doxygenate.
+
+2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/doxygen/user.cfg.in (EXCLUDE):  Add 'CVS'.
 
 2002-05-21  Phil Edwards  <pme@gcc.gnu.org>
