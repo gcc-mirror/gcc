@@ -1,3 +1,8 @@
+Wed Oct 13 23:23:45 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.c (expand_block_move): Use INTVAL, not XINT to access
+	alignment.
+
 Wed Oct 13 21:47:18 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-page.c (MAP_FAILED): Provide default.
