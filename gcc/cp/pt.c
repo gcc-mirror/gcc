@@ -11379,7 +11379,8 @@ dependent_type_p (tree type)
   return TYPE_DEPENDENT_P (type);
 }
 
-/* Returns TRUE if the EXPRESSION is value-dependent.  */
+/* Returns TRUE if the EXPRESSION is value-dependent, in the sense of
+   [temp.dep.constexpr] */
 
 bool
 value_dependent_expression_p (tree expression)
@@ -11406,13 +11407,15 @@ value_dependent_expression_p (tree expression)
       && value_dependent_expression_p (DECL_INITIAL (expression)))
     return true;
   /* These expressions are value-dependent if the type to which the
-     cast occurs is dependent.  */
+     cast occurs is dependent or the expression being casted is
+     value-dependent.  */
   if ((TREE_CODE (expression) == DYNAMIC_CAST_EXPR
        || TREE_CODE (expression) == STATIC_CAST_EXPR
        || TREE_CODE (expression) == CONST_CAST_EXPR
        || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
        || TREE_CODE (expression) == CAST_EXPR)
-      && dependent_type_p (TREE_TYPE (expression)))
+      && (dependent_type_p (TREE_TYPE (expression))
+   || value_dependent_expression_p (TREE_OPERAND (expression, 0))))
     return true;
   /* A `sizeof' expression where the sizeof operand is a type is
      value-dependent if the type is dependent.  If the type was not
