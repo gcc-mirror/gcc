@@ -1,3 +1,21 @@
+2004-05-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/abi.html (libgcc_s): Additions suggested by Matthias Klose.
+	* docs/doxygen/Intro.3: Subtractions suggested by Phil Edwards.
+
+2004-05-21  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/15123
+	PR libstdc++/13928
+	* docs/doxygen/Intro.3: Remove Allocators.3.
+	Add new extension headers, extension namespace list.
+	* docs/doxygen/run_doxygen (problematic): Remove Allocators.3
+	Rename GLIBCXXSTD names to std::. Rename __gnu_debug to
+	__gnu_debug::. Remove __policy_ renames.
+	* docs/doxygen/guide.html: Add dot note.
+	* docs/doxygen/stdheader.cc: Edit, add files.
+	* docs/doxygen/user.cfg.in: Regenerate with Doxygen 1.3.7.
+
 2004-05-19  Jan Beulich  <jbeulich@novell.com>
  
         PR libstdc++/15489
