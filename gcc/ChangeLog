@@ -1,3 +1,9 @@
+1999-11-29  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.c (init_cumulative_args): Fix type of third
+	arg.
+	* config/sparc/sparc-protos.h: Update proto, move into RTX_CODE.
+
 1999-11-28  Robert Lipe  <robertl@cygnus.com>
 
 	* i386/sco5.h (FINI_SECTION_ASM_OP_COFF): Move destructor fn

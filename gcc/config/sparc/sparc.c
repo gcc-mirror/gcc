@@ -3453,7 +3453,7 @@ void
 init_cumulative_args (cum, fntype, libname, indirect)
      CUMULATIVE_ARGS *cum;
      tree fntype;
-     tree libname ATTRIBUTE_UNUSED;
+     rtx libname ATTRIBUTE_UNUSED;
      int indirect ATTRIBUTE_UNUSED;
 {
   cum->words = 0;
