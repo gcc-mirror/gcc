@@ -1636,7 +1636,7 @@ vmsdbgout_init (main_input_filename)
 
   module_producer
     = (char *) xmalloc (strlen (language_string) + 1
-			+ strlen (version_string + 1));
+			+ strlen (version_string) + 1);
   sprintf (module_producer, "%s %s", language_string, version_string);
 
   ASM_GENERATE_INTERNAL_LABEL (text_end_label, TEXT_END_LABEL, 0);
