@@ -1,3 +1,10 @@
+2001-01-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.other/builtins1.C: New test.
+	* g++.old-deja/g++.other/builtins2.C: Likewise.
+	* g++.old-deja/g++.other/builtins3.C: Likewise.
+	* g++.old-deja/g++.other/builtins4.C: Likewise.
+
 2001-01-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20010117-1.c: New test.
