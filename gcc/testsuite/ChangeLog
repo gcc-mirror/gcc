@@ -1,3 +1,7 @@
+1998-04-29  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/compile/980419-1.f: Removed since doesn't compile.
+
 1998-04-27  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/compile/980427-0.f: New test.
