@@ -92,9 +92,9 @@ static const char * const tree_node_kind_names[] = {
 #endif /* GATHER_STATISTICS */
 
 /* Unique id for next decl created.  */
-static int next_decl_uid;
+static GTY(()) int next_decl_uid;
 /* Unique id for next type created.  */
-static int next_type_uid = 1;
+static GTY(()) int next_type_uid = 1;
 
 /* Since we cannot rehash a type after it is in the table, we have to
    keep the hash code.  */

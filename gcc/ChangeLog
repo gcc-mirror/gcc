@@ -1,3 +1,8 @@
+2003-04-15  Geoffrey Keating  <geoffk@apple.com>
+
+	* tree.c (next_decl_uid): Mark with GTY.
+	(next_type_uid): Likewise.
+
 2003-04-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR target/9594:
