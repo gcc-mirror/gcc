@@ -86,9 +86,9 @@ Thu Feb 24 20:04:11 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Wed Feb 23 16:42:21 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
-	* final.c (shorten_branches): Make value passed to LABEL_ALIGN
+	* final.c (shorten_branches): Make value passed to LOOP_ALIGN
 	conform to documentation.
-	* sh.h (LABEL_ALIGN): If aligning loops, call sh_loop_align
+	* sh.h (LOOP_ALIGN): If aligning loops, call sh_loop_align
 	to check for special cases.
 	* sh-protos.h (sh_loop_align): Declare.
 	* sh.c (sh_loop_align): Define.
