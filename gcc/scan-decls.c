@@ -113,8 +113,7 @@ scan_decls (pfile, argc, argv)
     }
   if (token.type == CPP_EOF)
     {
-      cpp_pop_buffer (pfile);
-      if (CPP_BUFFER (pfile) == NULL)
+      if (cpp_pop_buffer (pfile) == 0)
 	return 0;
 
       goto new_statement;
@@ -149,8 +148,7 @@ scan_decls (pfile, argc, argv)
 	  goto new_statement;
 	  
 	case CPP_EOF:
-	  cpp_pop_buffer (pfile);
-	  if (CPP_BUFFER (pfile) == NULL)
+	  if (cpp_pop_buffer (pfile) == 0)
 	    return 0;
 	  break;
 
