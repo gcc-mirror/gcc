@@ -1,3 +1,8 @@
+2001-11-15  Loren J. Rittle  <ljrittle@acm.org>
+
+	* docs/html/faq/index.html (Is libstdc++-v3 thread-safe?): Clarify
+	wording.
+
 2001-11-15  <bjornw@planetarion.com>
 	    Loren J. Rittle  <ljrittle@acm.org>
 
