@@ -1,5 +1,8 @@
 2001-11-16  Tom Tromey  <tromey@redhat.com>
 
+	* verify.cc (_Jv_BytecodeVerifier::check_field_constant): Handle
+	case where field has primitive type.
+
 	* verify.cc (_Jv_BytecodeVerifier::is_assignable_from_slow): New
 	method.
 	(type::compatible): Use it.
