@@ -1,3 +1,8 @@
+Wed Jul  1 22:25:43 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* xcoffout.c (xcoffout_begin_function): Call xcoffout_block for
+	the zero'th block.
+
 Wed Jul  1 23:12:58 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* h8300.c (print_operand): Delete %L support.
