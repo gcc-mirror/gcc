@@ -43,14 +43,28 @@
  
   // Expose global C names, including non-standard ones, but shadow
   // some names and types with the std:: C++ version.
+#ifdef __gid_t_defined
   using _C_legacy::gid_t;
+#endif
+#ifdef __uid_t_defined
   using _C_legacy::uid_t;
+#endif
+#ifdef __off_t_defined
   using _C_legacy::off_t;
+#endif
+#ifdef __off64_t_defined
   using _C_legacy::off64_t;
+#endif
+#ifdef __useconds_t_defined
   using _C_legacy::useconds_t;
+#endif
+#ifdef __pid_t_defined
   using _C_legacy::pid_t;
+#endif
   using _C_legacy::intptr_t;
+#ifdef __socklen_t_defined
   using _C_legacy::socklen_t;
+#endif
 
   using _C_legacy::access;
   using _C_legacy::euidaccess;

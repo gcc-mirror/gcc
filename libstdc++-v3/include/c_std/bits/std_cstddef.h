@@ -38,7 +38,11 @@ namespace _C_legacy {
   extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
-#     include_next <stddef.h>
+// XXX
+#   define __need_size_t
+#   define __need_ptrdiff_t
+#   define __need_NULL
+#   include_next <stddef.h>
   }
 } // namespace _C_legacy
 
@@ -53,8 +57,3 @@ namespace std {
 # undef _IN_C_LEGACY_
 
 #endif
-
-
-
-
-

@@ -32,7 +32,7 @@
 //
 
 #ifndef _CPP_CLIMITS
-#define _CPP_CLIMTIS 1
+#define _CPP_CLIMITS 1
 
 namespace _C_legacy {
   extern "C" {

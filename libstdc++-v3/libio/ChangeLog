@@ -1,3 +1,10 @@
+2000-10-17  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* libioP.h: Break up extern "C" bits around includes.
+	* libio.h: Only include C headers, or else _C_legacy namespaces
+	will be nested.
+	* libioP.h: Same here.
+	
 2000-10-11  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* Makefile.am: Add includes from GLIBCPP_EXPORT_INCLUDES.
