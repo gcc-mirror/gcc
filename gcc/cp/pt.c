@@ -169,7 +169,7 @@ static tree for_each_template_parm_r PARAMS ((tree *, int *, void *));
 static tree instantiate_clone PARAMS ((tree, tree));
 static tree copy_default_args_to_explicit_spec_1 PARAMS ((tree, tree));
 static void copy_default_args_to_explicit_spec PARAMS ((tree));
-static int check_nontype_parm PARAMS ((tree, int));
+static int invalid_nontype_parm_type_p PARAMS ((tree, int));
 
 /* Called once to initialize pt.c.  */
 
@@ -1934,7 +1934,7 @@ process_template_parm (list, next)
 
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
-      if (check_nontype_parm (TREE_TYPE (parm), 1))
+      if (invalid_nontype_parm_type_p (TREE_TYPE (parm), 1))
         TREE_TYPE (parm) = void_type_node;
       decl = build_decl (CONST_DECL, DECL_NAME (parm), TREE_TYPE (parm));
       DECL_INITIAL (parm) = DECL_INITIAL (decl) 
@@ -3417,7 +3417,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
     {
       tree t = tsubst (TREE_TYPE (parm), args, complain, in_decl);
 
-      if (check_nontype_parm (t, complain))
+      if (invalid_nontype_parm_type_p (t, complain))
         return error_mark_node;
       
       if (processing_template_decl)
@@ -10307,7 +10307,7 @@ current_instantiation ()
    non-zero, then complain. */
 
 static int
-check_nontype_parm (type, complain)
+invalid_nontype_parm_type_p (type, complain)
      tree type;
      int complain;
 {

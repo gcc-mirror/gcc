@@ -1,5 +1,12 @@
 2001-01-15  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (check_nontype_parm): Rename to ...
+	(invalid_nontype_parm_type_p): ... here.
+	(process_template_parm): Adjust.
+	(convert_template_argument): Adjust.
+
+2001-01-15  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (check_nontype_parm): New function.
 	(process_template_parm): Use it.
 	(convert_template_argument): Use it.
