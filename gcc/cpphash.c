@@ -73,7 +73,7 @@ _cpp_destroy_hashtable (pfile)
 {
   if (pfile->our_hashtable)
     {
-      free (pfile->hash_table);
+      ht_destroy (pfile->hash_table);
       obstack_free (&pfile->hash_ob, 0);
     }
 }

@@ -94,6 +94,17 @@ ht_create (order)
   return table;
 }
 
+/* Frees all memory associated with a hash table.  */
+
+void
+ht_destroy (table)
+     hash_table *table;
+{
+  obstack_free (&table->stack, NULL);
+  free (table->entries);
+  free (table);
+}
+
 /* Returns the hash entry for the a STR of length LEN.  If that string
    already exists in the table, returns the existing entry, and, if
    INSERT is CPP_ALLOCED, frees the last obstack object.  If the

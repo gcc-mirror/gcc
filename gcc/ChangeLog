@@ -1,4 +1,18 @@
 2001-08-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.c (_cpp_destroy_hashtable): Use ht_destroy.
+	* cpphash.h (CPP_IN_SYSTEM_HEADER): Fix.
+	(struct cpp_pool): New member first.
+	* cppinit.c (append_include_chain): Plug memory leaks.
+	* cpplib.c (cpp_register_pragma, cpp_register_pragma_space):
+	Allocate pragma structures from the (aligned) macro pool to
+	avoid leaking memory.
+	* cpplex.c (_cpp_init_pool, _cpp_free_pool): Use pool->first
+	so we don't leak memory.
+	* hashtable.c (ht_destroy): New.
+	* hashtable.h (ht_destroy): New.
+
+2001-08-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 	    Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* c-lex.c (map): Make const.

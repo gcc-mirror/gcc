@@ -66,7 +66,7 @@ struct cpp_chunk
 typedef struct cpp_pool cpp_pool;
 struct cpp_pool
 {
-  struct cpp_chunk *cur, *locked;
+  struct cpp_chunk *cur, *locked, *first;
   unsigned char *pos;		/* Current position.  */
   unsigned int align;
   unsigned int locks;
@@ -368,7 +368,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 /* Macros.  */
 
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
-#define CPP_IN_SYSTEM_HEADER(PFILE) (pfile->map && pfile->map->sysp)
+#define CPP_IN_SYSTEM_HEADER(PFILE) ((PFILE)->map && (PFILE)->map->sysp)
 #define CPP_PEDANTIC(PF) CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) CPP_OPTION (PF, warn_traditional)
 

@@ -2109,7 +2109,8 @@ _cpp_init_pool (pool, size, align, temp)
   if (align & (align - 1))
     abort ();
   pool->align = align;
-  pool->cur = new_chunk (size);
+  pool->first = new_chunk (size);
+  pool->cur = pool->first;
   pool->locked = 0;
   pool->locks = 0;
   if (temp)
@@ -2136,7 +2137,7 @@ void
 _cpp_free_pool (pool)
      cpp_pool *pool;
 {
-  cpp_chunk *chunk = pool->cur, *next;
+  cpp_chunk *chunk = pool->first, *next;
 
   do
     {
@@ -2144,7 +2145,7 @@ _cpp_free_pool (pool)
       free (chunk->base);
       chunk = next;
     }
-  while (chunk && chunk != pool->cur);
+  while (chunk && chunk != pool->first);
 }
 
 /* Reserve LEN bytes from a memory pool.  */

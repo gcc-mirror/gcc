@@ -197,8 +197,8 @@ path_include (pfile, list, path)
   while (1);
 }
 
-/* Append DIR to include path PATH.  DIR must be permanently allocated
-   and writable.  */
+/* Append DIR to include path PATH.  DIR must be allocated on the
+   heap; this routine takes responsibility for freeing it.  */
 static void
 append_include_chain (pfile, dir, path, cxx_aware)
      cpp_reader *pfile;
@@ -212,8 +212,12 @@ append_include_chain (pfile, dir, path, cxx_aware)
   unsigned int len;
 
   if (*dir == '\0')
-    dir = xstrdup (".");
+    {
+      free (dir);
+      dir = xstrdup (".");
+    }
   _cpp_simplify_pathname (dir);
+
   if (stat (dir, &st))
     {
       /* Dirs that don't exist are silently ignored.  */
@@ -221,12 +225,14 @@ append_include_chain (pfile, dir, path, cxx_aware)
 	cpp_notice_from_errno (pfile, dir);
       else if (CPP_OPTION (pfile, verbose))
 	fprintf (stderr, _("ignoring nonexistent directory \"%s\"\n"), dir);
+      free (dir);
       return;
     }
 
   if (!S_ISDIR (st.st_mode))
     {
       cpp_notice (pfile, "%s: Not a directory", dir);
+      free (dir);
       return;
     }
 
@@ -375,7 +381,7 @@ merge_include_chains (pfile)
 	brack = remove_dup_dir (pfile, qtail);
     }
   else
-      quote = brack;
+    quote = brack;
 
   CPP_OPTION (pfile, quote_include) = quote;
   CPP_OPTION (pfile, bracket_include) = brack;
