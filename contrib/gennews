@@ -22,7 +22,8 @@
 # Boston, MA 02111-1307, USA.
 
 website=http://gcc.gnu.org/
-files="gcc-3.0/gcc-3.0.html gcc-3.0/features.html gcc-3.0/caveats.html
+files="gcc-3.1/index.html gcc-3.1/changes.html
+    gcc-3.0/gcc-3.0.html gcc-3.0/features.html gcc-3.0/caveats.html
     gcc-2.95/index.html gcc-2.95/features.html gcc-2.95/caveats.html
     egcs-1.1/index.html egcs-1.1/features.html egcs-1.1/caveats.html
     egcs-1.0/egcs-1.0.3.html egcs-1.0/egcs-1.0.2.html egcs-1.0/egcs-1.0.1.html
@@ -31,11 +32,11 @@ files="gcc-3.0/gcc-3.0.html gcc-3.0/features.html gcc-3.0/caveats.html
 set -e
 
 cat <<EOF
-This file contains information about GCC releases which has been
-generated automatically from the online release notes.  This file
-covers releases of GCC (and the former EGCS project) since EGCS 1.0,
-on the line of development that led to GCC 3; for information on GCC
-2.8.1 and older releases of GCC 2, see ONEWS.
+This file contains information about GCC releases which has been generated
+automatically from the online release notes.  It covers releases of GCC
+(and the former EGCS project) since EGCS 1.0, on the line of development
+that led to GCC 3. For information on GCC 2.8.1 and older releases of GCC 2,
+see ONEWS.
 
 EOF
 
