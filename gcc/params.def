@@ -35,16 +35,70 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    Be sure to add an entry to invoke.texi summarizing the parameter.  */
 
-/* The maximum number of instructions accepted for inlining a
-   function.  Increasing values mean more agressive inlining.
-   This affects currently only functions explicitly marked as
-   inline (or methods defined within the class definition for C++).
-   The original default value of 10000 was arbitrary and caused
-   significant compile-time performance regressions.  */
+/* The single function inlining limit. This is the maximum size
+   of a function counted in internal gcc instructions (not in
+   real machine instructions) that is eligible for inlining
+   by the tree inliner.
+   The default value is 300.
+   Only functions marked inline (or methods defined in the class
+   definition for C++) are affected by this, unless you set the
+   -finline-functions (included in -O3) compiler option.
+   There are more restrictions to inlining: If inlined functions
+   call other functions, the already inlined instructions are
+   counted and once the recursive inline limit (see 
+   "max-inline-insns" parameter) is exceeded, the acceptable size
+   gets decreased.  */
+DEFPARAM (PARAM_MAX_INLINE_INSNS_SINGLE,
+	  "max-inline-insns-single",
+	  "The maximum number of instructions in a single function eliglible for inlining",
+	  300)
+
+/* The repeated inlining limit. After this number of instructions 
+   (in the internal gcc representation, not real machine instructions)
+   got inlined by repeated inlining, gcc starts to decrease the maximum
+   number of inlinable instructions in the tree inliner.
+   This is done by a linear function, see "max-inline-slope" parameter.
+   It is necessary in order to limit the compile-time resources, that 
+   could otherwise become very high.
+   It is recommended to set this value to twice the value of the single
+   function limit (set by the "max-inline-insns-single" parameter) or
+   higher. The default value is 600.
+   Higher values mean that more inlining is done, resulting in
+   better performance of the code, at the expense of higher 
+   compile-time resource (time, memory) requirements and larger
+   binaries.  
+   This parameters also controls the maximum size of functions considered
+   for inlining in the RTL inliner.  */
 DEFPARAM (PARAM_MAX_INLINE_INSNS,
 	  "max-inline-insns",
-	  "The maximum number of instructions in a function that is eligible for inlining",
+	  "The maximuem number of instructions by repeated inlining before gcc starts to throttle inlining",
 	  600)
+
+/* After the repeated inline limit has been exceeded (see
+   "max-inline-insns" parameter), a linear function is used to
+   decrease the size of single functions eligible for inlining.
+   The slope of this linear function is given the negative
+   reciprocal value (-1/x) of this parameter. 
+   The default vlue is 32.
+   This linear function is used until it falls below a minimum
+   value specified by the "min-inline-insns" parameter.  */
+DEFPARAM (PARAM_MAX_INLINE_SLOPE,
+	  "max-inline-slope",
+	  "The slope of the linear funtion throttling inlining after the recursive inlining limit has been reached is given by the negative reciprocal value of this parameter",
+	  32)
+
+/* When gcc has inlined so many instructions (by repeated
+   inlining) that the throttling limits the inlining very much,
+   inlining for very small functions is still desirable to
+   achieve good runtime performance. The size of single functions 
+   (measured in gcc instructions) which will still be eligible for 
+   inlining then is given by this parameter. It defaults to 130.
+   Only much later (after exceeding 128 times the recursive limit)
+   inlining is cut down completely.  */
+DEFPARAM (PARAM_MIN_INLINE_INSNS,
+	  "min-inline-insns",
+	  "The number of instructions in a single functions still eligible to inlining after a lot recursive inlining",
+	  130)
 
 /* The maximum number of instructions to consider when looking for an
    instruction to fill a delay slot.  If more than this arbitrary
