@@ -1,3 +1,8 @@
+2003-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* aclocal.m4: Add hpux10* and hpux11.00 to /dev/zero blacklist.
+	* configure: Rebuilt.
+
 2003-10-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (make_range): When handling unsigned, don't reverse
