@@ -7820,13 +7820,6 @@ invalidate_skipped_set (dest, set)
      rtx set;
      rtx dest;
 {
-  if (GET_CODE (set) == CLOBBER
-#ifdef HAVE_cc0
-      || dest == cc0_rtx
-#endif
-      || dest == pc_rtx)
-    return;
-
   if (GET_CODE (dest) == MEM)
     note_mem_written (dest, &skipped_writes_memory);
 
@@ -7835,6 +7828,13 @@ invalidate_skipped_set (dest, set)
      the proper equivalences.  So promote "nonscalar" to be "all".  */
   if (skipped_writes_memory.nonscalar)
     skipped_writes_memory.all = 1;
+
+  if (GET_CODE (set) == CLOBBER
+#ifdef HAVE_cc0
+      || dest == cc0_rtx
+#endif
+      || dest == pc_rtx)
+    return;
 
   if (GET_CODE (dest) == REG || GET_CODE (dest) == SUBREG
       || (! skipped_writes_memory.all && ! cse_rtx_addr_varies_p (dest)))
