@@ -1252,6 +1252,17 @@ build_array_ref (array, index)
 	  if (mark_addressable (array) == 0)
 	    return error_mark_node;
 	}
+      /* An array that is indexed by a constant value which is not within
+	 the array bounds cannot be stored in a register either; because we
+	 would get a crash in store_bit_field/extract_bit_field when trying
+	 to access a non-existent part of the register.  */
+      if (TREE_CODE (index) == INTEGER_CST
+	  && TYPE_VALUES (TREE_TYPE (array))
+	  && ! int_fits_type_p (index, TYPE_VALUES (TREE_TYPE (array))))
+	{
+	  if (mark_addressable (array) == 0)
+	    return error_mark_node;
+	}
 
       if (pedantic && !lvalue_p (array))
 	{
