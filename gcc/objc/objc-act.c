@@ -87,8 +87,7 @@ Boston, MA 02111-1307, USA.  */
 /* Define the special tree codes that we use.  */
 
 /* Table indexed by tree code giving a string containing a character
-   classifying the tree code.  Possibilities are
-   t, d, s, c, r, <, 1 and 2.  See objc-tree.def for details.  */
+   classifying the tree code.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
@@ -136,9 +135,14 @@ char *util_firstobj;
 /* for encode_method_def */
 #include "rtl.h"
 
+/* The version identifies which language generation and runtime
+   the module (file) was compiled for, and is recorded in the
+   module descriptor.  */
+
 #define OBJC_VERSION	(flag_next_runtime ? 5 : 8)
 #define PROTOCOL_VERSION 2
 
+/* (Decide if these can ever be validly changed.) */
 #define OBJC_ENCODE_INLINE_DEFS 	0
 #define OBJC_ENCODE_DONT_INLINE_DEFS	1
 
@@ -191,9 +195,6 @@ static tree generate_protocol_list		PARAMS ((tree));
 static void generate_forward_declaration_to_string_table PARAMS ((void));
 static void build_protocol_reference		PARAMS ((tree));
 
-#if 0
-static tree init_selector			PARAMS ((int));
-#endif
 static tree build_keyword_selector		PARAMS ((tree));
 static tree synth_id_with_class_suffix		PARAMS ((const char *, tree));
 
@@ -297,9 +298,6 @@ static tree init_objc_symtab			PARAMS ((tree));
 static void forward_declare_categories		PARAMS ((void));
 static void generate_objc_symtab_decl		PARAMS ((void));
 static tree build_selector			PARAMS ((tree));
-#if 0
-static tree build_msg_pool_reference		PARAMS ((int));
-#endif
 static tree build_typed_selector_reference     	PARAMS ((tree, tree));
 static tree build_selector_reference		PARAMS ((tree));
 static tree build_class_reference_decl		PARAMS ((void));
@@ -674,7 +672,7 @@ generate_struct_by_value_array ()
   int aggregate_in_mem[32];
   int found = 0;
 
-  /* Presumbaly no platform passes 32 byte structures in a register. */
+  /* Presumably no platform passes 32 byte structures in a register. */
   for (i = 1; i < 32; i++)
     {
       char buffer[5];
@@ -2147,39 +2145,6 @@ build_selector (ident)
     return build_c_cast (selector_type, expr); /* cast! */
 }
 
-/* Synthesize the following expr: (char *)&_OBJC_STRINGS[<offset>]
-   The cast stops the compiler from issuing the following message:
-   grok.m: warning: initialization of non-const * pointer from const *
-   grok.m: warning: initialization between incompatible pointer types.  */
-
-#if 0
-static tree
-build_msg_pool_reference (offset)
-     int offset;
-{
-  tree expr = build_int_2 (offset, 0);
-  tree cast;
-
-  expr = build_array_ref (UOBJC_STRINGS_decl, expr);
-  expr = build_unary_op (ADDR_EXPR, expr, 0);
-
-  cast = build_tree_list (build_tree_list (NULL_TREE,
-					   ridpointers[(int) RID_CHAR]),
-			  build1 (INDIRECT_REF, NULL_TREE, NULL_TREE));
-  TREE_TYPE (expr) = groktypename (cast);
-  return expr;
-}
-
-static tree
-init_selector (offset)
-     int offset;
-{
-  tree expr = build_msg_pool_reference (offset);
-  TREE_TYPE (expr) = selector_type;
-  return expr;
-}
-#endif
-
 static void
 build_selector_translation_table ()
 {
@@ -2425,13 +2390,7 @@ get_class_reference (ident)
     }
 }
 
-/* SEL_REFDEF_CHAIN is a list whose "value" fields will be instances
-   of identifier_node that represent the selector. It returns the
-   offset of the selector from the beginning of the _OBJC_STRINGS
-   pool. This offset is typically used by init_selector during code
-   generation.
-
-   For each string section we have a chain which maps identifier nodes
+/* For each string section we have a chain which maps identifier nodes
    to decls for the strings.  */
 
 static tree
@@ -8517,77 +8476,6 @@ handle_impent (impent)
     }
 }
 
-#ifdef DEBUG
-
-static void
-objc_debug (fp)
-     FILE *fp;
-{
-  char *buf = (char *)xmalloc (256);
-
-  {				/* dump function prototypes */
-    tree loop = UOBJC_MODULES_decl;
-
-    fprintf (fp, "\n\nfunction prototypes:\n");
-    while (loop)
-      {
-	if (TREE_CODE (loop) == FUNCTION_DECL && DECL_INITIAL (loop))
-	  {
-	    /* We have a function definition: generate prototype.  */
-	    fprintf (fp, "%s;\n", gen_declaration (loop, errbuf));
-	  }
-	loop = TREE_CHAIN (loop);
-      }
-  }
-  {
-    /* Dump global chains.  */
-    tree loop;
-    int i, index = 0, offset = 0;
-    hash hashlist;
-
-    for (i = 0; i < SIZEHASHTABLE; i++)
-      {
-	if (hashlist = nst_method_hash_list[i])
-	  {
-	    fprintf (fp, "\n\nnst_method_hash_list[%d]:\n", i);
-	    do
-	      {
-		fprintf (fp, "-%s;\n", gen_method_decl (hashlist->key, buf));
-		hashlist = hashlist->next;
-	      }
-	    while (hashlist);
-	  }
-      }
-
-    for (i = 0; i < SIZEHASHTABLE; i++)
-      {
-	if (hashlist = cls_method_hash_list[i])
-	  {
-	    fprintf (fp, "\n\ncls_method_hash_list[%d]:\n", i);
-	    do
-	      {
-		fprintf (fp, "-%s;\n", gen_method_decl (hashlist->key, buf));
-		hashlist = hashlist->next;
-	      }
-	    while (hashlist);
-	  }
-      }
-
-    fprintf (fp, "\nsel_refdef_chain:\n");
-    for (loop = sel_refdef_chain; loop; loop = TREE_CHAIN (loop))
-      {
-	fprintf (fp, "(index: %4d offset: %4d) %s\n", index, offset,
-		 IDENTIFIER_POINTER (TREE_VALUE (loop)));
-	index++;
-	/* add one for the '\0' character */
-	offset += IDENTIFIER_LENGTH (TREE_VALUE (loop)) + 1;
-      }
-
-    fprintf (fp, "\n (max_selector_index: %4d.\n", max_selector_index);
-  }
-}
-#endif
-
 void
 print_lang_statistics ()
 {
