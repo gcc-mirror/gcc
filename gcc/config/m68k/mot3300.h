@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
 /* See m68k.h.  0407 means 68020-68040.  */
 
 #ifndef TARGET_DEFAULT
-#define	TARGET_DEFAULT 0407
+#define	TARGET_DEFAULT (MASK_68040|MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif
 
 /* -m[c]6800 requires special flag to the assembler.  */
@@ -793,7 +793,7 @@ do {(CUM).offset = 0;\
    tell g++.c about that.  */
 #define ALT_LIBM	"-lm881"
 
-#if (TARGET_DEFAULT & 2)      /* The default configuration has a 6888[12] FPU. */
+#if (TARGET_DEFAULT & MASK_68881)      /* The default configuration has a 6888[12] FPU. */
 #define MATH_LIBRARY	"-lm881"
 #endif
 

@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
    the floating-point support package. */
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 01007
+#define TARGET_DEFAULT (MASK_68040_ONLY|MASK_BITFIELD|MASK_68881|MASK_68020)
 
 /* Options passed to CPP, GAS, CC1 and CC1PLUS. We override
    m68k-none.h for consistency with TARGET_DEFAULT. */

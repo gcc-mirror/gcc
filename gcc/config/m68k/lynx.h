@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running LynxOS.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 /* See m68k.h.  7 means 68020 with 68881.  */
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif
 
 /* Names to predefine in the preprocessor for this target machine.  */

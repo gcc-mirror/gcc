@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 /* See m68k.h.  7 means 68020 with 68881.  */
 
 #ifndef TARGET_DEFAULT
-#define	TARGET_DEFAULT (5 /*68020*/ + 2 /*68881*/)
+#define	TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif
 
 /* When using an SGS assembler, modify the name of the artificial label which
@@ -84,7 +84,7 @@ while (0)
    If a 68881 is not the default, gcc will only define __HAVE_68881__ if
    -m68881 is specified. */
 
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 #define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__}"
 #else
 #define CPP_SPEC "%{m68881:-D__HAVE_68881__}"

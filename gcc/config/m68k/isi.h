@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  ISI 68000/68020 version.
    Intended only for use with GAS, and not ISI's assembler, which is buggy
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,10 +23,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* See m68k.h.  7 means 68020 with 68881. */
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif
 
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 /* Define __HAVE_68881__ in preprocessor, unless -msoft-float is specified.
    This will control the use of inline 68881 insns in certain macros.  */
 

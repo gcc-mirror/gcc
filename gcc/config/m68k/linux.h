@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (68k Linux/ELF)");
 
 /* 68020 with 68881 */
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 
 /* for 68k machines this only needs to be TRUE for the 68000 */
 
@@ -104,7 +104,7 @@ Boston, MA 02111-1307, USA.  */
   "-D__ELF__ -Dunix -Dmc68000 -Dmc68020 -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(m68k) -Amachine(m68k)"
 
 #undef CPP_SPEC
-#if TARGET_DEFAULT & 2
+#if TARGET_DEFAULT & MASK_68881
 #define CPP_SPEC \
   "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{!msoft-float:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE}"
 #else

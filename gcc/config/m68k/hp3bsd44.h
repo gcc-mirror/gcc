@@ -2,7 +2,7 @@
 
 /* See m68k.h.  7 means 68020 with 68881.  */
 
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 
 /* Define __HAVE_68881__ in preprocessor, unless -msoft-float is specified.
    This will control the use of inline 68881 insns in certain macros.  */

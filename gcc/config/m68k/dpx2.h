@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  
    Bull DPX/2 200 and 300 systems (m68k, SysVr3).
-   Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Frederic Pierresteguy (F.Pierresteguy@frcl.bull.fr).
 
 This file is part of GNU CC.
@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
  * but this will get us going.  
  */
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 7
+#define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 #endif
 
 #define OBJECT_FORMAT_COFF
@@ -79,7 +79,7 @@ Boston, MA 02111-1307, USA.  */
  * bitfield instructions do not seem to work a clean way.
  */
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT 3
+#define TARGET_DEFAULT (MASK_68881|MASK_68020)
 
 /* The native assembler doesn't support fmovecr.  */
 #define NO_ASM_FMOVECR

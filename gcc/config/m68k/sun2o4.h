@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 2 running Sunos 4.
-   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE 16
 
-#if TARGET_DEFAULT & 0200
+#if TARGET_DEFAULT & MASK_SKY
 
 /* -msky is the default */
 #define CPP_SPEC \
@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef STARTFILE_SPEC
 
-#if TARGET_DEFAULT & 0200
+#if TARGET_DEFAULT & MASK_SKY
 /* -msky is the default */
 #define STARTFILE_SPEC					\
   "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}	\
@@ -78,7 +78,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIB_SPEC
 
-#if TARGET_DEFAULT & 0200
+#if TARGET_DEFAULT & MASK_SKY
 /* -msky is the default */
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} \
 %{a:/usr/lib/bb_link.o -lc} %{g:-lg} \
