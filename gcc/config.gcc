@@ -255,10 +255,27 @@ case $machine in
 	;;
 esac	
 
-# Common parts for linux and openbsd systems
+# Common parts for GNU/Linux, GNU/Hurd and OpenBSD systems.
 case $machine in
 *-*-linux*)
 	xm_defines="HAVE_ATEXIT POSIX BSTRING"
+	;;
+*-*-gnu*)
+	# On the Hurd, the setup is just about the same on
+	# each different CPU.  The specific machines that we
+	# support are matched above and just set $cpu_type.
+	xm_file="xm-gnu.h ${xm_file}"
+	tm_file=${cpu_type}/gnu.h
+	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+	# GNU always uses ELF.
+	elf=yes
+	# GNU tools are the only tools.
+	gnu_ld=yes
+	gas=yes
+	# These details are the same as for Linux.
+	xmake_file=x-linux
+	# But here we need a little extra magic.
+	tmake_file="t-linux t-gnu"
 	;;
 *-*-openbsd*)
 	tm_file=${cpu_type}/openbsd.h
@@ -3231,23 +3248,6 @@ xscale-*-coff)
 esac
 
 case $machine in
-*-*-linux*)
-        ;; # Existing GNU/Linux systems do not use the GNU setup.
-*-*-gnu*)
-	# On the GNU system, the setup is just about the same on
-	# each different CPU.  The specific machines that GNU
-	# supports are matched above and just set $cpu_type.
-	xm_file="xm-gnu.h ${xm_file}"
-	tm_file=${cpu_type}/gnu.h
-	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
-	# GNU always uses ELF.
-	elf=yes
-	# GNU tools are the only tools.
-	gnu_ld=yes
-	gas=yes
-	xmake_file=x-linux	# These details are the same as Linux.
-	tmake_file=t-gnu	# These are not.
-	;;
 *-*-sysv4*)
 	xmake_try_sysv=x-sysv
 	install_headers_dir=install-headers-cpio
