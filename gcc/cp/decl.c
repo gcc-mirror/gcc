@@ -3554,7 +3554,10 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  DECL_BEFRIENDING_CLASSES (newdecl)
 	    = chainon (DECL_BEFRIENDING_CLASSES (newdecl),
 		       DECL_BEFRIENDING_CLASSES (olddecl));
-	  DECL_THUNKS (newdecl) = DECL_THUNKS (olddecl);
+	  /* DECL_THUNKS is only valid for virtual functions,
+	     otherwise it is a DECL_FRIEND_CONTEXT.  */
+	  if (DECL_VIRTUAL_P (newdecl))
+	    DECL_THUNKS (newdecl) = DECL_THUNKS (olddecl);
 	}
     }
 
