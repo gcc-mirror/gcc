@@ -1,3 +1,31 @@
+2004-02-06  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/io/ObjectInputStream.java: Made all calls
+	to dumpElement[ln] conditional on dump flag. (readObject): Changed to
+	use cached info from ObjectStreamClass. (readClassDescriptor):
+	Cache more information in ObjectStreamClass. (processResolution,
+	readFields): Use cached info from ObjectStreamClass.
+	(newObject): Throw exception instead of returning null for failure.
+	(getField, getMethod, callReadMethod, setBooleanField, setByteField,
+	setCharField, setDoubleField, setFloatField, setIntField,
+	setLongField, setShortField, setObjectField, readObjectParams):
+	Removed. (dumpElement, dumpElementln): Removed dump flag condition
+	check.
+	* java/io/ObjectStreamField.java (hasReadMethod): Removed.
+	(setClass): Added call to cacheMethods() (findMethod): New method.
+	(cacheMethods): New method. (ObjectStreamClass): Added call to
+	cacheMethods(). (setFields): Cache fields. (getClassUID): Use
+	AccessController.doPrivileged to invoke setAccessible.
+	(readObjectMethod, readResolveMethod, realClassIsSerializable,
+	realClassIsExternalizable, fieldMapping, firstNonSerializableParent):
+	New fields.
+	* java/io/ObjectStreamField.java (ObjectStreamField): New constructor.
+	(ObjectStreamField): Removed FIXME workaround. (getTypeString,
+	isPrimitive): Made safe for cases where type == null.
+	(setBooleanField, setByteField, setCharField, setShortField,
+	setIntField, setLongField, setFloatField, setDoubleField,
+	setObjectField): New methods.
+
 2004-02-05  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* java/awt/Component.java (getFont): Return a default font

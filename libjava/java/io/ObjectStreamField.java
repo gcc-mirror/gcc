@@ -38,6 +38,8 @@ exception statement from your version. */
 
 package java.io;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import gnu.java.lang.reflect.TypeSignature;
 
 /**
@@ -54,6 +56,14 @@ public class ObjectStreamField implements Comparable
   private boolean unshared;
   private boolean persistent = false;
   private boolean toset = true;
+  private Field field;
+
+  ObjectStreamField (Field field)
+  {
+    this (field.getName(), field.getType());
+    this.field = field;
+    toset = !Modifier.isFinal(field.getModifiers());
+  }
 
   /**
    * This constructor creates an ObjectStreamField instance 
@@ -105,7 +115,6 @@ public class ObjectStreamField implements Comparable
       }
     catch(ClassNotFoundException e)
       {
-        type = Object.class; //FIXME: ???
       }
   }
   
@@ -128,7 +137,6 @@ public class ObjectStreamField implements Comparable
       }
     catch(ClassNotFoundException e)
       {
-        type = Object.class; // ALSO FIXME 
       }
   }
 
@@ -176,7 +184,7 @@ public class ObjectStreamField implements Comparable
   public String getTypeString ()
   {
     // use intern()
-    if (this.type.isPrimitive())
+    if (isPrimitive())
       return null;
     return typename.intern();
   }
@@ -225,7 +233,7 @@ public class ObjectStreamField implements Comparable
    */
   public boolean isPrimitive ()
   {
-    return type.isPrimitive ();
+    return typename.length() == 1;
   }
 
   public int compareTo (Object o)
@@ -299,5 +307,112 @@ public class ObjectStreamField implements Comparable
   {
     return "ObjectStreamField< " + type + " " + name + " >";
   }
-}
 
+  final void setBooleanField(Object obj, boolean val)
+  {
+      try
+      {
+	  field.setBoolean(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setByteField(Object obj, byte val)
+  {
+      try
+      {
+	  field.setByte(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setCharField(Object obj, char val)
+  {
+      try
+      {
+	  field.setChar(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setShortField(Object obj, short val)
+  {
+      try
+      {
+	  field.setShort(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setIntField(Object obj, int val)
+  {
+      try
+      {
+	  field.setInt(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setLongField(Object obj, long val)
+  {
+      try
+      {
+	  field.setLong(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setFloatField(Object obj, float val)
+  {
+      try
+      {
+	  field.setFloat(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setDoubleField(Object obj, double val)
+  {
+      try
+      {
+	  field.setDouble(obj, val);
+      }
+      catch(IllegalAccessException x)
+      {
+	  throw new InternalError(x.getMessage());
+      }
+  }
+
+  final void setObjectField(Object obj, Object val)
+  {
+    try
+      {
+	field.set(obj, val);
+      }
+    catch(IllegalAccessException x)
+      {
+	throw new InternalError(x.getMessage());
+      }
+  }
+}
