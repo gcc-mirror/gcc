@@ -403,9 +403,11 @@ found_attr:;
 	    continue;
 	  }
 	
-	if (!strcmp (IDENTIFIER_POINTER (format_type), "printf"))
+	if (!strcmp (IDENTIFIER_POINTER (format_type), "printf")
+	    || !strcmp (IDENTIFIER_POINTER (format_type), "__printf__"))
 	  is_scan = 0;
-	else if (!strcmp (IDENTIFIER_POINTER (format_type), "scanf"))
+	else if (!strcmp (IDENTIFIER_POINTER (format_type), "scanf")
+		 || !strcmp (IDENTIFIER_POINTER (format_type), "__scanf__"))
 	  is_scan = 1;
 	else
 	  {
