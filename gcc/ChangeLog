@@ -1,3 +1,7 @@
+Thu Aug 30 18:10:56 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* h8300.md (*andorhi3): New pattern.
+
 Thu Aug 30 16:00:31 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* h8300.c (dosize): Fix test for "sub".
