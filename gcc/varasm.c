@@ -1017,7 +1017,8 @@ assemble_asm (tree string)
    between 0 and MAX_INIT_PRIORITY.  */
 
 void
-default_stabs_asm_out_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
+default_stabs_asm_out_destructor (rtx symbol ATTRIBUTE_UNUSED,
+				  int priority ATTRIBUTE_UNUSED)
 {
 #if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
   /* Tell GNU LD that this is part of the static destructor set.
@@ -1077,7 +1078,8 @@ default_dtor_section_asm_out_destructor (rtx symbol,
 /* Likewise for global constructors.  */
 
 void
-default_stabs_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
+default_stabs_asm_out_constructor (rtx symbol ATTRIBUTE_UNUSED,
+				   int priority ATTRIBUTE_UNUSED)
 {
 #if defined DBX_DEBUGGING_INFO || defined XCOFF_DEBUGGING_INFO
   /* Tell GNU LD that this is part of the static destructor set.
