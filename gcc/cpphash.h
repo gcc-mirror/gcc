@@ -563,9 +563,6 @@ extern void _cpp_init_internal_pragmas (cpp_reader *);
 extern void _cpp_do_file_change (cpp_reader *, enum lc_reason, const char *,
 				 unsigned int, unsigned int);
 extern void _cpp_pop_buffer (cpp_reader *);
-extern uchar *_cpp_input_to_utf8 (cpp_reader *, const unsigned char *, cppchar_t);
-extern void _cpp_init_iconv_buffer (cpp_reader *, const char *);
-extern void _cpp_close_iconv_buffer (cpp_reader *);
 
 /* In cpptrad.c.  */
 extern bool _cpp_scan_out_logical_line (cpp_reader *, cpp_macro *);
@@ -582,8 +579,12 @@ extern size_t _cpp_replacement_text_len (const cpp_macro *);
 extern cppchar_t _cpp_valid_ucn (cpp_reader *, const uchar **,
 				 const uchar *, int);
 extern void _cpp_destroy_iconv (cpp_reader *);
-extern bool _cpp_interpret_string_notranslate (cpp_reader *, const cpp_string *,
+extern bool _cpp_interpret_string_notranslate (cpp_reader *,
+					       const cpp_string *,
 					       cpp_string *);
+extern uchar *_cpp_convert_input (cpp_reader *, const char *, uchar *,
+				  size_t, size_t, off_t *);
+extern const char *_cpp_default_encoding (void);
 
 /* Utility routines and macros.  */
 #define DSC(str) (const uchar *)str, sizeof str - 1

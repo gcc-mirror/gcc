@@ -159,11 +159,11 @@ cpp_create_reader (enum c_lang lang, hash_table *table,
   CPP_OPTION (pfile, bytes_big_endian) = 1;  /* does not matter */
 
   /* Default to no charset conversion.  */
-  CPP_OPTION (pfile, narrow_charset) = 0;
+  CPP_OPTION (pfile, narrow_charset) = _cpp_default_encoding ();
   CPP_OPTION (pfile, wide_charset) = 0;
 
-  /* Default the input character set to iso-8859-1 for now. */
-  CPP_OPTION (pfile, input_charset) = "ISO-8859-1";
+  /* Default the input character set to UTF-8.  */
+  CPP_OPTION (pfile, input_charset) = _cpp_default_encoding ();
 
   /* A fake empty "directory" used as the starting point for files
      looked up without a search path.  Name cannot be '/' because we
@@ -579,7 +579,7 @@ read_original_directory (cpp_reader *pfile)
       debugdir[token->val.str.len - 4] = '\0';
 
       pfile->cb.dir_change (pfile, debugdir);
-    }      
+    }
 
   /* We want to process the fake line changes as regular changes, to
      get them output.  */
@@ -591,7 +591,7 @@ read_original_directory (cpp_reader *pfile)
 /* This is called at the end of preprocessing.  It pops the last
    buffer and writes dependency output, and returns the number of
    errors.
- 
+
    Maybe it should also reset state, such that you could call
    cpp_start_read with a new filename to restart processing.  */
 int

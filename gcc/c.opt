@@ -482,6 +482,11 @@ fexec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
 -fexec-charset=<cset>	Convert all strings and character constants to character set <cset>
 
+finput-charset=
+C ObjC C++ ObjC++ Joined RejectNegative
+-finput-charset=<cset>      Specify the default character set for source files.
+
+
 fexternal-templates
 C++ ObjC++
 

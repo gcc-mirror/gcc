@@ -1,3 +1,18 @@
+2004-01-29  Eric Christopher  <echristo@redhat.com>
+            Zack Weinberg  <zack@codesourcery.com>
+
+	* testsuite/22_locale/collate/compare/wchar_t/2.cc: Remove xfail. Use
+        -finput-charset.
+        * testsuite/22_locale/collate/compare/wchar_t/wrapped_env.cc: Ditto.
+        * testsuite/22_locale/collate/compare/wchar_t/wrapped_locale.cc: Ditto
+	* testsuite/22_locale/collate/hash/wchar_t/2.cc: Ditto.
+        * testsuite/22_locale/collate/hash/wchar_t/wrapped_env.cc: Ditto.
+        * testsuite/22_locale/collate/hash/wchar_t/wrapped_locale.cc: Ditto.
+        * testsuite/22_locale/collate/transform/wchar_t/2.cc: Ditto.
+        * testsuite/22_locale/collate/transform/wchar_t/wrapped_env.cc: Ditto.
+        * testsuite/22_locale/collate/transform/wchar_t/wrapped_locale.cc:
+	Ditto.
+
 2004-02-02  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/stl_function.h: Additional minor tweaks.
@@ -97,7 +112,7 @@
 	* testsuite/21_strings/basic_string/cons/char/6.cc: New.
 	* testsuite/21_strings/basic_string/cons/wchar_t/6.cc: New.
 	* testsuite/performance/21_strings/string_cons_input_iterator.cc: New.
-	
+
 2004-01-30  Felix Yen  <fwy@alumni.brown.edu>
 
 	* testsuite/performance/20_util/allocator_thread.cc (do_loop):
@@ -108,7 +123,7 @@
 	* src/demangle.cc: Add instantiations.
 	* src/Makefile.am: Remove special rules for demangle.lo, demangle.o.
 	* src/Makefile.in: Regenerate.
-	
+
 2004-01-30  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/allocator.cc: Protect _S_get_thread_id() and
@@ -196,7 +211,7 @@
 
 	* include/bits/allocator.h: Temporary switch to new_allocator as
 	the default to unjam bootstraps.
-	
+
 2004-01-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (bits_headers): Remove allocator_traits.h.
@@ -212,7 +227,7 @@
 	* src/Makefile.am (sources): Add allocator.cc.
 	* src/Makefile.in: Regenerate.
 	* testsuite/20_util/allocator/1.cc: Split second test into...
-	* testsuite/20_util/allocator/8230.cc: ...this. 
+	* testsuite/20_util/allocator/8230.cc: ...this.
 	* include/bits/stl_bvector.h (__gnu_norm): Change bit_vector
 	typedef to use std::allocatore. Format.
 	* include/ext/pool_allocator.h: Remove allocator_traits.h include,
@@ -228,14 +243,14 @@
 	implementation details.
 
 	* include/ext/mt_allocator.h: Replace free with delete.
-	
+
 2004-01-28  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/globals_io.cc: Change to __gnu_internal namespace.
 	* src/globals_locale.cc: Same.
 	* src/locale_init.cc: Same.
 	* src/ios_init.cc: Same.
-	
+
 2004-01-28  Stefan Olsson  <stefan@snon.net>
 
 	* include/ext/mt_allocator.h: Replaced all malloc() calls with
@@ -264,7 +279,7 @@
 	* include/bits/basic_string.h (_Rep::operator[]): Tweak
 	signature to take a size_type, consistently with the other
 	members.
-	
+
 2004-01-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/27_io/ios_base/storage/11584.cc: Correct new and
@@ -304,7 +319,7 @@
 
 	PR libstdc++/13884
 	* include/bits/sstream.tcc: Guard use of extern template.
-	
+
 2004-01-27  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc
@@ -616,7 +631,7 @@
 	_CharT, const _Alloc&)): Remove redundant try/catch.
 	(_M_mutate(size_type, size_type, size_type)): Ditto.
 	(_M_clone(const _Alloc&, size_type)): Ditto.
-	
+
 2004-01-18  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.h (c_str()): Simplify, due to
@@ -652,7 +667,7 @@
 2004-01-16  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/enc_filebuf/char/13189.cc: Fix guards.
-	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: Same.	
+	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: Same.
 
 2004-01-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
@@ -675,15 +690,15 @@
 	... here, change signature to take a const char* and a size_t
 	for the grouping; not a template anymore.
 	(__add_grouping, num_put::_M_group_int, num_put::_M_group_float):
-	Likewise change signature and tweak consistently. 
+	Likewise change signature and tweak consistently.
 	(num_get::_M_extract_float, num_get::_M_extract_int,
 	num_put::_M_insert_int, num_put::_M_insert_float,
 	money_get::do_get(string_type&), money_get::do_put(string_type)):
-	Update callers. 
+	Update callers.
 	* config/locale/generic/numeric_members.cc
-	(numpunct<>::_M_initialize_numpunct): Assign the new member.	
+	(numpunct<>::_M_initialize_numpunct): Assign the new member.
 	* config/locale/gnu/numeric_members.cc
-	(numpunct<>::_M_initialize_numpunct): Likewise.	
+	(numpunct<>::_M_initialize_numpunct): Likewise.
 	* src/locale-inst.cc (__add_grouping): Tweak signature.
 	(__verify_grouping): Don't instantiate, not a template anymore.
 
@@ -698,13 +713,13 @@
 	* include/ext/mt_allocator.h: Fixups.
 	* testsuite/performance/allocator.cc: Enable __mt_alloc tests.
 	* testsuite/performance/allocator_thread.cc: Same.
-	
+
 2004-01-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/performance/ifstream_extract_float.cc: Add higher
 	precision tests.
 	* testsuite/performance/ofstream_insert_float.cc: Same.
-	
+
 2004-01-13  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale-misc-inst.cc (__convert_from_v(long),
@@ -830,7 +845,7 @@
 	* testsuite/27_io/basic_filebuf/imbue/wchar_t/13582-3.cc: Ditto.
 	* testsuite/27_io/objects/wchar_t/13582-1_xin.cc: Ditto.
 	* testsuite/27_io/objects/wchar_t/13582-1_xin.in: Ditto.
-	
+
 2004-01-10  Paolo Carlini  <pcarlini@suse.de>
 
 	* docs/html/ext/lwg-active.html, docs/html/ext/lwg-defects.html:
@@ -860,7 +875,7 @@
 	* config.h.in: Regenerate.
 	* aclocal.m4: Same.
 	* configure: Same.
-	
+
 2004-01-07  Gawain Bolton  <gp.bolton@computer.org>
 
 	* include/bits/stl_list.h:
@@ -874,7 +889,7 @@
         Remove inheritance from iterator class and create separate
         classes for non-constant and constant iterators.
 	* include/bits/stl_tree.h (_Rb_tree class):
-	* src/tree.cc: 
+	* src/tree.cc:
         Only erase contents in destructor.
         Eliminate unnecessary initialization in assignment operator.
         Optimize for the nominal case by not checking whether
@@ -886,9 +901,9 @@
         Use  _M_leftmost() and _M_end() to improve readability where
         appropriate.
         Create separate classes for non-constant and constant
-        iterators to clarify code, avoid extra template parameters and 
-        casting away constness.		
-	
+        iterators to clarify code, avoid extra template parameters and
+        casting away constness.
+
 2004-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* src/Makefile.am (sources): Add list.cc, tree.cc.
@@ -900,7 +915,7 @@
 	* testsuite/23_containers/set/operators/1_neg.cc: Add excess errors.
 
 	* bits/stl_vector.h: Column wrap comments.
-	
+
 2004-01-07  Loren J. Rittle  <ljrittle@acm.org>
 
 	(re-open) PR libstdc++/12658
