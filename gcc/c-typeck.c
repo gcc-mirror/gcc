@@ -960,7 +960,8 @@ default_conversion (exp)
 	return convert (unsigned_type_node, exp);
       return convert (integer_type_node, exp);
     }
-  if (flag_traditional && TYPE_MAIN_VARIANT (type) == float_type_node)
+  if (flag_traditional && !flag_allow_single_precision
+      && TYPE_MAIN_VARIANT (type) == float_type_node)
     return convert (double_type_node, exp);
   if (code == VOID_TYPE)
     {
@@ -4016,8 +4017,8 @@ build_c_cast (type, expr)
 	    }
 	  else
 	    name = "";
-	  return digest_init (type, build_nt (CONSTRUCTOR, NULL_TREE,
-					      build_tree_list (field, value)),
+	  return digest_init (type, build (CONSTRUCTOR, type,
+					   build_tree_list (field, value)),
 			      0, 0);
 	}
       error ("cast to union type from type not present in union");
@@ -5824,6 +5825,20 @@ void
 set_init_index (first, last)
      tree first, last;
 {
+  while ((TREE_CODE (first) == NOP_EXPR
+	  || TREE_CODE (first) == CONVERT_EXPR
+	  || TREE_CODE (first) == NON_LVALUE_EXPR)
+	 && (TYPE_MODE (TREE_TYPE (first))
+	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (first, 0)))))
+    (first) = TREE_OPERAND (first, 0);
+  if (last)
+    while ((TREE_CODE (last) == NOP_EXPR
+	    || TREE_CODE (last) == CONVERT_EXPR
+	    || TREE_CODE (last) == NON_LVALUE_EXPR)
+	   && (TYPE_MODE (TREE_TYPE (last))
+	       == TYPE_MODE (TREE_TYPE (TREE_OPERAND (last, 0)))))
+      (last) = TREE_OPERAND (last, 0);
+
   if (TREE_CODE (first) != INTEGER_CST)
     error_init ("nonconstant array index in initializer%s", " for `%s'", NULL);
   else if (last != 0 && TREE_CODE (last) != INTEGER_CST)
