@@ -1,5 +1,9 @@
 2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* loop.c: Fix a comment typo.
+
+2002-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/fr30/fr30.h: Fix comment typos.
 	* config/frv/frv.c: Likewise.
 	* config/i386/xmmintrin.h: Likewise.

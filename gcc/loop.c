@@ -3583,7 +3583,7 @@ struct prefetch_info
   HOST_WIDE_INT index;
   HOST_WIDE_INT stride;		/* Prefetch stride in bytes in each
 				   iteration.  */
-  unsigned int bytes_accessed;	/* Sum of sizes of all acceses to this
+  unsigned int bytes_accessed;	/* Sum of sizes of all accesses to this
 				   prefetch area in one iteration.  */
   unsigned int total_bytes;	/* Total bytes loop will access in this block.
 				   This is set only for loops with known
