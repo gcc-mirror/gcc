@@ -549,23 +549,32 @@ optimize_reg_copy_3 (insn, dest, src)
   old_mode = GET_MODE (src_reg);
   PUT_MODE (src_reg, GET_MODE (src));
   XEXP (src, 0) = SET_SRC (set);
-  if (! validate_change (p, &SET_SRC (set), src, 0))
-    {
-      PUT_MODE (src_reg, old_mode);
-      XEXP (src, 0) = src_reg;
-      return;
-    }
+
+  /* Include this change in the group so that it's easily undone if
+     one of the changes in the group is invalid.  */
+  validate_change (p, &SET_SRC (set), src, 1);
+
+  /* Now walk forward making additional replacements.  We want to be able
+     to undo all the changes if a later substitution fails.  */
   subreg = gen_rtx_SUBREG (old_mode, src_reg, 0);
   while (p = NEXT_INSN (p), p != insn)
     {
       if (GET_RTX_CLASS (GET_CODE (p)) != 'i')
 	continue;
-      /* If we can not perform the replacement, then abort now
-	 to make debugging easier.  */
-      if (! validate_replace_rtx (src_reg, subreg, p))
-	abort ();
+
+      /* Make a tenative change.  */
+      validate_replace_rtx_group (src_reg, subreg, p);
     }
-  validate_replace_rtx (src, src_reg, insn);
+
+  validate_replace_rtx_group (src, src_reg, insn);
+
+  /* Now see if all the changes are valid.  */
+  if (! apply_change_group ())
+    {
+      /* One or more changes were no good.  Back out everything.  */
+      PUT_MODE (src_reg, old_mode);
+      XEXP (src, 0) = src_reg;
+    }
 }
 
 
