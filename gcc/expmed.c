@@ -1144,7 +1144,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		/* Else we've got some float mode source being extracted into
 		   a different float mode destination -- this combination of
 		   subregs results in Severe Tire Damage.  */
-		abort ();
+		goto no_subreg_mode_swap;
 	    }
 	  if (GET_CODE (op0) == REG)
 	    op0 = gen_rtx_SUBREG (mode1, op0, byte_offset);
@@ -1155,6 +1155,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	return convert_to_mode (tmode, op0, unsignedp);
       return op0;
     }
+ no_subreg_mode_swap:
 
   /* Handle fields bigger than a word.  */
 
