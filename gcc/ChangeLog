@@ -1,3 +1,10 @@
+1999-12-10  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/m68k/m68k.h (CONDITIONAL_REGISTER_USAGE): If we have no
+	68881, we have no 68881 registers at all.
+	(HARD_REGNO_MODE_OK): It is always OK to put a MODE_FLOAT
+	value in a 68881 register if it is available.
+
 1999-12-10  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* config/arm/arm.md (*mulsidi3adddi, *umulsidi3adddi): New patterns
