@@ -26,6 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "flags.h"
 #include "regs.h"
+#include "hard-reg-set.h"
 #include "function.h"
 #include "insn-flags.h"
 #include "insn-codes.h"
@@ -153,7 +154,7 @@ extern int local_vars_size;
 extern int stack_depth;
 extern int max_stack_depth;
 extern struct obstack permanent_obstack;
-
+extern rtx arg_pointer_save_area;
 
 static rtx enqueue_insn		PROTO((rtx, rtx));
 static int queued_subexp_p	PROTO((rtx));
@@ -5280,7 +5281,8 @@ expand_expr (exp, target, tmode, modifier)
 			    && (TREE_CODE (TYPE_SIZE (TREE_TYPE (tem)))
 				!= INTEGER_CST)
 			    ? target : NULL_RTX),
-			   VOIDmode, 0);
+			   VOIDmode,
+			   modifier == EXPAND_INITIALIZER ? modifier : 0);
 
 	/* If this is a constant, put it into a register if it is a
 	   legitimate constant and memory if it isn't.  */
@@ -8491,6 +8493,161 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_MEMCMP:
       break;
 #endif
+
+      /* __builtin_setjmp is passed a pointer to an array of five words
+	 (not all will be used on all machines).  It operates similarly to
+	 the C library function of the same name, but is more efficient.
+	 Much of the code below (and for longjmp) is copied from the handling
+	 of non-local gotos.
+
+	 NOTE: This is intended for use by GNAT and will only work in
+	 the method used by it.  This code will likely NOT survive to 
+	 the GCC 2.8.0 release.  */
+    case BUILT_IN_SETJMP:
+      if (arglist == 0
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+	break;
+
+      {
+	rtx buf_addr
+	  = force_reg (Pmode, expand_expr (TREE_VALUE (arglist), subtarget,
+					   VOIDmode, 0));
+	rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
+	enum machine_mode sa_mode = Pmode;
+	rtx stack_save;
+
+	if (target == 0 || GET_CODE (target) != REG
+	    || REGNO (target) < FIRST_PSEUDO_REGISTER)
+	  target = gen_reg_rtx (value_mode);
+
+	emit_queue ();
+
+	emit_note (NULL_PTR, NOTE_INSN_SETJMP);
+	current_function_calls_setjmp = 1;
+
+	/* We store the frame pointer and the address of lab1 in the buffer
+	   and use the rest of it for the stack save area, which is
+	   machine-dependent.  */
+	emit_move_insn (gen_rtx (MEM, Pmode, buf_addr),
+			virtual_stack_vars_rtx);
+	emit_move_insn
+	  (validize_mem (gen_rtx (MEM, Pmode,
+				  plus_constant (buf_addr,
+						 GET_MODE_SIZE (Pmode)))),
+	   gen_rtx (LABEL_REF, Pmode, lab1));
+
+#ifdef HAVE_save_stack_nonlocal
+	if (HAVE_save_stack_nonlocal)
+	  sa_mode = insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0];
+#endif
+
+	stack_save = gen_rtx (MEM, sa_mode,
+			      plus_constant (buf_addr,
+					     2 * GET_MODE_SIZE (Pmode)));
+	emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
+
+	/* Set TARGET to zero and branch around the other case.  */
+	emit_move_insn (target, const0_rtx);
+	emit_jump_insn (gen_jump (lab2));
+	emit_barrier ();
+	emit_label (lab1);
+
+	/* Now put in the code to restore the frame pointer, and argument
+	   pointer, if needed.  The code below is from expand_end_bindings
+	   in stmt.c; see detailed documentation there.  */
+#ifdef HAVE_nonlocal_goto
+	if (! HAVE_nonlocal_goto)
+#endif
+	  emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
+
+#if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
+	if (fixed_regs[ARG_POINTER_REGNUM])
+	  {
+#ifdef ELIMINABLE_REGS
+	    static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
+	    int i;
+
+	    for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
+	      if (elim_regs[i].from == ARG_POINTER_REGNUM
+		  && elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
+		break;
+
+	    if (i == sizeof elim_regs / sizeof elim_regs [0])
+#endif
+	      {
+		/* Now restore our arg pointer from the address at which it
+		   was saved in our stack frame.
+		   If there hasn't be space allocated for it yet, make
+		   some now.  */
+		if (arg_pointer_save_area == 0)
+		  arg_pointer_save_area
+		    = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+		emit_move_insn (virtual_incoming_args_rtx,
+				copy_to_reg (arg_pointer_save_area));
+	      }
+	  }
+#endif
+
+	/* The result to return is in the static chain pointer.  */
+	if (GET_MODE (static_chain_rtx) == GET_MODE (target))
+	  emit_move_insn (target, static_chain_rtx);
+	else
+	  convert_move (target, static_chain_rtx, 0);
+
+	emit_label (lab2);
+	return target;
+      }
+
+      /* __builtin_longjmp is passed a pointer to an array of five words
+	 and a value to return.  It's similar to the C library longjmp
+	 function but works with __builtin_setjmp above.  */
+    case BUILT_IN_LONGJMP:
+      if (arglist == 0 || TREE_CHAIN (arglist) == 0
+	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+	break;
+
+      {
+	rtx buf_addr
+	  = force_reg (Pmode, expand_expr (TREE_VALUE (arglist), NULL_RTX,
+					   VOIDmode, 0));
+	rtx fp = gen_rtx (MEM, Pmode, buf_addr);
+	rtx lab = gen_rtx (MEM, Pmode,
+			   plus_constant (buf_addr, GET_MODE_SIZE (Pmode)));
+	enum machine_mode sa_mode
+#ifdef HAVE_save_stack_nonlocal
+	  = (HAVE_save_stack_nonlocal
+	     ? insn_operand_mode[(int) CODE_FOR_save_stack_nonlocal][0]
+	     : Pmode);
+#else
+	= Pmode;
+#endif
+	rtx stack = gen_rtx (MEM, sa_mode,
+			     plus_constant (buf_addr,
+					    2 * GET_MODE_SIZE (Pmode)));
+	rtx value = expand_expr (TREE_VALUE (TREE_CHAIN (arglist)), NULL_RTX,
+				 VOIDmode, 0);
+
+	/* Pick up FP, label, and SP from the block and jump.  This code is
+	   from expand_goto in stmt.c; see there for detailed comments.  */
+#if HAVE_nonlocal_goto
+	if (HAVE_nonlocal_goto)
+	  emit_insn (gen_nonlocal_goto (fp, lab, stack, value));
+      else
+#endif
+	{
+	  emit_move_insn (hard_frame_pointer_rtx, fp);
+	  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+
+	  /* Put in the static chain register the return value.  */
+	  emit_move_insn (static_chain_rtx, value);
+	  emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
+	  emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
+	  emit_insn (gen_rtx (USE, VOIDmode, static_chain_rtx));
+	  emit_indirect_jump (copy_to_reg (lab));
+	}
+
+	return const0_rtx;
+      }
 
     default:			/* just do library call, if unknown builtin */
       error ("built-in function `%s' not currently supported",
