@@ -61,6 +61,8 @@ echo "Pass 2: Updating full tree"
 cvs -q update ${1+"$@"}
 
 echo "Pass 3: Fixing local tree"
+# Please also update the FAQ accordingly if you change the list of
+# files below.
 touch `find . -name configure -print`
 touch `find texinfo -name Makefile.in -print`
 touch `find texinfo -name \*.pot -print`

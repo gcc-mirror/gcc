@@ -1,3 +1,7 @@
+Sat Oct 31 16:39:31 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* egcs_update: Add comment about keeping the FAQ synchronized.
+
 Fri Oct 30 00:39:27 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* egcs_update: Do touch java/parse.c and java/parse-scan.c. They're
