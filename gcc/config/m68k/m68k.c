@@ -53,6 +53,72 @@ static rtx find_addr_reg ();
 rtx legitimize_pic_address ();
 
 
+/* Alignment to use for loops and jumps */
+/* Specify power of two alignment used for loops. */
+char *m68k_align_loops_string;
+/* Specify power of two alignment used for non-loop jumps. */
+char *m68k_align_jumps_string;
+/* Specify power of two alignment used for functions. */
+char *m68k_align_funcs_string;
+
+/* Specify power of two alignment used for loops. */
+int m68k_align_loops;
+/* Specify power of two alignment used for non-loop jumps. */
+int m68k_align_jumps;
+/* Specify power of two alignment used for functions. */
+int m68k_align_funcs;
+
+
+/* Sometimes certain combinations of command options do not make
+   sense on a particular target machine.  You can define a macro
+   `OVERRIDE_OPTIONS' to take account of this.  This macro, if
+   defined, is executed once just after all the command options have
+   been parsed.
+
+   Don't use this macro to turn on various extra optimizations for
+   `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
+
+void
+override_options ()
+{
+  int def_align;
+
+  def_align = 1;
+
+  /* Validate -malign-loops= value, or provide default */
+  if (m68k_align_loops_string)
+    {
+      m68k_align_loops = atoi (m68k_align_loops_string);
+      if (m68k_align_loops < 1 || m68k_align_loops > MAX_CODE_ALIGN)
+	fatal ("-malign-loops=%d is not between 1 and %d",
+	       m68k_align_loops, MAX_CODE_ALIGN);
+    }
+  else
+    m68k_align_loops = def_align;
+
+  /* Validate -malign-jumps= value, or provide default */
+  if (m68k_align_jumps_string)
+    {
+      m68k_align_jumps = atoi (m68k_align_jumps_string);
+      if (m68k_align_jumps < 1 || m68k_align_jumps > MAX_CODE_ALIGN)
+	fatal ("-malign-jumps=%d is not between 1 and %d",
+	       m68k_align_jumps, MAX_CODE_ALIGN);
+    }
+  else
+    m68k_align_jumps = def_align;
+
+  /* Validate -malign-functions= value, or provide default */
+  if (m68k_align_funcs_string)
+    {
+      m68k_align_funcs = atoi (m68k_align_funcs_string);
+      if (m68k_align_funcs < 1 || m68k_align_funcs > MAX_CODE_ALIGN)
+	fatal ("-malign-functions=%d is not between 1 and %d",
+	       m68k_align_funcs, MAX_CODE_ALIGN);
+    }
+  else
+    m68k_align_funcs = def_align;
+}
+
 /* Emit a (use pic_offset_table_rtx) if we used PIC relocation in the 
    function at any time during the compilation process.  In the future 
    we should try and eliminate the USE if we can easily determine that 
