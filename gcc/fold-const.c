@@ -1510,13 +1510,15 @@ fold_convert (t, arg1)
 	  /* Indicate an overflow if (1) ARG1 already overflowed,
 	     or (2) force_fit_type indicates an overflow.
 	     Tell force_fit_type that an overflow has already occurred
-	     if ARG1 is a too-large unsigned value and T is signed.  */
+	     if ARG1 is a too-large unsigned value and T is signed.
+	     But don't indicate an overflow if converting a pointer.  */
 	  TREE_OVERFLOW (t)
 	    = (TREE_OVERFLOW (arg1)
-	       | force_fit_type (t,
-				 (TREE_INT_CST_HIGH (arg1) < 0
-				  & (TREE_UNSIGNED (type)
-				     < TREE_UNSIGNED (TREE_TYPE (arg1))))));
+	       || (force_fit_type (t,
+				  (TREE_INT_CST_HIGH (arg1) < 0
+				   & (TREE_UNSIGNED (type)
+				     < TREE_UNSIGNED (TREE_TYPE (arg1)))))
+		   && TREE_CODE (TREE_TYPE (arg1)) != POINTER_TYPE));
 	  TREE_CONSTANT_OVERFLOW (t)
 	    = TREE_OVERFLOW (t) | TREE_CONSTANT_OVERFLOW (arg1);
 	}
