@@ -5652,7 +5652,7 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
 	/* The PARM is not one we're trying to unify.  Just check
 	   to see if it matches ARG.  */
 	return (TREE_CODE (arg) == TREE_CODE (parm)
-		&& comptypes (parm, arg, 1) == 0) ? 0 : 1;
+		&& comptypes (parm, arg, 1)) ? 0 : 1;
       idx = TEMPLATE_TYPE_IDX (parm);
       targ = TREE_VEC_ELT (targs, idx);
       tparm = TREE_VALUE (TREE_VEC_ELT (tparms, idx));
@@ -5761,7 +5761,7 @@ unify (tparms, targs, ntparms, parm, arg, strict, explicit_mask)
 	/* The PARM is not one we're trying to unify.  Just check
 	   to see if it matches ARG.  */
 	return (TREE_CODE (arg) == TREE_CODE (parm)
-		&& cp_tree_equal (parm, arg) == 0) ? 0 : 1;
+		&& cp_tree_equal (parm, arg)) ? 0 : 1;
 
       idx = TEMPLATE_PARM_IDX (parm);
       targ = TREE_VEC_ELT (targs, idx);
