@@ -212,13 +212,15 @@ Boston, MA 02111-1307, USA.  */
 
 #define DEBUG_INFO_SECTION	".debug_info,0x7000001e,0,0,1"
 #define DEBUG_LINE_SECTION	".debug_line,0x7000001e,0,0,1"
-#define SFNAMES_SECTION		".debug_sfnames,0x7000001e,0,0,1"
-#define SRCINFO_SECTION		".debug_srcinfo,0x7000001e,0,0,1"
-#define MACINFO_SECTION		".debug_macinfo,0x7000001e,0,0,1"
-#define PUBNAMES_SECTION	".debug_pubnames,0x7000001e,0,0,1"
-#define ARANGES_SECTION		".debug_aranges,0x7000001e,0,0,1"
-#define FRAME_SECTION		".debug_frame,0x7000001e,0x08000000,0,1"
-#define ABBREV_SECTION		".debug_abbrev,0x7000001e,0,0,1"
+#define DEBUG_SFNAMES_SECTION	".debug_sfnames,0x7000001e,0,0,1"
+#define DEBUG_SRCINFO_SECTION	".debug_srcinfo,0x7000001e,0,0,1"
+#define DEBUG_MACINFO_SECTION	".debug_macinfo,0x7000001e,0,0,1"
+#define DEBUG_PUBNAMES_SECTION	".debug_pubnames,0x7000001e,0,0,1"
+#define DEBUG_ARANGES_SECTION	".debug_aranges,0x7000001e,0,0,1"
+#define DEBUG_FRAME_SECTION	".debug_frame,0x7000001e,0x08000000,0,1"
+#define DEBUG_ABBREV_SECTION	".debug_abbrev,0x7000001e,0,0,1"
+#define DEBUG_LOC_SECTION	".debug_loc,0x7000001e,0,0,1"
+#define DEBUG_STR_SECTION	".debug_str,0x7000001e,0,0,1"
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */

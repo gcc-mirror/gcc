@@ -2560,10 +2560,13 @@ do {									\
 /* Section names for DWARF2 debug info.  */
 
 #define DEBUG_INFO_SECTION	".debug_info, \"\", \"progbits\""
-#define ABBREV_SECTION		".debug_abbrev, \"\", \"progbits\""
-#define ARANGES_SECTION		".debug_aranges, \"\", \"progbits\""
+#define DEBUG_ABBREV_SECTION	".debug_abbrev, \"\", \"progbits\""
+#define DEBUG_ARANGES_SECTION	".debug_aranges, \"\", \"progbits\""
+#define DEBUG_MACINFO_SECTION	".debug_macinfo, \"\", \"progbits\""
 #define DEBUG_LINE_SECTION	".debug_line, \"\", \"progbits\""
-#define PUBNAMES_SECTION	".debug_pubnames, \"\", \"progbits\""
+#define DEBUG_LOC_SECTION	".debug_loc, \"\", \"progbits\""
+#define DEBUG_PUBNAMES_SECTION	".debug_pubnames, \"\", \"progbits\""
+#define DEBUG_STR_SECTION	".debug_str, \"\", \"progbits\""
 
 /* C string constants giving the pseudo-op to use for a sequence of
    2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */

@@ -976,20 +976,20 @@ static void retry_incomplete_types	PARAMS ((void));
 #ifndef LINE_SECTION
 #define LINE_SECTION		".line"
 #endif
-#ifndef SFNAMES_SECTION
-#define SFNAMES_SECTION		".debug_sfnames"
+#ifndef DEBUG_SFNAMES_SECTION
+#define DEBUG_SFNAMES_SECTION	".debug_sfnames"
 #endif
-#ifndef SRCINFO_SECTION
-#define SRCINFO_SECTION		".debug_srcinfo"
+#ifndef DEBUG_SRCINFO_SECTION
+#define DEBUG_SRCINFO_SECTION	".debug_srcinfo"
 #endif
-#ifndef MACINFO_SECTION
-#define MACINFO_SECTION		".debug_macinfo"
+#ifndef DEBUG_MACINFO_SECTION
+#define DEBUG_MACINFO_SECTION	".debug_macinfo"
 #endif
-#ifndef PUBNAMES_SECTION
-#define PUBNAMES_SECTION	".debug_pubnames"
+#ifndef DEBUG_PUBNAMES_SECTION
+#define DEBUG_PUBNAMES_SECTION	".debug_pubnames"
 #endif
-#ifndef ARANGES_SECTION
-#define ARANGES_SECTION		".debug_aranges"
+#ifndef DEBUG_ARANGES_SECTION
+#define DEBUG_ARANGES_SECTION	".debug_aranges"
 #endif
 #ifndef TEXT_SECTION
 #define TEXT_SECTION		".text"
@@ -5664,7 +5664,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	     defined in this compilation unit.  */
 
 	  fputc ('\n', asm_out_file);
-	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_PUBNAMES_SECTION);
 	  sprintf (label, PUB_DIE_LABEL_FMT, next_pubname_number);
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, label);
 	  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
@@ -5702,7 +5702,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 	         defined in this compilation unit.  */
 
 	      fputc ('\n', asm_out_file);
-	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
+	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_PUBNAMES_SECTION);
 	      sprintf (label, PUB_DIE_LABEL_FMT, next_pubname_number);
 	      ASM_OUTPUT_DWARF_ADDR (asm_out_file, label);
 	      ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
@@ -5716,7 +5716,7 @@ dwarfout_file_scope_decl (decl, set_finalizing)
 		 which is tentatively defined in this compilation unit.  */
 
 	      fputc ('\n', asm_out_file);
-	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
+	      ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_ARANGES_SECTION);
 	      ASM_OUTPUT_DWARF_ADDR (asm_out_file,
 			      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
 	      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 
@@ -5917,7 +5917,7 @@ generate_new_sfname_entry ()
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SFNAMES_SECTION);
   sprintf (label, SFNAMES_ENTRY_LABEL_FMT, filename_table[0].number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
   ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file,
@@ -6017,7 +6017,7 @@ generate_srcinfo_entry (line_entry_num, files_entry_num)
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SRCINFO_SECTION);
   sprintf (label, LINE_ENTRY_LABEL_FMT, line_entry_num);
   ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, label, LINE_BEGIN_LABEL);
   sprintf (label, SFNAMES_ENTRY_LABEL_FMT, files_entry_num);
@@ -6091,7 +6091,7 @@ generate_macinfo_entry (type_and_offset, string)
     return;
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
   fprintf (asm_out_file, "%s%s\n", UNALIGNED_INT_ASM_OP, type_and_offset);
   ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, string);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
@@ -6259,7 +6259,7 @@ dwarfout_init (asm_out_file, main_input_filename)
 	     referenced by the initial entry in the .debug_srcinfo section.  */
     
 	  fputc ('\n', asm_out_file);
-	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SFNAMES_SECTION);
 	  ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
 	  {
 	    register const char *pwd = getpwd ();
@@ -6283,7 +6283,7 @@ dwarfout_init (asm_out_file, main_input_filename)
 	     TAG_compile_unit DIE.  */
         
           fputc ('\n', asm_out_file);
-          ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
+          ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
           ASM_OUTPUT_LABEL (asm_out_file, MACINFO_BEGIN_LABEL);
           ASM_OUTPUT_POP_SECTION (asm_out_file);
 	}
@@ -6302,7 +6302,7 @@ dwarfout_init (asm_out_file, main_input_filename)
 	  /* Generate the initial entry for the .debug_srcinfo section.  */
 
 	  fputc ('\n', asm_out_file);
-	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SRCINFO_SECTION);
 	  ASM_OUTPUT_LABEL (asm_out_file, SRCINFO_BEGIN_LABEL);
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, LINE_BEGIN_LABEL);
 	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, SFNAMES_BEGIN_LABEL);
@@ -6319,14 +6319,14 @@ dwarfout_init (asm_out_file, main_input_filename)
       /* Generate the initial entry for the .debug_pubnames section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_PUBNAMES_SECTION);
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, DEBUG_BEGIN_LABEL);
       ASM_OUTPUT_POP_SECTION (asm_out_file);
     
       /* Generate the initial entry for the .debug_aranges section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_ARANGES_SECTION);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file,
 			       DEBUG_ARANGES_END_LABEL,
 			       DEBUG_ARANGES_BEGIN_LABEL);
@@ -6464,7 +6464,7 @@ dwarfout_finish ()
 	  /* Output a terminating entry for the .debug_srcinfo section.  */
 
 	  fputc ('\n', asm_out_file);
-	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, SRCINFO_SECTION);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_SRCINFO_SECTION);
 	  ASM_OUTPUT_DWARF_DELTA4 (asm_out_file,
 				   LINE_LAST_ENTRY_LABEL, LINE_BEGIN_LABEL);
 	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, -1);
@@ -6478,7 +6478,7 @@ dwarfout_finish ()
 	  dwarfout_resume_previous_source_file (0);
 
 	  fputc ('\n', asm_out_file);
-	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, MACINFO_SECTION);
+	  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_MACINFO_SECTION);
 	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
 	  ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
 	  ASM_OUTPUT_POP_SECTION (asm_out_file);
@@ -6487,7 +6487,7 @@ dwarfout_finish ()
       /* Generate the terminating entry for the .debug_pubnames section.  */
     
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, PUBNAMES_SECTION);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_PUBNAMES_SECTION);
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
       ASM_OUTPUT_DWARF_STRING_NEWLINE (asm_out_file, "");
       ASM_OUTPUT_POP_SECTION (asm_out_file);
@@ -6507,7 +6507,7 @@ dwarfout_finish ()
       */
     
       fputc ('\n', asm_out_file);
-      ASM_OUTPUT_PUSH_SECTION (asm_out_file, ARANGES_SECTION);
+      ASM_OUTPUT_PUSH_SECTION (asm_out_file, DEBUG_ARANGES_SECTION);
 
       ASM_OUTPUT_DWARF_ADDR (asm_out_file, TEXT_BEGIN_LABEL);
       ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, TEXT_END_LABEL, TEXT_BEGIN_LABEL);
