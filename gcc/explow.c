@@ -1,5 +1,5 @@
 /* Subroutines for manipulating rtx's in semantically interesting ways.
-   Copyright (C) 1987, 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -321,6 +321,7 @@ convert_memory_address (to_mode, x)
     case SYMBOL_REF:
       temp = gen_rtx (SYMBOL_REF, to_mode, XSTR (x, 0));
       SYMBOL_REF_FLAG (temp) = SYMBOL_REF_FLAG (x);
+      CONSTANT_POOL_ADDRESS_P (temp) = CONSTANT_POOL_ADDRESS_P (x);
       return temp;
 
     case CONST:
