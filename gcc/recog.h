@@ -178,7 +178,7 @@ extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALT
 
 extern const char *const insn_template[];
 
-extern const char *(*const insn_outfun[]) ();
+extern const char *(*const insn_outfun[]) PROTO ((rtx *, rtx));
 
 extern const int insn_n_operands[];
 
@@ -203,6 +203,6 @@ extern const enum machine_mode insn_operand_mode[][MAX_RECOG_OPERANDS];
 
 extern const char insn_operand_strict_low[][MAX_RECOG_OPERANDS];
 
-extern int (*const insn_operand_predicate[][MAX_RECOG_OPERANDS]) ();
+extern int (*const insn_operand_predicate[][MAX_RECOG_OPERANDS]) PROTO ((rtx, enum machine_mode));
 
 extern const char * insn_name[];

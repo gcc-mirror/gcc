@@ -1180,7 +1180,7 @@ rtx_equal_p (x, y)
 void
 note_stores (x, fun)
      register rtx x;
-     void (*fun) ();
+     void (*fun) PROTO ((rtx, rtx));
 {
   if ((GET_CODE (x) == SET || GET_CODE (x) == CLOBBER))
     {

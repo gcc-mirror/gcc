@@ -1,3 +1,12 @@
+Sun Mar 28 20:26:55 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* recog.h (insn_outfun, insn_operand_predicate): Add prototype
+	arguments.
+
+	* rtl.h (note_stores): Likewise.
+
+	* rtlanal.c (note_stores): Likewise.
+
 Sun Mar 28 15:34:28 1999  Richard Henderson  <rth@cygnus.com>
 
 	* varasm.c (output_constant_pool): Always mark the constant pool.
