@@ -1,3 +1,8 @@
+2003-03-25  Marcelo Abreu  <mmabreu@inf.ufrgs.br>
+
+	PR fortran/10204
+	* ffe.texi: Reference the GCC web site in the URL.
+
 2003-03-24  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	PR fortran/10197
