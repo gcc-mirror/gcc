@@ -1,3 +1,10 @@
+2001-02-09  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Double.java (doubleToRawLongBits): Now native.
+	* java/lang/Float.java (floatToRawIntBits): Likewise.
+	* java/lang/natDouble.cc (doubleToRawLongBits): New method.
+	* java/lang/natFloat.cc (floatToRawIntBits): Likewise.
+
 2001-02-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* java/io/File.java (java.net): Imported.

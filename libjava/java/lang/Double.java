@@ -138,13 +138,7 @@ public final class Double extends Number implements Comparable
   }
 
   public static native long doubleToLongBits (double value);
-
-  public static long doubleToRawLongBits (double value)
-  {
-    // FIXME: Check that this is correct with respect to NaN values.
-    return doubleToLongBits (value);
-  }
-
+  public static native long doubleToRawLongBits (double value);
   public static native double longBitsToDouble (long bits);
 
   public int compareTo (Double d)

@@ -145,14 +145,7 @@ public final class Float extends Number implements Comparable
   }
 
   public static native int floatToIntBits (float value);
-  
-  public static int floatToRawIntBits (float value)
-  {
-    // FIXME: Is this supposed to be different? NaN values seem to be handled
-    // the same in the JDK.
-    return floatToIntBits (value);
-  }
-
+  public static native int floatToRawIntBits (float value);
   public static native float intBitsToFloat (int bits);
 
   public int compareTo (Float d)
