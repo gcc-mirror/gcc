@@ -1381,6 +1381,15 @@ put_var_into_stack (decl)
       if (GET_CODE (XEXP (reg, 0)) == PLUS)
 	XEXP (reg, 0) = copy_rtx (XEXP (reg, 0));
     }
+  else
+    return;
+  
+  if (flag_check_memory_usage)
+    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+		       XEXP (reg, 0), ptr_mode,
+		       GEN_INT (GET_MODE_SIZE (GET_MODE (reg))),
+		       TYPE_MODE (sizetype),
+		       GEN_INT (MEMORY_USE_RW), QImode);
 }
 
 /* Subroutine of put_var_into_stack.  This puts a single pseudo reg REG
@@ -3686,6 +3695,18 @@ assign_parms (fndecl, second_time)
 	  else
 	    stack_parm = gen_rtx (MEM, nominal_mode,
 				  gen_rtx (PLUS, Pmode,
+	      if (flag_check_memory_usage)
+		{
+		  push_to_sequence (conversion_insns);
+		  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+				     XEXP (stack_parm, 0), ptr_mode,
+				     GEN_INT (int_size_in_bytes 
+					      (TREE_TYPE (parm))),
+				     TYPE_MODE (sizetype),
+				     GEN_INT (MEMORY_USE_RW), QImode);
+		  conversion_insns = get_insns ();
+		  end_sequence ();
+		}
 					   internal_arg_pointer, offset_rtx));
 
 	  /* If this is a memory ref that contains aggregate components,
@@ -3906,6 +3927,12 @@ assign_parms (fndecl, second_time)
 
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
+	      if (flag_check_memory_usage)
+		emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+				   XEXP (copy, 0), ptr_mode,
+				   GEN_INT (int_size_in_bytes (type)),
+				   TYPE_MODE (sizetype),
+				   GEN_INT (MEMORY_USE_RW), QImode);
 	      conversion_insns = get_insns ();
 	      did_conversion = 1;
 	      end_sequence ();
@@ -4055,7 +4082,19 @@ assign_parms (fndecl, second_time)
 		emit_move_insn (validize_mem (stack_parm),
 				validize_mem (entry_parm));
 	    }
+	  if (flag_check_memory_usage)
+	    {
+	      push_to_sequence (conversion_insns);
+	      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+				 XEXP (stack_parm, 0), ptr_mode,
+				 GEN_INT (GET_MODE_SIZE (GET_MODE 
+							 (entry_parm))),
+				 TYPE_MODE (sizetype),
+				 GEN_INT (MEMORY_USE_RW), QImode);
 
+	      conversion_insns = get_insns ();
+	      end_sequence ();
+	    }
 	  DECL_RTL (parm) = stack_parm;
 	}
       
@@ -4110,7 +4149,7 @@ assign_parms (fndecl, second_time)
     = (stack_args_size.var == 0 ? GEN_INT (-stack_args_size.constant)
        : expand_expr (size_binop (MINUS_EXPR, stack_args_size.var,	
 				  size_int (-stack_args_size.constant)),   
-		      NULL_RTX, VOIDmode, 0));
+		      NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_BAD));
 #else
   current_function_arg_offset_rtx = ARGS_SIZE_RTX (stack_args_size);
 #endif
@@ -5403,7 +5442,8 @@ expand_function_start (subr, parms_have_cleanups)
   /* Evaluate now the sizes of any types declared among the arguments.  */
   for (tem = nreverse (get_pending_sizes ()); tem; tem = TREE_CHAIN (tem))
     {
-      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode, 0);
+      expand_expr (TREE_VALUE (tem), const0_rtx, VOIDmode,
+		   EXPAND_MEMORY_USE_BAD);
       /* Flush the queue in case this parameter declaration has
 	 side-effects.  */
       emit_queue ();
