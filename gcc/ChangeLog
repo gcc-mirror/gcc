@@ -1,3 +1,7 @@
+1999-07-26  Nathan Sidwell  <nathan@acm.org>
+
+	* eh-common.h (__eh_matcher): Prototype correctly.
+
 Mon Jul 26 17:24:51 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	* config/arm/thumb.h (THUMB_FLAG_SINGLE_PIC_BASE): Define.
