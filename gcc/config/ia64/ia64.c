@@ -4811,13 +4811,25 @@ emit_all_insn_group_barriers (dump, insns)
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == INSN
-	       && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	       && XINT (PATTERN (insn), 1) == 2)
-	init_insn_group_barriers ();
+      if (GET_CODE (insn) == BARRIER)
+	{
+	  rtx last = prev_active_insn (insn);
+
+	  if (! last)
+	    continue;
+	  if (GET_CODE (last) == JUMP_INSN
+	      && GET_CODE (PATTERN (last)) == ADDR_DIFF_VEC)
+	    last = prev_active_insn (last);
+	  if (recog_memoized (last) != CODE_FOR_insn_group_barrier)
+	    emit_insn_after (gen_insn_group_barrier (GEN_INT (3)), last);
+
+	  init_insn_group_barriers ();
+	}
       else if (INSN_P (insn))
 	{
-	  if (group_barrier_needed_p (insn))
+	  if (recog_memoized (insn) == CODE_FOR_insn_group_barrier)
+	    init_insn_group_barriers ();
+	  else if (group_barrier_needed_p (insn))
 	    {
 	      emit_insn_before (gen_insn_group_barrier (GEN_INT (3)), insn);
 	      init_insn_group_barriers ();
