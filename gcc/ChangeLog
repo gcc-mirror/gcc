@@ -1,5 +1,12 @@
 2001-05-25  Zack Weinberg  <zackw@stanford.edu>
 
+	* toplev.c (debug_args, f_options, W_options): Mark
+	descriptions for translation.
+	(display_help): Translate descriptions on output.
+
+	* cp/lang-options.h, f/lang-options.h, java/lang-options.h,
+	objc/lang-options.h: Mark descriptions for translation.
+
 	* aclocal.m4: Quote final argument of patsubst.  Use
 	3-argument form of AC_DEFINE.  Restore quotes to [] while
 	using AC_FD_CC.
