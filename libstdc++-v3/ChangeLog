@@ -1,3 +1,10 @@
+2003-12-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* acinclude.m4 (GLIBCXX_CHECK_LFS): Add -fno-exceptions
+	to CXXFLAGS.
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+
 2003-12-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* acconfig.h: Add _GLIBCXX_USE_C99_MATH.
