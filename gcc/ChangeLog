@@ -1,5 +1,24 @@
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* vec.c (vec_p_reserve, vec_o_reserve): Rename to ...
+	(vec_gc_p_reserve, vec_gc_o_reserve): ... here. Clone to
+	(vec_heap_p_reserve, vec_heap_o_reserve): ... here, adjust.
+	(vec_gc_free, vec_heap_free): New.
+	* vec.h (DEF_VEC_GC_P, DEF_VEC_MALLOC_P): New.
+	(DEF_VEC_P): Add allocator argument. Adjust.
+	(DEF_VEC_GC_O, DEF_VEC_MALLOC_O): New.
+	(DEF_VEC_O): Add allocator argument. Adjust.
+	(VEC(free)): New.
+
+	* tree.h (tree): Define a GC'd vector.
+	* lamba-code.c (lambda_loop): Likewise.
+	* value-prof.h (histogram_value): Likewise.
+	* cp/cp-tree.h (tree_pair_s): Likewise.
+	* cp/name-lookup.h (cxx_saved_binding, cp_class_binding): Likewise.
+	* cp/semantics.c (deferred_access): Likewise.
+
+2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* emit-rtl.c (immed_double_const): Use gcc_assert and gcc_unreachable.
 	(gen_rtx_SUBREG, gen_reg_rtx, mark_user_reg, subreg_hard_regno,
 	gen_lowpart_common, gen_highpart, gen_highpart_mode,

@@ -138,7 +138,7 @@ typedef struct deferred_access GTY(())
   enum deferring_kind deferring_access_checks_kind;
   
 } deferred_access;
-DEF_VEC_O (deferred_access);
+DEF_VEC_GC_O (deferred_access);
 
 /* Data for deferred access checking.  */
 static GTY(()) VEC (deferred_access) *deferred_access_stack;

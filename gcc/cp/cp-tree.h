@@ -955,7 +955,7 @@ typedef struct tree_pair_s GTY (())
   tree value;
 } tree_pair_s;
 typedef tree_pair_s *tree_pair_p;
-DEF_VEC_O (tree_pair_s);
+DEF_VEC_GC_O (tree_pair_s);
 
 /* This is a few header flags for 'struct lang_type'.  Actually,
    all but the first are used only for lang_type_class; they

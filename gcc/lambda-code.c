@@ -1406,7 +1406,7 @@ find_induction_var_from_exit_cond (struct loop *loop)
   return TREE_OPERAND (test, 0);
 }
 
-DEF_VEC_P(lambda_loop);
+DEF_VEC_GC_P(lambda_loop);
 /* Generate a lambda loopnest from a gcc loopnest LOOP_NEST.
    Return the new loop nest.  
    INDUCTIONVARS is a pointer to an array of induction variables for the
