@@ -303,8 +303,8 @@ mark_referenced_resources (x, res, include_called_routine)
       if (include_called_routine)
 	{
 	  /* A CALL references memory, the frame pointer if it exists, the
-	     stack pointer, and any registers given in USE insns immediately
-	     in front of the CALL.
+	     stack pointer, any global registers and any registers given in
+	     USE insns immediately in front of the CALL.
 
 	     However, we may have moved some of the parameter loading insns
 	     into the delay slot of this CALL.  If so, the USE's for them
@@ -327,6 +327,10 @@ mark_referenced_resources (x, res, include_called_routine)
 	  SET_HARD_REG_BIT (res->regs, STACK_POINTER_REGNUM);
 	  if (frame_pointer_needed)
 	    SET_HARD_REG_BIT (res->regs, FRAME_POINTER_REGNUM);
+
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (global_regs[i])
+	      SET_HARD_REG_BIT (res->regs, i);
 
 	  /* Skip any labels between the CALL_INSN and possible USE insns.  */
 	  while (GET_CODE (insn) == CODE_LABEL)
@@ -403,8 +407,8 @@ mark_set_resources (insn, res, include_called_routine)
 
     case CALL_INSN:
       /* Called routine modifies the condition code, memory, any registers
-	 that aren't saved across calls, and anything explicitly CLOBBERed
-	 immediately after the CALL_INSN.  */
+	 that aren't saved across calls, global registers and anything
+	 explicitly CLOBBERed immediately after the CALL_INSN.  */
 
       if (include_called_routine)
 	{
@@ -412,7 +416,7 @@ mark_set_resources (insn, res, include_called_routine)
 
 	  res->cc = res->memory = 1;
 	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	    if (call_used_regs[i])
+	    if (call_used_regs[i] || global_regs[i])
 	      SET_HARD_REG_BIT (res->regs, i);
 
 	  /* Skip any possible labels between the CALL_INSN and CLOBBERs.  */
