@@ -2671,12 +2671,12 @@ java_pop_parser_context (generate)
   /* Set the single import class file flag to 0 for the current list
      of imported things */
   for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
-    IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_PURPOSE (current)) = 0;
+    IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_VALUE (current)) = 0;
 
   /* And restore those of the previous context */
   if ((ctxp = next))		/* Assignment is really meant here */
     for (current = ctxp->import_list; current; current = TREE_CHAIN (current))
-      IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_PURPOSE (current)) = 1;
+      IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P (TREE_VALUE (current)) = 1;
   
   /* If we pushed a context to parse a class intended to be generated,
      we keep it so we can remember the class. What we could actually
