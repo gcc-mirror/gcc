@@ -1,4 +1,10 @@
-2004-06-05  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15510
+	* trans-deecl.c (generate_local_decl): Do not issue warning for
+	unused variables if they're use associated.
+
+2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
         Andrew Vaught <andyv@firstinter.net>
 
 	PR fortran/14928

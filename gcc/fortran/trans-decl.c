@@ -1921,9 +1921,10 @@ generate_local_decl (gfc_symbol * sym)
             warning ("unused parameter `%s'", sym->name);
         }
       /* warn for unused variables, but not if they're inside a common
-	 block.  */
-      else if (warn_unused_variable && !sym->attr.in_common)
-	warning ("unused variable `%s'", sym->name);
+	 block or are use_associated.  */
+      else if (warn_unused_variable
+	       && !(sym->attr.in_common || sym->attr.use_assoc))
+	warning ("unused variable `%s'", sym->name); 
     }
 }
 
