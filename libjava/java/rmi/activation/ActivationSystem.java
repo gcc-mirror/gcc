@@ -42,7 +42,7 @@ import java.rmi.RemoteException;
 
 public interface ActivationSystem extends Remote
 {
-  int SYSTEM_PORT = 0; // XXX
+  int SYSTEM_PORT = 1098;
 
   ActivationID registerObject (ActivationDesc desc)
     throws ActivationException, UnknownGroupException, RemoteException;

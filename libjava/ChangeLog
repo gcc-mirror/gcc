@@ -1,5 +1,10 @@
 2004-10-18  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/activation/ActivationSystem.java
+	(SYSTEM_PORT): Initialize with correct port number.
+
+2004-10-18  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/reflect/Proxy.java: Improved javadocs.
 
 2004-10-18  Michael Koch  <konqueror@gmx.de>
