@@ -1,3 +1,13 @@
+Thu Nov 13 11:47:55 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.c (num_insns_constant): Use REAL_VALUE_FROM_CONST_DOUBLE to
+	pick apart floating point values, instead of using CONST_DOUBLE_LOW
+	and CONST_DOUBLE_HIGH.
+
+	* rs6000.md (define_splits for DF constants): Use the appropriate
+	REAL_VALUE_* interface to pick apart DF floating point constants in
+	a machine independent fashion.
+
 Thu Nov 13 11:41:42 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Tweak NCR entries.
