@@ -1,3 +1,9 @@
+Sun Sep 13 04:37:28 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* loop.c (move_movables): While removing insn sequences, preserve
+	the next pointer of the most recently deleted insn when we skip
+	over a NOTE.
+
 Sat Sep 12 11:37:19 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h ({ASM,CPP}_CPU_SPEC): Add support for all machines
