@@ -1159,6 +1159,12 @@ expand_leftover_cleanups ()
       /* Output the label for the start of the exception handler.  */
       emit_label (entry->exception_handler_label);
 
+#ifdef HAVE_exception_receiver
+      if (! exceptions_via_longjmp)
+	if (HAVE_exception_receiver)
+	  emit_insn (gen_exception_receiver ());
+#endif
+
 #ifdef HAVE_nonlocal_goto_receiver
       if (! exceptions_via_longjmp)
 	if (HAVE_nonlocal_goto_receiver)
@@ -1257,6 +1263,12 @@ expand_start_all_catch ()
 	 still be emitted, so any code emitted after this point will
 	 end up being the handler.  */
       emit_label (entry->exception_handler_label);
+
+#ifdef HAVE_exception_receiver
+      if (! exceptions_via_longjmp)
+	if (HAVE_exception_receiver)
+	  emit_insn (gen_exception_receiver ());
+#endif
 
 #ifdef HAVE_nonlocal_goto_receiver
       if (! exceptions_via_longjmp)
