@@ -1,3 +1,8 @@
+Sat Oct 17 01:17:51 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (reload_as_needed): Fix test for when to call
+	update_eliminable_offsets.
+
 Fri Oct 16 20:40:50 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	Fix consistency problems with reg_equiv_{mem,address};
