@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 /*****************************************************************************/
 
 /* SPECIAL ADDITION FOR MIL-STD-1750A     by O.M.Kellogg, 15-Apr-1993 */
-/* See file aux-output.c for the actual data instances. */
+/* See file aux-output.c for the actual data instances.  */
 struct datalabel_array {
     char *name;
     char value[14];
@@ -77,7 +77,7 @@ extern const char *const sectname[4];
    Though 1750 actually counts bits in big-endian fashion, the sign bit
    is still the most significant bit, which is leftmost. Therefore leaving
    this little-endian. Adjust short before assembler output when needed:
-   e.g. in QImode, a GCC bit n is a 1750 bit (15-n). */
+   e.g. in QImode, a GCC bit n is a 1750 bit (15-n).  */
 #define BITS_BIG_ENDIAN 0 
 
 /* Define this if most significant byte of a word is the lowest numbered.  */
@@ -87,7 +87,7 @@ extern const char *const sectname[4];
 
 /* Define this if most significant word of a multiword value is lowest
    numbered.
-   True for 1750. */
+   True for 1750.  */
 #define WORDS_BIG_ENDIAN 1
 
 /* number of bits in an addressable storage unit */
@@ -108,7 +108,7 @@ extern const char *const sectname[4];
 
 #define PTRDIFF_TYPE        "int"
 
-/* Type to use for `size_t'. If undefined, uses `long unsigned int'. */
+/* Type to use for `size_t'. If undefined, uses `long unsigned int'.  */
 #define SIZE_TYPE           "int"
 
 /* 1750a preliminary
@@ -119,7 +119,7 @@ extern const char *const sectname[4];
 #define POINTER_BOUNDARY     16
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-/* 1750: should have had to make this 32 when BITS_PER_WORD is 32. */
+/* 1750: should have had to make this 32 when BITS_PER_WORD is 32.  */
 #define PARM_BOUNDARY        16
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
@@ -135,7 +135,7 @@ extern const char *const sectname[4];
 #define BIGGEST_ALIGNMENT    16
 
 /* Define this to 1 if move instructions will actually fail to work
-   when given unaligned data. */
+   when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
 
 /* Define number of bits in most basic integer type.
@@ -143,29 +143,29 @@ extern const char *const sectname[4];
    #define INT_TYPE_SIZE  16  */
 
 /* Define number of bits in short integer type.
-   (If undefined, default is half of BITS_PER_WORD). */
+   (If undefined, default is half of BITS_PER_WORD).  */
 #define SHORT_TYPE_SIZE 16
 
 /* Define number of bits in long integer type.
-   (If undefined, default is BITS_PER_WORD). */
+   (If undefined, default is BITS_PER_WORD).  */
 #define LONG_TYPE_SIZE  32
 
 /* Define number of bits in long long integer type.
-   (If undefined, default is twice BITS_PER_WORD). */
+   (If undefined, default is twice BITS_PER_WORD).  */
 /* 1750 PRELIMINARY : no processor support for `long long', therefore
         need to check out the long-long opencodings ! */
 #define LONG_LONG_TYPE_SIZE  64
 
 /* Define number of bits in char type.
-   (If undefined, default is one fourth of BITS_PER_WORD). */
+   (If undefined, default is one fourth of BITS_PER_WORD).  */
 #define CHAR_TYPE_SIZE  16
 
 /* Define number of bits in float type.
-   (If undefined, default is BITS_PER_WORD). */
+   (If undefined, default is BITS_PER_WORD).  */
 #define FLOAT_TYPE_SIZE  32
 
 /* Define number of bits in double type.
-   (If undefined, default is twice BITS_PER_WORD). */
+   (If undefined, default is twice BITS_PER_WORD).  */
 #define DOUBLE_TYPE_SIZE  48
 
 /*****************************************************************************/
@@ -176,12 +176,12 @@ extern const char *const sectname[4];
    The hardware registers are assigned numbers for the compiler
    from 0 to just below FIRST_PSEUDO_REGISTER.
    All registers that the compiler knows about must be given numbers,
-   even those that are not normally considered general registers. */
+   even those that are not normally considered general registers.  */
 #define FIRST_PSEUDO_REGISTER 16
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
-   R15 is the 1750A stack pointer. R14 is the frame pointer. */
+   R15 is the 1750A stack pointer. R14 is the frame pointer.  */
 
 #define FIXED_REGISTERS  \
  { 0, 0, 0, 0, 0, 0, 0, 0, \
@@ -214,17 +214,17 @@ extern const char *const sectname[4];
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
    but can be less for certain modes in special long registers.
-   All 1750 registers are one word long. */
+   All 1750 registers are one word long.  */
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE. */
+/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) 1
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output. */
+   for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)	1
 
 /* Specify the registers used for certain standard purposes.
@@ -242,7 +242,7 @@ extern const char *const sectname[4];
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
-   This is computed in `reload', in reload1.c. */
+   This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED 0
 
 /* Base register for access to arguments of the function.  */
@@ -253,7 +253,7 @@ extern const char *const sectname[4];
    #define ARGS_GROW_DOWNWARD
 */
 
-/* Register in which static-chain is passed to a function. */
+/* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 13
 
 /* Place in which caller passes the structure value address.
@@ -270,7 +270,7 @@ extern const char *const sectname[4];
    is passed to a function.  */
 #define STRUCT_VALUE_REGNUM 12
 
-/* Define this to be 1 if all structure return values must be in memory. */
+/* Define this to be 1 if all structure return values must be in memory.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /*****************************************************************************/
@@ -304,14 +304,14 @@ extern const char *const sectname[4];
    Here's an example to drive this point home: in "LBX B12,R5"
    B12 shall be called the "index" reg and R5 shall be the "base" reg.
    This naming inversion is due to the GCC defined capabilities of
-   "Base" vs. "Index" regs. */
+   "Base" vs. "Index" regs.  */
 
 enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Since GENERAL_REGS is the same class as ALL_REGS,
-   don't give it a different class number; just make it an alias. */
+   don't give it a different class number; just make it an alias.  */
 #define GENERAL_REGS ALL_REGS
 
 /* Give names of register classes as strings for dump file.   */
@@ -323,7 +323,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.
    1750 "index" (remember, in the *GCC* sense!) regs are R12 through R15. 
-   The only 1750 register not usable as BASE_REG is R0. */
+   The only 1750 register not usable as BASE_REG is R0.  */
 
 #define REG_CLASS_CONTENTS  { {0}, {0x0004}, {0x0003}, {0xf000}, {0xfffe}, {0xffff} }
 
@@ -334,14 +334,14 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 #define REGNO_REG_CLASS(REGNO) ((REGNO) == 2 ? R2 : (REGNO) == 0 ? R0_1 : \
   (REGNO) >= 12 ? INDEX_REGS : (REGNO) >  0 ? BASE_REGS : ALL_REGS)
 
-/* The class value for index registers, and the one for base regs. */
+/* The class value for index registers, and the one for base regs.  */
 
 #define BASE_REG_CLASS  BASE_REGS
 #define INDEX_REG_CLASS INDEX_REGS
 
 /* Get reg_class from a letter such as appears in the machine description.
    For the 1750, we have 'z' for R0_1, 't' for R2, 'b' for gcc Base regs 
-   and 'x' for gcc Index regs. */
+   and 'x' for gcc Index regs.  */
 
 #define REG_CLASS_FROM_LETTER(C) ((C) == 't' ? R2 : \
 				  (C) == 'z' ? R0_1 : \
@@ -361,7 +361,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    `L' is used for unsigned 8-bit address displacements in instructions
        of addressing mode "Base Relative",
    `M' is for IM mode instructions et al.,
-   `O' is a synonym for (const_int 0). */
+   `O' is a synonym for (const_int 0).  */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)				\
   ((C) == 'I' ? (VALUE) > 0 && (VALUE) <=  16 :			\
@@ -397,7 +397,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
    On the 1750A, this is the size of MODE in words,
-   since class doesn't make any difference. */
+   since class doesn't make any difference.  */
 #define CLASS_MAX_NREGS(CLASS,MODE)  GET_MODE_SIZE(MODE)
 
 /*****************************************************************************/
@@ -428,7 +428,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
    1750 note: what GCC calls a "byte" is really a 16-bit word,
-   because BITS_PER_UNIT is 16. */
+   because BITS_PER_UNIT is 16.  */
 
 #define PUSH_ROUNDING(BYTES) (BYTES)
 
@@ -467,19 +467,19 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
-   otherwise, FUNC is 0. */
+   otherwise, FUNC is 0.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
   gen_rtx_REG (TYPE_MODE (VALTYPE), 0)
 
 /* Define how to find the value returned by a library function
-   assuming the value has mode MODE. */
+   assuming the value has mode MODE.  */
 /* 1750 note: no libcalls yet */
 
 #define LIBCALL_VALUE(MODE)  printf("LIBCALL_VALUE called!\n"), \
   gen_rtx_REG (MODE, 0)
 
-/* 1 if N is a possible register number for a function value. */
+/* 1 if N is a possible register number for a function value.  */
 
 #define FUNCTION_VALUE_REGNO_P(N)  ((N) == 0)
 
@@ -492,7 +492,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    structure and union values. 
    #define PCC_STATIC_STRUCT_RETURN  */
 
-/* 1 if N is a possible register number for function argument passing. */
+/* 1 if N is a possible register number for function argument passing.  */
 
 #define FUNCTION_ARG_REGNO_P(N)  ((N) < 12)
 
@@ -546,7 +546,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    do not preserve any registers; in other words, if `CALL_USED_REGISTERS'
    has 1 for all registers. This macro enables `-fcaller-saves' by
    default. Eventually that option will be enabled by default on all
-   machines and both the option and this macro will be eliminated. */
+   machines and both the option and this macro will be eliminated.  */
 
 #define DEFAULT_CALLER_SAVES
 
@@ -624,7 +624,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 /* Addressing modes, and classification of registers for them.  */
 
-/* 1750 doesn't have a lot of auto-incr./decr. - just for the stack ptr. */
+/* 1750 doesn't have a lot of auto-incr./decr. - just for the stack ptr.  */
 
 /* #define HAVE_POST_INCREMENT 0 just for R15 (stack pointer) */
 /* #define HAVE_POST_DECREMENT 0 */
@@ -709,7 +709,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
    1750 note: Currently we don't implement address expressions that use
    GCC "Index"-class regs. To be expanded to handle the 1750 "Base with Index"
-   instructions (see also MAX_REGS_PER_ADDRESS and others). */
+   instructions (see also MAX_REGS_PER_ADDRESS and others).  */
 
 #define GO_IF_BASED_ADDRESS(X, ADDR) {					\
    if ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P(X)))			\
@@ -736,7 +736,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    GO_IF_LEGITIMATE_ADDRESS.
 
    It is always safe for this macro to do nothing.  It exists to recognize
-   opportunities to optimize the output. */
+   opportunities to optimize the output.  */
 
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)
 
@@ -744,7 +744,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    has an effect that depends on the machine mode it is used for.
    On the 68000, only predecrement and postincrement address depend thus
    (the amount of decrement or increment being the length of the operand).  */
-/* 1750: not used. */
+/* 1750: not used.  */
 
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
@@ -757,7 +757,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
-   Do not define this if the table should contain absolute addresses. */
+   Do not define this if the table should contain absolute addresses.  */
 /* #define CASE_VECTOR_PC_RELATIVE 1 */
 
 /* Specify the tree operation to be used to convert reals to integers.  */
@@ -785,7 +785,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension
-   of a shift count. */
+   of a shift count.  */
 /* #define SHIFT_COUNT_TRUNCATED 1 */
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
@@ -835,7 +835,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 /* Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').  */
-/* MIL-STD-1750: none -- just has the garden variety C,P,Z,N flags. */
+/* MIL-STD-1750: none -- just has the garden variety C,P,Z,N flags.  */
 
 /* Store in cc_status the expressions
    that the condition codes will describe
@@ -891,7 +891,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
             cum_size += datalbl[i].size;				\
 	 }								\
          fprintf(FILE,"\n\tinit\n");					\
-         fprintf(FILE,"\tlim\tr0,init_srel\n");           /* destin. */	\
+         fprintf(FILE,"\tlim\tr0,init_srel\n");           /* destin.  */	\
          fprintf(FILE,"\tlim\tr1,%d\n",cum_size);         /* count */	\
          fprintf(FILE,"\tlim\tr2,K%s\n",datalbl[0].name); /* source */	\
          fprintf(FILE,"\tmov\tr0,r2\n");				\
@@ -967,7 +967,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
  { "0", "1", "2", "3", "4", "5", "6", "7", \
    "8", "9","10","11","12","13","14","15" }
 
-/* How to renumber registers for dbx and gdb. */
+/* How to renumber registers for dbx and gdb.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
@@ -1021,7 +1021,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	   fprintf (FILE, "\tglobal  %s\t; export\n", NAME);	\
   } while (0)
 
-/* The prefix to add to user-visible assembler symbols. */
+/* The prefix to add to user-visible assembler symbols.  */
 
 #define USER_LABEL_PREFIX ""
 
@@ -1087,7 +1087,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
   } while(0)
 
 /* This is how to output an assembler line defining a 1750A `double'
-    constant. */
+    constant.  */
 
 #define ASM_OUTPUT_THREE_QUARTER_FLOAT(FILE,VALUE)		\
   do {								\
@@ -1174,7 +1174,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
 	fprintf (FILE, "\tPOPM R%s,R%s\n", reg_names[REGNO], "FIXME: missing arg")
 
-/* This is how to output an element of a case-vector that is absolute. */
+/* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)   \
 	fprintf (FILE, "\tdata\tL%d ;addr_vec_elt\n", VALUE)
