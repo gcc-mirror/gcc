@@ -325,6 +325,7 @@ tree_code_create_function_prototype (unsigned char* chars,
   tree type_node;
   tree fn_type;
   tree fn_decl;
+  tree parm_list = NULL_TREE;
 
   /* Build the type.  */
   id = get_identifier ((const char*)chars);
@@ -378,6 +379,37 @@ tree_code_create_function_prototype (unsigned char* chars,
       gcc_unreachable ();
     }
 
+  /* Make the argument variable decls.  */
+  for (parm = parms; parm; parm = parm->tp.par.next)
+    {
+      tree parm_decl = build_decl (PARM_DECL, get_identifier
+                                   ((const char*) (parm->tp.par.variable_name)),
+                                   tree_code_get_type (parm->type));
+
+      /* Some languages have different nominal and real types.  */
+      DECL_ARG_TYPE (parm_decl) = TREE_TYPE (parm_decl);
+      gcc_assert (DECL_ARG_TYPE (parm_decl));
+      gcc_assert (fn_decl);
+      DECL_CONTEXT (parm_decl) = fn_decl;
+      DECL_SOURCE_LOCATION (parm_decl) = loc;
+      parm_list = chainon (parm_decl, parm_list);
+    }
+
+  /* Back into reverse order as the back end likes them.  */
+  parm_list = nreverse (parm_list);
+
+  DECL_ARGUMENTS (fn_decl) = parm_list;
+
+  /* Save the decls for use when the args are referred to.  */
+  for (parm = parms; parm_list;
+       parm_list = TREE_CHAIN (parm_list),
+	parm = parm->tp.par.next)
+    {
+      gcc_assert (parm); /* Too few.  */
+      *parm->tp.par.where_to_put_var_tree = parm_list;
+    }
+  gcc_assert (!parm); /* Too many.  */
+
   /* Process declaration of function defined elsewhere.  */
   rest_of_decl_compilation (fn_decl, 1, 0);
 
@@ -386,21 +418,16 @@ tree_code_create_function_prototype (unsigned char* chars,
 
 
 /* Output code for start of function; the decl of the function is in
-    PREV_SAVED (as created by tree_code_create_function_prototype),
-    the function is at line number LINENO in file FILENAME.  The
-    parameter details are in the lists PARMS. Returns nothing.  */
+   PREV_SAVED (as created by tree_code_create_function_prototype),
+   the function is at line number LINENO in file FILENAME.  The
+   parameter details are in the lists PARMS. Returns nothing.  */
+
 void
 tree_code_create_function_initial (tree prev_saved,
-				   location_t loc,
-				   struct prod_token_parm_item* parms)
+				   location_t loc)
 {
   tree fn_decl;
-  tree param_decl;
-  tree parm_decl;
-  tree parm_list;
   tree resultdecl;
-  struct prod_token_parm_item* this_parm;
-  struct prod_token_parm_item* parm;
 
   fn_decl = prev_saved;
   gcc_assert (fn_decl);
@@ -425,40 +452,6 @@ tree_code_create_function_initial (tree prev_saved,
   DECL_IGNORED_P (resultdecl) = 1;
   DECL_SOURCE_LOCATION (resultdecl) = loc;
   DECL_RESULT (fn_decl) = resultdecl;
-
-  /* Make the argument variable decls.  */
-  parm_list = NULL_TREE;
-  for (parm = parms; parm; parm = parm->tp.par.next)
-    {
-      parm_decl = build_decl (PARM_DECL, get_identifier
-                              ((const char*) (parm->tp.par.variable_name)),
-                              tree_code_get_type (parm->type));
-
-      /* Some languages have different nominal and real types.  */
-      DECL_ARG_TYPE (parm_decl) = TREE_TYPE (parm_decl);
-      gcc_assert (DECL_ARG_TYPE (parm_decl));
-      gcc_assert (fn_decl);
-      DECL_CONTEXT (parm_decl) = fn_decl;
-      DECL_SOURCE_LOCATION (parm_decl) = loc;
-      parm_list = chainon (parm_decl, parm_list);
-    }
-
-  /* Back into reverse order as the back end likes them.  */
-  parm_list = nreverse (parm_list);
-
-  DECL_ARGUMENTS (fn_decl) = parm_list;
-
-  /* Save the decls for use when the args are referred to.  */
-  for (param_decl = DECL_ARGUMENTS (fn_decl),
-         this_parm = parms;
-       param_decl;
-       param_decl = TREE_CHAIN (param_decl),
-         this_parm = this_parm->tp.par.next)
-    {
-      gcc_assert (this_parm); /* Too few.  */
-      *this_parm->tp.par.where_to_put_var_tree = param_decl;
-    }
-  gcc_assert (!this_parm); /* Too many.  */
 
   /* Create a new level at the start of the function.  */
 
@@ -721,7 +714,7 @@ tree_code_get_expression (unsigned int exp_type,
       break;
 
     case EXP_FUNCTION_INVOCATION:
-      gcc_assert (op1 && op2);
+      gcc_assert (op1);
       {
         tree fun_ptr;
         fun_ptr = fold (build1 (ADDR_EXPR,
