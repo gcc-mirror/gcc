@@ -1,3 +1,7 @@
+2001-05-26  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm-protos.h: Use GCC_C_PRAGMA_H in place of _C_PRAGMA_H.
+
 2001-05-25  Zack Weinberg  <zackw@stanford.edu>
 
 	* toplev.c (debug_args, f_options, W_options): Mark
