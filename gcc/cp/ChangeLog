@@ -1,3 +1,9 @@
+2002-02-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (grokdeclarator): Set typedef_decl for all TYPE_DECLs,
+	remove incorrect comment. Move #if 0'd code to common path. Use
+	IMPLICIT_TYPENAME_P. Simplify & reformat ARRAY_TYPE duplication.
+
 2002-02-13  Jason Merrill  <jason@redhat.com>
 
 	* decl.c (builtin_function): Set TREE_THIS_VOLATILE on return fns.
@@ -65,7 +71,7 @@
 
 	PR c++/109
 	* decl.c (grokdeclarator): Allow friend declarations from
-	dependant types.
+	dependent types.
 	* decl2.c (handle_class_head): Don't push into template parm contexts.
 	* pt.c (push_template_decl_real): Template parm contexts are never
 	being defined.

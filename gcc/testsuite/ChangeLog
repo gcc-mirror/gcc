@@ -1,3 +1,8 @@
+2002-02-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/abi/bitfield1.C: New test.
+	* g++.dg/abi/bitfield2.C: New test.
+
 2002-02-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/attr-nest.c: New test.
