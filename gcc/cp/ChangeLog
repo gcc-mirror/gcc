@@ -12,7 +12,7 @@
 	* pt.c (push_template_decl_real): Disallow member template
 	destructors.
 
-	PR c++/11036.C
+	PR c++/11036
 	* cp-tree.h (add_binding): Add prototype.
 	* class.c (add_method): Set TYPE_HAS_DESTRUCTOR if appropriate.
 	(maybe_warn_about_overly_private_class): Use
