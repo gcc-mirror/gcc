@@ -28,6 +28,9 @@ enum cmp_type				/* comparison type */
   CMP_MAX				/* max comparison type */
 };
 
+/* For long call handling.  */
+extern unsigned int total_code_bytes;
+
 /* Print subsidiary information on the compiler version in use.  */
 
 #define TARGET_VERSION fprintf (stderr, " (hppa)");
@@ -57,13 +60,18 @@ extern int target_flags;
 /* Allow unconditional jumps in the delay slots of call instructions.  */
 #define TARGET_JUMP_IN_DELAY (target_flags & 8)
 
-/* Force all function calls to indirect addressing via a register.  This
-   avoids lossage when the function is very far away from the current PC.
+/* In rare cases, a millicode call via "bl" can not be turned into
+   a millicode call using "ble" (when SHLIB_INFO subspace is very large).
+
+   This option forces just millicode calls to use inline long-calls
+   This is far more efficient than the old long-call option which forced
+   every function to be called indirectly (as is still the case for
+   TARGET_PORTABLE_RUNTIME).
 
    ??? What about simple jumps, they can suffer from the same problem.
    Would require significant surgery in pa.md.  */
 
-#define TARGET_LONG_CALLS (target_flags & 16)
+#define TARGET_MILLICODE_LONG_CALLS (target_flags & 16)
 
 /* Disable indexed addressing modes.  */
 
@@ -73,7 +81,8 @@ extern int target_flags;
    HP wants everyone to use for ELF objects.  If at all possible you want
    to avoid this since it's a performance loss for non-prototyped code.
 
-   Note TARGET_PORTABLE_RUNTIME also implies TARGET_LONG_CALLS.  */
+   Note TARGET_PORTABLE_RUNTIME also forces all calls to use inline
+   long-call stubs which is quite expensive.  */
 
 #define TARGET_PORTABLE_RUNTIME (target_flags & 64)
 
@@ -100,8 +109,8 @@ extern int target_flags;
    {"no-fast-indirect-calls", -4},\
    {"jump-in-delay", 8},	\
    {"no-jump-in-delay", -8},	\
-   {"long-calls", 16},		\
-   {"no-long-calls", -16},	\
+   {"millicode-long-calls", 16},\
+   {"no-millicode-long-calls", -16},\
    {"disable-indexing", 32},	\
    {"no-disable-indexing", -32},\
    {"portable-runtime", 64+16},\
@@ -832,9 +841,7 @@ struct hppa_args {int words, nargs_prototype; };
    The caller must make a distinction between calls to explicitly named
    functions and calls through pointers to functions -- the conventions
    are different!  Calls through pointers to functions only use general
-   registers for the first four argument words.  Note the indirect function
-   calling conventions are in effect during TARGET_LONG_CALLS, but 
-   current_call_is_indirect will not be set in such situations. 
+   registers for the first four argument words.
 
    Of course all this is different for the portable runtime model
    HP wants everyone to use for ELF.  Ugh.  Here's a quick description
@@ -869,12 +876,12 @@ struct hppa_args {int words, nargs_prototype; };
       || !FLOAT_MODE_P (MODE) || (CUM).nargs_prototype > 0)		\
       ? gen_rtx (REG, (MODE),						\
 		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-		  ? (((!(current_call_is_indirect || TARGET_LONG_CALLS)	\
+		  ? (((!current_call_is_indirect 			\
 		       || TARGET_PORTABLE_RUNTIME)			\
 		      && (MODE) == DFmode)				\
 		     ? ((CUM).words ? 38 : 34)				\
 		     : ((CUM).words ? 23 : 25))				\
-		  : (((!(current_call_is_indirect || TARGET_LONG_CALLS)	\
+		  : (((!current_call_is_indirect			\
 		       || TARGET_PORTABLE_RUNTIME)			\
 		      && (MODE) == SFmode)				\
 		     ? (32 + 2 * (CUM).words)				\
