@@ -263,7 +263,7 @@ in the following sections.
 -fkeep-static-consts  -fmove-all-movables @gol
 -fno-default-inline  -fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
--fno-inline  -fno-math-errno  -fno-peephole @gol
+-fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
 -funsafe-math-optimizations -fno-trapping-math @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -freduce-all-givs @gol
@@ -582,7 +582,8 @@ in the following sections.
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
 -fcall-saved-@var{reg}  -fcall-used-@var{reg} @gol
--fexceptions  -funwind-tables  -ffixed-@var{reg} @gol
+-ffixed-@var{reg} -fexceptions @gol
+-fnon-call-exceptions  -funwind-tables @gol
 -finhibit-size-directive  -finstrument-functions @gol
 -fcheck-memory-usage  -fprefix-function-name @gol
 -fno-common  -fno-ident  -fno-gnu-linker @gol
@@ -3587,8 +3588,13 @@ We're very interested in code that runs @emph{slower}
 when these options are @emph{enabled}.
 
 @item -fno-peephole
+@itemx -fno-peephole2
 @opindex fno-peephole
-Disable any machine-specific peephole optimizations.
+@opindex fno-peephole2
+Disable any machine-specific peephole optimizations.  The difference
+between @samp{-fno-peephole} and @samp{-fno-peephole2} is in how they
+are implemented in the compiler; some targets use one, some use the
+other, a few use both.
 
 @item -fbranch-probabilities
 @opindex fbranch-probabilities
@@ -8914,6 +8920,15 @@ to enable this option when compiling C code that needs to interoperate
 properly with exception handlers written in C++.  You may also wish to
 disable this option if you are compiling older C++ programs that don't
 use exception handling.
+
+@item -fnon-call-exceptions
+@opindex fnon-call-exceptions
+Generate code that allows trapping instructions to throw exceptions.
+Note that this requires platform-specific runtime support that does
+not exist everywhere.  Moreover, it only allows @emph{trapping}
+instructions to throw exceptions, i.e. memory references or floating
+point instructions.  It does not allow exceptions to be thrown from
+arbitrary signal handlers such as @code{SIGALRM}.
 
 @item -funwind-tables
 @opindex funwind-tables
