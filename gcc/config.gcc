@@ -705,6 +705,10 @@ arm-*-pe*)
 	tmake_file=arm/t-pe
 	extra_objs="pe.o"
 	;;
+arm*-*-kaos*)
+	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h kaos.h arm/kaos-arm.h"
+	tmake_file=arm/t-arm-elf
+	;;
 avr-*-*)
 	;;
 c4x-*-rtems* | tic4x-*-rtems*)
@@ -1202,6 +1206,10 @@ i[34567]86-*-interix*)
 	if test x$stabs = xyes ; then
 		tm_file="${tm_file} dbxcoff.h"
 	fi
+	;;
+i[34567]86-*-kaos*)
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h kaos.h i386/kaos-i386.h"
+	tmake_file="i386/t-i386elf t-svr4"
 	;;
 i960-*-coff*)
 	tm_file="${tm_file} dbxcoff.h i960/i960-coff.h libgloss.h"
@@ -1709,6 +1717,14 @@ powerpcle-*-eabi*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h rs6000/eabi.h"
 	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
 	;;
+powerpc-*-kaos*)
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h kaos.h rs6000/kaos-ppc.h"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+	;;
+powerpcle-*-kaos*)
+	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/sysv4le.h kaos.h rs6000/kaos-ppc.h"
+	tmake_file="rs6000/t-fprules rs6000/t-ppcgas rs6000/t-ppccomm"
+	;;
 rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix41.h rs6000/xcoff.h"
 	tmake_file="rs6000/t-fprules rs6000/t-newas"
@@ -1753,7 +1769,7 @@ s390x-*-linux*)
 	out_file=s390/s390.c
 	tmake_file="t-slibgcc-elf-ver t-linux s390/t-crtstuff s390/t-linux64"
 	;;
-sh-*-elf* | sh[2346l]*-*-elf*)
+sh-*-elf* | sh[2346l]*-*-elf* | sh*-*-kaos*)
 	tmake_file="sh/t-sh sh/t-elf"
 	case $machine in
 	shl* | sh64l*)
@@ -1777,6 +1793,7 @@ sh-*-elf* | sh[2346l]*-*-elf*)
 	esac
 	case $machine in
 	sh[234]*) tmake_file="${tmake_file} sh/t-monolib" ;;
+	sh*-*-kaos*) tm_file="${tm_file} kaos.h sh/kaos-sh.h" ;;
 	esac
 	;;
 sh-*-rtemself*)
@@ -2028,6 +2045,13 @@ strongarm-*-pe)
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
 	extra_objs=pe.o
+	;;
+strongarm-*-kaos*)
+	tm_file="arm/strongarm-elf.h dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h kaos.h arm/kaos-strongarm.h"
+	tmake_file=arm/t-strongarm-elf
+	out_file=arm/arm.c
+	md_file=arm/arm.md
+	extra_modes=arm/arm-modes.def
 	;;
 v850e-*-*)
 	target_cpu_default="TARGET_CPU_v850e"

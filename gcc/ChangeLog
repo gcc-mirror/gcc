@@ -1,3 +1,12 @@
+2003-06-11  Uwe Stieber  <uwe@kaos-group.de>
+
+	* config.gcc (arm*-*-kaos*, i[34567]86-*-kaos*, powerpc-*-kaos*,
+	powerpcle-*-kaos*, strongarm-*-kaos*): New targets.
+	(sh-*-elf*): Add sh*-*-kaos* support.
+	* config/kaos.h, config/arm/kaos-strongarm.h, config/arm/kaos-arm.h,
+	config/i386/kaos-i386.h, config/rs6000/kaos-ppc.h,
+	config/sh/kaos-sh.h: New files.
+
 2003-06-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gcse.c (fis_get_condition): Make it a global function.
