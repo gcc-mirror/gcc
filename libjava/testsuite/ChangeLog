@@ -1,3 +1,8 @@
+1999-06-25  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (test_libjava_from_javac): Prepend `$objdir/' to
+	class file names.
+
 1999-06-24  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (libjava_arguments): If `libtool' not found in
