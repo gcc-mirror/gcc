@@ -449,8 +449,8 @@ namespace std
               _Obj* volatile* __my_free_list =
                 _S_free_list + _S_freelist_index(__bytes_left);
 
-              ((_Obj*)_S_start_free) -> _M_free_list_link = *__my_free_list;
-              *__my_free_list = (_Obj*)_S_start_free;
+              ((_Obj*)(void*)_S_start_free) -> _M_free_list_link = *__my_free_list;
+              *__my_free_list = (_Obj*)(void*)_S_start_free;
             }
           _S_start_free = (char*) __new_alloc::allocate(__bytes_to_get);
           if (_S_start_free == 0)
@@ -508,12 +508,12 @@ namespace std
       __my_free_list = _S_free_list + _S_freelist_index(__n);
 
       // Build free list in chunk.
-      __result = (_Obj*)__chunk;
-      *__my_free_list = __next_obj = (_Obj*)(__chunk + __n);
+      __result = (_Obj*)(void*)__chunk;
+      *__my_free_list = __next_obj = (_Obj*)(void*)(__chunk + __n);
       for (__i = 1; ; __i++)
         {
 	  __current_obj = __next_obj;
-          __next_obj = (_Obj*)((char*)__next_obj + __n);
+          __next_obj = (_Obj*)(void*)((char*)__next_obj + __n);
 	  if (__nobjs - 1 == __i)
 	    {
 	      __current_obj -> _M_free_list_link = 0;
