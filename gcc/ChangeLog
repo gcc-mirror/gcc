@@ -1,5 +1,10 @@
 2002-01-05  Richard Henderson  <rth@redhat.com>
 
+	* cfgcleanup.c (try_forward_edges): Detect infinite loops while
+	jump threading.
+
+2002-01-05  Richard Henderson  <rth@redhat.com>
+
 	* c-decl.c (c_expand_body): Don't call outlining_inline_function.
 	* integrate.c (output_inline_function): Likewise.
 	* toplev.c (rest_of_compilation): Do it here instead.  Move call

@@ -412,12 +412,32 @@ try_forward_edges (mode, b)
 	      edge t = thread_jump (mode, e, target);
 	      if (t)
 		{
-		  new_target = t->dest;
-		  new_target_threaded = true;
 		  if (!nthreaded_edges)
 		    threaded_edges = xmalloc (sizeof (*threaded_edges)
 					      * n_basic_blocks);
+		  else
+		    {
+		      int i;
+
+		      /* Detect an infinite loop across blocks not
+			 including the start block.  */
+		      for (i = 0; i < nthreaded_edges; ++i)
+			if (threaded_edges[i] == t)
+			  break;
+		      if (i < nthreaded_edges)
+			break;
+		    }
+
+		  /* Detect an infinite loop across the start block.  */
+		  if (t->dest == b)
+		    break;
+
+		  if (nthreaded_edges >= n_basic_blocks)
+		    abort ();
 		  threaded_edges[nthreaded_edges++] = t;
+
+		  new_target = t->dest;
+		  new_target_threaded = true;
 		}
 	    }
 
@@ -504,7 +524,11 @@ try_forward_edges (mode, b)
 	      first->succ->count -= edge_count;
 	      first->frequency -= edge_frequency;
 	      if (first->succ->succ_next)
-		t = threaded_edges [n++];
+		{
+		  if (n >= nthreaded_edges)
+		    abort ();
+		  t = threaded_edges [n++];
+		}
 	      else
 		t = first->succ;
 
