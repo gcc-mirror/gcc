@@ -2707,13 +2707,14 @@ read_complex_part (rtx cplx, bool imag_p)
 			    true, NULL_RTX, imode, imode);
 }
 
-/* A subroutine of emit_move_via_alt_mode.  Yet another lowpart generator.
+/* A subroutine of emit_move_insn_1.  Yet another lowpart generator.
    NEW_MODE and OLD_MODE are the same size.  Return NULL if X cannot be
-   represented in NEW_MODE.  */
+   represented in NEW_MODE.  If FORCE is true, this will never happen, as
+   we'll force-create a SUBREG if needed.  */
 
 static rtx
 emit_move_change_mode (enum machine_mode new_mode,
-		       enum machine_mode old_mode, rtx x)
+		       enum machine_mode old_mode, rtx x, bool force)
 {
   rtx ret;
 
@@ -2735,28 +2736,15 @@ emit_move_change_mode (enum machine_mode new_mode,
 	 that the new mode is ok for a hard register.  If we were to use
 	 simplify_gen_subreg, we would create the subreg, but would
 	 probably run into the target not being able to implement it.  */
-      ret = simplify_subreg (new_mode, x, old_mode, 0);
+      /* Except, of course, when FORCE is true, when this is exactly what
+	 we want.  Which is needed for CCmodes on some targets.  */
+      if (force)
+	ret = simplify_gen_subreg (new_mode, x, old_mode, 0);
+      else
+	ret = simplify_subreg (new_mode, x, old_mode, 0);
     }
 
   return ret;
-}
-
-/* A subroutine of emit_move_insn_1.  Generate a move from Y into X using
-   ALT_MODE instead of the operand's natural mode, MODE.  CODE is the insn
-   code for the move in ALT_MODE, and is known to be valid.  Returns the
-   instruction emitted, or NULL if X or Y cannot be represented in ALT_MODE.  */
-
-static rtx
-emit_move_via_alt_mode (enum machine_mode alt_mode, enum machine_mode mode,
-			enum insn_code code, rtx x, rtx y)
-{
-  x = emit_move_change_mode (alt_mode, mode, x);
-  if (x == NULL_RTX)
-    return NULL_RTX;
-  y = emit_move_change_mode (alt_mode, mode, y);
-  if (y == NULL_RTX)
-    return NULL_RTX;
-  return emit_insn (GEN_FCN (code) (x, y));
 }
 
 /* A subroutine of emit_move_insn_1.  Generate a move from Y into X using
@@ -2779,7 +2767,13 @@ emit_move_via_integer (enum machine_mode mode, rtx x, rtx y)
   if (code == CODE_FOR_nothing)
     return NULL_RTX;
 
-  return emit_move_via_alt_mode (imode, mode, code, x, y);
+  x = emit_move_change_mode (imode, mode, x, false);
+  if (x == NULL_RTX)
+    return NULL_RTX;
+  y = emit_move_change_mode (imode, mode, y, false);
+  if (y == NULL_RTX)
+    return NULL_RTX;
+  return emit_insn (GEN_FCN (code) (x, y));
 }
 
 /* A subroutine of emit_move_insn_1.  X is a push_operand in MODE.
@@ -2943,7 +2937,11 @@ emit_move_ccmode (enum machine_mode mode, rtx x, rtx y)
     {
       enum insn_code code = mov_optab->handlers[CCmode].insn_code;
       if (code != CODE_FOR_nothing)
-	return emit_move_via_alt_mode (CCmode, mode, code, x, y);
+	{
+	  x = emit_move_change_mode (CCmode, mode, x, true);
+	  y = emit_move_change_mode (CCmode, mode, y, true);
+	  return emit_insn (GEN_FCN (code) (x, y));
+	}
     }
 
   /* Otherwise, find the MODE_INT mode of the same width.  */

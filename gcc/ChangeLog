@@ -1,5 +1,14 @@
 2005-01-19  Richard Henderson  <rth@redhat.com>
 
+	PR middle-end/19304
+	* expr.c (emit_move_change_mode): New argument force; use
+	simplify_gen_subreg if true.
+	(emit_move_via_alt_mode): Merge into ...
+	(emit_move_via_integer): ... here.
+	(emit_move_ccmode): Use emit_move_change_mode directly.
+
+2005-01-19  Richard Henderson  <rth@redhat.com>
+
 	PR target/19518
 	* config/alpha/alpha.c (alpha_rtx_costs): Handle HIGH.
 	(alpha_preferred_reload_class): Handle CONST_VECTOR.
