@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
 # Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -266,7 +266,7 @@ DIST_COMMON =  Makefile.am Makefile.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 SOURCES = $(libstdc___la_SOURCES)
 OBJECTS = $(libstdc___la_OBJECTS)
@@ -378,7 +378,7 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
 	  awk '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
 	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
-	  || (cd $(srcdir) && etags -o $$here/TAGS $(ETAGS_ARGS) $$tags  $$unique $(LISP))
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
 
 mostlyclean-tags:
 
@@ -485,35 +485,35 @@ distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
 @GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@libstdc++-symbol.ver:  ${glibcpp_srcdir}/@SYMVER_MAP@
-@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@	@LN_S@  $< ./libstdc++-symbol.ver || true
+@GLIBCPP_BUILD_VERSIONED_SHLIB_TRUE@	@LN_S@  ${glibcpp_srcdir}/@SYMVER_MAP@ ./libstdc++-symbol.ver || true
 @GLIBCPP_BUILD_VERSIONED_SHLIB_FALSE@libstdc++-symbol.ver:
 
 codecvt_members.cc: ${glibcpp_srcdir}/@CCODECVT_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCODECVT_CC@ . || true
 
 collate_members.cc: ${glibcpp_srcdir}/@CCOLLATE_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCOLLATE_CC@ . || true
 
 ctype_members.cc: ${glibcpp_srcdir}/@CCTYPE_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CCTYPE_CC@ . || true
 
 messages_members.cc: ${glibcpp_srcdir}/@CMESSAGES_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CMESSAGES_CC@ . || true
 
 monetary_members.cc: ${glibcpp_srcdir}/@CMONEY_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CMONEY_CC@ . || true
 
 numeric_members.cc: ${glibcpp_srcdir}/@CNUMERIC_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CNUMERIC_CC@ . || true
 
 time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
-	@LN_S@ $< . || true
+	@LN_S@ ${glibcpp_srcdir}/@CTIME_CC@ . || true
 
 c++locale.cc: ${glibcpp_srcdir}/@CLOCALE_CC@
-	@LN_S@ $< ./$@ || true
+	@LN_S@ ${glibcpp_srcdir}/@CLOCALE_CC@ ./$@ || true
 
 basic_file.cc: ${glibcpp_srcdir}/@BASIC_FILE_CC@
-	@LN_S@ $< ./$@ || true
+	@LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_CC@ ./$@ || true
 strstream.lo: strstream.cc
 	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -Wno-deprecated -c $<
 strstream.o: strstream.cc
