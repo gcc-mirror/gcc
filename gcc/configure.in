@@ -363,7 +363,7 @@ for machine in $build $host $target; do
 		fi
 		use_collect2=yes
 		case $machine in
-		  *-*-osf1.2)
+		  *-*-osf1*)
 		    tm_file="${tm_file} alpha/osf.h alpha/osf12.h alpha/osf2or3.h"
 		    ;;
 		  *-*-osf[[23]]*)
@@ -374,9 +374,6 @@ for machine in $build $host $target; do
 		    # Some versions of OSF4 (specifically X4.0-9 296.7) have
 		    # a broken tar, so we use cpio instead.
 		    install_headers_dir=install-headers-cpio
-		    ;;
-		  *-*-osf*)
-		    tm_file="${tm_file} alpha/osf.h"
 		    ;;
 		esac
 		case $machine in
