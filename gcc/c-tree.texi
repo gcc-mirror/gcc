@@ -1361,8 +1361,6 @@ This predicate holds if the function an overloaded
 @findex SCOPE_BEGIN_P
 @findex SCOPE_END_P
 @findex SCOPE_NULLIFIED_P
-@tindex START_CATCH_STMT
-@findex START_CATCH_TYPE
 @tindex SUBOBJECT
 @findex SUBOBJECT_CLEANUP
 @tindex SWITCH_STMT
@@ -1586,6 +1584,15 @@ goto'' extension has been used, the @code{GOTO_DESTINATION} will be an
 arbitrary expression indicating the destination.  This expression will
 always have pointer type.
 
+@item HANDLER
+
+Used to represent a C++ @code{catch} block.  The @code{HANDLER_TYPE}
+is the type of exception that will be caught by this handler; it is
+equal (by pointer equality) to @code{CATCH_ALL_TYPE} if this handler
+is for all types.  @code{HANDLER_PARMS} is the @code{DECL_STMT} for
+the catch parameter, and @code{HANDLER_BODY} is the
+@code{COMPOUND_STMT} for the block itself.
+
 @item IF_STMT
 
 Used to represent an @code{if} statement.  The @code{IF_COND} is the
@@ -1650,13 +1657,6 @@ occurring in the scope must be run, in reverse order to the order in
 which they were encountered.  If @code{SCOPE_NULLIFIED_P} or
 @code{SCOPE_NO_CLEANUPS_P} holds of the scope, back-ends should behave
 as if the @code{SCOPE_STMT} were not present at all.
-
-@item START_CATCH_STMT
-
-These statements represent the location to which control is transferred
-when an exception is thrown.  The @code{START_CATCH_TYPE} is the type of
-exception that will be caught by this handler; it is equal (by pointer
-equality) to @code{CATCH_ALL_TYPE} if this handler is for all types.
 
 @item SUBOBJECT
 
