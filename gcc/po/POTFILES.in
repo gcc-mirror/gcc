@@ -51,6 +51,7 @@
 
 acconfig.h
 alias.c
+attribs.c
 basic-block.h
 bb-reorder.c
 bitmap.c
@@ -76,6 +77,12 @@ c-tree.h
 c-typeck.c
 caller-save.c
 calls.c
+cfg.c
+cfganal.c
+cfgbuild.c
+cfgcleanup.c
+cfgloop.c
+cfgrtl.c
 ch/actions.c
 ch/actions.h
 ch/ch-tree.h
@@ -120,6 +127,7 @@ config/alpha/alpha-protos.h
 config/alpha/alpha.c
 config/alpha/alpha.h
 config/alpha/alpha32.h
+#config/alpha/crtfastmath.c is part of the GCC library
 config/alpha/elf.h
 config/alpha/freebsd.h
 config/alpha/linux-ecoff.h
@@ -132,6 +140,7 @@ config/alpha/osf.h
 config/alpha/osf12.h
 config/alpha/osf2or3.h
 config/alpha/osf5.h
+config/alpha/unicosmk.h
 config/alpha/va_list.h
 config/alpha/vms.h
 config/alpha/vxworks.h
@@ -190,6 +199,7 @@ config/convex/convex.h
 config/d30v/d30v-protos.h
 config/d30v/d30v.c
 config/d30v/d30v.h
+config/darwin-c.c
 config/darwin-protos.h
 config/darwin.c
 config/darwin.h
@@ -226,6 +236,8 @@ config/freebsd5.h
 config/freebsd6.h
 config/gnu.h
 config/gofast.h
+config/h8300/elf.h
+#config/h8300/fixunssfsi.c is part of the GCC library
 config/h8300/h8300-protos.h
 config/h8300/h8300.c
 config/h8300/h8300.h
@@ -274,6 +286,7 @@ config/i386/lynx.h
 config/i386/mach.h
 config/i386/mingw32.h
 config/i386/moss.h
+config/i386/netbsd-elf.h
 config/i386/netbsd.h
 config/i386/netware.h
 config/i386/next.h
@@ -331,17 +344,22 @@ config/i960/i960.h
 config/i960/rtems.h
 config/i960/vx960-coff.h
 config/i960/vx960.h
+config/ia64/aix.h
+#config/ia64/crtfastmath.c is part of the GCC library
 config/ia64/elf.h
 config/ia64/fde-glibc.c
 config/ia64/hpux.h
+config/ia64/hpux_longdouble.h
 config/ia64/ia64-protos.h
 config/ia64/ia64.c
 config/ia64/ia64.h
 config/ia64/ia64intrin.h
 config/ia64/linux.h
+#config/ia64/quadlib.c is part of the GCC library
 config/ia64/sysv4.h
-config/ia64/unwind-ia64.c
-config/ia64/unwind-ia64.h
+#config/ia64/unwind-aix.c is part of the GCC library
+#config/ia64/unwind-ia64.c is part of the GCC library
+#config/ia64/unwind-ia64.h is part of the GCC library
 config/interix.h
 config/libgloss.h
 config/linux-aout.h
@@ -469,7 +487,11 @@ config/mips/iris5.h
 config/mips/iris5gas.h
 config/mips/iris6.h
 config/mips/iris6gld.h
+#config/mips/irix6-libc-compat.c is part of the GCC library
+config/mips/isa32-linux.h
+config/mips/isa3264.h
 config/mips/linux.h
+config/mips/little.h
 config/mips/mips-5.h
 config/mips/mips-protos.h
 config/mips/mips.c
@@ -570,8 +592,10 @@ config/rs6000/eabi.h
 config/rs6000/eabiaix.h
 config/rs6000/eabisim.h
 config/rs6000/linux.h
+config/rs6000/linux64.h
 config/rs6000/lynx.h
 config/rs6000/mach.h
+config/rs6000/netbsd.h
 config/rs6000/rs6000-protos.h
 config/rs6000/rs6000.c
 config/rs6000/rs6000.h
@@ -581,8 +605,15 @@ config/rs6000/sol2.h
 config/rs6000/sysv4.h
 config/rs6000/sysv4le.h
 config/rs6000/vxppc.h
+config/rs6000/xcoff.h
 config/rs6000/xm-beos.h
 config/rtems.h
+#config/s390/fixdfdi.h is part of the GCC library
+config/s390/linux.h
+config/s390/linux64.h
+config/s390/s390-protos.h
+config/s390/s390.c
+config/s390/s390.h
 config/sh/elf.h
 config/sh/linux.h
 config/sh/rtems.h
@@ -627,6 +658,10 @@ config/sparc/sysv4.h
 config/sparc/vxsim.h
 config/sparc/vxsparc.h
 config/sparc/vxsparc64.h
+#config/stormy16/stormy16-lib2.c is part of the GCC library
+config/stormy16/stormy16-protos.h
+config/stormy16/stormy16.c
+config/stormy16/stormy16.h
 config/svr3.h
 config/svr4.h
 config/tm-dwarf2.h
@@ -710,6 +745,8 @@ cselib.h
 dbxout.c
 dbxout.h
 dbxstclass.h
+debug.c
+debug.h
 defaults.h
 dependence.c
 df.c
@@ -840,6 +877,7 @@ gcse.c
 #genattrtab.c is used only by GCC maintainers and installers
 #gencheck.c is used only by GCC maintainers and installers
 #gencodes.c is used only by GCC maintainers and installers
+#genconstants.c is used only by GCC maintainers and installers
 #genconfig.c is used only by GCC maintainers and installers
 #genemit.c is used only by GCC maintainers and installers
 #genextract.c is used only by GCC maintainers and installers
@@ -848,6 +886,7 @@ gcse.c
 #genopinit.c is used only by GCC maintainers and installers
 #genoutput.c is used only by GCC maintainers and installers
 #genpeep.c is used only by GCC maintainers and installers
+#genpreds.c is used only by GCC maintainers and installers
 #genrecog.c is used only by GCC maintainers and installers
 #gensupport.c is used only by GCC maintainers and installers
 #gensupport.h is used only by GCC maintainers and installers
@@ -935,11 +974,13 @@ java/zextract.c
 java/zipfile.h
 jump.c
 lcm.c
+libfuncs.h
 #libgcc2.c is part of the GCC library
 #libgcc2.h is part of the GCC library
 #limitx.h is part of the GCC library
 #limity.h is part of the GCC library
 line-map.c
+line-map.h
 lists.c
 local-alloc.c
 #longlong.h is part of the GCC library
@@ -959,6 +1000,7 @@ objc/objc-act.c
 objc/objc-act.h
 objc/objc-parse.y
 optabs.c
+optabs.h
 output.h
 params.c
 params.h
@@ -970,6 +1012,7 @@ print-rtl.c
 print-tree.c
 profile.c
 protoize.c
+#read-rtl.c is used only by GCC maintainers and installers
 real.c
 real.h
 recog.c
@@ -985,6 +1028,7 @@ reload1.c
 reorg.c
 resource.c
 resource.h
+rtl-error.c
 rtl.c
 rtl.h
 rtlanal.c
@@ -1002,10 +1046,10 @@ sdbout.c
 sdbout.h
 sibcall.c
 simplify-rtx.c
-ssa.c
-ssa.h
 ssa-ccp.c
 ssa-dce.c
+ssa.c
+ssa.h
 stack.h
 stmt.c
 stor-layout.c
@@ -1013,6 +1057,8 @@ stringpool.c
 sys-protos.h
 sys-types.h
 system.h
+target-def.h
+target.h
 timevar.c
 timevar.h
 tlink.c

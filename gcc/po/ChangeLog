@@ -1,3 +1,7 @@
+2001-09-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* POTFILES.in: Add all missing files.
+
 2001-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* POTFILES.in: Remove cp/errfn.c.
