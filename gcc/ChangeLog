@@ -1,3 +1,8 @@
+Thu May  7 19:26:34 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* i386.md (movsicc, movhicc, movsicc_1, movhicc_1, movsfcc_1,
+	movdfcc_1): Disable.
+
 Thu May  7 15:39:14 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (enable_threads): Rename to enable_threads_flag before
