@@ -1680,6 +1680,36 @@
   ""
   "jmp	@%0%#"
   [(set_attr "needs_delay_slot" "yes")])
+
+;; Call subroutine returning any type.
+;; ??? This probably doesn't work.
+
+(define_expand "untyped_call"
+  [(parallel [(call (match_operand 0 "" "")
+		    (const_int 0))
+	      (match_operand 1 "" "")
+	      (match_operand 2 "" "")])]
+  "TARGET_SH3E"
+  "
+{
+  int i;
+
+  emit_call_insn (gen_call (operands[0], const0_rtx, const0_rtx, const0_rtx));
+
+  for (i = 0; i < XVECLEN (operands[2], 0); i++)
+    {
+      rtx set = XVECEXP (operands[2], 0, i);
+      emit_move_insn (SET_DEST (set), SET_SRC (set));
+    }
+
+  /* The optimizer does not know that the call sets the function value
+     registers we stored in the result block.  We avoid problems by
+     claiming that all hard registers are used and clobbered at this
+     point.  */
+  emit_insn (gen_blockage ());
+
+  DONE;
+}")
 
 ;; ------------------------------------------------------------------------
 ;; Misc insns
