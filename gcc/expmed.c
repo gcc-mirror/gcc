@@ -2597,7 +2597,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	{
 	  /* No luck there.  Try a quotient-and-remainder insn,
 	     keeping the quotient alone.  */
-	  result = gen_reg_rtx (mode);
+	  result = gen_reg_rtx (compute_mode);
 	  if (! expand_twoval_binop (unsignedp ? udivmod_optab : sdivmod_optab,
 				     adjusted_op0, op1,
 				     result, NULL_RTX, unsignedp))
