@@ -1,3 +1,10 @@
+Sat Sep  4 17:15:13 1999  Richard Henderson  <rth@cygnus.com>
+
+	* sparc.h (EXPAND_BUILTIN_VA_START): Define.
+	(EXPAND_BUILTIN_VA_ARG): Define.
+	* sparc.c (sparc_va_start): New.
+	(sparc_va_arg): New.
+
 Sun Sep  5 11:11:59 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.h (DBR_OUTPUT_SEQEND): Use XVECEXP not XEXPs.

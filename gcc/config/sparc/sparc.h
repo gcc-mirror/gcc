@@ -2046,6 +2046,14 @@ void sparc64_initialize_trampoline ();
 extern struct rtx_def *sparc_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS() sparc_builtin_saveregs ()
 
+/* Implement `va_start' for varargs and stdarg.  */
+#define EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
+  sparc_va_start (stdarg, valist, nextarg)
+
+/* Implement `va_arg'.  */
+#define EXPAND_BUILTIN_VA_ARG(valist, type) \
+  sparc_va_arg (valist, type)
+
 /* Define this macro if the location where a function argument is passed
    depends on whether or not it is a named argument.
 
