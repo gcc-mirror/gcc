@@ -1,3 +1,14 @@
+2004-06-03 Mark G. Adams  <mark.g.adams@sympatico.ca>
+
+	* tree.h: Remove include of version.h
+	* c-cppbuiltin.c: Include version.h
+	* diagnostic.c: Include version.h
+	* dwarf2out.c: Include version.h
+	* toplev.c: Include version.h
+	* vmsdbgout.c: Include version.h
+	* Makefile.in: Remove dependency on version.h from TREE_H, and
+	add dependencies to required .o targets
+
 2004-06-03  Jerry Quinn  <jlquinn@optonline.net>
 
 	* Makefile.in (RA_H, RESOURCE_H, SCHED_INT_H, CFGLAYOUT_H,

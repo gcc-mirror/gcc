@@ -23,7 +23,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_TREE_H
 
 #include "machmode.h"
-#include "version.h"
 #include "input.h"
 #include "statistics.h"
 
