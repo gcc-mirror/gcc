@@ -1578,8 +1578,8 @@ struct lang_type
    which uses this must define what exactly this slot is used for.  */
 #define CLASSTYPE_SEARCH_SLOT(NODE) (TYPE_LANG_SPECIFIC(NODE)->search_slot)
 
-/* These are the size, mode and alignment of the type without its
-   virtual base classes, for when we use this type as a base itself.  */
+/* These are the size and alignment of the type without its virtual
+   base classes, for when we use this type as a base itself.  */
 #define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
 #define CLASSTYPE_SIZE_UNIT(NODE) (TYPE_LANG_SPECIFIC(NODE)->size_unit)
 #define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
