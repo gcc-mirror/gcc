@@ -752,14 +752,14 @@
 ;; 65 is the multiply/divide lo register
 
 (define_insn "divmodsi4"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "=d")
-		   (div:SI (match_operand:SI 1 "register_operand" "d")
-			   (match_operand:SI 2 "register_operand" "d")))
-	      (set (match_operand:SI 3 "register_operand" "=d")
-		   (mod:SI (match_dup 1)
-			   (match_dup 2)))
-	      (clobber (reg:SI 64))
-	      (clobber (reg:SI 65))])]
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(div:SI (match_operand:SI 1 "register_operand" "d")
+		(match_operand:SI 2 "register_operand" "d")))
+   (set (match_operand:SI 3 "register_operand" "=d")
+	(mod:SI (match_dup 1)
+		(match_dup 2)))
+   (clobber (reg:SI 64))
+   (clobber (reg:SI 65))]
   "optimize && !TARGET_DEBUG_C_MODE"
   "*
 {
@@ -776,14 +776,14 @@
    (set_attr "length"	"13")])		;; various tests for dividing by 0 and such
 
 (define_insn "udivmodsi4"
-  [(parallel [(set (match_operand:SI 0 "register_operand" "=d")
-		   (udiv:SI (match_operand:SI 1 "register_operand" "d")
-			    (match_operand:SI 2 "register_operand" "d")))
-	      (set (match_operand:SI 3 "register_operand" "=d")
-		   (umod:SI (match_dup 1)
-			    (match_dup 2)))
-	      (clobber (reg:SI 64))
-	      (clobber (reg:SI 65))])]
+  [(set (match_operand:SI 0 "register_operand" "=d")
+	(udiv:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))
+   (set (match_operand:SI 3 "register_operand" "=d")
+	(umod:SI (match_dup 1)
+		 (match_dup 2)))
+   (clobber (reg:SI 64))
+   (clobber (reg:SI 65))]
   "optimize && !TARGET_DEBUG_C_MODE"
   "*
 {
