@@ -110,6 +110,8 @@ T(Sdlf);
 T(Slfd);
 T(Sldf);
 
+DEBUG_FINI
+
 if (fails != 0)
   return;
 

@@ -204,6 +204,8 @@ T(13, Sis)
 T(14, Sis)
 T(15, Sis)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

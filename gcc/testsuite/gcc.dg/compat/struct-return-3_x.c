@@ -126,6 +126,8 @@ T(Ssic)
 T(Sisc)
 T(Sics)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

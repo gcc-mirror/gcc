@@ -165,6 +165,8 @@ T(cll)
 T(cd)
 T(cld)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

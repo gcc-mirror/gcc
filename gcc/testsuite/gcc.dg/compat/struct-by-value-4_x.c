@@ -236,6 +236,8 @@ T(13, Si)
 T(14, Si)
 T(15, Si)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

@@ -77,6 +77,8 @@ T(us)
 T(ss)
 T(f)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

@@ -1,3 +1,35 @@
+2003-07-03  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/compat/compat-common.h (DEBUG_FINI): New.
+	* gcc.dg/compat/scalar-by-value-1_x.c: Use it.
+	* gcc.dg/compat/scalar-by-value-2_x.c: Ditto.
+	* gcc.dg/compat/scalar-by-value-3_x.c: Ditto.
+	* gcc.dg/compat/scalar-by-value-4_x.c: Ditto.
+	* gcc.dg/compat/scalar-return-1_x.c: Ditto.
+	* gcc.dg/compat/scalar-return-2_x.c: Ditto.
+	* gcc.dg/compat/scalar-return-3_x.c: Ditto.
+	* gcc.dg/compat/scalar-return-4_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-10_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-11_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-12_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-13_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-14_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-15_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-16_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-17_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-18_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-2_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-3_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-4_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-5_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-6_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-7_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-8_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-9_x.c: Ditto.
+	* gcc.dg/compat/struct-return-10_x.c: Ditto.
+	* gcc.dg/compat/struct-return-2_x.c: Ditto.
+	* gcc.dg/compat/struct-return-3_x.c: Ditto.
+
 2003-07-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-call-1.c: New test.

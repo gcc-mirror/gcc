@@ -50,6 +50,8 @@ T(Sci14, _Complex int)
 T(Sci15, _Complex int)
 T(Sci16, _Complex int)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

@@ -50,6 +50,8 @@ T(Sld14, long double)
 T(Sld15, long double)
 T(Sld16, long double)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

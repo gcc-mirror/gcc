@@ -50,6 +50,8 @@ T(Scld14, _Complex long double)
 T(Scld15, _Complex long double)
 T(Scld16, _Complex long double)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 

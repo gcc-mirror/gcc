@@ -85,6 +85,8 @@ T(cc)
 T(cs)
 T(cf)
 
+DEBUG_FINI
+
 if (fails != 0)
   abort ();
 
