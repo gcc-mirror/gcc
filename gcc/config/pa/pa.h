@@ -332,15 +332,12 @@ extern int target_flags;
 /* Make sure everything's fine if we *don't* have a given processor.
    This assumes that putting a register in fixed_regs will keep the
    compiler's mitts completely off it.  We don't bother to zero it out
-   of register classes. 
-
-   Make register 27 global for now.  We'll undo this kludge after 2.1.  */
+   of register classes.   */
 
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
   int i;					\
   HARD_REG_SET x;				\
-  global_regs[27] = 1;				\
   if (!TARGET_SNAKE)				\
     {						\
       COPY_HARD_REG_SET (x, reg_class_contents[(int)SNAKE_FP_REGS]);\
