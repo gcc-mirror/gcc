@@ -1,3 +1,7 @@
+Wed Sep 10 15:19:22 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* config.sub: Accept 'amigados' for backward compatability.
+
 Wed Sep 10 14:05:08 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (testsuite/site.exp): New target.
