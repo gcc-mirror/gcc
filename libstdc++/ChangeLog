@@ -1,3 +1,9 @@
+Wed Sep  2 21:11:15 1998  H.J. Lu  (hjl@gnu.org)
+
+	* Makefile.in (RELINSTALLDIR): New. Use it to make symlinks.
+
+	* configure.in: Fix INSTALLDIR replacement for cross-compile.
+
 Sun Aug 30 22:17:41 1998  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (INTERFACE): New, set to 2.

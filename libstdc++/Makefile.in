@@ -285,21 +285,37 @@ install:
 	  INSTALLDIR=$(libsubdir); \
 	fi; \
 	INSTALLLINKDIR=$(libsubdir); \
+	if [ $${INSTALLLINKDIR}$(MULTISUBDIR) = $${INSTALLDIR} ]; \
+	then \
+	  RELINSTALLDIR=; \
+	elif [ x$(MULTISUBDIR) = x ]; then \
+	  RELINSTALLDIR=../../../; \
+	elif [ "x`echo $(MULTISUBDIR) | sed s,[a-z],,g`" = "x/" ]; then \
+	  RELINSTALLDIR=../../../../; \
+	else \
+	  RELINSTALLDIR=$${INSTALLDIR}/; \
+	fi; \
+	if [ $(build_alias) != $(target_alias) ]; then \
+	  case $$RELINSTALLDIR in \
+	  ../../../|../../../../) \
+	    RELINSTALLDIR=../$${RELINSTALLDIR}$(target_alias)/lib/;; \
+	  esac; \
+	fi; \
 	rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$(SHLINK) ; \
 	rm -f $${INSTALLLINKDIR}$(MULTISUBDIR)/$(ARLINK) ; \
 	for FILE in $(LIBS) ; do \
 	  rm -f $${INSTALLDIR}$(MULTISUBDIR)/$$FILE ; \
 	  if [ $$FILE = $(SHLINK) ] ; then \
 	    if [ -f $${INSTALLDIR}/$(MSHLINK) ]; then \
-	      ln -f -s $${INSTALLDIR}/$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -f -s $${RELINSTALLDIR}$(MSHLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    else \
-	      ln -f -s $${INSTALLDIR}/$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -f -s $${RELINSTALLDIR}$(SHLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    fi; \
 	  elif [ $$FILE = $(ARLINK) ] ; then \
 	    if [ -f $${INSTALLDIR}/$(MARLINK) ]; then \
-	      ln -f -s $${INSTALLDIR}/$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -f -s $${RELINSTALLDIR}$(MARLINK) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    else \
-	      ln -f -s $${INSTALLDIR}/$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
+	      ln -f -s $${RELINSTALLDIR}$(ARLIB) $${INSTALLLINKDIR}$(MULTISUBDIR)/$$FILE ; \
 	    fi; \
 	  elif [ $$FILE = mshlink ]; then \
 	    for FILE in $(MSHLINK) ; do \
