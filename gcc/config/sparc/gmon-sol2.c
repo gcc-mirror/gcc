@@ -88,13 +88,11 @@ static int	s_scale;
 
 #define	MSG "No space for profiling buffer(s)\n"
 
-static void moncontrol	PARAMS ((int));
-extern void monstartup	PARAMS ((char *, char *));
-extern void _mcleanup	PARAMS ((void));
+static void moncontrol (int);
+extern void monstartup (char *, char *);
+extern void _mcleanup (void);
 
-void monstartup(lowpc, highpc)
-    char	*lowpc;
-    char	*highpc;
+void monstartup(char *lowpc, char *highpc)
 {
     int			monsize;
     char		*buffer;
@@ -170,7 +168,7 @@ void monstartup(lowpc, highpc)
 }
 
 void
-_mcleanup()
+_mcleanup(void)
 {
     int			fd;
     int			fromindex;
@@ -269,7 +267,8 @@ _mcleanup()
  * -- [eichin:19920702.1107EST]
  */
 
-static void internal_mcount PARAMS ((char *, unsigned short *)) ATTRIBUTE_UNUSED;
+static void internal_mcount (char *, unsigned short *)
+     __attribute__ ((__unused__));
 
 /* i7 == last ret, -> frompcindex */
 /* o7 == current ret, -> selfpc */
@@ -278,9 +277,7 @@ asm(".global _mcount; _mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
 /* This is for compatibility with old versions of gcc which used mcount.  */
 asm(".global mcount; mcount: mov %i7,%o1; mov %o7,%o0;b,a internal_mcount");
 
-static void internal_mcount(selfpc, frompcindex)
-	register char			*selfpc;
-	register unsigned short		*frompcindex;
+static void internal_mcount(char *selfpc, unsigned short *frompcindex)
 {
 	register struct tostruct	*top;
 	register struct tostruct	*prevtop;
@@ -410,8 +407,7 @@ overflow:
  *	profiling is what mcount checks to see if
  *	all the data structures are ready.
  */
-static void moncontrol(mode)
-    int mode;
+static void moncontrol(int mode)
 {
     if (mode) {
 	/* start */
