@@ -5037,6 +5037,13 @@ override_options ()
   if (TARGET_BRANCHLIKELY && !ISA_HAS_BRANCHLIKELY)
     warning ("generation of Branch Likely instructions enabled, but not supported by architecture");
 
+  /* The effect of -mabicalls isn't defined for the EABI.  */
+  if (mips_abi == ABI_EABI && TARGET_ABICALLS)
+    {
+      error ("unsupported combination: %s", "-mabicalls -mabi=eabi");
+      target_flags &= ~MASK_ABICALLS;
+    }
+
   /* -fpic (-KPIC) is the default when TARGET_ABICALLS is defined.  We need
      to set flag_pic so that the LEGITIMATE_PIC_OPERAND_P macro will work.  */
   /* ??? -non_shared turns off pic code generation, but this is not
