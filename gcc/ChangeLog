@@ -1,3 +1,11 @@
+2000-03-21  Michael Meissner  <meissner@redhat.com>
+
+	* config/alpha/alpha.md (floating point insns): Add TARGET_FP to
+	all floating point insns that just tested the macro
+	TARGET_HAS_XFLOATING_LIBS.
+	(movsf/movdf recognizers): Add separate insns if -mno-fp-regs is
+	used to only use the gprs.
+
 2000-03-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.h (COMPLETE_TYPE_P): New macro.
