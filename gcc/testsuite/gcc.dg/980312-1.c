@@ -1,5 +1,5 @@
 /* { dg-do compile { target i?86-*-* } } */
-/* { dg-options "-O2 -mach=pentiumpro" } */
+/* { dg-options "-O2 -march=pentiumpro" } */
 
 extern __inline  double
 __expm1 (double __x)
