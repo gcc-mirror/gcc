@@ -1,3 +1,8 @@
+2005-01-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19667
+	* pt.c (redeclare_class_template): Robustify.
+
 2005-01-27  Steven Bosscher  <stevenb@suse.de>
 
 	* decl.c (finish_case_label): Use SWITCH_STMT accessor macros
