@@ -2162,7 +2162,7 @@ typedef __regmatch_t	regmatch_t;
 
   sed -e 's@ va_list @ __gnuc_va_list @' \
       -e 's@ va_list)@ __gnuc_va_list)@' \
-      -e 's@ _BSD_VA_LIST_));@ __gnuc_va_list));@' \
+      -e 's@ _BSD_VA_LIST_))@ __gnuc_va_list))@' \
       -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
       -e 's@ va_list@ __va_list__@' \
       -e 's@\*va_list@*__va_list__@' \
