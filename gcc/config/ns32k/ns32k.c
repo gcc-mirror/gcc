@@ -526,7 +526,7 @@ print_operand_address (file, addr)
 #ifdef INDEX_RATHER_THAN_BASE
   /* This is a re-implementation of the SEQUENT_ADDRESS_BUG fix.  */
   if (base && !indexexp && GET_CODE (base) == REG
-      && REG_OK_FOR_INDEX_P (base)
+      && REG_OK_FOR_INDEX_P (base))
     {
       indexexp = base;
       base = 0;
