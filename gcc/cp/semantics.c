@@ -425,7 +425,7 @@ finish_expr_stmt (tree expr)
 	  && ((TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE
 	       && lvalue_p (expr))
 	      || TREE_CODE (TREE_TYPE (expr)) == FUNCTION_TYPE))
-	expr = default_conversion (expr);
+	expr = decay_conversion (expr);
       
       /* Remember the type of the expression.  */
       expr_type = TREE_TYPE (expr);
@@ -748,7 +748,10 @@ finish_switch_cond (tree cond, tree switch_stmt)
       orig_type = TREE_TYPE (cond);
       if (cond != error_mark_node)
 	{
-	  cond = default_conversion (cond);
+	  /* [stmt.switch]
+
+	     Integral promotions are performed.  */
+	  cond = perform_integral_promotions (cond);
 	  cond = fold (build1 (CLEANUP_POINT_EXPR, TREE_TYPE (cond), cond));
 	}
 

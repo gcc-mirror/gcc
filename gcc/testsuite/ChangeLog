@@ -1,3 +1,11 @@
+2003-07-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.jason/typeid1.C: Make it a compile test, not a
+	run test.
+	
+	PR c++/11431
+	* g++.dg/expr/static_cast3.C: New test.
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.c-torture/execute/wchar_t-1.x: New file; XFAIL wchar_t-1.c

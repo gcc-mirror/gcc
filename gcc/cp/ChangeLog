@@ -1,3 +1,34 @@
+2003-07-05  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11431
+	* typeck.c (build_static_cast): Check for reference conversions
+	earlier.
+
+2003-07-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (perform_integral_promotions): Declare.
+	* call.c (build_addr_func): Use decay_conversion.
+	(convert_arg_to_ellipsis): Likewise.  Remove misleading comment.
+	(convert_for_arg_passing): Use perform_integral_promotions.
+	* cvt.c (build_expr_type_conversion): Use decay_conversion.
+	(type_promotes_to): Do not return a cv-qualified type.
+	* decl.c (grok_reference_init): Fix formatting.
+	(get_atexit_node): Use decay_conversion.
+	(build_enumerator): Use perform_integral_promotions.
+	* init.c (build_vec_init): Use decay_conversion.
+	* semantics.c (finish_expr_stmt): Likewise.
+	(finish_switch_cond): Use perform_integral_promotions.
+	* typeck.c (default_conversion): Likewise.
+	(perform_integral_promotions): New function.
+	(build_indirect_ref): Use decay_conversion.
+	(build_array_ref): Use perform_integral_promotions.
+	(convert_arguments): Use decay_conversion.
+	(build_unary_op): Use perform_integral_promotions.
+	(build_c_cast): Use decay_conversion.
+	(build_modify_expr): Likewise.
+	(convert_for_initialization): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+
 2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c: Fix comment typos.

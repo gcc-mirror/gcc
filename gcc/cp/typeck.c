@@ -1483,11 +1483,11 @@ expr_sizeof (tree e)
 }
   
 
-/* Perform the array-to-pointer and function-to-pointer conversions
-   for EXP.  
+/* Perform the conversions in [expr] that apply when an lvalue appears
+   in an rvalue context: the lvalue-to-rvalue, array-to-pointer, and
+   function-to-pointer conversions.
 
-   In addition, references are converted to lvalues and manifest
-   constants are replaced by their values.  */
+   In addition manifest constants are replaced by their values.  */
 
 tree
 decay_conversion (tree exp)
@@ -1609,22 +1609,30 @@ decay_conversion (tree exp)
 tree
 default_conversion (tree exp)
 {
-  tree type;
-  enum tree_code code;
-
   exp = decay_conversion (exp);
 
-  type = TREE_TYPE (exp);
-  code = TREE_CODE (type);
-
-  if (INTEGRAL_CODE_P (code))
-    {
-      tree t = type_promotes_to (type);
-      if (t != type)
-	return cp_convert (t, exp);
-    }
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (exp)))
+    exp = perform_integral_promotions (exp);
 
   return exp;
+}
+
+/* EXPR is an expression with an integral or enumeration type.
+   Perform the integral promotions in [conv.prom], and return the
+   converted value.  */
+
+tree
+perform_integral_promotions (tree expr)
+{
+  tree type;
+  tree promoted_type;
+
+  type = TREE_TYPE (expr);
+  my_friendly_assert (INTEGRAL_OR_ENUMERATION_TYPE_P (type), 20030703);
+  promoted_type = type_promotes_to (type);
+  if (type != promoted_type)
+    expr = cp_convert (promoted_type, expr);
+  return expr;
 }
 
 /* Take the address of an inline function without setting TREE_ADDRESSABLE
@@ -2232,7 +2240,7 @@ build_indirect_ref (ptr, errorstring)
     return current_class_ref;
 
   pointer = (TREE_CODE (TREE_TYPE (ptr)) == REFERENCE_TYPE
-	     ? ptr : default_conversion (ptr));
+	     ? ptr : decay_conversion (ptr));
   type = TREE_TYPE (pointer);
 
   if (TYPE_PTR_P (type) || TREE_CODE (type) == REFERENCE_TYPE)
@@ -2350,14 +2358,18 @@ build_array_ref (array, idx)
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (idx)) == char_type_node)
 	warning ("array subscript has type `char'");
 
-      /* Apply default promotions *after* noticing character types.  */
-      idx = default_conversion (idx);
-
-      if (TREE_CODE (TREE_TYPE (idx)) != INTEGER_TYPE)
+      if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (idx)))
 	{
 	  error ("array subscript is not an integer");
 	  return error_mark_node;
 	}
+
+      /* Apply integral promotions *after* noticing character types.
+	 (It is unclear why we do these promotions -- the standard
+	 does not say that we should.  In fact, the natual thing would
+	 seem to be to convert IDX to ptrdiff_t; we're performing
+	 pointer arithmetic.)  */
+      idx = perform_integral_promotions (idx);
 
       /* An array that is indexed by a non-constant
 	 cannot be stored in a register; we must be able to do
@@ -2742,7 +2754,7 @@ convert_arguments (typelist, values, fndecl, flags)
 	  if (TREE_CODE (TREE_TYPE (val)) == ARRAY_TYPE
 	      || TREE_CODE (TREE_TYPE (val)) == FUNCTION_TYPE
 	      || TREE_CODE (TREE_TYPE (val)) == METHOD_TYPE)
-	    val = default_conversion (val);
+	    val = decay_conversion (val);
 	}
 
       if (val == error_mark_node)
@@ -4039,8 +4051,8 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
     case NEGATE_EXPR:
       if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, true)))
 	errstring = "wrong type argument to unary minus";
-      else if (!noconvert)
-	arg = default_conversion (arg);
+      else if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	arg = perform_integral_promotions (arg);
       break;
 
     case BIT_NOT_EXPR:
@@ -4054,7 +4066,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 						   arg, true)))
 	errstring = "wrong type argument to bit-complement";
       else if (!noconvert)
-	arg = default_conversion (arg);
+	arg = perform_integral_promotions (arg);
       break;
 
     case ABS_EXPR:
@@ -4780,28 +4792,23 @@ build_static_cast (tree type, tree expr)
 
   /* [expr.static.cast]
 
-     An expression e can be explicitly converted to a type T using a
-     static_cast of the form static_cast<T>(e) if the declaration T
-     t(e);" is well-formed, for some invented temporary variable
-     t.  */
-  result = perform_direct_initialization_if_possible (type, expr);
-  if (result)
-    return convert_from_reference (result);
-  
-  /* [expr.static.cast]
-
-     Any expression can be explicitly converted to type cv void.  */
-  if (TREE_CODE (type) == VOID_TYPE)
-    return convert_to_void (expr, /*implicit=*/NULL);
-
-  /* [expr.static.cast]
-
      An lvalue of type "cv1 B", where B is a class type, can be cast
      to type "reference to cv2 D", where D is a class derived (clause
      _class.derived_) from B, if a valid standard conversion from
      "pointer to D" to "pointer to B" exists (_conv.ptr_), cv2 is the
      same cv-qualification as, or greater cv-qualification than, cv1,
      and B is not a virtual base class of D.  */
+  /* We check this case before checking the validity of "TYPE t =
+     EXPR;" below because for this case:
+
+       struct B {};
+       struct D : public B { D(const B&); };
+       extern B& b;
+       void f() { static_cast<const D&>(b); }
+
+     we want to avoid constructing a new D.  The standard is not
+     completely clear about this issue, but our interpretation is
+     consistent with other compilers.  */
   if (TREE_CODE (type) == REFERENCE_TYPE
       && CLASS_TYPE_P (TREE_TYPE (type))
       && CLASS_TYPE_P (intype)
@@ -4824,6 +4831,22 @@ build_static_cast (tree type, tree expr)
 	 there are no expressions with reference type in C++.  */
       return convert_from_reference (build_nop (type, expr));
     }
+
+  /* [expr.static.cast]
+
+     An expression e can be explicitly converted to a type T using a
+     static_cast of the form static_cast<T>(e) if the declaration T
+     t(e);" is well-formed, for some invented temporary variable
+     t.  */
+  result = perform_direct_initialization_if_possible (type, expr);
+  if (result)
+    return convert_from_reference (result);
+  
+  /* [expr.static.cast]
+
+     Any expression can be explicitly converted to type cv void.  */
+  if (TREE_CODE (type) == VOID_TYPE)
+    return convert_to_void (expr, /*implicit=*/NULL);
 
   /* [expr.static.cast]
 
@@ -5158,7 +5181,7 @@ build_c_cast (tree type, tree expr)
 		    && bound_pmf_p (value)))
 	  || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
-	value = default_conversion (value);
+	value = decay_conversion (value);
     }
   else if (TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
     /* However, even for class types, we still need to strip away
@@ -5422,7 +5445,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	    || TREE_CODE (TREE_TYPE (newrhs)) == FUNCTION_TYPE
 	    || TREE_CODE (TREE_TYPE (newrhs)) == METHOD_TYPE
 	    || TREE_CODE (TREE_TYPE (newrhs)) == OFFSET_TYPE)
-	  newrhs = default_conversion (newrhs);
+	  newrhs = decay_conversion (newrhs);
 	
 	/* ISO C++ 5.4/1: The result is an lvalue if T is a reference
 	   type, otherwise the result is an rvalue.  */
@@ -6078,7 +6101,7 @@ convert_for_initialization (tree exp, tree type, tree rhs, int flags,
 	  && (TREE_CODE (type) != REFERENCE_TYPE
 	      || TREE_CODE (TREE_TYPE (type)) != FUNCTION_TYPE))
       || TREE_CODE (TREE_TYPE (rhs)) == METHOD_TYPE)
-    rhs = default_conversion (rhs);
+    rhs = decay_conversion (rhs);
 
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);

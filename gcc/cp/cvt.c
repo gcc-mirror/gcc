@@ -1056,7 +1056,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 	
       case FUNCTION_TYPE:
       case ARRAY_TYPE:
-	return (desires & WANT_POINTER) ? default_conversion (expr)
+	return (desires & WANT_POINTER) ? decay_conversion (expr)
      	                                : NULL_TREE;
       default:
 	return NULL_TREE;
@@ -1131,12 +1131,9 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
 tree
 type_promotes_to (tree type)
 {
-  int type_quals;
-
   if (type == error_mark_node)
     return error_mark_node;
 
-  type_quals = cp_type_quals (type);
   type = TYPE_MAIN_VARIANT (type);
 
   /* bool always promotes to int (not unsigned), even if it's the same
@@ -1169,8 +1166,8 @@ type_promotes_to (tree type)
     }
   else if (type == float_type_node)
     type = double_type_node;
-
-  return cp_build_qualified_type (type, type_quals);
+    
+  return type;
 }
 
 /* The routines below this point are carefully written to conform to
