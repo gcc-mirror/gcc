@@ -3940,16 +3940,29 @@ dwarf2out_frame_debug (insn)
   char *label;
   rtx src, dest;
   long offset;
+
+  /* The current rule for calculating the DWARF2 canonical frame address.  */
   static unsigned cfa_reg;
   static long cfa_offset;
-  static long cfa_sp_offset;
+
+  /* The register used for saving registers to the stack, and its offset
+     from the CFA.  */
+  static unsigned cfa_store_reg;
+  static long cfa_store_offset;
+
+  /* A temporary register used in adjusting SP or setting up the store_reg.  */
+  static unsigned cfa_temp_reg;
+  static long cfa_temp_value;
 
   if (insn == NULL_RTX)
     {
       /* Set up state for generating call frame debug info.  */
       cfa_reg = STACK_POINTER_REGNUM;
       cfa_offset = 0;
-      cfa_sp_offset = 0;
+      cfa_store_reg = STACK_POINTER_REGNUM;
+      cfa_store_offset = 0;
+      cfa_temp_reg = -1;
+      cfa_temp_value = 0;
       return;
     }
 
@@ -3966,26 +3979,57 @@ dwarf2out_frame_debug (insn)
     case REG:
       /* Update the CFA rule wrt SP or FP.  Make sure src is
 	 relative to the current CFA register.  */
-      assert (REGNO (dest) == STACK_POINTER_REGNUM
-	      || frame_pointer_needed && REGNO (dest) == FRAME_POINTER_REGNUM);
       switch (GET_CODE (src))
 	{
 	  /* Setting FP from SP.  */
 	case REG:
 	  assert (cfa_reg == REGNO (src));
+	  assert (REGNO (dest) == STACK_POINTER_REGNUM
+		  || frame_pointer_needed && REGNO (dest) == FRAME_POINTER_REGNUM);
 	  cfa_reg = REGNO (dest);
 	  break;
 
-	  /* Adjusting SP.  */
 	case PLUS:
-	  cfa_sp_offset -= INTVAL (XEXP (src, 1));
-	  goto add;
 	case MINUS:
-	  cfa_sp_offset += INTVAL (XEXP (src, 1));
-	add:
-	  assert (REGNO (XEXP (src, 0)) == STACK_POINTER_REGNUM);
-	  if (cfa_reg == STACK_POINTER_REGNUM)
-	    cfa_offset = cfa_sp_offset;
+	  if (dest == stack_pointer_rtx)
+	    {
+	      /* Adjusting SP.  */
+	      switch (GET_CODE (XEXP (src, 1)))
+		{
+		case CONST_INT:
+		  offset = INTVAL (XEXP (src, 1));
+		  break;
+		case REG:
+		  assert (REGNO (XEXP (src, 1)) == cfa_temp_reg);
+		  offset = cfa_temp_value;
+		  break;
+		default:
+		  abort ();
+		}
+	      if (GET_CODE (src) == PLUS)
+		offset = -offset;
+	      if (cfa_reg == STACK_POINTER_REGNUM)
+		cfa_offset += offset;
+	      if (cfa_store_reg == STACK_POINTER_REGNUM)
+		cfa_store_offset += offset;
+	      assert (XEXP (src, 0) == stack_pointer_rtx);
+	    }
+	  else
+	    {
+	      /* Initializing the store base register.  */
+	      assert (GET_CODE (src) == PLUS);
+	      assert (XEXP (src, 1) == stack_pointer_rtx);
+	      assert (GET_CODE (XEXP (src, 0)) == REG
+		      && REGNO (XEXP (src, 0)) == cfa_temp_reg);
+	      assert (cfa_store_reg == STACK_POINTER_REGNUM);
+	      cfa_store_reg = REGNO (dest);
+	      cfa_store_offset -= cfa_temp_value;
+	    }
+	  break;
+
+	case CONST_INT:
+	  cfa_temp_reg = REGNO (dest);
+	  cfa_temp_value = INTVAL (src);
 	  break;
 
 	default:
@@ -4001,27 +4045,27 @@ dwarf2out_frame_debug (insn)
       switch (GET_CODE (XEXP (dest, 0)))
 	{
 	  /* With a push.  */
-	case PRE_DEC:
-	  cfa_sp_offset += GET_MODE_SIZE (GET_MODE (dest));
-	  goto pre;
 	case PRE_INC:
-	  cfa_sp_offset -= GET_MODE_SIZE (GET_MODE (dest));
-	pre:
+	case PRE_DEC:
+	  offset = GET_MODE_SIZE (GET_MODE (dest));
+	  if (GET_CODE (src) == PRE_INC)
+	    offset = -offset;
 	  assert (REGNO (XEXP (XEXP (dest, 0), 0)) == STACK_POINTER_REGNUM);
+	  assert (cfa_store_reg == STACK_POINTER_REGNUM);
+	  cfa_store_offset += offset;
 	  if (cfa_reg == STACK_POINTER_REGNUM)
-	    cfa_offset = cfa_sp_offset;
-	  offset = -cfa_sp_offset;
+	    cfa_offset = cfa_store_offset;
+	  offset = -cfa_store_offset;
 	  break;
 
 	  /* With an offset.  */
 	case PLUS:
-	  offset = INTVAL (XEXP (XEXP (dest, 0), 1));
-	  goto off;
 	case MINUS:
-	  offset = -INTVAL (XEXP (XEXP (dest, 0), 1));
-	off:
-	  assert (cfa_reg == REGNO (XEXP (XEXP (dest, 0), 0)));
-	  offset -= cfa_offset;
+	  offset = INTVAL (XEXP (XEXP (dest, 0), 1));
+	  if (GET_CODE (src) == MINUS)
+	    offset = -offset;
+	  assert (cfa_store_reg == REGNO (XEXP (XEXP (dest, 0), 0)));
+	  offset -= cfa_store_offset;
 	  break;
 
 	default:
@@ -6000,12 +6044,12 @@ add_bound_info (subrange_die, bound_attr, bound)
     /* All fixed-bounds are represented by INTEGER_CST nodes.        */
     case INTEGER_CST:
       bound_value = TREE_INT_CST_LOW (bound);
-      /* TODO: we need to check for C language below, or some flag
-	 derived from the language.  C implies a lower bound of 0.   */
-      if (!(bound_attr == DW_AT_lower_bound && bound_value == 0))
-	{
-	  add_AT_unsigned (subrange_die, bound_attr, bound_value);
-        }
+      if (bound_attr == DW_AT_lower_bound
+	  && ((is_c_family () && bound_value == 0)
+	      || (is_fortran () && bound_value == 1)))
+	/* use the default */;
+      else
+	add_AT_unsigned (subrange_die, bound_attr, bound_value);
       break;
 
     /* Dynamic bounds may be represented by NOP_EXPR nodes containing
@@ -6015,34 +6059,45 @@ add_bound_info (subrange_die, bound_attr, bound)
       /* ... fall thru...  */
 
     case SAVE_EXPR:
+      /* Handle the simple case of `int ar[i];'.  */
+      if (bound_attr == DW_AT_upper_bound && is_c_family ()
+	  && TREE_CODE (TREE_OPERAND (bound, 0)) == MINUS_EXPR)
+	{
+	  tree t = TREE_OPERAND (bound, 0);
+	  if (integer_onep (TREE_OPERAND (bound, 1)))
+	    t = TREE_OPERAND (t, 0);
+	  if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)
+	    {
+	      add_AT_die_ref (subrange_die, DW_AT_count, lookup_decl_die (t));
+	      return;
+	    }
+	}
+
       /* If optimization is turned on, the SAVE_EXPRs that describe how to
          access the upper bound values are essentially bogus. They only
          describe (at best) how to get at these values at the points in the
-         generated code right after they have just been computed.  Worse yet, 
-         in the typical case, the upper bound values will not even *be*
-         computed in the optimized code, so these SAVE_EXPRs are entirely
-         bogus. In order to compensate for this fact, we check here to see if
-         optimization is enabled, and if so, we effectively create an empty
-         location description for the (unknown and unknowable) upper bound.
-         This should not cause too much trouble for existing (stupid?)
-         debuggers because they have to deal with empty upper bounds location
-         descriptions anyway in order to be able to deal with incomplete array 
-         types.  Of course an intelligent debugger (GDB?) should be able to
-         comprehend that a missing upper bound specification in a array type
-         used for a storage class `auto' local array variable indicates that
-         the upper bound is both unknown (at compile- time) and unknowable (at
-         run-time) due to optimization.  */
+         generated code right after they have just been computed.  Worse
+         yet, in the typical case, the upper bound values will not even
+         *be* computed in the optimized code, so these SAVE_EXPRs are
+         entirely bogus. In order to compensate for this fact, we check
+         here to see if optimization is enabled, and if so, we don't add an
+         attribute for the (unknown and unknowable) upper bound.  This
+         should not cause too much trouble for existing (stupid?)
+         debuggers because they have to deal with empty upper bounds
+         location descriptions anyway in order to be able to deal with
+         incomplete array types.  Of course an intelligent debugger (GDB?)
+         should be able to comprehend that a missing upper bound
+         specification in a array type used for a storage class `auto'
+         local array variable indicates that the upper bound is both
+         unknown (at compile- time) and unknowable (at run-time) due to
+         optimization.  */
       if (!optimize)
 	{
-	  bound_loc = mem_loc_descriptor (
-				      eliminate_regs (SAVE_EXPR_RTL (bound),
-						      0, NULL_RTX));
+	  bound_loc = mem_loc_descriptor
+	    (eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
+	  add_AT_loc (subrange_die, bound_attr, bound_loc);
 	}
-      else
-	{
-	  bound_loc = NULL;
-	}
-      add_AT_loc (subrange_die, bound_attr, bound_loc);
+      /* else leave out the attribute.  */
       break;
 
     default:
@@ -6096,8 +6151,7 @@ add_subscript_info (type_die, type)
 	    add_type_attribute (subrange_die, TREE_TYPE (domain), 0, 0,
 				type_die);
 
-	  if (! is_c_family () && ! is_fortran ())
-	    add_bound_info (subrange_die, DW_AT_lower_bound, lower);
+	  add_bound_info (subrange_die, DW_AT_lower_bound, lower);
 	  add_bound_info (subrange_die, DW_AT_upper_bound, upper);
 	}
       else
@@ -6741,9 +6795,8 @@ gen_formal_parameter_die (node, context_die)
 	  if (DECL_ARTIFICIAL (node))
 	    add_AT_flag (parm_die, DW_AT_artificial, 1);
 	}
-      if (DECL_ABSTRACT (node))
-	equate_decl_number_to_die (node, parm_die);
-      else
+      equate_decl_number_to_die (node, parm_die);
+      if (! DECL_ABSTRACT (node))
 	add_location_or_const_value_attribute (parm_die, node);
       break;
 
@@ -7117,7 +7170,7 @@ gen_variable_die (decl, context_die)
     {
       add_abstract_origin_attribute (var_die, origin);
     }
-  else if (old_die)
+  else if (old_die && TREE_STATIC (decl))
     {
       assert (get_AT_flag (old_die, DW_AT_declaration) == 1);
       add_AT_die_ref (var_die, DW_AT_specification, old_die);
@@ -7157,8 +7210,7 @@ gen_variable_die (decl, context_die)
 
   if (! declaration && ! DECL_ABSTRACT (decl))
     {
-      if (TREE_STATIC (decl))
-	equate_decl_number_to_die (decl, var_die);
+      equate_decl_number_to_die (decl, var_die);
       add_location_or_const_value_attribute (var_die, decl);
       add_pubname (decl, var_die);
     }
