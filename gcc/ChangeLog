@@ -1,3 +1,8 @@
+Fri Jun 12 10:23:36 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* expr.c (do_jump, case EQ_EXPR, NE_EXPR): When comparing complex
+	prevent operands from being evaluated twice.
+
 Fri Jun 12 00:50:27 1998  Sergey Okhapkin <sos@prospect.com.ru>
 
 	* toplev.c (lang_options): Add -remap as a preprocessor option.
