@@ -1,3 +1,8 @@
+Thu Jul 15 01:26:49 1999  H.J. Lu  <hjl@gnu.org>
+
+	* decl.c (duplicate_decls): Relax restriction for exception
+	checks on duplicate symbols.
+
 1999-07-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokdeclarator): Update the names of all variants when
