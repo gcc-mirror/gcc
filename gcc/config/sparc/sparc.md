@@ -6789,7 +6789,7 @@
   [(set_attr "type" "fpmove")
    (set_attr "length" "1")])
 
-(define_insn "abstf2"
+(define_expand "abstf2"
   [(set (match_operand:TF 0 "register_operand" "")
 	(abs:TF (match_operand:TF 1 "register_operand" "")))]
   "TARGET_FPU"
@@ -6824,14 +6824,23 @@
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
-   operands[6] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 2);
-   operands[7] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 2);")
+   operands[6] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
+   operands[7] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
+
+(define_insn "*abstf2_hq_v9"
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
+  "TARGET_FPU && TARGET_V9 && TARGET_HARD_QUAD"
+  "@
+  fabsd\\t%0, %0
+  fabsq\\t%1, %0"
+  [(set_attr "type" "fpmove")
+   (set_attr "length" "1")])
 
 (define_insn "*abstf2_v9"
   [(set (match_operand:TF 0 "register_operand" "=e,e")
 	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
-  ; We don't use quad float insns here so we don't need TARGET_HARD_QUAD.
-  "TARGET_FPU && TARGET_V9"
+  "TARGET_FPU && TARGET_V9 && !TARGET_HARD_QUAD"
   "@
   fabsd\\t%0, %0
   #"
@@ -6894,7 +6903,7 @@
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(abs:DF (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_V9"
-  "fabsd\\t%0, %0"
+  "fabsd\\t%1, %0"
   [(set_attr "type" "fpmove")
    (set_attr "length" "1")])
 
@@ -7068,7 +7077,7 @@
    (set_attr "length" "1")])
 
 (define_insn "*ashrsi3_extend"
-  [(set (match_operand:DI 0 "register_operand" "")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI (ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
 				     (match_operand:SI 2 "arith_operand" "r"))))]
   "TARGET_ARCH64"
@@ -7079,7 +7088,7 @@
 ;; This handles the case as above, but with constant shift instead of
 ;; register. Combiner "simplifies" it for us a little bit though.
 (define_insn "*ashrsi3_extend2"
-  [(set (match_operand:DI 0 "register_operand" "")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(ashiftrt:DI (ashift:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
 				(const_int 32))
 		     (match_operand:SI 2 "small_int_or_double" "n")))]
@@ -7161,7 +7170,7 @@
 ;; (zero_extend:DI (lshiftrt:SI (match_operand:SI) (match_operand:SI))),
 ;; but combiner "simplifies" it for us.
 (define_insn "*lshrsi3_extend"
-  [(set (match_operand:DI 0 "register_operand" "")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(and:DI (subreg:DI (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
 			   (match_operand:SI 2 "arith_operand" "r")) 0)
 		(match_operand 3 "" "")))]
@@ -7182,7 +7191,7 @@
 ;; (lshiftrt:DI (zero_extend:DI (match_operand:SI)) (const_int >=0 < 32))
 ;; but combiner "simplifies" it for us.
 (define_insn "*lshrsi3_extend2"
-  [(set (match_operand:DI 0 "register_operand" "")
+  [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (subreg:DI (match_operand:SI 1 "register_operand" "r") 0)
 			 (match_operand 2 "small_int_or_double" "n")
 			 (const_int 32)))]

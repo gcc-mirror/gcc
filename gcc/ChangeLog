@@ -1,3 +1,13 @@
+Sun Jun  6 11:58:34 1999  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* sparc.md (abstf2): This should be an expand.
+	(split after abstf2_notv9): Fix mode.
+	(abstf2_hq_v9): New pattern.
+	(abstf2_v9): Only use when no hard quad.
+	(absdf2_v9): Fix if target is not the same as source.
+	(ashrsi3_extend, ashrsi3_extend2, lshrsi3_extend, lshrsi3_extend2):
+	Add correct output constraints.
+
 Sat Jun  5 17:04:16 1999  Craig Burley  <craig@jcb-sc.com>
 
 	From Dave Love to egcs-patches on 20 May 1999 17:38:38 +0100:
