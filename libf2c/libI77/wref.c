@@ -232,14 +232,16 @@ wrt_F (ufloat * p, int w, int d, ftnlen len)
     }
 
   if (n = f__scale)
-    if (n > 0)
-      do
-	x *= 10.;
-      while (--n > 0);
-    else
-      do
-	x *= 0.1;
-      while (++n < 0);
+    {
+      if (n > 0)
+	do
+	  x *= 10.;
+	while (--n > 0);
+      else
+	do
+	  x *= 0.1;
+	while (++n < 0);
+    }
 
 #ifdef USE_STRLEN
   sprintf (b = buf, "%#.*f", d, x);

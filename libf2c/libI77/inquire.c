@@ -55,67 +55,89 @@ f_inqu (inlist * a)
 	}
     }
   if (a->inex != NULL)
-    if (byfile && x != -1 || !byfile && p != NULL)
-      *a->inex = 1;
-    else
-      *a->inex = 0;
+    {
+      if (byfile && x != -1 || !byfile && p != NULL)
+	*a->inex = 1;
+      else
+	*a->inex = 0;
+    }
   if (a->inopen != NULL)
-    if (byfile)
-      *a->inopen = (p != NULL);
-    else
-      *a->inopen = (p != NULL && p->ufd != NULL);
+    {
+      if (byfile)
+	*a->inopen = (p != NULL);
+      else
+	*a->inopen = (p != NULL && p->ufd != NULL);
+    }
   if (a->innum != NULL)
     *a->innum = p - f__units;
   if (a->innamed != NULL)
-    if (byfile || p != NULL && p->ufnm != NULL)
-      *a->innamed = 1;
-    else
-      *a->innamed = 0;
+    {
+      if (byfile || p != NULL && p->ufnm != NULL)
+	*a->innamed = 1;
+      else
+	*a->innamed = 0;
+    }
   if (a->inname != NULL)
-    if (byfile)
-      b_char (buf, a->inname, a->innamlen);
-    else if (p != NULL && p->ufnm != NULL)
-      b_char (p->ufnm, a->inname, a->innamlen);
+    {
+      if (byfile)
+	b_char (buf, a->inname, a->innamlen);
+      else if (p != NULL && p->ufnm != NULL)
+	b_char (p->ufnm, a->inname, a->innamlen);
+    }
   if (a->inacc != NULL && p != NULL && p->ufd != NULL)
-    if (p->url)
-      b_char ("DIRECT", a->inacc, a->inacclen);
-    else
-      b_char ("SEQUENTIAL", a->inacc, a->inacclen);
+    {
+      if (p->url)
+	b_char ("DIRECT", a->inacc, a->inacclen);
+      else
+	b_char ("SEQUENTIAL", a->inacc, a->inacclen);
+    }
   if (a->inseq != NULL)
-    if (p != NULL && p->url)
-      b_char ("NO", a->inseq, a->inseqlen);
-    else
-      b_char ("YES", a->inseq, a->inseqlen);
+    {
+      if (p != NULL && p->url)
+	b_char ("NO", a->inseq, a->inseqlen);
+      else
+	b_char ("YES", a->inseq, a->inseqlen);
+    }
   if (a->indir != NULL)
-    if (p == NULL || p->url)
-      b_char ("YES", a->indir, a->indirlen);
-    else
-      b_char ("NO", a->indir, a->indirlen);
+    {
+      if (p == NULL || p->url)
+	b_char ("YES", a->indir, a->indirlen);
+      else
+	b_char ("NO", a->indir, a->indirlen);
+    }
   if (a->infmt != NULL)
-    if (p != NULL && p->ufmt == 0)
-      b_char ("UNFORMATTED", a->infmt, a->infmtlen);
-    else
-      b_char ("FORMATTED", a->infmt, a->infmtlen);
+    {
+      if (p != NULL && p->ufmt == 0)
+	b_char ("UNFORMATTED", a->infmt, a->infmtlen);
+      else
+	b_char ("FORMATTED", a->infmt, a->infmtlen);
+    }
   if (a->inform != NULL)
-    if (p != NULL && p->ufmt == 0)
-      b_char ("NO", a->inform, a->informlen);
-    else
-      b_char ("YES", a->inform, a->informlen);
+    {
+      if (p != NULL && p->ufmt == 0)
+	b_char ("NO", a->inform, a->informlen);
+      else
+	b_char ("YES", a->inform, a->informlen);
+    }
   if (a->inunf)
-    if (p != NULL && p->ufmt == 0)
-      b_char ("YES", a->inunf, a->inunflen);
-    else if (p != NULL)
-      b_char ("NO", a->inunf, a->inunflen);
-    else
-      b_char ("UNKNOWN", a->inunf, a->inunflen);
+    {
+      if (p != NULL && p->ufmt == 0)
+	b_char ("YES", a->inunf, a->inunflen);
+      else if (p != NULL)
+	b_char ("NO", a->inunf, a->inunflen);
+      else
+	b_char ("UNKNOWN", a->inunf, a->inunflen);
+    }
   if (a->inrecl != NULL && p != NULL)
     *a->inrecl = p->url;
   if (a->innrec != NULL && p != NULL && p->url > 0)
     *a->innrec = FTELL (p->ufd) / p->url + 1;
   if (a->inblank && p != NULL && p->ufmt)
-    if (p->ublnk)
-      b_char ("ZERO", a->inblank, a->inblanklen);
-    else
-      b_char ("NULL", a->inblank, a->inblanklen);
+    {
+      if (p->ublnk)
+	b_char ("ZERO", a->inblank, a->inblanklen);
+      else
+	b_char ("NULL", a->inblank, a->inblanklen);
+    }
   return (0);
 }
