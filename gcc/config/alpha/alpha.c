@@ -48,6 +48,16 @@ int alpha_compare_fp_p;
 
 char *alpha_function_name;
 
+/* Non-zero if inside of a function, because the Alpha asm can't
+   handle .files inside of functions.  */
+
+static int inside_function = FALSE;
+
+/* Whether to suppress issuing .loc's because the user attempted
+   to change the filename within a function.  */
+
+static int ignore_line_number = FALSE;
+
 /* Nonzero if the current function needs gp.  */
 
 int alpha_function_needs_gp;
@@ -1189,6 +1199,35 @@ output_prolog (file, size)
   unsigned reg_mask = 0;
   int i;
 
+  /* Ecoff can handle multiple .file directives, put out file and lineno.
+     We have to do that before the .ent directive as we cannot switch
+     files within procedures with native ecoff because line numbers are
+     linked to procedure descriptors.
+     Outputting the lineno helps debugging of one line functions as they
+     would otherwise get no line number at all. Please note that we would
+     like to put out last_linenum from final.c, but it is not accesible.  */
+
+  if (write_symbols == SDB_DEBUG)
+    {
+      ASM_OUTPUT_SOURCE_FILENAME (file,
+				  DECL_SOURCE_FILE (current_function_decl));
+      if (debug_info_level != DINFO_LEVEL_TERSE)
+        ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
+    }
+
+  /* The assembly language programmer's guide states that the second argument
+     to the .ent directive, the lex_level, is ignored by the assembler,
+     so we might as well omit it.  */
+     
+  fprintf (file, "\t.ent %s\n", alpha_function_name);
+  ASM_OUTPUT_LABEL (file, alpha_function_name);
+  inside_function = TRUE;
+
+  /* Set up offsets to alpha virtual arg/local debugging pointer.  */
+
+  alpha_auto_offset = -frame_size + current_function_pretend_args_size;
+  alpha_arg_offset = -frame_size + 48;
+
   /* If we need a GP (we have a LDSYM insn or a CALL_INSN), load it first. 
      Even if we are a static function, we still need to do this in case
      our address is taken and passed to something like qsort.  */
@@ -1445,7 +1484,101 @@ output_epilog (file, size)
 
   /* End the function.  */
   fprintf (file, "\t.end %s\n", alpha_function_name);
+  inside_function = FALSE;
+  ignore_line_number = FALSE;
 
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+}
+
+/* Debugging support.  */
+
+#include "gstab.h"
+
+/* Count the number of sdb related labels are generated (to find block
+   start and end boundaries).  */
+
+int sdb_label_count = 0;
+
+/* Next label # for each statement.  */
+
+static int sym_lineno = 0;
+
+/* Count the number of .file directives, so that .loc is up to date.  */
+
+static int num_source_filenames = 0;
+
+/* Name of the file containing the current function.  */
+
+static char *current_function_file = "";
+
+/* Offsets to alpha virtual arg/local debugging pointers.  */
+
+long alpha_arg_offset;
+long alpha_auto_offset;
+
+/* Emit a new filename to a stream.  */
+
+void
+alpha_output_filename (stream, name)
+     FILE *stream;
+     char *name;
+{
+  static int first_time = TRUE;
+  char ltext_label_name[100];
+
+  if (first_time)
+    {
+      first_time = FALSE;
+      ++num_source_filenames;
+      current_function_file = name;
+      fprintf (stream, "\t.file\t%d ", num_source_filenames);
+      output_quoted_string (stream, name);
+      fprintf (stream, "\n");
+      if (!TARGET_GAS && write_symbols == DBX_DEBUG)
+	fprintf (stream, "\t#@stabs\n");
+    }
+
+  else if (!TARGET_GAS && write_symbols == DBX_DEBUG)
+    {
+      ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext", 0);
+      fprintf (stream, "%s ", ASM_STABS_OP);
+      output_quoted_string (stream, name);
+      fprintf (stream, ",%d,0,0,%s\n", N_SOL, &ltext_label_name[1]);
+    }
+
+  else if (name != current_function_file
+      && strcmp (name, current_function_file) != 0)
+    {
+      if (inside_function && ! TARGET_GAS)
+	fprintf (stream, "\t#.file\t%d ", num_source_filenames);
+      else
+	{
+	  ++num_source_filenames;
+	  current_function_file = name;
+	  fprintf (stream, "\t.file\t%d ", num_source_filenames);
+	}
+
+      output_quoted_string (stream, name);
+      fprintf (stream, "\n");
+    }
+}
+
+/* Emit a linenumber to a stream.  */
+
+void
+alpha_output_lineno (stream, line)
+     FILE *stream;
+     int line;
+{
+  if (! TARGET_GAS && write_symbols == DBX_DEBUG)
+    {
+      /* mips-tfile doesn't understand .stabd directives.  */
+      ++sym_lineno;
+      fprintf (stream, "$LM%d:\n\t%s %d,0,%d,$LM%d\n",
+	       sym_lineno, ASM_STABN_OP, N_SLINE, line, sym_lineno);
+    }
+  else
+    fprintf (stream, "\n\t%s.loc\t%d %d\n", (ignore_line_number) ? "#" : "",
+	     num_source_filenames, line);
 }
