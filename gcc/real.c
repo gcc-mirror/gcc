@@ -465,6 +465,7 @@ endian (e, x, mode)
       x[1] = (long) t;
       /* fall into the float case */
 
+    case HFmode:
     case SFmode:
 
       /* swap halfwords in the first word */
@@ -513,6 +514,7 @@ endian (e, x, mode)
       x[1] = (long) t;
       /* fall into the float case */
 
+    case HFmode:
     case SFmode:
 
       /* pack the first long */
@@ -668,6 +670,7 @@ ereal_atof (s, t)
 
   switch (t)
     {
+    case HFmode:
     case SFmode:
       asctoe24 (s, tem);
       e24toe (tem, e);
@@ -956,6 +959,7 @@ real_value_truncate (mode, arg)
       e53toe (t, t);
       break;
 
+    case HFmode:
     case SFmode:
       etoe24 (e, t);
       e24toe (t, t);
@@ -5465,6 +5469,7 @@ make_nan (nan, sign, mode)
       n = 4;
       p = DFnan;
       break;
+    case HFmode:
     case SFmode:
       n = 2;
       p = SFnan;
