@@ -1,5 +1,7 @@
 Sun Mar 29 00:47:32 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* method.c (thunk_printable_name): Delete dead function.
+
 	* lex.c (yynextch): Delete dead function.
 
 	* expr.c (tree_extract_aggr_init): #if 0 out.

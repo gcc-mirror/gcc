@@ -67,7 +67,6 @@ static void issue_nrepeats PROTO((tree));
 static char *build_mangled_name PROTO((tree,int,int));
 static void process_modifiers PROTO((tree));
 static void process_overload_item PROTO((tree,int));
-static char *thunk_printable_name PROTO((tree));
 static void do_build_assign_ref PROTO((tree));
 static void do_build_copy_constructor PROTO((tree));
 static tree largest_union_member PROTO((tree));
@@ -1871,13 +1870,6 @@ hack_identifier (value, name)
 }
 
 
-static char *
-thunk_printable_name (decl)
-     tree decl;
-{
-  return "<thunk function>";
-}
-
 tree
 make_thunk (function, delta)
      tree function;
