@@ -1,3 +1,10 @@
+Mon Jul 27 17:18:52 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* stor-layout.c (layout_type): Handle arrays of bits, for Chill.
+
+	* expr.c (get_inner_reference): Handle zero-based, unsigned, array
+	index conversion.
+
 Mon Jul 27 14:51:33 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.h (DEBUGGER_AUTO_OFFSET): Define.

@@ -783,6 +783,7 @@ layout_type (type)
 	    tree ub = TYPE_MAX_VALUE (index);
 	    tree lb = TYPE_MIN_VALUE (index);
 	    tree length;
+	    tree element_size;
 
 	    /* If UB is max (lb - 1, x), remove the MAX_EXPR since the
 	       test for negative below covers it.  */
@@ -815,8 +816,19 @@ layout_type (type)
 		&& TREE_CODE (TYPE_MAX_VALUE (index)) != INTEGER_CST)
 	      length = size_binop (MAX_EXPR, length, size_zero_node);
 
-	    TYPE_SIZE (type) = size_binop (MULT_EXPR, TYPE_SIZE (element),
-					   length);
+	    /* Special handling for arrays of bits (for Chill).  */
+	    element_size = TYPE_SIZE (element);
+	    if (TYPE_PACKED (type) && INTEGRAL_TYPE_P (element))
+	      {
+		HOST_WIDE_INT maxvalue, minvalue;
+		maxvalue = TREE_INT_CST_LOW (TYPE_MAX_VALUE (element));
+		minvalue = TREE_INT_CST_LOW (TYPE_MIN_VALUE (element));
+		if (maxvalue - minvalue == 1
+		    && (maxvalue == 1 || maxvalue == 0))
+		  element_size = integer_one_node;
+	      }
+
+	    TYPE_SIZE (type) = size_binop (MULT_EXPR, element_size, length);
 
 	    /* If we know the size of the element, calculate the total
 	       size directly, rather than do some division thing below.
