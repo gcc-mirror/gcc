@@ -1,3 +1,7 @@
+2001-04-30  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.f-torture/execute/20010430.f: New test.
+
 2001-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/20000724-1.c: Add a clobber of `esp'.
