@@ -1,3 +1,9 @@
+2004-01-12  Gernot Hillier  <gernot.hillier@siemens.com>
+
+	* configure.in: GLIBCXX->GLIBCPP.
+	* configure: Regenerated.
+	* aclocal.m4: Regenerated.
+
 2004-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in: Add io bits to linux cross config.

@@ -130,8 +130,8 @@ if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
       # For showmanyc_helper().
       AC_CHECK_HEADERS(sys/ioctl.h sys/filio.h)
-      GLIBCXX_CHECK_POLL
-      GLIBCXX_CHECK_S_ISREG_OR_S_IFREG
+      GLIBCPP_CHECK_POLL
+      GLIBCPP_CHECK_S_ISREG_OR_S_IFREG
 
       AC_DEFINE(HAVE_COPYSIGN)
       AC_DEFINE(HAVE_COPYSIGNF)
