@@ -111,7 +111,7 @@ typedef __va_buf __gnuc_va_list;
    a warning about increasing the alignment requirement.  */
 #define va_arg(_AP, _MODE)	\
 __extension__								\
-({__voidptr *__ap = (__voidptr*)&_AP;					\
+(*({__voidptr *__ap = (__voidptr*)&_AP;					\
   register int __size = sizeof (_MODE);					\
   register int __onstack =						\
 	  (__size > 8 || ( (int)(__ap[2]) > 11) ||			\
@@ -121,8 +121,8 @@ __extension__								\
   ((void *)__ap[__onstack])+=__size;					\
     if (__onstack==0 || (int)(__ap[2])==11)				\
       __ap[2]+= (__size >> 2);						\
-  *(( _MODE *) (void *) __param_addr);					\
-})
+  (( _MODE *) (void *) __param_addr);					\
+}))
 
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
 #define va_end(_X)	((void)0)

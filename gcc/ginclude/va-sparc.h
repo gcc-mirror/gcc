@@ -132,7 +132,7 @@ enum __va_type_classes {
 
 #define va_arg(pvar,TYPE)					\
 __extension__							\
-({int __type = __builtin_classify_type (* (TYPE *) 0);		\
+(*({int __type = __builtin_classify_type (* (TYPE *) 0);	\
   void * __result;						\
   if (__type == __real_type_class)		/* float? */	\
     {								\
@@ -170,7 +170,7 @@ __extension__							\
 	__r = (void **) pvar.__va_next_stack++;			\
       __result = *__r;						\
     }								\
-  *(TYPE *) __result;})
+  (TYPE *) __result;}))
 
 #else /* not __sparc_v9__ */
 
@@ -184,18 +184,17 @@ __extension__							\
    The casts to char * avoid warnings about invalid pointer arithmetic.  */
 #define va_arg(pvar,TYPE)					\
 __extension__							\
-({ TYPE __va_temp;						\
-   ((__builtin_classify_type (__va_temp) >= __record_type_class) \
+(*({((__builtin_classify_type (*(TYPE*) 0) >= __record_type_class) \
     ? ((pvar) = (char *)(pvar) + __va_rounded_size (TYPE *),	\
-       **(TYPE **) (void *) ((char *)(pvar) - __va_rounded_size (TYPE *))) \
+       *(TYPE **) (void *) ((char *)(pvar) - __va_rounded_size (TYPE *))) \
     : __va_rounded_size (TYPE) == 8				\
     ? ({ union {char __d[sizeof (TYPE)]; int __i[2];} __u;	\
 	 __u.__i[0] = ((int *) (void *) (pvar))[0];		\
 	 __u.__i[1] = ((int *) (void *) (pvar))[1];		\
 	 (pvar) = (char *)(pvar) + 8;				\
-	 *(TYPE *) (void *) __u.__d; })				\
+	 (TYPE *) (void *) __u.__d; })				\
     : ((pvar) = (char *)(pvar) + __va_rounded_size (TYPE),	\
-       *((TYPE *) (void *) ((char *)(pvar) - __va_rounded_size (TYPE)))));})
+       ((TYPE *) (void *) ((char *)(pvar) - __va_rounded_size (TYPE)))));}))
 #endif /* not __sparc_v9__ */
 
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */

@@ -38,24 +38,24 @@ typedef struct {
 
 #define va_arg(pvar,type)  \
 __extension__ \
-    ({  type __va_result; \
+    (*({  type *__va_result; \
         if ((pvar).__pnt >= 20) { \
-           __va_result = *( (type *) ((pvar).__stack + (pvar).__pnt - 20)); \
+           __va_result = ( (type *) ((pvar).__stack + (pvar).__pnt - 20)); \
 	   (pvar).__pnt += (sizeof(type) + 7) & ~7; \
 	} \
 	else if ((pvar).__pnt + sizeof(type) > 20) { \
-	   __va_result = * (type *) (pvar).__stack; \
+	   __va_result = (type *) (pvar).__stack; \
 	   (pvar).__pnt = 20 + ( (sizeof(type) + 7) & ~7); \
 	} \
 	else if (sizeof(type) == 8) { \
 	   union {double d; int i[2];} __u; \
 	   __u.i[0] = *(int *) ((pvar).__regs + (pvar).__pnt); \
 	   __u.i[1] = *(int *) ((pvar).__regs + (pvar).__pnt + 4); \
-	   __va_result = * (type *) &__u; \
+	   __va_result = (type *) &__u; \
 	   (pvar).__pnt += 8; \
 	} \
 	else { \
-	   __va_result = * (type *) ((pvar).__regs + (pvar).__pnt); \
+	   __va_result = (type *) ((pvar).__regs + (pvar).__pnt); \
 	   (pvar).__pnt += (sizeof(type) + 3) & ~3; \
 	} \
-	__va_result; })
+	__va_result; }))

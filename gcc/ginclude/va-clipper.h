@@ -46,11 +46,11 @@ typedef struct
   ((AP).__va_ap = ((AP).__va_ap + sizeof (int) - 1) & ~(sizeof (int) - 1)))
 
 #define va_arg(AP, TYPE) \
-  ((AP).__va_num < 2 && __builtin_classify_type (* (TYPE *)0) < 12	\
+  (*((AP).__va_num < 2 && __builtin_classify_type (* (TYPE *)0) < 12	\
    ? (__builtin_classify_type (* (TYPE *)0) == 8			\
-      ? (*(TYPE *)(AP).__va_reg[2 * (AP).__va_num++ + 1])		\
-      : (*(TYPE *)(AP).__va_reg[2 * (AP).__va_num++ ]))			\
-   : ((AP).__va_num++, __va_round (AP,TYPE), *((TYPE *)((AP).__va_ap))++))
+      ? ((TYPE *)(AP).__va_reg[2 * (AP).__va_num++ + 1])		\
+      : ((TYPE *)(AP).__va_reg[2 * (AP).__va_num++ ]))			\
+   : ((AP).__va_num++, __va_round (AP,TYPE), ((TYPE *)((AP).__va_ap))++)))
 
 #define va_end(AP)	((void) 0)
 
