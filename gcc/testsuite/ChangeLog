@@ -1,3 +1,7 @@
+2002-04-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* g++.dg/abi/enum1.C: New test.
+
 2002-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/20020227-1.x: New file, xfail on 64-bit
