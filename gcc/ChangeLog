@@ -1,3 +1,9 @@
+2005-02-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/20117
+	* bb-reorder.c (duplicate_computed_gotos): Don't duplicate
+	the block including noncopyable insn.
+
 2005-02-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (delete_trivially_dead_insns): Speed up by minimizing
