@@ -1,6 +1,6 @@
 // Object.h - Header file for java.lang.Object.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2004  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -15,6 +15,8 @@ details.  */
 
 #include <gcj/javaprims.h>
 
+extern "Java"
+{
 // This class is mainly here as a kludge to get G++ to allocate two
 // extra entries in each vtable.
 struct _JvObjectPrefix
@@ -27,6 +29,7 @@ protected:
     virtual void nacd_2 (void) {}; // Actually the GC bitmap marking descriptor.
 # endif
 };
+}
 
 // Forward declarations for friends of java::lang::Object
 void _Jv_MonitorEnter (jobject obj);
