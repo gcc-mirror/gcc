@@ -1,3 +1,8 @@
+2000-03-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (require_complete_type): Don't assume size_zero_node.
+	(complete_type_or_else): Likewise.
+
 2000-03-16  Steven Grady <grady@digitaldeck.com>
 	    Jason Merrill  <jason@casey.cygnus.com>
 
