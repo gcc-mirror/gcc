@@ -1,3 +1,8 @@
+Wed Feb 11 01:46:20 1998  Manfred Hollstein <manfred@s-direktnet.de>
+
+	* Makefile.in ($(lib)): Call $(AR) repeatedly to avoid overflowing
+	argument size limit on ancious System V.
+
 Sun Feb  8 00:32:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in: Add `info install-info clean-info check dvi' targets.
