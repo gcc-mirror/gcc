@@ -211,7 +211,7 @@ esac
 case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
-	tahoe | i860 | ia64 | m32r | m68k | m68000 | m88k | ns32k | arc | arm \
+	tahoe | i860 | ia64 | m32r | m68k | m68000 | m88k | ns32k | arc | arm | xscale \
 		| arme[lb] | armv[2345] | armv[345][lb] | pyramid | mn10200 | mn10300 | tron | a29k \
 		| 580 | i960 | h8300 \
 		| x86 | ppcbe | mipsbe | mipsle | shbe | shle | armbe | armle \
@@ -267,7 +267,7 @@ case $basic_machine in
 	      | mips64el-* | mips64orion-* | mips64orionel-* \
 	      | mips64vr4100-* | mips64vr4100el-* | mips64vr4300-* | mips64vr4300el-* \
 	      | mipstx39-* | mipstx39el-* | mcore-* \
-	      | f301-* | armv*-* | s390-* | sv1-* | t3e-* \
+	      | f301-* | armv*-* | s390-* | s390x-* | sv1-* | t3e-* \
 	      | m88110-* | m680[01234]0-* | m683?2-* | m68360-* | z8k-* | d10v-* \
 	      | thumb-* | v850-* | d30v-* | tic30-* | c30-* | fr30-* \
 	      | bs2000-* | tic54x-* | c54x-* | x86_64-*)
@@ -916,7 +916,7 @@ case $basic_machine in
 		basic_machine=we32k-att
 		;;
 	sh3 | sh4)
-		base_machine=sh-unknown
+		basic_machine=sh-unknown
 		;;
 	sparc | sparcv9)
 		basic_machine=sparc-sun
