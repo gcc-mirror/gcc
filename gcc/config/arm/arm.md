@@ -4248,7 +4248,7 @@
   "GET_CODE (operands[0]) == SYMBOL_REF"
   "*
   {
-    return NEED_PLT_GOT ? \"bl%?\\t%a0(PLT)\" : \"bl%?\\t%a0\";
+    return NEED_PLT_RELOC ? \"bl%?\\t%a0(PLT)\" : \"bl%?\\t%a0\";
   }"
 [(set_attr "type" "call")])
 
@@ -4260,7 +4260,7 @@
   "GET_CODE(operands[1]) == SYMBOL_REF"
   "*
   {
-    return NEED_PLT_GOT ? \"bl%?\\t%a1(PLT)\" : \"bl%?\\t%a1\";
+    return NEED_PLT_RELOC ? \"bl%?\\t%a1(PLT)\" : \"bl%?\\t%a1\";
   }"
 [(set_attr "type" "call")])
 
@@ -5991,7 +5991,7 @@
   }
 
   output_return_instruction (NULL, FALSE, FALSE);
-  return NEED_PLT_GOT ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
+  return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
 }"
 [(set_attr "type" "call")
  (set_attr "length" "8")])
@@ -6019,7 +6019,7 @@
   }
 
   output_return_instruction (NULL, FALSE, FALSE);
-  return NEED_PLT_GOT ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
+  return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
 }"
 [(set_attr "type" "call")
  (set_attr "length" "8")])

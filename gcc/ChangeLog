@@ -1,3 +1,29 @@
+Fri Jul 23 14:09:58 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	* config/arm/arm.h (TARGET_SWITCHES): Add 
+	-m{no-}single-pic-base.  Correct help string for -mshort-load-words.
+	(TARGET_OPTIONS): Add -mpic-register=.
+	(ARM_FLAG_SINGLE_PIC_BASE, TARGET_SINGLE_PIC_BASE): Define.
+	(arm_pic_register_string): Declare.
+	(NEED_PLT_GOT): Delete, replace with ...
+	(NEED_GOT_RELOC, NEED_PLT_RELOC): ... these.  New macros.
+	(OUTPUT_INT_ADDR_CONST): Replace NEED_PLT_GOT with NEED_GOT_RELOC.
+	(ASM_OUTPUT_MI_THUNK): Replace NEED_PLT_GOT with NEED_PLT_RELOC.
+	* config/arm/arm.c (arm_override_options): Add new option
+ 	-mpic-register=N.
+	(arm_pic_register_string): New variable.
+	(arm_finalize_pic): Respect TARGET_SINGLE_PIC_BASE.
+	(output_func_prologue): If TARGET_SINGLE_PIC_BASE, treat the PIC
+	register as never live.  Use NEED_PLT_RELOC not NEED_PLT_GOT.
+	(output_return_instruction): Likewise. 
+	* config/arm/elf.h (NEED_PLT_GOT): Delete, replace with ...
+	(NEED_GOT_RELOC, NEED_PLT_RELOC): ... these.  Define to flag_pic.
+	* config/arm/arm.md: Use NEED_PLT_RELOC in place of NEED_PLT_GOT.
+
+	* invoke.texi (ARM Options): Fix spelling.  Remove duplicate
+	mention of -msched-prolog.  Document new options -msingle-pic-base 
+	and -mpic-register=.
+
 Thu Jul 22 18:23:56 1999  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (reemit_notes): Tidy.

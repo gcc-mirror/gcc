@@ -142,6 +142,7 @@ enum machine_mode output_memory_reference_mode;
 int current_function_anonymous_args;
 
 /* The register number to be used for the PIC offset register.  */
+const char * arm_pic_register_string = NULL;
 int arm_pic_register = 9;
 
 /* Set to one if we think that lr is only saved because of subroutine calls,
@@ -528,7 +529,8 @@ arm_override_options ()
   
   /* For arm2/3 there is no need to do any scheduling if there is only
      a floating point emulator, or we are doing software floating-point.  */
-  if ((TARGET_SOFT_FLOAT || arm_fpu != FP_HARD) && (tune_flags & FL_MODE32) == 0)
+  if ((TARGET_SOFT_FLOAT || arm_fpu != FP_HARD)
+      && (tune_flags & FL_MODE32) == 0)
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;
   
   arm_prog_mode = TARGET_APCS_32 ? PROG_MODE_PROG32 : PROG_MODE_PROG26;
@@ -541,6 +543,25 @@ arm_override_options ()
 	arm_structure_size_boundary = size;
       else
 	warning ("Structure size boundary can only be set to 8 or 32");
+    }
+
+  if (arm_pic_register_string != NULL)
+    {
+      int pic_register;
+
+      if (! flag_pic)
+	warning ("-mpic-register= is useless without -fpic");
+
+      pic_register = decode_reg_name (arm_pic_register_string);
+      
+      /* Prevent the user from choosing an obviously stupid PIC register.  */
+      if (pic_register < 0 || call_used_regs[pic_register]
+	  || pic_register == HARD_FRAME_POINTER_REGNUM
+	  || pic_register == STACK_POINTER_REGNUM
+	  || pic_register >= PC_REGNUM)
+	error ("Unable to use '%s' for PIC register", arm_pic_register_string);
+      else
+	arm_pic_register = pic_register;
     }
   
   /* If optimizing for space, don't synthesize constants.
@@ -1556,7 +1577,7 @@ arm_finalize_pic ()
   rtx l1, pic_tmp, pic_tmp2, seq;
   rtx global_offset_table;
 
-  if (current_function_uses_pic_offset_table == 0)
+  if (current_function_uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
     return;
 
   if (! flag_pic)
@@ -5353,7 +5374,7 @@ output_return_instruction (operand, really_return, reverse)
 
       /* Otherwise, trap an attempted return by aborting. */
       ops[0] = operand;
-      ops[1] = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_GOT ? "abort(PLT)" 
+      ops[1] = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_RELOC ? "abort(PLT)" 
 				   : "abort");
       assemble_external_libcall (ops[1]);
       output_asm_insn (reverse ? "bl%D0\t%a1" : "bl%d0\t%a1", ops);
@@ -5367,7 +5388,8 @@ output_return_instruction (operand, really_return, reverse)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
       live_regs++;
 
-  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+  if (flag_pic && ! TARGET_SINGLE_PIC_BASE
+      && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     live_regs++;
 
   if (live_regs || (regs_ever_live[LR_REGNUM] && ! lr_save_eliminated))
@@ -5391,7 +5413,8 @@ output_return_instruction (operand, really_return, reverse)
       for (reg = 0; reg <= 10; reg++)
         if (regs_ever_live[reg]
 	    && (! call_used_regs[reg]
-		|| (flag_pic && reg == PIC_OFFSET_TABLE_REGNUM)))
+		|| (flag_pic && ! TARGET_SINGLE_PIC_BASE
+		    && reg == PIC_OFFSET_TABLE_REGNUM)))
           {
 	    strcat (instr, "%|");
             strcat (instr, reg_names[reg]);
@@ -5551,7 +5574,8 @@ output_func_prologue (f, frame_size)
     if (regs_ever_live[reg] && ! call_used_regs[reg])
       live_regs_mask |= (1 << reg);
 
-  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+  if (flag_pic && ! TARGET_SINGLE_PIC_BASE 
+      && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
 
   if (frame_pointer_needed)
@@ -5617,7 +5641,7 @@ output_func_epilogue (f, frame_size)
   if (TARGET_ABORT_NORETURN && volatile_func)
     {
       rtx op;
-      op = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_GOT ? "abort(PLT)" : "abort");
+      op = gen_rtx_SYMBOL_REF (Pmode, NEED_PLT_RELOC ? "abort(PLT)" : "abort");
       assemble_external_libcall (op);
       output_asm_insn ("bl\t%a0", &op);
       goto epilogue_done;
@@ -5630,7 +5654,10 @@ output_func_epilogue (f, frame_size)
 	floats_offset += 4;
       }
 
-  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+  /* If we aren't loading the PIC register, don't stack it even though it may
+     be live.  */
+  if (flag_pic && ! TARGET_SINGLE_PIC_BASE 
+      && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     {
       live_regs_mask |= (1 << PIC_OFFSET_TABLE_REGNUM);
       floats_offset += 4;
