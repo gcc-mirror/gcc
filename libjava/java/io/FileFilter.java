@@ -39,27 +39,27 @@ exception statement from your version. */
 package java.io;
 
 /**
-  * This interface has one method which is used for filtering pathnames
-  * returned in a pathname listing.  It is currently used by the 
-  * <code>File.listFiles()</code> method.
-  * <p>
-  * The method in this interface determines if a particular pathname should
-  * or should not be included in the pathname listing.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  */
+ * This interface has one method which is used for filtering pathnames
+ * returned in a pathname listing.  It is currently used by the 
+ * <code>File.listFiles()</code> method.
+ * <p>
+ * The method in this interface determines if a particular pathname should
+ * or should not be included in the pathname listing.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ */
 public interface FileFilter
 {
 
   /**
-    * This method determines whether or not a given pathname should be included
-    * in a pathname listing.
-    *
-    * @param pathname The pathname to test
-    *
-    * @return <code>true</code> if the path should be included in the list, 
-    * <code>false</code> otherwise.
-    */
+   * This method determines whether or not a given pathname should be included
+   * in a pathname listing.
+   *
+   * @param pathname The pathname to test
+   *
+   * @return <code>true</code> if the path should be included in the list, 
+   * <code>false</code> otherwise.
+   */
   public abstract boolean accept(File pathname);
 
 } // interface FileFilter

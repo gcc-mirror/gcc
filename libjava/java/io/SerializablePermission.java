@@ -67,8 +67,6 @@ public final class SerializablePermission extends BasicPermission
 
   private static final String[] legal_names = { "enableSubclassImplementation",
   					      "enableSubstitution" };
-  /*************************************************************************/
-
   /*
    * Constructors
    */
@@ -87,8 +85,6 @@ public final class SerializablePermission extends BasicPermission
   {
     this(name, null);
   }
-
-  /*************************************************************************/
 
   /**
     * This method initializes a new instance of 

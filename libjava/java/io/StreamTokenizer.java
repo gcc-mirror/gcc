@@ -580,7 +580,7 @@ public class StreamTokenizer
    * quote, and comment) from all characters.  It is equivalent to calling
    * <code>ordinaryChars(0x00, 0xFF)</code>.
    *
-   * @see ordinaryChars
+   * @see #ordinaryChars(int, int)
    */
   public void resetSyntax()
   {

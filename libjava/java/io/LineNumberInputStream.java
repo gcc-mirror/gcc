@@ -57,7 +57,7 @@ package java.io;
  * stream, it has the same mark/reset functionality as the underlying
  * stream.  The <code>mark()</code> and <code>reset()</code> methods
  * in this class handle line numbers correctly.  Calling
- * @code{reset()} resets the line number to the point at which
+ * <code>reset()</code> resets the line number to the point at which
  * <code>mark()</code> was called if the subordinate stream supports
  * that functionality.
  * <p>
@@ -119,7 +119,7 @@ public class LineNumberInputStream extends FilterInputStream
   /**
    * This method returns the current line number
    *
-   * @returns The current line number
+   * @return The current line number
    */
   public int getLineNumber()
   {

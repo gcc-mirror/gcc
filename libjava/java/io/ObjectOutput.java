@@ -58,8 +58,6 @@ public interface ObjectOutput extends DataOutput
     */
   public abstract void write(int b) throws IOException;
 
-  /*************************************************************************/
-
   /**
     * This method writes all the bytes in the specified byte array to the
     * output stream.
@@ -69,8 +67,6 @@ public interface ObjectOutput extends DataOutput
     * @exception IOException If an error occurs.
     */
   public abstract void write(byte[] buf) throws IOException;
-
-  /*************************************************************************/
 
   /**
     * This method writes <code>len</code> bytes from the specified array
@@ -85,8 +81,6 @@ public interface ObjectOutput extends DataOutput
   public abstract void write(byte[] buf, int offset, int len) 
     throws IOException;
 
-  /*************************************************************************/
-
   /**
     * This method writes a object instance to a stream.  The format of the
     * data written is determined by the actual implementation of this method
@@ -97,8 +91,6 @@ public interface ObjectOutput extends DataOutput
     */
   public abstract void writeObject(Object obj) throws IOException;
 
-  /*************************************************************************/
-
   /**
     * This method causes any buffered data to be flushed out to the underlying
     * stream
@@ -106,8 +98,6 @@ public interface ObjectOutput extends DataOutput
     * @exception IOException If an error occurs
     */
   public abstract void flush() throws IOException;
-
-  /*************************************************************************/
 
   /**
     * This method closes the underlying stream.

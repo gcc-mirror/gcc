@@ -118,7 +118,7 @@ public class ByteArrayOutputStream extends OutputStream
    *
    * @return The number of bytes in the internal buffer
    *
-   * @see reset
+   * @see #reset()
    */
   public int size ()
   {

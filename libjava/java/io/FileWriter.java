@@ -54,8 +54,6 @@ package java.io;
 public class FileWriter extends OutputStreamWriter
 {
 
-  /*************************************************************************/
-
   /*
    * Constructors
    */
@@ -75,8 +73,6 @@ public class FileWriter extends OutputStreamWriter
     super(new FileOutputStream(file));
   }
 
-  /*************************************************************************/
-
   /**
     * This method initializes a new <code>FileWriter</code> object to write
     * to the specified <code>File</code> object.
@@ -94,8 +90,6 @@ public class FileWriter extends OutputStreamWriter
     super(new FileOutputStream(file, append));
   }
 
-  /*************************************************************************/
-
   /**
     * This method initializes a new <code>FileWriter</code> object to write
     * to the specified <code>FileDescriptor</code> object.
@@ -109,8 +103,6 @@ public class FileWriter extends OutputStreamWriter
   {
     super(new FileOutputStream(fd));
   }
-
-  /*************************************************************************/
 
   /**
     * This method intializes a new <code>FileWriter</code> object to 
@@ -127,8 +119,6 @@ public class FileWriter extends OutputStreamWriter
   {
     super(new FileOutputStream(name));
   }
-
-  /*************************************************************************/
 
   /**
     * This method intializes a new <code>FileWriter</code> object to 

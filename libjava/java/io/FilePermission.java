@@ -93,7 +93,7 @@ public final class FilePermission extends Permission implements Serializable
    **        permission represents.
    ** @param actionsString a comma-separated list of the actions this
    **        permission represents.
-   ** @XXX what to do when the file string is malformed?
+   ** FIXME: what to do when the file string is malformed?
    **/
   public FilePermission(String pathExpression, String actionsString) 
   {

@@ -44,173 +44,147 @@ package java.io;
  */
 
 /**
-  * This interface is implemented by classes that can wrte data to streams 
-  * from Java primitive types.
-  *
-  * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@cygnus.com>
-  */
+ * This interface is implemented by classes that can wrte data to streams 
+ * from Java primitive types.
+ *
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey <tromey@cygnus.com>
+ */
 public interface DataOutput
 {
 
   /**
-    * This method writes a Java boolean value to an output stream
-    *
-    * @param value The boolean value to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a Java boolean value to an output stream
+   *
+   * @param value The boolean value to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeBoolean(boolean value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a Java byte value to an output stream
-    *
-    * @param value The int value to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a Java byte value to an output stream
+   *
+   * @param value The int value to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeByte(int value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a Java char value to an output stream
-    *
-    * @param value The char value to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a Java char value to an output stream
+   *
+   * @param value The char value to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeChar(int value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a Java int value to an output stream as a 16 bit value
-    *
-    * @param value The int value to write as a 16-bit value
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a Java int value to an output stream as a 16 bit value
+   *
+   * @param value The int value to write as a 16-bit value
+   *
+   * @exception IOException If an error occurs
+   */
   void writeShort(int value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a Java int value to an output stream
-    *
-    * @param value The int value to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a Java int value to an output stream
+   *
+   * @param value The int value to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeInt(int value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a Java long value to an output stream
-    *
-    * @param value The long value to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a Java long value to an output stream
+   *
+   * @param value The long value to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeLong(long value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a Java float value to an output stream
-    *
-    * @param value The float value to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a Java float value to an output stream
+   *
+   * @param value The float value to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeFloat(float value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a Java double value to an output stream
-    *
-    * @param value The double value to write
-    *
-    * @exception IOException If any other error occurs
-    */
+   * This method writes a Java double value to an output stream
+   *
+   * @param value The double value to write
+   *
+   * @exception IOException If any other error occurs
+   */
   void writeDouble(double value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a String to an output stream as an array of bytes
-    *
-    * @param value The String to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a String to an output stream as an array of bytes
+   *
+   * @param value The String to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeBytes(String value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a String to an output stream as an array of char's
-    *
-    * @param value The String to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a String to an output stream as an array of char's
+   *
+   * @param value The String to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeChars(String value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes a String to an output stream encoded in
-    * UTF-8 format.
-    *
-    * @param value The String to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes a String to an output stream encoded in
+   * UTF-8 format.
+   *
+   * @param value The String to write
+   *
+   * @exception IOException If an error occurs
+   */
   void writeUTF(String value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes an 8-bit value (passed into the method as a Java
-    * int) to an output stream.
-    *
-    * @param value The byte to write to the output stream
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes an 8-bit value (passed into the method as a Java
+   * int) to an output stream.
+   *
+   * @param value The byte to write to the output stream
+   *
+   * @exception IOException If an error occurs
+   */
   void write(int value) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes the raw byte array passed in to the output stream.
-    *
-    * @param buf The byte array to write
-    *
-    * @exception IOException If an error occurs
-    */
+   * This method writes the raw byte array passed in to the output stream.
+   *
+   * @param buf The byte array to write
+   *
+   * @exception IOException If an error occurs
+   */
   void write(byte[] buf) throws IOException;
 
-  /*************************************************************************/
-
   /**
-    * This method writes raw bytes from the passed array <code>buf</code> 
-    * starting
-    * <code>offset</code> bytes into the buffer.  The number of bytes 
-    * written will be * exactly <code>len</code>. 
-    *
-    * @param buf The buffer from which to write the data
-    * @param offset The offset into the buffer to start writing data from
-    * @param len The number of bytes to write from the buffer to the output 
-    * stream
-    *
-    * @exception IOException If any other error occurs
-    */
+   * This method writes raw bytes from the passed array <code>buf</code> 
+   * starting
+   * <code>offset</code> bytes into the buffer.  The number of bytes 
+   * written will be * exactly <code>len</code>. 
+   *
+   * @param buf The buffer from which to write the data
+   * @param offset The offset into the buffer to start writing data from
+   * @param len The number of bytes to write from the buffer to the output 
+   * stream
+   *
+   * @exception IOException If any other error occurs
+   */
   void write(byte[] buf, int offset, int len) throws IOException;
 
 } // interface DataOutput

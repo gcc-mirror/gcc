@@ -56,24 +56,11 @@ package java.io;
   */
 public class FilterOutputStream extends OutputStream
 {
-
-  /*************************************************************************/
-
-  /*
-   * Instance Variables
-   */
-
   /**
     * This is the subordinate <code>OutputStream</code> that this class
     * redirects its method calls to.
     */
   protected OutputStream out;
-
-  /*************************************************************************/
-
-  /*
-   * Constructors
-   */
 
   /**
     * This method initializes an instance of <code>FilterOutputStream</code>
@@ -85,12 +72,6 @@ public class FilterOutputStream extends OutputStream
   {
     this.out = out;
   }
-
-  /*************************************************************************/
-
-  /*
-   * Instance Methods
-   */
 
   /**
     * This method closes the underlying <code>OutputStream</code>.  Any
@@ -104,8 +85,6 @@ public class FilterOutputStream extends OutputStream
     out.close();
   }
 
-  /*************************************************************************/
-
   /**
     * This method attempt to flush all buffered output to be written to the
     * underlying output sink.
@@ -116,8 +95,6 @@ public class FilterOutputStream extends OutputStream
   {
     out.flush();
   }
-
-  /*************************************************************************/
 
   /**
     * This method writes a single byte of output to the underlying
@@ -131,8 +108,6 @@ public class FilterOutputStream extends OutputStream
   {
     out.write(b);
   }
-
-  /*************************************************************************/
 
   /**
     * This method writes all the bytes in the specified array to the underlying
@@ -150,8 +125,6 @@ public class FilterOutputStream extends OutputStream
     // Don't do checking here, per Java Lang Spec.
     write(buf, 0, buf.length);
   }
-
-  /*************************************************************************/
 
   /**
     * This method calls the <code>write(int)</code> method <code>len</code>
