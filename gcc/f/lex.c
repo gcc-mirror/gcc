@@ -32,6 +32,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.j"
 #include "tree.j"
 #include "output.j"  /* Must follow tree.j so TREE_CODE is defined! */
+#include "ggc.j"
 #endif
 
 #ifdef DWARF_DEBUGGING_INFO
@@ -1320,7 +1321,7 @@ ffelex_hash_ (FILE *finput)
       lineno = l;
 
       if (ffelex_kludge_flag_)
-	input_filename = ffelex_token_text (token);
+	input_filename = ggc_alloc_string (ffelex_token_text (token), -1);
       else
 	{
 	  wf = ffewhere_file_new (ffelex_token_text (token),

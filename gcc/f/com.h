@@ -318,6 +318,7 @@ tree ffecom_lookup_label (ffelab label);
 tree ffecom_make_tempvar (const char *commentary, tree type,
 			  ffetargetCharacterSize size, int elements);
 tree ffecom_modify (tree newtype, tree lhs, tree rhs);
+void ffecom_save_tree_forever (tree t);
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 void ffecom_file (const char *name);
 void ffecom_notify_init_storage (ffestorag st);

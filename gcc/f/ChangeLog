@@ -1,3 +1,47 @@
+Thu Dec 30 11:42:05 1999  Geoff Keating  <geoffk@cygnus.com>
+
+	* com.c (ffecom_init_0): Make double_ftype_double,
+	float_ftype_float, ldouble_ftype_ldouble,
+	ffecom_tree_ptr_to_fun_type_void local.
+	(tracker_head): New static variable.
+	(mark_tracker_head): New, marker procedure for tracker_head.
+	(ffecom_save_tree_forever): New procedure.
+	(ffecom_init_zero_): Remove obstack use.
+	(ffecom_make_gfrt_): Remove obstack use.
+	(ffecom_sym_transform_): Remove obstack use, save appropriate trees.
+	(ffecom_transform_common_): Remove obstack use, save appropriate 
+	trees.
+	(ffecom_type_namelist_): Remove obstack use, save appropriate 
+	trees.
+	(ffecom_type_vardesc_): Remove obstack use, save appropriate trees.
+	(ffecom_lookup_label): Remove obstack use, save appropriate trees.
+	(duplicate_decls): Remove obstack use.
+	(finish_function): push & pop ggc context around
+	rest_of_compilation when building nested function.
+	(mark_binding_level): New function.
+	(init_decl_processing): Mark all the GC roots.
+	(ggc_p): Set to 1.
+	(lang_mark_tree): New function.
+	(lang_mark_false_label_stack): New trivial function.
+	* com.h (ffecom_save_tree_forever): Declare as external.
+	* lex.c (ffelex_hash_): Use GC to allocate the filename string
+	even when ffelex_kludge_flag_.
+	* ste.c (ffeste_io_ialist_): Register a static root.
+	(ffeste_io_inlist_): Likewise.
+	(ffeste_io_icilist_): Likewise.
+	(ffeste_io_cllist_): Likewise.
+	(ffeste_io_cilist_): Likewise.
+	(ffeste_io_olist_): Likewise.
+	* Makefile.in (OBJS): Don't use ggc-callbacks.o.
+	(OBJDEPS): Likewise.
+	(GGC_H): New variable.
+	Update dependencies.
+	* where.c (ffewhere_head): New global.
+	(mark_ffewhere_head): New marker procedure for ffewhere_head.
+	(ffewhere_file_kill): Use GC to do memory management.
+	(ffewhere_file_new): Use GC to do memory management.
+	* ggc.j: New file.
+
 Wed Dec 29 19:29:26 1999  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* g77.texi (C Interfacing Tools): Fix an incorrect link.

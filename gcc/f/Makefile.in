@@ -194,8 +194,8 @@ F77_OBJS = \
  where.o
 
 # Language-independent object files.
-OBJS = `cat ../stamp-objlist` ../ggc-callbacks.o
-OBJDEPS = ../stamp-objlist ../ggc-callbacks.o
+OBJS = `cat ../stamp-objlist`
+OBJDEPS = ../stamp-objlist
 
 compiler: ../f771$(exeext)
 ../f771$(exeext): $(P) $(F77_OBJS) $(OBJDEPS) $(LIBDEPS)
@@ -225,6 +225,7 @@ ASSERT_H = $(srcdir)/assert.j $(srcdir)/../assert.h
 CONFIG_H = $(srcdir)/config.j ../config.h
 CONVERT_H = $(srcdir)/convert.j $(srcdir)/../convert.h
 FLAGS_H = $(srcdir)/flags.j $(srcdir)/../flags.h
+GGC_H = $(srcdir)/ggc.j $(srcdir)/../ggc.h
 GLIMITS_H = $(srcdir)/glimits.j $(srcdir)/../glimits.h
 HCONFIG_H = $(srcdir)/hconfig.j ../hconfig.h
 INPUT_H = $(srcdir)/input.j $(srcdir)/../input.h
@@ -265,7 +266,7 @@ com.o: com.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(FLAGS_H) $(RTL_H) $(TO
  malloc.h info.h info-b.def info-k.def info-w.def target.h bad.h \
  bad.def where.h $(GLIMITS_H) top.h lex.h type.h intrin.h intrin.def \
  lab.h symbol.h symbol.def equiv.h storag.h global.h name.h expr.h \
- implic.h src.h st.h
+ implic.h src.h st.h $(GGC_H)
 data.o: data.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) data.h bld.h \
  bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
  info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \
@@ -311,7 +312,7 @@ lex.o: lex.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) top.h malloc.h where.h \
  $(GLIMITS_H) bad.h bad.def com.h com-rt.def $(TREE_H) bld.h bld-op.def \
  bit.h info.h info-b.def info-k.def info-w.def target.h lex.h type.h \
  intrin.h intrin.def lab.h symbol.h symbol.def equiv.h storag.h \
- global.h name.h src.h $(FLAGS_H) $(INPUT_H) $(TOPLEV_H) $(OUTPUT_H)
+ global.h name.h src.h $(FLAGS_H) $(INPUT_H) $(TOPLEV_H) $(OUTPUT_H) $(GGC_H)
 malloc.o: malloc.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) malloc.h
 name.o: name.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) bad.h bad.def where.h \
  $(GLIMITS_H) top.h malloc.h name.h global.h info.h info-b.def info-k.def \
@@ -359,7 +360,7 @@ ste.o: ste.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(RTL_H) $(TOPLEV_H) ste
  info-b.def info-k.def info-w.def target.h bad.h bad.def where.h \
  $(GLIMITS_H) top.h lex.h type.h lab.h storag.h symbol.h symbol.def \
  equiv.h global.h name.h intrin.h intrin.def stp.h stt.h stamp-str sts.h \
- stv.h stw.h expr.h sta.h
+ stv.h stw.h expr.h sta.h $(GGC_H)
 storag.o: storag.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) storag.h bld.h \
  bld-op.def bit.h malloc.h com.h com-rt.def $(TREE_H) info.h info-b.def \
  info-k.def info-w.def target.h bad.h bad.def where.h $(GLIMITS_H) top.h \
@@ -413,7 +414,7 @@ top.o: top.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) top.h malloc.h where.h \
 type.o: type.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) type.h malloc.h
 version.o: version.c
 where.o: where.c proj.h $(CONFIG_H) $(SYSTEM_H) $(ASSERT_H) where.h $(GLIMITS_H) \
- top.h malloc.h lex.h
+ top.h malloc.h lex.h $(GGC_H)
 
 # The rest of this list (Fortran 77 language-specific files) is hand-generated.
 
