@@ -2593,9 +2593,18 @@ emit_move_insn_1 (x, y)
 	}
       else
 	{
-	  /* Show the output dies here.  */
+	  /* Show the output dies here.  This is only necessary for pseudos.  */
 	  if (x != y)
-	    emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	    {
+	      rtx reg = x;
+	      
+	      while (GET_CODE (reg) == SUBREG)
+		reg = SUBREG_REG (reg);
+	      
+	      if (GET_CODE (reg) == REG
+		  && REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+		emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	    }
 
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
 		     (gen_realpart (submode, x), gen_realpart (submode, y)));
@@ -2624,9 +2633,18 @@ emit_move_insn_1 (x, y)
 	}
 #endif
 			     
-      /* Show the output dies here.  */
+      /* Show the output dies here.  This is only necessary for pseudos.  */
       if (x != y)
-        emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	{
+	  rtx reg = x;
+	  
+	  while (GET_CODE (reg) == SUBREG)
+	    reg = SUBREG_REG (reg);
+	  
+	  if (GET_CODE (reg) == REG
+	      && REGNO (reg) >= FIRST_PSEUDO_REGISTER)
+	    emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
+	}
 
       for (i = 0;
 	   i < (GET_MODE_SIZE (mode)  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
