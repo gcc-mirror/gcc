@@ -1,3 +1,9 @@
+2001-06-10  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* exception.cc (cstdlib): Replaces stdlib.h.
+	(_Jv_Throw): Use std::abort().
+	(PERSONALITY_FUNCTION): Likewise.
+
 2001-06-08  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
