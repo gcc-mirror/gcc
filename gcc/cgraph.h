@@ -25,7 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Information about the function collected locally.
    Available after function is lowered  */
 
-struct cgraph_local_info
+struct cgraph_local_info GTY(())
 {
   /* Set when function function is visiable in current compilation unit only
      and it's address is never taken.  */
@@ -40,7 +40,7 @@ struct cgraph_local_info
 /* Information about the function that needs to be computed globally
    once compilation is finished.  Available only with -funit-at-time.  */
 
-struct cgraph_global_info
+struct cgraph_global_info GTY(())
 {
   /* Set when the function will be inlined exactly once.  */
   bool inline_once;
@@ -49,9 +49,10 @@ struct cgraph_global_info
 /* Information about the function that is propagated by the RTL backend.
    Available only for functions that has been already assembled.  */
 
-struct cgraph_rtl_info
+struct cgraph_rtl_info GTY(())
 {
-   bool const_function, pure_function;
+   bool const_function;
+   bool pure_function;
    int preferred_incoming_stack_boundary;
 };
 
@@ -59,19 +60,20 @@ struct cgraph_rtl_info
 /* The cgraph data strutcture.
    Each function decl has assigned cgraph_node listing calees and callers.  */
 
-struct cgraph_node
+struct cgraph_node GTY(())
 {
   tree decl;
   struct cgraph_edge *callees;
   struct cgraph_edge *callers;
-  struct cgraph_node *next, *previous;
+  struct cgraph_node *next;
+  struct cgraph_node *previous;
   /* For nested functions points to function the node is nested in.  */
   struct cgraph_node *origin;
   /* Points to first nested function, if any.  */
   struct cgraph_node *nested;
   /* Pointer to the next function with same origin, if any.  */
   struct cgraph_node *next_nested;
-  void *aux;
+  PTR GTY ((skip (""))) aux;
 
   /* Set when function must be output - it is externally visible
      or it's address is taken.  */
@@ -90,9 +92,10 @@ struct cgraph_node
   struct cgraph_rtl_info rtl;
 };
 
-struct cgraph_edge
+struct cgraph_edge GTY(())
 {
-  struct cgraph_node *caller, *callee;
+  struct cgraph_node *caller;
+  struct cgraph_node *callee;
   struct cgraph_edge *next_caller;
   struct cgraph_edge *next_callee;
 };
@@ -100,10 +103,10 @@ struct cgraph_edge
 /* The cgraph_varpool data strutcture.
    Each static variable decl has assigned cgraph_varpool_node.  */
 
-struct cgraph_varpool_node
+struct cgraph_varpool_node GTY(())
 {
   tree decl;
-  void *aux;
+  PTR GTY ((skip (""))) aux;
 
   /* Set when function must be output - it is externally visible
      or it's address is taken.  */
@@ -114,13 +117,13 @@ struct cgraph_varpool_node
   bool output;
 };
 
-extern struct cgraph_node *cgraph_nodes;
-extern int cgraph_n_nodes;
+extern GTY(()) struct cgraph_node *cgraph_nodes;
+extern GTY(()) int cgraph_n_nodes;
 extern bool cgraph_global_info_ready;
-extern struct cgraph_node *cgraph_nodes_queue;
+extern GTY(()) struct cgraph_node *cgraph_nodes_queue;
 
-extern int cgraph_varpool_n_nodes;
-extern struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
+extern GTY(()) int cgraph_varpool_n_nodes;
+extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 
 
 /* In cgraph.c  */

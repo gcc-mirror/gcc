@@ -1,3 +1,17 @@
+Mon Jun 30 23:47:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (GTFILES): Add cgraph.h.
+	* cgraph.c (known_decls): Remove.
+	(cgraph_hash, cgraph_nodes, cgraph_nodes_queue,
+	cgraph_varpool_hash, cgraph_varpool_nodes_queue): GTYize.
+	(cgraph_node): Do not allocate known_decls; use polutate hashtable.
+	(cgraph_varpool_node): Likewise; add next pointer.
+	(cgraph_varpool_nodes): New static variable.
+	* cgraph.h (cgraph_local_info, cgraph_global_info, cgraph_rtl_info,
+	cgraph_node, cgraph_edge, cgraph_varpool_node, cgraph_nodes, cgraph_n_nodes,
+	cgraph_varpool_n_nodes, cgraph_varpool_nodes_queue): GTYize.
+	* gengtype.c (open_base_files): Include cgraph.h
+
 2003-06-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* Changelog: Remove ">>>>>>>" from previous change.
