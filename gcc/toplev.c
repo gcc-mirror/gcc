@@ -765,6 +765,20 @@ int flag_no_ident = 0;
 /* This will perform a peephole pass before sched2. */
 int flag_peephole2 = 0;
 
+/* Values of the -falign-* flags: how much to align labels in code. 
+   0 means `use default', 1 means `don't align'.  
+   For each variable, there is an _log variant which is the power
+   of two not less than the variable, for .align output.  */
+
+int align_loops;
+int align_loops_log;
+int align_jumps;
+int align_jumps_log;
+int align_labels;
+int align_labels_log;
+int align_functions;
+int align_functions_log;
+
 /* Table of supported debugging formats.  */
 static struct
 {
@@ -959,6 +973,14 @@ lang_independent_options f_options[] =
    "Assume arguments do not alias each other or globals" },
   {"strict-aliasing", &flag_strict_aliasing, 1,
    "Assume strict aliasing rules apply" },
+  {"align-loops", &align_loops, 0, 
+   "Align the start of loops" },
+  {"align-jumps", &align_jumps, 0, 
+   "Align labels which are only reached by jumping" },
+  {"align-labels", &align_labels, 0,
+   "Align all labels" },
+  {"align-functions", &align_functions, 0,
+   "Align the start of functions" },
   {"check-memory-usage", &flag_check_memory_usage, 1,
    "Generate code to check every memory access" },
   {"prefix-function-name", &flag_prefix_function_name, 1,
@@ -4494,7 +4516,7 @@ display_help ()
   printf ("  -ffixed-<register>      Mark <register> as being unavailable to the compiler\n");
   printf ("  -fcall-used-<register>  Mark <register> as being corrupted by function calls\n");
   printf ("  -fcall-saved-<register> Mark <register> as being preserved across functions\n");
-  printf ("  -finline-limit-<number> Limits the size of inlined functions to <number>\n");
+  printf ("  -finline-limit=<number> Limits the size of inlined functions to <number>\n");
 
   for (i = NUM_ELEM (f_options); i--;)
     {
@@ -4546,7 +4568,7 @@ display_help ()
   printf ("  -d[letters]             Enable dumps from specific passes of the compiler\n");
   printf ("  -dumpbase <file>        Base name to be used for dumps from specific passes\n");
 #if defined INSN_SCHEDULING
-  printf ("  -sched-verbose-<number> Set the verbosity level of the scheduler\n");
+  printf ("  -sched-verbose=<number> Set the verbosity level of the scheduler\n");
 #endif
   printf ("  --help                  Display this information\n");
 
@@ -4865,6 +4887,14 @@ main (argc, argv)
       flag_inline_functions = 1;
     }
 
+  if (optimize < 2 || optimize_size)
+    {
+      align_loops = 1;
+      align_jumps = 1;
+      align_labels = 1;
+      align_functions = 1;
+    }
+
   /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
      modify it.  */
   target_flags = 0;
@@ -5074,11 +5104,12 @@ main (argc, argv)
 
 	      if (found)
 		;
-	      else if (!strncmp (p, "inline-limit-", 13))
+	      else if (!strncmp (p, "inline-limit-", 13)
+		       || !strncmp (p, "inline-limit=", 13))
 	        inline_max_insns =
 		  read_integral_parameter (p + 13, p - 2, inline_max_insns);
 #ifdef INSN_SCHEDULING
-	      else if (!strncmp (p, "sched-verbose-",14))
+	      else if (!strncmp (p, "sched-verbose=",14))
 		fix_sched_param("verbose",&p[14]);
 #endif
 	      else if (!strncmp (p, "fixed-", 6))
@@ -5087,6 +5118,18 @@ main (argc, argv)
 		fix_register (&p[10], 0, 1);
 	      else if (!strncmp (p, "call-saved-", 11))
 		fix_register (&p[11], 0, 0);
+	      else if (!strncmp (p, "align-loops=", 12))
+		align_loops = read_integral_parameter (p + 12, p - 2,
+						       align_loops);
+	      else if (!strncmp (p, "align-functions=", 16))
+		align_functions = read_integral_parameter (p + 16, p - 2,
+						       align_functions);
+	      else if (!strncmp (p, "align-jumps=", 12))
+		align_jumps = read_integral_parameter (p + 12, p - 2,
+						       align_jumps);
+	      else if (!strncmp (p, "align-labels=", 13))
+		align_labels = read_integral_parameter (p + 13, p - 2,
+							align_labels);
 	      else
 		error ("Invalid option `%s'", argv[i]);
 	    }
@@ -5373,6 +5416,17 @@ main (argc, argv)
 #endif
     }
 
+  /* Set up the align_*_log variables, defaulting them to 1 if they
+     were still unset.  */
+  if (align_loops <= 0) align_loops = 1;
+  align_loops_log = floor_log2 (align_loops*2-1);
+  if (align_jumps <= 0) align_jumps = 1;
+  align_jumps_log = floor_log2 (align_jumps*2-1);
+  if (align_labels <= 0) align_labels = 1;
+  align_labels_log = floor_log2 (align_labels*2-1);
+  if (align_functions <= 0) align_functions = 1;
+  align_functions_log = floor_log2 (align_functions*2-1);
+  
   if (profile_block_flag == 3)
     {
       warning ("`-ax' and `-a' are conflicting options. `-a' ignored.");

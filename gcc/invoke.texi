@@ -150,18 +150,20 @@ in the following sections.
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
 @smallexample
--fbranch-probabilities  -foptimize-register-moves
+-falign-functions=@var{n}  -falign-labels=@var{n}  -falign-loops=@var{n} 
+-falign-jumps=@var{n}  -fbranch-probabilities  
 -fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
 -fdelayed-branch   -fexpensive-optimizations
 -ffast-math  -ffloat-store  -fforce-addr  -fforce-mem
--fdata-sections -ffunction-sections  -fgcse 
--finline-functions -finline-limit-@var{n} -fkeep-inline-functions
--fno-default-inline -fno-defer-pop  -fno-function-cse
--fno-inline  -fno-peephole  -fomit-frame-pointer -fregmove
--frerun-cse-after-loop  -frerun-loop-opt -fschedule-insns
--fschedule-insns2  -fstrength-reduce  -fthread-jumps
--funroll-all-loops  -funroll-loops
--fmove-all-movables  -freduce-all-givs -fstrict-aliasing
+-fdata-sections  -ffunction-sections  -fgcse 
+-finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
+-fmove-all-movables  -fno-default-inline  -fno-defer-pop
+-fno-function-cse  -fno-inline  -fno-peephole
+-fomit-frame-pointer  -foptimize-register-moves  -fregmove
+-frerun-cse-after-loop  -frerun-loop-opt  -freduce-all-givs
+-fschedule-insns  -fschedule-insns2  -fstrength-reduce
+-fstrict-aliasing  -fthread-jumps  -funroll-all-loops
+-funroll-loops
 -O  -O0  -O1  -O2  -O3 -Os
 @end smallexample
 
@@ -223,8 +225,6 @@ in the following sections.
 -mcpu=@var{cpu type}
 -mtune=@var{cpu type}
 -mcmodel=@var{code model}
--malign-jumps=@var{num}  -malign-loops=@var{num}
--malign-functions=@var{num}
 -m32  -m64
 -mapp-regs  -mbroken-saverestore  -mcypress  -mepilogue
 -mflat  -mfpu  -mhard-float  -mhard-quad-float
@@ -2336,7 +2336,7 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-@item -finline-limit-@var{n}
+@item -finline-limit=@var{n}
 By default, gcc limits the size of functions that can be inlined.  This flag
 allows the control of this limit for functions that are explicitly marked as
 inline (ie marked with the inline keyword or defined within the class 
@@ -2601,6 +2601,53 @@ node, an alias set for the node.  Nodes in different alias sets are not
 allowed to alias.  For an example, see the C front-end function
 @code{c_get_alias_set}.
 @end ifset
+
+@item -falign-functions
+@itemx -falign-functions=@var{n}
+Align the start of functions to the next power-of-two greater than
+@var{n}, skipping up to @var{n} bytes.  For instance,
+@samp{-falign-functions=32} aligns functions to the next 32-byte
+boundary, but @samp{-falign-functions=24} would align to the next
+32-byte boundary only if this can be done by skipping 23 bytes or less.
+
+@samp{-fno-align-functions} and @samp{-falign-functions=1} are
+equivalent and mean that functions will not be aligned.
+
+Some assemblers only support this flag when @var{n} is a power of two;
+in that case, it is rounded up.
+
+If @var{n} is not specified, use a machine-dependent default.
+
+@item -falign-labels
+@itemx -falign-labels=@var{n}
+Align all branch targets to a power-of-two boundary, skipping up to
+@var{n} bytes like @samp{-falign-functions}.  This option can easily
+make code slower, because it must insert dummy operations for when the
+branch target is reached in the usual flow of the code.
+
+If @samp{-falign-loops} or @samp{-falign-jumps} are applicable and
+are greater than this value, then their values are used instead.
+
+If @var{n} is not specified, use a machine-dependent default which is
+very likely to be @samp{1}, meaning no alignment.
+
+@item -falign-loops
+@itemx -falign-loops=@var{n}
+Align loops to a power-of-two boundary, skipping up to @var{n} bytes
+like @samp{-falign-functions}.  The hope is that the loop will be
+executed many times, which will make up for any execution of the dummy
+operations.
+
+If @var{n} is not specified, use a machine-dependent default.
+
+@item -falign-jumps
+@itemx -falign-jumps=@var{n}
+Align branch targets to a power-of-two boundary, for branch targets
+where the targets can only be reached by jumping, skipping up to @var{n}
+bytes like @samp{-falign-functions}.  In this case, no dummy operations
+need be executed.
+
+If @var{n} is not specified, use a machine-dependent default.
 
 @end table
 
@@ -3893,19 +3940,6 @@ The same values for @samp{-mcpu=}@var{cpu_type} are used for
 select a particular cpu implementation: @samp{cypress}, @samp{supersparc},
 @samp{hypersparc}, @samp{f930}, @samp{f934}, @samp{sparclite86x},
 @samp{tsc701}, @samp{ultrasparc}.
-
-@item -malign-loops=@var{num}
-Align loops to a 2 raised to a @var{num} byte boundary.  If
-@samp{-malign-loops} is not specified, the default is 2.
-
-@item -malign-jumps=@var{num}
-Align instructions that are only jumped to to a 2 raised to a @var{num}
-byte boundary.  If @samp{-malign-jumps} is not specified, the default is 2.
-
-@item -malign-functions=@var{num}
-Align the start of functions to a 2 raised to @var{num} byte boundary.
-If @samp{-malign-functions} is not specified, the default is 2 if compiling
-for 32 bit sparc, and 5 if compiling for 64 bit sparc.
 
 @end table
 

@@ -797,27 +797,27 @@ get_attr_length (insn)
    address mod X to one mod Y, which is Y - X.  */
 
 #ifndef LABEL_ALIGN
-#define LABEL_ALIGN(LABEL) 0
+#define LABEL_ALIGN(LABEL) align_labels_log
 #endif
 
 #ifndef LABEL_ALIGN_MAX_SKIP
-#define LABEL_ALIGN_MAX_SKIP 0
+#define LABEL_ALIGN_MAX_SKIP (align_labels-1)
 #endif
 
 #ifndef LOOP_ALIGN
-#define LOOP_ALIGN(LABEL) 0
+#define LOOP_ALIGN(LABEL) align_loops_log
 #endif
 
 #ifndef LOOP_ALIGN_MAX_SKIP
-#define LOOP_ALIGN_MAX_SKIP 0
+#define LOOP_ALIGN_MAX_SKIP (align_loops-1)
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER
-#define LABEL_ALIGN_AFTER_BARRIER(LABEL) 0
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL) align_jumps_log
 #endif
 
 #ifndef LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP
-#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP 0
+#define LABEL_ALIGN_AFTER_BARRIER_MAX_SKIP (align_jumps-1)
 #endif
 
 #ifndef ADDR_VEC_ALIGN
