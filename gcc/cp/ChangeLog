@@ -1,3 +1,8 @@
+2005-02-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cxx-pretty-print.c, cxx-pretty-print.h, decl.h: Update
+	copyright.
+
 2005-02-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_lexer_start_debugging): Avoid arithmetic operations
