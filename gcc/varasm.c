@@ -4712,7 +4712,7 @@ default_section_type_flags (decl, name, reloc)
 
   if (decl && TREE_CODE (decl) == FUNCTION_DECL)
     flags = SECTION_CODE;
-  else if (decl && DECL_READONLY_SECTION (decl, reloc))
+  else if (decl && decl_readonly_section (decl, reloc))
     flags = 0;
   else
     flags = SECTION_WRITE;
@@ -4872,7 +4872,7 @@ default_select_section (decl, reloc, align)
 
   if (DECL_P (decl))
     {
-      if (DECL_READONLY_SECTION (decl, reloc))
+      if (decl_readonly_section (decl, reloc))
 	readonly = true;
     }
   else if (TREE_CODE (decl) == CONSTRUCTOR)
@@ -5009,6 +5009,25 @@ categorize_decl_for_section (decl, reloc)
     }
 
   return ret;
+}
+
+bool
+decl_readonly_section (decl, reloc)
+     tree decl;
+     int reloc;
+{
+  switch (categorize_decl_for_section (decl, reloc))
+    {
+    case SECCAT_RODATA:
+    case SECCAT_RODATA_MERGE_STR:
+    case SECCAT_RODATA_MERGE_STR_INIT:
+    case SECCAT_RODATA_MERGE_CONST:
+      return true;
+      break;
+    default:
+      return false;
+      break;
+    }
 }
 
 /* Select a section based on the above categorization.  */

@@ -264,7 +264,7 @@ arm_pe_unique_section (decl, reloc)
      (everything from the $ on is stripped).  */
   if (TREE_CODE (decl) == FUNCTION_DECL)
     prefix = ".text$";
-  else if (DECL_READONLY_SECTION (decl, reloc))
+  else if (decl_readonly_section (decl, reloc))
     prefix = ".rdata$";
   else
     prefix = ".data$";

@@ -468,16 +468,9 @@ extern struct rtx_def *current_output_insn;
    The precise value is the insn being output, to pass to error_for_asm.  */
 extern rtx this_is_asm_operands;
 
-/* Decide whether DECL needs to be in a writable section.  RELOC is the same
-   as for SELECT_SECTION.  */
-
-#define DECL_READONLY_SECTION(DECL,RELOC)		\
-  (TREE_READONLY (DECL)					\
-   && ! TREE_THIS_VOLATILE (DECL)			\
-   && DECL_INITIAL (DECL)				\
-   && (DECL_INITIAL (DECL) == error_mark_node		\
-       || TREE_CONSTANT (DECL_INITIAL (DECL)))		\
-   && ! (RELOC && (flag_pic || DECL_ONE_ONLY (DECL))))
+/* Decide whether DECL needs to be in a writable section.
+   RELOC is the same as for SELECT_SECTION.  */
+extern bool decl_readonly_section PARAMS ((tree, int));
 
 /* User label prefix in effect for this compilation.  */
 extern const char *user_label_prefix;
