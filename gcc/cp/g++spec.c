@@ -189,6 +189,8 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 	  else if (strcmp (argv[i], "-static-libgcc") == 0 
 		   || strcmp (argv[i], "-static") == 0)
 	    shared_libgcc = 0;
+	  else if (DEFAULT_WORD_SWITCH_TAKES_ARG (&argv[i][1]))
+	    i++;
 	  else
 	    /* Pass other options through.  */
 	    continue;

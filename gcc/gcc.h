@@ -31,6 +31,28 @@ struct spec_function
   const char *(*func) PARAMS ((int, const char **));
 };
 
+/* This defines which switch letters take arguments.  */
+
+#define DEFAULT_SWITCH_TAKES_ARG(CHAR) \
+  ((CHAR) == 'D' || (CHAR) == 'U' || (CHAR) == 'o' \
+   || (CHAR) == 'e' || (CHAR) == 'T' || (CHAR) == 'u' \
+   || (CHAR) == 'I' || (CHAR) == 'm' || (CHAR) == 'x' \
+   || (CHAR) == 'L' || (CHAR) == 'A' || (CHAR) == 'V' \
+   || (CHAR) == 'B' || (CHAR) == 'b')
+
+/* This defines which multi-letter switches take arguments.  */
+
+#define DEFAULT_WORD_SWITCH_TAKES_ARG(STR)		\
+ (!strcmp (STR, "Tdata") || !strcmp (STR, "Ttext")	\
+  || !strcmp (STR, "Tbss") || !strcmp (STR, "include")	\
+  || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
+  || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
+  || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
+  || !strcmp (STR, "isystem") || !strcmp (STR, "-param") \
+  || !strcmp (STR, "specs") \
+  || !strcmp (STR, "MF") || !strcmp (STR, "MT") || !strcmp (STR, "MQ"))
+
+
 /* These are exported by gcc.c.  */
 extern int do_spec PARAMS ((const char *));
 extern void record_temp_file PARAMS ((const char *, int, int));

@@ -1,3 +1,8 @@
+2003-03-10  Devang Patel  <dpatel@apple.com>
+
+	* g++.dg/cpp/c++_cmd_1.C: New test.
+	* g++.dg/cpp/c++_cmd_1.h: New file.
+	
 2003-03-10  Segher Boessenkool  <segher@koffie.nl>
 
         * gcc.dg/altivec-9.c: New file.
