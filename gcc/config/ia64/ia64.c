@@ -1852,6 +1852,12 @@ ia64_expand_prologue ()
 	reg_names[OUT_REG (i)] = ia64_reg_numbers[inputs + locals + i];
     }
 
+  /* ??? Temporarily mark the remaining output registers fixed, so
+     that the register renaming pass does not try to used them after
+     we've fixed the size of the register frame.  */
+  for (i = current_frame_info.n_output_regs; i < 8; ++i)
+    fixed_regs[OUT_REG (i)] = 1;
+
   /* Set the frame pointer register name.  The regnum is logically loc79,
      but of course we'll not have allocated that many locals.  Rather than
      worrying about renumbering the existing rtxs, we adjust the name.  */
@@ -2475,6 +2481,8 @@ ia64_function_epilogue (file, size)
      FILE *file ATTRIBUTE_UNUSED;
      int size ATTRIBUTE_UNUSED;
 {
+  int i;
+
   /* Reset from the function's potential modifications.  */
   XINT (return_address_pointer_rtx, 0) = RETURN_ADDRESS_POINTER_REGNUM;
 
@@ -2487,8 +2495,6 @@ ia64_function_epilogue (file, size)
     }
   if (! TARGET_REG_NAMES)
     {
-      int i;
-
       for (i = 0; i < current_frame_info.n_input_regs; i++)
 	reg_names[IN_REG (i)] = ia64_input_reg_names[i];
       for (i = 0; i < current_frame_info.n_local_regs; i++)
@@ -2496,6 +2502,10 @@ ia64_function_epilogue (file, size)
       for (i = 0; i < current_frame_info.n_output_regs; i++)
 	reg_names[OUT_REG (i)] = ia64_output_reg_names[i];
     }
+
+  for (i = 0; i < 8; ++i)
+    fixed_regs[OUT_REG (i)] = 0;
+
   current_frame_info.initialized = 0;
 }
 

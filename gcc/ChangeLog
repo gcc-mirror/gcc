@@ -1,5 +1,11 @@
 2000-10-23  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/ia64.c (ia64_expand_prologue): Mark extra 
+	output registers as fixed.
+	(ia64_function_epilogue): Undo output fixation.
+
+2000-10-23  Richard Henderson  <rth@cygnus.com>
+
 	* config/alpha/alpha.md: Add names for all unnamed insns; use
 	define_insn_and_split in some obvious places.
 	(lda): Remove.
