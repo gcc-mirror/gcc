@@ -8469,7 +8469,7 @@ reload_cse_simplify_operands (insn)
 	continue;
 
       reload_cse_no_longer_dead (op_alt_regno[op][j], mode);
-      validate_change (insn, recog_operand_loc[op],
+      validate_change (insn, recog_dup_loc[i],
 		       gen_rtx (REG, mode, op_alt_regno[op][j]), 1);
     }
 
