@@ -1,3 +1,7 @@
+Mon Jan  3 02:54:40 2000  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/i386/i386.c (override_options): Fix option-name typo.
+
 2000-01-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* system.h (CEIL): Define.
