@@ -1,3 +1,8 @@
+Wed May  6 16:44:58 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* errfn.c (cp_error, cp_warning): Remove declarations for
+	error and warning respectively.
+
 Wed May  6 14:28:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* error.c: Convert to using ctype macros defined in system.h.

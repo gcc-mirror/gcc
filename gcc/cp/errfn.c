@@ -197,7 +197,6 @@ cp_thing (errfn, atarg1, format, ap)
 
 DECLARE (cp_error)
 {
-  extern errorfn error;
   va_list ap;
   INIT;
   if (! cp_silent)
@@ -207,7 +206,6 @@ DECLARE (cp_error)
 
 DECLARE (cp_warning)
 {
-  extern errorfn warning;
   va_list ap;
   INIT;
   if (! cp_silent)
