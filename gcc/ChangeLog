@@ -1,5 +1,9 @@
 2003-05-16  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* frv.c (frv_print_operand_memory_reference): Fix format specifier
+	warning.
+	(frv_rtx_costs): Mark parameter with ATTRIBUTE_UNUSED.
+
 	* m68k.c (m68k_output_function_epilogue): Fix format specifier
 	warnings.
 
