@@ -4,6 +4,12 @@ Mon Feb 22 10:55:00 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 	larger than long-longs, with a warning about integer constants 
         being larger than the largest target integer.
 
+Mon Feb 22 08:35:38 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Fix -fsyntax-only ICEs:
+	* varasm.c (assemble_zeros, assemble_variable,
+	output_constant_def): Do nothing when -fsyntax-only.
+
 Fri Feb 19 18:18:56 1999  Don Bowman  <don@pixstream.com>
 
 	* configure.in (mips*-*-vxworks*): Enable gthreads vxworks support.
