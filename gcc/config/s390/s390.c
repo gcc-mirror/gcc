@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
 
@@ -1773,14 +1773,11 @@ legitimate_la_operand_p (op)
 }
 
 /* Return 1 if OP is a valid operand for the LA instruction,
-   and we prefer to use LA over addition to compute it.
-   If STRICT is true, only accept operands that will never
-   change to something we cannot recognize as preferred.  */
+   and we prefer to use LA over addition to compute it.  */
    
 int
-preferred_la_operand_p (op, strict)
+preferred_la_operand_p (op)
      register rtx op;
-     int strict;
 {
   struct s390_address addr;
   if (!s390_decompose_address (op, &addr))
@@ -1792,10 +1789,9 @@ preferred_la_operand_p (op, strict)
   if (addr.pointer)
     return TRUE;
 
-  if (!strict) 
-    if ((addr.base && REG_P (addr.base) && REG_POINTER (addr.base))
-        || (addr.indx && REG_P (addr.indx) && REG_POINTER (addr.indx)))
-      return TRUE;
+  if ((addr.base && REG_P (addr.base) && REG_POINTER (addr.base))
+      || (addr.indx && REG_P (addr.indx) && REG_POINTER (addr.indx)))
+    return TRUE;
 
   return FALSE;
 }

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com).
 This file is part of GNU CC.
@@ -195,11 +195,13 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 #define ADDR_REGNO_P(N)		((N) >= 1 && (N) < 16)
 #define FP_REGNO_P(N)		((N) >= 16 && (N) < (TARGET_IEEE_FLOAT? 32 : 20))
 #define CC_REGNO_P(N)		((N) == 33)
+#define FRAME_REGNO_P(N)	((N) == 32 || (N) == 34)
 
 #define GENERAL_REG_P(X)	(REG_P (X) && GENERAL_REGNO_P (REGNO (X)))
 #define ADDR_REG_P(X)		(REG_P (X) && ADDR_REGNO_P (REGNO (X)))
 #define FP_REG_P(X)		(REG_P (X) && FP_REGNO_P (REGNO (X)))
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
+#define FRAME_REG_P(X)		(REG_P (X) && FRAME_REGNO_P (REGNO (X)))
 
 #define BASE_REGISTER 13
 #define RETURN_REGNUM 14
@@ -314,6 +316,8 @@ do								\
     (HARD_REGNO_NREGS(REGNO, MODE) == 1 || !((REGNO) & 1)) :        \
    CC_REGNO_P(REGNO)?                                               \
      GET_MODE_CLASS (MODE) == MODE_CC :                             \
+   FRAME_REGNO_P(REGNO)?                                            \
+     (MODE) == Pmode :                                              \
    0)
 
 #define MODES_TIEABLE_P(MODE1, MODE2)		\

@@ -1,3 +1,13 @@
+2003-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (preferred_la_operand_p):
+	Remove second parameter.
+	* config/s390/s390.c (preferred_la_operand_p): Likewise.
+	* config/s390/s390.h (FRAME_REGNO_P, FRAME_REG_P): New macros.
+	(HARD_REGNO_MODE_OK): Use FRAME_REGNO_P.
+	* config/s390/s390.md ("*la_cc_64", "*la_cc_31", splitters): Remove.
+	Add peepholes to transform ADD to LOAD ADDRESS.
+
 Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (SSE cmov splitter):  Handle memory operand in operand 5.

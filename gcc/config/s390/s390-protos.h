@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM S/390.
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com)
 
 This file is part of GNU CC.
@@ -49,7 +49,7 @@ extern enum machine_mode s390_tm_ccmode PARAMS ((rtx, rtx, int));
 extern enum machine_mode s390_select_ccmode PARAMS ((enum rtx_code, rtx, rtx));
 extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 extern int legitimate_la_operand_p PARAMS ((rtx));
-extern int preferred_la_operand_p PARAMS ((rtx, int));
+extern int preferred_la_operand_p PARAMS ((rtx));
 extern int legitimate_pic_operand_p PARAMS ((rtx));
 extern int legitimate_constant_p PARAMS ((rtx));
 extern int legitimate_reload_constant_p PARAMS ((rtx));
