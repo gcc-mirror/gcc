@@ -2,7 +2,7 @@
    hosting on Windows32, using GNU tools and the Windows32 API Library,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA. */
    distinguish MSVC from CRTDLL runtime in mingw headers. */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Di386 -D_WIN32 -DWIN32 -D__WIN32__ \
-  -D__MINGW32__ -D__MSVCRT__ -DWINNT  -D_X86_=1 -D__STDC__=1\
+  -D__MINGW32__=0.2 -D__MSVCRT__ -DWINNT  -D_X86_=1 -D__STDC__=1\
   -D__stdcall=__attribute__((__stdcall__)) \
   -D_stdcall=__attribute__((__stdcall__)) \
   -D__cdecl=__attribute__((__cdecl__)) \
@@ -43,6 +43,9 @@ Boston, MA 02111-1307, USA. */
 #define STANDARD_INCLUDE_DIR "/usr/local/i386-mingw32/include"
 
 #define STANDARD_INCLUDE_COMPONENT "MINGW32"
+
+#undef CPP_SPEC
+#define CPP_SPEC "-remap %(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */

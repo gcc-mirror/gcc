@@ -2,7 +2,7 @@
    hosting on Windows NT 3.x, using a Unix style C library and tools,
    as distinct from winnt.h, which is used to build GCC for use with a
    windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -234,6 +234,20 @@ switch_to_section (section, decl) 				\
     assemble_name (FILE, NAME);			\
     fprintf (FILE, "\n");			\
   } while (0)
+
+/* Don't allow flag_pic to propagate since gas may produce invalid code
+   otherwise. */
+
+#undef  SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+do {									\
+  if (flag_pic)								\
+    {									\
+      warning ("-f%s ignored for target (all code is position independent)",\
+	       (flag_pic > 1) ? "PIC" : "pic");				\
+      flag_pic = 0;							\
+    }									\
+} while (0)								\
 
 /* Define this macro if references to a symbol must be treated
    differently depending on something about the variable or

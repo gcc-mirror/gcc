@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for hosting on Windows NT.
    using a unix style C library.
-   Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -47,9 +47,15 @@ do {									\
   if (_epath != NULL && *_epath != 0					\
       && cygwin32_posix_path_list_p (_epath))				\
     {									\
+      char *p;								\
       _win32epath = (char *) xmalloc					\
 	(cygwin32_posix_to_win32_path_list_buf_size (_epath));		\
       cygwin32_posix_to_win32_path_list (_epath, _win32epath);		\
+      for (p = _win32epath; p && *p; ++p)				\
+        {								\
+	  if (*p == '\\')						\
+	    *p = '/';							\
+	}								\
     }									\
   (VAR) = _win32epath;							\
 } while (0)
