@@ -124,8 +124,7 @@ namespace std
 	    __r->_M_destroy(__a);
 	    __throw_exception_again;
 	  }
-	__r->_M_length = __len;
-	__r->_M_refdata()[__len] = _Rep::_S_terminal;       // grrr.
+	__r->_M_set_length_and_sharable(__len);
 	return __r->_M_refdata();
       }
 
@@ -155,8 +154,7 @@ namespace std
 	    __r->_M_destroy(__a);
 	    __throw_exception_again;
 	  }
-	__r->_M_length = __dnew;
-	__r->_M_refdata()[__dnew] = _Rep::_S_terminal;  // grrr.
+	__r->_M_set_length_and_sharable(__dnew);
 	return __r->_M_refdata();
       }
 
@@ -174,8 +172,7 @@ namespace std
       if (__n)
 	traits_type::assign(__r->_M_refdata(), __n, __c);
 
-      __r->_M_length = __n;
-      __r->_M_refdata()[__n] = _Rep::_S_terminal;  // grrr
+      __r->_M_set_length_and_sharable(__n);
       return __r->_M_refdata();
     }
 
@@ -278,9 +275,7 @@ namespace std
 	     traits_type::copy(_M_data(), __s, __n);
 	   else if (__pos)
 	     traits_type::move(_M_data(), __s, __n);
-	   _M_rep()->_M_set_sharable();
-	   _M_rep()->_M_length = __n;
-	   _M_data()[__n] = _Rep::_S_terminal;  // grr.
+	   _M_rep()->_M_set_length_and_sharable(__n);
 	   return *this;
 	 }
      }
@@ -415,10 +410,7 @@ namespace std
 	  traits_type::move(_M_data() + __pos + __len2,
 			    _M_data() + __pos + __len1, __how_much);
 	}
-      _M_rep()->_M_set_sharable();
-      _M_rep()->_M_length = __new_size;
-      _M_data()[__new_size] = _Rep::_S_terminal; // grrr. (per 21.3.4)
-      // You cannot leave those LWG people alone for a second.
+      _M_rep()->_M_set_length_and_sharable(__new_size);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -473,7 +465,6 @@ namespace std
     _S_create(size_type __capacity, size_type __old_capacity,
 	      const _Alloc& __alloc)
     {
-      typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
       if (__capacity > _S_max_size)
@@ -535,8 +526,6 @@ namespace std
       void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);
       _Rep *__p = new (__place) _Rep;
       __p->_M_capacity = __capacity;
-      __p->_M_set_sharable();  // One reference.
-      __p->_M_length = 0;
       return __p;
     }
 
@@ -550,11 +539,9 @@ namespace std
       _Rep* __r = _Rep::_S_create(__requested_cap, this->_M_capacity,
 				  __alloc);
       if (this->_M_length)
-	traits_type::copy(__r->_M_refdata(), _M_refdata(),
-			  this->_M_length);
+	traits_type::copy(__r->_M_refdata(), _M_refdata(), this->_M_length);
 
-      __r->_M_length = this->_M_length;
-      __r->_M_refdata()[this->_M_length] = _Rep::_S_terminal;
+      __r->_M_set_length_and_sharable(this->_M_length);
       return __r->_M_refdata();
     }
 

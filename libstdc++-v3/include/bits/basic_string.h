@@ -193,6 +193,15 @@ namespace std
 	_M_set_sharable()
         { this->_M_refcount = 0; }
 
+	void
+	_M_set_length_and_sharable(size_type __n)
+	{ 
+	  this->_M_set_sharable();  // One reference.
+	  this->_M_length = __n;
+	  this->_M_refdata()[__n] = _S_terminal; // grrr. (per 21.3.4)
+	  // You cannot leave those LWG people alone for a second.
+	}
+
 	_CharT*
 	_M_refdata() throw()
 	{ return reinterpret_cast<_CharT*>(this + 1); }
