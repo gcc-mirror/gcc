@@ -1240,6 +1240,10 @@ rs6000_makes_calls ()
 {
   rtx insn;
 
+  /* If we are profiling, we will be making a call to mcount.  */
+  if (profile_flag)
+    return 1;
+
   for (insn = get_insns (); insn; insn = next_insn (insn))
     if (GET_CODE (insn) == CALL_INSN)
       return 1;
