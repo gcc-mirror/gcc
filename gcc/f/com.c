@@ -2599,7 +2599,8 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 	if (ffebld_op (arg) != FFEBLD_opSYMTER)
 	  continue;
 	s = ffebld_symter (arg);
-	if (ffesymbol_hook (s).decl_tree == NULL_TREE)
+	if (ffesymbol_hook (s).decl_tree == NULL_TREE
+	    || ffesymbol_hook (s).decl_tree == error_mark_node)
 	  actarg = null_pointer_node;	/* We don't have this arg. */
 	else
 	  actarg = ffesymbol_hook (s).decl_tree;
@@ -2622,7 +2623,8 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
 	  continue;		/* Only looking for CHARACTER arguments. */
 	if (ffesymbol_kind (s) != FFEINFO_kindENTITY)
 	  continue;		/* Only looking for variables and arrays. */
-	if (ffesymbol_hook (s).length_tree == NULL_TREE)
+	if (ffesymbol_hook (s).length_tree == NULL_TREE
+	    || ffesymbol_hook (s).length_tree == error_mark_node)
 	  actarg = ffecom_f2c_ftnlen_zero_node;	/* We don't have this arg. */
 	else
 	  actarg = ffesymbol_hook (s).length_tree;
@@ -3281,6 +3283,9 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
       else
 	args = ffecom_list_ptr_to_expr (ffebld_right (expr));
       ffecom_pop_calltemps ();
+
+      if (args == error_mark_node)
+	return error_mark_node;
 
       item = ffecom_call_ (item, kt,
 			   ffesymbol_is_f2c (s)
@@ -10977,6 +10982,9 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
 	tree temp_length;
 
 	temp_exp = ffecom_arg_ptr_to_expr (ffebld_left (expr), &temp_length);
+	if (temp_exp == error_mark_node)
+	  return error_mark_node;
+
 	return ffecom_1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (temp_exp)),
 			 temp_exp);
       }
@@ -12703,9 +12711,12 @@ ffecom_list_expr (ffebld expr)
 
   while (expr != NULL)
     {
-      *plist
-	= build_tree_list (NULL_TREE, ffecom_arg_expr (ffebld_head (expr),
-						       &length));
+      tree texpr = ffecom_arg_expr (ffebld_head (expr), &length);
+
+      if (texpr == error_mark_node)
+	return error_mark_node;
+
+      *plist = build_tree_list (NULL_TREE, texpr);
       plist = &TREE_CHAIN (*plist);
       expr = ffebld_trail (expr);
       if (length != NULL_TREE)
@@ -12742,10 +12753,12 @@ ffecom_list_ptr_to_expr (ffebld expr)
 
   while (expr != NULL)
     {
-      *plist
-	= build_tree_list (NULL_TREE,
-			   ffecom_arg_ptr_to_expr (ffebld_head (expr),
-						   &length));
+      tree texpr = ffecom_arg_ptr_to_expr (ffebld_head (expr), &length);
+
+      if (texpr == error_mark_node)
+	return error_mark_node;
+
+      *plist = build_tree_list (NULL_TREE, texpr);
       plist = &TREE_CHAIN (*plist);
       expr = ffebld_trail (expr);
       if (length != NULL_TREE)
@@ -14366,7 +14379,9 @@ finish_function (int nested)
   if (!nested)
     permanent_allocation (1);
 
-  if (DECL_SAVED_INSNS (fndecl) == 0 && !nested && (TREE_CODE (fndecl) != ERROR_MARK))
+  if (TREE_CODE (fndecl) != ERROR_MARK
+      && !nested
+      && DECL_SAVED_INSNS (fndecl) == 0)
     {
       /* Stop pointing to the local nodes about to be freed.  */
       /* But DECL_INITIAL must remain nonzero so we know this was an actual
@@ -14544,7 +14559,8 @@ pop_f_function_context ()
       IDENTIFIER_LABEL_VALUE (DECL_NAME (TREE_VALUE (link)))
 	= TREE_VALUE (link);
 
-  if (DECL_SAVED_INSNS (current_function_decl) == 0)
+  if (current_function_decl != error_mark_node
+      && DECL_SAVED_INSNS (current_function_decl) == 0)
     {
       /* Stop pointing to the local nodes about to be freed.  */
       /* But DECL_INITIAL must remain nonzero so we know this was an actual
@@ -14647,6 +14663,9 @@ static void
 store_parm_decls (int is_main_program UNUSED)
 {
   register tree fndecl = current_function_decl;
+
+  if (fndecl == error_mark_node)
+    return;
 
   /* This is a chain of PARM_DECLs from old-style parm declarations.  */
   DECL_ARGUMENTS (fndecl) = storedecls (nreverse (getdecls ()));
@@ -15193,7 +15212,8 @@ poplevel (keep, reverse, functionbody)
   }
 
   /* Dispose of the block that we just made inside some higher level.  */
-  if (functionbody)
+  if (functionbody
+      && current_function_decl != error_mark_node)
     DECL_INITIAL (current_function_decl) = block;
   else if (block)
     {
