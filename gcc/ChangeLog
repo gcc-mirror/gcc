@@ -1,3 +1,18 @@
+Sun Jul 29 18:59:13 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (CLEANUP_PRE_LOOP): New.
+	* except.c (finish_eh_generation): Update call of cleanup_cfg.
+	* sibcall.c (optimize_sibling_calls): Likewise.
+	* toplev.c (rest_of_compilation): Likewise.
+	* flow.c (try_forward_edges): Take argument MODE;
+	do not forward over loop pre-headers if CLEANUP_PRE_LOOP.
+	(try_optimize_cfg): Update call of try_forward_edges.
+
+Sun Jul 29 18:59:56 CEST 2001  Roman Zippel  <zippel@linux-m68k.org>
+			       Jan Hubicka  <jh@suse.cz>
+
+	* (validate_replace_rtx_1): Fix simplification of MINUS.
+
 2001-07-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	PR preprocessor/3669
