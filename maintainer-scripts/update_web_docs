@@ -154,17 +154,19 @@ if [ "$DO_THANKS_HTML" = y ]; then
   ln onlinedocs/${contrib_file}.gz thanks.html.gz
 fi
 
-# Finally, generate the installation documentation.
-SOURCEDIR=$WORKDIR
-DESTDIR=$WWWBASE_PREFORMATTED/install
-export SOURCEDIR
-export DESTDIR
-$WORKDIR/gcc/gcc/doc/install.texi2html
+# Finally, generate the installation documentation (but only for CVS HEAD).
+if [ "$RELEASE" = "HEAD" ]; then
+  SOURCEDIR=$WORKDIR
+  DESTDIR=$WWWBASE_PREFORMATTED/install
+  export SOURCEDIR
+  export DESTDIR
+  $WORKDIR/gcc/gcc/doc/install.texi2html
 
-for file in `ls $DESTDIR`
-do
-  $PREPROCESS install/$file
-done 
+  for file in `ls $DESTDIR`
+  do
+    $PREPROCESS install/$file
+  done 
+fi
 
 # Clean up behind us.
 
