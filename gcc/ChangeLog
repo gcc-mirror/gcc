@@ -1,3 +1,8 @@
+2003-07-23  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/host-darwin.c: ANSIfy, update comment for sigaltstack
+	prototype.
+
 2003-07-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/10679

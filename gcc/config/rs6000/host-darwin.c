@@ -28,12 +28,13 @@
 #include "toplev.h"
 #include "diagnostic.h"
 
-static void segv_crash_handler PARAMS ((int));
-static void segv_handler PARAMS ((int, siginfo_t *, void *));
-static void darwin_rs6000_extra_signals PARAMS ((void));
+static void segv_crash_handler (int);
+static void segv_handler (int, siginfo_t *, void *);
+static void darwin_rs6000_extra_signals (void);
 
-/* No prototype for this, filed as Radar 3150910.  */
-extern int sigaltstack(const stack_t *, stack_t *);
+/* This doesn't have a prototype in signal.h in 10.2.x and earlier,
+   fixed in later releases.  */
+extern int sigaltstack(const struct sigaltstack *, struct sigaltstack *);
 
 #undef HOST_HOOKS_EXTRA_SIGNALS
 #define HOST_HOOKS_EXTRA_SIGNALS darwin_rs6000_extra_signals
@@ -45,17 +46,15 @@ extern int sigaltstack(const stack_t *, stack_t *);
    the previous bottom of the stack.  */
 
 static void
-segv_crash_handler (sig)
-     int sig ATTRIBUTE_UNUSED;
+segv_crash_handler (int sig ATTRIBUTE_UNUSED)
 {
   internal_error ("Segmentation Fault (code)");
 }
 
 static void
-segv_handler (sig, sip, scp)
-     int sig ATTRIBUTE_UNUSED;
-     siginfo_t *sip ATTRIBUTE_UNUSED;
-     void *scp;
+segv_handler (int sig ATTRIBUTE_UNUSED,
+	      siginfo_t *sip ATTRIBUTE_UNUSED,
+	      void *scp)
 {
   ucontext_t *uc = (ucontext_t *)scp;
   unsigned faulting_insn;
@@ -119,7 +118,7 @@ segv_handler (sig, sip, scp)
 }
 
 static void
-darwin_rs6000_extra_signals ()
+darwin_rs6000_extra_signals (void)
 {
   struct sigaction sact;
   stack_t sigstk;
