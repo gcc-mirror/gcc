@@ -1,3 +1,10 @@
+2002-07-10  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (emit_frame_save): New.
+        (rs6000_frame_related): Replace reg2 before reg.
+        (rs6000_emit_prologue): Use emit_frame_save for saving gprs, fprs,
+        and eh_return registers.
+
 2002-07-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	Revert all patches for optimization of Complex .op. Real.
