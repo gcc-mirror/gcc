@@ -3474,6 +3474,11 @@ ia64_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
 	}
     }
 
+  /* Make sure addresses are Pmode even if we are in ILP32 mode. */
+  addr = convert_memory_address (Pmode, addr);
+  fnaddr = convert_memory_address (Pmode, fnaddr);
+  static_chain = convert_memory_address (Pmode, static_chain);
+
   /* Load up our iterator.  */
   addr_reg = gen_reg_rtx (Pmode);
   emit_move_insn (addr_reg, addr);

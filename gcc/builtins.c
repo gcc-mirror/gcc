@@ -794,7 +794,9 @@ expand_builtin_nonlocal_goto (tree arglist)
   t_save_area = TREE_VALUE (arglist);
 
   r_label = expand_expr (t_label, NULL_RTX, VOIDmode, 0);
+  r_label = convert_memory_address (Pmode, r_label);
   r_save_area = expand_expr (t_save_area, NULL_RTX, VOIDmode, 0);
+  r_save_area = convert_memory_address (Pmode, r_save_area);
   r_fp = gen_rtx_MEM (Pmode, r_save_area);
   r_sp = gen_rtx_MEM (STACK_SAVEAREA_MODE (SAVE_NONLOCAL),
 		      plus_constant (r_save_area, GET_MODE_SIZE (Pmode)));
