@@ -163,10 +163,12 @@ namespace std {
 
 EOF
 
-echo "$CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
+# Must turn off exceptions, because the C++ exception handling support
+# routines have not been built yet.
+echo "$CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H -fno-exceptions \
     -o $BUILD_DIR/src/gen-num-limits $SRC_DIR/src/gen-num-limits.cc"
 
-{ $CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H \
+{ $CC -I. $CPPFLAGS -I$BUILD_DIR/include -DHAVE_CONFIG_H -fno-exceptions \
     -o "$BUILD_DIR/src/gen-num-limits" "$SRC_DIR/src/gen-num-limits.cc"
 } || {
   echo "gen-num-limits failed to build, exiting."
