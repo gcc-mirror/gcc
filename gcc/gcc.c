@@ -243,6 +243,7 @@ static void clear_failure_queue PARAMS ((void));
 static int check_live_switch	PARAMS ((int, int));
 static const char *handle_braces PARAMS ((const char *));
 static char *save_string	PARAMS ((const char *, int));
+static void set_collect_gcc_options PARAMS ((void));
 static int do_spec_1		PARAMS ((const char *, int, const char *));
 static const char *find_file	PARAMS ((const char *));
 static int is_directory		PARAMS ((const char *, const char *, int));
@@ -266,7 +267,6 @@ static void process_command		PARAMS ((int, const char *const *));
 static int execute			PARAMS ((void));
 static void clear_args			PARAMS ((void));
 static void fatal_error			PARAMS ((int));
-static void set_input			PARAMS ((const char *));
 static void init_gcc_specs              PARAMS ((struct obstack *,
 						 const char *,
 						 const char *));
@@ -3869,6 +3869,63 @@ process_command (argc, argv)
   switches[n_switches].part1 = 0;
   infiles[n_infiles].name = 0;
 }
+
+/* Store switches not filtered out by %{<S} in spec in COLLECT_GCC_OPTIONS
+   and place that in the environment.  */
+
+static void
+set_collect_gcc_options ()
+{
+  int i;
+  int first_time;
+
+  /* Build COLLECT_GCC_OPTIONS to have all of the options specified to
+     the compiler.  */
+  obstack_grow (&collect_obstack, "COLLECT_GCC_OPTIONS=",
+		sizeof ("COLLECT_GCC_OPTIONS=") - 1);
+
+  first_time = TRUE;
+  for (i = 0; (int) i < n_switches; i++)
+    {
+      const char *const *args;
+      const char *p, *q;
+      if (!first_time)
+	obstack_grow (&collect_obstack, " ", 1);
+
+      first_time = FALSE;
+
+      /* Ignore elided switches.  */
+      if (switches[i].live_cond == SWITCH_IGNORE)
+	continue;
+
+      obstack_grow (&collect_obstack, "'-", 2);
+      q = switches[i].part1;
+      while ((p = strchr (q, '\'')))
+	{
+	  obstack_grow (&collect_obstack, q, p - q);
+	  obstack_grow (&collect_obstack, "'\\''", 4);
+	  q = ++p;
+	}
+      obstack_grow (&collect_obstack, q, strlen (q));
+      obstack_grow (&collect_obstack, "'", 1);
+
+      for (args = switches[i].args; args && *args; args++)
+	{
+	  obstack_grow (&collect_obstack, " '", 2);
+	  q = *args;
+	  while ((p = strchr (q, '\'')))
+	    {
+	      obstack_grow (&collect_obstack, q, p - q);
+	      obstack_grow (&collect_obstack, "'\\''", 4);
+	      q = ++p;
+	    }
+	  obstack_grow (&collect_obstack, q, strlen (q));
+	  obstack_grow (&collect_obstack, "'", 1);
+	}
+    }
+  obstack_grow (&collect_obstack, "\0", 1);
+  putenv (obstack_finish (&collect_obstack));
+}
 
 /* Process a spec string, accumulating and running commands.  */
 
@@ -3942,6 +3999,8 @@ do_spec (spec)
       if (argbuf_index > 0 && !strcmp (argbuf[argbuf_index - 1], "|"))
 	argbuf_index--;
 
+      set_collect_gcc_options ();
+
       if (argbuf_index > 0)
 	value = execute ();
     }
@@ -4011,6 +4070,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    else
 	      argbuf_index--;
 	  }
+
+	set_collect_gcc_options ();
 
 	if (argbuf_index > 0)
 	  {
@@ -5395,7 +5456,7 @@ is_directory (path1, path2, linker)
 /* Set up the various global variables to indicate that we're processing
    the input file named FILENAME.  */
 
-static void
+void
 set_input (filename)
      const char *filename;
 {
@@ -5567,52 +5628,6 @@ main (argc, argv)
      Decode switches that are handled locally.  */
 
   process_command (argc, argv);
-
-  {
-    int first_time;
-
-    /* Build COLLECT_GCC_OPTIONS to have all of the options specified to
-       the compiler.  */
-    obstack_grow (&collect_obstack, "COLLECT_GCC_OPTIONS=",
-		  sizeof ("COLLECT_GCC_OPTIONS=") - 1);
-
-    first_time = TRUE;
-    for (i = 0; (int) i < n_switches; i++)
-      {
-	const char *const *args;
-	const char *p, *q;
-	if (!first_time)
-	  obstack_grow (&collect_obstack, " ", 1);
-
-	first_time = FALSE;
-	obstack_grow (&collect_obstack, "'-", 2);
-	q = switches[i].part1;
-	while ((p = strchr (q, '\'')))
-	  {
-	    obstack_grow (&collect_obstack, q, p - q);
-	    obstack_grow (&collect_obstack, "'\\''", 4);
-	    q = ++p;
-	  }
-	obstack_grow (&collect_obstack, q, strlen (q));
-	obstack_grow (&collect_obstack, "'", 1);
-
-	for (args = switches[i].args; args && *args; args++)
-	  {
-	    obstack_grow (&collect_obstack, " '", 2);
-	    q = *args;
-	    while ((p = strchr (q, '\'')))
-	      {
-		obstack_grow (&collect_obstack, q, p - q);
-		obstack_grow (&collect_obstack, "'\\''", 4);
-		q = ++p;
-	      }
-	    obstack_grow (&collect_obstack, q, strlen (q));
-	    obstack_grow (&collect_obstack, "'", 1);
-	  }
-      }
-    obstack_grow (&collect_obstack, "\0", 1);
-    putenv (obstack_finish (&collect_obstack));
-  }
 
   /* Initialize the vector of specs to just the default.
      This means one element containing 0s, as a terminator.  */

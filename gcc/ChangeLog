@@ -1,5 +1,20 @@
 2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* gcc.c (set_input): Export.
+	Move declaration ...
+	gcc.h (set_input): ... here.
+
+2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* gcc.c (set_collect_gcc_options): New function, split out from
+	main.
+	Ignore elided switches.
+	(do_spec): Invoke before executing command.
+	(do_spec_1): Likewise.
+	Fixes PR other/3968.
+
+2001-11-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* config/i386/sol2.h (WINT_TYPE): Redefine.
 	(WINT_TYPE_SIZE): Likewise.
 
