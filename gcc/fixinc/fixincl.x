@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 139 fixup descriptions.
+ * This file contains 140 fixup descriptions.
  *
  * See README for more information.
  *
@@ -3662,6 +3662,40 @@ static const char* apzSolaris_Mutex_InitPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Solaris_Stdio_Tag fix
+ */
+tSCC zSolaris_Stdio_TagName[] =
+     "solaris_stdio_tag";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSolaris_Stdio_TagList[] =
+  "|stdio_tag.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzSolaris_Stdio_TagMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSolaris_Stdio_TagSelect0[] =
+       "__cplusplus < 54321L";
+
+#define    SOLARIS_STDIO_TAG_TEST_CT  1
+static tTestDesc aSolaris_Stdio_TagTests[] = {
+  { TT_EGREP,    zSolaris_Stdio_TagSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Solaris_Stdio_Tag
+ */
+static const char* apzSolaris_Stdio_TagPatch[] = { "sed",
+    "-e", "s/defined(__cplusplus) && (__cplusplus < 54321L)/0/",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Statsswtch fix
  */
 tSCC zStatsswtchName[] =
@@ -5470,9 +5504,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          148
+#define REGEX_COUNT          149
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            139
+#define FIX_COUNT            140
 
 /*
  *  Enumerate the fixes
@@ -5570,6 +5604,7 @@ typedef enum {
     SCO_STATIC_FUNC_FIXIDX,
     SCO_UTIME_FIXIDX,
     SOLARIS_MUTEX_INIT_FIXIDX,
+    SOLARIS_STDIO_TAG_FIXIDX,
     STATSSWTCH_FIXIDX,
     STDIO_STDARG_H_FIXIDX,
     STDIO_VA_LIST_FIXIDX,
@@ -6079,6 +6114,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzSolaris_Mutex_InitMachs,
      SOLARIS_MUTEX_INIT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aSolaris_Mutex_InitTests,   apzSolaris_Mutex_InitPatch, 0 },
+
+  {  zSolaris_Stdio_TagName,    zSolaris_Stdio_TagList,
+     apzSolaris_Stdio_TagMachs,
+     SOLARIS_STDIO_TAG_TEST_CT, FD_MACH_ONLY,
+     aSolaris_Stdio_TagTests,   apzSolaris_Stdio_TagPatch, 0 },
 
   {  zStatsswtchName,    zStatsswtchList,
      apzStatsswtchMachs,

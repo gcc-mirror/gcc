@@ -2061,6 +2061,22 @@ fix = {
 
 
 /*
+ * Solaris 2.8 has what appears to be some gross workaround for 
+ * some old version of their c++ compiler.  G++ doesn't want it
+ * either, but doesn't want to be tied to SunPRO version numbers.
+ */
+fix = {
+    hackname = solaris_stdio_tag;
+    files    = stdio_tag.h;
+
+    select   = '__cplusplus < 54321L';
+    sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
+
+    test_text = '#if\tdefined(__cplusplus) && (__cplusplus < 54321L)';
+};
+
+
+/*
  *  Sony NEWSOS 5.0 does not support the complete ANSI C standard.
  */
 #ifdef SONY
