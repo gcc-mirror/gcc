@@ -1,3 +1,10 @@
+2005-02-01  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (override_options): Warn if -mint64
+	is used.
+	* doc/invoke.texi (MIPS Options): Document that -mint64 is
+	deprecated.
+
 2005-02-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cse.c (cse_reg_info): Remove hash_next, next, regno.  Add
@@ -2107,7 +2114,7 @@
 
 2005-01-11  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.c (struct s390_frame_layout): Remove 
+	* config/s390/s390.c (struct s390_frame_layout): Remove
 	save_backchain_p.
 	(s390_frame_info, s390_emit_prologue): Replace occurrences of
 	save_backchain_p with TARGET_BACKCHAIN.
@@ -2227,12 +2234,12 @@
 
 2005-01-09  Ira Rosen  <irar@il.ibm.com>
 
-	* tree-vectorizer.c (vect_analyze_offset_expr): Use 
+	* tree-vectorizer.c (vect_analyze_offset_expr): Use
 	expr_invariant_in_loop_p.
 	Initialize outputs first thing in the function.
 	(vect_update_ivs_after_vectorizer): Call initial_condition_in_loop_num.
 	(vect_is_simple_iv_evolution): Call initial_condition_in_loop_num.
-	(vect_analyze_pointer_ref_access): Check that the initial condition of 
+	(vect_analyze_pointer_ref_access): Check that the initial condition of
 	the access function is loop invariant.
 
 2005-01-09  Richard Henderson  <rth@redhat.com>
@@ -2254,7 +2261,7 @@
 	gtv2si3, umaxv8qi3, smaxv4hi3, uminv8qi3, sminv4hi3, ashrv4hi3,
 	ashrv2si3, lshrv4hi3, lshrv2si3, mmx_lshrdi3, ashlv4hi3, ashlv2si3,
 	mmx_ashldi3, mmx_packsswb, mmx_packssdw, mmx_packuswb, mmx_punpckhbw,
-	mmx_punpckhwd, mmx_punpckhdq, mmx_punpcklbw, mmx_punpcklwd, 
+	mmx_punpckhwd, mmx_punpckhdq, mmx_punpcklbw, mmx_punpcklwd,
 	mmx_punpckldq, emms, addv2sf3, subv2sf3, subrv2sf3, gtv2sf3, gev2sf3,
 	eqv2sf3, pfmaxv2sf3, pfminv2sf3, mulv2sf3, femms, pf2id, pf2iw,
 	pfacc, pfnacc, pfpnacc, pi2fw, floatv2si2, pfrcpv2sf2, pfrcpit1v2sf3,
@@ -2262,7 +2269,7 @@
 	pswapdv2sf2): Move to mmx.md; rename as necessary with leading
 	mmx_ prefix.
 	(mmx_clrdi, pavgusb): Remove.
-	(ldmxcsr, stmxcsr, sfence, sfence_insn): Move to sse.md; rename 
+	(ldmxcsr, stmxcsr, sfence, sfence_insn): Move to sse.md; rename
 	with leading sse_ prefix.
 	* config/i386/sse.md: Receive them.
 	* config/i386/mmx.md: New file.
@@ -2276,7 +2283,7 @@
 	(mmx_add<MMXMODEI>3, mmx_ssadd<MMXMODE12>3, mmx_usadd<MMXMODE12>3,
 	mmx_sub<MMXMODEI>3, mmx_sssub<MMXMODE12>3, mmx_ussub<MMXMODE12>3
 	mmx_ashr<MMXMODE24>3, mmx_lshr<MMXMODE23>3, mmx_ashl<MMXMODE24>3
-	mmx_eq<MMXMODEI>3, mmx_gt<MMXMODEI>3, mmx_and<MMXMODEI>3, 
+	mmx_eq<MMXMODEI>3, mmx_gt<MMXMODEI>3, mmx_and<MMXMODEI>3,
 	mmx_nand<MMXMODEI>3, mmx_ior<MMXMODEI>3, mmx_xor<MMXMODEI>3):
 	Macroize from existing patterns; use ix86_binary_operator_ok.
 	(mmx_packsswb, mmx_packssdw, mmx_packuswb): Add memory alternative.
@@ -2334,16 +2341,16 @@
 	(movtf, movtf_internal): Move near other fp moves.
 	(SSEMODE, SSEMODEI, vec_setv2df, vec_extractv2df, vec_initv2df,
 	vec_setv4sf, vec_extractv4sf, vec_initv4sf, movv4sf, movv4sf_internal,
-	movv2df, movv2df_internal, mov<SSEMODEI>, mov<SSEMODEI>_internal, 
+	movv2df, movv2df_internal, mov<SSEMODEI>, mov<SSEMODEI>_internal,
 	movmisalign<SSEMODE>, sse_movups_1, sse_movmskps, sse_movntv4sf,
 	sse_movhlps, sse_movlhps, sse_storehps, sse_loadhps, sse_storelps,
 	sse_loadlps, sse_loadss, sse_loadss_1, sse_movss, sse_storess,
 	sse_shufps, addv4sf3, vmaddv4sf3, subv4sf3, vmsubv4sf3, negv4sf2,
 	mulv4sf3, vmmulv4sf3, divv4sf3, vmdivv4sf3, rcpv4sf2, vmrcpv4sf2,
 	rsqrtv4sf2, vmrsqrtv4sf2, sqrtv4sf2, vmsqrtv4sf2, sse_andv4sf3,
-	sse_nandv4sf3, sse_iorv4sf3, sse_xorv4sf3, sse2_andv2df3, 
-	sse2_nandv2df3, sse2_iorv2df3, sse2_xorv2df3, sse2_andv2di3, 
-	sse2_nandv2di3, sse2_iorv2di3, sse2_xorv2di3, maskcmpv4sf3, 
+	sse_nandv4sf3, sse_iorv4sf3, sse_xorv4sf3, sse2_andv2df3,
+	sse2_nandv2df3, sse2_iorv2df3, sse2_xorv2df3, sse2_andv2di3,
+	sse2_nandv2di3, sse2_iorv2di3, sse2_xorv2di3, maskcmpv4sf3,
 	vmmaskcmpv4sf3, sse_comi, sse_ucomi, sse_unpckhps, sse_unpcklps,
 	smaxv4sf3, vmsmaxv4sf3, sminv4sf3, vmsminv4sf3, cvtpi2ps, cvtps2pi,
 	cvttps2pi, cvtsi2ss, cvtsi2ssq, cvtss2si, cvtss2siq, cvttss2si,
@@ -2361,14 +2368,14 @@
 	smulv8hi3_highpart, umulv8hi3_highpart, sse2_umulsidi3,
 	sse2_umulv2siv2di3, sse2_pmaddwd, sse2_uavgv16qi3, sse2_uavgv8hi3,
 	sse2_psadbw, sse2_pinsrw, sse2_pextrw, sse2_pshufd, sse2_pshuflw,
-	sse2_pshufhw, eqv16qi3, eqv8hi3, eqv4si3, gtv16qi3, gtv8hi3, 
+	sse2_pshufhw, eqv16qi3, eqv8hi3, eqv4si3, gtv16qi3, gtv8hi3,
 	gtv4si3, umaxv16qi3, smaxv8hi3, uminv16qi3, sminv8hi3, ashrv8hi3,
 	ashrv4si3, lshrv8hi3, lshrv4si3, lshrv2di3, ashlv8hi3, ashlv4si3,
 	ashlv2di3, sse2_ashlti3, sse2_lshrti3, sse2_unpckhpd, sse2_unpcklpd,
-	sse2_packsswb, sse2_packssdw, sse2_packuswb, sse2_punpckhbw, 
+	sse2_packsswb, sse2_packssdw, sse2_packuswb, sse2_punpckhbw,
 	sse2_punpckhwd, sse2_punpckhdq, sse2_punpcklbw, sse2_punpcklwd,
 	sse2_punpckldq, sse2_punpcklqdq, sse2_punpckhqdq, sse2_movupd,
-	sse2_movdqu, sse2_movdq2q, sse2_movdq2q_rex64, sse2_movq2dq, 
+	sse2_movdqu, sse2_movdq2q, sse2_movdq2q_rex64, sse2_movq2dq,
 	sse2_movq2dq_rex64, sse2_loadd, sse2_stored, sse2_storehpd,
 	sse2_loadhpd, sse2_storelpd, sse2_loadlpd, sse2_movsd, sse2_loadsd,
 	sse2_loadsd_1, sse2_storesd, sse2_shufpd, sse2_clflush, sse2_mfence,
@@ -2413,19 +2420,19 @@
 	sse3_haddv4sf3, sse3_hsubv4sf3, sse3_addsubv2df3, sse3_haddv2df3,
 	sse3_hsubv2df3, sse2_ashlti3, sse2_lshrti3): Likewise.
 	(sse_movhlps): Model with vec_select+vec_concat.
-	(sse_movlhps, sse_unpckhps, sse_unpcklps, sse3_movshdup, 
+	(sse_movlhps, sse_unpckhps, sse_unpcklps, sse3_movshdup,
 	sse3_movsldup, sse_shufps, sse_shufps_1, sse2_unpckhpd, sse3_movddup,
 	sse2_unpcklpd, sse2_shufpd, sse2_shufpd_1, sse2_punpckhbw,
 	sse2_punpcklbw, sse2_punpckhwd, sse2_punpcklwd, sse2_punpckhdq,
 	sse2_punpckldq, sse2_punpckhqdq, sse2_punpcklqdq, sse2_pshufd,
-	sse2_pshufd_1, sse2_pshuflw, sse2_pshuflw_1, sse2_pshufhw, 
+	sse2_pshufd_1, sse2_pshuflw, sse2_pshuflw_1, sse2_pshufhw,
 	sse2_pshufhw_1): Likewise.
 	(neg<SSEMODEI>2, one_cmpl<SSEMODEI>2): New.
 	(add<SSEMODEI>3, sse2_ssadd<SSEMODE12>3, sse2_usadd<SSEMODE12>3,
 	sub<SSEMODEI>3, sse2_sssub<SSEMODE12>3, sse2_ussub<SSEMODE12>3,
 	ashr<SSEMODE24>3, lshr<SSEMODE248>3, sse2_eq<SSEMODE124>3,
 	sse2_gt<SSEMODDE124>3, and<SSEMODEI>3, sse_nand<SSEMODEI>3,
-	ior<SSEMODEI>3, xor<SSEMODEI>3): Macroize from existing patterns.	
+	ior<SSEMODEI>3, xor<SSEMODEI>3): Macroize from existing patterns.
 	(addv4sf3, sse_vmaddv4sf3, mulv4sf3, sse_vmmulv4sf3, smaxv4sf3,
 	sse_vmsmaxv4sf3, sminv4sf3, sse_vmsminv4sf3, addv2df3, sse2_vmaddv2df3,
 	mulv2df3, sse2_vmmulv2df3, smaxv2df3, sse2_vmsmaxv2df3, sminv2df3,
@@ -2551,14 +2558,14 @@
 	for IBM long double format correctly.
 
 2005-01-06  Daniel Berlin <dberlin@dberlin.org>
-	
+
 	Fix PR tree-optimization/18792
 
 	* tree-data-ref.c (build_classic_dist_vector): Change first_loop
 	to first_loop_depth, and use loop depth instead of loop number.
 	(build_classic_dir_vector): Ditto.
 	(compute_data_dependences_for_loop): Use depth, not loop number.
-	* tree-loop-linear.c (try_interchange_loops): Use loop depth, not loop 
+	* tree-loop-linear.c (try_interchange_loops): Use loop depth, not loop
 	number. Pass in loops, instead of loop numbers.
 	(gather_interchange_stats): Ditto.
 	(linear_transform_loops): Ditto.
@@ -2580,7 +2587,7 @@
 	* gcc.c (process_command): Change year in 'gcc --version' to 2005.
 
 2005-01-05  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR middle-end/19286
 	Fix PR debug/19267
 	* dwarf2out.c (gen_subprogram_die): If we've already tried to
@@ -2591,7 +2598,7 @@
 	(decls_for_scope): Ditto.
 	* gimple-low.c (mark_blocks_with_used_subblocks): Remove.
 	(mark_used_blocks): Don't call mark_blocks_with_used_subblocks.
-	
+
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/11327
@@ -2600,7 +2607,7 @@
 	(ix86_expand_binop_builtin): Force operands into registers
 	when optimizing.
 	(ix86_expand_unop_builtin, ix86_expand_unop1_builtin,
-	ix86_expand_sse_compare, ix86_expand_sse_comi, 
+	ix86_expand_sse_compare, ix86_expand_sse_comi,
 	ix86_expand_builtin): Likewise.
 
 2005-01-05  Richard Henderson  <rth@redhat.com>
@@ -2665,7 +2672,7 @@
 	    Richard Henderson  <rth@redhat.com>
 
 	PR target/18910
-	* config/i386/i386.c (ix86_expand_move): Handle tls symbols 
+	* config/i386/i386.c (ix86_expand_move): Handle tls symbols
 	with an offset.
 
 2005-01-05  Richard Henderson  <rth@redhat.com>
@@ -2843,7 +2850,7 @@
 
 	* tree-vectorizer.c (vect_strip_conversions): New function.
 	(vect_analyze_offset_expr): Call vect_strip_conversions. Add
-	check for binary class.	
+	check for binary class.
 
 2005-01-03  Daniel Berlin  <dberlin@dberlin.org>
 
@@ -2858,7 +2865,7 @@
 	* tree-inline.c: Include debug.h.
 	(expand_call_inline): Call outlining_inline_function here.
 	* tree-optimize.c (init_tree_optimization_passes): Add
-	pass_mark_used_blocks. 
+	pass_mark_used_blocks.
 	* tree-pass.h (pass_mark_used_blocks): New.
 	* Makefile.in (tree-inline.o): Add debug.h dependency.
 

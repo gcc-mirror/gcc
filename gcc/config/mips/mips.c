@@ -4131,6 +4131,10 @@ override_options (void)
 	target_flags &= ~MASK_LONG64;
     }
 
+  /* Deprecate -mint64. Remove after 4.0 branches.  */
+  if ((target_flags_explicit & MASK_INT64) != 0)
+    warning ("-mint64 is a deprecated option");
+
   if (MIPS_MARCH_CONTROLS_SOFT_FLOAT
       && (target_flags_explicit & MASK_SOFT_FLOAT) == 0)
     {
