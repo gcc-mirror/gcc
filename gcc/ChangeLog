@@ -1,3 +1,8 @@
+2001-08-09  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/mips/mips.c	(mips_legitimate_address_p): Check for
+        CONST_INT in last patch.	
+
 2001-08-08  Anthony Green  <green@redhat.com>
 
 	* java/class.c (emit_register_classes): Use assemble_jcr if

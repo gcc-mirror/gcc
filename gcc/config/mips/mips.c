@@ -1368,8 +1368,9 @@ mips_legitimate_address_p (mode, xinsn, strict)
 		 in "la x, foo(x)" yielding the wrong result for:
 	         (set (blah:DI) (plus x y)).  */
 	      && (!TARGET_64BIT
-		  || trunc_int_for_mode (INTVAL (xplus1),
-					 SImode) == INTVAL (xplus1))
+		  || (code1 == CONST_INT
+		      && trunc_int_for_mode (INTVAL (xplus1), 
+					     SImode) == INTVAL (xplus1)))
 	      && !TARGET_MIPS16)
 	    return 1;
 	}
