@@ -659,7 +659,7 @@ cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
   `echo $(srcdir)/cp-parse.c | sed 's,^\./,,'`
 
 $(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
-	@echo expect 30 shift/reduce conflicts and 15 reduce/reduce conflicts
+	@echo expect 30 shift/reduce conflicts and 14 reduce/reduce conflicts
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o cp-parse.c cp-parse.y
 
 cp-spew.o : cp-spew.c $(CONFIG_H) $(CPLUS_TREE_H) \
@@ -926,7 +926,7 @@ stamp-attrtab : md genattrtab $(srcdir)/move-if-change
 	if cmp -s $(PREMADE_ATTRTAB_MD) md;	\
 	then					\
 	  echo Using $(PREMADE_ATTRTAB);	\
-	  cp $(srcdir)/$(PREMADE_ATTRTAB) tmp-attrtab.c;	\
+	  cp $(PREMADE_ATTRTAB) tmp-attrtab.c;	\
 	else					\
 	  ./genattrtab md > tmp-attrtab.c;	\
 	fi
@@ -1090,7 +1090,23 @@ proto: config.status protoize unprotoize SYSCALLS.c.X protoize.1 unprotoize.1
 protoize: protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
 	  protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
-protoize.o:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
+protoize.o: stamp-proto ;
+
+unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
+	  unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
+unprotoize.o:	stamp-proto ;
+
+stamp-proto:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
+	touch stamp-proto
+	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+          -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
+          -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
+          -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
+	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
+	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
+	  -DUNPROTOIZE $(srcdir)/protoize.c
+	mv protoize.o unprotoize.o
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
           -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
@@ -1098,20 +1114,6 @@ protoize.o:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
 	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
-
-unprotoize: unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
-	  unprotoize.o getopt.o getopt1.o getpwd.o version.o $(LIBS) -o $@
-unprotoize.o:	$(srcdir)/protoize.c getopt.h $(CONFIG_H)
-	-rm -f unprotoize.c
-	cp $(srcdir)/protoize.c unprotoize.c
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-          -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
-          -DGPLUSPLUS_INCLUDE_DIR=\"$(libdir)/g++-include\" \
-          -DCROSS_INCLUDE_DIR=\"$(libsubdir)/sys-include\" \
-	  -DLOCAL_INCLUDE_DIR=\"$(prefix)/include\" \
-	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
-	  -DUNPROTOIZE unprotoize.c
 
 getopt.o: $(srcdir)/getopt.c getopt.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt.c
@@ -1219,12 +1221,13 @@ clean: mostlyclean
 # Using unprotoize.c is not quite right in the first place, 
 # but what better way is there?
 	-rm -f libgcc.a libgcc1.a libgcc2.a libgcc2.ready unprotoize.c
+	-rm *.dvi
 
 # Delete all files that users would normally create
 # while building and installing GCC.
 distclean: clean
 	-rm -f tm.h aux-output.c config.h md config.status tconfig.h
-	-rm -f Makefile *.dvi *.oaux
+	-rm -f Makefile *.oaux
 	-rm -fr stage1 stage2 stage3 stage4
 
 # Delete anything likely to be found in the source directory
@@ -1383,20 +1386,20 @@ install-proto: proto install-dir
 install-man: install-dir $(srcdir)/gcc.1 $(srcdir)/cccp.1 \
    protoize.1 unprotoize.1 $(srcdir)/g++.1
 	-rm -f $(mandir)/gcc$(manext)
-	$(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/gcc$(manext)
-	chmod a-x $(mandir)/gcc$(manext)
+	-$(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/gcc$(manext)
+	-chmod a-x $(mandir)/gcc$(manext)
 	-rm -f $(mandir)/cccp$(manext)
-	$(INSTALL_DATA) $(srcdir)/cccp.1 $(mandir)/cccp$(manext)
-	chmod a-x $(mandir)/cccp$(manext)
+	-$(INSTALL_DATA) $(srcdir)/cccp.1 $(mandir)/cccp$(manext)
+	-chmod a-x $(mandir)/cccp$(manext)
 	-rm -f $(mandir)/protoize$(manext)
-	$(INSTALL_DATA) protoize.1 $(mandir)/protoize$(manext)
-	chmod a-x $(mandir)/protoize$(manext)
+	-$(INSTALL_DATA) protoize.1 $(mandir)/protoize$(manext)
+	-chmod a-x $(mandir)/protoize$(manext)
 	-rm -f $(mandir)/unprotoize$(manext)
-	$(INSTALL_DATA) unprotoize.1 $(mandir)/unprotoize$(manext)
-	chmod a-x $(mandir)/unprotoize$(manext)
+	-$(INSTALL_DATA) unprotoize.1 $(mandir)/unprotoize$(manext)
+	-chmod a-x $(mandir)/unprotoize$(manext)
 	-rm -f $(mandir)/g++$(manext)
-	$(INSTALL_DATA) $(srcdir)/g++.1 $(mandir)/g++$(manext)
-	chmod a-x $(mandir)/g++$(manext)
+	-$(INSTALL_DATA) $(srcdir)/g++.1 $(mandir)/g++$(manext)
+	-chmod a-x $(mandir)/g++$(manext)
 
 # Install the library.
 install-libgcc: libgcc.a
@@ -1533,7 +1536,7 @@ gcc.xtar.Z: gcc.xtar
 #	compress < gcc-$(version).tar > gcc-$(version).tar.Z
 
 #gcc-$(version).tar:
-gcc.xtar:
+gcc.xtar: doc
 	-rm -rf gcc-$(version) tmp	
 # Put all the files in a temporary subdirectory
 # which has the name that we want to have in the tar file.
