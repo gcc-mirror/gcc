@@ -1,3 +1,8 @@
+2002-03-26  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.mauve/mauve.exp (test_mauve): Use correct stderr
+	redirection code.
+
 2002-03-22  Eric Blake  <ebb9@email.byu.edu>
 
 	For PR java/6026:
