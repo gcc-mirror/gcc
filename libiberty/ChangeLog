@@ -1,3 +1,10 @@
+2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cp-demangle.c (demangle_operator_name): Add spaces before
+	names beginning with a letter: delete, delete[], new, new[],
+	sizeof.
+	(demangle_special_name): Handle TF <type> and TJ <type>.
+
 Thu Jun  8 18:52:24 2000  Philippe De Muyter  <phdm@macqel.be>
 
 	* cp-demangle.c (template_arg_list_new): Revert previous PARAMS patch.

@@ -1327,9 +1327,9 @@ demangle_operator_name (dm, short_name, num_args)
     { "cm", ","        , 2 },
     { "co", "~"        , 1 },
     { "dV", "/="       , 2 },
-    { "da", "delete[]" , 1 },
+    { "da", " delete[]", 1 },
     { "de", "*"        , 1 },
-    { "dl", "delete"   , 1 },
+    { "dl", " delete"  , 1 },
     { "dv", "/"        , 2 },
     { "eO", "^="       , 2 },
     { "eo", "^"        , 2 },
@@ -1346,11 +1346,11 @@ demangle_operator_name (dm, short_name, num_args)
     { "mi", "-"        , 2 },
     { "ml", "*"        , 2 },
     { "mm", "--"       , 1 },
-    { "na", "new[]"    , 1 },
+    { "na", " new[]"   , 1 },
     { "ne", "!="       , 2 },
     { "ng", "-"        , 1 },
     { "nt", "!"        , 1 },
-    { "nw", "new"      , 1 },
+    { "nw", " new"     , 1 },
     { "oR", "|="       , 2 },
     { "oo", "||"       , 2 },
     { "or", "|"        , 2 },
@@ -1364,7 +1364,7 @@ demangle_operator_name (dm, short_name, num_args)
     { "rS", ">>="      , 2 },
     { "rm", "%"        , 2 },
     { "rs", ">>"       , 2 },
-    { "sz", "sizeof"   , 1 }
+    { "sz", " sizeof"  , 1 }
   };
 
   const int num_operators = 
@@ -1439,10 +1439,12 @@ demangle_operator_name (dm, short_name, num_args)
                    ::= TI <type>          # typeinfo structure
 		   ::= TS <type>          # typeinfo name  
 
-   Also demangles the special g++ mangling,
+   Also demangles the special g++ manglings,
 
     <special-name> ::= CT <type> <offset number> _ <base type>
-                                          # construction vtable  */
+                                          # construction vtable
+		   ::= TF <type>	  # typeinfo function (old ABI only)
+		   ::= TJ <type>	  # java Class structure  */
 
 static status_t
 demangle_special_name (dm)
@@ -1490,10 +1492,24 @@ demangle_special_name (dm)
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
+	case 'F':
+	  /* Typeinfo function.  Used only in old ABI with new mangling.  */
+	  advance_char (dm);
+	  result_append (dm, "typeinfo fn for ");
+	  RETURN_IF_ERROR (demangle_type (dm));
+	  break;
+
 	case 'S':
 	  /* Character string containing type name, used in typeinfo. */
 	  advance_char (dm);
 	  result_append (dm, "typeinfo name for ");
+	  RETURN_IF_ERROR (demangle_type (dm));
+	  break;
+
+	case 'J':
+	  /* The java Class variable corresponding to a C++ class.  */
+	  advance_char (dm);
+	  result_append (dm, "java Class for ");
 	  RETURN_IF_ERROR (demangle_type (dm));
 	  break;
 
