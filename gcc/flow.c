@@ -1555,12 +1555,21 @@ delete_unreachable_blocks ()
       basic_block c = BASIC_BLOCK (i);
       edge s;
 
-      /* We only need care for simple unconditional jumps, which implies
-	 a single successor.  */
+      /* We care about simple conditional or unconditional jumps with
+	 a single successor.
+
+	 If we had a conditional branch to the next instruction when
+	 find_basic_blocks was called, then there will only be one
+	 out edge for the block which ended with the conditional
+	 branch (since we do not create duplicate edges).
+
+	 Furthermore, because we create the edge for the jump to the
+	 label before the fallthrough edge, we will only see the
+	 jump edge.  So we do not want to check that the edge is a 
+	 FALLTHRU edge.  */
       if ((s = b->succ) != NULL
 	  && s->succ_next == NULL
-	  && s->dest == c
-	  && ! (s->flags & EDGE_FALLTHRU))
+	  && s->dest == c)
 	tidy_fallthru_edge (s, b, c);
     }
 
@@ -1823,15 +1832,9 @@ can_delete_label_p (label)
     if (label == XEXP (x, 0))
       return 0;
 
-  /* User declared labels must be preserved, but we can
-     convert them into a NOTE instead. */
+  /* User declared labels must be preserved.  */
   if (LABEL_NAME (label) != 0)
-    {
-      PUT_CODE (label, NOTE);
-      NOTE_LINE_NUMBER (label) = NOTE_INSN_DELETED_LABEL;
-      NOTE_SOURCE_FILE (label) = 0;
-      return 0;
-    }
+    return 0;
   
   return 1;
 }
