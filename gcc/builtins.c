@@ -2544,8 +2544,9 @@ builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
    otherwise try to get the result in TARGET, if convenient (and in
    mode MODE if that's convenient).  */
 static rtx
-expand_builtin_memcpy (tree arglist, rtx target, enum machine_mode mode)
+expand_builtin_memcpy (tree exp, rtx target, enum machine_mode mode)
 {
+  tree arglist = TREE_OPERAND (exp, 1);
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
@@ -2559,26 +2560,14 @@ expand_builtin_memcpy (tree arglist, rtx target, enum machine_mode mode)
       unsigned int dest_align
 	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
       rtx dest_mem, src_mem, dest_addr, len_rtx;
+      tree result = fold_builtin_memcpy (exp);
+
+      if (result)
+	return expand_expr (result, target, mode, EXPAND_NORMAL);
 
       /* If DEST is not a pointer type, call the normal function.  */
       if (dest_align == 0)
 	return 0;
-
-      /* If the LEN parameter is zero, return DEST.  */
-      if (integer_zerop (len))
-	{
-	  /* Evaluate and ignore SRC in case it has side-effects.  */
-	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
-	}
-
-      /* If SRC and DEST are the same (and not volatile), return DEST.  */
-      if (operand_equal_p (src, dest, 0))
-	{
-	  /* Evaluate and ignore LEN in case it has side-effects.  */
-	  expand_expr (len, const0_rtx, VOIDmode, EXPAND_NORMAL);
-	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
-	}
 
       /* If either SRC is not a pointer type, don't do this
          operation in-line.  */
@@ -5490,7 +5479,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     case BUILT_IN_MEMCPY:
-      target = expand_builtin_memcpy (arglist, target, mode);
+      target = expand_builtin_memcpy (exp, target, mode);
       if (target)
 	return target;
       break;
