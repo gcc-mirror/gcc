@@ -1,5 +1,10 @@
 2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
 
+	* doc/install.texi: Yet another update for autoconf
+	and automake versions.
+
+2004-06-15  Paolo Bonzini  <bonzini@gnu.org>
+
 	* function.h (struct function): Remove cannot_inline field.
 	(current_function_cannot_inline): Remove.
 	* passes.c (rest_of_compilation): Reset DECL_DEFER_OUTPUT.
