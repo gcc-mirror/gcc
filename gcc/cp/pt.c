@@ -4001,7 +4001,6 @@ tsubst (t, args, in_decl)
     my_friendly_abort (42);
 
   if (type && TREE_CODE (t) != FUNCTION_DECL
-      && TREE_CODE (t) != IDENTIFIER_NODE
       && TREE_CODE (t) != TYPENAME_TYPE
       && TREE_CODE (t) != TEMPLATE_DECL
       && TREE_CODE (t) != IDENTIFIER_NODE)
