@@ -73,13 +73,40 @@ Boston, MA 02111-1307, USA.  */
 
    Note that block duplication can be minimized by first collecting the
    the set of unique destination blocks that the incoming edges should
-   be threaded to.  Block duplication can be further minimized by using 
+   be threaded to.  Block duplication can be further minimized by using
    B instead of creating B' for one destination if all edges into B are
-   going to be threaded to a successor of B.  */
+   going to be threaded to a successor of B.
 
+   We further reduce the number of edges and statements we create by
+   not copying all the outgoing edges and the control statement in
+   step #1.  We instead create a template block without the outgoing
+   edges and duplicate the template.  */
+
+
+/* Steps #5 and #6 of the above algorithm are best implemented by walking
+   all the incoming edges which thread to the same destination edge at
+   the same time.  That avoids lots of table lookups to get information
+   for the destination edge.
+
+   To realize that implementation we create a list of incoming edges
+   which thread to the same outgoing edge.  Thus to implement steps
+   #5 and #6 we traverse our hash table of outgoing edge information.
+   For each entry we walk the list of incoming edges which thread to
+   the current outgoing edge.  */
+
+struct el
+{
+  edge e;
+  struct el *next;
+};
 
 /* Main data structure recording information regarding B's duplicate
    blocks.  */
+
+/* We need to efficiently record the unique thread destinations of this
+   block and specific information associated with those destinations.  We
+   may have many incoming edges threaded to the same outgoing edge.  This
+   can be naturaly implemented with a hash table.  */
 
 struct redirection_data
 {
@@ -90,10 +117,30 @@ struct redirection_data
   /* An outgoing edge from B.  DUP_BLOCK will have OUTGOING_EDGE->dest as
      its single successor.  */
   edge outgoing_edge;
+
+  /* A list of incoming edges which we want to thread to
+     OUTGOING_EDGE->dest.  */
+  struct el *incoming_edges;
+
+  /* Flag indicating whether or not we should create a duplicate block
+     for this thread destination.  This is only true if we are threading
+     all incoming edges and thus are using BB itself as a duplicate block.  */
+  bool do_not_duplicate;
 };
 
 /* Main data structure to hold information for duplicates of BB.  */
-static varray_type redirection_data;
+static htab_t redirection_data;
+
+/* Data structure of information to pass to hash table traversal routines.  */
+struct local_info
+{
+  /* The current block we are working on.  */
+  basic_block bb;
+
+  /* A template copy of BB with no outgoing edges or control statement that
+     we use for creating copies.  */
+  basic_block template_block;
+};
 
 /* Remove the last statement in block BB if it is a control statement
    Also remove all outgoing edges except the edge which reaches DEST_BB.
@@ -151,11 +198,237 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
   remove_ctrl_stmt_and_useless_edges (rd->dup_block, NULL);
 }
 
+/* Hashing and equality routines for our hash table.  */
+static hashval_t
+redirection_data_hash (const void *p)
+{
+  edge e = ((struct redirection_data *)p)->outgoing_edge;
+  return htab_hash_pointer (e);
+}
+
+static int
+redirection_data_eq (const void *p1, const void *p2)
+{
+  edge e1 = ((struct redirection_data *)p1)->outgoing_edge;
+  edge e2 = ((struct redirection_data *)p2)->outgoing_edge;
+
+  return e1 == e2;
+}
+
+/* Given an outgoing edge E lookup and return its entry in our hash table.
+
+   If INSERT is true, then we insert the entry into the hash table if
+   it is not already present.  INCOMING_EDGE is added to the list of incoming
+   edges associated with E in the hash table.  */
+
+static struct redirection_data *
+lookup_redirection_data (edge e, edge incoming_edge, bool insert)
+{
+  void **slot;
+  struct redirection_data *elt;
+
+ /* Build a hash table element so we can see if E is already
+     in the table.  */
+  elt = xmalloc (sizeof (struct redirection_data));
+  elt->outgoing_edge = e;
+  elt->dup_block = NULL;
+  elt->do_not_duplicate = false;
+  elt->incoming_edges = NULL;
+
+  slot = htab_find_slot (redirection_data, elt, insert);
+
+  /* This will only happen if INSERT is false and the entry is not
+     in the hash table.  */
+  if (slot == NULL)
+    {
+      free (elt);
+      return NULL;
+    }
+
+  /* This will only happen if E was not in the hash table and
+     INSERT is true.  */
+  if (*slot == NULL)
+    {
+      *slot = (void *)elt;
+      elt->incoming_edges = xmalloc (sizeof (struct el));
+      elt->incoming_edges->e = incoming_edge;
+      elt->incoming_edges->next = NULL;
+      return elt;
+    }
+  /* E was in the hash table.  */
+  else
+    {
+      /* Free ELT as we do not need it anymore, we will extract the
+	 relevant entry from the hash table itself.  */
+      free (elt);
+
+      /* Get the entry stored in the hash table.  */
+      elt = (struct redirection_data *) *slot;
+
+      /* If insertion was requested, then we need to add INCOMING_EDGE
+	 to the list of incoming edges associated with E.  */
+      if (insert)
+	{
+          struct el *el = xmalloc (sizeof (struct el));
+	  el->next = elt->incoming_edges;
+	  el->e = incoming_edge;
+	  elt->incoming_edges = el;
+	}
+
+      return elt;
+    }
+}
+
+/* Given a duplicate block and its single destination (both stored
+   in RD).  Create an edge between the duplicate and its single
+   destination.
+
+   Add an additional argument to any PHI nodes at the single
+   destination.  */
+
+static void
+create_edge_and_update_destination_phis (struct redirection_data *rd)
+{
+  edge e = make_edge (rd->dup_block, rd->outgoing_edge->dest, EDGE_FALLTHRU);
+  tree phi;
+
+  /* If there are any PHI nodes at the destination of the outgoing edge
+     from the duplicate block, then we will need to add a new argument
+     to them.  The argument should have the same value as the argument
+     associated with the outgoing edge stored in RD.  */
+  for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
+    {
+      int indx = phi_arg_from_edge (phi, rd->outgoing_edge);
+      add_phi_arg (&phi, PHI_ARG_DEF_TREE (phi, indx), e);
+    }
+}
+
+/* Hash table traversal callback routine to create duplicate blocks.  */
+
+static int
+create_duplicates (void **slot, void *data)
+{
+  struct redirection_data *rd = (struct redirection_data *) *slot;
+  struct local_info *local_info = (struct local_info *)data;
+
+  /* If this entry should not have a duplicate created, then there's
+     nothing to do.  */
+  if (rd->do_not_duplicate)
+    return 1;
+
+  /* Create a template block if we have not done so already.  Otherwise
+     use the template to create a new block.  */
+  if (local_info->template_block == NULL)
+    {
+      create_block_for_threading (local_info->bb, rd);
+      local_info->template_block = rd->dup_block;
+
+      /* We do not create any outgoing edges for the template.  We will
+	 take care of that in a later traversal.  That way we do not
+	 create edges that are going to just be deleted.  */
+    }
+  else
+    {
+      create_block_for_threading (local_info->template_block, rd);
+
+      /* Go ahead and wire up outgoing edges and update PHIs for the duplicate
+         block.  */
+      create_edge_and_update_destination_phis (rd);
+    }
+
+  /* Keep walking the hash table.  */
+  return 1;
+}
+
+/* We did not create any outgoing edges for the template block during
+   block creation.  This hash table traversal callback creates the
+   outgoing edge for the template block.  */
+
+static int
+fixup_template_block (void **slot, void *data)
+{
+  struct redirection_data *rd = (struct redirection_data *) *slot;
+  struct local_info *local_info = (struct local_info *)data;
+
+  /* If this is the template block, then create its outgoing edges
+     and halt the hash table traversal.  */
+  if (rd->dup_block && rd->dup_block == local_info->template_block)
+    {
+      create_edge_and_update_destination_phis (rd);
+      return 0;
+    }
+
+  return 1;
+}
+
+/* Hash table traversal callback to redirect each incoming edge
+   associated with this hash table element to its new destination.  */
+
+static int
+redirect_edges (void **slot, void *data)
+{
+  struct redirection_data *rd = (struct redirection_data *) *slot;
+  struct local_info *local_info = (struct local_info *)data;
+  struct el *next, *el;
+
+  /* Walk over all the incoming edges associated associated with this
+     hash table entry.  */
+  for (el = rd->incoming_edges; el; el = next)
+    {
+      edge e = el->e;
+
+      /* Go ahead and free this element from the list.  Doing this now
+	 avoids the need for another list walk when we destroy the hash
+	 table.  */
+      next = el->next;
+      free (el);
+
+      /* Go ahead and clear E->aux.  It's not needed anymore and failure
+         to clear it will cause all kinds of unpleasant problems later.  */
+      e->aux = NULL;
+
+      if (rd->dup_block)
+	{
+	  edge e2;
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
+		     e->src->index, e->dest->index, rd->dup_block->index);
+
+	  /* Redirect the incoming edge to the appropriate duplicate
+	     block.  */
+	  e2 = redirect_edge_and_branch (e, rd->dup_block);
+	  flush_pending_stmts (e2);
+
+	  if ((dump_file && (dump_flags & TDF_DETAILS))
+	      && e->src != e2->src)
+	    fprintf (dump_file, "    basic block %d created\n", e2->src->index);
+	}
+      else
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
+		     e->src->index, e->dest->index, local_info->bb->index);
+
+	  /* We are using BB as the duplicate.  Remove the unnecessary
+	     outgoing edges and statements from BB.  */
+	  remove_ctrl_stmt_and_useless_edges (local_info->bb,
+					      rd->outgoing_edge->dest);
+
+	  /* And fixup the flags on the single remaining edge.  */
+	  EDGE_SUCC (local_info->bb, 0)->flags
+	    &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+	  EDGE_SUCC (local_info->bb, 0)->flags |= EDGE_FALLTHRU;
+	}
+    }
+  return 1;
+}
+
 /* BB is a block which ends with a COND_EXPR or SWITCH_EXPR and when BB
    is reached via one or more specific incoming edges, we know which
    outgoing edge from BB will be traversed.
 
-   We want to redirect those incoming edges to the target of the 
+   We want to redirect those incoming edges to the target of the
    appropriate outgoing edge.  Doing so avoids a conditional branch
    and may expose new optimization opportunities.  Note that we have
    to update dominator tree and SSA graph after such changes.
@@ -187,19 +460,23 @@ thread_block (basic_block bb)
      redirect to a duplicate of BB.  */
   edge e;
   edge_iterator ei;
-  basic_block template_block;
+  struct local_info local_info;
 
   /* ALL indicates whether or not all incoming edges into BB should
      be threaded to a duplicate of BB.  */
   bool all = true;
 
-  unsigned int i;
+  /* To avoid scanning a linear array for the element we need we instead
+     use a hash table.  For normal code there should be no noticable
+     difference.  However, if we have a block with a large number of
+     incoming and outgoing edges such linear searches can get expensive.  */
+  redirection_data = htab_create (EDGE_COUNT (bb->succs),
+				  redirection_data_hash,
+				  redirection_data_eq,
+				  free);
 
-  VARRAY_GENERIC_PTR_INIT (redirection_data, 2, "redirection data");
-
-  /* Look at each incoming edge into BB.  Record each unique outgoing
-     edge that we want to thread an incoming edge to.  Also note if
-     all incoming edges are threaded or not.  */
+  /* Record each unique threaded destination into a hash table for
+     efficient lookups.  */
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
       if (!e->aux)
@@ -208,39 +485,25 @@ thread_block (basic_block bb)
 	}
       else
 	{
-	  unsigned int i;
+	  edge e2 = e->aux;
 
-	  /* See if we can find an entry for the destination of this
-	     threaded edge that has already been recorded.  */
-	  for (i = 0; i < VARRAY_ACTIVE_SIZE (redirection_data); i++)
-	    {
-	      struct redirection_data *rd;
-	      edge e2;
-
-	      rd = VARRAY_GENERIC_PTR (redirection_data, i);
-	      e2 = e->aux;
-
-	      if (e2->dest == rd->outgoing_edge->dest)
-		break;
-	    }
-
-	  /* If the loop did not terminate early, then we have a new
-	     destination for the incoming threaded edges.  Record it.  */
-	  if (i == VARRAY_ACTIVE_SIZE (redirection_data))
-	    {
-	      struct redirection_data *rd;
-
-	      rd = ggc_alloc_cleared (sizeof (struct redirection_data));
-	      rd->outgoing_edge = e->aux;
-	      VARRAY_PUSH_GENERIC_PTR (redirection_data, rd);
-	    }
+	  /* Insert the outgoing edge into the hash table if it is not
+	     already in the hash table.  */
+	  lookup_redirection_data (e2, e, true);
 	}
     }
 
-  /* Now create duplicates of BB.  Note that if all incoming edges are
-     threaded, then BB is going to become unreachable.  In that case
-     we use BB for one of the duplicates rather than wasting memory
-     duplicating BB.  Thus the odd starting condition for the loop.
+  /* If we are going to thread all incoming edges to an outgoing edge, then
+     BB will become unreachable.  Rather than just throwing it away, use
+     it for one of the duplicates.  Mark the first incoming edge with the
+     DO_NOT_DUPLICATE attribute.  */
+  if (all)
+    {
+      edge e = EDGE_PRED (bb, 0)->aux;
+      lookup_redirection_data (e, NULL, false)->do_not_duplicate = true;
+    }
+
+  /* Now create duplicates of BB.
 
      Note that for a block with a high outgoing degree we can waste
      a lot of time and memory creating and destroying useless edges.
@@ -249,134 +512,34 @@ thread_block (basic_block bb)
      tail of the duplicate as well as all outgoing edges from the
      duplicate.  We then use that duplicate block as a template for
      the rest of the duplicates.  */
-  template_block = NULL;
-  for (i = (all ? 1 : 0); i < VARRAY_ACTIVE_SIZE (redirection_data); i++)
-    {
-      struct redirection_data *rd = VARRAY_GENERIC_PTR (redirection_data, i);
+  local_info.template_block = NULL;
+  local_info.bb = bb;
+  htab_traverse (redirection_data, create_duplicates, &local_info);
 
-      if (template_block == NULL)
-	{
-	  create_block_for_threading (bb, rd);
-	  template_block = rd->dup_block;
-	}
-      else
-	{
-	  create_block_for_threading (template_block, rd);
-	}
-    }
+  /* The template does not have an outgoing edge.  Create that outgoing
+     edge and update PHI nodes as the edge's target as necessary.
 
-  /* Now created up edges from the duplicate blocks to their new
-     destinations.  Doing this as a separate loop after block creation
-     allows us to avoid creating lots of useless edges.  */
-  for (i = (all ? 1 : 0); i < VARRAY_ACTIVE_SIZE (redirection_data); i++)
-    {
-      struct redirection_data *rd = VARRAY_GENERIC_PTR (redirection_data, i);
-      tree phi;
-      edge e;
+     We do this after creating all the duplicates to avoid creating
+     unnecessary edges.  */
+  htab_traverse (redirection_data, fixup_template_block, &local_info);
 
-      e = make_edge (rd->dup_block, rd->outgoing_edge->dest, EDGE_FALLTHRU);
-
-      /* If there are any PHI nodes at the destination of the outgoing edge
-	 from the duplicate block, then we will need to add a new argument
-	 to them.  The argument should have the same value as the argument
-	 associated with the outgoing edge stored in RD.  */
-      for (phi = phi_nodes (e->dest); phi; phi = PHI_CHAIN (phi))
-	{
-	  int indx = phi_arg_from_edge (phi, rd->outgoing_edge);
-	  add_phi_arg (&phi, PHI_ARG_DEF_TREE (phi, indx), e);
-	}
-    }
-
-  /* The loop above created the duplicate blocks (and the statements
-     within the duplicate blocks).  This loop creates PHI nodes for the
-     duplicated blocks and redirects the incoming edges into BB to reach
-     the duplicates of BB.
-
-     Note that redirecting the edge will change e->pred_next, so we have
-     to hold e->pred_next in a temporary. 
-
-     If this turns out to be a performance problem, then we could create
-     a list of incoming edges associated with each entry in 
-     REDIRECTION_DATA and walk over that list of edges instead.  */
-  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
-    {
-      edge new_dest = e->aux;
-
-      /* E was not threaded, then there is nothing to do.  */
-      if (!new_dest)
-	{
-	  ei_next (&ei);
-	  continue;
-	}
-
-      /* Go ahead and clear E->aux.  It's not needed anymore and failure
-         to clear it will cause all kinds of unpleasant problems later.  */
-      e->aux = NULL;
-
-      /* We know E is an edge we want to thread.  Find the entry associated
-         with E's new destination in the REDIRECTION_DATA array.  */
-      for (i = 0; i < VARRAY_ACTIVE_SIZE (redirection_data); i++)
-	{
-	  struct redirection_data *rd;
-
-	  rd = VARRAY_GENERIC_PTR (redirection_data, i);
-
-	  /* We have found the right entry if the outgoing edge in this
-	     entry matches E's new destination.  Note that if we have not
-	     created a duplicate block (rd->dup_block is NULL), then we
-	     are going to re-use BB as a duplicate and we do not need
-	     to create PHI nodes or redirect the edge.  */
-	  if (rd->outgoing_edge == new_dest && rd->dup_block)
-	    {
-	      edge e2;
-
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
-			 e->src->index, e->dest->index, rd->dup_block->index);
-
-	      e2 = redirect_edge_and_branch (e, rd->dup_block);
-	      flush_pending_stmts (e2);
-
-	      if ((dump_file && (dump_flags & TDF_DETAILS))
-		  && e->src != e2->src)
-	      fprintf (dump_file, "    basic block %d created\n",
-		       e2->src->index);
-	      break;
-	    }
-	}
-    }
-
-  /* If all the incoming edges where threaded, then we used BB as one
-     of the duplicate blocks.  We need to fixup BB in that case so that
-     it no longer has a COND_EXPR or SWITCH_EXPR and reaches one destination
-     unconditionally.  */
-  if (all)
-    {
-      struct redirection_data *rd;
-
-      rd = VARRAY_GENERIC_PTR (redirection_data, 0);
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "  Threaded jump %d --> %d to %d\n",
-		 EDGE_PRED (bb, 0)->src->index, bb->index,
-		 EDGE_SUCC (bb, 0)->dest->index);
-
-      remove_ctrl_stmt_and_useless_edges (bb, rd->outgoing_edge->dest);
-      EDGE_SUCC (bb, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      EDGE_SUCC (bb, 0)->flags |= EDGE_FALLTHRU;
-    }
+  /* The hash table traversals above created the duplicate blocks (and the
+     statements within the duplicate blocks).  This loop creates PHI nodes for
+     the duplicated blocks and redirects the incoming edges into BB to reach
+     the duplicates of BB.  */
+  htab_traverse (redirection_data, redirect_edges, &local_info);
 
   /* Done with this block.  Clear REDIRECTION_DATA.  */
-  VARRAY_CLEAR (redirection_data);
+  htab_delete (redirection_data);
+  redirection_data = NULL;
 }
 
-/* Walk through all blocks and thread incoming edges to the block's 
+/* Walk through all blocks and thread incoming edges to the block's
    destinations as requested.  This is the only entry point into this
    file.
 
    Blocks which have one or more incoming edges have INCOMING_EDGE_THREADED
    set in the block's annotation.
-   this routine.
 
    Each edge that should be threaded has the new destination edge stored in
    the original edge's AUX field.
