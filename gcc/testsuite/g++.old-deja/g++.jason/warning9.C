@@ -3,12 +3,13 @@
 
 struct A {
   operator int ();
-  A& operator= (int);		// { dg-warning "" } not used below
+  A& operator= (int);
 };
 
+int
 main()
 {
   A a, b;
 
-  a = b;			// { dg-warning "" } uses synthesized op=
+  a = b;
 }

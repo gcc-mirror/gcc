@@ -3562,20 +3562,6 @@ build_new_op (enum tree_code code, int flags, tree arg1, tree arg2, tree arg3,
       if (overloaded_p)
 	*overloaded_p = true;
 
-      if (warn_synth
-	  && fnname == ansi_assopname (NOP_EXPR)
-	  && DECL_ARTIFICIAL (cand->fn)
-	  && candidates->next
-	  && ! candidates->next->next)
-	{
-	  warning ("using synthesized `%#D' for copy assignment",
-		      cand->fn);
-	  cp_warning_at ("  where cfront would use `%#D'",
-			 cand == candidates
-			 ? candidates->next->fn
-			 : candidates->fn);
-	}
-
       return build_over_call (cand, LOOKUP_NORMAL);
     }
 
