@@ -1,3 +1,53 @@
+2000-01-12  Jason Merrill  <jason@casey.cygnus.com>
+
+	* cccp.c (do_pragma): Add cast to (char *).
+
+2000-01-12  Richard Henderson  <rth@cygnus.com>
+	    Fred Fish  <fnf@be.com>
+	    Jason Merrill  <jason@cygnus.com>
+
+	* configure.in (i?86-*-beos{pe,elf,}*): Recognize.
+	* i386/t-beos, i386/x-beos, i386/xm-beos.h: New files.
+	* i386/beos-elf.h, i386/beos-pe.h: New files.
+
+	* Makefile.in (CROSS_SYSTEM_HEADER_DIR): New.
+	* cross-make (SYSTEM_HEADER_DIR): Define using
+	CROSS_SYSTEM_HEADER_DIR.
+
+	* gcc.c (LIBRARY_PATH_ENV): Provide default.
+	(process_command): Use it.
+	(main): Likewise.  Kill trailing = from env vars.
+	(build_search_list): Put it back.
+	* collect2.c (main): Use LIBRARY_PATH_ENV.
+
+	* configure.in (GCC_NEED_DECLARATIONS): Add environ.
+	* toplev.c: Use NEED_DECLARATION_ENVIRON.
+
+	* tm.texi (Frame Layout): Document SMALL_STACK.
+	* c-common.c (c_common_nodes_and_builtins): Check it.
+
+	* system.h: Undef alloca after including glibc's <stdlib.h>,
+	if USE_C_ALLOCA is defined.
+
+	* gcc.c (set_input): New fn.
+	(main): After all input files are compiled, reset the input file
+	info to the first.
+
+	* aclocal.m4 (rindex, index): If already defined, don't attempt
+	to redefine.
+
+	* ginclude/varargs.h: (__va_list__): Define ifndef.
+	* ginclude/stdarg.h: Likewise.
+
+	* ginclude/stddef.h (__WCHAR_TYPE__) [BEOS]: Use int 
+	instead of unsigned char.
+
+	* hash.h (true, false, boolean): Undef before enum.
+
+	* expmed.c (choose_multiplier): Cast &mhigh_lo and &mhigh_hi to be
+	proper type of "HOST_WIDE_INT *", rather than their natural type of
+	"unsigned HOST_WIDE_INT *".
+
 2000-01-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* svr3.h (ASM_FILE_START): Wrap if-clause in squigly brackets.
@@ -531,7 +581,7 @@ Thu Jan  6 13:44:59 CET 2000  Jan Hubicka  <jh@suse.cz>
 	(asm_emit_uninitialised): Invoke UNIQUE_SECTION if either
 	flag_data_sections or UNIQUE_SECTION_P are true.
 
-	* tm.texi (UNIQUE)SECTION): Document that it can be called for
+	* tm.texi (UNIQUE_SECTION): Document that it can be called for
 	unitialised data decls.
 
 	* config/i386/winnt.c (i386_pe_unique_section): Cope with

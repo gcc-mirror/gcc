@@ -7211,7 +7211,7 @@ do_pragma (buf, limit, op, keyword)
     do_once ();
   }
 
-  if (!strncmp (buf, "poison", 6)) {
+  if (!strncmp ((char *) buf, "poison", 6)) {
     /* Poison these symbols so that all subsequent usage produces an
        error message.  */
     U_CHAR *p = buf + 6;
