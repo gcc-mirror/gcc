@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92, 93, 94, 96, 1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -64,6 +64,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Function Names::	Printable strings which are the name of the current
 			 function.
 * Return Address::      Getting the return or frame address of a function.
+* Other Builtins::      Other built-in functions.
 @end menu
 @end ifset
 @ifclear INTERNALS
@@ -111,6 +112,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 * Function Names::	Printable strings which are the name of the current
 			 function.
 * Return Address::      Getting the return or frame address of a function.
+* Other Builtins::      Other built-in functions.
 @end menu
 @end ifclear
 
@@ -2887,6 +2889,7 @@ These functions may be used to get information about the callers of a
 function.
 
 @table @code
+@findex __builtin_return_address
 @item __builtin_return_address (@var{level})
 This function returns the return address of the current function, or of
 one of its callers.  The @var{level} argument is number of frames to
@@ -2903,6 +2906,7 @@ of the stack has been reached, this function will return @code{0}.
 This function should only be used with a non-zero argument for debugging
 purposes.
 
+@findex __builtin_frame_address
 @item __builtin_frame_address (@var{level})
 This function is similar to @code{__builtin_return_address}, but it
 returns the address of the function frame rather than the return address
@@ -2922,6 +2926,56 @@ pointer register.
 The caveats that apply to @code{__builtin_return_address} apply to this
 function as well.
 @end table
+
+@node Other Builtins
+@section Other built-in functions provided by GNU CC
+
+GNU CC provides a large number of built-in functions other than the ones
+mentioned above.  Some of these are for internal use in the processing
+of exceptions or variable-length argument lists and will not be
+documented here because they may change from time to time; we do not
+recommend general use of these functions.
+
+The remaining functions are provided for optimization purposes.  
+
+GNU CC includes builtin versions of many of the functions in the
+standard C library.  These will always be treated as having the same
+meaning as the C library function even if you specify the
+@samp{-fno-builtin} (@pxref{C Dialect Options}) option.  These functions
+correspond to the C library functions @code{alloca}, @code{ffs},
+@code{abs}, @code{fabsf}, @code{fabs}, @code{fabsl}, @code{labs},
+@code{memcpy}, @code{memcmp}, @code{strcmp}, @code{strcpy},
+@code{strlen}, @code{sqrtf}, @code{sqrt}, @code{sqrtl}, @code{sinf},
+@code{sin}, @code{sinl}, @code{cosf}, @code{cos}, and @code{cosl}.
+
+@findex __builtin_constant_p
+You can use the builtin function @code{__builtin_constant_p} to
+determine if a value is known to be constant at compile-time and hence
+that GNU CC can perform constant-folding on expressions involving that
+value.  The argument of the function is the value to test.  The function
+returns the integer 1 if the argument is known to be a compile-time
+constant and 0 if it is not known to be a compile-time constant.  A
+return of 0 does not indicate that the value is @emph{not} a constant,
+but merely that GNU CC cannot prove it is a constant with the specified
+value of the @samp{-O} option.
+
+You would typically use this function in an embedded application where
+memory was a critical resource.  If you have some complex calculation,
+you may want it to be folded if it involves constants, but need to call
+a function if it does not.  For example:
+
+@smallexample
+#define Scale_Value(X)  \
+  (__builtin_constant_p (X) ? ((X) * SCALE + OFFSET) : Scale (X))
+@end smallexample
+
+You may use this builtin function in either a macro or an inline
+function.  However, if you use it in an inlined function and pass an
+argument of the function as the argument to the builtin, GNU CC will
+never return 1 when you call the inline function with a string constant
+or constructor expression (@pxref{Constructors}) and will not return 1
+when you pass a constant numeric value to the inline function unless you
+specify the @samp{-O} option.
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language
