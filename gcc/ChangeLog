@@ -1,3 +1,7 @@
+Thu Oct 29 12:39:35 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* c-common.c (c_get_alias_set): Handle ARRAY_REF of union field.
+
 Thu Oct 29 14:10:22 EST 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.c (emit_eh_context): Make the EH context register stay alive

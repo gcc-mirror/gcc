@@ -3155,8 +3155,15 @@ c_get_alias_set (t)
        the conservative assumption.  */
     return 0;
 
-  if (TREE_CODE (t) == COMPONENT_REF
-      && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+  if ((TREE_CODE (t) == COMPONENT_REF
+       && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == UNION_TYPE)
+      /* Also permit punning when accessing an array which is a union
+	 member.  This makes the current sparc va_arg macro work, but may
+	 not be otherwise necessary.  */
+      || (TREE_CODE (t) == ARRAY_REF
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF
+	  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)))
+	      == UNION_TYPE)))
     /* Permit type-punning when accessing a union, provided the
        access is directly through the union.  For example, this code does
        not permit taking the address of a union member and then
