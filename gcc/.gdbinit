@@ -90,6 +90,11 @@ end
 # stdio stop working and therefore the `pr' command below as well.
 b abort
 
+# Put breakpoints at exit and fancy_abort in case abort is mapped
+# to either fprintf/exit or fancy_abort.
+b exit
+b fancy_abort
+
 # Make gdb complain about symbol reading errors.  This is so that gcc
 # developers can see and fix bugs in gcc debug output.
 set complaints 20
