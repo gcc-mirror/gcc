@@ -128,6 +128,8 @@ a register with any other reload.  */
    reload_optional	  char, nonzero for an optional reload.
 			   Optional reloads are ignored unless the
 			   value is already sitting in a register.
+   reload_nongroup	  char, nonzero when a reload must use a register
+			   not already allocated to a group.
    reload_inc		  int, positive amount to increment or decrement by if
 			   reload_in is a PRE_DEC, PRE_INC, POST_DEC, POST_INC.
 			   Ignored otherwise (don't assume it is zero).
@@ -175,6 +177,7 @@ enum machine_mode reload_inmode[MAX_RELOADS];
 enum machine_mode reload_outmode[MAX_RELOADS];
 rtx reload_reg_rtx[MAX_RELOADS];
 char reload_optional[MAX_RELOADS];
+char reload_nongroup[MAX_RELOADS];
 int reload_inc[MAX_RELOADS];
 rtx reload_in_reg[MAX_RELOADS];
 char reload_nocombine[MAX_RELOADS];
@@ -526,6 +529,7 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 	  reload_outmode[t_reload] = ! in_p ? t_mode : VOIDmode;
 	  reload_reg_rtx[t_reload] = 0;
 	  reload_optional[t_reload] = optional;
+	  reload_nongroup[t_reload] = 0;
 	  reload_inc[t_reload] = 0;
 	  /* Maybe we could combine these, but it seems too tricky.  */
 	  reload_nocombine[t_reload] = 1;
@@ -594,6 +598,7 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
       reload_outmode[s_reload] = ! in_p ? mode : VOIDmode;
       reload_reg_rtx[s_reload] = 0;
       reload_optional[s_reload] = optional;
+      reload_nongroup[s_reload] = 0;
       reload_inc[s_reload] = 0;
       /* Maybe we could combine these, but it seems too tricky.  */
       reload_nocombine[s_reload] = 1;
@@ -1255,6 +1260,7 @@ push_reload (in, out, inloc, outloc, class,
       reload_outmode[i] = outmode;
       reload_reg_rtx[i] = 0;
       reload_optional[i] = optional;
+      reload_nongroup[i] = 0;
       reload_inc[i] = 0;
       reload_nocombine[i] = 0;
       reload_in_reg[i] = inloc ? *inloc : 0;
@@ -2298,6 +2304,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   int goal_alternative_swapped;
   int best;
   int commutative;
+  int changed;
   char operands_match[MAX_RECOG_OPERANDS][MAX_RECOG_OPERANDS];
   rtx substed_operand[MAX_RECOG_OPERANDS];
   rtx body = PATTERN (insn);
@@ -3916,6 +3923,67 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    transfer_replacements (i, j);
 	    reload_in[j] = 0;
 	  }
+
+  /* Set which reloads must use registers not used in any group.  Start
+     with those that conflict with a group and then include ones that
+     conflict with ones that are already known to conflict with a group.  */
+
+  changed = 0;
+  for (i = 0; i < n_reloads; i++)
+    {
+      enum machine_mode mode = reload_inmode[i];
+      enum reg_class class = reload_reg_class[i];
+      int size;
+
+      if (GET_MODE_SIZE (reload_outmode[i]) > GET_MODE_SIZE (mode))
+	mode = reload_outmode[i];
+      size = CLASS_MAX_NREGS (class, mode);
+
+      if (size == 1)
+	for (j = 0; j < n_reloads; j++)
+	  if ((CLASS_MAX_NREGS (reload_reg_class[j],
+				(GET_MODE_SIZE (reload_outmode[j])
+				 > GET_MODE_SIZE (reload_inmode[j]))
+				? reload_outmode[j] : reload_inmode[j])
+	       > 1)
+	      && !reload_optional[j]
+	      && (reload_in[j] != 0 || reload_out[j] != 0
+		  || reload_secondary_p[j])
+	      && reloads_conflict (i, j)
+	      && reg_classes_intersect_p (class, reload_reg_class[j]))
+	    {
+	      reload_nongroup[i] = 1;
+	      changed = 1;
+	      break;
+	    }
+    }
+
+  while (changed)
+    {
+      changed = 0;
+
+      for (i = 0; i < n_reloads; i++)
+	{
+	  enum machine_mode mode = reload_inmode[i];
+	  enum reg_class class = reload_reg_class[i];
+	  int size;
+
+	  if (GET_MODE_SIZE (reload_outmode[i]) > GET_MODE_SIZE (mode))
+	    mode = reload_outmode[i];
+	  size = CLASS_MAX_NREGS (class, mode);
+
+	  if (! reload_nongroup[i] && size == 1)
+	    for (j = 0; j < n_reloads; j++)
+	      if (reload_nongroup[j]
+		  && reloads_conflict (i, j)
+		  && reg_classes_intersect_p (class, reload_reg_class[j]))
+		{
+		  reload_nongroup[i] = 1;
+		  changed = 1;
+		  break;
+		}
+	}
+    }
 
 #else /* no REGISTER_CONSTRAINTS */
   int noperands;
@@ -6153,6 +6221,9 @@ debug_reload ()
 
       if (reload_optional[r])
 	fprintf (stderr, ", optional");
+
+      if (reload_nongroup[r])
+	fprintf (stderr, ", nongroup");
 
       if (reload_inc[r] != 0)
 	fprintf (stderr, ", inc by %d", reload_inc[r]);
