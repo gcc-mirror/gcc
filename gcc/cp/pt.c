@@ -10449,6 +10449,10 @@ instantiate_decl (d, defer_ok)
   if (need_push)
     push_to_top_level ();
 
+  /* Mark D as instantiated so that recursive calls to
+     instantiate_decl do not try to instantiate it again.  */
+  DECL_TEMPLATE_INSTANTIATED (d) = 1;
+
   /* Regenerate the declaration in case the template has been modified
      by a subsequent redeclaration.  */
   regenerate_decl_from_template (d, td);
@@ -10485,13 +10489,14 @@ instantiate_decl (d, defer_ok)
 	     instantiation.  There, we cannot implicitly instantiate a
 	     defined static data member in more than one translation
 	     unit, so import_export_decl marks the declaration as
-	     external; we must rely on explicit instantiation.  */
+	     external; we must rely on explicit instantiation.
+
+	     Reset instantiated marker to make sure that later
+	     explicit instantiation will be processed.  */
+	  DECL_TEMPLATE_INSTANTIATED (d) = 0;
 	}
       else
 	{
-	  /* Mark D as instantiated so that recursive calls to
-	     instantiate_decl do not try to instantiate it again.  */
-	  DECL_TEMPLATE_INSTANTIATED (d) = 1;
 	  /* This is done in analogous to `start_decl'.  It is
 	     required for correct access checking.  */
 	  push_nested_class (DECL_CONTEXT (d), 2);
@@ -10511,10 +10516,6 @@ instantiate_decl (d, defer_ok)
   else if (TREE_CODE (d) == FUNCTION_DECL)
     {
       htab_t saved_local_specializations;
-
-      /* Mark D as instantiated so that recursive calls to
-	 instantiate_decl do not try to instantiate it again.  */
-      DECL_TEMPLATE_INSTANTIATED (d) = 1;
 
       /* Save away the current list, in case we are instantiating one
 	 template from within the body of another.  */
