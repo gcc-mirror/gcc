@@ -51,6 +51,11 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_EXTRA_SPECS			\
   { "darwin_arch", "i386" },
 
+#define SUBTARGET_OVERRIDE_OPTIONS				  	\
+do {									\
+  darwin_parse_macosx_version_name ();                                  \
+} while (0)
+
 /* Use the following macro for any Darwin/x86-specific command-line option
    translation.  */
 #define SUBTARGET_OPTION_TRANSLATE_TABLE

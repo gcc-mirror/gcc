@@ -48,6 +48,48 @@ static void update_non_lazy_ptrs (const char *);
 static void update_stubs (const char *);
 static const char *machopic_non_lazy_ptr_name (const char*);
 
+/* Earliest operating system for which generated code is targeted, as string
+   and as integer.  The string form is "10.0", "10.1", etc.  The corresponding
+   numeric versions are 1000, 1010, etc.  This number is used for feature 
+   tests of the form "enable_this_feature = macosx_version_min_required >= n",
+   so 0 is a conservative default. */
+
+const char *darwin_macosx_version_name;
+unsigned int macosx_version_min_required = 0;
+
+/* Parse -macosx= option. */
+
+static struct darwin_macosx_vers {
+  const char *vers_str;
+  unsigned int vers_num;
+} darwin_macosx_vers_tbl[] = {
+  { "10.0", 1000 },
+  { "10.1", 1010 },
+  { "10.2", 1020 },
+  { "jaguar", 1020 },
+  { "10.3", 1030 },
+  { "panther", 1030 },
+  { "10.4", 1040 },
+  { "10.5", 1050 },
+  { NULL, 0 }
+};  
+
+void darwin_parse_macosx_version_name (void)
+{
+  if (darwin_macosx_version_name)
+    {
+      struct darwin_macosx_vers *v = darwin_macosx_vers_tbl;
+      while (v->vers_str
+	     && strcmp (darwin_macosx_version_name, v->vers_str) != 0)
+	v++;
+
+      if (v->vers_str)
+	macosx_version_min_required = v->vers_num;
+      else
+	warning ("-macosx=%s: unrecognized version", darwin_macosx_version_name);
+    }
+}
+
 int
 name_needs_quotes (const char *name)
 {
