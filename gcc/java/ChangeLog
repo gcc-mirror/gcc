@@ -1,3 +1,7 @@
+Wed Oct 28 00:46:15 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (jcf-dump, gcjh): Link in $(LIBS) too.
+
 1998-10-28  Tom Tromey  <tromey@cygnus.com>
 
 	* decl.c (init_decl_processing): Renamed fields.
