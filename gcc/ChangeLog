@@ -1,3 +1,18 @@
+2004-11-29  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgcleanup.c (outgoing_edges_match, try_crossjump_to_edge):
+	Remove CASE_DROPS_THROUGH checks, it is never defined.
+	* cfglyout.c (fixup_reorder_chain): Likewise.
+	* cfgrtl.c (rtl_verify_flow_info): Likewise.
+	* stmt.c (expand_case): Likewise.
+	* cfgbuild.c (make_edges): Likewise.  Also remove force_fallthru,
+	it is now always 0.
+	* system.h (CASE_DROPS_THROUGH): Poison.
+	* doc/md.texi (casesi): Remove documentation of CASE_DROPS_THROUGH.
+	* doc/tm.texi (casesi): Remove documentation of CASE_DROPS_THROUGH.
+
+	* config/v850/v850.h: Remove commented out CASE_DROPS_THROUGH.
+
 2004-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/18725
@@ -802,7 +817,7 @@
 	Use amd64 instead of 64.
 
 2004-11-24  Mark Mitchell  <mark@codesourcery.com>
-            Joseph Myers  <joseph@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
 
 	* crtstuff.c (IN_LIBGCC2): Define it.
 	(EH_FRAME_SECTION_CONST): Check EH_TABLES_CAN_BE_READ_ONLY

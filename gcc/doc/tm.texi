@@ -8717,12 +8717,6 @@ contain relative addresses only when @option{-fPIC} or @option{-fPIC}
 is in effect.
 @end defmac
 
-@defmac CASE_DROPS_THROUGH
-Define this if control falls through a @code{case} insn when the index
-value is out of range.  This means the specified default-label is
-actually ignored by the @code{case} insn proper.
-@end defmac
-
 @defmac CASE_VALUES_THRESHOLD
 Define this to be the smallest number of different values for which it
 is best to use a jump-table instead of a tree of conditional branches.

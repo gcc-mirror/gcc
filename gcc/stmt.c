@@ -2553,14 +2553,8 @@ expand_case (tree exp)
 	    emit_jump_insn (gen_rtx_ADDR_VEC (CASE_VECTOR_MODE,
 					      gen_rtvec_v (ncases, labelvec)));
 
-	  /* If the case insn drops through the table,
-	     after the table we must jump to the default-label.
-	     Otherwise record no drop-through after the table.  */
-#ifdef CASE_DROPS_THROUGH
-	  emit_jump (default_label);
-#else
+	  /* Record no drop-through after the table.  */
 	  emit_barrier ();
-#endif
 	}
 
       before_case = NEXT_INSN (before_case);
