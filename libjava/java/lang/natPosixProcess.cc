@@ -88,7 +88,7 @@ new_string (jstring string)
 }
 
 static void
-cleanup (char **args, char **env)
+cleanup (char **args, char **env, char *path)
 {
   if (args != NULL)
     {
@@ -102,6 +102,8 @@ cleanup (char **args, char **env)
 	_Jv_Free (env[i]);
       _Jv_Free (env);
     }
+  if (path != NULL)
+    _Jv_Free (path);
 }
 
 // This makes our error handling a bit simpler and it lets us avoid
@@ -127,6 +129,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
   // Initialize all locals here to make cleanup simpler.
   char **args = NULL;
   char **env = NULL;
+  char *path = NULL;
   int inp[2], outp[2], errp[2], msgp[2];
   inp[0] = -1;
   inp[1] = -1;
@@ -169,6 +172,11 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
 	    env[i] = new_string (elts[i]);
 	  env[envp->length] = NULL;
 	}
+
+      // We allocate this here because we can't call malloc() after
+      // the fork.
+      if (dir != NULL)
+	path = new_string (dir->getPath ());
 
       // Create pipes for I/O.  MSGP is for communicating exec()
       // status.
@@ -233,11 +241,9 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
 	  close (msgp[0]);
           
 	  // Change directory.
-	  if (dir != NULL)
+	  if (path != NULL)
 	    {
-	      // We don't care about leaking memory here; this process
-	      // is about to terminate one way or another.
-	      if (chdir (new_string (dir->getPath ())) != 0)
+	      if (chdir (path) != 0)
 		{
 		  char c = errno;
 		  write (msgp[1], &c, 1);
@@ -319,7 +325,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
     }
 
   myclose (msgp[0]);
-  cleanup (args, env);
+  cleanup (args, env, path);
 
   if (exc != NULL)
     throw exc;
