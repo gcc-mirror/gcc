@@ -100,6 +100,10 @@ output_file_directive ((FILE), main_input_filename)
 #define __PTR_TO_INT(P) ((int)(P))
 #define __INT_TO_PTR(P) ((char *)(P))
 
+/* The 3b1 does not have `atexit'.  */
+
+#undef HAVE_ATEXIT
+
 /* Override parts of m68k.h to fit the SGS-3b1 assembler.  */
 
 #undef TARGET_VERSION
