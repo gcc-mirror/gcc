@@ -1403,8 +1403,22 @@ acceptable_java_type (type)
       type = TREE_TYPE (type);
       if (TREE_CODE (type) == RECORD_TYPE)
 	{
-	  complete_type (type);
-	  return TYPE_FOR_JAVA (type);
+	  tree args;  int i;
+	  if (! TYPE_FOR_JAVA (type))
+	    return 0;
+	  if (! CLASSTYPE_TEMPLATE_INFO (type))
+	    return 1;
+	  args = CLASSTYPE_TI_ARGS (type);
+	  i = TREE_VEC_LENGTH (args);
+	  while (--i >= 0)
+	    {
+	      type = TREE_VEC_ELT (args, i);
+	      if (TREE_CODE (type) == POINTER_TYPE)
+		type = TREE_TYPE (type);
+	      if (! TYPE_FOR_JAVA (type))
+		return 0;
+	    }
+	  return 1;
 	}
     }
   return 0;
