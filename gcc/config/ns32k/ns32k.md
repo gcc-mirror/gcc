@@ -314,8 +314,8 @@
   "lprd sp,%0")
 
 (define_insn "movsi"
-  [(set (match_operand:SI 0 "general_operand" "=g<,g<,*f,g")
-	(match_operand:SI 1 "general_operand" "g,?xy,g,*f"))]
+  [(set (match_operand:SI 0 "general_operand" "=g<,g<,*f,g,x")
+	(match_operand:SI 1 "general_operand" "g,?xy,g,*f,rmn"))]
   ""
   "*
 {
@@ -332,6 +332,12 @@
 	return \"movf %1,tos\;movd tos,%0\";
       return \"movf %1,%0\";
     }
+  if (GET_CODE (operands[0]) == REG
+      && REGNO (operands[0]) == FRAME_POINTER_REGNUM)
+    return \"lprd fp,%1\";
+  if (GET_CODE (operands[1]) == CONST_DOUBLE)
+    operands[1]
+      = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (operands[1]));
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       int i = INTVAL (operands[1]);
