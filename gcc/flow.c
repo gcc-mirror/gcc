@@ -1260,6 +1260,7 @@ split_edge (edge_in)
 	  emit_barrier_after (pos);
 
 	  /* ... let jump know that label is in use, ...  */
+	  JUMP_LABEL (pos) = old_succ->head;
 	  ++LABEL_NUSES (old_succ->head);
 	  
 	  /* ... and clear fallthru on the outgoing edge.  */
@@ -1435,11 +1436,20 @@ commit_one_edge_insertion (e)
   /* Now that we've found the spot, do the insertion.  */
   tmp = e->insns;
   e->insns = NULL_RTX;
+
+  /* Set the new block number for these insns, if structure is allocated.  */
+  if (basic_block_for_insn)
+    {
+      rtx i;
+      for (i = tmp; i != NULL_RTX; i = NEXT_INSN (i))
+	set_block_for_insn (i, bb);
+    }
+
   if (before)
     {
       emit_insns_before (tmp, before);
       if (before == bb->head)
-	bb->head = before;
+	bb->head = tmp;
     }
   else
     {
