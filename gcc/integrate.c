@@ -333,6 +333,8 @@ copy_decl_for_inlining (decl, from_fn, to_fn)
 	 new PARM_DECL.  */
       copy = build_decl (VAR_DECL, DECL_NAME (decl), TREE_TYPE (decl));
       TREE_ADDRESSABLE (copy) = TREE_ADDRESSABLE (decl);
+      TREE_READONLY (copy) = TREE_READONLY (decl);
+      TREE_THIS_VOLATILE (copy) = TREE_THIS_VOLATILE (decl);
     }
   else
     {
