@@ -1,3 +1,9 @@
+2002-11-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/8408
+	* genrecog.c (preds): Handle ADDRESSOF.
+	(validate_pattern): Mark it as an lvalue.
+
 2002-11-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_override_options): Use string
