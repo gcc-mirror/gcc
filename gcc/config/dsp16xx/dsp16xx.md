@@ -563,7 +563,7 @@
 
 (define_insn "mulqi3"
   [(set (match_operand:QI 0 "register_operand" "=w")
-        (mult:HI (match_operand:QI 1 "register_operand" "%x")
+        (mult:QI (match_operand:QI 1 "register_operand" "%x")
                  (match_operand:QI 2 "register_operand" "y")))
    (clobber (match_scratch:QI 3 "=v"))]
   ""
