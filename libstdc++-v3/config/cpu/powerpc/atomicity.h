@@ -30,6 +30,12 @@
 #ifndef _BITS_ATOMICITY_H
 #define _BITS_ATOMICITY_H	1
 
+#ifdef __PPC405__
+#define _STWCX "sync \n\tstwcx. "
+#else
+#define _STWCX "stwcx. "
+#endif
+
 typedef int _Atomic_word;
 
 static inline _Atomic_word
@@ -42,7 +48,7 @@ __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 	"0:\t"
 	"lwarx    %0,0,%2 \n\t"
 	"add%I3   %1,%0,%3 \n\t"
-	"stwcx.   %1,0,%2 \n\t"
+	_STWCX "  %1,0,%2 \n\t"
 	"bne-     0b \n\t"
 	"/* End exchange & add */"
 	: "=&b"(__res), "=&r"(__tmp)
@@ -61,7 +67,7 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
 	"0:\t"
 	"lwarx    %0,0,%1 \n\t"
 	"add%I2   %0,%0,%2 \n\t"
-	"stwcx.   %0,0,%1 \n\t"
+	_STWCX "  %0,0,%1 \n\t"
 	"bne-     0b \n\t"
 	"/* End atomic add */"
 	: "=&b"(__tmp)
@@ -69,44 +75,4 @@ __atomic_add (volatile _Atomic_word *__mem, int __val)
 	: "cr0", "memory");
 }
 
-static inline long
-__attribute__ ((__unused__))
-__always_swap (volatile long *__p, long int __newval)
-{
-  long __res;
-  __asm__ __volatile__ (
-	"/* Inline always swap */\n"
-	"0:\t"
-	"lwarx    %0,0,%1 \n\t"
-	"stwcx.   %2,0,%1 \n\t"
-	"bne-     0b \n\t"
-	"/* End always swap */"
-	: "=&r"(__res)
-	: "r"(__p), "r"(__newval)
-	: "cr0", "memory");
-  return __res;
-}
-
-static inline int
-__attribute__ ((__unused__))
-__test_and_set (volatile long *__p, long int __newval)
-{
-  int __res;
-  __asm__ __volatile__ (
-	"/* Inline test & set */\n"
-	"0:\t"
-	"lwarx    %0,0,%1 \n\t"
-	"cmpwi    %0,0 \n\t"
-	"bne-     1f \n\t"
-	"stwcx.   %2,0,%1 \n\t"
-	"bne-     0b \n"
-	"1:\n\t"
-	"/* End test & set */"
-	: "=&r"(__res)
-	: "r"(__p), "r"(__newval)
-	: "cr0", "memory");
-  return __res;
-}
-
 #endif /* atomicity.h */
-

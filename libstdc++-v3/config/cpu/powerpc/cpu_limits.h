@@ -28,6 +28,10 @@
 #ifndef _GLIBCPP_CPU_LIMITS
 #define _GLIBCPP_CPU_LIMITS 1
 
+#ifdef __powerpc64__
+#define __glibcpp_long_bits 64
+#endif
+
 #ifndef __LONG_DOUBLE_128__
 #define __glibcpp_long_double_bits 64
 #endif

@@ -85,7 +85,7 @@ case "${target_cpu}" in
   mmix)
     ATOMICITYH="cpu/generic"
     ;;
-  powerpc | rs6000)
+  powerpc* | rs6000)
     cpu_include_dir="cpu/powerpc"
     ;;
   s390 | s390x)
