@@ -896,7 +896,7 @@ struct cumulative_args { int ints, floats; };
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE, OUTER_CODE)			\
   case CONST_INT:						\
     if (INTVAL (RTX) == 0)					\
       return 0;							\

@@ -669,7 +669,7 @@ enum reg_class { NO_REGS, GENERAL_REGS,
    of a switch statement.  If the code is computed here,
    return it with a return statement.  Otherwise, break from the switch.  */
 
-#define CONST_COSTS(RTX,CODE) \
+#define CONST_COSTS(RTX,CODE, OUTER_CODE)			\
   case CONST_INT:						\
     if ((unsigned) INTVAL (RTX) < 077) return 1;		\
   case CONST:							\
