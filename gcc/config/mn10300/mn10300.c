@@ -1418,6 +1418,8 @@ initial_offset (int from, int to)
   abort ();
 }
 
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+
 static bool
 mn10300_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {

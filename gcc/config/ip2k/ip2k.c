@@ -6196,11 +6196,15 @@ ip2k_unsigned_comparison_operator (rtx op, enum machine_mode mode)
           && unsigned_condition (GET_CODE (op)) == GET_CODE (op));
 }
 
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+
 static bool
 ip2k_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
   return (TYPE_MODE (type) == BLKmode) ? int_size_in_bytes (type) > 8 : 0;
 }
+
+/* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
 ip2k_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,

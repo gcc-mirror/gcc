@@ -1422,9 +1422,6 @@ do {									\
 
 /* How Large Values are Returned */
 
-/* If you define this macro to be 0, then the conventions used for structure
-   and union return values are decided by the `RETURN_IN_MEMORY' macro.  */
-
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 

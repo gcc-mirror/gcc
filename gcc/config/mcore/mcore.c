@@ -1949,7 +1949,7 @@ mcore_expand_block_move (rtx dst_mem, rtx src_mem, rtx * operands)
 /* Code to generate prologue and epilogue sequences.  */
 static int number_of_regs_before_varargs;
 
-/* Set by SETUP_INCOMING_VARARGS to indicate to prolog that this is
+/* Set by TARGET_SETUP_INCOMING_VARARGS to indicate to prolog that this is
    for a varargs function.  */
 static int current_function_anonymous_args;
 

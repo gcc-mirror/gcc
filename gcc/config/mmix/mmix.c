@@ -792,9 +792,9 @@ mmix_asm_output_mi_thunk (FILE *stream,
 			  HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
 			  tree func)
 {
-  /* If you define STRUCT_VALUE to 0, rather than use STRUCT_VALUE_REGNUM,
-     (i.e. pass location of structure to return as invisible first
-     argument) you need to tweak this code too.  */
+  /* If you define TARGET_STRUCT_VALUE_RTX that returns 0 (i.e. pass
+     location of structure to return as invisible first argument), you
+     need to tweak this code too.  */
   const char *regname = reg_names[MMIX_FIRST_INCOMING_ARG_REGNUM];
 
   if (delta >= 0 && delta < 65536)

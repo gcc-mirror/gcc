@@ -1420,25 +1420,8 @@ xstormy16_initialize_trampoline (rtx addr, rtx fnaddr, rtx static_chain)
   emit_move_insn (reg_addr_mem, reg_fnaddr);
 }
 
-/* Create an RTX representing the place where a function returns a
-   value of data type VALTYPE.  VALTYPE is a tree node representing a
-   data type.  Write `TYPE_MODE (VALTYPE)' to get the machine mode
-   used to represent that type.  On many machines, only the mode is
-   relevant.  (Actually, on most machines, scalar values are returned
-   in the same place regardless of mode).
+/* Worker function for FUNCTION_VALUE.  */
 
-   If `TARGET_PROMOTE_FUNCTION_RETURN' is defined to return true, you
-   must apply the same promotion rules specified in `PROMOTE_MODE' if
-   VALTYPE is a scalar type.
-
-   If the precise function being called is known, FUNC is a tree node
-   (`FUNCTION_DECL') for it; otherwise, FUNC is a null pointer.  This makes it
-   possible to use a different value-returning convention for specific
-   functions when all their calls are known.
-
-   `FUNCTION_VALUE' is not used for return vales with aggregate data types,
-   because these are returned in another way.  See `STRUCT_VALUE_REGNUM' and
-   related macros.  */
 rtx
 xstormy16_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
 {

@@ -3284,12 +3284,16 @@ iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   return NULL_RTX;
 }
 
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+
 static bool
 iq2000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {
   return ((int_size_in_bytes (type) > (2 * UNITS_PER_WORD))
 	  || (int_size_in_bytes (type) == -1));
 }
+
+/* Worker function for TARGET_SETUP_INCOMING_VARARGS.  */
 
 static void
 iq2000_setup_incoming_varargs (CUMULATIVE_ARGS *cum,

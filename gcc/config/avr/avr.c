@@ -5361,6 +5361,8 @@ avr_out_sbxx_branch (rtx insn, rtx operands[])
   return "";
 }
 
+/* Worker function for TARGET_ASM_CONSTRUCTOR.  */
+
 static void
 avr_asm_out_ctor (rtx symbol, int priority)
 {
@@ -5368,12 +5370,16 @@ avr_asm_out_ctor (rtx symbol, int priority)
   default_ctor_section_asm_out_constructor (symbol, priority);
 }
 
+/* Worker function for TARGET_ASM_DESTRUCTOR.  */
+
 static void
 avr_asm_out_dtor (rtx symbol, int priority)
 {
   fputs ("\t.global __do_global_dtors\n", asm_out_file);
   default_dtor_section_asm_out_destructor (symbol, priority);
 }
+
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
 avr_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)

@@ -1126,7 +1126,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 #define STATIC_CHAIN_REGNUM	(TARGET_SH5 ? 1 : 3)
 
 /* Don't default to pcc-struct-return, because we have already specified
-   exactly how to return structures in the RETURN_IN_MEMORY macro.  */
+   exactly how to return structures in the TARGET_RETURN_IN_MEMORY
+   target hook.  */
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 

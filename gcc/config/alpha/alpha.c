@@ -6240,7 +6240,7 @@ alpha_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   if (TARGET_ABI_UNICOSMK)
     std_expand_builtin_va_start (valist, nextarg);
 
-  /* For Unix, SETUP_INCOMING_VARARGS moves the starting address base
+  /* For Unix, TARGET_SETUP_INCOMING_VARARGS moves the starting address base
      up by 48, storing fp arg registers in the first 48 bytes, and the
      integer arg registers in the next 48 bytes.  This is only done,
      however, if any integer registers need to be stored.
