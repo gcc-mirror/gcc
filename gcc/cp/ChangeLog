@@ -1,4 +1,9 @@
-Wed Sep  3 09:55:09 1997  Klaus Espenlaub  (kespenla@student.informatik.uni-ulm.de)
+Wed Sep  3 11:09:25 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (type_unification): If strict and the function parm doesn't
+	use template parms, just compare types.
+
+Wed Sep  3 10:35:49 1997  Klaus Espenlaub  <kespenla@student.informatik.uni-ulm.de>
 
 	* method.c (build_overloaded_value): Replace direct call
 	to the floating point emulator with REAL_VALUE_TO_DECIMAL macro.
@@ -31,6 +36,15 @@ Tue Sep  2 10:27:08 1997  Richard Henderson  <rth@cygnus.com>
 	* typeck.c (build_ptrmemfunc1): Clean up ptr->int cast warnings.
 
 Mon Sep  1 13:19:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (add_builtin_candidate): Add missing TREE_TYPE.
+	(compare_ics): Likewise.
+	From someone whose name I've lost (sorry).
+
+	* call.c (joust): Warn about choosing one conversion op over
+ 	another because of 'this' argument when the other return type is
+ 	better.
+	(source_type): New fn.
 
 	* call.c (build_new_op): Strip leading REF_BIND from first operand
 	to builtin operator.

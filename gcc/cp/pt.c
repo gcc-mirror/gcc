@@ -2664,11 +2664,38 @@ type_unification (tparms, targs, parms, args, nsubsts, subr, strict)
       if (arg == unknown_type_node)
 	return 1;
 
-      if (! uses_template_parms (parm)
-	  && TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
+      /* Conversions will be performed on a function argument that
+	 corresponds with a function parameter that contains only
+	 non-deducible template parameters and explicitly specified
+	 template parameters.  */
+      if (! uses_template_parms (parm))
 	{
-	  if (can_convert_arg (parm, TREE_TYPE (arg), arg))
-	    continue;
+	  tree type;
+
+	  if (TREE_CODE_CLASS (TREE_CODE (arg)) != 't')
+	    type = TREE_TYPE (arg);
+	  else
+	    {
+	      type = arg;
+	      arg = NULL_TREE;
+	    }
+
+	  if (strict)
+	    {
+	      if (comptypes (parm, type, 1))
+		continue;
+	    }
+	  else if (arg)
+	    {
+	      if (can_convert_arg (parm, type, arg))
+		continue;
+	    }
+	  else
+	    {
+	      if (can_convert (parm, type))
+		continue;
+	    }
+
 	  return 1;
 	}
 	
