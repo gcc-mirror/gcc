@@ -141,7 +141,7 @@ symbol_hash_lookup (string, create)
 {
   return ((struct symbol_hash_entry *)
 	  hash_lookup (&symbol_table, (hash_table_key) string, 
-		       create, &string_copy));
+		       create, string_copy));
 }
 
 static struct hash_table file_table;
@@ -178,7 +178,7 @@ file_hash_lookup (string)
 {
   return ((struct file_hash_entry *)
 	  hash_lookup (&file_table, (hash_table_key) string, true, 
-		       &string_copy));
+		       string_copy));
 }
 
 static struct hash_table demangled_table;
@@ -213,7 +213,7 @@ demangled_hash_lookup (string, create)
 {
   return ((struct demangled_hash_entry *)
 	  hash_lookup (&demangled_table, (hash_table_key) string, 
-		       create, &string_copy));
+		       create, string_copy));
 }
 
 /* Stack code.  */
@@ -298,12 +298,12 @@ tlink_init ()
 {
   char *p;
 
-  hash_table_init (&symbol_table, symbol_hash_newfunc, &string_hash,
-		   &string_compare);
-  hash_table_init (&file_table, file_hash_newfunc, &string_hash, 
-		   &string_compare);
+  hash_table_init (&symbol_table, symbol_hash_newfunc, string_hash,
+		   string_compare);
+  hash_table_init (&file_table, file_hash_newfunc, string_hash, 
+		   string_compare);
   hash_table_init (&demangled_table, demangled_hash_newfunc,
-		   &string_hash, &string_compare);
+		   string_hash, string_compare);
   obstack_begin (&symbol_stack_obstack, 0);
   obstack_begin (&file_stack_obstack, 0);
 
