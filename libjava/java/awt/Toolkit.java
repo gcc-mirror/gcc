@@ -8,6 +8,7 @@ details.  */
 
 package java.awt;
 import java.awt.peer.*;
+import java.net.URL;
 
 /* A very incomplete placeholder. */
 
