@@ -1,3 +1,78 @@
+2003-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Merge from gcc-3_2-rhl8-branch:
+	2003-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tls/opt-6.c: New test.
+
+	2003-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030405-1.c: New test.
+
+	2003-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030309-1.c: New test.
+
+	2003-03-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/execute/20030307-1.c: New test.
+
+	2003-02-20  Randolph Chung  <tausq@debian.org>
+
+	* gcc.c-torture/compile/20030220-1.c: New test.
+
+	2003-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030217-1.c: New test.
+
+	2003-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20020129-1.c: New test.
+
+	2002-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/unroll-1.c: New test.
+
+	2002-11-16  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/20020920-1.c: New test.
+
+	2002-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/7434
+	* gcc.c-torture/compile/20021008-1.c: New test.
+
+	2002-08-10  Gwenole Beauchesne  <gbeauchesne@mandrakesoft.com>
+
+	PR target/7559
+	* testsuite/gcc.c-torture/execute/20020810-1.c: New test.
+
+	2002-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20020807-1.c: New test.
+
+	2002-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tls/opt-1.c: New test.
+
+	2002-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020729-1.c: New test.
+
+	2002-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/life1.C: New test.
+
+	2002-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20020525-1.c: New test.
+
+	2002-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/6794
+	* g++.dg/ext/pretty1.C: New test.
+	* g++.dg/ext/pretty2.C: New test.
+
 2003-05-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8385
