@@ -1,3 +1,10 @@
+2003-11-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* recog.c (preprocess_constraints): Only zero those elements of
+	recog_op_alt that are needed for this insn.
+	* arm.c (note_invalid_constants): A function can't contain invalid
+	constants if it has no constraints.
+
 2003-11-22  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Pass __float128 in memory.
