@@ -1,3 +1,20 @@
+2000-09-14  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* src/locale.cc (locale::name()): Implement.
+	(_Impl(size_t __numfacets, size_t __refs, bool __namep = false,
+	string __name = "*")): Change signature.
+	(locale::classic): Initialize the "C" locale as a named locale.
+	* bits/localefwd.h (locale): Change _M_num_references to
+	_M_references. Eliminate _M_cached_name_ok. Rename _M_cached_name
+	to _M_name.
+	* bits/localefwd.h: Tweaks.
+	* src/localename.cc: Tweaks.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test01): Add tests.
+	(test01): Fix.
+
+	* bits/basic_string.h: Consistency check, change _M_state ->
+	_M_references.
+
 2000-09-14  Brendan Kehoe  <brendan@zen.org>
 
         * bits/string.tcc (_Rep::_S_max_size): Use typename for its size_type
@@ -13,7 +30,7 @@
 	* bits/std_ostream.h (ends(basic_ostream<_CharT, _Traits>& __os)):
 	Change __eos to _S_eos.
 	
-2000-09-13  Benjamin Kosnik  <bkoz@redhat.com>
+2000-09-13  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* testsuite/22_locale/static_members.cc: New file.
 	* testsuite/22_locale/ctor_copy_dtor.cc: New file.

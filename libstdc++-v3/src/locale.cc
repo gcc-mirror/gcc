@@ -40,6 +40,7 @@
 #ifdef _GLIBCPP_USE_WCHAR_T  
   #include <bits/std_cwctype.h>     // for towupper, etc.
 #endif
+
 namespace std {
 
   // Definitions for static const data members of locale.
@@ -550,134 +551,50 @@ namespace std {
     return __incl_prec;
   }
 
-  // locale::_Impl
-  locale::_Impl::
-  ~_Impl() throw()
+
+  locale::locale(const char* __name)
   {
-    std::vector<facet*>::iterator it = _M_facets->begin();
-    for (; it != _M_facets->end(); ++it)
-      (*it)->_M_remove_reference();
-    delete _M_facets;
-    delete _M_category_names;
-  }
-
-  locale::_Impl::
-  _Impl(size_t __numfacets, size_t __refs)
-  : _M_num_references(__refs - 1), _M_facets(0), _M_category_names(0), 
-    _M_has_name(false), _M_cached_name_ok(false), _M_cached_name(string ("*"))
-  { 
-    typedef vector<facet*, allocator<facet*> > __vec_facet;
-    typedef vector<string, allocator<string> > __vec_string;
-
-    auto_ptr<__vec_facet> __pvf(new __vec_facet(__numfacets, (facet*)0));
-    auto_ptr<__vec_string> __pcn(new __vec_string(_S_num_categories, 
-						  string("*")));
-    _M_facets = __pvf.release();
-    _M_category_names = __pcn.release();
-  }
-  
-  locale::_Impl::
-  _Impl(const _Impl& __other, size_t __refs)
-  : _M_num_references(__refs), _M_facets(0), _M_category_names(0), 
-    _M_has_name(__other._M_has_name), 
-    _M_cached_name_ok(__other._M_cached_name_ok), 
-    _M_cached_name(__other._M_cached_name)
-  {
-    typedef vector<facet*, allocator<facet*> > __vec_facet;
-    typedef vector<string, allocator<string> > __vec_string;
-
-    auto_ptr<__vec_facet> __pvf(new __vec_facet(*(__other._M_facets)));
-    auto_ptr<__vec_string> 
-      __pcn(new __vec_string(*(__other._M_category_names)));
-
-    std::vector<facet*>::iterator __it = __pvf->begin();
-    for (; __it != __pvf->end(); ++__it)
-      (*__it)->_M_add_reference();
-
-    // These must be last since in the presence of an exception, the 
-    // destructor for 'this' won't run until AFTER execution has passed  
-    // the closing brace of the constructor.
-    _M_facets = __pvf.release();
-    _M_category_names = __pcn.release();
-  }
-  
-  void
-  locale::_Impl::
-  _M_replace_categories(const _Impl* __other, category __cats)
-  {
-    assert((__cats & locale::all) && !(__cats & ~locale::all));
-    
-    unsigned mask = (locale::all & -(unsigned)locale::all);
-    for (unsigned ix = 0; (-mask & __cats) != 0; ++ix, (mask <<= 1))
+    _S_initialize();
+    if (strcmp(__name, "C") == 0 || strcmp(__name, "POSIX") == 0)
+      (_M_impl = _S_classic)->_M_add_reference();
+    else
       {
-	if (mask & __cats)
-	  {
-	    _M_replace_category(__other, _S_facet_categories[ix]);
-	    (*_M_category_names)[ix] = (*(__other->_M_category_names))[ix];
-	  }
+	// Might throw:
+	_M_impl = new _Impl(*_S_classic, __name, all, 1);
+        _M_impl->_M_has_name = true;
       }
   }
 
-  void
-  locale::_Impl::
-  _M_replace_category(const _Impl* __other, const locale::id* const* __idpp)
+  locale::locale(const locale& __other, const char* __name, category __cat)
+  : _M_impl(new _Impl(*__other._M_impl, __name, _S_normalize_category(__cat), 1))
+  { }
+
+  bool
+  locale::operator==(const locale& __rhs) const throw()
   {
-    for (; *__idpp; ++__idpp)
-      _M_replace_facet(__other, *__idpp);
-  }
-  
-  void
-  locale::_Impl::
-  _M_replace_facet(const _Impl* __other, const locale::id* __idp)
-  {
-    size_t __index = __idp->_M_index;
-    if (__index == 0 
-	|| __other->_M_facets->size() <= __index 
-	|| (*(__other->_M_facets))[__index] == 0)
-      throw runtime_error("no locale facet");
-	
-    _M_install_facet(__idp, (*(__other->_M_facets))[__index]); 
+    return((this->name() != "*" && this->name() == __rhs.name())
+	   || _M_impl == __rhs._M_impl);
   }
 
-  void
-  locale::_Impl::
-  _M_install_facet(const locale::id* __idp, facet* __fp)
-  {
-    if (__fp == 0)
-      return;
-
-    size_t& __index = __idp->_M_index;
-    if (!__index)
-      __index = ++locale::id::_S_highwater;  // XXX MT
-
-    if (__index >= _M_facets->size())
-      _M_facets->resize(__index + 1, 0);  // might throw
-    facet*& __fpr = (*_M_facets)[__index];
-    // Order matters, here:
-    __fp->_M_add_reference();
-    if (__fpr) 
-      __fpr->_M_remove_reference();
-    __fpr = __fp;
-  }
- 
   locale::locale(_Impl* __ip) throw()
   : _M_impl(__ip)
   { __ip->_M_add_reference(); }
 
-  locale::locale(const locale& __other, const locale& __one, category __cats)
+  locale::locale(const locale& __other, const locale& __one, category __cat)
   {
-    __cats = _S_normalize_category(__cats);    // might throw
+    __cat = _S_normalize_category(__cat);    // might throw
     _M_impl = new _Impl(*__other._M_impl, 1);  // might throw
 
     try { 
-      _M_impl->_M_replace_categories(__one._M_impl, __cats); 
+      _M_impl->_M_replace_categories(__one._M_impl, __cat); 
     }
     catch (...) { 
       _M_impl->_M_remove_reference(); 
       throw; 
     }
 
-    _M_impl->_M_cached_name_ok = false;
+    // XXX
+    //    _M_impl->_M_cached_name_ok = false;
     if (!__other._M_impl->_M_has_name)
       _M_impl->_M_has_name = false;
   }
@@ -707,10 +624,7 @@ namespace std {
 
   string
   locale::name() const
-  {
-    // XXX not done
-    return "*";
-  }
+  { return _M_impl->_M_name; }
 
   locale const&
   locale::classic()
@@ -722,7 +636,8 @@ namespace std {
 	try {
 	  // 26 Standard facets, 2 references.
 	  // One reference for _M_classic, one for _M_global
-	  _S_classic = _S_global = new _Impl(26, 2);
+	  _S_classic = new _Impl(26, 2, true, "C");
+	  _S_global = _S_classic; 
 
 	  // collate category
 	  _S_classic->_M_facet_init(new std::collate<char>);
@@ -784,33 +699,49 @@ namespace std {
   }
 
   int
-  locale::_S_normalize_category(int __cats) 
+  locale::_S_normalize_category(int __cat) 
   {
-    if ((__cats & all) && !(__cats & ~all))
-      return __cats;
-
-    // NB: May be a C-style "LC_ALL" category; convert.
-    switch (__cats)
+    int __ret;
+    if ((__cat & all) && !(__cat & ~all))
+      __ret = __cat;
+    else
       {
-      case LC_COLLATE:  return collate; 
-      case LC_CTYPE:    return ctype;
-      case LC_MONETARY: return monetary;
-      case LC_NUMERIC:  return numeric;
-      case LC_TIME:     return time; 
+	// NB: May be a C-style "LC_ALL" category; convert.
+	switch (__cat)
+	  {
+	  case LC_COLLATE:  
+	    __ret = collate; 
+	    break;
+	  case LC_CTYPE:    
+	    __ret = ctype;
+	    break;
+	  case LC_MONETARY: 
+	    __ret = monetary;
+	    break;
+	  case LC_NUMERIC:  
+	    __ret = numeric;
+	    break;
+	  case LC_TIME:     
+	    __ret = time; 
+	    break;
 #ifdef _GLIBCPP_HAVE_LC_MESSAGES
-      case LC_MESSAGES: return messages;
+	  case LC_MESSAGES: 
+	    __ret = messages;
+	    break;
 #endif	
-      case LC_ALL:      return all;
+	  case LC_ALL:      
+	    __ret = all;
+	    break;
+	  default:
+	    throw runtime_error("bad locale category");
+	  }
       }
-    
-    // XXX Should throw derived class here
-    throw runtime_error("bad locale category");
-    /* NOTREACHED */
+    return __ret;
   }
 
   locale::facet::
   facet(size_t __refs) throw()
-  : _M_num_references(__refs - 1) 
+  : _M_references(__refs - 1) 
   { }
 
   void  
@@ -818,14 +749,14 @@ namespace std {
   _M_add_reference() throw()
   { 
     if (this) 
-      ++_M_num_references; 
+      ++_M_references; 
   }                     // XXX MT
 
   void  
   locale::facet::
   _M_remove_reference() throw()
   {
-    if (this && _M_num_references-- == 0)
+    if (this && _M_references-- == 0)
       {
         try { 
 	  delete this; 
