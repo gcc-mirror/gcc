@@ -1634,6 +1634,18 @@ static void
 rest_of_clean_state (void)
 {
   coverage_end_function ();
+  rtx insn, next;
+
+  /* It is very important to decompose the RTL instruction chain here:
+     debug information keeps pointing into CODE_LABEL insns inside the function
+     body.  If these remain pointing to the other insns, we end up preserving
+     whole RTL chain and attached detailed debug info in memory.  */
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+      NEXT_INSN (insn) = NULL;
+      PREV_INSN (insn) = NULL;
+    }
 
   /* In case the function was not output,
      don't leave any temporary anonymous types

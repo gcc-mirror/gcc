@@ -1,3 +1,7 @@
+2004-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (rest_of_clean_state):  Decompose the instruction stream.
+
 2004-09-04  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/md.texi (shift patterns): New anchor.  Add reference to
