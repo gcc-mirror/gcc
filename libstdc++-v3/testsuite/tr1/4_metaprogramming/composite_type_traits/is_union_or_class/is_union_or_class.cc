@@ -36,6 +36,8 @@ void test01()
   VERIFY( (test_category<__is_union_or_class, DerivedType>(true)) );
   VERIFY( (test_category<__is_union_or_class, ConvType>(true)) );
   VERIFY( (test_category<__is_union_or_class, AbstractClass>(true)) );
+  VERIFY( (test_category<__is_union_or_class, PolymorphicClass>(true)) );
+  VERIFY( (test_category<__is_union_or_class, DerivedPolymorphic>(true)) );
 
   // Negative tests.
   VERIFY( (test_category<__is_union_or_class, void>(false)) );

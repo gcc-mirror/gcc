@@ -123,6 +123,11 @@ namespace __gnu_test
   class AbstractClass
   { virtual void rotate(int) = 0; };
 
+  class PolymorphicClass
+  { virtual void rotate(int); };
+
+  class DerivedPolymorphic : public PolymorphicClass { }; 
+
   union UnionType { };
 
 
