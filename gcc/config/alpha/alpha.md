@@ -542,39 +542,47 @@
   operands[7] = gen_lowpart (SImode, operands[5]);
 }")
 
-(define_insn "adddi3"
-  [(set (match_operand:DI 0 "register_operand" "=r,r,r,r")
-	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "%rJ,rJ,rJ,rJ")
-		 (match_operand:DI 2 "add_operand" "rI,O,K,L")))]
+(define_expand "adddi3"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:DI (match_operand:DI 1 "register_operand" "")
+		 (match_operand:DI 2 "add_operand" "")))]
   ""
-  "*
-{
-  static const char * const pattern[4] = {
-    \"addq %r1,%2,%0\",
-    \"subq %r1,%n2,%0\",
-    \"lda %0,%2(%r1)\",
-    \"ldah %0,%h2(%r1)\"
-  };
+  "")
 
-  /* The NT stack unwind code can't handle a subq to adjust the stack
-     (that's a bug, but not one we can do anything about).  As of NT4.0 SP3,
-     the exception handling code will loop if a subq is used and an
-     exception occurs.
+;; This pattern exists so that register elimination tries to canonize
+;; (plus (plus reg c1) c2).
 
-     The 19980616 change to emit prologues as RTL also confused some
-     versions of GDB, which also interprets prologues.  This has been
-     fixed as of GDB 4.18, but it does not harm to unconditionally
-     use lda here.  */
+(define_insn "*lda"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+        (match_operand:DI 1 "addition_operation" "p"))]
+  ""
+  "lda %0,%a1")
 
-  int which = which_alternative;
+;; We used to expend quite a lot of effort choosing addq/subq/lda.
+;; With complications like
+;;
+;;   The NT stack unwind code can't handle a subq to adjust the stack
+;;   (that's a bug, but not one we can do anything about).  As of NT4.0 SP3,
+;;   the exception handling code will loop if a subq is used and an
+;;   exception occurs.
+;;  
+;;   The 19980616 change to emit prologues as RTL also confused some
+;;   versions of GDB, which also interprets prologues.  This has been
+;;   fixed as of GDB 4.18, but it does not harm to unconditionally
+;;   use lda here.
+;;
+;; and the fact that the three insns schedule exactly the same, it's
+;; just not worth the effort.
 
-  if (operands[0] == stack_pointer_rtx
-      && GET_CODE (operands[2]) == CONST_INT
-      && CONST_OK_FOR_LETTER_P (INTVAL (operands[2]), 'K'))
-    which = 2;
-
-  return pattern[which];
-}")
+(define_insn "*adddi_2"
+  [(set (match_operand:DI 0 "register_operand" "=r,r,r")
+	(plus:DI (match_operand:DI 1 "register_operand" "%r,r,r")
+		 (match_operand:DI 2 "add_operand" "r,K,L")))]
+  ""
+  "@
+   addq %1,%2,%0
+   lda %0,%2(%1)
+   ldah %0,%h2(%1)")
 
 ;; ??? Allow large constants when basing off the frame pointer or some
 ;; virtual register that may eliminate to the frame pointer.  This is
@@ -4004,8 +4012,8 @@
 ;; they are simpler.
 
 (define_insn ""
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,r,r,m,m")
-	(match_operand:SF 1 "input_operand" "fG,m,rG,m,fG,r"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
+	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
   "! TARGET_FIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
@@ -4019,8 +4027,8 @@
   [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
 
 (define_insn ""
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,r,r,m,m,f,*r")
-	(match_operand:SF 1 "input_operand" "fG,m,rG,m,fG,r,r,*f"))]
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
+	(match_operand:SF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
   "TARGET_FIX
    && (register_operand (operands[0], SFmode)
        || reg_or_fp0_operand (operands[1], SFmode))"
@@ -4036,8 +4044,8 @@
   [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist,itof,ftoi")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,r,r,m,m")
-	(match_operand:DF 1 "input_operand" "fG,m,rG,m,fG,r"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m")
+	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r"))]
   "! TARGET_FIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
@@ -4051,8 +4059,8 @@
   [(set_attr "type" "fcpys,fld,ilog,ild,fst,ist")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,r,r,m,m,f,*r")
-	(match_operand:DF 1 "input_operand" "fG,m,rG,m,fG,r,r,*f"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=f,f,*r,*r,m,m,f,*r")
+	(match_operand:DF 1 "input_operand" "fG,m,*rG,m,fG,*r,*r,f"))]
   "TARGET_FIX
    && (register_operand (operands[0], DFmode)
        || reg_or_fp0_operand (operands[1], DFmode))"
@@ -4090,8 +4098,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,f,f,m")
-	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,fJ,m,f"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,*f,*f,m")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,*fJ,m,*f"))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && ! TARGET_FIX
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
@@ -4107,8 +4115,8 @@
   [(set_attr "type" "ilog,iadd,iadd,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,f,f,m,r,*f")
-	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,fJ,m,f,f,*r"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,m,*f,*f,m,r,*f")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,m,rJ,*fJ,m,*f,*f,r"))]
   "! TARGET_WINDOWS_NT && ! TARGET_OPEN_VMS && TARGET_FIX
    && (register_operand (operands[0], SImode)
        || reg_or_0_operand (operands[1], SImode))"
@@ -4126,8 +4134,8 @@
   [(set_attr "type" "ilog,iadd,iadd,ild,ist,fcpys,fld,fst,ftoi,itof")])
 
 (define_insn ""
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f,m")
-	(match_operand:SI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,m,f"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,m")
+	(match_operand:SI 1 "input_operand" "rJ,K,L,s,m,rJ,*fJ,m,*f"))]
   "(TARGET_WINDOWS_NT || TARGET_OPEN_VMS)
     && (register_operand (operands[0], SImode)
         || reg_or_0_operand (operands[1], SImode))"
@@ -4235,8 +4243,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f,Q")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q")
+	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,*fJ,Q,*f"))]
   "! TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -4253,8 +4261,8 @@
   [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f,Q,r,*f")
-	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,fJ,Q,f,f,*r"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,r,m,*f,*f,Q,r,*f")
+	(match_operand:DI 1 "input_operand" "rJ,K,L,s,m,rJ,*fJ,Q,*f,*f,r"))]
   "TARGET_FIX
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"

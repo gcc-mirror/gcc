@@ -1,3 +1,17 @@
+Sat Oct 30 14:41:40 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (SECONDARY_INPUT_RELOAD_CLASS): Call secondary_reload_class.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.
+	(PREDICATE_CODES): Add addition_operation.
+	* alpha-protos.h (addition_operation): Declare.
+	(secondary_reload_class): Likewise.
+	* alpha.c (addition_operation): New.
+	(secondary_reload_class): New, from old SECONDARY_INPUT_RELOAD_CLASS.
+	* alpha.md (adddi3): Turn into expander.
+	(*lda, *adddi_2): New.
+	(movsf, movdf patterns): Don't preference integer regs.
+	(movsi, movdi patterns): Don't preference fp regs.
+
 Sat Oct 30 14:38:22 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (write_switch): Check for duplicate CODE cases.
