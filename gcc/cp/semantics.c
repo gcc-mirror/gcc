@@ -2836,7 +2836,7 @@ emit_associated_thunks (tree fn)
       
       for (thunk = DECL_THUNKS (fn); thunk; thunk = TREE_CHAIN (thunk))
 	{
-	  if (!THUNK_ALIAS_P (thunk))
+	  if (!THUNK_ALIAS (thunk))
 	    {
 	      use_thunk (thunk, /*emit_p=*/1);
 	      if (DECL_RESULT_THUNK_P (thunk))

@@ -2168,13 +2168,22 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
       
       if (DECL_THUNK_P (fn))
 	{
+	  my_friendly_assert (DECL_RESULT_THUNK_P (fn), 20031211);
 	  fixed_offset = ssize_int (THUNK_FIXED_OFFSET (fn));
 	  virtual_offset = THUNK_VIRTUAL_OFFSET (fn);
 	}
       else
 	fixed_offset = virtual_offset = NULL_TREE;
 
-      if (!virtual_offset)
+      if (virtual_offset)
+	/* Find the equivalent binfo within the return type of the
+	   overriding function. We will want the vbase offset from
+	   there.  */
+	virtual_offset =
+	  TREE_VALUE (purpose_member
+		      (BINFO_TYPE (virtual_offset),
+		       CLASSTYPE_VBASECLASSES (TREE_TYPE (over_return))));
+      else
 	{
 	  /* There was no existing virtual thunk (which takes
 	     precedence).  */
@@ -6715,11 +6724,7 @@ dump_thunk (FILE *stream, int indent, tree thunk)
 	   !DECL_THUNK_P (thunk) ? "function"
 	   : DECL_THIS_THUNK_P (thunk) ? "this-thunk" : "covariant-thunk",
 	   name ? IDENTIFIER_POINTER (name) : "<unset>");
-  if (!DECL_THUNK_P (thunk))
-    /*NOP*/;
-  else if (THUNK_ALIAS_P (thunk))
-    fprintf (stream, " alias to %p", (void *)THUNK_ALIAS (thunk));
-  else
+  if (DECL_THUNK_P (thunk))
     {
       HOST_WIDE_INT fixed_adjust = THUNK_FIXED_OFFSET (thunk);
       tree virtual_adjust = THUNK_VIRTUAL_OFFSET (thunk);
@@ -6734,6 +6739,8 @@ dump_thunk (FILE *stream, int indent, tree thunk)
 	fprintf (stream, " vbase=" HOST_WIDE_INT_PRINT_DEC "(%s)",
 		 tree_low_cst (BINFO_VPTR_FIELD (virtual_adjust), 0),
 		 type_as_string (BINFO_TYPE (virtual_adjust), TFF_SCOPE));
+      if (THUNK_ALIAS (thunk))
+	fprintf (stream, " alias to %p", (void *)THUNK_ALIAS (thunk));
     }
   fprintf (stream, "\n");
   for (thunks = DECL_THUNKS (thunk); thunks; thunks = TREE_CHAIN (thunks))
@@ -7406,7 +7413,7 @@ build_vtbl_initializer (tree binfo,
 	{
 	  if (!DECL_NAME (fn))
 	    finish_thunk (fn);
-	  if (THUNK_ALIAS_P (fn))
+	  if (THUNK_ALIAS (fn))
 	    {
 	      fn = THUNK_ALIAS (fn);
 	      BV_FN (v) = fn;
