@@ -1,5 +1,17 @@
 2003-10-08  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_frame_info): Add cprestore_size field.
+	(compute_frame_size): Initialize it.  Remove the .cprestore slot
+	from args_size.
+	(mips_output_function_prologue): Simplify accordingly.
+	(mips_debugger_offset): Change the mips16 frame pointer offset from
+	current_function_outgoing_args to cfun->machine->frame.args_size.
+	(mips_initial_elimination_offset): Likewise.
+	(mips_expand_prologue): Likewise.
+	(mips_expand_epilogue): Likewise.
+
+2003-10-08  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (EXTRA_CONSTRAINT): Add 'W' constraint.
 	(EXTRA_MEMORY_CONSTRAINT): Define.
 	(CAN_ELIMINATE): Remove lwu workaround.
