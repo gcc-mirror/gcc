@@ -16,96 +16,67 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
- In other words, you are welcome to use, share and improve this program.
- You are forbidden to forbid anyone else to use, share and improve
- what you give them.   Help stamp out software-hoarding!  */
-
-#ifdef EMACS
-#define NO_SHORTNAMES
-#include "../src/config.h"
-#ifdef open
-#undef open
-#undef read
-#undef write
-#endif /* open */
-#endif /* EMACS */
-
-/* The macro EMACS is defined when cpp is distributed as part of Emacs,
-   for the sake of machines with limited C compilers.  */
-#ifndef EMACS
 #include "config.h"
-#endif /* not EMACS */
-
-#ifndef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/include"
-#endif
-
-#if 0 /* We can't get ptrdiff_t, so I arranged not to need PTR_INT_TYPE.  */
-#ifdef __STDC__
-#define PTR_INT_TYPE ptrdiff_t
-#else
-#define PTR_INT_TYPE long
-#endif
-#endif /* 0 */
-
-#include "cpplib.h"
-#include "cpphash.h"
 
 #ifndef STDC_VALUE
 #define STDC_VALUE 1
 #endif
 
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-#define PATH_SEPARATOR ':'
-#endif
-
 #include <ctype.h>
 #include <stdio.h>
 #include <signal.h>
-#ifdef __STDC__
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 
-#ifndef VMS
-#ifndef USG
-#include <sys/time.h>		/* for __DATE__ and __TIME__ */
-#include <sys/resource.h>
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
 #else
-#include <sys/times.h>
-#include <time.h>
-#include <fcntl.h>
-#endif /* USG */
-#endif /* not VMS */
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
+# else
+#  include <time.h>
+#endif
+#endif
+
+#ifdef HAVE_TIMES_H
+#include <times.h>
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
 
 #ifdef HAVE_STDLIB_H
-#include <stdlib.h>
+# include <stdlib.h>
 #endif
 
 #ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
+# include <string.h>
+# else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
 #endif
 #endif
 
 /* This defines "errno" properly for VMS, and gives us EACCES.  */
 #include <errno.h>
 
-#ifndef HAVE_INDEX
-#define index strchr
-#endif
-
-#ifndef HAVE_RINDEX
-#define rindex strrchr
-#endif
+#include "cpplib.h"
+#include "cpphash.h"
+#include "gansidecl.h"
 
 #ifdef NEED_DECLARATION_INDEX
 extern char *index ();
@@ -113,6 +84,10 @@ extern char *index ();
 
 #ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
+
+#ifdef NEED_DECLARATION_GETENV
+extern char *getenv ();
 #endif
 
 extern char *update_path ();
@@ -156,24 +131,14 @@ extern char *update_path ();
 #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+#define PATH_SEPARATOR ':'
 #endif
 
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
+#ifndef STANDARD_INCLUDE_DIR
+#define STANDARD_INCLUDE_DIR "/usr/include"
 #endif
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR) 0)
-#endif
-
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
 #endif
@@ -336,7 +301,6 @@ enum file_change_code {same_file, enter_file, leave_file};
 
 extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader *));
 
-extern char *getenv ();
 extern FILE *fdopen ();
 extern char *version_string;
 extern struct tm *localtime ();

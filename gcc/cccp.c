@@ -16,87 +16,27 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
+Boston, MA 02111-1307, USA. */
 
- In other words, you are welcome to use, share and improve this program.
- You are forbidden to forbid anyone else to use, share and improve
- what you give them.   Help stamp out software-hoarding!  */
-
-typedef unsigned char U_CHAR;
-
-#ifdef EMACS
-#define NO_SHORTNAMES
-#include "../src/config.h"
-#ifdef open
-#undef open
-#undef read
-#undef write
-#endif /* open */
-#endif /* EMACS */
-
-/* The macro EMACS is defined when cpp is distributed as part of Emacs,
-   for the sake of machines with limited C compilers.  */
-#ifndef EMACS
 #include "config.h"
-#endif /* not EMACS */
-
-#ifndef STANDARD_INCLUDE_DIR
-#define STANDARD_INCLUDE_DIR "/usr/include"
-#endif
-
-#include "pcp.h"
-
-/* By default, colon separates directories in a path.  */
-#ifndef PATH_SEPARATOR
-#define PATH_SEPARATOR ':'
-#endif
-
-/* By default, the suffix for object files is ".o".  */
-#ifdef OBJECT_SUFFIX
-#define HAVE_OBJECT_SUFFIX
-#else
-#define OBJECT_SUFFIX ".o"
-#endif
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <signal.h>
 
-/* The following symbols should be autoconfigured:
-	HAVE_FCNTL_H
-	HAVE_SYS_TIME_H
-	STDC_HEADERS
-	TIME_WITH_SYS_TIME
-   In the mean time, we'll get by with approximations based
-   on existing GCC configuration symbols.  */
-
-#ifdef POSIX
-# ifndef STDC_HEADERS
-# define STDC_HEADERS 1
-# endif
-#endif /* defined (POSIX) */
-
-#if defined (POSIX) || (defined (USG) && !defined (VMS))
-# ifndef HAVE_FCNTL_H
-# define HAVE_FCNTL_H 1
-# endif
-#endif
-
-#ifndef RLIMIT_STACK
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
 # include <time.h>
 #else
-# if TIME_WITH_SYS_TIME
-#  include <sys/time.h>
-#  include <time.h>
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
 # else
-#  if HAVE_SYS_TIME_H
-#   include <sys/time.h>
-#  else
-#   include <time.h>
-#  endif
-# endif
+#  include <time.h>
+#endif
+#endif
+
+#ifdef HAVE_SYS_RESOURCE_H
 # include <sys/resource.h>
 #endif
 
@@ -108,104 +48,68 @@ typedef unsigned char U_CHAR;
 # include <limits.h>
 #endif
 
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #include <errno.h>
 
 #if HAVE_STDLIB_H
 # include <stdlib.h>
-#else
-char *getenv ();
 #endif
 
-#ifndef HAVE_INDEX
-#define index strchr
-#endif
-
-#ifndef HAVE_RINDEX
-#define rindex strrchr
-#endif
-
-#if STDC_HEADERS
+#ifdef HAVE_STRING_H
 # include <string.h>
-# ifndef bcmp
-# define bcmp(a, b, n) memcmp (a, b, n)
-# endif
-# ifndef bcopy
-# define bcopy(s, d, n) memcpy (d, s, n)
-# endif
-# ifndef bzero
-# define bzero(d, n) memset (d, 0, n)
-# endif
-#else /* !STDC_HEADERS */
-char *index ();
-char *rindex ();
+#else
+# ifdef HAVE_STRINGS_H
+#  inclued <strings.h>
+#endif
+#endif
 
-# if !defined (BSTRING) && (defined (USG) || defined (VMS))
+typedef unsigned char U_CHAR;
 
-#  ifndef bcmp
-#  define bcmp my_bcmp
-static int
-my_bcmp (a, b, n)
-     register char *a;
-     register char *b;
-     register unsigned n;
-{
-   while (n-- > 0)
-     if (*a++ != *b++)
-       return 1;
+#include "gansidecl.h"
+#include "pcp.h"
 
-   return 0;
-}
-#  endif /* !defined (bcmp) */
+#ifdef NEED_DECLARATION_INDEX
+extern char *index ();
+#endif
 
-#  ifndef bcopy
-#  define bcopy my_bcopy
-static void
-my_bcopy (s, d, n)
-     register char *s;
-     register char *d;
-     register unsigned n;
-{
-  while (n-- > 0)
-    *d++ = *s++;
-}
-#  endif /* !defined (bcopy) */
+#ifdef NEED_DECLARATION_RINDEX
+extern char *rindex ();
+#endif
 
-#  ifndef bzero
-#  define bzero my_bzero
-static void
-my_bzero (b, length)
-     register char *b;
-     register unsigned length;
-{
-  while (length-- > 0)
-    *b++ = 0;
-}
-#  endif /* !defined (bzero) */
-
-# endif /* !defined (BSTRING) && (defined (USG) || defined (VMS)) */
-#endif /* ! STDC_HEADERS */
+#ifdef NEED_DECLARATION_GETENV
+extern char *getenv ();
+#endif
 
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
 # define __attribute__(x)
 #endif
 
-#ifndef PROTO
-# if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#  define PROTO(ARGS) ARGS
-# else
-#  define PROTO(ARGS) ()
-# endif
+#ifndef STANDARD_INCLUDE_DIR
+# define STANDARD_INCLUDE_DIR "/usr/include"
+#endif
+
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+# define PATH_SEPARATOR ':'
+#endif
+
+/* By default, the suffix for object files is ".o".  */
+#ifdef OBJECT_SUFFIX
+# define HAVE_OBJECT_SUFFIX
+#else
+# define OBJECT_SUFFIX ".o"
 #endif
 
 #if defined (__STDC__) && defined (HAVE_VPRINTF)
 # include <stdarg.h>
-# define VA_START(va_list, var) va_start (va_list, var)
 # define PRINTF_ALIST(msg) char *msg, ...
 # define PRINTF_DCL(msg)
 # define PRINTF_PROTO(ARGS, m, n) PROTO (ARGS) __attribute__ ((format (__printf__, m, n)))
 #else
 # include <varargs.h>
-# define VA_START(va_list, var) va_start (va_list)
 # define PRINTF_ALIST(msg) msg, va_alist
 # define PRINTF_DCL(msg) char *msg; va_dcl
 # define PRINTF_PROTO(ARGS, m, n) () __attribute__ ((format (__printf__, m, n)))
@@ -222,10 +126,6 @@ my_bzero (b, length)
 #define PRINTF_PROTO_1(ARGS) PRINTF_PROTO(ARGS, 1, 2)
 #define PRINTF_PROTO_2(ARGS) PRINTF_PROTO(ARGS, 2, 3)
 #define PRINTF_PROTO_3(ARGS) PRINTF_PROTO(ARGS, 3, 4)
-
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
 
 /* VMS-specific definitions */
 #ifdef VMS
@@ -292,24 +192,6 @@ static void hack_vms_include_specification ();
 
 #ifndef INO_T_HASH
 #define INO_T_HASH(a) (a)
-#endif
-
-/* Define a generic NULL if one hasn't already been defined.  */
-
-#ifndef NULL
-#define NULL 0
-#endif
-
-#ifndef GENERIC_PTR
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define GENERIC_PTR void *
-#else
-#define GENERIC_PTR char *
-#endif
-#endif
-
-#ifndef NULL_PTR
-#define NULL_PTR ((GENERIC_PTR) 0)
 #endif
 
 #ifndef INCLUDE_LEN_FUDGE
