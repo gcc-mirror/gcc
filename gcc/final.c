@@ -1600,7 +1600,7 @@ profile_after_prologue (file)
 
 static void
 profile_function (file)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
 {
 #ifndef NO_PROFILE_COUNTERS
   int align = MIN (BIGGEST_ALIGNMENT, LONG_TYPE_SIZE);

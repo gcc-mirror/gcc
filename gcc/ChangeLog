@@ -1,5 +1,23 @@
 2001-12-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* 1750a.md: Add default case in switch.
+	* alpha/vms.h (INITIAL_ELIMINATION_OFFSET): Add abort clause in
+	if-else statement.
+	* dsp16xx.c (print_operand_address): Likewise.
+	* i386/osf1elf.h (FUNCTION_PROFILER): Const-ify.
+	* ia64.md: Add missing braces.
+	* rs6000-protos.h (s8bit_cint_operand): Prototype.
+	* s390.h (INITIAL_ELIMINATION_OFFSET): Add abort clause in
+        if-else statement.
+	* stormy16.h (REG_CLASS_CONTENTS): Add missing braces.
+	* v850.h (OUTPUT_ADDR_CONST_EXTRA): Don't issue a `return'.
+	* dbxout.c (dbxout_source_file): Move a variable into the scope
+	where it is used.
+	* final.c (profile_function): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	* genemit.c (gen_expand): Likewise for generated file.
+	* insn-addr.h (INSN_ADDRESSES_NEW): Avoid undefined behavior.
+
 	* vmsdbg.h: Delete spurious close-comment.
 	(DST_HEADER): Fix typo in ENUM_BITFIELD parameter.
 	* vmsdbgout.c (write_modbeg): Define return type.

@@ -566,13 +566,13 @@ dbxout_source_file (file, filename)
      FILE *file;
      const char *filename;
 {
-  char ltext_label_name[100];
-
   if (filename && (lastfile == 0 || strcmp (filename, lastfile)))
     {
 #ifdef DBX_OUTPUT_SOURCE_FILENAME
       DBX_OUTPUT_SOURCE_FILENAME (file, filename);
 #else
+      char ltext_label_name[100];
+
       ASM_GENERATE_INTERNAL_LABEL (ltext_label_name, "Ltext",
 				   source_label_number);
       fprintf (file, "%s", ASM_STABS_OP);

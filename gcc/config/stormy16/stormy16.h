@@ -1234,17 +1234,17 @@ enum reg_class
    `hard-reg-set.h'.  */
 #define REG_CLASS_CONTENTS			\
 {						\
-  0x00000,					\
-  0x00001,					\
-  0x00002,					\
-  0x00003,					\
-  0x00004,					\
-  0x000FF,					\
-  0x00100,					\
-  0x00300,					\
-  0x6FFFF,					\
-  0x10000,					\
-  (1 << FIRST_PSEUDO_REGISTER) - 1		\
+  { 0x00000 },					\
+  { 0x00001 },					\
+  { 0x00002 },					\
+  { 0x00003 },					\
+  { 0x00004 },					\
+  { 0x000FF },					\
+  { 0x00100 },					\
+  { 0x00300 },					\
+  { 0x6FFFF },					\
+  { 0x10000 },					\
+  { (1 << FIRST_PSEUDO_REGISTER) - 1 }		\
 }
 
 /* A C expression whose value is a register class containing hard register

@@ -70,6 +70,7 @@ extern int call_operand PARAMS ((rtx, enum machine_mode));
 extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
 extern int input_operand PARAMS ((rtx, enum machine_mode));
 extern int small_data_operand PARAMS ((rtx, enum machine_mode));
+extern int s8bit_cint_operand PARAMS ((rtx, enum machine_mode));
 extern int constant_pool_expr_p PARAMS ((rtx));
 extern int toc_relative_expr_p PARAMS ((rtx));
 extern int expand_block_move PARAMS ((rtx[]));

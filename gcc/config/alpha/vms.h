@@ -148,6 +148,8 @@ Boston, MA 02111-1307, USA.  */
 			     + get_frame_size ()			\
 			     + current_function_pretend_args_size)	\
 		- current_function_pretend_args_size);			\
+  else									\
+    abort();								\
   if ((TO) == STACK_POINTER_REGNUM)					\
     (OFFSET) += ALPHA_ROUND (current_function_outgoing_args_size);	\
 }

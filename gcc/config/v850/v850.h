@@ -1254,7 +1254,7 @@ do {									\
 
 #define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)		\
   if (GET_CODE (x) == TRUNCATE)				\
-    return output_addr_const (FILE, XEXP (X, 0));	\
+    output_addr_const (FILE, XEXP (X, 0));		\
   else							\
     goto FAIL;
 

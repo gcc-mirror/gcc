@@ -41,7 +41,7 @@ extern int insn_current_address;
     if (INSN_ADDRESSES_SET_P ())					\
       {									\
 	if (INSN_ADDRESSES_SIZE () <= insn_uid__)			\
-	  insn_addresses_ = VARRAY_GROW (insn_addresses_, insn_uid__ + 1); \
+	  VARRAY_GROW (insn_addresses_, insn_uid__ + 1);		\
 	INSN_ADDRESSES (insn_uid__) = insn_addr__;			\
       }									\
   }									\
