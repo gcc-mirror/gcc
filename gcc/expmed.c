@@ -3955,9 +3955,11 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	subtarget = 0;
 
       if (code == GE)
-	op0 = expand_unop (mode, one_cmpl_optab, op0, subtarget, 0);
+	op0 = expand_unop (mode, one_cmpl_optab, op0,
+			   ((STORE_FLAG_VALUE == 1 || normalizep)
+			    ? 0 : subtarget), 0);
 
-      if (normalizep || STORE_FLAG_VALUE == 1)
+      if (STORE_FLAG_VALUE == 1 || normalizep)
 	/* If we are supposed to produce a 0/1 value, we want to do
 	   a logical shift from the sign bit to the low-order bit; for
 	   a -1/0 value, we do an arithmetic shift.  */
