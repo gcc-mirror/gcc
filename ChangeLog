@@ -1,3 +1,21 @@
+2004-06-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (configure-build-[+module+],
+	configure-[+module+], configure-target-[+module+]): Pass
+	[+extra_configure_args+].
+	(all-build-[+module+], all-[+module+], check-[+module+],
+	install-[+module+], [+make_target+]-[+module+],
+	all-target-[+module+], check-target-[+module+],
+	install-target-[+module+], [+make_target+]-target-[+module+]):
+	Pass [+extra_make_args+].
+	(HOST_EXPORTS): Include the former GCC_HOST_EXPORTS.
+	(GCC_HOST_EXPORTS): Remove.
+	(configure-gcc, all-gcc, GCC_STRAP_TARGETS, profiledbootstrap,
+	cross, check-gcc, check-gcc-c++, install-gcc,
+	gcc-no-fixedincludes, [+make_target+]-gcc, stage[+id+]-bubble):
+	Replace GCC_HOST_EXPORTS with HOST_EXPORTS.
+	* Makefile.in: Regenerate.
+
 2004-06-21  Matthew Sachs  <msachs@apple.com>
 
 	* MAINTAINERS: Added self to write-after-approval.

@@ -160,17 +160,13 @@ HOST_EXPORTS = \
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP;
-
-# Similar, for the gcc directory.
-GCC_HOST_EXPORTS = \
-	$(HOST_EXPORTS) \
 	TOPLEVEL_CONFIGURE_ARGUMENTS="$(TOPLEVEL_CONFIGURE_ARGUMENTS)"; export TOPLEVEL_CONFIGURE_ARGUMENTS; \
 	GMPLIBS="$(HOST_GMPLIBS)"; export GMPLIBS; \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC;
 
 # Similar, for later GCC stages.
 STAGE_HOST_EXPORTS = \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	CC="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC; \
 	CC_FOR_BUILD="$(STAGE_CC_WRAPPER) $$r/prev-gcc/xgcc$(exeext) -B$$r/prev-gcc/ -B$(build_tooldir)/bin/"; export CC_FOR_BUILD;
 
@@ -735,7 +731,7 @@ install.all: install-no-fixedincludes
 	@if [ -f ./gcc/Makefile ] ; then \
 		r=`${PWD_COMMAND}` ; export r ; \
 		$(SET_LIB_PATH) \
-		$(GCC_HOST_EXPORTS) \
+		$(HOST_EXPORTS) \
 		(cd ./gcc && \
 		$(MAKE) $(FLAGS_TO_PASS) install-headers) ; \
 	else \
@@ -830,7 +826,7 @@ configure-build-[+module+]:
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(BUILD_CONFIGARGS) $${srcdiroption} \
-	  --with-build-subdir="$(BUILD_SUBDIR)" \
+	  --with-build-subdir="$(BUILD_SUBDIR)" [+extra_configure_flags+] \
 	  || exit 1
 @endif build-[+module+]
 
@@ -842,7 +838,7 @@ all-build-[+module+]: configure-build-[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(BUILD_EXPORTS) \
-	(cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) all)
+	(cd $(BUILD_SUBDIR)/[+module+] && $(MAKE) [+extra_make_flags+] all)
 @endif build-[+module+]
 [+ ENDFOR build_modules +]
 
@@ -874,7 +870,7 @@ configure-[+module+]:
 	    libsrcdir="$$s/[+module+]";; \
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  $(HOST_CONFIGARGS) $${srcdiroption} [+extra_configure_flags+] \
 	  || exit 1
 @endif [+module+]
 
@@ -890,7 +886,7 @@ all-[+module+]: configure-[+module+]
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
-	  ENDIF with_x +] all)
+	  ENDIF with_x +] [+extra_make_flags+] all)
 @endif [+module+]
 
 .PHONY: check-[+module+] maybe-check-[+module+]
@@ -910,7 +906,7 @@ check-[+module+]:
 	  (cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	    IF with_x 
 	      +] $(X11_FLAGS_TO_PASS)[+ 
-	    ENDIF with_x +] check); \
+	    ENDIF with_x +] [+extra_make_flags+] check); \
 	fi
 [+ ELSE check +]
 check-[+module+]:
@@ -921,7 +917,7 @@ check-[+module+]:
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
-	  ENDIF with_x +] check)
+	  ENDIF with_x +] [+extra_make_flags+] check)
 [+ ENDIF no_check +]
 @endif [+module+]
 
@@ -940,7 +936,7 @@ install-[+module+]: installdirs
 	(cd [+module+] && $(MAKE) $(FLAGS_TO_PASS)[+ 
 	  IF with_x 
 	    +] $(X11_FLAGS_TO_PASS)[+ 
-	  ENDIF with_x +] install)
+	  ENDIF with_x +] [+extra_make_flags+] install)
 [+ ENDIF no_install +]
 @endif [+module+]
 
@@ -972,7 +968,7 @@ maybe-[+make_target+]-[+module+]: [+make_target+]-[+module+]
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          [+make_target+]) \
+	          [+extra_make_flags+] [+make_target+]) \
 	  || exit 1
 [+ ENDIF +]
 @endif [+module+]
@@ -1043,7 +1039,7 @@ ENDIF raw_cxx +]
 	rm -f no-such-file || : ; \
 	CONFIG_SITE=no-such-file $(SHELL) $${libsrcdir}/configure \
 	  $(TARGET_CONFIGARGS) $${srcdiroption} \
-	  --with-target-subdir="$(TARGET_SUBDIR)" \
+	  --with-target-subdir="$(TARGET_SUBDIR)" [+extra_configure_flags+] \
 	  || exit 1
 @endif target-[+module+]
 
@@ -1065,7 +1061,7 @@ ENDIF raw_cxx +]
 	    IF raw_cxx 
 	  +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
 	    ENDIF raw_cxx 
-	  +] all)
+	  +] [+extra_make_flags+] all)
 @endif target-[+module+]
 
 .PHONY: check-target-[+module+] maybe-check-target-[+module+]
@@ -1090,7 +1086,7 @@ ENDIF raw_cxx +]
 	    IF raw_cxx 
 	      +] 'CXX=$$(RAW_CXX_FOR_TARGET)' 'CXX_FOR_TARGET=$$(RAW_CXX_FOR_TARGET)' [+ 
 	    ENDIF raw_cxx 
-	  +] check)
+	  +] [+extra_make_flags+] check)
 [+ ENDIF no_check +]
 @endif target-[+module+]
 
@@ -1112,7 +1108,7 @@ ELSE normal_cxx +]
 	$(NORMAL_TARGET_EXPORTS) \[+
 ENDIF raw_cxx +]
 	(cd $(TARGET_SUBDIR)/[+module+] && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS) install)
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS) [+extra_make_flags+] install)
 [+ ENDIF no_install +]
 @endif target-[+module+]
 
@@ -1148,7 +1144,7 @@ ENDIF raw_cxx +]
 	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
 	          "RANLIB=$${RANLIB}" \
 	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
-	          [+make_target+]) \
+	          [+extra_make_flags+] [+make_target+]) \
 	  || exit 1
 [+ ENDIF +]
 @endif target-[+module+]
@@ -1180,7 +1176,7 @@ configure-gcc:
 	[ -d gcc ] || mkdir gcc; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo Configuring in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
@@ -1212,7 +1208,7 @@ all-gcc: configure-gcc
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	if [ -f gcc/stage_last ] ; then \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) quickstrap); \
 	else \
@@ -1235,7 +1231,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $@
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1255,7 +1251,7 @@ $(GCC_STRAP_TARGETS): all-bootstrap configure-gcc
 	    compare=compare ;; \
 	esac; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "$$msg"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1268,7 +1264,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stageprofile_build
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1279,7 +1275,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) stagefeedback_build
 
@@ -1288,7 +1284,7 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "Building the C and C++ compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1307,7 +1303,7 @@ check-gcc:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
-	  $(GCC_HOST_EXPORTS) \
+	  $(HOST_EXPORTS) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
 	else \
 	  true; \
@@ -1319,7 +1315,7 @@ check-gcc-c++:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
-	  $(GCC_HOST_EXPORTS) \
+	  $(HOST_EXPORTS) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
 	else \
 	  true; \
@@ -1338,7 +1334,7 @@ install-gcc:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
-	  $(GCC_HOST_EXPORTS) \
+	  $(HOST_EXPORTS) \
 	  (cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	else \
 	  true; \
@@ -1360,7 +1356,7 @@ gcc-no-fixedincludes:
 	  r=`${PWD_COMMAND}`; export r; \
 	  s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	  $(SET_LIB_PATH) \
-	  $(GCC_HOST_EXPORTS) \
+	  $(HOST_EXPORTS) \
 	  (cd ./gcc && \
 	   $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	  rm -rf gcc/include; \
@@ -1384,7 +1380,7 @@ maybe-[+make_target+]-gcc: [+make_target+]-gcc
 	for flag in $(EXTRA_GCC_FLAGS); do \
 	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
 	done; \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "Doing [+make_target+] in gcc" ; \
 	(cd gcc && \
 	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
@@ -1508,7 +1504,7 @@ configure-stage[+id+]-gcc: [+ IF prev +] all-stage[+prev+]-gcc [+
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
 	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
-	$(GCC_HOST_EXPORTS) [+ ENDIF prev +] \
+	$(HOST_EXPORTS) [+ ENDIF prev +] \
 	echo Configuring stage [+id+] in gcc ; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \
@@ -1532,7 +1528,7 @@ all-stage[+id+]-gcc: configure-stage[+id+]-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; [+ IF prev +] \
 	$(STAGE_HOST_EXPORTS) [+ ELSE prev +] \
-	$(GCC_HOST_EXPORTS) [+ ENDIF prev +] \
+	$(HOST_EXPORTS) [+ ENDIF prev +] \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) [+ IF prev +] \
 		$(POSTSTAGE1_FLAGS_TO_PASS) [+ ENDIF prev +] \
@@ -1618,7 +1614,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "Bootstrapping the compiler"; \
 	$(MAKE) stageprofile-bubble distclean-stagefeedback stageprofile-start
 	@r=`${PWD_COMMAND}`; export r; \
@@ -1629,7 +1625,7 @@ profiledbootstrap: all-bootstrap configure-gcc
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
-	$(GCC_HOST_EXPORTS) \
+	$(HOST_EXPORTS) \
 	echo "Building feedback based compiler"; \
 	$(MAKE) stagefeedback-bubble stagefeedback-end
 
