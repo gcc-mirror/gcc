@@ -65,7 +65,8 @@ while(<STDIN>)
     # would require rev'ing all other Texinfo translators.
     /^\@c man begin ([A-Z]+)/ and $sect = $1, $output = 1, next;
     /^\@c man end/ and do {
-	$sects{$sect} = postprocess($section);
+	$sects{$sect} = "" unless exists $sects{$sect};
+	$sects{$sect} .= postprocess($section);
 	$section = "";
 	$output = 0;
 	next;
@@ -79,22 +80,57 @@ while(<STDIN>)
     # End-block handler goes up here because it needs to operate even
     # if we are skipping.
     /^\@end\s+([a-z]+)/ and do {
-	die "\@end $1 without \@$1 at line $.\n" unless defined $endw;
-	die "\@$endw ended by \@end $1 at line $.\n" unless $1 eq $endw;
+	# Ignore @end foo, where foo is not an operation which may
+	# cause us to skip, if we are presently skipping.
+	my $ended = $1;
+	next if $skipping && $ended !~ /^(?:ifset|ifclear|ignore|menu)$/;
+
+	die "\@end $ended without \@$ended at line $.\n" unless defined $endw;
+	die "\@$endw ended by \@end $ended at line $.\n" unless $ended eq $endw;
 
 	$endw = pop @endwstack;
 
-	if ($1 =~ /example$/) {
-	    $shift = "";
-	    next;
-	} elsif ($1 =~ /^(if|ignore|menu)/) {
+	if ($ended =~ /^(?:ifset|ifclear|ignore|menu)$/) {
 	    $skipping = pop @skstack;
 	    next;
-	} else {
+	} elsif ($ended =~ /^(?:example|smallexample)$/) {
+	    $shift = "";
+	    $_ = "";	# need a paragraph break
+	} elsif ($ended =~ /^(?:itemize|enumerate|table)$/) {
 	    $_ = "\n=back\n";
 	    $ic = pop @icstack;
+	} else {
+	    die "unknown command \@end $ended at line $.\n";
 	}
     };
+
+    # We must handle commands which can cause skipping even while we
+    # are skipping, otherwise we will not process nested conditionals
+    # correctly.
+    /^\@ifset\s+([a-zA-Z0-9_-]+)/ and do {
+	push @endwstack, $endw;
+	push @skstack, $skipping;
+	$endw = "ifset";
+	$skipping = 1 unless exists $defs{$1};
+	next;
+    };
+
+    /^\@ifclear\s+([a-zA-Z0-9_-]+)/ and do {
+	push @endwstack, $endw;
+	push @skstack, $skipping;
+	$endw = "ifclear";
+	$skipping = 1 if exists $defs{$1};
+	next;
+    };
+
+    /^\@(ignore|menu)\b/ and do {
+	push @endwstack, $endw;
+	push @skstack, $skipping;
+	$endw = $1;
+	$skipping = 1;
+	next;
+    };
+
     next if $skipping;
 
     # Character entities.  First the ones that can be replaced by raw text
@@ -132,30 +168,6 @@ while(<STDIN>)
     /^\@subsection\s+(.+)$/ and $_ = "\n=head3 $1\n";
 
     # Block command handlers:
-    /^\@ifset\s+([a-zA-Z0-9_-]+)/ and do {
-	push @endwstack, $endw;
-	push @skstack, $skipping;
-	$endw = "ifset";
-	$skipping = 1 unless exists $defs{$1};
-	next;
-    };
-
-    /^\@ifclear\s+([a-zA-Z0-9_-]+)/ and do {
-	push @endwstack, $endw;
-	push @skstack, $skipping;
-	$endw = "ifclear";
-	$skipping = 1 if exists $defs{$1};
-	next;
-    };
-
-    /^\@(ignore|menu)\b/ and do {
-	push @endwstack, $endw;
-	push @skstack, $skipping;
-	$endw = $1;
-	$skipping = 1;
-	next;
-    };
-
     /^\@itemize\s+(\@[a-z]+|\*|-)/ and do {
 	push @endwstack, $endw;
 	push @icstack, $ic;
@@ -192,7 +204,7 @@ while(<STDIN>)
 	push @endwstack, $endw;
 	$endw = $1;
 	$shift = "\t";
-	next;
+	$_ = "";	# need a paragraph break
     };
 
     /^\@itemx?\s*(.+)?$/ and do {

@@ -1,3 +1,11 @@
+2000-12-07  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* texi2pod.pl: If multiple @c man sections with the same tag
+	appear, concatenate them in the final output.  When skipping,
+	ignore block commands that can't cause skipping, and honor
+	those that can.  Ensure that verbatim blocks are separate
+	paragraphs.
+
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc_update: Don't touch tradcif.c or java/parse.h.
