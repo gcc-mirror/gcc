@@ -1,5 +1,7 @@
 2000-12-29  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* version.c: Bump.
+
 	* combine.c (cant_combine_insn_p): Only restrict hard register
 	combinations for SMALL_REGISTER_CLASSES machines.
 
