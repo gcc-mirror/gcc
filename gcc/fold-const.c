@@ -3076,8 +3076,20 @@ static tree
 make_bit_field_ref (tree inner, tree type, int bitsize, int bitpos,
 		    int unsignedp)
 {
-  tree result = build3 (BIT_FIELD_REF, type, inner,
-			size_int (bitsize), bitsize_int (bitpos));
+  tree result;
+
+  if (bitpos == 0)
+    {
+      tree size = TYPE_SIZE (TREE_TYPE (inner));
+      if ((INTEGRAL_TYPE_P (TREE_TYPE (inner))
+	   || POINTER_TYPE_P (TREE_TYPE (inner)))
+	  && host_integerp (size, 0) 
+	  && tree_low_cst (size, 0) == bitsize)
+	return fold_convert (type, inner);
+    }
+
+  result = build3 (BIT_FIELD_REF, type, inner,
+		   size_int (bitsize), bitsize_int (bitpos));
 
   BIT_FIELD_REF_UNSIGNED (result) = unsignedp;
 

@@ -1,5 +1,9 @@
 2005-02-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/19858
+	* fold-const.c (make_bit_field_ref): If bitpos == 0 and bitsize
+	is number of inner's bits, avoid creating a BIT_FIELD_REF.
+
 	* config/rs6000/sysv4.h (ENDFILE_LINUX_SPEC): Use crtendS.o instead of
 	crtend.o if -pie.  Use %{x:a;:b} spec syntax.
 
