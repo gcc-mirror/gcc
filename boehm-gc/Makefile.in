@@ -113,9 +113,8 @@ gcconfig.h dbg_mlc.c dyn_load.c finalize.c gc.h gc_alloc.h gc_cpp.h \
 gc_hdrs.h gc_mark.h gc_priv.h gc_private.h gc_typed.h headers.c	\
 irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
 misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c	\
-quick_threads.c real_malloc.c reclaim.c solaris_pthreads.c \
-solaris_threads.c solaris_threads.h stubborn.c typd_mlc.c version.h \
-weakpointer.h
+real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c \
+solaris_threads.h stubborn.c typd_mlc.c version.h weakpointer.h
 
 libgcjgc_la_LIBADD = @addobjs@
 libgcjgc_la_DEPENDENCIES = @addobjs@
@@ -203,8 +202,8 @@ libgcjgc_la_OBJECTS =  allchblk.lo alloc.lo blacklst.lo checksums.lo \
 dbg_mlc.lo dyn_load.lo finalize.lo headers.lo irix_threads.lo \
 linux_threads.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
 new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
-quick_threads.lo real_malloc.lo reclaim.lo solaris_pthreads.lo \
-solaris_threads.lo stubborn.lo typd_mlc.lo
+real_malloc.lo reclaim.lo solaris_pthreads.lo solaris_threads.lo \
+stubborn.lo typd_mlc.lo
 check_PROGRAMS =  gctest$(EXEEXT)
 gctest_OBJECTS =  test.o
 gctest_DEPENDENCIES =  ./libgcjgc.la
