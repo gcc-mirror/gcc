@@ -1,3 +1,8 @@
+2003-09-06  Josef Zlomek  <zlomekj@suse.cz>
+
+	* fibheap.c (fibheap_replace_key_data): Change type of OKEY to
+	FIBHEAPKEY_T.
+
 2003-09-02  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR bootstrap/12100

@@ -218,7 +218,7 @@ fibheap_replace_key_data (heap, node, key, data)
      void *data;
 {
   void *odata;
-  int okey;
+  fibheapkey_t okey;
   fibnode_t y;
 
   /* If we wanted to, we could actually do a real increase by redeleting and
