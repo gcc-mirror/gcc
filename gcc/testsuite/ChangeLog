@@ -1,5 +1,7 @@
 2004-07-23  Janis Johnson  <janis187@us.ibm.com>
 
+	* gcc.dg/vmx/8-02a.c: Fix typo.
+
 	* gcc.dg/vmx/varargs-4.c: Remove a Darwin-specific check.
 	* gcc.dg/darwin-abi-3.c: New test.
 
