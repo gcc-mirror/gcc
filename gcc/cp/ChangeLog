@@ -1,3 +1,26 @@
+2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c: Move TFF_ macros into cp-tree.h.  Throughout, replace
+	TS_* flags with corresponding TFF_*.  Adjust prototypes of
+	functions (which used to take a tree_string_flags) to take an int.
+
+	* cp-tree.h (enum tree_string_flags): Remove
+	(TFF_PLAIN_IDENTIFIER, TFF_NAMESPACE_SCOPE, TFF_CLASS_SCOPE,
+	TFF_CHASE_NAMESPACE_ALIAS, TFF_CHASE_TYPEDEF, TFF_DECL_SPECIFIERS,
+	TFF_CLASS_KEY_OR_ENUM, TFF_RETURN_TYPE,
+	TFF_FUNCTION_DEFAULT_ARGUMENTS, TFF_EXCEPTION_SPECIFICATION,
+	TFF_TEMPLATE_HEADER, TFF_TEMPLATE_DEFAULT_ARGUMENTS,
+	TFF_TEMPLATE_NAME, TFF_EXPR_IN_PARENS, TFF_SCOPE): New macros.
+	(type_as_string, decl_as_string, expr_as_string,
+	context_as_string): Adjust prototype.
+
+	* class.c (dump_class_hierarchy_r): Use TFF_PLAIN_IDENTIFIER
+	instead of TS_PLAIN.
+
+	* pt.c (mangle_class_name_for_template): Use TFF_CHASE_TYPEDEF
+	instead of TF_CHASE_TYPEDEFS. Use TFF_PLAIN_IDENTIFIER instead of
+	plain `0'.
+
 2000-10-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_EXTERNAL_LINKAGE_P): New macro.

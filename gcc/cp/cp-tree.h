@@ -3674,29 +3674,42 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
 #define TEMPLATE_TYPE_DECL(NODE) \
   (TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 
-/* Control stringification of trees (types, decls & exprs).
-   Bit or them together.  */
-enum tree_string_flags
-{
-    TS_PLAIN,                    /* nothing special */
-    TS_CHASE_TYPEDEFS = 1 <<  0, /* look through typedefs */
-    TS_DECORATE       = 1 <<  1, /* decorate things */
-    TS_FUNC_NORETURN  = 1 <<  2, /* inhibit function return type */
-    TS_FUNC_THROW     = 1 <<  3, /* show throw spec */
-    TS_PARM_DEFAULTS  = 1 <<  4, /* show parm defaults */
-    TS_EXPR_PARENS    = 1 <<  5, /* enclose in parens */
-    TS_AGGR_TAGS      = 1 <<  6, /* show struct tags */
-    TS_DECL_TYPE      = 1 <<  7, /* show decl's type */
-    TS_FUNC_SCOPE     = 1 <<  8, /* show function scope */
-    TS_PEDANTIC_NAME  = 1 <<  9, /* pedantically name things */
-    TS_TEMPLATE_PREFIX= 1 << 10, /* show template <parms> prefix */
+/* These constants can used as bit flags in the process of tree formatting.
 
-    /* Internal use flags */
-    TS_TEMPLATE_PARM  = 1 << 11, /* decl is really a non-type template parm */
-    TS_TEMPLATE_PLAIN = 1 << 12, /* don't decorate primary template_name */
+   TFF_PLAIN_IDENTIFIER: unqualified part of a name.
+   TFF_NAMESPACE_SCOPE: the complete qualified-id form of a name.
+   TFF_CLASS_SCOPE: if possible, include the class-name part of a
+        qualified-id.  This flag may be implied in some circumstances by
+        TFF_NAMESPACE_SCOPE.
+   TFF_SCOPE: the combinaison of the two above.
+   TFF_CHASE_TYPEDEF: print the original type-id instead of the typedef-name.
+   TFF_DECL_SPECIFIERS: print decl-specifiers.
+   TFF_CLASS_KEY_OR_ENUM: precede a class-type name (resp. enum name) with
+       a class-key (resp. `enum').
+   TFF_RETURN_TYPE: include function return type.
+   TFF_FUNCTION_DEFAULT_ARGUMENTS: include function default parameter values.
+   TFF_EXCEPTION_SPECIFICATION: show function exception specification.
+   TFF_TEMPLATE_HEADER: show the template<...> hearder in a
+       template-declaration.
+   TFF_TEMPLATE_DEFAULT_ARGUMENTS: show template paramter default values.
+   TFF_TEMPLATE_NAME: show only template-name.
+   TFF_EXPR_IN_PARENS: Parenthesize expressions.  */
 
-    TS_NEXT_BIT       = 13       /* next available bit */
-};
+#define TFF_PLAIN_IDENTIFIER               (0)
+#define TFF_NAMESPACE_SCOPE                (1)
+#define TFF_CLASS_SCOPE                    (1 << 1)
+#define TFF_CHASE_NAMESPACE_ALIAS          (1 << 2)
+#define TFF_CHASE_TYPEDEF                  (1 << 3)
+#define TFF_DECL_SPECIFIERS                (1 << 4)
+#define TFF_CLASS_KEY_OR_ENUM              (1 << 5)
+#define TFF_RETURN_TYPE                    (1 << 6)
+#define TFF_FUNCTION_DEFAULT_ARGUMENTS     (1 << 7)
+#define TFF_EXCEPTION_SPECIFICATION        (1 << 8)
+#define TFF_TEMPLATE_HEADER                (1 << 9)
+#define TFF_TEMPLATE_DEFAULT_ARGUMENTS     (1 << 10)
+#define TFF_TEMPLATE_NAME                  (1 << 11)
+#define TFF_EXPR_IN_PARENS                 (1 << 12)
+#define TFF_SCOPE (TFF_NAMESPACE_SCOPE | TFF_CLASS_SCOPE)
 
 /* Returns the TEMPLATE_DECL associated to a TEMPLATE_TEMPLATE_PARM
    node.  */
@@ -4032,10 +4045,10 @@ extern void cp_deprecated                       PARAMS ((const char*));
 
 /* in error.c */
 extern void init_error				PARAMS ((void));
-extern const char *type_as_string		PARAMS ((tree, enum tree_string_flags));
-extern const char *decl_as_string		PARAMS ((tree, enum tree_string_flags));
-extern const char *expr_as_string		PARAMS ((tree, enum tree_string_flags));
-extern const char *context_as_string            PARAMS ((tree, enum tree_string_flags));
+extern const char *type_as_string		PARAMS ((tree, int));
+extern const char *decl_as_string		PARAMS ((tree, int));
+extern const char *expr_as_string		PARAMS ((tree, int));
+extern const char *context_as_string            PARAMS ((tree, int));
 extern const char *lang_decl_name		PARAMS ((tree, int));
 extern const char *cp_file_of			PARAMS ((tree));
 extern int cp_line_of				PARAMS ((tree));

@@ -3534,7 +3534,7 @@ mangle_class_name_for_template (name, parms, arglist)
 
       if (TREE_CODE (parm) == TYPE_DECL)
 	{
-	  cat (type_as_string (arg, TS_CHASE_TYPEDEFS));
+	  cat (type_as_string (arg, TFF_CHASE_TYPEDEF));
 	  continue;
 	}
       else if (TREE_CODE (parm) == TEMPLATE_DECL)
@@ -3551,14 +3551,14 @@ mangle_class_name_for_template (name, parms, arglist)
                   my_friendly_assert (TREE_CODE (context) == NAMESPACE_DECL
                                       || CLASS_TYPE_P (context), 
                                       980422);
-		  cat(decl_as_string (DECL_CONTEXT (arg), 0));
+		  cat(decl_as_string (DECL_CONTEXT (arg), TFF_PLAIN_IDENTIFIER));
 		  cat("::");
 		}
 	      cat (IDENTIFIER_POINTER (DECL_NAME (arg)));
 	    }
 	  else
 	    /* Output the parameter declaration */
-	    cat (type_as_string (arg, TS_CHASE_TYPEDEFS));
+	    cat (type_as_string (arg, TFF_CHASE_TYPEDEF));
 	  continue;
 	}
       else
@@ -3573,7 +3573,7 @@ mangle_class_name_for_template (name, parms, arglist)
 	}
       /* No need to check arglist against parmlist here; we did that
 	 in coerce_template_parms, called from lookup_template_class.  */
-      cat (expr_as_string (arg, 0));
+      cat (expr_as_string (arg, TFF_PLAIN_IDENTIFIER));
     }
   {
     char *bufp = obstack_next_free (&scratch_obstack);

@@ -6665,7 +6665,7 @@ dump_class_hierarchy_r (t, binfo, indent)
 
   fprintf (stderr, "%*s0x%lx (%s) ", indent, "",
 	   (unsigned long) binfo,
-	   type_as_string (binfo, TS_PLAIN));
+	   type_as_string (binfo, TFF_PLAIN_IDENTIFIER));
   fprintf (stderr, HOST_WIDE_INT_PRINT_DEC,
 	   tree_low_cst (BINFO_OFFSET (binfo), 0));
   if (TREE_VIA_VIRTUAL (binfo))
