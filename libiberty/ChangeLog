@@ -1,3 +1,7 @@
+2002-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.table: Use mh-s390pic for s390x too.
+
 2002-10-06  Andreas Jaeger  <aj@suse.de>
 
 	* libiberty/cplus-dem.c (ada_demangle): Get rid of unneeded
