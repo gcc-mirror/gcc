@@ -1,3 +1,41 @@
+2004-08-12  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (struct s390_frame_layout): New struct as element
+	of struct machine_function.
+	(cfun->machine->frame_size): Moved into cfun->machine->frame_layout and
+	changed all uses.
+	(cfun->machine->save_fprs_p): Replaced by cfun_save_high_fprs and
+	changed all uses.
+	(cfun_frame_layout, cfun_save_high_fprs_p, cfun_gprs_save_area_size)
+	(cfun_set_fpr_bit, cfun_fpr_bit_p): New macros.
+	(s390_frame_area, s390_register_info): New functions.
+	(s390_optimize_prolog): Renamed to s390_optimize_prologue.  Added check
+	for base register.
+	(s390_return_addr_rtx, s390_return_address_offset)
+	(s390_va_start, s390_gimplify_va_arg)
+	(s390_emit_prologue, s390_emit_epilogue): Adjusted for new stack
+	layouts.
+	(s390_frame_info): Functionality partly moved to s390_register_info.
+	Made adaptions for new stack layout.
+	(save_gprs, restore_gprs): Changed meaning of second parameter and
+	adapted all callers.
+
+	* config/s390/s390.h (s390_backchain_string): New global variable.
+	(MASK_BACKCHAIN): Removed definition.
+	(TARGET_BACKCHAIN): Changed check.
+	(TARGET_KERNEL_BACKCHAIN): New macro.
+	(TARGET_SWITCHES): Removed entries of "backchain" and "no-backchain".
+	(TARGET_OPTIONS): Added "backchain", "no-backchain" and
+	"kernel-backchain".
+	(DYNAMIC_CHAIN_ADDRESS): Adjusted for new stack layouts.
+
+	* config/s390/s390.md ("allocate_stack"): Added TARGET_KERNEL_BACKCHAIN
+	as condition.  Adjusted for new stack layout.
+
+	* doc/invoke.texi: Added documentation for new option
+	"-mkernel-backchain" and adjusted documentation of "-mbackchain" and
+	"-mno-backchain".
+
 2004-08-12  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/lib1funcs.asm (ARM_FUNC_ALIAS): Also alias _L__name.

@@ -617,7 +617,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
--mhard-float  -msoft-float  -mbackchain  -mno-backchain @gol
+-mhard-float  -msoft-float  -mbackchain  -mno-backchain -mkernel-backchain @gol
 -msmall-exec  -mno-small-exec  -mmvcle -mno-mvcle @gol
 -m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch @gol
 -mtpf-trace -mno-tpf-trace  -mfused-madd  -mno-fused-madd}
@@ -10454,13 +10454,27 @@ generates IEEE floating-point instructions.  This is the default.
 
 @item -mbackchain
 @itemx -mno-backchain
+@itemx -mkernel-backchain
 @opindex mbackchain
 @opindex mno-backchain
-Generate (or do not generate) code which maintains an explicit
-backchain within the stack frame that points to the caller's frame.
-This may be needed to allow debugging using tools that do not understand
-DWARF-2 call frame information.  The default is not to generate the
-backchain.
+@opindex mkernel-backchain
+In order to provide a backchain the address of the caller's frame
+is stored within the callee's stack frame.
+A backchain may be needed to allow debugging using tools that do not understand
+DWARF-2 call frame information.
+For @option{-mno-backchain} no backchain is maintained at all which is the 
+default. 
+If one of the other options is present the backchain pointer is placed either 
+on top of the stack frame  (@option{-mkernel-backchain}) or on
+the bottom (@option{-mbackchain}).
+Beside the different backchain location @option{-mkernel-backchain}
+also changes stack frame layout breaking the ABI. This option
+is intended to be used for code which internally needs a backchain but has
+to get by with a limited stack size e.g. the linux kernel. 
+Internal unwinding code not using DWARF-2 info has to be able to locate the
+return address of a function. That will be eased be the fact that
+the return address of a function is placed two words below the backchain 
+pointer.
 
 @item -msmall-exec
 @itemx -mno-small-exec
