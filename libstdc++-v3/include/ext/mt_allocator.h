@@ -228,8 +228,8 @@ namespace __gnu_cxx
 	// Points to the block_record of the next free block.
         _Block_record* volatile         _M_next;
 
-	// The thread id of the thread which has requested this block.
 #ifdef __GTHREADS
+	// The thread id of the thread which has requested this block.
         size_t                          _M_thread_id;
 #endif
       };
@@ -241,6 +241,7 @@ namespace __gnu_cxx
 	// for _S_max_threads + global pool 0.
         _Block_record** volatile        _M_first;
 
+#ifdef __GTHREADS
 	// An "array" of counters used to keep track of the amount of
 	// blocks that are on the freelist/used for each thread id.
 	// Memory to these "arrays" is allocated in _S_initialize() for
@@ -251,7 +252,6 @@ namespace __gnu_cxx
 	// Each bin has its own mutex which is used to ensure data
 	// integrity while changing "ownership" on a block.  The mutex
 	// is initialized in _S_initialize().
-#ifdef __GTHREADS
         __gthread_mutex_t*              _M_mutex;
 #endif
       };
@@ -359,14 +359,6 @@ namespace __gnu_cxx
 		    }
 		  __gthread_mutex_unlock(__bin._M_mutex);
 		}
-	      
-	      // Return the first newly added block in our list and
-	      // update the counters
-	      __block = __bin._M_first[__thread_id];
-	      __bin._M_first[__thread_id] = __bin._M_first[__thread_id]->_M_next;
-	      __block->_M_thread_id = __thread_id;
-	      --__bin._M_free[__thread_id];
-	      ++__bin._M_used[__thread_id];
 	    }
 	  else
 #endif
@@ -384,28 +376,20 @@ namespace __gnu_cxx
 		  --__block_count;
 		}
 	      __block->_M_next = NULL;
-	      
-	      // Remove from list.
-	      __block = __bin._M_first[0];
-	      __bin._M_first[0] = __bin._M_first[0]->_M_next;
 	    }
 	}
-      else
-	{
-	  // "Default" operation - we have blocks on our own freelist
-	  // grab the first record and update the counters.
-	  __block = __bin._M_first[__thread_id];
-	  __bin._M_first[__thread_id] = __bin._M_first[__thread_id]->_M_next;
 
+      __block = __bin._M_first[__thread_id];
+      __bin._M_first[__thread_id] = __bin._M_first[__thread_id]->_M_next;
 #ifdef __GTHREADS
-	  if (__gthread_active_p())
-	    {
-	      __block->_M_thread_id = __thread_id;
-	      --__bin._M_free[__thread_id];
-	      ++__bin._M_used[__thread_id];
-	    }
-#endif
+      if (__gthread_active_p())
+	{
+	  __block->_M_thread_id = __thread_id;
+	  --__bin._M_free[__thread_id];
+	  ++__bin._M_used[__thread_id];
 	}
+#endif
+
       char* __c = reinterpret_cast<char*>(__block) + sizeof(_Block_record);
       return static_cast<_Tp*>(static_cast<void*>(__c));
     }

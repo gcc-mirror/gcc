@@ -111,23 +111,23 @@ template<typename Container>
 
 int main(void)
 {
-#ifdef TEST_T1
+#ifdef TEST_T0
   test_container(map<int, int>());
 #endif
-#ifdef TEST_T2
+#ifdef TEST_T1
   test_container(map<int, int, less<const int>, new_allocator<int> >());
 #endif
-#ifdef TEST_T3
+#ifdef TEST_T2
   test_container(map<int, int, less<const int>, malloc_allocator<int> >());
 #endif
-#ifdef TEST_T4
+#ifdef TEST_T3
   test_container(map<int, int, less<const int>,
                      __mt_alloc< pair<const int, int> > >());
 #endif
-#ifdef TEST_T5
+#ifdef TEST_T4
   test_container(map<int, int, less<const int>, bitmap_allocator<int> >());
 #endif
-#ifdef TEST_T6
+#ifdef TEST_T5
   test_container(map<int, int, less<const int>, __pool_alloc<int> >());
 #endif
   return 0;
