@@ -1301,6 +1301,13 @@ Like @code{PCC_BITFIELD_TYPE_MATTERS} except that its effect is limited
 to aligning a bit-field within the structure.
 @end defmac
 
+@deftypefn {Target Hook} bool TARGET_ALIGN_ANON_BITFIELDS (void)
+When @code{PCC_BITFIELD_TYPE_MATTERS} is true this hook will determine
+whether unnamed bitfields affect the alignment of the containing
+structure.  The hook should return true if the structure should inherit
+the alignment requirements of an unnamed bitfield's type.
+@end deftypefn
+
 @defmac MEMBER_TYPE_FORCES_BLK (@var{field}, @var{mode})
 Return 1 if a structure or array containing @var{field} should be accessed using
 @code{BLKMODE}.

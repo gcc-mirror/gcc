@@ -160,6 +160,7 @@ static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
 static bool arm_promote_prototypes (tree);
 static bool arm_default_short_enums (void);
+static bool arm_align_anon_bitfield (void);
 
 
 /* Initialize the GCC target structure.  */
@@ -259,6 +260,9 @@ static bool arm_default_short_enums (void);
 
 #undef TARGET_DEFAULT_SHORT_ENUMS
 #define TARGET_DEFAULT_SHORT_ENUMS arm_default_short_enums
+
+#undef TARGET_ALIGN_ANON_BITFIELD
+#define TARGET_ALIGN_ANON_BITFIELD arm_align_anon_bitfield
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14562,6 +14566,15 @@ arm_promote_prototypes (tree t ATTRIBUTE_UNUSED)
 
 static bool
 arm_default_short_enums (void)
+{
+  return TARGET_AAPCS_BASED;
+}
+
+
+/* AAPCS requires that anonymous bitfields affect structure alignment.  */
+
+static bool
+arm_align_anon_bitfield (void)
 {
   return TARGET_AAPCS_BASED;
 }
