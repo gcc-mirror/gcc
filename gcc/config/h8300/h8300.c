@@ -682,61 +682,31 @@ split_adds_subs (mode, operands)
 {
   HOST_WIDE_INT val = INTVAL (operands[1]);
   rtx reg = operands[0];
-  rtx tmp;
+  HOST_WIDE_INT sign = 1;
+  HOST_WIDE_INT amount;
 
-  /* Take care of +/- 4 for H8300H and H8300S.  */
-  if (TARGET_H8300H || TARGET_H8300S)
+  /* Force VAL to be positive so that we do not have to consider the
+     sign.  */
+  if (val < 0)
     {
-      /* Get the value in range of +/- 4.  */
-      if (val > 4)
-	{
-	  tmp = gen_rtx_PLUS (mode, reg, GEN_INT (4));
-	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
-	  val -= 4;
-	}
-      else if (val < -4)
-	{
-	  tmp = gen_rtx_PLUS (mode, reg, GEN_INT (-4));
-	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
-	  val += 4;
-	}
+      val = -val;
+      sign = -1;
+    }
 
-      if (val == 4 || val == -4)
+  /* Try different amounts in descending order.  */
+  for (amount = (TARGET_H8300H || TARGET_H8300S) ? 4 : 2;
+       amount > 0;
+       amount /= 2)
+    {
+      while (val >= amount)
 	{
-	  tmp = gen_rtx_PLUS (mode, reg, GEN_INT (val));
+	  rtx tmp = gen_rtx_PLUS (mode, reg, GEN_INT (sign * amount));
 	  emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
-	  return;
+	  val -= amount;
 	}
     }
 
-  /* Get the value in range of +/- 2.  */
-  if (val > 2)
-    {
-      tmp = gen_rtx_PLUS (mode, reg, GEN_INT (2));
-      emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
-      val -= 2;
-    }
-  else if (val < -2)
-    {
-      tmp = gen_rtx_PLUS (mode, reg, GEN_INT (-2));
-      emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
-      val += 2;
-    }
-
-  /* If not optimizing, we might be asked to add 0.  */
-  if (val == 0)
-    return;
-
-  /* We should have one or two now.  */
-  if (val >= -2 && val <= 2)
-    {
-      tmp = gen_rtx_PLUS (mode, reg, GEN_INT (val));
-      emit_insn (gen_rtx_SET (VOIDmode, reg, tmp));
-      return;
-    }
-
-  /* In theory, this can't happen.  */
-  abort ();
+  return;
 }
 
 /* Return true if OP is a valid call operand, and OP represents
