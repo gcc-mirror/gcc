@@ -21,9 +21,13 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
+#include <errno.h>
 #include "config.h"
-
 #include "tree.h"
+
+#ifndef errno
+extern int errno;
+#endif
 
 /* To enable support of XFmode extended real floating point, define
 LONG_DOUBLE_TYPE_SIZE 96 in the tm.h file (m68k.h or i386.h).
@@ -249,7 +253,8 @@ do { EMUSHORT w[4];		\
 #endif /* not REAL_ARITHMETIC */
 #endif /* no XFmode */
 
-void pedwarn ();
+void warning ();
+extern int extra_warnings;
 int ecmp (), enormlz (), eshift (), eisneg (), eisinf ();
 void eadd (), esub (), emul (), ediv ();
 void eshup1 (), eshup8 (), eshup6 (), eshdn1 (), eshdn8 (), eshdn6 ();
@@ -1935,7 +1940,8 @@ emdnorm (s, lost, subflg, exp, rcntrl)
       s[1] = 32767;
       for (i = 2; i < NI - 1; i++)
 	s[i] = 0;
-      pedwarn ("floating point overflow");
+      if (extra_warnings)
+	warning ("floating point overflow");
 #else
       s[1] = 32766;
       s[2] = 0;
@@ -2321,7 +2327,7 @@ e53toe (e, y)
   *p++ = *e++;
   *p++ = *e++;
 #endif
-  (void) eshift (yy, -5);
+  eshift (yy, -5);
   if (denorm)
     {				/* if zero exponent, then normalize the significand */
       if ((k = enormlz (yy)) > NBITS)
@@ -2434,7 +2440,7 @@ e24toe (e, y)
   ++e;
   *p++ = *e++;
 #endif
-  (void) eshift (yy, -8);
+  eshift (yy, -8);
   if (denorm)
     {				/* if zero exponent, then normalize the significand */
       if ((k = enormlz (yy)) > NBITS)
@@ -2616,12 +2622,12 @@ toe53 (x, y)
     }
   if (i == 0)
     {
-      (void) eshift (x, 4);
+      eshift (x, 4);
     }
   else
     {
       i <<= 4;
-      (void) eshift (x, 5);
+      eshift (x, 5);
     }
   i |= *p++ & (unsigned EMUSHORT) 0x0f;	/* *p = xi[M] */
   *y |= (unsigned EMUSHORT) i;	/* high order output already has sign bit set */
@@ -2691,8 +2697,9 @@ toe24 (x, y)
     *y = 0x8000;		/* output sign bit */
 
   i = *p++;
+/* Handle overflow cases. */
   if (i >= 255)
-    {				/* Saturate at largest number less than infinity. */
+    {
 #ifdef INFINITY
       *y |= (unsigned EMUSHORT) 0x7f80;
 #ifdef IBMPC
@@ -2705,7 +2712,7 @@ toe24 (x, y)
       ++y;
       *y = 0;
 #endif
-#else
+#else  /* no INFINITY */
       *y |= (unsigned EMUSHORT) 0x7f7f;
 #ifdef IBMPC
       *(--y) = 0xffff;
@@ -2717,17 +2724,20 @@ toe24 (x, y)
       ++y;
       *y = 0xffff;
 #endif
+#ifdef ERANGE
+      errno = ERANGE;
 #endif
+#endif  /* no INFINITY */
       return;
     }
   if (i == 0)
     {
-      (void) eshift (x, 7);
+      eshift (x, 7);
     }
   else
     {
       i <<= 7;
-      (void) eshift (x, 8);
+      eshift (x, 8);
     }
   i |= *p++ & (unsigned EMUSHORT) 0x7f;	/* *p = xi[M] */
   *y |= i;			/* high order output already has sign bit set */
@@ -2941,8 +2951,9 @@ eifrac (x, i, frac)
 	*i = ((unsigned long) 1) << (HOST_BITS_PER_LONG - 1);
       else
 	*i = (((unsigned long) 1) << (HOST_BITS_PER_LONG - 1)) - 1;
-      (void) eshift (xi, k);
-      pedwarn ("Overflow on truncation to integer");
+      eshift (xi, k);
+      if (extra_warnings)
+	warning ("overflow on truncation to integer");
       goto lab11;
     }
 
@@ -2953,7 +2964,7 @@ eifrac (x, i, frac)
 	 ; then complete the shift to get the fraction.
 	 */
       k -= 16;
-      (void) eshift (xi, k);
+      eshift (xi, k);
 
       *i = (long) (((unsigned long) xi[M] << 16) | xi[M + 1]);
       eshup6 (xi);
@@ -2961,7 +2972,7 @@ eifrac (x, i, frac)
     }
 
   /* shift not more than 16 bits */
-  (void) eshift (xi, k);
+  eshift (xi, k);
   *i = (long) xi[M] & 0xffff;
 
  lab10:
@@ -3017,8 +3028,9 @@ euifrac (x, i, frac)
 	 ;	and correct fraction
 	 */
       *i = ~(0L);
-      (void) eshift (xi, k);
-      pedwarn ("Overflow on truncation to unsigned integer");
+      eshift (xi, k);
+      if (extra_warnings)
+	warning ("overflow on truncation to unsigned integer");
       goto lab10;
     }
 
@@ -3029,7 +3041,7 @@ euifrac (x, i, frac)
 	 ; then complete the shift to get the fraction.
 	 */
       k -= 16;
-      (void) eshift (xi, k);
+      eshift (xi, k);
 
       *i = (long) (((unsigned long) xi[M] << 16) | xi[M + 1]);
       eshup6 (xi);
@@ -3037,7 +3049,7 @@ euifrac (x, i, frac)
     }
 
   /* shift not more than 16 bits */
-  (void) eshift (xi, k);
+  eshift (xi, k);
   *i = (long) xi[M] & 0xffff;
 
  lab10:
@@ -3540,13 +3552,27 @@ etoasc (x, string, ndigs)
     *s++ = '-';
   else
     *s++ = ' ';
-  *s++ = (char) digit + '0';
-  *s++ = '.';
   /* Examine number of digits requested by caller. */
   if (ndigs < 0)
     ndigs = 0;
   if (ndigs > NDEC)
     ndigs = NDEC;
+  if (digit == 10)
+    {
+      *s++ = '1';
+      *s++ = '.';
+      if (ndigs > 0)
+	{
+	  *s++ = '0';
+	  ndigs -= 1;
+	}
+      expon += 1;
+    }
+  else
+    {
+      *s++ = (char )digit + '0';
+      *s++ = '.';
+    }
   /* Generate digits after the decimal point. */
   for (k = 0; k <= ndigs; k++)
     {
@@ -3809,9 +3835,7 @@ asctoeg (ss, y, oprec)
       goto daldone;
     case 'i':
     case 'I':
-      ecleaz (yy);
-      yy[E] = 0x7fff;		/* infinity */
-      goto aexit;
+      goto infinite;
     default:
     error:
       mtherr ("asctoe", DOMAIN);
@@ -3840,9 +3864,29 @@ asctoeg (ss, y, oprec)
     {
       exp *= 10;
       exp += *s++ - '0';
+      if (exp > 4956)
+	{
+	  if (esign < 0)
+	    goto zero;
+	  else
+	    goto infinite;
+	}
     }
   if (esign < 0)
     exp = -exp;
+  if (exp > 4932)
+    {
+ infinite:
+      ecleaz (yy);
+      yy[E] = 0x7fff;		/* infinity */
+      goto aexit;
+    }
+  if (exp < -4956)
+    {
+ zero:
+      ecleaz (yy);
+      goto aexit;
+    }
 
  daldone:
   nexp = exp - nexp;
@@ -4247,7 +4291,8 @@ mtherr (name, code)
   if ((code <= 0) || (code >= 6))
     code = 0;
   sprintf (errstr, "\n%s %s error\n", name, ermsg[code]);
-  pedwarn (errstr);
+  if (extra_warnings)
+    warning (errstr);
   /* Set global error message word */
   merror = code + 1;
 
@@ -4429,6 +4474,9 @@ todec (x, y)
       *y++ = 0xffff;
       *y++ = 0xffff;
       *y++ = 0xffff;
+#ifdef ERANGE
+      errno = ERANGE;
+#endif
       return;
     }
   i &= 0377;
