@@ -1,3 +1,7 @@
+2001-03-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* cplus-dem.c (main): Cast enum style to int.
+
 2001-02-16  Loren J. Rittle  <ljrittle@acm.org>
 
 	* cplus-dem.c (main): Initialize style.
