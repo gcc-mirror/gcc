@@ -1,3 +1,10 @@
+2003-03-13  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/configopts.html, docs/html/documentation.html,
+	docs/html/explanations.html, docs/html/install.html,
+	docs/html/19_diagnostics/howto.html, docs/html/faq/index.html: Fix
+	invalid XHTML and make page header style consistent.
+
 2003-03-12  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/faq/index.html: Explain memory "leaks" due to allocators.
