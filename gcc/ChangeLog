@@ -1,3 +1,8 @@
+Sat Mar 11 16:18:12 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64-protos.h, config/ia64/ia64.c, config/ia64/ia64.h,
+	config/ia64/ia64.md, config/ia64/xm-ia64.h: Fix copyright messages.
+
 2000-03-11  Neil Booth  <NeilB@earthling.net>
 
 	* cppinit.c (struct pending option): Replace undef with a 

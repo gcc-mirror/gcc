@@ -1,5 +1,5 @@
 /* Definitions of target machine GNU compiler.  IA64 version.
-   Copyright (C) 1999 Cygnus Solutions.
+   Copyright (C) 2000 Free Software Foundation, Inc.
    Contributed by James E. Wilson <wilson@cygnus.com> and
    		  David Mosberger <davidm@hpl.hp.com>.
 
