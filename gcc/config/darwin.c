@@ -382,8 +382,11 @@ machopic_validate_stub_or_non_lazy_ptr (const char *name)
       
       p->used = true;
 
-      /* Do exactly what assemble_name will do when we actually call it.  */
-      real_name = targetm.strip_name_encoding (name);
+      /* Do what output_addr_const will do when we actually call it.  */
+      if (SYMBOL_REF_DECL (p->symbol))
+	mark_decl_referenced (SYMBOL_REF_DECL (p->symbol));
+
+      real_name = targetm.strip_name_encoding (XSTR (p->symbol, 0));
       
       id = maybe_get_identifier (real_name);
       if (id)
@@ -874,7 +877,7 @@ machopic_output_indirection (void **slot, void *data)
       else
 	sprintf (stub, "%s%s", user_label_prefix, ptr_name);
 
-      machopic_output_stub (asm_out_file, sym, stub);    
+      machopic_output_stub (asm_out_file, sym, stub);
     }
   else if (! indirect_data (symbol)
 	   && (machopic_symbol_defined_p (symbol)
