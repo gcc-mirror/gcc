@@ -1,3 +1,16 @@
+2001-04-09  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* configure.in: Add check for lstat.
+	* configure, config.in: Regenerate.
+	* cppinit.c (append_include_chain): Make empty path ".".
+        * cpplib.c (do_line): Don't simplify #line paths.
+        * cppfiles.c (remove_component_p): New function.
+	(find_or_create_entry): Acknowledge stat () errors during
+	path simplification.
+	(handle_missing_header): Don't simplify paths.
+        (_cpp_simplify_pathname): Don't simplify VMS paths.  Return
+        the empty path untouched.  Don't leave a trailing '/'.
+
 Sun Apr  8 22:50:49 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/xm-cygwin.h (GET_ENV_PATH_LIST): Eliminate obsolete

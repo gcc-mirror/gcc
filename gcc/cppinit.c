@@ -211,10 +211,12 @@ append_include_chain (pfile, dir, path, cxx_aware)
   struct stat st;
   unsigned int len;
 
+  if (*dir == '\0')
+    dir = xstrdup (".");
   _cpp_simplify_pathname (dir);
   if (stat (dir, &st))
     {
-      /* Dirs that don't exist are silently ignored. */
+      /* Dirs that don't exist are silently ignored.  */
       if (errno != ENOENT)
 	cpp_notice_from_errno (pfile, dir);
       else if (CPP_OPTION (pfile, verbose))

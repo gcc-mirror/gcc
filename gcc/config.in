@@ -159,6 +159,9 @@
 /* Define if you have the kill function.  */
 #undef HAVE_KILL
 
+/* Define if you have the lstat function.  */
+#undef HAVE_LSTAT
+
 /* Define if you have the munmap function.  */
 #undef HAVE_MUNMAP
 

@@ -543,7 +543,7 @@ fi
 AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy \
 	strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
-	fputs_unlocked getrusage iconv nl_langinfo)
+	fputs_unlocked getrusage iconv nl_langinfo lstat)
 
 AC_CHECK_TYPE(ssize_t, int)
 

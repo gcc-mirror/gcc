@@ -101,6 +101,7 @@ static int report_missing_guard		PARAMS ((splay_tree_node, void *));
 static splay_tree_node find_or_create_entry PARAMS ((cpp_reader *,
 						     const char *));
 static void handle_missing_header PARAMS ((cpp_reader *, const char *, int));
+static int remove_component_p	PARAMS ((const char *));
 
 /* Set up the splay tree we use to store information about all the
    file names seen in this compilation.  We also have entries for each
@@ -155,7 +156,8 @@ _cpp_never_reread (file)
 }
 
 /* Lookup a filename, which is simplified after making a copy, and
-   create an entry if none exists.  */
+   create an entry if none exists.  errno is nonzero iff a (reported)
+   stat() error occurred during simplification.  */
 static splay_tree_node
 find_or_create_entry (pfile, fname)
      cpp_reader *pfile;
@@ -207,6 +209,9 @@ open_file (pfile, filename)
 {
   splay_tree_node nd = find_or_create_entry (pfile, filename);
   struct include_file *file = (struct include_file *) nd->value;
+
+  if (errno)
+    file->fd = -2;
 
   /* Don't retry opening if we failed previously.  */
   if (file->fd == -2)
@@ -643,7 +648,6 @@ handle_missing_header (pfile, fname, angle_brackets)
 	      p[len++] = '/';
 	    }
 	  memcpy (p + len, fname, fname_len + 1);
-	  _cpp_simplify_pathname (p);
 	  deps_add_dep (pfile->deps, p);
 	}
     }
@@ -1006,6 +1010,26 @@ remap_filename (pfile, name, loc)
   return name;
 }
 
+/* Returns true if it is safe to remove the final component of path,
+   when it is followed by a ".." component.  We use lstat to avoid
+   symlinks if we have it.  If not, we can still catch errors with
+   stat ().  */
+static int
+remove_component_p (path)
+     const char *path;
+{
+  struct stat s;
+  int result;
+
+#ifdef HAVE_LSTAT
+  result = lstat (path, &s);
+#else
+  result = stat (path, &s);
+#endif
+
+  return result == 0 && S_ISDIR (s.st_mode);
+}
+
 /* Simplify a path name in place, deleting redundant components.  This
    reduces OS overhead and guarantees that equivalent paths compare
    the same (modulo symlinks).
@@ -1017,124 +1041,122 @@ remap_filename (pfile, name, loc)
    /../quux		/quux
    //quux		//quux  (POSIX allows leading // as a namespace escape)
 
-   Guarantees no trailing slashes. All transforms reduce the length
-   of the string.  Returns PATH;
- */
+   Guarantees no trailing slashes.  All transforms reduce the length
+   of the string.  Returns PATH.  errno is 0 if no error occurred;
+   nonzero if an error occurred when using stat () or lstat ().  */
+
 char *
 _cpp_simplify_pathname (path)
     char *path;
 {
-    char *from, *to;
-    char *base;
-    int absolute = 0;
+#ifndef VMS
+  char *from, *to;
+  char *base, *orig_base;
+  int absolute = 0;
+
+  errno = 0;
+  /* Don't overflow the empty path by putting a '.' in it below.  */
+  if (*path == '\0')
+    return path;
 
 #if defined (HAVE_DOS_BASED_FILE_SYSTEM)
-    /* Convert all backslashes to slashes. */
-    for (from = path; *from; from++)
-	if (*from == '\\') *from = '/';
+  /* Convert all backslashes to slashes. */
+  for (from = path; *from; from++)
+    if (*from == '\\') *from = '/';
     
-    /* Skip over leading drive letter if present. */
-    if (ISALPHA (path[0]) && path[1] == ':')
-	from = to = &path[2];
-    else
-	from = to = path;
-#else
+  /* Skip over leading drive letter if present. */
+  if (ISALPHA (path[0]) && path[1] == ':')
+    from = to = &path[2];
+  else
     from = to = path;
+#else
+  from = to = path;
 #endif
     
-    /* Remove redundant initial /s.  */
-    if (*from == '/')
+  /* Remove redundant leading /s.  */
+  if (*from == '/')
     {
-	absolute = 1;
-	to++;
+      absolute = 1;
+      to++;
+      from++;
+      if (*from == '/')
+	{
+	  if (*++from == '/')
+	    /* 3 or more initial /s are equivalent to 1 /.  */
+	    while (*++from == '/');
+	  else
+	    /* On some hosts // differs from /; Posix allows this.  */
+	    to++;
+	}
+    }
+
+  base = orig_base = to;
+  for (;;)
+    {
+      int move_base = 0;
+
+      while (*from == '/')
 	from++;
-	if (*from == '/')
-	{
-	    if (*++from == '/')
-		/* 3 or more initial /s are equivalent to 1 /.  */
-		while (*++from == '/');
-	    else
-		/* On some hosts // differs from /; Posix allows this.  */
-		to++;
-	}
-    }
-    base = to;
-    
-    for (;;)
-    {
-	while (*from == '/')
-	    from++;
 
-	if (from[0] == '.' && from[1] == '/')
-	    from += 2;
-	else if (from[0] == '.' && from[1] == '\0')
-	    goto done;
-	else if (from[0] == '.' && from[1] == '.' && from[2] == '/')
+      if (*from == '\0')
+	break;
+
+      if (*from == '.')
 	{
-	    if (base == to)
+	  if (from[1] == '\0')
+	    break;
+	  if (from[1] == '/')
 	    {
-		if (absolute)
-		    from += 3;
-		else
-		{
-		    *to++ = *from++;
-		    *to++ = *from++;
-		    *to++ = *from++;
-		    base = to;
-		}
+	      from += 2;
+	      continue;
 	    }
-	    else
+	  else if (from[1] == '.' && (from[2] == '/' || from[2] == '\0'))
 	    {
-		to -= 2;
-		while (to > base && *to != '/') to--;
-		if (*to == '/')
-		    to++;
-		from += 3;
+	      /* Don't simplify if there was no previous component.  */
+	      if (absolute && orig_base == to)
+		{
+		  from += 2;
+		  continue;
+		}
+	      /* Don't simplify if the previous component was "../",
+		 or if an error has already occurred with (l)stat.  */
+	      if (base != to && errno == 0)
+		{
+		  /* We don't back up if it's a symlink.  */
+		  *to = '\0';
+		  if (remove_component_p (path))
+		    {
+		      while (to > base && *to != '/')
+			to--;
+		      from += 2;
+		      continue;
+		    }
+		}
+	      move_base = 1;
 	    }
 	}
-	else if (from[0] == '.' && from[1] == '.' && from[2] == '\0')
-	{
-	    if (base == to)
-	    {
-		if (!absolute)
-		{
-		    *to++ = *from++;
-		    *to++ = *from++;
-		}
-	    }
-	    else
-	    {
-		to -= 2;
-		while (to > base && *to != '/') to--;
-		if (*to == '/')
-		    to++;
-	    }
-	    goto done;
-	}
-	else
-	    /* Copy this component and trailing /, if any.  */
-	    while ((*to++ = *from++) != '/')
-	    {
-		if (!to[-1])
-		{
-		    to--;
-		    goto done;
-		}
-	    }
-	
+
+      /* Add the component separator.  */
+      if (to > orig_base)
+	*to++ = '/';
+
+      /* Copy this component until the trailing null or '/'.  */
+      while (*from != '\0' && *from != '/')
+	*to++ = *from++;
+
+      if (move_base)
+	base = to;
     }
     
- done:
-    /* Trim trailing slash */
-    if (to[0] == '/' && (!absolute || to > path+1))
-	to--;
+  /* Change the empty string to "." so that it is not treated as stdin.
+     Null terminate.  */
+  if (to == path)
+    *to++ = '.';
+  *to = '\0';
 
-    /* Change the empty string to "." so that stat() on the result
-       will always work. */
-    if (to == path)
-      *to++ = '.';
-    
-    *to = '\0';
-
-    return path;
+  return path;
+#else /* VMS  */
+  errno = 0;
+  return path;
+#endif /* !VMS  */
 }
