@@ -1,3 +1,9 @@
+2000-04-24  Loren J. Rittle  <ljrittle@acm.org>
+
+        * config/generic/ctype.cc (do_toupper): Remove dependence on
+        non-portable/non-existent lookup table.
+        (do_tolower): Same.
+	
 2000-04-24  Nathan Myers  <ncm@cantrip.org>
 
 	* src/string-inst.cc: More fixing.
