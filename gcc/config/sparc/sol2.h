@@ -173,4 +173,7 @@ Boston, MA 02111-1307, USA.  */
    Sparc ABI says that long double is 4 words.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
 
+/* But indicate that it isn't supported by the hardware.  */
+#define WIDEST_HARDWARE_FP_SIZE 64
+
 #define STDC_0_IN_SYSTEM_HEADERS
