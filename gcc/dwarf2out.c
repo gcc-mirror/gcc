@@ -110,6 +110,8 @@ typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
 typedef struct dw_cfi_struct *dw_cfi_ref;
 typedef struct dw_fde_struct *dw_fde_ref;
 typedef union  dw_cfi_oprnd_struct *dw_cfi_oprnd_ref;
+typedef struct pubname_struct *pubname_ref;
+typedef dw_die_ref *arange_ref;
 
 /* Describe a double word constant value.  */
 typedef struct dw_double_const_struct
@@ -236,6 +238,14 @@ typedef struct die_struct
     unsigned long die_abbrev;
   }
 die_node;
+
+/* The pubname structure */
+typedef struct pubname_struct
+{
+  dw_die_ref die;
+  char * name;
+}
+pubname_entry;
 
 /* How to start an assembler comment.  */
 #ifndef ASM_COMMENT_START
@@ -501,6 +511,34 @@ static unsigned fde_table_in_use;
    fde_table.  */
 #define FDE_TABLE_INCREMENT 256
 
+/* A pointer to the base of a table that contains a list of publicly
+   accessible names.  */
+static pubname_ref pubname_table;
+
+/* Number of elements currently allocated for pubname_table.  */
+static unsigned pubname_table_allocated;
+
+/* Number of elements in pubname_table currently in use.  */
+static unsigned pubname_table_in_use;
+
+/* Size (in elements) of increments by which we may expand the
+   pubname_table.  */
+#define PUBNAME_TABLE_INCREMENT 64
+
+/* A pointer to the base of a table that contains a list of publicly
+   accessible names.  */
+static arange_ref arange_table;
+
+/* Number of elements currently allocated for arange_table.  */
+static unsigned arange_table_allocated;
+
+/* Number of elements in arange_table currently in use.  */
+static unsigned arange_table_in_use;
+
+/* Size (in elements) of increments by which we may expand the
+   arange_table.  */
+#define ARANGE_TABLE_INCREMENT 64
+
 /* The number of the current function definition for which debugging
    information is being generated.  These numbers range from 1 up to the
    maximum number of function definitions contained within the current
@@ -717,6 +755,9 @@ static unsigned lookup_filename ();
 #endif
 #ifndef BODY_END_LABEL_FMT
 #define BODY_END_LABEL_FMT	".L_b%u_e"
+#endif
+#ifndef FUNC_BEGIN_LABEL_FMT
+#define FUNC_BEGIN_LABEL_FMT	".L_f%u"
 #endif
 #ifndef FUNC_END_LABEL_FMT
 #define FUNC_END_LABEL_FMT	".L_f%u_e"
@@ -2121,6 +2162,31 @@ is_extern_subr_die (die)
   return is_subr && is_extern;
 }
 
+/* Get the attribute of type attr_kind.  */
+inline dw_attr_ref
+get_AT (die, attr_kind)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+{
+  register dw_attr_ref a;
+  register dw_die_ref spec;
+  
+  if (die != NULL)
+    {
+      for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
+	{
+	  if (a->dw_attr == attr_kind)
+	    return a;
+	  if (a->dw_attr == DW_AT_specification
+	      || a->dw_attr == DW_AT_abstract_origin)
+	    spec = a->dw_attr_val.v.val_die_ref;
+	}
+      if (spec)
+	return get_AT (spec, attr_kind);
+    }
+  return NULL;
+}
+
 /* Return the "low pc" attribute value, typically associated with
    a subprogram DIE.  Return null if the "low pc" attribute is
    either not prsent, or if it cannot be represented as an
@@ -2129,61 +2195,10 @@ inline char *
 get_AT_low_pc (die)
      register dw_die_ref die;
 {
-  register dw_attr_ref a;
-  register char *low_pc = NULL;
-  if (die != NULL)
-    {
-      for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
-	{
-	  if (a->dw_attr == DW_AT_low_pc
-	      && a->dw_attr_val.val_class == dw_val_class_lbl_id)
-	    {
-	      low_pc = a->dw_attr_val.v.val_lbl_id;
-	      break;
-	    }
-	}
-    }
-  return low_pc;
-}
-
-/* Return the value of the flag attribute designated by ATTR_KIND, or -1
-   if it is not present.  */
-inline int
-get_AT_flag (die, attr_kind)
-     register dw_die_ref die;
-     register enum dwarf_attribute attr_kind;
-{
-  register dw_attr_ref a;
-  if (die != NULL)
-    {
-      for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
-	{
-	  if (a->dw_attr == attr_kind
-	      && a->dw_attr_val.val_class == dw_val_class_flag)
-	    return a->dw_attr_val.v.val_flag;
-	}
-    }
-  return -1;
-}
-
-/* Return the value of the unsigned attribute designated by ATTR_KIND, or 0
-   if it is not present.  */
-inline unsigned
-get_AT_unsigned (die, attr_kind)
-     register dw_die_ref die;
-     register enum dwarf_attribute attr_kind;
-{
-  register dw_attr_ref a;
-  if (die != NULL)
-    {
-      for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
-	{
-	  if (a->dw_attr == attr_kind
-	      && a->dw_attr_val.val_class == dw_val_class_unsigned_const)
-	    return a->dw_attr_val.v.val_unsigned;
-	}
-    }
-  return 0;
+  register dw_attr_ref a = get_AT (die, DW_AT_low_pc);
+  if (a && a->dw_attr_val.val_class == dw_val_class_lbl_id)
+    return a->dw_attr_val.v.val_lbl_id;
+  return NULL;
 }
 
 /* Return the "high pc" attribute value, typically associated with
@@ -2194,21 +2209,49 @@ inline char *
 get_AT_hi_pc (die)
      register dw_die_ref die;
 {
-  register dw_attr_ref a;
-  register char *hi_pc = NULL;
-  if (die != NULL)
-    {
-      for (a = die->die_attr; a != NULL; a = a->dw_attr_next)
-	{
-	  if (a->dw_attr == DW_AT_high_pc
-	      && a->dw_attr_val.val_class == dw_val_class_lbl_id)
-	    {
-	      hi_pc = a->dw_attr_val.v.val_lbl_id;
-	      break;
-	    }
-	}
-    }
-  return hi_pc;
+  register dw_attr_ref a = get_AT (die, DW_AT_high_pc);
+  if (a && a->dw_attr_val.val_class == dw_val_class_lbl_id)
+    return a->dw_attr_val.v.val_lbl_id;
+  return NULL;
+}
+
+/* Return the value of the string attribute designated by ATTR_KIND, or
+   NULL if it is not present.  */
+inline char *
+get_AT_string (die, attr_kind)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+{
+  register dw_attr_ref a = get_AT (die, attr_kind);
+  if (a && a->dw_attr_val.val_class == dw_val_class_str)
+    return a->dw_attr_val.v.val_str;
+  return NULL;
+}
+
+/* Return the value of the flag attribute designated by ATTR_KIND, or -1
+   if it is not present.  */
+inline int
+get_AT_flag (die, attr_kind)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+{
+  register dw_attr_ref a = get_AT (die, attr_kind);
+  if (a && a->dw_attr_val.val_class == dw_val_class_flag)
+    return a->dw_attr_val.v.val_flag;
+  return -1;
+}
+
+/* Return the value of the unsigned attribute designated by ATTR_KIND, or 0
+   if it is not present.  */
+inline unsigned
+get_AT_unsigned (die, attr_kind)
+     register dw_die_ref die;
+     register enum dwarf_attribute attr_kind;
+{
+  register dw_attr_ref a = get_AT (die, attr_kind);
+  if (a && a->dw_attr_val.val_class == dw_val_class_unsigned_const)
+    return a->dw_attr_val.v.val_unsigned;
+  return 0;
 }
 
 /* Remove the specified attribute if present.  */
@@ -3097,20 +3140,14 @@ size_of_line_info ()
 static unsigned long
 size_of_pubnames ()
 {
-  dw_die_ref die;
   register unsigned long size;
+  register unsigned i;
+
   size = DWARF_PUBNAMES_HEADER_SIZE;
-  for (die = comp_unit_die->die_child; die != NULL; die = die->die_sib)
+  for (i = 0; i < pubname_table_in_use; ++i)
     {
-      if (is_extern_subr_die (die))
-	{
-	  char *low_pc = get_AT_low_pc (die);
-	  if (low_pc != NULL)
-	    {
-	      size += 4;
-	      size += size_of_string (low_pc);
-	    }
-	}
+      register pubname_ref p = &pubname_table[i];
+      size += 4 + size_of_string (p->name);
     }
   size += 4;
   return size;
@@ -3124,6 +3161,7 @@ size_of_aranges ()
   size = DWARF_ARANGES_HEADER_SIZE;
   /* Count the address/length pair for this compilation unit.  */
   size += 8;
+  size += 8 * arange_table_in_use;
   /* Count the two zero words used to terminated the address range table.  */
   size += 8;
   return size;
@@ -3945,15 +3983,39 @@ output_call_frame_info ()
     }
 }
 
+/* Add a new entry to .debug_pubnames if appropriate.  */
+static void
+add_pubname (decl, die)
+     tree decl;
+     dw_die_ref die;
+{
+  pubname_ref p;
+
+  if (! TREE_PUBLIC (decl))
+    return;
+
+  if (pubname_table_in_use == pubname_table_allocated)
+    {
+      pubname_table_allocated += PUBNAME_TABLE_INCREMENT;
+      pubname_table = (pubname_ref) xrealloc
+	(pubname_table, pubname_table_allocated * sizeof (pubname_entry));
+    }
+  p = &pubname_table[pubname_table_in_use++];
+  p->die = die;
+  p->name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+}
+
 /* Output the public names table used to speed up access to externally
    visible names.  For now, only generate entries for externally
    visible procedures.  */
 static void
 output_pubnames ()
 {
-  dw_die_ref die;
-  register unsigned long pubnames_length = size_of_pubnames ();
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, pubnames_length);
+  register unsigned i;
+  {
+    register unsigned long pubnames_length = size_of_pubnames ();
+    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, pubnames_length);
+  }
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Length of Public Names Info.",
@@ -3981,32 +4043,45 @@ output_pubnames ()
 	       ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
-  for (die = comp_unit_die->die_child; die != NULL; die = die->die_sib)
+  for (i = 0; i < pubname_table_in_use; ++i)
     {
-      if (is_extern_subr_die (die))
+      register pubname_ref pub = &pubname_table[i];
+      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, pub->die->die_offset);
+      if (flag_verbose_asm)
 	{
-	  char *low_pc = get_AT_low_pc (die);
-	  if (low_pc != NULL)
-	    {
-	      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, die->die_offset);
-	      if (flag_verbose_asm)
-		{
-		  fprintf (asm_out_file, "\t%s DIE offset",
-			   ASM_COMMENT_START);
-		}
-	      fputc ('\n', asm_out_file);
-	      ASM_OUTPUT_DWARF_STRING (asm_out_file, low_pc);
-	      if (flag_verbose_asm)
-		{
-		  fprintf (asm_out_file, "%s external name",
-			   ASM_COMMENT_START);
-		}
-	      fputc ('\n', asm_out_file);
-	    }
+	  fprintf (asm_out_file, "\t%s DIE offset",
+		   ASM_COMMENT_START);
 	}
+      fputc ('\n', asm_out_file);
+
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, pub->name);
+      if (flag_verbose_asm)
+	{
+	  fprintf (asm_out_file, "%s external name",
+		   ASM_COMMENT_START);
+	}
+      fputc ('\n', asm_out_file);
     }
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
   fputc ('\n', asm_out_file);
+}
+
+/* Add a new entry to .debug_aranges if appropriate.  */
+static void
+add_arange (decl, die)
+     tree decl;
+     dw_die_ref die;
+{
+  if (! DECL_SECTION_NAME (decl))
+    return;
+
+  if (arange_table_in_use == arange_table_allocated)
+    {
+      arange_table_allocated += ARANGE_TABLE_INCREMENT;
+      arange_table = (arange_ref) xrealloc
+	(arange_table, arange_table_allocated * sizeof (dw_die_ref));
+    }
+  arange_table[arange_table_in_use++] = die;
 }
 
 /* Output the information that goes into the .debug_aranges table.
@@ -4015,9 +4090,11 @@ output_pubnames ()
 static void
 output_aranges ()
 {
-  dw_die_ref die;
-  register unsigned long aranges_length = size_of_aranges ();
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, aranges_length);
+  register unsigned i;
+  {
+    register unsigned long aranges_length = size_of_aranges ();
+    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, aranges_length);
+  }
   if (flag_verbose_asm)
     {
       fprintf (asm_out_file, "\t%s Length of Address Ranges Info.",
@@ -4071,6 +4148,30 @@ output_aranges ()
       fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
     }
   fputc ('\n', asm_out_file);
+  for (i = 0; i < arange_table_in_use; ++i)
+    {
+      dw_die_ref a = arange_table[i];
+      if (a->die_tag == DW_TAG_subprogram)
+	ASM_OUTPUT_DWARF_ADDR (asm_out_file, get_AT_low_pc (a));
+      else
+	ASM_OUTPUT_DWARF_ADDR (asm_out_file, get_AT_string (a, DW_AT_name));
+      if (flag_verbose_asm)
+	{
+	  fprintf (asm_out_file, "\t%s Address", ASM_COMMENT_START);
+	}
+      fputc ('\n', asm_out_file);
+      if (a->die_tag == DW_TAG_subprogram)
+	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, get_AT_hi_pc (a),
+				 get_AT_low_pc (a));
+      else
+	ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
+				get_AT_unsigned (a, DW_AT_byte_size));
+      if (flag_verbose_asm)
+	{
+	  fprintf (asm_out_file, "%s Length", ASM_COMMENT_START);
+	}
+      fputc ('\n', asm_out_file);
+    }
   /* Output the terminator words.  */
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
   fputc ('\n', asm_out_file);
@@ -5804,7 +5905,7 @@ add_name_and_src_coords_attributes (die, decl)
      register dw_die_ref die;
      register tree decl;
 {
-  register tree decl_name = DECL_NAME (decl);
+  register tree decl_name = DECL_ASSEMBLER_NAME (decl);
   register unsigned file_index;
   if (decl_name && IDENTIFIER_POINTER (decl_name))
     {
@@ -5955,10 +6056,10 @@ member_declared_type (member)
     : TREE_TYPE (member);
 }
 
-/* Get the function's label, as described by its RTL. This may be different
+/* Get the decl's label, as described by its RTL. This may be different
    from the DECL_NAME name used in the source file.  */
 static char *
-function_start_label (decl)
+decl_start_label (decl)
      register tree decl;
 {
   rtx x;
@@ -6064,7 +6165,7 @@ gen_entry_point_die (decl, context_die)
     }
   else
     {
-      add_AT_lbl_id (decl_die, DW_AT_low_pc, function_start_label (decl));
+      add_AT_lbl_id (decl_die, DW_AT_low_pc, decl_start_label (decl));
     }
 }
 
@@ -6381,9 +6482,19 @@ gen_subprogram_die (decl, context_die)
     {
       if (origin == NULL)
 	equate_decl_number_to_die (decl, subr_die);
-      add_AT_lbl_id (subr_die, DW_AT_low_pc, function_start_label (decl));
+      if (DECL_WEAK (current_function_decl)
+	  || DECL_ONE_ONLY (current_function_decl))
+	{
+	  sprintf (label_id, FUNC_BEGIN_LABEL_FMT, current_funcdef_number);
+	  add_AT_lbl_id (subr_die, DW_AT_low_pc, label_id);
+	}
+      else
+	add_AT_lbl_id (subr_die, DW_AT_low_pc, decl_start_label (decl));
       sprintf (label_id, FUNC_END_LABEL_FMT, current_funcdef_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label_id);
+
+      add_pubname (decl, subr_die);
+      add_arange (decl, subr_die);
 
 #ifdef MIPS_DEBUGGING_INFO
 
@@ -6546,6 +6657,7 @@ gen_variable_die (decl, context_die)
     {
       equate_decl_number_to_die (decl, var_die);
       add_location_or_const_value_attribute (var_die, decl);
+      add_pubname (decl, var_die);
     }
   else if (decl_class_context (decl))
     {
@@ -7558,19 +7670,17 @@ dwarfout_label (insn)
     }
 }
 
-/* Output a marker (i.e. a label) for the point in the generated code where
-   the real body of the function begins (after parameters have been moved to
-   their home locations).  */
+/* Output a marker (i.e. a label) for the beginning of a function, before
+   the prologue.  */
 void
-dwarfout_begin_function ()
+dwarfout_begin_prologue ()
 {
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
-  register long int offset;
   register dw_fde_ref fde;
   register dw_cfi_ref cfi;
 
   function_section (current_function_decl);
-  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+  sprintf (label, FUNC_BEGIN_LABEL_FMT, current_funcdef_number);
   ASM_OUTPUT_LABEL (asm_out_file, label);
 
   /* Expand the fde table if necessary.  */
@@ -7586,11 +7696,35 @@ dwarfout_begin_function ()
 
   /* Add the new FDE at the end of the fde_table.  */
   fde = &fde_table[fde_table_in_use++];
-  fde->dw_fde_begin = xstrdup (function_start_label (current_function_decl));
-  fde->dw_fde_end_prolog = xstrdup (label);
+  if (DECL_WEAK (current_function_decl)
+      || DECL_ONE_ONLY (current_function_decl))
+    fde->dw_fde_begin = xstrdup (label);
+  else
+    fde->dw_fde_begin = xstrdup (decl_start_label (current_function_decl));
+  fde->dw_fde_end_prolog = NULL;
   fde->dw_fde_begin_epilogue = NULL;
   fde->dw_fde_end = NULL;
   fde->dw_fde_cfi = NULL;
+}
+
+/* Output a marker (i.e. a label) for the point in the generated code where
+   the real body of the function begins (after parameters have been moved to
+   their home locations).  */
+void
+dwarfout_begin_function ()
+{
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
+  register long int offset;
+  register dw_fde_ref fde;
+  register dw_cfi_ref cfi;
+
+  function_section (current_function_decl);
+  sprintf (label, BODY_BEGIN_LABEL_FMT, current_funcdef_number);
+  ASM_OUTPUT_LABEL (asm_out_file, label);
+
+  /* Record the end-of-prolog location in the FDE.  */
+  fde = &fde_table[fde_table_in_use - 1];
+  fde->dw_fde_end_prolog = xstrdup (label);
 
 #ifdef MIPS_DEBUGGING_INFO
 
@@ -8020,17 +8154,20 @@ dwarfout_finish ()
   output_compilation_unit_header ();
   output_die (comp_unit_die);
 
+  if (pubname_table_in_use)
+    {
+      /* Output public names table.  */
+      fputc ('\n', asm_out_file);
+      ASM_OUTPUT_SECTION (asm_out_file, PUBNAMES_SECTION);
+      output_pubnames ();
+    }
+
   if (fde_table_in_use)
     {
       /* Output call frame information.  */
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_SECTION (asm_out_file, FRAME_SECTION);
       output_call_frame_info ();
-
-      /* Output public names table.  */
-      fputc ('\n', asm_out_file);
-      ASM_OUTPUT_SECTION (asm_out_file, PUBNAMES_SECTION);
-      output_pubnames ();
 
       /* Output the address range information.  */
       fputc ('\n', asm_out_file);
