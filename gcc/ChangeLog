@@ -1,3 +1,7 @@
+2003-06-18  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* toplev.c (Remaining -d letters summary): Update.
+
 2003-06-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* config/rs6000/rs6000.c (init_cumulative_args): Add and handle LIBCALL
