@@ -1024,7 +1024,7 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
   rtx insn_a, insn_b;
   rtx set_a, set_b;
   rtx orig_x, x, a, b;
-  rtx jump, cond;
+  rtx jump, cond, insn;
 
   /* If this is not a standard conditional jump, we can't parse it.  */
   jump = test_bb->end;
@@ -1045,6 +1045,11 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
 
   x = SET_DEST (set_a);
   a = SET_SRC (set_a);
+
+  /* X may not be mentioned between cond_earliest and the jump.  */
+  for (insn = jump; insn != if_info.cond_earliest; insn = PREV_INSN (insn))
+    if (INSN_P (insn) && reg_mentioned_p (x, insn))
+      return FALSE;
 
   /* Look for the other potential set.  Make sure we've got equivalent
      destinations.  */
@@ -1165,10 +1170,10 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
     }
 
   /* The new insns will have been inserted before cond_earliest.  We should
-     be able to remove cond_earliest through the jump with impunity.  */
-  insn_a = prev_nonnote_insn (if_info.cond_earliest);
-  flow_delete_insn_chain (if_info.cond_earliest, test_bb->end);
-  test_bb->end = insn_a;
+     be able to remove the jump with impunity, but the condition itself may
+     have been modified by gcse to be shared across basic blocks.  */
+  test_bb->end = PREV_INSN (jump);
+  flow_delete_insn (jump);
 
   /* If we used a temporary, fix it up now.  */
   if (orig_x != x)
@@ -1178,7 +1183,7 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
       insn_b = gen_sequence ();
       end_sequence ();
 
-      test_bb->end = emit_insn_after (insn_b, insn_a);
+      test_bb->end = emit_insn_after (insn_b, test_bb->end);
     }
 
   /* Merge the blocks!  */

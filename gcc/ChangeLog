@@ -1,3 +1,9 @@
+2000-04-30  Richard Henderson  <rth@cygnus.com>
+
+	* ifcvt.c (noce_process_if_block): Fail the conversion if X is
+	referenced bewteen the condition and the jump.  Don't delete
+	anything but the jump.
+
 Sun Apr 30 22:48:24 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* bb-reorder.c (scope_def): New struct.
