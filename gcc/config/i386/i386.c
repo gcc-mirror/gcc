@@ -6080,13 +6080,11 @@ legitimate_address_p (mode, addr, strict)
 	     that never results in lea, this seems to be easier and
 	     correct fix for crash to disable this test.  */
 	}
-#if 0
       else if (!CONSTANT_ADDRESS_P (disp))
 	{
 	  reason = "displacement is not constant";
 	  goto report_error;
 	}
-#endif
       else if (TARGET_64BIT && !x86_64_sign_extended_value (disp))
 	{
 	  reason = "displacement is out of range";
@@ -14817,9 +14815,10 @@ ix86_hard_regno_mode_ok (regno, mode)
   if (FP_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
-    return VALID_SSE_REG_MODE (mode);
+    return (TARGET_SSE ? VALID_SSE_REG_MODE (mode) : 0);
   if (MMX_REGNO_P (regno))
-    return VALID_MMX_REG_MODE (mode) || VALID_MMX_REG_MODE_3DNOW (mode);
+    return (TARGET_MMX
+	    ? VALID_MMX_REG_MODE (mode) || VALID_MMX_REG_MODE_3DNOW (mode) : 0);
   /* We handle both integer and floats in the general purpose registers.
      In future we should be able to handle vector modes as well.  */
   if (!VALID_INT_MODE_P (mode) && !VALID_FP_MODE_P (mode))
