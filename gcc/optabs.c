@@ -3957,8 +3957,6 @@ init_optabs ()
   init_integral_libfuncs (ashl_optab, "ashl", '3');
   init_integral_libfuncs (ashr_optab, "ashr", '3');
   init_integral_libfuncs (lshr_optab, "lshr", '3');
-  init_integral_libfuncs (rotl_optab, "rotl", '3');
-  init_integral_libfuncs (rotr_optab, "rotr", '3');
   init_integral_libfuncs (smin_optab, "min", '3');
   init_floating_libfuncs (smin_optab, "min", '3');
   init_integral_libfuncs (smax_optab, "max", '3');
