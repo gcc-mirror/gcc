@@ -723,17 +723,25 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	}
 
       /* In case the insn wants input operands in modes different from
-	 the result, convert the operands.  */
+	 the result, convert the operands.  It would seem that we
+	 don't need to convert CONST_INTs, but we do, so that they're
+	 a properly sign-extended for their modes.  */
 
-      if (GET_MODE (op0) != VOIDmode
-	  && GET_MODE (op0) != mode0
+      if (GET_MODE (op0) != mode0
 	  && mode0 != VOIDmode)
-	xop0 = convert_to_mode (mode0, xop0, unsignedp);
+	xop0 = convert_modes (mode0,
+			      GET_MODE (op0) != VOIDmode
+			      ? GET_MODE (op0)
+			      : mode0,
+			      xop0, unsignedp);
 
-      if (GET_MODE (xop1) != VOIDmode
-	  && GET_MODE (xop1) != mode1
+      if (GET_MODE (xop1) != mode1
 	  && mode1 != VOIDmode)
-	xop1 = convert_to_mode (mode1, xop1, unsignedp);
+	xop1 = convert_modes (mode1,
+			      GET_MODE (op1) != VOIDmode
+			      ? GET_MODE (op1)
+			      : mode1,
+			      xop1, unsignedp);
 
       /* Now, if insn's predicates don't allow our operands, put them into
 	 pseudo regs.  */
@@ -4295,7 +4303,9 @@ expand_fix (to, from, unsignedp)
 				 NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	  expand_fix (to, target, 0);
 	  target = expand_binop (GET_MODE (to), xor_optab, to,
-				 GEN_INT ((HOST_WIDE_INT) 1 << (bitsize - 1)),
+				 GEN_INT (trunc_int_for_mode
+					  ((HOST_WIDE_INT) 1 << (bitsize - 1),
+					   GET_MODE (to))),
 				 to, 1, OPTAB_LIB_WIDEN);
 
 	  if (target != to)

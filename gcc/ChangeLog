@@ -1,3 +1,23 @@
+2001-04-12  Alexandre Oliva  <aoliva@redhat.com>
+
+	* expmed.c (store_bit_field): Truncate CONST_INTs.
+	(expand_mult_highpart, expand_divmod): Likewise.
+	* expr.c (convert_modes, store_field): Likewise.
+	* integrate.c (expand_inline_function): Use promote_mode() to
+	determine whether to convert_modes() an argument as signed
+	or unsigned.
+	* optabs.c (expand_binop): Get CONST_INT operands
+	sign-extended for their appropriate modes.
+	* stmt.c (emit_case_nodes): Convert node values to the
+	appropriate mode.
+	(expand_end_case): Convert minval and range to the appropriate
+	mode.
+	* unroll.c (loop_iterations): Truncate abs_diff to the mode of
+	the iteration variable.
+	* varasm.c (immed_double_const): Don't require words to be
+	narrower than host wide ints to properly sign-extend
+	CONST_INTs.
+
 2001-04-12  kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* sh.md (builtin_setjmp_receiver): New expander.

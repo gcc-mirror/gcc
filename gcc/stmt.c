@@ -1,6 +1,6 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -5474,6 +5474,8 @@ expand_end_case (orig_index)
 	      op1 = expand_expr (minval, NULL_RTX, VOIDmode, 0);
 
 	      op_mode = insn_data[(int) CODE_FOR_casesi].operand[1].mode;
+	      op1 = convert_modes (op_mode, TYPE_MODE (TREE_TYPE (minval)),
+				   op1, TREE_UNSIGNED (TREE_TYPE (minval)));
 	      if (! (*insn_data[(int) CODE_FOR_casesi].operand[1].predicate)
 		  (op1, op_mode))
 		op1 = copy_to_mode_reg (op_mode, op1);
@@ -5481,6 +5483,8 @@ expand_end_case (orig_index)
 	      op2 = expand_expr (range, NULL_RTX, VOIDmode, 0);
 
 	      op_mode = insn_data[(int) CODE_FOR_casesi].operand[2].mode;
+	      op2 = convert_modes (op_mode, TYPE_MODE (TREE_TYPE (range)),
+				   op2, TREE_UNSIGNED (TREE_TYPE (range)));
 	      if (! (*insn_data[(int) CODE_FOR_casesi].operand[2].predicate)
 		  (op2, op_mode))
 		op2 = copy_to_mode_reg (op_mode, op2);
@@ -5503,7 +5507,11 @@ expand_end_case (orig_index)
 	      do_pending_stack_adjust ();
 
 	      do_tablejump (index, TYPE_MODE (index_type),
-			    expand_expr (range, NULL_RTX, VOIDmode, 0),
+			    convert_modes (TYPE_MODE (index_type),
+					   TYPE_MODE (TREE_TYPE (range)),
+					   expand_expr (range, NULL_RTX,
+							VOIDmode, 0),
+					   TREE_UNSIGNED (TREE_TYPE (range))),
 			    table_label, default_label);
 	      win = 1;
 	    }
@@ -6027,6 +6035,7 @@ emit_case_nodes (index, node, default_label, index_type)
   /* If INDEX has an unsigned type, we must make unsigned branches.  */
   int unsignedp = TREE_UNSIGNED (index_type);
   enum machine_mode mode = GET_MODE (index);
+  enum machine_mode imode = TYPE_MODE (index_type);
 
   /* See if our parents have already tested everything for us.
      If they have, emit an unconditional jump for this node.  */
@@ -6038,7 +6047,11 @@ emit_case_nodes (index, node, default_label, index_type)
       /* Node is single valued.  First see if the index expression matches
 	 this node and then check our children, if any.  */
 
-      do_jump_if_equal (index, expand_expr (node->low, NULL_RTX, VOIDmode, 0),
+      do_jump_if_equal (index,
+			convert_modes (mode, imode,
+				       expand_expr (node->low, NULL_RTX,
+						    VOIDmode, 0),
+				       unsignedp),
 			label_rtx (node->code_label), unsignedp);
 
       if (node->right != 0 && node->left != 0)
@@ -6052,8 +6065,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	  if (node_is_bounded (node->right, index_type))
 	    {
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->high, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->high, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp, 0,
 				       label_rtx (node->right->code_label));
 	      emit_case_nodes (index, node->left, default_label, index_type);
@@ -6062,8 +6078,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	  else if (node_is_bounded (node->left, index_type))
 	    {
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->high, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->high, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       LT, NULL_RTX, mode, unsignedp, 0,
 				       label_rtx (node->left->code_label));
 	      emit_case_nodes (index, node->right, default_label, index_type);
@@ -6078,8 +6097,11 @@ emit_case_nodes (index, node, default_label, index_type)
 
 	      /* See if the value is on the right.  */
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->high, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->high, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp, 0,
 				       label_rtx (test_label));
 
@@ -6110,8 +6132,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	      if (!node_has_low_bound (node, index_type))
 		{
 		  emit_cmp_and_jump_insns (index,
-					   expand_expr (node->high, NULL_RTX,
-							VOIDmode, 0),
+					   convert_modes
+					   (mode, imode,
+					    expand_expr (node->high, NULL_RTX,
+							 VOIDmode, 0),
+					    unsignedp),
 					   LT, NULL_RTX, mode, unsignedp, 0,
 					   default_label);
 		}
@@ -6123,8 +6148,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	       since we haven't ruled out the numbers less than
 	       this node's value.  So handle node->right explicitly.  */
 	    do_jump_if_equal (index,
-			      expand_expr (node->right->low, NULL_RTX,
-					   VOIDmode, 0),
+			      convert_modes
+			      (mode, imode,
+			       expand_expr (node->right->low, NULL_RTX,
+					    VOIDmode, 0),
+			       unsignedp),
 			      label_rtx (node->right->code_label), unsignedp);
 	}
 
@@ -6150,9 +6178,12 @@ emit_case_nodes (index, node, default_label, index_type)
 	    {
 	      if (!node_has_high_bound (node, index_type))
 		{
-		  emit_cmp_and_jump_insns (index, expand_expr (node->high,
-							       NULL_RTX,
-							       VOIDmode, 0),
+		  emit_cmp_and_jump_insns (index,
+					   convert_modes
+					   (mode, imode,
+					    expand_expr (node->high, NULL_RTX,
+							 VOIDmode, 0),
+					    unsignedp),
 					   GT, NULL_RTX, mode, unsignedp, 0,
 					   default_label);
 		}
@@ -6164,8 +6195,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	       since we haven't ruled out the numbers less than
 	       this node's value.  So handle node->left explicitly.  */
 	    do_jump_if_equal (index,
-			      expand_expr (node->left->low, NULL_RTX,
-					   VOIDmode, 0),
+			      convert_modes
+			      (mode, imode,
+			       expand_expr (node->left->low, NULL_RTX,
+					    VOIDmode, 0),
+			       unsignedp),
 			      label_rtx (node->left->code_label), unsignedp);
 	}
     }
@@ -6187,8 +6221,12 @@ emit_case_nodes (index, node, default_label, index_type)
 	  if (node_is_bounded (node->right, index_type))
 	    /* Right hand node is fully bounded so we can eliminate any
 	       testing and branch directly to the target code.  */
-	    emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
-							 VOIDmode, 0),
+	    emit_cmp_and_jump_insns (index,
+				     convert_modes
+				     (mode, imode,
+				      expand_expr (node->high, NULL_RTX,
+						   VOIDmode, 0),
+				      unsignedp),
 				     GT, NULL_RTX, mode, unsignedp, 0,
 				     label_rtx (node->right->code_label));
 	  else
@@ -6198,16 +6236,23 @@ emit_case_nodes (index, node, default_label, index_type)
 
 	      test_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->high, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->high, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp, 0,
 				       label_rtx (test_label));
 	    }
 
 	  /* Value belongs to this node or to the left-hand subtree.  */
 
-	  emit_cmp_and_jump_insns (index, expand_expr (node->low, NULL_RTX,
-						       VOIDmode, 0),
+	  emit_cmp_and_jump_insns (index,
+				   convert_modes
+				   (mode, imode,
+				    expand_expr (node->low, NULL_RTX,
+						 VOIDmode, 0),
+				    unsignedp),
 				   GE, NULL_RTX, mode, unsignedp, 0,
 				   label_rtx (node->code_label));
 
@@ -6234,16 +6279,23 @@ emit_case_nodes (index, node, default_label, index_type)
 	  if (!node_has_low_bound (node, index_type))
 	    {
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->low, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->low, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       LT, NULL_RTX, mode, unsignedp, 0,
 				       default_label);
 	    }
 
 	  /* Value belongs to this node or to the right-hand subtree.  */
 
-	  emit_cmp_and_jump_insns (index, expand_expr (node->high, NULL_RTX,
-						       VOIDmode, 0),
+	  emit_cmp_and_jump_insns (index,
+				   convert_modes
+				   (mode, imode,
+				    expand_expr (node->high, NULL_RTX,
+						 VOIDmode, 0),
+				    unsignedp),
 				   LE, NULL_RTX, mode, unsignedp, 0,
 				   label_rtx (node->code_label));
 
@@ -6257,8 +6309,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	  if (!node_has_high_bound (node, index_type))
 	    {
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->high, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->high, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp, 0,
 				       default_label);
 	    }
@@ -6266,8 +6321,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	  /* Value belongs to this node or to the left-hand subtree.  */
 
 	  emit_cmp_and_jump_insns (index,
-				   expand_expr (node->low, NULL_RTX,
-						VOIDmode, 0),
+				   convert_modes
+				   (mode, imode,
+				    expand_expr (node->low, NULL_RTX,
+						 VOIDmode, 0),
+				    unsignedp),
 				   GE, NULL_RTX, mode, unsignedp, 0,
 				   label_rtx (node->code_label));
 
@@ -6283,8 +6341,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	  if (!node_has_high_bound (node, index_type))
 	    {
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->high, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->high, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       GT, NULL_RTX, mode, unsignedp, 0,
 				       default_label);
 	    }
@@ -6292,8 +6353,11 @@ emit_case_nodes (index, node, default_label, index_type)
 	  if (!node_has_low_bound (node, index_type))
 	    {
 	      emit_cmp_and_jump_insns (index,
-				       expand_expr (node->low, NULL_RTX,
-						    VOIDmode, 0),
+				       convert_modes
+				       (mode, imode,
+					expand_expr (node->low, NULL_RTX,
+						     VOIDmode, 0),
+					unsignedp),
 				       LT, NULL_RTX, mode, unsignedp, 0,
 				       default_label);
 	    }

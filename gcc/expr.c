@@ -1360,7 +1360,7 @@ convert_modes (mode, oldmode, x, unsignedp)
 	      && (val & ((HOST_WIDE_INT) 1 << (width - 1))))
 	    val |= (HOST_WIDE_INT) (-1) << width;
 
-	  return GEN_INT (val);
+	  return GEN_INT (trunc_int_for_mode (val, mode));
 	}
 
       return gen_lowpart (mode, x);
@@ -5268,7 +5268,13 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	      enum machine_mode tmode;
 
 	      if (unsignedp)
-		return expand_and (temp, GEN_INT (width_mask), NULL_RTX);
+		return expand_and (temp,
+				   GEN_INT
+				   (trunc_int_for_mode
+				    (width_mask,
+				     GET_MODE (temp) == VOIDmode
+				     ? value_mode
+				     : GET_MODE (temp))), NULL_RTX);
 	      tmode = GET_MODE (temp);
 	      if (tmode == VOIDmode)
 		tmode = value_mode;
