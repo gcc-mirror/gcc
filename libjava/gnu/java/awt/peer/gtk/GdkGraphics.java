@@ -215,8 +215,7 @@ public class GdkGraphics extends Graphics
   native void drawString (String str, int x, int y, String fname, int size);
   public void drawString (String str, int x, int y)
   {
-    drawString (str, x, y,
-		((GtkFontPeer)font.getPeer ()).getXLFD (), font.getSize ());
+    drawString (str, x, y, font.getName(), font.getSize());
   }
 
   public void drawString (AttributedCharacterIterator ci, int x, int y)

@@ -43,7 +43,7 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkCanvasPeer_create
   (JNIEnv *env, jobject obj)
 {
   gpointer widget;
-    
+
   gdk_threads_enter ();
   widget = gtk_type_new (gtk_drawing_area_get_type ());
   gdk_threads_leave ();

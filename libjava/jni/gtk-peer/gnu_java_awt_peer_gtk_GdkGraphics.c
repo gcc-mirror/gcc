@@ -191,26 +191,39 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_drawString
    jstring fname, jint size)
 {
   struct graphics *g;
-  const char *cfname, *cstr;
-  gchar *xlfd;
+  const char *cstr;
+  const char *font_name;
+  PangoFontDescription *font_desc;
+  PangoContext *context;
+  PangoLayout *layout;
 
   g = (struct graphics *) NSA_GET_PTR (env, obj);
-  
-  cfname = (*env)->GetStringUTFChars (env, fname, NULL);
-  xlfd = g_strdup_printf (cfname, (size * 10));
-  (*env)->ReleaseStringUTFChars (env, fname, cfname);
 
   cstr = (*env)->GetStringUTFChars (env, str, NULL);
+  font_name = (*env)->GetStringUTFChars (env, fname, NULL);
 
   gdk_threads_enter ();
-  gdk_draw_string (g->drawable, gdk_font_load (xlfd), g->gc, 
-		   x + g->x_offset, y + g->y_offset, cstr);
+
+  font_desc = pango_font_description_from_string (font_name);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE);
+
+  context = gdk_pango_context_get();
+  pango_context_set_font_description (context, font_desc);
+
+  layout = pango_layout_new (context);
+
+  pango_layout_set_text (layout, cstr, -1);
+
+  gdk_draw_layout (g->drawable, g->gc, 
+  		   x + g->x_offset, y + g->y_offset, layout);
+
+  pango_font_description_free (font_desc);
+
   gdk_threads_leave ();
 
+  (*env)->ReleaseStringUTFChars (env, fname, font_name);
   (*env)->ReleaseStringUTFChars (env, str, cstr);
-  g_free (xlfd);
 }
-
 
 JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_drawLine
   (JNIEnv *env, jobject obj, jint x, jint y, jint x2, jint y2)

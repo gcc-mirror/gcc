@@ -1,5 +1,13 @@
 2003-08-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GdkGraphics.java (drawString): Pass font
+	name, not XLFD, to native drawString.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c (drawString):
+	Replace XLFD-based implementation with Pango-based
+	implementation.
+
+2003-08-22  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
 	* gnu/java/awt/peer/gtk/GtkWindowPeer.java: Remove
 	GTK_WINDOW_DIALOG.  Set GTK_WINDOW_POPUP to 1.
 
