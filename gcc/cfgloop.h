@@ -97,9 +97,6 @@ struct loop
      the loop latch.  */
   basic_block last;
 
-  /* Bitmap of blocks contained within the loop.  */
-  sbitmap nodes;
-
   /* Number of blocks contained within the loop.  */
   unsigned num_nodes;
 
