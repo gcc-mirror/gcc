@@ -5950,6 +5950,8 @@ grokvardecl (tree type,
 	    warning ("non-local variable %q#D uses local type %qT", decl, t);
 	}
     }
+  else
+    DECL_INTERFACE_KNOWN (decl) = 1;
 
   return decl;
 }
