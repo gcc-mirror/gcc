@@ -2903,8 +2903,6 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
   if (DEFAULT_ABI == ABI_V4)
     {
       /* Indicate to allocate space on the stack for varargs save area.  */
-      /* ??? Does this really have to be located at a magic spot on the
-	 stack, or can we allocate this with assign_stack_local instead.  */
       cfun->machine->sysv_varargs_p = 1;
       if (! no_rtl)
 	save_area = plus_constant (virtual_stack_vars_rtx,
@@ -3096,48 +3094,8 @@ rs6000_va_arg (valist, type)
   int indirect_p, size, rsize, n_reg, sav_ofs, sav_scale;
   rtx lab_false, lab_over, addr_rtx, r;
 
-  /* For AIX, the rule is that structures are passed left-aligned in
-     their stack slot.  However, GCC does not presently do this:
-     structures which are the same size as integer types are passed
-     right-aligned, as if they were in fact integers.  This only
-     matters for structures of size 1 or 2, or 4 when TARGET_64BIT.  */
   if (DEFAULT_ABI != ABI_V4)
-    {
-      HOST_WIDE_INT align, rounded_size;
-      enum machine_mode mode;
-      tree addr_tree;
-
-      /* Compute the rounded size of the type.  */
-      align = PARM_BOUNDARY / BITS_PER_UNIT;
-      rounded_size = (((int_size_in_bytes (type) + align - 1) / align)
-		      * align);
-
-      addr_tree = valist;
-
-      mode = TYPE_MODE (type);
-      if (mode != BLKmode)
-	{
-	  HOST_WIDE_INT adj;
-	  adj = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT;
-	  if (rounded_size > align)
-	    adj = rounded_size;
-	  
-	  addr_tree = build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree,
-			     build_int_2 (rounded_size - adj, 0));
-	}
-
-      addr_rtx = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
-      addr_rtx = copy_to_reg (addr_rtx);
-      
-      /* Compute new value for AP.  */
-      t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		 build (PLUS_EXPR, TREE_TYPE (valist), valist,
-			build_int_2 (rounded_size, 0)));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-      
-      return addr_rtx;
-    }
+    return std_expand_builtin_va_arg (valist, type);
 
   f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_fpr = TREE_CHAIN (f_gpr);
