@@ -1,3 +1,33 @@
+Tue Dec 22 09:43:35 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* argv.c (buildargv): Cast the result of alloca in assignment.
+
+	* choose-temp.c: Include stdlib.h.
+	
+	* cplus-dem.c (demangle_arm_pt): Remove unused prototype.
+  	(snarf_numeric_literal): Constify first parameter.
+  	(code_for_qualifier): Avoid a gcc extension, make the parameter an
+ 	int, not a char.
+	(demangle_qualifier): Likewise.
+	(demangle_signature): Cast the argument of a ctype function to
+	unsigned char.
+	(arm_pt): Add parens around assignment used as truth value.
+	(demangle_arm_hp_template): Constify variable `args'.
+	(do_hpacc_template_const_value): Cast the argument of a ctype
+	function to unsigned char.
+	(do_hpacc_template_literal): Remove unused variable `i'.
+	(snarf_numeric_literal): Constify parameter `args'.
+	Cast the argument of a ctype function to unsigned char.
+
+	* floatformat.c (floatformat_to_double): Add explicit braces to
+ 	avoid ambiguous `else'.
+	
+	* fnmatch.c (fnmatch): Change type of variables `c', `c1',
+ 	`cstart' and `cend' to unsigned char.  Cast the argument of macro
+ 	`FOLD', which uses ctype functions, to unsigned char.
+
+	* objalloc.c (free): Add prototype.
+
 Sun Dec 20 16:03:46 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* Makefile.in (CFILES): Fix typo: splay-tree.c, not splay-tree.o

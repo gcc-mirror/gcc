@@ -285,9 +285,6 @@ static int
 arm_pt PARAMS ((struct work_stuff *, const char *, int, const char **,
 		const char **));
 
-static void
-demangle_arm_pt PARAMS ((struct work_stuff *, const char **, int, string *));
-
 static int
 demangle_class_name PARAMS ((struct work_stuff *, const char **, string *));
 
@@ -402,7 +399,7 @@ static int
 do_hpacc_template_literal PARAMS ((struct work_stuff *, const char **, string *));
 
 static int 
-snarf_numeric_literal PARAMS ((char **, string *));
+snarf_numeric_literal PARAMS ((const char **, string *));
 
 /* There is a TYPE_QUAL value for each type qualifier.  They can be
    combined by bitwise-or to form the complete set of qualifiers for a
@@ -414,13 +411,13 @@ snarf_numeric_literal PARAMS ((char **, string *));
 #define TYPE_QUAL_RESTRICT 0x4
 
 static int 
-code_for_qualifier PARAMS ((char));
+code_for_qualifier PARAMS ((int));
 
 static const char*
 qualifier_string PARAMS ((int));
 
 static const char*
-demangle_qualifier PARAMS ((char));
+demangle_qualifier PARAMS ((int));
 
 /*  Translate count to integer, consuming tokens in the process.
     Conversion terminates on the first non-digit character.
@@ -483,7 +480,7 @@ consume_count_with_underscores (mangled)
 
 static int
 code_for_qualifier (c)
-     char c;
+  int c;
 {
   switch (c) 
     {
@@ -551,7 +548,7 @@ qualifier_string (type_quals)
 
 static const char*
 demangle_qualifier (c)
-     char c;
+  int c;
 {
   return qualifier_string (code_for_qualifier (c));
 }
@@ -1130,7 +1127,7 @@ demangle_signature (work, mangled, declp)
             if (HP_DEMANGLING)
               {
                 (*mangled)++;
-                while (**mangled && isdigit (**mangled))
+                while (**mangled && isdigit ((unsigned char)**mangled))
                   (*mangled)++;
               }
             else
@@ -1768,7 +1765,7 @@ arm_pt (work, mangled, n, anchor, args)
               return 1;
             }
         }
-      else if (*anchor = mystrstr (mangled, "__S"))
+      else if ((*anchor = mystrstr (mangled, "__S")))
         {
  	  int len;
  	  *args = *anchor + 3;
@@ -1792,7 +1789,7 @@ demangle_arm_hp_template (work, mangled, n, declp)
      string *declp;
 {
   const char *p;
-  char *args;
+  const char *args;
   const char *e = *mangled + n;
   string arg;
 
@@ -3356,12 +3353,12 @@ do_hpacc_template_const_value (work, mangled, result)
     }
 
   /* We have to be looking at an integer now */
-  if (!(isdigit (**mangled)))
+  if (!(isdigit ((unsigned char)**mangled)))
     return 0;
 
   /* We only deal with integral values for template
      parameters -- so it's OK to look only for digits */
-  while (isdigit (**mangled))
+  while (isdigit ((unsigned char)**mangled))
     {
       char_str[0] = **mangled;
       string_append (result, char_str);
@@ -3387,7 +3384,6 @@ do_hpacc_template_literal (work, mangled, result)
      string *result;
 {
   int literal_len = 0;
-  int i;
   char * recurse;
   char * recurse_dem;
   
@@ -3429,7 +3425,7 @@ do_hpacc_template_literal (work, mangled, result)
 
 static int
 snarf_numeric_literal (args, arg)
-     char ** args;
+     const char ** args;
      string * arg;
 {
   if (**args == '-')
@@ -3441,10 +3437,10 @@ snarf_numeric_literal (args, arg)
   else if (**args == '+')
     (*args)++;
   
-  if (!isdigit (**args))
+  if (!isdigit ((unsigned char)**args))
     return 0;
 
-  while (isdigit (**args))
+  while (isdigit ((unsigned char)**args))
     {
       char_str[0] = **args;
       string_append (arg, char_str);
