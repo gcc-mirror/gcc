@@ -1,3 +1,19 @@
+Sun Sep 13 09:11:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* acconfig.h (NEED_DECLARATION_STRSIGNAL): Provide a stub.
+
+	* collect2.c: Don't declare `sys_siglist' here.
+	(my_strsignal): Prototype and define new function.  Use it in
+	place of `sys_siglist' hacks.
+
+	* mips_tfile.c:  Likewise.
+
+	* configure.in (AC_CHECK_FUNCS): Check for strsignal.
+	(GCC_NEED_DECLARATIONS): Likewise.
+
+	* system.h (strsignal): Prototype it, if necessary.
+	(sys_siglist): Declare it, if necessary.
+
 Sun Sep 13 04:37:28 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* loop.c (move_movables): While removing insn sequences, preserve

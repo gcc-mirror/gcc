@@ -1722,6 +1722,7 @@ STATIC void	  free_thead		__proto((thead_t *));
 
 STATIC char	 *local_index		__proto((const char *, int));
 STATIC char	 *local_rindex		__proto((const char *, int));
+STATIC const char	 *my_strsignal		__proto((int));
 
 extern char  *mktemp			__proto((char *));
 extern long   strtol			__proto((const char *, char **, int));
@@ -1730,12 +1731,6 @@ extern char *optarg;
 extern int   optind;
 extern int   opterr;
 extern char *version_string;
-#ifndef NO_SYS_SIGLIST
-#ifndef SYS_SIGLIST_DECLARED
-extern char *sys_siglist[NSIG + 1];
-#endif
-#endif
-
 
 /* List of assembler pseudo ops and beginning sequences that need
    special actions.  Someday, this should be a hash table, and such,
@@ -5050,6 +5045,29 @@ main (argc, argv)
 }
 
 
+STATIC const char *
+my_strsignal (s)
+     int s;
+{
+#ifdef HAVE_STRSIGNAL
+  return strsignal (s);
+#else
+  if (s >= 0 && s < NSIG)
+    {
+# ifdef NO_SYS_SIGLIST
+      static char buffer[30];
+
+      sprintf (buffer, "Unknown signal %d", s);
+      return buffer;
+# else
+      return sys_siglist[s];
+# endif
+    }
+  else
+    return NULL;
+#endif /* HAVE_STRSIGNAL */
+}
+
 /* Catch a signal and exit without dumping core.  */
 
 STATIC void
@@ -5057,11 +5075,7 @@ catch_signal (signum)
      int signum;
 {
   (void) signal (signum, SIG_DFL);	/* just in case...  */
-#ifdef NO_SYS_SIGLIST
-  fatal ("caught signal");
-#else
-  fatal (sys_siglist[signum]);
-#endif  
+  fatal (my_strsignal(signum));
 }
 
 /* Print a fatal error message.  NAME is the text.
