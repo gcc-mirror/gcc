@@ -42,7 +42,7 @@ void test01(int iters)
       try
 	{
 	  locale loc1 = locale::classic();
-	  locale loc2("");
+	  locale loc2 = __gnu_test::try_named_locale("");
 	  VERIFY( !has_facet<MyFacet>(loc2) );
 	  
 	  loc1.combine<MyFacet>(loc2);
