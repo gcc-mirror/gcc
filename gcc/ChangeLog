@@ -1,3 +1,8 @@
+Fri May  8 18:23:08 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* final.c (final_scan_insn): Call fatal_insn instead of abort if
+	we could not split an insn when required to.
+
 Fri May  8 14:13:21 1998  H.J. Lu  (hjl@gnu.org)
 
 	* reload1.c (emit_reload_insns): When performing expensive
