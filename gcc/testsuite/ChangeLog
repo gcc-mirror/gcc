@@ -1,3 +1,7 @@
+2003-09-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* g++.dg/opt/reg-stack2.C: New test.
+
 2003-09-21  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	* g++.dg/eh/delayslot1.C: New test.
