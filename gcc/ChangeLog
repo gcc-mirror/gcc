@@ -1,3 +1,9 @@
+2004-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_mathfn): Add pow10* to the
+	existing exp10* case.
+	(expand_builtin): Likewise.
+
 2004-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/tm.texi (registers) <Values in Registers>: Add
