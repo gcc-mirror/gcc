@@ -2226,7 +2226,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/x1/java/install/share/bison.simple"
+#line 3 "/usr/lib/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2419,7 +2419,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/x1/java/install/share/bison.simple"
+#line 196 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4678,7 +4678,7 @@ case 493:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/x1/java/install/share/bison.simple"
+#line 498 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -8087,9 +8087,16 @@ source_end_java_method ()
   /* Set EH language codes */
   java_set_exception_lang_code ();
 
+  /* Turn function bodies with only a NOP expr null, so they don't get
+     generated at all and we won't get warnings when using the -W
+     -Wall flags. */
+  if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) == empty_stmt_node)
+    BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)) = NULL_TREE;
+
   /* Generate function's code */
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl))
-      && ! flag_emit_class_files)
+      && ! flag_emit_class_files
+      && ! flag_emit_xref)
     expand_expr_stmt (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (fndecl)));
 
   /* pop out of its parameters */
@@ -8098,7 +8105,7 @@ source_end_java_method ()
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
 
   /* Generate rtl for function exit.  */
-  if (! flag_emit_class_files)
+  if (! flag_emit_class_files && ! flag_emit_xref)
     {
       lineno = DECL_SOURCE_LINE_LAST (fndecl);
       /* Emit catch-finally clauses */
@@ -8502,7 +8509,7 @@ java_expand_finals ()
 void
 java_expand_classes ()
 {
-  int save_error_count = java_error_count;
+  int save_error_count = 0;
   java_parse_abort_on_error ();
   if (!(ctxp = ctxp_for_generation))
     return;
@@ -8692,7 +8699,7 @@ resolve_expression_name (id, orig)
 	      /* Otherwise build what it takes to access the field */
 	      decl = build_field_ref ((fs ? NULL_TREE : current_this),
 				      current_class, name);
-	      if (fs && !flag_emit_class_files)
+	      if (fs && !flag_emit_class_files && !flag_emit_xref)
 		decl = build_class_init (current_class, decl);
 	      /* We may be asked to save the real field access node */
 	      if (orig)
@@ -8741,7 +8748,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 
   /* Resolve the LENGTH field of an array here */
   if (DECL_NAME (decl) == length_identifier_node && TYPE_ARRAY_P (type_found)
-      && ! flag_emit_class_files)
+      && ! flag_emit_class_files && ! flag_emit_xref)
     {
       tree length = build_java_array_length_access (where_found);
       field_ref =
@@ -8770,7 +8777,8 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 				     type_found, DECL_NAME (decl));
       if (field_ref == error_mark_node)
 	return error_mark_node;
-      if (is_static && !static_final_found && !flag_emit_class_files)
+      if (is_static && !static_final_found 
+	  && !flag_emit_class_files && !flag_emit_xref)
 	{
 	  field_ref = build_class_init (type_found, field_ref);
 	  /* If the static field was identified by an expression that
@@ -9612,7 +9620,7 @@ patch_invoke (patch, method, args)
 	TREE_TYPE (TREE_VALUE (ta)) != TREE_VALUE (t))
       TREE_VALUE (ta) = convert (TREE_VALUE (t), TREE_VALUE (ta));
   
-  if (flag_emit_class_files)
+  if (flag_emit_class_files || flag_emit_xref)
     func = method;
   else
     {
@@ -9658,7 +9666,7 @@ patch_invoke (patch, method, args)
     {
       tree class = DECL_CONTEXT (method);
       tree c1, saved_new, size, new;
-      if (flag_emit_class_files)
+      if (flag_emit_class_files || flag_emit_xref)
 	{
 	  TREE_TYPE (patch) = build_pointer_type (class);
 	  return patch;
@@ -10523,9 +10531,17 @@ java_complete_lhs (node)
       if (!EXPR_WFL_NODE (node) /* Or a PRIMARY flag ? */
 	  || TREE_CODE (EXPR_WFL_NODE (node)) == IDENTIFIER_NODE)
 	{
+	  tree wfl = node;
 	  node = resolve_expression_name (node, NULL);
 	  if (node == error_mark_node)
 	    return node;
+	  /* Keep line number information somewhere were it doesn't
+	     disrupt the completion process. */
+	  if (flag_emit_xref)
+	    {
+	      EXPR_WFL_NODE (wfl) = TREE_OPERAND (node, 1);
+	      TREE_OPERAND (node, 1) = wfl;
+	    }
 	  CAN_COMPLETE_NORMALLY (node) = 1;
 	}
       else
@@ -11255,6 +11271,7 @@ patch_assignment (node, wfl_op1, wfl_op2)
 
   /* 10.10: Array Store Exception runtime check */
   if (!flag_emit_class_files
+      && !flag_emit_xref
       && lvalue_from_array 
       && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type))
       && !CLASS_FINAL (TYPE_NAME (GET_SKIP_TYPE (rhs_type))))

@@ -202,6 +202,9 @@ extern tree throwable_type_node;
 extern tree runtime_exception_type_node;
 extern tree error_exception_type_node;
 
+extern tree *predef_filenames;
+extern int predef_filenames_size;
+
 extern tree byte_array_type_node;
 extern tree short_array_type_node;
 extern tree int_array_type_node;

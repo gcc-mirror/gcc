@@ -1,3 +1,20 @@
+Wed Apr 21 11:13:36 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* decl.c (predef_filenames, predef_filenames_size): New globals
+	(init_decl_processing): predef_filenames and predef_filenames_size
+ 	initialized.
+	* java-tree.h (predef_filenames, predef_filenames_size): Declared
+ 	extern.
+	* jcf-parse.c (predefined_filename_p): New function.
+	(yyparse): Check that files on the command line are specified only
+ 	once and issue a warning otherwise.
+	* parse.h (JPRIMITIVE_TYPE_OR_VOID_P): New macro.
+	* parse.y (source_end_java_method): Nullify NOP method bodies, to
+ 	avoid a gcc warning with -W -Wall turned on.
+	(java_expand_classes): Abort if errors were encountered.
+	(java_complete_lhs): If the cross reference flag is set, wrap
+ 	field DECL node around a WFL when resolving expression name.
+	
 Mon Apr 19 14:44:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* lang.c (lang_decode_option): Fixed returned value when parsing
@@ -6,7 +23,7 @@ Mon Apr 19 14:44:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
  	flag_emit_xref is set.
 	(resolve_expression_name): Do not build static field access when
  	flag_emit_xref is set.
-	(resolve_field_access): No special treatement on `length' when
+	(resolve_field_access): No special treatment on `length' when
  	flag_emit_xref is set. Do not build qualified static field access
  	when flag_emit_xref is set.
 	(patch_invoke): Keep the method DECL as operand 0 of the CALL_EXPR

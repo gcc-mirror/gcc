@@ -761,6 +761,17 @@ parse_source_file (file)
   java_parse_abort_on_error ();
 }
 
+static int
+predefined_filename_p (node)
+     tree node;
+{
+  int i;
+  for (i = 0; i < predef_filenames_size; i++)
+    if (predef_filenames [i] == node)
+      return 1;
+  return 0;
+}
+
 int
 yyparse ()
 {
@@ -780,6 +791,8 @@ yyparse ()
       if (list[0]) 
 	{
 	  char *value;
+	  tree id;
+	  int twice = 0;
 
 	  int len = strlen (list);
 	  /* FIXME: this test is only needed until our .java parser is
@@ -792,9 +805,42 @@ yyparse ()
 
 	  obstack_grow0 (&temporary_obstack, list, len);
 	  value = obstack_finish (&temporary_obstack);
-	  node = get_identifier (value);
-	  IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
-	  current_file_list = tree_cons (NULL_TREE, node, current_file_list);
+
+	  /* Exclude file that we see twice on the command line. For
+	     all files except {Class,Error,Object,RuntimeException,String,
+	     Throwable}.java we can rely on maybe_get_identifier. For
+	     these files, we need to do a linear search of
+	     current_file_list. This search happens only for these
+	     files, presumably only when we're recompiling libgcj. */
+	     
+	  if ((id = maybe_get_identifier (value)))
+	    {
+	      if (predefined_filename_p (id))
+		{
+		  tree c;
+		  for (c = current_file_list; c; c = TREE_CHAIN (c))
+		    if (TREE_VALUE (c) == id)
+		      twice = 1;
+		}
+	      else
+		twice = 1;
+	    }
+
+	  if (twice)
+	    {
+	      char *saved_input_filename = input_filename;
+	      input_filename = value;
+	      warning ("source file seen twice on command line and will be "
+		       "compiled only once.");
+	      input_filename = saved_input_filename;
+	    }
+	  else
+	    {
+	      node = get_identifier (value);
+	      IS_A_COMMAND_LINE_FILENAME_P (node) = 1;
+	      current_file_list = tree_cons (NULL_TREE, node, 
+					     current_file_list);
+	    }
 	}
       list = next;
     }
