@@ -1,5 +1,17 @@
 2004-07-07  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* configure.ac (libtool_VERSION): To 6:2:0.
+	* configure: Regenerated.
+
+	* testsuite/testsuite_abi.cc (check_version): Add 3.4.2.
+	
+2004-07-07  Aaron W. LaFramboise  <aaronraolete36@aaronwl.com>
+
+	PR libstdc++/16411
+	* config/linker-map.gnu: Add stdio_sync_filebuf::file exports.
+
+2004-07-07  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* docs/html/abi.html: Updates for 3.4.1 release. Add summary of
 	-Weffc++ issues.
 
