@@ -1,3 +1,8 @@
+2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cpplex.c (_cpp_lex_token, '/' case): Comments can't appear
+	after stage3.
+
 2001-05-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* README.ALTOS: Remove obsolete file.
