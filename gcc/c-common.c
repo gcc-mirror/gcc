@@ -67,13 +67,13 @@ declare_hidden_char_array (name, value)
   int vlen;
 
   /* If the default size of char arrays isn't big enough for the name,
-     make a bigger one.  */
+     or if we want to give warnings for large objects, make a bigger one.  */
   vlen = strlen (value) + 1;
   type = char_array_type_node;
-  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TREE_TYPE (type))) < vlen)
+  if (TREE_INT_CST_LOW (TYPE_MAX_VALUE (TREE_TYPE (type))) < vlen
+      || warn_larger_than)
     type = build_array_type (char_type_node,
 			     build_index_type (build_int_2 (vlen, 0)));
-
   push_obstacks_nochange ();
   decl = build_decl (VAR_DECL, get_identifier (name), type);
   TREE_STATIC (decl) = 1;
