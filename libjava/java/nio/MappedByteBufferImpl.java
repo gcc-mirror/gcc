@@ -117,6 +117,8 @@ final class MappedByteBufferImpl extends MappedByteBuffer
 
   public ByteBuffer compact()
   {
+    checkIfReadOnly();
+    mark = -1;
     int pos = position();
     if (pos > 0)
       {
@@ -124,6 +126,11 @@ final class MappedByteBufferImpl extends MappedByteBuffer
 	// Call shiftDown method optimized for direct buffers.
 	VMDirectByteBuffer.shiftDown(address, 0, pos, count);
 	position(count);
+	limit(capacity());
+      }
+    else
+      {
+	position(limit());
 	limit(capacity());
       }
     return this;

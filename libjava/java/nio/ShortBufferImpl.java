@@ -80,6 +80,8 @@ final class ShortBufferImpl extends ShortBuffer
   
   public ShortBuffer compact ()
   {
+    checkIfReadOnly();
+    mark = -1;
     int copied = 0;
     
     while (remaining () > 0)
@@ -89,6 +91,7 @@ final class ShortBufferImpl extends ShortBuffer
       }
 
     position (copied);
+    limit(capacity());
     return this;
   }
   

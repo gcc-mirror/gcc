@@ -120,6 +120,11 @@ final class FloatViewBufferImpl extends FloatBuffer
         position (count);
         limit (capacity ());
       }
+    else
+      {
+	position(limit());
+	limit(capacity());
+      }
     return this;
   }
   

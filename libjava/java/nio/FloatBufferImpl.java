@@ -80,6 +80,8 @@ final class FloatBufferImpl extends FloatBuffer
   
   public FloatBuffer compact ()
   {
+    checkIfReadOnly();
+    mark = -1;
     int copied = 0;
     
     while (remaining () > 0)
@@ -89,6 +91,7 @@ final class FloatBufferImpl extends FloatBuffer
       }
 
     position (copied);
+    limit(capacity());
     return this;
   }
   
