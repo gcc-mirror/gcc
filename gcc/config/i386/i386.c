@@ -1911,7 +1911,7 @@ asm_output_function_prefix (file, name)
       if (pic_label_rtx == 0)
 	{
 	  pic_label_rtx = gen_label_rtx ();
-	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
+	  ASM_GENERATE_INTERNAL_LABEL (pic_label_name, "LPR", pic_label_no++);
 	  LABEL_NAME (pic_label_rtx) = pic_label_name;
 	}
 
@@ -1966,7 +1966,7 @@ load_pic_register (do_rtl)
       if (pic_label_rtx == 0)
 	{
 	  pic_label_rtx = gen_label_rtx ();
-	  sprintf (pic_label_name, "LPR%d", pic_label_no++);
+	  ASM_GENERATE_INTERNAL_LABEL (pic_label_name, "LPR", pic_label_no++);
 	  LABEL_NAME (pic_label_rtx) = pic_label_name;
 	}
 
@@ -1984,7 +1984,7 @@ load_pic_register (do_rtl)
 	}
       else
 	{
-	  output_asm_insn (AS1 (call,%P1), xops);
+	  output_asm_insn (AS1 (call,%X1), xops);
 	  output_asm_insn ("addl $_GLOBAL_OFFSET_TABLE_,%0", xops);
 	  pic_label_rtx = 0;
 	}
@@ -2979,7 +2979,9 @@ output_pic_addr_const (file, x, code)
 	  assemble_name (asm_out_file, buf);
 	}
 
-      if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
+      if (code == 'X')
+	; /* No suffix, dammit. */
+      else if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
 	fprintf (file, "@GOTOFF(%%ebx)");
       else if (code == 'P')
 	fprintf (file, "@PLT");
@@ -3272,6 +3274,7 @@ print_operand (file, x, code)
 	case 'h':
 	case 'y':
 	case 'P':
+	case 'X':
 	  break;
 
 	case 'J':
@@ -3550,7 +3553,7 @@ print_operand_address (file, addr)
 
 /* Set the cc_status for the results of an insn whose pattern is EXP.
    On the 80386, we assume that only test and compare insns, as well
-   as SI, HI, & DI mode ADD, SUB, NEG, AND, IOR, XOR, ASHIFT,
+   as SI, HI, & DI mode ADD, SUB, NEG, AND, IOR, XOR, BSF, ASHIFT,
    ASHIFTRT, and LSHIFTRT instructions set the condition codes usefully.
    Also, we assume that jumps, moves and sCOND don't affect the condition
    codes.  All else clobbers the condition codes, by assumption.
