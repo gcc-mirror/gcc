@@ -100,6 +100,7 @@ namespace std
       return __ret;
     }
 
+#ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     basic_filebuf<wchar_t>::int_type 
     basic_filebuf<wchar_t>::_M_underflow_common(bool __bump)
@@ -188,4 +189,5 @@ namespace std
       _M_last_overflowed = false;	
       return __ret;
     }
+#endif
 } // namespace std
