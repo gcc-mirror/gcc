@@ -790,7 +790,7 @@ static struct compiler default_compilers[] =
   {".ads", "@ada"},
   {".adb", "@ada"},
   {"@ada",
-   "%{!M:%{!MM:%{!E:gnat1 %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet}\
+   "%{!M:%{!MM:%{!E:gnat1 %{I*} %{k8:-gnatk8} %{w:-gnatws} %{!Q:-quiet}\
 			  -dumpbase %{.adb:%b.adb}%{.ads:%b.ads}\
 			  %{g*} %{O*} %{W*} %{w} %{p} %{pg:-p} %{f*}\
 			  %{d*}\
