@@ -1,3 +1,10 @@
+2003-04-07  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* doc/install.texi: Use @command and @samp for single- and
+	multi-word commands respectively.
+	* doc/makefile.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+
 2003-04-07  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
             Richard Henderson  <rth@redhat.com>
 
