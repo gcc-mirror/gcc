@@ -1,3 +1,7 @@
+2001-02-08  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (dwarf2out_line): Include filename in -dA output.
+
 Thu Feb  8 11:21:28 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtlanal.c (remove_node_from_expr_list): Correctly update PREV.
