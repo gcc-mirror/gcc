@@ -1043,9 +1043,18 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
 	return 0;
 
       /* If DEST is used in I3, it is being killed in this insn,
-	 so record that for later.  */
+	 so record that for later. 
+	 Never add REG_DEAD notes for the FRAME_POINTER_REGNUM or the
+	 STACK_POINTER_REGNUM, since these are always considered to be
+	 live.  Similarly for ARG_POINTER_REGNUM if it is fixed.  */
       if (pi3dest_killed && GET_CODE (dest) == REG
-	  && reg_referenced_p (dest, PATTERN (i3)))
+	  && reg_referenced_p (dest, PATTERN (i3))
+	  && REGNO (dest) != FRAME_POINTER_REGNUM
+#if ARG_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	  && (REGNO (dest) != ARG_POINTER_REGNUM
+	      || ! fixed_regs [REGNO (dest)])
+#endif
+	  && REGNO (dest) != STACK_POINTER_REGNUM)
 	{
 	  if (*pi3dest_killed)
 	    return 0;
