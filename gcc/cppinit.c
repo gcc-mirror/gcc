@@ -167,7 +167,7 @@ static const struct default_include include_defaults_array[]
 struct pending_option
 {
   struct pending_option *next;
-  char *arg;
+  const char *arg;
   int undef;
 };
 
@@ -354,7 +354,7 @@ append_include_chain (pfile, pend, dir, path, cxx_aware)
   if (len > pfile->max_include_len)
     pfile->max_include_len = len;
   
-  new = (struct file_name_list *)xmalloc (sizeof (struct file_name_list));
+  new = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
   new->name = dir;
   new->nlen = len;
   new->ino  = st.st_ino;
@@ -530,7 +530,7 @@ void
 cpp_options_init (opts)
      cpp_options *opts;
 {
-  bzero ((char *) opts, sizeof (struct cpp_options));
+  memset ((char *) opts, 0, sizeof (struct cpp_options));
 
   opts->dollars_in_ident = 1;
   opts->cplusplus_comments = 1;
@@ -546,7 +546,7 @@ void
 cpp_reader_init (pfile)
      cpp_reader *pfile;
 {
-  bzero ((char *) pfile, sizeof (cpp_reader));
+  memset ((char *) pfile, 0, sizeof (cpp_reader));
 
   pfile->token_buffer_size = 200;
   pfile->token_buffer = (U_CHAR *) xmalloc (pfile->token_buffer_size);
@@ -747,7 +747,7 @@ initialize_standard_includes (pfile)
   cpp_options *opts = CPP_OPTIONS (pfile);
   char *path;
   const struct default_include *p;
-  char *specd_prefix = opts->include_prefix;
+  const char *specd_prefix = opts->include_prefix;
 
   /* Several environment variables may add to the include search path.
      CPATH specifies an additional list of directories to be searched
@@ -841,7 +841,7 @@ initialize_standard_includes (pfile)
 int
 cpp_start_read (pfile, fname)
      cpp_reader *pfile;
-     char *fname;
+     const char *fname;
 {
   struct cpp_options *opts = CPP_OPTIONS (pfile);
   struct pending_option *p, *q;
@@ -1054,7 +1054,7 @@ new_pending_define (opts, text)
   struct pending_option *o = (struct pending_option *)
     xmalloc (sizeof (struct pending_option));
 
-  o->arg = (char *) text;
+  o->arg = text;
   o->next = NULL;
   o->undef = 0;
   APPEND (opts->pending, define, o);
@@ -1268,7 +1268,7 @@ handle_option (pfile, argc, argv)
     {
       enum opt_code opt_code;
       int opt_index;
-      char *arg = 0;
+      const char *arg = 0;
 
       /* Skip over '-' */
       opt_index = parse_option (&argv[i][1]);

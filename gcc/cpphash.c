@@ -237,7 +237,7 @@ _cpp_install (pfile, name, len, type, value)
   hp->length = len;
   hp->value.cpval = value;
   hp->name = ((U_CHAR *) hp) + sizeof (HASHNODE);
-  bcopy (name, hp->name, len);
+  memcpy (hp->name, name, len);
   hp->name[len] = 0;
   return hp;
 }
@@ -251,7 +251,7 @@ macro_cleanup (pbuf, pfile)
   if (macro->type == T_DISABLED)
     macro->type = T_MACRO;
   if (macro->type != T_MACRO || pbuf->buf != macro->value.defn->expansion)
-    free (pbuf->buf);
+    free ((PTR) pbuf->buf);
   return 0;
 }
 
@@ -493,7 +493,7 @@ collect_expansion (pfile, arglist)
   if (last_token == START)
     {
       /* Empty macro definition.  */
-      exp = xstrdup ("\r \r ");
+      exp = (U_CHAR *) xstrdup ("\r \r ");
       len = 1;
     }
   else
@@ -506,7 +506,8 @@ collect_expansion (pfile, arglist)
   
       CPP_NUL_TERMINATE (pfile);
       len = CPP_WRITTEN (pfile) - start + 1;
-      exp = xmalloc (len + 4); /* space for no-concat markers at either end */
+      /* space for no-concat markers at either end */
+      exp = (U_CHAR *) xmalloc (len + 4);
       exp[0] = '\r';
       exp[1] = ' ';
       exp[len + 1] = '\r';
@@ -580,7 +581,7 @@ collect_formal_parameters (pfile)
 	  tok = pfile->token_buffer + old_written;
 	  len = CPP_PWRITTEN (pfile) - tok;
 	  if (namebuf
-	      && (name = strstr (namebuf, tok))
+	      && (name = (U_CHAR *) strstr (namebuf, tok))
 	      && name[len] == ','
 	      && (name == namebuf || name[-1] == ','))
 	    {
@@ -591,7 +592,7 @@ collect_formal_parameters (pfile)
 	      && !strncmp (tok, "__VA_ARGS__", sizeof "__VA_ARGS__" - 1))
 	    cpp_pedwarn (pfile,
 	"C99 does not permit use of `__VA_ARGS__' as a macro argument name");
-	  namebuf = xrealloc (namebuf, argslen + len + 1);
+	  namebuf = (U_CHAR *) xrealloc (namebuf, argslen + len + 1);
 	  name = &namebuf[argslen - 1];
 	  argslen += len + 1;
 
@@ -604,7 +605,7 @@ collect_formal_parameters (pfile)
 
 	case CPP_COMMA:
 	  argc++;
-	  argv = xrealloc (argv, (argc + 1)*sizeof(struct arg));
+	  argv = (struct arg *) xrealloc (argv, (argc + 1)*sizeof(struct arg));
 	  argv[argc].len = 0;
 	  break;
 
@@ -637,7 +638,7 @@ collect_formal_parameters (pfile)
 	cpp_pedwarn (pfile, "C89 does not permit varargs macros");
 
       len = sizeof "__VA_ARGS__" - 1;
-      namebuf = xrealloc (namebuf, argslen + len + 1);
+      namebuf = (U_CHAR *) xrealloc (namebuf, argslen + len + 1);
       name = &namebuf[argslen - 1];
       argslen += len;
       memcpy (name, "__VA_ARGS__", len);

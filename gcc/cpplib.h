@@ -63,11 +63,11 @@ typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
 
 struct cpp_buffer
 {
-  unsigned char *cur;	 /* current position */
-  unsigned char *rlimit; /* end of valid data */
-  unsigned char *buf;	 /* entire buffer */
-  unsigned char *alimit; /* end of allocated buffer */
-  unsigned char *line_base; /* start of current line */
+  const unsigned char *cur;	 /* current position */
+  const unsigned char *rlimit; /* end of valid data */
+  const unsigned char *buf;	 /* entire buffer */
+  const unsigned char *alimit; /* end of allocated buffer */
+  const unsigned char *line_base; /* start of current line */
 
   struct cpp_buffer *prev;
 
@@ -245,7 +245,7 @@ struct cpp_reader
 /* Pointed to by cpp_reader.opts. */
 struct cpp_options
 {
-  char *in_fname;
+  const char *in_fname;
 
   /* Name of output file, for error messages.  */
   const char *out_fname;
@@ -394,7 +394,7 @@ struct cpp_options
 
   /* Directory prefix that should replace `/usr/lib/gcc-lib/TARGET/VERSION'
      in the standard include file directories.  */
-  char *include_prefix;
+  const char *include_prefix;
   int include_prefix_len;
 
   char no_standard_includes;
@@ -427,7 +427,7 @@ struct cpp_options
 
   /* File name which deps are being written to.
      This is 0 if deps are being written to stdout.  */
-  char *deps_file;
+  const char *deps_file;
 
   /* Target-name to write with the dependency information.  */
   char *deps_target;
@@ -443,16 +443,16 @@ extern enum cpp_token get_directive_token PARAMS ((cpp_reader *));
 
 extern void cpp_reader_init PARAMS ((cpp_reader *));
 extern void cpp_options_init PARAMS ((cpp_options *));
-extern int cpp_start_read PARAMS ((cpp_reader *, char *));
+extern int cpp_start_read PARAMS ((cpp_reader *, const char *));
 extern void cpp_finish PARAMS ((cpp_reader *));
 extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer *cpp_file_buffer PARAMS((cpp_reader *));
-extern void cpp_define PARAMS ((cpp_reader *, unsigned char *));
-extern void cpp_assert PARAMS ((cpp_reader *, unsigned char *));
-extern void cpp_undef  PARAMS ((cpp_reader *, unsigned char *));
-extern void cpp_unassert PARAMS ((cpp_reader *, unsigned char *));
+extern void cpp_define PARAMS ((cpp_reader *, const char *));
+extern void cpp_assert PARAMS ((cpp_reader *, const char *));
+extern void cpp_undef  PARAMS ((cpp_reader *, const char *));
+extern void cpp_unassert PARAMS ((cpp_reader *, const char *));
 
 /* N.B. The error-message-printer prototypes have not been nicely
    formatted because exgettext needs to see 'msgid' on the same line
@@ -485,7 +485,7 @@ extern void cpp_notice_from_errno PARAMS ((cpp_reader *, const char *));
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
-					    unsigned char *, long));
+					    const unsigned char *, long));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
 extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 

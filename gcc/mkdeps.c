@@ -173,7 +173,7 @@ deps_add_target (d, t)
   if (d->ntargets == d->targets_size)
     {
       d->targets_size *= 2;
-      d->targetv = xrealloc (d->targetv,
+      d->targetv = (const char **) xrealloc (d->targetv,
 			     d->targets_size * sizeof (const char *));
     }
 
@@ -210,7 +210,8 @@ deps_add_dep (d, t)
   if (d->ndeps == d->deps_size)
     {
       d->deps_size *= 2;
-      d->depv = xrealloc (d->depv, d->deps_size * sizeof (const char *));
+      d->depv = (const char **)
+	xrealloc (d->depv, d->deps_size * sizeof (const char *));
     }
   d->depv[d->ndeps++] = t;
 }

@@ -165,7 +165,7 @@ file_cleanup (pbuf, pfile)
 {
   if (pbuf->buf)
     {
-      free (pbuf->buf);
+      free ((PTR) pbuf->buf);
       pbuf->buf = 0;
     }
   if (pfile->system_include_depth)
@@ -246,7 +246,7 @@ _cpp_find_include_file (pfile, fname, search_start, ihash, before)
 
   for (l = search_start; l; l = l->next)
     {
-      bcopy (l->name, name, l->nlen);
+      memcpy (name, l->name, l->nlen);
       name[l->nlen] = '/';
       strcpy (&name[l->nlen+1], fname);
       _cpp_simplify_pathname (name);
@@ -266,7 +266,7 @@ _cpp_find_include_file (pfile, fname, search_start, ihash, before)
       if (f >= 0)
         {
 	  ih->foundhere = l;
-	  ih->name = xrealloc (name, strlen (name)+1);
+	  ih->name = xrealloc (name, strlen (name) + 1);
 	  return f;
         }
     }
@@ -445,7 +445,7 @@ remap_filename (pfile, name, loc)
      looking in.  Thus #include <sys/types.h> will look up sys/types.h
      in /usr/include/header.gcc and look up types.h in
      /usr/include/sys/header.gcc.  */
-  p = rindex (name, '/');
+  p = strrchr (name, '/');
   if (!p)
     p = name;
   if (loc && loc->name
@@ -462,7 +462,7 @@ remap_filename (pfile, name, loc)
   else
     {
       char * newdir = (char *) alloca (p - name + 1);
-      bcopy (name, newdir, p - name);
+      memcpy (newdir, name, p - name);
       newdir[p - name] = '\0';
       dir = newdir;
       from = p + 1;
@@ -614,7 +614,7 @@ _cpp_read_include_file (pfile, fd, ihash)
   if (length < 0)
     goto fail;
   if (length == 0)
-    ihash->control_macro = "";  /* never re-include */
+    ihash->control_macro = (const U_CHAR *) "";  /* never re-include */
 
   close (fd);
   fp->rlimit = fp->alimit = fp->buf + length;
@@ -657,7 +657,7 @@ actual_directory (pfile, fname)
   struct file_name_list *x;
   
   dir = xstrdup (fname);
-  last_slash = rindex (dir, '/');
+  last_slash = strrchr (dir, '/');
   if (last_slash)
     {
       if (last_slash == dir)
@@ -1266,20 +1266,20 @@ hack_vms_include_specification (fullname)
   check_filename_before_returning = 0;
   must_revert = 0;
   /* See if we can find a 1st slash. If not, there's no path information.  */
-  first_slash = index (fullname, '/');
+  first_slash = strchr (fullname, '/');
   if (first_slash == 0)
     return 0;				/* Nothing to do!!! */
 
   /* construct device spec if none given.  */
 
-  if (index (fullname, ':') == 0)
+  if (strchr (fullname, ':') == 0)
     {
 
       /* If fullname has a slash, take it as device spec.  */
 
       if (first_slash == fullname)
 	{
-	  first_slash = index (fullname+1, '/');	/* 2nd slash ? */
+	  first_slash = strchr (fullname + 1, '/');	/* 2nd slash ? */
 	  if (first_slash)
 	    *first_slash = ':';				/* make device spec  */
 	  for (basename = fullname; *basename != 0; basename++)
@@ -1399,7 +1399,7 @@ hack_vms_include_specification (fullname)
      in the "root" directory.  Otherwise, we need to add
      directory specifications.  */
 
-  if (index (unixname, '/') == 0)
+  if (strchr (unixname, '/') == 0)
     {
       /* if no directories specified yet and none are following.  */
       if (local_ptr[-1] == '[')
@@ -1414,7 +1414,7 @@ hack_vms_include_specification (fullname)
     {
 
       /* As long as there are still subdirectories to add, do them.  */
-      while (index (unixname, '/') != 0)
+      while (strchr (unixname, '/') != 0)
 	{
 	  /* If this token is "." we can ignore it
 	       if it's not at the beginning of a path.  */
@@ -1496,8 +1496,8 @@ hack_vms_include_specification (fullname)
       /* The filename did not work.  Try to remove the [000000] from the name,
 	 and return it.  */
 
-      basename = index (fullname, '[');
-      local_ptr = index (fullname, ']') + 1;
+      basename = strchr (fullname, '[');
+      local_ptr = strchr (fullname, ']') + 1;
       strcpy (basename, local_ptr);		/* this gets rid of it */
 
     }
