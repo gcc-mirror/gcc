@@ -634,14 +634,8 @@ do {									\
 /* get_mode_alignment assumes complex values are always held in multiple
    registers, but that is not the case on the SH; CQImode and CHImode are
    held in a single integer register.  SH5 also holds CSImode and SCmode
-   values in integer regsters.  Thus the alignment needs to be bumped up
-   to match the size of the mode.  */
-#define ROUND_TYPE_ALIGN(STRUCT, COMPUTED, SPECIFIED) \
-  (MAX ((GET_MODE_CLASS (TYPE_MODE (STRUCT)) == MODE_COMPLEX_INT \
-	 || GET_MODE_CLASS (TYPE_MODE (STRUCT)) == MODE_COMPLEX_FLOAT) \
-	? MIN (BIGGEST_ALIGNMENT, GET_MODE_BITSIZE (TYPE_MODE (STRUCT))) \
-	: (COMPUTED), \
-	(SPECIFIED)))
+   values in integer regsters.  This is relevant for argument passing on
+   SHcompact as we use a stack temp in order to pass CSImode by reference.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGN) \
   ((GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_INT \
     || GET_MODE_CLASS (TYPE_MODE (TYPE)) == MODE_COMPLEX_FLOAT) \

@@ -1,3 +1,7 @@
+2003-06-20  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (ROUND_TYPE_ALIGN): Remove.
+
 2003-06-20  Richard Henderson  <rth@redhat.com>
 
 	* hooks.c (hook_int_void_no_regs): Rename from
