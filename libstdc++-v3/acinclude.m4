@@ -871,6 +871,121 @@ AC_DEFUN([GLIBCXX_ENABLE_C99], [
     AC_DEFINE(_GLIBCXX_USE_C99_MATH)
   fi
 
+  # Check for the existence of <math.h> complex functions.
+  # This is necessary even though libstdc++ uses the builtin versions
+  # of these functions, because if the builtin cannot be used, a reference
+  # to the library function is emitted.
+  AC_CHECK_HEADERS(complex.h, ac_has_complex_h=yes, ac_has_complex_h=no)
+  ac_c99_complex=no;
+  if test x"$ac_has_complex_h" = x"yes"; then
+    ac_c99_complex=yes;
+    AC_MSG_CHECKING([for ISO C99 support in <complex.h>])
+    AC_TRY_COMPILE([#include <complex.h>],
+	           [typedef __complex__ float _ComplexT; _ComplexT tmp;
+	            cabsf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    cabs(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+	 	   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    cabsl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+	           [typedef __complex__ float _ComplexT; _ComplexT tmp;
+                    cargf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    carg(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+	   	   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    cargl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+	       	   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    ccosf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    ccos(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    ccosl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    ccoshf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    ccosh(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    ccoshl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    cexpf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    cexp(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    cexpl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    csinf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    csin(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    csinl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+ 		    csinhf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    csinh(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    csinhl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    csqrtf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    csqrt(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    csqrtl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    ctanf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    ctan(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    ctanl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    ctanhf(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    ctanh(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+	  	   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    ctanhl(tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ float _ComplexT; _ComplexT tmp;
+		    cpowf(tmp, tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ double _ComplexT; _ComplexT tmp;
+		    cpow(tmp, tmp);],, [ac_c99_complex=no])
+    AC_TRY_COMPILE([#include <complex.h>],
+		   [typedef __complex__ long double _ComplexT; _ComplexT tmp;
+		    cpowl(tmp, tmp);],, [ac_c99_complex=no])
+  fi
+  AC_MSG_RESULT($ac_c99_complex)
+
+  if test x"$ac_c99_complex" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_C99_COMPLEX_MATH)
+  fi
+
   # Check for the existence in <stdio.h> of vscanf, et. al.
   ac_c99_stdio=yes;
   AC_MSG_CHECKING([for ISO C99 support in <stdio.h>])

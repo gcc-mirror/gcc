@@ -1,3 +1,13 @@
+2005-01-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_C99): Test for complex math
+	functions, and enable _GLIBCXX_USE_C99_COMPLEX_MATH if they exist.
+	* acconfig.h: Add _GLIBCXX_USE_C99_COMPLEX_MATH.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/std/std_complex.h: Protect complex builtins with
+	_GLIBCXX_USE_C99_COMPLEX_MATH.
+
 2005-01-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/tr1/type_traits: Implement is_signed and is_unsigned.
