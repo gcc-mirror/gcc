@@ -1,5 +1,5 @@
 /* 
-Copyright (C) 1993 Free Software Foundation
+Copyright (C) 1993, 1999 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -53,7 +53,7 @@ extern char* oct(unsigned int, int=0);
 char*        chr(char ch, int width = 0);
 char*        str(const char* s, int width = 0);
 
-inline istream& WS(istream& str) { return ws(str); }
+inline istream& WS(istream& __str) { return ws(__str); }
 } // extern "C++"
 
 #endif /* !_COMPAT_STREAM_H */
