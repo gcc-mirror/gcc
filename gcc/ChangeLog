@@ -1,3 +1,8 @@
+2003-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (make_decl_rtl): Treat decls with a DECL_CONTEXT of
+	TRANSLATION_UNIT_DECL as top_level.
+
 2003-07-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* optabs.c (prepare_cmp_insn): Try cmpmemM first if it exists,
