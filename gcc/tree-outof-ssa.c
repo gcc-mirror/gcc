@@ -2233,11 +2233,7 @@ perform_edge_inserts (FILE *dump_file)
 
   /* Clear out any tables which were created.  */
   edge_leader = NULL;
-  if (leader_has_match != NULL)
-    {
-      free (leader_has_match);
-      leader_has_match = NULL;
-    }
+  BITMAP_XFREE (leader_has_match);
 
   if (changed)
     {

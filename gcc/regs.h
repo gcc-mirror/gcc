@@ -23,6 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_REGS_H
 
 #include "varray.h"
+#include "obstack.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 

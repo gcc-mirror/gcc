@@ -38,7 +38,7 @@ typedef bitmap_head regset_head;
 typedef bitmap regset;
 
 /* Initialize a new regset.  */
-#define INIT_REG_SET(HEAD) bitmap_initialize (HEAD, 1)
+#define INIT_REG_SET(HEAD) bitmap_initialize (HEAD, &reg_obstack)
 
 /* Clear a register set by freeing up the linked list.  */
 #define CLEAR_REG_SET(HEAD) bitmap_clear (HEAD)
@@ -104,25 +104,14 @@ typedef bitmap_iterator reg_set_iterator;
 /* Allocate a register set with oballoc.  */
 #define OBSTACK_ALLOC_REG_SET(OBSTACK) BITMAP_OBSTACK_ALLOC (OBSTACK)
 
-/* Initialize a register set.  Returns the new register set.  */
-#define INITIALIZE_REG_SET(HEAD) bitmap_initialize (&HEAD, 1)
-
 /* Do any cleanup needed on a regset when it is no longer used.  */
-#define FREE_REG_SET(REGSET) BITMAP_FREE(REGSET)
+#define FREE_REG_SET(REGSET) BITMAP_OBSTACK_FREE(REGSET)
 
 /* Allocate a register set with xmalloc.  */
 #define XMALLOC_REG_SET() BITMAP_XMALLOC ()
 
 /* Free a register set.  */
 #define XFREE_REG_SET(REGSET) BITMAP_XFREE (REGSET)
-
-/* Do any one-time initializations needed for regsets.  */
-#define INIT_ONCE_REG_SET() BITMAP_INIT_ONCE ()
-
-/* Grow any tables needed when the number of registers is calculated
-   or extended.  For the linked list allocation, nothing needs to
-   be done, other than zero the statistics on the first allocation.  */
-#define MAX_REGNO_REG_SET(NUM_REGS, NEW_P, RENUMBER_P)
 
 /* Type we use to hold basic block counters.  Should be at least
    64bit.  Although a counter cannot be negative, we use a signed
@@ -388,7 +377,7 @@ extern regset regs_live_at_setjmp;
 
 extern GTY(()) rtx label_value_list;
 
-extern struct obstack flow_obstack;
+extern bitmap_obstack reg_obstack;
 
 /* Indexed by n, gives number of basic block that  (REG n) is used in.
    If the value is REG_BLOCK_GLOBAL (-2),

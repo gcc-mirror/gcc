@@ -293,9 +293,6 @@ init_reg_sets (void)
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
   memset (global_regs, 0, sizeof global_regs);
 
-  /* Do any additional initialization regsets may need.  */
-  INIT_ONCE_REG_SET ();
-
 #ifdef REG_ALLOC_ORDER
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     inv_reg_alloc_order[reg_alloc_order[i]] = i;
@@ -2181,7 +2178,6 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 	  reg_pref_buffer = xmalloc (regno_allocated
 				     * sizeof (struct reg_pref));
 	}
-
       else
 	{
 	  VARRAY_GROW (reg_n_info, regno_allocated);
@@ -2257,9 +2253,6 @@ allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 
   if (renumber_p)
     reg_renumber = renumber;
-
-  /* Tell the regset code about the new number of registers.  */
-  MAX_REGNO_REG_SET (num_regs, new_p, renumber_p);
 }
 
 /* Free up the space allocated by allocate_reg_info.  */
@@ -2581,14 +2574,6 @@ reg_classes_intersect_p (enum reg_class c1, enum reg_class c2)
 
  lose:
   return 0;
-}
-
-/* Release any memory allocated by register sets.  */
-
-void
-regset_release_memory (void)
-{
-  bitmap_release_memory ();
 }
 
 #ifdef CANNOT_CHANGE_MODE_CLASS

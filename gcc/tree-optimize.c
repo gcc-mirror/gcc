@@ -636,12 +636,21 @@ tree_rest_of_compilation (tree fndecl)
   while (node->callees)
     cgraph_remove_edge (node->callees);
 
-  if (!vars_to_rename)
-    vars_to_rename = BITMAP_XMALLOC ();
 
+  /* Initialize the default bitmap obstack.  */
+  bitmap_obstack_initialize (NULL);
+  bitmap_obstack_initialize (&reg_obstack); /* FIXME, only at RTL generation*/
+  
+  vars_to_rename = BITMAP_XMALLOC ();
+  
   /* Perform all tree transforms and optimizations.  */
   execute_pass_list (all_passes);
+  
+  bitmap_obstack_release (&reg_obstack);
 
+  /* Release the default bitmap obstack.  */
+  bitmap_obstack_release (NULL);
+  
   /* Restore original body if still needed.  */
   if (cfun->saved_tree)
     {

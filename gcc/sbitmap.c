@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "flags.h"
 #include "hard-reg-set.h"
+#include "obstack.h"
 #include "basic-block.h"
 
 /* Bitmap manipulation routines.  */

@@ -52,7 +52,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tree.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
 #include "regs.h"
 #include "flags.h"
 #include "output.h"
@@ -60,13 +59,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"
 #include "toplev.h"
 #include "tm_p.h"
-#include "obstack.h"
 #include "alloc-pool.h"
 #include "timevar.h"
 #include "ggc.h"
 
 /* The obstack on which the flow graph components are allocated.  */
 
+struct bitmap_obstack reg_obstack;
 struct obstack flow_obstack;
 static char *flow_firstobj;
 

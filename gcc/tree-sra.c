@@ -1361,12 +1361,12 @@ decide_instantiations (void)
 {
   unsigned int i;
   bool cleared_any;
-  struct bitmap_head_def done_head;
+  bitmap_head done_head;
   bitmap_iterator bi;
 
   /* We cannot clear bits from a bitmap we're iterating over,
      so save up all the bits to clear until the end.  */
-  bitmap_initialize (&done_head, 1);
+  bitmap_initialize (&done_head, &bitmap_default_obstack);
   cleared_any = false;
 
   EXECUTE_IF_SET_IN_BITMAP (sra_candidates, 0, i, bi)

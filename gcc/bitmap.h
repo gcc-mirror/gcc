@@ -39,6 +39,14 @@ typedef unsigned long BITMAP_WORD;
 
 #define BITMAP_ELEMENT_ALL_BITS (BITMAP_ELEMENT_WORDS * BITMAP_WORD_BITS)
 
+/* Obstack for allocating bitmaps and elements from.  */
+typedef struct bitmap_obstack GTY (())
+{
+  struct bitmap_element_def *elements;
+  struct bitmap_head_def *heads;
+  struct obstack GTY ((skip)) obstack;
+} bitmap_obstack;
+
 /* Bitmap set element.  We use a linked list to hold only the bits that
    are set.  This allows for use to grow the bitset dynamically without
    having to realloc and copy a giant bit array.  The `prev' field is
@@ -57,13 +65,16 @@ typedef struct bitmap_head_def GTY(()) {
   bitmap_element *first;	/* First element in linked list.  */
   bitmap_element *current;	/* Last element looked at.  */
   unsigned int indx;		/* Index of last element looked at.  */
-  int using_obstack;		/* Are we using an obstack or ggc for
-                                   allocation?  */
+  bitmap_obstack *obstack;	/* Obstack to allocate elements from.
+				   If NULL, then use ggc_alloc.  */
 } bitmap_head;
+
+
 typedef struct bitmap_head_def *bitmap;
 
 /* Global data */
 extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
+extern bitmap_obstack bitmap_default_obstack;   /* Default bitmap obstack */
 
 /* Clear a bitmap by freeing up the linked list.  */
 extern void bitmap_clear (bitmap);
@@ -118,36 +129,47 @@ extern void debug_bitmap_file (FILE *, bitmap);
 /* Print a bitmap.  */
 extern void bitmap_print (FILE *, bitmap, const char *, const char *);
 
-/* Initialize a bitmap header.  If HEAD is NULL, a new header will be
-   allocated.  USING_OBSTACK indicates how elements should be allocated.  */
-extern bitmap bitmap_initialize (bitmap head, int using_obstack);
+/* Initialize and releas a bitmap obstack.  */
+extern void bitmap_obstack_initialize (bitmap_obstack *);
+extern void bitmap_obstack_release (bitmap_obstack *);
 
-/* Release all memory used by the bitmap obstack.  */
-extern void bitmap_release_memory (void);
+/* Initialize a bitmap header.  OBSTACK indicates the bitmap obstack
+   to allocate from, NULL for GC'd bitmap.  */
+
+static inline void
+bitmap_initialize (bitmap head, bitmap_obstack *obstack)
+{
+  head->first = head->current = NULL;
+  head->obstack = obstack;
+}
+
+/* Allocate and free bitmaps from obstack, malloc and gc'd memory.  */
+extern bitmap bitmap_obstack_alloc (bitmap_obstack *obstack);
+extern bitmap bitmap_malloc_alloc (void);
+extern bitmap bitmap_gc_alloc (void);
+extern void bitmap_obstack_free (bitmap);
+extern void bitmap_malloc_free (bitmap);
 
 /* A few compatibility/functions macros for compatibility with sbitmaps */
 #define dump_bitmap(file, bitmap) bitmap_print (file, bitmap, "", "\n")
 #define bitmap_zero(a) bitmap_clear (a)
 extern unsigned bitmap_first_set_bit (bitmap);
 
-/* Allocate a bitmap with oballoc.  */
-#define BITMAP_OBSTACK_ALLOC(OBSTACK)				\
-  bitmap_initialize (obstack_alloc (OBSTACK, sizeof (bitmap_head)), 1)
+/* Allocate a bitmap from a bit obstack.  */
+#define BITMAP_OBSTACK_ALLOC(OBSTACK) bitmap_obstack_alloc (OBSTACK)
 
-/* Allocate a bitmap with ggc_alloc.  */
-#define BITMAP_GGC_ALLOC()			\
-  bitmap_initialize (NULL, 0)
+/* Allocate a gc'd bitmap.  */
+#define BITMAP_GGC_ALLOC() bitmap_gc_alloc ()
 
 /* Allocate a bitmap with xmalloc.  */
-#define BITMAP_XMALLOC()                                        \
-  bitmap_initialize (xmalloc (sizeof (bitmap_head)), 1)
+#define BITMAP_XMALLOC() bitmap_malloc_alloc ()
 
 /* Do any cleanup needed on a bitmap when it is no longer used.  */
-#define BITMAP_FREE(BITMAP)			\
+#define BITMAP_OBSTACK_FREE(BITMAP)			\
 do {						\
   if (BITMAP)					\
     {						\
-      bitmap_clear (BITMAP);			\
+      bitmap_obstack_free (BITMAP);		\
       (BITMAP) = 0;				\
     }						\
 } while (0)
@@ -157,14 +179,10 @@ do {						\
 do {						\
   if (BITMAP)					\
     {						\
-      bitmap_clear (BITMAP);			\
-      free (BITMAP);				\
+      bitmap_malloc_free (BITMAP);		\
       (BITMAP) = 0;				\
     }						\
 } while (0)
-
-/* Do any one-time initializations needed for bitmaps.  */
-#define BITMAP_INIT_ONCE()
 
 /* Iterator for bitmaps.  */
 

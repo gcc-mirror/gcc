@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "coretypes.h"
 #include "tm.h"
 #include "rtl.h"
+#include "obstack.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "insn-config.h"

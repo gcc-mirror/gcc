@@ -37,7 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
-#include "basic-block.h"
+#include "regs.h"
 #include "timevar.h"
 #include "output.h"
 #include "insn-config.h"
@@ -48,7 +48,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "params.h"
 #include "tm_p.h"
 #include "target.h"
-#include "regs.h"
 #include "cfglayout.h"
 #include "emit-rtl.h"
 

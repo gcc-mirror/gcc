@@ -567,15 +567,15 @@ verify_local_live_at_start (regset new_live_at_start, basic_block bb)
    unless the caller resets it to zero.  */
 
 int
-update_life_info (sbitmap blocks, enum update_life_extent extent, int prop_flags)
+update_life_info (sbitmap blocks, enum update_life_extent extent,
+		  int prop_flags)
 {
   regset tmp;
-  regset_head tmp_head;
   unsigned i;
   int stabilized_prop_flags = prop_flags;
   basic_block bb;
 
-  tmp = INITIALIZE_REG_SET (tmp_head);
+  tmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
   ndead = 0;
 
   if ((prop_flags & PROP_REG_INFO) && !reg_deaths)
@@ -1016,8 +1016,6 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 {
   basic_block *queue, *qhead, *qtail, *qend, bb;
   regset tmp, new_live_at_end, invalidated_by_call;
-  regset_head tmp_head, invalidated_by_call_head;
-  regset_head new_live_at_end_head;
 
   /* The registers that are modified within this in block.  */
   regset *local_sets;
@@ -1035,9 +1033,9 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
     gcc_assert (!bb->aux);
 #endif
 
-  tmp = INITIALIZE_REG_SET (tmp_head);
-  new_live_at_end = INITIALIZE_REG_SET (new_live_at_end_head);
-  invalidated_by_call = INITIALIZE_REG_SET (invalidated_by_call_head);
+  tmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  new_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+  invalidated_by_call = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 
   /* Inconveniently, this is only readily available in hard reg set form.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
@@ -1438,11 +1436,11 @@ allocate_bb_life_data (void)
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     {
-      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&reg_obstack);
+      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&reg_obstack);
     }
 
-  regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (&flow_obstack);
+  regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (&reg_obstack);
 }
 
 void
@@ -1845,8 +1843,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
   if (JUMP_P (BB_END (bb))
       && any_condjump_p (BB_END (bb)))
     {
-      regset_head diff_head;
-      regset diff = INITIALIZE_REG_SET (diff_head);
+      regset diff = OBSTACK_ALLOC_REG_SET (&reg_obstack);
       basic_block bb_true, bb_false;
       unsigned i;
 
