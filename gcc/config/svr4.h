@@ -222,6 +222,10 @@ do {				 				\
 
 #define TARGET_MEM_FUNCTIONS
 
+/* Handle #pragma weak and #pragma pack.  */
+
+#define HANDLE_SYSV_PRAGMA
+
 /* System V Release 4 uses DWARF debugging info.  */
 
 #define DWARF_DEBUGGING_INFO
