@@ -1,3 +1,8 @@
+2001-08-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.c (default_valid_attribute_p): Don't use PARAMS on a
+	function definition.
+
 2001-08-28  Daniel Berlin  <dan@cgsoftware.com>
 
 	* df.h (struct df): Add rts_order variable.
