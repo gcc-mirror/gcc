@@ -9,7 +9,7 @@ details.  */
 package gnu.gcj.xlib;
 
 /**
- * Runtime exception that occured during an Xlib opertation. 
+ * Runtime exception that occurred during an Xlib operation. 
  *
  * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
  */

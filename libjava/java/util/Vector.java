@@ -32,7 +32,7 @@ import java.io.Serializable;
 /**
  * the <b>Vector</b> classes implements growable arrays of Objects.
  * You can access elements in a Vector with an index, just as you
- * can in a built in array, but Vectors can grow and shrink to accomodate
+ * can in a built in array, but Vectors can grow and shrink to accommodate
  * more or fewer objects.  
  *
  * Vectors try to mantain efficiency in growing by having a
@@ -244,12 +244,12 @@ public class Vector extends AbstractList
 
   /**
    * Searches the vector starting at <b>index</b> for object <b>elem</b>
-   * and returns the index of the first occurence of this Object.  If
+   * and returns the index of the first occurrence of this Object.  If
    * the object is not found, -1 is returned
    *
    * @param e The Object to search for
    * @param index Start searching at this index
-   * @returns The index of the first occurence of <b>elem</b>, or -1
+   * @returns The index of the first occurrence of <b>elem</b>, or -1
    * if it is not found
    */
   public synchronized int indexOf(Object e, int index)
@@ -263,11 +263,11 @@ public class Vector extends AbstractList
   }
 
   /**
-   * Returns the first occurence of <b>elem</b> in the Vector, or -1 if
+   * Returns the first occurrence of <b>elem</b> in the Vector, or -1 if
    * <b>elem</b> is not found.
    *
    * @param elem The object to search for
-   * @returns The index of the first occurence of <b>elem</b> or -1 if 
+   * @returns The index of the first occurrence of <b>elem</b> or -1 if 
    * not found
    */
   public int indexOf(Object elem)
@@ -287,7 +287,7 @@ public class Vector extends AbstractList
   }
 
   /**
-   * Returns the index of the first occurence of <b>elem</b>, when searching
+   * Returns the index of the first occurrence of <b>elem</b>, when searching
    * backwards from <b>index</b>.  If the object does not occur in this Vector,
    * -1 is returned.
    *
@@ -465,7 +465,7 @@ public class Vector extends AbstractList
   }
 
   /**
-   * Removes the first occurence of the given object from the Vector.
+   * Removes the first occurrence of the given object from the Vector.
    * If such a remove was performed (the object was found), true is returned.
    * If there was no such object, false is returned.
    *

@@ -657,7 +657,7 @@ _Jv_NewArrayClass (jclass element, java::lang::ClassLoader *loader,
   array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
 
   // Since all array classes have the same interface dispatch table, we can 
-  // cache one and reuse it. It is not neccessary to synchronize this.
+  // cache one and reuse it. It is not necessary to synchronize this.
   if (!array_idt)
     {
       _Jv_PrepareConstantTimeTables (array_class);

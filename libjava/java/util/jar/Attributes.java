@@ -45,7 +45,7 @@ import java.util.Set;
  * manipulating the Attributes more or less type safe.
  * <p>
  * Most of the methods are wrappers to implement the Map interface. The really
- * usefull and often used methods are <code>getValue(Name)</code> and
+ * useful and often used methods are <code>getValue(Name)</code> and
  * <code>getValue(String)</code>. If you actually want to set attributes you
  * may want to use the <code>putValue(String, String)</code> method
  * (sorry there is no public type safe <code>putValue(Name, String)</code>

@@ -1,3 +1,37 @@
+2001-10-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* HACKING, gnu/gcj/xlib/Pixmap.java, gnu/gcj/xlib/XException.java,
+	gnu/java/rmi/rmic/RMIC.java, java/awt/Window.java,
+	java/awt/AWTEvent.java, java/io/ByteArrayOutputStream.java,
+	java/io/CharConversionException.java,
+	java/io/PipedInputStream.java, java/io/PipedReader.java,
+	java/io/PrintWriter.java, java/io/WriteAbortedException.java,
+	java/io/natFileWin32.cc, java/lang/Class.h,
+	java/lang/natClassLoader.cc, java/lang/natObject.cc,
+	java/lang/Package.java, java/net/BindException.java,
+	java/net/ConnectException.java, java/net/ProtocolException.java,
+	java/net/SocketException.java,
+	java/net/UnknownServiceException.java,
+	java/security/cert/X509Certificate.java,
+	java/security/interfaces/DSAKey.java,
+	java/security/SecureRandom.java, java/security/SignedObject.java,
+	java/sql/DatabaseMetaData.java,
+	java/text/DecimalFormatSymbols.java,
+	java/util/jar/Attributes.java, java/util/jar/JarEntry.java,
+	java/util/jar/JarInputStream.java,
+	java/util/jar/JarOutputStream.java, java/util/Calendar.java,
+	java/util/Collections.java, java/util/GregorianCalendar.java,
+	java/util/HashMap.java, java/util/List.java,
+	java/util/Properties.java, java/util/Timer.java,
+	java/util/Vector.java, java/util/WeakHashMap.java,
+	javax/naming/NamingException.java,
+	testsuite/libjava.lang/Thread_Wait.java,
+	org/xml/sax/helpers/DefaultHandler.java,
+	org/xml/sax/HandlerBase.java, org/xml/sax/SAXParseException.java,
+	ChangeLog, acinclude.m4, aclocal.m4, posix-threads.cc: Fix
+	spelling errors.
+	* configure: Regenerate.
+
 2001-10-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* jni.cc (JNI_CreateJavaVM): Call _Jv_CreateJavaVM. Don't call
@@ -1236,7 +1270,7 @@ Tue Oct 23 23:52:18 2001  Anthony Green  <green@redhat.com>
 	of _Jv_AttachCurrentThread.
 	* gnu/gcj/runtime/FirstThread.java (FirstThread): Now extends Thread.
 	(run): New method. Take care of looking up main class manifest
-	attribute and calling forName if neccessary. Then call call_main.
+	attribute and calling forName if necessary. Then call call_main.
 	(call_main): New native method.
 	* gnu/gcj/runtime/natFirstThread.cc (call_main): New function, code
 	relocated from prims.cc. Look up and call main method.
@@ -1784,7 +1818,7 @@ Tue Oct 23 23:52:18 2001  Anthony Green  <green@redhat.com>
 	    Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Ensure that ancestors
-	table index is within allowed bounds. Ensure that we dont try to access
+	table index is within allowed bounds. Ensure that we don't try to access
 	class itable at a negative offset. Avoid an ancestor table lookup if
 	source is a primitive type class.
 	(isInstance): Remove redundant isPrimitive() check.
@@ -4788,7 +4822,7 @@ Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
 	* java/awt/Toolkit.java (systemEventQueue): Removed.
 	(getDefaultToolkit): Default to "gnu.awt.gtk.GtkToolkit".
 	* java/awt/Window.java (getToolkit): Don't call super.
-	* java/awt/image/BufferedImage.java: Fix definate assignment errors.
+	* java/awt/image/BufferedImage.java: Fix definite assignment errors.
 	* java/awt/peer/ContainerPeer.java (insets): Remove unused method.
 	* gnu/awt/gtk/GtkComponentPeer.java: New file.
 	* gnu/awt/gtk/GtkContainerPeer.java: New file.
@@ -5419,7 +5453,7 @@ Sat Aug 19 11:00:53 2000  Anthony Green  <green@redhat.com>
 	* java/awt/image/BufferedImage.java: New file.
 	* java/awt/image/RasterOp.java: New file.
 	* java/awt/peer/ComponentPeer.java (getGraphicsConfiguration):
-	More powerfull replacement for getColorModel().
+	More powerful replacement for getColorModel().
 	(getColorModel) Removed.
 	(setEventMask) New method.
 	* Makefile.am: Added new files.

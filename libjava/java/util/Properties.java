@@ -125,7 +125,7 @@ public class Properties extends Hashtable
    * </pre>
    *
    * @param in the input stream
-   * @exception IOException if an error occured when reading
+   * @exception IOException if an error occurred when reading
    * from the input.  */
   public void load(InputStream inStream) throws IOException
   {

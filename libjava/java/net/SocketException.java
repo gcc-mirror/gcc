@@ -1,4 +1,4 @@
-/* SocketException.java -- An exception occured while performing a socket op
+/* SocketException.java -- An exception occurred while performing a socket op
    Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -31,7 +31,7 @@ package java.net;
  */
 
 /**
-  * This exception indicates that a generic error occured related to an
+  * This exception indicates that a generic error occurred related to an
   * operation on a socket.  Check the descriptive message (if any) for
   * details on the nature of this error
   *

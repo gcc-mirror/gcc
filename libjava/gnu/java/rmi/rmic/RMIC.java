@@ -647,7 +647,7 @@ private void generateSkel() throws IOException {
 
 	out.println();
 
-	// getOpertions method
+	// getOperations method
 	out.print("public java.rmi.server.Operation[] getOperations() {");
 	ctrl.indent();
 	out.print("return ((java.rmi.server.Operation[]) operations.clone());");

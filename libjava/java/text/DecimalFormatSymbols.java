@@ -476,7 +476,7 @@ public final class DecimalFormatSymbols implements Cloneable, Serializable
   }
 
   /**
-   * This method sets the charcter used to represen the digit zero.
+   * This method sets the character used to represent the digit zero.
    *
    * @param zeroDigit The character used to represent the digit zero.
    */

@@ -36,7 +36,7 @@ import java.io.PrintWriter;
  * <code>NamingException</code>), the part of the <code>Name</code> that
  * could be resolved (including the <code>Object</code> it resolved to)
  * and the part of the <code>Name</code> that could not be resolved when
- * the exception occured.
+ * the exception occurred.
  *
  * @since 1.3
  * @author Anthony Green (green@redhat.com)

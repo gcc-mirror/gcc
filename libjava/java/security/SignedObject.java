@@ -80,7 +80,7 @@ public final class SignedObject implements Serializable
      @param signingKey the key to sign with
      @param signingEngine the signature engine to use
 
-     @throws IOException serialization error occured
+     @throws IOException serialization error occurred
      @throws InvalidKeyException invalid key
      @throws SignatureException signing error
    */
@@ -108,8 +108,8 @@ public final class SignedObject implements Serializable
 
      @return the encapsulated object
 
-     @throws IOException de-serialization error occured
-     @throws ClassNotFoundException de-serialization error occured
+     @throws IOException de-serialization error occurred
+     @throws ClassNotFoundException de-serialization error occurred
    */
   public Object getObject() throws IOException, ClassNotFoundException
   {

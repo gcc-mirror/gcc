@@ -57,7 +57,7 @@ public class PrintWriter extends Writer
   private boolean autoflush;
 
   /**
-   * This boolean indicates whether or not an error has ever occured
+   * This boolean indicates whether or not an error has ever occurred
    * on this stream.
    */
   private boolean error;

@@ -9,7 +9,7 @@ AC_ARG_ENABLE(multilib,
   *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
  esac], [multilib=yes])dnl
 
-dnl We may get other options which we dont document:
+dnl We may get other options which we don't document:
 dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
 
 # When building with srcdir == objdir, links to the source files will
@@ -61,7 +61,7 @@ version=0.0.7
 dnl Still use "libjava" here to placate dejagnu.
 AM_INIT_AUTOMAKE(libjava, $version)
 
-# AC_CHECK_TOOL does AC_REQUIRE (AC_CANONICAL_BUILD).  If we dont
+# AC_CHECK_TOOL does AC_REQUIRE (AC_CANONICAL_BUILD).  If we don't
 # run it explicitly here, it will be run implicitly before
 # LIBGCJ_CONFIGURE, which doesn't work because that means that it will
 # be run before AC_CANONICAL_HOST.
@@ -80,7 +80,7 @@ AM_MAINTAINER_MODE
 # need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
 # fails, because we are probably configuring with a cross compiler
 # which cant create executables.  So we include AC_EXEEXT to keep
-# automake happy, but we dont execute it, since we dont care about
+# automake happy, but we don't execute it, since we don't care about
 # the result.
 if false; then
   # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands

@@ -75,7 +75,7 @@ public class JarInputStream extends ZipInputStream
    * tries to verify all the entry signatures while reading.
    *
    * @param in InputStream to read the jar from
-   * @param verify wheter or not to verify the manifest entries
+   * @param verify whether or not to verify the manifest entries
    * @exception IOException when an error occurs when opening or reading
    */
   public JarInputStream(InputStream in, boolean verify) throws IOException

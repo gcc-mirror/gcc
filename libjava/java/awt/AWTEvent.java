@@ -17,7 +17,7 @@ package java.awt;
 
 /**
  * AWTEvent is the root event class for all AWT events in the JDK 1.1 event 
- * model. It supercedes the Event class from JDK 1.0.
+ * model. It supersedes the Event class from JDK 1.0.
  */
 
 public abstract class AWTEvent extends java.util.EventObject

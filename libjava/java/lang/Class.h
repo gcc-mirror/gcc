@@ -305,7 +305,7 @@ private:
   friend jshort _Jv_FindIIndex (jclass *, jshort *, jshort);
 
   // Return array class corresponding to element type KLASS, creating it if
-  // neccessary.
+  // necessary.
   inline friend jclass
   _Jv_GetArrayClass (jclass klass, java::lang::ClassLoader *loader)
   {

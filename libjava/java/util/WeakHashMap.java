@@ -615,7 +615,7 @@ public class WeakHashMap extends AbstractMap implements Map
       {
 	WeakBucket prev = buckets[slot];
 	/* This may throw a NullPointerException.  It shouldn't but if
-	 * a race condition occured (two threads removing the same
+	 * a race condition occurred (two threads removing the same
 	 * bucket at the same time) it may happen.  <br>
 	 * But with race condition many much worse things may happen
 	 * anyway.

@@ -161,7 +161,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
   mu->owner = self;
   mu->count = count;
 
-  // If we were interrupted, or if a timeout occured, remove ourself from
+  // If we were interrupted, or if a timeout occurred, remove ourself from
   // the cv wait list now. (If we were notified normally, notify() will have
   // already taken care of this)
   if (r == ETIMEDOUT || interrupted)

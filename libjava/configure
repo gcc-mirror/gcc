@@ -1364,7 +1364,7 @@ fi
 
 
 
-# AC_CHECK_TOOL does AC_REQUIRE (AC_CANONICAL_BUILD).  If we dont
+# AC_CHECK_TOOL does AC_REQUIRE (AC_CANONICAL_BUILD).  If we don't
 # run it explicitly here, it will be run implicitly before
 # LIBGCJ_CONFIGURE, which doesn't work because that means that it will
 # be run before AC_CANONICAL_HOST.
@@ -1613,7 +1613,7 @@ fi
 # need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
 # fails, because we are probably configuring with a cross compiler
 # which cant create executables.  So we include AC_EXEEXT to keep
-# automake happy, but we dont execute it, since we dont care about
+# automake happy, but we don't execute it, since we don't care about
 # the result.
 if false; then
   # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands

@@ -445,7 +445,7 @@ public abstract class Calendar implements Serializable, Cloneable
   }
 
   /**
-   * Gets the set of locales for which a Calendar is availiable.
+   * Gets the set of locales for which a Calendar is available.
    * @exception MissingResourceException if locale data couldn't be found.
    * @return the set of locales.
    */
@@ -682,7 +682,7 @@ public abstract class Calendar implements Serializable, Cloneable
    * Compares the given calendar with this.  
    * @param o the object to that we should compare.
    * @return true, if the given object is a calendar, that represents
-   * the same time (but doesn't neccessary have the same fields).
+   * the same time (but doesn't necessary have the same fields).
    */
   public boolean equals(Object o)
   {
@@ -892,7 +892,7 @@ public abstract class Calendar implements Serializable, Cloneable
 
   /**
    * Gets the actual minimum value that is allowed for the specified field.
-   * This value is dependant on the values of the other fields.
+   * This value is dependent on the values of the other fields.
    * @param field the time field. One of the time field constants.
    * @return the actual minimum value.
    * @since jdk1.2
@@ -902,7 +902,7 @@ public abstract class Calendar implements Serializable, Cloneable
 
   /**
    * Gets the actual maximum value that is allowed for the specified field.
-   * This value is dependant on the values of the other fields.
+   * This value is dependent on the values of the other fields.
    * @param field the time field. One of the time field constants.
    * @return the actual maximum value.  
    * @since jdk1.2

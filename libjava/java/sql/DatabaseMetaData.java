@@ -47,7 +47,7 @@ public static final int bestRowUnknown = 0;
 public static final int bestRowNotPseudo = 1;
 
 /**
-  * The best row identifer is a pseudo-column.
+  * The best row identifier is a pseudo-column.
   */
 public static final int bestRowPseudo = 2;
 
@@ -58,12 +58,12 @@ public static final int bestRowPseudo = 2;
 public static final int bestRowTemporary = 0;
 
 /**
-  * The best row identifer is valid to the end of the transaction.
+  * The best row identifier is valid to the end of the transaction.
   */
 public static final int bestRowTransaction = 1;
 
 /**
-  * The best row identifer is valid to the end of the session.
+  * The best row identifier is valid to the end of the session.
   */
 public static final int bestRowSession = 2;
 
@@ -2696,7 +2696,7 @@ supportsBatchUpdates() throws SQLException;
   * <li>TYPE_SCEHM - The schema name, which may be <code>null</code>.
   * <li>TYPE_NAME - The user defined data type name.
   * <li>CLASS_NAME - The Java class name this type maps to.
-  * <li>DATA_TYPE - A type identifer from <code>Types</code> for this type.
+  * <li>DATA_TYPE - A type identifier from <code>Types</code> for this type.
   * This will be one of <code>JAVA_OBJECT</code>, <code>STRUCT</code>, or
   * <code>DISTINCT</code>.
   * <li>REMARKS - Comments about this data type.
@@ -2708,7 +2708,7 @@ supportsBatchUpdates() throws SQLException;
   * @param schema The schema to retrieve information from, or the empty string
   * to return entities not associated with a schema.
   * @param typePattern The type name pattern to match.
-  * @param types The type identifer patterns (from <code>Types</code>) to
+  * @param types The type identifier patterns (from <code>Types</code>) to
   * match.
   *
   * @return A <code>ResultSet</code> with the requested type information

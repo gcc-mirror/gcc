@@ -84,7 +84,7 @@ java::io::File::attr (jint query)
   if (query == LENGTH)
     return ((long long)info.nFileSizeHigh) << 32 | (unsigned long long)info.nFileSizeLow;
   else {
-    // FIXME? This is somewhat compiler dependant (the LL constant suffix)
+    // FIXME? This is somewhat compiler dependent (the LL constant suffix)
     // The file time as return by windows is the number of 100-nanosecond intervals since January 1, 1601
     return (((((long long)info.ftLastWriteTime.dwHighDateTime) << 32) | ((unsigned long long)info.ftLastWriteTime.dwLowDateTime)) - 116444736000000000LL) / 10000LL;
   }

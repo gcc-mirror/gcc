@@ -33,7 +33,7 @@ package java.io;
  */
 
 /**
-  * This exception is thrown to indicate that a problem occured with
+  * This exception is thrown to indicate that a problem occurred with
   * an attempted character conversion.
   *
   * @version 0.0

@@ -216,7 +216,7 @@ public class GregorianCalendar extends Calendar
    * Get the linear time in milliseconds since the epoch.  If you
    * specify a nonpositive year it is interpreted as BC as
    * following: 0 is 1 BC, -1 is 2 BC and so on.  The date is
-   * interpreted as gregorian if the change occured before that date.
+   * interpreted as gregorian if the change occurred before that date.
    *
    * @param year the year of the date.
    * @param dayOfYear the day of year of the date; 1 based.
@@ -627,7 +627,7 @@ public class GregorianCalendar extends Calendar
    * Compares the given calender with this.  
    * @param o the object to that we should compare.
    * @return true, if the given object is a calendar, that represents
-   * the same time (but doesn't neccessary have the same fields).
+   * the same time (but doesn't necessary have the same fields).
    * @XXX Should we check if time zones, locale, cutover etc. are equal?
    */
   public boolean equals(Object o)
@@ -973,7 +973,7 @@ public class GregorianCalendar extends Calendar
 
   /**
    * Gets the actual minimum value that is allowed for the specified field.
-   * This value is dependant on the values of the other fields.  Note that
+   * This value is dependent on the values of the other fields.  Note that
    * this calls <code>complete()</code> if not enough fields are set.  This
    * can have ugly side effects.
    * @param field the time field. One of the time field constants.
@@ -1001,7 +1001,7 @@ public class GregorianCalendar extends Calendar
 
   /**
    * Gets the actual maximum value that is allowed for the specified field.
-   * This value is dependant on the values of the other fields.  Note that
+   * This value is dependent on the values of the other fields.  Note that
    * this calls <code>complete()</code> if not enough fields are set.  This
    * can have ugly side effects.
    * @param field the time field. One of the time field constants.
