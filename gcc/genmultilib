@@ -59,15 +59,15 @@
 #   genmultilib "m68000/m68020 msoft-float" "m68000 m68020 msoft-float"
 #		"m68000=mc68000"
 # This produces:
-#   #define MULTILIB_MATCHES "\
-#   m68000/msoft-float m68000 msoft-float;\
-#   m68000/msoft-float mc68000 msoft-float;\
-#   m68020/msoft-float m68020 msoft-float;\
-#   msoft-float !m68000 !mc68000 !m68020 msoft-float;\
-#   m68000 m68000 !msoft-float;\
-#   m68000 mc60000 !msoft-float;\
-#   m68020 m68020 !msoft-float;\
+#   #define MULTILIB_SELECT "\
 #   . !m68000 !mc68000 !m68020 !msoft-float;\
+#   m68000 m68000 !m68020 !msoft-float;\
+#   m68000 mc60000 !m68020 !msoft-float;\
+#   m68020 !m68000 !mc68000 m68020 !msoft-float;\
+#   msoft-float !m68000 !mc68000 !m68020 msoft-float;\
+#   m68000/msoft-float m68000 !m68020 msoft-float;\
+#   m68000/msoft-float mc68000 !m68020 msoft-float;\
+#   m68020/msoft-float !m68000 !mc68000 m68020 msoft-float;\
 #   "
 # The effect is that `gcc -msoft-float' (for example) will append
 # msoft-float to the directory name when searching for libraries or
@@ -200,24 +200,17 @@ for combo in ${combinations}; do
   dirout=`echo ${dirout} | sed -e 's|^/||' -e 's|/$||g'`
 
   # Look through the options.  We must output each option that is
-  # present, and negate each option that is not present.  If an
-  # element of a set is present, we need not negate the other elements
-  # of the set.
+  # present, and negate each option that is not present.
   optout=
   for set in ${options}; do
     setopts=`echo ${set} | sed -e 's|/| |g'`
-    found=
     for opt in ${setopts}; do
       if expr "${combo} " : ".*/${opt}/.*" > /dev/null; then
 	optout="${optout} ${opt}"
-	found=yes
+      else
+	optout="${optout} !${opt}"
       fi
     done
-    if [ "${found}" = "" ]; then
-      for opt in ${setopts}; do
-	optout="${optout} !${opt}"
-      done
-    fi
   done
   optout=`echo ${optout} | sed -e 's/^ //'`
 
