@@ -65,10 +65,13 @@ if test "$enable_getenv_properties" = no; then
 fi
 
 dnl See if the user has requested runtime debugging.
+LIBGCJDEBUG="false"
+AC_SUBST(LIBGCJDEBUG)
 AC_ARG_ENABLE(libgcj-debug,
 [  --enable-libgcj-debug   enable runtime debugging code],
   if test "$enable_libgcj_debug" = yes; then
-     AC_DEFINE(DEBUG)
+    AC_DEFINE(DEBUG)
+    LIBGCJDEBUG="true"
   fi)
 
 dnl See if the user has the interpreter included.
@@ -173,6 +176,7 @@ dnl Create the subdirectory for natFileDescriptor.cc, or the attempt
 dnl to create the link will fail.
 test -d java || mkdir java
 test -d java/io || mkdir java/io
+test -d gnu || mkdir gnu
 AC_LINK_FILES(java/io/$FILE_DESCRIPTOR, java/io/natFileDescriptor.cc)
 
 dnl Likewise for ConcreteProcess.java and natConcreteProcess.cc.
@@ -770,7 +774,7 @@ here=`pwd`
 AC_SUBST(here)
 
 
-AC_OUTPUT(Makefile libgcj.spec libgcj-test.spec gcj/Makefile include/Makefile testsuite/Makefile,
+AC_OUTPUT(Makefile libgcj.spec libgcj-test.spec gnu/classpath/Configuration.java gcj/Makefile include/Makefile testsuite/Makefile,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${libgcj_basedir}/../config-ml.in
 fi

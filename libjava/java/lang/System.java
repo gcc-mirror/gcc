@@ -63,7 +63,8 @@ public final class System
   {
     if (secman != null)
       secman.checkPropertiesAccess();
-    init_properties ();
+    if (properties == null)
+      init_properties ();
     return properties;
   }
 
@@ -71,7 +72,8 @@ public final class System
   {
     if (secman != null)
       secman.checkPropertyAccess(property);
-    init_properties ();
+    if (properties == null)
+      init_properties ();
     return properties.getProperty(property);
   }
 
@@ -79,7 +81,8 @@ public final class System
   {
     if (secman != null)
       secman.checkPropertyAccess(property, defval);
-    init_properties ();
+    if (properties == null)
+      init_properties ();
     return properties.getProperty(property, defval);
   }
 
@@ -128,15 +131,18 @@ public final class System
   {
     if (secman != null)
       secman.checkPropertiesAccess();
-    // We might not have initialized yet.
-    prop_init = true;
-    properties = props;
+    synchronized (System.class)
+    {
+      properties = props;
+    }
   }
 
   public static String setProperty (String key, String value)
   {
     if (secman != null)
       secman.checkPermission (new PropertyPermission (key, "write"));
+    if (properties == null)
+      init_properties ();
     return (String) properties.setProperty (key, value);
   }
 
@@ -165,7 +171,4 @@ public final class System
   // Private data.
   private static SecurityManager secman = null;
   private static Properties properties = null;
-  // This boolean is only required for 1.1 and earlier.  After 1.1, a
-  // null properties should always be re-initialized.
-  private static boolean prop_init = false;
 }

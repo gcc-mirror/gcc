@@ -758,7 +758,8 @@ java/beans/Visibility.java
 
 ## Java files which are created by configure and thus are in the build
 ## directory.
-built_java_source_files = java/lang/ConcreteProcess.java
+built_java_source_files = java/lang/ConcreteProcess.java \
+                          gnu/classpath/Configuration.java
 
 ## Java files in the core packages java.lang, java.io, and java.util.
 ## These are built before the other source files, in order to reduce 

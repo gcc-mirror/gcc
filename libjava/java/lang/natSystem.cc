@@ -217,18 +217,16 @@ getpwuid_adaptor(T_passwd * (*getpwuid_r)(T_uid user_id, T_passwd *pwd_r,
 void
 java::lang::System::init_properties (void)
 {
-  {
-    // We only need to synchronize around this gatekeeper.
-    JvSynchronize sync (&java::lang::System::class$);
-    if (prop_init)
-      return;
-    prop_init = true;
-  }
+  JvSynchronize sync (&java::lang::System::class$);
+  
+  if (properties != NULL)
+    return;
 
-  properties = new java::util::Properties ();
+  java::util::Properties* newprops = new java::util::Properties ();
+  
   // A convenience define.
 #define SET(Prop,Val) \
-	properties->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
+	newprops->put(JvNewStringLatin1 (Prop), JvNewStringLatin1 (Val))
 
   // A mixture of the Java Product Versioning Specification
   // (introduced in 1.2), and earlier versioning properties.
@@ -351,7 +349,7 @@ java::lang::System::init_properties (void)
 	;
       jstring name = JvNewStringLatin1 (p, s - p);
       jstring val = JvNewStringLatin1 (*s == '=' ? s + 1 : s);
-      properties->put (name, val);
+      newprops->put (name, val);
     }
 
   // Set the system properties from the user's environment.
@@ -368,13 +366,13 @@ java::lang::System::init_properties (void)
     }
 
   if (_Jv_Jar_Class_Path)
-    properties->put(JvNewStringLatin1 ("java.class.path"),
-		    JvNewStringLatin1 (_Jv_Jar_Class_Path));
+    newprops->put(JvNewStringLatin1 ("java.class.path"),
+		  JvNewStringLatin1 (_Jv_Jar_Class_Path));
   else
     {
       // FIXME: find libgcj.zip and append its path?
       char *classpath = ::getenv("CLASSPATH");
-      jstring cp = properties->getProperty (JvNewStringLatin1("java.class.path"));
+      jstring cp = newprops->getProperty (JvNewStringLatin1("java.class.path"));
       java::lang::StringBuffer *sb = new java::lang::StringBuffer ();
       
       if (classpath)
@@ -391,7 +389,11 @@ java::lang::System::init_properties (void)
       else
 	sb->append ((jchar) '.');
       
-      properties->put(JvNewStringLatin1 ("java.class.path"),
+      newprops->put(JvNewStringLatin1 ("java.class.path"),
 		      sb->toString ());
     }
+  // Finally, set the field. This ensures that concurrent getProperty() 
+  // calls will return initialized values without requiring them to be 
+  // synchronized in the common case.
+  properties = newprops;
 }
