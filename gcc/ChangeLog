@@ -1,3 +1,8 @@
+Tue Apr 17 21:39:12 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (mark_all_labels): Canonicalize the tail recursion
+	label attached to CALL_PLACEHOLDER insns.
+
 2001-04-17  Loren J. Rittle  <ljrittle@acm.org>
 
 	* dbxout.c (N_OPT): Define if not available from <stab.h>
