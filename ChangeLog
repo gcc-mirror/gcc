@@ -1,3 +1,8 @@
+2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* configure.in (vax-*-netbsd*): Don't build gas for this
+	platform.
+
 2002-05-28  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	* configure.in (noconfigdirs): Don't compile libiberty, libstdcxx
