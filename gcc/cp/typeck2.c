@@ -1654,11 +1654,15 @@ report_case_error (code, type, new_value, old_value)
 }
 #endif
 
+/* Complain about defining new types in inappropriate places.  We give an
+   exception for C-style casts, to accommodate GNU C stylings.  */
+
 void
 check_for_new_type (string, inptree)
      char *string;
      flagged_type_tree inptree;
 {
-  if (inptree.new_type_flag)
+  if (inptree.new_type_flag
+      && (pedantic || strcmp (string, "cast") != 0))
     pedwarn ("ANSI C++ forbids defining types within %s",string);
 }

@@ -10,7 +10,8 @@
 	* init.c (build_member_call): Don't try to convert to the base type
 	if it's ambiguous.
 
-	* typeck2.c (check_for_new_type): Don't depend on pedantic.
+	* typeck2.c (check_for_new_type): Only depend on pedantic for
+	C-style casts.
 
 1998-10-25  Mark Mitchell  <mark@markmitchell.com>
 
