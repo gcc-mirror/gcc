@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "toplev.h"
 #include "rtl.h"
 
 static int rtx_addr_can_trap_p	PARAMS ((rtx));
@@ -878,7 +879,7 @@ single_set_1 (insn)
 	    /* Instruction should not consist only from USEs and CLOBBERS,
 	       since then gcc is allowed to remove it entirely.  In case
 	       something else is present, it should be first in the pattern.  */
-	    abort();
+	    fatal_insn ("USE or CLOBBER before SET:", insn);
 #endif
 	  case SET:
 	    break;
@@ -895,34 +896,41 @@ single_set_1 (insn)
 	  for (i = XVECLEN (pat, 0) - 1; i > 1; i--)
 	    if (GET_CODE (XVECEXP (pat, 0, i)) != USE
 		&& GET_CODE (XVECEXP (pat, 0, i)) != CLOBBER)
-	      abort();
+	      fatal_insn ("USE or CLOBBER before SET:", insn);
 #endif
 	    return set;
 	case SET:
-	  /* Multiple set insns - we are off the critical path now.  */
-	  for (i = XVECLEN (pat, 0) - 1; i > 0; i--)
-	    {
-	      sub = XVECEXP (pat, 0, i);
-	      switch GET_CODE (sub)
-		{
-		case USE:
-		case CLOBBER:
-		  break;
+	  {
+	    int seen_clobber = 0;
 
-		case SET:
-		  if (!set
-		      || (find_reg_note (insn, REG_UNUSED, SET_DEST (set))
-			  && side_effects_p (set)))
-		    set = sub;
-		  else if (! find_reg_note (insn, REG_UNUSED, SET_DEST (sub))
-			   || side_effects_p (sub))
+	    /* Multiple set insns - we are off the critical path now.  */
+	    for (i = 1; i < XVECLEN (pat, 0); i++)
+	      {
+		sub = XVECEXP (pat, 0, i);
+		switch GET_CODE (sub)
+		  {
+		  case USE:
+		  case CLOBBER:
+		    seen_clobber = 1;
+		    break;
+		    
+		  case SET:
+		    if (seen_clobber)
+		      fatal_insn ("USE or CLOBBER before SET:", insn);
+		    if (!set
+			|| (find_reg_note (insn, REG_UNUSED, SET_DEST (set))
+			    && side_effects_p (set)))
+		      set = sub;
+		    else if (! find_reg_note (insn, REG_UNUSED, SET_DEST (sub))
+			     || side_effects_p (sub))
+		      return NULL_RTX;
+		    break;
+		    
+		  default:
 		    return NULL_RTX;
-		  break;
-
-		default:
-		  return NULL_RTX;
-		}
-	    }
+		  }
+	      }
+	  }
 	  return set;
 	default:
 	  return NULL_RTX;

@@ -1253,7 +1253,7 @@ rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h $(GGC_H) toplev.h
 
 print-rtl.o : print-rtl.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h \
     $(BASIC_BLOCK_H)
-rtlanal.o : rtlanal.c $(CONFIG_H) system.h $(RTL_H)
+rtlanal.o : rtlanal.c $(CONFIG_H) system.h toplev.h $(RTL_H)
 errors.o : errors.c $(CONFIG_H) system.h errors.h
 
 varasm.o : varasm.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) flags.h \

@@ -1,3 +1,24 @@
+2000-09-30  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.md (movsi_to_cr): Remove the USE.  Calculate
+	the mask value from the individual SET operations.
+	(return_internal_si): Move the USE after the RETURN.
+	(return_internal_di): Likewise.
+	(return_and_restore_fpregs_si): Likewise.
+	(return_and_restore_fpregs_di): Likewise.
+	(return_eh_si): Likewise.
+	(return_eh_di): Likewise.
+	* config/rs6000/rs6000.c (mtcrf_operation): Don't look for,
+	or check, the USE.
+	(rs6000_emit_prologue): Don't emit the USE for movsi_to_cr.
+	Don't generate a PARALLEL around a single operation movsi_to_cr.
+	Generate the RETURN first in any PARALLELs.
+
+	* rtlanal.c (single_set_1): Use fatal_insn to display the
+	invalid insn.  Check for more cases when a USE or CLOBBER occurs
+	before a SET.
+	* Makefile.in: Update dependencies for rtlanal.o.
+
 2000-09-30  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* i386.c: Move include of "config.h" to before that of <setjmp.h>.
