@@ -38,12 +38,28 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	VALUE_REGNO
 #define VALUE_REGNO(MODE) \
-  (((MODE)==SFmode || (MODE)==DFmode) ? FIRST_FLOAT_REG : 0)
+  ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode	\
+   ? FIRST_FLOAT_REG : 0)
 
 /* 1 if N is a possible register number for a function value. */
 
 #undef	FUNCTION_VALUE_REGNO_P
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (N)== FIRST_FLOAT_REG)
+
+#ifdef REAL_VALUE_TO_TARGET_LONG_DOUBLE
+#undef	ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
+  do {									\
+    long hex[3];							\
+    REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, hex);			\
+    if (sizeof (int) == sizeof (long))					\
+      fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n\t.long 0x%x\n",	\
+		hex[0], hex[1], hex[2]);				\
+    else								\
+      fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n\t.long 0x%lx\n",	\
+		hex[0], hex[1], hex[2]);				\
+  } while (0)
+#endif
 
 #ifdef REAL_VALUE_TO_TARGET_DOUBLE
 #undef	ASM_OUTPUT_DOUBLE
@@ -51,7 +67,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   do {									\
     long hex[2];							\
     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, hex);				\
-    fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n", hex[0], hex[1]);	\
+    if (sizeof (int) == sizeof (long))					\
+      fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n", hex[0], hex[1]);	\
+    else								\
+      fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n", hex[0], hex[1]);	\
   } while (0)
 #endif
 
@@ -63,7 +82,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   do {									\
     long hex;								\
     REAL_VALUE_TO_TARGET_SINGLE (VALUE, hex);				\
-    fprintf (FILE, "\t.long 0x%x\n", hex);				\
+    if (sizeof (int) == sizeof (long))					\
+      fprintf (FILE, "\t.long 0x%x\n", hex);				\
+    else								\
+      fprintf (FILE, "\t.long 0x%lx\n", hex);				\
   } while (0)
 #endif
 
