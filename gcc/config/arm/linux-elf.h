@@ -47,6 +47,7 @@
 #define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
 
 /* Now we define the strings used to build the spec file.  */
+#undef  LIB_SPEC
 #define LIB_SPEC \
   "%{pthread:-lpthread} \
    %{shared:-lc} \

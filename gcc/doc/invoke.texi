@@ -400,7 +400,7 @@ in the following sections.
 -mno-crt0  -mrelax}
 
 @emph{M32R/D Options}
-@gccoptlist{-m32rx  -m32r  -mcode-model=@var{model-type} @gol
+@gccoptlist{-m32r2 -m32rx -m32r -mcode-model=@var{model-type} @gol
 -msdata=@var{sdata-type}  -G @var{num}}
 
 @emph{M88K Options}
@@ -6840,6 +6840,10 @@ This option makes symbolic debugging impossible.
 These @option{-m} options are defined for Mitsubishi M32R/D architectures:
 
 @table @gcctabopt
+@item -m32r2
+@opindex m32r2
+Generate code for the M32R/2@.
+
 @item -m32rx
 @opindex m32rx
 Generate code for the M32R/X@.
