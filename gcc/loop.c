@@ -1008,6 +1008,9 @@ record_excess_regs (in_this, not_in_this, output)
 	  && ! reg_mentioned_p (in_this, not_in_this))
 	*output = gen_rtx (EXPR_LIST, VOIDmode, in_this, *output);
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -1095,6 +1098,9 @@ reg_in_basic_block_p (insn, reg)
 	case BARRIER:
 	  /* It's the end of the basic block, so we lose.  */
 	  return 0;
+	  
+	default:
+	  break;
 	}
     }
 
@@ -2043,6 +2049,9 @@ replace_call_address (x, reg, addr)
 	abort ();
       XEXP (x, 0) = addr;
       return;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -2091,6 +2100,9 @@ count_nonfixed_reads (x)
     case MEM:
       return ((invariant_p (XEXP (x, 0)) != 1)
 	      + count_nonfixed_reads (XEXP (x, 0)));
+      
+    default:
+      break;
     }
 
   value = 0;
@@ -2272,6 +2284,8 @@ find_and_verify_loops (f)
 	    current_loop = loop_outer_loop[current_loop];
 	    break;
 
+	  default:
+	    break;
 	  }
 
       /* Note that this will mark the NOTE_INSN_LOOP_END note as being in the
@@ -2806,6 +2820,10 @@ invariant_p (x)
       /* Don't mess with insns declared volatile.  */
       if (MEM_VOLATILE_P (x))
 	return 0;
+      break;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -4356,8 +4374,11 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
 
 	    v->mem_mode = GET_MODE (x);
 	  }
-	return;
       }
+      return;
+
+    default:
+      break;
     }
 
   /* Recursively scan the subexpressions for other mem refs.  */
@@ -5433,6 +5454,9 @@ simplify_giv_expr (x, benefit)
 	      tem = gen_rtx (MINUS, mode, tem, v->derive_adjustment);
 	    return simplify_giv_expr (tem, benefit);
 	  }
+
+	default:
+	  break;
 	}
 
       /* Fall through to general case.  */
@@ -6574,6 +6598,9 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 	if (v->giv_type == DEST_ADDR && v->location == &XEXP (x, 0))
 	  return 1;
       break;
+
+    default:
+      break;
     }
 
   /* See if any subexpression fails elimination.  */
@@ -6890,6 +6917,9 @@ get_condition (jump, earliest)
 	case GEU:
 	  if (uconst_val != 0)
 	    code = GTU, op1 = GEN_INT (uconst_val - 1);
+	  break;
+
+	default:
 	  break;
 	}
     }
