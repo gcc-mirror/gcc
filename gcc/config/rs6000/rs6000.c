@@ -64,9 +64,6 @@
 #define TARGET_NO_PROTOTYPE 0
 #endif
 
-#define EASY_VECTOR_15(n) ((n) >= -16 && (n) <= 15)
-#define EASY_VECTOR_15_ADD_SELF(n) ((n) >= 0x10 && (n) <= 0x1e && !((n) & 1))
-
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
@@ -603,8 +600,6 @@ struct processor_costs power4_cost = {
 
 
 static bool rs6000_function_ok_for_sibcall (tree, tree);
-static int num_insns_constant_wide (HOST_WIDE_INT);
-static void validate_condition_mode (enum rtx_code, enum machine_mode);
 static rtx rs6000_generate_compare (enum rtx_code);
 static void rs6000_maybe_dead (rtx);
 static void rs6000_emit_stack_tie (void);
@@ -620,11 +615,8 @@ static unsigned toc_hash_function (const void *);
 static int toc_hash_eq (const void *, const void *);
 static int constant_pool_expr_1 (rtx, int *, int *);
 static bool constant_pool_expr_p (rtx);
-static bool toc_relative_expr_p (rtx);
 static bool legitimate_small_data_p (enum machine_mode, rtx);
 static bool legitimate_indexed_address_p (rtx, int);
-static bool legitimate_indirect_address_p (rtx, int);
-static bool macho_lo_sum_memory_operand (rtx x, enum machine_mode mode);
 static bool legitimate_lo_sum_address_p (enum machine_mode, rtx, int);
 static struct machine_function * rs6000_init_machine_status (void);
 static bool rs6000_assemble_integer (rtx, unsigned int, int);
@@ -710,7 +702,6 @@ static rtx spe_expand_builtin (tree, rtx, bool *);
 static rtx spe_expand_stv_builtin (enum insn_code, tree);
 static rtx spe_expand_predicate_builtin (enum insn_code, tree, rtx);
 static rtx spe_expand_evsel_builtin (enum insn_code, tree, rtx);
-static bool invalid_e500_subreg (rtx, enum machine_mode);
 static int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
 static rs6000_stack_t *rs6000_stack_info (void);
 static void debug_stack_info (rs6000_stack_t *);
@@ -735,8 +726,6 @@ static void compute_save_world_info(rs6000_stack_t *info_ptr);
 static void is_altivec_return_reg (rtx, void *);
 static rtx generate_set_vrsave (rtx, rs6000_stack_t *, int);
 int easy_vector_constant (rtx, enum machine_mode);
-static int easy_vector_same (rtx, enum machine_mode);
-static int easy_vector_splat_const (int, enum machine_mode);
 static bool is_ev64_opaque_type (tree);
 static rtx rs6000_dwarf_register_span (rtx);
 static rtx rs6000_legitimize_tls_address (rtx, enum tls_model);
@@ -853,10 +842,6 @@ static const char alt_reg_names[][8] =
 
 /* The VRSAVE bitmask puts bit %v0 as the most significant bit.  */
 #define ALTIVEC_REG_BIT(REGNO) (0x80000000 >> ((REGNO) - FIRST_ALTIVEC_REGNO))
-
-/* Return 1 for a symbol ref for a thread-local storage symbol.  */
-#define RS6000_SYMBOL_REF_TLS_P(RTX) \
-  (GET_CODE (RTX) == SYMBOL_REF && SYMBOL_REF_TLS_MODEL (RTX) != 0)
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -1810,312 +1795,10 @@ direct_return (void)
   return 0;
 }
 
-/* Returns 1 always.  */
-
-int
-any_operand (rtx op ATTRIBUTE_UNUSED,
-	     enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return 1;
-}
-
-/* Returns 1 always.  */
-
-int
-any_parallel_operand (rtx op ATTRIBUTE_UNUSED,
-		      enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return 1;
-}
-
-/* Returns 1 if op is the count register.  */
-
-int
-count_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) != REG)
-    return 0;
-
-  if (REGNO (op) == COUNT_REGISTER_REGNUM)
-    return 1;
-
-  if (REGNO (op) > FIRST_PSEUDO_REGISTER)
-    return 1;
-
-  return 0;
-}
-
-/* Returns 1 if op is an altivec register.  */
-
-int
-altivec_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG
-	      || REGNO (op) > FIRST_PSEUDO_REGISTER
-	      || ALTIVEC_REGNO_P (REGNO (op))));
-}
-
-int
-xer_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) != REG)
-    return 0;
-
-  if (XER_REGNO_P (REGNO (op)))
-    return 1;
-
-  return 0;
-}
-
-/* Return 1 if OP is a signed 8-bit constant.  Int multiplication
-   by such constants completes more quickly.  */
-
-int
-s8bit_cint_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-	  && (INTVAL (op) >= -128 && INTVAL (op) <= 127));
-}
-
-/* Return 1 if OP is a constant that can fit in a D field.  */
-
-int
-short_cint_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-	  && CONST_OK_FOR_LETTER_P (INTVAL (op), 'I'));
-}
-
-/* Similar for an unsigned D field.  */
-
-int
-u_short_cint_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-	  && CONST_OK_FOR_LETTER_P (INTVAL (op) & GET_MODE_MASK (mode), 'K'));
-}
-
-/* Return 1 if OP is a CONST_INT that cannot fit in a signed D field.  */
-
-int
-non_short_cint_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000);
-}
-
-/* Returns 1 if OP is a CONST_INT that is a positive value
-   and an exact power of 2.  */
-
-int
-exact_log2_cint_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-	  && INTVAL (op) > 0
-	  && exact_log2 (INTVAL (op)) >= 0);
-}
-
-/* Returns 1 if OP is a register that is not special (i.e., not MQ,
-   ctr, or lr).  */
-
-int
-gpc_reg_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG
-	      || (REGNO (op) >= ARG_POINTER_REGNUM
-		  && !XER_REGNO_P (REGNO (op)))
-	      || REGNO (op) < MQ_REGNO));
-}
-
-/* Returns 1 if OP is either a pseudo-register or a register denoting a
-   CR field.  */
-
-int
-cc_reg_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG
-	      || REGNO (op) >= FIRST_PSEUDO_REGISTER
-	      || CR_REGNO_P (REGNO (op))));
-}
-
-/* Returns 1 if OP is either a pseudo-register or a register denoting a
-   CR field that isn't CR0.  */
-
-int
-cc_reg_not_cr0_operand (rtx op, enum machine_mode mode)
-{
-  return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG
-	      || REGNO (op) >= FIRST_PSEUDO_REGISTER
-	      || CR_REGNO_NOT_CR0_P (REGNO (op))));
-}
-
-/* Returns 1 if OP is either a constant integer valid for a D-field or
-   a non-special register.  If a register, it must be in the proper
-   mode unless MODE is VOIDmode.  */
-
-int
-reg_or_short_operand (rtx op, enum machine_mode mode)
-{
-  return short_cint_operand (op, mode) || gpc_reg_operand (op, mode);
-}
-
-/* Similar, except check if the negation of the constant would be
-   valid for a D-field.  Don't allow a constant zero, since all the
-   patterns that call this predicate use "addic r1,r2,-constant" on
-   a constant value to set a carry when r2 is greater or equal to
-   "constant".  That doesn't work for zero.  */
-
-int
-reg_or_neg_short_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return CONST_OK_FOR_LETTER_P (INTVAL (op), 'P') && INTVAL (op) != 0;
-
-  return gpc_reg_operand (op, mode);
-}
-
-/* Returns 1 if OP is either a constant integer valid for a DS-field or
-   a non-special register.  If a register, it must be in the proper
-   mode unless MODE is VOIDmode.  */
-
-int
-reg_or_aligned_short_operand (rtx op, enum machine_mode mode)
-{
-  if (gpc_reg_operand (op, mode))
-    return 1;
-  else if (short_cint_operand (op, mode) && !(INTVAL (op) & 3))
-    return 1;
-
-  return 0;
-}
-
-
-/* Return 1 if the operand is either a register or an integer whose
-   high-order 16 bits are zero.  */
-
-int
-reg_or_u_short_operand (rtx op, enum machine_mode mode)
-{
-  return u_short_cint_operand (op, mode) || gpc_reg_operand (op, mode);
-}
-
-/* Return 1 is the operand is either a non-special register or ANY
-   constant integer.  */
-
-int
-reg_or_cint_operand (rtx op, enum machine_mode mode)
-{
-  return (GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode));
-}
-
-/* Return 1 is the operand is either a non-special register or ANY
-   32-bit signed constant integer.  */
-
-int
-reg_or_arith_cint_operand (rtx op, enum machine_mode mode)
-{
-  return (gpc_reg_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-#if HOST_BITS_PER_WIDE_INT != 32
-	      && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
-		  < (unsigned HOST_WIDE_INT) 0x100000000ll)
-#endif
-	      ));
-}
-
-/* Return 1 is the operand is either a non-special register or a 32-bit
-   signed constant integer valid for 64-bit addition.  */
-
-int
-reg_or_add_cint64_operand (rtx op, enum machine_mode mode)
-{
-  return (gpc_reg_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-#if HOST_BITS_PER_WIDE_INT == 32
-	      && INTVAL (op) < 0x7fff8000
-#else
-	      && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
-		  < 0x100000000ll)
-#endif
-	      ));
-}
-
-/* Return 1 is the operand is either a non-special register or a 32-bit
-   signed constant integer valid for 64-bit subtraction.  */
-
-int
-reg_or_sub_cint64_operand (rtx op, enum machine_mode mode)
-{
-  return (gpc_reg_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-#if HOST_BITS_PER_WIDE_INT == 32
-	      && (- INTVAL (op)) < 0x7fff8000
-#else
-	      && ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80008000)
-		  < 0x100000000ll)
-#endif
-	      ));
-}
-
-/* Return 1 is the operand is either a non-special register or ANY
-   32-bit unsigned constant integer.  */
-
-int
-reg_or_logical_cint_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    {
-      if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
-	{
-	  if (GET_MODE_BITSIZE (mode) <= 32)
-	    abort ();
-
-	  if (INTVAL (op) < 0)
-	    return 0;
-	}
-
-      return ((INTVAL (op) & GET_MODE_MASK (mode)
-	       & (~ (unsigned HOST_WIDE_INT) 0xffffffff)) == 0);
-    }
-  else if (GET_CODE (op) == CONST_DOUBLE)
-    {
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
-	  || mode != DImode)
-	abort ();
-
-      return CONST_DOUBLE_HIGH (op) == 0;
-    }
-  else
-    return gpc_reg_operand (op, mode);
-}
-
-/* Return 1 if the operand is an operand that can be loaded via the GOT.  */
-
-int
-got_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == SYMBOL_REF
-	  || GET_CODE (op) == CONST
-	  || GET_CODE (op) == LABEL_REF);
-}
-
-/* Return 1 if the operand is a simple references that can be loaded via
-   the GOT (labels involving addition aren't allowed).  */
-
-int
-got_no_const_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF);
-}
-
 /* Return the number of instructions it takes to form a constant in an
    integer register.  */
 
-static int
+int
 num_insns_constant_wide (HOST_WIDE_INT value)
 {
   /* signed constant loadable with {cal|addi} */
@@ -2222,88 +1905,9 @@ num_insns_constant (rtx op, enum machine_mode mode)
     abort ();
 }
 
-/* Return 1 if the operand is a CONST_DOUBLE and it can be put into a
-   register with one instruction per word.  We only do this if we can
-   safely read CONST_DOUBLE_{LOW,HIGH}.  */
-
-int
-easy_fp_constant (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) != CONST_DOUBLE
-      || GET_MODE (op) != mode
-      || (GET_MODE_CLASS (mode) != MODE_FLOAT && mode != DImode))
-    return 0;
-
-  /* Consider all constants with -msoft-float to be easy.  */
-  if ((TARGET_SOFT_FLOAT || TARGET_E500_SINGLE)
-      && mode != DImode)
-    return 1;
-
-  /* If we are using V.4 style PIC, consider all constants to be hard.  */
-  if (flag_pic && DEFAULT_ABI == ABI_V4)
-    return 0;
-
-#ifdef TARGET_RELOCATABLE
-  /* Similarly if we are using -mrelocatable, consider all constants
-     to be hard.  */
-  if (TARGET_RELOCATABLE)
-    return 0;
-#endif
-
-  if (mode == TFmode)
-    {
-      long k[4];
-      REAL_VALUE_TYPE rv;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-      REAL_VALUE_TO_TARGET_LONG_DOUBLE (rv, k);
-
-      return (num_insns_constant_wide ((HOST_WIDE_INT) k[0]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[2]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[3]) == 1);
-    }
-
-  else if (mode == DFmode)
-    {
-      long k[2];
-      REAL_VALUE_TYPE rv;
-
-      if (TARGET_E500_DOUBLE)
-	return 0;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-      REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
-
-      return (num_insns_constant_wide ((HOST_WIDE_INT) k[0]) == 1
-	      && num_insns_constant_wide ((HOST_WIDE_INT) k[1]) == 1);
-    }
-
-  else if (mode == SFmode)
-    {
-      long l;
-      REAL_VALUE_TYPE rv;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
-      REAL_VALUE_TO_TARGET_SINGLE (rv, l);
-
-      return num_insns_constant_wide (l) == 1;
-    }
-
-  else if (mode == DImode)
-    return ((TARGET_POWERPC64
-	     && GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_LOW (op) == 0)
-	    || (num_insns_constant (op, DImode) <= 2));
-
-  else if (mode == SImode)
-    return 1;
-  else
-    abort ();
-}
-
 /* Returns the constant for the splat instruction, if exists.  */
 
-static int
+int
 easy_vector_splat_const (int cst, enum machine_mode mode)
 {
   switch (mode)
@@ -2336,10 +1940,9 @@ easy_vector_splat_const (int cst, enum machine_mode mode)
   return 0;
 }
 
-
 /* Return nonzero if all elements of a vector have the same value.  */
 
-static int
+int
 easy_vector_same (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   int units, i, cst;
@@ -2352,75 +1955,6 @@ easy_vector_same (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
       break;
   if (i == units && easy_vector_splat_const (cst, mode))
     return 1;
-  return 0;
-}
-
-/* Return 1 if the operand is a CONST_INT and can be put into a
-   register without using memory.  */
-
-int
-easy_vector_constant (rtx op, enum machine_mode mode)
-{
-  int cst, cst2;
-
-  if (GET_CODE (op) != CONST_VECTOR
-      || (!TARGET_ALTIVEC
-	  && !TARGET_SPE))
-    return 0;
-
-  if (zero_constant (op, mode)
-      && ((TARGET_ALTIVEC && ALTIVEC_VECTOR_MODE (mode))
-	  || (TARGET_SPE && SPE_VECTOR_MODE (mode))))
-    return 1;
-
-  if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-    return 0;
-
-  if (TARGET_SPE && mode == V1DImode)
-    return 0;
-
-  cst  = INTVAL (CONST_VECTOR_ELT (op, 0));
-  cst2 = INTVAL (CONST_VECTOR_ELT (op, 1));
-
-  /* Limit SPE vectors to 15 bits signed.  These we can generate with:
-       li r0, CONSTANT1
-       evmergelo r0, r0, r0
-       li r0, CONSTANT2
-
-     I don't know how efficient it would be to allow bigger constants,
-     considering we'll have an extra 'ori' for every 'li'.  I doubt 5
-     instructions is better than a 64-bit memory load, but I don't
-     have the e500 timing specs.  */
-  if (TARGET_SPE && mode == V2SImode
-      && cst  >= -0x7fff && cst <= 0x7fff
-      && cst2 >= -0x7fff && cst2 <= 0x7fff)
-    return 1;
-
-  if (TARGET_ALTIVEC
-      && easy_vector_same (op, mode))
-    {
-      cst = easy_vector_splat_const (cst, mode);
-      if (EASY_VECTOR_15_ADD_SELF (cst)
-	  || EASY_VECTOR_15 (cst))
-	return 1;
-    }
-  return 0;
-}
-
-/* Same as easy_vector_constant but only for EASY_VECTOR_15_ADD_SELF.  */
-
-int
-easy_vector_constant_add_self (rtx op, enum machine_mode mode)
-{
-  int cst;
-  if (TARGET_ALTIVEC
-      && GET_CODE (op) == CONST_VECTOR
-      && easy_vector_same (op, mode))
-    {
-      cst = easy_vector_splat_const (INTVAL (CONST_VECTOR_ELT (op, 0)), mode);
-      if (EASY_VECTOR_15_ADD_SELF (cst))
-	return 1;
-    }
   return 0;
 }
 
@@ -2520,241 +2054,7 @@ output_vec_const_move (rtx *operands)
   abort ();
 }
 
-/* Return 1 if the operand is the constant 0.  This works for scalars
-   as well as vectors.  */
 int
-zero_constant (rtx op, enum machine_mode mode)
-{
-  return op == CONST0_RTX (mode);
-}
-
-/* Return 1 if the operand is 0.0.  */
-int
-zero_fp_constant (rtx op, enum machine_mode mode)
-{
-  return GET_MODE_CLASS (mode) == MODE_FLOAT && op == CONST0_RTX (mode);
-}
-
-/* Return 1 if the operand is in volatile memory.  Note that during
-   the RTL generation phase, memory_operand does not return TRUE for
-   volatile memory references.  So this function allows us to
-   recognize volatile references where its safe.  */
-
-int
-volatile_mem_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) != MEM)
-    return 0;
-
-  if (!MEM_VOLATILE_P (op))
-    return 0;
-
-  if (mode != GET_MODE (op))
-    return 0;
-
-  if (reload_completed)
-    return memory_operand (op, mode);
-
-  if (reload_in_progress)
-    return strict_memory_address_p (mode, XEXP (op, 0));
-
-  return memory_address_p (mode, XEXP (op, 0));
-}
-
-/* Return 1 if the operand is an offsettable memory operand.  */
-
-int
-offsettable_mem_operand (rtx op, enum machine_mode mode)
-{
-  return ((GET_CODE (op) == MEM)
-	  && offsettable_address_p (reload_completed || reload_in_progress,
-				    mode, XEXP (op, 0)));
-}
-
-/* Return 1 if the operand is either an easy FP constant (see above) or
-   memory.  */
-
-int
-mem_or_easy_const_operand (rtx op, enum machine_mode mode)
-{
-  return memory_operand (op, mode) || easy_fp_constant (op, mode);
-}
-
-/* Return 1 if the operand is either a non-special register or an item
-   that can be used as the operand of a `mode' add insn.  */
-
-int
-add_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == CONST_INT)
-    return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
-	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
-
-  return gpc_reg_operand (op, mode);
-}
-
-/* Return 1 if OP is a constant but not a valid add_operand.  */
-
-int
-non_add_cint_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-	  && !CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
-	  && !CONST_OK_FOR_LETTER_P (INTVAL (op), 'L'));
-}
-
-/* Return 1 if the operand is a non-special register or a constant that
-   can be used as the operand of an OR or XOR insn on the RS/6000.  */
-
-int
-logical_operand (rtx op, enum machine_mode mode)
-{
-  HOST_WIDE_INT opl, oph;
-
-  if (gpc_reg_operand (op, mode))
-    return 1;
-
-  if (GET_CODE (op) == CONST_INT)
-    {
-      opl = INTVAL (op) & GET_MODE_MASK (mode);
-
-#if HOST_BITS_PER_WIDE_INT <= 32
-      if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT && opl < 0)
-	return 0;
-#endif
-    }
-  else if (GET_CODE (op) == CONST_DOUBLE)
-    {
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-	abort ();
-
-      opl = CONST_DOUBLE_LOW (op);
-      oph = CONST_DOUBLE_HIGH (op);
-      if (oph != 0)
-	return 0;
-    }
-  else
-    return 0;
-
-  return ((opl & ~ (unsigned HOST_WIDE_INT) 0xffff) == 0
-	  || (opl & ~ (unsigned HOST_WIDE_INT) 0xffff0000) == 0);
-}
-
-/* Return 1 if C is a constant that is not a logical operand (as
-   above), but could be split into one.  */
-
-int
-non_logical_cint_operand (rtx op, enum machine_mode mode)
-{
-  return ((GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE)
-	  && ! logical_operand (op, mode)
-	  && reg_or_logical_cint_operand (op, mode));
-}
-
-/* Return 1 if C is a constant that can be encoded in a 32-bit mask on the
-   RS/6000.  It is if there are no more than two 1->0 or 0->1 transitions.
-   Reject all ones and all zeros, since these should have been optimized
-   away and confuse the making of MB and ME.  */
-
-int
-mask_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  HOST_WIDE_INT c, lsb;
-
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-
-  c = INTVAL (op);
-
-  /* Fail in 64-bit mode if the mask wraps around because the upper
-     32-bits of the mask will all be 1s, contrary to GCC's internal view.  */
-  if (TARGET_POWERPC64 && (c & 0x80000001) == 0x80000001)
-    return 0;
-
-  /* We don't change the number of transitions by inverting,
-     so make sure we start with the LS bit zero.  */
-  if (c & 1)
-    c = ~c;
-
-  /* Reject all zeros or all ones.  */
-  if (c == 0)
-    return 0;
-
-  /* Find the first transition.  */
-  lsb = c & -c;
-
-  /* Invert to look for a second transition.  */
-  c = ~c;
-
-  /* Erase first transition.  */
-  c &= -lsb;
-
-  /* Find the second transition (if any).  */
-  lsb = c & -c;
-
-  /* Match if all the bits above are 1's (or c is zero).  */
-  return c == -lsb;
-}
-
-/* Return 1 for the PowerPC64 rlwinm corner case.  */
-
-int
-mask_operand_wrap (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  HOST_WIDE_INT c, lsb;
-
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-
-  c = INTVAL (op);
-
-  if ((c & 0x80000001) != 0x80000001)
-    return 0;
-
-  c = ~c;
-  if (c == 0)
-    return 0;
-
-  lsb = c & -c;
-  c = ~c;
-  c &= -lsb;
-  lsb = c & -c;
-  return c == -lsb;
-}
-
-/* Return 1 if the operand is a constant that is a PowerPC64 mask.
-   It is if there are no more than one 1->0 or 0->1 transitions.
-   Reject all zeros, since zero should have been optimized away and
-   confuses the making of MB and ME.  */
-
-int
-mask64_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == CONST_INT)
-    {
-      HOST_WIDE_INT c, lsb;
-
-      c = INTVAL (op);
-
-      /* Reject all zeros.  */
-      if (c == 0)
-	return 0;
-
-      /* We don't change the number of transitions by inverting,
-	 so make sure we start with the LS bit zero.  */
-      if (c & 1)
-	c = ~c;
-
-      /* Find the transition, and check that all bits above are 1's.  */
-      lsb = c & -c;
-
-      /* Match if all the bits above are 1's (or c is zero).  */
-      return c == -lsb;
-    }
-  return 0;
-}
-
-static int
 mask64_1or2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED,
 		       bool allow_one)
 {
@@ -2807,14 +2107,6 @@ mask64_1or2_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED,
       return c == -lsb;
     }
   return 0;
-}
-
-/* Like mask64_operand, but allow up to three transitions.  This
-   predicate is used by insn patterns that generate two rldicl or
-   rldicr machine insns.   */
-int mask64_2_operand (rtx op, enum machine_mode mode)
-{
-  return mask64_1or2_operand (op, mode, false);
 }
 
 /* Generates shifts and masks for a pair of rldicl or rldicr insns to
@@ -2887,174 +2179,9 @@ build_mask64_2_operands (rtx in, rtx *out)
 #endif
 }
 
-/* Return 1 if the operand is either a non-special register or a constant
-   that can be used as the operand of a PowerPC64 logical AND insn.  */
-
-int
-and64_operand (rtx op, enum machine_mode mode)
-{
-  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis.  */
-    return (gpc_reg_operand (op, mode) || mask64_operand (op, mode));
-
-  return (logical_operand (op, mode) || mask64_operand (op, mode));
-}
-
-/* Like the above, but also match constants that can be implemented
-   with two rldicl or rldicr insns.  */
-
-int
-and64_2_operand (rtx op, enum machine_mode mode)
-{
-  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis.  */
-    return gpc_reg_operand (op, mode) || mask64_1or2_operand (op, mode, true);
-
-  return logical_operand (op, mode) || mask64_1or2_operand (op, mode, true);
-}
-
-/* Return 1 if the operand is either a non-special register or a
-   constant that can be used as the operand of an RS/6000 logical AND insn.  */
-
-int
-and_operand (rtx op, enum machine_mode mode)
-{
-  if (fixed_regs[CR0_REGNO])	/* CR0 not available, don't do andi./andis.  */
-    return (gpc_reg_operand (op, mode) || mask_operand (op, mode));
-
-  return (logical_operand (op, mode) || mask_operand (op, mode));
-}
-
-/* Return 1 if the operand is a general register or memory operand.  */
-
-int
-reg_or_mem_operand (rtx op, enum machine_mode mode)
-{
-  return (gpc_reg_operand (op, mode)
-	  || memory_operand (op, mode)
-	  || macho_lo_sum_memory_operand (op, mode)
-	  || volatile_mem_operand (op, mode));
-}
-
-/* Return 1 if the operand is a general register or memory operand without
-   pre_inc or pre_dec which produces invalid form of PowerPC lwa
-   instruction.  */
-
-int
-lwa_operand (rtx op, enum machine_mode mode)
-{
-  rtx inner = op;
-
-  if (reload_completed && GET_CODE (inner) == SUBREG)
-    inner = SUBREG_REG (inner);
-
-  return gpc_reg_operand (inner, mode)
-    || (memory_operand (inner, mode)
-	&& GET_CODE (XEXP (inner, 0)) != PRE_INC
-	&& GET_CODE (XEXP (inner, 0)) != PRE_DEC
-	&& (GET_CODE (XEXP (inner, 0)) != PLUS
-	    || GET_CODE (XEXP (XEXP (inner, 0), 1)) != CONST_INT
-	    || INTVAL (XEXP (XEXP (inner, 0), 1)) % 4 == 0));
-}
-
-/* Return 1 if the operand, used inside a MEM, is a SYMBOL_REF.  */
-
-int
-symbol_ref_operand (rtx op, enum machine_mode mode)
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-
-  return (GET_CODE (op) == SYMBOL_REF
-	  && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op)));
-}
-
-/* Return 1 if the operand, used inside a MEM, is a valid first argument
-   to CALL.  This is a SYMBOL_REF, a pseudo-register, LR or CTR.  */
-
-int
-call_operand (rtx op, enum machine_mode mode)
-{
-  if (mode != VOIDmode && GET_MODE (op) != mode)
-    return 0;
-
-  return (GET_CODE (op) == SYMBOL_REF
-	  || (GET_CODE (op) == REG
-	      && (REGNO (op) == LINK_REGISTER_REGNUM
-		  || REGNO (op) == COUNT_REGISTER_REGNUM
-		  || REGNO (op) >= FIRST_PSEUDO_REGISTER)));
-}
-
-/* Return 1 if the operand is a SYMBOL_REF for a function known to be in
-   this file.  */
-
-int
-current_file_function_operand (rtx op,
-			       enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == SYMBOL_REF
-	  && (DEFAULT_ABI != ABI_AIX || SYMBOL_REF_FUNCTION_P (op))
-	  && (SYMBOL_REF_LOCAL_P (op)
-	      || (DECL_RTL_SET_P (current_function_decl)
-		  && op == XEXP (DECL_RTL (current_function_decl), 0))));
-}
-
-/* Return 1 if this operand is a valid input for a move insn.  */
-
-int
-input_operand (rtx op, enum machine_mode mode)
-{
-  /* Memory is always valid.  */
-  if (memory_operand (op, mode))
-    return 1;
-
-  /* For floating-point, easy constants are valid.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
-      && CONSTANT_P (op)
-      && easy_fp_constant (op, mode))
-    return 1;
-
-  /* Allow any integer constant.  */
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && (GET_CODE (op) == CONST_INT
-	  || GET_CODE (op) == CONST_DOUBLE))
-    return 1;
-
-  /* Allow easy vector constants.  */
-  if (GET_CODE (op) == CONST_VECTOR
-      && easy_vector_constant (op, mode))
-    return 1;
-
-  /* For floating-point or multi-word mode, the only remaining valid type
-     is a register.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT
-      || GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-    return register_operand (op, mode);
-
-  /* The only cases left are integral modes one word or smaller (we
-     do not get called for MODE_CC values).  These can be in any
-     register.  */
-  if (register_operand (op, mode))
-    return 1;
-
-  /* A SYMBOL_REF referring to the TOC is valid.  */
-  if (legitimate_constant_pool_address_p (op))
-    return 1;
-
-  /* A constant pool expression (relative to the TOC) is valid */
-  if (toc_relative_expr_p (op))
-    return 1;
-
-  /* V.4 allows SYMBOL_REFs and CONSTs that are in the small data region
-     to be valid.  */
-  if (DEFAULT_ABI == ABI_V4
-      && (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == CONST)
-      && small_data_operand (op, Pmode))
-    return 1;
-
-  return 0;
-}
-
 /* Return TRUE if OP is an invalid SUBREG operation on the e500.  */
-static bool
+
+bool
 invalid_e500_subreg (rtx op, enum machine_mode mode)
 {
   /* Reject (subreg:SI (reg:DF)).  */
@@ -3072,19 +2199,6 @@ invalid_e500_subreg (rtx op, enum machine_mode mode)
     return true;
 
   return false;
-}
-
-/* Just like nonimmediate_operand, but return 0 for invalid SUBREG's
-   on the e500.  */
-int
-rs6000_nonimmediate_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_E500_DOUBLE
-      && GET_CODE (op) == SUBREG
-      && invalid_e500_subreg (op, mode))
-    return 0;
-
-  return nonimmediate_operand (op, mode);
 }
 
 /* Darwin, AIX increases natural record alignment to doubleword if the first
@@ -3228,7 +2342,7 @@ constant_pool_expr_p (rtx op)
   return constant_pool_expr_1 (op, &have_sym, &have_toc) && have_sym;
 }
 
-static bool
+bool
 toc_relative_expr_p (rtx op)
 {
   int have_sym = 0;
@@ -3351,13 +2465,13 @@ legitimate_indexed_address_p (rtx x, int strict)
 	      && INT_REG_OK_FOR_INDEX_P (op0, strict)));
 }
 
-static inline bool
+inline bool
 legitimate_indirect_address_p (rtx x, int strict)
 {
   return GET_CODE (x) == REG && INT_REG_OK_FOR_BASE_P (x, strict);
 }
 
-static bool
+bool
 macho_lo_sum_memory_operand (rtx x, enum machine_mode mode)
 {
   if (!TARGET_MACHO || !flag_pic
@@ -3781,15 +2895,6 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
     }
 
   return dest;
-}
-
-/* Return 1 if X is a SYMBOL_REF for a TLS symbol.  This is used in
-   instruction definitions.  */
-
-int
-rs6000_tls_symbol_ref (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return RS6000_SYMBOL_REF_TLS_P (x);
 }
 
 /* Return 1 if X contains a thread-local symbol.  */
@@ -9193,225 +8298,6 @@ expand_block_move (rtx operands[])
 }
 
 
-/* Return 1 if OP is suitable for a save_world call in prologue. It is
-   known to be a PARALLEL. */
-int
-save_world_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int index;
-  int i;
-  rtx elt;
-  int count = XVECLEN (op, 0);
-
-  if (count != 55)
-    return 0;
-
-  index = 0;
-  if (GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE)
-    return 0;
-
-  for (i=1; i <= 18; i++)
-    {
-      elt = XVECEXP (op, 0, index++);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || ! memory_operand (SET_DEST (elt), DFmode)
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != DFmode)
-	return 0;
-    }
-
-  for (i=1; i <= 12; i++)
-    {
-      elt = XVECEXP (op, 0, index++);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != V4SImode)
-	return 0;
-    }
-
-  for (i=1; i <= 19; i++)
-    {
-      elt = XVECEXP (op, 0, index++);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || ! memory_operand (SET_DEST (elt), Pmode)
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != Pmode)
-	return 0;
-    }
-
-  elt = XVECEXP (op, 0, index++);
-  if (GET_CODE (elt) != SET
-      || GET_CODE (SET_DEST (elt)) != MEM
-      || ! memory_operand (SET_DEST (elt), Pmode)
-      || GET_CODE (SET_SRC (elt)) != REG
-      || REGNO (SET_SRC (elt)) != CR2_REGNO
-      || GET_MODE (SET_SRC (elt)) != Pmode)
-    return 0;
-
-  if (GET_CODE (XVECEXP (op, 0, index++)) != USE
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE
-      || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER)
-    return 0;
-  return 1;
-}
-
-/* Return 1 if OP is suitable for a save_world call in prologue. It is
-   known to be a PARALLEL. */
-int
-restore_world_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int index;
-  int i;
-  rtx elt;
-  int count = XVECLEN (op, 0);
-
-  if (count != 59)
-    return 0;
-
-  index = 0;
-  if (GET_CODE (XVECEXP (op, 0, index++)) != RETURN
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE
-      || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER)
-    return 0;
-
-  elt = XVECEXP (op, 0, index++);
-  if (GET_CODE (elt) != SET
-      || GET_CODE (SET_SRC (elt)) != MEM
-      || ! memory_operand (SET_SRC (elt), Pmode)
-      || GET_CODE (SET_DEST (elt)) != REG
-      || REGNO (SET_DEST (elt)) != CR2_REGNO
-      || GET_MODE (SET_DEST (elt)) != Pmode)
-    return 0;
-
-  for (i=1; i <= 19; i++)
-    {
-      elt = XVECEXP (op, 0, index++);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || ! memory_operand (SET_SRC (elt), Pmode)
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != Pmode)
-	return 0;
-    }
-
-  for (i=1; i <= 12; i++)
-    {
-      elt = XVECEXP (op, 0, index++);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != V4SImode)
-	return 0;
-    }
-
-  for (i=1; i <= 18; i++)
-    {
-      elt = XVECEXP (op, 0, index++);
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || ! memory_operand (SET_SRC (elt), DFmode)
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != DFmode)
-	return 0;
-    }
-
-  if (GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER
-      || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER
-      || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER
-      || GET_CODE (XVECEXP (op, 0, index++)) != CLOBBER
-      || GET_CODE (XVECEXP (op, 0, index++)) != USE)
-    return 0;
-  return 1;
-}
-
-
-/* Return 1 if OP is a load multiple operation.  It is known to be a
-   PARALLEL and the first section will be tested.  */
-
-int
-load_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int count = XVECLEN (op, 0);
-  unsigned int dest_regno;
-  rtx src_addr;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != MEM)
-    return 0;
-
-  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
-  src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || REGNO (SET_DEST (elt)) != dest_regno + i
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || GET_CODE (XEXP (SET_SRC (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_SRC (elt), 0), 0), src_addr)
-	  || GET_CODE (XEXP (XEXP (SET_SRC (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_SRC (elt), 0), 1)) != i * 4)
-	return 0;
-    }
-
-  return 1;
-}
-
-/* Similar, but tests for store multiple.  Here, the second vector element
-   is a CLOBBER.  It will be tested later.  */
-
-int
-store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int count = XVECLEN (op, 0) - 1;
-  unsigned int src_regno;
-  rtx dest_addr;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != MEM
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != REG)
-    return 0;
-
-  src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
-  dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i + 1);
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || REGNO (SET_SRC (elt)) != src_regno + i
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || GET_CODE (XEXP (SET_DEST (elt), 0)) != PLUS
-	  || ! rtx_equal_p (XEXP (XEXP (SET_DEST (elt), 0), 0), dest_addr)
-	  || GET_CODE (XEXP (XEXP (SET_DEST (elt), 0), 1)) != CONST_INT
-	  || INTVAL (XEXP (XEXP (SET_DEST (elt), 0), 1)) != i * 4)
-	return 0;
-    }
-
-  return 1;
-}
-
 /* Return a string to perform a load_multiple operation.
    operands[0] is the vector.
    operands[1] is the source address.
@@ -9469,292 +8355,12 @@ rs6000_output_load_multiple (rtx operands[3])
   return "{lsi|lswi} %2,%1,%N0";
 }
 
-/* Return 1 for a parallel vrsave operation.  */
-
-int
-vrsave_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int count = XVECLEN (op, 0);
-  unsigned int dest_regno, src_regno;
-  int i;
-
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC_VOLATILE)
-    return 0;
-
-  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
-  src_regno  = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
-
-  if (dest_regno != VRSAVE_REGNO
-      && src_regno != VRSAVE_REGNO)
-    return 0;
-
-  for (i = 1; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-
-      if (GET_CODE (elt) != CLOBBER
-	  && GET_CODE (elt) != SET)
-	return 0;
-    }
-
-  return 1;
-}
-
-/* Return 1 for an PARALLEL suitable for mfcr.  */
-
-int
-mfcr_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int count = XVECLEN (op, 0);
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count < 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC
-      || XVECLEN (SET_SRC (XVECEXP (op, 0, 0)), 0) != 2)
-    return 0;
-
-  for (i = 0; i < count; i++)
-    {
-      rtx exp = XVECEXP (op, 0, i);
-      rtx unspec;
-      int maskval;
-      rtx src_reg;
-
-      src_reg = XVECEXP (SET_SRC (exp), 0, 0);
-
-      if (GET_CODE (src_reg) != REG
-	  || GET_MODE (src_reg) != CCmode
-	  || ! CR_REGNO_P (REGNO (src_reg)))
-	return 0;
-
-      if (GET_CODE (exp) != SET
-	  || GET_CODE (SET_DEST (exp)) != REG
-	  || GET_MODE (SET_DEST (exp)) != SImode
-	  || ! INT_REGNO_P (REGNO (SET_DEST (exp))))
-	return 0;
-      unspec = SET_SRC (exp);
-      maskval = 1 << (MAX_CR_REGNO - REGNO (src_reg));
-
-      if (GET_CODE (unspec) != UNSPEC
-	  || XINT (unspec, 1) != UNSPEC_MOVESI_FROM_CR
-	  || XVECLEN (unspec, 0) != 2
-	  || XVECEXP (unspec, 0, 0) != src_reg
-	  || GET_CODE (XVECEXP (unspec, 0, 1)) != CONST_INT
-	  || INTVAL (XVECEXP (unspec, 0, 1)) != maskval)
-	return 0;
-    }
-  return 1;
-}
-
-/* Return 1 for an PARALLEL suitable for mtcrf.  */
-
-int
-mtcrf_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int count = XVECLEN (op, 0);
-  int i;
-  rtx src_reg;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count < 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC
-      || XVECLEN (SET_SRC (XVECEXP (op, 0, 0)), 0) != 2)
-    return 0;
-  src_reg = XVECEXP (SET_SRC (XVECEXP (op, 0, 0)), 0, 0);
-
-  if (GET_CODE (src_reg) != REG
-      || GET_MODE (src_reg) != SImode
-      || ! INT_REGNO_P (REGNO (src_reg)))
-    return 0;
-
-  for (i = 0; i < count; i++)
-    {
-      rtx exp = XVECEXP (op, 0, i);
-      rtx unspec;
-      int maskval;
-
-      if (GET_CODE (exp) != SET
-	  || GET_CODE (SET_DEST (exp)) != REG
-	  || GET_MODE (SET_DEST (exp)) != CCmode
-	  || ! CR_REGNO_P (REGNO (SET_DEST (exp))))
-	return 0;
-      unspec = SET_SRC (exp);
-      maskval = 1 << (MAX_CR_REGNO - REGNO (SET_DEST (exp)));
-
-      if (GET_CODE (unspec) != UNSPEC
-	  || XINT (unspec, 1) != UNSPEC_MOVESI_TO_CR
-	  || XVECLEN (unspec, 0) != 2
-	  || XVECEXP (unspec, 0, 0) != src_reg
-	  || GET_CODE (XVECEXP (unspec, 0, 1)) != CONST_INT
-	  || INTVAL (XVECEXP (unspec, 0, 1)) != maskval)
-	return 0;
-    }
-  return 1;
-}
-
-/* Return 1 for an PARALLEL suitable for lmw.  */
-
-int
-lmw_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int count = XVECLEN (op, 0);
-  unsigned int dest_regno;
-  rtx src_addr;
-  unsigned int base_regno;
-  HOST_WIDE_INT offset;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != REG
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != MEM)
-    return 0;
-
-  dest_regno = REGNO (SET_DEST (XVECEXP (op, 0, 0)));
-  src_addr = XEXP (SET_SRC (XVECEXP (op, 0, 0)), 0);
-
-  if (dest_regno > 31
-      || count != 32 - (int) dest_regno)
-    return 0;
-
-  if (legitimate_indirect_address_p (src_addr, 0))
-    {
-      offset = 0;
-      base_regno = REGNO (src_addr);
-      if (base_regno == 0)
-	return 0;
-    }
-  else if (rs6000_legitimate_offset_address_p (SImode, src_addr, 0))
-    {
-      offset = INTVAL (XEXP (src_addr, 1));
-      base_regno = REGNO (XEXP (src_addr, 0));
-    }
-  else
-    return 0;
-
-  for (i = 0; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-      rtx newaddr;
-      rtx addr_reg;
-      HOST_WIDE_INT newoffset;
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != SImode
-	  || REGNO (SET_DEST (elt)) != dest_regno + i
-	  || GET_CODE (SET_SRC (elt)) != MEM
-	  || GET_MODE (SET_SRC (elt)) != SImode)
-	return 0;
-      newaddr = XEXP (SET_SRC (elt), 0);
-      if (legitimate_indirect_address_p (newaddr, 0))
-	{
-	  newoffset = 0;
-	  addr_reg = newaddr;
-	}
-      else if (rs6000_legitimate_offset_address_p (SImode, newaddr, 0))
-	{
-	  addr_reg = XEXP (newaddr, 0);
-	  newoffset = INTVAL (XEXP (newaddr, 1));
-	}
-      else
-	return 0;
-      if (REGNO (addr_reg) != base_regno
-	  || newoffset != offset + 4 * i)
-	return 0;
-    }
-
-  return 1;
-}
-
-/* Return 1 for an PARALLEL suitable for stmw.  */
-
-int
-stmw_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  int count = XVECLEN (op, 0);
-  unsigned int src_regno;
-  rtx dest_addr;
-  unsigned int base_regno;
-  HOST_WIDE_INT offset;
-  int i;
-
-  /* Perform a quick check so we don't blow up below.  */
-  if (count <= 1
-      || GET_CODE (XVECEXP (op, 0, 0)) != SET
-      || GET_CODE (SET_DEST (XVECEXP (op, 0, 0))) != MEM
-      || GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != REG)
-    return 0;
-
-  src_regno = REGNO (SET_SRC (XVECEXP (op, 0, 0)));
-  dest_addr = XEXP (SET_DEST (XVECEXP (op, 0, 0)), 0);
-
-  if (src_regno > 31
-      || count != 32 - (int) src_regno)
-    return 0;
-
-  if (legitimate_indirect_address_p (dest_addr, 0))
-    {
-      offset = 0;
-      base_regno = REGNO (dest_addr);
-      if (base_regno == 0)
-	return 0;
-    }
-  else if (rs6000_legitimate_offset_address_p (SImode, dest_addr, 0))
-    {
-      offset = INTVAL (XEXP (dest_addr, 1));
-      base_regno = REGNO (XEXP (dest_addr, 0));
-    }
-  else
-    return 0;
-
-  for (i = 0; i < count; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i);
-      rtx newaddr;
-      rtx addr_reg;
-      HOST_WIDE_INT newoffset;
-
-      if (GET_CODE (elt) != SET
-	  || GET_CODE (SET_SRC (elt)) != REG
-	  || GET_MODE (SET_SRC (elt)) != SImode
-	  || REGNO (SET_SRC (elt)) != src_regno + i
-	  || GET_CODE (SET_DEST (elt)) != MEM
-	  || GET_MODE (SET_DEST (elt)) != SImode)
-	return 0;
-      newaddr = XEXP (SET_DEST (elt), 0);
-      if (legitimate_indirect_address_p (newaddr, 0))
-	{
-	  newoffset = 0;
-	  addr_reg = newaddr;
-	}
-      else if (rs6000_legitimate_offset_address_p (SImode, newaddr, 0))
-	{
-	  addr_reg = XEXP (newaddr, 0);
-	  newoffset = INTVAL (XEXP (newaddr, 1));
-	}
-      else
-	return 0;
-      if (REGNO (addr_reg) != base_regno
-	  || newoffset != offset + 4 * i)
-	return 0;
-    }
-
-  return 1;
-}
 
 /* A validation routine: say whether CODE, a condition code, and MODE
    match.  The other alternatives either don't make sense or should
    never be generated.  */
 
-static void
+void
 validate_condition_mode (enum rtx_code code, enum machine_mode mode)
 {
   if ((GET_RTX_CLASS (code) != RTX_COMPARE
@@ -9793,82 +8399,6 @@ validate_condition_mode (enum rtx_code code, enum machine_mode mode)
     abort ();
 }
 
-/* Return 1 if OP is a comparison operation that is valid for a branch insn.
-   We only check the opcode against the mode of the CC value here.  */
-
-int
-branch_comparison_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (op);
-  enum machine_mode cc_mode;
-
-  if (!COMPARISON_P (op))
-    return 0;
-
-  cc_mode = GET_MODE (XEXP (op, 0));
-  if (GET_MODE_CLASS (cc_mode) != MODE_CC)
-    return 0;
-
-  validate_condition_mode (code, cc_mode);
-
-  return 1;
-}
-
-/* Return 1 if OP is a comparison operation that is valid for a branch
-   insn and which is true if the corresponding bit in the CC register
-   is set.  */
-
-int
-branch_positive_comparison_operator (rtx op, enum machine_mode mode)
-{
-  enum rtx_code code;
-
-  if (! branch_comparison_operator (op, mode))
-    return 0;
-
-  code = GET_CODE (op);
-  return (code == EQ || code == LT || code == GT
-	  || code == LTU || code == GTU
-	  || code == UNORDERED);
-}
-
-/* Return 1 if OP is a comparison operation that is valid for an scc
-   insn: it must be a positive comparison.  */
-
-int
-scc_comparison_operator (rtx op, enum machine_mode mode)
-{
-  return branch_positive_comparison_operator (op, mode);
-}
-
-int
-trap_comparison_operator (rtx op, enum machine_mode mode)
-{
-  if (mode != VOIDmode && mode != GET_MODE (op))
-    return 0;
-  return COMPARISON_P (op);
-}
-
-int
-boolean_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (op);
-  return (code == AND || code == IOR || code == XOR);
-}
-
-int
-boolean_or_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (op);
-  return (code == IOR || code == XOR);
-}
-
-int
-min_max_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (op);
-  return (code == SMIN || code == SMAX || code == UMIN || code == UMAX);
-}
 
 /* Return 1 if ANDOP is a mask that has no bits on that are not in the
    mask required to convert the result of a rotate insn into a shift
