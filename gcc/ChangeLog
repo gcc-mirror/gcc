@@ -1,3 +1,9 @@
+2000-08-22  Philipp Thomas  <pthomas@suse.de>
+            Masanobu Yuhara <yuhara@flab.fujitsu.co.jp>
+
+	* gmicro.h (TARGET_SWITCHES): Add descriptions and mark them
+	for translation.
+
 2000-08-30  Greg McGary  <greg@mcgary.org>
 
 	* Makefile.in (fixinc.sh): Pass CC, CFLAGS and LDFLAGS to mkfixinc.sh
