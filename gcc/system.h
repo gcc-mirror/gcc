@@ -171,6 +171,15 @@ extern int errno;
 # define O_WRONLY 1
 #endif
 
+/* Some systems define these in, e.g., param.h.  We undefine these names
+   here to avoid the warnings.  We prefer to use our definitions since we
+   know they are correct.  */
+
+#undef MIN
+#undef MAX
+#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
+
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
 #endif
