@@ -687,7 +687,7 @@ determine_biv_step (tree phi)
     return NULL_TREE;
 
   if (!step)
-    return fold_convert (type, integer_zero_node);
+    return build_int_cst (type, 0);
 
   return step;
 }
@@ -1173,10 +1173,8 @@ idx_find_step (tree base, tree *idx, void *data)
   if (TREE_CODE (base) == ARRAY_REF)
     step = array_ref_element_size (base);
   else
-    {
-      /* The step for pointer arithmetics already is 1 byte.  */
-      step = fold_convert (type, integer_one_node);
-    }
+    /* The step for pointer arithmetics already is 1 byte.  */
+    step = build_int_cst (type, 1);
 
   if (TYPE_PRECISION (iv_type) < TYPE_PRECISION (type))
     iv_step = can_count_iv_in_wider_type (dta->ivopts_data->current_loop,
@@ -1586,7 +1584,7 @@ add_old_iv_candidates (struct ivopts_data *data, struct iv *iv)
 
   /* The same, but with initial value zero.  */
   add_candidate (data,
-		 fold_convert (TREE_TYPE (iv->base), integer_zero_node),
+		 build_int_cst (TREE_TYPE (iv->base), 0),
 		 iv->step, true, NULL);
 
   phi = SSA_NAME_DEF_STMT (iv->ssa_name);
@@ -1628,8 +1626,7 @@ add_iv_value_candidates (struct ivopts_data *data,
   add_candidate (data, iv->base, iv->step, false, use);
 
   /* The same, but with initial value zero.  */
-  add_candidate (data,
-		 fold_convert (TREE_TYPE (iv->base), integer_zero_node),
+  add_candidate (data, build_int_cst (TREE_TYPE (iv->base), 0),
 		 iv->step, false, use);
 }
 
