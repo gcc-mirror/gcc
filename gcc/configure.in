@@ -1491,6 +1491,40 @@ else
 		AC_MSG_ERROR([--enable-languages needs at least one argument])
 	fi
 fi
+
+# First scan to see if an enabled language requires some other language.
+# We assume that a given config-lang.in will list all the language
+# front ends it requires, even if some are required indirectly.
+for lang in ${srcdir}/*/config-lang.in ..
+do
+   case $lang in
+    ..)
+       ;;
+    # The odd quoting in the next line works around
+    # an apparent bug in bash 1.12 on linux.
+changequote(,)dnl
+    ${srcdir}/[*]/config-lang.in)
+       ;;
+    *)
+       lang_alias=`sed -n -e 's,^language=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^language=\([^ 	]*\).*$,\1,p' $lang`
+       this_lang_requires=`sed -n -e 's,^lang_requires=['"'"'"'"]\(.*\)["'"'"'"'].*$,\1,p' -e 's,^lang_requires=\([^ 	]*\).*$,\1,p' $lang`
+       for other in $this_lang_requires
+       do
+	  case ,${enable_languages}, in
+	   *,$other,*)
+	      ;;
+	   *,all,*)
+	      ;;
+	   *)
+	      enable_languages="$enable_languages,$other"
+	      ;;
+	  esac
+       done
+       ;;
+changequote([,])dnl
+   esac
+done
+
 subdirs=
 for lang in ${srcdir}/*/config-lang.in ..
 do
