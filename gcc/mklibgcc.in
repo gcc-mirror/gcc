@@ -430,6 +430,7 @@ echo '	  if [ -d $(stage)/$$dir ]; then true; else mkdir $(stage)/$$dir; fi; \'
 echo '	done'
 echo '	-for dir in '"${dirs}"'; do \'
 echo '	  mv $$dir/*'"${objext}"' $(stage)/$$dir; \'
+echo '	  test ! -f $$dir/libgcc.a || mv $$dir/lib* $(stage)/$$dir; \'
 echo '	done'
 
 echo ""
