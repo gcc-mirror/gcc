@@ -26,7 +26,7 @@ host_xm_file=config/i386/xm-winnt.h
 /^lang_specs_files=/ d
 /^lang_options_files=/ d
 /^version=/ c\
-version=2.6.3
+version=2.7.1
 s/CC = cc/CC = cl/
 s/^SHELL =.*/SHELL =/
 s/CFLAGS = -g/CFLAGS =/
