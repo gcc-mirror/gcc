@@ -1,3 +1,8 @@
+Tue Jun 18 22:37:35 2002  Denis Chertykov  <denisc@overta.ru>
+
+	* config.sub: Add support for avr target.
+	Import from master sources, rev 1.255
+	
 2002-06-19  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure, .cvsignore:  Revert previous change...
