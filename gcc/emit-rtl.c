@@ -4180,7 +4180,10 @@ init_emit_once (line_numbers)
     if (GET_MODE_CLASS (mode) == MODE_CC)
       const_tiny_rtx[0][(int) mode] = const0_rtx;
 
-  ggc_add_rtx_root (&const_tiny_rtx[0][0], sizeof(const_tiny_rtx)/sizeof(rtx));
+  /* For bounded pointers, `&const_tiny_rtx[0][0]' is not the same as
+     `(rtx *) const_tiny_rtx'.  The former has bounds that only cover
+     `const_tiny_rtx[0]', whereas the latter has bounds that cover all.  */
+  ggc_add_rtx_root ((rtx *) const_tiny_rtx, sizeof const_tiny_rtx / sizeof (rtx));
   ggc_add_rtx_root (&const_true_rtx, 1);
 
 #ifdef RETURN_ADDRESS_POINTER_REGNUM

@@ -1158,7 +1158,7 @@ mcore_output_inline_const_forced (insn, operands, mode)
   if (mcore_const_ok_for_inline (value))
     return output_inline_const (SImode, operands);
 
-  for (i = 0; (unsigned) i < sizeof (part) / sizeof (part[0]); i++)
+  for (i = 0; (unsigned) i < ARRAY_SIZE (part); i++)
     {
       part[i].shift = 0;
       part[i].low = (value & 0x1F);
@@ -1990,7 +1990,7 @@ layout_mcore_frame (infp)
      (1) run fast,
      (2) reduce instruction space, or
      (3) reduce stack space.  */
-  for (i = 0; i < sizeof (infp->growth) / sizeof (infp->growth[0]); i++)
+  for (i = 0; i < ARRAY_SIZE (infp->growth); i++)
     infp->growth[i] = 0;
 
   regarg      = infp->reg_size + infp->arg_size;
@@ -3139,7 +3139,7 @@ handle_structs_in_regs (mode, type, reg)
         }
 
       /* We assume here that NPARM_REGS == 6.  The assert checks this.  */
-      assert (sizeof (arg_regs) / sizeof (arg_regs[0]) == 6);
+      assert (ARRAY_SIZE (arg_regs) == 6);
       rtvec = gen_rtvec (nregs, arg_regs[0], arg_regs[1], arg_regs[2],
 			  arg_regs[3], arg_regs[4], arg_regs[5]);
       

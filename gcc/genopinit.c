@@ -134,7 +134,7 @@ gen_insn (insn)
   /* See if NAME matches one of the patterns we have for the optabs we know
      about.  */
 
-  for (pindex = 0; pindex < sizeof optabs / sizeof optabs[0]; pindex++)
+  for (pindex = 0; pindex < ARRAY_SIZE (optabs); pindex++)
     {
       int force_float = 0, force_int = 0;
       int force_consec = 0;
@@ -221,7 +221,7 @@ gen_insn (insn)
 	break;
     }
 
-  if (pindex == sizeof optabs / sizeof optabs[0])
+  if (pindex == ARRAY_SIZE (optabs))
     return;
 
   /* We found a match.  If this pattern is only conditionally present,

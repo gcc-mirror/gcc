@@ -8569,8 +8569,6 @@ sparc_add_gc_roots ()
   ggc_add_rtx_root (&get_pc_symbol, 1);
   ggc_add_rtx_root (&sparc_addr_diff_list, 1);
   ggc_add_rtx_root (&sparc_addr_list, 1);
-  ggc_add_root (ultra_pipe_hist, 
-		sizeof (ultra_pipe_hist) / sizeof (ultra_pipe_hist[0]),
-		sizeof (ultra_pipe_hist[0]),
-		&mark_ultrasparc_pipeline_state);
+  ggc_add_root (ultra_pipe_hist, ARRAY_SIZE (ultra_pipe_hist),
+		sizeof (ultra_pipe_hist[0]), &mark_ultrasparc_pipeline_state);
 }

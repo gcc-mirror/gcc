@@ -317,7 +317,7 @@ arm_override_options ()
   unsigned i;
   
   /* Set up the flags based on the cpu/architecture selected by the user.  */
-  for (i = sizeof (arm_select) / sizeof (arm_select[0]); i--;)
+  for (i = ARRAY_SIZE (arm_select); i--;)
     {
       struct arm_cpu_select * ptr = arm_select + i;
       

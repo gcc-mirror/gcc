@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.9 $"
+#define VERSION_INFO2   "$Revision: 1.10 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -85,8 +85,8 @@ Boston, MA 02111-1307, USA.  */
 /* Override svr[34].h.  */
 #undef	ASM_FILE_START
 #define ASM_FILE_START(FILE) \
-  output_file_start (FILE, f_options, sizeof f_options / sizeof f_options[0], \
-		     W_options, sizeof W_options / sizeof W_options[0])
+  output_file_start (FILE, f_options, ARRAY_SIZE (f_options), \
+		     W_options, ARRAY_SIZE (W_options))
 
 /* ix86 abi specified type for wchar_t */
 

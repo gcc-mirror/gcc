@@ -641,7 +641,7 @@ decode_reg_name (asmspec)
 	static struct { const char *name; int number; } table[]
 	  = ADDITIONAL_REGISTER_NAMES;
 
-	for (i = 0; i < (int)(sizeof (table) / sizeof (table[0])); i++)
+	for (i = 0; i < (int) ARRAY_SIZE (table); i++)
 	  if (! strcmp (asmspec, table[i].name))
 	    return table[i].number;
       }

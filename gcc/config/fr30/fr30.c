@@ -575,7 +575,7 @@ fr30_print_operand (file, x, code)
       switch (GET_CODE (x0))
 	{
 	case REG:
-	  if ((unsigned) REGNO (x0) >= (sizeof (reg_names) / sizeof (reg_names[0])))
+	  if ((unsigned) REGNO (x0) >= ARRAY_SIZE (reg_names))
 	    abort ();
 	  fprintf (file, "@%s", reg_names [REGNO (x0)]);
 	  break;

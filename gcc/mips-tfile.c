@@ -3283,7 +3283,7 @@ parse_def (name_start)
 
       if (diff)
 	{
-	  for (j = (sizeof (t.sizes) / sizeof (t.sizes[0])) - 1; j >= 0; j--)
+	  for (j = ARRAY_SIZE (t.sizes) - 1; j >= 0; j--)
 	    t.sizes[ j ] = ((j-diff) >= 0) ? t.sizes[ j-diff ] : 0;
 
 	  t.num_sizes = i + 1;
@@ -3882,7 +3882,7 @@ parse_input __proto((void))
 	p++;
 
       /* See if it's a directive we handle.  If so, dispatch handler.  */
-      for (i = 0; i < sizeof (pseudo_ops) / sizeof (pseudo_ops[0]); i++)
+      for (i = 0; i < ARRAY_SIZE (pseudo_ops); i++)
 	if (memcmp (p, pseudo_ops[i].name, pseudo_ops[i].len) == 0
 	    && ISSPACE ((unsigned char)(p[pseudo_ops[i].len])))
 	  {

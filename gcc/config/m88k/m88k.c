@@ -1544,7 +1544,7 @@ output_options (file, f_options, f_len, W_options, W_len,
       pos = output_option (file, sep, "-W", W_options[j].string,
 			   indent, pos, max);
 
-  for (j = 0; j < (long) (sizeof m_options / sizeof m_options[0]); j++)
+  for (j = 0; j < (long) ARRAY_SIZE (m_options); j++)
     if (m_options[j].name[0] != '\0'
 	&& m_options[j].value > 0
 	&& ((m_options[j].value & target_flags)

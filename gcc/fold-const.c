@@ -1870,7 +1870,7 @@ size_int_type_wide (number, type)
   /* If this is a positive number that fits in the table we use to hold
      cached entries, see if it is already in the table and put it there
      if not.  */
-  if (number >= 0 && number < (int) (sizeof size_table / sizeof size_table[0]))
+  if (number >= 0 && number < (int) ARRAY_SIZE (size_table))
     {
       if (size_table[number] != 0)
 	for (t = size_table[number]; t != 0; t = TREE_CHAIN (t))

@@ -129,7 +129,7 @@ run_test( tname, fname, text )
 #define _FT_(n,p) { n, p },
   static test_entry_t test_table[] = { FIX_TEST_TABLE { NULL, NULL }};
 #undef _FT_
-#define TEST_TABLE_CT ((sizeof(test_table)/sizeof(test_table[0]))-1)
+#define TEST_TABLE_CT (ARRAY_SIZE (test_table)-1)
 
   int ct = TEST_TABLE_CT;
   test_entry_t* pte = test_table;

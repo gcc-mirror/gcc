@@ -3395,12 +3395,12 @@ expand_nl_goto_receiver ()
       static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
       size_t i;
 
-      for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
+      for (i = 0; i < ARRAY_SIZE (elim_regs); i++)
 	if (elim_regs[i].from == ARG_POINTER_REGNUM
 	    && elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
 	  break;
 
-      if (i == sizeof elim_regs / sizeof elim_regs [0])
+      if (i == ARRAY_SIZE (elim_regs))
 #endif
 	{
 	  /* Now restore our arg pointer from the address at which it
