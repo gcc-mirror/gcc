@@ -1,3 +1,11 @@
+Sat Jun 27 07:36:09 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (EXPR_H): New dependency variable.
+	(decl2.o): Depend on $(EXPR_H).
+	(typeck.o): Likewise.
+	(init.o): Likewise.
+	(expr.o): Likewise.
+
 1998-06-25  Benjamin Kosnik  <bkoz@lisa.cygnus.com>
 
 	* decl.c (start_enum): Put local enums on permanent_obstack.
