@@ -1,3 +1,8 @@
+2003-06-30  Doug Gregor <dgregor@apple.com> 
+	
+	* testsuite/24_iterators/insert_iterator.cc (test01, test02):
+	Don't initialize an insert_iterator with a singular iterator.
+
 2003-06-30  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* acinclude.m4 (GLIBCPP_ENABLE_PCH): Add bits for --enable-pch.
