@@ -1,3 +1,56 @@
+Sat Dec 20 11:26:47 1997  Kaveh R. Ghazi  <ghazi@tragg.rutgers.edu>
+			  Jeff Law  <law@cygnus.com>
+
+	* bitmap.c (bitmap_clear): Ensure `inline' is at the beginning
+	of the declaration.
+	* c-decl.c (finish_decl): Use parentheses around && within ||.
+	* rtl.c: Include stdlib.h.
+	(read_skip_spaces): Add parentheses around assignments used as
+	truth values.
+	(read_rtx): Initialize list_rtx.
+        * cppexp.c (parse_number): Use || when operands are truth values.
+        * alias.c (find_base_value): Add default case.
+	(memrefs_conflict): Likewise.
+        * combine.c (sets_function_arg_p): Likewise.
+        * genemit.c (gen_exp): Likewise.
+        * local-alloc.c (contains_replace_regs): Likewise.
+        * rtlanal.c (jmp_uses_reg_or_mem): Likewise.
+        * fold-const.c (fold_convert): Use "&&" for truth values.
+	(fold): Add default case.
+        * sdbout.c (sdbout_field_types): Fix typo in declaration.
+	(sdbout_one_type): Add default case.
+        * alpha.c (alpha_sa_mask): Prototype only if OPEN_VMS.
+	(some_operand): Add default case.
+	(input_operand): Likewise.
+	(signed_comparison_operator): Likewise.
+	(divmod_operator): Likewise.
+	(alpha_set_memflags_1): Likewise.
+	* reload1.c (reload_cse_simplify_operands): Ensure function
+	always returns a value.
+	* scan-decls.c (scan_decls): Likewise.
+	* c-lex.c (skip_white_space): Fix typo in declaraion.
+	* c-typeck.c (comp_target_types): Add parentheses around assignment
+	used as truth value.
+	(print_spelling): Likewise.
+	(constructor_implicit, constructor_result): Remove unused variables.
+	* collect2.c (scan_library): Protect prototype with
+	#ifdef SCAN_LIBRARIES.
+	* emit-rtl.c (find_line_note): Fix typo in declaration.
+	* final.c (asm_insn_count): Protect prototype with 
+	#ifdef HAVE_ATTR_length.
+	* flow.c (find_auto_inc): Protect prototype with #ifdef AUTO_INC_DEC.
+	(try_pre_increment_1, try_pre_increment): Likewise.
+	* regclass.c (auto_inc_dec_reg_p): Protect prototype with
+	#ifdef FORBIDDEN_INC_DEC_CLASSES.  Make return type explicit.
+        * gcov-io.h (__store_long, __write_long, __read_long): Fix
+        unsigned/signed comparisons.
+        * gcov.c (read_files): Remove unused "first_type" variable.
+	(scan _for_source_files): Initialize s_ptr.
+	(function_summary): Eliminate "%lf" formatting, use %ld for
+	longs.
+	(output_data): Initialize branch_probs and last_line_num.
+	Eliminate "%lf" formatting, use "%ld" for longs.
+
 Fri Dec 19 17:31:11 1997  Ian Lance Taylor  <ian@cygnus.com>
 
         * mips16.S: New file.

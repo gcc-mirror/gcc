@@ -3888,7 +3888,7 @@ finish_decl (decl, init, asmspec_tree)
 		 declaration into a file scope one.  This can be detected
 		 by TREE_ASM_WRITTEN being set.  */
 		(DECL_INITIAL (decl) != 0
-		 || DECL_CONTEXT (decl) != 0 && ! TREE_ASM_WRITTEN (decl))
+		 || (DECL_CONTEXT (decl) != 0 && ! TREE_ASM_WRITTEN (decl)))
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */

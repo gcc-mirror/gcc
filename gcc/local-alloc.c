@@ -628,6 +628,9 @@ contains_replace_regs (x, reg_equiv_replace)
 
     case REG:
       return reg_equiv_replace[REGNO (x)];
+
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);

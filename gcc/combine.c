@@ -1087,6 +1087,9 @@ sets_function_arg_p (pat)
       return (GET_CODE (inner_dest) == REG
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
 	      && FUNCTION_ARG_REGNO_P (REGNO (inner_dest)));
+
+    default:
+      break;
     }
 
   return 0;

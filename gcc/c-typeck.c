@@ -547,7 +547,7 @@ comp_target_types (ttl, ttr)
   int val;
 
   /* Give maybe_objc_comptypes a crack at letting these types through.  */
-  if (val = maybe_objc_comptypes (ttl, ttr, 1) >= 0)
+  if ((val = maybe_objc_comptypes (ttl, ttr, 1)) >= 0)
     return val;
 
   val = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
@@ -4700,7 +4700,7 @@ print_spelling (buffer)
       {
 	if (p->kind == SPELLING_MEMBER)
 	  *d++ = '.';
-	for (s = p->u.s; *d = *s++; d++)
+	for (s = p->u.s; (*d = *s++); d++)
 	  ;
       }
   *d++ = '\0';
@@ -5106,9 +5106,6 @@ static int constructor_depth;
 /* 0 if implicitly pushing constructor levels is allowed.  */
 int constructor_no_implicit = 0; /* 0 for C; 1 for some other languages.  */
 
-/* 1 if this constructor level was entered implicitly.  */
-static int constructor_implicit;
-
 static int require_constant_value;
 static int require_constant_elements;
 
@@ -5127,9 +5124,6 @@ static char *constructor_asmspec;
 /* Nonzero if this is an initializer for a top-level decl.  */
 static int constructor_top_level;
 
-/* When we finish reading a constructor expression
-   (constructor_decl is 0), the CONSTRUCTOR goes here.  */
-static tree constructor_result;
 
 /* This stack has a level for each implicit or explicit level of
    structuring in the initializer, including the outermost one.  It

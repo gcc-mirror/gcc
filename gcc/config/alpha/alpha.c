@@ -108,8 +108,10 @@ static rtx alpha_emit_set_const_1 PROTO((rtx, enum machine_mode,
 static void add_long_const	PROTO((FILE *, HOST_WIDE_INT, int, int, int));
 
 /* Compute the size of the save area in the stack.  */
+#if OPEN_VMS
 static void alpha_sa_mask	PROTO((unsigned long *imaskP,
 				       unsigned long *fmaskP));
+#endif
 /* Get the number of args of a function in one of two ways.  */
 #ifdef OPEN_VMS
 #define NUM_ARGS current_function_args_info.num_args
@@ -536,6 +538,9 @@ some_operand (op, mode)
 
     case SUBREG:
       return some_operand (SUBREG_REG (op), VOIDmode);
+
+    default:
+      break;
     }
 
   return 0;
@@ -578,6 +583,9 @@ input_operand (op, mode)
 
     case CONST_INT:
       return mode == QImode || mode == HImode || add_operand (op, mode);
+
+    default:
+      break;
     }
 
   return 0;
@@ -657,6 +665,9 @@ signed_comparison_operator (op, mode)
     {
     case EQ:  case NE:  case LE:  case LT:  case GE:   case GT:
       return 1;
+
+    default:
+      break;
     }
 
   return 0;
@@ -673,6 +684,9 @@ divmod_operator (op, mode)
     {
     case DIV:  case MOD:  case UDIV:  case UMOD:
       return 1;
+
+    default:
+      break;
     }
 
   return 0;
@@ -890,6 +904,9 @@ alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
       MEM_IN_STRUCT_P (x) = in_struct_p;
       MEM_VOLATILE_P (x) = volatile_p;
       RTX_UNCHANGING_P (x) = unchanging_p;
+      break;
+
+    default:
       break;
     }
 }

@@ -263,10 +263,12 @@ static void mark_set_regs		PROTO((regset, regset, rtx,
 					       rtx, regset));
 static void mark_set_1			PROTO((regset, regset, rtx,
 					       rtx, regset));
+#ifdef AUTO_INC_DEC
 static void find_auto_inc		PROTO((regset, rtx, rtx));
-static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
 static int try_pre_increment_1		PROTO((rtx));
 static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
+#endif
+static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
 void dump_flow_info			PROTO((FILE *));
 
 /* Find basic blocks of the current function and perform data flow analysis.

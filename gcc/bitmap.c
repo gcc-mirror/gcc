@@ -222,7 +222,7 @@ bitmap_element_link (head, element)
 
 /* Clear a bitmap by freeing the linked list.  */
 
-void INLINE
+INLINE void
 bitmap_clear (head)
      bitmap head;
 {
