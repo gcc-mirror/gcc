@@ -33,9 +33,13 @@ bool operator==(X, X) { return true; }
 // Not implemented on purpose.  { dg-do link }
 bool operator!=(X, X);
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<X>;
+#endif
+
 int main()
 {
   std::vector<X> v, w;
-
   return !std::equal(v.begin(), v.end(), w.begin());
 }

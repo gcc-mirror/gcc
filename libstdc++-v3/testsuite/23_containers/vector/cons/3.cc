@@ -1,6 +1,6 @@
 // 1999-06-29 bkoz
 
-// Copyright (C) 1999-2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999-2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -46,9 +46,13 @@ test03()
   VERIFY(std::equal(B, B + M, v5.begin()));
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<int>;
+#endif
+
 int main()
 {
   test03();
-
   return 0;
 }

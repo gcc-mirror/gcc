@@ -43,12 +43,17 @@ void operator delete(void *v) throw()
   return std::free(v);
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<gnu>;
+#endif
+
 void test01()
 {
   bool test __attribute__((unused)) = true;
   std::allocator<gnu> obj;
 
-  // XXX These should work for various size allocation and
+  // NB: These should work for various size allocation and
   // deallocations.  Currently, they only work as expected for sizes >
   // _MAX_BYTES as defined in stl_alloc.h, which happes to be 128. 
   gnu* pobj = obj.allocate(256);
@@ -63,3 +68,4 @@ int main()
   test01();
   return 0;
 }
+

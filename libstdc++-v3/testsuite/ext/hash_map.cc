@@ -95,6 +95,13 @@ void test01()
   }
 }
 
+#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
+// Explicitly instantiate for systems with no COMDAT or weak support.
+template class __gnu_cxx::__mt_alloc<__gnu_cxx::_Hashtable_node<std::pair<const std::string, int> > >;
+template class __gnu_cxx::__mt_alloc<__gnu_cxx::_Hashtable_node<std::pair<const std::string, int> >* >;
+template class __gnu_cxx::__mt_alloc<std::pair<std::string, int> >;
+#endif
+
 int main()
 {
   test01();
