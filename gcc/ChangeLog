@@ -1,3 +1,7 @@
+Thu Nov  7 15:50:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (DWARF_FRAME_RETURN_COLUMN): Use DWARF_FRAME_REGNUM.
+
 Thu Nov  7 11:18:01 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (compensate_edge): Fix sanity check.

@@ -3316,7 +3316,8 @@ extern int rtx_equal_function_value_matters;
 #define MD_CAN_REDIRECT_BRANCH(INSN, SEQ) \
   sh_can_redirect_branch ((INSN), (SEQ))
 
-#define DWARF_FRAME_RETURN_COLUMN (TARGET_SH5 ? PR_MEDIA_REG : PR_REG)
+#define DWARF_FRAME_RETURN_COLUMN \
+  (TARGET_SH5 ? DWARF_FRAME_REGNUM (PR_MEDIA_REG) : DWARF_FRAME_REGNUM (PR_REG))
 
 #if (defined CRT_BEGIN || defined CRT_END) && ! __SHMEDIA__
 /* SH constant pool breaks the devices in crtstuff.c to control section
