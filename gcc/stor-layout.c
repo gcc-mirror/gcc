@@ -284,7 +284,8 @@ layout_decl (decl, known_align)
       && known_align % TYPE_ALIGN (type) == 0
       && DECL_SIZE (decl) != 0
       && (TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST
-	  || (TREE_INT_CST_LOW (DECL_SIZE (decl)) % BITS_PER_UNIT) == 0))
+	  || (TREE_INT_CST_LOW (DECL_SIZE (decl)) % BITS_PER_UNIT) == 0)
+      && DECL_ALIGN (decl) >= TYPE_ALIGN (type))
     DECL_BIT_FIELD (decl) = 0;
 
   /* Evaluate nonconstant size only once, either now or as soon as safe.  */
