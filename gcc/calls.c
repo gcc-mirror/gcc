@@ -1043,7 +1043,8 @@ expand_call (exp, target, ignore)
 	      /* If it's in a register, we must make a copy of it too.  */
 	      /* ??? Is this a sufficient test?  Is there a better one? */
 	      && !(TREE_CODE (args[i].tree_value) == VAR_DECL
-		   && REG_P (DECL_RTL (args[i].tree_value))))
+		   && REG_P (DECL_RTL (args[i].tree_value)))
+	      && ! TREE_ADDRESSABLE (type))
 	    {
 	      args[i].tree_value = build1 (ADDR_EXPR,
 					   build_pointer_type (type),
