@@ -509,6 +509,8 @@
 /* Define 0/1 to force the choice for exception handling model. */
 #undef CONFIG_SJLJ_EXCEPTIONS
 
+/* Define if cpp should also search $prefix/include. */
+#undef PREFIX_INCLUDE_DIR
 
 /* Bison unconditionally undefines `const' if neither `__STDC__' nor
    __cplusplus are defined.  That's a problem since we use `const' in
