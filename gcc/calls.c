@@ -48,8 +48,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #ifdef PUSH_ROUNDING
 
+#ifndef PUSH_ARGS_REVERSED
 #if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
 #define PUSH_ARGS_REVERSED  PUSH_ARGS
+#endif
 #endif
 
 #endif
