@@ -1,5 +1,9 @@
 2000-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* init.c (resolve_offset_ref): Deal with TEMPLATE_ID_EXPR.
+
+2000-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (lookup_template_class): Remove abort.
 	* tree.c (get_type_decl): Allow error_mark_node.
 
