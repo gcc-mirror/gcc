@@ -1,3 +1,13 @@
+2001-07-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+config:
+	* i386/cygwin.h (VALID_MACHINE_DECL_ATTRIBUTE,
+	VALID_MACHINE_TYPE_ATTRIBUTE): Remove.
+	* i386/i386-protos.h (i386_pe_valid_decl_attribute_p,
+	i386_pe_valid_type_attribute_p): Add.
+	* i386/i386.c (TARGET_INITIALIZER): Override for cygwin targets.
+	* i386/winnt.c (i386_valid_decl_attribute_p): Return directly.
+
 Mon Jul  2 21:52:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* explow.c (plus_constant_wide, case LO_SUM): New case.

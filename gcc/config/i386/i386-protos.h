@@ -175,4 +175,6 @@ extern int ix86_data_alignment PARAMS ((tree, int));
 extern int ix86_local_alignment PARAMS ((tree, int));
 extern int ix86_constant_alignment PARAMS ((tree, int));
 extern int ix86_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
+extern int i386_pe_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
+extern int i386_pe_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 #endif
