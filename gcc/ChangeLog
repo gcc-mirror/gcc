@@ -1,3 +1,7 @@
+2003-07-09  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* c-lex.c (cb_ident): Cast cstr.text to const char *.
+
 2003-07-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov-io.h: Update documentation.
