@@ -3678,6 +3678,7 @@ alpha_mark_machine_status (p)
   if (machine)
     {
       ggc_mark_rtx (machine->ra_rtx);
+      ggc_mark_rtx (machine->gp_save_rtx);
     }
 }
 
@@ -3711,6 +3712,29 @@ alpha_return_addr (count, frame)
       init = gen_rtx_SET (VOIDmode, reg, gen_rtx_REG (Pmode, REG_RA));
 
       /* Emit the insn to the prologue with the other argument copies.  */
+      push_topmost_sequence ();
+      emit_insn_after (init, get_insns ());
+      pop_topmost_sequence ();
+    }
+
+  return reg;
+}
+
+/* Return or create a pseudo containing the gp value for the current
+   function.  Needed only if TARGET_LD_BUGGY_LDGP.  */
+
+rtx
+alpha_gp_save_rtx ()
+{
+  rtx init, reg;
+
+  reg = cfun->machine->gp_save_rtx;
+  if (reg == NULL)
+    {
+      reg = gen_reg_rtx (DImode);
+      cfun->machine->gp_save_rtx = reg;
+      init = gen_rtx_SET (VOIDmode, reg, gen_rtx_REG (DImode, 29));
+
       push_topmost_sequence ();
       emit_insn_after (init, get_insns ());
       pop_topmost_sequence ();
