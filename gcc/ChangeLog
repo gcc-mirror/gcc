@@ -1,5 +1,11 @@
 Tue Dec 16 23:44:54 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
+	* fixincludes (size_t): Add support for Motorola's stdlib.h
+	which fails to provide a definition for size_t.
+	(fabs/hypot): Provide a prototype for fabs on m88k-motorola-sysv3.
+	(strlen,strspn,strcspn return value): Handle different layout on sysV88.
+	(hypot): Provide a fake for hypot for m88k-motorola-sysv3.
+
 	* m68k/xm-mot3300.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Define to
 	prevent unresolved externals in libio.
 	* m88k/xm-sysv3.h (ADD_MISSING_POSIX, ADD_MISSING_XOPEN): Likewise.
@@ -121,7 +127,7 @@ Fri Oct 10 17:58:31 CEST 1997  Marc Lehmann <pcg@goof.com>
 
 Thu Dec 11 23:55:17 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
-	* fixincludes (str{len,spn,cspn} return value): Handle different
+	* fixincludes (strlen,strspn,strcspn return value): Handle different
 	layout on sysV88.
 	(hypot): Provide a fake for hypot which is broken on 
 	m88k-motorola-sysv3.
