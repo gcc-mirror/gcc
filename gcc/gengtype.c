@@ -522,7 +522,7 @@ enum {
   BASE_FILE_COBOL
 };
 
-static const char *lang_names[] = {
+static const char *const lang_names[] = {
   "c", "objc", "cp", "treelang", "cobol", "f", "ada", "java"
 };
 #define NUM_BASE_FILES (sizeof (lang_names) / sizeof (lang_names[0]))
