@@ -24,4 +24,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef SUB_CPP_PREDEFINES
 #define SUB_CPP_PREDEFINES "-D__ELF__"
 
-#define ELF_DYNAMIC_LINKER  "/usr/libexec/ld.elf_so"
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+{ "elf_dynamic_linker", ELF_DYNAMIC_LINKER },
+
+#define ELF_DYNAMIC_LINKER	"/usr/libexec/ld.elf_so"

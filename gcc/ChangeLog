@@ -1,3 +1,21 @@
+Mon Jul 20 22:34:17 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (CPP_SPEC): Tidy.  Hook to cpp_cpu and cpp_subtarget.
+	(CPP_SUBTARGET_SPEC): Default to empty string.
+	(CPP_AM_*, CPP_IM_*, CPP_CPU_*, CPP_CPU_SPEC): New.
+	(EXTRA_SPECS, SUBTARGET_EXTRA_SPECS): New.
+	* alpha/elf.h (LD_SPEC): Use %(elf_dynamic_linker).
+	* alpha/linux-elf.h (SUBTARGET_EXTRA_SPECS): New.
+	(LIB_SPEC): Tidy.
+	* alpha/linux.h (CPP_PREDEFINES): Tidy.
+	* alpha/netbsd-elf.h (SUBTARGET_EXTRA_SPECS): New.
+	* alpha/netbsd.h (CPP_PREDEFINES): Tidy.
+	* alpha/osf.h (CPP_PREDEFINES): Remove bits subsumed by CPP_CPU_SPEC.
+	* alpha/win-nt.h (CPP_PREDEFINES): Likewise.
+	* alpha/vsf.h (CPP_PREDEFINES): Likewise.
+	(CPP_SUBTARGET_SPEC): New.  Do this instead of overriding CPP_SPEC.
+	* alpha/vxworks.h: Likewise.
+
 Mon Jul 20 22:51:57 1998  Ken Raeburn  <raeburn@cygnus.com>
 
 	* mips.md (reload_outsi): Added missing REGNO call.
