@@ -1,6 +1,5 @@
-/*
-   NetBSD/arm (RiscBSD) version.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+/* NetBSD/arm (RiscBSD) version.
+   Copyright (C) 1993, 1994, 1997 Free Software Foundation, Inc.
    Contributed by Mark Brinicombe (amb@physig.ph.kcl.ac.uk)
 
 This file is part of GNU CC.
@@ -50,7 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    arm32 is the NetBSD port name, so we always define arm32 and __arm32__.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "\
--Dunix -Driscbsd -Darm32 -D__arm32__ -D__NetBSD__ \
+-Dunix -Driscbsd -Darm32 -D__arm32__ -D__arm__ -D__NetBSD__ \
 -Asystem(unix) -Asystem(NetBSD) -Acpu(arm) -Amachine(arm)"
 
 /* Define _POSIX_SOURCE if necessary.  */
@@ -63,6 +62,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Because TARGET_DEFAULT sets ARM_FLAG_APCS_32 */
 #undef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
+
+/* Pass -X to the linker so that it will strip symbols starting with 'L' */
+#undef LINK_SPEC
+#define LINK_SPEC "\
+-X %{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{R*} \
+%{static:-Bstatic} %{assert*} \
+"
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -97,12 +103,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   fprintf(STREAM, "\tbl\tmcount\n");					    \
 }
 
+/* On the ARM `@' introduces a comment, so we must use something else
+   for .type directives.  */
+#undef TYPE_OPERAND_FMT
+#define TYPE_OPERAND_FMT "%%%s"
+
 /* VERY BIG NOTE : Change of structure alignment for RiscBSD.
    There are consequences you should be aware of...
 
    Normally GCC/arm uses a structure alignment of 32 for compatibility
    with armcc.  This means that structures are padded to a word
-   boundry.  However this causes problems with bugged NetBSD kernel
+   boundary.  However this causes problems with bugged NetBSD kernel
    code (possibly userland code as well - I have not checked every
    binary).  The nature of this bugged code is to rely on sizeof()
    returning the correct size of various structures rounded to the
@@ -118,7 +129,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
            structures containing shorts will be half word alinged.
            structures containing ints will be word aligned.
 
-      This means structures should be padded to a word boundry if
+      This means structures should be padded to a word boundary if
       alignment of 32 is required for byte structures etc.
       
    2. A potential performance penalty may exist if strings are no longer
@@ -130,3 +141,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    requirements.  */
 #undef STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY 8
+
+/* Until they use ELF or something that handles dwarf2 unwinds
+   and initialization stuff better.  */
+#define DWARF2_UNWIND_INFO 0
+

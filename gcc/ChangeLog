@@ -1,3 +1,9 @@
+Tue Jan 13 21:55:06 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* arm/netbsd.h (DWARF2_UNWIND_INFO): Define as zero for now.
+	* i386/netbsd.h, m68k/netbsd.h, ns32k/netbsd.h: Likewise.
+	* sparc/netbsd.h, vax/netbsd.h: Likewise.
+
 Tue Jan 13 21:37:07 1998  Shigeya Suzuki <shigeya@foretune.co.jp>
 
 	* i386/bsd386.h (DWARF2_UNWIND_INFO): Define as zero for now.
