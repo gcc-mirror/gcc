@@ -153,9 +153,6 @@ static int unknown_address_altered;
 
 static int unknown_constant_address_altered;
 
-/* Count of movable (i.e. invariant) instructions discovered in the loop.  */
-static int num_movables;
-
 /* Count of memory write instructions discovered in the loop.  */
 static int num_mem_sets;
 
@@ -224,7 +221,17 @@ struct movable
   struct movable *next;
 };
 
-static struct movable *the_movables;
+struct movables
+{
+  /* Head of movable chain.  */
+  struct movable *head;
+  /* Last movable in chain.  */
+  struct movable *last;
+  /* Number of movables in the loop.  */
+  int num;
+};
+
+static struct movables the_movables;
 
 FILE *loop_dump_stream;
 
@@ -252,13 +259,13 @@ static void replace_call_address PARAMS ((rtx, rtx, rtx));
 #endif
 static rtx skip_consec_insns PARAMS ((rtx, int));
 static int libcall_benefit PARAMS ((rtx));
-static void ignore_some_movables PARAMS ((struct movable *));
-static void force_movables PARAMS ((struct movable *));
-static void combine_movables PARAMS ((struct movable *, int));
-static int regs_match_p PARAMS ((rtx, rtx, struct movable *));
-static int rtx_equal_for_loop_p PARAMS ((rtx, rtx, struct movable *));
+static void ignore_some_movables PARAMS ((struct movables *));
+static void force_movables PARAMS ((struct movables *));
+static void combine_movables PARAMS ((struct movables *, int));
+static int regs_match_p PARAMS ((rtx, rtx, struct movables *));
+static int rtx_equal_for_loop_p PARAMS ((rtx, rtx, struct movables *));
 static void add_label_notes PARAMS ((rtx, rtx));
-static void move_movables PARAMS ((struct loop *loop, struct movable *,
+static void move_movables PARAMS ((struct loop *loop, struct movables *,
 				   int, int, int));
 static int count_nonfixed_reads PARAMS ((const struct loop *, rtx));
 static void strength_reduce PARAMS ((struct loop *, int, int));
@@ -599,9 +606,7 @@ scan_loop (loop, flags)
   /* The SET from an insn, if it is the only SET in the insn.  */
   rtx set, set1;
   /* Chain describing insns movable in current loop.  */
-  struct movable *movables = 0;
-  /* Last element in `movables' -- so we can add elements at the end.  */
-  struct movable *last_movable = 0;
+  struct movables *movables = &the_movables;
   /* Ratio of extra register life span we can justify
      for saving an instruction.  More if loop doesn't call subroutines
      since in that case saving an insn makes more difference
@@ -610,6 +615,10 @@ scan_loop (loop, flags)
   /* Nonzero if we are scanning instructions in a sub-loop.  */
   int loop_depth = 0;
   int nregs;
+
+  movables->head = 0;
+  movables->last = 0;
+  movables->num = 0;
 
   loop->top = 0;
 
@@ -916,11 +925,11 @@ scan_loop (loop, flags)
 		m->savings += libcall_benefit (p);
 	      VARRAY_INT (set_in_loop, regno) = move_insn ? -2 : -1;
 	      /* Add M to the end of the chain MOVABLES.  */
-	      if (movables == 0)
-		movables = m;
+	      if (movables->head == 0)
+		movables->head = m;
 	      else
-		last_movable->next = m;
-	      last_movable = m;
+		movables->last->next = m;
+	      movables->last = m;
 
 	      if (m->consec > 0)
 		{
@@ -1025,11 +1034,11 @@ scan_loop (loop, flags)
 		  m->savings = 1;
 		  VARRAY_INT (set_in_loop, regno) = -1;
 		  /* Add M to the end of the chain MOVABLES.  */
-		  if (movables == 0)
-		    movables = m;
+		  if (movables->head == 0)
+		    movables->head = m;
 		  else
-		    last_movable->next = m;
-		  last_movable = m;
+		    movables->last->next = m;
+		  movables->last = m;
 		}
 	    }
 	}
@@ -1121,7 +1130,6 @@ scan_loop (loop, flags)
 	/* Ensure our label doesn't go away.  */
 	LABEL_NUSES (update_end)++;
 
-      the_movables = movables;
       strength_reduce (loop, insn_count, flags);
 
       reg_scan_update (update_start, update_end, loop_max_reg);
@@ -1331,11 +1339,11 @@ skip_consec_insns (insn, count)
 
 static void
 ignore_some_movables (movables)
-     struct movable *movables;
+     struct movables *movables;
 {
   register struct movable *m, *m1;
 
-  for (m = movables; m; m = m->next)
+  for (m = movables->head; m; m = m->next)
     {
       /* Is this a movable for the value of a libcall?  */
       rtx note = find_reg_note (m->insn, REG_RETVAL, NULL_RTX);
@@ -1349,7 +1357,7 @@ ignore_some_movables (movables)
 	     explicitly check each insn in the libcall (since invariant
 	     libcalls aren't that common).  */
 	  for (insn = XEXP (note, 0); insn != m->insn; insn = NEXT_INSN (insn))
-	    for (m1 = movables; m1 != m; m1 = m1->next)
+	    for (m1 = movables->head; m1 != m; m1 = m1->next)
 	      if (m1->insn == insn)
 		m1->done = 1;
 	}
@@ -1363,10 +1371,10 @@ ignore_some_movables (movables)
 
 static void
 force_movables (movables)
-     struct movable *movables;
+     struct movables *movables;
 {
   register struct movable *m, *m1;
-  for (m1 = movables; m1; m1 = m1->next)
+  for (m1 = movables->head; m1; m1 = m1->next)
     /* Omit this if moving just the (SET (REG) 0) of a zero-extend.  */
     if (!m1->partial && !m1->done)
       {
@@ -1402,7 +1410,7 @@ force_movables (movables)
 
 static void
 combine_movables (movables, nregs)
-     struct movable *movables;
+     struct movables *movables;
      int nregs;
 {
   register struct movable *m;
@@ -1413,7 +1421,7 @@ combine_movables (movables, nregs)
      or be matched.  I'm no longer sure why not.  */
   /* Perhaps testing m->consec_sets would be more appropriate here?  */
 
-  for (m = movables; m; m = m->next)
+  for (m = movables->head; m; m = m->next)
     if (m->match == 0 && VARRAY_INT (n_times_set, m->regno) == 1
 	&& !m->partial)
       {
@@ -1473,7 +1481,7 @@ combine_movables (movables, nregs)
 
       /* Combine all the registers for extension from mode MODE.
 	 Don't combine any that are used outside this loop.  */
-      for (m = movables; m; m = m->next)
+      for (m = movables->head; m; m = m->next)
 	if (m->partial && ! m->global
 	    && mode == GET_MODE (SET_SRC (PATTERN (NEXT_INSN (m->insn)))))
 	  {
@@ -1495,7 +1503,7 @@ combine_movables (movables, nregs)
 
 	    /* We already have one: check for overlap with those
 	       already combined together.  */
-	    for (m1 = movables; m1 != m; m1 = m1->next)
+	    for (m1 = movables->head; m1 != m; m1 = m1->next)
 	      if (m1 == m0 || (m1->partial && m1->match == m0))
 		if (! (uid_luid[REGNO_FIRST_UID (m1->regno)] > last
 		       || uid_luid[REGNO_LAST_UID (m1->regno)] < first))
@@ -1521,17 +1529,17 @@ combine_movables (movables, nregs)
 static int
 regs_match_p (x, y, movables)
      rtx x, y;
-     struct movable *movables;
+     struct movables *movables;
 {
   unsigned int xn = REGNO (x);
   unsigned int yn = REGNO (y);
   struct movable *mx, *my;
 
-  for (mx = movables; mx; mx = mx->next)
+  for (mx = movables->head; mx; mx = mx->next)
     if (mx->regno == xn)
       break;
 
-  for (my = movables; my; my = my->next)
+  for (my = movables->head; my; my = my->next)
     if (my->regno == yn)
       break;
 
@@ -1550,7 +1558,7 @@ regs_match_p (x, y, movables)
 static int
 rtx_equal_for_loop_p (x, y, movables)
      rtx x, y;
-     struct movable *movables;
+     struct movables *movables;
 {
   register int i;
   register int j;
@@ -1570,7 +1578,7 @@ rtx_equal_for_loop_p (x, y, movables)
   if (GET_CODE (x) == REG && VARRAY_INT (set_in_loop, REGNO (x)) == -2
       && CONSTANT_P (y))
     {
-      for (m = movables; m; m = m->next)
+      for (m = movables->head; m; m = m->next)
 	if (m->move_insn && m->regno == REGNO (x)
 	    && rtx_equal_p (m->set_src, y))
 	  return 1;
@@ -1578,7 +1586,7 @@ rtx_equal_for_loop_p (x, y, movables)
   else if (GET_CODE (y) == REG && VARRAY_INT (set_in_loop, REGNO (y)) == -2
 	   && CONSTANT_P (x))
     {
-      for (m = movables; m; m = m->next)
+      for (m = movables->head; m; m = m->next)
 	if (m->move_insn && m->regno == REGNO (y)
 	    && rtx_equal_p (m->set_src, x))
 	  return 1;
@@ -1703,7 +1711,7 @@ add_label_notes (x, insns)
 static void
 move_movables (loop, movables, threshold, insn_count, nregs)
      struct loop *loop;
-     struct movable *movables;
+     struct movables *movables;
      int threshold;
      int insn_count;
      int nregs;
@@ -1719,9 +1727,9 @@ move_movables (loop, movables, threshold, insn_count, nregs)
   rtx *reg_map = (rtx *) xcalloc (nregs, sizeof (rtx));
   char *already_moved = (char *) xcalloc (nregs, sizeof (char));
 
-  num_movables = 0;
+  movables->num = 0;
 
-  for (m = movables; m; m = m->next)
+  for (m = movables->head; m; m = m->next)
     {
       /* Describe this movable insn.  */
 
@@ -1750,7 +1758,7 @@ move_movables (loop, movables, threshold, insn_count, nregs)
 	}
 
       /* Count movables.  Value used in heuristics in strength_reduce.  */
-      num_movables++;
+      movables->num++;
 
       /* Ignore the insn if it's already done (it matched something else).
 	 Otherwise, see if it is now safe to move.  */
@@ -2129,7 +2137,7 @@ move_movables (loop, movables, threshold, insn_count, nregs)
 	      /* Combine with this moved insn any other matching movables.  */
 
 	      if (! m->partial)
-		for (m1 = movables; m1; m1 = m1->next)
+		for (m1 = movables->head; m1; m1 = m1->next)
 		  if (m1->match == m)
 		    {
 		      rtx temp;
@@ -6542,7 +6550,7 @@ simplify_giv_expr (loop, x, ext_val, benefit)
 	    {
 	      struct movable *m;
 
-	      for (m = the_movables; m; m = m->next)
+	      for (m = the_movables.head; m; m = m->next)
 		if (rtx_equal_p (x, m->set_dest))
 		  {
 		    /* Ok, we found a match.  Substitute and simplify.  */
@@ -8264,7 +8272,7 @@ check_dbra_loop (loop, insn_count)
 	   && ! loop_info->has_volatile
 	   && reversible_mem_store
 	   && (bl->giv_count + bl->biv_count + num_mem_sets
-	      + num_movables + compare_and_branch == insn_count)
+	      + the_movables.num + compare_and_branch == insn_count)
 	   && (bl == loop_iv_list && bl->next == 0))
 	  || no_use_except_counting)
 	{
