@@ -94,7 +94,7 @@ ___umulsidi3:
 	beq .Ldontadd
 	add.f r4,r4,r1		; r += b
 	adc   r3,r3,r2
-L dontadd:
+.Ldontadd:
 	lsr r0,r0		; a >>= 1
 	lsl.f r1,r1		; b <<= 1
 	b.d .Lloop
