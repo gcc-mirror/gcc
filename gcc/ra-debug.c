@@ -29,6 +29,7 @@
 #include "df.h"
 #include "output.h"
 #include "ra.h"
+#include "tm_p.h"
 
 /* This file contains various dumping and debug functions for
    the graph coloring register allocator.  */

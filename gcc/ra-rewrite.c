@@ -57,7 +57,7 @@ static void delete_overlapping_slots PARAMS ((struct rtx_list **, rtx));
 static int slot_member_p PARAMS ((struct rtx_list *, rtx));
 static void insert_stores PARAMS ((bitmap));
 static int spill_same_color_p PARAMS ((struct web *, struct web *));
-static int is_partly_live_1 PARAMS ((sbitmap, struct web *));
+static bool is_partly_live_1 PARAMS ((sbitmap, struct web *));
 static void update_spill_colors PARAMS ((HARD_REG_SET *, struct web *, int));
 static int spill_is_free PARAMS ((HARD_REG_SET *, struct web *));
 static void emit_loads PARAMS ((struct rewrite_info *, int, rtx));
@@ -770,7 +770,7 @@ spill_same_color_p (web1, web2)
 /* Given the set of live web IDs LIVE, returns nonzero, if any of WEBs
    subwebs (or WEB itself) is live.  */
 
-static int
+static bool
 is_partly_live_1 (live, web)
      sbitmap live;
      struct web *web;

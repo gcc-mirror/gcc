@@ -1,3 +1,9 @@
+2002-08-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (ra-debug.o): Depend on $(TM_P_H).
+	* ra-debug.c: Include "tm_p.h".
+	* ra-rewrite.c (is_partly_live_1): Change return type to bool.
+
 2002-08-02  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* simplify-rtx.c (simplify_binary_operation): x * 1 is allowed
