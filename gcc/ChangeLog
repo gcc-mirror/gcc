@@ -1,3 +1,12 @@
+Thu Oct 29 01:33:54 1998  Jan Hubicka <hubicka@freesoft.cz>
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.md: Change ix86_cpu == PROCESSOR_PENTIUM to TARGET_PENTIUM
+	(zero_extendsidi2): Use # in output template and handle completely by
+	splits.
+	(zero_extend splitters): New define_splits.
+	(ashiftrt_32): New pattern.
+
 Wed Oct 28 22:58:35 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (append_random_chars): New fn.
