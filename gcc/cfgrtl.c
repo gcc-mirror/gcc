@@ -1819,7 +1819,7 @@ purge_dead_edges (bb)
      basic_block bb;
 {
   edge e, next;
-  rtx insn = bb->end;
+  rtx insn = bb->end, note;
   bool purged = false;
 
   if (GET_CODE (insn) == JUMP_INSN && !simplejump_p (insn))
@@ -1876,6 +1876,17 @@ purge_dead_edges (bb)
 	  f->count = bb->count * f->probability / REG_BR_PROB_BASE;
 	}
       return purged;
+    }
+
+  /* If this instruction cannot trap, remove REG_EH_REGION notes.  */
+  if (GET_CODE (insn) == INSN
+      && (note = find_reg_note (insn, REG_EH_REGION, NULL)))
+    {
+      rtx eqnote;
+      if (! may_trap_p (PATTERN (insn))
+	  || ((eqnote = find_reg_equal_equiv_note (insn))
+	      && ! may_trap_p (XEXP (eqnote, 0))))
+	remove_note (insn, note);
     }
 
   /* Cleanup abnormal edges caused by throwing insns that have been
