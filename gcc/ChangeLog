@@ -1,3 +1,190 @@
+2001-12-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* s390.md (prologue, epilogue, *return_si, *return_di): New.
+	s390.c (find_unused_clobbered_reg, s390_frame_info, 
+	save_fpr, restore_fpr, s390_emit_prologue, s390_emit_epilogue): New.
+	s390-protos.h (s390_emit_prologue, s390_emit_epilogue): Declare.
+	s390.c (s390_arg_frame_offset): Use s390_frame_info.
+	(leaf_function_flag, cur_is_leaf_function,
+	save_fprs, restore_fprs, force_const_mem_late): Remove.
+	(s390_function_prologue, s390_function_epilogue): Mostly remove.
+	s390.md (lit): New.  Uses ...
+	s390.c (s390_output_constant_pool): ... this, so adapt and make global.
+	s390-protos.h (s390_output_constant_pool): Declare.
+	s390.md (load_multiple, store_multiple): Allow use after reload.
+	s390.c (load_multiple_operation, store_multiple_operation): Likewise.
+	s390.h (INCOMING_FRAME_SP_OFFSET): Define.
+	s390.h (CALL_REALLY_USED_REGISTERS): Define.
+	config/s390/linux64.h (CALL_USED_REGISTERS): Remove, now handled ...
+	s390.h (CONDITIONAL_REGISTER_USAGE): ... here.
+	s390.c (s390_sr_alias_set): New global variable, initialized ...
+	(override_options): ... here.  New.
+	s390-protos.h (override_options): Declare.
+	s390.h (OVERRIDE_OPTIONS): Call it.
+	s390.c (s390_function_profiler): New.
+	s390-protos.h (s390_function_profiler): Declare.
+	s390.h (FUNCTION_PROFILER): Call it.
+	s390.c (s390_profile): Remove.
+
+	* s390.c (reg_used_in_mem_p): PC reload counts as memory access.
+	(addr_generation_dependency_p): Consider literal pool register loads.
+	(s390_adjust_priority): Do not schedule load_multiple.
+	s390.md (attribute "type"): Define some additional types.
+	(function_unit "integer"): Adapt.
+	(many insns): Adapt "type" attribute setting.
+
+	* s390.c (general_s_operand, s_imm_operand): New.
+	(s_operand): Remove old definition, call general_s_operand instead.
+	s390-protos.h (s_imm_operand): Declare.
+	s390.c (base_n_index_p, r_or_s_operand, r_or_s_or_im8_operand, 
+	r_or_x_or_im16_operand, r_or_im8_operand): Remove.
+	s390-protos.h (r_or_s_operand, r_or_s_or_im8_operand,
+	r_or_x_or_im16_operand, r_or_im8_operand): Likewise.
+	s390.h (PREDICATE_CODES): Add s_imm_operand, remove r_or_s*_operand.
+	s390.md (many insns): Rework insn predicates.
+
+	* s390.c (legitimate_pic_operand_p, legitimate_constant_p): Accept all
+	non-symbolic constants.  Reload will force them because of ...
+	(s390_preferred_reload_class): ... this.  New.
+	s390-protos.h (s390_preferred_reload_class): Declare.
+	s390.h (PREFERRED_RELOAD_CLASS): Call it.
+	s390.md (movdi, movsi, movdf, movsf, *reload_la_64 splitters,
+	*reload_la_31 splitters): Handle constants after reload.
+	(many insns): no longer force all constants immediately.
+	s390.c (legitimate_reload_constant_p): New helper routine.
+	s390-protos.h (legitimate_reload_constant_p): Declare.
+	s390.c (print_operand): Clean up CONST_INT case, add CONST_DOUBLE case.
+
+	* s390.h (FIRST_PSEUDO_REGISTER, FRAME_POINTER_REGNUM, 
+	HARD_FRAME_POINTER_REGNUM, REGISTER_NAMES): Add virtual frame pointer.
+	(CALL_USED_REGISTERS, CALL_REALLY_USED_REGISTERS): Update.
+	(ELIMINABLE_REGS, INITIAL_ELIMINATION_OFFSET): Likewise.
+	(REGNO_OK_FOR_INDEX_P, REG_OK_FOR_INDEX_NONSTRICT_P): Likewise.
+	(DWARF_FRAME_REGISTERS): Define.
+	s390.c (regclass_map): Add virtual frame pointer.
+	(legitimate_la_operand_p): Allow use of virtual frame pointer.
+	s390.md (*la_ccclobber, *addaddr_ccclobber): New.
+	(addaddr, addsi_64): Delete.
+
+	* s390.h (HARD_REGNO_MODE_OK): Allow SImode and DImode values in 
+	floating point registers.
+	(CLASS_CANNOT_CHANGE_MODE, CLASS_CANNOT_CHANGE_MODE_P): Define.
+	(ADDR_FP_REGS, GENERAL_FP_REGS): New register classes.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update.
+
+	* s390.md (movti): Replace multi-insn output with splitters.
+	(movdi_31, movdf_31): Likewise.
+	(movti_ss, movdi_ss, movsi_ss, movdf_ss, movsf_ss): New.
+	(movdi_lhi, movdi_lli, movdi_larl, movsi_lhi, movsi_lli): New.
+	(movdi_64, movdi_31, movsi, movdf_64, movdf_31): Adapt.
+	(movdf_soft_64, movdf_soft_31, movsf_soft): Remove.
+	(movsf_64, movsf_31): Remove, replace by ...
+	(movsf): ... this.
+	(movqi_64): Use lhi instead of llill.
+	(*movstrictqi, *movstricthi): Don't use (strict_low_part (mem)).
+
+	* s390.md (extendsidi2, *extendsidi2, extendhidi2, *extendhidi2,
+	extendqidi2, extendhisi2, *extendhisi2, extendqisi2,
+	extendqihi2 and associated splitters): Reworked.
+	(zero_extendsidi2, zero_extendsidi2, *zero_extendsidi2,
+	zero_extendhidi2, *zero_extendhidi2, zero_extendqidi2,
+	zero_extendqidi2, *zero_extendqidi2, zero_extendhisi2,
+	*zero_extendhisi2_64, zero_extendhisi2_31, zero_extendqisi2,
+	*zero_extendqisi2_64, *zero_extendqisi2_mem_31,
+	zero_extendqisi2_reg_31, zero_extendqihi2, *zero_extendqisi2_64,
+	zero_extendqihi2, zero_extendqihi2_64, zero_extendqihi2_31,
+	and associated splitters): Likewise.
+	(*sethighqisi, *sethighhisi, *sethighqidi_64, *sethighqidi_31 
+	and associated splitters): New.
+	(truncdisi2, truncdihi2, truncdiqi2, truncsihi2, do_truncsihi2, 
+	*truncsihi2_64, truncsiqi2, trunchiqi2): Remove.
+	(ashlhi3, ashrhi3, lshrhi3, abshi3): Remove.
+	s390.h (PROMOTE_PROTOTYPES): Remove.
+	config/s390/linux64.h (PROMOTE_PROTOTYPES): Likewise.
+
+	* s390.md (muldi3): Delete, use instead ...
+	(mulsidi3): ... this.
+	(*muldi3_64): Rename to muldi3.
+	(mulsi_6432): Fix template.
+	(divdi3, moddi3): Delete, replace by ...
+	(divmoddi4): ... this.
+	(divmodtidi3): Fix template.
+	(divmodtisi3): New.
+	(udivdi3, umoddi3): Delete, replace by ...
+	(udivmoddi4): ... this.
+	(udivmodtidi3): Fix template.
+	(divsi3, modsi3): Delete, replace by ...
+	(divmodsi4): ... this.
+	(divmoddisi3): Fix template.
+	(udivsi3, umodsi3): Adapt.
+
+	* s390.md (anddi3): Remove SS alternative, use instead ...
+	(anddi3_ss, anddi3_ss_inv): ... these.
+	(anddi3_ni): New.
+	(andsi3*, andhi3*, andqi3*): Likewise.
+	(iordi3): Remove SS alternative, use instead ...
+	(iordi3_ss, iordi3_ss_inv): ... these.
+	(iordi3_oi): New.
+	(iorsi3*, iorhi3*, iorqi3*): Likewise.
+	(iordi3_cc, iordi3_cconly, iorsi3_cc, iorsi3_cconly): New.
+	(xordi3): Remove SS alternative, use instead ...
+	(xordi3_ss, xordi3_ss_inv): ... these.
+	(xordi3_oi): New.
+	(xorsi3*, xorhi3*, xorqi3*): Likewise.
+	(xordi3_cc, xordi3_cconly, xorsi3_cc, xorsi3_cconly): New.
+	(one_cmpldi2, one_cmplsi2, one_cmplhi2, one_cmplqi2):
+	Expand to XOR with -1.
+	(*one_cmpldi2, *one_cmplsi2, *one_cmplhi2): Remove.
+	(cmpdi_tm): Delete, replace by ...
+	(cmpdi_tm_reg, cmpdi_tm_mem): ... these.
+	(cmpsi_cct): Delete, replace by ...
+	(cmpsi_tm_reg, cmpsi_tm_mem): ... these.
+	(cmpdi_tm2, cmpsi_tm2): Improve.
+	(cmphi_tm_sub, cmpqi_tm_sub, cmpqi_tm2, cmpqi_tm): New.
+	s390.c (s390_single_hi, s390_extract_hi, 
+	s390_single_qi, s390_extract_qi): New helper routines.
+	s390-protos.h (s390_single_hi, s390_extract_hi, 
+	s390_single_qi, s390_extract_qi): Declare.
+	s390.c (tmxx_operand, const1_operand): Remove.
+	s390-protos.h (tmxx_operand, const1_operand): Likewise.
+	s390.h (PREDICATE_CODES): Likewise.
+
+	* s390.md (sqrtdf2, sqrtsf2): New.
+
+	* s390.h (CRT_CALL_STATIC_FUNCTION): Define.
+	(check_and_change_labels): Remove section-change special case.
+
+	* s390.h (RETURN_ADDR_RTX): Fix use of __builtin_return_address 
+	in leaf functions.  Needs ...
+	(DYNAMIC_CHAIN_RTX):  ... this.  New.
+
+	* s390.c (emit_pic_move): Don't generate pseudos if no_new_pseudos.
+
+	* s390.md (movstrdix_64, movstrsix_31, movstrdi_64, movstrsi_31,
+	clrstrsi_64, clrstrsi_31, cmpstr_64, cmpstr_31): Do not clobber 
+	input operands using a match_dup clause.
+	(movstrdi, movstrsi, clrstrdi, clrstrsi, cmpstrdi, cmpstrsi): Adapt.
+
+	* s390.md (floatdidf2, floatdisf2, floatsidf2, floatsidf2_ieee,
+	floatsisf2, floatsisf2_ieee): Add missing CC clobber.
+
+	* s390.md (floatsidf2_ibm): Use correct operand.
+
+	* s390.md (fixuns_truncdfdi2, fixuns_truncdfsi2, fix_truncdfsi2,
+	fixuns_truncsfdi2, fixuns_truncsfsi2, floatsidf2): Remove use of
+	non-portable constants.
+	s390.c (s390_gen_rtx_const_DI): New helper routine.
+	s390-protos.h (s390_gen_rtx_const_DI): Declare.
+
+	* s390.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY): Fix alignment.
+
+	* config/s390/linux.h (ASM_OUTPUT_SHORT, ASM_OUTPUT_CHAR,
+	ASM_OUTPUT_BYTE): Clean up assembly output.
+	(ASM_OUTPUT_SKIP, ASM_OUTPUT_ALIGN): Remove duplicate definitions.
+	(ASM_OUTPUT_ASCII): Remove.
+
+	* config/s390/t-linux (CRTSTUFF_T_CFLAGS_S): Define.
+
 2001-12-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* unwind-dw2-fde-glibc.c: #define _Unwind_Find_FDE to itself

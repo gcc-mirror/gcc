@@ -22,24 +22,27 @@ Boston, MA 02111-1307, USA.  */
 /* Declare functions in s390.c.  */
 
 extern void optimization_options PARAMS ((int, int));
+extern void override_options PARAMS ((void));
 extern int s390_arg_frame_offset PARAMS ((void));
 extern void s390_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 extern void s390_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+extern void s390_emit_prologue PARAMS ((void));
+extern void s390_emit_epilogue PARAMS ((void));
+extern void s390_function_profiler PARAMS ((FILE *, int));
 
 #ifdef RTX_CODE
 extern int const0_operand PARAMS ((rtx, enum machine_mode));
-extern int const1_operand PARAMS ((rtx, enum machine_mode));
 extern int larl_operand PARAMS ((rtx, enum machine_mode));
 extern int fp_operand PARAMS ((rtx, enum machine_mode));
 extern int s_operand PARAMS ((rtx, enum machine_mode));
-extern int r_or_s_operand PARAMS ((rtx, enum machine_mode));
-extern int r_or_s_or_im8_operand PARAMS ((rtx, enum machine_mode));
-extern int r_or_x_or_im16_operand PARAMS ((rtx, enum machine_mode));
-extern int r_or_im8_operand PARAMS ((rtx, enum machine_mode));
-extern int tmxx_operand PARAMS ((rtx, enum machine_mode));
+extern int s_imm_operand PARAMS ((rtx, enum machine_mode));
 extern int bras_sym_operand PARAMS ((rtx, enum machine_mode));
 extern int load_multiple_operation PARAMS ((rtx, enum machine_mode));
 extern int store_multiple_operation PARAMS ((rtx, enum machine_mode));
+extern int s390_single_hi PARAMS ((rtx, enum machine_mode, int));
+extern int s390_extract_hi PARAMS ((rtx, enum machine_mode, int));
+extern int s390_single_qi PARAMS ((rtx, enum machine_mode, int));
+extern int s390_extract_qi PARAMS ((rtx, enum machine_mode, int));
 
 extern int s390_match_ccmode PARAMS ((rtx, enum machine_mode));
 extern enum machine_mode s390_select_ccmode PARAMS ((enum rtx_code, rtx, rtx));
@@ -47,18 +50,22 @@ extern int symbolic_reference_mentioned_p PARAMS ((rtx));
 extern int legitimate_la_operand_p PARAMS ((rtx));
 extern int legitimate_pic_operand_p PARAMS ((rtx));
 extern int legitimate_constant_p PARAMS ((rtx));
+extern int legitimate_reload_constant_p PARAMS ((rtx));
 extern int legitimate_address_p PARAMS ((enum machine_mode, rtx, int));
 extern rtx legitimize_pic_address PARAMS ((rtx, rtx));
 extern rtx legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
+extern enum reg_class s390_preferred_reload_class PARAMS ((rtx, enum reg_class));
 extern void emit_pic_move PARAMS ((rtx *, enum machine_mode));
 
 extern void s390_output_symbolic_const PARAMS ((FILE *, rtx));
 extern void print_operand_address PARAMS ((FILE *, rtx));
 extern void print_operand PARAMS ((FILE *, rtx, int));
+extern void s390_output_constant_pool PARAMS ((FILE *));
 extern int s390_stop_dump_lit_p PARAMS ((rtx));
 extern void s390_dump_literal_pool PARAMS ((rtx, rtx));
 extern void s390_trampoline_template PARAMS ((FILE *));
 extern void s390_initialize_trampoline PARAMS ((rtx, rtx, rtx));
+extern rtx s390_gen_rtx_const_DI PARAMS ((int, int));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
