@@ -1,5 +1,13 @@
 2002-10-26  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	* config/mmix/mmix.h (LIBCALL_VALUE): Use
+	MMIX_RETURN_VALUE_REGNUM, not MMIX_OUTGOING_RETURN_VALUE_REGNUM.
+	(FUNCTION_VALUE_REGNO_P): Similar, but move code to...
+	* config/mmix/mmix.c (mmix_function_value_regno_p): New.
+	* config/mmix/mmix-protos.h: Remove needless ifdefs on TREE_CODE
+	and RTX_CODE.
+	(mmix_function_value_regno_p): Declare.
+
 	* config/mmix/mmix.md ("fixuns_truncdfdi2"): Replace unsigned_fix,
 	invalid for floating point mode result, with fix.
 

@@ -57,16 +57,11 @@ extern void mmix_conditional_register_usage PARAMS ((void));
 extern int mmix_local_regno PARAMS ((int));
 extern int mmix_dbx_register_number PARAMS ((int));
 extern int mmix_use_simple_return PARAMS ((void));
-
-/* Things that need rtl.h, tree.h or real.h included, or in combination.  */
-
-/* Need tree.h */
-#ifdef TREE_CODE
-
 extern void mmix_make_decl_one_only PARAMS ((tree));
 extern int mmix_function_arg_pass_by_reference
   PARAMS ((const CUMULATIVE_ARGS *, enum machine_mode, tree, int));
 extern rtx mmix_function_outgoing_value PARAMS ((tree, tree));
+extern int mmix_function_value_regno_p PARAMS ((int));
 extern int mmix_data_alignment PARAMS ((tree, int));
 extern int mmix_constant_alignment PARAMS ((tree, int));
 extern int mmix_local_alignment PARAMS ((tree, int));
@@ -80,17 +75,9 @@ extern void mmix_asm_output_aligned_local
   PARAMS ((FILE *, const char *, int, int));
 extern void mmix_asm_declare_register_global
   PARAMS ((FILE *, tree, int, const char *));
-
-/* Need tree.h and rtl.h */
-# ifdef RTX_CODE
 extern rtx mmix_function_arg
   PARAMS ((const CUMULATIVE_ARGS *, enum machine_mode, tree, int, int));
 extern rtx mmix_expand_builtin_va_arg PARAMS ((tree, tree));
-# endif /* RTX_CODE */
-#endif /* TREE_CODE */
-
-/* Need rtl.h */
-#ifdef RTX_CODE
 extern void mmix_asm_output_addr_diff_elt PARAMS ((FILE *, rtx, int, int));
 extern void mmix_asm_output_addr_vec_elt PARAMS ((FILE *, int));
 extern enum reg_class mmix_preferred_reload_class
@@ -110,23 +97,25 @@ extern void mmix_initialize_trampoline PARAMS ((rtx, rtx, rtx));
 extern int mmix_constant_address_p PARAMS ((rtx));
 extern int mmix_legitimate_address PARAMS ((enum machine_mode, rtx, int));
 extern int mmix_legitimate_constant_p PARAMS ((rtx));
-extern enum machine_mode mmix_select_cc_mode PARAMS ((RTX_CODE, rtx, rtx));
-extern void mmix_canonicalize_comparison PARAMS ((RTX_CODE *, rtx *, rtx *));
-extern int mmix_rtx_cost_recalculated
-  PARAMS ((rtx, RTX_CODE, RTX_CODE, int *));
 extern int mmix_address_cost PARAMS ((rtx));
 extern void mmix_print_operand PARAMS ((FILE *, rtx, int));
 extern void mmix_print_operand_address PARAMS ((FILE *, rtx));
-extern int mmix_valid_comparison PARAMS ((RTX_CODE, enum machine_mode, rtx));
-extern rtx mmix_gen_compare_reg PARAMS ((enum rtx_code, rtx, rtx));
 extern void mmix_machine_dependent_reorg PARAMS ((rtx));
 extern void mmix_expand_prologue PARAMS ((void));
 extern void mmix_expand_epilogue PARAMS ((void));
 extern rtx mmix_get_hard_reg_initial_val PARAMS ((enum machine_mode, int));
-#endif /* RTX_CODE */
-
 extern int mmix_asm_preferred_eh_data_format PARAMS ((int, int));
 extern void mmix_setup_frame_addresses PARAMS ((void));
+
+#ifdef RTX_CODE
+/* Needs to be ifdef:d for sake of enum rtx_code.  */
+extern enum machine_mode mmix_select_cc_mode PARAMS ((enum rtx_code, rtx, rtx));
+extern void mmix_canonicalize_comparison PARAMS ((enum rtx_code *, rtx *, rtx *));
+extern int mmix_rtx_cost_recalculated
+  PARAMS ((rtx, enum rtx_code, enum rtx_code, int *));
+extern int mmix_valid_comparison PARAMS ((enum rtx_code, enum machine_mode, rtx));
+extern rtx mmix_gen_compare_reg PARAMS ((enum rtx_code, rtx, rtx));
+#endif
 
 /*
  * Local variables:
