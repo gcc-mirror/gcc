@@ -58,6 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "debug.h"
 #include "target.h"
+#include "langhooks.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -449,12 +450,17 @@ static int generating_instance_variables = 0;
 
 static int print_struct_values = 0;
 
+#undef LANG_HOOKS_INIT
+#define LANG_HOOKS_INIT objc_init
+#undef LANG_HOOKS_INIT_OPTIONS
+#define LANG_HOOKS_INIT_OPTIONS objc_init_options
+#undef LANG_HOOKS_DECODE_OPTION
+#define LANG_HOOKS_DECODE_OPTION objc_decode_option
+#undef LANG_HOOKS_POST_OPTIONS
+#define LANG_HOOKS_POST_OPTIONS objc_post_options
+
 /* Each front end provides its own.  */
-struct lang_hooks lang_hooks = {objc_init,
-				NULL, /* objc_finish */
-				objc_init_options,
-				objc_decode_option,
-				objc_post_options};
+struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* Post-switch processing.  */
 static void

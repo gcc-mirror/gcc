@@ -1,3 +1,12 @@
+2001-10-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* langhooks.c (lang_hook_default_do_nothing,
+	lang_hook_default_decode_option): New defaults.
+	* langhooks.h: Make hooks unconditional and non-NULL.
+	* toplev.c (compile_file, toplev_main): Update.
+	* toplev.h: Update comments.
+	* objc/objc-act.c (lang_hooks): Update to new paradigm.
+
 2001-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* arm.h (FUNCTION_ARG_REGNO_P): Use IN_RANGE.
