@@ -1,5 +1,10 @@
 1998-11-29  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck2.c (process_init_constructor): Use same_type_p.
+
+	* decl.c (check_tag_decl): Don't warn about null decl inside a 
+	class.
+
 	* pt.c (unify, case OFFSET_TYPE): Pass down 'strict' rather than
 	UNIFY_ALLOW_NONE.
 	(convert_nontype_argument): Use TYPE_PTRMEMFUNC_FN_TYPE.

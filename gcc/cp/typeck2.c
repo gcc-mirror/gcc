@@ -925,9 +925,10 @@ process_init_constructor (type, init, elts)
 		  tree tail1 = tail;
 		  next1 = digest_init (TREE_TYPE (type),
 				       TREE_VALUE (tail), &tail1);
-		  my_friendly_assert (TYPE_MAIN_VARIANT (TREE_TYPE (type))
-				      == TYPE_MAIN_VARIANT (TREE_TYPE (next1)),
-				      981123);
+		  my_friendly_assert
+		    (same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
+				  TYPE_MAIN_VARIANT (TREE_TYPE (next1))),
+		     981123);
 		  my_friendly_assert (tail1 == 0
 				      || TREE_CODE (tail1) == TREE_LIST, 319);
 		  if (tail == tail1 && len < 0)
