@@ -1605,6 +1605,15 @@ always override this default with the options @option{-fsigned-char}
 and @option{-funsigned-char}.
 @end defmac
 
+@defmac DEFAULT_SHORT_ENUMS
+A C expression to determine whether to give an @code{enum} type
+only as many bytes as it takes to represent the range of possible values
+of that type.  A nonzero value means to do that; a zero value means all
+@code{enum} types should be allocated like @code{int}.
+
+If you don't define the macro, the default is 0.
+@end defmac
+
 @defmac SIZE_TYPE
 A C expression for a string describing the name of the data type to use
 for size values.  The typedef name @code{size_t} is defined using the
