@@ -37,15 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "tm_p.h"
 
-/* We cannot use <assert.h> in GCC source, since that would include
-   GCC's assert.h, which may not be compatible with the host compiler.  */
-#undef assert
-#ifdef NDEBUG
-# define assert(e)
-#else
-# define assert(e) do { if (! (e)) abort (); } while (0)
-#endif
-
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */
 

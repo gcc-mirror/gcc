@@ -77,14 +77,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "recog.h"
 #include "output.h"
 
-/* We cannot use <assert.h> in GCC source, since that would include
-   GCC's assert.h, which may not be compatible with the host compiler.  */
-#undef assert
-#ifdef NDEBUG
-# define assert(e)
-#else
-# define assert(e) do { if (! (e)) abort (); } while (0)
-#endif
 
 /* A map from blocks to the edges on which they are control dependent.  */
 typedef struct {
@@ -186,7 +178,9 @@ set_control_dependent_block_to_edge_map_bit (c, bb, edge_index)
      basic_block bb;
      int edge_index;
 {
-  assert(bb->index - (INVALID_BLOCK+1) < c->length);
+  if (bb->index - (INVALID_BLOCK+1) >= c->length)
+    abort ();
+
   bitmap_set_bit (c->data[bb->index - (INVALID_BLOCK+1)],
 		  edge_index);
 }
@@ -246,7 +240,8 @@ find_control_dependence (el, edge_index, pdom, cdbte)
   basic_block current_block;
   basic_block ending_block;
 
-  assert (INDEX_EDGE_PRED_BB (el, edge_index) != EXIT_BLOCK_PTR);
+  if (INDEX_EDGE_PRED_BB (el, edge_index) == EXIT_BLOCK_PTR)
+    abort ();
   ending_block = 
     (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR) 
     ? BASIC_BLOCK (0) 
@@ -271,8 +266,11 @@ find_pdom (pdom, block)
      int *pdom;
      basic_block block;
 {
-  assert (block != NULL);
-  assert (block->index != INVALID_BLOCK);
+  if (!block)
+    abort ();
+  if (block->index == INVALID_BLOCK)
+    abort ();
+
   if (block == ENTRY_BLOCK_PTR)
     return BASIC_BLOCK (0);
   else if (block == EXIT_BLOCK_PTR || pdom[block->index] == EXIT_BLOCK)
@@ -456,9 +454,11 @@ delete_insn_bb (insn)
      rtx insn;
 {
   basic_block bb;
-  assert (insn != NULL_RTX);
+  if (!insn)
+    abort ();
   bb = BLOCK_FOR_INSN (insn);
-  assert (bb != 0);
+  if (!bb)
+    abort ();
   if (bb->head == bb->end)
     {
       /* Delete the insn by converting it to a note.  */
@@ -612,7 +612,8 @@ eliminate_dead_code ()
   /* Release allocated memory.  */
   for (insn = get_insns (); insn != NULL_RTX; insn = NEXT_INSN (insn))
     RESURRECT_INSN (insn);
-  assert (VARRAY_ACTIVE_SIZE(unprocessed_instructions) == 0);
+  if (VARRAY_ACTIVE_SIZE (unprocessed_instructions) != 0)
+    abort ();
   VARRAY_FREE (unprocessed_instructions);
   control_dependent_block_to_edge_map_free (cdbte);
   free ((PTR) pdom);

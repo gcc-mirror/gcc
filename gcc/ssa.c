@@ -48,15 +48,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 #include "ssa.h"
 
-/* We cannot use <assert.h> in GCC source, since that would include
-   GCC's assert.h, which may not be compatible with the host compiler.  */
-#undef assert
-#ifdef NDEBUG
-# define assert(e)
-#else
-# define assert(e) do { if (! (e)) abort (); } while (0)
-#endif
-
 /* TODO: 
 
    Handle subregs better, maybe.  For now, if a reg that's set in a
@@ -1069,7 +1060,8 @@ rename_block (bb, idom)
 	  reg = SET_DEST (phi);
 	  if (REGNO (reg) >= ssa_max_reg_num)
 	    reg = ssa_rename_from_lookup (REGNO (reg));
-	  assert (reg != NULL_RTX);
+	  if (reg == NULL_RTX)
+	    abort ();
 	  reg = ssa_rename_to_lookup (reg);
 
 	  /* It is possible for the variable to be uninitialized on
