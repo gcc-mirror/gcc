@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -83,10 +83,16 @@ public final class Buffers
       {
       case DataBuffer.TYPE_BYTE:
 	return new DataBufferByte(size, numBanks);
+      case DataBuffer.TYPE_SHORT:
+	return new DataBufferShort(size, numBanks);
       case DataBuffer.TYPE_USHORT:
 	return new DataBufferUShort(size, numBanks);
       case DataBuffer.TYPE_INT:
 	return new DataBufferInt(size, numBanks);
+      case DataBuffer.TYPE_FLOAT:
+	return new DataBufferFloat(size, numBanks);
+      case DataBuffer.TYPE_DOUBLE:
+	return new DataBufferDouble(size, numBanks);
       default:
 	throw new UnsupportedOperationException();
       }
@@ -106,10 +112,16 @@ public final class Buffers
       {
       case DataBuffer.TYPE_BYTE:
 	return new DataBufferByte((byte[]) data, size);
+      case DataBuffer.TYPE_SHORT:
+	return new DataBufferShort((short[]) data, size);
       case DataBuffer.TYPE_USHORT:
 	return new DataBufferUShort((short[]) data, size);
       case DataBuffer.TYPE_INT:
 	return new DataBufferInt((int[]) data, size);
+      case DataBuffer.TYPE_FLOAT:
+	return new DataBufferFloat((float[]) data, size);
+      case DataBuffer.TYPE_DOUBLE:
+	return new DataBufferDouble((double[]) data, size);
       default:
 	throw new UnsupportedOperationException();
       }
@@ -126,10 +138,22 @@ public final class Buffers
   {
     if (buffer instanceof DataBufferByte)
       return ((DataBufferByte) buffer).getData();
+
+    if (buffer instanceof DataBufferShort)
+      return ((DataBufferShort) buffer).getData();
+
     if (buffer instanceof DataBufferUShort)
       return ((DataBufferUShort) buffer).getData();
+
     if (buffer instanceof DataBufferInt)
       return ((DataBufferInt) buffer).getData();
+
+    if (buffer instanceof DataBufferFloat)
+      return ((DataBufferFloat) buffer).getData();
+
+    if (buffer instanceof DataBufferDouble)
+      return ((DataBufferDouble) buffer).getData();
+
     throw new ClassCastException("Unknown data buffer type");
   }
 
@@ -149,6 +173,11 @@ public final class Buffers
 	from = ((DataBufferByte) src).getData();
 	if (dest == null) dest = new byte[length+destOffset];
       }
+    else if (src instanceof DataBufferShort)
+      {
+	from = ((DataBufferShort) src).getData();
+	if (dest == null) dest = new short[length+destOffset];
+      }
     else if (src instanceof DataBufferUShort)
       {
 	from = ((DataBufferUShort) src).getData();
@@ -158,6 +187,16 @@ public final class Buffers
       {
 	from = ((DataBufferInt) src).getData();
 	if (dest == null) dest = new int[length+destOffset];
+      }
+    else if (src instanceof DataBufferFloat)
+      {
+	from = ((DataBufferFloat) src).getData();
+	if (dest == null) dest = new float[length+destOffset];
+      }
+    else if (src instanceof DataBufferDouble)
+      {
+	from = ((DataBufferDouble) src).getData();
+	if (dest == null) dest = new double[length+destOffset];
       }
     else
       {
