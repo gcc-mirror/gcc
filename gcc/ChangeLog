@@ -1,5 +1,12 @@
 2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (format_char_info): Add 'W' flag to comment.
+	(print_char_table, scan_char_table): Use it.
+	(check_format_info): Use the 'W' flag to determine whether a
+	format argument is written into.
+
+2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (check_format_types): Reorganise and clean up,
 	checking earlier for ERROR_MARKs and making cur_type into its
 	TYPE_MAIN_VARIANT where convenient.
