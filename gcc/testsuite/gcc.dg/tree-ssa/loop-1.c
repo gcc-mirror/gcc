@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fivcanon -funroll-loops -fdump-tree-ivcanon-details" } */
+/* { dg-options "-O1 -ftree-loop-ivcanon -funroll-loops -fdump-tree-ivcanon-details" } */
 
 void xxx(void)
 {
