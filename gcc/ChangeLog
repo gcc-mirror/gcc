@@ -1,3 +1,11 @@
+Wed Jan 12 22:34:00 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* flow.c (split_edge): If we have to insert a new jump, make
+	sure to associate it with a basic block.
+
+	* flow.c (commit_one_edge_insertion): A block with one successor
+	can end in a JUMP_INSN that is not a simplejump.
+
 2000-01-12  Robert Lipe  <robertl@sco.com>
 
 	* i386/sco5.h (INIT_SECTION_ASM_OP_COFF): Rename section to "ctor".

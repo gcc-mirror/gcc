@@ -1387,6 +1387,7 @@ split_edge (edge_in)
 	  pos = emit_jump_insn_after (gen_jump (old_succ->head),
 				      jump_block->end);
 	  jump_block->end = pos;
+	  set_block_for_insn (pos, jump_block);
 	  emit_barrier_after (pos);
 
 	  /* ... let jump know that label is in use, ...  */
@@ -1580,13 +1581,14 @@ commit_one_edge_insertion (e)
 	   && e->src != ENTRY_BLOCK_PTR)
     {
       bb = e->src;
+      /* It is possible to have a non-simple jump here.  Consider a target
+	 where some forms of unconditional jumps clobber a register.  This
+	 happens on the fr30 for example. 
+
+	 We know this block has a single successor, so we can just emit
+	 the queued insns before the jump.  */
       if (GET_CODE (bb->end) == JUMP_INSN)
 	{
-	  /* ??? Is it possible to wind up with non-simple jumps?  Perhaps
-	     a jump with delay slots already filled?  */
-	  if (! simplejump_p (bb->end))
-	    abort ();
-
 	  before = bb->end;
 	}
       else
