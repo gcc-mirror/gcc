@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_TOC 0
 #define TARGET_NO_TOC 1
 
+/* Handle #pragma weak and #pragma pack.  */
+#define HANDLE_SYSV_PRAGMA
+
 /* The Darwin ABI always includes AltiVec, can't be (validly) turned
    off.  */
 
@@ -221,6 +224,7 @@ Boston, MA 02111-1307, USA.  */
    : (TARGET_ALTIVEC && TREE_CODE (STRUCT) == VECTOR_TYPE) \
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), 128)           \
    : MAX ((COMPUTED), (SPECIFIED)))
+
 /* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
    support 64 bit powerpc either, so this just keeps things happy.  */
 #define DOUBLE_INT_ASM_OP "\t.quad\t"

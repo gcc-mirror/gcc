@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for 64 bit powerpc linux.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -250,29 +250,36 @@ do {						\
       fputs (DOUBLE_INT_ASM_OP, (FILE));				\
       putc ('.', (FILE));						\
       assemble_name ((FILE), (NAME));					\
-      putc ('\n', (FILE));						\
-      fputs (DOUBLE_INT_ASM_OP, (FILE));				\
-      fputs (".TOC.@tocbase, 0\n\t.previous\n", (FILE));		\
-									\
-      if (TREE_PUBLIC (DECL))						\
+      fputs (",.TOC.@tocbase,0\n\t.previous\n\t.size\t", (FILE));	\
+      assemble_name ((FILE), (NAME));					\
+      fputs (",24\n\t.type\t.", (FILE));				\
+      assemble_name ((FILE), (NAME));					\
+      fputs (",@function\n", (FILE));					\
+      if (TREE_PUBLIC (DECL) && ! DECL_WEAK (DECL))			\
         {								\
-	  if (DECL_WEAK (DECL))						\
-	    fputs ("\t.weak\t", (FILE));				\
-	  else								\
-	    fputs ("\t.globl\t", (FILE));				\
-	  putc ('.', (FILE));						\
+	  fputs ("\t.globl\t.", (FILE));				\
 	  assemble_name ((FILE), (NAME));				\
 	  putc ('\n', (FILE));						\
         }								\
-      fputs (TYPE_ASM_OP, (FILE));					\
-      putc ('.', (FILE));						\
-      assemble_name ((FILE), (NAME));					\
-      putc (',', (FILE));						\
-      fprintf ((FILE), TYPE_OPERAND_FMT, "function");			\
-      putc ('\n', (FILE));						\
       ASM_DECLARE_RESULT ((FILE), DECL_RESULT (DECL));			\
       putc ('.', (FILE));						\
       ASM_OUTPUT_LABEL ((FILE), (NAME));				\
+    }									\
+  while (0)
+
+/* This is how to declare the size of a function.  */
+#undef	ASM_DECLARE_FUNCTION_SIZE
+#define	ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)			\
+  do									\
+    {									\
+      if (!flag_inhibit_size_directive)					\
+	{								\
+	  fputs ("\t.size\t.", (FILE));					\
+	  assemble_name ((FILE), (FNAME));				\
+	  fputs (",.-.", (FILE));					\
+	  assemble_name ((FILE), (FNAME));				\
+	  putc ('\n', (FILE));						\
+	}								\
     }									\
   while (0)
 

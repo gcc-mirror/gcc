@@ -1,3 +1,23 @@
+2002-03-18  Alan Modra  <amodra@bigpond.net.au>
+	    David Edelsohn  <edelsohn@gnu.org>
+
+	* c-pragma.h (HANDLE_PRAGMA_WEAK): Define if ASM_WEAKEN_DECL too.
+	* config/rs6000/linux64.h (ASM_DECLARE_FUNCTION_NAME): Don't emit
+	.weak for code sym.  Do emit .size for descriptor sym.
+	(ASM_DECLARE_FUNCTION_SIZE): Define.
+	* config/rs6000/rs6000.h (ASM_WEAKEN_DECL): Define.
+	(ASM_OUTPUT_DEF_FROM_DECLS): Don't emit .weak here.  Don't output
+	.lglobl unless TARGET_XCOFF.  Formatting fixes.
+	(PREDICATE_CODES): Add any_operand and zero_constant.
+	(HANDLE_PRAGMA_PACK): Delete.
+	* config/rs6000/xcoff.h (ASM_DECLARE_FUNCTION_NAME): Don't emit
+	.weak for code sym.
+	(HANDLE_PRAGMA_WEAK): Remove.
+	(ASM_WEAKEN_LABEL): Remove.
+	(COLLECT_EXPORT_LIST): Delete.
+	* config/rs6000/aix.h (HANDLE_SYSV_PRAGMA): Define.
+	* config/rs6000/darwin.h (HANDLE_SYSV_PRAGMA): Define.
+	
 2002-03-18  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (GO_IF_MODE_DEPENDENT_ADDRESS): Treat
