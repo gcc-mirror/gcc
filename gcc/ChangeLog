@@ -1,3 +1,7 @@
+Wed Sep 30 14:21:39 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* libgcc2.c (__bb_init_prg): Properly zero bb_hashbuckets.
+
 Wed Sep 30 11:31:23 1998  Walter Gadeyne  <gadeynew@sebb.bel.alcatel.be>
 
 	* combine.c (num_sign_bit_copies, case UDIV): Return 1.
