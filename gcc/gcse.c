@@ -2054,8 +2054,8 @@ compute_hash_table (f, set_p)
       mem_first_set = NEVER_SET;
       mem_last_set = NEVER_SET;
 
-      for (insn = basic_block_head[bb];
-	   insn && insn != NEXT_INSN (basic_block_end[bb]);
+      for (insn = BLOCK_HEAD (bb);
+	   insn && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 #ifdef NON_SAVING_SETJMP 
@@ -2099,8 +2099,8 @@ compute_hash_table (f, set_p)
 
       /* The next pass builds the hash table.  */
 
-      for (insn = basic_block_head[bb], in_libcall_block = 0;
-	   insn && insn != NEXT_INSN (basic_block_end[bb]);
+      for (insn = BLOCK_HEAD (bb), in_libcall_block = 0;
+	   insn && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
@@ -3243,8 +3243,8 @@ classic_gcse ()
 	 start of the block].  */
       reset_opr_set_tables ();
 
-      for (insn = basic_block_head[bb];
-	   insn != NULL && insn != NEXT_INSN (basic_block_end[bb]);
+      for (insn = BLOCK_HEAD (bb);
+	   insn != NULL && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  /* Is insn of form (set (pseudo-reg) ...)?  */
@@ -3829,8 +3829,8 @@ cprop ()
 	 start of the block].  */
       reset_opr_set_tables ();
 
-      for (insn = basic_block_head[bb];
-	   insn != NULL && insn != NEXT_INSN (basic_block_end[bb]);
+      for (insn = BLOCK_HEAD (bb);
+	   insn != NULL && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')

@@ -1,3 +1,15 @@
+Mon Jan 11 22:36:01 1999  Richard Henderson  <rth@cygnus.com>
+
+	* basic-block.h (basic_block_head): Rename to x_basic_block_head.
+	(basic_block_end): Rename to x_basic_block_end.
+	(BLOCK_HEAD, BLOCK_END): Update.
+
+	* caller-save.c: Change basic_block_head/end references to 
+	BLOCK_HEAD/END.
+	* combine.c, flow.c, function.c, gcse.c, global.c: Likewise.
+	* graph.c, haifa-sched.c, local-alloc.c, regclass.c: Likewise.
+	* regmove.c, reload1.c, reorg.c, sched.c: Likewise.
+
 Sat Jan  9 23:54:09 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c (xstrerror): Renamed from my_strerror.  All callers

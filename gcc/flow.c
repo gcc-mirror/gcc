@@ -195,12 +195,12 @@ int regset_size;
 /* Element N is first insn in basic block N.
    This info lasts until we finish compiling the function.  */
 
-rtx *basic_block_head;
+rtx *x_basic_block_head;
 
 /* Element N is last insn in basic block N.
    This info lasts until we finish compiling the function.  */
 
-rtx *basic_block_end;
+rtx *x_basic_block_end;
 
 /* Element N indicates whether basic block N can be reached through a
    computed jump.  */
@@ -344,7 +344,7 @@ find_basic_blocks (f, nregs, file)
 
 	    /* If the previous insn was a call that did not create an
 	       abnormal edge, we want to add a nop so that the CALL_INSN
-	       itself is not at basic_block_end.  This allows us to easily
+	       itself is not at basic block end.  This allows us to easily
 	       distinguish between normal calls and those which create
 	       abnormal edges in the flow graph.  */
 
@@ -393,8 +393,8 @@ find_basic_blocks (f, nregs, file)
   /* Allocate some tables that last till end of compiling this function
      and some needed only in find_basic_blocks and life_analysis.  */
 
-  basic_block_head = XNMALLOC (rtx, n_basic_blocks);
-  basic_block_end = XNMALLOC (rtx, n_basic_blocks);
+  x_basic_block_head = XNMALLOC (rtx, n_basic_blocks);
+  x_basic_block_end = XNMALLOC (rtx, n_basic_blocks);
   basic_block_succ = XNMALLOC (int_list_ptr, n_basic_blocks);
   basic_block_pred = XNMALLOC (int_list_ptr, n_basic_blocks);
   bzero ((char *)basic_block_succ, n_basic_blocks * sizeof (int_list_ptr));
@@ -497,8 +497,8 @@ find_basic_blocks_1 (f, nonlocal_labels)
 		       || (prev_code == CALL_INSN && call_had_abnormal_edge)
 		       || prev_code == BARRIER)))
 	{
-	  basic_block_head[++i] = insn;
-	  basic_block_end[i] = insn;
+	  BLOCK_HEAD (++i) = insn;
+	  BLOCK_END (i) = insn;
 	  basic_block_loop_depth[i] = depth;
 
 	  if (code == CODE_LABEL)
@@ -513,7 +513,7 @@ find_basic_blocks_1 (f, nonlocal_labels)
 
       else if (GET_RTX_CLASS (code) == 'i')
 	{
-	  basic_block_end[i] = insn;
+	  BLOCK_END (i) = insn;
 	  basic_block_loop_depth[i] = depth;
 	}
 
@@ -720,7 +720,7 @@ make_edges (i)
   /* See if control drops into the next block.  */
   if (i + 1 < n_basic_blocks)
     {
-      for (insn = PREV_INSN (basic_block_head[i + 1]);
+      for (insn = PREV_INSN (BLOCK_HEAD (i + 1));
 	   insn && GET_CODE (insn) == NOTE; insn = PREV_INSN (insn))
 	;
 
@@ -728,7 +728,7 @@ make_edges (i)
 	add_edge (i, i + 1);
     }
 
-  insn = basic_block_end[i];
+  insn = BLOCK_END (i);
   if (GET_CODE (insn) == JUMP_INSN)
     mark_label_ref (i, PATTERN (insn));
 
@@ -741,8 +741,8 @@ make_edges (i)
   /* Now scan the insns for this block, we may need to make edges for some of
      them to various non-obvious locations (exception handlers, nonlocal
      labels, etc).  */
-  for (insn = basic_block_head[i];
-       insn != NEXT_INSN (basic_block_end[i]);
+  for (insn = BLOCK_HEAD (i);
+       insn != NEXT_INSN (BLOCK_END (i));
        insn = NEXT_INSN (insn))
     {
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
@@ -934,16 +934,16 @@ delete_unreachable_blocks ()
 
       if (i != j)
 	{
-	  rtx tmp = basic_block_head[i];
+	  rtx tmp = BLOCK_HEAD (i);
 	  for (;;)
 	    {
 	      BLOCK_NUM (tmp) = j;
-	      if (tmp == basic_block_end[i])
+	      if (tmp == BLOCK_END (i))
 		break;
 	      tmp = NEXT_INSN (tmp);
 	    }
-	  basic_block_head[j] = basic_block_head[i];
-	  basic_block_end[j] = basic_block_end[i];
+	  BLOCK_HEAD (j) = BLOCK_HEAD (i);
+	  BLOCK_END (j) = BLOCK_END (i);
 	  basic_block_pred[j] = basic_block_pred[i];
 	  basic_block_succ[j] = basic_block_succ[i];
 	  basic_block_loop_depth[j] = basic_block_loop_depth[i];
@@ -977,7 +977,7 @@ delete_unreachable_blocks ()
 }
 
 /* Delete the insns in a (non-live) block.  We physically delete every
-   non-note insn except the start and end (so basic_block_head/end needn't
+   non-note insn except the start and end (so BLOCK_HEAD/END needn't
    be updated), we turn the latter into NOTE_INSN_DELETED notes.
 
    We use to "delete" the insns by turning them into notes, but we may be
@@ -1003,7 +1003,7 @@ delete_block (i)
      We need to remove the label from the exception_handler_label
      list and remove the associated NOTE_EH_REGION_BEG and
      NOTE_EH_REGION_END notes.  */
-  insn = basic_block_head[i];
+  insn = BLOCK_HEAD (i);
   if (GET_CODE (insn) == CODE_LABEL)
     {
       rtx x, *prev = &exception_handler_labels;
@@ -1029,7 +1029,7 @@ delete_block (i)
 
   /* Walk the insns of the block, building a chain of NOTEs that need to be
      kept.  */
-  insn = basic_block_head[i];
+  insn = BLOCK_HEAD (i);
   for (;;)
     {
       if (GET_CODE (insn) == BARRIER)
@@ -1045,7 +1045,7 @@ delete_block (i)
 	      kept_tail = insn;
 	    }
 	}
-      if (insn == basic_block_end[i])
+      if (insn == BLOCK_END (i))
 	break;
       insn = NEXT_INSN (insn);
     }
@@ -1063,19 +1063,19 @@ delete_block (i)
      place.  */
   if (kept_head == 0)
     {
-      NEXT_INSN (PREV_INSN (basic_block_head[i])) = insn;
+      NEXT_INSN (PREV_INSN (BLOCK_HEAD (i))) = insn;
       if (insn != 0)
-	PREV_INSN (insn) = PREV_INSN (basic_block_head[i]);
+	PREV_INSN (insn) = PREV_INSN (BLOCK_HEAD (i));
       else
-	set_last_insn (PREV_INSN (basic_block_head[i]));
+	set_last_insn (PREV_INSN (BLOCK_HEAD(i)));
     }
   else
     {
-      NEXT_INSN (PREV_INSN (basic_block_head[i])) = kept_head;
+      NEXT_INSN (PREV_INSN (BLOCK_HEAD (i))) = kept_head;
       if (insn != 0)
 	PREV_INSN (insn) = kept_tail;
 
-      PREV_INSN (kept_head) = PREV_INSN (basic_block_head[i]);
+      PREV_INSN (kept_head) = PREV_INSN (BLOCK_HEAD (i));
       NEXT_INSN (kept_tail) = insn;
 
       /* This must happen after NEXT_INSN (kept_tail) has been reinitialized
@@ -1096,7 +1096,7 @@ delete_block (i)
 	if (block_live_static[j])
 	  {
 	    rtx label;
-	    insn = basic_block_end[i - 1];
+	    insn = BLOCK_END (i - 1);
 	    if (GET_CODE (insn) == JUMP_INSN
 		/* An unconditional jump is the only possibility
 		   we must check for, since a conditional one
@@ -1156,7 +1156,7 @@ life_analysis (f, nregs, file)
 
 /* Free the variables allocated by find_basic_blocks.
 
-   KEEP_HEAD_END_P is non-zero if basic_block_head and basic_block_end
+   KEEP_HEAD_END_P is non-zero if BLOCK_HEAD and BLOCK_END
    are not to be freed.  */
 
 void
@@ -1179,12 +1179,12 @@ free_basic_block_vars (keep_head_end_p)
       uid_volatile = 0;
     }
 
-  if (! keep_head_end_p && basic_block_head)
+  if (! keep_head_end_p && x_basic_block_head)
     {
-      free (basic_block_head);
-      basic_block_head = 0;
-      free (basic_block_end);
-      basic_block_end = 0;
+      free (x_basic_block_head);
+      x_basic_block_head = 0;
+      free (x_basic_block_end);
+      x_basic_block_end = 0;
     }
 }
 
@@ -1524,7 +1524,7 @@ life_analysis_1 (f, nregs)
 	      COPY_REG_SET (basic_block_live_at_start[i],
 			    basic_block_live_at_end[i]);
 	      propagate_block (basic_block_live_at_start[i],
-			       basic_block_head[i], basic_block_end[i], 0,
+			       BLOCK_HEAD (i), BLOCK_END (i), 0,
 			       first_pass ? basic_block_significant[i]
 			       : (regset) 0,
 			       i);
@@ -1574,7 +1574,7 @@ life_analysis_1 (f, nregs)
   for (i = 0; i < n_basic_blocks; i++)
     {
       propagate_block (basic_block_live_at_end[i],
-		       basic_block_head[i], basic_block_end[i], 1,
+		       BLOCK_HEAD (i), BLOCK_END (i), 1,
 		       (regset) 0, i);
 #ifdef USE_C_ALLOCA
       alloca (0);
@@ -2574,8 +2574,8 @@ find_auto_inc (needed, x, insn)
 		 new insn(s) and do the updates.  */
 	      emit_insns_before (insns, insn);
 
-	      if (basic_block_head[BLOCK_NUM (insn)] == insn)
-		basic_block_head[BLOCK_NUM (insn)] = insns;
+	      if (BLOCK_HEAD (BLOCK_NUM (insn)) == insn)
+		BLOCK_HEAD (BLOCK_NUM (insn)) = insns;
 
 	      /* INCR will become a NOTE and INSN won't contain a
 		 use of ADDR.  If a use of ADDR was just placed in
@@ -3276,14 +3276,14 @@ print_rtl_with_bb (outf, rtx_first)
       for (i = n_basic_blocks-1; i >= 0; i--)
 	{
 	  rtx x;
-	  start[INSN_UID (basic_block_head[i])] = i;
-	  end[INSN_UID (basic_block_end[i])] = i;
-	  for (x = basic_block_head[i]; x != NULL_RTX; x = NEXT_INSN (x))
+	  start[INSN_UID (BLOCK_HEAD (i))] = i;
+	  end[INSN_UID (BLOCK_END (i))] = i;
+	  for (x = BLOCK_HEAD (i); x != NULL_RTX; x = NEXT_INSN (x))
 	    {
 	      in_bb_p[ INSN_UID(x)]
 		= (in_bb_p[ INSN_UID(x)] == NOT_IN_BB)
 		 ? IN_ONE_BB : IN_MULTIPLE_BB;
-	      if (x == basic_block_end[i])
+	      if (x == BLOCK_END (i))
 		break;
 	    }
 	}

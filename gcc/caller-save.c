@@ -732,8 +732,8 @@ insert_one_insn (chain, before_p, code, pat)
 	 registers from the live sets.  */
       COPY_REG_SET (new->live_before, chain->live_before);
       COPY_REG_SET (new->live_after, chain->live_before);
-      if (chain->insn == basic_block_head[chain->block])
-	basic_block_head[chain->block] = new->insn;
+      if (chain->insn == BLOCK_HEAD (chain->block))
+	BLOCK_HEAD (chain->block) = new->insn;
     }
   else
     {
@@ -747,8 +747,8 @@ insert_one_insn (chain, before_p, code, pat)
 	 registers from the live sets, and observe REG_UNUSED notes.  */
       COPY_REG_SET (new->live_before, chain->live_after);
       COPY_REG_SET (new->live_after, chain->live_after);
-      if (chain->insn == basic_block_end[chain->block])
-	basic_block_end[chain->block] = new->insn;
+      if (chain->insn == BLOCK_END (chain->block))
+	BLOCK_END (chain->block) = new->insn;
     }
   new->block = chain->block;
   new->is_caller_save_insn = 1;

@@ -6267,9 +6267,9 @@ thread_prologue_and_epilogue_insns (f)
 
       /* Include the new prologue insns in the first block.  Ignore them
 	 if they form a basic block unto themselves.  */
-      if (basic_block_head && n_basic_blocks
-	  && GET_CODE (basic_block_head[0]) != CODE_LABEL)
-	basic_block_head[0] = NEXT_INSN (f);
+      if (x_basic_block_head && n_basic_blocks
+	  && GET_CODE (BLOCK_HEAD (0)) != CODE_LABEL)
+	BLOCK_HEAD (0) = NEXT_INSN (f);
 
       /* Retain a map of the prologue insns.  */
       prologue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : head);
@@ -6335,9 +6335,9 @@ thread_prologue_and_epilogue_insns (f)
 
 	  /* Include the new epilogue insns in the last block.  Ignore
 	     them if they form a basic block unto themselves.  */
-	  if (basic_block_end && n_basic_blocks
-	      && GET_CODE (basic_block_end[n_basic_blocks - 1]) != JUMP_INSN)
-	    basic_block_end[n_basic_blocks - 1] = tail;
+	  if (x_basic_block_end && n_basic_blocks
+	      && GET_CODE (BLOCK_END (n_basic_blocks - 1)) != JUMP_INSN)
+	    BLOCK_END (n_basic_blocks - 1) = tail;
 
 	  /* Retain a map of the epilogue insns.  */
 	  epilogue = record_insns (GET_CODE (seq) == SEQUENCE ? seq : tail);
@@ -6397,10 +6397,10 @@ reposition_prologue_and_epilogue_notes (f)
 		  if (next)
 		    PREV_INSN (next) = prev;
 
-		  /* Whether or not we can depend on basic_block_head, 
+		  /* Whether or not we can depend on BLOCK_HEAD, 
 		     attempt to keep it up-to-date.  */
-		  if (basic_block_head[0] == note)
-		    basic_block_head[0] = next;
+		  if (BLOCK_HEAD (0) == note)
+		    BLOCK_HEAD (0) = next;
 
 		  add_insn_after (note, insn);
 		}
@@ -6441,11 +6441,11 @@ reposition_prologue_and_epilogue_notes (f)
 		  if (next)
 		    PREV_INSN (next) = prev;
 
-		  /* Whether or not we can depend on basic_block_head, 
+		  /* Whether or not we can depend on BLOCK_HEAD, 
 		     attempt to keep it up-to-date.  */
 		  if (n_basic_blocks
-		      && basic_block_head[n_basic_blocks-1] == insn)
-		    basic_block_head[n_basic_blocks-1] = note;
+		      && BLOCK_HEAD (n_basic_blocks-1) == insn)
+		    BLOCK_HEAD (n_basic_blocks-1) = note;
 
 		  add_insn_before (note, insn);
 		}

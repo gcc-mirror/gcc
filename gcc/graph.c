@@ -292,14 +292,14 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
       for (i = n_basic_blocks - 1; i >= 0; --i)
 	{
 	  rtx x;
-	  start[INSN_UID (basic_block_head[i])] = i;
-	  end[INSN_UID (basic_block_end[i])] = i;
-	  for (x = basic_block_head[i]; x != NULL_RTX; x = NEXT_INSN (x))
+	  start[INSN_UID (BLOCK_HEAD (i))] = i;
+	  end[INSN_UID (BLOCK_END (i))] = i;
+	  for (x = BLOCK_HEAD (i); x != NULL_RTX; x = NEXT_INSN (x))
 	    {
 	      in_bb_p[INSN_UID (x)]
 		= (in_bb_p[INSN_UID (x)] == NOT_IN_BB)
 		 ? IN_ONE_BB : IN_MULTIPLE_BB;
-	      if (x == basic_block_end[i])
+	      if (x == BLOCK_END (i))
 		break;
 	    }
 	}

@@ -573,7 +573,7 @@ combine_instructions (f, nregs)
 
       /* If INSN starts a new basic block, update our basic block number.  */
       if (this_basic_block + 1 < n_basic_blocks
-	  && basic_block_head[this_basic_block + 1] == insn)
+	  && BLOCK_HEAD (this_basic_block + 1) == insn)
 	this_basic_block++;
 
       if (GET_CODE (insn) == CODE_LABEL)
@@ -2124,7 +2124,7 @@ try_combine (i3, i2, i1)
 
 	  for (insn = NEXT_INSN (i3);
 	       insn && (this_basic_block == n_basic_blocks - 1
-			|| insn != basic_block_head[this_basic_block + 1]);
+			|| insn != BLOCK_HEAD (this_basic_block + 1));
 	       insn = NEXT_INSN (insn))
 	    {
 	      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
@@ -2310,7 +2310,7 @@ try_combine (i3, i2, i1)
 				  SET_DEST (XVECEXP (PATTERN (i2), 0, i))))
 	    for (temp = NEXT_INSN (i2);
 		 temp && (this_basic_block == n_basic_blocks - 1
-			  || basic_block_head[this_basic_block] != temp);
+			  || BLOCK_HEAD (this_basic_block) != temp);
 		 temp = NEXT_INSN (temp))
 	      if (temp != i3 && GET_RTX_CLASS (GET_CODE (temp)) == 'i')
 		for (link = LOG_LINKS (temp); link; link = XEXP (link, 1))
@@ -11035,7 +11035,7 @@ reg_dead_at_p (reg, insn)
   else
     {
       for (block = 0; block < n_basic_blocks; block++)
-	if (insn == basic_block_head[block])
+	if (insn == BLOCK_HEAD (block))
 	  break;
 
       if (block == n_basic_blocks)
@@ -11726,9 +11726,9 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 				       tem);
 
 		  /* If this insn was emitted between blocks, then update
-		     basic_block_head of the current block to include it.  */
-		  if (basic_block_end[this_basic_block - 1] == tem)
-		    basic_block_head[this_basic_block] = place;
+		     BLOCK_HEAD of the current block to include it.  */
+		  if (BLOCK_END (this_basic_block - 1) == tem)
+		    BLOCK_HEAD (this_basic_block) = place;
 		}
 	    }
 
@@ -11927,7 +11927,7 @@ distribute_links (links)
 
       for (insn = NEXT_INSN (XEXP (link, 0));
 	   (insn && (this_basic_block == n_basic_blocks - 1
-		     || basic_block_head[this_basic_block + 1] != insn));
+		     || BLOCK_HEAD (this_basic_block + 1) != insn));
 	   insn = NEXT_INSN (insn))
 	if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
 	    && reg_overlap_mentioned_p (reg, PATTERN (insn)))

@@ -868,8 +868,8 @@ scan_one_insn (insn, pass)
 	{
 	  int b;
 	  for (b = 0; b < n_basic_blocks; b++)
-	    if (insn == basic_block_head[b])
-	      basic_block_head[b] = newinsn;
+	    if (insn == BLOCK_HEAD (b))
+	      BLOCK_HEAD (b) = newinsn;
 	}
 
       /* This makes one more setting of new insns's dest.  */

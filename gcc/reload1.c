@@ -2039,10 +2039,10 @@ delete_caller_save_insns ()
 	  struct insn_chain *next = c->next;
 	  rtx insn = c->insn;
 
-	  if (insn == basic_block_head[c->block])
-	    basic_block_head[c->block] = NEXT_INSN (insn);
-	  if (insn == basic_block_end[c->block])
-	    basic_block_end[c->block] = PREV_INSN (insn);
+	  if (insn == BLOCK_HEAD (c->block))
+	    BLOCK_HEAD (c->block) = NEXT_INSN (insn);
+	  if (insn == BLOCK_END (c->block))
+	    BLOCK_END (c->block) = PREV_INSN (insn);
 	  if (c == reload_insn_chain)
 	    reload_insn_chain = next;
 
@@ -7308,10 +7308,10 @@ emit_reload_insns (chain)
   /* Keep basic block info up to date.  */
   if (n_basic_blocks)
     {
-      if (basic_block_head[chain->block] == insn)
-        basic_block_head[chain->block] = NEXT_INSN (before_insn);
-      if (basic_block_end[chain->block] == insn)
-        basic_block_end[chain->block] = PREV_INSN (following_insn);
+      if (BLOCK_HEAD (chain->block) == insn)
+        BLOCK_HEAD (chain->block) = NEXT_INSN (before_insn);
+      if (BLOCK_END (chain->block) == insn)
+        BLOCK_END (chain->block) = PREV_INSN (following_insn);
     }
 
   /* For all the spill regs newly reloaded in this instruction,
@@ -9464,7 +9464,7 @@ reload_combine ()
   CLEAR_HARD_REG_SET (ever_live_at_start);
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
-      insn = basic_block_head[i];
+      insn = BLOCK_HEAD (i);
       if (GET_CODE (insn) == CODE_LABEL)
 	{
 	  HARD_REG_SET live;
