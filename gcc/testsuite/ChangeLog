@@ -1,3 +1,7 @@
+2000-07-02  Zack Weinberg  <zack@wolery.cumb.org
+
+	* gcc.c-torture/compile/20000701-1.c: New test.
+
 2000-06-30  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c-torture/compile/20000629-1.c: Add second, reversed, loop
