@@ -1324,9 +1324,12 @@ extern int rs6000_sysv_varargs_p;
    && (DEFAULT_ABI != ABI_SOLARIS || int_size_in_bytes (TYPE) > 8))
 
 /* Mode of stack savearea.
+   FUNCTION is VOIDmode because calling convention maintains SP.
+   BLOCK needs Pmode for SP.
    NONLOCAL needs twice Pmode to maintain both backchain and SP.  */
 #define STACK_SAVEAREA_MODE(LEVEL)	\
-    (LEVEL == SAVE_NONLOCAL ? (TARGET_32BIT ? DImode : TImode) : Pmode)
+  (LEVEL == SAVE_FUNCTION ? VOIDmode	\
+  : LEVEL == SAVE_NONLOCAL ? (TARGET_32BIT ? DImode : TImode) : Pmode)
 
 /* Minimum and maximum general purpose registers used to hold arguments.  */
 #define GP_ARG_MIN_REG 3
