@@ -2740,10 +2740,10 @@ complex_direct_notype_declarator:
 	| direct_notype_declarator '[' ']'
 		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
 	| notype_qualified_id
-		{ if (OP0 ($$) != current_class_type)
+		{ if (OP0 ($1) != current_class_type)
 		    {
-		      push_nested_class (OP0 ($$), 3);
-		      TREE_COMPLEXITY ($$) = current_class_depth;
+		      push_nested_class (OP0 ($1), 3);
+		      TREE_COMPLEXITY ($1) = current_class_depth;
 		    }
 		}
         | nested_name_specifier notype_template_declarator

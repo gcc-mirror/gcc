@@ -4668,6 +4668,7 @@ pushclass (type, modify)
      tree type;
      int modify;
 {
+  type = TYPE_MAIN_VARIANT (type);
   push_memoized_context (type, modify);
 
   current_class_depth++;

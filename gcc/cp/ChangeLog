@@ -1,9 +1,22 @@
+1998-05-26  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (pushdecl): Don't copy the type_decl.
+
+1998-05-26  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* class.c (pushclass): Always store TYPE_MAIN_VARIANT in
+	current_class_type.
+	* decl.c (grokdeclarator): Put typedefs on the type's obstack.
+
+	* parse.y (complex_direct_notype_declarator): Use $1 to access
+	scope of notype_qualified_id.
+
 1998-05-26  Dave Brolley  <brolley@cygnus.com>
 
 	* lex.c (parse_options,yy_cur,yy_lim): Add for cpplib.
 	(init_parse): Initialize cpplib interface.
 
-	* Makefile.in (CXX_OBJS): Make sure dependencies nenver end with an
+	* Makefile.in (CXX_OBJS): Make sure dependencies never end with an
 	empty continuation.
 
 1998-05-26  Mark Mitchell  <mark@markmitchell.com>
