@@ -1,3 +1,11 @@
+Wed Jul  1 05:04:41 1998  Richard Henderson  <rth@cygnus.com>
+
+	* expr.c (emit_group_load, emit_group_store): Rewrite considering
+	the size and alignment of the structure being manipulated. 
+	* expr.c, calls.c, function.c: Update all callers.
+	* expr.h: Update prototypes.
+	* cse.c (invalidate): Cope with parallels.
+
 Wed Jul  1 04:22:23 1998  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.c (function_arg_record_value): Take a MODE arg with which to

@@ -1922,7 +1922,12 @@ expand_call (exp, target, ignore)
 	     locations.  The Irix 6 ABI has examples of this.  */
 
 	  if (GET_CODE (reg) == PARALLEL)
-	    emit_group_load (reg, args[i].value);
+	    {
+	      emit_group_load (reg, args[i].value,
+			       int_size_in_bytes (TREE_TYPE (args[i].tree_value)),
+			       (TYPE_ALIGN (TREE_TYPE (args[i].tree_value))
+				/ BITS_PER_UNIT));
+	    }
 
 	  /* If simple case, just do move.  If normal partial, store_one_arg
 	     has already loaded the register for us.  In all other cases,
@@ -2089,15 +2094,17 @@ expand_call (exp, target, ignore)
      The Irix 6 ABI has examples of this.  */
   else if (GET_CODE (valreg) == PARALLEL)
     {
+      int bytes = int_size_in_bytes (TREE_TYPE (exp));
+
       if (target == 0)
 	{
-	  int bytes = int_size_in_bytes (TREE_TYPE (exp));
 	  target = assign_stack_temp (TYPE_MODE (TREE_TYPE (exp)), bytes, 0);
 	  MEM_IN_STRUCT_P (target) = AGGREGATE_TYPE_P (TREE_TYPE (exp));
 	  preserve_temp_slots (target);
 	}
 
-      emit_group_store (target, valreg);
+      emit_group_store (target, valreg, bytes,
+			TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
     }
   else if (target && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp))
 	   && GET_MODE (target) == GET_MODE (valreg))

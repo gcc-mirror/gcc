@@ -1822,103 +1822,187 @@ move_block_from_reg (regno, x, nregs, size)
     }
 }
 
-/* Emit code to move a block Y to a block X, where X is non-consecutive
-   registers represented by a PARALLEL.  */
+/* Emit code to move a block SRC to a block DST, where DST is non-consecutive
+   registers represented by a PARALLEL.  SSIZE represents the total size of
+   block SRC in bytes, or -1 if not known.  ALIGN is the known alignment of
+   SRC in bits.  */
+/* ??? If SSIZE % UNITS_PER_WORD != 0, we make the blatent assumption that
+   the balance will be in what would be the low-order memory addresses, i.e.
+   left justified for big endian, right justified for little endian.  This
+   happens to be true for the targets currently using this support.  If this
+   ever changes, a new target macro along the lines of FUNCTION_ARG_PADDING
+   would be needed.  */
 
 void
-emit_group_load (x, y)
-     rtx x, y;
+emit_group_load (dst, orig_src, ssize, align)
+     rtx dst, orig_src;
+     int align, ssize;
 {
-  rtx target_reg, source;
-  int i;
+  rtx *tmps, src;
+  int start, i;
 
-  if (GET_CODE (x) != PARALLEL)
+  if (GET_CODE (dst) != PARALLEL)
     abort ();
 
   /* Check for a NULL entry, used to indicate that the parameter goes
      both on the stack and in registers.  */
-  if (XEXP (XVECEXP (x, 0, 0), 0))
-    i = 0;
+  if (XEXP (XVECEXP (dst, 0, 0), 0))
+    start = 0;
   else
-    i = 1;
+    start = 1;
 
-  for (; i < XVECLEN (x, 0); i++)
+  tmps = (rtx *) alloca (sizeof(rtx) * XVECLEN (dst, 0));
+
+  /* If we won't be loading directly from memory, protect the real source
+     from strange tricks we might play.  */
+  src = orig_src;
+  if (GET_CODE (src) != MEM)
     {
-      rtx element = XVECEXP (x, 0, i);
+      src = gen_reg_rtx (GET_MODE (orig_src));
+      emit_move_insn (src, orig_src);
+    }
 
-      target_reg = XEXP (element, 0);
+  /* Process the pieces.  */
+  for (i = start; i < XVECLEN (dst, 0); i++)
+    {
+      enum machine_mode mode = GET_MODE (XEXP (XVECEXP (dst, 0, i), 0));
+      int bytepos = INTVAL (XEXP (XVECEXP (dst, 0, i), 1));
+      int bytelen = GET_MODE_SIZE (mode);
+      int shift = 0;
 
-      if (GET_CODE (y) == MEM)
-	source = change_address (y, GET_MODE (target_reg),
-				 plus_constant (XEXP (y, 0),
-						INTVAL (XEXP (element, 1))));
-      else if (XEXP (element, 1) == const0_rtx)
+      /* Handle trailing fragments that run over the size of the struct.  */
+      if (ssize >= 0 && bytepos + bytelen > ssize)
 	{
-	  if (GET_MODE (target_reg) == GET_MODE (y))
-	    source = y;
-	  /* Allow for the target_reg to be smaller than the input register
-	     to allow for AIX with 4 DF arguments after a single SI arg.  The
-	     last DF argument will only load 1 word into the integer registers,
-	     but load a DF value into the float registers.  */
-	  else if ((GET_MODE_SIZE (GET_MODE (target_reg))
-		    <= GET_MODE_SIZE (GET_MODE (y)))
-		   && GET_MODE (target_reg) == word_mode)
-	    /* This might be a const_double, so we can't just use SUBREG.  */
-	    source = operand_subword (y, 0, 0, VOIDmode);
-	  else if (GET_MODE_SIZE (GET_MODE (target_reg))
-		   == GET_MODE_SIZE (GET_MODE (y)))
-	    source = gen_lowpart (GET_MODE (target_reg), y);
-	  else
-	    abort ();	    
+	  shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
+	  bytelen = ssize - bytepos;
+	  if (bytelen <= 0)
+	    abort();
+	}
+
+      /* Optimize the access just a bit.  */
+      if (GET_CODE (src) == MEM
+	  && align*BITS_PER_UNIT >= GET_MODE_ALIGNMENT (mode)
+	  && bytepos*BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
+	  && bytelen == GET_MODE_SIZE (mode))
+	{
+	  tmps[i] = gen_reg_rtx (mode);
+	  emit_move_insn (tmps[i],
+			  change_address (src, mode,
+					  plus_constant (XEXP (src, 0),
+							 bytepos)));
 	}
       else
-	abort ();
+	{
+	  tmps[i] = extract_bit_field (src, bytelen*BITS_PER_UNIT,
+				       bytepos*BITS_PER_UNIT, 1, NULL_RTX,
+				       mode, mode, align, ssize);
+	}
 
-      emit_move_insn (target_reg, source);
+      if (BYTES_BIG_ENDIAN && shift)
+	{
+	  expand_binop (mode, ashl_optab, tmps[i], GEN_INT (shift),
+			tmps[i], 0, OPTAB_WIDEN);
+	}
     }
+  emit_queue();
+
+  /* Copy the extracted pieces into the proper (probable) hard regs.  */
+  for (i = start; i < XVECLEN (dst, 0); i++)
+    emit_move_insn (XEXP (XVECEXP (dst, 0, i), 0), tmps[i]);
 }
 
-/* Emit code to move a block Y to a block X, where Y is non-consecutive
-   registers represented by a PARALLEL.  */
+/* Emit code to move a block SRC to a block DST, where SRC is non-consecutive
+   registers represented by a PARALLEL.  SSIZE represents the total size of
+   block DST, or -1 if not known.  ALIGN is the known alignment of DST.  */
 
 void
-emit_group_store (x, y)
-     rtx x, y;
+emit_group_store (orig_dst, src, ssize, align)
+     rtx orig_dst, src;
+     int ssize, align;
 {
-  rtx source_reg, target;
-  int i;
+  rtx *tmps, dst;
+  int start, i;
 
-  if (GET_CODE (y) != PARALLEL)
+  if (GET_CODE (src) != PARALLEL)
     abort ();
 
   /* Check for a NULL entry, used to indicate that the parameter goes
      both on the stack and in registers.  */
-  if (XEXP (XVECEXP (y, 0, 0), 0))
-    i = 0;
+  if (XEXP (XVECEXP (src, 0, 0), 0))
+    start = 0;
   else
-    i = 1;
+    start = 1;
 
-  for (; i < XVECLEN (y, 0); i++)
+  tmps = (rtx *) alloca (sizeof(rtx) * XVECLEN (src, 0));
+
+  /* Copy the (probable) hard regs into pseudos.  */
+  for (i = start; i < XVECLEN (src, 0); i++)
     {
-      rtx element = XVECEXP (y, 0, i);
+      rtx reg = XEXP (XVECEXP (src, 0, i), 0);
+      tmps[i] = gen_reg_rtx (GET_MODE (reg));
+      emit_move_insn (tmps[i], reg);
+    }
+  emit_queue();
 
-      source_reg = XEXP (element, 0);
+  /* If we won't be storing directly into memory, protect the real destination
+     from strange tricks we might play.  */
+  dst = orig_dst;
+  if (GET_CODE (dst) != MEM)
+    {
+      dst = gen_reg_rtx (GET_MODE (orig_dst));
+      /* Make life a bit easier for combine.  */
+      emit_move_insn (dst, const0_rtx);
+    }
+  else if (! MEM_IN_STRUCT_P (dst))
+    {
+      /* store_bit_field requires that memory operations have
+	 mem_in_struct_p set; we might not.  */
 
-      if (GET_CODE (x) == MEM)
-	target = change_address (x, GET_MODE (source_reg),
-				 plus_constant (XEXP (x, 0),
-						INTVAL (XEXP (element, 1))));
-      else if (XEXP (element, 1) == const0_rtx)
+      dst = copy_rtx (orig_dst);
+      MEM_IN_STRUCT_P (dst) = 1;
+    }
+
+  /* Process the pieces.  */
+  for (i = start; i < XVECLEN (src, 0); i++)
+    {
+      int bytepos = INTVAL (XEXP (XVECEXP (src, 0, i), 1));
+      enum machine_mode mode = GET_MODE (tmps[i]);
+      int bytelen = GET_MODE_SIZE (mode);
+
+      /* Handle trailing fragments that run over the size of the struct.  */
+      if (ssize >= 0 && bytepos + bytelen > ssize)
 	{
-	  target = x;
-	  if (GET_MODE (target) != GET_MODE (source_reg))
-	    target = gen_lowpart (GET_MODE (source_reg), target);
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      int shift = (bytelen - (ssize - bytepos)) * BITS_PER_UNIT;
+	      expand_binop (mode, ashr_optab, tmps[i], GEN_INT (shift),
+			    tmps[i], 0, OPTAB_WIDEN);
+	    }
+	  bytelen = ssize - bytepos;
+	}
+
+      /* Optimize the access just a bit.  */
+      if (GET_CODE (dst) == MEM
+	  && align*BITS_PER_UNIT >= GET_MODE_ALIGNMENT (mode)
+	  && bytepos*BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
+	  && bytelen == GET_MODE_SIZE (mode))
+	{
+	  emit_move_insn (change_address (dst, mode,
+					  plus_constant (XEXP (dst, 0),
+							 bytepos)),
+			  tmps[i]);
 	}
       else
-	abort ();
-
-      emit_move_insn (target, source_reg);
+	{
+	  store_bit_field (dst, bytelen*BITS_PER_UNIT, bytepos*BITS_PER_UNIT,
+			   mode, tmps[i], align, ssize);
+	}
     }
+  emit_queue();
+
+  /* Copy from the pseudo into the (probable) hard reg.  */
+  if (GET_CODE (dst) == REG)
+    emit_move_insn (orig_dst, dst);
 }
 
 /* Add a USE expression for REG to the (possibly empty) list pointed
@@ -2862,7 +2946,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
       /* Handle calls that pass values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (reg) == PARALLEL)
-	emit_group_load (reg, x);
+	emit_group_load (reg, x, -1, align);  /* ??? size? */
       else
 	move_block_to_reg (REGNO (reg), x, partial, mode);
     }
@@ -3071,7 +3155,8 @@ expand_assignment (to, from, want_value, suggest_reg)
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (to_rtx) == PARALLEL)
-	emit_group_load (to_rtx, value);
+	emit_group_load (to_rtx, value, int_size_in_bytes (TREE_TYPE (from)),
+			 TYPE_ALIGN (TREE_TYPE (from)) / BITS_PER_UNIT);
       else if (GET_MODE (to_rtx) == BLKmode)
 	emit_block_move (to_rtx, value, expr_size (from),
 			 TYPE_ALIGN (TREE_TYPE (from)) / BITS_PER_UNIT);
@@ -3476,7 +3561,8 @@ store_expr (exp, target, want_value)
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       else if (GET_CODE (target) == PARALLEL)
-	emit_group_load (target, temp);
+	emit_group_load (target, temp, int_size_in_bytes (TREE_TYPE (exp)),
+			 TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
       else if (GET_MODE (temp) == BLKmode)
 	emit_block_move (target, temp, expr_size (exp),
 			 TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);

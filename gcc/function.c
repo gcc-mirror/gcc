@@ -3945,8 +3945,10 @@ assign_parms (fndecl, second_time)
 		  /* Handle calls that pass values in multiple non-contiguous
 		     locations.  The Irix 6 ABI has examples of this.  */
 		  if (GET_CODE (entry_parm) == PARALLEL)
-		    emit_group_store (validize_mem (stack_parm),
-					 entry_parm);
+		    emit_group_store (validize_mem (stack_parm), entry_parm,
+				      int_size_in_bytes (TREE_TYPE (parm)),
+				      (TYPE_ALIGN (TREE_TYPE (parm))
+				       / BITS_PER_UNIT));
 		  else
 		    move_block_from_reg (REGNO (entry_parm),
 					 validize_mem (stack_parm), nregs,
@@ -4116,7 +4118,10 @@ assign_parms (fndecl, second_time)
 	      /* Handle calls that pass values in multiple non-contiguous
 		 locations.  The Irix 6 ABI has examples of this.  */
 	      if (GET_CODE (entry_parm) == PARALLEL)
-		emit_group_store (validize_mem (stack_parm), entry_parm);
+		emit_group_store (validize_mem (stack_parm), entry_parm,
+				  int_size_in_bytes (TREE_TYPE (parm)),
+				  (TYPE_ALIGN (TREE_TYPE (parm))
+				   / BITS_PER_UNIT));
 	      else
 		move_block_from_reg (REGNO (entry_parm),
 				     validize_mem (stack_parm),
