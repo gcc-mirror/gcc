@@ -2277,6 +2277,24 @@ __unwind_function(void *ptr)
   asm("ret");
 }
 #endif
+
+#if #machine(rs6000)
+__unwind_function(void *ptr)
+{
+  asm("mr 31,1");
+  asm("l 1,0(1)");
+  asm("l 31,-4(1)");
+  asm("# br");
+
+  asm("mr 31,1");
+  asm("l 1,0(1)");
+  /* use 31 as a scratch register to restore the link register. */
+  asm("l 31, 8(1);mtlr 31 # l lr,8(1)");
+  asm("l 31,-4(1)");
+  asm("# br");
+  asm("mtctr 3;bctr # b 3");
+}
+#endif
 #endif /* L_eh */
 
 #ifdef L_pure
