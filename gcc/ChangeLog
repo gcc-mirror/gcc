@@ -1,3 +1,8 @@
+Tue May 25 08:55:57 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (ASM_OUTPUT_DOUBLE_INT) : Use 'dword' if 
+	TARGET_GAS.
+
 Mon May 24 20:30:08 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* configure.in (rs6000-ibm-aix4.[12]*): Delete use of aix41-gld.h.
