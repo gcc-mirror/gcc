@@ -1,3 +1,7 @@
+Mon Oct 27 12:03:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in: check-target-libio depends on all-target-libstdc++.
+
 Sun Oct 26 11:48:27 1997  Manfred Hollstein  (manfred@s-direktnet.de)
 
 	* Makefile.in (bootstrap-lean): Combined with `normal' bootstrap
