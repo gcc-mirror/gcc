@@ -104,7 +104,7 @@ treelang/tree1.o: treelang/tree1.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 treelang/treetree.o: treelang/treetree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(TM_H) $(TREE_H) flags.h output.h $(RTL_H) $(GGC_H) toplev.h \
   varray.h $(LANGHOOKS_DEF_H) langhooks.h treelang/treelang.h input.h \
-  treelang/treetree.h treelang/parse.h
+  treelang/treetree.h $(parsedir)/treelang/parse.h
 
 treelang/tree-convert.o: treelang/tree-convert.c $(CONFIG_H) $(SYSTEM_H) \
   coretypes.h diagnostic.h $(TREE_H) flags.h toplev.h langhooks.h $(TM_H)
@@ -116,7 +116,8 @@ treelang/parse.o: $(parsedir)/treelang/parse.h $(parsedir)/treelang/parse.c \
 	$(parsedir)/treelang/parse.c $(OUTPUT_OPTION)
 
 treelang/lex.o: $(parsedir)/treelang/lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-  $(TM_H) diagnostic.h $(TREE_H) treelang/treelang.h input.h treelang/parse.h
+  $(TM_H) diagnostic.h $(TREE_H) treelang/treelang.h input.h \
+  $(parsedir)/treelang/parse.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(parsedir)/treelang/lex.c $(OUTPUT_OPTION)
 

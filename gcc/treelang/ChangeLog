@@ -1,5 +1,10 @@
 2003-10-21  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* Make-lang.in (treelang.o): Depend on $(parsedir)/treelang/parse.h.
+	(lex.o): Likewise.
+
+2003-10-21  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* Make-lang.in (parse.o): Honor $(parsedir).
 	(lex.o): Likewise.
 	(lex.c): Likewise
