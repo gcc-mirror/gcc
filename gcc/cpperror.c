@@ -29,34 +29,35 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpphash.h"
 #include "intl.h"
 
-static void print_location (cpp_reader *, unsigned int, unsigned int);
+static void print_location (cpp_reader *, fileline, unsigned int);
 
 /* Print the logical file location (LINE, COL) in preparation for a
    diagnostic.  Outputs the #include chain if it has changed.  A line
    of zero suppresses the include stack, and outputs the program name
    instead.  */
 static void
-print_location (cpp_reader *pfile, unsigned int line, unsigned int col)
+print_location (cpp_reader *pfile, fileline line, unsigned int col)
 {
   if (!pfile->buffer || line == 0)
     fprintf (stderr, "%s: ", progname);
   else
     {
       const struct line_map *map;
+      unsigned int lin;
 
       map = linemap_lookup (&pfile->line_maps, line);
       linemap_print_containing_files (&pfile->line_maps, map);
 
-      line = SOURCE_LINE (map, line);
+      lin = SOURCE_LINE (map, line);
       if (col == 0)
 	col = 1;
 
-      if (line == 0)
+      if (lin == 0)
 	fprintf (stderr, "%s:", map->to_file);
       else if (CPP_OPTION (pfile, show_column) == 0)
-	fprintf (stderr, "%s:%u:", map->to_file, line);
+	fprintf (stderr, "%s:%u:", map->to_file, lin);
       else
-	fprintf (stderr, "%s:%u:%u:", map->to_file, line, col);
+	fprintf (stderr, "%s:%u:%u:", map->to_file, lin, col);
 
       fputc (' ', stderr);
     }
@@ -68,7 +69,7 @@ print_location (cpp_reader *pfile, unsigned int line, unsigned int col)
    the correct place by default.  Returns 0 if the error has been
    suppressed.  */
 int
-_cpp_begin_message (cpp_reader *pfile, int code, unsigned int line,
+_cpp_begin_message (cpp_reader *pfile, int code, fileline line,
 		    unsigned int column)
 {
   int level = DL_EXTRACT (code);
@@ -124,7 +125,8 @@ _cpp_begin_message (cpp_reader *pfile, int code, unsigned int line,
 void
 cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 {
-  unsigned int line, column;
+  fileline line;
+  unsigned int column;
   va_list ap;
   
   va_start (ap, msgid);
@@ -157,7 +159,7 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 /* Print an error at a specific location.  */
 void
 cpp_error_with_line (cpp_reader *pfile, int level,
-		     unsigned int line, unsigned int column,
+		     fileline line, unsigned int column,
 		     const char *msgid, ...)
 {
   va_list ap;
