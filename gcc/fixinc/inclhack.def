@@ -6,6 +6,15 @@ autogen definitions fixincl;
 /* Define all the fixes we know about for repairing damaged headers.
    Please see the README before adding or changing entries in this file.
 
+   This is the sort command:
+
+   blocksort output=XXX \
+          pattern='^/\*$' \
+          start='DO +NOT +DO +BROKEN +FIXES' \
+          trailer='^/\*EOF\*[/]' \
+          input=inclhack.def \
+          key='hackname[ 	]*=[ 	]*(.*);'
+
    Set up a debug test so we can make the templates emit special
    code while debugging these fixes:  */
 
@@ -112,7 +121,8 @@ fix = {
 /* _INT_VARARGS.H - Define the common stuff for varargs/stdarg/stdio.   */
 /************************************************************************/
 
-/*\n** This file is a DG internal header.  Never include this
+/*" "
+** This file is a DG internal header.  Never include this
 ** file directly.
 */
 
@@ -1145,11 +1155,17 @@ fix = {
 fix = {
     hackname  = hpux10_cpp_pow_inline;
     files     = fixinc-test-limits.h, math.h;
-    select    = "^# +ifdef +__cplusplus\n +}\n +inline +double +pow"
-	        "\\(double +__d,int +__expon\\) +{\n[ \t]+return +pow"
-		"\\(__d,\\(double\\)__expon\\);\n +}\n +extern"
-		' +"C"'
-		" +{\n#else\n# +endif";
+    select    = <<-	END_POW_INLINE
+	^# +ifdef +__cplusplus
+	 +}
+	 +inline +double +pow\(double +__d,int +__expon\) +{
+	[ 	]+return +pow\(__d,\(double\)__expon\);
+	 +}
+	 +extern +"C" +{
+	#else
+	# +endif
+	END_POW_INLINE;
+ 
     c_fix     = format;
     c_fix_arg = "";
 
@@ -1200,7 +1216,7 @@ fix = {
 
 
 /*
- * In inttypes.h on HPUX 11, the use of __CONCAT__ in the definition 
+ * In inttypes.h on HPUX 11, the use of __CONCAT__ in the definition
  * of UINT32_C has undefined behavior according to ISO/ANSI:
  * the arguments to __CONCAT__ are not macro expanded before the
  * concatination happens so the trailing ')' in the first argument
@@ -1208,7 +1224,7 @@ fix = {
  * invalid pp token.  The behavior of invalid pp tokens is undefined.
  * GCC does not handle these invalid tokens the way the HP compiler does.
  * This problem will potentially occur anytime macros are used in the
- * arguments to __CONCAT__.  A general solution to this problem would be to 
+ * arguments to __CONCAT__.  A general solution to this problem would be to
  * insert another layer of macro between __CONCAT__ and its use
  * in UINT32_C.  An example of this solution can be found in the C standard.
  * A more specific solution, the one used here, is to change the UINT32_C
@@ -1224,6 +1240,24 @@ fix = {
     test_text =
     "#define CONCAT_U__(__c)\t__CONCAT__(__c,u)\n"
     "#define UINT32_C(__c)\t__CONCAT__(__CONCAT_U__(__c),l)";
+};
+
+
+/*
+ *  Fix hpux 11.00 broken vsnprintf declaration
+ */
+fix = {
+    hackname = hpux11_vsnprintf;
+    files    = stdio.h;
+    select   = 'extern int vsnprintf\(char \*, __size_t, const char \*,'
+                                     ' __va__list\);';
+
+    c_fix     = format;
+    c_fix_arg = "extern int vsnprintf(char *, __size_t, const char *,"
+                                     " __va_list);";
+
+    test_text = 'extern int vsnprintf(char *, __size_t, const char *,'
+                                     ' __va__list);';
 };
 
 
@@ -1376,18 +1410,18 @@ fix = {
  *  Non-traditional "const" declaration in Irix's limits.h.
  */
 fix = {
-    hackname	= irix_limits_const;
-    files	= fixinc-test-limits.h, limits.h;
-    select	= "^extern const ";
-    c_fix	= format;
-    c_fix_arg	= "extern __const ";
+    hackname    = irix_limits_const;
+    files       = fixinc-test-limits.h, limits.h;
+    select      = "^extern const ";
+    c_fix       = format;
+    c_fix_arg   = "extern __const ";
     test_text   = "extern const char limit; /* test limits */";
 };
 
 
 /*
  *  IRIX 5.x's stdio.h declares some functions that take a va_list as
- *  taking char *.  However, GCC uses void * for va_list, so 
+ *  taking char *.  However, GCC uses void * for va_list, so
  *  calling vfprintf with a va_list fails in C++.  */
 fix = {
     hackname  = irix_stdio_va_list;
@@ -1617,7 +1651,7 @@ fix = {
 
 /*
  * Fix BSD machine/ansi.h to use __builtin_va_list to define _BSD_VA_LIST_.
- * 
+ *
  * On NetBSD, machine is a symbolic link to an architecture specific
  * directory name, so we can't match a specific file name here.
  */
@@ -1949,7 +1983,7 @@ fix = {
 
 
 /*
- *  function class(double x) conflicts with C++ keyword on rs/6000 
+ *  function class(double x) conflicts with C++ keyword on rs/6000
  */
 fix = {
     hackname  = rs6000_double;
@@ -1978,7 +2012,7 @@ fix = {
 
 
 /*
- *  parameters conflict with C++ new on rs/6000 
+ *  parameters conflict with C++ new on rs/6000
  */
 fix = {
     hackname  = rs6000_param;
@@ -1994,7 +2028,7 @@ fix = {
 
 
 /*
- *  The static functions lstat() and fchmod() in <sys/stat.h> 
+ *  The static functions lstat() and fchmod() in <sys/stat.h>
  *  cause G++ grief since they're not wrapped in "if __cplusplus".
  *
  *  On SCO OpenServer 5.0.0 through (at least) 5.0.5 <sys/stat.h> contains
@@ -2050,30 +2084,30 @@ fix = {
 
 
 /*
- * Sun Solaris 2.7 defines PTHREAD_MUTEX_INITIALIZER with a trailing
+ * Sun Solaris defines PTHREAD_MUTEX_INITIALIZER with a trailing
  * "0" for the last field of the pthread_mutex_t structure, which is
  * of type upad64_t, which itself is typedef'd to int64_t, but with
  * __STDC__ defined (e.g. by -ansi) it is a union. So change the
  * initializer to "{0}" instead
  */
 fix = {
-	hackname = solaris_mutex_init;
-	select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-	files = pthread.h;
-	c_fix = format;
-	c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-				"%0\n"
-				"#else\n"
-				"%1, {0}}%3\n"
-				"#endif";
-	c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+{.*)"
-				",[ \t]*0}" "(|[ \t].*)$";
-	test_text =
-	'#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-	"#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
-	"#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
-	"#define PTHREAD_RWLOCK_INITIALIZER\t"
-			 "{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
+    hackname = solaris_mutex_init;
+    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
+    files = pthread.h;
+    c_fix = format;
+    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
+                "%0\n"
+                "#else\n"
+                "%1, {0}}%3\n"
+                "#endif";
+    c_fix_arg = "(^#define[ \t]+PTHREAD_(MUTEX|COND)_INITIALIZER[ \t]+{.*)"
+                ",[ \t]*0}" "(|[ \t].*)$";
+    test_text =
+    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
+    "#define PTHREAD_MUTEX_INITIALIZER\t{{{0},0}, {{{0}}}, 0}\n"
+    "#define PTHREAD_COND_INITIALIZER\t{{{0}, 0}, 0}\t/* DEFAULTCV */\n"
+    "#define PTHREAD_RWLOCK_INITIALIZER\t"
+             "{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
 };
 
 
@@ -2757,7 +2791,7 @@ fix = {
 #endif
 
 
-/* 
+/*
  *  Like svr4_mach_defines, but with newfangled syntax.
  *  Source lines are of #define __i386 #machine(i386).   Delete them.
  */
@@ -2849,6 +2883,21 @@ fix = {
     c_fix     = format;
     c_fix_arg = " __cplusplus";
     test_text = "#ifdef _cplusplus\nint bogus;\n#endif";
+};
+
+
+/*
+ *  function parameter to atexit is missing "void" on VAX Ultrix 4.3.
+ */
+fix = {
+    hackname = ultrix_atexit_param;
+    files    = stdlib.h;
+    select   = 'atexit\(.*\(\)';
+
+    c_fix     = format;
+    c_fix_arg = "atexit( void (*__func)( void )";
+
+    test_text = "int atexit( void (*__func)() );\n";
 };
 
 
