@@ -970,7 +970,8 @@ decl_attributes (node, attributes, prefix_attributes)
 			     TREE_UNSIGNED (type) ? "uintmax_t" : "intmax_t");
 		  TREE_TYPE (decl) = type = typefm;
 		  DECL_SIZE (decl) = DECL_SIZE_UNIT (decl) = 0;
-		  layout_decl (decl, 0);
+		  if (TREE_CODE (decl) != FIELD_DECL)
+		    layout_decl (decl, 0);
 		}
 	    }
 	  break;
