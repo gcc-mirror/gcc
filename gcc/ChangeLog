@@ -1,3 +1,8 @@
+2002-07-30  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/extend.texi (Hints implementation): Document that GCC
+	mostly ignores `register'.
+
 2002-07-30  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* flags.h: Declare flag_finite_math_only.
