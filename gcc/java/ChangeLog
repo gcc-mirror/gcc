@@ -1,5 +1,10 @@
-2005-03-08  Julian Brown  <julian@codesourcery.com>
+2005-03-09  Ranjit Mathew  <rmathew@hotmail.com>
 
+	PR java/20338
+	* decl.c (finish_method): Emit _Jv_InitClass for private static 
+	methods inside inner classes as well.
+
+2005-03-08  Julian Brown  <julian@codesourcery.com>
 	* Revert patch from 2005-03-08 for causing bootstrap failure on
 	ppc-darwin.
 
