@@ -1,3 +1,7 @@
+2003-07-08  Gawain Bolton  <gp.bolton@computer.org>
+
+	* testsuite/performance/list_create_fill_sort.cc: New.
+
 2003-07-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/generic/numeric_members.cc: Correct type info.
