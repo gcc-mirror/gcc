@@ -100,7 +100,7 @@ convert_to_real (type, expr)
   {
     register tree tem = make_node (REAL_CST);
     TREE_TYPE (tem) = type;
-    TREE_REAL_CST (tem) = REAL_VALUE_ATOF ("0.0");
+    TREE_REAL_CST (tem) = REAL_VALUE_ATOF ("0.0", TYPE_MODE (type));
     return tem;
   }
 }
