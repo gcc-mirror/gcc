@@ -100,6 +100,7 @@ a register with any other reload.  */
 #include "real.h"
 #include "output.h"
 #include "expr.h"
+#include "toplev.h"
 
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(x, y) 2

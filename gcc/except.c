@@ -404,6 +404,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "recog.h"
 #include "output.h"
+#include "toplev.h"
 
 /* One to use setjmp/longjmp method of generating code for exception
    handling.  */

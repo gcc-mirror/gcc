@@ -55,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "basic-block.h"
 #include "obstack.h"
+#include "toplev.h"
 
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
