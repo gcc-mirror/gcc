@@ -139,6 +139,9 @@ extern void ia64_init_builtins PARAMS((void));
 extern void ia64_override_options PARAMS((void));
 extern int ia64_dbx_register_number PARAMS((int));
 
+extern rtx ia64_return_addr_rtx PARAMS ((HOST_WIDE_INT, rtx));
+extern void ia64_split_return_addr_rtx PARAMS ((rtx));
+
 #ifdef SDATA_SECTION_ASM_OP
 extern void sdata_section PARAMS ((void));
 #endif
