@@ -1214,7 +1214,7 @@ used in @code{cpp}.
 @item LONG_LONG_TYPE_SIZE
 A C expression for the size in bits of the type @code{long long} on the
 target machine.  If you don't define this, the default is two
-words.  If you want to support GNU Ada on your machine, the value of
+words.  If you want to support GNU Ada on your machine, the value of this
 macro must be at least 64.
 
 @findex CHAR_TYPE_SIZE
@@ -5064,50 +5064,52 @@ can also define additional sections.
 @table @code
 @findex TEXT_SECTION_ASM_OP
 @item TEXT_SECTION_ASM_OP
-A C expression whose value is a string containing the assembler
-operation that should precede instructions and read-only data.  Normally
-@code{".text"} is right.
+A C expression whose value is a string, including spacing, containing the
+assembler operation that should precede instructions and read-only data.
+Normally @code{"\t.text"} is right.
 
 @findex DATA_SECTION_ASM_OP
 @item DATA_SECTION_ASM_OP
-A C expression whose value is a string containing the assembler
-operation to identify the following data as writable initialized data.
-Normally @code{".data"} is right.
+A C expression whose value is a string, including spacing, containing the
+assembler operation to identify the following data as writable initialized
+data.  Normally @code{"\t.data"} is right.
 
 @findex SHARED_SECTION_ASM_OP
 @item SHARED_SECTION_ASM_OP
-If defined, a C expression whose value is a string containing the
-assembler operation to identify the following data as shared data.  If
-not defined, @code{DATA_SECTION_ASM_OP} will be used.
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+shared data.  If not defined, @code{DATA_SECTION_ASM_OP} will be used.
 
 @findex BSS_SECTION_ASM_OP
 @item BSS_SECTION_ASM_OP
-If defined, a C expression whose value is a string containing the
-assembler operation to identify the following data as uninitialized global
-data.  If not defined, and neither @code{ASM_OUTPUT_BSS} nor
-@code{ASM_OUTPUT_ALIGNED_BSS} are defined, uninitialized global data will be
-output in the data section if @samp{-fno-common} is passed, otherwise
-@code{ASM_OUTPUT_COMMON} will be used.
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+uninitialized global data.  If not defined, and neither
+@code{ASM_OUTPUT_BSS} nor @code{ASM_OUTPUT_ALIGNED_BSS} are defined,
+uninitialized global data will be output in the data section if
+@samp{-fno-common} is passed, otherwise @code{ASM_OUTPUT_COMMON} will be
+used.
 
 @findex SHARED_BSS_SECTION_ASM_OP
 @item SHARED_BSS_SECTION_ASM_OP
-If defined, a C expression whose value is a string containing the
-assembler operation to identify the following data as uninitialized global
-shared data.  If not defined, and @code{BSS_SECTION_ASM_OP} is, the latter
-will be used.
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+uninitialized global shared data.  If not defined, and
+@code{BSS_SECTION_ASM_OP} is, the latter will be used.
 
 @findex INIT_SECTION_ASM_OP
 @item INIT_SECTION_ASM_OP
-If defined, a C expression whose value is a string containing the
-assembler operation to identify the following data as initialization
-code.  If not defined, GCC will assume such a section does not
-exist.
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+initialization code.  If not defined, GCC will assume such a section does
+not exist.
 
 @findex FINI_SECTION_ASM_OP
 @item FINI_SECTION_ASM_OP
-If defined, a C expression whose value is a string containing the
-assembler opration to identify the following data as finalization
-code.  If not defined, GCC will assume such a section does not exist.
+If defined, a C expression whose value is a string, including spacing,
+containing the assembler operation to identify the following data as
+finalization code.  If not defined, GCC will assume such a section does
+not exist.
 
 @findex CRT_CALL_STATIC_FUNCTION
 @item CRT_CALL_STATIC_FUNCTION
@@ -5483,9 +5485,9 @@ instruction to assemble a single byte containing the number @var{value}.
 
 @findex ASM_BYTE_OP
 @item ASM_BYTE_OP
-A C string constant giving the pseudo-op to use for a sequence of
-single-byte constants.  If this macro is not defined, the default is
-@code{"byte"}.
+A C string constant, including spacing, giving the pseudo-op to use for a
+sequence of single-byte constants.  If this macro is not defined, the
+default is @code{"\t.byte\t"}.
 
 @findex ASM_OUTPUT_ASCII
 @item ASM_OUTPUT_ASCII (@var{stream}, @var{ptr}, @var{len})
@@ -6183,12 +6185,12 @@ and termination functions:
 @table @code
 @findex INIT_SECTION_ASM_OP
 @item INIT_SECTION_ASM_OP
-If defined, a C string constant for the assembler operation to identify
-the following data as initialization code.  If not defined, GCC will
-assume such a section does not exist.  When you are using special
-sections for initialization and termination functions, this macro also
-controls how @file{crtstuff.c} and @file{libgcc2.c} arrange to run the
-initialization functions.
+If defined, a C string constant, including spacing, for the assembler
+operation to identify the following data as initialization code.  If not
+defined, GCC will assume such a section does not exist.  When you are
+using special sections for initialization and termination functions, this
+macro also controls how @file{crtstuff.c} and @file{libgcc2.c} arrange to
+run the initialization functions.
 
 @item HAS_INIT_SECTION
 @findex HAS_INIT_SECTION
@@ -6607,11 +6609,11 @@ or @samp{-fPIC} is in effect, the @code{data_section}, otherwise the
 
 @findex EH_FRAME_SECTION_ASM_OP
 @item EH_FRAME_SECTION_ASM_OP
-If defined, a C string constant for the assembler operation to switch to
-the section for exception handling frame unwind information.  If not
-defined, GCC will provide a default definition if the target supports
-named sections.  @file{crtstuff.c} uses this macro to switch to the
-appropriate section.
+If defined, a C string constant, including spacing, for the assembler
+operation to switch to the section for exception handling frame unwind
+information.  If not defined, GCC will provide a default definition if the
+target supports named sections.  @file{crtstuff.c} uses this macro to
+switch to the appropriate section.
 
 You should define this symbol if your target supports DWARF 2 frame
 unwind information and the default definition does not work.
@@ -6862,24 +6864,25 @@ in the text section.
 
 @findex ASM_STABS_OP
 @item ASM_STABS_OP
-A C string constant naming the assembler pseudo op to use instead of
-@code{.stabs} to define an ordinary debugging symbol.  If you don't
-define this macro, @code{.stabs} is used.  This macro applies only to
-DBX debugging information format.
+A C string constant, including spacing, naming the assembler pseudo op to
+use instead of @code{"\t.stabs\t"} to define an ordinary debugging symbol.
+If you don't define this macro, @code{"\t.stabs\t"} is used.  This macro
+applies only to DBX debugging information format.
 
 @findex ASM_STABD_OP
 @item ASM_STABD_OP
-A C string constant naming the assembler pseudo op to use instead of
-@code{.stabd} to define a debugging symbol whose value is the current
-location.  If you don't define this macro, @code{.stabd} is used.
-This macro applies only to DBX debugging information format.
+A C string constant, including spacing, naming the assembler pseudo op to
+use instead of @code{"\t.stabd\t"} to define a debugging symbol whose
+value is the current location.  If you don't define this macro,
+@code{"\t.stabd\t"} is used.  This macro applies only to DBX debugging
+information format.
 
 @findex ASM_STABN_OP
 @item ASM_STABN_OP
-A C string constant naming the assembler pseudo op to use instead of
-@code{.stabn} to define a debugging symbol with no name.  If you don't
-define this macro, @code{.stabn} is used.  This macro applies only to
-DBX debugging information format.
+A C string constant, including spacing, naming the assembler pseudo op to
+use instead of @code{"\t.stabn\t"} to define a debugging symbol with no
+name.  If you don't define this macro, @code{"\t.stabn\t"} is used.  This
+macro applies only to DBX debugging information format.
 
 @findex DBX_NO_XREFS
 @item DBX_NO_XREFS
