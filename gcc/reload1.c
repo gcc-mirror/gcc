@@ -1089,7 +1089,7 @@ reload (first, global, dumpfile)
     {
       rtx addr = 0;
       int in_struct = 0;
-      int is_scalar;
+      int is_scalar = 0;
       int is_readonly = 0;
 
       if (reg_equiv_memory_loc[i])
@@ -3794,7 +3794,7 @@ init_elim_table ()
 static void
 spill_hard_reg (regno, dumpfile, cant_eliminate)
      register int regno;
-     FILE *dumpfile;
+     FILE *dumpfile ATTRIBUTE_UNUSED;
      int cant_eliminate;
 {
   register int i;
@@ -5845,7 +5845,7 @@ choose_reload_regs (chain)
 	    {
 	      int word = 0;
 	      register int regno = -1;
-	      enum machine_mode mode;
+	      enum machine_mode mode = VOIDmode;
 
 	      if (reload_in[r] == 0)
 		;
@@ -7622,7 +7622,7 @@ emit_reload_insns (chain)
 	  register int nregno = REGNO (out);
 	  if (nregno >= FIRST_PSEUDO_REGISTER)
 	    {
-	      rtx src_reg, store_insn;
+	      rtx src_reg, store_insn = NULL_RTX;
 
 	      reg_last_reload_reg[nregno] = 0;
 
@@ -8968,7 +8968,7 @@ reload_cse_regno_equal_p (regno, val, mode)
 static int
 reload_cse_noop_set_p (set, insn)
      rtx set;
-     rtx insn;
+     rtx insn ATTRIBUTE_UNUSED;
 {
   rtx src, dest;
   enum machine_mode dest_mode;
@@ -9650,7 +9650,7 @@ reload_combine ()
 	  rtx prev = prev_nonnote_insn (insn);
 	  rtx prev_set = prev ? single_set (prev) : NULL_RTX;
 	  int regno = REGNO (reg);
-	  rtx const_reg;
+	  rtx const_reg = NULL_RTX;
 	  rtx reg_sum = NULL_RTX;
 
 	  /* Now, we need an index register.
@@ -10074,7 +10074,7 @@ reload_cse_move2add (first)
 		       && reg_set_luid[regno] > reg_set_luid[REGNO (src)])
 		{
 		  rtx next = next_nonnote_insn (insn);
-		  rtx set;
+		  rtx set = NULL_RTX;
 		  if (next)
 		    set = single_set (next);
 		  if (next

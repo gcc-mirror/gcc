@@ -4198,7 +4198,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	case ROTATE:
 	  /* Rotating ~0 always results in ~0.  */
 	  if (GET_CODE (op0) == CONST_INT && width <= HOST_BITS_PER_WIDE_INT
-	      && INTVAL (op0) == GET_MODE_MASK (mode)
+	      && (unsigned HOST_WIDE_INT) INTVAL (op0) == GET_MODE_MASK (mode)
 	      && ! side_effects_p (op1))
 	    return op0;
 
@@ -4224,7 +4224,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	   
 	case SMAX:
 	  if (width <= HOST_BITS_PER_WIDE_INT && GET_CODE (op1) == CONST_INT
-	      && (INTVAL (op1)
+	      && ((unsigned HOST_WIDE_INT) INTVAL (op1)
 		  == (unsigned HOST_WIDE_INT) GET_MODE_MASK (mode) >> 1)
 	      && ! side_effects_p (op0))
 	    return op1;
@@ -4839,14 +4839,14 @@ simplify_relational_operation (code, mode, op0, op1)
 	  /* Unsigned values are never greater than the largest
 	     unsigned value.  */
 	  if (GET_CODE (op1) == CONST_INT
-	      && INTVAL (op1) == GET_MODE_MASK (mode)
+	      && (unsigned HOST_WIDE_INT) INTVAL (op1) == GET_MODE_MASK (mode)
 	    && INTEGRAL_MODE_P (mode))
 	  return const_true_rtx;
 	  break;
 
 	case GTU:
 	  if (GET_CODE (op1) == CONST_INT
-	      && INTVAL (op1) == GET_MODE_MASK (mode)
+	      && (unsigned HOST_WIDE_INT) INTVAL (op1) == GET_MODE_MASK (mode)
 	      && INTEGRAL_MODE_P (mode))
 	    return const0_rtx;
 	  break;
@@ -6377,12 +6377,12 @@ cse_insn (insn, libcall_insn)
 
   rtx src_eqv = 0;
   struct table_elt *src_eqv_elt = 0;
-  int src_eqv_volatile;
-  int src_eqv_in_memory;
-  int src_eqv_in_struct;
-  unsigned src_eqv_hash;
+  int src_eqv_volatile = 0;
+  int src_eqv_in_memory = 0;
+  int src_eqv_in_struct = 0;
+  unsigned src_eqv_hash = 0;
 
-  struct set *sets;
+  struct set *sets = NULL_PTR;
 
   this_insn = insn;
 

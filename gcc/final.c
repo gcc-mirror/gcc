@@ -314,7 +314,7 @@ extern char *getpwd ();
 
 void
 init_final (filename)
-     char *filename;
+     const char *filename ATTRIBUTE_UNUSED;
 {
   next_block_index = 2;
   app_on = 0;
@@ -1598,7 +1598,7 @@ void
 final_start_function (first, file, optimize)
      rtx first;
      FILE *file;
-     int optimize;
+     int optimize ATTRIBUTE_UNUSED;
 {
   block_depth = 0;
 
@@ -1790,9 +1790,9 @@ profile_function (file)
 
 void
 final_end_function (first, file, optimize)
-     rtx first;
+     rtx first ATTRIBUTE_UNUSED;
      FILE *file;
-     int optimize;
+     int optimize ATTRIBUTE_UNUSED;
 {
   if (app_on)
     {
@@ -2982,7 +2982,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 static void
 output_source_line (file, insn)
-     FILE *file;
+     FILE *file ATTRIBUTE_UNUSED;
      rtx insn;
 {
   register char *filename = NOTE_SOURCE_FILE (insn);

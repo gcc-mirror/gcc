@@ -1,3 +1,67 @@
+Wed Aug 25 09:32:31 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (emit_call_1): Mark parameter `stack_size' with
+	ATTRIBUTE_UNUSED.
+	(expand_call): Initialize variable `insn'.
+	(emit_library_call): Likewise for variable `high_to_save'.
+	(emit_library_call_value): Likewise.
+	(store_one_arg): Likewise for variables `lower_bound' and
+	`upper_bound'.
+
+	* combine.c (try_combine): Likewise for variables `i2_code_number'
+	and `other_code_number'.
+	(find_split_point): Likewise for variables `pos', `unsignedp' and
+	`inner'.
+	(simplify_if_then_else): Likewise for variables `op' and `c1'.
+	(simplify_and_const_int): Remove unused variable `width'.
+	(merge_outer_ops): Likewise.
+
+	* cse.c (simplify_binary_operation): Cast an INTVAL() to `unsigned
+	HOST_WIDE_INT' when comparing against one.
+	(simplify_relational_operation): Likewise.
+	(cse_insn): Initialize variables `src_eqv_volatile',
+	`src_eqv_in_memory', `src_eqv_in_struct', `src_eqv_hash' and `sets'.
+
+	* final.c (init_final): Constify parameter `filename'.
+	(final_start_function): Mark parameter `optimize' with
+	ATTRIBUTE_UNUSED.
+	(profile_function): Likewise for parameters `first' and `optimize'.
+	(output_source_line): Likewise for parameter `file'.
+
+	* integrate.c (subst_constants): Cast a value to `size_t' when
+	comparing against one.
+	(mark_stores): Initialize variable `mode'.  Cast a value to
+	`size_t' when comparing against one.
+
+	* integrate.h (MAYBE_EXTEND_CONST_EQUIV_VARRAY): Likewise.
+
+	* loop.c (move_movables): Initialize variable `first'.
+	(strength_reduce): Likewise for variable `increment'.
+	(check_dbra_loop): Likewise for variable `comparison_val'.  Cast a
+	value to `size_t' when comparing against one.
+	(load_mems): Initialize variable `end_label'.
+
+	* output.h (init_final): Constify parameter.
+
+	* reload.c (decompose): Initialize variable `base'.
+
+	* reload1.c (reload): Likewise for variable `is_scalar'.
+	(spill_hard_reg): Mark parameter `dumpfile' with ATTRIBUTE_UNUSED.
+	(choose_reload_regs): Initialize variable `mode'.
+	(emit_reload_insns): Likewise for variable `store_insn'.
+	(reload_cse_noop_set_p): Mark parameter `insn' with
+	ATTRIBUTE_UNUSED.
+	(reload_combine): Initialize variable `set'.
+
+	* unroll.c (unroll_loop): Likewise for variable `local_label'.
+	(copy_loop_body): Cast a value to `size_t' when comparing against
+	one.
+
+	* varasm.c (assemble_variable): Initialize variable `size_tree'.
+	(const_hash): Add an `else abort()' in an if-else-if-else sequence.
+	(remove_from_pending_weak_list): Mark parameter `name' with
+	ATTRIBUTE_UNUSED.
+
 Wed Aug 25 11:18:39 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* toplev.c (rest_of_compilation): Use decl_printable_name when opening

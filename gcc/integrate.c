@@ -2859,7 +2859,7 @@ subst_constants (loc, insn, map)
 	struct const_equiv_data *p;
 
 	if (! (regno < FIRST_PSEUDO_REGISTER && REG_USERVAR_P (x))
-	    && regno < VARRAY_SIZE (map->const_equiv_varray)
+	    && (size_t) regno < VARRAY_SIZE (map->const_equiv_varray)
 	    && (p = &VARRAY_CONST_EQUIV (map->const_equiv_varray, regno),
 		p->rtx != 0)
 	    && p->age >= map->const_age)
@@ -3087,7 +3087,7 @@ mark_stores (dest, x)
      rtx x ATTRIBUTE_UNUSED;
 {
   int regno = -1;
-  enum machine_mode mode;
+  enum machine_mode mode = VOIDmode;
 
   /* DEST is always the innermost thing set, except in the case of
      SUBREGs of hard registers.  */
@@ -3111,7 +3111,7 @@ mark_stores (dest, x)
       if (regno != VIRTUAL_INCOMING_ARGS_REGNUM
 	  && regno != VIRTUAL_STACK_VARS_REGNUM)
 	for (i = regno; i <= last_reg; i++)
-	  if (i < VARRAY_SIZE (global_const_equiv_varray))
+	  if ((size_t) i < VARRAY_SIZE (global_const_equiv_varray))
 	    VARRAY_CONST_EQUIV (global_const_equiv_varray, i).rtx = 0;
     }
 }

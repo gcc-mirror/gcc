@@ -2226,7 +2226,7 @@ decompose (x)
   val.base = 0;
   if (GET_CODE (x) == MEM)
     {
-      rtx base, offset = 0;
+      rtx base = NULL_RTX, offset = 0;
       rtx addr = XEXP (x, 0);
 
       if (GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == PRE_INC

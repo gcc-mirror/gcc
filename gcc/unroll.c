@@ -237,7 +237,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   int max_labelno, max_insnno;
   rtx insert_before;
   struct inline_remap *map;
-  char *local_label;
+  char *local_label = NULL;
   char *local_regno;
   int max_local_regnum;
   int maxregnum;
@@ -1963,7 +1963,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	    {
 	      int regno = REGNO (SET_DEST (pattern));
 
-	      if (regno < VARRAY_SIZE (map->const_equiv_varray)
+	      if ((size_t) regno < VARRAY_SIZE (map->const_equiv_varray)
 		  && (VARRAY_CONST_EQUIV (map->const_equiv_varray, regno).age
 		      == map->const_age))
 		VARRAY_CONST_EQUIV (map->const_equiv_varray, regno).age = -1;

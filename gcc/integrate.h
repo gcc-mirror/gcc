@@ -134,7 +134,7 @@ extern varray_type global_const_equiv_varray;
 
 #define MAYBE_EXTEND_CONST_EQUIV_VARRAY(MAP,MAX)			\
   {									\
-    if ((MAX) >= VARRAY_SIZE ((MAP)->const_equiv_varray))		\
+    if ((size_t)(MAX) >= VARRAY_SIZE ((MAP)->const_equiv_varray))	\
       {									\
         int is_global = (global_const_equiv_varray			\
 			 == (MAP)->const_equiv_varray);			\
