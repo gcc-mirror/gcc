@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Testing allocator for the C++ library testsuite.
 //
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -181,20 +181,29 @@ namespace __gnu_test
   check_construct_destroy(const char* tag, int expected_c, int expected_d);
 
   template<typename Alloc, bool uses_global_new_and_delete>
-  bool check_new()
-  {
-    bool test __attribute__((unused)) = true;
-    Alloc  a;
-    typename Alloc::pointer p = a.allocate(10);
-    if (uses_global_new_and_delete)  
-      test &= ( requested >= (10 * 15 * sizeof(long)) );
+    bool 
+    check_new(Alloc a = Alloc())
+    {
+      bool test __attribute__((unused)) = true;
+      typename Alloc::pointer p = a.allocate(10);
+      if (uses_global_new_and_delete)  
+	test &= ( requested >= (10 * 15 * sizeof(long)) );
+      
+      test &= ( new_called == uses_global_new_and_delete );
+      a.deallocate(p, 10);
+      test &= ( delete_called == uses_global_new_and_delete );
+      
+      return test;
+    }
 
-    test &= ( new_called == uses_global_new_and_delete );
-    a.deallocate(p, 10);
-    test &= ( delete_called == uses_global_new_and_delete );
-  
-    return test;
-  }
+  template<typename Alloc>
+    bool 
+    check_deallocate_null()
+    {
+      // Let's not core here...
+      Alloc  a;
+      a.deallocate(NULL, 10);
+    }
 }; // namespace __gnu_test
 
 #endif // _GLIBCXX_TESTSUITE_ALLOCATOR_H

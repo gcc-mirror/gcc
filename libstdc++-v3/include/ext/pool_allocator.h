@@ -234,7 +234,7 @@ namespace __gnu_cxx
     void
     __pool_alloc<_Tp>::deallocate(pointer __p, size_type __n)
     {
-      if (__n)
+      if (__n && (__p != 0))
 	{
 	  const size_t __bytes = __n * sizeof(_Tp);
 	  if (__bytes > static_cast<size_t>(_S_max_bytes) || _S_force_new == 1)
