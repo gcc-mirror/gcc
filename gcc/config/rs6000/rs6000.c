@@ -70,6 +70,49 @@
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
+/* Structure used to define the rs6000 stack */
+typedef struct rs6000_stack {
+  int first_gp_reg_save;	/* first callee saved GP register used */
+  int first_fp_reg_save;	/* first callee saved FP register used */
+  int first_altivec_reg_save;	/* first callee saved AltiVec register used */
+  int lr_save_p;		/* true if the link reg needs to be saved */
+  int cr_save_p;		/* true if the CR reg needs to be saved */
+  unsigned int vrsave_mask;	/* mask of vec registers to save */
+  int toc_save_p;		/* true if the TOC needs to be saved */
+  int push_p;			/* true if we need to allocate stack space */
+  int calls_p;			/* true if the function makes any calls */
+  enum rs6000_abi abi;		/* which ABI to use */
+  int gp_save_offset;		/* offset to save GP regs from initial SP */
+  int fp_save_offset;		/* offset to save FP regs from initial SP */
+  int altivec_save_offset;	/* offset to save AltiVec regs from initial SP */
+  int lr_save_offset;		/* offset to save LR from initial SP */
+  int cr_save_offset;		/* offset to save CR from initial SP */
+  int vrsave_save_offset;	/* offset to save VRSAVE from initial SP */
+  int spe_gp_save_offset;	/* offset to save spe 64-bit gprs  */
+  int toc_save_offset;		/* offset to save the TOC pointer */
+  int varargs_save_offset;	/* offset to save the varargs registers */
+  int ehrd_offset;		/* offset to EH return data */
+  int reg_size;			/* register size (4 or 8) */
+  int varargs_size;		/* size to hold V.4 args passed in regs */
+  HOST_WIDE_INT vars_size;	/* variable save area size */
+  int parm_size;		/* outgoing parameter size */
+  int save_size;		/* save area size */
+  int fixed_size;		/* fixed size of stack frame */
+  int gp_size;			/* size of saved GP registers */
+  int fp_size;			/* size of saved FP registers */
+  int altivec_size;		/* size of saved AltiVec registers */
+  int cr_size;			/* size to hold CR if not in save_size */
+  int lr_size;			/* size to hold LR if not in save_size */
+  int vrsave_size;		/* size to hold VRSAVE if not in save_size */
+  int altivec_padding_size;	/* size of altivec alignment padding if
+				   not in save_size */
+  int spe_gp_size;		/* size of 64-bit GPR save size for SPE */
+  int spe_padding_size;
+  int toc_size;			/* size to hold TOC if not in save_size */
+  HOST_WIDE_INT total_size;	/* total bytes allocated for stack */
+  int spe_64bit_regs_used;
+} rs6000_stack_t;
+
 /* Target cpu type */
 
 enum processor_type rs6000_cpu;
@@ -222,7 +265,7 @@ static void rs6000_frame_related (rtx, rtx, HOST_WIDE_INT, rtx, rtx);
 static rtx spe_synthesize_frame_save (rtx);
 static bool spe_func_has_64bit_regs_p (void);
 static void emit_frame_save (rtx, rtx, enum machine_mode, unsigned int,
-			     int, int);
+			     int, HOST_WIDE_INT);
 static rtx gen_frame_mem_offset (enum machine_mode, rtx, int);
 static void rs6000_emit_allocate_stack (HOST_WIDE_INT, int);
 static unsigned rs6000_hash_constant (rtx);
@@ -317,6 +360,8 @@ static rtx spe_expand_builtin (tree, rtx, bool *);
 static rtx spe_expand_predicate_builtin (enum insn_code, tree, rtx);
 static rtx spe_expand_evsel_builtin (enum insn_code, tree, rtx);
 static int rs6000_emit_int_cmove (rtx, rtx, rtx, rtx);
+static rs6000_stack_t *rs6000_stack_info (void);
+static void debug_stack_info (rs6000_stack_t *);
 
 static rtx altivec_expand_builtin (tree, rtx, bool *);
 static rtx altivec_expand_ld_builtin (tree, rtx, bool *);
@@ -10269,14 +10314,14 @@ is_altivec_return_reg (rtx reg, void *xyes)
 #define ABI_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
-rs6000_stack_t *
+static rs6000_stack_t *
 rs6000_stack_info (void)
 {
   static rs6000_stack_t info, zero_info;
   rs6000_stack_t *info_ptr = &info;
   int reg_size = TARGET_POWERPC64 ? 8 : 4;
   int ehrd_size;
-  int total_raw_size;
+  HOST_WIDE_INT total_raw_size;
 
   /* Zero all fields portably.  */
   info = zero_info;
@@ -10608,7 +10653,7 @@ spe_func_has_64bit_regs_p (void)
   return false;
 }
 
-void
+static void
 debug_stack_info (rs6000_stack_t *info)
 {
   const char *abi_string;
@@ -10697,13 +10742,15 @@ debug_stack_info (rs6000_stack_t *info)
     fprintf (stderr, "\tvarargs_save_offset = %5d\n", info->varargs_save_offset);
 
   if (info->total_size)
-    fprintf (stderr, "\ttotal_size          = %5d\n", info->total_size);
+    fprintf (stderr, "\ttotal_size          = "HOST_WIDE_INT_PRINT_DEC"\n",
+	     info->total_size);
 
   if (info->varargs_size)
     fprintf (stderr, "\tvarargs_size        = %5d\n", info->varargs_size);
 
   if (info->vars_size)
-    fprintf (stderr, "\tvars_size           = %5d\n", info->vars_size);
+    fprintf (stderr, "\tvars_size           = "HOST_WIDE_INT_PRINT_DEC"\n",
+	     info->vars_size);
 
   if (info->parm_size)
     fprintf (stderr, "\tparm_size           = %5d\n", info->parm_size);
@@ -10974,6 +11021,42 @@ rs6000_emit_load_toc_table (int fromprolog)
     }
   else
     abort ();
+}
+
+/* Emit instructions to restore the link register after determining where
+   its value has been stored.  */
+
+void
+rs6000_emit_eh_reg_restore (rtx source, rtx scratch)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+  rtx operands[2];
+
+  operands[0] = source;
+  operands[1] = scratch;
+
+  if (info->lr_save_p)
+    {
+      rtx frame_rtx = stack_pointer_rtx;
+      HOST_WIDE_INT sp_offset = 0;
+      rtx tmp;
+
+      if (frame_pointer_needed
+	  || current_function_calls_alloca
+	  || info->total_size > 32767)
+	{
+	  emit_move_insn (operands[1], gen_rtx_MEM (Pmode, frame_rtx));
+	  frame_rtx = operands[1];
+	}
+      else if (info->push_p)
+	sp_offset = info->total_size;
+
+      tmp = plus_constant (frame_rtx, info->lr_save_offset + sp_offset);
+      tmp = gen_rtx_MEM (Pmode, tmp);
+      emit_move_insn (tmp, operands[0]);
+    }
+  else
+    emit_move_insn (gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM), operands[0]);
 }
 
 int   
@@ -11374,7 +11457,7 @@ generate_set_vrsave (rtx reg, rs6000_stack_t *info, int epiloguep)
 
 static void
 emit_frame_save (rtx frame_reg, rtx frame_ptr, enum machine_mode mode, 
-		 unsigned int regno, int offset, int total_size)
+		 unsigned int regno, int offset, HOST_WIDE_INT total_size)
 {
   rtx reg, offset_rtx, insn, mem, addr, int_rtx;
   rtx replacea, replaceb;
@@ -15573,6 +15656,28 @@ rs6000_libcall_value (enum machine_mode mode)
     regno = GP_ARG_RETURN;
 
   return gen_rtx_REG (mode, regno);
+}
+
+/* Define the offset between two registers, FROM to be eliminated and its
+   replacement TO, at the start of a routine.  */
+HOST_WIDE_INT
+rs6000_initial_elimination_offset (int from, int to)
+{
+  rs6000_stack_t *info = rs6000_stack_info ();
+  HOST_WIDE_INT offset;
+
+  if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    offset = info->push_p ? 0 : -info->total_size;
+  else if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    offset = info->total_size;
+  else if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    offset = info->push_p ? info->total_size : 0;
+  else if (from == RS6000_PIC_OFFSET_TABLE_REGNUM)
+    offset = 0;
+  else
+    abort ();
+
+  return offset;
 }
 
 /* Return true if TYPE is of type __ev64_opaque__.  */

@@ -1,3 +1,23 @@
+2003-11-12  Janis Johnson  <janis187@us.ibm.com>
+
+	* rs6000-protos.h (rs6000_initial_elimination_offset): Add.
+	(rs6000_stack_info): Remove.  (debug_stack_info): Remove.
+	(rs6000_emit_eh_reg_restore): Add
+	* rs6000.c (rs6000_stack_t): Move from rs6000.h, change data type
+	of vars_size and total_size to HOST_WIDE_INT.
+	(emit_frame_save): Change parameter size to HOST_WIDE_INT.
+	(rs6000_stack_info): Make static; change data size to HOST_WIDE_INT.
+	(debug_stack_info): Make static; change output format of HOST_WIDE_INT
+	values.
+	(rs6000_emit_eh_reg_restore): New, with code formerly in rs6000.md.
+	(rs6000_initial_elimination_offset): New, with code formerly in
+	INITIAL_ELIMINATION_OFFSET.
+	* rs6000.h (rs6000_stack_t): Remove.
+	(INITIAL_ELIMINATION_OFFSET): Replace code with call to function
+	rs6000_initial_elimination_offset.
+	* rs6000.md (UNSPECV_EH_RR split): Replace code with call to
+	rs6000_emit_eh_reg_restore.
+
 2003-11-12  Mike Stump  <mrs@apple.com>
 
 	* c-typeck.c (c_convert_parm_for_inlining): Add argnum, which
