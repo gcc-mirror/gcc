@@ -25,6 +25,7 @@ configure.tp
 configure.tps
 configure.vr
 configure.vrs
+Makefile
 dir.info
 lost+found
 update.out

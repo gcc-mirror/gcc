@@ -1,3 +1,9 @@
+2002-06-24  Phil Edwards  <pme@gcc.gnu.org>
+
+	* configure:  Revert in-srcdir redirect upon request.
+	* .cvsignore:  Add Makefile.
+	* Makefile:  Removed.
+
 2002-06-18  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure:  Remove garbage from previous commit.
