@@ -4,6 +4,7 @@
 #define DBX_DEBUGGING_INFO
 #define SDB_DEBUGGING_INFO
 #define MIPS_DEBUGGING_INFO
+#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
 
 /* GNU as does handle DWARF2 directives.  */
 #undef DWARF2_UNWIND_INFO

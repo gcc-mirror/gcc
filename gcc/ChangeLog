@@ -1,5 +1,8 @@
 Wed Aug 26 15:55:41 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* iris5.h (PREFERRED_DEBUGGING_TYPE): Undef.
+	* iris5gas.h (PREFERRED_DEBUGGING_TYPE): Define.
+
 	* configure.in (powerpc-ibm-aix4.[12]*): Change from 4.[12].*.
 	(rs6000-ibm-aix4.[12]*): Likewise.
 	* configure: Regnerate.
