@@ -62,14 +62,12 @@ extern int target_flags;
 
 #define TARGET_DISABLE_INDEXING (target_flags & 32)
 
-/* Force a colon to be tacked onto the end of local and global
-   labels.  An option because the HP assembler croaks on them.   */
-
-#define TARGET_TRAILING_COLON (target_flags & 64)
-
 /* Emit directives only understood by GAS.  This allows parameter
    relocations to work for static functions.  There is no way
-   to make them work the HP assembler at this time.  */
+   to make them work the HP assembler at this time. 
+
+   Also forces a colon to be tacked onto the end of local and
+   global labes.  */
 
 #define TARGET_GAS (target_flags & 128)
 
@@ -92,8 +90,6 @@ extern int target_flags;
    {"no-long-calls", -16},	\
    {"disable-indexing", 32},	\
    {"no-disable-indexing", -32},\
-   {"trailing-colon", 64},	\
-   {"no-trailing-colon", -64},	\
    {"gas", 128},		\
    {"no-gas", -128},		\
    { "", TARGET_DEFAULT}}
@@ -1623,7 +1619,7 @@ bss_section ()								\
 
 #define ASM_OUTPUT_LABEL(FILE, NAME)	\
   do { assemble_name (FILE, NAME); 	\
-       if (TARGET_TRAILING_COLON)	\
+       if (TARGET_GAS)			\
 	 fputc (':', FILE);		\
        fputc ('\n', FILE); } while (0)
 
@@ -1680,7 +1676,7 @@ bss_section ()								\
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
   {fprintf (FILE, "%s$%04d", PREFIX, NUM);		\
-   if (TARGET_TRAILING_COLON)				\
+   if (TARGET_GAS)					\
      fputs (":\n", FILE);				\
    else							\
      fputs ("\n", FILE);}
@@ -1777,7 +1773,7 @@ bss_section ()								\
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 { bss_section ();					\
   assemble_name ((FILE), (NAME));			\
-  if (TARGET_TRAILING_COLON) 				\
+  if (TARGET_GAS) 					\
     fputc (':', (FILE));				\
   fputs ("\t.comm ", (FILE));				\
   fprintf ((FILE), "%d\n", (ROUNDED));}
@@ -1789,7 +1785,7 @@ bss_section ()								\
 { bss_section ();						\
   fprintf ((FILE), "\t.align %d\n", (SIZE) <= 4 ? 4 : 8);	\
   assemble_name ((FILE), (NAME));				\
-  if (TARGET_TRAILING_COLON) 				\
+  if (TARGET_GAS) 					\
     fputc (':', (FILE));				\
   fprintf ((FILE), "\n\t.block %d\n", (ROUNDED));}
 
