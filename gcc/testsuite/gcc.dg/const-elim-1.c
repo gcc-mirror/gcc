@@ -7,7 +7,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=c99" } */
-/* { dg-final { scan-assembler-not "LC\[^A-Z\]" } } */
+/* { dg-final { scan-assembler-not "L\\\$?C\[^A-Z\]" } } */
 
 #define I (__extension__ 1.0iF)
 
