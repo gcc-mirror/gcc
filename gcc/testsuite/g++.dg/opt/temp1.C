@@ -20,6 +20,7 @@ void *memcpy (void *dest, const void *src, __SIZE_TYPE__ n)
   while (n--)
     d[n] = s[n];
   ++i;
+  return dest;
 }
  
 struct T {

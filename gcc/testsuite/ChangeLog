@@ -9,6 +9,8 @@
 
 2004-12-27  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/opt/temp1.C (memcpy): Return a value.
+
 	PR c++/19148
 	* g++.dg/expr/cond7.C: New test.
 
