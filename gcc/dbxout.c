@@ -2178,8 +2178,15 @@ dbxout_parms (parms)
 	    current_sym_code = DBX_REGPARM_STABS_CODE;
 	    regparm_letter = DBX_REGPARM_STABS_LETTER;
 
-	    /* DECL_RTL looks like (MEM (REG...).  Get the register number.  */
-	    current_sym_value = REGNO (XEXP (DECL_RTL (parms), 0));
+	    /* DECL_RTL looks like (MEM (REG...).  Get the register number.
+	       If it is an unallocated pseudo-reg, then use the register where
+	       it was passed instead.  */
+	    if (REGNO (XEXP (DECL_RTL (parms), 0)) >= 0
+		&& REGNO (XEXP (DECL_RTL (parms), 0)) < FIRST_PSEUDO_REGISTER)
+	      current_sym_value = REGNO (XEXP (DECL_RTL (parms), 0));
+	    else
+	      current_sym_value = REGNO (DECL_INCOMING_RTL (parms));
+
 	    current_sym_addr = 0;
 
 	    FORCE_TEXT;
