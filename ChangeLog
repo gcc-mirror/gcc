@@ -1,4 +1,9 @@
 2002-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.tpl: Rewrite substituted lines to look autoconfy.
+	* Makefile.in: Regenerate.
+	* configure.in: Rewrite sed statements to look autoconfy.
+
 	* Makefile.tpl: Autogenerate *-target-* lists, dependencies of
 	all-target-foo on configure-target-foo.
 	* Makefile.def: Ditto.
