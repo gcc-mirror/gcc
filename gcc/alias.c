@@ -1704,19 +1704,22 @@ init_alias_analysis ()
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{
-#if defined (HAVE_prologue) || defined (HAVE_epilogue)
-	  if (prologue_epilogue_contains (insn))
-	    continue;
-#endif
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    {
 	      rtx note, set;
+
+#if defined (HAVE_prologue) || defined (HAVE_epilogue)
+	      if (prologue_epilogue_contains (insn))
+		continue;
+#endif
+
 	      /* If this insn has a noalias note, process it,  Otherwise,
 	         scan for sets.  A simple set will have no side effects
 	         which could change the base value of any other register. */
 
 	      if (GET_CODE (PATTERN (insn)) == SET
-		  && (find_reg_note (insn, REG_NOALIAS, NULL_RTX)))
+		  && REG_NOTES (insn) != 0
+		  && find_reg_note (insn, REG_NOALIAS, NULL_RTX))
 		record_set (SET_DEST (PATTERN (insn)), NULL_RTX, NULL);
 	      else
 		note_stores (PATTERN (insn), record_set, NULL);
@@ -1726,6 +1729,7 @@ init_alias_analysis ()
 	      if (set != 0
 		  && GET_CODE (SET_DEST (set)) == REG
 		  && REGNO (SET_DEST (set)) >= FIRST_PSEUDO_REGISTER
+		  && REG_NOTES (insn) != 0
 		  && (((note = find_reg_note (insn, REG_EQUAL, 0)) != 0
 		       && REG_N_SETS (REGNO (SET_DEST (set))) == 1)
 		      || (note = find_reg_note (insn, REG_EQUIV, NULL_RTX)) != 0)

@@ -23,8 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "flags.h"
 #include "obstack.h"
-#include "regs.h"
-#include "basic-block.h"
+#include "bitmap.h"
 
 /* Obstack to allocate bitmap elements from.  */
 static struct obstack bitmap_obstack;

@@ -26,6 +26,7 @@
        Wu and Larus; MICRO-27.
    [3] "Corpus-based Static Branch Prediction"
        Calder, Grunwald, Lindsay, Martin, Mozer, and Zorn; PLDI '95.
+
 */
 
 
@@ -34,10 +35,10 @@
 #include "tree.h"
 #include "rtl.h"
 #include "tm_p.h"
+#include "hard-reg-set.h"
 #include "basic-block.h"
 #include "insn-config.h"
 #include "regs.h"
-#include "hard-reg-set.h"
 #include "flags.h"
 #include "output.h"
 #include "function.h"

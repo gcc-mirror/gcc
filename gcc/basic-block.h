@@ -70,13 +70,11 @@ typedef bitmap regset;
 #define REGNO_REG_SET_P(TO, REG) bitmap_bit_p (TO, REG)
 
 /* Copy the hard registers in a register set to the hard register set.  */
+extern void reg_set_to_hard_reg_set PARAMS ((HARD_REG_SET *, bitmap));
 #define REG_SET_TO_HARD_REG_SET(TO, FROM)				\
 do {									\
-  int i_;								\
   CLEAR_HARD_REG_SET (TO);						\
-  for (i_ = 0; i_ < FIRST_PSEUDO_REGISTER; i_++)			\
-    if (REGNO_REG_SET_P (FROM, i_))					\
-      SET_HARD_REG_BIT (TO, i_);					\
+  reg_set_to_hard_reg_set (&TO, FROM);					\
 } while (0)
 
 /* Loop over all registers in REGSET, starting with MIN, setting REGNUM to the

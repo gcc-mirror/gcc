@@ -1,3 +1,36 @@
+Fri May 19 18:16:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cse.c (cse_basic_block): Only call find_reg_note if REG_NOTES not 0.
+	* reload.c (find_equiv_reg): Likewise.
+	* alias.c (init_alias_analysis): Likewise.
+	Only call prologue_epilogue_contains on insns.
+	* basic-block.h (REG_SET_TO_HARD_REG_SET): Call new function.
+	* bb-reorder.c (hard-reg-set.h): Include earlier.
+	* haifa-sched.c (hard-reg-set.h): Likewise.
+	* ifcvt.c (hard-reg-set.h): Likewise.
+	* local-alloc.c (hard-reg-set.h): Likewise.
+	* loop.c (hard-reg-set.h): Likewise.
+	* predict.c (hard-reg-set.h): Likewise.
+	* regrename.c (hard-reg-set.h): Likewise.
+	* flow.c (hard-reg-set.h): Likewise.
+	(reg_set_to_hard_reg_set): New function.
+	* bitmap.c (regs.h, basic-block.h): No longer include.
+	(bitmap.h): Now include.
+	* conflict.c (hard-reg-set.h): Include.
+	* profile.c (hard-reg-set.h): Likewise.
+	* print-rtl.c (hard-reg-set.h): Likewise.
+	* sbitmap.c (hard-reg-set.h): Likewise.
+	* toplev.c (hard-reg-set.h): Likewise.
+	* unroll.c (hard-reg-set.h, basic-block.h): Likewise.
+	* hard-reg-set.h (reg_names): Now constant.
+	* regs.h (reg_names): Likewise.
+	* regclass.c (reg_names): Likewise.
+	* loop.h (basic-block.h): No longer include.
+	(bitmap.h): Now include.
+	* reload1.c (order_regs_for_reload): Avoid loop over reg sets.
+	* Makefile.in (LOOP_H, sbitmap.o, profile.o): Reflect above changes.
+	(toplev.o, print-rtl.o, conflict.o, unroll.o, bitmap.o): Likewise.
+
 2000-05-19  Jan Hubicka  <jh@suse.cz>
 	    Richard Henderson  <rth@cygnus.com>
 

@@ -7017,10 +7017,13 @@ cse_basic_block (from, to, next_branch, around_loop)
 	     its destination is the result of the block and hence should be
 	     recorded.  */
 
-	  if ((p = find_reg_note (insn, REG_LIBCALL, NULL_RTX)))
-	    libcall_insn = XEXP (p, 0);
-	  else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	    libcall_insn = NULL_RTX;
+	  if (REG_NOTES (insn) != 0)
+	    {
+	      if ((p = find_reg_note (insn, REG_LIBCALL, NULL_RTX)))
+		libcall_insn = XEXP (p, 0);
+	      else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
+		libcall_insn = 0;
+	    }
 
 	  cse_insn (insn, libcall_insn);
 	}

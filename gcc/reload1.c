@@ -1210,6 +1210,7 @@ reload (first, global, dumpfile)
    fatal_insn later.  We clear the corresponding regnos in the live
    register sets to avoid this.
    The whole thing is rather sick, I'm afraid.  */
+
 static void
 maybe_fix_stack_asms ()
 {
@@ -1512,29 +1513,29 @@ count_pseudo (reg)
 
 /* Calculate the SPILL_COST and SPILL_ADD_COST arrays and determine the
    contents of BAD_SPILL_REGS for the insn described by CHAIN.  */
+
 static void
 order_regs_for_reload (chain)
      struct insn_chain *chain;
 {
   register int i, j;
+  HARD_REG_SET used_by_pseudos;
+  HARD_REG_SET used_by_pseudos2;
 
-  COPY_HARD_REG_SET (bad_spill_regs, bad_spill_regs_global);
+  COPY_HARD_REG_SET (bad_spill_regs, fixed_reg_set);
 
   memset (spill_cost, 0, sizeof spill_cost);
   memset (spill_add_cost, 0, sizeof spill_add_cost);
 
   /* Count number of uses of each hard reg by pseudo regs allocated to it
-     and then order them by decreasing use.  */
+     and then order them by decreasing use.  First exclude hard registers
+     that are live in or across this insn.  */
 
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      /* Test the various reasons why we can't use a register for
-	 spilling in this insn.  */
-      if (fixed_regs[i]
-	  || REGNO_REG_SET_P (&chain->live_throughout, i)
-	  || REGNO_REG_SET_P (&chain->dead_or_set, i))
-	SET_HARD_REG_BIT (bad_spill_regs, i);
-    }
+  REG_SET_TO_HARD_REG_SET (used_by_pseudos, &chain->live_throughout);
+  REG_SET_TO_HARD_REG_SET (used_by_pseudos2, &chain->dead_or_set);
+  IOR_HARD_REG_SET (bad_spill_regs, used_by_pseudos);
+  IOR_HARD_REG_SET (bad_spill_regs, used_by_pseudos2);
+
   /* Now find out which pseudos are allocated to it, and update
      hard_reg_n_uses.  */
   CLEAR_REG_SET (&pseudos_counted);
@@ -3517,20 +3518,21 @@ finish_spills (global, dumpfile)
     else
       spill_reg_order[i] = -1;
 
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
-    if (REGNO_REG_SET_P (&spilled_pseudos, i))
-      {
-	/* Record the current hard register the pseudo is allocated to in
-	   pseudo_previous_regs so we avoid reallocating it to the same
-	   hard reg in a later pass.  */
-	if (reg_renumber[i] < 0)
-	  abort ();
-	SET_HARD_REG_BIT (pseudo_previous_regs[i], reg_renumber[i]);
-	/* Mark it as no longer having a hard register home.  */
-	reg_renumber[i] = -1;
-	/* We will need to scan everything again.  */
-	something_changed = 1;
-      }
+  EXECUTE_IF_SET_IN_REG_SET
+    (&spilled_pseudos, FIRST_PSEUDO_REGISTER, i,
+     {
+       /* Record the current hard register the pseudo is allocated to in
+	  pseudo_previous_regs so we avoid reallocating it to the same
+	  hard reg in a later pass.  */
+       if (reg_renumber[i] < 0)
+	 abort ();
+
+       SET_HARD_REG_BIT (pseudo_previous_regs[i], reg_renumber[i]);
+       /* Mark it as no longer having a hard register home.  */
+       reg_renumber[i] = -1;
+       /* We will need to scan everything again.  */
+       something_changed = 1;
+     });
 
   /* Retry global register allocation if possible.  */
   if (global)
@@ -5062,6 +5064,7 @@ allocate_reload_reg (chain, r, last_reload)
 /* Initialize all the tables needed to allocate reload registers.
    CHAIN is the insn currently being processed; SAVE_RELOAD_REG_RTX
    is the array we use to restore the reg_rtx field for every reload.  */
+
 static void
 choose_reload_regs_init (chain, save_reload_reg_rtx)
      struct insn_chain *chain;
@@ -5093,6 +5096,7 @@ choose_reload_regs_init (chain, save_reload_reg_rtx)
     compute_use_by_pseudos (&reg_used_in_insn, &chain->live_throughout);
     compute_use_by_pseudos (&reg_used_in_insn, &chain->dead_or_set);
   }
+
   for (i = 0; i < reload_n_operands; i++)
     {
       CLEAR_HARD_REG_SET (reload_reg_used_in_output[i]);

@@ -160,6 +160,8 @@ enum unroll_types { UNROLL_COMPLETELY, UNROLL_MODULO, UNROLL_NAIVE };
 #include "expr.h"
 #include "loop.h"
 #include "toplev.h"
+#include "hard-reg-set.h"
+#include "basic-block.h"
 
 /* This controls which loops are unrolled, and by how much we unroll
    them.  */

@@ -162,7 +162,7 @@ enum reg_class reg_class_superunion[N_REG_CLASSES][N_REG_CLASSES];
 
 /* Array containing all of the register names */
 
-const char *reg_names[] = REGISTER_NAMES;
+const char * const reg_names[] = REGISTER_NAMES;
 
 /* For each hard register, the widest mode object that it can contain.
    This will be a MODE_INT mode if the register can hold integers.  Otherwise

@@ -25,8 +25,8 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "real.h"
 #include "flags.h"
+#include "hard-reg-set.h"
 #include "basic-block.h"
-
 
 /* How to print out a register name.
    We don't use PRINT_REG because some definitions of PRINT_REG
