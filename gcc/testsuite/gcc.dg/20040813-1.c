@@ -2,7 +2,7 @@
 /* Contributed by Devang Patel  <dpatel@apple.com>  */
 
 /* { dg-do compile } */
-/* { dg-skip-if "No stabs" { mmix-*-* } { "*" } { "" } } */
+/* { dg-skip-if "No stabs" { mmix-*-* *-*-aix* } { "*" } { "" } } */
 /* { dg-options "-gstabs" } */
 
 int
