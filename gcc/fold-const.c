@@ -5126,7 +5126,7 @@ fold (expr)
          appropriate.  */
     case CLEANUP_POINT_EXPR:
       if (! TREE_SIDE_EFFECTS (arg0))
-	return convert (type, arg0);
+	return TREE_OPERAND (t, 0);
 
       {
 	enum tree_code code0 = TREE_CODE (arg0);
