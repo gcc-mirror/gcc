@@ -1,3 +1,10 @@
+2001-08-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("bitcmpqi"): Allow memory and soft
+	register for operand 0.
+	("bitcmpqi_z_used"): Allow memory for operand 0.
+	(split "bitcmpqi"): New split to handle address reg as operand 1.
+
 2001-08-04  Andreas Jaeger  <aj@suse.de>
 
 	* gcse.c: Revert Daniel's last patch.
