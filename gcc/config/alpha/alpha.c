@@ -171,10 +171,6 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
   },
 };
 
-/* Machine-specific symbol_ref flags.  */
-#define SYMBOL_FLAG_NEAR	(SYMBOL_FLAG_MACH_DEP << 0)
-#define SYMBOL_FLAG_SAMEGP	(SYMBOL_FLAG_MACH_DEP << 1)
-
 /* Declarations of static functions.  */
 static bool alpha_function_ok_for_sibcall
   PARAMS ((tree, tree));
@@ -182,14 +178,10 @@ static int tls_symbolic_operand_1
   PARAMS ((rtx, enum machine_mode, int, int));
 static enum tls_model tls_symbolic_operand_type
   PARAMS ((rtx));
-static bool decl_in_text_section
-  PARAMS ((tree));
 static bool decl_has_samegp
   PARAMS ((tree));
 static bool alpha_in_small_data_p
   PARAMS ((tree));
-static void alpha_encode_section_info
-  PARAMS ((tree, int));
 static rtx get_tls_get_addr
   PARAMS ((void));
 static int some_small_symbolic_operand_1
@@ -301,8 +293,6 @@ static void vms_asm_out_destructor PARAMS ((rtx, int));
 
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P alpha_in_small_data_p
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO alpha_encode_section_info
 
 #if TARGET_ABI_UNICOSMK
 static void unicosmk_asm_named_section PARAMS ((const char *, unsigned int));
@@ -1045,15 +1035,27 @@ samegp_function_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (op) != SYMBOL_REF)
-    return 0;
+    return false;
 
   /* Easy test for recursion.  */
   if (op == XEXP (DECL_RTL (current_function_decl), 0))
-    return 1;
+    return true;
 
-  /* Otherwise, encode_section_info recorded whether we are to treat
-     this symbol as having the same GP.  */
-  return (SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_SAMEGP) != 0;
+  /* Functions that are not local can be overridden, and thus may
+     not share the same gp.  */
+  if (! SYMBOL_REF_LOCAL_P (op))
+    return false;
+
+  /* If -msmall-data is in effect, assume that there is only one GP
+     for the module, and so any local symbol has this property.  We
+     need explicit relocations to be able to enforce this for symbols
+     not defined in this unit of translation, however.  */
+  if (TARGET_EXPLICIT_RELOCS && TARGET_SMALL_DATA)
+    return true;
+
+  /* Functions that are not external are defined in this UoT,
+     and thus must share the same gp.  */
+  return ! SYMBOL_REF_EXTERNAL_P (op);
 }
 
 /* Return 1 if OP is a SYMBOL_REF for which we can make a call via bsr.  */
@@ -1063,11 +1065,11 @@ direct_call_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  bool is_near;
+  tree op_decl, cfun_sec, op_sec;
 
   /* Must share the same GP.  */
   if (!samegp_function_operand (op, mode))
-    return 0;
+    return false;
 
   /* If profiling is implemented via linker tricks, we can't jump
      to the nogp alternate entry point.  Note that current_function_profile
@@ -1077,18 +1079,36 @@ direct_call_operand (op, mode)
      but is approximately correct for the OSF ABIs.  Don't know
      what to do for VMS, NT, or UMK.  */
   if (!TARGET_PROFILING_NEEDS_GP && profile_flag)
-    return 0;
+    return false;
 
-  is_near = (SYMBOL_REF_FLAGS (op) & SYMBOL_FLAG_NEAR) != 0;
-
+  /* Must be a function.  In some cases folks create thunks in static
+     data structures and then make calls to them.  If we allow the
+     direct call, we'll get an error from the linker about !samegp reloc
+     against a symbol without a .prologue directive.  */
+  if (!SYMBOL_REF_FUNCTION_P (op))
+    return false;
+  
   /* Must be "near" so that the branch is assumed to reach.  With
-     -msmall-text, this is true of all local symbols.  */
+     -msmall-text, this is assumed true of all local symbols.  Since
+     we've already checked samegp, locality is already assured.  */
   if (TARGET_SMALL_TEXT)
-    return is_near;
+    return true;
 
-  /* Otherwise, a decl is "near" if it is defined in the same section.
-     See alpha_encode_section_info for commentary.  */
-  return is_near && decl_in_text_section (cfun->decl);
+  /* Otherwise, a decl is "near" if it is defined in the same section.  */
+  if (flag_function_sections)
+    return false;
+
+  op_decl = SYMBOL_REF_DECL (op);
+  if (DECL_ONE_ONLY (current_function_decl)
+      || (op_decl && DECL_ONE_ONLY (op_decl)))
+    return false;
+
+  cfun_sec = DECL_SECTION_NAME (current_function_decl);
+  op_sec = op_decl ? DECL_SECTION_NAME (op_decl) : NULL;
+  return ((!cfun_sec && !op_sec)
+	  || (cfun_sec && op_sec
+	      && strcmp (TREE_STRING_POINTER (cfun_sec),
+		         TREE_STRING_POINTER (op_sec)) == 0));
 }
 
 /* Return true if OP is a LABEL_REF, or SYMBOL_REF or CONST referencing
@@ -1818,22 +1838,6 @@ tls_symbolic_operand_type (symbol)
   return model;
 }
 
-/* Return true if the function DECL will be placed in the default text
-   section.  */
-/* ??? Ideally we'd be able to always move from a SYMBOL_REF back to the
-   decl, as that would allow us to determine if two functions are in the
-   same section, which is what we really want to know.  */
-
-static bool
-decl_in_text_section (decl)
-     tree decl;
-{
-  return (DECL_SECTION_NAME (decl) == NULL_TREE
-	  && ! (flag_function_sections
-	        || (targetm.have_named_sections
-		    && DECL_ONE_ONLY (decl))));
-}
-
 /* Return true if the function DECL will share the same GP as any
    function in the current unit of translation.  */
 
@@ -1887,58 +1891,6 @@ alpha_in_small_data_p (exp)
     }
 
   return false;
-}
-
-/* If we are referencing a function that is static, make the SYMBOL_REF
-   special.  We use this to see indicate we can branch to this function
-   without setting PV or restoring GP. 
-
-   If this is a variable that is known to be defined locally, add "@v"
-   to the name.  If in addition the variable is to go in .sdata/.sbss,
-   then add "@s" instead.  */
-
-static void
-alpha_encode_section_info (decl, first)
-     tree decl;
-     int first;
-{
-  default_encode_section_info (decl, first);
- 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      rtx symbol = XEXP (DECL_RTL (decl), 0);
-      int flags = SYMBOL_REF_FLAGS (symbol);
-
-      /* Mark whether the decl is "near" in distance.  If -msmall-text is
-	 in effect, this is trivially true of all local symbols.  */
-      if (TARGET_SMALL_TEXT)
-	{
-	  if (flags & SYMBOL_FLAG_LOCAL)
-	    flags |= SYMBOL_FLAG_NEAR;
-	}
-      else
-	{
-	  /* Otherwise, a decl is "near" if it is defined in this same
-	     section.  What we really need is to be able to access the
-	     target decl of a call from the call_insn pattern, so that
-	     we can determine if the call is from the same section.  We
-	     can't do that at present, so handle the common case and
-	     match up .text with .text.
-
-	     Delay marking public functions until they are emitted; otherwise
-	     we don't know that they exist in this unit of translation.  */
-	  /* Now we *DO* have access to SYMBOL_REF_DECL.  Fixme.  */
-	  if (!TREE_PUBLIC (decl) && decl_in_text_section (decl))
-            flags |= SYMBOL_FLAG_NEAR;
-	}
-
-      /* Indicate whether the target function shares the same GP as any
-	 function emitted in this unit of translation.  */
-      if (decl_has_samegp (decl))
-	flags |= SYMBOL_FLAG_SAMEGP;
-
-      SYMBOL_REF_FLAGS (symbol) = flags;
-    }
 }
 
 #if TARGET_ABI_OPEN_VMS
@@ -8070,7 +8022,7 @@ void
 alpha_end_function (file, fnname, decl)
      FILE *file;
      const char *fnname;
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
   /* End the function.  */
   if (!TARGET_ABI_UNICOSMK && !flag_inhibit_size_directive)
@@ -8084,26 +8036,6 @@ alpha_end_function (file, fnname, decl)
 #if TARGET_ABI_OPEN_VMS
   alpha_write_linkage (file, fnname, decl);
 #endif
-
-  /* Show that we know this function if it is called again.
-     This is only meaningful for symbols that bind locally.  */
-  if ((*targetm.binds_local_p) (decl))
-    {
-      rtx symbol = XEXP (DECL_RTL (decl), 0);
-      int flags = SYMBOL_REF_FLAGS (symbol);
-
-      /* Mark whether the decl is "near".  See the commentary in 
-	 alpha_encode_section_info wrt the .text section.  */
-      if (decl_in_text_section (decl))
-	flags |= SYMBOL_FLAG_NEAR;
-
-      /* Mark whether the decl shares a GP with other functions
-	 in this unit of translation.  This is trivially true of
-	 local symbols.  */
-      flags |= SYMBOL_FLAG_SAMEGP;
-
-      SYMBOL_REF_FLAGS (symbol) = flags;
-    }
 
   /* Output jump tables and the static subroutine information block.  */
   if (TARGET_ABI_UNICOSMK)
