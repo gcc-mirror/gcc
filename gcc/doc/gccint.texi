@@ -88,7 +88,7 @@ included in the section entitled ``GNU Free Documentation License''.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 7 January 2002
+@center Last updated 10 January 2002
 @sp 1
 
 @center for GCC @value{version-GCC}
@@ -141,11 +141,25 @@ write front ends for new languages.  It corresponds to GCC version
 separate manual.  @xref{Top,, Introduction, gcc, Using the GNU
 Compiler Collection (GCC)}.
 
+This manual is mainly a reference manual rather than a tutorial.  It
+discusses how to contribute to GCC (@pxref{Contributing}), the
+characteristics of the machines supported by GCC as hosts and targets
+(@pxref{Portability}), how GCC relates to the ABIs on such systems
+(@pxref{Interface}), and the characteristics of the languages for
+which GCC front ends are written (@pxref{Languages}).  It then
+describes the GCC source tree structure and build system, some of the
+interfaces to GCC front ends, and how support for a target system is
+implemented in GCC@.
+
+Additional tutorial information is linked to from
+@uref{http://gcc.gnu.org/readings.html}.
+
 @menu
 * Contributing::    How to contribute to testing and developing GCC.
-* Makefile::        Additional Makefile and configure information.
 * Portability::     Goals of GCC's portability features.
 * Interface::       Function-call interface of GCC output.
+* Languages::       Languages for which GCC front ends are written.
+* Source Tree::     GCC source tree structure and build system.
 * Passes::          Order of passes, what they do, and what each file is for.
 * Trees::           The source representation used by the C and C++ front ends.
 * RTL::             The intermediate representation that most passes work on.
@@ -153,7 +167,6 @@ Compiler Collection (GCC)}.
 * Target Macros::   How to write the machine description C macros and functions.
 * Config::          Writing the @file{xm-@var{machine}.h} file.
 * Fragments::       Writing the @file{t-@var{target}} and @file{x-@var{host}} files.
-* Configuration Files::  Files created by running @code{configure}.
 * Collect2::        How @code{collect2} works; how it finds @code{ld}.
 * Header Dirs::     Understanding the standard header file directories.
 
@@ -170,10 +183,10 @@ Compiler Collection (GCC)}.
 @end menu
 
 @include contribute.texi
-@include makefile.texi
-@include configterms.texi
 @include portability.texi
 @include interface.texi
+@include languages.texi
+@include sourcebuild.texi
 @include passes.texi
 @include c-tree.texi
 @include rtl.texi
@@ -181,7 +194,6 @@ Compiler Collection (GCC)}.
 @include tm.texi
 @include hostconfig.texi
 @include fragments.texi
-@include configfiles.texi
 @include collect2.texi
 @include headerdirs.texi
 

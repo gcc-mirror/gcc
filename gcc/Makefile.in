@@ -2278,7 +2278,8 @@ $(docdir)/gccint.info: $(docdir)/gccint.texi \
 	 $(docdir)/configfiles.texi $(docdir)/collect2.texi \
 	 $(docdir)/headerdirs.texi $(docdir)/include/funding.texi \
 	 $(docdir)/gnu.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi
+	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi \
+	 $(docdir)/languages.texi $(docdir)/sourcebuild.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gccint.info doc/gccint.texi
 
 $(docdir)/cppinternals.info: $(docdir)/cppinternals.texi
@@ -2312,7 +2313,8 @@ gccint.dvi: $(docdir)/gccint.texi \
 	 $(docdir)/configfiles.texi $(docdir)/collect2.texi \
 	 $(docdir)/headerdirs.texi $(docdir)/include/funding.texi \
 	 $(docdir)/gnu.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi
+	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi \
+	 $(docdir)/languages.texi $(docdir)/sourcebuild.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gccint.texi
 
 cppinternals.dvi: $(docdir)/cppinternals.texi
