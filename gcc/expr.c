@@ -3405,13 +3405,10 @@ get_subtarget (rtx x)
 	  ? 0 : x);
 }
 
-/* Expand an assignment that stores the value of FROM into TO.
-   If WANT_VALUE is nonzero, return an rtx for the value of TO.
-   (If the value is constant, this rtx is a constant.)
-   Otherwise, the returned value is NULL_RTX.  */
+/* Expand an assignment that stores the value of FROM into TO.  */
 
-rtx
-expand_assignment (tree to, tree from, int want_value)
+void
+expand_assignment (tree to, tree from)
 {
   rtx to_rtx = 0;
   rtx result;
@@ -3421,7 +3418,7 @@ expand_assignment (tree to, tree from, int want_value)
   if (TREE_CODE (to) == ERROR_MARK)
     {
       result = expand_expr (from, NULL_RTX, VOIDmode, 0);
-      return want_value ? result : NULL_RTX;
+      return;
     }
 
   /* Assignment of a structure component needs special treatment
@@ -3448,9 +3445,6 @@ expand_assignment (tree to, tree from, int want_value)
 
       /* If we are going to use store_bit_field and extract_bit_field,
 	 make sure to_rtx will be safe for multiple use.  */
-
-      if (mode1 == VOIDmode && want_value)
-	tem = stabilize_reference (tem);
 
       orig_to_rtx = to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, 0);
 
@@ -3513,7 +3507,7 @@ expand_assignment (tree to, tree from, int want_value)
 	}
 
       /* Optimize bitfld op= val in certain cases.  */
-      while (mode1 == VOIDmode && !want_value
+      while (mode1 == VOIDmode
 	     && bitsize > 0 && bitsize < BITS_PER_WORD
 	     && GET_MODE_BITSIZE (GET_MODE (to_rtx)) <= BITS_PER_WORD
 	     && !TREE_SIDE_EFFECTS (to)
@@ -3616,7 +3610,7 @@ expand_assignment (tree to, tree from, int want_value)
 		emit_move_insn (str_rtx, result);
 	      free_temp_slots ();
 	      pop_temp_slots ();
-	      return NULL_RTX;
+	      return;
 
 	    default:
 	      break;
@@ -3626,11 +3620,7 @@ expand_assignment (tree to, tree from, int want_value)
 	}
 
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,
-			    (want_value
-			     /* Spurious cast for HPUX compiler.  */
-			     ? ((enum machine_mode)
-				TYPE_MODE (TREE_TYPE (to)))
-			     : VOIDmode),
+			    VOIDmode,
 			    unsignedp, TREE_TYPE (tem), get_alias_set (to));
 
       preserve_temp_slots (result);
@@ -3639,11 +3629,7 @@ expand_assignment (tree to, tree from, int want_value)
 
       /* If the value is meaningful, convert RESULT to the proper mode.
 	 Otherwise, return nothing.  */
-      return (want_value ? convert_modes (TYPE_MODE (TREE_TYPE (to)),
-					  TYPE_MODE (TREE_TYPE (from)),
-					  result,
-					  TYPE_UNSIGNED (TREE_TYPE (to)))
-	      : NULL_RTX);
+      return;
     }
 
   /* If the rhs is a function call and its value is not an aggregate,
@@ -3684,7 +3670,7 @@ expand_assignment (tree to, tree from, int want_value)
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
       pop_temp_slots ();
-      return want_value ? to_rtx : NULL_RTX;
+      return;
     }
 
   /* Ordinary treatment.  Expand TO to get a REG or MEM rtx.
@@ -3711,7 +3697,7 @@ expand_assignment (tree to, tree from, int want_value)
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
       pop_temp_slots ();
-      return want_value ? to_rtx : NULL_RTX;
+      return;
     }
 
   /* In case we are returning the contents of an object which overlaps
@@ -3737,17 +3723,17 @@ expand_assignment (tree to, tree from, int want_value)
       preserve_temp_slots (to_rtx);
       free_temp_slots ();
       pop_temp_slots ();
-      return want_value ? to_rtx : NULL_RTX;
+      return;
     }
 
   /* Compute FROM and store the value in the rtx we got.  */
 
   push_temp_slots ();
-  result = store_expr (from, to_rtx, want_value);
+  result = store_expr (from, to_rtx, 0);
   preserve_temp_slots (result);
   free_temp_slots ();
   pop_temp_slots ();
-  return want_value ? result : NULL_RTX;
+  return;
 }
 
 /* Generate code for computing expression EXP,
@@ -4732,7 +4718,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		       the loop.  */
 		    expand_assignment (index,
 				       build2 (PLUS_EXPR, TREE_TYPE (index),
-					       index, integer_one_node), 0);
+					       index, integer_one_node));
 		    
 		    emit_jump (loop_start);
 		    
@@ -8093,14 +8079,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    expand_assignment (lhs, convert (TREE_TYPE (rhs),
 					     (TREE_CODE (rhs) == BIT_IOR_EXPR
 					      ? integer_one_node
-					      : integer_zero_node)),
-			       0);
+					      : integer_zero_node)));
 	    do_pending_stack_adjust ();
 	    emit_label (label);
 	    return const0_rtx;
 	  }
 
-	expand_assignment (lhs, rhs, 0);
+	expand_assignment (lhs, rhs);
 
 	return const0_rtx;
       }

@@ -2730,7 +2730,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 
       /* TREE_USED gets set erroneously during expand_assignment.  */
       save_tree_used = TREE_USED (parm);
-      expand_assignment (parm, make_tree (data->nominal_type, tempreg), 0);
+      expand_assignment (parm, make_tree (data->nominal_type, tempreg));
       TREE_USED (parm) = save_tree_used;
       all->conversion_insns = get_insns ();
       end_sequence ();
