@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
+
 /* This file gets included by all architectures. It holds stuff
    that ought to be defined when hosting a compiler on an OpenBSD
    machine, independently of the architecture. It's included by
@@ -31,5 +32,3 @@ Boston, MA 02111-1307, USA.  */
 #ifdef __GNUC__
 #define alloca __builtin_alloca
 #endif
-
-
