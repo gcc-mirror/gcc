@@ -1,3 +1,9 @@
+2004-09-23  Andrew Haley  <aph@redhat.com>
+
+	PR java/16927:
+	* parse.y (java_complete_lhs): Call patch_string() on Operand 1 of
+	COND_EXPRs.
+
 2004-09-23  Tom Tromey  <tromey@redhat.com>
 
 	PR java/17329:
