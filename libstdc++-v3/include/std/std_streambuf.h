@@ -333,16 +333,6 @@ namespace std
 	  }
       }
 
-      // Returns zero if the output buffer is full (-> overflow).
-      off_type
-      _M_out_buf_size()
-      {
-	if (_M_out_cur)
-	  return _M_out_end - _M_out_cur;
-	else
-	  return off_type(0);
-      }
-
   public:
       /// Destructor deallocates no buffer space.
       virtual 

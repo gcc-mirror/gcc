@@ -92,7 +92,7 @@ namespace std
       __size_type __len =
 	std::max(_M_string.capacity() + 1, this->_M_buf_size_opt);
 
-      bool __testwrite = _M_out_buf_size();
+      bool __testwrite = this->_M_out_cur < this->_M_out_end;
       if (__builtin_expect(!__testwrite && __len > _M_string.max_size(), false))
 	return traits_type::eof();
 

@@ -1,3 +1,20 @@
+2003-03-31  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_streambuf.h (_M_out_buf_size()): Remove.
+	* include/bits/fstream.tcc (_M_allocate_internal_buffer):
+	Don't set _M_out_end.
+	(basic_filebuf::overflow): Replace _M_out_buf_size() with
+	this->_M_out_cur && this->_M_out_cur < this->_M_out_end.
+	* include/bits/sstream.tcc (basic_stringbuf::overflow):
+	Replace _M_out_buf_size() with this->_M_out_cur < this->_M_out_end;
+	* include/bits/streambuf.tcc (basic_streambuf::sputc):
+	Replace _M_out_buf_size() with _M_out_cur && _M_out_cur < _M_out_end.
+	(basic_streambuf::xsputn): Replace _M_out_buf_size() with
+	_M_out_end - _M_out_cur.
+	(__copy_streambufs): Likewise.
+	* include/std/std_fstream.h (_M_set_determinate): Set
+	_M_out_end here.
+	
 2003-03-30  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (basic_filebuf::showmanyc,
