@@ -1660,40 +1660,40 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
       if (code == NE_EXPR)
 	{
 	  if (max_lt || min_gt)
-	    val = integer_one_node;
+	    val = boolean_true_node;
 	}
       else if (code == EQ_EXPR)
 	{
 	  if (max_lt || min_gt)
-	    val = integer_zero_node;
+	    val = boolean_false_node;
 	}
       else if (code == LT_EXPR)
 	{
 	  if (max_lt)
-	    val = integer_one_node;
+	    val = boolean_true_node;
 	  if (!min_lt)
-	    val = integer_zero_node;
+	    val = boolean_false_node;
 	}
       else if (code == GT_EXPR)
 	{
 	  if (min_gt)
-	    val = integer_one_node;
+	    val = boolean_true_node;
 	  if (!max_gt)
-	    val = integer_zero_node;
+	    val = boolean_false_node;
 	}
       else if (code == LE_EXPR)
 	{
 	  if (!max_gt)
-	    val = integer_one_node;
+	    val = boolean_true_node;
 	  if (min_gt)
-	    val = integer_zero_node;
+	    val = boolean_false_node;
 	}
       else if (code == GE_EXPR)
 	{
 	  if (!min_lt)
-	    val = integer_one_node;
+	    val = boolean_true_node;
 	  if (max_lt)
-	    val = integer_zero_node;
+	    val = boolean_false_node;
 	}
 
       /* If primop0 was sign-extended and unsigned comparison specd,
@@ -1731,18 +1731,18 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	{
 	  /* This is the case of (char)x >?< 0x80, which people used to use
 	     expecting old C compilers to change the 0x80 into -0x80.  */
-	  if (val == integer_zero_node)
+	  if (val == boolean_false_node)
 	    warning ("comparison is always 0 due to limited range of data type");
-	  if (val == integer_one_node)
+	  if (val == boolean_true_node)
 	    warning ("comparison is always 1 due to limited range of data type");
 	}
 
       if (!min_lt && unsignedp0 && TREE_CODE (primop0) != INTEGER_CST)
 	{
 	  /* This is the case of (unsigned char)x >?< -1 or < 0.  */
-	  if (val == integer_zero_node)
+	  if (val == boolean_false_node)
 	    warning ("comparison is always 0 due to limited range of data type");
-	  if (val == integer_one_node)
+	  if (val == boolean_true_node)
 	    warning ("comparison is always 1 due to limited range of data type");
 	}
 
@@ -1810,7 +1810,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 			&& ! TREE_OVERFLOW (convert (signed_type (type),
 						     primop0))))
 		warning ("unsigned value >= 0 is always 1");
-	      value = integer_one_node;
+	      value = boolean_true_node;
 	      break;
 
 	    case LT_EXPR:
@@ -1819,7 +1819,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 			&& ! TREE_OVERFLOW (convert (signed_type (type),
 						     primop0))))
 		warning ("unsigned value < 0 is always 0");
-	      value = integer_zero_node;
+	      value = boolean_false_node;
 	    }
 
 	  if (value != 0)
@@ -1836,7 +1836,7 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
   *op0_ptr = convert (type, primop0);
   *op1_ptr = convert (type, primop1);
 
-  *restype_ptr = integer_type_node;
+  *restype_ptr = boolean_type_node;
 
   return 0;
 }
@@ -1847,10 +1847,10 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
    This preparation consists of taking the ordinary
    representation of an expression expr and producing a valid tree
    boolean expression describing whether expr is nonzero.  We could
-   simply always do build_binary_op (NE_EXPR, expr, integer_zero_node, 1),
+   simply always do build_binary_op (NE_EXPR, expr, boolean_false_node, 1),
    but we optimize comparisons, &&, ||, and !.
 
-   The resulting type should always be `integer_type_node'.  */
+   The resulting type should always be `boolean_type_node'.  */
 
 tree
 truthvalue_conversion (expr)
@@ -1866,15 +1866,15 @@ truthvalue_conversion (expr)
     {
     case RECORD_TYPE:
       error ("struct type value used where scalar is required");
-      return integer_zero_node;
+      return boolean_false_node;
 
     case UNION_TYPE:
       error ("union type value used where scalar is required");
-      return integer_zero_node;
+      return boolean_false_node;
 
     case ARRAY_TYPE:
       error ("array type value used where scalar is required");
-      return integer_zero_node;
+      return boolean_false_node;
 
     default:
       break;
@@ -1907,23 +1907,24 @@ truthvalue_conversion (expr)
     case TRUTH_AND_EXPR:
     case TRUTH_OR_EXPR:
     case TRUTH_XOR_EXPR:
-      return convert (integer_type_node, expr);
+      TREE_TYPE (expr) = boolean_type_node;
+      return expr;
 
     case ERROR_MARK:
       return expr;
 
     case INTEGER_CST:
-      return integer_zerop (expr) ? integer_zero_node : integer_one_node;
+      return integer_zerop (expr) ? boolean_false_node : boolean_true_node;
 
     case REAL_CST:
-      return real_zerop (expr) ? integer_zero_node : integer_one_node;
+      return real_zerop (expr) ? boolean_false_node : boolean_true_node;
 
     case ADDR_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0)))
-	return build (COMPOUND_EXPR, integer_type_node,
-		      TREE_OPERAND (expr, 0), integer_one_node);
+	return build (COMPOUND_EXPR, boolean_type_node,
+		      TREE_OPERAND (expr, 0), boolean_true_node);
       else
-	return integer_one_node;
+	return boolean_true_node;
 
     case COMPLEX_EXPR:
       return build_binary_op ((TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
@@ -1944,14 +1945,14 @@ truthvalue_conversion (expr)
       /* These don't change whether an object is zero or non-zero, but
 	 we can't ignore them if their second arg has side-effects.  */
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1)))
-	return build (COMPOUND_EXPR, integer_type_node, TREE_OPERAND (expr, 1),
+	return build (COMPOUND_EXPR, boolean_type_node, TREE_OPERAND (expr, 1),
 		      truthvalue_conversion (TREE_OPERAND (expr, 0)));
       else
 	return truthvalue_conversion (TREE_OPERAND (expr, 0));
       
     case COND_EXPR:
       /* Distribute the conversion into the arms of a COND_EXPR.  */
-      return fold (build (COND_EXPR, integer_type_node, TREE_OPERAND (expr, 0),
+      return fold (build (COND_EXPR, boolean_type_node, TREE_OPERAND (expr, 0),
 			  truthvalue_conversion (TREE_OPERAND (expr, 1)),
 			  truthvalue_conversion (TREE_OPERAND (expr, 2))));
 
