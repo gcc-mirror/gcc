@@ -1,3 +1,8 @@
+2003-06-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* doc/tm.texi: Uniformly use @defmac for macros, rather than
+	@table items.  Minor formatting and editorial corrections.
+
 2003-06-20  Neil Booth  <neil@daikokuya.co.uk>
 
 	* line-map.c, line-map.h: Convert to ISO prototypes.
