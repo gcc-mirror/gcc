@@ -5337,6 +5337,8 @@ follow_tag_typedef (type)
   tree original;
 
   original = original_type (type);
+  if (! TYPE_NAME (original))
+    return NULL_TREE;
   if (TYPE_IDENTIFIER (original) == TYPE_IDENTIFIER (type)
       && (CP_DECL_CONTEXT (TYPE_NAME (original))
 	  == CP_DECL_CONTEXT (TYPE_NAME (type)))
