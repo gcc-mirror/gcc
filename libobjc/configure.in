@@ -23,7 +23,6 @@
 AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR([objc/objc.h])
-AC_CONFIG_HEADER(config.h)
 
 # We need the following definitions because AC_PROG_LIBTOOL relies on them
 PACKAGE=libobjc
@@ -125,34 +124,30 @@ gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 AC_SUBST(gcc_version)
 
-# Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
+# Calculate toolexeclibdir
 case ${version_specific_libs} in
   yes)
     # Need the gcc compiler version to know where to install libraries
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
-    glibcpp_toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
-    glibcpp_toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
+    toolexeclibdir='$(toolexecdir)/'${gcc_version}'$(MULTISUBDIR)'
     ;;
   no)
     if test -n "$with_cross_host" &&
        test x"$with_cross_host" != x"no"; then
-      glibcpp_toolexecdir='$(exec_prefix)/$(target_noncanonical)'
-      glibcpp_toolexeclibdir='$(toolexecdir)/lib'
-    else
       # Install a library built with a cross compiler in tooldir, not libdir.
-      glibcpp_toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
-      glibcpp_toolexeclibdir='$(libdir)'
+      toolexeclibdir='$(toolexecdir)/lib'
+    else
+      toolexeclibdir='$(libdir)'
     fi
     multi_os_directory=`$CC -print-multi-os-directory`
     case $multi_os_directory in
       .) ;; # Avoid trailing /.
-      *) glibcpp_toolexeclibdir=$glibcpp_toolexeclibdir/$multi_os_directory ;;
+      *) toolexeclibdir=$toolexeclibdir/$multi_os_directory ;;
     esac
     ;;
 esac
-AC_SUBST(glibcpp_toolexecdir)
-AC_SUBST(glibcpp_toolexeclibdir)
+AC_SUBST(toolexeclibdir)
 
 glibcpp_prefixdir=${prefix}
 AC_SUBST(glibcpp_prefixdir)
@@ -218,8 +213,7 @@ AC_SUBST(GTHREAD_FLAGS)
 AC_CONFIG_FILES([Makefile])
 
 AC_CONFIG_COMMANDS([default],
-[[test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
-if test -n "$CONFIG_FILES"; then
+[[if test -n "$CONFIG_FILES"; then
   if test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile
