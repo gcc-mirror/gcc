@@ -2357,6 +2357,10 @@ alpha_emit_xfloating_cvt (code, operands)
 					       operands[1]));
 }
 
+/* Split a TFmode OP[1] into DImode OP[2,3] and likewise for
+   OP[0] into OP[0,1].  Naturally, output operand ordering is
+   little-endian.  */
+
 void
 alpha_split_tfmode_pair (operands)
      rtx operands[4];
@@ -2390,6 +2394,52 @@ alpha_split_tfmode_pair (operands)
     }
   else
     abort ();
+}
+
+/* Implement negtf2 or abstf2.  Op0 is destination, op1 is source, 
+   op2 is a register containing the sign bit, operation is the 
+   logical operation to be performed.  */
+
+void
+alpha_split_tfmode_frobsign (operands, operation)
+     rtx operands[3];
+     rtx (*operation) PARAMS ((rtx, rtx, rtx));
+{
+  rtx high_bit = operands[2];
+  rtx scratch;
+  int move;
+
+  alpha_split_tfmode_pair (operands);
+
+  /* Detect three flavours of operand overlap.  */
+  move = 1;
+  if (rtx_equal_p (operands[0], operands[2]))
+    move = 0;
+  else if (rtx_equal_p (operands[1], operands[2]))
+    {
+      if (rtx_equal_p (operands[0], high_bit))
+	move = 2;
+      else
+	move = -1;
+    }
+
+  if (move < 0)
+    emit_move_insn (operands[0], operands[2]);
+
+  /* ??? If the destination overlaps both source tf and high_bit, then
+     assume source tf is dead in its entirety and use the other half
+     for a scratch register.  Otherwise "scratch" is just the proper
+     destination register.  */
+  scratch = operands[move < 2 ? 1 : 3];
+
+  emit_insn ((*operation) (scratch, high_bit, operands[3]));
+
+  if (move > 0)
+    {
+      emit_move_insn (operands[0], operands[2]);
+      if (move > 1)
+	emit_move_insn (operands[1], scratch);
+    }
 }
 
 /* Use ext[wlq][lh] as the Architecture Handbook describes for extracting
