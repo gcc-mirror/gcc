@@ -184,6 +184,49 @@ If you don't know the type of the operand, you can still do this, but you
 must use @code{typeof} (@pxref{Typeof}) or type naming (@pxref{Naming
 Types}).
 
+Statement expressions are not supported fully in G++, and their fate
+there is unclear.  (It is possible that they will become fully supported
+at some point, or that they will be deprecated, or that the bugs that
+are present will continue to exist indefinitely.)  Presently, statement
+expressions do not work well as default arguments. 
+
+In addition, there are semantic issues with statement-expressions in
+C++.  If you try to use statement-expressions instead of inline
+functions in C++, you may be surprised at the way object destruction is
+handled.  For example:
+
+@example
+#define foo(a)  (@{int b = (a); b + 3; @})
+@end example
+
+@noindent
+does not work the same way as:
+
+@example
+inline int foo(a) @{ int b = a; return b + 3; @}
+@end example
+
+@noindent
+In particular, if the expression passed into @code{foo} involves the
+creation of temporaries, the destructors for those temporaries will be
+run earlier in the case of the macro than in the case of the function.
+
+These considerations mean that it is probably a bad idea to use
+statement-expressions of this form in header files that are designed to
+work with C++.  Note that the GNU C Library does contain header files
+using statement-expressions, and that these definitions make the library
+technically non-conforming.  For example, when optimization is turned
+on,
+
+@example
+string a, b;
+printf("%s", toupper((a+b).c_str()[0]));
+@end example
+
+@noindent
+will result in the destructor for the temporary created for @code{a+b}
+being run earlier than it should be.
+
 @node Local Labels
 @section Locally Declared Labels
 @cindex local labels
