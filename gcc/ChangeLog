@@ -433,7 +433,6 @@
 
 2004-09-13  Kenneth Zadeck  <Kenneth.Zadeck@NaturalBridge.com>
 
-
 	* tree-ssa-operands.c (get_call_expr_operands): Added parm to
 	add_call_clobber_ops and add_call_read_ops.
 	(add_call_clobber_ops, add_call_read_ops): Added code to reduce

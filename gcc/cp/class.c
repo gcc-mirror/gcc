@@ -3750,8 +3750,7 @@ check_methods (tree t)
 	{
 	  TYPE_POLYMORPHIC_P (t) = 1;
 	  if (DECL_PURE_VIRTUAL_P (x))
-	    CLASSTYPE_PURE_VIRTUALS (t)
-	      = tree_cons (NULL_TREE, x, CLASSTYPE_PURE_VIRTUALS (t));
+	    VEC_safe_push (tree, CLASSTYPE_PURE_VIRTUALS (t), x);
 	}
     }
 }
@@ -4281,6 +4280,8 @@ static void
 fixup_inline_methods (tree type)
 {
   tree method = TYPE_METHODS (type);
+  VEC (tree) *friends;
+  unsigned ix;
 
   if (method && TREE_CODE (method) == TREE_VEC)
     {
@@ -4297,11 +4298,10 @@ fixup_inline_methods (tree type)
     fixup_pending_inline (method);
 
   /* Do friends.  */
-  for (method = CLASSTYPE_INLINE_FRIENDS (type); 
-       method; 
-       method = TREE_CHAIN (method))
-    fixup_pending_inline (TREE_VALUE (method));
-  CLASSTYPE_INLINE_FRIENDS (type) = NULL_TREE;
+  for (friends = CLASSTYPE_INLINE_FRIENDS (type), ix = 0;
+       VEC_iterate (tree, friends, ix, method); ix++)
+    fixup_pending_inline (method);
+  CLASSTYPE_INLINE_FRIENDS (type) = NULL;
 }
 
 /* Add OFFSET to all base types of BINFO which is a base in the
@@ -5183,11 +5183,10 @@ finish_struct (tree t, tree attributes)
 	 the PARM_DECLS. Note that while the type is being defined,
 	 CLASSTYPE_PURE_VIRTUALS contains the list of the inline friends
 	 (see CLASSTYPE_INLINE_FRIENDS) so we need to clear it.  */
-      CLASSTYPE_PURE_VIRTUALS (t) = NULL_TREE;
+      CLASSTYPE_PURE_VIRTUALS (t) = NULL;
       for (x = TYPE_METHODS (t); x; x = TREE_CHAIN (x))
 	if (DECL_PURE_VIRTUAL_P (x))
-	  CLASSTYPE_PURE_VIRTUALS (t)
-	    = tree_cons (NULL_TREE, x, CLASSTYPE_PURE_VIRTUALS (t));
+	  VEC_safe_push (tree, CLASSTYPE_PURE_VIRTUALS (t), x);
       complete_vars (t);
     }
   else

@@ -5312,16 +5312,18 @@ build_new_method_call (tree instance, tree fns, tree args,
 	}
       else
 	{
-	  if (DECL_PURE_VIRTUAL_P (cand->fn)
+	  if (!(flags & LOOKUP_NONVIRTUAL)
+	      && DECL_PURE_VIRTUAL_P (cand->fn)
 	      && instance == current_class_ref
 	      && (DECL_CONSTRUCTOR_P (current_function_decl)
-		  || DECL_DESTRUCTOR_P (current_function_decl))
-	      && ! (flags & LOOKUP_NONVIRTUAL)
-	      && value_member (cand->fn, CLASSTYPE_PURE_VIRTUALS (basetype)))
-	    error ((DECL_CONSTRUCTOR_P (current_function_decl) ? 
-		    "abstract virtual `%#D' called from constructor"
-		    : "abstract virtual `%#D' called from destructor"),
-		   cand->fn);
+		  || DECL_DESTRUCTOR_P (current_function_decl)))
+	    /* This is not an error, it is runtime undefined
+	       behaviour.  */
+	    warning ((DECL_CONSTRUCTOR_P (current_function_decl) ? 
+		      "abstract virtual `%#D' called from constructor"
+		      : "abstract virtual `%#D' called from destructor"),
+		     cand->fn);
+	  
 	  if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
 	      && is_dummy_object (instance_ptr))
 	    {
