@@ -4058,6 +4058,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		fprintf (loop_dump_stream, "is giv of biv %d\n", bl2->regno);
 	      /* Let this giv be discovered by the generic code.  */
 	      REG_IV_TYPE (bl->regno) = UNKNOWN_INDUCT;
+	      reg_biv_class[bl->regno] = NULL_PTR;
 	      /* We can get better optimization if we can move the giv setting
 		 before the first giv use.  */
 	      if (dominator
@@ -4109,7 +4110,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		}
 	      /* Remove this biv from the chain.  */
 	      if (bl->next)
-		*bl = *bl->next;
+		{
+		  /* We move the following giv from *bl->next into *bl.
+		     We have to update reg_biv_class for that moved biv
+		     to point to its new address.  */
+		  *bl = *bl->next;
+		  reg_biv_class[bl->regno] = bl;
+		}
 	      else
 		{
 		  *backbl = 0;
@@ -7190,16 +7197,18 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
       for (p = v->insn; INSN_UID (p) >= max_uid_for_loop; )
 	p = PREV_INSN (p);
       stats[i].start_luid = INSN_LUID (p);
-      v->ix = i;
       i++;
     }
 
   qsort (stats, giv_count, sizeof(*stats), cmp_recombine_givs_stats);
 
-  /* Do the actual most-recently-used recombination.  */
+  /* Set up the ix field for each giv in stats to name
+     the corresponding index into stats, and
+     do the actual most-recently-used recombination.  */
   for (last_giv = 0, i = giv_count - 1; i >= 0; i--)
     {
       v = giv_array[stats[i].giv_number];
+      v->ix = i;
       if (v->same)
 	{
 	  struct induction *old_same = v->same;
