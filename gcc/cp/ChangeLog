@@ -1,3 +1,10 @@
+Thu Nov 27 00:59:46 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c: Remove static pending_hard_virtuals.
+ 	(add_virtual_function): Take pointers to pending_virtuals
+	and pending_hard_virtuals.
+	(finish_struct_1): Pass them.  Declare pending_hard_virtuals.
+
 Wed Nov 26 20:28:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (import_export_vtable): If we support one_only but not
