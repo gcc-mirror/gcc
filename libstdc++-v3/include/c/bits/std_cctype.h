@@ -39,7 +39,7 @@
 #include <bits/c++config.h>
 
 #pragma GCC system_header
-#include_next <ctype.h>
+#include <ctype.h>
 
 // Get rid of those macros defined in <ctype.h> in lieu of real functions.
 #undef isalnum

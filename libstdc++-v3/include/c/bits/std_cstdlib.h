@@ -39,7 +39,7 @@
 #include <bits/c++config.h>
 
 #pragma GCC system_header
-#include_next <stdlib.h>
+#include <stdlib.h>
 
 namespace std 
 {

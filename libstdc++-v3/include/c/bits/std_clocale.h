@@ -37,7 +37,7 @@
 #define _CPP_CLOCALE 1
 
 #pragma GCC system_header
-#include_next <locale.h>
+#include <locale.h>
 
 namespace std
 {
