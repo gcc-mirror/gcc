@@ -7267,6 +7267,7 @@ package body Sem_Prag is
                end if;
 
                Set_Is_Pure (Def_Id);
+               Set_Has_Pragma_Pure_Function (Def_Id);
                E := Homonym (E);
             end loop;
          end Pure_Function;

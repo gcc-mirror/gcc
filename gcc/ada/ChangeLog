@@ -1,4 +1,13 @@
-2001-12-04  Douglas B. <rupp@gnat.com>
+2001-12-04  Robert Dewar <dewar@gnat.com>
+
+	* einfo.adb (Has_Pragma_Pure_Function): New flag.
+	Fix problem that stopped ceinfo from working
+	
+	* einfo.ads (Has_Pragma_Pure_Function): New flag.
+	
+	* sem_prag.adb (Pure_Function): Set new flag Has_Pragma_Pure_Function.
+
+2001-12-04  Douglas B. Rupp <rupp@gnat.com>
 
 	* gnatchop.adb:
 	(File_Time_Stamp): New procedure.
