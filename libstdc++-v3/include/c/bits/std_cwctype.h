@@ -54,6 +54,10 @@
 #undef iswupper
 #undef iswxdigit
 #undef iswctype  
+#undef towlower
+#undef towupper
+#undef towctrans
+#undef wctrans
 
 namespace std
 {
