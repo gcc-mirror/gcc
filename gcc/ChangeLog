@@ -1,3 +1,17 @@
+2002-06-04  Jeff Law <law@redhat.com.
+            David Edelsohn <edelsohn@gnu.org>
+            Michael Matz <matz@kde.org>
+
+	* sched-int.h (struct deps): New field libcall_block_tail_insn.
+	* sched_deps.c (init_deps): Initialize libcall_block_tail_insn.
+	* sched_deps.c (sched_analyze_insn): If libcall_block_tail_insn
+	is set, then mark the current insn as being part of a libcall
+	scheduling group.
+	(sched_analyze): Set and clear libcall_block_tail_insn appropriately.
+
+	* haifa-sched.c (schedule_block): Do not count USE or CLOBBER
+	insns against the issue rate.
+
 Tue Jun  4 19:29:42 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* cfglayout.c (duplicate_insn_chain): Kill NOTE_INSN_RANGE notes.
