@@ -798,14 +798,21 @@ build_java_arrayaccess (array, type, index)
 	  TREE_SIDE_EFFECTS( throw ) = 1;
 	}
     }
-  
+
+  /* The SAVE_EXPR is for correct evaluation order.  It would be
+     cleaner to use force_evaluation_order (see comment there), but
+     that is difficult when we also have to deal with bounds
+     checking. The SAVE_EXPR is not necessary to do that when we're
+     not checking for array bounds. */
+  if (TREE_SIDE_EFFECTS (index) && throw)
+    throw = build (COMPOUND_EXPR, int_type_node, save_expr (array), throw);
+
   node = build1 (INDIRECT_REF, type, 
 		 fold (build (PLUS_EXPR, ptr_type_node, 
-			      java_check_reference (array, flag_check_references), 
+			      java_check_reference (array,
+						    flag_check_references), 
 			      (throw ? build (COMPOUND_EXPR, int_type_node, 
-					      throw, arith )
-			             : arith))));
-  
+					      throw, arith ) : arith))));
   return node;
 }
 

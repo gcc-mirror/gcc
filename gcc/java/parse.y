@@ -12940,10 +12940,13 @@ patch_assignment (node, wfl_op1)
           /* We can have a SAVE_EXPR here when doing String +=.  */
           if (TREE_CODE (op) == SAVE_EXPR)
             op = TREE_OPERAND (op, 0);
-          if (flag_bounds_check)
-            base = TREE_OPERAND (TREE_OPERAND (op, 1), 0);
-          else
-            base = TREE_OPERAND (op, 0);
+	  /* We can have a COMPOUND_EXPR here when doing bounds check. */
+	  if (TREE_CODE (op) == COMPOUND_EXPR)
+	    op = TREE_OPERAND (op, 1);
+	  base = TREE_OPERAND (op, 0);
+	  /* Strip the last PLUS_EXPR to obtain the base. */
+	  if (TREE_CODE (base) == PLUS_EXPR)
+	    base = TREE_OPERAND (base, 0);
 	}
 
       /* Build the invocation of _Jv_CheckArrayStore */
@@ -14592,16 +14595,7 @@ patch_array_ref (node)
       TREE_OPERAND (node, 1) = index;
     }
   else
-    {
-      /* The save_expr is for correct evaluation order.  It would be cleaner
-	 to use force_evaluation_order (see comment there), but that is
-	 difficult when we also have to deal with bounds checking. */
-      if (TREE_SIDE_EFFECTS (index))
-	array = save_expr (array);
-      node = build_java_arrayaccess (array, array_type, index);
-      if (TREE_SIDE_EFFECTS (index))
-	node = build (COMPOUND_EXPR, array_type, array, node);
-    }
+    node = build_java_arrayaccess (array, array_type, index);
   TREE_TYPE (node) = array_type;
   return node;
 }
