@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler
    for an Intel i386 or later processor running OS/2 2.x.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
    Contributed by Samuel Figueroa (figueroa@cs.nyu.edu)
 
 This file is part of GNU CC.
@@ -33,6 +33,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 #ifndef LOCAL_INCLUDE_DIR
 #define LOCAL_INCLUDE_DIR "\\gcc\\include"
+#endif
+
+#ifndef PATH_SEPARATOR
+#define PATH_SEPARATOR ';'
 #endif
 
 #define YES_UNDERSCORES
