@@ -2673,6 +2673,33 @@ for file in signal.h sys/signal.h; do
   fi
 done
 
+# sys/signal.h on some versions of AIX uses volatile in the typedef of
+# sig_atomic_t, which causes gcc to generate a warning about duplicate
+# volatile when a sig_atomic_t variable is declared volatile, as
+# required by ANSI C.
+file=sys/signal.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo "Checking for duplicate volatile in sys/signal.h"
+  sed -e 's/typedef volatile int sig_atomic_t/typedef int sig_atomic_t/' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
 # This loop does not appear to do anything, because it uses file
 # rather than $file when setting target.  It also appears to be
 # unnecessary, since the main loop processes symbolic links.
