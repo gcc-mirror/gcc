@@ -1,3 +1,10 @@
+2003-09-24  Phil Edwards  <phil@codesourcery.com>
+
+	PR pch/12112
+	* gcc/cppfiles.c (pch_open_file): Return based on combined
+        result of all files.
+	(validate_pch): Return validate flag for current file.
+	
 2003-09-24  Roger Sayle  <roger@eyesopen.com>
 
 	PR bootstrap/12358

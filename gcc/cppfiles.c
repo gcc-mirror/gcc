@@ -273,6 +273,9 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file)
 	  while ((d = readdir (pchdir)) != NULL)
 	    {
 	      dlen = strlen (d->d_name) + 1;
+	      if ((strcmp (d->d_name, ".") == 0)
+		  || (strcmp (d->d_name, "..") == 0))
+		continue;
 	      if (dlen + plen > len)
 		{
 		  len += dlen + 64;
@@ -285,6 +288,7 @@ pch_open_file (cpp_reader *pfile, _cpp_file *file)
 	    }
 	  closedir (pchdir);
 	}
+      file->pch |= valid;
     }
 
   if (valid)
@@ -1185,14 +1189,14 @@ static bool
 validate_pch (cpp_reader *pfile, _cpp_file *file, const char *pchname)
 {
   const char *saved_path = file->path;
+  bool valid = false;
 
   file->path = pchname;
   if (open_file (file))
     {
-      if ((file->pch & 2) == 0)
-	file->pch = pfile->cb.valid_pch (pfile, pchname, file->fd);
+      valid = 1 & pfile->cb.valid_pch (pfile, pchname, file->fd);
 
-      if (!include_pch_p (file))
+      if (!valid)
 	{
 	  close (file->fd);
 	  file->fd = -1;
@@ -1204,12 +1208,10 @@ validate_pch (cpp_reader *pfile, _cpp_file *file, const char *pchname)
 	  for (i = 1; i < pfile->line_maps.depth; i++)
 	    putc ('.', stderr);
 	  fprintf (stderr, "%c %s\n",
-		   include_pch_p (file) ? '!' : 'x', pchname);
+		   valid ? '!' : 'x', pchname);
 	}
     }
-  else
-    file->pch = 2;
 
   file->path = saved_path;
-  return include_pch_p (file);
+  return valid;
 }
