@@ -1,4 +1,5 @@
 2004-02-19  Richard Sandiford  <rsandifo@redhat.com>
+	    Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
 	* config/mips/mips.c (mips_address_insns): Treat BLKmode specially.
 	* config/mips/mips.md: Expand comment above unaligned loads and stores.
