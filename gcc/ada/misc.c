@@ -7,7 +7,7 @@
  *                           C Implementation File                          *
  *                                                                          *
  *                                                                          *
- *          Copyright (C) 1992-2002 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -796,7 +796,7 @@ default_pass_by_ref (gnu_type)
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (cum, TYPE_MODE (gnu_type),
 					     gnu_type, 1)
 #endif
-	  || RETURN_IN_MEMORY (gnu_type)
+	  || targetm.calls.return_in_memory (gnu_type, NULL_TREE)
 	  || (AGGREGATE_TYPE_P (gnu_type)
 	      && (! host_integerp (TYPE_SIZE (gnu_type), 1)
 		  || 0 < compare_tree_int (TYPE_SIZE (gnu_type),

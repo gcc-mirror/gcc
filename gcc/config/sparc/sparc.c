@@ -8301,7 +8301,7 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Find the "this" pointer.  Normally in %o0, but in ARCH64 if the function
      returns a structure, the structure return pointer is there instead.  */
-  if (TARGET_ARCH64 && aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+  if (TARGET_ARCH64 && aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     this = gen_rtx_REG (Pmode, SPARC_INCOMING_INT_ARG_FIRST + 1);
   else
     this = gen_rtx_REG (Pmode, SPARC_INCOMING_INT_ARG_FIRST);

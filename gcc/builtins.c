@@ -941,7 +941,7 @@ apply_args_size (void)
 
       /* The second value is the structure value address unless this is
 	 passed as an "invisible" first argument.  */
-      if (struct_value_rtx)
+      if (targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 0))
 	size += GET_MODE_SIZE (Pmode);
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
@@ -1116,6 +1116,7 @@ expand_builtin_apply_args_1 (void)
   rtx registers;
   int size, align, regno;
   enum machine_mode mode;
+  rtx struct_incoming_value = targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 1);
 
   /* Create a block where the arg-pointer, structure value address,
      and argument registers can be saved.  */
@@ -1123,7 +1124,7 @@ expand_builtin_apply_args_1 (void)
 
   /* Walk past the arg-pointer and structure value address.  */
   size = GET_MODE_SIZE (Pmode);
-  if (struct_value_rtx)
+  if (targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 0))
     size += GET_MODE_SIZE (Pmode);
 
   /* Save each register used in calling a function to the block.  */
@@ -1149,10 +1150,10 @@ expand_builtin_apply_args_1 (void)
 
   /* Save the structure value address unless this is passed as an
      "invisible" first argument.  */
-  if (struct_value_incoming_rtx)
+  if (struct_incoming_value)
     {
       emit_move_insn (adjust_address (registers, Pmode, size),
-		      copy_to_reg (struct_value_incoming_rtx));
+		      copy_to_reg (struct_incoming_value));
       size += GET_MODE_SIZE (Pmode);
     }
 
@@ -1210,6 +1211,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   rtx incoming_args, result, reg, dest, src, call_insn;
   rtx old_stack_level = 0;
   rtx call_fusage = 0;
+  rtx struct_value = targetm.calls.struct_value_rtx (TREE_TYPE (cfun->decl), 0);
 
 #ifdef POINTERS_EXTEND_UNSIGNED
   if (GET_MODE (arguments) != Pmode)
@@ -1263,7 +1265,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 
   /* Walk past the arg-pointer and structure value address.  */
   size = GET_MODE_SIZE (Pmode);
-  if (struct_value_rtx)
+  if (struct_value)
     size += GET_MODE_SIZE (Pmode);
 
   /* Restore each of the registers previously saved.  Make USE insns
@@ -1283,13 +1285,13 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   /* Restore the structure value address unless this is passed as an
      "invisible" first argument.  */
   size = GET_MODE_SIZE (Pmode);
-  if (struct_value_rtx)
+  if (struct_value)
     {
       rtx value = gen_reg_rtx (Pmode);
       emit_move_insn (value, adjust_address (arguments, Pmode, size));
-      emit_move_insn (struct_value_rtx, value);
-      if (GET_CODE (struct_value_rtx) == REG)
-	use_reg (&call_fusage, struct_value_rtx);
+      emit_move_insn (struct_value, value);
+      if (GET_CODE (struct_value) == REG)
+	use_reg (&call_fusage, struct_value);
       size += GET_MODE_SIZE (Pmode);
     }
 
@@ -3728,21 +3730,8 @@ expand_builtin_saveregs (void)
 
   start_sequence ();
 
-#ifdef EXPAND_BUILTIN_SAVEREGS
   /* Do whatever the machine needs done in this case.  */
-  val = EXPAND_BUILTIN_SAVEREGS ();
-#else
-  /* ??? We used to try and build up a call to the out of line function,
-     guessing about what registers needed saving etc.  This became much
-     harder with __builtin_va_start, since we don't have a tree for a
-     call to __builtin_saveregs to fall back on.  There was exactly one
-     port (i860) that used this code, and I'm unconvinced it could actually
-     handle the general case.  So we no longer try to handle anything
-     weird and make the backend absorb the evil.  */
-
-  error ("__builtin_saveregs not supported by this target");
-  val = const0_rtx;
-#endif
+  val = targetm.calls.expand_builtin_saveregs ();
 
   seq = get_insns ();
   end_sequence ();

@@ -169,33 +169,10 @@ do {							\
 tree split_complex_types (tree);
 tree split_complex_values (tree);
 
-/* Provide a default value for STRICT_ARGUMENT_NAMING.  */
-#ifndef STRICT_ARGUMENT_NAMING
-#define STRICT_ARGUMENT_NAMING 0
-#endif
-
-/* Provide a default value for PRETEND_OUTGOING_VARARGS_NAMED.  */
-#ifdef SETUP_INCOMING_VARARGS
-#ifndef PRETEND_OUTGOING_VARARGS_NAMED
-#define PRETEND_OUTGOING_VARARGS_NAMED 1
-#endif
-#else
-/* It is an error to define PRETEND_OUTGOING_VARARGS_NAMED without
-   defining SETUP_INCOMING_VARARGS.  */
-#define PRETEND_OUTGOING_VARARGS_NAMED 0
-#endif
-
 /* Nonzero if we do not know how to pass TYPE solely in registers.  */
 extern bool default_must_pass_in_stack (enum machine_mode, tree);
 #ifndef MUST_PASS_IN_STACK
 #define MUST_PASS_IN_STACK(MODE,TYPE) default_must_pass_in_stack(MODE, TYPE)
-#endif
-
-/* Nonzero if type TYPE should be returned in memory.
-   Most machines can use the following default definition.  */
-
-#ifndef RETURN_IN_MEMORY
-#define RETURN_IN_MEMORY(TYPE) (TYPE_MODE (TYPE) == BLKmode)
 #endif
 
 /* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.

@@ -203,6 +203,7 @@ const struct attribute_spec sh_attribute_table[];
 static tree sh_handle_interrupt_handler_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree sh_handle_sp_switch_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static tree sh_handle_trap_exit_attribute PARAMS ((tree *, tree, tree, int, bool *));
+static tree sh_handle_renesas_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static void sh_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void sh_insert_attributes PARAMS ((tree, tree *));
 static int sh_adjust_cost PARAMS ((rtx, rtx, rtx, int));
@@ -238,6 +239,15 @@ static int scavenge_reg (HARD_REG_SET *s);
 struct save_schedule_s;
 static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 						struct save_schedule_s *, int);
+
+static bool sh_promote_prototypes PARAMS ((tree));
+static rtx sh_struct_value_rtx PARAMS ((tree, int));
+static bool sh_return_in_memory PARAMS ((tree, tree));
+static rtx sh_builtin_saveregs PARAMS ((void));
+static void sh_setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *, enum machine_mode, tree, int *, int));
+static bool sh_strict_argument_naming PARAMS ((CUMULATIVE_ARGS *));
+static bool sh_pretend_outgoing_varargs_named PARAMS ((CUMULATIVE_ARGS *));
+
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -314,6 +324,27 @@ static struct save_entry_s *sh5_schedule_saves (HARD_REG_SET *,
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true
 #endif
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES sh_promote_prototypes
+#undef TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS sh_promote_prototypes
+#undef TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN sh_promote_prototypes
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX sh_struct_value_rtx
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY sh_return_in_memory
+
+#undef TARGET_EXPAND_BUILTIN_SAVEREGS
+#define TARGET_EXPAND_BUILTIN_SAVEREGS sh_builtin_saveregs
+#undef TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS sh_setup_incoming_varargs
+#undef TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING sh_strict_argument_naming
+#undef TARGET_PRETEND_OUTGOING_VARARGS_NAMED
+#define TARGET_PRETEND_OUTGOING_VARARGS_NAMED sh_pretend_outgoing_varargs_named
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4898,7 +4929,11 @@ calc_live_regs (live_regs_mask)
 		 && (reg == (int) EH_RETURN_DATA_REGNO (0)
 		     || reg == (int) EH_RETURN_DATA_REGNO (1)
 		     || reg == (int) EH_RETURN_DATA_REGNO (2)
-		     || reg == (int) EH_RETURN_DATA_REGNO (3)))))
+		     || reg == (int) EH_RETURN_DATA_REGNO (3)))
+	     || ((reg == MACL_REG || reg == MACH_REG)
+		 && regs_ever_live[reg]
+		 && sh_cfun_attr_renesas_p ())
+	     ))
 	{
 	  SET_HARD_REG_BIT (*live_regs_mask, reg);
 	  count += GET_MODE_SIZE (REGISTER_NATURAL_MODE (reg));
@@ -5190,7 +5225,8 @@ sh_expand_prologue ()
   if (current_function_stdarg)
     {
       /* This is not used by the SH2E calling convention  */
-      if (TARGET_SH1 && ! TARGET_SH2E && ! TARGET_SH5 && ! TARGET_HITACHI)
+      if (TARGET_SH1 && ! TARGET_SH2E && ! TARGET_SH5
+	  && ! (TARGET_HITACHI || sh_cfun_attr_renesas_p ()))
 	{
 	  /* Push arg regs as if they'd been provided by caller in stack.  */
 	  for (i = 0; i < NPARM_REGS(SImode); i++)
@@ -5822,7 +5858,7 @@ sh_output_function_epilogue (file, size)
   sp_switch = NULL_RTX;
 }
 
-rtx
+static rtx
 sh_builtin_saveregs ()
 {
   /* First unnamed integer register.  */
@@ -5972,7 +6008,8 @@ sh_build_va_list ()
   tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
   tree record;
 
-  if (TARGET_SH5 || (! TARGET_SH2E && ! TARGET_SH4) || TARGET_HITACHI)
+  if (TARGET_SH5 || (! TARGET_SH2E && ! TARGET_SH4)
+      || TARGET_HITACHI || sh_cfun_attr_renesas_p ())
     return ptr_type_node;
 
   record = make_node (RECORD_TYPE);
@@ -6026,7 +6063,8 @@ sh_va_start (valist, nextarg)
       return;
     }
 
-  if ((! TARGET_SH2E && ! TARGET_SH4) || TARGET_HITACHI)
+  if ((! TARGET_SH2E && ! TARGET_SH4)
+      || TARGET_HITACHI || sh_cfun_attr_renesas_p ())
     {
       std_expand_builtin_va_start (valist, nextarg);
       return;
@@ -6105,7 +6143,8 @@ sh_va_arg (valist, type)
   if (pass_by_ref)
     type = build_pointer_type (type);
 
-  if (! TARGET_SH5 && (TARGET_SH2E || TARGET_SH4) && ! TARGET_HITACHI)
+  if (! TARGET_SH5 && (TARGET_SH2E || TARGET_SH4)
+      && ! (TARGET_HITACHI || sh_cfun_attr_renesas_p ()))
     {
       tree f_next_o, f_next_o_limit, f_next_fp, f_next_fp_limit, f_next_stack;
       tree next_o, next_o_limit, next_fp, next_fp_limit, next_stack;
@@ -6289,6 +6328,343 @@ sh_va_arg (valist, type)
   return result;
 }
 
+static bool
+sh_promote_prototypes (type)
+     tree type;
+{
+  if (TARGET_HITACHI)
+    return 0;
+  if (! type)
+    return 1;
+  return ! sh_attr_renesas_p (type);
+}
+
+/* Define where to put the arguments to a function.
+   Value is zero to push the argument on the stack,
+   or a hard register in which to store the argument.
+
+   MODE is the argument's machine mode.
+   TYPE is the data type of the argument (as a tree).
+    This is null for libcalls where that information may
+    not be available.
+   CUM is a variable of type CUMULATIVE_ARGS which gives info about
+    the preceding args and about the function being called.
+   NAMED is nonzero if this argument is a named parameter
+    (otherwise it is an extra parameter matching an ellipsis).
+
+   On SH the first args are normally in registers
+   and the rest are pushed.  Any arg that starts within the first
+   NPARM_REGS words is at least partially passed in a register unless
+   its data type forbids.  */
+
+
+rtx
+sh_function_arg (ca, mode, type, named)
+     CUMULATIVE_ARGS *ca;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+  if (! TARGET_SH5 && mode == VOIDmode)
+    return GEN_INT (ca->renesas_abi ? 1 : 0);
+
+  if (! TARGET_SH5
+      && PASS_IN_REG_P (*ca, mode, type)
+      && (named || ! (TARGET_HITACHI || ca->renesas_abi)))
+    {
+      int regno;
+
+      if (mode == SCmode && TARGET_SH4 && TARGET_LITTLE_ENDIAN
+	  && (! FUNCTION_ARG_SCmode_WART || (ROUND_REG (*ca, mode) & 1)))
+	{
+	  rtx r1 = gen_rtx_EXPR_LIST (VOIDmode,
+				      gen_rtx_REG (SFmode,
+						   BASE_ARG_REG (mode)
+						   + (ROUND_REG (*ca, mode) ^ 1)),
+				      const0_rtx);
+	  rtx r2 = gen_rtx_EXPR_LIST(VOIDmode,
+				     gen_rtx_REG (SFmode,
+						  BASE_ARG_REG (mode)
+						  + ((ROUND_REG (*ca, mode) + 1) ^ 1)),
+				     GEN_INT (4));
+	  return gen_rtx_PARALLEL(SCmode, gen_rtvec(2, r1, r2));
+	}
+
+     /* If the alignment of a DF value causes an SF register to be
+	skipped, we will use that skipped register for the next SF
+	value.  */
+      if ((TARGET_HITACHI || ca->renesas_abi)
+	  && ca->free_single_fp_reg
+	  && mode == SFmode)
+	return gen_rtx_REG (mode, ca->free_single_fp_reg);
+
+      regno = (BASE_ARG_REG (mode) + ROUND_REG (*ca, mode))
+	       ^ (mode == SFmode && TARGET_SH4
+		  && TARGET_LITTLE_ENDIAN != 0
+		  && ! TARGET_HITACHI && ! ca->renesas_abi);
+      return gen_rtx_REG (mode, regno);
+
+    }
+  
+  if (TARGET_SH5)
+    {
+      if (mode == VOIDmode && TARGET_SHCOMPACT)
+	return GEN_INT (ca->call_cookie);
+
+      /* The following test assumes unnamed arguments are promoted to
+	 DFmode.  */
+      if (mode == SFmode && ca->free_single_fp_reg)
+	return SH5_PROTOTYPED_FLOAT_ARG (*ca, mode, ca->free_single_fp_reg);
+
+      if ((GET_SH_ARG_CLASS (mode) == SH_ARG_FLOAT)
+	  && (named || ! ca->prototype_p)
+	  && ca->arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (SFmode))
+	{
+	  if (! ca->prototype_p && TARGET_SHMEDIA)
+	    return SH5_PROTOTYPELESS_FLOAT_ARG (*ca, mode);
+
+	  return SH5_PROTOTYPED_FLOAT_ARG (*ca, mode,
+					   FIRST_FP_PARM_REG
+					   + ca->arg_count[(int) SH_ARG_FLOAT]);
+	}
+
+      if (ca->arg_count[(int) SH_ARG_INT] < NPARM_REGS (SImode)
+	  && (! TARGET_SHCOMPACT
+	      || (! SHCOMPACT_FORCE_ON_STACK (mode, type)
+		  && ! SH5_WOULD_BE_PARTIAL_NREGS (*ca, mode,
+						   type, named))))
+	{
+	  return gen_rtx_REG (mode, (FIRST_PARM_REG
+				       + ca->arg_count[(int) SH_ARG_INT]));
+	}
+
+      return 0;
+    }
+
+  return 0;
+}
+ 
+/* Update the data in CUM to advance over an argument
+   of mode MODE and data type TYPE.
+   (TYPE is null for libcalls where that information may not be
+   available.)  */
+
+void
+sh_function_arg_advance (ca, mode, type, named)
+     CUMULATIVE_ARGS *ca;
+     enum machine_mode mode;
+     tree type;
+     int named;
+{
+ if (ca->force_mem)
+   ca->force_mem = 0;
+ else if (TARGET_SH5)
+   {
+     tree type2 = (ca->byref && type
+		   ? TREE_TYPE (type)
+ 		   : type);
+     enum machine_mode mode2 = (ca->byref && type
+				? TYPE_MODE (type2)
+				: mode);
+     int dwords = ((ca->byref
+		    ? ca->byref
+		    : mode2 == BLKmode
+		    ? int_size_in_bytes (type2)
+		    : GET_MODE_SIZE (mode2)) + 7) / 8;
+     int numregs = MIN (dwords, NPARM_REGS (SImode)
+			- ca->arg_count[(int) SH_ARG_INT]);
+
+     if (numregs)
+       {
+	 ca->arg_count[(int) SH_ARG_INT] += numregs;
+	 if (TARGET_SHCOMPACT
+	     && SHCOMPACT_FORCE_ON_STACK (mode2, type2))
+	   {
+	     ca->call_cookie
+	       |= CALL_COOKIE_INT_REG (ca->arg_count[(int) SH_ARG_INT]
+				       - numregs, 1);
+	     /* N.B. We want this also for outgoing.   */
+	     ca->stack_regs += numregs;
+	   }
+	 else if (ca->byref)
+	   {
+	     if (! ca->outgoing)
+	       ca->stack_regs += numregs;
+	     ca->byref_regs += numregs;
+	     ca->byref = 0;
+	     do
+	       ca->call_cookie
+		 |= CALL_COOKIE_INT_REG (ca->arg_count[(int) SH_ARG_INT]
+					 - numregs, 2);
+	     while (--numregs);
+	     ca->call_cookie
+	       |= CALL_COOKIE_INT_REG (ca->arg_count[(int) SH_ARG_INT]
+				       - 1, 1);
+	   }
+	 else if (dwords > numregs)
+	   {
+	     int pushregs = numregs;
+
+	     if (TARGET_SHCOMPACT)
+	       ca->stack_regs += numregs;
+	     while (pushregs < NPARM_REGS (SImode) - 1
+		    && (CALL_COOKIE_INT_REG_GET
+			(ca->call_cookie,
+			NPARM_REGS (SImode) - pushregs)
+			== 1))
+	       {
+		 ca->call_cookie
+		   &= ~ CALL_COOKIE_INT_REG (NPARM_REGS (SImode)
+					     - pushregs, 1);
+		 pushregs++;
+	       }
+	     if (numregs == NPARM_REGS (SImode))
+	       ca->call_cookie
+		 |= CALL_COOKIE_INT_REG (0, 1)
+		    | CALL_COOKIE_STACKSEQ (numregs - 1);
+	     else
+	       ca->call_cookie
+		 |= CALL_COOKIE_STACKSEQ (numregs);
+	   }
+       }
+     if (GET_SH_ARG_CLASS (mode2) == SH_ARG_FLOAT
+	 && (named || ! ca->prototype_p))
+       {
+	 if (mode2 == SFmode && ca->free_single_fp_reg)
+	   ca->free_single_fp_reg = 0;
+	 else if (ca->arg_count[(int) SH_ARG_FLOAT]
+ 		  < NPARM_REGS (SFmode))
+	   {
+	     int numfpregs
+	       = MIN ((GET_MODE_SIZE (mode2) + 7) / 8 * 2,
+		      NPARM_REGS (SFmode)
+		      - ca->arg_count[(int) SH_ARG_FLOAT]);
+
+	     ca->arg_count[(int) SH_ARG_FLOAT] += numfpregs;
+
+	     if (TARGET_SHCOMPACT && ! ca->prototype_p)
+	       {
+		 if (ca->outgoing && numregs > 0)
+		   do
+		     {
+		       ca->call_cookie
+			 |= (CALL_COOKIE_INT_REG
+			     (ca->arg_count[(int) SH_ARG_INT]
+			      - numregs + ((numfpregs - 2) / 2),
+			      4 + (ca->arg_count[(int) SH_ARG_FLOAT]
+				   - numfpregs) / 2));
+		     }
+		   while (numfpregs -= 2);
+	       }
+	     else if (mode2 == SFmode && (named)
+		      && (ca->arg_count[(int) SH_ARG_FLOAT]
+			  < NPARM_REGS (SFmode)))
+	       ca->free_single_fp_reg
+		 = FIRST_FP_PARM_REG - numfpregs
+		 + ca->arg_count[(int) SH_ARG_FLOAT] + 1;
+	   }
+       }
+     return;
+   }
+
+ if ((TARGET_HITACHI || ca->renesas_abi) && TARGET_FPU_DOUBLE)
+   {
+     /* Note that we've used the skipped register.  */
+     if (mode == SFmode && ca->free_single_fp_reg)
+       {
+	 ca->free_single_fp_reg = 0;
+	 return;
+       }
+     /* When we have a DF after an SF, there's an SF register that get
+	skipped in order to align the DF value.  We note this skipped
+	register, because the next SF value will use it, and not the
+	SF that follows the DF.  */
+     if (mode == DFmode
+	 && ROUND_REG (*ca, DFmode) != ROUND_REG (*ca, SFmode))
+       {
+	 ca->free_single_fp_reg = (ROUND_REG (*ca, SFmode)
+				     + BASE_ARG_REG (mode));
+       }
+   }
+
+ if (! (TARGET_SH4 || ca->renesas_abi)
+     || PASS_IN_REG_P (*ca, mode, type))
+   (ca->arg_count[(int) GET_SH_ARG_CLASS (mode)]
+    = (ROUND_REG (*ca, mode)
+       + (mode == BLKmode
+	  ? ROUND_ADVANCE (int_size_in_bytes (type))
+	  : ROUND_ADVANCE (GET_MODE_SIZE (mode)))));
+}
+
+/* If the structure value address is not passed in a register, define
+   `STRUCT_VALUE' as an expression returning an RTX for the place
+   where the address is passed.  If it returns 0, the address is
+   passed as an "invisible" first argument.  */
+/* The Renesas calling convention doesn't quite fit into this scheme since
+   the address is passed like an invisible argument, but one that is always
+   passed in memory.  */
+static rtx
+sh_struct_value_rtx (fndecl, incoming)
+     tree fndecl;
+     int incoming ATTRIBUTE_UNUSED;
+{
+  if (TARGET_HITACHI || sh_attr_renesas_p (fndecl))
+    return 0;
+  return gen_rtx_REG (Pmode, 2);
+}
+
+static bool
+sh_return_in_memory (type, fndecl)
+     tree type;
+     tree fndecl;
+{
+  if (TARGET_SH5)
+    {
+      if (TYPE_MODE (type) == BLKmode)
+	return ((unsigned HOST_WIDE_INT) int_size_in_bytes (type)) > 8;
+      else
+	return GET_MODE_SIZE (TYPE_MODE (type)) > 8;
+    }
+  else
+    {
+      return (TYPE_MODE (type) == BLKmode
+	      || ((TARGET_HITACHI || sh_attr_renesas_p (fndecl))
+		  && TREE_CODE (type) == RECORD_TYPE));
+    }
+}
+
+/* We actually emit the code in sh_expand_prologue.  We used to use
+   a static variable to flag that we need to emit this code, but that
+   doesn't when inlining, when functions are deferred and then emitted
+   later.  Fortunately, we already have two flags that are part of struct
+   function that tell if a function uses varargs or stdarg.  */
+static void
+sh_setup_incoming_varargs (ca, mode, type, pretend_arg_size, second_time)
+     CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     tree type ATTRIBUTE_UNUSED;
+     int *pretend_arg_size ATTRIBUTE_UNUSED;
+     int second_time ATTRIBUTE_UNUSED;
+{
+  if (! current_function_stdarg)
+    abort ();
+}
+
+static bool
+sh_strict_argument_naming (ca)
+     CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED;
+{
+  return TARGET_SH5;
+}
+
+static bool
+sh_pretend_outgoing_varargs_named (ca)
+     CUMULATIVE_ARGS *ca;
+{
+  return ! (TARGET_HITACHI || ca->renesas_abi) && ! TARGET_SH5;
+}
+
+
 /* Define the offset between two registers, one to be eliminated, and
    the other its replacement, at the start of a routine.  */
 
@@ -6424,7 +6800,12 @@ sh_insert_attributes (node, attributes)
    to run on.
 
    trap_exit -- use a trapa to exit an interrupt function instead of
-   an rte instruction.  */
+   an rte instruction.
+
+   renesas -- use Renesas calling/layout conventions (functions and
+   structures).
+
+*/
 
 const struct attribute_spec sh_attribute_table[] =
 {
@@ -6432,6 +6813,7 @@ const struct attribute_spec sh_attribute_table[] =
   { "interrupt_handler", 0, 0, true,  false, false, sh_handle_interrupt_handler_attribute },
   { "sp_switch",         1, 1, true,  false, false, sh_handle_sp_switch_attribute },
   { "trap_exit",         1, 1, true,  false, false, sh_handle_trap_exit_attribute },
+  { "renesas",           0, 0, false, true, false, sh_handle_renesas_attribute },
   { NULL,                0, 0, false, false, false, NULL }
 };
 
@@ -6535,6 +6917,40 @@ sh_handle_trap_exit_attribute (node, name, args, flags, no_add_attrs)
     }
 
   return NULL_TREE;
+}
+
+static tree
+sh_handle_renesas_attribute (node, name, args, flags, no_add_attrs)
+     tree *node ATTRIBUTE_UNUSED;
+     tree name ATTRIBUTE_UNUSED;
+     tree args ATTRIBUTE_UNUSED;
+     int flags ATTRIBUTE_UNUSED;
+     bool *no_add_attrs ATTRIBUTE_UNUSED;
+{
+  return NULL_TREE;
+}
+
+/* True if __attribute__((renesas)) or -mrenesas.  */
+int
+sh_attr_renesas_p (td)
+     tree td;
+{
+  if (TARGET_HITACHI)
+    return 1;
+  if (td == 0)
+    return 0;
+  if (DECL_P (td))
+    td = TREE_TYPE (td);
+  return (lookup_attribute ("renesas", TYPE_ATTRIBUTES (td))
+	  != NULL_TREE);
+}
+
+/* True if __attribute__((renesas)) or -mrenesas, for the current
+   function.  */
+int
+sh_cfun_attr_renesas_p ()
+{
+  return sh_attr_renesas_p (current_function_decl);
 }
 
 int
@@ -8000,7 +8416,7 @@ static bool
 sh_ms_bitfield_layout_p (record_type)
      tree record_type ATTRIBUTE_UNUSED;
 {
-  return TARGET_SH5;
+  return (TARGET_SH5 || TARGET_HITACHI || sh_attr_renesas_p (record_type));
 }
 
 /* 
@@ -8683,10 +9099,10 @@ sh_output_mi_thunk (file, thunk_fndecl, delta, vcall_offset, function)
      comes first, in which case "this" comes second.  */
   INIT_CUMULATIVE_ARGS (cum, funtype, NULL_RTX, 0);
 #ifndef PCC_STATIC_STRUCT_RETURN
-  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     structure_value_byref = 1;
 #endif /* not PCC_STATIC_STRUCT_RETURN */
-  if (structure_value_byref && struct_value_rtx == 0)
+  if (structure_value_byref && sh_struct_value_rtx (function, 0) == 0)
     { 
       tree ptype = build_pointer_type (TREE_TYPE (funtype));
 

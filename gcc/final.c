@@ -1418,9 +1418,8 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 # define NO_PROFILE_COUNTERS	0
 #endif
 #if defined(ASM_OUTPUT_REG_PUSH)
-#if defined(STRUCT_VALUE_INCOMING_REGNUM) || defined(STRUCT_VALUE_REGNUM)
   int sval = current_function_returns_struct;
-#endif
+  rtx svrtx = targetm.calls.struct_value_rtx (TREE_TYPE (current_function_decl), 1);
 #if defined(STATIC_CHAIN_INCOMING_REGNUM) || defined(STATIC_CHAIN_REGNUM)
   int cxt = current_function_needs_context;
 #endif
@@ -1437,16 +1436,9 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 
   function_section (current_function_decl);
 
-#if defined(STRUCT_VALUE_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (sval)
-    ASM_OUTPUT_REG_PUSH (file, STRUCT_VALUE_INCOMING_REGNUM);
-#else
-#if defined(STRUCT_VALUE_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (sval)
-    {
-      ASM_OUTPUT_REG_PUSH (file, STRUCT_VALUE_REGNUM);
-    }
-#endif
+#if defined(ASM_OUTPUT_REG_PUSH)
+  if (sval && GET_CODE (svrtx) == REG)
+    ASM_OUTPUT_REG_PUSH (file, REGNO (svrtx));
 #endif
 
 #if defined(STATIC_CHAIN_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
@@ -1475,16 +1467,9 @@ profile_function (FILE *file ATTRIBUTE_UNUSED)
 #endif
 #endif
 
-#if defined(STRUCT_VALUE_INCOMING_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (sval)
-    ASM_OUTPUT_REG_POP (file, STRUCT_VALUE_INCOMING_REGNUM);
-#else
-#if defined(STRUCT_VALUE_REGNUM) && defined(ASM_OUTPUT_REG_PUSH)
-  if (sval)
-    {
-      ASM_OUTPUT_REG_POP (file, STRUCT_VALUE_REGNUM);
-    }
-#endif
+#if defined(ASM_OUTPUT_REG_PUSH)
+  if (sval && GET_CODE (svrtx) == REG)
+    ASM_OUTPUT_REG_POP (file, REGNO (svrtx));
 #endif
 }
 

@@ -7799,7 +7799,7 @@ alpha_output_mi_thunk_osf (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   /* Find the "this" pointer.  If the function returns a structure,
      the structure return pointer is in $16.  */
-  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
+  if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function)), function))
     this = gen_rtx_REG (Pmode, 17);
   else
     this = gen_rtx_REG (Pmode, 16);

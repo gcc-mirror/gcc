@@ -132,8 +132,6 @@ REAL_VALUE_TYPE dconsthalf;
 
    In an inline procedure, the stack and frame pointer rtxs may not be
    used for anything else.  */
-rtx struct_value_rtx;		/* (REG:Pmode STRUCT_VALUE_REGNUM) */
-rtx struct_value_incoming_rtx;	/* (REG:Pmode STRUCT_VALUE_INCOMING_REGNUM) */
 rtx static_chain_rtx;		/* (REG:Pmode STATIC_CHAIN_REGNUM) */
 rtx static_chain_incoming_rtx;	/* (REG:Pmode STATIC_CHAIN_INCOMING_REGNUM) */
 rtx pic_offset_table_rtx;	/* (REG:Pmode PIC_OFFSET_TABLE_REGNUM) */
@@ -5465,23 +5463,6 @@ init_emit_once (int line_numbers)
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
   return_address_pointer_rtx
     = gen_raw_REG (Pmode, RETURN_ADDRESS_POINTER_REGNUM);
-#endif
-
-#ifdef STRUCT_VALUE
-  struct_value_rtx = STRUCT_VALUE;
-#else
-  struct_value_rtx = gen_rtx_REG (Pmode, STRUCT_VALUE_REGNUM);
-#endif
-
-#ifdef STRUCT_VALUE_INCOMING
-  struct_value_incoming_rtx = STRUCT_VALUE_INCOMING;
-#else
-#ifdef STRUCT_VALUE_INCOMING_REGNUM
-  struct_value_incoming_rtx
-    = gen_rtx_REG (Pmode, STRUCT_VALUE_INCOMING_REGNUM);
-#else
-  struct_value_incoming_rtx = struct_value_rtx;
-#endif
 #endif
 
 #ifdef STATIC_CHAIN_REGNUM

@@ -4273,7 +4273,7 @@ expand_assignment (tree to, tree from, int want_value)
      since it might be a promoted variable where the zero- or sign- extension
      needs to be done.  Handling this in the normal way is safe because no
      computation is done before the call.  */
-  if (TREE_CODE (from) == CALL_EXPR && ! aggregate_value_p (from)
+  if (TREE_CODE (from) == CALL_EXPR && ! aggregate_value_p (from, from)
       && TREE_CODE (TYPE_SIZE (TREE_TYPE (from))) == INTEGER_CST
       && ! ((TREE_CODE (to) == VAR_DECL || TREE_CODE (to) == PARM_DECL)
 	    && GET_CODE (DECL_RTL (to)) == REG))
@@ -6704,7 +6704,7 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode, enum expand_modifier
   if (! cse_not_expected && mode != BLKmode && target
       && (GET_CODE (target) != REG || REGNO (target) < FIRST_PSEUDO_REGISTER)
       && ! (code == CONSTRUCTOR && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
-      && ! (code == CALL_EXPR && aggregate_value_p (exp)))
+      && ! (code == CALL_EXPR && aggregate_value_p (exp, exp)))
     target = 0;
 
   switch (code)

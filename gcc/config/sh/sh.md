@@ -5869,7 +5869,10 @@
       DONE;
     }
   else
+  {
     operands[0] = force_reg (SImode, XEXP (operands[0], 0));
+    operands[1] = operands[2];
+  }
 
   emit_call_insn (gen_calli (operands[0], operands[1]));
   DONE;

@@ -2673,6 +2673,26 @@ start_decl (tree declarator, tree declspecs, int initialized, tree attributes)
   decl_attributes (&decl, attributes, 0);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
+      && targetm.calls.promote_prototypes (TREE_TYPE (decl)))
+    {
+      tree ce = declarator;
+
+      if (TREE_CODE (ce) == INDIRECT_REF)
+	ce = TREE_OPERAND (declarator, 0);
+      if (TREE_CODE (ce) == CALL_EXPR)
+	{
+	  tree args = TREE_PURPOSE (TREE_OPERAND (ce, 1));
+	  for (; args; args = TREE_CHAIN (args))
+	    {
+	      tree type = TREE_TYPE (args);
+	      if (INTEGRAL_TYPE_P (type)
+		  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+		DECL_ARG_TYPE (args) = integer_type_node;
+	    }
+	}
+    }
+
+  if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && DECL_UNINLINABLE (decl)
       && lookup_attribute ("noinline", DECL_ATTRIBUTES (decl)))
@@ -4574,10 +4594,6 @@ get_parm_info (int void_at_end)
 	 declared types.  The back end may override this.  */
       type = TREE_TYPE (decl);
       DECL_ARG_TYPE (decl) = type;
-      if (PROMOTE_PROTOTYPES
-	  && INTEGRAL_TYPE_P (type)
-	  && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-	DECL_ARG_TYPE (decl) = integer_type_node;
 
       /* Check for (..., void, ...) and issue an error.  */
       if (VOID_TYPE_P (type) && !DECL_NAME (decl) && !gave_void_only_once_err)
@@ -5899,7 +5915,7 @@ store_parm_decls_oldstyle (void)
 		     useful for argument types like uid_t.  */
 		  DECL_ARG_TYPE (parm) = TREE_TYPE (parm);
 
-		  if (PROMOTE_PROTOTYPES
+		  if (targetm.calls.promote_prototypes (TREE_TYPE (current_function_decl))
 		      && INTEGRAL_TYPE_P (TREE_TYPE (parm))
 		      && TYPE_PRECISION (TREE_TYPE (parm))
 		      < TYPE_PRECISION (integer_type_node))
@@ -6049,6 +6065,19 @@ finish_function ()
     {
       pushlevel (0);
       poplevel (0, 0, 0);
+    }
+
+  if (TREE_CODE (fndecl) == FUNCTION_DECL
+      && targetm.calls.promote_prototypes (TREE_TYPE (fndecl)))
+    {
+      tree args = DECL_ARGUMENTS (fndecl);
+      for (; args; args = TREE_CHAIN (args))
+ 	{
+ 	  tree type = TREE_TYPE (args);
+ 	  if (INTEGRAL_TYPE_P (type)
+ 	      && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
+ 	    DECL_ARG_TYPE (args) = integer_type_node;
+ 	}
     }
 
   BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;
