@@ -3472,13 +3472,14 @@ expand_assignment (to, from, want_value, suggest_reg)
      val = setjmp (buf) on machines where reference to val
      requires loading up part of an address in a separate insn.
 
-     Don't do this if TO is a VAR_DECL whose DECL_RTL is REG since it might be
-     a promoted variable where the zero- or sign- extension needs to be done.
-     Handling this in the normal way is safe because no computation is done
-     before the call.  */
+     Don't do this if TO is a VAR_DECL or PARM_DECL whose DECL_RTL is REG
+     since it might be a promoted variable where the zero- or sign- extension
+     needs to be done.  Handling this in the normal way is safe because no
+     computation is done before the call.  */
   if (TREE_CODE (from) == CALL_EXPR && ! aggregate_value_p (from)
       && TREE_CODE (TYPE_SIZE (TREE_TYPE (from))) == INTEGER_CST
-      && ! (TREE_CODE (to) == VAR_DECL && GET_CODE (DECL_RTL (to)) == REG))
+      && ! ((TREE_CODE (to) == VAR_DECL || TREE_CODE (to) == PARM_DECL)
+	    && GET_CODE (DECL_RTL (to)) == REG))
     {
       rtx value;
 

@@ -1,3 +1,8 @@
+Thu Mar  9 20:01:38 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* expr.c (expand_assignment): For a CALL_EXPR, special case PARM_DECL
+	same as VAR_DECL.
+
 2000-03-09  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* config/alpha/linux.h (WCHAR_TYPE): Make consistent.
