@@ -1,3 +1,7 @@
+2004-12-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* expr.h (expand_modifier): Define EXPAND_STACK_PARM as 1.
+
 2004-12-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/18973
