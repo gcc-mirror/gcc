@@ -1,3 +1,8 @@
+Tue Dec 23 03:14:54 1997  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (clean): Remove the stages with their objects here ...
+	(distclean): ... instead of here.
+
 Mon Dec 22 11:24:01 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
 	* cse.c (rtx_cost): Add default case in enumeration switch.
