@@ -82,7 +82,7 @@ proc libstdc++_init { testfile } {
     global cxx cxxflags
     global includes
     global gluefile wrap_flags
-    global ld_library_path original_ld_library_path
+    global original_ld_library_path
     global target_triplet
 
     set blddir [lookfor_file [get_multilibs] libstdc++-v3]
