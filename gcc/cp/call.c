@@ -2780,9 +2780,19 @@ build_new_op (code, flags, arg1, arg2, arg3)
     conv = TREE_OPERAND (conv, 0);
   arg1 = convert_like (conv, arg1);
   if (arg2)
-    arg2 = convert_like (TREE_VEC_ELT (cand->convs, 1), arg2);
+    {
+      conv = TREE_VEC_ELT (cand->convs, 1);
+      if (TREE_CODE (conv) == REF_BIND)
+        conv = TREE_OPERAND (conv, 0);
+      arg2 = convert_like (conv, arg2);
+    }
   if (arg3)
-    arg3 = convert_like (TREE_VEC_ELT (cand->convs, 2), arg3);
+    {
+      conv = TREE_VEC_ELT (cand->convs, 2);
+      if (TREE_CODE (conv) == REF_BIND)
+        conv = TREE_OPERAND (conv, 0);
+      arg3 = convert_like (conv, arg3);
+    }
 
 builtin:
   switch (code)

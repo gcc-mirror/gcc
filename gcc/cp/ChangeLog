@@ -1,3 +1,7 @@
+1999-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	* call.c (build_new_op): Remove REF_BIND from all operands.
+
 1999-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* search.c (convert_pointer_to_single_level): Reimplement without
