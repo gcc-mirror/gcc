@@ -1,5 +1,12 @@
 2003-07-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11509
+	* pt.c (dependent_scope_ref_p): New function.
+	(value_dependent_expression_p): Use it.
+	(type_dependent_expression_p): Likewise.	
+	
+	* pt.c (tsubst_friend_function): Use reregister_specialization.
+
 	PR c++/7019
 	* cp-tree.h (lookup_qualified_name): Adjust prototype.
 	* decl.c (lookup_qualified_name): Add complain parameter.  Adjust

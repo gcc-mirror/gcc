@@ -4912,17 +4912,9 @@ tsubst_friend_function (tree decl, tree args)
 	      DECL_TEMPLATE_INFO (old_decl) = new_friend_template_info;
 
 	      if (TREE_CODE (old_decl) != TEMPLATE_DECL)
-		{
-		  tree t;
-		  tree spec;
-
-		  t = most_general_template (old_decl);
-		  for (spec = DECL_TEMPLATE_SPECIALIZATIONS (t);
-		       spec;
-		       spec = TREE_CHAIN (spec))
-		    if (TREE_VALUE (spec) == new_friend)
-		      TREE_VALUE (spec) = old_decl;
-		}
+		reregister_specialization (new_friend,
+					   most_general_template (old_decl),
+					   old_decl);
 	      else 
 		{
 		  tree t;
@@ -11455,6 +11447,40 @@ dependent_type_p (tree type)
   return TYPE_DEPENDENT_P (type);
 }
 
+/* Returns TRUE if EXPRESSION is dependent, according to CRITERION.  */
+
+static bool
+dependent_scope_ref_p (tree expression, bool criterion (tree))
+{
+  tree scope;
+  tree name;
+
+  my_friendly_assert (TREE_CODE (expression) == SCOPE_REF, 20030714);
+
+  if (!TYPE_P (TREE_OPERAND (expression, 0)))
+    return true;
+
+  scope = TREE_OPERAND (expression, 0);
+  name = TREE_OPERAND (expression, 1);
+
+  /* [temp.dep.expr]
+
+     An id-expression is type-dependent if it contains a
+     nested-name-specifier that contains a class-name that names a
+     dependent type.  */
+  /* The suggested resolution to Core Issue 2 implies that if the
+     qualifying type is the current class, then we must peek
+     inside it.  */
+  if (DECL_P (name) 
+      && currently_open_class (scope)
+      && !criterion (name))
+    return false;
+  if (dependent_type_p (scope))
+    return true;
+
+  return false;
+}
+
 /* Returns TRUE if the EXPRESSION is value-dependent, in the sense of
    [temp.dep.constexpr] */
 
@@ -11518,6 +11544,8 @@ value_dependent_expression_p (tree expression)
 	return dependent_type_p (expression);
       return type_dependent_expression_p (expression);
     }
+  if (TREE_CODE (expression) == SCOPE_REF)
+    return dependent_scope_ref_p (expression, value_dependent_expression_p);
   /* A constant expression is value-dependent if any subexpression is
      value-dependent.  */
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expression))))
@@ -11604,30 +11632,10 @@ type_dependent_expression_p (tree expression)
 	return dependent_type_p (type);
     }
 
-  /* [temp.dep.expr]
-
-     An id-expression is type-dependent if it contains a
-     nested-name-specifier that contains a class-name that names a
-     dependent type.  */
   if (TREE_CODE (expression) == SCOPE_REF
-      && TYPE_P (TREE_OPERAND (expression, 0)))
-    {
-      tree scope;
-      tree name;
-
-      scope = TREE_OPERAND (expression, 0);
-      name = TREE_OPERAND (expression, 1);
-
-      /* The suggested resolution to Core Issue 2 implies that if the
-	 qualifying type is the current class, then we must peek
-	 inside it.  */
-      if (DECL_P (name) 
-	  && currently_open_class (scope)
-	  && !type_dependent_expression_p (name))
-	return false;
-      if (dependent_type_p (scope))
-	return true;
-    }
+      && dependent_scope_ref_p (expression,
+				type_dependent_expression_p))
+    return true;
 
   if (TREE_CODE (expression) == FUNCTION_DECL
       && DECL_LANG_SPECIFIC (expression)
