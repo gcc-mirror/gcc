@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 /* The ARM uses @ are a comment character so we need to redefine
    TYPE_OPERAND_FMT.  */
 #undef  TYPE_OPERAND_FMT
-#define TYPE_OPERAND_FMT	"%s"
+#define TYPE_OPERAND_FMT	"%%%s"
 
 /* We might need a ARM specific header to function declarations.  */
 #undef  ASM_DECLARE_FUNCTION_NAME

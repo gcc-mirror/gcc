@@ -1,3 +1,7 @@
+2002-11-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm/elf.h (TYPE_OPERAND_FMT): Prefix type with %.
+
 Thu Nov  7 15:50:18 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (DWARF_FRAME_RETURN_COLUMN): Use DWARF_FRAME_REGNUM.
