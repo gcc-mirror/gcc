@@ -1807,6 +1807,9 @@ while (0)
   case LSHIFTRT:							\
     return COSTS_N_INSNS (1);
 
+/* Adjust the cost of branches.  */
+#define BRANCH_COST (pa_cpu == PROCESSOR_8000 ? 2 : 1)
+
 /* Adjust the cost of dependencies.  */
 
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
