@@ -1074,6 +1074,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 {
   register rtx operand0 = operands[0];
   register rtx operand1 = operands[1];
+  register rtx tem;
 
   if (reload_in_progress && GET_CODE (operand0) == REG
       && REGNO (operand0) >= FIRST_PSEUDO_REGISTER)
@@ -1096,6 +1097,15 @@ emit_move_sequence (operands, mode, scratch_reg)
       SUBREG_REG (operand1) = reg_equiv_mem[REGNO (SUBREG_REG (operand1))];
       operand1 = alter_subreg (operand1);
     }
+
+  if (reload_in_progress && GET_CODE (operand0) == MEM
+      && ((tem = find_replacement (&XEXP (operand0, 0)))
+	  != XEXP (operand0, 0)))
+    operand0 = gen_rtx (MEM, GET_MODE (operand0), tem);
+  if (reload_in_progress && GET_CODE (operand1) == MEM
+      && ((tem = find_replacement (&XEXP (operand1, 0)))
+	  != XEXP (operand1, 0)))
+    operand1 = gen_rtx (MEM, GET_MODE (operand1), tem);
 
   /* Handle secondary reloads for loads/stores of FP registers from
      REG+D addresses where D does not fit in 5 bits, including 
