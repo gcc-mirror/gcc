@@ -1,6 +1,6 @@
 // PR c++/7503
 // { dg-do compile }
-// { dg-options "-O2" }
+// { dg-options "-O2 -Wno-deprecated" }
 
 extern int A, B;
 
