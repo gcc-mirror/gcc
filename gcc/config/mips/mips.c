@@ -478,7 +478,7 @@ mips_const_double_ok (op, mode)
   if (GET_CODE (op) != CONST_DOUBLE)
     return FALSE;
 
-  if (mode == DImode)
+  if (mode == VOIDmode)
     return TRUE;
 
   if (mode != SFmode && mode != DFmode)
@@ -1016,8 +1016,18 @@ mips_move_1word (operands, insn, unsignedp)
 	    }
 	}
 
-      else if (code1 == CONST_INT)
+      else if (code1 == CONST_INT
+	       || (code1 == CONST_DOUBLE
+		   && GET_MODE (op1) == VOIDmode))
 	{
+	  if (code1 == CONST_DOUBLE)
+	    {
+	      /* This can happen when storing constants into long long
+                 bitfields.  Just store the least significant word of
+                 the value.  */
+	      operands[1] = op1 = GEN_INT (CONST_DOUBLE_LOW (op1));
+	    }
+
 	  if (INTVAL (op1) == 0)
 	    {
 	      if (GP_REG_P (regno0))
