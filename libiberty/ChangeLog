@@ -1,4 +1,4 @@
-2000-12-07  Mike Stump  <mrs@kankakee.wrs.com>
+2000-12-07  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (distclean): When cleaning, remove testsuite.
 
