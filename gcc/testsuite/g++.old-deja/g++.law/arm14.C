@@ -18,7 +18,7 @@ void h(X* p) {
     X::E2 e2;
     int x2 = X::a2;
 
-    X::E1 e1;                   // Should be rejected, but isn't.// ERROR - .* , XFAIL *-*-*
+    X::E1 e1;                   // ERROR - within this context
     int x1 = X::a1;             // ERROR - Should be rejected, and is.
     }
 

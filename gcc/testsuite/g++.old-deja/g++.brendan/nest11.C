@@ -6,6 +6,8 @@ class A {
   struct B {
     int x;
   };
+  struct C;
+  friend struct C;
   struct C {
     int bug (A::B &y);
   };

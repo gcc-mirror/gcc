@@ -38,15 +38,15 @@ int foo2 (int (*a)(int) = &foo)
 }
 
 class X{
-  class Y{};
+  class Y{};			// ERROR - private
 };
 
 typedef int const * bart ();
 typedef bart const * const * bar2; // ERROR - qualifiers
 
 bar2 baz (X::Y y)
-{
-  X::Y f;
+{				// ERROR - in this context
+  X::Y f;			// ERROR - in this context
   bar2 wa [5];
   wa[0] = baz(f);
   undef2 (1); // ERROR - implicit declaration
