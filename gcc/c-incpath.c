@@ -309,7 +309,7 @@ add_path (path, chain, cxx_aware)
   p->next = NULL;
   p->name = path;
   if (chain == SYSTEM || chain == AFTER)
-    p->sysp = 1 + (cxx_aware != 0);
+    p->sysp = 1 + !cxx_aware;
   else
     p->sysp = 0;
 

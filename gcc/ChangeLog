@@ -1,3 +1,7 @@
+2003-03-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-incpath.c (add_path): Fix sysp assignment.
+
 2003-03-02  Kurt Garloff  <garloff@suse.de>
 
 	* params.def: Introduce parameter max-inline-insns-rtl for
