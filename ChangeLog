@@ -1,3 +1,9 @@
+Sun Feb  7 18:01:54 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+	
+	* configure.in (*-*-cygwin32*): Use config/mh-cygwin instead of
+	the old name config/mh-cygwin32.
+	Enable texinfo.
+
 Tue Feb  2 19:46:40 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (EXTRA_GCC_FLAGS):  Set AR to $AR instead of
