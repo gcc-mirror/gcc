@@ -1,3 +1,10 @@
+2001-12-14  DJ Delorie  <dj@redhat.com>
+	    Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygwin.h (I386_PE_STRIP_ENCODING): Handle '*'
+	at SYM_NAME[0] or SYM_NAME[3].
+	(STRIP_NAME_ENCODING): Don't check for leading '*'.
+
 2001-12-14  Ira Ruben	<ira@apple.com>
 
 	Add -### option (displays driver-generated commands without
