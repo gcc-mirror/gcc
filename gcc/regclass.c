@@ -901,7 +901,7 @@ scan_one_insn (insn, pass)
      have been initialized.  We must do this even if one operand
      is a constant--see addsi3 in m68k.md.  */
 
-  for (i = 0; i < recog_data.n_operands - 1; i++)
+  for (i = 0; i < (int) recog_data.n_operands - 1; i++)
     if (constraints[i][0] == '%')
       {
 	const char *xconstraints[MAX_RECOG_OPERANDS];
