@@ -1802,6 +1802,7 @@ remove_bb (basic_block bb)
   for (i = bsi_start (bb); !bsi_end_p (i); bsi_remove (&i))
     {
       tree stmt = bsi_stmt (i);
+      release_defs (stmt);
 
       set_bb_for_stmt (stmt, NULL);
 
