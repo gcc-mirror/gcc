@@ -664,8 +664,9 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 
 objc-runtime: libobjc.a
 
-# Build the Objective C runtime library.  Build the Objc compiler first!
+# Build the Objective C runtime library.
 libobjc.a: cc1obj libgcc2.ready
+	mkdir objc
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
@@ -1268,6 +1269,7 @@ mostlyclean:
 # Clean the objc subdir.
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; $(MAKE) -f $$srcdir1/objc/Makefile mostlyclean
+	-rm -f libobjc.a
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
