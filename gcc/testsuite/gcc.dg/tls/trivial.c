@@ -1,0 +1,1 @@
+__thread int i;
