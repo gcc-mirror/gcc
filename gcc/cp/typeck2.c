@@ -130,6 +130,29 @@ abstract_virtuals_error (decl, type)
      tree type;
 {
   tree u = CLASSTYPE_ABSTRACT_VIRTUALS (type);
+  int has_abstract_virtuals, needs_final_overriders;
+  tree tu;
+
+  /* Count how many abstract methods need to be defined.  */
+  for (has_abstract_virtuals = 0, tu = u; tu; tu = TREE_CHAIN (tu))
+    {
+      if (DECL_ABSTRACT_VIRTUAL_P (TREE_VALUE (tu))
+	  && ! DECL_NEEDS_FINAL_OVERRIDER_P (TREE_VALUE (tu)))
+	{
+	  has_abstract_virtuals = 1;
+	  break;
+	}
+    }
+
+  /* Count how many virtual methods need a final overrider.  */
+  for (needs_final_overriders = 0, tu = u; tu; tu = TREE_CHAIN (tu))
+    {
+      if (DECL_NEEDS_FINAL_OVERRIDER_P (TREE_VALUE (tu)))
+	{
+	  needs_final_overriders = 1;
+	  break;
+	}
+    }
 
   if (decl)
     {
@@ -151,19 +174,52 @@ abstract_virtuals_error (decl, type)
       else if (TREE_CODE (decl) == FUNCTION_DECL)
 	cp_error ("invalid return type for function `%#D'", decl);
     }
-  else cp_error ("cannot allocate an object of type `%T'", type);
+  else
+    cp_error ("cannot allocate an object of type `%T'", type);
+
   /* Only go through this once.  */
   if (TREE_PURPOSE (u) == NULL_TREE)
     {
-      error ("  since the following virtual functions are abstract:");
       TREE_PURPOSE (u) = error_mark_node;
-      while (u)
+
+      if (has_abstract_virtuals)
+	error ("  since the following virtual functions are abstract:");
+      tu = u;
+      while (tu)
 	{
-	  cp_error ("\t%#D", TREE_VALUE (u));
-	  u = TREE_CHAIN (u);
+	  if (DECL_ABSTRACT_VIRTUAL_P (TREE_VALUE (tu))
+	      && ! DECL_NEEDS_FINAL_OVERRIDER_P (TREE_VALUE (tu)))
+	    cp_error ("\t%#D", TREE_VALUE (tu));
+	  tu = TREE_CHAIN (tu);
+	}
+
+      if (needs_final_overriders)
+	{
+	  if (has_abstract_virtuals)
+	    error ("  and the following virtual functions need a final overrider:");
+	  else
+	    error ("  since the following virtual functions need a final overrider:");
+	}
+      tu = u;
+      while (tu)
+	{
+	  if (DECL_NEEDS_FINAL_OVERRIDER_P (TREE_VALUE (tu)))
+	    cp_error ("\t%#D", TREE_VALUE (tu));
+	  tu = TREE_CHAIN (tu);
 	}
     }
-  else cp_error ("  since type `%T' has abstract virtual functions", type);
+  else
+    {
+      if (has_abstract_virtuals)
+	{
+	  if (needs_final_overriders)
+	    cp_error ("  since type `%T' has abstract virtual functions and must override virtual functions", type);
+	  else
+	    cp_error ("  since type `%T' has abstract virtual functions", type);
+	}
+      else
+	cp_error ("  since type `%T' must override virtual functions", type);
+    }
 }
 
 /* Print an error message for invalid use of a signature type.
