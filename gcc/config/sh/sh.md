@@ -628,8 +628,8 @@
 			   (match_operand:DI 1 "arith_reg_or_0_operand" "N,r")))]
   ""
   "@
-	tst	%S0,%S0\;bf	%,Ldi%=\;tst	%R0,%R0\\nLdi%=:
-	cmp/eq	%S1,%S0\;bf	%,Ldi%=\;cmp/eq	%R1,%R0\\nLdi%=:"
+	tst	%S0,%S0\;bf	%,Ldi%=\;tst	%R0,%R0\\n%,Ldi%=:
+	cmp/eq	%S1,%S0\;bf	%,Ldi%=\;cmp/eq	%R1,%R0\\n%,Ldi%=:"
   [(set_attr "length" "6")
    (set_attr "type" "arith3b")])
 
