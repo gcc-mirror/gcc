@@ -1,3 +1,8 @@
+Wed Apr  5 09:34:26 2000  Philippe De Muyter <phdm@macqel.be>
+
+	* m68k/m68k-protos.h (finalize_pic): Turn prototype off using `#if 0',
+	not C++ comments.
+
 2000-04-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (snedi_zero+1, neg_snedi_zero+1,
