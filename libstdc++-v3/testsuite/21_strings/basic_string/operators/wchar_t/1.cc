@@ -41,12 +41,6 @@ int test01(void)
   // wprintf("2:%s\n", str1.c_str()); //str1 is gone
   const wchar_t* p2 = str1.c_str();
   return 0;
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
-  return test;
 }
 
 int main()

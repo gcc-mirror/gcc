@@ -39,16 +39,11 @@ struct B { };
 void test01()
 {
   // 1
-  bool test = true;
   std::vector< A<B> > vec01;
   std::vector< A<B> > vec02(5);
   typedef std::vector< A<B> >::size_type size_type;
 
   vec01 = vec02;
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 // 2
@@ -82,22 +77,13 @@ test03()
   std::vector<int> v5(M, 7);
   VERIFY(std::equal(v5.begin(), v5.end(), B));
   VERIFY(std::equal(B, B + M, v5.begin()));
-  
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 // libstdc++/6513
 void test04()
 {
-  bool test = true;
   const char* c_strings[5] = { "1", "2", "3", "4", "5" };
   std::vector<std::string> strings(c_strings, c_strings + 5);
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 

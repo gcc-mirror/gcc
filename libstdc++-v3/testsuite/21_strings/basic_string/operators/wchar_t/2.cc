@@ -285,11 +285,6 @@ template<class charT, class traits, class Allocator>
   str_4 = L'o' + str_4;
   str_4 = L'c' + str_4;
   VERIFY( str_4 == str_3 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return 0;
 }
 

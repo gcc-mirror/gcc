@@ -54,10 +54,6 @@ void test04(int size)
   VERIFY( oss.good() );
   std::wstring str_tmp = oss.str();
   VERIFY( str_tmp.size() == expected_size );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 int main()

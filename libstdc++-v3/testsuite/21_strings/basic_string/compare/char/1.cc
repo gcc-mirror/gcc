@@ -59,11 +59,7 @@ test_value(int result, want_value expected)
   default:
     pass = false; //should not get here
   }
-
-#ifdef DEBUG_ASSERT
-  assert(pass);
-#endif
-  
+  VERIFY(pass);
   return 0;
 }
  

@@ -41,10 +41,6 @@ bool test02()
   VERIFY( pos == 1 );
   pos = z.find_last_of('X');
   VERIFY( pos == std::string::npos );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

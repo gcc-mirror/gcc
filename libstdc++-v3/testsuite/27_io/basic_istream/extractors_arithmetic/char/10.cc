@@ -139,11 +139,6 @@ bool test10() {
   is_05.ignore();
   is_05 >> n;
   VERIFY( n == 16 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 

@@ -180,10 +180,6 @@ int test01(void)
   csz01 = str03.size();
   str03.insert(str03.end(), str01.begin(), str01.end()); 
   VERIFY( str03 == L"baker beach, san franciscorodeo beach, marin" );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

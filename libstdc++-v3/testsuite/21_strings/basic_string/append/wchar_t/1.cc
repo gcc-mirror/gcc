@@ -150,10 +150,6 @@ bool test01(void)
   str05.append(str05.begin(), str05.begin() + str05.find(L'r')); 
   VERIFY( str05 ==  L"point bolivar, texaspoint boliva" );
   VERIFY( str05 != str01 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

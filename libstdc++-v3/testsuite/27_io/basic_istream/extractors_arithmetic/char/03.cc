@@ -55,11 +55,6 @@ bool test03()
   istr >>  l01; // _M_in_end set completely incorrectly here.
   VERIFY( l01 == 12220101 );
   VERIFY( istr.rdstate() == std::ios_base::eofbit );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 

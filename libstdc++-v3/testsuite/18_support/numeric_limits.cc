@@ -2,7 +2,7 @@
 
 // 1999-08-23 bkoz
 
-// Copyright (C) 1999, 2001, 2002 Free Software Foundation
+// Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -233,11 +233,6 @@ bool test01()
   VERIFY( !obj.traps );
   VERIFY( !obj.tinyness_before );
   VERIFY( obj.round_style == std::round_toward_zero );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 
@@ -281,11 +276,6 @@ bool test03()
       VERIFY( std::numeric_limits<signed long long>::digits10 == 18 );
       VERIFY( std::numeric_limits<unsigned long long>::digits10 == 19 );
     }
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 
@@ -302,11 +292,6 @@ bool test04()
   VERIFY( !std::numeric_limits<unsigned long>::is_iec559 );
   VERIFY( !std::numeric_limits<long long>::is_iec559 );
   VERIFY( !std::numeric_limits<unsigned long long>::is_iec559 );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
-
   return test;
 }
 

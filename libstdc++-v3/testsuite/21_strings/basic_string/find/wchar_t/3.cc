@@ -83,10 +83,6 @@ bool test03(void)
   VERIFY( csz01 == 0 );
   csz01 = str04.find_first_not_of(L'S');
   VERIFY( csz01 == npos );
-
-#ifdef DEBUG_ASSERT
-  VERIFY(test);
-#endif
   return test;
 }
 

@@ -83,10 +83,6 @@ bool test01(void)
   VERIFY( csz01 == csz02 );
   csz01 = str01.rfind('/');
   VERIFY( csz01 == npos );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

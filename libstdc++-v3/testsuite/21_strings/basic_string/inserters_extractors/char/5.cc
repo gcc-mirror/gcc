@@ -75,10 +75,6 @@ void test05(int size)
     }
 
   VERIFY( count == 2 * size );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 int main()

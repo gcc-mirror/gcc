@@ -157,10 +157,6 @@ bool test01(void)
   
   std::wstring hello_world;
   std::wcout << hello_world;
-  
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
   return test;
 }
 

@@ -70,10 +70,6 @@ void test06()
   is >> c; // EOF
   VERIFY( c == ',' );
   VERIFY( static_cast<bool>(is.rdstate() & std::ios_base::failbit) );
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
 int main()
