@@ -16,6 +16,7 @@
 
 
 #include <stdio.h>
+#include <limits.h>
 #ifndef _WIN32_WCE
 #include <signal.h>
 #endif
@@ -111,6 +112,12 @@ GC_bool GC_print_back_height = 0;
 #else
   int GC_all_interior_pointers = 0;
 #endif
+
+long GC_large_alloc_warn_interval = 5;
+	/* Interval between unsuppressed warnings.	*/
+
+long GC_large_alloc_warn_suppressed = 0;
+	/* Number of warnings suppressed so far.	*/
 
 /*ARGSUSED*/
 GC_PTR GC_default_oom_fn GC_PROTO((size_t bytes_requested))
@@ -518,16 +525,30 @@ void GC_init_inner()
     if (0 != GETENV("GC_PRINT_BACK_HEIGHT")) {
       GC_print_back_height = 1;
     }
+    if (0 != GETENV("GC_NO_BLACKLIST_WARNING")) {
+      GC_large_alloc_warn_interval = LONG_MAX;
+    }
     {
       char * time_limit_string = GETENV("GC_PAUSE_TIME_TARGET");
       if (0 != time_limit_string) {
-        long time_limit;
-        if (time_limit_string != 0) time_limit = atol(time_limit_string);
+        long time_limit = atol(time_limit_string);
         if (time_limit < 5) {
 	  WARN("GC_PAUSE_TIME_TARGET environment variable value too small "
 	       "or bad syntax: Ignoring\n", 0);
         } else {
 	  GC_time_limit = time_limit;
+        }
+      }
+    }
+    {
+      char * interval_string = GETENV("GC_LARGE_ALLOC_WARN_INTERVAL");
+      if (0 != interval_string) {
+        long interval = atol(interval_string);
+        if (interval <= 0) {
+	  WARN("GC_LARGE_ALLOC_WARN_INTERVAL environment variable has "
+	       "bad value: Ignoring\n", 0);
+        } else {
+	  GC_large_alloc_warn_interval = interval;
         }
       }
     }

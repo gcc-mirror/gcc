@@ -499,7 +499,7 @@ struct hblk;	/* See below.	*/
 # endif
 
 /* Print warning message, e.g. almost out of memory.	*/
-# define WARN(msg,arg) (*GC_current_warn_proc)(msg, (GC_word)(arg))
+# define WARN(msg,arg) (*GC_current_warn_proc)("GC Warning: " msg, (GC_word)(arg))
 extern GC_warn_proc GC_current_warn_proc;
 
 /* Get environment entry */
@@ -1223,7 +1223,12 @@ extern word GC_root_size;	/* Total size of registered root sections */
 
 extern GC_bool GC_debugging_started;	/* GC_debug_malloc has been called. */ 
 
-			
+extern long GC_large_alloc_warn_interval;
+	/* Interval between unsuppressed warnings.	*/
+
+extern long GC_large_alloc_warn_suppressed;
+	/* Number of warnings suppressed so far.	*/
+
 /* Operations */
 # ifndef abs
 #   define abs(x)  ((x) < 0? (-(x)) : (x))
