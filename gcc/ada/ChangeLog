@@ -1,3 +1,10 @@
+2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* misc.c (gnat_decode_option, gnat_init_options): Make definitions
+	static too.
+	(gnat_init): Don't return NULL.
+	(finish_parse): Remove.
+
 2001-11-17  Laurent Guerby  <guerby@acm.org>
 
 	* Make-lang.in (GNATLIBFLAGS): Add -W -Wall.

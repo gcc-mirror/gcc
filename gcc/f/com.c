@@ -14189,12 +14189,6 @@ ffecom_init_decl_processing ()
   ffe_init_0 ();
 }
 
-void
-finish_parse ()
-{
-  fclose (finput);
-}
-
 /* Delete the node BLOCK from the current binding level.
    This is used for the block inside a stmt expr ({...})
    so that the block can be reinserted where appropriate.  */
@@ -14303,6 +14297,8 @@ ffe_finish ()
 
   if (ffe_is_ffedebug ())
     malloc_pool_display (malloc_pool_image ());
+
+  fclose (finput);
 }
 
 static void

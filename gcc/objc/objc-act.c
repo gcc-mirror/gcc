@@ -456,6 +456,8 @@ static int print_struct_values = 0;
 #define LANG_HOOKS_NAME "GNU Objective-C"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT objc_init
+#undef LANG_HOOKS_FINISH
+#define LANG_HOOKS_FINISH c_common_finish
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS objc_init_options
 #undef LANG_HOOKS_DECODE_OPTION

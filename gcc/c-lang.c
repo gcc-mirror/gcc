@@ -54,6 +54,8 @@ static int c_cannot_inline_tree_fn PARAMS ((tree *));
 #define LANG_HOOKS_NAME "GNU C"
 #undef LANG_HOOKS_INIT
 #define LANG_HOOKS_INIT c_init
+#undef LANG_HOOKS_FINISH
+#define LANG_HOOKS_FINISH c_common_finish
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS c_init_options
 #undef LANG_HOOKS_DECODE_OPTION

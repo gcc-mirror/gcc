@@ -265,7 +265,8 @@ void
 cxx_finish ()
 {
   if (flag_gnu_xref)
-    GNU_xref_end (errorcount+sorrycount);
+    GNU_xref_end (errorcount + sorrycount);
+  c_common_finish ();
 }
 
 static int *
@@ -739,14 +740,6 @@ cxx_init (filename)
   init_repo (filename);
 
   return filename;
-}
-
-void
-finish_parse ()
-{
-  cpp_finish (parse_in);
-  /* Call to cpp_destroy () omitted for performance reasons.  */
-  errorcount += cpp_errors (parse_in);
 }
 
 inline void

@@ -1,3 +1,8 @@
+Sun Nov 18 11:13:04 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* com.c (finish_parse): Remove.
+	(ffe_finish): Move body of finish_parse.
+
 Thu Nov 15 10:06:38 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c (ffecom_init_decl_processing): Renamed from

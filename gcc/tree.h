@@ -2647,8 +2647,6 @@ extern const char *(*decl_printable_name)	PARAMS ((tree, int));
 
 extern void (*incomplete_decl_finalize_hook)	PARAMS ((tree));
 
-extern void finish_parse			PARAMS ((void));
-
 /* Declare a predefined function.  Return the declaration.  This function is
    provided by each language frontend.  */
 extern tree builtin_function			PARAMS ((const char *, tree, int,

@@ -61,7 +61,10 @@ struct lang_hooks
 
   /* Called after options parsing, to initialize the front end.  The
      main input filename is passed, which may be NULL; the front end
-     should return the original filename (e.g. foo.i -> foo.c).  */
+     should return the original filename (e.g. foo.i -> foo.c).
+     Return NULL to indicate a serious error of some sort; in that
+     case no compilation is performed, and the finish hook is called
+     immediately.  */
   const char * (*init) PARAMS ((const char *));
 
   /* Called last, as a finalizer.  */
