@@ -1,3 +1,11 @@
+Tue Nov 18 15:39:59 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips/mips.c (save_restore_insns): If gp_offset or fp_offset are
+	large_int, emit two insns instead of one splitable insn.
+	* dwarf2out.c (dwarf2out_frame_debug): When set cfa_store_offset
+	from cfa_temp_value, use cfa_offset.  Add assert checking that
+	cfa_reg is SP.
+
 Mon Nov 17 15:35:38 1997  Tom Tromey  <tromey@cygnus.com>
 
 	* cccp.c (deps_output): Properly quote file names for make.
