@@ -1,3 +1,7 @@
+2000-05-29  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* libjava.lang/PR242.java: New file. PR gcj/242.
+
 2000-05-23  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.compile/PR238.java: New file.  For PR gcj/238.
