@@ -3067,7 +3067,7 @@ display_help ()
   fputs (_("\
   -x <language>            Specify the language of the following input files\n\
                            Permissable languages include: c c++ assembler none\n\
-                           'none' means revert to the default behaviour of\n\
+                           'none' means revert to the default behavior of\n\
                            guessing the language based on the file's extension\n\
 "), stdout);
 
@@ -5027,7 +5027,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      /* Catch the case where a spec string contains something like
 		 '%{foo:%*}'.  ie there is no * in the pattern on the left
 		 hand side of the :.  */
-	      error ("spec failure: '%%*' has not been initialised by pattern match");
+	      error ("spec failure: '%%*' has not been initialized by pattern match");
 	    break;
 
 	    /* Process a string found as the value of a spec given by name.
@@ -5179,7 +5179,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  default:
-	    error ("spec failure: unrecognised spec option '%c'", c);
+	    error ("spec failure: unrecognized spec option '%c'", c);
 	    break;
 	  }
 	break;

@@ -163,7 +163,7 @@ ghs_pragma_section (pfile)
       else if (streq (sect, "zbss"))    kind = GHS_SECTION_KIND_ZDATA;
       else
 	{
-	  warning ("unrecognised section name \"%s\"", sect);
+	  warning ("unrecognized section name \"%s\"", sect);
 	  return;
 	}
       

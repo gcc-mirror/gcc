@@ -476,7 +476,7 @@ fr30_print_operand (file, x, code)
       /* Compute the register name of the second register in a hi/lo
 	 register pair.  */
       if (GET_CODE (x) != REG)
-	output_operand_lossage ("fr30_print_operand: unrecognised %p code");
+	output_operand_lossage ("fr30_print_operand: unrecognized %p code");
       else
 	fprintf (file, "r%d", REGNO (x) + 1);
       return;
@@ -496,7 +496,7 @@ fr30_print_operand (file, x, code)
 	case GTU: fprintf (file, "hi"); break;
 	case GEU: fprintf (file, "nc");  break;
 	default:
-	  output_operand_lossage ("fr30_print_operand: unrecognised %b code");
+	  output_operand_lossage ("fr30_print_operand: unrecognized %b code");
 	  break;
 	}
       return;
@@ -517,7 +517,7 @@ fr30_print_operand (file, x, code)
 	case GTU: fprintf (file, "ls"); break;
 	case GEU: fprintf (file, "c"); break;
 	default:
-	  output_operand_lossage ("fr30_print_operand: unrecognised %B code");
+	  output_operand_lossage ("fr30_print_operand: unrecognized %B code");
 	  break;
 	}
       return;
