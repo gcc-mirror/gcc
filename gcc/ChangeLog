@@ -1,3 +1,7 @@
+Sun Feb 28 14:47:53 1999  Arturo Montes  <mitosys@colomsat.com.co>
+
+        * config/i386/t-sco5gas (crti.o): New target.
+
 Sun Feb 28 15:10:17 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (elf_high, movsi_got, *movsi_got_internal,
