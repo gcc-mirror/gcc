@@ -1,5 +1,14 @@
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.c (rtx_needs_barrier): Handle CONST_VECTOR
+	and VEC_SELECT.
+	* config/ia64/vect.md (mulv8qi3): Re-implement with mix_[rl].
+	(mulv4hi3): Set itanium_class mmmul.
+	(fpack_sfxf, fpack_xfsf, fpack_xfxf): Remove.
+	(fpack): Rename from fpack_sfsf.
+
+2005-01-05  Richard Henderson  <rth@redhat.com>
+
 	PR rtl-opt/10692
 	* reload1.c (do_input_reload): Restrict the optimization deleteing
 	a previous output reload to RELOAD_FOR_INPUT.

@@ -5198,17 +5198,27 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
       for (i = XVECLEN (x, 0) - 1; i >= 0; --i)
 	{
 	  rtx pat = XVECEXP (x, 0, i);
-	  if (GET_CODE (pat) == SET)
+	  switch (GET_CODE (pat))
 	    {
+	    case SET:
 	      update_set_flags (pat, &new_flags, &pred, &cond);
-	      need_barrier |= set_src_needs_barrier (pat, new_flags, pred, cond);
+	      need_barrier |= set_src_needs_barrier (pat, new_flags,
+						     pred, cond);
+	      break;
+
+	    case USE:
+	    case CALL:
+	    case ASM_OPERANDS:
+	      need_barrier |= rtx_needs_barrier (pat, flags, pred);
+	      break;
+
+	    case CLOBBER:
+	    case RETURN:
+	      break;
+
+	    default:
+	      gcc_unreachable ();
 	    }
-	  else if (GET_CODE (pat) == USE
-		   || GET_CODE (pat) == CALL
-		   || GET_CODE (pat) == ASM_OPERANDS)
-	    need_barrier |= rtx_needs_barrier (pat, flags, pred);
-	  else if (GET_CODE (pat) != CLOBBER && GET_CODE (pat) != RETURN)
-	    abort ();
 	}
       for (i = XVECLEN (x, 0) - 1; i >= 0; --i)
 	{
@@ -5246,7 +5256,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
       need_barrier = rtx_needs_barrier (XEXP (x, 0), new_flags, pred);
       break;
 
-    case CONST_INT:   case CONST_DOUBLE:
+    case CONST_INT:   case CONST_DOUBLE:  case CONST_VECTOR:
     case SYMBOL_REF:  case LABEL_REF:     case CONST:
       break;
 
@@ -5287,6 +5297,14 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
     case TRUNCATE: case FLOAT_EXTEND:   case FLOAT_TRUNCATE:  case FLOAT:
     case FIX:      case UNSIGNED_FLOAT: case UNSIGNED_FIX:    case ABS:
     case SQRT:     case FFS:		case POPCOUNT:
+      need_barrier = rtx_needs_barrier (XEXP (x, 0), flags, pred);
+      break;
+
+    case VEC_SELECT:
+      /* VEC_SELECT's second argument is a PARALLEL with integers that
+	 describe the elements selected.  On ia64, those integers are
+	 always constants.  Avoid walking the PARALLEL so that we don't
+	 get confused with "normal" parallels and abort.  */
       need_barrier = rtx_needs_barrier (XEXP (x, 0), flags, pred);
       break;
 
