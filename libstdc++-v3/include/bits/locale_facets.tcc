@@ -330,7 +330,6 @@ namespace std
 	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
 	  // and decimal_point.
 	  const char_type __c = *__beg;
-	  const char_type* __q = __traits_type::find(__lit_zero, 10, __c);
           if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	    {
 	      if (!__found_dec && !__found_sci)
@@ -368,40 +367,44 @@ namespace std
 	      else
 		break;
 	    }
-          else if (__q != 0)
+          else
 	    {
-	      __xtrc += __num_base::_S_atoms_in[__q - __lit];
-	      __found_mantissa = true;
-	      ++__sep_pos;
-	      ++__beg;
-	    }
-	  else if ((__c == __lit[__num_base::_S_ie] 
-		    || __c == __lit[__num_base::_S_iE])
-		   && __found_mantissa && !__found_sci)
-	    {
-	      // Scientific notation.
-	      if (__found_grouping.size() && !__found_dec)
-		__found_grouping += static_cast<char>(__sep_pos);
-	      __xtrc += 'e';
-	      __found_sci = true;
-
-	      // Remove optional plus or minus sign, if they exist.
-	      if (++__beg != __end)
+	      const char_type* __q = __traits_type::find(__lit_zero, 10, __c);
+	      if (__q)
 		{
-		  const bool __plus = *__beg == __lit[__num_base::_S_iplus];
-		  if ((__plus || *__beg == __lit[__num_base::_S_iminus])
-		      && !(__lc->_M_use_grouping
-			   && *__beg == __lc->_M_thousands_sep)
-		      && !(*__beg == __lc->_M_decimal_point))
+		  __xtrc += __num_base::_S_atoms_in[__q - __lit];
+		  __found_mantissa = true;
+		  ++__sep_pos;
+		  ++__beg;
+		}
+	      else if ((__c == __lit[__num_base::_S_ie] 
+			|| __c == __lit[__num_base::_S_iE])
+		       && __found_mantissa && !__found_sci)
+		{
+		  // Scientific notation.
+		  if (__found_grouping.size() && !__found_dec)
+		    __found_grouping += static_cast<char>(__sep_pos);
+		  __xtrc += 'e';
+		  __found_sci = true;
+
+		  // Remove optional plus or minus sign, if they exist.
+		  if (++__beg != __end)
 		    {
-		      __xtrc += __plus ? '+' : '-';
-		      ++__beg;
+		      const bool __plus = *__beg == __lit[__num_base::_S_iplus];
+		      if ((__plus || *__beg == __lit[__num_base::_S_iminus])
+			  && !(__lc->_M_use_grouping
+			       && *__beg == __lc->_M_thousands_sep)
+			  && !(*__beg == __lc->_M_decimal_point))
+			{
+			  __xtrc += __plus ? '+' : '-';
+			  ++__beg;
+			}
 		    }
 		}
+	      else
+		// Not a valid input item.
+		break;
 	    }
-	  else
-	    // Not a valid input item.
-	    break;
         }
 
       // Digit grouping is checked. If grouping and found_grouping don't
@@ -516,8 +519,6 @@ namespace std
 		// According to 22.2.2.1.2, p8-9, first look for thousands_sep
 		// and decimal_point.
 		const char_type __c = *__beg;
-		const char_type* __q = __traits_type::find(__lit_zero, 
-							   __len, __c);
 		if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		  {
 		    // NB: Thousands separator at the beginning of a string
@@ -535,26 +536,31 @@ namespace std
 		  }
 		else if (__c == __lc->_M_decimal_point)
 		  break;
-		else if (__q != 0)
-		  {
-		    int __digit = __q - __lit_zero;
-		    if (__digit > 15)
-		      __digit -= 6;
-		    if (__result < __min)
-		      __overflow = true;
-		    else
-		      {
-			const _ValueT __new_result = __result * __base
-			                             - __digit;
-			__overflow |= __new_result > __result;
-			__result = __new_result;
-			++__sep_pos;
-			__found_num = true;
-		      }
-		  }
 		else
-		  // Not a valid input item.
-		  break;
+		  {
+		    const char_type* __q = __traits_type::find(__lit_zero, 
+							       __len, __c);
+		    if (__q)
+		      {
+			int __digit = __q - __lit_zero;
+			if (__digit > 15)
+			  __digit -= 6;
+			if (__result < __min)
+			  __overflow = true;
+			else
+			  {
+			    const _ValueT __new_result = (__result * __base
+							  - __digit);
+			    __overflow |= __new_result > __result;
+			    __result = __new_result;
+			    ++__sep_pos;
+			    __found_num = true;
+			  }
+		      }
+		    else
+		      // Not a valid input item.
+		      break;
+		  }
 	      }
 	  }
 	else
@@ -563,8 +569,6 @@ namespace std
 	    for (; __beg != __end; ++__beg)
 	      {
 		const char_type __c = *__beg;
-		const char_type* __q = __traits_type::find(__lit_zero, 
-							   __len, __c);
 		if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		  {
 		    if (__sep_pos)
@@ -580,25 +584,30 @@ namespace std
 		  }
 		else if (__c == __lc->_M_decimal_point)
 		  break;
-		else if (__q != 0)
-		  {
-		    int __digit = __q - __lit_zero;
-		    if (__digit > 15)
-		      __digit -= 6;
-		    if (__result > __max)
-		      __overflow = true;
-		    else
-		      {
-			const _ValueT __new_result = __result * __base
-			                             + __digit;
-			__overflow |= __new_result < __result;
-			__result = __new_result;
-			++__sep_pos;
-			__found_num = true;
-		      }
-		  }
 		else
-		  break;
+		  {
+		    const char_type* __q = __traits_type::find(__lit_zero,
+							       __len, __c);    
+		    if (__q)
+		      {
+			int __digit = __q - __lit_zero;
+			if (__digit > 15)
+			  __digit -= 6;
+			if (__result > __max)
+			  __overflow = true;
+			else
+			  {
+			    const _ValueT __new_result = (__result * __base
+							  + __digit);
+			    __overflow |= __new_result < __result;
+			    __result = __new_result;
+			    ++__sep_pos;
+			    __found_num = true;
+			  }
+		      }
+		    else
+		      break;
+		  }
 	      }
 	  }
 

@@ -1,3 +1,9 @@
+2004-07-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
+	num_get<>::_M_extract_int): In the main parsing loop delay the
+	life of __q to the actual use point.
+
 2004-07-29  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/14220
