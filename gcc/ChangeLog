@@ -1,3 +1,8 @@
+2002-10-26  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("fixuns_truncdfdi2"): Replace unsigned_fix,
+	invalid for floating point mode result, with fix.
+
 2002-10-25  Mike Stump  <mrs@apple.com>
 
 	Fixes gcc.dg/warn-1.c.
