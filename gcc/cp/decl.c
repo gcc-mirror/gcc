@@ -9296,6 +9296,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		decl = start_decl (declarator, declspecs, 1,
 				   attributes, prefix_attributes);
+		decl_type_access_control (decl);
 		if (decl)
 		  {
 		    /* Look for __unused__ attribute */

@@ -1,3 +1,9 @@
+2000-02-23  Jason Merrill  <jason@casey.cygnus.com>
+
+	* decl.c (grokdeclarator): Call decl_type_access_control.
+	* parse.y (parse_end_decl): Don't call decl_type_access_control if
+	decl is null.
+
 2000-02-23  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (decls_match): Remove obsolete static member nadgering.

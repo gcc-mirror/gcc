@@ -151,7 +151,10 @@ static void
 parse_end_decl (decl, init, asmspec)
      tree decl, init, asmspec;
 {
-  decl_type_access_control (decl);
+  /* If decl is NULL_TREE, then this was a variable declaration using
+     () syntax for the initializer, so we handled it in grokdeclarator.  */
+  if (decl)
+    decl_type_access_control (decl);
   cp_finish_decl (decl, init, asmspec, init ? LOOKUP_ONLYCONVERTING : 0);
 }
 
