@@ -26,18 +26,18 @@ Boston, MA 02111-1307, USA.    */
 #define DBX_DEBUGGING_INFO
 #define DWARF2_DEBUGGING_INFO
 
-#undef PREFERRED_DEBUGGING_TYPE
+#undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #undef ASM_FINAL_SPEC
 
-#undef CC1_SPEC
+#undef  CC1_SPEC
 #define CC1_SPEC  "%{G*}"
 
-#undef ASM_SPEC
+#undef  ASM_SPEC
 #define ASM_SPEC  "%{G*} %{relax:-relax} %{gdwarf*:-no-mdebug}"
 
-#undef LINK_SPEC
+#undef  LINK_SPEC
 #define LINK_SPEC "-m elf64alpha %{G*} %{relax:-relax}		\
   %{O*:-O3} %{!O*:-O1}						\
   %{shared:-shared}						\
@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.    */
     %{static:-static}}"
 
 /* Output at beginning of assembler file.  */
-#undef ASM_FILE_START
+#undef  ASM_FILE_START
 #define ASM_FILE_START(FILE)					\
 do {								\
   if (write_symbols != DWARF2_DEBUG)				\
@@ -100,8 +100,8 @@ do {				 				\
 
 #define SKIP_ASM_OP	"\t.zero\t"
 
-#undef ASM_OUTPUT_SKIP
-#define ASM_OUTPUT_SKIP(FILE,SIZE) \
+#undef  ASM_OUTPUT_SKIP
+#define ASM_OUTPUT_SKIP(FILE, SIZE) \
   fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE))
 
 /* Output the label which precedes a jumptable.  Note that for all svr4
@@ -115,12 +115,12 @@ do {				 				\
 #define ALIGN_ASM_OP "\t.align\t"
 
 #ifndef ASM_OUTPUT_BEFORE_CASE_LABEL
-#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE,PREFIX,NUM,TABLE) \
+#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
   ASM_OUTPUT_ALIGN ((FILE), 2);
 #endif
 
-#undef ASM_OUTPUT_CASE_LABEL
-#define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)		\
+#undef  ASM_OUTPUT_CASE_LABEL
+#define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)		\
   do {									\
     ASM_OUTPUT_BEFORE_CASE_LABEL (FILE, PREFIX, NUM, JUMPTABLE)		\
     ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);			\
@@ -140,7 +140,7 @@ do {				 				\
 
 #define COMMON_ASM_OP	"\t.comm\t"
 
-#undef ASM_OUTPUT_ALIGNED_COMMON
+#undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
   fprintf ((FILE), "%s", COMMON_ASM_OP);				\
@@ -153,7 +153,7 @@ do {									\
    the linker seems to want the alignment of data objects
    to depend on their types.  We do exactly that here.  */
 
-#undef ASM_OUTPUT_ALIGNED_LOCAL
+#undef  ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
   if ((SIZE) <= g_switch_value)						\
@@ -197,7 +197,7 @@ do {									\
    values from a double-quoted string WITHOUT HAVING A TERMINATING NUL
    AUTOMATICALLY APPENDED.  This is the same for most svr4 assemblers.  */
 
-#undef ASCII_DATA_ASM_OP
+#undef  ASCII_DATA_ASM_OP
 #define ASCII_DATA_ASM_OP	"\t.ascii\t"
 
 /* Support const sections and the ctors and dtors sections for g++.
@@ -249,14 +249,14 @@ do {									\
    should override this definition in the target-specific file which
    includes this file.  */
 
-#undef EXTRA_SECTIONS
+#undef  EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_sbss, in_sdata
 
 /* A default list of extra section function definitions.  For targets
    that use additional sections (e.g. .tdesc) you should override this
    definition in the target-specific file which includes this file.  */
 
-#undef EXTRA_SECTION_FUNCTIONS
+#undef  EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION						\
   SECTION_FUNCTION_TEMPLATE(ctors_section, in_ctors, CTORS_SECTION_ASM_OP) \
@@ -269,7 +269,7 @@ extern void dtors_section		PARAMS ((void));
 extern void sbss_section		PARAMS ((void));
 extern void sdata_section		PARAMS ((void));
 
-#undef READONLY_DATA_SECTION
+#undef  READONLY_DATA_SECTION
 #define READONLY_DATA_SECTION() const_section ()
 
 #define CONST_SECTION_FUNCTION					\
@@ -309,7 +309,7 @@ void FN ()					\
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
+#define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)				\
   do {									\
     ctors_section ();							\
     fprintf (FILE, "%s", INT_ASM_OP);					\
@@ -319,7 +319,7 @@ void FN ()					\
 
 /* A C statement (sans semicolon) to output an element in the table of
    global destructors.  */
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)       				\
+#define ASM_OUTPUT_DESTRUCTOR(FILE, NAME)      				\
   do {									\
     dtors_section ();                   				\
     fprintf (FILE, "%s", INT_ASM_OP);					\
@@ -332,7 +332,7 @@ void FN ()					\
    or a constant of some sort.  RELOC indicates whether forming
    the initial value of DECL requires link-time relocations.  */
 
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL, RELOC)					\
 {									\
   if (TREE_CODE (DECL) == STRING_CST)					\
     {									\
@@ -383,8 +383,9 @@ void FN ()					\
    in the case of a `const_int' rtx.  Currently, these always
    go into the const section.  */
 
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX) const_section()
+#undef  SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE, RTX) \
+   const_section()
 
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to
@@ -397,13 +398,13 @@ void FN ()					\
 
 /* This is how we tell the assembler that a symbol is weak.  */
 
-#define ASM_WEAKEN_LABEL(FILE,NAME) \
+#define ASM_WEAKEN_LABEL(FILE, NAME) \
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
        fputc ('\n', FILE); } while (0)
 
 /* This is how we tell the assembler that two symbols have the same value.  */
 
-#define ASM_OUTPUT_DEF(FILE,NAME1,NAME2) \
+#define ASM_OUTPUT_DEF(FILE, NAME1, NAME2) \
   do { assemble_name(FILE, NAME1); 	 \
        fputs(" = ", FILE);		 \
        assemble_name(FILE, NAME2);	 \
@@ -520,7 +521,7 @@ void FN ()					\
 #define STRING_ASM_OP	"\t.string\t"
 
 /* GAS is the only Alpha/ELF assembler.  */
-#undef TARGET_GAS
+#undef  TARGET_GAS
 #define TARGET_GAS	(1)
 
 /* Provide a STARTFILE_SPEC appropriate for ELF.  Here we add the
