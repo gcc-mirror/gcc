@@ -22,9 +22,7 @@ HOST_OBSTACK=$(OBSTACK)
 # To build the native compiler with the cross compiler, the headers 
 # for the target are already fixed. And /usr/include is for host, not
 # target.
-FIXINCLUDES=Makefile.in
-
-# Don't run fixproto either
+STMP_FIXINC =
 STMP_FIXPROTO =
 
 # Cause installation using install-build. We do nothing here.

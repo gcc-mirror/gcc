@@ -63,7 +63,7 @@ load_file_data (fp)
               int err = errno;
               if (err != EISDIR)
                 fprintf (stderr, "error %d (%s) reading input\n", err,
-                         strerror (err));
+                         xstrerror (err));
               free ((void *) pz_data);
               fclose (fp);
               return (char *) NULL;

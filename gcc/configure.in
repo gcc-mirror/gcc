@@ -376,7 +376,7 @@ if test $gcc_cv_header_inttypes_h = yes; then
   AC_DEFINE(HAVE_INTTYPES_H)
 fi
 
-AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
+AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
 	fputs_unlocked getrusage valloc)
@@ -399,7 +399,7 @@ AC_FUNC_VFORK
 AC_FUNC_MMAP_ANYWHERE
 
 GCC_NEED_DECLARATIONS(bcopy bzero bcmp \
-	index rindex getenv atol sbrk abort atof strerror getcwd getwd \
+	index rindex getenv atol sbrk abort atof getcwd getwd \
 	strsignal putc_unlocked fputs_unlocked strstr environ)
 
 GCC_NEED_DECLARATIONS(malloc realloc calloc free, [

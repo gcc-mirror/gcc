@@ -194,7 +194,7 @@ chain_open (stdin_fd, pp_args, p_child)
 
   execvp (pz_cmd, pp_args);
   fprintf (stderr, "Error %d:  Could not execvp( '%s', ... ):  %s\n",
-           errno, pz_cmd, strerror (errno));
+           errno, pz_cmd, xstrerror (errno));
   exit (EXIT_PANIC);
 }
 

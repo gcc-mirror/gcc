@@ -183,7 +183,7 @@ main (argc, argv)
       if (freopen (argv[1], "r", stdin) == (FILE*)NULL)
         {
           fprintf (stderr, "Error %d (%s) reopening %s as stdin\n",
-                   errno, strerror (errno), argv[1] );
+                   errno, xstrerror (errno), argv[1] );
           exit (EXIT_FAILURE);
         }
       break;
@@ -264,7 +264,7 @@ main (argc, argv)
         if (child == NOPROCESS)
           {
             fprintf (stderr, "Error %d (%s) forking in main\n",
-                     errno, strerror (errno));
+                     errno, xstrerror (errno));
             exit (EXIT_FAILURE);
           }
 
@@ -464,7 +464,7 @@ wait_for_pid(child)
         default:
           if (NOT_SILENT)
             fprintf (stderr, "Error %d (%s) waiting for %d to finish\n",
-                     errno, strerror( errno ), child );
+                     errno, xstrerror( errno ), child );
           /* FALLTHROUGH */
 
         case ECHILD: /* no children to wait for?? */
@@ -492,7 +492,7 @@ load_file ( fname )
     {
       if (NOT_SILENT)
         fprintf (stderr, "error %d (%s) stat-ing %s\n",
-                 errno, strerror (errno), fname );
+                 errno, xstrerror (errno), fname );
       return (char *) NULL;
     }
   if (stbf.st_size == 0)
@@ -506,7 +506,7 @@ load_file ( fname )
     {
       if (NOT_SILENT)
         fprintf (stderr, "error %d (%s) opening %s for read\n",
-                 errno, strerror (errno), fname);
+                 errno, xstrerror (errno), fname);
       return (char*)NULL;
     }
 
@@ -724,7 +724,7 @@ create_file ()
   if (fd < 0)
     {
       fprintf (stderr, "Error %d (%s) creating %s\n",
-               errno, strerror (errno), fname);
+               errno, xstrerror (errno), fname);
       exit (EXIT_FAILURE);
     }
   if (NOT_SILENT)
@@ -968,7 +968,7 @@ internal_fix (read_fd, p_fixd)
       /*
        *  Parent in error
        */
-      fprintf (stderr, z_fork_err, errno, strerror (errno),
+      fprintf (stderr, z_fork_err, errno, xstrerror (errno),
                p_fixd->fix_name);
       {
         static int failCt = 0;
@@ -1058,7 +1058,7 @@ start_fixer (read_fd, p_fixd, pz_fix_file)
           break;
         }
 
-      fprintf (stderr, z_fork_err, errno, strerror (errno),
+      fprintf (stderr, z_fork_err, errno, xstrerror (errno),
                p_fixd->fix_name);
 
       if ((errno != EAGAIN) || (++failCt > 10))
@@ -1307,7 +1307,7 @@ process ()
       int erno = errno;
       fprintf (stderr, "Cannot access %s from %s\n\terror %d (%s)\n",
                pz_curr_file, getcwd ((char *) NULL, MAXPATHLEN),
-               erno, strerror (erno));
+               erno, xstrerror (erno));
       return;
     }
 
@@ -1352,7 +1352,7 @@ process ()
           if (read_fd < 0)
             {
               fprintf (stderr, "Error %d (%s) opening %s\n", errno,
-                       strerror (errno), pz_curr_file);
+                       xstrerror (errno), pz_curr_file);
               exit (EXIT_FAILURE);
             }
 
