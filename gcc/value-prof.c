@@ -34,8 +34,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "optabs.h"
 #include "regs.h"
 #include "ggc.h"
+#include "tree-flow.h"
+#include "tree-flow-inline.h"
+#include "diagnostic.h"
+#include "tree.h"
+#include "gcov-io.h"
 
 static struct value_prof_hooks *value_prof_hooks;
+
+/* This is the vector of histograms.  Created in find_values_to_profile.
+   During profile generation, freed by instrument_values.
+   During profile use, freed by value_profile_transformations.  */
+
+static histogram_values static_values = NULL;
 
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
@@ -53,19 +64,38 @@ static struct value_prof_hooks *value_prof_hooks;
    in profile.c and the requested values are instrumented by it in the first
    compilation with -fprofile-arcs.  The optimization may then read the
    gathered data in the second compilation with -fbranch-probabilities.
-   The measured data is appended as REG_VALUE_PROFILE note to the instrumented
-   insn.  The argument to the note consists of an EXPR_LIST where its
-   members have the following meaning (from the first to the last):
+
+   There are currently two versions, RTL-based and tree-based.  Over time
+   the RTL-based version may go away.  
+
+   In the RTL-based version, the measured data is appended as REG_VALUE_PROFILE 
+   note to the instrumented insn.  The argument to the note consists of an
+   EXPR_LIST where its members have the following meaning (from the first to 
+   the last):
    
    -- type of information gathered (HIST_TYPE*)
    -- the expression that is profiled
-   -- list of counters starting from the first one.  */
+   -- list of counters starting from the first one.
+
+   In the tree-based version, the measured data is pointed to from the histograms
+   field of the statement annotation of the instrumented insns.  It is
+   kept as a linked list of struct histogram_value_t's, which contain the
+   same information as above.  */
 
 /* For speculative prefetching, the range in that we do not prefetch (because
    we assume that it will be in cache anyway).  The asymmetry between min and
    max range is trying to reflect the fact that the sequential prefetching
    of the data is commonly done directly by hardware.  Nevertheless, these
-   values are just a guess and should of course be target-specific.  */
+   values are just a guess and should of course be target-specific.  
+
+   FIXME:  There is no tree form of speculative prefetching as yet.
+
+   FIXME:  A better approach to instrumentation in the profile-generation
+   pass is to generate calls to magic library functions (to be added to
+   libgcc) rather than inline code.  This approach will probably be
+   necessary to get tree-based speculative prefetching working in a useful
+   fashion, as inline code bloats things so much the rest of the compiler has
+   serious problems dealing with it (judging from the rtl behavior).  */
 
 #ifndef NOPREFETCH_RANGE_MIN
 #define NOPREFETCH_RANGE_MIN (-16)
@@ -74,7 +104,7 @@ static struct value_prof_hooks *value_prof_hooks;
 #define NOPREFETCH_RANGE_MAX 32
 #endif
 
-static void insn_divmod_values_to_profile (rtx, histogram_values *);
+static void rtl_divmod_values_to_profile (rtx, histogram_values *);
 #ifdef HAVE_prefetch
 static bool insn_prefetch_values_to_profile (rtx, histogram_values *);
 static int find_mem_reference_1 (rtx *, void *);
@@ -82,26 +112,37 @@ static void find_mem_reference_2 (rtx, rtx, void *);
 static bool find_mem_reference (rtx, rtx *, int *);
 #endif
 
-static void insn_values_to_profile (rtx, histogram_values *);
-static rtx gen_divmod_fixed_value (enum machine_mode, enum rtx_code, rtx, rtx,
+static void rtl_values_to_profile (rtx, histogram_values *);
+static rtx rtl_divmod_fixed_value (enum machine_mode, enum rtx_code, rtx, rtx,
 				   rtx, gcov_type, int);
-static rtx gen_mod_pow2 (enum machine_mode, enum rtx_code, rtx, rtx, rtx, int);
-static rtx gen_mod_subtract (enum machine_mode, enum rtx_code, rtx, rtx, rtx,
+static rtx rtl_mod_pow2 (enum machine_mode, enum rtx_code, rtx, rtx, rtx, int);
+static rtx rtl_mod_subtract (enum machine_mode, enum rtx_code, rtx, rtx, rtx,
 			     int, int, int);
 #ifdef HAVE_prefetch
 static rtx gen_speculative_prefetch (rtx, gcov_type, int);
 #endif
-static bool divmod_fixed_value_transform (rtx insn);
-static bool mod_pow2_value_transform (rtx);
-static bool mod_subtract_transform (rtx);
+static bool rtl_divmod_fixed_value_transform (rtx);
+static bool rtl_mod_pow2_value_transform (rtx);
+static bool rtl_mod_subtract_transform (rtx);
 #ifdef HAVE_prefetch
 static bool speculative_prefetching_transform (rtx);
 #endif
+static void tree_divmod_values_to_profile (tree, histogram_values *);
+static void tree_values_to_profile (tree, histogram_values *);
+static tree tree_divmod_fixed_value (tree, tree, tree, tree, 
+				    tree, int, gcov_type, gcov_type);
+static tree tree_mod_pow2 (tree, tree, tree, tree, int, gcov_type, gcov_type);
+static tree tree_mod_subtract (tree, tree, tree, tree, int, int, int,
+				gcov_type, gcov_type, gcov_type);
+static bool tree_divmod_fixed_value_transform (tree);
+static bool tree_mod_pow2_value_transform (tree);
+static bool tree_mod_subtract_transform (tree);
+
 
 /* Find values inside INSN for that we want to measure histograms for
    division/modulo optimization and stores them to VALUES.  */
 static void
-insn_divmod_values_to_profile (rtx insn, histogram_values *values)
+rtl_divmod_values_to_profile (rtx insn, histogram_values *values)
 {
   rtx set, set_src, op1, op2;
   enum machine_mode mode;
@@ -134,10 +175,10 @@ insn_divmod_values_to_profile (rtx insn, histogram_values *values)
       if ((GET_CODE (set_src) == UMOD) && !CONSTANT_P (op2))
 	{
 	  hist = ggc_alloc (sizeof (*hist));
-	  hist->value = op2;
-	  hist->seq = NULL_RTX;
-	  hist->mode = mode;
-	  hist->insn = insn;
+	  hist->hvalue.rtl.value = op2;
+	  hist->hvalue.rtl.seq = NULL_RTX;
+	  hist->hvalue.rtl.mode = mode;
+	  hist->hvalue.rtl.insn = insn;
 	  hist->type = HIST_TYPE_POW2;
 	  hist->hdata.pow2.may_be_other = 1;
 	  VEC_safe_push (histogram_value, *values, hist);
@@ -147,10 +188,10 @@ insn_divmod_values_to_profile (rtx insn, histogram_values *values)
       if (!CONSTANT_P (op2))
 	{
 	  hist = ggc_alloc (sizeof (*hist));
-	  hist->value = op2;
-	  hist->mode = mode;
-	  hist->seq = NULL_RTX;
-	  hist->insn = insn;
+	  hist->hvalue.rtl.value = op2;
+	  hist->hvalue.rtl.mode = mode;
+	  hist->hvalue.rtl.seq = NULL_RTX;
+	  hist->hvalue.rtl.insn = insn;
 	  hist->type = HIST_TYPE_SINGLE_VALUE;
 	  VEC_safe_push (histogram_value, *values, hist);
 	}
@@ -164,16 +205,14 @@ insn_divmod_values_to_profile (rtx insn, histogram_values *values)
 	  hist = ggc_alloc (sizeof (*hist));
 	  start_sequence ();
 	  tmp = simplify_gen_binary (DIV, mode, copy_rtx (op1), copy_rtx (op2));
-	  hist->value = force_operand (tmp, NULL_RTX);
-	  hist->seq = get_insns ();
+	  hist->hvalue.rtl.value = force_operand (tmp, NULL_RTX);
+	  hist->hvalue.rtl.seq = get_insns ();
 	  end_sequence ();
-	  hist->mode = mode;
-	  hist->insn = insn;
+	  hist->hvalue.rtl.mode = mode;
+	  hist->hvalue.rtl.insn = insn;
 	  hist->type = HIST_TYPE_INTERVAL;
 	  hist->hdata.intvl.int_start = 0;
 	  hist->hdata.intvl.steps = 2;
-	  hist->hdata.intvl.may_be_less = 1;
-	  hist->hdata.intvl.may_be_more = 1;
 	  VEC_safe_push (histogram_value, *values, hist);
 	}
       return;
@@ -239,7 +278,7 @@ find_mem_reference (rtx insn, rtx *mem, int *write)
    Returns true if such we found any such value, false otherwise.  */
 
 static bool
-insn_prefetch_values_to_profile (rtx insn, histogram_values *values)
+insn_prefetch_values_to_profile (rtx insn, histogram_values* values)
 {
   rtx mem, address;
   int write;
@@ -260,10 +299,10 @@ insn_prefetch_values_to_profile (rtx insn, histogram_values *values)
     return false;
 
   hist = ggc_alloc (sizeof (*hist));
-  hist->value = address;
-  hist->mode = GET_MODE (address);
-  hist->seq = NULL_RTX;
-  hist->insn = insn;
+  hist->hvalue.rtl.value = address;
+  hist->hvalue.rtl.mode = GET_MODE (address);
+  hist->hvalue.rtl.seq = NULL_RTX;
+  hist->hvalue.rtl.insn = insn;
   hist->type = HIST_TYPE_CONST_DELTA;
   VEC_safe_push (histogram_value, *values, hist);
 
@@ -273,10 +312,10 @@ insn_prefetch_values_to_profile (rtx insn, histogram_values *values)
 /* Find values inside INSN for that we want to measure histograms and adds
    them to list VALUES (increasing the record of its length in N_VALUES).  */
 static void
-insn_values_to_profile (rtx insn, histogram_values *values)
+rtl_values_to_profile (rtx insn, histogram_values *values)
 {
   if (flag_value_profile_transformations)
-    insn_divmod_values_to_profile (insn, values);
+    rtl_divmod_values_to_profile (insn, values);
 
 #ifdef HAVE_prefetch
   if (flag_speculative_prefetching)
@@ -296,23 +335,8 @@ rtl_find_values_to_profile (histogram_values *values)
   *values = VEC_alloc (histogram_value, 0);
   libcall_level = 0;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	libcall_level++;
-
-      /* Do not instrument values inside libcalls (we are going to split block
-	 due to instrumentation, and libcall blocks should be local to a single
-	 basic block).  */
-      if (!libcall_level)
-	insn_values_to_profile (insn, values);
-
-      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	{
-	  gcc_assert (libcall_level > 0);
-	  libcall_level--;
-	}
-    }
-  gcc_assert (libcall_level == 0);
+    rtl_values_to_profile (insn, values);
+  static_values = *values;
 
   for (i = 0; i < VEC_length (histogram_value, *values); i++)
     {
@@ -324,22 +348,20 @@ rtl_find_values_to_profile (histogram_values *values)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Interval counter for insn %d, range %d -- %d.\n",
-		     INSN_UID ((rtx)hist->insn),
+		     INSN_UID ((rtx)hist->hvalue.rtl.insn),
 		     hist->hdata.intvl.int_start,
 		     (hist->hdata.intvl.int_start
 		      + hist->hdata.intvl.steps - 1));
-	  hist->n_counters = hist->hdata.intvl.steps +
-		  (hist->hdata.intvl.may_be_less ? 1 : 0) +
-		  (hist->hdata.intvl.may_be_more ? 1 : 0);
+	  hist->n_counters = hist->hdata.intvl.steps + 2;
 	  break;
 
 	case HIST_TYPE_POW2:
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Pow2 counter for insn %d.\n",
-		     INSN_UID ((rtx)hist->insn));
+		     INSN_UID ((rtx)hist->hvalue.rtl.insn));
 	  hist->n_counters 
-		= GET_MODE_BITSIZE (hist->mode)
+		= GET_MODE_BITSIZE (hist->hvalue.rtl.mode)
 		  +  (hist->hdata.pow2.may_be_other ? 1 : 0);
 	  break;
 
@@ -347,7 +369,7 @@ rtl_find_values_to_profile (histogram_values *values)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Single value counter for insn %d.\n",
-		     INSN_UID ((rtx)hist->insn));
+		     INSN_UID ((rtx)hist->hvalue.rtl.insn));
 	  hist->n_counters = 3;
 	  break;
 
@@ -355,7 +377,7 @@ rtl_find_values_to_profile (histogram_values *values)
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "Constant delta counter for insn %d.\n",
-		     INSN_UID ((rtx)hist->insn));
+		     INSN_UID ((rtx)hist->hvalue.rtl.insn));
 	  hist->n_counters = 4;
 	  break;
 
@@ -493,9 +515,9 @@ rtl_value_profile_transformations (void)
 
       /* Transformations:  */
       if (flag_value_profile_transformations
-	  && (mod_subtract_transform (insn)
-	      || divmod_fixed_value_transform (insn)
-	      || mod_pow2_value_transform (insn)))
+	  && (rtl_mod_subtract_transform (insn)
+	      || rtl_divmod_fixed_value_transform (insn)
+	      || rtl_mod_pow2_value_transform (insn)))
 	changed = true;
 #ifdef HAVE_prefetch
       if (flag_speculative_prefetching
@@ -517,7 +539,7 @@ rtl_value_profile_transformations (void)
    and OP2, whose value is expected to be VALUE, result TARGET and
    probability of taking the optimal path PROB).  */
 static rtx
-gen_divmod_fixed_value (enum machine_mode mode, enum rtx_code operation,
+rtl_divmod_fixed_value (enum machine_mode mode, enum rtx_code operation,
 			rtx target, rtx op1, rtx op2, gcov_type value,
 			int prob)
 {
@@ -571,7 +593,7 @@ gen_divmod_fixed_value (enum machine_mode mode, enum rtx_code operation,
 
 /* Do transform 1) on INSN if applicable.  */
 static bool
-divmod_fixed_value_transform (rtx insn)
+rtl_divmod_fixed_value_transform (rtx insn)
 {
   rtx set, set_src, set_dest, op1, op2, value, histogram;
   enum rtx_code code;
@@ -630,7 +652,7 @@ divmod_fixed_value_transform (rtx insn)
   delete_insn (insn);
   
   insert_insn_on_edge (
-	gen_divmod_fixed_value (mode, code, set_dest,
+	rtl_divmod_fixed_value (mode, code, set_dest,
 				op1, op2, val, prob), e);
 
   return true;
@@ -639,7 +661,7 @@ divmod_fixed_value_transform (rtx insn)
 /* Generate code for transformation 2 (with MODE and OPERATION, operands OP1
    and OP2, result TARGET and probability of taking the optimal path PROB).  */
 static rtx
-gen_mod_pow2 (enum machine_mode mode, enum rtx_code operation, rtx target,
+rtl_mod_pow2 (enum machine_mode mode, enum rtx_code operation, rtx target,
 	      rtx op1, rtx op2, int prob)
 {
   rtx tmp, tmp1, tmp2, tmp3, jump;
@@ -693,7 +715,7 @@ gen_mod_pow2 (enum machine_mode mode, enum rtx_code operation, rtx target,
 
 /* Do transform 2) on INSN if applicable.  */
 static bool
-mod_pow2_value_transform (rtx insn)
+rtl_mod_pow2_value_transform (rtx insn)
 {
   rtx set, set_src, set_dest, op1, op2, value, histogram;
   enum rtx_code code;
@@ -758,7 +780,7 @@ mod_pow2_value_transform (rtx insn)
   delete_insn (insn);
   
   insert_insn_on_edge (
-	gen_mod_pow2 (mode, code, set_dest, op1, op2, prob), e);
+	rtl_mod_pow2 (mode, code, set_dest, op1, op2, prob), e);
 
   return true;
 }
@@ -767,7 +789,7 @@ mod_pow2_value_transform (rtx insn)
    operands OP1 and OP2, result TARGET, at most SUB subtractions, and
    probability of taking the optimal path(s) PROB1 and PROB2).  */
 static rtx
-gen_mod_subtract (enum machine_mode mode, enum rtx_code operation,
+rtl_mod_subtract (enum machine_mode mode, enum rtx_code operation,
 		  rtx target, rtx op1, rtx op2, int sub, int prob1, int prob2)
 {
   rtx tmp, tmp1, jump;
@@ -824,7 +846,7 @@ gen_mod_subtract (enum machine_mode mode, enum rtx_code operation,
 
 /* Do transforms 3) and 4) on INSN if applicable.  */
 static bool
-mod_subtract_transform (rtx insn)
+rtl_mod_subtract_transform (rtx insn)
 {
   rtx set, set_src, set_dest, op1, op2, histogram;
   enum rtx_code code;
@@ -897,7 +919,7 @@ mod_subtract_transform (rtx insn)
   delete_insn (insn);
   
   insert_insn_on_edge (
-	gen_mod_subtract (mode, code, set_dest,
+	rtl_mod_subtract (mode, code, set_dest,
 			  op1, op2, i, prob1, prob2), e);
 
   return true;
@@ -1008,6 +1030,586 @@ speculative_prefetching_transform (rtx insn)
   return true;
 }
 #endif  /* HAVE_prefetch */
+
+/* Tree based transformations. */
+static bool
+tree_value_profile_transformations (void)
+{
+  basic_block bb;
+  block_stmt_iterator bsi;
+  bool changed = false;
+
+  FOR_EACH_BB (bb)
+    {
+      /* Ignore cold areas -- we are enlarging the code.  */
+      if (!maybe_hot_bb_p (bb))
+	continue;
+
+      for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+	{
+	  tree stmt = bsi_stmt (bsi);
+	  stmt_ann_t ann = get_stmt_ann (stmt);
+	  histogram_value th = ann->histograms;
+	  if (!th)
+	    continue;
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Trying transformations on insn ");
+	      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+	    }
+
+	  /* Transformations:  */
+	  /* The order of things in this conditional controls which
+	     transformation is used when more than one is applicable.  */
+	  /* It is expected that any code added by the transformations
+	     will be added before the current statement, and that the
+	     current statement remain valid (although possibly
+	     modified) upon return.  */
+	  if (flag_value_profile_transformations
+	      && (tree_mod_subtract_transform (stmt)
+		  || tree_divmod_fixed_value_transform (stmt)
+		  || tree_mod_pow2_value_transform (stmt)))
+	    {
+	      changed = true;
+	      /* Original statement may no longer be in the same block. */
+	      bb = bb_for_stmt (stmt);
+	    }
+
+	  /* Free extra storage from compute_value_histograms.  */
+	  while (th)
+	    {
+	      free (th->hvalue.tree.counters);
+	      th = th->hvalue.tree.next;
+	    }
+	  ann->histograms = 0;
+        }
+    }
+
+  if (changed)
+    {
+      counts_to_freqs ();
+    }
+
+  return changed;
+}
+
+/* Generate code for transformation 1 (with OPERATION, operands OP1
+   and OP2, whose value is expected to be VALUE, parent modify-expr STMT and
+   probability of taking the optimal path PROB, which is equivalent to COUNT/ALL
+   within roundoff error).  This generates the result into a temp and returns 
+   the temp; it does not replace or alter the original STMT.  */
+static tree
+tree_divmod_fixed_value (tree stmt, tree operation, 
+			 tree op1, tree op2, tree value, int prob, gcov_type count,
+			 gcov_type all)
+{
+  tree stmt1, stmt2, stmt3;
+  tree tmp1, tmp2, tmpv;
+  tree label_decl1 = create_artificial_label ();
+  tree label_decl2 = create_artificial_label ();
+  tree label_decl3 = create_artificial_label ();
+  tree label1, label2, label3;
+  tree bb1end, bb2end, bb3end;
+  basic_block bb, bb2, bb3, bb4;
+  tree optype = TREE_TYPE (operation);
+  edge e12, e13, e23, e24, e34;
+  block_stmt_iterator bsi;
+
+  bb = bb_for_stmt (stmt);
+  bsi = bsi_for_stmt (stmt);
+
+  tmpv = create_tmp_var (optype, "PROF");
+  tmp1 = create_tmp_var (optype, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, optype, tmpv, fold_convert (optype, value));
+  stmt2 = build2 (MODIFY_EXPR, optype, tmp1, op2);
+  stmt3 = build3 (COND_EXPR, void_type_node,
+	    build2 (NE_EXPR, boolean_type_node, tmp1, tmpv),
+	    build1 (GOTO_EXPR, void_type_node, label_decl2),
+	    build1 (GOTO_EXPR, void_type_node, label_decl1));
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
+  bb1end = stmt3;
+
+  tmp2 = create_tmp_var (optype, "PROF");
+  label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
+  stmt1 = build2 (MODIFY_EXPR, optype, tmp2,
+		  build2 (TREE_CODE (operation), optype, op1, tmpv));
+  bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bb2end = stmt1;
+
+  label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
+  stmt1 = build2 (MODIFY_EXPR, optype, tmp2,
+		  build2 (TREE_CODE (operation), optype, op1, op2));
+  bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bb3end = stmt1;
+
+  label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
+  bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
+
+  /* Fix CFG. */
+  /* Edge e23 connects bb2 to bb3, etc. */
+  e12 = split_block (bb, bb1end);
+  bb2 = e12->dest;
+  bb2->count = count;
+  e23 = split_block (bb2, bb2end);
+  bb3 = e23->dest;
+  bb3->count = all - count;
+  e34 = split_block (bb3, bb3end);
+  bb4 = e34->dest;
+  bb4->count = all;
+
+  e12->flags &= ~EDGE_FALLTHRU;
+  e12->flags |= EDGE_FALSE_VALUE;
+  e12->probability = prob;
+  e12->count = count;
+
+  e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
+  e13->probability = REG_BR_PROB_BASE - prob;
+  e13->count = all - count;
+
+  remove_edge (e23);
+  
+  e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
+  e24->probability = REG_BR_PROB_BASE;
+  e24->count = count;
+
+  e34->probability = REG_BR_PROB_BASE;
+  e34->count = all - count;
+
+  return tmp2;
+}
+
+/* Do transform 1) on INSN if applicable.  */
+static bool
+tree_divmod_fixed_value_transform (tree stmt)
+{
+  stmt_ann_t ann = get_stmt_ann (stmt);
+  histogram_value histogram;
+  enum tree_code code;
+  gcov_type val, count, all;
+  tree modify, op, op1, op2, result, value, tree_val;
+  int prob;
+
+  modify = stmt;
+  if (TREE_CODE (stmt) == RETURN_EXPR
+      && TREE_OPERAND (stmt, 0)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+    modify = TREE_OPERAND (stmt, 0);
+  if (TREE_CODE (modify) != MODIFY_EXPR)
+    return false;
+  op = TREE_OPERAND (modify, 1);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
+    return false;
+  code = TREE_CODE (op);
+  
+  if (code != TRUNC_DIV_EXPR && code != TRUNC_MOD_EXPR)
+    return false;
+
+  op1 = TREE_OPERAND (op, 0);
+  op2 = TREE_OPERAND (op, 1);
+  if (!ann->histograms)
+    return false;
+
+  for (histogram = ann->histograms; histogram; histogram = histogram->hvalue.tree.next)
+    if (histogram->type == HIST_TYPE_SINGLE_VALUE)
+      break;
+
+  if (!histogram)
+    return false;
+
+  value = histogram->hvalue.tree.value;
+  val = histogram->hvalue.tree.counters[0];
+  count = histogram->hvalue.tree.counters[1];
+  all = histogram->hvalue.tree.counters[2];
+
+  /* We require that count is at least half of all; this means
+     that for the transformation to fire the value must be constant
+     at least 50% of time (and 75% gives the guarantee of usage).  */
+  if (simple_cst_equal (op2, value) != 1 || 2 * count < all)
+    return false;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Div/mod by constant transformation on insn ");
+      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+    }
+
+  /* Compute probability of taking the optimal path.  */
+  prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+
+  tree_val = build_int_cst_wide (GCOV_TYPE_NODE, val & 0xffffffffull, val >> 32);
+  result = tree_divmod_fixed_value (stmt, op, op1, op2, tree_val, prob, count, all);
+
+  TREE_OPERAND (modify, 1) = result;
+
+  return true;
+}
+
+/* Generate code for transformation 2 (with OPERATION, operands OP1
+   and OP2, parent modify-expr STMT and probability of taking the optimal 
+   path PROB, which is equivalent to COUNT/ALL within roundoff error).  
+   This generates the result into a temp and returns 
+   the temp; it does not replace or alter the original STMT.  */
+static tree
+tree_mod_pow2 (tree stmt, tree operation, tree op1, tree op2, int prob, 
+	       gcov_type count, gcov_type all)
+{
+  tree stmt1, stmt2, stmt3, stmt4;
+  tree tmp1, tmp2, tmp3;
+  tree label_decl1 = create_artificial_label ();
+  tree label_decl2 = create_artificial_label ();
+  tree label_decl3 = create_artificial_label ();
+  tree label1, label2, label3;
+  tree bb1end, bb2end, bb3end;
+  basic_block bb, bb2, bb3, bb4;
+  tree optype = TREE_TYPE (operation);
+  edge e12, e13, e23, e24, e34;
+  block_stmt_iterator bsi;
+  tree result = create_tmp_var (optype, "PROF");
+
+  bb = bb_for_stmt (stmt);
+  bsi = bsi_for_stmt (stmt);
+
+  tmp1 = create_tmp_var (optype, "PROF");
+  tmp2 = create_tmp_var (optype, "PROF");
+  tmp3 = create_tmp_var (optype, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, optype, tmp1, fold_convert (optype, op2));
+  stmt2 = build2 (MODIFY_EXPR, optype, tmp2, 
+		    build2 (PLUS_EXPR, optype, op2, integer_minus_one_node));
+  stmt3 = build2 (MODIFY_EXPR, optype, tmp3,
+		    build2 (BIT_AND_EXPR, optype, tmp2, tmp1));
+  stmt4 = build3 (COND_EXPR, void_type_node,
+	    build2 (NE_EXPR, boolean_type_node, tmp3, integer_zero_node),
+	    build1 (GOTO_EXPR, void_type_node, label_decl2),
+	    build1 (GOTO_EXPR, void_type_node, label_decl1));
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt4, BSI_SAME_STMT);
+  bb1end = stmt4;
+
+  /* tmp2 == op2-1 inherited from previous block */
+  label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
+  stmt1 = build2 (MODIFY_EXPR, optype, result,
+		  build2 (BIT_AND_EXPR, optype, op1, tmp2));
+  bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bb2end = stmt1;
+
+  label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
+  stmt1 = build2 (MODIFY_EXPR, optype, result,
+		  build2 (TREE_CODE (operation), optype, op1, op2));
+  bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bb3end = stmt1;
+
+  label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
+  bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
+
+  /* Fix CFG. */
+  /* Edge e23 connects bb2 to bb3, etc. */
+  e12 = split_block (bb, bb1end);
+  bb2 = e12->dest;
+  bb2->count = count;
+  e23 = split_block (bb2, bb2end);
+  bb3 = e23->dest;
+  bb3->count = all - count;
+  e34 = split_block (bb3, bb3end);
+  bb4 = e34->dest;
+  bb4->count = all;
+
+  e12->flags &= ~EDGE_FALLTHRU;
+  e12->flags |= EDGE_FALSE_VALUE;
+  e12->probability = prob;
+  e12->count = count;
+
+  e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
+  e13->probability = REG_BR_PROB_BASE - prob;
+  e13->count = all - count;
+
+  remove_edge (e23);
+  
+  e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
+  e24->probability = REG_BR_PROB_BASE;
+  e24->count = count;
+
+  e34->probability = REG_BR_PROB_BASE;
+  e34->count = all - count;
+
+  return result;
+}
+
+/* Do transform 2) on INSN if applicable.  */
+static bool
+tree_mod_pow2_value_transform (tree stmt)
+{
+  stmt_ann_t ann = get_stmt_ann (stmt);
+  histogram_value histogram;
+  enum tree_code code;
+  gcov_type count, wrong_values, all;
+  tree modify, op, op1, op2, result, value;
+  int prob;
+  unsigned int i;
+
+  modify = stmt;
+  if (TREE_CODE (stmt) == RETURN_EXPR
+      && TREE_OPERAND (stmt, 0)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+    modify = TREE_OPERAND (stmt, 0);
+  if (TREE_CODE (modify) != MODIFY_EXPR)
+    return false;
+  op = TREE_OPERAND (modify, 1);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
+    return false;
+  code = TREE_CODE (op);
+  
+  if (code != TRUNC_MOD_EXPR || !TYPE_UNSIGNED (TREE_TYPE (op)))
+    return false;
+
+  op1 = TREE_OPERAND (op, 0);
+  op2 = TREE_OPERAND (op, 1);
+  if (!ann->histograms)
+    return false;
+
+  for (histogram = ann->histograms; histogram; histogram = histogram->hvalue.tree.next)
+    if (histogram->type == HIST_TYPE_POW2)
+      break;
+
+  if (!histogram)
+    return false;
+
+  value = histogram->hvalue.tree.value;
+  wrong_values = histogram->hvalue.tree.counters[0];
+  count = 0;
+  for (i = 1; i <= TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (stmt))); i++)
+    count += histogram->hvalue.tree.counters[i];
+
+  /* We require that we hit a power of 2 at least half of all evaluations.  */
+  if (simple_cst_equal (op2, value) != 1 || count < wrong_values)
+    return false;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Mod power of 2 transformation on insn ");
+      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+    }
+
+  /* Compute probability of taking the optimal path.  */
+  all = count + wrong_values;
+  prob = (count * REG_BR_PROB_BASE + all / 2) / all;
+
+  result = tree_mod_pow2 (stmt, op, op1, op2, prob, count, all);
+
+  TREE_OPERAND (modify, 1) = result;
+
+  return true;
+}
+
+/* Generate code for transformations 3 and 4 (with OPERATION, operands OP1
+   and OP2, parent modify-expr STMT, and NCOUNTS the number of cases to
+   support.  Currently only NCOUNTS==0 or 1 is supported and this is
+   built into this interface.  The probabilities of taking the optimal 
+   paths are PROB1 and PROB2, which are equivalent to COUNT1/ALL and
+   COUNT2/ALL respectively within roundoff error).  This generates the 
+   result into a temp and returns the temp; it does not replace or alter 
+   the original STMT.  */
+/* FIXME: Generalize the interface to handle NCOUNTS > 1.  */
+
+static tree
+tree_mod_subtract (tree stmt, tree operation, tree op1, tree op2, 
+		    int prob1, int prob2, int ncounts,
+		    gcov_type count1, gcov_type count2, gcov_type all)
+{
+  tree stmt1, stmt2, stmt3;
+  tree tmp1;
+  tree label_decl1 = create_artificial_label ();
+  tree label_decl2 = create_artificial_label ();
+  tree label_decl3 = create_artificial_label ();
+  tree label1, label2, label3;
+  tree bb1end, bb2end = NULL_TREE, bb3end;
+  basic_block bb, bb2, bb3, bb4;
+  tree optype = TREE_TYPE (operation);
+  edge e12, e23 = 0, e24, e34, e14;
+  block_stmt_iterator bsi;
+  tree result = create_tmp_var (optype, "PROF");
+
+  bb = bb_for_stmt (stmt);
+  bsi = bsi_for_stmt (stmt);
+
+  tmp1 = create_tmp_var (optype, "PROF");
+  stmt1 = build2 (MODIFY_EXPR, optype, result, op1);
+  stmt2 = build2 (MODIFY_EXPR, optype, tmp1, op2);
+  stmt3 = build3 (COND_EXPR, void_type_node,
+	    build2 (LT_EXPR, boolean_type_node, result, tmp1),
+	    build1 (GOTO_EXPR, void_type_node, label_decl3),
+	    build1 (GOTO_EXPR, void_type_node, 
+		    ncounts ? label_decl1 : label_decl2));
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt3, BSI_SAME_STMT);
+  bb1end = stmt3;
+
+  if (ncounts)	/* Assumed to be 0 or 1 */
+    {
+      label1 = build1 (LABEL_EXPR, void_type_node, label_decl1);
+      stmt1 = build2 (MODIFY_EXPR, optype, result,
+		      build2 (MINUS_EXPR, optype, result, tmp1));
+      stmt2 = build3 (COND_EXPR, void_type_node,
+		build2 (LT_EXPR, boolean_type_node, result, tmp1),
+		build1 (GOTO_EXPR, void_type_node, label_decl3),
+		build1 (GOTO_EXPR, void_type_node, label_decl2));
+      bsi_insert_before (&bsi, label1, BSI_SAME_STMT);
+      bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+      bsi_insert_before (&bsi, stmt2, BSI_SAME_STMT);
+      bb2end = stmt2;
+    }
+
+  /* Fallback case. */
+  label2 = build1 (LABEL_EXPR, void_type_node, label_decl2);
+  stmt1 = build2 (MODIFY_EXPR, optype, result,
+		    build2 (TREE_CODE (operation), optype, result, tmp1));
+  bsi_insert_before (&bsi, label2, BSI_SAME_STMT);
+  bsi_insert_before (&bsi, stmt1, BSI_SAME_STMT);
+  bb3end = stmt1;
+
+  label3 = build1 (LABEL_EXPR, void_type_node, label_decl3);
+  bsi_insert_before (&bsi, label3, BSI_SAME_STMT);
+
+  /* Fix CFG. */
+  /* Edge e23 connects bb2 to bb3, etc. */
+  /* However block 3 is optional; if it is not there, references
+     to 3 really refer to block 2. */
+  e12 = split_block (bb, bb1end);
+  bb2 = e12->dest;
+  bb2->count = all - count1;
+    
+  if (ncounts)	/* Assumed to be 0 or 1.  */
+    {
+      e23 = split_block (bb2, bb2end);
+      bb3 = e23->dest;
+      bb3->count = all - count1 - count2;
+    }
+
+  e34 = split_block (ncounts ? bb3 : bb2, bb3end);
+  bb4 = e34->dest;
+  bb4->count = all;
+
+  e12->flags &= ~EDGE_FALLTHRU;
+  e12->flags |= EDGE_FALSE_VALUE;
+  e12->probability = REG_BR_PROB_BASE - prob1;
+  e12->count = count1;
+
+  e14 = make_edge (bb, bb4, EDGE_TRUE_VALUE);
+  e14->probability = prob1;
+  e14->count = all - count1;
+
+  if (ncounts)  /* Assumed to be 0 or 1.  */
+    {
+      e23->flags &= ~EDGE_FALLTHRU;
+      e23->flags |= EDGE_FALSE_VALUE;
+      e23->count = all - count1 - count2;
+      e23->probability = REG_BR_PROB_BASE - prob2;
+
+      e24 = make_edge (bb2, bb4, EDGE_TRUE_VALUE);
+      e24->probability = prob2;
+      e24->count = count2;
+    }
+
+  e34->probability = REG_BR_PROB_BASE;
+  e34->count = all - count1 - count2;
+
+  return result;
+}
+
+/* Do transforms 3) and 4) on INSN if applicable.  */
+static bool
+tree_mod_subtract_transform (tree stmt)
+{
+  stmt_ann_t ann = get_stmt_ann (stmt);
+  histogram_value histogram;
+  enum tree_code code;
+  gcov_type count, wrong_values, all;
+  tree modify, op, op1, op2, result, value;
+  int prob1, prob2;
+  unsigned int i;
+
+  modify = stmt;
+  if (TREE_CODE (stmt) == RETURN_EXPR
+      && TREE_OPERAND (stmt, 0)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+    modify = TREE_OPERAND (stmt, 0);
+  if (TREE_CODE (modify) != MODIFY_EXPR)
+    return false;
+  op = TREE_OPERAND (modify, 1);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
+    return false;
+  code = TREE_CODE (op);
+  
+  if (code != TRUNC_MOD_EXPR || !TYPE_UNSIGNED (TREE_TYPE (op)))
+    return false;
+
+  op1 = TREE_OPERAND (op, 0);
+  op2 = TREE_OPERAND (op, 1);
+  if (!ann->histograms)
+    return false;
+
+  for (histogram = ann->histograms; histogram; histogram = histogram->hvalue.tree.next)
+    if (histogram->type == HIST_TYPE_INTERVAL)
+      break;
+
+  if (!histogram)
+    return false;
+
+  value = histogram->hvalue.tree.value;
+  all = 0;
+  wrong_values = 0;
+  for (i = 0; i < histogram->hdata.intvl.steps; i++)
+    all += histogram->hvalue.tree.counters[i];
+
+  wrong_values += histogram->hvalue.tree.counters[i];
+  wrong_values += histogram->hvalue.tree.counters[i+1];
+  all += wrong_values;
+
+  /* Sanity check. */
+  if (simple_cst_equal (op2, value) != 1)
+    return false;
+
+  /* We require that we use just subtractions in at least 50% of all
+     evaluations.  */
+  count = 0;
+  for (i = 0; i < histogram->hdata.intvl.steps; i++)
+    {
+      count += histogram->hvalue.tree.counters[i];
+      if (count * 2 >= all)
+	break;
+    }
+  if (i == histogram->hdata.intvl.steps)
+    return false;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Mod subtract transformation on insn ");
+      print_generic_stmt (dump_file, stmt, TDF_SLIM);
+    }
+
+  /* Compute probability of taking the optimal path(s).  */
+  prob1 = (histogram->hvalue.tree.counters[0] * REG_BR_PROB_BASE + all / 2) / all;
+  prob2 = (histogram->hvalue.tree.counters[1] * REG_BR_PROB_BASE + all / 2) / all;
+
+  /* In practice, "steps" is always 2.  This interface reflects this,
+     and will need to be changed if "steps" can change.  */
+  result = tree_mod_subtract (stmt, op, op1, op2, prob1, prob2, i,
+			    histogram->hvalue.tree.counters[0], 
+			    histogram->hvalue.tree.counters[1], all);
+
+  TREE_OPERAND (modify, 1) = result;
+
+  return true;
+}
 
 /* Connection to the outside world.  */
 /* Struct for IR-dependent hooks.  */
@@ -1034,17 +1636,159 @@ rtl_register_value_prof_hooks (void)
   gcc_assert (!ir_type ());
 }
 
-/* Tree-based versions are stubs for now.  */
+/* Find values inside INSN for that we want to measure histograms for
+   division/modulo optimization.  */
 static void
-tree_find_values_to_profile (histogram_values *values ATTRIBUTE_UNUSED)
+tree_divmod_values_to_profile (tree stmt, histogram_values *values)
 {
-  gcc_unreachable ();
+  tree op, op1, op2;
+  histogram_value hist;
+
+  op = stmt;
+  if (TREE_CODE (stmt) == RETURN_EXPR 
+      && TREE_OPERAND (stmt, 0)
+      && TREE_CODE (TREE_OPERAND (stmt, 0)) == MODIFY_EXPR)
+    op = TREE_OPERAND (stmt, 0);
+
+  if (TREE_CODE (op) != MODIFY_EXPR)
+    return;
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (op)))
+    return;
+  op = TREE_OPERAND (op, 1);
+  switch (TREE_CODE (op))
+    {
+    case TRUNC_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+      op1 = TREE_OPERAND (op, 0);
+      op2 = TREE_OPERAND (op, 1);
+
+      /* Check for a special case where the divisor is power(s) of 2.
+         This is more aggressive than the RTL version, under the
+	 assumption that later phases will reduce / or % by power of 2
+	 to something clever most of the time.  Signed or unsigned.  */
+      if (TREE_CODE (op2) != INTEGER_CST)
+	{
+	  hist = ggc_alloc (sizeof (*hist));
+	  hist->hvalue.tree.value = op2;
+	  hist->hvalue.tree.stmt = stmt;
+	  hist->type = HIST_TYPE_POW2;
+	  hist->hdata.pow2.may_be_other = 1;
+	  VEC_safe_push (histogram_value, *values, hist);
+	}
+
+      /* Check for the case where the divisor is the same value most
+	 of the time.  */
+      if (TREE_CODE (op2) != INTEGER_CST)
+	{
+	  hist = ggc_alloc (sizeof (*hist));
+	  hist->hvalue.tree.value = op2;
+	  hist->hvalue.tree.stmt = stmt;
+	  hist->type = HIST_TYPE_SINGLE_VALUE;
+	  VEC_safe_push (histogram_value, *values, hist);
+	}
+
+      /* For mod, check whether it is not often a noop (or replaceable by
+	 a few subtractions).  */
+      if (TREE_CODE (op) == TRUNC_MOD_EXPR && TYPE_UNSIGNED (TREE_TYPE (op)))
+	{
+	  hist = ggc_alloc (sizeof (*hist));
+	  hist->hvalue.tree.stmt = stmt;
+	  hist->hvalue.tree.value = op2;
+	  hist->type = HIST_TYPE_INTERVAL;
+	  hist->hdata.intvl.int_start = 0;
+	  hist->hdata.intvl.steps = 2;
+	  VEC_safe_push (histogram_value, *values, hist);
+	}
+      return;
+
+    default:
+      return;
+    }
 }
 
-static bool
-tree_value_profile_transformations (void)
+/* Find values inside INSN for that we want to measure histograms and adds
+   them to list VALUES (increasing the record of its length in N_VALUES).  */
+static void
+tree_values_to_profile (tree stmt, histogram_values *values)
 {
-  gcc_unreachable ();
+  if (flag_value_profile_transformations)
+    tree_divmod_values_to_profile (stmt, values);
+}
+
+static void
+tree_find_values_to_profile (histogram_values *values)
+{
+  basic_block bb;
+  block_stmt_iterator bsi;
+  tree stmt;
+  unsigned int i;
+
+  *values = VEC_alloc (histogram_value, 0);
+  FOR_EACH_BB (bb)
+    for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
+      {
+        tree stmt = bsi_stmt (bsi);
+        tree_values_to_profile (stmt, values);
+      }
+  static_values = *values;
+  
+  for (i = 0; i < VEC_length (histogram_value, *values); i++)
+    {
+      histogram_value hist = VEC_index (histogram_value, *values, i);
+
+      switch (hist->type)
+        {
+	case HIST_TYPE_INTERVAL:
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Interval counter for tree ");
+	      print_generic_expr (dump_file, hist->hvalue.tree.stmt, 
+				  TDF_SLIM);
+	      fprintf (dump_file, ", range %d -- %d.\n",
+		     hist->hdata.intvl.int_start,
+		     (hist->hdata.intvl.int_start
+		      + hist->hdata.intvl.steps - 1));
+	    }
+	  hist->n_counters = hist->hdata.intvl.steps + 2;
+	  break;
+
+	case HIST_TYPE_POW2:
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Pow2 counter for insn ");
+	      print_generic_expr (dump_file, hist->hvalue.tree.stmt, TDF_SLIM);
+	      fprintf (dump_file, ".\n");
+	    }
+	  stmt = hist->hvalue.tree.stmt;
+	  hist->n_counters 
+		= TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (stmt)))
+		  +  (hist->hdata.pow2.may_be_other ? 1 : 0);
+	  break;
+
+	case HIST_TYPE_SINGLE_VALUE:
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Single value counter for insn ");
+	      print_generic_expr (dump_file, hist->hvalue.tree.stmt, TDF_SLIM);
+	      fprintf (dump_file, ".\n");
+	    }
+	  hist->n_counters = 3;
+	  break;
+
+	case HIST_TYPE_CONST_DELTA:
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Constant delta counter for insn ");
+	      print_generic_expr (dump_file, hist->hvalue.tree.stmt, TDF_SLIM);
+	      fprintf (dump_file, ".\n");
+	    }
+	  hist->n_counters = 4;
+	  break;
+
+	default:
+	  abort ();
+	}
+    }
 }
 
 static struct value_prof_hooks tree_value_prof_hooks = {
@@ -1069,6 +1813,7 @@ find_values_to_profile (histogram_values *values)
 bool
 value_profile_transformations (void)
 {
-  return (value_prof_hooks->value_profile_transformations) ();
+  bool retval = (value_prof_hooks->value_profile_transformations) ();
+  VEC_free (histogram_value, static_values);
+  return retval;
 }
-

@@ -1,3 +1,52 @@
+2005-03-29  Dale Johannesen <dalej@apple.com>
+
+	* Makefile.in (value-prof.o): New dependencies on $(DIAGNOSTIC_H)
+	$(TREE_H) and $(COVERAGE_H).
+	* coverage.c (compute_checksum): Use DECL_NAME not DECL_ASSEMBLER_NAME.
+	* opts.c (common_handle_option): Enable tree-based value transforms.
+	* toplev.c (process_options): Ditto.
+	* value-prof.h (struct histogram_value_t): Redefine. "Adjust" below
+	refers to references to this type.
+	* tree-flow.h: (struct stmt_ann_d): Add histograms field.
+	* rtl-profile.c (rtl_gen_interval_profiler): Adjust. Remove checks
+	for may_be_more, may_be_less.
+	(rtl_gen_pow2_profiler): Adjust.
+	(rtl_gen_one_value_profiler_no_edge_manip): Adjust.
+	(rtl_gen_one_value_profiler): Adjust.
+	(rtl_gen_const_delta_profiler): Adjust.
+	* tree-profile.c (tree_gen_interval_profiler): Implement.
+	(tree_gen_pow2_profiler): Ditto.
+	(tree_gen_one_value_profiler): Ditto.
+	(tree_profiling): New.
+	(pass_tree_profile): Reference it.
+	* value-prof.c: Include tree-flow.h, tree-flow-inline.h, diagnostic.h,
+	tree.h, gcov-io.h.
+	(insn_divmod_values_to_profile): Rename to 
+	rtl_divmod_values_to_profile. Adjust.
+	(insn_values_to_profile): Rename to rtl_values_to_profile. Adjust.
+	(insn_prefetch_values_to_profile): Adjust.
+	(rtl_value_profile_transformations): Adjust.
+	(gen_divmod_fixed_value): Rename to rtl_divmod_fixed_value.
+	(gen_mod_pow2): Rename to rtl_mod_pow2.
+	(gen_mod_subtract): Rename to rtl_mod_subtract.
+	(divmod_fixed_value_transform): Rename to 
+	rtl_divmod_fixed_value_transform.
+	(mod_pow2_value_transform): Rename to rtl_mod_pow2_value_transform.
+	(mod_subtract_transform): Rename to rtl_mod_subtract_transform.
+	(rtl_find_values_to_profile): Adjust.
+	(tree_value_profile_transformations): Implement.
+	(tree_divmod_values_to_profile): New.
+	(tree_values_to_profile): New.
+	(tree_divmod_fixed_value): New.
+	(tree_mod_pow2): New.
+	(tree_mod_subtract): New.
+	(tree_divmod_fixed_value_transform): New.
+	(tree_mod_pow2_value_transform): New.
+	(tree_mod_subtract_transform): New.
+	(tree_find_values_to_profile): Implement.
+	* profile.c (instrument_values):  Free histograms.
+	(compute_value_histograms): Adjust. Implement tree version.
+
 2005-03-29  Uros Bizjak  <uros@kss-loka.si>
 
 	* reg-stack.c (subst_stack_regs_pat): Handle <UNSPEC_FIST> case.
