@@ -4706,7 +4706,7 @@ make_decl_one_only (decl)
       DECL_ONE_ONLY (decl) = 1;
     }
   else if (SUPPORTS_WEAK)
-    declare_weak (decl);
+    DECL_WEAK (decl) = 1;
   else
     abort ();
 }

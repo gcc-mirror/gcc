@@ -9231,7 +9231,7 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
 	  op0 = AND, *pcomp_p = 1;
 	else /* op1 == IOR */
 	  /* (a | b) ^ b == a & ~b */
-	  op0 = AND, *pconst0 = ~const0;
+	  op0 = AND, const0 = ~const0;
 	break;
 
       case AND:
