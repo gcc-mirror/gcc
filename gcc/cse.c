@@ -1536,7 +1536,15 @@ invalidate (x, full_mode)
       reg_tick[regno]++;
 
       if (regno >= FIRST_PSEUDO_REGISTER)
-	remove_from_table (lookup_for_remove (x, hash, GET_MODE (x)), hash);
+	{
+	  /* Because a register can be referenced in more than one mode,
+	     we might have to remove more than one table entry.  */
+
+	  struct table_elt *elt;
+
+	  while (elt = lookup_for_remove (x, hash, GET_MODE (x)))
+	    remove_from_table (elt, hash);
+	}
       else
 	{
 	  HOST_WIDE_INT in_table
