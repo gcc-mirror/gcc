@@ -1,3 +1,10 @@
+2004-09-28  Andrew Haley  <aph@redhat.com>
+
+	PR java/17586
+	* jcf-parse.c (load_class): Don't try to read a class that we've
+	already read.
+	Check that we really did read the right class.
+
 2004-09-25  Tom Tromey  <tromey@redhat.com>
 
 	PR java/17500:
