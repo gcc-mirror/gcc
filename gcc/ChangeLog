@@ -159,6 +159,11 @@ Fri Apr 13 00:09:22 EDT 2001  John Wehle  (john@feith.com)
 	* toplev.c (rest_of_compilation): Call delete_trivially_dead_insns
 	prior to running jump optimize before cse2.
 
+2001-04-12  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (regmove.o): Depend on except.h.
+	* regmove.c: Include it.
+
 2001-04-12  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c: Remove all code ifdefed with the never-used
