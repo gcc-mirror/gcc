@@ -780,9 +780,13 @@ add (FLO_type arg_a, FLO_type arg_b)
   fp_number_type b;
   fp_number_type tmp;
   fp_number_type *res;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   res = _fpadd_parts (&a, &b, &tmp);
 
@@ -796,9 +800,13 @@ sub (FLO_type arg_a, FLO_type arg_b)
   fp_number_type b;
   fp_number_type tmp;
   fp_number_type *res;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   b.sign ^= 1;
 
@@ -986,9 +994,13 @@ multiply (FLO_type arg_a, FLO_type arg_b)
   fp_number_type b;
   fp_number_type tmp;
   fp_number_type *res;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   res = _fpmul_parts (&a, &b, &tmp);
 
@@ -1092,9 +1104,13 @@ divide (FLO_type arg_a, FLO_type arg_b)
   fp_number_type a;
   fp_number_type b;
   fp_number_type *res;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   res = _fpdiv_parts (&a, &b);
 
@@ -1195,9 +1211,13 @@ compare (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   return __fpcmp_parts (&a, &b);
 }
@@ -1213,9 +1233,13 @@ _eq_f2 (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   if (isnan (&a) || isnan (&b))
     return 1;			/* false, truth == 0 */
@@ -1230,9 +1254,13 @@ _ne_f2 (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   if (isnan (&a) || isnan (&b))
     return 1;			/* true, truth != 0 */
@@ -1247,9 +1275,13 @@ _gt_f2 (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   if (isnan (&a) || isnan (&b))
     return -1;			/* false, truth > 0 */
@@ -1264,9 +1296,13 @@ _ge_f2 (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   if (isnan (&a) || isnan (&b))
     return -1;			/* false, truth >= 0 */
@@ -1280,9 +1316,13 @@ _lt_f2 (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   if (isnan (&a) || isnan (&b))
     return 1;			/* false, truth < 0 */
@@ -1297,9 +1337,13 @@ _le_f2 (FLO_type arg_a, FLO_type arg_b)
 {
   fp_number_type a;
   fp_number_type b;
+  FLO_union_type au, bu;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
-  unpack_d ((FLO_union_type *) & arg_b, &b);
+  au.value = arg_a;
+  bu.value = arg_b;
+
+  unpack_d (&au, &a);
+  unpack_d (&bu, &b);
 
   if (isnan (&a) || isnan (&b))
     return 1;			/* false, truth <= 0 */
@@ -1354,8 +1398,11 @@ float_to_si (FLO_type arg_a)
 {
   fp_number_type a;
   SItype tmp;
+  FLO_union_type au;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
+  au.value = arg_a;
+  unpack_d (&au, &a);
+
   if (iszero (&a))
     return 0;
   if (isnan (&a))
@@ -1385,8 +1432,11 @@ USItype
 float_to_usi (FLO_type arg_a)
 {
   fp_number_type a;
+  FLO_union_type au;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
+  au.value = arg_a;
+  unpack_d (&au, &a);
+
   if (iszero (&a))
     return 0;
   if (isnan (&a))
@@ -1415,8 +1465,11 @@ FLO_type
 negate (FLO_type arg_a)
 {
   fp_number_type a;
+  FLO_union_type au;
 
-  unpack_d ((FLO_union_type *) & arg_a, &a);
+  au.value = arg_a;
+  unpack_d (&au, &a);
+
   flip_sign (&a);
   return pack_d (&a);
 }
@@ -1455,8 +1508,11 @@ DFtype
 sf_to_df (SFtype arg_a)
 {
   fp_number_type in;
+  FLO_union_type au;
 
-  unpack_d ((FLO_union_type *) & arg_a, &in);
+  au.value = arg_a;
+  unpack_d (&au, &in);
+
   return __make_dp (in.class, in.sign, in.normal_exp,
 		    ((UDItype) in.fraction.ll) << F_D_BITOFF);
 }
@@ -1489,8 +1545,10 @@ df_to_sf (DFtype arg_a)
 {
   fp_number_type in;
   USItype sffrac;
+  FLO_union_type au;
 
-  unpack_d ((FLO_union_type *) & arg_a, &in);
+  au.value = arg_a;
+  unpack_d (&au, &in);
 
   sffrac = in.fraction.ll >> F_D_BITOFF;
 

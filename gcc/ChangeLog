@@ -1,3 +1,9 @@
+1999-08-29  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* fp-bit.c (add, sub, multiply, divide, compare, _eq_f2, _ne_f2,
+	_gt_f2, _ge_f2, _lt_f2, _le_f2, float_to_si, float_to_usi, negate,
+	sf_to_df, df_to_sf): Fix potential problem with alias analysis.
+
 Sun Aug 29 04:30:52 1999  John Wehle  (john@feith.com)
 
 	* jump.c (delete_prior_computation): Also check calls
