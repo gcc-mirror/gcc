@@ -1,3 +1,7 @@
+2003-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* parse.y (check_pkg_class_access): ANSIfy definition.
+
 2003-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c, parse-scan.y, parse.y: Don't cast return value of
