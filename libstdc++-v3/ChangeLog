@@ -4,6 +4,12 @@
         __builtin_fmod* and test libm for fmodf, fmodl or _fmodf, _fmodl.
         * acconfig.h: Add entries for fmod*.
 
+2000-06-13  Branko Cibej  <branko.cibej@hermes.si>
+
+        * bits/std_cmath.h:  Fix typos in tests (*_FMODFF -> *_FMODF).
+        Test  *_MODFF not *_MODF for modf(float, float*).
+        (modf(float, float*)): Remove reference to _C_legacy.
+
 2000-06-13  Benjamin Kosnik  <bkoz@redhat.com>
 	
        	* acinclude.m4 (enable_cshadow_headers): Change CSHADOWFLAGS to

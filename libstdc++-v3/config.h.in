@@ -105,6 +105,15 @@
 // Define if the compiler/host combination has __builtin_floorl
 #undef HAVE_BUILTIN_FLOORL
 
+// Define if the compiler/host combination has __builtin_fmod
+#undef HAVE_BUILTIN_FMOD
+
+// Define if the compiler/host combination has __builtin_fmodf
+#undef HAVE_BUILTIN_FMODF
+
+// Define if the compiler/host combination has __builtin_fmodl
+#undef HAVE_BUILTIN_FMODL
+
 // Define if the compiler/host combination has __builtin_frexp
 #undef HAVE_BUILTIN_FREXP
 
@@ -294,6 +303,12 @@
 /* Define if you have the _floorl function.  */
 #undef HAVE__FLOORL
 
+/* Define if you have the _fmodf function.  */
+#undef HAVE__FMODF
+
+/* Define if you have the _fmodl function.  */
+#undef HAVE__FMODL
+
 /* Define if you have the _fpclass function.  */
 #undef HAVE__FPCLASS
 
@@ -341,9 +356,6 @@
 
 /* Define if you have the _logl function.  */
 #undef HAVE__LOGL
-
-/* Define if you have the _modf function.  */
-#undef HAVE__MODF
 
 /* Define if you have the _modff function.  */
 #undef HAVE__MODFF
@@ -591,6 +603,12 @@
 /* Define if you have the floorl function.  */
 #undef HAVE_FLOORL
 
+/* Define if you have the fmodf function.  */
+#undef HAVE_FMODF
+
+/* Define if you have the fmodl function.  */
+#undef HAVE_FMODL
+
 /* Define if you have the fpclass function.  */
 #undef HAVE_FPCLASS
 
@@ -659,9 +677,6 @@
 
 /* Define if you have the logl function.  */
 #undef HAVE_LOGL
-
-/* Define if you have the modf function.  */
-#undef HAVE_MODF
 
 /* Define if you have the modff function.  */
 #undef HAVE_MODFF

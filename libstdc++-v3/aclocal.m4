@@ -268,6 +268,9 @@ dnl check for __builtin_fabsl
 dnl check for __builtin_floor
 dnl check for __builtin_floorf
 dnl check for __builtin_floorl
+dnl check for __builtin_fmod
+dnl check for __builtin_fmodf
+dnl check for __builtin_fmodl
 dnl check for __builtin_frexp
 dnl check for __builtin_frexpf
 dnl check for __builtin_frexpl
@@ -380,7 +383,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_atan2])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_atan2(0.0);], 
+  [ __builtin_atan2(0.0, 0.0);], 
   use_builtin_atan2=yes, use_builtin_atan2=no)
   AC_MSG_RESULT($use_builtin_atan2)
   if test $use_builtin_atan2 = "yes"; then
@@ -388,7 +391,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_atan2f])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_atan2f(0.0);], 
+  [ __builtin_atan2f(0.0, 0.0);], 
   use_builtin_atan2f=yes, use_builtin_atan2f=no)
   AC_MSG_RESULT($use_builtin_atan2f)
   if test $use_builtin_atan2f = "yes"; then
@@ -396,7 +399,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_atan2l])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_atan2l(0.0);], 
+  [ __builtin_atan2l(0.0, 0.0);], 
   use_builtin_atan2l=yes, use_builtin_atan2l=no)
   AC_MSG_RESULT($use_builtin_atan2l)
   if test $use_builtin_atan2l = "yes"; then
@@ -524,7 +527,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_floor])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_ffloor(0.0);], 
+  [ __builtin_floor(0.0);], 
   use_builtin_floor=yes, use_builtin_floor=no)
   AC_MSG_RESULT($use_builtin_floor)
   if test $use_builtin_floor = "yes"; then
@@ -546,9 +549,33 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   if test $use_builtin_floorl = "yes"; then
     AC_DEFINE(HAVE_BUILTIN_FLOORL)
   fi
+  AC_MSG_CHECKING([for __builtin_fmod])
+  AC_TRY_COMPILE([#include <math.h>], 
+  [ __builtin_fmod(0.0, 0.0);], 
+  use_builtin_fmod=yes, use_builtin_fmod=no)
+  AC_MSG_RESULT($use_builtin_fmod)
+  if test $use_builtin_fmod = "yes"; then
+    AC_DEFINE(HAVE_BUILTIN_FMOD)
+  fi
+  AC_MSG_CHECKING([for __builtin_fmodf])
+  AC_TRY_COMPILE([#include <math.h>], 
+  [ __builtin_fmodf(0.0, 0.0);], 
+  use_builtin_fmodf=yes, use_builtin_fmodf=no)
+  AC_MSG_RESULT($use_builtin_fmodf)
+  if test $use_builtin_fmodf = "yes"; then
+    AC_DEFINE(HAVE_BUILTIN_FMODF)
+  fi
+  AC_MSG_CHECKING([for __builtin_fmodl])
+  AC_TRY_COMPILE([#include <math.h>], 
+  [ __builtin_fmodl(0.0, 0.0);], 
+  use_builtin_fmodl=yes, use_builtin_fmodl=no)
+  AC_MSG_RESULT($use_builtin_fmodl)
+  if test $use_builtin_fmodl = "yes"; then
+    AC_DEFINE(HAVE_BUILTIN_FMODL)
+  fi
   AC_MSG_CHECKING([for __builtin_frexp])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_frexp(0.0);], 
+  [ __builtin_frexp(0.0, 0);], 
   use_builtin_frexp=yes, use_builtin_frexp=no)
   AC_MSG_RESULT($use_builtin_frexp)
   if test $use_builtin_frexp = "yes"; then
@@ -556,7 +583,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_frexpf])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_frexpf(0.0);], 
+  [ __builtin_frexpf(0.0, 0);], 
   use_builtin_frexpf=yes, use_builtin_frexpf=no)
   AC_MSG_RESULT($use_builtin_frexpf)
   if test $use_builtin_frexpf = "yes"; then
@@ -564,7 +591,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_frexpl])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_frexpl(0.0);], 
+  [ __builtin_frexpl(0.0, 0);], 
   use_builtin_frexpl=yes, use_builtin_frexpl=no)
   AC_MSG_RESULT($use_builtin_frexpl)
   if test $use_builtin_frexpl = "yes"; then
@@ -572,7 +599,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_ldexp])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_ldexp(0.0);], 
+  [ __builtin_ldexp(0.0, 0);], 
   use_builtin_ldexp=yes, use_builtin_ldexp=no)
   AC_MSG_RESULT($use_builtin_ldexp)
   if test $use_builtin_ldexp = "yes"; then
@@ -580,7 +607,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_ldexpf])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_ldexpf(0.0);], 
+  [ __builtin_ldexpf(0.0, 0);], 
   use_builtin_ldexpf=yes, use_builtin_ldexpf=no)
   AC_MSG_RESULT($use_builtin_ldexpf)
   if test $use_builtin_ldexpf = "yes"; then
@@ -588,7 +615,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_ldexpl])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_ldexpl(0.0);], 
+  [ __builtin_ldexpl(0.0, 0);], 
   use_builtin_ldexpl=yes, use_builtin_ldexpl=no)
   AC_MSG_RESULT($use_builtin_ldexpl)
   if test $use_builtin_ldexpl = "yes"; then
@@ -644,7 +671,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_modf])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_modf(0.0);], 
+  [ __builtin_modf(0.0, 0);], 
   use_builtin_modf=yes, use_builtin_modf=no)
   AC_MSG_RESULT($use_builtin_modf)
   if test $use_builtin_modf = "yes"; then
@@ -652,7 +679,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_modff])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_modff(0.0);], 
+  [ __builtin_modff(0.0, 0);], 
   use_builtin_modff=yes, use_builtin_modff=no)
   AC_MSG_RESULT($use_builtin_modff)
   if test $use_builtin_modff = "yes"; then
@@ -660,7 +687,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_modfl])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_modfl(0.0);], 
+  [ __builtin_modfl(0.0, 0);], 
   use_builtin_modfl=yes, use_builtin_modfl=no)
   AC_MSG_RESULT($use_builtin_modfl)
   if test $use_builtin_modfl = "yes"; then
@@ -668,7 +695,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_pow])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_pow(0.0);], 
+  [ __builtin_pow(0.0, 0.0);], 
   use_builtin_pow=yes, use_builtin_pow=no)
   AC_MSG_RESULT($use_builtin_pow)
   if test $use_builtin_pow = "yes"; then
@@ -676,7 +703,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_powf])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_powf(0.0);], 
+  [ __builtin_powf(0.0, 0.0);], 
   use_builtin_powf=yes, use_builtin_powf=no)
   AC_MSG_RESULT($use_builtin_powf)
   if test $use_builtin_powf = "yes"; then
@@ -684,7 +711,7 @@ AC_DEFUN(GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT, [
   fi
   AC_MSG_CHECKING([for __builtin_powl])
   AC_TRY_COMPILE([#include <math.h>], 
-  [ __builtin_powl(0.0);], 
+  [ __builtin_powl(0.0, 0.0);], 
   use_builtin_powl=yes, use_builtin_powl=no)
   AC_MSG_RESULT($use_builtin_powl)
   if test $use_builtin_powl = "yes"; then
@@ -1042,8 +1069,8 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   AC_REPLACE_MATHFUNCS(cosf fabsf sinf sqrtf)
   AC_CHECK_FUNCS(isnan isnanf isnanl isinf isinff isinfl copysign copysignl \
   acosf acosl asinf asinl atanf atanl atan2f atan2l ceilf ceill cosl \
-  coshf coshl expf expl fabsl floorf floorl frexpf frexpl ldexpf \
-  ldexpl logf logl log10f log10l modf modff modfl powf powl sinl sinhf \
+  coshf coshl expf expl fabsl floorf floorl fmodf fmodl frexpf frexpl ldexpf \
+  ldexpl logf logl log10f log10l modff modfl powf powl sinl sinhf \
   sinhl sqrtl tanf tanl tanhf tanhl strtof strtold sincos sincosf \
   sincosl finite finitef finitel fqfinite fpclass qfpclass)
 
@@ -1055,10 +1082,10 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   AC_CHECK_FUNCS(_isnan _isnanf _isnanl _isinf _isinff _isinfl _copysign \
   _copysignl _acosf _acosl _asinf _asinl _atanf _atanl _atan2f _atan2l \
   _ceilf _ceill _cosf _cosl _coshf _coshl _expf _expl _fabsf _fabsl \
-  _floorf _floorl _frexpf _frexpl _ldexpf _ldexpl _logf _logl _log10f \
-  _log10l _modf _modff _modfl _powf _powl _sinf _sinl _sinhf _sinhl _sqrtf \
-  _sqrtl _tanf _tanl _tanhf _tanhl _strtof _strtold _sincos _sincosf _sincosl \
-  _finite _finitef _finitel _fqfinite _fpclass _qfpclass)
+  _floorf _floorl _fmodf _fmodl _frexpf _frexpl _ldexpf _ldexpl _logf _logl \
+  _log10f _log10l _modff _modfl _powf _powl _sinf _sinl _sinhf _sinhl \
+  _sqrtf _sqrtl _tanf _tanl _tanhf _tanhl _strtof _strtold _sincos _sincosf \
+  _sincosl _finite _finitef _finitel _fqfinite _fpclass _qfpclass)
 
 LIBS="$save_LIBS"
 ])

@@ -102,6 +102,15 @@
 // Define if the compiler/host combination has __builtin_floorl
 #undef HAVE_BUILTIN_FLOORL
 
+// Define if the compiler/host combination has __builtin_fmod
+#undef HAVE_BUILTIN_FMOD
+
+// Define if the compiler/host combination has __builtin_fmodf
+#undef HAVE_BUILTIN_FMODF
+
+// Define if the compiler/host combination has __builtin_fmodl
+#undef HAVE_BUILTIN_FMODL
+
 // Define if the compiler/host combination has __builtin_frexp
 #undef HAVE_BUILTIN_FREXP
 
