@@ -1,3 +1,8 @@
+2002-03-08  Tom Tromey  <tromey@redhat.com>
+
+	* posix.cc (internal_gettimeofday): New function.
+	(_Jv_select): Use it.
+
 2002-03-07  Adam Megacz  <adam@xwt.org>
 
 	* java/lang/natSystem.cc (currentTimeMillis): Now uses updated
