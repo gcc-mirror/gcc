@@ -416,7 +416,8 @@ for machine in $build $host $target; do
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	arm-*-*)			# generic version
+	arm-*-aout)
+		tm_file=arm/aout.h
 		;;
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
