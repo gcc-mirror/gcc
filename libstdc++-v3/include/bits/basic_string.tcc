@@ -88,8 +88,10 @@ namespace std
       _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		   input_iterator_tag)
       {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
+#endif
 	// Avoid reallocation for common case.
 	_CharT __buf[128];
 	size_type __len = 0;
@@ -134,11 +136,12 @@ namespace std
       _S_construct(_InIterator __beg, _InIterator __end, const _Alloc& __a,
 		   forward_iterator_tag)
       {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
 	if (__beg == __end && __a == _Alloc())
 	  return _S_empty_rep()._M_refdata();
-
+#endif
 	// NB: Not required, but considered best practice.
-	if (__builtin_expect(__is_null_pointer(__beg), 0))
+	if (__builtin_expect(__is_null_pointer(__beg) && __beg != __end, 0))
 	  __throw_logic_error(__N("basic_string::_S_construct NULL not valid"));
 
 	const size_type __dnew = static_cast<size_type>(std::distance(__beg,
@@ -162,9 +165,10 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     _S_construct(size_type __n, _CharT __c, const _Alloc& __a)
     {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
       if (__n == 0 && __a == _Alloc())
 	return _S_empty_rep()._M_refdata();
-
+#endif
       // Check for out_of_range and length_error exceptions.
       _Rep* __r = _Rep::_S_create(__n, size_type(0), __a);
       if (__n)
@@ -358,8 +362,10 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
     _M_destroy(const _Alloc& __a) throw ()
     {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
       if (this == &_S_empty_rep())
-        return;
+	return;
+#endif
       const size_type __size = sizeof(_Rep_base) +
 	                       (this->_M_capacity + 1) * sizeof(_CharT);
       _Raw_bytes_alloc(__a).deallocate(reinterpret_cast<char*>(this), __size);
@@ -369,8 +375,10 @@ namespace std
     void
     basic_string<_CharT, _Traits, _Alloc>::_M_leak_hard()
     {
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
       if (_M_rep() == &_S_empty_rep())
-        return;
+	return;
+#endif
       if (_M_rep()->_M_is_shared())
 	_M_mutate(0, 0, 0);
       _M_rep()->_M_set_leaked();
@@ -385,8 +393,7 @@ namespace std
       const size_type __new_size = __old_size + __len2 - __len1;
       const size_type __how_much = __old_size - __pos - __len1;
 
-      if (_M_rep() == &_S_empty_rep()
-	  || _M_rep()->_M_is_shared() || __new_size > capacity())
+      if (__new_size > capacity() || _M_rep()->_M_is_shared())
 	{
 	  // Must reallocate.
 	  const allocator_type __a = get_allocator();

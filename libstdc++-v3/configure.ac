@@ -94,6 +94,7 @@ GLIBCXX_ENABLE_CONCEPT_CHECKS([no])
 GLIBCXX_ENABLE_DEBUG_FLAGS(["-g3 -O0"])
 GLIBCXX_ENABLE_DEBUG([no])
 GLIBCXX_ENABLE_CXX_FLAGS
+GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING([no])
 
 # No surprises, no surprises...
 if test $atomicity_dir = cpu/generic ; then

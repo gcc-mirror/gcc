@@ -1,3 +1,29 @@
+2004-10-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (_M_mutate): Do not reallocate
+	unnecessarily when _M_rep() == &_S_empty_rep() and __new_size
+	== capacity() (== 0): is ok to just leave everything unchanged.
+
+2004-10-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16612
+	* include/bits/basic_string.h (_M_dispose, _M_refcopy,
+	basic_string()): When _GLIBCXX_FULLY_DYNAMIC_STRING is defined,
+	don't deal with _S_empty_rep.
+	* include/bits/basic_string.tcc (_S_construct, _M_destroy,
+	_M_leak_hard, _M_mutate): Likewise.
+	* acinclude.m4 (GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING): New.
+	* acconfig.h: Add corresponding undef. 	
+	* configure.ac: Use GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING.
+	* docs/html/configopts.html: Document --enable-fully-dynamic-string.
+	* aclocal.m4: Regenerate.
+	* configure: Likewise.
+	* config.h.in: Likewise.
+
+2004-10-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* README: Remove obsolete entry about include/c_shadow.
+
 2004-10-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR other/18138

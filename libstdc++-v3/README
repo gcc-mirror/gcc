@@ -35,13 +35,6 @@ It has subdirectories:
       names into the std:: namespace.
       [NB: this is the default, and is the same as --enable-cheaders=c_std]
 
-    include/c_shadow
-      Headers intended to shadow standard C headers provided by an
-      underlying OS or C library, and other headers depended on directly
-      by C++ headers (e.g. unistd.h).  These are meant to wrap the names
-      defined there into the _C_legacy namespace.
-      [NB: this can be enabled via --enable-cheaders=c_shadow]
-
     include/bits
       Files included by standard headers and by other files in
       the bits directory. 

@@ -211,7 +211,9 @@ namespace std
 	void
 	_M_dispose(const _Alloc& __a)
 	{
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
+#endif
 	    if (__gnu_cxx::__exchange_and_add(&this->_M_refcount, -1) <= 0)
 	      _M_destroy(__a);
 	}  // XXX MT
@@ -222,7 +224,9 @@ namespace std
 	_CharT*
 	_M_refcopy() throw()
 	{
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
 	  if (__builtin_expect(this != &_S_empty_rep(), false))
+#endif
             __gnu_cxx::__atomic_add(&this->_M_refcount, 1);
 	  return _M_refdata();
 	}  // XXX MT
@@ -1963,11 +1967,14 @@ namespace std
 	      size_type __n2) const;
   };
 
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     inline basic_string<_CharT, _Traits, _Alloc>::
     basic_string()
+#ifndef _GLIBCXX_FULLY_DYNAMIC_STRING
     : _M_dataplus(_S_empty_rep()._M_refdata(), _Alloc()) { }
+#else
+    : _M_dataplus(_S_construct(size_type(), _CharT(), _Alloc()), _Alloc()) { }
+#endif
 
   // operator+
   /**
