@@ -5,6 +5,8 @@
    In the declaration of proc, x must be parsed as a typedef name
    (6.7.5.3 p11).  */
 
+/* { dg-do compile } */
+
 typedef int x;
 int proc(int (x));	/* x is a typedef, param to proc is a function.  */
 int proc2(int x);	/* x is an identifier, param is an int.  */
