@@ -12,3 +12,8 @@ typedef struct { Sd sd; } Ssds;
 typedef struct { Sd sd; char c; } Ssdsc;
 typedef struct { char c; Ssds ssds; } Scssdss;
 typedef struct { char c; Ssds ssds; char b; } Scssdssc;
+
+typedef struct { float f; int i; } Sfi;
+typedef struct { float f; int i1; int i2; } Sfii;
+typedef struct { float f; int i; Sfi fi; } Sfifi;
+typedef struct { float f; int i1; int i2; Sfii fii; } Sfiifii;

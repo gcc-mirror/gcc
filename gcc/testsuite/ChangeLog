@@ -1,3 +1,11 @@
+2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/compat/mixed-struct-check.h, mixed-struct-defs.h,
+	mixed-struct-init.h: Add 4 mixed structure types.
+	struct-by-value-21_main.c, struct-by-value-21_x.c,
+	struct-by-value-21_y.c, struct-return-21_main.c,
+	struct-return-21_x.c, struct-return-21_y.c: New files.
+
 2004-03-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14550
