@@ -1,3 +1,8 @@
+2000-09-09  Geoff Keating  <geoffk@cygnus.com>
+
+	* recog.c (validate_replace_rtx_1): Correct MODE parameter in call
+	to operand_subword.
+
 2000-09-10  Michael Hayes  <mhayes@cygnus.com>
 
 	* loop.c (struct movables): New.
