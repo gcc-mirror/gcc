@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.45 2000/10/29 22:30:27 bkoz Exp $
+## $Id: Makefile.am,v 1.46 2000/11/13 21:04:54 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -295,7 +295,7 @@ libstdc++.INC: Makefile
 	mv tmp-$@ $@
 
 tmp-libstdc++.INC: Makefile
-	echo -I$(top_builddir) $(INCLUDES) > $@
+	echo $(INCLUDES) > $@
 
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
