@@ -1,3 +1,7 @@
+2004-03-12  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.c (ix86_split_ashrdi): Optimize shift by 63.
+
 2004-03-12  Matt Austern  <austern@apple.com>
 
 	* target.h (struct gcc_target): New target hook, unwind_label.
