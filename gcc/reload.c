@@ -4590,6 +4590,10 @@ subst_reg_equivs (ad)
       if (XEXP (ad, 0) == frame_pointer_rtx
 	  && GET_CODE (XEXP (ad, 1)) == CONST_INT)
 	return ad;
+      break;
+      
+    default:
+      break;
     }
 
   fmt = GET_RTX_FORMAT (code);
@@ -5122,6 +5126,9 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	    }
 	}
       break;
+      
+    default:
+      break;
     }
 
   {
@@ -5411,6 +5418,9 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
 	return 0;
       x = SET_SRC (x);
       goto repeat;
+      
+    default:
+      break;
     }
 
   /* X does not match, so try its subexpressions.  */
@@ -5591,6 +5601,8 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 	case POST_DEC:
 	case PRE_DEC:
 	  return 0;
+	default:
+	  break;
 	}
       goal_mem = 1;
     }
