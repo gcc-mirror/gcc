@@ -1,3 +1,7 @@
+2001-07-16  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.sub: Fix mips64vr5000el typo in CPU-COMPANY.
+
 2001-07-12  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* configure.in (noconfigdirs): Don't compile libiberty, libstdcxx
