@@ -22,22 +22,22 @@
 
 /* On 4.3bsd-net2, make sure ansi.h is included, so we have
    one less case to deal with in the following.  */
-#if defined (__BSD_NET2__) || defined (____386BSD____) || defined (__FreeBSD__)
+#if defined (__BSD_NET2__) || defined (____386BSD____) || defined (__FreeBSD__) || defined(__NetBSD__)
 #include <machine/ansi.h>
 #endif
 
 /* In 4.3bsd-net2, machine/ansi.h defines these symbols, which are
     defined if the corresponding type is *not* defined.  */
 #ifdef _ANSI_H_
-#ifndef _SIZE_T_
+#if !defined(_SIZE_T_) && !defined(_BSD_SIZE_T_)
 #define _SIZE_T
 #endif
-#ifndef _PTRDIFF_T_
+#if !defined(_PTRDIFF_T_) && !defined(_BSD_PTRDIFF_T_)
 #define _PTRDIFF_T
 #endif
 /* On BSD/386 1.1, at least, machine/ansi.h defines _BSD_WCHAR_T_
    instead of _WCHAR_T_. */
-#ifndef _WCHAR_T_
+#if !defined(_WCHAR_T_) && !defined(_BSD_WCHAR_T_)
 #ifndef _BSD_WCHAR_T_
 #define _WCHAR_T
 #endif
@@ -45,12 +45,15 @@
 /* Undef _FOO_T_ if we are supposed to define foo_t.  */
 #if defined (__need_ptrdiff_t) || defined (_STDDEF_H_)
 #undef _PTRDIFF_T_
+#undef _BSD_PTRDIFF_T_
 #endif
 #if defined (__need_size_t) || defined (_STDDEF_H_)
 #undef _SIZE_T_
+#undef _BSD_SIZE_T_
 #endif
 #if defined (__need_wchar_t) || defined (_STDDEF_H_)
 #undef _WCHAR_T_
+#undef _BSD_WCHAR_T_
 #endif
 #endif /* _ANSI_H_ */
 
@@ -76,6 +79,7 @@
 #ifndef _T_PTRDIFF
 #ifndef __PTRDIFF_T
 #ifndef _PTRDIFF_T_
+#ifndef _BSD_PTRDIFF_T_
 #ifndef ___int_ptrdiff_t_h
 #ifndef _GCC_PTRDIFF_T
 #define _PTRDIFF_T
@@ -83,6 +87,7 @@
 #define _T_PTRDIFF
 #define __PTRDIFF_T
 #define _PTRDIFF_T_
+#define _BSD_PTRDIFF_T_
 #define ___int_ptrdiff_t_h
 #define _GCC_PTRDIFF_T
 #ifndef __PTRDIFF_TYPE__
@@ -91,6 +96,7 @@
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #endif /* _GCC_PTRDIFF_T */
 #endif /* ___int_ptrdiff_t_h */
+#endif /* _BSD_PTRDIFF_T_ */
 #endif /* _PTRDIFF_T_ */
 #endif /* __PTRDIFF_T */
 #endif /* _T_PTRDIFF */
@@ -113,6 +119,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _T_SIZE
 #ifndef __SIZE_T
 #ifndef _SIZE_T_
+#ifndef _BSD_SIZE_T_
 #ifndef _SIZE_T_DEFINED_
 #ifndef ___int_size_t_h
 #ifndef _GCC_SIZE_T
@@ -124,6 +131,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define _T_SIZE
 #define __SIZE_T
 #define _SIZE_T_
+#define _BSD_SIZE_T_
 #define _SIZE_T_DEFINED_
 #define ___int_size_t_h
 #define _GCC_SIZE_T
@@ -140,6 +148,7 @@ typedef __SIZE_TYPE__ size_t;
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
 #endif /* _SIZE_T_DEFINED_ */
+#endif /* _BSD_SIZE_T_ */
 #endif /* _SIZE_T_ */
 #endif /* __SIZE_T */
 #endif /* _T_SIZE */
@@ -163,6 +172,7 @@ typedef __SIZE_TYPE__ size_t;
 #ifndef _T_WCHAR
 #ifndef __WCHAR_T
 #ifndef _WCHAR_T_
+#ifndef _BSD_WCHAR_T_
 #ifndef _WCHAR_T_DEFINED_
 #ifndef _WCHAR_T_H
 #ifndef ___int_wchar_t_h
@@ -173,6 +183,7 @@ typedef __SIZE_TYPE__ size_t;
 #define _T_WCHAR
 #define __WCHAR_T
 #define _WCHAR_T_
+#define _BSD_WCHAR_T_
 #define _WCHAR_T_DEFINED_
 #define _WCHAR_T_H
 #define ___int_wchar_t_h
@@ -212,6 +223,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #endif
+#endif
 #undef	__need_wchar_t
 #endif /* _STDDEF_H or __need_wchar_t.  */
 
@@ -222,12 +234,15 @@ typedef __WCHAR_TYPE__ wchar_t;
     are probably typos and should be removed before 2.7 is released.  */
 #ifdef _GCC_PTRDIFF_T_
 #undef _PTRDIFF_T_
+#undef _BSD_PTRDIFF_T_
 #endif
 #ifdef _GCC_SIZE_T_
 #undef _SIZE_T_
+#undef _BSD_SIZE_T_
 #endif
 #ifdef _GCC_WCHAR_T_
 #undef _WCHAR_T_
+#undef _BSD_WCHAR_T_
 #endif
 /*  The following ones are the real ones.  */
 #ifdef _GCC_PTRDIFF_T
