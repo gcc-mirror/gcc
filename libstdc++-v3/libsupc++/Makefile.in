@@ -170,9 +170,6 @@ AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS)
 # an include diretory, which screws up shadow headers. (That way,
 # things like -O2 passed down from the toplevel can be overridden by
 # --enable-debug.)
-CXXCOMPILE = $(CXX) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) 	     $(CXXFLAGS) $(AM_CXXFLAGS) 
-
-
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
@@ -202,6 +199,7 @@ libsupc___la_OBJECTS =  del_op.lo del_opnt.lo del_opv.lo del_opvnt.lo \
 exception.lo new_handler.lo new_op.lo new_opnt.lo new_opv.lo \
 new_opvnt.lo pure.lo tinfo.lo tinfo2.lo vec.lo
 CXXFLAGS = @CXXFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
 HEADERS =  $(glibcppinstall_HEADERS)
 
