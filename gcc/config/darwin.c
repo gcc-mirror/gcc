@@ -859,18 +859,11 @@ machopic_finish (asm_out_file)
     {
       const char *const sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
       const char *const lazy_name = IDENTIFIER_POINTER (TREE_PURPOSE (temp));
-#if 0
-      tree decl = lookup_name_darwin (TREE_VALUE (temp));
-#endif
 
       if (! TREE_USED (temp))
 	continue;
 
-      if (machopic_ident_defined_p (TREE_VALUE (temp))
-#if 0 /* add back when we have private externs */
-          || (decl && DECL_PRIVATE_EXTERN (decl))
-#endif
-	  )
+      if (machopic_ident_defined_p (TREE_VALUE (temp)))
 	{
 	  data_section ();
 	  assemble_align (GET_MODE_ALIGNMENT (Pmode));
@@ -919,18 +912,6 @@ machopic_operand_p (op)
       && machopic_name_defined_p (XSTR (XEXP (op, 0), 0))
       && machopic_name_defined_p (XSTR (XEXP (op, 1), 0)))
       return 1;
-
-#if 0 /*def TARGET_TOC*/ /* i.e., PowerPC */
-  /* Without this statement, the compiler crashes while compiling enquire.c
-     when targetting PowerPC.  It is not known why this code is not needed
-     when targetting other processors.  */
-  else if (GET_CODE (op) == SYMBOL_REF
-	   && (machopic_classify_name (XSTR (op, 0))
-	       == MACHOPIC_DEFINED_FUNCTION))
-    {
-      return 1;
-    }
-#endif
 
   return 0;
 }
