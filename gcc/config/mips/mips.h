@@ -3617,7 +3617,21 @@ while (0)
    that the constraints of the insn are met.  Setting a cost of
    other than 2 will allow reload to verify that the constraints are
    met.  You should do this if the `movM' pattern's constraints do
-   not allow such copying.  */
+   not allow such copying.
+
+   ??? We make make the cost of moving from HI/LO/HILO/MD into general
+   registers the same as for one of moving general registers to
+   HI/LO/HILO/MD for TARGET_MIPS16 in order to prevent allocating a
+   pseudo to HI/LO/HILO/MD.  This might hurt optimizations though, it
+   isn't clear if it is wise.  And it might not work in all cases.  We
+   could solve the DImode LO reg problem by using a multiply, just like
+   reload_{in,out}si.  We could solve the SImode/HImode HI reg problem
+   by using divide instructions.  divu puts the remainder in the HI
+   reg, so doing a divide by -1 will move the value in the HI reg for
+   all values except -1.  We could handle that case by using a signed
+   divide, e.g.  -1 / 2 (or maybe 1 / -2?).  We'd have to emit a
+   compare/branch to test the input value to see which instruction we
+   need to use.  This gets pretty messy, but it is feasible. */
 
 #define REGISTER_MOVE_COST(FROM, TO)	\
   ((FROM) == M16_REGS && GR_REG_CLASS_P (TO) ? 2			\
@@ -3633,7 +3647,7 @@ while (0)
       && ((TO) == M16_REGS || (TO) == M16_NA_REGS)) ? 6			\
    : (((FROM) == HI_REG || (FROM) == LO_REG				\
        || (FROM) == MD_REGS || (FROM) == HILO_REG)			\
-      && GR_REG_CLASS_P (TO)) ? (TARGET_MIPS16 ? 8 : 6)			\
+      && GR_REG_CLASS_P (TO)) ? (TARGET_MIPS16 ? 12 : 6)		\
    : (((TO) == HI_REG || (TO) == LO_REG					\
        || (TO) == MD_REGS || (TO) == HILO_REG)				\
       && GR_REG_CLASS_P (FROM)) ? (TARGET_MIPS16 ? 12 : 6)		\
