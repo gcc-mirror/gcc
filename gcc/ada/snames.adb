@@ -82,6 +82,7 @@ package body Snames is
      "_secondary_stack#" &
      "_service#" &
      "_size#" &
+     "_stack#" &
      "_tags#" &
      "_task#" &
      "_task_id#" &

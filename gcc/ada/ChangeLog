@@ -1,3 +1,41 @@
+2004-10-04  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* targparm.ads, targparm.adb (Targparm_Tags): Add PAS value
+	corresponding to the Preallocated_Stacks flags in System.
+	(Get_Target_Parameters): Including the processing for
+	Preallocated_Stacks.
+
+	* system.ads, system-vxworks-x86.ads, system-darwin-ppc.ads, 
+	system-vms_64.ads, system-unixware.ads, system-linux-ia64.ads, 
+	system-freebsd-x86.ads, system-lynxos-ppc.ads, system-lynxos-x86.ads, 
+	system-linux-x86_64.ads, system-tru64.ads, system-aix.ads, 
+	system-vxworks-sparcv9.ads, system-vxworks-xscale.ads, 
+	system-solaris-x86.ads, system-irix-o32.ads, system-irix-n32.ads, 
+	system-hpux.ads, system-vxworks-m68k.ads, system-linux-x86.ads, 
+	system-vxworks-mips.ads, system-os2.ads, system-interix.ads, 
+	system-solaris-sparc.ads, system-solaris-sparcv9.ads, system-vms.ads, 
+	system-mingw.ads, system-vms-zcx.ads, system-vxworks-ppc.ads, 
+	system-vxworks-alpha.ads: Add the flag Preallocated_Stacks, that is
+	used to signal whether the compiler creates the required stacks and
+	descriptors for the different tasks (when True) or it is done by the
+	underlying operating system at run time (when False).
+	It is initially set to False in all targets.
+
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Create the task stack
+	if it is supported by the target.
+	(Make_Task_Create_Call): Pass the stack address if it has been
+	previously created. Otherwise pass a Null_Address.
+
+	* snames.adb: Add _stack.
+
+	* snames.ads: Add Name_uStack. Required to allow the expander to
+	statically allocated task stacks.
+
+	* s-tarest.ads, s-tarest.adb (Create_Restricted_Task): Add
+	Stack_Address argument.
+	Check that its value is equal to Null_Address because this target does
+	not support the static stack allocation.
+
 2004-10-04  Thomas Quinot  <quinot@act-europe.fr>
 
 	* usage.adb: Change "pragma inline" to "pragma Inline" in information

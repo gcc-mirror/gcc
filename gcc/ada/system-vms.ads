@@ -128,6 +128,7 @@ private
    Machine_Overflows         : constant Boolean := False;
    Machine_Rounds            : constant Boolean := True;
    OpenVMS                   : constant Boolean := True;
+   Preallocated_Stacks       : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := True;
    Stack_Check_Probes        : constant Boolean := True;

@@ -345,6 +345,13 @@ package Targparm is
    --
    --    The routine __gnat_handler_installed is not imported
 
+   Preallocated_Stacks_On_Target : Boolean;
+   --  If this flag is True, then the expander preallocates all task stacks
+   --  at compile time. If the flag is False, then task stacks are not pre-
+   --  allocated, and task stack allocation is the responsibility of the
+   --  run-time (which typically delegates the task to the underlying
+   --  operating system environment).
+
    ---------------------
    -- Duration Format --
    ---------------------
