@@ -1,3 +1,17 @@
+1999-05-03  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.mauve/mauve.exp (test_mauve): Pass `link' to
+	libjava_arguments when linking.
+	(test_mauve_sim): Likewise.
+	* lib/libjava.exp (libjava_arguments): Run `libtool' to link.
+	Don't use `-static'.  Added `mode' argument.  Use -nodefaultlibs
+	when linking.
+	(test_libjava_from_source): Mention why target_compile failed.
+	Pass `link' to libjava_arguments when linking.  Only do `xfails'
+	for tests we would actually have run.
+	(test_libjava_from_javac): Likewise.
+	(libjava_find_lib): Return name of `.la' file.
+
 1999-04-26  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (libjava_find_lib): New proc.

@@ -87,11 +87,11 @@ proc libjava_find_lib {dir name} {
     foreach sub {.libs _libs} {
 	if {$gp != ""} {
 	    if {[file exists $gp/$dir/$sub/lib${name}.a]} then {
-		return "-L$gp/$dir/$sub -l$name"
+		return "$gp/$dir/lib${name}.la"
 	    }
 	}
 	set lib [findfile $base_dir/../../$dir/$sub/lib${name}.a \
-		   "-L$base_dir/../../$dir/$sub -l$name" ""]
+		   "$base_dir/../../$dir/lib${name}.la" ""]
 	if {$lib != ""} {
 	    return $lib
 	}
@@ -99,8 +99,9 @@ proc libjava_find_lib {dir name} {
     return ""
 }
 
-# Compute arguments needed for compiler.
-proc libjava_arguments {} {
+# Compute arguments needed for compiler.  MODE is a libtool mode:
+# either compile or link.
+proc libjava_arguments {{mode compile}} {
     global base_dir
     global LIBJAVA
     global LIBGC
@@ -167,7 +168,6 @@ proc libjava_arguments {} {
 
     global wrapper_file wrap_compile_flags;
     lappend args "additional_flags=$wrap_compile_flags";
-    lappend args "additional_flags=-static"
     lappend args "libs=$wrapper_file";
     lappend args "libs=$libjava";
     lappend args "libs=$libgc";
@@ -182,7 +182,21 @@ proc libjava_arguments {} {
     if [info exists TOOL_OPTIONS] {
 	lappend args "additional_flags=$TOOL_OPTIONS"
     }
-    lappend args "compiler=$GCJ_UNDER_TEST"
+
+    # Search for libtool.  We need it to link.
+    set d [absolute $objdir]
+    foreach x {. .. ../.. ../../..} {
+	if {[file exists $d/$x/libtool]} then {
+	    # We have to run silently to avoid DejaGNU lossage.
+	    lappend args \
+	      "compiler=$d/$x/libtool --silent --mode=$mode $GCJ_UNDER_TEST"
+	    break
+	}
+    }
+
+    if {$mode == "link"} {
+	lappend args "additional_flags=-nodefaultlibs -lm -lgcc -lc -lgcc"
+    }
 
     return $args
 }
@@ -208,7 +222,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
         return
     }
 
-    set args [libjava_arguments]
+    set args [libjava_arguments link]
     # Add the --main flag
     lappend args "additional_flags=--main=[file rootname [file tail $srcfile]]"
     if { $compile_args != "" } {
@@ -221,12 +235,16 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	set errname "$errname $compile_args"
     }
 
-    if { [target_compile $srcfile "$executable" executable $args] != "" } {
+    set x [target_compile $srcfile "$executable" executable $args]
+    if { $x != "" } {
+	verbose "target_compile failed: $x" 2
 	fail "$errname compilation from source"
-	setup_xfail "*-*-*"
-	fail "$errname execution from source compiled test"
-	setup_xfail "*-*-*"
-	fail "$errname output from source compiled test"
+	if {$exec_args != "no-exec"} {
+	    setup_xfail "*-*-*"
+	    fail "$errname execution from source compiled test"
+	    setup_xfail "*-*-*"
+	    fail "$errname output from source compiled test"
+	}
 	return;
     }
     pass "$errname compilation from source"
@@ -306,10 +324,12 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	fail "$errname byte compilation"
 	setup_xfail "*-*-*"
 	fail "$errname compilation from bytecode"
-	setup_xfail "*-*-*"
-	fail "$errname execution from bytecode->native test"
-	setup_xfail "*-*-*"
-	fail "$errname output from bytecode->native test"
+	if {$exec_args != "no-exec"} {
+	    setup_xfail "*-*-*"
+	    fail "$errname execution from bytecode->native test"
+	    setup_xfail "*-*-*"
+	    fail "$errname output from bytecode->native test"
+	}
 	return
     }
     pass "$errname byte compilation"
@@ -335,11 +355,9 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	set class_files [join [split [string trim $class_out]] ".class "].class
     }
 
-    # Initial arguments.
-    set args [libjava_arguments]
-
     # Usually it is an error for a test program not to have a `main'
     # method.  However, for no-exec tests it is ok.
+    set largs {}
     if {$main_name == ""} {
 	if {$exec_args != "no-exec"} {
 	    perror "No `main' given in program $errname"
@@ -347,12 +365,18 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	} else {
 	    set type object
 	    set executable [file rootname [file tail $srcfile]].o
+	    set mode compile
 	}
     } else {
 	set type executable
-	lappend args "additional_flags=--main=$main_name"
+	lappend largs "additional_flags=--main=$main_name"
 	set executable "${objdir}/$main_name"
+	set mode link
     }
+
+    # Initial arguments.
+    set args [libjava_arguments $mode]
+    eval lappend args $largs
 
     if { $compile_args != "" } {
 	lappend args "additional_flags=$compile_args"
@@ -362,7 +386,10 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	set errname "$errname $compile_args"
     }
 
-    if { [target_compile $class_files "$executable" $type $args] != "" } {
+    verbose "compilation command = $args" 2
+    set x [target_compile $class_files "$executable" $type $args]
+    if { $x != "" } {
+	verbose "target_compile failed: $x" 2
 	fail "$errname compilation from bytecode"
 	setup_xfail "*-*-*"
 	if {$exec_args != "no-exec"} {
