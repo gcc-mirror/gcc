@@ -184,7 +184,7 @@ varray_type reg_n_info;
 /* Regset of regs live when calls to `setjmp'-like functions happen.  */
 /* ??? Does this exist only for the setjmp-clobbered warning message?  */
 
-regset regs_live_at_setjmp;
+static regset regs_live_at_setjmp;
 
 /* List made of EXPR_LIST rtx's which gives pairs of pseudo registers
    that have to go in the same hard reg.

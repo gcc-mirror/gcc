@@ -5,6 +5,9 @@
 
 	* calls (stack_arg_under_construction): Make it static.
 
+	* flow.c (regs_live_at_setjmp): Make it static.
+	* flow.h: Remove the corresponding prototype.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
