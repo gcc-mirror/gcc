@@ -922,11 +922,9 @@ get_virtual_var (tree var)
   if (TREE_CODE (var) == SSA_NAME)
     var = SSA_NAME_VAR (var);
 
-  if (TREE_CODE (var) == REALPART_EXPR || TREE_CODE (var) == IMAGPART_EXPR)
+  while (TREE_CODE (var) == REALPART_EXPR || TREE_CODE (var) == IMAGPART_EXPR
+	 || handled_component_p (var))
     var = TREE_OPERAND (var, 0);
-  else
-    while (handled_component_p (var))
-      var = TREE_OPERAND (var, 0);
     
 #ifdef ENABLE_CHECKING
   /* Treating GIMPLE registers as virtual variables makes no sense.
