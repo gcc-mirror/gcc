@@ -163,7 +163,7 @@ do {									\
 } while (0)
 
 /* Describe how to emit unitialized external linkage items  */
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN)			\
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)		\
 do {									\
   ASM_GLOBALIZE_LABEL (FILE, NAME);					\
   ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);			\
@@ -171,8 +171,8 @@ do {									\
 
 /* This says out to put a global symbol in the BSS section */
 #undef ASM_OUTPUT_ALIGNED_BSS
-#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN) \
-  asm_output_aligned_bss ((FILE), (NAME), (SIZE), (ALIGN))
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss ((FILE), (DECL), (NAME), (SIZE), (ALIGN))
 
 
 /* Stuff to force fit us into the Motorola PPC assembler */
