@@ -1145,13 +1145,16 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
     esac
   fi
 
+  dnl Deal with gettext issues.
+  AC_ARG_ENABLE(nls,
+  [  --enable-nls            use Native Language Support (default)],
+  , enable_nls=yes)
+  USE_NLS=no
+
   dnl Set configure bits for specified locale package
   case x${enable_clocale_flag} in
     xgeneric)
       AC_MSG_RESULT(generic)
-
-      # Don't use gettext.
-      USE_NLS=no
 
       CLOCALE_H=config/locale/generic/c_locale.h
       CLOCALE_CC=config/locale/generic/c_locale.cc
@@ -1171,9 +1174,12 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       # languages.
       # For some reason, ALL_LINGUAS has to be before AM_GNU_GETTEXT
       ALL_LINGUAS="de fr"
+
       # Don't call AM_GNU_GETTEXT here. Instead, assume glibc.
-      # Need to deal with MSGFMT, USE_NLS, and glibcpp_[P,M]OFILES
-      USE_NLS=yes
+      AC_CHECK_PROG(check_msgfmt, msgfmt, yes, no)
+      if test x"$check_msgfmt" = x"yes" && test x"$enable_nls" = x"yes"; then
+	USE_NLS=yes
+      fi
 
       # Export the build objects.
       for ling in $ALL_LINGUAS; do \
@@ -1196,9 +1202,6 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       ;;
     xieee_1003.1-2001)
       AC_MSG_RESULT(generic)
-
-      # Don't use gettext.
-      USE_NLS=no
 
       CLOCALE_H=config/locale/ieee_1003.1-2001/c_locale.h
       CLOCALE_CC=config/locale/ieee_1003.1-2001/c_locale.cc
