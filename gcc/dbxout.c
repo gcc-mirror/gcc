@@ -877,6 +877,8 @@ dbxout_range_type (type)
   fprintf (asmfile, "r");
   if (TREE_TYPE (type))
     dbxout_type (TREE_TYPE (type), 0, 0);
+  else if (TREE_CODE (type) != INTEGER_TYPE)
+    dbxout_type (type, 0, 0); /* E.g. Pascal's ARRAY [BOOLEAN] of INTEGER */
   else
     {
       /* This used to say `r1' and we used to take care
