@@ -1049,7 +1049,7 @@ const_binop (code, arg1, arg2)
       int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
       /* Propagate overflow flags from operands; also record new overflow.  */
       int overflow
-	= TREE_CONSTANT_OVERFLOW (arg0) | TREE_CONSTANT_OVERFLOW (arg1);
+	= TREE_CONSTANT_OVERFLOW (arg1) | TREE_CONSTANT_OVERFLOW (arg2);
 
       switch (code)
 	{
