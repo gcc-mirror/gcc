@@ -1,3 +1,17 @@
+Fri Oct  9 15:57:51 1998  Bernd Schmidt <crux@Pool.Informatik.RWTH-Aachen.DE>
+
+	* flow.c (life_analysis_1): Break out some functions.
+	(find_basic_blocks_1): Likewise.  Also move some variables out and
+	make them static.
+	Rename NONLOCAL_LABEL_LIST arg to NONLOCAL_LABELS and initialize
+	new static var nonlocal_label_list with it.
+	(active_eh_region, nested_eh_region, label_value_list,
+	nonlocal_label_list): New static variables.
+	(make_edges, delete_unreachable_blocks, delete_block): New static
+	functions, broken out of find_basic_blocks_1.
+	(record_volatile_insns, mark_regs_live_at_end, set_noop_p,
+	noop_move_p): New static functions, broken out of life_analysis_1.
+
 Fri Oct  9 15:49:29 1998  Richard Henderson  <rth@cygnus.com>
 
 	* expmed.c (store_bit_field): Pun non-integral str_rtx modes.
