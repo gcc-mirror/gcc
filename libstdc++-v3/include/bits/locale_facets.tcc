@@ -1509,14 +1509,13 @@ namespace std
 
       for (size_t __i = 0; __beg != __end && __i < __len && !__err; ++__i)
 	{
-	  char __c = __format[__i];
-	  if (__c == '%')
+	  if (__ctype.narrow(__format[__i], 0) == '%')
 	    {
 	      // Verify valid formatting code, attempt to extract.
-	      __c = __format[++__i];
+	      char __c = __ctype.narrow(__format[++__i], 0);
 	      int __mem = 0; 
 	      if (__c == 'E' || __c == 'O')
-		__c = __format[++__i];
+		__c = __ctype.narrow(__format[++__i], 0);
 	      switch (__c)
 		{
 		  const char* __cs;
@@ -1690,7 +1689,7 @@ namespace std
 	  else
 	    {
 	      // Verify format and input match, extract and discard.
-	      if (__c == __ctype.narrow(*__beg, 0))
+	      if (__format[__i] == *__beg)
 		++__beg;
 	      else
 		__err |= ios_base::failbit;
