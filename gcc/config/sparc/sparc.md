@@ -7791,6 +7791,7 @@
 ;; if we need it.  So do nothing much here, but we'll check for this in
 ;; finalize_pic.
 
+;; Make sure this unspec_volatile number agrees with finalize_pic.
 (define_insn "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] 5)]
   "flag_pic"

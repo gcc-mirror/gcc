@@ -2492,10 +2492,13 @@ finalize_pic ()
 
   emit_insn_after (pic_setup_code (), get_insns ());
 
-  /* Insert the code in each nonlocal goto receiver.  */
+  /* Insert the code in each nonlocal goto receiver.
+     If you make changes here or to the nonlocal_goto_receiver
+     pattern, make sure the unspec_volatile numbers still
+     match.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
-	&& XINT (PATTERN (insn), 1) == 4)
+	&& XINT (PATTERN (insn), 1) == 5)
       emit_insn_after (pic_setup_code (), insn);
 
   flag_pic = orig_flag_pic;
