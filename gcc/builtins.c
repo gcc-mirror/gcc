@@ -990,15 +990,20 @@ get_memory_rtx (tree exp)
     exp = TREE_OPERAND (exp, 0);
 
   if (TREE_CODE (exp) == ADDR_EXPR)
-    {
-      exp = TREE_OPERAND (exp, 0);
-      set_mem_attributes (mem, exp, 0);
-    }
+    exp = TREE_OPERAND (exp, 0);
   else if (POINTER_TYPE_P (TREE_TYPE (exp)))
+    exp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
+  else
+    exp = NULL;
+
+  /* Honor attributes derived from exp, except for the alias set
+     (as builtin stringops may alias with anything) and the size
+     (as stringops may access multiple array elements).  */
+  if (exp)
     {
-      exp = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (exp)), exp);
-      /* memcpy, memset and other builtin stringops can alias with anything.  */
+      set_mem_attributes (mem, exp, 0);
       set_mem_alias_set (mem, 0);
+      set_mem_size (mem, NULL_RTX);
     }
 
   return mem;
