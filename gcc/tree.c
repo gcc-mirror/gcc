@@ -3564,8 +3564,13 @@ simple_cst_equal (t1, t2)
       return 0;
     }
 
-  /* This general rule works for most tree codes.
-     All exceptions should be handled above.  */
+  /* This general rule works for most tree codes.  All exceptions should be
+     handled above.  If this is a language-specific tree code, we can't
+     trust what might be in the operand, so say we don't know
+     the situation.  */
+  if (code1
+      >= sizeof standard_tree_code_type / sizeof standard_tree_code_type[0])
+    return -1;
 
   switch (TREE_CODE_CLASS (code1))
     {
