@@ -768,7 +768,13 @@ read_rtx (infile)
 #if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
 	tmp_wide = atol (tmp_char);
 #else
+#ifdef HAVE_ATOLL
+	tmp_wide = atoll (tmp_char);
+#else
+#ifdef HAVE_ATOQ
 	tmp_wide = atoq (tmp_char);
+#endif
+#endif
 #endif
 #endif
 	XWINT (return_rtx, i) = tmp_wide;
