@@ -28,12 +28,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MASK_LITTLE_ENDIAN	0x04000000	/* target is little endian */
 
 #define	TARGET_NO_BITFIELD_TYPE	(target_flags & MASK_NO_BITFIELD_TYPE)
-#define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
 #define TARGET_STRICT_ALIGN	(target_flags & MASK_STRICT_ALIGN)
 #define TARGET_RELOCATABLE	(target_flags & MASK_RELOCATABLE)
 #define TARGET_NO_TRACEBACK	(target_flags & MASK_NO_TRACEBACK)
-#define	TARGET_TRACEBACK	(! TARGET_NO_TRACEBACK)
 #define TARGET_LITTLE_ENDIAN	(target_flags & MASK_LITTLE_ENDIAN)
+
+#define	TARGET_BITFIELD_TYPE	(! TARGET_NO_BITFIELD_TYPE)
+#define	TARGET_TRACEBACK	(! TARGET_NO_TRACEBACK)
 #define TARGET_BIG_ENDIAN	(! TARGET_LITTLE_ENDIAN)
 
 #undef	SUBTARGET_SWITCHES
@@ -50,17 +51,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   { "little",		 MASK_LITTLE_ENDIAN },				\
   { "big-endian",	-MASK_LITTLE_ENDIAN },				\
   { "big",		-MASK_LITTLE_ENDIAN },
-
-/* If the user wants little endian support, don't allow -mmultiple */
-#define SUBTARGET_OVERRIDE_OPTIONS					\
-{									\
-  if (TARGET_LITTLE_ENDIAN && TARGET_MULTIPLE)				\
-    {									\
-      target_flags &= ~MASK_MULTIPLE;					\
-      if (TARGET_MULTIPLE_SET)						\
-	warning ("-mmultiple is not supported on little endian PowerPC systems"); \
-    }									\
-}
 
 #include "rs6000/powerpc.h"
 
@@ -321,6 +311,9 @@ extern int rs6000_pic_labelno;
 #define CPP_SPEC "\
 %{posix: -D_POSIX_SOURCE} \
 %{mrelocatable: -D_RELOCATABLE} \
+%{mlittle: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
+%{mlittle-endian: -D_LITTLE_ENDIAN -Amachine(littleendian)} \
+%{!mlittle: %{!mlittle-endian: -D_BIG_ENDIAN -Amachine(bigendian)}} \
 %{!mcpu*: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \
