@@ -105,6 +105,7 @@ static const char *user_label_prefix;
    It is zero for rescanning results of macro expansion
    and for expanding macro arguments.  */
 #define INPUT_STACK_MAX 200
+struct file_name_list;
 struct file_buf {
   const char *fname;
   int lineno;
@@ -120,6 +121,8 @@ struct file_buf {
   struct if_stack *if_stack;
   /* Object to be freed at end of input at this level.  */
   U_CHAR *free_ptr;
+  /* Position to start scanning for #include_next in this file.  */
+  struct file_name_list *next_header_dir;
 } instack[INPUT_STACK_MAX];
 
 typedef struct file_buf FILE_BUF;
@@ -240,6 +243,7 @@ union hashval {
 enum node_type {
  T_DEFINE = 1,	/* `#define' */
  T_INCLUDE,	/* `#include' */
+ T_INCLUDE_NEXT,/* `#include_next' */
  T_IFDEF,	/* `#ifdef' */
  T_IFNDEF,	/* `#ifndef' */
  T_IF,		/* `#if' */
@@ -358,6 +362,7 @@ static void do_error	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_warning	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_line	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_include	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
+static void do_include_next	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_undef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_if	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
 static void do_ifdef	PARAMS ((U_CHAR *, U_CHAR *, FILE_BUF *));
@@ -415,7 +420,10 @@ static void make_assertion	PARAMS ((const char *));
 
 static void grow_outbuf 	PARAMS ((FILE_BUF *, int));
 static int handle_directive 	PARAMS ((FILE_BUF *, FILE_BUF *));
-static void finclude		PARAMS ((int, const char *, FILE_BUF *));
+static void process_include	PARAMS ((struct file_name_list *,
+					 const U_CHAR *, int, int, FILE_BUF *));
+static void finclude		PARAMS ((int, const char *,
+					 struct file_name_list *, FILE_BUF *));
 static void init_dependency_output PARAMS ((void));
 static void rescan		PARAMS ((FILE_BUF *, int));
 static void newline_fix		PARAMS ((U_CHAR *));
@@ -450,6 +458,7 @@ struct directive directive_table[] = {
   {  4, do_elif,    "elif",    T_ELIF    },
   {  5, do_error,   "error",   T_ERROR   },
   {  7, do_warning, "warning", T_WARNING },
+  { 12, do_include_next, "include_next", T_INCLUDE_NEXT },
   {  6, do_assert,  "assert",  T_ASSERT  },
   {  8, do_unassert,"unassert",T_UNASSERT},
   {  -1, 0, "", T_UNUSED},
@@ -853,7 +862,7 @@ main (argc, argv)
 	if (print_deps)
 	  deps_add_dep (deps, pend[i].arg);
 
-	finclude (fd, pend[i].arg, &outbuf);
+	finclude (fd, pend[i].arg, 0, &outbuf);
       }
   indepth--;
   no_output--;
@@ -2278,21 +2287,16 @@ do_include (buf, limit, op)
      U_CHAR *buf, *limit;
      FILE_BUF *op;
 {
-  char *fname;		/* Dynamically allocated fname buffer */
   U_CHAR *fbeg, *fend;		/* Beginning and end of fname */
 
   struct file_name_list *stackp = include; /* Chain of dirs to search */
   struct file_name_list dsp[1];	/* First in chain, if #include "..." */
   int flen;
 
-  int f;			/* file number */
-
   int retried = 0;		/* Have already tried macro
 				   expanding the include line*/
   FILE_BUF trybuf;		/* It got expanded into here */
   int system_header_p = 0;	/* 0 for "...", 1 for <...> */
-
-  f= -1;			/* JF we iz paranoid! */
 
 get_filename:
 
@@ -2374,6 +2378,90 @@ get_filename:
   }
 
   flen = fend - fbeg;
+  process_include (stackp, fbeg, flen, system_header_p, op);
+}
+
+static void
+do_include_next (buf, limit, op)
+     U_CHAR *buf, *limit;
+     FILE_BUF *op;
+{
+  U_CHAR *fbeg, *fend;		/* Beginning and end of fname */
+
+  struct file_name_list *stackp; /* Chain of dirs to search */
+  int flen;
+
+  int retried = 0;		/* Have already tried macro
+				   expanding the include line*/
+  FILE_BUF trybuf;		/* It got expanded into here */
+  int system_header_p = 0;	/* 0 for "...", 1 for <...> */
+
+  /* Treat as plain #include if we don't know where to start
+     looking.  */
+  stackp = instack[indepth].next_header_dir;
+  if (stackp == 0)
+    {
+      do_include (buf, limit, op);
+      return;
+    }
+
+get_filename:
+
+  fbeg = buf;
+  SKIP_WHITE_SPACE (fbeg);
+  /* Discard trailing whitespace so we can easily see
+     if we have parsed all the significant chars we were given.  */
+  while (limit != fbeg && is_nvspace (limit[-1])) limit--;
+
+  switch (*fbeg++) {
+  case '\"':
+    fend = fbeg;
+    while (fend != limit && *fend != '\"')
+      fend++;
+    if (*fend == '\"' && fend + 1 == limit)
+      break;
+    goto fail;
+
+  case '<':
+    fend = fbeg;
+    while (fend != limit && *fend != '>') fend++;
+    if (*fend == '>' && fend + 1 == limit) {
+      system_header_p = 1;
+      break;
+    }
+    goto fail;
+
+  default:
+  fail:
+    if (retried) {
+      error ("#include expects \"fname\" or <fname>");
+      return;
+    } else {
+      trybuf = expand_to_temp_buffer (buf, limit, 0);
+      buf = (U_CHAR *) alloca (trybuf.bufp - trybuf.buf + 1);
+      memcpy (buf, trybuf.buf, trybuf.bufp - trybuf.buf);
+      limit = buf + (trybuf.bufp - trybuf.buf);
+      free (trybuf.buf);
+      retried++;
+      goto get_filename;
+    }
+  }
+
+  flen = fend - fbeg;
+  process_include (stackp, fbeg, flen, system_header_p, op);
+}
+
+static void
+process_include (stackp, fbeg, flen, system_header_p, op)
+     struct file_name_list *stackp;
+     const U_CHAR *fbeg;
+     int flen;
+     int system_header_p;
+     FILE_BUF *op;
+{
+  char *fname;
+  int f = -1;			/* file number */
+
   fname = (char *) alloca (max_include_len + flen + 2);
   /* + 2 above for slash and terminating null.  */
 
@@ -2472,7 +2560,7 @@ get_filename:
       system_include_depth++;
 
     /* Actually process the file.  */
-    finclude (f, fname, op);
+    finclude (f, fname, stackp->next, op);
 
     if (system_header_p)
       system_include_depth--;
@@ -2485,9 +2573,10 @@ get_filename:
    with output to OP.  */
 
 static void
-finclude (f, fname, op)
+finclude (f, fname, nhd, op)
      int f;
      const char *fname;
+     struct file_name_list *nhd;
      FILE_BUF *op;
 {
   int st_mode;
@@ -2506,6 +2595,7 @@ finclude (f, fname, op)
   fp->length = 0;
   fp->lineno = 1;
   fp->if_stack = if_stack;
+  fp->next_header_dir = nhd;
 
   if (S_ISREG (st_mode)) {
     fp->buf = (U_CHAR *) xmalloc (st_size + 2);
