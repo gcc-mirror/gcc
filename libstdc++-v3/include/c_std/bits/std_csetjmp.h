@@ -31,13 +31,11 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CSETJMP
 #define _CPP_CSETJMP 1
 
 #pragma GCC system_header
-#include <setjmp.h>
+#include_next <setjmp.h>
 
 // Get rid of those macros defined in <setjmp.h> in lieu of real functions.
 #undef longjmp
@@ -50,7 +48,7 @@
 namespace std
 {
   using ::jmp_buf;
-  extern "C" void longjmp(jmp_buf, int);
+  using ::longjmp;
 }
 
 #endif

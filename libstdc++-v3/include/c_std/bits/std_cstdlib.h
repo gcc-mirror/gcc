@@ -31,16 +31,13 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CSTDLIB
 #define _CPP_CSTDLIB 1
 
 #include <bits/c++config.h>
-#include <bits/std_cstddef.h>
 
 #pragma GCC system_header
-#include <stdlib.h>
+#include_next <stdlib.h>
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
 #undef atof
@@ -82,47 +79,47 @@
 
 namespace std 
 {
+  using ::size_t;	// cstddef
+
   using ::div_t;
   using ::ldiv_t;
 
-  extern "C" double atof(const char*); 
-  extern "C" int atoi(const char*); 
-  extern "C" long int atol(const char*); 
-  extern "C" double strtod(const char*, char**); 
-  extern "C" float strtof(const char*, char**); 
-  extern "C" long int strtol(const char*, char**, int); 
-  extern "C" unsigned long int strtoul(const char*, char**, int);
-  extern "C" int rand(void); 
-  extern "C" void srand(unsigned int); 
-  extern "C" void* calloc(size_t, size_t); 
-  extern "C" void free(void*); 
-  extern "C" void* malloc(size_t); 
-  extern "C" void* realloc(void*, size_t); 
-  extern "C" void abort(void); 
-  extern "C" int atexit(void (*func)(void)); 
-  extern "C" void exit(int); 
-  extern "C" void _Exit(int); 
-  extern "C" char*getenv(const char*); 
-  extern "C" int system(const char*); 
-  extern "C" void* bsearch(const void*, const void*, size_t, size_t, 
-			   int (*comp)(const void *, const void *)); 
-  extern "C" void qsort(void*, size_t, size_t, 
-			int (*comp)(const void *, const void *)); 
-  extern "C" int abs(int); 
-  extern "C" long int labs(long int); 
-  extern "C" div_t div(int, int); 
-  extern "C" ldiv_t ldiv(long int, long int); 
-  extern "C" int mblen(const char*, size_t); 
-  extern "C" int mbtowc(wchar_t*, const char*, size_t); 
-  extern "C" int wctomb(char*, wchar_t); 
-  extern "C" size_t mbstowcs(wchar_t*, const char*, size_t); 
-  extern "C" size_t wcstombs(char*, const wchar_t*, size_t);
+  using ::atof;
+  using ::atoi;
+  using ::atol;
+  using ::strtod;
+  using ::strtof;
+  using ::strtol;
+  using ::strtoul;
+  using ::rand;
+  using ::srand;
+  using ::calloc;
+  using ::free;
+  using ::malloc;
+  using ::realloc;
+  using ::abort;
+  using ::atexit;
+  using ::exit;
+  using ::_Exit;
+  using ::getenv;
+  using ::system;
+  using ::bsearch;
+  using ::qsort;
+  using ::abs;
+  using ::labs;
+  using ::div;
+  using ::ldiv;
+  using ::mblen;
+  using ::mbtowc;
+  using ::wctomb;
+  using ::mbstowcs;
+  using ::wcstombs;
 
   inline long 
-  abs(long __i) { return ::labs(__i); }
+  abs(long __i) { return labs(__i); }
 
   inline ldiv_t
-  div(long __i, long __j) { return ::ldiv(__i, __j); }
+  div(long __i, long __j) { return ldiv(__i, __j); }
 } // namespace std
 
 #if _GLIBCPP_USE_C99
@@ -144,12 +141,12 @@ namespace __gnu_cxx
   lldiv(long long __n, long long __d)
   { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
-  extern "C" long long int atoll(const char*); 
-  extern "C" long long int strtoll(const char*, char**, int); 
-  extern "C" unsigned long long int strtoull(const char*, char**, int); 
+  using ::atoll;
+  using ::strtoll;
+  using ::strtoull;
 
 #ifdef _GLIBCPP_HAVE_STRTOLD
-  extern "C" long double strtold(const char*, char**); 
+  using ::strtold; 
 #endif
 } // namespace __gnu_cxx
 
@@ -157,7 +154,7 @@ namespace std
 {
   using __gnu_cxx::lldiv_t;
   using __gnu_cxx::abs;
-  //using __gnu_cxx::llabs; // XXX ???
+  using __gnu_cxx::llabs; 
   using __gnu_cxx::div;
   using __gnu_cxx::lldiv;
   using __gnu_cxx::atoll;

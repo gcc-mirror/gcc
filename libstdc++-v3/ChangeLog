@@ -1,3 +1,21 @@
+2001-06-08  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2767
+	libstdc++/2989
+	libstdc++/2992
+	* include/std/*: Add copyright notice.
+	* include/c_std/bits/*: Use using statements instead of extern "C".
+	* include/c_std/bits/std_cmath.h: Don't overload double versions
+	of math functions with __buitin versions, use global version to
+	prevent ambiguities. Remove define hacks.
+	* include/c_std/bits/std_cwchar.h: Using declarations for "C"
+	functions that have changed signatures and std::
+	declarations. Remove define hacks.
+	* include/c_std/bits/std_cwchar.h: Same, plus remove ambiguous
+	__builtins in std::. Remove define hacks.
+	* testsuite/17_intro/headers_c.cc: Add tests.
+	* testsuite/17_intro/headers_c++.cc: Add test.
+
 2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
 	    John David Anglin  <dave@hiauly1.hia.nrc.ca>
 

@@ -31,15 +31,13 @@
 // ISO C++ 14882: <ccytpe>
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CCTYPE
 #define _CPP_CCTYPE 1
 
 #include <bits/c++config.h>
 
 #pragma GCC system_header
-#include <ctype.h>
+#include_next <ctype.h>
 
 // Get rid of those macros defined in <ctype.h> in lieu of real functions.
 #undef isalnum
@@ -59,32 +57,20 @@
 
 namespace std
 {
-  extern "C" int isalnum(int __c);
-  extern "C" int isalpha(int __c);
-  extern "C" int isblank(int __c);
-  extern "C" int iscntrl(int __c);
-  extern "C" int isdigit(int __c);
-  extern "C" int isgraph(int __c);
-  extern "C" int islower(int __c);
-  extern "C" int isprint(int __c);
-  extern "C" int ispunct(int __c);
-  extern "C" int isspace(int __c);
-  extern "C" int isupper(int __c);
-  extern "C" int isxdigit(int __c);
-  extern "C" int tolower(int __c);
-  extern "C" int toupper(int __c);
+  using ::isalnum;
+  using ::isalpha;
+  using ::isblank;
+  using ::iscntrl;
+  using ::isdigit;
+  using ::isgraph;
+  using ::islower;
+  using ::isprint;
+  using ::ispunct;
+  using ::isspace;
+  using ::isupper;
+  using ::isxdigit;
+  using ::tolower;
+  using ::toupper;
 }
 
 #endif 
-
-
-
-
-
-
-
-
-
-
-
-

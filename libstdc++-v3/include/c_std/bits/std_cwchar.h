@@ -31,26 +31,14 @@
 // ISO C++ 14882: ???
 //
 
-// Note: This is not a conforming implementation.
-
 #ifndef _CPP_CWCHAR
 #define _CPP_CWCHAR 1
 
 #include <bits/c++config.h>
-#include <bits/std_cstddef.h>
-#include <bits/std_cstdio.h>
-#include <bits/std_cstdarg.h>
 
 #if _GLIBCPP_HAVE_WCHAR_H
-// Need to mangle these "C" functions because C++ modifies their signature.
-#define wcschr  __glibcpp_wcschr
-#define wcsbrk  __glibcpp_wcspbrk
-#define wcsrchr  __glibcpp_wcsrchr
-#define wcsstr  __glibcpp_wcsstr
-#define wmemchr  __glibcpp_wmemchr
-
 #pragma GCC system_header
-#include <wchar.h>
+#include_next <wchar.h>
 #endif
 
 // Need to do a bit of trickery here with mbstate_t as char_traits
@@ -71,6 +59,22 @@ namespace std
 }
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
+#undef btowc
+#undef wctob
+#undef fgetwc
+#undef fgetwc
+#undef fgetws
+#undef fputwc
+#undef fputws
+#undef fwide
+#undef fwprintf
+#undef fwscanf
+#undef swprintf
+#undef swscanf
+#undef vfwprintf
+#undef vfwscanf
+#undef vswprintf
+#undef vswscanf
 #undef vwprintf
 #undef vwscanf
 #undef wprintf
@@ -98,118 +102,119 @@ namespace std
 #undef wcscoll
 #undef wcsncmp
 #undef wcsxfrm
-#undef wcschr
 #undef wcscspn
 #undef wcslen
-#undef wcspbrk
-#undef wcsrchr
 #undef wcsspn
-#undef wcsstr
 #undef wcstok
-#undef wmemchr
 #undef wmemcmp
 #undef wmemcpy
 #undef wmemmove
 #undef wmemset
 #undef wcsftime
-#undef wcstold
-#undef wcstoll
-#undef wcstoull
+
+#undef wcschr
+#undef wcspbrk
+#undef wcsrchr
+#undef wcsstr
+#undef wmemchr
 
 #if _GLIBCPP_USE_WCHAR_T
 namespace std
 {
+  using ::size_t;	// cstddef
+
   using ::wint_t;
 
-  extern "C" wint_t btowc(int); 
-  extern "C" int wctob(wint_t); 
-  extern "C" wint_t fgetwc(FILE*); 
-  extern "C" wchar_t* fgetws(wchar_t*, int, FILE*); 
-  extern "C" wint_t fputwc(wchar_t, FILE*); 
-  extern "C" int fputws(const wchar_t*, FILE*); 
-  extern "C" int fwide(FILE*, int); 
-  extern "C" int fwprintf(FILE*, const wchar_t*, ...); 
-  extern "C" int fwscanf(FILE*, const wchar_t*, ...); 
-  extern "C" int swprintf(wchar_t*, size_t, const wchar_t*, ...); 
-  extern "C" int swscanf(const wchar_t*, const wchar_t*, ...); 
-  extern "C" int vfwprintf(FILE*, const wchar_t*, va_list); 
-  extern "C" int vfwscanf(FILE*, const wchar_t*, va_list); 
-  extern "C" int vswprintf(wchar_t*, size_t, const wchar_t*, va_list); 
-  extern "C" int vswscanf(const wchar_t*, const wchar_t*, va_list); 
-  extern "C" int vwprintf(const wchar_t*, va_list); 
-  extern "C" int vwscanf(const wchar_t*, va_list); 
-  extern "C" int wprintf(const wchar_t*, ...); 
-  extern "C" int wscanf(const wchar_t*, ...); 
-  extern "C" wint_t getwc(FILE* stream); 
-  extern "C" wint_t getwchar(void); 
-  extern "C" int mbsinit(const mbstate_t*); 
-  extern "C" size_t mbrlen(const char*, size_t, mbstate_t*); 
-  extern "C" size_t mbrtowc(wchar_t*, const char*, size_t, mbstate_t*); 
-  extern "C" size_t mbsrtowcs(wchar_t*, const char**, size_t, mbstate_t*); 
-  extern "C" size_t wcsrtombs(char*, const wchar_t **, size_t, mbstate_t*);
-  extern "C" wint_t putwc(wchar_t, FILE*); 
-  extern "C" wint_t putwchar(wchar_t); 
-  extern "C" wint_t ungetwc(wint_t, FILE*);
-  extern "C" size_t wcrtomb(char*, wchar_t, mbstate_t*); 
-  extern "C" double wcstod(const wchar_t*, wchar_t**); 
-  extern "C" float wcstof(const wchar_t*, wchar_t**); 
-  extern "C" long int wcstol(const wchar_t*, wchar_t**, int); 
-  extern "C" unsigned long int wcstoul(const wchar_t*, wchar_t**, int); 
-  extern "C" wchar_t* wcscpy(wchar_t* s1, const wchar_t*); 
-  extern "C" wchar_t* wcsncpy(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wcscat(wchar_t*, const wchar_t*); 
-  extern "C" wchar_t* wcsncat(wchar_t*, const wchar_t*, size_t); 
-  extern "C" int wcscmp(const wchar_t*, const wchar_t*); 
-  extern "C" int wcscoll(const wchar_t*, const wchar_t*); 
-  extern "C" int wcsncmp(const wchar_t*, const wchar_t*, size_t); 
-  extern "C" size_t wcsxfrm(wchar_t*, const wchar_t*, size_t); 
-  extern "C" const wchar_t* wcschr(const wchar_t*, wchar_t); 
+  using ::btowc;
+  using ::wctob;
+  using ::fgetwc;
+  using ::fgetwc;
+  using ::fgetws;
+  using ::fputwc;
+  using ::fputws;
+  using ::fwide;
+  using ::fwprintf;
+  using ::fwscanf;
+  using ::swprintf;
+  using ::swscanf;
+  using ::vfwprintf;
+  using ::vfwscanf;
+  using ::vswprintf;
+  using ::vswscanf;
+  using ::vwprintf;
+  using ::vwscanf;
+  using ::wprintf;
+  using ::wscanf;
+  using ::getwc;
+  using ::getwchar;
+  using ::mbsinit;
+  using ::mbrlen;
+  using ::mbrtowc;
+  using ::mbsrtowcs;
+  using ::wcsrtombs;
+  using ::putwc;
+  using ::putwchar;
+  using ::ungetwc;
+  using ::wcrtomb;
+  using ::wcstod;
+  using ::wcstof;
+  using ::wcstol;
+  using ::wcstoul;
+  using ::wcscpy;
+  using ::wcsncpy;
+  using ::wcscat;
+  using ::wcsncat;
+  using ::wcscmp;
+  using ::wcscoll;
+  using ::wcsncmp;
+  using ::wcsxfrm;
+  using ::wcscspn;
+  using ::wcslen;
+  using ::wcsspn;
+  using ::wcstok;
+  using ::wmemcmp;
+  using ::wmemcpy;
+  using ::wmemmove;
+  using ::wmemset;
+  using ::wcsftime;
+
+  using ::wcschr;
+
   inline wchar_t*
   wcschr(wchar_t* __p, wchar_t __c)
-  {
-    return const_cast<wchar_t*>(wcschr(const_cast<const wchar_t*>(__p), __c));
-  }
-  extern "C" size_t wcscspn(const wchar_t*, const wchar_t*); 
-  extern "C" size_t wcslen(const wchar_t*); 
-  extern "C" const wchar_t* wcspbrk(const wchar_t*, const wchar_t*); 
+  { return wcschr(const_cast<const wchar_t*>(__p), __c); }
+
+  using ::wcspbrk;
+
   inline wchar_t*
   wcspbrk(wchar_t* __s1, wchar_t* __s2)
-  {
-    return const_cast<wchar_t*>(wcspbrk(const_cast<const wchar_t*>(__s1), __s2));
-  }
-  extern "C" const wchar_t* wcsrchr(const wchar_t*, wchar_t); 
+  { return wcspbrk(const_cast<const wchar_t*>(__s1), __s2); }
+
+  using ::wcsrchr;
+
   inline wchar_t*
   wcsrchr(wchar_t* __p, wchar_t __c)
-  {
-    return const_cast<wchar_t*>(wcsrchr(const_cast<const wchar_t*>(__p), __c));
-  }
-  extern "C" size_t wcsspn(const wchar_t*, const wchar_t*); 
-  extern "C" const wchar_t* wcsstr(const wchar_t*, const wchar_t*); 
+  { return wcsrchr(const_cast<const wchar_t*>(__p), __c); }
+
+  using ::wcsstr;
+
   inline wchar_t*
   wcsstr(wchar_t* __s1, wchar_t* __s2)
-  {
-    return const_cast<wchar_t*>(wcsstr(const_cast<const wchar_t*>(__s1), __s2));
-  }
-  extern "C" wchar_t* wcstok(wchar_t*, const wchar_t*, wchar_t**); 
-  extern "C" const wchar_t* wmemchr(const wchar_t*, wchar_t, size_t);
+  { return wcsstr(const_cast<const wchar_t*>(__s1), __s2); }
+
+  using ::wmemchr;
+
   inline wchar_t*
   wmemchr(wchar_t* __p, wchar_t __c, size_t __n)
-  {
-    return const_cast<wchar_t*>(wmemchr(const_cast<const wchar_t*>(__p), __c, __n));
-  }
-  extern "C" int wmemcmp(const wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wmemcpy(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wmemmove(wchar_t*, const wchar_t*, size_t); 
-  extern "C" wchar_t* wmemset(wchar_t*, wchar_t, size_t); 
-  extern "C" size_t wcsftime(wchar_t*, size_t, const wchar_t*, const struct tm*); 
+  { return wmemchr(const_cast<const wchar_t*>(__p), __c, __n); }
 }
 
 #if _GLIBCPP_USE_C99
 namespace __gnu_cxx
 {
-  extern "C" long double wcstold(const wchar_t*, wchar_t**); 
-  extern "C" long long int wcstoll(const wchar_t*, wchar_t**, int); 
-  extern "C" unsigned long long int wcstoull(const wchar_t*, wchar_t**, int); 
+  using ::wcstold;
+  using ::wcstoll;
+  using ::wcstoull;
 }
 
 namespace std
