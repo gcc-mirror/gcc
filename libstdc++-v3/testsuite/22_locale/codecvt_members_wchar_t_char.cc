@@ -124,7 +124,7 @@ void test02()
   if (!setenv("LANG", "de_DE", 1))
     {
       test01();
-      setenv("LANG", oldLANG, 1);
+      setenv("LANG", oldLANG ? oldLANG : "", 1);
     }
 #endif
 }
