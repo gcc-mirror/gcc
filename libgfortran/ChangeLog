@@ -1,3 +1,9 @@
+2005-02-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	PR libfortran/18025
+	* write.c (output_float): Handling the "F0.d" format similarly as
+	commercial compilers.
+
 2005-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	* Makefile.am: Added new files.

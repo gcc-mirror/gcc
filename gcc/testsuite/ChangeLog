@@ -1,3 +1,7 @@
+2005-03-23  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* pr18025.f90: New test.
+
 2005-03-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.old-deja/g++.warn/compare1.C: Run with -Wno-deprecated.

@@ -537,7 +537,7 @@ output_float (fnode *f, double value, int len)
 
   /* Pick a field size if none was specified.  */
   if (w <= 0)
-    w = nbefore + nzero + nafter + 2;
+    w = nbefore + nzero + nafter + (sign != SIGN_NONE ? 2 : 1);
 
   /* Create the ouput buffer.  */
   out = write_block (w);
