@@ -1,3 +1,8 @@
+2000-10-20  David Edelsohn  <edelsohn@gnu.org>
+
+	* typeck2.c (abstract_virtuals_error): Use "because" instead of
+	"since" in error message.
+
 Fri Oct 20 13:54:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* typeck.c (dubious_conversion_warning): Suppress if TYPE_IS_SIZETYPE.

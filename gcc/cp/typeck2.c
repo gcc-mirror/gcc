@@ -168,7 +168,7 @@ abstract_virtuals_error (decl, type)
     {
       TREE_PURPOSE (u) = error_mark_node;
 
-      error ("  since the following virtual functions are abstract:");
+      error ("  because the following virtual functions are abstract:");
       for (tu = u; tu; tu = TREE_CHAIN (tu))
 	cp_error_at ("\t%#D", TREE_VALUE (tu));
     }
