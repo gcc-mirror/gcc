@@ -37,7 +37,6 @@
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
-#include <ctype.h>
 #include <errno.h>
 #ifdef NEED_DECLARATION_ERRNO
 extern int errno;
@@ -46,6 +45,7 @@ extern int errno;
 #include <stdlib.h>
 #endif
 #include "ansidecl.h"
+#include "safe-ctype.h"
 
 #ifndef ULONG_MAX
 #define	ULONG_MAX	((unsigned long)(~0L))		/* 0xFFFFFFFF */
