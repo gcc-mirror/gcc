@@ -1,3 +1,16 @@
+2004-01-19  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/5263
+	* simplify-rtx.c (associative_constant_p): Delete.
+	(simplify_associative_operation): Rewrite to linearize terms, and
+	attempt to simplify new term against both left and right subterms.
+	(simplify_binary_operation): Call swap_commutative_operands_p on
+	op0 and op1, not trueop0 and trueop1.  Move the initialization of
+	trueop0 and trueop1 down to where first needed.
+	(simplify_relational_operation): Likewise.
+	* rtlanal.c (commutative_operand_precedence): Also order constant
+	operands using avoid_constant_pool_reference.
+
 2004-01-19  Richard Henderson  <rth@redhat.com>
 
         * config/alpha/alpha.c (aligned_memory_operand): Check MEM_ALIGN,

@@ -1,6 +1,6 @@
 /* Analyze RTL for C-Compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3022,6 +3022,11 @@ int
 commutative_operand_precedence (rtx op)
 {
   /* Constants always come the second operand.  Prefer "nice" constants.  */
+  if (GET_CODE (op) == CONST_INT)
+    return -7;
+  if (GET_CODE (op) == CONST_DOUBLE)
+    return -6;
+  op = avoid_constant_pool_reference (op);
   if (GET_CODE (op) == CONST_INT)
     return -5;
   if (GET_CODE (op) == CONST_DOUBLE)
