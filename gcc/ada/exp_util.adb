@@ -68,8 +68,7 @@ package body Exp_Util is
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
       A_Type : Entity_Id;
-      Dyn    : Boolean := False)
-      return   Node_Id;
+      Dyn    : Boolean := False) return Node_Id;
    --  Build function to generate the image string for a task that is an
    --  array component, concatenating the images of each index. To avoid
    --  storage leaks, the string is built with successive slice assignments.
@@ -81,8 +80,7 @@ package body Exp_Util is
      (Loc   : Source_Ptr;
       Decls : List_Id;
       Stats : List_Id;
-      Res   : Entity_Id)
-      return  Node_Id;
+      Res   : Entity_Id) return Node_Id;
    --  Common processing for Task_Array_Image and Task_Record_Image.
    --  Build function body that computes image.
 
@@ -101,8 +99,7 @@ package body Exp_Util is
    function Build_Task_Record_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      Dyn    : Boolean := False)
-      return   Node_Id;
+      Dyn    : Boolean := False) return Node_Id;
    --  Build function to generate the image string for a task that is a
    --  record component. Concatenate name of variable with that of selector.
    --  The flag Dyn indicates whether this is called for the initialization
@@ -110,9 +107,8 @@ package body Exp_Util is
    --  created task that is assigned to a selected component.
 
    function Make_CW_Equivalent_Type
-     (T    : Entity_Id;
-      E    : Node_Id)
-      return Entity_Id;
+     (T : Entity_Id;
+      E : Node_Id) return Entity_Id;
    --  T is a class-wide type entity, E is the initial expression node that
    --  constrains T in case such as: " X: T := E" or "new T'(E)"
    --  This function returns the entity of the Equivalent type and inserts
@@ -128,8 +124,7 @@ package body Exp_Util is
 
    function Make_Literal_Range
      (Loc         : Source_Ptr;
-      Literal_Typ : Entity_Id)
-      return        Node_Id;
+      Literal_Typ : Entity_Id) return Node_Id;
    --  Produce a Range node whose bounds are:
    --    Low_Bound (Literal_Type) ..
    --        Low_Bound (Literal_Type) + Length (Literal_Typ) - 1
@@ -137,9 +132,8 @@ package body Exp_Util is
 
    function New_Class_Wide_Subtype
      (CW_Typ : Entity_Id;
-      N      : Node_Id)
-      return   Entity_Id;
-   --  Create an implicit subtype of CW_Typ attached to node N.
+      N      : Node_Id) return Entity_Id;
+   --  Create an implicit subtype of CW_Typ attached to node N
 
    ----------------------
    -- Adjust_Condition --
@@ -376,14 +370,13 @@ package body Exp_Util is
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
       A_Type : Entity_Id;
-      Dyn    : Boolean := False)
-      return   Node_Id
+      Dyn    : Boolean := False) return Node_Id
    is
       Dims : constant Nat := Number_Dimensions (A_Type);
-      --  Number of dimensions for array of tasks.
+      --  Number of dimensions for array of tasks
 
       Temps : array (1 .. Dims) of Entity_Id;
-      --  Array of temporaries to hold string for each index.
+      --  Array of temporaries to hold string for each index
 
       Indx : Node_Id;
       --  Index expression
@@ -425,7 +418,8 @@ package body Exp_Util is
              Defining_Identifier => Pref,
              Object_Definition => New_Occurrence_Of (Standard_String, Loc),
              Expression =>
-               Make_String_Literal (Loc, Strval => String_From_Name_Buffer)));
+               Make_String_Literal (Loc,
+                 Strval => String_From_Name_Buffer)));
 
       else
          Append_To (Decls,
@@ -588,8 +582,7 @@ package body Exp_Util is
    function Build_Task_Image_Decls
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      A_Type : Entity_Id)
-      return   List_Id
+      A_Type : Entity_Id) return List_Id
    is
       Decls  : constant List_Id   := New_List;
       T_Id   : Entity_Id := Empty;
@@ -617,8 +610,8 @@ package body Exp_Util is
                Defining_Identifier => T_Id,
                Object_Definition => New_Occurrence_Of (Standard_String, Loc),
                Expression =>
-                 Make_String_Literal
-                   (Loc, Strval => String_From_Name_Buffer)));
+                 Make_String_Literal (Loc,
+                   Strval => String_From_Name_Buffer)));
 
       else
          if Nkind (Id_Ref) = N_Identifier
@@ -635,8 +628,9 @@ package body Exp_Util is
 
             Get_Name_String (Chars (Id_Ref));
 
-            Expr := Make_String_Literal
-              (Loc, Strval => String_From_Name_Buffer);
+            Expr :=
+              Make_String_Literal (Loc,
+                Strval => String_From_Name_Buffer);
 
          elsif Nkind (Id_Ref) = N_Selected_Component then
             T_Id :=
@@ -677,8 +671,7 @@ package body Exp_Util is
      (Loc   : Source_Ptr;
       Decls : List_Id;
       Stats : List_Id;
-      Res   : Entity_Id)
-      return  Node_Id
+      Res   : Entity_Id) return Node_Id
    is
       Spec : Node_Id;
 
@@ -791,8 +784,7 @@ package body Exp_Util is
    function Build_Task_Record_Image
      (Loc    : Source_Ptr;
       Id_Ref : Node_Id;
-      Dyn    : Boolean := False)
-      return   Node_Id
+      Dyn    : Boolean := False) return Node_Id
    is
       Len : Entity_Id;
       --  Total length of generated name
@@ -807,7 +799,7 @@ package body Exp_Util is
       --  Name of enclosing variable, prefix of resulting name
 
       Sum : Node_Id;
-      --  Expression to compute total size of string.
+      --  Expression to compute total size of string
 
       Sel : Entity_Id;
       --  Entity for selector name
@@ -828,7 +820,8 @@ package body Exp_Util is
              Defining_Identifier => Pref,
              Object_Definition => New_Occurrence_Of (Standard_String, Loc),
              Expression =>
-               Make_String_Literal (Loc, Strval => String_From_Name_Buffer)));
+               Make_String_Literal (Loc,
+                 Strval => String_From_Name_Buffer)));
 
       else
          Append_To (Decls,
@@ -847,7 +840,8 @@ package body Exp_Util is
            Defining_Identifier => Sel,
            Object_Definition => New_Occurrence_Of (Standard_String, Loc),
            Expression =>
-              Make_String_Literal (Loc, Strval => String_From_Name_Buffer)));
+             Make_String_Literal (Loc,
+               Strval => String_From_Name_Buffer)));
 
       Sum := Make_Integer_Literal (Loc, Nat (Name_Len + 1));
 
@@ -1010,8 +1004,7 @@ package body Exp_Util is
 
    function Duplicate_Subexpr
      (Exp      : Node_Id;
-      Name_Req : Boolean := False)
-      return     Node_Id
+      Name_Req : Boolean := False) return Node_Id
    is
    begin
       Remove_Side_Effects (Exp, Name_Req);
@@ -1024,8 +1017,7 @@ package body Exp_Util is
 
    function Duplicate_Subexpr_No_Checks
      (Exp      : Node_Id;
-      Name_Req : Boolean := False)
-      return     Node_Id
+      Name_Req : Boolean := False) return Node_Id
    is
       New_Exp : Node_Id;
 
@@ -1042,8 +1034,7 @@ package body Exp_Util is
 
    function Duplicate_Subexpr_Move_Checks
      (Exp      : Node_Id;
-      Name_Req : Boolean := False)
-      return     Node_Id
+      Name_Req : Boolean := False) return Node_Id
    is
       New_Exp : Node_Id;
 
@@ -1075,7 +1066,6 @@ package body Exp_Util is
             --  in gigi.
 
             P := Parent (N);
-
             while Present (P)
               and then Nkind (P) /= N_Subprogram_Body
             loop
@@ -1228,7 +1218,7 @@ package body Exp_Util is
       then
          if Is_Itype (Exp_Typ) then
 
-            --  No need to generate a new one.
+            --  No need to generate a new one
 
             T := Exp_Typ;
 
@@ -1523,10 +1513,9 @@ package body Exp_Util is
       --  condition, Sens is True if the condition is true and
       --  False if it needs inverting.
 
-      Cond := Condition (CV);
-
       --  Deal with NOT operators, inverting sense
 
+      Cond := Condition (CV);
       while Nkind (Cond) = N_Op_Not loop
          Cond := Right_Opnd (Cond);
          Sens := not Sens;
@@ -1819,7 +1808,7 @@ package body Exp_Util is
                   return;
                end if;
 
-            --  Statements, declarations, pragmas, representation clauses.
+            --  Statements, declarations, pragmas, representation clauses
 
             when
                --  Statements
@@ -1981,13 +1970,14 @@ package body Exp_Util is
 
                      else
                         declare
-                           Decl : Node_Id := Assoc_Node;
+                           Decl : Node_Id;
 
                         begin
                            --  Check whether these actions were generated
                            --  by a declaration that is part of the loop_
                            --  actions for the component_association.
 
+                           Decl := Assoc_Node;
                            while Present (Decl) loop
                               exit when Parent (Decl) = P
                                 and then Is_List_Member (Decl)
@@ -2552,7 +2542,6 @@ package body Exp_Util is
 
          if Result and then Nkind (P) = N_Indexed_Component then
             Expr := First (Expressions (P));
-
             while Present (Expr) loop
                Force_Evaluation (Expr);
                Next (Expr);
@@ -2669,9 +2658,9 @@ package body Exp_Util is
 
          elsif Nkind (N) = N_Case_Statement then
             declare
-               Alt : Node_Id := First (Alternatives (N));
-
+               Alt : Node_Id;
             begin
+               Alt := First (Alternatives (N));
                while Present (Alt) loop
                   Kill_Dead_Code (Statements (Alt));
                   Next (Alt);
@@ -2816,9 +2805,8 @@ package body Exp_Util is
    --   derived types
 
    function Make_CW_Equivalent_Type
-     (T    : Entity_Id;
-      E    : Node_Id)
-      return Entity_Id
+     (T : Entity_Id;
+      E : Node_Id) return Entity_Id
    is
       Loc         : constant Source_Ptr := Sloc (E);
       Root_Typ    : constant Entity_Id  := Root_Type (T);
@@ -2955,8 +2943,7 @@ package body Exp_Util is
 
    function Make_Literal_Range
      (Loc         : Source_Ptr;
-      Literal_Typ : Entity_Id)
-      return        Node_Id
+      Literal_Typ : Entity_Id) return Node_Id
    is
       Lo : constant Node_Id :=
              New_Copy_Tree (String_Literal_Low_Bound (Literal_Typ));
@@ -2993,8 +2980,7 @@ package body Exp_Util is
 
    function Make_Subtype_From_Expr
      (E       : Node_Id;
-      Unc_Typ : Entity_Id)
-      return    Node_Id
+      Unc_Typ : Entity_Id) return Node_Id
    is
       Loc         : constant Source_Ptr := Sloc (E);
       List_Constr : constant List_Id    := New_List;
@@ -3152,8 +3138,7 @@ package body Exp_Util is
 
    function New_Class_Wide_Subtype
      (CW_Typ : Entity_Id;
-      N      : Node_Id)
-      return   Entity_Id
+      N      : Node_Id) return Entity_Id
    is
       Res       : constant Entity_Id := Create_Itype (E_Void, N);
       Res_Name  : constant Name_Id   := Chars (Res);
@@ -3479,7 +3464,6 @@ package body Exp_Util is
 
          else
             N := First (L);
-
             while Present (N) loop
                if not Side_Effect_Free (N) then
                   return False;
@@ -3636,7 +3620,7 @@ package body Exp_Util is
             Set_Is_Renaming_Of_Object (Def_Id, False);
          end if;
 
-      --  If it is a scalar type, just make a copy.
+      --  If it is a scalar type, just make a copy
 
       elsif Is_Elementary_Type (Exp_Type) then
          Def_Id := Make_Defining_Identifier (Loc, New_Internal_Name ('R'));
@@ -3927,7 +3911,7 @@ package body Exp_Util is
       then
          return True;
 
-      --   Otherwise, Gigi cannot handle this and we must make a temporary.
+      --   Otherwise, Gigi cannot handle this and we must make a temporary
 
       else
          return False;
@@ -3997,8 +3981,7 @@ package body Exp_Util is
    function Target_Has_Fixed_Ops
      (Left_Typ   : Entity_Id;
       Right_Typ  : Entity_Id;
-      Result_Typ : Entity_Id)
-      return       Boolean
+      Result_Typ : Entity_Id) return Boolean
    is
       function Is_Fractional_Type (Typ : Entity_Id) return Boolean;
       --  Return True if the given type is a fixed-point type with a small

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -70,7 +70,7 @@ private
       others                                           => False);
 
    Graphic_Set               : constant Character_Set :=
-     (L.Space                  ..  L.Tilde             => True,
+     (L.Space                ..  L.Tilde               => True,
       L.No_Break_Space       ..  L.LC_Y_Diaeresis      => True,
       others                                           => False);
 
@@ -107,7 +107,7 @@ private
       others                                           => False);
 
    Decimal_Digit_Set         : constant Character_Set :=
-     ('0'                  ..  '9'                     => True,
+     ('0'                    ..  '9'                   => True,
       others                                           => False);
 
    Hexadecimal_Digit_Set     : constant Character_Set :=
