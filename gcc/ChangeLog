@@ -1,3 +1,9 @@
+2004-01-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (thumb_legitimate_address_p): Only allow constant pool 
+	references from SImode.
+	* arm.md (thumb_movhi_insn): Don't allow minipool references.
+
 2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* system.h (TEXT_SECTION): Poison.
