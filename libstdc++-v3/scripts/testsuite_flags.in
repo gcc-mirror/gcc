@@ -32,10 +32,8 @@ case ${query} in
       echo ${INCLUDES}
       ;;
     --build-includes)
-      INCLUDES="-nostdinc++ @GLIBCXX_INCLUDES@
-	        -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
-		-I${SRC_DIR}/include/backward 
-		-I${SRC_DIR}/testsuite"
+      INCLUDES="-nostdinc++ @GLIBCXX_INCLUDES@ -I${SRC_DIR}/libsupc++ 
+                -I${SRC_DIR}/include/backward -I${SRC_DIR}/testsuite"
       echo ${INCLUDES}
       ;;
     --install-cxx)
