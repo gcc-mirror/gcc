@@ -1,3 +1,8 @@
+Tue Aug 24 20:49:47 1999  Art Haas  <ahaas@neosoft.com>
+
+	* final.c (output_addr_const): Handle case where ASM_OPEN_PAREN
+	and ASM_CLOSE_PAREN are empty strings.
+
 Wed Aug 25 12:46:22 1999  Fred Fish  <fnf@cygnus.com>
 			  Geoffrey Keating <geoffk@cygnus.com>
 
