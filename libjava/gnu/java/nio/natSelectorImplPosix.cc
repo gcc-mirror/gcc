@@ -57,8 +57,10 @@ gnu::java::nio::SelectorImpl::implSelect (jintArray read, jintArray write,
   real_time_data.tv_usec = timeout;
 
   // If not legal timeout value is given, use NULL.
-  // This means an infinite timeout.
-  if (timeout >= 0)
+  // This means an infinite timeout. The specification
+  // also says that a zero timeout should be treated
+  // as infinite.
+  if (timeout > 0)
     {
       time_data = &real_time_data;
     }
