@@ -213,8 +213,8 @@ override_options ()
 {
   /* We're 370 floating point, not IEEE floating point.  */
   memset (real_format_for_mode, 0, sizeof real_format_for_mode);
-  real_format_for_mode[SFmode - QFmode] = &i370_single_format;
-  real_format_for_mode[DFmode - QFmode] = &i370_double_format;
+  REAL_MODE_FORMAT (SFmode) = &i370_single_format;
+  REAL_MODE_FORMAT (DFmode) = &i370_double_format;
 }
 
 /* ===================================================== */

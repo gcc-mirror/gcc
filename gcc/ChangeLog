@@ -1,10 +1,20 @@
+2003-10-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* real.h (REAL_MODE_FORMAT): New macro.
+	* c-cppbuiltin.c, optabs.c, real.c, config/alpha/alpha.c
+	* config/c4x/c4x.c, config/i370/i370.c, config/i386/freebsd.h
+	* config/i386/i386.c, config/i960/i960.c, config/ia64/ia64.c
+	* config/m68k/m68k.c, config/mips/mips.c, config/rs6000/rs6000.c
+	* config/vax/vax.c: Use REAL_MODE_FORMAT instead of referring
+	directly to real_format_for_mode array, wherever possible.
+
 2003-10-06  Devang Patel  <dpatel@apple.com>
 
 	* dwarf2out.c (is_main_source): Remove variable.
 	(dwarf2out_start_source_file): Do not check is_main_source.
 	Do not reset is_main_source.
 	(dwarf2out_init): Do not initialize is_main_source.
-	
+
 2003-10-06  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* fixinc/inclhack.def (stdio_va_list): Removed _ap fix.
@@ -103,7 +113,7 @@
 
 2003-10-05  Andrew Pinski <apinski@apple.com>
 
-	* config/darwin.c (machopic_non_lazy_ptr_name): 
+	* config/darwin.c (machopic_non_lazy_ptr_name):
 	Change strcat to memcpy and add length together.
 	(machopic_stub_name): Likewise.
 
@@ -191,7 +201,7 @@
 	* gengtype-lex.l: Recognize typedef of functions without PARAMS macro.
 
 2003-10-04  Nathanael Nerode  <neroden@gcc.gnu.org>
-        
+
 	* config/v850/v850-c.c, config/v850/v850-protos.h, config/v850/v850.c:
 	Convert to ISO C90 function declarations and definitions.
 

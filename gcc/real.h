@@ -145,6 +145,7 @@ struct real_format
    Indexed by MODE - QFmode.  */
 extern const struct real_format *real_format_for_mode[TFmode - QFmode + 1];
 
+#define REAL_MODE_FORMAT(MODE) (real_format_for_mode[(MODE) - QFmode])
 
 /* Declare functions in real.c.  */
 

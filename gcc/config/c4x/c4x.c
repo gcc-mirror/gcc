@@ -317,8 +317,8 @@ c4x_override_options (void)
 
   /* We're C4X floating point, not IEEE floating point.  */
   memset (real_format_for_mode, 0, sizeof real_format_for_mode);
-  real_format_for_mode[QFmode - QFmode] = &c4x_single_format;
-  real_format_for_mode[HFmode - QFmode] = &c4x_extended_format;
+  REAL_MODE_FORMAT (QFmode) = &c4x_single_format;
+  REAL_MODE_FORMAT (HFmode) = &c4x_extended_format;
 }
 
 

@@ -1113,8 +1113,8 @@ override_options (void)
 
   /* By default our XFmode is the 80-bit extended format.  If we have
      use TFmode instead, it's also the 80-bit format, but with padding.  */
-  real_format_for_mode[XFmode - QFmode] = &ieee_extended_intel_96_format;
-  real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
+  REAL_MODE_FORMAT (XFmode) = &ieee_extended_intel_96_format;
+  REAL_MODE_FORMAT (TFmode) = &ieee_extended_intel_128_format;
 
   /* Set the default values for switches whose default depends on TARGET_64BIT
      in case they weren't overwritten by command line options.  */

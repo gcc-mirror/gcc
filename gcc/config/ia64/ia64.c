@@ -4509,7 +4509,7 @@ ia64_override_options (void)
 
   /* Tell the compiler which flavor of TFmode we're using.  */
   if (INTEL_EXTENDED_IEEE_FORMAT)
-    real_format_for_mode[TFmode - QFmode] = &ieee_extended_intel_128_format;
+    REAL_MODE_FORMAT (TFmode) = &ieee_extended_intel_128_format;
 }
 
 static enum attr_itanium_class ia64_safe_itanium_class (rtx);
