@@ -223,7 +223,7 @@ process_include (desc, lineno)
   const char *filename = XSTR (desc, 0);
   char *pathname = NULL;
   FILE *input_file;
-  char *fname;
+  char *fname = NULL;
   struct file_name_list *stackp;
   int flen;
 
@@ -257,7 +257,7 @@ process_include (desc, lineno)
 
       flen = strlen (filename);
 
-      fname = (char *) alloca (max_include_len + flen + 2);
+      fname = (char *) xmalloc (max_include_len + flen + 2);
 
       /* + 2 above for slash and terminating null.  */
 
@@ -312,6 +312,8 @@ process_include (desc, lineno)
   if (init_include_reader (input_file) == FATAL_EXIT_CODE)
     message_with_line (lineno, "read errors found in include file  %s\n", pathname);
 
+  if (fname)
+    free (fname);
   return SUCCESS_EXIT_CODE;
 }
 

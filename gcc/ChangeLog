@@ -1,3 +1,8 @@
+2001-11-15  Alan Matsuoka  <alanm@redhat.com>
+
+	* gensupport.c	process_include : Change call to alloca to
+	xmalloc.
+
 2001-11-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md: Use spaces instead of tabs in output
