@@ -56,6 +56,12 @@ package body System.Parameters is
    -- Default_Stack_Size --
    ------------------------
 
+   --  Note that on Windows this is not really the default stack size. It
+   --  is the default used for the stack checking support but there is no
+   --  way to set the thread stack size at runtime. Only the initial thread
+   --  stack size can be specified. The real stack size limit is set at
+   --  link time. See GNU/Linker --stack=x,y option.
+
    function Default_Stack_Size return Size_Type is
    begin
       return 20 * 1024;

@@ -843,6 +843,13 @@ package body System.Task_Primitives.Operations is
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean)
    is
+      pragma Unreferenced (Stack_Size);
+
+      Initial_Stack_Size : constant := 1024;
+      --  We set the initial stack size to 1024. On Windows there is no way to
+      --  fix a task stack size. Only the initial stack size can be set, the
+      --  operating system will raise the task stack size if needed.
+
       hTask          : HANDLE;
       TaskId         : aliased DWORD;
       pTaskParameter : System.OS_Interface.PVOID;
@@ -856,7 +863,7 @@ package body System.Task_Primitives.Operations is
 
       hTask := CreateThread
          (null,
-          DWORD (Adjust_Storage_Size (Stack_Size)),
+          Initial_Stack_Size,
           Entry_Point,
           pTaskParameter,
           DWORD (Create_Suspended),
