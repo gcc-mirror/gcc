@@ -26,7 +26,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define VALID_SIGN(c, prevc) \
   (((c) == '+' || (c) == '-') && \
    ((prevc) == 'e' || (prevc) == 'E' \
-    || (((prevc) == 'p' || (prevc) == 'P') && !CPP_OPTION (pfile, c89))))
+    || (((prevc) == 'p' || (prevc) == 'P') \
+        && CPP_OPTION (pfile, extended_numbers))))
 
 /* Memory pools.  */
 #define ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))

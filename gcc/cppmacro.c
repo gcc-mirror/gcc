@@ -564,7 +564,7 @@ parse_args (pfile, node)
 
       if (argc + 1 == macro->paramc && macro->var_args)
 	{
-	  if (CPP_OPTION (pfile, c99) && CPP_PEDANTIC (pfile))
+	  if (CPP_PEDANTIC (pfile))
 	    cpp_pedwarn (pfile, "ISO C99 requires rest arguments to be used");
 	}
       else
@@ -1283,7 +1283,7 @@ parse_params (pfile, macro)
 	      pfile->state.va_args_ok = 1;
 	      if (! CPP_OPTION (pfile, c99) && CPP_OPTION (pfile, pedantic))
 		cpp_pedwarn (pfile,
-		     "C89 does not permit anonymous variable arguments");
+		     "anonymous variable arguments were introduced in C99");
 	    }
 	  else if (CPP_OPTION (pfile, pedantic))
 	    cpp_pedwarn (pfile,
@@ -1395,7 +1395,7 @@ _cpp_create_definition (pfile, node)
 	      macro->count--;
 	    }
 	  /* Let assembler get away with murder.  */
-	  else if (!CPP_OPTION (pfile, lang_asm))
+	  else if (CPP_OPTION (pfile, lang) != CLK_ASM)
 	    {
 	      ok = 0;
 	      cpp_error (pfile, "'#' is not followed by a macro parameter");

@@ -1,3 +1,16 @@
+2000-11-26  Neil Booth  <neilb@earthling.net>
+
+        * cpplib.h (struct cpp_reader): Remove lang_asm.
+        (struct cpp_options): Remove c89. New members lang,
+        extended_numbers.
+        * cppexp.c (parse_number): Use them. 
+        * cpphash.h (VALID_SIGN): Use them.
+        * cppinit.c (set_lang, cpp_start_read): Update.
+        * cpplex.c (parse_string, _cpp_lex_token): Update.
+        * cpplib.c (_cpp_handle_directive): Update.
+        * cppmacro.c (parse_args): Update.
+        * cppmain.c (scan_buffer): Update.
+
 Sun Nov 26 10:02:37 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* fold-const.c (fold, case CONVERT_EXPR): Always return tree of

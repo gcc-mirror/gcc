@@ -199,7 +199,7 @@ scan_buffer (pfile)
 	    }
 	  else if (print.printed
 		   && ! (token->flags & PREV_WHITE)
-		   && ! CPP_OPTION (pfile, lang_asm)
+		   && CPP_OPTION (pfile, lang) != CLK_ASM
 		   && cpp_avoid_paste (pfile, &tokens[1 - index], token))
 	    token->flags |= PREV_WHITE;
 
