@@ -153,13 +153,7 @@ void ffeglobal_terminate_1 (void);
 
 /* Define macros. */
 
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-#define FFEGLOBAL_ENABLED 0
-#elif FFECOM_targetCURRENT == FFECOM_targetGCC
 #define FFEGLOBAL_ENABLED 1
-#else
-#error
-#endif
 
 #define ffeglobal_common_init(g) ((g)->tick != 0)
 #define ffeglobal_common_have_pad(g) ((g)->u.common.have_pad)
@@ -198,4 +192,4 @@ void ffeglobal_terminate_1 (void);
 /* End of #include file. */
 
 #endif /* ! GCC_F_GLOBAL_H */
- 
+

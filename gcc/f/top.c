@@ -53,10 +53,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "symbol.h"
 #include "target.h"
 #include "where.h"
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 #include "flags.h"
 #include "toplev.h"
-#endif
 
 /* Externals defined here. */
 

@@ -62,9 +62,6 @@ struct _ffeequiv_
 /* Declare functions with prototypes. */
 
 void ffeequiv_add (ffeequiv eq, ffebld list, ffelexToken t);
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void ffeequiv_dump (ffeequiv eq);
-#endif
 void ffeequiv_exec_transition (void);
 void ffeequiv_init_2 (void);
 void ffeequiv_kill (ffeequiv victim);

@@ -105,10 +105,8 @@ ffeintrinFamily ffeintrin_family (ffeintrinSpec spec);
 void ffeintrin_fulfill_generic (ffebld *expr, ffeinfo *info, ffelexToken t);
 void ffeintrin_fulfill_specific (ffebld *expr, ffeinfo *info,
 				 bool *check_intrin, ffelexToken t);
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 ffecomGfrt ffeintrin_gfrt_direct (ffeintrinImp imp);
 ffecomGfrt ffeintrin_gfrt_indirect (ffeintrinImp imp);
-#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 void ffeintrin_init_0 (void);
 #define ffeintrin_init_1()
 #define ffeintrin_init_2()

@@ -58,11 +58,9 @@ struct _ffeintrin_spec_
 struct _ffeintrin_imp_
   {
     const char *const name;	/* Name of implementation. */
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
     const ffecomGfrt gfrt_direct;/* library routine, direct-callable form. */
     const ffecomGfrt gfrt_f2c;	/* library routine, f2c-callable form. */
     const ffecomGfrt gfrt_gnu;	/* library routine, gnu-callable form. */
-#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
     const char *const control;
     const char y2kbad;
   };
@@ -117,21 +115,12 @@ static const struct _ffeintrin_imp_ ffeintrin_imps_[]
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2)
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP)
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
       { NAME, FFECOM_gfrt ## GFRTDIRECT, FFECOM_gfrt ## GFRTF2C, \
 	FFECOM_gfrt ## GFRTGNU, CONTROL, FALSE },
 #define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
       { NAME, FFECOM_gfrt ## GFRTDIRECT, FFECOM_gfrt ## GFRTF2C, \
 	FFECOM_gfrt ## GFRTGNU, CONTROL, Y2KBAD },
-#elif FFECOM_targetCURRENT == FFECOM_targetFFE
-#define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
-      { NAME, CONTROL, FALSE },
-#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
-      { NAME, CONTROL, Y2KBAD },
-#else
-#error
-#endif
 #include "intrin.def"
 #undef DEFNAME
 #undef DEFGEN
@@ -1195,7 +1184,7 @@ ffeintrin_basictype (ffeintrinSpec spec)
 
   if (ffe_is_f2c ())
     gfrt = ffeintrin_imps_[imp].gfrt_f2c;
-  else 
+  else
     gfrt = ffeintrin_imps_[imp].gfrt_gnu;
 
   assert (gfrt != FFECOM_gfrt);
@@ -1523,7 +1512,6 @@ ffeintrin_fulfill_specific (ffebld *expr, ffeinfo *info,
 
 /* Return run-time index of intrinsic implementation as direct call.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 ffecomGfrt
 ffeintrin_gfrt_direct (ffeintrinImp imp)
 {
@@ -1531,11 +1519,9 @@ ffeintrin_gfrt_direct (ffeintrinImp imp)
 
   return ffeintrin_imps_[imp].gfrt_direct;
 }
-#endif
 
 /* Return run-time index of intrinsic implementation as actual argument.  */
 
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
 ffecomGfrt
 ffeintrin_gfrt_indirect (ffeintrinImp imp)
 {
@@ -1545,7 +1531,6 @@ ffeintrin_gfrt_indirect (ffeintrinImp imp)
     return ffeintrin_imps_[imp].gfrt_gnu;
   return ffeintrin_imps_[imp].gfrt_f2c;
 }
-#endif
 
 void
 ffeintrin_init_0 ()
@@ -1758,13 +1743,11 @@ ffeintrin_is_actualarg (ffeintrinSpec spec)
   state = ffeintrin_state_family (ffeintrin_specs_[spec].family);
 
   return (!ffe_is_pedantic () || ffeintrin_specs_[spec].is_actualarg)
-#if FFECOM_targetCURRENT == FFECOM_targetGCC
     && (ffe_is_f2c ()
 	? (ffeintrin_imps_[ffeintrin_specs_[spec].implementation].gfrt_f2c
 	   != FFECOM_gfrt)
 	: (ffeintrin_imps_[ffeintrin_specs_[spec].implementation].gfrt_gnu
 	   != FFECOM_gfrt))
-#endif
     && ((state == FFE_intrinsicstateENABLED)
 	|| (state == FFE_intrinsicstateHIDDEN));
 }

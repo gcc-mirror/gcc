@@ -1,5 +1,14 @@
 2001-10-17  Richard Henderson  <rth@redhat.com>
 
+	* com.h: Remove FFECOM_targetCURRENT, FFECOM_ONEPASS, BUILT_FOR_270,
+	BUILT_FOR_280, FFECOM_GCC_INCLUDE, all derivitive defines, and all
+	related conditional compilation directives.
+	* bad.c, bld.c, bld.h, com.c, equiv.c, equiv.h, global.h, intdoc.c,
+	intrin.c, intrin.h, lex.c, parse.c, sta.c, std.c, ste.c, ste.h, stt.c,
+	stt.h, stw.h, symbol.c, symbol.h, target.h, top.c: Likewise.
+
+2001-10-17  Richard Henderson  <rth@redhat.com>
+
 	* Make-lang.in (f/com.o): Depend on langhooks.h.
 	* com.c: Include it.
 	(LANG_HOOKS_INIT, LANG_HOOKS_FINISH): New.

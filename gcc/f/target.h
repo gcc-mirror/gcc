@@ -860,13 +860,9 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 
 /* Define macros. */
 
-#if BUILT_FOR_280
-#define FFETARGET_REAL_VALUE_FROM_INT_(resr, lf, kt) \
-  REAL_VALUE_FROM_INT (resr, (long) lf, (long) ((lf < 0) ? -1 : 0), ((kt == 1) ? SFmode : DFmode))
-#else
-#define FFETARGET_REAL_VALUE_FROM_INT_(resr, lf, kt) \
-  REAL_VALUE_FROM_INT (resr, (long) lf, (long) ((lf < 0) ? -1 : 0))
-#endif
+#define FFETARGET_REAL_VALUE_FROM_INT_(resr, lf, kt)			\
+  REAL_VALUE_FROM_INT (resr, (long) lf, (long) ((lf < 0) ? -1 : 0),	\
+		       ((kt == 1) ? SFmode : DFmode))
 
 #ifdef REAL_ARITHMETIC
 #define ffetarget_add_complex1(res,l,r) \

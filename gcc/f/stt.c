@@ -114,35 +114,6 @@ ffestt_caselist_create ()
   return new;
 }
 
-/* ffestt_caselist_dump -- Dump list of cases
-
-   ffesttCaseList list;
-   ffestt_caselist_dump(list);
-
-   The cases in the list are dumped with commas separating them.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void
-ffestt_caselist_dump (ffesttCaseList list)
-{
-  ffesttCaseList next;
-
-  for (next = list->next; next != list; next = next->next)
-    {
-      if (next != list->next)
-	fputc (',', dmpout);
-      if (next->expr1 != NULL)
-	ffebld_dump (next->expr1);
-      if (next->range)
-	{
-	  fputc (':', dmpout);
-	  if (next->expr2 != NULL)
-	    ffebld_dump (next->expr2);
-	}
-    }
-}
-#endif
-
 /* ffestt_caselist_kill -- Kill list of cases
 
    ffesttCaseList list;
@@ -438,32 +409,6 @@ ffestt_dimlist_create ()
   return new;
 }
 
-/* ffestt_dimlist_dump -- Dump list of dims
-
-   ffesttDimList list;
-   ffestt_dimlist_dump(list);
-
-   The dims in the list are dumped with commas separating them.	 */
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void
-ffestt_dimlist_dump (ffesttDimList list)
-{
-  ffesttDimList next;
-
-  for (next = list->next; next != list; next = next->next)
-    {
-      if (next != list->next)
-	fputc (',', dmpout);
-      if (next->lower != NULL)
-	ffebld_dump (next->lower);
-      fputc (':', dmpout);
-      if (next->upper != NULL)
-	ffebld_dump (next->upper);
-    }
-}
-#endif
-
 /* ffestt_dimlist_kill -- Kill list of dims
 
    ffesttDimList list;
@@ -610,28 +555,6 @@ ffestt_exprlist_drive (ffesttExprList list, void (*fn) (ffebld, ffelexToken))
       (*fn) (next->expr, next->t);
     }
 }
-
-/* ffestt_exprlist_dump -- Dump list of exprs
-
-   ffesttExprList list;
-   ffestt_exprlist_dump(list);
-
-   The exprs in the list are dumped with commas separating them.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void
-ffestt_exprlist_dump (ffesttExprList list)
-{
-  ffesttExprList next;
-
-  for (next = list->next; next != list; next = next->next)
-    {
-      if (next != list->next)
-	fputc (',', dmpout);
-      ffebld_dump (next->expr);
-    }
-}
-#endif
 
 /* ffestt_exprlist_kill -- Kill list of exprs
 
@@ -850,35 +773,6 @@ ffestt_implist_drive (ffesttImpList list, void (*fn) (ffelexToken, ffelexToken))
     }
 }
 
-/* ffestt_implist_dump -- Dump list of token pairs
-
-   ffesttImpList list;
-   ffestt_implist_dump(list);
-
-   The token pairs in the list are dumped with commas separating them.	*/
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void
-ffestt_implist_dump (ffesttImpList list)
-{
-  ffesttImpList next;
-
-  for (next = list->next; next != list; next = next->next)
-    {
-      if (next != list->next)
-	fputc (',', dmpout);
-      assert (ffelex_token_type (next->first) == FFELEX_typeNAME);
-      fputs (ffelex_token_text (next->first), dmpout);
-      if (next->last != NULL)
-	{
-	  fputc ('-', dmpout);
-	  assert (ffelex_token_type (next->last) == FFELEX_typeNAME);
-	  fputs (ffelex_token_text (next->last), dmpout);
-	}
-    }
-}
-#endif
-
 /* ffestt_implist_kill -- Kill list of token pairs
 
    ffesttImpList list;
@@ -963,44 +857,6 @@ ffestt_tokenlist_drive (ffesttTokenList tl, void (*fn) (ffelexToken))
       (*fn) (ti->t);
     }
 }
-
-/* ffestt_tokenlist_dump -- Dump list of tokens
-
-   ffesttTokenList tl;
-   ffestt_tokenlist_dump(tl);
-
-   The tokens in the list are dumped with commas separating them.  */
-
-#if FFECOM_targetCURRENT == FFECOM_targetFFE
-void
-ffestt_tokenlist_dump (ffesttTokenList tl)
-{
-  ffesttTokenItem ti;
-
-  for (ti = tl->first; ti != (ffesttTokenItem) &tl->first; ti = ti->next)
-    {
-      if (ti != tl->first)
-	fputc (',', dmpout);
-      switch (ffelex_token_type (ti->t))
-	{
-	case FFELEX_typeNUMBER:
-	case FFELEX_typeNAME:
-	case FFELEX_typeNAMES:
-	  fputs (ffelex_token_text (ti->t), dmpout);
-	  break;
-
-	case FFELEX_typeASTERISK:
-	  fputc ('*', dmpout);
-	  break;
-
-	default:
-	  assert (FALSE);
-	  fputc ('?', dmpout);
-	  break;
-	}
-    }
-}
-#endif
 
 /* ffestt_tokenlist_handle -- Handle list of tokens
 

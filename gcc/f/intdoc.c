@@ -96,9 +96,6 @@ struct _ffeintrin_spec_
 struct _ffeintrin_imp_
   {
     const char *const name;		/* Name of implementation. */
-#if 0	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
-    const ffecomGfrt gfrt;		/* gfrt index in library. */
-#endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
     const char *const control;
   };
 
@@ -136,19 +133,10 @@ static const struct _ffeintrin_imp_ imps[] = {
 #define DEFNAME(UPPER,LOWER,MIXED,GEN,SPEC)
 #define DEFGEN(CODE,NAME,SPEC1,SPEC2)
 #define DEFSPEC(CODE,NAME,CALLABLE,FAMILY,IMP)
-#if 0	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
-#define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
-  { NAME, FFECOM_gfrt ## GFRT, CONTROL },
-#define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
-  { NAME, FFECOM_gfrt ## GFRT, CONTROL },
-#elif 1	/* FFECOM_targetCURRENT == FFECOM_targetFFE */
 #define DEFIMP(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL) \
   { NAME, CONTROL },
 #define DEFIMPY(CODE,NAME,GFRTDIRECT,GFRTF2C,GFRTGNU,CONTROL,Y2KBAD) \
   { NAME, CONTROL },
-#else
-#error
-#endif
 #include "intrin.def"
 #undef DEFNAME
 #undef DEFGEN
