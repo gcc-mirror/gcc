@@ -1,3 +1,10 @@
+2005-04-05  Per Bothner  <per@bothner.com>
+
+	* c-decl.c (finish_function): If USE_MAPPED_LOCATION set the location
+	of the artification 'return 0' in main() to BUILTINS_LOCATION.
+	* tree-cfg.c (remove_bb): Check that location isn't BUILTINS_LOCATION
+	before warning.	
+
 2004-04-05  Devang Patel  <dpatel@apple.com>
 
 	* config/rs600/altivec.md (altivec_vsr<VI_char>): Rename to ..

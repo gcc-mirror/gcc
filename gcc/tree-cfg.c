@@ -2129,7 +2129,7 @@ remove_bb (basic_block bb)
      loop above, so the last statement we process is the first statement
      in the block.  */
 #ifdef USE_MAPPED_LOCATION
-  if (warn_notreached && loc != UNKNOWN_LOCATION)
+  if (warn_notreached && loc > BUILTINS_LOCATION)
     warning ("%Hwill never be executed", &loc);
 #else
   if (warn_notreached && loc)
