@@ -1,3 +1,9 @@
+2001-02-26  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* libI77/configure.in: Test for ftruncate.
+	* libI77/configure: Rebuilt.
+	* libI77/endfile.c: Use fflush/ftruncate when available.
+
 2001-02-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* libF77/Version.c, libI77/Version.c, libU77/Version.c: Update G77
