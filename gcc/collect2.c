@@ -790,45 +790,45 @@ main (argc, argv)
 
   full_ld_suffix
     = xcalloc (strlen (ld_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_ld_suffix, ld_suffix);
+  strcpy (full_ld_suffix, target_machine);
   strcat (full_ld_suffix, "-");
-  strcat (full_ld_suffix, target_machine);
+  strcat (full_ld_suffix, ld_suffix);
 
   full_real_ld_suffix
     = xcalloc (strlen (real_ld_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_real_ld_suffix, real_ld_suffix);
+  strcpy (full_real_ld_suffix, target_machine);
   strcat (full_real_ld_suffix, "-");
-  strcat (full_real_ld_suffix, target_machine);
+  strcat (full_real_ld_suffix, real_ld_suffix);
 
   full_gld_suffix
     = xcalloc (strlen (gld_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_gld_suffix, gld_suffix);
+  strcpy (full_gld_suffix, target_machine);
   strcat (full_gld_suffix, "-");
-  strcat (full_gld_suffix, target_machine);
+  strcat (full_gld_suffix, gld_suffix);
 
   full_nm_suffix
     = xcalloc (strlen (nm_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_nm_suffix, nm_suffix);
+  strcpy (full_nm_suffix, target_machine);
   strcat (full_nm_suffix, "-");
-  strcat (full_nm_suffix, target_machine);
+  strcat (full_nm_suffix, nm_suffix);
 
   full_gnm_suffix
     = xcalloc (strlen (gnm_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_gnm_suffix, gnm_suffix);
+  strcpy (full_gnm_suffix, target_machine);
   strcat (full_gnm_suffix, "-");
-  strcat (full_gnm_suffix, target_machine);
+  strcat (full_gnm_suffix, gnm_suffix);
 
   full_strip_suffix
     = xcalloc (strlen (strip_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_strip_suffix, strip_suffix);
+  strcpy (full_strip_suffix, target_machine);
   strcat (full_strip_suffix, "-");
-  strcat (full_strip_suffix, target_machine);
+  strcat (full_strip_suffix, strip_suffix);
   
   full_gstrip_suffix
     = xcalloc (strlen (gstrip_suffix) + strlen (target_machine) + 2, 1);
-  strcpy (full_gstrip_suffix, gstrip_suffix);
+  strcpy (full_gstrip_suffix, target_machine);
   strcat (full_gstrip_suffix, "-");
-  strcat (full_gstrip_suffix, target_machine);
+  strcat (full_gstrip_suffix, gstrip_suffix);
 #endif /* CROSS_COMPILE */
 
   /* Try to discover a valid linker/nm/strip to use.  */
@@ -836,7 +836,7 @@ main (argc, argv)
   /* Search the (target-specific) compiler dirs for `gld'.  */
   ld_file_name = find_a_file (&cpath, gld_suffix);
   /* Search the ordinary system bin directories
-     for `gld' (if native linking) or `gld-TARGET' (if cross).  */
+     for `gld' (if native linking) or `TARGET-gld' (if cross).  */
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, full_gld_suffix);
   /* Likewise for `real-ld'.  */
@@ -853,7 +853,7 @@ main (argc, argv)
      for `ld', but we don't do that, since this program is installed
      there as `ld'.  */
   /* Search the ordinary system bin directories
-     for `ld' (if native linking) or `ld-TARGET' (if cross).  */
+     for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
     ld_file_name = find_a_file (&path, full_ld_suffix);
 
@@ -887,8 +887,8 @@ main (argc, argv)
     {
 #ifdef CROSS_COMPILE
       c_file_name = xcalloc (sizeof ("gcc-") + strlen (target_machine) + 1, 1);
-      strcpy (c_file_name, "gcc-");
-      strcat (c_file_name, target_machine);
+      strcpy (c_file_name, target_machine);
+      strcat (c_file_name, "-gcc");
 #else
       c_file_name = "gcc";
 #endif
