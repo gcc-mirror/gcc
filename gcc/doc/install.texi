@@ -287,14 +287,15 @@ systems' @command{tar} programs will also work, only try GNU
 @heading Tools/packages necessary for modifying GCC
 @table @asis
 
-@item autoconf versions 2.13 and 2.57
+@item autoconf versions 2.13 and 2.59
 @itemx GNU m4 version 1.4 (or later)
 
 Necessary when modifying @file{configure.in}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
 directories require autoconf 2.13 (exactly), but @file{libiberty},
 @file{fastjar}, @file{libstdc++-v3}, @file{libjava/libltdl}, @file{boehm-gc},
-@file{intl}, @file{libada}, and @file{gcc} require autoconf 2.57 (exactly).
+@file{intl}, @file{libada}, @file{libffi} and @file{gcc} require autoconf
+2.59 (exactly).
 
 @item automake versions 1.4-gcj and 1.7.9
 
@@ -306,9 +307,9 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 @file{libf2c}, @file{libiberty}, @file{libobjc} directories as well as any
 of their subdirectories.
 
-The @file{libstdc++-v3}, @file{libjava/libltdl}, and @file{fastjar}
-directories require automake 1.7.9.  However, the Java directories, which
-include @file{boehm-gc}, @file{libffi}, @file{libjava}, and @file{zlib},
+The @file{libstdc++-v3}, @file{libjava/libltdl}, @file{fastjar} and
+@file{libffi} directories require automake 1.7.9. However, the Java
+directories, which include @file{boehm-gc}, @file{libjava}, and @file{zlib},
 require a modified version of automake 1.4 downloadable from
 @uref{ftp://gcc.gnu.org/pub/java/automake-gcj-1.4.tar.gz}.
 
