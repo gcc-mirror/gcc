@@ -4427,6 +4427,9 @@ extern tree mangle_ref_init_variable            PARAMS ((tree));
 /* in dump.c */
 extern int cp_dump_tree                         PARAMS ((void *, tree));
 
+/* in parser.c */
+extern int pending_lang_change;
+
 /* -- end of C++ */
 
 #endif /* ! GCC_CP_TREE_H */
