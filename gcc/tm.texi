@@ -7973,4 +7973,29 @@ A C expression for the maximum number of instructions to execute via
 conditional execution instructions instead of a branch.  A value of
 @code{BRANCH_COST}+1 is the default if the machine does not use cc0, and
 1 if it does use cc0.
+
+@findex IFCVT_MODIFY_TESTS
+@item IFCVT_MODIFY_TESTS
+A C expression to modify the tests in @code{TRUE_EXPR}, and
+@code{FALSE_EXPPR} for use in converting insns in @code{TEST_BB},
+@code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB} basic blocks to
+conditional execution.  Set either @code{TRUE_EXPR} or @code{FALSE_EXPR}
+to a null pointer if the tests cannot be converted.
+
+@findex IFCVT_MODIFY_INSN
+@item IFCVT_MODIFY_INSN
+A C expression to modify the @code{PATTERN} of an @code{INSN} that is to
+be converted to conditional execution format.
+
+@findex IFCVT_MODIFY_FINAL
+@item IFCVT_MODIFY_FINAL
+A C expression to perform any final machine dependent modifications in
+converting code to conditional execution in the basic blocks
+@code{TEST_BB}, @code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB}.
+
+@findex IFCVT_MODIFY_CANCEL
+@item IFCVT_MODIFY_CANCEL
+A C expression to cancel any machine dependent modifications in
+converting code to conditional execution in the basic blocks
+@code{TEST_BB}, @code{THEN_BB}, @code{ELSE_BB}, and @code{JOIN_BB}.
 @end table
