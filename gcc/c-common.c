@@ -967,9 +967,10 @@ truthvalue_conversion (expr)
 	return integer_one_node;
 
     case COMPLEX_EXPR:
-      return build_binary_op (TRUTH_ANDIF_EXPR,
-			      truthvalue_conversion (TREE_REALPART (expr)),
-			      truthvalue_conversion (TREE_IMAGPART (expr)),
+      return build_binary_op ((TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 1))
+			       ? TRUTH_AND_EXPR : TRUTH_ANDIF_EXPR),
+			      truthvalue_conversion (TREE_OPERAND (expr, 0)),
+			      truthvalue_conversion (TREE_OPERAND (expr, 1)),
 			      0);
 
     case NEGATE_EXPR:
@@ -1026,6 +1027,14 @@ truthvalue_conversion (expr)
 	warning ("suggest parentheses around assignment used as truth value");
       break;
     }
+
+  if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
+    return (build_binary_op
+	    ((TREE_SIDE_EFFECTS (expr)
+	      ? TRUTH_AND_EXPR : TRUTH_ANDIF_EXPR),
+	     truthvalue_conversion (build_unary_op (REALPART_EXPR, expr, 0)),
+	     truthvalue_conversion (build_unary_op (IMAGPART_EXPR, expr, 0)),
+	     0));
 
   return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
 }
