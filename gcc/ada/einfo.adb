@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.630 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -6569,7 +6569,8 @@ package body Einfo is
          when E_Discriminant                             =>
             Write_Str ("Corresponding_Discriminant");
 
-         when E_Package                                  =>
+         when E_Package                                  |
+              E_Generic_Package                          =>
             Write_Str ("Body_Entity");
 
          when E_Package_Body                             |

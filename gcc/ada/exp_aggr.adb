@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.170 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1134,6 +1134,24 @@ package body Exp_Aggr is
                      High := Aggr_High;
                   else
                      High := Add (-1, To => Table (J + 1).Choice_Lo);
+                  end if;
+
+                  --  If this is an expansion within an init_proc, make
+                  --  sure that discriminant references are replaced by
+                  --  the corresponding discriminal.
+
+                  if Inside_Init_Proc then
+                     if Is_Entity_Name (Low)
+                       and then Ekind (Entity (Low)) = E_Discriminant
+                     then
+                        Set_Entity (Low, Discriminal (Entity (Low)));
+                     end if;
+
+                     if Is_Entity_Name (High)
+                       and then Ekind (Entity (High)) = E_Discriminant
+                     then
+                        Set_Entity (High, Discriminal (Entity (High)));
+                     end if;
                   end if;
 
                   if First
