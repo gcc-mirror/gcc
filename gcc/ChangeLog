@@ -1,5 +1,8 @@
 2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* fold-const.c (fold_addr_expr_with_type): Look through all
+	valid LHS modifiers to find a base to mark addressable.
+
 	* tree.h (debug_find_tree): Add declaration.
 	* tree-inline.c (debug_find_tree): Remove extern declaration.
 
