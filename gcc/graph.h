@@ -1,4 +1,4 @@
-/* Header file for graph routines.  
+/* Header file for graph routines.
    Copyright (C) 1999 Free Software Foundation, Inc.
 
 This file is part of GCC.

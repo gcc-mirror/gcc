@@ -31,12 +31,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define GCC_GTHR_WIN32_H
 
 /* Windows32 threads specific definitions. The windows32 threading model
-   does not map well into pthread-inspired gcc's threading model, and so 
+   does not map well into pthread-inspired gcc's threading model, and so
    there are caveats one needs to be aware of.
 
    1. The destructor supplied to __gthread_key_create is ignored for
-      generic x86-win32 ports. This will certainly cause memory leaks 
-      due to unreclaimed eh contexts (sizeof (eh_context) is at least 
+      generic x86-win32 ports. This will certainly cause memory leaks
+      due to unreclaimed eh contexts (sizeof (eh_context) is at least
       24 bytes for x86 currently).
 
       This memory leak may be significant for long-running applications
@@ -47,18 +47,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       linked in if -mthreads option is specified, that runs the dtors in
       the reverse order of registration when each thread exits. If
       -mthreads option is not given, a stub is linked in instead of the
-      DLL, which results in memory leak. Other x86-win32 ports can use 
+      DLL, which results in memory leak. Other x86-win32 ports can use
       the same technique of course to avoid the leak.
 
    2. The error codes returned are non-POSIX like, and cast into ints.
-      This may cause incorrect error return due to truncation values on 
+      This may cause incorrect error return due to truncation values on
       hw where sizeof (DWORD) > sizeof (int).
-   
-   3. We might consider using Critical Sections instead of Windows32 
-      mutexes for better performance, but emulating __gthread_mutex_trylock 
+
+   3. We might consider using Critical Sections instead of Windows32
+      mutexes for better performance, but emulating __gthread_mutex_trylock
       interface becomes more complicated (Win9x does not support
       TryEnterCriticalSectioni, while NT does).
-  
+
    The basic framework should work well enough. In the long term, GCC
    needs to use Structured Exception Handling on Windows32.  */
 
@@ -72,12 +72,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef _LIBOBJC
 
 /* This is necessary to prevent windef.h (included from windows.h) from
-   defining it's own BOOL as a typedef.  */	
+   defining it's own BOOL as a typedef.  */
 #ifndef __OBJC__
 #define __OBJC__
 #endif
 #include <windows.h>
-/* Now undef the windows BOOL.  */ 
+/* Now undef the windows BOOL.  */
 #undef BOOL
 
 /* Key structure for maintaining thread specific storage */
@@ -115,9 +115,9 @@ __gthread_objc_thread_detach(void (*func)(void *arg), void *arg)
   HANDLE win32_handle;
 
   if (!(win32_handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func,
-                                   arg, 0, &thread_id)))
+				    arg, 0, &thread_id)))
     thread_id = 0;
-  
+
   return (objc_thread_t)thread_id;
 }
 
@@ -155,7 +155,7 @@ __gthread_objc_thread_get_priority(void)
   int sys_priority;
 
   sys_priority = GetThreadPriority(GetCurrentThread());
-  
+
   switch (sys_priority)
     {
     case THREAD_PRIORITY_HIGHEST:
@@ -167,7 +167,7 @@ __gthread_objc_thread_get_priority(void)
     default:
     case THREAD_PRIORITY_BELOW_NORMAL:
       return OBJC_THREAD_BACKGROUND_PRIORITY;
-    
+
     case THREAD_PRIORITY_IDLE:
     case THREAD_PRIORITY_LOWEST:
       return OBJC_THREAD_LOW_PRIORITY;
@@ -355,7 +355,7 @@ extern int __mingwthr_key_dtor (DWORD, void (*) (void *));
 #endif
 
 /* Mingw runtime >= v0.3 provides a magic variable that is set to non-zero
-   if -mthreads option was specified, or 0 otherwise. This is to get around 
+   if -mthreads option was specified, or 0 otherwise. This is to get around
    the lack of weak symbols in PE-COFF.  */
 extern int _CRT_MT;
 #endif
@@ -381,27 +381,27 @@ __gthread_once (__gthread_once_t *once, void (*func) (void))
   if (! once->done)
     {
       if (InterlockedIncrement (&(once->started)) == 0)
-        {
+	{
 	  (*func) ();
 	  once->done = TRUE;
 	}
       else
 	{
-	  /* Another thread is currently executing the code, so wait for it 
-	     to finish; yield the CPU in the meantime.  If performance 
-	     does become an issue, the solution is to use an Event that 
-	     we wait on here (and set above), but that implies a place to 
-	     create the event before this routine is called.  */ 
+	  /* Another thread is currently executing the code, so wait for it
+	     to finish; yield the CPU in the meantime.  If performance
+	     does become an issue, the solution is to use an Event that
+	     we wait on here (and set above), but that implies a place to
+	     create the event before this routine is called.  */
 	  while (! once->done)
 	    Sleep (0);
 	}
     }
-  
+
   return 0;
 }
 
 /* Windows32 thread local keys don't support destructors; this leads to
-   leaks, especially in threaded applications making extensive use of 
+   leaks, especially in threaded applications making extensive use of
    C++ EH. Mingw uses a thread-support DLL to work-around this problem.  */
 static inline int
 __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
@@ -423,7 +423,7 @@ __gthread_key_create (__gthread_key_t *key, void (*dtor) (void *))
 }
 
 /* Currently, this routine is called only for Mingw runtime, and if
-   -mthreads option is chosen to link in the thread support DLL.  */ 
+   -mthreads option is chosen to link in the thread support DLL.  */
 static inline int
 __gthread_key_dtor (__gthread_key_t key, void *ptr)
 {
@@ -461,7 +461,7 @@ __gthread_setspecific (__gthread_key_t key, const void *ptr)
 static inline void
 __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 {
-  /* Create unnamed mutex with default security attr and no initial owner.  */ 
+  /* Create unnamed mutex with default security attr and no initial owner.  */
   *mutex = CreateMutex (NULL, 0, NULL);
 }
 

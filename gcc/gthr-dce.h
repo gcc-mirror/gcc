@@ -146,9 +146,9 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
 
   if (!__gthread_active_p ())
     return NULL;
- 
+
   if ( !(pthread_create(&new_thread_handle, pthread_attr_default,
-  			(void *)func, arg)) )
+			(void *)func, arg)) )
     {
       /* ??? May not work! (64bit) */
       thread_id = *(objc_thread_t *)&new_thread_handle;
@@ -156,7 +156,7 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
     }
   else
     thread_id = NULL;
-  
+
   return thread_id;
 }
 
@@ -182,7 +182,7 @@ __gthread_objc_thread_set_priority(int priority)
       sys_priority = (PRI_BG_MIN_NP + PRI_BG_MAX_NP) / 2;
       break;
     }
-    
+
   /* Change the priority.  */
   if (pthread_setprio(pthread_self(), sys_priority) >= 0)
     return 0;
@@ -200,7 +200,7 @@ __gthread_objc_thread_get_priority(void)
   if (__gthread_active_p ())
     {
       if ((sys_priority = pthread_getprio(pthread_self())) >= 0)
-        {
+	{
 	  if (sys_priority >= PRI_FG_MIN_NP
 	      && sys_priority <= PRI_FG_MAX_NP)
 	    return OBJC_THREAD_INTERACTIVE_PRIORITY;
@@ -292,12 +292,12 @@ __gthread_objc_mutex_allocate(objc_mutex_t mutex)
       mutex->backend = objc_malloc(sizeof(pthread_mutex_t));
 
       if (pthread_mutex_init((pthread_mutex_t *)mutex->backend,
-      			    pthread_mutexattr_default))
-        {
-          objc_free(mutex->backend);
-          mutex->backend = NULL;
-          return -1;
-        }
+			     pthread_mutexattr_default))
+	{
+	  objc_free(mutex->backend);
+	  mutex->backend = NULL;
+	  return -1;
+	}
     }
 
   return 0;
@@ -310,7 +310,7 @@ __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
   if (__gthread_active_p ())
     {
       if (pthread_mutex_destroy((pthread_mutex_t *)mutex->backend))
-        return -1;
+	return -1;
 
       objc_free(mutex->backend);
       mutex->backend = NULL;

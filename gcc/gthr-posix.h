@@ -52,9 +52,9 @@ typedef pthread_mutex_t __gthread_mutex_t;
 #pragma weak pthread_setspecific
 #pragma weak pthread_create
 
-#pragma weak pthread_mutex_lock 
-#pragma weak pthread_mutex_trylock 
-#pragma weak pthread_mutex_unlock 
+#pragma weak pthread_mutex_lock
+#pragma weak pthread_mutex_trylock
+#pragma weak pthread_mutex_unlock
 
 #ifdef _LIBOBJC
 /* Objective C.  */
@@ -120,15 +120,15 @@ __gthread_objc_init_thread_system(void)
     {
       /* Initialize the thread storage key */
       if (pthread_key_create(&_objc_thread_storage, NULL) == 0)
-        {
-          /* The normal default detach state for threads is
-           * PTHREAD_CREATE_JOINABLE which causes threads to not die
-           * when you think they should.  */
-          if (pthread_attr_init(&_objc_thread_attribs) == 0
-              && pthread_attr_setdetachstate(&_objc_thread_attribs, 
-                                             PTHREAD_CREATE_DETACHED) == 0)
-            return 0;
-        }
+	{
+	  /* The normal default detach state for threads is
+	   * PTHREAD_CREATE_JOINABLE which causes threads to not die
+	   * when you think they should.  */
+	  if (pthread_attr_init(&_objc_thread_attribs) == 0
+	      && pthread_attr_setdetachstate(&_objc_thread_attribs,
+					     PTHREAD_CREATE_DETACHED) == 0)
+	    return 0;
+	}
     }
 
   return -1;
@@ -157,12 +157,12 @@ __gthread_objc_thread_detach(void (*func)(void *), void *arg)
 
   if (!__gthread_active_p ())
     return NULL;
- 
+
   if ( !(pthread_create(&new_thread_handle, NULL, (void *)func, arg)) )
     thread_id = (objc_thread_t) new_thread_handle;
   else
     thread_id = NULL;
-  
+
   return thread_id;
 }
 
@@ -180,25 +180,25 @@ __gthread_objc_thread_set_priority(int priority)
 
     if (pthread_getschedparam(thread_id, &policy, &params) == 0)
       {
-        if ((priority_max = sched_get_priority_max(policy)) != 0)
-          return -1;
+	if ((priority_max = sched_get_priority_max(policy)) != 0)
+	  return -1;
 
-        if ((priority_min = sched_get_priority_min(policy)) != 0)
-          return -1;
+	if ((priority_min = sched_get_priority_min(policy)) != 0)
+	  return -1;
 
-        if (priority > priority_max)
-          priority = priority_max;
-        else if (priority < priority_min)
-          priority = priority_min;
-        params.sched_priority = priority;
+	if (priority > priority_max)
+	  priority = priority_max;
+	else if (priority < priority_min)
+	  priority = priority_min;
+	params.sched_priority = priority;
 
-        /*
-         * The solaris 7 and several other man pages incorrectly state that
-         * this should be a pointer to policy but pthread.h is universally
-         * at odds with this.
-         */
-        if (pthread_setschedparam(thread_id, policy, &params) == 0)
-          return 0;
+	/*
+	 * The solaris 7 and several other man pages incorrectly state that
+	 * this should be a pointer to policy but pthread.h is universally
+	 * at odds with this.
+	 */
+	if (pthread_setschedparam(thread_id, policy, &params) == 0)
+	  return 0;
       }
     return -1;
   }
@@ -214,9 +214,9 @@ __gthread_objc_thread_get_priority(void)
       struct sched_param params;
 
       if (pthread_getschedparam(pthread_self(), &policy, &params) == 0)
-        return params.sched_priority;
+	return params.sched_priority;
       else
-        return -1;
+	return -1;
     }
   else
     return OBJC_THREAD_INTERACTIVE_PRIORITY;
@@ -330,7 +330,7 @@ __gthread_objc_mutex_deallocate(objc_mutex_t mutex)
 static inline int
 __gthread_objc_mutex_lock(objc_mutex_t mutex)
 {
-  if (__gthread_active_p () 
+  if (__gthread_active_p ()
       && pthread_mutex_lock((pthread_mutex_t *)mutex->backend) != 0)
     {
       return -1;
@@ -343,7 +343,7 @@ __gthread_objc_mutex_lock(objc_mutex_t mutex)
 static inline int
 __gthread_objc_mutex_trylock(objc_mutex_t mutex)
 {
-  if (__gthread_active_p () 
+  if (__gthread_active_p ()
       && pthread_mutex_trylock((pthread_mutex_t *)mutex->backend) != 0)
     {
       return -1;
@@ -356,7 +356,7 @@ __gthread_objc_mutex_trylock(objc_mutex_t mutex)
 static inline int
 __gthread_objc_mutex_unlock(objc_mutex_t mutex)
 {
-  if (__gthread_active_p () 
+  if (__gthread_active_p ()
       && pthread_mutex_unlock((pthread_mutex_t *)mutex->backend) != 0)
     {
       return -1;

@@ -687,7 +687,7 @@ create_program_flow_graph (bptr)
   __read_long (&function_name_len, bbg_file, 4);
   function_name = xmalloc (function_name_len + 1);
   fread (function_name, 1, function_name_len + 1, bbg_file);
-  
+
   /* Skip padding.  */
   tmp = (function_name_len + 1) % 4;
 
@@ -695,7 +695,7 @@ create_program_flow_graph (bptr)
     fseek (bbg_file, 4 - tmp, SEEK_CUR);
 
   __read_long (&tmp, bbg_file, 4);   /* ignore -1.  */
-  
+
   /* Read the cfg checksum.  */
   __read_long (&cfg_checksum, bbg_file, 4);
 
@@ -729,7 +729,7 @@ create_program_flow_graph (bptr)
 	  __read_long (&flag_bits, bbg_file, 4);
 	  if (flag_bits & 0x1)
 	    arcptr->on_tree++;
-	  else 
+	  else
 	    instr_arcs++;
 	  arcptr->fake = !! (flag_bits & 0x2);
 	  arcptr->fall_through = !! (flag_bits & 0x4);
@@ -1063,9 +1063,9 @@ calculate_branch_probs (current_graph, block_num, branch_probs, last_line_num)
       a_ptr = (struct arcdata *) xmalloc (sizeof (struct arcdata));
       a_ptr->total = total;
       if (total == 0)
-          a_ptr->hits = 0;
+	a_ptr->hits = 0;
       else
-          a_ptr->hits = arcptr->arc_count;
+	a_ptr->hits = arcptr->arc_count;
       a_ptr->call_insn = arcptr->fake;
 
       if (output_function_summary)
@@ -1565,8 +1565,8 @@ output_data ()
 					   ((a_ptr->hits * 100)
 					    + (a_ptr->total >> 1))
 					   / a_ptr->total);
-                                fnotice (gcov_file,
-                                         "branch %d taken = %s%%\n", i, c);
+				  fnotice (gcov_file,
+					   "branch %d taken = %s%%\n", i, c);
 				}
 			    }
 			}

@@ -74,7 +74,7 @@ __store_gcov_type (value, dest, bytes)
   if (value && value != -1)
     return 1;
 
-  for(; i < bytes ; i++) 
+  for(; i < bytes ; i++)
     dest[i] = 0;
   dest[bytes - 1] |= upper_bit;
   return 0;

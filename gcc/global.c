@@ -52,7 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    1. Assign allocation-numbers (allocnos) to the pseudo-registers
    still needing allocations and to the pseudo-registers currently
    allocated by local-alloc which may be spilled by reload.
-   Set up tables reg_allocno and allocno_reg to map 
+   Set up tables reg_allocno and allocno_reg to map
    reg numbers to allocnos and vice versa.
    max_allocno gets the number of allocnos in use.
 
@@ -483,7 +483,7 @@ global_alloc (file)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     if (regs_ever_live[i])
       local_reg_n_refs[i] = 0, local_reg_freq[i] = 0;
-	
+
   allocno_row_words = (max_allocno + INT_BITS - 1) / INT_BITS;
 
   /* We used to use alloca here, but the size of what it would try to
@@ -549,7 +549,7 @@ global_alloc (file)
 	}
 
       qsort (allocno_order, max_allocno, sizeof (int), allocno_compare);
-      
+
       prune_preferences ();
 
       if (file)
@@ -884,18 +884,18 @@ expand_preferences ()
 
 /* Prune the preferences for global registers to exclude registers that cannot
    be used.
-   
+
    Compute `regs_someone_prefers', which is a bitmask of the hard registers
    that are preferred by conflicting registers of lower priority.  If possible,
    we will avoid using these registers.  */
-   
+
 static void
 prune_preferences ()
 {
   int i;
   int num;
   int *allocno_to_order = (int *) xmalloc (max_allocno * sizeof (int));
-  
+
   /* Scan least most important to most important.
      For each allocno, remove from preferences registers that cannot be used,
      either because of conflicts or register type.  Then compute all registers
@@ -1028,7 +1028,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
   COPY_HARD_REG_SET (used, used1);
   IOR_COMPL_HARD_REG_SET (used, regs_used_so_far);
   IOR_HARD_REG_SET (used, allocno[num].regs_someone_prefers);
-  
+
   best_reg = -1;
   for (i = FIRST_PSEUDO_REGISTER, pass = 0;
        pass <= 1 && i >= FIRST_PSEUDO_REGISTER;
@@ -1073,7 +1073,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 
      Remove from the preferred registers and conflicting registers.  Note that
      additional conflicts may have been added after `prune_preferences' was
-     called. 
+     called.
 
      First do this for those register with copy preferences, then all
      preferred registers.  */
@@ -1156,7 +1156,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
     }
  no_prefs:
 
-  /* If we haven't succeeded yet, try with caller-saves. 
+  /* If we haven't succeeded yet, try with caller-saves.
      We need not check to see if the current function has nonlocal
      labels because we don't put any pseudos that are live over calls in
      registers in that case.  */
@@ -1176,7 +1176,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 	    CLEAR_HARD_REG_SET (new_losers);
 	  else
 	    COPY_HARD_REG_SET (new_losers, losers);
-	    
+
 	  IOR_HARD_REG_SET(new_losers, losing_caller_save_reg_set);
 	  find_reg (num, new_losers, alt_regs_p, 1, retrying);
 	  if (reg_renumber[allocno[num].reg] >= 0)
@@ -1223,7 +1223,7 @@ find_reg (num, losers, alt_regs_p, accept_call_clobbered, retrying)
 	      /* We explicitly evaluate the divide results into temporary
 		 variables so as to avoid excess precision problems that occur
 		 on an i386-unknown-sysv4.2 (unixware) host.  */
-		 
+
 	      double tmp1 = ((double) local_reg_freq[regno]
 			    / local_reg_live_length[regno]);
 	      double tmp2 = ((double) allocno[num].freq
@@ -1593,7 +1593,7 @@ mark_reg_live_nc (regno, mode)
    that SRC is a register.  If SRC or the first operand of SRC is a register,
    try to set a preference.  If one of the two is a hard register and the other
    is a pseudo-register, mark the preference.
-   
+
    Note that we are not as aggressive as local-alloc in trying to tie a
    pseudo-register to a hard register.  */
 
@@ -1713,7 +1713,7 @@ mark_elimination (from, to)
 
   FOR_EACH_BB (bb)
     {
-      regset r = bb->global_live_at_start; 
+      regset r = bb->global_live_at_start;
       if (REGNO_REG_SET_P (r, from))
 	{
 	  CLEAR_REGNO_REG_SET (r, from);
@@ -1741,7 +1741,7 @@ reg_becomes_live (reg, setter, regs_set)
 
   if (GET_CODE (reg) != REG)
     return;
-  
+
   regno = REGNO (reg);
   if (regno < FIRST_PSEUDO_REGISTER)
     {
@@ -1818,7 +1818,7 @@ build_insn_chain (first)
 		   : reg_renumber[i] >= 0)
 		 SET_REGNO_REG_SET (live_relevant_regs, i);
 	     });
- 	}
+	}
 
       if (GET_CODE (first) != NOTE && GET_CODE (first) != BARRIER)
 	{
@@ -1906,7 +1906,7 @@ dump_conflicts (file)
   for (i = 0; i < max_allocno; i++)
     {
       if (reg_renumber[allocno[allocno_order[i]].reg] >= 0)
-        continue;
+	continue;
       nregs++;
     }
   fprintf (file, ";; %d regs to allocate:", nregs);
@@ -1958,13 +1958,13 @@ dump_global_regs (file)
      FILE *file;
 {
   int i, j;
-  
+
   fprintf (file, ";; Register dispositions:\n");
   for (i = FIRST_PSEUDO_REGISTER, j = 0; i < max_regno; i++)
     if (reg_renumber[i] >= 0)
       {
 	fprintf (file, "%d in %d  ", i, reg_renumber[i]);
-        if (++j % 6 == 0)
+	if (++j % 6 == 0)
 	  fprintf (file, "\n");
       }
 

@@ -53,7 +53,7 @@ struct ggc_root
 static struct ggc_root *roots;
 
 /* Add BASE as a new garbage collection root.  It is an array of
-   length NELT with each element SIZE bytes long.  CB is a 
+   length NELT with each element SIZE bytes long.  CB is a
    function that will be called with a pointer to each element
    of the array; it is the intention that CB call the appropriate
    routine to mark gc-able memory for that element.  */
@@ -103,7 +103,7 @@ ggc_mark_roots ()
   const struct ggc_cache_tab *const *ct;
   const struct ggc_cache_tab *cti;
   size_t i;
-  
+
   for (rt = gt_ggc_deletable_rtab; *rt; rt++)
     for (rti = *rt; rti->base != NULL; rti++)
       memset (rti->base, 0, rti->stride);
@@ -179,7 +179,7 @@ ggc_mark_rtx_children_1 (r)
   int i;
   rtx next_rtx;
 
-  do 
+  do
     {
       enum rtx_code code = GET_CODE (r);
       /* This gets set to a child rtx to eliminate tail recursion.  */
@@ -244,12 +244,12 @@ ggc_mark_rtx_children_1 (r)
 	    case 'e': case 'u':
 	      exp = XEXP (r, i);
 	      if (ggc_test_and_set_mark (exp))
-		{ 
-		  if (next_rtx == NULL) 
-		    next_rtx = exp; 
-		  else 
+		{
+		  if (next_rtx == NULL)
+		    next_rtx = exp;
+		  else
 		    ggc_mark_rtx_children (exp);
-		} 
+		}
 	      break;
 	    case 'V': case 'E':
 	      gt_ggc_m_rtvec_def (XVEC (r, i));
@@ -342,17 +342,17 @@ ggc_print_common_statistics (stream, stats)
     }
 
   /* Print the statistics for trees.  */
-  fprintf (stream, "\n%-17s%10s %16s %10s\n", "Tree", 
+  fprintf (stream, "\n%-17s%10s %16s %10s\n", "Tree",
 	   "Number", "Bytes", "% Total");
   for (code = 0; code < MAX_TREE_CODES; ++code)
-    if (ggc_stats->num_trees[code]) 
+    if (ggc_stats->num_trees[code])
       {
 	fprintf (stream, "%-17s%10u%16ld%c %10.3f\n",
 		 tree_code_name[code],
 		 ggc_stats->num_trees[code],
 		 SCALE (ggc_stats->size_trees[code]),
 		 LABEL (ggc_stats->size_trees[code]),
-		 (100 * ((double) ggc_stats->size_trees[code]) 
+		 (100 * ((double) ggc_stats->size_trees[code])
 		  / ggc_stats->total_size_trees));
       }
   fprintf (stream,
@@ -362,17 +362,17 @@ ggc_print_common_statistics (stream, stats)
 	   LABEL (ggc_stats->total_size_trees));
 
   /* Print the statistics for RTL.  */
-  fprintf (stream, "\n%-17s%10s %16s %10s\n", "RTX", 
+  fprintf (stream, "\n%-17s%10s %16s %10s\n", "RTX",
 	   "Number", "Bytes", "% Total");
   for (code = 0; code < NUM_RTX_CODE; ++code)
-    if (ggc_stats->num_rtxs[code]) 
+    if (ggc_stats->num_rtxs[code])
       {
 	fprintf (stream, "%-17s%10u%16ld%c %10.3f\n",
 		 rtx_name[code],
 		 ggc_stats->num_rtxs[code],
 		 SCALE (ggc_stats->size_rtxs[code]),
 		 LABEL (ggc_stats->size_rtxs[code]),
-		 (100 * ((double) ggc_stats->size_rtxs[code]) 
+		 (100 * ((double) ggc_stats->size_rtxs[code])
 		  / ggc_stats->total_size_rtxs));
       }
   fprintf (stream,

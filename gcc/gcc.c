@@ -242,7 +242,7 @@ static const struct modify_target
 }
 modify_target[] = MODIFY_TARGET_NAME;
 #endif
- 
+
 /* The number of errors that have occurred; the link phase will not be
    run if this is non-zero.  */
 static int error_count = 0;
@@ -1522,12 +1522,12 @@ init_spec ()
   {
     const char *p = libgcc_spec;
     int in_sep = 1;
- 
+
     /* Transform the extant libgcc_spec into one that uses the shared libgcc
        when given the proper command line arguments.  */
     while (*p)
       {
-        if (in_sep && *p == '-' && strncmp (p, "-lgcc", 5) == 0)
+	if (in_sep && *p == '-' && strncmp (p, "-lgcc", 5) == 0)
 	  {
 	    init_gcc_specs (&obstack,
 #ifdef NO_SHARED_LIBGCC_MULTILIB
@@ -2758,8 +2758,8 @@ execute ()
 	{
 	  const char *const *j;
 
-     	  if (verbose_only_flag)
-     	    {
+	  if (verbose_only_flag)
+	    {
 	      for (j = commands[i].argv; *j; j++)
 		{
 		  const char *p;
@@ -2772,8 +2772,8 @@ execute ()
 		    }
 		  fputc ('"', stderr);
 		}
-     	    }
-     	  else
+	    }
+	  else
 	    for (j = commands[i].argv; *j; j++)
 	      fprintf (stderr, " %s", *j);
 
@@ -2784,7 +2784,7 @@ execute ()
 	}
       fflush (stderr);
       if (verbose_only_flag != 0)
-        return 0;
+	return 0;
 #ifdef DEBUG
       notice ("\nGo ahead? (y or n) ");
       fflush (stderr);
@@ -3384,20 +3384,20 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  add_linker_option ("--help", 6);
 	}
       else if (strcmp (argv[i], "-ftarget-help") == 0)
-        {
-          /* translate_options() has turned --target-help into -ftarget-help.  */
-          target_help_flag = 1;
+	{
+	  /* translate_options() has turned --target-help into -ftarget-help.  */
+	  target_help_flag = 1;
 
-          /* We will be passing a dummy file on to the sub-processes.  */
-          n_infiles++;
-          n_switches++;
+	  /* We will be passing a dummy file on to the sub-processes.  */
+	  n_infiles++;
+	  n_switches++;
 
 	  /* CPP driver cannot obtain switch from cc1_options.  */
 	  if (is_cpp_driver)
 	    add_preprocessor_option ("--target-help", 13);
-          add_assembler_option ("--target-help", 13);
-          add_linker_option ("--target-help", 13);
-        }
+	  add_assembler_option ("--target-help", 13);
+	  add_linker_option ("--target-help", 13);
+	}
       else if (! strcmp (argv[i], "-pass-exit-codes"))
 	{
 	  pass_exit_codes = 1;
@@ -3572,7 +3572,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 		    tmp[++ len] = 0;
 		    value = tmp;
 		  }
-		
+
 		/* As a kludge, if the arg is "[foo/]stageN/", just
 		   add "[foo/]include" to the include prefix.  */
 		if ((len == 7
@@ -3703,7 +3703,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 
 	      if (is_modify_target_name)
 		break;
-#endif		      
+#endif
 
 	      n_switches++;
 
@@ -3893,7 +3893,7 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n"
 	  /* -save-temps overrides -pipe, so that temp files are produced */
 	  if (save_temps_flag)
 	    error ("warning: -pipe ignored because -save-temps specified");
-          /* -time overrides -pipe because we can't get correct stats when
+	  /* -time overrides -pipe because we can't get correct stats when
 	     multiple children are running at once.  */
 	  else if (report_times)
 	    error ("warning: -pipe ignored because -time specified");
@@ -4509,7 +4509,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      }
 		    suffix_length += strlen (TARGET_OBJECT_SUFFIX);
 		  }
-		
+
 		/* If the input_filename has the same suffix specified
 		   for the %g, %u, or %U, and -save-temps is specified,
 		   we could end up using that file as an intermediate
@@ -4517,7 +4517,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		   gcc -save-temps foo.s would clobber foo.s with the
 		   output of cpp0).  So check for this condition and
 		   generate a temp file as the intermediate.  */
-		   
+
 		if (save_temps_flag)
 		  {
 		    temp_filename_length = basename_length + suffix_length;
@@ -4529,7 +4529,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		    if (strcmp (temp_filename, input_filename) != 0)
 		      {
 		      	struct stat st_temp;
-		      	
+
 		      	/* Note, set_input() resets input_stat_set to 0.  */
 		      	if (input_stat_set == 0)
 		      	  {
@@ -4537,17 +4537,17 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      	    if (input_stat_set >= 0)
 		      	      input_stat_set = 1;
 		      	  }
-		      	  
+
 		      	/* If we have the stat for the input_filename
 		      	   and we can do the stat for the temp_filename
 		      	   then the they could still refer to the same
 		      	   file if st_dev/st_ino's are the same.  */
-		      	
+
 			if (input_stat_set != 1
 			    || stat (temp_filename, &st_temp) < 0
 			    || input_stat.st_dev != st_temp.st_dev
 			    || input_stat.st_ino != st_temp.st_ino)
- 		      	  {
+			  {
 			    temp_filename = save_string (temp_filename,
 							 temp_filename_length + 1);
 			    obstack_grow (&obstack, temp_filename,
@@ -4755,8 +4755,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'C':
 	    {
 	      const char *const spec
-		= (input_file_compiler->cpp_spec 
-		   ? input_file_compiler->cpp_spec 
+		= (input_file_compiler->cpp_spec
+		   ? input_file_compiler->cpp_spec
 		   : cpp_spec);
 	      value = do_spec_1 (spec, 0, NULL);
 	      if (value != 0)
@@ -4984,17 +4984,17 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    obstack_1grow (&obstack, '%');
 	    break;
 
-         case '.':
-	   {
-	     unsigned len = 0;
+	  case '.':
+	    {
+	      unsigned len = 0;
 
-	     while (p[len] && p[len] != ' ' && p[len] != '%')
-	       len++;
-             suffix_subst = save_string (p - 1, len + 1);
-             p += len;
-           }
+	      while (p[len] && p[len] != ' ' && p[len] != '%')
+		len++;
+	      suffix_subst = save_string (p - 1, len + 1);
+	      p += len;
+	    }
 	   break;
-          
+
 	  case '*':
 	    if (soft_matched_part)
 	      {
@@ -5693,7 +5693,7 @@ set_input (filename)
     }
   else
     input_suffix = "";
-  
+
   /* If a spec for 'g', 'u', or 'U' is seen with -save-temps then
      we will need to do a stat on the input_filename.  The
      INPUT_STAT_SET signals that the stat is needed.  */
@@ -6095,7 +6095,7 @@ main (argc, argv)
       input_file_compiler
 	= lookup_compiler (infiles[i].name, input_filename_length,
 			   infiles[i].language);
-      
+
       if (input_file_compiler)
 	{
 	  /* Ok, we found an applicable compiler.  Run its spec.  */
@@ -6234,7 +6234,7 @@ lookup_compiler (name, length, language)
 	      && !strcmp (cp->suffix,
 			  name + length - strlen (cp->suffix))
 	 ))
-        break;
+	break;
     }
 
 #if defined (OS2) ||defined (HAVE_DOS_BASED_FILE_SYSTEM)

@@ -78,6 +78,6 @@ do {									\
     for (nptrs = 0; __CTOR_LIST__[nptrs + 1] != 0; nptrs++);		\
   for (i = nptrs; i >= 1; i--)						\
     __CTOR_LIST__[i] ();						\
-} while (0) 
+} while (0)
 #endif
 
