@@ -3290,7 +3290,11 @@ output_constant_def (exp, defer)
      encoded in it.  */
   if (! found)
     {
-      ENCODE_SECTION_INFO (exp);
+      /* Take care not to invoque ENCODE_SECTION_INFO for constants
+	 which don't have a TREE_CST_RTL.  */
+      if (TREE_CODE (exp) != INTEGER_CST)
+	ENCODE_SECTION_INFO (exp);
+      
       desc->rtl = rtl;
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
     }
