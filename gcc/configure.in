@@ -3722,7 +3722,7 @@ if test -x "$AS"; then
 elif test -x as$host_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
-elif test -f $gcc_cv_as_gas_srcdir/configure.in; then
+elif test -f $gcc_cv_as_gas_srcdir/configure.in -a -f ../gas/Makefile; then
 	# Single tree build which includes gas.
 	for f in $gcc_cv_as_gas_srcdir/configure $gcc_cv_as_gas_srcdir/configure.in $gcc_cv_as_gas_srcdir/Makefile.in
 	do
