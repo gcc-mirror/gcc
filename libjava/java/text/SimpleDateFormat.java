@@ -384,16 +384,27 @@ public class SimpleDateFormat extends DateFormat
 
     SimpleDateFormat sdf = (SimpleDateFormat)o;
 
-    if (!toPattern().equals(sdf.toPattern()))
+    if (defaultCentury != sdf.defaultCentury)
       return false;
 
-    if (!get2DigitYearStart().equals(sdf.get2DigitYearStart()))
+    if (!toPattern().equals(sdf.toPattern()))
       return false;
 
     if (!getDateFormatSymbols().equals(sdf.getDateFormatSymbols()))
       return false;
 
     return true;
+  }
+
+  /**
+   * This method returns a hash value for this object.
+   *
+   * @return A hash value for this object.
+   */
+  public int hashCode()
+  {
+    return super.hashCode() ^ toPattern().hashCode() ^ defaultCentury ^
+      getDateFormatSymbols().hashCode();
   }
 
 
