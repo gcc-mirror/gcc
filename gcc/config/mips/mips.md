@@ -2412,11 +2412,25 @@
 
 ;; Division trap
 
-(define_insn "div_trap"
+(define_expand "div_trap"
   [(trap_if (eq (match_operand 0 "register_operand" "d")
 		(match_operand 1 "reg_or_0_operand" "dJ"))
             (match_operand 2 "immediate_operand" ""))]
   ""
+  "
+{
+  if (TARGET_MIPS16)
+    emit_insn (gen_div_trap_mips16 (operands[0],operands[1],operands[2]));
+  else
+    emit_insn (gen_div_trap_normal (operands[0],operands[1],operands[2]));
+  DONE;
+}")
+
+(define_insn "div_trap_normal"
+  [(trap_if (eq (match_operand 0 "register_operand" "d")
+		(match_operand 1 "reg_or_0_operand" "dJ"))
+            (match_operand 2 "immediate_operand" ""))]
+  "!TARGET_MIPS16"
   "*
 {
   rtx link;
@@ -2450,7 +2464,41 @@
   return \"\";
 }"
   [(set_attr "type" "unknown")
-   (set_attr "length" "2")])
+   (set_attr "length" "3")])
+
+
+;; The mips16 bne insns is a macro which uses reg 24 as an intermediate.
+
+(define_insn "div_trap_mips16"
+  [(trap_if (eq (match_operand 0 "register_operand" "d")
+		(match_operand 1 "reg_or_0_operand" "dJ"))
+            (match_operand 2 "immediate_operand" ""))
+   (clobber (reg:SI 24))]
+  "TARGET_MIPS16"
+  "*
+{
+  rtx link;
+  int have_dep_anti = 0;
+
+  /* For divmod if one division is not needed then we don't need an extra
+     divide by zero trap, which is anti dependent on previous trap */
+  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+
+    if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
+        && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
+	&& REGNO (operands[1]) == 0)
+      have_dep_anti = 1;
+  if (! have_dep_anti)
+    {
+      if (GET_CODE (operands[1]) == CONST_INT)
+        return \"%(bnez\\t%0,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
+      else
+        return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
+    }
+  return \"\";
+}"
+  [(set_attr "type" "unknown")
+   (set_attr "length" "4")])
 
 (define_expand "divsi3"
   [(set (match_operand:SI 0 "register_operand" "=l")

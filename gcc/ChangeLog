@@ -1,3 +1,9 @@
+Mon Jan 18 12:03:08 1999  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.md (div_trap): Split div_trap_mips16
+	from div_trap.  
+	(div_trap_normal,div_trap_mips16): Correct the length attributes.
+
 Mon Jan 18 11:48:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cpplib.c (special_symbol): Qualify a char* with the `const' keyword.
