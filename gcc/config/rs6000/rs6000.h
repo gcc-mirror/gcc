@@ -1713,7 +1713,7 @@ typedef struct rs6000_args
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
-  function_arg_advance (&CUM, MODE, TYPE, NAMED)
+  function_arg_advance (&CUM, MODE, TYPE, NAMED, 0)
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,

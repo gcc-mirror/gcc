@@ -1,3 +1,23 @@
+2004-11-14  Stan Shebs  <shebs@apple.com>
+
+	Basic ABI changes for passing structs by value in 64-bit Darwin.
+	* config/rs6000/rs6000.c (rs6000_darwin64_abi): New flag.
+	(rs6000_override_options): Set it for 64-bit Darwin.
+	(rs6000_parse_abi_options): Add testing options to change it.
+	(rs6000_return_in_memory): Test whether the type is one
+	that can be passed in registers.
+	(darwin64_function_arg_advance): New.
+	(function_arg_advance): Call it, plus add recursion depth
+	argument and test when counting off arguments.
+	(rs6000_darwin64_function_arg): New.
+	(function_arg): Call it.
+	(setup_incoming_varargs): Add argument to function_arg_advance.
+	(rs6000_darwin64_function_value): New.
+	(rs6000_function_value): Call it.
+	* config/rs6000/rs6000.h (FUNCTION_ARG_ADVANCE): Pass depth arg.
+	* config/rs6000/rs6000-protos.h: Update decl of
+	function_arg_advance.
+
 2004-11-14  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/17279
