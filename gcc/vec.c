@@ -82,7 +82,7 @@ vec_o_reserve (void *vec, int reserve, size_t vec_offset, size_t elt_size
 
 void
 vec_assert_fail (const char *op, const char *struct_name,
-		 const char *file, size_t line, const char *function)
+		 const char *file, unsigned int line, const char *function)
 {
   internal_error ("vector %s %s domain error, in %s at %s:%u",
 		  struct_name, op, function, trim_filename (file), line);

@@ -251,7 +251,7 @@ extern void *vec_o_reserve (void *, int, size_t, size_t MEM_STAT_DECL);
 
 #if ENABLE_CHECKING
 extern void vec_assert_fail (const char *, const char *,
-			    const char *, size_t, const char *)
+			    const char *, unsigned int, const char *)
      ATTRIBUTE_NORETURN;
 #define VEC_ASSERT_FAIL(OP,VEC) \
   vec_assert_fail (OP,#VEC,__FILE__,__LINE__,__FUNCTION__)
