@@ -35,7 +35,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dunix -Darm -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(arm) -Amachine(arm)"
+"-Dunix -D__arm__ -Dlinux \
+-Asystem(unix) -Asystem(posix) -Acpu(arm) -Amachine(arm)"
 
 #undef LIB_SPEC
 #define LIB_SPEC \

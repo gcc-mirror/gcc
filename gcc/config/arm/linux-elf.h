@@ -25,13 +25,34 @@ Boston, MA 02111-1307, USA.  */
 /* We have libgcc2.  */
 #define HAVE_ATEXIT
 
-/* Default is to use APCS-32 mode.  */
 #ifndef SUBTARGET_DEFAULT_APCS26
-#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SHORT_BYTE)
-#define SUBTARGET_EXTRA_LINK_SPEC	\
+/* Default is to use APCS-32 mode.  */
+# define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SHORT_BYTE)
+# ifdef SUBTARGET_OLD_LINKER
+#  define SUBTARGET_EXTRA_LINK_SPEC	\
 	" %{mapcs-26:-m elf32arm26} %{!mapcs-26:-m elf32arm}"
-#define SUBTARGET_EXTRA_ASM_SPEC	\
+# else	/* new linker */
+#  define SUBTARGET_EXTRA_LINK_SPEC	\
+	" %{mapcs-26:-m armelf_linux26} %{!mapcs-26:-m armelf_linux} -p"
+# endif
+# define SUBTARGET_EXTRA_ASM_SPEC	\
 	" %{mapcs-26:-mapcs-26} %(!mapcs-26:-mapcs-32}"
+# define MULTILIB_DEFAULTS \
+	{ "mlittle-endian", "mhard-float", "mapcs-32", "mno-thumb-interwork" }
+# define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
+#else	/* default is APCS-26 */
+# define TARGET_DEFAULT (ARM_FLAG_SHORT_BYTE)
+# ifdef SUBTARGET_OLD_LINKER
+#  define SUBTARGET_LINK_SPEC	\
+	" %{mapcs-32:-m elf32arm} %{!mapcs-32:-m elf32arm26}"
+# else	/* new linker */
+#  define SUBTARGET_LINK_SPEC	\
+	" %{mapcs-32:-m armelf_linux} %{!mapcs-32:-m armelf_linux26} -p"
+# endif
+# define SUBTARGET_EXTRA_ASM_SPEC	\
+	" %{mapcs-32:-mapcs-32} %(!mapcs-32:-mapcs-26}"
+# define MULTILIB_DEFAULTS \
+	{ "mlittle-endian", "mhard-float", "mapcs-26", "mno-thumb-interwork" }
 #endif
 
 /* This was defined in linux.h.  Define it here also. */
@@ -45,7 +66,8 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC \
   "%{shared: -lc} \
    %{!shared: %{pthread:-lpthread} \
-	%{profile:-lc_p} %{!profile: -lc}}"
+   %{profile:-lc_p} %{!profile: -lc}}"
+
 
 #define LIBGCC_SPEC "%{msoft-float:-lfloat} -lgcc"
 
@@ -81,14 +103,17 @@ Boston, MA 02111-1307, USA.  */
    %{mbig-endian:-EB}" \
    SUBTARGET_EXTRA_LINK_SPEC
 
+#define ASM_SPEC "%{mbig-endian:-EB} \
+   %{mcpu=*:-m%*} %{march=*:-m%*} \
+   %{mthumb-interwork:-mthumb-interwork} \
+   %{msoft-float:-mno-fpu} \
+   %{mapcs-float:-mfloat}" \
+   SUBTARGET_EXTRA_ASM_SPEC
+
 #undef  CPP_PREDEFINES
 #define CPP_PREDEFINES \
-"-Dunix -Darm -Dlinux -Asystem(unix) -Asystem(posix) -Acpu(arm) \
--Amachine(arm) -D__ELF__ -Darm_elf"
-
-#ifndef SUBTARGET_DEFAULT_APCS26
-#define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
-#endif
+"-Dunix -D__arm__ -Dlinux -D__ELF__ \
+-Asystem(unix) -Asystem(posix) -Acpu(arm) -Amachine(arm)"
 
 /* Allow #sccs in preprocessor.  */
 #define SCCS_DIRECTIVE
@@ -236,10 +261,6 @@ const_section ()							\
 #include "arm/elf.h"
 #include "arm/linux-gas.h"
 
-#ifndef SUBTARGET_DEFAULT_APCS26
-/* On 32-bit machine it is always safe to assume we have the "new"
-   floating point system.  
-   ?? Make this happen for all targets when NWFPE is better established.  */
+/* NWFPE always understands FPA instructions.  */
 #undef  FP_DEFAULT
 #define FP_DEFAULT FP_SOFT3
-#endif
