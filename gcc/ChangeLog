@@ -1,3 +1,8 @@
+Wed Dec  1 18:16:38 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* i386.md (extend?f?f2): Force the input into a register, not
+	the output.
+
 1999-12-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (movsf_const_intreg): Add constraints for
