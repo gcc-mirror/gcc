@@ -53,10 +53,10 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "toplev.h"
 
-/* Information about the loop being processed used to compute
+/* Information about the current loop being processed used to compute
    the number of loop iterations for loop unrolling and doloop
    optimization.  */
-static struct loop_info loop_info_data;
+static struct loop_info *current_loop_info;
 
 /* Vector mapping INSN_UIDs to luids.
    The luids are like uids but increase monotonically always.
@@ -516,6 +516,9 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
     {
       struct loop *loop = &loops->array[i];
 
+      loop->info = (struct loop_info *) alloca (sizeof (struct loop_info));
+      memset (loop->info, 0, sizeof (struct loop_info));
+      
       if (! loop->invalid && loop->end)
 	scan_loop (loop, unroll_p, bct_p);
     }
@@ -578,6 +581,7 @@ scan_loop (loop, unroll_p, bct_p)
   register int i;
   rtx loop_start = loop->start;
   rtx loop_end = loop->end;
+  struct loop_info *loop_info = loop->info;
   rtx p;
   /* 1 if we are scanning insns that could be executed zero times.  */
   int maybe_never = 0;
@@ -605,9 +609,8 @@ scan_loop (loop, unroll_p, bct_p)
   /* Nonzero if we are scanning instructions in a sub-loop.  */
   int loop_depth = 0;
   int nregs;
-  struct loop_info *loop_info = &loop_info_data;
 
-  loop->info = loop_info;
+  current_loop_info = loop_info;
   loop->top = 0;
 
   /* Determine whether this loop starts with a jump down to a test at
@@ -3230,7 +3233,7 @@ invariant_p (x)
 	  && ! current_function_has_nonlocal_goto)
 	return 1;
 
-      if (loop_info_data.has_call
+      if (current_loop_info->has_call
 	  && REGNO (x) < FIRST_PSEUDO_REGISTER && call_used_regs[REGNO (x)])
 	return 0;
 
