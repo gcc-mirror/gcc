@@ -6823,7 +6823,7 @@ dump_bb (bb, outf)
   edge e;
 
   fprintf (outf, ";; Basic block %d, loop depth %d, count ",
-	   bb->index, bb->loop_depth, bb->count);
+	   bb->index, bb->loop_depth);
   fprintf (outf, HOST_WIDEST_INT_PRINT_DEC, (HOST_WIDEST_INT) bb->count);
   putc ('\n', outf);
 
