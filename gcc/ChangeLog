@@ -1,3 +1,8 @@
+Mon Oct 4 09:55:17 1999  Stan Cox  <scox@cygnus.com>
+
+	* mips.h (GO_IF_LEGITIMATE_ADDRESS): Let leasi/liadi handle large
+	register offsets. 
+
 Mon Oct  4 08:54:12 1999  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* cppinit.c (is_idchar initializer): Loosen tests to accept
