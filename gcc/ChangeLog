@@ -1,3 +1,8 @@
+2003-06-25  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/i386/i386.h (builtin_define): Remove duplicate __amd64
+	and __amd64__.
+
 2003-06-25	Dhananjay Deshpande <dhananjayd@kpitcummins.com>
 
 	* config/sh/sh.c (sh_register_move_cost):
