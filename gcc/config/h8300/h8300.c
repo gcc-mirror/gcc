@@ -2010,7 +2010,7 @@ compute_mov_length (rtx *operands)
 	      if (REG_P (src))
 		return 2;
 
-	      if (src == const0_rtx)
+	      if (CONST_DOUBLE_OK_FOR_LETTER_P (src, 'G'))
 		return 2;
 	      return 6;
 	    }

@@ -1,3 +1,13 @@
+2003-07-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (compute_mov_length): Fix the length of
+	loading CONST0_RTX (SFmode).
+	* config/h8300/h8300.h (CONST_DOUBLE_OK_FOR_LETTER_P): Change
+	'G' to CONST0_RTX (SFmode).
+	* config/h8300/h8300.md (movsf_h8300): Change the first
+	constraint to 'G'.
+	(movsf_h8300h): Likewise.
+
 2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-common.h (c_common_init_options): New prototype.

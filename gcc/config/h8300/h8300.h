@@ -484,7 +484,7 @@ enum reg_class {
   `G' is a floating-point zero.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)	\
-  ((C) == 'G' ? (VALUE) == CONST0_RTX (DFmode)	\
+  ((C) == 'G' ? (VALUE) == CONST0_RTX (SFmode)	\
    : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
