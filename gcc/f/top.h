@@ -224,7 +224,7 @@ void ffe_terminate_4 (void);
 #define ffe_set_is_automatic(f) (ffe_is_automatic_ = (f))
 #define ffe_set_is_backslash(f) (ffe_is_backslash_ = (f))
 #define ffe_set_is_debug_kludge(f) (ffe_is_debug_kludge_ = (f))
-#define ffe_set_is_do_internal_checks(f) (ffe_set_is_do_internal_checks_ = (f))
+#define ffe_set_is_do_internal_checks(f) (ffe_is_do_internal_checks_ = (f))
 #define ffe_set_is_dollar_ok(f) (ffe_is_dollar_ok_ = (f))
 #define ffe_set_is_emulate_complex(f) (ffe_is_emulate_complex_ = (f))
 #define ffe_set_is_f2c(f) (ffe_is_f2c_ = (f))
