@@ -1157,7 +1157,7 @@ static void vwarning PROTO((char *, va_list));
 static void error_with_line PRINTF_PROTO_2((int, char *, ...));
 static void verror_with_line PROTO((int, char *, va_list));
 static void vwarning_with_line PROTO((int, char *, va_list));
-static void warning_with_line PROTO((int, char *, ...));
+static void warning_with_line PRINTF_PROTO_2((int, char *, ...));
 void pedwarn PRINTF_PROTO_1((char *, ...));
 void pedwarn_with_line PRINTF_PROTO_2((int, char *, ...));
 static void pedwarn_with_file_and_line PRINTF_PROTO_3((char *, int, char *, ...));
