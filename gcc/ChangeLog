@@ -1,3 +1,12 @@
+2002-12-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/spe.h (__ev_mwlufi): Remove.
+	(__ev_mwlufia): Remove.
+	(__ev_mwlumfaaw): Remove.
+	(__ev_mwlusfaaw): Remove.
+	(__ev_mwlumfanw): Remove.
+	(__ev_mwlusfanw): Remove.
+
 2002-12-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*andorsi3_shift_8): New.
