@@ -311,6 +311,23 @@ duplicate_loop_exit_test (rtx loop_start)
   int max_reg = max_reg_num ();
   rtx *reg_map = 0;
   rtx loop_pre_header_label;
+  int loop_depth;
+
+  /* If EXITCODE is not in the loop, then this optimization is not
+     safe; we will emit a VTOP note entirely outside the loop.  */
+  for (insn = loop_start, loop_depth = 0; 
+       insn != exitcode; 
+       insn = NEXT_INSN (insn))
+    {
+      if (GET_CODE (insn) != NOTE)
+	continue;
+
+      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+	++loop_depth;
+      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END
+	       && --loop_depth == 0)
+	return 0;
+    }
 
   /* Scan the exit code.  We do not perform this optimization if any insn:
 

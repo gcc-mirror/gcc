@@ -1,3 +1,9 @@
+2004-08-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* jump.c (duplicate_loop_exit_test): If the location reached by
+	the unconditional jump at the top of the loop is outside the loop,
+	then do not treat it as the exit test.
+
 2004-08-23  Janis Johnson  <janis187@us.ibm.com>
 
 	Backports from mainline:
