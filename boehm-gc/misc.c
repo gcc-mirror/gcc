@@ -479,8 +479,9 @@ void GC_init()
       BOOL (WINAPI *pfn) (LPCRITICAL_SECTION, DWORD) = NULL;
       HMODULE hK32 = GetModuleHandle("kernel32.dll");
       if (hK32)
-          (FARPROC) pfn = GetProcAddress(hK32,
-			  "InitializeCriticalSectionAndSpinCount");
+	  pfn = (BOOL (WINAPI *) (LPCRITICAL_SECTION, DWORD))
+		GetProcAddress (hK32,
+				"InitializeCriticalSectionAndSpinCount");
       if (pfn)
           pfn(&GC_allocate_ml, 4000);
       else
