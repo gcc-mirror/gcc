@@ -1,3 +1,9 @@
+Sat Sep  4 13:46:27 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (f771): Depend on ggc-callbacks.o.
+	* Makefile.in (OBJS): Add ggc-callbacks.o.
+	(OBJDEPS): Likewise.
+	
 Mon Aug 30 22:05:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (language_string): Constify.

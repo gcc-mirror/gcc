@@ -1,3 +1,9 @@
+1999-09-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (jc1): Depend on ggc-callbacks.o.
+	* Makefile.in (OBJS): Add ggc-callbacks.o.
+	(OBJDEPS): Likewise.
+
 1999-09-03  Tom Tromey  <tromey@cygnus.com>
 
 	* parse.y (strip_out_static_field_access_decl): Return operand if
