@@ -979,9 +979,9 @@ namespace std
 	  typedef basic_string<_CharT> 	__string_type;
 	  __string_type __name;
           if (__v)
-	    __name = __lc.truename();
+	    __name = __lc._M_truename;
           else
-	    __name = __lc.falsename();
+	    __name = __lc._M_falsename;
 
 	  const _CharT* __cs = __name.c_str();
 	  int __len = __name.size();
