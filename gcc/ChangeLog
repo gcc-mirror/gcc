@@ -1,4 +1,9 @@
 Mon Feb 22 11:40:44 1999  Craig Burley  <craig@jcb-sc.com>
+Sat Feb 20 09:59:36 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* Makefile.in (all.internal, all.cross): Depend on `doc'
+	target, to ensure docs get made before installation.
+
 
 	Decrease spurious warnings from -fsyntax-only:
 	* stmt.c (expand_expr_stmt): Expand expr even when -fsyntax-only.

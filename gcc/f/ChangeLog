@@ -1,4 +1,12 @@
 1999-02-20  Craig Burley  <craig@jcb-sc.com>
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in (f77.install-common, f77.install-info,
+	f77.install-man, f77.uninstall): Use `$(prefix)/lang-f77'
+	instead of `lang-f77' for flag file, to be sure of a
+	writable directory, and remove the flag file after each
+	operation to keep things clean.
+
 
 	* g77.texi: Properly attribute Priest document; clarify
 	that it is in the .ps version of the Goldberg document.

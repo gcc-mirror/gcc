@@ -824,12 +824,12 @@ config.status: configure version.c
 	  LANGUAGES="$(CONFIG_LANGUAGES)" $(SHELL) config.status --recheck; \
 	fi
 
-all.internal: start.encap rest.encap
+all.internal: start.encap rest.encap doc
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just built,
 # although we can't run it on this machine.
 all.cross: native gcc-cross specs stmp-headers $(STMP_FIXPROTO) $(LIBGCC) \
-	$(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross
+	$(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross doc
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.

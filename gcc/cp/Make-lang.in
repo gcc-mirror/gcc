@@ -189,8 +189,11 @@ cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS) cplib2.ready
 	mv -f cplib2.new cplib2.txt 
 
 # Or if it would be different.
+# Don't try to do write if `.' is not writable;
+# in that case, we're installing from someone else's directory.
+# But go ahead and fail if that directory hasn't been properly built.
 cplib2.ready: $(GCC_PASSES) $(LANGUAGES) $(LIBGCC2_DEPS) stmp-int-hdrs
-	@if [ -r cplib2.txt ]; then \
+	@if [ -r cplib2.txt -a -w . ]; then \
 	  case " $(LANGUAGES) " in \
 	  *" "[cC]"++ "*) \
 	    echo $(CXX_LIB2FUNCS) > cplib2.new;; \

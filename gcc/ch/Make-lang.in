@@ -107,8 +107,10 @@ CHILL.all.cross: chill-cross
 CHILL.start.encap: chill
 CHILL.rest.encap:
 
-CHILL.info: $(srcdir)/ch/chill.texi
-	$(MAKEINFO) -I$(srcdir)/ch $(srcdir)/ch/chill.texi -o chill.info
+CHILL.info: ch/chill.info
+
+ch/chill.info: $(srcdir)/ch/chill.texi
+	$(MAKEINFO) -I$(srcdir)/ch $(srcdir)/ch/chill.texi -o ch/chill.info
 
 chill.dvi: $(srcdir)/ch/chill.texi $(srcdir)/extend.texi $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/rtl.texi $(srcdir)/tm.texi
 	cd ch ; \
@@ -139,10 +141,13 @@ CHILL.install-common:
 	  fi ; \
 	fi
 
+# Don't delete $(infodir)/ch.info* unless there's actually new
+# docs to install (in case LANGUAGES didn't contain chill earlier).
 CHILL.install-info:
-	-for i in chill.info*; do \
-	  rm -f $(infodir)/$$i; \
-	  $(INSTALL_DATA) $$i $(infodir)/$$i; \
+	-for i in ch/chill.info*; do \
+	  rm -f $(infodir)/chill.info*; \
+	  realfile=`echo $$i | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	  $(INSTALL_DATA) $$i $(infodir)/$$realfile; \
 	done
 
 CHILL.install-man:

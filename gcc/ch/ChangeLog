@@ -1,4 +1,16 @@
 Sun Jan 31 20:34:29 1999  Zack Weinberg  <zack@rabi.columbia.edu>
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	* Make-lang.in (CHILL.info): Depend on intermediate ch/chill.info
+	target instead of the chill.texi file.
+	(ch/chill.info): New target, depends on the chill.texi source file.
+	Its command writes ch/chill.info instead of chill.info.
+	(CHILL.install-info): Install from ch/chill.info instead of
+	chill.info.
+	If any ch/chill.info* files exist, delete *all* chill.info* files
+	in $infodir first, not just the ones corresponding to the
+	files to be installed (just in case the docs get smaller).
+
 
 	* decl2.c: Don't define flag_no_ident here.  Don't process
 	-f(no-)ident here.
