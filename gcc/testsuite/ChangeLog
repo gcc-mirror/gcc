@@ -1,3 +1,8 @@
+2005-02-16  Eric Christopher  <echristo@redhat.com>
+
+	PR preprocessor/19077
+	* gcc.dg/cpp/20050215-1.c: New file.
+
 2005-02-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/14479

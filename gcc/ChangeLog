@@ -1,3 +1,10 @@
+2005-02-16  Eric Christopher  <echristo@redhat.com>
+
+	PR preprocessor/19077
+	* cppmacro.c (cpp_macro_definition): Move handling of whitespace
+        to PREV_WHITE conditional. Remove overloading of len
+        variable.
+
 2005-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/19715
