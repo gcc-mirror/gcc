@@ -1688,6 +1688,11 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	       It's just the name of an instantiation.  But, it's not
 	       a request for an instantiation, either.  */
 	    SET_DECL_IMPLICIT_INSTANTIATION (decl);
+	  else if (DECL_CONSTRUCTOR_P (decl) || DECL_DESTRUCTOR_P (decl))
+	    /* This is indeed a specialization.  In case of constructors
+	       and destructors, we need in-charge and not-in-charge
+	       versions in V3 ABI.  */
+	    clone_function_decl (decl, /*update_method_vec_p=*/0);
 
 	  /* Register this specialization so that we can find it
 	     again.  */
