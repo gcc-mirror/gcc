@@ -132,7 +132,9 @@ namespace std
     private:
       // Disable copy constructor and assignment operator.
       _Temporary_buffer(const _Temporary_buffer&);
-      void operator=(const _Temporary_buffer&);
+
+      void
+      operator=(const _Temporary_buffer&);
     };
   
 
@@ -140,27 +142,28 @@ namespace std
     _Temporary_buffer<_ForwardIterator, _Tp>::
     _Temporary_buffer(_ForwardIterator __first, _ForwardIterator __last)
     : _M_original_len(std::distance(__first, __last)), 
-      _M_len(0) , _M_buffer(0)
+      _M_len(0), _M_buffer(0)
     {
       // Workaround for a __type_traits bug in the pre-7.3 compiler.
       typedef typename __type_traits<_Tp>::has_trivial_default_constructor
 	      _Trivial;
 
       try
-      {
-	pair<pointer, size_type> __p(get_temporary_buffer<value_type>(_M_original_len));
-	_M_buffer = __p.first;
-	_M_len = __p.second;
-	if (_M_len > 0)
-	  _M_initialize_buffer(*__first, _Trivial());
-      }
+	{
+	  pair<pointer, size_type> __p(get_temporary_buffer<
+				       value_type>(_M_original_len));
+	  _M_buffer = __p.first;
+	  _M_len = __p.second;
+	  if (_M_len > 0)
+	    _M_initialize_buffer(*__first, _Trivial());
+	}
       catch(...)
-      { 
-	std::return_temporary_buffer(_M_buffer);
-	_M_buffer = 0; 
-	_M_len = 0;
-	__throw_exception_again; 
-      }
+	{ 
+	  std::return_temporary_buffer(_M_buffer);
+	  _M_buffer = 0; 
+	  _M_len = 0;
+	  __throw_exception_again; 
+	}
     }
 } // namespace std
 

@@ -1,3 +1,12 @@
+2004-02-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_iterator_base_funcs.h: Minor formatting
+	and indentation tweaks.
+	* include/bits/stl_iterator_base_types.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_tempbuf.h: Likewise.
+
 2004-02-02  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/gslice.h, include/bits/gslice_array.h,
