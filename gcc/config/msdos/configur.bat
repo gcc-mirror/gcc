@@ -26,7 +26,15 @@ set LANG=%LANG% c++.&
 echo lang.mostlyclean: %LANG% | sed "s/&/mostlyclean/g" >> Makefile
 echo lang.clean: %LANG% | sed "s/&/clean/g" >> Makefile
 echo lang.distclean: %LANG% | sed "s/&/distclean/g" >> Makefile
-echo lang.realclean: %LANG% | sed "s/&/realclean/g" >> Makefile
+echo lang.maintrainer-clean: %LANG% | sed "s/&/maintainer-clean/g" >> Makefile
+echo /* options.h */ > options.h
+if exist cp\lang-options.h echo #include "cp/lang-options.h" >> options.h
+if exist ada\lang-options.h echo #include "ada/lang-options.h" >> options.h
+if exist f\lang-options.h echo #include "f/lang-options.h" >> options.h
+echo /* specs.h */ > specs.h
+if exist cp\lang-specs.h echo #include "cp/lang-specs.h" >> specs.h
+if exist ada\lang-specs.h echo #include "ada/lang-specs.h" >> specs.h
+if exist f\lang-specs.h echo #include "f/lang-specs.h" >> specs.h
 
 echo #define MULTILIB_SELECT ". ;" > multilib.h1
 update multilib.h1 multilib.h
