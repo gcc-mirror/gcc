@@ -1,3 +1,7 @@
+2000-03-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* except.c (add_eh_table_entry): Mark type_info's as referenced.	
+
 2000-03-29  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* config/rs6000/aix41.h (CPP_SPEC): Define _ANSI_C_SOURCE if -ansi

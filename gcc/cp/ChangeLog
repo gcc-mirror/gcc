@@ -1,3 +1,9 @@
+2000-03-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* rtti.c (get_tinfo_decl): Mark used.
+	(emit_tinfo_decl): Don't optimize polymorphic type_info. Only
+	mark as dealt with, if we output it.
+
 2000-03-28  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c: Reorganize to put virtual function table initialization

@@ -2162,6 +2162,24 @@ add_eh_table_entry (n)
 	}
     }
   eh_table[eh_table_size++] = n;
+  
+  if (flag_new_exceptions)
+    {
+      /* We will output the exception table late in the compilation. That
+         references type_info objects which should have already been output
+         by that time. We explicitly mark those objects as being
+         referenced now so we know to emit them.  */
+      struct handler_info *handler = get_first_handler (n);
+      
+      for (; handler; handler = handler->next)
+        if (handler->type_info && handler->type_info != CATCH_ALL_TYPE)
+          {
+            tree tinfo = (tree)handler->type_info;
+
+            tinfo = TREE_OPERAND (tinfo, 0);
+            TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (tinfo)) = 1;
+          }
+    }
 #endif
 }
 
