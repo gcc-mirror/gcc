@@ -627,7 +627,6 @@ fixup_reorder_chain (void)
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
       basic_block nb;
-      basic_block old_bb;
       edge_iterator ei;
 
       if (EDGE_COUNT (bb->succs) == 0)
@@ -772,7 +771,6 @@ fixup_reorder_chain (void)
 	  nb->rbi->next = bb->rbi->next;
 	  bb->rbi->next = nb;
 	  /* Don't process this new block.  */
-	  old_bb = bb;
 	  bb = nb;
 	  
 	  /* Make sure new bb is tagged for correct section (same as

@@ -1,3 +1,7 @@
+2005-03-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfglayout.c (fixup_reorder_chain): Remove old_bb.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
