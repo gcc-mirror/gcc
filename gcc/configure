@@ -5101,18 +5101,6 @@ fi
 # Handle cpp installation.
 if [ x$enable_cpp != x ]
 then
-  if [ x$cpp_install_dir = x ]
-  then
-    case $target in
-    *-*-linux-gnu*)
-      if [ x$prefix = x/usr ]
-      then
-	cpp_install_dir=../lib
-      fi
-      ;;
-    esac
-  fi
-
   tmake_file="$tmake_file t-install-cpp"
 fi
 
@@ -5416,7 +5404,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5420: checking assembler alignment features" >&5
+echo "configure:5408: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,gcc$,gas,'`
