@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001, 2003  Free Software Foundation.
+/* Copyright (C) 2000, 2001, 2003, 2005  Free Software Foundation.
 
    Ensure all expected transformations of builtin strncmp occur and
    perform correctly.
@@ -12,13 +12,13 @@ extern int strncmp (const char *, const char *, size_t);
 void
 main_test (void)
 {
-  const char *const s1 = "hello world";
-  const char *s2, *s3;
-  int n = 6, x;
-  
-#if !defined(__OPTIMIZE__) || (defined(__i386__) && !defined(__OPTIMIZE_SIZE__))
+#if !defined(__OPTIMIZE__) || ((defined(__i386__) || defined (__x86_64__)) && !defined(__OPTIMIZE_SIZE__))
   /* These tests work on platforms which support cmpstrsi.  We test it
      at -O0 on all platforms to ensure the strncmp logic is correct.  */
+  const char *const s1 = "hello world";
+  const char *s2;
+  int n = 6, x;
+  
   s2 = s1;
   if (strncmp (++s2, "ello", 3) != 0 || s2 != s1+1)
     abort();
