@@ -293,6 +293,7 @@ extern void cancel_loop			PARAMS ((struct loops *, struct loop *));
 extern void cancel_loop_tree		PARAMS ((struct loops *, struct loop *));
 
 extern basic_block loop_split_edge_with PARAMS ((edge, rtx, struct loops *));
+extern int fix_loop_placement		PARAMS ((struct loop *));
 
 enum
 {
@@ -312,3 +313,27 @@ extern rtx count_loop_iterations	PARAMS ((struct loop_desc *, rtx, rtx));
 extern bool just_once_each_iteration_p	PARAMS ((struct loops *,struct loop *,
 						 basic_block));
 extern unsigned expected_loop_iterations PARAMS ((const struct loop *));
+
+/* Loop manipulation.  */
+extern bool can_duplicate_loop_p	PARAMS ((struct loop *loop));
+
+#define DLTHE_FLAG_UPDATE_FREQ	1	/* Update frequencies in
+					   duplicate_loop_to_header_edge.  */
+
+extern int duplicate_loop_to_header_edge PARAMS ((struct loop *, edge,
+						struct loops *, unsigned,
+						sbitmap, edge, edge *,
+						unsigned *, int));
+extern struct loop *loopify		PARAMS ((struct loops *, edge,
+						edge, basic_block));
+extern bool remove_path			PARAMS ((struct loops *, edge));
+extern edge split_loop_bb		PARAMS ((struct loops *, basic_block,
+						rtx));
+
+/* Loop optimizer initialization.  */
+extern struct loops *loop_optimizer_init PARAMS ((FILE *));
+extern void loop_optimizer_finalize	PARAMS ((struct loops *, FILE *));
+
+/* Optimization passes.  */
+extern void unswitch_loops		PARAMS ((struct loops *));
+
