@@ -4275,11 +4275,13 @@ main (argc, argv, envp)
 	       lim - (char *) &environ);
       fflush (stderr);
 
+#ifndef __MSDOS__
 #ifdef USG
       system ("ps -l 1>&2");
 #else /* not USG */
       system ("ps v");
 #endif /* not USG */
+#endif
     }
 #endif /* ! OS2 && ! VMS && (! _WIN32 || CYGWIN32) */
 
