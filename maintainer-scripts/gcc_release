@@ -64,12 +64,21 @@ inform() {
 
 usage() {
 cat <<EOF
-gcc_release     [-d destination]
-                [-u username]
-		[-r release]
-		[-t tag]
-		[-p previous-tarball]
-		[-s] [-f] [-l]
+gcc_release -r release [further options]
+gcc_release -s [further options]
+
+Options:
+
+  -r release           Version of the form X.Y or X.Y.Z.
+  -s                   Create a snapshot, not a real release.
+
+  -d destination       Local working directory where we will build the release
+                       (default=${HOME}).
+  -f                   Create a final release (and update ChangeLogs,...).
+  -l                   Indicate that we are running on gcc.gnu.org.
+  -p previous-tarball  Location of a previous tarball (to generate diff files).
+  -t tag               Tag to mark the release in CVS.
+  -u username          Username for upload operations.
 EOF
     exit 1
 }
