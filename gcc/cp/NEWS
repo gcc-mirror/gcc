@@ -7,8 +7,20 @@
 
   for more information.
 
+* New flags -Wsign-promo, -Wno-pmf-conversion.
+
+* local static variables in extern inline functions will be shared between
+  translation units.
+
+* Standard usage syntax for the std namespace is supported; std is treated
+  as an alias for global scope.  General namespaces are still not supported.
+
+* -fvtable-thunks is supported for all targets, and is the default for 
+  Linux with glibc (libc 6 on x86).
+
 * Default function arguments in templates will not be evaluated (or
-  checked for semantic validity) unless they are needed.
+  checked for semantic validity) unless they are needed.  Default arguments
+  in class bodies will not be parsed until the class definition is complete.
 
 * The -ftemplate-depth-NN flag can be used to increase the maximum
   recursive template instantiation depth, defaulting to 17. If you need
