@@ -53,11 +53,6 @@ char *alpha_function_name;
 
 static int inside_function = FALSE;
 
-/* Whether to suppress issuing .loc's because the user attempted
-   to change the filename within a function.  */
-
-static int ignore_line_number = FALSE;
-
 /* Nonzero if the current function needs gp.  */
 
 int alpha_function_needs_gp;
@@ -1485,7 +1480,6 @@ output_epilog (file, size)
   /* End the function.  */
   fprintf (file, "\t.end %s\n", alpha_function_name);
   inside_function = FALSE;
-  ignore_line_number = FALSE;
 
   /* Show that we know this function if it is called again.  */
   SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
@@ -1579,6 +1573,5 @@ alpha_output_lineno (stream, line)
 	       sym_lineno, ASM_STABN_OP, N_SLINE, line, sym_lineno);
     }
   else
-    fprintf (stream, "\n\t%s.loc\t%d %d\n", (ignore_line_number) ? "#" : "",
-	     num_source_filenames, line);
+    fprintf (stream, "\n\t.loc\t%d %d\n", num_source_filenames, line);
 }
