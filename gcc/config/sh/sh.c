@@ -226,13 +226,25 @@ print_operand (stream, x, code)
       fprintf (stream, "%s", LOCAL_LABEL_PREFIX);
       break;
     case '@':
+      {
+	int interrupt_handler;
+
+	if ((lookup_attribute
+	     ("interrupt_handler",
+	      DECL_MACHINE_ATTRIBUTES (current_function_decl)))
+	    != NULL_TREE)
+	  interrupt_handler = 1;
+	else
+	  interrupt_handler = 0;
+	
       if (trap_exit)
 	fprintf (stream, "trapa #%d", trap_exit);
-      else if (pragma_interrupt)
+      else if (interrupt_handler)
 	fprintf (stream, "rte");
       else
 	fprintf (stream, "rts");
       break;
+      }
     case '#':
       /* Output a nop if there's nothing in the delay slot.  */
       if (dbr_sequence_length () == 0)
@@ -3615,13 +3627,22 @@ calc_live_regs (count_ptr, live_regs_mask2)
   int reg;
   int live_regs_mask = 0;
   int count;
+  int interrupt_handler;
+
+  if ((lookup_attribute
+       ("interrupt_handler",
+	DECL_MACHINE_ATTRIBUTES (current_function_decl)))
+      != NULL_TREE)
+    interrupt_handler = 1;
+  else
+    interrupt_handler = 0;
 
   *live_regs_mask2 = 0;
   /* If we can save a lot of saves by switching to double mode, do that.  */
   if (TARGET_SH4 && TARGET_FMOVD && TARGET_FPU_SINGLE)
     for (count = 0, reg = FIRST_FP_REG; reg <= LAST_FP_REG; reg += 2)
       if (regs_ever_live[reg] && regs_ever_live[reg+1]
-	  && (! call_used_regs[reg] || (pragma_interrupt && ! pragma_trapa))
+	  && (! call_used_regs[reg] || (interrupt_handler && ! pragma_trapa))
 	  && ++count > 2)
 	{
 	  target_flags &= ~FPU_SINGLE_BIT;
@@ -3629,7 +3650,7 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	}
   for (count = 0, reg = FIRST_PSEUDO_REGISTER - 1; reg >= 0; reg--)
     {
-      if ((pragma_interrupt && ! pragma_trapa)
+      if ((interrupt_handler && ! pragma_trapa)
 	  ? (/* Need to save all the regs ever live.  */
 	     (regs_ever_live[reg]
 	      || (call_used_regs[reg]
@@ -3951,6 +3972,31 @@ sh_handle_pragma (p_getc, p_ungetc, pname)
 
   return retval;
 }
+
+/* Generate 'handle_interrupt' attribute for decls */
+
+void
+sh_pragma_insert_attributes (node, attributes, prefix)
+     tree node;
+     tree * attributes;
+     tree * prefix;
+{
+  tree a;
+
+  if (! pragma_interrupt
+      || TREE_CODE (node) != FUNCTION_DECL)
+    return;
+
+  /* We are only interested in fields.  */
+  if (TREE_CODE_CLASS (TREE_CODE (node)) != 'd')
+    return;
+
+  /* Add a 'handle_interrupt' attribute.  */
+  * attributes = tree_cons (get_identifier ("interrupt_handler"), NULL, * attributes);
+
+  return;
+}
+
 /* Return nonzero if ATTR is a valid attribute for DECL.
    ATTRIBUTES are any existing attributes and ARGS are the arguments
    supplied with ATTR.
@@ -3979,7 +4025,6 @@ sh_valid_machine_decl_attribute (decl, attributes, attr, args)
 
   if (is_attribute_p ("interrupt_handler", attr))
     {
-      pragma_interrupt = 1;
       return 1;
     }
 

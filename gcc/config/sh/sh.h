@@ -2062,6 +2062,10 @@ extern int sh_valid_machine_decl_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
+extern void sh_pragma_insert_attributes ();
+#define PRAGMA_INSERT_ATTRIBUTES(node, pattr, prefix_attr) \
+  sh_pragma_insert_attributes (node, pattr, prefix_attr)
+
 extern int sh_flag_remove_dead_before_cse;
 extern int rtx_equal_function_value_matters;
 extern struct rtx_def *fpscr_rtx;

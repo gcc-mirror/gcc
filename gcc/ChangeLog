@@ -22,6 +22,16 @@
 	(fix-header.o): Likewise.
 	(scan-decls.o): Likewise.
 
+Fri Dec 11 11:02:49 1998  Stan Cox  <scox@cygnus.com>
+
+	* sh.c (print_operand): lookup interrupt_handler attribute instead
+	of relying on static variable. 
+	* (calc_live_regs): Likewise.
+	* (sh_pragma_insert_attributes): Create interrupt_handler
+	attribute if a pragma was specified
+	* (sh_valid_machine_decl_attribute): Don't set static flag.
+	* sh.h (PRAGMA_INSERT_ATTRIBUTES): New.
+
 Fri Dec 11 12:56:07 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine): Use BASIC_BLOCK_LIVE_AT_START
