@@ -132,45 +132,32 @@ namespace std
       if (_M_string.capacity() && (__testin || __testout || __testboth))
 	{
 	  char_type* __beg = __testin ? this->_M_in_beg : this->_M_out_beg;
-	  char_type* __curi = NULL;
-	  char_type* __curo = NULL;
-	  char_type* __endi = NULL;
-	  char_type* __endo = NULL;
-
-	  if (__testin || __testboth)
-	    {
-	      __curi = this->_M_in_cur;
-	      __endi = this->_M_in_end;
-	    }
-	  if (__testout || __testboth)
-	    {
-	      __curo = this->_M_out_cur;
-	      // Due to the resolution of DR169, ios_base::end
-	      // is this->_M_out_lim, not _M_out_end.
-	      __endo = this->_M_out_lim;
-	    }
 
 	  off_type __newoffi = 0;
 	  off_type __newoffo = 0;
 	  if (__way == ios_base::cur)
 	    {
-	      __newoffi = __curi - __beg;
-	      __newoffo = __curo - __beg;
+	      __newoffi = this->_M_in_cur - __beg;
+	      __newoffo = this->_M_out_cur - __beg;
 	    }
 	  else if (__way == ios_base::end)
 	    {
-	      __newoffi = __endi - __beg;
-	      __newoffo = __endo - __beg;
+	      __newoffi = this->_M_in_end - __beg;
+	      // Due to the resolution of DR169, ios_base::end
+	      // is this->_M_out_lim, not _M_out_end.
+	      __newoffo = this->_M_out_lim - __beg;
 	    }
 
 	  if ((__testin || __testboth)
-	      && __newoffi + __off >= 0 && __endi - __beg >= __newoffi + __off)
+	      && __newoffi + __off >= 0 
+	      && this->_M_in_end - __beg >= __newoffi + __off)
 	    {
 	      this->_M_in_cur = __beg + __newoffi + __off;
 	      __ret = pos_type(__newoffi);
 	    }
 	  if ((__testout || __testboth)
-	      && __newoffo + __off >= 0 && __endo - __beg >= __newoffo + __off)
+	      && __newoffo + __off >= 0 
+	      && this->_M_out_lim - __beg >= __newoffo + __off)
 	    {
 	      _M_move_out_cur(__newoffo + __off - (this->_M_out_cur - __beg));
 	      __ret = pos_type(__newoffo);
@@ -207,7 +194,7 @@ namespace std
 	  if (__testout)
 	    {
 	      __beg = this->_M_out_beg;
-	      __end = this->_M_out_end;
+	      __end = this->_M_out_lim;
 	      if (0 <= __pos && __pos <= __end - __beg)
 		__testposo = true;
 	    }

@@ -191,7 +191,7 @@ namespace std
 	if (_M_pback_init)
 	  {
 	    // Length _M_in_cur moved in the pback buffer.
-	    const size_t __off = this->_M_in_cur == &_M_pback ? 0 : 1;
+	    const size_t __off = this->_M_in_cur == this->_M_in_beg ? 0 : 1;
 	    this->setg(this->_M_buf, _M_pback_cur_save + __off, 
 		       _M_pback_end_save);
 	    _M_pback_init = false;
@@ -399,12 +399,10 @@ namespace std
 	// Clear out pback buffer before going on to the real deal...
 	if (this->_M_pback_init)
 	  {
-	    while (__ret < __n && this->_M_in_cur < this->_M_in_end)
+	    if (__n && this->_M_in_cur == this->_M_in_beg)
 	      {
-		*__s = *this->_M_in_cur;
-		++__ret;
-		++__s;
-		++this->_M_in_cur;
+		*__s++ = *this->_M_in_cur++;
+		__ret = 1;
 	      }
 	    _M_destroy_pback();
 	  }
