@@ -1,3 +1,8 @@
+2001-02-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* optimize.c (expand_call_inline): Don't walk subtrees of type
+	nodes.
+
 2001-02-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (add_vcall_offset_vtbl_entries_1): Only add one entry
