@@ -1,3 +1,7 @@
+2001-07-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi: Remove CVS Id.
+
 2001-07-02  Andreas Jaeger  <aj@suse.de>
 
 	* ssa-dce.c (note_inherently_necessary_set): Add unused attribute.
