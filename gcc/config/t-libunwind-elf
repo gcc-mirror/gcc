@@ -14,8 +14,7 @@ SHLIBUNWIND_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared \
 	@multilib_flags@ $(SHLIB_OBJS) -lc && \
 	rm -f $(SHLIB_SOLINK) && \
 	if [ -f $(SHLIBUNWIND_NAME) ]; then \
-	  mv -f $(SHLIBUNWIND_NAME) \
-	     $(SHLIBUNWIND_NAME).`basename $(STAGE_PREFIX)`; \
+	  mv -f $(SHLIBUNWIND_NAME) $(SHLIBUNWIND_NAME).backup; \
 	else true; fi && \
 	mv $(SHLIBUNWIND_NAME).tmp $(SHLIBUNWIND_NAME) && \
 	$(LN_S) $(SHLIBUNWIND_NAME) $(SHLIB_SOLINK)
