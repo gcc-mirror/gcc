@@ -1,3 +1,8 @@
+2005-02-08  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/19803
+	* predict.c (PROB_VERY_UNLIKELY): Use 1% instead of 10%.
+
 2005-02-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR debug/19327
