@@ -1,3 +1,8 @@
+2003-06-30  Jason Merrill  <jason@redhat.com>
+
+	* defaults.h (PUSH_ARGS_REVERSED): Define default here.
+	* calls.c: Not here.
+
 2003-06-30  Ben Elliston  <bje@wasabisystems.com>
 
 	* config/arm/arm.c (arm_rtx_costs): Remove #if 0 block.

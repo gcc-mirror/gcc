@@ -411,6 +411,26 @@ do { fputs (integer_asm_op (POINTER_SIZE / UNITS_PER_WORD, TRUE), FILE); \
 #endif
 #endif
 
+/* Decide whether a function's arguments should be processed
+   from first to last or from last to first.
+
+   They should if the stack and args grow in opposite directions, but
+   only if we have push insns.  */
+
+#ifdef PUSH_ROUNDING
+
+#ifndef PUSH_ARGS_REVERSED
+#if defined (STACK_GROWS_DOWNWARD) != defined (ARGS_GROW_DOWNWARD)
+#define PUSH_ARGS_REVERSED  PUSH_ARGS
+#endif
+#endif
+
+#endif
+
+#ifndef PUSH_ARGS_REVERSED
+#define PUSH_ARGS_REVERSED 0
+#endif
+
 /* If PREFERRED_STACK_BOUNDARY is not defined, set it to STACK_BOUNDARY.
    STACK_BOUNDARY is required.  */
 #ifndef PREFERRED_STACK_BOUNDARY
