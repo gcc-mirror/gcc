@@ -6,6 +6,8 @@
 	(waitFor): Only check thread interrupted status if waitpid() returned
 	an error. Use WIFEXITED and WEXITSTATUS to process process's exit
 	value.
+	
+	* java/security/cert/X509Extension.java: Merge from classpath.
 
 2001-09-22  Anthony Green  <green@redhat.com>
 
