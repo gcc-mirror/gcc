@@ -1,3 +1,8 @@
+Sun Mar 28 00:49:41 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* lib/objc-torture.exp: Replace "77" with "Obj-C" in pattern
+	matching strings.
+
 Fri Mar 26 00:50:46 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/990326-1.c: New test from Charles Hannum.

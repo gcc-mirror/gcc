@@ -70,7 +70,7 @@ proc objc-torture-compile { src option } {
     set comp_output [objc_target_compile "$src" "$output" object $options];
     
     # Set a few common compiler messages.
-    set fatal_signal "*77*: Internal compiler error: program*got fatal signal"
+    set fatal_signal "*Obj-C*: Internal compiler error: program*got fatal signal"
  
     if [string match "$fatal_signal 6" $comp_output] then {
 	objc_fail $testcase "Got Signal 6, $option"
@@ -85,7 +85,7 @@ proc objc-torture-compile { src option } {
     }
 
     # We shouldn't get these because of -w, but just in case.
-    if [string match "*77*:*warning:*" $comp_output] then {
+    if [string match "*Obj-C*:*warning:*" $comp_output] then {
 	warning "$testcase: (with warnings) $option"
 	send_log "$comp_output\n"
 	unresolved "$testcase, $option"
@@ -173,7 +173,7 @@ proc objc-torture-execute { src } {
 	set comp_output [objc_target_compile "$src" "$executable" executable $options];
 
 	# Set a few common compiler messages.
-	set fatal_signal "*77*: Internal compiler error: program*got fatal signal"
+	set fatal_signal "*Obj-C*: Internal compiler error: program*got fatal signal"
 	
 	if [string match "$fatal_signal 6" $comp_output] then {
 	    objc_fail $testcase "Got Signal 6, $option"
@@ -188,7 +188,7 @@ proc objc-torture-execute { src } {
 	}
 	
 	# We shouldn't get these because of -w, but just in case.
-	if [string match "*77*:*warning:*" $comp_output] then {
+	if [string match "*Obj-C*:*warning:*" $comp_output] then {
 	    warning "$testcase: (with warnings) $option"
 	    send_log "$comp_output\n"
 	    unresolved "$testcase, $option"
