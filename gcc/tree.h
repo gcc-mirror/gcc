@@ -218,6 +218,10 @@ struct tree_common
    implicitly and should not lead to an "unused value" warning.  */
 #define TREE_NO_UNUSED_WARNING(NODE) ((NODE)->common.static_flag)
 
+/* In a NON_LVALUE_EXPR, this means there was overflow in folding.
+   The folded constant is inside the NON_LVALUE_EXPR.  */
+#define TREE_CONSTANT_OVERFLOW(NODE) ((NODE)->common.static_flag)
+
 /* Nonzero for a TREE_LIST or TREE_VEC node means that the derivation
    chain is via a `virtual' declaration.  */
 #define TREE_VIA_VIRTUAL(NODE) ((NODE)->common.static_flag)
