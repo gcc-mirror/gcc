@@ -407,8 +407,13 @@ version 0.5.22 of @code{g77}, due to using the
 it to fix a few bugs and improve performance in a
 few cases.
 
+@ifhtml
+See the page on Fortran news
+@end ifhtml
+@ifnothtml
 @xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
 available in plain-text format in @code{gcc/f/BUGS},
+@end ifnothtml
 for information on the known bugs in this version,
 including the regressions.
 
@@ -789,8 +794,13 @@ due to using the
 it to fix a few bugs and improve performance in a
 few cases.
 
+@ifhtml
+See the page on Fortran news
+@end ifhtml
+@ifnothtml
 @xref{Actual Bugs,,Actual Bugs We Haven't Fixed Yet},
 available in plain-text format in @code{gcc/f/BUGS},
+@end ifnothtml
 for information on the known bugs in this version,
 including the regressions.
 
