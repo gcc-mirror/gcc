@@ -6706,13 +6706,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (set_attr "type" "multi")])
 
 (define_insn "*exception_receiver_2"
-  [(unspec_volatile [(match_operand:DI 0 "nonimmediate_operand" "r,m")]
-		    UNSPECV_EHR)]
+  [(unspec_volatile [(match_operand:DI 0 "memory_operand" "m")] UNSPECV_EHR)]
   "TARGET_LD_BUGGY_LDGP"
-  "@
-   bis $31,%0,$29
-   ldq $29,%0"
-  [(set_attr "type" "ilog,ild")])
+  "ldq $29,%0"
+  [(set_attr "type" "ild")])
 
 (define_expand "nonlocal_goto_receiver"
   [(unspec_volatile [(const_int 0)] UNSPECV_BLOCKAGE)

@@ -2540,7 +2540,6 @@ rest_of_compilation (decl)
      carry magic hard reg data throughout the function.  */
   rtx_equal_function_value_matters = 0;
   purge_hard_subreg_sets (get_insns ());
-  emit_initial_value_sets ();
 
   /* Don't return yet if -Wreturn-type; we need to do cleanup_cfg.  */
   if ((rtl_dump_and_exit || flag_syntax_only) && !warn_return_type)
@@ -2571,6 +2570,10 @@ rest_of_compilation (decl)
       close_dump_file (DFI_eh, print_rtl, get_insns ());
       timevar_pop (TV_JUMP);
     }
+
+  /* Delay emitting hard_reg_initial_value sets until after EH landing pad
+     generation, which might create new sets.  */
+  emit_initial_value_sets ();
 
 #ifdef FINALIZE_PIC
   /* If we are doing position-independent code generation, now
