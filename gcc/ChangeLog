@@ -10,6 +10,7 @@ Thu Jun 10 06:55 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 	*fixinc/inclhack.def(sun_auth_proto): We do not know how to
 	test for the presence of valid prototypes.  Delete bypass expr.
 	(ioctl_fix_ctrl): Correct the selection expression.
+	(no_double_slash): Correct quoting rules
 	*fixinc/fixincl.x: regen
 	*fixinc/inclhack.sh: regen
 
