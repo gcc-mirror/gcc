@@ -82,6 +82,11 @@ int const_labelno;
 
 int var_labelno;
 
+/* Carry information from ASM_DECLARE_OBJECT_NAME
+   to ASM_FINISH_DECLARE_OBJECT.  */
+
+int size_directive_output;
+
 /* Nonzero if at least one function definition has been seen.  */
 static int function_defined;
 
