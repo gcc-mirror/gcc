@@ -1,3 +1,8 @@
+2002-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgcleanup.c (try_optimize_cfg): Make sure merge_blocks doesn't
+	merge bb with itself.
+
 2002-06-07  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config.gcc (mips*-*-netbsd*): Add mips/t-netbsd to ${tmake_file}.

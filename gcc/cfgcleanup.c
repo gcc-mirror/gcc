@@ -1634,6 +1634,7 @@ try_optimize_cfg (mode)
 		     && !(s->flags & EDGE_COMPLEX)
 		     && (c = s->dest) != EXIT_BLOCK_PTR
 		     && c->pred->pred_next == NULL
+		     && b != c
 		     /* If the jump insn has side effects,
 			we can't kill the edge.  */
 		     && (GET_CODE (b->end) != JUMP_INSN
