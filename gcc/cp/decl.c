@@ -5385,19 +5385,20 @@ make_typename_type (context, name)
     {
       if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR)
 	{
+	  tree tmpl = NULL_TREE;
 	  if (IS_AGGR_TYPE (context))
-	    t = lookup_field (context, name, 0, 0);
-	  else
+	    tmpl = lookup_field (context, name, 0, 0);
+	  if (!tmpl || !DECL_CLASS_TEMPLATE_P (tmpl))
 	    {
 	      cp_error ("no class template named `%#T' in `%#T'",
 			name, context);
 	      return error_mark_node;
 	    }
 
-	  if (t && DECL_CLASS_TEMPLATE_P (t))
-	    return lookup_template_class (t, TREE_OPERAND (fullname, 1),
-					  NULL_TREE, context, 
-					  /*entering_scope=*/0);
+	  return lookup_template_class (tmpl, 
+					TREE_OPERAND (fullname, 1),
+					NULL_TREE, context, 
+					/*entering_scope=*/0);
 	}
       else
 	{
