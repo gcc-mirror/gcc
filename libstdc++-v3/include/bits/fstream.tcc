@@ -268,54 +268,39 @@ namespace std
 
       if (__testin)
 	{
-	  const bool __testpb = this->_M_in_beg < this->_M_in_cur;
-	  char_type __c = traits_type::to_char_type(__i);
+	  // Remember whether the pback buffer is active, otherwise below
+	  // we may try to store in it a second char (libstdc++/9761).
+	  const bool __testpb = this->_M_pback_init;	   
 	  const bool __testeof = traits_type::eq_int_type(__i, __ret);
-
-	  if (__testpb)
+	  
+	  int_type __tmp;
+	  if (this->_M_in_beg < this->_M_in_cur)
 	    {
-	      const bool __testout = this->_M_mode & ios_base::out;
-	      const bool __testeq = traits_type::eq(__c, this->_M_in_cur[-1]);
-
-	      --this->_M_in_cur;
-	      if (__testout)
-		--this->_M_out_cur;
-	      // Try to put back __c into input sequence in one of three ways.
-	      // Order these tests done in is unspecified by the standard.
-	      if (!__testeof && __testeq)
-		__ret = __i;
-	      else if (__testeof)
-		__ret = traits_type::not_eof(__i);
-	      else
-		{
-		  _M_create_pback();
-		  *this->_M_in_cur = __c; 
-		  __ret = __i;
-		}
+	      _M_move_in_cur(-1);
+	      __tmp = traits_type::to_int_type(*this->_M_in_cur);
 	    }
-	  else
-	    {	 
- 	      // At the beginning of the buffer, need to make a
-	      // putback position available.
-	      // But the seek may fail (f.i., at the beginning of
-	      // a file, see libstdc++/9439) and in that case
-	      // we return traits_type::eof()
-	      if (this->seekoff(-1, ios_base::cur) >= 0)
-		{
-		  this->underflow();
-		  if (!__testeof)
-		    {
-		      if (!traits_type::eq(__c, *this->_M_in_cur))
-			{
-			  _M_create_pback();
-			  *this->_M_in_cur = __c;
-			}
-		      __ret = __i;
-		    }
-		  else
-		    __ret = traits_type::not_eof(__i);
-		}
- 	    }
+	  // At the beginning of the buffer, need to make a
+	  // putback position available.
+	  // But the seek may fail (f.i., at the beginning of
+	  // a file, see libstdc++/9439) and in that case
+	  // we return traits_type::eof().
+	  else if (this->seekoff(-1, ios_base::cur) < 0
+		   || traits_type::eq_int_type(__tmp = this->underflow(),
+					       traits_type::eof()))
+	    return __ret;
+
+	  // Try to put back __i into input sequence in one of three ways.
+	  // Order these tests done in is unspecified by the standard.
+	  if (!__testeof && traits_type::eq_int_type(__i, __tmp))
+	    __ret = __i;
+	  else if (__testeof)
+	    __ret = traits_type::not_eof(__i);
+	  else if (!__testpb)
+	    {
+	      _M_create_pback();
+	      *this->_M_in_cur = traits_type::to_char_type(__i); 
+	      __ret = __i;
+	    }
 	}
       _M_last_overflowed = false;	
       return __ret;

@@ -1,5 +1,14 @@
 2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/9761
+	* include/bits/fstream.tcc (pbackfail): If the pback buffer
+	is already active don't try to store in it a second char.
+	* testsuite/27_io/basic_filebuf/pbackfail/char/9761.cc: New.
+
+	* include/bits/fstream.tcc (pbackfail): Add unbuffered bits.
+
+2003-06-02  Paolo Carlini  <pcarlini@unitus.it>
+
 	* testsuite/27_io/basic_stringbuf/seekpos/char/3.cc: Tweak
 	line spacing.
 
