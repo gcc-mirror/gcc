@@ -162,7 +162,81 @@ sse2floatfloat:
 	movaps	(%rdi), %xmm0
 	movq	%xmm0, (%rsi)
 	ret
-	
+
+	.align	2
+.globl ffi_closure_UNIX64
+        .type	ffi_closure_UNIX64,@function
+
+ffi_closure_UNIX64:
+.LFB2:
+        pushq   %rbp
+.LCFI10:
+        movq    %rsp, %rbp
+.LCFI11:
+        subq    $240, %rsp
+.LCFI12:
+	movq	%rdi, -176(%rbp)
+        movq    %rsi, -168(%rbp)
+        movq    %rdx, -160(%rbp)
+        movq    %rcx, -152(%rbp)
+        movq    %r8, -144(%rbp)
+        movq    %r9, -136(%rbp)
+        /* FIXME: We can avoid all this stashing of XMM registers by
+	   (in ffi_prep_closure) computing the number of
+	   floating-point args and moving it into %rax before calling
+	   this function.  Once this is done, uncomment the next few
+	   lines and only the essential XMM registers will be written
+	   to memory.  This is a significant saving.  */
+/*         movzbl  %al, %eax  */
+/*         movq    %rax, %rdx */
+/*         leaq    0(,%rdx,4), %rax */
+/*         leaq    2f(%rip), %rdx */
+/*         subq    %rax, %rdx */
+        leaq    -1(%rbp), %rax
+/*         jmp     *%rdx */
+        movaps  %xmm7, -15(%rax)
+        movaps  %xmm6, -31(%rax)
+        movaps  %xmm5, -47(%rax)
+        movaps  %xmm4, -63(%rax)
+        movaps  %xmm3, -79(%rax)
+        movaps  %xmm2, -95(%rax)
+        movaps  %xmm1, -111(%rax)
+        movaps  %xmm0, -127(%rax)
+2:
+        movl    %edi, -180(%rbp)
+        movl    $0, -224(%rbp)
+        movl    $48, -220(%rbp)
+        leaq    16(%rbp), %rax
+        movq    %rax, -216(%rbp)
+        leaq    -176(%rbp), %rdx
+        movq    %rdx, -208(%rbp)
+        leaq    -224(%rbp), %rsi
+	movq	%r10, %rdi
+	movq	%rsp, %rdx
+        call    ffi_closure_UNIX64_inner@PLT
+
+	cmpl	$FFI_TYPE_FLOAT, %eax
+	je	1f
+	cmpl	$FFI_TYPE_DOUBLE, %eax
+	je	2f
+	cmpl	$FFI_TYPE_LONGDOUBLE, %eax
+	je	3f
+	cmpl	$FFI_TYPE_STRUCT, %eax
+	je	4f
+	popq	%rax
+        leave
+        ret
+1:
+2:
+3:	
+	movaps	-240(%rbp), %xmm0
+        leave
+        ret
+4:
+	leave
+	ret
+.LFE2:	
+		
         .section        .eh_frame,"a",@progbits
 .Lframe0:
         .long   .LECIE1-.LSCIE1
@@ -204,5 +278,25 @@ sse2floatfloat:
         .uleb128 0x6
 	.align 8
 .LEFDE1:
+.LSFDE3:
+        .long   .LEFDE3-.LASFDE3        # FDE Length
+.LASFDE3:
+        .long   .LASFDE3-.Lframe0       # FDE CIE offset
+
+        .long   .LFB2-. # FDE initial location
+        .long   .LFE2-.LFB2     # FDE address range
+        .uleb128 0x0    # Augmentation size
+        .byte   0x4     # DW_CFA_advance_loc4
+        .long   .LCFI10-.LFB2
+        .byte   0xe     # DW_CFA_def_cfa_offset
+        .uleb128 0x10
+        .byte   0x86    # DW_CFA_offset, column 0x6
+        .uleb128 0x2
+        .byte   0x4     # DW_CFA_advance_loc4
+        .long   .LCFI11-.LCFI10
+        .byte   0xd     # DW_CFA_def_cfa_register
+        .uleb128 0x6
+        .align 8
+.LEFDE3:
 
 #endif /* __x86_64__  */

@@ -27,6 +27,7 @@
 #include <ffi_common.h>
 
 #include <stdlib.h>
+#include <stdarg.h>
 
 /* ffi_prep_args is called by the assembly routine once stack space
    has been allocated for the function's arguments */
@@ -571,4 +572,135 @@ void ffi_call(/*@dependent@*/ ffi_cif *cif,
     }
 }
 
+extern void ffi_closure_UNIX64(void);
+
+ffi_status
+ffi_prep_closure (ffi_closure* closure,
+		  ffi_cif* cif,
+		  void (*fun)(ffi_cif*, void*, void**, void*),
+		  void *user_data)
+{
+  volatile unsigned short *tramp;
+
+  /* FFI_ASSERT (cif->abi == FFI_OSF);  */
+
+  tramp = (volatile unsigned short *) &closure->tramp[0];
+  tramp[0] = 0xbb49;		/* mov <code>, %r11	*/
+  tramp[5] = 0xba49;		/* mov <data>, %r10	*/
+  tramp[10] = 0xff49;		/* jmp *%r11	*/
+  tramp[11] = 0x00e3;
+  *(void * volatile *) &tramp[1] = ffi_closure_UNIX64;
+  *(void * volatile *) &tramp[6] = closure;
+
+  closure->cif = cif;
+  closure->fun = fun;
+  closure->user_data = user_data;
+
+  return FFI_OK;
+}
+
+int
+ffi_closure_UNIX64_inner(ffi_closure *closure, va_list l, void *rp)
+{
+  ffi_cif *cif;
+  void **avalue;
+  ffi_type **arg_types;
+  long i, avn, argn;
+
+  cif = closure->cif;
+  avalue = alloca(cif->nargs * sizeof(void *));
+
+  argn = 0;
+
+  i = 0;
+  avn = cif->nargs;
+  arg_types = cif->arg_types;
+  
+  /* Grab the addresses of the arguments from the stack frame.  */
+  while (i < avn)
+    {
+      switch (arg_types[i]->type)
+	{
+	case FFI_TYPE_SINT8:
+	case FFI_TYPE_UINT8:
+	case FFI_TYPE_SINT16:
+	case FFI_TYPE_UINT16:
+	case FFI_TYPE_SINT32:
+	case FFI_TYPE_UINT32:
+	case FFI_TYPE_SINT64:
+	case FFI_TYPE_UINT64:
+	case FFI_TYPE_POINTER:
+	  {
+	    if (l->gp_offset > 48-8)
+	      {
+		avalue[i] = l->overflow_arg_area;
+		l->overflow_arg_area = (char *)l->overflow_arg_area + 8;
+	      }
+	    else
+	      {
+		avalue[i] = (char *)l->reg_save_area + l->gp_offset;
+		l->gp_offset += 8;
+	      }
+	  }
+	  break;
+
+	case FFI_TYPE_STRUCT:
+	  /* FIXME  */
+	  FFI_ASSERT(0);
+	  break;
+
+	case FFI_TYPE_DOUBLE:
+	  {
+	    if (l->fp_offset > 176-16)
+	      {
+		avalue[i] = l->overflow_arg_area;
+		l->overflow_arg_area = (char *)l->overflow_arg_area + 8;
+	      }
+	    else
+	      {
+		avalue[i] = (char *)l->reg_save_area + l->fp_offset;
+		l->fp_offset += 16;
+	      }
+	  }
+#if DEBUG_FFI
+	  fprintf (stderr, "double arg %d = %g\n", i, *(double *)avalue[i]);
+#endif
+	  break;
+	  
+	case FFI_TYPE_FLOAT:
+	  {
+	    if (l->fp_offset > 176-16)
+	      {
+		avalue[i] = l->overflow_arg_area;
+		l->overflow_arg_area = (char *)l->overflow_arg_area + 8;
+	      }
+	    else
+	      {
+		avalue[i] = (char *)l->reg_save_area + l->fp_offset;
+		l->fp_offset += 16;
+	      }
+	  }
+#if DEBUG_FFI
+	  fprintf (stderr, "float arg %d = %g\n", i, *(float *)avalue[i]);
+#endif
+	  break;
+	  
+	default:
+	  FFI_ASSERT(0);
+	}
+
+      argn += ALIGN(arg_types[i]->size, SIZEOF_ARG) / SIZEOF_ARG;
+      i++;
+    }
+
+  /* Invoke the closure.  */
+  (closure->fun) (cif, rp, avalue, closure->user_data);
+
+  /* FIXME: Structs not supported.  */
+  FFI_ASSERT(cif->rtype->type != FFI_TYPE_STRUCT);
+
+  /* Tell ffi_closure_UNIX64 how to perform return type promotions.  */
+
+  return cif->rtype->type;
+}
 #endif /* ifndef __x86_64__ */
