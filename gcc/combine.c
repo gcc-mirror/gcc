@@ -2714,11 +2714,11 @@ try_combine (i3, i2, i1, new_direct_jump_p)
       }
 
     /* Update reg_nonzero_bits et al for any changes that may have been made
-       to this insn.  */
-
-    note_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
+       to this insn.  The order of set_nonzero_bits_and_sign_copies() is 
+       important.  Because newi2pat can affect nonzero_bits of newpat */
     if (newi2pat)
       note_stores (newi2pat, set_nonzero_bits_and_sign_copies, NULL);
+    note_stores (newpat, set_nonzero_bits_and_sign_copies, NULL);
 
     /* Set new_direct_jump_p if a new return or simple jump instruction
        has been created.
