@@ -1,5 +1,10 @@
 2000-04-08  Richard Earnshaw (rearnsha@arm.com)
 
+	* arm/thumb.md: Delete.
+	* arm/thumb-protos.h: Delete.
+
+2000-04-08  Richard Earnshaw (rearnsha@arm.com)
+
 	Merge changes from merged-arm-thumb-backend-branch onto trunk.
 
 	2000-04-08  Richard Earnshaw (rearnsha@arm.com)
