@@ -418,24 +418,7 @@ namespace std
 
       // [documentation is inherited]
       virtual streamsize
-      xsgetn(char_type* __s, streamsize __n)
-      {
-	// Clear out pback buffer before going on to the real deal...
-	streamsize __ret = 0;
-	if (this->_M_pback_init)
-	  {
-	    if (__n && this->gptr() == this->eback())
-	      {
-		*__s++ = *this->gptr();
-		this->gbump(1);
-		__ret = 1;
-	      }
-	    _M_destroy_pback();
-	  }
-	if (__ret < __n)
-	  __ret += __streambuf_type::xsgetn(__s, __n - __ret);
-	return __ret;
-      }
+      xsgetn(char_type* __s, streamsize __n);
 
       // [documentation is inherited]
       virtual streamsize
