@@ -1,3 +1,10 @@
+2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (build_vtbl_initializer): Use build_int_cst for
+	negative size types.
+	* decl.c (complete_array_type): Likewise.
+	* method.c (finish_thunk): Likewise.
+
 2004-08-20  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* tree.c: Remove unused mark_local_for_remap_r.

@@ -1799,7 +1799,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
       /* If the size overflows, pass -1 so the allocator will raise
 	 storage error.  */
       if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
-	size = ssize_int (-1);
+	size = build_int_cst (ssizetype, -1, -1);
 
       storage = build_call_alloc_dealloc (NULL_TREE, size,
 					  TYPE_ALIGN (storage_type),
@@ -1872,7 +1872,7 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   /* If the size overflows, pass -1 so the allocator will raise
      storage error.  */
   if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
-    size = ssize_int (-1);
+    size = build_int_cst (ssizetype, -1, -1);
 
   /* If this is a type whose alignment is larger than the
      biggest we support in normal alignment and this is in

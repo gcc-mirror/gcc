@@ -5260,7 +5260,7 @@ complete_array_type (tree type, tree initial_value, int do_default)
 	{
 	  tree elts = CONSTRUCTOR_ELTS (initial_value);
 
-	  maxindex = ssize_int (-1);
+	  maxindex = build_int_cst (ssizetype, -1, -1);
 	  for (; elts; elts = TREE_CHAIN (elts))
 	    {
 	      if (TREE_PURPOSE (elts))

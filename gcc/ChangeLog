@@ -1,3 +1,8 @@
+2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* stor-layout.c (initialize_sizetypes): Set SIZETYPE earlier,
+	clear cache on copied sizetype.
+
 2004-08-20  Ben Elliston  <bje@au.ibm.com>
 
 	* configure.ac: Don't escape apostrophe in --enable-coverage help.
@@ -2785,7 +2790,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√É?  <tfautre@pandora.be>
+	    Tanguy Fautr√  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 

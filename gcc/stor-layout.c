@@ -1863,12 +1863,12 @@ initialize_sizetypes (void)
   TYPE_MODE (t) = SImode;
   TYPE_ALIGN (t) = GET_MODE_ALIGNMENT (SImode);
   TYPE_USER_ALIGN (t) = 0;
+  TYPE_IS_SIZETYPE (t) = 1;
   TYPE_SIZE (t) = build_int_cst (t, GET_MODE_BITSIZE (SImode), 0);
   TYPE_SIZE_UNIT (t) = build_int_cst (t, GET_MODE_SIZE (SImode), 0);
   TYPE_UNSIGNED (t) = 1;
   TYPE_PRECISION (t) = GET_MODE_BITSIZE (SImode);
   TYPE_MIN_VALUE (t) = build_int_cst (t, 0, 0);
-  TYPE_IS_SIZETYPE (t) = 1;
 
   /* 1000 avoids problems with possible overflow and is certainly
      larger than any size value we'd want to be storing.  */
@@ -1878,6 +1878,8 @@ initialize_sizetypes (void)
      size_int_wide.  */
   sizetype = t;
   bitsizetype = copy_node (t);
+  TYPE_CACHED_VALUES (bitsizetype) = NULL_TREE;
+  TYPE_CACHED_VALUES_P (bitsizetype) = 0;
 }
 
 /* Set sizetype to TYPE, and initialize *sizetype accordingly.

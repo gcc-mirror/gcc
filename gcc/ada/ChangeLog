@@ -1,3 +1,8 @@
+2004-08-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* utils2.c (build_allocator): Use build_int_cst for negative
+	size types.
+
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
 	* misc.c (LANG_HOOKS_HONOR_READONLY): Remove.
