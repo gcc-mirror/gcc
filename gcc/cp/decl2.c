@@ -2064,7 +2064,7 @@ coerce_new_type (type)
       e = 2;
       if (args && args != void_list_node)
         args = TREE_CHAIN (args);
-      error ("`operator new' takes type `size_t' (`%T') as first parameter", c_size_type_node);
+      pedwarn ("`operator new' takes type `size_t' (`%T') as first parameter", c_size_type_node);
     }
   switch (e)
   {

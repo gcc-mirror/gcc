@@ -1,3 +1,12 @@
+2002-01-07  Jason Merrill  <jason@redhat.com>
+
+	* decl2.c (coerce_new_type): Downgrade error for size_t mismatch
+	to pedwarn.
+
+	* method.c (make_thunk): If !flag_weak, give the thunk the
+	function's linkage.
+	(use_thunk): Here, too.
+
 2002-01-07  Graham Stott  <grahams@redhat.com>
 
         * error.c: Update copyright date.
@@ -221,7 +230,7 @@
 
 2002-01-05  Richard Henderson  <rth@redhat.com>
 
-        * semantics.c (expand_body): Revert last change.
+	* semantics.c (expand_body): Revert last change.
 
 2002-01-04  Jason Merrill  <jason@redhat.com>
 
