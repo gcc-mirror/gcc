@@ -74,6 +74,13 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
+#undef CPP_SPEC
+#define CPP_SPEC \
+  "%{mt|pthread:-D_REENTRANT -D_THREAD_SAFE -D_POSIX_C_SOURCE=199506L}"
+/* aCC defines also -DRWSTD_MULTI_THREAD, -DRW_MULTI_THREAD.  These
+   affect only aCC's C++ library (Rogue Wave-derived) which we do not
+   use, and they violate the user's name space.  */
+
 /* We can debug dynamically linked executables on hpux11; we also
    want dereferencing of a NULL pointer to cause a SEGV.  */
 #undef LINK_SPEC
@@ -100,15 +107,12 @@ Boston, MA 02111-1307, USA.  */
    %{static:-a archive} %{shared:-b}"
 #endif
 
-/* Like the default, except no -lg.  */
+/* hpux 11 has posix threads.  */
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:\
-     %{!p:%{!pg:\
-       %{!threads:-lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}\
-       %{threads:-lcma -lc_r}}}\
-     %{p:%{!pg:-lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}\
-     %{pg:-lc %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}}"
+     %{mt|pthread:-lpthread} -lc \
+     %{static:%{!nolibdld:-a shared -ldld -a archive -lc}}}"
 
 /* Under hpux11, the normal location of the `ld' and `as' programs is the
    /usr/ccs/bin directory.  */
