@@ -122,6 +122,8 @@ static tree build_vtable_entry_for_fn PROTO((tree, tree));
 static tree build_vtbl_initializer PROTO((tree));
 static int count_fields PROTO((tree));
 static int add_fields_to_vec PROTO((tree, tree, int));
+static void check_bitfield_decl PROTO((tree));
+static void check_field_decl PROTO((tree, tree, int *, int *, int *, int *));
 
 /* Variables shared between class.c and call.c.  */
 
@@ -3156,6 +3158,194 @@ add_fields_to_vec (fields, field_vec, idx)
   return idx;
 }
 
+/* FIELD is a bit-field.  We are finishing the processing for its
+   enclosing type.  Issue any appropriate messages and set appropriate
+   flags.  */
+
+static void
+check_bitfield_decl (field)
+     tree field;
+{
+  tree type = TREE_TYPE (field);
+
+  /* Invalid bit-field size done by grokfield.  */
+  /* Detect invalid bit-field type. Simply checking if TYPE is
+     integral is insufficient, as that is the array core of the field
+     type. If TREE_TYPE (field) is integral, then TYPE must be the same.  */
+  if (DECL_INITIAL (field)
+      && ! INTEGRAL_TYPE_P (TREE_TYPE (field)))
+    {
+      cp_error_at ("bit-field `%#D' with non-integral type", field);
+      DECL_INITIAL (field) = NULL;
+    }
+
+  /* Detect and ignore out of range field width.  */
+  if (DECL_INITIAL (field))
+    {
+      tree w = DECL_INITIAL (field);
+      register int width = 0;
+
+      /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
+      STRIP_NOPS (w);
+
+      /* detect invalid field size.  */
+      if (TREE_CODE (w) == CONST_DECL)
+	w = DECL_INITIAL (w);
+      else if (TREE_READONLY_DECL_P (w))
+	w = decl_constant_value (w);
+
+      if (TREE_CODE (w) != INTEGER_CST)
+	{
+	  cp_error_at ("bit-field `%D' width not an integer constant",
+		       field);
+	  DECL_INITIAL (field) = NULL_TREE;
+	}
+      else if (width = TREE_INT_CST_LOW (w),
+	       width < 0)
+	{
+	  DECL_INITIAL (field) = NULL;
+	  cp_error_at ("negative width in bit-field `%D'", field);
+	}
+      else if (width == 0 && DECL_NAME (field) != 0)
+	{
+	  DECL_INITIAL (field) = NULL;
+	  cp_error_at ("zero width for bit-field `%D'", field);
+	}
+      else if (width
+	       > TYPE_PRECISION (long_long_unsigned_type_node))
+	{
+	  /* The backend will dump if you try to use something too
+	     big; avoid that.  */
+	  DECL_INITIAL (field) = NULL;
+	  sorry ("bit-fields larger than %d bits",
+		 TYPE_PRECISION (long_long_unsigned_type_node));
+	  cp_error_at ("  in declaration of `%D'", field);
+	}
+      else if (width > TYPE_PRECISION (type)
+	       && TREE_CODE (type) != ENUMERAL_TYPE
+	       && TREE_CODE (type) != BOOLEAN_TYPE)
+	cp_warning_at ("width of `%D' exceeds its type", field);
+      else if (TREE_CODE (type) == ENUMERAL_TYPE
+	       && ((min_precision (TYPE_MIN_VALUE (type),
+				   TREE_UNSIGNED (type)) > width)
+		   || (min_precision (TYPE_MAX_VALUE (type),
+				      TREE_UNSIGNED (type)) > width)))
+	cp_warning_at ("`%D' is too small to hold all values of `%#T'",
+		       field, type);
+
+      if (DECL_INITIAL (field))
+	{
+	  DECL_INITIAL (field) = NULL_TREE;
+	  DECL_FIELD_SIZE (field) = width;
+	  DECL_BIT_FIELD (field) = 1;
+
+	  if (width == 0)
+	    {
+#ifdef EMPTY_FIELD_BOUNDARY
+	      DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
+					EMPTY_FIELD_BOUNDARY);
+#endif
+#ifdef PCC_BITFIELD_TYPE_MATTERS
+	      if (PCC_BITFIELD_TYPE_MATTERS)
+		DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
+					  TYPE_ALIGN (type));
+#endif
+	    }
+	}
+    }
+  else
+    /* Non-bit-fields are aligned for their type.  */
+    DECL_ALIGN (field) = MAX (DECL_ALIGN (field), TYPE_ALIGN (type));
+}
+
+/* FIELD is a non bit-field.  We are finishing the processing for its
+   enclosing type T.  Issue any appropriate messages and set appropriate
+   flags.  */
+
+static void
+check_field_decl (field, t, cant_have_const_ctor,
+		  cant_have_default_ctor, no_const_asn_ref,
+		  any_default_members)
+     tree field;
+     tree t;
+     int *cant_have_const_ctor;
+     int *cant_have_default_ctor;
+     int *no_const_asn_ref;
+     int *any_default_members;
+{
+  tree type = strip_array_types (TREE_TYPE (field));
+
+  /* An anonymous union cannot contain any fields which would change
+     the settings of CANT_HAVE_CONST_CTOR and friends.  */
+  if (ANON_UNION_TYPE_P (type))
+    ;
+  /* And, we don't set TYPE_HAS_CONST_INIT_REF, etc., for anonymous
+     structs.  So, we recurse through their fields here.  */
+  else if (ANON_AGGR_TYPE_P (type))
+    {
+      tree fields;
+
+      for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
+	if (TREE_CODE (field) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
+	  check_field_decl (fields, t, cant_have_const_ctor,
+			    cant_have_default_ctor, no_const_asn_ref,
+			    any_default_members);
+    }
+  /* Check members with class type for constructors, destructors,
+     etc.  */
+  else if (CLASS_TYPE_P (type))
+    {
+      /* Never let anything with uninheritable virtuals
+	 make it through without complaint.  */
+      abstract_virtuals_error (field, type);
+		      
+      if (TREE_CODE (t) == UNION_TYPE)
+	{
+	  if (TYPE_NEEDS_CONSTRUCTING (type))
+	    cp_error_at ("member `%#D' with constructor not allowed in union",
+			 field);
+	  if (TYPE_NEEDS_DESTRUCTOR (type))
+	    cp_error_at ("member `%#D' with destructor not allowed in union",
+			 field);
+	  if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
+	    cp_error_at ("member `%#D' with copy assignment operator not allowed in union",
+			 field);
+	}
+      else
+	{
+	  TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
+	  TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (type);
+	  TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (type);
+	  TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
+	}
+
+      if (!TYPE_HAS_CONST_INIT_REF (type))
+	*cant_have_const_ctor = 1;
+
+      if (!TYPE_HAS_CONST_ASSIGN_REF (type))
+	*no_const_asn_ref = 1;
+
+      if (TYPE_HAS_CONSTRUCTOR (type)
+	  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
+	*cant_have_default_ctor = 1;
+    }
+  if (DECL_INITIAL (field) != NULL_TREE)
+    {
+      /* `build_class_init_list' does not recognize
+	 non-FIELD_DECLs.  */
+      if (TREE_CODE (t) == UNION_TYPE && any_default_members != 0)
+	cp_error_at ("multiple fields in union `%T' initialized");
+      *any_default_members = 1;
+    }
+
+  /* Non-bit-fields are aligned for their type, except packed fields
+     which require only BITS_PER_UNIT alignment.  */
+  DECL_ALIGN (field) = MAX (DECL_ALIGN (field), 
+			    (DECL_PACKED (field) 
+			     ? BITS_PER_UNIT
+			     : TYPE_ALIGN (TREE_TYPE (field))));
+};
+
 /* Create a RECORD_TYPE or UNION_TYPE node for a C struct or union declaration
    (or C++ class declaration).
 
@@ -3188,7 +3378,6 @@ finish_struct_1 (t)
      tree t;
 {
   int old;
-  enum tree_code code = TREE_CODE (t);
   tree fields = TYPE_FIELDS (t);
   tree x, last_x, method_vec;
   int has_virtual;
@@ -3447,8 +3636,7 @@ finish_struct_1 (t)
 	    }
 	}
 
-      while (TREE_CODE (type) == ARRAY_TYPE)
-        type = TREE_TYPE (type);
+      type = strip_array_types (type);
       
       if (TREE_CODE (type) == POINTER_TYPE)
 	has_pointers = 1;
@@ -3500,171 +3688,13 @@ finish_struct_1 (t)
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
       if (DECL_C_BIT_FIELD (x))
-	{
-	  /* Invalid bit-field size done by grokfield.  */
-	  /* Detect invalid bit-field type. Simply checking if TYPE is
-             integral is insufficient, as that is the array core of the
-             field type. If TREE_TYPE (x) is integral, then TYPE must be
-             the same.  */
-	  if (DECL_INITIAL (x)
-	      && ! INTEGRAL_TYPE_P (TREE_TYPE (x)))
-	    {
-	      cp_error_at ("bit-field `%#D' with non-integral type", x);
-	      DECL_INITIAL (x) = NULL;
-	    }
-
-	  /* Detect and ignore out of range field width.  */
-	  if (DECL_INITIAL (x))
-	    {
-	      tree w = DECL_INITIAL (x);
-	      register int width = 0;
-
-	      /* Avoid the non_lvalue wrapper added by fold for PLUS_EXPRs.  */
-	      STRIP_NOPS (w);
-
-	      /* detect invalid field size.  */
-	      if (TREE_CODE (w) == CONST_DECL)
-		w = DECL_INITIAL (w);
-	      else if (TREE_READONLY_DECL_P (w))
-		w = decl_constant_value (w);
-
-	      if (TREE_CODE (w) != INTEGER_CST)
-		{
-		  cp_error_at ("bit-field `%D' width not an integer constant",
-			       x);
-		  DECL_INITIAL (x) = NULL_TREE;
-		}
-	      else if (width = TREE_INT_CST_LOW (w),
-		       width < 0)
-		{
-		  DECL_INITIAL (x) = NULL;
-		  cp_error_at ("negative width in bit-field `%D'", x);
-		}
-	      else if (width == 0 && DECL_NAME (x) != 0)
-		{
-		  DECL_INITIAL (x) = NULL;
-		  cp_error_at ("zero width for bit-field `%D'", x);
-		}
-	      else if (width
-		       > TYPE_PRECISION (long_long_unsigned_type_node))
-		{
-		  /* The backend will dump if you try to use something
-		     too big; avoid that.  */
-		  DECL_INITIAL (x) = NULL;
-		  sorry ("bit-fields larger than %d bits",
-			 TYPE_PRECISION (long_long_unsigned_type_node));
-		  cp_error_at ("  in declaration of `%D'", x);
-		}
-	      else if (width > TYPE_PRECISION (type)
-		       && TREE_CODE (type) != ENUMERAL_TYPE
-		       && TREE_CODE (type) != BOOLEAN_TYPE)
-		{
-		  cp_warning_at ("width of `%D' exceeds its type", x);
-		}
-	      else if (TREE_CODE (type) == ENUMERAL_TYPE
-		       && ((min_precision (TYPE_MIN_VALUE (type),
-					   TREE_UNSIGNED (type)) > width)
-			   || (min_precision (TYPE_MAX_VALUE (type),
-					      TREE_UNSIGNED (type)) > width)))
-		{
-		  cp_warning_at ("`%D' is too small to hold all values of `%#T'",
-				 x, type);
-		}
-
-	      if (DECL_INITIAL (x))
-		{
-		  DECL_INITIAL (x) = NULL_TREE;
-		  DECL_FIELD_SIZE (x) = width;
-		  DECL_BIT_FIELD (x) = 1;
-
-		  if (width == 0)
-		    {
-#ifdef EMPTY_FIELD_BOUNDARY
-		      DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-					    EMPTY_FIELD_BOUNDARY);
-#endif
-#ifdef PCC_BITFIELD_TYPE_MATTERS
-		      if (PCC_BITFIELD_TYPE_MATTERS)
-			DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
-					      TYPE_ALIGN (type));
-#endif
-		    }
-		}
-	    }
-	  else
-	    /* Non-bit-fields are aligned for their type.  */
-	    DECL_ALIGN (x) = MAX (DECL_ALIGN (x), TYPE_ALIGN (type));
-	}
+	check_bitfield_decl (x);
       else
-	{
-	  if (CLASS_TYPE_P (type) && ! ANON_AGGR_TYPE_P (type))
-	    {
-	      /* Never let anything with uninheritable virtuals
-		 make it through without complaint.  */
-	      abstract_virtuals_error (x, type);
-		      
-	      if (code == UNION_TYPE)
-		{
-		  const char *fie = NULL;
-		  if (TYPE_NEEDS_CONSTRUCTING (type))
-		    fie = "constructor";
-		  else if (TYPE_NEEDS_DESTRUCTOR (type))
-		    fie = "destructor";
-		  else if (TYPE_HAS_COMPLEX_ASSIGN_REF (type))
-		    fie = "copy assignment operator";
-		  if (fie)
-		    cp_error_at ("member `%#D' with %s not allowed in union", x,
-				 fie);
-		}
-	      else
-		{
-		  TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (type);
-		  TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (type);
-		  TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (type);
-		  TYPE_HAS_COMPLEX_INIT_REF (t) |= TYPE_HAS_COMPLEX_INIT_REF (type);
-		}
-
-	      if (!TYPE_HAS_CONST_INIT_REF (type))
-		cant_have_const_ctor = 1;
-
-	      if (!TYPE_HAS_CONST_ASSIGN_REF (type))
-		no_const_asn_ref = 1;
-
-	      if (TYPE_HAS_CONSTRUCTOR (type)
-		  && ! TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
-		{
-		  cant_have_default_ctor = 1;
-#if 0
-		  /* This is wrong for aggregates.  */
-		  if (! TYPE_HAS_CONSTRUCTOR (t))
-		    {
-		      if (DECL_NAME (x))
-			cp_pedwarn_at ("member `%#D' with only non-default constructor", x);
-		      else
-			cp_pedwarn_at ("member with only non-default constructor", x);
-		      cp_pedwarn_at ("in class without a constructor",
-				     x);
-		    }
-#endif
-		}
-	    }
-	  if (DECL_INITIAL (x) != NULL_TREE)
-	    {
-	      /* `build_class_init_list' does not recognize
-		 non-FIELD_DECLs.  */
-	      if (code == UNION_TYPE && any_default_members != 0)
-		cp_error_at ("multiple fields in union `%T' initialized");
-	      any_default_members = 1;
-	    }
-
-	  {
-	    unsigned int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
-				      : TYPE_ALIGN (TREE_TYPE (x)));
-	    /* Non-bit-fields are aligned for their type, except packed
-	       fields which require only BITS_PER_UNIT alignment.  */
-	    DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);
-	  }
-	}
+	check_field_decl (x, t,
+			  &cant_have_const_ctor,
+			  &cant_have_default_ctor, 
+			  &no_const_asn_ref,
+			  &any_default_members);
     }
 
   /* If this type has any constant members which did not come
