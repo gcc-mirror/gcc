@@ -60,6 +60,7 @@ begin_stmt_tree (t)
   *t = build_nt (EXPR_STMT, void_zero_node);
   last_tree = *t;
   last_expr_type = NULL_TREE;
+  last_expr_filename = input_filename;
 }
 
 /* T is a statement.  Add it to the statement-tree.  */
@@ -68,6 +69,19 @@ tree
 add_stmt (t)
      tree t;
 {
+  if (input_filename != last_expr_filename)
+    {
+      /* If the filename has changed, also add in a FILE_STMT.  Do a string
+	 compare first, though, as it might be an equivalent string.  */
+      int add = (strcmp (input_filename, last_expr_filename) != 0);
+      last_expr_filename = input_filename;
+      if (add)
+	{
+	  tree pos = build_nt (FILE_STMT, get_identifier (input_filename));
+	  add_stmt (pos);
+	}
+    }
+
   /* Add T to the statement-tree.  */
   TREE_CHAIN (last_tree) = t;
   last_tree = t;
@@ -760,6 +774,10 @@ expand_stmt (t)
 
       switch (TREE_CODE (t))
 	{
+	case FILE_STMT:
+	  input_filename = FILE_STMT_FILENAME (t);
+	  break;
+
 	case RETURN_STMT:
 	  genrtl_return_stmt (t);
 	  break;
@@ -845,4 +863,3 @@ expand_stmt (t)
       t = TREE_CHAIN (t);
     }
 }
-
