@@ -1,3 +1,9 @@
+2004-01-28  Sylvain Pion  <Sylvain.Pion@mpi-sb.mpg.de>
+
+	PR libstdc++/10783
+	* include/bits/stl_iterator.h (class __normal_iterator):
+	Don't inherit from iterator, add missing typedefs.
+
 2004-01-27  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/12967
