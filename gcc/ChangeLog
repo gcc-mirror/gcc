@@ -1,5 +1,8 @@
 Wed Mar 18 05:54:25 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* fold-const.c (operand_equal_for_comparison_p): See if equal
+	when nop conversions are removed.
+
 	* expr.c (expand_expr, case COND_EXPR): If have conditional move,
 	don't use ORIGINAL_TARGET unless REG.
 
