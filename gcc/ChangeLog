@@ -1,3 +1,7 @@
+Mon Mar  8 01:19:23 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for prerelease.
+
 Mon Mar  8 01:16:30 1999  Manfred Hollstein  <manfred@s-direktnet.de>
 			  Jeff Law <law@cygnus.com>
 
