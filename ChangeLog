@@ -1,3 +1,7 @@
+Wed Sep  9 15:44:52 1998  Robert Lipe  <robertl@dgii.com>
+
+	* config.guess: Match "Pent II" or "PentII" for OpenServer.
+
 Tue Sep  8 01:18:39 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* config.guess: Correctly identify Pentium II sco boxes.
