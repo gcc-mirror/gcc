@@ -28,6 +28,7 @@
 #define LIBFFI_ASM	
 #include <ffi.h>
 
+	.arch ev6
 	.text
 
 /* ffi_call_osf (void *args, unsigned long bytes, unsigned flags,
@@ -121,9 +122,9 @@ $retdouble:
 	.ent	ffi_closure_osf
 ffi_closure_osf:
 	.frame	$30, 16*8, $26, 0
-	.mask	0x4000000, -14*8
+	.mask	0x4000000, -16*8
 	ldgp	$29, 0($27)
-	subq	$30, 14*8, $30
+	subq	$30, 16*8, $30
 	stq	$26, 0($30)
 	.prologue 1
 
@@ -150,33 +151,129 @@ ffi_closure_osf:
 	ldq	$26, 0($30)
 
 	# Load up the return value in the proper type.
-	cmpeq	$0, FFI_TYPE_INT, $1
-	bne	$1, $loadint
-	cmpeq	$0, FFI_TYPE_FLOAT, $2
-	bne	$2, $loadfloat
-	cmpeq	$18, FFI_TYPE_DOUBLE, $3
-	bne	$3, $loaddouble
+	lda	$1, $load_table
+	s4addq	$0, $1, $1
+	ldl	$1, 0($1)
+	addq	$1, $29, $1
+	jmp	$31, ($1), $load_32
 
+	.align 4
+$load_none:
 	addq	$30, 16*8, $30
 	ret
 
-	.align 3
-$loadint:
-	ldq	$0, 16($30)
-	nop
-	addq	$30, 16*8, $30
-	ret
-
-$loadfloat:
+	.align 4
+$load_float:
 	lds	$f0, 16($30)
 	nop
 	addq	$30, 16*8, $30
 	ret
 
-$loaddouble:
+	.align 4
+$load_double:
 	ldt	$f0, 16($30)
 	nop
 	addq	$30, 16*8, $30
 	ret
 
+	.align 4
+$load_u8:
+#ifdef __alpha_bwx__
+	ldbu	$0, 16($30)
+	nop
+#else
+	ldq	$0, 16($30)
+	and	$0, 255, $0
+#endif
+	addq	$30, 16*8, $30
+	ret
+
+	.align 4
+$load_s8:
+#ifdef __alpha_bwx__
+	ldbu	$0, 16($30)
+	sextb	$0, $0
+#else
+	ldq	$0, 16($30)
+	sll	$0, 56, $0
+	sra	$0, 56, $0
+#endif
+	addq	$30, 16*8, $30
+	ret
+
+	.align 4
+$load_u16:
+#ifdef __alpha_bwx__
+	ldwu	$0, 16($30)
+	nop
+#else
+	ldq	$0, 16($30)
+	zapnot	$0, 3, $0
+#endif
+	addq	$30, 16*8, $30
+	ret
+
+	.align 4
+$load_s16:
+#ifdef __alpha_bwx__
+	ldwu	$0, 16($30)
+	sextw	$0, $0
+#else
+	ldq	$0, 16($30)
+	sll	$0, 48, $0
+	sra	$0, 48, $0
+#endif
+	addq	$30, 16*8, $30
+	ret
+
+	.align 4
+$load_32:
+	ldl	$0, 16($30)
+	nop
+	addq	$30, 16*8, $30
+	ret
+
+	.align 4
+$load_64:
+	ldq	$0, 16($30)
+	nop
+	addq	$30, 16*8, $30
+	ret
+
 	.end	ffi_closure_osf
+
+.section .rodata
+$load_table:
+	.gprel32 $load_none	# FFI_TYPE_VOID
+	.gprel32 $load_32	# FFI_TYPE_INT
+	.gprel32 $load_float	# FFI_TYPE_FLOAT
+	.gprel32 $load_double	# FFI_TYPE_DOUBLE
+	.gprel32 $load_double	# FFI_TYPE_LONGDOUBLE
+	.gprel32 $load_u8	# FFI_TYPE_UINT8
+	.gprel32 $load_s8	# FFI_TYPE_SINT8
+	.gprel32 $load_u16	# FFI_TYPE_UINT16
+	.gprel32 $load_s16	# FFI_TYPE_SINT16
+	.gprel32 $load_32	# FFI_TYPE_UINT32
+	.gprel32 $load_32	# FFI_TYPE_SINT32
+	.gprel32 $load_64	# FFI_TYPE_UINT64
+	.gprel32 $load_64	# FFI_TYPE_SINT64
+	.gprel32 $load_none	# FFI_TYPE_STRUCT
+	.gprel32 $load_64	# FFI_TYPE_POINTER
+
+/* Assert that the table above is in sync with ffi.h.  */
+
+#if	   FFI_TYPE_FLOAT != 2		\
+	|| FFI_TYPE_DOUBLE != 3		\
+	|| FFI_TYPE_UINT8 != 5		\
+	|| FFI_TYPE_SINT8 != 6		\
+	|| FFI_TYPE_UINT16 != 7		\
+	|| FFI_TYPE_SINT16 != 8		\
+	|| FFI_TYPE_UINT32 != 9		\
+	|| FFI_TYPE_SINT32 != 10	\
+	|| FFI_TYPE_UINT64 != 11	\
+	|| FFI_TYPE_SINT64 != 12	\
+	|| FFI_TYPE_STRUCT != 13	\
+	|| FFI_TYPE_POINTER != 14	\
+	|| FFI_TYPE_LAST != 14
+#error "osf.S out of sync with ffi.h"
+#endif

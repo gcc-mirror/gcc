@@ -70,7 +70,7 @@ ffi_call(ffi_cif *cif, void (*fn)(), void *rvalue, void **avalue)
 
   /* If the return value is a struct and we don't have a return
      value address then we need to make one.  */
-  if (rvalue == NULL && cif->rtype->type == FFI_TYPE_STRUCT)
+  if (rvalue == NULL && cif->flags == FFI_TYPE_STRUCT)
     rvalue = alloca(cif->rtype->size);
 
   /* Allocate the space for the arguments, plus 4 words of temp
@@ -202,7 +202,7 @@ ffi_closure_osf_inner(ffi_closure *closure, void *rvalue, unsigned long *argp)
   /* Grab the addresses of the arguments from the stack frame.  */
   while (i < avn)
     {
-      switch ((*arg_types)->type)
+      switch (arg_types[i]->type)
 	{
 	case FFI_TYPE_SINT8:
 	case FFI_TYPE_UINT8:
@@ -214,7 +214,7 @@ ffi_closure_osf_inner(ffi_closure *closure, void *rvalue, unsigned long *argp)
 	case FFI_TYPE_UINT64:
 	case FFI_TYPE_POINTER:
 	case FFI_TYPE_STRUCT:
-	  *avalue = &argp[argn];
+	  avalue[i] = &argp[argn];
 	  break;
 
 	case FFI_TYPE_FLOAT:
@@ -223,27 +223,27 @@ ffi_closure_osf_inner(ffi_closure *closure, void *rvalue, unsigned long *argp)
 	      /* Floats coming from registers need conversion from double
 	         back to float format.  */
 	      *(float *)&argp[argn - 6] = *(double *)&argp[argn - 6];
-	      *avalue = &argp[argn - 6];
+	      avalue[i] = &argp[argn - 6];
 	    }
 	  else
-	    *avalue = &argp[argn];
+	    avalue[i] = &argp[argn];
 	  break;
 
 	case FFI_TYPE_DOUBLE:
-	  *avalue = &argp[argn - (argn < 6 ? 6 : 0)];
+	  avalue[i] = &argp[argn - (argn < 6 ? 6 : 0)];
 	  break;
 
 	default:
 	  FFI_ASSERT(0);
 	}
 
-      argn += ALIGN((*arg_types)->size, SIZEOF_ARG) / SIZEOF_ARG;
-      i++, arg_types++, avalue++;
+      argn += ALIGN(arg_types[i]->size, SIZEOF_ARG) / SIZEOF_ARG;
+      i++;
     }
 
   /* Invoke the closure.  */
   (closure->fun) (cif, rvalue, avalue, closure->user_data);
 
-  /* Tell ffi_closure_osf what register to put the return value in.  */
-  return cif->flags;
+  /* Tell ffi_closure_osf how to perform return type promotions.  */
+  return cif->rtype->type;
 }
