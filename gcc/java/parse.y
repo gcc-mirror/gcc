@@ -6847,10 +6847,6 @@ source_start_java_method (fndecl)
   tree tem;
   tree parm_decl;
   int i;
-#if 0
-  int flag_inner = DECL_CONSTRUCTOR_P (fndecl)
-      && (INNER_CLASS_TYPE_P (DECL_CONTEXT (fndecl)) ? 1 : 0);
-#endif
 
   if (!fndecl)
     return;
@@ -6887,29 +6883,6 @@ source_start_java_method (fndecl)
 	LOCAL_FINAL (parm_decl) = 1;
 
       BLOCK_CHAIN_DECL (parm_decl);
-
-#if 0
-      /* If this is a constructor of a inner class, hide the extra
-         this$<n> parameter */
-      if (i == 0 && flag_inner)
-	{
-	  tree link = TREE_CHAIN (tem);
-	  tree type = DECL_CONTEXT (TYPE_NAME (DECL_CONTEXT (fndecl)));
-
-	  type = build_pointer_type (TREE_TYPE (type));
-	  parm_decl = build_decl (PARM_DECL,
-				  build_current_thisn (current_class), type);
-	  BLOCK_CHAIN_DECL (parm_decl);
-	  /* We hide the this$<n> decl in the name field of its
-	     parameter declaration. */
-	  parm_decl = build_tree_list (DECL_NAME (parm_decl), type);
-	  TREE_CHAIN (tem) = parm_decl;
-	  TREE_CHAIN (parm_decl) = link;
-	  tem = parm_decl;
-	  i++;
-	}
-#endif
-
     }
   tem = BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl));
   BLOCK_EXPR_DECLS (DECL_FUNCTION_BODY (current_function_decl)) =
@@ -9479,9 +9452,9 @@ patch_method_invocation (patch, primary, where, is_static, ret_decl)
 	     access$0(access$0(...(this$0))). 
 	     
 	     maybe_use_access_method returns a non zero value if the
-	     this_arg has to be deplaced into the (then generated)
-	     stub argument list. In the mean time, the selected
-	     function might have be replaced by a generated stub. */
+	     this_arg has to be moved into the (then generated) stub
+	     argument list. In the mean time, the selected function
+	     might have be replaced by a generated stub. */
 	  if (maybe_use_access_method (is_super_init, &list, &this_arg))
 	    args = tree_cons (NULL_TREE, this_arg, args);
 	}

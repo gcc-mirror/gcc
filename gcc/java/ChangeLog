@@ -1,3 +1,8 @@
+2000-04-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (source_start_java_method): Deleted unecessary code.
+        (patch_method_invocation): Fixed comment.
+
 2000-04-24  Robert Lipe <robertlipe@usa.net>
 
 	* parse.h (_jdep): Member `kind' now ENUM_BITFIELD.
