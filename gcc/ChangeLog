@@ -1,3 +1,13 @@
+1999-02-16  Scott Bambrough <scottb@corelcomputer.com>
+
+        * configure.in (arm*-*-linux-gnu*): Set thread_file to 'posix' if
+	--enable-threads[={yes,pthreads,posix}] is passed as a command
+	line parameter to configure. 
+
+        * configure: Regenerate.
+	
+        * gcc/config/arm/t-linux (TARGET_LIBGCC2_CFLAGS): Include -fPIC.
+
 Fri Mar 26 19:42:19 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (combine_givs): Fix index into can_combine when doing

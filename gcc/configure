@@ -3088,6 +3088,11 @@ for machine in $build $host $target; do
 		tmake_file="t-linux arm/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gnu_ld=yes
+		case x${enable_threads} in
+		x | xyes | xpthreads | xposix)
+			thread_file='posix'
+			;;
+		esac
 		;;
 	arm*-*-aout)
 		tm_file=arm/aout.h
