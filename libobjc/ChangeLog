@@ -1,3 +1,12 @@
+2004-10-08  Mike Stump  <mrs@apple.com>
+            Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* aclocal.m4: Rename to ...
+	* acinclude.m4: here and also use m4_include instead of sinclude.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add AM_MAINTAINER_MODE and AM_PROG_CC_C_O.
+
 2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* archive.c: Fix all the warnings about passing unsigned char*
