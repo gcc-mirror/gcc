@@ -2864,6 +2864,7 @@ changequote(,)dnl
 	rs6000-ibm-aix4.[12]* | powerpc-ibm-aix4.[12]*)
 changequote([,])dnl
 		if test "$gnu_ld" = yes
+		then
 			tm_file=rs6000/aix41-gld.h
 		else
 			tm_file=rs6000/aix41.h
