@@ -198,9 +198,12 @@ if $LINKS; then
 		;;
 	    esac
           done
+	  # Get the path from ${LIB} to $file, accounting for symlinks.
+	  parent=`echo "$file" | sed -e 's@/[^/]*$@@'`
+	  libabs=`cd ${LIB}; ${PWDCMD}`
+	  file2=`cd ${LIB}; cd $parent; ${PWDCMD} | sed -e "s@^${libabs}@@"`
 	  # DOTS is the relative path from ${LIB}/$file's dir back to ${LIB}.
-	  dots=`echo "$file" |
-	    sed -e 's@^./@@' -e 's@/./@/@g' -e 's@[^/][^/]*@..@g' -e 's@..$@@'`
+	  dots=`echo "$file2" | sed -e 's@/[^/]*@../@g'`
 	  rm -fr ${LIB}/$file > /dev/null 2>&1
 	  ln -s ${dots}root$x ${LIB}/$file > /dev/null 2>&1
 	  treetops="$treetops $x ${LIB}/root$x"
