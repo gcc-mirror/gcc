@@ -1,3 +1,12 @@
+Sat Feb 17 14:48:30 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+			  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (validate_replace_src_1): New.
+	(validate_replace_src_data): Likewise.
+	(validate_replace_src): Use note_uses.
+	* rtl.h (note_uses): Declare.
+	* rtlanal.c (note_uses): New.
+
 Sat Feb 17 10:52:34 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (stack_def): Make field reg unsigned.

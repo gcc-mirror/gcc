@@ -1403,6 +1403,9 @@ extern rtx set_of			PARAMS ((rtx, rtx));
 extern void note_stores			PARAMS ((rtx,
 						 void (*) (rtx, rtx, void *),
 						 void *));
+extern void note_uses			PARAMS ((rtx *,
+						 void (*) (rtx *, void *),
+						 void *));
 extern rtx reg_set_last			PARAMS ((rtx, rtx));
 extern int dead_or_set_p		PARAMS ((rtx, rtx));
 extern int dead_or_set_regno_p		PARAMS ((rtx, unsigned int));

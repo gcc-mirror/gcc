@@ -25,10 +25,9 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "rtl.h"
 
+/* Forward declarations */
 static void set_of_1		PARAMS ((rtx, rtx, void *));
 static void insn_dependent_p_1	PARAMS ((rtx, rtx, void *));
-
-/* Forward declarations */
 static int computed_jump_p_1	PARAMS ((rtx));
 
 /* Bit flags that specify the machine subtype we are compiling for.
@@ -1301,6 +1300,89 @@ note_stores (x, fun, data)
   else if (GET_CODE (x) == PARALLEL)
     for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
       note_stores (XVECEXP (x, 0, i), fun, data);
+}
+
+/* Like notes_stores, but call FUN for each expression that is being
+   referenced in PBODY, a pointer to the PATTERN of an insn.  We only call
+   FUN for each expression, not any interior subexpressions.  FUN receives a
+   pointer to the expression and the DATA passed to this function.
+
+   Note that this is not quite the same test as that done in reg_referenced_p
+   since that considers something as being referenced if it is being
+   partially set, while we do not.  */
+
+void
+note_uses (pbody, fun, data)
+     rtx *pbody;
+     void (*fun) PARAMS ((rtx *, void *));
+     void *data;
+{
+  rtx body = *pbody;
+  int i;
+
+  switch (GET_CODE (body))
+    {
+    case COND_EXEC:
+      (*fun) (&COND_EXEC_TEST (body), data);
+      note_uses (&COND_EXEC_CODE (body), fun, data);
+      return;
+
+    case PARALLEL:
+      for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
+	note_uses (&XVECEXP (body, 0, i), fun, data);
+      return;
+
+    case USE:
+      (*fun) (&XEXP (body, 0), data);
+      return;
+
+    case ASM_OPERANDS:
+      for (i = ASM_OPERANDS_INPUT_LENGTH (body) - 1; i >= 0; i--)
+	(*fun) (&ASM_OPERANDS_INPUT (body, i), data);
+      return;
+
+    case TRAP_IF:
+      (*fun) (&TRAP_CONDITION (body), data);
+      return;
+
+    case UNSPEC:
+    case UNSPEC_VOLATILE:
+      for (i = XVECLEN (body, 0) - 1; i >= 0; i--)
+	(*fun) (&XVECEXP (body, 0, i), data);
+      return;
+
+    case CLOBBER:
+      if (GET_CODE (XEXP (body, 0)) == MEM)
+	(*fun) (&XEXP (XEXP (body, 0), 0), data);
+      return;
+
+    case SET:
+      {
+	rtx dest = SET_DEST (body);
+
+	/* For sets we replace everything in source plus registers in memory
+	   expression in store and operands of a ZERO_EXTRACT.  */
+	(*fun) (&SET_SRC (body), data);
+
+	if (GET_CODE (dest) == ZERO_EXTRACT)
+	  {
+	    (*fun) (&XEXP (dest, 1), data);
+	    (*fun) (&XEXP (dest, 2), data);
+	  }
+
+	while (GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART)
+	  dest = XEXP (dest, 0);
+
+	if (GET_CODE (dest) == MEM)
+	  (*fun) (&XEXP (dest, 0), data);
+      }
+      return;
+
+    default:
+      /* All the other possibilities never store.  */
+      (*fun) (pbody, data);
+      return;
+    }
 }
 
 /* Return nonzero if X's old contents don't survive after INSN.
