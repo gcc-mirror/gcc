@@ -1185,7 +1185,7 @@ read_dependence (mem, x)
    MEM2 if vice versa.  Otherwise, returns NULL_RTX.  If a non-NULL
    value is returned MEM1 and MEM2 can never alias.  VARIES_P is used
    to decide whether or not an address may vary; it should return
-   nozero whenever variation is possible.  */
+   nonzero whenever variation is possible.  */
 
 static rtx
 fixed_scalar_and_varying_struct_p (mem1, mem2, varies_p)
