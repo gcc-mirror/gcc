@@ -8517,7 +8517,7 @@ verify_flow_info ()
 	}
       if (!NOTE_INSN_BASIC_BLOCK_P (x) || NOTE_BASIC_BLOCK (x) != bb)
 	{
-	  error ("NOTE_INSN_BASIC_BLOCK is missing for block %d\n",
+	  error ("NOTE_INSN_BASIC_BLOCK is missing for block %d",
 		 bb->index);
 	  err = 1;
 	}

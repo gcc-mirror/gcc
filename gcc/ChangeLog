@@ -1,3 +1,9 @@
+2001-08-20  Andreas Jaeger  <aj@suse.de>
+
+	* profile.c (compute_branch_probabilities): Remove extra new-line
+	in error message.
+	* flow.c (verify_flow_info): Likewise.
+
 2001-08-20  Diego Novillo  <dnovillo@redhat.com>
 
 	* basic-block.h (basic_block): Add new field 'flags'.
@@ -102,7 +108,7 @@ Mon Aug 20 01:44:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-19  Richard Henderson  <rth@redhat.com>
 
-	* dwarf2asm.c (dw2_output_indirect_constant_1): The symbol ref 
+	* dwarf2asm.c (dw2_output_indirect_constant_1): The symbol ref
 	is aligned to pointer size.
 
 2001-08-19  Richard Henderson  <rth@redhat.com>
@@ -164,7 +170,7 @@ Mon Aug 20 01:44:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(ia64_compute_frame_size): Make ar.unat live when in use.
 	(ia64_epilogue_uses): Reformat; do not check current_function_is_leaf
 	for ar.pfs; remove ar.unat handling.
-	* config/ia64/ia64.h (CALL_REALLY_USED_REGISTERS): ar.unat is 
+	* config/ia64/ia64.h (CALL_REALLY_USED_REGISTERS): ar.unat is
 	call-saved.
 	(PREDICATE_CODES): Add ar_pfs_reg_operand.
 	* config/ia64/ia64-protos.h: Update decls.
