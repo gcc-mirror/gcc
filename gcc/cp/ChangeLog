@@ -1,3 +1,13 @@
+Mon Mar 16 12:10:39 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (pushclass): Only use the mi_matrix stuff #ifdef MI_MATRIX.
+	* search.c: Likewise.
+
+	* lex.c (do_pending_defargs): Only call 
+	maybe_{begin,end}_member_template_processing for FUNCTION_DECLs.
+
+	* parse.y (initdcl0_innards): Move maybeasm back into initdcl0 et al.
+
 Mon Mar 16 10:47:22 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* parse.y: Deal with CONSTRUCTORS in new_initializers.

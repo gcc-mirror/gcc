@@ -2417,6 +2417,7 @@ next_baselink (baselink)
 
 /* DEPTH-FIRST SEARCH ROUTINES.  */
 
+#ifdef MI_MATRIX
 /* Assign unique numbers to _CLASSTYPE members of the lattice
    specified by TYPE.  The root nodes are marked first; the nodes
    are marked depth-fisrt, left-right.  */
@@ -2441,6 +2442,7 @@ static int mi_size;
   ((mi_matrix+mi_size*(CLASSTYPE_CID (C1)-1))[CLASSTYPE_CID (C2)-1])
 #define BINFO_DERIVES_FROM_STAR(C)	\
   (mi_matrix+(BINFO_CID (C)-1))
+#endif
 
 /* This routine converts a pointer to be a pointer of an immediate
    base class.  The normal convert_pointer_to routine would diagnose
@@ -2531,11 +2533,13 @@ dfs_walk (binfo, fn, qfn)
   fn (binfo);
 }
 
+#ifdef MI_MATRIX
 /* Predicate functions which serve for dfs_walk.  */
 static int numberedp (binfo) tree binfo;
 { return BINFO_CID (binfo); }
 static int unnumberedp (binfo) tree binfo;
 { return BINFO_CID (binfo) == 0; }
+#endif
 
 static int markedp (binfo) tree binfo;
 { return BINFO_MARKED (binfo); }
@@ -2578,6 +2582,7 @@ static int dfs_debug_unmarkedp (binfo) tree binfo;
    test anything (vis a vis marking) if they are paired with
    a predicate function (above).  */
 
+#ifdef MI_MATRIX
 /* Assign each type within the lattice a number which is unique
    in the lattice.  The first number assigned is 1.  */
 
@@ -2594,6 +2599,7 @@ dfs_unnumber (binfo)
 {
   BINFO_CID (binfo) = 0;
 }
+#endif
 
 #if 0
 static void
@@ -3131,6 +3137,7 @@ get_vbase_types (type)
   return vbase_types;
 }
 
+#ifdef MI_MATRIX
 static void
 dfs_record_inheritance (binfo)
      tree binfo;
@@ -3217,6 +3224,7 @@ free_mi_matrix ()
   cid = 0;
 #endif
 }
+#endif
 
 /* If we want debug info for a type TYPE, make sure all its base types
    are also marked as being potentially interesting.  This avoids
@@ -3300,12 +3308,17 @@ envelope_add_decl (type, decl, values)
 	  else
 	    dont_add = 1;
 	}
-      /* If we don't check CLASSTYPE_CID on CONTEXT right now, we'll end
-	 up subtracting from the address of MI_MATRIX, putting us off
-	 in la la land.  */
-      else if (context
-	       && CLASSTYPE_CID (context)
-	       && TYPE_DERIVES_FROM (context, type))
+      else if (type == current_class_type
+#ifdef MI_MATRIX
+	       /* If we don't check CLASSTYPE_CID on CONTEXT right now,
+		  we'll end up subtracting from the address of MI_MATRIX,
+		  putting us off in la la land.  */
+	       || (CLASSTYPE_CID (type)
+		   && TYPE_DERIVES_FROM (context, type))
+#else
+	       || DERIVED_FROM_P (context, type)
+#endif
+	       )
 	{
 	  /* Don't add in *values to list */
 	  *values = NULL_TREE;
@@ -3323,12 +3336,17 @@ envelope_add_decl (type, decl, values)
 	  ? DECL_CLASS_CONTEXT (value)
 	    : DECL_CONTEXT (value);
 
-	/* If we don't check CLASSTYPE_CID on CONTEXT right now, we'll end
-	   up subtracting from the address of MI_MATRIX, putting us off
-	   in la la land.  */
-	if (context
-	    && CLASSTYPE_CID (context)
-	    && TYPE_DERIVES_FROM (context, type))
+	if (type == current_class_type
+#ifdef MI_MATRIX
+	    /* If we don't check CLASSTYPE_CID on CONTEXT right now,
+	       we'll end up subtracting from the address of MI_MATRIX,
+	       putting us off in la la land.  */
+	    || (CLASSTYPE_CID (type)
+		&& TYPE_DERIVES_FROM (context, type))
+#else
+	    || DERIVED_FROM_P (context, type)
+#endif
+	    )
 	  {
 	    /* remove *tmp from list */
 	    *tmp = TREE_CHAIN (*tmp);
