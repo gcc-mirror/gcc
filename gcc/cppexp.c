@@ -721,7 +721,8 @@ cpp_parse_expr (pfile)
       switch (op.op)
 	{
 	case NAME:
-	  abort ();
+	  cpp_fatal (pfile, "internal error: cpp_lex returns a NAME");
+	  goto syntax_error;
 	case INT:  case CHAR:
 	  top->value = op.value;
 	  top->unsignedp = op.unsignedp;

@@ -26,6 +26,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "system.h"
 #include "cpplib.h"
 #include "cpphash.h"
+#undef abort
 
 static int comp_def_part	 PARAMS ((int, U_CHAR *, int, U_CHAR *,
 					  int, int));
@@ -290,7 +291,10 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
      that something smarter should happen.  */
 
   if (limit < buf)
-    abort ();
+    {
+      cpp_fatal (pfile, "internal error: limit < buf in collect_expansion");
+      limit = buf; /* treat it like a null defn */
+    }
 
   /* Find the beginning of the trailing whitespace.  */
   p = buf;
@@ -1011,9 +1015,6 @@ special_symbol (hp, pfile)
       cpp_fatal (pfile, "cpplib internal error: invalid special hash type");
       return;
     }
-
-  /* This point should be unreachable. */
-  abort ();
 }
 
 /* Expand a macro call.
@@ -1408,7 +1409,10 @@ macroexpand (pfile, hp)
 	    }
 
 	  if (totlen > xbuf_len)
-	    abort ();
+	    {
+	      cpp_fatal (pfile, "internal_error: buffer overrun in macroexpand");
+	      return;
+	    }
 	}
 
       /* if there is anything left of the definition
