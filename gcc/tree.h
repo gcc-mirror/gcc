@@ -2550,6 +2550,7 @@ extern tree invert_truthvalue	PARAMS ((tree));
    change.  Required by any language that supports variadic arguments.  */
 
 extern tree (*lang_type_promotes_to)	PARAMS ((tree));
+extern tree fold_builtin		PARAMS ((tree));
 
 /* The language front-end must define these functions.  */
 
