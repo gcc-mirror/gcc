@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2402,6 +2402,13 @@ stabilize_reference (ref)
       result = build_nt (COMPOUND_EXPR,
 			 stabilize_reference_1 (TREE_OPERAND (ref, 0)),
 			 stabilize_reference (TREE_OPERAND (ref, 1)));
+      break;
+
+    case RTL_EXPR:
+      result = build1 (INDIRECT_REF, TREE_TYPE (ref),
+		       save_expr (build1 (ADDR_EXPR,
+					  TREE_TYPE (TREE_TYPE (ref)),
+					  ref)));
       break;
 
 
