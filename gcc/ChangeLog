@@ -1,3 +1,8 @@
+2002-11-17  Daniel Jacobowitz  <drow@mvista.com>
+
+	* sh.c (gen_shl_and): Don't create a zero_extend if the operand
+	is not an arith_reg_operand.
+
 2002-11-17  Graham Stott  <graham.stott@btinternet.com>
 
 	* real.c (real_to_decimal): Fix buffer overrun when buffer size
