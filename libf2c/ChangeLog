@@ -1,3 +1,8 @@
+Fri May 7 9:33:55 1999 Donn Terry (donn@interix.com)
+
+	* libU77/dtime_.c (G77_dtime_0): Standard-conforming error check.
+	* libU77/etime_.c (G77_etime_0): Likewise.
+
 Mon May  3 19:15:07 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libU77/u77-test.f (main): Declare ABORT as intrinsic.

@@ -155,7 +155,7 @@ double G77_dtime_0 (real tarray[2])
 #  else
   #error Dont know clock tick length
 #  endif
-  if (times(&buffer) < 0) return -1.0;
+  if (times(&buffer) == (clock_t)-1) return -1.0;
   utime = buffer.tms_utime; stime = buffer.tms_stime;
   tarray[0] = ((float)(utime - old_utime)) / (float)clk_tck;
   tarray[1] = ((float)(stime - old_stime)) / (float)clk_tck;
