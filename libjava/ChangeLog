@@ -1,3 +1,7 @@
+1999-04-19  Andrew Haley  <aph@cygnus.com>
+
+	* Makefile.in: Processed with new automake.
+
 1999-04-19  Tom Tromey  <tromey@cygnus.com>
 
 	* include/javaprims.h: Removed security namespace.
