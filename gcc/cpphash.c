@@ -25,6 +25,8 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 
+extern char *xmalloc PARAMS ((unsigned));
+
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #ifndef NULL
