@@ -15,7 +15,7 @@ class S {
 };
 } 
 
-void (::foo)(M::S *ptr) {
+void (foo)(M::S *ptr) {
   M::S::s.Fn();
   ptr->Fn();
 } 

@@ -1,3 +1,30 @@
+2004-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18445
+	* class.c (instantiate_type): Treat NON_DEPENDENT_EXPRs with
+	unknown_type as non matching.  Tidy up.
+	* pt.c (build_non_dependent_expr): Do not build a
+	NON_DEPENDENT_EXPR for a VAR_DECL.
+
+	PR c++/18001
+	* cp-tree.h (lvalue_or_else): Remove declaration.
+	* tree.c (lvalue_or_else): Remove.
+	* typeck.c (build_unary_op): Adjust call to lvalue_or_else.
+	(build_modify_expr): Likewise.
+
+	PR c++/18625
+	* decl.c (duplicate_decls): Return error_mark_node on error, as
+	specified.
+
+	PR c++/18466
+	* decl.c (grokvardecl): Keep track of whether or not a there was
+	explicit qualification.
+	* name-lookup.c (set_decl_namespace): Complain about explicit
+	qualification of a name within its own namespace.
+
+	PR c++/18545
+	* typeck.c (check_return_expr): Robustify.
+
 2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	Friend class name lookup 3/n, PR c++/3332

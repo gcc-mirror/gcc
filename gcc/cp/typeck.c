@@ -3956,7 +3956,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	/* Complain about anything else that is not a true lvalue.  */
 	if (!lvalue_or_else (arg, ((code == PREINCREMENT_EXPR
 				    || code == POSTINCREMENT_EXPR)
-				   ? "increment" : "decrement")))
+				   ? lv_increment : lv_decrement)))
 	  return error_mark_node;
 
 	/* Forbid using -- on `bool'.  */
@@ -4100,7 +4100,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	 is an error.  */
       else if (TREE_CODE (argtype) != FUNCTION_TYPE
 	       && TREE_CODE (argtype) != METHOD_TYPE
-	       && !lvalue_or_else (arg, "unary %<&$>"))
+	       && !lvalue_or_else (arg, lv_addressof))
 	return error_mark_node;
 
       if (argtype != error_mark_node)
@@ -5294,7 +5294,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
     case MAX_EXPR:
       /* MIN_EXPR and MAX_EXPR are currently only permitted as lvalues,
 	 when neither operand has side-effects.  */
-      if (!lvalue_or_else (lhs, "assignment"))
+      if (!lvalue_or_else (lhs, lv_assign))
 	return error_mark_node;
 
       gcc_assert (!TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0))
@@ -5322,7 +5322,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	
 	/* Check this here to avoid odd errors when trying to convert
 	   a throw to the type of the COND_EXPR.  */
-	if (!lvalue_or_else (lhs, "assignment"))
+	if (!lvalue_or_else (lhs, lv_assign))
 	  return error_mark_node;
 
 	cond = build_conditional_expr
@@ -5421,7 +5421,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
     }
 
   /* The left-hand side must be an lvalue.  */
-  if (!lvalue_or_else (lhs, "assignment"))
+  if (!lvalue_or_else (lhs, lv_assign))
     return error_mark_node;
 
   /* Warn about modifying something that is `const'.  Don't warn if
@@ -6230,6 +6230,15 @@ check_return_expr (tree retval)
     /* Remember that this function did return a value.  */
     current_function_returns_value = 1;
 
+  /* Check for errnoneous operands -- but after giving ourselves a
+     chance to provide an error about returning a value from a void
+     function.  */
+  if (error_operand_p (retval))
+    {
+      current_function_return_value = error_mark_node;
+      return error_mark_node;
+    }
+
   /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
   if ((DECL_OVERLOADED_OPERATOR_P (current_function_decl) == NEW_EXPR
        || DECL_OVERLOADED_OPERATOR_P (current_function_decl) == VEC_NEW_EXPR)
@@ -6305,8 +6314,8 @@ check_return_expr (tree retval)
 
   /* We don't need to do any conversions when there's nothing being
      returned.  */
-  if (!retval || retval == error_mark_node)
-    return retval;
+  if (!retval)
+    return NULL_TREE;
 
   /* Do any required conversions.  */
   if (retval == result || DECL_CONSTRUCTOR_P (current_function_decl))

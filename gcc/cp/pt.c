@@ -12296,6 +12296,9 @@ build_non_dependent_expr (tree expr)
       || TREE_CODE (inner_expr) == TEMPLATE_DECL
       || TREE_CODE (inner_expr) == TEMPLATE_ID_EXPR)
     return expr;
+  /* There is no need to return a proxy for a variable.  */
+  if (TREE_CODE (expr) == VAR_DECL)
+    return expr;
   /* Preserve string constants; conversions from string constants to
      "char *" are allowed, even though normally a "const char *"
      cannot be used to initialize a "char *".  */

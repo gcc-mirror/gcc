@@ -3114,42 +3114,46 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
     error ("declaration of %qD not in a namespace surrounding %qD",
            decl, scope);
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
-  if (scope != current_namespace)
+
+  /* Writing "int N::i" to declare a variable within "N" is invalid.  */ 
+  if (scope == current_namespace) 
     {
-      /* See whether this has been declared in the namespace.  */
-      old = namespace_binding (DECL_NAME (decl), scope);
-      if (!old)
-	/* No old declaration at all.  */
-	goto complain;
-      /* A template can be explicitly specialized in any namespace.  */
-      if (processing_explicit_instantiation)
-	return;
-      if (!is_overloaded_fn (decl))
-	/* Don't compare non-function decls with decls_match here,
-	   since it can't check for the correct constness at this
-	   point. pushdecl will find those errors later.  */
-	return;
-      /* Since decl is a function, old should contain a function decl.  */
-      if (!is_overloaded_fn (old))
-	goto complain;
-      if (processing_template_decl || processing_specialization)
-	/* We have not yet called push_template_decl to turn a
-	   FUNCTION_DECL into a TEMPLATE_DECL, so the declarations
-	   won't match.  But, we'll check later, when we construct the
-	   template.  */
-	return;
-      if (is_overloaded_fn (old))
-	{
-	  for (; old; old = OVL_NEXT (old))
-	    if (decls_match (decl, OVL_CURRENT (old)))
-	      return;
-	}
-      else
-	if (decls_match (decl, old))
+      if (at_namespace_scope_p ())
+	error ("explicit qualification in declaration of `%D'",
+	       decl);
+      return;
+    }
+
+  /* See whether this has been declared in the namespace.  */
+  old = namespace_binding (DECL_NAME (decl), scope);
+  if (!old)
+    /* No old declaration at all.  */
+    goto complain;
+  /* A template can be explicitly specialized in any namespace.  */
+  if (processing_explicit_instantiation)
+    return;
+  if (!is_overloaded_fn (decl))
+    /* Don't compare non-function decls with decls_match here, since
+       it can't check for the correct constness at this
+       point. pushdecl will find those errors later.  */
+    return;
+  /* Since decl is a function, old should contain a function decl.  */
+  if (!is_overloaded_fn (old))
+    goto complain;
+  if (processing_template_decl || processing_specialization)
+    /* We have not yet called push_template_decl to turn a
+       FUNCTION_DECL into a TEMPLATE_DECL, so the declarations won't
+       match.  But, we'll check later, when we construct the
+       template.  */
+    return;
+  if (is_overloaded_fn (old))
+    {
+      for (; old; old = OVL_NEXT (old))
+	if (decls_match (decl, OVL_CURRENT (old)))
 	  return;
     }
-  else
-    return;
+  else if (decls_match (decl, old))
+      return;
  complain:
   error ("%qD should have been declared inside %qD", decl, scope);
 } 

@@ -1,3 +1,20 @@
+2004-11-25  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18445
+	* g++.dg/template/crash28.C: Likewise.
+
+	PR c++/18001
+	* g++.dg/expr/unary2.C: Adjust lvalue messages.
+	* g++.dg/ext/lvaddr.C: Likewise.
+	* g++.dg/opt/pr7503-3.C: Likewise.
+
+	PR c++/18466
+	* g++.dg/parse/qualified3.C: New test.
+	* g++.old-deja/g++.other/friend7.C: Remove bogus qualification.
+	
+	PR c++/18545
+	* g++.dg/expr/return1.C: New test. 
+
 2004-11-25  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	Friend class name lookup 3/n, PR c++/3332

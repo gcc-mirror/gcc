@@ -215,20 +215,6 @@ lvalue_p (tree ref)
     (lvalue_p_1 (ref, /*class rvalue ok*/ 1) != clk_none);
 }
 
-/* Return nonzero if REF is an lvalue valid for this language;
-   otherwise, print an error message and return zero.  */
-
-int
-lvalue_or_else (tree ref, const char* string)
-{
-  if (!lvalue_p (ref))
-    {
-      error ("non-lvalue in %s", string);
-      return 0;
-    }
-  return 1;
-}
-
 /* Build a TARGET_EXPR, initializing the DECL with the VALUE.  */
 
 static tree
