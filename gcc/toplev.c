@@ -1846,6 +1846,23 @@ output_lang_identify (asm_out_file)
   ASM_OUTPUT_LABEL (asm_out_file, s);
 }
 
+/* Routine to open a dump file.  */
+static FILE *
+open_dump_file (base_name, suffix)
+     char *base_name;
+     char *suffix;
+{
+  FILE *f;
+  char *dumpname = (char *) alloca (strlen (base_name) + strlen (suffix) + 1);
+
+  strcpy (dumpname, base_name);
+  strcat (dumpname, suffix);
+  f = fopen (dumpname, "w");
+  if (f == 0)
+    pfatal_with_name (dumpname);
+  return f;
+}
+
 /* Compile an entire file of output from cpp, named NAME.
    Write a file of assembly output and various debugging dumps.  */
 
@@ -1855,13 +1872,11 @@ compile_file (name)
 {
   tree globals;
   int start_time;
-  int dump_base_name_length;
 
   int name_specified = name != 0;
 
   if (dump_base_name == 0)
     dump_base_name = name ? name : "gccdump";
-  dump_base_name_length = strlen (dump_base_name);
 
   parse_time = 0;
   varconst_time = 0;
@@ -1932,159 +1947,61 @@ compile_file (name)
 
   /* If rtl dump desired, open the output file.  */
   if (rtl_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".rtl");
-      rtl_dump_file = fopen (dumpname, "w");
-      if (rtl_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    rtl_dump_file = open_dump_file (dump_base_name, ".rtl");
 
   /* If jump_opt dump desired, open the output file.  */
   if (jump_opt_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".jump");
-      jump_opt_dump_file = fopen (dumpname, "w");
-      if (jump_opt_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    jump_opt_dump_file = open_dump_file (dump_base_name, ".jump");
 
   /* If cse dump desired, open the output file.  */
   if (cse_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".cse");
-      cse_dump_file = fopen (dumpname, "w");
-      if (cse_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    cse_dump_file = open_dump_file (dump_base_name, ".cse");
 
   /* If loop dump desired, open the output file.  */
   if (loop_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".loop");
-      loop_dump_file = fopen (dumpname, "w");
-      if (loop_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    loop_dump_file = open_dump_file (dump_base_name, ".loop");
 
   /* If cse2 dump desired, open the output file.  */
   if (cse2_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".cse2");
-      cse2_dump_file = fopen (dumpname, "w");
-      if (cse2_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    cse2_dump_file = open_dump_file (dump_base_name, ".cse2");
 
   /* If flow dump desired, open the output file.  */
   if (flow_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".flow");
-      flow_dump_file = fopen (dumpname, "w");
-      if (flow_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    flow_dump_file = open_dump_file (dump_base_name, ".flow");
 
   /* If combine dump desired, open the output file.  */
   if (combine_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 10);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".combine");
-      combine_dump_file = fopen (dumpname, "w");
-      if (combine_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    combine_dump_file = open_dump_file (dump_base_name, ".combine");
 
   /* If scheduling dump desired, open the output file.  */
   if (sched_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 7);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".sched");
-      sched_dump_file = fopen (dumpname, "w");
-      if (sched_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    sched_dump_file = open_dump_file (dump_base_name, ".sched");
 
   /* If local_reg dump desired, open the output file.  */
   if (local_reg_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".lreg");
-      local_reg_dump_file = fopen (dumpname, "w");
-      if (local_reg_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    local_reg_dump_file = open_dump_file (dump_base_name, ".lreg");
 
   /* If global_reg dump desired, open the output file.  */
   if (global_reg_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".greg");
-      global_reg_dump_file = fopen (dumpname, "w");
-      if (global_reg_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    global_reg_dump_file = open_dump_file (dump_base_name, ".greg");
 
   /* If 2nd scheduling dump desired, open the output file.  */
   if (sched2_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 8);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".sched2");
-      sched2_dump_file = fopen (dumpname, "w");
-      if (sched2_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    sched2_dump_file = open_dump_file (dump_base_name, ".sched2");
 
   /* If jump2_opt dump desired, open the output file.  */
   if (jump2_opt_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 7);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".jump2");
-      jump2_opt_dump_file = fopen (dumpname, "w");
-      if (jump2_opt_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    jump2_opt_dump_file = open_dump_file (dump_base_name, ".jump2");
 
   /* If dbr_sched dump desired, open the output file.  */
   if (dbr_sched_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 7);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".dbr");
-      dbr_sched_dump_file = fopen (dumpname, "w");
-      if (dbr_sched_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    dbr_sched_dump_file = open_dump_file (dump_base_name, ".dbr");
 
 #ifdef STACK_REGS
 
   /* If stack_reg dump desired, open the output file.  */
   if (stack_reg_dump)
-    {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 10);
-      strcpy (dumpname, dump_base_name);
-      strcat (dumpname, ".stack");
-      stack_reg_dump_file = fopen (dumpname, "w");
-      if (stack_reg_dump_file == 0)
-	pfatal_with_name (dumpname);
-    }
+    stack_reg_dump_file = open_dump_file (dump_base_name, ".stack");
 
 #endif
 
@@ -2094,8 +2011,8 @@ compile_file (name)
     asm_out_file = stdout;
   else
     {
-      register char *dumpname = (char *) xmalloc (dump_base_name_length + 6);
       int len = strlen (dump_base_name);
+      register char *dumpname = (char *) xmalloc (len + 6);
       strcpy (dumpname, dump_base_name);
       strip_off_ending (dumpname, len);
       strcat (dumpname, ".s");
