@@ -7350,6 +7350,44 @@ mips_cannot_change_mode_class (enum machine_mode from,
   return false;
 }
 
+/* Return true if X should not be moved directly into register $25.
+   We need this because many versions of GAS will treat "la $25,foo" as
+   part of a call sequence and so allow a global "foo" to be lazily bound.  */
+
+bool
+mips_dangerous_for_la25_p (rtx x)
+{
+  HOST_WIDE_INT offset;
+
+  if (TARGET_EXPLICIT_RELOCS)
+    return false;
+
+  mips_split_const (x, &x, &offset);
+  return global_got_operand (x, VOIDmode);
+}
+
+/* Implement PREFERRED_RELOAD_CLASS.  */
+
+enum reg_class
+mips_preferred_reload_class (rtx x, enum reg_class class)
+{
+  if (mips_dangerous_for_la25_p (x) && reg_class_subset_p (LEA_REGS, class))
+    return LEA_REGS;
+
+  if (TARGET_HARD_FLOAT
+      && FLOAT_MODE_P (GET_MODE (x))
+      && reg_class_subset_p (FP_REGS, class))
+    return FP_REGS;
+
+  if (reg_class_subset_p (GR_REGS, class))
+    class = GR_REGS;
+
+  if (TARGET_MIPS16 && reg_class_subset_p (M16_REGS, class))
+    class = M16_REGS;
+
+  return class;
+}
+
 /* This function returns the register class required for a secondary
    register when copying between one of the registers in CLASS, and X,
    using MODE.  If IN_P is nonzero, the copy is going from X to the
@@ -7369,9 +7407,12 @@ mips_secondary_reload_class (enum reg_class class,
 
   gp_reg_p = TARGET_MIPS16 ? M16_REG_P (regno) : GP_REG_P (regno);
 
-  if (TEST_HARD_REG_BIT (reg_class_contents[(int) class], 25)
-      && DANGEROUS_FOR_LA25_P (x))
-    return LEA_REGS;
+  if (mips_dangerous_for_la25_p (x))
+    {
+      gr_regs = LEA_REGS;
+      if (TEST_HARD_REG_BIT (reg_class_contents[(int) class], 25))
+	return gr_regs;
+    }
 
   /* Copying from HI or LO to anywhere other than a general register
      requires a general register.  */
@@ -7402,13 +7443,13 @@ mips_secondary_reload_class (enum reg_class class,
     {
       if (in_p)
 	return FP_REGS;
-      return GP_REG_P (regno) ? NO_REGS : GR_REGS;
+      return gp_reg_p ? NO_REGS : gr_regs;
     }
   if (ST_REG_P (regno))
     {
       if (! in_p)
 	return FP_REGS;
-      return class == GR_REGS ? NO_REGS : GR_REGS;
+      return class == gr_regs ? NO_REGS : gr_regs;
     }
 
   if (class == FP_REGS)
@@ -7425,7 +7466,7 @@ mips_secondary_reload_class (enum reg_class class,
 	     code by returning GR_REGS here.  */
 	  return NO_REGS;
 	}
-      else if (GP_REG_P (regno) || x == CONST0_RTX (mode))
+      else if (gp_reg_p || x == CONST0_RTX (mode))
 	{
 	  /* In this case we can use mtc1, mfc1, dmtc1 or dmfc1.  */
 	  return NO_REGS;
@@ -7438,7 +7479,7 @@ mips_secondary_reload_class (enum reg_class class,
       else
 	{
 	  /* Otherwise, we need to reload through an integer register.  */
-	  return GR_REGS;
+	  return gr_regs;
 	}
     }
 

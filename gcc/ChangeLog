@@ -1,3 +1,16 @@
+2004-01-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_dangerous_for_la25_p): Declare.
+	(mips_preferred_reload_class): Declare.
+	* config/mips/mips.h (DANGEROUS_FOR_LA25_P): Replace with function.
+	(EXTRA_CONSTRAINT): Update accordingly.
+	(PREFERRED_RELOAD_CLASS): Use mips_preferred_reload_class.
+	* config/mips/mips.c (mips_dangerous_for_la25_p): New function.
+	(mips_preferred_reload_class): New function.  Prefer LEA_REGS if
+	mips_dangerous_for_la25_p.
+	(mips_secondary_reload_class): Use LEA_REGS rather than GR_REGS
+	if mips_dangerous_for_la25_p.
+
 2004-01-05  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c (output_andsi3): Fix signed/unsigned comparison
