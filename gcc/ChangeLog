@@ -1,3 +1,8 @@
+2001-10-02  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c (main): Set this_file_error if the appropriate
+	compiler for a language has not been installed.
+
 2001-10-01  Loren J. Rittle  <ljrittle@acm.org>
 
 	* Makefile.in (STAGE2_FLAGS_TO_PASS): Propagate HOST_CC.
