@@ -3111,8 +3111,9 @@ do_identifier (token, parsing, args)
       id = lookup_name (token, 0);
       return error_mark_node;
     }
-      
-  if (!id)
+
+  if (!id || (TREE_CODE (id) == FUNCTION_DECL
+	      && DECL_ANTICIPATED (id)))
     {
       if (current_template_parms)
 	return build_min_nt (LOOKUP_EXPR, token);
@@ -3124,7 +3125,16 @@ do_identifier (token, parsing, args)
 	}
       else if (in_call && ! flag_strict_prototype)
 	{
-	  id = implicitly_declare (token);
+	  if (!id)
+	    id = implicitly_declare (token);
+	  else
+	    {
+	      /* Implicit declaration of built-in function.  Don't
+		 change the built-in declaration, but don't let this
+		 go by silently, either.  */
+	      cp_pedwarn ("implicit declaration of function `%D'", token);
+	      DECL_ANTICIPATED (id) = 0;  /* only issue this warning once */
+	    }
 	}
       else if (current_function_decl == 0)
 	{

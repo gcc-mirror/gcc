@@ -1,3 +1,15 @@
+2000-05-30  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cp-tree.h (DECL_ANTICIPATED): New macro.
+	Document new use of DECL_LANG_FLAG_7.
+	* decl.c (builtin_function): Set DECL_ANTICIPATED on builtins
+	in the user namespace.
+	* lex.c (do_identifier): If the identifier's declaration has
+	DECL_ANTICIPATED on, it has not yet been declared.  But do not
+	replace it with an ordinary implicit declaration.             
+
+	* tinfo2.cc: Include stdlib.h.
+
 2000-05-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (CLASSTYPE_ALIGN_UNIT): New macro.

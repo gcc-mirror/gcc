@@ -28,6 +28,7 @@
 // the GNU General Public License.
 
 #include <stddef.h>
+#include <stdlib.h>		// for abort
 #include "tinfo.h"
 #include "new"			// for placement new
 
