@@ -40,7 +40,6 @@ package java.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import gnu.java.util.DoubleEnumeration;
 
 /**
  * This class is a concrete <code>ResourceBundle</code> that gets it
