@@ -29,6 +29,17 @@ Boston, MA 02111-1307, USA.  */
 #include <i386/att.h>	/* Use the i386 AT&T assembler syntax */
 #include <linux.h>	/* some common stuff */
 
+/* Output at beginning of assembler file.  */
+/* The .file command should always begin the output.  */
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE)						\
+  do {									\
+	output_file_directive (FILE, main_input_filename);		\
+	if (target_flags & MASK_INTEL_SYNTAX)				\
+	  fputs ("\t.intel_syntax\n", FILE);				\
+	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
+  } while (0)
+
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (i386 Linux/ELF)");
 
