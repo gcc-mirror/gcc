@@ -3698,7 +3698,9 @@ duplicate_decls (newdecl, olddecl)
 	}
       if (! types_match || new_defines_function)
 	{
-	  /* These need to be copied so that the names are available.  */
+	  /* These need to be copied so that the names are available.
+	     Note that if the types do match, we'll preserve inline
+	     info and other bits, but if not, we won't.  */
 	  DECL_ARGUMENTS (olddecl) = DECL_ARGUMENTS (newdecl);
 	  DECL_RESULT (olddecl) = DECL_RESULT (newdecl);
 	}
@@ -3706,7 +3708,7 @@ duplicate_decls (newdecl, olddecl)
 	/* If defining a function declared with other language
 	   linkage, use the previously declared language linkage.  */
 	DECL_LANGUAGE (newdecl) = DECL_LANGUAGE (olddecl);
-      else
+      else if (types_match)
 	{
 	  /* If redeclaring a builtin function, and not a definition,
 	     it stays built in.  */
@@ -5858,6 +5860,10 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
     }
 
   /* First, look in non-namespace scopes.  */
+
+  if (current_class_type == NULL_TREE)
+    nonclass = 1;
+
   for (t = IDENTIFIER_BINDING (name); t; t = TREE_CHAIN (t))
     {
       tree binding;

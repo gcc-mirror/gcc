@@ -58,13 +58,13 @@ int flag_gnu_xref;
 #define FALSE 0
 #endif
 
-#define PALLOC(typ) ((typ *) calloc(1,sizeof(typ)))
+#define PALLOC(typ) ((typ *) xcalloc(1,sizeof(typ)))
 
 
 /* Return a malloc'd copy of STR.  */
 #define SALLOC(str) \
  ((char *) ((str) == NULL ? NULL	\
-	    : (char *) strcpy ((char *) malloc (strlen ((str)) + 1), (str))))
+	    : (char *) strcpy ((char *) xmalloc (strlen ((str)) + 1), (str))))
 #define SFREE(str) (str != NULL && (free(str),0))
 
 #define STREQL(s1,s2) (strcmp((s1),(s2)) == 0)

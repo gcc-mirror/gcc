@@ -906,15 +906,9 @@ comptypes (type1, type2, strict)
 				  TYPE_TI_ARGS (t2));
     look_hard:
       if ((strict & COMPARE_BASE) && DERIVED_FROM_P (t1, t2))
-	{
-	  val = 1;
-	  break;
-	}
-      if ((strict & COMPARE_RELAXED) && DERIVED_FROM_P (t2, t1))
-	{
-	  val = 1;
-	  break;
-	}
+	val = 1;
+      else if ((strict & COMPARE_RELAXED) && DERIVED_FROM_P (t2, t1))
+	val = 1;
       break;
 
     case OFFSET_TYPE:
