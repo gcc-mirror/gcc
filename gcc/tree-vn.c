@@ -168,7 +168,7 @@ set_value_handle (tree e, tree v)
     SSA_NAME_VALUE (e) = v;
   else if (EXPR_P (e) || DECL_P (e))
     get_tree_ann (e)->common.value_handle = v;
-  else if (TREE_CODE_CLASS (TREE_CODE (e)) == 'c')
+  else if (is_gimple_min_invariant (e))
     /* Do nothing.  Constants are their own value handles.  */
     ;
   else
@@ -214,8 +214,10 @@ vn_lookup (tree expr, vuse_optype vuses)
   void **slot;
   struct val_expr_pair_d vep = {NULL, NULL, NULL, 0};
 
-  if (TREE_CODE_CLASS (TREE_CODE (expr)) == 'c')
+  /* Constants are their own value.  */
+  if (is_gimple_min_invariant (expr))
     return expr;
+
   vep.e = expr;
   vep.vuses = vuses;
   vep.hashcode = vn_compute (expr, 0, vuses); 
@@ -261,20 +263,20 @@ vn_lookup_or_add (tree expr, vuse_optype vuses)
 
 /* Get the value handle of EXPR.  This is the only correct way to get
    the value handle for a "thing".  If EXPR does not have a value
-   handle associated, it generates and returns a new one.  */
+   handle associated, it returns NULL_TREE.  */
 
 tree
 get_value_handle (tree expr)
 {
   if (TREE_CODE (expr) == SSA_NAME)
     return SSA_NAME_VALUE (expr);
-  else if (TREE_CODE_CLASS (TREE_CODE (expr)) == 'c')
-    return expr;
   else if (EXPR_P (expr) || DECL_P (expr))
     {
       tree_ann_t ann = tree_ann (expr);
       return ((ann) ? ann->common.value_handle : NULL_TREE);
     }
+  else if (is_gimple_min_invariant (expr))
+    return expr;
 
   abort ();
 }

@@ -1,3 +1,14 @@
+2004-06-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree-ssa-pre.c (phi_trans_add): Use is_gimple_min_invariant
+	to check for constants.
+	(set_remove): Likewise.
+	(value_replace_in_set): Likewise.
+	(find_leader): Likewise.
+	* tree-vn.c (set_value_handle): Likewise.
+	(vn_lookup): Likewise.
+	(vn_lookup_or_add): Likewise.
+
 2004-06-30  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	RTL prologue/epilogue for SPARC
