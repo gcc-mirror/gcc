@@ -49,7 +49,7 @@ import java.nio.channels.InterruptibleChannel;
 public abstract class AbstractInterruptibleChannel
   implements Channel, InterruptibleChannel
 {
-  boolean opened = true;
+  private boolean closed;
 
   /**
    * Initializes the channel.
@@ -72,8 +72,11 @@ public abstract class AbstractInterruptibleChannel
    */
   public final void close () throws IOException
   {
-    opened = false;
-    implCloseChannel ();
+    if (!closed)
+      {
+	implCloseChannel();
+	closed = true;
+      }
   }
 
   /**
@@ -101,6 +104,6 @@ public abstract class AbstractInterruptibleChannel
    */
   public final boolean isOpen ()
   {
-    return opened;
+    return !closed;
   }
 }

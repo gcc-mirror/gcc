@@ -1,5 +1,13 @@
 2003-12-02  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/channels/spi/AbstractInterruptibleChannel.java
+	(opened): Removed.
+	(closed): New field.
+	(close): Check of channel is closed already.
+	(isOpen): Return !closed.
+
+2003-12-02  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/DatagramChannelImpl.java
 	(blocking): Initialize with true by default.
 	* gnu/java/nio/ServerSocketChannelImpl.java
