@@ -5799,11 +5799,13 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 #define GNU_TYPE_CT 3
 int gnu_type_map_ct = GNU_TYPE_CT;
 
-tSCC z_cxx_guard[] = " && !defined(__cplusplus)";
-tSCC z_nil[]       = "";
-
+/*
+ *  The following table depends upon XXX_TYPE being #define-d to the
+ *  correct string via defines in a header file pointed to by the
+ *  generated file "tm.h".
+ */
 t_gnu_type_map gnu_type_map[ GNU_TYPE_CT ] = {
-  { 7, "ptrdiff", "PTRDIFF", "long int", z_nil },
-  { 4, "size", "SIZE", "long unsigned int", z_nil },
-  { 5, "wchar", "WCHAR", "int", z_cxx_guard }
+  { 5, "wchar", "WCHAR", WCHAR_TYPE },
+  { 7, "ptrdiff", "PTRDIFF", PTRDIFF_TYPE },
+  { 4, "size", "SIZE", SIZE_TYPE }
 };

@@ -1,3 +1,12 @@
+2000-07-20  Bruce Korb  <bkorb@gnu.org>
+
+	* fixincl/check.tpl: strip the platform specific types before testing
+	* fixincl/fixfixes.c(gnu_type_fix): use platform specific types
+	* fixincl/fixincl.tpl: use platform specific types
+	* fixincl/fixlib.h: include the platform specific types
+	* fixincl/inclhack.def(gnu_types): don't supply the types
+	* fixincl/fixincl.x: regen
+
 2000-07-19  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.h (HARD_REGNO_MODE_OK): Don't allow XFmode in
