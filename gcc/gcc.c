@@ -3254,23 +3254,30 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		{
 		  if (! strncmp (y, "-D", 2))
 		    {
-		      *x++ = *y++;
-		      *x++ = *y++;
+		      y += 2;
 
 		      if (strncmp (y, "__", 2))
 		        {
-			  /* Stick __ at front of macro name.  */
+			  /* Stick -D__ at front of macro name.  */
+			  *x++ = '-';
+			  *x++ = 'D';
 			  *x++ = '_';
 			  *x++ = '_';
+
+			  /* Copy the macro name.  */
+			  while (*y && *y != '=' && *y != ' ' && *y != '\t')
+			    *x++ = *y++;
+
+			  /* Copy the value given, if any.  */
+			  while (*y && *y != ' ' && *y != '\t')
+			    *x++ = *y++;
 			}
-
-		      /* Copy the macro name.  */
-		      while (*y && *y != '=' && *y != ' ' && *y != '\t')
-			*x++ = *y++;
-
-		      /* Copy the value given, if any.  */
-		      while (*y && *y != ' ' && *y != '\t')
-			*x++ = *y++;
+		      else
+			{
+			  /* Do not copy this macro - we have just done it before */
+			  while (*y && *y != ' ' && *y != '\t')
+			    y++;
+			}
 		    }
 		  else if (*y == ' ' || *y == '\t')
 		    /* Copy whitespace to the result.  */
