@@ -674,7 +674,8 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 /* Loading and storing HImode or QImode values to and from memory
    usually requires a scratch register.  The exceptions are loading
-   QImode and HImode from an aligned address to a general register. 
+   QImode and HImode from an aligned address to a general register
+   unless byte instructions are permitted.
    We also cannot load an unaligned address or a paradoxical SUBREG into an
    FP register.   */
 
@@ -688,7 +689,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
   && (((CLASS) == FLOAT_REGS						\
        && ((MODE) == SImode || (MODE) == HImode || (MODE) == QImode))	\
       || (((MODE) == QImode || (MODE) == HImode)			\
-	  && unaligned_memory_operand (IN, MODE))))			\
+	  && ! TARGET_BYTE_OPS && unaligned_memory_operand (IN, MODE)))) \
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (IN) == MEM			\
     && GET_CODE (XEXP (IN, 0)) == AND) ? GENERAL_REGS			\
@@ -704,7 +705,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
        && (GET_CODE (SUBREG_REG (OUT)) == MEM				\
 	   || (GET_CODE (SUBREG_REG (OUT)) == REG			\
 	       && REGNO (SUBREG_REG (OUT)) >= FIRST_PSEUDO_REGISTER)))) \
-  && (((MODE) == HImode || (MODE) == QImode				\
+  && ((((MODE) == HImode || (MODE) == QImode) && ! TARGET_BYTE_OPS	\
        || ((MODE) == SImode && (CLASS) == FLOAT_REGS))))		\
  ? GENERAL_REGS								\
  : ((CLASS) == FLOAT_REGS && GET_CODE (OUT) == MEM			\
@@ -788,6 +789,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    this says how many the stack pointer really advances by.
    On Alpha, don't define this because there are no push insns.  */
 /*  #define PUSH_ROUNDING(BYTES) */
+
+/* Define this to be nonzero if stack checking is built into the ABI.  */
+#define STACK_CHECK_BUILTIN 1
 
 /* Define this if the maximum size of all the outgoing args is to be
    accumulated and pushed during the prologue.  The amount can be
@@ -1696,8 +1700,11 @@ extern void final_prescan_insn ();
 {								\
   alpha_write_verstamp (FILE);					\
   fprintf (FILE, "\t.set noreorder\n");				\
-  fprintf (FILE, "\t.set volatile\n");                                \
+  fprintf (FILE, "\t.set volatile\n");                          \
   fprintf (FILE, "\t.set noat\n");				\
+  fprintf (FILE, "\t.arch %s\n",				\
+	   (TARGET_BYTE_OPS ? "ev56"				\
+	    : alpha_cpu == PROCESSOR_EV4 ? "ev4" : "ev5"));	\
   ASM_OUTPUT_SOURCE_FILENAME (FILE, main_input_filename);	\
 }
 
