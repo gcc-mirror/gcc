@@ -1448,7 +1448,7 @@
    && ! function_label_operand (operands[1])
    && ! read_only_operand (operands[1])
    && ! flag_pic"
-  "addil L'%G1,%%r27"
+  "addil LR'%G1,%%r27"
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
 
@@ -1492,7 +1492,13 @@
 	(high:SI (match_operand 1 "" "")))]
   "(!flag_pic || !symbolic_operand (operands[1]), Pmode)
     && !is_function_label_plus_const (operands[1])"
-  "ldil L'%G1,%0"
+  "*
+{
+  if (symbolic_operand (operands[1], Pmode))
+    return \"ldil LR'%G1,%0\";
+  else
+    return \"ldil L'%G1,%0\";
+}"
   [(set_attr "type" "move")
    (set_attr "length" "4")])
 
@@ -1531,6 +1537,8 @@
 {
   if (flag_pic && symbolic_operand (operands[2], Pmode))
     abort ();
+  else if (symbolic_operand (operands[2], Pmode))
+    return \"ldo RR'%G2(%1),%0\";
   else
     return \"ldo R'%G2(%1),%0\";
 }"
