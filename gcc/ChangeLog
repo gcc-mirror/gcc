@@ -1,3 +1,8 @@
+2000-04-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* c-common.c (decl_attributes) [A_ALIAS]: Set TREE_USED on the
+	object pointed to.
+
 Thu Apr 20 14:19:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (emit_iv_add_mult):  Simplify it's input and emit
