@@ -1,3 +1,7 @@
+2000-03-30  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (FUNCTION_BOUNDARY): Reduce to 128 bits.
+
 2000-03-30  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in: Comment out --enable-c-cpplib stanza.

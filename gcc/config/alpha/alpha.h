@@ -487,7 +487,7 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 #define STACK_BOUNDARY 64
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY 256
+#define FUNCTION_BOUNDARY 128
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 64
