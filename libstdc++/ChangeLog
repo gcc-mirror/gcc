@@ -1,3 +1,7 @@
+Mon Nov 23 09:44:26 1998  Richard Henderson <rth@cygnus.com>
+
+	* configure.in: Append mh-ppcpic and mh-elfalphapic as appropriate.
+
 1998-08-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* stdexcept: Put things in the std namespace, if appropriate.
