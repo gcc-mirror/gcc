@@ -2918,6 +2918,8 @@ purge_addressof_1 (loc, insn, force, store)
 
 	      if (store)
 		{
+		  rtx p;
+
 		  start_sequence ();
 		  val = gen_reg_rtx (GET_MODE (x));
 		  if (! validate_change (insn, loc, val, 0))
@@ -2935,6 +2937,16 @@ purge_addressof_1 (loc, insn, force, store)
 		  store_bit_field (sub, size_x, 0, GET_MODE (x),
 				   val, GET_MODE_SIZE (GET_MODE (sub)),
 				   GET_MODE_SIZE (GET_MODE (sub)));
+
+		  /* Make sure to unshare any shared rtl that store_bit_field
+		     might have created.  */
+		  for (p = get_insns(); p; p = NEXT_INSN (p))
+		    {
+		      reset_used_flags (PATTERN (p));
+		      reset_used_flags (REG_NOTES (p));
+		      reset_used_flags (LOG_LINKS (p));
+		    }
+		  unshare_all_rtl (get_insns ());
 
 		  seq = gen_sequence ();
 		  end_sequence ();
