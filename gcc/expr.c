@@ -4515,7 +4515,7 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
 	  set_mem_alias_set (target, alias_set);
 	}
 
-      store_constructor (exp, target, cleared, bitsize / BITS_PER_UNIT);
+      store_constructor (exp, target, cleared, bitsize);
     }
   else
     store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0, type,
@@ -4525,8 +4525,10 @@ store_constructor_field (rtx target, unsigned HOST_WIDE_INT bitsize,
 /* Store the value of constructor EXP into the rtx TARGET.
    TARGET is either a REG or a MEM; we know it cannot conflict, since
    safe_from_p has been called.
-   CLEARED is true if TARGET is known to have been zero'd.
-   SIZE is the number of bytes of TARGET we are allowed to modify: this
+   CLEARED is positive if TARGET is known to have been zeroed, zero if
+   this is the top level of calls to store_constructor, and negative
+   if this is a recursive call but no clearing has been done.
+   SIZE is the number of bits of TARGET we are allowed to modify: this
    may not be the same as the size of EXP if we are assigning to a field
    which has been packed to exclude padding bits.  */
 
@@ -4543,8 +4545,11 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
     {
       tree elt;
 
-      /* If size is zero or the target is already cleared, do nothing.  */
-      if (size == 0 || cleared)
+      /* If this is not the top level, we don't do any initialization.  */
+      if (cleared)
+	;
+      /* If the size is zero, pretend we've cleared it.  */
+      else if (size == 0)
 	cleared = 1;
       /* We either clear the aggregate or indicate the value is dead.  */
       else if ((TREE_CODE (type) == UNION_TYPE
@@ -4552,7 +4557,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	       && ! CONSTRUCTOR_ELTS (exp))
 	/* If the constructor is empty, clear the union.  */
 	{
-	  clear_storage (target, expr_size (exp));
+	  clear_storage (target, GEN_INT (size / BITS_PER_UNIT));
 	  cleared = 1;
 	}
 
@@ -4575,7 +4580,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       else if (((list_length (CONSTRUCTOR_ELTS (exp)) != fields_length (type))
 		|| mostly_zeros_p (exp))
 	       && (GET_CODE (target) != REG
-		   || ((HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target))
+		   || ((HOST_WIDE_INT) GET_MODE_BITSIZE (GET_MODE (target))
 		       == size)))
 	{
 	  rtx xtarget = target;
@@ -4586,12 +4591,14 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      RTX_UNCHANGING_P (xtarget) = 1;
 	    }
 
-	  clear_storage (xtarget, GEN_INT (size));
+	  clear_storage (xtarget, GEN_INT (size / BITS_PER_UNIT));
 	  cleared = 1;
 	}
-
-      if (! cleared)
-	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+      else
+	{
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+	  cleared = -1;
+	}
 
       /* Store each element of the constructor into
 	 the corresponding field of TARGET.  */
@@ -4612,7 +4619,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	  if (field == 0)
 	    continue;
 
-	  if (cleared && is_zeros_p (value))
+	  if (cleared > 0 && is_zeros_p (value))
 	    continue;
 
 	  if (host_integerp (DECL_SIZE (field), 1))
@@ -4822,13 +4829,17 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      if (REG_P (target))
 		emit_move_insn (target,  CONST0_RTX (GET_MODE (target)));
 	      else
-		clear_storage (target, GEN_INT (size));
+		clear_storage (target, GEN_INT (size / BITS_PER_UNIT));
+
+	      cleared = 1;
 	    }
-	  cleared = 1;
 	}
       else if (REG_P (target))
-	/* Inform later passes that the old value is dead.  */
-	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+	{
+	  /* Inform later passes that the old value is dead.  */
+	  emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+	  cleared = -1;
+	}
 
       /* Store each element of the constructor into
 	 the corresponding element of TARGET, determined
@@ -4845,7 +4856,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	  tree index = TREE_PURPOSE (elt);
 	  rtx xtarget = target;
 
-	  if (cleared && is_zeros_p (value))
+	  if (cleared > 0 && is_zeros_p (value))
 	    continue;
 
 	  unsignedp = TYPE_UNSIGNED (elttype);
@@ -4939,8 +4950,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 					    highest_pow2_factor (position));
 		  xtarget = adjust_address (xtarget, mode, 0);
 		  if (TREE_CODE (value) == CONSTRUCTOR)
-		    store_constructor (value, xtarget, cleared,
-				       bitsize / BITS_PER_UNIT);
+		    store_constructor (value, xtarget, cleared, bitsize);
 		  else
 		    store_expr (value, xtarget, 0);
 
@@ -5038,8 +5048,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       /* Check for all zeros.  */
       if (elt == NULL_TREE && size > 0)
 	{
-	  if (!cleared)
-	    clear_storage (target, GEN_INT (size));
+	  if (cleared <= 0)
+	    clear_storage (target, GEN_INT (size / BITS_PER_UNIT));
 	  return;
 	}
 
@@ -5079,7 +5089,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      bit_pos++;  ibit++;
 	      if (bit_pos >= set_word_size || ibit == nbits)
 		{
-		  if (word != 0 || ! cleared)
+		  if (word != 0 || cleared <= 0)
 		    {
 		      rtx datum = gen_int_mode (word, mode);
 		      rtx to_rtx;
@@ -5104,7 +5114,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		}
 	    }
 	}
-      else if (!cleared)
+      else if (cleared <= 0)
 	/* Don't bother clearing storage if the set is all ones.  */
 	if (TREE_CHAIN (elt) != NULL_TREE
 	    || (TREE_PURPOSE (elt) == NULL_TREE
@@ -5114,7 +5124,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		   || (tree_low_cst (TREE_VALUE (elt), 0)
 		       - tree_low_cst (TREE_PURPOSE (elt), 0) + 1
 		       != (HOST_WIDE_INT) nbits))))
-	  clear_storage (target, expr_size (exp));
+	  clear_storage (target, GEN_INT (size / BITS_PER_UNIT));
 
       for (; elt != NULL_TREE; elt = TREE_CHAIN (elt))
 	{
@@ -6742,7 +6752,8 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 						       * TYPE_QUAL_CONST))),
 			     0, TREE_ADDRESSABLE (exp), 1);
 
-	  store_constructor (exp, target, 0, int_expr_size (exp));
+	  store_constructor (exp, target, 0,
+			     int_expr_size (exp) * BITS_PER_UNIT);
 	  return target;
 	}
 
