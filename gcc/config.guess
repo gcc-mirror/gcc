@@ -364,6 +364,8 @@ EOF
 	  echo "${UNAME_MACHINE}-unknown-linux" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68klinux"; then
 	  echo "${UNAME_MACHINE}-unknown-linuxaout" ; exit 0
+	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: elf32ppc"; then
+	  echo "powerpc-unknown-linux" ; exit 0
 	elif test "${UNAME_MACHINE}" = "alpha" ; then
 	  echo alpha-unknown-linux ; exit 0
 	elif test "${UNAME_MACHINE}" = "sparc" ; then
