@@ -1,5 +1,5 @@
 /* VMClassLoader.java -- Reference implementation of compiler interface
-   Copyright (C) 2004 Free Software Foundation
+   Copyright (C) 2004, 2005 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -201,6 +201,11 @@ final class VMCompiler
 	  }
 	catch (Exception _)
 	  {
+	  }
+	catch (UnknownError _)
+	  {
+	    // SharedLibHelper will throw UnknownError if the dlopen
+	    // fails for some reason.  We ignore it and continue on.
 	  }
       }
  
