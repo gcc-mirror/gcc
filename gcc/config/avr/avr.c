@@ -1194,14 +1194,19 @@ avr_jump_mode (x, insn)
   return 2;
 }
 
-/* return a AVR condition jump commands.
- LEN is a number returned by avr_jump_mode function.  */
+/* return an AVR condition jump commands.
+   X is a comparison RTX.
+   LEN is a number returned by avr_jump_mode function.
+   if REVERSE nonzero then condition code in X must be reversed.  */
 
 const char *
-ret_cond_branch (cond, len)
-     RTX_CODE cond;
+ret_cond_branch (x, len, reverse)
+     rtx x;
      int len;
+     int reverse;
 {
+  RTX_CODE cond = reverse ? reverse_condition (GET_CODE (x)) : GET_CODE (x);
+  
   switch (cond)
     {
     case GT:
@@ -1262,17 +1267,34 @@ ret_cond_branch (cond, len)
                AS1 (brsh,_PC_+4) CR_TAB
 	       AS1 (jmp,%0)));
     default:
-      switch (len)
-        {
-        case 1:
-          return AS1 (br%j1,%0);
-        case 2:
-          return (AS1 (br%k1,_PC_+2) CR_TAB
-                  AS1 (rjmp,%0));
-        default:
-          return (AS1 (br%k1,_PC_+4) CR_TAB
-                  AS1 (jmp,%0));
-        }
+      if (reverse)
+	{
+	  switch (len)
+	    {
+	    case 1:
+	      return AS1 (br%k1,%0);
+	    case 2:
+	      return (AS1 (br%j1,_PC_+2) CR_TAB
+		      AS1 (rjmp,%0));
+	    default:
+	      return (AS1 (br%j1,_PC_+4) CR_TAB
+		      AS1 (jmp,%0));
+	    }
+	}
+	else
+	  {
+	    switch (len)
+	      {
+	      case 1:
+		return AS1 (br%j1,%0);
+	      case 2:
+		return (AS1 (br%k1,_PC_+2) CR_TAB
+			AS1 (rjmp,%0));
+	      default:
+		return (AS1 (br%k1,_PC_+4) CR_TAB
+			AS1 (jmp,%0));
+	      }
+	  }
     }
   return "";
 }
@@ -4736,10 +4758,9 @@ encode_section_info (decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL)
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
-
-  if ((TREE_STATIC (decl) || DECL_EXTERNAL (decl))
-      && TREE_CODE (decl) == VAR_DECL
-      && avr_progmem_p (decl))
+  else if ((TREE_STATIC (decl) || DECL_EXTERNAL (decl))
+	   && TREE_CODE (decl) == VAR_DECL
+	   && avr_progmem_p (decl))
     {
       const char *dsec = ".progmem.data";
       DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
@@ -5102,6 +5123,7 @@ avr_function_value (type, func)
      tree func ATTRIBUTE_UNUSED;
 {
   unsigned int offs;
+  
   if (TYPE_MODE (type) != BLKmode)
     return avr_libcall_value (TYPE_MODE (type));
   

@@ -1,3 +1,19 @@
+Sun Jan 21 09:44:17 2001  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (ret_cond_branch): New argument (reverse) added.
+	If REVERSE nonzero then condition code in X must be reversed.
+	(encode_section_info): Optimise if/else.
+	(avr_function_value): Fix formatting.
+
+	* config/avr/avr.md (branch): Call to ret_cond_branch changed.
+	(difficult_branch): Likewise.
+	(rvbranch): Likewise.
+	(difficult_rvbranch): Likewise.
+
+	* config/avr/avr-protos.h (ret_cond_branch): Prototype changed.
+
+	* config/avr/libgcc.S: Fix comment.
+
 2001-01-20  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* sdbout.c (PUT_SDB_DEF): Fix after last bogus change.

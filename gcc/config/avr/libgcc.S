@@ -597,7 +597,7 @@ __prologue_saves__:
 #endif /* defined (L_prologue) */
 
 /*
- * This is a epilogue subroutine
+ * This is an epilogue subroutine
  */
 #if defined (L_epilogue)
 

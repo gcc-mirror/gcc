@@ -1937,8 +1937,7 @@
   "! (GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
       || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
   "*
-   return ret_cond_branch (GET_CODE (operands[1]),
-                           avr_jump_mode (operands[0],insn));"
+   return ret_cond_branch (operands[1], avr_jump_mode (operands[0],insn), 0);"
   [(set_attr "type" "branch")
    (set_attr "cc" "clobber")])
 
@@ -1952,8 +1951,7 @@
   "(GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
     || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
   "*
-   return ret_cond_branch (GET_CODE (operands[1]),
-                           avr_jump_mode (operands[0],insn));"
+   return ret_cond_branch (operands[1], avr_jump_mode (operands[0],insn), 0);"
   [(set_attr "type" "branch1")
    (set_attr "cc" "clobber")])
 
@@ -1968,8 +1966,7 @@
   "! (GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
       || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
   "*
-   return ret_cond_branch (reverse_condition (GET_CODE (operands[1])),
-                           avr_jump_mode (operands[0],insn));"
+   return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 1);"
   [(set_attr "type" "branch1")
    (set_attr "cc" "clobber")])
 
@@ -1982,8 +1979,7 @@
   "(GET_CODE (operands[1]) == GT || GET_CODE (operands[1]) == GTU
     || GET_CODE (operands[1]) == LE || GET_CODE (operands[1]) == LEU)"
   "*
-   return ret_cond_branch (reverse_condition (GET_CODE (operands[1])),
-                           avr_jump_mode (operands[0],insn));"
+   return ret_cond_branch (operands[1], avr_jump_mode (operands[0], insn), 1);"
   [(set_attr "type" "branch")
    (set_attr "cc" "clobber")])
 
