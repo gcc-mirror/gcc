@@ -1411,41 +1411,73 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       tree type = TREE_TYPE (val);
       tree val1;
       int j;
-      int found_equal;
+      int found_equal = 0;
+      int allows_reg = 0;
 
       /* If there's an erroneous arg, emit no insn.  */
       if (TREE_TYPE (val) == error_mark_node)
 	return;
 
-      /* Make sure constraint has `=' and does not have `+'.  */
+      /* Make sure constraint has `=' and does not have `+'.  Also, see
+	 if it allows any register.  Be liberal on the latter test, since
+	 the worst that happens if we get it wrong is we issue an error
+	 message.  */
 
-      found_equal = 0;
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)); j++)
-	{
-	  if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j] == '+')
-	    {
-	      error ("output operand constraint contains `+'");
-	      return;
-	    }
-	  if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j] == '=')
+      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
+	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
+	  {
+	  case '+':
+	    error ("output operand constraint contains `+'");
+	    return;
+
+	  case '=':
 	    found_equal = 1;
-	}
+	    break;
+
+	  case '?':  case '!':  case '*':  case '%':  case '&':
+	  case '0':  case '1':  case '2':  case '3':  case '4':
+	  case 'V':  case 'm':  case 'o':  case '<':  case '>':
+	  case 'E':  case 'F':  case 'G':  case 'H':  case 'X':
+	  case 's':  case 'i':  case 'n':
+	  case 'I':  case 'J':  case 'K':  case 'L':  case 'M':
+	  case 'N':  case 'O':  case 'P':  case ',':
+#ifdef EXTRA_CONSTRAINT
+	  case 'Q':  case 'R':  case 'S':  case 'T':  case 'U':
+#endif
+	    break;
+
+	  case 'p':  case 'g':  case 'r':
+	  default:
+	    allows_reg = 1;
+	    break;
+	  }
+
       if (! found_equal)
 	{
 	  error ("output operand constraint lacks `='");
 	  return;
 	}
 
-      /* If an output operand is not a decl or indirect ref,
-	 make a temporary to act as an intermediate.   Make the asm insn
-	 write into that, then our caller will copy it to the real output
-	 operand.  Likewise for promoted variables.  */
+      /* If an output operand is not a decl or indirect ref and our constraint
+	 allows a register, make a temporary to act as an intermediate.
+	 Make the asm insn write into that, then our caller will copy it to
+	 the real output operand.  Likewise for promoted variables.  */
 
       if (TREE_CODE (val) == INDIRECT_REF
 	  || (TREE_CODE_CLASS (TREE_CODE (val)) == 'd'
 	      && ! (GET_CODE (DECL_RTL (val)) == REG
-		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type))))
-	output_rtx[i] = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+		    && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
+	  || ! allows_reg)
+	{
+	  if (! allows_reg)
+	    mark_addressable (TREE_VALUE (tail));
+
+	  output_rtx[i]
+	    = expand_expr (TREE_VALUE (tail), NULL_RTX, VOIDmode, 0);
+
+	  if (! allows_reg && GET_CODE (output_rtx[i]) != MEM)
+	    error ("output number %d not directly addressable", i);
+	}
       else
 	{
 	  if (TYPE_MODE (type) == BLKmode)
