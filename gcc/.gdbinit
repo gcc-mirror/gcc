@@ -86,10 +86,6 @@ In cc1plus, print the current binding stack, frame by frame, up to and
 including the global binding level.
 end
 
-# Don't let abort actually run, as it will make
-# stdio stop working and therefore the `pr' command below as well.
-b abort
-
 # Put breakpoints at exit and fancy_abort in case abort is mapped
 # to either fprintf/exit or fancy_abort.
 b exit
@@ -98,3 +94,9 @@ b fancy_abort
 # Make gdb complain about symbol reading errors.  This is so that gcc
 # developers can see and fix bugs in gcc debug output.
 set complaints 20
+
+# Don't let abort actually run, as it will make
+# stdio stop working and therefore the `pr' command above as well.
+# Put this last because gcc does not reference it any more unless
+# USE_SYSTEM_ABORT is defined, so gdb may complain and bail out.
+b abort
