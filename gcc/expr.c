@@ -4472,13 +4472,12 @@ store_constructor_field (target, bitsize, bitpos,
 	 generate unnecessary clear instructions anyways.  */
       && (bitpos == 0 || GET_CODE (target) == MEM))
     {
-      if (bitpos != 0)
-	target
-	  = adjust_address (target,
-			    GET_MODE (target) == BLKmode
-			    || 0 != (bitpos
-				     % GET_MODE_ALIGNMENT (GET_MODE (target)))
-			    ? BLKmode : VOIDmode, bitpos / BITS_PER_UNIT);
+      target
+	= adjust_address (target,
+			  GET_MODE (target) == BLKmode
+			  || 0 != (bitpos
+				   % GET_MODE_ALIGNMENT (GET_MODE (target)))
+			  ? BLKmode : VOIDmode, bitpos / BITS_PER_UNIT);
 
 
       /* Show the alignment may no longer be what it was and update the alias
@@ -4488,7 +4487,10 @@ store_constructor_field (target, bitsize, bitpos,
 
       if (GET_CODE (target) == MEM && ! MEM_KEEP_ALIAS_SET_P (target)
 	  && MEM_ALIAS_SET (target) != 0)
-	set_mem_alias_set (target, alias_set);
+	{
+	  target = copy_rtx (target);
+	  set_mem_alias_set (target, alias_set);
+	}
 
       store_constructor (exp, target, align, cleared, bitsize / BITS_PER_UNIT);
     }
@@ -5354,7 +5356,10 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 
       MEM_SET_IN_STRUCT_P (to_rtx, 1);
       if (!MEM_KEEP_ALIAS_SET_P (to_rtx) && MEM_ALIAS_SET (to_rtx) != 0)
-	set_mem_alias_set (to_rtx, alias_set);
+	{
+	  to_rtx = copy_rtx (to_rtx);
+	  set_mem_alias_set (to_rtx, alias_set);
+	}
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
     }
@@ -5502,7 +5507,16 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 
       else if (TREE_CODE (exp) == PLACEHOLDER_EXPR)
 	{
-	  exp = find_placeholder (exp, &placeholder_ptr);
+	  tree new = find_placeholder (exp, &placeholder_ptr);
+
+	  /* If we couldn't find the replacement, return the PLACEHOLDER_EXPR.
+	     We might have been called from tree optimization where we
+	     haven't set up an object yet.  */
+	  if (new == 0)
+	    break;
+	  else
+	    exp = new;
+
 	  continue;
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
@@ -5778,9 +5792,26 @@ safe_from_p (x, exp, top_p)
       switch (TREE_CODE (exp))
 	{
 	case ADDR_EXPR:
-	  return (staticp (TREE_OPERAND (exp, 0))
-		  || TREE_STATIC (exp)
-		  || safe_from_p (x, TREE_OPERAND (exp, 0), 0));
+	  /* If the operand is static or we are static, we can't conflict.
+	     Likewise if we don't conflict with the operand at all.  */
+	  if (staticp (TREE_OPERAND (exp, 0))
+	      || TREE_STATIC (exp)
+	      || safe_from_p (x, TREE_OPERAND (exp, 0), 0))
+	    return 1;
+
+	  /* Otherwise, the only way this can conflict is if we are taking
+	     the address of a DECL a that address if part of X, which is
+	     very rare.  */
+	  exp = TREE_OPERAND (exp, 0);
+	  if (DECL_P (exp))
+	    {
+	      if (!DECL_RTL_SET_P (exp)
+		  || GET_CODE (DECL_RTL (exp)) != MEM)
+		return 0;
+	      else
+		exp_rtl = XEXP (DECL_RTL (exp), 0);
+	    }
+	  break;
 
 	case INDIRECT_REF:
 	  if (GET_CODE (x) == MEM
@@ -6023,8 +6054,8 @@ highest_pow2_factor (exp)
 /* Return an object on the placeholder list that matches EXP, a
    PLACEHOLDER_EXPR.  An object "matches" if it is of the type of the
    PLACEHOLDER_EXPR or a pointer type to it.  For further information, see
-   tree.def.  If no such object is found, abort.  If PLIST is nonzero, it is
-   a location which initially points to a starting location in the
+   tree.def.  If no such object is found, return 0.  If PLIST is nonzero, it
+   is a location which initially points to a starting location in the
    placeholder list (zero means start of the list) and where a pointer into
    the placeholder list at which the object is found is placed.  */
 
@@ -6083,7 +6114,7 @@ find_placeholder (exp, plist)
 	  }
     }
 
-  abort ();
+  return 0;
 }
 
 /* expand_expr: generate code for computing expression EXP.
@@ -6617,6 +6648,9 @@ expand_expr (exp, target, tmode, modifier)
 	tree placeholder_expr = 0;
 
 	exp = find_placeholder (exp, &placeholder_expr);
+	if (exp == 0)
+	  abort ();
+
 	placeholder_list = TREE_CHAIN (placeholder_expr);
 	temp = expand_expr (exp, original_target, tmode, ro_modifier);
 	placeholder_list = old_list;
