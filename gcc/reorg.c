@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1992 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -271,6 +271,23 @@ mark_referenced_resources (x, res, include_called_routine)
 
     case CC0:
       res->cc = 1;
+      return;
+
+    case ASM_INPUT:
+      /* Traditional asm's are always volatile.  */
+      res->volatil = 1;
+      return;
+
+    case ASM_OPERANDS:
+      res->volatil = MEM_VOLATILE_P (x);
+
+      /* For all ASM_OPERANDS, we must traverse the vector of input operands.
+	 We can not just fall through here since then we would be confused
+	 by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
+	 traditional asms unlike their normal usage.  */
+      
+      for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
+	mark_referenced_resources (ASM_OPERANDS_INPUT (x, i), res, 0);
       return;
 
     case CALL:
@@ -719,6 +736,20 @@ emit_delay_sequence (insn, list, length, avail)
 
   NEXT_INSN (XVECEXP (seq, 0, length)) = NEXT_INSN (seq_insn);
 
+  /* If the previous insn is a SEQUENCE, update the NEXT_INSN pointer on the
+     last insn in that SEQUENCE to point to us.  Similarly for the first
+     insn in the following insn if it is a SEQUENCE.  */
+
+  if (PREV_INSN (seq_insn) && GET_CODE (PREV_INSN (seq_insn)) == INSN
+      && GET_CODE (PATTERN (PREV_INSN (seq_insn))) == SEQUENCE)
+    NEXT_INSN (XVECEXP (PATTERN (PREV_INSN (seq_insn)), 0,
+			XVECLEN (PATTERN (PREV_INSN (seq_insn)), 0) - 1))
+      = seq_insn;
+
+  if (NEXT_INSN (seq_insn) && GET_CODE (NEXT_INSN (seq_insn)) == INSN
+      && GET_CODE (PATTERN (NEXT_INSN (seq_insn))) == SEQUENCE)
+    PREV_INSN (XVECEXP (PATTERN (NEXT_INSN (seq_insn)), 0, 0)) = seq_insn;
+    
   /* If there used to be a BARRIER, put it back.  */
   if (had_barrier)
     emit_barrier_after (seq_insn);
@@ -811,7 +842,7 @@ delete_from_delay_slot (insn)
   /* If there are any delay insns, remit them.  Otherwise clear the
      annul flag.  */
   if (delay_list)
-    trial = emit_delay_sequence (trial, delay_list, XVECLEN (seq, 0) - 1, 0);
+    trial = emit_delay_sequence (trial, delay_list, XVECLEN (seq, 0) - 2, 0);
   else
     INSN_ANNULLED_BRANCH_P (trial) = 0;
 
@@ -1377,7 +1408,7 @@ try_merge_delay_insns (insn, thread)
 
 	  if (! annul_p)
 	    {
-	      update_block (trial, trial);
+	      update_block (trial, thread);
 	      delete_insn (trial);
 	      INSN_FROM_TARGET_P (next_to_match) = 0;
 	    }
@@ -1420,7 +1451,7 @@ try_merge_delay_insns (insn, thread)
 	    {
 	      if (! annul_p)
 		{
-		  update_block (dtrial, trial);
+		  update_block (dtrial, thread);
 		  delete_from_delay_slot (dtrial);
 		  INSN_FROM_TARGET_P (next_to_match) = 0;
 		}
@@ -1447,12 +1478,12 @@ try_merge_delay_insns (insn, thread)
 	{
 	  if (GET_MODE (merged_insns) == SImode)
 	    {
-	      update_block (XEXP (merged_insns, 0), trial);
+	      update_block (XEXP (merged_insns, 0), thread);
 	      delete_from_delay_slot (XEXP (merged_insns, 0));
 	    }
 	  else
 	    {
-	      update_block (XEXP (merged_insns, 0), XEXP (merged_insns, 0));
+	      update_block (XEXP (merged_insns, 0), thread);
 	      delete_insn (XEXP (merged_insns, 0));
 	    }
 	}
@@ -1761,7 +1792,7 @@ update_block_from_store (dest, x)
 }
 
 /* Called when INSN is being moved from a location near the target of a jump.
-   If INSN is the first active insn at the start of its basic block, we can
+   If WHERE is the first active insn at the start of its basic block, we can
    just mark the registers set in INSN as live at the start of the basic block
    that starts immediately before INSN.
 
@@ -1783,7 +1814,7 @@ update_block (insn, where)
   if (current_block_number == -1)
     return;
 
-  if (insn == next_active_insn (basic_block_head[current_block_number]))
+  if (where == next_active_insn (basic_block_head[current_block_number]))
     note_stores (PATTERN (insn), update_block_from_store);
   else
     emit_insn_before (gen_rtx (USE, VOIDmode, insn), where);
@@ -2689,7 +2720,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	    {
 	      if (own_thread)
 		{
-		  update_block (trial, trial);
+		  update_block (trial, thread);
 		  delete_insn (trial);
 		}
 	      else
@@ -2741,7 +2772,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 		     starting point of this thread.  */
 		  if (own_thread)
 		    {
-		      update_block (trial, trial);
+		      update_block (trial, thread);
 		      delete_insn (trial);
 		    }
 		  else
@@ -2884,7 +2915,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
 	  if (own_thread)
 	    {
-	      update_block (trial, trial);
+	      update_block (trial, thread);
 	      delete_insn (trial);
 	    }
 	  else
