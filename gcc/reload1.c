@@ -8651,20 +8651,27 @@ reload_combine ()
 
 	  for (link = CALL_INSN_FUNCTION_USAGE (insn); link;
 	       link = XEXP (link, 1))
-	    if (GET_CODE (XEXP (XEXP (link, 0), 0)) == REG)
-	      {
-		unsigned int regno = REGNO (XEXP (XEXP (link, 0), 0));
+	    {
+	      rtx usage_rtx = XEXP (XEXP (link, 0), 0);
+	      if (GET_CODE (usage_rtx) == REG)
+	        {
+		  int i;
+		  unsigned int start_reg = REGNO (usage_rtx);
+		  unsigned int num_regs =
+			HARD_REGNO_NREGS (start_reg, GET_MODE (usage_rtx));
+		  unsigned int end_reg  = start_reg + num_regs - 1;
+		  for (i = start_reg; i <= end_reg; i++)
+		    if (GET_CODE (XEXP (link, 0)) == CLOBBER)
+		      {
+		        reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
+		        reg_state[i].store_ruid = reload_combine_ruid;
+		      }
+		    else
+		      reg_state[i].use_index = -1;
+	         }
+	     }
 
-		if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-		  {
-		    reg_state[regno].use_index = RELOAD_COMBINE_MAX_USES;
-		    reg_state[regno].store_ruid = reload_combine_ruid;
-		  }
-		else
-		  reg_state[regno].use_index = -1;
-	      }
 	}
-
       else if (GET_CODE (insn) == JUMP_INSN
 	       && GET_CODE (PATTERN (insn)) != RETURN)
 	{
