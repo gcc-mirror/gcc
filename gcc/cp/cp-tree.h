@@ -118,6 +118,33 @@ Boston, MA 02111-1307, USA.  */
      hold, the first entry does not have a TREE_VALUE; it is just an
      offset.  */ 
 
+/* Language-specific tree checkers. */
+
+#if defined ENABLE_CHECKING && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+
+#define VAR_OR_FUNCTION_DECL_CHECK(NODE)			\
+({  const tree __t = NODE;					\
+    enum tree_code __c = TREE_CODE(__t);			\
+    if (__c != VAR_DECL && __c != FUNCTION_DECL)		\
+      tree_check_failed (__t, VAR_DECL, __FILE__,		\
+			 __LINE__, __PRETTY_FUNCTION__);	\
+    __t; })
+
+#define RECORD_OR_UNION_TYPE_CHECK(NODE)			\
+({  const tree __t = NODE;					\
+    enum tree_code __c = TREE_CODE(__t);			\
+    if (__c != RECORD_TYPE && __c != UNION_TYPE)		\
+      tree_check_failed (__t, RECORD_TYPE, __FILE__,		\
+			 __LINE__, __PRETTY_FUNCTION__);	\
+    __t; })
+
+#else /* not ENABLE_CHECKING, or not gcc */
+
+#define VAR_OR_FUNCTION_DECL_CHECK(NODE)	NODE
+#define RECORD_OR_UNION_TYPE_CHECK(NODE)	NODE
+
+#endif
+
 /* Language-dependent contents of an identifier.  */
 
 struct lang_identifier
@@ -129,6 +156,9 @@ struct lang_identifier
   tree class_template_info;
   struct lang_id2 *x;
 };
+
+#define LANG_IDENTIFIER_CAST(NODE) \
+	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
 
 struct lang_id2
 {
@@ -173,14 +203,14 @@ typedef struct ptrmem_cst
    _TYPE node, or a NAMESPACE_DECL.)  This macro should be used only
    for namespace-level bindings; on the IDENTIFIER_BINDING list
    BINDING_LEVEL is used instead.  */
-#define BINDING_SCOPE(NODE) (((struct tree_binding*)NODE)->scope.scope)
+#define BINDING_SCOPE(NODE) (((struct tree_binding*)CPLUS_BINDING_CHECK (NODE))->scope.scope)
 
 /* Nonzero if NODE has BINDING_LEVEL, rather than BINDING_SCOPE.  */
 #define BINDING_HAS_LEVEL_P(NODE) TREE_LANG_FLAG_2 ((NODE))
 
 /* This is the declaration bound to the name. Possible values:
    variable, overloaded function, namespace, template, enumerator.  */
-#define BINDING_VALUE(NODE)    (((struct tree_binding*)NODE)->value)
+#define BINDING_VALUE(NODE)    (((struct tree_binding*)CPLUS_BINDING_CHECK (NODE))->value)
 
 /* If name is bound to a type, this is the type (struct, union, enum).  */
 #define BINDING_TYPE(NODE)     TREE_TYPE(NODE)
@@ -205,7 +235,7 @@ struct tree_binding
 };
 
 /* The overloaded FUNCTION_DECL. */
-#define OVL_FUNCTION(NODE)   (((struct tree_overload*)NODE)->function)
+#define OVL_FUNCTION(NODE)   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->function)
 #define OVL_CHAIN(NODE)      TREE_CHAIN(NODE)
 /* Polymorphic access to FUNCTION and CHAIN. */
 #define OVL_CURRENT(NODE)     \
@@ -231,8 +261,8 @@ struct tree_overload
 #define SET_BASELINK_P(NODE) \
   (TREE_LANG_FLAG_1 (NODE) = 1)
 
-#define WRAPPER_PTR(NODE) (((struct tree_wrapper*)(NODE))->u.ptr)
-#define WRAPPER_INT(NODE) (((struct tree_wrapper*)(NODE))->u.i)
+#define WRAPPER_PTR(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->u.ptr)
+#define WRAPPER_INT(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->u.i)
 
 struct tree_wrapper
 {
@@ -243,8 +273,8 @@ struct tree_wrapper
   } u;
 };
 
-#define SRCLOC_FILE(NODE) (((struct tree_srcloc*)NODE)->filename)
-#define SRCLOC_LINE(NODE) (((struct tree_srcloc*)NODE)->linenum)
+#define SRCLOC_FILE(NODE) (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->filename)
+#define SRCLOC_LINE(NODE) (((struct tree_srcloc*)SRCLOC_CHECK (NODE))->linenum)
 struct tree_srcloc
 {
   char common[sizeof (struct tree_common)];
@@ -259,9 +289,9 @@ struct tree_srcloc
 /* Macros for access to language-specific slots in an identifier.  */
 
 #define IDENTIFIER_NAMESPACE_BINDINGS(NODE)	\
-  (((struct lang_identifier *)(NODE))->namespace_bindings)
+  (LANG_IDENTIFIER_CAST (NODE)->namespace_bindings)
 #define IDENTIFIER_TEMPLATE(NODE)	\
-  (((struct lang_identifier *)(NODE))->class_template_info)
+  (LANG_IDENTIFIER_CAST (NODE)->class_template_info)
 
 /* The IDENTIFIER_BINDING is the innermost CPLUS_BINDING for the
     identifier.  It's TREE_CHAIN is the next outermost binding.  Each
@@ -271,7 +301,7 @@ struct tree_srcloc
     and such.)  You can use BINDING_SCOPE or BINDING_LEVEL to
     determine the scope that bound the name.  */
 #define IDENTIFIER_BINDING(NODE) \
-  (((struct lang_identifier*) (NODE))->bindings)
+  (LANG_IDENTIFIER_CAST (NODE)->bindings)
 
 /* The IDENTIFIER_VALUE is the value of the IDENTIFIER_BINDING, or
    NULL_TREE if there is no binding.  */
@@ -286,7 +316,7 @@ struct tree_srcloc
    IDENTIFIER_BINDINGs list, so any time that this is non-NULL so is
    IDENTIFIER_BINDING.  */
 #define IDENTIFIER_CLASS_VALUE(NODE) \
-  (((struct lang_identifier *) (NODE))->class_value)
+  (LANG_IDENTIFIER_CAST (NODE)->class_value)
 
 /* The amount of time used by the file whose special "time identifier"
    is NODE, represented as an INTEGER_CST.  See get_time_identifier.  */
@@ -306,14 +336,15 @@ struct tree_srcloc
 #define SET_IDENTIFIER_TYPE_VALUE(NODE,TYPE) (TREE_TYPE (NODE) = TYPE)
 #define IDENTIFIER_HAS_TYPE_VALUE(NODE) (IDENTIFIER_TYPE_VALUE (NODE) ? 1 : 0)
 
-#define LANG_ID_FIELD(NAME,NODE) \
-  (((struct lang_identifier *)(NODE))->x \
-   ? ((struct lang_identifier *)(NODE))->x->NAME : 0)
-#define SET_LANG_ID(NODE,VALUE,NAME) \
-  (((struct lang_identifier *)(NODE))->x == 0				    \
-   ? ((struct lang_identifier *)(NODE))->x				    \
-      = (struct lang_id2 *)perm_calloc (1, sizeof (struct lang_id2)) : 0,   \
-   ((struct lang_identifier *)(NODE))->x->NAME = (VALUE))
+#define LANG_ID_FIELD(NAME,NODE)			\
+  (LANG_IDENTIFIER_CAST (NODE)->x			\
+   ? LANG_IDENTIFIER_CAST (NODE)->x->NAME : 0)	 
+
+#define SET_LANG_ID(NODE,VALUE,NAME)					  \
+  (LANG_IDENTIFIER_CAST (NODE)->x == 0				  \
+   ? LANG_IDENTIFIER_CAST (NODE)->x					  \
+      = (struct lang_id2 *)perm_calloc (1, sizeof (struct lang_id2)) : 0, \
+   LANG_IDENTIFIER_CAST (NODE)->x->NAME = (VALUE))
 
 #define IDENTIFIER_LABEL_VALUE(NODE)	    LANG_ID_FIELD(label_value, NODE)
 #define SET_IDENTIFIER_LABEL_VALUE(NODE,VALUE)   \
@@ -1726,30 +1757,31 @@ struct lang_decl
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
    that is the common ancestor. */
-#define DECL_NAMESPACE_USING(NODE) DECL_VINDEX(NODE)
+#define DECL_NAMESPACE_USING(NODE) DECL_VINDEX (NAMESPACE_DECL_CHECK (NODE))
 
 /* In a NAMESPACE_DECL, the DECL_INITIAL is used to record all users
    of a namespace, to record the transitive closure of using namespace. */
-#define DECL_NAMESPACE_USERS(NODE) DECL_INITIAL (NODE)
+#define DECL_NAMESPACE_USERS(NODE) DECL_INITIAL (NAMESPACE_DECL_CHECK (NODE))
 
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */
-#define DECL_NAMESPACE_ALIAS(NODE) DECL_ABSTRACT_ORIGIN (NODE)
+#define DECL_NAMESPACE_ALIAS(NODE) \
+	DECL_ABSTRACT_ORIGIN (NAMESPACE_DECL_CHECK (NODE))
 #define ORIGINAL_NAMESPACE(NODE)  \
   (DECL_NAMESPACE_ALIAS (NODE) ? DECL_NAMESPACE_ALIAS (NODE) : (NODE))
 
 /* In a non-local VAR_DECL with static storage duration, this is the
    initialization priority.  If this value is zero, the NODE will be
    initialized at the DEFAULT_INIT_PRIORITY.  */
-#define DECL_INIT_PRIORITY(NODE) (DECL_FIELD_SIZE ((NODE)))
+#define DECL_INIT_PRIORITY(NODE) (DECL_FIELD_SIZE (VAR_DECL_CHECK (NODE)))
 
 /* In a TREE_LIST concatenating using directives, indicate indirekt
    directives  */
-#define TREE_INDIRECT_USING(NODE) ((NODE)->common.lang_flag_0)
+#define TREE_INDIRECT_USING(NODE) (TREE_LIST_CHECK (NODE)->common.lang_flag_0)
 
 /* In a VAR_DECL for a variable declared in a for statement,
    this is the shadowed (local) variable.  */
-#define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(NODE)
+#define DECL_SHADOWED_FOR_VAR(NODE) DECL_RESULT(VAR_DECL_CHECK (NODE))
 
 /* Points back to the decl which caused this lang_decl to be allocated.  */
 #define DECL_MAIN_VARIANT(NODE) (DECL_LANG_SPECIFIC(NODE)->main_decl_variant)
@@ -1758,7 +1790,7 @@ struct lang_decl
    the class definition.  We have saved away the text of the function,
    but have not yet processed it.  */
 #define DECL_PENDING_INLINE_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.pending_inline_p)
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->decl_flags.pending_inline_p)
    
 /* If DECL_PENDING_INLINE_P holds, this is the saved text of the
    function.  */
@@ -1767,7 +1799,8 @@ struct lang_decl
 
 /* For a TYPE_DECL: if this function has many fields, we'll sort them
    and put them into a TREE_VEC. */
-#define DECL_SORTED_FIELDS(NODE) (DECL_LANG_SPECIFIC(NODE)->u.sorted_fields)
+#define DECL_SORTED_FIELDS(NODE) \
+	(DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))->u.sorted_fields)
 
 /* True if on the saved_inlines (see decl2.c) list.  */
 #define DECL_SAVED_INLINE(DECL) \
@@ -1775,16 +1808,17 @@ struct lang_decl
 
 /* For a VAR_DECL or FUNCTION_DECL: template-specific information.  */
 #define DECL_TEMPLATE_INFO(NODE) \
-  (DECL_LANG_SPECIFIC(NODE)->decl_flags.u.template_info)
+  (DECL_LANG_SPECIFIC(VAR_OR_FUNCTION_DECL_CHECK (NODE))->decl_flags.u.template_info)
 
 /* Template information for a RECORD_TYPE or UNION_TYPE.  */
-#define CLASSTYPE_TEMPLATE_INFO(NODE) (TYPE_LANG_SPECIFIC(NODE)->template_info)
+#define CLASSTYPE_TEMPLATE_INFO(NODE) \
+  (TYPE_LANG_SPECIFIC(RECORD_OR_UNION_TYPE_CHECK (NODE))->template_info)
 
 /* Template information for an ENUMERAL_TYPE.  Although an enumeration may
    not be a primary template, it may be declared within the scope of a
    primary template and the enumeration constants may depend on
    non-type template parameters.  */
-#define ENUM_TEMPLATE_INFO(NODE) (TYPE_BINFO (NODE))
+#define ENUM_TEMPLATE_INFO(NODE) (TYPE_BINFO (ENUMERAL_TYPE_CHECK (NODE)))
 
 /* Template information for a template template parameter.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) (TYPE_BINFO (NODE))
@@ -1862,11 +1896,11 @@ struct lang_decl
    entire function.  Usually a COMPOUND_STMT, but this may also be a
    RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
 #define DECL_SAVED_TREE(NODE) \
-  (DECL_LANG_SPECIFIC ((NODE))->saved_tree)
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->saved_tree)
 
 /* In a FUNCTION_DECL, the saved language-specific per-function data.  */
 #define DECL_SAVED_FUNCTION_DATA(NODE) \
-  (DECL_LANG_SPECIFIC ((NODE))->u.saved_language_function)
+  (DECL_LANG_SPECIFIC (FUNCTION_DECL_CHECK (NODE))->u.saved_language_function)
 
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -1876,7 +1910,8 @@ struct lang_decl
 
 /* Nonzero if this AGGR_INIT_EXPR provides for initialization via a
    constructor call, rather than an ordinary function call.  */
-#define AGGR_INIT_VIA_CTOR_P(NODE) TREE_LANG_FLAG_0 (NODE)
+#define AGGR_INIT_VIA_CTOR_P(NODE) \
+  TREE_LANG_FLAG_0 (AGGR_INIT_EXPR_CHECK (NODE))
 
 /* Nonzero if this statement should be considered a full-expression.  */
 #define STMT_IS_FULL_EXPR_P(NODE) TREE_LANG_FLAG_1 ((NODE))
@@ -1909,7 +1944,7 @@ struct lang_decl
 
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */
-#define TREE_NEGATED_INT(NODE) (TREE_LANG_FLAG_0 (NODE))
+#define TREE_NEGATED_INT(NODE) TREE_LANG_FLAG_0 (INTEGER_CST_CHECK (NODE))
 
 #if 0				/* UNUSED */
 /* Nonzero in any kind of _EXPR or _REF node means that it is a call
@@ -1950,11 +1985,11 @@ extern int flag_new_for_scope;
 
 /* This flag is true of a local VAR_DECL if it was declared in a for
    statement, but we are no longer in the scope of the for.  */
-#define DECL_DEAD_FOR_LOCAL(NODE) DECL_LANG_FLAG_7 (NODE)
+#define DECL_DEAD_FOR_LOCAL(NODE) DECL_LANG_FLAG_7 (VAR_DECL_CHECK (NODE))
 
 /* This flag is set on a VAR_DECL that is a DECL_DEAD_FOR_LOCAL
    if we already emitted a warning about using it.  */
-#define DECL_ERROR_REPORTED(NODE) DECL_LANG_FLAG_0 (NODE)
+#define DECL_ERROR_REPORTED(NODE) DECL_LANG_FLAG_0 (VAR_DECL_CHECK (NODE))
 
 /* This _DECL represents a compiler-generated entity.  */
 #define SET_DECL_ARTIFICIAL(NODE) (DECL_ARTIFICIAL (NODE) = 1)
@@ -1964,9 +1999,10 @@ extern int flag_new_for_scope;
 
 /* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
 #define DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_SPECIFIC (NODE) && DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield)
+  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))\
+   && DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield)
 #define SET_DECL_C_BIT_FIELD(NODE) \
-  (DECL_LANG_SPECIFIC (NODE)->decl_flags.bitfield = 1)
+  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->decl_flags.bitfield = 1)
 
 #define INTEGRAL_CODE_P(CODE) \
   (CODE == INTEGER_TYPE || CODE == ENUMERAL_TYPE || CODE == BOOLEAN_TYPE)
@@ -2164,23 +2200,26 @@ extern int flag_new_for_scope;
 /* For a pointer-to-member constant `X::Y' this is the RECORD_TYPE for
    `X'.  */
 #define PTRMEM_CST_CLASS(NODE) \
-  TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (NODE))
+  TYPE_PTRMEM_CLASS_TYPE (TREE_TYPE (PTRMEM_CST_CHECK (NODE)))
 
 /* For a pointer-to-member constant `X::Y' this is the _DECL for 
    `Y'.  */
-#define PTRMEM_CST_MEMBER(NODE) (((ptrmem_cst_t) NODE)->member)
+#define PTRMEM_CST_MEMBER(NODE) (((ptrmem_cst_t)PTRMEM_CST_CHECK (NODE))->member)
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `extern' was
    specified in its declaration.  */
-#define DECL_THIS_EXTERN(NODE) (DECL_LANG_FLAG_2(NODE))
+#define DECL_THIS_EXTERN(NODE) \
+  DECL_LANG_FLAG_2 (VAR_OR_FUNCTION_DECL_CHECK (NODE))
 
 /* Nonzero for VAR_DECL and FUNCTION_DECL node means that `static' was
    specified in its declaration.  */
-#define DECL_THIS_STATIC(NODE) (DECL_LANG_FLAG_6(NODE))
+#define DECL_THIS_STATIC(NODE) \
+  DECL_LANG_FLAG_6 (VAR_OR_FUNCTION_DECL_CHECK (NODE))
 
 /* Nonzero in FUNCTION_DECL means it is really an operator.
    Just used to communicate formatting information to dbxout.c.  */
-#define DECL_OPERATOR(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.operator_attr)
+#define DECL_OPERATOR(NODE) \
+  (DECL_LANG_SPECIFIC(FUNCTION_DECL_CHECK (NODE))->decl_flags.operator_attr)
 
 /* Nonzero if TYPE is an anonymous union or struct type.  We have to use a
    flag for this because "A union for which objects or pointers are
@@ -2419,7 +2458,8 @@ extern int flag_new_for_scope;
 /* Nonzero if this VAR_DECL or FUNCTION_DECL has already been
    instantiated, i.e. its definition has been generated from the
    pattern given in the the template.  */
-#define DECL_TEMPLATE_INSTANTIATED(NODE) DECL_LANG_FLAG_1(NODE)
+#define DECL_TEMPLATE_INSTANTIATED(NODE) \
+  DECL_LANG_FLAG_1 (VAR_OR_FUNCTION_DECL_CHECK (NODE))
 
 /* We know what we're doing with this decl now.  */
 #define DECL_INTERFACE_KNOWN(NODE) DECL_LANG_FLAG_5 (NODE)
@@ -2446,66 +2486,65 @@ extern int flag_new_for_scope;
 #define UPT_PARMS(NODE)         TREE_VALUE(TYPE_VALUES(NODE))
 
 /* An un-parsed default argument looks like an identifier.  */
-#define DEFARG_NODE_CHECK(t)	TREE_CHECK(t, DEFAULT_ARG) 
-#define DEFARG_LENGTH(NODE)	(DEFARG_NODE_CHECK(NODE)->identifier.length)
-#define DEFARG_POINTER(NODE)	(DEFARG_NODE_CHECK(NODE)->identifier.pointer)
+#define DEFARG_LENGTH(NODE)  (DEFAULT_ARG_CHECK(NODE)->identifier.length)
+#define DEFARG_POINTER(NODE) (DEFAULT_ARG_CHECK(NODE)->identifier.pointer)
 
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
-#define IF_COND(NODE)           TREE_OPERAND (NODE, 0)
-#define THEN_CLAUSE(NODE)       TREE_OPERAND (NODE, 1)
-#define ELSE_CLAUSE(NODE)       TREE_OPERAND (NODE, 2)
-#define WHILE_COND(NODE)        TREE_OPERAND (NODE, 0)
-#define WHILE_BODY(NODE)        TREE_OPERAND (NODE, 1)
-#define DO_COND(NODE)           TREE_OPERAND (NODE, 0)
-#define DO_BODY(NODE)           TREE_OPERAND (NODE, 1)
-#define RETURN_EXPR(NODE)       TREE_OPERAND (NODE, 0)
-#define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (NODE, 0)
-#define FOR_INIT_STMT(NODE)     TREE_OPERAND (NODE, 0)
-#define FOR_COND(NODE)          TREE_OPERAND (NODE, 1)
-#define FOR_EXPR(NODE)          TREE_OPERAND (NODE, 2)
-#define FOR_BODY(NODE)          TREE_OPERAND (NODE, 3)
-#define SWITCH_COND(NODE)       TREE_OPERAND (NODE, 0)
-#define SWITCH_BODY(NODE)       TREE_OPERAND (NODE, 1)
-#define CASE_LOW(NODE)          TREE_OPERAND (NODE, 0)
-#define CASE_HIGH(NODE)         TREE_OPERAND (NODE, 1)
-#define GOTO_DESTINATION(NODE)  TREE_OPERAND (NODE, 0)
-#define TRY_STMTS(NODE)         TREE_OPERAND (NODE, 0)
-#define TRY_HANDLERS(NODE)      TREE_OPERAND (NODE, 1)
-#define CLEANUP_P(NODE)         TREE_LANG_FLAG_0 (NODE)
+#define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
+#define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
+#define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
+#define WHILE_COND(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
+#define WHILE_BODY(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
+#define DO_COND(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
+#define DO_BODY(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
+#define RETURN_EXPR(NODE)       TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
+#define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
+#define FOR_INIT_STMT(NODE)     TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
+#define FOR_COND(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
+#define FOR_EXPR(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
+#define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
+#define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
+#define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
+#define CASE_LOW(NODE)          TREE_OPERAND (CASE_LABEL_CHECK (NODE), 0)
+#define CASE_HIGH(NODE)         TREE_OPERAND (CASE_LABEL_CHECK (NODE), 1)
+#define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
+#define TRY_STMTS(NODE)         TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 0)
+#define TRY_HANDLERS(NODE)      TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 1)
+#define CLEANUP_P(NODE)         TREE_LANG_FLAG_0 (TRY_BLOCK_CHECK (NODE))
 /* Nonzero if this try block is a function try block.  */
-#define FN_TRY_BLOCK_P(NODE)    TREE_LANG_FLAG_3 (NODE)
-#define HANDLER_PARMS(NODE)     TREE_OPERAND (NODE, 0)
-#define HANDLER_BODY(NODE)      TREE_OPERAND (NODE, 1)
-#define COMPOUND_BODY(NODE)     TREE_OPERAND (NODE, 0)
-#define ASM_CV_QUAL(NODE)       TREE_OPERAND (NODE, 0)
-#define ASM_STRING(NODE)        TREE_OPERAND (NODE, 1)
-#define ASM_OUTPUTS(NODE)       TREE_OPERAND (NODE, 2)
-#define ASM_INPUTS(NODE)        TREE_OPERAND (NODE, 3)
-#define ASM_CLOBBERS(NODE)      TREE_OPERAND (NODE, 4)
-#define DECL_STMT_DECL(NODE)    TREE_OPERAND (NODE, 0)
-#define STMT_EXPR_STMT(NODE)    TREE_OPERAND (NODE, 0)
-#define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (NODE, 0)
-#define CLEANUP_DECL(NODE)      TREE_OPERAND (NODE, 0)
-#define CLEANUP_EXPR(NODE)      TREE_OPERAND (NODE, 1)
-#define START_CATCH_TYPE(NODE)  TREE_TYPE (NODE)
-#define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (NODE, 0)
+#define FN_TRY_BLOCK_P(NODE)    TREE_LANG_FLAG_3 (TRY_BLOCK_CHECK (NODE))
+#define HANDLER_PARMS(NODE)     TREE_OPERAND (HANDLER_CHECK (NODE), 0)
+#define HANDLER_BODY(NODE)      TREE_OPERAND (HANDLER_CHECK (NODE), 1)
+#define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
+#define ASM_CV_QUAL(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 0)
+#define ASM_STRING(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 1)
+#define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 2)
+#define ASM_INPUTS(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 3)
+#define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_STMT_CHECK (NODE), 4)
+#define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
+#define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
+#define SUBOBJECT_CLEANUP(NODE) TREE_OPERAND (SUBOBJECT_CHECK (NODE), 0)
+#define CLEANUP_DECL(NODE)      TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 0)
+#define CLEANUP_EXPR(NODE)      TREE_OPERAND (CLEANUP_STMT_CHECK (NODE), 1)
+#define START_CATCH_TYPE(NODE)  TREE_TYPE (START_CATCH_STMT_CHECK (NODE))
+#define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (LABEL_STMT_CHECK (NODE), 0)
 
 /* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
 #define SCOPE_BEGIN_P(NODE) \
-  (TREE_LANG_FLAG_0 ((NODE))) 
+  (TREE_LANG_FLAG_0 (SCOPE_STMT_CHECK (NODE))) 
 
 /* Nonzero if this SCOPE_STMT is for the end of a scope.  */
 #define SCOPE_END_P(NODE) \
-  (!SCOPE_BEGIN_P ((NODE)))
+  (!SCOPE_BEGIN_P (SCOPE_STMT_CHECK (NODE)))
 
 /* Nonzero for a SCOPE_STMT if there were no variables in this scope.  */
 #define SCOPE_NULLIFIED_P(NODE) \
-  (TREE_LANG_FLAG_3 ((NODE)))
+  (TREE_LANG_FLAG_3 (SCOPE_STMT_CHECK (NODE)))
 
 /* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
 #define ASM_VOLATILE_P(NODE)			\
-  (ASM_CV_QUAL ((NODE)) != NULL_TREE)
+  (ASM_CV_QUAL (ASM_STMT_CHECK (NODE)) != NULL_TREE)
 
 /* The line-number at which a statement began.  But if
    STMT_LINENO_FOR_FN_P does holds, then this macro gives the
@@ -3050,11 +3089,13 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, OP_FLAG, TYPENAME_FLAG };
   comptypes ((type1), (type2), COMPARE_BASE)
 
 /* These macros are used to access a TEMPLATE_PARM_INDEX.  */
-#define TEMPLATE_PARM_IDX(NODE) (((template_parm_index*) NODE)->index)
-#define TEMPLATE_PARM_LEVEL(NODE) (((template_parm_index*) NODE)->level)
+#define TEMPLATE_PARM_INDEX_CAST(NODE) \
+	((template_parm_index*)TEMPLATE_PARM_INDEX_CHECK (NODE))
+#define TEMPLATE_PARM_IDX(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->index)
+#define TEMPLATE_PARM_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->level)
 #define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
-#define TEMPLATE_PARM_ORIG_LEVEL(NODE) (((template_parm_index*) NODE)->orig_level)
-#define TEMPLATE_PARM_DECL(NODE) (((template_parm_index*) NODE)->decl)
+#define TEMPLATE_PARM_ORIG_LEVEL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->orig_level)
+#define TEMPLATE_PARM_DECL(NODE) (TEMPLATE_PARM_INDEX_CAST (NODE)->decl)
 
 /* These macros are for accessing the fields of TEMPLATE_TYPE_PARM 
    and TEMPLATE_TEMPLATE_PARM nodes.  */
