@@ -1,6 +1,8 @@
 # Under VMS, directory names cannot contain dots.
 version:=$(shell echo $(gcc_version) | sed -e 's/\./_/g')
 
+libsubdir=$(libdir)/gcc-lib
+
 # Rules for linker and compiler wrappers.  These are only useful on
 # a VMS host.
 EXTRA_PROGRAMS=ld.exe decc.exe

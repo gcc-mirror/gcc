@@ -1,5 +1,8 @@
 2002-02-13  Douglas B Rupp  <rupp@gnat.com>
 
+	* config/alpha/vms.h (MD_EXEC_PREFIX, MD_STARTFILE_PREFIX): Define.
+	* config/alpha/x-vms (libsubdir): Define.
+
 	* config/alpha/vms.h (MD_FALLBACK_FRAME_STATE_FOR): Handle
 	register frame procedures. Optimize retrieving context.
 
