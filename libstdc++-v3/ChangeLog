@@ -1,3 +1,8 @@
+2000-10-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* include/bits/std_complex.h: Remove duplicate definition of conj.
+	* include/c/bits/std_cwctype.h: Consistent placement of undefs.
+	
 2000-10-31  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* src/complex.cc (arg, polar): Comment out specializations.

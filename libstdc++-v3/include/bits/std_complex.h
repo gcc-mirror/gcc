@@ -177,9 +177,7 @@ namespace std
     friend class complex<long double>;
 
     // friend float abs<>(const complex<float>&);
-
     friend complex<float> conj<>(const complex<float>&);
-
     friend complex<float> cos<>(const complex<float>&);
     friend complex<float> cosh<>(const complex<float>&);
     friend complex<float> exp<>(const complex<float>&);
@@ -253,7 +251,6 @@ namespace std
     friend class complex<long double>;
 
     // friend double abs<>(const complex<double>&);
-
     friend complex<double> conj<>(const complex<double>&);
     friend complex<double> cos<>(const complex<double>&);
     friend complex<double> cosh<>(const complex<double>&);
@@ -329,7 +326,6 @@ namespace std
     friend class complex<double>;
 
     // friend long double abs<>(const complex<long double>&);
-
     friend complex<long double> conj<>(const complex<long double>&);
     friend complex<long double> cos<>(const complex<long double>&);
     friend complex<long double> cosh<>(const complex<long double>&);
@@ -683,12 +679,6 @@ namespace std
     complex<_Tp>::complex(const complex<_Up>& __z)
     : _M_real(__z.real()), _M_imag(__z.imag()) { }
 
-  // 26.2.7/6
-  template<typename _Tp>
-    inline complex<_Tp>
-    conj(const complex<_Tp>& __z)
-    { return complex<_Tp>(__z.real(), -__z.imag()); }
-
   // 26.2.7/4
   template<typename _Tp>
     inline _Tp
@@ -949,6 +939,7 @@ namespace std
     polar(const _Tp& __rho, const _Tp& __theta)
     { return complex<_Tp>(__rho * cos(__theta), __rho * sin(__theta)); }
 
+  // 26.2.7/6
   template<typename _Tp>
     inline complex<_Tp>
     conj(const complex<_Tp>& __z)
