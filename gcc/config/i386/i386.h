@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel X86
    (386, 486, Pentium).
-   Copyright (C) 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -17,8 +17,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
-
+Boston, MA 02111-1307, USA. */
 
 /* The purpose of this file is to define the characteristics of the i386,
    independent of assembler syntax or operating system.
@@ -53,6 +52,20 @@ Boston, MA 02111-1307, USA.  */
 #define HALF_PIC_FINISH(STREAM)
 #endif
 
+/* Define the specific costs for a given cpu */
+
+struct processor_costs {
+  int add;			/* cost of an add instruction */
+  int lea;			/* cost of a lea instruction */
+  int shift_var;		/* variable shift costs */
+  int shift_const;		/* constant shift costs */
+  int mult_init;		/* cost of starting a multiply */
+  int mult_bit;			/* cost of multiply per each bit set */
+  int divide;			/* cost of a divide/mod */
+};
+
+extern struct processor_costs *ix86_cost;
+
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
@@ -74,12 +87,12 @@ extern int target_flags;
 #define MASK_IEEE_FP		000000000100	/* IEEE fp comparisons */
 #define MASK_FLOAT_RETURNS	000000000200	/* Return float in st(0) */
 #define MASK_NO_FANCY_MATH_387	000000000400	/* Disable sin, cos, sqrt */
-
 						/* Temporary codegen switches */
 #define MASK_DEBUG_ADDR		000001000000	/* Debug GO_IF_LEGITIMATE_ADDRESS */
 #define MASK_NO_WIDE_MULTIPLY	000002000000	/* Disable 32x32->64 multiplies */
 #define MASK_NO_MOVE		000004000000	/* Don't generate mem->mem */
-#define MASK_DEBUG_ARG		000010000000	/* Debug function_arg */   
+#define MASK_NO_PSEUDO		000010000000	/* Move op's args -> pseudos */
+#define MASK_DEBUG_ARG		000020000000	/* Debug function_arg */   
 
 /* Use the floating point instructions */
 #define TARGET_80387 (target_flags & MASK_80387)
@@ -127,6 +140,8 @@ extern int target_flags;
 
 /* Hack macros for tuning code generation */
 #define TARGET_MOVE	((target_flags & MASK_NO_MOVE) == 0)	/* Don't generate memory->memory */
+#define TARGET_PSEUDO	((target_flags & MASK_NO_PSEUDO) == 0)	/* Move op's args into pseudos */
+
 #define TARGET_386 (ix86_cpu == PROCESSOR_I386)
 #define TARGET_486 (ix86_cpu == PROCESSOR_I486)
 #define TARGET_PENTIUM (ix86_cpu == PROCESSOR_PENTIUM)
@@ -174,7 +189,9 @@ extern int target_flags;
   SUBTARGET_SWITCHES							\
   { "", TARGET_DEFAULT}}
 
-/* Processor type.  */
+/* Which processor to schedule for. The cpu attribute defines a list that
+   mirrors this list, so changes to i386.md must be made at the same time.  */
+
 enum processor_type
  {PROCESSOR_I386,			/* 80386 */
   PROCESSOR_I486,			/* 80486DX, 80486SX, 80486DX[24] */
@@ -246,6 +263,9 @@ extern enum processor_type ix86_cpu;
 /* These are meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES
 #define SUBTARGET_OPTIONS
+
+/* Define this to change the optimizations performed by default.  */
+#define OPTIMIZATION_OPTIONS(LEVEL) optimization_options(LEVEL)
 
 /* Specs for the compiler proper */
 
@@ -328,6 +348,9 @@ extern enum processor_type ix86_cpu;
    aligned on 64 bit boundaries. */
 #define BIGGEST_ALIGNMENT (TARGET_ALIGN_DOUBLE ? 64 : 32)
 
+/* align DFmode constants and nonaggregates */
+#define ALIGN_DFmode (!TARGET_386)
+
 /* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
@@ -355,6 +378,7 @@ extern enum processor_type ix86_cpu;
    for details. */
 
 #define STACK_REGS
+#define IS_STACK_MODE(mode) (mode==DFmode || mode==SFmode || mode==XFmode)
 
 /* Number of actual hardware registers.
    The hardware registers are assigned numbers for the compiler
@@ -486,15 +510,6 @@ extern enum processor_type ix86_cpu;
    for any hard reg, then this must be 0 for correct output.  */
 
 #define MODES_TIEABLE_P(MODE1, MODE2) ((MODE1) == (MODE2))
-
-/* A C expression returning the cost of moving data from a register of class
-   CLASS1 to one of CLASS2.
-
-   On the i386, copying between floating-point and fixed-point
-   registers is expensive.  */
-
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)			\
-  ((FLOAT_CLASS_P (CLASS1) == FLOAT_CLASS_P (CLASS2)) ? 2 : 10)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -628,7 +643,7 @@ enum reg_class
      0x3,			/* AD_REGS */			\
      0xf,			/* Q_REGS */			\
     0x10,   0x20,		/* SIREG, DIREG */		\
- 0x07f,				/* INDEX_REGS */		\
+ 0x7f,				/* INDEX_REGS */		\
  0x100ff,			/* GENERAL_REGS */		\
   0x0100, 0x0200,		/* FP_TOP_REG, FP_SECOND_REG */	\
   0xff00,			/* FLOAT_REGS */		\
@@ -719,6 +734,7 @@ enum reg_class
    (C) == 'L' ? (VALUE) == 0xffff :		\
    (C) == 'M' ? (VALUE) >= 0 && (VALUE) <= 3 :	\
    (C) == 'N' ? (VALUE) >= 0 && (VALUE) <= 255 :\
+   (C) == 'O' ? (VALUE) >= 0 && (VALUE) <= 32 :	\
    0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1563,6 +1579,8 @@ do {						\
     goto WIN;								\
 }
 
+#define REWRITE_ADDRESS(x) rewrite_address(x)
+
 /* Nonzero if the constant value X is a legitimate general operand
    when generating PIC code.  It is given that flag_pic is on and 
    that X satisfies CONSTANT_P or is a CONST_DOUBLE.  */
@@ -1597,6 +1615,15 @@ do									\
       {									\
 	rtx rtl = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'		\
 		   ? TREE_CST_RTL (DECL) : DECL_RTL (DECL));		\
+									\
+	if (TARGET_DEBUG_ADDR						\
+	    && TREE_CODE_CLASS (TREE_CODE (DECL)) == 'd')		\
+	  {								\
+	    fprintf (stderr, "Encode %s, public = %s\n",		\
+		     IDENTIFIER_POINTER (DECL_NAME (DECL)),		\
+		     TREE_PUBLIC (DECL));				\
+	  }								\
+									\
 	SYMBOL_REF_FLAG (XEXP (rtl, 0))					\
 	  = (TREE_CODE_CLASS (TREE_CODE (DECL)) != 'd'			\
 	     || ! TREE_PUBLIC (DECL));					\
@@ -1687,17 +1714,18 @@ while (0)
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
 
-/* MOVE_RATIO is the number of move instructions that is better than a
-   block move.  Make this large on i386, since the block move is very
-   inefficient with small blocks, and the hard register needs of the
-   block move require much reload work. */
+/* The number of scalar move insns which should be generated instead
+   of a string move insn or a library call.  Increasing the value
+   will always make code faster, but eventually incurs high cost in
+   increased code size.
+
+   If you don't define this, a reasonable default is used.
+
+   Make this large on i386, since the block move is very inefficient with small
+   blocks, and the hard register needs of the block move require much reload
+   work. */
+
 #define MOVE_RATIO 5
-
-/* Define this if zero-extension is slow (more than one real instruction).  */
-/* #define SLOW_ZERO_EXTEND */
-
-/* Nonzero if access to memory by bytes is slow and undesirable.  */
-#define SLOW_BYTE_ACCESS 0
 
 /* Define if shifts truncate the shift count
    which implies one can omit a sign-extension or zero-extension
@@ -1729,45 +1757,19 @@ while (0)
    is a byte address (for indexing purposes)
    so give the MEM rtx a byte's mode.  */
 #define FUNCTION_MODE QImode
-
-/* Define this if addresses of constant functions
-   shouldn't be put through pseudo regs where they can be cse'd.
-   Desirable on the 386 because a CALL with a constant address is
-   not much slower than one with a register address.  On a 486,
-   it is faster to call with a constant address than indirect.  */
-#define NO_FUNCTION_CSE
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE. */
-
-#define RTX_COSTS(X,CODE,OUTER_CODE)				\
-  case MULT:							\
-    return COSTS_N_INSNS (20);					\
-  case DIV:							\
-  case UDIV:							\
-  case MOD:							\
-  case UMOD:							\
-    return COSTS_N_INSNS (20);					\
-  case ASHIFTRT:						\
-  case LSHIFTRT:						\
-  case ASHIFT:							\
-    return (4 + rtx_cost (XEXP (X, 0), OUTER_CODE)		\
-	    + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
-  case PLUS:							\
-    if (GET_CODE (XEXP (X, 0)) == MULT				\
-	&& GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT	\
-	&& (INTVAL (XEXP (XEXP (X, 0), 1)) == 2			\
-	    || INTVAL (XEXP (XEXP (X, 0), 1)) == 4		\
-	    || INTVAL (XEXP (XEXP (X, 0), 1)) == 8))		\
-      return (2 + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
-	      + rtx_cost (XEXP (X, 1), OUTER_CODE));		\
-    break;
-
-
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
+
+/* A part of a C `switch' statement that describes the relative costs
+   of constant RTL expressions.  It must contain `case' labels for
+   expression codes `const_int', `const', `symbol_ref', `label_ref'
+   and `const_double'.  Each case must ultimately reach a `return'
+   statement to return the relative cost of the use of that kind of
+   constant value in an expression.  The cost may depend on the
+   precise value of the constant, which is available for examination
+   in X, and the rtx code of the expression in which it is contained,
+   found in OUTER_CODE.
+  
+   CODE is the expression code--redundant, since it can be obtained
+   with `GET_CODE (X)'.  */
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
@@ -1775,24 +1777,134 @@ while (0)
   case LABEL_REF:						\
   case SYMBOL_REF:						\
     return flag_pic && SYMBOLIC_CONST (RTX) ? 2 : 0;		\
+								\
   case CONST_DOUBLE:						\
     {								\
       int code;							\
       if (GET_MODE (RTX) == VOIDmode)				\
 	return 2;						\
+								\
       code = standard_80387_constant_p (RTX);			\
       return code == 1 ? 0 :					\
 	     code == 2 ? 1 :					\
 			 2;					\
     }
 
-/* Compute the cost of an address.  This is meant to approximate the size
-   and/or execution delay of an insn using that address.  If the cost is
-   approximated by the RTL complexity, including CONST_COSTS above, as
-   is usually the case for CISC machines, this macro should not be defined.
-   For aggressively RISCy machines, only one insn format is allowed, so
-   this macro should be a constant.  The value of this macro only matters
-   for valid addresses.
+/* Like `CONST_COSTS' but applies to nonconstant RTL expressions.
+   This can be used, for example, to indicate how costly a multiply
+   instruction is.  In writing this macro, you can use the construct
+   `COSTS_N_INSNS (N)' to specify a cost equal to N fast
+   instructions.  OUTER_CODE is the code of the expression in which X
+   is contained.
+
+   This macro is optional; do not define it if the default cost
+   assumptions are adequate for the target machine.  */
+
+#define RTX_COSTS(X,CODE,OUTER_CODE)					\
+  case ASHIFT:								\
+    if (GET_CODE (XEXP (X, 1)) == CONST_INT				\
+	&& GET_MODE (XEXP (X, 0)) == SImode)				\
+      {									\
+	HOST_WIDE_INT value = INTVAL (XEXP (X, 1));			\
+									\
+	if (value == 1)							\
+	  return COSTS_N_INSNS (ix86_cost->add);				\
+									\
+	if (value == 2 || value == 3)					\
+	  return COSTS_N_INSNS (ix86_cost->lea);				\
+      }									\
+    /* fall through */							\
+		  							\
+  case ROTATE:								\
+  case ASHIFTRT:							\
+  case LSHIFTRT:							\
+  case ROTATERT:							\
+    return COSTS_N_INSNS ((GET_CODE (XEXP (X, 1)) == CONST_INT)		\
+				? ix86_cost->shift_const			\
+				: ix86_cost->shift_var);			\
+									\
+  case MULT:								\
+    if (GET_CODE (XEXP (X, 1)) == CONST_INT)				\
+      {									\
+	unsigned HOST_WIDE_INT value = INTVAL (XEXP (X, 1));		\
+	int nbits = 0;							\
+									\
+	while (value != 0)						\
+	  {								\
+	    nbits++;							\
+	    value >>= 1;						\
+	  } 								\
+									\
+	return COSTS_N_INSNS (ix86_cost->mult_init			\
+			      + nbits * ix86_cost->mult_bit);		\
+      }									\
+									\
+    else			/* This is arbitrary */			\
+      return COSTS_N_INSNS (ix86_cost->mult_init				\
+			    + 7 * ix86_cost->mult_bit);			\
+									\
+  case DIV:								\
+  case UDIV:								\
+  case MOD:								\
+  case UMOD:								\
+    return COSTS_N_INSNS (ix86_cost->divide);				\
+									\
+  case PLUS:								\
+    if (GET_CODE (XEXP (X, 0)) == REG					\
+	&& GET_MODE (XEXP (X, 0)) == SImode				\
+	&& GET_CODE (XEXP (X, 1)) == PLUS)				\
+      return COSTS_N_INSNS (ix86_cost->lea);				\
+									\
+    /* fall through */							\
+  case AND:								\
+  case IOR:								\
+  case XOR:								\
+  case MINUS:								\
+  case NEG:								\
+  case NOT:								\
+    return COSTS_N_INSNS (ix86_cost->add);
+
+
+/* An expression giving the cost of an addressing mode that contains
+   ADDRESS.  If not defined, the cost is computed from the ADDRESS
+   expression and the `CONST_COSTS' values.
+
+   For most CISC machines, the default cost is a good approximation
+   of the true cost of the addressing mode.  However, on RISC
+   machines, all instructions normally have the same length and
+   execution time.  Hence all addresses will have equal costs.
+
+   In cases where more than one form of an address is known, the form
+   with the lowest cost will be used.  If multiple forms have the
+   same, lowest, cost, the one that is the most complex will be used.
+
+   For example, suppose an address that is equal to the sum of a
+   register and a constant is used twice in the same basic block.
+   When this macro is not defined, the address will be computed in a
+   register and memory references will be indirect through that
+   register.  On machines where the cost of the addressing mode
+   containing the sum is no higher than that of a simple indirect
+   reference, this will produce an additional instruction and
+   possibly require an additional register.  Proper specification of
+   this macro eliminates this overhead for such machines.
+
+   Similar use of this macro is made in strength reduction of loops.
+
+   ADDRESS need not be valid as an address.  In such a case, the cost
+   is not relevant and can be any value; invalid addresses need not be
+   assigned a different cost.
+
+   On machines where an address involving more than one register is as
+   cheap as an address computation involving only one register,
+   defining `ADDRESS_COST' to reflect this can cause two registers to
+   be live over a region of code where only one would have been if
+   `ADDRESS_COST' were not defined in that manner.  This effect should
+   be considered in the definition of this macro.  Equivalent costs
+   should probably only be given to addresses with different numbers
+   of registers on machines with lots of registers.
+
+   This macro will normally either not be defined or be defined as a
+   constant.
 
    For i386, it is better to use a complex address than let gcc copy
    the address into a reg and make a new pseudo.  But not if the address
@@ -1805,6 +1917,193 @@ while (0)
 	&& REG_P (XEXP (RTX, 0)))) ? 0				\
    : REG_P (RTX) ? 1						\
    : 2)
+
+/* A C expression for the cost of moving data of mode M between a
+   register and memory.  A value of 2 is the default; this cost is
+   relative to those in `REGISTER_MOVE_COST'.
+
+   If moving between registers and memory is more expensive than
+   between two registers, you should define this macro to express the
+   relative cost.
+
+   On the i386, copying between floating-point and fixed-point
+   registers is expensive.  */
+
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)				\
+  (((FLOAT_CLASS_P (CLASS1) && ! FLOAT_CLASS_P (CLASS2))		\
+    || (! FLOAT_CLASS_P (CLASS1) && FLOAT_CLASS_P (CLASS2))) ? 10	\
+   : 2)
+
+
+/* A C expression for the cost of moving data of mode M between a
+   register and memory.  A value of 2 is the default; this cost is
+   relative to those in `REGISTER_MOVE_COST'.
+
+   If moving between registers and memory is more expensive than
+   between two registers, you should define this macro to express the
+   relative cost.  */
+
+/* #define MEMORY_MOVE_COST(M) 2  */
+
+/* A C expression for the cost of a branch instruction.  A value of 1
+   is the default; other values are interpreted relative to that.  */
+
+/* #define BRANCH_COST 1 */
+
+/* Define this macro as a C expression which is nonzero if accessing
+   less than a word of memory (i.e. a `char' or a `short') is no
+   faster than accessing a word of memory, i.e., if such access
+   require more than one instruction or if there is no difference in
+   cost between byte and (aligned) word loads.
+
+   When this macro is not defined, the compiler will access a field by
+   finding the smallest containing object; when it is defined, a
+   fullword load will be used if alignment permits.  Unless bytes
+   accesses are faster than word accesses, using word accesses is
+   preferable since it may eliminate subsequent memory access if
+   subsequent accesses occur to other fields in the same word of the
+   structure, but to different bytes.  */
+
+#define SLOW_BYTE_ACCESS 0
+
+/* Nonzero if access to memory by shorts is slow and undesirable.  */
+#define SLOW_SHORT_ACCESS 0
+
+/* Define this macro if zero-extension (of a `char' or `short' to an
+   `int') can be done faster if the destination is a register that is
+   known to be zero.
+
+   If you define this macro, you must have instruction patterns that
+   recognize RTL structures like this:
+
+          (set (strict_low_part (subreg:QI (reg:SI ...) 0)) ...)
+
+   and likewise for `HImode'.  */
+
+/* #define SLOW_ZERO_EXTEND */
+
+/* Define this macro to be the value 1 if unaligned accesses have a
+   cost many times greater than aligned accesses, for example if they
+   are emulated in a trap handler.
+
+   When this macro is non-zero, the compiler will act as if
+   `STRICT_ALIGNMENT' were non-zero when generating code for block
+   moves.  This can cause significantly more instructions to be
+   produced.  Therefore, do not set this macro non-zero if unaligned
+   accesses only add a cycle or two to the time for a memory access.
+
+   If the value of this macro is always zero, it need not be defined.  */
+
+/* #define SLOW_UNALIGNED_ACCESS 0 */
+
+/* Define this macro to inhibit strength reduction of memory
+   addresses.  (On some machines, such strength reduction seems to do
+   harm rather than good.)  */
+
+/* #define DONT_REDUCE_ADDR */
+
+/* Define this macro if it is as good or better to call a constant
+   function address than to call an address kept in a register.
+
+   Desirable on the 386 because a CALL with a constant address is
+   faster than one with a register address.  */
+
+#define NO_FUNCTION_CSE
+
+/* Define this macro if it is as good or better for a function to call
+   itself with an explicit address than to call an address kept in a
+   register.  */
+
+#define NO_RECURSIVE_FUNCTION_CSE
+
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  This can be used for example to specify to
+   the scheduler that an output- or anti-dependence does not incur
+   the same cost as a data-dependence.  */
+
+#define ADJUST_COST(insn,link,dep_insn,cost)				\
+  {									\
+    rtx next_inst;							\
+    if (GET_CODE (dep_insn) == CALL_INSN)				\
+      (cost) = 0;							\
+   									\
+    else if (GET_CODE (dep_insn) == INSN				\
+	&& GET_CODE (PATTERN (dep_insn)) == SET				\
+	&& GET_CODE (SET_DEST (PATTERN (dep_insn))) == REG		\
+	&& GET_CODE (insn) == INSN					\
+	&& GET_CODE (PATTERN (insn)) == SET				\
+	&& !reg_overlap_mentioned_p (SET_DEST (PATTERN (dep_insn)),	\
+				     SET_SRC (PATTERN (insn))))		\
+      {									\
+	(cost) = 0;							\
+      }									\
+									\
+    else if (GET_CODE (insn) == JUMP_INSN)				\
+      {									\
+        (cost) = 0;							\
+      }									\
+									\
+    if (TARGET_PENTIUM)							\
+      {									\
+        if (cost !=0 && is_fp_insn (insn) && is_fp_insn (dep_insn)	\
+            && !is_fp_dest (dep_insn))					\
+          {								\
+            (cost) = 0;							\
+          }								\
+									\
+        if (agi_dependent (insn, dep_insn))				\
+          {								\
+            (cost) = 3;							\
+          }								\
+        else if (GET_CODE (insn) == INSN				\
+                 && GET_CODE (PATTERN (insn)) == SET			\
+                 && SET_DEST (PATTERN (insn)) == cc0_rtx		\
+                 && (next_inst = next_nonnote_insn (insn))		\
+                 && GET_CODE (next_inst) == JUMP_INSN)			\
+          { /* compare probably paired with jump */			\
+            (cost) = 0;							\
+          }								\
+      }									\
+    else								\
+      if (!is_fp_dest (dep_insn))					\
+	{								\
+	  if(!agi_dependent (insn, dep_insn))				\
+	    (cost) = 0;							\
+	  else if (TARGET_486)						\
+	    (cost) = 2;							\
+	}								\
+      else								\
+	if (is_fp_store (insn) && is_fp_insn (dep_insn)			\
+	    && NEXT_INSN (insn) && NEXT_INSN (NEXT_INSN (insn))		\
+	    && NEXT_INSN (NEXT_INSN (NEXT_INSN (insn)))			\
+	    && (GET_CODE (NEXT_INSN (insn)) == INSN)			\
+	    && (GET_CODE (NEXT_INSN (NEXT_INSN (insn))) == JUMP_INSN)	\
+	    && (GET_CODE (NEXT_INSN (NEXT_INSN (NEXT_INSN (insn)))) == NOTE) \
+	    && (NOTE_LINE_NUMBER (NEXT_INSN (NEXT_INSN (NEXT_INSN (insn)))) \
+		== NOTE_INSN_LOOP_END))					\
+	  {								\
+	    (cost) = 3;							\
+	  }								\
+  }
+
+
+#define ADJUST_BLOCKAGE(last_insn,insn,blockage)			\
+{									\
+  if (is_fp_store (last_insn) && is_fp_insn (insn)			\
+      && NEXT_INSN (last_insn) && NEXT_INSN (NEXT_INSN (last_insn))	\
+      && NEXT_INSN (NEXT_INSN (NEXT_INSN (last_insn)))			\
+      && (GET_CODE (NEXT_INSN (last_insn)) == INSN)			\
+      && (GET_CODE (NEXT_INSN (NEXT_INSN (last_insn))) == JUMP_INSN)	\
+      && (GET_CODE (NEXT_INSN (NEXT_INSN (NEXT_INSN (last_insn)))) == NOTE) \
+      && (NOTE_LINE_NUMBER (NEXT_INSN (NEXT_INSN (NEXT_INSN (last_insn)))) \
+	  == NOTE_INSN_LOOP_END))					\
+    {									\
+      (blockage) = 3;							\
+    }									\
+}
+
 
 /* Add any extra modes needed to represent the condition code.
 
@@ -1836,6 +2135,10 @@ extern struct rtx_def *(*i386_compare_gen)(), *(*i386_compare_gen_eq)();
 
 /* Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').  */
+
+/* Set if the cc value is was actually from the 80387 and
+   we are testing eax directly (i.e. no sahf) */
+#define CC_TEST_AX 020000
 
 /* Set if the cc value is actually in the 80387, so a floating point
    conditional branch must be output.  */
@@ -2175,9 +2478,24 @@ extern char *qi_high_reg_name[];
 #define RET return ""
 #define AT_SP(mode) (gen_rtx (MEM, (mode), stack_pointer_rtx))
 
+/* Helper macros to expand a binary/unary operator if needed */
+#define IX86_EXPAND_BINARY_OPERATOR(OP, MODE, OPERANDS)			\
+do {									\
+  if (!ix86_expand_binary_operator (OP, MODE, OPERANDS))		\
+    FAIL;								\
+} while (0)
+
+#define IX86_EXPAND_UNARY_OPERATOR(OP, MODE, OPERANDS)			\
+do {									\
+  if (!ix86_expand_unary_operator (OP, MODE, OPERANDS,))		\
+    FAIL;								\
+} while (0)
+
+
 /* Functions in i386.c */
 extern void override_options ();
 extern void order_regs_for_local_alloc ();
+extern char *output_strlen_unroll ();
 extern int i386_valid_decl_attribute_p ();
 extern int i386_valid_type_attribute_p ();
 extern int i386_return_pops_args ();
@@ -2199,6 +2517,10 @@ extern int symbolic_operand ();
 extern int call_insn_operand ();
 extern int expander_call_insn_operand ();
 extern int symbolic_reference_mentioned_p ();
+extern int ix86_expand_binary_operator ();
+extern int ix86_binary_operator_ok ();
+extern int ix86_expand_unary_operator ();
+extern int ix86_unary_operator_ok ();
 extern void emit_pic_move ();
 extern void function_prologue ();
 extern int simple_386_epilogue ();
@@ -2221,6 +2543,22 @@ extern void save_386_machine_status ();
 extern void restore_386_machine_status ();
 extern void clear_386_stack_locals ();
 extern struct rtx_def *assign_386_stack_local ();
+extern int is_mul ();
+extern int is_div ();
+extern int last_to_set_cc ();
+extern int doesnt_set_condition_code ();
+extern int sets_condition_code ();
+extern int str_immediate_operand ();
+extern int is_fp_insn ();
+extern int is_fp_dest ();
+extern int is_fp_store ();
+extern int agi_dependent ();
+extern int reg_mentioned_in_mem ();
+
+#ifdef NOTYET
+extern struct rtx_def *copy_all_rtx ();
+extern void rewrite_address ();
+#endif
 
 /* Variables in i386.c */
 extern char *ix86_cpu_string;			/* for -mcpu=<xxx> */
@@ -2242,11 +2580,12 @@ extern struct rtx_def *i386_compare_op0;	/* operand 0 for comparisons */
 extern struct rtx_def *i386_compare_op1;	/* operand 1 for comparisons */
 
 /* External variables used */
-extern int optimize;			/* optimization level */
-extern int obey_regdecls;		/* TRUE if stupid register allocation */
+extern int optimize;				/* optimization level */
+extern int obey_regdecls;			/* TRUE if stupid register allocation */
 
 /* External functions used */
 extern struct rtx_def *force_operand ();
+
 
 /*
 Local variables:
