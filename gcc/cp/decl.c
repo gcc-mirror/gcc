@@ -7213,10 +7213,8 @@ grok_reference_init (tree decl, tree type, tree init)
 
   if (TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
-    {
-      /* Note: default conversion is only called in very special cases.  */
-      init = default_conversion (init);
-    }
+    /* Note: default conversion is only called in very special cases.  */
+    init = decay_conversion (init);
 
   /* Convert INIT to the reference type TYPE.  This may involve the
      creation of a temporary, whose lifetime must be the same as that
@@ -8356,7 +8354,7 @@ get_atexit_node (void)
   atexit_fndecl = build_library_fn_ptr (name, fn_type);
   mark_used (atexit_fndecl);
   pop_lang_context ();
-  atexit_node = default_conversion (atexit_fndecl);
+  atexit_node = decay_conversion (atexit_fndecl);
 
   return atexit_node;
 }
@@ -13180,7 +13178,7 @@ build_enumerator (tree name, tree value, tree enumtype)
 
 	  if (TREE_CODE (value) == INTEGER_CST)
 	    {
-	      value = default_conversion (value);
+	      value = perform_integral_promotions (value);
 	      constant_expression_warning (value);
 	    }
 	  else

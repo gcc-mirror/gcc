@@ -326,7 +326,7 @@ build_addr_func (tree function)
       function = build_address (function);
     }
   else
-    function = default_conversion (function);
+    function = decay_conversion (function);
 
   return function;
 }
@@ -4339,20 +4339,29 @@ call_builtin_trap (void)
 }
 
 /* ARG is being passed to a varargs function.  Perform any conversions
-   required.  Array/function to pointer decay must have already happened.
-   Return the converted value.  */
+   required.  Return the converted value.  */
 
 tree
 convert_arg_to_ellipsis (tree arg)
 {
+  /* [expr.call]
+
+     The lvalue-to-rvalue, array-to-pointer, and function-to-pointer
+     standard conversions are performed.  */
+  arg = decay_conversion (arg);
+  /* [expr.call]
+
+     If the argument has integral or enumeration type that is subject
+     to the integral promotions (_conv.prom_), or a floating point
+     type that is subject to the floating point promotion
+     (_conv.fpprom_), the value of the argument is converted to the
+     promoted type before the call.  */
   if (TREE_CODE (TREE_TYPE (arg)) == REAL_TYPE
       && (TYPE_PRECISION (TREE_TYPE (arg))
 	  < TYPE_PRECISION (double_type_node)))
-    /* Convert `float' to `double'.  */
     arg = cp_convert (double_type_node, arg);
-  else
-    /* Convert `short' and `char' to full-size `int'.  */
-    arg = default_conversion (arg);
+  else if (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (arg)))
+    arg = perform_integral_promotions (arg);
 
   arg = require_complete_type (arg);
   
@@ -4487,7 +4496,7 @@ convert_for_arg_passing (tree type, tree val)
   else if (PROMOTE_PROTOTYPES
 	   && INTEGRAL_TYPE_P (type)
 	   && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
-    val = default_conversion (val);
+    val = perform_integral_promotions (val);
   return val;
 }
 

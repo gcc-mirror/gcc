@@ -2656,7 +2656,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
   ptype = build_pointer_type (type);
   size = size_in_bytes (type);
   if (TREE_CODE (TREE_TYPE (base)) == ARRAY_TYPE)
-    base = cp_convert (ptype, default_conversion (base));
+    base = cp_convert (ptype, decay_conversion (base));
 
   /* The code we are generating looks like:
 
@@ -2739,7 +2739,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 	 checking.  */ 
       if (init)
 	{
-	  base2 = default_conversion (init);
+	  base2 = decay_conversion (init);
 	  itype = TREE_TYPE (base2);
 	  base2 = get_temp_regvar (itype, base2);
 	  itype = TREE_TYPE (itype);

@@ -1030,7 +1030,7 @@ build_x_arrow (tree datum)
 	last_rval = convert_from_reference (last_rval);
     }
   else
-    last_rval = default_conversion (rval);
+    last_rval = decay_conversion (rval);
 
   if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
     return build_indirect_ref (last_rval, NULL);
