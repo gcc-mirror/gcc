@@ -1,0 +1,14 @@
+# configuration file for a bare sparc cpu, aout format files
+
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIB1ASMSRC = sparc/lb1spc.asm
+LIB1ASMFUNCS = _mulsi3 _divsi3 _modsi3
+
+# MULTILIB_OPTIONS should have msparclite too, but we'd have to make
+# gas build...
+MULTILIB_OPTIONS=msoft-float mv8
+MULTILIB_DIRNAMES=soft v8
+MULTILIB_MATCHES=msoft-float=mno-fpu
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
