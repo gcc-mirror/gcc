@@ -1,3 +1,8 @@
+2004-09-03  James E Wilson  <wilson@specifixinc.com>
+
+	* tree-ssa-alias.c (may_be_aliased): Move TREE_STATIC check after
+	DECL_EXTERNAL check.
+
 2004-09-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* final.c (output_in_slot): New global variable.

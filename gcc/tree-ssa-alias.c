@@ -2467,14 +2467,16 @@ may_be_aliased (tree var)
   if (TREE_ADDRESSABLE (var))
     return true;
 
-  /* Automatic variables can't have their addresses escape any other way.  */
-  if (!TREE_STATIC (var))
-    return false;
-
   /* Globally visible variables can have their addresses taken by other
      translation units.  */
   if (DECL_EXTERNAL (var) || TREE_PUBLIC (var))
     return true;
+
+  /* Automatic variables can't have their addresses escape any other way.
+     This must be after the check for global variables, as extern declarations
+     do not have TREE_STATIC set.  */
+  if (!TREE_STATIC (var))
+    return false;
 
   /* If we're in unit-at-a-time mode, then we must have seen all occurrences
      of address-of operators, and so we can trust TREE_ADDRESSABLE.  Otherwise
