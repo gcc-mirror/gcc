@@ -1,3 +1,10 @@
+2004-12-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* varasm.c (decode_reg_name): Revert change to check for zero
+	length strings.
+	(make_decl_rtl): Make sure that we call decode_reg_name only
+	when needed.
+
 2004-12-02  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-opt/18716
