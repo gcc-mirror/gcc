@@ -1,3 +1,12 @@
+2004-11-26  Robert Millan  <robertmh@gnu.org>
+
+	Changes for k*bsd-gnu support.
+	* config/i386/linux.h: Define REG_NAME to allow overriding of
+	register names in sc structure.
+	* config/i386/linux-unwind.h: Refer to sc->REG_NAME(reg) instead
+	of sc->reg.
+	* config.gcc: Detect x86_64-k*bsd-gnu systems.
+
 2004-11-26  Jeff Law  <law@redhat.com>
 
 	* tree-ssa.c (verify_flow_sensitive_alias_info): Don't
