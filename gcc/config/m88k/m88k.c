@@ -46,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.2.6.6 02 Jul 1992 06:06:08";
+static char out_sccs_id[] = "@(#)m88k.c	2.2.6.9 04 Jul 1992 13:17:36";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -1748,34 +1748,20 @@ m88k_end_prologue (stream)
     PUT_OCS_FUNCTION_START (stream);
   if (epilogue_marked)
     abort ();
+  frame_laid_out = 0;
 }
 
 void
 m88k_expand_prologue ()
 {
-  int old_fp_offset = m88k_fp_offset;
-  int old_stack_size = m88k_stack_size;
-
   m88k_layout_frame ();
-#if (MONITOR_GCC & 0x8) /* Watch for suspicious register elimination changes.  */
-  if (frame_laid_out > 1)
-    {
-      if (old_fp_offset != m88k_fp_offset)
-	warning ("Internal gcc error: FP offset has changed by %d bytes",
-		 m88k_fp_offset - old_fp_offset);
-      if (old_stack_size != m88k_stack_size)
-	warning ("Internal gcc error: stack size has changed by %d bytes",
-		 m88k_stack_size - old_stack_size);
-    }
-#endif
-  frame_laid_out = 0;
 
   if (TARGET_OPTIMIZE_ARG_AREA
       && m88k_stack_size
       && ! uses_arg_area_p ())
     {
       /* The incoming argument area is used for stack space if it is not
-	 used (or if -mno-use-arg-area is given).  */
+	 used (or if -mno-optimize-arg-area is given).  */
       if ((m88k_stack_size -= REG_PARM_STACK_SPACE (0)) < 0)
 	m88k_stack_size = 0;
     }
