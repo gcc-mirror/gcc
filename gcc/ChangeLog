@@ -87,7 +87,7 @@ Mon Jun 30 09:52:39 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-29  Aaron W. LaFramboise  <awlaframboise@aol.com>
 
-	* config/i386/mingw32.h (__GTHREAD_HIDE_WIN32API): Define to 1.
+	* config/i386/gthr-win32.h (__GTHREAD_HIDE_WIN32API): Define to 1.
 
 2003-06-29  Dara Hazeghi  <dhazeghi@yahoo.com>
 
