@@ -1,3 +1,8 @@
+2001-01-16  Richard Henderson  <rth@redhat.com>
+
+	* lib/libjava.exp (bytecompile_file): Don't unset CLASSPATH.
+	(libjava_arguments): Use .jar extension for libgcj.
+
 2001-01-08  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* libjava.compile/SuperConstr.java: New test case.

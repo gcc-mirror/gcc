@@ -82,7 +82,6 @@ proc bytecompile_file { file objdir {classpath {}} } {
     set dirname [file dirname $file]
 
     set javac [find_javac]
-    catch {unset env(CLASSPATH)}
     if {$classpath != ""} then {
         set env(CLASSPATH) $classpath
     }
@@ -253,9 +252,9 @@ proc libjava_arguments {{mode compile}} {
     setenv SHLIB_PATH "$ld_library_path:$original_ld_library_path"
 
     # Set the CLASSPATH environment variable
-    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj.zip"
+    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
     global env
-    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj.zip"
+    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj.jar"
 
     global wrapper_file wrap_compile_flags;
     lappend args "additional_flags=$wrap_compile_flags";
