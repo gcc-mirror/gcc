@@ -1,3 +1,11 @@
+2004-03-19  Per Bothner  <per@bothner.com>
+
+	* gnu/gcj/convert/Input_UnicodeBig.java:  New class..
+	* gnu/gcj/convert/Input_UnicodeLittle.java:  New class.
+	* Makefile.am:  Update accordingly.
+	* gnu/gcj/convert/IOConverter.java:  Define "utf-16le" and "utf16be"
+	as aliases for UnicodeLittle and UnicodeBig.
+
 2004-03-20  Mark Wielaard  <mark@klomp.org>
 
 	* native/jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c

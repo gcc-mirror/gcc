@@ -882,6 +882,8 @@ gnu/gcj/convert/Input_ASCII.java \
 gnu/gcj/convert/Input_EUCJIS.java \
 gnu/gcj/convert/Input_JavaSrc.java \
 gnu/gcj/convert/Input_SJIS.java \
+gnu/gcj/convert/Input_UnicodeBig.java \
+gnu/gcj/convert/Input_UnicodeLittle.java \
 gnu/gcj/convert/Input_UTF8.java	\
 gnu/gcj/convert/Input_iconv.java \
 gnu/gcj/convert/IOConverter.java \
