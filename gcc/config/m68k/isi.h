@@ -63,6 +63,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef FUNCTION_VALUE
 #undef LIBCALL_VALUE
 #undef FUNCTION_VALUE_REGNO_P
+#undef NEEDS_UNTYPED_CALL
 #undef ASM_FILE_START
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
@@ -81,6 +82,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define FUNCTION_VALUE_REGNO_P(N) \
  ((N) == 0 || (TARGET_68881 && (N) == 16))
+
+/* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
+   more than one register.  */
+
+#define NEEDS_UNTYPED_CALL 1
 
 /* Also output something to cause the correct _doprnt to be loaded.  */
 #define ASM_FILE_START(FILE) fprintf (FILE, "#NO_APP\n%s\n", TARGET_68881 ? ".globl fltused" : "")

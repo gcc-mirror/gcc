@@ -284,6 +284,12 @@ output_file_directive ((FILE), main_input_filename)
 #define FUNCTION_VALUE_REGNO_P(N) \
  ((N) == 0 || (N) == 8 || (TARGET_68881 && (N) == 16))
 #endif 
+
+/* Define this to be true when FUNCTION_VALUE_REGNO_P is true for
+   more than one register.  */
+
+#undef NEEDS_UNTYPED_CALL
+#define NEEDS_UNTYPED_CALL 1
  
 /* This is the command to make the user-level label named NAME
    defined for reference from other files.  */
