@@ -584,7 +584,7 @@ canonical_type_variant (tree t)
 tree
 copy_base_binfos (tree binfo, tree t, tree prev)
 {
-  tree binfos = BINFO_BASETYPES (binfo);
+  tree binfos = BINFO_BASE_BINFOS (binfo);
   int n, ix;
 
   if (prev)
@@ -792,11 +792,11 @@ make_binfo (tree offset, tree binfo, tree vtable, tree virtuals)
   BINFO_VIRTUALS (new_binfo) = virtuals;
 
   if (binfo && !BINFO_DEPENDENT_BASE_P (binfo)
-      && BINFO_BASETYPES (binfo) != NULL_TREE)
+      && BINFO_BASE_BINFOS (binfo) != NULL_TREE)
     {
-      BINFO_BASETYPES (new_binfo) = copy_node (BINFO_BASETYPES (binfo));
+      BINFO_BASE_BINFOS (new_binfo) = copy_node (BINFO_BASE_BINFOS (binfo));
       /* We do not need to copy the accesses, as they are read only.  */
-      BINFO_BASEACCESSES (new_binfo) = BINFO_BASEACCESSES (binfo);
+      BINFO_BASE_ACCESSES (new_binfo) = BINFO_BASE_ACCESSES (binfo);
     }
   return new_binfo;
 }

@@ -9082,8 +9082,8 @@ xref_basetypes (tree ref, tree base_list)
       tree binfos = make_tree_vec (i);
       tree accesses = make_tree_vec (i);
       
-      BINFO_BASETYPES (binfo) = binfos;
-      BINFO_BASEACCESSES (binfo) = accesses;
+      BINFO_BASE_BINFOS (binfo) = binfos;
+      BINFO_BASE_ACCESSES (binfo) = accesses;
   
       for (i = 0; base_list; base_list = TREE_CHAIN (base_list))
 	{
@@ -9178,7 +9178,7 @@ xref_basetypes (tree ref, tree base_list)
       if (i)
 	TREE_VEC_LENGTH (accesses) = TREE_VEC_LENGTH (binfos) = i;
       else
-	BINFO_BASEACCESSES (binfo) = BINFO_BASETYPES (binfo) = NULL_TREE;
+	BINFO_BASE_ACCESSES (binfo) = BINFO_BASE_BINFOS (binfo) = NULL_TREE;
       if (max_vbases)
 	CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, max_vbases);
       
@@ -9206,7 +9206,7 @@ xref_basetypes (tree ref, tree base_list)
   /* Unmark all the types.  */
   while (i--)
     {
-      tree basetype = BINFO_TYPE (BINFO_BASETYPE (TYPE_BINFO (ref), i));
+      tree basetype = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (ref), i));
       
       CLEAR_CLASSTYPE_MARKED (basetype);
       if (CLASS_TYPE_P (basetype))

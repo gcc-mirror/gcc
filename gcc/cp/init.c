@@ -475,9 +475,9 @@ sort_mem_initializers (tree t, tree mem_inits)
     sorted_inits = tree_cons (base, NULL_TREE, sorted_inits);
   
   /* Process the direct bases.  */
-  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
     {
-      base = BINFO_BASETYPE (TYPE_BINFO (t), i);
+      base = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
       if (!BINFO_VIRTUAL_P (base))
 	sorted_inits = tree_cons (base, NULL_TREE, sorted_inits);
     }
@@ -941,14 +941,15 @@ expand_member_init (tree name)
     {
       /* This is an obsolete unnamed base class initializer.  The
 	 parser will already have warned about its use.  */
-      switch (CLASSTYPE_N_BASECLASSES (current_class_type))
+      switch (BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type)))
 	{
 	case 0:
 	  error ("unnamed initializer for `%T', which has no base classes",
 		 current_class_type);
 	  return NULL_TREE;
 	case 1:
-	  basetype = TYPE_BINFO_BASETYPE (current_class_type, 0);
+	  basetype = BINFO_TYPE
+	    (BINFO_BASE_BINFO (TYPE_BINFO (current_class_type), 0));
 	  break;
 	default:
 	  error ("unnamed initializer for `%T', which uses multiple inheritance",
@@ -981,11 +982,12 @@ expand_member_init (tree name)
       virtual_binfo = NULL_TREE;
 
       /* Look for a direct base.  */
-      for (i = 0; i < BINFO_N_BASETYPES (class_binfo); ++i)
-	if (same_type_p (basetype, 
-			 TYPE_BINFO_BASETYPE (current_class_type, i)))
+      for (i = 0; i < BINFO_N_BASE_BINFOS (class_binfo); ++i)
+	if (same_type_p
+	    (basetype, BINFO_TYPE
+	     (BINFO_BASE_BINFO (TYPE_BINFO (current_class_type), i))))
 	  {
-	    direct_binfo = BINFO_BASETYPE (class_binfo, i);
+	    direct_binfo = BINFO_BASE_BINFO (class_binfo, i);
 	    break;
 	  }
       /* Look for a virtual base -- unless the direct base is itself
@@ -2910,8 +2912,8 @@ push_base_cleanups (void)
 	}
     }
 
-  binfos = BINFO_BASETYPES (TYPE_BINFO (current_class_type));
-  n_baseclasses = CLASSTYPE_N_BASECLASSES (current_class_type);
+  binfos = BINFO_BASE_BINFOS (TYPE_BINFO (current_class_type));
+  n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type));
 
   /* Take care of the remaining baseclasses.  */
   for (i = 0; i < n_baseclasses; i++)

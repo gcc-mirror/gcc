@@ -185,8 +185,8 @@ lookup_base_r (tree binfo, tree base, base_access access,
       return found;
     }
   
-  bases = BINFO_BASETYPES (binfo);
-  accesses = BINFO_BASEACCESSES (binfo);
+  bases = BINFO_BASE_BINFOS (binfo);
+  accesses = BINFO_BASE_ACCESSES (binfo);
   if (!bases)
     return bk_not_base;
   
@@ -363,8 +363,8 @@ dynamic_cast_base_recurse (tree subtype, tree binfo, bool is_via_virtual,
         }
     }
   
-  binfos = BINFO_BASETYPES (binfo);
-  accesses = BINFO_BASEACCESSES (binfo);
+  binfos = BINFO_BASE_BINFOS (binfo);
+  accesses = BINFO_BASE_ACCESSES (binfo);
   n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
   for (i = 0; i < n_baselinks; i++)
     {
@@ -682,8 +682,8 @@ dfs_access_in_type (tree binfo, void *data)
 	  
 	  /* Otherwise, scan our baseclasses, and pick the most favorable
 	     access.  */
-	  binfos = BINFO_BASETYPES (binfo);
-	  accesses = BINFO_BASEACCESSES (binfo);
+	  binfos = BINFO_BASE_BINFOS (binfo);
+	  accesses = BINFO_BASE_ACCESSES (binfo);
 	  n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
 	  for (i = 0; i < n_baselinks; ++i)
 	    {
@@ -759,14 +759,14 @@ access_in_type (tree type, tree decl)
 static tree
 dfs_accessible_queue_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
 {
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   
   if (BINFO_MARKED (binfo))
     return NULL_TREE;
 
   /* If this class is inherited via private or protected inheritance,
      then we can't see it, unless we are a friend of the derived class.  */
-  if (BINFO_BASEACCESS (derived, ix) != access_public_node
+  if (BINFO_BASE_ACCESS (derived, ix) != access_public_node
       && !is_friend (BINFO_TYPE (derived), current_scope ()))
     return NULL_TREE;
 
@@ -1021,7 +1021,7 @@ struct lookup_field_info {
 static tree
 lookup_field_queue_p (tree derived, int ix, void *data)
 {
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   struct lookup_field_info *lfi = (struct lookup_field_info *) data;
 
   /* Don't look for constructors or destructors in base classes.  */
@@ -1595,7 +1595,7 @@ bfs_walk (tree binfo,
       if (rval)
 	goto done;
 
-      n_bases = BINFO_N_BASETYPES (binfo);
+      n_bases = BINFO_N_BASE_BINFOS (binfo);
       for (ix = 0; ix != n_bases; ix++)
 	{
 	  tree base_binfo;
@@ -1603,7 +1603,7 @@ bfs_walk (tree binfo,
 	  if (qfn)
 	    base_binfo = (*qfn) (binfo, ix, data);
 	  else
-	    base_binfo = BINFO_BASETYPE (binfo, ix);
+	    base_binfo = BINFO_BASE_BINFO (binfo, ix);
 	  
  	  if (base_binfo)
 	    {
@@ -1657,9 +1657,9 @@ dfs_walk_real (tree binfo,
     }
 
   /* Process the basetypes.  */
-  if (BINFO_BASETYPES (binfo))
+  if (BINFO_BASE_BINFOS (binfo))
     {
-      int i, n = TREE_VEC_LENGTH (BINFO_BASETYPES (binfo));
+      int i, n = TREE_VEC_LENGTH (BINFO_BASE_BINFOS (binfo));
       for (i = 0; i != n; i++)
 	{
 	  tree base_binfo;
@@ -1667,7 +1667,7 @@ dfs_walk_real (tree binfo,
 	  if (qfn)
 	    base_binfo = (*qfn) (binfo, i, data);
 	  else
-	    base_binfo = BINFO_BASETYPE (binfo, i);
+	    base_binfo = BINFO_BASE_BINFO (binfo, i);
 	  
 	  if (base_binfo)
 	    {
@@ -1806,7 +1806,7 @@ int
 look_for_overrides (tree type, tree fndecl)
 {
   tree binfo = TYPE_BINFO (type);
-  tree basebinfos = BINFO_BASETYPES (binfo);
+  tree basebinfos = BINFO_BASE_BINFOS (binfo);
   int nbasebinfos = basebinfos ? TREE_VEC_LENGTH (basebinfos) : 0;
   int ix;
   int found = 0;
@@ -1959,7 +1959,7 @@ get_pure_virtuals (tree type)
 tree 
 markedp (tree derived, int ix, void *data ATTRIBUTE_UNUSED) 
 {
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   
   return BINFO_MARKED (binfo) ? binfo : NULL_TREE; 
 }
@@ -1967,7 +1967,7 @@ markedp (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
 tree
 unmarkedp (tree derived, int ix, void *data ATTRIBUTE_UNUSED) 
 {
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   
   return !BINFO_MARKED (binfo) ? binfo : NULL_TREE; 
 }
@@ -1975,7 +1975,7 @@ unmarkedp (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
 static tree
 marked_pushdecls_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
 {
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   
   return (!BINFO_DEPENDENT_BASE_P (binfo)
 	  && BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE; 
@@ -1984,7 +1984,7 @@ marked_pushdecls_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
 static tree
 unmarked_pushdecls_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
 { 
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   
   return (!BINFO_DEPENDENT_BASE_P (binfo)
 	  && !BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE;
@@ -2067,7 +2067,7 @@ dfs_debug_mark (tree binfo, void *data ATTRIBUTE_UNUSED)
 static tree 
 dfs_debug_unmarkedp (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
 {
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   
   return (!CLASSTYPE_DEBUG_REQUESTED (BINFO_TYPE (binfo)) 
 	  ? binfo : NULL_TREE);
@@ -2415,14 +2415,14 @@ dfs_check_overlap (tree empty_binfo, void *data)
   tree binfo;
   for (binfo = TYPE_BINFO (oi->compare_type); 
        ; 
-       binfo = BINFO_BASETYPE (binfo, 0))
+       binfo = BINFO_BASE_BINFO (binfo, 0))
     {
       if (BINFO_TYPE (binfo) == BINFO_TYPE (empty_binfo))
 	{
 	  oi->found_overlap = 1;
 	  break;
 	}
-      else if (BINFO_BASETYPES (binfo) == NULL_TREE)
+      else if (BINFO_BASE_BINFOS (binfo) == NULL_TREE)
 	break;
     }
 
@@ -2434,7 +2434,7 @@ dfs_check_overlap (tree empty_binfo, void *data)
 static tree
 dfs_no_overlap_yet (tree derived, int ix, void *data)
 {
-  tree binfo = BINFO_BASETYPE (derived, ix);
+  tree binfo = BINFO_BASE_BINFO (derived, ix);
   struct overlap_info *oi = (struct overlap_info *) data;
   
   return !oi->found_overlap ? binfo : NULL_TREE;
@@ -2466,8 +2466,8 @@ tree
 binfo_for_vtable (tree var)
 {
   tree main_binfo = TYPE_BINFO (DECL_CONTEXT (var));
-  tree binfos = TYPE_BINFO_BASETYPES (BINFO_TYPE (main_binfo));
-  int n_baseclasses = CLASSTYPE_N_BASECLASSES (BINFO_TYPE (main_binfo));
+  tree binfos = BINFO_BASE_BINFOS (TYPE_BINFO (BINFO_TYPE (main_binfo)));
+  int n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (BINFO_TYPE (main_binfo)));
   int i;
 
   for (i = 0; i < n_baseclasses; i++)
@@ -2540,7 +2540,7 @@ copied_binfo (tree binfo, tree here)
       int ix, n;
       
       base_binfos = copied_binfo (BINFO_INHERITANCE_CHAIN (binfo), here);
-      base_binfos = BINFO_BASETYPES (base_binfos);
+      base_binfos = BINFO_BASE_BINFOS (base_binfos);
       n = TREE_VEC_LENGTH (base_binfos);
       for (ix = 0; ix != n; ix++)
 	{
@@ -2601,7 +2601,7 @@ original_binfo (tree binfo, tree here)
 	{
 	  int ix, n;
 	  
-	  base_binfos = BINFO_BASETYPES (base_binfos);
+	  base_binfos = BINFO_BASE_BINFOS (base_binfos);
 	  n = TREE_VEC_LENGTH (base_binfos);
 	  for (ix = 0; ix != n; ix++)
 	    {

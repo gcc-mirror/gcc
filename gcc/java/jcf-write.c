@@ -2921,8 +2921,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
   int methods_count = 0;
   tree part;
   int total_supers
-    = clas == object_type_node ? 0
-    : TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (clas));
+    = clas == object_type_node ? 0 : BINFO_N_BASE_BINFOS (TYPE_BINFO (clas));
   
   ptr = append_chunk (NULL, 8, state);
   PUT4 (0xCafeBabe);  /* Magic number */
@@ -2948,7 +2947,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
     }
   else
     {
-      tree basetypes = TYPE_BINFO_BASETYPES (clas);
+      tree basetypes = BINFO_BASE_BINFOS (TYPE_BINFO (clas));
       tree base = BINFO_TYPE (TREE_VEC_ELT (basetypes, 0));
       int j = find_class_constant (&state->cpool, base);
       PUT2 (j);  /* super_class */

@@ -11891,10 +11891,10 @@ gen_member_die (tree type, dw_die_ref context_die)
      the TREE node representing the appropriate (containing) type.  */
 
   /* First output info about the base classes.  */
-  if (binfo && BINFO_BASETYPES (binfo))
+  if (binfo && BINFO_BASE_BINFOS (binfo))
     {
-      tree bases = BINFO_BASETYPES (binfo);
-      tree accesses = BINFO_BASEACCESSES (binfo);
+      tree bases = BINFO_BASE_BINFOS (binfo);
+      tree accesses = BINFO_BASE_ACCESSES (binfo);
       int n_bases = TREE_VEC_LENGTH (bases);
       int i;
 

@@ -515,8 +515,8 @@ do_build_copy_constructor (tree fndecl)
   else
     {
       tree fields = TYPE_FIELDS (current_class_type);
-      int n_bases = CLASSTYPE_N_BASECLASSES (current_class_type);
-      tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
+      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type));
+      tree binfos = BINFO_BASE_BINFOS (TYPE_BINFO (current_class_type));
       tree member_init_list = NULL_TREE;
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
@@ -623,12 +623,14 @@ do_build_assign_ref (tree fndecl)
       int i;
 
       /* Assign to each of the direct base classes.  */
-      for (i = 0; i < CLASSTYPE_N_BASECLASSES (current_class_type); ++i)
+      for (i = 0;
+	   i < BINFO_N_BASE_BINFOS (TYPE_BINFO (current_class_type));
+	   ++i)
 	{
 	  tree binfo;
 	  tree converted_parm;
 
-	  binfo = BINFO_BASETYPE (TYPE_BINFO (current_class_type), i);
+	  binfo = BINFO_BASE_BINFO (TYPE_BINFO (current_class_type), i);
 	  /* We must convert PARM directly to the base class
 	     explicitly since the base class may be ambiguous.  */
 	  converted_parm = build_base_path (PLUS_EXPR, parm, binfo, 1);
@@ -789,8 +791,8 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
 {
   tree raises = empty_except_spec;
   tree fields = TYPE_FIELDS (type);
-  int i, n_bases = CLASSTYPE_N_BASECLASSES (type);
-  tree binfos = TYPE_BINFO_BASETYPES (type);
+  int i, n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
+  tree binfos = BINFO_BASE_BINFOS (TYPE_BINFO (type));
 
   for (i = 0; i != n_bases; i++)
     {

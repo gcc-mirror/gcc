@@ -1633,7 +1633,7 @@ dump_expr (tree t, int flags)
 
 	      t = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (t)));
 	      t = TYPE_METHOD_BASETYPE (t);
-	      virtuals = TYPE_BINFO_VIRTUALS (TYPE_MAIN_VARIANT (t));
+	      virtuals = BINFO_VIRTUALS (TYPE_BINFO (TYPE_MAIN_VARIANT (t)));
 
 	      n = tree_low_cst (idx, 0);
 

@@ -1635,9 +1635,8 @@ dbxout_type (tree type, int full)
       {
 	int i, n_baseclasses = 0;
 
-	if (TYPE_BINFO (type) != 0
-	    && TYPE_BINFO_BASETYPES (type) != 0)
-	  n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
+	if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
+	  n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
 
 	/* Output a structure type.  We must use the same test here as we
 	   use in the DBX_NO_XREFS case above.  */
@@ -1696,9 +1695,9 @@ dbxout_type (tree type, int full)
 	for (i = 0; i < n_baseclasses; i++)
 	  {
 	    tree binfo = TYPE_BINFO (type);
-	    tree child = BINFO_BASETYPE (binfo, i);
-	    tree access = (BINFO_BASEACCESSES (binfo)
-			   ? BINFO_BASEACCESS (binfo, i) : access_public_node);
+	    tree child = BINFO_BASE_BINFO (binfo, i);
+	    tree access = (BINFO_BASE_ACCESSES (binfo)
+			   ? BINFO_BASE_ACCESS (binfo, i) : access_public_node);
 
 	    if (use_gnu_debug_info_extensions)
 	      {
