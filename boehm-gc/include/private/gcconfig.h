@@ -1057,6 +1057,9 @@
 #   endif
 #   ifdef NETBSD
 #	define OS_TYPE "NETBSD"
+#	ifdef __ELF__
+#	    define DYNAMIC_LOADING
+#	endif
 #   endif
 #   ifdef THREE86BSD
 #	define OS_TYPE "THREE86BSD"

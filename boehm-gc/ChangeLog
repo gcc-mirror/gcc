@@ -1,3 +1,8 @@
+2002-03-30  Krister Walfridsson  <cato@df.lth.se>
+
+	* include/private/gcconfig.h: define DYNAMIC_LOADING for ELF
+        NetBSD/i386.
+
 2002-03-29  Hans Boehm  <Hans_Boehm@hp.com>
 
 	* linux_threads.c (return_free_lists): Clear fl[i] unconditionally.
