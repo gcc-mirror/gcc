@@ -1,3 +1,7 @@
+2002-11-12  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* doc/install.texi (powerpc-*-linux-gnu*): Update binutils requirement.
+
 2002-11-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (tiny_constant_address_p): Parenthesize
