@@ -3876,6 +3876,7 @@ it was an simple conditional jump, @minus{}1 otherwise.  To simplify
 recomputing of edge frequencies, new sequence is required to have only
 forward jumps to the newly created labels.
 
+@findex define_insn_and_split
 For the common case where the pattern of a define_split exactly matches the
 pattern of a define_insn, use @code{define_insn_and_split}.  It looks like
 this:
