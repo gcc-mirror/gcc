@@ -2283,11 +2283,26 @@ LFLGRET"ID":\n\
 
 /* Optional extra constraints for this machine.
 
+   'Q' handles floating point constants which can be moved into
+       an integer register with a single sethi instruction.
+
+   'R' handles floating point constants which can be moved into
+       an integer register with a single mov instruction.
+
+   'S' handles floating point constants which can be moved into
+       an integer register using a high/lo_sum sequence.
+
    'T' handles memory addresses where the alignment is known to
        be at least 8 bytes.
 
    `U' handles all pseudo registers or a hard even numbered
        integer register, needed for ldd/std instructions.  */
+
+#define EXTRA_CONSTRAINT_BASE(OP, C)   \
+   ((C) == 'Q' ? fp_sethi_p(OP)        \
+    : (C) == 'R' ? fp_mov_p(OP)        \
+    : (C) == 'S' ? fp_high_losum_p(OP) \
+    : 0)
 
 #ifndef REG_OK_STRICT
 
@@ -2303,12 +2318,13 @@ LFLGRET"ID":\n\
 /* 'T', 'U' are for aligned memory loads which aren't needed for v9.  */
 
 #define EXTRA_CONSTRAINT(OP, C)				\
-   ((! TARGET_ARCH64 && (C) == 'T')			\
-    ? (mem_min_alignment (OP, 8))			\
-    : ((! TARGET_ARCH64 && (C) == 'U')			\
-       ? (register_ok_for_ldd (OP))			\
-       : 0))
- 
+   (EXTRA_CONSTRAINT_BASE(OP, C)                        \
+    || ((! TARGET_ARCH64 && (C) == 'T')			\
+        ? (mem_min_alignment (OP, 8))			\
+        : ((! TARGET_ARCH64 && (C) == 'U')		\
+            ? (register_ok_for_ldd (OP))		\
+            : 0)))
+
 #else
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
@@ -2317,14 +2333,16 @@ LFLGRET"ID":\n\
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
 #define EXTRA_CONSTRAINT(OP, C)				\
-   ((! TARGET_ARCH64 && (C) == 'T')			\
-    ? mem_min_alignment (OP, 8) && strict_memory_address_p (Pmode, XEXP (OP, 0)) \
-    : ((! TARGET_ARCH64 && (C) == 'U')			\
-       ? (GET_CODE (OP) == REG				\
-          && (REGNO (OP) < FIRST_PSEUDO_REGISTER	\
-	      || reg_renumber[REGNO (OP)] >= 0)		\
-          && register_ok_for_ldd (OP))			\
-       : 0))
+   (EXTRA_CONSTRAINT_BASE(OP, C)                        \
+    || ((! TARGET_ARCH64 && (C) == 'T')			\
+        ? mem_min_alignment (OP, 8) && strict_memory_address_p (Pmode, XEXP (OP, 0)) \
+        : ((! TARGET_ARCH64 && (C) == 'U')		\
+           ? (GET_CODE (OP) == REG			\
+              && (REGNO (OP) < FIRST_PSEUDO_REGISTER	\
+	          || reg_renumber[REGNO (OP)] >= 0)	\
+              && register_ok_for_ldd (OP))		\
+           : 0)))
+
 #endif
 
 /* Should gcc use [%reg+%lo(xx)+offset] addresses?  */
@@ -3309,6 +3327,9 @@ do {									\
 #define PREDICATE_CODES							\
 {"reg_or_0_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		\
 {"fp_zero_operand", {CONST_DOUBLE}},					\
+{"fp_sethi_p", {CONST_DOUBLE}},						\
+{"fp_mov_p", {CONST_DOUBLE}},						\
+{"fp_high_losum_p", {CONST_DOUBLE}},					\
 {"intreg_operand", {SUBREG, REG}},					\
 {"fcc_reg_operand", {REG}},						\
 {"icc_or_fcc_reg_operand", {REG}},					\

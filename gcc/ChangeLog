@@ -1,3 +1,20 @@
+1999-12-10  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.c (fp_sethi_p, fp_mov_p, fp_high_losum_p):
+	New functions.
+	* config/sparc/sparc-protos.h: Add them.
+	* config/sparc/sparc.h: Add them to PREDICATE_CODES.
+	(EXTRA_CONSTRAINT_BASE): New macro, handling Q, R, and S
+	constraints which use those helpers.
+	(EXTRA_CONSTRAINT): Use this new macro.
+	* md.texi: Update sparc target constraints documentation.
+	* config/sparc/sparc.md (clear_sf, clear_sfp, movsf_const_intreg,
+	movsf_const_high, movsf_const_lo, movsf_insn): Delete.
+	(movsf_insn_novis_liveg0, movsf_insn_novis_noliveg0,
+	movsf_insn_vis, movsf_lo_sum, movsf_high): New patterns.
+	(movsf high/lo_sum split): Rework for new patterns.
+	(movsf expander): Allow storing fp_zero to memory if ! live_g0.
+
 1999-12-09  Gavin Romig-Koch  <gavin@cetus.cygnus.com>
 
 	* c-common.c (c_common_nodes_and_builtins): 

@@ -37,12 +37,10 @@
 ;;			9	sethh
 ;;			10	setlm
 ;;			11	embmedany_sethi, embmedany_brsum
-;;                      12	movsf_const_high
 ;;			13	embmedany_textuhi
 ;;			14	embmedany_texthi
 ;;			15	embmedany_textulo
 ;;			16	embmedany_textlo
-;;                      17	movsf_const_lo
 ;;			18	sethm
 ;;			19	setlo
 ;;
@@ -2820,83 +2818,165 @@
 
 ;; Floating point move insns
 
-(define_insn "*clear_sf"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-        (match_operand:SF 1 "const_double_operand" ""))]
-  "TARGET_VIS
-   && fp_zero_operand (operands[1])"
-  "fzeros\\t%0"
-  [(set_attr "type" "fpmove")
+(define_insn "*movsf_insn_novis_liveg0"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,*r,*r,*r,*r,*r,f,m,m")
+	(match_operand:SF 1 "input_operand"         "f,G,Q,*rR,S,m,m,f,*r"))]
+  "(TARGET_FPU && ! TARGET_VIS && TARGET_LIVE_G0)
+   && (register_operand (operands[0], SFmode)
+       || register_operand (operands[1], SFmode))"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && (which_alternative == 2
+          || which_alternative == 3
+          || which_alternative == 4))
+    {
+      REAL_VALUE_TYPE r;
+      long i;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      operands[1] = GEN_INT (i);
+    }
+
+  switch (which_alternative)
+    {
+    case 0:
+      return \"fmovs\\t%1, %0\";
+    case 1:
+      return \"and\\t%0, 0, %0\";
+    case 2:
+      return \"sethi\\t%%hi(%a1), %0\";
+    case 3:
+      return \"mov\\t%1, %0\";
+    case 4:
+      return \"#\";
+    case 5:
+    case 6:
+      return \"ld\\t%1, %0\";
+    case 7:
+    case 8:
+      return \"st\\t%1, %0\";
+    }
+}"
+  [(set_attr "type" "fpmove,move,move,move,*,load,fpload,fpstore,store")
    (set_attr "length" "1")])
 
-(define_insn "*clear_sfp"
-  [(set (match_operand:SF 0 "memory_operand" "=m")
-        (match_operand:SF 1 "const_double_operand" ""))]
-  "! TARGET_LIVE_G0
-   && fp_zero_operand (operands[1])"
-  "st\\t%%g0, %0"
-  [(set_attr "type" "store")
+(define_insn "*movsf_insn_novis_noliveg0"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,*r,*r,*r,*r,*r,f,m,m")
+	(match_operand:SF 1 "input_operand"         "f,G,Q,*rR,S,m,m,f,*rG"))]
+  "(TARGET_FPU && ! TARGET_VIS && ! TARGET_LIVE_G0)
+   && (register_operand (operands[0], SFmode)
+       || register_operand (operands[1], SFmode)
+       || fp_zero_operand (operands[1]))"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && (which_alternative == 2
+          || which_alternative == 3
+          || which_alternative == 4))
+    {
+      REAL_VALUE_TYPE r;
+      long i;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      operands[1] = GEN_INT (i);
+    }
+
+  switch (which_alternative)
+    {
+    case 0:
+      return \"fmovs\\t%1, %0\";
+    case 1:
+      return \"clr\\t%0\";
+    case 2:
+      return \"sethi\\t%%hi(%a1), %0\";
+    case 3:
+      return \"mov\\t%1, %0\";
+    case 4:
+      return \"#\";
+    case 5:
+    case 6:
+      return \"ld\\t%1, %0\";
+    case 7:
+    case 8:
+      return \"st\\t%r1, %0\";
+    }
+}"
+  [(set_attr "type" "fpmove,move,move,move,*,load,fpload,fpstore,store")
    (set_attr "length" "1")])
 
-(define_insn "*movsf_const_intreg"
-  [(set (match_operand:SF 0 "register_operand" "=f,r")
-        (match_operand:SF 1 "const_double_operand" "m#F,F"))]
-  "TARGET_FPU"
+(define_insn "*movsf_insn_vis"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,*r,*r,*r,*r,*r,f,m,m")
+	(match_operand:SF 1 "input_operand"         "f,G,G,Q,*rR,S,m,m,f,*rG"))]
+  "(TARGET_FPU && TARGET_VIS)
+   && (register_operand (operands[0], SFmode)
+       || register_operand (operands[1], SFmode)
+       || fp_zero_operand (operands[1]))"
+  "*
+{
+  if (GET_CODE (operands[1]) == CONST_DOUBLE
+      && (which_alternative == 3
+          || which_alternative == 4
+          || which_alternative == 5))
+    {
+      REAL_VALUE_TYPE r;
+      long i;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+      REAL_VALUE_TO_TARGET_SINGLE (r, i);
+      operands[1] = GEN_INT (i);
+    }
+
+  switch (which_alternative)
+    {
+    case 0:
+      return \"fmovs\\t%1, %0\";
+    case 1:
+      return \"fzeros\\t%0\";
+    case 2:
+      return \"clr\\t%0\";
+    case 3:
+      return \"sethi\\t%%hi(%a1), %0\";
+    case 4:
+      return \"mov\\t%1, %0\";
+    case 5:
+      return \"#\";
+    case 6:
+    case 7:
+      return \"ld\\t%1, %0\";
+    case 8:
+    case 9:
+      return \"st\\t%r1, %0\";
+    }
+}"
+  [(set_attr "type" "fpmove,fpmove,move,move,move,*,load,fpload,fpstore,store")
+   (set_attr "length" "1")])
+
+(define_insn "*movsf_lo_sum"
+  [(set (match_operand:SF 0 "register_operand" "")
+        (lo_sum:SF (match_operand:SF 1 "register_operand" "")
+                   (match_operand:SF 2 "const_double_operand" "")))]
+  "TARGET_FPU && fp_high_losum_p (operands[2])"
   "*
 {
   REAL_VALUE_TYPE r;
   long i;
 
-  if (which_alternative == 0)
-    return \"ld\\t%1, %0\";
-
-  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
+  REAL_VALUE_FROM_CONST_DOUBLE (r, operands[2]);
   REAL_VALUE_TO_TARGET_SINGLE (r, i);
-  if (SPARC_SIMM13_P (i) || SPARC_SETHI_P (i))
-    {
-      operands[1] = GEN_INT (i);
-      if (SPARC_SIMM13_P (INTVAL (operands[1])))
-        return \"mov\\t%1, %0\";
-      else if (SPARC_SETHI_P (INTVAL (operands[1])))
-        return \"sethi\\t%%hi(%a1), %0\";
-      else
-        abort ();
-    }
-  else
-    return \"#\";
+  operands[2] = GEN_INT (i);
+  return \"or\\t%1, %%lo(%a2), %0\";
 }"
-  [(set_attr "type" "move")
-   (set_attr "length" "1,2")])
-
-;; There isn't much I can do about this, if I change the
-;; mode then flow info gets really confused because the
-;; destination no longer looks the same.  Ho hum...
-(define_insn "*movsf_const_high"
-  [(set (match_operand:SF 0 "register_operand" "=r")
-        (unspec:SF [(match_operand 1 "const_int_operand" "")] 12))]
-  ""
-  "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
+  [(set_attr "type" "ialu")
    (set_attr "length" "1")])
 
-(define_insn "*movsf_const_lo"
-  [(set (match_operand:SF 0 "register_operand" "=r")
-        (unspec:SF [(match_operand:SF 1 "register_operand" "r")
-                    (match_operand 2 "const_int_operand" "")] 17))]
-  ""
-  "or\\t%1, %%lo(%a2), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
-
-(define_split
+(define_insn "*movsf_high"
   [(set (match_operand:SF 0 "register_operand" "")
-        (match_operand:SF 1 "const_double_operand" ""))]
-  "TARGET_FPU
-   && (GET_CODE (operands[0]) == REG
-       && REGNO (operands[0]) < 32)"
-  [(set (match_dup 0) (unspec:SF [(match_dup 1)] 12))
-   (set (match_dup 0) (unspec:SF [(match_dup 0) (match_dup 1)] 17))]
-  "
+        (high:SF (match_operand:SF 1 "const_double_operand" "")))]
+  "TARGET_FPU && fp_high_losum_p (operands[1])"
+  "*
 {
   REAL_VALUE_TYPE r;
   long i;
@@ -2904,7 +2984,37 @@
   REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
   REAL_VALUE_TO_TARGET_SINGLE (r, i);
   operands[1] = GEN_INT (i);
-}")
+  return \"sethi\\t%%hi(%1), %0\";
+}"
+  [(set_attr "type" "move")
+   (set_attr "length" "1")])
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "")
+        (match_operand:SF 1 "const_double_operand" ""))]
+  "TARGET_FPU
+   && fp_high_losum_p (operands[1])
+   && (GET_CODE (operands[0]) == REG
+       && REGNO (operands[0]) < 32)"
+  [(set (match_dup 0) (high:SF (match_dup 1)))
+   (set (match_dup 0) (lo_sum:SF (match_dup 0) (match_dup 1)))])
+
+;; Exactly the same as above, except that all `f' cases are deleted.
+;; This is necessary to prevent reload from ever trying to use a `f' reg
+;; when -mno-fpu.
+
+(define_insn "*movsf_no_f_insn"
+  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
+	(match_operand:SF 1 "input_operand"    "r,m,r"))]
+  "! TARGET_FPU
+   && (register_operand (operands[0], SFmode)
+       || register_operand (operands[1], SFmode))"
+  "@
+   mov\\t%1, %0
+   ld\\t%1, %0
+   st\\t%1, %0"
+  [(set_attr "type" "move,load,store")
+   (set_attr "length" "1")])
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_operand" "")
@@ -2933,7 +3043,10 @@
   /* Handle sets of MEM first.  */
   if (GET_CODE (operands[0]) == MEM)
     {
-      if (register_operand (operands[1], SFmode))
+      if (register_operand (operands[1], SFmode)
+	  || (! TARGET_LIVE_G0
+	      && GET_CODE (operands[1]) == CONST_DOUBLE
+              && fp_zero_operand (operands[1])))
 	goto movsf_is_ok;
 
       if (! reload_in_progress)
@@ -2963,39 +3076,6 @@
  movsf_is_ok:
   ;
 }")
-
-(define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=f,f,m,r,r,m")
-	(match_operand:SF 1 "input_operand"    "f,m,f,r,m,r"))]
-  "TARGET_FPU
-   && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode))"
-  "@
-   fmovs\\t%1, %0
-   ld\\t%1, %0
-   st\\t%1, %0
-   mov\\t%1, %0
-   ld\\t%1, %0
-   st\\t%1, %0"
-  [(set_attr "type" "fpmove,fpload,fpstore,move,load,store")
-   (set_attr "length" "1")])
-
-;; Exactly the same as above, except that all `f' cases are deleted.
-;; This is necessary to prevent reload from ever trying to use a `f' reg
-;; when -mno-fpu.
-
-(define_insn "*movsf_no_f_insn"
-  [(set (match_operand:SF 0 "nonimmediate_operand" "=r,r,m")
-	(match_operand:SF 1 "input_operand"    "r,m,r"))]
-  "! TARGET_FPU
-   && (register_operand (operands[0], SFmode)
-       || register_operand (operands[1], SFmode))"
-  "@
-   mov\\t%1, %0
-   ld\\t%1, %0
-   st\\t%1, %0"
-  [(set_attr "type" "move,load,store")
-   (set_attr "length" "1")])
 
 (define_insn "*clear_df"
   [(set (match_operand:DF 0 "register_operand" "=e")

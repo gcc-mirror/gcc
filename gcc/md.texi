@@ -1621,11 +1621,19 @@ Floating-point zero
 Signed 13 bit constant, sign-extended to 32 or 64 bits
 
 @item Q
-Memory reference that can be loaded with one instruction  (@samp{m} is
-more appropriate for @code{asm} statements)
+Floating-point constant whose integral representation can
+be moved into an integer register using a single sethi
+instruction
+
+@item R
+Floating-point constant whose integral representation can
+be moved into an integer register using a single mov
+instruction
 
 @item S
-Constant, or memory address
+Floating-point constant whose integral representation can
+be moved into an integer register using a high/lo_sum
+instruction sequence
 
 @item T
 Memory address aligned to an 8-byte boundary
