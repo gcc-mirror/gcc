@@ -52,9 +52,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_ISA=_MIPS_ISA_MIPS4}}}} \
 %{mips1: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
 %{mips2: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
-%{mips3: -D_MIPS_SIM=_MIPS_SIM_ABI64}	\
-%{mips4: -D_MIPS_SIM=_MIPS_SIM_ABI64}	\
-%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_MIPS_SIM=_MIPS_SIM_ABI64}}}}	\
+%{mips3: -D_ABI64=3 -D_MIPS_SIM=_ABI64}	\
+%{mips4: -D_ABI64=3 -D_MIPS_SIM=_ABI64}	\
+%{!mips1: %{!mips2: %{!mips3: %{!mips4: -D_ABI64=3 -D_MIPS_SIM=_ABI64}}}}	\
 %{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
 %{mips1: -D_MIPS_SZLONG=32}%{mips2: -D_MIPS_SZLONG=32}  \
 %{!mips1:%{!mips2: -D_MIPS_SZLONG=64}}			\
@@ -137,14 +137,23 @@ extern struct rtx_def *mips_function_value ();
 	   - ! current_function_varargs) * UNITS_PER_WORD;		\
 									\
       if (! (NO_RTL))							\
-	move_block_from_reg						\
-	  ((CUM).arg_words + GP_ARG_FIRST + ! current_function_varargs,	\
-	   gen_rtx (MEM, BLKmode,					\
-		    plus_constant (virtual_incoming_args_rtx,		\
-				   - PRETEND_SIZE)),			\
-	   (MAX_ARGS_IN_REGISTERS - (CUM).arg_words			\
-	    - ! current_function_varargs),				\
-	   PRETEND_SIZE);						\
+	{								\
+	  rtx mem = gen_rtx (MEM, BLKmode,				\
+			     plus_constant (virtual_incoming_args_rtx,	\
+					    - PRETEND_SIZE));		\
+	  /* va_arg is an array access in this case, which causes it to \
+	     get MEM_IN_STRUCT_P set.  We must set it here so that the	\
+	     insn scheduler won't assume that these stores can't 	\
+	     possibly overlap with the va_arg loads.  */		\
+	  if (BYTES_BIG_ENDIAN)						\
+	    MEM_IN_STRUCT_P (mem) = 1;					\
+	  move_block_from_reg						\
+	    ((CUM).arg_words + GP_ARG_FIRST + ! current_function_varargs, \
+	     mem,							\
+	     (MAX_ARGS_IN_REGISTERS - (CUM).arg_words			\
+	      - ! current_function_varargs),				\
+	     PRETEND_SIZE);						\
+	}								\
     }									\
 }
 
