@@ -89,7 +89,7 @@ public class PropertyChangeSupport implements Serializable
    *
    * @serial the serialization format
    */
-  private final int propertyChangeSupportSerializedDataVersion = 2;
+  private static final int propertyChangeSupportSerializedDataVersion = 2;
 
   /**
    * The list of all registered property listeners. If this instance was

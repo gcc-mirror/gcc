@@ -89,7 +89,7 @@ public class VetoableChangeSupport implements Serializable
    *
    * @serial the serialization format
    */
-  private final int vetoableChangeSupportSerializedDataVersion = 2;
+  private static final int vetoableChangeSupportSerializedDataVersion = 2;
 
   /**
    * The list of all registered vetoable listeners. If this instance was

@@ -1,3 +1,10 @@
+2004-11-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/beans/PropertyChangeSupport.java
+	(propertyChangeSupportSerializedDataVersion): Made static.
+	* java/beans/VetoableChangeSupport.java
+	(propertyChangeSupportSerializedDataVersion): Likewise.
+
 2004-11-18  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/net/URLStreamHandler.java
