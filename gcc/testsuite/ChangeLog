@@ -1,3 +1,7 @@
+2002-05-30  Osku Salerma  <osku@iki.fi>
+
+	* gcc.c-torture/execute/mayalias-1.c: New file.
+
 2002-05-29  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/c++98-pedantic.c, gcc.dg/cpp/c89-pedantic.c, 
