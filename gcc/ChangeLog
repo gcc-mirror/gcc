@@ -1,3 +1,7 @@
+2005-01-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-hpux.h (STARTFILE_SPEC): Fix typo in spec.
+
 2005-01-06  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/6077

@@ -276,7 +276,7 @@ do {								\
 #if TARGET_HPUX_11_11
 #define STARTFILE_SPEC \
   "%{!shared: %{!symbolic: crt0%O%s} %{munix=95:unix95.o%s} \
-     %{!munix=93:%{!munix=95:unix98%O%s}}} %{static:crtbeginT%Oos} \
+     %{!munix=93:%{!munix=95:unix98%O%s}}} %{static:crtbeginT%O%s} \
    %{!static:%{!shared:crtbegin%O%s} %{shared:crtbeginS%O%s}}"
 #else
 #define STARTFILE_SPEC \
