@@ -1,3 +1,8 @@
+Sun Oct 24 21:02:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.md (*lea_0): Collapse addsi_0, addsi_lea_[123] into
+	a single load-address pattern.
+
 Sun Oct 24 19:33:24 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* haifa-sched.c (schedule_insns): Don't assign LUIDs differently
