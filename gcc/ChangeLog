@@ -1,3 +1,8 @@
+Fri Jun 25 06:06:37 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (MASK_SUPPORT_ARCH, MASK_CPU_EV5, MASK_CPU_EV6): Define
+	such that MASK_SUPPORT_ARCH is not negative.
+
 Fri Jun 25 05:35:44 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (verify_dominator): Properly handle ADDR_VEC and
