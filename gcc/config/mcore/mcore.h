@@ -33,7 +33,7 @@
 
 /* Get tree.c to declare a target-specific specialization of
    merge_decl_attributes.  */
-#define TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1
 
 #define TARGET_CPU_CPP_BUILTINS()					  \
   do									  \

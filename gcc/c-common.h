@@ -654,6 +654,7 @@ extern void constant_expression_warning (tree);
 extern tree convert_and_check (tree, tree);
 extern void overflow_warning (tree);
 extern void unsigned_conversion_warning (tree, tree);
+extern bool c_determine_visibility (tree);
 
 #define c_sizeof(T)  c_sizeof_or_alignof_type (T, SIZEOF_EXPR, 1)
 #define c_alignof(T) c_sizeof_or_alignof_type (T, ALIGNOF_EXPR, 1)

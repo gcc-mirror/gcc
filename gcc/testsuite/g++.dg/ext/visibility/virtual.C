@@ -1,7 +1,7 @@
 /* Test that setting visibility for class affects virtual table. */
 /* { dg-do compile } */
 /* { dg-require-visibility "" } */
-/* { dg-final { scan-assembler "\\.hidden.*ZTV3Foo" } } */
+/* { dg-final { scan-hidden "ZTV3Foo" } } */
 
 class __attribute__ ((visibility ("hidden"))) Foo
 {

@@ -977,7 +977,7 @@ static void init_ext_80387_constants (void);
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ix86_attribute_table
-#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
 #  undef TARGET_MERGE_DECL_ATTRIBUTES
 #  define TARGET_MERGE_DECL_ATTRIBUTES merge_dllimport_decl_attributes
 #endif
@@ -1609,9 +1609,9 @@ const struct attribute_spec ix86_attribute_table[] =
   /* Regparm attribute specifies how many integer arguments are to be
      passed in registers.  */
   { "regparm",   1, 1, false, true,  true,  ix86_handle_regparm_attribute },
-#ifdef TARGET_DLLIMPORT_DECL_ATTRIBUTES
-  { "dllimport", 0, 0, false, false, false, ix86_handle_dll_attribute },
-  { "dllexport", 0, 0, false, false, false, ix86_handle_dll_attribute },
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
+  { "dllimport", 0, 0, false, false, false, handle_dll_attribute },
+  { "dllexport", 0, 0, false, false, false, handle_dll_attribute },
   { "shared",    0, 0, true,  false, false, ix86_handle_shared_attribute },
 #endif
   { "ms_struct", 0, 0, false, false,  false, ix86_handle_struct_attribute },

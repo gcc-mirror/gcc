@@ -205,7 +205,6 @@ extern int ix86_return_pops_args (tree, tree, int);
 extern int ix86_data_alignment (tree, int);
 extern int ix86_local_alignment (tree, int);
 extern int ix86_constant_alignment (tree, int);
-extern tree ix86_handle_dll_attribute (tree *, tree, tree, int, bool *);
 extern tree ix86_handle_shared_attribute (tree *, tree, tree, int, bool *);
 
 extern unsigned int i386_pe_section_type_flags (tree, const char *, int);

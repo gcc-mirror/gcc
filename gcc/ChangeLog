@@ -1,3 +1,38 @@
+2004-08-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.c (handle_dll_attribute): Move here from i383/winnt.c.
+	Replace use of DECL_INLINE with DECL_DECLARED_INLINE_P.  Set
+	DECL_VISIBLITY.  Test TARGET_DLLIMPORT_DECL_ATTRIBUTES with #if.
+	* tree.h (handle_dll_attribute): Declare.  Test
+	TARGET_DLLIMPORT_DECL_ATTRIBUTES with #if.
+	* c-common.h (c_determine_visibility): Declare.
+	* c-common.c (c_determine_visibility): New function.
+	* c-decl.c (finish_decl): Use it.
+	(finish_function): Likewise.
+	* defaults.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define it to
+	zero, by default.  Use #if, not	#ifdef, to test it.
+	* config/arm/arm.c (arm_attribute_table): Use
+	handle_dll_attribute.  Test TARGET_DLLIMPORT_DECL_ATTRIBUTES with
+	#if.
+	* config/arm/pe.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define to 1.
+	* config/i386/cygming.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define
+	to 1.
+	* config/i386/i386-protos.h (ix86_handle_dll_attribute): Remove.
+	* config/i386/i386.c (ix86_attribute_table): Use
+	handle_dll_attribute for dllimport/dllexport.  Test
+	TARGET_DLLIMPORT_DECL_ATTRIBUTES with #if.
+	* config/i386/winnt.c (ix86_handle_dll_attribute): Remove.
+	* config/mcore/mcore.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define
+	it to 1.
+	* config/mcore/mcore.c (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Test it
+	with #if.
+	* config/sh/symbian-pre.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define
+	it to 1.
+	* doc/extend.texi (dllexport): Clarify and correct documentation.
+	(dllimport): Likewise.
+	* doc/tm.texi (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Mention
+	handle_dll_attribute.
+	
 2004-08-05  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-ssa-loop-manip.c: New file.
@@ -184,7 +219,7 @@
 	* defaults.h (TARGET_DECLSPEC): New macro.
 	* c-cppbuiltin.c (c_cpp_builtins): Handle TARGET_DECLSPEC.
 	* config/arm/pe.h (SUBTARGET_CPP_SPEC): Remove __declspec support.
-	* config/arm/symbian. (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define.
+	* config/arm/symbian.h (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define.
 	* config/i386/beof-elf.h (TARGET_OS_CPP_BUILTINS): Remove
 	__declspec support.
 	(TARGET_DECLSPEC): Define.

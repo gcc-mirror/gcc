@@ -1611,7 +1611,8 @@ maybe_emit_vtables (tree ctype)
   return true;
 }
 
-/* Determine the ELF symbol visibility for DECL.  */
+/* Like c_determine_visibility, but with additional C++-specific
+   behavior.  */
 
 void
 determine_visibility (tree decl)
@@ -1621,9 +1622,14 @@ determine_visibility (tree decl)
   /* Cloned constructors and destructors get the same visibility as
      the underlying function.  That should be set up in
      maybe_clone_body.  */
-  if (DECL_CLONED_FUNCTION_P (decl))
+  my_friendly_assert (!DECL_CLONED_FUNCTION_P (decl), 20040804);
+
+  /* Give the common code a chance to make a determination.  */
+  if (c_determine_visibility (decl))
     return;
 
+  /* If DECL is a member of a class, visibility specifiers on the
+     class can influence the visibility of the DECL.  */
   if (DECL_CLASS_SCOPE_P (decl))
     class_type = DECL_CONTEXT (decl);
   else if (TREE_CODE (decl) == VAR_DECL
@@ -1643,11 +1649,16 @@ determine_visibility (tree decl)
 
   /* By default, static data members and function members receive
      the visibility of their containing class.  */
-  if (class_type
-      && (TREE_CODE (decl) == VAR_DECL 
-	  || TREE_CODE (decl) == FUNCTION_DECL)
-      && !lookup_attribute ("visibility", DECL_ATTRIBUTES (decl)))
+  if (class_type)
     {
+      if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+	  && lookup_attribute ("dllexport", TYPE_ATTRIBUTES (class_type)))
+	{
+	  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
+	  DECL_VISIBILITY_SPECIFIED (decl) = 1;
+	  return;
+	}
+
       if (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_DECLARED_INLINE_P (decl)
 	  && visibility_options.inlines_hidden)

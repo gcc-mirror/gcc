@@ -1610,40 +1610,49 @@ types (@pxref{Variable Attributes}, @pxref{Type Attributes}.)
 
 @item dllexport
 @cindex @code{__declspec(dllexport)}
-On Microsoft Windows targets and Symbian targets the @code{dllexport}
-attribute causes the compiler to provide a global pointer to a pointer
-in a dll, so that it can be referenced with the @code{dllimport}
-attribute. The pointer name is formed by combining @code{_imp__} and
-the function or variable name.
+On Microsoft Windows targets and Symbian OS targets the
+@code{dllexport} attribute causes the compiler to provide a global
+pointer to a pointer in a DLL, so that it can be referenced with the
+@code{dllimport} attribute.  On Microsoft Windows targets, the pointer
+name is formed by combining @code{_imp__} and the function or variable
+name.
 
-Currently, the @code{dllexport}attribute is ignored for inlined
-functions, but export can be forced by using the
-@option{-fkeep-inline-functions} flag. The attribute is also ignored for
-undefined symbols.
+You can use @code{__declspec(dllexport)} as a synonym for
+@code{__attribute__ ((dllexport))} for compatibility with other
+compilers.
+
+On systems that support the @code{visibility} attribute, this
+attribute also implies ``default'' visibility, unless a
+@code{visibility} attribute is explicitly specified.  You should avoid
+the use of @code{dllexport} with ``hidden'' or ``internal''
+visibility; in the future GCC may issue an error for those cases.
+
+Currently, the @code{dllexport} attribute is ignored for inlined
+functions, unless the @option{-fkeep-inline-functions} flag has been
+used.  The attribute is also ignored for undefined symbols.
 
 When applied to C++ classes. the attribute marks defined non-inlined
 member functions and static data members as exports. Static consts
 initialized in-class are not marked unless they are also defined
 out-of-class.
 
-On cygwin, mingw, arm-pe and sh-symbianelf targets,
-@code{__declspec(dllexport)} is recognized as a synonym for
-@code{__attribute__ ((dllexport))} for compatibility with other
-Microsoft Windows and Symbian compilers. 
-
 For Microsoft Windows targets there are alternative methods for
-including the symbol in the dll's export table such as using a
+including the symbol in the DLL's export table such as using a
 @file{.def} file with an @code{EXPORTS} section or, with GNU ld, using
 the @option{--export-all} linker flag.
 
 @item dllimport
 @cindex @code{__declspec(dllimport)}
-On Microsoft Windows and Symbian targets, the @code{dllimport}
+On Microsoft Windows and Symbian OS targets, the @code{dllimport}
 attribute causes the compiler to reference a function or variable via
-a global pointer to a pointer that is set up by the Microsoft Windows
-dll library. The pointer name is formed by combining @code{_imp__} and
-the function or variable name. The attribute implies @code{extern}
-storage.
+a global pointer to a pointer that is set up by the DLL exporting the
+symbol. The attribute implies @code{extern} storage.  On Microsoft
+Windows targets, the pointer name is formed by combining @code{_imp__}
+and the function or variable name.
+
+You can use @code{__declspec(dllimport)} as a synonym for
+@code{__attribute__ ((dllimport))} for compatibility with other
+compilers.
 
 Currently, the attribute is ignored for inlined functions. If the
 attribute is applied to a symbol @emph{definition}, an error is reported.
@@ -1657,31 +1666,27 @@ member functions and static data members as imports.  However, the
 attribute is ignored for virtual methods to allow creation of vtables
 using thunks.
 
-For Symbian targets the @code{dllimport} attribute also has another
-affect - it can cause the vtable and run-time type information for a
-class to be exported.  This happens when the class has a dllimport'ed
-constructor or a non-inline, non-pure virtual function and, for either
-of those two conditions, the class also has a inline constructor or
-destructor and has a key function that is defined in the current
-translation unit.
-
-On cygwin, mingw, arm-pe sh-symbianelf targets,
-@code{__declspec(dllimport)} is recognized as a synonym for
-@code{__attribute__ ((dllimport))} for compatibility with other
-Microsoft Windows and Symbian compilers. 
+On the SH Symbian OS target the @code{dllimport} attribute also has
+another affect - it can cause the vtable and run-time type information
+for a class to be exported.  This happens when the class has a
+dllimport'ed constructor or a non-inline, non-pure virtual function
+and, for either of those two conditions, the class also has a inline
+constructor or destructor and has a key function that is defined in
+the current translation unit.
 
 For Microsoft Windows based targets the use of the @code{dllimport}
 attribute on functions is not necessary, but provides a small
-performance benefit by eliminating a thunk in the dll. The use of the
+performance benefit by eliminating a thunk in the DLL. The use of the
 @code{dllimport} attribute on imported variables was required on older
-versions of GNU ld, but can now be avoided by passing the
-@option{--enable-auto-import} switch to ld. As with functions, using
-the attribute for a variable eliminates a thunk in the dll.
+versions of the GNU linker, but can now be avoided by passing the
+@option{--enable-auto-import} switch to the GNU linker. As with
+functions, using the attribute for a variable eliminates a thunk in
+the DLL.
 
-One drawback to using this attribute is that a pointer to a function or
-variable marked as dllimport cannot be used as a constant address. The
-attribute can be disabled for functions by setting the
-@option{-mnop-fun-dllimport} flag.
+One drawback to using this attribute is that a pointer to a function
+or variable marked as @code{dllimport} cannot be used as a constant
+address.  On Microsoft Windows targets, the attribute can be disabled
+for functions by setting the @option{-mnop-fun-dllimport} flag.
 
 @item eightbit_data
 @cindex eight bit data on the H8/300, H8/300H, and H8S

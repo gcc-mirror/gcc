@@ -1,7 +1,6 @@
-// { dg-require-visibility }
-// { dg-do compile }
+// { dg-require-visibility "" }
 // { dg-options "-fvisibility=hidden" }
-// { dg-final { scan-assembler-not "\\.hidden\[^\n\]*_Znwj" } }
+// { dg-final { scan-not-hidden "_Znwj" } }
 
 void f() {
   new int;

@@ -1,3 +1,30 @@
+2004-08-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/ext/visibility/assign1.C: Use scan-hidden and
+	dg-require-visiblity.
+	* g++.dg/ext/visibility/fvisibility-inlines-hidden.C: Likewise.
+	* g++.dg/ext/visibility/fvisibility.C: Likewise.
+	* g++.dg/ext/visibility/memfuncts.C: Likewise.
+	* g++.dg/ext/visibility/new1.C: Likewise.
+	* g++.dg/ext/visibility/pragma.C: Likewise.
+	* g++.dg/ext/visibility/staticmemfuncts.C: Likewise.
+	* g++.dg/ext/visibility/virtual.C: Likewise.
+	* g++/dg/ext/visibility/visibility-1.C: Likewise.
+	* g++/dg/ext/visibility/visibility-2.C: Likewise.
+	* g++/dg/ext/visibility/visibility-3.C: Likewise.
+	* g++/dg/ext/visibility/visibility-4.C: Likewise.
+	* g++/dg/ext/visibility/visibility-5.C: Likewise.
+	* g++/dg/ext/visibility/visibility-6.C: Likewise.
+	* g++/dg/ext/visibility/visibility-7.C: Likewise.
+	* g++/dg/ext/visibility/visibility-8.C: New test.
+	* gcc.c-torture/compile/dll.x: Remove.
+	* gcc.dg/dll-2.c: Use dg-require-dll
+	* gcc.dg/visibility-10.c: New test.
+	* lib/gcc-dg.exp (dg-require-dll): Add Symbian to list of targets
+	supporting DLLs.
+	* testsuite/lib/scanasm.exp (scan_hidden): New function.
+	(scan_not_hidden): Likewise.
+
 2004-08-05  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/sh4a-fprun.c: Fix dg-do typo.

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-visibility "" } */
-/* { dg-final { scan-assembler "\\.hidden.*_ZN1DaSERKS_" } } */
+/* { dg-final { scan-hidden "_ZN1DaSERKS_" } } */
 
 struct B {
   B& operator=(const B&);
