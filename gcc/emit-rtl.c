@@ -3495,6 +3495,38 @@ init_emit_once (line_numbers)
 
   no_line_numbers = ! line_numbers;
 
+  /* Compute the word and byte modes.  */
+
+  byte_mode = VOIDmode;
+  word_mode = VOIDmode;
+  double_mode = VOIDmode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
+	  && byte_mode == VOIDmode)
+	byte_mode = mode;
+
+      if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
+	  && word_mode == VOIDmode)
+	word_mode = mode;
+    }
+
+#ifndef DOUBLE_TYPE_SIZE
+#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
+#endif
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
+	  && double_mode == VOIDmode)
+	double_mode = mode;
+    }
+
+  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
+
   /* Assign register numbers to the globally defined register rtx.
      This must be done at runtime because the register number field
      is in a union and some compilers can't initialize unions.  */
@@ -3529,38 +3561,6 @@ init_emit_once (line_numbers)
      init_function_start.  */
   INIT_EXPANDERS;
 #endif
-
-  /* Compute the word and byte modes.  */
-
-  byte_mode = VOIDmode;
-  word_mode = VOIDmode;
-  double_mode = VOIDmode;
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
-	  && byte_mode == VOIDmode)
-	byte_mode = mode;
-
-      if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
-	  && word_mode == VOIDmode)
-	word_mode = mode;
-    }
-
-#ifndef DOUBLE_TYPE_SIZE
-#define DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
-#endif
-
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    {
-      if (GET_MODE_BITSIZE (mode) == DOUBLE_TYPE_SIZE
-	  && double_mode == VOIDmode)
-	double_mode = mode;
-    }
-
-  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
 
   /* Create the unique rtx's for certain rtx codes and operand values.  */
 

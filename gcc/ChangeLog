@@ -1,3 +1,26 @@
+Thu Sep 23 12:54:49 1999  Alex Samuel  <samuel@codesourcery.com>
+
+	* emit-rtl.c (init_emit_once): Initialize modes first.
+
+Sun Sep 19 01:23:23 1999  Alex Samuel  <samuel@codesourcery.com>
+
+	* config/i386/i386.c (pic_label_name): Change to char pointer.
+	(global_offset_table): New variable.
+	(load_pic_register): Fill global_offset_table if it hasn't
+	already been done.  Allocate pic_label_name dynamically.
+	* ggc.h (empty_string): New variable.
+	* ggc-simple.c (empty_string): Likewise.
+	(init_ggc): Allocate empty_string and add as root.
+	* stmt.c (digit_strings): New variable.
+	(init_stmt): Add last_block_end_note as root.  Allocate and
+	initialize digit_strings. 
+	(expand_asm_operands): Use empty_string instead of string
+	constant.  Use digit_strings instead of string constants.
+	* profile.c (init_arc_profiler): Allocate string with
+	ggc_alloc_string instead of xmalloc.
+	(output_func_start_profiler): Likewise.
+	* c-typeck.c (digest_init): Check if init is error_mark_node.
+
 Wed Sep 22 12:04:58 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cpplib.c (handle_directive): Don't complain about `# NUMBER' if
