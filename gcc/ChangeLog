@@ -1,3 +1,7 @@
+2001-11-11  H.J. Lu <hjl@gnu.org>
+
+	* config.gcc: Add "elfos.h svr4.h" to $tm_file for Linux/mips.
+
 Sun Nov 11 01:26:00 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (*_MAX_SKIP): Use *_max_skip variables.
