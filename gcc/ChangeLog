@@ -1,3 +1,14 @@
+2001-04-17  Zack Weinberg  <zackw@stanford.edu>
+
+	* dbxout.c (dbxout_init): If DBX_OUTPUT_GCC_MARKER is defined,
+	use it instead of blindly generating a .stabs.
+	* xcoffout.h: Define DBX_OUTPUT_GCC_MARKER so we put the type
+	in the right place.
+	* xcoffout.c: Don't bother defining default for N_CATCH.
+	(UNKNOWN_STAB): Use internal_error.
+	(stab_to_sclass): Remove now-unnecessary aborts.
+	Remove #if 0'ed case N_BROWS.  Add #ifdef N_OPT block.
+
 Tue Apr 17 21:41:11 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (mark_all_labels): Canonicalize the tail recursion
@@ -92,7 +103,7 @@ Mon Apr 16 08:03:48 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (reload_outdi): Operand 0 must be a non hard register.
 
-	* pa.c (secondary_reload_class): SAR<->FP copies require a 
+	* pa.c (secondary_reload_class): SAR<->FP copies require a
 	secondary register.
 
 	* install.texi (mips-mips-bsd): Update list of functions
@@ -149,8 +160,8 @@ Fri Apr 13 21:40:28 2001  Loren J. Rittle  <ljrittle@acm.org>
 
 2001-04-13  Alan Modra  <alan@linuxcare.com.au>
 
-        * pa.h (GO_IF_LEGITIMATE_ADDRESS): Disallow PIC LO_SUM
-        fp mode addresses.
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Disallow PIC LO_SUM
+	fp mode addresses.
 
 2001-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
@@ -500,12 +511,12 @@ Thu Apr 12 18:13:37 2001  Rodney Brown  <RodneyBrown@mynd.com>
 	eliminate_constant_term, expand_complex_abs, find_single_use,
 	make_tree, init_expr_once, init_optabs, supports_one_only):
 	Likewise.
-	
+
 	* tree.h (exact_log2_wide, floor_log2_wide, expand_null_return,
 	rest_of_type_compilation, emit_queue, do_pending_stack_adjust,
 	expand_assignment, store_expr, emit_line_note_after,
 	emit_line_note_force, split_specs_attrs, label_rtx): Likewise.
-	
+
 	* toplev.h (exact_log2_wide, floor_log2_wide): Add prototype.
 
 	* sparc-protos.h: Delete redundant prototypes.
@@ -558,7 +569,7 @@ Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-04-10  Andrew MacLeod  <amacleod@redhat.com>
 
-	* function.c (purge_single_hard_subreg_set): Only check REGNO if 
+	* function.c (purge_single_hard_subreg_set): Only check REGNO if
 	the subreg was a hard register. Pseudos are left as subregs.
 
 2001-04-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
@@ -566,7 +577,7 @@ Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* Makefile.in (LIB2FUNCS_STATIC_EXTRA): New macro.
 	(LIB2ADD_ST): New macro, pass it to mklibgcc.
 	* mklibgcc.in (libgcc2_st_objs): New variable, set it from LIB2ADD_ST.
-        (libgcc_st_objs): New, set from libgcc2_st_objs. Use it for libgcc.a.
+	(libgcc_st_objs): New, set from libgcc2_st_objs. Use it for libgcc.a.
 	* config/rs6000/t-ppccomm (LIB2FUNCS_STATIC_EXTRA): New macro.
 
 2001-04-09  Bo Thorsen  <bo@suse.co.uk>
@@ -575,7 +586,7 @@ Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
 
-	* output.h (set_block_num): Missed it earlier, remove deprecated 
+	* output.h (set_block_num): Missed it earlier, remove deprecated
 	prototype.
 
 2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
@@ -585,29 +596,29 @@ Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(oprs_not_set_p): Pass basic_blocks instead of ints as parameters.
 	(handle_rd_kill_set): Change bb parameter from int to basic_block.
 	(compute_kill_rd): Pass basic_blocks instead of ints as parameters.
-	(expr_killed_p): Change bb parameter from int to basic_block, pass 
+	(expr_killed_p): Change bb parameter from int to basic_block, pass
 	basic_blocks instead of ints as parameters.
 	(compute_ae_kill): Pass basic_blocks instead of ints as parameters.
-	(expr_reaches_here_p_work, expr_reaches_here_p): Change bb parameter 
+	(expr_reaches_here_p_work, expr_reaches_here_p): Change bb parameter
 	from int to basic_block, pass basic_blocks instead of ints as parms.
-	(pre_expr_reaches_here_p_work, pre_expr_reaches_here_p): Change bb 
+	(pre_expr_reaches_here_p_work, pre_expr_reaches_here_p): Change bb
 	parameter from int to basic_block, pass basic_blocks instead of ints.
 	(process_insert_insn): Pass basic_blocks instead of ints as parameters.
-	(insert_insn_end_bb): Change bb parameter from int to basic_block, 
+	(insert_insn_end_bb): Change bb parameter from int to basic_block,
 	pass basic_blocks instead of ints.
-	(pre_edge_insert, pre_insert_copy_insn, pre_insert_copies): Pass 
+	(pre_edge_insert, pre_insert_copy_insn, pre_insert_copies): Pass
 	basic_blocks instead of ints as parameters.
 	(pre_delete): Pass basic_blocks instead of ints as parameters.
-	(hoist_expr_reaches_here_p): Change bb parameter from int to 
+	(hoist_expr_reaches_here_p): Change bb parameter from int to
 	basic_block, pass basic_blocks instead of ints.
 	(hoist_code): Pass basic_blocks instead of ints as parameters.
-	(reg_set_info, store_ops_ok, store_killed_after, store_killed_before): 
+	(reg_set_info, store_ops_ok, store_killed_after, store_killed_before):
 	Change bb parameter from int to basic_block.
 	(build_store_vectors): Pass basic_blocks instead of ints as parameters.
-	(insert_insn_start_bb): Change bb parameter from int to basic_block, 
+	(insert_insn_start_bb): Change bb parameter from int to basic_block,
 	pass basic_blocks instead of ints.
 	(insert_store): Pass basic_blocks instead of ints as parameters.
-	(replace_store_insn, delete_store): Change bb parameter from int to 
+	(replace_store_insn, delete_store): Change bb parameter from int to
 	basic_block, pass basic_blocks instead of ints.
 	(store_motion): Pass basic_blocks instead of ints as parameters.
 
@@ -618,7 +629,7 @@ Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* flow.c (set_block_num): Remove obsolete function.
 	(set_block_for_new_insns): Set BB for single or multiple insns.
 	* gcse.c (handle_avail_expr): Use set_block_for_new_insns.
-	(process_insn_end_bb): Use set_block_for_new_insns or 
+	(process_insn_end_bb): Use set_block_for_new_insns or
 	set_block_for_insn instead of set_block_num.
 	(pre_insert_copy_insn): Use set_block_for_new_insns.
 	(update_ld_motion_stores): Use set_block_for_new_insns.
@@ -634,13 +645,13 @@ Tue Apr 10 17:45:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* flags.h (flag_gcse_lm, flag_gcse_sm): New optimization flags.
 	* gcse.c (struct ls_expr): Add load/store expressions structure.
 	(modify_mem_list, canon_modify_mem_list): New variable.
-	(gcse_main): Initialize & finalize alias analysis. Use enhanced 
+	(gcse_main): Initialize & finalize alias analysis. Use enhanced
 	load motion and store motion if requested.
 	(alloc_gcse_mem): Allocate space for modify_mem_list array.
 	(free_gcse_mem): Free the modify_mem_list array.
 	(oprs_unchanged_p): Use load_killed_in_block_p.
 	(gcse_mems_conflict_p, gcse_mem_operand): New variables.
-	(mems_conflict_for_gcse_p): New function.  Don't kill loads 
+	(mems_conflict_for_gcse_p): New function.  Don't kill loads
 	with stores to themselves if its in the load/store expression list.
 	(load_killed_in_block_p): New function.
 	(canon_list_insert): New Function.

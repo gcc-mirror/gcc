@@ -45,11 +45,6 @@ Boston, MA 02111-1307, USA.  */
 #include "gstab.h"
 #else
 #include <stab.h>
-
-/* This is a GNU extension we need to reference in this file.  */
-#ifndef N_CATCH
-#define N_CATCH 0x54
-#endif
 #endif
 
 /* Line number of beginning of current function, minus one.
@@ -178,10 +173,7 @@ xcoff_output_standard_types (syms)
 /* Print an error message for unrecognized stab codes.  */
 
 #define UNKNOWN_STAB(STR)	\
-   do { \
-     error ("Unknown stab %s: : 0x%x\n", STR, stab);	\
-     fflush (stderr);	\
-   } while (0)
+  internal_error ("No sclass for %s stab (0x%x)\n", STR, stab)
 
 /* Conversion routine from BSD stabs to AIX storage classes.  */
 
@@ -196,7 +188,6 @@ stab_to_sclass (stab)
 
     case N_FNAME:
       UNKNOWN_STAB ("N_FNAME");
-      abort ();
 
     case N_FUN:
       return C_FUN;
@@ -208,7 +199,6 @@ stab_to_sclass (stab)
 #ifdef N_MAIN
     case N_MAIN:
       UNKNOWN_STAB ("N_MAIN");
-      abort ();
 #endif
 
     case N_RSYM:
@@ -216,7 +206,6 @@ stab_to_sclass (stab)
 
     case N_SSYM:
       UNKNOWN_STAB ("N_SSYM");
-      abort ();
 
     case N_RPSYM:
       return C_RPSYM;
@@ -232,59 +221,43 @@ stab_to_sclass (stab)
 
     case N_SO:
       UNKNOWN_STAB ("N_SO");
-      abort ();
 
     case N_SOL:
       UNKNOWN_STAB ("N_SOL");
-      abort ();
 
     case N_SLINE:
       UNKNOWN_STAB ("N_SLINE");
-      abort ();
 
 #ifdef N_DSLINE
     case N_DSLINE:
       UNKNOWN_STAB ("N_DSLINE");
-      abort ();
 #endif
 
 #ifdef N_BSLINE
     case N_BSLINE:
       UNKNOWN_STAB ("N_BSLINE");
-      abort ();
-#endif
-#if 0
-      /* This has the same value as N_BSLINE.  */
-    case N_BROWS:
-      UNKNOWN_STAB ("N_BROWS");
-      abort ();
 #endif
 
 #ifdef N_BINCL
     case N_BINCL:
       UNKNOWN_STAB ("N_BINCL");
-      abort ();
 #endif
 
 #ifdef N_EINCL
     case N_EINCL:
       UNKNOWN_STAB ("N_EINCL");
-      abort ();
 #endif
 
 #ifdef N_EXCL
     case N_EXCL:
       UNKNOWN_STAB ("N_EXCL");
-      abort ();
 #endif
 
     case N_LBRAC:
       UNKNOWN_STAB ("N_LBRAC");
-      abort ();
 
     case N_RBRAC:
       UNKNOWN_STAB ("N_RBRAC");
-      abort ();
 
     case N_BCOMM:
       return C_BCOMM;
@@ -295,31 +268,32 @@ stab_to_sclass (stab)
 
     case N_LENG:
       UNKNOWN_STAB ("N_LENG");
-      abort ();
 
     case N_PC:
       UNKNOWN_STAB ("N_PC");
-      abort ();
 
 #ifdef N_M2C
     case N_M2C:
       UNKNOWN_STAB ("N_M2C");
-      abort ();
 #endif
 
 #ifdef N_SCOPE
     case N_SCOPE:
       UNKNOWN_STAB ("N_SCOPE");
-      abort ();
 #endif
 
+#ifdef N_CATCH
     case N_CATCH:
       UNKNOWN_STAB ("N_CATCH");
-      abort ();
+#endif
+
+#ifdef N_OPT
+    case N_OPT:
+      UNKNOWN_STAB ("N_OPT");
+#endif
 
     default:
-      UNKNOWN_STAB ("default");
-      abort ();
+      UNKNOWN_STAB ("?");
     }
 }
 
