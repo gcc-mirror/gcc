@@ -30,7 +30,7 @@ extern struct obstack permanent_obstack;
 
 enum attrs {A_PACKED, A_NOCOMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
-	    A_FORMAT, A_WEAK, A_ALIAS};
+	    A_UNUSED, A_FORMAT, A_WEAK, A_ALIAS};
 
 static void declare_hidden_char_array	PROTO((char *, char *));
 static void add_attribute		PROTO((enum attrs, char *,
@@ -250,6 +250,7 @@ init_attributes ()
   add_attribute (A_NOCOMMON, "nocommon", 0, 0, 1);
   add_attribute (A_NORETURN, "noreturn", 0, 0, 1);
   add_attribute (A_NORETURN, "volatile", 0, 0, 1);
+  add_attribute (A_UNUSED, "unused", 0, 0, 1);
   add_attribute (A_CONST, "const", 0, 0, 1);
   add_attribute (A_T_UNION, "transparent_union", 0, 0, 0);
   add_attribute (A_CONSTRUCTOR, "constructor", 0, 0, 1);
@@ -351,6 +352,14 @@ decl_attributes (node, attributes, prefix_attributes)
 	      = build_pointer_type
 		(build_type_variant (TREE_TYPE (type),
 				     TREE_READONLY (TREE_TYPE (type)), 1));
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_UNUSED:
+	  if (TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == FUNCTION_DECL)
+	    TREE_USED (decl) = 1;
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
 	  break;
