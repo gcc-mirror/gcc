@@ -1768,11 +1768,14 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
     case ADDRESSOF:
       if (XEXP (x, 0) == var)
 	{
+	  /* Prevent sharing of rtl that might lose.  */
+	  rtx sub = copy_rtx (XEXP (var, 0));
+
 	  start_sequence ();
 
-	  if (! validate_change (insn, loc, XEXP (var, 0), 0))
+	  if (! validate_change (insn, loc, sub, 0))
 	    {
-	      rtx y = force_operand (XEXP (var, 0), NULL_RTX);
+	      rtx y = force_operand (sub, NULL_RTX);
 
 	      if (! validate_change (insn, loc, y, 0))
 		*loc = copy_to_reg (y);
@@ -2715,13 +2718,16 @@ purge_addressof_1 (loc, insn, force)
   if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
     {
       rtx insns;
+      /* We must create a copy of the rtx because it was created by
+	 overwriting a REG rtx which is always shared.  */
+      rtx sub = copy_rtx (XEXP (XEXP (x, 0), 0));
 
-      if (validate_change (insn, loc, XEXP (XEXP (x, 0), 0), 0))
+      if (validate_change (insn, loc, sub, 0))
 	return;
 
       start_sequence ();
       if (! validate_change (insn, loc,
-			     force_operand (XEXP (XEXP (x, 0), 0), NULL_RTX),
+			     force_operand (sub, NULL_RTX),
 			     0))
 	abort ();
 
@@ -2733,6 +2739,8 @@ purge_addressof_1 (loc, insn, force)
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
+      if (GET_CODE (sub) != REG)
+	sub = copy_rtx (sub);
       if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
 	  if (! BYTES_BIG_ENDIAN && ! WORDS_BIG_ENDIAN)
