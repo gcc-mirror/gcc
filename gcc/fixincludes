@@ -2552,6 +2552,24 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
     
+# This file in A/UX 3.0.x/3.1.x contains an __asm directive for c89; gcc
+# doesn't understand it.
+file=sys/param.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo "Fixing __asm directive in sys/param.h"
+  sed -e 's|#ifndef NOINLINE|#if !defined(NOINLINE) \&\& !defined(__GNUC__)|' \
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
 
 # This loop does not appear to do anything, because it uses file
 # rather than $file when setting target.  It also appears to be
