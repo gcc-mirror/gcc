@@ -76,7 +76,7 @@ gen : $(SH_TARGET) fixincl.x
 
 $(FIOBJ): $(HDR)
 
-fixincl: $(FIOBJ)
+fixincl: $(FIOBJ) fixfixes fixtests
 	@echo $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; \
 	if $(CC) -o $@ $(FIOBJ) $(LIBERTY) $(LIB) ; then : ; else \
 	rm -f $@ ; (echo "#! /bin/sh" ; echo exit 1 ) > $@ ; \
@@ -99,33 +99,13 @@ server.o : server.c server.h
 procopen.o : procopen.c server.h
 
 fixincl.x: fixincl.tpl inclhack.def
-	@if ( autogen --help > /dev/null 2>&1 ) ; then \
-		echo autogen -T fixincl.tpl -b fixincl inclhack.def ; \
-		autogen -T $(srcdir)/fixincl.tpl -b fixincl \
-			$(srcdir)/inclhack.def ; \
-	else echo You need to install autogen ; \
-		if [ `pwd` != `cd $(srcdir) ; pwd` ] ; then \
-			cp $(srcdir)/$@ . ; \
-		else touch $@ ; fi ; fi
+	cd $(srcdir) ; ./genfixes $@
 
 inclhack.sh: inclhack.def inclhack.tpl hackshell.tpl
-	@if ( autogen --help > /dev/null 2>&1 ) ; then \
-		echo autogen inclhack.def ; \
-		autogen -L$(srcdir) $(srcdir)/inclhack.def ; \
-	else echo You need to install autogen ; \
-		if [ `pwd` != `cd $(srcdir) ; pwd` ] ; then \
-			cp $(srcdir)/$@ . ; \
-		else touch $@ ; fi ; fi
+	cd $(srcdir) ; ./genfixes $@
 
 fixincl.sh: inclhack.def inclhack.tpl
-	@if ( autogen --help > /dev/null 2>&1 ) ; then \
-		echo autogen -DPROGRAM=1 -b fixincl inclhack.def ; \
-		autogen -DPROGRAM=1 -b fixincl -L$(srcdir) \
-			$(srcdir)/inclhack.def ; touch $@ ; \
-	else echo You need to install autogen ; \
-		if [ `pwd` != `cd $(srcdir) ; pwd` ] ; then \
-			cp $(srcdir)/$@ . ; \
-		else touch $@ ; fi ; fi
+	cd $(srcdir) ; ./genfixes $@
 
 clean:
 	rm -f *.o $(TARGETS) fixincl.x

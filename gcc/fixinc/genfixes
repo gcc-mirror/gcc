@@ -3,11 +3,47 @@
 SHELL=/bin/sh
 export SHELL
 
-echo AutoGen-ing inclhack.sh
-autogen inclhack.def
+if [ $# -eq 0 ] ; then
+  echo AutoGen-ing inclhack.sh
+  autogen inclhack.def
 
-echo AutoGen-ing fixincl.x
-autogen -T fixincl.tpl -b fixincl inclhack.def
+  echo AutoGen-ing fixincl.x
+  autogen -T fixincl.tpl -b fixincl inclhack.def
 
-echo AutoGen-ing fixincl.sh
-autogen -DPROGRAM=1 -b fixincl inclhack.def
+  echo AutoGen-ing fixincl.sh
+  autogen -DPROGRAM=1 -b fixincl inclhack.def
+  exit 0
+fi
+
+if (autogen --help > /dev/null 2>&1) ; then : ; else
+  echo "AutoGen does not appear to be correctly installed."
+  echo "Please download and install:"
+  echo "   ftp://sourceware.cygnus.com/pub/egcs/infrastructure/autogen.tar.gz"
+  exit 1
+fi
+
+set -e
+
+case "$1" in
+inclhack.def )
+  echo AutoGen-ing inclhack.sh
+  autogen inclhack.sh
+  ;;
+
+fixincl.x )
+  echo AutoGen-ing fixincl.x
+  autogen -T fixincl.tpl -b fixincl inclhack.def
+  ;;
+
+fixincl.sh )
+  echo AutoGen-ing fixincl.sh
+  autogen -DPROGRAM=1 -b fixincl inclhack.def
+  ;;
+
+* )
+  echo genfixes cannot create $1
+  exit 1
+  ;;
+esac
+
+exit 0
