@@ -538,7 +538,7 @@
 		      (match_operand:V16QI 2 "register_operand" "v")
                       (match_operand:V4SI 3 "register_operand" "v")] 66))]
   "TARGET_ALTIVEC"
-  "vmsumubm %0, %1, %2, %3"
+  "vmsummbm %0, %1, %2, %3"
   [(set_attr "type" "veccomplex")])
 
 (define_insn "altivec_vmsumuhm"

@@ -1,3 +1,8 @@
+2003-12-04  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/12467
+	* config/rs6000/altivec.md (altivec_vmsummbm): Fix typo.
+
 2003-12-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.in (stmp-fixinc): Don't bail out if SYSTEM_HEADER_DIR
