@@ -1,3 +1,9 @@
+Tue Feb 11 23:25:34 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* simplify-rtx.c (simplify_unary_operation,
+	simplify_binary_operation):  Deal with vector modes
+	(simplify_ternary_operation):  Deal with no-op VEC_MERGE.
+
 2003-02-11  Richard Henderson  <rth@redhat.com>
 
 	2003-01-15  Richard Henderson  <rth@redhat.com>
