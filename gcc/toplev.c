@@ -1887,7 +1887,14 @@ compile_file (name)
 	    && DECL_INITIAL (decl) == 0
 	    && DECL_EXTERNAL (decl)
 	    && ! TREE_PUBLIC (decl))
-	  pedwarn_with_decl (decl, "`%s' declared `static' but never defined");
+	  {
+	    pedwarn_with_decl (decl, 
+			       "`%s' declared `static' but never defined");
+	    /* This symbol is effectively an "extern" declaration now.  */
+	    TREE_PUBLIC (decl) = 1;
+	    assemble_external (decl);
+
+	  }
 	/* Warn about static fns or vars defined but not used,
 	   but not about inline functions
 	   since unused inline statics is normal practice.  */
