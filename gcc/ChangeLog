@@ -1,3 +1,12 @@
+Mon Sep 21 13:51:05 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* flow.c (find_basic_blocks): Delete check for in_libcall_block when
+	prev_code is a CALL_INSN.  Change check for REG_RETVAL note to
+	use in_libcall_block.
+	(find_basic_blocks_1): Delete check for in_libcall_block when prev_code
+	is a CALL_INSN.  If CALL_INSN and in_libcall_block, then change code
+	to INSN.
+
 Mon Sep 21 14:02:23 1998
 
 	* i386.h: (TARGET_SWITCHES) Improve doc for align-double.  Fix
