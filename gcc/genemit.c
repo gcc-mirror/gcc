@@ -536,7 +536,7 @@ gen_expand (rtx expand)
 	       || (GET_CODE (next) == PARALLEL
 		   && GET_CODE (XVECEXP (next, 0, 0)) == CALL))
 	printf ("  emit_call_insn (");
-      else if (GET_CODE (next) == CODE_LABEL)
+      else if (LABEL_P (next))
 	printf ("  emit_label (");
       else if (GET_CODE (next) == MATCH_OPERAND
 	       || GET_CODE (next) == MATCH_DUP
@@ -646,7 +646,7 @@ gen_split (rtx split)
 	       || (GET_CODE (next) == PARALLEL
 		   && GET_CODE (XVECEXP (next, 0, 0)) == CALL))
 	printf ("  emit_call_insn (");
-      else if (GET_CODE (next) == CODE_LABEL)
+      else if (LABEL_P (next))
 	printf ("  emit_label (");
       else if (GET_CODE (next) == MATCH_OPERAND
 	       || GET_CODE (next) == MATCH_OPERATOR

@@ -711,7 +711,7 @@ live_out_1 (struct df *df ATTRIBUTE_UNUSED, struct curr_use *use, rtx insn)
 
       /* We want to access the root webpart.  */
       wp = find_web_part (wp);
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	wp->crosses_call = 1;
       else if (copy_insn_p (insn, &s, NULL))
 	source_regno = REGNO (GET_CODE (s) == SUBREG ? SUBREG_REG (s) : s);
@@ -1045,7 +1045,7 @@ livethrough_conflicts_bb (basic_block bb)
 	    bitmap_set_bit (all_defs, DF_REF_ID (info.defs[n]));
 	  if (TEST_BIT (insns_with_deaths, INSN_UID (insn)))
 	    deaths++;
-	  if (GET_CODE (insn) == CALL_INSN)
+	  if (CALL_P (insn))
 	    contains_call = 1;
 	}
       if (insn == BB_END (bb))
@@ -2676,7 +2676,7 @@ detect_webs_set_in_cond_jump (void)
 {
   basic_block bb;
   FOR_EACH_BB (bb)
-    if (GET_CODE (BB_END (bb)) == JUMP_INSN)
+    if (JUMP_P (BB_END (bb)))
       {
 	struct df_link *link;
 	for (link = DF_INSN_DEFS (df, BB_END (bb)); link; link = link->next)

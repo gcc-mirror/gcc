@@ -738,7 +738,7 @@ combine_instructions (rtx f, unsigned int nregs)
 		    INSN_UID (insn), uid_insn_cost[INSN_UID (insn)]);
 	}
 
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	label_tick++;
     }
 
@@ -760,7 +760,7 @@ combine_instructions (rtx f, unsigned int nregs)
 	{
 	  next = 0;
 
-	  if (GET_CODE (insn) == CODE_LABEL)
+	  if (LABEL_P (insn))
 	    label_tick++;
 
 	  else if (INSN_P (insn))
@@ -784,7 +784,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
 		  /* If the linked insn has been replaced by a note, then there
 		     is no point in pursuing this chain any further.  */
-		  if (GET_CODE (link) == NOTE)
+		  if (NOTE_P (link))
 		    continue;
 
 		  for (nextlinks = LOG_LINKS (link);
@@ -804,9 +804,9 @@ combine_instructions (rtx f, unsigned int nregs)
 		 We need this special code because data flow connections
 		 via CC0 do not get entered in LOG_LINKS.  */
 
-	      if (GET_CODE (insn) == JUMP_INSN
+	      if (JUMP_P (insn)
 		  && (prev = prev_nonnote_insn (insn)) != 0
-		  && GET_CODE (prev) == INSN
+		  && NONJUMP_INSN_P (prev)
 		  && sets_cc0_p (PATTERN (prev)))
 		{
 		  if ((next = try_combine (insn, prev,
@@ -822,9 +822,9 @@ combine_instructions (rtx f, unsigned int nregs)
 		}
 
 	      /* Do the same for an insn that explicitly references CC0.  */
-	      if (GET_CODE (insn) == INSN
+	      if (NONJUMP_INSN_P (insn)
 		  && (prev = prev_nonnote_insn (insn)) != 0
-		  && GET_CODE (prev) == INSN
+		  && NONJUMP_INSN_P (prev)
 		  && sets_cc0_p (PATTERN (prev))
 		  && GET_CODE (PATTERN (insn)) == SET
 		  && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (insn))))
@@ -845,11 +845,11 @@ combine_instructions (rtx f, unsigned int nregs)
 		 explicitly references CC0.  If so, try this insn, that insn,
 		 and its predecessor if it sets CC0.  */
 	      for (links = LOG_LINKS (insn); links; links = XEXP (links, 1))
-		if (GET_CODE (XEXP (links, 0)) == INSN
+		if (NONJUMP_INSN_P (XEXP (links, 0))
 		    && GET_CODE (PATTERN (XEXP (links, 0))) == SET
 		    && reg_mentioned_p (cc0_rtx, SET_SRC (PATTERN (XEXP (links, 0))))
 		    && (prev = prev_nonnote_insn (XEXP (links, 0))) != 0
-		    && GET_CODE (prev) == INSN
+		    && NONJUMP_INSN_P (prev)
 		    && sets_cc0_p (PATTERN (prev))
 		    && (next = try_combine (insn, XEXP (links, 0),
 					    prev, &new_direct_jump_p)) != 0)
@@ -891,7 +891,7 @@ combine_instructions (rtx f, unsigned int nregs)
 		    }
 		}
 
-	      if (GET_CODE (insn) != NOTE)
+	      if (!NOTE_P (insn))
 		record_dead_and_set_regs (insn);
 
 	    retry:
@@ -1205,7 +1205,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
       /* Can't merge a function call.  */
       || GET_CODE (src) == CALL
       /* Don't eliminate a function call argument.  */
-      || (GET_CODE (i3) == CALL_INSN
+      || (CALL_P (i3)
 	  && (find_reg_fusage (i3, USE, dest)
 	      || (REG_P (dest)
 		  && REGNO (dest) < FIRST_PSEUDO_REGISTER
@@ -1342,7 +1342,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 #ifdef AUTO_INC_DEC
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC
-	&& (GET_CODE (i3) == JUMP_INSN
+	&& (JUMP_P (i3)
 	    || reg_used_between_p (XEXP (link, 0), insn, i3)
 	    || reg_overlap_mentioned_p (XEXP (link, 0), PATTERN (i3))))
       return 0;
@@ -1359,7 +1359,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
      but that would be much slower, and this ought to be equivalent.  */
 
   p = prev_nonnote_insn (insn);
-  if (p && p != pred && GET_CODE (p) == INSN && sets_cc0_p (PATTERN (p))
+  if (p && p != pred && NONJUMP_INSN_P (p) && sets_cc0_p (PATTERN (p))
       && ! all_adjacent)
     return 0;
 #endif
@@ -1688,7 +1688,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
      where I2 and I3 are adjacent to avoid making difficult register
      usage tests.  */
 
-  if (i1 == 0 && GET_CODE (i3) == INSN && GET_CODE (PATTERN (i3)) == SET
+  if (i1 == 0 && NONJUMP_INSN_P (i3) && GET_CODE (PATTERN (i3)) == SET
       && REG_P (SET_SRC (PATTERN (i3)))
       && REGNO (SET_SRC (PATTERN (i3))) >= FIRST_PSEUDO_REGISTER
       && find_reg_note (i3, REG_DEAD, SET_SRC (PATTERN (i3)))
@@ -2646,7 +2646,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
      they are adjacent to each other or not.  */
   {
     rtx p = prev_nonnote_insn (i3);
-    if (p && p != i2 && GET_CODE (p) == INSN && newi2pat
+    if (p && p != i2 && NONJUMP_INSN_P (p) && newi2pat
 	&& sets_cc0_p (newi2pat))
       {
 	undo_all ();
@@ -2702,7 +2702,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
     INSN_CODE (i3) = insn_code_number;
     PATTERN (i3) = newpat;
 
-    if (GET_CODE (i3) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (i3))
+    if (CALL_P (i3) && CALL_INSN_FUNCTION_USAGE (i3))
       {
 	rtx call_usage = CALL_INSN_FUNCTION_USAGE (i3);
 
@@ -2947,7 +2947,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	mark_jump_label (PATTERN (i3), i3, 0);
 
 	if ((temp = next_nonnote_insn (i3)) == NULL_RTX
-	    || GET_CODE (temp) != BARRIER)
+	    || !BARRIER_P (temp))
 	  emit_barrier_after (i3);
       }
 
@@ -2958,7 +2958,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 	*new_direct_jump_p = 1;
 
 	if ((temp = next_nonnote_insn (undobuf.other_insn)) == NULL_RTX
-	    || GET_CODE (temp) != BARRIER)
+	    || !BARRIER_P (temp))
 	  emit_barrier_after (undobuf.other_insn);
       }
 
@@ -3087,12 +3087,12 @@ find_split_point (rtx *loc, rtx insn)
 	  if (seq
 	      && NEXT_INSN (seq) != NULL_RTX
 	      && NEXT_INSN (NEXT_INSN (seq)) == NULL_RTX
-	      && GET_CODE (seq) == INSN
+	      && NONJUMP_INSN_P (seq)
 	      && GET_CODE (PATTERN (seq)) == SET
 	      && SET_DEST (PATTERN (seq)) == reg
 	      && ! reg_mentioned_p (reg,
 				    SET_SRC (PATTERN (seq)))
-	      && GET_CODE (NEXT_INSN (seq)) == INSN
+	      && NONJUMP_INSN_P (NEXT_INSN (seq))
 	      && GET_CODE (PATTERN (NEXT_INSN (seq))) == SET
 	      && SET_DEST (PATTERN (NEXT_INSN (seq))) == reg
 	      && memory_address_p (GET_MODE (x),
@@ -10939,7 +10939,7 @@ record_dead_and_set_regs (rtx insn)
 	record_value_for_reg (XEXP (link, 0), insn, NULL_RTX);
     }
 
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
@@ -11321,7 +11321,7 @@ reg_dead_at_p (rtx reg, rtx insn)
 
   /* Scan backwards until we find a REG_DEAD note, SET, CLOBBER, label, or
      beginning of function.  */
-  for (; insn && GET_CODE (insn) != CODE_LABEL && GET_CODE (insn) != BARRIER;
+  for (; insn && !LABEL_P (insn) && !BARRIER_P (insn);
        insn = prev_nonnote_insn (insn))
     {
       note_stores (PATTERN (insn), reg_dead_at_p_1, NULL);
@@ -11740,9 +11740,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	  break;
 
 	case REG_NON_LOCAL_GOTO:
-	  if (GET_CODE (i3) == JUMP_INSN)
+	  if (JUMP_P (i3))
 	    place = i3;
-	  else if (i2 && GET_CODE (i2) == JUMP_INSN)
+	  else if (i2 && JUMP_P (i2))
 	    place = i2;
 	  else
 	    abort ();
@@ -11750,9 +11750,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 
 	case REG_EH_REGION:
 	  /* These notes must remain with the call or trapping instruction.  */
-	  if (GET_CODE (i3) == CALL_INSN)
+	  if (CALL_P (i3))
 	    place = i3;
-	  else if (i2 && GET_CODE (i2) == CALL_INSN)
+	  else if (i2 && CALL_P (i2))
 	    place = i2;
 	  else if (flag_non_call_exceptions)
 	    {
@@ -11773,9 +11773,9 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	case REG_SETJMP:
 	  /* These notes must remain with the call.  It should not be
 	     possible for both I2 and I3 to be a call.  */
-	  if (GET_CODE (i3) == CALL_INSN)
+	  if (CALL_P (i3))
 	    place = i3;
-	  else if (i2 && GET_CODE (i2) == CALL_INSN)
+	  else if (i2 && CALL_P (i2))
 	    place = i2;
 	  else
 	    abort ();
@@ -11883,19 +11883,19 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 
 	  /* Don't attach REG_LABEL note to a JUMP_INSN which has
 	     JUMP_LABEL already.  Instead, decrement LABEL_NUSES.  */
-	  if (place && GET_CODE (place) == JUMP_INSN && JUMP_LABEL (place))
+	  if (place && JUMP_P (place) && JUMP_LABEL (place))
 	    {
 	      if (JUMP_LABEL (place) != XEXP (note, 0))
 		abort ();
-	      if (GET_CODE (JUMP_LABEL (place)) == CODE_LABEL)
+	      if (LABEL_P (JUMP_LABEL (place)))
 		LABEL_NUSES (JUMP_LABEL (place))--;
 	      place = 0;
 	    }
-	  if (place2 && GET_CODE (place2) == JUMP_INSN && JUMP_LABEL (place2))
+	  if (place2 && JUMP_P (place2) && JUMP_LABEL (place2))
 	    {
 	      if (JUMP_LABEL (place2) != XEXP (note, 0))
 		abort ();
-	      if (GET_CODE (JUMP_LABEL (place2)) == CODE_LABEL)
+	      if (LABEL_P (JUMP_LABEL (place2)))
 		LABEL_NUSES (JUMP_LABEL (place2))--;
 	      place2 = 0;
 	    }
@@ -11912,7 +11912,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	  /* If the insn previously containing this note still exists,
 	     put it back where it was.  Otherwise move it to the previous
 	     insn.  Adjust the corresponding REG_LIBCALL note.  */
-	  if (GET_CODE (from_insn) != NOTE)
+	  if (!NOTE_P (from_insn))
 	    place = from_insn;
 	  else
 	    {
@@ -11932,7 +11932,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 
 	case REG_LIBCALL:
 	  /* This is handled similarly to REG_RETVAL.  */
-	  if (GET_CODE (from_insn) != NOTE)
+	  if (!NOTE_P (from_insn))
 	    place = from_insn;
 	  else
 	    {
@@ -11966,7 +11966,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 	     use of A and put the death note there.  */
 
 	  if (from_insn
-	      && GET_CODE (from_insn) == CALL_INSN
+	      && CALL_P (from_insn)
 	      && find_reg_fusage (from_insn, USE, XEXP (note, 0)))
 	    place = from_insn;
 	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
@@ -12074,7 +12074,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 			}
 		    }
 		  else if (reg_referenced_p (XEXP (note, 0), PATTERN (tem))
-			   || (GET_CODE (tem) == CALL_INSN
+			   || (CALL_P (tem)
 			       && find_reg_fusage (tem, USE, XEXP (note, 0))))
 		    {
 		      place = tem;
@@ -12281,7 +12281,7 @@ distribute_links (rtx links)
 	 replace I3, I2, and I1 by I3 and I2.  But in that case the
 	 destination of I2 also remains unchanged.  */
 
-      if (GET_CODE (XEXP (link, 0)) == NOTE
+      if (NOTE_P (XEXP (link, 0))
 	  || (set = single_set (XEXP (link, 0))) == 0)
 	continue;
 
@@ -12310,7 +12310,7 @@ distribute_links (rtx links)
 	      place = insn;
 	    break;
 	  }
-	else if (GET_CODE (insn) == CALL_INSN
+	else if (CALL_P (insn)
 		 && find_reg_fusage (insn, USE, reg))
 	  {
 	    place = insn;
@@ -12378,7 +12378,7 @@ static int
 insn_cuid (rtx insn)
 {
   while (insn != 0 && INSN_UID (insn) > max_uid_cuid
-	 && GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
+	 && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE)
     insn = NEXT_INSN (insn);
 
   if (INSN_UID (insn) > max_uid_cuid)

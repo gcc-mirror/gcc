@@ -128,11 +128,11 @@ edge: { sourcename: \"%s.0\" targetname: \"%s.%d\" }\n",
       fprintf (fp, "node: {\n  title: \"%s.%d\"\n  color: %s\n  \
 label: \"%s %d\n",
 	       current_function_name (), XINT (tmp_rtx, 0),
-	       GET_CODE (tmp_rtx) == NOTE ? "lightgrey"
-	       : GET_CODE (tmp_rtx) == INSN ? "green"
-	       : GET_CODE (tmp_rtx) == JUMP_INSN ? "darkgreen"
-	       : GET_CODE (tmp_rtx) == CALL_INSN ? "darkgreen"
-	       : GET_CODE (tmp_rtx) == CODE_LABEL ?  "\
+	       NOTE_P (tmp_rtx) ? "lightgrey"
+	       : NONJUMP_INSN_P (tmp_rtx) ? "green"
+	       : JUMP_P (tmp_rtx) ? "darkgreen"
+	       : CALL_P (tmp_rtx) ? "darkgreen"
+	       : LABEL_P (tmp_rtx) ?  "\
 darkgrey\n  shape: ellipse" : "white",
 	       GET_RTX_NAME (GET_CODE (tmp_rtx)), XINT (tmp_rtx, 0));
       break;
@@ -141,7 +141,7 @@ darkgrey\n  shape: ellipse" : "white",
     }
 
   /* Print the RTL.  */
-  if (GET_CODE (tmp_rtx) == NOTE)
+  if (NOTE_P (tmp_rtx))
     {
       const char *name = "";
       if (NOTE_LINE_NUMBER (tmp_rtx) < 0)
@@ -287,9 +287,9 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
 
 	  if (start[INSN_UID (tmp_rtx)] < 0 && end[INSN_UID (tmp_rtx)] < 0)
 	    {
-	      if (GET_CODE (tmp_rtx) == BARRIER)
+	      if (BARRIER_P (tmp_rtx))
 		continue;
-	      if (GET_CODE (tmp_rtx) == NOTE
+	      if (NOTE_P (tmp_rtx)
 		  && (1 || in_bb_p[INSN_UID (tmp_rtx)] == NOT_IN_BB))
 		continue;
 	    }
@@ -348,7 +348,7 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
 	    {
 	      /* Don't print edges to barriers.  */
 	      if (next_insn == 0
-		  || GET_CODE (next_insn) != BARRIER)
+		  || !BARRIER_P (next_insn))
 		draw_edge (fp, XINT (tmp_rtx, 0),
 			   next_insn ? INSN_UID (next_insn) : 999999, 0, 0);
 	      else
@@ -359,8 +359,8 @@ print_rtl_graph_with_bb (const char *base, const char *suffix, rtx rtx_first)
 		  do
 		    next_insn = NEXT_INSN (next_insn);
 		  while (next_insn
-			 && (GET_CODE (next_insn) == NOTE
-			     || GET_CODE (next_insn) == BARRIER));
+			 && (NOTE_P (next_insn)
+			     || BARRIER_P (next_insn)));
 
 		  draw_edge (fp, XINT (tmp_rtx, 0),
 			     next_insn ? INSN_UID (next_insn) : 999999, 0, 3);

@@ -344,7 +344,7 @@ next_flags_user (rtx insn)
       if (INSN_P (insn) && reg_mentioned_p (ix86_flags_rtx, PATTERN (insn)))
 	return insn;
 
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	return NULL_RTX;
     }
   return NULL_RTX;
@@ -506,7 +506,7 @@ record_label_references (rtx insn, rtx pat)
       rtx label = XEXP (pat, 0);
       rtx ref;
 
-      if (GET_CODE (label) != CODE_LABEL)
+      if (!LABEL_P (label))
 	abort ();
 
       /* If this is an undefined label, LABEL_REFS (label) contains
@@ -986,10 +986,10 @@ emit_swap_insn (rtx insn, stack regstack, rtx reg)
       rtx limit = PREV_INSN (BB_HEAD (current_block));
       while (tmp != limit)
 	{
-	  if (GET_CODE (tmp) == CODE_LABEL
-	      || GET_CODE (tmp) == CALL_INSN
+	  if (LABEL_P (tmp)
+	      || CALL_P (tmp)
 	      || NOTE_INSN_BASIC_BLOCK_P (tmp)
-	      || (GET_CODE (tmp) == INSN
+	      || (NONJUMP_INSN_P (tmp)
 		  && stack_regs_mentioned (tmp)))
 	    {
 	      i1 = tmp;
@@ -1292,7 +1292,7 @@ swap_rtx_condition (rtx insn)
 	  insn = NEXT_INSN (insn);
 	  if (INSN_P (insn) && reg_mentioned_p (dest, insn))
 	    break;
-	  if (GET_CODE (insn) == CALL_INSN)
+	  if (CALL_P (insn))
 	    return 0;
 	}
 
@@ -2326,7 +2326,7 @@ subst_stack_regs (rtx insn, stack regstack)
   bool control_flow_insn_deleted = false;
   int i;
 
-  if (GET_CODE (insn) == CALL_INSN)
+  if (CALL_P (insn))
     {
       int top = regstack->top;
 
@@ -2388,7 +2388,7 @@ subst_stack_regs (rtx insn, stack regstack)
   /* subst_stack_regs_pat may have deleted a no-op insn.  If so, any
      REG_UNUSED will already have been dealt with, so just return.  */
 
-  if (GET_CODE (insn) == NOTE || INSN_DELETED_P (insn))
+  if (NOTE_P (insn) || INSN_DELETED_P (insn))
     return control_flow_insn_deleted;
 
   /* If there is a REG_UNUSED note on a stack register on this insn,
@@ -2748,7 +2748,7 @@ compensate_edge (edge e, FILE *file)
       tmpstack = regstack;
 
       change_stack (BB_END (block), &tmpstack, target_stack,
-		    (GET_CODE (BB_END (block)) == JUMP_INSN
+		    (JUMP_P (BB_END (block))
 		     ? EMIT_BEFORE : EMIT_AFTER));
     }
   else
@@ -2870,7 +2870,7 @@ convert_regs_1 (FILE *file, basic_block block)
       /* Don't bother processing unless there is a stack reg
 	 mentioned or if it's a CALL_INSN.  */
       if (stack_regs_mentioned (insn)
-	  || GET_CODE (insn) == CALL_INSN)
+	  || CALL_P (insn))
 	{
 	  if (file)
 	    {
@@ -2894,7 +2894,7 @@ convert_regs_1 (FILE *file, basic_block block)
     }
 
   insn = BB_END (block);
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     insn = PREV_INSN (insn);
 
   /* If the function is declared to return a value, but it returns one

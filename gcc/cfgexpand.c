@@ -64,7 +64,7 @@ expand_block (basic_block bb, FILE * dump_file)
       /* Java emits line number notes in the top of labels. 
          ??? Make this go away once line number notes are obsoleted.  */
       BB_HEAD (bb) = NEXT_INSN (last);
-      if (GET_CODE (BB_HEAD (bb)) == NOTE)
+      if (NOTE_P (BB_HEAD (bb)))
 	BB_HEAD (bb) = NEXT_INSN (BB_HEAD (bb));
       bsi_next (&bsi);
       note = emit_note_after (NOTE_INSN_BASIC_BLOCK, BB_HEAD (bb));
@@ -150,7 +150,7 @@ expand_block (basic_block bb, FILE * dump_file)
 	    expand_expr (else_exp, const0_rtx, VOIDmode, 0);
 
 	    BB_END (bb) = last;
-	    if (GET_CODE (BB_END (bb)) == BARRIER)
+	    if (BARRIER_P (BB_END (bb)))
 	      BB_END (bb) = PREV_INSN (BB_END (bb));
 	    update_bb_for_insn (bb);
 
@@ -163,7 +163,7 @@ expand_block (basic_block bb, FILE * dump_file)
 	    new_edge = make_edge (new_bb, dest, 0);
 	    new_edge->probability = REG_BR_PROB_BASE;
 	    new_edge->count = new_bb->count;
-	    if (GET_CODE (BB_END (new_bb)) == BARRIER)
+	    if (BARRIER_P (BB_END (new_bb)))
 	      BB_END (new_bb) = PREV_INSN (BB_END (new_bb));
 	    update_bb_for_insn (new_bb);
 
@@ -182,7 +182,7 @@ expand_block (basic_block bb, FILE * dump_file)
           expand_expr_stmt (stmt);
 	  for (last = NEXT_INSN (last); last; last = NEXT_INSN (last))
 	    {
-	      if (GET_CODE (last) == CALL_INSN && SIBLING_CALL_P (last))
+	      if (CALL_P (last) && SIBLING_CALL_P (last))
 		{
 		  edge e;
 		  int probability = 0;
@@ -217,13 +217,13 @@ expand_block (basic_block bb, FILE * dump_file)
 		     after the sibcall (to perform the function return).  These confuse the 
 		     find_sub_basic_blocks code, so we need to get rid of these.  */
 		  last = NEXT_INSN (last);
-		  if (GET_CODE (last) != BARRIER)
+		  if (!BARRIER_P (last))
 		    abort ();
 		  while (NEXT_INSN (last))
 		    {
 		      /* For instance an sqrt builtin expander expands if with
 			 sibcall in the then and label for `else`.  */
-		      if (GET_CODE (NEXT_INSN (last)) == CODE_LABEL)
+		      if (LABEL_P (NEXT_INSN (last)))
 			break;
 		      delete_insn (NEXT_INSN (last));
 		    }
@@ -252,7 +252,7 @@ expand_block (basic_block bb, FILE * dump_file)
   /* Find the the block tail.  The last insn is the block is the insn
      before a barrier and/or table jump insn.  */
   last = get_last_insn ();
-  if (GET_CODE (last) == BARRIER)
+  if (BARRIER_P (last))
     last = PREV_INSN (last);
   if (JUMP_TABLE_DATA_P (last))
     last = PREV_INSN (PREV_INSN (last));
@@ -330,7 +330,7 @@ construct_exit_block (void)
   end = get_last_insn ();
   if (head == end)
     return;
-  while (NEXT_INSN (head) && GET_CODE (NEXT_INSN (head)) == NOTE)
+  while (NEXT_INSN (head) && NOTE_P (NEXT_INSN (head)))
     head = NEXT_INSN (head);
   exit_block = create_basic_block (NEXT_INSN (head), end, EXIT_BLOCK_PTR->prev_bb);
   exit_block->frequency = EXIT_BLOCK_PTR->frequency;

@@ -1087,7 +1087,7 @@ scan_one_insn (rtx insn, int pass)
 	 We need not check for code_label here;
 	 while a basic block can start with a code_label,
 	 INSN could not be at the beginning of that block.  */
-      if (previnsn == 0 || GET_CODE (previnsn) == JUMP_INSN)
+      if (previnsn == 0 || JUMP_P (previnsn))
 	{
 	  basic_block b;
 	  FOR_EACH_BB (b)

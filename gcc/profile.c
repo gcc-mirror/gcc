@@ -907,7 +907,7 @@ branch_prob (void)
 
 	  while (insn != BB_END (bb))
 	    {
-	      if (GET_CODE (insn) == NOTE)
+	      if (NOTE_P (insn))
 		{
 		  /* Must ignore the line number notes that
 		     immediately follow the end of an inline function

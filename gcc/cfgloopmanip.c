@@ -1256,7 +1256,7 @@ create_loop_notes (void)
 #ifdef ENABLE_CHECKING
   /* Verify that there really are no loop notes.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE
+    if (NOTE_P (insn)
 	&& NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
       abort ();
 #endif
@@ -1297,11 +1297,11 @@ create_loop_notes (void)
 		     front of the jump.  */
 		  insn = PREV_INSN (BB_HEAD (first[loop->num]));
 		  if (insn
-		      && GET_CODE (insn) == BARRIER)
+		      && BARRIER_P (insn))
 		    insn = PREV_INSN (insn);
 		  
 		  if (insn
-		      && GET_CODE (insn) == JUMP_INSN
+		      && JUMP_P (insn)
 		      && any_uncondjump_p (insn)
 		      && onlyjump_p (insn))
 		    {
@@ -1322,7 +1322,7 @@ create_loop_notes (void)
 		  /* Position the note correctly wrto barrier.  */
 		  insn = BB_END (last[loop->num]);
 		  if (NEXT_INSN (insn)
-		      && GET_CODE (NEXT_INSN (insn)) == BARRIER)
+		      && BARRIER_P (NEXT_INSN (insn)))
 		    insn = NEXT_INSN (insn);
 		  
 		  end = BB_END (last[loop->num]);

@@ -6405,7 +6405,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
 		 may_trap_p instruction may throw.  */
 	      && GET_CODE (PATTERN (insn)) != CLOBBER
 	      && GET_CODE (PATTERN (insn)) != USE
-	      && (GET_CODE (insn) == CALL_INSN || may_trap_p (PATTERN (insn))))
+	      && (CALL_P (insn) || may_trap_p (PATTERN (insn))))
 	    {
 	      REG_NOTES (insn) = alloc_EXPR_LIST (REG_EH_REGION, GEN_INT (rn),
 						  REG_NOTES (insn));

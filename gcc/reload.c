@@ -2536,7 +2536,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
   /* JUMP_INSNs and CALL_INSNs are not allowed to have any output reloads;
      neither are insns that SET cc0.  Insns that use CC0 are not allowed
      to have any input reloads.  */
-  if (GET_CODE (insn) == JUMP_INSN || GET_CODE (insn) == CALL_INSN)
+  if (JUMP_P (insn) || CALL_P (insn))
     no_output_reloads = 1;
 
 #ifdef HAVE_cc0
@@ -4020,7 +4020,7 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  /* If we're replacing an operand with a LABEL_REF, we need
 	     to make sure that there's a REG_LABEL note attached to
 	     this instruction.  */
-	  if (GET_CODE (insn) != JUMP_INSN
+	  if (!JUMP_P (insn)
 	      && GET_CODE (substitution) == LABEL_REF
 	      && !find_reg_note (insn, REG_LABEL, XEXP (substitution, 0)))
 	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
@@ -5528,7 +5528,7 @@ find_reloads_address_1 (enum machine_mode mode, rtx x, int context,
 			   ? XEXP (x, 0)
 			   : reg_equiv_mem[regno]);
 	      int icode = (int) add_optab->handlers[(int) Pmode].insn_code;
-	      if (insn && GET_CODE (insn) == INSN && equiv
+	      if (insn && NONJUMP_INSN_P (insn) && equiv
 		  && memory_operand (equiv, GET_MODE (equiv))
 #ifdef HAVE_cc0
 		  && ! sets_cc0_p (PATTERN (insn))
@@ -5954,7 +5954,7 @@ subst_reloads (rtx insn)
 	     REG_LABEL note to indicate to flow which label this
 	     register refers to.  */
 	  if (GET_CODE (*r->where) == LABEL_REF
-	      && GET_CODE (insn) == JUMP_INSN)
+	      && JUMP_P (insn))
 	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
 						  XEXP (*r->where, 0),
 						  REG_NOTES (insn));
@@ -6460,11 +6460,11 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
     {
       p = PREV_INSN (p);
       num++;
-      if (p == 0 || GET_CODE (p) == CODE_LABEL
+      if (p == 0 || LABEL_P (p)
 	  || num > PARAM_VALUE (PARAM_MAX_RELOAD_SEARCH_INSNS))
 	return 0;
 
-      if (GET_CODE (p) == INSN
+      if (NONJUMP_INSN_P (p)
 	  /* If we don't want spill regs ...  */
 	  && (! (reload_reg_p != 0
 		 && reload_reg_p != (short *) (HOST_WIDE_INT) 1)
@@ -6655,7 +6655,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 
       /* Don't trust the conversion past a function call
 	 if either of the two is in a call-clobbered register, or memory.  */
-      if (GET_CODE (p) == CALL_INSN)
+      if (CALL_P (p))
 	{
 	  int i;
 
@@ -6778,7 +6778,7 @@ find_equiv_reg (rtx goal, rtx insn, enum reg_class class, int other,
 		}
 	    }
 
-	  if (GET_CODE (p) == CALL_INSN && CALL_INSN_FUNCTION_USAGE (p))
+	  if (CALL_P (p) && CALL_INSN_FUNCTION_USAGE (p))
 	    {
 	      rtx link;
 

@@ -225,7 +225,7 @@ insn_sets_btr_p (rtx insn, int check_const, int *regno)
 {
   rtx set;
 
-  if (GET_CODE (insn) == INSN
+  if (NONJUMP_INSN_P (insn)
       && (set = single_set (insn)))
     {
       rtx dest = SET_DEST (set);
@@ -533,7 +533,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 		      user->next = info.users_this_bb;
 		      info.users_this_bb = user;
 		    }
-		  if (GET_CODE (insn) == CALL_INSN)
+		  if (CALL_P (insn))
 		    {
 		      HARD_REG_SET *clobbered = &call_used_reg_set;
 		      HARD_REG_SET call_saved;
@@ -580,7 +580,7 @@ compute_defs_uses_and_gen (fibheap_t all_btr_defs, btr_def *def_array,
 	  IOR_HARD_REG_SET (btrs_live_at_end[i], tmp);
 	  can_throw = 1;
 	}
-      if (can_throw || GET_CODE (insn) == JUMP_INSN)
+      if (can_throw || JUMP_P (insn))
 	{
 	  int regno;
 
@@ -740,7 +740,7 @@ link_btr_uses (btr_def *def_array, btr_user *use_array, sbitmap *bb_out,
 		  sbitmap_free (reaching_defs_of_reg);
 		}
 
-	      if (GET_CODE (insn) == CALL_INSN)
+	      if (CALL_P (insn))
 		{
 		  int regno;
 
@@ -1135,7 +1135,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   combine_btr_defs (def, btrs_live_in_range);
   btr = def->btr;
   add_btr_to_live_range (def);
-  if (GET_CODE (insp) == CODE_LABEL)
+  if (LABEL_P (insp))
     insp = NEXT_INSN (insp);
   /* N.B.: insp is expected to be NOTE_INSN_BASIC_BLOCK now.  Some
      optimizations can result in insp being both first and last insn of
@@ -1148,7 +1148,7 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
       for (insp = BB_END (b); ! INSN_P (insp); insp = PREV_INSN (insp))
 	if (insp == BB_HEAD (b))
 	  abort ();
-      if (GET_CODE (insp) == JUMP_INSN || can_throw_internal (insp))
+      if (JUMP_P (insp) || can_throw_internal (insp))
 	insp = PREV_INSN (insp);
     }
 

@@ -842,8 +842,7 @@ reload (rtx first, int global)
      main reload loop in the most common case where register elimination
      cannot be done.  */
   for (insn = first; insn && num_eliminable; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == INSN || GET_CODE (insn) == JUMP_INSN
-	|| GET_CODE (insn) == CALL_INSN)
+    if (INSN_P (insn))
       note_stores (PATTERN (insn), mark_not_eliminable, NULL);
 
   maybe_fix_stack_asms ();
@@ -1053,7 +1052,7 @@ reload (rtx first, int global)
 		 if an insn has a variable address, gets a REG_EH_REGION
 		 note added to it, and then gets converted into an load
 		 from a constant address.  */
-	      if (GET_CODE (equiv_insn) == NOTE
+	      if (NOTE_P (equiv_insn)
 		  || can_throw_internal (equiv_insn))
 		;
 	      else if (reg_set_p (regno_reg_rtx[i], PATTERN (equiv_insn)))
@@ -1162,7 +1161,7 @@ reload (rtx first, int global)
       {
 	rtx *pnote;
 
-	if (GET_CODE (insn) == CALL_INSN)
+	if (CALL_P (insn))
 	  replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (insn),
 			      VOIDmode, CALL_INSN_FUNCTION_USAGE (insn));
 
@@ -1436,7 +1435,7 @@ calculate_needs_all_insns (int global)
 	 include REG_LABEL), we need to see what effects this has on the
 	 known offsets at labels.  */
 
-      if (GET_CODE (insn) == CODE_LABEL || GET_CODE (insn) == JUMP_INSN
+      if (LABEL_P (insn) || JUMP_P (insn)
 	  || (INSN_P (insn) && REG_NOTES (insn) != 0))
 	set_label_offsets (insn, insn, 0);
 
@@ -2130,7 +2129,7 @@ set_label_offsets (rtx x, rtx insn, int initial_p)
 
       else if (x == insn
 	       && (tem = prev_nonnote_insn (insn)) != 0
-	       && GET_CODE (tem) == BARRIER)
+	       && BARRIER_P (tem))
 	set_offsets_for_label (insn);
       else
 	/* If neither of the above cases is true, compare each offset
@@ -3788,7 +3787,7 @@ reload_as_needed (int live_known)
 
       /* If we pass a label, copy the offsets from the label information
 	 into the current offsets of each elimination.  */
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	set_offsets_for_label (insn);
 
       else if (INSN_P (insn))
@@ -3811,7 +3810,7 @@ reload_as_needed (int live_known)
 	  if ((num_eliminable || num_eliminable_invariants) && chain->need_elim)
 	    {
 	      eliminate_regs_in_insn (insn, 1);
-	      if (GET_CODE (insn) == NOTE)
+	      if (NOTE_P (insn))
 		{
 		  update_eliminable_offsets ();
 		  continue;
@@ -3901,7 +3900,7 @@ reload_as_needed (int live_known)
 	  /* There may have been CLOBBER insns placed after INSN.  So scan
 	     between INSN and NEXT and use them to forget old reloads.  */
 	  for (x = NEXT_INSN (insn); x != old_next; x = NEXT_INSN (x))
-	    if (GET_CODE (x) == INSN && GET_CODE (PATTERN (x)) == CLOBBER)
+	    if (NONJUMP_INSN_P (x) && GET_CODE (PATTERN (x)) == CLOBBER)
 	      note_stores (PATTERN (x), forget_old_reloads_1, NULL);
 
 #ifdef AUTO_INC_DEC
@@ -4022,13 +4021,13 @@ reload_as_needed (int live_known)
 #endif
 	}
       /* A reload reg's contents are unknown after a label.  */
-      if (GET_CODE (insn) == CODE_LABEL)
+      if (LABEL_P (insn))
 	CLEAR_HARD_REG_SET (reg_reloaded_valid);
 
       /* Don't assume a reload reg is still good after a call insn
 	 if it is a call-used reg, or if it contains a value that will
          be partially clobbered by the call.  */
-      else if (GET_CODE (insn) == CALL_INSN)
+      else if (CALL_P (insn))
 	{
 	AND_COMPL_HARD_REG_SET (reg_reloaded_valid, call_used_reg_set);
 	AND_COMPL_HARD_REG_SET (reg_reloaded_valid, reg_reloaded_call_part_clobbered);
@@ -6351,10 +6350,10 @@ emit_input_reload_insns (struct insn_chain *chain, struct reload *rl,
 				rl->when_needed, old, rl->out, j, 0))
     {
       rtx temp = PREV_INSN (insn);
-      while (temp && GET_CODE (temp) == NOTE)
+      while (temp && NOTE_P (temp))
 	temp = PREV_INSN (temp);
       if (temp
-	  && GET_CODE (temp) == INSN
+	  && NONJUMP_INSN_P (temp)
 	  && GET_CODE (PATTERN (temp)) == SET
 	  && SET_DEST (PATTERN (temp)) == old
 	  /* Make sure we can access insn_operand_constraint.  */
@@ -6928,7 +6927,7 @@ do_output_reload (struct insn_chain *chain, struct reload *rl, int j)
     return;
 
   /* If is a JUMP_INSN, we can't support output reloads yet.  */
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     abort ();
 
   emit_output_reload_insns (chain, rld + j, j);
@@ -7647,14 +7646,14 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
   for (i1 = NEXT_INSN (output_reload_insn);
        i1 != insn; i1 = NEXT_INSN (i1))
     {
-      if (GET_CODE (i1) == CODE_LABEL || GET_CODE (i1) == JUMP_INSN)
+      if (LABEL_P (i1) || JUMP_P (i1))
 	return;
-      if ((GET_CODE (i1) == INSN || GET_CODE (i1) == CALL_INSN)
+      if ((NONJUMP_INSN_P (i1) || CALL_P (i1))
 	  && reg_mentioned_p (reg, PATTERN (i1)))
 	{
 	  /* If this is USE in front of INSN, we only have to check that
 	     there are no more references than accounted for by inheritance.  */
-	  while (GET_CODE (i1) == INSN && GET_CODE (PATTERN (i1)) == USE)
+	  while (NONJUMP_INSN_P (i1) && GET_CODE (PATTERN (i1)) == USE)
 	    {
 	      n_occurrences += rtx_equal_p (reg, XEXP (PATTERN (i1), 0)) != 0;
 	      i1 = NEXT_INSN (i1);
@@ -7700,10 +7699,10 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
 	     since if they are the only uses, they are dead.  */
 	  if (set != 0 && SET_DEST (set) == reg)
 	    continue;
-	  if (GET_CODE (i2) == CODE_LABEL
-	      || GET_CODE (i2) == JUMP_INSN)
+	  if (LABEL_P (i2)
+	      || JUMP_P (i2))
 	    break;
-	  if ((GET_CODE (i2) == INSN || GET_CODE (i2) == CALL_INSN)
+	  if ((NONJUMP_INSN_P (i2) || CALL_P (i2))
 	      && reg_mentioned_p (reg, PATTERN (i2)))
 	    {
 	      /* Some other ref remains; just delete the output reload we
@@ -7725,8 +7724,8 @@ delete_output_reload (rtx insn, int j, int last_reload_reg)
 	      delete_address_reloads (i2, insn);
 	      delete_insn (i2);
 	    }
-	  if (GET_CODE (i2) == CODE_LABEL
-	      || GET_CODE (i2) == JUMP_INSN)
+	  if (LABEL_P (i2)
+	      || JUMP_P (i2))
 	    break;
 	}
 
@@ -7837,7 +7836,7 @@ delete_address_reloads_1 (rtx dead_insn, rtx x, rtx current_insn)
 	 it might have been inherited.  */
       for (i2 = NEXT_INSN (dead_insn); i2; i2 = NEXT_INSN (i2))
 	{
-	  if (GET_CODE (i2) == CODE_LABEL)
+	  if (LABEL_P (i2))
 	    break;
 	  if (! INSN_P (i2))
 	    continue;
@@ -7861,7 +7860,7 @@ delete_address_reloads_1 (rtx dead_insn, rtx x, rtx current_insn)
 		}
 	      return;
 	    }
-	  if (GET_CODE (i2) == JUMP_INSN)
+	  if (JUMP_P (i2))
 	    break;
 	  /* If DST is still live at CURRENT_INSN, check if it is used for
 	     any reload.  Note that even if CURRENT_INSN sets DST, we still
@@ -8059,7 +8058,7 @@ fixup_abnormal_edges (void)
 	      == (EDGE_ABNORMAL | EDGE_EH))
 	    break;
 	}
-      if (e && GET_CODE (BB_END (bb)) != CALL_INSN
+      if (e && !CALL_P (BB_END (bb))
 	  && !can_throw_internal (BB_END (bb)))
 	{
 	  rtx insn = BB_END (bb), stop = NEXT_INSN (BB_END (bb));
@@ -8069,11 +8068,11 @@ fixup_abnormal_edges (void)
 	      break;
 	  /* Get past the new insns generated. Allow notes, as the insns may
 	     be already deleted.  */
-	  while ((GET_CODE (insn) == INSN || GET_CODE (insn) == NOTE)
+	  while ((NONJUMP_INSN_P (insn) || NOTE_P (insn))
 		 && !can_throw_internal (insn)
 		 && insn != BB_HEAD (bb))
 	    insn = PREV_INSN (insn);
-	  if (GET_CODE (insn) != CALL_INSN && !can_throw_internal (insn))
+	  if (!CALL_P (insn) && !can_throw_internal (insn))
 	    abort ();
 	  BB_END (bb) = insn;
 	  inserted = true;

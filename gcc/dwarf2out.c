@@ -1066,7 +1066,7 @@ dwarf2out_stack_adjust (rtx insn)
   if (prologue_epilogue_contains (insn) || sibcall_epilogue_contains (insn))
     return;
 
-  if (!flag_asynchronous_unwind_tables && GET_CODE (insn) == CALL_INSN)
+  if (!flag_asynchronous_unwind_tables && CALL_P (insn))
     {
       /* Extract the size of the args from the CALL rtx itself.  */
       insn = PATTERN (insn);
@@ -1086,7 +1086,7 @@ dwarf2out_stack_adjust (rtx insn)
   else if (!flag_asynchronous_unwind_tables && cfa.reg != STACK_POINTER_REGNUM)
     return;
 
-  if (GET_CODE (insn) == BARRIER)
+  if (BARRIER_P (insn))
     {
       /* When we see a BARRIER, we know to reset args_size to 0.  Usually
 	 the compiler will have already emitted a stack adjustment, but
@@ -1814,7 +1814,7 @@ dwarf2out_frame_debug (rtx insn)
       return;
     }
 
-  if (GET_CODE (insn) != INSN || clobbers_queued_reg_save (insn))
+  if (!NONJUMP_INSN_P (insn) || clobbers_queued_reg_save (insn))
     flush_queued_reg_saves ();
 
   if (! RTX_FRAME_RELATED_P (insn))
@@ -11592,8 +11592,8 @@ gen_label_die (tree decl, dw_die_ref context_die)
 	 eliminated because of various optimizations.  We still emit them
 	 here so that it is possible to put breakpoints on them.  */
       if (insn
-	  && (GET_CODE (insn) == CODE_LABEL
-	      || ((GET_CODE (insn) == NOTE
+	  && (LABEL_P (insn)
+	      || ((NOTE_P (insn)
 	           && NOTE_LINE_NUMBER (insn) == NOTE_INSN_DELETED_LABEL))))
 	{
 	  /* When optimization is enabled (via -O) some parts of the compiler
@@ -13119,7 +13119,7 @@ dwarf2out_var_location (rtx loc_note)
      last time.  */
   if (last_insn != NULL_RTX
       && last_insn == prev_insn
-      && GET_CODE (prev_insn) == NOTE
+      && NOTE_P (prev_insn)
       && NOTE_LINE_NUMBER (prev_insn) == NOTE_INSN_VAR_LOCATION)
     {
       newloc->label = last_label;

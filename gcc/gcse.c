@@ -3293,7 +3293,7 @@ constprop_register (rtx insn, rtx from, rtx to, int alter_jumps)
     }
 
   /* Handle normal insns next.  */
-  if (GET_CODE (insn) == INSN
+  if (NONJUMP_INSN_P (insn)
       && try_replace_reg (from, to, insn))
     return 1;
 
@@ -4127,7 +4127,7 @@ bypass_conditional_jumps (void)
 	  for (insn = BB_HEAD (bb);
 	       insn != NULL && insn != NEXT_INSN (BB_END (bb));
 	       insn = NEXT_INSN (insn))
-	    if (GET_CODE (insn) == INSN)
+	    if (NONJUMP_INSN_P (insn))
 	      {
 		if (setcc)
 		  break;
@@ -4427,7 +4427,7 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
      instructions in presence of non-call exceptions.  */
 
   if (JUMP_P (insn)
-      || (GET_CODE (insn) == INSN
+      || (NONJUMP_INSN_P (insn)
 	  && (bb->succ->succ_next || (bb->succ->flags & EDGE_ABNORMAL))))
     {
 #ifdef HAVE_cc0
@@ -4436,7 +4436,7 @@ insert_insn_end_bb (struct expr *expr, basic_block bb, int pre)
       /* It should always be the case that we can put these instructions
 	 anywhere in the basic block with performing PRE optimizations.
 	 Check this.  */
-      if (GET_CODE (insn) == INSN && pre
+      if (NONJUMP_INSN_P (insn) && pre
 	  && !TEST_BIT (antloc[bb->index], expr->bitmap_index)
 	  && !TEST_BIT (transp[bb->index], expr->bitmap_index))
 	abort ();
@@ -7375,7 +7375,7 @@ gcse_after_reload (void)
 	   insn = NEXT_INSN (insn))
 	{
 	  /* Is it a load - of the form (set (reg) (mem))?  */
-	  if (GET_CODE (insn) == INSN
+	  if (NONJUMP_INSN_P (insn)
               && GET_CODE (PATTERN (insn)) == SET
 	      && REG_P (SET_DEST (PATTERN (insn)))
 	      && MEM_P (SET_SRC (PATTERN (insn))))

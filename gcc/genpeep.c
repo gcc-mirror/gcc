@@ -75,13 +75,13 @@ gen_peephole (rtx peep)
 	  printf ("  do { insn = NEXT_INSN (insn);\n");
 	  printf ("       if (insn == 0) goto L%d; }\n",
 		  insn_code_number);
-	  printf ("  while (GET_CODE (insn) == NOTE\n");
-	  printf ("\t || (GET_CODE (insn) == INSN\n");
+	  printf ("  while (NOTE_P (insn)\n");
+	  printf ("\t || (NONJUMP_INSN_P (insn)\n");
 	  printf ("\t     && (GET_CODE (PATTERN (insn)) == USE\n");
 	  printf ("\t\t || GET_CODE (PATTERN (insn)) == CLOBBER)));\n");
 
-	  printf ("  if (GET_CODE (insn) == CODE_LABEL\n\
-      || GET_CODE (insn) == BARRIER)\n    goto L%d;\n",
+	  printf ("  if (LABEL_P (insn)\n\
+      || BARRIER_P (insn))\n    goto L%d;\n",
 		  insn_code_number);
 	}
 
@@ -391,7 +391,7 @@ from the machine description file `md'.  */\n\n");
 
   /* Early out: no peepholes for insns followed by barriers.  */
   printf ("  if (NEXT_INSN (ins1)\n");
-  printf ("      && GET_CODE (NEXT_INSN (ins1)) == BARRIER)\n");
+  printf ("      && BARRIER_P (NEXT_INSN (ins1)))\n");
   printf ("    return 0;\n\n");
 
   /* Read the machine description.  */

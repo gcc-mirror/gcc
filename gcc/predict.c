@@ -247,7 +247,7 @@ tree_predict_edge (edge e, enum br_predictor predictor, int probability)
 static bool
 can_predict_insn_p (rtx insn)
 {
-  return (GET_CODE (insn) == JUMP_INSN
+  return (JUMP_P (insn)
 	  && any_condjump_p (insn)
 	  && BLOCK_FOR_INSN (insn)->succ->succ_next);
 }
@@ -672,7 +672,7 @@ estimate_probability (struct loops *loops_info)
 		 messages.  */
 	      for (insn = BB_HEAD (e->dest); insn != NEXT_INSN (BB_END (e->dest));
 		   insn = NEXT_INSN (insn))
-		if (GET_CODE (insn) == CALL_INSN
+		if (CALL_P (insn)
 		    /* Constant and pure calls are hardly used to signalize
 		       something exceptional.  */
 		    && ! CONST_OR_PURE_CALL_P (insn))
@@ -774,7 +774,7 @@ estimate_probability (struct loops *loops_info)
 
   /* Attach the combined probability to each conditional jump.  */
   FOR_EACH_BB (bb)
-    if (GET_CODE (BB_END (bb)) == JUMP_INSN
+    if (JUMP_P (BB_END (bb))
 	&& any_condjump_p (BB_END (bb))
 	&& bb->succ->succ_next != NULL)
       combine_predictions_for_insn (BB_END (bb), bb);
@@ -1023,7 +1023,7 @@ expected_value_to_br_prob (void)
 	case JUMP_INSN:
 	  /* Look for simple conditional branches.  If we haven't got an
 	     expected value yet, no point going further.  */
-	  if (GET_CODE (insn) != JUMP_INSN || ev == NULL_RTX
+	  if (!JUMP_P (insn) || ev == NULL_RTX
 	      || ! any_condjump_p (insn))
 	    continue;
 	  break;
@@ -1155,7 +1155,7 @@ process_note_predictions (basic_block bb, int *heads)
   for (insn = BB_END (bb); insn;
        was_bb_head |= (insn == BB_HEAD (bb)), insn = PREV_INSN (insn))
     {
-      if (GET_CODE (insn) != NOTE)
+      if (!NOTE_P (insn))
 	{
 	  if (was_bb_head)
 	    break;
@@ -1163,7 +1163,7 @@ process_note_predictions (basic_block bb, int *heads)
 	    {
 	      /* Noreturn calls cause program to exit, therefore they are
 	         always predicted as not taken.  */
-	      if (GET_CODE (insn) == CALL_INSN
+	      if (CALL_P (insn)
 		  && find_reg_note (insn, REG_NORETURN, NULL))
 		contained_noreturn_call = 1;
 	      continue;

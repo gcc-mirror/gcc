@@ -477,12 +477,12 @@ create_ddg (basic_block bb, struct df *df, int closing_branch_deps)
     {
       if (! INSN_P (insn))
 	{
-	  if (! first_note && GET_CODE (insn) == NOTE
+	  if (! first_note && NOTE_P (insn)
 	      && NOTE_LINE_NUMBER (insn) !=  NOTE_INSN_BASIC_BLOCK)
 	    first_note = insn;
 	  continue;
 	}
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	{
 	  if (g->closing_branch)
 	    abort (); /* Found two branches in DDG.  */

@@ -2495,7 +2495,7 @@ nonlocal_mentioned_p (rtx x)
 {
   if (INSN_P (x))
     {
-      if (GET_CODE (x) == CALL_INSN)
+      if (CALL_P (x))
 	{
 	  if (! CONST_OR_PURE_CALL_P (x))
 	    return 1;
@@ -2589,7 +2589,7 @@ nonlocal_referenced_p (rtx x)
 {
   if (INSN_P (x))
     {
-      if (GET_CODE (x) == CALL_INSN)
+      if (CALL_P (x))
 	{
 	  if (! CONST_OR_PURE_CALL_P (x))
 	    return 1;
@@ -2665,7 +2665,7 @@ nonlocal_set_p (rtx x)
 {
   if (INSN_P (x))
     {
-      if (GET_CODE (x) == CALL_INSN)
+      if (CALL_P (x))
 	{
 	  if (! CONST_OR_PURE_CALL_P (x))
 	    return 1;
@@ -2953,7 +2953,7 @@ init_alias_analysis (void)
 		    }
 		}
 	    }
-	  else if (GET_CODE (insn) == NOTE
+	  else if (NOTE_P (insn)
 		   && NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
 	    copying_arguments = false;
 	}

@@ -93,7 +93,7 @@ forwarder_block_p (basic_block bb)
       return false;
 
   return (!INSN_P (insn)
-	  || (GET_CODE (insn) == JUMP_INSN && simplejump_p (insn))
+	  || (JUMP_P (insn) && simplejump_p (insn))
 	  || !flow_active_insn_p (insn));
 }
 

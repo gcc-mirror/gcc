@@ -715,9 +715,7 @@ next_insn_tests_no_inequality (rtx insn)
   if (next == 0)
     return 0;
 
-  return ((GET_CODE (next) == JUMP_INSN
-	   || GET_CODE (next) == INSN
-	   || GET_CODE (next) == CALL_INSN)
+  return (INSN_P (next)
 	  && ! inequality_comparisons_p (PATTERN (next)));
 }
 #endif
@@ -850,7 +848,7 @@ find_single_use (rtx dest, rtx insn, rtx *ploc)
     {
       next = NEXT_INSN (insn);
       if (next == 0
-	  || (GET_CODE (next) != INSN && GET_CODE (next) != JUMP_INSN))
+	  || (!NONJUMP_INSN_P (next) && !JUMP_P (next)))
 	return 0;
 
       result = find_single_use_1 (dest, &PATTERN (next));
@@ -864,7 +862,7 @@ find_single_use (rtx dest, rtx insn, rtx *ploc)
     return 0;
 
   for (next = next_nonnote_insn (insn);
-       next != 0 && GET_CODE (next) != CODE_LABEL;
+       next != 0 && !LABEL_P (next);
        next = next_nonnote_insn (next))
     if (INSN_P (next) && dead_or_set_p (next, dest))
       {
@@ -2740,7 +2738,7 @@ split_all_insns (int upd_life)
 			 BB boundary we are interested in will be set to
 			 previous one.  */
 
-		      while (GET_CODE (last) == BARRIER)
+		      while (BARRIER_P (last))
 			last = PREV_INSN (last);
 		      SET_BIT (blocks, bb->index);
 		      changed = true;
@@ -3077,14 +3075,14 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 		      if (j >= MAX_INSNS_PER_PEEP2 + 1)
 			j -= MAX_INSNS_PER_PEEP2 + 1;
 		      old_insn = peep2_insn_data[j].insn;
-		      if (GET_CODE (old_insn) != CALL_INSN)
+		      if (!CALL_P (old_insn))
 			continue;
 		      was_call = true;
 
 		      new_insn = try;
 		      while (new_insn != NULL_RTX)
 			{
-			  if (GET_CODE (new_insn) == CALL_INSN)
+			  if (CALL_P (new_insn))
 			    break;
 			  new_insn = NEXT_INSN (new_insn);
 			}
@@ -3119,7 +3117,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 			  if (j >= MAX_INSNS_PER_PEEP2 + 1)
 			    j -= MAX_INSNS_PER_PEEP2 + 1;
 			  old_insn = peep2_insn_data[j].insn;
-			  if (GET_CODE (old_insn) == CALL_INSN)
+			  if (CALL_P (old_insn))
 			    abort ();
 			}
 		      break;
@@ -3149,7 +3147,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 			  break;
 
 		      for (x = try ; x != before_try ; x = PREV_INSN (x))
-			if (GET_CODE (x) == CALL_INSN
+			if (CALL_P (x)
 			    || (flag_non_call_exceptions
 				&& may_trap_p (PATTERN (x))
 				&& !find_reg_note (x, REG_EH_REGION, NULL)))
@@ -3168,7 +3166,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 				nfte = split_block (bb, x);
 				flags = (eh_edge->flags
 					 & (EDGE_EH | EDGE_ABNORMAL));
-				if (GET_CODE (x) == CALL_INSN)
+				if (CALL_P (x))
 				  flags |= EDGE_ABNORMAL_CALL;
 				nehe = make_edge (nfte->src, eh_edge->dest,
 						  flags);
@@ -3236,7 +3234,7 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 		  /* If we generated a jump instruction, it won't have
 		     JUMP_LABEL set.  Recompute after we're done.  */
 		  for (x = try; x != before_try; x = PREV_INSN (x))
-		    if (GET_CODE (x) == JUMP_INSN)
+		    if (JUMP_P (x))
 		      {
 		        do_rebuild_jump_labels = true;
 			break;
@@ -3342,7 +3340,7 @@ if_test_bypass_p (rtx out_insn, rtx in_insn)
   in_set = single_set (in_insn);
   if (! in_set)
     {
-      if (GET_CODE (in_insn) == JUMP_INSN || GET_CODE (in_insn) == CALL_INSN)
+      if (JUMP_P (in_insn) || CALL_P (in_insn))
 	return false;
       abort ();
     }

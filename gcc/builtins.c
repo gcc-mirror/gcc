@@ -766,13 +766,13 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
     {
       if (insn == last)
 	abort ();
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	{
 	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
 					      REG_NOTES (insn));
 	  break;
 	}
-      else if (GET_CODE (insn) == CALL_INSN)
+      else if (CALL_P (insn))
 	break;
     }
 }
@@ -837,13 +837,13 @@ expand_builtin_nonlocal_goto (tree arglist)
      non-local goto.  */
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     {
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (JUMP_P (insn))
 	{
 	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO,
 					      const0_rtx, REG_NOTES (insn));
 	  break;
 	}
-      else if (GET_CODE (insn) == CALL_INSN)
+      else if (CALL_P (insn))
 	break;
     }
 
@@ -4981,9 +4981,9 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
       ret = get_insns ();
 
       drop_through_label = get_last_insn ();
-      if (drop_through_label && GET_CODE (drop_through_label) == NOTE)
+      if (drop_through_label && NOTE_P (drop_through_label))
 	drop_through_label = prev_nonnote_insn (drop_through_label);
-      if (drop_through_label && GET_CODE (drop_through_label) != CODE_LABEL)
+      if (drop_through_label && !LABEL_P (drop_through_label))
 	drop_through_label = NULL_RTX;
       end_sequence ();
 
@@ -4998,7 +4998,7 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	{
 	  rtx next = NEXT_INSN (insn);
 
-	  if (GET_CODE (insn) == JUMP_INSN && any_condjump_p (insn))
+	  if (JUMP_P (insn) && any_condjump_p (insn))
 	    {
 	      rtx ifelse = SET_SRC (pc_set (insn));
 	      rtx then_dest = XEXP (ifelse, 1);
@@ -5021,10 +5021,10 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 	      /* Otherwise check where we drop through.  */
 	      else if (else_dest == pc_rtx)
 		{
-		  if (next && GET_CODE (next) == NOTE)
+		  if (next && NOTE_P (next))
 		    next = next_nonnote_insn (next);
 
-		  if (next && GET_CODE (next) == JUMP_INSN
+		  if (next && JUMP_P (next)
 		      && any_uncondjump_p (next))
 		    temp = XEXP (SET_SRC (pc_set (next)), 0);
 		  else
@@ -5039,10 +5039,10 @@ expand_builtin_expect_jump (tree exp, rtx if_false_label, rtx if_true_label)
 		}
 	      else if (then_dest == pc_rtx)
 		{
-		  if (next && GET_CODE (next) == NOTE)
+		  if (next && NOTE_P (next))
 		    next = next_nonnote_insn (next);
 
-		  if (next && GET_CODE (next) == JUMP_INSN
+		  if (next && JUMP_P (next)
 		      && any_uncondjump_p (next))
 		    temp = XEXP (SET_SRC (pc_set (next)), 0);
 		  else

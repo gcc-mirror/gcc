@@ -90,7 +90,7 @@ rebuild_jump_labels (rtx f)
      count doesn't drop to zero.  */
 
   for (insn = forced_labels; insn; insn = XEXP (insn, 1))
-    if (GET_CODE (XEXP (insn, 0)) == CODE_LABEL)
+    if (LABEL_P (XEXP (insn, 0)))
       LABEL_NUSES (XEXP (insn, 0))++;
   timevar_pop (TV_REBUILD_JUMP);
 }
@@ -110,10 +110,10 @@ cleanup_barriers (void)
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
-      if (GET_CODE (insn) == BARRIER)
+      if (BARRIER_P (insn))
 	{
 	  prev = prev_nonnote_insn (insn);
-	  if (GET_CODE (prev) == BARRIER)
+	  if (BARRIER_P (prev))
 	    delete_barrier (insn);
 	  else if (prev != PREV_INSN (insn))
 	    reorder_insns (insn, insn, prev);
@@ -132,7 +132,7 @@ purge_line_number_notes (rtx f)
      even if it became empty.  */
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == NOTE)
+    if (NOTE_P (insn))
       {
 	if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_FUNCTION_BEG)
 	  /* Any previous line note was for the prologue; gdb wants a new
@@ -168,11 +168,11 @@ init_label_info (rtx f)
   rtx insn;
 
   for (insn = f; insn; insn = NEXT_INSN (insn))
-    if (GET_CODE (insn) == CODE_LABEL)
+    if (LABEL_P (insn))
       LABEL_NUSES (insn) = (LABEL_PRESERVE_P (insn) != 0);
-    else if (GET_CODE (insn) == JUMP_INSN)
+    else if (JUMP_P (insn))
       JUMP_LABEL (insn) = 0;
-    else if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+    else if (NONJUMP_INSN_P (insn) || CALL_P (insn))
       {
 	rtx note, next;
 
@@ -198,7 +198,7 @@ mark_all_labels (rtx f)
     if (INSN_P (insn))
       {
 	mark_jump_label (PATTERN (insn), insn, 0);
-	if (! INSN_DELETED_P (insn) && GET_CODE (insn) == JUMP_INSN)
+	if (! INSN_DELETED_P (insn) && JUMP_P (insn))
 	  {
 	    /* When we know the LABEL_REF contained in a REG used in
 	       an indirect jump, we'll have a REG_LABEL note so that
@@ -242,7 +242,7 @@ squeeze_notes (rtx* startp, rtx* endp)
   for (insn = start; insn != past_end; insn = next)
     {
       next = NEXT_INSN (insn);
-      if (GET_CODE (insn) == NOTE
+      if (NOTE_P (insn)
 	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG
@@ -289,7 +289,7 @@ get_label_before (rtx insn)
      or make a new one if there is none.  */
   label = prev_nonnote_insn (insn);
 
-  if (label == 0 || GET_CODE (label) != CODE_LABEL)
+  if (label == 0 || !LABEL_P (label))
     {
       rtx prev = PREV_INSN (insn);
 
@@ -311,7 +311,7 @@ get_label_after (rtx insn)
      or make a new one if there is none.  */
   label = next_nonnote_insn (insn);
 
-  if (label == 0 || GET_CODE (label) != CODE_LABEL)
+  if (label == 0 || !LABEL_P (label))
     {
       label = gen_label_rtx ();
       emit_label_after (label, insn);
@@ -393,7 +393,7 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
 	return UNKNOWN;
 
       for (prev = prev_nonnote_insn (insn);
-	   prev != 0 && GET_CODE (prev) != CODE_LABEL;
+	   prev != 0 && !LABEL_P (prev);
 	   prev = prev_nonnote_insn (prev))
 	{
 	  rtx set = set_of (arg0, prev);
@@ -736,7 +736,7 @@ comparison_dominates_p (enum rtx_code code1, enum rtx_code code2)
 int
 simplejump_p (rtx insn)
 {
-  return (GET_CODE (insn) == JUMP_INSN
+  return (JUMP_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SET
 	  && GET_CODE (SET_DEST (PATTERN (insn))) == PC
 	  && GET_CODE (SET_SRC (PATTERN (insn))) == LABEL_REF);
@@ -813,7 +813,7 @@ rtx
 pc_set (rtx insn)
 {
   rtx pat;
-  if (GET_CODE (insn) != JUMP_INSN)
+  if (!JUMP_P (insn))
     return NULL_RTX;
   pat = PATTERN (insn);
 
@@ -903,7 +903,7 @@ returnjump_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 int
 returnjump_p (rtx insn)
 {
-  if (GET_CODE (insn) != JUMP_INSN)
+  if (!JUMP_P (insn))
     return 0;
   return for_each_rtx (&PATTERN (insn), returnjump_p_1, NULL);
 }
@@ -916,7 +916,7 @@ onlyjump_p (rtx insn)
 {
   rtx set;
 
-  if (GET_CODE (insn) != JUMP_INSN)
+  if (!JUMP_P (insn))
     return 0;
 
   set = single_set (insn);
@@ -1003,12 +1003,12 @@ follow_jumps (rtx label)
   for (depth = 0;
        (depth < 10
 	&& (insn = next_active_insn (value)) != 0
-	&& GET_CODE (insn) == JUMP_INSN
+	&& JUMP_P (insn)
 	&& ((JUMP_LABEL (insn) != 0 && any_uncondjump_p (insn)
 	     && onlyjump_p (insn))
 	    || GET_CODE (PATTERN (insn)) == RETURN)
 	&& (next = NEXT_INSN (insn))
-	&& GET_CODE (next) == BARRIER);
+	&& BARRIER_P (next));
        depth++)
     {
       /* Don't chain through the insn that jumps into a loop
@@ -1018,7 +1018,7 @@ follow_jumps (rtx label)
       rtx tem;
       if (!reload_completed)
 	for (tem = value; tem != insn; tem = NEXT_INSN (tem))
-	  if (GET_CODE (tem) == NOTE
+	  if (NOTE_P (tem)
 	      && (NOTE_LINE_NUMBER (tem) == NOTE_INSN_LOOP_BEG
 		  /* ??? Optional.  Disables some optimizations, but makes
 		     gcov output more accurate with -O.  */
@@ -1092,11 +1092,11 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
 
 	/* Ignore remaining references to unreachable labels that
 	   have been deleted.  */
-	if (GET_CODE (label) == NOTE
+	if (NOTE_P (label)
 	    && NOTE_LINE_NUMBER (label) == NOTE_INSN_DELETED_LABEL)
 	  break;
 
-	if (GET_CODE (label) != CODE_LABEL)
+	if (!LABEL_P (label))
 	  abort ();
 
 	/* Ignore references to labels of containing functions.  */
@@ -1109,7 +1109,7 @@ mark_jump_label (rtx x, rtx insn, int in_mem)
 
 	if (insn)
 	  {
-	    if (GET_CODE (insn) == JUMP_INSN)
+	    if (JUMP_P (insn))
 	      JUMP_LABEL (insn) = label;
 	    else
 	      {
@@ -1174,7 +1174,7 @@ delete_jump (rtx insn)
 void
 delete_barrier (rtx insn)
 {
-  if (GET_CODE (insn) != BARRIER)
+  if (!BARRIER_P (insn))
     abort ();
 
   delete_insn (insn);
@@ -1191,15 +1191,15 @@ delete_prior_computation (rtx note, rtx insn)
   rtx reg = XEXP (note, 0);
 
   for (our_prev = prev_nonnote_insn (insn);
-       our_prev && (GET_CODE (our_prev) == INSN
-		    || GET_CODE (our_prev) == CALL_INSN);
+       our_prev && (NONJUMP_INSN_P (our_prev)
+		    || CALL_P (our_prev));
        our_prev = prev_nonnote_insn (our_prev))
     {
       rtx pat = PATTERN (our_prev);
 
       /* If we reach a CALL which is not calling a const function
 	 or the callee pops the arguments, then give up.  */
-      if (GET_CODE (our_prev) == CALL_INSN
+      if (CALL_P (our_prev)
 	  && (! CONST_OR_PURE_CALL_P (our_prev)
 	      || GET_CODE (pat) != SET || GET_CODE (SET_SRC (pat)) != CALL))
 	break;
@@ -1212,14 +1212,14 @@ delete_prior_computation (rtx note, rtx insn)
 	break;
 
       if (GET_CODE (pat) == USE
-	  && GET_CODE (XEXP (pat, 0)) == INSN)
+	  && NONJUMP_INSN_P (XEXP (pat, 0)))
 	/* reorg creates USEs that look like this.  We leave them
 	   alone because reorg needs them for its own purposes.  */
 	break;
 
       if (reg_set_p (reg, pat))
 	{
-	  if (side_effects_p (pat) && GET_CODE (our_prev) != CALL_INSN)
+	  if (side_effects_p (pat) && !CALL_P (our_prev))
 	    break;
 
 	  if (GET_CODE (pat) == PARALLEL)
@@ -1325,7 +1325,7 @@ delete_computation (rtx insn)
 	 will use them.  So if the previous insn
 	 exists to set the CC's, delete it
 	 (unless it performs auto-increments, etc.).  */
-      if (prev && GET_CODE (prev) == INSN
+      if (prev && NONJUMP_INSN_P (prev)
 	  && sets_cc0_p (PATTERN (prev)))
 	{
 	  if (sets_cc0_p (PATTERN (prev)) > 0
@@ -1365,7 +1365,7 @@ delete_computation (rtx insn)
 rtx
 delete_related_insns (rtx insn)
 {
-  int was_code_label = (GET_CODE (insn) == CODE_LABEL);
+  int was_code_label = (LABEL_P (insn));
   rtx note;
   rtx next = NEXT_INSN (insn), prev = PREV_INSN (insn);
 
@@ -1381,13 +1381,13 @@ delete_related_insns (rtx insn)
   /* If instruction is followed by a barrier,
      delete the barrier too.  */
 
-  if (next != 0 && GET_CODE (next) == BARRIER)
+  if (next != 0 && BARRIER_P (next))
     delete_insn (next);
 
   /* If deleting a jump, decrement the count of the label,
      and delete the label if it is now unused.  */
 
-  if (GET_CODE (insn) == JUMP_INSN && JUMP_LABEL (insn))
+  if (JUMP_P (insn) && JUMP_LABEL (insn))
     {
       rtx lab = JUMP_LABEL (insn), lab_next;
 
@@ -1418,7 +1418,7 @@ delete_related_insns (rtx insn)
 
   /* Likewise if we're deleting a dispatch table.  */
 
-  if (GET_CODE (insn) == JUMP_INSN
+  if (JUMP_P (insn)
       && (GET_CODE (PATTERN (insn)) == ADDR_VEC
 	  || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC))
     {
@@ -1435,15 +1435,15 @@ delete_related_insns (rtx insn)
     }
 
   /* Likewise for an ordinary INSN / CALL_INSN with a REG_LABEL note.  */
-  if (GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN)
+  if (NONJUMP_INSN_P (insn) || CALL_P (insn))
     for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
       if (REG_NOTE_KIND (note) == REG_LABEL
 	  /* This could also be a NOTE_INSN_DELETED_LABEL note.  */
-	  && GET_CODE (XEXP (note, 0)) == CODE_LABEL)
+	  && LABEL_P (XEXP (note, 0)))
 	if (LABEL_NUSES (XEXP (note, 0)) == 0)
 	  delete_related_insns (XEXP (note, 0));
 
-  while (prev && (INSN_DELETED_P (prev) || GET_CODE (prev) == NOTE))
+  while (prev && (INSN_DELETED_P (prev) || NOTE_P (prev)))
     prev = PREV_INSN (prev);
 
   /* If INSN was a label and a dispatch table follows it,
@@ -1452,14 +1452,14 @@ delete_related_insns (rtx insn)
 
   if (was_code_label
       && NEXT_INSN (insn) != 0
-      && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
+      && JUMP_P (NEXT_INSN (insn))
       && (GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_VEC
 	  || GET_CODE (PATTERN (NEXT_INSN (insn))) == ADDR_DIFF_VEC))
     next = delete_related_insns (NEXT_INSN (insn));
 
   /* If INSN was a label, delete insns following it if now unreachable.  */
 
-  if (was_code_label && prev && GET_CODE (prev) == BARRIER)
+  if (was_code_label && prev && BARRIER_P (prev))
     {
       enum rtx_code code;
       while (next)
@@ -1500,7 +1500,7 @@ delete_for_peephole (rtx from, rtx to)
       rtx next = NEXT_INSN (insn);
       rtx prev = PREV_INSN (insn);
 
-      if (GET_CODE (insn) != NOTE)
+      if (!NOTE_P (insn))
 	{
 	  INSN_DELETED_P (insn) = 1;
 
@@ -1672,7 +1672,7 @@ redirect_jump (rtx jump, rtx nlabel, int delete_unused)
      function, move the function end note so that -Wreturn-type works.  */
   if (olabel && nlabel
       && NEXT_INSN (olabel)
-      && GET_CODE (NEXT_INSN (olabel)) == NOTE
+      && NOTE_P (NEXT_INSN (olabel))
       && NOTE_LINE_NUMBER (NEXT_INSN (olabel)) == NOTE_INSN_FUNCTION_END)
     emit_note_after (NOTE_INSN_FUNCTION_END, nlabel);
 

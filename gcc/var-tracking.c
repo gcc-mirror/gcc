@@ -503,7 +503,7 @@ prologue_stack_adjust (void)
   end = NEXT_INSN (BB_END (bb));
   for (insn = BB_HEAD (bb); insn != end; insn = NEXT_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE
+      if (NOTE_P (insn)
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
 	break;
 
@@ -2579,7 +2579,7 @@ vt_initialize (void)
 		}
 	      note_uses (&PATTERN (insn), count_uses_1, insn);
 	      note_stores (PATTERN (insn), count_stores, insn);
-	      if (GET_CODE (insn) == CALL_INSN)
+	      if (CALL_P (insn))
 		VTI (bb)->n_mos++;
 	    }
 	}
@@ -2629,7 +2629,7 @@ vt_initialize (void)
 		    }
 		}
 
-	      if (GET_CODE (insn) == CALL_INSN)
+	      if (CALL_P (insn))
 		{
 		  micro_operation *mo = VTI (bb)->mos + VTI (bb)->n_mos++;
 

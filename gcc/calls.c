@@ -2838,7 +2838,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  /* Expansion of block moves possibly introduced a loop that may
 	     not appear inside libcall block.  */
 	  for (insn = insns; insn; insn = NEXT_INSN (insn))
-	    if (GET_CODE (insn) == JUMP_INSN)
+	    if (JUMP_P (insn))
 	      failed = true;
 
 	  if (failed)
@@ -2923,7 +2923,7 @@ expand_call (tree exp, rtx target, int ignore)
 	     than just a CALL_INSN above, so we must search for it here.  */
 
 	  rtx last = get_last_insn ();
-	  while (GET_CODE (last) != CALL_INSN)
+	  while (!CALL_P (last))
 	    {
 	      last = PREV_INSN (last);
 	      /* There was no CALL_INSN?  */
@@ -3929,7 +3929,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	 just a CALL_INSN above, so we must search for it here.  */
 
       rtx last = get_last_insn ();
-      while (GET_CODE (last) != CALL_INSN)
+      while (!CALL_P (last))
 	{
 	  last = PREV_INSN (last);
 	  /* There was no CALL_INSN?  */

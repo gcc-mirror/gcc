@@ -3018,7 +3018,7 @@ output_constant_pool_1 (struct constant_descriptor_rtx *desc)
     case LABEL_REF:
       tmp = XEXP (x, 0);
       if (INSN_DELETED_P (tmp)
-	  || (GET_CODE (tmp) == NOTE
+	  || (NOTE_P (tmp)
 	      && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_DELETED))
 	{
 	  abort ();

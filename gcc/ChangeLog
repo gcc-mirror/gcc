@@ -1,3 +1,182 @@
+2004-07-08  Jerry Quinn  <jlquinn@optonline.net>
+
+	* alias.c (nonlocal_mentioned_p, nonlocal_referenced_p,
+	nonlocal_set_p, init_alias_analysis): Use, LABEL_P, JUMP_P, CALL_P,
+	NONJUMP_INSN_P, INSN_P, NOTE_P, BARRIER_P.
+	* bb-reorder.c (mark_bb_for_unlikely_executed_section,
+	add_labels_and_missing_jumps, find_jump_block,
+	fix_crossing_unconditional_branches, add_reg_crossing_jump_notes):
+	Likewise.
+	* bt-load.c (btr_referenced_p, compute_defs_uses_and_gen,
+	link_btr_uses, move_btr_def): Likewise.
+	* builtins.c (expand_builtin_longjmp, expand_builtin_nonlocal_goto,
+	expand_builtin_expect_jump): Likewise.
+	* caller-save.c (save_call_clobbered_regs, insert_one_insn): Likewise.
+	* calls.c (expand_call, emit_library_call_value_1): Likewise.
+	* cfganal.c (forwarder_block_p): Likewise.
+	* cfgbuild.c (inside_basic_block_p, count_basic_blocks,
+	make_label_edge, rtl_make_eh_edge, make_edges, find_basic_blocks_1,
+	find_bb_boundaries): Likewise.
+	* cfgcleanup.c (try_simplify_condjump, try_forward_edges,
+	merge_blocks_move_predecessor_nojumps,
+	merge_blocks_move_successor_nojumps, insns_match_p,
+	flow_find_cross_jump, outgoing_edges_match, try_crossjump_to_edge,
+	try_optimize_cfg): Likewise.
+	* cfgexpand.c (expand_block, construct_exit_block): Likewise.
+	* cfglayout.c (skip_insns_after_block, label_for_bb,
+	record_effective_endpoints, insn_locators_initialize,
+	fixup_reorder_chain, update_unlikely_executed_notes): Likewise.
+	* cfgmainloop.c (create_loop_notes): Likewise.
+	* cfgrtl.c (delete_insn, delete_insn_chain,
+	create_basic_block_structure, rtl_delete_block, free_bb_for_insn,
+	update_bb_for_insn, rtl_merge_blocks, rtl_can_merge_blocks,
+	block_label, try_redirect_by_replacing_jump, last_loop_beg_note,
+	redirect_branch_edge, force_nonfallthru_and_redirect,
+	rtl_tidy_fallthru_edge, back_edge_of_syntactic_loop_p,
+	rtl_split_edge, commit_one_edge_insertion, print_rtl_with_bb,
+	update_br_prob_note, rtl_verify_flow_info_1, rtl_verify_flow_info,
+	purge_dead_edges, cfg_layout_redirect_edge_and_branch,
+	cfg_layout_delete_block, cfg_layout_can_merge_blocks_p,
+	cfg_layout_merge_blocks, rtl_block_ends_with_call_p,
+	need_fake_edge_p, rtl_flow_call_edges_add): Likewise.
+	* combine.c (combine_instructions, can_combine_p, try_combine,
+	find_split_point, record_dead_and_set_regs, reg_dead_at_p,
+	distribute_notes, distribute_links, insn_cuid): Likewise.
+	* cse.c (fold_rtx, cse_insn, cse_around_loop,
+	invalidate_skipped_block, cse_set_around_loop,
+	cse_end_of_basic_block, cse_main, cse_basic_block,
+	cse_condition_code_reg): Likewise.
+	* cselib.c (cselib_process_insn): Likewise.
+	* ddg.c (create_ddg): Likewise.
+	* df.c (df_insn_refs_record, df_bb_rd_local_compute, df_insns_modify):
+	Likewise.
+	* dwarf2out.c (dwarf2out_stack_adjust, dwarf2out_frame_debug,
+	gen_label_die, dwarf2out_var_location): Likewise.
+	* emit-rtl.c (get_first_nonnote_insn, get_last_nonnote_insn,
+	next_insn, previous_insn, next_nonnote_insn, prev_nonnote_insn,
+	last_call_insn, active_insn_p, next_label, prev_label,
+	link_cc0_insns, next_cc0_user, try_split, add_insn_after,
+	add_insn_before, remove_insn, add_function_usage_to,
+	reorder_insns, find_line_note, remove_unnecessary_notes,
+	emit_insn_after_1, classify_insn): Likewise.
+	* except.c (convert_from_eh_region_ranges_1, emit_to_new_bb_before,
+	connect_post_landing_pads, sjlj_mark_call_sites,
+	sjlj_emit_function_enter, sjlj_emit_function_exit, reachable_handlers,
+	can_throw_internal, can_throw_external, set_nothrow_function_flags,
+	convert_to_eh_region_ranges): Likewise.
+	* explow.c (optimize_save_area_alloca): Likewise.
+	* expr.c (expand_expr_real): Likewise.
+	* final.c (insn_current_reference_address, compute_alignments,
+	shorten_branches, final, scan_ahead_for_unlikely_executed_note,
+	final_scan_insn, output_asm_label, leaf_function_p): Likewise.
+	* flow.c (first_insn_after_basic_block_note, delete_dead_jumptables,
+	propagate_block_delete_insn, propagate_one_insn,
+	init_propagate_block_info, propagate_block, libcall_dead_p,
+	mark_set_1, attempt_auto_inc, find_auto_inc, try_pre_increment):
+	Likewise.
+	* function.c (instantiate_virtual_regs,	reorder_blocks_1,
+	expand_function_start, expand_function_end, contains,
+	thread_prologue_and_epilogue_insns,
+	reposition_prologue_and_epilogue_notes): Likewise.
+	* gcse.c (constprop_register, bypass_conditional_jumps,
+	insert_insn_end_bb, gcse_after_reload): Likewise.
+	* genemit.c (gen_expand, gen_split): Likewise.
+	* genpeep.c (gen_peephole, main): Likewise.
+	* global.c (build_insn_chain): Likewise.
+	* graph.c (node_data, print_rtl_graph_with_bb): Likewise.
+	* haifa-sched.c (unlink_other_notes, unlink_line_notes,
+	get_block_head_tail, no_real_insns_p, rm_line_notes, save_line_notes,
+	restore_line_notes, rm_redundant_line_notes, rm_other_notes,
+	ok_for_early_queue_removal, set_priorities, sched_init): Likewise.
+	* ifcvt.c (count_bb_insns, first_active_insn, last_active_insn,
+	cond_exec_process_insns, end_ifcvt_sequence, noce_process_if_block,
+	merge_if_block, block_jumps_and_fallthru_p, find_if_block,
+	dead_or_predicable): Likewise.
+	* integrate.c (try_constants): Likewise.
+	* jump.c (rebuild_jump_labels, cleanup_barriers,
+	purge_line_number_notes, init_label_info, mark_all_labels,
+	squeeze_notes, get_label_before, get_label_after,
+	reversed_comparison_code_parts, simplejump_p, pc_set,
+	returnjump_p, onlyjump_p, follow_jumps, mark_jump_label,
+	delete_barrier, delete_prior_computation, delete_computation,
+	delete_related_insns, delete_for_peephole, redirect_jump):
+	Likewise.
+	* lcm.c (optimize_mode_switching): Likewise.
+	* local-alloc.c (validate_equiv_mem, update_equiv_regs, block_alloc):
+	Likewise.
+	* loop-doloop.c (doloop_valid_p, doloop_optimize): Likewise.
+	* loop-invariant.c (find_exits, find_invariants_bb): Likewise.
+	* loop-iv.c (simplify_using_assignment): Likewise.
+	* loop.c (compute_luids, loop_optimize, scan_loop, libcall_other_reg,
+	libcall_benefit, skip_consec_insns, move_movables, prescan_loop,
+	find_and_verify_loops, labels_in_range_p, for_each_insn_in_loop,
+	loop_bivs_init_find, strength_reduce, check_insn_for_bivs,
+	check_insn_for_givs, check_final_value, update_giv_derive,
+	basic_induction_var, product_cheap_p, check_dbra_loop,
+	loop_insn_first_p, last_use_this_basic_block,
+	canonicalize_condition, get_condition, loop_regs_scan, load_mems,
+	try_copy_prop, LOOP_BLOCK_NUM, loop_dump_aux): Likewise.
+	* modulo-sched.c (doloop_register_get, find_line_note, sms_schedule,
+	sms_schedule_by_order): Likewise.
+	* optabs.c (emit_no_conflict_block, emit_libcall_block): Likewise.
+	* postreload.c (reload_cse_simplify_operands, reload_combine,
+	reload_cse_move2add): Likewise.
+	* predict.c (can_predict_insn_p, estimate_probability,
+	expected_value_to_br_prob, process_note_predictions): Likewise.
+	* print-rtl.c (print_rtx, print_rtl, print_rtl_single): Likewise.
+	* profile.c (branch_prob): Likewise.
+	* ra-build.c (live_out_1, livethrough_conflicts_bb,
+	detect_webs_set_in_cond_jump): Likewise.
+	* ra-debug.c (ra_print_rtx_object, ra_debug_insns,
+	ra_print_rtl_with_bb): Likewise.
+	* ra-rewrite.c (insert_stores, rewrite_program2): Likewise.
+	* recog.c (next_insn_tests_no_inequality, find_single_use,
+	split_all_insns, peephole2_optimize, if_test_bypass_p): Likewise.
+	* reg-stack.c (next_flags_user, record_label_references,
+	emit_swap_insn, swap_rtx_condition, subst_stack_regs,
+	compensate_edge, convert_regs_1): Likewise.
+	* regclass.c (scan_one_insn): Likewise.
+	* regmove.c (optimize_reg_copy_1, optimize_reg_copy_2, fixup_match_2,
+	regmove_optimize, fixup_match_1, single_set_for_csa,
+	combine_stack_adjustments_for_block): Likewise.
+	* regrename.c (build_def_use, copyprop_hardreg_forward_1): Likewise.
+	* reload.c (find_reloads, find_reloads_address_1, subst_reloads,
+	find_equiv_reg): Likewise.
+	* reload1.c (reload, calculate_needs_all_insns, set_label_offsets,
+	reload_as_needed, emit_input_reload_insns, do_output_reload,
+	delete_output_reload, delete_address_reloads_1, fixup_abnormal_edges):
+	Likewise.
+	* reorg.c (find_end_label, emit_delay_sequence,
+	delete_from_delay_slot, delete_scheduled_jump, optimize_skip,
+	get_jump_flags, rare_destination, mostly_true_jump,
+	try_merge_delay_insns, redundant_insn, own_thread_p,
+	fill_simple_delay_slots, fill_slots_from_thread,
+	fill_eager_delay_slots, relax_delay_slots, make_return_insns,
+	dbr_schedule): Likewise.
+	* resource.c (find_basic_block, next_insn_no_annul,
+	find_dead_or_set_registers, mark_target_live_regs): Likewise.
+	* rtl.h (RTX_PREV): Likewise.
+	* rtlanal.c (global_reg_mentioned_p, no_labels_between_p,
+	no_jumps_between_p, reg_used_between_p, reg_referenced_between_p,
+	reg_set_p, find_last_value, dead_or_set_regno_p, find_reg_fusage,
+	find_regno_fusage, pure_call_p, replace_label, rtx_referenced_p_1,
+	tablejump_p, computed_jump_p, insns_safe_to_move_p,
+	find_first_parameter_load, can_hoist_insn_p): Likewise.
+	* sched-deps.c (get_condition, add_dependence, sched_analyze_2,
+	sched_analyze_insn, sched_analyze, add_forward_dependence): Likewise.
+	* sched-ebb.c (fix_basic_block_boundaries, add_deps_for_risky_insns,
+	schedule_ebbs): Likewise.
+	* sched-rgn.c (is_cfg_nonregular, find_conditional_protection,
+	is_conditionally_protected, can_schedule_ready_p,
+	add_branch_dependences, debug_dependencies): Likewise.
+	* stmt.c (emit_nop, expand_start_case, emit_jump_if_reachable):
+	Likewise.
+	* unroll.c (unroll_loop, copy_loop_body, back_branch_in_range_p,
+	reg_dead_after_loop, loop_find_equiv_value, loop_iterations,
+	set_dominates_use, ujump_to_loop_cont): Likewise.
+	* var-tracking.c (prologue_stack_adjust, vt_initialize): Likewise.
+	* varasm.c (output_constant_pool_1): Likewise.
+
 2004-07-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-scalar-evolution.c: New file.

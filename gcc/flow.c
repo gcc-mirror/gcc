@@ -343,7 +343,7 @@ first_insn_after_basic_block_note (basic_block block)
 
   if (insn == NULL_RTX)
     return NULL_RTX;
-  if (GET_CODE (insn) == CODE_LABEL)
+  if (LABEL_P (insn))
     insn = NEXT_INSN (insn);
   if (!NOTE_INSN_BASIC_BLOCK_P (insn))
     abort ();
@@ -832,9 +832,9 @@ delete_dead_jumptables (void)
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
-      if (GET_CODE (insn) == CODE_LABEL
+      if (LABEL_P (insn)
 	  && LABEL_NUSES (insn) == LABEL_PRESERVE_P (insn)
-	  && GET_CODE (next) == JUMP_INSN
+	  && JUMP_P (next)
 	  && (GET_CODE (PATTERN (next)) == ADDR_VEC
 	      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
 	{
@@ -1474,7 +1474,7 @@ propagate_block_delete_insn (rtx insn)
      real good way to fix up the reference to the deleted label
      when the label is deleted, so we just allow it here.  */
 
-  if (inote && GET_CODE (inote) == CODE_LABEL)
+  if (inote && LABEL_P (inote))
     {
       rtx label = XEXP (inote, 0);
       rtx next;
@@ -1484,7 +1484,7 @@ propagate_block_delete_insn (rtx insn)
 	 jump following it, but not the label itself.  */
       if (LABEL_NUSES (label) == 1 + LABEL_PRESERVE_P (label)
 	  && (next = next_nonnote_insn (label)) != NULL
-	  && GET_CODE (next) == JUMP_INSN
+	  && JUMP_P (next)
 	  && (GET_CODE (PATTERN (next)) == ADDR_VEC
 	      || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
 	{
@@ -1674,7 +1674,7 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	 in a register clobbered by calls.  Find all regs now live and
 	 record this for them.  */
 
-      if (GET_CODE (insn) == CALL_INSN && (flags & PROP_REG_INFO))
+      if (CALL_P (insn) && (flags & PROP_REG_INFO))
 	EXECUTE_IF_SET_IN_REG_SET (pbi->reg_live, 0, i,
 				   { REG_N_CALLS_CROSSED (i)++; });
 
@@ -1682,7 +1682,7 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
 	 would have killed the values if they hadn't been deleted.  */
       mark_set_regs (pbi, PATTERN (insn), insn);
 
-      if (GET_CODE (insn) == CALL_INSN)
+      if (CALL_P (insn))
 	{
 	  regset live_at_end;
 	  bool sibcall_p;
@@ -1752,7 +1752,7 @@ propagate_one_insn (struct propagate_block_info *pbi, rtx insn)
       prev = PREV_INSN (insn);
 #endif
 
-      if (! insn_is_dead && GET_CODE (insn) == CALL_INSN)
+      if (! insn_is_dead && CALL_P (insn))
 	{
 	  int i;
 	  rtx note, cond;
@@ -1824,7 +1824,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
   /* If this block ends in a conditional branch, for each register
      live from one side of the branch and not the other, record the
      register as conditionally dead.  */
-  if (GET_CODE (BB_END (bb)) == JUMP_INSN
+  if (JUMP_P (BB_END (bb))
       && any_condjump_p (BB_END (bb)))
     {
       regset_head diff_head;
@@ -1932,7 +1932,7 @@ init_propagate_block_info (basic_block bb, regset live, regset local_set,
     {
       rtx insn, set;
       for (insn = BB_END (bb); insn != BB_HEAD (bb); insn = PREV_INSN (insn))
-	if (GET_CODE (insn) == INSN
+	if (NONJUMP_INSN_P (insn)
 	    && (set = single_set (insn))
 	    && MEM_P (SET_DEST (set)))
 	  {
@@ -2026,7 +2026,7 @@ propagate_block (basic_block bb, regset live, regset local_set,
       /* If this is a call to `setjmp' et al, warn if any
 	 non-volatile datum is live.  */
       if ((flags & PROP_REG_INFO)
-	  && GET_CODE (insn) == CALL_INSN
+	  && CALL_P (insn)
 	  && find_reg_note (insn, REG_SETJMP, NULL))
 	IOR_REG_SET (regs_live_at_setjmp, pbi->reg_live);
 
@@ -2272,7 +2272,7 @@ libcall_dead_p (struct propagate_block_info *pbi, rtx note, rtx insn)
 	  int i;
 
 	  /* Find the call insn.  */
-	  while (call != insn && GET_CODE (call) != CALL_INSN)
+	  while (call != insn && !CALL_P (call))
 	    call = NEXT_INSN (call);
 
 	  /* If there is none, do nothing special,
@@ -2745,8 +2745,8 @@ mark_set_1 (struct propagate_block_info *pbi, enum rtx_code code, rtx reg, rtx c
 		  if (y && (BLOCK_NUM (y) == blocknum)
 		      && (regno_first >= FIRST_PSEUDO_REGISTER
 			  || (asm_noperands (PATTERN (y)) < 0
-			      && ! ((GET_CODE (insn) == CALL_INSN
-				     || GET_CODE (y) == CALL_INSN)
+			      && ! ((CALL_P (insn)
+				     || CALL_P (y))
 				    && global_regs[regno_first]))))
 		    LOG_LINKS (y) = alloc_INSN_LIST (insn, LOG_LINKS (y));
 		}
@@ -3322,7 +3322,7 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
 	 use of INCR_REG.  If a use of INCR_REG was just placed in
 	 the insn before INSN, make that the next use.
 	 Otherwise, invalidate it.  */
-      if (GET_CODE (PREV_INSN (insn)) == INSN
+      if (NONJUMP_INSN_P (PREV_INSN (insn))
 	  && GET_CODE (PATTERN (PREV_INSN (insn))) == SET
 	  && SET_SRC (PATTERN (PREV_INSN (insn))) == incr_reg)
 	pbi->reg_next_use[regno] = PREV_INSN (insn);
@@ -3345,7 +3345,7 @@ attempt_auto_inc (struct propagate_block_info *pbi, rtx inc, rtx insn,
       /* If there are any calls between INSN and INCR, show
 	 that REGNO now crosses them.  */
       for (temp = insn; temp != incr; temp = NEXT_INSN (temp))
-	if (GET_CODE (temp) == CALL_INSN)
+	if (CALL_P (temp))
 	  REG_N_CALLS_CROSSED (regno)++;
 
       /* Invalidate alias info for Q since we just changed its value.  */
@@ -3418,7 +3418,7 @@ find_auto_inc (struct propagate_block_info *pbi, rtx x, rtx insn)
   int regno;
   int size = GET_MODE_SIZE (GET_MODE (x));
 
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     return;
 
   /* Here we detect use of an index register which might be good for
@@ -4049,7 +4049,7 @@ try_pre_increment (rtx insn, rtx reg, HOST_WIDE_INT amount)
      because if the incremented register is spilled and must be reloaded
      there would be no way to store the incremented value back in memory.  */
 
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (JUMP_P (insn))
     return 0;
 
   use = 0;
