@@ -157,10 +157,7 @@ typedef struct page_entry
   unsigned long *save_in_use_p;
 
   /* Context depth of this page.  */
-  unsigned char context_depth;
-
-  /* The lg of size of objects allocated from this page.  */
-  unsigned char order;
+  unsigned short context_depth;
 
   /* The number of free objects remaining on this page.  */
   unsigned short num_free_objects;
@@ -168,6 +165,9 @@ typedef struct page_entry
   /* A likely candidate for the bit position of a free object for the
      next allocation from this page.  */
   unsigned short next_bit_hint;
+
+  /* The lg of size of objects allocated from this page.  */
+  unsigned char order;
 
   /* A bit vector indicating whether or not objects are in use.  The
      Nth bit is one if the Nth object on this page is allocated.  This

@@ -1,3 +1,8 @@
+2000-01-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc-page.c (struct page_entry): Make `context_depth' an
+	`unsigned short'.
+
 2000-01-23  Clinton Popetz  <cpopetz@cygnus.com>
 
 	* loop.c (check_dbra_loop): When checking a loop for
