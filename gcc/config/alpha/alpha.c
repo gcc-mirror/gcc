@@ -1842,7 +1842,9 @@ decl_has_samegp (decl)
     return true;
 
   /* Functions that are not external are defined in this UoT.  */
-  return !DECL_EXTERNAL (decl);
+  /* ??? Irritatingly, static functions not yet emitted are still
+     marked "external".  Apply this to non-static functions only.  */
+  return !TREE_PUBLIC (decl) || !DECL_EXTERNAL (decl);
 }
 
 /* Return true if EXP should be placed in the small data section.  */
