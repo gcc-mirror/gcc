@@ -1,5 +1,15 @@
 1999-05-10  Tom Tromey  <tromey@cygnus.com>
 
+	* java/io/InputStreamReader.java (read): If length is 0, return
+	0.  Reset `wpos' and `wcount' when buffer has been filled and
+	emptied.
+
+	* java/util/Properties.java (save): Removed `FIXME' comment.
+	(load): Invalid characters in \u now treated as terminators.
+	Make sure to append character resulting from `\' handling.
+	Cast to `char' when appending to key or value.
+	(skip_ws): Inverted test for whitespace.
+
 	* java/io/RandomAccessFile.java (RandomAccessFile): Removed
 	`FIXME' comment.
 	(readLine): Likewise.

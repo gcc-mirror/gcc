@@ -111,6 +111,8 @@ public class InputStreamReader extends Reader
 	  }
 	else
 	  {
+	    if (length == 0)
+	      return 0;
 	    for (;;)
 	      {
 		in.mark(1);
@@ -138,6 +140,11 @@ public class InputStreamReader extends Reader
 	if (work == null)
 	  {
 	    work = new char[100];
+	    wpos = 0;
+	    wcount = 0;
+	  }
+	else if (wavail == 0)
+	  {
 	    wpos = 0;
 	    wcount = 0;
 	  }

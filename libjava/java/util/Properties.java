@@ -103,7 +103,7 @@ public class Properties extends Hashtable
 	  // FIXME: we use our own definition of whitespace.
 	  // Character.isWhitespace includes newlines, which we don't
 	  // want.  Character.isSpaceChar doesn't include \t.
-	  if (c == ' ' || c == '\t')
+	  if (c != ' ' && c != '\t')
 	    {
 	      reader.unread(c);
 	      return true;
@@ -166,12 +166,12 @@ public class Properties extends Hashtable
 		  reader.unread(c);
 		  break;
 		}
-	      // FIXME: again, our own definitino of whitespace.
+	      // FIXME: again, our own definition of whitespace.
 	      if (c == ' ' || c == '\t' || c == ':' || c == '=')
 		break;
 
 	      first_char = false;
-	      key.append(c);
+	      key.append((char) c);
 	    }
 
 	  // Found end of key.  Skip whitespace.  If the terminator
@@ -226,10 +226,14 @@ public class Properties extends Hashtable
 			  if (x == -1)
 			    return;
 			  int d = Character.digit((char) x, 16);
-			  // FIXME: what to do here?  We call it an
-			  // error.
+			  // We follow JDK here: invalid characters
+			  // are treated as terminators.
 			  if (d == -1)
-			    throw new IOException ();
+			    {
+			      value.append((char) c);
+			      c = x;
+			      break;
+			    }
 			  c <<= 4;
 			  c |= d;
 			}
@@ -238,8 +242,7 @@ public class Properties extends Hashtable
 		      // Nothing.
 		    }
 		}
-	      else
-		value.append(c);
+	      value.append((char) c);
 	    }
 
 	  put (key.toString(), value.toString());
@@ -290,7 +293,8 @@ public class Properties extends Hashtable
 	{
 	  if (comment != null)
 	    {
-	      // FIXME: what if COMMENT contains newlines?
+	      // We just lose if COMMENT contains a newline.  This is
+	      // what JDK 1.1 does.
 	      output.write("#");
 	      output.write(comment);
 	      output.write(newline);
@@ -309,7 +313,7 @@ public class Properties extends Hashtable
 	      // characters.  But it also doesn't say we should encode
 	      // it in any way.
 	      // FIXME: if key contains ':', '=', or whitespace, must
-	      // quote it here.
+	      // quote it here.  Note that JDK 1.1 does not do this.
 	      output.write(key);
 	      output.write("=");
 
