@@ -20,7 +20,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include <setjmp.h>
 
 #include "rtl.h"
 #include "tree.h"
@@ -126,6 +125,7 @@ static int skip_white_space		PROTO((int));
 static int skip_white_space_on_line	PROTO((void));
 static char *extend_token_buffer	PROTO((const char *));
 static int readescape			PROTO((int *));
+static void parse_float			PROTO((PTR));
 
 /* Do not insert generated code into the source, instead, include it.
    This allows us to build gcc automatically even for targets that
@@ -1090,6 +1090,120 @@ struct try_type type_sequence[] =
 };
 #endif /* 0 */
 
+struct pf_args
+{
+  /* Input */
+  int base;
+  char * p;
+  /* I/O */
+  int c;
+  int imag;
+  tree type;
+  int conversion_errno;
+  /* Output */
+  REAL_VALUE_TYPE value;
+};
+ 
+static void
+parse_float (data)
+  PTR data;
+{
+  struct pf_args * args = (struct pf_args *) data;
+  int fflag = 0, lflag = 0;
+  /* Copy token_buffer now, while it has just the number
+     and not the suffixes; once we add `f' or `i',
+     REAL_VALUE_ATOF may not work any more.  */
+  char *copy = (char *) alloca (args->p - token_buffer + 1);
+  bcopy (token_buffer, copy, args->p - token_buffer + 1);
+
+  while (1)
+    {
+      int lose = 0;
+
+      /* Read the suffixes to choose a data type.  */
+      switch (args->c)
+	{
+	case 'f': case 'F':
+	  if (fflag)
+	    error ("more than one `f' in numeric constant");
+	  fflag = 1;
+	  break;
+
+	case 'l': case 'L':
+	  if (lflag)
+	    error ("more than one `l' in numeric constant");
+	  lflag = 1;
+	  break;
+
+	case 'i': case 'I':
+	  if (args->imag)
+	    error ("more than one `i' or `j' in numeric constant");
+	  else if (pedantic)
+	    pedwarn ("ANSI C forbids imaginary numeric constants");
+	  args->imag = 1;
+	  break;
+
+	default:
+	  lose = 1;
+	}
+
+      if (lose)
+	break;
+
+      if (args->p >= token_buffer + maxtoken - 3)
+	args->p = extend_token_buffer (args->p);
+      *(args->p++) = args->c;
+      *(args->p) = 0;
+      args->c = GETC();
+    }
+
+  /* The second argument, machine_mode, of REAL_VALUE_ATOF
+     tells the desired precision of the binary result
+     of decimal-to-binary conversion.  */
+
+  if (fflag)
+    {
+      if (lflag)
+	error ("both `f' and `l' in floating constant");
+
+      args->type = float_type_node;
+      errno = 0;
+      if (args->base == 16)
+	args->value = REAL_VALUE_HTOF (copy, TYPE_MODE (args->type));
+      else
+	args->value = REAL_VALUE_ATOF (copy, TYPE_MODE (args->type));
+      args->conversion_errno = errno;
+      /* A diagnostic is required here by some ANSI C testsuites.
+	 This is not pedwarn, because some people don't want
+	 an error for this.  */
+      if (REAL_VALUE_ISINF (args->value) && pedantic)
+	warning ("floating point number exceeds range of `float'");
+    }
+  else if (lflag)
+    {
+      args->type = long_double_type_node;
+      errno = 0;
+      if (args->base == 16)
+	args->value = REAL_VALUE_HTOF (copy, TYPE_MODE (args->type));
+      else
+	args->value = REAL_VALUE_ATOF (copy, TYPE_MODE (args->type));
+      args->conversion_errno = errno;
+      if (REAL_VALUE_ISINF (args->value) && pedantic)
+	warning ("floating point number exceeds range of `long double'");
+    }
+  else
+    {
+      errno = 0;
+      if (args->base == 16)
+	args->value = REAL_VALUE_HTOF (copy, TYPE_MODE (args->type));
+      else
+	args->value = REAL_VALUE_ATOF (copy, TYPE_MODE (args->type));
+      args->conversion_errno = errno;
+      if (REAL_VALUE_ISINF (args->value) && pedantic)
+	warning ("floating point number exceeds range of `double'");
+    }
+}
+ 
 int
 yylex ()
 {
@@ -1490,7 +1604,7 @@ yylex ()
 	    int imag = 0;
 	    int conversion_errno = 0;
 	    REAL_VALUE_TYPE value;
-	    jmp_buf handler;
+	    struct pf_args args;
 
 	    /* Read explicit exponent if any, and put it in tokenbuf.  */
 
@@ -1522,112 +1636,33 @@ yylex ()
 
 	    *p = 0;
 
+	    /* Setup input for parse_float() */
+	    args.base = base;
+	    args.p = p;
+	    args.c = c;
+	    args.imag = imag;
+	    args.type = type;
+	    args.conversion_errno = conversion_errno;
+
 	    /* Convert string to a double, checking for overflow.  */
-	    if (setjmp (handler))
+	    if (do_float_handler (parse_float, (PTR) &args))
 	      {
-		error ("floating constant out of range");
-		value = dconst0;
+		/* Receive output from parse_float() */
+		value = args.value;
 	      }
 	    else
 	      {
-		int fflag = 0, lflag = 0;
-		/* Copy token_buffer now, while it has just the number
-		   and not the suffixes; once we add `f' or `i',
-		   REAL_VALUE_ATOF may not work any more.  */
-		char *copy = (char *) alloca (p - token_buffer + 1);
-		bcopy (token_buffer, copy, p - token_buffer + 1);
+		/* We got an exception from parse_float() */
+		error ("floating constant out of range");
+		value = dconst0;
+	      }
 
-		set_float_handler (handler);
-
-		while (1)
-		  {
-		    int lose = 0;
-
-		    /* Read the suffixes to choose a data type.  */
-		    switch (c)
-		      {
-		      case 'f': case 'F':
-			if (fflag)
-			  error ("more than one `f' in numeric constant");
-			fflag = 1;
-			break;
-
-		      case 'l': case 'L':
-			if (lflag)
-			  error ("more than one `l' in numeric constant");
-			lflag = 1;
-			break;
-
-		      case 'i': case 'I':
-			if (imag)
-			  error ("more than one `i' or `j' in numeric constant");
-			else if (pedantic)
-			  pedwarn ("ANSI C forbids imaginary numeric constants");
-			imag = 1;
-			break;
-
-		      default:
-			lose = 1;
-		      }
-
-		    if (lose)
-		      break;
-
-		    if (p >= token_buffer + maxtoken - 3)
-		      p = extend_token_buffer (p);
-		    *p++ = c;
-		    *p = 0;
-		    c = GETC();
-		  }
-
-		/* The second argument, machine_mode, of REAL_VALUE_ATOF
-		   tells the desired precision of the binary result
-		   of decimal-to-binary conversion.  */
-
-		if (fflag)
-		  {
-		    if (lflag)
-		      error ("both `f' and `l' in floating constant");
-
-		    type = float_type_node;
-		    errno = 0;
-		    if (base == 16)
-		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
-		    else
-		      value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
-		    conversion_errno = errno;
-		    /* A diagnostic is required here by some ANSI C testsuites.
-		       This is not pedwarn, because some people don't want
-		       an error for this.  */
-		    if (REAL_VALUE_ISINF (value) && pedantic)
-		      warning ("floating point number exceeds range of `float'");
-		  }
-		else if (lflag)
-		  {
-		    type = long_double_type_node;
-		    errno = 0;
-		    if (base == 16)
-		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
-		    else
-		      value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
-		    conversion_errno = errno;
-		    if (REAL_VALUE_ISINF (value) && pedantic)
-		      warning ("floating point number exceeds range of `long double'");
-		  }
-		else
-		  {
-		    errno = 0;
-		    if (base == 16)
-		      value = REAL_VALUE_HTOF (copy, TYPE_MODE (type));
-		    else
-		      value = REAL_VALUE_ATOF (copy, TYPE_MODE (type));
-		    conversion_errno = errno;
-		    if (REAL_VALUE_ISINF (value) && pedantic)
-		      warning ("floating point number exceeds range of `double'");
-		  }
-
-		set_float_handler (NULL_PTR);
-	    }
+	    /* Receive output from parse_float() */
+	    c = args.c;
+	    imag = args.imag;
+	    type = args.type;
+	    conversion_errno = args.conversion_errno;
+	    
 #ifdef ERANGE
 	    /* ERANGE is also reported for underflow,
 	       so test the value to distinguish overflow from that.  */
