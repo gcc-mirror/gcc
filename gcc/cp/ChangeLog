@@ -1,3 +1,83 @@
+Tue Apr 18 03:57:35 1995  Michael Meissner  (meissner@cygnus.com)
+
+	* Makefile.in (lex.o): Add dependency on c-pragma.h.
+
+	* lex.c (handle_sysv_pragma): Use NULL_PTR and NULL_TREE as
+	appropriate, instead of 0.
+
+Mon Apr 17 12:28:42 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (pushdecl): Use decls_match, not duplicate_decls, for
+	comparing local and global decls.
+
+Fri Apr 14 01:46:52 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck.c (convert_arguments): Only prohibit passing to ... of
+	types with non-trivial copy constructors.
+
+	* repo.c (repo_template_used): Don't try to mess with no id.
+
+Fri Apr 14 23:32:50 1995  Per Bothner  <bothner@rtl.cygnus.com>
+
+	* decl.c (duplicate_decls):  Use cp_warning_at for redundant-decls.
+
+Thu Apr 13 15:37:42 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* cp-tree.h (current_tinst_level): Delete declaration, since it's
+	static inside pt.c.
+
+	* typeck.c (build_modify_expr): Catch incompatible array assignment.
+
+	* parse.y (attribute_list, attrib): Rewrite actions to feed the
+	right stuff to decl_attributes.
+
+Thu Apr 13 11:24:10 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* search.c (dfs_debug_mark): Check for magic virtual like
+	import_export_vtable.
+
+	* typeck.c (build_binary_op_nodefault): Don't call cp_pedwarn with
+	four args.
+
+Wed Apr 12 12:02:57 1995  Jason Merrill  <jason@deneb.cygnus.com>
+
+	* decl2.c (finish_file): Move prevtable pass before needs_messing_up
+	decision.
+
+Tue Apr 11 11:20:27 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (finish_decl): If we're writing out a static data member of
+	a class, we want the debug info for that class.
+
+	* gc.c (build_t_desc): Check linkage of a class properly.
+
+	* class.c (finish_struct): Set the 'headof' offset for the main
+	vtable properly.
+	(prepare_fresh_vtable): Fix typeinfo pointer here.
+	(modify_one_vtable): Instead of here.
+
+Mon Apr 10 12:15:59 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* repo.c (repo_get_id): New function to return the interesting
+	identifier for a repo entity.
+	(repo_template_used): Use it.
+	(repo_template_instantiated): Mark the id as chosen.
+	(init_repo): Record whether or not the id was chosen.
+	(finish_repo): Note if an id was newly chosen.
+
+	* pt.c (do_function_instantiation): Call repo_template_instantiated.
+	(do_type_instantiation): Ditto.  Don't diagnose multiple
+	instantiation.
+
+	* decl2.c (finish_file): Use DECL_NOT_REALLY_EXTERN when deciding
+	whether or not to synthesize a method.
+
+	Undo these changes:
+	* class.c (finish_vtbls): build more vtables if flag_rtti is on.
+	* class.c (modify_all_direct_vtables): ditto.
+	* init.c (expand_direct_vtbls_init): expand more vtables if
+	flag_rtti is on.
+
 Sat Apr  8 17:45:41 1995  Mike Stump  <mrs@cygnus.com>
 
 	* gc.c (build_headof): Use ptrdiff_type_node instead of

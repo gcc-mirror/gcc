@@ -2085,22 +2085,22 @@ attribute:
 
 attribute_list:
       attrib
-		{ $$ = build_tree_list (NULL_TREE, $1); }
+		{ $$ = $1; }
 	| attribute_list ',' attrib
-		{ $$ = chainon ($1, build_tree_list (NULL_TREE, $3)); }
+		{ $$ = chainon ($1, $3); }
 	;
  
 attrib:
     /* empty */
 		{ $$ = NULL_TREE; }
 	| any_word
-		{ $$ = $1; }
+		{ $$ = build_tree_list ($1, NULL_TREE); }
 	| any_word '(' IDENTIFIER ')'
-		{ $$ = tree_cons ($1, NULL_TREE, build_tree_list (NULL_TREE, $3)); }
+		{ $$ = build_tree_list ($1, build_tree_list (NULL_TREE, $3)); }
 	| any_word '(' IDENTIFIER ',' nonnull_exprlist ')'
-		{ $$ = tree_cons ($1, NULL_TREE, tree_cons (NULL_TREE, $3, $5)); }
+		{ $$ = build_tree_list ($1, tree_cons (NULL_TREE, $3, $5)); }
 	| any_word '(' nonnull_exprlist ')'
-		{ $$ = tree_cons ($1, NULL_TREE, $3); }
+		{ $$ = build_tree_list ($1, $3); }
 	;
 
 /* This still leaves out most reserved keywords,

@@ -125,7 +125,6 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
   tree real_binfos = BINFO_BASETYPES (real_binfo);
   tree binfos = BINFO_BASETYPES (binfo);
   int i, n_baselinks = real_binfos ? TREE_VEC_LENGTH (real_binfos) : 0;
-  int has_expanded = 0;
 
   for (i = 0; i < n_baselinks; i++)
     {
@@ -134,12 +133,8 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
       int is_not_base_vtable =
 	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (real_binfo));
       if (! TREE_VIA_VIRTUAL (real_base_binfo))
-	{
-	  expand_direct_vtbls_init (real_base_binfo, base_binfo,
-		  (is_not_base_vtable || flag_rtti), can_elide, addr);
-	  if (is_not_base_vtable && flag_rtti)
-	    has_expanded = 1;
-	}
+	expand_direct_vtbls_init (real_base_binfo, base_binfo,
+				  is_not_base_vtable, can_elide, addr);
     }
 #if 0
   /* Before turning this on, make sure it is correct.  */
@@ -147,7 +142,7 @@ expand_direct_vtbls_init (real_binfo, binfo, init_self, can_elide, addr)
     return;
 #endif
   /* Should we use something besides CLASSTYPE_VFIELDS? */
-  if (init_self && !has_expanded && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
+  if (init_self && CLASSTYPE_VFIELDS (BINFO_TYPE (real_binfo)))
     {
       tree base_ptr = convert_pointer_to_real (binfo, addr);
       expand_virtual_init (real_binfo, base_ptr);

@@ -1500,8 +1500,6 @@ struct tinst_level
   struct tinst_level *next;
 };
 
-extern struct tinst_level *current_tinst_level;
-
 /* in class.c */
 extern tree current_class_name;
 extern tree current_class_type;

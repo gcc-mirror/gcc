@@ -2559,6 +2559,7 @@ do_function_instantiation (declspecs, declarator, storage)
     cp_error ("storage class `%D' applied to template instantiation",
 	      storage);
   mark_function_instantiated (result, extern_p);
+  repo_template_instantiated (result, extern_p);
 }
 
 void
@@ -2608,15 +2609,15 @@ do_type_instantiation (name, storage)
     }
 
   /* We've already instantiated this.  */
-  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && ! CLASSTYPE_INTERFACE_ONLY (t))
-    {
-      if (! extern_p)
-	cp_pedwarn ("multiple explicit instantiation of `%#T'", t);
-      return;
-    }
+  if (CLASSTYPE_EXPLICIT_INSTANTIATION (t) && ! CLASSTYPE_INTERFACE_ONLY (t)
+      && extern_p)
+    return;
 
   if (! CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
-    mark_class_instantiated (t, extern_p);
+    {
+      mark_class_instantiated (t, extern_p);
+      repo_template_instantiated (t, extern_p);
+    }
   
   {
     tree tmp;
@@ -2632,18 +2633,8 @@ do_type_instantiation (name, storage)
     tmp = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (t), 0);
     for (; tmp; tmp = TREE_CHAIN (tmp))
       {
-	if (DECL_TEMPLATE_SPECIALIZATION (tmp)
-	    || (DECL_USE_TEMPLATE (tmp) == 0
-		&& CLASSTYPE_TEMPLATE_SPECIALIZATION (t)))
-	  continue;
-
-	SET_DECL_EXPLICIT_INSTANTIATION (tmp);
-	TREE_PUBLIC (tmp) = 1;
-	if (! extern_p)
-	  {
-	    DECL_INTERFACE_KNOWN (tmp) = 1;
-	    DECL_NOT_REALLY_EXTERN (tmp) = 1;
-	  }
+	mark_function_instantiated (tmp, extern_p);
+	repo_template_instantiated (tmp, extern_p);
       }
 
 #if 0

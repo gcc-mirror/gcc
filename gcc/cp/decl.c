@@ -2395,7 +2395,7 @@ duplicate_decls (newdecl, olddecl)
       && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl)))
     {
       cp_warning ("redundant redeclaration of `%D' in same scope", newdecl);
-      cp_warning ("previous declaration of `%D'", olddecl);
+      cp_warning_at ("previous declaration of `%D'", olddecl);
     }
 
   /* Copy all the DECL_... slots specified in the new decl
@@ -2971,7 +2971,7 @@ pushdecl (x)
 	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
 	    {
 	      /* We have one.  Their types must agree.  */
-	      if (duplicate_decls (x, oldglobal))
+	      if (decls_match (x, oldglobal))
 		/* OK */;
 	      else
 		{
@@ -6230,6 +6230,10 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
       else if (!DECL_EXTERNAL (decl) && IS_AGGR_TYPE (ttype))
 	/* Let debugger know it should output info for this type.  */
 	note_debug_info_needed (ttype);
+
+      if (TREE_STATIC (decl) && DECL_CONTEXT (decl)
+	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
+	note_debug_info_needed (DECL_CONTEXT (decl));
 
       if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	  && DECL_SIZE (decl) != NULL_TREE

@@ -2665,8 +2665,8 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	    /* Convert `float' to `double'.  */
 	    result = tree_cons (NULL_TREE, convert (double_type_node, val), result);
 	  else if (TYPE_LANG_SPECIFIC (TREE_TYPE (val))
-		   && (TYPE_HAS_INIT_REF (TREE_TYPE (val))
-		       || TYPE_HAS_ASSIGN_REF (TREE_TYPE (val))))
+		   && (! TYPE_HAS_INIT_REF (TREE_TYPE (val))
+		       || TYPE_HAS_COMPLEX_INIT_REF (TREE_TYPE (val))))
 	    {
 	      cp_warning ("cannot pass objects of type `%T' through `...'",
 			  TREE_TYPE (val));
@@ -3147,11 +3147,6 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 		  && tree_int_cst_lt (TYPE_SIZE (type1), TYPE_SIZE (type0)))
 		pedwarn ("ANSI C++ forbids comparison of `void *' with function pointer");
 	    }
-	  else if ((TYPE_SIZE (tt0) != 0) != (TYPE_SIZE (tt1) != 0))
-	    cp_pedwarn ("comparison of %scomplete and %scomplete pointers `%T' and `%T'",
-			TYPE_SIZE (tt0) == 0 ? "in" : "",
-			TYPE_SIZE (tt1) == 0 ? "in" : "",
-			type0, type1);
 	  else
 	    cp_pedwarn ("comparison of distinct pointer types `%T' and `%T' lacks a cast",
 			type0, type1);
@@ -5931,6 +5926,13 @@ build_modify_expr (lhs, modifycode, rhs)
     {
       int from_array;
       
+      if (! comptypes (lhstype, TREE_TYPE (rhs), 0))
+	{
+	  cp_error ("incompatible types in assignment of `%T' to `%T'",
+		    TREE_TYPE (rhs), lhstype);
+	  return error_mark_node;
+	}
+
       /* Allow array assignment in compiler-generated code.  */
       if (pedantic && ! DECL_ARTIFICIAL (current_function_decl))
 	pedwarn ("ANSI C++ forbids assignment of arrays");
