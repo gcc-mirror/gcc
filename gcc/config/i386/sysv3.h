@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-#include "i386.h"
+#include "i386/i386.h"
 
 /* Use default settings for system V.3.  */
 
@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Use the ATT assembler syntax.
    This overrides at least one macro (ASM_OUTPUT_LABELREF) from svr3.h.  */
 
-#include "att386.h"
+#include "i386/att.h"
 
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
