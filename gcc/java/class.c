@@ -282,21 +282,7 @@ make_class ()
 {
   tree type;
   type = make_node (RECORD_TYPE);
-#ifdef JAVA_USE_HANDLES
-  tree field1 = build_decl (FIELD_DECL, get_identifier ("obj"),
-			    build_pointer_type (type));
-  tree field2 = build_decl (FIELD_DECL, get_identifier ("methods"),
-			    methodtable_ptr_type);
-  tree handle_type = make_node (RECORD_TYPE);
-  TREE_CHAIN (field1) = field2;
-  TYPE_FIELDS (handle_type) = field1;
-  TYPE_BINFO (type) = make_tree_vec (7);
-  TYPE_BINFO (handle_type) = make_tree_vec (7);
-  BINFO_HANDLE (TYPE_BINFO (handle_type)) = type;
-  BINFO_HANDLE (TYPE_BINFO (type)) = handle_type;
-#else
   TYPE_BINFO (type) = make_tree_vec (6);
-#endif
   MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
 
   return type;
@@ -353,15 +339,6 @@ push_class (class_type, class_name)
   DECL_ARTIFICIAL (decl) = 1;
 
   pushdecl_top_level (decl);
-#ifdef JAVA_USE_HANDLES
-  {
-    tree handle_name = identifier_subst (class_name,
-					 "Handle$", '.', '.', "");
-    tree handle_decl = build_decl (TYPE_DECL, handle_name,
-				   CLASS_TO_HANDLE_TYPE (class_type));
-    pushdecl (handle_decl);
-  }
-#endif
 
   return decl;
 }
@@ -618,12 +595,12 @@ build_java_method_type (fntype, this_class, access_flags)
 {
   if (access_flags & ACC_STATIC)
     return fntype;
-  return build_method_type (CLASS_TO_HANDLE_TYPE (this_class), fntype);
+  return build_method_type (this_class, fntype);
 }
 
 tree
-add_method_1 (handle_class, access_flags, name, function_type)
-     tree handle_class;
+add_method_1 (this_class, access_flags, name, function_type)
+     tree this_class;
      int access_flags;
      tree name;
      tree function_type;
@@ -631,10 +608,10 @@ add_method_1 (handle_class, access_flags, name, function_type)
   tree method_type, fndecl;
 
   method_type = build_java_method_type (function_type,
-					handle_class, access_flags);
+					this_class, access_flags);
 
   fndecl = build_decl (FUNCTION_DECL, name, method_type);
-  DECL_CONTEXT (fndecl) = handle_class;
+  DECL_CONTEXT (fndecl) = this_class;
 
   DECL_LANG_SPECIFIC (fndecl)
     = (struct lang_decl *) ggc_alloc_cleared (sizeof (struct lang_decl));
@@ -653,15 +630,15 @@ add_method_1 (handle_class, access_flags, name, function_type)
   /* Initialize the static method invocation compound list */
   DECL_FUNCTION_STATIC_METHOD_INVOCATION_COMPOUND (fndecl) = NULL_TREE;
 
-  TREE_CHAIN (fndecl) = TYPE_METHODS (handle_class);
-  TYPE_METHODS (handle_class) = fndecl;
+  TREE_CHAIN (fndecl) = TYPE_METHODS (this_class);
+  TYPE_METHODS (this_class) = fndecl;
 
   /* Notice that this is a finalizer and update the class type
      accordingly. This is used to optimize instance allocation. */
   if (name == finalize_identifier_node
       && TREE_TYPE (function_type) == void_type_node
       && TREE_VALUE (TYPE_ARG_TYPES (function_type)) == void_type_node)
-    HAS_FINALIZER_P (handle_class) = 1;
+    HAS_FINALIZER_P (this_class) = 1;
 
   if (access_flags & ACC_PUBLIC) METHOD_PUBLIC (fndecl) = 1;
   if (access_flags & ACC_PROTECTED) METHOD_PROTECTED (fndecl) = 1;
@@ -694,7 +671,6 @@ add_method (this_class, access_flags, name, method_sig)
      tree name;
      tree method_sig;
 {
-  tree handle_class = CLASS_TO_HANDLE_TYPE (this_class);
   tree function_type, fndecl;
   const unsigned char *sig
     = (const unsigned char *) IDENTIFIER_POINTER (method_sig);
@@ -703,7 +679,7 @@ add_method (this_class, access_flags, name, method_sig)
     fatal_error ("bad method signature");
 
   function_type = get_type_from_signature (method_sig);
-  fndecl = add_method_1 (handle_class, access_flags, name, function_type);
+  fndecl = add_method_1 (this_class, access_flags, name, function_type);
   set_java_signature (TREE_TYPE (fndecl), method_sig);
   return fndecl;
 }
@@ -1525,7 +1501,7 @@ make_class_data (type)
     fields_decl = NULL_TREE;
 
   /* Build Method array. */
-  for (method = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (type));
+  for (method = TYPE_METHODS (type);
        method != NULL_TREE; method = TREE_CHAIN (method))
     {
       tree init;
@@ -1707,7 +1683,7 @@ void
 finish_class ()
 {
   tree method;
-  tree type_methods = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (current_class));
+  tree type_methods = TYPE_METHODS (current_class);
   int saw_native_method = 0;
 
   /* Find out if we have any native methods.  We use this information
@@ -2013,13 +1989,12 @@ layout_class_methods (this_class)
      tree this_class;
 {
   tree method_decl, dtable_count;
-  tree super_class, handle_type;
+  tree super_class;
 
   if (TYPE_NVIRTUALS (this_class))
     return;
 
   super_class = CLASSTYPE_SUPER (this_class);
-  handle_type = CLASS_TO_HANDLE_TYPE (this_class);
 
   if (super_class)
     {
@@ -2031,18 +2006,14 @@ layout_class_methods (this_class)
   else
     dtable_count = integer_zero_node;
 
-  TYPE_METHODS (handle_type) = nreverse (TYPE_METHODS (handle_type));
+  TYPE_METHODS (this_class) = nreverse (TYPE_METHODS (this_class));
 
-  for (method_decl = TYPE_METHODS (handle_type);
+  for (method_decl = TYPE_METHODS (this_class);
        method_decl; method_decl = TREE_CHAIN (method_decl))
     dtable_count = layout_class_method (this_class, super_class, 
 					method_decl, dtable_count);
 
   TYPE_NVIRTUALS (this_class) = dtable_count;
-
-#ifdef JAVA_USE_HANDLES
-  layout_type (handle_type);
-#endif
 }
 
 /* Return 0 if NAME is equal to STR, -1 if STR is "less" than NAME,

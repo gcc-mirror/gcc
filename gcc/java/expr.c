@@ -198,22 +198,6 @@ java_truthvalue_conversion (expr)
     }
 }
 
-#ifdef JAVA_USE_HANDLES
-/* Given a pointer to a handle, get a pointer to an object. */
-
-tree
-unhand_expr (expr)
-     tree expr;
-{
-  tree field, handle_type;
-  expr = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
-  handle_type = TREE_TYPE (expr);
-  field = TYPE_FIELDS (handle_type);
-  expr = build (COMPONENT_REF, TREE_TYPE (field), expr, field);
-  return expr;
-}
-#endif
-
 /* Save any stack slots that happen to be in the quick_stack into their
    home virtual register slots.
 
@@ -404,8 +388,6 @@ can_widen_reference_to (source_type, target_type)
     return 1;
   else
     {
-      source_type = HANDLE_TO_CLASS_TYPE (source_type);
-      target_type = HANDLE_TO_CLASS_TYPE (target_type);
       if (TYPE_ARRAY_P (source_type) || TYPE_ARRAY_P (target_type))
 	{
 	  HOST_WIDE_INT source_length, target_length;
@@ -1571,12 +1553,9 @@ build_field_ref (self_value, self_class, name)
 		   && ! (DECL_P (self_value)
 			 && DECL_NAME (self_value) == this_identifier_node));
 
-      tree base_handle_type = promote_type (base_class);
-      if (base_handle_type != TREE_TYPE (self_value))
-	self_value = fold (build1 (NOP_EXPR, base_handle_type, self_value));
-#ifdef JAVA_USE_HANDLES
-      self_value = unhand_expr (self_value);
-#endif
+      tree base_type = promote_type (base_class);
+      if (base_type != TREE_TYPE (self_value))
+	self_value = fold (build1 (NOP_EXPR, base_type, self_value));
       self_value = build_java_indirect_ref (TREE_TYPE (TREE_TYPE (self_value)),
 					    self_value, check);
       return fold (build (COMPONENT_REF, TREE_TYPE (field_decl),
@@ -1842,7 +1821,7 @@ build_known_method_ref (method, method_type, self_type,
 	methods_ident = get_identifier ("methods");
       ref = build (COMPONENT_REF, method_ptr_type_node, ref,
 		   lookup_field (&class_type_node, methods_ident));
-      for (meth = TYPE_METHODS (CLASS_TO_HANDLE_TYPE (self_type));
+      for (meth = TYPE_METHODS (self_type);
 	   ; meth = TREE_CHAIN (meth))
 	{
 	  if (method == meth)
@@ -2056,11 +2035,9 @@ expand_invoke (opcode, method_ref_index, nargs)
   layout_class_methods (self_type);
 
   if (ID_INIT_P (method_name))
-    method = lookup_java_constructor (CLASS_TO_HANDLE_TYPE (self_type),
-				      method_signature);
+    method = lookup_java_constructor (self_type, method_signature);
   else
-    method = lookup_java_method (CLASS_TO_HANDLE_TYPE (self_type),
-				 method_name, method_signature);
+    method = lookup_java_method (self_type, method_name, method_signature);
   if (method == NULL_TREE)
     {
       error ("class '%s' has no method named '%s' matching signature '%s'",

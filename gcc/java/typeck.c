@@ -446,7 +446,7 @@ promote_type (type)
   switch (TREE_CODE (type))
     {
     case RECORD_TYPE:
-      return build_pointer_type (CLASS_TO_HANDLE_TYPE (type));
+      return build_pointer_type (type);
     case BOOLEAN_TYPE:
       if (type == boolean_type_node)
 	return promoted_boolean_type_node;

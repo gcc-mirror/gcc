@@ -145,8 +145,8 @@ merge_types (type1, type2)
       if (type2 == ptr_type_node || type1 == object_ptr_type_node)
 	return type1;
 
-      tt1 = HANDLE_TO_CLASS_TYPE (TREE_TYPE (type1));
-      tt2 = HANDLE_TO_CLASS_TYPE (TREE_TYPE (type2));
+      tt1 = TREE_TYPE (type1);
+      tt2 = TREE_TYPE (type2);
 
       /* If tt{1,2} haven't been properly loaded, now is a good time
          to do it. */

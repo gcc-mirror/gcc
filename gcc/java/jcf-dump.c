@@ -939,11 +939,7 @@ DEFUN(main, (argc, argv),
   if (optind >= argc)
     {
       fprintf (out, "Reading .class from <standard input>.\n");
-#if JCF_USE_STDIO
-      open_class ("<stdio>", jcf, stdin, NULL);
-#else
       open_class ("<stdio>", jcf, 0, NULL);
-#endif
       process_class (jcf);
     }
   else
