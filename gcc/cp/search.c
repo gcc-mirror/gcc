@@ -49,12 +49,8 @@ static tree dfs_check_overlap (tree, void *);
 static tree dfs_no_overlap_yet (tree, int, void *);
 static base_kind lookup_base_r (tree, tree, base_access, bool, tree *);
 static int dynamic_cast_base_recurse (tree, tree, bool, tree *);
-static tree marked_pushdecls_p (tree, int, void *);
-static tree unmarked_pushdecls_p (tree, int, void *);
 static tree dfs_debug_unmarkedp (tree, int, void *);
 static tree dfs_debug_mark (tree, void *);
-static tree dfs_push_type_decls (tree, void *);
-static tree dfs_push_decls (tree, void *);
 static tree add_conversions (tree, void *);
 static int look_for_overrides_r (tree, tree);
 static tree bfs_walk (tree, tree (*) (tree, void *),
@@ -68,7 +64,6 @@ static tree dfs_access_in_type (tree, void *);
 static access_kind access_in_type (tree, tree);
 static int protected_accessible_p (tree, tree, tree);
 static int friend_accessible_p (tree, tree, tree);
-static void setup_class_bindings (tree, int);
 static int template_self_reference_p (tree, tree);
 static tree dfs_get_pure_virtuals (tree, void *);
 
@@ -455,12 +450,23 @@ lookup_field_1 (tree type, tree name, bool want_type)
 	    return temp;
 	}
       if (TREE_CODE (field) == USING_DECL)
-	/* For now, we're just treating member using declarations as
-	   old ARM-style access declarations.  Thus, there's no reason
-	   to return a USING_DECL, and the rest of the compiler can't
-	   handle it.  Once the class is defined, these are purged
-	   from TYPE_FIELDS anyhow; see handle_using_decl.  */
-	continue;
+	{
+	  /* We generally treat class-scope using-declarations as
+	     ARM-style access specifications, because support for the
+	     ISO semantics has not been implemented.  So, in general,
+	     there's no reason to return a USING_DECL, and the rest of
+	     the compiler cannot handle that.  Once the class is
+	     defined, USING_DECLs are purged from TYPE_FIELDS; see
+	     handle_using_decl.  However, we make special efforts to
+	     make using-declarations in template classes work
+	     correctly.  */
+	  if (CLASSTYPE_TEMPLATE_INFO (type)
+	      && !CLASSTYPE_USE_TEMPLATE (type)
+	      && !TREE_TYPE (field))
+	    ;
+	  else
+	    continue;
+	}
 
       if (DECL_NAME (field) == name
 	  && (!want_type 
@@ -1912,24 +1918,6 @@ unmarkedp (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
   return !BINFO_MARKED (binfo) ? binfo : NULL_TREE; 
 }
 
-static tree
-marked_pushdecls_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
-{
-  tree binfo = BINFO_BASE_BINFO (derived, ix);
-  
-  return (!BINFO_DEPENDENT_BASE_P (binfo)
-	  && BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE; 
-}
-
-static tree
-unmarked_pushdecls_p (tree derived, int ix, void *data ATTRIBUTE_UNUSED)
-{ 
-  tree binfo = BINFO_BASE_BINFO (derived, ix);
-  
-  return (!BINFO_DEPENDENT_BASE_P (binfo)
-	  && !BINFO_PUSHDECLS_MARKED (binfo)) ? binfo : NULL_TREE;
-}
-
 /* The worker functions for `dfs_walk'.  These do not need to
    test anything (vis a vis marking) if they are paired with
    a predicate function (above).  */
@@ -2032,188 +2020,6 @@ note_debug_info_needed (tree type)
   dfs_walk (TYPE_BINFO (type), dfs_debug_mark, dfs_debug_unmarkedp, 0);
 }
 
-/* A vector of IDENTIFIER_NODEs that have been processed by
-   setup_class_bindings.  */
-
-static GTY(()) VEC(tree) *marked_identifiers;
-
-/* Subroutines of push_class_decls ().  */
-
-static void
-setup_class_bindings (tree name, int type_binding_p)
-{
-  tree type_binding = NULL_TREE;
-  tree value_binding;
-
-  /* If we've already done the lookup for this declaration, we're
-     done.  */
-  if (IDENTIFIER_MARKED (name))
-    return;
-
-  IDENTIFIER_MARKED (name) = 1;
-  VEC_safe_push (tree, marked_identifiers, name);
-
-  /* First, deal with the type binding.  */
-  if (type_binding_p)
-    {
-      type_binding = lookup_member (current_class_type, name,
-				    /*protect=*/2, /*want_type=*/true);
-      if (TREE_CODE (type_binding) == TREE_LIST 
-	  && TREE_TYPE (type_binding) == error_mark_node)
-	/* NAME is ambiguous.  */
-	push_class_level_binding (name, type_binding);
-      else
-	pushdecl_class_level (type_binding);
-    }
-
-  /* Now, do the value binding.  */
-  value_binding = lookup_member (current_class_type, name,
-				 /*protect=*/2, /*want_type=*/false);
-
-  if (type_binding_p
-      && (TREE_CODE (value_binding) == TYPE_DECL
-	  || DECL_CLASS_TEMPLATE_P (value_binding)
-	  || (TREE_CODE (value_binding) == TREE_LIST
-	      && TREE_TYPE (value_binding) == error_mark_node
-	      && (TREE_CODE (TREE_VALUE (value_binding))
-		  == TYPE_DECL))))
-    /* We found a type-binding, even when looking for a non-type
-       binding.  This means that we already processed this binding
-       above.  */;
-  else if (value_binding)
-    {
-      if (TREE_CODE (value_binding) == TREE_LIST 
-	  && TREE_TYPE (value_binding) == error_mark_node)
-	/* NAME is ambiguous.  */
-	push_class_level_binding (name, value_binding);
-      else
-	{
-	  if (BASELINK_P (value_binding))
-	    /* NAME is some overloaded functions.  */
-	    value_binding = BASELINK_FUNCTIONS (value_binding);
-	  /* Two conversion operators that convert to the same type
-	     may have different names.  (See
-	     mangle_conv_op_name_for_type.)  To avoid recording the
-	     same conversion operator declaration more than once we
-	     must check to see that the same operator was not already
-	     found under another name.  */
-	  if (IDENTIFIER_TYPENAME_P (name)
-	      && is_overloaded_fn (value_binding))
-	    {
-	      tree fns;
-	      for (fns = value_binding; fns; fns = OVL_NEXT (fns))
-		{
-		  tree name = DECL_NAME (OVL_CURRENT (fns));
-		  if (IDENTIFIER_MARKED (name))
-		    return;
-		  IDENTIFIER_MARKED (name) = 1;
-		  VEC_safe_push (tree, marked_identifiers, name);
-		}
-	    }
-	  pushdecl_class_level (value_binding);
-	}
-    }
-}
-
-/* Push class-level declarations for any names appearing in BINFO that
-   are TYPE_DECLS.  */
-
-static tree
-dfs_push_type_decls (tree binfo, void *data ATTRIBUTE_UNUSED)
-{
-  tree type;
-  tree fields;
-
-  type = BINFO_TYPE (binfo);
-  for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
-    if (DECL_NAME (fields) && TREE_CODE (fields) == TYPE_DECL
-	&& !(!same_type_p (type, current_class_type)
-	     && template_self_reference_p (type, fields)))
-      setup_class_bindings (DECL_NAME (fields), /*type_binding_p=*/1);
-
-  /* We can't just use BINFO_MARKED because envelope_add_decl uses
-     DERIVED_FROM_P, which calls get_base_distance.  */
-  BINFO_PUSHDECLS_MARKED (binfo) = 1;
-
-  return NULL_TREE;
-}
-
-/* Push class-level declarations for any names appearing in BINFO that
-   are not TYPE_DECLS.  */
-
-static tree
-dfs_push_decls (tree binfo, void *data)
-{
-  tree type = BINFO_TYPE (binfo);
-  tree method_vec;
-  tree fields;
-  
-  for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
-    if (DECL_NAME (fields) 
-	&& TREE_CODE (fields) != TYPE_DECL
-	&& TREE_CODE (fields) != USING_DECL
-	&& !DECL_ARTIFICIAL (fields))
-      setup_class_bindings (DECL_NAME (fields), /*type_binding_p=*/0);
-    else if (TREE_CODE (fields) == FIELD_DECL
-	     && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
-      dfs_push_decls (TYPE_BINFO (TREE_TYPE (fields)), data);
-  
-  method_vec = (CLASS_TYPE_P (type) 
-		? CLASSTYPE_METHOD_VEC (type) : NULL_TREE);
-  
-  if (method_vec && TREE_VEC_LENGTH (method_vec) >= 3)
-    {
-      tree *methods;
-      tree *end;
-      
-      /* Farm out constructors and destructors.  */
-      end = TREE_VEC_END (method_vec);
-      
-      for (methods = &TREE_VEC_ELT (method_vec, 2);
-	   methods < end && *methods;
-	   methods++)
-	setup_class_bindings (DECL_NAME (OVL_CURRENT (*methods)), 
-			      /*type_binding_p=*/0);
-    }
-
-  BINFO_PUSHDECLS_MARKED (binfo) = 0;
-
-  return NULL_TREE;
-}
-
-/* When entering the scope of a class, we cache all of the
-   fields that that class provides within its inheritance
-   lattice.  Where ambiguities result, we mark them
-   with `error_mark_node' so that if they are encountered
-   without explicit qualification, we can emit an error
-   message.  */
-
-void
-push_class_decls (tree type)
-{
-  tree id;
-  size_t i;
-
-  if (!TYPE_BINFO (type))
-    /* This occurs when parsing an invalid declarator id where the
-       scope is incomplete.  */
-    return;
-  
-  /* Enter type declarations and mark.  */
-  dfs_walk (TYPE_BINFO (type), dfs_push_type_decls, unmarked_pushdecls_p, 0);
-
-  /* Enter non-type declarations and unmark.  */
-  dfs_walk (TYPE_BINFO (type), dfs_push_decls, marked_pushdecls_p, 0);
-
-  /* Clear the IDENTIFIER_MARKED bits.  */
-  for (i = 0;
-       (id = VEC_iterate (tree, marked_identifiers, i));
-       ++i)
-    IDENTIFIER_MARKED (id) = 0;
-  if (marked_identifiers)
-    VEC_truncate (tree, marked_identifiers, 0);
-}
-
 void
 print_search_statistics (void)
 {
@@ -2533,4 +2339,3 @@ original_binfo (tree binfo, tree here)
   return result;
 }
 
-#include "gt-cp-search.h"

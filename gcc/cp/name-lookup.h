@@ -310,7 +310,6 @@ extern tree lookup_qualified_name (tree, tree, bool, bool);
 extern tree lookup_name_nonclass (tree);
 extern tree lookup_function_nonclass (tree, tree, bool);
 extern void push_local_binding (tree, tree, int);
-extern int push_class_binding (tree, tree);
 extern bool pushdecl_class_level (tree);
 extern tree pushdecl_namespace_level (tree);
 extern bool push_class_level_binding (tree, tree);
@@ -329,7 +328,8 @@ extern void do_using_directive (tree);
 extern tree lookup_arg_dependent (tree, tree, tree);
 extern bool is_associated_namespace (tree, tree);
 extern void parse_using_directive (tree, tree);
-
+extern tree innermost_non_namespace_value (tree);
+extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 
 /* Set *DECL to the (non-hidden) declaration for ID at global scope,
    if present and return true; otherwise return false.  */

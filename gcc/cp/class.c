@@ -807,6 +807,7 @@ add_method (tree type, tree method, int error_p)
   int len;
   int slot;
   tree method_vec;
+  tree overload;
   int template_conv_p;
 
   if (method == error_mark_node)
@@ -1025,15 +1026,14 @@ add_method (tree type, tree method, int error_p)
 	}
     }
 
-  /* Actually insert the new method.  */
-  TREE_VEC_ELT (method_vec, slot) 
-    = build_overload (method, TREE_VEC_ELT (method_vec, slot));
-
   /* Add the new binding.  */ 
+  overload = build_overload (method, TREE_VEC_ELT (method_vec, slot));
   if (!DECL_CONSTRUCTOR_P (method)
       && !DECL_DESTRUCTOR_P (method))
-    push_class_level_binding (DECL_NAME (method),
-			      TREE_VEC_ELT (method_vec, slot));
+    push_class_level_binding (DECL_NAME (method), overload);
+
+  /* Actually insert the new method.  */
+  TREE_VEC_ELT (method_vec, slot) = overload;
 }
 
 /* Subroutines of finish_struct.  */
@@ -5484,9 +5484,7 @@ init_class_processing (void)
 static void
 restore_class_cache (void)
 {
-  cp_class_binding *cb;
   tree type;
-  size_t i;
 
   /* We are re-entering the same class we just left, so we don't
      have to search the whole inheritance matrix to find all the
@@ -5494,18 +5492,6 @@ restore_class_cache (void)
      class_shadowed list and walk through it binding names.  */
   push_binding_level (previous_class_level);
   class_binding_level = previous_class_level;
-  for (i = 0; 
-       (cb = VEC_iterate (cp_class_binding, 
-			  previous_class_level->class_shadowed,
-			  i));
-       ++i)
-    {
-      tree id;
-
-      id = cb->identifier;
-      cb->base.previous = IDENTIFIER_BINDING (id);
-      IDENTIFIER_BINDING (id) = &cb->base;
-    }
   /* Restore IDENTIFIER_TYPE_VALUE.  */
   for (type = class_binding_level->type_shadowed; 
        type; 
@@ -5567,22 +5553,7 @@ pushclass (tree type)
   if (!previous_class_level 
       || type != previous_class_level->this_entity
       || current_class_depth > 1)
-    {
-      pushlevel_class ();
-      push_class_decls (type);
-      if (CLASSTYPE_TEMPLATE_INFO (type) && !CLASSTYPE_USE_TEMPLATE (type))
-	{
-	  /* If we are entering the scope of a template declaration (not a
-	     specialization), we need to push all the using decls with
-	     dependent scope too.  */
-	  tree fields;
-
-	  for (fields = TYPE_FIELDS (type);
-	       fields; fields = TREE_CHAIN (fields))
-	    if (TREE_CODE (fields) == USING_DECL && !TREE_TYPE (fields))
-	      pushdecl_class_level (fields);
-	}
-    }
+    pushlevel_class ();
   else
     restore_class_cache ();
   
