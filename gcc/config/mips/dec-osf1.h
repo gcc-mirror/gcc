@@ -45,3 +45,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* turn off collect2 COFF support, since ldfcn now has elf declaration */
 #undef OBJECT_FORMAT_COFF
+
+#undef MACHINE_TYPE
+#define MACHINE_TYPE "DECstation running DEC OSF/1"
