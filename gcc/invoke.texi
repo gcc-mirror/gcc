@@ -1599,8 +1599,7 @@ cases where multiple declaration is valid and changes nothing.
 Warn if an @code{extern} declaration is encountered within an function.
 
 @item -Winline
-Warn if a function can not be inlined, and either it was declared as inline,
-or else the @samp{-finline-functions} option was given.
+Warn if a function can not be inlined and it was declared as inline.
 
 @item -Wold-style-cast
 Warn if an old-style (C-style) cast is used within a program.
