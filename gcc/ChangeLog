@@ -1,3 +1,20 @@
+2004-09-28 Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadupdate.c (create_block_for_threading):  Request
+	that no outgoing edges be left in the duplicate block.  Do no
+	update information on outgoing edges or PHI nodes in target
+	blocks here.
+	(remove_ctrl_stmt_and_useless_edges): Renamed from
+	remove_last_stmt_and_useless_edges.  Handle case where the
+	block is empty or has no control statements.  Do not update edge
+	flags here.
+	(thread_block): Create a template block rather than copying the
+	original block every time.  Create outgoing edges from the
+	duplicate blocks and update PHIs at the target of the outgoing
+	edges here.  Fix edge flags for the original block if necessary.
+	* cfghooks (duplicate_block): No longer assert that the original
+	block has incoming edges.
+
 2004-09-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* doc/extend.texi (Extended Asm): Add blurb about using Explicit
