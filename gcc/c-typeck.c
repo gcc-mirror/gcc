@@ -727,7 +727,9 @@ c_sizeof (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		  size_int (TYPE_PRECISION (char_type_node)));
-  force_fit_type (t);
+  /* size_binop does not put the constant in range, so do it now.  */
+  if (TREE_CODE (t) == INTEGER_CST)
+    force_fit_type (t);
   return t;
 }
 
