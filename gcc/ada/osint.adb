@@ -26,6 +26,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Fmap;
 with Hostparm;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -1001,6 +1002,18 @@ package body Osint is
          --  Otherwise do standard search for source file
 
          else
+
+            --  Check the mapping of this file name
+
+            File := Fmap.Path_Name_Of (N);
+
+            --  If the file name is mapped to a path name, return the
+            --  corresponding path name
+
+            if File /= No_File then
+               return File;
+            end if;
+
             --  First place to look is in the primary directory (i.e. the same
             --  directory as the source) unless this has been disabled with -I-
 

@@ -286,6 +286,7 @@ package body Bindgen is
    ---------------------
 
    procedure Gen_Adainit_Ada is
+      Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
    begin
       WBI ("   procedure " & Ada_Init_Name.all & " is");
 
@@ -347,7 +348,32 @@ package body Bindgen is
       --  the routine call, rather than define the globals in the binder
       --  file to deal with cross-library calls in some systems.
 
-      if not No_Run_Time_Specified then
+      if No_Run_Time_Specified then
+         --  Case of pragma No_Run_Time present. The only global variable
+         --  that might be needed (by the Ravenscar profile) is
+         --  the environment task's priority. Also no exception tables are
+         --  needed.
+
+         if Main_Priority /= No_Main_Priority then
+            WBI ("      Main_Priority : Integer;");
+            WBI ("      pragma Import (C, Main_Priority," &
+                 " ""__gl_main_priority"");");
+            WBI ("");
+         end if;
+
+         WBI ("   begin");
+
+         if Main_Priority /= No_Main_Priority then
+            Set_String ("      Main_Priority := ");
+            Set_Int    (Main_Priority);
+            Set_Char   (';');
+            Write_Statement_Buffer;
+
+         else
+            WBI ("      null;");
+         end if;
+
+      else
          WBI ("");
          WBI ("      procedure Set_Globals");
          WBI ("        (Main_Priority            : Integer;");
@@ -383,7 +409,7 @@ package body Bindgen is
          WBI ("      Set_Globals");
 
          Set_String ("        (Main_Priority            => ");
-         Set_Int    (ALIs.Table (ALIs.First).Main_Priority);
+         Set_Int    (Main_Priority);
          Set_Char   (',');
          Write_Statement_Buffer;
 
@@ -449,14 +475,6 @@ package body Bindgen is
          WBI ("      if Handler_Installed = 0 then");
          WBI ("        Install_Handler;");
          WBI ("      end if;");
-
-      --  Case of pragma No_Run_Time present. Globals are not needed since
-      --  there are no runtime routines to make use of them, and no routine
-      --  to store them in any case! Also no exception tables are needed.
-
-      else
-         WBI ("   begin");
-         WBI ("      null;");
       end if;
 
       Gen_Elab_Calls_Ada;
@@ -469,6 +487,7 @@ package body Bindgen is
    --------------------
 
    procedure Gen_Adainit_C is
+      Main_Priority : Int renames ALIs.Table (ALIs.First).Main_Priority;
    begin
       WBI ("void " & Ada_Init_Name.all & " ()");
       WBI ("{");
@@ -493,9 +512,19 @@ package body Bindgen is
 
       Write_Statement_Buffer;
 
-      --  Code for normal case (no pragma No_Run_Time in use)
+      if No_Run_Time_Specified then
+         --  Case where No_Run_Time pragma is present.
+         --  Set __gl_main_priority if needed for the Ravenscar profile.
 
-      if not No_Run_Time_Specified then
+         if Main_Priority /= No_Main_Priority then
+            Set_String ("   extern int __gl_main_priority = ");
+            Set_Int    (Main_Priority);
+            Set_Char   (';');
+            Write_Statement_Buffer;
+         end if;
+
+      else
+         --  Code for normal case (no pragma No_Run_Time in use)
 
          Gen_Exception_Table_C;
 
@@ -510,7 +539,7 @@ package body Bindgen is
          WBI ("   __gnat_set_globals (");
 
          Set_String ("      ");
-         Set_Int (ALIs.Table (ALIs.First).Main_Priority);
+         Set_Int (Main_Priority);
          Set_Char (',');
          Tab_To (15);
          Set_String ("/* Main_Priority              */");
@@ -584,12 +613,6 @@ package body Bindgen is
          WBI ("     {");
          WBI ("        __gnat_install_handler ();");
          WBI ("     }");
-
-      --  Case where No_Run_Time pragma is present (no globals required)
-      --  Nothing more needs to be done in this case.
-
-      else
-         null;
       end if;
 
       WBI ("");

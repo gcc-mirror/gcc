@@ -606,6 +606,8 @@ package body Switch is
 
                case Switch_Chars (Ptr) is
 
+                  --  Configuration pragmas
+
                   when 'c' =>
                      Ptr := Ptr + 1;
                      if Ptr > Max then
@@ -614,6 +616,19 @@ package body Switch is
 
                      Config_File_Name :=
                         new String'(Switch_Chars (Ptr .. Max));
+
+                     return;
+
+                  --  Mapping file
+
+                  when 'm' =>
+                     Ptr := Ptr + 1;
+                     if Ptr > Max then
+                        Osint.Fail ("Invalid switch: ", "em");
+                     end if;
+
+                     Mapping_File_Name :=
+                       new String'(Switch_Chars (Ptr .. Max));
 
                      return;
 

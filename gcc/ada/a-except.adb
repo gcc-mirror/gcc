@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.1 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -364,6 +364,34 @@ package body Ada.Exceptions is
    --                   |                        |
    --            Basic_Exc_Tback    Or    Tback_Decorator
    --          if no decorator set           otherwise
+
+   ----------------------------------------------
+   -- Run-Time Exception Notification Routines --
+   ----------------------------------------------
+
+   --  The notification routines described above are low level "handles" for
+   --  the debugger but what needs to be done at the notification points
+   --  always involves more than just calling one of these routines. The
+   --  routines below provide a common run-time interface for this purpose,
+   --  with variations depending on the handled/not handled status of the
+   --  occurrence. They are exported to be usable by the Ada exception
+   --  handling personality routine when the GCC 3 mechanism is used.
+
+   procedure Notify_Handled_Exception
+     (Handler    : Code_Loc;
+      Is_Others  : Boolean;
+      Low_Notify : Boolean);
+   pragma Export (C, Notify_Handled_Exception,
+      "__gnat_notify_handled_exception");
+   --  Routine to call when a handled occurrence is about to be propagated.
+   --  Low_Notify might be set to false to skip the low level debugger
+   --  notification, which is useful when the information it requires is
+   --  not available, like in the SJLJ case.
+
+   procedure Notify_Unhandled_Exception (Id : Exception_Id);
+   pragma Export (C, Notify_Unhandled_Exception,
+     "__gnat_notify_unhandled_exception");
+   --  Routine to call when an unhandled occurrence is about to be propagated.
 
    --------------------------------
    -- Import Run-Time C Routines --
@@ -953,29 +981,10 @@ package body Ada.Exceptions is
                  or else (Hrec.Id = Others_Id
                             and not Excep.Id.Not_Handled_By_Others)
                then
-                  --  Notify the debugger that we have found a handler
-                  --  and are about to propagate an exception.
+                  --  Perform the necessary notification tasks.
 
-                  Notify_Exception
-                    (Excep.Id, Hrec.Handler, Hrec.Id = Others_Id);
-
-                  --  Output some exception information if necessary, as
-                  --  specified by GNAT.Exception_Traces. Take care not to
-                  --  output information about internal exceptions.
-                  --
-                  --  ??? The traceback entries we have at this point only
-                  --  consist in the ones we stored while walking up the
-                  --  stack *up to the handler*. All the frames above the
-                  --  subprogram in which the handler is found are missing.
-
-                  if Exception_Trace = Every_Raise
-                    and then not Excep.Id.Not_Handled_By_Others
-                  then
-                     To_Stderr (Nline);
-                     To_Stderr ("Exception raised");
-                     To_Stderr (Nline);
-                     To_Stderr (Tailored_Exception_Information (Excep.all));
-                  end if;
+                  Notify_Handled_Exception
+                    (Hrec.Handler, Hrec.Id = Others_Id, True);
 
                   --  If we already encountered a finalization handler, then
                   --  reset the context to that handler, and enter it.
@@ -1002,15 +1011,10 @@ package body Ada.Exceptions is
          Pop_Frame (Mstate, Info);
       end loop Main_Loop;
 
-      --  Fall through if no "real" exception handler found. First thing
-      --  is to call the dummy Unhandled_Exception routine with the stack
-      --  intact, so that the debugger can get control.
+      --  Fall through if no "real" exception handler found. First thing is to
+      --  perform the necessary notification tasks with the stack intact.
 
-      Unhandled_Exception;
-
-      --  Also make the appropriate Notify_Exception call for the debugger.
-
-      Notify_Exception (Excep.Id, Null_Loc, False);
+      Notify_Unhandled_Exception (Excep.Id);
 
       --  If there were finalization handlers, then enter the top one.
       --  Just because there is no handler does not mean we don't have
@@ -1066,30 +1070,14 @@ package body Ada.Exceptions is
             Call_Chain (Excep);
          end if;
 
+         --  Perform the necessary notification tasks if this is not a
+         --  reraise. Actually ask to skip the low level debugger notification
+         --  call since we do not have the necessary information to "feed"
+         --  it properly.
+
          if not Excep.Exception_Raised then
-            --  This is not a reraise.
-
             Excep.Exception_Raised := True;
-
-            --  Output some exception information if necessary, as specified
-            --  by GNAT.Exception_Traces. Take care not to output information
-            --  about internal exceptions.
-
-            if Exception_Trace = Every_Raise
-              and then not Excep.Id.Not_Handled_By_Others
-            then
-               begin
-                  --  This is in a block because of the call to
-                  --  Tailored_Exception_Information which might
-                  --  require an exception handler for secondary
-                  --  stack cleanup.
-
-                  To_Stderr (Nline);
-                  To_Stderr ("Exception raised");
-                  To_Stderr (Nline);
-                  To_Stderr (Tailored_Exception_Information (Excep.all));
-               end;
-            end if;
+            Notify_Handled_Exception (Null_Loc, False, False);
          end if;
 
          builtin_longjmp (Jumpbuf_Ptr, 1);
@@ -1112,8 +1100,7 @@ package body Ada.Exceptions is
             Call_Chain (Get_Current_Excep.all);
          end if;
 
-         Unhandled_Exception;
-         Notify_Exception (E, Null_Loc, False);
+         Notify_Unhandled_Exception (E);
          Unhandled_Exception_Terminate;
       end if;
    end Raise_Current_Excep;
@@ -1179,9 +1166,10 @@ package body Ada.Exceptions is
       --  the signal handler that passed control here has already set the
       --  machine state directly.
       --
-      --  ??? Updates related to the implementation of automatic backtraces
-      --  have not been done here. Some action will be required when dealing
-      --  the remaining problems in ZCX mode (incomplete backtraces so far).
+      --  We also do not compute the backtrace for the occurrence since going
+      --  through the signal handler is far from trivial and it is not a
+      --  problem to fail providing a backtrace in the "raised from signal
+      --  handler" case.
 
       --  If the jump buffer pointer is non-null, it means that a jump
       --  buffer was allocated (obviously that happens only in the case
@@ -1204,7 +1192,7 @@ package body Ada.Exceptions is
       --  have no finalizations to do other than at the outer level.
 
       else
-         Unhandled_Exception;
+         Notify_Unhandled_Exception (E);
          Unhandled_Exception_Terminate;
       end if;
    end Raise_From_Signal_Handler;
@@ -1832,6 +1820,58 @@ package body Ada.Exceptions is
    begin
       null;
    end Notify_Exception;
+
+   ------------------------------
+   -- Notify_Handled_Exception --
+   ------------------------------
+
+   procedure Notify_Handled_Exception
+     (Handler    : Code_Loc;
+      Is_Others  : Boolean;
+      Low_Notify : Boolean)
+   is
+      Excep  : constant EOA := Get_Current_Excep.all;
+
+   begin
+      --  Notify the debugger that we have found a handler and are about to
+      --  propagate an exception, but only if specifically told to do so.
+
+      if Low_Notify then
+         Notify_Exception (Excep.Id, Handler, Is_Others);
+      end if;
+
+      --  Output some exception information if necessary, as specified by
+      --  GNAT.Exception_Traces. Take care not to output information about
+      --  internal exceptions.
+      --
+      --  ??? In the ZCX case, the traceback entries we have at this point
+      --  only include the ones we stored while walking up the stack *up to
+      --  the handler*. All the frames above the subprogram in which the
+      --  handler is found are missing.
+
+      if Exception_Trace = Every_Raise
+        and then not Excep.Id.Not_Handled_By_Others
+      then
+         To_Stderr (Nline);
+         To_Stderr ("Exception raised");
+         To_Stderr (Nline);
+         To_Stderr (Tailored_Exception_Information (Excep.all));
+      end if;
+
+   end Notify_Handled_Exception;
+
+   ------------------------------
+   -- Notify_Handled_Exception --
+   ------------------------------
+
+   procedure Notify_Unhandled_Exception (Id : Exception_Id) is
+   begin
+      --  Simply perform the two necessary low level notification calls.
+
+      Unhandled_Exception;
+      Notify_Exception (Id, Null_Loc, False);
+
+   end Notify_Unhandled_Exception;
 
    -----------------------------------
    -- Unhandled_Exception_Terminate --

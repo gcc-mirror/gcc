@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.2 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -1486,15 +1486,16 @@ package body Sem_Ch10 is
          E_Name := Defining_Entity (U);
 
       --  Note: in the following test, Unit_Kind is the original Nkind, but
-      --  in the case of an instantiation, the call to Semantics above will
-      --  have replaced the unit by its instantiated version.
+      --  in the case of an instantiation, semantic analysis above will
+      --  have replaced the unit by its instantiated version. If the instance
+      --  body has been generated, the instance now denotes the body entity.
+      --  For visibility purposes we need the entity of its spec.
 
-      elsif Unit_Kind = N_Package_Instantiation
+      elsif (Unit_Kind = N_Package_Instantiation
+              or else Nkind (Original_Node (Unit (Library_Unit (N)))) =
+                N_Package_Instantiation)
         and then Nkind (U) = N_Package_Body
       then
-         --  Instantiation node is replaced with body of instance.
-         --  Unit name is defining unit name in corresponding spec.
-
          E_Name := Corresponding_Spec (U);
 
       elsif Unit_Kind = N_Package_Instantiation
@@ -2712,17 +2713,6 @@ package body Sem_Ch10 is
       P     : constant Entity_Id := Scope (Uname);
 
    begin
-      --  If the unit is a package instantiation, its body may have been
-      --  generated for an inner instance, and the instance now denotes the
-      --  body entity. For visibility purposes we need the instance in the
-      --  specification.
-
-      if Ekind (Uname) = E_Package_Body
-        and then Is_Generic_Instance (Uname)
-      then
-         Uname := Spec_Entity (Uname);
-      end if;
-
       --  We do not apply the restrictions to an internal unit unless
       --  we are compiling the internal unit as a main unit. This check
       --  is also skipped for dummy units (for missing packages).

@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *                            $Revision: 1.1 $
+ *                            $Revision$
  *                                                                          *
  *          Copyright (C) 1992-2001 Free Software Foundation, Inc.          *
  *                                                                          *
@@ -46,5 +46,8 @@ extern Boolean UR_Is_Negative	PARAMS ((Ureal));
 #define UR_Is_Zero urealp__ur_is_zero
 extern Boolean UR_Is_Zero	PARAMS ((Ureal));
 
+enum Rounding_Mode {Floor = 0, Ceiling = 1, Round = 2, Round_Even = 3};
+
 #define Machine eval_fat__machine
-extern Ureal Machine		PARAMS ((Entity_Id, Ureal));
+extern Ureal Machine		PARAMS ((Entity_Id, Ureal,
+					 enum Rounding_Mode));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.10 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -38,6 +38,11 @@ package Prj.Env is
 
    procedure Print_Sources;
    --  Output the list of sources, after Project files have been scanned
+
+   procedure Create_Mapping_File (Name : in out Temp_File_Name);
+   --  Create a temporary mapping file.
+   --  For each unit, put the mapping of its spec and or body to its
+   --  file name and path name in this file.
 
    procedure Create_Config_Pragmas_File
      (For_Project  : Project_Id;

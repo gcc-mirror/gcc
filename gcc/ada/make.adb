@@ -2508,6 +2508,10 @@ package body Make is
       --  be rebuild (if we rebuild mains), even in the case when it is not
       --  really necessary, because it is too hard to decide.
 
+      Mapping_File_Name : Temp_File_Name;
+      --  The name of the temporary mapping file that is copmmunicated
+      --  to the compiler through a -gnatem switch, when using project files.
+
    begin
       Do_Compile_Step := True;
       Do_Bind_Step    := True;
@@ -2854,7 +2858,7 @@ package body Make is
          --  in procedure Compile_Sources.
 
          The_Saved_Gcc_Switches :=
-           new Argument_List (1 .. Saved_Gcc_Switches.Last + 1);
+           new Argument_List (1 .. Saved_Gcc_Switches.Last + 2);
 
          for J in 1 .. Saved_Gcc_Switches.Last loop
             The_Saved_Gcc_Switches (J) := Saved_Gcc_Switches.Table (J);
@@ -2863,8 +2867,18 @@ package body Make is
 
          --  We never use gnat.adc when a project file is used
 
-         The_Saved_Gcc_Switches (The_Saved_Gcc_Switches'Last) :=
+         The_Saved_Gcc_Switches (The_Saved_Gcc_Switches'Last - 1) :=
            No_gnat_adc;
+
+         --  Create a temporary mapping file and add the switch -gnatem
+         --  with its name to the compiler.
+
+         Prj.Env.Create_Mapping_File (Name => Mapping_File_Name);
+         The_Saved_Gcc_Switches (The_Saved_Gcc_Switches'Last) :=
+           new String'("-gnatem" & Mapping_File_Name);
+
+         --  Check if there are any relative search paths in the switches.
+         --  Fail if there is one.
 
          for J in 1 .. Gcc_Switches.Last loop
             Test_If_Relative_Path (Gcc_Switches.Table (J));
@@ -3184,7 +3198,7 @@ package body Make is
                  and then not No_Main_Subprogram
                then
                   if Osint.Number_Of_Files = 1 then
-                     return;
+                     exit Multiple_Main_Loop;
 
                   else
                      goto Next_Main;
@@ -3231,7 +3245,7 @@ package body Make is
                      end if;
 
                      if Osint.Number_Of_Files = 1 then
-                        return;
+                        exit Multiple_Main_Loop;
 
                      else
                         goto Next_Main;
@@ -3476,6 +3490,19 @@ package body Make is
             end if;
          end if;
       end loop Multiple_Main_Loop;
+
+      --  Delete the temporary mapping file that was created if we are
+      --  using project files.
+
+      if Main_Project /= No_Project then
+         declare
+            Success : Boolean;
+
+         begin
+            Delete_File (Name => Mapping_File_Name, Success => Success);
+         end;
+
+      end if;
 
       Exit_Program (E_Success);
 

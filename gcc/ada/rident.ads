@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.12 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -73,6 +73,7 @@ package Rident is
       No_Reentrancy,                           -- (RM H.4(23))
       No_Relative_Delay,                       -- GNAT
       No_Requeue,                              -- GNAT
+      No_Secondary_Stack,                      -- GNAT
       No_Select_Statements,                    -- GNAT (Ravenscar)
       No_Standard_Storage_Pools,               -- GNAT
       No_Streams,                              -- GNAT
