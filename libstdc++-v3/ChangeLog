@@ -1,3 +1,11 @@
+2004-01-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (erase(size_type, size_type),
+	erase(iterator), erase(iterator, iterator)): Call _M_replace_safe
+	instead, thus avoiding redundant check for length_error.
+
+	* include/bits/basic_string.h: Tweak some comments.
+
 2004-01-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/basic_string.tcc (operator+(const _CharT*,
