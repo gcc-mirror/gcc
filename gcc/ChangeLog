@@ -5,6 +5,9 @@ Mon Feb 28 13:07:19 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 Mon Feb 28 07:03:27 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (number_blocks): Reset next_block_index based on
+	what debugging format is used, not what is defined.
+	
 	* lcm.c: Minor reformatting throughout.
 	(reg_dies, reg_becomes_live): Properly handle multiple hard regs.
 	

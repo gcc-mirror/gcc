@@ -5668,7 +5668,8 @@ number_blocks (fn)
      from 1 within each function, rather than keeping a running
      count.  */
 #if defined (SDB_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-  next_block_index = 1;
+  if (write_symbols == SDB_DEBUG || write_symbols == XCOFF_DEBUG)
+    next_block_index = 1;
 #endif
 
   block_vector = get_block_vector (DECL_INITIAL (fn), &n_blocks);
