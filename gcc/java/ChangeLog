@@ -1,3 +1,8 @@
+Wed Sep 30 20:53:51 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* jcf-write.c (OP2, OP4): Use "_i", not "_I" to avoid problems on
+	FreeBSD.
+
 Thu Sep 17 19:45:01 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (jcf-dump, jvgenmain): Link in memmove.o too.
