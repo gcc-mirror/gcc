@@ -1,3 +1,13 @@
+2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cp-tree.h (pedantic, convert, global_bindings_p, insert_block,
+	set_block, pushdecl, getdecls, gettags, init_decl_processing,
+	maybe_build_cleanup, copy_lang_decl, prep_stmt, lvalue_p,
+	lvalue_or_else, print_lang_statistics, comp_target_types,
+	unsigned_type, signed_type, signed_or_unsigned_type,
+	build_function_call, mark_addressable, incomplete_type_error):
+	Delete redundant declarations.
+
 2001-04-11  Jason Merrill  <jason_merrill@redhat.com>
 
 	* cp-tree.h (TYPE_LINKAGE_IDENTIFIER): New macro.
