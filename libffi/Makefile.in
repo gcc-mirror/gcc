@@ -152,21 +152,21 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libffi_la_LIBADD = 
 @ALPHA_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@ALPHA_TRUE@raw_api.lo ffi.lo osf.lo
+@ALPHA_TRUE@raw_api.lo java_raw_api.lo ffi.lo osf.lo
 @ARM_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@ARM_TRUE@raw_api.lo sysv.lo ffi.lo
+@ARM_TRUE@raw_api.lo java_raw_api.lo sysv.lo ffi.lo
 @M68K_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@M68K_TRUE@raw_api.lo ffi.lo sysv.lo
+@M68K_TRUE@raw_api.lo java_raw_api.lo ffi.lo sysv.lo
 @MIPS_GCC_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@MIPS_GCC_TRUE@raw_api.lo ffi.lo o32.lo n32.lo
+@MIPS_GCC_TRUE@raw_api.lo java_raw_api.lo ffi.lo o32.lo n32.lo
 @MIPS_SGI_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@MIPS_SGI_TRUE@raw_api.lo ffi.lo o32.lo n32.lo
+@MIPS_SGI_TRUE@raw_api.lo java_raw_api.lo ffi.lo o32.lo n32.lo
 @POWERPC_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@POWERPC_TRUE@raw_api.lo ffi.lo sysv.lo
+@POWERPC_TRUE@raw_api.lo java_raw_api.lo ffi.lo sysv.lo
 @SPARC_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@SPARC_TRUE@raw_api.lo ffi.lo v8.lo
+@SPARC_TRUE@raw_api.lo java_raw_api.lo ffi.lo v8.lo
 @X86_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
-@X86_TRUE@raw_api.lo ffi.lo sysv.lo
+@X86_TRUE@raw_api.lo java_raw_api.lo ffi.lo sysv.lo
 libffi_la_OBJECTS =  $(am_libffi_la_OBJECTS)
 noinst_PROGRAMS =  ffitest$(EXEEXT)
 PROGRAMS =  $(noinst_PROGRAMS)
