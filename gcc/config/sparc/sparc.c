@@ -5353,13 +5353,34 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
       reg = gen_rtx_REG (mode, regno);
       return reg;
     }
+    
+  if (type && TREE_CODE (type) == RECORD_TYPE)
+    {
+      /* Structures up to 16 bytes in size are passed in arg slots on the
+	 stack and are promoted to registers where possible.  */
 
+      if (int_size_in_bytes (type) > 16)
+	abort (); /* shouldn't get here */
+
+      return function_arg_record_value (type, mode, slotno, named, regbase);
+    }
+  else if (type && TREE_CODE (type) == UNION_TYPE)
+    {
+      enum machine_mode mode;
+      int bytes = int_size_in_bytes (type);
+
+      if (bytes > 16)
+	abort ();
+
+      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
+      reg = gen_rtx_REG (mode, regno);
+    }
   /* v9 fp args in reg slots beyond the int reg slots get passed in regs
      but also have the slot allocated for them.
      If no prototype is in scope fp values in register slots get passed
      in two places, either fp regs and int regs or fp regs and memory.  */
-  if ((GET_MODE_CLASS (mode) == MODE_FLOAT
-       || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+  else if ((GET_MODE_CLASS (mode) == MODE_FLOAT
+	    || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
       && SPARC_FP_REG_P (regno))
     {
       reg = gen_rtx_REG (mode, regno);
@@ -5422,27 +5443,6 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
 	      return gen_rtx_PARALLEL (mode, gen_rtvec (2, v0, v1));
 	    }
 	}
-    }
-  else if (type && TREE_CODE (type) == RECORD_TYPE)
-    {
-      /* Structures up to 16 bytes in size are passed in arg slots on the
-	 stack and are promoted to registers where possible.  */
-
-      if (int_size_in_bytes (type) > 16)
-	abort (); /* shouldn't get here */
-
-      return function_arg_record_value (type, mode, slotno, named, regbase);
-    }
-  else if (type && TREE_CODE (type) == UNION_TYPE)
-    {
-      enum machine_mode mode;
-      int bytes = int_size_in_bytes (type);
-
-      if (bytes > 16)
-	abort ();
-
-      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 0);
-      reg = gen_rtx_REG (mode, regno);
     }
   else
     {
