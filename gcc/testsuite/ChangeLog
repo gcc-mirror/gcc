@@ -1,3 +1,9 @@
+2002-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/bitfld-1.c: Update.
+	* gcc.dg/bitfld-2.c: Update.
+	* gcc.c-torture/execute/bitfld-1.x: New.
+
 2002-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20020201-1.c: New test.

@@ -2393,6 +2393,13 @@ objc_copy_list (list, head)
   while (list)
     {
       tail = copy_node (list);
+
+      /* The following statement fixes a bug when inheriting instance
+	 variables that are declared to be bitfields. finish_struct
+	 expects to find the width of the bitfield in DECL_INITIAL.  */
+      if (DECL_BIT_FIELD (tail) && DECL_INITIAL (tail) == 0)
+	DECL_INITIAL (tail) = DECL_SIZE (tail);
+
       newlist = chainon (newlist, tail);
       list = TREE_CHAIN (list);
     }

@@ -53,6 +53,7 @@ enum decl_context
   FUNCDEF,			/* Function definition */
   PARM,				/* Declaration of parm before function body */
   FIELD,			/* Declaration inside struct or union */
+  BITFIELD,			/* Likewise but with specified width */
   TYPENAME};			/* Typename (inside cast or sizeof)  */
 
 
@@ -275,13 +276,12 @@ static tree lookup_tag			PARAMS ((enum tree_code, tree,
 						 struct binding_level *, int));
 static tree lookup_tag_reverse		PARAMS ((tree));
 static tree grokdeclarator		PARAMS ((tree, tree, enum decl_context,
-						 int, tree));
+						 int));
 static tree grokparms			PARAMS ((tree, int));
 static void layout_array_type		PARAMS ((tree));
 static tree c_make_fname_decl           PARAMS ((tree, int));
 static void c_expand_body               PARAMS ((tree, int, int));
 static void warn_if_shadowing		PARAMS ((tree, tree));
-static tree build_bitfield_integer_type	PARAMS ((tree, tree, const char *));
 
 /* C-specific option variables.  */
 
@@ -319,7 +319,7 @@ int flag_noniso_default_format_attributes = 1;
    being traditional.  */
 int flag_allow_single_precision = 0;
 
-/* Nonzero means to treat bit-fields as signed unless they say `unsigned'.  */
+/* Nonzero means to treat bitfields as signed unless they say `unsigned'.  */
 
 int flag_signed_bitfields = 1;
 int explicit_flag_signed_bitfields = 0;
@@ -3390,8 +3390,7 @@ groktypename (typename)
 
   split_specs_attrs (TREE_PURPOSE (typename), &specs, &attrs);
 
-  typename = grokdeclarator (TREE_VALUE (typename), specs, TYPENAME, 0,
-			     NULL_TREE);
+  typename = grokdeclarator (TREE_VALUE (typename), specs, TYPENAME, 0);
 
   /* Apply attributes.  */
   decl_attributes (&typename, attrs, 0);
@@ -3409,7 +3408,7 @@ groktypename_in_parm_context (typename)
     return typename;
   return grokdeclarator (TREE_VALUE (typename),
 			 TREE_PURPOSE (typename),
-			 PARM, 0, NULL_TREE);
+			 PARM, 0);
 }
 
 /* Decode a declarator in an ordinary declaration or data definition.
@@ -3442,7 +3441,7 @@ start_decl (declarator, declspecs, initialized, attributes)
     deprecated_state = DEPRECATED_SUPPRESS;
 
   decl = grokdeclarator (declarator, declspecs,
-			 NORMAL, initialized, NULL_TREE);
+			 NORMAL, initialized);
   
   deprecated_state = DEPRECATED_NORMAL;
 
@@ -3820,8 +3819,7 @@ push_parm_decl (parm)
   immediate_size_expand = 0;
 
   decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
-			 TREE_PURPOSE (TREE_PURPOSE (parm)),
-			 PARM, 0, NULL_TREE);
+			 TREE_PURPOSE (TREE_PURPOSE (parm)), PARM, 0);
   decl_attributes (&decl, TREE_VALUE (parm), 0);
 
 #if 0
@@ -3981,92 +3979,6 @@ complete_array_type (type, initial_value, do_default)
   return value;
 }
 
-/* A bit-field NAME should have an integer type whose precision
-   accurately reflects its WIDTH.  If TYPE is good for that, return
-   it, otherwise create and return the appropriate type.
-
-   This routine also performs sanity checks on the bit-field's type
-   and width, and uses appropriate values if they are invalid.  */
-static tree
-build_bitfield_integer_type (type, width, orig_name)
-     tree type, width;
-     const char *orig_name;
-{
-  tree type_mv;
-  unsigned int max_width;
-  unsigned HOST_WIDE_INT w;
-  const char *name = orig_name ? orig_name: _("<anonymous>");
-
-  /* Necessary?  */
-  STRIP_NOPS (width);
-
-  /* Detect and ignore out of range field width and process valid
-     field widths.  */
-  if (TREE_CODE (width) != INTEGER_CST)
-    {
-      error ("bit-field `%s' width not an integer constant", name);
-      width = integer_one_node;
-    }
-  else
-    {
-      constant_expression_warning (width);
-      if (tree_int_cst_sgn (width) < 0)
-	{
-	  error ("negative width in bit-field `%s'", name);
-	  width = integer_one_node;
-	}
-      else if (integer_zerop (width) && orig_name)
-	{
-	  error ("zero width for bit-field `%s'", name);
-	  width = integer_one_node;
-	}
-    }
-
-  /* Detect invalid bit-field type.  */
-  if (TREE_CODE (type) != INTEGER_TYPE
-      && TREE_CODE (type) != BOOLEAN_TYPE
-      && TREE_CODE (type) != ENUMERAL_TYPE)
-    {
-      error ("bit-field `%s' has invalid type", name);
-      type = unsigned_type_node;
-    }
-
-  type_mv = TYPE_MAIN_VARIANT (type);
-  if (pedantic
-      && type_mv != integer_type_node
-      && type_mv != unsigned_type_node
-      && type_mv != c_bool_type_node
-      /* Accept an enum that's equivalent to int or unsigned int.  */
-      && (TREE_CODE (type) != ENUMERAL_TYPE
-	  || TYPE_PRECISION (type) != TYPE_PRECISION (integer_type_node)))
-    pedwarn ("type of bit-field `%s' is a GCC extension", name);
-
-  if (type_mv == c_bool_type_node)
-    max_width = CHAR_TYPE_SIZE;
-  else
-    max_width = TYPE_PRECISION (type);
-
-  if (0 < compare_tree_int (width, max_width))
-    {
-      error ("width of `%s' exceeds its type", name);
-      w = max_width;
-    }
-  else
-    w = tree_low_cst (width, 1);
-
-  if (TREE_CODE (type) == ENUMERAL_TYPE
-      && (w < min_precision (TYPE_MIN_VALUE (type), TREE_UNSIGNED (type))
-	  || w < min_precision (TYPE_MAX_VALUE (type), TREE_UNSIGNED (type))))
-    warning ("`%s' is narrower than values of its type", name);
-
-  /* The type of a bit-field should have precision the same as the
-     bit-field's width.  */
-  if (w != TYPE_PRECISION (type))
-    type = build_nonstandard_integer_type (w, TREE_UNSIGNED (type));
-
-  return type;
-}
-
 /* Given declspecs and a declarator,
    determine the name and type of the object declared
    and construct a ..._DECL node for it.
@@ -4086,9 +3998,8 @@ build_bitfield_integer_type (type, width, orig_name)
      TYPENAME if for a typename (in a cast or sizeof).
       Don't make a DECL node; just return the ..._TYPE node.
      FIELD for a struct or union field; make a FIELD_DECL.
+     BITFIELD for a field with specified width.
    INITIALIZED is 1 if the decl has an initializer.
-   WIDTH is non-NULL for bit-fields, and is an INTEGER_CST node representing
-   the width of the bit-field.
 
    In the TYPENAME case, DECLARATOR is really an absolute declarator.
    It may also be so in the PARM case, for a prototype where the
@@ -4098,12 +4009,11 @@ build_bitfield_integer_type (type, width, orig_name)
    and `extern' are interpreted.  */
 
 static tree
-grokdeclarator (declarator, declspecs, decl_context, initialized, width)
+grokdeclarator (declarator, declspecs, decl_context, initialized)
      tree declspecs;
      tree declarator;
      enum decl_context decl_context;
      int initialized;
-     tree width;
 {
   int specbits = 0;
   tree spec;
@@ -4118,16 +4028,19 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, width)
   int explicit_char = 0;
   int defaulted_int = 0;
   tree typedef_decl = 0;
-  const char *name, *orig_name;
+  const char *name;
   tree typedef_type = 0;
   int funcdef_flag = 0;
   enum tree_code innermost_code = ERROR_MARK;
+  int bitfield = 0;
   int size_varies = 0;
   tree decl_attr = NULL_TREE;
   tree array_ptr_quals = NULL_TREE;
   int array_parm_static = 0;
   tree returned_attrs = NULL_TREE;
-  bool bitfield = width != NULL_TREE;
+
+  if (decl_context == BITFIELD)
+    bitfield = 1, decl_context = FIELD;
 
   if (decl_context == FUNCDEF)
     funcdef_flag = 1, decl_context = NORMAL;
@@ -4160,7 +4073,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, width)
 	default:
 	  abort ();
 	}
-    orig_name = name;
     if (name == 0)
       name = "type name";
   }
@@ -4377,9 +4289,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, width)
     }
 
   /* Decide whether an integer type is signed or not.
-     Optionally treat bit-fields as signed by default.  */
+     Optionally treat bitfields as signed by default.  */
   if (specbits & 1 << (int) RID_UNSIGNED
-      /* Traditionally, all bit-fields are unsigned.  */
+      /* Traditionally, all bitfields are unsigned.  */
       || (bitfield && flag_traditional
 	  && (! explicit_flag_signed_bitfields || !flag_signed_bitfields))
       || (bitfield && ! flag_signed_bitfields
@@ -4451,11 +4363,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, width)
 	  type = build_complex_type (type);
 	}
     }
-
-  /* A bit-field needs its type to have precision equal to its width,
-     rather than the precision of the specified standard type.  */
-  if (bitfield)
-    type = build_bitfield_integer_type (type, width, orig_name);
 
   /* Figure out the type qualifiers for the declaration.  There are
      two ways a declaration can become qualified.  One is something
@@ -5106,6 +5013,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, width)
     else if (decl_context == FIELD)
       {
 	/* Structure field.  It may not be a function.  */
+
 	if (TREE_CODE (type) == FUNCTION_TYPE)
 	  {
 	    error ("field `%s' declared as a function", name);
@@ -5129,29 +5037,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, width)
 #endif
 	  }
 	decl = build_decl (FIELD_DECL, declarator, type);
-	if (bitfield)
-	  {
-	    DECL_SIZE (decl) = bitsize_int (TYPE_PRECISION (type));
-	    DECL_BIT_FIELD (decl) = 1;
-	    SET_DECL_C_BIT_FIELD (decl);
-
-	    /* Bit-field width 0 => force desired amount of alignment.  */
-	    if (TYPE_PRECISION (type) == 0)
-	      {
-#ifdef EMPTY_FIELD_BOUNDARY
-		DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl),
-					 EMPTY_FIELD_BOUNDARY);
-#endif
-#ifdef PCC_BITFIELD_TYPE_MATTERS
-		if (PCC_BITFIELD_TYPE_MATTERS)
-		  {
-		    DECL_ALIGN (decl) = MAX (DECL_ALIGN (decl),
-					     TYPE_ALIGN (type));
-		    DECL_USER_ALIGN (decl) |= TYPE_USER_ALIGN (type);
-		  }
-#endif
-	      }
-	  }
 	DECL_NONADDRESSABLE_P (decl) = bitfield;
 
 	if (size_varies)
@@ -5654,7 +5539,7 @@ start_struct (code, name)
 
 /* Process the specs, declarator (NULL if omitted) and width (NULL if omitted)
    of a structure component, returning a FIELD_DECL node.
-   WIDTH is non-NULL for bit-fields only, and is an INTEGER_CST node.
+   WIDTH is non-NULL for bit fields only, and is an INTEGER_CST node.
 
    This is done during the parsing of the struct declaration.
    The FIELD_DECL nodes are chained together and the lot of them
@@ -5680,9 +5565,10 @@ grokfield (filename, line, declarator, declspecs, width)
 	}
     }
 
-  value = grokdeclarator (declarator, declspecs, FIELD, 0, width);
+  value = grokdeclarator (declarator, declspecs, width ? BITFIELD : FIELD, 0);
 
   finish_decl (value, NULL_TREE, NULL_TREE);
+  DECL_INITIAL (value) = width;
 
   maybe_objc_check_decl (value);
   return value;
@@ -5734,7 +5620,10 @@ finish_struct (t, fieldlist, attributes)
 		 fieldlist ? _("named members") : _("members"));
     }
 
-  /* Install struct as DECL_CONTEXT of each field decl.  */
+  /* Install struct as DECL_CONTEXT of each field decl.
+     Also process specified field sizes,m which is found in the DECL_INITIAL.
+     Store 0 there, except for ": 0" fields (so we can find them
+     and delete them, below).  */
 
   saw_named_field = 0;
   for (x = fieldlist; x; x = TREE_CHAIN (x))
@@ -5770,7 +5659,93 @@ finish_struct (t, fieldlist, attributes)
 	error ("nested redefinition of `%s'",
 	       IDENTIFIER_POINTER (TYPE_NAME (t)));
 
-      if (TREE_TYPE (x) != error_mark_node && !DECL_BIT_FIELD (x))
+      /* Detect invalid bit-field size.  */
+      if (DECL_INITIAL (x))
+	STRIP_NOPS (DECL_INITIAL (x));
+      if (DECL_INITIAL (x))
+	{
+	  if (TREE_CODE (DECL_INITIAL (x)) == INTEGER_CST)
+	    constant_expression_warning (DECL_INITIAL (x));
+	  else
+	    {
+	      error_with_decl (x,
+			       "bit-field `%s' width not an integer constant");
+	      DECL_INITIAL (x) = NULL;
+	    }
+	}
+
+      /* Detect invalid bit-field type.  */
+      if (DECL_INITIAL (x)
+	  && TREE_CODE (TREE_TYPE (x)) != INTEGER_TYPE
+	  && TREE_CODE (TREE_TYPE (x)) != BOOLEAN_TYPE
+	  && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
+	{
+	  error_with_decl (x, "bit-field `%s' has invalid type");
+	  DECL_INITIAL (x) = NULL;
+	}
+
+      if (DECL_INITIAL (x) && pedantic
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != integer_type_node
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != unsigned_type_node
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != c_bool_type_node
+	  /* Accept an enum that's equivalent to int or unsigned int.  */
+	  && !(TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
+	       && (TYPE_PRECISION (TREE_TYPE (x))
+		   == TYPE_PRECISION (integer_type_node))))
+	pedwarn_with_decl (x, "bit-field `%s' type invalid in ISO C");
+
+      /* Detect and ignore out of range field width and process valid
+	 field widths.  */
+      if (DECL_INITIAL (x))
+	{
+	  int max_width
+	    = (TYPE_MAIN_VARIANT (TREE_TYPE (x)) == c_bool_type_node
+	       ? CHAR_TYPE_SIZE : TYPE_PRECISION (TREE_TYPE (x)));
+
+	  if (tree_int_cst_sgn (DECL_INITIAL (x)) < 0)
+	    error_with_decl (x, "negative width in bit-field `%s'");
+	  else if (0 < compare_tree_int (DECL_INITIAL (x), max_width))
+	    pedwarn_with_decl (x, "width of `%s' exceeds its type");
+	  else if (integer_zerop (DECL_INITIAL (x)) && DECL_NAME (x) != 0)
+	    error_with_decl (x, "zero width for bit-field `%s'");
+	  else
+	    {
+	      /* The test above has assured us that TREE_INT_CST_HIGH is 0.  */
+	      unsigned HOST_WIDE_INT width
+		= tree_low_cst (DECL_INITIAL (x), 1);
+
+	      if (TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
+		  && (width < min_precision (TYPE_MIN_VALUE (TREE_TYPE (x)),
+					     TREE_UNSIGNED (TREE_TYPE (x)))
+		      || (width
+			  < min_precision (TYPE_MAX_VALUE (TREE_TYPE (x)),
+					   TREE_UNSIGNED (TREE_TYPE (x))))))
+		warning_with_decl (x,
+				   "`%s' is narrower than values of its type");
+
+	      DECL_SIZE (x) = bitsize_int (width);
+	      DECL_BIT_FIELD (x) = 1;
+	      SET_DECL_C_BIT_FIELD (x);
+
+	      if (width == 0)
+		{
+		  /* field size 0 => force desired amount of alignment.  */
+#ifdef EMPTY_FIELD_BOUNDARY
+		  DECL_ALIGN (x) = MAX (DECL_ALIGN (x), EMPTY_FIELD_BOUNDARY);
+#endif
+#ifdef PCC_BITFIELD_TYPE_MATTERS
+		  if (PCC_BITFIELD_TYPE_MATTERS)
+		    {
+		      DECL_ALIGN (x) = MAX (DECL_ALIGN (x),
+					    TYPE_ALIGN (TREE_TYPE (x)));
+		      DECL_USER_ALIGN (x) |= TYPE_USER_ALIGN (TREE_TYPE (x));
+		    }
+#endif
+		}
+	    }
+	}
+
+      else if (TREE_TYPE (x) != error_mark_node)
 	{
 	  unsigned int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
 				    : TYPE_ALIGN (TREE_TYPE (x)));
@@ -5781,6 +5756,8 @@ finish_struct (t, fieldlist, attributes)
 	  if (! DECL_PACKED (x))
 	    DECL_USER_ALIGN (x) |= TYPE_USER_ALIGN (TREE_TYPE (x));
 	}
+
+      DECL_INITIAL (x) = 0;
 
       /* Detect flexible array member in an invalid context.  */
       if (TREE_CODE (TREE_TYPE (x)) == ARRAY_TYPE
@@ -6206,7 +6183,7 @@ start_function (declspecs, declarator, attributes)
   /* Don't expand any sizes in the return type of the function.  */
   immediate_size_expand = 0;
 
-  decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1, NULL_TREE);
+  decl1 = grokdeclarator (declarator, declspecs, FUNCDEF, 1);
 
   /* If the declarator is not suitable for a function definition,
      cause a syntax error.  */

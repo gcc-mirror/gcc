@@ -1,3 +1,8 @@
+2002-02-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-decl.c, tree.c, tree.h, objc/objc-act.c: Revert bitfield
+	patch.
+
 2002-02-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.h (CPP_CPUCOMMON_SPEC): Add missing | separators.
