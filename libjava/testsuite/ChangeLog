@@ -1,5 +1,10 @@
 2003-02-14  Mark Wielaard  <mark@klomp.org>
 
+	* lib/libjava.exp (test_libjava_from_javac): Don't create .o files
+	containing $ characters and always quote class files with "'"s.
+
+2003-02-14  Mark Wielaard  <mark@klomp.org>
+
 	* libjava.mauve/mauve.exp (mauve_compute_uses): Add inner class
 	object files by changing all occurances of $ to ^.
 	(test_mauve): Replace ^ with $ for class file names and quote
