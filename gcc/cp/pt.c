@@ -2703,10 +2703,28 @@ convert_nontype_argument (type, expr)
 	tree type_pointed_to = TREE_TYPE (type);
  
 	if (TYPE_PTRMEM_P (type))
-	  /* For a non-type template-parameter of type pointer to data
-	     member, qualification conversions (_conv.qual_) are
-	     applied.  */
-	  return perform_qualification_conversions (type, expr);
+	  {
+	    tree e;
+
+	    /* For a non-type template-parameter of type pointer to data
+	       member, qualification conversions (_conv.qual_) are
+	       applied.  */
+	    e = perform_qualification_conversions (type, expr);
+	    if (TREE_CODE (e) == NOP_EXPR)
+	      {
+		/* The call to perform_qualification_conversions will
+		   insert a NOP_EXPR over EXPR to do express
+		   conversion, if necessary.  But, that will confuse
+		   us if we use this (converted) template parameter to
+		   instantiate another template; then the thing will
+		   not look like a valid template argument.  So, just
+		   make a new constant, of the appropriate type.  */
+		e = make_node (PTRMEM_CST);
+		TREE_TYPE (e) = type;
+		PTRMEM_CST_MEMBER (e) = PTRMEM_CST_MEMBER (expr);
+	      }
+	    return e;
+	  }
 	else if (TREE_CODE (type_pointed_to) == FUNCTION_TYPE)
 	  { 
 	    /* For a non-type template-parameter of type pointer to
