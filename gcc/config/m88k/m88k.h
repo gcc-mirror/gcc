@@ -1248,6 +1248,12 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /*** Addressing Modes ***/
 
+#define EXTRA_CC_MODES CCEVENmode
+
+#define EXTRA_CC_NAMES "CCEVEN"
+
+#define SELECT_CC_MODE(OP,X,Y) CCmode
+
 /* #define HAVE_POST_INCREMENT */
 /* #define HAVE_POST_DECREMENT */
 
@@ -1453,6 +1459,9 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
   {"real_or_0_operand", {SUBREG, REG, CONST_DOUBLE}},			\
   {"reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
   {"relop", {EQ, NE, LT, LE, GE, GT, LTU, LEU, GEU, GTU}},		\
+  {"even_relop", {EQ, LT, GT, LTU, GTU}},		\
+  {"odd_relop", { NE, LE, GE, LEU, GEU}},		\
+  {"partial_ccmode_register_operand", { SUBREG, REG}},			\
   {"relop_no_unsigned", {EQ, NE, LT, LE, GE, GT}},			\
   {"equality_op", {EQ, NE}},						\
   {"pc_or_label_ref", {PC, LABEL_REF}},
