@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "mips/iris5.h"
-#include "mips/abi64.h"
 
 /* Irix6 assembler does handle DWARF2 directives.  Override setting in
    irix5.h file.  */

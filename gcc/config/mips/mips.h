@@ -77,11 +77,9 @@ enum processor_type {
 /* Recast the cpu class to be the cpu attribute.  */
 #define mips_cpu_attr ((enum attr_cpu)mips_tune)
 
-/* Which ABI to use.  These are constants because abi64.h must check their
-   value at preprocessing time.
-
-   ABI_32 (original 32, or o32), ABI_N32 (n32), ABI_64 (n64) are all
-   defined by SGI.  ABI_O64 is o32 extended to work on a 64 bit machine.  */
+/* Which ABI to use.  ABI_32 (original 32, or o32), ABI_N32 (n32),
+   ABI_64 (n64) are all defined by SGI.  ABI_O64 is o32 extended
+   to work on a 64 bit machine.  */
 
 #define ABI_32  0
 #define ABI_N32 1
@@ -868,73 +866,7 @@ extern void		sbss_section PARAMS ((void));
 
 #define OVERRIDE_OPTIONS override_options ()
 
-/* Zero or more C statements that may conditionally modify two
-   variables `fixed_regs' and `call_used_regs' (both of type `char
-   []') after they have been initialized from the two preceding
-   macros.
-
-   This is necessary in case the fixed or call-clobbered registers
-   depend on target flags.
-
-   You need not define this macro if it has no work to do.
-
-   If the usage of an entire class of registers depends on the target
-   flags, you may indicate this to GCC by using this macro to modify
-   `fixed_regs' and `call_used_regs' to 1 for each of the registers in
-   the classes which should not be used by GCC.  Also define the macro
-   `REG_CLASS_FROM_LETTER' to return `NO_REGS' if it is called with a
-   letter for a class that shouldn't be used.
-
-   (However, if this class is not included in `GENERAL_REGS' and all
-   of the insn patterns whose constraints permit this class are
-   controlled by target switches, then GCC will automatically avoid
-   using these registers when the target switches are opposed to
-   them.)  */
-
-#define CONDITIONAL_REGISTER_USAGE					\
-do									\
-  {									\
-    if (!TARGET_HARD_FLOAT)						\
-      {									\
-	int regno;							\
-									\
-	for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)	\
-	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
-	for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)	\
-	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
-      }									\
-    else if (! ISA_HAS_8CC)						\
-      {									\
-	int regno;							\
-									\
-	/* We only have a single condition code register.  We		\
-           implement this by hiding all the condition code registers,	\
-           and generating RTL that refers directly to ST_REG_FIRST.  */	\
-	for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)	\
-	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
-      }									\
-    /* In mips16 mode, we permit the $t temporary registers to be used	\
-       for reload.  We prohibit the unused $s registers, since they	\
-       are caller saved, and saving them via a mips16 register would	\
-       probably waste more time than just reloading the value.  */	\
-    if (TARGET_MIPS16)							\
-      {									\
-	fixed_regs[18] = call_used_regs[18] = 1;                        \
-	fixed_regs[19] = call_used_regs[19] = 1;                        \
-	fixed_regs[20] = call_used_regs[20] = 1;                        \
-	fixed_regs[21] = call_used_regs[21] = 1;                        \
-	fixed_regs[22] = call_used_regs[22] = 1;                        \
-	fixed_regs[23] = call_used_regs[23] = 1;                        \
-	fixed_regs[26] = call_used_regs[26] = 1;                        \
-	fixed_regs[27] = call_used_regs[27] = 1;                        \
-	fixed_regs[30] = call_used_regs[30] = 1;                        \
-      }									\
-    SUBTARGET_CONDITIONAL_REGISTER_USAGE				\
-  }									\
-while (0)
-
-/* This is meant to be redefined in the host dependent files.  */
-#define SUBTARGET_CONDITIONAL_REGISTER_USAGE
+#define CONDITIONAL_REGISTER_USAGE mips_conditional_register_usage ()
 
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
@@ -2552,8 +2484,10 @@ extern enum reg_class mips_char_to_class[256];
    in register. In case an argument list is of form GF used registers
    are a0 (a2,a3), but we should push over a1...  */
 
-#define REG_PARM_STACK_SPACE(FNDECL)	\
-  ((MAX_ARGS_IN_REGISTERS*UNITS_PER_WORD) - FIRST_PARM_OFFSET (FNDECL))
+#define REG_PARM_STACK_SPACE(FNDECL) 					 \
+  ((mips_abi == ABI_32 || mips_abi == ABI_O64)				 \
+   ? (MAX_ARGS_IN_REGISTERS * UNITS_PER_WORD) - FIRST_PARM_OFFSET (FNDECL) \
+   : 0)
 
 /* Define this if it is the responsibility of the caller to
    allocate the area reserved for arguments passed in registers.
@@ -2562,10 +2496,9 @@ extern enum reg_class mips_char_to_class[256];
    `current_function_outgoing_args_size'.  */
 #define OUTGOING_REG_PARM_STACK_SPACE
 
-/* Align stack frames on 64 bits (Double Word ).  */
-#ifndef STACK_BOUNDARY
-#define STACK_BOUNDARY 64
-#endif
+#define STACK_BOUNDARY \
+  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI) \
+   ? 64 : 128)
 
 /* Make sure 4 words are always allocated on the stack.  */
 
@@ -2613,14 +2546,19 @@ extern enum reg_class mips_char_to_class[256];
 #define GP_RETURN (GP_REG_FIRST + 2)
 #define FP_RETURN ((TARGET_SOFT_FLOAT) ? GP_RETURN : (FP_REG_FIRST + 0))
 
+#define MAX_ARGS_IN_REGISTERS \
+  ((mips_abi == ABI_32 || mips_abi == ABI_O64) ? 4 : 8)
+
+/* Largest possible value of MAX_ARGS_IN_REGISTERS.  */
+
+#define BIGGEST_MAX_ARGS_IN_REGISTERS 8
+
 /* Symbolic macros for the first/last argument registers.  */
 
 #define GP_ARG_FIRST (GP_REG_FIRST + 4)
-#define GP_ARG_LAST  (GP_REG_FIRST + 7)
+#define GP_ARG_LAST  (GP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 #define FP_ARG_FIRST (FP_REG_FIRST + 12)
-#define FP_ARG_LAST  (FP_REG_FIRST + 15)
-
-#define MAX_ARGS_IN_REGISTERS	4
+#define FP_ARG_LAST  (FP_ARG_FIRST + MAX_ARGS_IN_REGISTERS - 1)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  Because we define
@@ -2683,6 +2621,8 @@ extern enum reg_class mips_char_to_class[256];
 #define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
 
+#define STRICT_ARGUMENT_NAMING (mips_abi != ABI_32 && mips_abi != ABI_O64)
+
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
@@ -2757,7 +2697,7 @@ typedef struct mips_args {
      the shift patterns, and function_arg, which returns them when given
      a VOIDmode argument.  */
   unsigned int num_adjusts;
-  rtx adjust[MAX_ARGS_IN_REGISTERS];
+  rtx adjust[BIGGEST_MAX_ARGS_IN_REGISTERS];
 } CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -2812,6 +2752,39 @@ typedef struct mips_args {
 		? PARM_BOUNDARY						\
 		: GET_MODE_ALIGNMENT(MODE)))
 
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED)		\
+  function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
+
+#define FUNCTION_ARG_PADDING(MODE, TYPE)				\
+  (! BYTES_BIG_ENDIAN							\
+   ? upward								\
+   : (((MODE) == BLKmode						\
+       ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
+	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT))\
+       : (GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY			\
+	  && (mips_abi == ABI_32					\
+	      || mips_abi == ABI_O64					\
+	      || mips_abi == ABI_EABI					\
+	      || GET_MODE_CLASS (MODE) == MODE_INT)))			\
+      ? downward : upward))
+
+#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
+  (mips_abi == ABI_EABI && (NAMED)					\
+   && FUNCTION_ARG_PASS_BY_REFERENCE (CUM, MODE, TYPE, NAMED))
+
+/* Modified version of the macro in expr.h.  */
+#define MUST_PASS_IN_STACK(MODE,TYPE)			\
+  ((TYPE) != 0						\
+   && (TREE_CODE (TYPE_SIZE (TYPE)) != INTEGER_CST	\
+       || TREE_ADDRESSABLE (TYPE)			\
+       || ((MODE) == BLKmode 				\
+	   && mips_abi != ABI_32 && mips_abi != ABI_O64 \
+	   && ! ((TYPE) != 0 && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST \
+		 && 0 == (int_size_in_bytes (TYPE)	\
+			  % (PARM_BOUNDARY / BITS_PER_UNIT))) \
+	   && (FUNCTION_ARG_PADDING (MODE, TYPE)	\
+	       == (BYTES_BIG_ENDIAN ? upward : downward)))))
+
 /* True if using EABI and varargs can be passed in floating-point
    registers.  Under these conditions, we need a more complex form
    of va_list, which tracks GPR, FPR and stack arguments separately.  */
@@ -2826,10 +2799,12 @@ typedef struct mips_args {
   || (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)	\
   || (regno == (GP_REG_FIRST + 31) && regs_ever_live[GP_REG_FIRST + 31]))
 
-/* ALIGN FRAMES on double word boundaries */
-#ifndef MIPS_STACK_ALIGN
-#define MIPS_STACK_ALIGN(LOC) (((LOC) + 7) & ~7)
-#endif
+/* Treat LOC as a byte offset from the stack pointer and round it up
+   to the next fully-aligned offset.  */
+#define MIPS_STACK_ALIGN(LOC)						\
+  ((mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)	\
+   ? ((LOC) + 7) & ~7							\
+   : ((LOC) + 15) & ~15)
 
 
 /* Define the `__builtin_va_list' type for the ABI.  */

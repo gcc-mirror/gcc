@@ -405,6 +405,10 @@ extern HARD_REG_SET fixed_reg_set;
 
 extern char call_used_regs[FIRST_PSEUDO_REGISTER];
 
+#ifdef CALL_REALLY_USED_REGISTERS
+extern char call_really_used_regs[];
+#endif
+
 /* The same info as a HARD_REG_SET.  */
 
 extern HARD_REG_SET call_used_reg_set;

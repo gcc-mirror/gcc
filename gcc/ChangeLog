@@ -1,3 +1,21 @@
+2002-08-02  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config.gcc: Don't include mips/abi64.h in $tm_file.
+	* hard-reg-set.h (call_really_used_regs): Declare.
+	* config/mips/abi64.h: Remove file.
+	* config/mips/linux.h,
+	* config/mips/iris6.h: Don't include it.
+	* config/mips/mips-protos.h (mips_conditional_register_usage): Declare.
+	* config/mips/mips.h (CONDITIONAL_REGISTER_USAGE): Use it.
+	(REG_PARM_STACK_SPACE, STACK_BOUNDARY, STRICT_ARGUMENT_NAMING,
+	FUNCTION_ARG_PASS_BY_REFERENCE, FUNCTION_ARG_PADDING,
+	FUNCTION_ARG_CALLEE_COPIES, MUST_PASS_IN_STACK, MIPS_STACK_ALIGN):
+	Bring across definitions from abi64.h.
+	(GP_ARG_LAST, FP_ARG_LAST): Use MAX_ARGS_IN_REGISTERS.
+	(BIGGEST_MAX_ARGS_IN_REGISTERS): New.
+	(struct mips_args): Use it.
+	* config/mips/mips.c (mips_conditional_register_usage): Define.
+
 2002-08-02  Jason Merrill  <jason@redhat.com>
 
 	* langhooks-def.h (LANG_HOOKS_EXPR_SIZE): New macro.

@@ -104,6 +104,7 @@ extern const char      *mips_restore_gp PARAMS ((rtx *, rtx));
 extern const char      *output_block_move PARAMS ((rtx, rtx *, int,
 						   enum block_move_type));
 extern void		override_options PARAMS ((void));
+extern void		mips_conditional_register_usage PARAMS ((void));
 extern void		print_operand_address PARAMS ((FILE *, rtx));
 extern void		print_operand PARAMS ((FILE *, rtx, int));
 extern int		double_memory_operand PARAMS ((rtx,enum machine_mode));
