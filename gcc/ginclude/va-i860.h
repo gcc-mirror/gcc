@@ -15,7 +15,7 @@ typedef union {
 } __f_regs;
 
 typedef struct {
-#if defined(__SVR4__) || defined(__alliant__)
+#if defined (__SVR4__) || defined (__svr4__) || defined (__alliant__)
   __f_regs __float_regs; long __ireg[12];
 #else /* pre-SVR4 */
   long __ireg[12]; __f_regs __float_regs;
