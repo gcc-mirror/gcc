@@ -1,3 +1,9 @@
+2004-09-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/16409
+	* gcc.dg/vla-init-2.c, gcc.dg/vla-init-3.c, gcc.dg/vla-init-4.c,
+	gcc.dg/vla-init-5.c: New tests.
+
 2004-09-27  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/13804
