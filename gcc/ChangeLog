@@ -1,3 +1,8 @@
+Tue Feb  2 16:39:39 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* final.c (output_source_line): If MIPS debugging info and
+	ASM_OUTPUT_SOURCE_FILENAME defined, call it.
+
 Mon Feb  1 19:21:36 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload.c (find_reloads): Handle multiple 
