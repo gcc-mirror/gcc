@@ -1663,7 +1663,7 @@ build_decl_overload (dname, parms, for_method)
 
 /* Set the mangled name (DECL_ASSEMBLER_NAME) for DECL.  */
 
-tree
+void
 set_mangled_name_for_decl (decl)
      tree decl;
 {

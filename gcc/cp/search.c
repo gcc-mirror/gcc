@@ -3480,6 +3480,23 @@ envelope_add_decl (type, decl, values)
     }
 }
 
+/* Returns 1 iff BINFO is a base we shouldn't really be able to see into,
+   because it (or one of the intermediate bases) depends on template parms.  */
+
+static int
+dependent_base_p (binfo)
+     tree binfo;
+{
+  for (; binfo; binfo = BINFO_INHERITANCE_CHAIN (binfo))
+    {
+      if (binfo == current_class_type)
+	break;
+      if (uses_template_parms (TREE_TYPE (binfo)))
+	return 1;
+    }
+  return 0;
+}
+
 /* Add the instance variables which this class contributed to the
    current class binding contour.  When a redefinition occurs, if the
    redefinition is strictly within a single inheritance path, we just
@@ -3506,9 +3523,18 @@ dfs_pushdecls (binfo)
   tree type = BINFO_TYPE (binfo);
   tree fields, *methods, *end;
   tree method_vec;
+  int dummy = 0;
+
+  /* Only record types if we're a template base.  */
+  if (processing_template_decl && type != current_class_type
+      && dependent_base_p (binfo))
+    dummy = 1;
 
   for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
     {
+      if (dummy && TREE_CODE (fields) != TYPE_DECL)
+	continue;
+
       /* Unmark so that if we are in a constructor, and then find that
 	 this field was initialized by a base initializer,
 	 we can emit an error message.  */
@@ -3546,7 +3572,7 @@ dfs_pushdecls (binfo)
     }
 
   method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (method_vec)
+  if (method_vec && ! dummy)
     {
       /* Farm out constructors and destructors.  */
       methods = &TREE_VEC_ELT (method_vec, 2);
@@ -3598,7 +3624,10 @@ dfs_compress_decls (binfo)
   tree type = BINFO_TYPE (binfo);
   tree method_vec = CLASSTYPE_METHOD_VEC (type);
 
-  if (method_vec != 0)
+  if (processing_template_decl && type != current_class_type
+      && dependent_base_p (binfo))
+    /* We only record types if we're a template base.  */;
+  else if (method_vec != 0)
     {
       /* Farm out constructors and destructors.  */
       tree *methods = &TREE_VEC_ELT (method_vec, 2);

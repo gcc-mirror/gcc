@@ -5074,11 +5074,11 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
       /* Add implicit 'typename' to types from template bases.  lookup_field
          will do this for us.  If classval is actually from an enclosing
          scope, lookup_nested_field will get it for us.  */
-      if (processing_template_decl
-	  && classval && TREE_CODE (classval) == TYPE_DECL
-	  && ! currently_open_class (DECL_CONTEXT (classval))
-	  && uses_template_parms (current_class_type)
-	  && ! DECL_ARTIFICIAL (classval))
+      else if (processing_template_decl
+	       && classval && TREE_CODE (classval) == TYPE_DECL
+	       && ! currently_open_class (DECL_CONTEXT (classval))
+	       && uses_template_parms (current_class_type)
+	       && ! DECL_ARTIFICIAL (classval))
 	classval = lookup_field (current_class_type, name, 0, 1);
 
       /* yylex() calls this with -2, since we should never start digging for
@@ -5120,6 +5120,28 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
     val = classval;
   else
     val = unqualified_namespace_lookup (name, flags);
+
+  if (classval && TREE_CODE (val) == TYPE_DECL
+      && TREE_CODE (TREE_TYPE (val)) == TYPENAME_TYPE
+      && TREE_TYPE (TREE_TYPE (val)))
+    {
+      tree nsval = unqualified_namespace_lookup (name, flags);
+
+      if (val && nsval && TREE_CODE (nsval) == TYPE_DECL)
+	{
+	  static int explained;
+	  cp_warning ("namespace-scope type `%#D'", nsval);
+	  cp_warning
+	    ("  is used instead of `%D' from dependent base class", val);
+	  if (! explained)
+	    {
+	      explained = 1;
+	      cp_warning ("  (use `typename %D' if that's what you meant)",
+			  val);
+	    }
+	  val = nsval;
+	}
+    }
 
  done:
   if (val)
