@@ -1,3 +1,7 @@
+Tue May 19 15:07:54 1998  Todd Vierling  <tv@netbsd.org>
+
+	* arm/netbsd.h: Ensure DWARF2_UNWIND_INFO is undefined.
+
 Tue May 19 17:19:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_reg_free_for_value_p): New function.
