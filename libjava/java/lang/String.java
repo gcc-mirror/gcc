@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -32,13 +32,44 @@ public final class String implements Serializable, Comparable
   // but it will avoid showing up as a discrepancy when comparing SUIDs.
   private static final long serialVersionUID = -6849794470754667710L;
 
-  public static final Comparator CASE_INSENSITIVE_ORDER = new Comparator()
+  /**
+   * An implementation for {@link CASE_INSENSITIVE_ORDER}.
+   * This must be {@link Serializable}.
+   */
+  private static final class CaseInsensitiveComparator
+    implements Comparator, Serializable
   {
-    public int compare (Object o1, Object o2)
+    /**
+     * The default private constructor generates unnecessary overhead
+     */
+    CaseInsensitiveComparator() {}
+
+    /**
+     * Compares two Strings, using
+     * <code>String.compareToIgnoreCase(String)</code>.
+     * 
+     * @param o1 the first string
+     * @param o2 the second string
+     * @return &lt; 0, 0, or &gt; 0 depending on the case-insensitive
+     *         comparison of the two strings.
+     * @throws NullPointerException if either argument is null
+     * @throws ClassCastException if either argument is not a String
+     * @see #compareToIgnoreCase(String)
+     */
+    public int compare(Object o1, Object o2)
     {
-      return ((String) o1).compareToIgnoreCase ((String) o2);
+      return ((String) o1).compareToIgnoreCase((String) o2);
     }
-  };
+  }
+
+  /**
+   * A Comparator that uses <code>String.compareToIgnoreCase(String)</code>.
+   * This comparator is {@link Serializable}.
+   *
+   * @since 1.2
+   */
+  public static final Comparator CASE_INSENSITIVE_ORDER
+    = new CaseInsensitiveComparator();
 
   public String ()
   {
