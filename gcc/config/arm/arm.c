@@ -2748,7 +2748,7 @@ current_file_function_operand (rtx sym_ref)
     return 1;
 
   /* The current function is always defined within the current compilation
-     unit.  if it s a weak definition however, then this may not be the real
+     unit.  If it s a weak definition however, then this may not be the real
      definition of the function, and so we have to say no.  */
   if (sym_ref == XEXP (DECL_RTL (current_function_decl), 0)
       && !DECL_WEAK (current_function_decl))
@@ -2764,16 +2764,19 @@ current_file_function_operand (rtx sym_ref)
         a.  has an __attribute__((long call))
      or b.  is within the scope of a #pragma long_calls
      or c.  the -mlong-calls command line switch has been specified
+         .  and either:
+                1. -ffunction-sections is in effect
+	     or 2. the current function has __attribute__ ((section))
+	     or 3. the target function has __attribute__ ((section))
 
    However we do not generate a long call if the function:
    
         d.  has an __attribute__ ((short_call))
      or e.  is inside the scope of a #pragma no_long_calls
-     or f.  has an __attribute__ ((section))
-     or g.  is defined within the current compilation unit.
+     or f.  is defined within the current compilation unit.
    
    This function will be called by C fragments contained in the machine
-   description file.  CALL_REF and CALL_COOKIE correspond to the matched
+   description file.  SYM_REF and CALL_COOKIE correspond to the matched
    rtl operands.  CALL_SYMBOL is used to distinguish between
    two different callers of the function.  It is set to 1 in the
    "call_symbol" and "call_symbol_value" patterns and to 0 in the "call"
@@ -2796,9 +2799,15 @@ arm_is_longcall_p (rtx sym_ref, int call_cookie, int call_symbol)
   if (call_cookie & CALL_SHORT)
     return 0;
 
-  if (TARGET_LONG_CALLS && flag_function_sections)
-    return 1;
-  
+  if (TARGET_LONG_CALLS)
+    {
+      if (flag_function_sections
+	  || DECL_SECTION_NAME (current_function_decl))
+	/* c.3 is handled by the defintion of the
+	   ARM_DECLARE_FUNCTION_SIZE macro.  */
+	return 1;
+    }
+
   if (current_file_function_operand (sym_ref))
     return 0;
   

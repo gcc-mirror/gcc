@@ -1,3 +1,12 @@
+2004-08-11  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (arm_is_longcall_p): Update comment describing
+	this funciton's behaviour.  Return true when the current function
+	has a section attribute and -mlong-calls is in effect.
+	* config/arm/arm.h (ARM_DECLARE_FUNCTION_SIZE): Do not set the
+	short-call marker when -mlong-calls is in effect and the function
+	has a section attribute.
+
 2004-08-10  Zack Weinberg  <zack@codesourcery.com>
 
 	* stmt.c (expand_return): If asked to return the RESULT_DECL,

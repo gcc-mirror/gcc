@@ -2064,8 +2064,14 @@ typedef struct
 #define ASM_OUTPUT_LABELREF(FILE, NAME)		\
    arm_asm_output_labelref (FILE, NAME)
 
+/* Set the short-call flag for any function compiled in the current
+   compilation unit.  We skip this for functions with the section
+   attirubte when long-calls are in effect as this tells the compiler
+   that the section might be placed a long way from the caller.
+   See arm_is_longcall_p() for more information.  */
 #define ARM_DECLARE_FUNCTION_SIZE(STREAM, NAME, DECL)	\
-  arm_encode_call_attribute (DECL, SHORT_CALL_FLAG_CHAR)
+  if (!TARGET_LONG_CALLS || ! DECL_SECTION_NAME (DECL)) \
+    arm_encode_call_attribute (DECL, SHORT_CALL_FLAG_CHAR)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
