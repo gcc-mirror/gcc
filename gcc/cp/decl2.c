@@ -2497,7 +2497,10 @@ import_export_decl (decl)
 	    comdat_linkage (decl);
 	}
       else
-	DECL_NOT_REALLY_EXTERN (decl) = 0;
+	{
+	  DECL_EXTERNAL (decl) = 1;
+	  DECL_NOT_REALLY_EXTERN (decl) = 0;
+	}
     }
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
@@ -2512,6 +2515,9 @@ import_export_decl (decl)
 		     || (DECL_DECLARED_INLINE_P (decl) 
 			 && ! flag_implement_inlines
 			 && !DECL_VINDEX (decl)));
+
+	      if (!DECL_NOT_REALLY_EXTERN (decl))
+		DECL_EXTERNAL (decl) = 1;
 
 	      /* Always make artificials weak.  */
 	      if (DECL_ARTIFICIAL (decl) && flag_weak)

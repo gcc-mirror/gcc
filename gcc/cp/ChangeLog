@@ -1,3 +1,9 @@
+2002-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/6611
+	* decl2.c (import_export_decl): If we clear
+	DECL_NOT_REALLY_EXTERN, make sure DECL_EXTERNAL is set.
+
 2002-07-03  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/6944
