@@ -84,12 +84,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LIB_SPEC "%{!nostdlib:-lcg %{p:-lprof}%{pg:-lgprof}\
 	  %{mka:-lfpg}%{msa:-lfpg}%{mca:-lfpg}%{mcf:-lfpg} -lgnu}"
 
-/* These compiler options take an argument.  */
-#define WORD_SWITCH_TAKES_ARG(STR)			\
- (!strcmp (STR, "Tdata") || !strcmp (STR, "include")	\
-  || !strcmp (STR, "imacros") || !strcmp (STR, "Ttext")	\
-  || !strcmp (STR, "aux-info"))
-
 /* Omit frame pointer at -O2.  Inline functions at -O3.  */
 #define OPTIMIZATION_OPTIONS(LEVEL)		\
 {						\
