@@ -426,9 +426,9 @@ if test -n "${with_cross_host}"; then
    AC_DEFINE(NO_DEBUGGING)
 fi
 
-AC_ARG_ENABLE(full-debug,
-[  --enable-full-debug	include full support for pointer backtracing etc.],
-[ if test "$enable_full_debug" = "yes"; then
+AC_ARG_ENABLE(gc-debug,
+[  --enable-gc-debug	include full support for pointer backtracing etc.],
+[ if test "$enable_gc_debug" = "yes"; then
     AC_MSG_WARN("Must define GC_DEBUG and use debug alloc. in clients.")
     AC_DEFINE(KEEP_BACK_PTRS)
     AC_DEFINE(DBG_HDRS_ALL)
@@ -444,8 +444,8 @@ AC_ARG_ENABLE(full-debug,
       i[3456]86-*-dgux*)
 	AC_DEFINE(MAKE_BACK_GRAPH)
       ;;
-    esac ]
-  fi)
+    esac 
+  fi])
 
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
