@@ -22,6 +22,12 @@ Boston, MA 02111-1307, USA.  */
 /* Use ELF.  */
 #define OBJECT_FORMAT_ELF
 
+/* All ELF targets can support DWARF-2.  */
+
+#ifndef DWARF2_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
+#endif
+
 /* Until we figure out what MIPS ELF targets normally use, just do
    stabs in ELF.  */
 #ifndef PREFERRED_DEBUGGING_TYPE
