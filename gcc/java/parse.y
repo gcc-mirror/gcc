@@ -8922,8 +8922,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
       && ! flag_emit_class_files && ! flag_emit_xref)
     {
       tree length = build_java_array_length_access (where_found);
-      field_ref =
-	build_java_arraynull_check (type_found, length, int_type_node);
+      field_ref = length;
 
       /* In case we're dealing with a static array, we need to
 	 initialize its class before the array length can be fetched.
@@ -10196,7 +10195,7 @@ patch_invoke (patch, method, args)
 {
   tree dtable, func;
   tree original_call, t, ta;
-  tree cond = NULL_TREE;
+  tree check = NULL_TREE;
 
   /* Last step for args: convert build-in types. If we're dealing with
      a new TYPE() type call, the first argument to the constructor
@@ -10235,12 +10234,11 @@ patch_invoke (patch, method, args)
 	     optimization pass to eliminate redundant checks.  */
 	  if (TREE_VALUE (args) != current_this)
 	    {
-	      /* We use a SAVE_EXPR here to make sure we only evaluate
+	      /* We use a save_expr here to make sure we only evaluate
 		 the new `self' expression once.  */
 	      tree save_arg = save_expr (TREE_VALUE (args));
 	      TREE_VALUE (args) = save_arg;
-	      cond = build (EQ_EXPR, boolean_type_node, save_arg,
-			    null_pointer_node);
+	      check = java_check_reference (save_arg, 1);
 	    }
 	  /* Fall through.  */
 
@@ -10300,22 +10298,11 @@ patch_invoke (patch, method, args)
       patch = build (COMPOUND_EXPR, TREE_TYPE (new), patch, saved_new);
     }
 
-  /* If COND is set, then we are building a check to see if the object
+  /* If CHECK is set, then we are building a check to see if the object
      is NULL.  */
-  if (cond != NULL_TREE)
+  if (check != NULL_TREE)
     {
-      /* We have to make the `then' branch a compound expression to
-	 make the types turn out right.  This seems bizarre.  */
-      patch = build (COND_EXPR, TREE_TYPE (patch), cond,
-		     build (COMPOUND_EXPR, TREE_TYPE (patch),
-			    build (CALL_EXPR, void_type_node,
-				   build_address_of (soft_nullpointer_node),
-				   NULL_TREE, NULL_TREE),
-			    (FLOAT_TYPE_P (TREE_TYPE (patch))
-			     ? build_real (TREE_TYPE (patch), dconst0)
-			     : build1 (CONVERT_EXPR, TREE_TYPE (patch),
-				       integer_zero_node))),
-		     patch);
+      patch = build (COMPOUND_EXPR, TREE_TYPE (patch), check, patch);
       TREE_SIDE_EFFECTS (patch) = 1;
     }
 
@@ -12525,15 +12512,20 @@ patch_assignment (node, wfl_op1, wfl_op2)
       tree check;
       tree base = lvalue;
 
-      /* We need to retrieve the right argument for _Jv_CheckArrayStore */
+      /* We need to retrieve the right argument for
+         _Jv_CheckArrayStore.  This is somewhat complicated by bounds
+         and null pointer checks, both of which wrap the operand in
+         one layer of COMPOUND_EXPR.  */
       if (TREE_CODE (lvalue) == COMPOUND_EXPR)
 	base = TREE_OPERAND (lvalue, 0);
       else
 	{
+	  base = TREE_OPERAND (base, 0);
 	  if (flag_bounds_check)
-	    base = TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (base, 0), 1), 0);
-	  else
-	    base = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
+	    base = TREE_OPERAND (base, 1);
+	  if (flag_check_references)
+	    base = TREE_OPERAND (base, 1);
+	  base = TREE_OPERAND (base, 0);	
 	}
 
       /* Build the invocation of _Jv_CheckArrayStore */
