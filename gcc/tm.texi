@@ -4872,6 +4872,14 @@ the stdio stream @var{stream}.
 This macro need not be defined if the standard form of output
 for the file format in use is appropriate.
 
+@findex OUTPUT_QUOTED_STRING
+@item OUTPUT_QUOTED_STRING (@var{stream}, @var{name})
+A C statement to output the string @var{string} to the stdio stream
+@var{stream}.  If you do not call the function @code{output_quoted_string}
+in your config files, GNU CC will only call it to output filenames to
+the assembler source.  So you can use it to canonicalize the format
+of the filename using this macro.
+
 @findex ASM_OUTPUT_SOURCE_LINE
 @item ASM_OUTPUT_SOURCE_LINE (@var{stream}, @var{line})
 A C statement to output DBX or SDB debugging information before code
