@@ -122,9 +122,6 @@
 // Define if <float.h> exists.
 #undef HAVE_FLOAT_H
 
-// Define if modf is present in <math.h>
-#undef HAVE_MODF
-
 // @BOTTOM@
 //
 // Systems that have certain non-standard functions prefixed with an
