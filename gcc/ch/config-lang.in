@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU CHILL.
-#   Copyright (C) 1994, 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1994, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -24,15 +24,12 @@
 # language	- name of language as it would appear in $(LANGUAGES)
 # compilers	- value to add to $(COMPILERS)
 # stagestuff	- files to add to $(STAGESTUFF)
-# diff_excludes	- files to ignore when building diffs between two versions.
 
 language="CHILL"
 
 compilers="cc1chill\$(exeext)"
 
 stagestuff="chill chill-cross\$(exeext) cc1chill\$(exeext)"
-
-diff_excludes="-x -x ch/chill.info*"
 
 outputs=ch/Makefile
 

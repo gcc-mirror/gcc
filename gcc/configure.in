@@ -2143,7 +2143,6 @@ all_languages=
 all_boot_languages=
 all_compilers=
 all_stagestuff=
-all_diff_excludes=
 all_outputs='Makefile intl/Makefile fixinc/Makefile gccbug mklibgcc'
 # List of language makefile fragments.
 all_lang_makefiles=
@@ -2168,7 +2167,6 @@ do
 		boot_language=
 		compilers=
 		stagestuff=
-		diff_excludes=
 		headers=
 		outputs=
 		lib2funcs=
@@ -2189,7 +2187,6 @@ do
 		fi
 		all_compilers="$all_compilers $compilers"
 		all_stagestuff="$all_stagestuff $stagestuff"
-		all_diff_excludes="$all_diff_excludes $diff_excludes"
 		all_headers="$all_headers $headers"
 		all_outputs="$all_outputs $outputs"
 		all_lib2funcs="$all_lib2funcs $lib2funcs"
@@ -2325,7 +2322,6 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 AC_SUBST(subdirs)
 AC_SUBST(all_boot_languages)
 AC_SUBST(all_compilers)
-AC_SUBST(all_diff_excludes)
 AC_SUBST(all_headers)
 AC_SUBST(all_lang_makefiles)
 AC_SUBST(all_languages)

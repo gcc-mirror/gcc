@@ -1,3 +1,7 @@
+2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config-lang.in (diff_excludes): Remove.
+
 2001-12-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* g77.texi, invoke.texi: Update links to GCC manual.

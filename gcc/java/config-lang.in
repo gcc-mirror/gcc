@@ -29,7 +29,6 @@
 # language	- name of language as it would appear in $(LANGUAGES)
 # compilers	- value to add to $(COMPILERS)
 # stagestuff	- files to add to $(STAGESTUFF)
-# diff_excludes	- files to ignore when building diffs between two versions.
 
 language="java"
 

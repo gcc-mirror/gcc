@@ -639,7 +639,6 @@ INCLUDES = -I. -I$(@D) -I$(srcdir) -I$(srcdir)/$(@D) \
 # These next lines are overridden by configure.
 LANG_MAKEFILES = @all_lang_makefiles@
 LANG_STAGESTUFF = @all_stagestuff@
-LANG_DIFF_EXCLUDES = @all_diff_excludes@
 LANG_EXTRA_HEADERS = @all_headers@
 
 # Flags to pass to recursive makes.

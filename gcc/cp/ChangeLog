@@ -1,3 +1,7 @@
+2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config-lang.in (diff_excludes): Remove.
+
 2001-12-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/90

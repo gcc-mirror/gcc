@@ -1,3 +1,10 @@
+2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* configure.in (all_diff_excludes, diff_excludes): Remove.
+	* configure: Regenerate.
+	* Makefile.in (LANG_DIFF_EXCLUDES): Remove.
+	* objc/config-lang.in (diff_excludes): Remove.
+
 2001-12-19  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* config/sparc/sparc.md (ldd peephole2s): For load peepholes pass
