@@ -261,7 +261,8 @@ for machine in $build $host $target; do
 	alpha*-*-linux-gnuecoff*)
 		tm_file="${tm_file} alpha/linux.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		target_cpu_default=MASK_GAS
+		target_cpu_default="MASK_GAS"
+		gas=no
 		xmake_file=none
 		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
@@ -269,7 +270,8 @@ for machine in $build $host $target; do
 	alpha*-*-linux-gnu*)
 		tm_file="${tm_file} alpha/linux.h alpha/elf.h"
 		xm_file="${xm_file} alpha/xm-linux.h"
-		target_cpu_default=MASK_GAS
+		target_cpu_default="MASK_GAS"
+		gas=no
 		tmake_file="t-linux alpha/t-linux"
 		xmake_file=none
 		fixincludes=Makefile.in
@@ -2513,9 +2515,9 @@ for machine in $build $host $target; do
 		then
 			if [[ x$target_cpu_default2 = x ]]
 			then
-				target_cpu_default2=MASK_GAS
+				target_cpu_default2="MASK_GAS"
 			else
-				target_cpu_default2=${target_cpu_default2}|MASK_GAS
+				target_cpu_default2="${target_cpu_default2}|MASK_GAS"
 			fi
 		fi
 		;;
