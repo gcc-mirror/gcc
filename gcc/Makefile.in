@@ -258,7 +258,9 @@ all: all.indirect
 .NOEXPORT:
 
 # sed inserts variable overrides after the following line.
-####
+####target overrides
+####host overrides
+####cross overrides
 
 # Now figure out from those variables how to compile and link.
 
