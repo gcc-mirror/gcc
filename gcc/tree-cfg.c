@@ -2574,7 +2574,7 @@ disband_implicit_edges (void)
   basic_block bb;
   block_stmt_iterator last;
   edge e;
-  tree stmt, label, forward;
+  tree stmt, label;
 
   FOR_EACH_BB (bb)
     {
@@ -2639,15 +2639,6 @@ disband_implicit_edges (void)
 	abort ();
 
       label = tree_block_label (e->dest);
-
-      /* If this is a goto to a goto, jump to the final destination.
-         Handles unfactoring of the computed jumps.
-         ??? Why bother putting this back together when rtl is just
-	 about to take it apart again?  */
-      forward = last_and_only_stmt (e->dest);
-      if (forward
-	  && TREE_CODE (forward) == GOTO_EXPR)
-	label = GOTO_DESTINATION (forward);
 
       stmt = build1 (GOTO_EXPR, void_type_node, label);
       SET_EXPR_LOCUS (stmt, e->goto_locus);

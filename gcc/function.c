@@ -440,8 +440,6 @@ free_after_compilation (struct function *f)
   f->x_cleanup_label = NULL;
   f->x_return_label = NULL;
   f->x_naked_return_label = NULL;
-  f->computed_goto_common_label = NULL;
-  f->computed_goto_common_reg = NULL;
   f->x_save_expr_regs = NULL;
   f->x_stack_slot_list = NULL;
   f->x_rtl_expr_chain = NULL;
