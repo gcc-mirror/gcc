@@ -6684,7 +6684,7 @@ check_return_expr (retval)
      returned expression uses the chosen variable somehow.  And people expect
      this restriction, anyway.  (jason 2000-11-19) */
 
-  if (fn_returns_value_p && optimize)
+  if (fn_returns_value_p && flag_elide_constructors)
     {
       if (retval != NULL_TREE
 	  && (current_function_return_value == NULL_TREE
@@ -6692,7 +6692,8 @@ check_return_expr (retval)
 	  && TREE_CODE (retval) == VAR_DECL
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && ! TREE_STATIC (retval)
-	  && ! DECL_USER_ALIGN (retval)
+	  && (DECL_ALIGN (retval)
+	      == DECL_ALIGN (DECL_RESULT (current_function_decl)))
 	  && same_type_p (TREE_TYPE (retval),
 			  TREE_TYPE (TREE_TYPE (current_function_decl))))
 	current_function_return_value = retval;
