@@ -2470,8 +2470,10 @@ hppa_encode_label (sym)
   int len = strlen (str);
   char *newstr = obstack_alloc (saveable_obstack, len + 2) ;
 
+  if (str[0] == '*')
+    *newstr++ = *str++;
   strcpy (newstr + 1, str);
-  newstr[0] = '@';
+  *newstr = '@';
   XSTR (sym,0) = newstr;
 }
   
@@ -2480,5 +2482,5 @@ function_label_operand  (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  return GET_CODE (op) == SYMBOL_REF && (XSTR (op, 0))[0] == '@';
+  return GET_CODE (op) == SYMBOL_REF && FUNCTION_NAME_P (XSTR (op, 0));
 }
