@@ -118,16 +118,17 @@ extern int target_flags;
    efficient manner.  This code is not compatible with normal sparc code.  */
 /* This is not a user selectable option yet, because it requires changes
    that are not yet switchable via command line arguments.  */
+/* ??? This flag is deprecated and may disappear at some point.  */
 #define TARGET_FRW (target_flags & 256)
 
 /* Nonzero means that we should generate code using a flat register window
    model, i.e. no save/restore instructions are generated, but which is
    compatible with normal sparc code.   This is the same as above, except
-   that the frame pointer is %l6 instead of %fp.  This code is not as efficient
-   as TARGET_FRW, because it has one less allocatable register.  */
-/* This is not a user selectable option yet, because it requires changes
-   that are not yet switchable via command line arguments.  */
-#define TARGET_FRW_COMPAT (target_flags & 512)
+   that the frame pointer is %i7 instead of %fp.  */
+/* ??? This use to be named TARGET_FRW_COMPAT.  At some point TARGET_FRW will
+   go away, but until that time only use this one when necessary.
+   -mflat sets both.  */
+#define TARGET_FLAT (target_flags & 512)
 
 /* Nonzero means use the registers that the Sparc ABI reserves for
    application software.  This is the default.  */
@@ -162,13 +163,11 @@ extern int target_flags;
     {"no-v8", -64},		\
     {"sparclite", 128},		\
     {"no-sparclite", -128},	\
-/*  {"frw", 256}, */		\
-/*  {"no-frw", -256}, */	\
-/*  {"frw-compat", 256+512}, */	\
-/*  {"no-frw-compat", -(256+512)}, */ \
     {"f930", 128},		\
     {"f930", -1},		\
     {"f934", 128},		\
+    {"flat", 256+512},		\
+    {"no-flat", -(256+512)},	\
     {"app-regs", 1024},		\
     {"no-app-regs", -1024},	\
     {"hard-quad-float", 2048},        \
@@ -381,6 +380,15 @@ do								\
 	fixed_regs[3] = 1;					\
 	fixed_regs[4] = 1;					\
       }								\
+    if (TARGET_FLAT)						\
+      {								\
+	/* Let the compiler believe the frame pointer is still	\
+	   %fp, but output it as %i7.  */			\
+	fixed_regs[31] = 1;					\
+	reg_names[FRAME_POINTER_REGNUM] = "%i7";		\
+	/* ??? This is a hack to disable leaf functions.  */	\
+	global_regs[7] = 1;					\
+      }								\
   }								\
 while (0)
 
@@ -447,7 +455,8 @@ extern int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
 extern int leaf_function;
 
 #define FRAME_POINTER_REQUIRED \
-  (! (leaf_function_p () && only_leaf_regs_used ()))
+  (TARGET_FRW ? (current_function_calls_alloca || current_function_varargs) \
+   : ! (leaf_function_p () && only_leaf_regs_used ()))
 
 /* C statement to store the difference between the frame pointer
    and the stack pointer values immediately after the function prologue.
@@ -456,11 +465,11 @@ extern int leaf_function;
    it's not, there's no point in trying to eliminate the
    frame pointer.  If it is a leaf function, we guessed right!  */
 #define INITIAL_FRAME_POINTER_OFFSET(VAR) \
-  ((VAR) = (TARGET_FRW ? sparc_frw_compute_frame_size (get_frame_size ()) \
+  ((VAR) = (TARGET_FRW ? sparc_flat_compute_frame_size (get_frame_size ()) \
 	    : compute_frame_size (get_frame_size (), 1)))
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 30
+#define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
 /* Register in which static-chain is passed to a function.  This must
    not be a register used by the prologue.  */
@@ -577,8 +586,13 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define ORDER_REGS_FOR_LOCAL_ALLOC order_regs_for_local_alloc ()
 
+/* ??? %g7 is not a leaf register to effectively #undef LEAF_REGISTERS when
+   -mflat is used.  Function only_leaf_regs_used will return 0 if a global
+   register is used and is not permitted in a leaf function.  We make %g7
+   a global reg if -mflat and voila.  Since %g7 is a system register and is
+   fixed it won't be used by gcc anyway.  */
 #define LEAF_REGISTERS \
-{ 1, 1, 1, 1, 1, 1, 1, 1,	\
+{ 1, 1, 1, 1, 1, 1, 1, 0,	\
   0, 0, 0, 0, 0, 0, 1, 0,	\
   0, 0, 0, 0, 0, 0, 0, 0,	\
   1, 1, 1, 1, 1, 1, 0, 1,	\
@@ -589,8 +603,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 extern char leaf_reg_remap[];
 #define LEAF_REG_REMAP(REGNO) (leaf_reg_remap[REGNO])
-extern char leaf_reg_backmap[];
-#define LEAF_REG_BACKMAP(REGNO) (leaf_reg_backmap[REGNO])
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS GENERAL_REGS
@@ -939,7 +951,7 @@ do {									\
    to do this is made in regclass.c.  */
 
 #define FUNCTION_PROLOGUE(FILE, SIZE)				\
-  (TARGET_FRW ? sparc_frw_output_function_prologue (FILE, SIZE, leaf_function)\
+  (TARGET_FRW ? sparc_flat_output_function_prologue (FILE, SIZE) \
    : output_function_prologue (FILE, SIZE, leaf_function))
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
@@ -1002,13 +1014,13 @@ extern int current_function_outgoing_args_size;
 extern union tree_node *current_function_decl;
 
 #define FUNCTION_EPILOGUE(FILE, SIZE)				\
-  (TARGET_FRW ? sparc_frw_output_function_epilogue (FILE, SIZE, leaf_function)\
+  (TARGET_FRW ? sparc_flat_output_function_epilogue (FILE, SIZE) \
    : output_function_epilogue (FILE, SIZE, leaf_function))
 
 #define DELAY_SLOTS_FOR_EPILOGUE	\
-  (TARGET_FRW ? sparc_frw_epilogue_delay_slots () : 1)
+  (TARGET_FRW ? sparc_flat_epilogue_delay_slots () : 1)
 #define ELIGIBLE_FOR_EPILOGUE_DELAY(trial, slots_filled)	\
-  (TARGET_FRW ? sparc_frw_eligible_for_epilogue_delay (trial, slots_filled) \
+  (TARGET_FRW ? sparc_flat_eligible_for_epilogue_delay (trial, slots_filled) \
    : eligible_for_epilogue_delay (trial, slots_filled))
 
 /* Output assembler code for a block containing the constant parts
