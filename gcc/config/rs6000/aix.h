@@ -579,7 +579,7 @@ toc_section ()						\
     if (TREE_CODE (DECL) == FUNCTION_DECL) {		\
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL)); \
       len = strlen (name) + 5;				\
-      string = alloca (len) + 1;			\
+      string = alloca (len + 1);			\
       sprintf (string, ".%s[PR]", name);		\
       DECL_SECTION_NAME (DECL) = build_string (len, string); \
     }							\
