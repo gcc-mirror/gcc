@@ -1,5 +1,22 @@
 2003-11-26  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/URL.java
+	(URL): Fixed documentation to be HTML compliant.
+	(getContent): Completed documentation.
+	(getFile): Likewise.
+	(getPath): Likewise.
+	(getAuthority): Likewise.
+	(getHost): Likewise.
+	(getDefaultPort): Likewise.
+	(getProtocol): Likewise.
+	(hashCode): Likewise.
+	(openConnection): Likewise.
+	(openStream): Likewise.
+	(set): Likewise.
+	(getURLStreamHandler): Wrapped lines to fit into our 79 chars rule.
+
+2003-11-26  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetSocketAddress.java
 	(hostname): Made private, added documentation.
 	(addr): Likewise.
