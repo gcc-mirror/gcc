@@ -1,3 +1,7 @@
+Fri Feb 11 02:48:30 2000  Brad Lucier  (lucier@math.purdue.edu)
+
+	* sbitmap.h: Make SBITMAP_ELT_BITS unsigned.
+
 2000-02-11  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 	
 	* config/c4x/c4x.c (fp_zero_operand): Check for CONST_DOUBLE.
