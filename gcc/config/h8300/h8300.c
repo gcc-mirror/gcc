@@ -3198,7 +3198,7 @@ h8300_shift_needs_scratch_p (count, mode)
 
   /* On H8/300H and H8S, count == 8 uses the scratch register.  */
   return (a == SHIFT_LOOP || lr == SHIFT_LOOP || ar == SHIFT_LOOP
-	  || (!TARGET_H8300 && mode == SImode && count == 8));
+	  || (TARGET_H8300H && mode == SImode && count == 8));
 }
 
 /* Emit the assembler code for doing shifts.  */

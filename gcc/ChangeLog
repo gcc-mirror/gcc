@@ -1,3 +1,8 @@
+2003-01-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_shift_needs_scratch_p): Don't
+	request a scratch reg on H8S when the shift count is 8.
+
 2003-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (preferred_la_operand_p):
