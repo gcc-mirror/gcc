@@ -1,4 +1,4 @@
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 29 Aug 1999 <nathan@acm.org>
 
 // We cannot catch an ambiguous base class.
@@ -7,6 +7,8 @@
 // E==D--B==A
 //    +--C==A
 //    +--AA-A
+
+// Special g++ Options: -w
 
 struct A { int m; };
 struct B : virtual A { int m; };
