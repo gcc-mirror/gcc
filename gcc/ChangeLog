@@ -1,3 +1,8 @@
+Fri Jul 10 11:50:43 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* config/i960/i960.c (i960_address_cost): MEMA operands with
+	positive offsets < 4096 are free.
+
 Fri Jul 10 12:34:37 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* config/m68k/m68k.c (const_uint32_operand): Recognize

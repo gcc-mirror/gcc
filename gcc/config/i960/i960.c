@@ -531,6 +531,12 @@ i960_address_cost (x)
   if (GET_CODE (x) == REG)
     return 1;
 #endif
+  /* This is a MEMA operand -- it's free.  */
+  if (GET_CODE (x) == CONST_INT
+      && INTVAL (x) >= 0
+      && INTVAL (x) < 4096)
+    return 0;
+
   if (GET_CODE (x) == PLUS)
     {
       rtx base = XEXP (x, 0);
