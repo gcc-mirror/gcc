@@ -52,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "integrate.h"
+#include "langhooks.h"
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -3913,7 +3914,7 @@ mips_build_builtin_va_list (void)
       tree f_ovfl, f_gtop, f_ftop, f_goff, f_foff, f_res, record;
       tree array, index;
 
-      record = make_node (RECORD_TYPE);
+      record = (*lang_hooks.types.make_type) (RECORD_TYPE);
 
       f_ovfl = build_decl (FIELD_DECL, get_identifier ("__overflow_argptr"),
 			  ptr_type_node);
