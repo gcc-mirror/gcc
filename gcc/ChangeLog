@@ -1,5 +1,9 @@
 1998-01-30  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
+	* dwarf2out.c (dwarf2out_frame_init): Undo last change, so that
+	-fno-sjlj-exceptions works for a target that defines
+	DWARF2_UNWIND_INFO as zero.
+
 	* regmove.c (fixup_match_1): Undo last change which removed some
 	"useless" code, and add a comment explaining this.
 
