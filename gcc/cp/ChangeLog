@@ -1,3 +1,9 @@
+2004-08-19  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c++/17041
+	* pt.c (tsubst_copy, tsubst_copy_and_build): Copy TREE_NO_WARNING
+	from input for MODOP_EXPR.
+
 2004-08-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (dependent_template_p): Fix typo in commment.
