@@ -6001,7 +6001,7 @@ the language standard.  You should not need to use these options yourself.
 This section describes several environment variables that affect how GNU
 CC operates.  Some of them work by specifying directories or prefixes to use
 when searching for various kinds of files. Some are used to specify other
-ascpects of the compilation environment.
+aspects of the compilation environment.
 
 @ifclear INTERNALS
 Note that you can also specify places to search using options such as
@@ -6120,7 +6120,7 @@ Recognize SJIS characters.
 Recognize EUCJP characters.
 @end table
 
-If @code{LANG} is not defined, or if it has some ther value, then the
+If @code{LANG} is not defined, or if it has some other value, then the
 compiler will use mblen and mbtowc as defined by the default locale to
 recognize and translate multibyte characters.
 @end table
