@@ -20,126 +20,118 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-extern int m68hc11_override_options PARAMS((void));
-extern int m68hc11_optimization_options PARAMS((int,int));
-extern void m68hc11_conditional_register_usage PARAMS((void));
-extern int hard_regno_mode_ok PARAMS((int, enum machine_mode));
-extern int m68hc11_hard_regno_rename_ok PARAMS((int, int));
+extern int m68hc11_override_options (void);
+extern int m68hc11_optimization_options (int,int);
+extern void m68hc11_conditional_register_usage (void);
+extern int hard_regno_mode_ok (int, enum machine_mode);
+extern int m68hc11_hard_regno_rename_ok (int, int);
 
-extern int m68hc11_total_frame_size PARAMS((void));
-extern int m68hc11_initial_frame_pointer_offset PARAMS((void));
-extern int m68hc11_initial_elimination_offset PARAMS((int, int));
+extern int m68hc11_total_frame_size (void);
+extern int m68hc11_initial_frame_pointer_offset (void);
+extern int m68hc11_initial_elimination_offset (int, int);
 
-extern void expand_prologue PARAMS((void));
-extern void expand_epilogue PARAMS((void));
+extern void expand_prologue (void);
+extern void expand_epilogue (void);
 
 #ifdef TREE_CODE
-extern void m68hc11_function_arg_advance PARAMS((CUMULATIVE_ARGS*,
-                                                 enum machine_mode,
-                                                 tree,
-                                                 int));
+extern void m68hc11_function_arg_advance (CUMULATIVE_ARGS*,
+                                          enum machine_mode,
+                                          tree,
+                                          int);
 #endif
 
 #ifdef RTX_CODE
-extern void m68hc11_initialize_trampoline PARAMS((rtx, rtx, rtx));
+extern void m68hc11_initialize_trampoline (rtx, rtx, rtx);
 
-extern rtx m68hc11_expand_compare_and_branch PARAMS((enum rtx_code,
-                                                     rtx, rtx, rtx));
-extern enum reg_class preferred_reload_class PARAMS((rtx, enum reg_class));
+extern rtx m68hc11_expand_compare_and_branch (enum rtx_code, rtx, rtx, rtx);
+extern enum reg_class preferred_reload_class (rtx, enum reg_class);
 
-extern int m68hc11_go_if_legitimate_address PARAMS((rtx,
-                                                    enum machine_mode,
-                                                    int));
+extern int m68hc11_go_if_legitimate_address (rtx, enum machine_mode, int);
 
-extern int m68hc11_legitimize_address PARAMS((rtx*, rtx, enum machine_mode));
+extern int m68hc11_legitimize_address (rtx*, rtx, enum machine_mode);
 
-extern void m68hc11_notice_update_cc PARAMS((rtx, rtx));
-extern void m68hc11_notice_keep_cc PARAMS((rtx));
+extern void m68hc11_notice_update_cc (rtx, rtx);
+extern void m68hc11_notice_keep_cc (rtx);
 
-extern void m68hc11_gen_movqi PARAMS((rtx, rtx*));
-extern void m68hc11_gen_movhi PARAMS((rtx, rtx*));
-extern void m68hc11_gen_rotate PARAMS((enum rtx_code, rtx, rtx*));
+extern void m68hc11_gen_movqi (rtx, rtx*);
+extern void m68hc11_gen_movhi (rtx, rtx*);
+extern void m68hc11_gen_rotate (enum rtx_code, rtx, rtx*);
 
-extern void m68hc11_output_swap PARAMS((rtx,rtx*));
+extern void m68hc11_output_swap (rtx, rtx*);
 
-extern int next_insn_test_reg PARAMS((rtx,rtx));
+extern int next_insn_test_reg (rtx, rtx);
 
-extern void print_operand PARAMS((FILE*,rtx,int));
-extern void print_operand_address PARAMS((FILE*,rtx));
+extern void print_operand (FILE*, rtx, int);
+extern void print_operand_address (FILE*, rtx);
 
-extern int m68hc11_reload_operands PARAMS((rtx*));
+extern int m68hc11_reload_operands (rtx*);
 
-extern int dead_register_here PARAMS((rtx, rtx));
+extern int dead_register_here (rtx, rtx);
 
-extern int push_pop_operand_p PARAMS((rtx));
-extern void m68hc11_split_move PARAMS((rtx, rtx, rtx));
-extern void m68hc11_split_compare_and_branch PARAMS((enum rtx_code,
-                                                     rtx, rtx, rtx));
-extern void aux_restore_IX_IY PARAMS((rtx));
-extern void aux_validate_IX_IY PARAMS((rtx));
+extern int push_pop_operand_p (rtx);
+extern void m68hc11_split_move (rtx, rtx, rtx);
+extern void m68hc11_split_compare_and_branch (enum rtx_code,
+                                              rtx, rtx, rtx);
 
-extern rtx m68hc11_gen_lowpart PARAMS((enum machine_mode, rtx));
-extern rtx m68hc11_gen_highpart PARAMS((enum machine_mode, rtx));
+extern rtx m68hc11_gen_lowpart (enum machine_mode, rtx);
+extern rtx m68hc11_gen_highpart (enum machine_mode, rtx);
 
 #ifdef HAVE_MACHINE_MODES
-extern int m68hc11_memory_move_cost PARAMS((enum machine_mode, enum reg_class,
-                                           int));
-extern int m68hc11_register_move_cost PARAMS((enum machine_mode,
-					      enum reg_class, enum reg_class));
+extern int m68hc11_memory_move_cost (enum machine_mode, enum reg_class, int);
+extern int m68hc11_register_move_cost (enum machine_mode,
+                                       enum reg_class, enum reg_class);
 
-extern void m68hc11_emit_libcall PARAMS((const char*, enum rtx_code,
-                                         enum machine_mode, enum machine_mode,
-                                         int, rtx*));
-extern int m68hc11_small_indexed_indirect_p PARAMS((rtx, enum machine_mode));
-extern int m68hc11_symbolic_p PARAMS((rtx, enum machine_mode));
-extern int m68hc11_indirect_p PARAMS((rtx, enum machine_mode));
-extern int go_if_legitimate_address2 PARAMS((rtx, enum machine_mode, int));
+extern void m68hc11_emit_libcall (const char*, enum rtx_code,
+                                  enum machine_mode, enum machine_mode,
+                                  int, rtx*);
+extern int m68hc11_small_indexed_indirect_p (rtx, enum machine_mode);
+extern int m68hc11_symbolic_p (rtx, enum machine_mode);
+extern int m68hc11_indirect_p (rtx, enum machine_mode);
+extern int go_if_legitimate_address2 (rtx, enum machine_mode, int);
 
-extern int reg_or_indexed_operand PARAMS((rtx,enum machine_mode));
-extern int tst_operand PARAMS((rtx,enum machine_mode));
-extern int cmp_operand PARAMS((rtx,enum machine_mode));
-extern int memory_indexed_operand PARAMS((rtx, enum machine_mode));
+extern int reg_or_indexed_operand (rtx,enum machine_mode);
+extern int tst_operand (rtx,enum machine_mode);
+extern int cmp_operand (rtx,enum machine_mode);
+extern int memory_indexed_operand (rtx, enum machine_mode);
 
-extern void m68hc11_split_logical PARAMS((enum machine_mode, int, rtx*));
+extern void m68hc11_split_logical (enum machine_mode, int, rtx*);
 
-extern int m68hc11_register_indirect_p PARAMS((rtx, enum machine_mode));
+extern int m68hc11_register_indirect_p (rtx, enum machine_mode);
 
-extern int symbolic_memory_operand PARAMS((rtx, enum machine_mode));
+extern int symbolic_memory_operand (rtx, enum machine_mode);
 
-extern int memory_reload_operand PARAMS((rtx, enum machine_mode));
-extern int stack_register_operand PARAMS((rtx, enum machine_mode));
-extern int d_register_operand PARAMS((rtx, enum machine_mode));
-extern int hard_addr_reg_operand PARAMS((rtx, enum machine_mode));
-extern int arith_src_operand PARAMS((rtx, enum machine_mode));
-extern int m68hc11_logical_operator PARAMS((rtx, enum machine_mode));
-extern int m68hc11_arith_operator PARAMS((rtx, enum machine_mode));
-extern int m68hc11_non_shift_operator PARAMS((rtx, enum machine_mode));
-extern int m68hc11_shift_operator PARAMS((rtx, enum machine_mode));
-extern int m68hc11_unary_operator PARAMS((rtx, enum machine_mode));
-extern int m68hc11_eq_compare_operator PARAMS((rtx, enum machine_mode));
-extern int non_push_operand PARAMS((rtx, enum machine_mode));
-extern int hard_reg_operand PARAMS((rtx, enum machine_mode));
-extern int soft_reg_operand PARAMS((rtx, enum machine_mode));
-extern int reg_or_some_mem_operand PARAMS((rtx, enum machine_mode));
+extern int memory_reload_operand (rtx, enum machine_mode);
+extern int stack_register_operand (rtx, enum machine_mode);
+extern int d_register_operand (rtx, enum machine_mode);
+extern int hard_addr_reg_operand (rtx, enum machine_mode);
+extern int arith_src_operand (rtx, enum machine_mode);
+extern int m68hc11_logical_operator (rtx, enum machine_mode);
+extern int m68hc11_arith_operator (rtx, enum machine_mode);
+extern int m68hc11_non_shift_operator (rtx, enum machine_mode);
+extern int m68hc11_shift_operator (rtx, enum machine_mode);
+extern int m68hc11_unary_operator (rtx, enum machine_mode);
+extern int m68hc11_eq_compare_operator (rtx, enum machine_mode);
+extern int non_push_operand (rtx, enum machine_mode);
+extern int hard_reg_operand (rtx, enum machine_mode);
+extern int soft_reg_operand (rtx, enum machine_mode);
+extern int reg_or_some_mem_operand (rtx, enum machine_mode);
 
 #if defined TREE_CODE
-extern void m68hc11_init_cumulative_args PARAMS((CUMULATIVE_ARGS*,
-                                                 tree,
-                                                 rtx));
+extern void m68hc11_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx);
 
-extern rtx m68hc11_function_arg PARAMS((const CUMULATIVE_ARGS* ,
-                                        enum machine_mode,
-                                        tree, int));
-extern int m68hc11_function_arg_pass_by_reference PARAMS((const CUMULATIVE_ARGS*,
-                                                          enum machine_mode,
-                                                          tree,
-                                                          int));
-extern int m68hc11_function_arg_padding PARAMS((enum machine_mode, tree));
+extern rtx m68hc11_function_arg (const CUMULATIVE_ARGS* ,
+                                 enum machine_mode,
+                                 tree, int);
+extern int m68hc11_function_arg_pass_by_reference (const CUMULATIVE_ARGS*,
+                                                   enum machine_mode,
+                                                   tree,
+                                                   int);
+extern int m68hc11_function_arg_padding (enum machine_mode, tree);
 
-extern void m68hc11_function_epilogue PARAMS((FILE*,int));
+extern void m68hc11_function_epilogue (FILE*,int);
 
-extern int m68hc11_is_far_symbol PARAMS((rtx));
-extern int m68hc11_is_trap_symbol PARAMS((rtx));
+extern int m68hc11_is_far_symbol (rtx);
+extern int m68hc11_is_trap_symbol (rtx);
 
 #endif /* TREE_CODE */
 
