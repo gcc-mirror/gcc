@@ -1,3 +1,8 @@
+2005-02-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* doc/extend.texi (5.24 Declaring Attributes of Functions)<noreturn>:
+	Clarify that the alternative way doesn't work in GNU C++.
+
 2005-02-25  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* tree-ssa-dom.c (simple_iv_increment_p): New function.
