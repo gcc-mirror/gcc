@@ -4703,7 +4703,8 @@ push_decl_namespace (decl)
 {
   if (TREE_CODE (decl) != NAMESPACE_DECL)
     decl = decl_namespace (decl);
-  decl_namespace_list = tree_cons (decl, NULL_TREE, decl_namespace_list);
+  decl_namespace_list = tree_cons (ORIGINAL_NAMESPACE (decl),
+                                   NULL_TREE, decl_namespace_list);
 }
 
 void

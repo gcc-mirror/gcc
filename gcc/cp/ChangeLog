@@ -1,5 +1,9 @@
 2000-07-03  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl2.c (push_decl_namespace): Push the original namespace.
+
+2000-07-03  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* pt.c (instantiate_class_template): Set CLASSTYPE_VBASECLASSES.
 	* semantics.c (begin_class_definition): Clear it.
 
