@@ -1,3 +1,15 @@
+2004-06-01  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/ObjectStreamField.java: Cleaned up imports.
+
+2004-06-01  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/ObjectStreamField.java: Style and javadoc cleanup.
+      
+2004-06-01  Mark Wielaard  <mark@klomp.org>
+
+	* java/io/Writer.java (Writer(Object)): Fixed API doc.
+
 2004-06-01  Michael Koch  <konqueror@gmx.de>
 
 	* java/security/Security.java

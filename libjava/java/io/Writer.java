@@ -76,7 +76,7 @@ public abstract class Writer
    * on the specified <code>Object</code>.
    *
    * @param lock The <code>Object</code> to use for synchronizing critical
-   *             sections. Must be not be null.
+   *             sections. Must not be null.
    */
   protected Writer(Object lock)
   {
