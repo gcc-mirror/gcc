@@ -171,6 +171,8 @@ public:
 // type_info for a general class.
 
 // Kludge, kludge, kludge.
+#include "tconfig.h"
+
 #if BITS_PER_UNIT == 8
 typedef int myint32 __attribute__ ((mode (SI)));
 #elif BITS_PER_UNIT == 16
@@ -428,6 +430,6 @@ void *__dynamic_cast (const void *src_ptr,    // object started from
     // -2: src_type is not a public base of dst_type
     // -3: src_type is a multiple public non-virtual base of dst_type
 
-}; // namespace std
+} // namespace std
 
 #endif

@@ -1,3 +1,8 @@
+2000-01-31  Jason Merrill  <jason@casey.cygnus.com>
+
+	* tinfo.h (old abi): #include "tconfig.h".
+	* tinfo.cc (convert_to_base): Move into old abi section.
+
 2000-01-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (BINFO_VIRTUALS): Tweak documentation.
