@@ -1,5 +1,11 @@
 2002-03-11  Phil Edwards  <pme@gcc.gnu.org>
 
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-list-sourcefiles):
+	New function.  Build the list of tests to run in testsuite_files.
+	* testsuite/libstdc++-v3.dg/dg.exp:  Use it.
+
+2002-03-11  Phil Edwards  <pme@gcc.gnu.org>
+
 	* testsuite/21_strings/capacity.cc:  Only explicitly instantiate on
 	platforms with no weak support.
 	* testsuite/27_io/ios_init.cc:  Likewise.
