@@ -1,3 +1,7 @@
+2000-10-05  Richard Henderson  <rth@cygnus.com>
+
+	* decl.c (finish_chill_function): Don't init can_reach_end.
+
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* decl.c, timing.c: Include defaults.h if not already included.
