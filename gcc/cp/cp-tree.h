@@ -3126,7 +3126,7 @@ typedef enum tmpl_spec_kind {
 
 /* The various kinds of access.  BINFO_ACCESS depends on these being
    two bit quantities.  The numerical values are important; they are
-   used to initialize RTTI data structures, so chaning them changes
+   used to initialize RTTI data structures, so changing them changes
    the ABI.  */
 typedef enum access_kind {
   ak_none = 0,             /* Inaccessible.  */
