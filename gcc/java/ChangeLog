@@ -1,3 +1,8 @@
+2002-10-01  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* jcf-dump.c (print_constant, case CONSTANT_float): Don't fall
+	foul of type-based aliasing.
+
 2002-09-30  Anthony Green  <green@redhat.com>
 
 	* gcj.texi (Invoking jv-scan): Fix texinfo.
