@@ -1,5 +1,9 @@
 2002-06-05  Eric Christopher  <echristo@redhat.com>
 
+	* Makefile.in: Remove missed halfpic bits.
+
+2002-06-05  Eric Christopher  <echristo@redhat.com>
+
 	* toplev.c: Remove half-pic.
 	* config/mips/mips.c: Ditto.
 	* config/mips/mips.h: Ditto. Remove unused defines.
