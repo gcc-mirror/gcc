@@ -401,8 +401,7 @@ public class Throwable implements Serializable
    */
   private static class StaticData
   {
-
-    final static String nl;
+    static final String nl;
 
     static
     {

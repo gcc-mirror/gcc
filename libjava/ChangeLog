@@ -1,3 +1,14 @@
+2004-11-06  Michael Koch  <konqueror@gmx.de>
+
+	* java/lang/StringBuffer.java,
+	java/lang/Throwable.java,
+	java/security/spec/DSAParameterSpec.java,
+	java/util/zip/ZipEntry.java,
+	java/util/zip/ZipFile.java,
+	java/util/zip/ZipInputStream.java,
+	java/util/zip/ZipOutputStream.java:
+	Removed redundant and reordered modifiers.
+
 2004-11-06  Mattias Rehnberg  <Mattias.Rehnberg@home.se>
 
 	* java/io/Vector.java
