@@ -1,3 +1,7 @@
+2002-05-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* flow.c (calculate_global_regs_live): Queue blocks in program order.
+
 2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* doc/install.texi (Configuration): Document PWDCMD.
