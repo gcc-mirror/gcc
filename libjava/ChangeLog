@@ -1,5 +1,9 @@
 1999-09-24  Tom Tromey  <tromey@cygnus.com>
 
+	* include/sparc-signal.h (SIGNAL_HANDLER): Third argument now a
+	`void *'.
+	(MAKE_THROW_FRAME): Cast third argument back to `ucontext_t *'.
+
 	Fix for PR java.util/47:
 	* configure, include/config.h: Rebuilt.
 	* configure.in: Don't look for ctime or ctime_r.
