@@ -2266,10 +2266,13 @@ canon_hash (x, mode)
 	   failure to do so leads to failure to simplify 0<100 type of
 	   conditionals.
 
-	   On all machines, we can't record any global registers.  */
+	   On all machines, we can't record any global registers.  
+	   Nor should we record any register that is in a small
+	   class, as defined by CLASS_LIKELY_SPILLED_P.  */
 
 	if (regno < FIRST_PSEUDO_REGISTER
 	    && (global_regs[regno]
+		|| CLASS_LIKELY_SPILLED_P (REGNO_REG_CLASS (regno))
 		|| (SMALL_REGISTER_CLASSES
 		    && ! fixed_regs[regno]
 		    && regno != FRAME_POINTER_REGNUM

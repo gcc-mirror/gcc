@@ -1,3 +1,9 @@
+2001-07-02  Geoffrey Keating  <geoffk@redhat.com>
+
+	* cse.c (canon_hash): Don't register registers in very small
+	register classes, as extending their lifetime might cause
+	reload to fail.
+
 Mon Jul  2 23:14:00 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (try_redirect_by_replacing_jump): Remove cc0 setter.
