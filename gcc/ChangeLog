@@ -1,3 +1,12 @@
+2001-12-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* langhooks.h (struct lang_hooks): Add staticp.
+	* langhooks-def.h (lhd_staticp, LANG_HOOKS_STATICP): New.
+	(LANG_HOOKS_INITIALIZER): Add LANG_HOOKS_STATICP.
+	* langhooks.c (lhd_staticp): New function.
+	* tree.c (staticp): Call lang_hooks.staticp for language-specific
+	tree codes.
+
 2001-12-04  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppspec.c (lang_specific_driver): Set is_cpp_driver.

@@ -123,6 +123,9 @@ struct lang_hooks
      parameter.  */
   int (*safe_from_p) PARAMS ((rtx, tree));
 
+  /* Hook called by staticp for language-specific tree codes.  */
+  int (*staticp) PARAMS ((tree));
+
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;
 

@@ -77,6 +77,15 @@ lhd_safe_from_p (x, exp)
   return 1;
 }
 
+/* Called from staticp.  */
+
+int
+lhd_staticp (exp)
+     tree exp;
+{
+  return 0;
+}
+
 /* Called when -dy is given on the command line.  */
 
 void
