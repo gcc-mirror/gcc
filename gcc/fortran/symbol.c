@@ -369,6 +369,7 @@ check_conflict (symbol_attribute * attr, const char * name, locus * where)
 	{
 	case PROC_ST_FUNCTION:
 	  conf2 (in_common);
+	  conf2 (dummy);
 	  break;
 
 	case PROC_MODULE:
