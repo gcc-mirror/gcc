@@ -1,3 +1,8 @@
+2003-06-13  Richard Henderson  <rth@redhat.com>
+
+        * com.c (ffecom_sym_transform_): Install FFEINFO_whereGLOBAL
+        symbols in the global binding level.
+
 Sun Jun  8 15:42:09 2003  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in (F77_OBJS, f77.mostlyclean, f/com.o): Update.
