@@ -1,5 +1,10 @@
 2002-11-12  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.c (tiny_constant_address_p): Parenthesize
+	expressions appropriately.
+
+2002-11-12  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* gthr-win32.h: Fix formatting.
 
 2002-11-12  Kazu Hirata  <kazu@cs.umass.edu>

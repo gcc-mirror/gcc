@@ -3909,7 +3909,7 @@ h8300_tiny_constant_address_p (x)
 
   return (0
 	  || (TARGET_H8300H
-	      && IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4))
+	      && (IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4)))
 	  || (TARGET_H8300S
-	      && IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4)));
+	      && (IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4))));
 }
