@@ -32,15 +32,22 @@ verify_demangle("_Z3fooIA6_KiEvA9_KT_rVPrS4_",
 		"void foo<int const [6]>(int const [9][6], int const restrict (* volatile restrict) [9][6])");
 // 2003/11/12, libstdc++/12947
 verify_demangle("_Z1fILi5E1AEvN1CIXqugtT_Li0ELi1ELi2EEE1qE",
-                "void f<5, A>(C<((5) > (0)) ? (1) : (2)>::q)");
+                "void f<5, A>(C<(((5) > (0))) ? (1) : (2)>::q)");
 verify_demangle("_Z1fILi5EEvN1AIXcvimlT_Li22EEE1qE",
                 "void f<5>(A<(int)((5) * (22))>::q)");
 verify_demangle("_Z1fPFYPFiiEiE",
-                "f(int (*)(int) (*) [extern \"C\"] (int))");
+                "f(int (*(*) [extern \"C\"] (int))(int))");
 verify_demangle("_Z1fI1XENT_1tES2_",
                 "X::t f<X>(X::t)");
 verify_demangle("_Z1fILi5E1AEvN1CIXstN1T1tEEXszsrS2_1tEE1qE",
                 "void f<5, A>(C<sizeof (T::t), sizeof (T::t)>::q)");
+// 2003/12/03, libstdc++/13045
+verify_demangle("_Z1fILi1ELc120EEv1AIXplT_cviLd4028ae147ae147aeEEE",
+                "void f<1, (char)120>(A<(1) + ((int)((double)[4028ae147ae147ae]))>)");
+verify_demangle("_Z1fILi1ELc120EEv1AIXplT_cviLf3f800000EEE",
+                "void f<1, (char)120>(A<(1) + ((int)((float)[3f800000]))>)");
+verify_demangle("_Z9hairyfuncM1YKFPVPFrPA2_PM1XKFKPA3_ilEPcEiE",
+                "hairyfunc(int (* const (X::** (* restrict (* volatile* (Y::*)(int) const)(char*)) [2])(long) const) [3])");
 
   return 0;
 }

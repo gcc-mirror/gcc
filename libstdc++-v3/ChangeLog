@@ -1,3 +1,33 @@
+2003-12-05  Carlo Wood  <carlo@alinoe.com>
+
+	PR libstdc++/13045
+	* bits/demangle.h
+	namespace __gnu_cxx::demangler
+	(enum substitution_nt): Removed trailing comma.
+	(implementation_details): Added.
+	(session<Allocator>::M_implementation_details): Added.
+	(session<Allocator>::session): Pass implementation_details.
+	(session<Allocator>::decode_encoding): Same.
+	(session<Allocator>::decode_real): Added.
+	(_GLIBCXX_DEMANGLER_STYLE_VOID _GLIBCXX_DEMANGLER_STYLE_LITERAL
+	_GLIBCXX_DEMANGLER_STYLE_LITERAL_INT
+	_GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
+	_GLIBCXX_DEMANGLER_STYLE_SIZEOF_TYPENAME): Replaced with
+	implementation_details equivalent.
+	(session<Allocator>::decode_expression):
+	Use M_implementation_details instead of macros. Add extra parentheses
+	around 'larger than' operator in expressions in template arguments.
+	(session<Allocator>::decode_bare_function_type): Idem.
+	(session<Allocator>::decode_literal):
+	Idem, and call decode_real for floating literals.
+	(session<Allocator>::decode_type_with_postfix): Put the postfix
+	of the return type of (member) functions after the function
+	instead of after the return type.  Also, put a space after the
+	prefix of qualified function pointers: "int (* const<space>".
+	* src/demangle.cc: include most dependent header file first.
+	* testsuite/demangle/regression/cw-16.cc: Updated two
+	and added three tests.
+
 2003-12-04  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/13284
