@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
-   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -26,5 +26,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef LINK_SPEC
 #define LINK_SPEC  \
-  "-G 8 -O1 %{!shared:-init __main} %{static:-non_shared}
+  "-G 8 -O1 %{!shared:-init __main} %{static:-non_shared} \
    %{!static:%{shared:-shared} %{!shared:-call_shared}}"
