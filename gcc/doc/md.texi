@@ -701,8 +701,8 @@ as follows, having the output control string start with a @samp{@@}:
 @end ifset
 
 @c Most of this node appears by itself (in a different place) even
-@c when the INTERNALS flag is clear.  Passages that require the full
-@c manual's context are conditionalized to appear only in the full manual.
+@c when the INTERNALS flag is clear.  Passages that require the internals
+@c manual's context are conditionalized to appear only in the internals manual.
 @ifset INTERNALS
 @node Constraints
 @section Operand Constraints
@@ -5075,7 +5075,6 @@ units.  These insns will cause a potential conflict for the second unit
 used during their execution and there is no way of representing that
 conflict.  We welcome any examples of how function unit conflicts work
 in such processors and suggestions for their representation.
-@end ifset
 
 @node Conditional Execution
 @section Conditional Execution
@@ -5208,3 +5207,4 @@ You could write:
 
 The constants that are defined with a define_constant are also output
 in the insn-codes.h header file as #defines.
+@end ifset

@@ -3239,21 +3239,12 @@ restore frame pointers; it also makes an extra register available
 in many functions.  @strong{It also makes debugging impossible on
 some machines.}
 
-@ifset INTERNALS
-On some machines, such as the VAX, this flag has no effect, because
-the standard calling sequence automatically handles the frame pointer
-and nothing is saved by pretending it doesn't exist.  The
-machine-description macro @code{FRAME_POINTER_REQUIRED} controls
-whether a target machine supports this flag.  @xref{Registers}.
-@end ifset
-@ifclear INTERNALS
 On some machines, such as the VAX, this flag has no effect, because
 the standard calling sequence automatically handles the frame pointer
 and nothing is saved by pretending it doesn't exist.  The
 machine-description macro @code{FRAME_POINTER_REQUIRED} controls
 whether a target machine supports this flag.  @xref{Registers,,Register
-Usage, gcc.info, Using and Porting GCC}.
-@end ifclear
+Usage, gccint, GNU Compiler Collection (GCC) Internals}.
 
 @item -foptimize-sibling-calls
 @opindex foptimize-sibling-calls
@@ -3624,7 +3615,6 @@ file  The information in this data file is very dependent on the
 structure of the generated code, so you must use the same source code
 and the same optimization options for both compilations.
 
-@ifset INTERNALS
 With @option{-fbranch-probabilities}, GCC puts a @samp{REG_EXEC_COUNT}
 note on the first instruction of each basic block, and a
 @samp{REG_BR_PROB} note on each @samp{JUMP_INSN} and @samp{CALL_INSN}.
@@ -3632,7 +3622,6 @@ These can be used to improve optimization.  Currently, they are only
 used in one place: in @file{reorg.c}, instead of guessing which path a
 branch is mostly to take, the @samp{REG_BR_PROB} values are used to
 exactly determine which path is taken more often.
-@end ifset
 
 @item -fno-guess-branch-probability
 @opindex fno-guess-branch-probability
@@ -3689,13 +3678,11 @@ int f() @{
 @}
 @end example
 
-@ifset INTERNALS
 Every language that wishes to perform language-specific alias analysis
 should define a function that computes, given an @code{tree}
 node, an alias set for the node.  Nodes in different alias sets are not
 allowed to alias.  For an example, see the C front-end function
 @code{c_get_alias_set}.
-@end ifset
 
 @item -falign-functions
 @itemx -falign-functions=@var{n}
@@ -4276,20 +4263,16 @@ One of the standard libraries bypassed by @option{-nostdlib} and
 @option{-nodefaultlibs} is @file{libgcc.a}, a library of internal subroutines
 that GCC uses to overcome shortcomings of particular machines, or special
 needs for some languages.
-@ifset INTERNALS
-(@xref{Interface,,Interfacing to GCC Output}, for more discussion of
-@file{libgcc.a}.)
-@end ifset
-@ifclear INTERNALS
-(@xref{Interface,,Interfacing to GCC Output,gcc.info,Porting GCC},
+(@xref{Interface,,Interfacing to GCC Output,gccint,GNU Compiler
+Collection (GCC) Internals},
 for more discussion of @file{libgcc.a}.)
-@end ifclear
 In most cases, you need @file{libgcc.a} even when you want to avoid
 other standard libraries.  In other words, when you specify @option{-nostdlib}
 or @option{-nodefaultlibs} you should usually specify @option{-lgcc} as well.
 This ensures that you have no unresolved references to internal GCC
 library subroutines.  (For example, @samp{__main}, used to ensure C++
-constructors will be called; @pxref{Collect2,,@command{collect2}}.)
+constructors will be called; @pxref{Collect2,,@code{collect2}, gccint,
+GNU Compiler Collection (GCC) Internals}.)
 
 @item -s
 @opindex s
@@ -5059,11 +5042,9 @@ Some configurations of the compiler also support additional special
 options, usually for compatibility with other compilers on the same
 platform.
 
-@ifset INTERNALS
 These options are defined by the macro @code{TARGET_SWITCHES} in the
 machine description.  The default for the options is also defined by
 that macro, which enables you to change the defaults.
-@end ifset
 
 @menu
 * M680x0 Options::
@@ -7460,12 +7441,10 @@ depends on the target gcc was configured for, but commonly is either
 @samp{_flush_func} or @samp{__cpu_flush}.
 @end table
 
-@ifset INTERNALS
 These options are defined by the macro
 @code{TARGET_SWITCHES} in the machine description.  The default for the
 options is also defined by that macro, which enables you to change the
 defaults.
-@end ifset
 
 @node i386 and x86-64 Options
 @subsection Intel 386 and AMD x86-64 Options
@@ -10099,20 +10078,12 @@ operates.  Some of them work by specifying directories or prefixes to use
 when searching for various kinds of files.  Some are used to specify other
 aspects of the compilation environment.
 
-@ifclear INTERNALS
 Note that you can also specify places to search using options such as
 @option{-B}, @option{-I} and @option{-L} (@pxref{Directory Options}).  These
 take precedence over places specified using environment variables, which
 in turn take precedence over those specified by the configuration of GCC@.
-
-@end ifclear
-@ifset INTERNALS
-Note that you can also specify places to search using options such as
-@option{-B}, @option{-I} and @option{-L} (@pxref{Directory Options}).  These
-take precedence over places specified using environment variables, which
-in turn take precedence over those specified by the configuration of GCC@.
-@xref{Driver}.
-@end ifset
+@xref{Driver,, Controlling the Compilation Driver @file{gcc}, gccint,
+GNU Compiler Collection (GCC) Internals}.
 
 @table @env
 @item LANG

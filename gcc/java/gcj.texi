@@ -154,7 +154,7 @@ and the Info entries for @file{gcj} and @file{gcc}.
 
 As @code{gcj} is just another front end to @code{gcc}, it supports many
 of the same options as gcc.  @xref{Option Summary, , Option Summary,
-gcc, Using the GNU Compiler Collection}.  This manual only documents the
+gcc, Using the GNU Compiler Collection (GCC)}.  This manual only documents the
 options specific to @code{gcj}.
 
 @c man end

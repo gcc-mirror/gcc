@@ -2238,52 +2238,68 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 docdir = $(srcdir)/doc
 
 doc: $(BUILD_INFO) $(GENERATED_MANPAGES) gccbug
-info: $(docdir)/cpp.info $(docdir)/gcc.info lang.info $(docdir)/cppinternals.info
+info: $(docdir)/cpp.info $(docdir)/gcc.info $(docdir)/gccint.info lang.info $(docdir)/cppinternals.info
 
 $(docdir)/cpp.info: $(docdir)/cpp.texi $(docdir)/include/fdl.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/cpp.info doc/cpp.texi
 
-$(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/extend.texi \
-	 $(docdir)/install-old.texi  $(docdir)/invoke.texi $(docdir)/md.texi \
-	 $(docdir)/c-tree.texi $(docdir)/rtl.texi $(docdir)/tm.texi \
-	 $(docdir)/gcov.texi $(docdir)/contrib.texi $(docdir)/objc.texi \
-	 $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/funding.texi $(docdir)/bugreport.texi \
-	 $(docdir)/contribute.texi $(docdir)/frontends.texi \
-	 $(docdir)/service.texi $(docdir)/standards.texi \
-	 $(docdir)/trouble.texi $(docdir)/vms.texi $(docdir)/configterms.texi \
-	 $(docdir)/fragments.texi $(docdir)/hostconfig.texi \
-	 $(docdir)/gnu.texi $(docdir)/interface.texi \
-	 $(docdir)/makefile.texi $(docdir)/passes.texi \
-	 $(docdir)/portability.texi $(docdir)/collect2.texi \
-	 $(docdir)/configfiles.texi $(docdir)/headerdirs.texi
+$(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
+	 $(docdir)/frontends.texi $(docdir)/standards.texi \
+	 $(docdir)/invoke.texi $(docdir)/extend.texi $(docdir)/md.texi \
+	 $(docdir)/objc.texi $(docdir)/gcov.texi $(docdir)/trouble.texi \
+	 $(docdir)/bugreport.texi $(docdir)/service.texi \
+	 $(docdir)/contribute.texi $(docdir)/vms.texi \
+	 $(docdir)/include/funding.texi $(docdir)/gnu.texi \
+	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
+	 $(docdir)/contrib.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gcc.info doc/gcc.texi
+
+$(docdir)/gccint.info: $(docdir)/gccint.texi \
+	 $(docdir)/include/gcc-common.texi $(docdir)/contribute.texi \
+	 $(docdir)/makefile.texi $(docdir)/configterms.texi \
+	 $(docdir)/portability.texi $(docdir)/interface.texi \
+	 $(docdir)/passes.texi $(docdir)/c-tree.texi \
+	 $(docdir)/rtl.texi $(docdir)/md.texi $(docdir)/tm.texi \
+	 $(docdir)/hostconfig.texi $(docdir)/fragments.texi \
+	 $(docdir)/configfiles.texi $(docdir)/collect2.texi \
+	 $(docdir)/headerdirs.texi $(docdir)/include/funding.texi \
+	 $(docdir)/gnu.texi $(docdir)/include/gpl.texi \
+	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/gccint.info doc/gccint.texi
 
 $(docdir)/cppinternals.info: $(docdir)/cppinternals.texi
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -I doc/include -o doc/cppinternals.info \
 		doc/cppinternals.texi
 
-dvi: gcc.dvi cpp.dvi lang.dvi cppinternals.dvi
+dvi: gcc.dvi gccint.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 # This works with GNU Make's default rule.
 cpp.dvi: $(docdir)/cpp.texi $(docdir)/include/fdl.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cpp.texi
 
-gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install-old.texi \
-	 $(docdir)/invoke.texi $(docdir)/md.texi $(docdir)/c-tree.texi \
-	 $(docdir)/rtl.texi $(docdir)/tm.texi $(docdir)/gcov.texi \
-	 $(docdir)/contrib.texi $(docdir)/objc.texi \
-	 $(docdir)/include/fdl.texi $(docdir)/include/gpl.texi \
-	 $(docdir)/include/funding.texi $(docdir)/bugreport.texi \
-	 $(docdir)/contribute.texi $(docdir)/frontends.texi \
-	 $(docdir)/service.texi $(docdir)/standards.texi \
-	 $(docdir)/trouble.texi $(docdir)/vms.texi $(docdir)/configterms.texi \
-	 $(docdir)/fragments.texi $(docdir)/hostconfig.texi \
-	 $(docdir)/gnu.texi $(docdir)/interface.texi \
-	 $(docdir)/makefile.texi $(docdir)/passes.texi \
-	 $(docdir)/portability.texi $(docdir)/collect2.texi \
-	 $(docdir)/configfiles.texi $(docdir)/headerdirs.texi
+gcc.dvi: $(docdir)/gcc.texi $(docdir)/include/gcc-common.texi \
+	 $(docdir)/frontends.texi $(docdir)/standards.texi \
+	 $(docdir)/invoke.texi $(docdir)/extend.texi $(docdir)/md.texi \
+	 $(docdir)/objc.texi $(docdir)/gcov.texi $(docdir)/trouble.texi \
+	 $(docdir)/bugreport.texi $(docdir)/service.texi \
+	 $(docdir)/contribute.texi $(docdir)/vms.texi \
+	 $(docdir)/include/funding.texi $(docdir)/gnu.texi \
+	 $(docdir)/include/gpl.texi $(docdir)/include/fdl.texi \
+	 $(docdir)/contrib.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gcc.texi
+
+gccint.dvi: $(docdir)/gccint.texi \
+	 $(docdir)/include/gcc-common.texi $(docdir)/contribute.texi \
+	 $(docdir)/makefile.texi $(docdir)/configterms.texi \
+	 $(docdir)/portability.texi $(docdir)/interface.texi \
+	 $(docdir)/passes.texi $(docdir)/c-tree.texi \
+	 $(docdir)/rtl.texi $(docdir)/md.texi $(docdir)/tm.texi \
+	 $(docdir)/hostconfig.texi $(docdir)/fragments.texi \
+	 $(docdir)/configfiles.texi $(docdir)/collect2.texi \
+	 $(docdir)/headerdirs.texi $(docdir)/include/funding.texi \
+	 $(docdir)/gnu.texi $(docdir)/include/gpl.texi \
+	 $(docdir)/include/fdl.texi $(docdir)/contrib.texi
+	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/gccint.texi
 
 cppinternals.dvi: $(docdir)/cppinternals.texi
 	$(TEXI2DVI) -I $(docdir) -I $(docdir)/include $(docdir)/cppinternals.texi
@@ -2468,7 +2484,7 @@ maintainer-clean:
 	-rm -f c-parse.y c-parse.c c-parse.output TAGS
 	-rm -f cpp.??s cpp.*aux
 	-rm -f gcc.??s gcc.*aux
-	-rm -f $(docdir)/cpp.info* $(docdir)/gcc.info*
+	-rm -f $(docdir)/cpp.info* $(docdir)/gcc.info* $(docdir)/gccint.info*
 	-rm -f $(docdir)/cppinternals.info*
 	-rm -f $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1
 	-rm -f $(docdir)/fsf-funding.7 $(docdir)/gfdl.7 $(docdir)/gpl.7
@@ -2614,17 +2630,17 @@ install-driver: installdirs xgcc$(exeext)
 # to do the install.
 install-info: doc installdirs lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-rm -f $(infodir)/cppinternals.info*
+	-rm -f $(infodir)/cppinternals.info* $(infodir)/gccint.info*
 	if [ -f $(docdir)/gcc.info ]; then \
 	  for f in $(docdir)/cpp.info* $(docdir)/gcc.info* \
-		$(docdir)/cppinternals.info*; do \
+		$(docdir)/cppinternals.info* $(docdir)/gccint.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
 	  done; \
 	else true; fi
 	-if $(SHELL) -c 'install-info --version' >/dev/null 2>&1; then \
 	  if [ -f $(infodir)/dir ] ; then \
-	    for f in cpp.info gcc.info cppinternals.info; do \
+	    for f in cpp.info gcc.info gccint.info cppinternals.info; do \
 		if [ -f $(infodir)/$$f ]; then \
 		  install-info --dir-file=$(infodir)/dir $(infodir)/$$f; \
 		else true; fi; \
@@ -2632,7 +2648,7 @@ install-info: doc installdirs lang.install-info
 	  else true; fi; \
 	else true; fi;
 	-chmod a-x $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-chmod a-x $(infodir)/cppinternals.info*
+	-chmod a-x $(infodir)/cppinternals.info* $(infodir)/gccint.info*
 
 # Install the man pages.
 install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
@@ -2776,7 +2792,7 @@ uninstall: intl.uninstall lang.uninstall $(UNINSTALL_CPP)
 	-rm -rf $(man1dir)/protoize$(man1ext)
 	-rm -rf $(man1dir)/unprotoize$(man1ext)
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
-	-rm -f $(infodir)/cppinternals.info*
+	-rm -f $(infodir)/cppinternals.info* $(infodir)/gccint.info*
 #
 # These targets are for the dejagnu testsuites. The file site.exp
 # contains global variables that all the testsuites will use.

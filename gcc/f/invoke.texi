@@ -68,8 +68,8 @@ See the Info entry for @file{g77}, or
 
 The @command{g77} command supports all the options supported by the
 @command{gcc} command.
-@xref{Invoking GCC,,GNU CC Command Options,gcc,Using and Porting GNU CC},
-for information
+@xref{Invoking GCC,,GCC Command Options,gcc,Using the GNU Compiler
+Collection (GCC)}, for information
 on the non-Fortran-specific aspects of the @command{gcc} command (and,
 therefore, the @command{g77} command).
 
@@ -254,7 +254,8 @@ For any given input file, the file name suffix determines what kind of
 program is contained in the file---that is, the language in which the
 program is written is generally indicated by the suffix.
 Suffixes specific to GNU Fortran are listed below.
-@xref{Overall Options,,gcc,Using and Porting GNU CC}, for
+@xref{Overall Options,,Options Controlling the Kind of
+Output,gcc,Using the GNU Compiler Collection (GCC)}, for
 information on suffixes recognized by GNU CC.
 
 @table @gcctabopt
@@ -350,7 +351,7 @@ line is a non-comment line of important code!
 @emph{Note:} The @option{-traditional} and @option{-undef} flags are supplied
 to @command{cpp} by default, to help avoid unpleasant surprises.
 @xref{Preprocessor Options,,Options Controlling the Preprocessor,
-gcc,Using and Porting GNU CC}.
+gcc,Using the GNU Compiler Collection (GCC)}.
 This means that ANSI C preprocessor features (such as the @samp{#}
 operator) aren't available, and only variables in the C reserved
 namespace (generally, names with a leading underscore) are liable to
@@ -443,7 +444,7 @@ UNIX @command{f77} implementations and @command{f2c}
 @end table
 
 @xref{Overall Options,,Options Controlling the Kind of Output,
-gcc,Using and Porting GNU CC}, for information
+gcc,Using the GNU Compiler Collection (GCC)}, for information
 on more options that control the overall operation of the @command{gcc} command
 (and, by extension, the @command{g77} command).
 
@@ -1337,7 +1338,8 @@ for certain configurations).
 @end table
 
 @xref{Warning Options,,Options to Request or Suppress Warnings,
-gcc,Using and Porting GNU CC}, for information on more options offered
+gcc,Using the GNU Compiler Collection (GCC)}, for information on more
+options offered
 by the GBE shared by @command{g77} @command{gcc} and other GNU compilers.
 
 Some of these have no effect when compiling programs written in Fortran:
@@ -1399,8 +1401,9 @@ Produce debugging information in the operating system's native format
 information.
 @end table
 
-@xref{Debugging Options,,Options for Debugging Your Program or GNU CC,
-gcc,Using and Porting GNU CC}, for more information on debugging options.
+@xref{Debugging Options,,Options for Debugging Your Program or GCC,
+gcc,Using the GNU Compiler Collection (GCC)}, for more information on
+debugging options.
 
 @node Optimize Options
 @section Options That Control Optimization
@@ -1628,7 +1631,7 @@ non-Fortran code that benefits when they are
 @end table
 
 @xref{Optimize Options,,Options That Control Optimization,
-gcc,Using and Porting GNU CC}, for more information on options
+gcc,Using the GNU Compiler Collection (GCC)}, for more information on options
 to optimize the generated machine code.
 
 @node Preprocessor Options
@@ -1642,7 +1645,8 @@ These options control the C preprocessor, which is run on each C source
 file before actual compilation.
 
 @xref{Preprocessor Options,,Options Controlling the Preprocessor,
-gcc,Using and Porting GNU CC}, for information on C preprocessor options.
+gcc,Using the GNU Compiler Collection (GCC)}, for information on C
+preprocessor options.
 
 @cindex INCLUDE directive
 @cindex directive, INCLUDE
@@ -1710,7 +1714,8 @@ Also note that the general behavior of @option{-I} and
 looking for @file{header.gcc} files and other such things.
 
 @xref{Directory Options,,Options for Directory Search,
-gcc,Using and Porting GNU CC}, for information on the @option{-I} option.
+gcc,Using the GNU Compiler Collection (GCC)}, for information on the
+@option{-I} option.
 @end table
 
 @node Code Gen Options
@@ -2131,7 +2136,7 @@ to it users.)
 @end table
 
 @xref{Code Gen Options,,Options for Code Generation Conventions,
-gcc,Using and Porting GNU CC}, for information on more options
+gcc,Using the GNU Compiler Collection (GCC)}, for information on more options
 offered by the GBE
 shared by @command{g77} @command{gcc} and other GNU compilers.
 
@@ -2180,8 +2185,8 @@ GNU Fortran currently does not make use of any environment
 variables to control its operation above and beyond those
 that affect the operation of @command{gcc}.
 
-@xref{Environment Variables,,Environment Variables Affecting GNU CC,
-gcc,Using and Porting GNU CC}, for information on environment
+@xref{Environment Variables,,Environment Variables Affecting GCC,
+gcc,Using the GNU Compiler Collection (GCC)}, for information on environment
 variables.
 
 @c man end
