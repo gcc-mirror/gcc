@@ -38,13 +38,21 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import java.awt.AWTEvent;
+import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Graphics;
+import java.awt.event.WindowEvent;
 import java.awt.peer.FileDialogPeer;
 import java.io.FilenameFilter;
 
 public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
 {
+  static final String FS = System.getProperty("file.separator");
+  
+  private String currentFile = null;
+  private String currentDirectory = null;
+
   native void create ();
 
   public GtkFileDialogPeer (FileDialog fd)
@@ -52,21 +60,134 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
     super (fd);
   }
 
-  public void setDirectory (String directory)
+  native void connectJObject ();
+  native void connectSignals ();
+  native void nativeSetFile (String file);
+
+  public void setFile (String fileName)
   {
-    setFile (directory);
+    /* If nothing changed do nothing.  This usually happens because
+       the only way we have to set the file name in FileDialog is by
+       calling its SetFile which will call us back. */
+    if ((fileName == null && currentFile == null)
+        || (fileName != null && fileName.equals (currentFile)))
+      return;
+
+    if (fileName == null || fileName.equals (""))
+      {
+        currentFile = "";
+        nativeSetFile ("");
+        return;
+      }
+
+    // Remove any directory path from the filename
+    int sepIndex = fileName.lastIndexOf (FS);
+    if (sepIndex < 0)
+      {
+        currentFile = fileName;
+        nativeSetFile (fileName);
+      }
+    else
+      {
+        if (fileName.length() > (sepIndex + 1))
+	  {
+	    String fn = fileName.substring (sepIndex + 1);
+            currentFile = fn;
+            nativeSetFile (fn);
+	  }
+	else
+	  {
+            currentFile = "";
+            nativeSetFile ("");
+	  }
+      }
   }
 
-  public native void setFile (String file);
-  public native void connectJObject ();
+  public void setDirectory (String directory)
+  {
+    /* If nothing changed so nothing.  This usually happens because
+       the only way we have to set the directory in FileDialog is by
+       calling its setDirectory which will call us back. */
+    if ((directory == null && currentDirectory == null)
+        || (directory != null && directory.equals (currentDirectory)))
+      return;
+
+    if (directory == null || directory.equals (""))
+      {
+        currentDirectory = FS;
+        nativeSetFile (FS);
+	return;
+      }
+      
+    currentDirectory = directory;
+
+    // Gtk expects the directory to end with a file separator
+    if (directory.substring (directory.length () - 1).equals (FS))
+      nativeSetFile (directory);
+    else
+      nativeSetFile (directory + FS);
+  }
 
   public void setFilenameFilter (FilenameFilter filter)
   {
-    /* GTK has no filters. */
+    /* GTK has no filter callbacks yet.  It works by setting a pattern
+     * (see gtk_file_selection_complete), which we can't convert
+     * to the callback paradigm. With GTK-2.4 there will be a
+     * gtk_file_filter_add_custom function that we can use. */
   }
 
   public Graphics getGraphics ()
   {
+    // GtkFileDialog will repaint by itself
     return null;
+  }
+  
+  void gtkHideFileDialog () 
+  {
+    ((Dialog) awtComponent).hide();
+  }
+  
+  void gtkDisposeFileDialog () 
+  {
+    ((Dialog) awtComponent).dispose();
+  }
+
+  /* Callback to set the file and directory values when the user is finished
+   * with the dialog.
+   */
+  void gtkSetFilename (String fileName)
+  {
+    FileDialog fd = (FileDialog) awtWidget;
+    if (fileName == null)
+      {
+        currentFile = null;
+        fd.setFile(null);
+        return;
+      }
+
+    int sepIndex = fileName.lastIndexOf (FS);
+    if (sepIndex < 0)
+      {
+        /* This should never happen on Unix (all paths start with '/') */
+	currentFile = fileName;
+      }
+    else
+      {
+        if (fileName.length() > (sepIndex + 1))
+	  {
+	    String fn = fileName.substring (sepIndex + 1);
+	    currentFile = fn;
+	  }
+	else
+	  {
+            currentFile = null;
+	  }
+
+        String dn = fileName.substring (0, sepIndex + 1);
+        currentDirectory = dn;
+        fd.setDirectory(dn);
+      }
+
+    fd.setFile (currentFile);
   }
 }
