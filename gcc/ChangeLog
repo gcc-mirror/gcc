@@ -1,3 +1,29 @@
+Fri Mar  9 19:52:52 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (FIRST_PSEUDO_REGISTER): Set to 53.
+	(FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ONES): Add extended ones.
+	(CONDITIONAL_REGISTER_USAGE): Set proper values according to TARGET_64BIT.
+	(FIRST_REX_INT_REG, LAST_REX_INT_REG, FIRST_REX_SSE_REG, LAST_REX_SSE_REG):
+	define.
+	(enum reg_class): Add 'LEGACY_REGS'
+	(REG_CLASS_CONTENTS): Likewise; add extended registers.
+	(SSE_REGNO_P): Recognize extended registers.
+	(ANY_QI_REG_P, REX_INT_REGNO_P, REX_INT_REG_P): New.
+	(REG_CLASS_FROM_LETTER): Add 'R' and 'Q'.
+	(REGNO_OK_FOR_INDEX_P, REGNO_OK_FOR_BASE_P, REG_OK_FOR_BASE_NONSTRICT_P):
+	 Recognize REX registers.
+	(REG_OK_FOR_STRREG_NONSTRICT_P, REG_OK_FOR_STRREG_STRICT_P,
+	 REG_OK_FOR_STRREG_P): Remove.
+	(HI_REGISTER_NAMES): Add extended registers.
+	(ADDITIONAL_REGISTER_NAMES): Likewise.
+	(QI_REGISTER_NAMES): Add 8bit extended registers.
+	(DEBUG_REG): Support extended registers.
+	* i386.c (regclass_map): Add extended registers.
+	(dbx_register-map): Likewise.
+	(svr4_dbx_register_map): Likewise.
+	(print_reg): Support extended registers.
+	(print_operand): Support 64bit operands.
+
 Fri Mar  9 19:37:46 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Set to 128bit for x86_64

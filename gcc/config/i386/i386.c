@@ -411,9 +411,11 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 5, 4,		/* general regs */
   11, 12, 13, 14, 15, 16, 17, 18,	/* fp regs */
-  -1, 9, -1, -1,			/* arg, flags, fpsr, dir */
+  -1, 9, -1, -1, -1,			/* arg, flags, fpsr, dir, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE registers */
   29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
+  -1, -1, -1, -1, -1, -1, -1, -1,	/* extemded integer registers */
+  -1, -1, -1, -1, -1, -1, -1, -1,	/* extemded SSE registers */
 };
 
 /* Test and compare insns in i386.md store the information needed to
@@ -3315,6 +3317,8 @@ print_reg (x, code, file)
     code = 1;
   else if (code == 'k')
     code = 4;
+  else if (code == 'q')
+    code = 8;
   else if (code == 'y')
     code = 3;
   else if (code == 'h')
@@ -3324,6 +3328,33 @@ print_reg (x, code, file)
   else
     code = GET_MODE_SIZE (GET_MODE (x));
 
+  /* Irritatingly, AMD extended registers use different naming convention
+     from the normal registers.  */
+  if (REX_INT_REG_P (x))
+    {
+      switch (code)
+	{
+	  case 5:
+	    error ("Extended registers have no high halves\n");
+	    break;
+	  case 1:
+	    fprintf (file, "r%ib", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    break;
+	  case 2:
+	    fprintf (file, "r%iw", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    break;
+	  case 4:
+	    fprintf (file, "r%id", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    break;
+	  case 8:
+	    fprintf (file, "r%i", REGNO (x) - FIRST_REX_INT_REG + 8);
+	    break;
+	  default:
+	    error ("Unsupported operand size for extended register.\n");
+	    break;
+	}
+      return;
+    }
   switch (code)
     {
     case 5:
@@ -3336,11 +3367,11 @@ print_reg (x, code, file)
 	  break;
 	}
       /* FALLTHRU */
-    case 4:
     case 8:
+    case 4:
     case 12:
       if (! ANY_FP_REG_P (x))
-	putc ('e', file);
+	putc (code == 8 ? 'r' : 'e', file);
       /* FALLTHRU */
     case 16:
     case 2:
@@ -3372,6 +3403,7 @@ print_reg (x, code, file)
 	%b0 would print %al if operands[0] is reg 0.
    w --  likewise, print the HImode name of the register.
    k --  likewise, print the SImode name of the register.
+   q --  likewise, print the DImode name of the register.
    h --  print the QImode name for a "high" register, either ah, bh, ch or dh.
    y --  print "st(0)" instead of "st" as a register.
    m --  print "st(n)" as an mmx register.
@@ -3495,6 +3527,7 @@ print_operand (file, x, code)
 	case 'b':
 	case 'w':
 	case 'k':
+	case 'q':
 	case 'h':
 	case 'y':
 	case 'm':
