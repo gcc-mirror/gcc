@@ -748,10 +748,6 @@ if (TARGET_ARCH64				\
     && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)	\
   (MODE) = word_mode;
 
-/* Define this macro if the promotion described by PROMOTE_MODE
-   should _only_ be performed for outgoing function arguments or
-   function return values, as specified by PROMOTE_FUNCTION_ARGS
-   and PROMOTE_FUNCTION_RETURN, respectively.  */
 /* This is only needed for TARGET_ARCH64, but since PROMOTE_MODE is a no-op
    for TARGET_ARCH32 this is ok.  Otherwise we'd need to add a runtime test
    for this value.  For TARGET_ARCH64 we need it, as we don't have instructions

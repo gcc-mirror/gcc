@@ -92,7 +92,7 @@ static int pragma_trapa;
    interrupted.  */
 int pragma_nosave_low_regs;
 
-/* This is used for communication between SETUP_INCOMING_VARARGS and
+/* This is used for communication between TARGET_SETUP_INCOMING_VARARGS and
    sh_expand_prologue.  */
 int current_function_anonymous_args;
 
@@ -6520,10 +6520,6 @@ sh_function_arg_advance (CUMULATIVE_ARGS *ca, enum machine_mode mode,
 	  : ROUND_ADVANCE (GET_MODE_SIZE (mode)))));
 }
 
-/* If the structure value address is not passed in a register, define
-   `STRUCT_VALUE' as an expression returning an RTX for the place
-   where the address is passed.  If it returns 0, the address is
-   passed as an "invisible" first argument.  */
 /* The Renesas calling convention doesn't quite fit into this scheme since
    the address is passed like an invisible argument, but one that is always
    passed in memory.  */
@@ -6534,6 +6530,8 @@ sh_struct_value_rtx (tree fndecl, int incoming ATTRIBUTE_UNUSED)
     return 0;
   return gen_rtx_REG (Pmode, 2);
 }
+
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
 sh_return_in_memory (tree type, tree fndecl)

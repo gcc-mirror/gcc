@@ -4852,7 +4852,7 @@ init_cumulative_args (struct sparc_args *cum, tree fntype,
   cum->libcall_p = fntype == 0;
 }
 
-/* Handle the PROMOTE_PROTOTYPES macro.
+/* Handle the TARGET_PROMOTE_PROTOTYPES target hook.
    When a prototype says `char' or `short', really pass an `int'.  */
 
 static bool
@@ -4861,7 +4861,7 @@ sparc_promote_prototypes (tree fntype ATTRIBUTE_UNUSED)
   return TARGET_ARCH32 ? true : false;
 }
 
-/* Handle the STRICT_ARGUMENT_NAMING macro.  */
+/* Handle the TARGET_STRICT_ARGUMENT_NAMING target hook.  */
 
 static bool
 sparc_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
@@ -4870,7 +4870,7 @@ sparc_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
   return TARGET_V9 ? true : false;
 }
 
-/* Handle the RETURN_IN_MEMORY macro.
+/* Handle the TARGET_RETURN_IN_MEMORY target hook.
    Specify whether to return the return value in memory.  */
 
 static bool
@@ -4887,7 +4887,7 @@ sparc_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 	     && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 32));
 }
 
-/* Handle the STRUCT_VALUE macro.
+/* Handle the TARGET_STRUCT_VALUE target hook.
    Return where to find the structure return value address.  */
 
 static rtx

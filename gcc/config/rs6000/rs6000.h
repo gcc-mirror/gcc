@@ -1645,7 +1645,7 @@ extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
 /* DRAFT_V4_STRUCT_RET defaults off.  */
 #define DRAFT_V4_STRUCT_RET 0
 
-/* Let RETURN_IN_MEMORY control what happens.  */
+/* Let TARGET_RETURN_IN_MEMORY control what happens.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* Mode of stack savearea.

@@ -5504,6 +5504,8 @@ m68hc11_rtx_costs (rtx x, int code, int outer_code, int *total)
 }
 
 
+/* Worker function for TARGET_ASM_FILE_START.  */
+
 static void
 m68hc11_file_start (void)
 {
@@ -5513,6 +5515,8 @@ m68hc11_file_start (void)
 }
 
 
+/* Worker function for TARGET_ASM_CONSTRUCTOR.  */
+
 static void
 m68hc11_asm_out_constructor (rtx symbol, int priority)
 {
@@ -5520,12 +5524,16 @@ m68hc11_asm_out_constructor (rtx symbol, int priority)
   fprintf (asm_out_file, "\t.globl\t__do_global_ctors\n");
 }
 
+/* Worker function for TARGET_ASM_DESTRUCTOR.  */
+
 static void
 m68hc11_asm_out_destructor (rtx symbol, int priority)
 {
   default_dtor_section_asm_out_destructor (symbol, priority);
   fprintf (asm_out_file, "\t.globl\t__do_global_dtors\n");
 }
+
+/* Worker function for TARGET_STRUCT_VALUE_RTX.  */
 
 static rtx
 m68hc11_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,

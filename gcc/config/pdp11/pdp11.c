@@ -1700,6 +1700,8 @@ output_addr_const_pdp11 (FILE *file, rtx x)
     }
 }
 
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
+
 static bool
 pdp11_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
 {

@@ -1158,7 +1158,7 @@ extern enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 /* ??? What about r1 in DI/DF values.  */
 #define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
 
-/* Tell GCC to use RETURN_IN_MEMORY.  */
+/* Tell GCC to use TARGET_RETURN_IN_MEMORY.  */
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
 /* Function entry and exit.  */

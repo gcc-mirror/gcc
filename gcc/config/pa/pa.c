@@ -9096,12 +9096,16 @@ pa_globalize_label (FILE *stream, const char *name)
   }
 }
 
+/* Worker function for TARGET_STRUCT_VALUE_RTX.  */
+
 static rtx
 pa_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
 		     int incoming ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (Pmode, PA_STRUCT_VALUE_REGNUM);
 }
+
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 bool
 pa_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)

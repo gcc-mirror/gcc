@@ -1,3 +1,28 @@
+2004-01-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/alpha/alpha.c: Remove mentions of deprecates macros
+	in comments, remove some target-independent comments about target
+	macros, and/or add minimal function comments for target hook
+	implementations.
+	* config/avr/avr.c: Likewise.
+	* config/ia64/ia64.h: Likewise.
+	* config/ip2k/ip2k.c: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/m32r/m32r.h: Likewise.
+	* config/m68hc11/m68hc11.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pdp11/pdp11.c: Likewise.
+	* config/rs6000/rs6000.h: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+
 2004-01-30  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR optimization/12147
@@ -8,7 +33,7 @@
 
 2004-01-30  Jan Hubicka  <jh@suse.cz>
 
-	* reload.c (get_secondary_mem):  Fix updating of
+	* reload.c (get_secondary_mem): Fix updating of
 	secondary_memlocs_elim_used.
 
 2004-01-30  Richard Henderson  <rth@redhat.com>
