@@ -121,18 +121,18 @@ slice_array<_T>::operator= (const _Expr<_Dom,_T>& __e) const
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
 template<typename _T>							\
 inline void								\
-slice_array<_T>::operator##op##= (const valarray<_T>& __v) const	\
+slice_array<_T>::operator op##= (const valarray<_T>& __v) const		\
 {									\
   _Array_augmented_##name (_M_array, _M_sz, _M_stride, _Array<_T> (__v));\
 }									\
 									\
 template<typename _T> template<class _Dom>				\
 inline void								\
-slice_array<_T>::operator##op##= (const _Expr<_Dom,_T>& __e) const	\
+slice_array<_T>::operator op##= (const _Expr<_Dom,_T>& __e) const	\
 {									\
     _Array_augmented_##name (_M_array, _M_stride, __e, _M_sz);		\
 }
-        
+
 
 _DEFINE_VALARRAY_OPERATOR(*, multiplies)
 _DEFINE_VALARRAY_OPERATOR(/, divides)

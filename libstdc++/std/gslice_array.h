@@ -133,7 +133,7 @@ gslice_array<_Tp>::operator= (const _Expr<E, _Tp>& __e) const
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
 template<typename _Tp>							\
 inline void								\
-gslice_array<_Tp>::operator##op##= (const valarray<_Tp>& __v) const	\
+gslice_array<_Tp>::operator op##= (const valarray<_Tp>& __v) const	\
 {									\
     _Array_augmented_##name (_M_array, _Array<size_t>(_M_index),	\
                               _Array<_Tp> (__v), __v.size ());		\
@@ -141,7 +141,7 @@ gslice_array<_Tp>::operator##op##= (const valarray<_Tp>& __v) const	\
 									\
 template<typename _Tp> template<class E>        			\
 inline void 								\
-gslice_array<_Tp>::operator##op##= (const _Expr<E, _Tp>& __e) const	\
+gslice_array<_Tp>::operator op##= (const _Expr<E, _Tp>& __e) const	\
 {									\
     _Array_augmented_##name (_M_array, _Array<size_t>(_M_index), __e,	\
                               _M_index.size());				\

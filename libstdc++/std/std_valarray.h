@@ -567,7 +567,7 @@ valarray<_Tp>::apply (_Tp func (const _Tp &)) const
 #define _DEFINE_VALARRAY_UNARY_OPERATOR(_Op, _Name)                     \
   template<typename _Tp>						\
   inline _Expr<_UnClos<_Name,_ValArray,_Tp>, _Tp>               	\
-  valarray<_Tp>::operator##_Op() const					\
+  valarray<_Tp>::operator _Op() const					\
   {									\
       typedef _UnClos<_Name,_ValArray,_Tp> _Closure;	                \
       return _Expr<_Closure, _Tp> (_Closure (*this));			\
@@ -590,7 +590,7 @@ valarray<_Tp>::apply (_Tp func (const _Tp &)) const
 #define _DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(_Op, _Name)               \
   template<class _Tp>							\
   inline valarray<_Tp> &						\
-  valarray<_Tp>::operator##_Op##= (const _Tp &__t)			\
+  valarray<_Tp>::operator _Op##= (const _Tp &__t)			\
   {									\
       _Array_augmented_##_Name (_Array<_Tp>(_M_data), _M_size, __t);	\
       return *this;							\
@@ -598,7 +598,7 @@ valarray<_Tp>::apply (_Tp func (const _Tp &)) const
 									\
   template<class _Tp>							\
   inline valarray<_Tp> &						\
-  valarray<_Tp>::operator##_Op##= (const valarray<_Tp> &__v)		\
+  valarray<_Tp>::operator _Op##= (const valarray<_Tp> &__v)		\
   {									\
       _Array_augmented_##_Name (_Array<_Tp>(_M_data), _M_size, 		\
                                _Array<_Tp>(__v._M_data));		\
@@ -622,7 +622,7 @@ _DEFINE_VALARRAY_AUGMENTED_ASSIGNMENT(>>, shift_right)
 #define _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(_Op, _Name)          \
   template<class _Tp> template<class _Dom>				\
   inline valarray<_Tp> &						\
-  valarray<_Tp>::operator##_Op##= (const _Expr<_Dom,_Tp> &__e)		\
+  valarray<_Tp>::operator _Op##= (const _Expr<_Dom,_Tp> &__e)		\
   {									\
       _Array_augmented_##_Name (_Array<_Tp>(_M_data), __e, _M_size);	\
       return *this;							\
@@ -645,7 +645,7 @@ _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, shift_right)
 #define _DEFINE_BINARY_OPERATOR(_Op, _Name)				\
   template<typename _Tp>						\
   inline _Expr<_BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp>, _Tp>        \
-  operator##_Op (const valarray<_Tp> &__v, const valarray<_Tp> &__w)	\
+  operator _Op (const valarray<_Tp> &__v, const valarray<_Tp> &__w)	\
   {									\
       typedef _BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp> _Closure;     \
       return _Expr<_Closure, _Tp> (_Closure (__v, __w));		\
@@ -653,7 +653,7 @@ _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, shift_right)
 									\
   template<typename _Tp>						\
   inline _Expr<_BinClos<_Name,_ValArray,_Constant,_Tp,_Tp>,_Tp>         \
-  operator##_Op (const valarray<_Tp> &__v, const _Tp &__t)		\
+  operator _Op (const valarray<_Tp> &__v, const _Tp &__t)		\
   {									\
       typedef _BinClos<_Name,_ValArray,_Constant,_Tp,_Tp> _Closure;	\
       return _Expr<_Closure, _Tp> (_Closure (__v, __t));	        \
@@ -661,7 +661,7 @@ _DEFINE_VALARRAY_EXPR_AUGMENTED_ASSIGNMENT(>>, shift_right)
 									\
   template<typename _Tp>						\
   inline _Expr<_BinClos<_Name,_Constant,_ValArray,_Tp,_Tp>,_Tp>         \
-  operator##_Op (const _Tp &__t, const valarray<_Tp> &__v)		\
+  operator _Op (const _Tp &__t, const valarray<_Tp> &__v)		\
   {									\
       typedef _BinClos<_Name,_Constant,_ValArray,_Tp,_Tp> _Closure;     \
       return _Expr<_Closure, _Tp> (_Closure (__t, __v));        	\
@@ -683,7 +683,7 @@ _DEFINE_BINARY_OPERATOR(>>, _Shift_right)
 #define _DEFINE_LOGICAL_OPERATOR(_Op, _Name)				\
   template<typename _Tp>						\
   inline _Expr<_BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp>,bool>        \
-  operator##_Op (const valarray<_Tp> &__v, const valarray<_Tp> &__w)	\
+  operator _Op (const valarray<_Tp> &__v, const valarray<_Tp> &__w)	\
   {									\
       typedef _BinClos<_Name,_ValArray,_ValArray,_Tp,_Tp> _Closure;     \
       return _Expr<_Closure, bool> (_Closure (__v, __w));               \
@@ -691,7 +691,7 @@ _DEFINE_BINARY_OPERATOR(>>, _Shift_right)
 									\
   template<class _Tp>							\
   inline _Expr<_BinClos<_Name,_ValArray,_Constant,_Tp,_Tp>,bool>        \
-  operator##_Op (const valarray<_Tp> &__v, const _Tp &__t)		\
+  operator _Op (const valarray<_Tp> &__v, const _Tp &__t)		\
   {									\
       typedef _BinClos<_Name,_ValArray,_Constant,_Tp,_Tp> _Closure;     \
       return _Expr<_Closure, bool> (_Closure (__v, __t));       	\
@@ -699,7 +699,7 @@ _DEFINE_BINARY_OPERATOR(>>, _Shift_right)
 									\
   template<class _Tp>							\
   inline _Expr<_BinClos<_Name,_Constant,_ValArray,_Tp,_Tp>,bool>        \
-  operator##_Op (const _Tp &__t, const valarray<_Tp> &__v)		\
+  operator _Op (const _Tp &__t, const valarray<_Tp> &__v)		\
   {									\
       typedef _BinClos<_Name,_Constant,_ValArray,_Tp,_Tp> _Closure;     \
       return _Expr<_Closure, bool> (_Closure (__t, __v));	        \

@@ -119,7 +119,7 @@ mask_array<_T>::operator= (const _Expr<E, _T>& __e) const
 #define _DEFINE_VALARRAY_OPERATOR(op, name)				\
 template<typename _T>							\
 inline void								\
-mask_array<_T>::operator##op##= (const valarray<_T>& __v) const		\
+mask_array<_T>::operator op##= (const valarray<_T>& __v) const		\
 {									\
   _Array_augmented_##name (_M_array, _M_mask, 				\
                            _Array<_T> (__v), __v.size ());		\
@@ -127,7 +127,7 @@ mask_array<_T>::operator##op##= (const valarray<_T>& __v) const		\
 									\
 template<typename _T> template<class E>					\
 inline void								\
-mask_array<_T>::operator##op##= (const _Expr<E, _T>& __e) const		\
+mask_array<_T>::operator op##= (const _Expr<E, _T>& __e) const		\
 {									\
   _Array_augmented_##name (_M_array, _M_mask, __e, __e.size ());	\
 }
