@@ -1009,14 +1009,7 @@ public Reader getReaderForText(Transferable transferable)
    */
   public boolean isRepresentationClassByteBuffer ()
   {
-    try
-      {
-        return ByteBuffer.class.isAssignableFrom (representationClass);
-      }
-    catch (ClassNotFoundException e)
-      {
-        return false;
-      }
+    return ByteBuffer.class.isAssignableFrom (representationClass);
   }
 
   /**
@@ -1027,14 +1020,7 @@ public Reader getReaderForText(Transferable transferable)
    */
   public boolean isRepresentationClassCharBuffer ()
   {
-    try
-      {
-        return CharBuffer.class.isAssignableFrom (representationClass);
-      }
-    catch (ClassNotFoundException e)
-      {
-        return false;
-      }
+    return CharBuffer.class.isAssignableFrom (representationClass);
   }
 
   /**
@@ -1045,14 +1031,7 @@ public Reader getReaderForText(Transferable transferable)
    */
   public boolean isRepresentationClassReader ()
   {
-    try
-      {
-        return Reader.class.isAssignableFrom (representationClass);
-      }
-    catch (ClassNotFoundException e)
-      {
-        return false;
-      }
+    return Reader.class.isAssignableFrom (representationClass);
   }
 
 } // class DataFlavor
