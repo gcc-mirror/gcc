@@ -390,8 +390,12 @@ namespace std
           // integral types
           char __xtrc[32];
           int __base;
+	  // According to 18.2.1.2.9, digits10 is "Number of base 10 digits
+	  // that can be represented without change" so we have to add 1 to it
+	  // in order to obtain the max number of digits. The same for the
+	  // other do_get for integral types below.
           _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-			 numeric_limits<bool>::digits10, __base);
+			 numeric_limits<bool>::digits10 + 1, __base);
 
           // Stage 2: convert and store results.
           char* __sanity;
@@ -456,7 +460,7 @@ namespace std
       char __xtrc[32];
       int __base;
       _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<long>::digits10, __base);
+		     numeric_limits<long>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -482,7 +486,7 @@ namespace std
       char __xtrc[32];
       int __base;
       _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned short>::digits10, __base);
+		     numeric_limits<unsigned short>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -509,7 +513,7 @@ namespace std
       char __xtrc[32];
       int __base;
       _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned int>::digits10, __base);
+		     numeric_limits<unsigned int>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -536,7 +540,7 @@ namespace std
       char __xtrc[32];
       int __base;
       _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned long>::digits10, __base);
+		     numeric_limits<unsigned long>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -563,7 +567,7 @@ namespace std
       char __xtrc[32];
       int __base;
       _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<long long>::digits10, __base);
+		     numeric_limits<long long>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -589,7 +593,7 @@ namespace std
       char __xtrc[32];
       int __base;
       _M_extract_int(__beg, __end, __io, __err, __xtrc,
-		     numeric_limits<unsigned long long>::digits10, __base);
+		     numeric_limits<unsigned long long>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;
@@ -718,7 +722,7 @@ namespace std
       char __xtrc[32];
       int __base;
       _M_extract_int(__beg, __end, __io, __err, __xtrc, 
-		     numeric_limits<unsigned long>::digits10, __base);
+		     numeric_limits<unsigned long>::digits10 + 1, __base);
 
       // Stage 2: convert and store results.
       char* __sanity;

@@ -1,3 +1,16 @@
+2001-12-12  Philip Martin  <philip@codematters.co.uk>
+            Ross Smith     <r-smith@ihug.co.nz>
+            Paolo Carlini  <pcarlini@unitus.it>
+
+	libstdc++/5045
+	* include/bits/std_limits.h (defines, numeric_limits<bool>::digits10):
+	Fix digits10 values for integral types.
+	* include/bits/locale_facets.tcc (num_get::do_get for integral types):
+	Tweak _M_extract_int call.
+	* testsuite/27_io/istream_extractor_arith.cc (test13, test12_aux):
+	Tweak overflowing number of digits.
+	* testsuite/18_support/numeric_limits.cc (test03): New testcase.
+
 2001-12-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/os/generic/bits/ctype_inline.h: Remove spaces.
