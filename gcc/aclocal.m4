@@ -25,3 +25,67 @@ if test $gcc_cv_decl_needed_$1 = yes; then
   AC_DEFINE_UNQUOTED($gcc_tr_decl)
 fi
 ])dnl
+
+dnl See if symbolic links work and if not, try to substitute either hard links or simple copy.
+AC_DEFUN(GCC_PROG_LN_S,
+[AC_MSG_CHECKING(whether ln -s works)
+AC_CACHE_VAL(gcc_cv_prog_LN_S,
+[rm -f conftestdata_to
+echo >conftestdata_from
+if ln -s conftestdata_from conftestdata_to 2>/dev/null
+then
+  gcc_cv_prog_LN_S="ln -s"
+else
+  if ln conftestdata_from conftestdata_to 2>/dev/null
+  then
+    gcc_cv_prog_LN_S=ln
+  else
+    gcc_cv_prog_LN_S=cp
+  fi
+fi
+rm -f conftestdata_from conftestdata_to
+])dnl
+LN_S="$gcc_cv_prog_LN_S"
+if test "$gcc_cv_prog_LN_S" = "ln -s"; then
+  AC_MSG_RESULT(yes)
+else
+  if test "$gcc_cv_prog_LN_S" = "ln"; then
+    AC_MSG_RESULT([no, using ln])
+  else
+    AC_MSG_RESULT([no, and neither does ln, so using cp])
+  fi
+fi
+AC_SUBST(LN_S)dnl
+])
+
+dnl See if hard links work and if not, try to substitute either symbolic links or simple copy.
+AC_DEFUN(GCC_PROG_LN,
+[AC_MSG_CHECKING(whether ln works)
+AC_CACHE_VAL(gcc_cv_prog_LN,
+[rm -f conftestdata_to
+echo >conftestdata_from
+if ln conftestdata_from conftestdata_to 2>/dev/null
+then
+  gcc_cv_prog_LN="ln"
+else
+  if ln -s conftestdata_from conftestdata_to 2>/dev/null
+  then
+    gcc_cv_prog_LN="ln -s"
+  else
+    gcc_cv_prog_LN=cp
+  fi
+fi
+rm -f conftestdata_from conftestdata_to
+])dnl
+LN="$gcc_cv_prog_LN"
+if test "$gcc_cv_prog_LN" = "ln"; then
+  AC_MSG_RESULT(yes)
+else
+  if test "$gcc_cv_prog_LN" = "ln -s"; then
+    AC_MSG_RESULT([no, using ln -s])
+  else
+    AC_MSG_RESULT([no, and neither does ln -s, so using cp])
+  fi
+fi
+AC_SUBST(LN)dnl
+])

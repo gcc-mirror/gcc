@@ -77,6 +77,10 @@ DLLTOOL = dlltool
 SHELL = /bin/sh
 # on sysV, define this as cp.
 INSTALL = @INSTALL@
+# Some systems may be missing symbolic links, regular links, or both.
+# Allow configure to check this and use "ln -s", "ln", or "cp" as appropriate.
+LN=@LN@
+LN_S=@LN_S@
 # These permit overriding just for certain files.
 INSTALL_PROGRAM = $(INSTALL)
 INSTALL_DATA = $(INSTALL)
@@ -530,6 +534,8 @@ FLAGS_TO_PASS = \
 	"LDFLAGS=$(LDFLAGS)" \
 	"LEX=$(LEX)" \
 	"LEXFLAGS=$(LEXFLAGS)" \
+	"LN=$(LN)" \
+	"LN_S=$(LN_S)" \
 	"MAKEINFO=$(MAKEINFO)" \
 	"MAKEINFOFLAGS=$(MAKEINFOFLAGS)" \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
@@ -1187,8 +1193,7 @@ c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
 # To make a configuration always use collect2, set USE_COLLECT2 to ld.
 ld: collect2
 	rm -f ld$(exeext)
-	ln collect2$(exeext) ld$(exeext) > /dev/null 2>&1 \
-	   || cp collect2$(exeext) ld$(exeext)
+	$(LN) collect2$(exeext) ld$(exeext)
 
 collect2: collect2.o tlink.o hash.o cplus-dem.o underscore.o version.o \
 	choose-temp.o $(LIBDEPS)
@@ -1717,8 +1722,7 @@ bytecode.maintainer-clean: bytecode.clean
 # Making the preprocessor
 cpp: $(CCCP)
 	-rm -f cpp$(exeext)
-	ln $(CCCP)$(exeext) cpp$(exeext) > /dev/null 2>&1 \
-	 || cp $(CCCP)$(exeext) cpp$(exeext)
+	$(LN) $(CCCP)$(exeext) cpp$(exeext)
 cccp: cccp.o cexp.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ cccp.o cexp.o \
 	  version.o $(LIBS)
@@ -2239,9 +2243,7 @@ install-driver: xgcc
 	  rm -f $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) xgcc$(exeext) $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
 	  rm -f $(bindir)/$(target_alias)-gcc-1$(exeext); \
-	  ln $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-1$(exeext) \
-	    > /dev/null 2>&1 \
-	    || cp $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-1$(exeext); \
+	  $(LN) $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-1$(exeext); \
 	  mv $(bindir)/$(target_alias)-gcc-1$(exeext) $(bindir)/$(target_alias)-gcc$(exeext); \
 	fi
 
@@ -2299,6 +2301,7 @@ install-multilib: stmp-multilib installdirs
 install-headers: install-include-dir $(INSTALL_HEADERS_DIR) $(INSTALL_ASSERT_H)
 # Fix symlinks to absolute paths in the installed include directory to
 # point to the installed directory, not the build directory.
+# Don't need to use LN_S here since we really do need ln -s and no substitutes.
 	-files=`cd $(libsubdir)/include; find . -type l -print 2>/dev/null`; \
 	if [ $$? -eq 0 ]; then \
 	  dir=`cd include; pwd`; \
@@ -2509,7 +2512,7 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	mkdir tmp/ginclude
 	mkdir tmp/objc
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file tmp > /dev/null 2>&1 || cp $$file tmp; \
+	  $(LN) $$file tmp; \
 	done
 	cd config; \
 	for file in *[0-9a-zA-Z+]; do \
@@ -2517,25 +2520,22 @@ distdir-start: doc $(srcdir)/INSTALL $(srcdir)/c-parse.y $(srcdir)/c-gperf.h \
 	    mkdir ../tmp/config/$$file; \
 	    cd $$file; \
 	    for subfile in *[0-9a-zA-Z+]; do \
-	      ln $$subfile ../../tmp/config/$$file >/dev/null 2>&1 \
-	      || cp $$subfile ../../tmp/config/$$file; \
+	      $(LN) $$subfile ../../tmp/config/$$file; \
 	    done; \
 	    cd ..; \
 	  else \
-	    ln $$file ../tmp/config >/dev/null 2>&1 \
-	    || cp $$file ../tmp/config; \
+	    $(LN) $$file ../tmp/config; \
 	  fi; \
 	done
 	cd ginclude; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/ginclude >/dev/null 2>&1 \
-	   || cp $$file ../tmp/ginclude; \
+	  $(LN) $$file ../tmp/ginclude; \
 	done
 	cd objc; \
 	for file in *[0-9a-zA-Z+]; do \
-	  ln $$file ../tmp/objc >/dev/null 2>&1 || cp $$file ../tmp/objc; \
+	  $(LN) $$file ../tmp/objc; \
 	done
-	ln .gdbinit tmp
+	$(LN) .gdbinit tmp
 
 # Finish making `distdir', after the languages have done their thing.
 distdir-finish:
@@ -2609,8 +2609,6 @@ compare: force
 	  exit 1; \
 	else true; \
 	fi
-	
-	
 
 # Similar, but compare with stage3 directory
 compare3: force
@@ -2669,9 +2667,9 @@ stage1-start:
 	-mv $(STAGESTUFF) stage1
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage1 || cp as$(exeext) stage1 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage1 || cp ld$(exeext) stage1 ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then ln -s ../collect-ld$(exeext) stage1 || cp collect-ld$(exeext) stage1 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage1 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then $(LN_S) ../ld$(exeext) stage1 ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then $(LN_S) ../collect-ld$(exeext) stage1 ; else true ; fi
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
@@ -2690,9 +2688,9 @@ stage2-start:
 	-mv $(STAGESTUFF) stage2
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage2 || cp as$(exeext) stage2 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage2 || cp ld$(exeext) stage2 ; else true ; fi
-	-if [ -f collect-ld ] ; then ln -s ../collect-ld$(exeext) stage2 || cp collect-ld$(exeext) stage2 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage2 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then $(LN_S) ../ld$(exeext) stage2 ; else true ; fi
+	-if [ -f collect-ld ] ; then $(LN_S) ../collect-ld$(exeext) stage2 ; else true ; fi
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
@@ -2711,9 +2709,9 @@ stage3-start:
 	-mv $(STAGESTUFF) stage3
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage3 || cp as$(exeext) stage3 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage3 || cp ld$(exeext) stage3 ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then ln -s ../collect-ld$(exeext) stage3 || cp collect-ld$(exeext) stage3 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage3 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then $(LN_S) ../ld$(exeext) stage3 ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then $(LN_S) ../collect-ld$(exeext) stage3 ; else true ; fi
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
@@ -2732,9 +2730,9 @@ stage4-start:
 	-mv $(STAGESTUFF) stage4
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
-	-if [ -f as$(exeext) ] ; then ln -s ../as$(exeext) stage4 || cp as$(exeext) stage4 ; else true ; fi
-	-if [ -f ld$(exeext) ] ; then ln -s ../ld$(exeext) stage4 || cp ld$(exeext) stage4 ; else true ; fi
-	-if [ -f collect-ld$(exeext) ] ; then ln -s ../collect-ld$(exeext) stage4 || cp collect-ld$(exeext) stage4 ; else true ; fi
+	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage4 ; else true ; fi
+	-if [ -f ld$(exeext) ] ; then $(LN_S) ../ld$(exeext) stage4 ; else true ; fi
+	-if [ -f collect-ld$(exeext) ] ; then $(LN_S) ../collect-ld$(exeext) stage4 ; else true ; fi
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
