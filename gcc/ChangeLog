@@ -1,5 +1,12 @@
 2000-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
+	* config/c4x/c4x.h (IS_XXX_REG, IS_XXX_REGNO): Swap behaviour of 
+	macros so that they're consistent with their names.
+	* config/c4x/c4x.c (IS_XXX_REG, IS_XXX_REGNO): Likewise.
+	* config/c4x/c4x.md (IS_XXX_REG, IS_XXX_REGNO): Likewise.
+
+2000-01-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
 	* config/c4x/c4x.md (*addqi3_noclobber_reload): Ensure that CC never
 	modified inadvertently.
 
