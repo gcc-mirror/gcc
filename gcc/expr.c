@@ -42,6 +42,7 @@ Boston, MA 02111-1307, USA.  */
 #include "defaults.h"
 #include "toplev.h"
 #include "ggc.h"
+#include "intl.h"
 #include "tm_p.h"
 
 /* Decide whether a function's arguments should be processed
