@@ -1,3 +1,8 @@
+2001-07-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (finish_struct_1): When copying the primary base's
+	VFIELD, make sure we find it is at offset zero.
+
 2001-07-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/3621

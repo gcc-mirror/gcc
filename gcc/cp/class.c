@@ -5350,20 +5350,25 @@ finish_struct_1 (t)
 
   /* Make sure that we get our own copy of the vfield FIELD_DECL.  */
   vfield = TYPE_VFIELD (t);
-  if (vfield != NULL_TREE
-      && DECL_FIELD_CONTEXT (vfield) != t)
+  if (vfield && CLASSTYPE_HAS_PRIMARY_BASE_P (t))
     {
-      tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
+      tree primary = CLASSTYPE_PRIMARY_BINFO (t);
 
+      my_friendly_assert (same_type_p (DECL_FIELD_CONTEXT (vfield),
+				       BINFO_TYPE (primary)),
+			  20010726);
+      /* The vtable better be at the start. */
+      my_friendly_assert (integer_zerop (DECL_FIELD_OFFSET (vfield)),
+			  20010726);
+      my_friendly_assert (integer_zerop (BINFO_OFFSET (primary)),
+			  20010726);
+      
       vfield = copy_decl (vfield);
-
       DECL_FIELD_CONTEXT (vfield) = t;
-      DECL_FIELD_OFFSET (vfield)
-	= size_binop (PLUS_EXPR,
-		      BINFO_OFFSET (binfo),
-		      DECL_FIELD_OFFSET (vfield));
       TYPE_VFIELD (t) = vfield;
     }
+  else
+    my_friendly_assert (!vfield || DECL_FIELD_CONTEXT (vfield) == t, 20010726);
 
   overridden_virtuals 
     = modify_all_vtables (t, &vfuns, nreverse (overridden_virtuals));
