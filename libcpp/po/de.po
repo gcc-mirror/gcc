@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 3.4-b20040206\n"
+"Project-Id-Version: cpplib 4.0-b20050226\n"
 "Report-Msgid-Bugs-To: http://gcc.gnu.org/bugs.html\n"
 "POT-Creation-Date: 2005-02-25 23:37+0000\n"
-"PO-Revision-Date: 2004-02-15 12:14+0100\n"
+"PO-Revision-Date: 2005-03-26 15:41+0100\n"
 "Last-Translator: Roland Stigge <stigge@antcom.de>\n"
 "Language-Team: German <de@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -31,18 +31,18 @@ msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "keine Implementation für iconv, es kann nicht von %s nach %s konvertiert werden"
 
 #: charset.c:743
-#, fuzzy, c-format
+#, c-format
 msgid "character 0x%lx is not in the basic source character set\n"
-msgstr "UCN wird in Quellzeichensatz konvertiert"
+msgstr "Zeichen 0x%lx ist nicht im regulären Quellzeichensatz\n"
 
 #: charset.c:760 charset.c:1243
 msgid "converting to execution character set"
 msgstr "Konvertierung in Zeichensatz der Ausführung"
 
 #: charset.c:766
-#, fuzzy, c-format
+#, c-format
 msgid "character 0x%lx is not unibyte in execution character set"
-msgstr "Konvertierung in Zeichensatz der Ausführung"
+msgstr "Zeichen 0x%lx ist kein Unibyte im Ausführungs-Zeichensatz"
 
 #: charset.c:865
 msgid "universal character names are only valid in C++ and C99"
@@ -209,7 +209,7 @@ msgstr "#%s erwartet \"DATEINAME\" oder <DATEINAME>"
 #: directives.c:673
 #, c-format
 msgid "empty filename in #%s"
-msgstr ""
+msgstr "leerer Dateiname in #%s"
 
 #: directives.c:681
 msgid "#include nested too deeply"
@@ -250,7 +250,7 @@ msgstr "ungültige #ident-Direktive"
 #: directives.c:1038
 #, c-format
 msgid "registering \"%s\" as both a pragma and a pragma namespace"
-msgstr "registriere »%s« sowohl als Pragma als auch als Pragma-Namespace"
+msgstr "»%s« wird sowohl als Pragma als auch als Pragma-Namespace registriert"
 
 #: directives.c:1041
 #, c-format
@@ -461,9 +461,8 @@ msgid "token \"%s\" is not valid in preprocessor expressions"
 msgstr "Token »%s« ist nicht gültig in Präprozessorausdrücken"
 
 #: expr.c:753
-#, fuzzy
 msgid "missing expression between '(' and ')'"
-msgstr "ungültiger Ausdruck zwischen '(' und ')'"
+msgstr "fehlender Ausdruck zwischen '(' und ')'"
 
 #: expr.c:756
 msgid "#if with no expression"
@@ -475,9 +474,9 @@ msgid "operator '%s' has no right operand"
 msgstr "Operator »%s« hat keinen rechten Operanden"
 
 #: expr.c:764
-#, fuzzy, c-format
+#, c-format
 msgid "operator '%s' has no left operand"
-msgstr "Operator »%s« hat keinen rechten Operanden"
+msgstr "Operator »%s« hat keinen linken Operanden"
 
 #: expr.c:790
 msgid " ':' without preceding '?'"
@@ -540,7 +539,7 @@ msgstr "ein oder mehrere PCH-Dateien wurden gefunden, aber sie sind ungültig"
 
 #: files.c:457
 msgid "use -Winvalid-pch for more information"
-msgstr "verwenden Sie -Winvalid-pch für mehr Informationen"
+msgstr "-Winvalid-pch für mehr Informationen verwenden"
 
 #: files.c:522
 #, c-format
@@ -614,9 +613,9 @@ msgid "trigraph ??%c converted to %c"
 msgstr "Trigraph ??%c in %c konvertiert"
 
 #: lex.c:301
-#, fuzzy, c-format
+#, c-format
 msgid "trigraph ??%c ignored, use -trigraphs to enable"
-msgstr "Trigraph ??%c ignoriert"
+msgstr "Trigraph ??%c ignoriert, -trigraphs zum Aktivieren verwenden"
 
 #: lex.c:347
 msgid "\"/*\" within comment"
