@@ -1823,13 +1823,13 @@
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_dssall"
-  [(unspec [(const_int 0)] 188)]
+  [(unspec_volatile [(const_int 0)] 188)]
   "TARGET_ALTIVEC"
   "dssall"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_dss"
-  [(unspec [(match_operand:QI 0 "immediate_operand" "i")] 189)]
+  [(unspec_volatile [(match_operand:QI 0 "immediate_operand" "i")] 189)]
   "TARGET_ALTIVEC"
   "dss %0"
   [(set_attr "type" "vecsimple")])
