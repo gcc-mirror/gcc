@@ -4300,8 +4300,6 @@ get_unwidened (op, for_type)
      tree for_type;
 {
   /* Set UNS initially if converting OP to FOR_TYPE is a zero-extension.  */
-  /* TYPE_PRECISION is safe in place of type_precision since
-     pointer types are not allowed.  */
   register tree type = TREE_TYPE (op);
   register unsigned final_prec
     = TYPE_PRECISION (for_type != 0 ? for_type : type);
@@ -4467,21 +4465,6 @@ get_narrower (op, unsignedp_ptr)
   return win;
 }
 
-/* Return the precision of a type, for arithmetic purposes.
-   Supports all types on which arithmetic is possible
-   (including pointer types).
-   It's not clear yet what will be right for complex types.  */
-
-int
-type_precision (type)
-     register tree type;
-{
-  return ((TREE_CODE (type) == INTEGER_TYPE
-	   || TREE_CODE (type) == ENUMERAL_TYPE
-	   || TREE_CODE (type) == REAL_TYPE)
-	  ? TYPE_PRECISION (type) : POINTER_SIZE);
-}
-
 /* Nonzero if integer constant C has a value that is permissible
    for type TYPE (an INTEGER_TYPE).  */
 
