@@ -468,3 +468,7 @@ extern int flag_prefix_function_name;
 /* Nonzero if the current function is a thunk, so we should try to cut
    corners where we can.  */
 extern int current_function_is_thunk;
+
+/* Value of the -G xx switch, and whether it was passed or not.  */
+extern int g_switch_value;
+extern int g_switch_set;

@@ -301,6 +301,10 @@ override_options ()
 
     alpha_memory_latency = lat;
   }
+
+  /* Default the definition of "small data" to 8 bytes.  */
+  if (!g_switch_set)
+    g_switch_value = 8;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
