@@ -193,6 +193,7 @@ static int method_signature = 0;
 #define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT)	\
   {									\
     method_synthetic = 0;						\
+    method_printed = 0;							\
     method_signature = SIGNATURE;					\
     if (ATTRIBUTE_COUNT)						\
       method_synthetic = peek_attribute (jcf, ATTRIBUTE_COUNT,		\
@@ -208,7 +209,7 @@ static int method_signature = 0;
       } 								\
     if (method_pass && !method_synthetic)				\
       {									\
-	decompiled = 0; method_printed = 0;				\
+	decompiled = 0;							\
 	if (out)							\
 	  print_method_info (out, jcf, NAME, SIGNATURE,			\
 			     ACCESS_FLAGS);				\
@@ -1757,6 +1758,7 @@ print_namelet (out, name, depth)
       print_namelet (out, c, depth + 2);
       c = next;
     }
+  name->subnamelets = NULL;
 
   if (name->name)
     {
