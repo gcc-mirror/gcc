@@ -1,3 +1,10 @@
+Wed Aug 19 07:08:15 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.c (finalize_pic): Check for the correct
+	nonlocal_goto_receiver UNSPEC number.
+	* config/sparc/sparc.md (nonlocal_goto_receiver): Add comment
+	making note of this dependency existing in sparc.c
+
 Tue Aug 18 12:40:27 1998  Richard Henderson  <rth@cygnus.com>
 
 	* c-common.c (decl_attributes): Issue an error if the argument
