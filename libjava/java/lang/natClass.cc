@@ -732,7 +732,7 @@ java::lang::Class::initializeClass (void)
     {
       try
 	{
-	  superclass->initializeClass ();
+	  _Jv_InitClass (superclass);
 	}
       catch (java::lang::Throwable *except)
 	{
