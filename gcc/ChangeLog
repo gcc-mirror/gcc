@@ -1,3 +1,9 @@
+2004-06-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/15653
+	* config/ia64/ia64.c (ia64_dfa_new_cycle): Do not insert nops
+	after shifts before asm.
+
 2004-06-15  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/linux.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove
