@@ -1,3 +1,19 @@
+Fri Jun  5 01:12:15 1998  H.J. Lu  (hjl@gnu.org)
+
+	* i386/i386.c (output_fp_conditional_move): New function
+	to output floating point conditional move.
+	(output_int_conditional_move): New function to output integer
+	conditional move.
+
+	* i386/i386.md (movsicci+5, movhicc+5, movdicc+5): Call
+	output_int_conditional_move () to output int conditional move.
+	(movsfcc+5, movdfcc+5, movxfcc+5): Call
+	output_fp_conditional_move () to output floating point
+	conditional move.
+
+	* i386/i386.c (put_condition_code): In INT mode, check
+	cc_prev_status.flags & CC_NO_OVERFLOW for GE and LT.
+
 Thu Jun  4 16:09:51 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* dbxout.c (dbxout_type): Output arrays of bits as if

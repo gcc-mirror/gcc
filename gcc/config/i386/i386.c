@@ -3097,7 +3097,10 @@ put_condition_code (code, reverse_cc, mode, file)
 	return;
 
       case GE:
-	fputs ("ge", file);
+	if (cc_prev_status.flags & CC_NO_OVERFLOW)
+	  fputs ("ns", file);
+	else
+	  fputs ("ge", file);
 	return;
 
       case GT:
@@ -3109,7 +3112,10 @@ put_condition_code (code, reverse_cc, mode, file)
 	return;
 
       case LT:
-	fputs ("l", file);
+	if (cc_prev_status.flags & CC_NO_OVERFLOW)
+	  fputs ("s", file);
+	else
+	  fputs ("l", file);
 	return;
 
       case GEU:
@@ -5129,6 +5135,127 @@ output_strlen_unroll (operands)
   output_asm_insn (AS1 (inc%L0,%0), xops);
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[12]));
+
+  return "";
+}
+
+char *
+output_fp_conditional_move (which_alternative, operands)
+     int which_alternative;
+     rtx operands[];
+{
+  int code = GET_CODE (operands[1]);
+
+  /* This is very tricky. We have to do it right. For a code segement
+     like:
+
+	int foo;
+	double bar;
+	....
+	foo = foo - x;
+	if (foo >= 0)
+	  bar = y;
+
+     final_scan_insn () may delete the insn which sets CC. We have to
+     tell final_scan_insn () if it should be reinserted. When CODE is
+     GT or LE, we have to check the CC_NO_OVERFLOW bit and return
+     NULL_PTR to tell final to reinsert the test insn because the
+     conditional move cannot be handled properly without it. */
+  if ((code == GT || code == LE)
+      && (cc_prev_status.flags & CC_NO_OVERFLOW))
+    return NULL_PTR;
+
+  switch (which_alternative)
+    {
+    case 0:
+      /* r <- cond ? arg : r */
+      output_asm_insn (AS2 (fcmov%F1,%2,%0), operands);
+      break;
+  
+    case 1:
+      /* r <- cond ? r : arg */
+      output_asm_insn (AS2 (fcmov%f1,%3,%0), operands);
+      break;
+
+    case 2:
+      /* r <- cond ? r : arg */
+      output_asm_insn (AS2 (fcmov%F1,%2,%0), operands);
+      output_asm_insn (AS2 (fcmov%f1,%3,%0), operands);
+      break;
+
+    default:
+      abort ();
+    }
+
+  return "";
+}
+
+char *
+output_int_conditional_move (which_alternative, operands)
+     int which_alternative;
+     rtx operands[];
+{
+  int code = GET_CODE (operands[1]);
+  enum machine_mode mode;
+  rtx xops[4];
+
+  /* This is very tricky. We have to do it right. For a code segement
+     like:
+
+	int foo, bar;
+	....
+	foo = foo - x;
+	if (foo >= 0)
+	  bar = y;
+
+     final_scan_insn () may delete the insn which sets CC. We have to
+     tell final_scan_insn () if it should be reinserted. When CODE is
+     GT or LE, we have to check the CC_NO_OVERFLOW bit and return
+     NULL_PTR to tell final to reinsert the test insn because the
+     conditional move cannot be handled properly without it. */
+  if ((code == GT || code == LE)
+      && (cc_prev_status.flags & CC_NO_OVERFLOW))
+    return NULL_PTR;
+
+  mode = GET_MODE (operands [0]);
+  if (mode == DImode)
+    {
+      xops [0] = gen_rtx_SUBREG (SImode, operands [0], 1);
+      xops [1] = operands [1];
+      xops [2] = gen_rtx_SUBREG (SImode, operands [2], 1);
+      xops [3] = gen_rtx_SUBREG (SImode, operands [3], 1);
+    }
+
+  switch (which_alternative)
+    {
+    case 0:
+      /* r <- cond ? arg : r */
+      output_asm_insn (AS2 (cmov%C1,%2,%0), operands);
+      if (mode == DImode)
+	output_asm_insn (AS2 (cmov%C1,%2,%0), xops);
+      break;
+
+    case 1:
+      /* r <- cond ? r : arg */
+      output_asm_insn (AS2 (cmov%c1,%3,%0), operands);
+      if (mode == DImode)
+	output_asm_insn (AS2 (cmov%c1,%3,%0), xops);
+      break;
+
+    case 2:
+      /* rm <- cond ? arg1 : arg2 */
+      output_asm_insn (AS2 (cmov%C1,%2,%0), operands);
+      output_asm_insn (AS2 (cmov%c1,%3,%0), operands);
+      if (mode == DImode)
+	{
+	  output_asm_insn (AS2 (cmov%C1,%2,%0), xops);
+	  output_asm_insn (AS2 (cmov%c1,%3,%0), xops);
+	}
+      break;
+
+    default:
+      abort ();
+    }
 
   return "";
 }
