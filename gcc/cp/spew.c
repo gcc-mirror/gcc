@@ -1,5 +1,5 @@
 /* Type Analyzer for GNU C++.
-   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998, 1999 Free Software Foundation, Inc.
    Hacked... nay, bludgeoned... by Mark Eichin (eichin@cygnus.com)
 
 This file is part of GNU CC.
@@ -305,6 +305,16 @@ yylex ()
 #endif
       goto retry;
 
+    case '(':
+      scan_tokens (1);
+      if (nth_token (1)->yychar == ')')
+	{
+	  consume_token ();
+	  tmp_token.yychar = LEFT_RIGHT;
+	}
+      consume_token ();
+      break;
+
     case IDENTIFIER:
       scan_tokens (1);
       if (nth_token (1)->yychar == SCOPE)
@@ -361,21 +371,31 @@ yylex ()
       break;
 
     case SCSPEC:
+      if (tmp_token.yylval.ttype == ridpointers[RID_EXTERN])
+	{
+	  scan_tokens (1);
+	  if (nth_token (1)->yychar == STRING)
+	    {
+	      tmp_token.yychar = EXTERN_LANG_STRING;
+	      tmp_token.yylval.ttype = get_identifier
+		(TREE_STRING_POINTER (nth_token (1)->yylval.ttype));
+	      consume_token ();
+	    }
+	}
       /* If export, warn that it's unimplemented and go on. */
-      if (tmp_token.yylval.ttype == get_identifier("export"))
+      else if (tmp_token.yylval.ttype == ridpointers[RID_EXPORT])
 	{
 	  warning ("keyword 'export' not implemented and will be ignored");
 	  consume_token ();
 	  goto retry;
 	}
-      else
-	{
-	  ++first_token;
-	  break;
-	}
+      /* do_aggr needs to check if the previous token was `friend',
+	 so just increment first_token instead of calling consume_token.  */
+      ++first_token;
+      break;
 
     case NEW:
-      /* do_aggr needs to check if the previous token was RID_NEW,
+      /* do_aggr needs to check if the previous token was `new',
 	 so just increment first_token instead of calling consume_token.  */
       ++first_token;
       break;

@@ -69,21 +69,20 @@ typedef union {long itype; tree ttype; char *strtype; enum tree_code code; flagg
 #define	PLUSPLUS	325
 #define	MINUSMINUS	326
 #define	HYPERUNARY	327
-#define	PAREN_STAR_PAREN	328
-#define	POINTSAT	329
-#define	TRY	330
-#define	CATCH	331
-#define	PRE_PARSED_FUNCTION_DECL	332
-#define	EXTERN_LANG_STRING	333
-#define	ALL	334
-#define	PRE_PARSED_CLASS_DECL	335
-#define	DEFARG	336
-#define	DEFARG_MARKER	337
-#define	TYPENAME_DEFN	338
-#define	IDENTIFIER_DEFN	339
-#define	PTYPENAME_DEFN	340
-#define	END_OF_LINE	341
-#define	END_OF_SAVED_INPUT	342
+#define	POINTSAT	328
+#define	TRY	329
+#define	CATCH	330
+#define	PRE_PARSED_FUNCTION_DECL	331
+#define	EXTERN_LANG_STRING	332
+#define	ALL	333
+#define	PRE_PARSED_CLASS_DECL	334
+#define	DEFARG	335
+#define	DEFARG_MARKER	336
+#define	TYPENAME_DEFN	337
+#define	IDENTIFIER_DEFN	338
+#define	PTYPENAME_DEFN	339
+#define	END_OF_LINE	340
+#define	END_OF_SAVED_INPUT	341
 
 
 extern YYSTYPE yylval;

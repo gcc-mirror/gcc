@@ -1176,8 +1176,8 @@ struct lang_type
 
 /* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
    this type can raise.  Each TREE_VALUE is a _TYPE.  The TREE_VALUE
-   will be NULL_TREE to indicate a throw specification of `(...)', or,
-   equivalently, no throw specification.  */
+   will be NULL_TREE to indicate a throw specification of `()', or
+   no exceptions allowed.  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_NONCOPIED_PARTS (NODE)
 
 /* For FUNCTION_TYPE or METHOD_TYPE, return 1 iff it is declared `throw()'.  */

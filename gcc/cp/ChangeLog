@@ -1,3 +1,50 @@
+1999-07-20  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lang-specs.h (c++-cpp-output): Pass -fpreprocessed.
+
+	* lex.c (token_getch, token_put_back): New fns.
+	(real_yylex): Use them.
+
+	* lex.c (lang_init): Generalize.
+	(lang_init_options): Tell cpplib this is C++.
+	(nextchar): Remove.  Replace uses with put_back.
+	(skip_white_space): Handle linemode here.  Optimize for cpplib.
+	(extend_token_buffer_to): New fn.
+	(extend_token_buffer): Use it.
+	(read_line_number, check_newline): Just deal with tokens.
+	(real_yylex): More cpplib optimizations.  Simplify.  Don't produce
+	EXTERN_LANG_STRING, LEFT_RIGHT or PAREN_STAR_PAREN here.
+	* spew.c (yylex): Produce LEFT_RIGHT and EXTERN_LANG_STRING.
+	* parse.y (PAREN_STAR_PAREN): Remove.
+	* input.c: Don't use the putback machinery with cpplib.
+	(sub_getch): Fold back into getch.
+	(getch): Don't handle linemode here.
+	(feed_input): Unget any text in the token buffer.
+
+	* lex.c	(set_typedecl_interface_info, set_vardecl_interface_info,
+	nextyychar, nextyylval): Remove.
+
+1999-07-20  Michael Tiemann  <tiemann@holodeck.cygnus.com>
+	    Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (indent_level): New variable.
+	(init_parse): Set cpp_token to CPP_DIRECTIVE.
+	(consume_string): Make this smart about USE_CPPLIB.
+	(yyungetc): Use put_back function.
+	(pragma_getc, pragma_ungetc): Functions deleted.
+	(check_newline): Rewrite to be intelligent about USE_CPPLIB.
+	Also, call HANDLE_PRAGMA with getch, yyungetc, not pragma_getc and
+	pragma_ungetc.
+	(real_yylex): Rewrite to be intelligent about USE_CPPLIB.
+	Also, clean up cases where we redundantly set token_buffer[0].
+	(read_line_number): New fn.
+	* input.c (feed_input): Use integrated cpplib if USE_CPPLIB.
+	(end_input): Call cpp_pop_buffer if USE_CPPLIB.
+	(sub_getch): Conditionalize out code that's not appropriate if
+	USE_CPPLIB.
+	(put_back): Rewrite in case USE_CPPLIB is defined.
+	(input_redirected): Ditto.
+
 Tue Jul 20 11:24:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cp-tree.h: Delete lots of declarations of tree nodes; replaced by

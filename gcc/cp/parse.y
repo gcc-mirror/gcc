@@ -178,7 +178,7 @@ empty_parms ()
 %left <code> POINTSAT_STAR DOT_STAR
 %right <code> UNARY PLUSPLUS MINUSMINUS '~'
 %left HYPERUNARY
-%left <ttype> PAREN_STAR_PAREN LEFT_RIGHT
+%left <ttype> LEFT_RIGHT
 %left <code> POINTSAT '.' '(' '['
 
 %right SCOPE			/* C++ extension */
@@ -3174,7 +3174,6 @@ direct_abstract_declarator:
 	  '(' absdcl_intern ')'
 		{ $$ = $2; }
 	  /* `(typedef)1' is `int'.  */
-	| PAREN_STAR_PAREN
 	| direct_abstract_declarator '(' parmlist ')' cv_qualifiers exception_specification_opt  %prec '.'
 		{ $$ = make_call_declarator ($$, $3, $5, $6); }
 	| direct_abstract_declarator LEFT_RIGHT cv_qualifiers exception_specification_opt  %prec '.'
