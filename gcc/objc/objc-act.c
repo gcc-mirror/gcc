@@ -148,6 +148,7 @@ char *util_firstobj;
 
 static void init_objc				PARAMS ((void));
 static void finish_objc				PARAMS ((void));
+static void objc_post_options			PARAMS ((void));
 
 /* Code generation.  */
 
@@ -625,6 +626,15 @@ static int generating_instance_variables = 0;
    features and output a C header file with appropriate definitions. */
 
 static int print_struct_values = 0;
+
+/* Each front end provides its own.  */
+struct lang_hooks lang_hooks = {objc_post_options};
+
+/* Post-switch processing.  */
+static void
+objc_post_options ()
+{
+}
 
 /* Some platforms pass small structures through registers versus through
    an invisible pointer.  Determine at what size structure is the 

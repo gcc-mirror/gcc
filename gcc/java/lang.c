@@ -186,6 +186,9 @@ static int dependency_tracking = 0;
 #define DEPEND_TARGET_SET 4
 #define DEPEND_FILE_ALREADY_SET 8
 
+/* Each front end provides its own.  */
+struct lang_hooks lang_hooks = {NULL /* post_options */};
+
 /* Process an option that can accept a `no-' form.
    Return 1 if option found, 0 otherwise.  */
 static int

@@ -14676,6 +14676,9 @@ insert_block (block)
     = chainon (current_binding_level->blocks, block);
 }
 
+/* Each front end provides its own.  */
+struct lang_hooks lang_hooks = {NULL /* post_options */};
+
 int
 lang_decode_option (argc, argv)
      int argc;

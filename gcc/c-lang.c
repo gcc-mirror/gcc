@@ -38,10 +38,19 @@ Boston, MA 02111-1307, USA.  */
 
 static int c_tree_printer PARAMS ((output_buffer *));
 static int c_missing_noreturn_ok_p PARAMS ((tree));
+static void c_post_options PARAMS ((void));
+
+/* Each front end provides its own.  */
+struct lang_hooks lang_hooks = {c_post_options};
+
+/* Post-switch processing.  */
+static void
+c_post_options ()
+{
+}
 
 /* Each of the functions defined here
    is an alternative to a function in objc-actions.c.  */
-
 int
 lang_decode_option (argc, argv)
      int argc;
