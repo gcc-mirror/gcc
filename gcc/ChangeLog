@@ -1,3 +1,9 @@
+2000-08-08  Jason Eckhardt  <jle@cygnus.com>
+
+	* config/i860/i860.c (singlemove_string): Do not generate assembler
+	pseudo instructions that must be expanded (that is, with signed
+	constants larger than 16 bits).
+
 2000-08-08  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (life_analysis): Only turn off PROP_LOG_LINKS and
