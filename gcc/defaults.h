@@ -118,3 +118,16 @@ do { fprintf (FILE, "\t%s\t", ASM_SHORT);				\
 #define ASM_IDENTIFY_LANGUAGE(FILE) output_lang_identify (FILE);
 #endif
 #endif
+
+/* This is how we tell the assembler to equate two values.  */
+#ifdef SET_ASM_OP
+#ifndef ASM_OUTPUT_DEF
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
+ do {	fprintf ((FILE), "\t%s\t", SET_ASM_OP);				\
+	assemble_name (FILE, LABEL1);					\
+	fprintf (FILE, ",");						\
+	assemble_name (FILE, LABEL2);					\
+	fprintf (FILE, "\n");						\
+  } while (0)
+#endif
+#endif
