@@ -1,3 +1,10 @@
+2004-06-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/i386/darwin.h (HOT_TEXT_SECTION_NAME): Define.
+	(NORMAL_TEXT_SECTION_NAME): Define.
+	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Define.
+	(SECTION_FORMAT_STRING): Define.
+
 2004-06-18  Steven Bosscher  <stevenb@suse.de>
 
 	* config/xtensa/xtensa.c
