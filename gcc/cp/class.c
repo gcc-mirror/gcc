@@ -81,7 +81,7 @@ tree current_class_ptr, current_class_ref;
 tree current_class_name;	/* IDENTIFIER_NODE: name of current class */
 tree current_class_type;	/* _TYPE: the type of the current class */
 tree previous_class_type;	/* _TYPE: the previous type that was a class */
-tree previous_class_values;		/* TREE_LIST: copy of the class_shadowed list
+tree previous_class_values;	/* TREE_LIST: copy of the class_shadowed list
 				   when leaving an outermost class scope.  */
 
 struct base_info;
@@ -89,7 +89,6 @@ struct base_info;
 static tree get_vfield_name PROTO((tree));
 static void finish_struct_anon PROTO((tree));
 static tree build_vbase_pointer PROTO((tree, tree));
-static int complete_type_p PROTO((tree));
 static tree build_vtable_entry PROTO((tree, tree));
 static tree get_vtable_name PROTO((tree));
 static tree get_derived_offset PROTO((tree, tree));
@@ -176,6 +175,7 @@ build_vbase_pointer (exp, type)
   return build_component_ref (exp, get_identifier (name), NULL_TREE, 0);
 }
 
+#if 0
 /* Is the type of the EXPR, the complete type of the object?
    If we are going to be wrong, we must be conservative, and return 0.  */
 
@@ -221,6 +221,7 @@ complete_type_p (expr)
     }
   return 0;
 }
+#endif
 
 /* Build multi-level access to EXPR using hierarchy path PATH.
    CODE is PLUS_EXPR if we are going with the grain,

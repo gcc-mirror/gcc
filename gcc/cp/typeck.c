@@ -1067,7 +1067,6 @@ comp_target_types (ttl, ttr, nptrs)
   else if (TREE_CODE (ttr) == OFFSET_TYPE)
     {
       int base;
-      tree tmp;
 
       /* Contravariance: we can assign a pointer to base member to a pointer
 	 to derived member.  Note difference from simple pointer case, where

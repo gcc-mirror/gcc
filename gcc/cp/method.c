@@ -1237,8 +1237,6 @@ process_overload_item (parmtype, extra_Gcode)
     case ARRAY_TYPE:
 #if PARM_CAN_BE_ARRAY_TYPE
       {
-        tree length;
-
         OB_PUTC ('A');
         if (TYPE_DOMAIN (parmtype) == NULL_TREE)
 	  OB_PUTC ('_');
