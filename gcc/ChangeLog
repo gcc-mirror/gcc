@@ -1,3 +1,13 @@
+Mon Oct 29 12:43:06 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (purge_all_dead_edges): Add update_life_p argument.
+	* cfgcleanup.c (merge_blocks): Update the life flag after merging;
+	fix warning.
+	* cfgrtl.c (purge_all_dead_edges): Allow updating of liveness.
+	(life_analysis): call purge_all_dead_edges after deleting noops.
+	(delete_noop_move): Do not purge CFG.
+	* toplev.c (rest_of_compilation): Update purge_all_dead_edges call.
+
 2001-10-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix31.h (ASM_OUTPUT_EXTERNAL): Use assemble_name.

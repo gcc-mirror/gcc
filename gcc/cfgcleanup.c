@@ -433,6 +433,12 @@ merge_blocks (e, b, c, mode)
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)
     {
+      /* We need to update liveness in case C already has broken liveness
+	 or B ends by conditional jump to next instructions that will be
+	 removed.  */
+      if ((BB_FLAGS (c) & BB_UPDATE_LIFE)
+	  || GET_CODE (b->end) == JUMP_INSN)
+	BB_SET_FLAG (b, BB_UPDATE_LIFE);
       merge_blocks_nomove (b, c);
       update_forwarder_flag (b);
 
@@ -490,7 +496,7 @@ merge_blocks (e, b, c, mode)
 
       if (b_has_incoming_fallthru)
 	{
-	  rtx bb;
+	  basic_block bb;
 	  if (b_fallthru_edge->src == ENTRY_BLOCK_PTR)
 	    return false;
 	  bb = force_nonfallthru (b_fallthru_edge);

@@ -1923,10 +1923,30 @@ purge_dead_edges (bb)
  */
 
 bool
-purge_all_dead_edges ()
+purge_all_dead_edges (update_life_p)
+     bool update_life_p;
 {
   int i, purged = false;
+  sbitmap blocks;
+
+  if (update_life_p)
+    {
+      blocks = sbitmap_alloc (n_basic_blocks);
+      sbitmap_zero (blocks);
+    }
   for (i = 0; i < n_basic_blocks; i++)
-    purged |= purge_dead_edges (BASIC_BLOCK (i));
+    {
+      bool purged_here;
+      purged_here = purge_dead_edges (BASIC_BLOCK (i));
+      purged |= purged_here;
+      if (purged_here && update_life_p)
+	SET_BIT (blocks, i);
+    }
+  if (update_life_p && purged)
+    update_life_info (blocks, UPDATE_LIFE_GLOBAL,
+		      PROP_DEATH_NOTES | PROP_SCAN_DEAD_CODE
+		      | PROP_KILL_DEAD_CODE);
+  if (update_life_p)
+    sbitmap_free (blocks);
   return purged;
 }
