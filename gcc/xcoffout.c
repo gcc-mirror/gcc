@@ -39,7 +39,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifdef XCOFF_DEBUGGING_INFO
 
 /* This defines the C_* storage classes.  */
-#include "dbxstclass.h"
+#include "xcoff.h"
 #include "xcoffout.h"
 #include "dbxout.h"
 #include "gstab.h"
