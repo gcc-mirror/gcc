@@ -1354,11 +1354,7 @@ struct tree_decl
   int linenum;
   unsigned int uid;
   union tree_node *size;
-#ifdef ONLY_INT_FIELDS
-  int mode : 8;
-#else
-  enum machine_mode mode : 8;
-#endif
+  ENUM_BITFIELD(machine_mode) mode : 8;
 
   unsigned external_flag : 1;
   unsigned nonlocal_flag : 1;

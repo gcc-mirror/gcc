@@ -1,3 +1,7 @@
+2000-04-24  Robert Lipe <robertlipe@usa.net>
+
+	* tree.h (tree_decl): Member `mode' now ENUM_BITFIELD.
+
 2000-04-24  Hiroyuki Machida <machida@sm.sony.co.jp>
 
 	* combine.c (try_combine): Update reg_nonzero_bits of

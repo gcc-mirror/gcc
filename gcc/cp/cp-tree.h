@@ -1854,11 +1854,7 @@ struct lang_type
 
 struct lang_decl_flags
 {
-#ifdef ONLY_INT_FIELDS
-  int language : 8;
-#else
-  enum languages language : 8;
-#endif
+  ENUM_BITFIELD(languages) language : 8;
 
   unsigned operator_attr : 1;
   unsigned constructor_attr : 1;
