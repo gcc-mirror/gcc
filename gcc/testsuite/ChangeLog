@@ -1,5 +1,11 @@
 2003-06-25  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10990
+	* g++.dg/rtti/dyncast1.C: New test.
+	* g++.dg/abi/mangle4.C: Correct base-specifier access.
+	* g++.dg/lookup/scoped1.C: Remove XFAIL.
+	* g++.old-deja/g++.martin/pmf1.C: Correct base-specifier access.
+
 	PR c++/10931
 	* g++.dg/expr/static_cast1.C: New test.
 	
