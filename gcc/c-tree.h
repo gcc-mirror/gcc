@@ -179,6 +179,7 @@ extern void finish_function (void);
 extern tree finish_struct (tree, tree, tree);
 extern tree get_parm_info (bool);
 extern tree grokfield (tree, tree, tree);
+extern void split_specs_attrs (tree, tree *, tree *);
 extern tree groktypename (tree);
 extern tree groktypename_in_parm_context (tree);
 extern tree grokparm (tree);

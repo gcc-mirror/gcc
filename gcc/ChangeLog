@@ -1,3 +1,11 @@
+2004-08-31  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* attribs.c (strip_attrs): Remove.
+	(split_specs_attrs): Move ...
+	* c-decl.c: ... to here.
+	* tree.h (split_specs_attrs, strip_attrs): Remove.
+	* c-tree.h (split_specs_attrs): Declare.
+
 2004-08-31  Richard Sandiford  <rsandifo@redhat.com>
 
 	* read-rtl.c: Disable RTL checking.
