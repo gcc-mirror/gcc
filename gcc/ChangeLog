@@ -1,3 +1,8 @@
+2001-12-13  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* toplev.c (process_options, parse_options_and_default_flags):
+	Set flag_no_inline before the post_options hook.
+
 2001-12-13  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c (adjust_address_1): Don't adjust address if adjust

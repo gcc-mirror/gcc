@@ -4762,15 +4762,11 @@ parse_options_and_default_flags (argc, argv)
 	}
     }
 
-  /* All command line options have been parsed; allow the front end to
-     perform consistency checks, etc.  */
-  (*lang_hooks.post_options) ();
-}
-
-/* Process the options that have been parsed.  */
-static void
-process_options ()
-{
+  /* Set flag_no_inline before the post_options () hook.  The C front
+     ends use it to determine tree inlining defaults.  FIXME: such
+     code should be lang-independent when all front ends use tree
+     inlining, in which case it, and this condition, should be moved
+     to the top of process_options() instead.  */
   if (optimize == 0)
     {
       /* Inlining does not work if not optimizing,
@@ -4785,6 +4781,15 @@ process_options ()
 	warning ("-Wuninitialized is not supported without -O");
     }
 
+  /* All command line options have been parsed; allow the front end to
+     perform consistency checks, etc.  */
+  (*lang_hooks.post_options) ();
+}
+
+/* Process the options that have been parsed.  */
+static void
+process_options ()
+{
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
   OVERRIDE_OPTIONS;
