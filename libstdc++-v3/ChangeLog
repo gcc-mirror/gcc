@@ -1,3 +1,13 @@
+2004-04-29  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/ext/malloc_allocator.h: Fixed the construct function to
+	call global placement new instead of assignment. Added a check
+	after the return from malloc to check whether returned pointer is
+	NULL, and if so, throw std::bad_alloc().	
+	* include/ext/debug_allocator.h: Added a check in the deallocate
+	function to check whether the user has passed a NULL pointer or
+	not.
+
 2004-04-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/20_util/allocator.html: Add bitmap_allocator links.
