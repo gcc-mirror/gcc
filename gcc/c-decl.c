@@ -1843,7 +1843,14 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       if (TREE_THIS_VOLATILE (newdecl))
 	{
 	  TREE_THIS_VOLATILE (write_olddecl) = 1;
-	  if (TREE_CODE (newdecl) == VAR_DECL)
+	  if (TREE_CODE (newdecl) == VAR_DECL
+	      /* If an automatic variable is re-declared in the same
+		 function scope, but the old declaration was not
+		 volatile, make_var_volatile() would crash because the
+		 variable would have been assigned to a pseudo, not a
+		 MEM.  Since this duplicate declaration is invalid
+		 anyway, we just skip the call.  */
+	      && errmsg == 0)
 	    make_var_volatile (newdecl);
 	}
 

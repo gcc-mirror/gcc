@@ -1,3 +1,8 @@
+2000-07-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* c-decl.c (duplicate_decls): Do not call make_var_volatile() in
+	case of invalid volatile re-declaration.
+
 2000-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* calls.c (store_arg): Return non-zero if sibcall_failure is
