@@ -46,9 +46,18 @@ Tue Nov 11 01:40:17 1997  Oleg Krivosheev <kriol@fnal.gov>
 
 	* iomanip.h: Fix guiding decls.
 
+1997-11-05  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* libio.h (__P): Name its arg `p' instead of `params'.
+	Avoids problems with an unchanged Solaris math.h header.
+
 Wed Oct 29 23:01:47 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* gen-params: Override NULL.
+
+1997-10-27 03:53  Ulrich Drepper  <drepper@cygnus.com>
+
+	* stdio-lock.h: Removed.  Was never needed.
 
 Wed Oct 22 19:19:32 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
@@ -112,7 +121,7 @@ Sun Sep 28 12:04:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libio.h: Don't use _IO_LOCK_T if it's not defined.
 
-Fri Sep 26 20:56:41 1997  Ulrich Drepper  <drepper@rtl.cygnus.com>
+Fri Sep 26 20:56:41 1997
 
 	Based on a patch by H.J. Lu  (hjl@gnu.ai.mit.edu).
 
@@ -152,7 +161,7 @@ Fri Sep 26 20:56:41 1997  Ulrich Drepper  <drepper@rtl.cygnus.com>
 
 	* tests/tFile.cc (tempfile): Fix a typo.
 
-Fri Sep 19 11:52:25 1997  Jim Wilson  <wilson@cygnus.com>
+1997-09-19 11:52  Jim Wilson  <wilson@cygnus.com>
 
 	* Makefile.in (LIBIO_OBJECTS): Depend on _G_CONFIG_H.
 
@@ -165,7 +174,6 @@ Fri Sep 19 11:52:25 1997  Jim Wilson  <wilson@cygnus.com>
 1997-09-17 02:50  Ulrich Drepper  <drepper@cygnus.com>
 
 	* libioP.h: Define __set_errno if not already defined.
-	* fileops.c: Don't try to define __set_errno, it's already defined.
 
 1997-09-15 02:37  Ulrich Drepper  <drepper@cygnus.com>
 
@@ -480,7 +488,7 @@ Sat Apr 26 13:38:21 1997  Bob Manson  <manson@charmed.cygnus.com>
 	* configure.in (configdirs): Add testsuite directory.
 
 	* testsuite/ChangeLog:
-	* testsuite/Makefile.in: 
+	* testsuite/Makefile.in:
 	* testsuite/libio.tests/tiomanip.exp:
 	* testsuite/libio.tests/tstdiomisc.exp:
 	* testsuite/libio.tests/tiomisc.exp:
@@ -491,12 +499,12 @@ Sat Apr 26 13:38:21 1997  Bob Manson  <manson@charmed.cygnus.com>
 	* testsuite/libio.tests/putbackdog.exp:
 	* testsuite/configure.in:
 	* testsuite/lib/libio.exp:
-	* testsuite/config/default.exp: 
+	* testsuite/config/default.exp:
 	New files for DejaGnu-style testsuite.
-	
+
 Fri Apr  4 03:16:44 1997  Ulrich Drepper  <drepepr@cygnus.com>
 
-	* configure.in: Enable multilibing by default. 
+	* configure.in: Enable multilibing by default.
 	Update multilib template to read config-ml.in.
 
 	* floatconv.c: Enable use in cross targets which use the
@@ -600,7 +608,7 @@ Tue May 14 11:47:21 1996  Per Bothner  <bothner@andros.cygnus.com>
 	* strstream.h, strstream.cc (strstreambase::strstreambase()):  Call
 	ios::init here.
  	(other constructors):  Simplify - init already called.
-	
+
 Tue May 14 10:55:21 1996  Per Bothner  <bothner@deneb.cygnus.com>
 
 	Change so that strstreambuf default constructor does no allocation.
@@ -611,12 +619,12 @@ Tue May 14 10:55:21 1996  Per Bothner  <bothner@deneb.cygnus.com>
 	buffer, to handle case when initial size is 0.
 
 	* iostdio.h (remove, rename, tmpfile, tempnam):  Comment out.
-	
+
 Mon May 13 23:19:39 1996  Per Bothner  <bothner@deneb.cygnus.com>
 
 	* fileops.c (_IO_file_close_it):  Just call _IO_do_flush rather
 	than _IO_file_sync, to avoid useless lseek.
-	
+
 Tue May 14 10:48:48 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* floatconv.c (_IO_strtod): Force rv into the stack.
@@ -690,7 +698,7 @@ Tue Feb 27 18:08:16 1996  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* streambuf.h (ios):  Add ios::binary;  deprecate ios::bin.
 	* filebuf.cc (filebuf::open):  Handle ios::binary.
-	
+
 Fri Feb  9 12:40:19 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* cleanup.c (_IO_cleanup_registration_needed) [!_G_HAVE_ATEXIT]: Init
@@ -823,7 +831,7 @@ Wed Oct 25 11:14:25 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 	* libio.h (_IO_seekoff, _IO_seekpos):  New declarations.
 	* libioP.h (_IO_seekoff, _IO_seekpos):  Remove declarations.
 	* libioP.h:  Cleanup;  remove old !_IO_UNIFIED_JUMPTABLES stuff.
-	
+
 	* filebuf.cc (filebuf::~filebuf):  Only call SYSYCLOSE if currently
 	open.  Bug found by Martin Gerbershagen <ger@ezis-ulm.de>.
 
@@ -891,7 +899,7 @@ Fri Aug  4 23:21:17 1995  Paul Eggert  <eggert@twinsun.com>
 	that do not have a space before the defined type name,
 	e.g. `typedef void *__gnuc_va_list;' as in Linux.  Also,
 	not require a space in the definiens, e.g. `typedef void*foo;'.
-	
+
 Thu Aug  3 17:54:15 1995  Per Bothner  <bothner@kalessin.cygnus.com>
 
 	* iostream.h, iostream.cc (istream::sync):  Added missing method.
@@ -1670,7 +1678,7 @@ Fri Feb 11 11:08:01 1994  SBPM Marc GINGOLD (marc@david.saclay.cea.fr)
 	* iovfprintf.c (helper_vfprintf): add
 	  hp->_IO_file_flags = _IO_MAGIC|(_IO_IS_FILEBUF+_IO_NO_READS);
 	[This is needed because _IO_vfprintf checks for _IO_UNBUFFERED. -PB]
-	[Actually:  don't set _IO_IS_FILEBUF. -PB]  
+	[Actually:  don't set _IO_IS_FILEBUF. -PB]
 
 Wed Jun 22 13:49:22 1994  Per Bothner  (bothner@kalessin.cygnus.com)
 
@@ -2150,7 +2158,7 @@ Wed Nov  3 10:20:49 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	_IO_read_base, _IO_read_pre, IO_read_end, _IO_write_base,
 	_IO_write_ptr, _IO_write_end).
 	* libio.h:  Remove the old macros (which fixes a conflict.
-	
+
 Mon Nov  1 15:22:12 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	* iostream.cc:  Use _IO_sputn instead of sputn.  _IO_sputn does
@@ -2193,7 +2201,7 @@ Thu Oct 21 19:24:02 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 Wed Oct 20 15:22:04 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
-	* streambuf.h (streambuf::underflow, streambuf::overflow): 
+	* streambuf.h (streambuf::underflow, streambuf::overflow):
 	Don't make virtual functions pure.
 	* streambuf.cc (streambuf::underflow, streambuf::overflow):
 	Default definitions (return EOF).
@@ -2275,7 +2283,7 @@ Mon Sep 27 14:04:47 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 	* procbuf.cc:  Now just a C++ wrapper for the files in iopopen.c.
 	* streambuf.h (ios::unsetf):  Return complete old value of flags.
 	* iogets.c (_IO_gets(), ioungetc.c (_IO_ungetc), ioperror.c
-	(_IO_perror), iostrerror.c (_IO_strerror):  New files and 
+	(_IO_perror), iostrerror.c (_IO_strerror):  New files and
 	functions, for stdio implementation.
 	* iostdio.h:  Add declarations for various recently-added functions.
 
@@ -2341,7 +2349,7 @@ Wed Aug 18 19:34:04 1993  david d `zoo' zuhn  (zoo@rtl.cygnus.com)
 	* configure.in (INSTALLDIR): handle native vs. cross case
 
 	* Makefile.in (install): don't use $TARGETLIB, set INSTALLDIR to
-	$(libdir) 
+	$(libdir)
 
 Wed Aug 18 12:10:03 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
@@ -2357,5 +2365,3 @@ Tue Aug 17 17:34:24 1993  Per Bothner  (bothner@kalessin.cygnus.com)
 
 	New directory.  Based on old libg++/iostream code,
 	but extensively re-written.
-
-

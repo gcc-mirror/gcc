@@ -55,9 +55,9 @@
 #  include <sys/cdefs.h>
 # else
 #  ifdef __STDC__
-#   define __P(protos) protos
+#   define __P(p) p
 #  else
-#   define __P(protos) ()
+#   define __P(p) ()
 #  endif
 # endif
 #endif /*!__P*/
