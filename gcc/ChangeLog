@@ -1,3 +1,7 @@
+Thu Feb 15 10:52:31 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (extendsfdf2_2): Fix constraints.
+
 Thu Feb 15 09:46:21 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (fop_df_3 splitter): Fix operand number.
