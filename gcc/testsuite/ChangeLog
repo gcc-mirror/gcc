@@ -1,3 +1,7 @@
+2003-11-03  Gernot Hillier  <gernot.hillier@siemens.com>
+
+	* g++.old-deja/g++.pt/asm1.C: Enable for e.g. x86_64-*-linux-gnu.
+
 2003-11-05  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/11616
@@ -59,7 +63,7 @@
 	* gcc.misc-tests/bprob.exp: Likewise.
 	* g77.dg/execute/20001201.x, 6367.x, io0.x, io1.x, u77-test.x: XFAIL
 	the execution test on arm-elf configs.
-	* g77.dg/execute/10197.x: New file.  XFAIL the execution test on 
+	* g77.dg/execute/10197.x: New file.  XFAIL the execution test on
 	configs that don't support scratch files.
 	* g77.dg/execute/u77-test.x: XFAIL compilation on arm-elf configs.
 
@@ -243,7 +247,7 @@
 	objc.dg/try-catch-4.m: Run on non-Darwin targets.
 	* objc.dg/zero-link-2.m: Remove blank line.
 	* objc.dg/zero-link-3.m: New test case.
-	
+
 2003-10-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* g77.f-torture/execute/980520-1.x: XFAIL at -O0.
@@ -337,10 +341,10 @@
 	PR c++/10147
 	* g++.dg/other/error4.C: Update error messages.
 	* g++.dg/template/ptrmem4.C: Likewise.
-	
+
 	PR c++/12337
 	* g++.dg/init/new9.C: New test.
-	
+
 	PR c++/12334, c++/12236, c++/8656
 	* g++.dg/ext/attrib8.C: New test.
 
@@ -348,7 +352,7 @@
 
 	* gcc.dg/debug/dwarf2-3.h: New test.
 	* gcc.dg/debug/dwarf2-3.c: New test case for -feliminate-dwarf2-dups.
-	
+
 2003-10-06  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
 
 	* g++.dg/opt/cfg2.C: New test.
@@ -469,7 +473,7 @@
 	objc.dg/method-{1-2}.m, objc.dg/proto-hier-1.m,
 	objc.dg/proto-lossage-1.m: Adjust for message wording changes.
 	* objc.dg/const-str-1.m: Fix constant string layout.
- 
+
 2003-09-24  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/cpp/Wunknown-pragmas-1.c: New test.
@@ -620,7 +624,7 @@
 2003-09-09  Devang Patel  <dpatel@apple.com>
 
 	* gcc.dg/darwin-ld-6.c: New test.
-	
+
 2003-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-explog-1.c: New testcase.
@@ -683,7 +687,7 @@
 
 	PR c++/11507
 	* g++.dg/lookup/scoped7.C: New test.
- 
+
 	PR c++/9574
 	* g++.dg/other/static1.C: New test.
 
@@ -692,10 +696,10 @@
 
 	PR c++/11432
 	* g++.dg/template/crash10.C: New test.
- 
+
 	PR c++/2478
 	* g++.dg/overload/VLA.C: New test.
- 
+
 	PR c++/10804
 	* g++.dg/template/call1.C: New test.
 
@@ -732,7 +736,7 @@
 
 2003-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* g++.old-deja/g++.ext/pretty2.C: Update for change 
+	* g++.old-deja/g++.ext/pretty2.C: Update for change
 	in __FUNCTION__.
 	* g++.old-deja/g++.ext/pretty3.C: Likewise.
 
@@ -740,7 +744,7 @@
 
 	PR c++/11922
 	* g++/dg/template/qualified-id1.C: New test.
-	
+
 	PR c++/12037
 	* g++.dg/warn/noeffect4.C: New test.
 
@@ -749,7 +753,7 @@
 	* g++.dg/ext/fnname1.C: New test. (__func__ for C++.)
 	* g++.dg/ext/fnname2.C: Likewise.
 	* g++.dg/ext/fnname3.C: Likewise.
-	
+
 2003-09-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/expr/lval1.C: New test.
@@ -769,7 +773,7 @@
 
 	PR c++/11553
 	* g++.dg/parse/friend3.C: New test.
-	
+
 2003-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11847
@@ -1078,7 +1082,7 @@
 
 	PR c++/11670
 	* g++.dg/expr/cast2.C: New test.
-	
+
 	PR c++/10530
 	* g++.dg/template/dependent-name2.C: New test.
 
@@ -1143,7 +1147,7 @@
 	* gcc.dg/torture/builtin-math-1.c: New test taken from
 	bits of gcc.dg/builtins-3.c, gcc.dg/builtins-5.c and also some
 	additional cases.
-	
+
 	* gcc.dg/builtins-3.c, gcc.dg/builtins-4.c, gcc.dg/builtins-5.c:
 	Delete.
 
@@ -1208,7 +1212,7 @@
 	* gcc.dg/tls/opt-7.c: New test.
 
 2003-07-31  Andrew Pinski  <pinskia@physics.uc.edu>
-	
+
 	* g++.old-deja/g++.other/crash18.C: Remove.
 
 2003-07-31  Nathan Sidwell  <nathan@codesourcery.com>
@@ -2580,7 +2584,7 @@
 
 2003-06-03  Glen Nakamura  <glen@imodulo.com>
 
- 	* gcc.dg/20020525-1.c: Replace 0x5a5a5a5a with -1.
+	* gcc.dg/20020525-1.c: Replace 0x5a5a5a5a with -1.
 
 2003-06-03  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -5881,7 +5885,7 @@
 
 2002-10-21  Mark Mitchell  <mark@codesourcery.com>
 
- 	* g++.dg/init/array6.C: Add additional tests.
+	* g++.dg/init/array6.C: Add additional tests.
 
 2002-10-21  Ulrich Weigand  <uweigand@de.ibm.com>
 
