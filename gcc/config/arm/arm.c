@@ -2099,9 +2099,6 @@ arm_encode_call_attribute (decl, flag)
   int          len = strlen (str);
   char *       newstr;
 
-  if (TREE_CODE (decl) != FUNCTION_DECL)
-    return;
-
   /* Do not allow weak functions to be treated as short call.  */
   if (DECL_WEAK (decl) && flag == SHORT_CALL_FLAG_CHAR)
     return;
@@ -2315,7 +2312,10 @@ legitimize_pic_address (orig, mode, reg)
       else
 	emit_insn (gen_pic_load_addr_thumb (address, orig));
 
-      if (GET_CODE (orig) == LABEL_REF && NEED_GOT_RELOC)
+      if ((GET_CODE (orig) == LABEL_REF
+	   || (GET_CODE (orig) == SYMBOL_REF && 
+	       ENCODED_SHORT_CALL_ATTR_P (XSTR (orig, 0))))
+	  && NEED_GOT_RELOC)
 	pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
       else
 	{
@@ -8599,7 +8599,9 @@ arm_assemble_integer (x, size, aligned_p)
       if (NEED_GOT_RELOC && flag_pic && making_const_table &&
 	  (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF))
 	{
-	  if (GET_CODE (x) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (x))
+	  if (GET_CODE (x) == SYMBOL_REF 
+	      && (CONSTANT_POOL_ADDRESS_P (x)
+		  || ENCODED_SHORT_CALL_ATTR_P (XSTR (x, 0))))
 	    fputs ("(GOTOFF)", asm_out_file);
 	  else if (GET_CODE (x) == LABEL_REF)
 	    fputs ("(GOTOFF)", asm_out_file);
