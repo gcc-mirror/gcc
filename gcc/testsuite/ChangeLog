@@ -5,7 +5,6 @@
 2002-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/arith-2.c: Remove.
-	* gcc.dg/cpp/arith-3.c: Don't set std=c99.
 
 2002-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
