@@ -1867,7 +1867,7 @@ dump_expr (t, flags)
 		}
 	      if (virtuals)
 		{
-		  dump_expr (TREE_VALUE (virtuals),
+		  dump_expr (BV_FN (virtuals),
 	                     flags | TS_EXPR_PARENS);
 		  break;
 		}

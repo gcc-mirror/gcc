@@ -2076,7 +2076,7 @@ mangle_ctor_vtbl_for_type (type, binfo)
 
 /* Return an identifier for the mangled name of a thunk to FN_DECL.
    OFFSET is the initial adjustment to this used to find the vptr.  If
-   VCALL_OFFSET is non-zero, this is a virtual thunk, and it is the
+   VCALL_OFFSET is non-NULL, this is a virtual thunk, and it is the
    vtbl offset in bytes.  
 
     <special-name> ::= Th <offset number> _ <base encoding>
@@ -2087,8 +2087,8 @@ mangle_ctor_vtbl_for_type (type, binfo)
 tree
 mangle_thunk (fn_decl, offset, vcall_offset)
      tree fn_decl;
-     int offset;
-     int vcall_offset;
+     tree offset;
+     tree vcall_offset;
 {
   const char *result;
   
@@ -2104,14 +2104,14 @@ mangle_thunk (fn_decl, offset, vcall_offset)
     write_char ('h');
 
   /* For either flavor, write the offset to this.  */
-  write_signed_number (offset);
+  write_integer_cst (offset);
   write_char ('_');
 
   /* For a virtual thunk, add the vcall offset.  */
-  if (vcall_offset != 0)
+  if (vcall_offset)
     {
       /* Virtual thunk.  Write the vcall offset and base type name.  */
-      write_signed_number (vcall_offset);
+      write_integer_cst (vcall_offset);
       write_char ('_');
     }
 

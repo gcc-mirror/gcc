@@ -1040,8 +1040,8 @@ returning to the thunk.  The first parameter to the thunk is always the
 value.  (The @code{THUNK_DELTA} is an @code{int}, not an
 @code{INTEGER_CST}.)  
 
-Then, if @code{THUNK_VCALL_OFFSET} (also an @code{int}) is non-zero the
-adjusted @code{this} pointer must be adjusted again.  The complete
+Then, if @code{THUNK_VCALL_OFFSET} (an @code{INTEGER_CST}) is non-zero
+the adjusted @code{this} pointer must be adjusted again.  The complete
 calculation is given by the following pseudo-code:
 
 @example

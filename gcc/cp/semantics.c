@@ -50,6 +50,7 @@ static tree expand_cond PARAMS ((tree));
 static tree maybe_convert_cond PARAMS ((tree));
 static tree simplify_aggr_init_exprs_r PARAMS ((tree *, int *, void *));
 static void deferred_type_access_control PARAMS ((void));
+static void emit_associated_thunks PARAMS ((tree));
 
 /* Record the fact that STMT was the last statement added to the
    statement tree.  */
@@ -2962,6 +2963,53 @@ simplify_aggr_init_exprs_r (tp, walk_subtrees, data)
   return NULL_TREE;
 }
 
+/* Emit all thunks to FN that should be emitted when FN is emitted.  */
+
+static void
+emit_associated_thunks (fn)
+     tree fn;
+{
+  /* When we use vcall offsets, we emit thunks with the virtual
+     functions to which they thunk. The whole point of vcall offsets
+     is so that you can know statically the entire set of thunks that
+     will ever be needed for a given virtual function, thereby
+     enabling you to output all the thunks with the function itself.  */
+  if (vcall_offsets_in_vtable_p () && DECL_VIRTUAL_P (fn))
+    {
+      tree binfo;
+      tree v;
+
+      for (binfo = TYPE_BINFO (DECL_CONTEXT (fn));
+	   binfo;
+	   binfo = TREE_CHAIN (binfo))
+	for (v = BINFO_VIRTUALS (binfo); v; v = TREE_CHAIN (v))
+	  if (BV_FN (v) == fn
+	      && (!integer_zerop (BV_DELTA (v))
+		  || BV_VCALL_INDEX (v)))
+	    {
+	      tree thunk;
+	      tree vcall_index;
+
+	      if (BV_USE_VCALL_INDEX_P (v))
+		{
+		  vcall_index = BV_VCALL_INDEX (v);
+		  my_friendly_assert (vcall_index != NULL_TREE, 20000621);
+		}
+	      else
+		vcall_index = NULL_TREE;
+
+	      thunk = make_thunk (build1 (ADDR_EXPR,
+					  vfunc_ptr_type_node,
+					  fn),
+				  BV_DELTA (v),
+				  vcall_index,
+				  /*generate_with_vtable_p=*/0);
+	      use_thunk (thunk, /*emit_p=*/1);
+	    }
+    }
+}
+
+
 /* Generate RTL for FN.  */
 
 void
@@ -3036,6 +3084,9 @@ expand_body (fn)
       note_deferral_of_defined_inline_function (fn);
       return;
     }
+
+  /* Emit any thunks that should be emitted at the same time as FN.  */
+  emit_associated_thunks (fn);
 
   timevar_push (TV_INTEGRATION);
 
