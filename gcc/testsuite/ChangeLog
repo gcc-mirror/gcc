@@ -1,5 +1,8 @@
 1998-09-15  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/static2.C: invocation of static data
+ 	member of type pointer-to-function denoted as non-static member
+
 	* g++.old-deja/g++.other/typedef5.C: add some more tests involving 
 	checks involving function types and aliases
 
