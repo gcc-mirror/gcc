@@ -2828,8 +2828,8 @@ scan_prog_file (prog_name, which_pass)
 #else
 		      if (debug)
 			fprintf (stderr,
-				 "\tiss = %5d, value = %5d, index = %5d, name = %s\n",
-				 symbol.iss, symbol.value, symbol.index, name);
+				 "\tiss = %5d, value = %5ld, index = %5d, name = %s\n",
+				 symbol.iss, (long) symbol.value, symbol.index, name);
 #endif
 		    }
 #ifdef COLLECT_EXPORT_LIST

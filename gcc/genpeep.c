@@ -481,7 +481,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#define operands peep_operand\n\n");
 
   printf ("rtx\npeephole (ins1)\n     rtx ins1;\n{\n");
-  printf ("  rtx insn, x, pat;\n\n");
+  printf ("  rtx insn ATTRIBUTE_UNUSED, x ATTRIBUTE_UNUSED, pat ATTRIBUTE_UNUSED;\n\n");
 
   /* Early out: no peepholes for insns followed by barriers.  */
   printf ("  if (NEXT_INSN (ins1)\n");

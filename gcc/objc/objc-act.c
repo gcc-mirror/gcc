@@ -6557,9 +6557,9 @@ encode_array (type, curtype, format)
       return;
     }
 
-  sprintf (buffer, "[%d",
-	   (TREE_INT_CST_LOW (an_int_cst)
-	    / TREE_INT_CST_LOW (TYPE_SIZE (array_of))));
+  sprintf (buffer, "[%ld",
+	   (long) (TREE_INT_CST_LOW (an_int_cst)
+		   / TREE_INT_CST_LOW (TYPE_SIZE (array_of))));
 
   obstack_grow (&util_obstack, buffer, strlen (buffer));
   encode_type (array_of, curtype, format);
@@ -7361,7 +7361,8 @@ adorn_decl (decl, str)
       tree an_int_cst = TREE_OPERAND (decl, 1);
 
       if (an_int_cst && TREE_CODE (an_int_cst) == INTEGER_CST)
-	sprintf (str + strlen (str), "[%d]", TREE_INT_CST_LOW (an_int_cst));
+	sprintf (str + strlen (str), "[%ld]",
+		 (long) TREE_INT_CST_LOW (an_int_cst));
       else
 	strcat (str, "[]");
     }
@@ -7372,9 +7373,9 @@ adorn_decl (decl, str)
       tree array_of = TREE_TYPE (decl);
 
       if (an_int_cst && TREE_CODE (an_int_cst) == INTEGER_TYPE)
-	sprintf (str + strlen (str), "[%d]",
-		 (TREE_INT_CST_LOW (an_int_cst)
-		  / TREE_INT_CST_LOW (TYPE_SIZE (array_of))));
+	sprintf (str + strlen (str), "[%ld]",
+		 (long) (TREE_INT_CST_LOW (an_int_cst)
+			 / TREE_INT_CST_LOW (TYPE_SIZE (array_of))));
       else
 	strcat (str, "[]");
     }
