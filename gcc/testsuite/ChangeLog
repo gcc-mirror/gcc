@@ -1,3 +1,7 @@
+2001-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20011218-1.c: New test.
+
 2001-12-20  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* gcc.misc-test/arm-isr.exp: New file.  Control running of the
