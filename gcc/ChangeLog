@@ -1,3 +1,9 @@
+2000-06-24  Philipp Thomas  <pthomas@suse.de>
+
+	* aclocal.m4(AM_GNU_GETTEXT): If LINGUAS isn't set, build
+	all catalogs specified in ALL_LINGUAS.
+	* configure: Rebuilt.
+
 2000-06-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.md (reload_outdi+1): Handle
