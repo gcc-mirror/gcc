@@ -580,9 +580,8 @@ ac_cv_prog_cc_static=
 ac_cv_prog_cc_no_builtin=
 ac_cv_prog_cc_can_build_shared=$can_build_shared
 
-# It is not enough to reset these cached values, they must be unset.
-unset ac_cv_prog_cc_pic_works
-unset ac_cv_prog_cc_static_works
+ac_cv_prog_cc_pic_works=
+ac_cv_prog_cc_static_works=
 
 if test "$with_gcc" = yes; then
   ac_cv_prog_cc_wl='-Wl,'
