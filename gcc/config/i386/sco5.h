@@ -44,9 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #define CTORS_SECTION_ASM_OP		"\t.section\t.ctors, \"aw\""
 #define DTORS_SECTION_ASM_OP		"\t.section\t.dtors, \"aw\""
 
-#undef ASM_FILE_START_1
-#define ASM_FILE_START_1(FILE)
-
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)						\
 do {									\

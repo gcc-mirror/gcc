@@ -54,10 +54,6 @@ do								\
 	  fputs ("\t.intel_syntax\n", FILE);				\
   } while (0)
 
-/* Do use .optim by default on this machine.  */
-#undef ASM_FILE_START_1
-#define ASM_FILE_START_1(FILE) fprintf (FILE, "\t.optim\n")
-
 /* This is how to output an assembler line
    that says to advance the location counter
    to a multiple of 2**LOG bytes.  */
