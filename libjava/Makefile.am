@@ -1263,6 +1263,7 @@ gnu/gcj/protocol/jar/Handler.java \
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/FirstThread.java \
+gnu/gcj/runtime/JNIWeakRef.java \
 gnu/gcj/runtime/SharedLibLoader.java \
 gnu/gcj/runtime/VMClassLoader.java \
 gnu/java/io/ClassLoaderObjectInputStream.java \
