@@ -1,5 +1,6 @@
 /* -----------------------------------------------------------------------
    darwin.S - Copyright (c) 2000 John Hornkvist
+	      Copyright (c) 2004 Free Software Foundation, Inc.
 
    PowerPC Assembly glue.
 
@@ -142,12 +143,23 @@ L(done_return_value):
 	blr
 
 L(fp_return_value):
+	/* Do we have long double to store?  */
+	bf	31,L(fd_return_value)
+	stfd	f1,0(r30)
+	stfd	f2,8(r30)
+	b	L(done_return_value)
+
+L(fd_return_value):
+	/* Do we have double to store?  */
 	bf	28,L(float_return_value)
 	stfd	f1,0(r30)
 	b	L(done_return_value)
+
 L(float_return_value):
+	/* We only have a float to store.  */
 	stfs	f1,0(r30)
 	b	L(done_return_value)
+
 LFE1:
 /* END(_ffi_call_DARWIN)  */
 
@@ -218,6 +230,6 @@ LASFDE1:
 	.align 2
 LEFDE1:
 .data
-        .align 2
+	.align 2
 LLFB0$non_lazy_ptr:
-        .long   LFB0
+	.long   LFB0
