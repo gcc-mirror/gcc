@@ -1557,7 +1557,7 @@ propagate_freq (struct loop *loop, bitmap tovisit)
   basic_block head = loop->header;
   basic_block bb;
   basic_block last;
-  int i;
+  unsigned i;
   edge e;
   basic_block nextbb;
   bitmap_iterator bi;
@@ -1569,15 +1569,15 @@ propagate_freq (struct loop *loop, bitmap tovisit)
       edge_iterator ei;
       int count = 0;
 
-      /* The outermost "loop" includes the exit block, which we can not
-	 look up via BASIC_BLOCK.  Detect this and use EXIT_BLOCK_PTR
-	 directly.  Do the same for the entry block just to be safe.  */
-      if (i == ENTRY_BLOCK)
-	bb = ENTRY_BLOCK_PTR;
-      else if (i == EXIT_BLOCK)
-	bb = EXIT_BLOCK_PTR;
-      else
-	bb = BASIC_BLOCK (i);
+       /* The outermost "loop" includes the exit block, which we can not
+	  look up via BASIC_BLOCK.  Detect this and use EXIT_BLOCK_PTR
+	  directly.  Do the same for the entry block.  */
+     if (i == (unsigned)ENTRY_BLOCK)
+       bb = ENTRY_BLOCK_PTR;
+     else if (i == (unsigned)EXIT_BLOCK)
+       bb = EXIT_BLOCK_PTR;
+     else
+       bb = BASIC_BLOCK (i);
 
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
@@ -1589,8 +1589,8 @@ propagate_freq (struct loop *loop, bitmap tovisit)
 	    fprintf (dump_file,
 		     "Irreducible region hit, ignoring edge to %i->%i\n",
 		     e->src->index, bb->index);
-	  BLOCK_INFO (bb)->npredecessors = count;
 	}
+      BLOCK_INFO (bb)->npredecessors = count;
     }
 
   memcpy (&BLOCK_INFO (head)->frequency, &real_one, sizeof (real_one));
