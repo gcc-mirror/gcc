@@ -1,5 +1,5 @@
 /* Subroutines for GNU compiler for Intel 80x86 running DG/ux
-   Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1995, 1997, 1999 Free Software Foundation, Inc.
    Currently maintained by (gcc@dg-rtp.dg.com)
 
 This file is part of GNU CC.
@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 
 extern char *version_string;
 
-struct option
+struct lang_independent_option
 {
   char *string;
   int *variable;
@@ -51,17 +51,22 @@ output_option (file, sep, type, name, indent, pos, max)
   return pos + fprintf (file, "%s%s%s", sep, type, name);
 }
 
-static struct { char *name; int value; } m_options[] = TARGET_SWITCHES;
+static struct { 
+  char *name; 
+  int value; 
+  const char * description;
+} m_options[] = TARGET_SWITCHES;
 
 static void
 output_options (file, f_options, f_len, W_options, W_len,
 		pos, max, sep, indent, term)
      FILE *file;
-     struct option *f_options;
-     struct option *W_options;
+     struct lang_independent_option *f_options;
+     struct lang_independent_option *W_options;
      int f_len, W_len;
      int pos;
      int max;
+     int sep;
      char *indent;
      char *term;
 {
@@ -96,8 +101,12 @@ output_options (file, f_options, f_len, W_options, W_len,
       pos = output_option (file, sep, "-m", m_options[j].name,
 			   indent, pos, max);
 
-  pos = output_option (file, sep, "-mcpu=", ix86_cpu_string, indent, pos, max);
-  pos = output_option (file, sep, "-march=", ix86_arch_string, indent, pos, max);
+  if (ix86_cpu_string)
+    pos = output_option (file, sep, "-mcpu=", ix86_cpu_string, 
+			 indent, pos, max);
+  if (ix86_arch_string)
+    pos = output_option (file, sep, "-march=", ix86_arch_string, 
+			 indent, pos, max);
   fprintf (file, term);
 }
 
@@ -106,8 +115,8 @@ output_options (file, f_options, f_len, W_options, W_len,
 void
 output_file_start (file, f_options, f_len, W_options, W_len)
      FILE *file;
-     struct option *f_options;
-     struct option *W_options;
+     struct lang_independent_option *f_options;
+     struct lang_independent_option *W_options;
      int f_len, W_len;
 {
   register int pos;

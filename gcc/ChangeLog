@@ -1,3 +1,12 @@
+1999-12-21  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* config/i386/dgux.c (struct option): Rename to
+	lang_independent_option.
+	(struct m_options): Add description field.
+	(output_options): Rename option type, add sep declaration, output
+	ix86_cpu_string and ix86_arch_string only if set.
+	(output_file_start): Rename option type.
+
 Mon Dec 20 23:15:36 1999  Mike Stump  <mrs@wrs.com>
 
 	* Makefile.in (crtbegin.o, crtend.o, s-crtS): Depend on
