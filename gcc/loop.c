@@ -3730,7 +3730,7 @@ for_each_insn_in_loop (loop, fncall)
        p != NULL_RTX;
        p = next_insn_in_loop (loop, p))
     {
-      p = fncall (loop, p, not_every_iteration, not_every_iteration);
+      p = fncall (loop, p, not_every_iteration, maybe_multiple);
 
       /* Past CODE_LABEL, we get to insns that may be executed multiple
          times.  The only way we can be sure that they can't is if every
