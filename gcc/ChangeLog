@@ -1,3 +1,10 @@
+2000-06-05  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* explow.c (maybe_set_unchanging): New function, broken out from...
+	(set_mem_attributes): Here.
+	* expr.h: Declare it.
+	* stmt.c (expand_decl): Call it.
+
 2000-06-05  Richard Henderson  <rth@cygnus.com>
 
 	* reload1.c (choose_reload_regs): Mind CLASS_CANNOT_CHANGE_SIZE

@@ -3817,9 +3817,8 @@ expand_decl (decl)
       if (POINTER_TYPE_P (type))
 	mark_reg_pointer (DECL_RTL (decl),
 			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (decl))));
-			  
-      if (TREE_READONLY (decl))
-	RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
+
+      maybe_set_unchanging (DECL_RTL (decl), decl);
     }
 
   else if (TREE_CODE (DECL_SIZE_UNIT (decl)) == INTEGER_CST

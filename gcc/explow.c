@@ -628,6 +628,27 @@ validize_mem (ref)
   return change_address (ref, GET_MODE (ref), XEXP (ref, 0));
 }
 
+/* Given REF, either a MEM or a REG, and T, either the type of X or
+   the expression corresponding to REF, set RTX_UNCHANGING_P if
+   appropriate.  */
+
+void
+maybe_set_unchanging (ref, t)
+     rtx ref;
+     tree t;
+{
+  /* We can set RTX_UNCHANGING_P from TREE_READONLY for decls whose
+     initialization is only executed once, or whose initializer always
+     has the same value.  Currently we simplify this to PARM_DECLs in the
+     first case, and decls with TREE_CONSTANT initializers in the second.  */
+  if ((TREE_READONLY (t) && DECL_P (t)
+       && (TREE_CODE (t) == PARM_DECL
+	   || DECL_INITIAL (t) == NULL_TREE
+	   || TREE_CONSTANT (DECL_INITIAL (t))))
+      || TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
+    RTX_UNCHANGING_P (ref) = 1;
+}
+
 /* Given REF, a MEM, and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  */
@@ -642,8 +663,12 @@ set_mem_attributes (ref, t, objectp)
 
   /* Get the alias set from the expression or type (perhaps using a
      front-end routine) and then copy bits from the type.  */
+
+  /* It is incorrect to set RTX_UNCHANGING_P from TREE_READONLY (type)
+     here, because, in C and C++, the fact that a location is accessed
+     through a const expression does not mean that the value there can
+     never change.  */
   MEM_ALIAS_SET (ref) = get_alias_set (t);
-  RTX_UNCHANGING_P (ref) = TYPE_READONLY (type);
   MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
 
@@ -657,8 +682,7 @@ set_mem_attributes (ref, t, objectp)
   if (TYPE_P (t))
     return;
 
-  if (TREE_READONLY (t) || TREE_CODE_CLASS (TREE_CODE (t)) == 'c')
-    RTX_UNCHANGING_P (ref) = 1;
+  maybe_set_unchanging (ref, t);
   if (TREE_THIS_VOLATILE (t))
     MEM_VOLATILE_P (ref) = 1;
 

@@ -1150,6 +1150,11 @@ extern rtx change_address PARAMS ((rtx, enum machine_mode, rtx));
 extern rtx validize_mem PARAMS ((rtx));
 
 #ifdef TREE_CODE
+/* Given REF, either a MEM or a REG, and T, either the type of X or
+   the expression corresponding to REF, set RTX_UNCHANGING_P if
+   appropriate.  */
+extern void maybe_set_unchanging PARAMS ((rtx, tree));
+
 /* Given REF, a MEM, and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  */
