@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "toplev.h"
 #include "intl.h"
+#include "loop.h"
 
 #include "obstack.h"
 #define	obstack_chunk_alloc	xmalloc
@@ -74,8 +75,6 @@ static void set_decl_origin_self	PROTO((tree));
 static void set_block_abstract_flags	PROTO((tree, int));
 static void process_reg_param		PROTO((struct inline_remap *, rtx,
 					       rtx));
-
-
 void set_decl_abstract_flags		PROTO((tree, int));
 static tree copy_and_set_decl_abstract_origin PROTO((tree));
 
@@ -742,6 +741,11 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	RTX_INTEGRATED_P (note) = 1;
     }
 
+  /* Figure out where the blocks are if we're going to have to insert
+     new BLOCKs into the existing block tree.  */
+  if (current_function->x_whole_function_mode_p)
+    find_loop_tree_blocks ();
+
   /* Process each argument.  For each, set up things so that the function's
      reference to the argument will refer to the argument being passed.
      We only replace REG with REG here.  Any simplifications are done
@@ -1279,7 +1283,16 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   BLOCK_ABSTRACT_ORIGIN (block) = (DECL_ABSTRACT_ORIGIN (fndecl) == NULL
 				   ? fndecl : DECL_ABSTRACT_ORIGIN (fndecl));
   inline_function_decl = 0;
-  insert_block (block);
+
+  if (current_function->x_whole_function_mode_p)
+    /* Insert the block into the already existing block-tree.  */
+    retrofit_block (block, map->insns_at_start);
+  else
+    /* In statement-at-a-time mode, we just tell the front-end to add
+       this block to the list of blocks at this binding level.  We
+       can't do it the way it's done for function-at-a-time mode the
+       superblocks have not been created yet.  */
+    insert_block (block);
 
   /* End the scope containing the copied formal parameter variables
      and copied LABEL_DECLs.  We pass NULL_TREE for the variables list

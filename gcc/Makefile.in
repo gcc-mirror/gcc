@@ -1519,7 +1519,7 @@ emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
 integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    integrate.h insn-flags.h insn-config.h $(EXPR_H) real.h $(REGS_H) \
-   intl.h function.h output.h $(RECOG_H) except.h toplev.h
+   intl.h function.h output.h $(RECOG_H) except.h toplev.h loop.h
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
    toplev.h insn-attr.h

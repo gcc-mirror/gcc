@@ -1016,13 +1016,24 @@ expand_fixup (tree_label, rtl_label, last_insn)
         register rtx original_before_jump
           = last_insn ? last_insn : get_last_insn ();
 	rtx start;
+	tree block;
+
+	block = make_node (BLOCK);
+	TREE_USED (block) = 1;
+
+	if (current_function->x_whole_function_mode_p)
+	  {
+	    find_loop_tree_blocks ();
+	    retrofit_block (block, original_before_jump);
+	  }
+	else
+	  insert_block (block);
 
         start_sequence ();
-        pushlevel (0);
         start = emit_note (NULL_PTR, NOTE_INSN_BLOCK_BEG);
 	fixup->before_jump = emit_note (NULL_PTR, NOTE_INSN_DELETED);
         last_block_end_note = emit_note (NULL_PTR, NOTE_INSN_BLOCK_END);
-        fixup->context = poplevel (1, 0, 0);  /* Create the BLOCK node now! */
+        fixup->context = block;
         end_sequence ();
         emit_insns_after (start, original_before_jump);
       }
