@@ -2507,7 +2507,7 @@ build_new_1 (exp)
 	  tree ifexp;
 
 	  null_node = convert (TREE_TYPE (alloc_node),
-			       cookie_size ? cookie_size : size_zero_node);
+			       use_cookie ? cookie_size : size_zero_node);
 	  ifexp = cp_build_binary_op (NE_EXPR, alloc_node, null_node);
 	  rval = build_conditional_expr (ifexp, rval, alloc_node);
 	}
