@@ -1,3 +1,7 @@
+2001-04-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* g++.old-deja/g++.other/perf1.C: New test.
+
 2001-04-24  Nathan Sidwell <nathan@codesourcery.com>
 
 	* gcc.dg/c99-func-2.c: Remove xfail.

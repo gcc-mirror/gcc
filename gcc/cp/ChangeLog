@@ -1,3 +1,11 @@
+2001-04-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* cp/optimize.c: Include hashtab.h.
+	(struct inline_data): Add tree_pruner.
+	(expand_call_inline, expand_calls_inline): Use it when calling
+	walk_tree.
+	(optimize_function): Initialize and free tree_pruner.
+
 2001-04-24  Nathan Sidwell <nathan@codesourcery.com>
 
 	Lazy __FUNCTION__ generation.
@@ -54,7 +62,7 @@
 	* cp-tree.h (finish_enum): Change prototype.
 	* decl.c (finish_enum): Reorganize.
 	* parse.y (structsp): Adjust calls to finish_enum.
-	
+
 2001-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree.c (cp_tree_equal): Adjust final switch formatting. Add
@@ -99,7 +107,7 @@
 	* mangle.c (mangle_decl_string): Don't mangle the names of
 	variables declared with C language linkage.
 	* semantics.c (finish_member_declaration): Use SET_DECL_LANGUAGE.
-	
+
 2001-04-18  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* semantics.c (simplify_aggr_init_exprs_r): Don't restore
@@ -127,7 +135,7 @@
 	(expand_ptrmemfunc_cst): Remove idx and delta2 parameters.
 	(delta2_from_ptrmemfunc): Remove.
 	(pfn_from_ptrmemfunc): Adjust call to expand_ptrmemfunc_cst.
-	
+
 2001-04-12  Jason Merrill  <jason_merrill@redhat.com>
 
 	* cp-tree.h (decl_namespace_list): New macro.
@@ -140,7 +148,7 @@
 
 	* cp-tree.h (warn_return_type, yylex): Delete redundant
 	declarations.
-	
+
 	* decl.c (current_class_depth, global_namespace): Likewise.
 
 	* decl2.c (current_class_depth, flag_gnu_xref): Likewise
@@ -223,7 +231,7 @@
 	(import_export_decl): Likewise.
 	* method.c (implicitly_declare_fn): Likewise.
 	* optimize.c (maybe_clone_body): Likewise.
-	
+
 2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* lang-specs.h: Add __DEPRECATED.
@@ -251,7 +259,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-04-03  Mark Mitchell  <mark@codesourcery.com>
 
-	* decl2.c (import_export_decl): Don't call import_export_class 
+	* decl2.c (import_export_decl): Don't call import_export_class
 	when processing an inline member function.
 	* semantics.c (expand_body): Call import_export_decl before
 	emitting inline functions.
@@ -267,7 +275,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 	(struct cp_language_function): Rename x_eh_spec_try_block
 	to x_eh_spec_block.
 	(EH_SPEC_STMTS, EH_SPEC_RAISES): New.
-	* decl.c (current_binding_level): If no current function 
+	* decl.c (current_binding_level): If no current function
 	bindings, revert to scope_chain.
 	(initialize_predefined_identifiers): Remove __cp_push_exception.
 	(store_parm_decls): Use begin_eh_spec_block.
@@ -374,7 +382,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 	rest_of_compilation.  Clear DECL_RTL for local variables
 	afterwards.
 	(clear_decl_rtl): New function.
-		
+
 2001-03-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Implement DR 209
@@ -444,7 +452,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 	* tree.c (cp_valid_lang_attribute): Handle "java_interface" attribute
 	by setting TYPE_JAVA_INTERFACE.
 	* call.c (java_iface_lookup_fn): New static.
-	(build_over_call): If calling a method declared in a 
+	(build_over_call): If calling a method declared in a
 	TYPE_JAVA_INTERFACE, call build_java_interface_fn_ref to generate the
 	expression which resolves the function address.
 	(build_java_interface_fn_ref): New function.
@@ -577,7 +585,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 	* search.c (looup_field_1): Likewise.
 	* semantics.c (finish_named_return_value): Likewise.
 	* tree.c (init_tree): Set lang_set_decl_assembler_name.
-	
+
 2001-03-15  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	Correct semantics restrictions checking in throw-expression.
@@ -612,7 +620,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 	(expand_body): Likewise.
 	(genrtl_finish_function): Likewise.
 	* tree.c (cp_tree_equal): Likewise.
-	
+
 2001-03-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* call.c (convert_like_real): Add extra semantics to INNER
@@ -713,7 +721,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 	(build_rtt_vtbl_entries): Lose RTTI_BINFO parameter.
 	(get_matching_base): Remove.
 	(get_original_base): New function.
-	(build_vtbl_initializer): Initialize vid.rtti_binfo. 
+	(build_vtbl_initializer): Initialize vid.rtti_binfo.
 	Use a virtual thunk for a ctor vtable with an index
 	(add_vcall_offset_vtbl_entries_1): Check if binfo has lost a
 	primary base within a constructor vtable. Only set
@@ -729,7 +737,7 @@ Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-02-26  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* except.c (call_eh_info): Cleanup generation of cp_eh_info struct.
-	
+
 	* decl.c (mark_inlined_fns): Prototype.
 
 2001-02-22  Mark Mitchell  <mark@codesourcery.com>
