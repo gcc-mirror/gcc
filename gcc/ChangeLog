@@ -1,3 +1,9 @@
+2000-09-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+	* doloop.c (doloop_modify): Prevent delete_insn() from
+	deleting too much.  Prefer loop->top over loop->start as
+	target for the new JUMP insn.
+	(doloop_valid_p): Ignore loop with exit_count != 0.
+
 2000-09-28  Philipp Thomas  <pthomas@suse.de>
 
 	* invoke.texi (i386 Options): Add athlon to table of possible
@@ -2673,6 +2679,16 @@ Sat Sep  2 13:58:23 2000  Marek Michalkiewicz <marekm@linux.org.pl>
 
 	* config/avr/avr.md ("*negsi2"): substitute %@ to __zero_reg__
 	* config/avr/libgcc.S: Lost part of the previous patch.
+
+2000-08-31  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000/rs6000.h (NO_DOLLAR_IN_LABEL, DOLLARS_IN_IDENTIFIERS,
+	ENCODE_SECTION_INFO, ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Move from
+	here...
+	* rs6000/aix.h: ...to here.
+	* rs6000/linux.h (ASM_APP_ON, ASM_APP_OFF): Define to Linux-style.
+	* rs6000/rs6000.c (rs6000_select_section): Handle CONSTRUCTOR.
+	(rs6000_unique_section): Likewise.
 
 2000-08-31  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
 
