@@ -1,3 +1,8 @@
+2001-10-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (cr_logical): Swap order of CODE and
+	MODE arguments to gen_rtx and compare operand with const0_rtx.
+
 2001-10-15  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* system.h: Poison old unused target macros.
