@@ -1,3 +1,9 @@
+Mon Mar 16 15:57:17 1998  Michael Meissner  <meissner@cygnus.com>
+
+	(From Geoffrey Keating  <geoffk@ozemail.com.au>)
+	* rs6000.c (small_data_operand): Ensure that any address referenced
+	relative to the small data area is inside the SDA.
+
 Sun Mar 15 16:01:19 1998  Andrew Pochinsky  <avp@ctp.mit.edu>
 
 	* sparc.h (ASM_OUTPUT_LOOP_ALIGN): Write nop's.
