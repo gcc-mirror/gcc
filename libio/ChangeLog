@@ -1,3 +1,7 @@
+1997-10-02  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* iostream.cc (operator<<): Use `#if _G_HAVE_PRINTF_FP', not ifdef.
+
 Thu Oct  2 10:36:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* gen-params: Fix __printf_fp test.
