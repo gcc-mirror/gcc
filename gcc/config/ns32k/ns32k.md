@@ -1,6 +1,6 @@
 ;;- Machine description for GNU compiler, ns32000 Version
 ;;  Copyright (C) 1988, 1994 Free Software Foundation, Inc.
-;;  Contributed by Michael Tiemann (tiemann@mcc.com)
+;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 ;; This file is part of GNU CC.
 
@@ -1861,12 +1861,29 @@
     return \"adjspb %$-4\";
 }")
 
+;; The extsd/extd isntructions have the problem that they always access
+;; 32 bits even if the bitfield is smaller. For example the instruction
+;; 	extsd 7(r1),r0,2,5
+;; would read not only at address 7(r1) but also at 8(r1) to 10(r1).
+;; If these addresses are in a different (unmapped) page a memory fault
+;; is the result.
+;;
+;; Timing considerations:
+;;	movd	0(r1),r0	3 bytes
+;;	lshd	-26,r0		4
+;;	andd	0x1f,r0		5
+;; takes about 13 cycles on the 532 while
+;;	extsd	7(r1),r0,2,5	5 bytes
+;; takes about 21 cycles.
+;;
+;; So lets forget about extsd/extd on the 532.
+
 (define_insn ""
   [(set (match_operand:SI 0 "general_operand" "=g<")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "g")
 			 (match_operand:SI 2 "const_int_operand" "i")
 			 (match_operand:SI 3 "general_operand" "rK")))]
-  ""
+  "! TARGET_32532"
   "*
 { if (GET_CODE (operands[3]) == CONST_INT)
     return \"extsd %1,%0,%3,%2\";
@@ -1878,7 +1895,7 @@
 	(zero_extract:SI (match_operand:QI 1 "general_operand" "g")
 			 (match_operand:SI 2 "const_int_operand" "i")
 			 (match_operand:SI 3 "general_operand" "rK")))]
-  ""
+  "! TARGET_32532"
   "*
 { if (GET_CODE (operands[3]) == CONST_INT)
     return \"extsd %1,%0,%3,%2\";
