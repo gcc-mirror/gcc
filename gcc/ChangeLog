@@ -1,3 +1,17 @@
+2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
+
+	* fixinc/Makefile.in: Set SHELL.
+
+2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
+
+	* fixinc/fixincl.c (fix_with_system): Quote file names before
+	passing them to shell.
+		 
+2001-03-16  Laurynas Biveinis  <lauras@softhome.net>
+
+	* Makefile.in: Use fix-header$(build_exeext) instead
+	of fix-header.
+	
 2001-03-16  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c: Revert most of 2000-11-25 and 2001-01-24 changes.
