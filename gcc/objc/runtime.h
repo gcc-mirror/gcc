@@ -37,10 +37,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "objc/objc.h"		/* core data types */
 #include "objc/objc-api.h"	/* runtime api functions */
 
-#include "objc/thread.h"  	/* thread and mutex support */
+#include "objc/thr.h"		/* thread and mutex support */
 
 #include "objc/hash.h"		/* hash structures */
-#include "objc/objc-list.h"		/* linear lists */
+#include "objc/objc-list.h"	/* linear lists */
 
 extern void __objc_add_class_to_hash(Class);   /* (objc-class.c) */
 extern void __objc_init_selector_tables();     /* (objc-sel.c) */
