@@ -79,7 +79,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef getopt
 
 extern int errno;
-#if defined(bsd4_4)
+#if defined(bsd4_4) || defined(__NetBSD__)
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];

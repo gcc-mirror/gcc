@@ -187,7 +187,7 @@ extern FILE *fdopen ();
 extern char *version_string;
 extern struct tm *localtime ();
 extern int sys_nerr;
-#if defined(bsd4_4)
+#if defined(bsd4_4) || defined(__NetBSD__)
 extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
