@@ -1,3 +1,8 @@
+2004-07-10  Daniel Jacobowitz  <dan@debian.org>
+
+	* config/i386/i386.c (override_options): Pick a 64-bit CPU
+	for the default tuning if TARGET_64BIT.
+
 2004-07-10  Richard Henderson  <rth@redhat.com>
 
 	* builtins.c (std_gimplify_va_arg_expr): Widen align/boundary
