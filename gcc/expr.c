@@ -6051,7 +6051,9 @@ expand_expr (exp, target, tmode, modifier)
 	if (TREE_CODE (slot) != VAR_DECL)
 	  abort ();
 
-	target = original_target;
+	if (! ignore)
+	  target = original_target;
+
 	if (target == 0)
 	  {
 	    if (DECL_RTL (slot) != 0)
