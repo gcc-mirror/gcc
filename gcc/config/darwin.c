@@ -311,7 +311,7 @@ machopic_non_lazy_ptr_name (const char *name)
       {
 	buffer[bufferlen] = '_';
 	memcpy (buffer + bufferlen +1, name, namelen+1);
-        bufferlen += namelen;
+        bufferlen += namelen +1;
       }
 
     memcpy (buffer + bufferlen, "$non_lazy_ptr", strlen("$non_lazy_ptr")+1);
@@ -386,7 +386,7 @@ machopic_stub_name (const char *name)
       {
 	buffer[bufferlen] = '_';
 	memcpy (buffer + bufferlen +1, name, namelen+1);
-        bufferlen += namelen;
+        bufferlen += namelen +1;
       }
 
     if (needs_quotes)
