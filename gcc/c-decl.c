@@ -41,9 +41,6 @@ enum decl_context
   BITFIELD,			/* Likewise but with specified width */
   TYPENAME};			/* Typename (inside cast or sizeof)  */
 
-#undef NULL
-#define NULL 0
-
 #ifndef CHAR_TYPE_SIZE
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
@@ -864,8 +861,8 @@ poplevel (keep, reverse, functionbody)
 
   if (keep || functionbody
       || (current_binding_level->keep_if_subblocks && subblocks != 0))
-    block = build_block (keep ? decls : 0, keep ? tags : 0,
-			 subblocks, 0, 0);
+    block = build_block (keep ? decls : NULL_TREE, keep ? tags : NULL_TREE,
+			 subblocks, NULL_TREE, NULL_TREE);
 
   /* In each subblock, record that this is its superior.  */
 
@@ -1108,7 +1105,7 @@ pushtag (name, type)
      us a convenient place to record the "scope start" address for the
      tagged type.  */
 
-  TYPE_STUB_DECL (type) = pushdecl (build_decl (TYPE_DECL, NULL, type));
+  TYPE_STUB_DECL (type) = pushdecl (build_decl (TYPE_DECL, NULL_TREE, type));
 }
 
 /* Handle when a new declaration NEWDECL
@@ -1974,7 +1971,7 @@ implicitly_declare (functionid)
   /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
   maybe_objc_check_decl (decl);
 
-  rest_of_decl_compilation (decl, 0, 0, 0);
+  rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
 
   if (warn_implicit && implicit_warning)
     warning ("implicit declaration of function `%s'",
@@ -2509,7 +2506,7 @@ init_decl_processing ()
   endlink = tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 
   void_ftype_any
-    = build_function_type (void_type_node, 0);
+    = build_function_type (void_type_node, NULL_TREE);
 
   double_ftype_double
     = build_function_type (double_type_node,
@@ -2587,21 +2584,21 @@ init_decl_processing ()
   /* ``integer_tpe_node'' misspelling corrected: North-Keys 30 Mar 91 */
   builtin_function ("__builtin_constant_p",
 		    build_function_type (integer_type_node, endlink),
-		    BUILT_IN_CONSTANT_P, 0);
+		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
   builtin_function ("__builtin_return_address",
 		    build_function_type (integer_type_node, 
 					 tree_cons (NULL_TREE,
 						    unsigned_type_node,
 						    endlink)),
-		    BUILT_IN_RETURN_ADDRESS, 0);
+		    BUILT_IN_RETURN_ADDRESS, NULL_PTR);
 
   builtin_function ("__builtin_frame_address",
 		    build_function_type (integer_type_node, 
 					 tree_cons (NULL_TREE,
 						    unsigned_type_node,
 						    endlink)),
-		    BUILT_IN_FRAME_ADDRESS, 0);
+		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
 
   builtin_function ("__builtin_alloca",
 		    build_function_type (ptr_type_node,
@@ -2616,22 +2613,25 @@ init_decl_processing ()
 						    tree_cons (NULL_TREE,
 							       sizetype,
 							       endlink)),
-			       BUILT_IN_ALLOCA, 0);
+			       BUILT_IN_ALLOCA, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("_exit", void_ftype_any, NOT_BUILT_IN, 0);
+      temp = builtin_function ("_exit", void_ftype_any, NOT_BUILT_IN,
+			       NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
     }
 
-  builtin_function ("__builtin_abs", int_ftype_int, BUILT_IN_ABS, 0);
-  builtin_function ("__builtin_fabs", double_ftype_double, BUILT_IN_FABS, 0);
-  builtin_function ("__builtin_labs", long_ftype_long, BUILT_IN_LABS, 0);
-  builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, 0);
+  builtin_function ("__builtin_abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
+  builtin_function ("__builtin_fabs", double_ftype_double, BUILT_IN_FABS,
+		    NULL_PTR);
+  builtin_function ("__builtin_labs", long_ftype_long, BUILT_IN_LABS,
+		    NULL_PTR);
+  builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
   builtin_function ("__builtin_saveregs", default_function_type,
-		    BUILT_IN_SAVEREGS, 0);
+		    BUILT_IN_SAVEREGS, NULL_PTR);
 /* EXPAND_BUILTIN_VARARGS is obsolete.  */
 #if 0
   builtin_function ("__builtin_varargs",
@@ -2639,19 +2639,19 @@ init_decl_processing ()
 					 tree_cons (NULL_TREE,
 						    integer_type_node,
 						    endlink)),
-		    BUILT_IN_VARARGS, 0);
+		    BUILT_IN_VARARGS, NULL_PTR);
 #endif
   builtin_function ("__builtin_classify_type", default_function_type,
-		    BUILT_IN_CLASSIFY_TYPE, 0);
+		    BUILT_IN_CLASSIFY_TYPE, NULL_PTR);
   builtin_function ("__builtin_next_arg",
 		    build_function_type (ptr_type_node, endlink),
-		    BUILT_IN_NEXT_ARG, 0);
+		    BUILT_IN_NEXT_ARG, NULL_PTR);
   builtin_function ("__builtin_args_info",
 		    build_function_type (integer_type_node,
 					 tree_cons (NULL_TREE,
 						    integer_type_node,
 						    endlink)),
-		    BUILT_IN_ARGS_INFO, 0);
+		    BUILT_IN_ARGS_INFO, NULL_PTR);
 
   /* Currently under experimentation.  */
   builtin_function ("__builtin_memcpy", memcpy_ftype,
@@ -2672,24 +2672,28 @@ init_decl_processing ()
      However, honor the -fno-builtin option.  */
   if (!flag_no_builtin)
     {
-      builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, 0);
-      builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, 0);
-      builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, 0);
-      builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY, 0);
-      builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP, 0);
-      builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP, 0);
-      builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY, 0);
-      builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN, 0);
-      builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, 0);
+      builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
+      builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, NULL_PTR);
+      builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, NULL_PTR);
+      builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY, NULL_PTR);
+      builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP,
+			NULL_PTR);
+      builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP,
+			NULL_PTR);
+      builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY,
+			NULL_PTR);
+      builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN, NULL_PTR);
+      builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, NULL_PTR);
 
       /* Declare these functions volatile
 	 to avoid spurious "control drops through" warnings.  */
       /* Don't specify the argument types, to avoid errors
 	 from certain code which isn't valid in ANSI but which exists.  */
-      temp = builtin_function ("abort", void_ftype_any, NOT_BUILT_IN, 0);
+      temp = builtin_function ("abort", void_ftype_any, NOT_BUILT_IN,
+			       NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
-      temp = builtin_function ("exit", void_ftype_any, NOT_BUILT_IN, 0);
+      temp = builtin_function ("exit", void_ftype_any, NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
     }
@@ -2697,15 +2701,22 @@ init_decl_processing ()
 #if 0
   /* Support for these has not been written in either expand_builtin
      or build_function_call.  */
-  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV, 0);
-  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV, 0);
-  builtin_function ("__builtin_ffloor", double_ftype_double, BUILT_IN_FFLOOR, 0);
-  builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL, 0);
-  builtin_function ("__builtin_fmod", double_ftype_double_double, BUILT_IN_FMOD, 0);
-  builtin_function ("__builtin_frem", double_ftype_double_double, BUILT_IN_FREM, 0);
-  builtin_function ("__builtin_memset", ptr_ftype_ptr_int_int, BUILT_IN_MEMSET, 0);
-  builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP, 0);
-  builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN, 0);
+  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV, NULL_PTR);
+  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV, NULL_PTR);
+  builtin_function ("__builtin_ffloor", double_ftype_double, BUILT_IN_FFLOOR,
+		    NULL_PTR);
+  builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL,
+		    NULL_PTR);
+  builtin_function ("__builtin_fmod", double_ftype_double_double,
+		    BUILT_IN_FMOD, NULL_PTR);
+  builtin_function ("__builtin_frem", double_ftype_double_double,
+		    BUILT_IN_FREM, NULL_PTR);
+  builtin_function ("__builtin_memset", ptr_ftype_ptr_int_int,
+		    BUILT_IN_MEMSET, NULL_PTR);
+  builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP,
+		    NULL_PTR);
+  builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
+		    NULL_PTR);
 #endif
 
   /* Create the global bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
@@ -2741,7 +2752,7 @@ builtin_function (name, type, function_code, library_name)
     DECL_BUILT_IN_NONANSI (decl) = 1;
   if (library_name)
     DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
-  make_decl_rtl (decl, 0, 1);
+  make_decl_rtl (decl, NULL_PTR, 1);
   pushdecl (decl);
   if (function_code != NOT_BUILT_IN)
     {
@@ -3151,7 +3162,7 @@ finish_decl (decl, init, asmspec_tree)
     {
       /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
       maybe_objc_check_decl (decl);
-      rest_of_decl_compilation (decl, 0,
+      rest_of_decl_compilation (decl, NULL_PTR,
 				current_binding_level == global_binding_level,
 				0);
     }
@@ -3843,7 +3854,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	  /* Omit the arg types if -traditional, since the arg types
 	     and the list links might not be permanent.  */
-	  type = build_function_type (type, flag_traditional ? 0 : arg_types);
+	  type = build_function_type (type,
+				      flag_traditional 
+				      ? NULL_TREE : arg_types);
 #endif
 	  type = build_function_type (type, arg_types);
 	  declarator = TREE_OPERAND (declarator, 0);
@@ -4551,7 +4564,7 @@ grokfield (filename, line, declarator, declspecs, width)
 
   value = grokdeclarator (declarator, declspecs, width ? BITFIELD : FIELD, 0);
 
-  finish_decl (value, NULL, NULL);
+  finish_decl (value, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
 
   return value;
@@ -4674,7 +4687,8 @@ finish_struct (t, fieldlist)
 	      error_with_decl (x, "zero width for bit-field `%s'");
 	      DECL_INITIAL (x) = NULL;
 	    }
-	  else if (width > TYPE_PRECISION (TREE_TYPE (x)))
+	  else if (width > TYPE_PRECISION (TREE_TYPE (x))
+		   || TREE_INT_CST_HIGH (DECL_INITIAL (x)) != 0)
 	    {
 	      DECL_INITIAL (x) = NULL;
 	      pedwarn_with_decl (x, "width of `%s' exceeds its type");
@@ -4829,7 +4843,7 @@ finish_struct (t, fieldlist)
 	      layout_decl (decl, 0);
 	      /* This is a no-op in c-lang.c or something real in objc-actions.c.  */
 	      maybe_objc_check_decl (decl);
-	      rest_of_decl_compilation (decl, 0, toplevel, 0);
+	      rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
 	      if (! toplevel)
 		expand_decl (decl);
 	      --current_binding_level->n_incomplete;
@@ -4919,8 +4933,8 @@ finish_enum (enumtype, values)
 {
   register tree pair;
   tree minnode = 0, maxnode = 0;
-  register long maxvalue = 0;
-  register long minvalue = 0;
+  register HOST_WIDE_INT maxvalue = 0;
+  register HOST_WIDE_INT minvalue = 0;
   register int i;
   unsigned precision = 0;
   int toplevel = global_binding_level == current_binding_level;
@@ -4956,8 +4970,8 @@ finish_enum (enumtype, values)
     precision = TYPE_PRECISION (long_long_integer_type_node);
   else
     {
-      int maxvalue = TREE_INT_CST_LOW (maxnode);
-      int minvalue = TREE_INT_CST_LOW (minnode);
+      maxvalue = TREE_INT_CST_LOW (maxnode);
+      minvalue = TREE_INT_CST_LOW (minnode);
 
       if (maxvalue > 0)
 	precision = floor_log2 (maxvalue) + 1;
@@ -5065,7 +5079,7 @@ build_enumerator (name, value)
   TREE_TYPE (value) = integer_type_node;
   pushdecl (decl);
 
-  return saveable_tree_cons (decl, value, NULL);
+  return saveable_tree_cons (decl, value, NULL_TREE);
 }
 
 /* Create the FUNCTION_DECL for a function definition.
@@ -5186,7 +5200,8 @@ start_function (declspecs, declarator, nested)
   if (TREE_CODE (restype) == INTEGER_TYPE
       && TYPE_PRECISION (restype) < TYPE_PRECISION (integer_type_node))
     restype = integer_type_node;
-  DECL_RESULT (current_function_decl) = build_decl (RESULT_DECL, 0, restype);
+  DECL_RESULT (current_function_decl)
+    = build_decl (RESULT_DECL, NULL_TREE, restype);
 
   if (!nested)
     /* Allocate further tree nodes temporarily during compilation
@@ -5518,14 +5533,15 @@ store_parm_decls ()
 
 	  for (parm = DECL_ARGUMENTS (fndecl); parm; parm = TREE_CHAIN (parm))
 	    {
-	      type = perm_tree_cons (NULL, DECL_ARG_TYPE (parm), NULL);
+	      type = perm_tree_cons (NULL_TREE, DECL_ARG_TYPE (parm),
+				     NULL_TREE);
 	      if (last)
 		TREE_CHAIN (last) = type;
 	      else
 		actual = type;
 	      last = type;
 	    }
-	  type = perm_tree_cons (NULL, void_type_node, NULL);
+	  type = perm_tree_cons (NULL_TREE, void_type_node, NULL_TREE);
 	  if (last)
 	    TREE_CHAIN (last) = type;
 	  else

@@ -343,8 +343,21 @@ yyprint (file, yychar, yylval)
     case CONSTANT:
       t = yylval.ttype;
       if (TREE_CODE (t) == INTEGER_CST)
-	fprintf (file, " 0x%8x%8x", TREE_INT_CST_HIGH (t),
-		 TREE_INT_CST_LOW (t));
+	fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == 64
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		 " 0x%lx%016lx",
+#else
+		 " 0x%x%016x",
+#endif
+#else
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		 " 0x%lx%08lx",
+#else
+		 " 0x%x%08x",
+#endif
+#endif
+		 TREE_INT_CST_HIGH (t), TREE_INT_CST_LOW (t));
       break;
     }
 }
@@ -1344,7 +1357,7 @@ yylex ()
 	      {
 		set_float_handler (handler);
 		value = REAL_VALUE_ATOF (token_buffer);
-		set_float_handler (0);
+		set_float_handler (NULL_PTR);
 	      }
 #ifdef ERANGE
 	    if (errno == ERANGE && !flag_traditional && pedantic)
@@ -1424,6 +1437,7 @@ yylex ()
 	else
 	  {
 	    tree traditional_type, ansi_type, type;
+	    HOST_WIDE_INT high, low;
 	    int spec_unsigned = 0;
 	    int spec_long = 0;
 	    int spec_long_long = 0;
@@ -1496,14 +1510,18 @@ yylex ()
 
 	    /* This is simplified by the fact that our constant
 	       is always positive.  */
-	    /* The casts in the following statement should not be
-	       needed, but they get around bugs in some C compilers.  */
-	    yylval.ttype
-	      = (build_int_2
-		 ((((long)parts[3]<<24) + ((long)parts[2]<<16)
-		   + ((long)parts[1]<<8) + (long)parts[0]),
-		  (((long)parts[7]<<24) + ((long)parts[6]<<16)
-		   + ((long)parts[5]<<8) + (long)parts[4])));
+
+	    high = low = 0;
+
+	    for (i = 0; i < HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR; i++)
+	      {
+		high |= ((HOST_WIDE_INT) parts[i + (HOST_BITS_PER_WIDE_INT
+						    / HOST_BITS_PER_CHAR)]
+			 << (i * HOST_BITS_PER_CHAR));
+		low |= (HOST_WIDE_INT) parts[i] << (i * HOST_BITS_PER_CHAR);
+	      }
+	    
+	    yylval.ttype = build_int_2 (low, high);
 
 	    /* If warn_traditional, calculate both the ANSI type and the
 	       traditional type, then see if they disagree.
@@ -1665,13 +1683,13 @@ yylex ()
 	    if (TREE_UNSIGNED (char_type_node)
 		|| ((result >> (num_bits - 1)) & 1) == 0)
 	      yylval.ttype
-		= build_int_2 (result & ((unsigned) ~0
-					 >> (HOST_BITS_PER_INT - num_bits)),
+		= build_int_2 (result & ((unsigned HOST_WIDE_INT) ~0
+					 >> (HOST_BITS_PER_WIDE_INT - num_bits)),
 			       0);
 	    else
 	      yylval.ttype
-		= build_int_2 (result | ~((unsigned) ~0
-					  >> (HOST_BITS_PER_INT - num_bits)),
+		= build_int_2 (result | ~((unsigned HOST_WIDE_INT) ~0
+					  >> (HOST_BITS_PER_WIDE_INT - num_bits)),
 			       -1);
 	  }
 	else
@@ -1685,7 +1703,7 @@ yylex ()
 		|| (num_chars == 1 && token_buffer[1] != '\0'))
 	      {
 		wchar_t wc;
-		(void) mbtowc (NULL, NULL, 0);
+		(void) mbtowc (NULL_PTR, NULL_PTR, 0);
 		if (mbtowc (& wc, token_buffer + 1, num_chars) == num_chars)
 		  result = wc;
 		else
