@@ -992,6 +992,10 @@ extern int rs6000_default_long_calls;
 
 #define BRANCH_COST 3
 
+/* Override BRANCH_COST heuristic which empirically produces worse
+   performance for fold_range_test().  */
+
+#define RANGE_TEST_NON_SHORT_CIRCUIT 0
 
 /* A fixed register used at prologue and epilogue generation to fix
    addressing modes.  The SPE needs heavy addressing fixes at the last

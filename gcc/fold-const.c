@@ -3414,6 +3414,10 @@ merge_ranges (pin_p, plow, phigh, in0_p, low0, high0, in1_p, low1, high1)
   return 1;
 }
 
+#ifndef RANGE_TEST_NON_SHORT_CIRCUIT
+#define RANGE_TEST_NON_SHORT_CIRCUIT (BRANCH_COST >= 2)
+#endif
+
 /* EXP is some logical combination of boolean tests.  See if we can
    merge it into some range test.  Return the new tree if so.  */
 
@@ -3450,7 +3454,7 @@ fold_range_test (exp)
   /* On machines where the branch cost is expensive, if this is a
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
-  else if (BRANCH_COST >= 2
+  else if (RANGE_TEST_NON_SHORT_CIRCUIT
 	   && lhs != 0 && rhs != 0
 	   && (TREE_CODE (exp) == TRUTH_ANDIF_EXPR
 	       || TREE_CODE (exp) == TRUTH_ORIF_EXPR)

@@ -1,3 +1,11 @@
+2003-04-22  David Edelsohn  <edelsohn@gnu.org>
+
+	* fold-const.c (fold_range_test): Use RANGE_TEST_NON_SHORT_CIRCUIT
+	macro defaulting to original BRANCH_COST heuristic.
+	* doc/tm.texi (RANGE_TEST_NON_SHORT_CIRCUIT): Document.
+
+	* config/rs6000/rs6000.h (RANGE_TEST_NON_SHORT_CIRCUIT): Define.
+
 2003-04-22  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/t-spe: Merge in t-fprules into file.
