@@ -1,3 +1,8 @@
+2003-05-30  Florian Weimer  <fw@deneb.enyo.de>
+
+	* doc/install.texi: Ada-enabled bootstrap requires GNAT 3.14 or
+	later.
+
 2003-05-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* vax.h (ASM_GENERATE_INTERNAL_LABEL): Fix format specifier

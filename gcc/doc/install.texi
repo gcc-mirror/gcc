@@ -1141,7 +1141,7 @@ the number of processors in your machine.
 @section Building the Ada compiler
 
 In order to build GNAT, the Ada compiler, you need a working GNAT
-compiler (GNAT version 3.13 or later, or GCC version 3.1 or later),
+compiler (GNAT version 3.14 or later, or GCC version 3.1 or later),
 since the Ada front end is written in Ada (with some
 GNAT-specific extensions), and GNU make.
 
