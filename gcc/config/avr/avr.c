@@ -1229,6 +1229,7 @@ notice_update_cc (rtx body ATTRIBUTE_UNUSED, rtx insn)
 	      rtx x = XEXP (src, 1);
 
 	      if (GET_CODE (x) == CONST_INT
+		  && INTVAL (x) > 0
 		  && INTVAL (x) != 6)
 		{
 		  cc_status.value1 = SET_DEST (set);
@@ -2749,6 +2750,13 @@ out_shift_with_cnt (const char *template, rtx insn, rtx operands[],
       int count = INTVAL (operands[2]);
       int max_len = 10;  /* If larger than this, always use a loop.  */
 
+      if (count <= 0)
+	{
+	  if (len)
+	    *len = 0;
+	  return;
+	}
+
       if (count < 8 && !scratch)
 	use_zero_reg = 1;
 
@@ -2871,6 +2879,9 @@ ashlqi3_out (rtx insn, rtx operands[], int *len)
       switch (INTVAL (operands[2]))
 	{
 	default:
+	  if (INTVAL (operands[2]) < 8)
+	    break;
+
 	  *len = 1;
 	  return AS1 (clr,%0);
 	  
@@ -2967,6 +2978,14 @@ ashlhi3_out (rtx insn, rtx operands[], int *len)
       
       switch (INTVAL (operands[2]))
 	{
+	default:
+	  if (INTVAL (operands[2]) < 16)
+	    break;
+
+	  *len = 2;
+	  return (AS1 (clr,%B0) CR_TAB
+		  AS1 (clr,%A0));
+
 	case 4:
 	  if (optimize_size && scratch)
 	    break;  /* 5 */
@@ -3218,6 +3237,20 @@ ashlsi3_out (rtx insn, rtx operands[], int *len)
       
       switch (INTVAL (operands[2]))
 	{
+	default:
+	  if (INTVAL (operands[2]) < 32)
+	    break;
+
+	  if (AVR_ENHANCED)
+	    return *len = 3, (AS1 (clr,%D0) CR_TAB
+			      AS1 (clr,%C0) CR_TAB
+			      AS2 (movw,%A0,%C0));
+	  *len = 4;
+	  return (AS1 (clr,%D0) CR_TAB
+		  AS1 (clr,%C0) CR_TAB
+		  AS1 (clr,%B0) CR_TAB
+		  AS1 (clr,%A0));
+
 	case 8:
 	  {
 	    int reg0 = true_regnum (operands[0]);
@@ -3356,6 +3389,11 @@ ashrqi3_out (rtx insn, rtx operands[], int *len)
 		  AS2 (bld,%0,0));
 
 	default:
+	  if (INTVAL (operands[2]) < 8)
+	    break;
+
+	  /* fall through */
+
 	case 7:
 	  *len = 2;
 	  return (AS1 (lsl,%0) CR_TAB
@@ -3519,6 +3557,12 @@ ashrhi3_out (rtx insn, rtx operands[], int *len)
 		  AS2 (mov,%B0,%A0) CR_TAB
 		  AS1 (rol,%A0));
 
+	default:
+	  if (INTVAL (operands[2]) < 16)
+	    break;
+
+	  /* fall through */
+
 	case 15:
 	  return *len = 3, (AS1 (lsl,%B0)     CR_TAB
 			    AS2 (sbc,%A0,%A0) CR_TAB
@@ -3626,6 +3670,12 @@ ashrsi3_out (rtx insn, rtx operands[], int *len)
 			      AS2 (mov,%B0,%D0) CR_TAB
 			      AS2 (mov,%C0,%D0));
 
+	default:
+	  if (INTVAL (operands[2]) < 32)
+	    break;
+
+	  /* fall through */
+
 	case 31:
 	  if (AVR_ENHANCED)
 	    return *len = 4, (AS1 (lsl,%D0)     CR_TAB
@@ -3664,6 +3714,9 @@ lshrqi3_out (rtx insn, rtx operands[], int *len)
       switch (INTVAL (operands[2]))
 	{
 	default:
+	  if (INTVAL (operands[2]) < 8)
+	    break;
+
 	  *len = 1;
 	  return AS1 (clr,%0);
 
@@ -3758,6 +3811,14 @@ lshrhi3_out (rtx insn, rtx operands[], int *len)
       
       switch (INTVAL (operands[2]))
 	{
+	default:
+	  if (INTVAL (operands[2]) < 16)
+	    break;
+
+	  *len = 2;
+	  return (AS1 (clr,%B0) CR_TAB
+		  AS1 (clr,%A0));
+
 	case 4:
 	  if (optimize_size && scratch)
 	    break;  /* 5 */
@@ -4008,6 +4069,20 @@ lshrsi3_out (rtx insn, rtx operands[], int *len)
       
       switch (INTVAL (operands[2]))
 	{
+	default:
+	  if (INTVAL (operands[2]) < 32)
+	    break;
+
+	  if (AVR_ENHANCED)
+	    return *len = 3, (AS1 (clr,%D0) CR_TAB
+			      AS1 (clr,%C0) CR_TAB
+			      AS2 (movw,%A0,%C0));
+	  *len = 4;
+	  return (AS1 (clr,%D0) CR_TAB
+		  AS1 (clr,%C0) CR_TAB
+		  AS1 (clr,%B0) CR_TAB
+		  AS1 (clr,%A0));
+
 	case 8:
 	  {
 	    int reg0 = true_regnum (operands[0]);
