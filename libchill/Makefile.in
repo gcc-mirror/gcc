@@ -171,7 +171,7 @@ waitbuffer.o: waitbuffer.c rtltypes.h rts.h
 
 $(PSOBJS): $(srcdir)/powerset.h
 librmt.o: $(srcdir)/rtltypes.h
-chillrt0.o: $(srcdir)/rtltypes.h $(srcdir)/iomodes.h $(srcdir)/auxtypes.h
+chillrt0.o: chillrt0.c $(srcdir)/rtltypes.h $(srcdir)/iomodes.h $(srcdir)/auxtypes.h
 $(LIBOBJS1): $(srcdir)/rtltypes.h
 $(TIMEOBJS): $(srcdir)/rtltypes.h $(srcdir)/rts.h
 $(TASKOBJS): $(srcdir)/rts.h $(srcdir)/rtltypes.h
