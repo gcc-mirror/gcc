@@ -207,7 +207,6 @@ static int find_splittable_givs PARAMS ((const struct loop *,
 					 rtx, int));
 static int reg_dead_after_loop PARAMS ((const struct loop *, rtx));
 static rtx fold_rtx_mult_add PARAMS ((rtx, rtx, rtx, enum machine_mode));
-static int verify_addresses PARAMS ((struct induction *, rtx, int));
 static rtx remap_split_bivs PARAMS ((struct loop *, rtx));
 static rtx find_common_reg_term PARAMS ((rtx, rtx));
 static rtx subtract_reg_term PARAMS ((rtx, rtx));
@@ -2607,35 +2606,6 @@ find_splittable_regs (loop, unroll_type, unroll_number)
   return result;
 }
 
-/* Return 1 if the first and last unrolled copy of the address giv V is valid
-   for the instruction that is using it.  Do not make any changes to that
-   instruction.  */
-
-static int
-verify_addresses (v, giv_inc, unroll_number)
-     struct induction *v;
-     rtx giv_inc;
-     int unroll_number;
-{
-  int ret = 1;
-  rtx orig_addr = *v->location;
-  rtx last_addr = plus_constant (v->dest_reg,
-				 INTVAL (giv_inc) * (unroll_number - 1));
-
-  /* First check to see if either address would fail.   Handle the fact
-     that we have may have a match_dup.  */
-  if (! validate_replace_rtx (*v->location, v->dest_reg, v->insn)
-      || ! validate_replace_rtx (*v->location, last_addr, v->insn))
-    ret = 0;
-
-  /* Now put things back the way they were before.  This should always
-   succeed.  */
-  if (! validate_replace_rtx (*v->location, orig_addr, v->insn))
-    abort ();
-
-  return ret;
-}
-
 /* For every giv based on the biv BL, check to determine whether it is
    splittable.  This is a subroutine to find_splittable_regs ().
 
@@ -2647,7 +2617,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
      struct iv_class *bl;
      enum unroll_types unroll_type;
      rtx increment;
-     int unroll_number;
+     int unroll_number ATTRIBUTE_UNUSED;
 {
   struct loop_ivs *ivs = LOOP_IVS (loop);
   struct induction *v, *v2;
@@ -2818,107 +2788,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 	      splittable_regs[REGNO (v->new_reg)] = value;
 	    }
 	  else
-	    {
-	      /* Splitting address givs is useful since it will often allow us
-		 to eliminate some increment insns for the base giv as
-		 unnecessary.  */
-
-	      /* If the addr giv is combined with a dest_reg giv, then all
-		 references to that dest reg will be remapped, which is NOT
-		 what we want for split addr regs. We always create a new
-		 register for the split addr giv, just to be safe.  */
-
-	      /* If we have multiple identical address givs within a
-		 single instruction, then use a single pseudo reg for
-		 both.  This is necessary in case one is a match_dup
-		 of the other.  */
-
-	      v->const_adjust = 0;
-
-	      if (v->same_insn)
-		{
-		  v->dest_reg = v->same_insn->dest_reg;
-		  if (loop_dump_stream)
-		    fprintf (loop_dump_stream,
-			     "Sharing address givs in insn %d\n",
-			     INSN_UID (v->insn));
-		}
-	      /* If multiple address GIVs have been combined with the
-		 same dest_reg GIV, do not create a new register for
-		 each.  */
-	      else if (unroll_type != UNROLL_COMPLETELY
-		       && v->giv_type == DEST_ADDR
-		       && v->same && v->same->giv_type == DEST_ADDR
-		       && v->same->unrolled
-		       /* combine_givs_p may return true for some cases
-			  where the add and mult values are not equal.
-			  To share a register here, the values must be
-			  equal.  */
-		       && rtx_equal_p (v->same->mult_val, v->mult_val)
-		       && rtx_equal_p (v->same->add_val, v->add_val)
-		       /* If the memory references have different modes,
-			  then the address may not be valid and we must
-			  not share registers.  */
-		       && verify_addresses (v, giv_inc, unroll_number))
-		{
-		  v->dest_reg = v->same->dest_reg;
-		  v->shared = 1;
-		}
-	      else if (unroll_type == UNROLL_COMPLETELY)
-		{
-		  v->dest_reg = value;
-
-		  /* Check the resulting address for validity, and fail
-		     if the resulting address would be invalid.  */
-		  if (! verify_addresses (v, giv_inc, unroll_number))
-		    {
-		      for (v2 = v->next_iv; v2; v2 = v2->next_iv)
-			if (v2->same_insn == v)
-			  v2->same_insn = 0;
-
-		      if (loop_dump_stream)
-			fprintf (loop_dump_stream,
-				 "Invalid address for giv at insn %d\n",
-				 INSN_UID (v->insn));
-		      continue;
-		    }
-		}
-	      else
-		continue;
-
-	      /* Store the value of dest_reg into the insn.  This sharing
-		 will not be a problem as this insn will always be copied
-		 later.  */
-
-	      *v->location = v->dest_reg;
-
-	      /* If this address giv is combined with a dest reg giv, then
-		 save the base giv's induction pointer so that we will be
-		 able to handle this address giv properly.  The base giv
-		 itself does not have to be splittable.  */
-
-	      if (v->same && v->same->giv_type == DEST_REG)
-		addr_combined_regs[REGNO (v->same->new_reg)] = v->same;
-
-	      if (GET_CODE (v->new_reg) == REG)
-		{
-		  /* This giv maybe hasn't been combined with any others.
-		     Make sure that it's giv is marked as splittable here.  */
-
-		  splittable_regs[REGNO (v->new_reg)] = value;
-
-		  /* Make it appear to depend upon itself, so that the
-		     giv will be properly split in the main loop above.  */
-		  if (! v->same)
-		    {
-		      v->same = v;
-		      addr_combined_regs[REGNO (v->new_reg)] = v;
-		    }
-		}
-
-	      if (loop_dump_stream)
-		fprintf (loop_dump_stream, "DEST_ADDR giv being split.\n");
-	    }
+	    continue;
 	}
       else
 	{
