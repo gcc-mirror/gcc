@@ -486,7 +486,7 @@ genrtl_do_stmt (t)
      not emit the loop widgetry in this case.  In particular this
      avoids cluttering the rtl with dummy loop notes, which can affect
      alignment of adjacent labels.  */
-  if (cond == integer_zero_node)
+  if (integer_zerop (cond))
     expand_stmt (DO_BODY (t));
   else
     {
