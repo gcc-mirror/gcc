@@ -5519,30 +5519,41 @@ resolve_class (enclosing, class_type, decl, cl)
 }
 
 /* Effectively perform the resolution of class CLASS_TYPE. DECL or CL
-   are used to report error messages.  */
+   are used to report error messages. Do not try to replace TYPE_NAME
+   (class_type) by a variable, since it is changed by
+   find_in_imports{_on_demand} and (but it doesn't really matter)
+   qualify_and_find.  */
 
 tree
 do_resolve_class (enclosing, class_type, decl, cl)
      tree enclosing, class_type, decl, cl;
 {
-  tree new_class_decl, super, start;
+  tree new_class_decl, super;
+  struct hash_table _ht, *circularity_hash = &_ht;
 
-  /* Do not try to replace TYPE_NAME (class_type) by a variable, since
-     it is changed by find_in_imports{_on_demand} and (but it doesn't
-     really matter) qualify_and_find */
+  /* This hash table is used to register the classes we're going
+     through when searching the current class as an inner class, in
+     order to detect circular references. Remember to free it before
+     returning the section 0- of this function. */
+  hash_table_init (circularity_hash, hash_newfunc,
+		   java_hash_hash_tree_node, java_hash_compare_tree_node);
 
-  /* 0- Search in the current class as an inner class */
-  start = enclosing;
-
-  /* Maybe some code here should be added to load the class or
+  /* 0- Search in the current class as an inner class.
+     Maybe some code here should be added to load the class or
      something, at least if the class isn't an inner class and ended
      being loaded from class file. FIXME. */
   while (enclosing)
     {
       tree intermediate;
 
+      hash_lookup (circularity_hash, 
+		   (const  hash_table_key) enclosing, TRUE, NULL);
+
       if ((new_class_decl = find_as_inner_class (enclosing, class_type, cl)))
-        return new_class_decl;
+	{
+	  hash_table_free (circularity_hash);
+	  return new_class_decl;
+	}
 
       intermediate = enclosing;
       /* Explore enclosing contexts. */
@@ -5551,7 +5562,10 @@ do_resolve_class (enclosing, class_type, decl, cl)
 	  intermediate = DECL_CONTEXT (intermediate);
 	  if ((new_class_decl = find_as_inner_class (intermediate, 
 						     class_type, cl)))
-	    return new_class_decl;
+	    {
+	      hash_table_free (circularity_hash);
+	      return new_class_decl;
+	    }
 	}
 
       /* Now go to the upper classes, bail out if necessary. */
@@ -5563,13 +5577,14 @@ do_resolve_class (enclosing, class_type, decl, cl)
         super = do_resolve_class (NULL, super, NULL, NULL);
       else
 	super = TYPE_NAME (super);
- 
+
       /* We may not have checked for circular inheritance yet, so do so
          here to prevent an infinite loop. */
-      if (super == start)
+      if (hash_lookup (circularity_hash,
+		       (const hash_table_key) super, FALSE, NULL))
         {
           if (!cl)
-            cl = lookup_cl (decl);
+            cl = lookup_cl (enclosing);
 	  
           parse_error_context
             (cl, "Cyclic inheritance involving %s",
@@ -5578,6 +5593,8 @@ do_resolve_class (enclosing, class_type, decl, cl)
         }
       enclosing = super;
     }
+
+  hash_table_free (circularity_hash);
 
   /* 1- Check for the type in single imports. This will change
      TYPE_NAME() if something relevant is found */

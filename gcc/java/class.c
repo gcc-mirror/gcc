@@ -618,9 +618,9 @@ init_test_hash_newfunc (entry, table, string)
   return (struct hash_entry *) ret;
 }
 
-/* Hash table helpers. Also reused in find_applicable_accessible_methods_list
-   (parse.y). The hash of a tree node is it's pointer value,
-   comparison is direct. */
+/* Hash table helpers. Also reused in find_applicable_accessible_methods_list 
+   (parse.y). The hash of a tree node is its pointer value, comparison
+   is direct. */
 
 unsigned long
 java_hash_hash_tree_node (k)
