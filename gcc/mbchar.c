@@ -18,11 +18,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* These functions are used to manipulate multibyte characters.  */
-
 /* Note regarding cross compilation:
 
-   In general translation of multibyte characters to wide characters can
+   In general, translation of multibyte characters to wide characters can
    only work in a native compiler since the translation function (mbtowc)
    needs to know about both the source and target character encoding.  However,
    this particular implementation for JIS, SJIS and EUCJP source characters
@@ -33,36 +31,29 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef MULTIBYTE_CHARS
 #include "config.h"
-#include "system.h"
 #include "gansidecl.h"
+#include "system.h"
 #include "mbchar.h"
 #include <locale.h>
 
-typedef enum
-{
-  ESCAPE, DOLLAR, BRACKET, AT, B, J, NUL, JIS_CHAR, OTHER, JIS_C_NUM
-} JIS_CHAR_TYPE;
+typedef enum {ESCAPE, DOLLAR, BRACKET, AT, B, J, NUL, JIS_CHAR, OTHER,
+	      JIS_C_NUM} JIS_CHAR_TYPE;
 
-typedef enum
-{
-  ASCII, A_ESC, A_ESC_DL, JIS, JIS_1, JIS_2, J_ESC, J_ESC_BR,
-  J2_ESC, J2_ESC_BR, INV, JIS_S_NUM
-} JIS_STATE; 
+typedef enum {ASCII, A_ESC, A_ESC_DL, JIS, JIS_1, JIS_2, J_ESC, J_ESC_BR,
+	     J2_ESC, J2_ESC_BR, INV, JIS_S_NUM} JIS_STATE; 
 
-typedef enum
-{
-  COPYA, COPYJ, COPYJ2, MAKE_A, MAKE_J, NOOP, EMPTY, ERROR
-} JIS_ACTION;
+typedef enum {COPYA, COPYJ, COPYJ2, MAKE_A, MAKE_J, NOOP,
+	      EMPTY, ERROR} JIS_ACTION;
 
-/*****************************************************************************
- * state/action tables for processing JIS encoding
- * Where possible, switches to JIS are grouped with proceding JIS characters
- * and switches to ASCII are grouped with preceding JIS characters.
- * Thus, maximum returned length is:
- *   2 (switch to JIS) + 2 (JIS characters) + 2 (switch back to ASCII) = 6.
- *****************************************************************************/
+/* State/action tables for processing JIS encoding:
+
+   Where possible, switches to JIS are grouped with proceding JIS characters
+   and switches to ASCII are grouped with preceding JIS characters.
+   Thus, maximum returned length is:
+     2 (switch to JIS) + 2 (JIS characters) + 2 (switch back to ASCII) = 6.  */
+
 static JIS_STATE JIS_state_table[JIS_S_NUM][JIS_C_NUM] = {
-/*            ESCAPE DOLLAR   BRACKET   AT     B      J     NUL JIS_CHAR OTHER*/
+/*            ESCAPE DOLLAR   BRACKET   AT     B      J     NUL JIS_CHAR OTH*/
 /*ASCII*/   { A_ESC, ASCII,   ASCII,    ASCII, ASCII, ASCII, ASCII,ASCII,ASCII},
 /*A_ESC*/   { ASCII, A_ESC_DL,ASCII,    ASCII, ASCII, ASCII, ASCII,ASCII,ASCII},
 /*A_ESC_DL*/{ ASCII, ASCII,   ASCII,    JIS,   JIS,   ASCII, ASCII,ASCII,ASCII},
@@ -76,17 +67,17 @@ static JIS_STATE JIS_state_table[JIS_S_NUM][JIS_C_NUM] = {
 };
 
 static JIS_ACTION JIS_action_table[JIS_S_NUM][JIS_C_NUM] = {
-/*            ESCAPE DOLLAR BRACKET AT     B       J      NUL  JIS_CHAR OTHER */
+/*            ESCAPE DOLLAR BRACKET AT     B       J      NUL  JIS_CHAR OTH */
 /*ASCII */   {NOOP,  COPYA, COPYA, COPYA,  COPYA,  COPYA, EMPTY, COPYA, COPYA},
 /*A_ESC */   {COPYA, NOOP,  COPYA, COPYA,  COPYA,  COPYA, COPYA, COPYA, COPYA},
 /*A_ESC_DL */{COPYA, COPYA, COPYA, MAKE_J, MAKE_J, COPYA, COPYA, COPYA, COPYA},
-/*JIS */     {NOOP,  NOOP,  NOOP,  NOOP,   NOOP,   NOOP,  ERROR, NOOP,  ERROR },
-/*JIS_1 */   {ERROR, NOOP,  NOOP,  NOOP,   NOOP,   NOOP,  ERROR, NOOP,  ERROR },
+/*JIS */     {NOOP,  NOOP,  NOOP,  NOOP,   NOOP,   NOOP,  ERROR, NOOP,  ERROR},
+/*JIS_1 */   {ERROR, NOOP,  NOOP,  NOOP,   NOOP,   NOOP,  ERROR, NOOP,  ERROR},
 /*JIS_2 */   {NOOP,  COPYJ2,COPYJ2,COPYJ2, COPYJ2, COPYJ2,ERROR, COPYJ2,COPYJ2},
-/*J_ESC */   {ERROR, ERROR, NOOP,  ERROR,  ERROR,  ERROR, ERROR, ERROR, ERROR },
-/*J_ESC_BR */{ERROR, ERROR, ERROR, ERROR,  NOOP,   NOOP,  ERROR, ERROR, ERROR },
-/*J2_ESC */  {ERROR, ERROR, NOOP,  ERROR,  ERROR,  ERROR, ERROR, ERROR, ERROR },
-/*J2_ESC_BR*/{ERROR, ERROR, ERROR, ERROR,  COPYJ,  COPYJ, ERROR, ERROR, ERROR },
+/*J_ESC */   {ERROR, ERROR, NOOP,  ERROR,  ERROR,  ERROR, ERROR, ERROR, ERROR},
+/*J_ESC_BR */{ERROR, ERROR, ERROR, ERROR,  NOOP,   NOOP,  ERROR, ERROR, ERROR},
+/*J2_ESC */  {ERROR, ERROR, NOOP,  ERROR,  ERROR,  ERROR, ERROR, ERROR, ERROR},
+/*J2_ESC_BR*/{ERROR, ERROR, ERROR, ERROR,  COPYJ,  COPYJ, ERROR, ERROR, ERROR},
 };
 
 
@@ -94,69 +85,85 @@ char *literal_codeset = NULL;
 
 int
 local_mbtowc (pwc, s, n)
-     wchar_t       *pwc;
-     const char    *s;
-     size_t         n;
+     wchar_t *pwc;
+     char *s;
+     size_t n;
 {
   static JIS_STATE save_state = ASCII;
   JIS_STATE curr_state = save_state;
-  unsigned char *t = (unsigned char *)s;
+  unsigned char *t = (unsigned char *) s;
 
   if (s != NULL && n == 0)
     return -1;
 
   if (literal_codeset == NULL || strlen (literal_codeset) <= 1)
-    {
-      /* This must be the "C" locale or unknown locale -- fall thru */
-    }
+    /* This must be the "C" locale or unknown locale -- fall thru */
+    ;
   else if (! strcmp (literal_codeset, "C-SJIS"))
     {
       int char1;
       if (s == NULL)
-        return 0;  /* not state-dependent */
+	/* Not state-dependent.  */
+        return 0;
+
       char1 = *t;
       if (ISSJIS1 (char1))
         {
           int char2 = t[1];
+
           if (n <= 1)
             return -1;
+
           if (ISSJIS2 (char2))
             {
 	      if (pwc != NULL)
-		*pwc = (((wchar_t)*t) << 8) + (wchar_t)(*(t+1));
+		*pwc = (((wchar_t) *t) << 8) + (wchar_t) (*(t + 1));
               return 2;
             }
+
 	  return -1;
         }
+
       if (pwc != NULL)
-	*pwc = (wchar_t)*t;
+	*pwc = (wchar_t) *t;
+
       if (*t == '\0')
 	return 0;
+
       return 1;
     }
   else if (! strcmp (literal_codeset, "C-EUCJP"))
     {
       int char1;
+
       if (s == NULL)
-        return 0;  /* not state-dependent */
+	/* Not state-dependent.  */
+        return 0;
+
       char1 = *t;
       if (ISEUCJP (char1))
         {
           int char2 = t[1];     
+
           if (n <= 1)
             return -1;
+
           if (ISEUCJP (char2))
             {
 	      if (pwc != NULL)
-		*pwc = (((wchar_t)*t) << 8) + (wchar_t)(*(t+1));
+		*pwc = (((wchar_t) *t) << 8) + (wchar_t) (*(t + 1));
               return 2;
             }
+
 	  return -1;
         }
+
       if (pwc != NULL)
-	*pwc = (wchar_t)*t;
+	*pwc = (wchar_t) *t;
+
       if (*t == '\0')
 	return 0;
+
       return 1;
     }
   else if (! strcmp (literal_codeset, "C-JIS"))
@@ -169,12 +176,13 @@ local_mbtowc (pwc, s, n)
       if (s == NULL)
 	{
 	  save_state = ASCII;
-	  return 1;  /* state-dependent */
+	  /* State-dependent. */
+	  return 1;
 	}
 
       ptr = t;
 
-      for (i = 0; i < n; ++i)
+      for (i = 0; i < n; i++)
         {
           curr_ch = t[i];
           switch (curr_ch)
@@ -214,46 +222,59 @@ local_mbtowc (pwc, s, n)
             {
             case NOOP:
               break;
+
             case EMPTY:
 	      if (pwc != NULL)
-		*pwc = (wchar_t)0;
+		*pwc = (wchar_t) 0;
+
 	      save_state = curr_state;
               return i;
+
             case COPYA:
 	      if (pwc != NULL)
-		*pwc = (wchar_t)*ptr;
+		*pwc = (wchar_t) *ptr;
 	      save_state = curr_state;
-              return (i + 1);
+              return i + 1;
+
             case COPYJ:
 	      if (pwc != NULL)
-		*pwc = (((wchar_t)*ptr) << 8) + (wchar_t)(*(ptr+1));
+		*pwc = (((wchar_t) *ptr) << 8) + (wchar_t) (*(ptr + 1));
+
 	      save_state = curr_state;
-              return (i + 1);
+              return i + 1;
+
             case COPYJ2:
 	      if (pwc != NULL)
-		*pwc = (((wchar_t)*ptr) << 8) + (wchar_t)(*(ptr+1));
+		*pwc = (((wchar_t) *ptr) << 8) + (wchar_t) (*(ptr + 1));
+
 	      save_state = curr_state;
-              return (ptr - t) + 2;
+              return ptr - t + 2;
+
             case MAKE_A:
             case MAKE_J:
-              ptr = (char *)(t + i + 1);
+              ptr = (char *) (t + i + 1);
               break;
+
             case ERROR:
             default:
               return -1;
             }
         }
 
-      return -1;  /* n < bytes needed */
+      /* More than n bytes needed.  */
+      return -1;  
     }
                
 #ifdef CROSS_COMPILE
   if (s == NULL)
-    return 0;  /* not state-dependent */
+    /* Not state-dependent.  */
+    return 0;
+
   if (pwc != NULL)
     *pwc = *s;
   return 1;
 #else
+
   /* This must be the "C" locale or unknown locale. */
   return mbtowc (pwc, s, n);
 #endif
@@ -261,8 +282,8 @@ local_mbtowc (pwc, s, n)
 
 int
 local_mblen (s, n)
-     const char    *s;
-     size_t         n;
+     char *s;
+     size_t n;
 {
   return local_mbtowc (NULL, s, n);
 }
