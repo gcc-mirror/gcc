@@ -1,3 +1,9 @@
+2004-11-30  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18298
+	* tree-optimize.c (init_tree_optimization_passes): Add a may_alias
+	pass right after fold builtins.
+
 2004-11-30  Andreas Krebbel  <krebbel1@de.ibm.com>
 	
 	* config/s390/s390-modes.def: Added cc modes documentation.
