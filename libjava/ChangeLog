@@ -1,5 +1,10 @@
 2004-02-20  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/gcj/convert/Convert.java
+	(main): Use equals() to compare strings.
+
+2004-02-20  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/AbstractButton.java: Made several constants final.
 	(getRolloverSelectedIcon): Made public.
 	(getSelectedIcon): Made public.
