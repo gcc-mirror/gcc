@@ -136,7 +136,7 @@ FLAGS_TO_PASS = \
 	"tooldir=$(tooldir)"
 
 all: libobjc.la $(OBJC_BOEHM_GC)
-	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
+	: $(MAKE) ; exec $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=all
 
 # User-visible header files.
 

@@ -121,7 +121,7 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 # the dependency) and then (perhaps) builds multilibs.
 
 all: all-unilib
-	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="all-unilib"
+	: $(MAKE) ; exec $(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="all-unilib"
 
 # `all-unilib' is the overall target in the absence of multilibs,
 # meant to be invoked via multi-do for multilibs.

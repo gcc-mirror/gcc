@@ -1,3 +1,7 @@
+2002-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (all): Fix multilib parallel build.
+
 2002-08-14  Release Manager
 
 	* GCC 3.2 Released.
