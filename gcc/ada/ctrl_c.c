@@ -48,8 +48,6 @@ void __gnat_install_int_handler (void (*) (void));
 /* __gnat_uninstall_int_handler will reinstall the original handler */
 void __gnat_uninstall_int_handler (void);
 
-static void __gnat_int_handler (int);
-
 /* POSIX implementation */
 
 #if (defined (_AIX) || defined (unix)) && !defined (__vxworks)
@@ -104,7 +102,7 @@ __gnat_uninstall_int_handler (void)
 #include "mingw32.h"
 #include <windows.h>
 
-void (*sigint_intercepted) () = NULL;
+void (*sigint_intercepted) (void) = NULL;
 
 static BOOL WINAPI
 __gnat_int_handler  (DWORD dwCtrlType)

@@ -69,6 +69,7 @@
 #ifdef __MINGW32__
 #include "mingw32.h"
 #include <sys/utime.h>
+#include <ctype.h>
 #else
 #ifndef VMS
 #include <utime.h>
@@ -312,7 +313,9 @@ __gnat_to_gm_time
    OS/2 and vxworks, always return -1.  */
 
 int
-__gnat_readlink (char *path, char *buf, size_t bufsiz)
+__gnat_readlink (char *path ATTRIBUTE_UNUSED,
+		 char *buf ATTRIBUTE_UNUSED,
+		 size_t bufsiz ATTRIBUTE_UNUSED)
 {
 #if defined (MSDOS) || defined (_WIN32) || defined (__EMX__)
   return -1;
@@ -330,7 +333,8 @@ __gnat_readlink (char *path, char *buf, size_t bufsiz)
    Interix and VMS, always return -1. */
 
 int
-__gnat_symlink (char *oldpath, char *newpath)
+__gnat_symlink (char *oldpath ATTRIBUTE_UNUSED,
+		char *newpath ATTRIBUTE_UNUSED)
 {
 #if defined (MSDOS) || defined (_WIN32) || defined (__EMX__)
   return -1;
@@ -826,7 +830,6 @@ win32_filetime (HANDLE h)
 time_t
 __gnat_file_time_name (char *name)
 {
-  struct stat statbuf;
 
 #if defined (__EMX__) || defined (MSDOS)
   int fd = open (name, O_RDONLY | O_BINARY);
@@ -841,7 +844,7 @@ __gnat_file_time_name (char *name)
   CloseHandle (h);
   return ret;
 #else
-
+  struct stat statbuf;
   (void) __gnat_stat (name, &statbuf);
 #ifdef VMS
   /* VMS has file versioning.  */
@@ -1343,7 +1346,7 @@ __gnat_is_absolute_path (char *name)
 {
   return (*name == '/' || *name == DIR_SEPARATOR
 #if defined (__EMX__) || defined (MSDOS) || defined (WINNT)
-      || strlen (name) > 1 && isalpha (name[0]) && name[1] == ':'
+      || (strlen (name) > 1 && isalpha (name[0]) && name[1] == ':')
 #endif
 	  );
 }
@@ -1421,7 +1424,7 @@ __gnat_set_readonly (char *name)
 }
 
 int
-__gnat_is_symbolic_link (char *name)
+__gnat_is_symbolic_link (char *name ATTRIBUTE_UNUSED)
 {
 #if defined (__vxworks)
   return 0;
@@ -1455,11 +1458,11 @@ int
 __gnat_portable_spawn (char *args[])
 {
   int status = 0;
-  int finished;
-  int pid;
+  int finished ATTRIBUTE_UNUSED;
+  int pid ATTRIBUTE_UNUSED;
 
 #if defined (MSDOS) || defined (_WIN32)
-  status = spawnvp (P_WAIT, args[0], args);
+  status = spawnvp (P_WAIT, args[0],(const char* const*)args);
   if (status < 0)
     return -1;
   else
@@ -1512,19 +1515,19 @@ __gnat_portable_spawn (char *args[])
 static CRITICAL_SECTION plist_cs;
 
 void
-__gnat_plist_init ()
+__gnat_plist_init (void)
 {
   InitializeCriticalSection (&plist_cs);
 }
 
 static void
-plist_enter ()
+plist_enter (void)
 {
   EnterCriticalSection (&plist_cs);
 }
 
 static void
-plist_leave ()
+plist_leave (void)
 {
   LeaveCriticalSection (&plist_cs);
 }
@@ -1558,9 +1561,11 @@ add_handle (HANDLE h)
   plist_leave();
 }
 
-void remove_handle (HANDLE h)
+static void
+remove_handle (HANDLE h)
 {
-  Process_List *pl, *prev;
+  Process_List *pl;
+  Process_List *prev = NULL;
 
   plist_enter();
 

@@ -298,6 +298,8 @@ __gnat_ttyname (filedes)
 #ifdef __MINGW32__
 #if OLD_MINGW
 #include <termios.h>
+#else
+#include <conio.h>  /* for getch(), kbhit() */
 #endif
 #else
 #include <termios.h>
