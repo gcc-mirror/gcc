@@ -1,3 +1,9 @@
+Sat Mar  6 17:18:44 1999  Richard Earnshaw  (rearnsha@arm.com)
+			  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (make_edges): Handle casesi that jump to default branch.
+	If CASE_DROPS_THROUGH, force fallthru to block after casesi.
+
 Sat Mar  6 07:49:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-aux-info.c (data_type, affix_data_type, gen_decl, 
