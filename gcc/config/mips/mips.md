@@ -337,7 +337,7 @@
   "
 {
   if (GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) == -32768)
-    operands[2] = force_reg (SImode, operands[2]);
+    operands[2] = force_reg (DImode, operands[2]);
 
   operands[3] = gen_reg_rtx (SImode);
 }")
