@@ -3426,7 +3426,6 @@ except for debugging section.
 This optimization enables such transformations.  It is still compatible with
 @option{-g}, but debugging resulting programs will be even higher challenge.
 
-@table @gcctabopt
 @item -fstrength-reduce
 @opindex fstrength-reduce
 Perform the optimizations of loop strength reduction and
