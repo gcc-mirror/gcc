@@ -1,3 +1,12 @@
+Tue Aug 27 22:26:35 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (BIGGEST_FIELD_ALIGNMENT): Set proper default for x86_64.
+
+Tue Aug 27 20:07:01 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (overwrite_options): Set -mpreferred-stack-boundary to 128
+	for -Os/TARGET_64BIT too.
+
 2002-09-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog: Follow spelling conventions.
