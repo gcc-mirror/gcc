@@ -1,5 +1,20 @@
 2002-04-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cppexp.c (struct op, parse_number): Replace U_CHAR with uchar.
+	* cppfiles.c (read_include_file): Similarly.
+	* cpphash.h (DSC, U_CHAR, ustrcmp, ustrncmp, ustrlen,
+	uxstrdup ustrchr, ufputs): Similarly.
+	* cppinit.c (TRIGRAPH_MAP, cpp_destroy): Similarly.
+	* cpplex.c (parse_slow, unescaped_terminator_p, save_comment,
+	cpp_ideq, parse_identifier, parse_number): Similarly.
+	* cpplib.c (struct directive, dequote_string, D, run_directive,
+	cpp_push_buffer): Similarly.
+	* cppmacro.c (new_string_token, builtin_macro, cpp_quote_string,
+	_cpp_create_definition, check_trad_stringification,
+	cpp_macro_definition): Similarly.
+
+2002-04-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cppmacro.c (funlike_invocation_p): Don't step back
 	over CPP_EOF.
 

@@ -77,13 +77,13 @@ static int skip_line_comment PARAMS ((cpp_reader *));
 static void adjust_column PARAMS ((cpp_reader *));
 static int skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
 static cpp_hashnode *parse_identifier PARAMS ((cpp_reader *));
-static U_CHAR *parse_slow PARAMS ((cpp_reader *, const U_CHAR *, int,
+static uchar *parse_slow PARAMS ((cpp_reader *, const uchar *, int,
 				   unsigned int *));
 static void parse_number PARAMS ((cpp_reader *, cpp_string *, int));
-static int unescaped_terminator_p PARAMS ((cpp_reader *, const U_CHAR *));
+static int unescaped_terminator_p PARAMS ((cpp_reader *, const uchar *));
 static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static bool trigraph_p PARAMS ((cpp_reader *));
-static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *,
+static void save_comment PARAMS ((cpp_reader *, cpp_token *, const uchar *,
 				  cppchar_t));
 static int name_p PARAMS ((cpp_reader *, const cpp_string *));
 static int maybe_read_ucs PARAMS ((cpp_reader *, const unsigned char **,
@@ -105,7 +105,7 @@ cpp_ideq (token, string)
   if (token->type != CPP_NAME)
     return 0;
 
-  return !ustrcmp (NODE_NAME (token->val.node), (const U_CHAR *) string);
+  return !ustrcmp (NODE_NAME (token->val.node), (const uchar *) string);
 }
 
 /* Call when meeting a newline, assumed to be in buffer->cur[-1].
@@ -421,7 +421,7 @@ parse_identifier (pfile)
      cpp_reader *pfile;
 {
   cpp_hashnode *result;
-  const U_CHAR *cur, *base;
+  const uchar *cur, *base;
 
   /* Fast-path loop.  Skim over a normal identifier.
      N.B. ISIDNUM does not include $.  */
@@ -473,15 +473,15 @@ parse_identifier (pfile)
    1 if it's a number, and 2 if it has a leading period.  Returns a
    pointer to the token's NUL-terminated spelling in permanent
    storage, and sets PLEN to its length.  */
-static U_CHAR *
+static uchar *
 parse_slow (pfile, cur, number_p, plen)
      cpp_reader *pfile;
-     const U_CHAR *cur;
+     const uchar *cur;
      int number_p;
      unsigned int *plen;
 {
   cpp_buffer *buffer = pfile->buffer;
-  const U_CHAR *base = buffer->cur - 1;
+  const uchar *base = buffer->cur - 1;
   struct obstack *stack = &pfile->hash_table->stack;
   unsigned int c, prevc, saw_dollar = 0;
 
@@ -550,7 +550,7 @@ parse_number (pfile, number, leading_period)
      cpp_string *number;
      int leading_period;
 {
-  const U_CHAR *cur;
+  const uchar *cur;
 
   /* Fast-path loop.  Skim over a normal number.
      N.B. ISIDNUM does not include $.  */
@@ -563,8 +563,8 @@ parse_number (pfile, number, leading_period)
     number->text = parse_slow (pfile, cur, 1 + leading_period, &number->len);
   else
     {
-      const U_CHAR *base = pfile->buffer->cur - 1;
-      U_CHAR *dest;
+      const uchar *base = pfile->buffer->cur - 1;
+      uchar *dest;
 
       number->len = cur - base + leading_period;
       dest = _cpp_unaligned_alloc (pfile, number->len + 1);

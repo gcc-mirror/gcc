@@ -130,14 +130,14 @@ enum { BRACKET = 0, SYSTEM, AFTER };
 
 #define init_trigraph_map()  /* Nothing.  */
 #define TRIGRAPH_MAP \
-__extension__ const U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = {
+__extension__ const uchar _cpp_trigraph_map[UCHAR_MAX + 1] = {
 
 #define END };
 #define s(p, v) [p] = v,
 
 #else
 
-#define TRIGRAPH_MAP U_CHAR _cpp_trigraph_map[UCHAR_MAX + 1] = { 0 }; \
+#define TRIGRAPH_MAP uchar _cpp_trigraph_map[UCHAR_MAX + 1] = { 0 }; \
  static void init_trigraph_map PARAMS ((void)) { \
  unsigned char *x = _cpp_trigraph_map;
 
@@ -619,7 +619,7 @@ cpp_destroy (pfile)
    Also, macros with CPLUS set in the flags field are entered only for C++.  */
 struct builtin
 {
-  const U_CHAR *name;
+  const uchar *name;
   const char *value;
   unsigned char builtin;
   unsigned char operator;

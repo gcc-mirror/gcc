@@ -42,9 +42,9 @@ static const unsigned char *op_as_text PARAMS ((cpp_reader *, enum cpp_ttype));
 struct op
 {
   enum cpp_ttype op;
-  U_CHAR prio;         /* Priority of op.  */
-  U_CHAR flags;
-  U_CHAR unsignedp;    /* True if value should be treated as unsigned.  */
+  uchar prio;         /* Priority of op.  */
+  uchar flags;
+  uchar unsignedp;    /* True if value should be treated as unsigned.  */
   HOST_WIDEST_INT value; /* The value logically "right" of op.  */
 };
 
@@ -91,9 +91,9 @@ parse_number (pfile, tok)
      const cpp_token *tok;
 {
   struct op op;
-  const U_CHAR *start = tok->val.str.text;
-  const U_CHAR *end = start + tok->val.str.len;
-  const U_CHAR *p = start;
+  const uchar *start = tok->val.str.text;
+  const uchar *end = start + tok->val.str.len;
+  const uchar *p = start;
   int c = 0, i, nsuff;
   unsigned HOST_WIDEST_INT n = 0, nd, MAX_over_base;
   int base = 10;

@@ -82,7 +82,7 @@ typedef struct directive directive;
 struct directive
 {
   directive_handler handler;	/* Function to handle directive.  */
-  const U_CHAR *name;		/* Name of directive.  */
+  const uchar *name;		/* Name of directive.  */
   unsigned short length;	/* Length of name.  */
   unsigned char origin;		/* Origin of directive.  */
   unsigned char flags;	        /* Flags describing this directive.  */
@@ -103,9 +103,9 @@ static const cpp_token *parse_include PARAMS ((cpp_reader *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
 static unsigned int read_flag	PARAMS ((cpp_reader *, unsigned int));
-static U_CHAR *dequote_string	PARAMS ((cpp_reader *, const U_CHAR *,
+static uchar *dequote_string	PARAMS ((cpp_reader *, const uchar *,
 					 unsigned int));
-static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
+static int  strtoul_for_line	PARAMS ((const uchar *, unsigned int,
 					 unsigned long *));
 static void do_diagnostic	PARAMS ((cpp_reader *, int, int));
 static cpp_hashnode *lex_macro_node	PARAMS ((cpp_reader *));
@@ -185,7 +185,7 @@ enum
 
 /* Don't invoke CONCAT2 with any whitespace or K&R cc will fail.  */
 #define D(name, t, origin, flags) \
-{ CONCAT2(do_,name), (const U_CHAR *) STRINGX(name), \
+{ CONCAT2(do_,name), (const uchar *) STRINGX(name), \
   sizeof STRINGX(name) - 1, origin, flags },
 static const directive dtable[] =
 {
@@ -429,7 +429,7 @@ run_directive (pfile, dir_no, buf, count)
      const char *buf;
      size_t count;
 {
-  cpp_push_buffer (pfile, (const U_CHAR *) buf, count,
+  cpp_push_buffer (pfile, (const uchar *) buf, count,
 		   /* from_stage3 */ true, 1);
   start_directive (pfile);
   /* We don't want a leading # to be interpreted as a directive.  */
@@ -717,15 +717,15 @@ read_flag (pfile, last)
 /* Subroutine of do_line and do_linemarker.  Returns a version of STR
    which has a NUL terminator and all escape sequences converted to
    their equivalents.  Temporary, hopefully.  */
-static U_CHAR *
+static uchar *
 dequote_string (pfile, str, len)
      cpp_reader *pfile;
-     const U_CHAR *str;
+     const uchar *str;
      unsigned int len;
 {
-  U_CHAR *result = _cpp_unaligned_alloc (pfile, len + 1);
-  U_CHAR *dst = result;
-  const U_CHAR *limit = str + len;
+  uchar *result = _cpp_unaligned_alloc (pfile, len + 1);
+  uchar *dst = result;
+  const uchar *limit = str + len;
   unsigned int c;
   unsigned HOST_WIDE_INT mask;
 
@@ -742,7 +742,7 @@ dequote_string (pfile, str, len)
       if (c != '\\')
 	*dst++ = c;
       else
-	*dst++ = cpp_parse_escape (pfile, (const U_CHAR **)&str, limit, mask);
+	*dst++ = cpp_parse_escape (pfile, (const uchar **)&str, limit, mask);
     }
   *dst++ = '\0';
   return result;
@@ -753,12 +753,12 @@ dequote_string (pfile, str, len)
    number was well-formed, 1 if not.  Temporary, hopefully.  */
 static int
 strtoul_for_line (str, len, nump)
-     const U_CHAR *str;
+     const uchar *str;
      unsigned int len;
      unsigned long *nump;
 {
   unsigned long reg = 0;
-  U_CHAR c;
+  uchar c;
   while (len--)
     {
       c = *str++;
@@ -1878,7 +1878,7 @@ cpp_set_callbacks (pfile, cb)
 cpp_buffer *
 cpp_push_buffer (pfile, buffer, len, from_stage3, return_at_eof)
      cpp_reader *pfile;
-     const U_CHAR *buffer;
+     const uchar *buffer;
      size_t len;
      int from_stage3;
      int return_at_eof;
