@@ -1,3 +1,29 @@
+2003-10-21  Benjamin Kosnik  <bkoz@redhat.com>
+ 
+	PR libstdc++/9858
+	* include/bits/locale_facets.h (ctype<char>): Remove
+	__ctype_abstract_base.
+	(ctype<char>::do_is): Remove.
+	(ctype<char>::do_scan_is): Remove.
+	* src/ctype.cc: Same. Inline the rest.
+	* testsuite/22_locale/ctype/is/char/9858.cc: New.
+	* config/os/aix/ctype_noninline.h: Adjust ctor.
+	* config/os/bsd/freebsd/ctype_noninline.h: Same.
+	* config/os/bsd/netbsd/ctype_noninline.h: Same.
+	* config/os/djgpp/ctype_noninline.h: Same.
+	* config/os/generic/ctype_noninline.h: Same.
+	* config/os/gnu-linux/ctype_noninline.h: Same.
+	* config/os/hpux/ctype_noninline.h: Same.
+	* config/os/irix/irix5.2/ctype_noninline.h: Same.
+	* config/os/irix/irix6.5/ctype_noninline.h: Same.
+	* config/os/mingw32/ctype_noninline.h: Same.
+	* config/os/newlib/ctype_noninline.h: Same.
+	* config/os/qnx/qnx6.1/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.5/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.6/ctype_noninline.h: Same.
+	* config/os/solaris/solaris2.7/ctype_noninline.h: Same.
+	* config/os/windiss/ctype_noninline.h: Same.
+
 2003-10-21  Paolo Carlini  <pcarlini@suse.de>
 
 	* src/locale.cc: Tweak a comment.

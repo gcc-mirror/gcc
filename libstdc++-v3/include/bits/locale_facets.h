@@ -334,7 +334,7 @@ namespace std
 
   // 22.2.1.3  ctype<char> specialization.
   template<>
-    class ctype<char> : public __ctype_abstract_base<char>
+    class ctype<char> : public locale::facet, public ctype_base
     {
     public:
       // Types:
@@ -371,6 +371,39 @@ namespace std
       inline const char*
       scan_not(mask __m, const char* __lo, const char* __hi) const;
      
+      char_type 
+      toupper(char_type __c) const
+      { return this->do_toupper(__c); }
+
+      const char_type*
+      toupper(char_type *__lo, const char_type* __hi) const
+      { return this->do_toupper(__lo, __hi); }
+
+      char_type 
+      tolower(char_type __c) const
+      { return this->do_tolower(__c); }
+
+      const char_type*
+      tolower(char_type* __lo, const char_type* __hi) const
+      { return this->do_tolower(__lo, __hi); }
+
+      char_type 
+      widen(char __c) const
+      { return this->do_widen(__c); }
+
+      const char*
+      widen(const char* __lo, const char* __hi, char_type* __to) const
+      { return this->do_widen(__lo, __hi, __to); }
+
+      char 
+      narrow(char_type __c, char __dfault) const
+      { return this->do_narrow(__c, __dfault); }
+
+      const char_type*
+      narrow(const char_type* __lo, const char_type* __hi,
+	      char __dfault, char *__to) const
+      { return this->do_narrow(__lo, __hi, __dfault, __to); }
+
     protected:
       const mask* 
       table() const throw()
@@ -381,19 +414,6 @@ namespace std
 
       virtual 
       ~ctype();
-
-      virtual bool 
-      do_is(mask __m, char_type __c) const;
-
-      virtual const char_type*
-      do_is(const char_type* __lo, const char_type* __hi, mask* __vec) const;
-
-      virtual const char_type*
-      do_scan_is(mask __m, const char_type* __lo, const char_type* __hi) const;
-
-      virtual const char_type*
-      do_scan_not(mask __m, const char_type* __lo, 
-		  const char_type* __hi) const;
 
       virtual char_type 
       do_toupper(char_type) const;
@@ -408,17 +428,27 @@ namespace std
       do_tolower(char_type* __lo, const char_type* __hi) const;
       
       virtual char_type 
-      do_widen(char) const;
+      do_widen(char __c) const
+      { return __c; }
 
       virtual const char*
-      do_widen(const char* __lo, const char* __hi, char_type* __dest) const;
+      do_widen(const char* __lo, const char* __hi, char_type* __dest) const
+      {
+	memcpy(__dest, __lo, __hi - __lo);
+	return __hi;
+      }
 
       virtual char 
-      do_narrow(char_type, char __dfault) const;
+      do_narrow(char_type __c, char) const
+      { return __c; }
 
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
-		char __dfault, char* __dest) const;
+		char, char* __dest) const
+      {
+	memcpy(__dest, __lo, __hi - __lo);
+	return __hi;
+      }
     };
  
   template<>
@@ -492,7 +522,6 @@ namespace std
       virtual const char_type*
       do_narrow(const char_type* __lo, const char_type* __hi,
 		char __dfault, char* __dest) const;
-
     };
 
   template<>

@@ -30,10 +30,18 @@
 
 namespace std 
 {
-  // XXX At some point, just rename this file to ctype_members_char.cc
-  // and compile it as a separate file instead of including it here.
-  // Platform-specific initialization code for ctype tables.
-  #include <bits/ctype_noninline.h>
+  // Definitions for static const data members of ctype_base.
+  const ctype_base::mask ctype_base::space;
+  const ctype_base::mask ctype_base::print;
+  const ctype_base::mask ctype_base::cntrl;
+  const ctype_base::mask ctype_base::upper;
+  const ctype_base::mask ctype_base::lower;
+  const ctype_base::mask ctype_base::alpha;
+  const ctype_base::mask ctype_base::digit;
+  const ctype_base::mask ctype_base::punct;
+  const ctype_base::mask ctype_base::xdigit;
+  const ctype_base::mask ctype_base::alnum;
+  const ctype_base::mask ctype_base::graph;
 
   // Definitions for locale::id of standard facets that are specialized.
   locale::id ctype<char>::id;
@@ -62,18 +70,10 @@ namespace std
     }
 #endif
 
-  // Definitions for static const data members of ctype_base.
-  const ctype_base::mask ctype_base::space;
-  const ctype_base::mask ctype_base::print;
-  const ctype_base::mask ctype_base::cntrl;
-  const ctype_base::mask ctype_base::upper;
-  const ctype_base::mask ctype_base::lower;
-  const ctype_base::mask ctype_base::alpha;
-  const ctype_base::mask ctype_base::digit;
-  const ctype_base::mask ctype_base::punct;
-  const ctype_base::mask ctype_base::xdigit;
-  const ctype_base::mask ctype_base::alnum;
-  const ctype_base::mask ctype_base::graph;
+  // XXX At some point, just rename this file to ctype_configure_char.cc
+  // and compile it as a separate file instead of including it here.
+  // Platform-specific initialization code for ctype tables.
+  #include <bits/ctype_noninline.h>
 
   const size_t ctype<char>::table_size;
 
@@ -82,46 +82,6 @@ namespace std
     _S_destroy_c_locale(_M_c_locale_ctype);
     if (_M_del) 
       delete[] this->table(); 
-  }
-
-  // These are dummy placeholders as these virtual functions are never called.
-  bool 
-  ctype<char>::do_is(mask, char_type) const 
-  { return false; }
-  
-  const char*
-  ctype<char>::do_is(const char_type* __c, const char_type*, mask*) const 
-  { return __c; }
-  
-  const char*
-  ctype<char>::do_scan_is(mask, const char_type* __c, const char_type*) const 
-  { return __c; }
-
-  const char* 
-  ctype<char>::do_scan_not(mask, const char_type* __c, const char_type*) const
-  { return __c; }
-
-  char
-  ctype<char>::do_widen(char __c) const
-  { return __c; }
-  
-  const char* 
-  ctype<char>::do_widen(const char* __lo, const char* __hi, char* __dest) const
-  {
-    memcpy(__dest, __lo, __hi - __lo);
-    return __hi;
-  }
-  
-  char
-  ctype<char>::do_narrow(char __c, char /*__dfault*/) const
-  { return __c; }
-  
-  const char* 
-  ctype<char>::do_narrow(const char* __lo, const char* __hi, 
-			 char /*__dfault*/, char* __dest) const
-  {
-    memcpy(__dest, __lo, __hi - __lo);
-    return __hi;
   }
 
 #ifdef _GLIBCXX_USE_WCHAR_T
