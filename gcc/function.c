@@ -39,9 +39,7 @@ Boston, MA 02111-1307, USA.  */
    then scans all the RTL instructions so far generated to correct them.  */
 
 #include "config.h"
-
 #include <stdio.h>
-
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -57,6 +55,7 @@ Boston, MA 02111-1307, USA.  */
 #include "basic-block.h"
 #include "obstack.h"
 #include "bytecode.h"
+#include "bc-emit.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -314,8 +313,8 @@ static int virtuals_instantiated;
 /* These variables hold pointers to functions to
    save and restore machine-specific data,
    in push_function_context and pop_function_context.  */
-void (*save_machine_status) ();
-void (*restore_machine_status) ();
+void (*save_machine_status) PROTO((struct function *));
+void (*restore_machine_status) PROTO((struct function *));
 
 /* Nonzero if we need to distinguish between the return value of this function
    and the return value of a function called by this function.  This helps
@@ -323,10 +322,6 @@ void (*restore_machine_status) ();
 
 extern int rtx_equal_function_value_matters;
 extern tree sequence_rtl_expr;
-extern tree bc_runtime_type_code ();
-extern rtx bc_build_calldesc ();
-extern char *bc_emit_trampoline ();
-extern char *bc_end_function ();
 
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
