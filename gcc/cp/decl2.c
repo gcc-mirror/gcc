@@ -2473,10 +2473,6 @@ import_export_vtable (decl, type, final)
       TREE_PUBLIC (decl) = 1;
       DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
       DECL_INTERFACE_KNOWN (decl) = 1;
-
-      /* Always make vtables weak.  */
-      if (flag_weak)
-	comdat_linkage (decl);
     }
   else
     {
@@ -2644,6 +2640,10 @@ finish_vtable_vardecl (prev, vars)
 
 	  DECL_IGNORED_P (vars) = 1;
 	}
+
+      /* Always make vtables weak.  */
+      if (flag_weak)
+	comdat_linkage (vars);
 
       rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
 

@@ -1,3 +1,8 @@
+1999-01-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_vtable_vardecl): Make vtables comdat here.
+	(import_export_vtable): Not here.
+
 1999-01-18  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_component_ref): Wrap an OVERLOAD around a unique
