@@ -1213,14 +1213,12 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
    changed.  A volatile and non-volatile reference can be interchanged
    though. 
 
-   A MEM_IN_STRUCT reference at a non-QImode non-AND varying address can never
-   conflict with a non-MEM_IN_STRUCT reference at a fixed address.   We must
-   allow QImode aliasing because the ANSI C standard allows character
-   pointers to alias anything.  We are assuming that characters are
-   always QImode here.  We also must allow AND addresses, because they may
-   generate accesses outside the object being referenced.  This is used to
-   generate aligned addresses from unaligned addresses, for instance, the
-   alpha storeqi_unaligned pattern.  */
+   A MEM_IN_STRUCT reference at a non-AND varying address can never
+   conflict with a non-MEM_IN_STRUCT reference at a fixed address.  We
+   also must allow AND addresses, because they may generate accesses
+   outside the object being referenced.  This is used to generate
+   aligned addresses from unaligned addresses, for instance, the alpha
+   storeqi_unaligned pattern.  */
 
 /* Read dependence: X is read after read in MEM takes place.  There can
    only be a dependence here if both reads are volatile.  */
@@ -1269,10 +1267,6 @@ static int
 aliases_everything_p (mem)
      rtx mem;
 {
-  if (GET_MODE (mem) == QImode)
-    /* ANSI C says that a `char*' can point to anything.  */
-    return 1;
-
   if (GET_CODE (XEXP (mem, 0)) == AND)
     /* If the address is an AND, its very hard to know at what it is
        actually pointing.  */
