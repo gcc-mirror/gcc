@@ -1,5 +1,11 @@
 2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/cris/cris.c (TARGET_SETUP_INCOMING_VARARGS): New.
+	(cris_setup_incoming_varargs): Likewise.
+	* config/cris/cris.h (SETUP_INCOMING_VARARGS): Remove.
+
+2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/ns32k/ns32k.c (TARGET_STRUCT_VALUE_RTX): New.
 	(ns32k_struct_value_rtx): Likewise.
 	* config/ns32k/ns32k.h (STRUCT_VALUE_REGNUM): Rename to
