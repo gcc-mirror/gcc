@@ -60,7 +60,7 @@
 	(sh*-netbsd*): Use SELECT_SH* macros.
 	(supported_defaults): sh[123456ble]-*-* | sh-*-* support "cpu".
 	Merge sh*-*-netbsd* configurations into sh-elf configurations.
-	* config/sh/t-netbsd-sh5, config/sh/t-le, config/sh/t-le: Delete.
+	* config/sh/t-netbsd-sh5, config/sh/t-be, config/sh/t-le: Delete.
 	* config/sh/t-monolib: Likewise.
 
 2004-06-21  Paul Brook  <paul@codesourcery.com>
