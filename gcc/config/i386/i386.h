@@ -502,7 +502,8 @@ extern enum processor_type ix86_cpu;
    ? (((int) GET_MODE_CLASS (MODE) == (int) MODE_FLOAT		\
        || (int) GET_MODE_CLASS (MODE) == (int) MODE_COMPLEX_FLOAT)	\
       && GET_MODE_UNIT_SIZE (MODE) <= 12)			\
-   : (int) (MODE) != (int) QImode)
+   : (int) (MODE) != (int) QImode ? 1				\
+   : (reload_in_progress | reload_completed) == 1)
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
