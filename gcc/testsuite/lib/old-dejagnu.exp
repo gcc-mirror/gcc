@@ -196,7 +196,8 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 # is right.  If no such Special Options are found, $default_cflags is used.
 # FIXME: Can there be multiple lines of these?
 #
-# Other keywords: "Build don't link:", "Build don't run:", "Build then link:".
+# Other keywords: "Build don't link:", "Build don't run:", "Build then link:",
+#                 "Additional sources: <file>.cc ..."
 
     set name "[file tail [file dirname $prog]]/[file tail $prog]"
 
