@@ -1,7 +1,8 @@
 /* Makeinfo -- convert Texinfo source files into Info files.
-   $Id: makeinfo.c,v 1.8 1998/03/24 18:07:53 law Exp $
+   $Id: makeinfo.c,v 1.11 1998/07/06 21:58:00 law Exp $
 
-   Copyright (C) 1987, 92, 93, 94, 95, 96, 97 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92, 93, 94, 95, 96, 97, 98
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -114,6 +115,9 @@ int must_start_paragraph = 0;
 
 /* Nonzero means a string is in execution, as opposed to a file. */
 static int executing_string = 0;
+
+/* Nonzero means a macro string is in execution, as opposed to a file. */
+static int me_executing_string = 0;
 
 #if defined (HAVE_MACROS)
 /* If non-NULL, this is an output stream to write the full macro expansion
@@ -1082,10 +1086,11 @@ main (argc, argv)
         case 'V':
           /* User requested version info. */
           print_version_info ();
-          puts (_("Copyright (C) 1996 Free Software Foundation, Inc.\n\
+	  printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
 There is NO warranty.  You may redistribute this software\n\
 under the terms of the GNU General Public License.\n\
-For more information about these matters, see the files named COPYING."));
+For more information about these matters, see the files named COPYING.\n"),
+		  "1998");
           exit (NO_ERROR);
           break;
 
@@ -1143,7 +1148,7 @@ For more information about these matters, see the files named COPYING."));
 void
 print_version_info ()
 {
-  printf (_("makeinfo (GNU %s %s) %d.%d\n"), PACKAGE, VERSION,
+  printf ("makeinfo (GNU %s %s) %d.%d\n", PACKAGE, VERSION,
           major_version, minor_version);
 }
 
@@ -1188,10 +1193,10 @@ Options:\n\
 --verbose              report about what is being done.\n\
 --version              display version information and exit.\n\
 \n\
-Email bug reports to bug-texinfo@prep.ai.mit.edu.\n\
+Email bug reports to bug-texinfo@gnu.org.\n\
 "),
-           progname, paragraph_start_indent,
-           fill_column, max_error_level, reference_warning_limit);
+           progname, max_error_level, fill_column,
+           paragraph_start_indent, reference_warning_limit);
   exit (exit_value);
 }
 
@@ -1248,8 +1253,8 @@ find_and_load (filename)
   if (file < 0)
     goto error_exit;
 
-  /* Load the file. */
-  result = (char *)xmalloc (1 + file_size);
+  /* Load the file, with enough room for a newline and a null. */
+  result = xmalloc (file_size + 2);
 
   /* VMS stat lies about the st_size value.  The actual number of
      readable bytes is always less than this value.  The arcane
@@ -1291,8 +1296,10 @@ find_and_load (filename)
   line_number = 1;
   /* Not strictly necessary.  This magic prevents read_token () from doing
      extra unnecessary work each time it is called (that is a lot of times).
-     The SIZE_OF_INPUT_TEXT is one past the actual end of the text. */
+     SIZE_OF_INPUT_TEXT is one past the actual end of the text. */
   input_text[size_of_input_text] = '\n';
+  /* This, on the other hand, is always necessary.  */
+  input_text[size_of_input_text+1] = 0;
   return (result);
 }
 
@@ -1333,7 +1340,7 @@ popfile ()
   filestack = filestack->next;
 
   /* Make sure that commands with braces have been satisfied. */
-  if (!executing_string)
+  if (!executing_string && !me_executing_string)
     discard_braces ();
 
   /* Get the top of the stack into the globals. */
@@ -1817,7 +1824,7 @@ get_until_in_line (expand, match, string)
      `execution_strings' array.  This happens when processing the
      (synthetic) Overview-Footnotes node in the Texinfo manual.  */
 
-  if (expand && !executing_string)
+  if (expand && !executing_string && !me_executing_string)
     {
       char *xp;
       unsigned xp_len, new_len;
@@ -1833,12 +1840,15 @@ get_until_in_line (expand, match, string)
       xp_len = strlen (xp);
       free (str);
       
-      /* Plunk the expansion into the middle of input_text.  */
-      str = xstrdup (input_text + limit);
-      new_len = input_text_offset + xp_len + strlen (str) + 1;
+      /* Plunk the expansion into the middle of `input_text' --
+         which is terminated by a newline, not a null.  */
+      str = xmalloc (real_bottom - limit + 1);
+      strncpy (str, input_text + limit, real_bottom - limit + 1);
+      new_len = input_text_offset + xp_len + real_bottom - limit + 1;
       input_text = xrealloc (input_text, new_len);
       strcpy (input_text + input_text_offset, xp);
-      strcat (input_text, str);
+      strncpy (input_text + input_text_offset + xp_len, str,
+	       real_bottom - limit + 1);
       free (str);
       free (xp);
       
@@ -3973,7 +3983,7 @@ cm_today (arg)
     {
       time_t timer = time (0);
       struct tm *ts = localtime (&timer);
-      add_word_args (_("%d %s %d"), ts->tm_mday, _(months[ts->tm_mon]),
+      add_word_args ("%d %s %d", ts->tm_mday, _(months[ts->tm_mon]),
                      ts->tm_year + 1900);
     }
 }
@@ -4160,7 +4170,7 @@ insert_and_underscore (with_char)
   no_indent = 1;
 
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     append_to_expansion_output (input_text_offset + 1);
 #endif /* HAVE_MACROS */
 
@@ -4168,7 +4178,7 @@ insert_and_underscore (with_char)
 
   starting_pos = output_position + output_paragraph_offset;
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     {
       char *temp1 = (char *) xmalloc (2 + strlen (temp));
       sprintf (temp1, "%s\n", temp);
@@ -4312,7 +4322,7 @@ cm_top ()
     {
       TAG_ENTRY *tag = tag_table;
 
-      line_error (_("There already is a node having %ctop as a section"),
+      line_error (_("Node with %ctop as a section already exists"),
                   COMMAND_PREFIX);
 
       while (tag != (TAG_ENTRY *)NULL)
@@ -4730,7 +4740,7 @@ cm_node ()
   current_footnote_number = 1;
 
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     append_to_expansion_output (input_text_offset + 1);
 #endif /* HAVE_MACROS */
 
@@ -4743,7 +4753,7 @@ cm_node ()
     printf (_("Formatting node %s...\n"), node);
     
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     remember_itext (input_text, input_text_offset);
 #endif /* HAVE_MACROS */
 
@@ -4753,7 +4763,7 @@ cm_node ()
       add_word_args ("\037\nFile: %s,  Node: ", pretty_output_filename);
 
 #if defined (HAVE_MACROS)
-      if (macro_expansion_output_stream)
+      if (macro_expansion_output_stream && !executing_string)
         me_execute_string (node);
       else
 #endif /* HAVE_MACROS */
@@ -4934,7 +4944,7 @@ cm_node ()
 #if defined (HAVE_MACROS)
   /* Insert the correct args if we are expanding macros, and the node's
      pointers weren't defaulted. */
-  if (macro_expansion_output_stream && !defaulting)
+  if (macro_expansion_output_stream && !executing_string && !defaulting)
     {
       char *temp;
       int op_orig = output_paragraph_offset;
@@ -5833,7 +5843,7 @@ cm_uref (arg, start_pos, end_pos)
   if (arg == END)
     {
       char *comma;
-      char *arg = &output_paragraph[start_pos];
+      char *arg = (char *) &output_paragraph[start_pos];
 
       output_paragraph[end_pos] = 0;
       output_column -= end_pos - start_pos;
@@ -5877,7 +5887,7 @@ cm_email (arg, start_pos, end_pos)
   if (arg == END)
     {
       char *comma;
-      char *arg = &output_paragraph[start_pos];
+      char *arg = (char *) &output_paragraph[start_pos];
 
       output_paragraph[end_pos] = 0;
       output_column -= end_pos - start_pos;
@@ -6314,8 +6324,8 @@ cm_value (arg, start_pos, end_pos)
 {
   if (arg == END)
     {
-      char *name, *value;
-      name = &output_paragraph[start_pos];
+      char *name = (char *) &output_paragraph[start_pos];
+      char *value;
       output_paragraph[end_pos] = 0;
       name = xstrdup (name);
       value = set_p (name);
@@ -6623,13 +6633,10 @@ expansion (str, implicit_code)
   /* Inhibit any real output.  */
   int start = output_paragraph_offset;
   int saved_paragraph_is_open = paragraph_is_open;
-  FILE *saved_macro_expansion_output_stream = macro_expansion_output_stream;
 
   inhibit_output_flushing ();
-  macro_expansion_output_stream = NULL;
   paragraph_is_open = 1;
   execute_string (implicit_code ? "@code{%s}" : "%s", str);
-  macro_expansion_output_stream = saved_macro_expansion_output_stream;
   uninhibit_output_flushing ();
 
   /* Copy the expansion from the buffer.  */
@@ -7268,29 +7275,27 @@ defun_internal (type, x_p)
   current_indent -= default_indentation_increment;
   close_single_paragraph ();
 
-  if (!macro_expansion_output_stream)
-    /* Make an entry in the appropriate index unless we are just
-       expanding macros. */
-    switch (base_type)
-      {
-      case deffn:
-      case deftypefn:
-        execute_string ("%cfindex %s\n", COMMAND_PREFIX, defined_name);
-        break;
-      case defvr:
-      case deftypevr:
-      case defcv:
-        execute_string ("%cvindex %s\n", COMMAND_PREFIX, defined_name);
-        break;
-      case defop:
-      case deftypemethod:
-        execute_string ("%cfindex %s on %s\n",
-                        COMMAND_PREFIX, defined_name, type_name);
-        break;
-      case deftp:
-        execute_string ("%ctindex %s\n", COMMAND_PREFIX, defined_name);
-        break;
-      }
+  /* Make an entry in the appropriate index. */
+  switch (base_type)
+    {
+    case deffn:
+    case deftypefn:
+      execute_string ("%cfindex %s\n", COMMAND_PREFIX, defined_name);
+      break;
+    case defvr:
+    case deftypevr:
+    case defcv:
+      execute_string ("%cvindex %s\n", COMMAND_PREFIX, defined_name);
+      break;
+    case defop:
+    case deftypemethod:
+      execute_string ("%cfindex %s on %s\n",
+		      COMMAND_PREFIX, defined_name, type_name);
+      break;
+    case deftp:
+      execute_string ("%ctindex %s\n", COMMAND_PREFIX, defined_name);
+      break;
+    }
 
   /* Deallocate the token list. */
   scan_args = defun_args;
@@ -7562,7 +7567,7 @@ cm_include ()
   char *filename;
 
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     me_append_before_this_command ();
 #endif /* HAVE_MACROS */
 
@@ -7570,7 +7575,7 @@ cm_include ()
   get_rest_of_line (&filename);
 
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     remember_itext (input_text, input_text_offset);
 #endif /* HAVE_MACROS */
 
@@ -7608,7 +7613,7 @@ cm_include ()
   else
     {
 #if defined (HAVE_MACROS)
-      if (macro_expansion_output_stream)
+      if (macro_expansion_output_stream && !executing_string)
         remember_itext (input_text, input_text_offset);
 #endif /* HAVE_MACROS */
       reader_loop ();
@@ -7936,7 +7941,7 @@ index_add_arg (name)
   which = tem ? tem->write_index : -1;
 
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     append_to_expansion_output (input_text_offset + 1);
 #endif /* HAVE_MACROS */
 
@@ -7944,7 +7949,7 @@ index_add_arg (name)
   ignore_blank_line ();
 
 #if defined (HAVE_MACROS)
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     {
       int op_orig;
 
@@ -8436,11 +8441,11 @@ cm_footnote ()
   char *marker;
   char *note;
 
-  if (macro_expansion_output_stream)
-    append_to_expansion_output (input_text_offset + 1); /* include the { */
-
   get_until ("{", &marker);
   canon_white (marker);
+
+  if (macro_expansion_output_stream && !executing_string)
+    append_to_expansion_output (input_text_offset + 1); /* include the { */
 
   /* Read the argument in braces. */
   if (curchar () != '{')
@@ -8483,7 +8488,7 @@ cm_footnote ()
 
   /* Must write the macro-expanded argument to the macro expansion
      output stream.  This is like the case in index_add_arg.  */
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     {
       int op_orig;
 
@@ -8854,10 +8859,10 @@ apply (named, actuals, body)
             }
           else
             { /* not a parameter, restore \'s */
-              char *trailer = body[i] ? "/" : "";
-              len += 1 + strlen (trailer);
-              text = (char *)xmalloc (1 + len);
-              sprintf (text, "\\%s%s", param, trailer);
+              i = body[i] ? (i - 1) : i;
+              len++;
+              text = xmalloc (1 + len);
+              sprintf (text, "\\%s", param);
             }
 
           if ((2 + strlen (param)) < len)
@@ -8888,7 +8893,7 @@ execute_macro (def)
   int num_args;
   char *execution_string = (char *)NULL;
 
-  if (macro_expansion_output_stream && !me_inhibit_expansion)
+  if (macro_expansion_output_stream && !executing_string && !me_inhibit_expansion)
     me_append_before_this_command ();
 
   /* Find out how many arguments this macro definition takes. */
@@ -8911,7 +8916,7 @@ execute_macro (def)
 
   if (def->body)
     {
-      if (macro_expansion_output_stream && !me_inhibit_expansion)
+      if (macro_expansion_output_stream && !executing_string && !me_inhibit_expansion)
         {
           remember_itext (input_text, input_text_offset);
           me_execute_string (execution_string);
@@ -8939,7 +8944,7 @@ cm_macro ()
   body_size = 0;
   body_index = 0;
 
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     me_append_before_this_command ();
 
   skip_whitespace ();
@@ -9136,7 +9141,7 @@ cm_macro ()
 
   add_macro (name, arglist, body, input_filename, defining_line, flags);
 
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     remember_itext (input_text, input_text_offset);
 }
 
@@ -9147,7 +9152,7 @@ cm_unmacro ()
   char *line, *name;
   MACRO_DEF *def;
 
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     me_append_before_this_command ();
 
   get_rest_of_line (&line);
@@ -9181,7 +9186,7 @@ cm_unmacro ()
   free (line);
   free (name);
 
-  if (macro_expansion_output_stream)
+  if (macro_expansion_output_stream && !executing_string)
     remember_itext (input_text, input_text_offset);
 }
 
@@ -9284,10 +9289,10 @@ me_execute_string (execution_string)
 
   remember_itext (execution_string, 0);
 
-  executing_string++;
+  me_executing_string++;
   reader_loop ();
   popfile ();
-  executing_string--;
+  me_executing_string--;
 }
 
 /* Append the text which appears in input_text from the last offset to
@@ -9307,7 +9312,7 @@ append_to_expansion_output (offset)
       }
 
   if (!itext)
-    itext = remember_itext (input_text, 0);
+    return;
 
   if (offset > itext->offset)
     {

@@ -1,5 +1,5 @@
 ## Makefile.am for texinfo/lib.
-## $Id: Makefile.am,v 1.2 1998/03/24 18:07:26 law Exp $
+## $Id: Makefile.am,v 1.1.1.2 1998/03/24 18:19:49 law Exp $
 ## Run automake in .. to produce Makefile.in from this.
 
 noinst_LIBRARIES = libtxi.a

@@ -50,6 +50,7 @@ RANLIB = @RANLIB@
 
 DEFS = -DLOCALEDIR=\"$(localedir)\" -DGNULOCALEDIR=\"$(gnulocaledir)\" \
 -DLOCALE_ALIAS_PATH=\"$(aliaspath)\" @DEFS@
+CPPFLAGS = @CPPFLAGS@
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
 
@@ -130,10 +131,9 @@ install-data: all
 	    $(top_srcdir)/mkinstalldirs $(gettextsrcdir); \
 	  fi; \
 	  $(INSTALL_DATA) VERSION $(gettextsrcdir)/VERSION; \
-	  cd $(srcdir) && \
 	  dists="$(DISTFILES.common)"; \
 	  for file in $$dists; do \
-	    $(INSTALL_DATA) $$file $(gettextsrcdir)/$$file; \
+	    $(INSTALL_DATA) $(srcdir)/$$file $(gettextsrcdir)/$$file; \
 	  done; \
 	else \
 	  : ; \
@@ -148,7 +148,7 @@ uninstall:
 	  rm -f $(gettextsrcdir)/$$file; \
 	done
 
-info dvi install-info:
+info dvi:
 
 $(OBJECTS): ../config.h libgettext.h
 bindtextdom.$lo finddomain.$lo loadmsgcat.$lo: gettextP.h gettext.h loadinfo.h

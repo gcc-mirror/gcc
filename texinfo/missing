@@ -80,7 +80,15 @@ WARNING: \`$1' is missing on your system.  You should only need it if
          you modified \`acconfig.h' or \`configure.in'.  You might want
          to install the \`Autoconf' and \`GNU m4' packages.  Grab them
          from any GNU archive site."
-    touch config.h.in
+    files=`sed -n 's/^[ ]*A[CM]_CONFIG_HEADER([^):]*:\([^)]*\)).*/\1/p' configure.in`
+    if test -z "$files"; then
+      files=`sed -n 's/^[ ]*A[CM]_CONFIG_HEADER(\([^):]*\)).*/\1/p' configure.in`
+      test -z "$files" || files="$files.in"
+    else
+      files=`echo "$files" | sed -e 's/:/ /g'`
+    fi
+    test -z "$files" && files="config.h.in"
+    touch $files
     ;;
 
   automake)

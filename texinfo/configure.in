@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-dnl $Id: configure.in,v 1.5 1998/03/24 18:05:13 law Exp $
+dnl $Id: configure.in,v 1.7 1998/03/26 10:30:41 law Exp $
 dnl
 AC_INIT(makeinfo/makeinfo.c)
 AC_PREREQ(2.12)dnl Minimum Autoconf version required.
 AM_CONFIG_HEADER(config.h)
 
-AM_INIT_AUTOMAKE([texinfo], [3.11])
+AM_INIT_AUTOMAKE([texinfo], [3.12])
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -16,7 +16,7 @@ AC_PROG_RANLIB
 # We do this for the sake of a more helpful warning in doc/Makefile.
 TEXMF='$(datadir)/texmf'
 AC_CHECK_PROG(TEXCONFIG, texconfig, true, false)
-$TEXCONFIG && eval `texconfig confall | grep '^TEXMF='`
+$TEXCONFIG && eval `texconfig conf </dev/null | grep '^TEXMF='`
 AC_SUBST(TEXMF)
 
 AC_ISC_POSIX
@@ -27,8 +27,10 @@ AM_MAINTAINER_MODE
 AM_EXEEXT
 
 dnl Checks for libraries.
-# Needed on sysV68 for sigblock, sigsetmask.
-AC_CHECK_LIB(bsd, sigblock)
+AC_CHECK_LIB(z, gzdopen)
+
+# Needed on sysV68 for sigblock, sigsetmask.  But check for it in libc first.
+AC_CHECK_FUNC(sigblock, , AC_CHECK_LIB(bsd, sigblock))
 
 # Some GNU/Linux systems (e.g., SuSE 4.3, 1996) don't have curses, but
 # rather ncurses.  So we check for it.
@@ -40,15 +42,15 @@ done
 AC_SUBST(TERMLIBS)
 
 dnl Checks for header files.
+dnl Do not use <ncurses/termcap.h> unless we're linking with ncurses.
+if test "x$termlib" = xncurses; then
+  dnl Use AC_CHECK_HEADERS so the HAVE_*_H symbol gets defined.
+  AC_CHECK_HEADERS(ncurses/termcap.h)
+fi
 AC_HEADER_STDC
 AC_CHECK_HEADERS(fcntl.h pwd.h string.h strings.h termcap.h termio.h \
   termios.h unistd.h \
   sys/fcntl.h sys/file.h sys/ptem.h sys/time.h sys/ttold.h sys/wait.h)
-
-dnl Do not use <ncurses/termcap.h> unless we're linking with ncurses.
-if test "x$termlib" = xncurses; then
-  AC_CHECK_HEADER(ncurses/termcap.h)
-fi
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_OFF_T
@@ -59,9 +61,7 @@ AC_STRUCT_TM
 dnl Checks for library functions.
 AC_FUNC_ALLOCA
 AC_FUNC_VPRINTF
-if test "$ac_cv_c_cross" = no; then
-  AC_FUNC_SETVBUF_REVERSED
-fi
+AC_FUNC_SETVBUF_REVERSED
 AC_CHECK_FUNCS(setvbuf getcwd memset bzero strchr strcasecmp \
   sigprocmask sigsetmask)
 dnl strcasecmp, strerror, xmalloc, xrealloc, probably others should be added.
@@ -74,7 +74,6 @@ AC_LINK_FILES($nls_cv_header_libgt, $nls_cv_header_intl)
 
 AC_OUTPUT([Makefile             \
            doc/Makefile         \
-           emacs/Makefile       \
            info/Makefile        \
            intl/Makefile        \
            lib/Makefile         \

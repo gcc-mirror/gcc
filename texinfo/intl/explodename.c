@@ -1,21 +1,19 @@
-/* Copyright (C) 1995, 1996 Free Software Foundation, Inc.
-This file is part of the GNU C Library.
-Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
+/* Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Contributed by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
 
-The GNU C Library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Library General Public License as
-published by the Free Software Foundation; either version 2 of the
-License, or (at your option) any later version.
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-The GNU C Library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Library General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU Library General Public
-License along with the GNU C Library; see the file COPYING.LIB.  If
-not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -23,6 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include "loadinfo.h"
 
@@ -164,7 +163,7 @@ _nl_explode_name (name, language, modifier, territory, codeset,
 	}
     }
 
-  /* For CEN sytnax values it might be important to have the
+  /* For CEN syntax values it might be important to have the
      separator character in the file name, not for XPG syntax.  */
   if (syntax == xpg)
     {

@@ -1,5 +1,5 @@
 ## Makefile.am for texinfo/info.
-## $Id: Makefile.am,v 1.2 1998/03/24 18:05:58 law Exp $
+## $Id: Makefile.am,v 1.1.1.2 1998/03/24 18:20:06 law Exp $
 ## Run automake in .. to produce Makefile.in from this.
 
 noinst_PROGRAMS = makedoc
@@ -13,7 +13,10 @@ transform = s/ginfo/info/; @program_transform_name@
 localedir = $(datadir)/locale
 
 # -I. for funs.h.
-INCLUDES = -I. -I$(top_srcdir)/lib -I../intl -DLOCALEDIR=\"$(localedir)\"
+# Automake puts -I.. and -I$(srcdir) into DEFS by default, but
+# we need to override it, so include them ourselves.
+INCLUDES = -I. -I$(top_srcdir)/lib -I../intl -I.. -I$(srcdir)
+DEFS = -DINFODIR=\"$(infodir)\" -DLOCALEDIR=\"$(localedir)\" @DEFS@
 LDADD = ../lib/libtxi.a @TERMLIBS@ @INTLLIBS@
 
 makedoc_SOURCES = makedoc.c
@@ -32,13 +35,11 @@ EXTRA_DIST = README
 # files which contain DECLARE_INFO_COMMAND.  `funs.h' is a header file
 # listing the functions found.  `doc.c' is a structure containing pointers
 # to those functions along with completable names and documentation strings.
-# 
-# I do not know how to get this right.
-# BUILT_SOURCES = doc.c funs.h
-#
-#cmd_sources = $(srcdir)/session.c $(srcdir)/echo-area.c $(srcdir)/infodoc.c \
-#  $(srcdir)/m-x.c $(srcdir)/indices.c $(srcdir)/nodemenu.c \
-#  $(srcdir)/footnotes.c $(srcdir)/variables.c
-#
-#$(BUILTSOURCES): makedoc $(cmd_sources)
-#	./makedoc $(cmd_sources)
+BUILT_SOURCES = doc.c funs.h
+
+cmd_sources = $(srcdir)/session.c $(srcdir)/echo-area.c $(srcdir)/infodoc.c \
+  $(srcdir)/m-x.c $(srcdir)/indices.c $(srcdir)/nodemenu.c \
+  $(srcdir)/footnotes.c $(srcdir)/variables.c
+
+$(BUILT_SOURCES): makedoc $(cmd_sources)
+	./makedoc $(cmd_sources)

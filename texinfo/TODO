@@ -1,8 +1,8 @@
-If you are interested in working on any of these,
-email bug-texinfo@prep.ai.mit.edu.
+If you are interested in working on any of these, email bug-texinfo@gnu.org.
 
 * Makeinfo:
-  - HTML output.
+  - HTML output is being actively worked on, and with luck will be in
+    the next release.
   - A detexinfo program, like detex or delatex.  This command would
     strip all the texinfo commands out, and would be used as a filter on
     the way to a speller.  An option would be to NOT strip comments out.
@@ -12,8 +12,9 @@ email bug-texinfo@prep.ai.mit.edu.
     enumerate chapters and sections, convert cross-refs and indices to
     chapter/section references.  See:
        ftp://ftp.simtel.net/pub/simtelnet/gnu/djgpp/v2/faq201s.zip
+  - Call Ghostscript to get ASCII output for the @image command.
 
-n* TeX:
+* TeX:
   - Use @ as the escape character, and Texinfo syntax generally, in the
     table of contents, aux, and index files.  Eliminate all the crazy
     multiple redefinitions of every Texinfo command in different contexts.

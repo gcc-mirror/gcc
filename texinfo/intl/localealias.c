@@ -1,5 +1,5 @@
-/* localealias.c -- handle aliases for locale names
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+/* Handle aliases for locale names
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Written by Ulrich Drepper <drepper@gnu.ai.mit.edu>, 1995.
 
    This program is free software; you can redistribute it and/or modify
@@ -59,11 +59,13 @@ void free ();
 # include <string.h>
 #else
 # include <strings.h>
+# ifndef memcpy
+#  define memcpy(Dst, Src, Num) bcopy (Src, Dst, Num)
+# endif
+#endif
+#if !HAVE_STRCHR && !defined _LIBC
 # ifndef strchr
 #  define strchr index
-# endif
-# ifndef memcpy
-#  define memcpy(Dst, Src, Num) bcopy ((Src), (Dst), (Num))
 # endif
 #endif
 
@@ -295,7 +297,7 @@ read_alias_file (fname, fname_len)
 	    }
 	}
 
-      /* Possibily not the whole line fitted into the buffer.  Ignore
+      /* Possibly not the whole line fits into the buffer.  Ignore
 	 the rest of the line.  */
       while (strchr (cp, '\n') == NULL)
 	{

@@ -1,19 +1,19 @@
-/* dcgettext.c -- implementation of the dcgettext(3) function
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+/* Implementation of the dcgettext(3) function
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -41,6 +41,9 @@ char *alloca ();
 #include <errno.h>
 #ifndef errno
 extern int errno;
+#endif
+#ifndef __set_errno
+# define __set_errno(val) errno = (val)
 #endif
 
 #if defined STDC_HEADERS || defined _LIBC
@@ -273,13 +276,13 @@ DCGETTEXT (domainname, msgid, category)
       dirname = (char *) alloca (path_max + dirname_len);
       ADD_BLOCK (block_list, dirname);
 
-      errno = 0;
+      __set_errno (0);
       while ((ret = getcwd (dirname, path_max)) == NULL && errno == ERANGE)
 	{
 	  path_max += PATH_INCR;
 	  dirname = (char *) alloca (path_max + dirname_len);
 	  ADD_BLOCK (block_list, dirname);
-	  errno = 0;
+	  __set_errno (0);
 	}
 
       if (ret == NULL)
@@ -287,14 +290,10 @@ DCGETTEXT (domainname, msgid, category)
 	  /* We cannot get the current working directory.  Don't signal an
 	     error but simply return the default string.  */
 	  FREE_BLOCKS (block_list);
-	  errno = saved_errno;
+	  __set_errno (saved_errno);
 	  return (char *) msgid;
 	}
 
-      /* We don't want libintl.a to depend on any other library.  So
-	 we avoid the non-standard function stpcpy.  In GNU C Library
-	 this function is available, though.  Also allow the symbol
-	 HAVE_STPCPY to be defined.  */
       stpcpy (stpcpy (strchr (dirname, '\0'), "/"), binding->dirname);
     }
 
@@ -305,10 +304,7 @@ DCGETTEXT (domainname, msgid, category)
   xdomainname = (char *) alloca (strlen (categoryname)
 				 + strlen (domainname) + 5);
   ADD_BLOCK (block_list, xdomainname);
-  /* We don't want libintl.a to depend on any other library.  So we
-     avoid the non-standard function stpcpy.  In GNU C Library this
-     function is available, though.  Also allow the symbol HAVE_STPCPY
-     to be defined.  */
+
   stpcpy (stpcpy (stpcpy (stpcpy (xdomainname, categoryname), "/"),
 		  domainname),
 	  ".mo");
@@ -329,7 +325,7 @@ DCGETTEXT (domainname, msgid, category)
 	{
 	  /* The whole contents of CATEGORYVALUE has been searched but
 	     no valid entry has been found.  We solve this situation
-	     by implicitely appending a "C" entry, i.e. no translation
+	     by implicitly appending a "C" entry, i.e. no translation
 	     will take place.  */
 	  single_locale[0] = 'C';
 	  single_locale[1] = '\0';
@@ -348,7 +344,7 @@ DCGETTEXT (domainname, msgid, category)
 	  || strcmp (single_locale, "POSIX") == 0)
 	{
 	  FREE_BLOCKS (block_list);
-	  errno = saved_errno;
+	  __set_errno (saved_errno);
 	  return (char *) msgid;
 	}
 
@@ -377,7 +373,7 @@ DCGETTEXT (domainname, msgid, category)
 	  if (retval != NULL)
 	    {
 	      FREE_BLOCKS (block_list);
-	      errno = saved_errno;
+	      __set_errno (saved_errno);
 	      return retval;
 	    }
 	}
@@ -538,7 +534,8 @@ category_to_name (category)
 }
 
 /* Guess value of current locale from value of the environment variables.  */
-static const char *guess_category_value (category, categoryname)
+static const char *
+guess_category_value (category, categoryname)
      int category;
      const char *categoryname;
 {

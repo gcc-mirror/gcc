@@ -1,47 +1,227 @@
-Mon Feb  2 17:17:17 1998  Jason Molenda  (crash@bugshack.cygnus.com)
+Tue Mar  3 13:29:17 1998  Karl Berry  <karl@cs.umb.edu>
 
-	* info/termdep.h (TIOCGETC): Don't define if we have termios.h.
-        From Robert Lipe.
+	* configure.in: Version 3.12.
 
-Tue Oct  7 11:14:04 1997  Michael Meissner  <meissner@cygnus.com>
+	* po/de.po: New version.
+	
+	* po/POTFILES.in: Do not include doc.c; that gets built at
+	runtime, thus causing texinfo.pot to try to get rebuilt.  Besides,
+	it doesn't have any translatable strings.
 
-	* info/tilde.c (alloca): Don't redefine alloca as __builtin_alloca
-	if alloca was already defined.
+Sun Mar  1 10:38:47 1998  Karl Berry  <karl@cs.umb.edu>
 
-Mon Oct  6 12:46:27 1997  Ian Lance Taylor  <ian@cygnus.com>
+	* util/install-info.c: No need for i18n on version message.  From
+ 		ke@suse.de.
 
-	* util/Makefile.am (bin_PROGRAMS): Remove install-info.
-	(noinst_PROGRAMS, install_inf_SOURCES): Define.
-	(install-exec-local): New target.
-	* util/Makefile.in: Rebuild.
-	* info/Makefile.in: Rebuild with current automake.
+Fri Feb 27 16:06:23 1998  Karl Berry  <karl@cs.umb.edu>
 
-Wed Sep  3 12:44:18 1997  Ian Lance Taylor  <ian@cygnus.com>
+	* configure.in: Run texconfig conf instead of confall.
 
-	* po/Makefile.in.in: More --enable-maintainer-mode changes.
+	* doc/Makefile.am (INSTALL_INFO): New variable.
+	(install-info-am): Use install-info from our distribution.
 
-Thu Aug 28 23:52:29 1997  Ian Lance Taylor  <ian@cygnus.com>
+	* info/info.c (info_minor_version): Increment.
+	* (info_patch_level),
+	* info/info.h (info_patch_level): Remove.
 
-	* po/Makefile.in.in: Make automatic dependencies only run programs
-	if --enable-maintainer-mode.
+	* info/info.c (program_name): Move decl.
 
-Mon Aug 25 16:50:32 1997  Ian Lance Taylor  <ian@cygnus.com>
+	* util/install-info.c (ensure_dirfile_exists): Use commas and \t
+	 instead of an explicit tab, which make dist expands.
 
-	* configure.in: Add AM_MAINTAINER_MODE and AM_EXEEXT.
-	* Makefile.in, */Makefile.in: Rebuild with automake --cygnus.
-	* configure: Rebuild with current autoconf.
+	* doc/texinfo.txi: @prep.ai.mit.edu -> @gnu.org.
 
-Wed Feb 12 11:15:16 1997  Michael Meissner  <meissner@cygnus.com>
+	* info/info.c: Make help messages consistent with others.
 
-	* util/texindex.c (main): Make main an int function, not void.
+	* util/install-info.c (print_help): Format consistently.
+	
+	(readfile): Support gzipped files via libz.
+	From: Elliot Lee <sopwith@redhat.com>
+	Date: Mon, 1 Sep 1997 23:37:14 -0400 (EDT)
 
-Sat Jun 29 18:56:07 1996  Geoffrey Noer  <noer@cygnus.com>
+Thu Feb 26 16:13:14 1998  Karl Berry  <karl@cs.umb.edu>
 
-	* configure.in: if ac_cv_c_cross is yes, don't run the
-	AC_FUNC_SETVBUF_REVERSED call since it tries to do a run
-	test.  This allows texinfo to build for cygwin32 Canadian
-	crosses/natives
-	* configure: regenerate
+	* info/echo-area.c: Whoops, _ might not start with parens.
+
+	* configure.in: Check for libz.
+	Do not output emacs/Makefile.
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Set to 1.2f.
+
+	* util/texi2dvi: Always remove temporary directories. (From Akim.)
+	Formatting changes.
+
+Wed Feb 25 15:26:26 1998  Karl Berry  <karl@cs.umb.edu>
+
+	* util/texi2dvi: New options --batch, --clean.
+	From: Akim Demaille <demaille@inf.enst.fr>
+	Date: 15 Aug 1997 18:05:33 +0200
+	* doc/texinfo.txi (Format with texi2dvi): Mention --help.
+
+	Applied this:
+1997-08-09  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* makeinfo/makeinfo.c (me_executing_string): New variable.
+	(me_execute_string): Use it instead of executing_string.
+	(popfile): Check for me_executing_string as well as
+	executing_string.
+	(get_until_in_line): Likewise.
+	(insert_and_underscore): Do not write any expansion output if
+	executing a string.
+	(cm_node, cm_include, index_add_arg, cm_footnote, execute_macro,
+	cm_macro, cm_unmacro): Likewise.
+	(cm_footnote): Include the footnote marker in the expansion
+	output.
+	(append_to_expansion_output): Do nothing if the input_text wasn't
+	a remembered text.
+	(defun_internal): Make the index entry even if expanding macros.
+	(expansion): Don't reset macro_expansion_output_stream around call
+	to execute_string.
+	(apply): Fix typo.
+
+Tue Feb 24 17:33:44 1998  Karl Berry  <karl@cs.umb.edu>
+
+	1997-11-10 Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+	* makeinfo/makeinfo.c (get_until_in_line): Don't use xstrdup on
+		the unterminated input_text.
+
+	* makeinfo/makeinfo.c: Don't assume all \'s in macro bodies are
+		arguments.
+	From: Mathias.Herberts@irisa.fr (Mathias Herberts)
+	Date: Tue, 6 Jan 1998 18:54:26 +0100
+
+	* configure.in: Check for sigblock in libc before libbsd.
+	* From: hjl@lucon.org (H.J. Lu)
+	* Date: Fri, 23 Jan 1998 21:50:25 -0800 (PST)
+
+Mon Feb 23 16:26:31 1998  Karl Berry  <karl@cs.umb.edu>
+
+	* info/window.c (character_width): If ISO_Latin_p is set, make
+		printable_limit 255, not 160.  ISO Latin 1 uses
+		essentially all of the 256 characters.
+	Reported by: Marius Groeger <mag@sysgo.de>
+	Date: Wed, 17 Dec 1997 16:05:27 +0100
+
+	* info/info.c: Improve help message.
+
+Sun Feb 22 17:38:32 1998  Karl Berry  <karl@cs.umb.edu>
+
+	* Makefile.am (SUBDIRS): Remove emacs; we'll just distribute the
+		Elisp files with Emacs.
+
+	* doc/Makefile.am (info_TEXINFOS, texinfo): Rename manual to
+		texinfo.txi to avoid DOS filename clash with texinfo.tex.
+
+	* info/tilde.c: Copy slightly updated alloca stuff from makeinfo.
+
+	* util/texindex.c (main): Declare as returning int to placate
+ 		warnings.
+
+	* info/Makefile.am: Uncomment BUILT_SOURCES stuff and add missing _.
+	From: "Joel N. Weber II" <devnull@gnu.org>
+	Date: Fri, 30 Jan 1998 17:21:38 -1000
+
+	* util/texindex.c,
+	* util/install-info.c,
+	* makeinfo/makeinfo.c,
+	* info/info.c: Change help address to @gnu.org.
+
+	1998-01-22 Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+	* makeinfo/makeinfo.c (usage): Fix order of arguments to help
+		format string.
+
+	* makeinfo/makeinfo.c (cm_top): Error message wording.
+
+	* doc/texinfo.texi (Functions in Typed Languages): Remove
+		duplicate description of @deftypemethod.
+	From: KHMarbaise@p69.ks.fido.de (Karl Heinz Marbaise)
+	Date: Wed, 07 Jan 1998 11:11:50 +0100
+
+	* info/session.c (info_get_input_char) [EINTR]: Keep reading if we
+		get EINTR.
+	From: Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>
+	Date: 22 Dec 1997 10:32:53 +0100
+
+Sat Feb 21 17:41:26 1998  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (find_and_load): Malloc enough room for the
+		null as well as the newline.
+	From: "John W. Eaton" <jwe@bevo.che.wisc.edu>
+	Date: Tue, 30 Sep 1997 21:12:01 -0500
+
+	* util/texindex.c (--version),
+	* makeinfo/makeinfo.c (cm_today),
+	* makeinfo/makeinfo.c (print_version_info): Version strings etc. do not
+		need translation. 
+	From: Karl Eichwalder <ke@suse.de>
+	Date: 13 Sep 1997 16:20:02 +0200
+
+	* info/echo-area.c: Rewrite pluralization to be translatable.
+	From: Karl Eichwalder <ke@suse.de>
+	Date: 13 Sep 1997 16:20:02 +0200
+
+	* util/texindex.c,
+	* info/info.c,
+	* makeinfo/makeinfo.c,
+	* util/install-info.c: --version: Give year as argument to printf,
+		to reduce the number of translations needed.
+	From: Ulrich Drepper <drepper@ipd.info.uni-karlsruhe.de>
+	Date: 02 Sep 1997 18:01:26 +0200
+
+	* util/texindex.c: Remove the fnctl.h and sys/file.h conditional #includes, they are
+	already in lib/system.h.
+	From: "Philippe De Muyter" <phdm@macqel.be>
+	Date: Thu, 21 Aug 1997 20:16:49 +0200 (MET DST)
+
+	* info/terminal.c (terminal_begin_using_terminal,
+ 	  terminal_end_using_terminal): #ifdef SIGWINCH settings for
+	 	  m68k-motorola-sysv.
+	From: "Philippe De Muyter" <phdm@macqel.be>
+	Date: Thu, 21 Aug 1997 20:16:49 +0200 (MET DST)
+
+	* info/filesys.c (info_suffixes): Add /index as a possibility for
+		subdirectories.
+	From: Matthew Wilcox <willy@odie.barnet.ac.uk>
+	Date: Wed, 6 Aug 1997 15:55:16 +0100 (BST)
+
+	* configure.in: Redirect texconfig input from /dev/null to avoid
+		stoppage.
+	From: Thomas Esser <te@informatik.uni-hannover.de>
+	Date: Mon, 4 Aug 1997 18:15:49 +0200
+
+	* makeinfo/makeinfo.c (find_and_load): Null-terminate the input text.
+	From: Kenneth Stailey <kstailey@disclosure.com>.
+
+	* info/Makefile.am (INCLUDES): Add -I.. -I$(srcdir).
+
+Fri Aug 22 16:24:59 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* doc/texinfo.texi: Adjust ISBN, edition number for print run.
+
+Mon Aug  4 16:12:42 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* info/info.c (main) [INFODIR]: Add this to infopath, if set.
+	* info/Makefile.am (DEFS): New define, include -DINFODIR.
+	From: Larry Schwimmer <rosebud@cyclone.Stanford.EDU>.
+
+	* util/install-info.c (ensure_dirfile_exists): Use tabs instead of
+ 		spaces on the File: dir line.
+ 	Bug from: Dave Love <d.love@dl.ac.uk>.
+
+Sat Aug  2 12:43:57 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* makeinfo/makeinfo.c (cm_value, cm_email, cm_uref): Have to cast
+ 		from unsigned char * to char * or IRIX cc complains.
+	From: "Kaveh R. Ghazi" <ghazi@caip.rutgers.edu>.
+
+Fri Aug  1 14:05:10 1997  Karl Berry  <karl@cs.umb.edu>
+
+	* Makefile.am (EXTRA_DIST): Remove README-alpha.
+	From: "ir. Mark M._Kettenis" <kettenis@phys.uva.nl>.
+
+1997-07-31 Andreas Schwab <schwab@issan.informatik.uni-dortmund.de>	
+
+	* configure.in: Use AC_CHECK_HEADERS, not AC_CHECK_HEADER.
 
 Thu Jul 31 11:57:46 1997  Karl Berry  <karl@cs.umb.edu>
 

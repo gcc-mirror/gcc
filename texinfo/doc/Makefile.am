@@ -1,11 +1,12 @@
 ## Makefile.am for texinfo/emacs.
-## $Id: Makefile.am,v 1.2 1998/03/24 18:05:32 law Exp $
+## $Id: Makefile.am,v 1.1.1.2 1998/03/24 18:20:38 law Exp $
 ## Run automake in .. to produce Makefile.in from this.
 
-info_TEXINFOS = info-stnd.texi info.texi texinfo.texi
+info_TEXINFOS = info-stnd.texi info.texi texinfo.txi
 
-# Use the makeinfo built in our distribution.
+# Use the programs built in our distribution.
 MAKEINFO = ../makeinfo/makeinfo
+INSTALL_INFO = ../util/install-info
 
 # Include our texinfo.tex, not Automake's.
 EXTRA_DIST = macro.texi userdoc.texi epsf.tex texinfo.tex
@@ -26,10 +27,10 @@ dist-info:
 # since we don't distribute them.
 .texi.info:
 	$(MAKEINFO) -I$(srcdir) `echo $< | sed 's,.*/,,'`
-texinfo: $(srcdir)/texinfo.texi
-	$(MAKEINFO) -I$(srcdir) texinfo.texi
+texinfo: $(srcdir)/texinfo.txi
+	$(MAKEINFO) -I$(srcdir) texinfo.txi
 
-# Do not try to install them from $(srcdir).
+# Similarly, Do not try to install the info files from $(srcdir).
 install-info-am: $(INFO_DEPS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(infodir)
@@ -43,14 +44,14 @@ install-info-am: $(INFO_DEPS)
 	  done; \
 	done
 	@$(POST_INSTALL)
-	@if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	@if $(SHELL) -c '$(INSTALL_INFO) --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	  for file in $(INFO_DEPS); do \
-	    echo " install-info --info-dir=$(infodir) $(infodir)/$$file";\
-	    install-info --info-dir=$(infodir) $(infodir)/$$file || :;\
+	    echo " $(INSTALL_INFO) --info-dir=$(infodir) $(infodir)/$$file";\
+	    $(INSTALL_INFO) --info-dir=$(infodir) $(infodir)/$$file || :;\
 	  done; \
 	else : ; fi
 
 
-# Remove them at make distclean.
+# Remove the info files at make distclean.
 distclean-aminfo:
 	rm -f texinfo texinfo-* info*.info*

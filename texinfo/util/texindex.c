@@ -1,7 +1,7 @@
 /* Prepare TeX index dribble output into an actual index.
-   $Id: texindex.c,v 1.2 1998/03/24 18:08:47 law Exp $
+   $Id: texindex.c,v 1.1.1.3 1998/03/24 18:20:31 law Exp $
 
-   Copyright (C) 1987, 91, 92, 96, 97 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 92, 96, 97, 98 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -43,18 +43,6 @@ char *mktemp ();
 #  define TI_FATAL_ERROR ((1 << 28) | 4)
 #  define unlink delete
 #else /* !VMS */
-#  if defined (HAVE_SYS_FCNTL_H)
-#    include <sys/types.h>
-#    include <sys/fcntl.h>
-#  endif /* HAVE_SYS_FCNTL_H */
-
-#  if defined (_AIX) || !defined (_POSIX_VERSION)
-#    include <sys/file.h>
-#  else /* !AIX && _POSIX_VERSION */
-#    if !defined (HAVE_SYS_FCNTL_H)
-#      include <fcntl.h>
-#    endif /* !HAVE_FCNTL_H */
-#  endif /* !_AIX && _POSIX_VERSION */
 #  define TI_NO_ERROR 0
 #  define TI_FATAL_ERROR 1
 #endif /* !VMS */
@@ -246,6 +234,8 @@ main (argc, argv)
 
   flush_tempfiles (tempcount);
   exit (TI_NO_ERROR);
+  
+  return 0; /* Avoid bogus warnings.  */
 }
 
 typedef struct
@@ -297,7 +287,7 @@ usage (result_value)
 
       fprintf (f, "\t%s\n", _(texindex_options[i].doc_string));
     }
-  puts (_("\nEmail bug reports to bug-texinfo@prep.ai.mit.edu."));
+  puts (_("\nEmail bug reports to bug-texinfo@gnu.org."));
 
   exit (result_value);
 }
@@ -344,11 +334,12 @@ decode_command (argc, argv)
         {
           if (strcmp (arg, "--version") == 0)
             {
-              printf (_("texindex (GNU %s %s) 2.1\n"), PACKAGE, VERSION);
-puts (_("Copyright (C) 1996 Free Software Foundation, Inc.\n\
+              printf ("texindex (GNU %s) %s\n", PACKAGE, VERSION);
+	  printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
 There is NO warranty.  You may redistribute this software\n\
 under the terms of the GNU General Public License.\n\
-For more information about these matters, see the files named COPYING."));
+For more information about these matters, see the files named COPYING.\n"),
+		  "1998");
               exit (0);
             }
           else if ((strcmp (arg, "--keep") == 0) ||

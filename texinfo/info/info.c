@@ -1,7 +1,7 @@
 /* info.c -- Display nodes of Info files in multiple windows.
-   $Id: info.c,v 1.2 1998/03/24 18:06:30 law Exp $
+   $Id: info.c,v 1.1.1.3 1998/03/24 18:20:13 law Exp $
 
-   Copyright (C) 1993, 96, 97 Free Software Foundation, Inc.
+   Copyright (C) 1993, 96, 97, 98 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -29,8 +29,10 @@
 
 /* The version numbers of this version of Info. */
 int info_major_version = 2;
-int info_minor_version = 17;
-int info_patch_level = 0;
+int info_minor_version = 18;
+
+/* basename (argv[0]) */
+static char *program_name = NULL;
 
 /* Non-zero means search all indices for APROPOS_SEARCH_STRING. */
 static int apropos_p = 0;
@@ -100,7 +102,7 @@ static char *short_options = "d:n:f:o:s";
 int info_windows_initialized_p = 0;
 
 /* Some "forward" declarations. */
-static void usage (), info_short_help (), remember_info_program_name ();
+static void info_short_help (), remember_info_program_name ();
 
 
 /* **************************************************************** */
@@ -207,7 +209,8 @@ main (argc, argv)
           break;
 
         default:
-          usage ();
+          fprintf (stderr, _("Try --help for more information."));
+          exit (1);
         }
     }
 
@@ -223,11 +226,13 @@ main (argc, argv)
   /* If the user specified --version, then show the version and exit. */
   if (print_version_p)
     {
-      printf ("info (GNU %s %s) %s\n", PACKAGE, VERSION, version_string ());
-      puts ("Copyright (C) 1997 Free Software Foundation, Inc.\n\
+      printf ("%s (GNU %s %s) %s\n", program_name, PACKAGE, VERSION, 
+              version_string ());
+      printf (_("Copyright (C) %s Free Software Foundation, Inc.\n\
 There is NO warranty.  You may redistribute this software\n\
 under the terms of the GNU General Public License.\n\
-For more information about these matters, see the files named COPYING.");
+For more information about these matters, see the files named COPYING.\n"),
+		  "1998");
       exit (0);
     }
 
@@ -238,7 +243,10 @@ For more information about these matters, see the files named COPYING.");
       exit (0);
     }
   
-  /* If the user hasn't specified a path for Info files, default it.  */
+  /* If the user hasn't specified a path for Info files, default it.
+     Lowest priority is our messy hardwired list in filesys.h.
+     Then comes the user's INFODIR from the Makefile.
+     Highest priority is the environment variable, if set.  */
   if (!infopath)
     {
       char *path_from_env = getenv ("INFOPATH");
@@ -252,10 +260,18 @@ For more information about these matters, see the files named COPYING.");
               path_from_env[len - 1] = 0;
               info_add_path (DEFAULT_INFOPATH, INFOPATH_PREPEND);
             }
+#ifdef INFODIR /* from the Makefile */
+          info_add_path (INFODIR, INFOPATH_PREPEND);
+#endif
           info_add_path (path_from_env, INFOPATH_PREPEND);
         }
       else
-        info_add_path (DEFAULT_INFOPATH, INFOPATH_PREPEND);
+        {
+          info_add_path (DEFAULT_INFOPATH, INFOPATH_PREPEND);
+#ifdef INFODIR /* from the Makefile */
+         info_add_path (INFODIR, INFOPATH_PREPEND);
+#endif
+        }
     }
 
   /* If the user specified a particular filename, add the path of that
@@ -517,19 +533,12 @@ version_string ()
     {
       vstring = (char *)xmalloc (50);
       sprintf (vstring, "%d.%d", info_major_version, info_minor_version);
-      if (info_patch_level)
-        sprintf (vstring + strlen (vstring), "-p%d", info_patch_level);
     }
   return (vstring);
 }
-
-/* **************************************************************** */
-/*                                                                  */
-/*                 Error Handling for Info                          */
-/*                                                                  */
-/* **************************************************************** */
 
-static char *program_name = (char *)NULL;
+
+/* Error handling.  */
 
 static void
 remember_info_program_name (fullpath)
@@ -586,44 +595,33 @@ info_error (format, arg1, arg2)
     }
 }
 
-/* Produce a very brief descripton of the available options and exit with
-   an error. */
-static void
-usage ()
-{
-  fprintf (stderr,"%s\n%s\n%s\n%s\n%s\n",
-_("Usage: info [-d dir-path] [-f info-file] [-o output-file] [-n node-name]..."),
-_("            [--directory dir-path] [--file info-file] [--node node-name]..."),
-_("            [--help] [--output output-file] [--subnodes] [--version]"),
-_("            [--dribble dribble-file] [--restore from-file]"),
-_("            [menu-selection ...]"));
-  exit (1);
-}
-
 /* Produce a scaled down description of the available options to Info. */
 static void
 info_short_help ()
 {
-  puts (_("\
-Here is a quick description of Info's options.  For a more complete\n\
-description of how to use Info, type `info info options'.\n\
+  printf (_("\
+Usage: %s [OPTION]... [INFO-FILE [MENU-ITEM...]]\n\
 \n\
-   --directory DIR              Add DIR to INFOPATH.\n\
-   --dribble FILENAME           Remember user keystrokes in FILENAME.\n\
-   --file FILENAME              Specify Info file to visit.\n\
-   --node NODENAME              Specify nodes in first visited Info file.\n\
-   --output FILENAME            Output selected nodes to FILENAME.\n\
-   --restore FILENAME           Read initial keystrokes from FILENAME.\n\
-   --subnodes                   Recursively output menu items.\n\
-   --help                       Get this help message.\n\
-   --version                    Display Info's version information.\n\
+Read documentation in Info format.\n\
+For more complete documentation on how to use Info, run `info info options'.\n\
 \n\
-Remaining arguments to Info are treated as the names of menu\n\
-items in the initial node visited.  You can easily move to the\n\
-node of your choice by specifying the menu names which describe\n\
-the path to that node.  For example, `info emacs buffers'.\n\
+Options:\n\
+--directory DIR              add DIR to INFOPATH.\n\
+--dribble FILENAME           remember user keystrokes in FILENAME.\n\
+--file FILENAME              specify Info file to visit.\n\
+--node NODENAME              specify nodes in first visited Info file.\n\
+--output FILENAME            output selected nodes to FILENAME.\n\
+--restore FILENAME           read initial keystrokes from FILENAME.\n\
+--subnodes                   recursively output menu items.\n\
+--help                       display this help and exit.\n\
+--version                    display version information and exit.\n\
 \n\
-Email bug reports to bug-texinfo@prep.ai.mit.edu."));
+The first argument, if present, is the name of the Info file to read.\n\
+Any remaining arguments are treated as the names of menu\n\
+items in the initial node visited.  For example, `info emacs buffers'\n\
+moves to the node `buffers' in the info file `emacs'.\n\
+\n\
+Email bug reports to bug-texinfo@gnu.org."), program_name);
 
   exit (0);
 }

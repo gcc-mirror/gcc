@@ -1,8 +1,14 @@
-# Makefile.in generated automatically by automake 1.2 from Makefile.am
+# Makefile.in generated automatically by automake 1.2f from Makefile.am
 
-# Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
-# gives unlimited permission to copy, distribute and modify it.
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
 
 
 SHELL = /bin/sh
@@ -43,27 +49,26 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 transform = @program_transform_name@
 
-NORMAL_INSTALL = true
-PRE_INSTALL = true
-POST_INSTALL = true
-NORMAL_UNINSTALL = true
-PRE_UNINSTALL = true
-POST_UNINSTALL = true
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
 CATALOGS = @CATALOGS@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 DATADIRNAME = @DATADIRNAME@
-EXEEXT = @EXEEXT@
 GENCAT = @GENCAT@
 GMOFILES = @GMOFILES@
 GMSGFMT = @GMSGFMT@
 GT_NO = @GT_NO@
 GT_YES = @GT_YES@
+INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
 INSTOBJEXT = @INSTOBJEXT@
 INTLDEPS = @INTLDEPS@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
-MAINT = @MAINT@
 MKINSTALLDIRS = @MKINSTALLDIRS@
 MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
@@ -77,10 +82,11 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 l = @l@
 
-info_TEXINFOS = info-stnd.texi info.texi texinfo.texi
+info_TEXINFOS = info-stnd.texi info.texi texinfo.txi
 
-# Use the makeinfo built in our distribution.
+# Use the programs built in our distribution.
 MAKEINFO = ../makeinfo/makeinfo
+INSTALL_INFO = ../util/install-info
 
 # Include our texinfo.tex, not Automake's.
 EXTRA_DIST = macro.texi userdoc.texi epsf.tex texinfo.tex
@@ -90,11 +96,11 @@ TEXMF = @TEXMF@
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-TEXI2DVI = `if test -f $(top_srcdir)/../texinfo/util/texi2dvi; then echo $(top_srcdir)/../texinfo/util/texi2dvi; else echo texi2dvi; fi`
-TEXINFO_TEX = $(top_srcdir)/../texinfo/texinfo.tex
+TEXI2DVI = texi2dvi
+TEXINFO_TEX = $(srcdir)/texinfo.tex
 INFO_DEPS = info-stnd.info info.info texinfo
 DVIS = info-stnd.dvi info.dvi texinfo.dvi
-TEXINFOS = info-stnd.texi info.texi texinfo.texi
+TEXINFOS = info-stnd.texi info.texi texinfo.txi
 DIST_COMMON =  README $(info_TEXINFOS) Makefile.am Makefile.in \
 texinfo.tex
 
@@ -106,9 +112,9 @@ GZIP = --best
 default: all
 
 .SUFFIXES:
-.SUFFIXES: .dvi .info .ps .texi .texinfo
-$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --cygnus doc/Makefile
+.SUFFIXES: .dvi .info .ps .texi .texinfo .txi
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps doc/Makefile
 
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	cd $(top_builddir) \
@@ -123,31 +129,48 @@ info.info: info.texi $(info_TEXINFOS)
 info.dvi: info.texi $(info_TEXINFOS)
 
 
-texinfo: texinfo.texi
-texinfo.dvi: texinfo.texi
+texinfo: texinfo.txi
+texinfo.dvi: texinfo.txi
 
 
 DVIPS = dvips
 
 .texi.dvi:
-	TEXINPUTS=$(top_srcdir)/../texinfo:$$TEXINPUTS \
+	TEXINPUTS=$(srcdir):$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
 
 .texi:
-	@rm -f $@ $@-[0-9] $@-[0-9][0-9]
-	$(MAKEINFO) -I $(srcdir) $<
+	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	cd $(srcdir) \
+	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 
 .texinfo.info:
-	@rm -f $@ $@-[0-9] $@-[0-9][0-9]
-	$(MAKEINFO) -I $(srcdir) $<
+	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	cd $(srcdir) \
+	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 
 .texinfo:
-	@rm -f $@ $@-[0-9] $@-[0-9][0-9]
-	$(MAKEINFO) -I $(srcdir) $<
+	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	cd $(srcdir) \
+	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 
 .texinfo.dvi:
-	TEXINPUTS=$(top_srcdir)/../texinfo:$$TEXINPUTS \
+	TEXINPUTS=$(srcdir):$$TEXINPUTS \
 	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
+
+.txi.info:
+	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	cd $(srcdir) \
+	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
+
+.txi.dvi:
+	TEXINPUTS=$(srcdir):$$TEXINPUTS \
+	  MAKEINFO='$(MAKEINFO) -I $(srcdir)' $(TEXI2DVI) $<
+
+.txi:
+	@cd $(srcdir) && rm -f $@ $@-[0-9] $@-[0-9][0-9]
+	cd $(srcdir) \
+	  && $(MAKEINFO) `echo $< | sed 's,.*/,,'`
 .dvi.ps:
 	$(DVIPS) $< -o $@
 
@@ -157,33 +180,39 @@ uninstall-info:
 	  ii=yes; \
 	else ii=; fi; \
 	for file in $(INFO_DEPS); do \
-	  test -z $ii || install-info --info-dir=$(infodir) --remove $$file; \
+	  test -z "$ii" \
+	    || install-info --info-dir=$(infodir) --remove $$file; \
 	done
-	$(NORMAL_UNINSTALL)
+	@$(NORMAL_UNINSTALL)
 	for file in $(INFO_DEPS); do \
 	  (cd $(infodir) && rm -f $$file $$file-[0-9] $$file-[0-9][0-9]); \
 	done
 
 mostlyclean-aminfo:
-	rm -f info-stnd.aux info-stnd.cp info-stnd.cps info-stnd.dvi \
-	  info-stnd.fn info-stnd.fns info-stnd.ky info-stnd.log \
-	  info-stnd.pg info-stnd.toc info-stnd.tp info-stnd.tps \
-	  info-stnd.vr info-stnd.vrs info-stnd.op info-stnd.tr \
-	  info-stnd.cv info.aux info.cp info.cps info.dvi info.fn \
-	  info.fns info.ky info.log info.pg info.toc info.tp info.tps \
-	  info.vr info.vrs info.op info.tr info.cv texinfo.aux \
+	-rm -f info-stnd.aux info-stnd.cp info-stnd.cps info-stnd.dvi \
+	  info-stnd.fn info-stnd.fns info-stnd.ky info-stnd.kys \
+	  info-stnd.ps info-stnd.log info-stnd.pg info-stnd.toc \
+	  info-stnd.tp info-stnd.tps info-stnd.vr info-stnd.vrs \
+	  info-stnd.op info-stnd.tr info-stnd.cv info-stnd.cn info.aux \
+	  info.cp info.cps info.dvi info.fn info.fns info.ky info.kys \
+	  info.ps info.log info.pg info.toc info.tp info.tps info.vr \
+	  info.vrs info.op info.tr info.cv info.cn texinfo.aux \
 	  texinfo.cp texinfo.cps texinfo.dvi texinfo.fn texinfo.fns \
-	  texinfo.ky texinfo.log texinfo.pg texinfo.toc texinfo.tp \
-	  texinfo.tps texinfo.vr texinfo.vrs texinfo.op texinfo.tr \
-	  texinfo.cv
+	  texinfo.ky texinfo.kys texinfo.ps texinfo.log texinfo.pg \
+	  texinfo.toc texinfo.tp texinfo.tps texinfo.vr texinfo.vrs \
+	  texinfo.op texinfo.tr texinfo.cv texinfo.cn
 
 clean-aminfo:
 
 distclean-aminfo:
 
 maintainer-clean-aminfo:
-	for i in $(INFO_DEPS); do rm -f `eval echo $$i*`; done
-clean-info: mostlyclean-aminfo
+	for i in $(INFO_DEPS); do \
+	  rm -f $$i; \
+	  if test "`echo $$i-[0-9]*`" != "$$i-[0-9]*"; then \
+	    rm -f $$i-[0-9]*; \
+	  fi; \
+	done
 tags: TAGS
 TAGS:
 
@@ -194,7 +223,7 @@ subdir = doc
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
-	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
@@ -205,45 +234,45 @@ dvi: $(DVIS)
 check: all
 	$(MAKE)
 installcheck:
-install-info: install-info-am
 install-exec: 
 	@$(NORMAL_INSTALL)
 
-install-data: install-data-local
+install-data: install-info-am install-data-local
 	@$(NORMAL_INSTALL)
 
 install: install-exec install-data all
 	@:
 
-uninstall: 
+uninstall: uninstall-info
 
-all: Makefile
+all: Makefile $(INFO_DEPS)
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
 installdirs:
+	$(mkinstalldirs)  $(infodir)
 
 
 mostlyclean-generic:
-	test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
 
 clean-generic:
-	test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
-	rm -f Makefile $(DISTCLEANFILES)
-	rm -f config.cache config.log stamp-h stamp-h[0-9]*
-	test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+	-rm -f Makefile $(DISTCLEANFILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 
 maintainer-clean-generic:
-	test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-	test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 mostlyclean:  mostlyclean-aminfo mostlyclean-generic
 
 clean:  clean-aminfo clean-generic mostlyclean
 
 distclean:  distclean-aminfo distclean-generic clean
-	rm -f config.status
+	-rm -f config.status
 
 maintainer-clean:  maintainer-clean-aminfo maintainer-clean-generic \
 		distclean
@@ -252,10 +281,9 @@ maintainer-clean:  maintainer-clean-aminfo maintainer-clean-generic \
 
 .PHONY: default install-info-am uninstall-info mostlyclean-aminfo \
 distclean-aminfo clean-aminfo maintainer-clean-aminfo tags distdir info \
-dvi installcheck install-info install-exec install-data install \
-uninstall all installdirs mostlyclean-generic distclean-generic \
-clean-generic maintainer-clean-generic clean mostlyclean distclean \
-maintainer-clean
+dvi installcheck install-exec install-data install uninstall all \
+installdirs mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 install-data-local:
@@ -271,10 +299,10 @@ dist-info:
 # since we don't distribute them.
 .texi.info:
 	$(MAKEINFO) -I$(srcdir) `echo $< | sed 's,.*/,,'`
-texinfo: $(srcdir)/texinfo.texi
-	$(MAKEINFO) -I$(srcdir) texinfo.texi
+texinfo: $(srcdir)/texinfo.txi
+	$(MAKEINFO) -I$(srcdir) texinfo.txi
 
-# Do not try to install them from $(srcdir).
+# Similarly, Do not try to install the info files from $(srcdir).
 install-info-am: $(INFO_DEPS)
 	@$(NORMAL_INSTALL)
 	$(mkinstalldirs) $(infodir)
@@ -288,14 +316,14 @@ install-info-am: $(INFO_DEPS)
 	  done; \
 	done
 	@$(POST_INSTALL)
-	@if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	@if $(SHELL) -c '$(INSTALL_INFO) --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
 	  for file in $(INFO_DEPS); do \
-	    echo " install-info --info-dir=$(infodir) $(infodir)/$$file";\
-	    install-info --info-dir=$(infodir) $(infodir)/$$file || :;\
+	    echo " $(INSTALL_INFO) --info-dir=$(infodir) $(infodir)/$$file";\
+	    $(INSTALL_INFO) --info-dir=$(infodir) $(infodir)/$$file || :;\
 	  done; \
 	else : ; fi
 
-# Remove them at make distclean.
+# Remove the info files at make distclean.
 distclean-aminfo:
 	rm -f texinfo texinfo-* info*.info*
 

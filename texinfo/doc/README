@@ -1,5 +1,6 @@
 This directory contains documentation on the Texinfo system and the TeX
-sources needed to process Texinfo sources.
+sources needed to process Texinfo sources.  (Use texi2dvi to run a
+Texinfo manual through TeX to produce a DVI file.)
 
 The .tex files are not installed automatically because TeX installations
 vary so widely.  Installing them in the wrong place would give a false

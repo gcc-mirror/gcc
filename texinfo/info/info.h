@@ -1,10 +1,10 @@
 /* info.h -- Header file which includes all of the other headers.
-   $Id: info.h,v 1.2 1998/03/24 18:06:31 law Exp $
+   $Id: info.h,v 1.1.1.3 1998/03/24 18:20:14 law Exp $
 
    This file is part of GNU Info, a program for reading online documentation
    stored in Info format.
 
-   Copyright (C) 1993, 97 Free Software Foundation, Inc.
+   Copyright (C) 1993, 97, 98 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -125,7 +125,7 @@ extern int info_error_rings_bell_p;
 extern void info_error ();
 
 /* The version numbers of Info. */
-extern int info_major_version, info_minor_version, info_patch_level;
+extern int info_major_version, info_minor_version;
 
 /* How to get the version string for this version of Info.  Returns
    something similar to "2.11". */

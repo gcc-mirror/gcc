@@ -213,7 +213,7 @@ Options:
 Backup of the info node has a '.old' suffix added.  This is a shell script.
 Files: update-info.f -- contains functions (optional).
 Environment Variables: COLUMNS, EDITOR, LINES, TMPDIR
-Email bug reports to bug-texinfo@prep.ai.mit.edu.
+Email bug reports to bug-texinfo@gnu.org.
 HelpEndOfFile
 		exit;;
 
