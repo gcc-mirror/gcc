@@ -1,3 +1,11 @@
+2003-01-28  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* src/Makefile.am (CONFIG_CXXFLAGS): Reverse order of
+	@EXTRA_CXX_FLAGS@ @SECTION_FLAGS@.
+	* libsupc++/Makefile.am (CONFIG_CXXFLAGS): Likewise.
+	* src/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+
 2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (glibcpp_toolexeclibdir): Instead of
