@@ -121,6 +121,9 @@ RANLIB_TEST_FOR_TARGET = [ -f $(TARGET_TOOLPREFIX)ranlib ]
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
 
+# Uncomment following line for fixproto support.  (May become the default!)
+# STMP_FIXPROTO = stmp-fixproto
+
 # There may be a premade insn-attrtab.c for this machine.
 # (You could rebuild it with genattrtab as usual, but it takes a long time.)
 # PREMADE_ATTRTAB is the file name of the file to use.
@@ -466,7 +469,7 @@ all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just build,
 # although we can't run it on this machine.
-all.cross: native gcc-cross specs $(LIBGCC) stmp-headers cross-test enquire $(EXTRA_PARTS)
+all.cross: native gcc-cross specs $(LIBGCC) stmp-headers $(STMP_FIXPROTO) cross-test enquire $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
@@ -474,7 +477,7 @@ start.encap: native xgcc specs $(LIBGCC1) xlimits.h
 # Use this to make a GCC that will be used only to recompile GCC.
 for-bootstrap: start.encap $(LIBGCC)
 # These can't be made, with COFF encapsulation, until after GCC can run.
-rest.encap: $(LIBGCC) stmp-headers $(EXTRA_PARTS)
+rest.encap: $(LIBGCC) stmp-headers $(STMP_FIXPROTO) $(EXTRA_PARTS)
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
@@ -1292,6 +1295,7 @@ SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES)
 	  -aux-info $@ -S -o tmp-SYSCALLS.s SYSCALLS.c
 	-rm -f SYSCALLS.c tmp-SYSCALLS.s
 
+
 test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	-rm -f tmp-proto.[cso]
 	cp $(srcdir)/protoize.c tmp-proto.c
@@ -1396,6 +1400,35 @@ objc-headers:
 	GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
 	GCC_CFLAGS="$(GCC_CFLAGS)" incinstalldir=$${thisdir1}/include
 	touch objc-headers
+
+# Files related to the fixproto script.
+
+deduced.h: $(srcdir)/scan-types.sh
+	CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -nostdinc -Iinclude -I${SYSTEM_HEADER_DIR}"; \
+	  export CC; \
+	  $(srcdir)/scan-types.sh >tmp-deduced.h
+	mv tmp-deduced.h deduced.h
+
+gen-protos: gen-protos.o scan.o
+	${HOST_CC} -o gen-protos gen-protos.o scan.o
+
+xsys-protos.h: $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
+	cat deduced.h $(srcdir)/sys-protos.h |\
+	  sed -e 's/	/ /g' -e 's/ *(/ (/g' -e 's/ [ ]*/ /g' >tmp.c
+	$(GCC_FOR_TARGET) tmp.c -E | ./gen-protos >xsys-protos.h
+
+scan-decls: scan-decls.o scan.o
+	$(HOST_CC) -o scan-decls scan-decls.o scan.o
+
+patch-header: patch-header.o scan.o xsys-protos.h obstack.o
+	$(HOST_CC) -o patch-header patch-header.o scan.o obstack.o
+
+patch-header.o: xsys-protos.h
+
+stmp-fixproto: patch-header scan-decls xsys-protos.h
+	CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
+	  ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR)
+	touch stmp-fixproto
 
 # Remake the info files.
 
@@ -1463,6 +1496,9 @@ mostlyclean:
 # Delete some files made during installation.
 	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
+# Delete files generated for fixproto
+	rm -rf patch-header scan-decls xsys-protos.h deduced.h tmp-deduced.h \
+	  tmp.i tmp.c
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 # Delete sorted indices we don't actually use.
@@ -1691,7 +1727,7 @@ install-include-dir: install-dir
 	-chmod a+rx $(libsubdir)/include
 
 # Install the include directory using tar.
-install-headers-tar: stmp-headers install-include-dir
+install-headers-tar: stmp-headers $(STMP_FIXPROTO) install-include-dir
 	cd include; \
 	 (tar cf - .; exit 0) | (cd $(libsubdir)/include; tar $(TAROUTOPTS) - )
 # /bin/sh on some systems returns the status of the first tar,
@@ -1699,7 +1735,7 @@ install-headers-tar: stmp-headers install-include-dir
 # So use `exit 0' to ignore its exit status.
 
 # Install the include directory using cpio.
-install-headers-cpio: stmp-headers install-include-dir
+install-headers-cpio: stmp-headers $(STMP_FIXPROTO) install-include-dir
 	cd include; find . -print | cpio -pdum $(libsubdir)/include
 
 # Put assert.h where it won't override GNU libc's assert.h.
