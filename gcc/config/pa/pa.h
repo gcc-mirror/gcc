@@ -1019,7 +1019,7 @@ extern enum cmp_type hppa_branch_type;
     fputs ("\t.NSUBSPA $CODE$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY\n", FILE); \
   else if (! TARGET_PORTABLE_RUNTIME && TARGET_GAS)			\
     fprintf (FILE,							\
-	     "\t.SUBSPA $%s$\n", NAME);
+	     "\t.SUBSPA %s\n", NAME);
     
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
     do { tree fntype = TREE_TYPE (TREE_TYPE (DECL));			\
@@ -1828,21 +1828,21 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA $%s$,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n", \
+	       "\t.SUBSPA %s,QUAD=0,ALIGN=8,ACCESS=44,CODE_ONLY,SORT=24\n", \
 	       NAME);						\
     }								\
   else if (DECL && TREE_READONLY (DECL))			\
     {								\
       fputs ("\t.SPACE $TEXT$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA $%s$,QUAD=0,ALIGN=8,ACCESS=44,SORT=16\n", \
+	       "\t.SUBSPA %s,QUAD=0,ALIGN=8,ACCESS=44,SORT=16\n", \
 	       NAME);						\
     }								\
   else								\
     {								\
       fputs ("\t.SPACE $PRIVATE$\n", FILE);			\
       fprintf (FILE,						\
-	       "\t.SUBSPA $%s$,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n", \
+	       "\t.SUBSPA %s,QUAD=1,ALIGN=8,ACCESS=31,SORT=16\n", \
 	       NAME);						\
     }
 
