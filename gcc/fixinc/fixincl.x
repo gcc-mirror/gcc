@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 138 fixup descriptions.
+ * This file contains 139 fixup descriptions.
  *
  * See README for more information.
  *
@@ -740,6 +740,41 @@ static tTestDesc aAlpha___AssertTests[] = {
 static const char* apzAlpha___AssertPatch[] = {
     "format",
     "__assert(const char *, const char *, int)",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Alpha_Assert fix
+ */
+tSCC zAlpha_AssertName[] =
+     "alpha_assert";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zAlpha_AssertList[] =
+  "|assert.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzAlpha_AssertMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zAlpha_AssertSelect0[] =
+       "(#define assert\\(EX\\).*)\\(\\(int\\) \\(EX\\)\\)";
+
+#define    ALPHA_ASSERT_TEST_CT  1
+static tTestDesc aAlpha_AssertTests[] = {
+  { TT_EGREP,    zAlpha_AssertSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Alpha_Assert
+ */
+static const char* apzAlpha_AssertPatch[] = {
+    "format",
+    "%1(EX)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5435,9 +5470,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          147
+#define REGEX_COUNT          148
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            138
+#define FIX_COUNT            139
 
 /*
  *  Enumerate the fixes
@@ -5458,6 +5493,7 @@ typedef enum {
     AIX_SYSWAIT_FIXIDX,
     AIX_VOLATILE_FIXIDX,
     ALPHA___ASSERT_FIXIDX,
+    ALPHA_ASSERT_FIXIDX,
     ALPHA_GETOPT_FIXIDX,
     ALPHA_PARENS_FIXIDX,
     ALPHA_SBRK_FIXIDX,
@@ -5658,6 +5694,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzAlpha___AssertMachs,
      ALPHA___ASSERT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha___AssertTests,   apzAlpha___AssertPatch, 0 },
+
+  {  zAlpha_AssertName,    zAlpha_AssertList,
+     apzAlpha_AssertMachs,
+     ALPHA_ASSERT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aAlpha_AssertTests,   apzAlpha_AssertPatch, 0 },
 
   {  zAlpha_GetoptName,    zAlpha_GetoptList,
      apzAlpha_GetoptMachs,
