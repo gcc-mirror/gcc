@@ -901,7 +901,7 @@ i960_function_name_declare (file, name, fndecl)
   /* Do this after choosing the leaf return register, so it will be listed
      if one was chosen.  */
 
-  fprintf (file, "\t#  Function '%s'\n", name);
+  fprintf (file, "\t#  Function '%s'\n", (name[0] == '*' ? &name[1] : name));
   fprintf (file, "\t#  Registers used: ");
 
   for (i = 0, j = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -925,12 +925,14 @@ i960_function_name_declare (file, name, fndecl)
       /* Make it a leaf procedure.  */
 
       if (TREE_PUBLIC (fndecl))
-	fprintf (file,"\t.globl    %s.lf\n", name);
+	fprintf (file,"\t.globl\t%s.lf\n", (name[0] == '*' ? &name[1] : name));
 
-      fprintf (file, "\t.leafproc\t_%s,%s.lf\n", name, name);
-      fprintf (file, "_%s:\n", name);
+      fprintf (file, "\t.leafproc\t");
+      assemble_name (file, name);
+      fprintf (file, ",%s.lf\n", (name[0] == '*' ? &name[1] : name));
+      ASM_OUTPUT_LABEL (file, name);
       fprintf (file, "\tlda    LR%d,g14\n", ret_label);
-      fprintf (file, "%s.lf:\n", name);
+      fprintf (file, "%s.lf:\n", (name[0] == '*' ? &name[1] : name));
       fprintf (file, "\tmov    g14,g%d\n", i960_leaf_ret_reg);
 
       if (TARGET_C_SERIES)
