@@ -140,7 +140,7 @@ DEFTREECODE (COMPLEX_TYPE, "complex_type", "t", 0)
 /* C enums.  The type node looks just like an INTEGER_TYPE node.
    The symbols for the values of the enum type are defined by
    CONST_DECL nodes, but the type does not point to them;
-   however, the TREE_VALUES is a list in which each elements' TREE_PURPOSE
+   however, the TYPE_VALUES is a list in which each element's TREE_PURPOSE
    is a name and the TREE_VALUE is the value (an INTEGER_CST node).  */
 /* A forward reference `enum foo' when no enum named foo is defined yet
    has zero (a null pointer) in its TYPE_SIZE.  The tag name is in
