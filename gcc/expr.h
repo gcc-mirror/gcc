@@ -506,6 +506,10 @@ extern void emit_cmp_insn PROTO((rtx, rtx, enum rtx_code, rtx,
    (without splitting it into pieces).  */
 extern int can_compare_p PROTO((enum machine_mode));
 
+/* Emit a library call comparison between floating point X and Y.
+   COMPARISON is the rtl operator to compare with (EQ, NE, GT, etc.).  */
+extern void emit_float_lib_cmp PROTO((rtx, rtx, enum rtx_code));
+
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump PROTO((rtx));
 
