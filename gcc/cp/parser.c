@@ -1295,16 +1295,20 @@ typedef struct cp_parser GTY(())
      issued as an error message if a type is defined.  */
   const char *type_definition_forbidden_message;
 
-  /* A TREE_LIST of queues of functions whose bodies have been lexed,
-     but may not have been parsed.  These functions are friends of
-     members defined within a class-specification; they are not
-     procssed until the class is complete.  The active queue is at the
-     front of the list.
+  /* A list of lists. The outer list is a stack, used for member
+     functions of local classes. At each level there are two sub-list,
+     one on TREE_VALUE and one on TREE_PURPOSE. Each of those
+     sub-lists has a FUNCTION_DECL or TEMPLATE_DECL on their
+     TREE_VALUE's. The functions are chained in reverse declaration
+     order.
 
-     Within each queue, functions appear in the reverse order that
-     they appeared in the source.  Each TREE_VALUE is a
-     FUNCTION_DECL of TEMPLATE_DECL corresponding to a member
-     function.  */
+     The TREE_PURPOSE sublist contains those functions with default
+     arguments that need post processing, and the TREE_VALUE sublist
+     contains those functions with definitions that need post
+     processing.
+
+     These lists can only be processed once the outermost class being
+     defined is complete. */
   tree unparsed_functions_queues;
 
   /* The number of classes whose definitions are currently in
@@ -1678,6 +1682,8 @@ static void cp_parser_template_declaration_after_export
 static tree cp_parser_single_declaration
   (cp_parser *, bool, bool *);
 static tree cp_parser_functional_cast
+  (cp_parser *, tree);
+static void cp_parser_save_default_args
   (cp_parser *, tree);
 static void cp_parser_late_parsing_for_member
   (cp_parser *, tree);
@@ -9735,10 +9741,14 @@ cp_parser_init_declarator (cp_parser* parser,
   /* For an in-class declaration, use `grokfield' to create the
      declaration.  */
   if (member_p)
-    decl = grokfield (declarator, decl_specifiers,
-		      initializer, /*asmspec=*/NULL_TREE,
+    {
+      decl = grokfield (declarator, decl_specifiers,
+			initializer, /*asmspec=*/NULL_TREE,
 			/*attributes=*/NULL_TREE);
-
+      if (decl && TREE_CODE (decl) == FUNCTION_DECL)
+	cp_parser_save_default_args (parser, decl);
+    }
+  
   /* Finish processing the declaration.  But, skip friend
      declarations.  */
   if (!friend_p && decl)
@@ -11031,6 +11041,9 @@ cp_parser_function_definition (cp_parser* parser, bool* friend_p)
 	  return error_mark_node;
 	}
 
+      /* Remember it, if there default args to post process.  */
+      cp_parser_save_default_args (parser, fn);
+      
       /* Create a token cache.  */
       cache = cp_token_cache_new ();
       /* Save away the tokens that make up the body of the 
@@ -11505,14 +11518,9 @@ cp_parser_class_specifier (cp_parser* parser)
      there is no need to delay the parsing of `A::B::f'.  */
   if (--parser->num_classes_being_defined == 0) 
     {
-      tree last_scope = NULL_TREE;
       tree queue_entry;
       tree fn;
 
-      /* Reverse the queue, so that we process it in the order the
-	 functions were declared.  */
-      TREE_VALUE (parser->unparsed_functions_queues)
-	= nreverse (TREE_VALUE (parser->unparsed_functions_queues));
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
 	 This two-phased approach handles cases like:
@@ -11523,13 +11531,13 @@ cp_parser_class_specifier (cp_parser* parser)
             };
 
          */
-      for (queue_entry = TREE_VALUE (parser->unparsed_functions_queues);
-	   queue_entry;
-	   queue_entry = TREE_CHAIN (queue_entry))
+      for (TREE_PURPOSE (parser->unparsed_functions_queues)
+	     = nreverse (TREE_PURPOSE (parser->unparsed_functions_queues));
+	   (queue_entry = TREE_PURPOSE (parser->unparsed_functions_queues));
+	   TREE_PURPOSE (parser->unparsed_functions_queues)
+	     = TREE_CHAIN (TREE_PURPOSE (parser->unparsed_functions_queues)))
 	{
 	  fn = TREE_VALUE (queue_entry);
-	  if (DECL_FUNCTION_TEMPLATE_P (fn))
-	    fn = DECL_TEMPLATE_RESULT (fn);
 	  /* Make sure that any template parameters are in scope.  */
 	  maybe_begin_member_template_processing (fn);
 	  /* If there are default arguments that have not yet been processed,
@@ -11539,24 +11547,19 @@ cp_parser_class_specifier (cp_parser* parser)
 	  maybe_end_member_template_processing ();
 	}
       /* Now parse the body of the functions.  */
-      while (TREE_VALUE (parser->unparsed_functions_queues))
-
+      for (TREE_VALUE (parser->unparsed_functions_queues)
+	     = nreverse (TREE_VALUE (parser->unparsed_functions_queues));
+	   (queue_entry = TREE_VALUE (parser->unparsed_functions_queues));
+	   TREE_VALUE (parser->unparsed_functions_queues)
+	     = TREE_CHAIN (TREE_VALUE (parser->unparsed_functions_queues)))
 	{
 	  /* Figure out which function we need to process.  */
-	  queue_entry = TREE_VALUE (parser->unparsed_functions_queues);
 	  fn = TREE_VALUE (queue_entry);
 
 	  /* Parse the function.  */
 	  cp_parser_late_parsing_for_member (parser, fn);
-
-	  TREE_VALUE (parser->unparsed_functions_queues)
-	    = TREE_CHAIN (TREE_VALUE (parser->unparsed_functions_queues));
 	}
 
-      /* If LAST_SCOPE is non-NULL, then we have pushed scopes one
-	 more time than we have popped, so me must pop here.  */
-      if (last_scope)
-	pop_scope (last_scope);
     }
 
   /* Put back any saved access checks.  */
@@ -12268,13 +12271,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (!friend_p)
 		finish_member_declaration (decl);
 
-	      /* If DECL is a function, we must return
-		 to parse it later.  (Even though there is no definition,
-		 there might be default arguments that need handling.)  */
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
-		TREE_VALUE (parser->unparsed_functions_queues)
-		  = tree_cons (NULL_TREE, decl, 
-			       TREE_VALUE (parser->unparsed_functions_queues));
+		cp_parser_save_default_args (parser, decl);
 	    }
 	}
     }
@@ -14127,6 +14125,27 @@ cp_parser_late_parsing_for_member (cp_parser* parser, tree member_function)
   /* Restore the queue.  */
   parser->unparsed_functions_queues 
     = TREE_CHAIN (parser->unparsed_functions_queues);
+}
+
+/* If DECL contains any default args, remeber it on the unparsed
+   functions queue.  */
+
+static void
+cp_parser_save_default_args (cp_parser* parser, tree decl)
+{
+  tree probe;
+
+  for (probe = TYPE_ARG_TYPES (TREE_TYPE (decl));
+       probe;
+       probe = TREE_CHAIN (probe))
+    if (TREE_PURPOSE (probe))
+      {
+	TREE_PURPOSE (parser->unparsed_functions_queues)
+	  = tree_cons (NULL_TREE, decl, 
+		       TREE_PURPOSE (parser->unparsed_functions_queues));
+	break;
+      }
+  return;
 }
 
 /* FN is a FUNCTION_DECL which may contains a parameter with an

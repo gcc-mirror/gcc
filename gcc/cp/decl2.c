@@ -889,8 +889,14 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
     }
 
   /* Pass friendly classes back.  */
-  if (TREE_CODE (value) == VOID_TYPE)
-    return void_type_node;
+  if (value == void_type_node)
+    return value;
+
+  /* Pass friend decls back. */
+  if ((TREE_CODE (value) == FUNCTION_DECL
+       || TREE_CODE (value) == TEMPLATE_DECL)
+      && DECL_CONTEXT (value) != current_class_type)
+    return value;
 
   if (DECL_NAME (value) != NULL_TREE
       && IDENTIFIER_POINTER (DECL_NAME (value))[0] == '_'

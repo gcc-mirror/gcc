@@ -306,10 +306,7 @@ make_friend_class (type, friend_type)
     }
 }
 
-/* Main friend processor.  This is large, and for modularity purposes,
-   has been removed from grokdeclarator.  It returns `void_type_node'
-   to indicate that something happened, though a FIELD_DECL is
-   not returned.
+/* Main friend processor. 
 
    CTYPE is the class this friend belongs to.
 

@@ -1,3 +1,8 @@
+2003-07-03  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9162
+	* g++.dg/parse/defarg4.C: New.
+
 2003-07-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/10700
