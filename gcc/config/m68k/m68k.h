@@ -81,14 +81,15 @@ extern int target_flags;
 /* Compile (actually, link) for Sun SKY board.  */
 #define TARGET_SKY (target_flags & 0200)
 
-/* Optimize for 68040.
+/* Optimize for 68040, but still allow execution on 68020
+   (-m68020-40 or -m68040).
    The 68040 will execute all 68030 and 68881/2 instructions, but some
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2. */
-#define TARGET_68040 (target_flags & 0400)
+#define TARGET_68040 (target_flags & 01400)
 
-/* Support 68040 fp instructions.  */
+/* Use the 68040-only fp instructions (-m68040).  */
 #define TARGET_68040_ONLY (target_flags & 01000)
 
 /* Macro to define tables used to set the flags.
@@ -114,10 +115,10 @@ extern int target_flags;
     { "nofpa", -0100},				\
     { "sky", 0200},				\
     { "nosky", -0200},				\
-    { "68040", 0407},				\
+    { "68020-40", 0407},				\
     { "68030", -01400},				\
     { "68030", 7},				\
-    { "68040-only", 01000},			\
+    { "68040", 01000},			\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
 
