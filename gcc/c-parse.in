@@ -2431,6 +2431,7 @@ asm_string:
 		    }
 		  else
 		    $$ = $1; }
+	;
 
 stop_string_translation:
         { c_lex_string_translate = 0; }
