@@ -1,3 +1,8 @@
+2001-10-29  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/zip/GZIPOutputStream.java (write(int)): New method.
+	Fixes PR libgcj/4728.
+
 2001-10-27  Tom Tromey  <tromey@redhat.com>
 
 	* include/jni.h (struct JNINativeInterface) [GetStringLength]:
