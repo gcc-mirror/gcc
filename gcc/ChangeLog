@@ -1,3 +1,8 @@
+2002-02-17  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c: Fix formatting.
+	* config/h8300/h8300.h: Likewise.
+
 2002-02-17  Philipp Thomas  <pthomas@suse.de>
 
 	* doc/tm.texi: Explain why empty strings should not be

@@ -2411,25 +2411,25 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    }
 	}
       else if (TARGET_H8300 && 24 <= count && count <= 28)
- 	{
- 	  info->remainder = count - 24;
+	{
+	  info->remainder = count - 24;
  
- 	  switch (shift_type)
- 	    {
- 	    case SHIFT_ASHIFT:
- 	      info->special = "mov.b\t%w0,%z0\n\tsub.b\t%y0,%y0\n\tsub.w\t%f0,%f0";
- 	      info->shift1  = "shll.b\t%z0";
+	  switch (shift_type)
+	    {
+	    case SHIFT_ASHIFT:
+	      info->special = "mov.b\t%w0,%z0\n\tsub.b\t%y0,%y0\n\tsub.w\t%f0,%f0";
+	      info->shift1  = "shll.b\t%z0";
+	      goto end;
+	    case SHIFT_LSHIFTRT:
+	      info->special = "mov.b\t%z0,%w0\n\tsub.b\t%x0,%x0\n\tsub.w\t%e0,%e0";
+	      info->shift1  = "shlr.b\t%w0";
+	      goto end;
+	    case SHIFT_ASHIFTRT:
+	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0";
+	      info->shift1  = "shar.b\t%w0";
  	      goto end;
- 	    case SHIFT_LSHIFTRT:
- 	      info->special = "mov.b\t%z0,%w0\n\tsub.b\t%x0,%x0\n\tsub.w\t%e0,%e0";
- 	      info->shift1  = "shlr.b\t%w0";
- 	      goto end;
- 	    case SHIFT_ASHIFTRT:
- 	      info->special = "mov.b\t%z0,%w0\n\tbld\t#7,%w0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0\n\tsubx\t%x0,%x0";
- 	      info->shift1  = "shar.b\t%w0";
-  	      goto end;
-  	    }
-  	}
+ 	    }
+ 	}
       else if ((TARGET_H8300H && count == 24)
 	       || (TARGET_H8300S && 24 <= count && count <= 25))
 	{
