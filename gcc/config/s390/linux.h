@@ -166,7 +166,7 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE, VALUE)  \
-  fprintf ((FILE), "%s 0x%x\n", ASM_BYTE_OP, (VALUE))
+  fprintf ((FILE), "%s 0x%x\n", ASM_BYTE_OP, (int)(VALUE))
 
      /* internal macro to output long */
 #define _ASM_OUTPUT_LONG(FILE, VALUE)                                   \
@@ -224,12 +224,12 @@ do { fprintf (FILE, "%s\t", ASM_LONG);          \
 #undef ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)                             \
 do {                                                                    \
-      register unsigned char *_ascii_bytes = (unsigned char *) (STR);   \
-      register unsigned char *limit = _ascii_bytes + (LENGTH);          \
+      register const unsigned char *_ascii_bytes = (const unsigned char *) (STR);   \
+      register const unsigned char *limit = _ascii_bytes + (LENGTH);          \
       register unsigned bytes_in_chunk = 0;                             \
       for (; _ascii_bytes < limit; _ascii_bytes++)                      \
         {                                                               \
-          register unsigned char *p;                                    \
+          register const unsigned char *p;                                    \
           if (bytes_in_chunk >= 64)                                     \
             {                                                           \
               fputc ('\n', (FILE));                                     \
@@ -237,7 +237,7 @@ do {                                                                    \
             }                                                           \
           for (p = _ascii_bytes; p < limit && *p != '\0'; p++)          \
             continue;                                                   \
-          if (p < limit && (p - _ascii_bytes) <= STRING_LIMIT)          \
+          if (p < limit && (p - _ascii_bytes) <= (long)STRING_LIMIT)    \
             {                                                           \
               if (bytes_in_chunk > 0)                                   \
                 {                                                       \
@@ -307,7 +307,9 @@ do {                                                                          \
           fprintf (FILE, "@GOTENT\n");                                        \
           fprintf (FILE, "\tlg    1,0(1)\n");                                 \
           fprintf (FILE, "\tbr    1\n");                                      \
-          fprintf (FILE, "0:\t.long  %d\n",DELTA);                            \
+          fprintf (FILE, "0:\t.long  ");	                              \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
         }                                                                     \
       else                                                                    \
         {                                                                     \
@@ -318,7 +320,9 @@ do {                                                                          \
           fprintf (FILE, "\tjg  ");                                           \
           assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
           fprintf (FILE, "\n");                                               \
-          fprintf (FILE, "0:\t.long  %d\n",DELTA);                            \
+          fprintf (FILE, "0:\t.long  ");		                      \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
         }                                                                     \
     }                                                                         \
   else                                                                        \
@@ -330,7 +334,9 @@ do {                                                                          \
           fprintf (FILE, "\t.long  ");                                        \
           assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
           fprintf (FILE, "@GOT\n");                                           \
-          fprintf (FILE, "\t.long  %d\n",DELTA);                              \
+          fprintf (FILE, "\t.long  ");		                              \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
           fprintf (FILE, "0:\tal  %d,8(1)\n",                                 \
                    aggregate_value_p (TREE_TYPE                               \
                                       (TREE_TYPE (FUNCTION))) ? 3 : 2 );      \
@@ -344,7 +350,9 @@ do {                                                                          \
           fprintf (FILE, "\t.long  ");                                        \
           assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));      \
           fprintf (FILE, "-.\n");                                             \
-          fprintf (FILE, "\t.long  %d\n",DELTA);                              \
+          fprintf (FILE, "\t.long  ");		                              \
+          fprintf (FILE, HOST_WIDE_INT_PRINT_DEC, (DELTA));                   \
+          fprintf (FILE, "\n");			                              \
           fprintf (FILE, "0:\tal  %d,4(1)\n",                                 \
                    aggregate_value_p (TREE_TYPE                               \
                                       (TREE_TYPE (FUNCTION))) ? 3 : 2 );      \

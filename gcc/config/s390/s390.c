@@ -2161,8 +2161,7 @@ s390_final_chunkify (chunkify)
 		{
 		  debug_rtx (insn);
 		  debug_rtx (tmp);
-		  fprintf (stderr, "s390 multiple literalpool support:"
-			   "\n No code label between this insn %X %X",
+		  fprintf (stderr, "s390 multiple literalpool support:\n No code label between this insn %X %X",
 			   naddr, INSN_ADDRESSES (INSN_UID (tmp)));
 		  abort ();
 		}
@@ -2487,8 +2486,7 @@ s390_function_prologue (file, lsize)
   long frame_size;
   rtx stack_label = 0, got_label = 0;
   char *l;
-  char b64[2] = " ";
-  b64[0] = TARGET_64BIT ? 'g' : '\0';
+  const char *const b64 = TARGET_64BIT ? "g" : "";
 
   /* Check for too large size of local variables */
 
@@ -2801,9 +2799,8 @@ s390_function_epilogue (file, lsize)
   long frame_size;
   int return_reg = RETURN_REGNUM;
   int fp, offset;
-  char b64[2] = " ";
+  const char *const b64 = TARGET_64BIT ? "g" : "";
 
-  b64[0] = TARGET_64BIT ? 'g' : '\0';
   frame_size = STARTING_FRAME_OFFSET + lsize + save_fprs_p () * 64;
   
   if (current_function_uses_pic_offset_table)
