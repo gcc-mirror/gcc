@@ -1,3 +1,7 @@
+2000-07-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	* gcc.dg/noncompile/redecl-1.c: New test.
+
 2000-07-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20000717-5.c: New test.
