@@ -15,7 +15,7 @@ If you would like to work on improvements to GCC, please read the
 advice at these URLs:
 
 @smallexample
-@uref{http://gcc.gnu.org/contribute.html} 
+@uref{http://gcc.gnu.org/contribute.html}
 @uref{http://gcc.gnu.org/contributewhy.html}
 @end smallexample
 

@@ -1,3 +1,9 @@
+2002-02-23  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/contribute.texi, doc/extend.texi, doc/install.texi,
+	doc/invoke.texi, doc/md.texi, doc/passes.texi, doc/rtl.texi,
+	doc/standards.texi, doc/tm.texi: Remove trailing whitespace.
+
 2002-02-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/5747

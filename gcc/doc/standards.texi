@@ -164,7 +164,7 @@ recent version, while @uref{http://www.toodarkpark.org/computers/objc/}
 is an older example.  @uref{http://www.gnustep.org} includes useful
 information as well.
 
-@xref{Top, GNAT Reference Manual, About This Guide, gnat_rm, 
+@xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,
 GNAT Reference Manual}, for information on standard
 conformance and compatibility of the Ada compiler.
 

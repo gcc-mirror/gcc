@@ -2556,7 +2556,7 @@ An attribute specifier list may appear immediately before the comma,
 than a function definition.  At present, such attribute specifiers apply
 to the declared object or function, but in future they may attach to the
 outermost adjacent declarator.  In simple cases there is no difference,
-but, for example, in 
+but, for example, in
 
 @smallexample
 void (****f)(void) __attribute__((noreturn));
@@ -2615,7 +2615,7 @@ declaration @code{T D} specifies the type
 @var{type-qualifier-and-attribute-specifier-list} @var{Type}'' for
 @var{ident}.
 
-For example, 
+For example,
 
 @smallexample
 void (__attribute__((noreturn)) ****f) (void);
@@ -4634,7 +4634,7 @@ for (i = 0; i < n; i++)
   @}
 @end smallexample
 
-Data prefetch does not generate faults if @var{addr} is invalid, but 
+Data prefetch does not generate faults if @var{addr} is invalid, but
 the address expression itself must be valid.  For example, a prefetch
 of @code{p->next} will not fault if @code{p->next} is not a valid
 address, but evaluation will fault if @code{p} is not a valid address.
@@ -5713,7 +5713,7 @@ vector signed int vec_all_gt (vector unsigned char,
 vector signed int vec_all_gt (vector signed char, vector signed char);
 vector signed int vec_all_gt (vector signed short,
                               vector unsigned short);
-vector signed int vec_all_gt (vector unsigned short,    
+vector signed int vec_all_gt (vector unsigned short,
                               vector signed short);
 vector signed int vec_all_gt (vector unsigned short,
                               vector unsigned short);

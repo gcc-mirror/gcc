@@ -2586,7 +2586,7 @@ appropriate may not be detected.  This option has no effect unless
 @item -Wno-deprecated-declarations
 @opindex Wno-deprecated-declarations
 Do not warn about uses of functions, variables, and types marked as
-deprecated by using the @code{deprecated} attribute. 
+deprecated by using the @code{deprecated} attribute.
 (@pxref{Function Attributes}, @pxref{Variable Attributes},
 @pxref{Type Attributes}.)
 
@@ -8319,7 +8319,7 @@ arithmetic instead of IEEE single and double precision.
 @opindex mexplicit-relocs
 @opindex mno-explicit-relocs
 Older Alpha assemblers provided no way to generate symbol relocations
-except via assembler macros.  Use of these macros does not allow 
+except via assembler macros.  Use of these macros does not allow
 optimial instruction scheduling.  GNU binutils as of version 2.12
 supports a new syntax that allows the compiler to explicitly mark
 which relocations should apply to which instructions.  This option
@@ -8330,7 +8330,7 @@ the assembler when it is built and sets the default accordingly.
 @itemx -mlarge-data
 @opindex msmall-data
 @opindex mlarge-data
-When @option{-mexplicit-relocs} is in effect, static data is 
+When @option{-mexplicit-relocs} is in effect, static data is
 accessed via @dfn{gp-relative} relocations.  When @option{-msmall-data}
 is used, objects 8 bytes long or smaller are placed in a @dfn{small data area}
 (the @code{.sdata} and @code{.sbss} sections) and are accessed via
@@ -9321,7 +9321,7 @@ generates IEEE floating-point instructions.  This is the default.
 @itemx -mno-backchain
 @opindex mbackchain
 @opindex mno-backchain
-Generate (or do not generate) code which maintains an explicit 
+Generate (or do not generate) code which maintains an explicit
 backchain within the stack frame that points to the caller's frame.
 This is currently needed to allow debugging.  The default is to
 generate the backchain.
@@ -9330,8 +9330,8 @@ generate the backchain.
 @itemx -mno-small-exec
 @opindex msmall-exec
 @opindex mno-small-exec
-Generate (or do not generate) code using the @code{bras} instruction 
-to do subroutine calls. 
+Generate (or do not generate) code using the @code{bras} instruction
+to do subroutine calls.
 This only works reliably if the total executable size does not
 exceed 64k.  The default is to use the @code{basr} instruction instead,
 which does not have this limitation.
@@ -9344,14 +9344,14 @@ When @option{-m31} is specified, generate code compliant to the
 Linux for S/390 ABI@.  When @option{-m64} is specified, generate
 code compliant to the Linux for zSeries ABI@.  This allows GCC in
 particular to generate 64-bit instructions.  For the @samp{s390}
-targets, the default is @option{-m31}, while the @samp{s390x} 
+targets, the default is @option{-m31}, while the @samp{s390x}
 targets default to @option{-m64}.
 
 @item -mmvcle
 @itemx -mno-mvcle
 @opindex mmvcle
 @opindex mno-mvcle
-Generate (or do not generate) code using the @code{mvcle} instruction 
+Generate (or do not generate) code using the @code{mvcle} instruction
 to perform block moves.  When @option{-mno-mvcle} is specifed,
 use a @code{mvc} loop instead.  This is the default.
 
