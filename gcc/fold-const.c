@@ -9693,27 +9693,19 @@ fold_binary (enum tree_code code, tree type, tree op0, tree op1)
     } /* switch (code) */
 }
 
-/* Fold a ternary expression EXPR.  Return the folded expression if
-   folding is successful.  Otherwise, return the original
-   expression.  */
+/* Fold a ternary expression of code CODE and type TYPE with operands
+   OP0, OP1, and OP2.  Return the folded expression if folding is
+   successful.  Otherwise, return NULL_TREE.  */
 
 static tree
-fold_ternary (tree expr)
+fold_ternary (enum tree_code code, tree type, tree op0, tree op1, tree op2)
 {
-  const tree t = expr;
-  const tree type = TREE_TYPE (expr);
   tree tem;
-  tree op0, op1, op2;
   tree arg0 = NULL_TREE, arg1 = NULL_TREE;
-  enum tree_code code = TREE_CODE (t);
   enum tree_code_class kind = TREE_CODE_CLASS (code);
 
   gcc_assert (IS_EXPR_CODE_CLASS (kind)
 	      && TREE_CODE_LENGTH (code) == 3);
-
-  op0 = TREE_OPERAND (t, 0);
-  op1 = TREE_OPERAND (t, 1);
-  op2 = TREE_OPERAND (t, 2);
 
   /* Strip any conversions that don't change the mode.  This is safe
      for every expression, except for a comparison expression because
@@ -9909,8 +9901,8 @@ fold_ternary (tree expr)
 	  && TREE_CODE (TREE_OPERAND (op0, 0)) == FUNCTION_DECL
 	  && DECL_BUILT_IN (TREE_OPERAND (op0, 0)))
 	{
-	  tree fndecl = get_callee_fndecl (t);
-	  tree arglist = TREE_OPERAND (t, 1);
+	  tree fndecl = TREE_OPERAND (op0, 0);
+	  tree arglist = op1;
 	  tree tmp = fold_builtin (fndecl, arglist, false);
 	  if (tmp)
 	    return tmp;
@@ -9950,7 +9942,7 @@ fold (tree expr)
   if (IS_EXPR_CODE_CLASS (kind))
     {
       tree type = TREE_TYPE (t);
-      tree op0, op1;
+      tree op0, op1, op2;
 
       switch (TREE_CODE_LENGTH (code))
 	{
@@ -9964,7 +9956,10 @@ fold (tree expr)
 	  tem = fold_binary (code, type, op0, op1);
 	  return tem ? tem : expr;
 	case 3:
-	  tem = fold_ternary (expr);
+	  op0 = TREE_OPERAND (t, 0);
+	  op1 = TREE_OPERAND (t, 1);
+	  op2 = TREE_OPERAND (t, 2);
+	  tem = fold_ternary (code, type, op0, op1, op2);
 	  return tem ? tem : expr;
 	default:
 	  break;
