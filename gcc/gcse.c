@@ -5850,7 +5850,7 @@ static sbitmap *hoist_exprs;
 dominance_info dominators;
 
 /* ??? We could compute post dominators and run this algorithm in
-   reverse to to perform tail merging, doing so would probably be
+   reverse to perform tail merging, doing so would probably be
    more effective than the tail merging code in jump.c.
 
    It's unclear if tail merging could be run in parallel with

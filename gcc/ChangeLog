@@ -1,3 +1,9 @@
+2002-07-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c: Fix comment typos.
+	* gcse.c: Likewise.
+	* reload1.c: Likewise.
+
 2002-07-29  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md: Disallow CCEQ compare with crnor/crnot
