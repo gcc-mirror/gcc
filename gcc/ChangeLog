@@ -1,3 +1,7 @@
+Mon Apr  5 11:51:38 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k.md (movdf): Hide GPR sources & destinations from regclass.
+
 Mon Apr 5 09:54:42 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
