@@ -1,3 +1,8 @@
+2001-08-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cvt.c (convert_to_void): Preserve TREE_SIDE_EFFECTS
+	on COMPOUND_EXPRs.
+
 2001-08-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_over_call): Mark COMPOUND_EXPRs generated for

@@ -936,8 +936,13 @@ convert_to_void (expr, implicit)
         tree new_op1 = convert_to_void (op1, implicit);
         
         if (new_op1 != op1)
-          expr = build (COMPOUND_EXPR, TREE_TYPE (new_op1),
-                        TREE_OPERAND (expr, 0), new_op1);
+	  {
+	    tree t = build (COMPOUND_EXPR, TREE_TYPE (new_op1),
+			    TREE_OPERAND (expr, 0), new_op1);
+	    TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (expr);
+	    expr = t;
+	  }
+
         break;
       }
     
