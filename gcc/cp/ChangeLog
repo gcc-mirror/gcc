@@ -1,4 +1,4 @@
-2003-08-26  Fred Fish  <fnf@intrinsity.com>
+2004-01-17  Fred Fish  <fnf@intrinsity.com>
 
 	PR c++/11895
 	* decl.c (reshape_init): Handle VECTOR_TYPE like ARRAY_TYPE,
