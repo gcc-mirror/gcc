@@ -274,6 +274,7 @@ getruntime.o: config.h $(INCDIR)/libiberty.h
 hex.o: $(INCDIR)/libiberty.h
 floatformat.o: $(INCDIR)/floatformat.h
 lbasename.o: $(INCDIR)/libiberty.h
+make-temp-file.o: config.h
 mkstemps.o: config.h
 md5.o: config.h
 objalloc.o: config.h $(INCDIR)/objalloc.h

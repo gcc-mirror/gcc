@@ -1,3 +1,7 @@
+2001-02-28  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (make-temp-file.o): Depend on config.h.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* memchr.c (memchr): Adjust condition to avoid infinite loop.
