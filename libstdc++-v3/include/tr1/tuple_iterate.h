@@ -128,7 +128,7 @@ template<typename _T1, typename _T2, typename _T3, typename _T4,
    struct tuple_element<_GLIBCXX_NUM_ARGS, tuple<_T1, _T2, _T3, _T4, 
                                                 _T5, _T6, _T7, _T8, _T9, 
                                                 _T10> >
-  { typedef _GLIBCXX_CAT(_T,_GLIBCXX_NUM_ARGS_PLUS_1) type; };
+  { typedef _GLIBCXX_T_NUM_ARGS_PLUS_1 type; };
 
 #endif
 #if _GLIBCXX_NUM_ARGS == 0

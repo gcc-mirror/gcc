@@ -70,6 +70,7 @@ for ($num_args = 2; $num_args <= $max; ++$num_args) {
   print "#define _GLIBCXX_REF_WRAP_PARAMS $ref_wrap_params\n";
   print "#define _GLIBCXX_REF_TEMPLATE_ARGS $ref_template_args\n";
   print "#define _GLIBCXX_NUM_ARGS_PLUS_1 $next_args\n";
+  print "#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T$next_args\n";
   if ($num_args == $max) {
     print "#define _GLIBCXX_LAST_INCLUDE\n"
   }
@@ -77,7 +78,7 @@ for ($num_args = 2; $num_args <= $max; ++$num_args) {
   if ($num_args == $max) {
     print "#undef _GLIBCXX_LAST_INCLUDE\n"
   }
-
+  print "#undef _GLIBCXX_T_NUM_ARGS_PLUS_1\n";
   print "#undef _GLIBCXX_NUM_ARGS_PLUS_1\n";
   print "#undef _GLIBCXX_REF_TEMPLATE_ARGS\n";
   print "#undef _GLIBCXX_REF_WRAP_PARAMS\n";
