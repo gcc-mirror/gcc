@@ -23,8 +23,8 @@ CXXFLAGS = -g
 CC = gcc
 CXX = gcc
 
-EXPECT = `if [ -f $${rootme}/../../expect/expect ] ; then \
-          echo $${rootme}/../../expect/expect ; \
+EXPECT = `if [ -f $${rootme}/../../../expect/expect ] ; then \
+          echo $${rootme}/../../../expect/expect ; \
           else echo expect ; fi`
 
 RUNTEST = $(RUNTEST_FOR_TARGET)
@@ -83,7 +83,7 @@ just-check: site.exp
 	rootme=`pwd`; export rootme; \
 	srcdir=${srcdir} ; export srcdir ; \
 	EXPECT=${EXPECT} ; export EXPECT ; \
-	if [ -f $${rootme}/../../expect/expect ] ; then  \
+	if [ -f $${rootme}/../../../expect/expect ] ; then  \
 	  TCL_LIBRARY=$${srcdir}/../../tcl/library ; \
 	  export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) $(RUNTESTFLAGS) 
