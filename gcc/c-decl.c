@@ -3056,36 +3056,6 @@ init_decl_processing ()
 			    g77_ulongint_type_node));
     }
 
-  builtin_function ("__builtin_aggregate_incoming_address",
-		    build_function_type (ptr_type_node, NULL_TREE),
-		    BUILT_IN_AGGREGATE_INCOMING_ADDRESS,
-		    BUILT_IN_NORMAL, NULL);
-
-  /* Hooks for the DWARF 2 __throw routine.  */
-  builtin_function ("__builtin_unwind_init",
-		    build_function_type (void_type_node, endlink),
-		    BUILT_IN_UNWIND_INIT, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_dwarf_cfa", ptr_ftype_void,
-		    BUILT_IN_DWARF_CFA, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_dwarf_fp_regnum",
-		    build_function_type (unsigned_type_node, endlink),
-		    BUILT_IN_DWARF_FP_REGNUM, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_init_dwarf_reg_size_table", void_ftype_ptr,
-		    BUILT_IN_INIT_DWARF_REG_SIZES, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_frob_return_addr", ptr_ftype_ptr,
-		    BUILT_IN_FROB_RETURN_ADDR, BUILT_IN_NORMAL, NULL);
-  builtin_function ("__builtin_extract_return_addr", ptr_ftype_ptr,
-		    BUILT_IN_EXTRACT_RETURN_ADDR, BUILT_IN_NORMAL, NULL);
-  builtin_function
-    ("__builtin_eh_return",
-     build_function_type (void_type_node,
-			  tree_cons (NULL_TREE,
-				     type_for_mode (ptr_mode, 0),
-				     tree_cons (NULL_TREE,
-						ptr_type_node,
-						endlink))),
-     BUILT_IN_EH_RETURN, BUILT_IN_NORMAL, NULL);
-
   pedantic_lvalues = pedantic;
 
   make_fname_decl = c_make_fname_decl;

@@ -343,5 +343,13 @@ do {								\
 #define TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER true
 #endif
 
+/* Define this macro if you have any machine-specific builtin
+   functions that need to be defined.  It should be a C expression
+   that performs the necessary setup. */
+
+#ifndef MD_INIT_BUILTINS
+#define MD_INIT_BUILTINS
+#endif
+
 #endif  /* GCC_DEFAULTS_H */
 

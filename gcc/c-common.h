@@ -148,11 +148,6 @@ enum c_tree_index
     CTI_C_BOOL_FALSE,
     CTI_DEFAULT_FUNCTION_TYPE,
 
-    CTI_VOID_FTYPE,
-    CTI_VOID_FTYPE_PTR,
-    CTI_INT_FTYPE_INT,
-    CTI_PTR_FTYPE_SIZETYPE,
-
     CTI_G77_INTEGER_TYPE,
     CTI_G77_UINTEGER_TYPE,
     CTI_G77_LONGINT_TYPE,
@@ -207,10 +202,6 @@ struct c_common_identifier
 #define const_string_type_node		c_global_trees[CTI_CONST_STRING_TYPE]
 
 #define default_function_type		c_global_trees[CTI_DEFAULT_FUNCTION_TYPE]
-#define void_ftype			c_global_trees[CTI_VOID_FTYPE]
-#define void_ftype_ptr			c_global_trees[CTI_VOID_FTYPE_PTR]
-#define int_ftype_int			c_global_trees[CTI_INT_FTYPE_INT]
-#define ptr_ftype_sizetype		c_global_trees[CTI_PTR_FTYPE_SIZETYPE]
 
 /* g77 integer types, which which must be kept in sync with f/com.h */
 #define g77_integer_type_node		c_global_trees[CTI_G77_INTEGER_TYPE]
