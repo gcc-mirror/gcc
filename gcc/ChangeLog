@@ -1,3 +1,10 @@
+Sat Oct 31 20:39:35 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* toplev.c (rest_of_compilation): No longer set reload_completed.
+	* reload1.c (reload): Set it here.  Perform instruction splitting
+	after reload has completed if we will be running the scheduler
+	again.
+
 Sat Oct 31 12:30:02 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (jump_optimize): Initialize mappings from INSN_UID to
