@@ -1,5 +1,5 @@
 /* MenuComponent.java -- Superclass of all AWT menu components
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.awt;
 
 import java.awt.peer.MenuComponentPeer;
+import java.io.Serializable;
 
 // FIXME: Java 1.0 event model unimplemented
 
@@ -47,7 +48,7 @@ import java.awt.peer.MenuComponentPeer;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public abstract class MenuComponent implements java.io.Serializable
+public abstract class MenuComponent implements Serializable
 {
 
 /*
@@ -55,7 +56,7 @@ public abstract class MenuComponent implements java.io.Serializable
  */
 
 // Serialization Constant
-private static final long serialVersionUID = -4536902356223894379L;
+private static final long serialVersionUID = -4269533416223798698L;
 
 /*************************************************************************/
 

@@ -1,5 +1,5 @@
 /* TextComponent.java -- Widgets for entering text
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,6 +42,7 @@ import java.awt.event.TextEvent;
 import java.awt.event.TextListener;
 import java.awt.peer.TextComponentPeer;
 import java.awt.peer.ComponentPeer;
+import java.io.Serializable;
 import java.util.EventListener;
 
 /**
@@ -50,7 +51,8 @@ import java.util.EventListener;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class TextComponent extends Component implements java.io.Serializable
+public class TextComponent extends Component
+  implements Serializable
 {
 
 /*

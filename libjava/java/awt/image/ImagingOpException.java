@@ -1,5 +1,5 @@
 /* ImagingOpException.java -- indicates an imaging filter failure
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,7 +52,7 @@ public class ImagingOpException extends RuntimeException
   /**
    * Compatible with JDK 1.0+.
    */
-  private static final long serialVersionUID = 96598996116164315L;
+  private static final long serialVersionUID = 8026288481846276658L;
 
   /**
    * Create a new instance with a descriptive error message.

@@ -1,5 +1,5 @@
 /* MenuItem.java -- An item in a menu
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,6 +41,7 @@ package java.awt;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.peer.MenuItemPeer;
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.EventListener;
 
@@ -49,7 +50,8 @@ import java.util.EventListener;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class MenuItem extends MenuComponent implements java.io.Serializable
+public class MenuItem extends MenuComponent
+  implements Serializable
 {
 
 // FIXME: The enabled event mask is not used at this time.
