@@ -1,5 +1,10 @@
 2003-07-02  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/basic_string.tcc (_M_replace_aux): Constify
+	__n1 and __off1.
+
+2003-07-02  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/stl_bvector.h: Fully qualify standard
 	functions with std::, thus avoiding Koenig lookup.
 	* include/bits/stl_construct.h: Likewise.
