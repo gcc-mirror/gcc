@@ -5407,11 +5407,11 @@ case 329:
     break;}
 case 330:
 #line 1494 "parse.y"
-{ yyval.ttype = finish_globally_qualified_member_call_expr (yyvsp[-3].ttype, yyvsp[-1].ttype); ;
+{ yyval.ttype = finish_qualified_call_expr (yyvsp[-3].ttype, yyvsp[-1].ttype); ;
     break;}
 case 331:
 #line 1496 "parse.y"
-{ yyval.ttype = finish_globally_qualified_member_call_expr (yyvsp[-1].ttype, NULL_TREE); ;
+{ yyval.ttype = finish_qualified_call_expr (yyvsp[-1].ttype, NULL_TREE); ;
     break;}
 case 332:
 #line 1498 "parse.y"
