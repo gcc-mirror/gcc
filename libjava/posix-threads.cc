@@ -1,6 +1,6 @@
 // posix-threads.cc - interface between libjava and POSIX threads.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -104,6 +104,16 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
   _Jv_Thread_t *current = _Jv_ThreadCurrentData ();
   java::lang::Thread *current_obj = _Jv_ThreadCurrent ();
 
+  pthread_mutex_lock (&current->wait_mutex);
+
+  // Now that we hold the wait mutex, check if this thread has been 
+  // interrupted already.
+  if (current_obj->interrupt_flag)
+    {
+      pthread_mutex_unlock (&current->wait_mutex);
+      return _JV_INTERRUPTED;
+    }
+
   // Add this thread to the cv's wait set.
   current->next = NULL;
 
@@ -118,16 +128,6 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
             break;
           }
       }
-
-  pthread_mutex_lock (&current->wait_mutex);
-  
-  // Now that we hold the wait mutex, check if this thread has been 
-  // interrupted already.
-  if (current_obj->interrupt_flag)
-    {
-      pthread_mutex_unlock (&current->wait_mutex);
-      return _JV_INTERRUPTED;
-    }
 
   // Record the current lock depth, so it can be restored when we re-aquire it.
   int count = mu->count;
@@ -154,7 +154,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
         done_sleeping = true;
     }
   
-  // Check for an interrupt *before* unlocking the wait mutex.
+  // Check for an interrupt *before* releasing the wait mutex.
   jboolean interrupted = current_obj->interrupt_flag;
   
   pthread_mutex_unlock (&current->wait_mutex);
