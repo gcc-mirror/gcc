@@ -1,3 +1,7 @@
+Sat Jan 17 22:25:53 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* choose-temp.c: Sync with gcc version.
+
 Thu Dec  4 17:25:19 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* strsignal.c (sys_nsig): Try NSIG and _NSIG.
