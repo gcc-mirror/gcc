@@ -1,3 +1,8 @@
+2002-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/5844
+	* gcc.dg/20020310-1.c: New test.
+
 2002-03-11  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.c-torture/execute/20020227-1.c: New test.

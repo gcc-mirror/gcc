@@ -103,6 +103,7 @@ Fri Mar  8 06:48:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-03-06  Richard Henderson  <rth@redhat.com>
 
+	PR optimization/5844
 	* genemit.c (gen_exp): New argument used.  Invoke copy_rtx
 	if used indicates we've already emitted one copy of an operand.
 	(gen_insn, gen_expand, output_add_clobbers): Supply a null used.
