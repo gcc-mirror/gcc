@@ -1,3 +1,33 @@
+2003-12-20  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* gnu/java/nio/SelectorImpl.java
+	(selectThreadMutex): New field.
+	(selectThread): New field.
+	(unhandledWakeup): New field.
+	(implCloseSelector): Added skeleton code which
+	synchronizes as per Sun JRE JavaDoc.
+	(keys): Throw ClosedSelectorException if selector
+	is closed.
+	(selectNow): Added comment that we're faking out
+	an immediate select with a one-microsecond-timeout one.
+	(select): Use 0 instead of -1 for infinite timeout.
+	(implSelect): Changed comment in declaration.
+	(select): Added synchronized to method declaration.
+	Added synchronization and wakeup support as per Sun
+	JRE JavaDoc.
+	(selectedKeys): Throw ClosedSelectorException if selector
+	is closed.
+	(wakeup): Implemented.
+	(deregisterCancelledKeys): Synchronize on cancelled key
+	set before deregistering.
+	(register): Synchronize on key set before registering.
+	* java/nio/channels/spi/AbstractSelector.java
+	Added import for java.nio.channels.ClosedSelectorException.
+	(close): Added synchronized to method declaration.
+	(cancelledKeys): Throw ClosedSelectorException if selector
+	is closed.
+	(cancelKey): Synchronize on cancelled key set before key.
+
 2003-12-20  Michael Koch  <konqueror@gmx.de>
 
 	* Makefile.am (ordinary_java_source_files):

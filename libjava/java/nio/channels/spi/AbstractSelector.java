@@ -39,6 +39,7 @@ exception statement from your version. */
 package java.nio.channels.spi;
 
 import java.io.IOException;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Set;
@@ -64,7 +65,7 @@ public abstract class AbstractSelector extends Selector
    * 
    * @exception IOException If an error occurs
    */
-  public final void close () throws IOException
+  public final synchronized void close () throws IOException
   {
     if (closed)
       return;
@@ -102,12 +103,18 @@ public abstract class AbstractSelector extends Selector
 
   protected final Set cancelledKeys()
   {
+    if (!isOpen())
+      throw new ClosedSelectorException();
+
     return cancelledKeys;
   }
 
   final void cancelKey (AbstractSelectionKey key)
   {
-    cancelledKeys.remove (key);
+    synchronized (cancelledKeys)
+      {
+        cancelledKeys.remove(key);
+      }
   }
 
   /**
