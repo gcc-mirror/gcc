@@ -1,3 +1,9 @@
+2003-04-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	* reorg.c (fill_slots_from_thread): When considering changing the
+	insn following a reg-to-reg copy insn to use the source reg of the
+	copy, bail out if there's overlap between the registers.
+
 2003-04-08  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* function.c (postponed_insns): New.

@@ -2813,11 +2813,13 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	 that would make the replacement into the insn invalid.  We also can't
 	 do this if it modifies our source, because it might be an earlyclobber
 	 operand.  This latter test also prevents updating the contents of
-	 a PRE_INC.  */
+	 a PRE_INC.  We also can't do this if there's overlap of source and
+	 destination.  Overlap may happen for larger-than-register-size modes.  */
 
       if (GET_CODE (trial) == INSN && GET_CODE (pat) == SET
 	  && GET_CODE (SET_SRC (pat)) == REG
-	  && GET_CODE (SET_DEST (pat)) == REG)
+	  && GET_CODE (SET_DEST (pat)) == REG
+	  && !reg_overlap_mentioned_p (SET_DEST (pat), SET_SRC (pat)))
 	{
 	  rtx next = next_nonnote_insn (trial);
 
