@@ -51,6 +51,10 @@ namespace __gnu_test
     }
   };
 
+  inline bool
+  operator==(const character& lhs, const character& rhs)
+  { return lhs.val == rhs.val; }
+
   // State type.
   struct conversion_state
   {

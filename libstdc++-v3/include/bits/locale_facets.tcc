@@ -182,11 +182,10 @@ namespace std
       if (__beg != __end)
 	{
 	  const char_type __c = *__beg;
-	  const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
-	  if ((__plus || __traits_type::eq(__c, __lit[_S_iminus]))
-	      && (!__lc->_M_use_grouping
-		  || !__traits_type::eq(__c, __lc->_M_thousands_sep))
-	      && !__traits_type::eq(__c, __lc->_M_decimal_point))
+	  const bool __plus = __c == __lit[_S_iplus];
+	  if ((__plus || __c == __lit[_S_iminus])
+	      && !(__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
+	      && !(__c == __lc->_M_decimal_point))
 	    {
 	      __xtrc += __plus ? '+' : '-';
 	      ++__beg;
@@ -197,11 +196,10 @@ namespace std
       while (__beg != __end)
 	{
 	  const char_type __c = *__beg;
-	  if (__lc->_M_use_grouping
-	      && __traits_type::eq(__c, __lc->_M_thousands_sep)
-	      || __traits_type::eq(__c, __lc->_M_decimal_point))
+	  if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
+	      || __c == __lc->_M_decimal_point)
 	    break;
-	  else if (__traits_type::eq(__c, __lit[_S_izero]))
+	  else if (__c == __lit[_S_izero])
 	    {
 	      if (!__found_mantissa)
 		{
@@ -228,8 +226,7 @@ namespace std
 	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
 	  // and decimal_point.
 	  const char_type __c = *__beg;
-          if (__lc->_M_use_grouping
-	      && __traits_type::eq(__c, __lc->_M_thousands_sep))
+          if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	    {
 	      if (!__found_dec && !__found_sci)
 		{
@@ -250,7 +247,7 @@ namespace std
 	      else
 		break;
             }
-	  else if (__traits_type::eq(__c, __lc->_M_decimal_point))
+	  else if (__c == __lc->_M_decimal_point)
 	    {
 	      if (!__found_dec && !__found_sci)
 		{
@@ -273,8 +270,7 @@ namespace std
 	      ++__sep_pos;
 	      ++__beg;
 	    }
-	  else if ((__traits_type::eq(__c, __lit[_S_ie])
-		    || __traits_type::eq(__c, __lit[_S_iE]))
+	  else if ((__c == __lit[_S_ie] || __c == __lit[_S_iE])
 		   && __found_mantissa && !__found_sci)
 	    {
 	      // Scientific notation.
@@ -286,12 +282,11 @@ namespace std
 	      // Remove optional plus or minus sign, if they exist.
 	      if (++__beg != __end)
 		{
-		  const bool __plus = __traits_type::eq(*__beg,
-							__lit[_S_iplus]);
-		  if ((__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
-		      && (!__lc->_M_use_grouping
-			  || !__traits_type::eq(*__beg, __lc->_M_thousands_sep))
-		      && !__traits_type::eq(*__beg, __lc->_M_decimal_point))
+		  const bool __plus = *__beg == __lit[_S_iplus];
+		  if ((__plus || *__beg == __lit[_S_iminus])
+		      && !(__lc->_M_use_grouping
+			   && *__beg == __lc->_M_thousands_sep)
+		      && !(*__beg == __lc->_M_decimal_point))
 		    {
 		      __xtrc += __plus ? '+' : '-';
 		      ++__beg;
@@ -351,11 +346,10 @@ namespace std
 	  {
 	    const char_type __c = *__beg;
 	    if (numeric_limits<_ValueT>::is_signed)
-	      __negative = __traits_type::eq(__c, __lit[_S_iminus]);
-	    if ((__negative || __traits_type::eq(__c, __lit[_S_iplus]))
-		&& (!__lc->_M_use_grouping
-		    || !__traits_type::eq(__c, __lc->_M_thousands_sep))
-		&& !__traits_type::eq(__c, __lc->_M_decimal_point))
+	      __negative = __c == __lit[_S_iminus];
+	    if ((__negative || __c == __lit[_S_iplus])
+		&& !(__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
+		&& !(__c == __lc->_M_decimal_point))
 	      ++__beg;
 	  }
 
@@ -364,20 +358,17 @@ namespace std
 	while (__beg != __end)
 	  {
 	    const char_type __c = *__beg;
-	    if (__lc->_M_use_grouping
-		&& __traits_type::eq(__c, __lc->_M_thousands_sep)
-		|| __traits_type::eq(__c, __lc->_M_decimal_point))
+	    if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
+		|| __c == __lc->_M_decimal_point)
 	      break;
-	    else if (__traits_type::eq(__c, __lit[_S_izero])
-		     && (!__found_num || __base == 10))
+	    else if (__c == __lit[_S_izero] && (!__found_num || __base == 10))
 	      {
 		__found_num = true;
 		++__beg;
 	      }
 	    else if (__found_num)
 	      {
-		if (__traits_type::eq(__c, __lit[_S_ix])
-		    || __traits_type::eq(__c, __lit[_S_iX]))
+		if (__c == __lit[_S_ix] || __c == __lit[_S_iX])
 		  {
 		    if (__basefield == 0)
 		      __base = 16;
@@ -416,8 +407,7 @@ namespace std
 		// According to 22.2.2.1.2, p8-9, first look for thousands_sep
 		// and decimal_point.
 		const char_type __c = *__beg;
-		if (__lc->_M_use_grouping
-		    && __traits_type::eq(__c, __lc->_M_thousands_sep))
+		if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		  {
 		    // NB: Thousands separator at the beginning of a string
 		    // is a no-no, as is two consecutive thousands separators.
@@ -432,7 +422,7 @@ namespace std
 			break;
 		      }
 		  }
-		else if (__traits_type::eq(__c, __lc->_M_decimal_point))
+		else if (__c == __lc->_M_decimal_point)
 		  break;
 		else if (__q = __traits_type::find(__lit_zero, __len, __c))
 		  {
@@ -462,8 +452,7 @@ namespace std
 	    for (; __beg != __end; ++__beg)
 	      {
 		const char_type __c = *__beg;
-		if (__lc->_M_use_grouping
-		    && __traits_type::eq(__c, __lc->_M_thousands_sep))
+		if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		  {
 		    if (__sep_pos)
 		      {
@@ -476,7 +465,7 @@ namespace std
 			break;
 		      }
 		  }
-		else if (__traits_type::eq(__c, __lc->_M_decimal_point))
+		else if (__c == __lc->_M_decimal_point)
 		  break;
 		else if (__q = __traits_type::find(__lit_zero, __len, __c))
 		  {
@@ -560,13 +549,13 @@ namespace std
             {
 	      if (__testf)
 		if (__n < __lc->_M_falsename_size)
-		  __testf = __traits_type::eq(*__beg, __lc->_M_falsename[__n]);
+		  __testf = *__beg == __lc->_M_falsename[__n];
 		else
 		  break;
 
 	      if (__testt)
 		if (__n < __lc->_M_truename_size)
-		  __testt = __traits_type::eq(*__beg, __lc->_M_truename[__n]);
+		  __testt = *__beg == __lc->_M_truename[__n];
 		else
 		  break;
 
@@ -2330,13 +2319,12 @@ namespace std
           const locale& __loc = __io._M_getloc();
 	  const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
-	  const bool __testsign = _Traits::eq(__ctype.widen('-'), __olds[0])
-	                          || _Traits::eq(__ctype.widen('+'), __olds[0]);
-	  const bool __testhex = (_Traits::eq(__ctype.widen('0'), __olds[0])
+	  const bool __testsign = (__ctype.widen('-') == __olds[0]
+				   || __ctype.widen('+') == __olds[0]);
+	  const bool __testhex = (__ctype.widen('0') == __olds[0]
 				  && __oldlen > 1
-				  && (_Traits::eq(__ctype.widen('x'), __olds[1])
-				      || _Traits::eq(__ctype.widen('X'),
-						     __olds[1])));
+				  && (__ctype.widen('x') == __olds[1]
+				      || __ctype.widen('X') == __olds[1]));
 	  if (__testhex)
 	    {
 	      __news[0] = __olds[0];
