@@ -75,9 +75,9 @@ extern void m88k_va_start PARAMS ((int, tree, rtx));
 struct m88k_lang_independent_options;
 #endif
 extern void output_file_start PARAMS ((FILE *,
-				       struct m88k_lang_independent_options *,
+				       const struct m88k_lang_independent_options *,
 				       int,
-				       struct m88k_lang_independent_options *,
+				       const struct m88k_lang_independent_options *,
 				       int));
 
 extern int null_prologue PARAMS ((void));

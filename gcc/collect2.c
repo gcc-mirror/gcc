@@ -572,11 +572,11 @@ is_ctor_dtor (s)
   struct names { const char *const name; const int len; const int ret;
     const int two_underscores; };
 
-  struct names *p;
+  const struct names *p;
   int ch;
   const char *orig_s = s;
 
-  static struct names special[] = {
+  static const struct names special[] = {
     { "GLOBAL__I_", sizeof ("GLOBAL__I_")-1, 1, 0 },
     { "GLOBAL__D_", sizeof ("GLOBAL__D_")-1, 2, 0 },
     { "GLOBAL__F_", sizeof ("GLOBAL__F_")-1, 5, 0 },

@@ -76,7 +76,7 @@ int pedantic = 0;
 #define OPT_VERSION   LONG_OPT (1)
 #define OPT_ENCODING  LONG_OPT (2)
 
-static struct option options[] =
+static const struct option options[] =
 {
   { "help",      no_argument,       NULL, OPT_HELP },
   { "version",   no_argument,       NULL, OPT_VERSION },

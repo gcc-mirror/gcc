@@ -280,7 +280,7 @@ enum dump_file_index
 	"       H JK   OPQ  TUV  YZ"
 */
 
-struct dump_file_info dump_file[DFI_MAX] =
+static struct dump_file_info dump_file[DFI_MAX] =
 {
   { "rtl",	'r', 0, 0, 0 },
   { "sibling",  'i', 0, 0, 0 },
@@ -940,10 +940,10 @@ debug_args[] =
 
 typedef struct
 {
-  const char *string;
-  int *variable;
-  int on_value;
-  const char *description;
+  const char *const string;
+  int *const variable;
+  const int on_value;
+  const char *const description;
 }
 lang_independent_options;
 
@@ -974,7 +974,7 @@ static const param_info lang_independent_params[] = {
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-lang_independent_options f_options[] =
+static const lang_independent_options f_options[] =
 {
   {"eliminate-dwarf2-dups", &flag_eliminate_dwarf2_dups, 1,
    N_("Perform DWARF2 duplicate elimination") },
@@ -1466,7 +1466,7 @@ int warn_missing_noreturn;
 
 /* Likewise for -W.  */
 
-lang_independent_options W_options[] =
+static const lang_independent_options W_options[] =
 {
   {"unused-function", &warn_unused_function, 1,
    N_("Warn when a function is unused") },
