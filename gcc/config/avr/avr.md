@@ -360,10 +360,11 @@
 
   if (GET_CODE (operands[2]) != CONST_INT)
     FAIL;
-  cnt8 = byte_immediate_operand (operands[1], GET_MODE (operands[1]));
+  cnt8 = byte_immediate_operand (operands[2], GET_MODE (operands[2]));
   mode = cnt8 ? QImode : HImode;
-  operands[1] = copy_to_mode_reg (mode,
-                                  gen_int_mode (INTVAL (operands[1]), mode));
+  operands[2] = copy_to_mode_reg (mode,
+                                  gen_int_mode (INTVAL (operands[2]), mode));
+  operands[4] = operands[2];
   addr0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
   addr1 = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
 

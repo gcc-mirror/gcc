@@ -1,3 +1,7 @@
+2002-09-10  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.md (movstrhi): Use right operands for conversion.
+
 2002-09-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR c/7873
