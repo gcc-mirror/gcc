@@ -1,3 +1,11 @@
+2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in: Remove obsolete rts-none, rts-cert, install-rts-none,
+	and install-rts-cert targets.  Remove all gnatlib and gnattools
+	targets and all other rts-* targets (moved to libada).  Remove (now)
+	unused Make variables CHMOD, CHMOD_AX_FLAGS, shext, THREAD_KIND,
+	TRACE, GNATLIBFLAGS, GNATLIBCFLAGS.
+
 2004-04-08  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* trans.c (tree_transform): Shortcut returning error_mark_node for
