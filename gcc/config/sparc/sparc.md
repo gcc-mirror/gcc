@@ -872,7 +872,7 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(lo_sum:DI (match_operand:DI 1 "register_operand" "r")
+	(lo_sum:DI (match_operand:DI 1 "register_operand" "0")
 		   (match_operand:DI 2 "immediate_operand" "in")))]
   ""
   "*
