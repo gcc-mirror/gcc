@@ -5707,7 +5707,10 @@ output_init_element (value, type, field, pending)
     constructor_erroneous = 1;
   else if (!TREE_CONSTANT (value))
     constructor_constant = 0;
-  else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0)
+  else if (initializer_constant_valid_p (value, TREE_TYPE (value)) == 0
+	   || ((TREE_CODE (constructor_type) == RECORD_TYPE
+		|| TREE_CODE (constructor_type) == UNION_TYPE)
+	       && DECL_BIT_FIELD (field) && TREE_CODE (value) != INTEGER_CST))
     constructor_simple = 0;
 
   if (require_constant_value && ! TREE_CONSTANT (value))
