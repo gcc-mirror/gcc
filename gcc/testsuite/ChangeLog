@@ -1,3 +1,7 @@
+2003-12-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.old-deja/g++.pt/static11.C: Correct XFAIL syntax.
+
 2003-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/12774
