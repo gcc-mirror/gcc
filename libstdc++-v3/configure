@@ -30148,6 +30148,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 #include <unistd.h>
        #include <stdio.h>
+       #include <sys/stat.h>
 
 int
 main ()
@@ -30157,6 +30158,8 @@ FILE* fp;
        fseeko64(fp, 0, SEEK_CUR);
        ftello64(fp);
        lseek64(1, 0, SEEK_CUR);
+       struct stat64 buf;
+       fstat64(1, &buf);
   ;
   return 0;
 }

@@ -68,7 +68,7 @@
 # endif
 #endif
 
-#include <limits> // For <off_t>::max() and min()
+#include <limits> // For <off_t>::max() and min() and <streamsize>::max()
 
 namespace __gnu_internal
 {
@@ -315,8 +315,8 @@ namespace std
 #ifdef _GLIBCXX_USE_LFS
     return lseek64(this->fd(), __off, __way);
 #else
-    if (__off > std::numeric_limits<off_t>::max()
-	|| __off < std::numeric_limits<off_t>::min())
+    if (__off > numeric_limits<off_t>::max()
+	|| __off < numeric_limits<off_t>::min())
       return -1L;
     return lseek(this->fd(), __off, __way);
 #endif
@@ -352,10 +352,21 @@ namespace std
 
 #if defined(_GLIBCXX_HAVE_S_ISREG) || defined(_GLIBCXX_HAVE_S_IFREG)
     // Regular files.
+#ifdef _GLIBCXX_USE_LFS
+    struct stat64 __buffer;
+    const int __err = fstat64(this->fd(), &__buffer);
+    if (!__err && _GLIBCXX_ISREG(__buffer.st_mode))
+      {
+	const streamoff __off = __buffer.st_size - lseek64(this->fd(), 0,
+							   ios_base::cur);
+	return std::min(__off, streamoff(numeric_limits<streamsize>::max()));
+      }
+#else
     struct stat __buffer;
-    int __ret = fstat(this->fd(), &__buffer);
-    if (!__ret && _GLIBCXX_ISREG(__buffer.st_mode))
-	return __buffer.st_size - lseek(this->fd(), 0, ios_base::cur);
+    const int __err = fstat(this->fd(), &__buffer);
+    if (!__err && _GLIBCXX_ISREG(__buffer.st_mode))
+      return __buffer.st_size - lseek(this->fd(), 0, ios_base::cur);
+#endif
 #endif
     return 0;
   }

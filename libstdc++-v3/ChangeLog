@@ -1,3 +1,12 @@
+2004-09-21  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/12882 (cont)
+	* acinclude.m4 (GLIBCXX_CHECK_LFS): Check for fstat64 too.
+	* configure: Regenerate.
+	* config/io/basic_file_stdio.cc (__basic_file<>::showmanyc): When
+	_GLIBCXX_USE_LFS use fstat64 and lseek64, thus providing a non
+	trivial showmanyc for large files too.
+
 2004-09-17  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* include/bits/stl_algo.h (remove): Remove too restrictive
