@@ -832,6 +832,11 @@ struct tree_type
    because this decl is unused.  */
 #define DECL_IN_SYSTEM_HEADER(NODE) ((NODE)->decl.in_system_header_flag)
 
+/* Nonzero for a given ..._DECL node means that this node should be
+   put in .common, if possible.  If a DECL_INITIAL is given, and it
+   is not error_mark_node, then the decl cannot be put in .common.  */
+#define DECL_COMMON(NODE) ((NODE)->decl.common_flag)
+
 /* Language-specific decl information.  */
 #define DECL_LANG_SPECIFIC(NODE) ((NODE)->decl.lang_specific)
 
@@ -914,7 +919,8 @@ struct tree_decl
   unsigned abstract_flag : 1;
 
   unsigned in_system_header_flag : 1;
-  /* room for seven more */
+  unsigned common_flag : 1;
+  /* room for six more */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
