@@ -1,0 +1,3 @@
+# AIX 4.3 and above requires -X32_64 flag to all ar commands
+# to allow archives to contain both 32-bit and 64-bit objects.
+AR_FOR_TARGET=ar -X32_64
