@@ -1,3 +1,8 @@
+Thu Oct 25 12:21:58 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* doc/md.texi (movMM): Clarify semantics of storing into a 
+	non-paradoxical SUBREG.
+
 2001-10-25  Zack Weinberg  <zack@codesourcery.com>
 
 	* langhooks.c (lang_hook_default_clear_binding_stack): New.
