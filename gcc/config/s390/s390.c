@@ -60,6 +60,7 @@ static void s390_select_rtx_section (enum machine_mode, rtx,
 static void s390_encode_section_info (tree, rtx, int);
 static bool s390_cannot_force_const_mem (rtx);
 static rtx s390_delegitimize_address (rtx);
+static bool s390_return_in_memory (tree, tree);
 static void s390_init_builtins (void);
 static rtx s390_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
 static void s390_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -106,6 +107,9 @@ static tree s390_build_builtin_va_list (void);
 
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS s390_delegitimize_address
+
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY s390_return_in_memory
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS s390_init_builtins
@@ -6009,6 +6013,10 @@ s390_function_arg_size (enum machine_mode mode, tree type)
 static bool
 s390_function_arg_float (enum machine_mode mode, tree type)
 {
+  int size = s390_function_arg_size (mode, type);
+  if (size > 8)
+    return false;
+
   /* Soft-float changes the ABI: no floating-point registers are used.  */
   if (TARGET_SOFT_FLOAT)
     return false;
@@ -6043,6 +6051,39 @@ s390_function_arg_float (enum machine_mode mode, tree type)
   return TREE_CODE (type) == REAL_TYPE;
 }
 
+/* Return true if a function argument of type TYPE and mode MODE
+   is to be passed in an integer register, or a pair of integer
+   registers, if available.  */
+
+static bool
+s390_function_arg_integer (enum machine_mode mode, tree type)
+{
+  int size = s390_function_arg_size (mode, type);
+  if (size > 8)
+    return false;
+
+  /* No type info available for some library calls ...  */
+  if (!type)
+    return GET_MODE_CLASS (mode) == MODE_INT
+	   || (TARGET_SOFT_FLOAT &&  GET_MODE_CLASS (mode) == MODE_FLOAT);
+
+  /* We accept small integral (and similar) types.  */
+  if (INTEGRAL_TYPE_P (type)
+      || POINTER_TYPE_P (type) 
+      || TREE_CODE (type) == OFFSET_TYPE
+      || (TARGET_SOFT_FLOAT && TREE_CODE (type) == REAL_TYPE))
+    return true;
+
+  /* We also accept structs of size 1, 2, 4, 8 that are not
+     passed in floating-point registers.  */  
+  if (AGGREGATE_TYPE_P (type)
+      && exact_log2 (size) >= 0
+      && !s390_function_arg_float (mode, type))
+    return true;
+
+  return false;
+}
+
 /* Return 1 if a function argument of type TYPE and mode MODE
    is to be passed by reference.  The ABI specifies that only
    structures of size 1, 2, 4, or 8 bytes are passed by value,
@@ -6053,15 +6094,16 @@ int
 s390_function_arg_pass_by_reference (enum machine_mode mode, tree type)
 {
   int size = s390_function_arg_size (mode, type);
+  if (size > 8)
+    return true;
 
   if (type)
     {
-      if (AGGREGATE_TYPE_P (type) &&
-          size != 1 && size != 2 && size != 4 && size != 8
-	  && !s390_function_arg_float (mode, type))
+      if (AGGREGATE_TYPE_P (type) && exact_log2 (size) < 0)
         return 1;
 
-      if (TREE_CODE (type) == COMPLEX_TYPE)
+      if (TREE_CODE (type) == COMPLEX_TYPE
+	  || TREE_CODE (type) == VECTOR_TYPE)
         return 1;
     }
 
@@ -6086,11 +6128,13 @@ s390_function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode,
     {
       cum->fprs += 1;
     }
-  else
+  else if (s390_function_arg_integer (mode, type))
     {
       int size = s390_function_arg_size (mode, type);
       cum->gprs += ((size + UNITS_PER_WORD-1) / UNITS_PER_WORD);
     }
+  else
+    abort ();
 }
 
 /* Define where to put the arguments to a function.
@@ -6126,7 +6170,7 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       else
 	return gen_rtx (REG, mode, cum->fprs + 16);
     }
-  else
+  else if (s390_function_arg_integer (mode, type))
     {
       int size = s390_function_arg_size (mode, type);
       int n_gprs = (size + UNITS_PER_WORD-1) / UNITS_PER_WORD;
@@ -6136,6 +6180,68 @@ s390_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       else
 	return gen_rtx (REG, mode, cum->gprs + 2);
     }
+
+  /* After the real arguments, expand_call calls us once again
+     with a void_type_node type.  Whatever we return here is
+     passed as operand 2 to the call expanders.
+
+     We don't need this feature ...  */
+  else if (type == void_type_node)
+    return const0_rtx;
+
+  abort ();
+}
+
+/* Return true if return values of type TYPE should be returned
+   in a memory buffer whose address is passed by the caller as
+   hidden first argument.  */
+
+static bool
+s390_return_in_memory (tree type, tree fundecl ATTRIBUTE_UNUSED)
+{
+  /* We accept small integral (and similar) types.  */
+  if (INTEGRAL_TYPE_P (type)
+      || POINTER_TYPE_P (type) 
+      || TREE_CODE (type) == OFFSET_TYPE
+      || TREE_CODE (type) == REAL_TYPE)
+    return int_size_in_bytes (type) > 8;
+
+  /* Aggregates and similar constructs are always returned
+     in memory.  */
+  if (AGGREGATE_TYPE_P (type)
+      || TREE_CODE (type) == COMPLEX_TYPE
+      || TREE_CODE (type) == VECTOR_TYPE)
+    return true;
+
+  /* ??? We get called on all sorts of random stuff from
+     aggregate_value_p.  We can't abort, but it's not clear
+     what's safe to return.  Pretend it's a struct I guess.  */
+  return true;
+}
+
+/* Define where to return a (scalar) value of type TYPE.
+   If TYPE is null, define where to return a (scalar)
+   value of mode MODE from a libcall.  */
+
+rtx
+s390_function_value (tree type, enum machine_mode mode)
+{
+  if (type)
+    {
+      int unsignedp = TREE_UNSIGNED (type);
+      mode = promote_mode (type, TYPE_MODE (type), &unsignedp, 1);
+    }
+
+  if (GET_MODE_CLASS (mode) != MODE_INT 
+      && GET_MODE_CLASS (mode) != MODE_FLOAT)
+    abort ();
+  if (GET_MODE_SIZE (mode) > 8)
+    abort ();
+
+  if (TARGET_HARD_FLOAT && GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return gen_rtx_REG (mode, 16);
+  else
+    return gen_rtx_REG (mode, 2);
 }
 
 
