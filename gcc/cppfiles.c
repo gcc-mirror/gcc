@@ -558,8 +558,6 @@ stack_file (cpp_reader *pfile, _cpp_file *file, bool import)
 
   /* Generate the call back.  */
   fname = file->name;
-  if (*fname == '\0')
-    fname = "<stdin>";
   _cpp_do_file_change (pfile, LC_ENTER, fname, 1, sysp);
 
   return true;
