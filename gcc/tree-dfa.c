@@ -891,12 +891,11 @@ add_referenced_var (tree var, struct walk_state *walk_state)
       if (is_global_var (var))
 	mark_call_clobbered (var);
 
-      /* If an initialized global variable then register the initializer
-	 as well.  */
-      if (POINTER_TYPE_P (TREE_TYPE (var))
-	  && TREE_READONLY (var)
-	  && DECL_INITIAL (var)
-	  && TREE_CODE (DECL_INITIAL (var)) == ADDR_EXPR)
+      /* Scan DECL_INITIAL for pointer variables as they may contain
+	 address arithmetic referencing the address of other
+	 variables.  */
+      if (DECL_INITIAL (var)
+	  && POINTER_TYPE_P (TREE_TYPE (var)))
       	walk_tree (&DECL_INITIAL (var), find_vars_r, walk_state, 0);
     }
 }
