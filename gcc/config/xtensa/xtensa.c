@@ -2447,6 +2447,25 @@ xtensa_va_arg (tree valist, tree type)
   rtx array, orig_ndx, r, addr, size, va_size;
   rtx lab_false, lab_over, lab_false2;
 
+  /* Handle complex values as separate real and imaginary parts.  */
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      rtx real_part, imag_part, concat_val, local_copy;
+
+      real_part = xtensa_va_arg (valist, TREE_TYPE (type));
+      imag_part = xtensa_va_arg (valist, TREE_TYPE (type));
+
+      /* Make a copy of the value in case the parts are not contiguous.  */
+      real_part = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (type)), real_part);
+      imag_part = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (type)), imag_part);
+      concat_val = gen_rtx_CONCAT (TYPE_MODE (type), real_part, imag_part);
+
+      local_copy = assign_temp (type, 0, 1, 0);
+      emit_move_insn (local_copy, concat_val);
+
+      return XEXP (local_copy, 0);
+    }
+
   f_stk = TYPE_FIELDS (va_list_type_node);
   f_reg = TREE_CHAIN (f_stk);
   f_ndx = TREE_CHAIN (f_reg);
