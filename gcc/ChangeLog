@@ -1,3 +1,9 @@
+2003-05-19  Seth Arnold  <sarnold@wirex.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (rs6000_stack_info): Do not add
+        vrsave_size twice.
+
 2003-05-19  Aldy Hernandez  <aldyh@redhat.com>
 
         * doc/tm.texi (function_arg): Fix typo.
