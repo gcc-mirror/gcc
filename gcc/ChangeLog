@@ -4,6 +4,9 @@ Wed Apr 14 19:57:49 1999  Jeffrey A Law  (law@cygnus.com)
 	target_cpu_default.
 	* configure: Rebuilt.
 
+	* explow.c (allocate_dynamic_stack_space): Undo last change.  Use
+	convert_memory_address instead.
+
 Wed Apr 14 19:42:02 1999  Donn Terry (donn@interix.com)
 
 	* alpha/lib1funcs.asm: New file.
