@@ -6221,7 +6221,18 @@ express_from (g1, g2)
   if (add == const0_rtx)
     return mult;
   else
-    return gen_rtx_PLUS (g2->mode, mult, add);
+    {
+      if (GET_CODE (add) == PLUS
+	  && CONSTANT_P (XEXP (add, 1)))
+	{
+	  rtx tem = XEXP (add, 1);
+	  mult = gen_rtx_PLUS (g2->mode, mult, XEXP (add, 0));
+	  add = tem;
+	}
+      
+      return gen_rtx_PLUS (g2->mode, mult, add);
+    }
+  
 }
 
 /* Return an rtx, if any, that expresses giv G2 as a function of the register

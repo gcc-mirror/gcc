@@ -1,3 +1,8 @@
+Thu Oct 22 16:46:35 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* loop.c (express_from): Make sure that when generating a PLUS of
+	a PLUS, any constant expression appears on the outermost PLUS.
+
 Thu Oct 22 15:46:23 1998  Per Bothner (bothner@cygnus.com)
 
 	* Makefile.in (distdir-cvs, distdir-start):  Clean up so it
