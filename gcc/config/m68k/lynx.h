@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running LynxOS.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -45,3 +45,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16
+
+/* Lynx uses d2 and d3 as scratch registers. */
+#undef CALL_USED_REGISTERS
+#define CALL_USED_REGISTERS \
+ {1, 1, 1, 1, 0, 0, 0, 0,   \
+  1, 1, 0, 0, 0, 0, 0, 1,   \
+  1, 1, 0, 0, 0, 0, 0, 0 }
