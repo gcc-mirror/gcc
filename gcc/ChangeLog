@@ -1,3 +1,9 @@
+2001-09-07  Jim Wilson  <wilson@redhat.com>
+
+	* alias.c (clear_reg_alias_info): New.
+	* flow.c (attempt_auto_inc): Call clear_reg_alias_info.
+	* rtl.h (clear_reg_alias_info): Declare.
+
 2001-09-07  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* real.c (EMUSHORT,EMUSHORT_SIZE): Use HImode if no 16-bit type is
