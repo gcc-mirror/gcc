@@ -988,12 +988,12 @@ cpp_get_token (pfile, token)
    defined in a system header.  Just checks the macro at the top of
    the stack.  Used for diagnostic suppression.  */
 int
-cpp_sys_objmacro_p (pfile)
+cpp_sys_macro_p (pfile)
      cpp_reader *pfile;
 {
   cpp_macro *macro = pfile->context->macro;
 
-  return macro && ! macro->fun_like && macro->syshdr;
+  return macro && macro->syshdr;
 }
 
 /* Read each token in, until EOF.  Directives are transparently

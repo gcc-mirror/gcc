@@ -205,7 +205,7 @@ parse_number (pfile, tok)
 
       if (CPP_WTRADITIONAL (pfile)
 	  && sufftab[i].u
-	  && ! cpp_sys_objmacro_p (pfile))
+	  && ! cpp_sys_macro_p (pfile))
 	cpp_warning (pfile, "traditional C rejects the `U' suffix");
       if (sufftab[i].l == 2 && CPP_OPTION (pfile, pedantic)
 	  && ! CPP_OPTION (pfile, c99))
