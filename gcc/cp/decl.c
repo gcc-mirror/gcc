@@ -5174,6 +5174,9 @@ init_decl_processing ()
 
   boolean_type_node = make_unsigned_type (BOOL_TYPE_SIZE);
   TREE_SET_CODE (boolean_type_node, BOOLEAN_TYPE);
+  TYPE_MAX_VALUE (boolean_type_node) = build_int_2 (1, 0);
+  TREE_TYPE (TYPE_MAX_VALUE (boolean_type_node)) = boolean_type_node;
+  TYPE_PRECISION (boolean_type_node) = 1;
   record_builtin_type (RID_BOOL, "bool", boolean_type_node);
   boolean_false_node = build_int_2 (0, 0);
   TREE_TYPE (boolean_false_node) = boolean_type_node;
