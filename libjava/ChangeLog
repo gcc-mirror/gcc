@@ -1,3 +1,8 @@
+2003-03-01  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* posix-threads.cc: Include <unistd.h> if HAVE_UNISTD_H is defined.
+	(_Jv_ThreadSetPriority): Test for _POSIX_THREAD_PRIORITY_SCHEDULING.
+
 2003-03-01  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* java/io/File.java (normalizePath): Remove trailing separator
