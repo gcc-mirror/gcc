@@ -34,6 +34,10 @@
 # Suppress smart makes who think they know how to automake Yacc files
 .y.c:
 
+# It defines the c++ interface name. It should be changed when the
+# c++ interface is changed.
+INTERFACE = 1
+
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
