@@ -1,3 +1,7 @@
+2000-06-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.old-deja/g++.other/inline12.C: New test.
+
 2000-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.old-deja/g++.other/eh1.C: New test.
