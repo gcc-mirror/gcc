@@ -3557,7 +3557,7 @@ check_for_full_enumeration_handling (type)
   int all_values = 1;
 
   /* The time complexity of this loop is currently O(N * M), with
-     N being the number of enumerals in the enumerated type, and
+     N being the number of members in the enumerated type, and
      M being the number of case expressions in the switch. */
 
   for (chain = TYPE_VALUES (type);
@@ -3566,7 +3566,7 @@ check_for_full_enumeration_handling (type)
     {
       /* Find a match between enumeral and case expression, if possible.
 	 Quit looking when we've gone too far (since case expressions
-	 are kept sorted in ascending order).  Warn about enumerals not
+	 are kept sorted in ascending order).  Warn about enumerators not
 	 handled in the switch statement case expression list. */
 
       for (n = case_stack->data.case_stmt.case_list;
@@ -3584,7 +3584,7 @@ check_for_full_enumeration_handling (type)
     }
 
   /* Now we go the other way around; we warn if there are case
-     expressions that don't correspond to enumerals.  This can
+     expressions that don't correspond to enumerators.  This can
      occur since C and C++ don't enforce type-checking of
      assignments to enumeration variables. */
 
