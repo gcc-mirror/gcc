@@ -2017,6 +2017,10 @@ javax/print/attribute/HashPrintServiceAttributeSet.java	\
 javax/print/attribute/Attribute.java \
 javax/print/attribute/DocAttributeSet.java \
 javax/print/attribute/PrintRequestAttributeSet.java \
+javax/print/attribute/standard/Chromaticity.java \
+javax/print/attribute/standard/Destination.java \
+javax/print/attribute/standard/MediaPrintableArea.java \
+javax/print/attribute/standard/MediaSize.java \
 javax/print/attribute/standard/NumberOfInterveningJobs.java \
 javax/print/attribute/standard/PrinterMakeAndModel.java	\
 javax/print/attribute/standard/PrinterStateReason.java \

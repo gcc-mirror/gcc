@@ -2016,6 +2016,10 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	javax/print/attribute/Attribute.java \
 	javax/print/attribute/DocAttributeSet.java \
 	javax/print/attribute/PrintRequestAttributeSet.java \
+	javax/print/attribute/standard/Chromaticity.java \
+	javax/print/attribute/standard/Destination.java \
+	javax/print/attribute/standard/MediaPrintableArea.java \
+	javax/print/attribute/standard/MediaSize.java \
 	javax/print/attribute/standard/NumberOfInterveningJobs.java \
 	javax/print/attribute/standard/PrinterMakeAndModel.java \
 	javax/print/attribute/standard/PrinterStateReason.java \
@@ -3518,6 +3522,10 @@ am__objects_13 = javax/imageio/ImageWriteParam.lo \
 	javax/print/attribute/Attribute.lo \
 	javax/print/attribute/DocAttributeSet.lo \
 	javax/print/attribute/PrintRequestAttributeSet.lo \
+	javax/print/attribute/standard/Chromaticity.lo \
+	javax/print/attribute/standard/Destination.lo \
+	javax/print/attribute/standard/MediaPrintableArea.lo \
+	javax/print/attribute/standard/MediaSize.lo \
 	javax/print/attribute/standard/NumberOfInterveningJobs.lo \
 	javax/print/attribute/standard/PrinterMakeAndModel.lo \
 	javax/print/attribute/standard/PrinterStateReason.lo \
@@ -6294,6 +6302,10 @@ javax/print/attribute/HashPrintServiceAttributeSet.java	\
 javax/print/attribute/Attribute.java \
 javax/print/attribute/DocAttributeSet.java \
 javax/print/attribute/PrintRequestAttributeSet.java \
+javax/print/attribute/standard/Chromaticity.java \
+javax/print/attribute/standard/Destination.java \
+javax/print/attribute/standard/MediaPrintableArea.java \
+javax/print/attribute/standard/MediaSize.java \
 javax/print/attribute/standard/NumberOfInterveningJobs.java \
 javax/print/attribute/standard/PrinterMakeAndModel.java	\
 javax/print/attribute/standard/PrinterStateReason.java \
@@ -14069,6 +14081,18 @@ javax/print/attribute/standard/$(am__dirstamp):
 javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) javax/print/attribute/standard/$(DEPDIR)
 	@: > javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/Chromaticity.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/Destination.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/MediaPrintableArea.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
+javax/print/attribute/standard/MediaSize.lo:  \
+	javax/print/attribute/standard/$(am__dirstamp) \
+	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
 javax/print/attribute/standard/NumberOfInterveningJobs.lo:  \
 	javax/print/attribute/standard/$(am__dirstamp) \
 	javax/print/attribute/standard/$(DEPDIR)/$(am__dirstamp)
@@ -20163,6 +20187,8 @@ mostlyclean-compile:
 	-rm -f javax/print/attribute/URISyntax.lo
 	-rm -f javax/print/attribute/UnmodifiableSetException.$(OBJEXT)
 	-rm -f javax/print/attribute/UnmodifiableSetException.lo
+	-rm -f javax/print/attribute/standard/Chromaticity.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/Chromaticity.lo
 	-rm -f javax/print/attribute/standard/ColorSupported.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/ColorSupported.lo
 	-rm -f javax/print/attribute/standard/Compression.$(OBJEXT)
@@ -20177,6 +20203,8 @@ mostlyclean-compile:
 	-rm -f javax/print/attribute/standard/DateTimeAtCreation.lo
 	-rm -f javax/print/attribute/standard/DateTimeAtProcessing.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/DateTimeAtProcessing.lo
+	-rm -f javax/print/attribute/standard/Destination.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/Destination.lo
 	-rm -f javax/print/attribute/standard/DocumentName.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/DocumentName.lo
 	-rm -f javax/print/attribute/standard/Fidelity.$(OBJEXT)
@@ -20223,6 +20251,10 @@ mostlyclean-compile:
 	-rm -f javax/print/attribute/standard/JobStateReasons.lo
 	-rm -f javax/print/attribute/standard/Media.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/Media.lo
+	-rm -f javax/print/attribute/standard/MediaPrintableArea.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/MediaPrintableArea.lo
+	-rm -f javax/print/attribute/standard/MediaSize.$(OBJEXT)
+	-rm -f javax/print/attribute/standard/MediaSize.lo
 	-rm -f javax/print/attribute/standard/MediaSizeName.$(OBJEXT)
 	-rm -f javax/print/attribute/standard/MediaSizeName.lo
 	-rm -f javax/print/attribute/standard/MultipleDocumentHandling.$(OBJEXT)
@@ -23573,6 +23605,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/$(DEPDIR)/TextSyntax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/$(DEPDIR)/URISyntax.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/$(DEPDIR)/UnmodifiableSetException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Chromaticity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/ColorSupported.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Compression.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Copies.Plo@am__quote@
@@ -23580,6 +23613,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DateTimeAtCompleted.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DateTimeAtCreation.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DateTimeAtProcessing.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Destination.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/DocumentName.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Fidelity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Finishings.Plo@am__quote@
@@ -23603,6 +23637,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobStateReason.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/JobStateReasons.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/Media.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/MediaPrintableArea.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/MediaSize.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/MediaSizeName.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/MultipleDocumentHandling.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/print/attribute/standard/$(DEPDIR)/NumberOfDocuments.Plo@am__quote@
