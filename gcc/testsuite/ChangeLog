@@ -1,4 +1,10 @@
- 2004-06-30  David Billinghurst (David.Billinghurst@riotinto.com)
+2004-06-30  Tobias Schlueter  <tobias.shclueter@physik.uni-muenchen.de>
+
+	PR fortran/16161
+	* gfortran.fortran-torture/compile/implicit.f90: Add test
+	for implicit character.
+
+2004-06-30  David Billinghurst (David.Billinghurst@riotinto.com)
 
  	PR fortran/16289
  	* gfortran.fortran-torture/execute/intrinsic_nearest.f90
