@@ -300,6 +300,24 @@ type_stack_dup (size, offset)
     }
 }
 
+/* This keeps track of a start PC and corresponding initial index.  */
+struct pc_index
+{
+  int start_pc;
+  int index;
+};
+
+/* A helper that is used when sorting exception ranges.  */
+static int
+start_pc_cmp (xp, yp)
+     const GENERIC_PTR xp;
+     const GENERIC_PTR yp;
+{
+  struct pc_index *x = (struct pc_index *) xp;
+  struct pc_index *y = (struct pc_index *) yp;
+  return x->start_pc - y->start_pc;
+}
+
 /* This causes the next iteration to ignore the next instruction
    and look for some other unhandled instruction. */
 #define INVALIDATE_PC (prevpc = -1, oldpc = PC, PC = INVALID_PC)
@@ -341,6 +359,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
   struct eh_range *prev_eh_ranges = NULL_EH_RANGE;
   struct eh_range *eh_ranges;
   tree return_type = TREE_TYPE (TREE_TYPE (current_function_decl));
+  struct pc_index *starts;
+  int eh_count;
 
   jint int_value = -1;
 
@@ -349,17 +369,28 @@ verify_jvm_instructions (jcf, byte_ops, length)
   /* Handle the exception table. */
   method_init_exceptions ();
   JCF_SEEK (jcf, DECL_CODE_OFFSET (current_function_decl) + length);
-  i = JCF_readu2 (jcf);
+  eh_count = JCF_readu2 (jcf);
 
-  /* We read the exception backwards. */
-  p = jcf->read_ptr + 8 * i;
-  while (--i >= 0)
+  /* We read the exception handlers in order of increasing start PC.
+     To do this we first read and sort the start PCs.  */
+  starts = (struct pc_index *) xmalloc (eh_count * sizeof (struct pc_index));
+  for (i = 0; i < eh_count; ++i)
     {
-      int start_pc = GET_u2 (p-8);
-      int end_pc = GET_u2 (p-6);
-      int handler_pc = GET_u2 (p-4);
-      int catch_type = GET_u2 (p-2);
-      p -= 8;
+      starts[i].start_pc = GET_u2 (jcf->read_ptr + 8 * i);
+      starts[i].index = i;
+    }
+  qsort (starts, eh_count, sizeof (struct pc_index), start_pc_cmp);
+
+  for (i = 0; i < eh_count; ++i)
+    {
+      int start_pc, end_pc, handler_pc, catch_type;
+
+      p = jcf->read_ptr + 8 * starts[i].index;
+
+      start_pc = GET_u2 (p);
+      end_pc = GET_u2 (p+2);
+      handler_pc = GET_u2 (p+4);
+      catch_type = GET_u2 (p+6);
 
       if (start_pc < 0 || start_pc >= length
 	  || end_pc < 0 || end_pc > length || start_pc >= end_pc
@@ -370,20 +401,20 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  || ! (instruction_bits [handler_pc] & BCODE_INSTRUCTION_START))
 	{
 	  error ("bad pc in exception_table");
+	  free (starts);
 	  return 0;
 	}
 
-      if (! add_handler (start_pc, end_pc,
-			 lookup_label (handler_pc),
-			 catch_type == 0 ? NULL_TREE
-			 : get_class_constant (jcf, catch_type)))
-	{
-	  error ("overlapping exception ranges are not supported");
-	  return 0;
-	}
+      add_handler (start_pc, end_pc,
+		   lookup_label (handler_pc),
+		   catch_type == 0 ? NULL_TREE
+		   : get_class_constant (jcf, catch_type));
 
       instruction_bits [handler_pc] |= BCODE_EXCEPTION_TARGET;
     }
+
+  free (starts);
+  handle_nested_ranges ();
 
   for (PC = 0;;)
     {

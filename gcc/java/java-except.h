@@ -47,11 +47,6 @@ struct eh_range
 
     /* The next child of outer, in address order. */
     struct eh_range *next_sibling;
-
-#if 0
-    /* Next handler, sorted by ascending start_pc then descending end_pc. */
-    tree next;
-#endif
   };
 
 /* A dummy range that represents the entire method. */
@@ -69,6 +64,8 @@ extern void maybe_start_try PROTO ((int));
 
 extern void maybe_end_try PROTO ((int));
 
-extern int add_handler PROTO ((int, int, tree, tree));
+extern void add_handler PROTO ((int, int, tree, tree));
+
+extern void handle_nested_ranges PROTO ((void));
 
 extern void expand_resume_after_catch PROTO ((void));
