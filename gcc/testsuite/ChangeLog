@@ -1,3 +1,7 @@
+2002-03-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/weak-1.c: Fix scan tests.
+
 2002-03-15  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* gcc.dg/20020312-2.c [__MMIX__]: No pic register.
