@@ -65,7 +65,6 @@ typedef unsigned char U_CHAR;
 #include <signal.h>
 
 #ifndef VMS
-#include <sys/file.h>
 #ifndef USG
 #include <sys/time.h>		/* for __DATE__ and __TIME__ */
 #include <sys/resource.h>
@@ -886,6 +885,7 @@ main (argc, argv)
   char **pend_assertion_options = (char **) xmalloc (argc * sizeof (char *));
   int inhibit_predefs = 0;
   int no_standard_includes = 0;
+  int no_standard_cplusplus_includes = 0;
   int missing_newline = 0;
 
   /* Non-0 means don't output the preprocessed program.  */
@@ -1266,6 +1266,9 @@ main (argc, argv)
 	  /* -nostdinc causes no default include directories.
 	     You must specify all include-file directories with -I.  */
 	  no_standard_includes = 1;
+	else if (!strcmp (argv[i], "-nostdinc++"))
+	  /* -nostdinc++ causes no default C++-specific include directories. */
+	  no_standard_cplusplus_includes = 1;
 	else if (!strcmp (argv[i], "-noprecomp"))
 	  no_precomp = 1;
 	break;
@@ -1501,7 +1504,7 @@ main (argc, argv)
     if (specd_prefix != 0 && default_len != 0)
       for (p = include_defaults; p->fname; p++) {
 	/* Some standard dirs are only for C++.  */
-	if (!p->cplusplus || cplusplus) {
+	if (!p->cplusplus || (cplusplus && !no_standard_cplusplus_includes)) {
 	  /* Does this dir start with the prefix?  */
 	  if (!strncmp (p->fname, default_prefix, default_len)) {
 	    /* Yes; change prefix and add to search list.  */
@@ -1533,7 +1536,7 @@ main (argc, argv)
     /* Search ordinary names for GNU include directories.  */
     for (p = include_defaults; p->fname; p++) {
       /* Some standard dirs are only for C++.  */
-      if (!p->cplusplus || cplusplus) {
+      if (!p->cplusplus || (cplusplus && !no_standard_cplusplus_includes)) {
 	struct file_name_list *new
 	  = (struct file_name_list *) xmalloc (sizeof (struct file_name_list));
 	new->control_macro = 0;

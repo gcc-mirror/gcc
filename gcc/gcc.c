@@ -34,20 +34,19 @@ compilation is specified by a string called a "spec".  */
 #include <sys/types.h>
 #include <ctype.h>
 #include <signal.h>
-#include <sys/file.h>
 #include <sys/stat.h>
 
 #include "config.h"
 #include "obstack.h"
 #include "gvarargs.h"
 
-#ifdef USG
 #ifndef R_OK
 #define R_OK 4
 #define W_OK 2
 #define X_OK 1
 #endif
 
+#ifdef USG
 #define vfork fork
 #endif /* USG */
 
@@ -395,7 +394,7 @@ static struct compiler default_compilers[] =
 {
   {".c", "@c"},
   {"@c",
-   "cpp -lang-c %{nostdinc} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -415,7 +414,7 @@ static struct compiler default_compilers[] =
 		      %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o}\
                       %{!pipe:%g.s} %A\n }}}}"},
   {"-",
-   "%{E:cpp -lang-c %{nostdinc} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "%{E:cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -427,7 +426,7 @@ static struct compiler default_compilers[] =
     %{!E:%e-E required when input is from standard input}"},
   {".m", "@objective-c"},
   {"@objective-c",
-   "cpp -lang-objc %{nostdinc} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d}\
         -undef -D__OBJC__ -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -450,7 +449,7 @@ static struct compiler default_compilers[] =
   {".h", "@c-header"},
   {"@c-header",
    "%{!E:%eCompilation of header file requested} \
-    cpp %{nostdinc} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+    cpp %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	 %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
         -undef -D__GNUC__=2 %{ansi:-trigraphs -$ -D__STRICT_ANSI__}\
@@ -463,7 +462,7 @@ static struct compiler default_compilers[] =
   {".cxx", "@c++"},
   {".C", "@c++"},
   {"@c++",
-   "cpp -lang-c++ %{nostdinc} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} \
 	-undef -D__GNUC__=2 -D__GNUG__=2 -D__cplusplus \
@@ -509,7 +508,7 @@ static struct compiler default_compilers[] =
             %{c:%W{o*}%{!o*:-o %w%b.o}}%{!c:-o %d%w%b.o} %i %A\n }"},
   {".S", "@assembler-with-cpp"},
   {"@assembler-with-cpp",
-   "cpp -lang-asm %{nostdinc} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
+   "cpp -lang-asm %{nostdinc*} %{C} %{v} %{A*} %{D*} %{U*} %{I*} %{i*} %{P}\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{trigraphs} \
         -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
@@ -533,16 +532,17 @@ static int n_default_compilers
 
 #ifdef LINK_LIBGCC_SPECIAL
 /* Have gcc do the search.  */
+/* -u* was put back because both BSD and SysV seem to support it.  */
 static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %X %l %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
-			%{r} %{s} %{T*} %{t} %{x} %{z}\
+			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} \
 			%{L*} %D %o %{!nostdlib:libgcc.a%s %L libgcc.a%s %{!A:%E}}\n }}}}}";
 #else
 /* Use -l and have the linker do the search.  */
 static char *link_command_spec = "\
 %{!c:%{!M:%{!MM:%{!E:%{!S:ld %X %l %{o*} %{A} %{d} %{e*} %{m} %{N} %{n} \
-			%{r} %{s} %{T*} %{t} %{x} %{z}\
+			%{r} %{s} %{T*} %{t} %{u*} %{x} %{z}\
 			%{!A:%{!nostdlib:%S}} \
 			%{L*} %D %o %{!nostdlib:-lgcc %L -lgcc %{!A:%E}}\n }}}}}";
 #endif
