@@ -266,6 +266,11 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
     case OPT_nostdinc:
       break;
 
+    case OPT_nostdlib:
+      gnat_argv[gnat_argc] = xstrdup ("-nostdlib");
+      gnat_argc++;
+      break;
+
     case OPT_fRTS:
       gnat_argv[gnat_argc] = xstrdup ("-fRTS");
       gnat_argc++;
