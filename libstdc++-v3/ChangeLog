@@ -1,3 +1,15 @@
+2004-02-11  Paolo Carlini  <pcarlini@suse.de>
+	    Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/14078
+	* include/std/std_istream.h (operator>>(__istream_type& (*)
+	(__istream_type&)), operator>>(__ios_type& (*)(__ios_type&)),
+	operator>>(ios_base& (*)(ios_base&))): Declare inline.
+	* include/std/std_ostream.h (operator<<(__ostream_type& (*)
+	(__ostream_type&)), operator<<(__ios_type& (*)(__ios_type&)),
+	operator<<(ios_base& (*) (ios_base&))): Likewise.
+	* testsuite/performance/27_io/fmtflags_manipulators.cc: New.
+
 2004-02-10  Loren J. Rittle  <ljrittle@acm.org>
 
 	PR libstdc++/14098

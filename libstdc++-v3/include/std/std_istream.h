@@ -128,13 +128,13 @@ namespace std
        *  functions in constructs like "std::cin >> std::ws".  For more
        *  information, see the iomanip header.
       */
-      __istream_type&
+      inline __istream_type&
       operator>>(__istream_type& (*__pf)(__istream_type&));
 
-      __istream_type&
+      inline __istream_type&
       operator>>(__ios_type& (*__pf)(__ios_type&));
 
-      __istream_type&
+      inline __istream_type&
       operator>>(ios_base& (*__pf)(ios_base&));
       //@}
       
