@@ -2458,8 +2458,11 @@ dwarf2out_frame_finish (void)
   if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
     output_call_frame_info (0);
 
+#ifndef TARGET_UNWIND_INFO
+  /* Output another copy for the unwinder.  */
   if (! USING_SJLJ_EXCEPTIONS && (flag_unwind_tables || flag_exceptions))
     output_call_frame_info (1);
+#endif
 }
 #endif
 

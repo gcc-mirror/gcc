@@ -1,3 +1,10 @@
+2004-08-12  Paul Brook  <paul@codesourcery.com>
+
+	* dwarf2out.h (dwarf2out_frame_finish): Conditionalize outputting eh
+	frame info.
+	* doc/tm.texi: Document interaction between TARGET_UNWIND_INFO and
+	DWARF2_UNWIND_INFO.
+
 2004-08-12  Ben Elliston  <bje@au.ibm.com>
 
 	PR target/16286
