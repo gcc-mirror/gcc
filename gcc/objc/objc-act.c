@@ -91,9 +91,6 @@ char *objc_tree_code_name[] = {
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern int xmalloc ();
-extern void free ();
-
 /* This obstack is used to accumulate the encoding of a data type.  */
 static struct obstack util_obstack;
 /* This points to the beginning of obstack contents,
