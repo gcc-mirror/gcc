@@ -1017,7 +1017,7 @@ esac
     else
       echo "$as_me: WARNING: no configuration information is in $ac_dir" >&2
     fi
-    cd "$ac_popdir"
+    cd $ac_popdir
   done
 fi
 
@@ -5326,7 +5326,7 @@ echo "${ECHO_T}no" >&6
 fi
 
 # How about lex?
-if test -f $srcdir/../flex/skel.c; then
+if test x${build} = x${host} && test -f $srcdir/../flex/skel.c; then
   FLEX='$(objdir)/../flex/flex'
 else
   # Extract the first word of "flex", so it can be a program name with args.
@@ -5369,7 +5369,7 @@ fi
 
 # Bison?
 # The -L switch is so bison can find its skeleton file.
-if test -f $srcdir/../bison/bison.simple; then
+if test x${build} = x${host} && test -f $srcdir/../bison/bison.simple; then
   BISON='$(objdir)/../bison/bison -L $(srcdir)/../bison/'
 else
   # Extract the first word of "bison", so it can be a program name with args.

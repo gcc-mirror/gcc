@@ -760,7 +760,7 @@ fi
 # How about lex?
 dnl Don't use AC_PROG_LEX; we insist on flex.
 dnl LEXLIB is not useful in gcc.
-if test -f $srcdir/../flex/skel.c; then
+if test x${build} = x${host} && test -f $srcdir/../flex/skel.c; then
   FLEX='$(objdir)/../flex/flex'
 else
   AC_CHECK_PROG(FLEX, flex, flex, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing flex)
@@ -768,7 +768,7 @@ fi
 
 # Bison?
 # The -L switch is so bison can find its skeleton file.
-if test -f $srcdir/../bison/bison.simple; then
+if test x${build} = x${host} && test -f $srcdir/../bison/bison.simple; then
   BISON='$(objdir)/../bison/bison -L $(srcdir)/../bison/'
 else
   AC_CHECK_PROG(BISON, bison, bison, ${CONFIG_SHELL-/bin/sh} ${srcdir}/../missing bison)

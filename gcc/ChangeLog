@@ -1,5 +1,9 @@
 2004-05-02  Alexandre Oliva  <aoliva@redhat.com>
 
+	* configure.ac (FLEX, BISON): Only use tools from the build tree
+	if build equals host.
+	* configure: Rebuilt.
+
 	* config/frv/frv-protos.h (frv_expand_epilogue,
 	frv_expand_fdpic_call): Add bool argument.
 	* config/frv/frv.c (frv_function_ok_for_sibcall): New.
