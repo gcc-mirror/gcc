@@ -1,5 +1,0 @@
-rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c \
-    $(srcdir)/config/rs6000/rs6000-protos.h \
-    $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(CPPLIB_H) \
-    $(TM_P_H) c-pragma.h errors.h coretypes.h $(TM_H)
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/config/rs6000/rs6000-c.c

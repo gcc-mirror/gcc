@@ -1,0 +1,29 @@
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	cat $(srcdir)/config/fp-bit.c > dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+MULTILIB_MATCHES_FLOAT	= msoft-float=mcpu?401 \
+			  msoft-float=mcpu?403 \
+			  msoft-float=mcpu?405 \
+			  msoft-float=mcpu?ec603e \
+			  msoft-float=mcpu?801 \
+			  msoft-float=mcpu?821 \
+			  msoft-float=mcpu?823 \
+			  msoft-float=mcpu?860
+
+# Build the libraries for both hard and soft floating point by default
+
+MULTILIB_OPTIONS = msoft-float
+MULTILIB_DIRNAMES = soft-float
+MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
