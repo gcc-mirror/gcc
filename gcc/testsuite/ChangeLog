@@ -1,3 +1,10 @@
+2005-03-20  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/20539
+	* gcc.c-torture/compile/pr13066-1.c: New test case.
+	* gcc.c-torture/compile/pr20539-1.c: Likewise.
+	* g++.dg/opt/pr13066-1.C: Likewise.
+
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/bitfld-14.c, gcc.dg/enum3.c: New tests.
