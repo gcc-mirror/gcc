@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.249 1998/06/29 21:46:34 karl Exp $
+% $Id: texinfo.tex,v 2.249 1998/07/02 14:20:32 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -3391,8 +3391,8 @@ width0pt\relax} \fi
 
 % Finish up the main text and prepare to read what we've written
 % to \tocfile.
-
 \newskip\contentsrightmargin \contentsrightmargin=1in
+\newcount\savepageno
 \def\startcontents#1{%
    % If @setchapternewpage on, and @headings double, the contents should
    % start on an odd page, unlike chapters.  Thus, we maintain
@@ -3400,12 +3400,11 @@ width0pt\relax} \fi
    % From: Torbjorn Granlund <tege@matematik.su.se>
    \contentsalignmacro
    \immediate\closeout\tocfile
-   \ifnum \pageno>0
-      \pageno = -1              % Request roman numbered pages.
-   \fi
+   %
    % Don't need to put `Contents' or `Short Contents' in the headline.
    % It is abundantly clear what they are.
    \unnumbchapmacro{#1}\def\thischapter{}%
+   \savepageno = \pageno
    \begingroup                  % Set up to handle contents files properly.
       \catcode`\\=0  \catcode`\{=1  \catcode`\}=2  \catcode`\@=11
       % We can't do this, because then an actual ^ in a section
@@ -3413,15 +3412,23 @@ width0pt\relax} \fi
       %\catcode`\^=7 % to see ^^e4 as \"a etc. juha@piuha.ydi.vtt.fi
       \raggedbottom             % Worry more about breakpoints than the bottom.
       \advance\hsize by -\contentsrightmargin % Don't use the full line length.
+      %
+      % Roman numerals for page numbers.
+      \ifnum \pageno>0 \pageno = -1 \fi
 }
 
 
 % Normal (long) toc.
 \def\contents{%
    \startcontents{\putwordTableofContents}%
-      \input \jobname.toc
+     \openin 1 \jobname.toc
+     \ifeof 1 \else
+       \closein 1
+       \input \jobname.toc
+     \fi
+     \vfill \eject
    \endgroup
-   \vfill \eject
+   \pageno = \savepageno
 }
 
 % And just the chapters.
@@ -3442,9 +3449,14 @@ width0pt\relax} \fi
       \def\unnumbsubsecentry ##1##2{}
       \def\subsubsecentry ##1##2##3##4##5##6{}
       \def\unnumbsubsubsecentry ##1##2{}
-      \input \jobname.toc
+      \openin 1 \jobname.toc
+      \ifeof 1 \else
+        \closein 1
+        \input \jobname.toc
+      \fi
+     \vfill \eject
    \endgroup
-   \vfill \eject
+   \pageno = \savepageno
 }
 \let\shortcontents = \summarycontents
 
@@ -4670,7 +4682,7 @@ width0pt\relax} \fi
     \else
       % Use the actual chapter/section title appear inside
       % the square brackets.  Use the real section title if we have it.
-      \ifdim \wd1>0pt%
+      \ifdim \wd1 > 0pt
         % It is in another manual, so we don't have it.
         \def\printednodename{\ignorespaces #1}%
       \else
@@ -4705,9 +4717,9 @@ width0pt\relax} \fi
      \setbox2 = \hbox{\ignorespaces \refx{#1-snt}{}}%
      \ifdim \wd2 > 0pt \refx{#1-snt}\space\fi
     }%
-    % `mynode, '
+    % [mynode], 
     [\printednodename],\space
-    % `page 3'.
+    % page 3
     \turnoffactive \putwordpage\tie\refx{#1-pg}{}%
   \fi
 \endgroup}
