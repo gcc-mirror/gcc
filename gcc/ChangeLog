@@ -1,3 +1,7 @@
+2003-02-26  Michael Matz  <matz@suse.de>
+
+	* ra-colorize.c (merge_moves): Fix list handling.
+
 2003-02-26  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.c (is_load_address): Rename to...
