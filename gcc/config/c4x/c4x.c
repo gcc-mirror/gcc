@@ -45,8 +45,6 @@
 #include "recog.h"
 #include "c-tree.h"
 
-extern void iteration_info ();	/* in unroll.c */
-
 static int c4x_leaf_function;
 
 static char *float_reg_names[] = FLOAT_REGISTER_NAMES;
