@@ -1226,7 +1226,7 @@ component_decl_list:
 		{ $$ = $1; }
 	| component_decl_list2 component_decl
 		{ $$ = chainon ($1, $2);
-		  warning ("no semicolon at end of struct or union"); }
+		  pedwarn ("no semicolon at end of struct or union"); }
 	;
 
 component_decl_list2:	/* empty */
