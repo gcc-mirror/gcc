@@ -46,9 +46,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* These match the definitions used in VAXCRTL, the VMS C run-time library */
 
-#define SIZE_TYPE "unsigned int"
-#define PTRDIFF_TYPE "int"
+#define SIZE_TYPE	"unsigned int"
+#define PTRDIFF_TYPE	"int"
 #define WCHAR_TYPE	"unsigned int"
+#define WCHAR_TYPE_SIZE	32	/* in bits */
 
 /* Use memcpy for structure copying, and so forth.  */
 #define TARGET_MEM_FUNCTIONS
