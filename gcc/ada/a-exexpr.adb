@@ -275,11 +275,13 @@ package body Exception_Propagation is
    --  Currently, these only have their address taken and compared so there is
    --  no real point having whole exception data blocks allocated. In any case
    --  the types should match what gigi and the personality routine expect.
+   --  The initial value is an arbitrary value that will not exceed the range
+   --  of Integer on 16-bit targets (such as AAMP).
 
-   Others_Value : constant Integer := 16#BEEF#;
+   Others_Value : constant Integer := 16#7FFF#;
    pragma Export (C, Others_Value, "__gnat_others_value");
 
-   All_Others_Value : constant Integer := 16#BEEF#;
+   All_Others_Value : constant Integer := 16#7FFF#;
    pragma Export (C, All_Others_Value, "__gnat_all_others_value");
 
    ------------
