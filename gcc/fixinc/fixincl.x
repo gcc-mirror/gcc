@@ -1686,7 +1686,8 @@ tTestDesc aIo_Use_QuotesTests[] = {
  *  Fix Command Arguments for Io_Use_Quotes
  */
 const char* apzIo_Use_QuotesPatch[] = {
-    "IO_use",
+    "char_macro_use",
+    "IO",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1720,7 +1721,8 @@ tTestDesc aIo_Def_QuotesTests[] = {
  *  Fix Command Arguments for Io_Def_Quotes
  */
 const char* apzIo_Def_QuotesPatch[] = {
-    "IO_defn",
+    "char_macro_def",
+    "IO",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1754,7 +1756,8 @@ tTestDesc aCtrl_Use_QuotesTests[] = {
  *  Fix Command Arguments for Ctrl_Use_Quotes
  */
 const char* apzCtrl_Use_QuotesPatch[] = {
-    "CTRL_use",
+    "char_macro_use",
+    "CTRL",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1788,7 +1791,8 @@ tTestDesc aCtrl_Def_QuotesTests[] = {
  *  Fix Command Arguments for Ctrl_Def_Quotes
  */
 const char* apzCtrl_Def_QuotesPatch[] = {
-    "CTRL_defn",
+    "char_macro_def",
+    "CTRL",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
