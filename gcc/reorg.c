@@ -3329,7 +3329,20 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	      else
 		{
 		  update_reg_unused_notes (prior_insn, trial);
-		  new_thread = next_active_insn (trial);
+
+		  /* Even if we don't own the the thread, we still need
+		     call update_block to get our special USE insn inserted.
+
+		     Furthermore, new_thread should point to the USE insn
+		     so the USE insn will be after any label created before
+		     new_thread later in reorg.  Also note next_active_insn
+		     skips the USE insn.
+
+		     If we do not do this mark_target_live_regs may fail
+		     to realize any insn set by the redundant insn was
+		     live at new_thread.  */
+		  update_block (trial, next_active_insn (thread));
+		  new_thread = PREV_INSN (next_active_insn (trial));
 		}
 
 	      continue;
