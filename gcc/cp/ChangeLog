@@ -1,3 +1,8 @@
+2004-09-08  Ziemowit Laski  <zlaski@apple.com>
+
+	* cp-tree.h (do_poplevel): New prototype.
+	* semantics.c (do_poplevel): Make externally visible.
+
 2004-09-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (tree_pair_s): Define a GC'd vector.
