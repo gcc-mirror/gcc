@@ -62,7 +62,7 @@ SHLIB_INSTALL = $(INSTALL_DATA) @shlib_base_name@.a $$(slibdir)/
 SHLIB_LIBS = -lc `case @shlib_base_name@ in *pthread*) echo -lpthread ;; esac`
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
-SHLIB_NM_FLAGS = -Bpg
+SHLIB_NM_FLAGS = -Bpg -X32_64
 
 # Either 32-bit and 64-bit objects in archives.
 AR_FLAGS_FOR_TARGET = -X32_64
