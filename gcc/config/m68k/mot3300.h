@@ -61,7 +61,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define TARGET_MEM_FUNCTIONS
 
-/ * size_t is unsigned int.  */
+/* size_t is unsigned int.  */
 
 #define SIZE_TYPE "unsigned int"
 
