@@ -2067,6 +2067,25 @@ field_byte_offset (decl)
   /* Compute the offset of the containing object in bytes.  */
   object_offset_in_bytes = object_offset_in_align_units * type_align_in_bytes;
 
+  /* The above code assumes that the field does not cross an alignment
+     boundary.  This can happen if PCC_BITFIELD_TYPE_MATTERS is not defined,
+     or if the structure is packed.  If this happens, then we get an object
+     which starts after the bitfield, which means that the bit offset is
+     negative.  Gdb fails when given negative bit offsets.  We avoid this
+     by recomputing using the first bit of the bitfield.  This will give
+     us an object which does not completely contain the bitfield, but it
+     will be aligned, and it will contain the first bit of the bitfield.  */
+  if (object_offset_in_bits > bitpos_int)
+    {
+      deepest_bitpos = bitpos_int + 1;
+      object_offset_in_bits
+	= ceiling (deepest_bitpos, type_align_in_bits) - type_size_in_bits;
+      object_offset_in_align_units = (object_offset_in_bits
+				      / type_align_in_bits);
+      object_offset_in_bytes = (object_offset_in_align_units
+				* type_align_in_bytes);
+    }
+
   return object_offset_in_bytes;
 }
 
