@@ -480,6 +480,9 @@
 /* Define if your assembler uses the new HImode fild and fist notation. */
 #undef HAVE_GAS_FILDS_FISTS
 
+/* Define if your assembler supports the Sun syntax for cmov. */
+#undef HAVE_AS_IX86_CMOV_SUN_SYNTAX
+
 /* Define true if the assembler supports '.long foo@GOTOFF'. */
 #undef HAVE_AS_GOTOFF_IN_DATA
 
