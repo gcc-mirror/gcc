@@ -1,3 +1,8 @@
+2003-03-22  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/os/hpux/bits/ctype_noninline.h (ctype<char>::classic_table):
+	Correct return value.
+
 2003-02-17  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9169
