@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is mostly the same as a29k.h, except that we define unix instead of
    EPI and define unix-style machine names.  */
 
-#include "a29k.h"
+#include "a29k/a29k.h"
 
 /* Set our default target to be the 29050; that is the more interesting chip
    for Unix systems.  */
