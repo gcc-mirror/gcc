@@ -1,3 +1,9 @@
+2002-03-21  Eric Botcazou <ebotcazou@multimania.com>
+
+	PR c/5597
+	* c-typeck.c (process_init_element): Flag non-static
+	initialization of a flexible array member as illegal.
+
 2002-03-22  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/t-linux64: New.
