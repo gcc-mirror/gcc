@@ -102,6 +102,7 @@ static bool arc_rtx_costs (rtx, int, int, int *);
 static int arc_address_cost (rtx);
 static void arc_external_libcall (rtx);
 static bool arc_return_in_memory (tree, tree);
+static tree arc_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -141,6 +142,8 @@ static bool arc_return_in_memory (tree, tree);
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS arc_setup_incoming_varargs
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR arc_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2289,76 +2292,20 @@ arc_va_start (tree valist, rtx nextarg)
   std_expand_builtin_va_start (valist, nextarg);
 }
 
-rtx
-arc_va_arg (tree valist, tree type)
+static tree
+arc_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  rtx addr_rtx;
-  tree addr, incr;
-  tree type_ptr = build_pointer_type (type);
-
   /* All aggregates are passed by reference.  All scalar types larger
      than 8 bytes are passed by reference.  */
 
   if (AGGREGATE_TYPE_P (type) || int_size_in_bytes (type) > 8)
     {
-      tree type_ptr_ptr = build_pointer_type (type_ptr);
-
-      addr = build (INDIRECT_REF, type_ptr,
-		    build (NOP_EXPR, type_ptr_ptr, valist));
-
-      incr = build (PLUS_EXPR, TREE_TYPE (valist),
-		    valist, build_int_2 (UNITS_PER_WORD, 0));
-    }
-  else
-    {
-      HOST_WIDE_INT align, rounded_size;
-
-      /* Compute the rounded size of the type.  */
-      align = PARM_BOUNDARY / BITS_PER_UNIT;
-      rounded_size = (((TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT
-			+ align - 1) / align) * align);
-
-      /* Align 8 byte operands.  */
-      addr = valist;
-      if (TYPE_ALIGN (type) > BITS_PER_WORD)
-	{
-	  /* AP = (TYPE *)(((int)AP + 7) & -8)  */
-
-	  addr = build (NOP_EXPR, integer_type_node, valist);
-	  addr = fold (build (PLUS_EXPR, integer_type_node, addr,
-			      build_int_2 (7, 0)));
-	  addr = fold (build (BIT_AND_EXPR, integer_type_node, addr,
-			      build_int_2 (-8, 0)));
-	  addr = fold (build (NOP_EXPR, TREE_TYPE (valist), addr));
-	}
-
-      /* The increment is always rounded_size past the aligned pointer.  */
-      incr = fold (build (PLUS_EXPR, TREE_TYPE (addr), addr,
-			  build_int_2 (rounded_size, 0)));
-
-      /* Adjust the pointer in big-endian mode.  */
-      if (BYTES_BIG_ENDIAN)
-	{
-	  HOST_WIDE_INT adj;
-	  adj = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT;
-	  if (rounded_size > align)
-	    adj = rounded_size;
-
-	  addr = fold (build (PLUS_EXPR, TREE_TYPE (addr), addr,
-			      build_int_2 (rounded_size - adj, 0)));
-	}
+      tree type_ptr = build_pointer_type (type);
+      tree addr = std_gimplify_va_arg_expr (valist, type_ptr, pre_p, post_p);
+      return build_fold_indirect_ref (addr);
     }
 
-  /* Evaluate the data address.  */
-  addr_rtx = expand_expr (addr, NULL_RTX, Pmode, EXPAND_NORMAL);
-  addr_rtx = copy_to_reg (addr_rtx);
-  
-  /* Compute new value for AP.  */
-  incr = build (MODIFY_EXPR, TREE_TYPE (valist), valist, incr);
-  TREE_SIDE_EFFECTS (incr) = 1;
-  expand_expr (incr, const0_rtx, VOIDmode, EXPAND_NORMAL);
-
-  return addr_rtx;
+  return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* This is how to output a definition of an internal numbered label where
