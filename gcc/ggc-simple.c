@@ -344,6 +344,20 @@ init_ggc (void)
 {
 }
 
+/* Start a new GGC zone.  */
+
+struct alloc_zone *
+new_ggc_zone (const char *name ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+/* Destroy a GGC zone.  */
+void
+destroy_ggc_zone (struct alloc_zone *zone ATTRIBUTE_UNUSED)
+{
+}
+
 /* Start a new GGC context.  Memory allocated in previous contexts
    will not be collected while the new context is active.  */
 

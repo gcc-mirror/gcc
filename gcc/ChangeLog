@@ -1,3 +1,20 @@
+2003-12-01  Steven Bosscher  <stevenb@suse.de>
+
+	* ggc.h (struct alloc_zone): Move forward declaration up.
+	(new_ggc_zone): New function prototype.
+	(destroy_ggc_zone): Ditto.
+	* ggc-simple.c (new_ggc_zone): New function, does nothing.
+	(destroy_ggc_zone): Ditto.
+	* ggc-page.c (new_ggc_zone): New function, does nothing.
+	(destroy_ggc_zone): Ditto.
+	* ggc-zone.c (struct page_entry): Fix comment.
+	(ggc_alloc_typed): Use a switch statement instead of ifs.
+	(new_ggc_zone): New function to set up a new GC zone.
+	(destroy_ggc_zone): New function to remove a GC zone.
+	init_ggc): Use new_ggc_zone to set up the default zones.
+	(ggc_collect): Walk a list of zones, instead of just the
+	default zones.  Report statistics using the zone name.
+
 2003-12-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* unroll.c (find_splittable_givs): Add missing extend_value_for_giv.

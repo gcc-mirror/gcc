@@ -1401,6 +1401,20 @@ init_ggc (void)
   G.save_in_use = xmalloc (G.by_depth_max * sizeof (unsigned long *));
 }
 
+/* Start a new GGC zone.  */
+
+struct alloc_zone *
+new_ggc_zone (const char *name ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
+
+/* Destroy a GGC zone.  */
+void
+destroy_ggc_zone (struct alloc_zone *zone ATTRIBUTE_UNUSED)
+{
+}
+
 /* Increment the `GC context'.  Objects allocated in an outer context
    are never freed, eliminating the need to register their roots.  */
 
