@@ -361,8 +361,8 @@ doloop_valid_p (loop, jump_insn)
     {
       /* If the comparison is LEU and the comparison value is UINT_MAX
 	 then the loop will not terminate.  Similarly, if the
-	 comparison code is GEU and the initial value is 0, the loop
-	 will not terminate.
+	 comparison code is GEU and the comparison value is 0, the
+	 loop will not terminate.
 
 	 If the absolute increment is not 1, the loop can be infinite
 	 even with LTU/GTU, e.g. for (i = 3; i > 0; i -= 2)
@@ -591,6 +591,10 @@ doloop_modify_runtime (loop, iterations_max,
        n = abs (final - initial) / abs_inc;
        n += (abs (final - initial) % abs_inc) != 0;
 
+     But when abs_inc is a power of two, the summation won't overflow
+     except in cases where the loop never terminates.  So we don't
+     need to use this more costly calculation.
+
      If the loop has been unrolled, then the loop body has been
      preconditioned to iterate a multiple of unroll_number times.  If
      abs_inc is != 1, the full calculation is
@@ -666,50 +670,22 @@ doloop_modify_runtime (loop, iterations_max,
   if (abs_inc * loop_info->unroll_number != 1)
     {
       int shift_count;
-      rtx extra;
-      rtx label;
-      unsigned HOST_WIDE_INT limit;
 
       shift_count = exact_log2 (abs_inc * loop_info->unroll_number);
       if (shift_count < 0)
 	abort ();
 
-      /* abs (final - initial) / (abs_inc * unroll_number)  */
-      iterations = expand_simple_binop (GET_MODE (diff), LSHIFTRT,
-					diff, GEN_INT (shift_count),
-					NULL_RTX, 1,
-					OPTAB_LIB_WIDEN);
-
       if (abs_inc != 1)
-	{
-	  /* abs (final - initial) % (abs_inc * unroll_number)  */
-	  rtx count = GEN_INT (abs_inc * loop_info->unroll_number - 1);
-	  extra = expand_simple_binop (GET_MODE (iterations), AND,
-				       diff, count, NULL_RTX, 1,
-				       OPTAB_LIB_WIDEN);
+	diff = expand_simple_binop (GET_MODE (diff), PLUS,
+				    diff, GEN_INT (abs_inc - 1),
+				    diff, 1, OPTAB_LIB_WIDEN);
 
-	  /* If (abs (final - initial) % (abs_inc * unroll_number)
-	       <= abs_inc * (unroll - 1)),
-	     jump past following increment instruction.  */
-	  label = gen_label_rtx ();
-	  limit = abs_inc * (loop_info->unroll_number - 1);
-	  emit_cmp_and_jump_insns (extra, GEN_INT (limit),
-				   limit == 0 ? EQ : LEU, NULL_RTX,
-				   GET_MODE (extra), 0, label);
-	  JUMP_LABEL (get_last_insn ()) = label;
-	  LABEL_NUSES (label)++;
-
-	  /* Increment the iteration count by one.  */
-	  iterations = expand_simple_binop (GET_MODE (iterations), PLUS,
-					    iterations, GEN_INT (1),
-					    iterations, 1,
-					    OPTAB_LIB_WIDEN);
-
-	  emit_label (label);
-	}
+      /* (abs (final - initial) + abs_inc - 1) / (abs_inc * unroll_number)  */
+      diff = expand_simple_binop (GET_MODE (diff), LSHIFTRT,
+				  diff, GEN_INT (shift_count),
+				  diff, 1, OPTAB_LIB_WIDEN);
     }
-  else
-    iterations = diff;
+  iterations = diff;
 
   /* If there is a NOTE_INSN_LOOP_VTOP, we have a `for' or `while'
      style loop, with a loop exit test at the start.  Thus, we can
@@ -722,17 +698,20 @@ doloop_modify_runtime (loop, iterations_max,
      iteration count to one if necessary.  */
   if (! loop->vtop)
     {
-      rtx label;
-
       if (loop_dump_stream)
 	fprintf (loop_dump_stream, "Doloop: Do-while loop.\n");
 
-      /* A `do-while' loop must iterate at least once.  If the
-	 iteration count is bogus, we set the iteration count to 1.
+      /* A `do-while' loop must iterate at least once.  For code like
+	 i = initial; do { ... } while (++i < final);
+	 we will calculate a bogus iteration count if initial > final.
+	 So detect this and set the iteration count to 1.
 	 Note that if the loop has been unrolled, then the loop body
-	 is guaranteed to execute at least once.  */
-      if (loop_info->unroll_number == 1)
+	 is guaranteed to execute at least once.  Also, when the
+	 comparison is NE, our calculated count will be OK.  */
+      if (loop_info->unroll_number == 1 && comparison_code != NE)
 	{
+	  rtx label;
+
 	  /*  Emit insns to test if the loop will immediately
 	      terminate and to set the iteration count to 1 if true.  */
 	  label = gen_label_rtx();
