@@ -473,8 +473,9 @@ short_cint_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (GET_CODE (op) == CONST_INT
-	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) < 0x10000);
+  return ((GET_CODE (op) == CONST_INT
+	   && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) < 0x10000)
+	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
 
 /* Similar for a unsigned D field.  */
@@ -484,8 +485,9 @@ u_short_cint_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  return (GET_CODE (op) == CONST_INT
-	  && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0);
+  return ((GET_CODE (op) == CONST_INT
+	   && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0)
+	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
 
 /* Return 1 if OP is a CONST_INT that cannot fit in a signed D field.  */
@@ -561,11 +563,7 @@ reg_or_u_short_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  if (GET_CODE (op) == CONST_INT
-      && (INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0)
-    return 1;
-
-  return gpc_reg_operand (op, mode);
+  return u_short_cint_operand (op, mode) || gpc_reg_operand (op, mode);
 }
 
 /* Return 1 is the operand is either a non-special register or ANY
@@ -576,7 +574,9 @@ reg_or_cint_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-     return GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode);
+     return (GET_CODE (op) == CONST_INT
+	     || GET_CODE (op) == CONSTANT_P_RTX
+	     || gpc_reg_operand (op, mode));
 }
 
 /* Return 1 if the operand is an operand that can be loaded via the GOT */
@@ -860,7 +860,8 @@ logical_operand (op, mode)
   return (gpc_reg_operand (op, mode)
 	  || (GET_CODE (op) == CONST_INT
 	      && ((INTVAL (op) & (~ (HOST_WIDE_INT) 0xffff)) == 0
-		  || (INTVAL (op) & 0xffff) == 0)));
+		  || (INTVAL (op) & 0xffff) == 0))
+	  || GET_CODE (op) == CONSTANT_P_RTX);
 }
 
 /* Return 1 if C is a constant that is not a logical operand (as
@@ -1094,7 +1095,9 @@ input_operand (op, mode)
 
   /* Allow any integer constant.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
-      && (GET_CODE (op) == CONST_INT || GET_CODE (op) == CONST_DOUBLE))
+      && (GET_CODE (op) == CONST_INT
+	  || GET_CODE (op) == CONSTANT_P_RTX
+	  || GET_CODE (op) == CONST_DOUBLE))
     return 1;
 
   /* For floating-point or multi-word mode, the only remaining valid type
