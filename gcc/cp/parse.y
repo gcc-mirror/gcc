@@ -736,6 +736,8 @@ datadef:
 		}
 	| error ';'
 	| error '}'
+	| error END_OF_SAVED_INPUT
+		{ end_input (); }
 	| ';'
 	| bad_decl
 	;

@@ -1,3 +1,9 @@
+2001-10-02  Jason Merrill  <jason_merrill@redhat.com>
+
+	* spew.c (end_input): No longer static.
+	* cp-tree.h: Declare it.
+	* parse.y (datadef): Add "error END_OF_SAVED_INPUT" expansion.
+
 2001-10-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* call.c (build_over_call), typeck.c (build_function_call_real):
