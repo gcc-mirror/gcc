@@ -691,7 +691,6 @@ extern enum reg_class xtensa_char_to_class[256];
    operand types.
 
    R = memory that can be accessed with a 4-bit unsigned offset
-   S = memory where the second word can be addressed with a 4-bit offset
    T = memory in a constant pool (addressable with a pc-relative load)
    U = memory *NOT* in a constant pool
 
@@ -713,7 +712,6 @@ extern enum reg_class xtensa_char_to_class[256];
 	&& reload_in_progress && GET_CODE (OP) == REG			\
         && REGNO (OP) >= FIRST_PSEUDO_REGISTER)				\
    : ((CODE) == 'R') ? smalloffset_mem_p (OP)				\
-   : ((CODE) == 'S') ? smalloffset_double_mem_p (OP)			\
    : ((CODE) == 'T') ? !TARGET_CONST16 && constantpool_mem_p (OP)	\
    : ((CODE) == 'U') ? !constantpool_mem_p (OP)				\
    : FALSE)

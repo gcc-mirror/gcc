@@ -599,19 +599,32 @@ move_operand (op, mode)
       || memory_operand (op, mode))
     return TRUE;
 
-  if (mode == SFmode)
-    return TARGET_CONST16 && CONSTANT_P (op);
+  switch (mode)
+    {
+    case DFmode:
+    case SFmode:
+      return TARGET_CONST16 && CONSTANT_P (op);
 
-  /* Accept CONSTANT_P_RTX, since it will be gone by CSE1 and
-     result in 0/1.  */
-  if (GET_CODE (op) == CONSTANT_P_RTX)
-    return TRUE;
+    case DImode:
+    case SImode:
+      if (TARGET_CONST16)
+	return CONSTANT_P (op);
+      /* fall through */
 
-  if (GET_CODE (op) == CONST_INT && xtensa_simm12b (INTVAL (op)))
-    return TRUE;
+    case HImode:
+    case QImode:
+      /* Accept CONSTANT_P_RTX, since it will be gone by CSE1 and
+	 result in 0/1.  */
+      if (GET_CODE (op) == CONSTANT_P_RTX)
+	return TRUE;
 
-  if (mode == SImode)
-    return TARGET_CONST16 && CONSTANT_P (op);
+      if (GET_CODE (op) == CONST_INT && xtensa_simm12b (INTVAL (op)))
+	return TRUE;
+      break;
+
+    default:
+      break;
+    }
 
   return FALSE;
 }
@@ -637,16 +650,6 @@ smalloffset_mem_p (op)
 	}
     }
   return FALSE;
-}
-
-
-int
-smalloffset_double_mem_p (op)
-     rtx op;
-{
-  if (!smalloffset_mem_p (op))
-    return FALSE;
-  return smalloffset_mem_p (adjust_address (op, GET_MODE (op), 4));
 }
 
 
@@ -1014,7 +1017,7 @@ gen_float_relational (test_code, cmp0, cmp1)
     case GT: reverse_regs = 1; invert = 0; gen_fn = gen_slt_sf; break;
     case LT: reverse_regs = 0; invert = 0; gen_fn = gen_slt_sf; break;
     case GE: reverse_regs = 1; invert = 0; gen_fn = gen_sle_sf; break;
-    default: 
+    default:
       fatal_insn ("bad test", gen_rtx (test_code, VOIDmode, cmp0, cmp1));
       reverse_regs = 0; invert = 0; gen_fn = 0; /* avoid compiler warnings */
     }
@@ -1204,6 +1207,53 @@ xtensa_expand_scc (operands)
 	    : gen_movsicc_internal1);
   emit_insn (gen_fn (dest, XEXP (cmp, 0), one_tmp, zero_tmp, cmp));
   return 1;
+}
+
+
+/* Split OP[1] into OP[2,3] and likewise for OP[0] into OP[0,1].  MODE is
+   for the output, i.e., the input operands are twice as big as MODE.  */
+
+void
+xtensa_split_operand_pair (operands, mode)
+     rtx operands[4];
+     enum machine_mode mode;
+{
+  switch (GET_CODE (operands[1]))
+    {
+    case REG:
+      operands[3] = gen_rtx_REG (mode, REGNO (operands[1]) + 1);
+      operands[2] = gen_rtx_REG (mode, REGNO (operands[1]));
+      break;
+
+    case MEM:
+      operands[3] = adjust_address (operands[1], mode, GET_MODE_SIZE (mode));
+      operands[2] = adjust_address (operands[1], mode, 0);
+      break;
+
+    case CONST_INT:
+    case CONST_DOUBLE:
+      split_double (operands[1], &operands[2], &operands[3]);
+      break;
+
+    default:
+      abort ();
+    }
+
+  switch (GET_CODE (operands[0]))
+    {
+    case REG:
+      operands[1] = gen_rtx_REG (mode, REGNO (operands[0]) + 1);
+      operands[0] = gen_rtx_REG (mode, REGNO (operands[0]));
+      break;
+
+    case MEM:
+      operands[1] = adjust_address (operands[0], mode, GET_MODE_SIZE (mode));
+      operands[0] = adjust_address (operands[0], mode, 0);
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 
@@ -1658,24 +1708,27 @@ xtensa_dbx_register_number (regno)
      int regno;
 {
   int first = -1;
-  
-  if (GP_REG_P (regno)) {
-    regno -= GP_REG_FIRST;
-    first = 0;
-  }
-  else if (BR_REG_P (regno)) {
-    regno -= BR_REG_FIRST;
-    first = 16;
-  }
-  else if (FP_REG_P (regno)) {
-    regno -= FP_REG_FIRST;
-    /* The current numbering convention is that TIE registers are
-       numbered in libcc order beginning with 256.  We can't guarantee
-       that the FP registers will come first, so the following is just
-       a guess.  It seems like we should make a special case for FP
-       registers and give them fixed numbers < 256.  */
-    first = 256;
-  }
+
+  if (GP_REG_P (regno))
+    {
+      regno -= GP_REG_FIRST;
+      first = 0;
+    }
+  else if (BR_REG_P (regno))
+    {
+      regno -= BR_REG_FIRST;
+      first = 16;
+    }
+  else if (FP_REG_P (regno))
+    {
+      regno -= FP_REG_FIRST;
+      /* The current numbering convention is that TIE registers are
+	 numbered in libcc order beginning with 256.  We can't guarantee
+	 that the FP registers will come first, so the following is just
+	 a guess.  It seems like we should make a special case for FP
+	 registers and give them fixed numbers < 256.  */
+      first = 256;
+    }
   else if (ACC_REG_P (regno))
     {
       first = 0;
@@ -1885,7 +1938,7 @@ override_options ()
    a null pointer for X and the punctuation character for CODE.
 
    'a', 'c', 'l', and 'n' are reserved.
-   
+
    The Xtensa specific codes are:
 
    'd'  CONST_INT, print as signed decimal
@@ -2041,7 +2094,7 @@ print_operand (file, x, letter)
 	  print_operand (file, XEXP (XEXP (x, 0), 1), 0);
 	}
       else
-	{ 
+	{
 	  output_addr_const (file, x);
 	  fputs (letter == 't' ? "@h" : "@l", file);
 	}
@@ -2608,7 +2661,7 @@ xtensa_va_arg (valist, type)
 
   size = gen_reg_rtx (SImode);
   emit_move_insn (size, va_size);
-  
+
   if (BYTES_BIG_ENDIAN)
     {
       rtx lab_use_va_size = gen_label_rtx ();

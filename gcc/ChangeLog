@@ -1,3 +1,21 @@
+2003-05-28  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa-protos.h (smalloffset_double_mem_p): Delete.
+	(xtensa_split_operand_pair): New proto.
+	* config/xtensa/xtensa.c (move_operand): Handle DFmode and DImode.
+	(smalloffset_double_mem_p): Delete.
+	(gen_float_relational, printx, print_operand, xtensa_va_arg):
+	Fix whitespace.
+	(xtensa_split_operand_pair): New.
+	(xtensa_dbx_register_number): Fix formatting.
+	* config/xtensa/xtensa.h (EXTRA_CONSTRAINT): Remove 'S' constraint.
+	* config/xtensa/xtensa.md (movdi, movdf): Force constants to memory
+	instead of splitting them into single-word moves.  Remove unnecessary
+	checks for reload_in_progress and reload_completed.
+	(movdi_internal, movdf_internal): Change to post-reload split patterns.
+	Add constraints to allow constant operands.
+	(movsf_internal): Allow CONST_INT operands.
+
 2003-05-27  Danny Smith   <dannysmith@users.sourceforge.net>
 
 	* config.gcc (i[34567]86-*-mingw32*): Add host makefile
