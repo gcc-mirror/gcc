@@ -10,6 +10,19 @@ if ![info exists tmpdir] {
     set tmpdir "/tmp"
 }
 
+# This is like `target_compile' but it does some surgery to work
+# around stupid DejaGNU bugs.  In particular DejaGNU has very poor
+# quoting, so for instance a `$' will be re-evaluated at spawn time.
+# We don't want that.
+proc libjava_tcompile {source destfile type options} {
+    # This strange-looking expression really does quote the `$'.
+    regsub -all -- {\$} $source {\$} source
+    regsub -all -- {\$} $destfile {\$} destfile
+    verbose "Now source = $source"
+    verbose "Now destfile = $destfile"
+    return [target_compile $source $destfile $type $options]
+}
+
 # Read an `xfail' file if it exists.  Returns a list of xfail tokens.
 proc libjava_read_xfail {file} {
     if {! [file exists $file]} {
@@ -46,12 +59,8 @@ proc find_gcjh {} {
     return [libjava_find_program gcjh]
 }
 
-proc bytecompile_file { file objdir {classpath {}} } {
-    global env
-    global SUN_JAVAC
-    global GCJ_UNDER_TEST
-    set dirname [file dirname $file]
-
+proc find_javac {} {
+    global SUN_JAVAC GCJ_UNDER_TEST env
     # If JDK doesn't run on your platform but some other
     # JDK-compatible javac does, you may set SUN_JAVAC to point to it.
     # One of the most important properties of a SUN_JAVAC is that it
@@ -60,14 +69,21 @@ proc bytecompile_file { file objdir {classpath {}} } {
     # those that have.  For example, Pizza won't do it, but you can
     # use `kaffe sun.tools.javac.Main', if you have Sun's classes.zip
     # in the kaffe's default search path.
-    if ![info exists SUN_JAVAC] {
-	if [info exists env(SUN_JAVAC)] {
+    if {![info exists SUN_JAVAC]} {
+	if {[info exists env(SUN_JAVAC)]} {
 	    set SUN_JAVAC $env(SUN_JAVAC)
 	} else {
 	    set SUN_JAVAC "$GCJ_UNDER_TEST -C"
 	}
     }
+    return $SUN_JAVAC
+}
 
+proc bytecompile_file { file objdir {classpath {}} } {
+    global env
+    set dirname [file dirname $file]
+
+    set javac [find_javac]
     catch {unset env(CLASSPATH)}
     if {$classpath != ""} then {
         set env(CLASSPATH) $classpath
@@ -75,7 +91,7 @@ proc bytecompile_file { file objdir {classpath {}} } {
     if {[catch {
 	set here [pwd]
 	cd $dirname
-	set q [eval exec "$SUN_JAVAC [list $file] -d $objdir 2>@ stdout"]
+	set q [eval exec "$javac [list $file] -d $objdir 2>@ stdout"]
 	cd $here
 	# "return" a result
 	set q $q
@@ -338,7 +354,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
     }
 
     set x [prune_warnings \
-	     [target_compile $srcfile "$executable" $target $args]]
+	     [libjava_tcompile $srcfile "$executable" $target $args]]
     if {[info exists opts(xfail-gcj)]} {
 	setup_xfail *-*-*
     }
@@ -449,9 +465,15 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 
     # bytecompile files with Sun's compiler for now.
     set bc_ok [bytecompile_file $srcfile $objdir]
-    # FIXME: assumes we are using javac to compile to bytecode.
-    # This is not always the case.
-    if {[info exists opts(xfail-javac)]} {
+
+    set javac [find_javac]
+    # This is an ugly heuristic but it will have to do.
+    if {[string match *gcj* $javac]} {
+	set tag gcjC
+    } else {
+	set tag javac
+    }
+    if {[info exists opts(xfail-$tag)]} {
 	setup_xfail *-*-*
     }
     if {! $bc_ok} then {
@@ -481,12 +503,12 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     verbose "jvscan is $jvscan"
     set main_name [string trim \
 		     [prune_warnings \
-			[target_compile $srcfile "" none \
+			[libjava_tcompile $srcfile "" none \
 			   "compiler=$jvscan additional_flags=--print-main"]]]
     verbose "main name is $main_name"
     set class_out [string trim \
 		     [prune_warnings \
-			[target_compile $srcfile "" none \
+			[libjava_tcompile $srcfile "" none \
 			   "compiler=$jvscan additional_flags=--list-class"]]]
     verbose "class list is $class_out"
 
@@ -519,14 +541,13 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	set opts(no-exec) x
     }
     set largs {}
-    if {$main_name == ""} {
-	if {! [info exists opts(no-exec)]} {
-	    perror "No `main' given in program $errname"
-	    return
-	} else {
-	    set type object
-	    set mode compile
-	}
+
+    if {[info exists opts(no-exec)]} {
+	set type object
+	set mode compile
+    } elseif {$main_name == ""} {
+	perror "No `main' given in program $errname"
+	return
     } else {
 	set type executable
 	lappend largs "additional_flags=--main=$main_name"
@@ -554,14 +575,14 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	foreach c_file $class_files {
 	    set executable [file rootname [file tail $c_file]].o
 	    set x [prune_warnings \
-		     [target_compile $c_file "$executable" $type $args]]
+		     [libjava_tcompile $c_file "$executable" $type $args]]
 	    if {$x != ""} {
 		break
 	    }
 	}
     } else {
 	set x [prune_warnings \
-		 [target_compile $class_files "$executable" $type $args]]
+		 [libjava_tcompile $class_files "$executable" $type $args]]
     }
     if {[info exists opts(xfail-byte)]} {
 	setup_xfail *-*-*
