@@ -3118,25 +3118,6 @@
    (set_attr "pa_combine_type" "addmove")
    (set_attr "length" "4,4")])
 
-;; Disgusting kludge to work around reload bugs with frame pointer
-;; elimination.  Similar to other magic reload patterns in the
-;; indexed memory operations.
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=&r")
-	(plus:SI (plus:SI (match_operand:SI 1 "register_operand" "%r")
-			  (match_operand:SI 2 "register_operand" "r"))
-		 (match_operand:SI 3 "const_int_operand" "rL")))]
-  "reload_in_progress"
-  "*
-{
-  if (GET_CODE (operands[3]) == CONST_INT)
-    return \"ldo %3(%2),%0\;{addl|add,l} %1,%0,%0\";
-  else
-    return \"{addl|add,l} %3,%2,%0\;{addl|add,l} %1,%0,%0\";
-}"
-  [(set_attr "type" "binary")
-   (set_attr "length" "8")])
-
 (define_expand "subdi3"
   [(set (match_operand:DI 0 "register_operand" "")
 	(minus:DI (match_operand:DI 1 "register_operand" "")
@@ -4222,28 +4203,6 @@
   "{sh%O3addl %2,%1,%0|shladd,l %2,%O3,%1,%0} "
   [(set_attr "type" "binary")
    (set_attr "length" "4")])
-
-;; This variant of the above insn can occur if the first operand
-;; is the frame pointer.  This is a kludge, but there doesn't
-;; seem to be a way around it.  Only recognize it while reloading.
-;; Note how operand 3 uses a predicate of "const_int_operand", but 
-;; has constraints allowing a register.  I don't know how this works,
-;; but it somehow makes sure that out-of-range constants are placed
-;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=&r,r")
-	(plus:SI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r,r")
-				   (match_operand:SI 4 "shadd_operand" ""))
-			  (match_operand:SI 1 "register_operand" "r,r"))
-		 (match_operand:SI 3 "const_int_operand" "r,J")))]
-  "reload_in_progress"
-  "@
-   {sh%O4addl %2,%1,%0|shladd,l %2,%O4,%1,%0}\;{addl|add,l} %3,%0,%0
-   {sh%O4addl %2,%1,%0|shladd,l %2,%O4,%1,%0}\;ldo %3(%0),%0"
-  [(set_attr "type" "multi")
-   (set_attr "length" "8")])
 
 ;; This anonymous pattern and splitter wins because it reduces the latency
 ;; of the shadd sequence without increasing the latency of the shift.
