@@ -1,3 +1,10 @@
+2002-05-29  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/fr30/fr30.md: Remove previous restriction on splits.
+	Enforce conformance through gen_lowpart and cont_int_operand.
+        * config/fr30/fr30.h (BSS_SECTION_ASM_OP): Use ".section .bss"
+	as the assembler does not support ".bss".
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/i386/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define.

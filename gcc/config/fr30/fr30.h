@@ -1134,7 +1134,7 @@ do										\
    uninitialized global data will be output in the data section if
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
-#define BSS_SECTION_ASM_OP "\t.bss"
+#define BSS_SECTION_ASM_OP "\t.section .bss"
 
 /*}}}*/ 
 /*{{{  The Overall Framework of an Assembler File.  */
