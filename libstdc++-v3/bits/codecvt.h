@@ -416,7 +416,12 @@ namespace std
 	  if (__conv != size_t(-1))
 	    {
 	      __to_next = reinterpret_cast<extern_type*>(__cto);
-	      __ret = ok;
+	      if (__tlen == __tmultiple * (__to_end - __to))
+		__ret = noconv;
+	      else if (__tlen == 0)
+		__ret = ok;
+	      else
+		__ret = partial;
 	    }
 	  else 
 	    __ret = error;

@@ -10,7 +10,6 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
-
 dnl
 dnl Initialize configure bits.
 dnl
@@ -948,10 +947,12 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     AC_MSG_RESULT($has_weof)
 
     dnl Tests for wide character functions used in char_traits<wchar_t>.
-    AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset, ac_wfuncs=yes, ac_wfuncs=no)
+    AC_CHECK_FUNCS(wcslen wmemchr wmemcmp wmemcpy wmemmove wmemset \
+    wcsrtombs mbsrtowcs, ac_wfuncs=yes, ac_wfuncs=no)
 
     AC_MSG_CHECKING([for ISO C9X wchar_t support])
-    if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes && test x"$ac_wfuncs" = xyes; then
+    if test x"$has_weof" = xyes && test x"$has_wchar_minmax" = xyes \
+       && test x"$ac_wfuncs" = xyes; then
       ac_isoC9X_wchar_t=yes
     else
       ac_isoC9X_wchar_t=no
@@ -961,10 +962,13 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     dnl Use iconv for wchar_t to char conversions. As such, check for 
     dnl X/Open Portability Guide, version 2 features (XPG2).
     AC_CHECK_HEADER(iconv.h, ac_has_iconv_h=yes, ac_has_iconv_h=no)
-    AC_CHECK_FUNCS(iconv_open iconv_close iconv, ac_XPG2funcs=yes, ac_XPG2funcs=no)
+    AC_CHECK_HEADER(langinfo.h, ac_has_langinfo_h=yes, ac_has_langinfo_h=no)
+    AC_CHECK_FUNCS(iconv_open iconv_close iconv nl_langinfo, \
+    ac_XPG2funcs=yes, ac_XPG2funcs=no)
 
     AC_MSG_CHECKING([for XPG2 wchar_t support])
-    if test x"$ac_has_iconv_h" = xyes && test x"$ac_XPG2funcs" = xyes; then
+    if test x"$ac_has_iconv_h" = xyes && test x"$ac_has_langinfo_h" = xyes \
+       && test x"$ac_XPG2funcs" = xyes; then
       ac_XPG2_wchar_t=yes
     else
       ac_XPG2_wchar_t=no
@@ -973,12 +977,9 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
 
     dnl At the moment, only enable wchar_t specializations if all the
     dnl above support is present.
-    dnl 2000-07-07-bkoz-hack-xxx
-#    ac_isoC9X_wchar_t=no
-    dnl 2000-07-07-bkoz-hack-xxx
-
     AC_MSG_CHECKING([for enabled wchar_t specializations])
-    if test x"$ac_isoC9X_wchar_t" = xyes && test x"$ac_XPG2_wchar_t" = xyes; then
+    if test x"$ac_isoC9X_wchar_t" = xyes \
+       && test x"$ac_XPG2_wchar_t" = xyes; then
       libinst_wstring_la="libinst-wstring.la"
       AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
       AC_MSG_RESULT("yes")

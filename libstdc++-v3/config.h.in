@@ -510,6 +510,9 @@
 /* Define if you have the logl function.  */
 #undef HAVE_LOGL
 
+/* Define if you have the mbsrtowcs function.  */
+#undef HAVE_MBSRTOWCS
+
 /* Define if you have the modff function.  */
 #undef HAVE_MODFF
 
@@ -518,6 +521,9 @@
 
 /* Define if you have the nan function.  */
 #undef HAVE_NAN
+
+/* Define if you have the nl_langinfo function.  */
+#undef HAVE_NL_LANGINFO
 
 /* Define if you have the powf function.  */
 #undef HAVE_POWF
@@ -578,6 +584,9 @@
 
 /* Define if you have the wcslen function.  */
 #undef HAVE_WCSLEN
+
+/* Define if you have the wcsrtombs function.  */
+#undef HAVE_WCSRTOMBS
 
 /* Define if you have the wmemchr function.  */
 #undef HAVE_WMEMCHR
