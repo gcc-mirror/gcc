@@ -1363,6 +1363,9 @@ A symbol in the text segment of the current file
 @item Uv
 A memory reference suitable for VFP load/store insns (reg+constant offset)
 
+@item Uy
+A memory reference suitable for iWMMXt load/store instructions.
+
 @item Uq
 A memory reference suitable for for the ARMv4 ldrsb instruction.
 

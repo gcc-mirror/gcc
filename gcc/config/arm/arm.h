@@ -306,6 +306,7 @@ extern GTY(()) rtx aof_pic_label;
 				         ? (target_flags & THUMB_FLAG_LEAF_BACKTRACE)	\
 				         : (target_flags & THUMB_FLAG_BACKTRACE))
 #define TARGET_CIRRUS_FIX_INVALID_INSNS	(target_flags & CIRRUS_FIX_INVALID_INSNS)
+#define TARGET_LDRD			(arm_arch5e && ARM_DOUBLEWORD_ALIGN)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.  */
 #ifndef SUBTARGET_SWITCHES
@@ -1292,6 +1293,7 @@ enum reg_class
    accessed without using a load.
    'U' Prefixes an extended memory constraint where:
    'Uv' is an address valid for VFP load/store insns.  
+   'Uy' is an address valid for iwmmxt load/store insns.  
    'Uq' is an address valid for ldrsb.  */
 
 #define EXTRA_CONSTRAINT_STR_ARM(OP, C, STR)			\
@@ -1302,7 +1304,8 @@ enum reg_class
 		   && CONSTANT_POOL_ADDRESS_P (XEXP (OP, 0))) :	\
    ((C) == 'S') ? (optimize > 0 && CONSTANT_ADDRESS_P (OP)) :	\
    ((C) == 'T') ? cirrus_memory_offset (OP) :			\
-   ((C) == 'U' && (STR)[1] == 'v') ? vfp_mem_operand (OP) :	\
+   ((C) == 'U' && (STR)[1] == 'v') ? arm_coproc_mem_operand (OP, FALSE) : \
+   ((C) == 'U' && (STR)[1] == 'y') ? arm_coproc_mem_operand (OP, TRUE) : \
    ((C) == 'U' && (STR)[1] == 'q')				\
     ? arm_extendqisi_mem_op (OP, GET_MODE (OP))			\
       : 0)

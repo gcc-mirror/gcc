@@ -4073,7 +4073,7 @@
 )
 
 (define_insn "*arm_movdi"
-  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, o<>")
+  [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r ,m")
 	(match_operand:DI 1 "di_operand"              "rIK,mi,r"))]
   "TARGET_ARM
   && !(TARGET_HARD_FLOAT && (TARGET_MAVERICK || TARGET_VFP))
@@ -4085,6 +4085,26 @@
    (set_attr "type" "*,load2,store2")
    (set_attr "pool_range" "*,1020,*")
    (set_attr "neg_pool_range" "*,1008,*")]
+)
+
+;; We can't actually do base+index doubleword loads if the index and
+;; destination overlap.  Split here so that we at least have chance to
+;; schedule.
+(define_split
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(mem:DI (plus:SI (match_operand:SI 1 "s_register_operand" "")
+			 (match_operand:SI 2 "s_register_operand" ""))))]
+  "TARGET_LDRD
+  && reg_overlap_mentioned_p (operands[0], operands[1])
+  && reg_overlap_mentioned_p (operands[0], operands[2])"
+  [(set (match_dup 4)
+	(plus:SI (match_dup 1)
+		 (match_dup 2)))
+   (set (match_dup 0)
+	(mem:DI (match_dup 4)))]
+  "
+  operands[4] = gen_rtx_REG (SImode, REGNO(operands[0]));
+  "
 )
 
 ;;; ??? This should have alternatives for constants.
