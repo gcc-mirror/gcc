@@ -140,6 +140,7 @@ static void debug_yychar PARAMS ((int));
 extern char *debug_yytranslate PARAMS ((int));
 #endif
 static enum cpp_ttype last_token;
+static tree last_token_id;
 
 /* From lex.c: */
 /* the declaration found for the last IDENTIFIER token read in.
@@ -259,7 +260,8 @@ read_token (t)
 {
  retry:
 
-  last_token = c_lex (&t->yylval.ttype);
+  last_token = c_lex (&last_token_id);
+  t->yylval.ttype = last_token_id;
 
   switch (last_token)
     {
@@ -1499,10 +1501,12 @@ yyerror (msgid)
     error ("%s before numeric constant", string);
   else if (last_token == CPP_NAME)
     {
-      if (yylval.ttype && TREE_CODE (yylval.ttype) == IDENTIFIER_NODE)
-        error ("%s before `%s'", string, IDENTIFIER_POINTER (yylval.ttype));
-      else
+      if (TREE_CODE (last_token_id) == IDENTIFIER_NODE)
+        error ("%s before `%s'", string, IDENTIFIER_POINTER (last_token_id));
+      else if (ISGRAPH (yychar))
         error ("%s before `%c'", string, yychar);
+      else
+	error ("%s before `\%o'", string, yychar);
     }
   else
     error ("%s before `%s' token", string, NAME (last_token));
