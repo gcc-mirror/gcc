@@ -1,3 +1,7 @@
+2001-08-01  Richard Henderson  <rth@redhat.com>
+
+	* rtl.c (read_name): Consider \r whitespace.
+
 2001-08-01  Mark Kettenis  <kettenis@gnu.org>
 
 	* unwind-pe.h (base_of_encoded_value, read_encoded_value): Define
