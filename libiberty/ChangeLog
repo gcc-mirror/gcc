@@ -1,3 +1,8 @@
+2000-08-31  DJ Delorie  <dj@redhat.com>
+
+	* configure.in (Cygwin): special case cygwin only when we're
+	building cygwin, not when we're hosting cygwin.
+
 2000-09-04  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_template_arg): Eat an `E' after an
