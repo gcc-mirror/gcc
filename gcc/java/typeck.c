@@ -28,6 +28,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "system.h"
 #include "tree.h"
 #include "obstack.h"
+#include "flags.h"
 #include "java-tree.h"
 #include "jcf.h"
 #include "convert.h"
@@ -52,6 +53,39 @@ set_local_type (slot, type)
     type_map[++slot] = void_type_node;
 }
 
+/* Convert an IEEE real to an integer type.  The result of such a
+   conversion when the source operand is a NaN isn't defined by
+   IEEE754, but by the Java language standard: it must be zero.  This
+   conversion produces something like:
+   
+   ({ double tmp = expr; (tmp != tmp) ? 0 : (int)tmp; })
+
+   */
+
+static tree
+convert_ieee_real_to_integer (type, expr)
+     tree type, expr;
+{
+  tree node, assignment, expr_decl;
+
+  expr_decl = build_decl (VAR_DECL, generate_name (), TREE_TYPE (expr));
+  layout_decl (expr_decl, 0);
+  expand_decl (pushdecl (expr_decl));
+  assignment = build (MODIFY_EXPR, NULL_TREE, expr_decl, expr);
+  TREE_SIDE_EFFECTS (assignment) = 1;
+  TREE_TYPE (assignment) = type;
+
+  expr = build (COMPOUND_EXPR, NULL_TREE,
+		assignment,
+		build (COND_EXPR, type, 
+		       build (NE_EXPR, boolean_type_node, expr_decl, expr_decl),
+		       build_int_2 (0, 0),
+		       convert_to_integer (type, expr_decl)));
+
+  TREE_TYPE (expr) = type;
+  return expr;
+}  
+
 /* Create an expression whose value is that of EXPR,
    converted to type TYPE.  The TREE_TYPE of the value
    is always TYPE.  This function implements all reasonable
@@ -69,10 +103,23 @@ convert (type, expr)
     return expr;
   if (TREE_CODE (TREE_TYPE (expr)) == ERROR_MARK)
     return error_mark_node;
+  if (code == VOID_TYPE)
+    return build1 (CONVERT_EXPR, type, expr);
   if (code == BOOLEAN_TYPE)
     return fold (convert_to_boolean (type, expr));
   if (code == INTEGER_TYPE)
-    return fold (convert_to_integer (type, expr));
+    {
+      if (TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
+#ifdef TARGET_SOFT_FLOAT
+	  && !TARGET_SOFT_FLOAT
+#endif
+	  && !flag_emit_class_files
+	  && !flag_fast_math
+	  && TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)
+	return fold (convert_ieee_real_to_integer (type, expr));
+      else
+	return fold (convert_to_integer (type, expr));
+    }	  
   if (code == REAL_TYPE)
     return fold (convert_to_real (type, expr));
   if (code == CHAR_TYPE)
@@ -82,6 +129,7 @@ convert (type, expr)
   error ("conversion to non-scalar type requested");
   return error_mark_node;
 }
+
 
 tree
 convert_to_char (type, expr)
