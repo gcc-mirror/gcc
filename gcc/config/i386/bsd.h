@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
    that says to advance the location counter by SIZE bytes.  */
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.space %u\n", (SIZE))
+  fprintf (FILE, "\t.space "HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
 
 /* Define the syntax of labels and symbol definitions/declarations.  */
 
@@ -63,7 +63,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
@@ -71,7 +71,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 /* This is how to output an assembler line
    that says to advance the location counter

@@ -1709,7 +1709,7 @@ __transfer_from_trampoline ()					\
     fprintf (FILE, "\t.even\n");
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.skip %u\n", (SIZE))
+  fprintf (FILE, "\t.skip %u\n", (int)(SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1717,7 +1717,7 @@ __transfer_from_trampoline ()					\
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
@@ -1725,7 +1725,7 @@ __transfer_from_trampoline ()					\
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 /* Output a float value (represented as a C double) as an immediate operand.
    This macro is a 68k-specific macro.  */

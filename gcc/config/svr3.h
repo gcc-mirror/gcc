@@ -93,7 +93,7 @@ Boston, MA 02111-1307, USA.
     data_section ();					\
     ASM_OUTPUT_ALIGN ((FILE), align == -1 ? 2 : align);	\
     ASM_OUTPUT_LABEL ((FILE), (NAME));			\
-    fprintf ((FILE), "\t.set .,.+%u\n", (ROUNDED));	\
+    fprintf ((FILE), "\t.set .,.+%u\n", (int)(ROUNDED));	\
   } while (0)
 
 #if 0 /* For now, let's leave these machine-specific.  */

@@ -126,7 +126,7 @@ do {					\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\tspace %d\n", (SIZE))
+  fprintf (FILE, "\tspace %d\n", (int)(SIZE))
 
 /* Can't use ASM_OUTPUT_SKIP in text section; it doesn't leave 0s.  */
 
@@ -392,7 +392,7 @@ int switch_table_difference_label_flag;
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\tlcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 #define USER_LABEL_PREFIX ""
 

@@ -3921,7 +3921,7 @@ while (0)
    linker).  */
 
 #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
-  mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (SIZE))
+  mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (int)(SIZE))
 
 
 /* This says how to output an external.  It would be possible not to
@@ -4025,7 +4025,7 @@ do {									\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM,SIZE)					\
-  fprintf (STREAM, "\t.space\t%u\n", (SIZE))
+  fprintf (STREAM, "\t.space\t"HOST_WIDE_INT_PRINT_UNSIGNED"%u\n", (SIZE))
 
 /* This is how to output a string.  */
 #undef ASM_OUTPUT_ASCII

@@ -1,3 +1,92 @@
+Mon May 12 11:32:53 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* expr.h (assemble_static_space): Update prototype.
+	* output.h (assemble_zeros, output_constant): Likewise.
+	* elfos.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON): Make it 64bit clean
+	* alpha.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON, ASK_OUTPUT_LOCAL): Make
+	it 64bit clean.
+	* elf.h (ASM_OTUPUT_SKIP): Likewise.
+	* unicosmk.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMM): Likewise.
+	* arm.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP):
+	Expect HOST_WIDE_INT operand.
+	* aout.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP):
+	Expect HOST_WIDE_INT operand.
+	* unknown-elf.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP):
+	Expect HOST_WIDE_INT operand.
+	* avr.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_SKIP): Expect
+	HOST_WIDE_INT operand.
+	* c4x.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP,
+	ASM_OUTPUT_BSS): Expect HOST_WIDE_INT operand.
+	* aout.h (ASM_OTUPUT_SKIP): Likewise.
+	* cris.h (ASM_OTUPUT_SKIP, ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Likewise.
+	* darwin.h (ASM_OTUPUT_SKIP, ASM_OUTPUT_COMMON): Likewise.
+	* dsp16xx.h (ASM_OTUPUT_SKIP): Likewise.
+	* frv.h (ASM_OTUPUT_SKIP): Likewise.
+	* h8300.h (ASM_OTUPUT_SKIP, ASM_OUTPUT_LOCAL): Likewise.
+	* 370.h (ASM_OTUPUT_SKIP, ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL):
+	Make it 64bit
+	clean.
+	* att.h (ASM_OUTPUT_SKIP): Expect HOST_WIDE_INT operand.
+	* bsd.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL):
+	Make it 64bit clean.
+	* darwin.h (ASM_OUTPUT_SKIP): Make it 64bit clean..
+	* sco5.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL): Expect
+	HOST_WIDE_INT operand
+	* svr3gas.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL):
+	Expect HOST_WIDE_INT operand
+	* sysv3.h (ASM_OUTPUT_SKIP): Expect HOST_WIDE_INT operand
+	* i960.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON,
+	ASM_OUTPUT_ALIGNED_LOCAL): Expect HOST_WIDE_INT operand
+	* ip2k.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP):
+	Likewise.
+	* m32r.h (ASM_OUTPUT_COMMON): Likewise.
+	* 3b1.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP):
+	Likewise.
+	* amix.h (ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
+	* crds.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_ALIGNED_LOCAL): Likewise.
+	* hp320.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL,
+	ASM_OUTPUT_SKIP): Likewise.
+	* m68k.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP):
+	Likewise.
+	* m68kelf.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL,
+	ASM_OUTPUT_SKIP): Likewise.
+	* m68kv4.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL,
+	ASM_OUTPUT_SKIP): Likewise.
+	* mot3300.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP): Likewise.
+	* netbsd-elf.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_COMMON,
+	ASM_OUTPUT_SKIP): Likewise.
+	* sgs.h (ASM_OUTPUT_SKIP): Likewise.
+	* tower-as.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_COMMON,
+	ASM_OUTPUT_SKIP): Likewise.
+	* m88k.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_COMMON, ASM_OUTPUT_SKIP):
+	Likewise.
+	* mcore.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_BSS, ASM_OUTPUT_SKIP): Likewise.
+	* iris.h (ASM_OUTPUT_LOCAL): Likewise.
+	* mips.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_SKIP): Likewise.
+	* ns32k.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL,
+	ASM_OUTPUT_SKIP): Make it 64bit clean.
+	* pa-pro-end.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_ALIGNED_LOCAL):
+	Make it 64bit clean.
+	* pa.h (ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL, ASM_OUTPUT_ALIGNED_LOCAL,
+	ASM_OUTPUT_SKIP): Make it 64bit clean.
+	* hpux.h (ASM_OUTPUT_LOCAL, ASM_OUTPUT_ALIGNED_LOCAL): Make it
+	64bit clean.
+	* romp.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_LOCAL, ASM_OUTPUT_COMMON): Expect
+	HOST_WIDE_INT argument
+	* s390.h (ASM_OUTPUT_SKIP): Expect HOST_WIDE_INT argument.
+	* sh.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_LOCAL, ASM_OUTPUT_COMMON): Expect
+	HOST_WIDE_INT argument
+	* sol2.h (ASM_OUTPUT_SKIP): HOST_WIDE_INT argument
+	* sparc.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON): HOST_WIDE_INT argument
+	* svr3.h (ASM_OUTPUT_SKIP): HOST_WIDE_INT argument
+	* vax.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_COMMON, ASM_OUTPUT_LOCAL):
+	HOST_WIDE_INT argument
+	* vaxv.h (ASM_OUTPUT_LOCAL): HOST_WIDE_INT argument
+	* xtensa.h (ASM_OUTPUT_LOCAL): HOST_WIDE_INT argument
+	* varasm.c (asm_output_bss, asm_output_aligned_bss,
+	asm_emit_uninitialized, assemble_zeros, assemble_static_space):
+	HOST_WIDE_INT argument
+
 2003-05-10  Steven Bosscher  <steven@gcc.gnu.org> 
 
 	* cgraphunit.c (cgraph_create_edges): Drop walk_tree in

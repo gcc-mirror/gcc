@@ -52,7 +52,7 @@ output_file_directive ((FILE), main_input_filename)
 #define ASM_OUTPUT_LOCAL(FILE,NAME,SIZE,ROUNDED)	\
 ( data_section (),					\
   assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ":\n\t.space %u\n", (ROUNDED)))
+  fprintf ((FILE), ":\n\t.space %u\n", (int)(ROUNDED)))
 
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)			\
 do {							\

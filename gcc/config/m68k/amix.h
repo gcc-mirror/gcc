@@ -89,7 +89,7 @@ do {									\
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
 do {									\
   fprintf ((FILE), "%s%s,%u,%u\n",					\
-	   BSS_ASM_OP, (NAME), (SIZE), MAX ((ALIGN) / BITS_PER_UNIT, 4)); \
+	   BSS_ASM_OP, (NAME), (int)(SIZE), MAX ((ALIGN) / BITS_PER_UNIT, 4)); \
 } while (0)
 
 /* This definition of ASM_OUTPUT_ASCII is the same as the one in m68k/sgs.h,

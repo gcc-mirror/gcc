@@ -124,7 +124,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "%s%u\n", SPACE_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SPACE_ASM_OP, (int)(SIZE))
 
 /* 1 if N is a possible register number for a function value.
    For m68k/SVR4 allow d0, a0, or fp0 as return registers, for integral,
@@ -258,12 +258,12 @@ int switch_table_difference_label_flag;
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (SIZE)))
+  fprintf ((FILE), ",%u\n", (int)(SIZE)))
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (SIZE)))
+  fprintf ((FILE), ",%u\n", (int)(SIZE)))
 
 /* Override the definition in svr4.h. In m68k svr4, using swbeg is the 
    standard way to do switch table.  */

@@ -163,22 +163,27 @@ static int mark_constant		PARAMS ((rtx *current_rtx, void *data));
 static int output_addressed_constants	PARAMS ((tree));
 static unsigned HOST_WIDE_INT array_size_for_constructor PARAMS ((tree));
 static unsigned min_align		PARAMS ((unsigned, unsigned));
-static void output_constructor		PARAMS ((tree, HOST_WIDE_INT,
+static void output_constructor		PARAMS ((tree, unsigned HOST_WIDE_INT,
 						 unsigned int));
 static void globalize_decl		PARAMS ((tree));
 static void maybe_assemble_visibility	PARAMS ((tree));
 static int in_named_entry_eq		PARAMS ((const PTR, const PTR));
 static hashval_t in_named_entry_hash	PARAMS ((const PTR));
 #ifdef ASM_OUTPUT_BSS
-static void asm_output_bss		PARAMS ((FILE *, tree, const char *, int, int));
+static void asm_output_bss		PARAMS ((FILE *, tree, const char *,
+						unsigned HOST_WIDE_INT,
+						unsigned HOST_WIDE_INT));
 #endif
 #ifdef BSS_SECTION_ASM_OP
 #ifdef ASM_OUTPUT_ALIGNED_BSS
 static void asm_output_aligned_bss
-  PARAMS ((FILE *, tree, const char *, int, int)) ATTRIBUTE_UNUSED;
+  PARAMS ((FILE *, tree, const char *,
+	   unsigned HOST_WIDE_INT, int)) ATTRIBUTE_UNUSED;
 #endif
 #endif /* BSS_SECTION_ASM_OP */
-static bool asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
+static bool asm_emit_uninitialised	PARAMS ((tree, const char*,
+						 unsigned HOST_WIDE_INT,
+						 unsigned HOST_WIDE_INT));
 static void resolve_unique_section	PARAMS ((tree, int, int));
 static void mark_weak                   PARAMS ((tree));
 
@@ -501,7 +506,7 @@ asm_output_bss (file, decl, name, size, rounded)
      FILE *file;
      tree decl ATTRIBUTE_UNUSED;
      const char *name;
-     int size ATTRIBUTE_UNUSED, rounded;
+     unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED, rounded;
 {
   (*targetm.asm_out.globalize_label) (file, name);
   bss_section ();
@@ -529,7 +534,8 @@ asm_output_aligned_bss (file, decl, name, size, align)
      FILE *file;
      tree decl ATTRIBUTE_UNUSED;
      const char *name;
-     int size, align;
+     unsigned HOST_WIDE_INT size;
+     int align;
 {
   bss_section ();
   ASM_OUTPUT_ALIGN (file, floor_log2 (align / BITS_PER_UNIT));
@@ -1208,7 +1214,7 @@ assemble_end_function (decl, fnname)
 
 void
 assemble_zeros (size)
-     int size;
+     unsigned HOST_WIDE_INT size;
 {
   /* Do no output if -fsyntax-only.  */
   if (flag_syntax_only)
@@ -1219,7 +1225,7 @@ assemble_zeros (size)
      so we must output 0s explicitly in the text section.  */
   if (ASM_NO_SKIP_IN_TEXT && in_text_section ())
     {
-      int i;
+      unsigned HOST_WIDE_INT i;
       for (i = 0; i < size; i++)
 	assemble_integer (const0_rtx, 1, BITS_PER_UNIT, 1);
     }
@@ -1309,8 +1315,8 @@ static bool
 asm_emit_uninitialised (decl, name, size, rounded)
      tree decl;
      const char *name;
-     int size ATTRIBUTE_UNUSED;
-     int rounded ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT size ATTRIBUTE_UNUSED;
+     unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED;
 {
   enum
   {
@@ -1751,7 +1757,7 @@ assemble_name (file, name)
 
 rtx
 assemble_static_space (size)
-     int size;
+     unsigned HOST_WIDE_INT size;
 {
   char name[12];
   const char *namestring;
@@ -1780,7 +1786,7 @@ assemble_static_space (size)
     /* Round size up to multiple of BIGGEST_ALIGNMENT bits
        so that each uninitialized object starts on such a boundary.  */
     /* Variable `rounded' might or might not be used in ASM_OUTPUT_LOCAL.  */
-    int rounded ATTRIBUTE_UNUSED
+    unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED
       = ((size + (BIGGEST_ALIGNMENT / BITS_PER_UNIT) - 1)
 	 / (BIGGEST_ALIGNMENT / BITS_PER_UNIT)
 	 * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
@@ -3767,11 +3773,11 @@ initializer_constant_valid_p (value, endtype)
 void
 output_constant (exp, size, align)
      tree exp;
-     HOST_WIDE_INT size;
+     unsigned HOST_WIDE_INT size;
      unsigned int align;
 {
   enum tree_code code;
-  HOST_WIDE_INT thissize;
+  unsigned HOST_WIDE_INT thissize;
 
   /* Some front-ends use constants other than the standard language-independent
      varieties, but which may still be output directly.  Give the front-end a
@@ -3851,7 +3857,8 @@ output_constant (exp, size, align)
 	}
       else if (TREE_CODE (exp) == STRING_CST)
 	{
-	  thissize = MIN (TREE_STRING_LENGTH (exp), size);
+	  thissize = MIN ((unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp),
+			  size);
 	  assemble_string (TREE_STRING_POINTER (exp), thissize);
 	}
       else if (TREE_CODE (exp) == VECTOR_CST)
@@ -3960,7 +3967,7 @@ array_size_for_constructor (val)
 static void
 output_constructor (exp, size, align)
      tree exp;
-     HOST_WIDE_INT size;
+     unsigned HOST_WIDE_INT size;
      unsigned int align;
 {
   tree type = TREE_TYPE (exp);
@@ -4256,7 +4263,7 @@ output_constructor (exp, size, align)
       total_bytes++;
     }
 
-  if (total_bytes < size)
+  if ((unsigned HOST_WIDE_INT)total_bytes < size)
     assemble_zeros (size - total_bytes);
 }
 

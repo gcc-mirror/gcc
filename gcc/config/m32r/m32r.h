@@ -1696,7 +1696,7 @@ extern char m32r_punct_chars[256];
       else								\
 	fprintf ((FILE), "%s", COMMON_ASM_OP);				\
       assemble_name ((FILE), (NAME));					\
-      fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
+      fprintf ((FILE), ",%u,%u\n", (int)(SIZE), (ALIGN) / BITS_PER_UNIT);\
     }									\
   while (0)
 

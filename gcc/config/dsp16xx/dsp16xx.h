@@ -1703,7 +1703,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 #define ASM_NO_SKIP_IN_TEXT 1
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t%d * int 0\n", (SIZE))
+  fprintf (FILE, "\t%d * int 0\n", (int)(SIZE))
 
 /* CONTROLLING DEBUGGING INFORMATION FORMAT */
 

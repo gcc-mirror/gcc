@@ -453,7 +453,8 @@ ssib_section ()			\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM,SIZE)			\
-  fprintf ((STREAM), "\t.byte\t0:%d\n", (SIZE));
+  fprintf ((STREAM), "\t.byte\t0:"HOST_WIDE_INT_PRINT_UNSIGNED"\n",\
+	   (SIZE));
 
 /* This says how to output an assembler line to define a global common
    symbol. We need the alignment information because it has to be supplied
@@ -470,7 +471,7 @@ ssib_section ()			\
   do { data_section ();					\
        fprintf (FILE, "\t.align\t%d\n", floor_log2 ((ALIGN) / BITS_PER_UNIT));\
        ASM_OUTPUT_LABEL ((FILE), (NAME));		\
-       fprintf (FILE, "\t.byte 0:%d\n", SIZE);		\
+       fprintf (FILE, "\t.byte 0:"HOST_WIDE_INT_PRINT_UNSIGNED"\n",(SIZE));\
   } while (0)
 
 /* CAM does not allow us to declare a symbol as external first and then

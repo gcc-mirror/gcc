@@ -914,7 +914,7 @@ extern int flag_pic;
 
 /* Advance the location counter by SIZE bytes.  */
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
-  fprintf ((FILE), "\t.set\t.,.+%u\n", (SIZE))
+  fprintf ((FILE), "\t.set\t.,.+"HOST_WIDE_INT_PRINT_UNSIGNED"\n", (SIZE))
 
 /* The LOCAL_LABEL_PREFIX variable is used by dbxelf.h.  */
 #define LOCAL_LABEL_PREFIX "."

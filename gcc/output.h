@@ -276,7 +276,7 @@ extern void assemble_variable		PARAMS ((tree, int, int, int));
 extern void assemble_external		PARAMS ((tree));
 
 /* Assemble code to leave SIZE bytes of zeros.  */
-extern void assemble_zeros		PARAMS ((int));
+extern void assemble_zeros		PARAMS ((unsigned HOST_WIDE_INT));
 
 /* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
 extern void assemble_align		PARAMS ((int));
@@ -363,7 +363,7 @@ extern tree initializer_constant_valid_p	PARAMS ((tree, tree));
    with zeros if necessary.  SIZE must always be specified.
 
    ALIGN is the alignment in bits that may be assumed for the data.  */
-extern void output_constant		PARAMS ((tree, HOST_WIDE_INT,
+extern void output_constant		PARAMS ((tree, unsigned HOST_WIDE_INT,
 						 unsigned int));
 
 /* When outputting delayed branch sequences, this rtx holds the

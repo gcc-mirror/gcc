@@ -1961,7 +1961,7 @@ do {									\
 do {							\
      fputs ("\t.comm ", (STREAM));			\
      assemble_name ((STREAM), (NAME));			\
-     fprintf ((STREAM), ",%d\n", (SIZE));		\
+     fprintf ((STREAM), ",%d\n", (int)(SIZE));		\
 } while (0)
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM the assembler definition of a common-label named NAME whose
@@ -1979,7 +1979,7 @@ do {							\
 do {							\
      fputs ("\t.lcomm ", (STREAM));			\
      assemble_name ((STREAM), (NAME));			\
-     fprintf ((STREAM), ",%d\n", (SIZE));		\
+     fprintf ((STREAM), ",%d\n", (int)(SIZE));		\
 } while (0)
 /* A C statement (sans semicolon) to output to the stdio stream
    STREAM the assembler definition of a local-common-label named NAME

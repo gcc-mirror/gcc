@@ -793,7 +793,7 @@ extern bool const_mult_add_overflow_p PARAMS ((rtx, rtx, rtx, enum machine_mode,
 extern rtx expand_mult_add PARAMS ((rtx, rtx, rtx, rtx,enum machine_mode, int));
 extern rtx expand_mult_highpart_adjust PARAMS ((enum machine_mode, rtx, rtx, rtx, rtx, int));
 
-extern rtx assemble_static_space PARAMS ((int));
+extern rtx assemble_static_space PARAMS ((unsigned HOST_WIDE_INT));
 extern int safe_from_p PARAMS ((rtx, tree, int));
 
 /* Call this once to initialize the contents of the optabs

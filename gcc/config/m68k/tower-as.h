@@ -199,7 +199,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\tcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%d\n", ((SIZE) == 0) ? (ROUNDED) : (SIZE)))
+  fprintf ((FILE), ",%d\n", ((SIZE) == 0) ? (int)(ROUNDED) : (int)(SIZE)))
 
 /* This says how to output an assembler line to define a local common symbol.
    We use SIZE rather than ROUNDED, as this is what the native cc does.  */
@@ -208,7 +208,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\tlcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%d\n", ((SIZE) == 0) ? (ROUNDED) : (SIZE)))
+  fprintf ((FILE), ",%d\n", ((SIZE) == 0) ? (int)(ROUNDED) : (int)(SIZE)))
 
 #define ASM_PN_FORMAT "%s%%%%%lu"
  
@@ -246,7 +246,7 @@ do {					\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\tspace %d\n", (SIZE))
+  fprintf (FILE, "\tspace %d\n", (int)(SIZE))
 
 /* Output a float value (represented as a C double) as an immediate operand.
    This macro is a 68k-specific macro.  */

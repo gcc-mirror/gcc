@@ -154,7 +154,7 @@ Boston, MA 02111-1307, USA.  */
 /*unos has no .skip :-( */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)	 	\
-    fprintf (FILE, "\t. = . + %u\n", (SIZE));	
+    fprintf (FILE, "\t. = . + %u\n", (int)(SIZE));	
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
@@ -165,7 +165,7 @@ Boston, MA 02111-1307, USA.  */
 { data_section ();				\
   if ((SIZE) > 1) fprintf (FILE, "\t.even\n");	\
   assemble_name ((FILE), (NAME));		\
-  fprintf ((FILE), ":\t. = . + %u\n", (ROUNDED));}
+  fprintf ((FILE), ":\t. = . + %u\n", (int)(ROUNDED));}
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

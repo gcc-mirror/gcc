@@ -109,7 +109,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED"\n", (ROUNDED)))
 
 /* Darwin profiling -- call mcount.  */
 #undef FUNCTION_PROFILER
