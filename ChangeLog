@@ -1,3 +1,11 @@
+2004-03-15  Paolo Bonzini  <bonzini@gnu.org>
+            Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in (DEFAULT_YACC, DEFAULT_M4, DEFAULT_LEX):
+        Set with AC_CHECK_PROGS.
+	* configure.in: Fix comment typo from last patch.
+	* configure: Regenerate.
+
 2004-03-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl: Introduce experimental top level bootstrap support.

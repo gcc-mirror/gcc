@@ -1070,7 +1070,7 @@ fi
 
 ACX_PROG_GNAT
 
-# By default, C is the only stage 1 langauge.
+# By default, C is the only stage 1 language.
 stage1_languages=c
 AC_SUBST(stage1_languages)
 
@@ -1497,62 +1497,12 @@ esac
 tooldir='${exec_prefix}'/${target_alias}
 build_tooldir=${tooldir}
 
-# Generate a default definition for YACC.  This is used if the makefile can't
-# locate bison or byacc in objdir.
-
-for prog in 'bison -y' byacc yacc
-do
-  set dummy $prog; tmp=$2
-  IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
-  for dir in $PATH; do
-    test -z "$dir" && dir=.
-    if test -f $dir/$tmp; then
-      DEFAULT_YACC="$prog"
-      break
-    fi
-  done
-  IFS="$save_ifs"
-
-  test -n "$DEFAULT_YACC" && break
-done
-
-# Generate a default definition for M4.  This is used if the makefile can't
-# locate m4 in objdir.
-
-for prog in gm4 gnum4 m4
-do
-  set dummy $prog; tmp=$2
-  IFS="${IFS=   }"; save_ifs="$IFS"; IFS="${IFS}:"
-  for dir in $PATH; do
-    test -z "$dir" && dir=.
-    if test -f $dir/$tmp; then
-      DEFAULT_M4="$prog"
-      break
-    fi
-  done
-  IFS="$save_ifs"
-
-  test -n "$DEFAULT_M4" && break
-done
-
-# Generate a default definition for LEX.  This is used if the makefile can't
-# locate flex in objdir.
-
-for prog in flex lex
-do
-  set dummy $prog; tmp=$2
-  IFS="${IFS= 	}"; save_ifs="$IFS"; IFS="${IFS}:"
-  for dir in $PATH; do
-    test -z "$dir" && dir=.
-    if test -f $dir/$tmp; then
-      DEFAULT_LEX="$prog"
-      break
-    fi
-  done
-  IFS="$save_ifs"
-
-  test -n "$DEFAULT_LEX" && break
-done
+# Generate default definitions for YACC, M4, LEX.  These are used if the
+# Makefile can't locate these programs in objdir.
+MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
+AC_CHECK_PROGS([DEFAULT_YACC], ['bison -y' byacc yacc], [$MISSING bison])
+AC_CHECK_PROGS([DEFAULT_M4], [gm4 gnum4 m4], [$MISSING m4])
+AC_CHECK_PROGS([DEFAULT_LEX], [flex lex], [$MISSING flex])
 
 # FIXME Should this be done recursively ??? (Useful for e.g. gdbtest)
 # Set up the list of links to be made.
