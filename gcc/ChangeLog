@@ -1,3 +1,15 @@
+1998-07-08  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* toplev.c (lang_options): Add -Wlong-long, -Wno-long-long
+	options.
+	* c-decl.c (warn_long_long): Define.
+	(c_decode_option): Parse -Wlong-long, -Wno-long-long options.
+	(grokdeclarator): Add flag `warn_long_long' as guard for
+	warning "ANSI C does not support `long long'".
+	* invoke.texi: Add description of options -Wlong-long,
+	-Wno-long-long.
+	* gcc.1: The same as above.
+	
 Wed Jul  8 02:43:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* rtlanal.c (reg_overlap_mentioned_p): Handle STRICT_LOW_PART.  If

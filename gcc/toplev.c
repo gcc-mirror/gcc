@@ -864,6 +864,8 @@ char *lang_options[] =
   "-Wno-implicit-int",
   "-Wimplicit",
   "-Wno-implicit",
+  "-Wlong-long",
+  "-Wno-long-long",
   "-Wmain",
   "-Wno-main",
   "-Wmissing-braces",

@@ -329,6 +329,10 @@ extern int flag_no_ident;
 
 extern int warn_implicit;
 
+/* Nonzero means warn about usage of long long when `-pedantic'.  */
+
+extern int warn_long_long;
+
 /* Nonzero means warn when all ctors or dtors are private, and the class
    has no friends.  */
 
