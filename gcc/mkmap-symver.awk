@@ -21,6 +21,10 @@
 BEGIN {
   state = "nm";
   sawsymbol = 0;
+  if (leading_underscore)
+    prefix = "_";
+  else
+    prefix = "";
 }
 
 # Remove comment and blank lines.
@@ -56,6 +60,8 @@ state == "nm" {
 # for beginning and ending each section, and %inherit markers for
 # describing version inheritence.  A symbol may appear in more than
 # one symbol version, and the last seen takes effect.
+# The magic version name '%exclude' causes all the symbols given that
+# version to be dropped from the output (unless a later version overrides).
 
 NF == 3 && $1 == "%inherit" {
   inherit[$2] = $3;
@@ -63,7 +69,8 @@ NF == 3 && $1 == "%inherit" {
 }
 
 NF == 2 && $2 == "{" {
-  libs[$1] = 1;
+  if ($1 != "%exclude")
+    libs[$1] = 1;
   thislib = $1;
   next;
 }
@@ -74,7 +81,11 @@ $1 == "}" {
 }
 
 {
-  ver[$1] = thislib;
+  sym = prefix $1;
+  if (thislib != "%exclude")
+    ver[sym] = thislib;
+  else
+    delete ver[sym];
   next;
 }
 
@@ -106,8 +117,6 @@ function output(lib) {
 	    empty = 0;
 	  }
 	printf("\t%s;\n", sym);
-	if (dotsyms)
-	  printf("\t.%s;\n", sym);
       }
 
   if (empty)

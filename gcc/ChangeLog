@@ -1,3 +1,21 @@
+2004-11-16  Zack Weinberg  <zack@codesourcery.com>
+
+	* mkmap-flat.awk, mkmap-symver.awk: If the last version
+	assigned to a symbol was '%exclude', do not emit it anywhere.
+	If leading_underscore is true, prefix all symbols from the
+	version scripts with a leading underscore before comparing
+	them with nm output or emitting them.  Remove support for dot
+	symbols.
+	* config/t-slibgcc-darwin (SHLIB_LINK): Use mkmap-flat.awk.
+	(SHLIB_MAPFILES): Use libgcc-std.ver.
+	(SHLIB_MKMAP_OPTS): Enable leading-underscore mode.
+	(SHLIB_LINK): Add -Wl,-exported_symbols_list,$(SHLIB_MAP).
+	* config/sh/t-linux: Use the normal libgcc-std.ver, plus
+	libgcc-excl.ver and libgcc-glibc.ver.
+
+	* config/sh/libgcc-excl.ver: New file.
+	* config/sh/libgcc-std.ver, libgcc-darwin.ver: Delete.
+
 2004-11-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Swap
@@ -6,21 +24,21 @@
 
 2004-11-16  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (rs6000_override_options): Split e500v2
-        doubles.
-        (rs6000_complex_function_value): Handle e500 v2 variant.
+	* config/rs6000/rs6000.c (rs6000_override_options): Split e500v2
+	doubles.
+	(rs6000_complex_function_value): Handle e500 v2 variant.
 
 2004-11-16  Daniel Berlin  <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/18519
-	
+
 	* tree-optimize (execute_todo): Add case for TODO_cleanup_cfg.
 	* tree-pass.h: Add TODO_cleanup_cfg.
 	* tree-ssa-ccp.c (pass_ccp): Use TODO_cleanup_cfg.
 	(ccp_finalize): Remove call to cleanup_cfg.
 	* tree-ssa-dce.c (pass_dce): Use TODO_cleanup_cfg and TODO_dump_func.
 	(pass_cd_dce): Ditto.
-	(perform_tree_ssa_dce): Remove call to cleanup_cfg, 
+	(perform_tree_ssa_dce): Remove call to cleanup_cfg,
 	dump_function_to_file.
 	* tree-ssa-loop-ch.c (copy_loop_headers): Remove call
 	to cleanup_cfg.
@@ -29,12 +47,12 @@
 	cleanup_cfg.
 	(pass_loop_done): Add TODO_cleanup_cfg.
 	* tree-ssa-phiopt.c (pass_phiopt): Ditto.
-	(tree_ssa_phiopt): Remove call to cleanup_cfg.	
-	
+	(tree_ssa_phiopt): Remove call to cleanup_cfg.
+
 2004-11-16  Devang Patel  <dpatel@apple.com>
 
 	* optabs.c (vector_compare_rtx): Fix COMPARISON_CLASS_P use.
-	
+
 2004-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expmed.c, ra-colorize.c: Fix comment typos.
@@ -42,7 +60,7 @@
 	* doc/tm.texi: Fix typos.
 
 2004-11-16  Daniel Jacobowitz  <dan@codesourcery.com>
-            Mark Mitchell  <mark@codesourcery.com>
+	    Mark Mitchell  <mark@codesourcery.com>
 
 	PR target/6123
 	* config/sol2.h (TARGET_OS_CPP_BUILTINS): Define __PIC__ and
@@ -56,7 +74,7 @@
 2004-11-16  Devang Patel  <dpatel@apple.com>
 
 	* tree-if-conv.c (clean_predicate_lists): Update gcc_assert check.
-	
+
 2004-11-16  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c: Use rtl _P predicates.
@@ -261,7 +279,7 @@
 	(vect_transform_loop_bound): Set loop->nb_iterations.
 
 2004-11-14  Dorit Naishlos  <dorit@il.ibm.com>
-            Andrew Pinski  <pinskia@physics.uc.edu>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR tree-opt/18425
 	* tree-vectorize.c (vect_build_loop_niters): Do not insert
