@@ -1,3 +1,10 @@
+2000-09-07  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* config/cpu/i386/bits/atomicity.h (__exchange_and_add): Change unused
+	to __unused__.
+	* config/cpu/ia64/bits/atomicity.h (__exchange_and_add): And here.
+	* config/cpu/i486/bits/atomicity.h (__exchange_and_add): And here.
+
 2000-09-07  Phil Edwards  <pme@sources.redhat.com>
 
 	Add bits for --enable-maintainer-mode:
