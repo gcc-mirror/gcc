@@ -1,3 +1,7 @@
+2000-09-27  benjamin kosnik  <bkoz@haight.constant.com>
+
+	* libioP.h: Remove fcntl.h include.
+
 2000-08-22  Benjamin Kosnik  <bkoz@gnu.org>
 
 	* iofwide.c (_IO_fwide): Simplify, as nl_langinfo is assumed.

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -28,28 +28,41 @@
 // the GNU General Public License.
 
 
-
 #ifndef  _INCLUDED_CPP_CTYPE_H_
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cctype>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::isalnum;
-  using ::std::isalpha;
-  using ::std::iscntrl;
-  using ::std::isdigit;
-  using ::std::isgraph;
-  using ::std::islower;
-  using ::std::isprint;
-  using ::std::ispunct;
-  using ::std::isspace;
-  using ::std::isupper;
-  using ::std::isxdigit;
-  using ::std::tolower;
-  using ::std::toupper;
 # define _INCLUDED_CPP_CTYPE_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+#error ctype.h
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _CTYPE_NEED_C_LEGACY_
 # endif
 
+# include <cctype>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::isalnum;
+  using std::isalpha;
+  using std::iscntrl;
+  using std::isdigit;
+  using std::isgraph;
+  using std::islower;
+  using std::isprint;
+  using std::ispunct;
+  using std::isspace;
+  using std::isupper;
+  using std::isxdigit;
+  using std::tolower;
+  using std::toupper;
+
+# ifdef _CTYPE_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _CTYPE_NEED_C_LEGACY_
+# endif /* _CTYPE_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_CTYPE_H_ */

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,16 +29,53 @@
 
 
 #ifndef  _INCLUDED_CPP_LIBIO_H_
-
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <bits/wrap_libio.h>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  // using ::std::stuff
-
 # define _INCLUDED_CPP_LIBIO_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _LIBIO_NEED_C_LEGACY_
 # endif
 
+# include <bits/wrap_libio.h>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+
+  // NB: Cannot use typedefs here to inject the names as the "C" headers
+  // often include typedefs that include the keyword 'struct'
+  using _C_legacy::_IO_pos_t;
+  using _C_legacy::_IO_fpos_t;
+  using _C_legacy::_IO_fpos64_t;
+  using _C_legacy::_IO_size_t;
+  using _C_legacy::_IO_ssize_t;
+  using _C_legacy::_IO_off_t;
+  using _C_legacy::_IO_off64_t;
+  using _C_legacy::_IO_pid_t;
+  using _C_legacy::_IO_uid_t;
+  using _C_legacy::_IO_iconv_t;
+  using _C_legacy::_IO_va_list;
+  using _C_legacy::_IO_wint_t;
+  using _C_legacy::_IO_lock_t;
+
+  using _C_legacy::_IO_marker;
+  using _C_legacy::_IO_codecvt;
+  using _C_legacy::_IO_wide_data;
+  using _C_legacy::_IO_FILE;
+  using _C_legacy::_IO_cookie_io_functions_t;
+  using _C_legacy::_IO_cookie_file;
+
+# ifdef _LIBIO_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _LIBIO_NEED_C_LEGACY_
+# endif /* _LIBIO_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_LIBIO_H_ */
+
+
+
+

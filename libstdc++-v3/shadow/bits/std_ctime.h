@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,30 +34,28 @@
 #ifndef _CPP_CTIME
 #define _CPP_CTIME 1
 
-# include <bits/std_cstddef.h>  /* pick up size_t, NULL */
+# include <bits/std_cstddef.h>  
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
+
+      // XXX
+      // glibc 2.1.x time.h is on crack
+#     undef __need_time_t
+#     undef __need_clock_t
+#     undef __need_timespec
+
 #     include_next <time.h>
-    }
-    inline clock_t _CPP_CLOCKS_PER_SEC_capture() 
-      { return CLOCKS_PER_SEC; }
-    // typedef size_t    _CPP_size_t_capture;  // handled in <cstddef>
-    typedef clock_t   _CPP_clock_t_capture;
-    typedef time_t    _CPP_time_t_capture;
-    typedef struct tm _CPP_tm_capture;
+  }
 
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
+  typedef clock_t	_CPP_clock_t_capture;
+  typedef time_t    	_CPP_time_t_capture;
+  typedef tm 		_CPP_tm_capture;
 
-// #  undef  NULL
-// #  define NULL 0  /* handled in <cstddef> */
-#  undef  CLOCKS_PER_SEC
-#  define CLOCKS_PER_SEC (::_C_legacy::_CPP_CLOCKS_PER_SEC_capture())
+} // namespace _C_legacy
 
-#  undef size_t  /* handled in <cstddef> */
 #  undef clock_t
 #  undef time_t
 #  undef tm
@@ -71,57 +69,38 @@
 #  undef localtime
 #  undef strftime
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-      // typedef ::_C_legacy::_CPP_size_t_capture  size_t;
-      typedef ::_C_legacy::_CPP_clock_t_capture  clock_t;
-      typedef ::_C_legacy::_CPP_time_t_capture   time_t;
-    }
-  }
-  namespace std {
+namespace std {
 
-    // Adopt C names into std::
-    // using ::_C_legacy::_C_shadow::size_t;  
-    using ::_C_legacy::_C_shadow::clock_t;  
-    using ::_C_legacy::_C_shadow::time_t;
+  // Adopt C names into std::
+  typedef _C_legacy::_CPP_clock_t_capture  clock_t;
+  typedef _C_legacy::_CPP_time_t_capture   time_t;
+  struct tm : _C_legacy::_CPP_tm_capture  { };
 
-    // note: still a POD type:
-    struct tm  : ::_C_legacy::_CPP_tm_capture  { };
+  using _C_legacy::clock;
+  using _C_legacy::difftime;
+  using _C_legacy::mktime;
+  using _C_legacy::time;
+  using _C_legacy::ctime;
 
-    using ::_C_legacy::clock;
-    using ::_C_legacy::difftime;
-    using ::_C_legacy::mktime;
-    using ::_C_legacy::time;
+  inline char* 
+  asctime(const tm* __t) 
+  { return _C_legacy::asctime(static_cast<_C_legacy::_CPP_tm_capture const*>(__t)); }
 
-    inline char* asctime(const tm* __tp) 
-      { return ::_C_legacy::asctime(
-          static_cast< ::_C_legacy::_CPP_tm_capture const*>(__tp)); }
+  inline tm* 
+  gmtime(time_t const* __tp) 
+  { return reinterpret_cast<tm*>(_C_legacy::gmtime(__tp)); }
 
-    using ::_C_legacy::ctime;
+  inline tm* 
+  localtime(const time_t* __tp) 
+  { return reinterpret_cast<tm*>(_C_legacy::localtime(__tp)); } 
+    
+  inline size_t 
+  strftime(char* __buf, size_t __maxsz, char const* __fmt, tm const* __tp) 
+  { return _C_legacy::strftime(__buf, __maxsz, __fmt,
+	       	       static_cast<_C_legacy::_CPP_tm_capture const*>(__tp)); }
 
-    inline tm* gmtime(time_t const* __tp) 
-      { return reinterpret_cast<tm*>(::_C_legacy::gmtime(__tp)); }
-
-    inline tm* localtime(const time_t* __tp) 
-      { return reinterpret_cast<tm*>(::_C_legacy::localtime(__tp)); } 
-
-    inline size_t strftime(char* __buf, size_t __maxsz, 
-                           char const* __fmt, tm const* __tp) 
-      { return ::_C_legacy::strftime(__buf, __maxsz, __fmt,
-                 static_cast< ::_C_legacy::_CPP_tm_capture const*>(__tp)); }
-
-  } // close namespace std::
+} // namespace std
   
-  namespace _C_legacy {
-    namespace _C_shadow {
-      using ::std::tm;
-      using ::std::asctime;
-      using ::std::gmtime;
-      using ::std::localtime;
-      using ::std::strftime;
-    }
-  }
-
 # undef _IN_C_LEGACY_
 
 #endif

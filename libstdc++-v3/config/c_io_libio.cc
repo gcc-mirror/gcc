@@ -33,7 +33,6 @@
 
 #include <bits/basic_file.h>
 #include <libioP.h>
-#include <fcntl.h> 		// Solaris needs for O_* macros
 
 namespace std {
 

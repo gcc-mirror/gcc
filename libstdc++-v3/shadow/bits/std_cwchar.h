@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,252 +30,252 @@
 //
 // ISO C++ 14882: 21
 
-// XXX: this file still needs hackery for system version dependencies
-
 #ifndef _CPP_CWCHAR
 # define _CPP_CWCHAR 1
 
-# include <bits/std_cstddef.h>  /* size_t, NULL */
-# include <bits/std_cstdio.h>   /* FILE */
-# include <bits/std_ctime.h>    /* struct tm */
-# include <bits/std_cstring.h>  /* memset */
+# include <bits/std_cstdio.h> 
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <wchar.h>
-    }
-    // NULL, size_t handled in <cstddef>
+  }
 
-    // wchar_t
-    typedef wint_t _CPP_wint_t_capture;
-    typedef mbstate_t _CPP_mbstate_t_capture;
-    const wint_t _CPP_WEOF_capture = (wint_t)(WEOF);
+  typedef wchar_t 	_CPP_wchar_t_capture;
+  typedef wint_t 	_CPP_wint_t_capture;
+  typedef mbstate_t 	_CPP_mbstate_t_capture;
 
-#if 0 /* XXX glibc-2.0 does not implement these. */
-    inline wint_t _CPP_getwc_capture(FILE* __f)
-      { return getwc(__f); }
-    inline wint_t _CPP_getwchar_capture()
-      { return getwchar(); }
-    inline wint_t _CPP_putwc_capture(wint_t __c, FILE* __f)
-      { return putwc(__c,__f); }
-    inline wint_t _CPP_putwchar_capture(wint_t __c)
-      { return putwchar(__c); }
+#if 0
+  // XXX
+  inline int 
+  fwprintf(FILE* __stream, const wchar_t* __format, ...); 
+
+  inline int 
+  fwscanf(FILE* __stream, const wchar_t* __format, ...); 
+
+  inline int 
+  vfwprintf(FILE* __stream, const wchar_t* __format, va_list __arg); 
+
+  inline int 
+  vfwscanf(FILE* __stream, const wchar_t* __format, va_list __arg);
+
+  inline wint_t 
+  _CPP_fgetwc_capture(FILE* __stream)
+  { return fgetwc(__stream); }
+
+  inline wchar_t*
+  _CPP_fgetws_capture(wchar_t* __s, int __n, FILE* __stream)
+  { return fgetws(__s, __n, __stream); }
+
+  inline wint_t 
+  _CPP_fputwc_capture(wchar_t __c, FILE* __stream)
+  { return fputwc(__c, __stream); }
+
+  inline int 
+  _CPP_fputws_capture(const wchar_t* __s, FILE* __stream)
+  { return fputws(__s, __stream); }
+
+  inline int 
+  _CPP_fwide_capture(FILE* __stream, int __mode) 
+  { return fwide(__stream, __mode); }
+
+  inline wint_t 
+  _CPP_fgetwc_capture(FILE* __stream)
+  { return fgetwc(__stream); }
+
+  inline wint_t 
+  _CPP_putwc_capture(wchar_t __c, FILE* __stream)
+  { return putwc(__c, __stream); }
+  
+  inline wint_t 
+  _CPP_ungetwc_capture(wint_t __c, FILE* __stream)
+  { return ungetwc(__c, __stream); }
 #endif
+} // namespace _C_legacy
 
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
-
-// #  undef size_t  /* handled in <cstddef> */
 # undef wchar_t
 # undef wint_t
 # undef mbstate_t
-# undef WEOF
-# define WEOF ::_C_legacy::_CPP_WEOF_capture
 
-// the following are not in glibc-2.0
+# undef fwprintf
+# undef fwscanf
+# undef swprintf
+# undef swscanf
+# undef vfwprintf
+# undef vfwscanf
+# undef vswprintf
+# undef vswscanf
+# undef vwprintf
+# undef vwscanf
+# undef wprintf
+# undef wscanf
 # undef fgetwc
 # undef fgetws
 # undef fputwc
 # undef fputws
-# undef ungetwc
+# undef fwide
 # undef getwc
 # undef getwchar
 # undef putwc
 # undef putwchar
-# undef wprintf
-# undef wsprintf
-# undef wvsprintf
-# undef wfsprintf
-# undef wscanf
-# undef wsscanf
-# undef wvsscanf
-# undef wfscanf
-// XXX etc.
-
+# undef ungetwc
+# undef wcstod
+# undef wcstof
+# undef wcstold
+# undef wcstol
+# undef wcstoll
+# undef wcstoul
+# undef wcstoull
 # undef wcscpy
+# undef wcsncpy
 # undef wcscat
-# undef wcscmp
+# undef wcsncat
+# undef wcsmp
 # undef wcscoll
+# undef wcsncmp
 # undef wcsxfrm
-# undef wcsdup
 # undef wcschr
 # undef wcscspn
+# undef wcslen
 # undef wcspbrk
+# undef wcsrchr
+# undef wcsspn
 # undef wcsstr
 # undef wcstok
-# undef wcslen
 # undef wmemchr
 # undef wmemcmp
 # undef wmemcpy
 # undef wmemmove
 # undef wmemset
+# undef wcsftime
 # undef btowc
 # undef wctob
 # undef mbsinit
+# undef mbrlen
 # undef mbrtowc
 # undef wcrtomb
-# undef mbrlen
 # undef mbsrtowcs
 # undef wcsrtombs
-#ifdef __USE_GNU
-# undef mbsnrtowcs
-# undef mbsnrtombs
-# undef wcwidth
-# undef wcswidth
-# undef wcscmpy
-#endif
-# undef wcstod
-# undef wcstol
-# undef wcstoul
-# undef wcsncat
-# undef wcsncmp
-# undef wcsncpy
-# undef wcsrchr
-# undef wcsspn
 
-  // XXX a bunch more names are required under C89 Amendment 1, 
-  // but they are not uniformly implemented.
+namespace std {
 
-  // XXX the following are not supposed to be defined in <wchar.h>, 
-  //  but Sun does anyway.
-# undef iswalpha
-# undef iswupper
-# undef iswlower
-# undef iswdigit
-# undef iswxdigit
-# undef iswalnum
-# undef iswspace
-# undef iswpunct
-# undef iswprint
-# undef iswgraph
-# undef iswcntrl
-# undef iswctype
-# undef towlower
-# undef towupper
-# undef wctype_t
-# undef wctype
-# undef wcspbrk
-# undef wcswcs
+  typedef _C_legacy::_CPP_wchar_t_capture wchar_t; 
+  typedef _C_legacy::_CPP_wint_t_capture wint_t; 
+  typedef _C_legacy::_CPP_mbstate_t_capture mbstate_t;
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-      typedef ::_C_legacy::_CPP_wint_t_capture wint_t; 
-      // typedef ::_C_legacy::_CPP_wctype_t_capture wctype_t;
-    }
-  }
-  namespace std {
-
-    // using ::_C_legacy::wchar_t;
-    using ::_C_legacy::_C_shadow::wint_t;
-    // using ::_C_legacy::WEOF;
-
-   // XXX this might better be replaced with one unrelated to the C mbstate_t.
-
-   struct mbstate_t { 
-     _C_legacy::_CPP_mbstate_t_capture _M_dum; 
-     mbstate_t() { std::memset(&_M_dum,0,sizeof(_M_dum)); }
-   };
-
-#if 0 /* glibc-2.0 does not implement these. */
-    inline wint_t fgetwc(FILE* __f)
-      { return ::_C_legacy::fgetwc(__f); }
-    inline wchar_t* fgetws(wchar_t* __s, int __n, FILE* __f)
-      { return ::_C_legacy::fgetws(__s,__n,__f); }
-    inline wint_t fputwc(wint_t __c, FILE* __f)
-      { return ::_C_legacy::fputwc(__c,__f); }
-    inline int fputws(const wchar_t* __s, FILE* __f)
-      { return ::_C_legacy::fputws(__s,__f); }
-    inline wint_t ungetwc(wint_t __c, FILE* __f)
-      { return ::_C_legacy::ungetwc(__c,__f); }
-
-    inline wint_t getwc(FILE* __f)
-      { return ::_C_legacy::_CPP_getwc_capture(__f); }
-    inline wint_t getwchar()
-      { return ::_C_legacy::_CPP_getwchar_capture(); }
-    inline wint_t putwc(wint_t __c, FILE* __f)
-      { return ::_C_legacy::_CPP_putwc_capture(__c,__f); }
-    inline wint_t putwchar(wint_t __c)
-      { return ::_C_legacy::_CPP_putwchar_capture(__c); }
-
-    // similarly wprintf etc.
+#if 0
+  using _C_legacy::swprintf;
+  using _C_legacy::swscanf;
+  using _C_legacy::vswprintf;
+  using _C_legacy::vswscanf;
+  using _C_legacy::vwprintf;
+  using _C_legacy::vwscanf;
+  using _C_legacy::wprintf;
+  using _C_legacy::wscanf;
+  using _C_legacy::getwchar;
+  using _C_legacy::putwchar;
 #endif
 
-    using ::_C_legacy::wcscpy;
-    using ::_C_legacy::wcscat;
-    using ::_C_legacy::wcscmp;
-    using ::_C_legacy::wcscoll;
-    using ::_C_legacy::wcsxfrm;
-    using ::_C_legacy::wcschr;
-    using ::_C_legacy::wcscspn;
-    using ::_C_legacy::wcspbrk;
-    using ::_C_legacy::wcstok;
-    using ::_C_legacy::wcslen;
-#ifndef __sun
-#ifdef __USE_GNU
-    using ::_C_legacy::wcsdup;
-#endif
-    using ::_C_legacy::wcsstr;
-    using ::_C_legacy::wmemchr;
-    using ::_C_legacy::wmemcmp;
-    using ::_C_legacy::wmemcpy;
-    using ::_C_legacy::wmemmove;
-    using ::_C_legacy::wmemset;
-    using ::_C_legacy::btowc;
-    using ::_C_legacy::wctob;
-    using ::_C_legacy::mbsinit;
-    using ::_C_legacy::mbrtowc;
-    using ::_C_legacy::wcrtomb;
-    using ::_C_legacy::mbrlen;
-#endif
-#ifdef __USE_GNU
-    using ::_C_legacy::mbsrtowcs;
-    using ::_C_legacy::wcsrtombs;
-    using ::_C_legacy::mbsnrtowcs;
-    using ::_C_legacy::mbsnrtombs;
-    using ::_C_legacy::wcscmpy
-    using ::_C_legacy::wcwidth;
-    using ::_C_legacy::wcswidth;
-#endif
-    using ::_C_legacy::wcstod;
-    using ::_C_legacy::wcstol;
-    using ::_C_legacy::wcstoul;
-    using ::_C_legacy::wcsncat;
-    using ::_C_legacy::wcsncmp;
-    using ::_C_legacy::wcsncpy;
-    using ::_C_legacy::wcsrchr;
-    using ::_C_legacy::wcsspn;
-    // using ::_C_legacy::wcswcs;
+  using _C_legacy::wcstod;
+  using _C_legacy::wcstof;
+  using _C_legacy::wcstold;
+  using _C_legacy::wcstol;
+  using _C_legacy::wcstoll;
+  using _C_legacy::wcstoul;
+  using _C_legacy::wcstoull;
+  using _C_legacy::wcscpy;
+  using _C_legacy::wcsncpy;
+  using _C_legacy::wcscat;
+  using _C_legacy::wcsncat;
 
-#if 0  /* not implemented in glibc-2 */
-    inline size_t wcsftime(wchar_t* __s, size_t __n, 
-		           char const* __fmt, struct tm const* __tmb)
-      { return ::_C_legacy::wcsftime(__s,__n,__fmt,__tmb); }
-
-    using ::_C_legacy::wctype;
+#if 0
+  using _C_legacy::wcsmp;
 #endif
 
-  }
+  using _C_legacy::wcscoll;
+  using _C_legacy::wcsncmp;
+  using _C_legacy::wcsxfrm;
+  using _C_legacy::wcschr;
+  using _C_legacy::wcscspn;
+  using _C_legacy::wcslen;
+  using _C_legacy::wcspbrk;
+  using _C_legacy::wcsrchr;
+  using _C_legacy::wcsspn;
+  using _C_legacy::wcsstr;
+  using _C_legacy::wcstok;
+  using _C_legacy::wmemchr;
+  using _C_legacy::wmemcmp;
+  using _C_legacy::wmemcpy;
+  using _C_legacy::wmemmove;
+  using _C_legacy::wmemset;
+
+#if 0
+  using _C_legacy::wcsftime;
+#endif
+
+  using _C_legacy::btowc;
+  using _C_legacy::wctob;
+  using _C_legacy::mbsinit;
+  using _C_legacy::mbrlen;
+  using _C_legacy::mbrtowc;
+  using _C_legacy::wcrtomb;
+  using _C_legacy::mbsrtowcs;
+  using _C_legacy::wcsrtombs;
+
+#if 0
+  // XXX
+  inline int 
+  fwprintf(FILE* __stream, const wchar_t* __format, ...); 
+
+  inline int 
+  fwscanf(FILE* __stream, const wchar_t* __format, ...); 
+
+  inline int 
+  vfwprintf(FILE* __stream, const wchar_t* __format, va_list __arg); 
+
+  inline int 
+  vfwscanf(FILE* __stream, const wchar_t* __format, va_list __arg);
+
+  inline wint_t 
+  fgetwc(FILE* __stream)
+  { return _C_legacy::_CPP_fgetwc_capture(__stream); }
+
+  inline wchar_t*
+  fgetws(wchar_t* __s, int __n, FILE* __stream) 
+  { return _C_legacy::_CPP_fgetws_capture(__s, __n, __stream); }
+
+  inline wint_t 
+  fputwc(wchar_t __c, FILE* __stream)
+  { return _C_legacy::_CPP_fputwc_capture(__c, __stream); }
+
+  inline int 
+  fputws(const wchar_t* __s, FILE* __stream)
+  { return _C_legacy::_CPP_fputws_capture(__s, __stream); }
+
+  inline int 
+  fwide(FILE* __stream, int __mode)
+  { return _C_legacy::_CPP_fwide_capture(__stream, __mode); }
+
+  inline wint_t 
+  getwc(FILE* __stream)
+  { return _C_legacy::_CPP_getwc_capture(__stream); }
+
+  inline wint_t 
+  putwc(wchar_t __c, FILE* __stream)
+  { return _C_legacy::_CPP_putwc_capture(__c, __stream); }
   
-  namespace _C_legacy {
-    namespace _C_shadow {
-#if 0 /* XXX glibc-2.0 does not implement these. */
-      using ::std::fgetwc;
-      using ::std::fgetws;
-      using ::std::fputwc;
-      using ::std::fputws;
-      using ::std::ungetwc;
-      using ::std::getwc;
-      using ::std::getwchar;
-      using ::std::putwc;
-      using ::std::putwchar;
-      using ::std::wcsftime;
-      // XXX also wprintf etc.
+  inline wint_t 
+  ungetwc(wint_t __c, FILE* __stream)
+  { return _C_legacy::_CPP_ungetwc_capture(__c, __stream); }
 #endif
-    }
-  }
+}
 
 # undef _IN_C_LEGACY_
 
 #endif
+
+
+
+
+

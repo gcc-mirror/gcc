@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -29,83 +29,103 @@
 
 
 #ifndef  _INCLUDED_CPP_WCHAR_H_
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cwchar>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::size_t;  /* handled in <cstddef> */
-  using ::std::wint_t;
-  using ::std::mbstate_t;
-
-# if 0  /* glibc-2.0 doesn't define these */
-  using ::std::fgetwc;
-  using ::std::fgetws;
-  using ::std::fputwc;
-  using ::std::fputws;
-  using ::std::ungetwc;
-  using ::std::getwc;
-  using ::std::getwchar;
-  using ::std::putwc;
-  using ::std::putwchar;
-  using ::std::wprintf;
-  using ::std::wsprintf;
-  using ::std::wvsprintf;
-  using ::std::wfsprintf;
-  using ::std::wscanf;
-  using ::std::wsscanf;
-  using ::std::wvsscanf;
-  using ::std::wfscanf;
-    // XXX etc.
-  using ::std::wcsftime;
-# endif 
-
-  using ::std::wcscpy;
-  using ::std::wcscat;
-  using ::std::wcscmp;
-  using ::std::wcscoll;
-  using ::std::wcsxfrm;
-# ifdef __USE_GNU
-  using ::std::wcsdup;
-# endif
-  using ::std::wcschr;
-  using ::std::wcscspn;
-  using ::std::wcspbrk;
-  using ::std::wcsstr;
-  using ::std::wcstok;
-  using ::std::wcslen;
-# ifndef __sun
-    using ::std::wmemchr;
-    using ::std::wmemcmp;
-    using ::std::wmemcpy;
-    using ::std::wmemmove;
-    using ::std::wmemset;
-    using ::std::btowc;
-    using ::std::wctob;
-    using ::std::mbsinit;
-    using ::std::mbrtowc;
-    using ::std::wcrtomb;
-    using ::std::mbrlen;
-# endif
-# ifdef __USE_GNU
-    using ::std::mbsrtowcs;
-    using ::std::wcsrtombs;
-    using ::std::mbsnrtowcs;
-    using ::std::mbsnrtombs;
-    using ::std::wcwidth;
-    using ::std::wcswidth;
-    using ::std::wcscmpy;
-# endif
-  using ::std::wcstod;
-  using ::std::wcstol;
-  using ::std::wcstoul;
-  using ::std::wcsncat;
-  using ::std::wcsncmp;
-  using ::std::wcsncpy;
-  using ::std::wcsrchr;
-  using ::std::wcsspn;
 # define _INCLUDED_CPP_WCHAR_H_ 1
-# endif /* _IN_C_LEGACY_ */
 
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_  /* sub-included by a C header */
+#  define _WCHAR_NEED_C_LEGACY_
+# endif
+
+# include <cwchar>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::wchar_t;
+  using std::wint_t;
+  using std::mbstate_t;
+
+#if 0
+  using std::fwprintf;
+  using std::fwscanf;
+  using std::swprintf;
+  using std::swscanf;
+  using std::vfwprintf;
+  using std::vfwscanf;
+  using std::vswprintf;
+  using std::vswscanf;
+  using std::vwprintf;
+  using std::vwscanf;
+  using std::wprintf;
+  using std::wscanf;
+  using std::fgetwc;
+  using std::fgetws;
+  using std::fputwc;
+  using std::fputws;
+  using std::fwide;
+  using std::getwc;
+  using std::getwchar;
+  using std::putwc;
+  using std::putwchar;
+  using std::ungetwc;
+#endif
+
+  using std::wcstod;
+  using std::wcstof;
+  using std::wcstold;
+  using std::wcstol;
+  using std::wcstoll;
+  using std::wcstoul;
+  using std::wcstoull;
+  using std::wcscpy;
+  using std::wcsncpy;
+  using std::wcscat;
+  using std::wcsncat;
+
+#if 0
+  using std::wcsmp;
+#endif
+
+  using std::wcscoll;
+  using std::wcsncmp;
+  using std::wcsxfrm;
+  using std::wcschr;
+  using std::wcscspn;
+  using std::wcslen;
+  using std::wcspbrk;
+  using std::wcsrchr;
+  using std::wcsspn;
+  using std::wcsstr;
+  using std::wcstok;
+  using std::wmemchr;
+  using std::wmemcmp;
+  using std::wmemcpy;
+  using std::wmemmove;
+  using std::wmemset;
+
+#if 0
+  using std::wcsftime;
+#endif
+
+  using std::btowc;
+  using std::wctob;
+  using std::mbsinit;
+  using std::mbrlen;
+  using std::mbrtowc;
+  using std::wcrtomb;
+  using std::mbsrtowcs;
+  using std::wcsrtombs;
+
+# ifdef _WCHAR_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _WCHAR_NEED_C_LEGACY_
+# endif /* _WCHAR_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_WCHAR_H_ */
+
+
+

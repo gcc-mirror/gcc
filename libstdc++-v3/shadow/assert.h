@@ -29,7 +29,23 @@
 
 
 // no include guard here.
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cassert>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
+#ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+# undef _IN_C_LEGACY_
+# define _ASSERT_NEED_C_LEGACY_
+#endif
+
+#include <cassert>
+ 
+  // expose global C names, including non-standard ones, but shadow
+  //   some names and types with the std:: C++ version.
+
+#ifdef _ASSERT_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+# define _IN_C_LEGACY_
+# undef _ASSERT_NEED_C_LEGACY_
+#endif /* _ASSERT_NEED_C_LEGACY_ */

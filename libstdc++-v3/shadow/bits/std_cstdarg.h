@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,65 +34,19 @@
 #ifndef _CPP_CSTDARG
 #define _CPP_CSTDARG 1
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <stdarg.h>
-    }
-    typedef va_list   _CPP_va_list_capture;
-#   ifdef __GNUC__
-
-#   elif
-      template <class T>
-        inline void _CPP_va_start_capture(va_list& __val, T& __v) 
-          { va_start(__val, __v); }
-      template <class T>
-        inline void _CPP_va_arg_capture(va_list& __val, T& __arg) 
-          { va_start(__val, __arg); }
-      template <class T>
-        inline T& _CPP_va_arg_capture(va_list& __val)
-          { return va_arg(__val, T); }
-      template <class T>
-        inline void _CPP_va_end(va_list& __val)
-          { va_end(__val); }
-#   endif
-
-    // typedef size_t    _CPP_size_t_capture;  // handled in <cstddef>
-
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
-
-#  ifdef __GNUC__
-
-#    undef va_list
-     using _C_legacy::__gnuc_va_list;
-
-#  elif  /* probably must be tailored for each compiler, as above. */
-
-#    undef va_list
-#    undef va_start
-#    define va_start(a,b) ::_C_legacy::_CPP_va_start_capture(a,b)
-#    undef va_arg
-#    define va_arg(a,b)   ::_C_legacy::_CPP_va_arg_capture<b>(a)
-#    undef va_end
-#    define va_end(a)     ::_C_legacy::_CPP_va_end_capture(a)
-
-#  endif
-
-  namespace _C_legacy {
-    namespace _C_shadow {
-      typedef ::_C_legacy::_CPP_va_list_capture va_list;
-    }
   }
-  namespace std {
-    using ::_C_legacy::_C_shadow::va_list;  
-  } // close namespace std::
-  
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
+} // namespace _C_legacy
+
+#  undef va_list
+
+namespace std {
+  using _C_legacy::va_list;
+} // namespace std
 
 # undef _IN_C_LEGACY_
 

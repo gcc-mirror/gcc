@@ -36,237 +36,113 @@
 
 #ifndef FLT
 # define FLT double
-# define FCT(name) ::name
 #endif
+
+// This file often breaks due to compiler bugs. May need to put in guards, ie:
+// #if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) 
+// and
+// #if defined(_GLIBCPP_FLOAT_SPECIALIZATION)
 
 namespace std
 {
-    
-    template<>
-    FLT
-    abs(const complex<FLT>& __x)
-    { return FCT(cabs)(__x._M_value); }
+  template<>
+  FLT
+  abs(const complex<FLT>& __x)
+  { return cabs(__x._M_value); }
 
-    template<>
-    FLT
-    arg(const complex<FLT>& __x)
-    { return FCT(carg)(__x._M_value); }
+  template<>
+  FLT
+  arg(const complex<FLT>& __x)
+  { return carg(__x._M_value); }
 
-    template<>
-    complex<FLT>
-    polar(const FLT& __rho, const FLT& __theta)
-    {
-#if defined _G_HAVE_SINCOS && !defined __osf__
-      // Although sincos does exist on OSF3.2 and OSF4.0 we cannot use it
-      // since the necessary types are not defined in the headers.
-      FLT __sinx, __cosx;
-      FCT(sincos)(__theta, &__sinx, &__cosx);
-      return complex<FLT>(__rho * __cosx, __rho * __sinx);
+  template<>
+  complex<FLT>
+  polar(const FLT& __rho, const FLT& __theta)
+  {
+#if 0
+// XXX
+// defined(_GLIBCPP_HAVE_SINCOS) && !defined(__osf__)
+    // Although sincos does exist on OSF3.2 and OSF4.0 we cannot use it
+    // since the necessary types are not defined in the headers.
+    FLT __sinx, __cosx;
+    sincos(__theta, &__sinx, &__cosx);
+    return complex<FLT>(__rho * __cosx, __rho * __sinx);
 #else
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-      complex<FLT> __tmpf(__rho * FCT(cos)(__theta),
-                         __rho * FCT(sin)(__theta));
-      return __tmpf;
-#else
-       return complex<FLT>(__rho * FCT(cos)(__theta),
-                          __rho * FCT(sin)(__theta));
+    return complex<FLT>(__rho * cos(__theta), __rho * sin(__theta));
 #endif
-#endif
-    }
+  }
 
-    template<>
-    complex<FLT>
-    cos(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(ccos)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(ccos)(__x._M_value)); }
-#endif
+  template<>
+  complex<FLT>
+  cos(const complex<FLT>& __x)
+  { return complex<FLT>(ccos(__x._M_value)); }
 
-    template<>
-    complex<FLT>
-    cosh(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(ccosh)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(ccosh)(__x._M_value)); }
-#endif
+  template<>
+  complex<FLT>
+  cosh(const complex<FLT>& __x)
+  { return complex<FLT>(ccosh(__x._M_value)); }
 
-    template<>
-    complex<FLT>
-    exp(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(cexp)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(cexp)(__x._M_value)); }
-#endif
+  template<>
+  complex<FLT>
+  exp(const complex<FLT>& __x)
+  { return complex<FLT>(cexp(__x._M_value)); }
 
-    template<>
-    complex<FLT>
-    log(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(c_log)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(c_log)(__x._M_value)); }
-#endif
+  template<>
+  complex<FLT>
+  log(const complex<FLT>& __x)
+  { return complex<FLT>(c_log(__x._M_value)); }
 
-    template<>
-    complex<FLT>
-    log10(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(clog10)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(clog10)(__x._M_value)); }
-#endif
+  template<>
+  complex<FLT>
+  log10(const complex<FLT>& __x)
+  { return complex<FLT>(clog10(__x._M_value)); }
+  
+  template<>
+  complex<FLT>
+  pow(const complex<FLT>& __x, int __n)
+  { return complex<FLT>(cexp(__n * c_log(__x._M_value))); }
 
-    template<>
-    complex<FLT>
-    pow(const complex<FLT>& __x, int __n)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(cexp) (__n * FCT(c_log)(__x._M_value)));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(cexp) (__n * FCT(c_log)(__x._M_value))); }
-#endif
+  template<>
+  complex<FLT>
+  pow(const complex<FLT>& __x, const FLT& __y)
+  { return complex<FLT>(cexp(__y * c_log(__x._M_value))); }
 
+  template<>
+  complex<FLT>
+  pow(const complex<FLT>& __x, const complex<FLT>& __y)
+  { return complex<FLT>(cpow(__x._M_value, __y._M_value)); }
 
-    template<>
-    complex<FLT>
-    pow(const complex<FLT>& __x, const FLT& __y)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(cexp) (__y * FCT(c_log)(__x._M_value)));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(cexp) (__y * FCT(c_log)(__x._M_value))); }
-#endif
+  template<>
+  complex<FLT>
+  pow(const FLT& __x, const complex<FLT>& __y)
+  { return complex<FLT>(cexp(__y._M_value * log(__x))); }
 
-    template<>
-    complex<FLT>
-    pow(const complex<FLT>& __x, const complex<FLT>& __y)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(cpow)(__x._M_value, __y._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(cpow)(__x._M_value, __y._M_value)); }
-#endif
+  template<>
+  complex<FLT>
+  sin(const complex<FLT>& __x)
+  { return complex<FLT>(csin(__x._M_value)); }
 
-    template<>
-    complex<FLT>
-    pow(const FLT& __x, const complex<FLT>& __y)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(cexp)(__y._M_value * FCT(log)(__x)));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(cexp)(__y._M_value * FCT(log)(__x))); }
-#endif
-
-    template<>
-    complex<FLT>
-    sin(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(csin)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(csin)(__x._M_value)); }
-#endif
-
-    template<>
-    complex<FLT>
-    sinh(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(csinh)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(csinh)(__x._M_value)); }
-#endif
-
-    template<>
-    complex<FLT>
-    sqrt(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(csqrt)(__x._M_value));
-      return __tmpf;
-    }
-#else
-    { return complex<FLT>(FCT(csqrt)(__x._M_value)); }
-#endif
-
-    template<>
-    complex<FLT>
-    tan(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(ctan)(__x._M_value));
-      return __tmpf;
-    }
-#else
-     { return complex<FLT>(FCT(ctan)(__x._M_value)); }
-#endif
-
-    template<>
-    complex<FLT>
-    tanh(const complex<FLT>& __x)
-#if defined(_GLIBCPP_BUGGY_FLOAT_COMPLEX) \
-      && defined(_GLIBCPP_FLOAT_SPECIALIZATION)
-    {
-      complex<FLT> __tmpf(FCT(ctanh)(__x._M_value));
-      return __tmpf;
-    }
-#else
-     { return complex<FLT>(FCT(ctanh)(__x._M_value)); }
-#endif
-    
+  template<>
+  complex<FLT>
+  sinh(const complex<FLT>& __x)
+  { return complex<FLT>(csinh(__x._M_value)); }
+  
+  template<>
+  complex<FLT>
+  sqrt(const complex<FLT>& __x)
+  { return complex<FLT>(csqrt(__x._M_value)); }
+  
+  template<>
+  complex<FLT>
+  tan(const complex<FLT>& __x)
+  { return complex<FLT>(ctan(__x._M_value)); }
+  
+  template<>
+  complex<FLT>
+  tanh(const complex<FLT>& __x)
+  { return complex<FLT>(ctanh(__x._M_value)); }
+  
 } // namespace std
-
-
-
-
-
-
-
-
 
 
 

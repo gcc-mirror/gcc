@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,58 +27,71 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-
 #ifndef  _INCLUDED_CPP_STDIO_H_
-# undef _SHADOW_NAME
-# define _SHADOW_NAME <cstdio>
-# include <bits/generic_shadow.h>
-# undef _SHADOW_NAME
-
-# ifndef _IN_C_LEGACY_
-  using ::std::size_t;
-  using ::std::fpos_t; 
-  using ::std::remove;
-  using ::std::rename;
-  using ::std::tmpfile;
-  using ::std::tmpnam;
-  using ::std::fclose;
-  using ::std::fflush;
-  using ::std::fopen;
-  using ::std::freopen;
-  using ::std::setbuf;
-  using ::std::setvbuf;
-  using ::std::fprintf;
-  using ::std::fscanf;
-  using ::std::printf;
-  using ::std::scanf;
-  using ::std::sprintf;
-  using ::std::sscanf;
-  using ::std::vfprintf;
-  using ::std::vprintf;
-  using ::std::vsprintf;
-  using ::std::fgetc;
-  using ::std::fgets;
-  using ::std::fputc;
-  using ::std::fputs;
-  using ::std::getc;
-  using ::std::getchar;
-  using ::std::gets;
-  using ::std::putc;
-  using ::std::putchar;
-  using ::std::puts;
-  using ::std::ungetc;
-  using ::std::fread;
-  using ::std::fwrite;
-  using ::std::fgetpos;
-  using ::std::fseek;
-  using ::std::fsetpos;
-  using ::std::ftell;
-  using ::std::rewind;
-  using ::std::clearerr;
-  using ::std::feof;
-  using ::std::ferror;
-  using ::std::perror;
 # define _INCLUDED_CPP_STDIO_H_ 1
+
+# ifdef _IN_C_LEGACY_  /* sub-included by a C header */
+      // get out of the "legacy"
+    } // close extern "C"
+  }   // close namespace _C_legacy::
+#  undef _IN_C_LEGACY_
+#  define _STDIO_NEED_C_LEGACY_
 # endif
 
+# include <cstdio>
+
+  // Expose global C names, including non-standard ones, but shadow
+  // some names and types with the std:: C++ version.
+  using std::FILE;
+  using std::fpos_t; 
+
+  using std::remove;
+  using std::rename;
+  using std::tmpfile;
+  using std::tmpnam;
+  using std::fclose;
+  using std::fflush;
+  using std::fopen;
+  using std::freopen;
+  using std::setbuf;
+  using std::setvbuf;
+  using std::fprintf;
+  using std::fscanf;
+  using std::printf;
+  using std::scanf;
+  using std::sprintf;
+  using std::sscanf;
+  using std::vfprintf;
+  using std::vprintf;
+  using std::vsprintf;
+  using std::fgetc;
+  using std::fgets;
+  using std::fputc;
+  using std::fputs;
+  using std::getc;
+  using std::getchar;
+  using std::gets;
+  using std::putc;
+  using std::putchar;
+  using std::puts;
+  using std::ungetc;
+  using std::fread;
+  using std::fwrite;
+  using std::fgetpos;
+  using std::fseek;
+  using std::fsetpos;
+  using std::ftell;
+  using std::rewind;
+  using std::clearerr;
+  using std::feof;
+  using std::ferror;
+  using std::perror;
+
+# ifdef _STDIO_NEED_C_LEGACY_
+  // dive back into the "swamp"
+  namespace _C_legacy {
+    extern "C" {
+#  define _IN_C_LEGACY_
+#  undef _STDIO_NEED_C_LEGACY_
+# endif /* _STDIO_NEED_C_LEGACY_ */
 #endif /* _INCLUDED_CPP_STDIO_H_ */

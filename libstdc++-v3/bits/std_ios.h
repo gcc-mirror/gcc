@@ -39,7 +39,7 @@
 #include <bits/char_traits.h> 	// For char_traits, streamoff, streamsize, fpos
 #include <bits/stl_string_fwd.h>// For string.
 #include <bits/std_cstdio.h> 	// For SEEK_SET, SEEK_CUR, SEEK_END
-# include <bits/localefwd.h>	// For class locale
+#include <bits/localefwd.h>	// For class locale
 #include <bits/ios_base.h>	// For ios_base declarations.
 #include <bits/std_streambuf.h> 
 #include <bits/basic_ios.h>

@@ -57,46 +57,45 @@ namespace std {
   typedef _IO_FILE 	__c_file_type;
   typedef _IO_wide_data __c_wfile_type;
 
-  extern "C" struct _IO_codecvt __c_libio_codecvt;
+  extern "C" _IO_codecvt __c_libio_codecvt;
 
 // from ios_base.h
   struct __ios_flags
- {
-   typedef short __int_type;
+  {
+    typedef short __int_type;
 
-   static const __int_type _S_boolalpha =	_IO_BAD_SEEN;
-   static const __int_type _S_dec =		_IO_DEC;
-   static const __int_type _S_fixed = 		_IO_FIXED;
-   static const __int_type _S_hex =		_IO_HEX;
-   static const __int_type _S_internal = 	_IO_INTERNAL;
-   static const __int_type _S_left =   		_IO_LEFT;
-   static const __int_type _S_oct =		_IO_OCT;
-   static const __int_type _S_right =		_IO_RIGHT;
-   static const __int_type _S_scientific =	_IO_SCIENTIFIC;
-   static const __int_type _S_showbase =       	_IO_SHOWBASE;
-   static const __int_type _S_showpoint =	_IO_SHOWPOINT;
-   static const __int_type _S_showpos =		_IO_SHOWPOS;
-   static const __int_type _S_skipws =		_IO_SKIPWS;
-   static const __int_type _S_unitbuf =		_IO_UNITBUF;
-   static const __int_type _S_uppercase	=	_IO_UPPERCASE;
-   static const __int_type _S_adjustfield =	_IO_LEFT 
-   						| _IO_RIGHT
-                                                | _IO_INTERNAL;
-   static const __int_type _S_basefield =	_IO_DEC | _IO_OCT | _IO_HEX;
-   static const __int_type _S_floatfield =	_IO_SCIENTIFIC | _IO_FIXED;
+    static const __int_type _S_boolalpha =	_IO_BAD_SEEN;
+    static const __int_type _S_dec =		_IO_DEC;
+    static const __int_type _S_fixed = 		_IO_FIXED;
+    static const __int_type _S_hex =		_IO_HEX;
+    static const __int_type _S_internal = 	_IO_INTERNAL;
+    static const __int_type _S_left =          	_IO_LEFT;
+    static const __int_type _S_oct =		_IO_OCT;
+    static const __int_type _S_right =		_IO_RIGHT;
+    static const __int_type _S_scientific =	_IO_SCIENTIFIC;
+    static const __int_type _S_showbase =      	_IO_SHOWBASE;
+    static const __int_type _S_showpoint =	_IO_SHOWPOINT;
+    static const __int_type _S_showpos =       	_IO_SHOWPOS;
+    static const __int_type _S_skipws =		_IO_SKIPWS;
+    static const __int_type _S_unitbuf =       	_IO_UNITBUF;
+    static const __int_type _S_uppercase =	_IO_UPPERCASE;
+    static const __int_type _S_adjustfield =	_IO_LEFT | _IO_RIGHT
+    						| _IO_INTERNAL;
+    static const __int_type _S_basefield =	_IO_DEC | _IO_OCT | _IO_HEX;
+    static const __int_type _S_floatfield =	_IO_SCIENTIFIC | _IO_FIXED;
 
     // 27.4.2.1.3  Type ios_base::iostate
-   static const __int_type _S_badbit =		_IO_BAD_SEEN;
-   static const __int_type _S_eofbit =		_IO_EOF_SEEN;
-   static const __int_type _S_failbit =		_IO_ERR_SEEN;
+    static const __int_type _S_badbit =		_IO_BAD_SEEN;
+    static const __int_type _S_eofbit =		_IO_EOF_SEEN;
+    static const __int_type _S_failbit =       	_IO_ERR_SEEN;
 
     // 27.4.2.1.4  Type openmode
-   static const __int_type _S_app =		_IOS_APPEND;
-   static const __int_type _S_ate =		_IOS_ATEND;
-   static const __int_type _S_bin =		_IOS_BIN;
-   static const __int_type _S_in =		_IOS_INPUT;
-   static const __int_type _S_out =		_IOS_OUTPUT;
-   static const __int_type _S_trunc =		_IOS_TRUNC;
+    static const __int_type _S_app =		_IOS_APPEND;
+    static const __int_type _S_ate =		_IOS_ATEND;
+    static const __int_type _S_bin =		_IOS_BIN;
+    static const __int_type _S_in =		_IOS_INPUT;
+    static const __int_type _S_out =		_IOS_OUTPUT;
+    static const __int_type _S_trunc =		_IOS_TRUNC;
   };
 
 }

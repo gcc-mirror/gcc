@@ -1,3 +1,104 @@
+2000-10-02  Steven King  <sxking@uswest.net>
+
+        * mkcshadow: Fixed script to output proper include guard.
+        * bits/char_traits.h: Cleaned up types in char_traits<char> functions.
+        * libio/_G_config.h: Hacked to make work with shadow heraders.
+        * shadow/*: Hacked to make shadow headers work. 
+
+2000-10-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	Self-compile with shadow headers.
+	* acconfig.h (_GLIBCPP_USE_SHADOW_HEADERS): Define. Eventually,
+	like _GLIBCPP_USE_NAMESPACES before it, this macro will die when
+	it becomes the default way the library is built.
+	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): New macro.
+	* config/gnu-linux/bits/ctype_base.h (ctype_base): Use it.
+	* config/gnu-linux/ctype.cc (ctype): Use it.
+	
+	* src/localename.cc (locale::_Impl::_M_replace_categories): Remove
+	call to assert.
+	* src/locale.cc: Explicitly cast mbstate_t to void* in calls to
+	memset. This should not be necessary, but an ambiguous overload
+	with it in.
+
+	* shadow/bits/std_cwchar.h: Fix.
+	* shadow/wchar.h: Fix.
+
+	* config/gnu-linux/bits/ctype_base.h (ctype_base): Inject ctype
+	enums into namespace std:: for ctype_base enum. Other OS types
+	will have to do this as well.
+	* config/gnu-linux/ctype.cc (ctype): Inject ctype data into
+	namespace std, in particular __ctype_toupper, __ctype_tolower,
+	__ctype_b.
+
+	* shadow/iolibio.h: New file.
+	* shadow/bits/wrap_iolibio.h: New file.
+	* shadow/libioP.h: New file.
+	* shadow/bits/wrap_libioP.h: New file.
+	* shadow/bits/wrap_fcntl.h: New file.
+	* shadow/fcntl.h: New file.
+	* shadow/iconv.h: New file. Inject iconv names into the global
+	namespace, unmangled for the moment.
+	* shadow/bits/wrap_iconv.h: New file.
+	* shadow/unistd.h: Remove. Useless.
+	* shadow/bits/wrap_unistd.h: Remove.
+	
+	* src/Makefile.am: Take out machine-ansi.h, add fcntl.h unistd.h.
+	* src/Makefile.in: Regenerate.
+	
+	* config/c_io_libio.h (_IO_codecvt): Change to normal C++ decl.
+	
+	* shadow/libio.h: Fix.
+	* shadow/bits/wrap_libio.h: Fix.
+
+	* shadow/bits/std_clocale.h: Remove typedef struct construct,
+	which will not compile.
+	* shadow/bits/std_ctime.h: Same.
+	
+	* shadow/pthread.h: New file. Put pthreads types and functions
+	into global scope, which is probably not the correct long-term
+	solution but has to be done at the moment before libio wrappers
+	can even be started.
+	* shadow/bits/wrap_pthread.h: New file.
+
+	* bits/std_ios.h: Formatting tweak.
+	* shadow/bits/std_cstdio.h: Format. Remove extraneous bits.
+
+	* acinclude.m4 (GLIBCPP_CHECK_COMPILER_FEATURES): Add -Werror to
+	tests for compiler features.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	
+	* config/c_io_libio.cc: Remove fcntl.h include, as SEEK_SET
+	redefined.
+	* libio/libioP.h: Comment out fcntl.h include.
+
+	* shadow/math.h: Add in float and long declarations, as per ISO C9X.
+
+	* bits/c++config: Define _ISOC99_SOURCE.
+
+	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW): Add -fno-builtins to
+	CSHADOWFLAGS, as well as _ISOC99_SOURCE.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* src/Makefile.am (CSHADOW_INCLUDES): Enable, again.
+	(CSHADOW_INCLUDES): Add -I$(top_srcdir)/std before shadow include dir.
+	(CXXCOMPILE): Remove $(DEFS), which searches $(top_srcdir) before
+	std or shadow directories.
+	(LTCXXCOMPILE): Same.
+	(INCLUDES): Add $(top_builddir) before $(top_srcdir).
+	(AC_CXXFLAGS): Add CSHADOWFLAGS.
+	* src/Makefile.in: Regenerate.
+
+	* src/complex.cc (FCT): Change ::name to name.
+	* src/complexl.cc (FCT): Same. Use _GLIBCPP_USE_LONG_LONG here.
+	* src/complexf.cc (FCT): Same.
+
+	* src/complexf.cc: Remove FCT define, as things are properly
+	overloaded in the std namespace with the shadow headers.
+	* src/complexl.cc: Same.
+	* src/complex.cc: Same.
+	
 2000-09-25  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/documentation.html:  Add link to...

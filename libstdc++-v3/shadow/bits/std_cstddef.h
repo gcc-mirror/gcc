@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,45 +34,27 @@
 #ifndef _CPP_CSTDDEF
 #define _CPP_CSTDDEF 1
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma GCC system_header
 #     include_next <stddef.h>
-    }
-    typedef ptrdiff_t _CPP_ptrdiff_t_capture; 
-    typedef size_t    _CPP_size_t_capture; 
-
-    namespace _C_shadow { }
-  } // close namespace ::_C_legacy::
+  }
+} // namespace _C_legacy
 
 #  undef ptrdiff_t  
 #  undef size_t  
-#  undef wchar_t  
-#  undef  NULL
-#  define NULL 0 
-// # undef offsetof
 
-  namespace _C_legacy {
-    namespace _C_shadow {
-      typedef ::_C_legacy::_CPP_ptrdiff_t_capture  ptrdiff_t;
-      typedef ::_C_legacy::_CPP_size_t_capture  size_t;
-    }
-  }
-  namespace std {
-
-    // Adopt C names into std::
-    using ::_C_legacy::_C_shadow::ptrdiff_t;  
-    using ::_C_legacy::_C_shadow::size_t;  
-
-  } // close namespace std::
+namespace std {
+  using _C_legacy::ptrdiff_t;
+  using _C_legacy::size_t;
+} // namespace std
   
-  namespace _C_legacy {
-    namespace _C_shadow {
-    }
-  }
-
 # undef _IN_C_LEGACY_
 
 #endif
+
+
+
+
 

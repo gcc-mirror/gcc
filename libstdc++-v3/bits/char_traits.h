@@ -176,23 +176,23 @@ namespace std {
 
       static const char_type* 
       find(const char_type* __s, size_t __n, const char_type& __a)
-      { return static_cast<char*>(memchr(__s, __a, __n)); }
+      { return static_cast<const char_type*>(memchr(__s, __a, __n)); }
 
       static char_type* 
       move(char_type* __s1, const char_type* __s2, size_t __n)
-      { return static_cast<char*>(memmove(__s1, __s2, __n)); }
+      { return static_cast<char_type*>(memmove(__s1, __s2, __n)); }
 
       static char_type* 
       copy(char_type* __s1, const char_type* __s2, size_t __n)
-      {  return static_cast<char*>(memcpy(__s1, __s2, __n)); }
+      {  return static_cast<char_type*>(memcpy(__s1, __s2, __n)); }
 
       static char_type* 
       assign(char_type* __s, size_t __n, char_type __a)
-      { return static_cast<char*>(memset(__s, __a, __n)); }
+      { return static_cast<char_type*>(memset(__s, __a, __n)); }
 
       static char_type 
       to_char_type(const int_type& __c)
-      { return static_cast<char>(__c); }
+      { return static_cast<char_type>(__c); }
 
       // To keep both the byte 0xff and the eof symbol 0xffffffff
       // from ending up as 0xffffffff.
