@@ -1,5 +1,11 @@
 2003-05-01  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* testsuite/abi_check.cc (check_version): Update known versions.
+	Check added symbols for version_name != base version. Add missing
+	symbols to incompatible list.
+	
+2003-05-01  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4 (GLIBCPP_EXPORT_FLAGS): Remove -Winline.
 	* aclocal.m4: Regenerated.
 	* configure: Regenerated.
