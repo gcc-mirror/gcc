@@ -188,3 +188,10 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 #ifndef PROMOTE_PROTOTYPES
 #define PROMOTE_PROTOTYPES	0
 #endif
+
+/* Number of hardware registers that go into the DWARF-2 unwind info.
+   If not defined, equals FIRST_PSEUDO_REGISTER  */
+
+#ifndef DWARF_FRAME_REGISTERS
+#define DWARF_FRAME_REGISTERS FIRST_PSEUDO_REGISTER
+#endif
