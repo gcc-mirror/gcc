@@ -1,3 +1,22 @@
+Fri Nov 15 14:54:19 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (x86_function_profiler): New function
+	* i386.h (MCOUNT_NAME): New.
+	(PROFILE_COUNT_REGISTER): New.
+	(OUTPUT_FUNCTION_PROFILER): Move offline to ...
+	* i386.c (x86_function_profiler) ... here; fix 64bit support
+	* beos-elf.h (FUNCTION_PROFILER): Kill.
+	(MCOUNT_NAME): New.
+	* freebsd-aout.h (FUNCTION_PROFILER): Kill.
+	(MCOUNT_NAME): New.
+	(PROFILE_COUNT_REGISTER): New.
+	* linux.h (FUNCTION_PROFILER): Kill.
+	(MCOUNT_NAME): New.
+	* x86-64.h (FUNCTION_PROFILER): Kill.
+	(MCOUNT_NAME): New.
+	* freebsd.h (FUNCTION_PROFILER): Kill.
+	(MCOUNT_NAME): New.
+
 2002-11-14  Jeroen Dobbelaere  <jeroen.dobbelaere@acunia.com>
 
 	* config/arm/arm.h (EXPAND_BUILTIN_VA_ARG,

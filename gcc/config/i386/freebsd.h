@@ -47,14 +47,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Tell final.c that we don't need a label passed to mcount.  */
 
-#undef FUNCTION_PROFILER
-#define FUNCTION_PROFILER(FILE, LABELNO)  \
-{									\
-  if (flag_pic)								\
-      fprintf ((FILE), "\tcall *.mcount@GOT(%%ebx)\n");			\
-  else									\
-      fprintf ((FILE), "\tcall .mcount\n");				\
-}
+#undef MCOUNT_NAME
+#define MCOUNT_NAME ".mcount"
 
 /* Make gcc agree with <machine/ansi.h>.  */
 
