@@ -1,3 +1,13 @@
+2002-06-09  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (avr_mcu_types): Update for new devices.
+	* config/avr/avr.h (TARGET_SWITCHES, AVR_MEGA): Add -mshort-calls.
+	(LINK_SPEC, CRT_BINUTILS_SPECS): Update for new devices.
+	* config/avr/avr.md ("type" and "length" attributes): New type
+	"xcall", length 1 or 2 if AVR_MEGA.  Use in all patterns that
+	output a single "call" or "rcall" insn depending on device size.
+	* config/avr/t-avr (MULTILIB_MATCHES): Update for new devices.
+
 2002-06-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/{aix43.h,aix5.1} (ASM_CPU_SPEC): Add power3

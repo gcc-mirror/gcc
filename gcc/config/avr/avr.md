@@ -39,7 +39,7 @@
 (define_attr "cc" "none,set_czn,set_zn,set_n,compare,clobber"
   (const_string "none"))
 
-(define_attr "type" "branch,branch1,arith"
+(define_attr "type" "branch,branch1,arith,xcall"
   (const_string "arith"))
 
 (define_attr "mcu_enhanced" "yes,no"
@@ -80,7 +80,11 @@
                                           (le (minus (pc) (match_dup 0))
                                               (const_int 2043)))
                                      (const_int 3)
-                                     (const_int 4)))]
+                                     (const_int 4)))
+	 (eq_attr "type" "xcall")
+	 (if_then_else (eq_attr "mcu_mega" "no")
+		       (const_int 1)
+		       (const_int 2))]
         (const_int 2)))
 
 (define_insn "*pop1"
@@ -718,9 +722,7 @@
    (clobber (reg:QI 22))]
   "!AVR_ENHANCED"
   "%~call __mulqi3"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 (define_insn "mulqihi3"
@@ -790,9 +792,7 @@
    (clobber (reg:QI 21))]
   "!AVR_ENHANCED"
   "%~call __mulhi3"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 ;; Operand 2 (reg:SI 18) not clobbered on the enhanced core.
@@ -813,9 +813,7 @@
    (clobber (reg:HI 30))]
   "AVR_ENHANCED"
   "%~call __mulsi3"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 ; / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / %
@@ -845,9 +843,7 @@
    (clobber (reg:QI 23))]
   ""
   "%~call __divmodqi4"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 (define_expand "udivmodqi4"
@@ -867,9 +863,7 @@
    (clobber (reg:QI 23))]
   ""
   "%~call __udivmodqi4"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 (define_expand "divmodhi4"
@@ -891,9 +885,7 @@
    (clobber (reg:QI 21))]
   ""
   "%~call __divmodhi4"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 (define_expand "udivmodhi4"
@@ -915,9 +907,7 @@
    (clobber (reg:QI 21))]
   ""
   "%~call __udivmodhi4"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 (define_expand "divmodsi4"
@@ -939,9 +929,7 @@
    (clobber (reg:HI 30))]
   ""
   "%~call __divmodsi4"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 (define_expand "udivmodsi4"
@@ -963,9 +951,7 @@
    (clobber (reg:HI 30))]
   ""
   "%~call __udivmodsi4"
-  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
-				      (const_int 1)
-				      (const_int 2)))
+  [(set_attr "type" "xcall")
    (set_attr "cc" "clobber")])
 
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
