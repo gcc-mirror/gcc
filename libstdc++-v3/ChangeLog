@@ -1,3 +1,8 @@
+2004-06-08  Jason Merrill  <jason@redhat.com>
+
+	* config/linker-map.gnu: Use wildcards for
+	__basic_file::{xsgetn,xsputn,seekoff,xsputn_2}.
+
 2004-06-08  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/pool_allocator.h: Convert to a global free-list,
