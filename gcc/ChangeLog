@@ -1,3 +1,7 @@
+2004-08-14  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* c-common.c (shorten_compare): Use force_fit_type directly.
+
 2004-08-14  Gerald Pfeifer  <gerald@pfeifer.com>
 	    Dimitri Papadopoulos-Orfanos  <papadopo@shfj.cea.fr>
 	    Dave Korn  <dk@artimi.com>
@@ -1457,7 +1461,7 @@
 	* config/i386/xmmintrin.h: Include <mm_malloc.h>.
 
 2004-08-03  H.J. Lu  <hongjiu.lu@intel.com>
-	    Tanguy Fautr√  <tfautre@pandora.be>
+	    Tanguy Fautr√É  <tfautre@pandora.be>
 
 	* config/i386/pmm_malloc.h: New file.
 
