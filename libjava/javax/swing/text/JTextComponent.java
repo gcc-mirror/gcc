@@ -1467,6 +1467,11 @@ public abstract class JTextComponent extends JComponent
     dragEnabled = enabled;
   }
 
+  public int viewToModel(Point pt)
+  {
+    return getUI().viewToModel(this, pt);
+  }
+
   public void copy()
   {
     doTransferAction("copy", TransferHandler.getCopyAction());
