@@ -3145,7 +3145,6 @@ If the target machine does not have a push instruction, set it to zero.
 That directs GCC to use an alternate strategy: to
 allocate the entire argument block and then store the arguments into
 it.  When @code{PUSH_ARGS} is nonzero, @code{PUSH_ROUNDING} must be defined too.
-On some machines, the definition
 
 @findex PUSH_ROUNDING
 @item PUSH_ROUNDING (@var{npushed})
