@@ -83,76 +83,15 @@ extern const char *const built_in_class_names[4];
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */
 
+#define DEF_BUILTIN(x) x,
 enum built_in_function
 {
-  BUILT_IN_ALLOCA,
-  BUILT_IN_ABS,
-  BUILT_IN_FABS,
-  BUILT_IN_LABS,
-  BUILT_IN_FFS,
-  BUILT_IN_DIV,
-  BUILT_IN_LDIV,
-  BUILT_IN_FFLOOR,
-  BUILT_IN_FCEIL,
-  BUILT_IN_FMOD,
-  BUILT_IN_FREM,
-  BUILT_IN_MEMCPY,
-  BUILT_IN_MEMCMP,
-  BUILT_IN_MEMSET,
-  BUILT_IN_STRCPY,
-  BUILT_IN_STRCMP,
-  BUILT_IN_STRLEN,
-  BUILT_IN_FSQRT,
-  BUILT_IN_SIN,
-  BUILT_IN_COS,
-  BUILT_IN_GETEXP,
-  BUILT_IN_GETMAN,
-  BUILT_IN_SAVEREGS,
-  BUILT_IN_CLASSIFY_TYPE,
-  BUILT_IN_NEXT_ARG,
-  BUILT_IN_ARGS_INFO,
-  BUILT_IN_CONSTANT_P,
-  BUILT_IN_FRAME_ADDRESS,
-  BUILT_IN_RETURN_ADDRESS,
-  BUILT_IN_AGGREGATE_INCOMING_ADDRESS,
-  BUILT_IN_APPLY_ARGS,
-  BUILT_IN_APPLY,
-  BUILT_IN_RETURN,
-  BUILT_IN_SETJMP,
-  BUILT_IN_LONGJMP,
-  BUILT_IN_TRAP,
-
-  /* ISO C99 floating point unordered comparisons.  */
-  BUILT_IN_ISGREATER,
-  BUILT_IN_ISGREATEREQUAL,
-  BUILT_IN_ISLESS,
-  BUILT_IN_ISLESSEQUAL,
-  BUILT_IN_ISLESSGREATER,
-  BUILT_IN_ISUNORDERED,
-
-  /* Various hooks for the DWARF 2 __throw routine.  */
-  BUILT_IN_UNWIND_INIT,
-  BUILT_IN_DWARF_CFA,
-  BUILT_IN_DWARF_FP_REGNUM,
-  BUILT_IN_INIT_DWARF_REG_SIZES,
-  BUILT_IN_FROB_RETURN_ADDR,
-  BUILT_IN_EXTRACT_RETURN_ADDR,
-  BUILT_IN_EH_RETURN,
-
-  BUILT_IN_VARARGS_START,
-  BUILT_IN_STDARG_START,
-  BUILT_IN_VA_END,
-  BUILT_IN_VA_COPY,
-
-  /* C++ extensions */
-  BUILT_IN_NEW,
-  BUILT_IN_VEC_NEW,
-  BUILT_IN_DELETE,
-  BUILT_IN_VEC_DELETE,
+#include "builtins.def"
 
   /* Upper bound on non-language-specific builtins. */
   END_BUILTINS
 };
+#undef DEF_BUILTIN
 
 /* Names for the above.  */
 extern const char *const built_in_names[(int) END_BUILTINS];
