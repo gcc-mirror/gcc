@@ -1,3 +1,7 @@
+2002-04-24  Richard Henderson  <rth@redhat.com>
+
+	* config/mips/mips.md (movdi_usd): Renumber.
+
 2002-04-24  Robert Lipe  <robertlipe@usa.net>
 
 	* config/i386/sco5.h(i386.h, att.h): Eliminate double inclusion.
