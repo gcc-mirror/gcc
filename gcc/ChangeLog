@@ -1,3 +1,8 @@
+Thu May 10 14:45:44 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* jump.c (jump_optimize_1): Do not wrap the new jump target
+	inside a LABEL_REF; gen_jump will do that automatically.
+
 2001-05-10  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* dwarf2out.c (mem_loc_descriptor): Do not pass constant pool
