@@ -4063,8 +4063,7 @@ ambiguous_decl (name, old, new, flags)
         /* If we expect types or namespaces, and not templates,
            or this is not a template class. */
         if (LOOKUP_QUALIFIERS_ONLY (flags)
-            && (!(flags & LOOKUP_TEMPLATES_EXPECTED)
-                || !DECL_CLASS_TEMPLATE_P (val)))
+            && !DECL_CLASS_TEMPLATE_P (val))
           val = NULL_TREE;
         break;
       case TYPE_DECL:
