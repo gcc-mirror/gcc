@@ -54,6 +54,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  %{!p:%{m68881:/usr/lib/fp/crt1.o}%{!m68881:/lib/crt1.o}}      \
  crtbegin.o%s"
 
+/* We don't want local labels to start with period.
+   See ASM_OUTPUT_INTERNAL_LABEL.  */
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX ""
+
 /* These four macros control how m68k.md is expanded.  */
 
 #define MOTOROLA		/* Use Motorola syntax rather than "MIT" */
