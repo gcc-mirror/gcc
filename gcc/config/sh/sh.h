@@ -1942,13 +1942,13 @@ do {							\
       /* The following test assumes unnamed arguments are promoted to	\
 	 DFmode.  */							\
       : (MODE) == SFmode && (CUM).free_single_fp_reg			\
-      ? SH5_PROTOTYPED_FLOAT_ARG ((CUM), (MODE), (CUM).free_single_fp_reg) \
+      ? SH5_PROTOTYPED_FLOAT_ARG ((CUM), (NEW_MODE), (CUM).free_single_fp_reg) \
       : (GET_SH_ARG_CLASS (MODE) == SH_ARG_FLOAT			\
          && ((NAMED) || ! (CUM).prototype_p)				\
          && (CUM).arg_count[(int) SH_ARG_FLOAT] < NPARM_REGS (SFmode))	\
       ? ((! (CUM).prototype_p && TARGET_SHMEDIA)			\
-	 ? SH5_PROTOTYPELESS_FLOAT_ARG ((CUM), (MODE))			\
-	 : SH5_PROTOTYPED_FLOAT_ARG ((CUM), (MODE),			\
+	 ? SH5_PROTOTYPELESS_FLOAT_ARG ((CUM), (NEW_MODE))		\
+	 : SH5_PROTOTYPED_FLOAT_ARG ((CUM), (NEW_MODE),			\
 				     FIRST_FP_PARM_REG			\
 				     + (CUM).arg_count[(int) SH_ARG_FLOAT])) \
       : ((CUM).arg_count[(int) SH_ARG_INT] < NPARM_REGS (SImode)	\
@@ -1956,7 +1956,7 @@ do {							\
 	     || (! SHCOMPACT_FORCE_ON_STACK ((MODE), (TYPE))		\
 	         && ! SH5_WOULD_BE_PARTIAL_NREGS ((CUM), (MODE),	\
 						  (TYPE), (NAMED)))))	\
-      ? gen_rtx_REG ((MODE), (FIRST_PARM_REG				\
+      ? gen_rtx_REG ((NEW_MODE), (FIRST_PARM_REG			\
  			      + (CUM).arg_count[(int) SH_ARG_INT]))	\
       : 0)								\
    : 0)
