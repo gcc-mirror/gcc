@@ -1,3 +1,7 @@
+2001-09-15  Richard Henderson  <rth@redhat.com>
+
+	* c-typeck.c (comptypes): Handle zero-length arrays properly.
+
 2001-09-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi: Explain AIX exception handling work-around.

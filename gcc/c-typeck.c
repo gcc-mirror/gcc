@@ -508,6 +508,8 @@ comptypes (type1, type2)
       {
 	tree d1 = TYPE_DOMAIN (t1);
 	tree d2 = TYPE_DOMAIN (t2);
+	bool d1_variable, d2_variable;
+	bool d1_zero, d2_zero;
 	val = 1;
 
 	/* Target types must match incl. qualifiers.  */
@@ -516,14 +518,25 @@ comptypes (type1, type2)
 	  return 0;
 
 	/* Sizes must match unless one is missing or variable.  */
-	if (d1 == 0 || d2 == 0 || d1 == d2
-	    || TREE_CODE (TYPE_MIN_VALUE (d1)) != INTEGER_CST
-	    || TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
-	    || TREE_CODE (TYPE_MAX_VALUE (d1)) != INTEGER_CST
-	    || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST)
+	if (d1 == 0 || d2 == 0 || d1 == d2)
 	  break;
 
-	if (! tree_int_cst_equal (TYPE_MIN_VALUE (d1), TYPE_MIN_VALUE (d2))
+	d1_zero = ! TYPE_MAX_VALUE (d1);
+	d2_zero = ! TYPE_MAX_VALUE (d2);
+
+	d1_variable = (! d1_zero
+		       && (TREE_CODE (TYPE_MIN_VALUE (d1)) != INTEGER_CST
+			   || TREE_CODE (TYPE_MAX_VALUE (d1)) != INTEGER_CST));
+	d2_variable = (! d2_zero
+		       && (TREE_CODE (TYPE_MIN_VALUE (d2)) != INTEGER_CST
+			   || TREE_CODE (TYPE_MAX_VALUE (d2)) != INTEGER_CST));
+
+	if (d1_variable || d2_variable)
+	  break;
+	if (d1_zero && d2_zero)
+	  break;
+	if (d1_zero || d2_zero
+	    || ! tree_int_cst_equal (TYPE_MIN_VALUE (d1), TYPE_MIN_VALUE (d2))
 	    || ! tree_int_cst_equal (TYPE_MAX_VALUE (d1), TYPE_MAX_VALUE (d2)))
 	  val = 0;
 
