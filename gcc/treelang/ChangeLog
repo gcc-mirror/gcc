@@ -1,3 +1,9 @@
+2003-07-10  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in: Update.
+	* tree1.c: Don't include c-common.h.
+	(c_language): Remove.
+
 2003-07-10  Fergus Henderson  <fjh@cs.mu.oz.au>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 
