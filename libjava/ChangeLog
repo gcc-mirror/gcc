@@ -1,3 +1,9 @@
+2003-07-08  Andrew Haley  <aph@redhat.com>
+
+        * include/i386-signal.h (RESTORE): New.
+        (INIT_SEGV): Set restorer.
+        (INIT_FPE): Likewise.
+
 2003-07-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkButtonPeer.java: Call getName rather
