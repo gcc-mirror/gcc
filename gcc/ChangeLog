@@ -1,3 +1,8 @@
+2003-03-24  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/install.texi (Testing): Mention test result links from build
+	status pages.
+
 2003-03-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* function.c (put_var_into_stack): Change bool parameter to int.

@@ -1184,6 +1184,9 @@ Before you install GCC, we encourage you to run the testsuites and to
 compare your results with results from a similar configuration that have
 been submitted to the
 @uref{http://gcc.gnu.org/ml/gcc-testresults/,,gcc-testresults mailing list}.
+Some of these archived results are linked from the build status lists
+at @uref{http://gcc.gnu.org/buildstat.html}, although not everyone who
+reports a successful build runs the testsuites and submits the results.
 This step is optional and may require you to download additional software,
 but it can give you confidence in your new GCC installation or point out
 problems before you install and start using your new GCC.
