@@ -1,3 +1,10 @@
+2001-08-08  Jan van Male <jan.vanmale@fenk.wau.nl>
+
+        * emit-rtl.c (adjust_address, adjust_address_nv): Cast offset to
+	unsigned HOST_WIDE_INT to avoid warning.
+        * final.c (final): Cast INSN_UID to unsigned to avoid warning.
+        * flow.c (set_block_for_new_insns): Likewise.
+
 Wed Aug  8 21:08:14 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* sibcall.c (return_value_pseudo): New static variable.
@@ -93,7 +100,7 @@ Wed Aug  8 18:01:58 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* config/ia64/ia64.md (cond_opsi2_internal, cond_opsi2_internal_b):
 	Turn into define_insn_and_split.
-	
+
 	* sched-deps.c: Include "cselib.h".
 	(add_insn_mem_dependence, sched_analyze_1, sched_analyze_2):
 	Use cselib to turn memory addresses into VALUEs.
@@ -107,7 +114,7 @@ Wed Aug  8 18:01:58 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* cselib.c (cselib_subst_to_values): No longer static.  Allow MEMs
 	that have no value and autoincs to be handled by generating a new
 	dummy value.
-	
+
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
 	* final.c (shorten_branches): Update the INSN_ADDRESSES of insns

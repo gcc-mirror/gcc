@@ -366,7 +366,7 @@ typedef struct depth_first_search_dsS *depth_first_search_ds;
   print_rtl_and_abort_fcn (__FILE__, __LINE__, __FUNCTION__)
 
 /* Forward declarations */
-static bool try_crossjump_to_edge 	PARAMS ((int, edge, edge));
+static bool try_crossjump_to_edge	PARAMS ((int, edge, edge));
 static bool try_crossjump_bb		PARAMS ((int, basic_block));
 static bool outgoing_edges_match	PARAMS ((basic_block, basic_block));
 static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
@@ -1783,7 +1783,7 @@ can_fallthru (src, target)
 
 /* Attempt to perform edge redirection by replacing possibly complex jump
    instruction by unconditional jump or removing jump completely.
-   This can apply only if all edges now point to the same block. 
+   This can apply only if all edges now point to the same block.
 
    The parameters and return values are equivalent to redirect_edge_and_branch.
  */
@@ -2532,7 +2532,7 @@ need_fake_edge_p (insn)
 /* Add fake edges to the function exit for any non constant and non noreturn
    calls, volatile inline assembly in the bitmap of blocks specified by
    BLOCKS or to the whole CFG if BLOCKS is zero.  Return the nuber of blocks
-   that were split. 
+   that were split.
 
    The goal is to expose cases in which entering a basic block does not imply
    that all subsequent instructions must be executed.  */
@@ -2560,7 +2560,7 @@ flow_call_edges_add (blocks)
     }
   else
     {
-      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i, 
+      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
       {
 	bbs[bb_num++] = BASIC_BLOCK (i);
 	if (i == n_basic_blocks - 1)
@@ -2572,7 +2572,7 @@ flow_call_edges_add (blocks)
      a fallthru edge to EXIT.  Special care is required if the last insn
      of the last basic block is a call because make_edge folds duplicate
      edges, which would result in the fallthru edge also being marked
-     fake, which would result in the fallthru edge being removed by 
+     fake, which would result in the fallthru edge being removed by
      remove_fake_edges, which would result in an invalid CFG.
 
      Moreover, we can't elide the outgoing fake edge, since the block
@@ -3336,7 +3336,7 @@ try_simplify_condjump (cbranch_block)
   redirect_edge_succ_nodup (cbranch_fallthru_edge, jump_dest_block);
   cbranch_jump_edge->flags |= EDGE_FALLTHRU;
   cbranch_fallthru_edge->flags &= ~EDGE_FALLTHRU;
-  
+
   /* Delete the block with the unconditional jump, and clean up the mess.  */
   flow_delete_block (jump_block);
   tidy_fallthru_edge (cbranch_jump_edge, cbranch_block, cbranch_dest_block);
@@ -3363,7 +3363,7 @@ try_forward_edges (mode, b)
       next = e->succ_next;
 
       /* Skip complex edges because we don't know how to update them.
-        
+
          Still handle fallthru edges, as we can suceed to forward fallthru
          edge to the same place as the branch edge of conditional branch
          and turn conditional branch to an unconditonal branch.  */
@@ -3386,13 +3386,13 @@ try_forward_edges (mode, b)
 
 	  /* Avoid killing of loop pre-headers, as it is the place loop
 	     optimizer wants to hoist code to.
-	 
+
 	     For fallthru forwarders, the LOOP_BEG note must appear between
 	     the header of block and CODE_LABEL of the loop, for non forwarders
 	     it must appear before the JUMP_INSN.  */
 	  if (mode & CLEANUP_PRE_LOOP)
 	    {
-	      rtx insn = (target->succ->flags & EDGE_FALLTHRU 
+	      rtx insn = (target->succ->flags & EDGE_FALLTHRU
 		          ? target->head : prev_nonnote_insn (target->end));
 
 	      if (GET_CODE (insn) != NOTE)
@@ -3630,7 +3630,7 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
 
 /* Return true iff outgoing edges of BB1 and BB2 match, together with
    the branch instruction.  This means that if we commonize the control
-   flow before end of the basic block, the semantic remains unchanged.  
+   flow before end of the basic block, the semantic remains unchanged.
 
    We may assume that there exists one edge with a common destination.  */
 
@@ -3971,7 +3971,7 @@ try_crossjump_bb (mode, bb)
 	     If there is a match, we'll do it the other way around.  */
 	  if (e == fallthru)
 	    continue;
-	
+
 	  if (try_crossjump_to_edge (mode, e, fallthru))
 	    {
 	      changed = true;
@@ -4013,7 +4013,7 @@ try_crossjump_bb (mode, bb)
 
 	  /* The "first successor" check above only prevents multiple
 	     checks of crossjump(A,B).  In order to prevent redundant
-	     checks of crossjump(B,A), require that A be the block 
+	     checks of crossjump(B,A), require that A be the block
 	     with the lowest index.  */
 	  if (e->src->index > e2->src->index)
 	    continue;
@@ -4080,7 +4080,7 @@ try_optimize_cfg (mode)
 	      && !(b->pred->flags & EDGE_COMPLEX)
 	      && GET_CODE (b->head) == CODE_LABEL
 	      && (!(mode & CLEANUP_PRE_SIBCALL)
- 		  || !tail_recursion_label_p (b->head))
+		  || !tail_recursion_label_p (b->head))
 	      /* If previous block ends with condjump jumping to next BB,
 	         we can't delete the label.  */
 	      && (b->pred->src == ENTRY_BLOCK_PTR
@@ -6251,8 +6251,8 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
 	  if (regno_first < FIRST_PSEUDO_REGISTER)
 	    {
 	      regno_first += subreg_regno_offset (regno_first, inner_mode,
-	      					  SUBREG_BYTE (reg),
-	      					  outer_mode);
+						  SUBREG_BYTE (reg),
+						  outer_mode);
 	      regno_last = (regno_first
 			    + HARD_REGNO_NREGS (regno_first, outer_mode) - 1);
 
@@ -8277,7 +8277,7 @@ set_block_for_insn (insn, bb)
 /* When a new insn has been inserted into an existing block, it will
    sometimes emit more than a single insn. This routine will set the
    block number for the specified insn, and look backwards in the insn
-   chain to see if there are any other uninitialized insns immediately 
+   chain to see if there are any other uninitialized insns immediately
    previous to this one, and set the block number for them too.  */
 
 void
@@ -8287,14 +8287,14 @@ set_block_for_new_insns (insn, bb)
 {
   set_block_for_insn (insn, bb);
 
-  /* Scan the previous instructions setting the block number until we find 
-     an instruction that has the block number set, or we find a note 
+  /* Scan the previous instructions setting the block number until we find
+     an instruction that has the block number set, or we find a note
      of any kind.  */
   for (insn = PREV_INSN (insn); insn != NULL_RTX; insn = PREV_INSN (insn))
     {
       if (GET_CODE (insn) == NOTE)
 	break;
-      if (INSN_UID (insn) >= basic_block_for_insn->num_elements 
+      if ((unsigned) INSN_UID (insn) >= basic_block_for_insn->num_elements
 	  || BLOCK_FOR_INSN (insn) == 0)
 	set_block_for_insn (insn, bb);
       else
@@ -8556,7 +8556,7 @@ verify_flow_info ()
 	  num_bb_notes++;
 	  if (bb->index != last_bb_num_seen + 1)
 	    internal_error ("Basic blocks not numbered consecutively.");
-	       
+
 	  last_bb_num_seen = bb->index;
 	}
 
@@ -9891,13 +9891,13 @@ flow_loop_scan (loops, loop, flags)
       for (j = 0; j < loop->num_exits; j++)
 	sbitmap_a_and_b (loop->exits_doms, loop->exits_doms,
 			 loops->cfg.dom[loop->exit_edges[j]->src->index]);
-      
+
       /* The header of a natural loop must dominate
 	 all exits.  */
       if (! TEST_BIT (loop->exits_doms, loop->header->index))
 	abort ();
     }
-  
+
   if (flags & LOOP_PRE_HEADER)
     {
       /* Look to see if the loop has a pre-header node.  */
@@ -10301,7 +10301,7 @@ purge_dead_edges (bb)
 }
 
 /* Search all basic blocks for potentionally dead edges and purge them.
-  
+
    Return true ifif some edge has been elliminated.
  */
 

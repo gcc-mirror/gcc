@@ -526,7 +526,7 @@ end_final (filename)
 }
 
 /* Default target function prologue and epilogue assembler output.
-  
+
    If not overridden for epilogue code, then the function body itself
    contains return instructions wherever needed.  */
 void
@@ -918,7 +918,7 @@ insn_current_reference_address (branch)
     return insn_current_address;
   dest = JUMP_LABEL (branch);
 
-  /* BRANCH has no proper alignment chain set, so use SEQ.  
+  /* BRANCH has no proper alignment chain set, so use SEQ.
      BRANCH also has no INSN_SHUID.  */
   if (INSN_SHUID (seq) < INSN_SHUID (dest))
     {
@@ -1938,7 +1938,7 @@ final (first, file, optimize, prescan)
   for (insn = NEXT_INSN (first); insn;)
     {
 #ifdef HAVE_ATTR_length
-      if (INSN_UID (insn) >= INSN_ADDRESSES_SIZE ())
+      if ((unsigned) INSN_UID (insn) >= INSN_ADDRESSES_SIZE ())
 	{
 #ifdef STACK_REGS
 	  /* Irritatingly, the reg-stack pass is creating new instructions
@@ -2057,12 +2057,12 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	  break;
 
 	case NOTE_INSN_PROLOGUE_END:
-	  (*targetm.asm_out.function_end_prologue) (file);	     
+	  (*targetm.asm_out.function_end_prologue) (file);
 	  profile_after_prologue (file);
 	  break;
 
 	case NOTE_INSN_EPILOGUE_BEG:
-	  (*targetm.asm_out.function_begin_epilogue) (file);	     
+	  (*targetm.asm_out.function_begin_epilogue) (file);
 	  break;
 
 	case NOTE_INSN_FUNCTION_BEG:
@@ -2749,7 +2749,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
            print_rtl_single (asm_out_file, insn);
            print_rtx_head = "";
          }
-       
+
 	if (! constrain_operands_cached (1))
 	  fatal_insn_not_found (insn);
 
