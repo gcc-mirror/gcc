@@ -196,7 +196,7 @@ decl_attributes (decl, attributes)
 	if (TREE_CODE (decl) == FIELD_DECL)
 	  DECL_PACKED (decl) = 1;
 	/* We can't set DECL_PACKED for a VAR_DECL, because the bit is
-	   used for TREE_REGDECL.  It wouldn't mean anything anyway.  */
+	   used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
       }
     else if (TREE_VALUE (a) != 0
 	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST

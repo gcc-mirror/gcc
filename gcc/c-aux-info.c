@@ -126,12 +126,12 @@ affix_data_type (type_or_decl)
 
   for (;;)
     {
-      if (!strncmp (p, "volatile", 8))
+      if (!strncmp (p, "volatile ", 9))
         {
           p += 9;
           continue;
         }
-      if (!strncmp (p, "const", 5))
+      if (!strncmp (p, "const ", 6))
         {
           p += 6;
           continue;
@@ -568,7 +568,7 @@ gen_decl (decl, is_func_definition, style)
 
   ret_val = affix_data_type (ret_val);
 
-  if (TREE_REGDECL (decl))
+  if (DECL_REGISTER (decl))
     ret_val = concat ("register ", ret_val);
   if (TREE_PUBLIC (decl))
     ret_val = concat ("extern ", ret_val);

@@ -1200,7 +1200,7 @@ build_array_ref (array, index)
 
       if (pedantic && !lvalue_p (array))
 	{
-	  if (TREE_REGDECL (array))
+	  if (DECL_REGISTER (array))
 	    pedwarn ("ANSI C forbids subscripting `register' array");
 	  else
 	    pedwarn ("ANSI C forbids subscripting non-lvalue array");
@@ -1211,7 +1211,7 @@ build_array_ref (array, index)
 	  tree foo = array;
 	  while (TREE_CODE (foo) == COMPONENT_REF)
 	    foo = TREE_OPERAND (foo, 0);
-	  if (TREE_CODE (foo) == VAR_DECL && TREE_REGDECL (foo))
+	  if (TREE_CODE (foo) == VAR_DECL && DECL_REGISTER (foo))
 	    pedwarn ("ANSI C forbids subscripting non-lvalue array");
 	}
 
@@ -3206,7 +3206,7 @@ convert_sequence (conversions, arg)
 
 /* Return nonzero if REF is an lvalue valid for this language.
    Lvalues can be assigned, unless their type has TYPE_READONLY.
-   Lvalues can have their address taken, unless they have TREE_REGDECL.  */
+   Lvalues can have their address taken, unless they have DECL_REGISTER.  */
 
 int
 lvalue_p (ref)
@@ -3353,8 +3353,8 @@ mark_addressable (exp)
       case CONST_DECL:
       case PARM_DECL:
       case RESULT_DECL:
-	if (TREE_REGDECL (x) && !TREE_ADDRESSABLE (x)
-	    && TREE_NONLOCAL (x))
+	if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x)
+	    && DECL_NONLOCAL (x))
 	  {
 	    if (TREE_PUBLIC (x))
 	      {
@@ -3365,7 +3365,7 @@ mark_addressable (exp)
 	    pedwarn ("register variable `%s' used in nested function",
 		     IDENTIFIER_POINTER (DECL_NAME (x)));
 	  }
-	else if (TREE_REGDECL (x) && !TREE_ADDRESSABLE (x))
+	else if (DECL_REGISTER (x) && !TREE_ADDRESSABLE (x))
 	  {
 	    if (TREE_PUBLIC (x))
 	      {
@@ -4708,7 +4708,19 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 		  " `%s'", ofwhat);
 	      return error_mark_node;
 	    }
-	  inside_init = element;
+	  else
+	    {
+	      /* Deal with extra levels of {...}.  */
+	      if (TREE_CODE (element) == CONSTRUCTOR
+		  && TREE_TYPE (element) == 0)
+		{
+		  error_init (
+			      "initializer for scalar%s requires one element",
+			      " `%s'", ofwhat);
+		  return error_mark_node;
+		}
+	      inside_init = element;
+	    }
 	}
 
 #if 0  /* A non-raw constructor is an actual expression.  */
