@@ -377,6 +377,11 @@ enum optab_index
   /* String length */
   OTI_strlen,
 
+  /* Combined compare & jump/store flags/move operations.  */
+  OTI_cbranch,
+  OTI_cmov,
+  OTI_cstore,
+    
   OTI_MAX
 };
 
@@ -426,6 +431,10 @@ extern optab optab_table[OTI_MAX];
 #define tst_optab (optab_table[OTI_tst])
 
 #define strlen_optab (optab_table[OTI_strlen])
+
+#define cbranch_optab (optab_table[OTI_cbranch])
+#define cmov_optab (optab_table[OTI_cmov])
+#define cstore_optab (optab_table[OTI_cstore])
 
 /* Tables of patterns for extending one integer mode to another.  */
 extern enum insn_code extendtab[MAX_MACHINE_MODE][MAX_MACHINE_MODE][2];
@@ -778,9 +787,24 @@ extern void emit_cmp_insn PROTO((rtx, rtx, enum rtx_code, rtx,
 extern void emit_cmp_and_jump_insns PROTO((rtx, rtx, enum rtx_code, rtx,
 					   enum machine_mode, int, int, rtx));
 
+/* The various uses that a comparison can have; used by can_compare_p:
+   jumps, conditional moves, store flag operations.  */
+enum can_compare_purpose
+{
+  ccp_jump,
+  ccp_cmov,
+  ccp_store_flag
+};
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */
-extern int can_compare_p PROTO((enum machine_mode));
+extern int can_compare_p PROTO((enum machine_mode, enum can_compare_purpose));
+
+extern void prepare_cmp_insn PROTO((rtx *, rtx *, enum rtx_code *, rtx,
+				    enum machine_mode *, int *, int,
+				    enum can_compare_purpose));
+
+extern rtx prepare_operand PROTO((int, rtx, int, enum machine_mode,
+				  enum machine_mode, int));
 
 /* Generate code to indirectly jump to a location given in the rtx LOC.  */
 extern void emit_indirect_jump PROTO((rtx));

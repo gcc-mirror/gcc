@@ -4548,7 +4548,7 @@ do_cmp_and_jump (arg1, arg2, op, mode, label)
   /* If this mode is an integer too wide to compare properly,
      compare word by word.  Rely on cse to optimize constant cases.  */
 
-  if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode))
+  if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode, ccp_jump))
     {
       rtx label2 = gen_label_rtx ();
 

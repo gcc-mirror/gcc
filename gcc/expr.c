@@ -7388,7 +7388,7 @@ expand_expr (exp, target, tmode, modifier)
 
       /* If this mode is an integer too wide to compare properly,
 	 compare word by word.  Rely on cse to optimize constant cases.  */
-      if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode))
+      if (GET_MODE_CLASS (mode) == MODE_INT && ! can_compare_p (mode, ccp_jump))
 	{
 	  if (code == MAX_EXPR)
 	    do_jump_by_parts_greater_rtx (mode, TREE_UNSIGNED (type),
@@ -8938,7 +8938,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
 
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-		 && !can_compare_p (TYPE_MODE (inner_type)))
+		 && !can_compare_p (TYPE_MODE (inner_type), ccp_jump))
 	  do_jump_by_parts_equality (exp, if_false_label, if_true_label);
 	else
 	  do_compare_and_jump (exp, EQ, EQ, if_false_label, if_true_label);
@@ -8978,7 +8978,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
 
 	else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-		 && !can_compare_p (TYPE_MODE (inner_type)))
+		 && !can_compare_p (TYPE_MODE (inner_type), ccp_jump))
 	  do_jump_by_parts_equality (exp, if_true_label, if_false_label);
 	else
 	  do_compare_and_jump (exp, NE, NE, if_false_label, if_true_label);
@@ -8986,36 +8986,36 @@ do_jump (exp, if_false_label, if_true_label)
       }
 
     case LT_EXPR:
-      if ((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	   == MODE_INT)
-	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+      mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && ! can_compare_p (mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 1, if_false_label, if_true_label);
       else
 	do_compare_and_jump (exp, LT, LTU, if_false_label, if_true_label);
       break;
 
     case LE_EXPR:
-      if ((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	   == MODE_INT)
-	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+      mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && ! can_compare_p (mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 0, if_true_label, if_false_label);
       else
 	do_compare_and_jump (exp, LE, LEU, if_false_label, if_true_label);
       break;
 
     case GT_EXPR:
-      if ((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	   == MODE_INT)
-	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+      mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && ! can_compare_p (mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 0, if_false_label, if_true_label);
       else
 	do_compare_and_jump (exp, GT, GTU, if_false_label, if_true_label);
       break;
 
     case GE_EXPR:
-      if ((GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	   == MODE_INT)
-	  && !can_compare_p (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
+      mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && ! can_compare_p (mode, ccp_jump))
 	do_jump_by_parts_greater (exp, 1, if_true_label, if_false_label);
       else
 	do_compare_and_jump (exp, GE, GEU, if_false_label, if_true_label);
@@ -9044,7 +9044,7 @@ do_jump (exp, if_false_label, if_true_label)
 	    emit_jump (target);
 	}
       else if (GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT
-	       && ! can_compare_p (GET_MODE (temp)))
+	       && ! can_compare_p (GET_MODE (temp), ccp_jump))
 	/* Note swapping the labels gives us not-equal.  */
 	do_jump_by_parts_equality_rtx (temp, if_true_label, if_false_label);
       else if (GET_MODE (temp) != VOIDmode)
@@ -9658,7 +9658,7 @@ do_store_flag (exp, target, mode, only_cheap)
     }
 
   /* Now see if we are likely to be able to do this.  Return if not.  */
-  if (! can_compare_p (operand_mode))
+  if (! can_compare_p (operand_mode, ccp_store_flag))
     return 0;
   icode = setcc_gen_code[(int) code];
   if (icode == CODE_FOR_nothing

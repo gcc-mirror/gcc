@@ -1,3 +1,27 @@
+Thu Sep 23 11:15:36 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* expmed.c (do_cmp_and_jump): Pass ccp_jump to can_compare_p.
+	* expr.c (expand_expr): Likewise.
+	(do_jump): Likewise.
+	(do_store_flag): Pass ccp_store_flag to can_compare_p.
+	* expr.h (enum optab_index): Add cbranch, cmov, cstore optabs and
+	accessor macros.
+	(enum can_compare_purpose): New.
+	(can_compare_p): Adjust prototype.
+	(prepare_cmp_insn, prepare_operand): Declare.
+	* genopinit.c (optabs): Add cbranch_optab, cmov_optab, cstore_optab.
+	* optabs.c (cmp_available_p): Deleted.
+	(expand_abs): Pass ccp_jump to can_compare_p.
+	(can_compare_p): New arg PURPOSE.  Check for combined optabs.
+	(prepare_cmp_insn): No longer static.  Add arg PURPOSE.
+	Call can_compare_p rather than cmp_available_p.
+	(prepare_operand): No longer static.
+	(emit_cmp_and_jump_insn): Check for and use cbranch patterns.
+	(emit_cmp_and_jump_insns): Pass ccp_jump to prepare_cmp_insn.
+	(expand_float): Fix a slightly broken emit_cmp_insn/emit_jump_insn
+	sequence to use emit_cmp_and_jump_insns.
+	(init_optabs): Initialize cbranch_optab, cmov_optab, cstore_optab.
+
 Wed Sep 22 17:58:01 1999  Stan Cox  <scox@cygnus.com>
 
 	* mips.h (GO_IF_LEGITIMATE_ADDRESS): Don't accept large
