@@ -1065,7 +1065,7 @@ rename_block (bb, idom)
 	     consider those edges.  */
 	  if (reg == NULL || reg == RENAME_NO_RTX)
 	    {
-	      if (! remove_phi_alternative (phi, bb))
+	      if (! remove_phi_alternative (phi, b))
 		abort ();
 	    }
 	  else
@@ -2153,8 +2153,8 @@ convert_from_ssa()
      any significant dead code at this point, except perhaps dead
      stores.  So do not take the time to perform dead code elimination. 
 
-     We also do not need death notes, so don't bother creating them.  */
-  life_analysis (insns, NULL, 0);
+     Register coalescing needs death notes, so generate them.  */
+  life_analysis (insns, NULL, PROP_DEATH_NOTES);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
      therefore can be coalesced.  */
