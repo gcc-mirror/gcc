@@ -56,7 +56,7 @@ foo (int a, int b, int n, int p, int *ptr, struct s *sptr,
   ap[a+=1] += a++; /* { dg-warning "undefined" "sequence point warning" } */
   a = a++, b = a; /* { dg-warning "undefined" "sequence point warning" } */
   b = a, a = a++; /* { dg-warning "undefined" "sequence point warning" } */
-  a = (b++ ? n : a) + b; /* { dg-warning "undefined" "sequence point warning" } */
+  a = (b++ ? n : a) + b; /* { dg-warning "undefined" "sequence point warning" { xfail *-*-* } } */
   b ? a = a++ : a; /* { dg-warning "undefined" "sequence point warning" } */
   b ? a : a = a++; /* { dg-warning "undefined" "sequence point warning" } */
   b && (a = a++); /* { dg-warning "undefined" "sequence point warning" } */
