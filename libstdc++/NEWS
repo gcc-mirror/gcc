@@ -1,9 +1,0 @@
-SUMMARY OF RECENT MAJOR CHANGES to LIBSTDC++.
-(Also check ../libio/NEWS.)
-
-*** Noteworthy changes in libstdc++ for EGCS
-
-* EGCS includes the SGI STL implementation without changes.
-
-* As a result of these and other changes, libstc++ for EGCS is not binary
-  compatible with previous releases of libstdc++.

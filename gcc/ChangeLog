@@ -1,3 +1,9 @@
+2001-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (site.exp): Always set HAVE_LIBSTDCXX_V3.
+	* configure.in: Remove --enable-libstdcxx_v3 support.
+	* configure: Regenerated.
+
 Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* diagnostic.h (set_internal_error_function): Renamed.

@@ -1,3 +1,8 @@
+2001-02-04  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove V2 C++ library.
+	* configure.in: Remove --enable-libstdcxx_v3 support.
+
 2001-01-31  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* include/demangle.h: Add prototype for java_demangle_v3.
