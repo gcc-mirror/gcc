@@ -276,7 +276,7 @@ namespace std {
     _M_grow_words(int __index);
 
     // Members for locale and locale caching.
-    locale 		_M_locale_ios;
+    locale 		_M_ios_locale;
 
     void 
     _M_init();
@@ -367,7 +367,7 @@ namespace std {
     imbue(const locale& __loc);
 
     inline locale 
-    getloc() const { return _M_locale_ios; }
+    getloc() const { return _M_ios_locale; }
 
     // Storage:
     static int 

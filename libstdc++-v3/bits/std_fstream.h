@@ -47,20 +47,19 @@ namespace std {
     {
     public:
       // Types:
-      typedef _CharT                     	       	  char_type;
-      typedef _Traits                    		  traits_type;
-      typedef typename _Traits::int_type 		  int_type;
-      typedef typename _Traits::pos_type 		  pos_type;
-      typedef typename _Traits::off_type 		  off_type;
-
+      typedef _CharT                     	        char_type;
+      typedef _Traits                    	        traits_type;
+      typedef typename traits_type::int_type 		int_type;
+      typedef typename traits_type::pos_type 		pos_type;
+      typedef typename traits_type::off_type 		off_type;
 
       // Non-standard Types:
-      typedef basic_streambuf<_CharT, _Traits> 		  __streambuf_type;
-      typedef basic_filebuf<_CharT, _Traits>		  __filebuf_type;
-      typedef __basic_file				  __file_type;
-      typedef typename _Traits::state_type                __state_type;
-      typedef codecvt<_CharT, char, __state_type>         __codecvt_type;
-      typedef typename __codecvt_type::result 		  __res_type;
+      typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
+      typedef basic_filebuf<char_type, traits_type>     __filebuf_type;
+      typedef __basic_file			        __file_type;
+      typedef typename traits_type::state_type          __state_type;
+      typedef codecvt<char_type, char, __state_type>    __codecvt_type;
+      typedef typename __codecvt_type::result 	        __res_type;
       
       friend ios_base; // For sync_with_stdio.
 
@@ -197,15 +196,15 @@ namespace std {
     {
     public:
       // Types:
-      typedef _CharT 				char_type;
-      typedef typename _Traits::int_type 	int_type;
-      typedef typename _Traits::pos_type 	pos_type;
-      typedef typename _Traits::off_type 	off_type;
-      typedef _Traits 				traits_type;
+      typedef _CharT 					char_type;
+      typedef _Traits 					traits_type;
+      typedef typename traits_type::int_type 		int_type;
+      typedef typename traits_type::pos_type 		pos_type;
+      typedef typename traits_type::off_type 		off_type;
 
       // Non-standard types:
-      typedef basic_filebuf<_CharT, _Traits> 	__filebuf_type;
-      typedef basic_istream<_CharT, _Traits>	__istream_type;
+      typedef basic_filebuf<char_type, traits_type> 	__filebuf_type;
+      typedef basic_istream<char_type, traits_type>	__istream_type;
     
       // Constructors/Destructors:
       basic_ifstream()
@@ -251,17 +250,17 @@ namespace std {
     class basic_ofstream : public basic_ostream<_CharT,_Traits>
     {
     public:
-       // Types:
-      typedef _CharT 				char_type;
-      typedef typename _Traits::int_type 	int_type;
-      typedef typename _Traits::pos_type 	pos_type;
-      typedef typename _Traits::off_type 	off_type;
-      typedef _Traits 				traits_type;
+      // Types:
+      typedef _CharT 					char_type;
+      typedef _Traits 					traits_type;
+      typedef typename traits_type::int_type 		int_type;
+      typedef typename traits_type::pos_type 		pos_type;
+      typedef typename traits_type::off_type 		off_type;
 
       // Non-standard types:
-      typedef basic_filebuf<_CharT, _Traits> 	__filebuf_type;
-      typedef basic_ostream<_CharT, _Traits>	__ostream_type;
-     
+      typedef basic_filebuf<char_type, traits_type> 	__filebuf_type;
+      typedef basic_ostream<char_type, traits_type>	__ostream_type;
+      
       // Constructors:
       basic_ofstream()
       : __ostream_type(new __filebuf_type())
@@ -312,17 +311,17 @@ namespace std {
     class basic_fstream : public basic_iostream<_CharT, _Traits>
     {
     public:
-       // Types:
-      typedef _CharT 				char_type;
-      typedef typename _Traits::int_type 	int_type;
-      typedef typename _Traits::pos_type 	pos_type;
-      typedef typename _Traits::off_type 	off_type;
-      typedef _Traits 				traits_type;
+      // Types:
+      typedef _CharT 					char_type;
+      typedef _Traits 					traits_type;
+      typedef typename traits_type::int_type 		int_type;
+      typedef typename traits_type::pos_type 		pos_type;
+      typedef typename traits_type::off_type 		off_type;
 
       // Non-standard types:
-      typedef basic_filebuf<_CharT, _Traits> 	__filebuf_type;
-      typedef basic_ios<_CharT, _Traits>	__ios_type;
-      typedef basic_iostream<_CharT, _Traits>	__iostream_type;
+      typedef basic_filebuf<char_type, traits_type> 	__filebuf_type;
+      typedef basic_ios<char_type, traits_type>		__ios_type;
+      typedef basic_iostream<char_type, traits_type>	__iostream_type;
 
       // Constructors/destructor:
       basic_fstream()

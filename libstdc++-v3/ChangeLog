@@ -1,4 +1,29 @@
-2000-07-18  Benjamin Kosnik  <bkoz@soma.redhat.com>
+2000-07-19  Benjamin Kosnik  <bkoz@milou.soma.redhat.com>
+
+	Internal consistency checks.....
+	* bits/ios_base.h: Change _M_locale_ios to _M_ios_locale.
+	* src/ios.cc: Same.
+	
+	* bits/basic_ios.h: Change _M_fctype_ios to _M_ios_fctype.
+	* bits/basic_ios.tcc: Same.
+	
+	* bits/std_streambuf.h: Change _M_locale_buf to _M_buf_locale.
+	Change _M_fctype_buf to _M_buf_fctype.
+	* bits/fstream.tcc: Same.
+
+	* bits/std_streambuf.h: Change _M_buf_bump to _M_out_cur_move.
+	Change _M_locale_set to _M_buf_locale_init.
+	* bits/streambuf.tcc: Same.
+	* bits/sstream.tcc: Same.
+	* bits/fstream.tcc: Same.
+
+	* bits/std_streambuf.h: Make typedefs consistent.
+	(_M_buf_bump): Be more careful with input sequence.
+
+	* bits/std_sstream.h: Same.
+	* bits/std_fstream.h: Same.
+
+2000-07-18  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* acinclude.m4: Tweaks.
 	* config/c_io_libio.cc: Tweaks.

@@ -102,7 +102,7 @@ namespace std {
 		  _M_really_sync(_M_in_cur - _M_in_beg, 
 				 _M_out_cur - _M_out_beg);
 		  *_M_out_cur = traits_type::to_char_type(__c);
-		  _M_buf_bump(1);
+		  _M_out_cur_move(1);
 		  __retval = __c;
 		}
 	    }
@@ -163,7 +163,7 @@ namespace std {
 	  if (__testout
 	      && __newoffo + __off >= 0 && __endo - __beg >= __newoffo + __off)
 	    {
-	      _M_buf_bump(__newoffo + __off - (_M_out_cur - __beg));
+	      _M_out_cur_move(__newoffo + __off - (_M_out_cur - __beg));
 	      __retval = pos_type(__newoffo);
 	    }
 	}
@@ -199,7 +199,7 @@ namespace std {
 	  if (__testin)
 	    _M_in_cur = _M_in_beg + __pos;
 	  if (__testout)
-	    _M_buf_bump((__pos) - (_M_out_cur - __beg));
+	    _M_out_cur_move((__pos) - (_M_out_cur - __beg));
 	  __retval = pos_type(off_type(__pos));
 	}
       

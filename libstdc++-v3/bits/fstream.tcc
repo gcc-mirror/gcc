@@ -329,7 +329,7 @@ namespace std
 	  if (!__testpos)
 	    {
 	      *_M_out_cur = traits_type::to_char_type(__c);
-	      _M_buf_bump(1);
+	      _M_out_cur_move(1);
 	      __retval = traits_type::not_eof(__c);
 	    }
 	  else 
@@ -535,14 +535,14 @@ namespace std
       bool __testbeg = gptr() == eback() && pptr() == pbase();
       bool __teststate = _M_fcvt->encoding() == -1;
       
-      _M_locale_set = true;
-      if (__testbeg && !__teststate && _M_locale_buf != __loc)
+      _M_buf_locale_init = true;
+      if (__testbeg && !__teststate && _M_buf_locale != __loc)
 	{
 	  // XXX Will need to save these older values.
-	  _M_locale_buf = __loc;
-	  _M_fcvt = &use_facet<__codecvt_type>(_M_locale_buf);
+	  _M_buf_locale = __loc;
+	  _M_fcvt = &use_facet<__codecvt_type>(_M_buf_locale);
 	  // XXX Necessary?
-	  _M_fctype_buf = &use_facet<__ctype_type>(_M_locale_buf); 
+	  _M_buf_fctype = &use_facet<__ctype_type>(_M_buf_locale); 
 	}
       // NB this may require the reconversion of previously
       // converted chars. This in turn may cause the reconstruction

@@ -201,7 +201,7 @@ namespace std {
     _M_callbacks = 0;
     _M_words = 0;
     _M_word_limit = 0;
-    _M_locale_ios = locale();
+    _M_ios_locale = locale();
     // No init needed for _M_word_array or _M_dummy.
   }  
   
@@ -209,8 +209,8 @@ namespace std {
   locale
   ios_base::imbue(const locale& __loc)
   {
-    locale __old = _M_locale_ios;
-    _M_locale_ios = __loc;
+    locale __old = _M_ios_locale;
+    _M_ios_locale = __loc;
     // Make sure there's a callback for the format caches so they will be
     // marked dirty.
     _Format_cache<char>::_S_get(*this);
