@@ -6687,7 +6687,7 @@ maybe_note_name_used_in_class (name, decl)
   splay_tree names_used;
 
   /* If we're not defining a class, there's nothing to do.  */
-  if (!current_class_type || !TYPE_BEING_DEFINED (current_class_type))
+  if (!innermost_scope_is_class_p ())
     return;
   
   /* If there's already a binding for this NAME, then we don't have

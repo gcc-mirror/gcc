@@ -1,5 +1,13 @@
 2003-09-14  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/3907
+	* cp-tree.h (innermost_scope_is_class_p): New function.
+	* class.c (maybe_note_name_used_in_class): Refine test for whether
+	or not we are in a class scope.
+	* decl.c (innermost_scope_is_class_p): Define.
+
+2003-09-14  Mark Mitchell  <mark@codesourcery.com>
+
 	* class.c (layout_class_type): Make DECL_MODE match TYPE_MODE for
 	an bit-field whose width exceeds that of its type.
 

@@ -922,6 +922,14 @@ kept_level_p ()
 	      && !current_binding_level->tag_transparent));
 }
 
+/* Returns the kind of the innermost scope.  */
+
+bool
+innermost_scope_is_class_p ()
+{
+  return current_binding_level->parm_flag == 2;
+}
+
 static void
 declare_namespace_level ()
 {

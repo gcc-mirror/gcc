@@ -3696,6 +3696,7 @@ extern void adjust_clone_args			PARAMS ((tree));
 /* decl.c */
 extern int global_bindings_p			PARAMS ((void));
 extern int kept_level_p				PARAMS ((void));
+extern bool innermost_scope_is_class_p          (void);
 extern tree getdecls				PARAMS ((void));
 extern void pushlevel				PARAMS ((int));
 extern tree poplevel				PARAMS ((int,int, int));
