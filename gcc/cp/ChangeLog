@@ -1,3 +1,10 @@
+2004-01-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/12573
+	* pt.c (value_dependent_expression_p): Handle COMPONENT_REFs by
+	looking into them recursively. They can be there because of the
+	new __offsetof__ extension.
+
 2004-01-07  Zack Weinberg  <zack@codesourcery.com>
 
 	* parser.c (cp_parser_save_member_function_body): Mark the
