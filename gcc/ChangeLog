@@ -29,6 +29,11 @@
 	* gimplify.c (gimplify_expr): Remove local variables r0 and
 	r1.
 
+	* reg-stack.c (move_for_stack_reg): Remove local variable
+	push_insn.
+	(compare_for_stack_reg): Remove local variable flags_user.
+	(convert_regs_1): Remove local variable deleted.
+
 2005-03-12  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-lex.c (c_lex_with_flags): Add parameter to call to 
