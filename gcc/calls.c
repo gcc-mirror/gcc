@@ -2384,8 +2384,8 @@ expand_call (exp, target, ignore)
   args = (struct arg_data *) alloca (num_actuals * sizeof (struct arg_data));
   memset ((char *) args, 0, num_actuals * sizeof (struct arg_data));
 
-  /* Build up entries inthe ARGS array, compute the size of the arguments
-     into ARGS_SIZE, etc.  */
+  /* Build up entries in the ARGS array, compute the size of the
+     arguments into ARGS_SIZE, etc.  */
   initialize_argument_information (num_actuals, args, &args_size,
 				   n_named_args, actparms, fndecl,
 				   &args_so_far, reg_parm_stack_space,

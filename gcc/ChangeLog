@@ -16,6 +16,8 @@
 	Fix a comment typo.
 	* config/i960/i960.c (signed_arith_operand): Likewise.
 
+	* calls.c (expand_call): Fix a comment typo.
+
 Fri Apr 20 12:22:15 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config/pa/som.h (NM_FLAGS): Define.
