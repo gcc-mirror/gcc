@@ -1162,6 +1162,9 @@ finish_record_layout (rli)
   /* Compute the TYPE_MODE for the record.  */
   compute_record_mode (rli->t);
 
+  /* Perform any last tweaks to the TYPE_SIZE, etc.  */
+  finalize_type_size (rli->t);
+
   /* Lay out any static members.  This is done now because their type
      may use the record's type.  */
   while (rli->pending_statics)
@@ -1169,9 +1172,6 @@ finish_record_layout (rli)
       layout_decl (TREE_VALUE (rli->pending_statics), 0);
       rli->pending_statics = TREE_CHAIN (rli->pending_statics);
     }
-
-  /* Perform any last tweaks to the TYPE_SIZE, etc.  */
-  finalize_type_size (rli->t);
 
   /* Clean up.  */
   free (rli);
