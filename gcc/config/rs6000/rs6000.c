@@ -8438,21 +8438,30 @@ output_cbranch (op, label, reversed, insn)
   
   /* Maybe we have a guess as to how likely the branch is.  
      The old mnemonics don't have a way to specify this information.  */
+  pred = "";
   note = find_reg_note (insn, REG_BR_PROB, NULL_RTX);
   if (note != NULL_RTX)
     {
       /* PROB is the difference from 50%.  */
       int prob = INTVAL (XEXP (note, 0)) - REG_BR_PROB_BASE / 2;
-      
-      /* For branches that are very close to 50%, assume not-taken.  */
-      if (abs (prob) > REG_BR_PROB_BASE / 20
-	  && ((prob > 0) ^ need_longbranch))
-	pred = "+";
-      else
-	pred = "-";
+      bool always_hint = rs6000_cpu != PROCESSOR_POWER4;
+
+      /* Only hint for highly probable/improbable branches on newer
+	 cpus as static prediction overrides processor dynamic
+	 prediction.  For older cpus we may as well always hint, but
+	 assume not taken for branches that are very close to 50% as a
+	 mispredicted taken branch is more expensive than a
+	 mispredicted not-taken branch.  */ 
+      if (always_hint
+	  || abs (prob) > REG_BR_PROB_BASE / 100 * 48)
+	{
+	  if (abs (prob) > REG_BR_PROB_BASE / 20
+	      && ((prob > 0) ^ need_longbranch))
+	    pred = "+";
+	  else
+	    pred = "-";
+	}
     }
-  else
-    pred = "";
 
   if (label == NULL)
     s += sprintf (s, "{b%sr|b%slr%s} ", ccode, ccode, pred);
