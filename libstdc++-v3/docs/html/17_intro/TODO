@@ -17,7 +17,16 @@ executable speed.
 
 - benchmarking addition to the testsuite that does the above.
 
-- implement symbol versioning for ELF targets.
+- implement testing for symbol versioning for ELF targets.
+
+- review streambuf, filebuf, stringbuf to optimize data member
+placement.  Do pback bits need to be in streambuf? How about
+_M_set_indeterminate, etc?
+
+- Think about naming all member data and member functions consistently
+as per
+funtions: _M_verb_adverb
+data: _M_noun_adjective
 
 - exception specifications need to be reviewed for all parts of the
 library support and utility areas, particularly <new>. 

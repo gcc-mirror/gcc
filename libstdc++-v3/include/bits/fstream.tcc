@@ -90,9 +90,8 @@ namespace std
 	    {
 	      _M_allocate_internal_buffer();
 	      _M_mode = __mode;
-	      
-	      // For time being, set both (in/out) sets  of pointers.
 	      _M_set_indeterminate();
+
 	      if ((__mode & ios_base::ate)
 		  && this->seekoff(0, ios_base::end, __mode) < 0)
 		this->close();
@@ -147,12 +146,7 @@ namespace std
       bool __testin = _M_mode & ios_base::in;
 
       if (__testin && this->is_open())
-	{
-	  if (_M_in_cur < _M_in_end)
-	    __ret = _M_in_end - _M_in_cur;
-	  else
-	    __ret = 0;
-	}
+	__ret = _M_in_end - _M_in_cur;
       _M_last_overflowed = false;	
       return __ret;
     }
@@ -316,7 +310,7 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-      bool __testunbuffered = _M_file.is_open() && !_M_buf_size;
+      bool __testunbuffered = _M_file.is_open() && !_M_buf_size_opt;
 
       if (__testput || __testunbuffered)
 	{
