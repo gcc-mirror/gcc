@@ -24,28 +24,17 @@ extern int max_stack_depth;
 
 /* Emit DI constant according to target machine word ordering */
 
-#if WORDS_BIG_ENDIAN
-
 #define bc_emit_bytecode_DI_const(CST) 				\
 { int opcode;							\
-  opcode = TREE_INT_CST_HIGH (CST); 				\
+  opcode = (WORDS_BIG_ENDIAN					\
+	    ? TREE_INT_CST_HIGH (CST) 				\
+	    : TREE_INT_CST_LOW (CST));				\
   bc_emit_bytecode_const ((char *) &opcode, sizeof opcode); 	\
-  opcode = TREE_INT_CST_LOW (CST); 				\
+  opcode = (WORDS_BIG_ENDIAN					\
+	    ? TREE_INT_CST_LOW (CST) 				\
+	    : TREE_INT_CST_HIGH (CST));				\
   bc_emit_bytecode_const ((char *) &opcode, sizeof opcode);	\
 }
-	  
-#else
-
-#define bc_emit_bytecode_DI_const(CST)	 			\
-{ int opcode;							\
-  opcode = TREE_INT_CST_LOW (CST); 				\
-  bc_emit_bytecode_const ((char *) &opcode, sizeof opcode); 	\
-  opcode = TREE_INT_CST_HIGH (CST); 				\
-  bc_emit_bytecode_const ((char *) &opcode, sizeof opcode);	\
-}
-	  
-#endif
-
 
 extern void bc_expand_expr ();
 extern void bc_output_data_constructor ();

@@ -2328,13 +2328,14 @@ alter_reg (i, from_reg)
 	{
 	  /* No known place to spill from => no slot to reuse.  */
 	  x = assign_stack_local (GET_MODE (regno_reg_rtx[i]), total_size, -1);
-#if BYTES_BIG_ENDIAN
-	  /* Cancel the  big-endian correction done in assign_stack_local.
-	     Get the address of the beginning of the slot.
-	     This is so we can do a big-endian correction unconditionally
-	     below.  */
-	  adjust = inherent_size - total_size;
-#endif
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      /* Cancel the  big-endian correction done in assign_stack_local.
+		 Get the address of the beginning of the slot.
+		 This is so we can do a big-endian correction unconditionally
+		 below.  */
+	      adjust = inherent_size - total_size;
+	    }
 	}
       /* Reuse a stack slot if possible.  */
       else if (spill_stack_slot[from_reg] != 0
@@ -2358,23 +2359,22 @@ alter_reg (i, from_reg)
 	    }
 	  /* Make a slot with that size.  */
 	  x = assign_stack_local (mode, total_size, -1);
-#if BYTES_BIG_ENDIAN
-	  /* Cancel the  big-endian correction done in assign_stack_local.
-	     Get the address of the beginning of the slot.
-	     This is so we can do a big-endian correction unconditionally
-	     below.  */
-	  adjust = GET_MODE_SIZE (mode) - total_size;
-#endif
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      /* Cancel the  big-endian correction done in assign_stack_local.
+		 Get the address of the beginning of the slot.
+		 This is so we can do a big-endian correction unconditionally
+		 below.  */
+	      adjust = GET_MODE_SIZE (mode) - total_size;
+	    }
 	  spill_stack_slot[from_reg] = x;
 	  spill_stack_slot_width[from_reg] = total_size;
 	}
 
-#if BYTES_BIG_ENDIAN
       /* On a big endian machine, the "address" of the slot
 	 is the address of the low part that fits its inherent mode.  */
-      if (inherent_size < total_size)
+      if (BYTES_BIG_ENDIAN && inherent_size < total_size)
 	adjust += (total_size - inherent_size);
-#endif /* BYTES_BIG_ENDIAN */
 
       /* If we have any adjustment to make, or if the stack slot is the
 	 wrong mode, make a new stack slot.  */
@@ -2930,11 +2930,10 @@ eliminate_regs (x, mem_mode, insn)
 	      int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
 	      enum machine_mode mode = GET_MODE (x);
 
-#if BYTES_BIG_ENDIAN
-	      offset += (MIN (UNITS_PER_WORD,
-			      GET_MODE_SIZE (GET_MODE (new)))
-			 - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
-#endif
+	      if (BYTES_BIG_ENDIAN)
+		offset += (MIN (UNITS_PER_WORD,
+				GET_MODE_SIZE (GET_MODE (new)))
+			   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
 
 	      PUT_MODE (new, mode);
 	      XEXP (new, 0) = plus_constant (XEXP (new, 0), offset);

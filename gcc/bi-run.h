@@ -124,30 +124,23 @@ struct bytecode
    DEST offset by OFFSET bits. */
 
 
-#if BYTES_BIG_ENDIAN
-
 #define SHIFT_IN_BITS(DEST, SOURCE, OFFSET, NBITS)		\
   (DEST = ((DEST) << (NBITS))					\
    | (LM ((NBITS))						\
-      & ((SOURCE) >> (INTERP_BPC - (OFFSET) - (NBITS)))))
+      & ((SOURCE)						\
+	 >> (BYTES_BIG_ENDIAN					\
+	     ? (INTERP_BPC - (OFFSET) - (NBITS))		\
+	     : (OFFSET)))))
 
 #define OR_IN_BITS(DEST, VALUE, OFFSET, NBITS)			\
-  (DEST = ((DEST) & ~(LM ((NBITS)) << (INTERP_BPC - (OFFSET) - (NBITS))))	\
-   | (((VALUE) & LM ((NBITS))) << (INTERP_BPC - (OFFSET) - (NBITS))))
-
-#else
-
-#define SHIFT_IN_BITS(DEST, SOURCE, OFFSET, NBITS)		\
-  (DEST = ((DEST) << (NBITS))					\
-   | (LM ((NBITS))						\
-      & ((SOURCE) >> (OFFSET))))
-
-#define OR_IN_BITS(DEST, VALUE, OFFSET, NBITS)			\
-  (DEST = ((DEST) & ~(LM ((NBITS)) << (OFFSET)))		\
-   | (((VALUE) & LM ((NBITS))) << (OFFSET)))
-
-#endif
-
+  (DEST = ((DEST) & ~(LM ((NBITS))				\
+		      << (BIG_ENDIAN				\
+			  ? (INTERP_BPC - (OFFSET) - (NBITS))	\
+			  : (OFFSET)))				\
+   | (((VALUE) & LM ((NBITS)))					\
+      << (BIG_ENDIAN						\
+	  ? (INTERP_BPC - (OFFSET) - (NBITS))			\
+	  : (OFFSET)))))
 
 /* Procedure call; arguments are a pointer to the function to be called,
    a pointer to a place to store the return value, a pointer to a vector

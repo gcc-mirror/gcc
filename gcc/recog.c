@@ -423,11 +423,10 @@ validate_replace_rtx_1 (loc, from, to, object)
 	  enum machine_mode mode = GET_MODE (x);
 	  rtx new;
 
-#if BYTES_BIG_ENDIAN
-	  offset += (MIN (UNITS_PER_WORD,
-			  GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-		     - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
-#endif
+	  if (BYTES_BIG_ENDIAN)
+	    offset += (MIN (UNITS_PER_WORD,
+			    GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+		       - MIN (UNITS_PER_WORD, GET_MODE_SIZE (mode)));
 
 	  new = gen_rtx (MEM, mode, plus_constant (XEXP (to, 0), offset));
 	  MEM_VOLATILE_P (new) = MEM_VOLATILE_P (to);
@@ -474,10 +473,9 @@ validate_replace_rtx_1 (loc, from, to, object)
 
 		  /* If the bytes and bits are counted differently, we
 		     must adjust the offset.  */
-#if BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN
-	      offset = (GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (wanted_mode)
-			- offset);
-#endif
+	      if (BYTES_BIG_ENDIAN != BITS_BIG_ENDIAN)
+		offset = (GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (wanted_mode)
+			  - offset);
 
 	      pos %= GET_MODE_BITSIZE (wanted_mode);
 
@@ -1083,10 +1081,9 @@ indirect_operand (op, mode)
       register int offset = SUBREG_WORD (op) * UNITS_PER_WORD;
       rtx inner = SUBREG_REG (op);
 
-#if BYTES_BIG_ENDIAN
-      offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (op)))
-		 - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (inner))));
-#endif
+      if (BYTES_BIG_ENDIAN)
+	offset -= (MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (op)))
+		   - MIN (UNITS_PER_WORD, GET_MODE_SIZE (GET_MODE (inner))));
 
       if (mode != VOIDmode && GET_MODE (op) != mode)
 	return 0;

@@ -2204,12 +2204,10 @@ location_or_const_value_attribute (decl)
 
 	if (declared_type == passed_type)
 	  rtl = DECL_INCOMING_RTL (decl);
-#if (BYTES_BIG_ENDIAN == 0)
-	else
+	else if (! BYTES_BIG_ENDIAN)
 	  if (TREE_CODE (declared_type) == INTEGER_TYPE)
 	    if (TYPE_SIZE (declared_type) <= TYPE_SIZE (passed_type))
 	      rtl = DECL_INCOMING_RTL (decl);
-#endif /* (BYTES_BIG_ENDIAN == 0) */
       }
 
   if (rtl == NULL_RTX)
@@ -2519,19 +2517,18 @@ bit_offset_attribute (decl)
   highest_order_object_bit_offset = object_offset_in_bytes * BITS_PER_UNIT;
   highest_order_field_bit_offset = bitpos_int;
 
-#if (BYTES_BIG_ENDIAN == 0)
-  highest_order_field_bit_offset
-    += (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl));
+  if (! BYTES_BIG_ENDIAN)
+    {
+      highest_order_field_bit_offset
+	+= (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl));
 
-  highest_order_object_bit_offset += simple_type_size_in_bits (type);
-#endif /* (BYTES_BIG_ENDIAN == 0) */
+      highest_order_object_bit_offset += simple_type_size_in_bits (type);
+    }
 
   bit_offset =
-#if (BYTES_BIG_ENDIAN == 0)
-	  highest_order_object_bit_offset - highest_order_field_bit_offset;
-#else /* (BYTES_BIG_ENDIAN != 0) */
-	  highest_order_field_bit_offset - highest_order_object_bit_offset;
-#endif /* (BYTES_BIG_ENDIAN != 0) */
+    (! BYTES_BIG_ENDIAN
+     ? highest_order_object_bit_offset - highest_order_field_bit_offset
+     : highest_order_field_bit_offset - highest_order_object_bit_offset);
 
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_bit_offset);
   ASM_OUTPUT_DWARF_DATA2 (asm_out_file, bit_offset);

@@ -58,19 +58,21 @@ transcendental functions can be obtained by ftp from
 research.att.com: netlib/cephes/ldouble.shar.Z  */
 
 /* Type of computer arithmetic.
-   Only one of DEC, IBM, MIEEE, IBMPC, or UNK should get defined.
+   Only one of DEC, IBM, IEEE, or UNK should get defined.
 
-   `MIEEE' refers generically to big-endian IEEE floating-point data
-   structure.  This definition should work in SFmode `float' type and
-   DFmode `double' type on virtually all big-endian IEEE machines.
-   If LONG_DOUBLE_TYPE_SIZE has been defined to be 96, then MIEEE
-   also invokes the particular XFmode (`long double' type) data
-   structure used by the Motorola 680x0 series processors.
+   `IEEE', when FLOAT_WORDS_BIG_ENDIAN is non-zero, refers generically
+   to big-endian IEEE floating-point data structure.  This definition
+   should work in SFmode `float' type and DFmode `double' type on
+   virtually all big-endian IEEE machines.  If LONG_DOUBLE_TYPE_SIZE
+   has been defined to be 96, then IEEE also invokes the particular
+   XFmode (`long double' type) data structure used by the Motorola
+   680x0 series processors.
 
-   `IBMPC' refers generally to little-endian IEEE machines. In this
-   case, if LONG_DOUBLE_TYPE_SIZE has been defined to be 96, then
-   IBMPC also invokes the particular XFmode `long double' data
-   structure used by the Intel 80x86 series processors.
+   `IEEE', when FLOAT_WORDS_BIG_ENDIAN is zero, refers generally to
+   little-endian IEEE machines. In this case, if LONG_DOUBLE_TYPE_SIZE
+   has been defined to be 96, then IEEE also invokes the particular
+   XFmode `long double' data structure used by the Intel 80x86 series
+   processors.
 
    `DEC' refers specifically to the Digital Equipment Corp PDP-11
    and VAX floating point data structure.  This model currently
@@ -119,14 +121,7 @@ research.att.com: netlib/cephes/ldouble.shar.Z  */
 #define IBM 1
 #else /* it's also not an IBM */
 #if TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-#if FLOAT_WORDS_BIG_ENDIAN
-/* Motorola IEEE, high order words come first (Sun workstation): */
-#define MIEEE 1
-#else /* not big-endian */
-/* Intel IEEE, low order words come first:
- */
-#define IBMPC 1
-#endif /*  big-endian */
+#define IEEE
 #else /* it's not IEEE either */
 /* UNKnown arithmetic.  We don't support this and can't go on. */
 unknown arithmetic type
@@ -150,11 +145,7 @@ unknown arithmetic type
 #define IBM 1
 #else /* it's also not an IBM */
 #if HOST_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-#if HOST_FLOAT_WORDS_BIG_ENDIAN
-#define MIEEE 1
-#else /* not big-endian */
-#define IBMPC 1
-#endif /*  big-endian */
+#define IEEE
 #else /* it's not IEEE either */
 unknown arithmetic type
 #define UNK 1
@@ -263,29 +254,35 @@ unknown arithmetic type
 /* Emulator uses target format internally
    but host stores it in host endian-ness. */
 
-#if HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN
-#define GET_REAL(r,e) e53toe ((unsigned EMUSHORT*) (r), (e))
-#define PUT_REAL(e,r) etoe53 ((e), (unsigned EMUSHORT *) (r))
+#define GET_REAL(r,e)						\
+do {								\
+     if (HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN)	\
+       e53toe ((unsigned EMUSHORT*) (r), (e));			\
+     else							\
+       {							\
+	 unsigned EMUSHORT w[4];				\
+	 w[3] = ((EMUSHORT *) r)[0];				\
+	 w[2] = ((EMUSHORT *) r)[1];				\
+	 w[1] = ((EMUSHORT *) r)[2];				\
+	 w[0] = ((EMUSHORT *) r)[3];				\
+	 e53toe (w, (e));					\
+       }							\
+   } while (0)
 
-#else /* endian-ness differs */
-/* emulator uses target endian-ness internally */
-#define GET_REAL(r,e)		\
-do { unsigned EMUSHORT w[4];	\
- w[3] = ((EMUSHORT *) r)[0];	\
- w[2] = ((EMUSHORT *) r)[1];	\
- w[1] = ((EMUSHORT *) r)[2];	\
- w[0] = ((EMUSHORT *) r)[3];	\
- e53toe (w, (e)); } while (0)
-
-#define PUT_REAL(e,r)		\
-do { unsigned EMUSHORT w[4];	\
- etoe53 ((e), w);		\
- *((EMUSHORT *) r) = w[3];	\
- *((EMUSHORT *) r + 1) = w[2];	\
- *((EMUSHORT *) r + 2) = w[1];	\
- *((EMUSHORT *) r + 3) = w[0]; } while (0)
-
-#endif /* endian-ness differs */
+#define PUT_REAL(e,r)						\
+do {								\
+     if (HOST_FLOAT_WORDS_BIG_ENDIAN == FLOAT_WORDS_BIG_ENDIAN)	\
+       etoe53 ((e), (unsigned EMUSHORT *) (r));			\
+     else							\
+       {							\
+	 unsigned EMUSHORT w[4];				\
+	 etoe53 ((e), w);					\
+	 *((EMUSHORT *) r) = w[3];				\
+	 *((EMUSHORT *) r + 1) = w[2];				\
+	 *((EMUSHORT *) r + 2) = w[1];				\
+	 *((EMUSHORT *) r + 3) = w[0];				\
+       }							\
+   } while (0)
 
 #else /* not REAL_ARITHMETIC */
 
@@ -436,99 +433,99 @@ endian (e, x, mode)
 {
   unsigned long th, t;
 
-#if FLOAT_WORDS_BIG_ENDIAN
-  switch (mode)
+  if (FLOAT_WORDS_BIG_ENDIAN)
     {
+      switch (mode)
+	{
 
-    case TFmode:
-      /* Swap halfwords in the fourth long. */
-      th = (unsigned long) e[6] & 0xffff;
-      t = (unsigned long) e[7] & 0xffff;
-      t |= th << 16;
-      x[3] = (long) t;
+	case TFmode:
+	  /* Swap halfwords in the fourth long. */
+	  th = (unsigned long) e[6] & 0xffff;
+	  t = (unsigned long) e[7] & 0xffff;
+	  t |= th << 16;
+	  x[3] = (long) t;
 
-    case XFmode:
+	case XFmode:
 
-      /* Swap halfwords in the third long. */
-      th = (unsigned long) e[4] & 0xffff;
-      t = (unsigned long) e[5] & 0xffff;
-      t |= th << 16;
-      x[2] = (long) t;
-      /* fall into the double case */
+	  /* Swap halfwords in the third long. */
+	  th = (unsigned long) e[4] & 0xffff;
+	  t = (unsigned long) e[5] & 0xffff;
+	  t |= th << 16;
+	  x[2] = (long) t;
+	  /* fall into the double case */
 
-    case DFmode:
+	case DFmode:
 
-      /* swap halfwords in the second word */
-      th = (unsigned long) e[2] & 0xffff;
-      t = (unsigned long) e[3] & 0xffff;
-      t |= th << 16;
-      x[1] = (long) t;
-      /* fall into the float case */
+	  /* swap halfwords in the second word */
+	  th = (unsigned long) e[2] & 0xffff;
+	  t = (unsigned long) e[3] & 0xffff;
+	  t |= th << 16;
+	  x[1] = (long) t;
+	  /* fall into the float case */
 
-    case HFmode:
-    case SFmode:
+	case HFmode:
+	case SFmode:
 
-      /* swap halfwords in the first word */
-      th = (unsigned long) e[0] & 0xffff;
-      t = (unsigned long) e[1] & 0xffff;
-      t |= th << 16;
-      x[0] = t;
-      break;
+	  /* swap halfwords in the first word */
+	  th = (unsigned long) e[0] & 0xffff;
+	  t = (unsigned long) e[1] & 0xffff;
+	  t |= th << 16;
+	  x[0] = t;
+	  break;
 
-    default:
-      abort ();
+	default:
+	  abort ();
+	}
     }
-
-#else
-
-  /* Pack the output array without swapping. */
-
-  switch (mode)
+  else
     {
+      /* Pack the output array without swapping. */
 
-    case TFmode:
+      switch (mode)
+	{
 
-      /* Pack the fourth long. */
-      th = (unsigned long) e[7] & 0xffff;
-      t = (unsigned long) e[6] & 0xffff;
-      t |= th << 16;
-      x[3] = (long) t;
+	case TFmode:
 
-    case XFmode:
+	  /* Pack the fourth long. */
+	  th = (unsigned long) e[7] & 0xffff;
+	  t = (unsigned long) e[6] & 0xffff;
+	  t |= th << 16;
+	  x[3] = (long) t;
 
-      /* Pack the third long.
-	 Each element of the input REAL_VALUE_TYPE array has 16 useful bits
-	 in it.  */
-      th = (unsigned long) e[5] & 0xffff;
-      t = (unsigned long) e[4] & 0xffff;
-      t |= th << 16;
-      x[2] = (long) t;
-      /* fall into the double case */
+	case XFmode:
 
-    case DFmode:
+	  /* Pack the third long.
+	     Each element of the input REAL_VALUE_TYPE array has 16 useful bits
+	     in it.  */
+	  th = (unsigned long) e[5] & 0xffff;
+	  t = (unsigned long) e[4] & 0xffff;
+	  t |= th << 16;
+	  x[2] = (long) t;
+	  /* fall into the double case */
 
-      /* pack the second long */
-      th = (unsigned long) e[3] & 0xffff;
-      t = (unsigned long) e[2] & 0xffff;
-      t |= th << 16;
-      x[1] = (long) t;
-      /* fall into the float case */
+	case DFmode:
 
-    case HFmode:
-    case SFmode:
+	  /* pack the second long */
+	  th = (unsigned long) e[3] & 0xffff;
+	  t = (unsigned long) e[2] & 0xffff;
+	  t |= th << 16;
+	  x[1] = (long) t;
+	  /* fall into the float case */
 
-      /* pack the first long */
-      th = (unsigned long) e[1] & 0xffff;
-      t = (unsigned long) e[0] & 0xffff;
-      t |= th << 16;
-      x[0] = t;
-      break;
+	case HFmode:
+	case SFmode:
 
-    default:
-      abort ();
+	  /* pack the first long */
+	  th = (unsigned long) e[1] & 0xffff;
+	  t = (unsigned long) e[0] & 0xffff;
+	  t |= th << 16;
+	  x[0] = t;
+	  break;
+
+	default:
+	  abort ();
+	}
     }
-
-#endif
 }
 
 
@@ -1223,6 +1220,8 @@ ereal_isneg (x)
   Std 754-1985), the symbol IBMPC or MIEEE should be defined.
   These numbers have 53-bit significands.  In this mode, constants
   are provided as arrays of hexadecimal 16 bit integers.
+  [This has been changed to instead check the preprocessor macros IEEE
+  and FLOAT_WORDS_BIG_ENDIAN].
  
   To accommodate other types of computer arithmetic, all
   constants are also provided in a normal decimal radix
@@ -2841,9 +2840,8 @@ e53toe (pe, y)
   e = pe;
   denorm = 0;			/* flag if denormalized number */
   ecleaz (yy);
-#ifdef IBMPC
-  e += 3;
-#endif
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    e += 3;
   r = *e;
   yy[0] = 0;
   if (r & 0x8000)
@@ -2854,21 +2852,24 @@ e53toe (pe, y)
   if (r == 0x7ff0)
     {
 #ifdef NANS
-#ifdef IBMPC
-      if (((pe[3] & 0xf) != 0) || (pe[2] != 0)
-	  || (pe[1] != 0) || (pe[0] != 0))
+      if (! FLOAT_WORDS_BIG_ENDIAN)
 	{
-	  enan (y, yy[0] != 0);
-	  return;
+	  if (((pe[3] & 0xf) != 0) || (pe[2] != 0)
+	      || (pe[1] != 0) || (pe[0] != 0))
+	    {
+	      enan (y, yy[0] != 0);
+	      return;
+	    }
 	}
-#else
-      if (((pe[0] & 0xf) != 0) || (pe[1] != 0)
-	  || (pe[2] != 0) || (pe[3] != 0))
+      else
 	{
-	  enan (y, yy[0] != 0);
-	  return;
+	  if (((pe[0] & 0xf) != 0) || (pe[1] != 0)
+	      || (pe[2] != 0) || (pe[3] != 0))
+	    {
+	      enan (y, yy[0] != 0);
+	      return;
+	    }
 	}
-#endif
 #endif  /* NANS */
       eclear (y);
       einfin (y);
@@ -2889,16 +2890,20 @@ e53toe (pe, y)
   r += EXONE - 01777;
   yy[E] = r;
   p = &yy[M + 1];
-#ifdef IBMPC
-  *p++ = *(--e);
-  *p++ = *(--e);
-  *p++ = *(--e);
-#endif
-#ifdef MIEEE
-  ++e;
-  *p++ = *e++;
-  *p++ = *e++;
-  *p++ = *e++;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    {
+      *p++ = *(--e);
+      *p++ = *(--e);
+      *p++ = *(--e);
+    }
+  else
+    {
+      ++e;
+      *p++ = *e++;
+      *p++ = *e++;
+      *p++ = *e++;
+    }
 #endif
   eshift (yy, -5);
   if (denorm)
@@ -2925,10 +2930,6 @@ e64toe (pe, y)
   p = yy;
   for (i = 0; i < NE - 5; i++)
     *p++ = 0;
-#ifdef IBMPC
-  for (i = 0; i < 5; i++)
-    *p++ = *e++;
-#endif
 /* This precision is not ordinarily supported on DEC or IBM. */
 #ifdef DEC
   for (i = 0; i < 5; i++)
@@ -2941,12 +2942,20 @@ e64toe (pe, y)
   for (i = 0; i < 5; i++)
     *p-- = *e++;
 #endif
-#ifdef MIEEE
-  p = &yy[0] + (NE - 1);
-  *p-- = *e++;
-  ++e;
-  for (i = 0; i < 4; i++)
-    *p-- = *e++;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    {
+      for (i = 0; i < 5; i++)
+	*p++ = *e++;
+    }
+  else
+    {
+      p = &yy[0] + (NE - 1);
+      *p-- = *e++;
+      ++e;
+      for (i = 0; i < 4; i++)
+	*p-- = *e++;
+    }
 #endif
   p = yy;
   q = y;
@@ -2954,25 +2963,28 @@ e64toe (pe, y)
   if (*p == 0x7fff)
     {
 #ifdef NANS
-#ifdef IBMPC
-      for (i = 0; i < 4; i++)
+      if (! FLOAT_WORDS_BIG_ENDIAN)
 	{
-	  if (pe[i] != 0)
+	  for (i = 0; i < 4; i++)
 	    {
-	      enan (y, (*p & 0x8000) != 0);
-	      return;
+	      if (pe[i] != 0)
+		{
+		  enan (y, (*p & 0x8000) != 0);
+		  return;
+		}
 	    }
 	}
-#else
-      for (i = 1; i <= 4; i++)
+      else
 	{
-	  if (pe[i] != 0)
+	  for (i = 1; i <= 4; i++)
 	    {
-	      enan (y, (*p & 0x8000) != 0);
-	      return;
+	      if (pe[i] != 0)
+		{
+		  enan (y, (*p & 0x8000) != 0);
+		  return;
+		}
 	    }
 	}
-#endif
 #endif /* NANS */
       eclear (y);
       einfin (y);
@@ -2998,8 +3010,9 @@ e113toe (pe, y)
   e = pe;
   denorm = 0;
   ecleaz (yy);
-#ifdef IBMPC
-  e += 7;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    e += 7;
 #endif
   r = *e;
   yy[0] = 0;
@@ -3010,25 +3023,28 @@ e113toe (pe, y)
   if (r == 0x7fff)
     {
 #ifdef NANS
-#ifdef IBMPC
-      for (i = 0; i < 7; i++)
+      if (! FLOAT_WORDS_BIG_ENDIAN)
 	{
-	  if (pe[i] != 0)
+	  for (i = 0; i < 7; i++)
 	    {
-	      enan (y, yy[0] != 0);
-	      return;
+	      if (pe[i] != 0)
+		{
+		  enan (y, yy[0] != 0);
+		  return;
+		}
 	    }
 	}
-#else
-      for (i = 1; i < 8; i++)
+      else
 	{
-	  if (pe[i] != 0)
+	  for (i = 1; i < 8; i++)
 	    {
-	      enan (y, yy[0] != 0);
-	      return;
+	      if (pe[i] != 0)
+		{
+		  enan (y, yy[0] != 0);
+		  return;
+		}
 	    }
 	}
-#endif
 #endif /* NANS */
       eclear (y);
       einfin (y);
@@ -3039,14 +3055,18 @@ e113toe (pe, y)
 #endif  /* INFINITY */
   yy[E] = r;
   p = &yy[M + 1];
-#ifdef IBMPC
-  for (i = 0; i < 7; i++)
-    *p++ = *(--e);
-#endif
-#ifdef MIEEE
-  ++e;
-  for (i = 0; i < 7; i++)
-    *p++ = *e++;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    {
+      for (i = 0; i < 7; i++)
+	*p++ = *(--e);
+    }
+  else
+    {
+      ++e;
+      for (i = 0; i < 7; i++)
+	*p++ = *e++;
+    }
 #endif
 /* If denormal, remove the implied bit; else shift down 1. */
   if (r == 0)
@@ -3081,8 +3101,9 @@ e24toe (pe, y)
   e = pe;
   denorm = 0;			/* flag if denormalized number */
   ecleaz (yy);
-#ifdef IBMPC
-  e += 1;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    e += 1;
 #endif
 #ifdef DEC
   e += 1;
@@ -3097,19 +3118,22 @@ e24toe (pe, y)
   if (r == 0x7f80)
     {
 #ifdef NANS
-#ifdef MIEEE
-      if (((pe[0] & 0x7f) != 0) || (pe[1] != 0))
+      if (FLOAT_WORDS_BIG_ENDIAN)
 	{
-	  enan (y, yy[0] != 0);
-	  return;
+	  if (((pe[0] & 0x7f) != 0) || (pe[1] != 0))
+	    {
+	      enan (y, yy[0] != 0);
+	      return;
+	    }
 	}
-#else
-      if (((pe[1] & 0x7f) != 0) || (pe[0] != 0))
+      else
 	{
-	  enan (y, yy[0] != 0);
-	  return;
+	  if (((pe[1] & 0x7f) != 0) || (pe[0] != 0))
+	    {
+	      enan (y, yy[0] != 0);
+	      return;
+	    }
 	}
-#endif
 #endif  /* NANS */
       eclear (y);
       einfin (y);
@@ -3129,15 +3153,17 @@ e24toe (pe, y)
   r += EXONE - 0177;
   yy[E] = r;
   p = &yy[M + 1];
-#ifdef IBMPC
-  *p++ = *(--e);
-#endif
 #ifdef DEC
   *p++ = *(--e);
 #endif
-#ifdef MIEEE
-  ++e;
-  *p++ = *e++;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    *p++ = *(--e);
+  else
+    {
+      ++e;
+      *p++ = *e++;
+    }
 #endif
   eshift (yy, -8);
   if (denorm)
@@ -3199,11 +3225,10 @@ toe113 (a, b)
     }
 #endif
   p = a;
-#ifdef MIEEE
-  q = b;
-#else
-  q = b + 7;			/* point to output exponent */
-#endif
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    q = b;
+  else
+    q = b + 7;			/* point to output exponent */
 
   /* If not denormal, delete the implied bit. */
   if (a[E] != 0)
@@ -3212,27 +3237,33 @@ toe113 (a, b)
     }
   /* combine sign and exponent */
   i = *p++;
-#ifdef MIEEE
-  if (i)
-    *q++ = *p++ | 0x8000;
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      if (i)
+	*q++ = *p++ | 0x8000;
+      else
+	*q++ = *p++;
+    }
   else
-    *q++ = *p++;
-#else
-  if (i)
-    *q-- = *p++ | 0x8000;
-  else
-    *q-- = *p++;
-#endif
+    {
+      if (i)
+	*q-- = *p++ | 0x8000;
+      else
+	*q-- = *p++;
+    }
   /* skip over guard word */
   ++p;
   /* move the significand */
-#ifdef MIEEE
-  for (i = 0; i < 7; i++)
-    *q++ = *p++;
-#else
-  for (i = 0; i < 7; i++)
-    *q-- = *p++;
-#endif
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      for (i = 0; i < 7; i++)
+	*q++ = *p++;
+    }
+  else
+    {
+      for (i = 0; i < 7; i++)
+	*q-- = *p++;
+    }
 }
 
 static void 
@@ -3284,39 +3315,79 @@ toe64 (a, b)
     }
 #endif
   p = a;
-#if defined(MIEEE) || defined(IBM)
+#ifdef IBM
   q = b;
-#else
-  q = b + 4;			/* point to output exponent */
-#if LONG_DOUBLE_TYPE_SIZE == 96
-  /* Clear the last two bytes of 12-byte Intel format */
-  *(q+1) = 0;
 #endif
+#ifdef DEC
+  q = b + 4;
+#endif
+#ifdef IEEE
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    q = b;
+  else
+    {
+      q = b + 4;			/* point to output exponent */
+#if LONG_DOUBLE_TYPE_SIZE == 96
+      /* Clear the last two bytes of 12-byte Intel format */
+      *(q+1) = 0;
+#endif
+    }
 #endif
 
   /* combine sign and exponent */
   i = *p++;
-#if defined(MIEEE) || defined(IBM)
+#ifdef IBM
   if (i)
     *q++ = *p++ | 0x8000;
   else
     *q++ = *p++;
   *q++ = 0;
-#else
+#endif
+#ifdef DEC
   if (i)
     *q-- = *p++ | 0x8000;
   else
     *q-- = *p++;
 #endif
+#ifdef IEEE
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      if (i)
+	*q++ = *p++ | 0x8000;
+      else
+	*q++ = *p++;
+      *q++ = 0;
+    }
+  else
+    {
+      if (i)
+	*q-- = *p++ | 0x8000;
+      else
+	*q-- = *p++;
+    }
+#endif
   /* skip over guard word */
   ++p;
   /* move the significand */
-#if defined(MIEEE) || defined(IBM)
+#ifdef IBM
   for (i = 0; i < 4; i++)
     *q++ = *p++;
-#else
+#endif
+#ifdef DEC
   for (i = 0; i < 4; i++)
     *q-- = *p++;
+#endif
+#ifdef IEEE
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      for (i = 0; i < 4; i++)
+	*q++ = *p++;
+    }
+  else
+    {
+      for (i = 0; i < 4; i++)
+	*q-- = *p++;
+    }
 #endif
 }
 
@@ -3405,8 +3476,9 @@ toe53 (x, y)
     }
 #endif
   p = &x[0];
-#ifdef IBMPC
-  y += 3;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    y += 3;
 #endif
   *y = 0;			/* output high order */
   if (*p++)
@@ -3417,30 +3489,34 @@ toe53 (x, y)
     {				/* Saturate at largest number less than infinity. */
 #ifdef INFINITY
       *y |= 0x7ff0;
-#ifdef IBMPC
-      *(--y) = 0;
-      *(--y) = 0;
-      *(--y) = 0;
-#endif
-#ifdef MIEEE
-      ++y;
-      *y++ = 0;
-      *y++ = 0;
-      *y++ = 0;
-#endif
+      if (! FLOAT_WORDS_BIG_ENDIAN)
+	{
+	  *(--y) = 0;
+	  *(--y) = 0;
+	  *(--y) = 0;
+	}
+      else
+	{
+	  ++y;
+	  *y++ = 0;
+	  *y++ = 0;
+	  *y++ = 0;
+	}
 #else
       *y |= (unsigned EMUSHORT) 0x7fef;
-#ifdef IBMPC
-      *(--y) = 0xffff;
-      *(--y) = 0xffff;
-      *(--y) = 0xffff;
-#endif
-#ifdef MIEEE
-      ++y;
-      *y++ = 0xffff;
-      *y++ = 0xffff;
-      *y++ = 0xffff;
-#endif
+      if (! FLOAT_WORDS_BIG_ENDIAN)
+	{
+	  *(--y) = 0xffff;
+	  *(--y) = 0xffff;
+	  *(--y) = 0xffff;
+	}
+      else
+	{
+	  ++y;
+	  *y++ = 0xffff;
+	  *y++ = 0xffff;
+	  *y++ = 0xffff;
+	}
 #endif
       return;
     }
@@ -3455,17 +3531,19 @@ toe53 (x, y)
     }
   i |= *p++ & (unsigned EMUSHORT) 0x0f;	/* *p = xi[M] */
   *y |= (unsigned EMUSHORT) i;	/* high order output already has sign bit set */
-#ifdef IBMPC
-  *(--y) = *p++;
-  *(--y) = *p++;
-  *(--y) = *p;
-#endif
-#ifdef MIEEE
-  ++y;
-  *y++ = *p++;
-  *y++ = *p++;
-  *y++ = *p++;
-#endif
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    {
+      *(--y) = *p++;
+      *(--y) = *p++;
+      *(--y) = *p;
+    }
+  else
+    {
+      ++y;
+      *y++ = *p++;
+      *y++ = *p++;
+      *y++ = *p++;
+    }
 }
 
 #endif /* not IBM */
@@ -3539,8 +3617,9 @@ toe24 (x, y)
     }
 #endif
   p = &x[0];
-#ifdef IBMPC
-  y += 1;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    y += 1;
 #endif
 #ifdef DEC
   y += 1;
@@ -3555,27 +3634,31 @@ toe24 (x, y)
     {
 #ifdef INFINITY
       *y |= (unsigned EMUSHORT) 0x7f80;
-#ifdef IBMPC
-      *(--y) = 0;
-#endif
 #ifdef DEC
       *(--y) = 0;
 #endif
-#ifdef MIEEE
-      ++y;
-      *y = 0;
+#ifdef IEEE
+      if (! FLOAT_WORDS_BIG_ENDIAN)
+	*(--y) = 0;
+      else
+	{
+	  ++y;
+	  *y = 0;
+	}
 #endif
 #else  /* no INFINITY */
       *y |= (unsigned EMUSHORT) 0x7f7f;
-#ifdef IBMPC
-      *(--y) = 0xffff;
-#endif
 #ifdef DEC
       *(--y) = 0xffff;
 #endif
-#ifdef MIEEE
-      ++y;
-      *y = 0xffff;
+#ifdef IEEE
+      if (! FLOAT_WORDS_BIG_ENDIAN)
+	*(--y) = 0xffff;
+      else
+	{
+	  ++y;
+	  *y = 0xffff;
+	}
 #endif
 #ifdef ERANGE
       errno = ERANGE;
@@ -3594,15 +3677,17 @@ toe24 (x, y)
     }
   i |= *p++ & (unsigned EMUSHORT) 0x7f;	/* *p = xi[M] */
   *y |= i;			/* high order output already has sign bit set */
-#ifdef IBMPC
-  *(--y) = *p;
-#endif
 #ifdef DEC
   *(--y) = *p;
 #endif
-#ifdef MIEEE
-  ++y;
-  *y = *p;
+#ifdef IEEE
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    *(--y) = *p;
+  else
+    {
+      ++y;
+      *y = *p;
+    }
 #endif
 }
 #endif  /* not IBM */
@@ -5400,45 +5485,38 @@ toibm (x, y, mode)
 #ifdef TFMODE_NAN
 TFMODE_NAN;
 #else
-#ifdef MIEEE
-unsigned EMUSHORT TFnan[8] =
+#ifdef IEEE
+unsigned EMUSHORT TFbignan[8] =
  {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
-#endif
-#ifdef IBMPC
-unsigned EMUSHORT TFnan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};
+unsigned EMUSHORT TFlittlenan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};
 #endif
 #endif
 
 #ifdef XFMODE_NAN
 XFMODE_NAN;
 #else
-#ifdef MIEEE
-unsigned EMUSHORT XFnan[6] = {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
-#endif
-#ifdef IBMPC
-unsigned EMUSHORT XFnan[6] = {0, 0, 0, 0xc000, 0xffff, 0};
+#ifdef IEEE
+unsigned EMUSHORT XFbignan[6] =
+ {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
+unsigned EMUSHORT XFlittlenan[6] = {0, 0, 0, 0xc000, 0xffff, 0};
 #endif
 #endif
 
 #ifdef DFMODE_NAN
 DFMODE_NAN;
 #else
-#ifdef MIEEE
-unsigned EMUSHORT DFnan[4] = {0x7fff, 0xffff, 0xffff, 0xffff};
-#endif
-#ifdef IBMPC
-unsigned EMUSHORT DFnan[4] = {0, 0, 0, 0xfff8};
+#ifdef IEEE
+unsigned EMUSHORT DFbignan[4] = {0x7fff, 0xffff, 0xffff, 0xffff};
+unsigned EMUSHORT DFlittlenan[4] = {0, 0, 0, 0xfff8};
 #endif
 #endif
 
 #ifdef SFMODE_NAN
 SFMODE_NAN;
 #else
-#ifdef MIEEE
-unsigned EMUSHORT SFnan[2] = {0x7fff, 0xffff};
-#endif
-#ifdef IBMPC
-unsigned EMUSHORT SFnan[2] = {0, 0xffc0};
+#ifdef IEEE
+unsigned EMUSHORT SFbignan[2] = {0x7fff, 0xffff};
+unsigned EMUSHORT SFlittlenan[2] = {0, 0xffc0};
 #endif
 #endif
 
@@ -5459,33 +5537,43 @@ make_nan (nan, sign, mode)
 #if !defined(DEC) && !defined(IBM)
     case TFmode:
       n = 8;
-      p = TFnan;
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	p = TFbignan;
+      else
+	p = TFlittlenan;
       break;
     case XFmode:
       n = 6;
-      p = XFnan;
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	p = XFbignan;
+      else
+	p = XFlittlenan;
       break;
     case DFmode:
       n = 4;
-      p = DFnan;
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	p = DFbignan;
+      else
+	p = DFlittlenan;
       break;
     case HFmode:
     case SFmode:
       n = 2;
-      p = SFnan;
+      if (FLOAT_WORDS_BIG_ENDIAN)
+	p = SFbignan;
+      else
+	p = SFlittlenan;
       break;
 #endif
     default:
       abort ();
     }
-#ifdef MIEEE
-  *nan++ = (sign << 15) | *p++;
-#endif
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    *nan++ = (sign << 15) | *p++;
   while (--n != 0)
     *nan++ = *p++;
-#ifndef MIEEE
-  *nan = (sign << 15) | *p;
-#endif
+  if (! FLOAT_WORDS_BIG_ENDIAN)
+    *nan = (sign << 15) | *p;
 }
 
 /* Convert an SFmode target `float' value to a REAL_VALUE_TYPE.
@@ -5502,13 +5590,16 @@ ereal_from_float (f)
 
   /* Convert 32 bit integer to array of 16 bit pieces in target machine order.
    This is the inverse operation to what the function `endian' does.  */
-#if FLOAT_WORDS_BIG_ENDIAN
-  s[0] = (unsigned EMUSHORT) (f >> 16);
-  s[1] = (unsigned EMUSHORT) f;
-#else
-  s[0] = (unsigned EMUSHORT) f;
-  s[1] = (unsigned EMUSHORT) (f >> 16);
-#endif
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      s[0] = (unsigned EMUSHORT) (f >> 16);
+      s[1] = (unsigned EMUSHORT) f;
+    }
+  else
+    {
+      s[0] = (unsigned EMUSHORT) f;
+      s[1] = (unsigned EMUSHORT) (f >> 16);
+    }
   /* Convert and promote the target float to E-type. */
   e24toe (s, e);
   /* Output E-type to REAL_VALUE_TYPE. */
@@ -5535,30 +5626,34 @@ ereal_from_double (d)
   unsigned EMUSHORT e[NE];
 
   /* Convert array of HOST_WIDE_INT to equivalent array of 16-bit pieces.  */
-#if FLOAT_WORDS_BIG_ENDIAN
-  s[0] = (unsigned EMUSHORT) (d[0] >> 16);
-  s[1] = (unsigned EMUSHORT) d[0];
+  if (FLOAT_WORDS_BIG_ENDIAN)
+    {
+      s[0] = (unsigned EMUSHORT) (d[0] >> 16);
+      s[1] = (unsigned EMUSHORT) d[0];
 #if HOST_BITS_PER_WIDE_INT == 32
-  s[2] = (unsigned EMUSHORT) (d[1] >> 16);
-  s[3] = (unsigned EMUSHORT) d[1];
+      s[2] = (unsigned EMUSHORT) (d[1] >> 16);
+      s[3] = (unsigned EMUSHORT) d[1];
 #else
-  /* In this case the entire target double is contained in the
-     first array element.  The second element of the input is ignored.  */
-  s[2] = (unsigned EMUSHORT) (d[0] >> 48);
-  s[3] = (unsigned EMUSHORT) (d[0] >> 32);
+      /* In this case the entire target double is contained in the
+	 first array element.  The second element of the input is
+	 ignored.  */
+      s[2] = (unsigned EMUSHORT) (d[0] >> 48);
+      s[3] = (unsigned EMUSHORT) (d[0] >> 32);
 #endif
-#else
-/* Target float words are little-endian.  */
-  s[0] = (unsigned EMUSHORT) d[0];
-  s[1] = (unsigned EMUSHORT) (d[0] >> 16);
+    }
+  else
+    {
+      /* Target float words are little-endian.  */
+      s[0] = (unsigned EMUSHORT) d[0];
+      s[1] = (unsigned EMUSHORT) (d[0] >> 16);
 #if HOST_BITS_PER_WIDE_INT == 32
-  s[2] = (unsigned EMUSHORT) d[1];
-  s[3] = (unsigned EMUSHORT) (d[1] >> 16);
+      s[2] = (unsigned EMUSHORT) d[1];
+      s[3] = (unsigned EMUSHORT) (d[1] >> 16);
 #else
-  s[2] = (unsigned EMUSHORT) (d[0] >> 32);
-  s[3] = (unsigned EMUSHORT) (d[0] >> 48);
+      s[2] = (unsigned EMUSHORT) (d[0] >> 32);
+      s[3] = (unsigned EMUSHORT) (d[0] >> 48);
 #endif
-#endif
+    }
   /* Convert target double to E-type. */
   e53toe (s, e);
   /* Output E-type to REAL_VALUE_TYPE. */
@@ -5580,13 +5675,16 @@ uditoe (di, e)
   int k;
 
   ecleaz (yi);
-#if WORDS_BIG_ENDIAN
-  for (k = M; k < M + 4; k++)
-    yi[k] = *di++;
-#else
-  for (k = M + 3; k >= M; k--)
-    yi[k] = *di++;
-#endif
+  if (WORDS_BIG_ENDIAN)
+    {
+      for (k = M; k < M + 4; k++)
+	yi[k] = *di++;
+    }
+  else
+    {
+      for (k = M + 3; k >= M; k--)
+	yi[k] = *di++;
+    }
   yi[E] = EXONE + 47;	/* exponent if normalize shift count were 0 */
   if ((k = enormlz (yi)) > NBITS)/* normalize the significand */
     ecleaz (yi);		/* it was zero */
@@ -5608,13 +5706,16 @@ ditoe (di, e)
   int k, sign;
 
   ecleaz (yi);
-#if WORDS_BIG_ENDIAN
-  for (k = M; k < M + 4; k++)
-    yi[k] = *di++;
-#else
-  for (k = M + 3; k >= M; k--)
-    yi[k] = *di++;
-#endif
+  if (WORDS_BIG_ENDIAN)
+    {
+      for (k = M; k < M + 4; k++)
+	yi[k] = *di++;
+    }
+  else
+    {
+      for (k = M + 3; k >= M; k--)
+	yi[k] = *di++;
+    }
   /* Take absolute value */
   sign = 0;
   if (yi[M] & 0x8000)
@@ -5680,21 +5781,21 @@ etoudi (x, i)
       if (j == 0)
 	j = 16;
       eshift (xi, j);
-#if WORDS_BIG_ENDIAN
-      *i++ = xi[M];
-#else
-      i += 3;
-      *i-- = xi[M];
-#endif
+      if (WORDS_BIG_ENDIAN)
+	*i++ = xi[M];
+      else
+	{
+	  i += 3;
+	  *i-- = xi[M];
+	}
       k -= j;
       do
 	{
 	  eshup6 (xi);
-#if WORDS_BIG_ENDIAN
-	  *i++ = xi[M];
-#else
-	  *i-- = xi[M];
-#endif
+	  if (WORDS_BIG_ENDIAN)
+	    *i++ = xi[M];
+	  else
+	    *i-- = xi[M];
 	}
       while ((k -= 16) > 0);
     }
@@ -5705,18 +5806,21 @@ etoudi (x, i)
 
 noshift:
 
-#if WORDS_BIG_ENDIAN
-      i += 3;
-      *i-- = xi[M];
-      *i-- = 0;
-      *i-- = 0;
-      *i = 0;
-#else
-      *i++ = xi[M];
-      *i++ = 0;
-      *i++ = 0;
-      *i = 0;
-#endif
+      if (WORDS_BIG_ENDIAN)
+	{
+	  i += 3;
+	  *i-- = xi[M];
+	  *i-- = 0;
+	  *i-- = 0;
+	  *i = 0;
+	}
+      else
+	{
+	  *i++ = xi[M];
+	  *i++ = 0;
+	  *i++ = 0;
+	  *i = 0;
+	}
     }
 }
 
@@ -5759,21 +5863,21 @@ etodi (x, i)
       if (j == 0)
 	j = 16;
       eshift (xi, j);
-#if WORDS_BIG_ENDIAN
-      *i++ = xi[M];
-#else
-      i += 3;
-      *i-- = xi[M];
-#endif
+      if (WORDS_BIG_ENDIAN)
+	*i++ = xi[M];
+      else
+	{
+	  i += 3;
+	  *i-- = xi[M];
+	}
       k -= j;
       do
 	{
 	  eshup6 (xi);
-#if WORDS_BIG_ENDIAN
-	  *i++ = xi[M];
-#else
-	  *i-- = xi[M];
-#endif
+	  if (WORDS_BIG_ENDIAN)
+	    *i++ = xi[M];
+	  else
+	    *i-- = xi[M];
 	}
       while ((k -= 16) > 0);
     }
@@ -5782,34 +5886,35 @@ etodi (x, i)
         /* shift not more than 16 bits */
       eshift (xi, k);
 
-#if WORDS_BIG_ENDIAN
-      i += 3;
-      *i = xi[M];
-      *i-- = 0;
-      *i-- = 0;
-      *i = 0;
-#else
-      *i++ = xi[M];
-      *i++ = 0;
-      *i++ = 0;
-      *i = 0;
-#endif
+      if (WORDS_BIG_ENDIAN)
+	{
+	  i += 3;
+	  *i = xi[M];
+	  *i-- = 0;
+	  *i-- = 0;
+	  *i = 0;
+	}
+      else
+	{
+	  *i++ = xi[M];
+	  *i++ = 0;
+	  *i++ = 0;
+	  *i = 0;
+	}
     }
   /* Negate if negative */
   if (xi[0])
     {
       carry = 0;
-#if WORDS_BIG_ENDIAN
-      isave += 3;
-#endif
+      if (WORDS_BIG_ENDIAN)
+	isave += 3;
       for (k = 0; k < 4; k++)
 	{
 	  acc = (unsigned EMULONG) (~(*isave) & 0xffff) + carry;
-#if WORDS_BIG_ENDIAN
-	  *isave-- = acc;
-#else
-	  *isave++ = acc;
-#endif
+	  if (WORDS_BIG_ENDIAN)
+	    *isave-- = acc;
+	  else
+	    *isave++ = acc;
 	  carry = 0;
 	  if (acc & 0x10000)
 	    carry = 1;

@@ -3934,13 +3934,14 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest)
 	  int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
 	  rtx addr = (reg_equiv_address[regno] ? reg_equiv_address[regno]
 		      : XEXP (reg_equiv_mem[regno], 0));
-#if BYTES_BIG_ENDIAN
-	  int size;
-	  size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
-	  offset += MIN (size, UNITS_PER_WORD);
-	  size = GET_MODE_SIZE (GET_MODE (x));
-	  offset -= MIN (size, UNITS_PER_WORD);
-#endif
+	  if (BYTES_BIG_ENDIAN)
+	    {
+	      int size;
+	      size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
+	      offset += MIN (size, UNITS_PER_WORD);
+	      size = GET_MODE_SIZE (GET_MODE (x));
+	      offset -= MIN (size, UNITS_PER_WORD);
+	    }
 	  addr = plus_constant (addr, offset);
 	  x = gen_rtx (MEM, GET_MODE (x), addr);
 	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[regno]);

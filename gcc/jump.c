@@ -516,17 +516,16 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		if (i < 0)
 		  delete_insn (insn);
 	      }
-#if !BYTES_BIG_ENDIAN /* Not worth the hair to detect this
-			 in the big-endian case.  */
 	    /* Also delete insns to store bit fields if they are no-ops.  */
-	    else if (GET_CODE (body) == SET
+	    /* Not worth the hair to detect this in the big-endian case.  */
+	    else if (! BYTES_BIG_ENDIAN
+		     && GET_CODE (body) == SET
 		     && GET_CODE (SET_DEST (body)) == ZERO_EXTRACT
 		     && XEXP (SET_DEST (body), 2) == const0_rtx
 		     && XEXP (SET_DEST (body), 0) == SET_SRC (body)
 		     && ! (GET_CODE (SET_SRC (body)) == MEM
 			   && MEM_VOLATILE_P (SET_SRC (body))))
 	      delete_insn (insn);
-#endif /* not BYTES_BIG_ENDIAN */
 	  }
       insn = next;
     }
