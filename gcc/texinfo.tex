@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.242 1998/06/22 20:00:53 karl Exp $
+% $Id: texinfo.tex,v 2.243 1998/06/23 21:36:39 karl Exp karl $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.242 $
+\deftexinfoversion$Revision: 2.243 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -100,7 +100,7 @@
 \ifx\putwordAppendix\undefined \gdef\putwordAppendix{Appendix}\fi
 \ifx\putwordChapter\undefined  \gdef\putwordChapter{Chapter}\fi
 \ifx\putwordfile\undefined     \gdef\putwordfile{file}\fi
-\ifx\putwordInfo\undefined     \gdef\putwordfile{Info}\fi
+\ifx\putwordInfo\undefined     \gdef\putwordInfo{Info}\fi
 \ifx\putwordMethodon\undefined \gdef\putwordMethodon{Method on}\fi
 \ifx\putwordon\undefined       \gdef\putwordon{on}\fi
 \ifx\putwordpage\undefined     \gdef\putwordpage{page}\fi
@@ -598,15 +598,19 @@ where each line of input produces a line of output.}
 % We do .5em per period so that it has the same spacing in a typewriter
 % font as three actual period characters.
 %
-\def\dots{\hbox to 1.5em{%
-  \hskip 0pt plus 0.25fil minus 0.25fil
-  .\hss.\hss.%
-  \hskip 0pt plus 0.5fil minus 0.5fil
-}}
+\def\dots{%
+  \leavevmode
+  \hbox to 1.5em{%
+    \hskip 0pt plus 0.25fil minus 0.25fil
+    .\hss.\hss.%
+    \hskip 0pt plus 0.5fil minus 0.5fil
+  }%
+}
 
 % @enddots{} is an end-of-sentence ellipsis.
 % 
 \def\enddots{%
+  \leavevmode
   \hbox to 2em{%
     \hskip 0pt plus 0.25fil minus 0.25fil
     .\hss.\hss.\hss.%
@@ -617,7 +621,7 @@ where each line of input produces a line of output.}
 
 
 % @page    forces the start of a new page
-
+%
 \def\page{\par\vfill\supereject}
 
 % @exdent text....
