@@ -363,7 +363,7 @@ if [ x"${host}" = x"${target}" ] ; then
 	if [ x${enable_multilib} = xno ]; then
 	  target_subdir=.
 	else
-	  target_subdir=libraries
+	  target_subdir=${target_alias}
 	fi
 else
 	# similarly, don't build the targets in the 'native only' 
