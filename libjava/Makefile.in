@@ -59,16 +59,7 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/../compile \
 	ChangeLog NEWS THANKS
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/accross.m4 \
-	$(top_srcdir)/../config/acx.m4 \
-	$(top_srcdir)/../config/gcc-version.m4 \
-	$(top_srcdir)/../config/gxx-include-dir.m4 \
-	$(top_srcdir)/../config/iconv.m4 \
-	$(top_srcdir)/../config/lcmessage.m4 \
-	$(top_srcdir)/../config/lib-ld.m4 \
-	$(top_srcdir)/../config/lib-link.m4 \
-	$(top_srcdir)/../config/lib-prefix.m4 $(top_srcdir)/pkg.m4 \
-	$(top_srcdir)/acinclude.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -1936,6 +1927,9 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc link.cc \
 	javax/imageio/spi/ImageReaderWriterSpi.java \
 	javax/imageio/spi/ImageInputStreamSpi.java \
 	javax/imageio/spi/RegisterableService.java \
+	javax/imageio/metadata/IIOAttr.java \
+	javax/imageio/metadata/IIONamedNodeMap.java \
+	javax/imageio/metadata/IIONodeList.java \
 	javax/imageio/metadata/IIOMetadataFormatImpl.java \
 	javax/imageio/metadata/IIOInvalidTreeException.java \
 	javax/imageio/metadata/IIOMetadataFormat.java \
@@ -3430,6 +3424,9 @@ am__objects_13 = javax/imageio/ImageWriteParam.lo \
 	javax/imageio/spi/ImageReaderWriterSpi.lo \
 	javax/imageio/spi/ImageInputStreamSpi.lo \
 	javax/imageio/spi/RegisterableService.lo \
+	javax/imageio/metadata/IIOAttr.lo \
+	javax/imageio/metadata/IIONamedNodeMap.lo \
+	javax/imageio/metadata/IIONodeList.lo \
 	javax/imageio/metadata/IIOMetadataFormatImpl.lo \
 	javax/imageio/metadata/IIOInvalidTreeException.lo \
 	javax/imageio/metadata/IIOMetadataFormat.lo \
@@ -4743,13 +4740,11 @@ LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
 LIBGCJ_JAVAFLAGS = @LIBGCJ_JAVAFLAGS@
 LIBGCJ_LD_SYMBOLIC = @LIBGCJ_LD_SYMBOLIC@
-LIBICONV = @LIBICONV@
 LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
-LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
@@ -4772,7 +4767,6 @@ PANGOFT2_CFLAGS = @PANGOFT2_CFLAGS@
 PANGOFT2_LIBS = @PANGOFT2_LIBS@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PERL = @PERL@
-PKG_CONFIG = @PKG_CONFIG@
 PLATFORM_INNER_NAT_HDRS = @PLATFORM_INNER_NAT_HDRS@
 RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
@@ -4850,10 +4844,6 @@ build_os = @build_os@
 build_vendor = @build_vendor@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
-gcc_version = @gcc_version@
-gcc_version_full = @gcc_version_full@
-gcc_version_trigger = @gcc_version_trigger@
-gxx_include_dir = @gxx_include_dir@
 here = @here@
 host = @host@
 host_alias = @host_alias@
@@ -4866,7 +4856,6 @@ install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
 libgcj_basedir = @libgcj_basedir@
-libstdcxx_incdir = @libstdcxx_incdir@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
@@ -6155,6 +6144,9 @@ javax/imageio/spi/IIOServiceProvider.java \
 javax/imageio/spi/ImageReaderWriterSpi.java \
 javax/imageio/spi/ImageInputStreamSpi.java \
 javax/imageio/spi/RegisterableService.java \
+javax/imageio/metadata/IIOAttr.java \
+javax/imageio/metadata/IIONamedNodeMap.java \
+javax/imageio/metadata/IIONodeList.java \
 javax/imageio/metadata/IIOMetadataFormatImpl.java \
 javax/imageio/metadata/IIOInvalidTreeException.java \
 javax/imageio/metadata/IIOMetadataFormat.java \
@@ -13719,6 +13711,15 @@ javax/imageio/metadata/$(am__dirstamp):
 javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp):
 	@$(mkdir_p) javax/imageio/metadata/$(DEPDIR)
 	@: > javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIOAttr.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIONamedNodeMap.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
+javax/imageio/metadata/IIONodeList.lo:  \
+	javax/imageio/metadata/$(am__dirstamp) \
+	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
 javax/imageio/metadata/IIOMetadataFormatImpl.lo:  \
 	javax/imageio/metadata/$(am__dirstamp) \
 	javax/imageio/metadata/$(DEPDIR)/$(am__dirstamp)
@@ -19606,6 +19607,8 @@ mostlyclean-compile:
 	-rm -f javax/imageio/event/IIOWriteProgressListener.lo
 	-rm -f javax/imageio/event/IIOWriteWarningListener.$(OBJEXT)
 	-rm -f javax/imageio/event/IIOWriteWarningListener.lo
+	-rm -f javax/imageio/metadata/IIOAttr.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIOAttr.lo
 	-rm -f javax/imageio/metadata/IIOInvalidTreeException.$(OBJEXT)
 	-rm -f javax/imageio/metadata/IIOInvalidTreeException.lo
 	-rm -f javax/imageio/metadata/IIOMetadata.$(OBJEXT)
@@ -19618,6 +19621,10 @@ mostlyclean-compile:
 	-rm -f javax/imageio/metadata/IIOMetadataFormatImpl.lo
 	-rm -f javax/imageio/metadata/IIOMetadataNode.$(OBJEXT)
 	-rm -f javax/imageio/metadata/IIOMetadataNode.lo
+	-rm -f javax/imageio/metadata/IIONamedNodeMap.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIONamedNodeMap.lo
+	-rm -f javax/imageio/metadata/IIONodeList.$(OBJEXT)
+	-rm -f javax/imageio/metadata/IIONodeList.lo
 	-rm -f javax/imageio/spi/IIORegistry.$(OBJEXT)
 	-rm -f javax/imageio/spi/IIORegistry.lo
 	-rm -f javax/imageio/spi/IIOServiceProvider.$(OBJEXT)
@@ -23184,12 +23191,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOReadWarningListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOWriteProgressListener.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/event/$(DEPDIR)/IIOWriteWarningListener.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOAttr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOInvalidTreeException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadata.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataController.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataFormat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataFormatImpl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIOMetadataNode.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIONamedNodeMap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/metadata/$(DEPDIR)/IIONodeList.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/IIORegistry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/IIOServiceProvider.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@javax/imageio/spi/$(DEPDIR)/ImageInputStreamSpi.Plo@am__quote@

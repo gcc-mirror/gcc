@@ -1930,6 +1930,9 @@ javax/imageio/spi/IIOServiceProvider.java \
 javax/imageio/spi/ImageReaderWriterSpi.java \
 javax/imageio/spi/ImageInputStreamSpi.java \
 javax/imageio/spi/RegisterableService.java \
+javax/imageio/metadata/IIOAttr.java \
+javax/imageio/metadata/IIONamedNodeMap.java \
+javax/imageio/metadata/IIONodeList.java \
 javax/imageio/metadata/IIOMetadataFormatImpl.java \
 javax/imageio/metadata/IIOInvalidTreeException.java \
 javax/imageio/metadata/IIOMetadataFormat.java \
