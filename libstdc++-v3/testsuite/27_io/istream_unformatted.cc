@@ -461,7 +461,7 @@ int
 test07()
 {
   bool test = true;
-  const char* tfn = "istream_unformatted-3.txt";
+  const char* tfn = "istream_unformatted-1.txt";
   std::ifstream infile;
   infile.open(tfn);
   VERIFY( !(!infile) );

@@ -1,7 +1,30 @@
+2001-03-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/std_iosfwd.h: Remove string forward decls here.
+	* include/bits/stringfwd.h: Add forward decls for char_traits
+	specializations.
+	* config/c_io_libio.h (wstreamoff): Delete.
+	* config/c_io_stdio.h (wstreamoff): Same.
+	* include/bits/char_traits.h: Use streamoff not wstreamoff for
+	char_traits<wchar_t>::off_type.
+	Remove duplicate typedefs.
+	* include/bits/fpos.h: Define streampos/wstreampos here.
+	* testsuite/27_io/istream_seeks.cc (test04): Explicitly cast int
+	values to off_type.
+	(test05): Same.
+	Changeup output files.
+	* testsuite/27_io/istream_unformatted.cc: Change output files.	
+	* testsuite/27_io/istream_seeks-1.txt: Add.
+	* testsuite/27_io/istream_seeks-2.tst: Add.
+	* testsuite/27_io/istream_seeks-1.tst: Add.
+	* testsuite/27_io/istream_unformatted-2.tst: Delete.
+	* testsuite/27_io/istream_unformatted-3.tst: Delete.
+	* testsuite/27_io/istream_unformatted-3.txt: Delete.
+
 2001-03-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	Add Irix 5.2, 6.3 support.
-        * config/os/irix/bits: Renamed too...
+        * config/os/irix/bits: Renamed to...
         * config/os/irix/irix6.5/bits: this.
         * config/os/irix/irix5.2/bits: New, copied from irix6.5/bits.
         * config/os/irix/irix5.2/bits/ctype_base.h: Use _U, _L, _N,

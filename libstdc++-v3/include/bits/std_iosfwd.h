@@ -37,18 +37,12 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/std_cwchar.h> // For mbstate_t
 #include <bits/stringfwd.h> // For string forward declarations.
+#include <bits/fpos.h>
 #include <bits/functexcept.h>
 
 namespace std 
 {
-  // Forward declarations
-  template<> class char_traits<char>;
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template<> class char_traits<wchar_t>;
-#endif
-
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
     class basic_ios;
 
@@ -101,18 +95,6 @@ namespace std
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
   // Not included.
   class ios_base; 
-#endif
-
-  template<class _State> struct fpos;
-#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
-  // Can't have self-recursive types for streampos. 
-  // 21.1.3.1 char_traits sets size_type to streampos
-  // 27.4.1 
-  // And here, where streampos is typedefed to fpos<traits::state_type>
-  typedef fpos<mbstate_t> 		streampos;
-#  ifdef _GLIBCPP_USE_WCHAR_T
-  typedef fpos<mbstate_t> 		wstreampos;
-#  endif
 #endif
 
   typedef basic_ios<char> 		ios;
