@@ -1,3 +1,7 @@
+2002-10-10  Jim Wilson  <wilson@redhat.com>
+
+	* gcc.c-torture/execute/20021010-1.c: New test.
+
 2002-10-09  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/7353
