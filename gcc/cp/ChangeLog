@@ -13,6 +13,11 @@
 	* decl.c (pushdecl): Handle seeing an OVERLOAD in 
 	IDENTIFIER_NAMESPACE_VALUE.
 
+2000-07-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (THUNK_VCALL_OFFSET): Update documentation.
+	* method.c (use_thunk): Correct handling of vcall offsets.
+
 2000-07-14  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* .cvsignore: parse.h and parse.c have no cp- prefix.
