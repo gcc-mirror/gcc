@@ -386,7 +386,12 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
     case CONSTANT_Class:
       n = JPOOL_USHORT1 (jcf, index);
       if (verbosity > 0)
-	fprintf (out, verbosity > 1 ? "Class name: %d=" : "Class ", n);
+	{
+	  if (verbosity > 1)
+	    fprintf (out, "Class name: %d=", n);
+	  else
+	    fprintf (out, "Class ");
+	}
       if (! CPOOL_INDEX_IN_RANGE (&jcf->cpool, n))
 	fprintf (out, "<out of range>");
       else if (verbosity < 2 && JPOOL_TAG (jcf, n) == CONSTANT_Utf8)
@@ -412,8 +417,10 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
 	else if (verbosity > 0)
 	    fprintf (out, "%s ", str);
 	print_constant_terse (out, jcf, tclass, CONSTANT_Class);
-	fprintf (out, verbosity < 2 ? "." : " name_and_type: %d=<",
-		 name_and_type);
+	if (verbosity < 2)
+	  fprintf (out, ".");
+	else
+	  fprintf (out, " name_and_type: %d=<", name_and_type);
 	print_constant_terse (out, jcf, name_and_type, CONSTANT_NameAndType);
 	if (verbosity == 2)
 	  fputc ('>', out);
@@ -422,7 +429,12 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
     case CONSTANT_String:
       j = JPOOL_USHORT1 (jcf, index);
       if (verbosity > 0)
-	fprintf (out, verbosity > 1 ? "String %d=" : "String ", j);
+	{
+	  if (verbosity > 1)
+	    fprintf (out, "String %d=", j);
+	  else
+	    fprintf (out, "String ");
+	}
       print_constant_terse (out, jcf, j, CONSTANT_Utf8);
       break;
     case CONSTANT_Integer:
@@ -473,8 +485,12 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
 	uint16 name = JPOOL_USHORT1 (jcf, index);
 	uint16 sig = JPOOL_USHORT2 (jcf, index);
 	if (verbosity > 0)
-	  fprintf (out, verbosity > 1 ? "%s name: %d=" : "%s ",
-		   "NameAndType", name);
+	  {
+	    if (verbosity > 1)
+	      fprintf (out, "NameAndType name: %d=", name);
+	    else
+	      fprintf (out, "NameAndType ");
+	  }
 	print_name (out, jcf, name);
 	if (verbosity <= 1)
 	  fputc (' ', out);
@@ -1002,19 +1018,17 @@ DEFUN(disassemble_method, (jcf, byte_ops, len),
 #define ARRAY_NEW(TYPE) ARRAY_NEW_##TYPE
 #define ARRAY_NEW_NUM \
  INT_temp = IMMEDIATE_u1; \
- { const char *str; \
-  switch (INT_temp) {  \
-    case  4: str = "boolean"; break; \
-    case  5: str = "char"; break; \
-    case  6: str = "float"; break; \
-    case  7: str = "double"; break; \
-    case  8: str = "byte"; break; \
-    case  9: str = "short"; break; \
-    case 10: str = "int"; break; \
-    case 11: str = "long"; break; \
-    default: str = "<unknown type code %d>"; break; \
-  } \
-  fputc (' ', out); fprintf (out, str, INT_temp); }
+ { switch (INT_temp) {  \
+    case  4: fputs (" boolean", out); break; \
+    case  5: fputs (" char", out); break; \
+    case  6: fputs (" float", out); break; \
+    case  7: fputs (" double", out); break; \
+    case  8: fputs (" byte", out); break; \
+    case  9: fputs (" short", out); break; \
+    case 10: fputs (" int", out); break; \
+    case 11: fputs (" long", out); break; \
+    default: fprintf (out, " <unknown type code %ld>", (long)INT_temp); break;\
+  } }
 
 #define ARRAY_NEW_PTR  \
   fputc (' ', out); print_constant_ref (out, jcf, IMMEDIATE_u2);
