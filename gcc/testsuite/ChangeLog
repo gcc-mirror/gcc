@@ -1,3 +1,11 @@
+2004-10-04  Paul Brook  <paul@codesourcery.com>
+	Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/17706
+	PR fortran/16434
+	* gfortran/pr17706.f90: New test.
+	* gfortran.dg/g77/f77-edit-s-out.f: Remove xfail.
+
 2004-10-04  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/pr17612.f90: New test.

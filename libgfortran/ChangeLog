@@ -1,3 +1,12 @@
+2004-10-04  Paul Brook  <paul@codesourcery.com>
+	Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/17706
+	PR fortran/16434
+	* io/format.c (parse_format_list): Set repeat count for S, SP, SS,
+	BN and BZ formats.
+	* io/write.c (output_float): Don't output minus zero.
+
 2004-10-03  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
 
 	* intrinsics/abort.c ("libgfortran.h"): Move.
