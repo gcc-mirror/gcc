@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 93-7, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-8, 1999 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -3169,15 +3169,15 @@ do {									\
 /* Define the codes that are matched by predicates in rs6000.c.  */
 
 #define PREDICATE_CODES						\
-  {"short_cint_operand", {CONST_INT, CONSTANT_P_RTX}},		\
-  {"u_short_cint_operand", {CONST_INT, CONSTANT_P_RTX}},	\
+  {"short_cint_operand", {CONST_INT}},				\
+  {"u_short_cint_operand", {CONST_INT}},			\
   {"non_short_cint_operand", {CONST_INT}},			\
   {"gpc_reg_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
-  {"reg_or_short_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
+  {"reg_or_short_operand", {SUBREG, REG, CONST_INT}}, 		\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
-  {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
-  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
+  {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}}, 	\
+  {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}}, 		\
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
   {"easy_fp_constant", {CONST_DOUBLE}},				\
@@ -3186,12 +3186,11 @@ do {									\
   {"volatile_mem_operand", {MEM}},				\
   {"offsettable_addr_operand", {REG, SUBREG, PLUS}},		\
   {"mem_or_easy_const_operand", {SUBREG, MEM, CONST_DOUBLE}},	\
-  {"add_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
+  {"add_operand", {SUBREG, REG, CONST_INT}},			\
   {"non_add_cint_operand", {CONST_INT}},			\
-  {"and_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}},	\
-  {"and64_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX,	\
-		     CONST_DOUBLE}},				\
-  {"logical_operand", {SUBREG, REG, CONST_INT, CONSTANT_P_RTX}}, \
+  {"and_operand", {SUBREG, REG, CONST_INT}},			\
+  {"and64_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},	\
+  {"logical_operand", {SUBREG, REG, CONST_INT}}, 		\
   {"non_logical_cint_operand", {CONST_INT}},			\
   {"mask_operand", {CONST_INT}},				\
   {"mask64_operand", {CONST_INT, CONST_DOUBLE}},		\
@@ -3199,7 +3198,7 @@ do {									\
   {"fpmem_operand", {REG}},					\
   {"call_operand", {SYMBOL_REF, REG}},				\
   {"current_file_function_operand", {SYMBOL_REF}},		\
-  {"input_operand", {SUBREG, MEM, REG, CONST_INT, CONSTANT_P_RTX, \
+  {"input_operand", {SUBREG, MEM, REG, CONST_INT, 		\
 		     CONST_DOUBLE, SYMBOL_REF}}, 		\
   {"load_multiple_operation", {PARALLEL}},			\
   {"store_multiple_operation", {PARALLEL}},			\
