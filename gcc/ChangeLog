@@ -1,3 +1,8 @@
+2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/m32r/m32r.md: Use GEN_INT instead of gen_rtx
+	(CONST_INT, VOIDmode, ...).
+
 2004-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	* regrename.c (find_oldest_value_reg): If the replacement uses 
