@@ -1,5 +1,5 @@
-/* nextstep.h -- operating system specific defines to be used when
-   targeting GCC for NeXTSTEP.
+/* Operating system specific defines to be used when targeting GCC
+   for NeXTSTEP.
    Copyright (C) 1989, 90-93, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -254,6 +254,11 @@ Boston, MA 02111-1307, USA.  */
 		  (CLASS_NAME), (SEL_NAME));				\
      } while (0)
 
+/* The prefix to add to user-visible assembler symbols. */
+
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
+
 /* Wrap new method names in quotes so the assembler doesn't gag.
    Make Objective-C internal symbols local.  */
 
@@ -263,7 +268,7 @@ Boston, MA 02111-1307, USA.  */
        else if (!strncmp (NAME, "_OBJC_", 6)) fprintf (FILE, "L%s", NAME);   \
        else if (!strncmp (NAME, ".objc_class_name_", 17))		\
 	 fprintf (FILE, "%s", NAME);					\
-       else fprintf (FILE, "_%s", NAME); } while (0)
+       else fprintf (FILE, "%s%s", USER_LABEL_PREFIX, NAME); } while (0)
 
 #undef	ALIGN_ASM_OP
 #define ALIGN_ASM_OP		".align"
