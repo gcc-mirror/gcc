@@ -5826,7 +5826,7 @@ output_pic_addr_const (file, x, code)
 	  fputs ("@GOTOFF", file);
 	  break;
 	case UNSPEC_GOTPCREL:
-	  fputs ("@GOTPCREL(%RIP)", file);
+	  fputs ("@GOTPCREL(%rip)", file);
 	  break;
 	case UNSPEC_GOTTPOFF:
 	  fputs ("@GOTTPOFF", file);
@@ -6619,7 +6619,13 @@ print_operand_address (file, addr)
 	output_addr_const (file, addr);
 
       /* Use one byte shorter RIP relative addressing for 64bit mode.  */
-      if (GET_CODE (disp) != CONST_INT && TARGET_64BIT)
+      if (TARGET_64BIT
+	  && (GET_CODE (addr) == SYMBOL_REF
+	      || GET_CODE (addr) == LABEL_REF
+	      || (GET_CODE (addr) == CONST
+		  && GET_CODE (XEXP (addr, 0)) == PLUS
+		  && GET_CODE (XEXP (XEXP (addr, 0), 0)) == SYMBOL_REF
+		  && GET_CODE (XEXP (XEXP (addr, 0), 1)) == CONST_INT)))
 	fputs ("(%rip)", file);
     }
   else
