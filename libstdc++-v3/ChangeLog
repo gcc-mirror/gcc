@@ -1,4 +1,11 @@
 2003-10-04  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
+	Constify a couple of variables.
+	(num_get::do_get(..., bool&)): Constify __c; prefer *__beg,
+	++__beg to *__beg++.
+
+2003-10-04  Paolo Carlini  <pcarlini@unitus.it>
             Petur Runolfsson  <peturr02@ru.is>
 
 	* include/ext/stdio_sync_filebuf.h: Don't include the whole
