@@ -1,3 +1,9 @@
+Mon Oct 13 17:41:26 1997  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+ 	* decl.c (store_return_init): Allow classes with explicit ctors to
+	be used with the named return values extension.
+
+
 Fri Oct 10 12:21:11 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (instantiate_decl): Fix previous change.
