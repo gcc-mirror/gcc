@@ -1,7 +1,10 @@
+2004-12-10  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/t-slibgcc-sld (SHLIB_LINK): Correct symlink.
+
 2004-12-10  Uros Bizjak  <uros@kss-loka.si>
 
-	* config/i386/i386.md (*cmpfp_sf): Change type
-	attribute to "multi".
+	* config/i386/i386.md (*cmpfp_sf): Change type attribute to "multi".
 
 2004-12-09  Richard Henderson  <rth@redhat.com>
 
