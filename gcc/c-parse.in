@@ -407,11 +407,7 @@ save_obstack_position:
 
 datadef:
 	  setspecs notype_initdecls ';'
-		{ if (pedantic)
-		    error ("ISO C forbids data definition with no type or storage class");
-		  else
-		    warning ("data definition has no type or storage class");
-
+		{ pedwarn ("data definition has no type or storage class");
 		  POP_DECLSPEC_STACK; }
         | declspecs_nots setspecs notype_initdecls ';'
 		{ POP_DECLSPEC_STACK; }

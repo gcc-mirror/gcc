@@ -1,3 +1,8 @@
+2004-10-26  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-parse.in (datadef): Use pedwarn rather than error and warning
+	for diagnostic in case of no declaration specifiers.
+
 2004-10-26  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR bootstrap/15747
