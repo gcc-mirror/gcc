@@ -536,7 +536,7 @@ bool
 cgraph_function_possibly_inlined_p (tree decl)
 {
   if (!cgraph_global_info_ready)
-    return (DECL_INLINE (decl) && !flag_no_inline);
+    return (DECL_INLINE (decl) && !flag_really_no_inline);
   return cgraph_node (decl)->global.inlined;
 }
 
