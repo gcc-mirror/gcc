@@ -1257,7 +1257,7 @@ stack_reg_life_analysis (first, stackentry)
 	   function into the epilogue.  */
 
         if (GET_CODE (block_end[blocks-1]) != JUMP_INSN
-	    || GET_CODE (PATTERN (block_end[blocks-1])) == RETURN)
+	    || returnjump_p (block_end[blocks-1]))
 	  mark_regs_pat (retvalue, block_out_reg_set+blocks-1);
       }
    }
