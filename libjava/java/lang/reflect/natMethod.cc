@@ -10,7 +10,9 @@ details.  */
 
 #include <config.h>
 
+#if HAVE_ALLOCA_H
 #include <alloca.h>
+#endif
 
 #include <gcj/cni.h>
 #include <jvm.h>

@@ -1,3 +1,10 @@
+2000-09-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* defineclass.cc: Include alloca.h only if HAVE_ALLOCA_H.
+	* java/lang/natDouble.cc: Likewise.
+	* java/lang/reflect/natMethod.cc: Likewise.
+	* interpret.cc: Likewise.  Fix NULLCHECKs that tested a _Jv_word.
+
 2000-09-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (LIBDATASTARTSPEC): Use `%s' to search for
