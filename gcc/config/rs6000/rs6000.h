@@ -1841,7 +1841,7 @@ typedef struct rs6000_args
    || (TARGET_ALTIVEC && (REGNO) == VRSAVE_REGNO)		\
    || (current_function_calls_eh_return				\
        && TARGET_AIX						\
-       && (REGNO) == TOC_REGISTER))
+       && (REGNO) == 2))
 
 
 /* TRAMPOLINE_TEMPLATE deleted */
