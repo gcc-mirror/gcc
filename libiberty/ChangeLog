@@ -1,3 +1,19 @@
+2003-02-13  Daniel Jacobowitz  <drow@mvista.com>
+
+	Fix PR c++/7612.
+	* cplus-dem.c (demangle_signature): Call string_delete.
+	Remove extra string_init.
+	(demangle_arm_hp_template): Call string_delete instead of
+	string_clear.  Add missing string_delete call.
+	(demangle_qualified): Add missing string_delete call.
+	(do_type): Remove unused variable btype.  Add missing string_delete
+	call.  Call string_delete instead of string_clear.
+	(demangle_fund_type): Move variable btype inside of the switch
+	statement.  Add missing string_delete call.
+	(do_arg): Call string_delete instead of string_clear.  Remove extra
+	string_init.
+	(demangle_nested_args): Free work->previous_argument.
+
 2003-02-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* acconfig.h: New file.  Add uintptr_t.
