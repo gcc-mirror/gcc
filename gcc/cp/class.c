@@ -3958,7 +3958,8 @@ build_base_field (record_layout_info rli, tree binfo,
       DECL_SIZE_UNIT (decl) = CLASSTYPE_SIZE_UNIT (basetype);
       DECL_ALIGN (decl) = CLASSTYPE_ALIGN (basetype);
       DECL_USER_ALIGN (decl) = CLASSTYPE_USER_ALIGN (basetype);
-  
+      DECL_IGNORED_P (decl) = 1;
+
       /* Try to place the field.  It may take more than one try if we
 	 have a hard time placing the field without putting two
 	 objects of the same type at the same address.  */
