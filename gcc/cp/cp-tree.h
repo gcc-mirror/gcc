@@ -1165,13 +1165,17 @@ enum languages { lang_c, lang_cplusplus, lang_java };
        && IS_AGGR_TYPE (TREE_TYPE (NODE)))	\
    || IS_AGGR_TYPE (NODE))
 
-/* Nonzero iff TYPE is uniquely derived from PARENT.  Under MI, PARENT can
-   be an ambiguous base class of TYPE, and this macro will be false.  */
-#define UNIQUELY_DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) >= 0)
-#define ACCESSIBLY_DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, -1, (tree *)0) >= 0)
-#define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 1, (tree *)0) >= 0)
-#define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 2, (tree *)0) >= 0)
-#define DERIVED_FROM_P(PARENT, TYPE) (get_base_distance (PARENT, TYPE, 0, (tree *)0) != -1)
+/* Nonzero iff TYPE is derived from PARENT. Ignores accessibility and
+   ambiguity issues.  */
+#define DERIVED_FROM_P(PARENT, TYPE) (lookup_base (TYPE, PARENT, ba_any, NULL))
+/* Nonzero iff TYPE is uniquely derived from PARENT. Ignores
+   accessibility.  */
+#define UNIQUELY_DERIVED_FROM_P(PARENT, TYPE) (lookup_base (TYPE, PARENT, ba_ignore | ba_quiet, NULL))
+/* Nonzero iff TYPE is accessible in the current scope and uniquely
+   derived from PARENT.  */
+#define ACCESSIBLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (lookup_base (TYPE, PARENT, ba_check | ba_quiet, NULL))
+/* Nonzero iff TYPE is publicly & uniquely derived from PARENT.  */
+#define PUBLICLY_UNIQUELY_DERIVED_P(PARENT, TYPE) (lookup_base (TYPE, PARENT,  ba_not_special | ba_quiet, NULL))
 
 /* This structure provides additional information above and beyond
    what is provide in the ordinary tree_type.  In the past, we used it
@@ -1551,8 +1555,7 @@ struct lang_type
    base can be separately marked.  */
 #define BINFO_UNSHARED_MARKED(NODE) TREE_LANG_FLAG_0(NODE)
 
-/* Nonzero means marked by DFS or BFS search, including searches
-   by `get_binfo' and `get_base_distance'.  */
+/* Nonzero means marked by DFS or BFS search.  */
 #define BINFO_MARKED(NODE) (TREE_VIA_VIRTUAL(NODE)?CLASSTYPE_MARKED(BINFO_TYPE(NODE)):TREE_LANG_FLAG_0(NODE))
 /* Macros needed because of C compilers that don't allow conditional
    expressions to be lvalues.  Grr!  */
@@ -3020,16 +3023,17 @@ typedef enum instantiate_type_flags {
 
 /* The kind of checking we can do looking in a class heirarchy. */
 typedef enum base_access {
-  ba_any = -2,     /* Do not check access, allow an ambiguous base,
+  ba_any = 0,      /* Do not check access, allow an ambiguous base,
 		      prefer a non-virtual base */
-  ba_ignore = -1,  /* Do not check access */
-  ba_check = 0,    /* Check access */
-  ba_not_special   /* Do not consider special privilege
-		      current_class_type might give. */
+  ba_ignore = 1,   /* Do not check access */
+  ba_check = 2,    /* Check access */
+  ba_not_special = 3, /* Do not consider special privilege
+		         current_class_type might give. */
+  ba_quiet = 4,    /* Do not issue error messages (bit mask).  */
 } base_access;
 
 /* The kind of base we can find, looking in a class heirarchy.
-   values <0 indicate we failed. */
+   Values <0 indicate we failed. */
 typedef enum base_kind {
   bk_inaccessible = -3,   /* The base is inaccessible */
   bk_ambig = -2,          /* The base is ambiguous */
@@ -4005,8 +4009,6 @@ extern int emit_tinfo_decl                      PARAMS((tree *, void *));
 extern tree lookup_base PARAMS ((tree, tree, base_access, base_kind *));
 extern int types_overlap_p			PARAMS ((tree, tree));
 extern tree get_vbase				PARAMS ((tree, tree));
-extern tree get_binfo				PARAMS ((tree, tree, int));
-extern int get_base_distance			PARAMS ((tree, tree, int, tree *));
 extern tree get_dynamic_cast_base_type          PARAMS ((tree, tree));
 extern void type_access_control			PARAMS ((tree, tree));
 extern void skip_type_access_control            PARAMS ((void));
@@ -4186,7 +4188,6 @@ extern tree hash_tree_cons			PARAMS ((tree, tree, tree));
 extern tree hash_tree_chain			PARAMS ((tree, tree));
 extern tree hash_chainon			PARAMS ((tree, tree));
 extern tree make_binfo				PARAMS ((tree, tree, tree, tree));
-extern tree binfo_value				PARAMS ((tree, tree));
 extern tree reverse_path			PARAMS ((tree));
 extern int count_functions			PARAMS ((tree));
 extern int is_overloaded_fn			PARAMS ((tree));

@@ -401,7 +401,7 @@ build_up_reference (type, arg, flags, decl)
       && IS_AGGR_TYPE (argtype)
       && IS_AGGR_TYPE (target_type))
     {
-      /* We go through get_binfo for the access control.  */
+      /* We go through lookup_base for the access control.  */
       tree binfo = lookup_base (argtype, target_type, ba_check, NULL);
       if (binfo == error_mark_node)
 	return error_mark_node;

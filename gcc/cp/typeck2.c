@@ -56,20 +56,16 @@ error_not_base_type (basetype, type)
 }
 
 tree
-binfo_or_else (parent_or_type, type)
-     tree parent_or_type, type;
+binfo_or_else (base, type)
+     tree base, type;
 {
-  tree binfo;
-  if (TYPE_MAIN_VARIANT (parent_or_type) == TYPE_MAIN_VARIANT (type))
-    return TYPE_BINFO (parent_or_type);
-  if ((binfo = get_binfo (parent_or_type, TYPE_MAIN_VARIANT (type), 0)))
-    {
-      if (binfo == error_mark_node)
-	return NULL_TREE;
-      return binfo;
-    }
-  error_not_base_type (parent_or_type, type);
-  return NULL_TREE;
+  tree binfo = lookup_base (type, base, ba_ignore, NULL);
+
+  if (binfo == error_mark_node)
+    return NULL_TREE;
+  else if (!binfo)
+    error_not_base_type (base, type);
+  return binfo;
 }
 
 /* According to ARM $7.1.6, "A `const' object may be initialized, but its
@@ -1003,6 +999,8 @@ build_scoped_ref (datum, basetype)
     return error_mark_node;
   binfo = lookup_base (TREE_TYPE (datum), basetype, ba_check, NULL);
 
+  if (binfo == error_mark_node)
+    return error_mark_node;
   if (!binfo)
     return error_not_base_type (TREE_TYPE (datum), basetype);
   
@@ -1145,8 +1143,9 @@ build_m_component_ref (datum, component)
       return error_mark_node;
     }
 
-  binfo = get_binfo (TYPE_METHOD_BASETYPE (type), objtype, 1);
-  if (binfo == NULL_TREE)
+  binfo = lookup_base (objtype, TYPE_METHOD_BASETYPE (type),
+		       ba_check, NULL);
+  if (!binfo)
     {
       cp_error ("member type `%T::' incompatible with object type `%T'",
 		TYPE_METHOD_BASETYPE (type), objtype);

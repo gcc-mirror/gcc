@@ -787,7 +787,7 @@ standard_conversion (to, from, expr)
 	{
 	  tree fbase = TYPE_OFFSET_BASETYPE (TREE_TYPE (from));
 	  tree tbase = TYPE_OFFSET_BASETYPE (TREE_TYPE (to));
-	  tree binfo = get_binfo (fbase, tbase, 1);
+	  tree binfo = lookup_base (tbase, fbase, ba_check, NULL);
 
 	  if (binfo && !binfo_from_vbase (binfo)
 	      && (same_type_ignoring_top_level_qualifiers_p
@@ -835,7 +835,7 @@ standard_conversion (to, from, expr)
       tree tofn = TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (to));
       tree fbase = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fromfn)));
       tree tbase = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (tofn)));
-      tree binfo = get_binfo (fbase, tbase, 1);
+      tree binfo = lookup_base (tbase, fbase, ba_check, NULL);
 
       if (!binfo || binfo_from_vbase (binfo)
 	  || !same_type_p (TREE_TYPE (fromfn), TREE_TYPE (tofn))
