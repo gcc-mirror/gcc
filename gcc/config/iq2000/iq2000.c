@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on Vitesse IQ2000 processors
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -163,9 +163,14 @@ static struct machine_function* iq2000_init_machine_status (void);
 static void iq2000_select_rtx_section (enum machine_mode, rtx, unsigned HOST_WIDE_INT);
 static void iq2000_init_builtins      (void);
 static rtx  iq2000_expand_builtin     (tree, rtx, rtx, enum machine_mode, int);
+static bool iq2000_return_in_memory   (tree, tree);
+static void iq2000_setup_incoming_varargs (CUMULATIVE_ARGS *,
+					   enum machine_mode, tree, int *,
+					   int);
 static bool iq2000_rtx_costs          (rtx, int, int, int *);
 static int  iq2000_address_cost       (rtx);
 static void iq2000_select_section     (tree, int, unsigned HOST_WIDE_INT);
+static bool iq2000_return_in_memory   (tree, tree);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -179,6 +184,23 @@ static void iq2000_select_section     (tree, int, unsigned HOST_WIDE_INT);
 #define TARGET_ADDRESS_COST		iq2000_address_cost
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION	iq2000_select_section
+
+#undef  TARGET_PROMOTE_FUNCTION_ARGS
+#define TARGET_PROMOTE_FUNCTION_ARGS	hook_bool_tree_true
+#undef  TARGET_PROMOTE_FUNCTION_RETURN
+#define TARGET_PROMOTE_FUNCTION_RETURN	hook_bool_tree_true
+#undef  TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES	hook_bool_tree_true
+
+#undef  TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX		hook_rtx_tree_int_null
+#undef  TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY		iq2000_return_in_memory
+
+#undef  TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS	iq2000_setup_incoming_varargs
+#undef  TARGET_STRICT_ARGUMENT_NAMING
+#define TARGET_STRICT_ARGUMENT_NAMING	hook_bool_CUMULATIVE_ARGS_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2642,8 +2664,8 @@ iq2000_function_value (tree valtype, tree func ATTRIBUTE_UNUSED)
   enum machine_mode mode = TYPE_MODE (valtype);
   int unsignedp = TREE_UNSIGNED (valtype);
 
-  /* Since we define PROMOTE_FUNCTION_RETURN, we must promote the mode
-     just as PROMOTE_MODE does.  */
+  /* Since we define TARGET_PROMOTE_FUNCTION_RETURN that returns true,
+     we must promote the mode just as PROMOTE_MODE does.  */
   mode = promote_mode (valtype, mode, &unsignedp, 1);
 
   return gen_rtx_REG (mode, reg);
@@ -3262,20 +3284,28 @@ iq2000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   return NULL_RTX;
 }
 
-void
-iq2000_setup_incoming_varargs (CUMULATIVE_ARGS cum, int mode ATTRIBUTE_UNUSED,
+static bool
+iq2000_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return ((int_size_in_bytes (type) > (2 * UNITS_PER_WORD))
+	  || (int_size_in_bytes (type) == -1));
+}
+
+static void
+iq2000_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+			       enum machine_mode mode ATTRIBUTE_UNUSED,
 			       tree type ATTRIBUTE_UNUSED, int * pretend_size,
 			       int no_rtl)
 {
-  unsigned int iq2000_off = (! (cum).last_arg_fp); 
-  unsigned int iq2000_fp_off = ((cum).last_arg_fp); 
+  unsigned int iq2000_off = ! cum->last_arg_fp; 
+  unsigned int iq2000_fp_off = cum->last_arg_fp; 
 
-  if (((cum).arg_words < MAX_ARGS_IN_REGISTERS - iq2000_off))
+  if ((cum->arg_words < MAX_ARGS_IN_REGISTERS - iq2000_off))
     {
       int iq2000_save_gp_regs 
-	= MAX_ARGS_IN_REGISTERS - (cum).arg_words - iq2000_off; 
+	= MAX_ARGS_IN_REGISTERS - cum->arg_words - iq2000_off; 
       int iq2000_save_fp_regs 
-        = (MAX_ARGS_IN_REGISTERS - (cum).fp_arg_words - iq2000_fp_off); 
+        = (MAX_ARGS_IN_REGISTERS - cum->fp_arg_words - iq2000_fp_off); 
 
       if (iq2000_save_gp_regs < 0) 
 	iq2000_save_gp_regs = 0; 
@@ -3287,7 +3317,7 @@ iq2000_setup_incoming_varargs (CUMULATIVE_ARGS cum, int mode ATTRIBUTE_UNUSED,
 
       if (! (no_rtl)) 
 	{
-	  if ((cum).arg_words < MAX_ARGS_IN_REGISTERS - iq2000_off) 
+	  if (cum->arg_words < MAX_ARGS_IN_REGISTERS - iq2000_off) 
 	    {
 	      rtx ptr, mem; 
 	      ptr = plus_constant (virtual_incoming_args_rtx, 
@@ -3295,7 +3325,7 @@ iq2000_setup_incoming_varargs (CUMULATIVE_ARGS cum, int mode ATTRIBUTE_UNUSED,
 				      * UNITS_PER_WORD)); 
 	      mem = gen_rtx_MEM (BLKmode, ptr); 
 	      move_block_from_reg 
-		((cum).arg_words + GP_ARG_FIRST + iq2000_off, 
+		(cum->arg_words + GP_ARG_FIRST + iq2000_off, 
 		 mem, 
 		 iq2000_save_gp_regs);
 	    } 
