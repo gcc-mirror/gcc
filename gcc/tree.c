@@ -897,6 +897,63 @@ init_tree_codes ()
   ggc_add_string_root (&built_in_filename, 1);
 }
 
+/* Compute the number of bytes occupied by 'node'.  This routine only
+   looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */
+size_t
+tree_size (node)
+     tree node;
+{
+  enum tree_code code = TREE_CODE (node);
+
+  switch (TREE_CODE_CLASS (code))
+    {
+    case 'd':  /* A decl node */
+      return sizeof (struct tree_decl);
+
+    case 't':  /* a type node */
+      return sizeof (struct tree_type);
+
+    case 'b':  /* a lexical block node */
+      return sizeof (struct tree_block);
+
+    case 'r':  /* a reference */
+    case 'e':  /* an expression */
+    case 's':  /* an expression with side effects */
+    case '<':  /* a comparison expression */
+    case '1':  /* a unary arithmetic expression */
+    case '2':  /* a binary arithmetic expression */
+      return (sizeof (struct tree_exp)
+	      + (TREE_CODE_LENGTH (code) - 1) * sizeof (char *));
+
+    case 'c':  /* a constant */
+      /* We can't use TREE_CODE_LENGTH for INTEGER_CST, since the number of
+	 words is machine-dependent due to varying length of HOST_WIDE_INT,
+	 which might be wider than a pointer (e.g., long long).  Similarly
+	 for REAL_CST, since the number of words is machine-dependent due
+	 to varying size and alignment of `double'.  */
+      if (code == INTEGER_CST)
+	return sizeof (struct tree_int_cst);
+      else if (code == REAL_CST)
+	return sizeof (struct tree_real_cst);
+      else
+	return (sizeof (struct tree_common)
+		+ TREE_CODE_LENGTH (code) * sizeof (char *));
+
+    case 'x':  /* something random, like an identifier.  */
+      {
+	  size_t length;
+	  length = (sizeof (struct tree_common)
+		    + TREE_CODE_LENGTH (code) * sizeof (char *));
+	  if (code == TREE_VEC)
+	    length += (TREE_VEC_LENGTH (node) - 1) * sizeof (char *);
+	  return length;
+      }
+
+    default:
+      abort ();
+    }
+}
+
 /* Return a newly allocated node of code CODE.
    Initialize the node's unique id and its TREE_PERMANENT flag.
    Note that if garbage collection is in use, TREE_PERMANENT will
@@ -912,117 +969,55 @@ make_node (code)
 {
   register tree t;
   register int type = TREE_CODE_CLASS (code);
-  register int length = 0;
-  register struct obstack *obstack = current_obstack;
+  register size_t length;
 #ifdef GATHER_STATISTICS
   register tree_node_kind kind;
 #endif
+  struct tree_common ttmp;
+  
+  /* We can't allocate a TREE_VEC without knowing how many elements
+     it will have.  */
+  if (code == TREE_VEC)
+    abort ();
+  
+  TREE_SET_CODE ((tree)&ttmp, code);
+  length = tree_size ((tree)&ttmp);
 
+#ifdef GATHER_STATISTICS
   switch (type)
     {
     case 'd':  /* A decl node */
-#ifdef GATHER_STATISTICS
       kind = d_kind;
-#endif
-      length = sizeof (struct tree_decl);
-      /* All decls in an inline function need to be saved.  */
-      if (obstack != &permanent_obstack)
-	obstack = saveable_obstack;
-
-      /* PARM_DECLs go on the context of the parent. If this is a nested
-	 function, then we must allocate the PARM_DECL on the parent's
-	 obstack, so that they will live to the end of the parent's
-	 closing brace.  This is necessary in case we try to inline the
-	 function into its parent.
-
-	 PARM_DECLs of top-level functions do not have this problem.  However,
-	 we allocate them where we put the FUNCTION_DECL for languages such as
-	 Ada that need to consult some flags in the PARM_DECLs of the function
-	 when calling it.
-
-	 See comment in restore_tree_status for why we can't put this
-	 in function_obstack.  */
-      if (code == PARM_DECL && obstack != &permanent_obstack)
-	{
-	  tree context = 0;
-	  if (current_function_decl)
-	    context = decl_function_context (current_function_decl);
-
-	  if (context)
-	    obstack
-	      = find_function_data (context)->function_maybepermanent_obstack;
-	}
       break;
 
     case 't':  /* a type node */
-#ifdef GATHER_STATISTICS
       kind = t_kind;
-#endif
-      length = sizeof (struct tree_type);
-      /* All data types are put where we can preserve them if nec.  */
-      if (obstack != &permanent_obstack)
-	obstack = all_types_permanent ? &permanent_obstack : saveable_obstack;
       break;
 
     case 'b':  /* a lexical block */
-#ifdef GATHER_STATISTICS
       kind = b_kind;
-#endif
-      length = sizeof (struct tree_block);
-      /* All BLOCK nodes are put where we can preserve them if nec.  */
-      if (obstack != &permanent_obstack)
-	obstack = saveable_obstack;
       break;
 
     case 's':  /* an expression with side effects */
-#ifdef GATHER_STATISTICS
       kind = s_kind;
-      goto usual_kind;
-#endif
+      break;
+
     case 'r':  /* a reference */
-#ifdef GATHER_STATISTICS
       kind = r_kind;
-      goto usual_kind;
-#endif
+      break;
+
     case 'e':  /* an expression */
     case '<':  /* a comparison expression */
     case '1':  /* a unary arithmetic expression */
     case '2':  /* a binary arithmetic expression */
-#ifdef GATHER_STATISTICS
       kind = e_kind;
-    usual_kind:
-#endif
-      obstack = expression_obstack;
-      /* All BIND_EXPR nodes are put where we can preserve them if nec.  */
-      if (code == BIND_EXPR && obstack != &permanent_obstack)
-	obstack = saveable_obstack;
-      length = sizeof (struct tree_exp)
-	+ (TREE_CODE_LENGTH (code) - 1) * sizeof (char *);
       break;
 
     case 'c':  /* a constant */
-#ifdef GATHER_STATISTICS
       kind = c_kind;
-#endif
-      obstack = expression_obstack;
-
-      /* We can't use TREE_CODE_LENGTH for INTEGER_CST, since the number of
-	 words is machine-dependent due to varying length of HOST_WIDE_INT,
-	 which might be wider than a pointer (e.g., long long).  Similarly
-	 for REAL_CST, since the number of words is machine-dependent due
-	 to varying size and alignment of `double'.  */
-
-      if (code == INTEGER_CST)
-	length = sizeof (struct tree_int_cst);
-      else if (code == REAL_CST)
-	length = sizeof (struct tree_real_cst);
-      else
-	length = sizeof (struct tree_common)
-	  + TREE_CODE_LENGTH (code) * sizeof (char *);
       break;
 
     case 'x':  /* something random, like an identifier.  */
-#ifdef GATHER_STATISTICS
       if (code == IDENTIFIER_NODE)
 	kind = id_kind;
       else if (code == OP_IDENTIFIER)
@@ -1031,29 +1026,19 @@ make_node (code)
 	kind = vec_kind;
       else
 	kind = x_kind;
-#endif
-      length = sizeof (struct tree_common)
-	+ TREE_CODE_LENGTH (code) * sizeof (char *);
-      /* Identifier nodes are always permanent since they are
-	 unique in a compiler run.  */
-      if (code == IDENTIFIER_NODE) obstack = &permanent_obstack;
       break;
 
     default:
       abort ();
     }
 
-  if (ggc_p)
-    t = ggc_alloc_tree (length);
-  else
-    t = (tree) obstack_alloc (obstack, length);
-
-  memset ((PTR) t, 0, length);
-
-#ifdef GATHER_STATISTICS
   tree_node_counts[(int) kind]++;
   tree_node_sizes[(int) kind] += length;
 #endif
+
+  t = ggc_alloc_tree (length);
+
+  memset ((PTR) t, 0, length);
 
   TREE_SET_CODE (t, code);
   TREE_SET_PERMANENT (t);
@@ -1084,7 +1069,6 @@ make_node (code)
       TYPE_ALIGN (t) = 1;
       TYPE_USER_ALIGN (t) = 0;
       TYPE_MAIN_VARIANT (t) = t;
-      TYPE_OBSTACK (t) = obstack;
       TYPE_ATTRIBUTES (t) = NULL_TREE;
 #ifdef SET_DEFAULT_TYPE_ATTRIBUTES
       SET_DEFAULT_TYPE_ATTRIBUTES (t);
@@ -1150,54 +1134,9 @@ copy_node (node)
 {
   register tree t;
   register enum tree_code code = TREE_CODE (node);
-  register int length = 0;
+  register size_t length;
 
-  switch (TREE_CODE_CLASS (code))
-    {
-    case 'd':  /* A decl node */
-      length = sizeof (struct tree_decl);
-      break;
-
-    case 't':  /* a type node */
-      length = sizeof (struct tree_type);
-      break;
-
-    case 'b':  /* a lexical block node */
-      length = sizeof (struct tree_block);
-      break;
-
-    case 'r':  /* a reference */
-    case 'e':  /* an expression */
-    case 's':  /* an expression with side effects */
-    case '<':  /* a comparison expression */
-    case '1':  /* a unary arithmetic expression */
-    case '2':  /* a binary arithmetic expression */
-      length = sizeof (struct tree_exp)
-	+ (TREE_CODE_LENGTH (code) - 1) * sizeof (char *);
-      break;
-
-    case 'c':  /* a constant */
-      /* We can't use TREE_CODE_LENGTH for INTEGER_CST, since the number of
-	 words is machine-dependent due to varying length of HOST_WIDE_INT,
-	 which might be wider than a pointer (e.g., long long).  Similarly
-	 for REAL_CST, since the number of words is machine-dependent due
-	 to varying size and alignment of `double'.  */
-      if (code == INTEGER_CST)
-	length = sizeof (struct tree_int_cst);
-      else if (code == REAL_CST)
-	length = sizeof (struct tree_real_cst);
-      else
-	length = (sizeof (struct tree_common)
-		  + TREE_CODE_LENGTH (code) * sizeof (char *));
-      break;
-
-    case 'x':  /* something random, like an identifier.  */
-      length = sizeof (struct tree_common)
-	+ TREE_CODE_LENGTH (code) * sizeof (char *);
-      if (code == TREE_VEC)
-	length += (TREE_VEC_LENGTH (node) - 1) * sizeof (char *);
-    }
-
+  length = tree_size (node);
   if (ggc_p)
     t = ggc_alloc_tree (length);
   else
