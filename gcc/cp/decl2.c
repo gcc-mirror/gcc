@@ -2794,7 +2794,7 @@ finish_file ()
   int start_time, this_time;
 
   tree fnname;
-  tree vars = static_aggregates;
+  tree vars;
   int needs_cleaning = 0, needs_messing_up = 0;
 
   if (flag_detailed_statistics)
@@ -2809,27 +2809,6 @@ finish_file ()
   /* Push into C language context, because that's all
      we'll need here.  */
   push_lang_context (lang_name_c);
-
-  if (static_ctors || vars || might_have_exceptions_p ())
-    needs_messing_up = 1;
-  if (static_dtors)
-    needs_cleaning = 1;
-
-  /* See if we really need the hassle.  */
-  while (vars && needs_cleaning == 0)
-    {
-      tree decl = TREE_VALUE (vars);
-      tree type = TREE_TYPE (decl);
-      if (TYPE_NEEDS_DESTRUCTOR (type))
-	{
-	  needs_cleaning = 1;
-	  needs_messing_up = 1;
-	  break;
-	}
-      else
-	needs_messing_up |= TYPE_NEEDS_CONSTRUCTING (type);
-      vars = TREE_CHAIN (vars);
-    }
 
   /* Otherwise, GDB can get confused, because in only knows
      about source for LINENO-1 lines.  */
@@ -2866,6 +2845,29 @@ finish_file ()
   /* Walk to mark the inline functions we need, then output them so
      that we can pick up any other tdecls that those routines need. */
   walk_vtables ((void (*)())0, finish_prevtable_vardecl);
+
+  vars = static_aggregates;
+
+  if (static_ctors || vars || might_have_exceptions_p ())
+    needs_messing_up = 1;
+  if (static_dtors)
+    needs_cleaning = 1;
+
+  /* See if we really need the hassle.  */
+  while (vars && needs_cleaning == 0)
+    {
+      tree decl = TREE_VALUE (vars);
+      tree type = TREE_TYPE (decl);
+      if (TYPE_NEEDS_DESTRUCTOR (type))
+	{
+	  needs_cleaning = 1;
+	  needs_messing_up = 1;
+	  break;
+	}
+      else
+	needs_messing_up |= TYPE_NEEDS_CONSTRUCTING (type);
+      vars = TREE_CHAIN (vars);
+    }
 
   if (needs_cleaning == 0)
     goto mess_up;
@@ -3101,7 +3103,7 @@ finish_file ()
 	    if (DECL_ARTIFICIAL (decl) && ! DECL_INITIAL (decl))
 	      {
 		if (TREE_USED (decl)
-		    || (TREE_PUBLIC (decl) && ! DECL_EXTERNAL (decl)))
+		    || (TREE_PUBLIC (decl) && DECL_NOT_REALLY_EXTERN (decl)))
 		  synthesize_method (decl);
 		else
 		  {

@@ -691,7 +691,7 @@ prepare_fresh_vtable (binfo, for_type)
   if (flag_rtti)
     TREE_VALUE (BINFO_VIRTUALS (binfo))
       = build_vtable_entry (size_binop (MINUS_EXPR, integer_zero_node, offset),
-	    FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (BINFO_VIRTUALS (binfo))));
+			    build_t_desc (for_type, 0));
 
 #ifdef GATHER_STATISTICS
   n_vtables += 1;
@@ -2115,7 +2115,7 @@ finish_vtbls (binfo, do_self, t)
 	{
 	  base_binfo = binfo_member (BINFO_TYPE (base_binfo), CLASSTYPE_VBASECLASSES (t));
 	}
-      finish_vtbls (base_binfo, (is_not_base_vtable || flag_rtti), t);
+      finish_vtbls (base_binfo, is_not_base_vtable, t);
     }
 }
 
@@ -2250,11 +2250,6 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	  if (! BINFO_NEW_VTABLE_MARKED (binfo))
 	    prepare_fresh_vtable (binfo, t);
 	}
-      old_rtti = get_vtable_entry_n (BINFO_VIRTUALS (binfo), 0);
-      if (old_rtti)
-	TREE_VALUE (old_rtti) = build_vtable_entry (
-	DELTA_FROM_VTABLE_ENTRY (TREE_VALUE (old_rtti)), 
-        build_t_desc (t, 0));
     }
   if (fndecl == NULL_TREE) return;
 
@@ -2343,7 +2338,7 @@ modify_all_direct_vtables (binfo, do_self, t, fndecl, pfn)
       int is_not_base_vtable =
 	i != CLASSTYPE_VFIELD_PARENT (BINFO_TYPE (binfo));
       if (! TREE_VIA_VIRTUAL (base_binfo))
-	modify_all_direct_vtables (base_binfo, (is_not_base_vtable || flag_rtti), t, fndecl, pfn);
+	modify_all_direct_vtables (base_binfo, is_not_base_vtable, t, fndecl, pfn);
     }
 }
 
@@ -3794,8 +3789,12 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
 	  /* Update the rtti pointer for this class.  */
 	  if (flag_rtti)
-	    TREE_VALUE (TYPE_BINFO_VIRTUALS (t))
-	      = build_vtable_entry (integer_zero_node, build_t_desc (t, 0));
+	    {
+	      tree offset = get_derived_offset (TYPE_BINFO (t), NULL_TREE);
+	      offset = size_binop (MINUS_EXPR, integer_zero_node, offset);
+	      TREE_VALUE (TYPE_BINFO_VIRTUALS (t))
+		= build_vtable_entry (offset, build_t_desc (t, 0));
+	    }
 	}
 
       /* If this type has basetypes with constructors, then those

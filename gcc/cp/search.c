@@ -2427,8 +2427,7 @@ dfs_debug_mark (binfo)
       while (methods)
 	{
 	  if (DECL_VINDEX (methods)
-	      && DECL_SAVED_INSNS (methods) == 0
-	      && DECL_PENDING_INLINE_INFO (methods) == 0
+	      && DECL_THIS_INLINE (methods) == 0
 	      && DECL_ABSTRACT_VIRTUAL_P (methods) == 0)
 	    {
 	      /* Somebody, somewhere is going to have to define this

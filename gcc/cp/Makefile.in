@@ -247,7 +247,7 @@ pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(PARSE_H)
 error.o : error.c $(CONFIG_H) $(CXX_TREE_H)
 errfn.o : errfn.c $(CONFIG_H) $(CXX_TREE_H)
 sig.o : sig.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h
-repo.o : repo.c $(CONFIG.H) $(CXX_TREE_H)
+repo.o : repo.c $(CONFIG_H) $(CXX_TREE_H)
 
 # These exist for maintenance purposes.
 

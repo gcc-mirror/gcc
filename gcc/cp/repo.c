@@ -79,6 +79,19 @@ repo_class_defined (t)
      tree t;
 {}
 
+tree
+repo_get_id (t)
+     tree t;
+{
+  if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
+    {
+      t = TYPE_BINFO_VTABLE (t);
+      if (t == NULL_TREE)
+	return t;
+    }
+  return DECL_ASSEMBLER_NAME (t);
+}
+
 /* Note that a template has been used.  If we can see the definition, offer
    to emit it. */
 
@@ -91,18 +104,17 @@ repo_template_used (t)
   if (! flag_use_repository)
     return;
 
+  id = repo_get_id (t);
+  if (id == NULL_TREE)
+    return;
+  
   if (TREE_CODE_CLASS (TREE_CODE (t)) == 't')
     {
-      id = TYPE_BINFO_VTABLE (t);
-      if (id == NULL_TREE)
-	return;
-      id = DECL_ASSEMBLER_NAME (id);
       if (IDENTIFIER_REPO_CHOSEN (id))
 	mark_class_instantiated (t, 0);
     }
   else if (TREE_CODE_CLASS (TREE_CODE (t)) == 'd')
     {
-      id = DECL_ASSEMBLER_NAME (t);
       if (IDENTIFIER_REPO_CHOSEN (id))
 	mark_function_instantiated (t, 0);
     }
@@ -155,6 +167,19 @@ void
 repo_tinfo_used (ti)
      tree ti;
 {
+}
+
+void
+repo_template_instantiated (t, extern_p)
+     tree t;
+     int extern_p;
+{
+  if (! extern_p)
+    {
+      tree id = repo_get_id (t);
+      if (id)
+	IDENTIFIER_REPO_CHOSEN (id) = 1;
+    }
 }
 
 static char *
@@ -270,15 +295,21 @@ init_repo (filename)
 	case 'O':
 	  {
 	    char *q;
-	    tree id;
+	    tree id, orig;
 
 	    for (q = &buf[2]; *q && *q != ' ' && *q != '\n'; ++q) ;
 	    q = save_string (&buf[2], q - &buf[2]);
 	    id = get_identifier (q);
 
 	    if (buf[0] == 'C')
-	      IDENTIFIER_REPO_CHOSEN (id) = 1;
-	    original_repo = perm_tree_cons (NULL_TREE, id, original_repo);
+	      {
+		IDENTIFIER_REPO_CHOSEN (id) = 1;
+		orig = integer_one_node;
+	      }
+	    else
+	      orig = NULL_TREE;
+
+	    original_repo = perm_tree_cons (orig, id, original_repo);
 	  }
 	  break;
 	default:
@@ -315,11 +346,13 @@ finish_repo ()
 
   /* Do we have to write out a new info file?  */
 
-  /* Are there any old templates that aren't used any longer?  */
+  /* Are there any old templates that aren't used any longer or that are
+     newly chosen?  */
   
   for (t = original_repo; t; t = TREE_CHAIN (t))
     {
-      if (! IDENTIFIER_REPO_USED (TREE_VALUE (t)))
+      if (! IDENTIFIER_REPO_USED (TREE_VALUE (t))
+	  || (! TREE_PURPOSE (t) && IDENTIFIER_REPO_CHOSEN (TREE_VALUE (t))))
 	{
 	  repo_changed = 1;
 	  break;
