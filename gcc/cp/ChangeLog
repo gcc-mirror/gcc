@@ -1,5 +1,9 @@
 1999-11-15  Jason Merrill  <jason@casey.cygnus.com>
 
+	* cp-tree.h, decl.c (compute_array_index_type): Make nonstatic.
+	* pt.c (tsubst, case INTEGER_TYPE): Call it.  
+	Check uses_template_parms.
+
 	* class.c (finish_struct): If we're a local class in a template
 	function, add a TAG_DEFN.
 	* pt.c (lookup_template_class): If this is a local class in a

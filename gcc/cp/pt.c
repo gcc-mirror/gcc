@@ -6179,8 +6179,11 @@ tsubst (t, args, complain, in_decl)
 	    /* When providing explicit arguments to a template
 	       function, but leaving some arguments for subsequent
 	       deduction, MAX may be template-dependent even if we're
-	       not PROCESSING_TEMPLATE_DECL.  */
-	    || TREE_CODE (max) != INTEGER_CST)
+	       not PROCESSING_TEMPLATE_DECL.  We still need to check for
+	       template parms, though; MAX won't be an INTEGER_CST for
+	       dynamic arrays, either.  */
+	    || (TREE_CODE (max) != INTEGER_CST
+		&& uses_template_parms (max)))
 	  {
 	    tree itype = make_node (INTEGER_TYPE);
 	    TYPE_MIN_VALUE (itype) = size_zero_node;
@@ -6210,8 +6213,7 @@ tsubst (t, args, complain, in_decl)
 	    return error_mark_node;
 	  }
 
-	max = fold (build_binary_op (MINUS_EXPR, max, integer_one_node));
-	return build_index_type (max);
+	return compute_array_index_type (NULL_TREE, max);
       }
 
     case TEMPLATE_TYPE_PARM:
