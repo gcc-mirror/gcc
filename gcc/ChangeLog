@@ -1,4 +1,8 @@
 2002-10-14  Roger Sayle  <roger@eyesopen.com>
+
+	* combine.c (simplify_set):  Treat MODE_CC registers like cc0.
+
+2002-10-14  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg <zack@codesourcery.com>
 
 	* config/i386/i386.c (k6_cost): Correct typo.

@@ -5021,11 +5021,9 @@ simplify_set (x)
   /* If we are setting CC0 or if the source is a COMPARE, look for the use of
      the comparison result and try to simplify it unless we already have used
      undobuf.other_insn.  */
-  if ((GET_CODE (src) == COMPARE
-#ifdef HAVE_cc0
-       || dest == cc0_rtx
-#endif
-       )
+  if ((GET_MODE_CLASS (mode) == MODE_CC
+       || GET_CODE (src) == COMPARE
+       || CC0_P (dest))
       && (cc_use = find_single_use (dest, subst_insn, &other_insn)) != 0
       && (undobuf.other_insn == 0 || other_insn == undobuf.other_insn)
       && GET_RTX_CLASS (GET_CODE (*cc_use)) == '<'
