@@ -1,3 +1,8 @@
+2002-02-15  Richard Sandiford  <rsandifo@redhat.com>
+
+	* reload.c (find_dummy_reload): Check that an output register
+	is valid for its mode.
+
 2002-02-14  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (known_cond): After replacing the REG of a SUBREG, try

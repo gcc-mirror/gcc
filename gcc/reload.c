@@ -1879,6 +1879,7 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
       *inloc = const0_rtx;
 
       if (regno < FIRST_PSEUDO_REGISTER
+	  && HARD_REGNO_MODE_OK (regno, outmode)
 	  && ! refers_to_regno_for_reload_p (regno, regno + nwords,
 					     PATTERN (this_insn), outloc))
 	{
