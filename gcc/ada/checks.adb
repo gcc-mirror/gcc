@@ -5775,7 +5775,17 @@ package body Checks is
             return Get_Discriminal (E, Bound);
 
          elsif Nkind (Bound) = N_Integer_Literal then
-            return  Make_Integer_Literal (Loc, Intval (Bound));
+            return Make_Integer_Literal (Loc, Intval (Bound));
+
+         --  Case of a bound that has been rewritten to an
+         --  N_Raise_Constraint_Error node because it is an out-of-range
+         --  value. We may not call Duplicate_Subexpr on this node because
+         --  an N_Raise_Constraint_Error is not side effect free, and we may
+         --  not assume that we are in the proper context to remove side
+         --  effects on it at the point of reference.
+
+         elsif Nkind (Bound) = N_Raise_Constraint_Error then
+            return New_Copy_Tree (Bound);
 
          else
             return Duplicate_Subexpr_No_Checks (Bound);
