@@ -1,5 +1,20 @@
 2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-tree.h (flag_hosted): Move declaration from here...
+	* c-common.h (flag_hosted): ... to here.
+	(flag_noniso_default_format_attributes): New declaration.
+	* c-decl.c (flag_noniso_default_format_attributes): New variable.
+	(c_decode_option): Set it appropriately for options choosing
+	language standard variant.
+	* c-common.c (init_function_format_info): Only provide default
+	format attributes if flag_hosted.  Only provide the gettext
+	formats if flag_noniso_default_format_attributes.  Update
+	comments.
+	(check_format_info): Disable treatment of %a as a scanf flag in
+	C99 mode.
+
+2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-common.c (scan_char_table): Add 'w' to flags for all formats
 	except 'n'.
 	(check_format_info): Set 'wide' for scanf format widths.  Warn for

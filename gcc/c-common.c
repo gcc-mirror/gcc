@@ -1325,11 +1325,13 @@ static international_format_info *international_format_list = NULL;
 static void check_format_info	PARAMS ((function_format_info *, tree));
 
 /* Initialize the table of functions to perform format checking on.
-   The ANSI functions are always checked (whether <stdio.h> is
+   The ISO C functions are always checked (whether <stdio.h> is
    included or not), since it is common to call printf without
    including <stdio.h>.  There shouldn't be a problem with this,
-   since ANSI reserves these function names whether you include the
-   header file or not.  In any case, the checking is harmless.
+   since ISO C reserves these function names whether you include the
+   header file or not.  In any case, the checking is harmless.  With
+   -ffreestanding, these default attributes are disabled, and must be
+   specified manually if desired.
 
    Also initialize the name of function that modify the format string for
    internationalization purposes.  */
@@ -1337,28 +1339,32 @@ static void check_format_info	PARAMS ((function_format_info *, tree));
 void
 init_function_format_info ()
 {
-  record_function_format (get_identifier ("printf"), NULL_TREE,
-			  printf_format_type, 1, 2);
-  record_function_format (get_identifier ("fprintf"), NULL_TREE,
-			  printf_format_type, 2, 3);
-  record_function_format (get_identifier ("sprintf"), NULL_TREE,
-			  printf_format_type, 2, 3);
-  record_function_format (get_identifier ("scanf"), NULL_TREE,
-			  scanf_format_type, 1, 2);
-  record_function_format (get_identifier ("fscanf"), NULL_TREE,
-			  scanf_format_type, 2, 3);
-  record_function_format (get_identifier ("sscanf"), NULL_TREE,
-			  scanf_format_type, 2, 3);
-  record_function_format (get_identifier ("vprintf"), NULL_TREE,
-			  printf_format_type, 1, 0);
-  record_function_format (get_identifier ("vfprintf"), NULL_TREE,
-			  printf_format_type, 2, 0);
-  record_function_format (get_identifier ("vsprintf"), NULL_TREE,
-			  printf_format_type, 2, 0);
-  record_function_format (get_identifier ("strftime"), NULL_TREE,
-			  strftime_format_type, 3, 0);
+  if (flag_hosted)
+    {
+      /* Functions from ISO/IEC 9899:1990.  */
+      record_function_format (get_identifier ("printf"), NULL_TREE,
+			      printf_format_type, 1, 2);
+      record_function_format (get_identifier ("fprintf"), NULL_TREE,
+			      printf_format_type, 2, 3);
+      record_function_format (get_identifier ("sprintf"), NULL_TREE,
+			      printf_format_type, 2, 3);
+      record_function_format (get_identifier ("scanf"), NULL_TREE,
+			      scanf_format_type, 1, 2);
+      record_function_format (get_identifier ("fscanf"), NULL_TREE,
+			      scanf_format_type, 2, 3);
+      record_function_format (get_identifier ("sscanf"), NULL_TREE,
+			      scanf_format_type, 2, 3);
+      record_function_format (get_identifier ("vprintf"), NULL_TREE,
+			      printf_format_type, 1, 0);
+      record_function_format (get_identifier ("vfprintf"), NULL_TREE,
+			      printf_format_type, 2, 0);
+      record_function_format (get_identifier ("vsprintf"), NULL_TREE,
+			      printf_format_type, 2, 0);
+      record_function_format (get_identifier ("strftime"), NULL_TREE,
+			      strftime_format_type, 3, 0);
+    }
 
-  if (flag_isoc99)
+  if (flag_hosted && flag_isoc99)
     {
       /* ISO C99 adds the snprintf and vscanf family functions.  */
       record_function_format (get_identifier ("snprintf"), NULL_TREE,
@@ -1373,9 +1379,13 @@ init_function_format_info ()
 			      scanf_format_type, 2, 0);
     }
 
-  record_international_format (get_identifier ("gettext"), NULL_TREE, 1);
-  record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
-  record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
+  if (flag_hosted && flag_noniso_default_format_attributes)
+    {
+      /* Uniforum/GNU gettext functions, not in ISO C.  */
+      record_international_format (get_identifier ("gettext"), NULL_TREE, 1);
+      record_international_format (get_identifier ("dgettext"), NULL_TREE, 2);
+      record_international_format (get_identifier ("dcgettext"), NULL_TREE, 2);
+    }
 }
 
 /* Record information for argument format checking.  FUNCTION_IDENT is
@@ -1872,7 +1882,8 @@ check_format_info (info, params)
 	      if (pedantic && !flag_isoc99)
 		warning ("ISO C89 does not support the `hh' length modifier");
 	    }
-	  if (*format_chars == 'a' && info->format_type == scanf_format_type)
+	  if (*format_chars == 'a' && info->format_type == scanf_format_type
+	      && !flag_isoc99)
 	    {
 	      if (format_chars[1] == 's' || format_chars[1] == 'S'
 		  || format_chars[1] == '[')
