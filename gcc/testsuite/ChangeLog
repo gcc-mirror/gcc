@@ -1,3 +1,9 @@
+2004-10-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18095
+	* g++.dg/parse/crash18.C: New.
+	* g++.dg/parse/crash19.C: New.
+
 2004-10-22  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
 
 	* g++.dg/ext/dllimport1.C: Move dg-warnings.
