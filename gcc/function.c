@@ -3936,7 +3936,7 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
       offset_ptr->constant = - initial_offset_ptr->constant;
       offset_ptr->var = 0;
     }
-  if (where_pad == upward
+  if (where_pad != none
       && (TREE_CODE (sizetree) != INTEGER_CST
 	  || ((TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)))
     sizetree = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
@@ -3956,9 +3956,6 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
       arg_size_ptr->constant = (- initial_offset_ptr->constant -
 				offset_ptr->constant); 
     }
-/*  ADD_PARM_SIZE (*arg_size_ptr, sizetree); */
-  if (where_pad == downward)
-    pad_below (arg_size_ptr, passed_mode, sizetree);
 #else /* !ARGS_GROW_DOWNWARD */
   pad_to_arg_alignment (initial_offset_ptr, boundary);
   *offset_ptr = *initial_offset_ptr;
