@@ -84,6 +84,7 @@
    * use the constraints from asms
   */
 
+static int first_hard_reg (HARD_REG_SET);
 static struct obstack ra_obstack;
 static void create_insn_info (struct df *);
 static void free_insn_info (void);
@@ -147,6 +148,7 @@ int orig_max_uid;
 HARD_REG_SET never_use_colors;
 HARD_REG_SET usable_regs[N_REG_CLASSES];
 unsigned int num_free_regs[N_REG_CLASSES];
+int single_reg_in_regclass[N_REG_CLASSES];
 HARD_REG_SET hardregs_for_mode[NUM_MACHINE_MODES];
 HARD_REG_SET invalid_mode_change_regs;
 unsigned char byte2bitcount[256];
@@ -210,6 +212,19 @@ hard_regs_count (HARD_REG_SET rs)
     }
 #endif
   return count;
+}
+
+/* Returns the first hardreg in HARD_REG_SET RS. Assumes there is at
+   least one reg in the set.  */
+
+static int
+first_hard_reg (HARD_REG_SET rs)
+{
+  int c;
+  for (c = 0; c < FIRST_PSEUDO_REGISTER && !TEST_HARD_REG_BIT (rs, c); c++)
+  if (c == FIRST_PSEUDO_REGISTER)
+    abort();
+  return c;
 }
 
 /* Basically like emit_move_insn (i.e. validifies constants and such),
@@ -515,6 +530,10 @@ init_ra (void)
       size = hard_regs_count (rs);
       num_free_regs[i] = size;
       COPY_HARD_REG_SET (usable_regs[i], rs);
+      if (size == 1)
+	single_reg_in_regclass[i] = first_hard_reg (rs);
+      else
+	single_reg_in_regclass[i] = -1;
     }
 
   /* Setup hardregs_for_mode[].
