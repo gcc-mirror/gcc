@@ -3367,34 +3367,38 @@ h8300_adjust_insn_length (insn, length)
       else
 	addr = XEXP (SET_DEST (pat), 0);
 
-      /* On the H8/300, only one adjustment is necessary; if the
-	 address mode is register indirect, then this insn is two
-	 bytes shorter than indicated in the machine description.  */
-      if (TARGET_H8300 && GET_CODE (addr) == REG)
-	return -2;
+      if (TARGET_H8300)
+	{
+	  /* On the H8/300, we subtract the difference between the
+             actual length and the longest one, which is @(d:16,ERs).  */
 
-      /* On the H8/300H and H8/S, register indirect is 6 bytes shorter than
-	 indicated in the machine description.  */
-      if ((TARGET_H8300H || TARGET_H8300S)
-          && GET_CODE (addr) == REG)
-	return -6;
+	  /* @Rs is 2 bytes shorter than the longest.  */
+	  if (GET_CODE (addr) == REG)
+	    return -2;
+	}
+      else
+	{
+	  /* On the H8/300H and H8/S, we subtract the difference
+             between the actual length and the longest one, which is
+             @(d:24,ERs).  */
 
-      /* On the H8/300H and H8/S, reg + d, for small displacements is
-	 4 bytes shorter than indicated in the machine description.  */
-      if ((TARGET_H8300H || TARGET_H8300S)
-	  && GET_CODE (addr) == PLUS
-	  && GET_CODE (XEXP (addr, 0)) == REG
-	  && GET_CODE (XEXP (addr, 1)) == CONST_INT
-	  && INTVAL (XEXP (addr, 1)) > -32768
-	  && INTVAL (XEXP (addr, 1)) < 32767)
-	return -4;
+	  /* @ERs is 6 bytes shorter than the longest.  */
+	  if (GET_CODE (addr) == REG)
+	    return -6;
 
-      /* On the H8/300H and H8/S, abs:16 is two bytes shorter than the
-	 more general abs:24.  */
-      if ((TARGET_H8300H || TARGET_H8300S)
-	  && GET_CODE (addr) == SYMBOL_REF
-	  && TINY_DATA_NAME_P (XSTR (addr, 0)))
-	return -2;
+	  /* @(d:16,ERs) is 6 bytes shorter than the longest.  */
+	  if (GET_CODE (addr) == PLUS
+	      && GET_CODE (XEXP (addr, 0)) == REG
+	      && GET_CODE (XEXP (addr, 1)) == CONST_INT
+	      && INTVAL (XEXP (addr, 1)) > -32768
+	      && INTVAL (XEXP (addr, 1)) < 32767)
+	    return -4;
+
+	  /* @aa:16 is 2 bytes shorter than the longest.  */
+	  if (GET_CODE (addr) == SYMBOL_REF
+	      && TINY_DATA_NAME_P (XSTR (addr, 0)))
+	    return -2;
+	}
     }
 
   /* Loading some constants needs adjustment.  */

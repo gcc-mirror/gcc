@@ -1,3 +1,7 @@
+2002-03-01  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (h8300_adjust_insn_length): Clean up.
+
 Fri Mar  1 20:59:14 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Delete dead jumptables before
