@@ -863,7 +863,7 @@ main (argc, argv)
   putenv (xstrdup ("COLLECT_NO_DEMANGLE="));
 
 #if defined (COLLECT2_HOST_INITIALIZATION)
-  /* Perform system dependent initialization, if neccessary.  */
+  /* Perform system dependent initialization, if necessary.  */
   COLLECT2_HOST_INITIALIZATION;
 #endif
 

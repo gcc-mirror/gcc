@@ -68,7 +68,7 @@ struct insn_info
   struct df_link *defs;		/* Head of insn-def chain.  */
   struct df_link *uses;		/* Head of insn-use chain.  */
   /* ???? The following luid field should be considerd private so that
-     we can change it on the fly to accomodate new insns?  */
+     we can change it on the fly to accommodate new insns?  */
   int luid;			/* Logical UID.  */
 #if 0
   rtx insn;			/* Backpointer to the insn.  */

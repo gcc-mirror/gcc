@@ -5251,7 +5251,7 @@ delete_null_pointer_checks_1 (delete_list, block_reg, nonnull_avin,
 	      continue;
 	    }
 
-	  /* See if we've got a useable memory load.  We handle it first
+	  /* See if we've got a usable memory load.  We handle it first
 	     in case it uses its address register as a dest (which kills
 	     the nonnull property).  */
 	  if (GET_CODE (SET_SRC (set)) == MEM
@@ -6063,7 +6063,7 @@ invalidate_any_buried_refs (x)
 /* Find all the 'simple' MEMs which are used in LOADs and STORES. Simple
    being defined as MEM loads and stores to symbols, with no
    side effects and no registers in the expression. If there are any 
-   uses/defs which dont match this criteria, it is invalidated and
+   uses/defs which don't match this criteria, it is invalidated and
    trimmed out later.  */
 
 static void 

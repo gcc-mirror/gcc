@@ -1366,7 +1366,7 @@ eliminate_phi (e, reg_partition)
   if (n_nodes == 0)
     return;
 
-  /* Build the auxilliary graph R(B). 
+  /* Build the auxiliary graph R(B). 
 
      The nodes of the graph are the members of the register partition
      present in Phi(B).  There is an edge from FIND(T0)->FIND(T1) for

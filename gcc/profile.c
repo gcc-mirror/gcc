@@ -697,7 +697,7 @@ branch_prob ()
 
   /* Create spanning tree from basic block graph, mark each edge that is
      on the spanning tree.  We insert as many abnormal and critical edges
-     as possible to minimize number of edge splits necesary.  */
+     as possible to minimize number of edge splits necessary.  */
 
   find_spanning_tree (el);
 

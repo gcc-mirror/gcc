@@ -991,7 +991,7 @@ compute_alignments ()
 	    branch_frequency += EDGE_FREQUENCY (e);
 	}
 
-      /* There are two purposes to align block with no fallthru incomming edge:
+      /* There are two purposes to align block with no fallthru incoming edge:
 	 1) to avoid fetch stalls when branch destination is near cache boundary
 	 2) to improve cache effciency in case the previous block is not executed
 	    (so it does not need to be in the cache).

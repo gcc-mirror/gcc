@@ -399,7 +399,7 @@ save_call_clobbered_regs ()
 		 regs are live during the call.  */
 	      REG_SET_TO_HARD_REG_SET (hard_regs_to_save,
 				       &chain->live_throughout);
-	      /* Save hard registers always in the widest mode availble.  */
+	      /* Save hard registers always in the widest mode available.  */
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (TEST_HARD_REG_BIT (hard_regs_to_save, regno))
 		  save_mode [regno] = regno_save_mode [regno][1];

@@ -57,7 +57,7 @@ do not have integer mul/div or floating point support on-chip.
 
 GCC now supports a "--help" option to print detailed help information.
 
-cpplib has been greatly improved.  It is probably useable for some sites now
+cpplib has been greatly improved.  It is probably usable for some sites now
 (major missing feature is trigraphs).
 
 Memory footprint for the compiler has been significantly reduced for certain

@@ -1,3 +1,13 @@
+2001-10-28  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog.0, ChangeLog.1, ChangeLog.2, ChangeLog.3, ChangeLog.4,
+	ChangeLog.5, ChangeLog, ChangeLog.lib, FSFChangeLog.10, ONEWS,
+	c-common.c, caller-save.c, cfg.c, cfgcleanup.c, cfgrtl.c,
+	collect2.c, df.h, diagnostic.h, final.c, gcse.c, gthr.h,
+	haifa-sched.c, jump.c, local-alloc.c, profile.c, protoize.c,
+	regmove.c, reload1.c, rtlanal.c, sched-vis.c, ssa.c, stmt.c,
+	system.h, toplev.c: Fix spelling errors.
+
 Sat Oct 27 17:32:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcse.c (insert_insn_end_bb): Don't assume PAT is a SET.
@@ -4974,7 +4984,7 @@ Thu Aug 30 18:50:37 2001  J"orn Rennecke <amylaar@redhat.com>
 2001-08-30  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (zero_extendqihi2): Changes to
-	define_expand to accomodate target-specific attributes.
+	define_expand to accommodate target-specific attributes.
 	(anonymous zero_extendqihi2 patterns): New.
 
 Thu Aug 30 18:10:56 2001  J"orn Rennecke <amylaar@redhat.com>
@@ -5714,7 +5724,7 @@ Thu Aug 23 17:21:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (LABEL_ALIGN_AFTER_BARRIER): Default to no alignment.
 	(final_scan_insn): Consider jump tables data even if we have no
-	independant text section if !JUMP_TABLES_IN_TEXT_SECTION.  Use
+	independent text section if !JUMP_TABLES_IN_TEXT_SECTION.  Use
 	ADDR_VEC_ALIGN.
 	* config/ia64/ia64.h (JUMP_TABLES_IN_TEXT_SECTION): Remove.
 	(ASM_OUTPUT_CASE_END): Remove.
@@ -6174,7 +6184,7 @@ Mon Aug 20 01:44:50 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-18  Graham Stott  <grahams@redhat.com>
 
-	* config/mips/mips.md (adddi3_internal_2+1): Remove contraints from
+	* config/mips/mips.md (adddi3_internal_2+1): Remove constraints from
 	define_split.
 	(adddi3_internal_2+2): Likewise.
 	(eh_set_lr_di+1): Likewise.
@@ -8485,9 +8495,9 @@ Tue Jul 31 15:33:27 CEST 2001  Jan Hubicka  <jh@suse.cz>
 2001-07-31 Hartmut Penner <hpenner@de.ibm.com>
 
 	* doc/install.texi: Add s390 and s390x as new targets.
-	* doc/invoke.texi: Add documantation of S/390 and zSeries
+	* doc/invoke.texi: Add documentation of S/390 and zSeries
 	target options.
-	* doc/md.texi: Add documantation of S/390 and zSeries constraints.
+	* doc/md.texi: Add documentation of S/390 and zSeries constraints.
 
 2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
 

@@ -8580,7 +8580,7 @@ reload_combine ()
   int min_labelno, n_labels;
   HARD_REG_SET ever_live_at_start, *label_live;
 
-  /* If reg+reg can be used in offsetable memory adresses, the main chunk of
+  /* If reg+reg can be used in offsetable memory addresses, the main chunk of
      reload has already used it where appropriate, so there is no use in
      trying to generate it now.  */
   if (double_reg_address_ok && INDEX_REG_CLASS != NO_REGS)

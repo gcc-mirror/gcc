@@ -1009,7 +1009,7 @@ try_crossjump_bb (mode, bb)
   edge e, e2, nexte2, nexte, fallthru;
   bool changed;
 
-  /* Nothing to do if there is not at least two incomming edges.  */
+  /* Nothing to do if there is not at least two incoming edges.  */
   if (!bb->pred || !bb->pred->pred_next)
     return false;
 

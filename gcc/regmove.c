@@ -2290,7 +2290,7 @@ record_stack_memrefs (xp, data)
       if (!reg_mentioned_p (stack_pointer_rtx, x))
 	return -1;
       /* We are not able to handle correctly all possible memrefs containing
-         stack pointer, so this check is neccesary.  */
+         stack pointer, so this check is necessary.  */
       if (stack_memref_p (x))
 	{
 	  d->memlist = record_one_stack_memref (d->insn, xp, d->memlist);

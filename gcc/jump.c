@@ -742,7 +742,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
 		    mode = GET_MODE (XEXP (comparison, 1));
 		  break;
 		}
-	      /* We can get past reg-reg moves.  This may be usefull for model
+	      /* We can get past reg-reg moves.  This may be useful for model
 	         of i387 comparisons that first move flag registers around.  */
 	      if (REG_P (src))
 		{

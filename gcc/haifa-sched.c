@@ -1958,7 +1958,7 @@ sched_init (dump_file)
 	}
     }
 
-  /* Find units used in this fuction, for visualization.  */
+  /* Find units used in this function, for visualization.  */
   if (sched_verbose)
     init_target_units ();
 

@@ -43,7 +43,7 @@ Mon Sep 29 12:27:59 1997  Ian Lance Taylor  <ian@cygnus.com>
 Wed Sep 10 15:14:20 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* config.sub: Use "amigaos" instread of "amigados".  Still
-	recognize "amigados" for backward compatability.
+	recognize "amigados" for backward compatibility.
 
 Tue Sep  9 18:23:57 1997  Doug Evans  <dje@cygnus.com>
 

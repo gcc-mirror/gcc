@@ -49,7 +49,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      		to initialize __gthread_mutex_t to get a fast
 		non-recursive mutex.
      __GTHREAD_MUTEX_INIT_FUNCTION
-     		some systems can't initalize a mutex without a
+     		some systems can't initialize a mutex without a
 		function call.  On such systems, define this to a
 		function which looks like this:
 		  void __GTHREAD_MUTEX_INIT_FUNCTION (__gthread_mutex_t *)
