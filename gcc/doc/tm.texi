@@ -1280,21 +1280,6 @@ Normally, this is not needed.  See the file @file{c4x.h} for an example
 of how to use this macro to prevent a structure having a floating point
 field from being accessed in an integer mode.
 
-@findex ROUND_TYPE_SIZE
-@item ROUND_TYPE_SIZE (@var{type}, @var{computed}, @var{specified})
-Define this macro as an expression for the overall size of a type
-(given by @var{type} as a tree node) when the size computed in the
-usual way is @var{computed} and the alignment is @var{specified}.
-
-The default is to round @var{computed} up to a multiple of @var{specified}.
-
-@findex ROUND_TYPE_SIZE_UNIT
-@item ROUND_TYPE_SIZE_UNIT (@var{type}, @var{computed}, @var{specified})
-Similar to @code{ROUND_TYPE_SIZE}, but sizes and alignments are
-specified in units (bytes).  If you define @code{ROUND_TYPE_SIZE},
-you must also define this macro and they must be defined consistently
-with each other.
-
 @findex ROUND_TYPE_ALIGN
 @item ROUND_TYPE_ALIGN (@var{type}, @var{computed}, @var{specified})
 Define this macro as an expression for the alignment of a type (given

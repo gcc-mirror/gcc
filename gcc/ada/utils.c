@@ -63,7 +63,7 @@
 /* If nonzero, pretend we are allocating at global level.  */
 int force_global;
 
-/* Tree nodes for the various types and decls we create.  */ 
+/* Tree nodes for the various types and decls we create.  */
 tree gnat_std_decls[(int) ADT_LAST];
 
 /* Functions to call for each of the possible raise reasons.  */
@@ -84,12 +84,12 @@ static GTY(()) tree pending_elaborations;
    lists for an inner context.  */
 
 struct e_stack GTY(()) {
-  struct e_stack *next; 
-  tree elab_list; 
+  struct e_stack *next;
+  tree elab_list;
 };
 static GTY(()) struct e_stack *elist_stack;
 
-/* This variable keeps a table for types for each precision so that we only 
+/* This variable keeps a table for types for each precision so that we only
    allocate each of them once. Signed and unsigned types are kept separate.
 
    Note that these types are only used when fold-const requests something
@@ -343,7 +343,7 @@ poplevel (keep, reverse, functionbody)
   for (subblock_node = decl_chain; subblock_node;
        subblock_node = TREE_CHAIN (subblock_node))
     if (DECL_NAME (subblock_node) != 0)
-      /* If the identifier was used or addressed via a local extern decl,  
+      /* If the identifier was used or addressed via a local extern decl,
 	 don't forget that fact.   */
       if (DECL_EXTERNAL (subblock_node))
 	{
@@ -509,7 +509,7 @@ gnat_init_decl_processing ()
 
 }
 
-/* Create the predefined scalar types such as `integer_type_node' needed 
+/* Create the predefined scalar types such as `integer_type_node' needed
    in the gcc back-end and initialize the global binding level.  */
 
 void
@@ -589,7 +589,7 @@ init_gigi_decls (long_long_float_type, exception_type)
     = create_subprog_decl
     (get_identifier ("system__soft_links__set_jmpbuf_address_soft"),
      NULL_TREE,
-     build_function_type (void_type_node, 
+     build_function_type (void_type_node,
 			  tree_cons (NULL_TREE, jmpbuf_ptr_type, endlink)),
      NULL_TREE, 0, 1, 1, 0);
 
@@ -681,7 +681,7 @@ init_gigi_decls (long_long_float_type, exception_type)
   main_identifier_node = get_identifier ("main");
 }
 
-/* This function is called indirectly from toplev.c to handle incomplete 
+/* This function is called indirectly from toplev.c to handle incomplete
    declarations, i.e. VAR_DECL nodes whose DECL_SIZE is zero.  To be precise,
    compile_file in toplev.c makes an indirect call through the function pointer
    incomplete_decl_finalize_hook which is initialized to this routine in
@@ -695,9 +695,9 @@ gnat_finish_incomplete_decl (dont_care)
 }
 
 /* Given a record type (RECORD_TYPE) and a chain of FIELD_DECL
-   nodes (FIELDLIST), finish constructing the record or union type. 
+   nodes (FIELDLIST), finish constructing the record or union type.
    If HAS_REP is nonzero, this record has a rep clause; don't call
-   layout_type but merely set the size and alignment ourselves. 
+   layout_type but merely set the size and alignment ourselves.
    If DEFER_DEBUG is nonzero, do not call the debugging routines
    on this type; it will be done later. */
 
@@ -847,14 +847,8 @@ finish_record_type (record_type, fieldlist, has_rep, defer_debug)
       && ! TYPE_CONTAINS_TEMPLATE_P (record_type))
     SET_TYPE_ADA_SIZE (record_type, ada_size);
 
-#ifdef ROUND_TYPE_SIZE
-  size = ROUND_TYPE_SIZE (record_type, size, TYPE_ALIGN (record_type));
-  size_unit = ROUND_TYPE_SIZE_UNIT (record_type, size_unit,
-				    TYPE_ALIGN (record_type) / BITS_PER_UNIT);
-#else
   size = round_up (size, TYPE_ALIGN (record_type));
   size_unit = round_up (size_unit, TYPE_ALIGN (record_type) / BITS_PER_UNIT);
-#endif
 
   if (has_rep
       && ! (TREE_CODE (record_type) == RECORD_TYPE
@@ -917,7 +911,7 @@ finish_record_type (record_type, fieldlist, has_rep, defer_debug)
 		 a boundary and they something was added.  Check for the
 		 first case first.  If not, see if there is any evidence
 		 of rounding.  If so, round the last position and try
-		 again. 
+		 again.
 
 		 If this is a union, the position can be taken as zero. */
 
@@ -1111,7 +1105,7 @@ split_plus (in, pvar)
    PARM_DECL nodes that are the subprogram arguments.  CICO_LIST is the
    copy-in/copy-out list to be stored into TYPE_CICO_LIST.
    RETURNS_UNCONSTRAINED is nonzero if the function returns an unconstrained
-   object.  RETURNS_BY_REF is nonzero if the function returns by reference. 
+   object.  RETURNS_BY_REF is nonzero if the function returns by reference.
    RETURNS_WITH_DSP is nonzero if the function is to return with a
    depressed stack pointer.  */
 
@@ -1208,7 +1202,7 @@ create_index_type (min, max, index)
 }
 
 /* Return a TYPE_DECL node. TYPE_NAME gives the name of the type (a character
-   string) and TYPE is a ..._TYPE node giving its data type. 
+   string) and TYPE is a ..._TYPE node giving its data type.
    ARTIFICIAL_P is nonzero if this is a declaration that was generated
    by the compiler.  DEBUG_INFO_P is nonzero if we need to write debugging
    information about this type.  */
@@ -1253,9 +1247,9 @@ create_type_decl (type_name, type, attr_list, artificial_p, debug_info_p)
 
    PUBLIC_FLAG is nonzero if this definition is to be made visible outside of
    the current compilation unit. This flag should be set when processing the
-   variable definitions in a package specification.  EXTERN_FLAG is nonzero 
+   variable definitions in a package specification.  EXTERN_FLAG is nonzero
    when processing an external variable declaration (as opposed to a
-   definition: no storage is to be allocated for the variable here). 
+   definition: no storage is to be allocated for the variable here).
 
    STATIC_FLAG is only relevant when not at top level.  In that case
    it indicates whether to always allocate storage to the variable.   */
@@ -1569,7 +1563,7 @@ process_attributes (decl, attr_list)
 
 /* Add some pending elaborations on the list.  */
 
-void 
+void
 add_pending_elaborations (var_decl, var_init)
      tree var_decl;
      tree var_init;
@@ -1759,7 +1753,7 @@ begin_subprog_body (subprog_decl)
 
   /* Push all the PARM_DECL nodes onto the current scope (i.e. the scope of the
      subprogram body) so that they can be recognized as local variables in the
-     subprogram. 
+     subprogram.
 
      The list of PARM_DECL nodes is stored in the right order in
      DECL_ARGUMENTS.  Since ..._DECL nodes get stored in the reverse order in
@@ -1899,7 +1893,7 @@ builtin_function (name, type, function_code, class, library_name, attrs)
   return decl;
 }
 
-/* Return an integer type with the number of bits of precision given by  
+/* Return an integer type with the number of bits of precision given by
    PRECISION.  UNSIGNEDP is nonzero if the type is unsigned; otherwise
    it is a signed type.  */
 
@@ -2382,7 +2376,7 @@ build_vms_descriptor (type, mech, gnat_entity)
     case By_Descriptor_SB:
       field_list
 	= chainon (field_list,
-		   make_descriptor_field 
+		   make_descriptor_field
 		   ("SB_L1", gnat_type_for_size (32, 1), record_type,
 		    TREE_CODE (type) == ARRAY_TYPE
 		    ? TYPE_MIN_VALUE (TYPE_DOMAIN (type)) : size_zero_node));
@@ -2627,7 +2621,7 @@ update_pointer_to (old_type, new_type)
 		       build (PLACEHOLDER_EXPR, ptr),
 		       TREE_CHAIN (TYPE_FIELDS (ptr)));
 
-      update_pointer_to 
+      update_pointer_to
 	(TREE_TYPE (TREE_TYPE (TYPE_FIELDS (ptr))),
 	 gnat_substitute_in_type (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (ptr))),
 				  TREE_CHAIN (TYPE_FIELDS (ptr)), new_ref));
@@ -2920,7 +2914,7 @@ convert (type, expr)
 
     case INDIRECT_REF:
       /* If both types are record types, just convert the pointer and
-	 make a new INDIRECT_REF. 
+	 make a new INDIRECT_REF.
 
 	 ??? Disable this for now since it causes problems with the
 	 code in build_binary_op for MODIFY_EXPR which wants to
@@ -3233,7 +3227,7 @@ unchecked_convert (type, expr)
 				     GET_MODE_BITSIZE (TYPE_MODE (type))))
     {
       tree rec_type = make_node (RECORD_TYPE);
-      tree field = create_field_decl (get_identifier ("OBJ"), type, 
+      tree field = create_field_decl (get_identifier ("OBJ"), type,
 				      rec_type, 1, 0, 0, 0);
 
       TYPE_FIELDS (rec_type) = field;
