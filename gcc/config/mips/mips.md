@@ -346,6 +346,9 @@
 ;; instruction.
 (define_mode_attr size [(QI "b") (HI "h")])
 
+;; This attributes gives the mode mask of a SHORT.
+(define_mode_attr mask [(QI "0x00ff") (HI "0xffff")])
+
 ;; Mode attributes for GPR loads and stores.
 (define_mode_attr load [(SI "lw") (DI "ld")])
 (define_mode_attr store [(SI "sw") (DI "sd")])
@@ -2257,201 +2260,88 @@ beq\t%2,%.,1b\;\
 ;;  ....................
 
 ;; Extension insns.
-;; Those for integer source operand are ordered widest source type first.
 
 (define_insn_and_split "zero_extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (zero_extend:DI (match_operand:SI 1 "register_operand" "d")))]
+  [(set (match_operand:DI 0 "register_operand" "=d,d")
+        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "d,W")))]
   "TARGET_64BIT"
-  "#"
-  "&& reload_completed"
+  "@
+   #
+   lwu\t%0,%1"
+  "&& reload_completed && REG_P (operands[1])"
   [(set (match_dup 0)
         (ashift:DI (match_dup 1) (const_int 32)))
    (set (match_dup 0)
         (lshiftrt:DI (match_dup 0) (const_int 32)))]
-  "operands[1] = gen_lowpart (DImode, operands[1]);"
-  [(set_attr "type" "multi")
+  { operands[1] = gen_lowpart (DImode, operands[1]); }
+  [(set_attr "type" "multi,load")
    (set_attr "mode" "DI")
-   (set_attr "length" "8")])
+   (set_attr "length" "8,*")])
 
-(define_insn "*zero_extendsidi2_mem"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (zero_extend:DI (match_operand:SI 1 "memory_operand" "W")))]
-  "TARGET_64BIT"
-  "lwu\t%0,%1"
-  [(set_attr "type"     "load")
-   (set_attr "mode"     "DI")])
-
-(define_expand "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand")
-        (zero_extend:SI (match_operand:HI 1 "nonimmediate_operand")))]
+(define_expand "zero_extend<SHORT:mode><GPR:mode>2"
+  [(set (match_operand:GPR 0 "register_operand")
+        (zero_extend:GPR (match_operand:SHORT 1 "nonimmediate_operand")))]
   ""
 {
-  if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
+  if (TARGET_MIPS16 && !memory_operand (operands[1], <SHORT:MODE>mode))
     {
-      rtx op = gen_lowpart (SImode, operands[1]);
-      rtx temp = force_reg (SImode, GEN_INT (0xffff));
-
-      emit_insn (gen_andsi3 (operands[0], op, temp));
+      emit_insn (gen_and<GPR:mode>3 (operands[0],
+				     gen_lowpart (<GPR:MODE>mode, operands[1]),
+				     force_reg (<GPR:MODE>mode,
+						GEN_INT (<SHORT:mask>))));
       DONE;
     }
 })
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-        (zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "d,m")))]
+(define_insn "*zero_extend<SHORT:mode><GPR:mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d,d")
+        (zero_extend:GPR
+	     (match_operand:SHORT 1 "nonimmediate_operand" "d,m")))]
   "!TARGET_MIPS16"
   "@
-   andi\t%0,%1,0xffff
-   lhu\t%0,%1"
-  [(set_attr "type"     "arith,load")
-   (set_attr "mode"     "SI")
-   (set_attr "length"   "4,*")])
+   andi\t%0,%1,<SHORT:mask>
+   l<SHORT:size>u\t%0,%1"
+  [(set_attr "type" "arith,load")
+   (set_attr "mode" "<GPR:MODE>")])
 
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (zero_extend:SI (match_operand:HI 1 "memory_operand" "m")))]
+(define_insn "*zero_extend<SHORT:mode><GPR:mode>2_mips16"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+        (zero_extend:GPR (match_operand:SHORT 1 "memory_operand" "m")))]
   "TARGET_MIPS16"
-  "lhu\t%0,%1"
-  [(set_attr "type"     "load")
-   (set_attr "mode"     "SI")])
-
-(define_expand "zero_extendhidi2"
-  [(set (match_operand:DI 0 "register_operand")
-        (zero_extend:DI (match_operand:HI 1 "nonimmediate_operand")))]
-  "TARGET_64BIT"
-{
-  if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
-    {
-      rtx op = gen_lowpart (DImode, operands[1]);
-      rtx temp = force_reg (DImode, GEN_INT (0xffff));
-
-      emit_insn (gen_anddi3 (operands[0], op, temp));
-      DONE;
-    }
-})
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-        (zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "d,m")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "@
-   andi\t%0,%1,0xffff
-   lhu\t%0,%1"
-  [(set_attr "type"     "arith,load")
-   (set_attr "mode"     "DI")
-   (set_attr "length"   "4,*")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d")
-        (zero_extend:DI (match_operand:HI 1 "memory_operand" "m")))]
-  "TARGET_64BIT && TARGET_MIPS16"
-  "lhu\t%0,%1"
-  [(set_attr "type"     "load")
-   (set_attr "mode"     "DI")])
+  "l<SHORT:size>u\t%0,%1"
+  [(set_attr "type" "load")
+   (set_attr "mode" "<GPR:MODE>")])
 
 (define_expand "zero_extendqihi2"
   [(set (match_operand:HI 0 "register_operand")
 	(zero_extend:HI (match_operand:QI 1 "nonimmediate_operand")))]
   ""
 {
-  if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
+  if (TARGET_MIPS16 && !memory_operand (operands[1], QImode))
     {
-      rtx op0 = gen_lowpart (SImode, operands[0]);
-      rtx op1 = gen_lowpart (SImode, operands[1]);
-      rtx temp = force_reg (SImode, GEN_INT (0xff));
-
-      emit_insn (gen_andsi3 (op0, op1, temp));
+      emit_insn (gen_zero_extendqisi2 (gen_lowpart (SImode, operands[0]),
+				       operands[1]));
       DONE;
     }
 })
 
-(define_insn ""
+(define_insn "*zero_extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=d,d")
         (zero_extend:HI (match_operand:QI 1 "nonimmediate_operand" "d,m")))]
   "!TARGET_MIPS16"
   "@
    andi\t%0,%1,0x00ff
    lbu\t%0,%1"
-  [(set_attr "type"     "arith,load")
-   (set_attr "mode"     "HI")
-   (set_attr "length"   "4,*")])
+  [(set_attr "type" "arith,load")
+   (set_attr "mode" "HI")])
 
-(define_insn ""
+(define_insn "*zero_extendqihi2_mips16"
   [(set (match_operand:HI 0 "register_operand" "=d")
         (zero_extend:HI (match_operand:QI 1 "memory_operand" "m")))]
   "TARGET_MIPS16"
   "lbu\t%0,%1"
-  [(set_attr "type"     "load")
-   (set_attr "mode"     "HI")])
-
-(define_expand "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand")
-	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand")))]
-  ""
-{
-  if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
-    {
-      rtx op = gen_lowpart (SImode, operands[1]);
-      rtx temp = force_reg (SImode, GEN_INT (0xff));
-
-      emit_insn (gen_andsi3 (operands[0], op, temp));
-      DONE;
-    }
-})
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d,d")
-        (zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "d,m")))]
-  "!TARGET_MIPS16"
-  "@
-   andi\t%0,%1,0x00ff
-   lbu\t%0,%1"
-  [(set_attr "type"     "arith,load")
-   (set_attr "mode"     "SI")
-   (set_attr "length"   "4,*")])
-
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=d")
-        (zero_extend:SI (match_operand:QI 1 "memory_operand" "m")))]
-  "TARGET_MIPS16"
-  "lbu\t%0,%1"
-  [(set_attr "type"     "load")
-   (set_attr "mode"     "SI")])
-
-(define_expand "zero_extendqidi2"
-  [(set (match_operand:DI 0 "register_operand")
-	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand")))]
-  "TARGET_64BIT"
-{
-  if (TARGET_MIPS16 && GET_CODE (operands[1]) != MEM)
-    {
-      rtx op = gen_lowpart (DImode, operands[1]);
-      rtx temp = force_reg (DImode, GEN_INT (0xff));
-
-      emit_insn (gen_anddi3 (operands[0], op, temp));
-      DONE;
-    }
-})
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d,d")
-        (zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "d,m")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "@
-   andi\t%0,%1,0x00ff
-   lbu\t%0,%1"
-  [(set_attr "type"     "arith,load")
-   (set_attr "mode"     "DI")
-   (set_attr "length"   "4,*")])
-
-(define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(zero_extend:DI (match_operand:QI 1 "memory_operand" "m")))]
-  "TARGET_64BIT && TARGET_MIPS16"
-  "lbu\t%0,%1"
-  [(set_attr "type"	"load")
-   (set_attr "mode"	"DI")])
+  [(set_attr "type" "load")
+   (set_attr "mode" "HI")])
 
 ;;
 ;;  ....................
