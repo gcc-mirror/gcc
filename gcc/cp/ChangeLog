@@ -1,5 +1,8 @@
 1998-06-05  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* call.c (joust): Also warn about confusing conversion op/constructor
+	overload resolution.
+
 	* spew.c (yylex): Also return the TYPE_DECL if got_object.
 	Don't clear got_object after '~'.
 	* call.c (build_scoped_method_call): Tweak destructor handling.
