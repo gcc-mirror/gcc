@@ -1,3 +1,23 @@
+1998-08-05  Bruce Korb <korbb@datadesign.com>
+
+	* fixinc/Makefile
+	Added define for target machine so machine-specific tests
+	can be selected for or against.
+
+	* fixinc/fixincl.c
+	Added an array of string pointers to machines to select
+	or avoid, depending on a FD_MACH_IFNOT bit flag.
+	Used a shell script to match the defined TARGET_MACHINE
+	with any of the given match patterns.
+
+	* fixinc/fixincl.tpl
+	Generate the array of strings and bit flag, as needed,
+	depending on "mach" and "not_machine" attributes for a fix.
+
+	* fixinc/mkfixinc.sh
+	Invoke the make with TARGET assigned the value of the
+	machine name argument.
+
 Mon Jul 27 22:08:12 1998  Mike Stump  (mrs@wrs.com)
 
 	* compare_tests: New script.
