@@ -1,4 +1,4 @@
-Mon Aug 17 02:19:30 1998  David Edelsohn <dje@watson.ibm.com>
+Mon Aug 17 02:19:30 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* xcoffout.c (UNKNOWN_STAB): Fix typo in previous change; missing
  	backslash before newline.
