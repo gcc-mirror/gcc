@@ -1,5 +1,12 @@
 2000-04-01  Neil Booth <NeilB@earthling.net>
 
+        * cppexp.c: Redefine priority constants.
+        (_cpp_parse_expr): Replace left and right priority scheme with
+	single priority logic.  Move LOGICAL to same place as COMPARE.
+	Remove bogus check for multiple unary +/- operators.
+
+2000-04-01  Neil Booth <NeilB@earthling.net>
+
         * cppexp.c: (_cpp_parse_expr): Numerical constants are pushed
         within the switch statement.  Binary operations break out of
         the switch naturally.  '(' tokens handled by forcing
