@@ -3257,8 +3257,7 @@ pushdecl (x)
 	name = TREE_OPERAND (name, 0);
       
       /* Namespace-scoped variables are not found in the current level. */
-      if (TREE_CODE (x) == VAR_DECL
-	  && TREE_CODE (DECL_CONTEXT (x)) == NAMESPACE_DECL)
+      if (TREE_CODE (x) == VAR_DECL && DECL_NAMESPACE_SCOPE_P (x))
 	t = namespace_binding (name, DECL_CONTEXT (x));
       else
 	t = lookup_name_current_level (name);
@@ -3367,8 +3366,7 @@ pushdecl (x)
 	  if (t != x || DECL_LANGUAGE (x) == lang_c)
 	    return t;
 	}
-      else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_CONTEXT (x)
-	       && TREE_CODE (DECL_CONTEXT (x)) == NAMESPACE_DECL)
+      else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_NAMESPACE_SCOPE_P (x))
 	return push_overloaded_decl (x, 0);
 
       /* If declaring a type as a typedef, copy the type (unless we're
@@ -3995,7 +3993,7 @@ redeclaration_error_message (newdecl, olddecl)
 
       /* If both functions come from different namespaces, this is not
 	 a redeclaration - this is a conflict with a used function. */
-      if (TREE_CODE (DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
+      if (DECL_NAMESPACE_SCOPE_P (olddecl)
 	  && DECL_CONTEXT (olddecl) != DECL_CONTEXT (newdecl))
 	return "`%D' conflicts with used function";
 
@@ -6232,10 +6230,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
      comes from another scope, e.g. a static member variable.
      TEM may equal DECL or it may be a previous decl of the same name.  */
   
-  if ((TREE_CODE (decl) != PARM_DECL && DECL_CONTEXT (decl) != NULL_TREE 
-       /* Definitions of namespace members outside their namespace are
-	  possible. */
-       && TREE_CODE (DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+  if ((TREE_CODE (decl) != PARM_DECL && DECL_CONTEXT (decl) != NULL_TREE)
       || (TREE_CODE (decl) == TEMPLATE_DECL && !namespace_bindings_p ())
       || TREE_CODE (type) == LANG_TYPE
       /* The declaration of template specializations does not affect
@@ -6841,8 +6836,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	/* Let debugger know it should output info for this type.  */
 	note_debug_info_needed (ttype);
 
-      if (TREE_STATIC (decl) && DECL_CONTEXT (decl)
-	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
+      if (TREE_STATIC (decl) && DECL_CLASS_SCOPE_P (decl))
 	note_debug_info_needed (DECL_CONTEXT (decl));
 
       if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
@@ -11636,8 +11630,7 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
       if (! DECL_ARGUMENTS (decl1)
 	  && !DECL_STATIC_FUNCTION_P (decl1)
-	  && DECL_CONTEXT (decl1)
-	  && TREE_CODE (DECL_CONTEXT (decl1)) != NAMESPACE_DECL
+	  && DECL_CLASS_SCOPE_P (decl1)
 	  && TYPE_IDENTIFIER (DECL_CONTEXT (decl1))
 	  && IDENTIFIER_TEMPLATE (TYPE_IDENTIFIER (DECL_CONTEXT (decl1))))
 	{

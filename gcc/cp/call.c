@@ -3294,14 +3294,12 @@ build_over_call (cand, args, flags)
 
 	     we must be careful to do name lookup in the scope of
 	     S<T>, rather than in the current class.  */
-	  if (DECL_REAL_CONTEXT (fn) 
-	      && TREE_CODE (DECL_REAL_CONTEXT (fn)) != NAMESPACE_DECL)
+	  if (DECL_CLASS_SCOPE_P (fn))
 	    pushclass (DECL_REAL_CONTEXT (fn), 2);
 
 	  arg = tsubst_expr (arg, DECL_TI_ARGS (fn), NULL_TREE);
 
-	  if (DECL_REAL_CONTEXT (fn)
-	      && TREE_CODE (DECL_CONTEXT (fn)) != NAMESPACE_DECL)
+	  if (DECL_CLASS_SCOPE_P (fn))
 	    popclass (0);
 	}
       converted_args = expr_tree_cons
@@ -3926,10 +3924,10 @@ compare_ics (ics1, ics2)
 	    return -1;
 	}
       else if (TREE_CODE (to2) == VOID_TYPE && IS_AGGR_TYPE (to1)
-	       && get_base_distance (to1, from1, 0, 0) != -1)
+	       && DERIVED_FROM_P (to1, from1))
 	return 1;
       else if (TREE_CODE (to1) == VOID_TYPE && IS_AGGR_TYPE (to2)
-	       && get_base_distance (to2, from2, 0, 0) != -1)
+	       && DERIVED_FROM_P (to2, from2))
 	return -1;
 
       if (! (IS_AGGR_TYPE (to1) && IS_AGGR_TYPE (to2)))
