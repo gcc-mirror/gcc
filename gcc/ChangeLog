@@ -1,3 +1,10 @@
+Fri Mar  1 20:59:14 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Delete dead jumptables before
+	loop.
+	* flow.c (delete_dead_jumptables): Make global.
+	* rtl.h (delete_dead_jumptables): Declare.
+
 2002-03-01  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.h (HANDLE_PRAGMA_PACK): Delete.
