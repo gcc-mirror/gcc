@@ -1,3 +1,8 @@
+2002-01-04  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (anonymous patterns): Check that
+	operands are registers before using REGNO on them.
+
 2002-01-03  Roland McGrath  <roland@frob.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Add -mcall-gnu.
