@@ -1,3 +1,8 @@
+Thu Apr 27 15:58:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* compile/20000427-1.c: New test for loop hoisting code
+	and hard registers.
+
 2000-04-26  Geoff Keating  <geoffk@cygnus.com>
 
 	* execute/loop-5.c: New test.
