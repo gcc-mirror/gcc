@@ -25,6 +25,9 @@ Analog Devices helped implement the support for complex data types
 and iterators.
 
 @item
+John David Anglin for improvements to libstdc++-v3 and the HP-UX port.
+
+@item
 James van Artsdalen wrote the code that makes efficient use of
 the Intel 80387 register stack.
 
@@ -396,6 +399,11 @@ engine setup, various documentation fixes and other small fixes.
 Geoff Noer for this work on getting cygwin native builds working.
 
 @item
+David O'Brien for the FreeBSD/alpha, FreeBSD/AMD x86-64, FreeBSD/ARM,
+FreeBSD/PowerPC, and FreeBSD/SPARC64 ports and related infrastructure
+improvements.
+
+@item
 Alexandre Oliva for various build infrastructure improvements, scripts and
 amazing testing work.
 
@@ -430,6 +438,7 @@ cleanups in the compiler.
 @item
 David Reese of Sun Microsystems contributed to the Solaris on PowerPC
 port.
+
 @item
 Gabriel Dos Reis for contributions and maintenance of libstdc++-v3,
 including valarray implementation and limits support.
@@ -437,6 +446,9 @@ including valarray implementation and limits support.
 @item
 Joern Rennecke for maintaining the sh port, loop, regmove & reload
 hacking.
+
+@item
+Loren J. Rittle for improvements to libstdc++-v3 and the FreeBSD port.
 
 @item
 Craig Rodrigues for processing tons of bug reports.
@@ -692,6 +704,9 @@ Richard Polton
 
 @item
 David Rees
+
+@item
+Loren J. Rittle
 
 @item
 Peter Schmid
