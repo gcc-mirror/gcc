@@ -1747,8 +1747,8 @@ gfc_expr_attr (gfc_expr * e)
 /* Match a structure constructor.  The initial symbol has already been
    seen.  */
 
-static match
-match_structure_constructor (gfc_symbol * sym, gfc_expr ** result)
+match
+gfc_match_structure_constructor (gfc_symbol * sym, gfc_expr ** result)
 {
   gfc_constructor *head, *tail;
   gfc_component *comp;
@@ -1908,7 +1908,7 @@ gfc_match_rvalue (gfc_expr ** result)
       if (sym == NULL)
 	m = MATCH_ERROR;
       else
-        m = match_structure_constructor (sym, &e);
+        m = gfc_match_structure_constructor (sym, &e);
       break;
 
     /* If we're here, then the name is known to be the name of a
