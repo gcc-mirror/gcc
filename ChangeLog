@@ -1,3 +1,9 @@
+2004-08-03  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in (arm*-*-symbianelf*): Add ${libgcj} and
+	target-libiberty to noconfigdirs.
+	* configure: Regenerate.
+
 2004-08-03  Paul Brook  <paul@codesourcery.com>
 
 	* configure.in: Check for MPFR as well as GMP.

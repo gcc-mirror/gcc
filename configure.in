@@ -482,6 +482,9 @@ case "${target}" in
   arm-*-elf* | strongarm-*-elf* | xscale-*-elf*)
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     ;;
+  arm*-*-symbianelf*)
+    noconfigdirs="$noconfigdirs ${libgcj} target-libiberty"
+    ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
