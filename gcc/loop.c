@@ -1131,11 +1131,19 @@ scan_loop (loop, flags)
 
   if (flag_strength_reduce)
     {
+      if (update_end && GET_CODE (update_end) == CODE_LABEL)
+	/* Ensure our label doesn't go away.  */
+	LABEL_NUSES (update_end)++;
+
       the_movables = movables;
       strength_reduce (loop, insn_count, flags);
 
       reg_scan_update (update_start, update_end, loop_max_reg);
       loop_max_reg = max_reg_num ();
+
+      if (update_end && GET_CODE (update_end) == CODE_LABEL
+	  && --LABEL_NUSES (update_end) == 0)
+	delete_insn (update_end);
     }
 
   VARRAY_FREE (reg_single_usage);
