@@ -955,7 +955,7 @@ gfc_trans_array_constructor (gfc_loopinfo * loop, gfc_ss * ss)
   else
     assert (INTEGER_CST_P (offset));
 #if 0
-  /* Disable bound checking for now cause it's probably broken.  */
+  /* Disable bound checking for now because it's probably broken.  */
   if (flag_bounds_check)
     {
       abort ();
@@ -2307,7 +2307,7 @@ gfc_conv_loop_setup (gfc_loopinfo * loop)
 	    {
 	    case GFC_SS_CONSTRUCTOR:
 	      assert (info->dimen == 1);
-	      assert (loop->to[n]);
+      	      assert (loop->to[n]);
 	      break;
 
 	    case GFC_SS_SECTION:
