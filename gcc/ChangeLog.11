@@ -1,3 +1,13 @@
+Wed Aug 13 17:29:25 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* c-lex.c (check_newline): Pass finput again to HANDLE_PRAGMA.
+
+Sun Aug 10 15:25:51 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* toplev.c (main): In -g handling code, add code to set len.
+
+	* alpha.md (extendqihi2): Use HImode not QImode in force_reg call.
+
 Sat Aug  2 18:50:43 1997  Paul Eggert  <eggert@twinsun.com>
 
 	* tree.c (int_fits_type_p): Negative ints never fit unsigned
