@@ -502,13 +502,13 @@ all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just build,
 # although we can't run it on this machine.
-all.cross: native gcc-cross g++-cross specs stmp-headers $(LIBGCC) $(STMP_FIXPROTO) objc-runtime SYSCALLS.c.X $(CROSS_TEST) $(ENQUIRE) $(EXTRA_PARTS)
+all.cross: native gcc-cross g++-cross specs stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(CROSS_TEST) $(ENQUIRE) $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
 all.build: native xgcc g++ $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc g++ specs $(LIBGCC1) xlimits.h
 # These can't be made until after GCC can run.
-rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) objc-runtime SYSCALLS.c.X $(EXTRA_PARTS)
+rest.encap: stmp-headers $(LIBGCC) $(STMP_FIXPROTO) $(EXTRA_PARTS)
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
 native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
@@ -519,8 +519,8 @@ native: config.status cpp $(LANGUAGES) $(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_C
 # to do the right thing within all.cross.
 C c: cc1
 C++ c++: cc1plus
-OBJC objc: cc1obj
-OBJECTIVE-C objective-c: cc1obj
+OBJC objc: cc1obj objc-runtime
+OBJECTIVE-C objective-c: cc1obj objc-runtime
 PROTO: proto
 
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
@@ -691,7 +691,7 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
 # If you want to force recompilation, delete libgcc2.a.
-libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS)
+libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 	-if [ -f libgcc2.ready ] ; then \
 		true; \
 	else \
@@ -770,7 +770,7 @@ libgcc.a: $(LIBGCC1) $(LIBGCC2)
 objc-runtime: libobjc.a
 
 # Build the Objective C runtime library.
-libobjc.a: cc1obj libgcc2.ready $(USE_COLLECT2) $(EXTRA_PARTS)
+libobjc.a: cc1obj stmp-int-hdrs libgcc2.ready $(USE_COLLECT2) $(EXTRA_PARTS)
 	if [ -d objc ]; then true; else mkdir objc; fi
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
@@ -784,7 +784,7 @@ libobjc.a: cc1obj libgcc2.ready $(USE_COLLECT2) $(EXTRA_PARTS)
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
 
 # This is used by objc/Makefile if the user runs that directly.
-sublibobjc.a: cc1obj libgcc2.ready
+sublibobjc.a: cc1obj stmp-int-hdrs libgcc2.ready
 	thisdir1=`pwd`; \
 	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
@@ -1413,7 +1413,7 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status
 # Note for the stamp targets, we run the program `true' instead of
 # having an empty command (nothing following the semicolon).
 
-proto: config.status protoize unprotoize
+proto: config.status protoize unprotoize SYSCALLS.c.X
 
 protoize: protoize.o getopt.o getopt1.o getpwd.o version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) \
@@ -1452,7 +1452,7 @@ getopt1.o: $(srcdir)/getopt1.c getopt.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/getopt1.c
 
 # This info describes the target machine, so compile with GCC just built.
-SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES)
+SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES) stmp-int-hdrs
 	-rm -f SYSCALLS.c tmp-SYSCALLS.s
 	cat $(srcdir)/sys-types.h $(srcdir)/sys-protos.h > SYSCALLS.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
