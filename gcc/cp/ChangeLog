@@ -1,3 +1,10 @@
+2004-02-13  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR c++/9851
+	* parser.c (cp_parser_pseudo_destructor_name): Check for errors on
+	the type name and look ahead for ::~, and bail out early with a
+	better error message if the parse is going to fail.
+
 2004-02-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* typeck.c (lookup_destructor): Fix typo in error message.

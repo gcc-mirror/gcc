@@ -4113,7 +4113,7 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
    If either of the first two productions is used, sets *SCOPE to the
    TYPE specified before the final `::'.  Otherwise, *SCOPE is set to
    NULL_TREE.  *TYPE is set to the TYPE_DECL for the final type-name,
-   or ERROR_MARK_NODE if no type-name is present.  */
+   or ERROR_MARK_NODE if the parse fails.  */
 
 static void
 cp_parser_pseudo_destructor_name (cp_parser* parser, 
@@ -4153,6 +4153,21 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
     {
       /* Look for the type-name.  */
       *scope = TREE_TYPE (cp_parser_type_name (parser));
+
+      /* If we didn't get an aggregate type, or we don't have ::~,
+	 then something has gone wrong.  Since the only caller of this
+	 function is looking for something after `.' or `->' after a
+	 scalar type, most likely the program is trying to get a
+	 member of a non-aggregate type.  */
+      if (*scope == error_mark_node
+	  || cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE)
+	  || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_COMPL)
+	{
+	  cp_parser_error (parser, "request for member of non-aggregate type");
+	  *type = error_mark_node;
+	  return;
+	}
+
       /* Look for the `::' token.  */
       cp_parser_require (parser, CPP_SCOPE, "`::'");
     }
