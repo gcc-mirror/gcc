@@ -69,6 +69,14 @@ package body MLib.Tgt is
 
    Success : Boolean := False;
 
+   Shared_Libgcc : aliased String := "-shared-libgcc";
+
+   No_Shared_Libgcc_Switch : aliased Argument_List := (1 .. 0 => null);
+   Shared_Libgcc_Switch    : aliased Argument_List :=
+                               (1 => Shared_Libgcc'Access);
+   Link_With_Shared_Libgcc : Argument_List_Access :=
+                               No_Shared_Libgcc_Switch'Access;
+
    ------------------------------
    -- Target dependent section --
    ------------------------------
@@ -242,6 +250,14 @@ package body MLib.Tgt is
    --  Start of processing for Build_Dynamic_Library
 
    begin
+      --  Invoke gcc with -shared-libgcc, but only for GCC 3 or higher
+
+      if GCC_Version >= 3 then
+         Link_With_Shared_Libgcc := Shared_Libgcc_Switch'Access;
+      else
+         Link_With_Shared_Libgcc := No_Shared_Libgcc_Switch'Access;
+      end if;
+
       VMS_Options (VMS_Options'First + 1) := For_Linker_Opt;
 
       for J in Inter'Range loop
@@ -451,7 +467,8 @@ package body MLib.Tgt is
         (Output_File => Lib_File,
          Objects     => Ofiles & Additional_Objects.all,
          Options     => VMS_Options,
-         Options_2   => Opts (Opts'First .. Last_Opt) &
+         Options_2   => Link_With_Shared_Libgcc.all &
+                        Opts (Opts'First .. Last_Opt) &
                         Opts2 (Opts2'First .. Last_Opt2),
          Driver_Name => Driver_Name);
 

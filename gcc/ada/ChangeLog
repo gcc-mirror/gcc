@@ -1,3 +1,72 @@
+2004-01-23  Robert Dewar  <dewar@gnat.com>
+
+	* exp_aggr.adb: Minor reformatting
+
+	* exp_ch9.adb: Minor code clean up
+	Minor reformatting
+	Fix bad character in comment
+
+	PR ada/13471
+	* targparm.adb (Get_Target_Parameters): Give clean abort error on
+	unexpected end of file, along with more detailed message.
+
+2004-01-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* exp_pakd.adb (Install_PAT): Clear Freeze_Node for PAT and Etype of
+	PAT.
+
+	* decl.c (copy_alias_set): New function.
+	(gnat_to_gnu_entity, make_aligning_type, make_packable_type): Use it.
+
+2004-01-23  Doug Rupp  <rupp@gnat.com>
+
+	* Makefile.in (install-gnatlib): Change occurrences of lib$$file to
+	lib$${file} in case subsequent character is not a separator.
+
+2004-01-23  Vincent Celier  <celier@gnat.com>
+
+	* 5vml-tgt.adb (Build_Dynamic_Library): Invoke gcc with -shared-libgcc
+	when the GCC version is at least 3.
+
+	* make.adb: (Scan_Make_Arg): Pass -B to Scan_Make_Switches
+	Remove all "Opt.", to prepare for opt split
+
+	* prj-part.adb (Parse_Single_Project): New Boolean out parameter
+	Extends_All. Set to True when the project parsed is an extending all
+	project. Fails for importing an extending all project only when the
+	imported project is an extending all project.
+	(Post_Parse_Context_Clause): Set Is_Extending_All to the with clause,
+	depending on the value of Extends_All returned.
+
+	* prj-proc.adb (Process): Check that no project shares its object
+	directory with a project that extends it, directly or indirectly,
+	including a virtual project.
+	Check that no project extended by another project shares its object
+	directory with another also extended project.
+
+	* prj-tree.adb (Is_Extending_All, Set_Is_Extending_All): Allow for
+	Kind = N_With_Clause
+
+	* prj-tree.ads: Minor reformatting
+	Indicate that Flag2 also applies to N_With_Clause (Is_Extending_All).
+
+2004-01-23  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): If the attribute
+	applies to a type with an incomplete view, use full view in Name of
+	clause, for consistency with uses of Get_Attribute_Definition_Clause.
+
+2004-01-23  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 5itaprop.adb (Set_Priority): Reset the priority to 0 when using
+	SCHED_RR, since other values are not supported by this policy.
+	(Initialize): Move initialization of mutex attribute to package
+	elaboration, to prevent early access to this variable.
+
+	* Makefile.in: Remove mention of Makefile.adalib, unused.
+
+	* Makefile.adalib: Removed, unused.
+
 2004-01-21  Javier Miranda  <miranda@gnat.com>
 
 	* exp_aggr.adb (Build_Record_Aggr_Code): Do not build the master

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -712,6 +712,7 @@ package body System.Task_Primitives.Operations is
            (T.Common.LL.Thread, SCHED_FIFO, Param'Access);
 
       else
+         Param.sched_priority := 0;
          Result := pthread_setschedparam
            (T.Common.LL.Thread, SCHED_OTHER, Param'Access);
       end if;
@@ -1038,12 +1039,6 @@ package body System.Task_Primitives.Operations is
    begin
       Environment_Task_ID := Environment_Task;
 
-      Result := pthread_mutexattr_init (Mutex_Attr'Access);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
-      Result := pthread_condattr_init (Cond_Attr'Access);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
       Initialize_Lock (Single_RTS_Lock'Access, RTS_Lock_Level);
 
       --  Initialize the global RTS lock
@@ -1096,5 +1091,11 @@ begin
             pragma Assert (Result = 0);
          end if;
       end loop;
+
+      Result := pthread_mutexattr_init (Mutex_Attr'Access);
+      pragma Assert (Result = 0);
+
+      Result := pthread_condattr_init (Cond_Attr'Access);
+      pragma Assert (Result = 0);
    end;
 end System.Task_Primitives.Operations;

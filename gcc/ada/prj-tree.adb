@@ -933,7 +933,9 @@ package body Prj.Tree is
       pragma Assert
         (Node /= Empty_Node
           and then
-            Project_Nodes.Table (Node).Kind = N_Project);
+           (Project_Nodes.Table (Node).Kind = N_Project
+              or else
+            Project_Nodes.Table (Node).Kind = N_With_Clause));
       return Project_Nodes.Table (Node).Flag2;
    end Is_Extending_All;
 
@@ -1947,7 +1949,9 @@ package body Prj.Tree is
       pragma Assert
         (Node /= Empty_Node
           and then
-            Project_Nodes.Table (Node).Kind = N_Project);
+            (Project_Nodes.Table (Node).Kind = N_Project
+               or else
+             Project_Nodes.Table (Node).Kind = N_With_Clause));
       Project_Nodes.Table (Node).Flag2 := True;
    end Set_Is_Extending_All;
 

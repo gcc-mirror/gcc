@@ -1918,14 +1918,13 @@ package body Exp_Aggr is
 
       Comp := First (Component_Associations (N));
       while Present (Comp) loop
-         Selector  := Entity (First (Choices (Comp)));
+         Selector := Entity (First (Choices (Comp)));
 
          --  Ada0Y (AI-287): Default initialization of a limited component
 
          if Box_Present (Comp)
             and then Is_Limited_Type (Etype (Selector))
          then
-
             --  Ada0Y (AI-287): If the component type has tasks then generate
             --  the activation chain and master entities (except in case of an
             --  allocator because in that case these entities are generated
@@ -1949,6 +1948,7 @@ package body Exp_Aggr is
 
                   if not Inside_Init_Proc and not Inside_Allocator then
                      Build_Activation_Chain_Entity (N);
+
                      if not Has_Master_Entity (Current_Scope) then
                         Build_Master_Entity (Etype (N));
                      end if;

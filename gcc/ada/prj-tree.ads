@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2001-2003 Free Software Foundation, Inc.       --
+--             Copyright (C) 2001-2004 Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -245,7 +245,7 @@ package Prj.Tree is
 
    function Is_Extending_All (Node  : Project_Node_Id) return Boolean;
    pragma Inline (Is_Extending_All);
-   --  Only valid for N_Project
+   --  Only valid for N_Project and N_With_Clause
 
    function First_Variable_Of
      (Node : Project_Node_Id) return Variable_Node_Id;
@@ -798,7 +798,7 @@ package Prj.Tree is
          --    N_Project - it indicates that there are comments in the project
          --                source that cannot be kept in the tree.
          --    N_Project_Declaration
-         --              - it indixates that there are unkept comment in the
+         --              - it indicates that there are unkept comments in the
          --                project.
 
          Flag2 : Boolean := False;
@@ -807,6 +807,9 @@ package Prj.Tree is
          --                project.
          --    N_Comment - it indicates that the comment is followed by an
          --                empty line.
+         --    N_With_Clause
+         --              - it indicates that the originally imported project
+         --                is an extending all project.
 
          Comments : Project_Node_Id := Empty_Node;
          --  For nodes other that N_Comment_Zones or N_Comment, designates the
