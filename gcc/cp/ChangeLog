@@ -1,3 +1,8 @@
+1998-06-25  Dave Brolley  <brolley@cygnus.com>
+
+	* lang-specs.h: Use new | syntax to eliminate
+	string concatenation.
+
 1998-06-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.h (CP_DECL_CONTEXT): New macro.
