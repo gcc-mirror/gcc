@@ -400,12 +400,6 @@ static int recorded_label_ref;
 
 static int do_not_record;
 
-#ifdef LOAD_EXTEND_OP
-
-/* Scratch rtl used when looking for load-extended copy of a MEM.  */
-static rtx memory_extend_rtx;
-#endif
-
 /* canon_hash stores 1 in hash_arg_in_memory
    if it notices a reference to memory within the expression being hashed.  */
 
@@ -5154,10 +5148,13 @@ cse_insn (rtx insn, rtx libcall_insn)
 	  && MEM_P (src) && ! do_not_record
 	  && LOAD_EXTEND_OP (mode) != UNKNOWN)
 	{
+	  struct rtx_def memory_extend_buf;
+	  rtx memory_extend_rtx = &memory_extend_buf;
 	  enum machine_mode tmode;
 
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
+	  memset (memory_extend_rtx, 0, sizeof(*memory_extend_rtx));
 	  PUT_CODE (memory_extend_rtx, LOAD_EXTEND_OP (mode));
 	  XEXP (memory_extend_rtx, 0) = src;
 
@@ -6674,13 +6671,6 @@ cse_main (rtx f, int nregs, FILE *file)
   max_insn_uid = get_max_uid ();
 
   reg_eqv_table = xmalloc (nregs * sizeof (struct reg_eqv_elem));
-
-#ifdef LOAD_EXTEND_OP
-
-  /* Allocate scratch rtl here.  cse_insn will fill in the memory reference
-     and change the code and mode as appropriate.  */
-  memory_extend_rtx = gen_rtx_ZERO_EXTEND (VOIDmode, NULL_RTX);
-#endif
 
   /* Reset the counter indicating how many elements have been made
      thus far.  */
