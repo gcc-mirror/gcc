@@ -4395,6 +4395,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       if ((! (specbits & ((1 << (int) RID_LONG) | (1 << (int) RID_SHORT)
 			  | (1 << (int) RID_SIGNED)
 			  | (1 << (int) RID_UNSIGNED))))
+	  /* Don't warn about typedef foo = bar.  */
+	  && ! (specbits & (1 << (int) RID_TYPEDEF) && initialized)
 	  && ! (in_system_header && ! allocation_temporary_p ()))
 	{
 	  /* C9x will probably require a diagnostic here.
