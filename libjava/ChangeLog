@@ -1,3 +1,8 @@
+2004-01-07  Tom Tromey  <tromey@redhat.com>
+
+	* scripts/MakeDefaultMimeTypes.java: Use \n, not
+	backslash-newline.
+
 2004-01-07  Graydon Hoare  <graydon@redhat.com>
 
 	* java/awt/Container.java (LightweightDispatcher): Implement.
