@@ -1,3 +1,10 @@
+2000-12-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* sched-vis.c (visual_tbl_line_length): New variable.
+	(get_visual_tbl_length): Set it.
+	(visualize_stall_cycles): Don't let stalls overrun
+	visual_tbl_line_length.
+
 2000-12-05  Geoffrey Keating  <geoffk@redhat.com>
 
 	* global.c (global_conflicts): Allow for a REG_UNUSED note
