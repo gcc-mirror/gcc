@@ -1,3 +1,8 @@
+2002-06-06  Adam Megacz <adam@xwt.org>
+
+        * java/io/natFileDescriptorWin32.cc (open): Disable Win32 file
+        locking, just like the Sun JVM does.
+	
 2002-06-05  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.am (libgcj_convenience.la): Revert the last change.
