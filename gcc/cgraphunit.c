@@ -792,8 +792,7 @@ cgraph_expand_function (struct cgraph_node *node)
   if (flag_unit_at_a_time)
     announce_function (decl);
 
-  /* Generate RTL for the body of DECL.  Nested functions are expanded
-     via lang_expand_decl_stmt.  */
+  /* Generate RTL for the body of DECL.  */
   lang_hooks.callgraph.expand_function (decl);
 
   /* Make sure that BE didn't give up on compiling.  */
