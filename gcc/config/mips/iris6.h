@@ -223,8 +223,31 @@ Boston, MA 02111-1307, USA.  */
 #define BSS_SECTION_ASM_OP	".section\t.bss"
 #define CONST_SECTION_ASM_OP_32	"\t.rdata"
 #define CONST_SECTION_ASM_OP_64	".section\t.rodata"
-#define CTORS_SECTION_ASM_OP	".section\t.ctors,1,2,0,4"
-#define DTORS_SECTION_ASM_OP	".section\t.dtors,1,2,0,4"
+
+/* The IRIX 6 assembler .section directive takes four additional args:
+   section type, flags, entry size, and alignment.  The alignment of the
+   .ctors and .dtors sections needs to be the same as the size of a pointer
+   so that the linker doesn't add padding between elements.  */
+#if defined (CRT_BEGIN) || defined (CRT_END)
+
+/* If we are included from crtstuff.c, these need to be plain strings.
+   _MIPS_SZPTR is defined in SUBTARGET_CPP_SPEC above.  */
+#if _MIPS_SZPTR == 64
+#define CTORS_SECTION_ASM_OP ".section\t.ctors,1,2,0,8"
+#define DTORS_SECTION_ASM_OP ".section\t.dtors,1,2,0,8"
+#else /* _MIPS_SZPTR != 64 */
+#define CTORS_SECTION_ASM_OP ".section\t.ctors,1,2,0,4"
+#define DTORS_SECTION_ASM_OP ".section\t.dtors,1,2,0,4"
+#endif /* _MIPS_SZPTR == 64 */
+
+#else /* ! (defined (CRT_BEGIN) || defined (CRT_END)) */
+
+/* If we are included from varasm.c, these need to depend on -mabi.  */
+#define CTORS_SECTION_ASM_OP \
+  (TARGET_LONG64 ? ".section\t.ctors,1,2,0,8" : ".section\t.ctors,1,2,0,4")
+#define DTORS_SECTION_ASM_OP \
+  (TARGET_LONG64 ? ".section\t.dtors,1,2,0,8" : ".section\t.dtors,1,2,0,4")
+#endif /* defined (CRT_BEGIN) || defined (CRT_END) */
 
 /* A default list of other sections which we might be "in" at any given
    time.  For targets that use additional sections (e.g. .tdesc) you
