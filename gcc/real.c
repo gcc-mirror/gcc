@@ -2121,7 +2121,8 @@ round_for_format (fmt, r)
      struct real_value *r;
 {
   int p2, np2, i, w;
-  bool sticky, guard, lsb;
+  unsigned long sticky;
+  bool guard, lsb;
   int emin2m1, emax2;
 
   p2 = fmt->p * fmt->log2_b;
@@ -2207,8 +2208,7 @@ round_for_format (fmt, r)
 
   sticky = 0;
   for (i = 0, w = (np2 - 1) / HOST_BITS_PER_LONG; i < w; ++i)
-    if (r->sig[i])
-      sticky = 1;
+    sticky |= r->sig[i];
   sticky |=
     r->sig[w] & (((unsigned long)1 << ((np2 - 1) % HOST_BITS_PER_LONG)) - 1);
 
