@@ -1,3 +1,8 @@
+2003-12-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386.md (*movqi_insv_2): Remove AND in the
+	set source.
+
 2003-12-31  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* config.gcc: Added m32r-linux m32rle-elf and m32le-linux targets.
