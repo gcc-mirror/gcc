@@ -2400,7 +2400,19 @@ init_cumulative_args (cum, fntype, libname)
   tree param, next_param;
 
   if (TARGET_DEBUG_E_MODE)
-    fprintf (stderr, "\ninit_cumulative_args\n");
+    {
+      fprintf (stderr, "\ninit_cumulative_args, fntype = 0x%.8lx", (long)fntype);
+      if (!fntype)
+	fputc ('\n', stderr);
+
+      else
+	{
+	  tree ret_type = TREE_TYPE (fntype);
+	  fprintf (stderr, ", fntype code = %s, ret code = %s\n",
+		   tree_code_name[ (int)TREE_CODE (fntype) ],
+		   tree_code_name[ (int)TREE_CODE (ret_type) ]);
+	}
+    }
 
   cum->gp_reg_found = 0;
   cum->arg_number = 0;
