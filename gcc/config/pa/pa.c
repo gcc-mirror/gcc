@@ -1983,7 +1983,6 @@ print_operand (file, x, code)
 	}
       return;
     case 'N':			/* Condition, (N)egated */
-    case 'Y':
       switch (GET_CODE (x))
 	{
 	case EQ:
@@ -2006,6 +2005,29 @@ print_operand (file, x, code)
 	  fprintf (file, ">>");  break;
 	case LTU:
 	  fprintf (file, ">>=");  break;
+	default:
+	  printf ("Can't grok '%c' operator:\n", code);
+	  debug_rtx (x);
+	  abort ();
+	}
+      return;
+    /* For floating point comparisons.  Need special conditions to deal
+       with NaNs properly.  */
+    case 'Y':
+      switch (GET_CODE (x))
+	{
+	case EQ:
+	  fprintf (file, "!=");  break;
+	case NE:
+	  fprintf (file, "=");  break;
+	case GT:
+	  fprintf (file, "!>");  break;
+	case GE:
+	  fprintf (file, "!>=");  break;
+	case LT:
+	  fprintf (file, "!<");  break;
+	case LE:
+	  fprintf (file, "!<=");  break;
 	default:
 	  printf ("Can't grok '%c' operator:\n", code);
 	  debug_rtx (x);
