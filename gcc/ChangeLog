@@ -1,3 +1,9 @@
+2001-07-20  Richard Henderson  <rth@redhat.com>
+
+	Wed May  9 10:40:25 2001  Alexandre Oliva  <aoliva@redhat.com>
+	* regclass.c (scan_one_insn): Update REG_N_REFS when optimizing
+	handling of two-address insns.
+
 2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("movdi", "movdi_internal"): Use an
