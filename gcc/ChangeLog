@@ -1,5 +1,11 @@
 2004-08-12  Richard Henderson  <rth@redhat.com>
 
+	* stor-layout.c (round_up, round_down): Move ...
+	* fold-const.c (round_up, round_down): ... here.  Use 
+	multiple_of_p to avoid any arithmetic at all.
+
+2004-08-12  Richard Henderson  <rth@redhat.com>
+
 	* gimplify.c (struct gimplify_init_ctor_preeval_data): New.
 	(gimplify_init_ctor_preeval_1): New.
 	(gimplify_init_ctor_preeval): New.

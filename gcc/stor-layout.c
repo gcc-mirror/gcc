@@ -269,64 +269,6 @@ get_mode_alignment (enum machine_mode mode)
   return MIN (BIGGEST_ALIGNMENT, MAX (1, mode_base_align[mode]*BITS_PER_UNIT));
 }
 
-/* Return the value of VALUE, rounded up to a multiple of DIVISOR.
-   This can only be applied to objects of a sizetype.  */
-
-tree
-round_up (tree value, int divisor)
-{
-  tree t;
-
-  if (divisor == 0)
-    abort ();
-  if (divisor == 1)
-    return value;
-
-  /* If divisor is a power of two, simplify this to bit manipulation.  */
-  if (divisor == (divisor & -divisor))
-    {
-      t = size_int_type (divisor - 1, TREE_TYPE (value));
-      value = size_binop (PLUS_EXPR, value, t);
-      t = size_int_type (-divisor, TREE_TYPE (value));
-      value = size_binop (BIT_AND_EXPR, value, t);
-    }
-  else
-    {
-      t = size_int_type (divisor, TREE_TYPE (value));
-      value = size_binop (CEIL_DIV_EXPR, value, t);
-      value = size_binop (MULT_EXPR, value, t);
-    }
-
-  return value;
-}
-
-/* Likewise, but round down.  */
-
-tree
-round_down (tree value, int divisor)
-{
-  tree t;
-
-  if (divisor == 0)
-    abort ();
-  if (divisor == 1)
-    return value;
-
-  /* If divisor is a power of two, simplify this to bit manipulation.  */
-  if (divisor == (divisor & -divisor))
-    {
-      t = size_int_type (-divisor, TREE_TYPE (value));
-      value = size_binop (BIT_AND_EXPR, value, t);
-    }
-  else
-    {
-      t = size_int_type (divisor, TREE_TYPE (value));
-      value = size_binop (FLOOR_DIV_EXPR, value, t);
-      value = size_binop (MULT_EXPR, value, t);
-    }
-
-  return value;
-}
 
 /* Subroutine of layout_decl: Force alignment required for the data type.
    But if the decl itself wants greater alignment, don't override that.  */
