@@ -876,7 +876,6 @@ namespace std
     __base.setf(ios_base::scientific, ios_base::floatfield);
     return __base;
   }
-
 } // namespace std
 
 #endif /* _IOS_BASE_H */

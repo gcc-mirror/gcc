@@ -56,13 +56,12 @@ namespace std
    *
    *  See http://gcc.gnu.org/onlinedocs/libstdc++/21_strings/howto.html#5
    *  for advice on how to make use of this class for "unusual" character
-   *  types.
+   *  types. Also, check out include/ext/pod_char_traits.h.
   */
   template<class _CharT>
     struct char_traits
     {
       typedef _CharT 		char_type;
-      // Unsigned as wint_t is unsigned.
       typedef unsigned long  	int_type;
       typedef streampos 	pos_type;
       typedef streamoff 	off_type;
