@@ -1,3 +1,9 @@
+2004-11-27  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/12769
+	* config/rs6000/rs6000.c (init_cumulative_args): Set call_cookie
+	from rs6000_default_long_calls for libcalls.
+
 2004-11-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expmed.c (extract_bit_field): When extracting from non-integer mode,
