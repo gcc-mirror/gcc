@@ -150,7 +150,7 @@ instead of in the original English.
 @sp 1
 @c The version number appears five times more in this file.
 
-@center for egcs-1.1
+@center for egcs-1.1.1
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96, 98  Free Software Foundation, Inc.
@@ -194,19 +194,19 @@ instead of in the original English.
 @ifset USING
 This manual documents how to run, install and port the GNU
 compiler, as well as its new features and incompatibilities, and how to
-report bugs.  It corresponds to EGCS version 1.1.
+report bugs.  It corresponds to EGCS version 1.1.1.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
 This manual documents how to run and install the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to EGCS version 1.1.
+bugs.  It corresponds to EGCS version 1.1.1.
 @end ifclear
 @ifclear USING
 This manual documents how to port the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to EGCS version 1.1.
+bugs.  It corresponds to EGCS version 1.1.1.
 @end ifclear
 
 @end ifinfo
