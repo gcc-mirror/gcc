@@ -1,3 +1,8 @@
+2005-03-10  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Invoking gcj-dbtool): Document 'gcj-dbtool -p'.
+	(libgcj Runtime Properties): Document the default .db.
+
 2005-03-07  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* verify-glue.c (vfy_is_assignable_from): Perform static check using

@@ -553,6 +553,9 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // The path to libgcj's boot classes
   SET ("sun.boot.class.path", BOOT_CLASS_PATH);
 
+  // If there is a default system database, set it.
+  SET ("gnu.gcj.precompiled.db.path", LIBGCJ_DEFAULT_DATABASE);
+
   // Set some properties according to whatever was compiled in with
   // `-D'.  Important: after this point, the only properties that
   // should be set are those which either the user cannot meaningfully

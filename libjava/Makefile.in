@@ -92,8 +92,9 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(jardir)" \
-	"$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(toolexecmainlibdir)"
+	"$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" \
+	"$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" \
+	"$(DESTDIR)$(toolexecmainlibdir)"
 toolexeclibLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(noinst_LTLIBRARIES) $(toolexeclib_LTLIBRARIES)
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -4822,10 +4823,12 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
+dbexecDATA_INSTALL = $(INSTALL_DATA)
 jarDATA_INSTALL = $(INSTALL_DATA)
 pkgconfigDATA_INSTALL = $(INSTALL_DATA)
 toolexecmainlibDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(jar_DATA) $(pkgconfig_DATA) $(toolexecmainlib_DATA)
+DATA = $(dbexec_DATA) $(jar_DATA) $(pkgconfig_DATA) \
+	$(toolexecmainlib_DATA)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = @DIRLTDL@ gcj include external testsuite
@@ -5112,6 +5115,9 @@ jardir = $(datadir)/java
 jar_DATA = libgcj-@gcc_version@.jar
 secdir = $(libdir)/security
 propdir = $(libdir)
+dbexecdir = $(libdir)/gcj-@gcc_version@
+db_name = classmap.db
+@NATIVE_TRUE@dbexec_DATA = $(db_name)
 bin_SCRIPTS = addr2name.awk
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -5132,7 +5138,8 @@ AM_CXXFLAGS = \
 	-DPREFIX="\"$(prefix)\"" \
 	-DLIBDIR="\"$(libdir)\"" \
 	-DBOOT_CLASS_PATH="\"$(jardir)/$(jar_DATA)\"" \
-	-DJAVA_EXT_DIRS="\"$(jardir)/ext\""
+	-DJAVA_EXT_DIRS="\"$(jardir)/ext\"" \
+	-DLIBGCJ_DEFAULT_DATABASE="\"$(dbexecdir)/$(db_name)\""
 
 AM_GCJFLAGS = \
 	@LIBGCJ_JAVAFLAGS@ \
@@ -25771,6 +25778,23 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+install-dbexecDATA: $(dbexec_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(dbexecdir)" || $(mkdir_p) "$(DESTDIR)$(dbexecdir)"
+	@list='$(dbexec_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(dbexecDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(dbexecdir)/$$f'"; \
+	  $(dbexecDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(dbexecdir)/$$f"; \
+	done
+
+uninstall-dbexecDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dbexec_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(dbexecdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(dbexecdir)/$$f"; \
+	done
 install-jarDATA: $(jar_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(jardir)" || $(mkdir_p) "$(DESTDIR)$(jardir)"
@@ -26090,7 +26114,7 @@ check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(dbexecdir)" "$(DESTDIR)$(jardir)" "$(DESTDIR)$(pkgconfigdir)" "$(DESTDIR)$(toolexecmainlibdir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install: install-recursive
@@ -26473,7 +26497,8 @@ install-data-am: install-data-local install-jarDATA \
 	install-pkgconfigDATA
 
 install-exec-am: install-binPROGRAMS install-binSCRIPTS \
-	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA
+	install-dbexecDATA install-toolexeclibLTLIBRARIES \
+	install-toolexecmainlibDATA
 
 install-info: install-info-recursive
 
@@ -26502,8 +26527,9 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-binSCRIPTS \
-	uninstall-info-am uninstall-jarDATA uninstall-pkgconfigDATA \
-	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
+	uninstall-dbexecDATA uninstall-info-am uninstall-jarDATA \
+	uninstall-pkgconfigDATA uninstall-toolexeclibLTLIBRARIES \
+	uninstall-toolexecmainlibDATA
 
 uninstall-info: uninstall-info-recursive
 
@@ -26517,9 +26543,10 @@ uninstall-info: uninstall-info-recursive
 	distclean-recursive distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-binSCRIPTS \
-	install-data install-data-am install-data-local install-exec \
-	install-exec-am install-info install-info-am install-jarDATA \
-	install-man install-pkgconfigDATA install-strip \
+	install-data install-data-am install-data-local \
+	install-dbexecDATA install-exec install-exec-am install-info \
+	install-info-am install-jarDATA install-man \
+	install-pkgconfigDATA install-strip \
 	install-toolexeclibLTLIBRARIES install-toolexecmainlibDATA \
 	installcheck installcheck-am installdirs installdirs-am \
 	maintainer-clean maintainer-clean-generic \
@@ -26527,10 +26554,14 @@ uninstall-info: uninstall-info-recursive
 	mostlyclean-generic mostlyclean-libtool mostlyclean-local \
 	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
 	uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-binSCRIPTS uninstall-info-am uninstall-jarDATA \
-	uninstall-pkgconfigDATA uninstall-toolexeclibLTLIBRARIES \
-	uninstall-toolexecmainlibDATA
+	uninstall-binSCRIPTS uninstall-dbexecDATA uninstall-info-am \
+	uninstall-jarDATA uninstall-pkgconfigDATA \
+	uninstall-toolexeclibLTLIBRARIES uninstall-toolexecmainlibDATA
 
+
+$(db_name): gcj-dbtool
+	@rm -f $(db_name)
+	./gcj-dbtool -n $(db_name) || touch $(db_name)
 
 jniinclude/gnu_java_awt_peer_gtk_GdkGraphics.h: gnu/java/awt/peer/gtk/GdkGraphics.java
 jniinclude/gnu_java_awt_peer_gtk_GdkGraphics2D.h: gnu/java/awt/peer/gtk/GdkGraphics2D.java

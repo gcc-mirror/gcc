@@ -1,3 +1,16 @@
+2005-03-10  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/gcj/tools/gcj_dbtool/Main.java (main): Handle '-p'.
+	(usage): Document '-p'.
+	* Makefile.in: Rebuilt.
+	* Makefile.am (dbexecdir): New variable.
+	(db_name): Likewise.
+	(dbexec_DATA): Likewise.
+	($(db_name)): New target.
+	(AM_CXXFLAGS): Define LIBGCJ_DEFAULT_DATABASE.
+	* java/lang/natRuntime.cc (insertSystemProperties): Set default
+	system database.
+
 2005-03-10  Chris Burdess  <dog@bluezoo.org>
 
 	* gnu/xml/dom/ls/SAXEventSink.java: Ignore element declarations if
