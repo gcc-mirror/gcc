@@ -1,3 +1,8 @@
+2004-01-14  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/12850
+	* pt.c (instantiate_decl):  Do not increase function_depth.
+
 2004-01-14  Danny Smith  <dannysmith@users,sourceforge.net>
 
 	PR c++/9021
