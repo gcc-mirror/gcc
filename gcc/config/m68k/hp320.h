@@ -353,11 +353,11 @@ do{  if (PREFIX[0] == 'L' && PREFIX[1] == 'I')		\
 
 #ifdef AS_BUG_FLOATING_CONSTANT
 #undef  ASM_OUTPUT_DOUBLE_OPERAND
-#define ASM_OUTPUT_DOUBLE_OPERAND(FILE, VALUE)                  \
+#define ASM_OUTPUT_DOUBLE_OPERAND (FILE, VALUE)                  \
   do {								\
     union { double d; int i[2]; } dummy_u;			\
     dummy_u.d = (VALUE);					\
-    asm_fprintf (FILE, "%I0x%x%08x", dummy_u.i[0], dummy_u.i[1]); \ 
+    asm_fprintf (FILE, "%I0x%x%08x", dummy_u.i[0], dummy_u.i[1]); \
   } while (0)
 
 #undef  ASM_OUTPUT_FLOAT_OPERAND
