@@ -1,3 +1,8 @@
+2003-07-24  Nathan Myers <ncm-nospam@cantrip.org>
+
+        * testsuite/23_containers/map_operators.cc: Conform to 
+        container requirement as value must be Assignable.
+
 2003-07-23  Alexandre Oliva  <aoliva@redhat.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_PCH): Rework test such that it
