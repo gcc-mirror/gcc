@@ -310,7 +310,8 @@ override_options ()
     flag_omit_frame_pointer = 1;
 
   /* pic references don't explicitly mention pic_offset_table_rtx */
-  if (flag_pic)
+  /* code threaded into the prologue may conflict with profiling */
+  if (flag_pic || profile_flag || profile_block_flag)
     target_flags &= ~MASK_SCHEDULE_PROLOGUE;
 }
 
@@ -3619,6 +3620,7 @@ output_float_compare (insn, operands)
  	  xops[0] = operands[0];
  	  xops[1] = operands[1];
  	  xops[2] = operands[0];
+	  
 	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%2)), xops);
 	  RET;
 	}
