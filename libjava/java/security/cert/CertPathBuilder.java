@@ -1,5 +1,5 @@
 /* CertPathBuilder.java -- bulids CertPath objects from Certificates.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,13 +38,13 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.security.Engine;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.Security;
-
-import gnu.java.security.Engine;
 
 /**
  * This class builds certificate paths (also called certificate chains),

@@ -38,13 +38,14 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.security.action.GetPropertyAction;
+import gnu.java.security.der.DERReader;
+import gnu.java.security.der.DERValue;
+
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.math.BigInteger;
-
 import java.security.AccessController;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,10 +55,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.security.auth.x500.X500Principal;
-
-import gnu.java.security.action.GetPropertyAction;
-import gnu.java.security.der.DERReader;
-import gnu.java.security.der.DERValue;
 
 /**
  * A class for matching X.509 certificate revocation lists by criteria.

@@ -1,5 +1,5 @@
 /* DigestOutputStream.java --- An output stream tied to a message digest
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,28 +35,29 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
 
-import java.io.OutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 /**
-   DigestOutputStream is a class that ties an OutputStream with a
-   MessageDigest. The Message Digest is used by the class to update it
-   self as bytes are written to the OutputStream.
-
-   The updating to the digest depends on the on flag which is set to
-   true by default that tells the class to update the data in the
-   message digest.
-
-   @version 0.0
-   @author Mark Benvenuto <ivymccough@worldnet.att.net>
+ * DigestOutputStream is a class that ties an OutputStream with a
+ * MessageDigest. The Message Digest is used by the class to update it
+ * self as bytes are written to the OutputStream.
+ *
+ * The updating to the digest depends on the on flag which is set to
+ * true by default that tells the class to update the data in the
+ * message digest.
+ *
+ * @version 0.0
+ * @author Mark Benvenuto <ivymccough@worldnet.att.net>
  */
 public class DigestOutputStream extends FilterOutputStream
 {
   /**
-     The message digest for the DigestOutputStream
+   * The message digest for the DigestOutputStream
    */
   protected MessageDigest digest;
 
@@ -64,12 +65,12 @@ public class DigestOutputStream extends FilterOutputStream
   private boolean state = true;
 
   /**
-     Constructs a new DigestOutputStream.  It associates a
-     MessageDigest with the stream to compute the stream as data is
-     written.
-
-     @param stream An OutputStream to associate this stream with
-     @param digest A MessageDigest to hash the stream with
+   * Constructs a new DigestOutputStream.  It associates a
+   * MessageDigest with the stream to compute the stream as data is
+   * written.
+   *
+   * @param stream An OutputStream to associate this stream with
+   * @param digest A MessageDigest to hash the stream with
    */
   public DigestOutputStream(OutputStream stream, MessageDigest digest)
   {
@@ -78,9 +79,9 @@ public class DigestOutputStream extends FilterOutputStream
   }
 
   /**
-     Returns the MessageDigest associated with this DigestOutputStream
-
-     @return The MessageDigest used to hash this stream
+   * Returns the MessageDigest associated with this DigestOutputStream
+   *
+   * @return The MessageDigest used to hash this stream
    */
   public MessageDigest getMessageDigest()
   {
@@ -88,9 +89,9 @@ public class DigestOutputStream extends FilterOutputStream
   }
 
   /**
-     Sets the current MessageDigest to current parameter
-
-     @param digest A MessageDigest to associate with this stream
+   * Sets the current MessageDigest to current parameter
+   *
+   * @param digest A MessageDigest to associate with this stream
    */
   public void setMessageDigest(MessageDigest digest)
   {
@@ -99,13 +100,13 @@ public class DigestOutputStream extends FilterOutputStream
 
 
   /**
-     Updates the hash if the on flag is true and then writes a byte to
-     the underlying output stream.
-
-     @param b A byte to write to the output stream
-
-     @exception IOException if the underlying output stream 
-     cannot write the byte, this is thrown.
+   * Updates the hash if the on flag is true and then writes a byte to
+   * the underlying output stream.
+   *
+   * @param b A byte to write to the output stream
+   *
+   * @exception IOException if the underlying output stream 
+   * cannot write the byte, this is thrown.
    */
   public void write(int b) throws IOException
   {
@@ -116,15 +117,15 @@ public class DigestOutputStream extends FilterOutputStream
   }
 
   /**
-     Updates the hash if the on flag is true and then writes the bytes
-     to the underlying output stream.
-
-     @param b Bytes to write to the output stream
-     @param off Offset to start to start at in array
-     @param len Length of data to write
-
-     @exception IOException if the underlying output stream 
-     cannot write the bytes, this is thrown.
+   * Updates the hash if the on flag is true and then writes the bytes
+   * to the underlying output stream.
+   *
+   * @param b Bytes to write to the output stream
+   * @param off Offset to start to start at in array
+   * @param len Length of data to write
+   *
+   * @exception IOException if the underlying output stream 
+   * cannot write the bytes, this is thrown.
    */
   public void write(byte[]b, int off, int len) throws IOException
   {
@@ -135,10 +136,10 @@ public class DigestOutputStream extends FilterOutputStream
   }
 
   /**
-     Sets the flag specifying if this DigestOutputStream updates the
-     digest in the write() methods. The default is on;
-
-     @param on True means it digests stream, false means it does not
+   * Sets the flag specifying if this DigestOutputStream updates the
+   * digest in the write() methods. The default is on;
+   *
+   * @param on True means it digests stream, false means it does not
    */
   public void on(boolean on)
   {
@@ -146,9 +147,9 @@ public class DigestOutputStream extends FilterOutputStream
   }
 
   /**
-     Converts the output stream and underlying message digest to a string.
-
-     @return A string representing the output stream and message digest.
+   * Converts the output stream and underlying message digest to a string.
+   *
+   * @return A string representing the output stream and message digest.
    */
   public String toString()
   {

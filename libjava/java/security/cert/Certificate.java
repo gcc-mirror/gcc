@@ -1,5 +1,5 @@
 /* Certificate.java --- Certificate class
-   Copyright (C) 1999,2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.security.cert;
 
-import java.security.PublicKey;
-import java.security.NoSuchAlgorithmException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.io.ByteArrayInputStream;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
 
 /**
  * The Certificate class is an abstract class used to manage 

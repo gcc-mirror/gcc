@@ -1,5 +1,5 @@
 /* KeyFactory.java --- Key Factory Class
-   Copyright (C) 1999, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,12 +35,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
 
-import java.security.spec.KeySpec;
-import java.security.spec.InvalidKeySpecException;
-
 import gnu.java.security.Engine;
+
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
 
 /**
  * <p>Key factories are used to convert keys (opaque cryptographic keys of type

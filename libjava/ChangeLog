@@ -1,5 +1,38 @@
 2004-10-21  Michael Koch  <konqueror@gmx.de>
 
+	* java/security/AlgorithmParameterGenerator.java,
+	java/security/AlgorithmParameters.java,
+	java/security/AlgorithmParametersSpi.java,
+	java/security/AllPermission.java,
+	java/security/BasicPermission.java,
+	java/security/Certificate.java,
+	java/security/CodeSource.java,
+	java/security/DigestInputStream.java,
+	java/security/DigestOutputStream.java,
+	java/security/GuardedObject.java,
+	java/security/KeyFactory.java,
+	java/security/KeyFactorySpi.java,
+	java/security/KeyPairGenerator.java,
+	java/security/KeyStore.java,
+	java/security/KeyStoreSpi.java,
+	java/security/Permissions.java,
+	java/security/Security.java,
+	java/security/Signature.java,
+	java/security/UnresolvedPermission.java,
+	java/security/cert/CertPathBuilder.java,
+	java/security/cert/CertPathValidator.java,
+	java/security/cert/CertStore.java,
+	java/security/cert/Certificate.java,
+	java/security/cert/CertificateFactory.java,
+	java/security/cert/PolicyQualifierInfo.java,
+	java/security/cert/TrustAnchor.java,
+	java/security/cert/X509CRL.java,
+	java/security/cert/X509CRLSelector.java,
+	java/security/cert/X509CertSelector.java:
+	Import cleanup.
+
+2004-10-21  Michael Koch  <konqueror@gmx.de>
+
 	* java/rmi/MarshalledObject.java,
 	java/rmi/Naming.java,
 	java/rmi/activation/Activatable.java,

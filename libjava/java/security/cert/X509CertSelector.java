@@ -38,15 +38,15 @@ exception statement from your version. */
 
 package java.security.cert;
 
+import gnu.java.security.OID;
+import gnu.java.security.action.GetPropertyAction;
+
 import java.io.IOException;
-
 import java.math.BigInteger;
-
 import java.security.AccessController;
 import java.security.KeyFactory;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,9 +59,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
-
-import gnu.java.security.OID;
-import gnu.java.security.action.GetPropertyAction;
 
 /**
  * A concrete implementation of {@link CertSelector} for X.509 certificates,

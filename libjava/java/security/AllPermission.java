@@ -1,5 +1,5 @@
 /* AllPermission.java -- Permission to do anything
-   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,19 +35,21 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.security;
 
-import java.util.Enumeration;
-import java.util.Collections;
 import gnu.java.util.EmptyEnumeration;
+
+import java.util.Collections;
+import java.util.Enumeration;
 
 /**
  * This class is a permission that implies all other permissions.  Granting
  * this permission effectively grants all others.  Extreme caution should
  * be exercised in granting this permission.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see AccessController
  * @see Permissions
  * @see SecurityManager
