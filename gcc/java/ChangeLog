@@ -1,3 +1,8 @@
+2001-10-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_cast): Call patch_string on the first operand of
+	the incoming node, update it if necessary. Fixes java/4510.
+
 2001-10-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* parse.y (find_as_inner_class): Don't disregard the enclosing scope
@@ -15,6 +20,11 @@
 	* lang.c (java_tree_code_type, java_tree_code_length): Likewise.
 	* lex.c (java_get_line_col): Likewise.
 	* parse.y (build_incdec): Likewise.
+
+2001-10-05  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (register_incomplete_type): Set JDEP_SUPER to be given
+	a NULL enclosing context if appropriate. Fixes java/4466.
 
 2001-10-03  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
@@ -71,6 +81,11 @@
 
 	* parse.y: Use VA_OPEN/VA_CLOSE/VA_FIXEDARG throughout.
 	* jv-scan.c: Likewise.
+
+2001-09-17  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_method_invocation): Inner class creation context
+	check not enforced within constructors. Fixes PR java/1873.
 
 2001-09-16  Tom Tromey  <tromey@redhat.com>
 
