@@ -3340,8 +3340,13 @@ reload_as_needed (first, live_known)
 		    if (class == (int) reload_reg_class[i])
 		      {
 			if (reload_optional[i])
-			  reload_in[i] = reload_out[i] = reload_reg_rtx[i] = 0;
-			else if (reload_reg_rtx[i] == 0)
+			  {
+			    reload_in[i] = reload_out[i] = 0;
+			    reload_secondary_p[i] = 0;
+			  }
+			else if (reload_reg_rtx[i] == 0
+				 && (reload_in[i] != 0 || reload_out[i] != 0
+				     || reload_secondary_p[i] != 0))
 			  abort ();
 		      }
 
