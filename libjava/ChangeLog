@@ -1,3 +1,14 @@
+2005-03-05  Roger Sayle  <roger@eyesopen.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+	    Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR libgcj/20155
+	* Makefile.am (libgcj0_convenience.la): New rule to create a file
+	of the object files to link to avoid exceeding the command line
+	length limits on some platforms.
+	(clean-local): Clean up objectlist files.
+	* Makefile.in: Regenerate.
+
 2005-03-05  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* java/lang/dtoa.c (_dtoa_r): Initialize variables ilim, ilim1 and
