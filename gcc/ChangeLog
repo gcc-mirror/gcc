@@ -1,3 +1,8 @@
+Wed Feb 11 01:44:13 1998  Richard Henderson  <rth@cygnus.com>
+
+	* stor-layout.c (layout_type): Do upper - lower in the native type,
+	so as to properly handle negative indices.
+
 Wed Feb 11 01:35:55 1998  Robert Lipe   <robertl@dgii.com>
 
 	* except.c (start_dynamic_cleanup): Remove unused variable 'dhc'.
