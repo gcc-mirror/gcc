@@ -7668,8 +7668,8 @@ reload_cse_invalidate_regno (regno, mode, clobber)
     }
 }
 
-/* The memory at address MEM_BASE is being changed.  MEM_MODE is the mode of
-   the memory reference.  Return whether this change will invalidate VAL.  */
+/* The memory at address MEM_BASE is being changed.
+   Return whether this change will invalidate VAL.  */
 
 static int
 reload_cse_mem_conflict_p (mem_base, val)
@@ -7696,6 +7696,9 @@ reload_cse_mem_conflict_p (mem_base, val)
       return 0;
 
     case MEM:
+      if (GET_MODE (mem_base) == BLKmode
+	  || GET_MODE (val) == BLKmode)
+	return 1;
       return anti_dependence (val, mem_base);
 
     default:
