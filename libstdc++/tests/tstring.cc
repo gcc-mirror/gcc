@@ -109,6 +109,53 @@ void cattest()
   assert(z == "Hello, world.");
 }
 
+void
+findtest()
+{
+  string x;
+  string::size_type pos;
+  pos = x.find_last_not_of('X');
+  assert(pos == string::npos);
+  pos = x.find_last_not_of("XYZ");
+  assert(pos == string::npos);
+
+  string y("a");
+  pos = y.find_last_not_of('X');
+  assert(pos == 0);
+  pos = y.find_last_not_of('a');
+  assert(pos == string::npos);
+  pos = y.find_last_not_of("XYZ");
+  assert(pos == 0);
+  pos = y.find_last_not_of("a");
+  assert(pos == string::npos);
+
+  string z("ab");
+  pos = z.find_last_not_of('X');
+  assert(pos == 1);
+  pos = z.find_last_not_of("XYZ");
+  assert(pos == 1);
+  pos = z.find_last_not_of('b');
+  assert(pos == 0);
+  pos = z.find_last_not_of("Xb");
+  assert(pos == 0);
+  pos = z.find_last_not_of("Xa");
+  assert(pos == 1);
+  pos = z.find_last_of("ab");
+  assert(pos == 1);
+  pos = z.find_last_of("Xa");
+  assert(pos == 0);
+  pos = z.find_last_of("Xb");
+  assert(pos == 1);
+  pos = z.find_last_of("XYZ");
+  assert(pos == string::npos);
+  pos = z.find_last_of('a');
+  assert(pos == 0);
+  pos = z.find_last_of('b');
+  assert(pos == 1);
+  pos = z.find_last_of('X');
+  assert(pos == string::npos);
+}
+
 void comparetest()
 {  
   string x = X;
@@ -191,6 +238,7 @@ int main()
   decltest();
   cattest();
   comparetest();
+  findtest();
   substrtest();
   identitytest(X, X);
   identitytest(X, Y);
