@@ -1,3 +1,9 @@
+2004-09-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/17400
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Don't
+	coalesce partitions when one occurs in an abnormal PHI.
+							      
 2004-09-13  Andrew Pinski  <apinski@apple.com>
 
 	* config/rs6000/darwin.h (ASM_OUTPUT_COMMON): Change variable size's
