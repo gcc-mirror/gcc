@@ -119,7 +119,8 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
     $(srcdir)/ginclude/va-pyr.h $(srcdir)/ginclude/va-sparc.h \
     $(srcdir)/ginclude/va-clipper.h $(srcdir)/ginclude/va-spur.h \
     $(srcdir)/ginclude/iso646.h $(srcdir)/ginclude/va-ppc.h \
-    $(srcdir)/ginclude/proto.h $(srcdir)/ginclude/va-sh.h $(EXTRA_HEADERS)
+    $(srcdir)/ginclude/proto.h $(srcdir)/ginclude/va-sh.h $(EXTRA_HEADERS) \
+    $(LANG_EXTRA_HEADERS)
 
 # Target to use whe installing assert.h.  Some systems may
 # want to set this empty.
@@ -476,6 +477,8 @@ INCLUDES = -I. -I$(srcdir) -I$(srcdir)/config
 LANG_MAKEFILES =
 LANG_STAGESTUFF =
 LANG_DIFF_EXCLUDES =
+LANG_LIB2FUNCS =
+LANG_EXTRA_HEADERS =
 
 # Flags to pass to recursive makes.
 # CC is set by configure.  Hosts without symlinks need special handling
@@ -688,7 +691,7 @@ compilations: ${OBJS}
 
 # Create a list of the language-independent object files so the language
 # subdirectories needn't mention their names explicitly.
-stamp-objlist: Makefile $(OBJS) $(BC_OBJS)
+stamp-objlist: $(OBJS) $(BC_OBJS)
 	echo " $(OBJS) $(BC_OBJS)" | sed -e 's, \([a-z]\), ../\1,g' -e 's/\.o/$(objext)/g' >stamp-objlist
 
 # We call this executable `xgcc' rather than `gcc'
@@ -884,7 +887,7 @@ libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs
 	fi
 
 libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
-   machmode.h longlong.h gbl-ctors.h config.status
+   $(LANG_LIB2FUNCS) machmode.h longlong.h gbl-ctors.h config.status
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2.a
@@ -909,19 +912,32 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 # We don't use -e here because there are if statements
 # that should not make the command give up when the if condition is false.
 # Instead, we test for failure after each command where it matters.
-	for file in .. $(LIB2FUNCS_EXTRA); \
+	for file in .. $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS); \
 	do \
 	  if [ x$${file} != x.. ]; then \
-	    name=`echo $${file} | sed -e 's/[.][cS]$$//' -e 's/[.]asm$$//'`; \
+	    name=`echo $${file} | sed -e 's/[.][cSo]$$//' -e 's/[.]asm$$//' -e 's/[.]txt$$//'`; \
 	    oname=` echo $${name} | sed -e 's,.*/,,'`; \
-	    echo $${name}; \
-	    if [ $${name}.asm = $${file} ]; then \
-	      cp $${file} $${name}.s || exit 1; file=$${name}.s; \
-	    else true; fi; \
-	    $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
-	    if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	    $(AR) $(AR_FLAGS) tmplibgcc2.a $${oname}$(objext); \
-	    rm -f $${name}.s $${oname}$(objext); \
+	    if [ $${name}.txt = $${file} ]; then \
+	      for f in .. `cat $${file}`; do if [ x$${f} != x.. ]; then \
+		$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	  	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" CC="$(CC)" \
+		  CFLAGS="$(CFLAGS)" HOST_PREFIX="$(HOST_PREFIX)" \
+		  HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+		  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $${f}; \
+	        if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	        $(AR) $(AR_FLAGS) tmplibgcc2.a $${f}; \
+	        rm -f $${f}; \
+	      fi; done; \
+	    else \
+	      echo $${name}; \
+	      if [ $${name}.asm = $${file} ]; then \
+		cp $${file} $${name}.s || exit 1; file=$${name}.s; \
+	      else true; fi; \
+	      $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c $${file}; \
+	      if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	      $(AR) $(AR_FLAGS) tmplibgcc2.a $${oname}$(objext); \
+	      rm -f $${name}.s $${oname}$(objext); \
+	    fi; \
 	  else true; \
 	  fi; \
 	done
@@ -1798,7 +1814,7 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h objc-headers
 	  if [ X$$file != X.. ]; then \
 	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    rm -f $$objdir/include/$$realfile; \
-	    cp ginclude/$$realfile $$objdir/include; \
+	    cp $$file $$objdir/include; \
 	    chmod a+r $$objdir/include/$$realfile; \
 	  fi; \
 	done
