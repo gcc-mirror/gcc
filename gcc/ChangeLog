@@ -1,3 +1,11 @@
+2002-05-02  Jason Merrill  <jason@redhat.com>
+
+	* defaults.h (BOOL_TYPE_SIZE): Move default here from cp/decl.c.
+	* c-decl.c (c_init_decl_processing): Use it.
+	* config/rs6000/darwin.h (BOOL_TYPE_SIZE): Define to INT_TYPE_SIZE.
+	* config/i960/i960.h (BOOL_TYPE_SIZE): Don't define.
+	* config/mcore/mcore.h (BOOL_TYPE_SIZE): Don't define.
+
 2002-05-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* regrename.c: Fix formatting.

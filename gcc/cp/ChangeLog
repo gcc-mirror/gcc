@@ -1,3 +1,7 @@
+2002-05-03  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (BOOL_TYPE_SIZE): Move default to defaults.h.
+
 2002-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	ABI change, returning simple classes from functions.

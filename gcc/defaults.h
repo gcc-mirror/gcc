@@ -293,6 +293,11 @@ do {								\
 #define CHAR_TYPE_SIZE BITS_PER_UNIT
 #endif
 
+#ifndef BOOL_TYPE_SIZE
+/* `bool' has size and alignment `1', on almost all platforms.  */
+#define BOOL_TYPE_SIZE CHAR_TYPE_SIZE
+#endif
+
 #ifndef SHORT_TYPE_SIZE
 #define SHORT_TYPE_SIZE (BITS_PER_UNIT * MIN ((UNITS_PER_WORD + 1) / 2, 2))
 #endif
