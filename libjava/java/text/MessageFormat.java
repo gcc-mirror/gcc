@@ -1,6 +1,6 @@
 // MessageFormat.java - Localized message formatting.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -45,19 +45,6 @@ final class MessageFormatElement
   // Text to follow this element.
   String trailer;
 
-  // FIXME: shouldn't need this.
-  Class forName (String name)
-    {
-      try
-	{
-	  return Class.forName (name);
-	}
-      catch (ClassNotFoundException x)
-	{
-	}
-      return null;
-    }
-
   // Recompute the locale-based formatter.
   void setLocale (Locale loc)
     {
@@ -65,9 +52,7 @@ final class MessageFormatElement
 	;
       else if (type.equals("number"))
 	{
-	  // FIXME: named class literal.
-	  // formatClass = Number.class;
-	  formatClass = forName ("java.lang.Number");
+	  formatClass = java.lang.Number.class;
 
 	  if (style == null)
 	    format = NumberFormat.getInstance(loc);
@@ -98,9 +83,7 @@ final class MessageFormatElement
 	}
       else if (type.equals("time") || type.equals("date"))
 	{
-	  // FIXME: named class literal.
-	  // formatClass = Date.class;
-	  formatClass = forName ("java.util.Date");
+	  formatClass = java.util.Date.class;
 
 	  int val = DateFormat.DEFAULT;
 	  if (style == null)
@@ -127,9 +110,7 @@ final class MessageFormatElement
 	}
       else if (type.equals("choice"))
 	{
-	  // FIXME: named class literal.
-	  // formatClass = Number.class;
-	  formatClass = forName ("java.lang.Number");
+	  formatClass = java.lang.Number.class;
 
 	  if (style == null)
 	    throw new
@@ -370,8 +351,19 @@ public class MessageFormat extends Format
   public final StringBuffer format (Object singleArg, StringBuffer appendBuf,
 				    FieldPosition ignore)
     {
-      Object[] args = new Object[1];
-      args[0] = singleArg;
+      Object[] args;
+
+      if (singleArg instanceof Object[])
+	{
+	  // This isn't specified in any manual, but it follows the
+	  // JDK implementation.
+	  args = (Object[]) singleArg;
+	}
+      else
+	{
+	  args = new Object[1];
+	  args[0] = singleArg;
+	}
       return format (args, appendBuf, ignore);
     }
 

@@ -1,3 +1,12 @@
+2001-02-07  Tom Tromey  <tromey@redhat.com>
+
+	Fix for PR libgcj/1906:
+	* java/text/MessageFormat.java (setLocale): Use named class
+	literals.
+	(forName): Removed.
+	(format(Object,StringBuffer,FieldPosition)): Special case if
+	argument is an Object[].
+
 2001-02-07  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/Arrays.java: Removed "cmp" methods.
