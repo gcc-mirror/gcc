@@ -1,3 +1,7 @@
+2004-11-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* MAINTAINERS: Add myself as gcc testsuite maintainer.
+
 2004-11-11  Paul Brook  <paul@codesourcery.com>
 
 	* MAINTAINERS: Add self as arm maintainer.  Update email address.
