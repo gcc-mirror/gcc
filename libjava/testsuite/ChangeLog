@@ -1,3 +1,8 @@
+2001-08-01  Jeff Sturm  <jsturm@one-point.com>
+
+	* libjava.lang/KeepInline.java: New file.
+	* libjava.lang/KeepInline.out: New file.
+
 2001-07-30  Jeff Sturm  <jsturm@one-point.com>
 
 	* libjava.lang/SyncTest.java: New file.
