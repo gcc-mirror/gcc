@@ -1,5 +1,10 @@
 2003-04-26  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/fstream.tcc (pbackfail): Shorten a bit (10 lines)
+	the innermost 'if' by factoring out some code.
+
+2003-04-26  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/streambuf.tcc (__copy_streambufs): Don't
 	use in_avail(), simplify.
 
