@@ -127,3 +127,53 @@ GNU_xref_end ()
 {
   fatal ("GCC does not yet support XREF");
 }
+
+/* called at end of parsing, but before end-of-file processing.  */
+void
+finish_file ()
+{
+  extern tree static_ctors, static_dtors;
+  extern tree get_file_function_name ();
+  extern tree build_function_call                 PROTO((tree, tree));
+  tree void_list_node = build_tree_list (NULL_TREE, void_type_node);
+#ifndef ASM_OUTPUT_CONSTRUCTOR
+  if (static_ctors)
+    {
+      tree fnname = get_file_function_name ('I');
+      start_function (void_list_node,
+		      build_parse_node (CALL_EXPR, fnname, void_list_node,
+					NULL_TREE),
+		      0);
+      fnname = DECL_ASSEMBLER_NAME (current_function_decl);
+      store_parm_decls ();
+
+      for (; static_ctors; static_ctors = TREE_CHAIN (static_ctors))
+	expand_expr_stmt (build_function_call (TREE_VALUE (static_ctors),
+					       NULL_TREE));
+
+      finish_function (0);
+
+      assemble_constructor (IDENTIFIER_POINTER (fnname));
+    }
+#endif
+#ifndef ASM_OUTPUT_DESTRUCTOR
+  if (static_dtors)
+    {
+      tree fnname = get_file_function_name ('D');
+      start_function (void_list_node,
+		      build_parse_node (CALL_EXPR, fnname, void_list_node,
+					NULL_TREE),
+		      0);
+      fnname = DECL_ASSEMBLER_NAME (current_function_decl);
+      store_parm_decls ();
+
+      for (; static_dtors; static_dtors = TREE_CHAIN (static_dtors))
+	expand_expr_stmt (build_function_call (TREE_VALUE (static_dtors),
+					       NULL_TREE));
+
+      finish_function (0);
+
+      assemble_destructor (IDENTIFIER_POINTER (fnname));
+    }
+#endif
+}

@@ -271,6 +271,32 @@ decl_attributes (decl, attributes)
 	else
 	  warning_with_decl (decl, "`transparent_union' attribute ignored");
       }
+    else if (TREE_VALUE (a) == get_identifier ("constructor")
+	     || TREE_VALUE (a) == get_identifier ("__constructor__"))
+      {
+	if (TREE_CODE (decl) != FUNCTION_DECL
+	    || TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
+	    || decl_function_context (decl))
+	  {
+	    error_with_decl (decl,
+		    "`constructor' attribute meaningless for non-function %s");
+	    continue;
+	  }
+	DECL_STATIC_CONSTRUCTOR (decl) = 1;
+      }
+    else if (TREE_VALUE (a) == get_identifier ("destructor")
+	     || TREE_VALUE (a) == get_identifier ("__destructor__"))
+      {
+	if (TREE_CODE (decl) != FUNCTION_DECL
+	    || TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
+	    || decl_function_context (decl))
+	  {
+	    error_with_decl (decl,
+		    "`destructor' attribute meaningless for non-function %s");
+	    continue;
+	  }
+	DECL_STATIC_DESTRUCTOR (decl) = 1;
+      }
     else if (TREE_CODE (name) != TREE_LIST)
      {
 #ifdef VALID_MACHINE_ATTRIBUTE
