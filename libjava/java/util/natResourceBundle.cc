@@ -1,4 +1,4 @@
-/* Copyright (C) 2002, 2003  Free Software Foundation
+/* Copyright (C) 2002, 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -12,31 +12,18 @@ details.  */
 
 #include <gcj/cni.h>
 #include <jvm.h>
+#include <java-stack.h>
 #include <java/util/ResourceBundle.h>
-#include <java/lang/SecurityManager.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/Class.h>
-#include <java/lang/ArrayIndexOutOfBoundsException.h>
-#include <gnu/gcj/runtime/StackTrace.h>
+
+using namespace java::lang;
 
 java::lang::ClassLoader *
 java::util::ResourceBundle::getCallingClassLoader ()
 {
-  gnu::gcj::runtime::StackTrace *t = new gnu::gcj::runtime::StackTrace(6);
-  try
-    {
-      /* Frame 0 is this method, frame 1 is getBundle, so starting at
-	 frame 2 we might see the user's class.  FIXME: should account
-	 for reflection, JNI, etc, here.  */
-      for (int i = 2; ; ++i)
-	{
-	  jclass klass = t->classAt(i);
-	  if (klass != NULL)
-	    return klass->getClassLoaderInternal();
-	}
-    }
-  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-    {
-    }
+  jclass caller = _Jv_StackTrace::GetCallingClass (&ResourceBundle::class$);
+  if (caller)
+    return caller->getClassLoaderInternal();
   return NULL;
 }

@@ -304,12 +304,10 @@ final class VMClassLoader
 	    default_sys
 	      = (ClassLoader) c.newInstance(new Object[] { default_sys });
 	  }
-	catch (Exception e)
+	catch (Exception ex)
 	  {
-	    System.err.println("Requested system classloader "
-			       + loader + " failed, using "
-			       + "gnu.gcj.runtime.VMClassLoader");
-	    e.printStackTrace();
+	    throw new Error("Failed to load requested system classloader "
+			       + loader, ex);
 	  }
       }
     return default_sys;

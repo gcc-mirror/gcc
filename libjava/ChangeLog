@@ -1,3 +1,89 @@
+2005-03-10  Bryce McKinlay  <mckinlay@redhat.com>
+
+	New Stack Trace infrastructure.
+	* Makefile.am (libgcj0_convenience_la_SOURCES): Add stacktrace.cc.
+	(gnu/gcj/runtime/StackTrace.lo): Removed.
+	(ordinary_java_source_files): Remove obsolete files.
+	(nat_source_files): Remove obsolete files. Add natVMThrowable.cc.
+	* configure.host (fallback_backtrace_h): Set backtrace header
+	for mingw and cygwin targets. 
+	* configure.ac: Make symlink for fallback backtrace headers.
+	* Makefile.in, configure: Rebuilt.
+	* defineclass.cc (_Jv_ClassReader::read_one_code_attribute):
+	Read 'LineNumberTable' attribute.
+	(_Jv_ClassReader::read_one_class_attribute): Read 'SourceFile'
+	attribute.
+	(_Jv_ClassReader::handleCodeAttribute): Initialize method line 
+	table fields.
+	* exception.cc: Remove unused include.
+	* interpret.cc (DIRECT_THREADED, insn_slot): Moved to java-interp.h.
+	(SAVE_PC): New macro. Save current PC in the interpreter frame.
+	(NULLCHECK, NULLARRAYCHECK): Use SAVE_PC.
+	(_Jv_InterpMethod::compile): Translate bytecode PC values in the line
+	table to direct threaded instruction values.
+	(_Jv_StartOfInterpreter, _Jv_EndOfInterpreter): Removed.
+	(_Jv_InterpMethod::run): No longer member function. All 
+	callers updated. Remove _Unwind calls. Call SAVE_PC whenever a call
+	is made or where an instruction could throw.
+	(_Jv_InterpMethod::get_source_line): New. Look up source line numbers
+	in line_table.
+	* prims.cc (catch_segv): Construct exception after MAKE_THROW_FRAME.
+	(catch_fpe): Likewise.
+	* stacktrace.cc: New file. Stack trace code now here.
+	* gnu/gcj/runtime/MethodRef.java: 
+	* gnu/gcj/runtime/NameFinder.java: Mostly reimplemented. Now simply
+	calls addr2line to look up PC addresses in a given binary or shared
+	library.
+	* gnu/gcj/runtime/StackTrace.java, gnu/gcj/runtime/natNameFinder.cc,
+	gnu/gcj/runtime/natStackTrace.cc: Removed.
+	* gnu/java/lang/MainThread.java (call_main): Add comment warning that
+	this function name is specially recognised by the stack trace code
+	and shouldn't be changed.
+	* include/java-interp.h (DIRECT_THREADED, insn_slot): Moved here.
+	(struct  _Jv_LineTableEntry, line_table, line_table_len): New.
+	(_Jv_InterpMethod::run): Update declaration.
+	(_Jv_StackTrace_): New friend. NameFinder and StackTrace no longer
+	friends.
+	(_Jv_InterpFrame): Renamed from _Jv_MethodChain. Add PC field.
+	* include/java-stack.h: New file. Declarations for stack tracing.
+	* include/jvm.h (_Jv_Frame_info): Removed.
+	* java/lang/Class.h: Update friend declarations.	
+	* java/lang/VMClassLoader.java (getSystemClassLoader): Simplify
+	exception message.
+	* java/lang/VMThrowable.java (fillInStackTrace): Now native.
+	(getStackTrace): Now native.
+	(data): New RawDataManaged field.
+	* java/lang/natClass.cc: Update includes. 
+	(forName): Use _Jv_StackTrace::GetCallingClass for 
+	calling-classloader check.
+	(getClassLoader): Likewise.
+	* java/lang/natRuntime.cc: Update includes.
+	(_load): Use _Jv_StackTrace::GetFirstNonSystemClassLoader.
+	* java/lang/natVMSecurityManager.cc: Update includes.
+	(getClassContext): Use _Jv_StackTrace::GetClassContext.
+	* java/lang/natVMThrowable.cc: New file. Native methods for 
+	VMThrowable.
+	* java/lang/reflect/natArray.cc: Update includes.
+	(newInstance): Use _Jv_StackTrace::GetCallingClass to implement
+	accessibility check.
+	* java/lang/reflect/natConstructor.cc: Update includes.
+	(newInstance): Use _Jv_StackTrace::GetCallingClass to implement
+	accessibility check.
+	* java/lang/reflect/natField.cc: Update includes.
+	(getAddr): Use _Jv_StackTrace::GetCallingClass to implement
+	accessibility check.
+	* java/lang/reflect/natMethod.cc: Update includes.
+	(invoke): Use _Jv_StackTrace::GetCallingClass to implement
+	accessibility check.
+	* java/util/natResourceBundle.cc: Update includes.
+	(getCallingClassLoader): Use _Jv_StackTrace::GetCallingClass.	
+	* java/util/logging/natLogger.cc: Update includes. Use 
+	_Jv_StackTrace::GetCallerInfo to get call-site info.	
+	* sysdep/generic/backtrace.h: Fallback backtrace code. Stub
+	implementation.
+	* sysdep/i386/backtrace.h: New. Fallback backtrace code. i386
+	implementation.
+
 2005-03-10  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* testsuite/libjava.compile/PR20312.java: New file.

@@ -53,7 +53,6 @@ details.  */
 #include <java/lang/SecurityManager.h>
 #include <java/lang/StringBuffer.h>
 #include <java/lang/VMClassLoader.h>
-#include <gnu/gcj/runtime/StackTrace.h>
 #include <gcj/method.h>
 #include <gnu/gcj/runtime/MethodRef.h>
 #include <gnu/gcj/RawData.h>
@@ -62,6 +61,7 @@ details.  */
 #include <java-cpool.h>
 #include <java-interp.h>
 #include <java-assert.h>
+#include <java-stack.h>
 #include <execution.h>
 
 
@@ -101,20 +101,10 @@ jclass
 java::lang::Class::forName (jstring className)
 {
   java::lang::ClassLoader *loader = NULL;
-  gnu::gcj::runtime::StackTrace *t 
-    = new gnu::gcj::runtime::StackTrace(4);
-  java::lang::Class *klass = NULL;
-  try
-    {
-      for (int i = 1; !klass; i++)
-	{
-	  klass = t->classAt (i);
-	}
-      loader = klass->getClassLoaderInternal();
-    }
-  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-    {
-    }
+
+  jclass caller = _Jv_StackTrace::GetCallingClass (&Class::class$);
+  if (caller)
+    loader = caller->getClassLoaderInternal();
 
   return forName (className, true, loader);
 }
@@ -125,21 +115,10 @@ java::lang::Class::getClassLoader (void)
   java::lang::SecurityManager *s = java::lang::System::getSecurityManager();
   if (s != NULL)
     {
-      gnu::gcj::runtime::StackTrace *t 
-	= new gnu::gcj::runtime::StackTrace(4);
-      Class *caller = NULL;
+      jclass caller = _Jv_StackTrace::GetCallingClass (&Class::class$);
       ClassLoader *caller_loader = NULL;
-      try
-	{
-	  for (int i = 1; !caller; i++)
-	    {
-	      caller = t->classAt (i);
-	    }
-	  caller_loader = caller->getClassLoaderInternal();
-	}
-      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-	{
-	}
+      if (caller)
+	caller_loader = caller->getClassLoaderInternal();
 
       // If the caller has a non-null class loader, and that loader
       // is not this class' loader or an ancestor thereof, then do a

@@ -14,6 +14,7 @@ details.  */
 
 #include <jvm.h>
 #include <gcj/cni.h>
+#include <java-stack.h>
 #include <java/lang/reflect/Array.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/IllegalArgumentException.h>
@@ -54,21 +55,10 @@ java::lang::reflect::Array::newInstance (jclass componentType,
   if (ndims == 1)
     return newInstance (componentType, dims[0]);
 
-  gnu::gcj::runtime::StackTrace *t 
-    = new gnu::gcj::runtime::StackTrace(4);
-  Class *caller = NULL;
+  Class *caller = _Jv_StackTrace::GetCallingClass (&Array::class$);
   ClassLoader *caller_loader = NULL;
-  try
-    {
-      for (int i = 1; !caller; i++)
-	{
-	  caller = t->classAt (i);
-	}
-      caller_loader = caller->getClassLoaderInternal();
-    }
-  catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-    {
-    }
+  if (caller)
+    caller_loader = caller->getClassLoaderInternal();
 
   jclass arrayType = componentType;
   for (int i = 0;  i < ndims;  i++)

@@ -13,6 +13,7 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <jni.h>
+#include <java-stack.h>
 
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Constructor.h>
@@ -168,20 +169,7 @@ java::lang::reflect::Method::invoke (jobject obj, jobjectArray args)
   // Check accessibility, if required.
   if (! (Modifier::isPublic (meth->accflags) || this->isAccessible()))
     {
-      gnu::gcj::runtime::StackTrace *t 
-	= new gnu::gcj::runtime::StackTrace(4);
-      Class *caller = NULL;
-      try
-	{
-	  for (int i = 1; !caller; i++)
-	    {
-	      caller = t->classAt (i);
-	    }
-	}
-      catch (::java::lang::ArrayIndexOutOfBoundsException *e)
-	{
-	}
-
+      Class *caller = _Jv_StackTrace::GetCallingClass (&Method::class$);
       if (! _Jv_CheckAccess(caller, declaringClass, meth->accflags))
 	throw new IllegalAccessException;
     }

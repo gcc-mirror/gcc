@@ -23,6 +23,11 @@ details.  */
 #include <java/lang/ClassLoader.h>
 #include <java/lang/reflect/Modifier.h>
 
+// Define this to get the direct-threaded interpreter.  If undefined,
+// we revert to a basic bytecode interpreter.  The former is faster
+// but uses more memory.
+#define DIRECT_THREADED
+
 extern "C" {
 #include <ffi.h>
 }
@@ -95,6 +100,41 @@ public:
   }
 };
 
+// The type of the PC depends on whether we're doing direct threading
+// or a more ordinary bytecode interpreter.
+#ifdef DIRECT_THREADED
+// Slot in the "compiled" form of the bytecode.
+union insn_slot
+{
+  // Address of code.
+  void *insn;
+  // An integer value used by an instruction.
+  jint int_val;
+  // A pointer value used by an instruction.
+  void *datum;
+};
+
+typedef insn_slot *pc_t;
+#else
+typedef unsigned char *pc_t;
+#endif
+
+
+// This structure holds the bytecode pc and corresponding source code
+// line number.  An array (plus length field) of this structure is put
+// in each _Jv_InterpMethod and used to resolve the (internal) program
+// counter of the interpreted method to an actual java source file
+// line.
+struct  _Jv_LineTableEntry
+{
+  union
+  {
+    pc_t pc;
+    int bytecode_pc;
+  };
+  int line;
+};
+
 class _Jv_InterpMethod : public _Jv_MethodBase
 {
   _Jv_ushort       max_stack;
@@ -102,6 +142,10 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   int              code_length;
 
   _Jv_ushort       exc_count;
+
+  // Length of the line_table - when this is zero then line_table is NULL.
+  int line_table_len;  
+  _Jv_LineTableEntry *line_table;
 
   void *prepared;
 
@@ -135,17 +179,19 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   static void run_class (ffi_cif*, void*, ffi_raw*, void*);
   static void run_synch_class (ffi_cif*, void*, ffi_raw*, void*);
 
-  void run (void*, ffi_raw *);
+  static void run (void*, ffi_raw *, _Jv_InterpMethod *);
+
+  // Returns source file line number for given PC value, or -1 if line
+  // number info is unavailable.
+  int get_source_line(pc_t mpc);
 
  public:
   static void dump_object(jobject o);
 
   friend class _Jv_ClassReader;
   friend class _Jv_BytecodeVerifier;
-  friend class gnu::gcj::runtime::NameFinder;
-  friend class gnu::gcj::runtime::StackTrace;
+  friend class _Jv_StackTrace;
   friend class _Jv_InterpreterEngine;
-  
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;
@@ -155,11 +201,14 @@ class _Jv_InterpMethod : public _Jv_MethodBase
 class _Jv_InterpClass
 {
   _Jv_MethodBase **interpreted_methods;
-  _Jv_ushort        *field_initializers;
+  _Jv_ushort     *field_initializers;
+  jstring source_file_name;
 
   friend class _Jv_ClassReader;
   friend class _Jv_InterpMethod;
+  friend class _Jv_StackTrace;
   friend class _Jv_InterpreterEngine;
+
   friend void  _Jv_InitField (jobject, jclass, int);
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;
@@ -219,23 +268,24 @@ public:
   }
 };
 
-// A structure of this type is used to link together interpreter
-// invocations on the stack.
-struct _Jv_MethodChain
+// The interpreted call stack, represented by a linked list of frames.
+struct _Jv_InterpFrame
 {
-  const _Jv_InterpMethod *self;
-  _Jv_MethodChain **ptr;
-  _Jv_MethodChain *next;
+  _Jv_InterpMethod *self;
+  _Jv_InterpFrame **ptr;
+  _Jv_InterpFrame *next;
+  pc_t pc;
 
-  _Jv_MethodChain (const _Jv_InterpMethod *s, _Jv_MethodChain **n)
+  _Jv_InterpFrame (_Jv_InterpMethod *s, _Jv_InterpFrame **n)
   {
     self = s;
     ptr = n;
     next = *n;
     *n = this;
+    pc = NULL;
   }
 
-  ~_Jv_MethodChain ()
+  ~_Jv_InterpFrame ()
   {
     *ptr = next;
   }

@@ -30,6 +30,8 @@
 #			from a signal handler.
 #   disable_dladdr      Set to "yes" if dladdr should not be used
 #                       (i.e it is broken).
+#   fallback_backtrace_h  Header to use for fallback backtrace implementation
+#			  (only for targets that don't support DWARF2 unwind)
 
 libgcj_flags=
 libgcj_cflags=
@@ -42,6 +44,7 @@ sysdeps_dir=generic
 slow_pthread_self=
 can_unwind_signal=no
 disable_dladdr=
+fallback_backtrace_h=sysdep/generic/backtrace.h
 
 case "${target_optspace}:${host}" in
   yes:*)
@@ -257,6 +260,13 @@ EOF
 	slow_pthread_self=
 	;;
 esac
+
+case "${host}" in
+  *-cygwin* | *-mingw*)
+	fallback_backtrace_h=sysdep/i386/backtrace.h  
+  ;;
+esac
+
 
 libgcj_cflags="${libgcj_cflags} ${libgcj_flags}"
 libgcj_cxxflags="${libgcj_cxxflags} ${libgcj_flags}"

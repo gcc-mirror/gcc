@@ -127,5 +127,7 @@ final class MainThread extends Thread
     return mainName;
   }
 
+  // Note: this function name is known to the stack tracing code.
+  // You shouldn't change this without also updating stacktrace.cc.
   private native void call_main();
 }

@@ -84,7 +84,8 @@ CONFIG_CLEAN_FILES = libgcj.pc libgcj.spec libgcj-test.spec \
 	gnu/java/net/natPlainSocketImpl.cc \
 	gnu/java/net/natPlainDatagramSocketImpl.cc \
 	gnu/java/nio/natPipeImpl.cc gnu/java/nio/natSelectorImpl.cc \
-	gnu/java/nio/channels/natFileChannelImpl.cc sysdep/locks.h
+	gnu/java/nio/channels/natFileChannelImpl.cc sysdep/locks.h \
+	sysdep/backtrace.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -331,7 +332,7 @@ am_libgcj_la_OBJECTS =
 libgcj_la_OBJECTS = $(am_libgcj_la_OBJECTS)
 libgcj0_convenience_la_LIBADD =
 am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
-	link.cc defineclass.cc interpret.cc verify.cc \
+	stacktrace.cc link.cc defineclass.cc interpret.cc verify.cc \
 	gnu/gcj/natCore.cc gnu/gcj/convert/JIS0208_to_Unicode.cc \
 	gnu/gcj/convert/JIS0212_to_Unicode.cc \
 	gnu/gcj/convert/Unicode_to_JIS.cc gnu/gcj/convert/natIconv.cc \
@@ -341,9 +342,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/convert/natOutput_SJIS.cc \
 	gnu/gcj/io/natSimpleSHSStream.cc gnu/gcj/io/shs.cc \
 	gnu/gcj/runtime/natFinalizerThread.cc \
-	gnu/gcj/runtime/natNameFinder.cc \
 	gnu/gcj/runtime/natSharedLibLoader.cc \
-	gnu/gcj/runtime/natStackTrace.cc \
 	gnu/gcj/runtime/natStringBuffer.cc \
 	gnu/gcj/runtime/natVMClassLoader.cc gnu/gcj/util/natDebug.cc \
 	gnu/java/lang/natMainThread.cc \
@@ -362,7 +361,7 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	java/lang/natString.cc java/lang/natStringBuffer.cc \
 	java/lang/natSystem.cc java/lang/natThread.cc \
 	java/lang/natVMClassLoader.cc \
-	java/lang/natVMSecurityManager.cc \
+	java/lang/natVMSecurityManager.cc java/lang/natVMThrowable.cc \
 	java/lang/ref/natReference.cc java/lang/reflect/natArray.cc \
 	java/lang/reflect/natConstructor.cc \
 	java/lang/reflect/natField.cc java/lang/reflect/natMethod.cc \
@@ -555,12 +554,11 @@ am__libgcj0_convenience_la_SOURCES_DIST = prims.cc jni.cc exception.cc \
 	gnu/gcj/io/MimeTypes.java gnu/gcj/io/SimpleSHSStream.java \
 	gnu/gcj/runtime/FileDeleter.java \
 	gnu/gcj/runtime/FinalizerThread.java \
-	gnu/gcj/runtime/JNIWeakRef.java gnu/gcj/runtime/MethodRef.java \
+	gnu/gcj/runtime/JNIWeakRef.java \
 	gnu/gcj/runtime/NameFinder.java \
 	gnu/gcj/runtime/PersistentByteMap.java \
 	gnu/gcj/runtime/SharedLibHelper.java \
 	gnu/gcj/runtime/SharedLibLoader.java \
-	gnu/gcj/runtime/StackTrace.java \
 	gnu/gcj/runtime/StringBuffer.java \
 	gnu/gcj/runtime/SystemClassLoader.java \
 	gnu/gcj/runtime/VMClassLoader.java gnu/gcj/util/Debug.java \
@@ -2615,9 +2613,7 @@ am__objects_6 = gnu/gcj/natCore.lo \
 	gnu/gcj/convert/natOutput_SJIS.lo \
 	gnu/gcj/io/natSimpleSHSStream.lo gnu/gcj/io/shs.lo \
 	gnu/gcj/runtime/natFinalizerThread.lo \
-	gnu/gcj/runtime/natNameFinder.lo \
 	gnu/gcj/runtime/natSharedLibLoader.lo \
-	gnu/gcj/runtime/natStackTrace.lo \
 	gnu/gcj/runtime/natStringBuffer.lo \
 	gnu/gcj/runtime/natVMClassLoader.lo gnu/gcj/util/natDebug.lo \
 	gnu/java/lang/natMainThread.lo \
@@ -2636,7 +2632,7 @@ am__objects_6 = gnu/gcj/natCore.lo \
 	java/lang/natString.lo java/lang/natStringBuffer.lo \
 	java/lang/natSystem.lo java/lang/natThread.lo \
 	java/lang/natVMClassLoader.lo \
-	java/lang/natVMSecurityManager.lo \
+	java/lang/natVMSecurityManager.lo java/lang/natVMThrowable.lo \
 	java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
 	java/lang/reflect/natConstructor.lo \
 	java/lang/reflect/natField.lo java/lang/reflect/natMethod.lo \
@@ -3996,12 +3992,11 @@ am__objects_15 = $(am__objects_9) gnu/classpath/ServiceFactory.lo \
 	gnu/gcj/io/DefaultMimeTypes.lo gnu/gcj/io/MimeTypes.lo \
 	gnu/gcj/io/SimpleSHSStream.lo gnu/gcj/runtime/FileDeleter.lo \
 	gnu/gcj/runtime/FinalizerThread.lo \
-	gnu/gcj/runtime/JNIWeakRef.lo gnu/gcj/runtime/MethodRef.lo \
-	gnu/gcj/runtime/NameFinder.lo \
+	gnu/gcj/runtime/JNIWeakRef.lo gnu/gcj/runtime/NameFinder.lo \
 	gnu/gcj/runtime/PersistentByteMap.lo \
 	gnu/gcj/runtime/SharedLibHelper.lo \
 	gnu/gcj/runtime/SharedLibLoader.lo \
-	gnu/gcj/runtime/StackTrace.lo gnu/gcj/runtime/StringBuffer.lo \
+	gnu/gcj/runtime/StringBuffer.lo \
 	gnu/gcj/runtime/SystemClassLoader.lo \
 	gnu/gcj/runtime/VMClassLoader.lo gnu/gcj/util/Debug.lo \
 	gnu/java/io/ASN1ParsingException.lo \
@@ -4746,12 +4741,12 @@ am__objects_18 = java/lang/ConcreteProcess.lo \
 @USING_WIN32_THREADS_TRUE@am__objects_27 = win32-threads.lo
 @USING_NO_THREADS_TRUE@am__objects_28 = no-threads.lo
 am_libgcj0_convenience_la_OBJECTS = prims.lo jni.lo exception.lo \
-	link.lo defineclass.lo interpret.lo verify.lo $(am__objects_6) \
-	$(am__objects_7) $(am__objects_16) $(am__objects_17) \
-	$(am__objects_18) $(am__objects_19) $(am__objects_20) \
-	$(am__objects_21) $(am__objects_22) $(am__objects_23) \
-	$(am__objects_24) $(am__objects_25) $(am__objects_26) \
-	$(am__objects_27) $(am__objects_28)
+	stacktrace.lo link.lo defineclass.lo interpret.lo verify.lo \
+	$(am__objects_6) $(am__objects_7) $(am__objects_16) \
+	$(am__objects_17) $(am__objects_18) $(am__objects_19) \
+	$(am__objects_20) $(am__objects_21) $(am__objects_22) \
+	$(am__objects_23) $(am__objects_24) $(am__objects_25) \
+	$(am__objects_26) $(am__objects_27) $(am__objects_28)
 libgcj0_convenience_la_OBJECTS = $(am_libgcj0_convenience_la_OBJECTS)
 am_libgij_la_OBJECTS = gij.lo
 libgij_la_OBJECTS = $(am_libgij_la_OBJECTS)
@@ -5163,7 +5158,7 @@ libgij_la_LDFLAGS = -rpath $(toolexeclibdir) \
 # convenience library suddenly invokes the --whole-archive path instead.
 # This allows the build to succeed for targets that allocate multiple got
 # subsections in the linker, such as Alpha and MIPS.
-libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc \
+libgcj0_convenience_la_SOURCES = prims.cc jni.cc exception.cc stacktrace.cc \
 	link.cc defineclass.cc interpret.cc verify.cc \
 	$(nat_source_files) $(math_c_source_files) $(java_source_files) \
 	$(gnu_xml_source_files) $(built_java_source_files) \
@@ -7306,12 +7301,10 @@ gnu/gcj/io/SimpleSHSStream.java	\
 gnu/gcj/runtime/FileDeleter.java \
 gnu/gcj/runtime/FinalizerThread.java \
 gnu/gcj/runtime/JNIWeakRef.java \
-gnu/gcj/runtime/MethodRef.java \
 gnu/gcj/runtime/NameFinder.java \
 gnu/gcj/runtime/PersistentByteMap.java \
 gnu/gcj/runtime/SharedLibHelper.java \
 gnu/gcj/runtime/SharedLibLoader.java \
-gnu/gcj/runtime/StackTrace.java \
 gnu/gcj/runtime/StringBuffer.java \
 gnu/gcj/runtime/SystemClassLoader.java \
 gnu/gcj/runtime/VMClassLoader.java \
@@ -8066,9 +8059,7 @@ gnu/gcj/convert/natOutput_SJIS.cc \
 gnu/gcj/io/natSimpleSHSStream.cc \
 gnu/gcj/io/shs.cc \
 gnu/gcj/runtime/natFinalizerThread.cc \
-gnu/gcj/runtime/natNameFinder.cc \
 gnu/gcj/runtime/natSharedLibLoader.cc \
-gnu/gcj/runtime/natStackTrace.cc \
 gnu/gcj/runtime/natStringBuffer.cc \
 gnu/gcj/runtime/natVMClassLoader.cc \
 gnu/gcj/util/natDebug.cc \
@@ -8098,6 +8089,7 @@ java/lang/natSystem.cc \
 java/lang/natThread.cc \
 java/lang/natVMClassLoader.cc \
 java/lang/natVMSecurityManager.cc \
+java/lang/natVMThrowable.cc \
 java/lang/ref/natReference.cc \
 java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
@@ -8783,12 +8775,8 @@ gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp):
 gnu/gcj/runtime/natFinalizerThread.lo:  \
 	gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/runtime/natNameFinder.lo: gnu/gcj/runtime/$(am__dirstamp) \
-	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/natSharedLibLoader.lo:  \
 	gnu/gcj/runtime/$(am__dirstamp) \
-	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/runtime/natStackTrace.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/natStringBuffer.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
@@ -8898,6 +8886,8 @@ java/lang/natThread.lo: java/lang/$(am__dirstamp) \
 java/lang/natVMClassLoader.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/natVMSecurityManager.lo: java/lang/$(am__dirstamp) \
+	java/lang/$(DEPDIR)/$(am__dirstamp)
+java/lang/natVMThrowable.lo: java/lang/$(am__dirstamp) \
 	java/lang/$(DEPDIR)/$(am__dirstamp)
 java/lang/ref/$(am__dirstamp):
 	@$(mkdir_p) java/lang/ref
@@ -9612,8 +9602,6 @@ gnu/gcj/runtime/FinalizerThread.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/JNIWeakRef.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/runtime/MethodRef.lo: gnu/gcj/runtime/$(am__dirstamp) \
-	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/NameFinder.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/PersistentByteMap.lo: gnu/gcj/runtime/$(am__dirstamp) \
@@ -9621,8 +9609,6 @@ gnu/gcj/runtime/PersistentByteMap.lo: gnu/gcj/runtime/$(am__dirstamp) \
 gnu/gcj/runtime/SharedLibHelper.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/SharedLibLoader.lo: gnu/gcj/runtime/$(am__dirstamp) \
-	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
 gnu/gcj/runtime/StringBuffer.lo: gnu/gcj/runtime/$(am__dirstamp) \
 	gnu/gcj/runtime/$(DEPDIR)/$(am__dirstamp)
@@ -16363,8 +16349,6 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/FinalizerThread.lo
 	-rm -f gnu/gcj/runtime/JNIWeakRef.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/JNIWeakRef.lo
-	-rm -f gnu/gcj/runtime/MethodRef.$(OBJEXT)
-	-rm -f gnu/gcj/runtime/MethodRef.lo
 	-rm -f gnu/gcj/runtime/NameFinder.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/NameFinder.lo
 	-rm -f gnu/gcj/runtime/PersistentByteMap.$(OBJEXT)
@@ -16373,8 +16357,6 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/SharedLibHelper.lo
 	-rm -f gnu/gcj/runtime/SharedLibLoader.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/SharedLibLoader.lo
-	-rm -f gnu/gcj/runtime/StackTrace.$(OBJEXT)
-	-rm -f gnu/gcj/runtime/StackTrace.lo
 	-rm -f gnu/gcj/runtime/StringBuffer.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/StringBuffer.lo
 	-rm -f gnu/gcj/runtime/SystemClassLoader.$(OBJEXT)
@@ -16383,12 +16365,8 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/runtime/VMClassLoader.lo
 	-rm -f gnu/gcj/runtime/natFinalizerThread.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natFinalizerThread.lo
-	-rm -f gnu/gcj/runtime/natNameFinder.$(OBJEXT)
-	-rm -f gnu/gcj/runtime/natNameFinder.lo
 	-rm -f gnu/gcj/runtime/natSharedLibLoader.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natSharedLibLoader.lo
-	-rm -f gnu/gcj/runtime/natStackTrace.$(OBJEXT)
-	-rm -f gnu/gcj/runtime/natStackTrace.lo
 	-rm -f gnu/gcj/runtime/natStringBuffer.$(OBJEXT)
 	-rm -f gnu/gcj/runtime/natStringBuffer.lo
 	-rm -f gnu/gcj/runtime/natVMClassLoader.$(OBJEXT)
@@ -19002,6 +18980,8 @@ mostlyclean-compile:
 	-rm -f java/lang/natVMClassLoader.lo
 	-rm -f java/lang/natVMSecurityManager.$(OBJEXT)
 	-rm -f java/lang/natVMSecurityManager.lo
+	-rm -f java/lang/natVMThrowable.$(OBJEXT)
+	-rm -f java/lang/natVMThrowable.lo
 	-rm -f java/lang/ref/PhantomReference.$(OBJEXT)
 	-rm -f java/lang/ref/PhantomReference.lo
 	-rm -f java/lang/ref/Reference.$(OBJEXT)
@@ -21926,6 +21906,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix-threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prims.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stacktrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/verify.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32-threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.Plo@am__quote@
@@ -21992,19 +21973,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FileDeleter.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/FinalizerThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/JNIWeakRef.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/MethodRef.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/NameFinder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/PersistentByteMap.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SharedLibHelper.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SharedLibLoader.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/StackTrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/StringBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/SystemClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/VMClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natFinalizerThread.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natNameFinder.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natSharedLibLoader.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStackTrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natStringBuffer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/runtime/$(DEPDIR)/natVMClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/tools/gcj_dbtool/$(DEPDIR)/Main.Po@am__quote@
@@ -23312,6 +23289,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natThread.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMClassLoader.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMSecurityManager.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/natVMThrowable.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/s_atan.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/s_ceil.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/lang/$(DEPDIR)/s_copysign.Plo@am__quote@
@@ -26677,14 +26655,11 @@ distclean-local:
 clean-nat:
 	rm -f $(nat_files) $(xlib_nat_files)
 
-$(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files): %.lo: %.java
+$(javao_files) $(xlib_javao_files): %.lo: %.java
 	$(LTGCJCOMPILE) -o $@ -c $<
 
 $(gtk_awt_peer_sources:.java=.lo) $(gnu_xml_source_files:.java=.lo): %.lo: %.java
 	$(LTGCJCOMPILE) -fjni -o $@ -c $<
-
-gnu/gcj/runtime/StackTrace.lo: gnu/gcj/runtime/StackTrace.java
-	$(LTGCJCOMPILE) -fno-optimize-sibling-calls -o $@ -c $<
 
 libgcj.la: $(libgcj_la_OBJECTS) $(libgcj_la_DEPENDENCIES)
 	@echo Creating list of files to link...
