@@ -1,3 +1,8 @@
+2001-11-14  Hans Boehm <Hans_Boehm@hp.com>
+
+	* java/lang/natString.cc: correct argument order for
+	_Jv_AllocPtrFreeObj
+
 2001-11-14  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (class _Jv_BytecodeVerifier) [op_dup2]: Fixed logic.

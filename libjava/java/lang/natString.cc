@@ -400,7 +400,7 @@ _Jv_AllocString(jsize len)
 #else
   // Class needs no initialization, and there is no finalizer, so
   // we can go directly to the collector's allocator interface.
-  jstring obj = (jstring) _Jv_AllocPtrFreeObj(&StringClass, sz);
+  jstring obj = (jstring) _Jv_AllocPtrFreeObj(sz, &StringClass);
 #endif
   obj->data = obj;
   obj->boffset = sizeof(java::lang::String);
