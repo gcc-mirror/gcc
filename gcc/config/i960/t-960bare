@@ -1,0 +1,20 @@
+LIBGCC1 = libgcc1.null
+CROSS_LIBGCC1 = libgcc1.null
+
+LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' > dp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	echo '#define FLOAT_BIT_ORDER_MISMATCH' >> fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
+
+MULTILIB_OPTIONS=mnumerics
+MULTILIB_DIRNAMES=float
+MULTILIB_MATCHES=mnumerics=msb mnumerics=msc mnumerics=mkb mnumerics=mkc mnumerics=mmc mnumerics=mcb mnumerics=mcc
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
