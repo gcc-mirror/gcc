@@ -4632,6 +4632,15 @@ block_ultimate_origin (tree block)
 		       ? BLOCK_ABSTRACT_ORIGIN (ret_val) : NULL);
 	}
       while (lookahead != NULL && lookahead != ret_val);
+      
+      /* The block's abstract origin chain may not be the *ultimate* origin of
+	 the block. It could lead to a DECL that has an abstract origin set.
+	 If so, we want that DECL's abstract origin (which is what DECL_ORIGIN
+	 will give us if it has one).  Note that DECL's abstract origins are
+	 supposed to be the most distant ancestor (or so decl_ultimate_origin
+	 claims), so we don't need to loop following the DECL origins.  */
+      if (DECL_P (ret_val))
+	return DECL_ORIGIN (ret_val);
 
       return ret_val;
     }

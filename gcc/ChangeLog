@@ -1,3 +1,20 @@
+2005-01-03  Daniel Berlin  <dberlin@dberlin.org>
+
+	Fix PR debug/17924
+	Fix PR debug/19191
+	* dwarf2out.c (block_ultimate_origin): Follow decl origin if origin
+	is a decl.
+	* gimple-low.c (mark_blocks_with_used_vars): New function.
+	(mark_blocks_with_used_subblocks): Ditto.
+	(mark_used_blocks): Ditto.
+	(pass_mark_used_blocks): New pass.
+	* tree-inline.c: Include debug.h.
+	(expand_call_inline): Call outlining_inline_function here.
+	* tree-optimize.c (init_tree_optimization_passes): Add
+	pass_mark_used_blocks. 
+	* tree-pass.h (pass_mark_used_blocks): New.
+	* Makefile.in (tree-inline.o): Add debug.h dependency.
+
 2005-01-03  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/darwin.c (darwin_handle_weak_import_attribute): Permit

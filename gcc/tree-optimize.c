@@ -399,6 +399,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_remove_useless_vars);
+  NEXT_PASS (pass_mark_used_blocks);
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);
   *p = NULL;
 
