@@ -1,3 +1,10 @@
+2004-12-02  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.c: Fix and add comments, fix function declarations
+	(OPTIONAL,REQUIRED): New symbols
+	(add_functions,add_subroutines): Use symbols
+	(gmp.h): Remove unused include
+
 2004-11-25  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* f95-lang.c, gfortranspec.c, trans-decl.c: Avoid ` as left quote
