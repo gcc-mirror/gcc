@@ -1,7 +1,7 @@
 #! /bin/sh
 # Install modified versions of certain ANSI-incompatible
 # native Sequent DYNIX/ptx System V Release 3.2 system include files.
-# Copyright (C) 1994, 1996 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1996, 1997 Free Software Foundation, Inc.
 # Contributed by Bill Burton <billb@progress.com>
 # Portions adapted from fixinc.svr4 and fixincludes.
 #
@@ -125,7 +125,7 @@ if [ \! -z "$file_to_fix" ]; then
   if grep stdio $file_to_fix > /dev/null; then
     true
   else
-    sed -e '/#include \<sys\types\.h\>/a\
+    sed -e '/#include <sys\/types\.h>/a\
 \
 #if defined(__STDC__) || defined(__cplusplus)\
 #include <stdio.h>\
