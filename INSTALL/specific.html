@@ -23,7 +23,9 @@ the two object file formats.     ELF is now the default.
 <br>Look in gcc/config/i386/sco5.h (search for "messy") for additional
 OpenServer-specific flags.
 
-
+<br>Systems based on OpenServer before 5.0.4 (<code>uname -X</code> will
+tell you what you're running) require TLS597 from ftp.sco.com/TLS for
+C++ constructors and destructors to work right.
 
 <p><b>hppa*-hp-hpux*</b><br>
 We <b>highly</b> recommend using gas/binutils-2.8 on all hppa platforms; you
