@@ -61,11 +61,13 @@ Boston, MA 02111-1307, USA.  */
 	builtin_define ("_X86_=1");					\
 	builtin_assert ("system=winnt");				\
 	builtin_define ("__stdcall=__attribute__((__stdcall__))");	\
+	builtin_define ("__fastcall=__attribute__((__fastcall__))");	\
 	builtin_define ("__cdecl=__attribute__((__cdecl__))");		\
 	builtin_define ("__declspec(x)=__attribute__((x))");		\
 	if (!flag_iso)							\
 	  {								\
 	    builtin_define ("_stdcall=__attribute__((__stdcall__))");	\
+	    builtin_define ("_fastcall=__attribute__((__fastcall__))");	\
 	    builtin_define ("_cdecl=__attribute__((__cdecl__))");	\
 	  }								\
 	MAYBE_UWIN_CPP_BUILTINS ();					\
@@ -271,9 +273,7 @@ do {									\
 
 /* Output a reference to a label.  */
 #undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(STREAM, NAME)  		\
-  fprintf (STREAM, "%s%s", USER_LABEL_PREFIX, 		\
-	   i386_pe_strip_name_encoding (NAME))		\
+#define ASM_OUTPUT_LABELREF  i386_pe_output_labelref
 
 /* Output a common block.  */
 #undef ASM_OUTPUT_COMMON

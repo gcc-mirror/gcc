@@ -1443,6 +1443,9 @@ const struct attribute_spec ix86_attribute_table[] =
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
   { "stdcall",   0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
+  /* Fastcall attribute says callee is responsible for popping arguments
+     if they are not variable.  */
+  { "fastcall",  0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
   /* Cdecl attribute says the callee is a normal C declaration */
   { "cdecl",     0, 0, false, true,  true,  ix86_handle_cdecl_attribute },
   /* Regparm attribute specifies how many integer arguments are to be
@@ -1510,7 +1513,7 @@ ix86_function_ok_for_sibcall (decl, exp)
   return true;
 }
 
-/* Handle a "cdecl" or "stdcall" attribute;
+/* Handle a "cdecl", "stdcall", or "fastcall" attribute;
    arguments as in struct attribute_spec.handler.  */
 static tree
 ix86_handle_cdecl_attribute (node, name, args, flags, no_add_attrs)
@@ -1528,6 +1531,27 @@ ix86_handle_cdecl_attribute (node, name, args, flags, no_add_attrs)
       warning ("`%s' attribute only applies to functions",
 	       IDENTIFIER_POINTER (name));
       *no_add_attrs = true;
+    }
+  else
+    {
+      if (is_attribute_p ("fastcall", name))
+        {
+          if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (*node)))
+            {
+              error ("fastcall and stdcall attributes are not compatible");
+            }
+           else if (lookup_attribute ("regparm", TYPE_ATTRIBUTES (*node)))
+            {
+              error ("fastcall and regparm attributes are not compatible");
+            }
+        }
+      else if (is_attribute_p ("stdcall", name))
+        {
+          if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
+            {
+              error ("fastcall and stdcall attributes are not compatible");
+            }
+        }
     }
 
   if (TARGET_64BIT)
@@ -1575,6 +1599,11 @@ ix86_handle_regparm_attribute (node, name, args, flags, no_add_attrs)
 		   IDENTIFIER_POINTER (name), REGPARM_MAX);
 	  *no_add_attrs = true;
 	}
+
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (*node)))
+    {
+      error ("fastcall and regparm attributes are not compatible");
+    }
     }
 
   return NULL_TREE;
@@ -1594,6 +1623,11 @@ ix86_comp_type_attributes (type1, type2)
 
   if (TREE_CODE (type1) != FUNCTION_TYPE)
     return 1;
+
+  /*  Check for mismatched fastcall types */ 
+  if (!lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type1))
+      != !lookup_attribute ("fastcall", TYPE_ATTRIBUTES (type2)))
+    return 0; 
 
   /* Check for mismatched return types (cdecl vs stdcall).  */
   if (!lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type1))
@@ -1645,8 +1679,9 @@ ix86_return_pops_args (fundecl, funtype, size)
     /* Cdecl functions override -mrtd, and never pop the stack.  */
   if (! lookup_attribute ("cdecl", TYPE_ATTRIBUTES (funtype))) {
 
-    /* Stdcall functions will pop the stack if not variable args.  */
-    if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype)))
+    /* Stdcall and fastcall functions will pop the stack if not variable args. */
+    if (lookup_attribute ("stdcall", TYPE_ATTRIBUTES (funtype))
+        || lookup_attribute ("fastcall", TYPE_ATTRIBUTES (funtype)))
       rtd = 1;
 
     if (rtd
@@ -1732,6 +1767,17 @@ init_cumulative_args (cum, fntype, libname)
     }
   cum->maybe_vaarg = false;
 
+  /* Use ecx and edx registers if function has fastcall attribute */
+  if (fntype && !TARGET_64BIT)
+    {
+      if (lookup_attribute ("fastcall", TYPE_ATTRIBUTES (fntype)))
+	{
+	  cum->nregs = 2;
+	  cum->fastcall = 1;
+	}
+    }
+
+
   /* Determine if this function has variable arguments.  This is
      indicated by the last argument being 'void_type_mode' if there
      are no variable arguments.  If there are variable arguments, then
@@ -1746,7 +1792,10 @@ init_cumulative_args (cum, fntype, libname)
 	  if (next_param == 0 && TREE_VALUE (param) != void_type_node)
 	    {
 	      if (!TARGET_64BIT)
-		cum->nregs = 0;
+		{
+		  cum->nregs = 0;
+		  cum->fastcall = 0;
+		}
 	      cum->maybe_vaarg = true;
 	    }
 	}
@@ -2396,7 +2445,22 @@ function_arg (cum, mode, type, named)
       case HImode:
       case QImode:
 	if (words <= cum->nregs)
-	  ret = gen_rtx_REG (mode, cum->regno);
+ 	  {
+ 	    int regno = cum->regno;
+
+ 	    /* Fastcall allocates the first two DWORD (SImode) or
+ 	       smaller arguments to ECX and EDX.  */
+ 	    if (cum->fastcall)
+ 	      {
+ 	        if (mode == BLKmode || mode == DImode)
+ 	          break;
+ 
+ 	        /* ECX not EAX is the first allocated register.  */
+ 	        if (regno == 0)
+ 		      regno = 2;
+ 	      }
+ 	    ret = gen_rtx_REG (mode, regno);
+ 	  }
 	break;
       case TImode:
 	if (cum->sse_nregs)

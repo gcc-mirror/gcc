@@ -233,3 +233,4 @@ extern void i386_pe_asm_file_end PARAMS ((FILE *));
 extern void i386_pe_encode_section_info PARAMS ((tree, int));
 extern const char *i386_pe_strip_name_encoding PARAMS ((const char *));
 extern const char *i386_pe_strip_name_encoding_full PARAMS ((const char *));
+extern void i386_pe_output_labelref PARAMS ((FILE *, const char *));

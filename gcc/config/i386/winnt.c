@@ -48,6 +48,7 @@ Boston, MA 02111-1307, USA.  */
 
 static tree associated_type PARAMS ((tree));
 const char * gen_stdcall_suffix PARAMS ((tree));
+const char * gen_fastcall_suffix PARAMS ((tree));
 int i386_pe_dllexport_p PARAMS ((tree));
 int i386_pe_dllimport_p PARAMS ((tree));
 void i386_pe_mark_dllexport PARAMS ((tree));
@@ -315,8 +316,8 @@ i386_pe_mark_dllimport (decl)
       return;
     }
 
-  newname = alloca (strlen (oldname) + 11);
-  sprintf (newname, "%ci._imp__%s", DLL_IMPORT_EXPORT_PREFIX, oldname);
+  newname = alloca (strlen (oldname) + 4);
+  sprintf (newname, "%ci.%s", DLL_IMPORT_EXPORT_PREFIX, oldname);
 
   /* We pass newname through get_identifier to ensure it has a unique
      address.  RTL processing can sometimes peek inside the symbol ref
@@ -331,6 +332,43 @@ i386_pe_mark_dllimport (decl)
 
   /* Can't treat a pointer to this as a constant address */
   DECL_NON_ADDR_CONST_P (decl) = 1;
+}
+
+/* Return string which is the former assembler name modified with a 
+   prefix consisting of FASTCALL_PREFIX and a suffix consisting of an
+   atsign (@) followed by the number of bytes of arguments.  */
+
+const char *
+gen_fastcall_suffix (decl)
+  tree decl;
+{
+  int total = 0;
+
+  const char *asmname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  char *newsym;
+
+  if (TYPE_ARG_TYPES (TREE_TYPE (decl)))
+    if (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (decl))))
+        == void_type_node)
+      {
+	tree formal_type = TYPE_ARG_TYPES (TREE_TYPE (decl));
+
+	while (TREE_VALUE (formal_type) != void_type_node)
+	  {
+	    int parm_size
+	      = TREE_INT_CST_LOW (TYPE_SIZE (TREE_VALUE (formal_type)));
+	    /* Must round up to include padding.  This is done the same
+	       way as in store_one_arg.  */
+	    parm_size = ((parm_size + PARM_BOUNDARY - 1)
+			 / PARM_BOUNDARY * PARM_BOUNDARY);
+	    total += parm_size;
+	    formal_type = TREE_CHAIN (formal_type);
+	  }
+      }
+
+  newsym = xmalloc (strlen (asmname) + 11);
+  sprintf (newsym, "%c%s@%d", FASTCALL_PREFIX, asmname, total/BITS_PER_UNIT);
+  return IDENTIFIER_POINTER (get_identifier (newsym));
 }
 
 /* Return string which is the former assembler name modified with a 
@@ -389,10 +427,16 @@ i386_pe_encode_section_info (decl, first)
     }
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    if (lookup_attribute ("stdcall",
-			  TYPE_ATTRIBUTES (TREE_TYPE (decl))))
-      XEXP (DECL_RTL (decl), 0) = 
-	gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (decl));
+    {
+      if (lookup_attribute ("stdcall",
+			    TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+        XEXP (DECL_RTL (decl), 0) = 
+	  gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (decl));
+      else if (lookup_attribute ("fastcall",
+				 TYPE_ATTRIBUTES (TREE_TYPE (decl))))
+        XEXP (DECL_RTL (decl), 0) =
+	  gen_rtx (SYMBOL_REF, Pmode, gen_fastcall_suffix (decl));
+    }
 
   /* Mark the decl so we can tell from the rtl whether the object is
      dllexport'd or dllimport'd.  */
@@ -426,7 +470,8 @@ i386_pe_encode_section_info (decl, first)
     }
 }
 
-/* Strip only the leading encoding, leaving the stdcall suffix.  */
+/* Strip only the leading encoding, leaving the stdcall suffix and fastcall
+   prefix if it exists.  */
 
 const char *
 i386_pe_strip_name_encoding (str)
@@ -453,6 +498,44 @@ i386_pe_strip_name_encoding_full (str)
     return ggc_alloc_string (name, p - name);
 
   return name;
+}
+
+/* Output a reference to a label. Fastcall symbols are prefixed with @,
+   whereas symbols for functions using other calling conventions don't
+   have a prefix (unless they are marked dllimport or dllexport).  */
+
+void i386_pe_output_labelref (stream, name)
+     FILE *stream;
+     const char *name;
+{
+  char prefix[4];
+
+  sprintf (prefix, "%ci.", DLL_IMPORT_EXPORT_PREFIX);
+  if (strncmp (name, prefix, strlen (prefix)) == 0)
+    {
+      if (name[3] == FASTCALL_PREFIX)
+        {
+          fprintf (stream, "__imp_%s",
+                   i386_pe_strip_name_encoding (name));
+        }
+      else
+        {
+          fprintf (stream, "__imp__%s",
+                   i386_pe_strip_name_encoding (name));
+        }
+    }
+  else if ((name[0] == FASTCALL_PREFIX)
+           || ((name[0] == DLL_IMPORT_EXPORT_PREFIX)
+               && (name[3] == FASTCALL_PREFIX)))
+    {
+      fprintf (stream, "%s",
+               i386_pe_strip_name_encoding (name));
+    }
+  else
+    {
+      fprintf (stream, "%s%s", USER_LABEL_PREFIX,
+               i386_pe_strip_name_encoding (name));
+    }
 }
 
 void

@@ -2370,6 +2370,14 @@ pass arguments, unless it takes a variable number of arguments.
 The PowerPC compiler for Windows NT currently ignores the @code{stdcall}
 attribute.
 
+@item fastcall
+@cindex functions that pop the argument stack on the 386
+On the Intel 386, the @code{fastcall} attribute causes the compiler to
+pass the first two arguments in the registers ECX and EDX. Subsequent
+arguments are passed on the stack. The called function will pop the 
+arguments off the stack. If the number of arguments is variable all
+arguments are pushed on the stack.
+
 @item cdecl
 @cindex functions that do pop the argument stack on the 386
 @opindex mrtd
