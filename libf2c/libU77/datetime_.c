@@ -31,6 +31,11 @@ Boston, MA 02111-1307, USA.  */
 #  include <time.h>
 # endif
 #endif
+#if defined (_WIN32)
+#include <windows.h>
+#undef min
+#undef max
+#endif
 #include "f2c.h"
 
 void s_copy (register char *a, register char *b, ftnlen la, ftnlen lb);
@@ -44,6 +49,14 @@ G77_date_and_time_0 (char *date, char *fftime, char *zone,
   struct tm ltime = *localtime (&lt), gtime = *gmtime (&lt);
   char dat[9], zon[6], ftim[11];
   int i, vals[8];
+#if defined (_WIN32)
+    struct _SYSTEMTIME wdattim;
+    GetLocalTime(&wdattim);
+    vals[7] = wdattim.wMilliseconds;
+#else
+  vals[7] = 0;                  /* no STDC/POSIX way to get this */
+  /* GNUish way; maybe use `ftime' on other systems. */
+#endif
 
   vals[0] = 1900 + ltime.tm_year;
   vals[1] = 1 + ltime.tm_mon;
@@ -55,8 +68,6 @@ G77_date_and_time_0 (char *date, char *fftime, char *zone,
   vals[4] = ltime.tm_hour;
   vals[5] = ltime.tm_min;
   vals[6] = ltime.tm_sec;
-  vals[7] = 0;			/* no STDC/POSIX way to get this */
-  /* GNUish way; maybe use `ftime' on other systems. */
 #if HAVE_GETTIMEOFDAY
   {
     struct timeval tp;
