@@ -73,6 +73,8 @@ Boston, MA 02111-1307, USA.  */
        op1 -> stmt
        op2 -> array of case labels (as LABEL_DECLs?)
          FIXME: add case value info
+	The SWITCH_LABELS (op2) are sorted in ascending order, and the
+	last label in the vector is always the default case.
    jump-stmt:
        GOTO_EXPR
          op0 -> LABEL_DECL | '*' ID

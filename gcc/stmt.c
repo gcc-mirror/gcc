@@ -4434,8 +4434,8 @@ bool lshift_cheap_p (void)
    number of case nodes, i.e. the node with the most cases gets
    tested first.  */
 
-static
-int case_bit_test_cmp (const void *p1, const void *p2)
+static int
+case_bit_test_cmp (const void *p1, const void *p2)
 {
   const struct case_bit_test *d1 = p1;
   const struct case_bit_test *d2 = p2;
