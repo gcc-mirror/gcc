@@ -52,6 +52,9 @@ Boston, MA 02111-1307, USA.  */
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
 
+#undef  NO_PROFILE_COUNTERS
+#define NO_PROFILE_COUNTERS
+
 /* Tell final.c that we don't need a label passed to mcount.  */
 
 #undef FUNCTION_PROFILER
