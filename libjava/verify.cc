@@ -1202,14 +1202,6 @@ private:
     return r;
   }
 
-  type pop64 ()
-  {
-    type r = pop_raw ();
-    if (! r.iswide ())
-      verify_fail ("wide pop of narrow type");
-    return r;
-  }
-
   type pop_type (type match)
   {
     match.promote ();
@@ -2160,20 +2152,30 @@ private:
   bool initialize_stack ()
   {
     int var = 0;
-    bool is_init = false;
+    bool is_init = _Jv_equalUtf8Consts (current_method->self->name,
+					gcj::init_name);
+    bool is_clinit = _Jv_equalUtf8Consts (current_method->self->name,
+					  gcj::clinit_name);
 
     using namespace java::lang::reflect;
     if (! Modifier::isStatic (current_method->self->accflags))
       {
 	type kurr (current_class);
-	if (_Jv_equalUtf8Consts (current_method->self->name, gcj::init_name))
+	if (is_init)
 	  {
 	    kurr.set_uninitialized (type::SELF, this);
 	    is_init = true;
 	  }
+	else if (is_clinit)
+	  verify_fail ("<clinit> method must be static");
 	set_variable (0, kurr);
 	current_state->set_this_type (kurr);
 	++var;
+      }
+    else
+      {
+	if (is_init)
+	  verify_fail ("<init> method must be non-static");
       }
 
     // We have to handle wide arguments specially here.
@@ -2525,7 +2527,11 @@ private:
 	    pop32 ();
 	    break;
 	  case op_pop2:
-	    pop64 ();
+	    {
+	      type t = pop_raw ();
+	      if (! t.iswide ())
+		pop32 ();
+	    }
 	    break;
 	  case op_dup:
 	    {
