@@ -269,7 +269,6 @@ Wed Apr 24 13:48:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	(vec_vupklsh): New.
 	(vec_vxor): New.
 
->>>>>>> 1.13835
 2002-04-23  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c/5430
