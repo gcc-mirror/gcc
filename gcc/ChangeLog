@@ -1,3 +1,8 @@
+2004-06-05  Bernardo Innocenti  <bernie@develer.com>
+
+	* regclass.c (init_reg_sets): Check for missing registers in target
+	initializer macros FIXED_REGISTERS and CALL_USED_REGISTERS.
+
 2004-06-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (MKDEPS_H): New shorthand.
