@@ -46,8 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern tree builtin_return_address_fndecl;
-
 extern struct obstack permanent_obstack;
 extern struct obstack* saveable_obstack;
 
@@ -207,158 +205,82 @@ tree error_mark_node;
 /* Erroneous argument lists can use this *IFF* they do not modify it.  */
 tree error_mark_list;
 
-/* INTEGER_TYPE and REAL_TYPE nodes for the standard data types */
+/* The following symbols are subsumed in the cp_global_trees array, and
+   listed here individually for documentation purposes. 
 
-tree short_integer_type_node;
-tree integer_type_node;
-tree long_integer_type_node;
-tree long_long_integer_type_node;
+   C++ extensions
+	tree wchar_decl_node;
+	tree void_zero_node;
 
-tree short_unsigned_type_node;
-tree unsigned_type_node;
-tree long_unsigned_type_node;
-tree long_long_unsigned_type_node;
+	tree vtable_entry_type;
+	tree delta_type_node;
+#if 0
+   Old rtti stuff.
+	tree __baselist_desc_type_node;
+	tree __i_desc_type_node, __m_desc_type_node;
+	tree __t_desc_array_type, __i_desc_array_type, __m_desc_array_type;
+#endif
+	tree __t_desc_type_node;
+#if 0
+	tree __tp_desc_type_node;
+#endif
+	tree __access_mode_type_node;
+	tree __bltn_desc_type_node, __user_desc_type_node, __class_desc_type_node;
+	tree __ptr_desc_type_node, __attr_desc_type_node, __func_desc_type_node;
+	tree __ptmf_desc_type_node, __ptmd_desc_type_node;
+#if 0
+   Not needed yet?  May be needed one day?
+	tree __bltn_desc_array_type, __user_desc_array_type, __class_desc_array_type;
+	tree __ptr_desc_array_type, __attr_dec_array_type, __func_desc_array_type;
+	tree __ptmf_desc_array_type, __ptmd_desc_array_type;
+#endif
 
-/* These are used for integer literals that are larger than 
-   a long long.  The largest integer literals we can handle
-   are the width of two HOST_WIDE_INTs.  If two HOST_WIDE_INTs
-   are not larger than the target's long long, then these
-   will never be used. */
-tree widest_integer_literal_type_node;
-tree widest_unsigned_literal_type_node;
+	tree class_star_type_node;
+	tree class_type_node, record_type_node, union_type_node, enum_type_node;
+	tree unknown_type_node;
+	tree opaque_type_node, signature_type_node;
+	tree sigtable_entry_type;
 
-tree ptrdiff_type_node;
+   Array type `vtable_entry_type[]'
 
-tree unsigned_char_type_node;
-tree signed_char_type_node;
+	tree vtbl_type_node;
+	tree vtbl_ptr_type_node;
+
+   Nnamespace std
+
+	tree std_node;
+
+   A FUNCTION_DECL which can call `abort'.  Not necessarily the
+   one that the user will declare, but sufficient to be called
+   by routines that want to abort the program.
+
+	tree abort_fndecl;
+
+   The FUNCTION_DECL for the default `::operator delete'.
+
+	tree global_delete_fndecl;
+
+   Used by RTTI
+	tree type_info_type_node, tinfo_fn_id, tinfo_fn_type;
+
+*/
+
+tree cp_global_trees[CPTI_MAX];
+
+/* These can't be part of the above array, since they are declared
+   individually in tree.h, and used by the debug output routines.  */
+
+tree void_type_node;
 tree char_type_node;
-tree wchar_type_node;
-tree signed_wchar_type_node;
-tree unsigned_wchar_type_node;
-
-tree wchar_decl_node;
-
-tree float_type_node;
-tree double_type_node;
-tree long_double_type_node;
-
-tree complex_integer_type_node;
-tree complex_float_type_node;
-tree complex_double_type_node;
-tree complex_long_double_type_node;
-
-tree intQI_type_node;
-tree intHI_type_node;
-tree intSI_type_node;
-tree intDI_type_node;
-#if HOST_BITS_PER_WIDE_INT >= 64
-tree intTI_type_node;
-#endif
-
-tree unsigned_intQI_type_node;
-tree unsigned_intHI_type_node;
-tree unsigned_intSI_type_node;
-tree unsigned_intDI_type_node;
-#if HOST_BITS_PER_WIDE_INT >= 64
-tree unsigned_intTI_type_node;
-#endif
-
-tree java_byte_type_node;
-tree java_short_type_node;
-tree java_int_type_node;
-tree java_long_type_node;
-tree java_float_type_node;
-tree java_double_type_node;
-tree java_char_type_node;
-tree java_boolean_type_node;
-
-/* A VOID_TYPE node, and the same, packaged in a TREE_LIST.  */
-
-tree void_type_node, void_list_node;
-tree void_zero_node;
-
-/* Nodes for types `void *' and `const void *'.  */
-
-tree ptr_type_node;
-tree const_ptr_type_node;
-
-/* Nodes for types `char *' and `const char *'.  */
-
-tree string_type_node, const_string_type_node;
-
-/* Type `char[256]' or something like it.
-   Used when an array of char is needed and the size is irrelevant.  */
-
-tree char_array_type_node;
-
-/* Type `int[256]' or something like it.
-   Used when an array of int needed and the size is irrelevant.  */
-
-tree int_array_type_node;
-
-/* Type `wchar_t[256]' or something like it.
-   Used when a wide string literal is created.  */
-
-tree wchar_array_type_node;
-
-/* The bool data type, and constants */
-tree boolean_type_node, boolean_true_node, boolean_false_node;
-
-/* Type `int ()' -- used for implicit declaration of functions.  */
-
-tree default_function_type;
-
-/* Function types `double (double)' and `double (double, double)', etc.  */
-
-static tree double_ftype_double, double_ftype_double_double;
-static tree int_ftype_int, long_ftype_long;
-static tree float_ftype_float;
-static tree ldouble_ftype_ldouble;
-
-/* Function type `int (const void *, const void *, size_t)' */
-static tree int_ftype_cptr_cptr_sizet;
-
-/* C++ extensions */
-tree vtable_entry_type;
-tree delta_type_node;
-#if 0
-/* Old rtti stuff.  */
-tree __baselist_desc_type_node;
-tree __i_desc_type_node, __m_desc_type_node;
-tree __t_desc_array_type, __i_desc_array_type, __m_desc_array_type;
-#endif
-tree __t_desc_type_node;
-#if 0
-tree __tp_desc_type_node;
-#endif
-tree __access_mode_type_node;
-tree __bltn_desc_type_node, __user_desc_type_node, __class_desc_type_node;
-tree __ptr_desc_type_node, __attr_desc_type_node, __func_desc_type_node;
-tree __ptmf_desc_type_node, __ptmd_desc_type_node;
-#if 0
-/* Not needed yet?  May be needed one day?  */
-tree __bltn_desc_array_type, __user_desc_array_type, __class_desc_array_type;
-tree __ptr_desc_array_type, __attr_dec_array_type, __func_desc_array_type;
-tree __ptmf_desc_array_type, __ptmd_desc_array_type;
-#endif
+tree integer_type_node;
+tree unsigned_type_node;
 
 /* Indicates that there is a type value in some namespace, although
-   that is not necessarily in scope at the moment. */
+   that is not necessarily in scope at the moment.  */
 
 static tree global_type_node;
 
-tree class_star_type_node;
-tree class_type_node, record_type_node, union_type_node, enum_type_node;
-tree unknown_type_node;
-tree opaque_type_node, signature_type_node;
-tree sigtable_entry_type;
-
-/* Array type `vtable_entry_type[]' */
-tree vtbl_type_node;
-tree vtbl_ptr_type_node;
-
-/* namespace std */
-tree std_node;
+/* Namespace std.  */
 int in_std = 0;
 
 /* Expect only namespace names now. */
@@ -385,16 +307,6 @@ static rtx last_parm_cleanup_insn;
    the pointer to the initialized object.  */
 
 tree ctor_label;
-
-/* A FUNCTION_DECL which can call `abort'.  Not necessarily the
-   one that the user will declare, but sufficient to be called
-   by routines that want to abort the program.  */
-
-tree abort_fndecl;
-
-/* A FUNCTION_DECL for the default `::operator delete'.  */
-
-tree global_delete_fndecl;
 
 extern rtx cleanup_label, return_label;
 
@@ -6154,19 +6066,10 @@ auto_function (name, type, code)
 void
 init_decl_processing ()
 {
-  register tree endlink, int_endlink, double_endlink, unsigned_endlink;
   tree fields[20];
-  /* Data type of memcpy.  */
-  tree memcpy_ftype, strlen_ftype;
   int wchar_type_size;
-  tree temp;
   tree array_domain_type;
   tree vb_off_identifier = NULL_TREE;
-  /* Function type `char *(char *, char *)' and similar ones */
-  tree string_ftype_ptr_ptr, int_ftype_string_string;
-  tree sizetype_endlink;
-  tree ptr_ftype, ptr_ftype_unsigned, ptr_ftype_sizetype;
-  tree void_ftype, void_ftype_int, void_ftype_ptr;
 
   /* Have to make these distinct before we try using them.  */
   lang_name_cplusplus = get_identifier ("C++");
@@ -6463,268 +6366,23 @@ init_decl_processing ()
      need to look inside this envelope.  */
   class_star_type_node = build_pointer_type (make_lang_type (RECORD_TYPE));
 
+  if (flag_huge_objects)
+    delta_type_node = long_integer_type_node;
+  else
+    delta_type_node = short_integer_type_node;
+
   default_function_type
     = build_function_type (integer_type_node, NULL_TREE);
 
   ptr_type_node = build_pointer_type (void_type_node);
   const_ptr_type_node
     = build_pointer_type (build_qualified_type (void_type_node,
-						TYPE_QUAL_CONST)); 
-#if 0
-  record_builtin_type (RID_MAX, NULL_PTR, ptr_type_node);
-#endif
-  endlink = void_list_node;
-  int_endlink = tree_cons (NULL_TREE, integer_type_node, endlink);
-  double_endlink = tree_cons (NULL_TREE, double_type_node, endlink);
-  unsigned_endlink = tree_cons (NULL_TREE, unsigned_type_node, endlink);
+						TYPE_QUAL_CONST));
+  c_common_nodes_and_builtins (1, flag_no_builtin, flag_no_nonansi_builtin);
 
-  ptr_ftype = build_function_type (ptr_type_node, NULL_TREE);
-  ptr_ftype_unsigned = build_function_type (ptr_type_node, unsigned_endlink);
-  sizetype_endlink = tree_cons (NULL_TREE, sizetype, endlink);
-  /* We realloc here because sizetype could be int or unsigned.  S'ok.  */
-  ptr_ftype_sizetype = build_function_type (ptr_type_node, sizetype_endlink);
-
-  void_ftype = build_function_type (void_type_node, endlink);
-  void_ftype_int = build_function_type (void_type_node, int_endlink);
-  void_ftype_ptr
-    = build_function_type (void_type_node,
- 			   tree_cons (NULL_TREE, ptr_type_node, endlink));
   void_ftype_ptr
     = build_exception_variant (void_ftype_ptr,
 			       tree_cons (NULL_TREE, NULL_TREE, NULL_TREE));
-
-  float_ftype_float
-    = build_function_type (float_type_node,
-			   tree_cons (NULL_TREE, float_type_node, endlink));
-
-  double_ftype_double
-    = build_function_type (double_type_node, double_endlink);
-
-  ldouble_ftype_ldouble
-    = build_function_type (long_double_type_node,
-			   tree_cons (NULL_TREE, long_double_type_node,
-				      endlink));
-
-  double_ftype_double_double
-    = build_function_type (double_type_node,
-			   tree_cons (NULL_TREE, double_type_node,
-				      double_endlink));
-
-  int_ftype_int
-    = build_function_type (integer_type_node, int_endlink);
-
-  long_ftype_long
-    = build_function_type (long_integer_type_node,
-			   tree_cons (NULL_TREE, long_integer_type_node,
-				      endlink));
-
-  int_ftype_cptr_cptr_sizet
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, const_ptr_type_node,
-				      tree_cons (NULL_TREE, const_ptr_type_node,
-						 tree_cons (NULL_TREE,
-							    sizetype,
-							    endlink))));
-
-  string_ftype_ptr_ptr		/* strcpy prototype */
-    = build_function_type (string_type_node,
-			   tree_cons (NULL_TREE, string_type_node,
-				      tree_cons (NULL_TREE,
-						 const_string_type_node,
-						 endlink)));
-
-  int_ftype_string_string	/* strcmp prototype */
-    = build_function_type (integer_type_node,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      tree_cons (NULL_TREE,
-						 const_string_type_node,
-						 endlink)));
-
-  strlen_ftype		/* strlen prototype */
-    = build_function_type (sizetype,
-			   tree_cons (NULL_TREE, const_string_type_node,
-				      endlink));
-
-  memcpy_ftype	/* memcpy prototype */
-    = build_function_type (ptr_type_node,
-			   tree_cons (NULL_TREE, ptr_type_node,
-				      tree_cons (NULL_TREE, const_ptr_type_node,
-						 sizetype_endlink)));
-
-  if (flag_huge_objects)
-    delta_type_node = long_integer_type_node;
-  else
-    delta_type_node = short_integer_type_node;
-
-  builtin_function ("__builtin_constant_p", default_function_type,
-		    BUILT_IN_CONSTANT_P, NULL_PTR);
-
-  builtin_return_address_fndecl
-    = builtin_function ("__builtin_return_address", ptr_ftype_unsigned,
-			BUILT_IN_RETURN_ADDRESS, NULL_PTR);
-
-  builtin_function ("__builtin_frame_address", ptr_ftype_unsigned,
-		    BUILT_IN_FRAME_ADDRESS, NULL_PTR);
-
-  builtin_function ("__builtin_alloca", ptr_ftype_sizetype,
-		    BUILT_IN_ALLOCA, "alloca");
-  builtin_function ("__builtin_ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
-  /* Define alloca, ffs as builtins.
-     Declare _exit just to mark it as volatile.  */
-  if (! flag_no_builtin && !flag_no_nonansi_builtin)
-    {
-      temp = builtin_function ("alloca", ptr_ftype_sizetype,
-			       BUILT_IN_ALLOCA, NULL_PTR);
-      /* Suppress error if redefined as a non-function.  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
-      /* Suppress error if redefined as a non-function.  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("_exit", void_ftype_int,
-			       NOT_BUILT_IN, NULL_PTR);
-      TREE_THIS_VOLATILE (temp) = 1;
-      TREE_SIDE_EFFECTS (temp) = 1;
-      /* Suppress error if redefined as a non-function.  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-    }
-
-  builtin_function ("__builtin_abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
-  builtin_function ("__builtin_fabsf", float_ftype_float, BUILT_IN_FABS,
-		    NULL_PTR);
-  builtin_function ("__builtin_fabs", double_ftype_double, BUILT_IN_FABS,
-		    NULL_PTR);
-  builtin_function ("__builtin_fabsl", ldouble_ftype_ldouble, BUILT_IN_FABS,
-		    NULL_PTR);
-  builtin_function ("__builtin_labs", long_ftype_long,
-		    BUILT_IN_LABS, NULL_PTR);
-  builtin_function ("__builtin_saveregs", ptr_ftype,
-		    BUILT_IN_SAVEREGS, NULL_PTR);
-  builtin_function ("__builtin_classify_type", default_function_type,
-		    BUILT_IN_CLASSIFY_TYPE, NULL_PTR);
-  builtin_function ("__builtin_next_arg", ptr_ftype,
-		    BUILT_IN_NEXT_ARG, NULL_PTR);
-  builtin_function ("__builtin_args_info", int_ftype_int,
-		    BUILT_IN_ARGS_INFO, NULL_PTR);
-  builtin_function ("__builtin_setjmp",
-		    build_function_type (integer_type_node,
-					 tree_cons (NULL_TREE, ptr_type_node,
-						    endlink)),
-		    BUILT_IN_SETJMP, NULL_PTR);
-  builtin_function ("__builtin_longjmp",
-		    build_function_type (integer_type_node,
-					 tree_cons (NULL_TREE, ptr_type_node,
-						    tree_cons (NULL_TREE,
-							       integer_type_node,
-							       endlink))),
-		    BUILT_IN_LONGJMP, NULL_PTR);
-
-  /* Untyped call and return.  */
-  builtin_function ("__builtin_apply_args", ptr_ftype,
-		    BUILT_IN_APPLY_ARGS, NULL_PTR);
-
-  temp = tree_cons (NULL_TREE,
-		    build_pointer_type (build_function_type (void_type_node,
-							     NULL_TREE)),
-		    tree_cons (NULL_TREE, ptr_ftype_sizetype, NULL_TREE));
-  builtin_function ("__builtin_apply",
-		    build_function_type (ptr_type_node, temp),
-		    BUILT_IN_APPLY, NULL_PTR);
-  builtin_function ("__builtin_return", void_ftype_ptr,
-		    BUILT_IN_RETURN, NULL_PTR);
-
-  /* Currently under experimentation.  */
-  builtin_function ("__builtin_memcpy", memcpy_ftype,
-		    BUILT_IN_MEMCPY, "memcpy");
-  builtin_function ("__builtin_memcmp", int_ftype_cptr_cptr_sizet,
-		    BUILT_IN_MEMCMP, "memcmp");
-  builtin_function ("__builtin_strcmp", int_ftype_string_string,
-		    BUILT_IN_STRCMP, "strcmp");
-  builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
-		    BUILT_IN_STRCPY, "strcpy");
-  builtin_function ("__builtin_strlen", strlen_ftype,
-		    BUILT_IN_STRLEN, "strlen");
-  builtin_function ("__builtin_sqrtf", float_ftype_float, 
-		    BUILT_IN_FSQRT, "sqrtf");
-  builtin_function ("__builtin_fsqrt", double_ftype_double,
-		    BUILT_IN_FSQRT, NULL_PTR);
-  builtin_function ("__builtin_sqrtl", ldouble_ftype_ldouble, 
-		    BUILT_IN_FSQRT, "sqrtl");
-  builtin_function ("__builtin_sinf", float_ftype_float, 
-		    BUILT_IN_SIN, "sinf");
-  builtin_function ("__builtin_sin", double_ftype_double, 
-		    BUILT_IN_SIN, "sin");
-  builtin_function ("__builtin_sinl", ldouble_ftype_ldouble, 
-		    BUILT_IN_SIN, "sinl");
-  builtin_function ("__builtin_cosf", float_ftype_float, 
-		    BUILT_IN_COS, "cosf");
-  builtin_function ("__builtin_cos", double_ftype_double, 
-		    BUILT_IN_COS, "cos");
-  builtin_function ("__builtin_cosl", ldouble_ftype_ldouble, 
-		    BUILT_IN_COS, "cosl");
-
-  if (!flag_no_builtin)
-    {
-      builtin_function ("abs", int_ftype_int, BUILT_IN_ABS, NULL_PTR);
-      builtin_function ("fabs", double_ftype_double, BUILT_IN_FABS, NULL_PTR);
-      builtin_function ("labs", long_ftype_long, BUILT_IN_LABS, NULL_PTR);
-      builtin_function ("fabsf", float_ftype_float, BUILT_IN_FABS, NULL_PTR);
-      builtin_function ("fabsl", ldouble_ftype_ldouble, BUILT_IN_FABS,
-			NULL_PTR);
-      builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY, NULL_PTR);
-      builtin_function ("memcmp", int_ftype_cptr_cptr_sizet, BUILT_IN_MEMCMP,
-			NULL_PTR);
-      builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP,
-			NULL_PTR);
-      builtin_function ("strcpy", string_ftype_ptr_ptr, BUILT_IN_STRCPY,
-			NULL_PTR);
-      builtin_function ("strlen", strlen_ftype, BUILT_IN_STRLEN, NULL_PTR);
-      builtin_function ("sqrtf", float_ftype_float, BUILT_IN_FSQRT, NULL_PTR);
-      builtin_function ("sqrt", double_ftype_double, BUILT_IN_FSQRT, NULL_PTR);
-      builtin_function ("sqrtl", ldouble_ftype_ldouble, BUILT_IN_FSQRT,
-			NULL_PTR);
-      builtin_function ("sinf", float_ftype_float, BUILT_IN_SIN, NULL_PTR);
-      builtin_function ("sin", double_ftype_double, BUILT_IN_SIN, NULL_PTR);
-      builtin_function ("sinl", ldouble_ftype_ldouble, BUILT_IN_SIN, NULL_PTR);
-      builtin_function ("cosf", float_ftype_float, BUILT_IN_COS, NULL_PTR);
-      builtin_function ("cos", double_ftype_double, BUILT_IN_COS, NULL_PTR);
-      builtin_function ("cosl", ldouble_ftype_ldouble, BUILT_IN_COS, NULL_PTR);
-
-      /* Declare these functions volatile
-	 to avoid spurious "control drops through" warnings.  */
-      temp = builtin_function ("abort", void_ftype,
-			       NOT_BUILT_IN, NULL_PTR);
-      TREE_THIS_VOLATILE (temp) = 1;
-      TREE_SIDE_EFFECTS (temp) = 1;
-      /* Well, these are actually ANSI, but we can't set DECL_BUILT_IN on
-         them...  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-      temp = builtin_function ("exit", void_ftype_int,
-			       NOT_BUILT_IN, NULL_PTR);
-      TREE_THIS_VOLATILE (temp) = 1;
-      TREE_SIDE_EFFECTS (temp) = 1;
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-    }
-
-#if 0
-  /* Support for these has not been written in either expand_builtin
-     or build_function_call.  */
-  builtin_function ("__builtin_div", default_ftype, BUILT_IN_DIV, NULL_PTR);
-  builtin_function ("__builtin_ldiv", default_ftype, BUILT_IN_LDIV, NULL_PTR);
-  builtin_function ("__builtin_ffloor", double_ftype_double, BUILT_IN_FFLOOR,
-		    NULL_PTR);
-  builtin_function ("__builtin_fceil", double_ftype_double, BUILT_IN_FCEIL,
-		    NULL_PTR);
-  builtin_function ("__builtin_fmod", double_ftype_double_double,
-		    BUILT_IN_FMOD, NULL_PTR);
-  builtin_function ("__builtin_frem", double_ftype_double_double,
-		    BUILT_IN_FREM, NULL_PTR);
-  builtin_function ("__builtin_memset", ptr_ftype_ptr_int_int,
-		    BUILT_IN_MEMSET, NULL_PTR);
-  builtin_function ("__builtin_getexp", double_ftype_double, BUILT_IN_GETEXP,
-		    NULL_PTR);
-  builtin_function ("__builtin_getman", double_ftype_double, BUILT_IN_GETMAN,
-		    NULL_PTR);
-#endif
 
   /* C++ extensions */
 
@@ -6967,6 +6625,16 @@ define_function (name, type, function_code, pfn, library_name)
       DECL_FUNCTION_CODE (decl) = function_code;
     }
   return decl;
+}
+
+tree
+builtin_function (name, type, code, libname)
+     const char *name;
+     tree type;
+     enum built_in_function code;
+     const char *libname;
+{
+  return define_function (name, type, code, (void (*) PROTO((tree)))pushdecl, libname);
 }
 
 /* When we call finish_struct for an anonymous union, we create

@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
    definition here.  (fnf) */
 char *language_string = "GNU C++";
 
-extern tree void_list_node;
 extern struct obstack permanent_obstack;
 
 extern int end_of_file;

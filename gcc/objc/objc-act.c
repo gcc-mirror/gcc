@@ -1769,17 +1769,17 @@ build_module_descriptor ()
     return 0;
 
   {
-    tree parms, function_decl, decelerator, void_list_node;
+    tree parms, function_decl, decelerator, void_list_node_1;
     tree function_type;
     tree init_function_name = get_file_function_name ('I');
 
     /* Declare void __objc_execClass (void *); */
 
-    void_list_node = build_tree_list (NULL_TREE, void_type_node);
+    void_list_node_1 = build_tree_list (NULL_TREE, void_type_node);
     function_type
       = build_function_type (void_type_node,
 			     tree_cons (NULL_TREE, ptr_type_node,
-					void_list_node));
+					void_list_node_1));
     function_decl = build_decl (FUNCTION_DECL,
 				get_identifier (TAG_EXECCLASS),
 				function_type);
@@ -1797,12 +1797,12 @@ build_module_descriptor ()
 
     /* void _GLOBAL_$I$<gnyf> () {objc_execClass (&L_OBJC_MODULES);}  */
 
-    start_function (void_list_node,
+    start_function (void_list_node_1,
 		    build_parse_node (CALL_EXPR, init_function_name,
 				      /* This has the format of the output
 					 of get_parm_info.  */
 				      tree_cons (NULL_TREE, NULL_TREE,
-						 void_list_node),
+						 void_list_node_1),
 				      NULL_TREE),
 		    NULL_TREE, NULL_TREE, 0);
 #if 0 /* This should be turned back on later

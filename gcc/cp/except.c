@@ -37,13 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "eh-common.h"
 
-rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
-
-/* Holds the fndecl for __builtin_return_address.  */
-tree builtin_return_address_fndecl;
-
-/* A couple of backend routines from m88k.c */
-
 static void push_eh_cleanup PROTO((void));
 static tree build_eh_type_type PROTO((tree));
 static tree build_eh_type PROTO((tree));
@@ -184,7 +177,6 @@ static tree Unwind;
    ========================================================================= */
 
 extern rtx catch_clauses;
-extern tree const_ptr_type_node;
 
 /* ========================================================================= */
 

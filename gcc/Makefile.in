@@ -1319,7 +1319,7 @@ s-crt0:	$(CRT0_S) $(MCRT0_S) $(GCC_PASSES) $(CONFIG_H)
 # C language specific files.
 
 c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h \
-    $(srcdir)/c-parse.h c-tree.h input.h flags.h system.h toplev.h
+    $(srcdir)/c-parse.h c-tree.h c-common.h input.h flags.h system.h toplev.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 $(srcdir)/c-parse.h: $(srcdir)/c-parse.c
 $(srcdir)/c-parse.c: $(srcdir)/c-parse.y
@@ -1336,22 +1336,22 @@ $(srcdir)/c-gperf.h: c-parse.gperf
 	   -k1,3,$$ $(srcdir)/c-parse.gperf >tmp-gperf.h
 	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
-c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h flags.h \
-    output.h toplev.h
-c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h \
-    intl.h output.h $(EXPR_H) $(RTL_H) toplev.h
-c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h toplev.h \
-    output.h
+c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
+    c-lex.h flags.h output.h toplev.h
+c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
+    flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h
+c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
+    c-lex.h toplev.h output.h
 c-lex.o : c-lex.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-lex.h c-tree.h \
-    $(srcdir)/c-parse.h input.h intl.h flags.h $(srcdir)/c-gperf.h c-pragma.h \
-    toplev.h output.h mbchar.h
-c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h flags.h \
-    toplev.h
+    c-common.h $(srcdir)/c-parse.h $(srcdir)/c-gperf.h c-pragma.h input.h \
+    intl.h flags.h toplev.h output.h mbchar.h
+c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h \
+    c-common.h flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) except.h \
     function.h defaults.h c-pragma.h toplev.h
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
-    flags.h toplev.h $(EXPR_H)
+    c-common.h flags.h toplev.h $(EXPR_H)
 mbchar.o: mbchar.c $(CONFIG_H) system.h mbchar.h
 graph.o: graph.c $(CONFIG_H) system.h toplev.h flags.h output.h $(RTL_H) \
     hard-reg-set.h $(BASIC_BLOCK_H)
@@ -1401,7 +1401,7 @@ s-under: $(GCC_PASSES)
 # A file used by all variants of C.
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-lex.h \
-	flags.h toplev.h output.h c-pragma.h $(RTL_H)
+	c-common.h flags.h toplev.h output.h c-pragma.h $(RTL_H)
 
 # Language-independent files.
 

@@ -1,3 +1,30 @@
+Tue Jul 20 11:24:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* cp-tree.h: Delete lots of declarations of tree nodes; replaced by
+	c_global_trees and accessor macros defined in c-common.h.
+	(cp_tree_index): New enumeration.
+	(cp_global_trees): Declare new array.  Add accessor macros for it, and
+	delete declarations of tree nodes replaced by it.
+	(builtin_function): Delete macro, add declaration for new function.
+	Include c-common.h.
+	* decl.c: Delete definitions for tree nodes that were replaced by
+	cp_global_trees and c_global_trees.
+	(init_decl_processing): Call c_common_nodes_and_builtins; delete code
+	to generate the common builtins here.
+	(builtin_function): New function.
+	* decl2.c (abort_fndecl): Delete declaration.
+	* except.c (expand_builtin_return_address): Delete declaration.
+	(builtin_return_address_fndecl): Delete variable.
+	(const_ptr_type_node): Delete declaration.
+	* lex.c (cons_up_default_function): Delete declaration of
+	void_list_node.
+	* parse.y (void_list_node): Delete declaration.
+	* rtti.c (type_info_type_node, tinfo_fn_id, tinfo_fn_type):
+	Delete variables.
+	(const_string_type_node): Delete declaration.
+	* search.c (abort_fndecl): Delete declaration.
+	* Makefile.in: Update dependencies.
+
 1999-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (check_default_tmpl_args): Move test for missing default

@@ -19,6 +19,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "c-common.h"
+
 #ifndef _CP_TREE_H
 #define _CP_TREE_H
 
@@ -329,40 +331,96 @@ extern int pedantic;
    next exception handler.  */
 extern tree exception_throw_decl;
 
-extern tree double_type_node, long_double_type_node, float_type_node;
-extern tree char_type_node, unsigned_char_type_node, signed_char_type_node;
-extern tree ptrdiff_type_node;
+enum cp_tree_index
+{
+    CPTI_JAVA_BYTE_TYPE,
+    CPTI_JAVA_SHORT_TYPE,
+    CPTI_JAVA_INT_TYPE,
+    CPTI_JAVA_LONG_TYPE,
+    CPTI_JAVA_FLOAT_TYPE,
+    CPTI_JAVA_DOUBLE_TYPE,
+    CPTI_JAVA_CHAR_TYPE,
+    CPTI_JAVA_BOOLEAN_TYPE,
 
-extern tree short_integer_type_node, short_unsigned_type_node;
-extern tree long_integer_type_node, long_unsigned_type_node;
-extern tree long_long_integer_type_node, long_long_unsigned_type_node;
-extern tree widest_integer_literal_type_node, widest_unsigned_literal_type_node;
-extern tree unsigned_type_node;
-extern tree string_type_node, char_array_type_node, int_array_type_node;
-extern tree wchar_array_type_node;
-extern tree wchar_type_node, signed_wchar_type_node, unsigned_wchar_type_node;
+    CPTI_VOID_ZERO,
+    CPTI_WCHAR_DECL,
+    CPTI_VTABLE_ENTRY_TYPE,
+    CPTI_DELTA_TYPE,
 
-extern tree complex_integer_type_node;
-extern tree complex_float_type_node;
-extern tree complex_double_type_node;
-extern tree complex_long_double_type_node;
+    CPTI_TP_DESC_TYPE,
+    CPTI_ACCESS_MODE_TYPE,
+    CPTI_BLTN_DESC_TYPE,
+    CPTI_USER_DESC_TYPE,
+    CPTI_CLASS_DESC_TYPE,
+    CPTI_PTR_DESC_TYPE,
+    CPTI_ATTR_DESC_TYPE,
+    CPTI_FUNC_DESC_TYPE,
+    CPTI_PTMF_DESC_TYPE,
+    CPTI_PTMD_DESC_TYPE,
+    
+    CPTI_CLASS_STAR_TYPE,
+    CPTI_CLASS_TYPE,
+    CPTI_RECORD_TYPE,
+    CPTI_UNION_TYPE,
+    CPTI_ENUM_TYPE,
+    CPTI_UNKNOWN_TYPE,
+    CPTI_OPAQUE_TYPE,
+    CPTI_SIGNATURE_TYPE,
+    CPTI_SIGTABLE_ENTRY_TYPE,
+    CPTI_VTBL_TYPE,
+    CPTI_VTBL_PTR_TYPE,
+    CPTI_STD,
+    CPTI_TYPE_INFO_TYPE,
+    CPTI_TINFO_FN_ID,
+    CPTI_TINFO_FN_TYPE,
+    CPTI_ABORT_FNDECL,
+    CPTI_GLOBAL_DELETE_FNDECL,
 
-extern tree intQI_type_node, unsigned_intQI_type_node;
-extern tree intHI_type_node, unsigned_intHI_type_node;
-extern tree intSI_type_node, unsigned_intSI_type_node;
-extern tree intDI_type_node, unsigned_intDI_type_node;
-#if HOST_BITS_PER_WIDE_INT >= 64
-extern tree intTI_type_node, unsigned_intTI_type_node;
-#endif
+    CPTI_MAX
+};
 
-extern tree java_byte_type_node;
-extern tree java_short_type_node;
-extern tree java_int_type_node;
-extern tree java_long_type_node;
-extern tree java_float_type_node;
-extern tree java_double_type_node;
-extern tree java_char_type_node;
-extern tree java_boolean_type_node;
+extern tree cp_global_trees[CPTI_MAX];
+
+#define java_byte_type_node		cp_global_trees[CPTI_JAVA_BYTE_TYPE]
+#define java_short_type_node		cp_global_trees[CPTI_JAVA_SHORT_TYPE]
+#define java_int_type_node		cp_global_trees[CPTI_JAVA_INT_TYPE]
+#define java_long_type_node		cp_global_trees[CPTI_JAVA_LONG_TYPE]
+#define java_float_type_node		cp_global_trees[CPTI_JAVA_FLOAT_TYPE]
+#define java_double_type_node		cp_global_trees[CPTI_JAVA_DOUBLE_TYPE]
+#define java_char_type_node		cp_global_trees[CPTI_JAVA_CHAR_TYPE]
+#define java_boolean_type_node		cp_global_trees[CPTI_JAVA_BOOLEAN_TYPE]
+
+#define void_zero_node			cp_global_trees[CPTI_VOID_ZERO]
+#define wchar_decl_node			cp_global_trees[CPTI_WCHAR_DECL]
+#define vtable_entry_type		cp_global_trees[CPTI_VTABLE_ENTRY_TYPE]
+#define delta_type_node			cp_global_trees[CPTI_DELTA_TYPE]
+#define __tp_desc_type_node		cp_global_trees[CPTI_TP_DESC_TYPE]
+#define __access_mode_type_node		cp_global_trees[CPTI_ACCESS_MODE_TYPE]
+#define __bltn_desc_type_node		cp_global_trees[CPTI_BLTN_DESC_TYPE]
+#define __user_desc_type_node		cp_global_trees[CPTI_USER_DESC_TYPE]
+#define __class_desc_type_node		cp_global_trees[CPTI_CLASS_DESC_TYPE]
+#define __ptr_desc_type_node		cp_global_trees[CPTI_PTR_DESC_TYPE]
+#define __attr_desc_type_node		cp_global_trees[CPTI_ATTR_DESC_TYPE]
+#define __func_desc_type_node		cp_global_trees[CPTI_FUNC_DESC_TYPE]
+#define __ptmf_desc_type_node		cp_global_trees[CPTI_PTMF_DESC_TYPE]
+#define __ptmd_desc_type_node		cp_global_trees[CPTI_PTMD_DESC_TYPE]
+#define class_star_type_node		cp_global_trees[CPTI_CLASS_STAR_TYPE]
+#define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
+#define record_type_node		cp_global_trees[CPTI_RECORD_TYPE]
+#define union_type_node			cp_global_trees[CPTI_UNION_TYPE]
+#define enum_type_node			cp_global_trees[CPTI_ENUM_TYPE]
+#define unknown_type_node		cp_global_trees[CPTI_UNKNOWN_TYPE]
+#define opaque_type_node		cp_global_trees[CPTI_OPAQUE_TYPE]
+#define signature_type_node		cp_global_trees[CPTI_SIGNATURE_TYPE]
+#define sigtable_entry_type		cp_global_trees[CPTI_SIGTABLE_ENTRY_TYPE]
+#define vtbl_type_node			cp_global_trees[CPTI_VTBL_TYPE]
+#define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
+#define std_node			cp_global_trees[CPTI_STD]
+#define type_info_type_node		cp_global_trees[CPTI_TYPE_INFO_TYPE]
+#define tinfo_fn_id			cp_global_trees[CPTI_TINFO_FN_ID]
+#define tinfo_fn_type			cp_global_trees[CPTI_TINFO_FN_TYPE]
+#define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
+#define global_delete_fndecl		cp_global_trees[CPTI_GLOBAL_DELETE_FNDECL]
 
 extern int current_function_returns_value;
 extern int current_function_returns_null;
@@ -2048,9 +2106,6 @@ extern int flag_new_for_scope;
 #define DEFARG_LENGTH(NODE)	(DEFARG_NODE_CHECK(NODE)->identifier.length)
 #define DEFARG_POINTER(NODE)	(DEFARG_NODE_CHECK(NODE)->identifier.pointer)
 
-#define builtin_function(NAME, TYPE, CODE, LIBNAME) \
-  define_function (NAME, TYPE, CODE, (void (*) PROTO((tree)))pushdecl, LIBNAME)
-
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
 #define IF_COND(NODE)           TREE_OPERAND (NODE, 0)
@@ -2153,22 +2208,6 @@ extern tree type_for_size                       PROTO((unsigned, int));
 extern int c_get_alias_set                      PROTO((tree));
 
 /* in decl{2}.c */
-extern tree void_list_node;
-extern tree void_zero_node;
-extern tree default_function_type;
-extern tree vtable_entry_type;
-extern tree sigtable_entry_type;
-extern tree __t_desc_type_node;
-#if 0
-extern tree __tp_desc_type_node;
-#endif
-extern tree __access_mode_type_node;
-extern tree __bltn_desc_type_node, __user_desc_type_node;
-extern tree __class_desc_type_node, __attr_desc_type_node;
-extern tree __ptr_desc_type_node, __func_desc_type_node;
-extern tree __ptmf_desc_type_node, __ptmd_desc_type_node;
-extern tree type_info_type_node;
-extern tree class_star_type_node;
 extern tree this_identifier;
 extern tree ctor_identifier, dtor_identifier;
 extern tree pfn_identifier;
@@ -2182,35 +2221,18 @@ extern tree vt_off_identifier;
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
 
-extern tree ptr_type_node;
-extern tree class_type_node, record_type_node, union_type_node, enum_type_node;
-extern tree unknown_type_node;
-extern tree opaque_type_node, signature_type_node;
-
 /* Node for "pointer to (virtual) function".
    This may be distinct from ptr_type_node so gdb can distinguish them.  */
 #define vfunc_ptr_type_node \
   (flag_vtable_thunks ? vtable_entry_type : ptr_type_node)
 
-/* The type of a vtbl, i.e., an array of vtable entries.  */
-extern tree vtbl_type_node;
-/* The type of a class vtbl pointer, i.e., a pointer to a vtable entry.  */
-extern tree vtbl_ptr_type_node;
-extern tree delta_type_node;
-extern tree std_node;
 
-extern tree long_long_integer_type_node, long_long_unsigned_type_node;
 /* For building calls to `delete'.  */
 extern tree integer_two_node, integer_three_node;
-extern tree boolean_type_node, boolean_true_node, boolean_false_node;
 
 extern tree null_node;
 
 extern tree anonymous_namespace_name;
-
-/* The FUNCTION_DECL for the default `::operator delete'.  */
-
-extern tree global_delete_fndecl;
 
 /* in pt.c  */
 
@@ -2862,7 +2884,7 @@ extern void init_decl_processing		PROTO((void));
 extern int init_type_desc			PROTO((void));
 extern tree define_function
 	PROTO((const char *, tree, enum built_in_function,
-	       void (*) (tree), const char *));
+	       void (*) (tree), const char *));  
 extern tree check_tag_decl			PROTO((tree));
 extern void shadow_tag				PROTO((tree));
 extern tree groktypename			PROTO((tree));
