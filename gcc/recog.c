@@ -1878,7 +1878,11 @@ constrain_operands (insn_code_num, strict)
 
 	  if (strict > 0)
 	    for (eopno = 0; eopno < noperands; eopno++)
-	      if (earlyclobber[eopno])
+	      /* Ignore earlyclobber operands now in memory,
+		 because we would often report failure when we have
+		 two memory operands, one of which was formerly a REG.  */
+	      if (earlyclobber[eopno]
+		  && GET_CODE (recog_operand[eopno]) == REG)
 		for (opno = 0; opno < noperands; opno++)
 		  if ((GET_CODE (recog_operand[opno]) == MEM
 		       || op_types[opno] != OP_OUT)
