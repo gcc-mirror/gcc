@@ -524,7 +524,7 @@ asm_output_bss (file, decl, name, size, rounded)
 static void
 asm_output_aligned_bss (file, decl, name, size, align)
      FILE *file;
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
      const char *name;
      int size, align;
 {
@@ -1029,7 +1029,9 @@ assemble_constant_align (exp)
 #endif
 
   if (align > BITS_PER_UNIT)
-    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+    {
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+    }
 }
 
 /* Output a string of literal assembler code
@@ -1208,7 +1210,9 @@ assemble_start_function (decl, fnname)
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
   if (align > 0)
-    ASM_OUTPUT_ALIGN (asm_out_file, align);
+    {
+      ASM_OUTPUT_ALIGN (asm_out_file, align);
+    }
 
   /* Handle a user-specified function alignment.
      Note that we still need to align to FUNCTION_BOUNDARY, as above,
@@ -1324,7 +1328,9 @@ assemble_align (align)
      int align;
 {
   if (align > BITS_PER_UNIT)
-    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+    {
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+    }
 }
 
 /* Assemble a string constant with the specified C string as contents.  */
@@ -1682,8 +1688,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Output the alignment of this data.  */
   if (align > BITS_PER_UNIT)
-    ASM_OUTPUT_ALIGN (asm_out_file,
-		      floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT));
+    {
+      ASM_OUTPUT_ALIGN (asm_out_file,
+			floor_log2 (DECL_ALIGN (decl) / BITS_PER_UNIT));
+    }
 
   /* Do any machine/system dependent processing of the object.  */
 #ifdef ASM_DECLARE_OBJECT_NAME
@@ -1905,7 +1913,9 @@ assemble_trampoline_template ()
   /* Write the assembler code to define one.  */
   align = floor_log2 (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT);
   if (align > 0)
-    ASM_OUTPUT_ALIGN (asm_out_file, align);
+    {
+      ASM_OUTPUT_ALIGN (asm_out_file, align);
+    }
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LTRAMP", 0);
   TRAMPOLINE_TEMPLATE (asm_out_file);
@@ -3462,7 +3472,9 @@ output_constant_def_contents (exp, reloc, labelno)
     }
 
   if (align > BITS_PER_UNIT)
-    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+    {
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
+    }
 
   /* Output the label itself.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LC", labelno);

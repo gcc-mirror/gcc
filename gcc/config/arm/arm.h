@@ -2614,8 +2614,8 @@ extern int making_const_table;
 #define ASM_OUTPUT_DEF_FROM_DECLS(FILE, DECL1, DECL2)		\
   do						   		\
     {								\
-      char * LABEL1 = XSTR (XEXP (DECL_RTL (decl), 0), 0);	\
-      char * LABEL2 = IDENTIFIER_POINTER (DECL2);		\
+      const char *const LABEL1 = XSTR (XEXP (DECL_RTL (decl), 0), 0); \
+      const char *const LABEL2 = IDENTIFIER_POINTER (DECL2);	\
 								\
       if (TARGET_THUMB && TREE_CODE (DECL1) == FUNCTION_DECL)	\
 	{							\

@@ -25,6 +25,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "rtl.h"
 #include "hard-reg-set.h"
+#include "tm_p.h"
 
 /* Forward declarations */
 static void set_of_1		PARAMS ((rtx, rtx, void *));

@@ -2587,8 +2587,8 @@ sprintf (STRING, "*.%s%d", PREFIX, NUM)
    If this macro is not defined, nothing special is output at the end
    of the jump-table.  */
 
-#define ASM_OUTPUT_SKIP(STREAM, n)		\
-fprintf (STREAM, "\t.skip %d,0\n", n)
+#define ASM_OUTPUT_SKIP(STREAM, N)		\
+fprintf (STREAM, "\t.skip %d,0\n", N)
 /* A C statement to output to the stdio stream STREAM an assembler
    instruction to advance the location counter by NBYTES bytes.
    Those bytes should be zero when loaded.  NBYTES will be a C
