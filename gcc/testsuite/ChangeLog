@@ -1,3 +1,7 @@
+2001-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gnu99-init-1.c: Add test for [0 ... 0] range.
+
 2001-01-31  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* gcc.dg/c99-float-1.c: Back out "XFAIL FLT_EVAL_METHOD and
