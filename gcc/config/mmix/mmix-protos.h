@@ -67,7 +67,6 @@ extern void mmix_asm_declare_register_global
   (FILE *, tree, int, const char *);
 extern rtx mmix_function_arg
   (const CUMULATIVE_ARGS *, enum machine_mode, tree, int, int);
-extern rtx mmix_expand_builtin_va_arg (tree, tree);
 extern void mmix_asm_output_addr_diff_elt (FILE *, rtx, int, int);
 extern void mmix_asm_output_addr_vec_elt (FILE *, int);
 extern enum reg_class mmix_preferred_reload_class (rtx, enum reg_class);

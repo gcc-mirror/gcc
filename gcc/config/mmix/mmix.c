@@ -139,6 +139,7 @@ static void mmix_file_start (void);
 static void mmix_file_end (void);
 static bool mmix_rtx_costs (rtx, int, int, int *);
 static rtx mmix_struct_value_rtx (tree, int);
+static tree mmix_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 
 
 /* Target structure macros.  Listed by node.  See `Using and Porting GCC'
@@ -204,6 +205,8 @@ static rtx mmix_struct_value_rtx (tree, int);
 
 #undef TARGET_SETUP_INCOMING_VARARGS
 #define TARGET_SETUP_INCOMING_VARARGS mmix_setup_incoming_varargs
+#undef TARGET_GIMPLIFY_VA_ARG_EXPR
+#define TARGET_GIMPLIFY_VA_ARG_EXPR mmix_gimplify_va_arg_expr
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -843,109 +846,19 @@ mmix_setup_incoming_varargs (CUMULATIVE_ARGS *args_so_farp,
     internal_error ("MMIX Internal: Last named vararg would not fit in a register");
 }
 
-/* EXPAND_BUILTIN_VA_ARG.  */
+/* Gimplify VA_ARG_EXPR.  All we need to do is figure out if TYPE is
+   pass-by-reference and hand off to standard routines.  */
 
-/* This is modified from the "standard" implementation of va_arg: read the
-   value from the current (padded) address and increment by the (padded)
-   size.  The difference for MMIX is that if the type is
-   pass-by-reference, then perform an indirection.  */
-
-rtx
-mmix_expand_builtin_va_arg (tree valist, tree type)
+static tree
+mmix_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 {
-  tree ptr_size = size_int (BITS_PER_WORD / BITS_PER_UNIT);
-  tree addr_tree, type_size = NULL;
-  tree align, alignm1;
-  tree rounded_size;
-  rtx addr;
+  CUMULATIVE_ARGS cum;
+  cum.lib = 0;
 
-  /* Compute the rounded size of the type.  */
-
-  /* Get AP.  */
-  addr_tree = valist;
-  align = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
-  alignm1 = size_int (PARM_BOUNDARY / BITS_PER_UNIT - 1);
-  if (type == error_mark_node
-      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
-      || TREE_OVERFLOW (type_size))
-    /* Presumably an error; the size isn't computable.  A message has
-       supposedly been emitted elsewhere.  */
-    rounded_size = size_zero_node;
+  if (mmix_function_arg_pass_by_reference (&cum, TYPE_MODE (type), type, 0))
+    return ind_gimplify_va_arg_expr (valist, type, pre_p, post_p);
   else
-    rounded_size = fold (build (MULT_EXPR, sizetype,
-				fold (build (TRUNC_DIV_EXPR, sizetype,
-					     fold (build (PLUS_EXPR, sizetype,
-							  type_size, alignm1)),
-					     align)),
-				align));
-
- if (AGGREGATE_TYPE_P (type)
-     && GET_MODE_UNIT_SIZE (TYPE_MODE (type)) < 8
-     && GET_MODE_UNIT_SIZE (TYPE_MODE (type)) != 0)
-   {
-     /* Adjust for big-endian the location of aggregates passed in a
-	register, but where the aggregate is accessed in a shorter mode
-	than the natural register mode (i.e. it is accessed as SFmode(?),
-	SImode, HImode or QImode rather than DImode or DFmode(?)).  FIXME:
-	Or should we adjust the mode in which the aggregate is read, to be
-	a register size mode?  (Hum, nah, a small offset is generally
-	cheaper than a wider memory access on MMIX.)  */
-     addr_tree
-       = build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree,
-		size_int ((BITS_PER_WORD / BITS_PER_UNIT)
-			  - GET_MODE_UNIT_SIZE (TYPE_MODE (type))));
-   }
- else if (!integer_zerop (rounded_size))
-   {
-     if (!really_constant_p (type_size))
-       /* Varying-size types come in by reference.  */
-       addr_tree
-	 = build1 (INDIRECT_REF, build_pointer_type (type), addr_tree);
-     else
-       {
-	 /* If the size is less than a register, then we need to pad the
-	    address by adding the difference.  */
-	 tree addend
-	   = fold (build (COND_EXPR, sizetype,
-			  fold (build (GT_EXPR, sizetype,
-				       rounded_size,
-				       align)),
-			  size_zero_node,
-			  fold (build (MINUS_EXPR, sizetype,
-				       rounded_size,
-				       type_size))));
-	 tree addr_tree1
-	   = fold (build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree,
-			  addend));
-
-	 /* If this type is larger than what fits in a register, then it
-	    is passed by reference.  */
-	 addr_tree
-	   = fold (build (COND_EXPR, TREE_TYPE (addr_tree1),
-			  fold (build (GT_EXPR, sizetype,
-				       rounded_size,
-				       ptr_size)),
-			  build1 (INDIRECT_REF, build_pointer_type (type),
-				  addr_tree1),
-			  addr_tree1));
-       }
-   }
-
-  addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
-  addr = copy_to_reg (addr);
-
-  if (!integer_zerop (rounded_size))
-    {
-      /* Compute new value for AP.  For MMIX, it is always advanced by the
-	 size of a register.  */
-      tree t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-		      build (PLUS_EXPR, TREE_TYPE (valist), valist,
-			     ptr_size));
-      TREE_SIDE_EFFECTS (t) = 1;
-      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
-    }
-
-  return addr;
+    return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
 }
 
 /* TRAMPOLINE_SIZE.  */
