@@ -2831,6 +2831,7 @@ compute_frame_size (size, leaf_function)
 }
 
 /* Build a (32 bit) big number in a register.  */
+/* ??? We may be able to use the set macro here too.  */
 
 static void
 build_big_number (file, num, reg)
@@ -4145,60 +4146,59 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
 
              Before call		        After call
         +-----------------------+	+-----------------------+
-   high |			|       |      			|
-   mem. |		        |	|			|
-        |  caller's temps.    	|       |  caller's temps.    	|
+   high |		        |	|			|
+   mem  |  caller's temps.    	|       |  caller's temps.    	|
 	|       		|       |       	        |
         +-----------------------+	+-----------------------+
  	|       		|	|		        |
         |  arguments on stack.  |	|  arguments on stack.  |
-	|       		|FP+92->|			|
-        +-----------------------+	+-----------------------+
+	|       		|      	|			|
+        +-----------------------+FP+92->+-----------------------+
  	|  6 words to save     	|	|  6 words to save	|
 	|  arguments passed	|	|  arguments passed	|
 	|  in registers, even	|	|  in registers, even	|
- SP+68->|  if not passed.       |FP+68->|  if not passed.	|
-	+-----------------------+       +-----------------------+
-	| 1 word struct addr	|FP+64->| 1 word struct addr	|
-	+-----------------------+       +-----------------------+
-	|			|	|			|
-	| 16 word reg save area	|	| 16 word reg save area |
-    SP->|			|   FP->|			|
-	+-----------------------+	+-----------------------+
-					| 4 word area for	|
-				 FP-16->| fp/alu reg moves	|
-					+-----------------------+
-					|			|
-					|  local variables	|
-					|			|
-					+-----------------------+
-					|		        |
+       	|  if not passed.       |      	|  if not passed.	|
+ SP+68->+-----------------------+FP+68->+-----------------------+
+        | 1 word struct addr	|      	| 1 word struct addr	|
+        +-----------------------+FP+64->+-----------------------+
+        |			|	|			|
+        | 16 word reg save area	|	| 16 word reg save area |
+       	|                       |      	|			|
+    SP->+-----------------------+   FP->+-----------------------+
+				        | 4 word area for	|
+				       	| fp/alu reg moves	|
+				 FP-16->+-----------------------+
+				        |			|
+				        |  local variables	|
+				        |			|
+				        +-----------------------+
+				        |		        |
                                         |  fp register save     |
-					|			|
-					+-----------------------+
-					|		        |
+				        |			|
+				        +-----------------------+
+				        |		        |
                                         |  gp register save     |
                                         |       		|
-					+-----------------------+
-					|			|
+				        +-----------------------+
+				        |			|
                                         |  alloca allocations   |
-        				|			|
-					+-----------------------+
-					|			|
+        			        |			|
+				        +-----------------------+
+				        |			|
                                         |  arguments on stack   |
-        			 SP+92->|		        |
-					+-----------------------+
+        			       	|		        |
+				 SP+92->+-----------------------+
                                         |  6 words to save      |
-					|  arguments passed     |
+				        |  arguments passed     |
                                         |  in registers, even   |
-   low                           SP+68->|  if not passed.       |
-   memory        			+-----------------------+
-				 SP+64->| 1 word struct addr	|
-					+-----------------------+
-					|			|
-					I 16 word reg save area |
-				    SP->|			|
-					+-----------------------+  */
+   low                                 	|  if not passed.       |
+   memory        		 SP+68->+-----------------------+
+				       	| 1 word struct addr	|
+				 SP+64->+-----------------------+
+				        |			|
+				        I 16 word reg save area |
+				       	|			|
+				    SP->+-----------------------+  */
 
 /* Structure to be filled in by sparc_flat_compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -4211,10 +4211,9 @@ struct sparc_frame_info
   unsigned long extra_size;	/* # bytes of extra gunk.  */
   unsigned int  gp_reg_size;	/* # bytes needed to store gp regs.  */
   unsigned int  fp_reg_size;	/* # bytes needed to store fp regs.  */
-  unsigned long mask;		/* Mask of saved gp registers.  */
+  unsigned long gmask;		/* Mask of saved gp registers.  */
   unsigned long fmask;		/* Mask of saved fp registers.  */
-  unsigned long gp_sp_offset;	/* Offset from new sp to store gp regs.  */
-  unsigned long fp_sp_offset;	/* Offset from new sp to store fp regs.  */
+  unsigned long reg_offset;	/* Offset from new sp to store regs.  */
   int		initialized;	/* Nonzero if frame size already calculated.  */
 };
 
@@ -4226,10 +4225,14 @@ struct sparc_frame_info zero_frame_info;
 
 /* Tell prologue and epilogue if register REGNO should be saved / restored.  */
 
+#define RETURN_ADDR_REGNUM 15
+#define FRAME_POINTER_MASK (1 << (FRAME_POINTER_REGNUM))
+#define RETURN_ADDR_MASK (1 << (RETURN_ADDR_REGNUM))
+
 #define MUST_SAVE_REGISTER(regno) \
  ((regs_ever_live[regno] && !call_used_regs[regno])		\
   || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)	\
-  || (regno == 15 && regs_ever_live[15]))
+  || (regno == RETURN_ADDR_REGNUM && regs_ever_live[RETURN_ADDR_REGNUM]))
 
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.  */
@@ -4245,12 +4248,13 @@ sparc_flat_compute_frame_size (size)
   unsigned long extra_size;	/* # extra bytes.  */
   unsigned int  gp_reg_size;	/* # bytes needed to store gp regs.  */
   unsigned int  fp_reg_size;	/* # bytes needed to store fp regs.  */
-  unsigned long mask;		/* Mask of saved gp registers.  */
+  unsigned long gmask;		/* Mask of saved gp registers.  */
   unsigned long fmask;		/* Mask of saved fp registers.  */
+  unsigned long reg_offset;	/* Offset to register save area.  */
+  int           need_aligned_p;	/* 1 if need the save area 8 byte aligned.  */
 
   /* This is the size of the 16 word reg save area, 1 word struct addr
      area, and 4 word fp/alu register copy area.  */
-  /* ??? Is the stack bias taken into account here?  */
   extra_size	 = -STARTING_FRAME_OFFSET + FIRST_PARM_OFFSET(0);
   var_size	 = size;
   /* Also include the size needed for the 6 parameter registers.  */
@@ -4258,33 +4262,34 @@ sparc_flat_compute_frame_size (size)
   total_size	 = var_size + args_size + extra_size;
   gp_reg_size	 = 0;
   fp_reg_size	 = 0;
-  mask		 = 0;
+  gmask		 = 0;
   fmask		 = 0;
+  reg_offset	 = 0;
+  need_aligned_p = 0;
 
   /* Calculate space needed for gp registers.  */
   for (regno = 1; regno <= 31; regno++)
     {
       if (MUST_SAVE_REGISTER (regno))
 	{
+	  /* If we need to save two regs in a row, ensure there's room to bump
+	     up the address to align it to a doubleword boundary.  */
 	  if ((regno & 0x1) == 0 && MUST_SAVE_REGISTER (regno+1))
 	    {
 	      if (gp_reg_size % 8 != 0)
-		gp_reg_size += UNITS_PER_WORD;
+		gp_reg_size += 4;
 	      gp_reg_size += 2 * UNITS_PER_WORD;
-	      mask |= 3 << regno;
+	      gmask |= 3 << regno;
 	      regno++;
+	      need_aligned_p = 1;
 	    }
 	  else
 	    {
 	      gp_reg_size += UNITS_PER_WORD;
-	      mask |= 1 << regno;
+	      gmask |= 1 << regno;
 	    }
 	}
     }
-  /* Add extra word in case we have to align the space to a double word
-     boundary.  */
-  if (gp_reg_size != 0)
-    gp_reg_size += UNITS_PER_WORD;
 
   /* Calculate space needed for fp registers.  */
   for (regno = 32; regno <= 63; regno++)
@@ -4296,8 +4301,21 @@ sparc_flat_compute_frame_size (size)
 	}
     }
 
-  total_size += gp_reg_size + fp_reg_size;
+  if (gmask || fmask)
+    {
+      int n;
+      reg_offset = FIRST_PARM_OFFSET(0) + args_size;
+      /* Ensure save area is 8 byte aligned if we need it.  */
+      n = reg_offset % 8;
+      if (need_aligned_p && n != 0)
+	{
+	  total_size += 8 - n;
+	  reg_offset += 8 - n;
+	}
+      total_size += gp_reg_size + fp_reg_size;
+    }
 
+  /* ??? This looks a little suspicious.  Clarify.  */
   if (total_size == extra_size)
     total_size = extra_size = 0;
 
@@ -4310,92 +4328,70 @@ sparc_flat_compute_frame_size (size)
   current_frame_info.extra_size  = extra_size;
   current_frame_info.gp_reg_size = gp_reg_size;
   current_frame_info.fp_reg_size = fp_reg_size;
-  current_frame_info.mask	 = mask;
+  current_frame_info.gmask	 = gmask;
   current_frame_info.fmask	 = fmask;
+  current_frame_info.reg_offset	 = reg_offset;
   current_frame_info.initialized = reload_completed;
-
-  if (mask)
-    {
-      unsigned long offset = args_size;
-      if (extra_size)
-	offset += FIRST_PARM_OFFSET(0);
-      current_frame_info.gp_sp_offset = offset;
-    }
-
-  if (fmask)
-    {
-      unsigned long offset = args_size + gp_reg_size;
-      if (extra_size)
-	offset += FIRST_PARM_OFFSET(0);
-      current_frame_info.fp_sp_offset = offset;
-    }
 
   /* Ok, we're done.  */
   return total_size;
 }
 
-/* Common code to save/restore registers.  */
+/* Save/restore registers in GMASK and FMASK at register BASE_REG plus offset
+   OFFSET.
+
+   BASE_REG must be 8 byte aligned.  This allows us to test OFFSET for
+   appropriate alignment and use DOUBLEWORD_OP when we can.  We assume
+   [BASE_REG+OFFSET] will always be a valid address.
+
+   WORD_OP is either "st" for save, "ld" for restore.
+   DOUBLEWORD_OP is either "std" for save, "ldd" for restore.  */
 
 void
-sparc_flat_save_restore (file, word_op, doubleword_op)
-     FILE *file;		/* Stream to write to.  */
-     char *word_op;		/* Operation to do for one word.  */
-     char *doubleword_op;	/* Operation to do for doubleword.  */
+sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doubleword_op)
+     FILE *file;
+     char *base_reg;
+     unsigned int offset;
+     unsigned long gmask;
+     unsigned long fmask;
+     char *word_op;
+     char *doubleword_op;
 {
   int regno;
-  unsigned long mask	  = current_frame_info.mask;
-  unsigned long fmask	  = current_frame_info.fmask;
-  unsigned long gp_offset;
-  unsigned long fp_offset;
-  unsigned long max_offset;
-  char *base_reg;
 
-  if (mask == 0 && fmask == 0)
+  if (gmask == 0 && fmask == 0)
     return;
 
-  base_reg   = reg_names[STACK_POINTER_REGNUM];
-  gp_offset  = current_frame_info.gp_sp_offset;
-  fp_offset  = current_frame_info.fp_sp_offset;
-  max_offset = (gp_offset > fp_offset) ? gp_offset : fp_offset;
+  /* Save registers starting from high to low.  We've already saved the
+     previous frame pointer and previous return address for the debugger's
+     sake.  The debugger allows us to not need a nop in the epilog if at least
+     one register is reloaded in addition to return address.  */
 
-  /* Deal with calling functions with a large structure.  */
-  if (max_offset >= 4096)
-    {
-      char *temp = "%g2";
-      fprintf (file, "\tset %ld,%s\n", max_offset, temp);
-      fprintf (file, "\tadd %s,%s,%s\n", temp, base_reg, temp);
-      base_reg = temp;
-      gp_offset = max_offset - gp_offset;
-      fp_offset = max_offset - fp_offset;
-    }
-
-  /* Save registers starting from high to low.  The debuggers prefer
-     at least the return register be stored at func+4, and also it
-     allows us not to need a nop in the epilog if at least one
-     register is reloaded in addition to return address.  */
-
-  if (mask || frame_pointer_needed)
+  if (gmask)
     {
       for (regno = 1; regno <= 31; regno++)
 	{
-	  if ((mask & (1L << regno)) != 0
-	      || (regno == FRAME_POINTER_REGNUM && frame_pointer_needed))
+	  if ((gmask & (1L << regno)) != 0)
 	    {
-	      if ((regno & 0x1) == 0 && ((mask & (1L << (regno+1))) != 0))
+	      if ((regno & 0x1) == 0 && ((gmask & (1L << (regno+1))) != 0))
 		{
-		  if (gp_offset % 8 != 0)
-		    gp_offset += UNITS_PER_WORD;
-		  
+		  /* We can save two registers in a row.  If we're not at a
+		     double word boundary, move to one.
+		     sparc_flat_compute_frame_size ensures there's room to do
+		     this.  */
+		  if (offset % 8 != 0)
+		    offset += UNITS_PER_WORD;
+
 		  if (word_op[0] == 's')
 		    fprintf (file, "\t%s %s,[%s+%d]\n",
 			     doubleword_op, reg_names[regno],
-			     base_reg, gp_offset);
+			     base_reg, offset);
 		  else
 		    fprintf (file, "\t%s [%s+%d],%s\n",
-			     doubleword_op, base_reg, gp_offset,
+			     doubleword_op, base_reg, offset,
 			     reg_names[regno]);
 
-		  gp_offset += 2 * UNITS_PER_WORD;
+		  offset += 2 * UNITS_PER_WORD;
 		  regno++;
 		}
 	      else
@@ -4403,12 +4399,12 @@ sparc_flat_save_restore (file, word_op, doubleword_op)
 		  if (word_op[0] == 's')
 		    fprintf (file, "\t%s %s,[%s+%d]\n",
 			     word_op, reg_names[regno],
-			     base_reg, gp_offset);
+			     base_reg, offset);
 		  else
 		    fprintf (file, "\t%s [%s+%d],%s\n",
-			     word_op, base_reg, gp_offset, reg_names[regno]);
+			     word_op, base_reg, offset, reg_names[regno]);
 
-		  gp_offset += UNITS_PER_WORD;
+		  offset += UNITS_PER_WORD;
 		}
 	    }
 	}
@@ -4423,12 +4419,12 @@ sparc_flat_save_restore (file, word_op, doubleword_op)
 	      if (word_op[0] == 's')
 		fprintf (file, "\t%s %s,[%s+%d]\n",
 			 word_op, reg_names[regno],
-			 base_reg, gp_offset);
+			 base_reg, offset);
 	      else
 		fprintf (file, "\t%s [%s+%d],%s\n",
-			 word_op, base_reg, gp_offset, reg_names[regno]);
+			 word_op, base_reg, offset, reg_names[regno]);
 
-	      fp_offset += UNITS_PER_WORD;
+	      offset += UNITS_PER_WORD;
 	    }
 	}
     }
@@ -4441,50 +4437,140 @@ sparc_flat_output_function_prologue (file, size)
      FILE *file;
      int size;
 {
-  int tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
+  unsigned long gmask = current_frame_info.gmask;
 
   /* This is only for the human reader.  */
   fprintf (file, "\t!#PROLOGUE# 0\n");
+  fprintf (file, "\t!# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
+	   current_frame_info.var_size,
+	   current_frame_info.gp_reg_size / 4,
+	   current_frame_info.fp_reg_size / 8,
+	   current_function_outgoing_args_size,
+	   current_frame_info.extra_size);
 
   size = SPARC_STACK_ALIGN (size);
-  tsize = (! current_frame_info.initialized
-	   ? sparc_flat_compute_frame_size (size)
-	   : current_frame_info.total_size);
+  size = (! current_frame_info.initialized
+	  ? sparc_flat_compute_frame_size (size)
+	  : current_frame_info.total_size);
 
-  if (tsize > 0)
+  /* These cases shouldn't happen.  Catch them now.  */
+  if (size == 0 && (gmask || current_frame_info.fmask))
+    abort ();
+
+  /* Allocate our stack frame by decrementing %sp.
+     At present, the only algorithm gdb can use to determine if this is a
+     flat frame is if we always set %i7 if we set %sp.  This can be optimized
+     in the future by putting in some sort of debugging information that says
+     this is a `flat' function.  However, there is still the case of debugging
+     code without such debugging information (including cases where most fns
+     have such info, but there is one that doesn't).  So, always do this now
+     so we don't get a lot of code out there that gdb can't handle.
+     If the frame pointer isn't needn't then that's ok - gdb won't be able to
+     distinguish us from a non-flat function but there won't (and shouldn't)
+     be any differences anyway.  The return pc is saved (if necessary) right
+     after %i7 so gdb won't have to look too far to find it.  */
+  if (size > 0)
     {
-      if (tsize <= 4095)
-	fprintf (file,
-		 "\tsub %s,%d,%s\t\t!# vars= %d, regs= %d/%d, args = %d, extra= %d\n",
-		 sp_str, tsize, sp_str, current_frame_info.var_size,
-		 current_frame_info.gp_reg_size / 4,
-		 current_frame_info.fp_reg_size / 8,
-		 current_function_outgoing_args_size,
-		 current_frame_info.extra_size);
-      else
-	fprintf (file,
-		 "\tset %d,%s\n\tsub\t%s,%s,%s\t\t!# vars= %d, regs= %d/%d, args = %d, sfo= %d\n",
-		 tsize, "%g1", sp_str, "%g1",
-		 sp_str, current_frame_info.var_size,
-		 current_frame_info.gp_reg_size / 4,
-		 current_frame_info.fp_reg_size / 8,
-		 current_function_outgoing_args_size,
-		 current_frame_info.extra_size);
-    }
-
-  sparc_flat_save_restore (file, "st", "std");
-
-  if (frame_pointer_needed)
-    {
+      unsigned int reg_offset = current_frame_info.reg_offset;
       char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+      char *t1_str = "%g1";
 
-      if (tsize <= 4095)
-	fprintf (file, "\tadd %s,%d,%s\t!# set up frame pointer\n", sp_str,
-		 tsize, fp_str);
+      /* Things get a little tricky if local variables take up more than ~4096
+	 bytes and outgoing arguments take up more than ~4096 bytes.  When that
+	 happens, the register save area can't be accessed from either end of
+	 the frame.  Handle this by decrementing %sp to the start of the gp
+	 register save area, save the regs, update %i7, and then set %sp to its
+	 final value.  Given that we only have one scratch register to play
+	 with it is the cheapest solution, and it helps gdb out as it won't
+	 slow down recognition of flat functions.
+	 Don't change the order of insns emitted here without checking with
+	 the gdb folk first.  */
+
+      /* Is the entire register save area offsetable from %sp?  */
+      if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
+	{
+	  if (size <= 4096)
+	    {
+	      fprintf (file, "\tadd %s,%d,%s\n",
+		       sp_str, -size, sp_str);
+	      if (gmask & FRAME_POINTER_MASK)
+		{
+		  fprintf (file, "\tst %s,[%s+%d]\n",
+			   fp_str, sp_str, reg_offset);
+		  fprintf (file, "\tsub %s,%d,%s\t!# set up frame pointer\n",
+			   sp_str, -size, fp_str);
+		  reg_offset += 4;
+		}
+	    }
+	  else
+	    {
+	      fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
+		       size, t1_str, sp_str, t1_str, sp_str);
+	      if (gmask & FRAME_POINTER_MASK)
+		{
+		  fprintf (file, "\tst %s,[%s+%d]\n",
+			   fp_str, sp_str, reg_offset);
+		  fprintf (file, "\tadd %s,%s,%s\t!# set up frame pointer\n",
+			   sp_str, t1_str, fp_str);
+		  reg_offset += 4;
+		}
+	    }
+	  if (gmask & RETURN_ADDR_MASK)
+	    {
+	      fprintf (file, "\tst %s,[%s+%d]\n",
+		       reg_names[RETURN_ADDR_REGNUM], sp_str, reg_offset);
+	      reg_offset += 4;
+	    }
+	  sparc_flat_save_restore (file, sp_str, reg_offset,
+				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
+				   current_frame_info.fmask,
+				   "st", "std");
+	}
       else
-	fprintf (file, "\tadd %s,%s,%s\t!# set up frame pointer\n", sp_str,
-		 "%g1", fp_str);
+	{
+	  /* Subtract %sp in two steps, but make sure there is always a
+	     64 byte register save area, and %sp is properly aligned.  */
+	  /* Amount to decrement %sp by, the first time.  */
+	  unsigned int size1 = ((size - reg_offset + 64) + 15) & -16;
+	  /* Offset to register save area from %sp.  */
+	  unsigned int offset = size1 - (size - reg_offset);
+	  
+	  if (size1 <= 4096)
+	    {
+	      fprintf (file, "\tadd %s,%d,%s\n",
+		       sp_str, -size1, sp_str);
+	      if (gmask & FRAME_POINTER_MASK)
+		{
+		  fprintf (file, "\tst %s,[%s+%d]\n\tsub %s,%d,%s\t!# set up frame pointer\n",
+			   fp_str, sp_str, offset, sp_str, -size1, fp_str);
+		  offset += 4;
+		}
+	    }
+	  else
+	    {
+	      fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
+		       size1, t1_str, sp_str, t1_str, sp_str);
+	      if (gmask & FRAME_POINTER_MASK)
+		{
+		  fprintf (file, "\tst %s,[%s+%d]\n\tadd %s,%s,%s\t!# set up frame pointer\n",
+			   fp_str, sp_str, offset, sp_str, t1_str, fp_str);
+		  offset += 4;
+		}
+	    }
+	  if (gmask & RETURN_ADDR_MASK)
+	    {
+	      fprintf (file, "\tst %s,[%s+%d]\n",
+		       reg_names[RETURN_ADDR_REGNUM], sp_str, offset);
+	      offset += 4;
+	    }
+	  sparc_flat_save_restore (file, sp_str, offset,
+				   gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
+				   current_frame_info.fmask,
+				   "st", "std");
+	  fprintf (file, "\tset %d,%s\n\tsub %s,%s,%s\n",
+		   size - size1, t1_str, sp_str, t1_str, sp_str);
+	}
     }
 
   fprintf (file, "\t!#PROLOGUE# 1\n");
@@ -4498,9 +4584,6 @@ sparc_flat_output_function_epilogue (file, size)
      FILE *file;
      int size;
 {
-  int tsize;
-  char *sp_str = reg_names[STACK_POINTER_REGNUM];
-  char *t1_str = "%g1";
   rtx epilogue_delay = current_function_epilogue_delay_list;
   int noepilogue = FALSE;
 
@@ -4513,11 +4596,11 @@ sparc_flat_output_function_epilogue (file, size)
      multiply and divide).  */
 
   size = SPARC_STACK_ALIGN (size);
-  tsize = (!current_frame_info.initialized
+  size = (!current_frame_info.initialized
 	   ? sparc_flat_compute_frame_size (size)
 	   : current_frame_info.total_size);
 
-  if (tsize == 0 && epilogue_delay == 0)
+  if (size == 0 && epilogue_delay == 0)
     {
       rtx insn = get_last_insn ();
 
@@ -4531,25 +4614,77 @@ sparc_flat_output_function_epilogue (file, size)
 
   if (!noepilogue)
     {
+      unsigned int reg_offset = current_frame_info.reg_offset;
+      unsigned int size1;
+      char *sp_str = reg_names[STACK_POINTER_REGNUM];
+      char *fp_str = reg_names[FRAME_POINTER_REGNUM];
+      char *t1_str = "%g1";
+
       /* In the reload sequence, we don't need to fill the load delay
 	 slots for most of the loads, also see if we can fill the final
 	 delay slot if not otherwise filled by the reload sequence.  */
 
-      if (tsize > 4095)
-	fprintf (file, "\tset %d,%s\n", tsize, t1_str);
+      if (size > 4095)
+	fprintf (file, "\tset %d,%s\n", size, t1_str);
 
       if (frame_pointer_needed)
 	{
-	  char *fp_str = reg_names[FRAME_POINTER_REGNUM];
-	  if (tsize > 4095)
-	    fprintf (file,"\tsub %s,%s,%s\t\t!# sp not trusted  here\n",
+	  if (size > 4095)
+	    fprintf (file,"\tsub %s,%s,%s\t\t!# sp not trusted here\n",
 		     fp_str, t1_str, sp_str);
 	  else
-	    fprintf (file,"\tsub %s,%d,%s\t\t!# sp not trusted  here\n",
-		     fp_str, tsize, sp_str);
+	    fprintf (file,"\tsub %s,%d,%s\t\t!# sp not trusted here\n",
+		     fp_str, size, sp_str);
 	}
 
-      sparc_flat_save_restore (file, "ld", "ldd");
+      /* Is the entire register save area offsetable from %sp?  */
+      if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
+	{
+	  size1 = 0;
+	}
+      else
+	{
+	  /* Restore %sp in two steps, but make sure there is always a
+	     64 byte register save area, and %sp is properly aligned.  */
+	  /* Amount to increment %sp by, the first time.  */
+	  size1 = ((reg_offset - 64 - 16) + 15) & -16;
+	  /* Offset to register save area from %sp.  */
+	  reg_offset = size1 - reg_offset;
+
+	  fprintf (file, "\tset %d,%s\n\tadd %s,%s,%s\n",
+		   size1, t1_str, sp_str, t1_str, sp_str);
+	}
+
+      /* We must restore the frame pointer and return address reg first
+	 because they are treated specially by the prologue output code.  */
+      if (current_frame_info.gmask & FRAME_POINTER_MASK)
+	{
+	  fprintf (file, "\tld [%s+%d],%s\n",
+		   sp_str, reg_offset, fp_str);
+	  reg_offset += 4;
+	}
+      if (current_frame_info.gmask & RETURN_ADDR_MASK)
+	{
+	  fprintf (file, "\tld [%s+%d],%s\n",
+		   sp_str, reg_offset, reg_names[RETURN_ADDR_REGNUM]);
+	  reg_offset += 4;
+	}
+
+      /* Restore any remaining saved registers.  */
+      sparc_flat_save_restore (file, sp_str, reg_offset,
+			       current_frame_info.gmask & ~(FRAME_POINTER_MASK | RETURN_ADDR_MASK),
+			       current_frame_info.fmask,
+			       "ld", "ldd");
+
+      /* If we had to increment %sp in two steps, record it so the second
+	 restoration in the epilogue finishes up.  */
+      if (size1 > 0)
+	{
+	  size -= size1;
+	  if (size > 4095)
+	    fprintf (file, "\tset %d,%s\n",
+		     size, t1_str);
+	}
 
       if (current_function_returns_struct)
 	fprintf (file, "\tjmp %%o7+12\n");
@@ -4563,16 +4698,16 @@ sparc_flat_output_function_epilogue (file, size)
 
       if (epilogue_delay)
 	{
-	  if (tsize)
+	  if (size)
 	    abort ();
 	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1);
 	}
 
-      else if (tsize > 4095)
+      else if (size > 4095)
 	fprintf (file, "\tadd %s,%s,%s\n", sp_str, t1_str, sp_str);
 
-      else if (tsize > 0)
-	fprintf (file, "\tadd %s,%d,%s\n", sp_str, tsize, sp_str);
+      else if (size > 0)
+	fprintf (file, "\tadd %s,%d,%s\n", sp_str, size, sp_str);
 
       else
 	fprintf (file, "\tnop\n");
