@@ -19,7 +19,15 @@
 #
 # Usage: opts.sh outfile.c outfile.h file1.opt [file2.opt, ...]
 
-AWK=/usr/bin/awk
+# Always operate in the C locale.
+LANG=C
+LANGUAGE=C
+LC_ALL=C
+export LANG LANGUAGE LC_ALL
+
+# Set AWK if environment has not already set it.
+AWK=${AWK-awk}
+
 SORT=sort		# Could be /bin/sort or /usr/bin/sort
 
 C_FILE=$1; shift
@@ -30,7 +38,7 @@ cat "$@" | ${AWK} '
 	# Ignore comments and blank lines
 	/^[ \t]*(;|$)/	{ next }
 	/^[^ \t]/ 	{ gsub ("\n", "\034", $0); print }
-' | LANG=C ${SORT} | ${AWK} '
+' | ${SORT} | ${AWK} '
     function switch_flags (langs,   flags)
     {
 	langs = ":" langs ":"
