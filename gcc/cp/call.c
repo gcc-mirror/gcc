@@ -1814,7 +1814,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	    }
 	  else
 	    {
-	      if (TREE_CODE (instance) != CALL_EXPR)
+	      if (TREE_CODE (instance) != CALL_EXPR
+#ifdef PCC_STATIC_STRUCT_RETURN
+		  && TREE_CODE (instance) != RTL_EXPR
+#endif
+		  )
 		my_friendly_abort (125);
 	      if (TYPE_NEEDS_CONSTRUCTING (basetype))
 		instance = build_cplus_new (basetype, instance, 0);
@@ -1943,7 +1947,9 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	{
 	  constp = 0;
 	  volatilep = 0;
-	  parms = tree_cons (NULL_TREE, build1 (NOP_EXPR, TYPE_POINTER_TO (basetype), integer_zero_node), parms);
+	  parms = tree_cons (NULL_TREE,
+			     build1 (NOP_EXPR, TYPE_POINTER_TO (basetype),
+				     integer_zero_node), parms);
 	}
       else
 	{
@@ -2023,6 +2029,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
     return error_mark_node;
 
 
+#if 0
   /* Now, go look for this method name.  We do not find destructors here.
 
      Putting `void_list_node' on the end of the parmtypes
@@ -2032,6 +2039,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 				     1 + (name == constructor_name (save_basetype)
 					  || name == constructor_name_full (save_basetype)));
   TREE_CHAIN (last) = NULL_TREE;
+#endif
 
   for (pass = 0; pass < 2; pass++)
     {
@@ -2073,7 +2081,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		{
 		  tree new_type;
 		  parm = build_indirect_ref (parm, "friendifying parms (compiler error)");
-		  new_type = c_build_type_variant (TREE_TYPE (parm), constp,
+		  new_type = cp_build_type_variant (TREE_TYPE (parm), constp,
 						   volatilep);
 		  new_type = build_reference_type (new_type);
 		  parm = convert (new_type, parm);
@@ -2158,9 +2166,11 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		  && ! DECL_STATIC_FUNCTION_P (function))
 		continue;
 
+#if 0
 	      if (pass == 0
 		  && DECL_ASSEMBLER_NAME (function) == method_name)
 		goto found;
+#endif
 
 	      if (pass > 0)
 		{
@@ -2255,6 +2265,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
 	  if (cp - candidates > 1)
 	    {
 	      int n_candidates = cp - candidates;
+	      extern int warn_synth;
 	      TREE_VALUE (parms) = instance_ptr;
 	      cp = ideal_candidate (save_basetype, candidates,
 				    n_candidates, parms, len);
@@ -2262,14 +2273,25 @@ build_method_call (instance, name, parms, basetype_path, flags)
 		{
 		  if (flags & LOOKUP_COMPLAIN)
 		    {
-		      cp_error ("call of overloaded %s `%D' is ambiguous",
-				name_kind, name);
+		      TREE_CHAIN (last) = void_list_node;
+		      cp_error ("call of overloaded %s `%D(%A)' is ambiguous",
+				name_kind, name, TREE_CHAIN (parmtypes));
 		      print_n_candidates (candidates, n_candidates);
 		    }
 		  return error_mark_node;
 		}
 	      if (cp->h.code & EVIL_CODE)
 		return error_mark_node;
+	      if (warn_synth
+		  && DECL_NAME (cp->function) == ansi_opname[MODIFY_EXPR]
+		  && DECL_ARTIFICIAL (cp->function)
+		  && n_candidates == 2)
+		{
+		  cp_warning ("using synthesized `%#D' for copy assignment",
+			      cp->function);
+		  cp_warning_at ("  where cfront would use `%#D'",
+				 candidates->function);
+		}
 	    }
 	  else if (cp[-1].h.code & EVIL_CODE)
 	    {

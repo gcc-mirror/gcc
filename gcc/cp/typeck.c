@@ -161,7 +161,7 @@ qualify_type (type, like)
   int constflag = TYPE_READONLY (type) || TYPE_READONLY (like);
   int volflag = TYPE_VOLATILE (type) || TYPE_VOLATILE (like);
   /* @@ Must do member pointers here.  */
-  return c_build_type_variant (type, constflag, volflag);
+  return cp_build_type_variant (type, constflag, volflag);
 }
 
 /* Return the common type of two parameter lists.
@@ -372,7 +372,7 @@ common_type (t1, t2)
 	  = TYPE_READONLY (TREE_TYPE (t1)) || TYPE_READONLY (TREE_TYPE (t2));
 	int volatilep
 	  = TYPE_VOLATILE (TREE_TYPE (t1)) || TYPE_VOLATILE (TREE_TYPE (t2));
-	target = c_build_type_variant (target, constp, volatilep);
+	target = cp_build_type_variant (target, constp, volatilep);
 	if (code1 == POINTER_TYPE)
 	  t1 = build_pointer_type (target);
 	else
@@ -1378,7 +1378,7 @@ default_conversion (exp)
       restype = TREE_TYPE (type);
       if (TYPE_READONLY (type) || TYPE_VOLATILE (type)
 	  || constp || volatilep)
-	restype = c_build_type_variant (restype,
+	restype = cp_build_type_variant (restype,
 					TYPE_READONLY (type) || constp,
 					TYPE_VOLATILE (type) || volatilep);
       ptrtype = build_pointer_type (restype);
@@ -1533,8 +1533,7 @@ build_component_ref (datum, component, basetype_path, protect)
   register tree field = NULL;
   register tree ref;
 
-  /* If DATUM is a COMPOUND_EXPR or COND_EXPR, move our reference inside it
-     unless we are not to support things not strictly ANSI.  */
+  /* If DATUM is a COMPOUND_EXPR or COND_EXPR, move our reference inside it. */
   switch (TREE_CODE (datum))
     {
     case COMPOUND_EXPR:
@@ -1706,7 +1705,8 @@ build_component_ref (datum, component, basetype_path, protect)
       datum = build_indirect_ref (addr, NULL_PTR);
       my_friendly_assert (datum != error_mark_node, 311);
     }
-  ref = build (COMPONENT_REF, TREE_TYPE (field), break_out_cleanups (datum), field);
+  ref = fold (build (COMPONENT_REF, TREE_TYPE (field),
+		     break_out_cleanups (datum), field));
 
   if (TREE_READONLY (datum) || TREE_READONLY (field))
     TREE_READONLY (ref) = 1;
@@ -2619,7 +2619,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
       /* See if there are default arguments that can be used */
       if (TREE_PURPOSE (typetail))
 	{
-	  while (typetail != void_list_node)
+	  for (; typetail != void_list_node; ++i)
 	    {
 	      tree type = TREE_VALUE (typetail);
 	      tree val = TREE_PURPOSE (typetail);
@@ -4102,42 +4102,16 @@ build_unary_op (code, xarg, noconvert)
 
       if (TREE_CODE (arg) == TREE_LIST)
 	{
-	  /* Look at methods with only this name.  */
-	  if (TREE_CODE (TREE_VALUE (arg)) == FUNCTION_DECL)
-	    {
-	      tree targ = TREE_VALUE (arg);
-
-	      /* If this function is unique, or it is a unique
-		 constructor, we can take its address easily.  */
-	      if (DECL_CHAIN (targ) == NULL_TREE
-		  || (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (targ))
-		      && DECL_CHAIN (DECL_CHAIN (targ)) == NULL_TREE))
-		{
-		  if (DECL_CHAIN (targ))
-		    targ = DECL_CHAIN (targ);
-		  if (DECL_CLASS_CONTEXT (targ))
-		    targ = build (OFFSET_REF, TREE_TYPE (targ), C_C_D, targ);
-
-		  val = unary_complex_lvalue (ADDR_EXPR, targ);
-		  if (val)
-		    return val;
-		}
-
-	      /* This possible setting of TREE_CONSTANT is what makes it possible
-		 with an initializer list to emit the entire thing in the data
-		 section, rather than a run-time initialization.  */
-	      arg = build1 (ADDR_EXPR, unknown_type_node, arg);
-	      if (staticp (targ))
-		TREE_CONSTANT (arg) = 1;
-	      return arg;
-	    }
+	  if (TREE_CODE (TREE_VALUE (arg)) == FUNCTION_DECL
+	      && DECL_CHAIN (TREE_VALUE (arg)) == NULL_TREE)
+	    /* Unique overloaded non-member function.  */
+	    return build_unary_op (ADDR_EXPR, TREE_VALUE (arg), 0);
 	  if (TREE_CHAIN (arg) == NULL_TREE
 	      && TREE_CODE (TREE_VALUE (arg)) == TREE_LIST
 	      && DECL_CHAIN (TREE_VALUE (TREE_VALUE (arg))) == NULL_TREE)
-	    {
-	      /* Unique overloaded member function.  */
-	      return build_unary_op (ADDR_EXPR, TREE_VALUE (TREE_VALUE (arg)), 0);
-	    }
+	    /* Unique overloaded member function.  */
+	    return build_unary_op (ADDR_EXPR, TREE_VALUE (TREE_VALUE (arg)),
+				   0);
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
@@ -4179,7 +4153,7 @@ build_unary_op (code, xarg, noconvert)
 	  || TREE_CODE_CLASS (TREE_CODE (arg)) == 'r')
 	{
 	  if (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg))
-	    argtype = c_build_type_variant (argtype,
+	    argtype = cp_build_type_variant (argtype,
 					    TREE_READONLY (arg),
 					    TREE_THIS_VOLATILE (arg));
 	}
@@ -4587,7 +4561,7 @@ build_conditional_expr (ifexp, op1, op2)
       else if (TREE_READONLY_DECL_P (op2))
 	op2 = decl_constant_value (op2);
       if (type1 != type2)
-	type1 = c_build_type_variant
+	type1 = cp_build_type_variant
 			(type1,
 			 TREE_READONLY (op1) || TREE_READONLY (op2),
 			 TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
@@ -4636,7 +4610,7 @@ build_conditional_expr (ifexp, op1, op2)
       if (type1 == type2)
 	result_type = type1;
       else
-	result_type = c_build_type_variant
+	result_type = cp_build_type_variant
 			(type1,
 			 TREE_READONLY (op1) || TREE_READONLY (op2),
 			 TREE_THIS_VOLATILE (op1) || TREE_THIS_VOLATILE (op2));
@@ -5025,6 +4999,9 @@ build_c_cast (type, expr)
 	warning ("cast to pointer from integer of different size");
 #endif
 
+      if (TREE_READONLY_DECL_P (value))
+	value = decl_constant_value (value);
+
       ovalue = value;
       value = convert_force (type, value);
 
@@ -5349,12 +5326,12 @@ build_modify_expr (lhs, modifycode, rhs)
   tree olhstype = lhstype;
   tree olhs = lhs;
 
-  /* Types that aren't fully specified cannot be used in assignments.  */
-  lhs = require_complete_type (lhs);
-
   /* Avoid duplicate error messages from operands that had errors.  */
   if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
     return error_mark_node;
+
+  /* Types that aren't fully specified cannot be used in assignments.  */
+  lhs = require_complete_type (lhs);
 
   /* Decide early if we are going to protect RHS from GC
      before assigning it to LHS.  */
@@ -5786,10 +5763,12 @@ build_modify_expr (lhs, modifycode, rhs)
 
   if (TREE_CODE (lhstype) == ARRAY_TYPE)
     {
+      int from_array;
+      
       /* Allow array assignment in compiler-generated code.  */
       if ((pedantic || flag_ansi)
 	  && ! DECL_ARTIFICIAL (current_function_decl))
-	pedwarn ("ANSI C++ forbids assignment between arrays");
+	pedwarn ("ANSI C++ forbids assignment of arrays");
 
       /* Have to wrap this in RTL_EXPR for two cases:
 	 in base or member initialization and if we
@@ -5805,8 +5784,10 @@ build_modify_expr (lhs, modifycode, rhs)
       /* As a matter of principle, `start_sequence' should do this.  */
       emit_note (0, -1);
 
+      from_array = TREE_CODE (TREE_TYPE (newrhs)) == ARRAY_TYPE
+	           ? 1 + (modifycode != INIT_EXPR): 0;
       expand_vec_init (lhs, lhs, array_type_nelts (lhstype), newrhs,
-		       1 + (modifycode != INIT_EXPR));
+		       from_array);
 
       do_pending_stack_adjust ();
 
@@ -6124,12 +6105,15 @@ build_ptrmemfunc (type, pfn, force)
       return digest_init (TYPE_GET_PTRMEMFUNC_TYPE (type), u, (tree*)0);
     }
 
-  if (TREE_CODE (pfn) == TREE_LIST)
+  if (TREE_CODE (pfn) == TREE_LIST
+      || (TREE_CODE (pfn) == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (pfn, 0)) == TREE_LIST))
     {
       pfn = instantiate_type (type, pfn, 1);
       if (pfn == error_mark_node)
 	return error_mark_node;
-      pfn = build_unary_op (ADDR_EXPR, pfn, 0);
+      if (TREE_CODE (pfn) != ADDR_EXPR)
+	pfn = build_unary_op (ADDR_EXPR, pfn, 0);
     }
 
   /* Allow pointer to member conversions here. */
@@ -6585,10 +6569,11 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	}
       return null_pointer_node;
     }
-  else if (codel == INTEGER_TYPE
+  else if ((codel == INTEGER_TYPE || codel == BOOLEAN_TYPE)
 	   && (coder == POINTER_TYPE
 	       || (coder == RECORD_TYPE
 		   && (IS_SIGNATURE_POINTER (rhstype)
+		       || TYPE_PTRMEMFUNC_FLAG (rhstype)
 		       || IS_SIGNATURE_REFERENCE (rhstype)))))
     {
       if (fndecl)
@@ -6741,7 +6726,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
       && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type)))
     return build_signature_pointer_constructor (type, rhs);
 
-  if (IS_AGGR_TYPE (type) && TYPE_NEEDS_CONSTRUCTING (type))
+  if (IS_AGGR_TYPE (type)
+      && (TYPE_NEEDS_CONSTRUCTING (type) || TREE_HAS_CONSTRUCTOR (rhs)))
     {
       if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
 	{
@@ -6997,8 +6983,11 @@ c_expand_return (retval)
 	  while (TREE_CODE (whats_returned) == NEW_EXPR
 		 || TREE_CODE (whats_returned) == TARGET_EXPR
 		 || TREE_CODE (whats_returned) == WITH_CLEANUP_EXPR)
-	    /* Get the target.  */
-	    whats_returned = TREE_OPERAND (whats_returned, 0);
+	    {
+	      /* Get the target.  */
+	      whats_returned = TREE_OPERAND (whats_returned, 0);
+	      warning ("returning reference to temporary");
+	    }
 	}
 
       if (TREE_CODE (whats_returned) == VAR_DECL && DECL_NAME (whats_returned))

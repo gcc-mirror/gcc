@@ -502,7 +502,11 @@ struct lang_type
   union tree_node *signature;
   union tree_node *signature_pointer_to;
   union tree_node *signature_reference_to;
+
+  int linenum;
 };
+
+#define CLASSTYPE_SOURCE_LINE(NODE) (TYPE_LANG_SPECIFIC(NODE)->linenum)
 
 /* Indicates whether or not (and how) a template was expanded for this class.
      0=no information yet/non-template class
@@ -1355,7 +1359,7 @@ extern void check_function_format		PROTO((tree, tree, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PROTO((enum tree_code));
-extern tree c_build_type_variant                PROTO((tree, int, int));
+extern tree cp_build_type_variant                PROTO((tree, int, int));
 extern void c_expand_expr_stmt                  PROTO((tree));
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value                    PROTO((tree));
@@ -2011,7 +2015,7 @@ extern void expand_end_all_catch		PROTO((void));
 extern void start_catch_block			PROTO((tree, tree));
 extern void end_catch_block			PROTO((void));
 extern void expand_throw			PROTO((tree));
-extern void build_exception_table		PROTO((void));
+extern int build_exception_table		PROTO((void));
 extern tree build_throw				PROTO((tree));
 extern void init_exception_processing		PROTO((void));
 
@@ -2091,7 +2095,7 @@ extern void reinit_parse_for_method		PROTO((int, tree));
 #if 0
 extern void reinit_parse_for_block		PROTO((int, struct obstack *, int));
 #endif
-extern tree cons_up_default_function		PROTO((tree, tree, tree, int));
+extern tree cons_up_default_function		PROTO((tree, tree, int));
 extern void check_for_missing_semicolon		PROTO((tree));
 extern void note_got_semicolon			PROTO((tree));
 extern void note_list_got_semicolon		PROTO((tree));
@@ -2141,6 +2145,7 @@ extern void clear_anon_parm_name		PROTO((void));
 extern void do_inline_function_hair		PROTO((tree, tree));
 /* skip report_type_mismatch */
 extern char *build_overload_name		PROTO((tree, int, int));
+extern tree build_static_name			PROTO((tree, tree));
 extern tree cplus_exception_name		PROTO((tree));
 extern tree build_decl_overload			PROTO((tree, tree, int));
 extern tree build_typename_overload		PROTO((tree));

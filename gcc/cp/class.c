@@ -2743,6 +2743,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	     will fill in the right line number.  (mrs) */
 	  if (DECL_SOURCE_LINE (name))
 	    DECL_SOURCE_LINE (name) = lineno;
+	  CLASSTYPE_SOURCE_LINE (t) = lineno;
 	}
       name = DECL_NAME (name);
     }
@@ -2772,6 +2773,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   TYPE_SIZE (t) = NULL_TREE;
   CLASSTYPE_GOT_SEMICOLON (t) = 0;
 
+#if 0
   /* This is in general too late to do this.  I moved the main case up to
      left_curly, what else needs to move?  */
   if (! IS_SIGNATURE (t))
@@ -2779,6 +2781,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       my_friendly_assert (CLASSTYPE_INTERFACE_ONLY (t) == interface_only, 999);
       my_friendly_assert (CLASSTYPE_INTERFACE_KNOWN (t) == ! interface_unknown, 999);
     }
+#endif
 
   if (flag_dossier)
     build_t_desc (t, 0);
@@ -2841,6 +2844,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       needs_virtual_dtor = 0;
     }
 
+#if 0
   /* Both of these should be done before now.  */
   if (write_virtuals == 3 && CLASSTYPE_INTERFACE_KNOWN (t)
       && ! IS_SIGNATURE (t))
@@ -2848,6 +2852,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       my_friendly_assert (CLASSTYPE_INTERFACE_ONLY (t) == interface_only, 999);
       my_friendly_assert (CLASSTYPE_VTABLE_NEEDS_WRITING (t) == ! interface_only, 999);
     }
+#endif
 
   /* The three of these are approximations which may later be
      modified.  Needed at this point to make add_virtual_function
@@ -3003,6 +3008,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      cp_error_at ("field `%D' invalidly declared offset type", x);
 	      TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
 	    }
+
+	  if (DECL_NAME (x) == constructor_name (t))
+	    cant_have_default_ctor = cant_synth_copy_ctor = 1;
 
 	  if (TREE_TYPE (x) == error_mark_node)
 	    continue;
@@ -3270,12 +3278,14 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   CLASSTYPE_REF_FIELDS_NEED_INIT (t) = ref_sans_init;
   CLASSTYPE_ABSTRACT_VIRTUALS (t) = abstract_virtuals;
 
+  /* Synthesize any needed methods.  Note that methods will be synthesized
+     for anonymous unions; grok_x_components undoes that.  */
+
   if (TYPE_NEEDS_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t)
       && !IS_SIGNATURE (t))
     {
       /* Here we must cons up a destructor on the fly.  */
-      tree dtor = cons_up_default_function (t, name, fields,
-					    needs_virtual_dtor != 0);
+      tree dtor = cons_up_default_function (t, name, needs_virtual_dtor != 0);
 
       /* If we couldn't make it work, then pretend we didn't need it.  */
       if (dtor == void_type_node)
@@ -3304,9 +3314,6 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
 
-  /* Synthesize any needed methods.  Note that methods will be synthesized
-     for anonymous unions; grok_x_components undoes that.  */
-
   if (! fn_fields)
     nonprivate_method = 1;
 
@@ -3324,7 +3331,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor
       && ! IS_SIGNATURE (t))
     {
-      tree default_fn = cons_up_default_function (t, name, fields, 2);
+      tree default_fn = cons_up_default_function (t, name, 2);
       TREE_CHAIN (default_fn) = fn_fields;
       fn_fields = default_fn;
     }
@@ -3335,9 +3342,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     {
       /* ARM 12.18: You get either X(X&) or X(const X&), but
 	 not both.  --Chip  */
-      tree default_fn =
-	cons_up_default_function (t, name, fields,
-				  cant_have_const_ctor ? 4 : 3);
+      tree default_fn = cons_up_default_function (t, name,
+						  3 + cant_have_const_ctor);
       TREE_CHAIN (default_fn) = fn_fields;
       fn_fields = default_fn;
     }
@@ -3351,9 +3357,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   if (! TYPE_HAS_ASSIGN_REF (t) && ! cant_synth_asn_ref
       && ! IS_SIGNATURE (t))
     {
-      tree default_fn =
-	cons_up_default_function (t, name, fields,
-				  no_const_asn_ref ? 6 : 5);
+      tree default_fn = cons_up_default_function (t, name,
+						  5 + no_const_asn_ref);
       TREE_CHAIN (default_fn) = fn_fields;
       fn_fields = default_fn;
     }
@@ -3404,7 +3409,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	tree flist = NULL_TREE;
 	tree name;
 	enum access_type access = (enum access_type)TREE_PURPOSE(access_decls);
-	int i = 0;
+	int i = TREE_VEC_ELT (method_vec, 0) ? 0 : 1;
 	tree tmp;
 
 	if (TREE_CODE (fdecl) == TREE_LIST)
@@ -3512,30 +3517,26 @@ finish_struct (t, list_of_fieldlists, warn_anon)
   /* Delete all duplicate fields from the fields */
   delete_duplicate_fields (fields);
 
-  /* Catch function/field name conflict, removing the field (since it's
-     easier).  */
-  {
-    int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
-    tree last = NULL_TREE;
-    for (x = fields; x; x = TREE_CHAIN (x))
-      {
-	tree name = DECL_NAME (x);
-	int i;
-	for (i = 0; i < n_methods; ++i)
-	  if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
-	    {
-	      cp_error_at ("data member `%#D' conflicts with", x);
-	      cp_error_at ("function member `%#D'",
-			   TREE_VEC_ELT (method_vec, i));
-	      if (last)
-		TREE_CHAIN (last) = TREE_CHAIN (x);
-	      else
-		fields = TREE_CHAIN (x);
-	      break;
-	    }
-	last = x;
-      }
-  }
+  /* Catch function/field name conflict.  We don't need to do this for a
+     signature, since it can only contain the fields constructed in
+     append_signature_fields.  */
+  if (! IS_SIGNATURE (t))
+    {
+      int n_methods = method_vec ? TREE_VEC_LENGTH (method_vec) : 0;
+      for (x = fields; x; x = TREE_CHAIN (x))
+	{
+	  tree name = DECL_NAME (x);
+	  int i = /*TREE_VEC_ELT (method_vec, 0) ? 0 : */ 1;
+	  for (; i < n_methods; ++i)
+	    if (DECL_NAME (TREE_VEC_ELT (method_vec, i)) == name)
+	      {
+		cp_error_at ("data member `%#D' conflicts with", x);
+		cp_error_at ("function member `%#D'",
+			     TREE_VEC_ELT (method_vec, i));
+		break;
+	      }
+	}
+    }
 
   /* Now we have the final fieldlist for the data fields.  Record it,
      then lay out the structure or union (including the fields).  */
@@ -4967,12 +4968,14 @@ instantiate_type (lhstype, rhs, complain)
 	}
       TREE_TYPE (rhs) = lhstype;
       lhstype = TREE_TYPE (lhstype);
-      TREE_OPERAND (rhs, 0)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
-      if (TREE_OPERAND (rhs, 0) == error_mark_node)
-	return error_mark_node;
-
-      mark_addressable (TREE_OPERAND (rhs, 0));
+      {
+	tree fn = instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
+	if (fn == error_mark_node)
+	  return error_mark_node;
+	mark_addressable (fn);
+	TREE_OPERAND (rhs, 0) = fn;
+	TREE_CONSTANT (rhs) = staticp (fn);
+      }
       return rhs;
 
     case ENTRY_VALUE_EXPR:

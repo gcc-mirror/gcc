@@ -59,11 +59,6 @@ sorry_no_eh ()
 }
 
 void
-build_exception_table ()
-{
-}
-
-void
 expand_exception_blocks ()
 {
 }
@@ -180,29 +175,9 @@ output_exception_table_entry (file, start_label, end_label, eh_label)
 {
   char label[100];
 
-  fprintf (file, "\t%s\t ", ASM_LONG);	
-  if (GET_CODE (start_label) == CODE_LABEL)
-    {
-      ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (start_label));
-      assemble_name (file, label);
-    }
-  else if (GET_CODE (start_label) == SYMBOL_REF)
-    {
-      fprintf (stderr, "YYYYYYYYYEEEEEEEESSSSSSSSSSSS!!!!!!!!!!\n");
-      assemble_name (file, XSTR (start_label, 0));
-    }
-  putc ('\n', file);
-
-  fprintf (file, "\t%s\t ", ASM_LONG);
-  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (end_label));
-  assemble_name (file, label);
-  putc ('\n', file);
-
-  fprintf (file, "\t%s\t ", ASM_LONG);
-  ASM_GENERATE_INTERNAL_LABEL (label, "L", CODE_LABEL_NUMBER (eh_label));
-  assemble_name (file, label);
-  putc ('\n', file);
-
+  assemble_integer (start_label, BITS_PER_WORD/BITS_PER_UNIT, 1);
+  assemble_integer (end_label, BITS_PER_WORD/BITS_PER_UNIT, 1);
+  assemble_integer (eh_label, BITS_PER_WORD/BITS_PER_UNIT, 1);
   putc ('\n', file);		/* blank line */
 }
    
@@ -1436,39 +1411,62 @@ expand_throw (exp)
   emit_jump (throw_label);
 }
 
-
-/* output the exception table */
-void
-build_exception_table ()
-{
-  extern FILE *asm_out_file;
-  struct ehEntry *entry;
-
-  if (! doing_eh (0))
-    return;
-
-  exception_section ();
-
-  /* Beginning marker for table. */
-  fprintf (asm_out_file, "        .global ___EXCEPTION_TABLE__\n");
-  fprintf (asm_out_file, "        .align 4\n");
-  fprintf (asm_out_file, "___EXCEPTION_TABLE__:\n");
-  fprintf (asm_out_file, "        .word   0, 0, 0\n");
-
- while (entry = dequeue_eh_entry (&eh_table_output_queue)) {
-     output_exception_table_entry (asm_out_file,
-	     entry->start_label, entry->end_label, entry->exception_handler_label);
-  }
-
-  /* Ending marker for table. */
-  fprintf (asm_out_file, "        .global ___EXCEPTION_END__\n");
-  fprintf (asm_out_file, "___EXCEPTION_END__:\n");
-  fprintf (asm_out_file, "        .word   -1, -1, -1\n");
-}
-
 /* end of: my-cp-except.c */
 #endif
 
+
+/* Output the exception table.
+ Return the number of handlers.  */
+int
+build_exception_table ()
+{
+  int count = 0;
+#ifdef TRY_NEW_EH
+  extern FILE *asm_out_file;
+  struct ehEntry *entry;
+  tree eh_node_decl;
+
+  if (! doing_eh (0))
+    return 0;
+
+ while (entry = dequeue_eh_entry (&eh_table_output_queue))
+   {
+     if (count == 0)
+       {
+	 exception_section ();
+
+	 /* Beginning marker for table. */
+	 ASM_OUTPUT_ALIGN (asm_out_file, 2);
+	 ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_TABLE__");
+	 fprintf (asm_out_file, "        .word   0, 0, 0\n");
+       }
+     count++;
+     output_exception_table_entry (asm_out_file,
+				   entry->start_label, entry->end_label,
+				   entry->exception_handler_label);
+  }
+
+  if (count)
+    {
+      /* Ending marker for table. */
+      ASM_OUTPUT_LABEL (asm_out_file, "__EXCEPTION_END__");
+      fprintf (asm_out_file, "        .word   -1, -1, -1\n");
+    }
+
+#endif /* TRY_NEW_EH */
+  return count;
+}
+
+void
+register_exception_table ()
+{
+#ifdef TRY_NEW_EH
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__register_exceptions"), 0,
+		     VOIDmode, 1,
+		     gen_rtx (SYMBOL_REF, PTRmode, "__EXCEPTION_TABLE__"),
+		     Pmode);
+#endif /* TRY_NEW_EH */
+}
 
 /* Build a throw expression.  */
 tree

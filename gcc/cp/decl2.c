@@ -212,6 +212,12 @@ int warn_nonvdtor;
 /* Non-zero means warn when a function is declared extern and later inline.  */
 int warn_extern_inline;
 
+/* Non-zero means warn when the compiler will reorder code.  */
+int warn_reorder;
+
+/* Non-zero means warn when sysnthesis behavior differs from Cfront's.  */
+int warn_synth;
+
 /* Nonzero means `$' can be in an identifier.
    See cccp.c for reasons why this breaks some obscure ANSI C programs.  */
 
@@ -521,6 +527,10 @@ lang_decode_option (p)
 	warn_nonvdtor = setting;
       else if (!strcmp (p, "extern-inline"))
 	warn_extern_inline = setting;
+      else if (!strcmp (p, "reorder"))
+	warn_reorder = setting;
+      else if (!strcmp (p, "synth"))
+	warn_synth = setting;
       else if (!strcmp (p, "comment"))
 	;			/* cpp handles this one.  */
       else if (!strcmp (p, "comments"))
@@ -547,6 +557,7 @@ lang_decode_option (p)
 	  if (warn_uninitialized != 1)
 	    warn_uninitialized = (setting ? 2 : 0);
 	  warn_template_debugging = setting;
+	  warn_reorder = setting;
 	}
 
       else if (!strcmp (p, "overloaded-virtual"))
@@ -1065,11 +1076,20 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	return build1 (NOP_EXPR, void_type_node, t);
     }
 
-  /* You can't delete a pointer to constant.  */
-  if (code == POINTER_TYPE && TREE_READONLY (TREE_TYPE (type)))
+  if (code == POINTER_TYPE)
     {
-      error ("`const *' cannot be deleted");
-      return error_mark_node;
+      /* You can't delete a pointer to constant.  */
+      if (TREE_READONLY (TREE_TYPE (type)))
+	{
+	  error ("`const *' cannot be deleted");
+	  return error_mark_node;
+	}
+      /* You also can't delete functions.  */
+      if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+	{
+	  error ("cannot delete a function");
+	  return error_mark_node;
+	}
     }
 
 #if 0
@@ -1309,19 +1329,10 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
 	  /* current_class_type can be NULL_TREE in case of error.  */
 	  if (asmspec == 0 && current_class_type)
 	    {
-	      tree name;
-	      char *buf, *buf2;
-
-	      buf2 = build_overload_name (current_class_type, 1, 1);
-	      buf = (char *)alloca (IDENTIFIER_LENGTH (DECL_NAME (value))
-				    + sizeof (STATIC_NAME_FORMAT)
-				    + strlen (buf2));
-	      sprintf (buf, STATIC_NAME_FORMAT, buf2,
-		       IDENTIFIER_POINTER (DECL_NAME (value)));
-	      name = get_identifier (buf);
 	      TREE_PUBLIC (value) = 1;
 	      DECL_INITIAL (value) = error_mark_node;
-	      DECL_ASSEMBLER_NAME (value) = name;
+	      DECL_ASSEMBLER_NAME (value)
+		= build_static_name (current_class_type, DECL_NAME (value));
 	    }
 	  pending_statics = perm_tree_cons (NULL_TREE, value, pending_statics);
 
@@ -1374,9 +1385,11 @@ grokfield (declarator, declspecs, raises, init, asmspec_tree)
       if (DECL_FRIEND_P (value))
 	return void_type_node;
 
+#if 0 /* Just because a fn is declared doesn't mean we'll try to define it.  */
       if (current_function_decl && ! IS_SIGNATURE (current_class_type))
 	cp_error ("method `%#D' of local class must be defined in class body",
 		  value);
+#endif
 
       DECL_IN_AGGR_P (value) = 1;
       return value;
@@ -2591,8 +2604,7 @@ finish_file ()
   tree fnname;
   tree vars = static_aggregates;
   int needs_cleaning = 0, needs_messing_up = 0;
-
-  build_exception_table ();
+  int have_exception_handlers = build_exception_table ();
 
   if (flag_detailed_statistics)
     dump_tree_statistics ();
@@ -2686,7 +2698,7 @@ finish_file ()
  mess_up:
   /* Must do this while we think we are at the top level.  */
   vars = nreverse (static_aggregates);
-  if (vars != NULL_TREE)
+  if (vars != NULL_TREE || have_exception_handlers)
     {
       fnname = get_file_function_name ('I');
       start_function (void_list_node, build_parse_node (CALL_EXPR, fnname, void_list_node, NULL_TREE), 0, 0);
@@ -2697,6 +2709,9 @@ finish_file ()
       clear_last_expr ();
       push_momentary ();
       expand_start_bindings (0);
+
+      if (have_exception_handlers)
+	register_exception_table ();
 
       while (vars)
 	{

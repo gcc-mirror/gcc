@@ -162,6 +162,8 @@ tree wchar_type_node;
 tree signed_wchar_type_node;
 tree unsigned_wchar_type_node;
 
+tree wchar_decl_node;
+
 tree float_type_node;
 tree double_type_node;
 tree long_double_type_node;
@@ -2206,16 +2208,21 @@ duplicate_decls (newdecl, olddecl)
 	    return 0;
 	}
 
+      if (olddecl == wchar_decl_node)
+	{
+	  if (pedantic && ! DECL_IN_SYSTEM_HEADER (newdecl))
+	    cp_pedwarn ("redeclaration of wchar_t as `%T'",
+			TREE_TYPE (newdecl));
+
+	  /* Throw away the redeclaration.  */
+	  return 1;
+	}
+
       /* Already complained about this, so don't do so again.  */
       else if (current_class_type == NULL_TREE
 	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
 	{
-	  /* Since we're doing this before finish_struct can set the
-	     line number on NEWDECL, we just do a regular error here.  */
-	  if (DECL_SOURCE_LINE (newdecl) == 0)
-	    cp_error ("conflicting types for `%#D'", newdecl);
-	  else
-	    cp_error_at ("conflicting types for `%#D'", newdecl);
+	  cp_error ("conflicting types for `%#D'", newdecl);
 	  cp_error_at ("previous declaration as `%#D'", olddecl);
 	}
     }
@@ -2528,12 +2535,15 @@ duplicate_decls (newdecl, olddecl)
       DECL_TEMPLATE_MEMBERS (newdecl) = DECL_TEMPLATE_MEMBERS (olddecl);
       DECL_TEMPLATE_INSTANTIATIONS (newdecl)
 	= DECL_TEMPLATE_INSTANTIATIONS (olddecl);
+      if (DECL_CHAIN (newdecl) == NULL_TREE)
+	DECL_CHAIN (newdecl) = DECL_CHAIN (olddecl);
     }
   
   /* Now preserve various other info from the definition.  */
   TREE_ADDRESSABLE (newdecl) = TREE_ADDRESSABLE (olddecl);
   TREE_ASM_WRITTEN (newdecl) = TREE_ASM_WRITTEN (olddecl);
   DECL_COMMON (newdecl) = DECL_COMMON (olddecl);
+  DECL_ASSEMBLER_NAME (newdecl) = DECL_ASSEMBLER_NAME (olddecl);
 
   /* Don't really know how much of the language-specific
      values we should copy from old to new.  */
@@ -3900,7 +3910,9 @@ lookup_name_real (name, prefer_type, nonclass)
       
       if (got_scope != NULL_TREE)
 	{
-	  if (got_scope == void_type_node)
+	  if (got_scope == error_mark_node)
+	    return error_mark_node;
+	  else if (got_scope == void_type_node)
 	    val = IDENTIFIER_GLOBAL_VALUE (name);
 	  else if (TREE_CODE (got_scope) == TEMPLATE_TYPE_PARM
 		   /* TFIXME -- don't do this for UPTs in new model.  */
@@ -4750,6 +4762,11 @@ init_decl_processing ()
       : signed_wchar_type_node;
   record_builtin_type (RID_WCHAR, "__wchar_t", wchar_type_node);
 
+  /* Artificial declaration of wchar_t -- can be bashed */
+  wchar_decl_node = build_decl (TYPE_DECL, get_identifier ("wchar_t"),
+				wchar_type_node);
+  pushdecl (wchar_decl_node);
+
   /* This is for wide string constants.  */
   wchar_array_type_node
     = build_array_type (wchar_type_node, array_domain_type);
@@ -4800,7 +4817,7 @@ init_decl_processing ()
   vtbl_type_node
     = build_array_type (vtable_entry_type, NULL_TREE);
   layout_type (vtbl_type_node);
-  vtbl_type_node = c_build_type_variant (vtbl_type_node, 1, 0);
+  vtbl_type_node = cp_build_type_variant (vtbl_type_node, 1, 0);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_type_node);
 
   /* Simplify life by making a "sigtable_entry_type".  Give its
@@ -5297,8 +5314,7 @@ start_decl (declarator, declspecs, initialized, raises)
       if (interface_unknown && flag_external_templates
 	  && ! DECL_IN_SYSTEM_HEADER (decl))
 	warn_if_unknown_interface ();
-      TREE_PUBLIC (d) = TREE_PUBLIC (decl) =
-	flag_external_templates && !interface_unknown;
+      TREE_PUBLIC (d) = TREE_PUBLIC (decl);
       TREE_STATIC (d) = TREE_STATIC (decl);
       DECL_EXTERNAL (d) = (DECL_EXTERNAL (decl)
 			   && !(context && !DECL_THIS_EXTERN (decl)));
@@ -5756,6 +5772,9 @@ finish_decl (decl, init, asmspec_tree, need_pop)
 
   type = TREE_TYPE (decl);
 
+  if (type == error_mark_node)
+    return;
+
   was_incomplete = (DECL_SIZE (decl) == NULL_TREE);
 
   /* Take care of TYPE_DECLs up front.  */
@@ -5850,6 +5869,10 @@ finish_decl (decl, init, asmspec_tree, need_pop)
   else if (TREE_CODE (type) == REFERENCE_TYPE
 	   || (TYPE_LANG_SPECIFIC (type) && IS_SIGNATURE_REFERENCE (type)))
     {
+      if (TREE_STATIC (decl))
+	make_decl_rtl (decl, NULL_PTR,
+		       current_binding_level == global_binding_level
+		       || pseudo_global_level_p ());
       grok_reference_init (decl, type, init, &cleanup);
       init = NULL_TREE;
     }
@@ -6836,6 +6859,7 @@ grokvardecl (type, declarator, specbits, initialized)
       decl = build_lang_field_decl (VAR_DECL, declarator, type);
       DECL_CONTEXT (decl) = basetype;
       DECL_CLASS_CONTEXT (decl) = basetype;
+      DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype, declarator);
     }
   else
     decl = build_decl (VAR_DECL, declarator, type);
@@ -6901,6 +6925,8 @@ build_ptrmemfunc_type (type)
 
   /* Let the front-end know this is a pointer to member function. */
   TYPE_PTRMEMFUNC_FLAG(t) = 1;
+  /* and not really an aggregate.  */
+  IS_AGGR_TYPE (t) = 0;
 
   fields[0] = build_lang_field_decl (FIELD_DECL, delta_identifier,
 				     delta_type_node);
@@ -7327,7 +7353,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      goto found;
 	    }
 
-	  for (i = (int) RID_FIRST_MODIFIER; i < (int) RID_LAST_MODIFIER; i++)
+	  for (i = (int) RID_FIRST_MODIFIER; i <= (int) RID_LAST_MODIFIER; i++)
 	    {
 	      if (ridpointers[i] == id)
 		{
@@ -8031,7 +8057,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
 	    type = build_cplus_array_type (type, itype);
 	    if (constp || volatilep)
-	      type = c_build_type_variant (type, constp, volatilep);
+	      type = cp_build_type_variant (type, constp, volatilep);
 
 	    ctype = NULL_TREE;
 	  }
@@ -8040,6 +8066,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	case CALL_EXPR:
 	  {
 	    tree arg_types;
+	    int funcdecl_p;
+	    tree inner_parms = TREE_OPERAND (declarator, 1);
+	    tree inner_decl = TREE_OPERAND (declarator, 0);
 
 	    /* Declaring a function type.
 	       Make sure we have a valid type for the function to return.  */
@@ -8053,7 +8082,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
 	    if (constp || volatilep)
 	      {
-		type = c_build_type_variant (type, constp, volatilep);
+		type = cp_build_type_variant (type, constp, volatilep);
 		if (IS_AGGR_TYPE (type))
 		  build_pointer_type (type);
 		constp = 0;
@@ -8074,8 +8103,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		type = integer_type_node;
 	      }
 
+	    if (inner_decl && TREE_CODE (inner_decl) == SCOPE_REF)
+	      inner_decl = TREE_OPERAND (inner_decl, 1);
+
+	    /* Say it's a definition only for the CALL_EXPR
+	       closest to the identifier.  */
+	    funcdecl_p =
+	      inner_decl && TREE_CODE (inner_decl) == IDENTIFIER_NODE;
+
 	    if (ctype == NULL_TREE
 		&& decl_context == FIELD
+		&& funcdecl_p
 		&& (friendp == 0 || dname == current_class_name))
 	      ctype = current_class_type;
 
@@ -8189,27 +8227,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	    /* Construct the function type and go to the next
 	       inner layer of declarator.  */
 
-	    {
-	      int funcdef_p;
-	      tree inner_parms = TREE_OPERAND (declarator, 1);
-	      tree inner_decl = TREE_OPERAND (declarator, 0);
+	    declarator = TREE_OPERAND (declarator, 0);
 
-	      declarator = TREE_OPERAND (declarator, 0);
+	    /* FIXME: This is where default args should be fully
+	       processed.  */
 
-	      if (inner_decl && TREE_CODE (inner_decl) == SCOPE_REF)
-		inner_decl = TREE_OPERAND (inner_decl, 1);
-
-	      /* Say it's a definition only for the CALL_EXPR
-		 closest to the identifier.  */
-	      funcdef_p =
-		(inner_decl && TREE_CODE (inner_decl) == IDENTIFIER_NODE)
-		  ? funcdef_flag : 0;
-
-	      /* FIXME: This is where default args should be fully
-		 processed.  */
-
-	      arg_types = grokparms (inner_parms, funcdef_p);
-	    }
+	    arg_types = grokparms (inner_parms, funcdecl_p ? funcdef_flag : 0);
 
 	    if (declarator)
 	      {
@@ -8264,7 +8287,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		 signature pointer/reference itself.  */
 	      if (! IS_SIGNATURE (type))
 		{
-		  type = c_build_type_variant (type, constp, volatilep);
+		  type = cp_build_type_variant (type, constp, volatilep);
 		  if (IS_AGGR_TYPE (type))
 		    build_pointer_type (type);
 		  constp = 0;
@@ -8559,7 +8582,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
       /* Note that the grammar rejects storage classes
 	 in typenames, fields or parameters.  */
       if (constp || volatilep)
-	type = c_build_type_variant (type, constp, volatilep);
+	type = cp_build_type_variant (type, constp, volatilep);
 
       /* If the user declares "struct {...} foo" then `foo' will have
 	 an anonymous name.  Fill that name in now.  Nothing can
@@ -8648,7 +8671,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	if (IS_SIGNATURE (type))
 	  error ("`const' or `volatile' specified with signature type");
 	else  
-	  type = c_build_type_variant (type, constp, volatilep);
+	  type = cp_build_type_variant (type, constp, volatilep);
 
       /* Special case: "friend class foo" looks like a TYPENAME context.  */
       if (friendp)
@@ -8730,7 +8753,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  {
 	    /* Transfer const-ness of array into that of type pointed to. */
 	    type = build_pointer_type
-	      (c_build_type_variant (TREE_TYPE (type), constp, volatilep));
+	      (cp_build_type_variant (TREE_TYPE (type), constp, volatilep));
 	    volatilep = constp = 0;
 	  }
 	else if (TREE_CODE (type) == FUNCTION_TYPE)
@@ -9988,13 +10011,14 @@ xref_tag (code_type_node, name, binfo, globalize)
 
 	  ref = make_lang_type (code);
 
-	  /* A signature type will contain the fields of the signature
-	     table.  Therefore, it's not only an interface.  */
 	  if (tag_code == signature_type)
 	    {
 	      SET_SIGNATURE (ref);
+	      /* Since a signature type will be turned into the type
+		 of signature tables, it's not only an interface.  */
 	      CLASSTYPE_INTERFACE_ONLY (ref) = 0;
-	      SET_CLASSTYPE_INTERFACE_UNKNOWN (ref);
+	      SET_CLASSTYPE_INTERFACE_KNOWN (ref);
+	      /* A signature doesn't have a vtable.  */
 	      CLASSTYPE_VTABLE_NEEDS_WRITING (ref) = 0;
 	    }
 
@@ -10125,6 +10149,7 @@ xref_tag (code_type_node, name, binfo, globalize)
 	      TREE_VIA_PUBLIC (base_binfo) = via_public;
  	      TREE_VIA_PROTECTED (base_binfo) = via_protected;
 	      TREE_VIA_VIRTUAL (base_binfo) = via_virtual;
+	      BINFO_INHERITANCE_CHAIN (base_binfo) = TYPE_BINFO (ref);
 
 	      SET_CLASSTYPE_MARKED (basetype);
 #if 0
@@ -10226,6 +10251,7 @@ start_enum (name)
     TREE_ADDRESSABLE (b->tags) = 1;
   current_local_enum = NULL_TREE;
 
+#if 0 /* This stuff gets cleared in finish_enum anyway.  */
   if (TYPE_VALUES (enumtype) != NULL_TREE)
     /* Completely replace its old definition.
        The old enumerators remain defined, however.  */
@@ -10238,7 +10264,8 @@ start_enum (name)
 
   TYPE_PRECISION (enumtype) = TYPE_PRECISION (integer_type_node);
   TYPE_SIZE (enumtype) = NULL_TREE;
-  fixup_unsigned_type (enumtype);
+  fixup_signed_type (enumtype);
+#endif
 
   /* We copy this value because enumerated type constants
      are really of the type of the enumerator, not integer_type_node.  */
@@ -10258,84 +10285,78 @@ tree
 finish_enum (enumtype, values)
      register tree enumtype, values;
 {
-  register tree pair, tem;
-  register HOST_WIDE_INT maxvalue = 0;
-  register HOST_WIDE_INT minvalue = 0;
-  register HOST_WIDE_INT i;
-
+  register tree minnode, maxnode;
   /* Calculate the maximum value of any enumerator in this type.  */
 
   if (values)
     {
+      register tree pair;
+      register tree value = DECL_INITIAL (TREE_VALUE (values));
+      
       /* Speed up the main loop by performing some precalculations */
-
-      HOST_WIDE_INT value;
       TREE_TYPE (TREE_VALUE (values)) = enumtype;
-      TREE_TYPE (DECL_INITIAL (TREE_VALUE (values))) = enumtype;
-      TREE_VALUE (values) = DECL_INITIAL (TREE_VALUE (values));
-      value = TREE_INT_CST_LOW (TREE_VALUE (values));
-      minvalue = maxvalue = value;
+      TREE_TYPE (value) = enumtype;
+      TREE_VALUE (values) = value;
+      minnode = maxnode = value;
       
       for (pair = TREE_CHAIN (values); pair; pair = TREE_CHAIN (pair))
 	{
+	  value = DECL_INITIAL (TREE_VALUE (pair));
 	  TREE_TYPE (TREE_VALUE (pair)) = enumtype;
-	  TREE_TYPE (DECL_INITIAL (TREE_VALUE (pair))) = enumtype;
-	  TREE_VALUE (pair) = DECL_INITIAL (TREE_VALUE (pair));
-	  value = TREE_INT_CST_LOW (TREE_VALUE (pair));
-	  if (value > maxvalue)
-	    maxvalue = value;
-	  else if (value < minvalue)
-	    minvalue = value;
+	  TREE_TYPE (value) = enumtype;
+	  TREE_VALUE (pair) = value;
+	  if (tree_int_cst_lt (maxnode, value))
+	    maxnode = value;
+	  else if (tree_int_cst_lt (value, minnode))
+	    minnode = value;
 	}
     }
+  else
+    maxnode = minnode = integer_zero_node;
 
   TYPE_VALUES (enumtype) = values;
 
-  if (flag_short_enums)
-    {
-      /* Determine the precision this type needs, lay it out, and define
-         it.  */
+  {
+    int unsignedp = tree_int_cst_sgn (minnode) >= 0;
+    int lowprec = min_precision (minnode, unsignedp);
+    int highprec = min_precision (maxnode, unsignedp);
+    int precision = MAX (lowprec, highprec);
 
-      /* First reset precision */
-      TYPE_PRECISION (enumtype) = 0;
+    if (! flag_short_enums && precision < TYPE_PRECISION (integer_type_node))
+      precision = TYPE_PRECISION (integer_type_node);
 
-      for (i = maxvalue; i; i >>= 1)
-	TYPE_PRECISION (enumtype)++;
+    /* Unlike the C frontend, we prefer signed types.  */
+    if (unsignedp && int_fits_type_p (maxnode, type_for_size (precision, 0)))
+      unsignedp = 0;
 
-      if (!TYPE_PRECISION (enumtype))
-	TYPE_PRECISION (enumtype) = 1;
-
-      /* Cancel the laying out previously done for the enum type,
-	 so that fixup_unsigned_type will do it over.  */
-      TYPE_SIZE (enumtype) = NULL_TREE;
-
+    TYPE_PRECISION (enumtype) = precision;
+    TYPE_SIZE (enumtype) = NULL_TREE;
+    if (unsignedp)
       fixup_unsigned_type (enumtype);
-    }
+    else
+      fixup_signed_type (enumtype);
+  }
 
-  TREE_INT_CST_LOW (TYPE_MAX_VALUE (enumtype)) = maxvalue;
-
-  /* An enum can have some negative values; then it is signed.  */
-  if (minvalue < 0)
-    {
-      TREE_INT_CST_LOW (TYPE_MIN_VALUE (enumtype)) = minvalue;
-      TREE_INT_CST_HIGH (TYPE_MIN_VALUE (enumtype)) = -1;
-      TREE_UNSIGNED (enumtype) = 0;
-    }
   if (flag_cadillac)
     cadillac_finish_enum (enumtype);
 
-  /* Fix up all variant types of this enum type.  */
-  for (tem = TYPE_MAIN_VARIANT (enumtype); tem; tem = TYPE_NEXT_VARIANT (tem))
-    {
-      TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
-      TYPE_MIN_VALUE (tem) = TYPE_MIN_VALUE (enumtype);
-      TYPE_MAX_VALUE (tem) = TYPE_MAX_VALUE (enumtype);
-      TYPE_SIZE (tem) = TYPE_SIZE (enumtype);
-      TYPE_MODE (tem) = TYPE_MODE (enumtype);
-      TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
-      TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
-      TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
-    }
+  {
+    register tree tem;
+    
+    /* Fix up all variant types of this enum type.  */
+    for (tem = TYPE_MAIN_VARIANT (enumtype); tem;
+	 tem = TYPE_NEXT_VARIANT (tem))
+      {
+	TYPE_VALUES (tem) = TYPE_VALUES (enumtype);
+	TYPE_MIN_VALUE (tem) = TYPE_MIN_VALUE (enumtype);
+	TYPE_MAX_VALUE (tem) = TYPE_MAX_VALUE (enumtype);
+	TYPE_SIZE (tem) = TYPE_SIZE (enumtype);
+	TYPE_MODE (tem) = TYPE_MODE (enumtype);
+	TYPE_PRECISION (tem) = TYPE_PRECISION (enumtype);
+	TYPE_ALIGN (tem) = TYPE_ALIGN (enumtype);
+	TREE_UNSIGNED (tem) = TREE_UNSIGNED (enumtype);
+      }
+  }
 
   /* Finish debugging output for this type.  */
 #if 0
@@ -11042,59 +11063,6 @@ store_return_init (return_id, init)
     }
 }
 
-#if 0
-/* Generate code for default X() constructor.  */
-static void
-build_default_constructor (fndecl)
-     tree fndecl;
-{
-  int i = CLASSTYPE_N_BASECLASSES (current_class_type);
-  tree parm = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
-  tree fields = TYPE_FIELDS (current_class_type);
-  tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
-
-  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-    parm = TREE_CHAIN (parm);
-  parm = DECL_REFERENCE_SLOT (parm);
-
-  while (--i >= 0)
-    {
-      tree basetype = TREE_VEC_ELT (binfos, i);
-      if (TYPE_HAS_INIT_REF (basetype))
-	{
-	  tree name = TYPE_NAME (basetype);
-	  if (TREE_CODE (name) == TYPE_DECL)
-	    name = DECL_NAME (name);
-	  current_base_init_list = tree_cons (name, parm, current_base_init_list);
-	}
-    }
-  for (; fields; fields = TREE_CHAIN (fields))
-    {
-      tree name, init;
-      if (TREE_STATIC (fields))
-	continue;
-      if (TREE_CODE (fields) != FIELD_DECL)
-	continue;
-      if (DECL_NAME (fields))
-	{
-	  if (VFIELD_NAME_P (DECL_NAME (fields)))
-	    continue;
-	  if (VBASE_NAME_P (DECL_NAME (fields)))
-	    continue;
-
-	  /* True for duplicate members.  */
-	  if (IDENTIFIER_CLASS_VALUE (DECL_NAME (fields)) != fields)
-	    continue;
-	}
-
-      init = build (COMPONENT_REF, TREE_TYPE (fields), parm, fields);
-      init = build_tree_list (NULL_TREE, init);
-
-      current_member_init_list
-	= tree_cons (DECL_NAME (fields), init, current_member_init_list);
-    }
-}
-#endif
 
 /* Finish up a function declaration and compile that function
    all the way to assembler language output.  The free the storage

@@ -304,7 +304,7 @@ build_up_reference (type, arg, flags, checkconst)
 
   /* Pass along const and volatile down into the type. */
   if (TYPE_READONLY (type) || TYPE_VOLATILE (type))
-    target_type = c_build_type_variant (target_type, TYPE_READONLY (type),
+    target_type = cp_build_type_variant (target_type, TYPE_READONLY (type),
 					TYPE_VOLATILE (type));
   targ = arg;
   if (TREE_CODE (targ) == SAVE_EXPR)
@@ -494,6 +494,8 @@ build_up_reference (type, arg, flags, checkconst)
 	return rval;
       }
 
+    case PREINCREMENT_EXPR:
+    case PREDECREMENT_EXPR:
     case MODIFY_EXPR:
     case INIT_EXPR:
       {
@@ -634,7 +636,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 	    {
 	      int r = TREE_READONLY (expr);
 	      int v = TREE_THIS_VOLATILE (expr);
-	      ttr = c_build_type_variant (TREE_TYPE (expr), r, v);
+	      ttr = cp_build_type_variant (TREE_TYPE (expr), r, v);
 	    }
 
 	  if (! lvalue_p (expr) &&
@@ -2041,5 +2043,5 @@ type_promotes_to (type)
   else if (type == float_type_node)
     type = double_type_node;
 
-  return c_build_type_variant (type, constp, volatilep);
+  return cp_build_type_variant (type, constp, volatilep);
 }

@@ -230,12 +230,15 @@ break_out_calls (exp)
       return exp;
 
     case 'd':  /* A decl node */
+#if 0                               /* This is bogus.  jason 9/21/94 */
+
       t1 = break_out_calls (DECL_INITIAL (exp));
       if (t1 != DECL_INITIAL (exp))
 	{
 	  exp = copy_node (exp);
 	  DECL_INITIAL (exp) = t1;
 	}
+#endif
       return exp;
 
     case 'b':  /* A block node */
@@ -386,6 +389,40 @@ build_cplus_array_type (elt_type, index_type)
   current_obstack = ambient_obstack;
   saveable_obstack = ambient_saveable_obstack;
   return t;
+}
+
+/* Make a variant type in the proper way for C/C++, propagating qualifiers
+   down to the element type of an array.  */
+
+tree
+cp_build_type_variant (type, constp, volatilep)
+     tree type;
+     int constp, volatilep;
+{
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree real_main_variant = TYPE_MAIN_VARIANT (type);
+
+      push_obstacks (TYPE_OBSTACK (real_main_variant),
+		     TYPE_OBSTACK (real_main_variant));
+      type = build_cplus_array_type (cp_build_type_variant (TREE_TYPE (type),
+							    constp, volatilep),
+				     TYPE_DOMAIN (type));
+
+      /* TYPE must be on same obstack as REAL_MAIN_VARIANT.  If not,
+	 make a copy.  (TYPE might have come from the hash table and
+	 REAL_MAIN_VARIANT might be in some function's obstack.)  */
+
+      if (TYPE_OBSTACK (type) != TYPE_OBSTACK (real_main_variant))
+	{
+	  type = copy_node (type);
+	  TYPE_POINTER_TO (type) = TYPE_REFERENCE_TO (type) = 0;
+	}
+
+      TYPE_MAIN_VARIANT (type) = real_main_variant;
+      pop_obstacks ();
+    }
+  return build_type_variant (type, constp, volatilep);
 }
 
 /* Add OFFSET to all base types of T.

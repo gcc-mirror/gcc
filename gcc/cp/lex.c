@@ -75,6 +75,12 @@ void yyerror ();
 struct obstack inline_text_obstack;
 static char *inline_text_firstobj;
 
+/* This obstack is used to hold information about methods to be
+   synthesized.  It should go away when synthesized methods are handled
+   properly (i.e. only when needed).  */
+struct obstack synth_obstack;
+static char *synth_firstobj;
+
 int end_of_file;
 
 /* Pending language change.
@@ -564,6 +570,8 @@ init_lex ()
   init_error ();
   gcc_obstack_init (&inline_text_obstack);
   inline_text_firstobj = (char *) obstack_alloc (&inline_text_obstack, 0);
+  gcc_obstack_init (&synth_obstack);
+  synth_firstobj = (char *) obstack_alloc (&synth_obstack, 0);
 
   /* Start it at 0, because check_newline is called at the very beginning
      and will increment it to 1.  */
@@ -1086,30 +1094,60 @@ set_vardecl_interface_info (prev, vars)
 void
 do_pending_inlines ()
 {
-  struct pending_inline *prev = 0, *tail;
   struct pending_inline *t;
 
   /* Oops, we're still dealing with the last batch.  */
   if (yychar == PRE_PARSED_FUNCTION_DECL)
     return;
-  
+
+  /* Note that we've seen these inlines and are dealing with them.  */
+  for (t = pending_inlines; t; t = t->next)
+    t->deja_vu = 1;
+
   /* Reverse the pending inline functions, since
      they were cons'd instead of appended.  */
-  
-  for (t = pending_inlines; t; t = tail)
-    {
-      t->deja_vu = 1;
-      tail = t->next;
-      t->next = prev;
-      prev = t;
-    }
-  /* Reset to zero so that if the inline functions we are currently
-     processing define inline functions of their own, that is handled
-     correctly.  ??? This hasn't been checked in a while.  */
-  pending_inlines = 0;
-  
+  {
+    struct pending_inline *prev = 0, *tail;
+    t = pending_inlines;
+    pending_inlines = 0;
+
+    for (; t; t = tail)
+      {
+	tail = t->next;
+
+	/* This kludge should go away when synthesized methods are handled
+	   properly, i.e. only when needed.  */
+	if (t->lineno <= 0)
+	  {
+	    tree f = t->fndecl;
+	    DECL_PENDING_INLINE_INFO (f) = 0;
+	    switch (- t->lineno)
+	      {
+	      case 0: case 1:
+		build_dtor (f); break;
+	      case 2:
+		build_default_constructor (f); break;
+	      case 3: case 4:
+		build_copy_constructor (f); break;
+	      case 5: case 6:
+		build_assign_ref (f); break;
+	      default:
+		;
+	      }
+	    obstack_free (&synth_obstack, t);
+	    continue;
+	  }
+
+	t->next = prev;
+	prev = t;
+      }
+    t = prev;
+  }
+
+  if (t == 0)
+    return;
+	    
   /* Now start processing the first inline function.  */
-  t = prev;
   my_friendly_assert ((t->parm_vec == NULL_TREE) == (t->bindings == NULL_TREE),
 		      226);
   if (t->parm_vec)
@@ -1651,8 +1689,8 @@ reinit_parse_for_block (yychar, obstackp, is_template)
    When KIND == 6, build default operator = (X&).  */
 
 tree
-cons_up_default_function (type, name, fields, kind)
-     tree type, name, fields;
+cons_up_default_function (type, name, kind)
+     tree type, name;
      int kind;
 {
   extern tree void_list_node;
@@ -1676,14 +1714,6 @@ cons_up_default_function (type, name, fields, kind)
     case 2:
       /* Default constructor.  */
       args = void_list_node;
-      {
-	if (declspecs)
-	  declspecs = decl_tree_cons (NULL_TREE,
-				      ridpointers [(int) RID_INLINE],
-				      declspecs);
-	else
-	  declspecs = build_decl_list (NULL_TREE, ridpointers [(int) RID_INLINE]);
-      }
       break;
 
     case 3:
@@ -1691,16 +1721,12 @@ cons_up_default_function (type, name, fields, kind)
       /* Fall through...  */
     case 4:
       /* According to ARM $12.8, the default copy ctor will be declared, but
-	 not defined, unless it's needed.  So we mark this as `inline'; that
-	 way, if it's never used it won't be emitted.  */
-      declspecs = build_decl_list (NULL_TREE, ridpointers [(int) RID_INLINE]);
-
+	 not defined, unless it's needed.  */
       argtype = build_reference_type (type);
       args = tree_cons (NULL_TREE,
 			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
 					 get_identifier ("_ctor_arg")),
 			void_list_node);
-      default_copy_constructor_body (&func_buf, &func_len, type, fields);
       break;
 
     case 5:
@@ -1708,11 +1734,7 @@ cons_up_default_function (type, name, fields, kind)
       /* Fall through...  */
     case 6:
       retref = 1;
-      declspecs =
-	decl_tree_cons (NULL_TREE, name,
-			decl_tree_cons (NULL_TREE,
-					ridpointers [(int) RID_INLINE],
-					NULL_TREE));
+      declspecs = build_decl_list (NULL_TREE, name);
 
       name = ansi_opname [(int) MODIFY_EXPR];
 
@@ -1721,19 +1743,14 @@ cons_up_default_function (type, name, fields, kind)
 			build_tree_list (hash_tree_chain (argtype, NULL_TREE),
 					 get_identifier ("_ctor_arg")),
 			void_list_node);
-      default_assign_ref_body (&func_buf, &func_len, type, fields);
       break;
 
     default:
       my_friendly_abort (59);
     }
 
-  if (!func_buf)
-    {
-      func_len = 2;
-      func_buf = obstack_alloc (&inline_text_obstack, func_len);
-      strcpy (func_buf, "{}");
-    }
+  declspecs = decl_tree_cons (NULL_TREE, ridpointers [(int) RID_INLINE],
+			      declspecs);
 
   TREE_PARMLIST (args) = 1;
 
@@ -1742,44 +1759,22 @@ cons_up_default_function (type, name, fields, kind)
     if (retref)
       declarator = build_parse_node (ADDR_EXPR, declarator);
     
-    fn = start_method (declspecs, declarator, NULL_TREE);
+    fn = grokfield (declarator, declspecs, NULL_TREE, NULL_TREE, NULL_TREE);
   }
   
   if (fn == void_type_node)
     return fn;
 
-  current_base_init_list = NULL_TREE;
-  current_member_init_list = NULL_TREE;
-
+  /* This kludge should go away when synthesized methods are handled
+     properly, i.e. only when needed.  */
   {
     struct pending_inline *t;
-
-    t = (struct pending_inline *) obstack_alloc (&inline_text_obstack,
-						 sizeof (struct pending_inline));
-    t->lineno = lineno;
-
-#if 1
-    t->filename = input_filename;
-#else  /* This breaks; why? */
-#define MGMSG "(synthetic code at) "
-    t->filename = obstack_alloc (&inline_text_obstack,
-				 strlen (input_filename) + sizeof (MGMSG) + 1);
-    strcpy (t->filename, MGMSG);
-    strcat (t->filename, input_filename);
-#endif
-    t->token = YYEMPTY;
-    t->token_value = 0;
-    t->buf = func_buf;
-    t->len = func_len;
-    t->can_free = 1;
-    t->deja_vu = 0;
-    if (interface_unknown && processing_template_defn && flag_external_templates && ! DECL_IN_SYSTEM_HEADER (fn))
-      warn_if_unknown_interface ();
-    t->interface = (interface_unknown ? 1 : (interface_only ? 0 : 2));
+    t = (struct pending_inline *)
+      obstack_alloc (&synth_obstack, sizeof (struct pending_inline));
+    t->lineno = -kind;
+    t->can_free = 0;
     store_pending_inline (fn, t);
   }
-
-  finish_method (fn);
 
 #ifdef DEBUG_DEFAULT_FUNCTIONS
   { char *fn_type = NULL;
@@ -1802,14 +1797,13 @@ cons_up_default_function (type, name, fields, kind)
   }
 #endif /* DEBUG_DEFAULT_FUNCTIONS */
 
-  DECL_CLASS_CONTEXT (fn) = TYPE_MAIN_VARIANT (type);
-
   /* Show that this function was generated by the compiler.  */
   SET_DECL_ARTIFICIAL (fn);
   
   return fn;
 }
 
+#if 0
 /* Used by default_copy_constructor_body.  For the anonymous union
    in TYPE, return the member that is at least as large as the rest
    of the members, so we can copy it.  */
@@ -2155,6 +2149,7 @@ default_copy_constructor_body (bufp, lenp, type, fields)
   strcpy (*bufp, prologue.object_base);
   strcat (*bufp, "{}");
 }
+#endif
 
 /* Heuristic to tell whether the user is missing a semicolon
    after a struct or enum declaration.  Emit an error message

@@ -599,6 +599,7 @@ store_init_value (decl, init)
 	       ))
 
     return value;
+#if 0 /* No, that's C.  jason 9/19/94 */
   else
     {
       if (pedantic && TREE_CODE (value) == CONSTRUCTOR
@@ -613,6 +614,7 @@ store_init_value (decl, init)
 	    pedwarn ("ANSI C++ forbids non-constant aggregate initializer expressions");
 	}
     }
+#endif
   DECL_INITIAL (decl) = value;
   return NULL_TREE;
 }
@@ -659,8 +661,9 @@ digest_init (type, init, tail)
 
   if (init && TYPE_PTRMEMFUNC_P (type)
       && ((TREE_CODE (init) == ADDR_EXPR
-	   && TREE_CODE (TREE_TYPE (init)) == POINTER_TYPE
-	   && TREE_CODE (TREE_TYPE (TREE_TYPE (init))) == METHOD_TYPE)
+	   && ((TREE_CODE (TREE_TYPE (init)) == POINTER_TYPE
+		&& TREE_CODE (TREE_TYPE (TREE_TYPE (init))) == METHOD_TYPE)
+	       || TREE_CODE (TREE_OPERAND (init, 0)) == TREE_LIST))
 	  || TREE_CODE (init) == TREE_LIST
 	  || integer_zerop (init)
 	  || (TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (TREE_TYPE (init)))))
