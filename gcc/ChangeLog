@@ -1,3 +1,7 @@
+2000-11-14  DJ Delorie  <dj@redhat.com>
+
+	* config/v850/v850.c: Remove obstacks.
+
 Tue Nov 14 21:54:31 2000  Marek Michalkiewicz  <marekm@linux.org.pl> & Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.c (avr_case_values_threshold): New.
