@@ -99,6 +99,7 @@ const char *
 init_c_lex (filename)
      const char *filename;
 {
+  struct cpp_callbacks *cb;
   struct c_fileinfo *toplevel;
 
   orig_filename = filename;
@@ -121,16 +122,18 @@ init_c_lex (filename)
   GET_ENVIRONMENT (literal_codeset, "LANG");
 #endif
 
-  parse_in->cb.ident = cb_ident;
-  parse_in->cb.file_change = cb_file_change;
-  parse_in->cb.def_pragma = cb_def_pragma;
+  cb = cpp_get_callbacks (parse_in);
+
+  cb->ident = cb_ident;
+  cb->file_change = cb_file_change;
+  cb->def_pragma = cb_def_pragma;
 
   /* Set the debug callbacks if we can use them.  */
   if (debug_info_level == DINFO_LEVEL_VERBOSE
       && (write_symbols == DWARF_DEBUG || write_symbols == DWARF2_DEBUG))
     {
-      parse_in->cb.define = cb_define;
-      parse_in->cb.undef = cb_undef;
+      cb->define = cb_define;
+      cb->undef = cb_undef;
     }
 
   if (filename == 0 || !strcmp (filename, "-"))
