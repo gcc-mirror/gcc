@@ -1,30 +1,35 @@
+2004-06-09  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.fortran-torture/execure/intrinsic_associated.f90
+	(pointer_to_section): Rewrite to use smaller array.
+
 2004-06-08  David Edelsohn  <edelsohn@gnu.org>
 
-        * gcc.dg/ext/altivec-1.c: XFAIL powerpc-ibm-aix*.
-        * gcc.dg/ext/altivec-10.c: Same.
-        * gcc.dg/ext/altivec-11.c: Same.
-        * gcc.dg/ext/altivec-12.c: Same.
-        * gcc.dg/ext/altivec-13.c: Same.
-        * gcc.dg/ext/altivec-14.c: Same.
-        * gcc.dg/ext/altivec-15.c: Same.
-        * gcc.dg/ext/altivec-16.c: Same.
-        * gcc.dg/ext/altivec-3.c: Same.
-        * gcc.dg/ext/altivec-4.c: Same.
-        * gcc.dg/ext/altivec-6.c: Same.
-        * gcc.dg/ext/altivec-7.c: Same.
-        * gcc.dg/ext/altivec-8.c: Same.
-        * gcc.dg/ext/altivec-varargs-1.c: Same.
+	* gcc.dg/ext/altivec-1.c: XFAIL powerpc-ibm-aix*.
+	* gcc.dg/ext/altivec-10.c: Same.
+	* gcc.dg/ext/altivec-11.c: Same.
+	* gcc.dg/ext/altivec-12.c: Same.
+	* gcc.dg/ext/altivec-13.c: Same.
+	* gcc.dg/ext/altivec-14.c: Same.
+	* gcc.dg/ext/altivec-15.c: Same.
+	* gcc.dg/ext/altivec-16.c: Same.
+	* gcc.dg/ext/altivec-3.c: Same.
+	* gcc.dg/ext/altivec-4.c: Same.
+	* gcc.dg/ext/altivec-6.c: Same.
+	* gcc.dg/ext/altivec-7.c: Same.
+	* gcc.dg/ext/altivec-8.c: Same.
+	* gcc.dg/ext/altivec-varargs-1.c: Same.
 
-        * g++.dg/ext/altivec-1.C: Correct dg syntax.
-        * g++.dg/ext/altivec-10.C: Same.
-        * g++.dg/ext/altivec-2.C: Same.
-        * g++.dg/ext/altivec-3.C: Same.
-        * g++.dg/ext/altivec-4.C: Same.
-        * g++.dg/ext/altivec-5.C: Same.
-        * g++.dg/ext/altivec-6.C: Same.
-        * g++.dg/ext/altivec-7.C: Same.
-        * g++.dg/ext/altivec-8.C: Same.
-        * g++.dg/ext/altivec-9.C: Same.
+	* g++.dg/ext/altivec-1.C: Correct dg syntax.
+	* g++.dg/ext/altivec-10.C: Same.
+	* g++.dg/ext/altivec-2.C: Same.
+	* g++.dg/ext/altivec-3.C: Same.
+	* g++.dg/ext/altivec-4.C: Same.
+	* g++.dg/ext/altivec-5.C: Same.
+	* g++.dg/ext/altivec-6.C: Same.
+	* g++.dg/ext/altivec-7.C: Same.
+	* g++.dg/ext/altivec-8.C: Same.
+	* g++.dg/ext/altivec-9.C: Same.
 
 2004-06-08  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
