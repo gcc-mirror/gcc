@@ -352,7 +352,9 @@ public class EventQueue
     // occur.
     synchronized (prev)
       {
-        prev.next = null;
+        prev.next = next;
+        if (next != null)
+          next.prev = prev;
       }
 
     synchronized (this)
