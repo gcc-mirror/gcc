@@ -1865,6 +1865,9 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
       end = PREV_INSN (end);
     }
 
+  /* Disable handling dead code by conditional execution if the machine needs
+     to do anything funny with the tests, etc.  */
+#ifndef IFCVT_MODIFY_TESTS
   if (HAVE_conditional_execution)
     {
       /* In the conditional execution case, we have things easy.  We know
@@ -1896,6 +1899,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
       earliest = jump;
     }
   else
+#endif
     {
       /* In the non-conditional execution case, we have to verify that there
 	 are no trapping operations, no calls, no references to memory, and
