@@ -2051,10 +2051,14 @@ typedef struct rs6000_args
 /* Define if the object format being used is COFF or a superset.  */
 #define OBJECT_FORMAT_COFF
 
-/* Define the magic numbers that we recognize as COFF.  */
+/* Define the magic numbers that we recognize as COFF.
+   AIX 4.3 adds U803XTOCMAGIC (0757) for 64-bit executables, but collect2.c
+   does not include these files in the right order to conditionally define
+   the value in the macro.  */
 
 #define MY_ISCOFF(magic) \
-  ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC || (magic) == U802TOCMAGIC)
+  ((magic) == U802WRMAGIC || (magic) == U802ROMAGIC \
+   || (magic) == U802TOCMAGIC || (magic) == 0757)
 
 /* This is the only version of nm that collect2 can work with.  */
 #define REAL_NM_FILE_NAME "/usr/ucb/nm"

@@ -1,5 +1,6 @@
 Tue Feb 17 23:34:29 1998 David Edelsohn  <edelsohn@mhpcc.edu>
 
+	* rs6000.h (MY_ISCOFF): Add numeric value of U803XTOCMAGIC.
         * x-aix31 (INSTALL): Delete.
 
 Tue Feb 17 22:56:14 1998  Richard Henderson  <rth@cygnus.com>
