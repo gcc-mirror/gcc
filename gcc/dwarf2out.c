@@ -21,6 +21,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "config.h"
+#include "defaults.h"
 
 /* The first part of this file deals with the DWARF 2 frame unwind
    information, which is also used by the GCC efficient exception handling
@@ -28,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    DWARF2_DEBUGGING_INFO, deals with the other DWARF 2 debugging
    information.  */
 
-#if defined (DWARF2_DEBUGGING_INFO) || defined (INCOMING_RETURN_ADDR_RTX)
+#if defined (DWARF2_DEBUGGING_INFO) || defined (DWARF2_UNWIND_INFO)
 
 #include <stdio.h>
 #include <setjmp.h>
@@ -41,7 +42,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-config.h"
 #include "reload.h"
 #include "output.h"
-#include "defaults.h"
 #include "expr.h"
 #include "except.h"
 
@@ -91,7 +91,6 @@ dw_cfi_node;
 
 typedef struct dw_fde_struct
 {
-  unsigned long dw_fde_offset;
   char *dw_fde_begin;
   char *dw_fde_current_label;
   char *dw_fde_end;
@@ -128,26 +127,12 @@ dw_fde_node;
 #define DWARF_ROUND(SIZE,BOUNDARY) \
   (((SIZE) + (BOUNDARY) - 1) & ~((BOUNDARY) - 1))
 
-/* Fixed size portion of the CIE (including the length field).  */
-#define DWARF_CIE_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 5)
-
-/* The un-padded size of the CIE.  Initialized in calc_fde_sizes, used
-   in output_call_frame_info.  */
-static unsigned cie_size;
-
 /* Offsets recorded in opcodes are a multiple of this alignment factor.  */
 #ifdef STACK_GROWS_DOWNWARD
 #define DWARF_CIE_DATA_ALIGNMENT (-UNITS_PER_WORD)
 #else
 #define DWARF_CIE_DATA_ALIGNMENT UNITS_PER_WORD
 #endif
-
-/* Fixed size portion of the FDE.  */
-#define DWARF_FDE_HEADER_SIZE (2 * DWARF_OFFSET_SIZE + 2 * PTR_SIZE)
-
-/* This location is used by calc_fde_sizes() to keep track
-   the offset of each FDE within the .debug_frame section.  */
-static unsigned long next_fde_offset;
 
 /* A pointer to the base of a table that contains frame description
    information for each routine.  */
@@ -197,9 +182,6 @@ static void lookup_cfa			PROTO((unsigned long *, long *));
 static void reg_save			PROTO((char *, unsigned, unsigned,
 					       long));
 static void initial_return_save		PROTO((rtx));
-static unsigned long size_of_cfi	PROTO((dw_cfi_ref));
-static unsigned long size_of_fde	PROTO((dw_fde_ref, unsigned long *));
-static void calc_fde_sizes		PROTO((void));
 static void output_cfi			PROTO((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PROTO((int));
 static unsigned reg_number		PROTO((rtx));
@@ -266,6 +248,10 @@ static unsigned reg_number		PROTO((rtx));
 #ifndef FUNC_END_LABEL
 #define FUNC_END_LABEL		"LFE"
 #endif
+#define CIE_AFTER_SIZE_LABEL	"LSCIE"
+#define CIE_END_LABEL		"LECIE"
+#define FDE_AFTER_SIZE_LABEL	"LSFDE"
+#define FDE_END_LABEL		"LEFDE"
 
 /* Definitions of defaults for various types of primitive assembly language
    output operations.  These may be overridden from within the tm.h file,
@@ -374,6 +360,33 @@ static unsigned reg_number		PROTO((rtx));
   } while (0)
 #endif
 
+/* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
+   newline is produced.  When flag_verbose_asm is asserted, we add commnetary
+   at the end of the line, so we must avoid output of a newline here.  */
+#ifndef ASM_OUTPUT_DWARF_STRING
+#define ASM_OUTPUT_DWARF_STRING(FILE,P) \
+  do {									      \
+    register int slen = strlen(P);                                            \
+    register char *p = (P);  	                                              \
+    register int i;					                      \
+    fprintf (FILE, "\t.ascii \"");				              \
+    for (i = 0; i < slen; i++)					              \
+      {								              \
+	  register int c = p[i];					      \
+	  if (c == '\"' || c == '\\')					      \
+	    putc ('\\', FILE);					              \
+	  if (c >= ' ' && c < 0177)					      \
+	    putc (c, FILE);					              \
+	  else								      \
+	    {								      \
+	      fprintf (FILE, "\\%o", c);			              \
+	    }							 	      \
+      }								              \
+    fprintf (FILE, "\\0\"");					              \
+  }									      \
+  while (0)
+#endif
+
 /* The DWARF 2 CFA column which tracks the return address.  Normally this
    is the column for PC, or the first column after all of the hard
    registers.  */
@@ -389,6 +402,12 @@ static unsigned reg_number		PROTO((rtx));
    default, we just provide columns for all registers.  */
 #ifndef DWARF_FRAME_REGNUM
 #define DWARF_FRAME_REGNUM(REG) DBX_REGISTER_NUMBER (REG)
+#endif
+
+/* The offset from the incoming value of %sp to the top of the stack frame
+   for the current function.  */
+#ifndef INCOMING_FRAME_SP_OFFSET
+#define INCOMING_FRAME_SP_OFFSET 0
 #endif
 
 /* Return a pointer to a copy of the section string name S with all
@@ -611,7 +630,7 @@ lookup_cfa (regp, offsetp)
 }
 
 /* The current rule for calculating the DWARF2 canonical frame address.  */
-static unsigned cfa_reg;
+static unsigned long cfa_reg;
 static long cfa_offset;
 
 /* The register used for saving registers to the stack, and its offset
@@ -806,7 +825,7 @@ initial_return_save (rtl)
       abort ();
     }
 
-  reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset);
+  reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa_offset);
 }
 
 /* Record call frame debugging information for INSN, which either
@@ -828,10 +847,11 @@ dwarf2out_frame_debug (insn)
   if (insn == NULL_RTX)
     {
       /* Set up state for generating call frame debug info.  */
+      lookup_cfa (&cfa_reg, &cfa_offset);
+      assert (cfa_reg == DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM));
       cfa_reg = STACK_POINTER_REGNUM;
-      cfa_offset = 0;
-      cfa_store_reg = STACK_POINTER_REGNUM;
-      cfa_store_offset = 0;
+      cfa_store_reg = cfa_reg;
+      cfa_store_offset = cfa_offset;
       cfa_temp_reg = -1;
       cfa_temp_value = 0;
       return;
@@ -1003,114 +1023,6 @@ size_of_sleb128 (value)
 	   || ((value == -1) && ((byte & 0x40) != 0))));
 
   return size;
-}
-
-/* Return the size of a Call Frame Instruction.  */
-
-static unsigned long
-size_of_cfi (cfi)
-     dw_cfi_ref cfi;
-{
-  register unsigned long size;
-
-  /* Count the 1-byte opcode */
-  size = 1;
-  switch (cfi->dw_cfi_opc)
-    {
-    case DW_CFA_offset:
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd2.dw_cfi_offset);
-      break;
-    case DW_CFA_set_loc:
-      size += PTR_SIZE;
-      break;
-    case DW_CFA_advance_loc1:
-      size += 1;
-      break;
-    case DW_CFA_advance_loc2:
-      size += 2;
-      break;
-    case DW_CFA_advance_loc4:
-      size += 4;
-      break;
-#ifdef MIPS_DEBUGGING_INFO
-    case DW_CFA_MIPS_advance_loc8:
-      size += 8;
-      break;
-#endif
-    case DW_CFA_offset_extended:
-    case DW_CFA_def_cfa:
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd2.dw_cfi_offset);
-      break;
-    case DW_CFA_restore_extended:
-    case DW_CFA_undefined:
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
-      break;
-    case DW_CFA_same_value:
-    case DW_CFA_def_cfa_register:
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
-      break;
-    case DW_CFA_register:
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_reg_num);
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd2.dw_cfi_reg_num);
-      break;
-    case DW_CFA_def_cfa_offset:
-      size += size_of_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_offset);
-      break;
-    default:
-      break;
-    }
-
-    return size;
-}
-
-/* Return the size of an FDE sans the length word.  */
-
-static inline unsigned long
-size_of_fde (fde, npad)
-    dw_fde_ref fde;
-    unsigned long *npad;
-{
-  register dw_cfi_ref cfi;
-  register unsigned long aligned_size;
-  register unsigned long size;
-
-  size = DWARF_FDE_HEADER_SIZE;
-  for (cfi = fde->dw_fde_cfi; cfi != NULL; cfi = cfi->dw_cfi_next)
-    size += size_of_cfi(cfi);
-
-  /* Round the size up to a word boundary.  */
-  aligned_size = DWARF_ROUND (size, PTR_SIZE);
-  *npad = aligned_size - size;
-  return aligned_size;
-}
-
-/* Calculate the size of the FDE table, and establish the offset
-   of each FDE in the .debug_frame section.  */
-
-static void
-calc_fde_sizes ()
-{
-  register unsigned long i;
-  register dw_fde_ref fde;
-  register unsigned long fde_size;
-  register dw_cfi_ref cfi;
-  unsigned long fde_pad;
-
-  cie_size = DWARF_CIE_HEADER_SIZE;
-  for (cfi = cie_cfi_head; cfi != NULL; cfi = cfi->dw_cfi_next)
-    cie_size += size_of_cfi (cfi);
-
-  /* Initialize the beginning FDE offset.  */
-  next_fde_offset = DWARF_ROUND (cie_size, PTR_SIZE);
-
-  for (i = 0; i < fde_table_in_use; ++i)
-    {
-      fde = &fde_table[i];
-      fde->dw_fde_offset = next_fde_offset;
-      fde_size = size_of_fde (fde, &fde_pad);
-      next_fde_offset += fde_size;
-    }
 }
 
 /* Output an unsigned LEB128 quantity.  */
@@ -1299,6 +1211,10 @@ output_call_frame_info (for_eh)
   register unsigned long fde_size;
   register dw_cfi_ref cfi;
   unsigned long fde_pad;
+  char l1[20], l2[20];
+
+  /* Do we want to include a pointer to the exception table?  */
+  int eh_ptr = for_eh && exception_table_p ();
 
   /* Only output the info if it will be interesting.  */
   for (i = 0; i < fde_table_in_use; ++i)
@@ -1306,9 +1222,6 @@ output_call_frame_info (for_eh)
       break;
   if (i == fde_table_in_use)
     return;
-
-  /* (re-)initialize the beginning FDE offset.  */
-  next_fde_offset = DWARF_ROUND (cie_size, PTR_SIZE);
 
   fputc ('\n', asm_out_file);
   if (for_eh)
@@ -1324,12 +1237,16 @@ output_call_frame_info (for_eh)
     ASM_OUTPUT_SECTION (asm_out_file, FRAME_SECTION);
 
   /* Output the CIE. */
-  ASM_OUTPUT_DWARF_DATA (asm_out_file, next_fde_offset - DWARF_OFFSET_SIZE);
+  ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
+  ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
+  ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
   if (flag_verbose_asm)
     fprintf (asm_out_file, "\t%s Length of Common Information Entry",
 	     ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
+  ASM_OUTPUT_LABEL (asm_out_file, l1);
+
   ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
   if (flag_verbose_asm)
     fprintf (asm_out_file, "\t%s CIE Identifier Tag", ASM_COMMENT_START);
@@ -1346,9 +1263,21 @@ output_call_frame_info (for_eh)
     fprintf (asm_out_file, "\t%s CIE Version", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
-  if (flag_verbose_asm)
-    fprintf (asm_out_file, "\t%s CIE Augmentation (none)", ASM_COMMENT_START);
+  if (eh_ptr)
+    {
+      /* The "z" augmentation was defined by SGI; the FDE contains a pointer
+	 to the exception region info for the frame.  */
+      ASM_OUTPUT_DWARF_STRING (asm_out_file, "z");
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
+    }
+  else
+    {
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, 0);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s CIE Augmentation (none)",
+		 ASM_COMMENT_START);
+    }
 
   fputc ('\n', asm_out_file);
   output_uleb128 (1);
@@ -1366,20 +1295,21 @@ output_call_frame_info (for_eh)
     fprintf (asm_out_file, "\t%s CIE RA Column", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
+  if (eh_ptr)
+    {
+      output_uleb128 (0);
+      if (flag_verbose_asm)
+	fprintf (asm_out_file, "\t%s CIE augmentation fields length",
+		 ASM_COMMENT_START);
+      fputc ('\n', asm_out_file);
+    }
 
   for (cfi = cie_cfi_head; cfi != NULL; cfi = cfi->dw_cfi_next)
     output_cfi (cfi, NULL);
 
   /* Pad the CIE out to an address sized boundary.  */
-  for (i = next_fde_offset - cie_size; i; --i)
-    {
-      /* Pad out to a pointer size boundary */
-      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_CFA_nop);
-      if (flag_verbose_asm)
-	fprintf (asm_out_file, "\t%s CIE DW_CFA_nop (pad)", ASM_COMMENT_START);
-
-      fputc ('\n', asm_out_file);
-    }
+  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+  ASM_OUTPUT_LABEL (asm_out_file, l2);
 
   /* Loop through all of the FDE's.  */
   for (i = 0; i < fde_table_in_use; ++i)
@@ -1388,12 +1318,14 @@ output_call_frame_info (for_eh)
       if (fde->dw_fde_cfi == NULL)
 	continue;
 
-      fde_size = size_of_fde (fde, &fde_pad);
-      ASM_OUTPUT_DWARF_DATA (asm_out_file, fde_size - DWARF_OFFSET_SIZE);
+      ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i*2);
+      ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i*2);
+      ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
       if (flag_verbose_asm)
 	fprintf (asm_out_file, "\t%s FDE Length", ASM_COMMENT_START);
-
       fputc ('\n', asm_out_file);
+      ASM_OUTPUT_LABEL (asm_out_file, l1);
+
       if (for_eh)
 	ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__FRAME_BEGIN__");
       else
@@ -1413,6 +1345,26 @@ output_call_frame_info (for_eh)
 	fprintf (asm_out_file, "\t%s FDE address range", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
+      if (eh_ptr)
+	{
+	  output_uleb128 (PTR_SIZE);
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s FDE augmentation fields length",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+
+	  /* For now, a pointer to the translation unit's info will do.
+	     ??? Eventually this should point to the function's info.  */
+	  if (exception_table_p ())
+	    ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
+	  else
+	    ASM_OUTPUT_DWARF_ADDR_DATA (asm_out_file, 0);
+
+	  if (flag_verbose_asm)
+	    fprintf (asm_out_file, "\t%s pointer to exception region info",
+		     ASM_COMMENT_START);
+	  fputc ('\n', asm_out_file);
+	}
 
       /* Loop through the Call Frame Instructions associated with
 	 this FDE.  */
@@ -1420,16 +1372,9 @@ output_call_frame_info (for_eh)
       for (cfi = fde->dw_fde_cfi; cfi != NULL; cfi = cfi->dw_cfi_next)
 	output_cfi (cfi, fde);
 
-      /* Pad to a double word boundary.  */
-      for (j = 0; j < fde_pad; ++j)
-	{
-	  ASM_OUTPUT_DWARF_DATA1 (asm_out_file, DW_CFA_nop);
-	  if (flag_verbose_asm)
-	    fprintf (asm_out_file, "\t%s CIE DW_CFA_nop (pad)",
-		     ASM_COMMENT_START);
-
-	  fputc ('\n', asm_out_file);
-	}
+      /* Pad the FDE out to an address sized boundary.  */
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
+      ASM_OUTPUT_LABEL (asm_out_file, l2);
     }
 #ifndef EH_FRAME_SECTION
   if (for_eh)
@@ -1439,6 +1384,21 @@ output_call_frame_info (for_eh)
       fputc ('\n', asm_out_file);
     }
 #endif
+#ifdef MIPS_DEBUGGING_INFO
+  /* Work around Irix 6 assembler bug whereby labels at the end of a section
+     get a value of 0.  Putting .align 0 after the label fixes it.  */
+  ASM_OUTPUT_ALIGN (asm_out_file, 0);
+#endif
+}
+
+/* Decide whether we want to emit frame unwind information for the current
+   translation unit.  */
+
+int
+dwarf2out_do_frame ()
+{
+  return (write_symbols == DWARF2_DEBUG
+	  || (flag_exceptions && ! exceptions_via_longjmp));
 }
 
 /* Output a marker (i.e. a label) for the beginning of a function, before
@@ -1508,9 +1468,9 @@ dwarf2out_frame_init ()
   /* Generate the CFA instructions common to all FDE's.  Do it now for the
      sake of lookup_cfa.  */
 
-#ifdef INCOMING_RETURN_ADDR_RTX
-  /* On entry, the Canonical Frame Address is at SP+0.  */
-  dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, 0);
+#ifdef DWARF2_UNWIND_INFO
+  /* On entry, the Canonical Frame Address is at SP.  */
+  dwarf2out_def_cfa (NULL, STACK_POINTER_REGNUM, INCOMING_FRAME_SP_OFFSET);
   initial_return_save (INCOMING_RETURN_ADDR_RTX);
 #endif
 }
@@ -1518,14 +1478,17 @@ dwarf2out_frame_init ()
 void
 dwarf2out_frame_finish ()
 {
-  /* calculate sizes/offsets for FDEs.  */
-  calc_fde_sizes ();
-
   /* Output call frame information.  */
+#ifdef MIPS_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
     output_call_frame_info (0);
   if (flag_exceptions && ! exceptions_via_longjmp)
     output_call_frame_info (1);
+#else
+  if (write_symbols == DWARF2_DEBUG
+      || (flag_exceptions && ! exceptions_via_longjmp))
+    output_call_frame_info (1);  
+#endif
 }  
 
 #endif /* .debug_frame support */
@@ -2189,33 +2152,6 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #endif
 #ifndef SEPARATE_LINE_CODE_LABEL
 #define SEPARATE_LINE_CODE_LABEL	"LSM"
-#endif
-
-/* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
-   newline is produced.  When flag_verbose_asm is asserted, we add commnetary
-   at the end of the line, so we must avoid output of a newline here.  */
-#ifndef ASM_OUTPUT_DWARF_STRING
-#define ASM_OUTPUT_DWARF_STRING(FILE,P) \
-  do {									      \
-    register int slen = strlen(P);                                            \
-    register char *p = (P);  	                                              \
-    register int i;					                      \
-    fprintf (FILE, "\t.ascii \"");				              \
-    for (i = 0; i < slen; i++)					              \
-      {								              \
-	  register int c = p[i];					      \
-	  if (c == '\"' || c == '\\')					      \
-	    putc ('\\', FILE);					              \
-	  if (c >= ' ' && c < 0177)					      \
-	    putc (c, FILE);					              \
-	  else								      \
-	    {								      \
-	      fprintf (FILE, "\\%o", c);			              \
-	    }							 	      \
-      }								              \
-    fprintf (FILE, "\\0\"");					              \
-  }									      \
-  while (0)
 #endif
 
 /* Convert a reference to the assembler name of a C-level name.  This
@@ -4922,9 +4858,13 @@ output_die (die)
 	  break;
 
 	case dw_val_class_fde_ref:
-	  ref_offset = fde_table[a->dw_attr_val.v.val_fde_index].dw_fde_offset;
-	  fprintf (asm_out_file, "\t%s\t%s+0x%x", UNALIGNED_OFFSET_ASM_OP,
-		   stripattributes (FRAME_SECTION), ref_offset);
+	  {
+	    char l1[20];
+	    ASM_GENERATE_INTERNAL_LABEL
+	      (l1, FDE_AFTER_SIZE_LABEL, a->dw_attr_val.v.val_fde_index * 2);
+	    ASM_OUTPUT_DWARF_OFFSET (asm_out_file, l1);
+	    fprintf (asm_out_file, " - %d", DWARF_OFFSET_SIZE);
+	  }
 	  break;
 
 	case dw_val_class_lbl_id:

@@ -2363,6 +2363,9 @@ number as al, and ax.
 /* PC is dbx register 8; let's use that column for RA. */
 #define DWARF_FRAME_RETURN_COLUMN 	8
 
+/* Before the prologue, the top of the frame is at 4(%esp).  */
+#define INCOMING_FRAME_SP_OFFSET 4
+
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
 

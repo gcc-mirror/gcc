@@ -1262,7 +1262,8 @@ final (first, file, optimize, prescan)
   new_block = 1;
 
 #if defined (DWARF2_DEBUGGING_INFO) && defined (HAVE_prologue)
-  dwarf2out_frame_debug (NULL_RTX);
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_frame_debug (NULL_RTX);
 #endif
 
   check_exception_handler_labels ();
