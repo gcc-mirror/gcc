@@ -1,3 +1,12 @@
+2000-11-28  Neil Booth  <neilb@earthling.net>
+
+        * cppmacro.c (cpp_scan_buffer_nooutput): Take a boolean
+        indicating whether to scan all buffers on the stack or
+        just one.
+        * cppinit.c (do_includes): Update.
+        * cppmain.c (main): Update.
+        * cpplib.h: Update prototype.
+
 2000-11-28  Richard Henderson  <rth@redhat.com>
 
 	* genoutput.c (validate_insn_operands): New.

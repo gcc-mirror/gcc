@@ -95,7 +95,7 @@ main (argc, argv)
   if (CPP_BUFFER (pfile))
     {
       if (CPP_OPTION (pfile, no_output))
-	cpp_scan_buffer_nooutput (pfile);
+	cpp_scan_buffer_nooutput (pfile, 1);
       else
 	scan_buffer (pfile);
     }
