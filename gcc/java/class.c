@@ -156,7 +156,7 @@ push_class (class_type, class_name)
   input_filename = save_input_filename;
   lineno = save_lineno;
   signature = identifier_subst (class_name, "L", '.', '/', ";");
-  IDENTIFIER_SIGNATURE_TYPE (signature) = class_type;
+  IDENTIFIER_SIGNATURE_TYPE (signature) = build_pointer_type (class_type);
 
   /* Setting DECL_ARTIFICAL forces dbxout.c to specific the type is
      both a typedef and in the struct name-space.  We may want to re-visit
@@ -445,10 +445,6 @@ add_field (class, name, field_type, flags)
   tree field;
   /* Push the obstack of field_type ? FIXME */
   push_obstacks (&permanent_obstack, &permanent_obstack);
-#if ! JAVA_PROMOTE_TO_INT
-  if (TREE_CODE (field_type) == RECORD_TYPE)
-#endif
-    field_type = promote_type (field_type);
   field = build_decl (is_static ? VAR_DECL : FIELD_DECL, name, field_type);
   pop_obstacks ();
   TREE_CHAIN (field) = TYPE_FIELDS (class);
@@ -464,8 +460,9 @@ add_field (class, name, field_type, flags)
   if (is_static)
     {
       FIELD_STATIC (field) = 1;
-      if (! FIELD_PRIVATE (field) || FIELD_PROTECTED (field))
-	TREE_PUBLIC (field) = 1;
+      /* Always make field externally visible.  This is required so
+	 that native methods can always access the field.  */
+      TREE_PUBLIC (field) = 1;
     }
   return field;
 }
@@ -1118,6 +1115,8 @@ make_class_data (type)
   PUSH_FIELD_VALUE (cons, "final",
 		    method == NULL ? integer_zero_node : integer_one_node);
 
+  PUSH_FIELD_VALUE (cons, "thread", null_pointer_node);
+
   FINISH_RECORD_CONSTRUCTOR (cons);
 
   DECL_INITIAL (decl) = cons;
@@ -1598,5 +1597,5 @@ emit_register_class ()
 void
 init_class_processing ()
 {
-  registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "registerClass");
+  registerClass_libfunc = gen_rtx (SYMBOL_REF, Pmode, "_Jv_RegisterClass");
 }
