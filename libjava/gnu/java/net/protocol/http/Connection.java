@@ -97,7 +97,7 @@ public final class Connection extends HttpURLConnection
     if (proxyHost != null)
       {
 	proxyInUse = true;
-	getProperty.setName("http.proxyPort");
+	getProperty.setParameters("http.proxyPort");
 	port = (String) AccessController.doPrivileged(getProperty);
 	if (port != null)
 	  {
@@ -112,7 +112,7 @@ public final class Connection extends HttpURLConnection
 	  }
       }
 
-    getProperty.setName("http.agent");
+    getProperty.setParameters("http.agent");
     userAgent = (String) AccessController.doPrivileged(getProperty);
   }
 

@@ -41,13 +41,13 @@ import java.lang.reflect.AccessibleObject;
 import java.security.PrivilegedAction;
 
 /**
- * PrivilagedAction implementation that calls setAccessible(true) on the 
+ * PrivilegedAction implementation that calls setAccessible(true) on the 
  * AccessibleObject passed to its constructor.
  *
  * Example of use:
  * <code>
  * Field dataField = cl.getDeclaredField("data");
- * AccessController.doPrivilaged(new SetAccessibleAction(dataField));
+ * AccessController.doPrivileged(new SetAccessibleAction(dataField));
  * </code>
  */
 public class SetAccessibleAction implements PrivilegedAction
