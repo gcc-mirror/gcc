@@ -151,6 +151,8 @@ public abstract class DateFormat extends Format implements Cloneable
   {
     if (obj instanceof Number)
       obj = new Date(((Number) obj).longValue());
+    else if (! (obj instanceof Date))
+      throw new IllegalArgumentException ("Cannot format given Object as a Date");
     return format ((Date) obj, buf, pos);
   }
 

@@ -39,14 +39,14 @@ exception statement from your version. */
 
 package java.text;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.SimpleTimeZone;
-import java.util.Vector;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 
@@ -71,7 +71,7 @@ public class SimpleDateFormat extends DateFormat
     }
   }
 
-  private transient Vector tokens;
+  private transient ArrayList tokens;
   private DateFormatSymbols formatData;  // formatData
   private Date defaultCenturyStart;
   private transient int defaultCentury;
@@ -98,7 +98,7 @@ public class SimpleDateFormat extends DateFormat
       set2DigitYearStart(defaultCenturyStart);
 
     // Set up items normally taken care of by the constructor.
-    tokens = new Vector();
+    tokens = new ArrayList();
     compileFormat(pattern);
   }
 
@@ -119,24 +119,24 @@ public class SimpleDateFormat extends DateFormat
 	current = null;
 	if (Character.isLetter(thisChar)) {
 	  // Not a valid letter
-	  tokens.addElement(new FieldSizePair(-1,0));
+	  tokens.add(new FieldSizePair(-1,0));
 	} else if (thisChar == '\'') {
 	  // Quoted text section; skip to next single quote
 	  pos = pattern.indexOf('\'',i+1);
 	  if (pos == -1) {
 	    // This ought to be an exception, but spec does not
 	    // let us throw one.
-	    tokens.addElement(new FieldSizePair(-1,0));
+	    tokens.add(new FieldSizePair(-1,0));
 	  }
 	  if ((pos+1 < pattern.length()) && (pattern.charAt(pos+1) == '\'')) {
-	    tokens.addElement(pattern.substring(i+1,pos+1));
+	    tokens.add(pattern.substring(i+1,pos+1));
 	  } else {
-	    tokens.addElement(pattern.substring(i+1,pos));
+	    tokens.add(pattern.substring(i+1,pos));
 	  }
 	  i = pos;
 	} else {
 	  // A special character
-	  tokens.addElement(new Character(thisChar));
+	  tokens.add(new Character(thisChar));
 	}
       } else {
 	// A valid field
@@ -144,22 +144,22 @@ public class SimpleDateFormat extends DateFormat
 	  current.size++;
 	} else {
 	  current = new FieldSizePair(field,1);
-	  tokens.addElement(current);
+	  tokens.add(current);
 	}
       }
     }
   }
-    
+
   public String toString() 
   {
     StringBuffer output = new StringBuffer();
-    Enumeration e = tokens.elements();
-    while (e.hasMoreElements()) {
-      output.append(e.nextElement().toString());
+    Iterator i = tokens.iterator();
+    while (i.hasNext()) {
+      output.append(i.next().toString());
     }
     return output.toString();
   }
-      
+
   /**
    * Constructs a SimpleDateFormat using the default pattern for
    * the default locale.
@@ -175,7 +175,7 @@ public class SimpleDateFormat extends DateFormat
     Locale locale = Locale.getDefault();
     calendar = new GregorianCalendar(locale);
     computeCenturyStart();
-    tokens = new Vector();
+    tokens = new ArrayList();
     formatData = new DateFormatSymbols(locale);
     pattern = (formatData.dateFormats[DEFAULT] + ' '
 	       + formatData.timeFormats[DEFAULT]);
@@ -203,7 +203,7 @@ public class SimpleDateFormat extends DateFormat
     super();
     calendar = new GregorianCalendar(locale);
     computeCenturyStart();
-    tokens = new Vector();
+    tokens = new ArrayList();
     formatData = new DateFormatSymbols(locale);
     compileFormat(pattern);
     this.pattern = pattern;
@@ -221,7 +221,7 @@ public class SimpleDateFormat extends DateFormat
     super();
     calendar = new GregorianCalendar();
     computeCenturyStart ();
-    tokens = new Vector();
+    tokens = new ArrayList();
     this.formatData = formatData;
     compileFormat(pattern);
     this.pattern = pattern;
@@ -264,7 +264,7 @@ public class SimpleDateFormat extends DateFormat
    */
   public void applyPattern(String pattern)
   {
-    tokens = new Vector();
+    tokens = new ArrayList();
     compileFormat(pattern);
     this.pattern = pattern;
   }
@@ -418,10 +418,10 @@ public class SimpleDateFormat extends DateFormat
     String temp;
     calendar.setTime(date);
     
-    // go through vector, filling in fields where applicable, else toString
-    Enumeration e = tokens.elements();
-    while (e.hasMoreElements()) {
-      Object o = e.nextElement();
+    // go through ArrayList, filling in fields where applicable, else toString
+    Iterator i = tokens.iterator();
+    while (i.hasNext()) {
+      Object o = i.next();
       if (o instanceof FieldSizePair) {
 	FieldSizePair p = (FieldSizePair) o;
 	int beginIndex = buffer.length();
