@@ -70,7 +70,6 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <stdio.h>
 #include <signal.h>
 #ifdef __STDC__
-#include <string.h>
 #include <stdlib.h>
 #endif
 
@@ -903,6 +902,11 @@ file_cleanup (pbuf, pfile)
      cpp_buffer *pbuf;
      cpp_reader *pfile;
 {
+  if (pbuf->buf)
+    {
+      free (pbuf->buf);
+      pbuf->buf = 0;
+    }
   return 0;
 }
 
@@ -1035,6 +1039,9 @@ cpp_skip_hspace (pfile)
       else if (c == '\\' && PEEKN(1) == '\n') {
 	FORWARD(2);
       }
+      else if (c == '@' && CPP_BUFFER (pfile)->has_escapes
+	       && is_hor_space[PEEKN(1)])
+	FORWARD(2);
       else return;
     }
 }
@@ -1276,18 +1283,18 @@ struct arglist {
    MACRONAME is the macro name itself (so we can avoid recursive expansion)
    and NAMELEN is its length in characters.
    
-Note that comments and backslash-newlines have already been deleted
-from the argument.  */
+   Note that comments, backslash-newlines, and leading white space
+   have already been deleted from the argument.  */
 
 static DEFINITION *
-collect_expansion (pfile, buf, end, nargs, arglist)
+collect_expansion (pfile, buf, limit, nargs, arglist)
      cpp_reader *pfile;
-     U_CHAR *buf, *end;
+     U_CHAR *buf, *limit;
      int nargs;
      struct arglist *arglist;
 {
   DEFINITION *defn;
-  register U_CHAR *p, *limit, *lastp, *exp_p;
+  register U_CHAR *p, *lastp, *exp_p;
   struct reflist *endpat = NULL;
   /* Pointer to first nonspace after last ## seen.  */
   U_CHAR *concat = 0;
@@ -1301,24 +1308,24 @@ collect_expansion (pfile, buf, end, nargs, arglist)
      thru the arg list on every potential symbol.  Profiling might say
      that something smarter should happen. */
 
-  if (end < buf)
+  if (limit < buf)
     abort ();
 
   /* Find the beginning of the trailing whitespace.  */
-  /* Find end of leading whitespace.  */
-  limit = end;
   p = buf;
   while (p < limit && is_space[limit[-1]]) limit--;
-  while (p < limit && is_space[*p]) p++;
 
   /* Allocate space for the text in the macro definition.
      Leading and trailing whitespace chars need 2 bytes each.
      Each other input char may or may not need 1 byte,
-     so this is an upper bound.
-     The extra 2 are for invented trailing newline-marker and final null.  */
+     so this is an upper bound.  The extra 5 are for invented
+     leading and trailing newline-marker and final null.  */
   maxsize = (sizeof (DEFINITION)
-	     + 2 * (end - limit) + 2 * (p - buf)
-	     + (limit - p) + 3);
+	     + (limit - p) + 5);
+  /* Occurrences of '@' get doubled, so allocate extra space for them. */
+  while (p < limit)
+    if (*p++ == '@')
+      maxsize++;
   defn = (DEFINITION *) xcalloc (1, maxsize);
 
   defn->nargs = nargs;
@@ -1327,7 +1334,9 @@ collect_expansion (pfile, buf, end, nargs, arglist)
 
   p = buf;
 
-  /* Add one initial space (often removed by macroexpand). */
+  /* Add one initial space escape-marker to prevent accidental
+     token-pasting (often removed by macroexpand). */
+  *exp_p++ = '@';
   *exp_p++ = ' ';
 
   if (limit - p >= 2 && p[0] == '#' && p[1] == '#') {
@@ -1353,16 +1362,8 @@ collect_expansion (pfile, buf, end, nargs, arglist)
           expected_delimiter = c;
 	break;
 
-	/* Special hack: if a \# is written in the #define
-	   include a # in the definition.  This is useless for C code
-	   but useful for preprocessing other things.  */
-
       case '\\':
-	/* \# quotes a # even outside of strings.  */
-	if (p < limit && *p == '#' && !expected_delimiter) {
-	  exp_p--;
-	  *exp_p++ = *p++;
-	} else if (p < limit && expected_delimiter) {
+	if (p < limit && expected_delimiter) {
 	  /* In a string, backslash goes through
 	     and makes next char ordinary.  */
 	  *exp_p++ = *p++;
@@ -1523,16 +1524,14 @@ collect_expansion (pfile, buf, end, nargs, arglist)
     }
   }
 
-  if (limit < end) {
-    while (limit < end && is_space[*limit]) {
-      *exp_p++ = *limit++;
+  if (!CPP_TRADITIONAL (pfile) && expected_delimiter == 0)
+    {
+      /* If ANSI, put in a "@ " marker to prevent token pasting.
+         But not if "inside a string" (which in ANSI mode
+         happens only for -D option).  */
+      *exp_p++ = '@';
+      *exp_p++ = ' ';
     }
-  } else if (!CPP_TRADITIONAL (pfile) && expected_delimiter == 0) {
-    /* There is no trailing whitespace, so invent some in ANSI mode.
-       But not if "inside a string" (which in ANSI mode
-       happens only for -D option).  */
-    *exp_p++ = ' ';
-  }
 
   *exp_p = '\0';
 
@@ -1671,8 +1670,7 @@ create_definition (buf, limit, pfile, predefinition)
     }
 
     ++bp;			/* skip paren */
-    /* Skip exactly one space or tab if any.  */
-    if (bp < limit && (*bp == ' ' || *bp == '\t')) ++bp;
+    SKIP_WHITE_SPACE (bp);
     /* now everything from bp before limit is the definition. */
     defn = collect_expansion (pfile, bp, limit, argno, arg_ptrs);
     defn->rest_args = rest_args;
@@ -1944,7 +1942,6 @@ struct argdata {
   int raw_length, expand_length;
   int stringified_length;
   char newlines;
-  char comments;
   char use_count;
 };
 
@@ -2016,20 +2013,15 @@ cpp_scan_buffer (pfile)
 }
 
 /*
- * Rescan a string into pfile's buffer.
+ * Rescan a string (which may have escape marks) into pfile's buffer.
  * Place the result in pfile->token_buffer.
  *
  * The input is copied before it is scanned, so it is safe to pass
  * it something from the token_buffer that will get overwritten
  * (because it follows CPP_WRITTEN).  This is used by do_include.
- *
- * OUTPUT_MARKS nonzero means keep Newline markers found in the input
- * and insert such markers when appropriate.  See `rescan' for details.
- * OUTPUT_MARKS is 1 for macroexpanding a macro argument separately
- * before substitution; it is 0 for other uses.
  */
 
-void
+static void
 cpp_expand_to_buffer (pfile, buf, length)
      cpp_reader *pfile;
      U_CHAR *buf;
@@ -2059,6 +2051,7 @@ cpp_expand_to_buffer (pfile, buf, length)
   buf1[length] = 0;
 
   ip = cpp_push_buffer (pfile, buf1, length);
+  ip->has_escapes = 1;
 #if 0
   ip->lineno = obuf.lineno = 1;
 #endif
@@ -2249,7 +2242,7 @@ output_line_command (pfile, conditional, file_change)
 }
 
 /*
- * Parse a macro argument and store the info on it into *ARGPTR.
+ * Parse a macro argument and append the info on PFILE's token_buffer.
  * REST_ARGS means to absorb the rest of the args.
  * Return nonzero to indicate a syntax error.
  */
@@ -2734,6 +2727,8 @@ macroexpand (pfile, hp)
     dump_single_macro (hp, pcp_outfile);
 #endif
 
+  pfile->output_escapes++;
+  
   nargs = defn->nargs;
 
   if (nargs >= 0)
@@ -2886,6 +2881,13 @@ macroexpand (pfile, hp)
 			     one space except within an string or char token.*/
 			  if (is_space[c])
 			    {
+			      if (CPP_WRITTEN (pfile) > arg->stringified
+				  && (CPP_PWRITTEN (pfile))[-1] == '@')
+				{
+				  /* "@ " escape markers are removed */
+				  CPP_ADJUST_WRITTEN (pfile, -1);
+				  continue;
+				}
 			      if (need_space == 0)
 				need_space = 1;
 			      continue;
@@ -2941,12 +2943,10 @@ macroexpand (pfile, hp)
 	      if (args[ap->argno].expand_length < 0)
 		{
 		  args[ap->argno].expanded = CPP_WRITTEN (pfile);
-		  pfile->output_escapes++;
 		  cpp_expand_to_buffer (pfile,
 					ARG_BASE + args[ap->argno].raw,
 					args[ap->argno].raw_length);
 
-		  pfile->output_escapes--;
 		  args[ap->argno].expand_length
 		    = CPP_WRITTEN (pfile) - args[ap->argno].expanded;
 		}
@@ -3040,7 +3040,10 @@ macroexpand (pfile, hp)
 	      if (!ap->raw_before && totlen > 0 && arg->expand_length
 		  && !CPP_TRADITIONAL(pfile)
 		  && unsafe_chars (xbuf[totlen-1], expanded[0]))
-		xbuf[totlen++] = ' ';
+		{
+		  xbuf[totlen++] = '@';
+		  xbuf[totlen++] = ' ';
+		}
 
 	      bcopy (expanded, xbuf + totlen, arg->expand_length);
 	      totlen += arg->expand_length;
@@ -3048,7 +3051,10 @@ macroexpand (pfile, hp)
 	      if (!ap->raw_after && totlen > 0 && offset < defn->length
 		  && !CPP_TRADITIONAL(pfile)
 		  && unsafe_chars (xbuf[totlen-1], exp[offset]))
-		xbuf[totlen++] = ' ';
+		{
+		  xbuf[totlen++] = '@';
+		  xbuf[totlen++] = ' ';
+		}
 
 	      /* If a macro argument with newlines is used multiple times,
 		 then only expand the newlines once.  This avoids creating
@@ -3086,6 +3092,8 @@ macroexpand (pfile, hp)
 
     }
 
+  pfile->output_escapes--;
+
   /* Now put the expansion on the input stack
      so our caller will commence reading from it.  */
   push_macro_expansion (pfile, xbuf, xbuf_len, hp);
@@ -3113,7 +3121,7 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
   mbuf->cleanup = macro_cleanup;
   mbuf->data = hp;
 
-  /* The first char of the expansion should be a ' ' added by
+  /* The first chars of the expansion should be a "@ " added by
      collect_expansion.  This is to prevent accidental token-pasting
      between the text preceding the macro invocation, and the macro
      expansion text.
@@ -3131,10 +3139,10 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
      Also, we don't need the extra space if the first char is '(',
      or some other (less common) characters.  */
 
-  if (xbuf[0] == ' '
-      && (is_idchar[xbuf[1]] || xbuf[1] == '(' || xbuf[1] == '\''
-	  || xbuf[1] == '\"'))
-    mbuf->cur++;
+  if (xbuf[0] == '@' && xbuf[1] == ' '
+      && (is_idchar[xbuf[2]] || xbuf[2] == '(' || xbuf[2] == '\''
+	  || xbuf[2] == '\"'))
+    mbuf->cur += 2;
 }
 
 /* Like cpp_get_token, except that it does not read past end-of-line.
@@ -3368,7 +3376,7 @@ do_include (pfile, keyword, unused1, unused2)
     if (importing)
       f = lookup_import (pfile, fname, NULL_PTR);
     else
-      f = open_include_file (fname, NULL_PTR);
+      f = open_include_file (pfile, fname, NULL_PTR);
     if (f == -2)
       return 0;		/* Already included this file */
   } else {
@@ -3413,7 +3421,7 @@ do_include (pfile, keyword, unused1, unused2)
       if (importing)
 	f = lookup_import (pfile, fname, searchptr);
       else
-	f = open_include_file (fname, searchptr);
+	f = open_include_file (pfile, fname, searchptr);
       if (f == -2)
 	return 0;			/* Already included this file */
 #ifdef EACCES
@@ -3453,7 +3461,7 @@ do_include (pfile, keyword, unused1, unused2)
 
 		      if (searchptr->fname[0] == 0)
 			continue;
-		      p = xmalloc (strlen (searchptr->fname)
+		      p = alloca (strlen (searchptr->fname)
 				   + strlen (fname) + 2);
 		      strcpy (p, searchptr->fname);
 		      strcat (p, "/");
@@ -3717,11 +3725,19 @@ static void
 delete_assertion (hp)
      ASSERTION_HASHNODE *hp;
 {
-
+  struct tokenlist_list *tail;
   if (hp->prev != NULL)
     hp->prev->next = hp->next;
   if (hp->next != NULL)
     hp->next->prev = hp->prev;
+
+  for (tail = hp->value; tail; )
+    {
+      struct tokenlist_list *next = tail->next;
+      free_token_list (tail->tokens);
+      free (tail);
+      tail = next;
+    }
 
   /* make sure that the bucket chain header that
      the deleted guy was on points to the right thing afterwards. */
@@ -4748,8 +4764,8 @@ cpp_get_token (pfile)
 	      CPP_PUTC_Q (pfile, ' ');
 	      return CPP_HSPACE;
 	    }
-	  if (opts->for_lint) {
 #if 0
+	  if (opts->for_lint) {
 	    U_CHAR *argbp;
 	    int cmdlen, arglen;
 	    char *lintcmd = get_lintcmd (ibp, limit, &argbp, &arglen, &cmdlen);
@@ -4775,8 +4791,8 @@ cpp_get_token (pfile)
 	      *(obp++) = ' ';	/* just in case, if comments are copied thru */
 	      *(obp++) = '/';
 	    }
-#endif
 	  }
+#endif
 
 	case '#':
 #if 0
@@ -5004,6 +5020,14 @@ cpp_get_token (pfile)
 		  parse_name (pfile, GETC ());
 		  return CPP_NAME;
 		}
+	      else if (is_space [c])
+		{
+		  CPP_RESERVE (pfile, 2);
+		  if (pfile->output_escapes)
+		    CPP_PUTC_Q (pfile, '@');
+		  CPP_PUTC_Q (pfile, c);
+		  return CPP_HSPACE;
+		}
 	    }
 	  if (pfile->output_escapes)
 	    {
@@ -5214,22 +5238,21 @@ cpp_get_token (pfile)
 		CPP_SET_WRITTEN (pfile, before_name_written);
 	      }
 
-	    /* An extra space is added to the end of a macro expansion
+	    /* An extra "@ " is added to the end of a macro expansion
 	       to prevent accidental token pasting.  We prefer to avoid
 	       unneeded extra spaces (for the sake of cpp-using tools like
 	       imake).  Here we remove the space if it is safe to do so. */
-	    if (pfile->buffer->rlimit - pfile->buffer->cur >= 2
+	    if (pfile->buffer->rlimit - pfile->buffer->cur >= 3
+		&& pfile->buffer->rlimit[-2] == '@'
 		&& pfile->buffer->rlimit[-1] == ' ')
 	      {
-		int c1 = pfile->buffer->rlimit[-2];
+		int c1 = pfile->buffer->rlimit[-3];
 		int c2 = CPP_BUF_PEEK (CPP_PREV_BUFFER (CPP_BUFFER (pfile)));
 		if (c2 == EOF || ! unsafe_chars (c1, c2))
-		  pfile->buffer->rlimit--;
+		  pfile->buffer->rlimit -= 2;
 	      }
-
-	    goto get_next;
 	  }
-	  return CPP_NAME;
+	  goto get_next;
 
 	case ' ':  case '\t':  case '\v':  case '\r':
 	  for (;;)
@@ -5342,7 +5365,7 @@ import_hash (f)
 
 static int
 lookup_import (pfile, filename, searchptr)
-cpp_reader *pfile;
+     cpp_reader *pfile;
      char *filename;
      struct file_name_list *searchptr;
 {
@@ -5363,7 +5386,7 @@ cpp_reader *pfile;
     i = i->next;
   }
   /* Open it and try a match on inode/dev */
-  fd = open_include_file (filename, searchptr);
+  fd = open_include_file (pfile, filename, searchptr);
   if (fd < 0)
     return fd;
   fstat (fd, &sb);
@@ -5455,26 +5478,26 @@ read_filename_string (ch, f)
   return alloc;
 }
 
+/* This structure holds a linked list of file name maps, one per directory. */
+struct file_name_map_list
+{
+  struct file_name_map_list *map_list_next;
+  char *map_list_name;
+  struct file_name_map *map_list_map;
+};
+
 /* Read the file name map file for DIRNAME.  */
 
 static struct file_name_map *
-read_name_map (dirname)
+read_name_map (pfile, dirname)
+     cpp_reader *pfile;
      char *dirname;
 {
-  /* This structure holds a linked list of file name maps, one per
-     directory.  */
-  struct file_name_map_list
-    {
-      struct file_name_map_list *map_list_next;
-      char *map_list_name;
-      struct file_name_map *map_list_map;
-    };
-  static struct file_name_map_list *map_list;
   register struct file_name_map_list *map_list_ptr;
   char *name;
   FILE *f;
 
-  for (map_list_ptr = map_list; map_list_ptr;
+  for (map_list_ptr = CPP_OPTIONS (pfile)->map_list; map_list_ptr;
        map_list_ptr = map_list_ptr->map_list_next)
     if (! strcmp (map_list_ptr->map_list_name, dirname))
       return map_list_ptr->map_list_map;
@@ -5535,8 +5558,8 @@ read_name_map (dirname)
       fclose (f);
     }
   
-  map_list_ptr->map_list_next = map_list;
-  map_list = map_list_ptr;
+  map_list_ptr->map_list_next = CPP_OPTIONS (pfile)->map_list;
+  CPP_OPTIONS (pfile)->map_list = map_list_ptr;
 
   return map_list_ptr->map_list_map;
 }  
@@ -5547,7 +5570,8 @@ read_name_map (dirname)
    read_name_map.  */
 
 static int
-open_include_file (filename, searchptr)
+open_include_file (pfile, filename, searchptr)
+     cpp_reader *pfile;
      char *filename;
      struct file_name_list *searchptr;
 {
@@ -5557,7 +5581,8 @@ open_include_file (filename, searchptr)
 
   if (searchptr && ! searchptr->got_name_map)
     {
-      searchptr->name_map = read_name_map (searchptr->fname
+      searchptr->name_map = read_name_map (pfile,
+					   searchptr->fname
 					   ? searchptr->fname : ".");
       searchptr->got_name_map = 1;
     }
@@ -5606,7 +5631,7 @@ open_include_file (filename, searchptr)
       dir[p - filename] = '\0';
       from = p + 1;
     }
-  for (map = read_name_map (dir); map; map = map->map_next)
+  for (map = read_name_map (pfile, dir); map; map = map->map_next)
     if (! strcmp (map->map_from, from))
       return open (map->map_to, O_RDONLY, 0666);
 
@@ -6783,6 +6808,74 @@ cpp_finish (pfile)
 	}
     }
 }
+
+/* Free resources used by PFILE. */
+
+void
+cpp_cleanup (pfile)
+     cpp_reader *pfile;
+{
+  int i;
+  while ( CPP_BUFFER (pfile) != CPP_NULL_BUFFER (pfile))
+    cpp_pop_buffer (pfile);
+
+  if (pfile->token_buffer)
+    {
+      free (pfile->token_buffer);
+      pfile->token_buffer = NULL;
+    }
+
+  if (pfile->deps_buffer)
+    {
+      free (pfile->deps_buffer);
+      pfile->deps_buffer = NULL;
+      pfile->deps_allocated_size = 0;
+    }
+
+  while (pfile->if_stack)
+    {
+      IF_STACK_FRAME *temp = pfile->if_stack;
+      pfile->if_stack = temp->next;
+      free (temp);
+    }
+
+  while (pfile->dont_repeat_files)
+    {
+      struct file_name_list *temp = pfile->dont_repeat_files;
+      pfile->dont_repeat_files = temp->next;
+      free (temp->fname);
+      free (temp);
+    }
+
+  while (pfile->all_include_files)
+    {
+      struct file_name_list *temp = pfile->all_include_files;
+      pfile->all_include_files = temp->next;
+      free (temp->fname);
+      free (temp);
+    }
+
+  for (i = IMPORT_HASH_SIZE; --i >= 0; )
+    {
+      register struct import_file *imp = pfile->import_hash_table[i];
+      while (imp)
+	{
+	  struct import_file *next = imp->next;
+	  free (imp->name);
+	  free (imp);
+	  imp = next;
+	}
+      pfile->import_hash_table[i] = 0;
+    }
+
+  for (i = ASSERTION_HASHSIZE; --i >= 0; )
+    {
+      while (pfile->assertion_hashtab[i])
+	delete_assertion (pfile->assertion_hashtab[i]);
+    }
+
+  cpp_hash_cleanup (pfile);
+}
 
 static int
 do_assert (pfile, keyword, buf, limit)
@@ -6914,15 +7007,9 @@ do_unassert (pfile, keyword, buf, limit)
 
     /* If no token list was specified, then eliminate this assertion
        entirely.  */
-    if (! tokens_specified) {
-      struct tokenlist_list *next;
-      for (tail = hp->value; tail; tail = next) {
-	next = tail->next;
-	free_token_list (tail->tokens);
-	free (tail);
-      }
+    if (! tokens_specified)
       delete_assertion (hp);
-    } else {
+    else {
       /* If a list of tokens was given, then delete any matching list.  */
 
       tail = hp->value;
@@ -7528,4 +7615,6 @@ cpp_perror_with_name (pfile, name)
  * Support for trigraphs.
  *
  * Support -dM flag (dump_all_macros).
+ *
+ * Support for_lint flag.
  */
