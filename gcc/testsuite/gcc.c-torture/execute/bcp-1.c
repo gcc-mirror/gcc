@@ -69,7 +69,7 @@ int main()
       abort();
 
 #ifdef __OPTIMIZE__
-  for (i = 0; i < N(good_t0); ++i)
+  for (i = 0; i < N(opt_t0); ++i)
     if (! (*opt_t0[i])())
       abort();
 #endif

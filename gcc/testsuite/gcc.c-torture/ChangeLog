@@ -1,3 +1,8 @@
+Mon Aug 24 14:20:32 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* execute/bcp-1.c (main): Fix optimize test loop to count number
+	tests in opt_t0 not good_t0.
+
 Thu Aug 13 00:13:55 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* execute/ieee/ieee.exp: Pass -ffloat-store to compiler for
