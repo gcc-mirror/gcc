@@ -4007,7 +4007,10 @@ coerce_template_parms (tree parms,
       
       gcc_assert (arg);
       if (arg == error_mark_node)
-	error ("template argument %d is invalid", i + 1);
+	{
+	  if (complain & tf_error)
+	    error ("template argument %d is invalid", i + 1);
+	}
       else 
 	arg = convert_template_argument (TREE_VALUE (parm), 
 					 arg, new_args, complain, i,

@@ -1,3 +1,8 @@
+2004-11-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/17344
+	* g++.dg/template/defarg5.C: New test.
+
 2004-11-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/parse/cast1.C: Run only on ILP32.
