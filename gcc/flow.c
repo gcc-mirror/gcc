@@ -1,6 +1,6 @@
 /* Data flow analysis for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1496,7 +1496,6 @@ propagate_block_delete_insn (insn)
      rtx insn;
 {
   rtx inote = find_reg_note (insn, REG_LABEL, NULL_RTX);
-  basic_block bb = BLOCK_FOR_INSN (insn);
 
   /* If the insn referred to a label, and that label was attached to
      an ADDR_VEC, it's safe to delete the ADDR_VEC.  In fact, it's

@@ -1,10 +1,14 @@
+2002-03-08  Andreas Jaeger  <aj@suse.de>
+
+	* flow.c (propagate_block_delete_insn): Remove unused variable.
+
 2002-03-08  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.c (h8300_adjust_insn_length): Tighten
 	insn length for memory load/store.
 
 2002-03-08  Craig Rodrigues  <rodrigc@gcc.gnu.org>
- 
+
 	* doc/install.texi (--with-libiconv-prefix): Document.
 
 2002-03-08  Michael Y. Brukman  <myb2@cornell.edu>
@@ -114,7 +118,7 @@ Thu Mar  7 16:33:54 CET 2002  Jan Hubicka  <jh@suse.cz>
 
         * reload1.c (reload): Unshare all rtl after reload is done.
 
-	* simplify-rtx.c (simplify_plus_minus): Do not abort, 
+	* simplify-rtx.c (simplify_plus_minus): Do not abort,
 	but simply fail if the expression is too complex to simplify.
 	(simplify_gen_binary): Handle simplify_plus_minus failures.
 
@@ -133,7 +137,7 @@ Wed Mar  6 12:27:10 2002  Jeffrey A Law  (law@redhat.com)
 
 	* m68k.h (CONST_COSTS): Lower cost of 0.0 when used inside a
 	COMPARE operator.
-	
+
 2002-03-06  Phil Edwards  <pme@gcc.gnu.org>
 
 	* version.c:  Fix misplaced leading blanks on first line.
@@ -2563,7 +2567,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/sh/sh.h (FUNCTION_ARG_ADVANCE): Use trampoline to
 	copy FP regs to general-purpose regs only in outgoing calls.
 	* config/sh/sh.md (movdf_media, movsf_media): Revert incorrect
-	change from 	2000-10-30.  Adjust for 64-bit (or 32-bit)
+	change from	2000-10-30.  Adjust for 64-bit (or 32-bit)
 	HOST_WIDE_INT.
 	* config/sh/sh.h (struct sh_args): Document all fields.
 	(FUNCTION_OK_FOR_SIBCALL): Functions that receive arguments
@@ -2656,7 +2660,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	* config/sh/sh.md (call, call_value, sibcall): Simplify
 	copying of non-branch-target register.
 	2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
-	* glimits.h (__LONG_MAX__): Revert 	2000-12-13's patch.
+	* glimits.h (__LONG_MAX__): Revert	2000-12-13's patch.
 	* config/sh/sh.h (CPP_SPEC): Define it here for 64-bit SHmedia.
 	2000-12-22  Alexandre Oliva  <aoliva@redhat.com>
 	* config/sh/sh.h (GET_SH_ARG_CLASS): Handle complex
@@ -2886,7 +2890,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(UNSPEC_COMPACT_ARGS): New.
 	(type): Added pt and ptabs.
 	(length): Default to 4 on SHmedia.  Default pt length to 12
-	and 	20 on SHmedia32 and SHmedia64, respectively.
+	and	20 on SHmedia32 and SHmedia64, respectively.
 	(pt): New function unit.
 	(movdi, movsi): Add types pt and ptabs.  Don't increment LABEL_NUSES.
 	Add whitespace between operands of SHmedia instructions.
