@@ -13072,10 +13072,14 @@ finish_enum (tree enumtype)
   /* We built up the VALUES in reverse order.  */
   TYPE_VALUES (enumtype) = nreverse (TYPE_VALUES (enumtype));
 
-  /* For an enum defined in a template, all further processing is
-     postponed until the template is instantiated.  */
+  /* For an enum defined in a template, just set the type of the values;
+     all further processing is postponed until the template is
+     instantiated.  We need to set the type so that tsubst of a CONST_DECL
+     works.  */
   if (processing_template_decl)
     {
+      for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
+	TREE_TYPE (TREE_VALUE (pair)) = enumtype;
       if (at_function_scope_p ())
 	add_stmt (build_min (TAG_DEFN, enumtype));
       return;
@@ -13083,48 +13087,45 @@ finish_enum (tree enumtype)
 
   if (TYPE_VALUES (enumtype))
     {
-      /* Initialize min and max values and figure out actual values in
-	 following 'for' loop.  */
       minnode = maxnode = NULL_TREE;
 
-      /* [dcl.enum]
-	 
-      Following the closing brace of an enum-specifier, each
-      enumerator has the type of its enumeration.  Prior to the
-      closing brace, the type of each enumerator is the type of
-      its initializing value.  */
       for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
 	{
+	  tree decl = TREE_VALUE (pair);
+	  tree value = DECL_INITIAL (decl);
 
-	  tree value;
+	  /* [dcl.enum]: Following the closing brace of an enum-specifier,
+	     each enumerator has the type of its enumeration.  Prior to the
+	     closing brace, the type of each enumerator is the type of its
+	     initializing value.  */
+	  TREE_TYPE (decl) = enumtype;
 
-	  /* If we are going to reset type then copy node first.
-	     It cannot be shared now.  */
-	  if (TREE_TYPE (TREE_VALUE (pair)) != enumtype)
+	  /* Figure out what the minimum and maximum values of the
+	     enumerators are.  */
+	  if (!minnode)
+	    minnode = maxnode = value;
+	  else if (tree_int_cst_lt (maxnode, value))
+	    maxnode = value;
+	  else if (tree_int_cst_lt (value, minnode))
+	    minnode = value;
+
+	  /* Set the TREE_TYPE for the values as well.  That's so that when
+	     we call decl_constant_value we get an entity of the right type
+	     (but with the constant value).  But first make a copy so we
+	     don't clobber shared INTEGER_CSTs.  */
+	  if (TREE_TYPE (value) != enumtype)
 	    {
-	      if (DECL_INITIAL (TREE_VALUE (pair)))
-		DECL_INITIAL (TREE_VALUE (pair)) = 
-		  copy_node (DECL_INITIAL (TREE_VALUE (pair)));
-	      TREE_TYPE (TREE_VALUE (pair)) = enumtype;
+	      value = DECL_INITIAL (decl) = copy_node (value);
+	      TREE_TYPE (value) = enumtype;
 	    }
 
-	  if (!processing_template_decl)
-	    {
-	      /* Adjust min and max value.  */
-	      value = DECL_INITIAL (TREE_VALUE (pair));
-
-	      if (!minnode)
-		minnode = maxnode = value;
-	      else if (tree_int_cst_lt (maxnode, value))
-		maxnode = value;
-	      else if (tree_int_cst_lt (value, minnode))
-		minnode = value;
-	    }
+	  /* In addition, transform the TYPE_VALUES list to contain the
+	     values, rather than the CONST_DECLs for them.  */
+	  TREE_VALUE (pair) = value;
 	}
     }
   else
     minnode = maxnode = integer_zero_node;
-
 
   /* Compute the number of bits require to represent all values of the
      enumeration.  We must do this before the type of MINNODE and
@@ -13134,18 +13135,6 @@ finish_enum (tree enumtype)
   lowprec = min_precision (minnode, unsignedp);
   highprec = min_precision (maxnode, unsignedp);
   precision = MAX (lowprec, highprec);
-
-  /* Set the TREE_TYPE for the values as well.  That's so that when we
-     call decl_constant_value we get an entity of the right type (but
-     with the constant value).  In addition, transform the TYPE_VALUES
-     list to contain the values, rather than the CONST_DECLs for them.  */
-  for (pair = TYPE_VALUES (enumtype); pair; pair = TREE_CHAIN (pair))
-    {
-      tree value = DECL_INITIAL (TREE_VALUE (pair));
-
-      TREE_TYPE (value) = enumtype;
-      TREE_VALUE (pair) = value;
-    }
 
   /* Set TYPE_MIN_VALUE and TYPE_MAX_VALUE according to `precision'.  */
   TYPE_SIZE (enumtype) = NULL_TREE;
@@ -13241,8 +13230,7 @@ build_enumerator (tree name, tree value, tree enumtype)
 	}
 
       /* Remove no-op casts from the value.  */
-      if (value)
-	STRIP_TYPE_NOPS (value);
+      STRIP_TYPE_NOPS (value);
     }
 
   /* C++ associates enums with global, function, or class declarations.  */
