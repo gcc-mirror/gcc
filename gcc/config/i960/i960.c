@@ -2190,6 +2190,8 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       if (! (no_rtl) && first_reg_offset != NPARM_REGS)
 	{
 	  rtx label = gen_label_rtx ();
+	  rtx regblock;
+
 	  emit_insn (gen_cmpsi (arg_pointer_rtx, const0_rtx));
 	  emit_jump_insn (gen_bne (label));
 	  emit_insn (gen_rtx (SET, VOIDmode, arg_pointer_rtx,
@@ -2199,11 +2201,14 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 					      plus_constant (stack_pointer_rtx,
 							     48))));
 	  emit_label (label);
-	  move_block_from_reg
-	    (first_reg_offset,
-	     gen_rtx (MEM, BLKmode, virtual_incoming_args_rtx),
-	     NPARM_REGS - first_reg_offset,
-	     (NPARM_REGS - first_reg_offset) * UNITS_PER_WORD);
+
+	  regblock = gen_rtx (MEM, BLKmode,
+			      plus_constant (arg_pointer_rtx,
+					     first_reg_offset * 4));
+	  move_block_from_reg (first_reg_offset, regblock,
+			       NPARM_REGS - first_reg_offset,
+			       ((NPARM_REGS - first_reg_offset)
+				* UNITS_PER_WORD));
 	}
       *pretend_size = (NPARM_REGS - first_reg_offset) * UNITS_PER_WORD;
     }
