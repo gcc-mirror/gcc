@@ -8340,12 +8340,14 @@ verify_flow_info ()
   const rtx rtx_first = get_insns ();
   rtx last_head = get_last_insn ();
   basic_block *bb_info, *last_visited;
+  size_t *edge_checksum;
   rtx x;
   int i, last_bb_num_seen, num_bb_notes, err = 0;
 
   bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
   last_visited = (basic_block *) xcalloc (n_basic_blocks + 2,
 					  sizeof (basic_block));
+  edge_checksum = (size_t *) xcalloc (n_basic_blocks + 2, sizeof (size_t));
 
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
@@ -8396,9 +8398,8 @@ verify_flow_info ()
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
       basic_block bb = BASIC_BLOCK (i);
-      /* Check correctness of edge lists.  */
-      edge e;
       int has_fallthru = 0;
+      edge e;
 
       e = bb->succ;
       while (e)
@@ -8447,17 +8448,7 @@ verify_flow_info ()
 	      fprintf (stderr, "\n");
 	      err = 1;
 	    }
-	  if (e->dest != EXIT_BLOCK_PTR)
-	    {
-	      edge e2 = e->dest->pred;
-	      while (e2 && e2 != e)
-		e2 = e2->pred_next;
-	      if (!e2)
-		{
-		  error ("Basic block %i edge lists are corrupted", bb->index);
-		  err = 1;
-		}
-	    }
+	  edge_checksum[e->dest->index + 2] += (size_t) e;
 	  e = e->succ_next;
 	}
       if (!has_fallthru)
@@ -8489,17 +8480,7 @@ verify_flow_info ()
 	      fputc ('\n', stderr);
 	      err = 1;
 	    }
-	  if (e->src != ENTRY_BLOCK_PTR)
-	    {
-	      edge e2 = e->src->succ;
-	      while (e2 && e2 != e)
-		e2 = e2->succ_next;
-	      if (!e2)
-		{
-		  error ("Basic block %i edge lists are corrupted", bb->index);
-		  err = 1;
-		}
-	    }
+	  edge_checksum[e->dest->index + 2] -= (size_t) e;
 	  e = e->pred_next;
 	}
 
@@ -8555,6 +8536,22 @@ verify_flow_info ()
 	    }
 	}
     }
+
+  /* Complete edge checksumming for ENTRY and EXIT.  */
+  {
+    edge e;
+    for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
+      edge_checksum[e->dest->index + 2] += (size_t) e;
+    for (e = EXIT_BLOCK_PTR->pred; e ; e = e->pred_next)
+      edge_checksum[e->dest->index + 2] -= (size_t) e;
+  }
+
+  for (i = -2; i < n_basic_blocks; ++i)
+    if (edge_checksum[i + 2])
+      {
+	error ("Basic block %i edge lists are corrupted", i);
+	err = 1;
+      }
 
   last_bb_num_seen = -1;
   num_bb_notes = 0;
@@ -8617,6 +8614,7 @@ verify_flow_info ()
   /* Clean up.  */
   free (bb_info);
   free (last_visited);
+  free (edge_checksum);
 }
 
 /* Functions to access an edge list with a vector representation.
