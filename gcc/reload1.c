@@ -138,6 +138,11 @@ static HARD_REG_SET reg_reloaded_valid;
    This is only valid if reg_reloaded_contents is set and valid.  */
 static HARD_REG_SET reg_reloaded_dead;
 
+/* Indicate whether the register's current value is one that is not
+   safe to retain across a call, even for registers that are normally
+   call-saved.  */
+static HARD_REG_SET reg_reloaded_call_part_clobbered;
+
 /* Number of spill-regs so far; number of valid elements of spill_regs.  */
 static int n_spills;
 
@@ -3757,6 +3762,7 @@ reload_as_needed (int live_known)
   reg_last_reload_reg = xcalloc (max_regno, sizeof (rtx));
   reg_has_output_reload = xmalloc (max_regno);
   CLEAR_HARD_REG_SET (reg_reloaded_valid);
+  CLEAR_HARD_REG_SET (reg_reloaded_call_part_clobbered);
 
   set_initial_elim_offsets ();
 
@@ -4004,9 +4010,13 @@ reload_as_needed (int live_known)
 	CLEAR_HARD_REG_SET (reg_reloaded_valid);
 
       /* Don't assume a reload reg is still good after a call insn
-	 if it is a call-used reg.  */
+	 if it is a call-used reg, or if it contains a value that will
+         be partially clobbered by the call.  */
       else if (GET_CODE (insn) == CALL_INSN)
+	{
 	AND_COMPL_HARD_REG_SET (reg_reloaded_valid, call_used_reg_set);
+	AND_COMPL_HARD_REG_SET (reg_reloaded_valid, reg_reloaded_call_part_clobbered);
+	}
     }
 
   /* Clean up.  */
@@ -4061,6 +4071,7 @@ forget_old_reloads_1 (rtx x, rtx ignored ATTRIBUTE_UNUSED,
 	    || ! TEST_HARD_REG_BIT (reg_is_output_reload, regno + i))
 	  {
 	    CLEAR_HARD_REG_BIT (reg_reloaded_valid, regno + i);
+	    CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered, regno + i);
 	    spill_reg_store[regno + i] = 0;
 	  }
     }
@@ -7043,7 +7054,10 @@ emit_reload_insns (struct insn_chain *chain)
 		 If consecutive registers are used, clear them all.  */
 
 	      for (k = 0; k < nr; k++)
+  	        {
 		CLEAR_HARD_REG_BIT (reg_reloaded_valid, i + k);
+  		  CLEAR_HARD_REG_BIT (reg_reloaded_call_part_clobbered, i + k);
+  		}
 
 	      /* Maybe the spill reg contains a copy of reload_out.  */
 	      if (rld[r].out != 0
@@ -7090,6 +7104,8 @@ emit_reload_insns (struct insn_chain *chain)
 			   : nregno + k);
 		      reg_reloaded_insn[i + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, i + k);
+		      if (HARD_REGNO_CALL_PART_CLOBBERED (i + k, GET_MODE (out)))
+			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered, i + k);
 		    }
 		}
 
@@ -7107,14 +7123,16 @@ emit_reload_insns (struct insn_chain *chain)
 		{
 		  int nregno;
 		  int nnr;
+		  rtx in;
 
 		  if (GET_CODE (rld[r].in) == REG
 		      && REGNO (rld[r].in) >= FIRST_PSEUDO_REGISTER)
-		    nregno = REGNO (rld[r].in);
+		    in = rld[r].in;
 		  else if (GET_CODE (rld[r].in_reg) == REG)
-		    nregno = REGNO (rld[r].in_reg);
+		    in = rld[r].in_reg;
 		  else
-		    nregno = REGNO (XEXP (rld[r].in_reg, 0));
+		    in = XEXP (rld[r].in_reg, 0);
+		  nregno = REGNO (in);
 
 		  nnr = (nregno >= FIRST_PSEUDO_REGISTER ? 1
 			 : HARD_REGNO_NREGS (nregno,
@@ -7146,6 +7164,8 @@ emit_reload_insns (struct insn_chain *chain)
 			   : nregno + k);
 		      reg_reloaded_insn[i + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, i + k);
+		      if (HARD_REGNO_CALL_PART_CLOBBERED (i + k, GET_MODE (in)))
+			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered, i + k);
 		    }
 		}
 	    }
@@ -7232,6 +7252,10 @@ emit_reload_insns (struct insn_chain *chain)
 		      reg_reloaded_insn[src_regno + nr] = store_insn;
 		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, src_regno + nr);
 		      SET_HARD_REG_BIT (reg_reloaded_valid, src_regno + nr);
+		      if (HARD_REGNO_CALL_PART_CLOBBERED (src_regno + nr, 
+							  GET_MODE (src_reg)))
+			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered, 
+					  src_regno + nr);
 		      SET_HARD_REG_BIT (reg_is_output_reload, src_regno + nr);
 		      if (note)
 			SET_HARD_REG_BIT (reg_reloaded_died, src_regno);
