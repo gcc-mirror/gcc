@@ -1,3 +1,8 @@
+2001-02-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* combine.c (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD): New macro.
+	(try_combine): Use it.
+
 2001-02-13  Richard Henderson  <rth@redhat.com>
 
 	* sparc.md (cmp_cc_arith_op_set): Don't use match_dup on the
