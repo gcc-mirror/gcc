@@ -1,3 +1,7 @@
+2001-05-03  Tom Tromey  <tromey@redhat.com>
+
+	* libjava.lang/err11.xfail: Removed.
+
 2001-04-25  Tom Tromey  <tromey@redhat.com>
 
 	* lib/libjava.exp (libjava_init): Use UTF-8 encoding.
