@@ -1,3 +1,7 @@
+2000-04-28  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* pcp.h: Delete file.
+
 2000-04-28  Kazu Hirata  <kazu@hxi.com>
 
 	* h8300.c (function_epilogue): Clean up flags when the last insn

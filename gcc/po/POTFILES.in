@@ -713,7 +713,6 @@ objc/objc-act.h
 objc/objc-parse.c
 optabs.c
 output.h
-pcp.h
 ../libiberty/pexecute.c
 #po/cat-id-tbl.c contains the translation tables themselves
 prefix.c

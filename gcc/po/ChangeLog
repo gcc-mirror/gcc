@@ -1,3 +1,7 @@
+2000-04-28  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* POTFILES.in: Remove pcp.h.
+
 2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* POTFILES.in: Remove cccp.c and cexp.c.  Comment out
