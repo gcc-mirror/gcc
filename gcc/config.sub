@@ -383,15 +383,8 @@ case $basic_machine in
 	pbb)
 		basic_machine=m68k-tti
 		;;
-        pc532)
-		case $os in
-		    -netbsd*)
-			basic_machine=pc532-unknown
-			;;
-		    *)
-			basic_machine=ns32k-pc532
-			;;
-		esac
+        pc532 | pc532-*)
+		basic_machine=ns32k-pc532
 		;;
 	pentium-*)
 		# We will change tis to say i586 once there has been
