@@ -34,12 +34,9 @@ void test04()
 {
   bool test __attribute__((unused)) = true;
   std::wstring 		str_tmp, str_tmp2;
-  std::wstringbuf 		strb_tmp;
   std::streamsize 		strmsz_1, strmsz_2;
   typedef std::wstringbuf::int_type int_type;
   typedef std::wstringbuf::traits_type traits_type;
-  typedef std::wstringbuf::pos_type pos_type;
-  typedef std::wstringbuf::off_type off_type;
 
   int_type c1 = strb_01.sbumpc();
   int_type c2 = strb_02.sbumpc();

@@ -1,4 +1,30 @@
 2004-08-11  Paolo Carlini  <pcarlini@suse.de>
+	
+	* testsuite/27_io/basic_stringbuf/imbue/char/1.cc: Declare test
+	variable.
+	* testsuite/27_io/basic_stringbuf/imbue/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/in_avail/char/1.cc: Remove junk.
+	* testsuite/27_io/basic_stringbuf/in_avail/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sbumpc/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sbumpc/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/setbuf/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/setbuf/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sgetc/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sgetc/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sgetn/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sgetn/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/snextc/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/snextc/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sputbackc/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sputbackc/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sputc/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sputc/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sputn/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sputn/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sungetc/char/1.cc: Ditto.
+	* testsuite/27_io/basic_stringbuf/sungetc/wchar_t/1.cc: Ditto.
+
+2004-08-11  Paolo Carlini  <pcarlini@suse.de>
 	    Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/16959

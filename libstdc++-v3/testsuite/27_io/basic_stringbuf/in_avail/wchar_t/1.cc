@@ -33,13 +33,7 @@ std::wstringbuf strb_03(str_03, std::ios_base::out);
 void test04() 
 {
   bool test __attribute__((unused)) = true;
-  std::wstring 		str_tmp;
-  std::wstringbuf 		strb_tmp;
   std::streamoff  		strmof_1(-1), strmof_2;
-  typedef std::wstringbuf::int_type int_type;
-  typedef std::wstringbuf::traits_type traits_type;
-  typedef std::wstringbuf::pos_type pos_type;
-  typedef std::wstringbuf::off_type off_type;
 
   // GET
   // int in_avail()

@@ -33,12 +33,8 @@ std::wstringbuf strb_03(str_03, std::ios_base::out);
 void test04() 
 {
   bool test __attribute__((unused)) = true;
-  std::wstring 		str_tmp;
-  std::wstringbuf 		strb_tmp;
   typedef std::wstringbuf::int_type int_type;
   typedef std::wstringbuf::traits_type traits_type;
-  typedef std::wstringbuf::pos_type pos_type;
-  typedef std::wstringbuf::off_type off_type;
 
   int_type c1 = strb_01.sbumpc();
   int_type c2 = strb_02.sbumpc();
