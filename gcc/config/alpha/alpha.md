@@ -97,7 +97,7 @@
 ;; separately.
 
 (define_attr "type"
-  "ild,fld,ldsym,ist,fst,ibr,fbr,jsr,iadd,ilog,shift,icmov,fcmov,icmp,imul,\
+  "ild,fld,ldsym,ist,fst,ibr,callpal,fbr,jsr,iadd,ilog,shift,icmov,fcmov,icmp,imul,\
 fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   (const_string "iadd"))
 
@@ -4866,7 +4866,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   [(unspec_volatile [(const_int 0)] UNSPECV_IMB)]
   ""
   "call_pal 0x86"
-  [(set_attr "type" "ibr")])
+  [(set_attr "type" "callpal")])
 
 ;; BUGCHK is documented common to OSF/1 and VMS PALcode.
 ;; NT does not document anything at 0x81 -- presumably it would generate
@@ -4876,7 +4876,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   [(trap_if (const_int 1) (const_int 0))]
   "!TARGET_ABI_WINDOWS_NT"
   "call_pal 0x81"
-  [(set_attr "type" "ibr")])
+  [(set_attr "type" "callpal")])
 
 ;; For userland, we load the thread pointer from the TCB.
 ;; For the kernel, we load the per-cpu private value.
@@ -4891,7 +4891,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   else
     return "call_pal 0x9e";
 }
-  [(set_attr "type" "ibr")])
+  [(set_attr "type" "callpal")])
 
 ;; For completeness, and possibly a __builtin function, here's how to
 ;; set the thread pointer.  Since we don't describe enough of this
@@ -4913,7 +4913,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   else
     return "call_pal 0x9f";
 }
-  [(set_attr "type" "ibr")])
+  [(set_attr "type" "callpal")])
 
 ;; Finally, we have the basic data motion insns.  The byte and word insns
 ;; are done via define_expand.  Start with the floating-point insns, since

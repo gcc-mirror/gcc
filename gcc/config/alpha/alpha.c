@@ -8376,6 +8376,7 @@ alphaev4_insn_pipe (insn)
     case TYPE_MISC:
     case TYPE_IBR:
     case TYPE_JSR:
+    case TYPE_CALLPAL:
     case TYPE_FCPYS:
     case TYPE_FCMOV:
     case TYPE_FADD:
@@ -8418,6 +8419,7 @@ alphaev5_insn_pipe (insn)
 
     case TYPE_IBR:
     case TYPE_JSR:
+    case TYPE_CALLPAL:
       return EV5_E1;
 
     case TYPE_FCPYS:

@@ -59,6 +59,11 @@
        (eq_attr "type" "ibr,jsr"))
   "ev4_ib1+ev4_bbox,ev4_bbox")
 
+(define_insn_reservation "ev4_callpal" 2
+  (and (eq_attr "cpu" "ev4")
+       (eq_attr "type" "callpal"))
+  "ev4_ib1+ev4_bbox,ev4_bbox")
+
 (define_insn_reservation "ev4_fbr" 2
   (and (eq_attr "cpu" "ev4")
        (eq_attr "type" "fbr"))

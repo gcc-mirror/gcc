@@ -113,7 +113,7 @@
 ; Integer branches issue to upper units
 (define_insn_reservation "ev6_ibr" 1
   (and (eq_attr "cpu" "ev6")
-       (eq_attr "type" "ibr"))
+       (eq_attr "type" "ibr,callpal"))
   "ev6_u")
 
 ; Calls only issue to L0.
