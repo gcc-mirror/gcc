@@ -67,6 +67,7 @@ struct include_file
   const unsigned char *buffer;	/* pointer to cached file contents */
   struct stat st;		/* copy of stat(2) data for file */
   int fd;			/* fd open on file (short term storage only) */
+  int err_no;			/* errno obtained if opening a file failed */
   unsigned short include_count;	/* number of times file has been read */
   unsigned short refcnt;	/* number of stacked buffers using this file */
   unsigned char mapped;		/* file buffer is mmapped */
@@ -175,6 +176,7 @@ find_or_create_entry (pfile, fname)
     {
       file = xcnew (struct include_file);
       file->name = name;
+      file->err_no = errno;
       node = splay_tree_insert (pfile->all_include_files,
 				(splay_tree_key) file->name,
 				(splay_tree_value) file);
@@ -210,12 +212,12 @@ open_file (pfile, filename)
   splay_tree_node nd = find_or_create_entry (pfile, filename);
   struct include_file *file = (struct include_file *) nd->value;
 
-  if (errno)
-    file->fd = -2;
-
-  /* Don't retry opening if we failed previously.  */
-  if (file->fd == -2)
-    return 0;
+  if (file->err_no)
+    {
+      /* Ugh.  handle_missing_header () needs errno to be set.  */
+      errno = file->err_no;
+      return 0;
+    }
 
   /* Don't reopen an idempotent file. */
   if (DO_NOT_REREAD (file))
@@ -266,11 +268,9 @@ open_file (pfile, filename)
     }
 
   /* Don't issue an error message if the file doesn't exist.  */
+  file->err_no = errno;
   if (errno != ENOENT && errno != ENOTDIR)
     cpp_error_from_errno (pfile, file->name);
-
-  /* Create a negative node for this path, and return null.  */
-  file->fd = -2;
 
   return 0;
 }
