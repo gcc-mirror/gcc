@@ -3,6 +3,17 @@
 	PR fortran/8587
 	* libF77/pow_zz.c: Handle (0.0, 0.0) ** power.
 
+2002-10-18  Krister Walfridsson  <cato@df.lth.se>
+
+	* libU77/configure.in (_XOPEN_SOURCE, _XOPEN_SOURCE_EXTENDED,
+	__EXTENSIONS__, _FILE_OFFSET_BITS): Check that _XOPEN_SOURCE 500L
+	may be defined before defining these.
+	* libU77/configure: Regenerate.
+	* libI77/configure.in (_XOPEN_SOURCE, _XOPEN_SOURCE_EXTENDED,
+	__EXTENSIONS__, _FILE_OFFSET_BITS): Check that _XOPEN_SOURCE 500L
+	may be defined before defining these.
+	* libI77/configure: Regenerate.
+
 2002-09-23  Zack Weinberg  <zack@codesourcery.com>
 
 	* libF77/Version.c: Rename junk to __LIBF77_VERSION__.  Add
