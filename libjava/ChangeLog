@@ -1,3 +1,10 @@
+2001-05-24  Tom Tromey  <tromey@redhat.com>
+
+	* configure.in: Only allow hash synchronization when POSIX threads
+	are enabled.
+	* java/lang/natObject.cc (alloc_heavy): Properly find `init' field
+	of sync info object.
+
 2001-05-23  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.

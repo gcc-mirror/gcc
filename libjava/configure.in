@@ -75,12 +75,6 @@ AC_ARG_ENABLE(hash-synchronization,
 if test -z "$enable_hash_synchronization"; then
    enable_hash_synchronization=$enable_hash_synchronization_default
 fi
-HASH_SYNC_SPEC=
-if test "$enable_hash_synchronization" = yes; then
-   HASH_SYNC_SPEC=-fhash-synchronization
-   AC_DEFINE(JV_HASH_SYNCHRONIZATION)
-fi
-AC_SUBST(HASH_SYNC_SPEC)
 
 
 dnl See if the user has requested runtime debugging.
@@ -358,6 +352,15 @@ AC_SUBST(THREADINCS)
 AC_SUBST(THREADDEPS)
 AC_SUBST(THREADOBJS)
 AC_SUBST(THREADSPEC)
+
+HASH_SYNC_SPEC=
+# Hash synchronization is only useful with posix threads right now.
+if test "$enable_hash_synchronization" = yes && test "$THREADS" = "posix"; then
+   HASH_SYNC_SPEC=-fhash-synchronization
+   AC_DEFINE(JV_HASH_SYNCHRONIZATION)
+fi
+AC_SUBST(HASH_SYNC_SPEC)
+
 
 AM_CONDITIONAL(USING_GCC, test "$GCC" = yes)
 
