@@ -1,3 +1,8 @@
+2001-12-31  Douglas B Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms.h (HAS_INIT_SECTION, NEED_ATEXIT): Remove.
+	(NAME__MAIN, SYMBOL__MAIN): Define.
+
 2001-12-31  Richard Henderson  <rth@redhat.com>
 
 	* cfgrtl.c (delete_insn): Check for not NOTE_INSN_DELETED_LABEL

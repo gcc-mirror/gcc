@@ -451,8 +451,5 @@ do {									\
 #define UMODSI3_LIBCALL "OTS$REM_UI"
 #define UMODDI3_LIBCALL "OTS$REM_UL"
 
-/* crt0 calls __main */
-#define HAS_INIT_SECTION
-
-/* XXX Really? Even with modern CRTL? */
-#define NEED_ATEXIT
+#define NAME__MAIN "__gccmain"
+#define SYMBOL__MAIN __gccmain
