@@ -124,49 +124,47 @@ namespace std
 // Sentry uses locale info, so have to try one formatted input/output.
 void test03()
 {
-  using namespace std;
   bool test __attribute__((unused)) = true;
 
   // input streams
-  basic_ifstream<unsigned char> ifs_uc;
+  std::basic_ifstream<unsigned char> ifs_uc;
   unsigned char arr[6] = { 'a', 'b', 'c', 'd', 'e' };
-
   try 
     { 
       int i;
       ifs_uc >> i;
     }
-  catch (bad_cast& obj)
+  catch (std::bad_cast& obj)
     { }
-  catch (exception& obj)
+  catch (std::exception& obj)
     { test = false; }
   
   try 
     { 
       ifs_uc >> arr;
     }
-  catch (bad_cast& obj)
+  catch (std::bad_cast& obj)
     { }
-  catch (exception& obj)
+  catch (std::exception& obj)
     { test = false; }
   
   try 
     { 
-      ifs_uc >> ws;
+      ifs_uc >> std::ws;
     }
-  catch (bad_cast& obj)
+  catch (std::bad_cast& obj)
     { }
-  catch (exception& obj)
+  catch (std::exception& obj)
     { test = false; }
  
   try 
     { 
-      basic_string<unsigned char> s_uc(arr);
+      std::basic_string<unsigned char> s_uc(arr);
       ifs_uc >> s_uc;
     }
-  catch (bad_cast& obj)
+  catch (std::bad_cast& obj)
     { }
-  catch (exception& obj)
+  catch (std::exception& obj)
     { test = false; }
    
   VERIFY( test );
