@@ -1,3 +1,9 @@
+Wed Dec  9 19:36:57 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_combine, reload_combine_note_store):
+	Make USE_RUID always valid.
+	(reload_combine): Check if BASE is clobbered too early.
+
 Wed Dec  9 09:53:58 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* reload.c (find_reloads): Display the insn that cannot be
