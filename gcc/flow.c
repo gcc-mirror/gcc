@@ -1704,16 +1704,6 @@ propagate_block (old, first, last, final, significant, bnum)
   regset live;
   regset dead;
 
-  /* The following variables are used only if FINAL is nonzero.  */
-  /* This vector gets one element for each reg that has been live
-     at any point in the basic block that has been scanned so far.
-     SOMETIMES_MAX says how many elements are in use so far.  */
-  register int *regs_sometimes_live;
-  int sometimes_max = 0;
-  /* This regset has 1 for each reg that we have seen live so far.
-     It and REGS_SOMETIMES_LIVE are updated together.  */
-  regset maxlive;
-
   /* The loop depth may change in the middle of a basic block.  Since we
      scan from end to beginning, we start with the depth at the end of the
      current basic block, and adjust as we pass ends and starts of loops.  */
@@ -1743,18 +1733,12 @@ propagate_block (old, first, last, final, significant, bnum)
       register int i;
 
       num_scratch = 0;
-      maxlive = ALLOCA_REG_SET ();
-      COPY_REG_SET (maxlive, old);
-      regs_sometimes_live = (int *) alloca (max_regno * sizeof (int));
 
       /* Process the regs live at the end of the block.
-	 Enter them in MAXLIVE and REGS_SOMETIMES_LIVE.
-	 Also mark them as not local to any one basic block. */
+	 Mark them as not local to any one basic block. */
       EXECUTE_IF_SET_IN_REG_SET (old, 0, i,
 				 {
 				   REG_BASIC_BLOCK (i) = REG_BLOCK_GLOBAL;
-				   regs_sometimes_live[sometimes_max] = i;
-				   sometimes_max++;
 				 });
     }
 
@@ -1888,6 +1872,16 @@ propagate_block (old, first, last, final, significant, bnum)
 	    ;
 	  else
 	    {
+	      /* Any regs live at the time of a call instruction
+		 must not go in a register clobbered by calls.
+		 Find all regs now live and record this for them.  */
+
+	      if (GET_CODE (insn) == CALL_INSN && final)
+		EXECUTE_IF_SET_IN_REG_SET (old, 0, i,
+					   {
+					     REG_N_CALLS_CROSSED (i)++;
+					   });
+
 	      /* LIVE gets the regs used in INSN;
 		 DEAD gets those set by it.  Dead insns don't make anything
 		 live.  */
@@ -1952,44 +1946,13 @@ propagate_block (old, first, last, final, significant, bnum)
 	      AND_COMPL_REG_SET (old, dead);
 	      IOR_REG_SET (old, live);
 
-	      if (GET_CODE (insn) == CALL_INSN && final)
-		{
-		  /* Any regs live at the time of a call instruction
-		     must not go in a register clobbered by calls.
-		     Find all regs now live and record this for them.  */
-
-		  register int *p = regs_sometimes_live;
-
-		  for (i = 0; i < sometimes_max; i++, p++)
-		    if (REGNO_REG_SET_P (old, *p))
-		      REG_N_CALLS_CROSSED (*p)++;
-		}
 	    }
 
-	  /* On final pass, add any additional sometimes-live regs
-	     into MAXLIVE and REGS_SOMETIMES_LIVE.
-	     Also update counts of how many insns each reg is live at.  */
-
+	  /* On final pass, update counts of how many insns each reg is live
+	     at.  */
 	  if (final)
-	    {
-	      register int regno;
-	      register int *p;
-
-	      EXECUTE_IF_AND_COMPL_IN_REG_SET
-		(live, maxlive, 0, regno,
-		 {
-		   regs_sometimes_live[sometimes_max++] = regno;
-		   SET_REGNO_REG_SET (maxlive, regno);
-		 });
-
-	      p = regs_sometimes_live;
-	      for (i = 0; i < sometimes_max; i++)
-		{
-		  regno = *p++;
-		  if (REGNO_REG_SET_P (old, regno))
-		    REG_LIVE_LENGTH (regno)++;
-		}
-	    }
+	    EXECUTE_IF_SET_IN_REG_SET (old, 0, i,
+				       { REG_LIVE_LENGTH (i)++; });
 	}
     flushed: ;
       if (insn == first)
@@ -1998,8 +1961,6 @@ propagate_block (old, first, last, final, significant, bnum)
 
   FREE_REG_SET (dead);
   FREE_REG_SET (live);
-  if (final)
-    FREE_REG_SET (maxlive);
 
   if (num_scratch > max_scratch)
     max_scratch = num_scratch;

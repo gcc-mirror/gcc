@@ -1,5 +1,9 @@
 Sat Oct 17 02:26:03 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de> 
 
+	* flow.c (propagate_block): Replace code that computes and uses
+	regs_sometimes_live with simpler code that just walks the set of
+	currently live registers.
+
 	* Makefile.in (insn-extract.o): Fix dependencies.
 	* genextract.c (main): Generate includes for insn-config.h and
 	recog.h.
