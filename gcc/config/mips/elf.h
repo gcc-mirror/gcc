@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Mostly like ECOFF.  */
-#include "mips/mips.h"
 #include "gofast.h"
 #include "mips/ecoff.h"
 

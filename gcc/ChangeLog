@@ -1,5 +1,8 @@
 Sun Apr 12 20:23:03 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* mips/ecoffl.h: Do not include mips.h.
+	* mips/elf.h: Likewise.
+
 	* configure.in (mips-*-ecoff): Do not mention mips/mips.h in tm_files.
 	* mips/ecoff.h: Include "mips/mips.h".
 
