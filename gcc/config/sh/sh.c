@@ -8453,6 +8453,9 @@ sh_register_move_cost (mode, srcclass, dstclass)
   if (dstclass == T_REGS || dstclass == PR_REGS)
     return 10;
 
+  if (dstclass == MAC_REGS && srcclass == MAC_REGS)
+    return 4;
+
   if (mode == SImode && ! TARGET_SHMEDIA && TARGET_FMOVD
       && REGCLASS_HAS_FP_REG (srcclass)
       && REGCLASS_HAS_FP_REG (dstclass))
