@@ -1,3 +1,8 @@
+2003-09-23  Richard Henderson  <rth@redhat.com>
+
+	* tree-inline.c (remap_save_expr): Map new save_expr to identity
+	rather than to error_mark_node.
+
 2003-09-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in (HAVE_GAS_SHF_MERGE): Always define to test result.
