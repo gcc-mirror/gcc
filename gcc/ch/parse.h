@@ -7,6 +7,12 @@ typedef union {
 } YYSTYPE;
 extern YYSTYPE yylval;
 
+/* DELAY is defined in the standard headers on some platforms like
+   SunOS 4.1.4.  */
+#ifdef DELAY
+#undef DELAY
+#endif
+
 enum terminal
 {
   /*EOF = 0,*/
