@@ -700,13 +700,8 @@ save_for_inline_nocopy (fndecl)
      tree fndecl;
 {
   rtx insn;
-  rtx head, copy;
-  tree parms;
-  int max_labelno, min_labelno, i, len;
-  int max_reg;
-  int max_uid;
+  rtx head;
   rtx first_nonparm_insn;
-  int function_flags;
 
   /* Set up PARMDECL_MAP which maps pseudo-reg number to its PARM_DECL.
      Later we set TREE_READONLY to 0 if the parm is modified inside the fn.
@@ -1237,8 +1232,6 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
       tree arg = convert (TREE_TYPE (formal), TREE_VALUE (actual));
       /* Mode of the variable used within the function.  */
       enum machine_mode mode = TYPE_MODE (TREE_TYPE (formal));
-      /* Where parameter is located in the function.  */
-      rtx copy;
 
       /* Make sure this formal has some correspondence in the users code
        * before emitting any line notes for it.  */
@@ -1508,8 +1501,6 @@ expand_inline_function (fndecl, parms, target, ignore, type, structure_value_add
   for (formal = DECL_ARGUMENTS (fndecl), i = 0;
        formal; formal = TREE_CHAIN (formal), i++)
     {
-      rtx copy = arg_vals[i];
-
       loc = RTVEC_ELT (arg_vector, i);
 
       if (GET_CODE (loc) == MEM
