@@ -100,7 +100,8 @@ package body Bindgen is
    --      Num_Interrupt_States     : Integer;
    --      Unreserve_All_Interrupts : Integer;
    --      Exception_Tracebacks     : Integer;
-   --      Zero_Cost_Exceptions     : Integer);
+   --      Zero_Cost_Exceptions     : Integer;
+   --      Detect_Blocking          : Integer);
 
    --  Main_Priority is the priority value set by pragma Priority in the
    --  main program. If no such pragma is present, the value is -1.
@@ -161,6 +162,11 @@ package body Bindgen is
    --  Zero_Cost_Exceptions is set to one if zero cost exceptions are used for
    --  this partition, and to zero if longjmp/setjmp exceptions are used.
    --  the use of zero
+
+   --  Detect_Blocking indicates whether pragma Detect_Blocking is
+   --  active or not. A value of zero indicates that the pragma is not
+   --  present, while a value of 1 signals its presence in the
+   --  partition.
 
    -----------------------
    -- Local Subprograms --
@@ -524,12 +530,14 @@ package body Bindgen is
          WBI ("         Locking_Policy           : Character;");
          WBI ("         Queuing_Policy           : Character;");
          WBI ("         Task_Dispatching_Policy  : Character;");
+
          WBI ("         Restrictions             : System.Address;");
          WBI ("         Interrupt_States         : System.Address;");
          WBI ("         Num_Interrupt_States     : Integer;");
          WBI ("         Unreserve_All_Interrupts : Integer;");
          WBI ("         Exception_Tracebacks     : Integer;");
-         WBI ("         Zero_Cost_Exceptions     : Integer);");
+         WBI ("         Zero_Cost_Exceptions     : Integer;");
+         WBI ("         Detect_Blocking          : Integer);");
          WBI ("      pragma Import (C, Set_Globals, ""__gnat_set_globals"");");
 
          --  Import entry point for elaboration time signal handler
@@ -628,6 +636,17 @@ package body Bindgen is
             Set_String ("1");
          else
             Set_String ("0");
+         end if;
+
+         Set_String (",");
+         Write_Statement_Buffer;
+
+         Set_String ("         Detect_Blocking          => ");
+
+         if Detect_Blocking then
+            Set_Int (1);
+         else
+            Set_Int (0);
          end if;
 
          Set_String (");");
@@ -863,9 +882,22 @@ package body Bindgen is
 
          Set_String ("      ");
          Set_Int    (Boolean'Pos (Zero_Cost_Exceptions_Specified));
-         Set_String (");");
+         Set_String (",");
          Tab_To (24);
          Set_String ("/* Zero_Cost_Exceptions       */");
+         Write_Statement_Buffer;
+
+         Set_String ("      ");
+
+         if Detect_Blocking then
+            Set_Int (1);
+         else
+            Set_Int (0);
+         end if;
+
+         Set_String (");");
+         Tab_To (24);
+         Set_String ("/* Detect_Blocking            */");
          Write_Statement_Buffer;
          WBI ("");
 
@@ -2427,7 +2459,7 @@ package body Bindgen is
       WBI ("extern void __gnat_set_globals");
       WBI ("  (int, int, char, char, char, char,");
       WBI ("   const char *, const char *,");
-      WBI ("   int, int, int, int);");
+      WBI ("   int, int, int, int, int);");
       WBI ("extern void " & Ada_Final_Name.all & " (void);");
       WBI ("extern void " & Ada_Init_Name.all & " (void);");
       WBI ("extern void system__standard_library__adafinal (void);");

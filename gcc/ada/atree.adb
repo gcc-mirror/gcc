@@ -1429,7 +1429,6 @@ package body Atree is
             Set_Field5
               (New_Node, Copy_Field_With_Replacement (Field5 (New_Node)));
 
-
             --  Adjust Sloc of new node if necessary
 
             if New_Sloc /= No_Location then

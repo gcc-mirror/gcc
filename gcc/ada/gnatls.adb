@@ -98,6 +98,8 @@ procedure Gnatls is
    Dependable  : Boolean := False;  --  flag -d
    Also_Predef : Boolean := False;
 
+   Very_Verbose_Mode : Boolean := False; --  flag -V
+
    Unit_Start   : Integer;
    Unit_End     : Integer;
    Source_Start : Integer;
@@ -161,6 +163,20 @@ procedure Gnatls is
 
    function Image (Restriction : Restriction_Id) return String;
    --  Returns the capitalized image of Restriction
+
+   ---------------------------------------
+   -- GLADE specific output subprograms --
+   ---------------------------------------
+
+   package GLADE is
+
+      --  Any modification to this subunit requires a synchronization
+      --  with the GLADE implementation.
+
+      procedure Output_ALI    (A : ALI_Id);
+      procedure Output_No_ALI (Afile : File_Name_Type);
+
+   end GLADE;
 
    -----------------
    -- Add_Lib_Dir --
@@ -353,6 +369,409 @@ procedure Gnatls is
          end if;
       end if;
    end Find_Status;
+
+   -----------
+   -- GLADE --
+   -----------
+
+   package body GLADE is
+
+      N_Flags   : Natural;
+      N_Indents : Natural := 0;
+
+      type Token_Type is
+        (T_No_ALI,
+         T_ALI,
+         T_Unit,
+         T_With,
+         T_Source,
+         T_Afile,
+         T_Ofile,
+         T_Sfile,
+         T_Name,
+         T_Main,
+         T_Kind,
+         T_Flags,
+         T_Preelaborated,
+         T_Pure,
+         T_Has_RACW,
+         T_Remote_Types,
+         T_Shared_Passive,
+         T_RCI,
+         T_Predefined,
+         T_Internal,
+         T_Is_Generic,
+         T_Procedure,
+         T_Function,
+         T_Package,
+         T_Subprogram,
+         T_Spec,
+         T_Body);
+
+      Image : constant array (Token_Type) of String_Access :=
+        (T_No_ALI         => new String'("No_ALI"),
+         T_ALI            => new String'("ALI"),
+         T_Unit           => new String'("Unit"),
+         T_With           => new String'("With"),
+         T_Source         => new String'("Source"),
+         T_Afile          => new String'("Afile"),
+         T_Ofile          => new String'("Ofile"),
+         T_Sfile          => new String'("Sfile"),
+         T_Name           => new String'("Name"),
+         T_Main           => new String'("Main"),
+         T_Kind           => new String'("Kind"),
+         T_Flags          => new String'("Flags"),
+         T_Preelaborated  => new String'("Preelaborated"),
+         T_Pure           => new String'("Pure"),
+         T_Has_RACW       => new String'("Has_RACW"),
+         T_Remote_Types   => new String'("Remote_Types"),
+         T_Shared_Passive => new String'("Shared_Passive"),
+         T_RCI            => new String'("RCI"),
+         T_Predefined     => new String'("Predefined"),
+         T_Internal       => new String'("Internal"),
+         T_Is_Generic     => new String'("Is_Generic"),
+         T_Procedure      => new String'("procedure"),
+         T_Function       => new String'("function"),
+         T_Package        => new String'("package"),
+         T_Subprogram     => new String'("subprogram"),
+         T_Spec           => new String'("spec"),
+         T_Body           => new String'("body"));
+
+      procedure Output_Name  (N : Name_Id);
+      --  Remove any encoding info (%b and %s) and output N
+
+      procedure Output_Afile (A : File_Name_Type);
+      procedure Output_Ofile (O : File_Name_Type);
+      procedure Output_Sfile (S : File_Name_Type);
+      --  Output various names. Check that the name is different from
+      --  no name. Otherwise, skip the output.
+
+      procedure Output_Token (T : Token_Type);
+      --  Output token using a specific format. That is several
+      --  indentations and:
+      --
+      --  T_No_ALI  .. T_With : <token> & " =>" & NL
+      --  T_Source  .. T_Kind : <token> & " => "
+      --  T_Flags             : <token> & " =>"
+      --  T_Preelab .. T_Body : " " & <token>
+
+      procedure Output_Sdep  (S : Sdep_Id);
+      procedure Output_Unit  (U : Unit_Id);
+      procedure Output_With  (W : With_Id);
+      --  Output this entry as a global section (like ALIs)
+
+      ------------------
+      -- Output_Afile --
+      ------------------
+
+      procedure Output_Afile (A : File_Name_Type) is
+      begin
+         if A /= No_File then
+            Output_Token (T_Afile);
+            Write_Name (A);
+            Write_Eol;
+         end if;
+      end Output_Afile;
+
+      ----------------
+      -- Output_ALI --
+      ----------------
+
+      procedure Output_ALI (A : ALI_Id) is
+      begin
+         Output_Token (T_ALI);
+         N_Indents := N_Indents + 1;
+
+         Output_Afile (ALIs.Table (A).Afile);
+         Output_Ofile (ALIs.Table (A).Ofile_Full_Name);
+         Output_Sfile (ALIs.Table (A).Sfile);
+
+         --  Output Main
+
+         if ALIs.Table (A).Main_Program /= None then
+            Output_Token (T_Main);
+
+            if ALIs.Table (A).Main_Program = Proc then
+               Output_Token (T_Procedure);
+            else
+               Output_Token (T_Function);
+            end if;
+
+            Write_Eol;
+         end if;
+
+         --  Output Units
+
+         for U in ALIs.Table (A).First_Unit .. ALIs.Table (A).Last_Unit loop
+            Output_Unit (U);
+         end loop;
+
+         --  Output Sdeps
+
+         for S in ALIs.Table (A).First_Sdep .. ALIs.Table (A).Last_Sdep loop
+            Output_Sdep (S);
+         end loop;
+
+         N_Indents := N_Indents - 1;
+      end Output_ALI;
+
+      -------------------
+      -- Output_No_ALI --
+      -------------------
+
+      procedure Output_No_ALI (Afile : File_Name_Type) is
+      begin
+         Output_Token (T_No_ALI);
+         N_Indents := N_Indents + 1;
+         Output_Afile (Afile);
+         N_Indents := N_Indents - 1;
+      end Output_No_ALI;
+
+      -----------------
+      -- Output_Name --
+      -----------------
+
+      procedure Output_Name (N : Name_Id) is
+      begin
+         --  Remove any encoding info (%s or %b)
+
+         Get_Name_String (N);
+         if Name_Len > 2
+           and then Name_Buffer (Name_Len - 1) = '%'
+         then
+            Name_Len := Name_Len - 2;
+         end if;
+
+         Output_Token (T_Name);
+         Write_Str (Name_Buffer (1 .. Name_Len));
+         Write_Eol;
+      end Output_Name;
+
+      ------------------
+      -- Output_Ofile --
+      ------------------
+
+      procedure Output_Ofile (O : File_Name_Type) is
+      begin
+         if O /= No_File then
+            Output_Token (T_Ofile);
+            Write_Name (O);
+            Write_Eol;
+         end if;
+      end Output_Ofile;
+
+      -----------------
+      -- Output_Sdep --
+      -----------------
+
+      procedure Output_Sdep (S : Sdep_Id) is
+      begin
+         Output_Token (T_Source);
+         Write_Name (Sdep.Table (S).Sfile);
+         Write_Eol;
+      end Output_Sdep;
+
+      ------------------
+      -- Output_Sfile --
+      ------------------
+
+      procedure Output_Sfile (S : File_Name_Type) is
+         FS : File_Name_Type := S;
+
+      begin
+         if FS /= No_File then
+
+            --  We want to output the full source name
+
+            FS := Full_Source_Name (FS);
+
+            --  There is no full source name. This occurs for instance when a
+            --  withed unit has a spec file but no body file. This situation
+            --  is not a problem for GLADE since the unit may be located on
+            --  a partition we do not want to build. However, we need to
+            --  locate the spec file and to find its full source name.
+            --  Replace the body file name with the spec file name used to
+            --  compile the current unit when possible.
+
+            if FS = No_File then
+               Get_Name_String (S);
+
+               if Name_Len > 4
+                 and then Name_Buffer (Name_Len - 3 .. Name_Len) = ".adb"
+               then
+                  Name_Buffer (Name_Len) := 's';
+                  FS := Full_Source_Name (Name_Find);
+               end if;
+            end if;
+         end if;
+
+         if FS /= No_File then
+            Output_Token (T_Sfile);
+            Write_Name (FS);
+            Write_Eol;
+         end if;
+      end Output_Sfile;
+
+      ------------------
+      -- Output_Token --
+      ------------------
+
+      procedure Output_Token (T : Token_Type) is
+      begin
+         if T in T_No_ALI .. T_Flags then
+            for J in 1 .. N_Indents loop
+               Write_Str ("   ");
+            end loop;
+
+            Write_Str (Image (T).all);
+
+            for J in Image (T)'Length .. 12 loop
+               Write_Char (' ');
+            end loop;
+
+            Write_Str ("=>");
+
+            if T in T_No_ALI .. T_With then
+               Write_Eol;
+            elsif T in T_Source .. T_Name then
+               Write_Char (' ');
+            end if;
+
+         elsif T in T_Preelaborated .. T_Body then
+            if T in T_Preelaborated .. T_Is_Generic then
+               if N_Flags = 0 then
+                  Output_Token (T_Flags);
+               end if;
+
+               N_Flags := N_Flags + 1;
+            end if;
+
+            Write_Char (' ');
+            Write_Str  (Image (T).all);
+
+         else
+            Write_Str  (Image (T).all);
+         end if;
+      end Output_Token;
+
+      -----------------
+      -- Output_Unit --
+      -----------------
+
+      procedure Output_Unit (U : Unit_Id) is
+      begin
+         Output_Token (T_Unit);
+         N_Indents := N_Indents + 1;
+
+         --  Output Name
+
+         Output_Name (Units.Table (U).Uname);
+
+         --  Output Kind
+
+         Output_Token (T_Kind);
+
+         if Units.Table (U).Unit_Kind = 'p' then
+            Output_Token (T_Package);
+         else
+            Output_Token (T_Subprogram);
+         end if;
+
+         if Name_Buffer (Name_Len) = 's' then
+            Output_Token (T_Spec);
+         else
+            Output_Token (T_Body);
+         end if;
+
+         Write_Eol;
+
+         --  Output source file name
+
+         Output_Sfile (Units.Table (U).Sfile);
+
+         --  Output Flags
+
+         N_Flags := 0;
+
+         if Units.Table (U).Preelab then
+            Output_Token (T_Preelaborated);
+         end if;
+
+         if Units.Table (U).Pure then
+            Output_Token (T_Pure);
+         end if;
+
+         if Units.Table (U).Has_RACW then
+            Output_Token (T_Has_RACW);
+         end if;
+
+         if Units.Table (U).Remote_Types then
+            Output_Token (T_Remote_Types);
+         end if;
+
+         if Units.Table (U).Shared_Passive then
+            Output_Token (T_Shared_Passive);
+         end if;
+
+         if Units.Table (U).RCI then
+            Output_Token (T_RCI);
+         end if;
+
+         if Units.Table (U).Predefined then
+            Output_Token (T_Predefined);
+         end if;
+
+         if Units.Table (U).Internal then
+            Output_Token (T_Internal);
+         end if;
+
+         if Units.Table (U).Is_Generic then
+            Output_Token (T_Is_Generic);
+         end if;
+
+         if N_Flags > 0 then
+            Write_Eol;
+         end if;
+
+         --  Output Withs
+
+         for W in Units.Table (U).First_With .. Units.Table (U).Last_With loop
+            Output_With (W);
+         end loop;
+
+         N_Indents := N_Indents - 1;
+      end Output_Unit;
+
+      -----------------
+      -- Output_With --
+      -----------------
+
+      procedure Output_With (W : With_Id) is
+      begin
+         Output_Token (T_With);
+         N_Indents := N_Indents + 1;
+
+         Output_Name (Withs.Table (W).Uname);
+
+         --  Output Kind
+
+         Output_Token (T_Kind);
+
+         if Name_Buffer (Name_Len) = 's' then
+            Output_Token (T_Spec);
+         else
+            Output_Token (T_Body);
+         end if;
+
+         Write_Eol;
+
+         Output_Afile (Withs.Table (W).Afile);
+         Output_Sfile (Withs.Table (W).Sfile);
+
+         N_Indents := N_Indents - 1;
+      end Output_With;
+
+   end GLADE;
 
    -----------
    -- Image --
@@ -629,6 +1048,7 @@ procedure Gnatls is
             declare
                Restrictions : constant Restrictions_Info :=
                                 ALIs.Table (ALI).Restrictions;
+
             begin
                --  If the source was compiled with pragmas Restrictions,
                --  Display these restrictions.
@@ -721,6 +1141,7 @@ procedure Gnatls is
    procedure Scan_Ls_Arg (Argv : String) is
       FD  : File_Descriptor;
       Len : Integer;
+
    begin
       pragma Assert (Argv'First = 1);
 
@@ -729,7 +1150,6 @@ procedure Gnatls is
       end if;
 
       if Argv (1) = '-' then
-
          if Argv'Length = 1 then
             Fail ("switch character cannot be followed by a blank");
 
@@ -782,6 +1202,7 @@ procedure Gnatls is
                when 'o' => Reset_Print; Print_Object := True;
                when 'v' => Verbose_Mode              := True;
                when 'd' => Dependable                := True;
+               when 'V' => Very_Verbose_Mode         := True;
 
                when others => null;
             end case;
@@ -911,9 +1332,6 @@ procedure Gnatls is
    -----------
 
    procedure Usage is
-
-   --  Start of processing for Usage
-
    begin
       --  Usage line
 
@@ -1020,7 +1438,7 @@ procedure Gnatls is
 
    end Usage;
 
-   --   Start of processing for Gnatls
+--   Start of processing for Gnatls
 
 begin
    --  Initialize standard packages
@@ -1062,11 +1480,6 @@ begin
 
    if Verbose_Mode then
       Targparm.Get_Target_Parameters;
-
-      --  WARNING: the output of gnatls -v is used during the compilation
-      --  and installation of GLADE to recreate sdefault.adb and locate
-      --  the libgnat.a to use. Any change in the output of gnatls -v must
-      --  be synchronized with the GLADE Dist/config.sdefault shell script.
 
       Write_Eol;
       Write_Str ("GNATLS ");
@@ -1132,15 +1545,20 @@ begin
 
    while More_Lib_Files loop
       Main_File := Next_Main_Lib_File;
-      Ali_File := Full_Lib_File_Name (Lib_File_Name (Main_File));
+      Ali_File  := Full_Lib_File_Name (Lib_File_Name (Main_File));
 
       if Ali_File = No_File then
-         Write_Str ("Can't find library info for ");
-         Get_Name_String (Main_File);
-         Write_Char ('"');
-         Write_Str (Name_Buffer (1 .. Name_Len));
-         Write_Char ('"');
-         Write_Eol;
+         if Very_Verbose_Mode then
+            GLADE.Output_No_ALI (Lib_File_Name (Main_File));
+
+         else
+            Write_Str ("Can't find library info for ");
+            Get_Name_String (Main_File);
+            Write_Char ('"'); -- "
+            Write_Str (Name_Buffer (1 .. Name_Len));
+            Write_Char ('"'); -- "
+            Write_Eol;
+         end if;
 
       else
          Ali_File := Strip_Directory (Ali_File);
@@ -1165,6 +1583,14 @@ begin
          end if;
       end if;
    end loop;
+
+   if Very_Verbose_Mode then
+      for A in ALIs.First .. ALIs.Last loop
+         GLADE.Output_ALI (A);
+      end loop;
+
+      return;
+   end if;
 
    Find_General_Layout;
 

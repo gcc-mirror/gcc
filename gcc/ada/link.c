@@ -157,9 +157,9 @@ const char *__gnat_object_library_extension = ".a";
 char *__gnat_object_file_option = "";
 char *__gnat_run_path_option = "-Wl,-rpath,";
 char __gnat_shared_libgnat_default = STATIC;
-int __gnat_link_max = 2147483647;
-unsigned char __gnat_objlist_file_supported = 0;
-unsigned char __gnat_using_gnu_linker = 0;
+int __gnat_link_max = 8192;
+unsigned char __gnat_objlist_file_supported = 1;
+unsigned char __gnat_using_gnu_linker = 1;
 char *__gnat_object_library_extension = ".a";
 
 #elif defined (linux)

@@ -52,8 +52,8 @@
 
 --  On all platforms except VMS, this package is not intended to be used
 --  within a shared library, symbolic tracebacks are only supported for the
---  main executable and not for shared libraries.
---  You should consider using gdb to obtain symbolic traceback in such cases.
+--  main executable and not for shared libraries. You should consider using
+--  gdb to obtain symbolic traceback in such cases.
 
 --  On VMS, there is no restriction on using this facility with shared
 --  libraries. However, the OS should be at least v7.3-1 and OS patch

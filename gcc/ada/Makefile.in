@@ -308,7 +308,7 @@ GNATMAKE_OBJS = a-except.o ctrl_c.o ali.o ali-util.o s-casuti.o \
  gnatmake.o gnatvsn.o hostparm.o interfac.o i-c.o i-cstrin.o krunch.o lib.o \
  make.o makeusg.o makeutl.o mlib.o mlib-fil.o mlib-prj.o mlib-tgt.o mlib-utl.o \
  namet.o nlists.o opt.o osint.o osint-m.o output.o \
- prj.o prj-attr.o prj-com.o prj-dect.o prj-env.o prj-err.o prj-ext.o prj-nmsc.o \
+ prj.o prj-attr.o prj-attr-pm.o prj-com.o prj-dect.o prj-env.o prj-err.o prj-ext.o prj-nmsc.o \
  prj-pars.o prj-part.o prj-proc.o prj-strt.o prj-tree.o prj-util.o \
  rident.o s-exctab.o s-secsta.o s-stalib.o s-stoele.o \
  scans.o scng.o sdefault.o sfn_scan.o s-purexc.o s-htable.o \

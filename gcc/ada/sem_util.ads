@@ -110,8 +110,7 @@ package Sem_Util is
 
    procedure Check_Potentially_Blocking_Operation (N : Node_Id);
    --  N is one of the statement forms that is a potentially blocking
-   --  operation. If it appears within a protected action, emit warning
-   --  and raise Program_Error.
+   --  operation. If it appears within a protected action, emit warning.
 
    procedure Check_VMS (Construct : Node_Id);
    --  Check that this the target is OpenVMS, and if so, return with

@@ -45,8 +45,10 @@ package body System.Partition_Interface is
    type Pkg_Node;
    type Pkg_List is access Pkg_Node;
    type Pkg_Node is record
-      Name : String_Access;
-      Next : Pkg_List;
+      Name          : String_Access;
+      Subp_Info     : System.Address;
+      Subp_Info_Len : Integer;
+      Next          : Pkg_List;
    end record;
 
    Pkg_Head : Pkg_List;
@@ -63,9 +65,9 @@ package body System.Partition_Interface is
    --  String prepended in top of shared passive packages
 
    procedure Check
-     (Name    : in Unit_Name;
-      Version : in String;
-      RCI     : in Boolean := True)
+     (Name    : Unit_Name;
+      Version : String;
+      RCI     : Boolean := True)
    is
    begin
       null;
@@ -76,8 +78,7 @@ package body System.Partition_Interface is
    -----------------------------
 
    function Get_Active_Partition_ID
-     (Name : Unit_Name)
-      return System.RPC.Partition_ID
+     (Name : Unit_Name) return System.RPC.Partition_ID
    is
       P : Pkg_List := Pkg_Head;
       N : String   := Lower (Name);
@@ -98,10 +99,7 @@ package body System.Partition_Interface is
    -- Get_Active_Version --
    ------------------------
 
-   function Get_Active_Version
-     (Name : Unit_Name)
-      return String
-   is
+   function Get_Active_Version (Name : Unit_Name) return String is
    begin
       return "";
    end Get_Active_Version;
@@ -120,8 +118,7 @@ package body System.Partition_Interface is
    ------------------------------
 
    function Get_Passive_Partition_ID
-     (Name : Unit_Name)
-      return System.RPC.Partition_ID
+     (Name : Unit_Name) return System.RPC.Partition_ID
    is
    begin
       return Get_Local_Partition_ID;
@@ -131,21 +128,50 @@ package body System.Partition_Interface is
    -- Get_Passive_Version --
    -------------------------
 
-   function Get_Passive_Version
-     (Name : Unit_Name)
-      return String
-   is
+   function Get_Passive_Version (Name : Unit_Name) return String is
    begin
       return "";
    end Get_Passive_Version;
+
+   ------------------
+   -- Get_RAS_Info --
+   ------------------
+
+   procedure Get_RAS_Info
+     (Name          :  Unit_Name;
+      Subp_Id       :  Subprogram_Id;
+      Proxy_Address : out Interfaces.Unsigned_64)
+   is
+      LName : constant String := Lower (Name);
+      N : Pkg_List;
+   begin
+      N := Pkg_Head;
+      while N /= null loop
+         if N.Name.all = LName then
+            declare
+               subtype Subprogram_Array is RCI_Subp_Info_Array
+                 (First_RCI_Subprogram_Id ..
+                  First_RCI_Subprogram_Id + N.Subp_Info_Len - 1);
+               Subprograms : Subprogram_Array;
+               for Subprograms'Address use N.Subp_Info;
+               pragma Import (Ada, Subprograms);
+            begin
+               Proxy_Address :=
+                 Interfaces.Unsigned_64 (Subprograms (Integer (Subp_Id)).Addr);
+               return;
+            end;
+         end if;
+         N := N.Next;
+      end loop;
+      Proxy_Address := 0;
+   end Get_RAS_Info;
 
    ------------------------------
    -- Get_RCI_Package_Receiver --
    ------------------------------
 
    function Get_RCI_Package_Receiver
-     (Name : Unit_Name)
-      return Interfaces.Unsigned_64
+     (Name : Unit_Name) return Interfaces.Unsigned_64
    is
    begin
       return 0;
@@ -186,7 +212,7 @@ package body System.Partition_Interface is
    -------------------------------------
 
    procedure Raise_Program_Error_Unknown_Tag
-     (E : in Ada.Exceptions.Exception_Occurrence)
+     (E : Ada.Exceptions.Exception_Occurrence)
    is
    begin
       Ada.Exceptions.Raise_Exception
@@ -235,11 +261,12 @@ package body System.Partition_Interface is
    ------------------------------
 
    procedure Register_Passive_Package
-     (Name    : in Unit_Name;
-      Version : in String := "")
+     (Name    : Unit_Name;
+      Version : String := "")
    is
    begin
-      Register_Receiving_Stub (Passive_Prefix & Name, null, Version);
+      Register_Receiving_Stub
+        (Passive_Prefix & Name, null, Version, System.Null_Address, 0);
    end Register_Passive_Package;
 
    -----------------------------
@@ -247,19 +274,23 @@ package body System.Partition_Interface is
    -----------------------------
 
    procedure Register_Receiving_Stub
-     (Name     : in Unit_Name;
-      Receiver : in RPC.RPC_Receiver;
-      Version  : in String := "")
+     (Name          : Unit_Name;
+      Receiver      : RPC.RPC_Receiver;
+      Version       : String := "";
+      Subp_Info     : System.Address;
+      Subp_Info_Len : Integer)
    is
+      N : constant Pkg_List :=
+            new Pkg_Node'(new String'(Lower (Name)),
+                          Subp_Info, Subp_Info_Len,
+                          Next => null);
    begin
       if Pkg_Tail = null then
-         Pkg_Head := new Pkg_Node'(new String'(Lower (Name)), null);
-         Pkg_Tail := Pkg_Head;
-
+         Pkg_Head := N;
       else
-         Pkg_Tail.Next := new Pkg_Node'(new String'(Lower (Name)), null);
-         Pkg_Tail := Pkg_Tail.Next;
+         Pkg_Tail.Next := N;
       end if;
+      Pkg_Tail := N;
    end Register_Receiving_Stub;
 
    ---------
@@ -267,7 +298,7 @@ package body System.Partition_Interface is
    ---------
 
    procedure Run
-     (Main : in Main_Subprogram_Type := null)
+     (Main : Main_Subprogram_Type := null)
    is
    begin
       if Main /= null then

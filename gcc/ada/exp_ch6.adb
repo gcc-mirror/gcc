@@ -3043,7 +3043,8 @@ package body Exp_Ch6 is
    -- Expand_N_Subprogram_Body --
    ------------------------------
 
-   --  Add poll call if ATC polling is enabled
+   --  Add poll call if ATC polling is enabled, unless the body will be
+   --  inlined by the back-end.
 
    --  Add return statement if last statement in body is not a return
    --  statement (this makes things easier on Gigi which does not want
@@ -3272,14 +3273,6 @@ package body Exp_Ch6 is
          L := Statements (Handled_Statement_Sequence (N));
       end if;
 
-      --  Need poll on entry to subprogram if polling enabled. We only
-      --  do this for non-empty subprograms, since it does not seem
-      --  necessary to poll for a dummy null subprogram.
-
-      if Is_Non_Empty_List (L) then
-         Generate_Poll_Call (First (L));
-      end if;
-
       --  Find entity for subprogram
 
       Body_Id := Defining_Entity (N);
@@ -3288,6 +3281,23 @@ package body Exp_Ch6 is
          Spec_Id := Corresponding_Spec (N);
       else
          Spec_Id := Body_Id;
+      end if;
+
+      --  Need poll on entry to subprogram if polling enabled. We only
+      --  do this for non-empty subprograms, since it does not seem
+      --  necessary to poll for a dummy null subprogram. Do not add polling
+      --  point if calls to this subprogram will be inlined by the back-end,
+      --  to avoid repeated polling points in nested inlinings.
+
+      if Is_Non_Empty_List (L) then
+         if Is_Inlined (Spec_Id)
+           and then Front_End_Inlining
+           and then Optimization_Level > 1
+         then
+            null;
+         else
+            Generate_Poll_Call (First (L));
+         end if;
       end if;
 
       --  If this is a Pure function which has any parameters whose root

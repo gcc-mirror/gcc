@@ -102,6 +102,10 @@ package body System.Tasking.Rendezvous is
      Accept_Alternative_Open,
      No_Alternative_Open);
 
+   ----------------
+   -- Local Data --
+   ----------------
+
    Default_Treatment : constant array (Select_Modes) of Select_Treatment :=
      (Simple_Mode         => No_Alternative_Open,
       Else_Mode           => Else_Selected,
@@ -391,7 +395,19 @@ package body System.Tasking.Rendezvous is
       Uninterpreted_Data : System.Address)
    is
       Rendezvous_Successful : Boolean;
+
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then STPO.Self.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       Call_Synchronous
         (Acceptor, E, Uninterpreted_Data, Simple_Call, Rendezvous_Successful);
    end Call_Simple;
@@ -1309,6 +1325,17 @@ package body System.Tasking.Rendezvous is
       Entry_Call : Entry_Call_Link;
 
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then Self_Id.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       if Parameters.Runtime_Traces then
          Send_Trace_Info (W_Call, Acceptor, Entry_Index (E));
       end if;
@@ -1668,6 +1695,17 @@ package body System.Tasking.Rendezvous is
       Yielded    : Boolean;
 
    begin
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action.
+
+      if System.Tasking.Detect_Blocking
+        and then Self_Id.Common.Protected_Action_Nesting > 0
+      then
+         Ada.Exceptions.Raise_Exception
+           (Program_Error'Identity, "potentially blocking operation");
+      end if;
+
       Initialization.Defer_Abort (Self_Id);
       Self_Id.ATC_Nesting_Level := Self_Id.ATC_Nesting_Level + 1;
 

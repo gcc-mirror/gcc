@@ -114,6 +114,22 @@ extern tree maybe_variable (tree);
    position so that it is aligned to ALIGN bits and is SIZE bytes long.  */
 extern tree make_aligning_type (tree, int, tree);
 
+/* Ensure that TYPE has SIZE and ALIGN.  Make and return a new padded type
+   if needed.  We have already verified that SIZE and TYPE are large enough.
+
+   GNAT_ENTITY and NAME_TRAILER are used to name the resulting record and
+   to issue a warning.
+
+   IS_USER_TYPE is true if we must be sure we complete the original type.
+
+   DEFINITION is true if this type is being defined.
+
+   SAME_RM_SIZE is true if the RM_Size of the resulting type is to be
+   set to its TYPE_SIZE; otherwise, it's set to the RM_Size of the original
+   type.  */
+extern tree maybe_pad_type (tree, tree, unsigned int, Entity_Id,
+			    const char *, bool, bool, bool);
+
 /* Given a GNU tree and a GNAT list of choices, generate an expression to test
    the value passed against the list of choices.  */
 extern tree choices_to_gnu (tree, Node_Id);
@@ -446,8 +462,10 @@ extern void finish_record_type (tree, tree, bool, bool);
    RETURNS_UNCONSTRAINED is true if the function returns an unconstrained
    object.  RETURNS_BY_REF is true if the function returns by reference.
    RETURNS_WITH_DSP is true if the function is to return with a
-   depressed stack pointer.  */
-extern tree create_subprog_type (tree, tree, tree, bool, bool, bool);
+   depressed stack pointer.  RETURNS_BY_TARGET_PTR is true if the function
+   is to be passed (as its first parameter) the address of the place to copy
+   its result.  */
+extern tree create_subprog_type (tree, tree, tree, bool, bool, bool, bool);
 
 /* Return a copy of TYPE, but safe to modify in any way.  */
 extern tree copy_type (tree);

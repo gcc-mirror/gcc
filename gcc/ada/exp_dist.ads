@@ -83,4 +83,21 @@ package Exp_Dist is
       E   : Entity_Id) return Node_Id;
    --  Build a literal representing the remote subprogram identifier of E
 
+   function Copy_Specification
+     (Loc         : Source_Ptr;
+      Spec        : Node_Id;
+      Object_Type : Entity_Id := Empty;
+      Stub_Type   : Entity_Id := Empty;
+      New_Name    : Name_Id   := No_Name) return Node_Id;
+   --  Build a subprogram specification from another one, or from
+   --  an access-to-subprogram definition. If Object_Type is not Empty
+   --  and any access to Object_Type is found, then it is replaced by an
+   --  access to Stub_Type. If New_Name is given, then it will be used as
+   --  the name for the newly created spec.
+
+   function Underlying_RACW_Type
+     (RAS_Typ : Entity_Id) return Entity_Id;
+   --  Given a remote access-to-subprogram type or its equivalent
+   --  record type, return the RACW type generated to implement it.
+
 end Exp_Dist;

@@ -117,6 +117,7 @@ Implementation Defined Pragmas
 * Pragma CPP_Virtual::
 * Pragma CPP_Vtable::
 * Pragma Debug::
+* Pragma Detect_Blocking::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
 * Pragma Export_Exception::
@@ -308,7 +309,7 @@ The GNAT Library
 * GNAT.Memory_Dump (g-memdum.ads)::
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
 * GNAT.OS_Lib (g-os_lib.ads)::
-* GNAT.Perfect_Hash.Generators (g-pehage.ads)::
+* GNAT.Perfect_Hash_Generators (g-pehage.ads)::
 * GNAT.Regexp (g-regexp.ads)::
 * GNAT.Registry (g-regist.ads)::
 * GNAT.Regpat (g-regpat.ads)::
@@ -632,6 +633,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma CPP_Virtual::
 * Pragma CPP_Vtable::
 * Pragma Debug::
+* Pragma Detect_Blocking::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
 * Pragma Export_Exception::
@@ -1329,6 +1331,21 @@ equivalent to the procedure call statement corresponding to the argument
 with a terminating semicolon.  Pragmas are permitted in sequences of
 declarations, so you can use pragma @code{Debug} to intersperse calls to
 debug procedures in the middle of declarations.
+
+@node Pragma Detect_Blocking
+@unnumberedsec Pragma Detect_Blocking
+@findex Detect_Blocking
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Detect_Blocking;
+@end smallexample
+
+@noindent
+This is a configuration pragma that forces the detection of potentially
+blocking operations within a protected operation, and to raise Program_Error
+if that happens.
 
 @node Pragma Elaboration_Checks
 @unnumberedsec Pragma Elaboration_Checks
@@ -11495,7 +11512,7 @@ of GNAT, and will generate a warning message.
 * GNAT.Memory_Dump (g-memdum.ads)::
 * GNAT.Most_Recent_Exception (g-moreex.ads)::
 * GNAT.OS_Lib (g-os_lib.ads)::
-* GNAT.Perfect_Hash.Generators (g-pehage.ads)::
+* GNAT.Perfect_Hash_Generators (g-pehage.ads)::
 * GNAT.Regexp (g-regexp.ads)::
 * GNAT.Registry (g-regist.ads)::
 * GNAT.Regpat (g-regpat.ads)::
@@ -12137,9 +12154,9 @@ including time/date management, file operations, subprocess management,
 including a portable spawn procedure, and access to environment variables
 and error return codes.
 
-@node GNAT.Perfect_Hash.Generators (g-pehage.ads)
-@section @code{GNAT.Perfect_Hash.Generators} (@file{g-pehage.ads})
-@cindex @code{GNAT.Perfect_Hash.Generators} (@file{g-pehage.ads})
+@node GNAT.Perfect_Hash_Generators (g-pehage.ads)
+@section @code{GNAT.Perfect_Hash_Generators} (@file{g-pehage.ads})
+@cindex @code{GNAT.Perfect_Hash_Generators} (@file{g-pehage.ads})
 @cindex Hash functions
 
 @noindent

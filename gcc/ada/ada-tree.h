@@ -131,6 +131,11 @@ struct lang_type GTY(()) {tree t; };
 #define TYPE_RETURNS_BY_REF_P(NODE) \
   TYPE_LANG_FLAG_4 (FUNCTION_TYPE_CHECK (NODE))
 
+/* For FUNCTION_TYPEs, nonzero if function returns by being passed a pointer
+   to a place to store its result.  */
+#define TYPE_RETURNS_BY_TARGET_PTR_P(NODE) \
+  TYPE_LANG_FLAG_5 (FUNCTION_TYPE_CHECK (NODE))
+
 /* For VOID_TYPE, ENUMERAL_TYPE, UNION_TYPE, and RECORD_TYPE, nonzero if this
    is a dummy type, made to correspond to a private or incomplete type.  */
 #define TYPE_DUMMY_P(NODE) TYPE_LANG_FLAG_4 (NODE)

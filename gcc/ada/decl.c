@@ -89,8 +89,6 @@ static bool is_variable_size (tree);
 static tree elaborate_expression_1 (Node_Id, Entity_Id, tree, tree,
 				    bool, bool);
 static tree make_packable_type (tree);
-static tree maybe_pad_type (tree, tree, unsigned int, Entity_Id, const char *,
-                            bool, bool, bool);
 static tree gnat_to_gnu_field (Entity_Id, tree, int, bool);
 static void components_to_record (tree, Node_Id, tree, int, bool, tree *,
                                   bool, bool);
@@ -877,13 +875,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      gnu_expr = gnu_address;
 	    else
 	      gnu_expr
-		= build (COMPOUND_EXPR, gnu_type,
-			 build_binary_op
-			 (MODIFY_EXPR, NULL_TREE,
-			  build_unary_op (INDIRECT_REF, NULL_TREE,
-					  gnu_address),
-			  gnu_expr),
-			 gnu_address);
+		= build2 (COMPOUND_EXPR, gnu_type,
+			  build_binary_op
+			  (MODIFY_EXPR, NULL_TREE,
+			   build_unary_op (INDIRECT_REF, NULL_TREE,
+					   gnu_address),
+			   gnu_expr),
+			  gnu_address);
 	  }
 
 	/* If it has an address clause and we are not defining it, mark it
@@ -1234,8 +1232,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  {
 	    TYPE_MODULAR_P (gnu_type) = 1;
 	    SET_TYPE_MODULUS (gnu_type, gnu_modulus);
-	    gnu_high = fold (build (MINUS_EXPR, gnu_type, gnu_modulus,
-				    convert (gnu_type, integer_one_node)));
+	    gnu_high = fold (build2 (MINUS_EXPR, gnu_type, gnu_modulus,
+				     convert (gnu_type, integer_one_node)));
 	  }
 
 	/* If we have to set TYPE_PRECISION different from its natural value,
@@ -1511,9 +1509,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* Build a reference to the template from a PLACEHOLDER_EXPR that
 	   is the fat pointer.  This will be used to access the individual
 	   fields once we build them.  */
-	tem = build (COMPONENT_REF, gnu_ptr_template,
-		     build (PLACEHOLDER_EXPR, gnu_fat_type),
-		     TREE_CHAIN (TYPE_FIELDS (gnu_fat_type)), NULL_TREE);
+	tem = build3 (COMPONENT_REF, gnu_ptr_template,
+		      build0 (PLACEHOLDER_EXPR, gnu_fat_type),
+		      TREE_CHAIN (TYPE_FIELDS (gnu_fat_type)), NULL_TREE);
 	gnu_template_reference
 	  = build_unary_op (INDIRECT_REF, gnu_template_type, tem);
 	TREE_READONLY (gnu_template_reference) = 1;
@@ -1559,10 +1557,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    /* We can't use build_component_ref here since the template
 	       type isn't complete yet.  */
-	    gnu_min = build (COMPONENT_REF, gnu_ind_subtype,
-			     gnu_template_reference, gnu_min_field, NULL_TREE);
-	    gnu_max = build (COMPONENT_REF, gnu_ind_subtype,
-			     gnu_template_reference, gnu_max_field, NULL_TREE);
+	    gnu_min = build3 (COMPONENT_REF, gnu_ind_subtype,
+			      gnu_template_reference, gnu_min_field,
+			      NULL_TREE);
+	    gnu_max = build3 (COMPONENT_REF, gnu_ind_subtype,
+			      gnu_template_reference, gnu_max_field,
+			      NULL_TREE);
 	    TREE_READONLY (gnu_min) = TREE_READONLY (gnu_max) = 1;
 
 	    /* Make a range type with the new ranges, but using
@@ -1802,9 +1802,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  && TREE_CODE (gnu_max) == INTEGER_CST
 		  && TREE_OVERFLOW (gnu_min) && TREE_OVERFLOW (gnu_max)
 		  && (!TREE_OVERFLOW
-		      (fold (build (MINUS_EXPR, gnu_index_subtype,
-				    TYPE_MAX_VALUE (gnu_index_subtype),
-				    TYPE_MIN_VALUE (gnu_index_subtype))))))
+		      (fold (build2 (MINUS_EXPR, gnu_index_subtype,
+				     TYPE_MAX_VALUE (gnu_index_subtype),
+				     TYPE_MIN_VALUE (gnu_index_subtype))))))
 		TREE_OVERFLOW (gnu_min) = TREE_OVERFLOW (gnu_max)
 		  = TREE_CONSTANT_OVERFLOW (gnu_min)
 		  = TREE_CONSTANT_OVERFLOW (gnu_max) = 0;
@@ -2360,11 +2360,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       COMPONENT_REF which will be filled in below, once
 	       the parent type can be safely built.  */
 
-	    gnu_get_parent = build (COMPONENT_REF, void_type_node,
-				    build (PLACEHOLDER_EXPR, gnu_type),
-				    build_decl (FIELD_DECL, NULL_TREE,
-						NULL_TREE),
-				    NULL_TREE);
+	    gnu_get_parent = build3 (COMPONENT_REF, void_type_node,
+				     build0 (PLACEHOLDER_EXPR, gnu_type),
+				     build_decl (FIELD_DECL, NULL_TREE,
+						 NULL_TREE),
+				     NULL_TREE);
 
 	    if (Has_Discriminants (gnat_entity))
 	      for (gnat_field = First_Stored_Discriminant (gnat_entity);
@@ -2373,13 +2373,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		if (Present (Corresponding_Discriminant (gnat_field)))
 		  save_gnu_tree
 		    (gnat_field,
-		     build (COMPONENT_REF,
-			    get_unpadded_type (Etype (gnat_field)),
-			    gnu_get_parent,
-			    gnat_to_gnu_entity (Corresponding_Discriminant
-						(gnat_field),
+		     build3 (COMPONENT_REF,
+			     get_unpadded_type (Etype (gnat_field)),
+			     gnu_get_parent,
+			     gnat_to_gnu_entity (Corresponding_Discriminant
+						 (gnat_field),
 						NULL_TREE, 0),
-			    NULL_TREE),
+			     NULL_TREE),
 		     true);
 
 	    gnu_parent = gnat_to_gnu_type (Parent_Subtype (gnat_entity));
@@ -2418,10 +2418,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		 corresponding GNAT defining identifier.  Then add to the
 		 list of fields.  */
 	      save_gnu_tree (gnat_field,
-			     build (COMPONENT_REF, TREE_TYPE (gnu_field),
-				    build (PLACEHOLDER_EXPR,
-					   DECL_CONTEXT (gnu_field)),
-				    gnu_field, NULL_TREE),
+			     build3 (COMPONENT_REF, TREE_TYPE (gnu_field),
+				     build0 (PLACEHOLDER_EXPR,
+					     DECL_CONTEXT (gnu_field)),
+				     gnu_field, NULL_TREE),
 			     true);
 
 	      TREE_CHAIN (gnu_field) = gnu_field_list;
@@ -3243,6 +3243,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	bool volatile_flag = No_Return (gnat_entity);
 	bool returns_by_ref = false;
 	bool returns_unconstrained = false;
+	bool returns_by_target_ptr = false;
 	tree gnu_ext_name = create_concat_name (gnat_entity, 0);
 	bool has_copy_in_out = false;
 	int parmnum;
@@ -3323,9 +3324,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     || Has_Foreign_Convention (gnat_entity)))
 	  gnu_return_type = TREE_TYPE (TYPE_FIELDS (gnu_return_type));
 
-	/* Look at all our parameters and get the type of
-	   each.  While doing this, build a copy-out structure if
-	   we need one.  */
+	/* If the return type is unconstrained, that means it must have a
+	   maximum size.  We convert the function into a procedure and its
+	   caller will pass a pointer to an object of that maximum size as the
+	   first parameter when we call the function.  */
+	if (CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_return_type)))
+	  {
+	    returns_by_target_ptr = true;
+	    gnu_param_list
+	      = create_param_decl (get_identifier ("TARGET"),
+				   build_reference_type (gnu_return_type),
+				   true);
+	    gnu_return_type = void_type_node;
+	  }
 
 	/* If the return type has a size that overflows, we cannot have
 	   a function that returns that type.  This usage doesn't make
@@ -3339,8 +3350,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    TYPE_SIZE (gnu_return_type) = bitsize_zero_node;
 	    TYPE_SIZE_UNIT (gnu_return_type) = size_zero_node;
 	    TYPE_MAIN_VARIANT (gnu_return_type) = gnu_return_type;
-	    TYPE_NEXT_VARIANT (gnu_return_type) = 0;
+	    TYPE_NEXT_VARIANT (gnu_return_type) = NULL_TREE;
 	  }
+
+	/* Look at all our parameters and get the type of
+	   each.  While doing this, build a copy-out structure if
+	   we need one.  */
 
 	for (gnat_param = First_Formal (gnat_entity), parmnum = 0;
 	     Present (gnat_param);
@@ -3599,7 +3614,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  = create_subprog_type (gnu_return_type, gnu_param_list,
 				 gnu_return_list, returns_unconstrained,
 				 returns_by_ref,
-				 Function_Returns_With_DSP (gnat_entity));
+				 Function_Returns_With_DSP (gnat_entity),
+				 returns_by_target_ptr);
 
 	/* A subprogram (something that doesn't return anything) shouldn't
 	   be considered Pure since there would be no reason for such a
@@ -4524,9 +4540,9 @@ elaborate_expression_1 (Node_Id gnat_expr, Entity_Id gnat_entity,
      here.  We have to hope it will be at the highest level of the
      expression in these cases.  */
   if (TREE_CODE (gnu_expr) == FIELD_DECL)
-    gnu_expr = build (COMPONENT_REF, TREE_TYPE (gnu_expr),
-		      build (PLACEHOLDER_EXPR, DECL_CONTEXT (gnu_expr)),
-		      gnu_expr, NULL_TREE);
+    gnu_expr = build3 (COMPONENT_REF, TREE_TYPE (gnu_expr),
+		       build0 (PLACEHOLDER_EXPR, DECL_CONTEXT (gnu_expr)),
+		       gnu_expr, NULL_TREE);
 
   /* If GNU_EXPR is neither a placeholder nor a constant, nor a variable
      that is a constant, make a variable that is initialized to contain the
@@ -4576,7 +4592,7 @@ tree
 make_aligning_type (tree type, int align, tree size)
 {
   tree record_type = make_node (RECORD_TYPE);
-  tree place = build (PLACEHOLDER_EXPR, record_type);
+  tree place = build0 (PLACEHOLDER_EXPR, record_type);
   tree size_addr_place = convert (sizetype,
 				  build_unary_op (ADDR_EXPR, NULL_TREE,
 						  place));
@@ -4701,7 +4717,7 @@ make_packable_type (tree type)
    set to its TYPE_SIZE; otherwise, it's set to the RM_Size of the original
    type.  */
 
-static tree
+tree
 maybe_pad_type (tree type, tree size, unsigned int align,
                 Entity_Id gnat_entity, const char *name_trailer,
                 bool is_user_type, bool definition, bool same_rm_size)
@@ -5587,7 +5603,7 @@ annotate_value (tree gnu_size)
 
 	  temp = build1 (NEGATE_EXPR, bitsizetype, negative_size);
 	  if (adjust)
-	    temp = build (MINUS_EXPR, bitsizetype, temp, bitsize_one_node);
+	    temp = build2 (MINUS_EXPR, bitsizetype, temp, bitsize_one_node);
 
 	  return annotate_value (temp);
 	}

@@ -95,18 +95,18 @@ UI_To_gnu (Uint Input, tree type)
       gnu_ret = build_cst_from_int (comp_type, First);
       if (First < 0)
 	for (Idx++, Length--; Length; Idx++, Length--)
-	  gnu_ret = fold (build (MINUS_EXPR, comp_type,
-				 fold (build (MULT_EXPR, comp_type,
-					      gnu_ret, gnu_base)),
-				 build_cst_from_int (comp_type,
-						     Udigits_Ptr[Idx])));
+	  gnu_ret = fold (build2 (MINUS_EXPR, comp_type,
+				  fold (build2 (MULT_EXPR, comp_type,
+						gnu_ret, gnu_base)),
+				  build_cst_from_int (comp_type,
+						      Udigits_Ptr[Idx])));
       else
 	for (Idx++, Length--; Length; Idx++, Length--)
-	  gnu_ret = fold (build (PLUS_EXPR, comp_type,
-				 fold (build (MULT_EXPR, comp_type,
-					      gnu_ret, gnu_base)),
-				 build_cst_from_int (comp_type,
-						     Udigits_Ptr[Idx])));
+	  gnu_ret = fold (build2 (PLUS_EXPR, comp_type,
+				  fold (build2 (MULT_EXPR, comp_type,
+						gnu_ret, gnu_base)),
+				  build_cst_from_int (comp_type,
+						      Udigits_Ptr[Idx])));
     }
 
   gnu_ret = convert (type, gnu_ret);

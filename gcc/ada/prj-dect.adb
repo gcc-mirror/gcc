@@ -24,17 +24,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Err_Vars; use Err_Vars;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Prj.Err;  use Prj.Err;
-with Prj.Strt; use Prj.Strt;
-with Prj.Tree; use Prj.Tree;
-with Scans;    use Scans;
+with Err_Vars;    use Err_Vars;
+with Namet;       use Namet;
+with Opt;         use Opt;
+with Prj.Err;     use Prj.Err;
+with Prj.Strt;    use Prj.Strt;
+with Prj.Tree;    use Prj.Tree;
+with Scans;       use Scans;
 with Snames;
-with Types;    use Types;
-with Prj.Attr; use Prj.Attr;
-with Uintp;    use Uintp;
+with Types;       use Types;
+with Prj.Attr;    use Prj.Attr;
+with Prj.Attr.PM; use Prj.Attr.PM;
+with Uintp;       use Uintp;
 
 package body Prj.Dect is
 
@@ -876,7 +877,6 @@ package body Prj.Dect is
       --  Scan past "package"
 
       Scan;
-
       Expect (Tok_Identifier, "identifier");
 
       if Token = Tok_Identifier then

@@ -83,6 +83,7 @@ package body System.Tasking is
       T.Common.Parent := Parent;
       T.Common.Base_Priority := Base_Priority;
       T.Common.Current_Priority := 0;
+      T.Common.Protected_Action_Nesting := 0;
       T.Common.Call := null;
       T.Common.Task_Arg := Task_Arg;
       T.Common.Task_Entry_Point := Task_Entry_Point;

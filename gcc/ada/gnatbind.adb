@@ -605,7 +605,7 @@ begin
          Error_Msg
            ("?may result in missing run-time elaboration checks");
          Error_Msg
-           ("?use -gnatE, pragma Suppress (Elaboration_Checks) instead");
+           ("?use -gnatE, pragma Suppress (Elaboration_Check) instead");
       end if;
 
       --  Quit if some file needs compiling

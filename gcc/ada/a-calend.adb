@@ -417,7 +417,7 @@ package body Ada.Calendar is
       end if;
 
       --  Check for Day value too large (one might expect mktime to do this
-      --  check, as well as the basi checks we did with 'Valid, but it seems
+      --  check, as well as the basic checks we did with 'Valid, but it seems
       --  that at least on some systems, this built-in check is too weak).
 
       if Day > Days_In_Month (Month)

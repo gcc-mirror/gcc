@@ -335,12 +335,17 @@ package System.Tasking is
    ------------------------------------
 
    type Activation_Chain is limited private;
+   --  Comment required ???
 
    type Activation_Chain_Access is access all Activation_Chain;
+   --  Comment required ???
 
    type Task_Procedure_Access is access procedure (Arg : System.Address);
 
    type Access_Boolean is access all Boolean;
+
+   Detect_Blocking : constant Boolean;
+   --  Boolean constant set True iff Detect_Blocking is active
 
    ----------------------------------------------
    -- Ada_Task_Control_Block (ATCB) definition --
@@ -420,6 +425,14 @@ package System.Tasking is
       --  Protection: Only written by Self, and only accessed when Acceptor
       --  accepts an entry or when Created activates, at which points Self is
       --  suspended.
+
+      Protected_Action_Nesting : Natural;
+      pragma Atomic (Protected_Action_Nesting);
+      --  The dynamic level of protected action nesting for this task.
+      --  This field is needed for checking whether potentially
+      --  blocking operations are invoked from protected actions.
+      --  pragma Atomic is used because it can be read/written from
+      --  protected interrupt handlers.
 
       Task_Image : String (1 .. 32);
       --  Hold a string that provides a readable id for task,
@@ -968,6 +981,14 @@ package System.Tasking is
 
 private
    Null_Task : constant Task_Id := null;
+
+   GL_Detect_Blocking : Integer;
+   pragma Import (C, GL_Detect_Blocking, "__gl_detect_blocking");
+   --  Global variable exported by the binder generated file. A value
+   --  equal to 1 indicates that pragma Detect_Blocking is active,
+   --  while 0 is used for the pragma not being present.
+
+   Detect_Blocking : constant Boolean := GL_Detect_Blocking = 1;
 
    type Activation_Chain is record
       T_ID : Task_Id;

@@ -38,22 +38,25 @@ with Ada.Unchecked_Deallocation;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Regexp;               use GNAT.Regexp;
+--  ??? Ada units cannot depend on GNAT units
 
 with System;
 
 package body Ada.Directories is
 
    type Search_Data is record
-      Is_Valid : Boolean := False;
-      Name     : Ada.Strings.Unbounded.Unbounded_String;
-      Pattern  : Regexp;
-      Filter   : Filter_Type;
-      Dir      : Dir_Type;
+      Is_Valid      : Boolean := False;
+      Name          : Ada.Strings.Unbounded.Unbounded_String;
+      Pattern       : Regexp;
+      Filter        : Filter_Type;
+      Dir           : Dir_Type;
       Entry_Fetched : Boolean := False;
       Dir_Entry     : Directory_Entry_Type;
    end record;
+   --  Comment required ???
 
    Empty_String : constant String := (1 .. 0 => ASCII.NUL);
+   --  Comment required ???
 
    procedure Free is new Ada.Unchecked_Deallocation (Search_Data, Search_Ptr);
 
@@ -97,9 +100,8 @@ package body Ada.Directories is
       Name                 : String;
       Extension            : String := "") return String
    is
-      Result : String (1 ..
-                         Containing_Directory'Length +
-                         Name'Length + Extension'Length + 2);
+      Result : String (1 .. Containing_Directory'Length +
+                              Name'Length + Extension'Length + 2);
       Last   : Natural;
 
    begin
@@ -205,9 +207,9 @@ package body Ada.Directories is
    begin
       --  First, the invalid cases
 
-      if (not Is_Valid_Path_Name (Source_Name)) or else
-        (not Is_Valid_Path_Name (Target_Name)) or else
-        (not Is_Regular_File (Source_Name))
+      if not Is_Valid_Path_Name (Source_Name)
+        or else not Is_Valid_Path_Name (Target_Name)
+        or else not Is_Regular_File (Source_Name)
       then
          raise Name_Error;
 
@@ -328,10 +330,17 @@ package body Ada.Directories is
    -----------------------
 
    function Current_Directory return String is
-   begin
+
       --  The implementation uses GNAT.Directory_Operations.Get_Current_Dir
 
-      return Get_Current_Dir;
+      Cur : constant String := Get_Current_Dir;
+
+   begin
+      if Cur'Length > 1 and then Cur (Cur'Last) = Dir_Separator then
+         return Cur (1 .. Cur'Last - 1);
+      else
+         return Cur;
+      end if;
    end Current_Directory;
 
    ----------------------
@@ -340,9 +349,12 @@ package body Ada.Directories is
 
    procedure Delete_Directory (Directory : String) is
    begin
-      --  First, the invalid case
+      --  First, the invalid cases
 
       if not Is_Valid_Path_Name (Directory) then
+         raise Name_Error;
+
+      elsif not Is_Directory (Directory) then
          raise Name_Error;
 
       else
@@ -391,9 +403,12 @@ package body Ada.Directories is
 
    procedure Delete_Tree (Directory : String) is
    begin
-      --  First, the invalid case
+      --  First, the invalid cases
 
       if not Is_Valid_Path_Name (Directory) then
+         raise Name_Error;
+
+      elsif not Is_Directory (Directory) then
          raise Name_Error;
 
       else
@@ -439,13 +454,12 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  Look fir the first dot that is not followed by a directory
-         --  separator.
+         --  Look for first dot that is not followed by a directory separator
 
          for Pos in reverse Name'Range loop
 
-            --  If a directory separator is found before a dot, there is no
-            --  extension.
+            --  If a directory separator is found before a dot, there
+            --  is no extension.
 
             if Name (Pos) = Dir_Separator then
                return Empty_String;
@@ -459,6 +473,8 @@ package body Ada.Directories is
                begin
                   Result := Name (Pos + 1 .. Name'Last);
                   return Result;
+                  --  This should be done with a subtype conversion, avoiding
+                  --  the unnecessary junk copy ???
                end;
             end if;
          end loop;
@@ -476,7 +492,9 @@ package body Ada.Directories is
    procedure Fetch_Next_Entry (Search : Search_Type) is
       Name : String (1 .. 255);
       Last : Natural;
-      Kind : File_Kind;
+
+      Kind : File_Kind := Ordinary_File;
+      --  Initialized to avoid a compilation warning
 
    begin
       --  Search.Value.Is_Valid is always True when Fetch_Next_Entry is called
@@ -499,7 +517,7 @@ package body Ada.Directories is
                              Compose
                                (To_String
                                   (Search.Value.Name), Name (1 .. Last));
-               Found : Boolean := False;
+               Found     : Boolean := False;
 
             begin
                if File_Exists (Full_Name) then
@@ -553,7 +571,6 @@ package body Ada.Directories is
    begin
       C_Name (1 .. Name'Length) := Name;
       C_Name (C_Name'Last) := ASCII.NUL;
-
       return C_File_Exists (C_Name (1)'Address) = 1;
    end File_Exists;
 
@@ -587,8 +604,9 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  Build the return value with lower bound 1.
-         --  Use GNAT.OS_Lib.Normalize_Pathname.
+         --  Build the return value with lower bound 1
+
+         --  Use GNAT.OS_Lib.Normalize_Pathname
 
          declare
             Value : constant String := Normalize_Pathname (Name);
@@ -596,6 +614,7 @@ package body Ada.Directories is
          begin
             Result := Value;
             return Result;
+            --  Should use subtype conversion, not junk copy ???
          end;
       end if;
    end Full_Name;
@@ -775,7 +794,7 @@ package body Ada.Directories is
          raise Use_Error;
 
       else
-         --  The implemewntation uses GNAT.OS_Lib.Rename_File
+         --  The implementation uses GNAT.OS_Lib.Rename_File
 
          Rename_File (Old_Name, New_Name, Success);
 
@@ -812,16 +831,18 @@ package body Ada.Directories is
          raise Name_Error;
 
       else
-         --  Build the value to return with lower bound 1.
-         --  The implementation uses GNAT.Directory_Operations.Base_Name.
+         --  Build the value to return with lower bound 1
+
+         --  The implementation uses GNAT.Directory_Operations.Base_Name
 
          declare
-            Value : constant String :=
+            Value  : constant String :=
                        GNAT.Directory_Operations.Base_Name (Name);
             Result : String (1 .. Value'Length);
          begin
             Result := Value;
             return Result;
+            --  Should use subtype conversion instead of junk copy ???
          end;
       end if;
    end Simple_Name;
@@ -849,7 +870,7 @@ package body Ada.Directories is
    function Size (Name : String) return File_Size is
       C_Name : String (1 .. Name'Length + 1);
 
-      function C_Size (Name : System.Address) return File_Size;
+      function C_Size (Name : System.Address) return Long_Integer;
       pragma Import (C, C_Size, "__gnat_named_file_length");
 
    begin
@@ -861,7 +882,7 @@ package body Ada.Directories is
       else
          C_Name (1 .. Name'Length) := Name;
          C_Name (C_Name'Last) := ASCII.NUL;
-         return C_Size (C_Name'Address);
+         return File_Size (C_Size (C_Name'Address));
       end if;
    end Size;
 

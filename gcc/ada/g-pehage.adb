@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---        G N A T . P E R F E C T _ H A S H . G E N E R A T O R S           --
+--        G N A T . P E R F E C T _ H A S H _ G E N E R A T O R S           --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2002-2003 Ada Core Technologies, Inc.           --
+--            Copyright (C) 2002-2004 Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ with GNAT.Heap_Sort_A; use GNAT.Heap_Sort_A;
 with GNAT.OS_Lib;      use GNAT.OS_Lib;
 with GNAT.Table;
 
-package body GNAT.Perfect_Hash.Generators is
+package body GNAT.Perfect_Hash_Generators is
 
    --  We are using the algorithm of J. Czech as described in Zbigniew
    --  J. Czech, George Havas, and Bohdan S. Majewski ``An Optimal
@@ -2397,4 +2397,4 @@ package body GNAT.Perfect_Hash.Generators is
       end case;
    end Value;
 
-end GNAT.Perfect_Hash.Generators;
+end GNAT.Perfect_Hash_Generators;
