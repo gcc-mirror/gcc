@@ -26,10 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ch-tree.h"
 #include "toplev.h"
 
-/* Here is how primitive or already-canonicalized types' 
-   hash codes are made.  */
-#define TYPE_HASH(TYPE) ((HOST_WIDE_INT) (TYPE) & 0777777)
-
 extern struct obstack permanent_obstack;
 /* This is special sentinel used to communicate from build_string_type
    to layout_chill_range_type for the index range of a string. */

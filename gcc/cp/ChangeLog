@@ -1,3 +1,10 @@
+2001-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c: Cast argument to size_t, not HOST_WIDE_INT, in calls to
+	GNU_xref_start_scope and GNU_xref_end_scope.
+
+	* tree.c (TYPE_HASH): Moved to ../tree.h.
+
 2001-08-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cvt.c (convert_to_void): Preserve TREE_SIDE_EFFECTS

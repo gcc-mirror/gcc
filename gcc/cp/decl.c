@@ -824,7 +824,7 @@ pushlevel (tag_transparent)
     newlevel = make_binding_level ();
 
   push_binding_level (newlevel, tag_transparent, keep_next_level_flag);
-  GNU_xref_start_scope ((HOST_WIDE_INT) newlevel);
+  GNU_xref_start_scope ((size_t) newlevel);
   keep_next_level_flag = 0;
 }
 
@@ -1279,8 +1279,8 @@ poplevel (keep, reverse, functionbody)
      rather than the end.  This hack is no longer used.  */
   my_friendly_assert (keep == 0 || keep == 1, 0);
 
-  GNU_xref_end_scope ((HOST_WIDE_INT) current_binding_level,
-		      (HOST_WIDE_INT) current_binding_level->level_chain,
+  GNU_xref_end_scope ((size_t) current_binding_level,
+		      (size_t) current_binding_level->level_chain,
 		      current_binding_level->parm_flag,
 		      current_binding_level->keep);
 
@@ -1705,8 +1705,8 @@ poplevel_class ()
        shadowed = TREE_CHAIN (shadowed))
     pop_binding (TREE_PURPOSE (shadowed), TREE_TYPE (shadowed));
 
-  GNU_xref_end_scope ((HOST_WIDE_INT) class_binding_level,
-		      (HOST_WIDE_INT) class_binding_level->level_chain,
+  GNU_xref_end_scope ((size_t) class_binding_level,
+		      (size_t) class_binding_level->level_chain,
 		      class_binding_level->parm_flag,
 		      class_binding_level->keep);
 
@@ -14168,8 +14168,8 @@ finish_method (decl)
       DECL_CONTEXT (link) = NULL_TREE;
     }
 
-  GNU_xref_end_scope ((HOST_WIDE_INT) current_binding_level,
-		      (HOST_WIDE_INT) current_binding_level->level_chain,
+  GNU_xref_end_scope ((size_t) current_binding_level,
+		      (size_t) current_binding_level->level_chain,
 		      current_binding_level->parm_flag,
 		      current_binding_level->keep);
 

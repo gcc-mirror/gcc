@@ -1,3 +1,14 @@
+2001-08-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* except.c (TYPE_HASH): Delete.
+	
+	* objc/objc-act.c (HASHFUNCTION): Cast to size_t, not
+	HOST_WIDE_INT.
+
+	* tree.c (TYPE_HASH): Delete.
+
+	* tree.h (TYPE_HASH): Define.
+
 2001-08-18  Graham Stott  <grahams@redhat.com>
 
 	* config/mips/mips.md (adddi3_internal_2+1): Remove contraints from
