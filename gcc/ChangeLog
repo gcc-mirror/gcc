@@ -1,3 +1,7 @@
+Wed Jun  2 21:53:05 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (CONST_OK_FOR_I, CONST_OK_FOR_L): Cast VALUE to HOST_WIDE_INT.
+
 Wed Jun  2 12:25:55 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (override_options): Thinko in last patch.

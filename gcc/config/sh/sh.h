@@ -738,9 +738,11 @@ extern enum reg_class reg_class_from_letter[];
 	M: constant 1
 	N: constant 0  */
 
-#define CONST_OK_FOR_I(VALUE) (((int)(VALUE))>= -128 && ((int)(VALUE)) <= 127)
+#define CONST_OK_FOR_I(VALUE) (((HOST_WIDE_INT)(VALUE))>= -128 \
+			       && ((HOST_WIDE_INT)(VALUE)) <= 127)
 #define CONST_OK_FOR_K(VALUE) ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
-#define CONST_OK_FOR_L(VALUE) (((int)(VALUE))>=    0 && ((int)(VALUE)) <= 255)
+#define CONST_OK_FOR_L(VALUE) (((HOST_WIDE_INT)(VALUE))>= 0 \
+			       && ((HOST_WIDE_INT)(VALUE)) <= 255)
 #define CONST_OK_FOR_M(VALUE) ((VALUE)==1)
 #define CONST_OK_FOR_N(VALUE) ((VALUE)==0)
 #define CONST_OK_FOR_LETTER_P(VALUE, C)		\
