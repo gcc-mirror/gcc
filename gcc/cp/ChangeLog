@@ -1,3 +1,12 @@
+2004-12-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/17821
+	* class.c (add_method): Do not push conversion operators into a
+	binding level.
+
+	* cp-tree.h (CLASSTYPE_PRIMARY_TEMPLATE_TYPE): Reformat.
+	* error.c (dump_decl): <TYPE_DECL case> Remove extraneous braces.
+
 2004-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18905
