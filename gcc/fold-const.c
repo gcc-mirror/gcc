@@ -1,5 +1,5 @@
 /* Fold a constant sub-tree into a single node for C-compiler
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2785,20 +2785,32 @@ range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
     return 0;
 
   /* Set SGN[01] to -1 if ARG[01] is a lower bound, 1 for upper, and 0
-     for neither.  Then compute our result treating them as never equal
-     and comparing bounds to non-bounds as above.  */
+     for neither.  In real maths, we cannot assume open ended ranges are
+     the same. But, this is computer arithmetic, where numbers are finite.
+     We can therefore make the transformation of any unbounded range with
+     the value Z, Z being greater than any representable number. This permits
+     us to treat unbounded ranges as equal. */
   sgn0 = arg0 != 0 ? 0 : (upper0_p ? 1 : -1);
   sgn1 = arg1 != 0 ? 0 : (upper1_p ? 1 : -1);
   switch (code)
     {
-    case EQ_EXPR:  case NE_EXPR:
-      result = (code == NE_EXPR);
+    case EQ_EXPR:
+      result = sgn0 == sgn1;
       break;
-    case LT_EXPR:  case LE_EXPR:
+    case NE_EXPR:
+      result = sgn0 != sgn1;
+      break;
+    case LT_EXPR:
       result = sgn0 < sgn1;
       break;
-    case GT_EXPR:  case GE_EXPR:
+    case LE_EXPR:
+      result = sgn0 <= sgn1;
+      break;
+    case GT_EXPR:
       result = sgn0 > sgn1;
+      break;
+    case GE_EXPR:
+      result = sgn0 >= sgn1;
       break;
     default:
       abort ();
