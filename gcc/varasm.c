@@ -3900,6 +3900,19 @@ get_pool_constant (addr)
   return (find_pool_constant (cfun, addr))->constant;
 }
 
+/* Given a constant pool SYMBOL_REF, return the corresponding constant
+   and whether it has been output or not.  */
+
+rtx
+get_pool_constant_mark (addr, pmarked)
+     rtx addr;
+     bool *pmarked;
+{
+  struct pool_constant *pool = find_pool_constant (cfun, addr);
+  *pmarked = (pool->mark != 0);
+  return pool->constant;
+}
+
 /* Likewise, but for the constant pool of a specific function.  */
 
 rtx

@@ -1301,6 +1301,7 @@ extern rtx force_const_mem		PARAMS ((enum machine_mode, rtx));
 
 /* In varasm.c  */
 extern rtx get_pool_constant		PARAMS ((rtx));
+extern rtx get_pool_constant_mark	PARAMS ((rtx, bool *));
 extern enum machine_mode get_pool_mode	PARAMS ((rtx));
 extern rtx get_pool_constant_for_function	PARAMS ((struct function *, rtx));
 extern enum machine_mode get_pool_mode_for_function	PARAMS ((struct function *, rtx));
