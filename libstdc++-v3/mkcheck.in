@@ -9,7 +9,7 @@
 # has been enabled.
 
 # Invocation 
-# mkcheck [012] (path to build) (path to src) (path to install)
+# mkcheck [01] (path to build) (path to src) (path to install)
 
 ### XXX There are a lot of tests in here for OS-specific stuff.  If we
 ###     move to a 'configure.target' method of determining those extra
@@ -19,70 +19,29 @@
 ### XXX Note that breaking out of this with ^C will not work.  Dunno why.
 
 
-#
 # 1: variables
 #
 # WHICH determines if you are
 # (0) testing the build binary and headers, or
 # (1) testing the installed binary and headers, or
-# (2) testing under dejagnu (just print the standard flags needed).
 WHICH=$1
 if [ "$WHICH"x = 0x ] && [ $# -eq 3 ]; then
   echo "running mkcheck"
   echo "$0: testing the build directory"
+  query="--built-library"
 elif [ "$WHICH"x = 1x ] && [ $# -eq 4 ]; then
   echo "running mkcheck"
   echo "$0: testing the install directory $4"
-elif [ "$WHICH"x = 2x ] && [ $# -eq 3 ]; then
-  true
+  query="--installed-library"
 else
   echo 'Usage: mkcheck 0 (path to build) (path to src)'
   echo '       mkcheck 1 (path to build) (path to src) (path to install)'
-  echo '       mkcheck 2 (path to build) (path to src)'
   exit 1;
 fi
-  
-BUILD_DIR=$2
-if [ ! -d "$BUILD_DIR" ]; then
-  echo "build directory $BUILD_DIR not found, exiting."
-  exit 1
-fi
 
-SRC_DIR=$3
-if [ ! -d "$SRC_DIR" ]; then
-  echo "source directory $SRC_DIR not found, exiting."
-  exit 1
-fi
-
-if [ $WHICH -eq 1 ]; then 
-    PREFIX_DIR=$4
-    if [ ! -d "$PREFIX_DIR" ]; then
-    echo "install directory $PREFIX_DIR not found, exiting."
-    exit 1
-    fi
-fi
-
-# This is LIBTOOL=@LIBTOOL@ piped through a bit of sanity that we can
-# assume for this script (by the time we run this).
-LIBTOOL="$BUILD_DIR/libtool"
-chmod u+x $LIBTOOL
-
-# INC_PATH == include path to new headers for use on gcc command-line
-top_srcdir=@top_srcdir@
-C_DIR="`basename @C_INCLUDE_DIR@`"
-if [ $WHICH != "1" ]; then
-  INC_PATH="-nostdinc++ @CSHADOW_FLAGS@ -I$BUILD_DIR/include \
-    -I$SRC_DIR/include/std  -I$SRC_DIR/include/$C_DIR \
-    -I$SRC_DIR/include -I$SRC_DIR/libsupc++ -I$SRC_DIR/libio \
-    -I$SRC_DIR/testsuite"
-elif [ $WHICH -eq 1 ]; then
-  INC_PATH="-I$SRC_DIR/testsuite"
-fi
-
-if [ $WHICH -eq 2 ]; then
-  echo $INC_PATH -I$SRC_DIR/include/backward -I$SRC_DIR/include/ext
-  exit 0;
-fi
+# Now that we've successfully translated the numerical option into
+# a symbolic one, we can safely ignore it.
+shift
 
 # This has been true all along.  Found out about it the hard way...
 case $BASH_VERSION in
@@ -90,49 +49,12 @@ case $BASH_VERSION in
     *)   ;;   # ??
 esac
 
-# It's not dejagnu; we need to do things ourselves.  Pick up any extra
-# settings for this target.
-. ${top_srcdir}/configure.target
-
-# LIB_PATH == where to find the build libraries for libtool's use
-# CXX == how to call the compiler
-if [ $WHICH -eq 0 ]; then
-  LIB_PATH="$BUILD_DIR/src"
-  CXX="$BUILD_DIR/../../gcc/g++ -B$BUILD_DIR/../../gcc/"
-elif [ $WHICH -eq 1 ]; then
-  LIB_PATH="$PREFIX_DIR/lib"
-  CXX="$PREFIX_DIR/bin/g++"
-fi
-
-# gcc compiler flags (maybe use glibcpp_cxxflags from configure.target,
-# but thst's really meant for building the library itself, not using it)
-CXX_FLAG="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
-
-# specific libtool flag(s) to force the use of shared libraries, if any
-SH_FLAG=""
-
-# specific libtool flag(s) to force the use of static libraries, if any
-ST_FLAG="-static"
-#ST_FLAG="-all-static"
-
-# LTCXX == how to call libtool when creating an executable
-# LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
-if [ $WHICH -eq 0 ]; then
-  LTCXX="$LIBTOOL --tag=CXX --mode=link \
-          $CXX $CXX_FLAG $INC_PATH   \
-          $LIB_PATH/../libsupc++/libsupc++.la  $LIB_PATH/libstdc++.la   \
-          -no-install"
-  LIBS="-nodefaultlibs -lc -lgcc -lc"
-elif [ $WHICH -eq 1 ]; then
-  # For the installed version, we really only need to use libtool and
-  # the .la file to get correct rpaths.
-  LTCXX="$LIBTOOL --tag=CXX --mode=link \
-          $CXX $CXX_FLAG $INC_PATH -L$LIB_PATH   \
-          $LIB_PATH/libstdc++.la -no-install -rpath $LIB_PATH"
-  LIBS=
-fi
-# LTEXE == how to call libtool when running an executable
-LTEXE="$LIBTOOL --mode=execute"
+# Compute the flags necessary to run the testsuite.
+saved_ifs=$IFS
+IFS=':'
+set `./tests_flags ${query} $*` || exit 1
+BUILD_DIR=$1; SRC_DIR=$2; PREFIX_DIR=$3; LTCXX=$4; LIBS=$5; LTEXE=$6;
+IFS=$saved_ifs
 
 # Set up the testing directory, which should be in a directory called
 # "testsuite" in the root level of the build directory.

@@ -1,3 +1,11 @@
+2000-11-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* tests_flags.in: New file. Split out of ...
+	* mkcheck.in: ... this. Move flags computation into
+	tests_flags.in. 
+	* configure.in: Add support for tests_flags.
+	* confiigure: Regenerate.
+
 2000-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* acinclude.m4: Change C9X references to refer to C99.

@@ -1,3 +1,8 @@
+2000-11-26  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* lib/g++.exp (g++_include_flags): Invoke 'tests_flags --compiler'
+	instead of 'mkcheck 2'.
+
 2000-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/execute/memcheck/driver.c,

@@ -1,0 +1,177 @@
+#!/bin/sh
+
+#
+# This script computes the various flags needed to run GNU C++ testsuites
+# (compiler specific as well as library specific).  It is based on 
+# the ./mkcheck.in, which in the long will be removed in favor of a
+# DejaGnu-base framework.
+#
+# Written by Gabriel Dos Reis <gdr@codesourcery.com>
+#
+
+#
+# Synopsis
+#   * tests_flags --compiler build-dir src-dir
+#
+#      Returns a space-separated list of flags needed to run front-end
+#      specific tests.
+# 
+#   * tests_flags --built-library build-dir src-dir
+#   * tests_flags --installed-library build-dir src-dir install-dir
+#     
+#      Returns a colon-separated list of space-separated list of flags,
+#      needed to run library specific tests,
+#      BUILD_DIR:SRC_DIR:PREFIX_DIR:LTCXX:LIBS:LTEXE the meaning of which
+#      is as follows:
+#        BUILD_DIR   build-dir
+#        SRC_DIR     src-dir
+#        PREFIX_DIR  install-dir (meaningful only with --installed-library)
+#        LTCXX       libtoolized command to compile a C++ program
+#        LIBS        flags to pass to the linker
+#        LTEXE       libtoolized command to run a compiled C++ program
+#
+
+
+##
+## Utility functions
+##
+
+# Print a message saying how this script is intended to be invoked
+print_usage() {
+    cat <<EOF
+Usage: 
+  tests_fags --compiler <build-dir> <src-dir>
+             --built-library <build-dir>  <src-dir>
+             --installed-library <build-dir> <src-dir> <install-dir>
+EOF
+    exit 1
+}
+
+# Check for command line option
+check_options() {
+    # First, check for number of command line arguments
+    if [ \( $1 -ne 3 \) -a \( $1 -ne 4 \) ]; then
+	print_usage;
+    fi
+    
+    # Then, see if we understand the job we're asked for
+    case $2 in
+	--compiler|--built-library|--installed-library)
+	# OK
+	;;
+	*) 
+	print_usage
+	;;
+    esac
+}
+
+# Directory sanity check
+check_directory() {
+    if [ ! $2 ]; then
+	echo "$1 '$2' directory not found, exiting."
+	exit 1
+    fi
+}
+
+##
+## Main processing
+##
+
+# Command line options sanity check
+check_options $# $1
+
+query=$1
+
+# Check for build, source and install directories
+BUILD_DIR=$2; SRC_DIR=$3
+check_directory 'Build' ${BUILD_DIR}
+check_directory 'Source' ${SRC_DIR}
+case ${query} in
+    --installed-library)
+    PREFIX_DIR=$4
+    check_directory 'Install' ${PREFIX_FIR}
+    ;;
+    *)
+    PREFIX_DIR=
+    ;;
+esac
+
+# This is LIBTOOL=@LIBTOOL@ piped through a bit of sanity that we can
+# assume for this script (by the time we run this).
+LIBTOOL="${BUILD_DIR}/libtool"
+chmod u+x ${LIBTOOL}
+
+# Compute include paths
+# INC_PATH == include path to new headers for use on gcc command-line
+top_srcdir=@top_srcdir@
+C_DIR="`basename  @C_INCLUDE_DIR@`"
+case ${query} in
+    --installed-library)
+    INC_PATH="-I${SRC_DIR}/testsuite"
+    ;;
+    *)
+    INC_PATH="-nostdinc++ @CSHADOW_FLAGS@ -I${BUILD_DIR}/include
+	      -I${SRC_DIR}/include/std  -I${SRC_DIR}/include/$C_DIR
+	      -I${SRC_DIR}/include -I${SRC_DIR}/libsupc++ -I${SRC_DIR}/libio 
+	      -I${SRC_DIR}/testsuite"
+    ;;
+esac
+
+# If called for compiler tests, just output include paths
+case ${query} in
+    --compiler)
+    echo ${INC_PATH} -I${SRC_DIR}/include/backward -I${SRC_DIR}/include/ext
+    exit 0
+    ;;
+esac
+
+# For built or installed libraries, we need to get right OS-specific bits.
+. ${top_srcdir}/configure.target
+
+# LIB_PATH == where to find the build libraries for libtool's use
+# CXX == how to call the compiler
+case ${query} in
+    --built-library)
+    LIB_PATH=${BUILD_DIR}/src
+    CXX="${BUILD_DIR}/../../gcc/g++ -B${BUILD_DIR}/../../gcc/"
+    ;;
+    --installed-library)
+    LIB_PATH=${PREFIX_DIR}/lib
+    CXX=${PREFIX_DIR}/bin/g++
+    ;;
+esac
+
+# gcc compiler flags (maybe use glibcpp_cxxflags from configure.target,
+# but thst's really meant for building the library itself, not using it)
+CXXFLAGS="-ggdb3 -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
+
+# specific libtool flag(s) to force the use of shared libraries, if any
+SH_FLAGS=
+
+# specific libtool flag(s) to force the use of static libraries, if any
+ST_FLAGS="-static"
+#ST_FLAGS="-all-static"
+
+# LTCXX == how to call libtool when creating an executable
+# LIBS == any extra needed -l switches, etc (may need more libs, lose lose)
+case ${query} in
+    --built-library)
+    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXX_FLAG} ${INC_PATH} 
+	   ${LIB_PATH}/../libsupc++/libsupc++.la  ${LIB_PATH}/libstdc++.la
+	   -no-install"
+    LTEXE="${LIBTOOL} --mode=execute"
+    LIBS="-nodefaultlibs -lc -lgcc -lc"
+    ;;
+    --installed-library)
+    # For the installed version, we really only need to use libtool and
+    # the .la file to get correct rpaths.
+    LTCXX="${LIBTOOL} --tag=CXX --mode=link ${CXX} ${CXX_FLAG} ${INC_PATH}
+	   -L${LIB_PATH} ${LIB_PATH}/libstdc++.la -no-install 
+	   -rpath ${LIB_PATH}"
+    LTEXE="${LIBTOOL} --mode=execute"
+    LIBS=
+    ;;
+esac
+
+echo ${BUILD_DIR}:${SRC_DIR}:${PREFIX_DIR}:${LTCXX}:${LIBS}:${LTEXE}
+exit 0
