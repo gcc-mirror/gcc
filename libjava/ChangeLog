@@ -1,3 +1,8 @@
+2001-02-23  Per Bothner  <per@bothner.com>
+
+	* java/lang/Throwable.java (CPlusPlusDemangler):  Pass -s java to
+	c++filt to select java-style output.
+
 2001-02-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	Fix for PR java/2040:

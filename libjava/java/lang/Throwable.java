@@ -57,7 +57,7 @@ class CPlusPlusDemangler extends OutputStream
   CPlusPlusDemangler (PrintWriter writer) throws IOException
   {
     p = writer;
-    proc = Runtime.getRuntime ().exec ("c++filt");
+    proc = Runtime.getRuntime ().exec ("c++filt -s java");
     procOut = proc.getOutputStream ();
     procIn = proc.getInputStream ();
   }
