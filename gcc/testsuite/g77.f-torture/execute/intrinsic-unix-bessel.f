@@ -41,15 +41,12 @@ c     BESJN  - Bessel function of first kind of order N
       call c_r(BESJN(i,x),a,'BESJN(integer,real)')
       call c_r(BESJN(j,x),a,'BESJN(integer*2,real)')
       call c_r(BESJN(k,x),a,'BESJN(integer*1,real)')
-c      call c_r(BESJN(m,x),a,'BESJN(integer*8,real)')
       call c_d(BESJN(i,dx),da,'BESJN(integer,double)')
       call c_d(BESJN(j,dx),da,'BESJN(integer*2,double)')
       call c_d(BESJN(k,dx),da,'BESJN(integer*1,double)')
-c      call c_d(BESJN(m,dx),da,'BESJN(integer*8,double)')
       call c_d(DBESJN(i,dx),da,'DBESJN(integer,double)')
       call c_d(DBESJN(j,dx),da,'DBESJN(integer*2,double)')
       call c_d(DBESJN(k,dx),da,'DBESJN(integer*1,double)')
-c      call c_d(DBESJN(m,dx),da,'DBESJN(integer*8,double)')
 
 c     BESY0  - Bessel function of second kind of order zero
       a = 0.51037567
@@ -71,15 +68,12 @@ c     BESYN  - Bessel function of second kind of order N
       call c_r(BESYN(i,x),a,'BESYN(integer,real)')
       call c_r(BESYN(j,x),a,'BESYN(integer*2,real)')
       call c_r(BESYN(k,x),a,'BESYN(integer*1,real)')
-c      call c_r(BESYN(m,x),a,'BESYN(integer*8,real)')
       call c_d(BESYN(i,dx),da,'BESYN(integer,double)')
       call c_d(BESYN(j,dx),da,'BESYN(integer*2,double)')
       call c_d(BESYN(k,dx),da,'BESYN(integer*1,double)')
-c      call c_d(BESYN(m,dx),da,'BESYN(integer*8,double)')
       call c_d(DBESYN(i,dx),da,'DBESYN(integer,double)')
       call c_d(DBESYN(j,dx),da,'DBESYN(integer*2,double)')
       call c_d(DBESYN(k,dx),da,'DBESYN(integer*1,double)')
-c      call c_d(DBESYN(m,dx),da,'DBESYN(integer*8,double)')
 
       if ( fail ) call abort()
       end
