@@ -1401,17 +1401,18 @@ main (argc, argv)
 	break;
 
       case 'M':
-	/* ??? The style of the choices here is a bit mixed.
+	/* The style of the choices here is a bit mixed.
 	   The chosen scheme is a hybrid of keeping all options in one string
 	   and specifying each option in a separate argument:
 	   -M|-MM|-MD file|-MMD file [-MG].  An alternative is:
-	   -M|-MM|-MD file|-MMD file|-MG|-MMG|-MGD file|-MMGD file; or more
-	   concisely: -M[M][G][D file].  This is awkward to handle in specs,
-	   and is not as extensible.  */
-	/* ??? -MG must be specified in addition to one of the other arguments.
+	   -M|-MM|-MD file|-MMD file|-MG|-MMG; or more concisely:
+	   -M[M][G][D file].  This is awkward to handle in specs, and is not
+	   as extensible.  */
+	/* ??? -MG must be specified in addition to one of -M or -MM.
 	   This can be relaxed in the future without breaking anything.
 	   The converse isn't true.  */
 
+	/* -MG isn't valid with -MD or -MMD.  This is checked for later.  */
 	if (!strcmp (argv[i], "-MG"))
 	  {
 	    print_deps_missing_files = 1;
@@ -1894,10 +1895,11 @@ main (argc, argv)
   } else if ((f = open (in_fname, O_RDONLY, 0666)) < 0)
     goto perror;
 
-  /* -MG doesn't select the form of output and must be specified with
-     one of the other -M options.  */
-  if (print_deps == 0 && print_deps_missing_files)
-    fatal ("-MG must be specified with one of -M, -MM, -MD, -MMD");
+  /* -MG doesn't select the form of output and must be specified with one of
+     -M or -MM.  -MG doesn't make sense with -MD or -MMD since they don't
+     inhibit compilation.  */
+  if (print_deps_missing_files && (print_deps == 0 || !inhibit_output))
+    fatal ("-MG must be specified with one of -M or -MM");
 
   /* Either of two environment variables can specify output of deps.
      Its value is either "OUTPUT_FILE" or "OUTPUT_FILE DEPS_TARGET",
@@ -4243,9 +4245,6 @@ get_filename:
     if (print_deps_missing_files
 	&& print_deps > (angle_brackets || (system_include_depth > 0)))
       {
-	/* ??? Perhaps this warning shouldn't be printed at all.  */
-	warning ("No include path in which to find %s", fname);
-
 	/* If it was requested as a system header file,
 	   then assume it belongs in the first place to look for such.  */
 	if (angle_brackets)
