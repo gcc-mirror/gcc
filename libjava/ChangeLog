@@ -1,5 +1,10 @@
 2005-03-07  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/VMCompiler.java (md5Digest): New field.
+	(compileClass): Clone md5Digest instead of looking up a new one.
+
+2005-03-07  Tom Tromey  <tromey@redhat.com>
+
 	PR java/20215:
 	* include/jvm.h (_Jv_Linker::find_field_helper): Updated.
 	* link.cc (find_field_helper): Added 'type' argument.

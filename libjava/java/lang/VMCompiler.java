@@ -79,6 +79,24 @@ final class VMCompiler
 
   private static Vector precompiledMapFiles;
 
+  // We create a single MD5 engine and then clone it whenever we want
+  // a new one.  This is simpler than trying to find a new one each
+  // time, and it avoids potential deadlocks due to class loader
+  // oddities.
+  private static final MessageDigest md5Digest;
+
+  static
+  {
+    try
+      {
+	md5Digest = MessageDigest.getInstance("MD5");
+      }
+    catch (NoSuchAlgorithmException _)
+      {
+	md5Digest = null;
+      }
+  }
+
   static
   {
     gcjJitCompiler = System.getProperty("gnu.gcj.jit.compiler");
@@ -175,11 +193,18 @@ final class VMCompiler
 
     try
       {
-	MessageDigest md = MessageDigest.getInstance("MD5");
+	MessageDigest md = (MessageDigest) md5Digest.clone();
 	digest = md.digest(data);
       }
-    catch (NoSuchAlgorithmException _)
+    catch (CloneNotSupportedException _)
       {
+	// Can't happen.
+	return null;
+      }
+    catch (NullPointerException _)
+      {
+	// If md5Digest==null -- but really this should never happen
+	// either, since the MD5 digest is in libgcj.
 	return null;
       }
 
