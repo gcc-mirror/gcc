@@ -1,3 +1,21 @@
+2000-12-08  Jason Merrill  <jason@redhat.com>
+
+	* error.c (dump_function_name): Don't let the user see __comp_ctor.
+
+	Clean up copy-initialization in overloading code.
+	* call.c (build_user_type_conversion_1): Die if we are asked to
+	convert to the same or a base type.
+	(implicit_conversion): Avoid doing so.  Lose reference binding code.
+	(convert_like_real): Treat BASE_CONV and RVALUE_CONV as implicit
+	direct-initialization.  Also do direct-init part of copy-init.
+	(build_user_type_conversion): Don't provide context to convert_like.
+	* cvt.c (ocp_convert): build_user_type_conversion will now provide
+	the constructor call for copy-init.
+
+	* pt.c (tsubst_decl): Call clone_function_decl here if this is an
+	instantiation of a member template.
+	(do_decl_instantiation): Not here.
+
 2000-12-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* class.c (check_field_decls): Don't special case anonymous
@@ -96,8 +114,6 @@
 
 	* except.c (expand_throw): Use push_throw_library_fn for _Jv_Throw.
 
-	* pt.c (tsubst_decl): Call clone_function_decl here.
-	(do_decl_instantiation): Not here.
 	* class.c (clone_function_decl): Robustify.
 
 2000-12-04  Michael Matz  <matzmich@cs.tu-berlin.de>

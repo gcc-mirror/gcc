@@ -841,7 +841,7 @@ ocp_convert (type, expr, convtype, flags)
 	   with a user-defined conversion sequence, then we direct-initialize
 	   the target with the temp (see [dcl.init]).  */
 	ctor = build_user_type_conversion (type, ctor, flags);
-      if (ctor)
+      else
 	ctor = build_method_call (NULL_TREE, 
 				  complete_ctor_identifier,
 				  build_tree_list (NULL_TREE, ctor),
