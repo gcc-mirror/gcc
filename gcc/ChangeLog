@@ -5,6 +5,11 @@
 
 2000-07-31  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c (get_shift_alg): Remove the variable alg.
+	(emit_a_shift): Rearrange code to improve readability.
+
+	* h8300.md (movsi_h8300hs): Rearrange code to improve readability.
+
 	* h8300.h (MODES_TIEABLE_P): Accept a combination of QImode and
 	HImode on all architectures and a combination of HImode and SImode
 	on H8/300H and H8/S.

@@ -2055,8 +2055,6 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
      const char **assembler2_p;
      int *cc_valid_p;
 {
-  /* The default is to loop.  */
-  enum shift_alg alg = SHIFT_LOOP;
   enum shift_mode shift_mode;
 
   /* We don't handle negative shifts or shifts greater than the word size,
@@ -2544,7 +2542,8 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
       abort ();
     }
 
-  return alg;
+  /* No fancy method is available.  Just loop.  */
+  return SHIFT_LOOP;
 }
 
 /* Emit the assembler code for doing shifts.  */
@@ -2605,6 +2604,14 @@ emit_a_shift (insn, operands)
       /* Get the assembler code to do one shift.  */
       get_shift_alg (cpu_type, shift_type, mode, 1, &assembler,
 		     &assembler2, &cc_valid);
+
+      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+      output_asm_insn (assembler, operands);
+      output_asm_insn ("add	#0xff,%X4", operands);
+      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
+      fprintf (asm_out_file, ".Lle%d:\n", loopend_lab);
+
+      return "";
     }
   else
     {
@@ -2655,6 +2662,7 @@ emit_a_shift (insn, operands)
 			? ((1 << (GET_MODE_BITSIZE (mode) - n)) - 1) << n
 			: (1 << (GET_MODE_BITSIZE (mode) - n)) - 1);
 	    char insn_buf[200];
+
 	    /* Not all possibilities of rotate are supported.  They shouldn't
 	       be generated, but let's watch for 'em.  */
 	    if (assembler == 0)
@@ -2705,44 +2713,40 @@ emit_a_shift (insn, operands)
 	    output_asm_insn (insn_buf, operands);
 	    return "";
 	  }
+
 	case SHIFT_SPECIAL:
 	  output_asm_insn (assembler, operands);
 	  return "";
-	}
 
-      /* A loop to shift by a "large" constant value.
-	 If we have shift-by-2 insns, use them.  */
-      if (assembler2 != NULL)
-	{
-	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n / 2,
-		   names_big[REGNO (operands[4])]);
-	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	  output_asm_insn (assembler2, operands);
-	  output_asm_insn ("add	#0xff,%X4", operands);
-	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
-	  if (n % 2)
-	    output_asm_insn (assembler, operands);
+	case SHIFT_LOOP:
+	  /* A loop to shift by a "large" constant value.
+	     If we have shift-by-2 insns, use them.  */
+	  if (assembler2 != NULL)
+	    {
+	      fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n / 2,
+		       names_big[REGNO (operands[4])]);
+	      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+	      output_asm_insn (assembler2, operands);
+	      output_asm_insn ("add	#0xff,%X4", operands);
+	      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
+	      if (n % 2)
+		output_asm_insn (assembler, operands);
+	    }
+	  else
+	    {
+	      fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n,
+		       names_big[REGNO (operands[4])]);
+	      fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+	      output_asm_insn (assembler, operands);
+	      output_asm_insn ("add	#0xff,%X4", operands);
+	      fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
+	    }
 	  return "";
-	}
-      else
-	{
-	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n,
-		   names_big[REGNO (operands[4])]);
-	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	  output_asm_insn (assembler, operands);
-	  output_asm_insn ("add	#0xff,%X4", operands);
-	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
-	  return "";
+
+	default:
+	  abort ();
 	}
     }
-
-  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-  output_asm_insn (assembler, operands);
-  output_asm_insn ("add	#0xff,%X4", operands);
-  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
-  fprintf (asm_out_file, ".Lle%d:\n", loopend_lab);
-
-  return "";
 }
 
 /* Fix the operands of a gen_xxx so that it could become a bit
