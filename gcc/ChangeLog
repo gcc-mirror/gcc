@@ -1,3 +1,8 @@
+Wed Oct 13 15:19:04 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/rs6000/sysv4.h (CC1_SPEC): Fix errors from Jan 19 change.
+	Add !endian checks.  Change %{...} to %(...).
+
 Wed Oct 13 13:30:34 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (*addsi3_cc): Renamed from addcsi3.
