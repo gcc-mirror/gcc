@@ -708,8 +708,6 @@ char *lang_options[] =
   "-Wno-return-type",
   "-Woverloaded-virtual",
   "-Wno-overloaded-virtual",
-  "-Wenum-clash",
-  "-Wno-enum-clash",
   "-Wtemplate-debugging",
   "-Wno-template-debugging",
   "-Wctor-dtor-privacy",
