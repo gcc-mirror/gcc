@@ -1269,6 +1269,7 @@ enum reg_class
 typedef struct ia64_args
 {
   int words;			/* # words of arguments so far  */
+  int int_regs;			/* # GR registers used so far  */
   int fp_regs;			/* # FR registers used so far  */
   int prototype;		/* whether function prototyped  */
 } CUMULATIVE_ARGS;
@@ -1279,6 +1280,7 @@ typedef struct ia64_args
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT) \
 do {									\
   (CUM).words = 0;							\
+  (CUM).int_regs = 0;							\
   (CUM).fp_regs = 0;							\
   (CUM).prototype = ((FNTYPE) && TYPE_ARG_TYPES (FNTYPE)) || (LIBNAME);	\
 } while (0)
@@ -1292,6 +1294,7 @@ do {									\
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM, FNTYPE, LIBNAME) \
 do {									\
   (CUM).words = 0;							\
+  (CUM).int_regs = 0;							\
   (CUM).fp_regs = 0;							\
   (CUM).prototype = 1;							\
 } while (0)
