@@ -67,6 +67,9 @@ namespace std
    auto_ptr_ref(_Tp1* __p) : _M_ptr(__p) {}
 };
 
+/**
+ *  A simple smart pointer providing strict ownership semantics.  (More later.)
+*/
 template <class _Tp> class auto_ptr {
 private:
   _Tp* _M_ptr;
@@ -118,10 +121,6 @@ public:
     }    
   }
 
-  // According to the C++ standard, these conversions are required.  Most
-  // present-day compilers, however, do not enforce that requirement---and, 
-  // in fact, most present-day compilers do not support the language 
-  // features that these conversions rely on.
 public:
   auto_ptr(auto_ptr_ref<_Tp> __ref) throw()
     : _M_ptr(__ref._M_ptr) {}

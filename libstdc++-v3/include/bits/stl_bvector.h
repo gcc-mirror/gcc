@@ -98,7 +98,7 @@ inline void swap(_Bit_reference __x, _Bit_reference __y)
   __y = __tmp;
 }
 
-struct _Bit_iterator_base : public random_access_iterator<bool, ptrdiff_t> 
+struct _Bit_iterator_base : public iterator<random_access_iterator_tag, bool>
 {
   unsigned int* _M_p;
   unsigned int _M_offset;

@@ -1,5 +1,27 @@
 2001-12-19  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/Intro.3:  New 'Allocators' module.
+	* docs/doxygen/TODO:  Update.
+	* docs/doxygen/doxygroups.cc:  Update.
+	* docs/doxygen/run_doxygen:  Update.
+
+	* include/bits/stl_alloc.h:  Tweak doxygen hooks in comments.
+	* include/bits/std_memory.h:  Doxygenate.
+	* include/bits/stl_iterator_base_types.h:  Likewise.
+	* include/bits/stl_raw_storage_iter.h:  Likewise.
+	* include/bits/stl_tempbuf.h:  Likewise.
+	(get_temporary_buffer):  Remove unused nonstandard overload.
+	* include/bits/stl_uninitialized.h:  Likewise.
+
+	* include/bits/stl_iterator_base_types.h (input_iterator,
+	output_iterator, forward_iterator, bidirectional_iterator,
+	random_access_iterator):  Move old names...
+	* include/backward/iterator.h:  ...to here.
+	* include/bits/stl_bvector.h:  Update.
+	* include/ext/stl_rope.h:  Update.
+
+2001-12-19  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/html/configopts.html:  Describe recent options.
 	* docs/html/documentation.html:  Point to new doxygen tarballs.
 	* docs/html/install.html:  Brief updates.

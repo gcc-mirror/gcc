@@ -14,7 +14,7 @@ haven't gotten to it yet.  It /will/ be done (by somebody, eventually.)
 c17             FINISHED (Nothing in Clause 17 "exists" in terms of code.)
 c18             <limits>, Note A
 c19             Note A
-c20             std_memory.h[20.4], rel_ops (should they be doc'd?), Note A
+c20             rel_ops (should they be doc'd?), Note A
 c21             Untouched, Note B
 c22             Untouched
 c23             See doxygroups.cc and Note B.
