@@ -1890,13 +1890,44 @@ toc_section ()						\
 
 /* This is how to output an assembler line defining a `double' constant.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)		\
-  fprintf (FILE, "\t.double 0d%.20e\n", (VALUE))
+#define ASM_OUTPUT_DOUBLE(FILE, VALUE)					\
+  {									\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
+      {									\
+	long t[2];							\
+	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
+	fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n",		\
+		t[0] & 0xffffffff, t[1] & 0xffffffff);			\
+      }									\
+    else								\
+      {									\
+	char str[30];							\
+	REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", str);			\
+	fprintf (FILE, "\t.double 0d%s\n", str);			\
+      }									\
+  }
 
 /* This is how to output an assembler line defining a `float' constant.  */
 
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)		\
-  fprintf (FILE, "\t.float 0d%.20e\n", (VALUE))
+#define ASM_OUTPUT_FLOAT(FILE, VALUE)					\
+  {									\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
+      {									\
+	long t;								\
+	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
+	fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
+      }									\
+    else								\
+      {									\
+	char str[30];							\
+	REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);			\
+	fprintf (FILE, "\t.float 0d%s\n", str);				\
+      }									\
+  }
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
