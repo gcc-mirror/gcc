@@ -1,5 +1,13 @@
 2004-01-10  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/awt/image/ImageDecoder.java
+	(produce): Made public.
+	* gnu/java/awt/peer/GLightweightPeer.java,
+	gnu/java/awt/peer/gtk/GtkToolkit.java:
+	Reformated.
+
+2004-01-10  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/JRadioButtonMenuItem.java,
 	javax/swing/JSeparator.java,
 	javax/swing/JSplitPane.java,
