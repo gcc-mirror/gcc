@@ -1,3 +1,7 @@
+2004-08-10  Richard Henderson  <rth@redhat.com>
+
+	* tree-tailcall.c (suitable_for_tail_opt_p): Also check DECL_EXTERNAL.
+
 2004-08-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* config.gcc (arm*-*-eabi*): New target.
