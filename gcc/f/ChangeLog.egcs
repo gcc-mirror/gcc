@@ -1,3 +1,9 @@
+Sun Mar 22 00:50:42 1998  Nick Clifton  <nickc@cygnus.com>
+                          Geoff Noer    <noer@cygnus.com>
+
+	* Makefile.in: Various fixes for building cygwin32 native toolchains.
+	* Make-lang.in: Likewise.
+
 Thu Mar 12 09:39:40 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* lang-specs.h: Properly put brackets around array elements in initializer.

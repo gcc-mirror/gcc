@@ -1,3 +1,9 @@
+Sun Mar 22 00:50:42 1998  Nick Clifton  <nickc@cygnus.com>
+                          Geoff Noer    <noer@cygnus.com>
+
+	* Makefile.in: Various fixes for building cygwin32 native toolchains.
+	* Make-lang.in: Likewise.
+
 Fri Mar 20 18:07:39 1998  Kriang Lerdsuwanakij  <lerdsuwa@scf.usc.edu>
 
 	* pt.c (tsubst, TEMPLATE_TEMPLATE_PARM): Simplify.
