@@ -1098,7 +1098,7 @@
 	(mem:SI (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 4))
 			 (match_operand:SI 2 "register_operand" "r"))))]
-  ""
+  "! TARGET_DISABLE_INDEXING"
   "ldwx,s %1(0,%2),%0"
   [(set_attr "type" "load")
    (set_attr "length" "1")])
@@ -1111,7 +1111,7 @@
 ;	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 ;			  (const_int 4))
 ;		 (match_dup 1)))]
-;  ""
+;  "! TARGET_DISABLE_INDEXING"
 ;  "ldwx,sm %2(0,%1),%0"
 ;  [(set_attr "type" "load")
 ;   (set_attr "length" "1")])
@@ -1121,7 +1121,7 @@
 	(mem:HI (plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 				  (const_int 2))
 			 (match_operand:SI 1 "register_operand" "r"))))]
-  ""
+  "! TARGET_DISABLE_INDEXING"
   "ldhx,s %2(0,%1),%0"
   [(set_attr "type" "load")
    (set_attr "length" "1")])
@@ -1134,7 +1134,7 @@
 ;	(plus:SI (mult:SI (match_operand:SI 2 "register_operand" "r")
 ;			  (const_int 2))
 ;		 (match_dup 1)))]
-;  ""
+;  "! TARGET_DISABLE_INDEXING"
 ;  "ldhx,sm %2(0,%1),%0"
 ;  [(set_attr "type" "load")
 ;   (set_attr "length" "1")])
@@ -1686,7 +1686,7 @@
   ""
   "
 {
-  if (TARGET_SNAKE)
+  if (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS)
     {
       rtx scratch = gen_reg_rtx (DImode);
       operands[1] = force_reg (SImode, operands[1]);
@@ -1704,7 +1704,7 @@
   [(set (match_operand:DI 0 "register_operand" "=x")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "x"))
 		 (zero_extend:DI (match_operand:SI 2 "register_operand" "x"))))]
-  "TARGET_SNAKE"
+  "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
