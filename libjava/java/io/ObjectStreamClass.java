@@ -452,27 +452,33 @@ public class ObjectStreamClass implements Serializable
   }
 
   private Method findMethod(Method[] methods, String name, Class[] params,
-			    Class returnType)
+			    Class returnType, boolean mustBePrivate)
   {
 outer:
-    for(int i = 0; i < methods.length; i++)
+    for (int i = 0; i < methods.length; i++)
     {
-	if(methods[i].getName().equals(name) &&
-	   methods[i].getReturnType() == returnType)
+	final Method m = methods[i];
+        int mods = m.getModifiers();
+        if (Modifier.isStatic(mods)
+            || (mustBePrivate && !Modifier.isPrivate(mods)))
+        {
+            continue;
+        }
+
+	if (m.getName().equals(name)
+	   && m.getReturnType() == returnType)
 	{
-	    Class[] mp = methods[i].getParameterTypes();
-	    if(mp.length == params.length)
+	    Class[] mp = m.getParameterTypes();
+	    if (mp.length == params.length)
 	    {
-		for(int j = 0; j < mp.length; j++)
+		for (int j = 0; j < mp.length; j++)
 		{
-		    if(mp[j] != params[j])
+		    if (mp[j] != params[j])
 		    {
 			continue outer;
 		    }
 		}
-		final Method m = methods[i];
-		SetAccessibleAction setAccessible = new SetAccessibleAction(m);
-		AccessController.doPrivileged(setAccessible);
+		AccessController.doPrivileged(new SetAccessibleAction(m));
 		return m;
 	    }
 	}
@@ -485,9 +491,14 @@ outer:
     Method[] methods = forClass().getDeclaredMethods();
     readObjectMethod = findMethod(methods, "readObject",
 				  new Class[] { ObjectInputStream.class },
-				  Void.TYPE);
+				  Void.TYPE, true);
+    writeObjectMethod = findMethod(methods, "writeObject",
+                                   new Class[] { ObjectOutputStream.class },
+                                   Void.TYPE, true);
     readResolveMethod = findMethod(methods, "readResolve",
-				   new Class[0], Object.class);
+				   new Class[0], Object.class, false);
+    writeReplaceMethod = findMethod(methods, "writeReplace",
+                                    new Class[0], Object.class, false);
   }
 
   private ObjectStreamClass(Class cl)
@@ -517,20 +528,8 @@ outer:
       // only set this bit if CL is NOT Externalizable
       flags |= ObjectStreamConstants.SC_SERIALIZABLE;
 
-    try
-      {
-	Method writeMethod = cl.getDeclaredMethod("writeObject",
-						  writeMethodArgTypes);
-	int modifiers = writeMethod.getModifiers();
-
-	if (writeMethod.getReturnType() == Void.TYPE
-	    && Modifier.isPrivate(modifiers)
-	    && !Modifier.isStatic(modifiers))
-	  flags |= ObjectStreamConstants.SC_WRITE_METHOD;
-      }
-    catch(NoSuchMethodException oh_well)
-      {
-      }
+    if (writeObjectMethod != null)
+      flags |= ObjectStreamConstants.SC_WRITE_METHOD;
   }
 
 
@@ -851,11 +850,11 @@ outer:
     {
 	return (Externalizable)constructor.newInstance(null);
     }
-    catch(Throwable t)
+    catch(Exception x)
     {
 	throw (InvalidClassException)
 	    new InvalidClassException(clazz.getName(),
-		     "Unable to instantiate").initCause(t);
+		     "Unable to instantiate").initCause(x);
     }
   }
 
@@ -884,10 +883,12 @@ outer:
 
   Method readObjectMethod;
   Method readResolveMethod;
+  Method writeReplaceMethod;
+  Method writeObjectMethod;
   boolean realClassIsSerializable;
   boolean realClassIsExternalizable;
   ObjectStreamField[] fieldMapping;
-  Class firstNonSerializableParent;
+  Constructor firstNonSerializableParentConstructor;
   private Constructor constructor;  // default constructor for Externalizable
 
   boolean isProxyClass = false;
@@ -896,34 +897,33 @@ outer:
   // but it will avoid showing up as a discrepancy when comparing SUIDs.
   private static final long serialVersionUID = -6120832682080437368L;
 
-}
 
-
-// interfaces are compared only by name
-class InterfaceComparator implements Comparator
-{
-  public int compare(Object o1, Object o2)
+  // interfaces are compared only by name
+  private static final class InterfaceComparator implements Comparator
   {
-    return ((Class) o1).getName().compareTo(((Class) o2).getName());
+    public int compare(Object o1, Object o2)
+    {
+      return ((Class) o1).getName().compareTo(((Class) o2).getName());
+    }
   }
-}
 
 
-// Members (Methods and Constructors) are compared first by name,
-// conflicts are resolved by comparing type signatures
-class MemberComparator implements Comparator
-{
-  public int compare(Object o1, Object o2)
+  // Members (Methods and Constructors) are compared first by name,
+  // conflicts are resolved by comparing type signatures
+  private static final class MemberComparator implements Comparator
   {
-    Member m1 = (Member) o1;
-    Member m2 = (Member) o2;
+    public int compare(Object o1, Object o2)
+    {
+      Member m1 = (Member) o1;
+      Member m2 = (Member) o2;
 
-    int comp = m1.getName().compareTo(m2.getName());
+      int comp = m1.getName().compareTo(m2.getName());
 
-    if (comp == 0)
-      return TypeSignature.getEncodingOfMember(m1).
-	compareTo(TypeSignature.getEncodingOfMember(m2));
-    else
-      return comp;
+      if (comp == 0)
+        return TypeSignature.getEncodingOfMember(m1).
+	  compareTo(TypeSignature.getEncodingOfMember(m2));
+      else
+        return comp;
+    }
   }
 }
