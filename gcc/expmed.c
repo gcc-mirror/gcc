@@ -66,8 +66,8 @@ static int sdiv_pow2_cheap, smod_pow2_cheap;
 #define MAX_BITS_PER_WORD BITS_PER_WORD
 #endif
 
-/* Cost of various pieces of RTL.  Note that some of these are indexed by shift count,
-   and some by mode.  */
+/* Cost of various pieces of RTL.  Note that some of these are indexed by
+   shift count and some by mode.  */
 static int add_cost, negate_cost, zero_cost;
 static int shift_cost[MAX_BITS_PER_WORD];
 static int shiftadd_cost[MAX_BITS_PER_WORD];
@@ -96,7 +96,7 @@ init_expmed ()
      makes.  */
   free_point = (char *) oballoc (0);
 
-  reg = gen_rtx (REG, word_mode, 10000);
+  reg = gen_rtx_REG (word_mode, 10000);
 
   zero_cost = rtx_cost (const0_rtx, 0);
   add_cost = rtx_cost (gen_rtx_PLUS (word_mode, reg, reg), SET);
@@ -170,12 +170,13 @@ init_expmed ()
 	  mul_highpart_cost[(int) mode]
 	    = rtx_cost (gen_rtx_TRUNCATE
 			(mode,
-			 gen_rtx_LSHIFTRT
-			 (wider_mode,
-			  gen_rtx_MULT (wider_mode,
-					gen_rtx_ZERO_EXTEND (wider_mode, reg),
-					gen_rtx_ZERO_EXTEND (wider_mode, reg)),
-			  GEN_INT (GET_MODE_BITSIZE (mode)))),
+			 gen_rtx_LSHIFTRT (wider_mode,
+					   gen_rtx_MULT (wider_mode,
+							 gen_rtx_ZERO_EXTEND
+							 (wider_mode, reg),
+							 gen_rtx_ZERO_EXTEND
+							 (wider_mode, reg)),
+					   GEN_INT (GET_MODE_BITSIZE (mode)))),
 			SET);
 	}
     }
@@ -365,7 +366,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 	    }
 
 	  emit_insn (GEN_FCN (icode)
-		   (gen_rtx_SUBREG (fieldmode, op0, offset), value));
+		     (gen_rtx_SUBREG (fieldmode, op0, offset), value));
 	}
       return value;
     }
@@ -2419,7 +2420,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx_PLUS (mode, accum, tem),
-					 add_target ? add_target : accum_target);
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far += (HOST_WIDE_INT) 1 << log;
 		  break;
 
@@ -2427,7 +2429,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  tem = expand_shift (LSHIFT_EXPR, mode, op0,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx_MINUS (mode, accum, tem),
-					 add_target ? add_target : accum_target);
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far -= (HOST_WIDE_INT) 1 << log;
 		  break;
 
@@ -2436,7 +2439,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 					build_int_2 (log, 0), shift_subtarget,
 					0);
 		  accum = force_operand (gen_rtx_PLUS (mode, accum, op0),
-					 add_target ? add_target : accum_target);
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far = (val_so_far << log) + 1;
 		  break;
 
@@ -2445,7 +2449,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 					build_int_2 (log, 0), shift_subtarget,
 					0);
 		  accum = force_operand (gen_rtx_MINUS (mode, accum, op0),
-					 add_target ? add_target : accum_target);
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far = (val_so_far << log) - 1;
 		  break;
 
@@ -2453,7 +2458,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
 		  tem = expand_shift (LSHIFT_EXPR, mode, accum,
 				      build_int_2 (log, 0), NULL_RTX, 0);
 		  accum = force_operand (gen_rtx_PLUS (mode, accum, tem),
-					 add_target ? add_target : accum_target);
+					 add_target
+					 ? add_target : accum_target);
 		  val_so_far += val_so_far << log;
 		  break;
 
@@ -3279,11 +3285,15 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			t3 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 					   build_int_2 (size - 1, 0), NULL_RTX, 0);
 			if (d < 0)
-			  quotient = force_operand (gen_rtx_MINUS (compute_mode, t3, t2),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t3, t2),
+					     tquotient);
 			else
-			  quotient = force_operand (gen_rtx_MINUS (compute_mode, t2, t3),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t2, t3),
+					     tquotient);
 		      }
 		    else
 		      {
@@ -3297,18 +3307,25 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 						   max_cost - extra_cost);
 			if (t1 == 0)
 			  goto fail1;
-			t2 = force_operand (gen_rtx_PLUS (compute_mode, t1, op0),
+			t2 = force_operand (gen_rtx_PLUS (compute_mode,
+							  t1, op0),
 					    NULL_RTX);
 			t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
-					   build_int_2 (post_shift, 0), NULL_RTX, 0);
+					   build_int_2 (post_shift, 0),
+					   NULL_RTX, 0);
 			t4 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
-					   build_int_2 (size - 1, 0), NULL_RTX, 0);
+					   build_int_2 (size - 1, 0),
+					   NULL_RTX, 0);
 			if (d < 0)
-			  quotient = force_operand (gen_rtx_MINUS (compute_mode, t4, t3),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t4, t3),
+					     tquotient);
 			else
-			  quotient = force_operand (gen_rtx_MINUS (compute_mode, t3, t4),
-						    tquotient);
+			  quotient
+			    = force_operand (gen_rtx_MINUS (compute_mode,
+							    t3, t4),
+					     tquotient);
 		      }
 		  }
 		else		/* Too wide mode to use tricky code */
@@ -4261,7 +4278,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	     we don't have to do anything.  */
 	  if (normalizep == 0 || normalizep == STORE_FLAG_VALUE)
 	    ;
-	  else if (normalizep == - STORE_FLAG_VALUE)
+	  /* STORE_FLAG_VALUE might be the most negative number, so write
+	     the comparison this way to avoid a compiler-time warning.  */
+	  else if (- normalizep == STORE_FLAG_VALUE)
 	    op0 = expand_unop (compare_mode, neg_optab, op0, subtarget, 0);
 
 	  /* We don't want to use STORE_FLAG_VALUE < 0 below since this

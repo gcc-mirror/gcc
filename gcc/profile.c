@@ -1554,10 +1554,8 @@ output_arc_profiler (arcno, insert_after)
      rtx insert_after;
 {
   rtx profiler_target_addr
-    = (arcno
-       ? gen_rtx_CONST (Pmode,
-			gen_rtx_PLUS (Pmode, profiler_label,
-				      GEN_INT (LONG_TYPE_SIZE / BITS_PER_UNIT * arcno)))
+    = (arcno ? plus_constant (profiler_label,
+			      LONG_TYPE_SIZE / BITS_PER_UNIT * arcno)
        : profiler_label);
   enum machine_mode mode = mode_for_size (LONG_TYPE_SIZE, MODE_INT, 0);
   rtx profiler_reg = gen_reg_rtx (mode);

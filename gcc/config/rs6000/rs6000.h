@@ -1368,8 +1368,8 @@ extern int rs6000_sysv_varargs_p;
    assuming the value has mode MODE.  */
 
 #define LIBCALL_VALUE(MODE)		\
-  gen_rtx_REG (MODE,			\
-	       GET_MODE_CLASS (MODE) == MODE_FLOAT && TARGET_HARD_FLOAT ? 33 : 3)
+  gen_rtx_REG (MODE, (GET_MODE_CLASS (MODE) == MODE_FLOAT	 \
+		      && TARGET_HARD_FLOAT ? 33 : 3))
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1718,10 +1718,13 @@ typedef struct rs6000_args
   ((count == -1)					\
    ? gen_rtx_REG (Pmode, 65)				\
    : gen_rtx_MEM (Pmode,				\
-	      memory_address (Pmode, 			\
-			      plus_constant (copy_to_reg (gen_rtx_MEM (Pmode, \
-								   memory_address (Pmode, frame))), \
-					     RETURN_ADDRESS_OFFSET))))
+		  memory_address			\
+		  (Pmode, 				\
+		   plus_constant (copy_to_reg		\
+				  (gen_rtx_MEM (Pmode,	\
+						memory_address (Pmode, \
+								frame))), \
+				  RETURN_ADDRESS_OFFSET))))
 
 /* Definitions for register eliminations.
 
@@ -1998,7 +2001,7 @@ typedef struct rs6000_args
       if (low_int & 0x8000)						\
 	high_int += 0x10000, low_int |= ((HOST_WIDE_INT) -1) << 16;	\
       sum = force_operand (gen_rtx_PLUS (Pmode, XEXP (X, 0),		\
-				    GEN_INT (high_int)), 0);		\
+					 GEN_INT (high_int)), 0);	\
       (X) = gen_rtx_PLUS (Pmode, sum, GEN_INT (low_int));		\
       goto WIN;								\
     }									\
@@ -2009,7 +2012,7 @@ typedef struct rs6000_args
 	   && (MODE) != TImode)						\
     {									\
       (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),				\
-		     force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
+			  force_reg (Pmode, force_operand (XEXP (X, 1), 0))); \
       goto WIN;								\
     }									\
   else if (TARGET_ELF && TARGET_32BIT && TARGET_NO_TOC			\
@@ -3107,7 +3110,7 @@ do {									\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
   do { char buf[100];					\
        fputs (TARGET_32BIT ? "\t.long " : "\t.llong ", FILE);	\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\

@@ -401,7 +401,9 @@ gen_insn (insn)
     }
   else
     {
-      printf ("  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (%d", XVECLEN (insn, 1));
+      printf ("  return gen_rtx_PARALLEL (VOIDmode, gen_rtvec (%d",
+	      XVECLEN (insn, 1));
+
       for (i = 0; i < XVECLEN (insn, 1); i++)
 	{
 	  printf (",\n\t\t");

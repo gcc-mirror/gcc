@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,99 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92,93,94,96,98, 99 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -114,6 +114,7 @@ C++ Language}, for extensions that apply @emph{only} to C++.
 			 function.
 * Return Address::      Getting the return or frame address of a function.
 * Deprecated Features:: Things might disappear from g++.
+* Other Builtins::      Other built-in functions.
 @end menu
 @end ifclear
 
@@ -811,7 +812,8 @@ them as a single variable with a complex type.
 @node Hex Floats
 @section Hex Floats
 @cindex hex floats
-GNU CC recognizes floating-point numbers written not only in the usual
+
+GNU CC recognizes floating-point numbers writen not only in the usual
 decimal notation, such as @code{1.55e1}, but also numbers such as
 @code{0x1.fp3} written in hexadecimal format.  In that format the
 @code{0x} hex introducer and the @code{p} or @code{P} exponent field are
@@ -1555,16 +1557,19 @@ Not all target machines support this attribute.
 
 @item no_check_memory_usage
 @cindex @code{no_check_memory_usage} function attribute
-If @samp{-fcheck-memory-usage} is given, calls to support routines will
-be generated before most memory accesses, to permit support code to
-record usage and detect uses of uninitialized or unallocated storage.
-Since the compiler cannot handle them properly, @code{asm} statements
-are not allowed.  Declaring a function with this attribute disables the
+The @code{no_check_memory_usage} attribute causes GNU CC to omit checks
+of memory references when it generates code for that function.  Normally
+if you specify @samp{-fcheck-memory-usage} (see @pxref{Code Gen
+Options}), GNU CC generates calls to support routines before most memory
+accesses to permit support code to record usage and detect uses of
+uninitialized or unallocated storage.  Since GNU CC cannot handle
+@code{asm} statements properly they are not allowed in such functions.
+If you declare a function with this attribute, GNU CC will not generate
 memory checking code for that function, permitting the use of @code{asm}
-statements without requiring separate compilation with different
-options, and allowing you to write support routines of your own if you
-wish, without getting infinite recursion if they get compiled with this
-option.
+statements without having to compile that function with different
+options.  This also allows you to write support routines of your own if
+you wish, without getting infinite recursion if they get compiled with
+@code{-fcheck-memory-usage}.
 
 @item regparm (@var{number})
 @cindex functions that are passed arguments in registers on the 386
@@ -2445,13 +2450,15 @@ asm volatile ("movc3 %0,%1,%2"
               : "r0", "r1", "r2", "r3", "r4", "r5");
 @end example
 
-It is an error for a clobber description to overlap an input or output
-operand (for example, an operand describing a register class with one
-member, mentioned in the clobber list).  Most notably, it is invalid to
-describe that an input operand is modified, but unused as output.  It has
-to be specified as an input and output operand anyway.  Note that if there
-are only unused output operands, you will then also need to specify
-@code{volatile} for the @code{asm} construct, as described below.
+You may not write a clobber description in a way that overlaps with an
+input or output operand.  For example, you may not have an operand
+describing a register class with one member if you mention that register
+in the clobber list.  There is no way for you to specify that an input
+operand is modified without also specifying it as an output
+operand.  Note that if all the output operands you specify are for this
+purpose (and hence unused), you will then also need to specify
+@code{volatile} for the @code{asm} construct, as described below, to
+prevent GNU CC from deleting the @code{asm} statement as unused.
 
 If you refer to a particular hardware register from the assembler code,
 you will probably have to list the register after the third colon to

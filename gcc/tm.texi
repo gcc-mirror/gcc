@@ -4775,12 +4775,13 @@ than good.)
 @findex MOVE_RATIO
 @item MOVE_RATIO
 The threshold of number of scalar memory-to-memory move insns, @emph{below}
-which a sequence of insns  should be generated instead of a
+which a sequence of insns should be generated instead of a
 string move insn or a library call.  Increasing the value will always
 make code faster, but eventually incurs high cost in increased code size.
 
-Note that on machines with no memory-to-memory move insns, this macro denotes
-the corresponding number of memory-to-memory @emph{sequences}.
+Note that on machines where the corresponding move insn is a
+@code{define_expand} that emits a sequence of insns, this macro counts
+the number of such sequences.
 
 If you don't define this, a reasonable default is used.
 

@@ -2472,9 +2472,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   int goal_earlyclobber, this_earlyclobber;
   enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
   int retval = 0;
-  /* Cache the last regno for the last pseudo we did an output reload
-     for in case the next insn uses it.  */
-  static int last_output_reload_regno = -1;
 
   this_insn = insn;
   n_reloads = 0;
@@ -2908,9 +2905,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '=':
-	      case '+':
-	      case '*':
+	      case '=':  case '+':  case '*':
 		break;
 
 	      case '%':
@@ -2933,11 +2928,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		while (*p && *p != ',') p++;
 		break;
 
-	      case '0':
-	      case '1':
-	      case '2':
-	      case '3':
-	      case '4':
+	      case '0':  case '1':  case '2':  case '3':  case '4':
+	      case '5':  case '6':  case '7':  case '8':  case '9':
+
 		c -= '0';
 		this_alternative_matches[i] = c;
 		/* We are supposed to match a previous operand.
@@ -3242,21 +3235,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  && this_alternative[i] == (int) NO_REGS
 		  && this_alternative_matches[i] < 0)
 		bad = 1;
-
-#if 0
-	      /* If this is a pseudo-register that is set in the previous
-		 insns, there's a good chance that it will already be in a
-		 spill register and we can use that spill register.  So
-		 make this case cheaper.
-
-		 Disabled for egcs.  egcs has better inheritance code and
-		 this change causes problems with the improved reload
-		 inheritance code.  */
-	      if (GET_CODE (operand) == REG
-		  && REGNO (operand) >= FIRST_PSEUDO_REGISTER
-		  && REGNO (operand) == last_output_reload_regno)
-		reject--;
-#endif
 
 	      /* If this is a constant that is reloaded into the desired
 		 class by copying it to memory first, count that as another
@@ -3644,7 +3622,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	reload_earlyclobbers[n_earlyclobbers++] = recog_operand[i];
 
   /* Now record reloads for all the operands that need them.  */
-  last_output_reload_regno = -1;
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i])
       {
@@ -3708,9 +3685,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     (insn_code_number < 0 ? 0
 			      : insn_operand_strict_low[insn_code_number][i]),
 			     0, i, operand_type[i]);
-	    if (modified[i] != RELOAD_READ
-		&& GET_CODE (recog_operand[i]) == REG)
-	      last_output_reload_regno = REGNO (recog_operand[i]);
 	  }
 	/* In a matching pair of operands, one must be input only
 	   and the other must be output only.
@@ -3728,9 +3702,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     operand_mode[goal_alternative_matched[i]],
 			     0, 0, i, RELOAD_OTHER);
 	    operand_reloadnum[goal_alternative_matched[i]] = output_reloadnum;
-	    if (GET_CODE (recog_operand[goal_alternative_matched[i]]) == REG)
-	      last_output_reload_regno
-		= REGNO (recog_operand[goal_alternative_matched[i]]);
 	  }
 	else if (modified[i] == RELOAD_WRITE
 		 && modified[goal_alternative_matched[i]] == RELOAD_READ)
@@ -3745,8 +3716,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			     operand_mode[i],
 			     0, 0, i, RELOAD_OTHER);
 	    operand_reloadnum[i] = output_reloadnum;
-	    if (GET_CODE (recog_operand[i]) == REG)
-	      last_output_reload_regno = REGNO (recog_operand[i]);
 	  }
 	else if (insn_code_number >= 0)
 	  abort ();

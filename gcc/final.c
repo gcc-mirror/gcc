@@ -425,9 +425,11 @@ end_final (filename)
       if (write_symbols != NO_DEBUG && profile_block_flag)
 	{
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 5);
-	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes, 1);
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
+			    pointer_bytes, 1);
 	  ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 6);
-	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name), pointer_bytes, 1);
+	  assemble_integer (gen_rtx_SYMBOL_REF (Pmode, name),
+			    pointer_bytes, 1);
 	}
       else
 	{

@@ -1477,7 +1477,8 @@ unused variables, parameters and labels, use the @samp{unused} attribute
 (@pxref{Variable Attributes}).
 
 @item -Wuninitialized
-An automatic variable is used without first being initialized.
+Warn if an automatic variable is used without first being initialized or
+if a variable may be clobbered by a @code{setjmp} call.
 
 These warnings are possible only in optimizing compilation,
 because they require data flow information that is computed only
@@ -1534,7 +1535,8 @@ This has no bug because @code{save_y} is used only if it is set.
 
 @cindex @code{longjmp} warnings
 This option also warns when a nonvolatile automatic variable might be
-changed by a call to @code{longjmp}.
+changed by a call to @code{longjmp}.  These warnings as well are possible
+only in optimizing compilation.
 
 The compiler sees only the calls to @code{setjmp}.  It cannot know
 where @code{longjmp} will be called; in fact, a signal handler could
@@ -1545,6 +1547,12 @@ in fact be called at the place which would cause a problem.
 Some spurious warnings can be avoided if you declare all the functions
 you use that never return as @code{noreturn}.  @xref{Function
 Attributes}.
+
+@item -Wreorder (C++ only)
+@cindex reordering, warning
+@cindex warning for reordering of member initializers
+Warn when the order of member initializers given in the code does not
+match the order in which they must be executed.  For instance:
 
 @item -Wunknown-pragmas
 @cindex warning for unknown pragmas
@@ -1786,8 +1794,7 @@ because the program does work.  Another common use of unreachable
 code is to provide behaviour which is selectable at compile-time.
 
 @item -Winline
-Warn if a function can not be inlined, and either it was declared as inline,
-or else the @samp{-finline-functions} option was given.
+Warn if a function can not be inlined and it was declared as inline.
 
 @item -Wlong-long
 Warn if @samp{long long} type is used.  This is default.  To inhibit
@@ -6636,16 +6643,16 @@ it.
 @table @code
 @item -fexceptions
 Enable exception handling. Generates extra code needed to propagate
-exceptions.  For some targets, this implies generation of frame unwind 
-information for all functions. This can produce significant data size 
-overhead, although it does not affect execution.
-If you do not specify this option, it is enabled by
-default for languages like C++ which normally require exception handling,
-and disabled for languages like C that do not normally require it.
-However, when compiling C code that needs to interoperate properly with
-exception handlers written in C++, you may need to enable this option.
-You may also wish to disable this option is you are compiling older C++
-programs that don't use exception handling.
+exceptions.  For some targets, this implies GNU CC will generate frame
+unwind information for all functions, which can produce significant data
+size overhead, although it does not affect execution.  If you do not
+specify this option, GNU CC will enable it by default for languages like
+C++ which normally require exception handling, and disable itfor
+languages like C that do not normally require it.  However, you may need
+to enable this option when compiling C code that needs to interoperate
+properly with exception handlers written in C++.  You may also wish to
+disable this option if you are compiling older C++ programs that don't
+use exception handling.
 
 @item -fpcc-struct-return
 Return ``short'' @code{struct} and @code{union} values in memory like
@@ -6687,7 +6694,7 @@ shared between processes running the same program, while private data
 exists in one copy per process.
 
 @item -fno-common
-Allocate even uninitialized global variables in the bss section of the
+Allocate even uninitialized global variables in the data section of the
 object file, rather than generating them as common blocks.  This has the
 effect that if the same variable is declared (without @code{extern}) in
 two different compilations, you will get an error when you link them.
@@ -6833,22 +6840,20 @@ stubs for every function you call, you might have to specify
 @samp{-fcheck-memory-usage} without @samp{-fprefix-function-name}.
 
 If you specify this option, you can not use the @code{asm} or
-@code{__asm__} keywords in functions with memory checking enabled.  The
-compiler cannot understand what the @code{asm} statement will do, and
-therefore cannot generate the appropriate code, so it is rejected.
-However, the function attribute @code{no_check_memory_usage} will
-disable memory checking within a function, and @code{asm} statements can
-be put inside such functions.  Inline expansion of a non-checked
-function within a checked function is permitted; the inline function's
-memory accesses won't be checked, but the rest will.
+@code{__asm__} keywords in functions with memory checking enabled.  GNU
+CC cannot understand what the @code{asm} statement may do, and therefore
+cannot generate the appropriate code, so it will reject it.  However, if
+you specify the function attribute @code{no_check_memory_usage} (see
+@pxref{Function Attributes}, GNU CC will disable memory checking within a
+function; you may use @code{asm} statements inside such functions.  You
+may have an inline expansion of a non-checked function within a checked
+function; in that case GNU CC will not generate checks for the inlined
+function's memory accesses.
 
-If you move your @code{asm} statements to non-checked inline functions,
-but they do access memory, you can add calls to the support code in your
+If you move your @code{asm} statements to non-checked inline functions
+and they do access memory, you can add calls to the support code in your
 inline function, to indicate any reads, writes, or copies being done.
 These calls would be similar to those done in the stubs described above.
-
-@c FIXME: The support-routine interface is defined by the compiler and
-@c        should be documented!
 
 @item -fprefix-function-name
 Request GCC to add a prefix to the symbols generated for function names.

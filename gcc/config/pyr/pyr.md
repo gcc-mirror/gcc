@@ -1,5 +1,5 @@
 ;; GNU C machine description for Pyramid 90x, 9000, MIServer Series
-;; Copyright (C) 1989, 1990, 1995, 1997 Free Software Foundation, Inc.
+;; Copyright (C) 1989, 90, 95, 97, 98, 1999 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1257,9 +1257,9 @@
 {
   rtx xoperands[2];
   CC_STATUS_INIT;
-  xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   if (REG_P (operands[2]))
-    xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
+    xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     {
       xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
@@ -1278,9 +1278,9 @@
 {
   rtx xoperands[2];
   CC_STATUS_INIT;
-  xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   if (REG_P (operands[2]))
-    xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
+    xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     {
       xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
@@ -1299,9 +1299,9 @@
 {
   rtx xoperands[2];
   CC_STATUS_INIT;
-  xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   if (REG_P (operands[2]))
-    xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
+    xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     {
       xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
@@ -1320,9 +1320,9 @@
 {
   rtx xoperands[2];
   CC_STATUS_INIT;
-  xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   if (REG_P (operands[2]))
-    xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
+    xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     {
       xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));
@@ -1341,9 +1341,9 @@
 {
   rtx xoperands[2];
   CC_STATUS_INIT;
-  xoperands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+  xoperands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   if (REG_P (operands[2]))
-    xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[2]) + 1);
+    xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[2]) + 1);
   else
     {
       xoperands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[2]));

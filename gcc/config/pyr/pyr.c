@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Pyramid 90x, 9000, and MIServer Series.
-   Copyright (C) 1989, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,7 +20,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some output-actions in pyr.md need these.  */
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -258,6 +258,7 @@ extend_const (x, extop, from_mode, to_mode)
     val = val & ~((-1) << (GET_MODE_BITSIZE (from_mode)));
   if (GET_MODE_BITSIZE (to_mode) == HOST_BITS_PER_INT)
     return GEN_INT (val);
+
   return GEN_INT (val & ~((-1) << (GET_MODE_BITSIZE (to_mode))));
 }
 
@@ -296,7 +297,7 @@ extend_and_branch (extop)
   if (op1 == 0)
     {
       op0 = ensure_extended (op0, extop, test_mode);
-      emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx, op0));
+      emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, op0));
     }
   else
     {
@@ -338,8 +339,8 @@ extend_and_branch (extop)
 	    op0 = force_reg (test_mode, op0);
 	}
 
-      emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx,
-			  gen_rtx (COMPARE, VOIDmode, op0, op1)));
+      emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx,
+			      gen_rtx_COMPARE (VOIDmode, op0, op1)));
     }
 }
 
@@ -630,7 +631,7 @@ output_move_double (operands)
 	    }
 	  operands[1] = GEN_INT (CONST_DOUBLE_HIGH (const_op));
 	  output_asm_insn ("movw %1,%0", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (const_op));
 	  return "movw %1,%0";
 	}
@@ -648,7 +649,7 @@ output_move_double (operands)
 	    }
 	  operands[1] = GEN_INT (CONST_DOUBLE_LOW (const_op));
 	  output_asm_insn ("movw %1,%0", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 	  operands[1] = GEN_INT (CONST_DOUBLE_HIGH (const_op));
 	  return "movw %1,%0";
 	}

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
-   Copyright (C) 1988, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 93, 94-98, 1999 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -587,8 +587,8 @@ enum reg_class
    or perhaps F0 is there is fp support.  */
 
 #define LIBCALL_VALUE(MODE)  \
-  gen_rtx (REG, MODE,				  \
-	   FLOAT_MODE_P(MODE) && TARGET_32081 ? F0_REGNUM: R0_REGNUM)
+  gen_rtx_REG (MODE,				  \
+	       FLOAT_MODE_P(MODE) && TARGET_32081 ? F0_REGNUM: R0_REGNUM)
 
 /* Define this if PCC uses the nonreentrant convention for returning
    structure and union values.  */
@@ -653,7 +653,7 @@ enum reg_class
    It exists only to test register calling conventions.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-((TARGET_REGPARM && (CUM) < 8) ? gen_rtx (REG, (MODE), (CUM) / 4) : 0)
+((TARGET_REGPARM && (CUM) < 8) ? gen_rtx_REG ((MODE), (CUM) / 4) : 0)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
@@ -941,8 +941,8 @@ operands on the 32k are stored).  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			     \
 {									     \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 12)), CXT);    \
-  emit_move_insn (gen_rtx (MEM, SImode, plus_constant (TRAMP, 16)), FNADDR); \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 12)), CXT);    \
+  emit_move_insn (gen_rtx_MEM (SImode, plus_constant (TRAMP, 16)), FNADDR); \
 }
 
 /* This is the library routine that is used

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Vax.
-   Copyright (C) 1987, 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 94, 95, 97, 98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,7 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -53,11 +53,11 @@ split_quadword_operands (operands, low, n)
 	       && (GET_CODE (XEXP (operands[i], 0)) == POST_INC))
 	{
 	  rtx addr = XEXP (operands[i], 0);
-	  operands[i] = low[i] = gen_rtx (MEM, SImode, addr);
+	  operands[i] = low[i] = gen_rtx_MEM (SImode, addr);
 	  if (which_alternative == 0 && i == 0)
 	    {
 	      addr = XEXP (operands[i], 0);
-	      operands[i+1] = low[i+1] = gen_rtx (MEM, SImode, addr);
+	      operands[i+1] = low[i+1] = gen_rtx_MEM (SImode, addr);
 	    }
 	}
       else

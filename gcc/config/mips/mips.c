@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include <signal.h>
-
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -41,6 +40,8 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-codes.h"
 #include "recog.h"
 #include "toplev.h"
+#include "output.h"
+
 #include "tree.h"
 #include "function.h"
 #include "expr.h"
@@ -1478,14 +1479,14 @@ mips_fill_delay_slot (ret, type, operands, cur_insn)
   mips_load_reg = set_reg;
   if (GET_MODE_SIZE (mode)
       > (FP_REG_P (REGNO (set_reg)) ? UNITS_PER_FPREG : UNITS_PER_WORD))
-    mips_load_reg2 = gen_rtx (REG, SImode, REGNO (set_reg) + 1);
+    mips_load_reg2 = gen_rtx_REG (SImode, REGNO (set_reg) + 1);
   else
     mips_load_reg2 = 0;
 
   if (type == DELAY_HILO)
     {
-      mips_load_reg3 = gen_rtx (REG, SImode, MD_REG_FIRST);
-      mips_load_reg4 = gen_rtx (REG, SImode, MD_REG_FIRST+1);
+      mips_load_reg3 = gen_rtx_REG (SImode, MD_REG_FIRST);
+      mips_load_reg4 = gen_rtx_REG (SImode, MD_REG_FIRST+1);
     }
   else
     {
@@ -1646,9 +1647,10 @@ embedded_pic_offset (x)
       pop_topmost_sequence ();
     }
 
-  return gen_rtx (CONST, Pmode,
-		  gen_rtx (MINUS, Pmode, x,
-			   XEXP (DECL_RTL (current_function_decl), 0)));
+  return
+    gen_rtx_CONST (Pmode,
+		   gen_rtx_MINUS (Pmode, x,
+				  XEXP (DECL_RTL (current_function_decl), 0)));
 }
 
 /* Return the appropriate instructions to move one operand to another.  */
@@ -2790,7 +2792,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
   else if (test == ITEST_EQ)
     {
       reg2 = invert ? gen_reg_rtx (mode) : result;
-      convert_move (reg2, gen_rtx (LTU, mode, reg, const1_rtx), 0);
+      convert_move (reg2, gen_rtx_LTU (mode, reg, const1_rtx), 0);
       reg = reg2;
     }
 
@@ -2857,7 +2859,7 @@ gen_conditional_branch (operands, test_code)
     case CMP_SF:
     case CMP_DF:
       if (mips_isa < 4)
-	reg = gen_rtx (REG, CCmode, FPSW_REGNUM);
+	reg = gen_rtx_REG (CCmode, FPSW_REGNUM);
       else
 	reg = gen_reg_rtx (CCmode);
 
@@ -2865,10 +2867,10 @@ gen_conditional_branch (operands, test_code)
          0 in the instruction built below.  The MIPS FPU handles
          inequality testing by testing for equality and looking for a
          false result.  */
-      emit_insn (gen_rtx (SET, VOIDmode, reg,
-			  gen_rtx (test_code == NE ? EQ : test_code,
-				   CCmode, cmp0, cmp1)));
-
+      emit_insn (gen_rtx_SET (VOIDmode, reg,
+			      gen_rtx (test_code == NE ? EQ : test_code,
+				       CCmode, cmp0, cmp1)));
+      
       test_code = test_code == NE ? EQ : NE;
       mode = CCmode;
       cmp0 = reg;
@@ -2882,7 +2884,7 @@ gen_conditional_branch (operands, test_code)
 
   /* Generate the branch.  */
 
-  label1 = gen_rtx (LABEL_REF, VOIDmode, operands[0]);
+  label1 = gen_rtx_LABEL_REF (VOIDmode, operands[0]);
   label2 = pc_rtx;
 
   if (invert)
@@ -2891,10 +2893,11 @@ gen_conditional_branch (operands, test_code)
       label1 = pc_rtx;
     }
 
-  emit_jump_insn (gen_rtx (SET, VOIDmode, pc_rtx,
-			   gen_rtx (IF_THEN_ELSE, VOIDmode,
-				    gen_rtx (test_code, mode, cmp0, cmp1),
-				    label1, label2)));
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+			       gen_rtx_IF_THEN_ELSE (VOIDmode,
+						     gen_rtx (test_code, mode,
+							      cmp0, cmp1),
+						     label1, label2)));
 }
 
 /* Emit the common code for conditional moves.  OPERANDS is the array
@@ -2973,14 +2976,15 @@ gen_conditional_move (operands)
     abort ();
 
   cmp_reg = gen_reg_rtx (cmp_mode);
-  emit_insn (gen_rtx (SET, cmp_mode, cmp_reg,
-		      gen_rtx (cmp_code, cmp_mode, op0, op1)));
+  emit_insn (gen_rtx_SET (cmp_mode, cmp_reg,
+			  gen_rtx (cmp_code, cmp_mode, op0, op1)));
 
-  emit_insn (gen_rtx (SET, op_mode, operands[0],
-		      gen_rtx (IF_THEN_ELSE, op_mode,
-			       gen_rtx (move_code, VOIDmode,
-					cmp_reg, CONST0_RTX (SImode)),
-			       operands[2], operands[3])));
+  emit_insn (gen_rtx_SET (op_mode, operands[0],
+			  gen_rtx_IF_THEN_ELSE (op_mode,
+						gen_rtx (move_code, VOIDmode,
+							 cmp_reg,
+							 CONST0_RTX (SImode)),
+						operands[2], operands[3])));
 }
 
 /* Write a loop to move a constant number of bytes.
@@ -3097,13 +3101,13 @@ block_move_call (dest_reg, src_reg, bytes_rtx)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
 #ifdef TARGET_MEM_FUNCTIONS
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "memcpy"), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0,
 		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TREE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
 #else
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "bcopy"), 0,
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "bcopy"), 0,
 		     VOIDmode, 3, src_reg, Pmode, dest_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (integer_type_node), bytes_rtx,
 				      TREE_UNSIGNED (integer_type_node)),
@@ -3502,23 +3506,23 @@ output_block_move (insn, operands, num_regs, move_type)
 		    abort ();
 
 		  if (GET_MODE (operands[i + 4]) != load_store[i].mode)
-		    operands[i + 4] = gen_rtx (REG, load_store[i].mode,
-					       REGNO (operands[i + 4]));
+		    operands[i + 4] = gen_rtx_REG (load_store[i].mode,
+						   REGNO (operands[i + 4]));
 
 		  offset = load_store[i].offset;
 		  xoperands[0] = operands[i + 4];
-		  xoperands[1] = gen_rtx (MEM, load_store[i].mode,
-					  plus_constant (src_reg, offset));
+		  xoperands[1] = gen_rtx_MEM (load_store[i].mode,
+					      plus_constant (src_reg, offset));
 
 		  if (use_lwl_lwr)
 		    {
 		      int extra_offset
 			= GET_MODE_SIZE (load_store[i].mode) - 1;
 
-		      xoperands[2] = gen_rtx (MEM, load_store[i].mode,
-					      plus_constant (src_reg,
-							     extra_offset
-							     + offset));
+		      xoperands[2] = gen_rtx_MEM (load_store[i].mode,
+						  plus_constant (src_reg,
+								 extra_offset
+								 + offset));
 		    }
 
 		  output_asm_insn (load_store[i].load, xoperands);
@@ -3531,17 +3535,17 @@ output_block_move (insn, operands, num_regs, move_type)
 	      int offset = load_store[i].offset;
 
 	      xoperands[0] = operands[i + 4];
-	      xoperands[1] = gen_rtx (MEM, load_store[i].mode,
-				      plus_constant (dest_reg, offset));
+	      xoperands[1] = gen_rtx_MEM (load_store[i].mode,
+					  plus_constant (dest_reg, offset));
 
 
 	      if (use_lwl_lwr)
 		{
 		  int extra_offset = GET_MODE_SIZE (load_store[i].mode) - 1;
-		  xoperands[2] = gen_rtx (MEM, load_store[i].mode,
-					  plus_constant (dest_reg,
-							 extra_offset
-							 + offset));
+		  xoperands[2] = gen_rtx_MEM (load_store[i].mode,
+					      plus_constant (dest_reg,
+							     extra_offset
+							     + offset));
 		}
 
 	      if (move_type == BLOCK_MOVE_NORMAL)
@@ -3814,7 +3818,7 @@ function_arg (cum, mode, type, named)
 
       if (! type || TREE_CODE (type) != RECORD_TYPE || mips_abi == ABI_32
 	  || mips_abi == ABI_EABI || mips_abi == ABI_O64 || ! named)
-	ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
+	ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
       else
 	{
 	  /* The Irix 6 n32/n64 ABIs say that if any 64 bit chunk of the
@@ -3834,7 +3838,7 @@ function_arg (cum, mode, type, named)
 	  /* If the whole struct fits a DFmode register,
 	     we don't need the PARALLEL.  */
 	  if (! field || mode == DFmode)
-	    ret = gen_rtx (REG, mode, regbase + *arg_words + bias);
+	    ret = gen_rtx_REG (mode, regbase + *arg_words + bias);
 	  else
 	    {
 	      /* Now handle the special case by returning a PARALLEL
@@ -3853,7 +3857,7 @@ function_arg (cum, mode, type, named)
 
 	      /* assign_parms checks the mode of ENTRY_PARM, so we must
 		 use the actual mode here.  */
-	      ret = gen_rtx (PARALLEL, mode, rtvec_alloc (chunks));
+	      ret = gen_rtx_PARALLEL (mode, rtvec_alloc (chunks));
 
 	      bitpos = 0;
 	      regno = regbase + *arg_words + bias;
@@ -3872,14 +3876,14 @@ function_arg (cum, mode, type, named)
 		      && TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field)) == bitpos
 		      && TREE_CODE (TREE_TYPE (field)) == REAL_TYPE
 		      && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD)
-		    reg = gen_rtx (REG, DFmode,
-				   regno + FP_ARG_FIRST - GP_ARG_FIRST);
+		    reg = gen_rtx_REG (DFmode,
+				       regno + FP_ARG_FIRST - GP_ARG_FIRST);
 		  else
-		    reg = gen_rtx (REG, word_mode, regno);
-
+		    reg = gen_rtx_REG (word_mode, regno);
+		  
 		  XVECEXP (ret, 0, i) 
-		    = gen_rtx (EXPR_LIST, VOIDmode, reg,
-			       GEN_INT (bitpos / BITS_PER_UNIT));
+		    = gen_rtx_EXPR_LIST (VOIDmode, reg,
+					 GEN_INT (bitpos / BITS_PER_UNIT));
 
 		  bitpos += 64;
 		  regno++;
@@ -3915,7 +3919,7 @@ function_arg (cum, mode, type, named)
 	{
 	  rtx amount = GEN_INT (BITS_PER_WORD
 				- int_size_in_bytes (type) * BITS_PER_UNIT);
-	  rtx reg = gen_rtx (REG, word_mode, regbase + *arg_words + bias);
+	  rtx reg = gen_rtx_REG (word_mode, regbase + *arg_words + bias);
 
 	  if (TARGET_64BIT)
 	    cum->adjust[cum->num_adjusts++] = gen_ashldi3 (reg, reg, amount);
@@ -5773,7 +5777,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	       && (unsigned HOST_WIDE_INT) (large_offset - gp_offset) < 32768
 	       && (unsigned HOST_WIDE_INT) (large_offset - end_offset) < 32768)
 	{
-	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = large_offset;
 	  if (file == 0)
 	    {
@@ -5796,7 +5800,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       else
 	{
-	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = gp_offset;
 	  if (file == 0)
 	    {
@@ -5990,7 +5994,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	       && (unsigned HOST_WIDE_INT) (large_offset - fp_offset) < 32768
 	       && (unsigned HOST_WIDE_INT) (large_offset - end_offset) < 32768)
 	{
-	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = large_offset;
 	  if (file == 0)
 	    {
@@ -6014,7 +6018,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 
       else
 	{
-	  base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
+	  base_reg_rtx = gen_rtx_REG (Pmode, MIPS_TEMP2_REGNUM);
 	  base_offset = fp_offset;
 	  if (file == 0)
 	    {
@@ -6665,7 +6669,7 @@ mips_expand_prologue ()
 
       if (TARGET_ABICALLS && (mips_abi != ABI_32 && mips_abi != ABI_O64))
 	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0),
-			       gen_rtx (REG, DImode, 25)));
+			       gen_rtx_REG (DImode, 25)));
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -6794,7 +6798,7 @@ mips_expand_epilogue ()
 
   if (tsize > 32767 && ! TARGET_MIPS16)
     {
-      tmp_rtx = gen_rtx (REG, Pmode, MIPS_TEMP1_REGNUM);
+      tmp_rtx = gen_rtx_REG (Pmode, MIPS_TEMP1_REGNUM);
       emit_move_insn (tmp_rtx, tsize_rtx);
       tsize_rtx = tmp_rtx;
     }
@@ -7111,12 +7115,13 @@ mips_function_value (valtype, func)
 		 strictly necessary.  */
 	      enum machine_mode field_mode = TYPE_MODE (TREE_TYPE (fields[0]));
 
-	      return gen_rtx (PARALLEL, mode,
-			      gen_rtvec (1,
-					 gen_rtx (EXPR_LIST, VOIDmode,
-						  gen_rtx (REG, field_mode,
-							   FP_RETURN),
-						  const0_rtx)));
+	      return gen_rtx_PARALLEL
+		(mode,
+		 gen_rtvec (1,
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (field_mode,
+							    FP_RETURN),
+					       const0_rtx)));
 	    }
 
 	  else if (i == 2)
@@ -7130,23 +7135,24 @@ mips_function_value (valtype, func)
 	      int second_offset
 		= TREE_INT_CST_LOW (DECL_FIELD_BITPOS (fields[1]));
 
-	      return gen_rtx (PARALLEL, mode,
-			      gen_rtvec (2,
-					 gen_rtx (EXPR_LIST, VOIDmode,
-						  gen_rtx (REG, first_mode,
-							   FP_RETURN),
-						  GEN_INT (first_offset
-							   / BITS_PER_UNIT)),
-					 gen_rtx (EXPR_LIST, VOIDmode,
-						  gen_rtx (REG, second_mode,
-							   FP_RETURN + 2),
-						  GEN_INT (second_offset
-							   / BITS_PER_UNIT))));
+	      return gen_rtx_PARALLEL
+		(mode,
+		 gen_rtvec (2,
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (first_mode,
+							    FP_RETURN),
+					       GEN_INT (first_offset
+							/ BITS_PER_UNIT)),
+			    gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (second_mode,
+							    FP_RETURN + 2),
+					       GEN_INT (second_offset
+							/ BITS_PER_UNIT))));
 	    }
 	}
     }
 
-  return gen_rtx (REG, mode, reg);
+  return gen_rtx_REG (mode, reg);
 }
 
 /* The implementation of FUNCTION_ARG_PASS_BY_REFERENCE.  Return
@@ -7161,6 +7167,18 @@ function_arg_pass_by_reference (cum, mode, type, named)
 {
   int size;
 
+  /* We must pass by reference if we would be both passing in registers
+     and the stack.  This is because any subsequent partial arg would be
+     handled incorrectly in this case.
+
+     ??? This is really a kludge.  We should either fix GCC so that such
+     a situation causes an abort and then do something in the MIPS port
+     to prevent it, or add code to function.c to properly handle the case.  */
+  if (FUNCTION_ARG (*cum, mode, type, named) != 0
+      && MUST_PASS_IN_STACK (mode, type))
+    return 1;
+
+  /* Otherwise, we only do this if EABI is selected.  */
   if (mips_abi != ABI_EABI)
     return 0;
 

@@ -45,6 +45,9 @@ Boston, MA 02111-1307, USA.  */
 #include "mbchar.h"
 #include <locale.h>
 #endif /* MULTIBYTE_CHARS */
+#ifndef GET_ENVIRONMENT
+#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ((ENV_VALUE) = getenv (ENV_NAME))
+#endif
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -279,7 +282,7 @@ init_lex ()
 #ifdef MULTIBYTE_CHARS
   /* Change to the native locale for multibyte conversions.  */
   setlocale (LC_CTYPE, "");
-  literal_codeset = getenv ("LANG");
+  GET_ENVIRONMENT (literal_codeset, "LANG");
 #endif
 
   maxtoken = 40;
@@ -1529,7 +1532,7 @@ yylex ()
 #define TOTAL_PARTS ((HOST_BITS_PER_WIDE_INT / HOST_BITS_PER_CHAR) * 2)
 	unsigned int parts[TOTAL_PARTS];
 
-	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS, AFTER_EXPON }
+	enum anon1 { NOT_FLOAT, AFTER_POINT, TOO_MANY_POINTS, AFTER_EXPON}
 	  floatflag = NOT_FLOAT;
 
 	for (count = 0; count < TOTAL_PARTS; count++)
@@ -1970,7 +1973,7 @@ yylex ()
 	int max_chars;
 #ifdef MULTIBYTE_CHARS
 	int longest_char = local_mb_cur_max ();
-	local_mbtowc (NULL_PTR, NULL_PTR, 0);
+	(void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
 #endif
 
 	max_chars = TYPE_PRECISION (integer_type_node) / width;
@@ -2091,7 +2094,7 @@ yylex ()
 	  }
 
 	if (c != '\'')
-	  error ("malformatted character constant");
+	  error ("malformed character constant");
 	else if (chars_seen == 0)
 	  error ("empty character constant");
 	else if (num_chars > max_chars)
@@ -2139,9 +2142,8 @@ yylex ()
 	                           : TYPE_PRECISION (char_type_node);
 #ifdef MULTIBYTE_CHARS
 	int longest_char = local_mb_cur_max ();
-	local_mbtowc (NULL_PTR, NULL_PTR, 0);
+	(void) local_mbtowc (NULL_PTR, NULL_PTR, 0);
 #endif
-
 	c = token_getch ();
 	p = token_buffer + 1;
 

@@ -1,6 +1,6 @@
 /* Definitions for Motorola 68k running Linux-based GNU systems with
    ELF format.
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -298,8 +298,8 @@ do {									\
 #define LIBCALL_VALUE(MODE)						\
   ((((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)		\
     && TARGET_68881)							\
-   ? gen_rtx_REG (MODE, 16)						\
-   : gen_rtx_REG (MODE, 0))
+   ? gen_rtx_REG ((MODE), 16)						\
+   : gen_rtx_REG ((MODE), 0))
 
 /* In m68k svr4, a symbol_ref rtx can be a valid PIC operand if it is
    an operand of a function call. */

@@ -1,5 +1,5 @@
-;;- Machine description for GNU compiler, Vax Version
-;;   Copyright (C) 1987, 88, 91, 94-96, 1998 Free Software Foundation, Inc.
+;; Machine description for GNU compiler, Vax Version
+;; Copyright (C) 1987, 88, 91, 94-96, 1998, 1999 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1189,7 +1189,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, QImode, negate_rtx (QImode, operands[2]));
+    operands[2] = gen_rtx_NEG (QImode, negate_rtx (QImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1237,7 +1237,7 @@
   ""
   "
 {
-  operands[2] = gen_rtx (NEG, QImode, negate_rtx (QImode, operands[2]));
+  operands[2] = gen_rtx_NEG (QImode, negate_rtx (QImode, operands[2]));
 }")
 
 (define_insn "ashldi3"
@@ -1283,7 +1283,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, QImode, negate_rtx (QImode, operands[2]));
+    operands[2] = gen_rtx_NEG (QImode, negate_rtx (QImode, operands[2]));
 }")
 
 (define_insn "rotlsi3"
@@ -2131,6 +2131,7 @@
   ""
   "*
 {
-  operands[3] = GEN_INT (INTVAL (operands[3]) & ~((1 << INTVAL (operands[2])) - 1));
+  operands[3]
+    = GEN_INT (INTVAL (operands[3]) & ~((1 << INTVAL (operands[2])) - 1));
   return \"rotl %2,%1,%0\;bicl2 %N3,%0\";
 }")

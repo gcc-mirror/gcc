@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 /* Obstack to allocate bitmap elements from.  */
 static struct obstack bitmap_obstack;
 static int bitmap_obstack_init = FALSE;
-
 
 #ifndef INLINE
 #ifndef __GNUC__

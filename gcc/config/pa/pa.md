@@ -3107,8 +3107,7 @@
       operands[1] = force_reg (SImode, operands[1]);
       operands[2] = force_reg (SImode, operands[2]);
       emit_insn (gen_umulsidi3 (scratch, operands[1], operands[2]));
-      emit_insn (gen_rtx_SET (VOIDmode,
-			      operands[0],
+      emit_insn (gen_rtx_SET (VOIDmode, operands[0],
 			      gen_rtx_SUBREG (SImode, scratch, 1)));
       DONE;
     }
@@ -5410,7 +5409,8 @@
 
   /* Else call $$sh_func_adrs to extract the function's real add24.  */
   return output_millicode_call (insn,
-				gen_rtx_SYMBOL_REF (SImode, \"$$sh_func_adrs\"));
+				gen_rtx_SYMBOL_REF (SImode,
+					 \"$$sh_func_adrs\"));
 }"
   [(set_attr "type" "multi")
    (set (attr "length")
@@ -5456,8 +5456,9 @@
   /* Load the PIC register from the stack slot (in our caller's
      frame).  */
   emit_move_insn (pic_offset_table_rtx,
-		  gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, -32)));
-  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+		  gen_rtx_MEM (SImode,
+			       plus_constant (stack_pointer_rtx, -32)));
+  emit_insn (gen_rtx (USE, VOIDmode, pic_offset_table_rtx));
   emit_insn (gen_blockage ());
   DONE;
 }")

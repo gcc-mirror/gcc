@@ -1,5 +1,5 @@
-/* system.h - Get common system includes and various definitions and
-   declarations based on autoconf macros.
+/* Get common system includes and various definitions and declarations based
+   on autoconf macros.
    Copyright (C) 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
+
 
 #ifndef __GCC_SYSTEM_H__
 #define __GCC_SYSTEM_H__
@@ -121,7 +122,10 @@ extern int fputs_unlocked PROTO ((const char *, FILE *));
 #define ISDIGIT(c) ((unsigned) (c) - '0' <= 9)
 
 
+#ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
+#endif
+
 #include <errno.h>
 
 #ifndef errno
@@ -335,6 +339,22 @@ extern char *sbrk ();
 
 #ifdef NEED_DECLARATION_STRSTR
 extern char *strstr ();
+#endif
+
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+
+#ifdef NEED_DECLARATION_MALLOC
+extern char *malloc ();
+#endif
+
+#ifdef NEED_DECLARATION_CALLOC
+extern char *calloc ();
+#endif
+
+#ifdef NEED_DECLARATION_REMALLOC
+extern char *realloc ();
 #endif
 
 #ifdef HAVE_STRERROR

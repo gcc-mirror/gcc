@@ -2433,8 +2433,9 @@ expand_call (exp, target, ignore)
 	  preserve_temp_slots (target);
 	}
 
-      emit_group_store (target, valreg, bytes,
-			TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
+      if (! rtx_equal_p (target, valreg))
+        emit_group_store (target, valreg, bytes,
+			  TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
     }
   else if (target && GET_MODE (target) == TYPE_MODE (TREE_TYPE (exp))
 	   && GET_MODE (target) == GET_MODE (valreg))
@@ -2901,9 +2902,13 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 		= mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
 				 MODE_INT, 1);
 	      rtx stack_area
-		= gen_rtx_MEM (save_mode,
-			       memory_address (save_mode,
-					       plus_constant (argblock, argvec[argnum].offset.constant)));
+		= gen_rtx_MEM
+		  (save_mode,
+		   memory_address
+		   (save_mode,
+		    plus_constant (argblock,
+				   argvec[argnum].offset.constant)));
+
 	      argvec[argnum].save_area = gen_reg_rtx (save_mode);
 	      emit_move_insn (argvec[argnum].save_area, stack_area);
 	    }
@@ -3024,8 +3029,10 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
 	enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
 	rtx stack_area
 	  = gen_rtx_MEM (save_mode,
-			 memory_address (save_mode,
-					 plus_constant (argblock, argvec[count].offset.constant)));
+			 memory_address
+			 (save_mode,
+			  plus_constant (argblock,
+					 argvec[count].offset.constant)));
 
 	emit_move_insn (stack_area, argvec[count].save_area);
       }
@@ -3464,11 +3471,14 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 		= mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
 				 MODE_INT, 1);
 	      rtx stack_area
-		= gen_rtx_MEM (save_mode,
-			       memory_address (save_mode,
-					       plus_constant (argblock,
-							      argvec[argnum].offset.constant)));
+		= gen_rtx_MEM
+		  (save_mode,
+		   memory_address
+		   (save_mode,
+		    plus_constant (argblock,
+				   argvec[argnum].offset.constant)));
 	      argvec[argnum].save_area = gen_reg_rtx (save_mode);
+
 	      emit_move_insn (argvec[argnum].save_area, stack_area);
 	    }
 #endif
@@ -3613,8 +3623,10 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
 	enum machine_mode save_mode = GET_MODE (argvec[count].save_area);
 	rtx stack_area
 	  = gen_rtx_MEM (save_mode,
-		     memory_address (save_mode, plus_constant (argblock,
-				     argvec[count].offset.constant)));
+			 memory_address
+			 (save_mode,
+			  plus_constant (argblock,
+					 argvec[count].offset.constant)));
 
 	emit_move_insn (stack_area, argvec[count].save_area);
       }
@@ -3840,8 +3852,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 
   if (arg->value == arg->stack)
     {
-      /* If the value is already in the stack slot, we are done moving
-	 data.  */
+      /* If the value is already in the stack slot, we are done.  */
       if (current_function_check_memory_usage && GET_CODE (arg->stack) == MEM)
 	{
 	  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,

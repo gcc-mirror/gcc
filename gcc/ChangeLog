@@ -1,3 +1,8 @@
+Mon Sep  6 22:44:47 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Merge from gcc2 snapshot Jan 9, 1999.  See FSFChangeLog for
+	details.
+
 Mon Sep  6 22:31:28 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-aux-info.c (concat): Don't define.
@@ -126,6 +131,7 @@ Mon Sep  6 14:30:13 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	(ix86_mark_machine_status): New function.
 	(override_options): Set mark_machine_status.
 
+>>>>>>> 1.4290
 Mon Sep  6 15:26:23 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* tree.c (copy_node): Copy node contents also if doing GC.
@@ -136,6 +142,7 @@ Mon Sep  6 08:42:06 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 Mon Sep  6 02:42:36 1999  Jeffrey A Law  (law@cygnus.com)
 
+>>>>>>> 1.4287
 	* collect2.c (scan_libraries): Fix thinko.
 
 	* cse.c (delete_trivially_dead_insns): Do not skip the last

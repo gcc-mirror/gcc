@@ -3603,7 +3603,7 @@ fold_range_test (exp)
 		      TREE_TYPE (exp), TREE_OPERAND (exp, 0),
 		      TREE_OPERAND (exp, 1));
 
-      else if (current_function_decl != 0
+      else if (global_bindings_p () == 0
 	       && ! contains_placeholder_p (lhs))
 	{
 	  tree common = save_expr (lhs);
@@ -4352,7 +4352,7 @@ fold (expr)
 	       && (TREE_CODE (arg0) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg0)
-		   || (current_function_decl != 0
+		   || (global_bindings_p () == 0
 		       && ! contains_placeholder_p (arg0))))
 	{
 	  tree test, true_value, false_value;
@@ -4387,7 +4387,7 @@ fold (expr)
 	     in that case.  */
 
 	  if (TREE_CODE (arg0) != SAVE_EXPR && ! TREE_CONSTANT (arg0)
-	      && current_function_decl != 0
+	      && global_bindings_p () == 0
 	      && ((TREE_CODE (arg0) != VAR_DECL
 		   && TREE_CODE (arg0) != PARM_DECL)
 		  || TREE_SIDE_EFFECTS (arg0)))
@@ -4427,7 +4427,7 @@ fold (expr)
 	       && (TREE_CODE (arg1) != COND_EXPR
 		   || count_cond (arg0, 25) + count_cond (arg1, 25) <= 25)
 	       && (! TREE_SIDE_EFFECTS (arg1)
-		   || (current_function_decl != 0
+		   || (global_bindings_p () == 0
 		       && ! contains_placeholder_p (arg1))))
 	{
 	  tree test, true_value, false_value;
@@ -4448,7 +4448,7 @@ fold (expr)
 	    }
 
 	  if (TREE_CODE (arg1) != SAVE_EXPR && ! TREE_CONSTANT (arg0)
-	      && current_function_decl != 0
+	      && global_bindings_p () == 0
 	      && ((TREE_CODE (arg1) != VAR_DECL
 		   && TREE_CODE (arg1) != PARM_DECL)
 		  || TREE_SIDE_EFFECTS (arg1)))
@@ -5072,7 +5072,7 @@ fold (expr)
 	  if (real_onep (arg1))
 	    return non_lvalue (convert (type, arg0));
 	  /* x*2 is x+x */
-	  if (! wins && real_twop (arg1) && current_function_decl != 0
+	  if (! wins && real_twop (arg1) && global_bindings_p () == 0
 	      && ! contains_placeholder_p (arg0))
 	    {
 	      tree arg = save_expr (arg0);
@@ -6582,13 +6582,12 @@ fold (expr)
     } /* switch (code) */
 }
 
-/* Determine if first argument is a multiple of second argument.
-   Return 0 if it is not, or is not easily determined to so be.
+/* Determine if first argument is a multiple of second argument.  Return 0 if
+   it is not, or we cannot easily determined it to be.
 
-   An example of the sort of thing we care about (at this point --
-   this routine could surely be made more general, and expanded
-   to do what the *_DIV_EXPR's fold() cases do now) is discovering
-   that
+   An example of the sort of thing we care about (at this point; this routine
+   could surely be made more general, and expanded to do what the *_DIV_EXPR's
+   fold cases do now) is discovering that
 
      SAVE_EXPR (I) * SAVE_EXPR (J * 8)
 
@@ -6596,40 +6595,27 @@ fold (expr)
 
      SAVE_EXPR (J * 8)
 
-   when we know that the two `SAVE_EXPR (J * 8)' nodes are the
-   same node (which means they will have the same value at run
-   time, even though we don't know when they'll be assigned).
+   when we know that the two SAVE_EXPR (J * 8) nodes are the same node.
 
    This code also handles discovering that
 
      SAVE_EXPR (I) * SAVE_EXPR (J * 8)
 
-   is a multiple of
-
-     8
-
-   (of course) so we don't have to worry about dealing with a
+   is a multiple of 8 so we don't have to worry about dealing with a
    possible remainder.
 
-   Note that we _look_ inside a SAVE_EXPR only to determine
-   how it was calculated; it is not safe for fold() to do much
-   of anything else with the internals of a SAVE_EXPR, since
-   fold() cannot know when it will be evaluated at run time.
-   For example, the latter example above _cannot_ be implemented
-   as
-
-     SAVE_EXPR (I) * J
-
-   or any variant thereof, since the value of J at evaluation time
-   of the original SAVE_EXPR is not necessarily the same at the time
-   the new expression is evaluated.  The only optimization of this
+   Note that we *look* inside a SAVE_EXPR only to determine how it was
+   calculated; it is not safe for fold to do much of anything else with the
+   internals of a SAVE_EXPR, since it cannot know when it will be evaluated
+   at run time.  For example, the latter example above *cannot* be implemented
+   as SAVE_EXPR (I) * J or any variant thereof, since the value of J at
+   evaluation time of the original SAVE_EXPR is not necessarily the same at
+   the time the new expression is evaluated.  The only optimization of this
    sort that would be valid is changing
 
      SAVE_EXPR (I) * SAVE_EXPR (SAVE_EXPR (J) * 8)
-   divided by
-     8
 
-   to
+   divided by 8 to
 
      SAVE_EXPR (I) * SAVE_EXPR (J)
 
@@ -6660,12 +6646,14 @@ multiple_of_p (type, top, bottom)
 	      && multiple_of_p (type, TREE_OPERAND (top, 1), bottom));
 
     case NOP_EXPR:
-      /* Punt if conversion from non-integral or wider integral type.  */
+      /* Can't handle conversions from non-integral or wider integral type.  */
       if ((TREE_CODE (TREE_TYPE (TREE_OPERAND (top, 0))) != INTEGER_TYPE)
 	  || (TYPE_PRECISION (type)
 	      < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (top, 0)))))
 	return 0;
-      /* Fall through. */
+
+      /* .. fall through ... */
+
     case SAVE_EXPR:
       return multiple_of_p (type, TREE_OPERAND (top, 0), bottom);
 
@@ -6681,4 +6669,3 @@ multiple_of_p (type, top, bottom)
       return 0;
     }
 }
-

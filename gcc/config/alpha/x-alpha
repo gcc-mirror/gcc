@@ -1,2 +1,2 @@
-CLIB=-lmld
+CLIB=-lmld -lexc
 EXTRA_HEADERS = $(srcdir)/config/alpha/va_list.h

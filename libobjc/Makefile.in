@@ -1,5 +1,5 @@
 #Makefile for GNU Objective C runtime library.
-#Copyright (C) 1993, 95-97, 1998 Free Software Foundation, Inc.
+#Copyright (C) 1993, 95-98, 1999 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -294,6 +294,7 @@ install-libs: installdirs
 copy-headers:
 	-rm -rf $(incinstalldir)/objc
 	-mkdir $(incinstalldir)/objc
+	-chmod a+rx $(incinstalldir)/objc
 	for file in $(OBJC_H); do \
 	  realfile=$(srcdir)/objc/$${file}; \
 	  cp $${realfile} $(incinstalldir)/objc; \

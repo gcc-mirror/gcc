@@ -1915,13 +1915,28 @@ error VPROTO((const char *msgid, ...))
   va_end (ap);
 }
 
-/* Report a fatal error at the current line number.  */
+/* Report a fatal error at the current line number.   Allow a front end to
+   intercept the message.  */
+
+static void (*fatal_function) PROTO((const char *, va_list));
+
+/* Set the function to call when a fatal error occurs.  */
+
+void
+set_fatal_function (f)
+     void (*f) PROTO((char *, va_list));
+{
+  fatal_function = f;
+}
 
 static void
 vfatal (msgid, ap)
      const char *msgid;
      va_list ap;
 {
+   if (fatal_function != 0)
+     (*fatal_function) (_(msgid), ap);
+
   verror (msgid, ap);
   exit (FATAL_EXIT_CODE);
 }
@@ -3736,12 +3751,15 @@ rest_of_compilation (decl)
       TIMEVAR (cse_time, reg_scan (insns, max_reg_num (), 1));
 
       if (flag_thread_jumps)
-	/* Hacks by tiemann & kenner.  */
 	TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 1));
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
 					 0, rtl_dump_file));
       TIMEVAR (cse_time, delete_trivially_dead_insns (insns, max_reg_num ()));
+
+      /* If we are not running the second CSE pass, then we are no longer
+	 expecting CSE to be run.  */
+      cse_not_expected = !flag_rerun_cse_after_loop;
 
       if (tem || optimize > 1)
 	TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,

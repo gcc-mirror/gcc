@@ -2421,7 +2421,9 @@
 
 (define_insn "*sethi_di_medlow_embmedany_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (high:DI (match_operand:DI 1 "sp64_medium_pic_operand" "")))]
+        (high:DI (match_operand:DI 1 "sp64_medium_pic_operand" "")))
+  ;; The clobber is here because emit_move_sequence assumes the worst case.
+   (clobber (reg:DI 1))]
   "(TARGET_CM_MEDLOW || TARGET_CM_EMBMEDANY) && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
   [(set_attr "type" "move")
@@ -2430,6 +2432,8 @@
 (define_insn "*sethi_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (match_operand:DI 1 "symbolic_operand" "")))]
+  ;; The clobber is here because emit_move_sequence assumes the worst case.
+   (clobber (reg:DI 1))]
   "TARGET_CM_MEDLOW && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
   [(set_attr "type" "move")
@@ -3954,8 +3958,7 @@
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1,
-					 op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
 			  shift_16));
   emit_insn (gen_lshrsi3 (operand0, temp, shift_16));
   DONE;
@@ -4033,8 +4036,7 @@
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1,
-						op1_subword),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subword),
 			  shift_48));
   emit_insn (gen_lshrdi3 (operand0, temp, shift_48));
   DONE;
@@ -4214,8 +4216,7 @@
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1,
-						op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
 			  shift_16));
   emit_insn (gen_ashrsi3 (operand0, temp, shift_16));
   DONE;
@@ -4250,8 +4251,7 @@
       op0_subword = SUBREG_WORD (operand0);
       operand0 = XEXP (operand0, 0);
     }
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1,
-						op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
 			  shift_24));
   if (GET_MODE (operand0) != SImode)
     operand0 = gen_rtx_SUBREG (SImode, operand0, op0_subword);
@@ -4283,8 +4283,7 @@
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1,
-						op1_subword),
+  emit_insn (gen_ashlsi3 (temp, gen_rtx_SUBREG (SImode, operand1, op1_subword),
 			  shift_24));
   emit_insn (gen_ashrsi3 (operand0, temp, shift_24));
   DONE;
@@ -4314,8 +4313,7 @@
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1,
-						op1_subword),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subword),
 			  shift_56));
   emit_insn (gen_ashrdi3 (operand0, temp, shift_56));
   DONE;
@@ -4345,8 +4343,7 @@
       operand1 = XEXP (operand1, 0);
     }
 
-  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1,
-						op1_subword),
+  emit_insn (gen_ashldi3 (temp, gen_rtx_SUBREG (DImode, operand1, op1_subword),
 			  shift_48));
   emit_insn (gen_ashrdi3 (operand0, temp, shift_48));
   DONE;
@@ -6280,11 +6277,14 @@
 {
   if (! TARGET_ARCH64)
     {
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2,
-			  gen_rtx_SET (VOIDmode, operand0,
-				   gen_rtx_NEG (DImode, operand1)),
-			  gen_rtx_CLOBBER (VOIDmode,
-				   gen_rtx_REG (CCmode, SPARC_ICC_REG)))));
+      emit_insn (gen_rtx_PARALLEL
+		 (VOIDmode,
+		  gen_rtvec (2,
+			     gen_rtx_SET (VOIDmode, operand0,
+					  gen_rtx_NEG (DImode, operand1)),
+			     gen_rtx_CLOBBER (VOIDmode,
+					      gen_rtx_REG (CCmode,
+							   SPARC_ICC_REG)))));
       DONE;
     }
 }")
@@ -7407,21 +7407,19 @@
 
       if (! TARGET_ARCH64 && INTVAL (operands[3]) != 0)
 	emit_jump_insn
-	  (gen_rtx_PARALLEL (VOIDmode,
-		    gen_rtvec (3,
-			       gen_rtx_SET (VOIDmode, pc_rtx,
-					XEXP (operands[0], 0)),
-			       GEN_INT (INTVAL (operands[3]) & 0xfff),
-			       gen_rtx_CLOBBER (VOIDmode,
-					gen_rtx_REG (Pmode, 15)))));
+	  (gen_rtx_PARALLEL
+	   (VOIDmode,
+	    gen_rtvec (3,
+		       gen_rtx_SET (VOIDmode, pc_rtx, XEXP (operands[0], 0)),
+		       GEN_INT (INTVAL (operands[3]) & 0xfff),
+		       gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
       else
 	emit_jump_insn
-	  (gen_rtx_PARALLEL (VOIDmode,
-		    gen_rtvec (2,
-			       gen_rtx_SET (VOIDmode, pc_rtx,
-					XEXP (operands[0], 0)),
-			       gen_rtx_CLOBBER (VOIDmode,
-					gen_rtx_REG (Pmode, 15)))));
+	  (gen_rtx_PARALLEL
+	   (VOIDmode,
+	    gen_rtvec (2,
+		       gen_rtx_SET (VOIDmode, pc_rtx, XEXP (operands[0], 0)),
+		       gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
       goto finish_call;
     }
 
@@ -7441,17 +7439,17 @@
 
   if (! TARGET_ARCH64 && INTVAL (operands[3]) != 0)
     emit_call_insn
-      (gen_rtx_PARALLEL (VOIDmode,
-		gen_rtvec (3, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
-			   GEN_INT (INTVAL (operands[3]) & 0xfff),
-			   gen_rtx_CLOBBER (VOIDmode,
-				    gen_rtx_REG (Pmode, 15)))));
+      (gen_rtx_PARALLEL
+       (VOIDmode,
+	gen_rtvec (3, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
+		   GEN_INT (INTVAL (operands[3]) & 0xfff),
+		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
   else
     emit_call_insn
-      (gen_rtx_PARALLEL (VOIDmode,
-		gen_rtvec (2, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
-			   gen_rtx_CLOBBER (VOIDmode,
-				    gen_rtx_REG (Pmode, 15)))));
+      (gen_rtx_PARALLEL
+       (VOIDmode,
+	gen_rtvec (2, gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx),
+		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)))));
 
  finish_call:
 #if 0
@@ -7583,7 +7581,7 @@
 
   vec = gen_rtvec (2,
 		   gen_rtx_SET (VOIDmode, operands[0],
-			    gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx)),
+				gen_rtx_CALL (VOIDmode, fn_rtx, nregs_rtx)),
 		   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 15)));
 
   emit_call_insn (gen_rtx_PARALLEL (VOIDmode, vec));
@@ -7934,6 +7932,7 @@
 ;  "neg %1,%2\;xnor %1,%2,%2\;popc %2,%0\;movzr %1,0,%0"
 ;  [(set_attr "type" "multi")
 ;   (set_attr "length" "4")])
+
 
 
 ;; Peepholes go at the end.

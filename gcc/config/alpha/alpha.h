@@ -1009,25 +1009,25 @@ extern int alpha_memory_latency;
    On Alpha the value is found in $0 for integer functions and
    $f0 for floating-point functions.  */
 
-#define FUNCTION_VALUE(VALTYPE, FUNC)				\
+#define FUNCTION_VALUE(VALTYPE, FUNC)	\
   gen_rtx_REG (((INTEGRAL_TYPE_P (VALTYPE)			\
-	         && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
-	        || POINTER_TYPE_P (VALTYPE))			\
+		 && TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
+		|| POINTER_TYPE_P (VALTYPE))			\
 	       ? word_mode : TYPE_MODE (VALTYPE),		\
 	       ((TARGET_FPREGS					\
-	         && (TREE_CODE (VALTYPE) == REAL_TYPE		\
+		 && (TREE_CODE (VALTYPE) == REAL_TYPE		\
 		     || TREE_CODE (VALTYPE) == COMPLEX_TYPE))	\
-	        ? 32 : 0))
+		? 32 : 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)					\
+#define LIBCALL_VALUE(MODE)	\
    gen_rtx_REG (MODE,						\
-	        (TARGET_FPREGS					\
-	         && (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
+		(TARGET_FPREGS					\
+		 && (GET_MODE_CLASS (MODE) == MODE_FLOAT	\
 		     || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
-	         ? 32 : 0))
+		 ? 32 : 0))
 
 /* The definition of this macro implies that there are cases where
    a scalar value cannot be returned in registers.
@@ -1105,11 +1105,12 @@ extern int alpha_memory_latency;
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
 ((CUM) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
- ? gen_rtx(REG, (MODE),				\
-	   (CUM) + 16 + ((TARGET_FPREGS		\
-			  && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT  \
-			      || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
-			 * 32))			\
+ ? gen_rtx_REG ((MODE),				\
+		(CUM) + 16			\
+		+ ((TARGET_FPREGS		\
+		    && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT  \
+			|| GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
+		   * 32))			\
  : 0)
 
 /* Specify the padding direction of arguments.

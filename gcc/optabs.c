@@ -104,7 +104,7 @@ static void init_floating_libfuncs PROTO((optab, const char *, int));
 #ifdef HAVE_conditional_trap
 static void init_traps PROTO((void));
 #endif
-static int cmp_available_p PROTO((enum machine_mode, enum rtx_code, int));
+static int cmp_available_p PROTO((enum machine_mode, int));
 static void emit_cmp_and_jump_insn_1 PROTO((rtx, rtx, enum machine_mode,
 					    enum rtx_code, int, rtx));
 static void prepare_cmp_insn PROTO((rtx *, rtx *, enum rtx_code *, rtx,
@@ -1223,8 +1223,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 						   copy_rtx (xop0),
 						   copy_rtx (xop1)));
 	    }
+
 	  return target;
 	}
+
       else
 	delete_insns_since (last);
     }
@@ -1405,6 +1407,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 						       copy_rtx (op0),
 						       copy_rtx (op1)));
 		}
+
 	      return product;
 	    }
 	}
@@ -2618,7 +2621,8 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
 
       next = NEXT_INSN (insn);
 
-      if (GET_CODE (PATTERN (insn)) == SET)
+      if (GET_CODE (PATTERN (insn)) == SET || GET_CODE (PATTERN (insn)) == USE
+	  || GET_CODE (PATTERN (insn)) == CLOBBER)
 	set = PATTERN (insn);
       else if (GET_CODE (PATTERN (insn)) == PARALLEL)
 	{
@@ -2822,9 +2826,8 @@ emit_0_to_1_insn (x)
    straightforwardly.  */
 
 static int
-cmp_available_p (mode, code, can_use_tst_p)
+cmp_available_p (mode, can_use_tst_p)
      enum machine_mode mode;
-     enum rtx_code code;
      int can_use_tst_p;
 {
   do
@@ -2865,7 +2868,6 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
      int *punsignedp;
      int align;
 {
-  enum rtx_code comparison = *pcomparison;
   enum machine_mode mode = *pmode;
   rtx x = *px, y = *py;
   int unsignedp = *punsignedp;
@@ -2985,7 +2987,7 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align)
 
   *px = x;
   *py = y;
-  if (cmp_available_p (mode, comparison, y == CONST0_RTX (mode)))
+  if (cmp_available_p (mode, y == CONST0_RTX (mode)))
     return;
 
   /* Handle a lib call just for the mode we are using.  */
@@ -3460,6 +3462,14 @@ emit_conditional_move (target, code, op0, op1, cmode, op2, op3, mode,
       op1 = tem;
       code = swap_condition (code);
     }
+
+  /* get_condition will prefer to generate LT and GT even if the old
+     comparison was against zero, so undo that canonicalization here since
+     comparisons against zero are cheaper.  */
+  if (code == LT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == 1)
+    code = LE, op1 = const0_rtx;
+  else if (code == GT && GET_CODE (op1) == CONST_INT && INTVAL (op1) == -1)
+    code = GE, op1 = const0_rtx;
 
   if (cmode == VOIDmode)
     cmode = GET_MODE (op0);
@@ -4150,6 +4160,7 @@ expand_fix (to, from, unsignedp)
 						  GET_MODE (to),
 						  copy_rtx (from)));
 	    }
+
 	  return;
 	}
 #endif
@@ -4552,7 +4563,7 @@ init_optabs ()
 #ifndef INT_TYPE_SIZE
 #define INT_TYPE_SIZE BITS_PER_WORD
 #endif
-  ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)] .libfunc
+  ffs_optab->handlers[(int) mode_for_size (INT_TYPE_SIZE, MODE_INT, 0)].libfunc
     = gen_rtx_SYMBOL_REF (Pmode, "ffs");
 
   extendsfdf2_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__extendsfdf2");

@@ -21,7 +21,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Some output-actions in dsp1600.md need these.  */
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1795,10 +1795,11 @@ enum machine_mode mode;
 	  quotient = shift_amount/16;
 	  shift_amount = shift_amount - (quotient * 16);
 	  for (i = 0; i < quotient; i++)
-	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-				gen_rtx (shift_op, mode, 
-					 first_shift_emitted ? operands[0] : operands[1],
-					 GEN_INT (16))));
+	    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+				    gen_rtx (shift_op, mode, 
+					     first_shift_emitted
+					     ? operands[0] : operands[1],
+					     GEN_INT (16))));
 	  first_shift_emitted = 1;
 	}
       else if (shift_amount/8)
@@ -1806,10 +1807,11 @@ enum machine_mode mode;
 	  quotient = shift_amount/8;
 	  shift_amount = shift_amount - (quotient * 8);
 	  for (i = 0; i < quotient; i++)
-	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-				gen_rtx (shift_op, mode, 
-					 first_shift_emitted ? operands[0] : operands[1],
-					 GEN_INT (8))));
+	    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+				    gen_rtx (shift_op, mode, 
+					     first_shift_emitted
+					     ? operands[0] : operands[1],
+					     GEN_INT (8))));
 	  first_shift_emitted = 1;
 	}
       else if (shift_amount/4)
@@ -1817,10 +1819,11 @@ enum machine_mode mode;
 	  quotient = shift_amount/4;
 	  shift_amount = shift_amount - (quotient * 4);
 	  for (i = 0; i < quotient; i++)
-	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-				gen_rtx (shift_op, mode, 
-					 first_shift_emitted ? operands[0] : operands[1],
-					 GEN_INT (4))));
+	    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+				    gen_rtx (shift_op, mode, 
+					     first_shift_emitted
+					     ? operands[0] : operands[1],
+					     GEN_INT (4))));
 	  first_shift_emitted = 1;
 	}
       else if (shift_amount/1)
@@ -1828,10 +1831,11 @@ enum machine_mode mode;
 	  quotient = shift_amount/1;
 	  shift_amount = shift_amount - (quotient * 1);
 	  for (i = 0; i < quotient; i++)
-	    emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-				gen_rtx (shift_op, mode, 
-					 first_shift_emitted ? operands[0] : operands[1],
-					 GEN_INT (1))));
+	    emit_insn (gen_rtx_SET (VOIDmode, operands[0],
+				    gen_rtx (shift_op, mode, 
+					     first_shift_emitted
+					     ? operands[0] : operands[1],
+					     GEN_INT (1))));
 	  first_shift_emitted = 1;
 	}
     }
@@ -2085,7 +2089,7 @@ dsp16xx_function_arg (args_so_far, mode, type, named)
 	args_so_far++;
 
       if (named && args_so_far < 4 && !MUST_PASS_IN_STACK (mode,type))
-	return gen_rtx (REG, mode, args_so_far + FIRST_REG_FOR_FUNCTION_ARG);
+	return gen_rtx_REG (mode, args_so_far + FIRST_REG_FOR_FUNCTION_ARG);
       else
 	return (struct rtx_def *) 0;
     }
@@ -2135,14 +2139,14 @@ gen_tst_reg (x)
 
   if (mode == QImode)
     {
-	  emit_insn (gen_rtx (PARALLEL, VOIDmode,
-			gen_rtvec (2,
-				   gen_rtx (SET, VOIDmode, cc0_rtx, x),
-				   gen_rtx (CLOBBER, VOIDmode,
-					    gen_rtx (SCRATCH, QImode, 0)))));
+	  emit_insn (gen_rtx_PARALLEL
+		     (VOIDmode,
+		      gen_rtvec (2, gen_rtx_SET (VOIDmode, cc0_rtx, x),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)))));
 	}
   else if (mode == HImode)
-    emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx, x));
+    emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx, x));
   else
     fatal ("Invalid mode for gen_tst_reg");
 
@@ -2165,54 +2169,64 @@ gen_compare_reg (code, x, y)
 
   if (mode == QImode)
     {
-      if (code == GTU || code == GEU ||
-	  code == LTU || code == LEU)
+      if (code == GTU || code == GEU
+	  || code == LTU || code == LEU)
 	{
-	  emit_insn (gen_rtx (PARALLEL, VOIDmode,
-			gen_rtvec (3,
-				   gen_rtx (SET, VOIDmode, cc0_rtx,
-					    gen_rtx (COMPARE, mode, x, y)),
-				   gen_rtx (CLOBBER, VOIDmode,
-					    gen_rtx (SCRATCH, QImode, 0)),
-				   gen_rtx (CLOBBER, VOIDmode,
-					    gen_rtx (SCRATCH, QImode, 0)))));
+	  emit_insn (gen_rtx_PARALLEL
+		     (VOIDmode,
+		      gen_rtvec (3,
+				 gen_rtx_SET (VOIDmode, cc0_rtx,
+					      gen_rtx_COMPARE (mode, x, y)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)))));
 	}
       else
 	{
-	  emit_insn (gen_rtx (PARALLEL, VOIDmode,
-			gen_rtvec (3,
-				   gen_rtx (SET, VOIDmode, cc0_rtx,
-					    gen_rtx (COMPARE, mode, x, y)),
-				   gen_rtx (CLOBBER, VOIDmode,
-					    gen_rtx (SCRATCH, QImode, 0)),
-				   gen_rtx (CLOBBER, VOIDmode,
-					    gen_rtx (SCRATCH, QImode, 0)))));
+	  emit_insn (gen_rtx_PARALLEL
+		     (VOIDmode,
+		      gen_rtvec (3, gen_rtx_SET (VOIDmode, cc0_rtx,
+						 gen_rtx_COMPARE (mode, x, y)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)))));
 	}
     }
   else if (mode == HImode)
     {
-      if (code == GTU || code == GEU ||
-	  code == LTU || code == LEU)
+      if (code == GTU || code == GEU
+	  || code == LTU || code == LEU)
 	{
 #if 1
-	  emit_insn (gen_rtx (PARALLEL, VOIDmode, gen_rtvec (5,
-			     gen_rtx (SET, VOIDmode, cc0_rtx, gen_rtx (COMPARE, VOIDmode, x, y)),
-		             gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, QImode, 0)),
-		             gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, QImode, 0)),
-		             gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, QImode, 0)),
-		             gen_rtx (CLOBBER, VOIDmode, gen_rtx (SCRATCH, QImode, 0)))));
+	  emit_insn (gen_rtx_PARALLEL
+		     (VOIDmode,
+		      gen_rtvec (5,
+				 gen_rtx_SET (VOIDmode, cc0_rtx,
+					      gen_rtx_COMPARE (VOIDmode,
+							       x, y)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)),
+				 gen_rtx_CLOBBER (VOIDmode,
+						  gen_rtx_SCRATCH (QImode)))));
 #else
 	  if (!dsp16xx_ucmphi2_libcall)
-	    dsp16xx_ucmphi2_libcall = gen_rtx (SYMBOL_REF, Pmode, UCMPHI2_LIBCALL);
+	    dsp16xx_ucmphi2_libcall = gen_rtx_SYMBOL_REF (Pmode, UCMPHI2_LIBCALL);
 	  emit_library_call (dsp16xx_ucmphi2_libcall, 1, HImode, 2,
 			     x, HImode, y, HImode);
 	  emit_insn (gen_tsthi_1 (copy_to_reg(hard_libcall_value (HImode))));
 #endif
 	}
       else
-	emit_insn (gen_rtx (SET, VOIDmode, cc0_rtx,
-			    gen_rtx (COMPARE, VOIDmode, force_reg(HImode, x), 
-				     force_reg(HImode,y))));
+	emit_insn (gen_rtx_SET (VOIDmode, cc0_rtx,
+				gen_rtx_COMPARE (VOIDmode,
+						 force_reg (HImode, x), 
+						 force_reg (HImode,y))));
     }
   else
     fatal ("Invalid mode for integer comparison in gen_compare_reg");

@@ -98,11 +98,13 @@ struct move_by_pieces
   int autinc_to;
   int explicit_inc_to;
   int to_struct;
+  int to_readonly;
   rtx from;
   rtx from_addr;
   int autinc_from;
   int explicit_inc_from;
   int from_struct;
+  int from_readonly;
   int len;
   int offset;
   int reverse;
@@ -132,13 +134,14 @@ static int move_by_pieces_ninsns PROTO((unsigned int, int));
 static void move_by_pieces_1	PROTO((rtx (*) (rtx, ...), enum machine_mode,
 				       struct move_by_pieces *));
 static void clear_by_pieces	PROTO((rtx, int, int));
-static void clear_by_pieces_1	PROTO((rtx (*) (rtx, ...), enum machine_mode,
+static void clear_by_pieces_1	PROTO((rtx (*) (rtx, ...),
+				       enum machine_mode,
 				       struct clear_by_pieces *));
 static int is_zeros_p		PROTO((tree));
 static int mostly_zeros_p	PROTO((tree));
 static void store_constructor_field PROTO((rtx, int, int, enum machine_mode,
-					   tree, tree, int));
-static void store_constructor	PROTO((tree, rtx, int));
+					   tree, tree, int, int));
+static void store_constructor	PROTO((tree, rtx, int, int));
 static rtx store_field		PROTO((rtx, int, int, enum machine_mode, tree,
 				       enum machine_mode, int, int,
 				       int, int));
@@ -309,9 +312,8 @@ static rtx
 enqueue_insn (var, body)
      rtx var, body;
 {
-  pending_chain = gen_rtx_QUEUED (GET_MODE (var),
-				  var, NULL_RTX, NULL_RTX, body,
-				  pending_chain);
+  pending_chain = gen_rtx_QUEUED (GET_MODE (var), var, NULL_RTX, NULL_RTX,
+				  body, pending_chain);
   return pending_chain;
 }
 
@@ -1365,6 +1367,8 @@ move_by_pieces (to, from, len, align)
 
   data.to_struct = MEM_IN_STRUCT_P (to);
   data.from_struct = MEM_IN_STRUCT_P (from);
+  data.to_readonly = RTX_UNCHANGING_P (to);
+  data.from_readonly = RTX_UNCHANGING_P (from);
 
   /* If copying requires more than two move insns,
      copy addresses to registers (to make displacements shorter)
@@ -1502,6 +1506,7 @@ move_by_pieces_1 (genfun, mode, data)
 					 plus_constant (data->to_addr,
 							data->offset))));
       MEM_IN_STRUCT_P (to1) = data->to_struct;
+      RTX_UNCHANGING_P (to1) = data->to_readonly;
 
       from1
 	= (data->autinc_from
@@ -1510,6 +1515,7 @@ move_by_pieces_1 (genfun, mode, data)
 				       plus_constant (data->from_addr,
 						      data->offset))));
       MEM_IN_STRUCT_P (from1) = data->from_struct;
+      RTX_UNCHANGING_P (from1) = data->from_readonly;
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
 	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (-size)));
@@ -2731,7 +2737,7 @@ push_block (size, extra, below)
 		    negate_rtx (Pmode, plus_constant (size, extra)));
   else
     temp = gen_rtx_PLUS (Pmode, virtual_outgoing_args_rtx,
-		    negate_rtx (Pmode, size));
+			 negate_rtx (Pmode, size));
 #endif
 
   return memory_address (GET_CLASS_NARROWEST_MODE (MODE_INT), temp);
@@ -3194,7 +3200,7 @@ rtx
 expand_assignment (to, from, want_value, suggest_reg)
      tree to, from;
      int want_value;
-     int suggest_reg;
+     int suggest_reg ATTRIBUTE_UNUSED;
 {
   register rtx to_rtx = 0;
   rtx result;
@@ -3277,8 +3283,10 @@ expand_assignment (to, from, want_value, suggest_reg)
 
 	  to_rtx = change_address (to_rtx, VOIDmode,
 				   gen_rtx_PLUS (ptr_mode, XEXP (to_rtx, 0),
-						 force_reg (ptr_mode, offset_rtx)));
+						 force_reg (ptr_mode,
+							    offset_rtx)));
 	}
+
       if (volatilep)
 	{
 	  if (GET_CODE (to_rtx) == MEM)
@@ -3925,7 +3933,7 @@ mostly_zeros_p (exp)
 /* Helper function for store_constructor.
    TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
    TYPE is the type of the CONSTRUCTOR, not the element type.
-   CLEARED is as for store_constructor.
+   ALIGN and CLEARED are as for store_constructor.
 
    This provides a recursive shortcut back to store_constructor when it isn't
    necessary to go through store_field.  This is so that we can pass through
@@ -3934,11 +3942,12 @@ mostly_zeros_p (exp)
 
 static void
 store_constructor_field (target, bitsize, bitpos,
-			 mode, exp, type, cleared)
+			 mode, exp, type, align, cleared)
      rtx target;
      int bitsize, bitpos;
      enum machine_mode mode;
      tree exp, type;
+     int align;
      int cleared;
 {
   if (TREE_CODE (exp) == CONSTRUCTOR
@@ -3952,22 +3961,24 @@ store_constructor_field (target, bitsize, bitpos,
 	target = change_address (target, VOIDmode,
 				 plus_constant (XEXP (target, 0),
 						bitpos / BITS_PER_UNIT));
-      store_constructor (exp, target, cleared);
+      store_constructor (exp, target, align, cleared);
     }
   else
-    store_field (target, bitsize, bitpos, mode, exp,
-		 VOIDmode, 0, TYPE_ALIGN (type) / BITS_PER_UNIT,
-		 int_size_in_bytes (type), 0);
+    store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0, 
+		 (align + BITS_PER_UNIT - 1) / BITS_PER_UNIT,
+		 int_size_in_bytes (type), cleared);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
    TARGET is either a REG or a MEM.
+   ALIGN is the maximum known alignment for TARGET, in bits.
    CLEARED is true if TARGET is known to have been zero'd.  */
 
 static void
-store_constructor (exp, target, cleared)
+store_constructor (exp, target, align, cleared)
      tree exp;
      rtx target;
+     int align;
      int cleared;
 {
   tree type = TREE_TYPE (exp);
@@ -4021,7 +4032,7 @@ store_constructor (exp, target, cleared)
 	{
 	  if (! cleared)
 	    clear_storage (target, expr_size (exp),
-			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+			   (align + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
 
 	  cleared = 1;
 	}
@@ -4035,7 +4046,9 @@ store_constructor (exp, target, cleared)
       for (elt = CONSTRUCTOR_ELTS (exp); elt; elt = TREE_CHAIN (elt))
 	{
 	  register tree field = TREE_PURPOSE (elt);
+#ifdef WORD_REGISTER_OPERATIONS
 	  tree value = TREE_VALUE (elt);
+#endif
 	  register enum machine_mode mode;
 	  int bitsize;
 	  int bitpos = 0;
@@ -4097,8 +4110,10 @@ store_constructor (exp, target, cleared)
 	      to_rtx
 		= change_address (to_rtx, VOIDmode,
 				  gen_rtx_PLUS (ptr_mode, XEXP (to_rtx, 0),
-					   force_reg (ptr_mode, offset_rtx)));
+						force_reg (ptr_mode,
+							   offset_rtx)));
 	    }
+
 	  if (TREE_READONLY (field))
 	    {
 	      if (GET_CODE (to_rtx) == MEM)
@@ -4135,8 +4150,11 @@ store_constructor (exp, target, cleared)
 	      mode = word_mode;
 	    }
 #endif
-	  store_constructor_field (to_rtx, bitsize, bitpos,
-				   mode, value, type, cleared);
+	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
+				   TREE_VALUE (elt), type, 
+				   MIN (align,
+					DECL_ALIGN (TREE_PURPOSE (elt))),
+				   cleared);
 	}
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
@@ -4196,7 +4214,7 @@ store_constructor (exp, target, cleared)
 	{
 	  if (! cleared)
 	    clear_storage (target, expr_size (exp),
-			   TYPE_ALIGN (type) / BITS_PER_UNIT);
+			   (align + BITS_PER_UNIT - 1) / BITS_PER_UNIT);
 	  cleared = 1;
 	}
       else
@@ -4215,6 +4233,7 @@ store_constructor (exp, target, cleared)
 	  int bitpos;
 	  int unsignedp;
 	  tree value = TREE_VALUE (elt);
+	  int align = TYPE_ALIGN (TREE_TYPE (value));
 	  tree index = TREE_PURPOSE (elt);
 	  rtx xtarget = target;
 
@@ -4250,8 +4269,8 @@ store_constructor (exp, target, cleared)
 		  for (; lo <= hi; lo++)
 		    {
 		      bitpos = lo * TREE_INT_CST_LOW (TYPE_SIZE (elttype));
-		      store_constructor_field (target, bitsize, bitpos,
-					       mode, value, type, cleared);
+		      store_constructor_field (target, bitsize, bitpos, mode,
+					       value, type, align, cleared);
 		    }
 		}
 	      else
@@ -4290,7 +4309,7 @@ store_constructor (exp, target, cleared)
 		  addr = gen_rtx_PLUS (Pmode, XEXP (target, 0), pos_rtx);
 		  xtarget = change_address (target, mode, addr);
 		  if (TREE_CODE (value) == CONSTRUCTOR)
-		    store_constructor (value, xtarget, cleared);
+		    store_constructor (value, xtarget, align, cleared);
 		  else
 		    store_expr (value, xtarget, 0);
 
@@ -4337,8 +4356,8 @@ store_constructor (exp, target, cleared)
 			  * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
 	      else
 		bitpos = (i * TREE_INT_CST_LOW (TYPE_SIZE (elttype)));
-	      store_constructor_field (target, bitsize, bitpos,
-				       mode, value, type, cleared);
+	      store_constructor_field (target, bitsize, bitpos, mode, value,
+				       type, align, cleared);
 	    }
 	}
     }
@@ -5641,6 +5660,7 @@ expand_expr (exp, target, tmode, modifier)
 						 label_rtx (exp),
 						 forced_labels);
 	  }
+
 	temp = gen_rtx_MEM (FUNCTION_MODE,
 			    gen_rtx_LABEL_REF (Pmode, label_rtx (exp)));
 	if (function != current_function_decl
@@ -6171,7 +6191,7 @@ expand_expr (exp, target, tmode, modifier)
 	      RTX_UNCHANGING_P (target) = 1;
 	    }
 
-	  store_constructor (exp, target, 0);
+	  store_constructor (exp, target, TYPE_ALIGN (TREE_TYPE (exp)), 0);
 	  return target;
 	}
 
@@ -6475,7 +6495,8 @@ expand_expr (exp, target, tmode, modifier)
 
 	    op0 = change_address (op0, VOIDmode,
 				  gen_rtx_PLUS (ptr_mode, XEXP (op0, 0),
-						force_reg (ptr_mode, offset_rtx)));
+						force_reg (ptr_mode,
+							   offset_rtx)));
 	  }
 
 	/* Don't forget about volatility even if this is a bitfield.  */
@@ -6486,8 +6507,7 @@ expand_expr (exp, target, tmode, modifier)
 	  }
 
 	/* Check the access.  */
-	if (current_function && current_function_check_memory_usage
-	    && GET_CODE (op0) == MEM)
+	if (current_function_check_memory_usage && GET_CODE (op0) == MEM)
           {
 	    enum memory_use_mode memory_usage;
 	    memory_usage = get_memory_usage_from_modifier (modifier);
@@ -7092,19 +7112,23 @@ expand_expr (exp, target, tmode, modifier)
 	  /* Apply distributive law if OP0 is x+c.  */
 	  if (GET_CODE (op0) == PLUS
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT)
-	    return gen_rtx_PLUS (mode,
-				 gen_rtx_MULT (mode, XEXP (op0, 0),
-					       GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)))),
-			    GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))
-				     * INTVAL (XEXP (op0, 1))));
+	    return
+	      gen_rtx_PLUS
+		(mode,
+		 gen_rtx_MULT
+		 (mode, XEXP (op0, 0),
+		  GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1)))),
+		 GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))
+			  * INTVAL (XEXP (op0, 1))));
 
 	  if (GET_CODE (op0) != REG)
 	    op0 = force_operand (op0, NULL_RTX);
 	  if (GET_CODE (op0) != REG)
 	    op0 = copy_to_mode_reg (mode, op0);
 
-	  return gen_rtx_MULT (mode, op0,
-			       GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))));
+	  return
+	    gen_rtx_MULT (mode, op0,
+			  GEN_INT (TREE_INT_CST_LOW (TREE_OPERAND (exp, 1))));
 	}
 
       if (! safe_from_p (subtarget, TREE_OPERAND (exp, 1), 1))
@@ -7974,10 +7998,9 @@ expand_expr (exp, target, tmode, modifier)
 
 	  op0 = protect_from_queue (op0, 0);
 
-	  /* We would like the object in memory.  If it is a constant,
-	     we can have it be statically allocated into memory.  For
-	     a non-constant (REG, SUBREG or CONCAT), we need to allocate some
-	     memory and store the value into it.  */
+	  /* We would like the object in memory.  If it is a constant, we can
+	     have it be statically allocated into memory.  For a non-constant,
+	     we need to allocate some memory and store the value into it.  */
 
 	  if (CONSTANT_P (op0))
 	    op0 = force_const_mem (TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))),

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for System/370.
-   Copyright (C) 1989, 1993, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 95, 97, 98, 1999 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
    Hacked for Linux-ELF/390 by Linas Vepstas (linas@linas.org) 
@@ -22,12 +22,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>  
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "regs.h"
@@ -41,7 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "flags.h"
 #include "recog.h"
-#include <time.h>
 
 extern FILE *asm_out_file;
 

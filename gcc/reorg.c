@@ -717,7 +717,8 @@ optimize_skip (insn)
      we have one insn followed by a branch to the same label we branch to.
      In both of these cases, inverting the jump and annulling the delay
      slot give the same effect in fewer insns.  */
-  if ((next_trial == next_active_insn (JUMP_LABEL (insn)))
+  if ((next_trial == next_active_insn (JUMP_LABEL (insn))
+       && ! (next_trial == 0 && current_function_epilogue_delay_list != 0))
       || (next_trial != 0
 	  && GET_CODE (next_trial) == JUMP_INSN
 	  && JUMP_LABEL (insn) == JUMP_LABEL (next_trial)
@@ -2021,10 +2022,10 @@ fill_simple_delay_slots (non_jumps_p)
 	  || (GET_CODE (insn) != JUMP_INSN && ! non_jumps_p))
 	continue;
      
-      if (GET_CODE (insn) == JUMP_INSN)
-	flags = get_jump_flags (insn, JUMP_LABEL (insn));
-      else
-	flags = get_jump_flags (insn, NULL_RTX);
+      /* It may have been that this insn used to need delay slots, but
+	 now doesn't; ignore in that case.  This can happen, for example,
+	 on the HP PA RISC, where the number of delay slots depends on
+	 what insns are nearby.  */
       slots_to_fill = num_delay_slots (insn);
 
       /* Some machine description have defined instructions to have
@@ -2061,6 +2062,11 @@ fill_simple_delay_slots (non_jumps_p)
 
       slots_filled = 0;
       delay_list = 0;
+
+      if (GET_CODE (insn) == JUMP_INSN)
+	flags = get_jump_flags (insn, JUMP_LABEL (insn));
+      else
+	flags = get_jump_flags (insn, NULL_RTX);
 
       if ((trial = next_active_insn (insn))
 	  && GET_CODE (trial) == JUMP_INSN
@@ -2134,8 +2140,7 @@ fill_simple_delay_slots (non_jumps_p)
 		  && ! insn_sets_resource_p (trial, &needed, 1)
 #ifdef HAVE_cc0
 		  /* Can't separate set of cc0 from its use.  */
-		  && ! (reg_mentioned_p (cc0_rtx, pat)
-			&& ! sets_cc0_p (pat))
+		  && ! (reg_mentioned_p (cc0_rtx, pat) && ! sets_cc0_p (pat))
 #endif
 		  )
 		{
@@ -2925,7 +2930,7 @@ fill_eager_delay_slots ()
 	 allows the port to favor filling the delay slot of the call with
 	 the unconditional jump.  */
       if (slots_to_fill == 0)
-        continue;
+	continue;
 
       slots_filled = 0;
       target_label = JUMP_LABEL (insn);

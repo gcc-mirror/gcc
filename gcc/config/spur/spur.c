@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for SPUR.  Adapted from routines for
    the Motorola 68000 family.
-   Copyright (C) 1988, 1991, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -140,14 +140,14 @@ output_move_double (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+    latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (operands[0], 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+    latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
@@ -224,7 +224,7 @@ output_fp_move_double (operands)
 	{
 	  rtx xoperands[2];
 	  int offset = - get_frame_size () - 8;
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
 	  xoperands[0] = GEN_INT (offset + 4);
 	  output_asm_insn ("st_32 %1,r25,%0", xoperands);
 	  xoperands[1] = operands[1];
@@ -247,7 +247,7 @@ output_fp_move_double (operands)
 	  output_asm_insn ("st_dbl %1,r25,%0", xoperands);
 	  xoperands[1] = operands[0];
 	  output_asm_insn ("ld_32 %1,r25,%0\n\tnop", xoperands);
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 	  xoperands[0] = GEN_INT (offset + 4);
 	  output_asm_insn ("ld_32 %1,r25,%0\n\tnop", xoperands);
 	  return "";

@@ -1,5 +1,6 @@
 /* Read and manage MIPS symbol tables from object modules.
-   Copyright (C) 1991, 1994, 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1997, 1998, 1999 
+   Free Software Foundation, Inc.
    Contributed by hartzell@boulder.colorado.edu,
    Rewritten by meissner@osf.org.
 
@@ -22,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-
 #ifdef index
 #undef index
 #undef rindex

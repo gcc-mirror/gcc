@@ -1,5 +1,9 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 1.5 1998/06/29 21:40:12 law Exp $
+%
+% Load plain if necessary, i.e., if running under initex.
+\expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
+%
+\def\texinfoversion{1998-11-13}%
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -50,21 +54,12 @@
 % Sometimes one run after texindex suffices, and sometimes you need more
 % than two; texi2dvi does it as many times as necessary.
 
-
-% Make it possible to create a .fmt file just by loading this file:
-% if the underlying format is not loaded, start by loading it now.
-% Added by gildea November 1993.
-\expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
-
-% This automatically updates the version number based on RCS.
-\def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 1.5 $
-\message{Loading texinfo package [Version \texinfoversion]:}
+\message{Loading texinfo [version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
 % and turn on active characters that we couldn't do earlier because
 % they might have appeared in the input file name.
-\everyjob{\message{[Texinfo version \texinfoversion]}\message{}
+\everyjob{\message{[Texinfo version \texinfoversion]}%
   \catcode`+=\active \catcode`\_=\active}
 
 % Save some parts of plain tex whose names we will redefine.
@@ -182,13 +177,16 @@
     \shipout\vbox{%
       \ifcropmarks \vbox to \outervsize\bgroup
         \hsize = \outerhsize
-        \line{\ewtop\hfil\ewtop}%
-        \nointerlineskip
-        \line{%
-          \vbox{\moveleft\cornerthick\nstop}%
-          \hfill
-          \vbox{\moveright\cornerthick\nstop}%
-        }%
+        \vskip-\topandbottommargin
+        \vtop to0pt{%
+          \line{\ewtop\hfil\ewtop}%
+          \nointerlineskip
+          \line{%
+            \vbox{\moveleft\cornerthick\nstop}%
+            \hfill
+            \vbox{\moveright\cornerthick\nstop}%
+          }%
+          \vss}%
         \vskip\topandbottommargin
         \line\bgroup
           \hfil % center the page within the outer (page) hsize.
@@ -211,13 +209,15 @@
         \hfil\egroup % end of (centering) \line\bgroup
         \vskip\topandbottommargin plus1fill minus1fill
         \boxmaxdepth = \cornerthick
-        \line{%
-          \vbox{\moveleft\cornerthick\nsbot}%
-          \hfill
-          \vbox{\moveright\cornerthick\nsbot}%
+        \vbox to0pt{\vss
+          \line{%
+            \vbox{\moveleft\cornerthick\nsbot}%
+            \hfill
+            \vbox{\moveright\cornerthick\nsbot}%
+          }%
+          \nointerlineskip
+          \line{\ewbot\hfil\ewbot}%
         }%
-        \nointerlineskip
-        \line{\ewbot\hfil\ewbot}%
       \egroup % \vbox from first cropmarks clause
       \fi
     }% end of \shipout\vbox
@@ -835,7 +835,7 @@ where each line of input produces a line of output.}
     \immediate\write16{If you are running another version of TeX, relax.}
     \immediate\write16{If you are running Unix TeX 3.0, kill this TeX process.}
     \immediate\write16{  Then upgrade your TeX installation if you can.}
-    \immediate\write16{  (See ftp://ftp.gnu.ai.mit.edu/pub/gnu/TeX.README.)}
+    \immediate\write16{  (See ftp://ftp.gnu.org/pub/gnu/TeX.README.)}
     \immediate\write16{If you are stuck with version 3.0, run the}
     \immediate\write16{  script ``tex3patch'' from the Texinfo distribution}
     \immediate\write16{  to use a workaround.}
@@ -958,7 +958,7 @@ where each line of input produces a line of output.}
 % 
 \def\expandablevalue#1{%
   \expandafter\ifx\csname SET#1\endcsname\relax
-    {[No value for ``#1'']v}%
+    {[No value for ``#1'']}%
   \else
     \csname SET#1\endcsname
   \fi
@@ -2379,6 +2379,11 @@ width0pt\relax} \fi
 \def\copyright{\realbackslash copyright}%
 \def\tclose##1{\realbackslash tclose {##1}}%
 \def\code##1{\realbackslash code {##1}}%
+\def\uref##1{\realbackslash uref {##1}}%
+\def\url##1{\realbackslash url {##1}}%
+\def\env##1{\realbackslash env {##1}}%
+\def\command##1{\realbackslash command {##1}}%
+\def\option##1{\realbackslash option {##1}}%
 \def\dotless##1{\realbackslash dotless {##1}}%
 \def\samp##1{\realbackslash samp {##1}}%
 \def\,##1{\realbackslash ,{##1}}%
@@ -2394,6 +2399,7 @@ width0pt\relax} \fi
 \def\kbd##1{\realbackslash kbd {##1}}%
 \def\dfn##1{\realbackslash dfn {##1}}%
 \def\emph##1{\realbackslash emph {##1}}%
+\def\acronym##1{\realbackslash acronym {##1}}%
 %
 % Handle some cases of @value -- where the variable name does not
 % contain - or _, and the value does not contain any
@@ -2457,6 +2463,11 @@ width0pt\relax} \fi
 %\let\tt=\indexdummyfont
 \let\tclose=\indexdummyfont
 \let\code=\indexdummyfont
+\let\url=\indexdummyfont
+\let\uref=\indexdummyfont
+\let\env=\indexdummyfont
+\let\command=\indexdummyfont
+\let\option=\indexdummyfont
 \let\file=\indexdummyfont
 \let\samp=\indexdummyfont
 \let\kbd=\indexdummyfont
@@ -5055,7 +5066,7 @@ width0pt\relax} \fi
   \vsize = #1\relax
   \advance\vsize by \topskip
   \outervsize = \vsize
-  \advance\outervsize by 0.6in
+  \advance\outervsize by 2\topandbottommargin
   \pageheight = \vsize
   %
   \hsize = #2\relax
@@ -5294,5 +5305,9 @@ width0pt\relax} \fi
 @rm
 
 @c Local variables:
+@c eval: (add-hook 'write-file-hooks 'time-stamp)
 @c page-delimiter: "^\\\\message"
+@c time-stamp-start: "def\\\\texinfoversion{"
+@c time-stamp-format: "%:y-%02m-%02d"
+@c time-stamp-end: "}"
 @c End:

@@ -1647,10 +1647,12 @@ copy_rtx_and_substitute (orig, map)
       return get_label_from_map (map, CODE_LABEL_NUMBER (orig));
 
     case LABEL_REF:
-      copy = gen_rtx_LABEL_REF (mode,
-				LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
-				: get_label_from_map (map, 
-						      CODE_LABEL_NUMBER (XEXP (orig, 0))));
+      copy
+	= gen_rtx_LABEL_REF
+	  (mode,
+	   LABEL_REF_NONLOCAL_P (orig) ? XEXP (orig, 0)
+	   : get_label_from_map (map, CODE_LABEL_NUMBER (XEXP (orig, 0))));
+
       LABEL_OUTSIDE_LOOP_P (copy) = LABEL_OUTSIDE_LOOP_P (orig);
 
       /* The fact that this label was previously nonlocal does not mean
@@ -1777,10 +1779,13 @@ copy_rtx_and_substitute (orig, map)
 #ifndef NO_FUNCTION_CSE
       if (! (optimize && ! flag_no_function_cse))
 #endif
-	return gen_rtx_CALL (GET_MODE (orig),
-			     gen_rtx_MEM (GET_MODE (XEXP (orig, 0)),
-					  copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0), map)),
-			copy_rtx_and_substitute (XEXP (orig, 1), map));
+	return
+	  gen_rtx_CALL
+	    (GET_MODE (orig),
+	     gen_rtx_MEM (GET_MODE (XEXP (orig, 0)),
+			  copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0),
+						   map)),
+	     copy_rtx_and_substitute (XEXP (orig, 1), map));
       break;
 
 #if 0
@@ -1807,6 +1812,7 @@ copy_rtx_and_substitute (orig, map)
 	  equiv_loc = VARRAY_CONST_EQUIV (map->const_equiv_varray, REGNO (equiv_reg)).rtx;
 	  loc_offset
 	    = GET_CODE (equiv_loc) == REG ? 0 : INTVAL (XEXP (equiv_loc, 1));
+	      
 	  return gen_rtx_SET (VOIDmode, SET_DEST (orig),
 			      force_operand
 			      (plus_constant

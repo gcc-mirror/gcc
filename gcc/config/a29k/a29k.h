@@ -746,12 +746,12 @@ extern struct rtx_def *a29k_get_reloaded_address ();
    On 29k the value is found in gr96.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  gen_rtx (REG, TYPE_MODE (VALTYPE), R_GR (96))
+  gen_rtx_REG (TYPE_MODE (VALTYPE), R_GR (96))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 
-#define LIBCALL_VALUE(MODE)  gen_rtx (REG, MODE, R_GR (96))
+#define LIBCALL_VALUE(MODE)  gen_rtx_REG (MODE, R_GR (96))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.
@@ -846,7 +846,7 @@ extern struct rtx_def *a29k_get_reloaded_address ();
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)			\
 ((CUM) < 16 && (NAMED) && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
- ? gen_rtx(REG, (MODE), R_LR (2) + (CUM)) : 0)
+ ? gen_rtx_REG ((MODE), R_LR (2) + (CUM)) : 0)
 
 /* Define where a function finds its arguments.
    This is different from FUNCTION_ARG because of register windows.
@@ -856,8 +856,8 @@ extern struct rtx_def *a29k_get_reloaded_address ();
 
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)			\
 ((CUM) < 16 && (NAMED) && ! MUST_PASS_IN_STACK (MODE, TYPE)		\
- ? gen_rtx (REG, MODE,							\
-	    incoming_reg (CUM, A29K_ARG_SIZE (MODE, TYPE, NAMED)))	\
+ ? gen_rtx_REG (MODE,							\
+		incoming_reg (CUM, A29K_ARG_SIZE (MODE, TYPE, NAMED)))	\
  : 0)
 
 /* This indicates that an argument is to be passed with an invisible reference
@@ -911,7 +911,7 @@ extern struct rtx_def *a29k_get_reloaded_address ();
       if (! (NO_RTL) && first_reg_offset != 16)				\
 	move_block_from_reg						\
 	  (R_AR (0) + first_reg_offset,					\
-	   gen_rtx (MEM, BLKmode, virtual_incoming_args_rtx),		\
+	   gen_rtx_MEM (BLKmode, virtual_incoming_args_rtx),		\
 	   16 - first_reg_offset, (16 - first_reg_offset) * UNITS_PER_WORD); \
       PRETEND_SIZE = (16 - first_reg_offset) * UNITS_PER_WORD;		\
     }									\
@@ -1043,25 +1043,25 @@ extern char *a29k_function_name;
   rtx _val = force_reg (SImode, VALUE);					\
 									\
   _addr = memory_address (QImode, plus_constant (TRAMP, (CONST) + 3));	\
-  emit_move_insn (gen_rtx (MEM, QImode, _addr),				\
+  emit_move_insn (gen_rtx_MEM (QImode, _addr),				\
 		  gen_lowpart (QImode, _val));				\
 									\
   _temp = expand_shift (RSHIFT_EXPR, SImode, _val,			\
 		       build_int_2 (8, 0), 0, 1);			\
   _addr = memory_address (QImode, plus_constant (TRAMP, (CONST) + 1));	\
-  emit_move_insn (gen_rtx (MEM, QImode, _addr),				\
+  emit_move_insn (gen_rtx_MEM (QImode, _addr),				\
 		  gen_lowpart (QImode, _temp));				\
 									\
   _temp = expand_shift (RSHIFT_EXPR, SImode, _temp,			\
 		       build_int_2 (8, 0), _temp, 1);			\
   _addr = memory_address (QImode, plus_constant (TRAMP, (CONSTH) + 3));	\
-  emit_move_insn (gen_rtx (MEM, QImode, _addr),				\
+  emit_move_insn (gen_rtx_MEM (QImode, _addr),				\
 		  gen_lowpart (QImode, _temp));				\
 									\
   _temp = expand_shift (RSHIFT_EXPR, SImode, _temp,			\
 		       build_int_2 (8, 0), _temp, 1);			\
   _addr = memory_address (QImode, plus_constant (TRAMP, (CONSTH) + 1));	\
-  emit_move_insn (gen_rtx (MEM, QImode, _addr),				\
+  emit_move_insn (gen_rtx_MEM (QImode, _addr),				\
 		  gen_lowpart (QImode, _temp));				\
 }
 

@@ -143,7 +143,7 @@ Boston, MA 02111-1307, USA.  */
    Thus 6 or more means all following args should go on the stack.  */
 
 enum avms_arg_type {I64, FF, FD, FG, FS, FT};
-typedef struct {char num_args; enum avms_arg_type atypes[6];} avms_arg_info;
+typedef struct {int num_args; enum avms_arg_type atypes[6];} avms_arg_info;
 
 #undef CUMULATIVE_ARGS
 #define CUMULATIVE_ARGS avms_arg_info
@@ -185,12 +185,12 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)	\
 ((MODE) == VOIDmode ? alpha_arg_info_reg_val (CUM)		\
  : ((CUM.num_args) < 6 && ! MUST_PASS_IN_STACK (MODE, TYPE)	\
-    ? gen_rtx(REG, (MODE),					\
-	      ((CUM).num_args + 16				\
-	       + ((TARGET_FPREGS				\
-		   && (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
-		       || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
-		  * 32)))			\
+    ? gen_rtx_REG ((MODE),					\
+		   ((CUM).num_args + 16				\
+		    + ((TARGET_FPREGS				\
+			&& (GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT \
+			    || GET_MODE_CLASS (MODE) == MODE_FLOAT)) \
+		       * 32)))			\
     : 0))
 
 #undef FUNCTION_ARG_ADVANCE
@@ -242,7 +242,7 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
     {							\
       if (! (NO_RTL))					\
 	{						\
-	  emit_move_insn (gen_rtx (REG, DImode, 1),	\
+	  emit_move_insn (gen_rtx_REG (DImode, 1),	\
 			  virtual_incoming_args_rtx);	\
 	  emit_insn (gen_arg_home ());			\
 	}						\

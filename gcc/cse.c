@@ -4025,9 +4025,11 @@ simplify_binary_operation (code, mode, op0, op1)
 	  if (GET_CODE (op1) == AND)
 	    {
 	     if (rtx_equal_p (op0, XEXP (op1, 0)))
-	       return cse_gen_binary (AND, mode, op0, gen_rtx_NOT (mode, XEXP (op1, 1)));
+	       return cse_gen_binary (AND, mode, op0,
+				      gen_rtx_NOT (mode, XEXP (op1, 1)));
 	     if (rtx_equal_p (op0, XEXP (op1, 1)))
-	       return cse_gen_binary (AND, mode, op0, gen_rtx_NOT (mode, XEXP (op1, 0)));
+	       return cse_gen_binary (AND, mode, op0,
+				      gen_rtx_NOT (mode, XEXP (op1, 0)));
 	   }
 	  break;
 
@@ -4172,8 +4174,9 @@ simplify_binary_operation (code, mode, op0, op1)
 		  return gen_rtx_MULT (mode, op0, 
 				       CONST_DOUBLE_FROM_REAL_VALUE (d, mode));
 #else
-		  return gen_rtx_MULT (mode, op0, 
-				       CONST_DOUBLE_FROM_REAL_VALUE (1./d, mode));
+		  return
+		    gen_rtx_MULT (mode, op0, 
+				  CONST_DOUBLE_FROM_REAL_VALUE (1./d, mode));
 #endif
 		}
 	    }
@@ -7212,9 +7215,10 @@ cse_insn (insn, libcall_insn)
 	  && qty_first_reg[REG_QTY (REGNO (dest))] != REGNO (dest)
 	  && GET_CODE (src) == REG && REGNO (src) == REGNO (dest)
 	  /* Don't do this if the original insn had a hard reg as
-	     SET_SRC.  */
+	     SET_SRC or SET_DEST.  */
 	  && (GET_CODE (sets[i].src) != REG
-	      || REGNO (sets[i].src) >= FIRST_PSEUDO_REGISTER))
+	      || REGNO (sets[i].src) >= FIRST_PSEUDO_REGISTER)
+	  && (GET_CODE (dest) != REG || REGNO (dest) >= FIRST_PSEUDO_REGISTER))
 	/* We can't call canon_reg here because it won't do anything if
 	   SRC is a hard register.  */
 	{
@@ -7307,9 +7311,9 @@ cse_insn (insn, libcall_insn)
 		  if (note)
 		    XEXP (note, 0) = const_insn;
 		  else
-		    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_WAS_0,
-							  const_insn,
-							  REG_NOTES (insn));
+		    REG_NOTES (insn)
+		      = gen_rtx_INSN_LIST (REG_WAS_0, const_insn,
+					   REG_NOTES (insn));
 		}
 	    }
 	}
@@ -8820,7 +8824,8 @@ cse_basic_block (from, to, next_branch, around_loop)
 
   qty_first_reg = (int *) alloca ((max_qty - max_reg) * sizeof (int));
   qty_last_reg = (int *) alloca ((max_qty - max_reg) * sizeof (int));
-  qty_mode= (enum machine_mode *) alloca ((max_qty - max_reg) * sizeof (enum machine_mode));
+  qty_mode = (enum machine_mode *) alloca ((max_qty - max_reg)
+					   * sizeof (enum machine_mode));
   qty_const = (rtx *) alloca ((max_qty - max_reg) * sizeof (rtx));
   qty_const_insn = (rtx *) alloca ((max_qty - max_reg) * sizeof (rtx));
   qty_comparison_code

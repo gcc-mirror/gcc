@@ -1492,9 +1492,9 @@ emit_pop_insn (insn, regstack, reg, when)
 
   pop_insn = (*when) (pop_rtx, insn);
 
-  REG_NOTES (pop_insn) = gen_rtx_EXPR_LIST (REG_DEAD,
-					    FP_MODE_REG (FIRST_STACK_REG, DFmode),
-					    REG_NOTES (pop_insn));
+  REG_NOTES (pop_insn)
+    = gen_rtx_EXPR_LIST (REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, DFmode),
+			 REG_NOTES (pop_insn));
 
   regstack->reg[regstack->top - (hard_regno - FIRST_STACK_REG)]
     = regstack->reg[regstack->top];

@@ -2741,12 +2741,6 @@ as when text other than a comment follows @samp{#else} or @samp{#endif}.
 Like @samp{-pedantic}, except that errors are produced rather than
 warnings.
 
-@item -Wtrigraphs
-@findex -Wtrigraphs
-Warn if any trigraphs are encountered.  Currently this only works if you
-have turned trigraphs on with @samp{-trigraphs} or @samp{-ansi}; in the
-future this restriction will be removed.
-
 @item -Wcomment
 @findex -Wcomment
 @ignore
@@ -2759,10 +2753,19 @@ future this restriction will be removed.
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
 comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
 
+@item -Wtrigraphs
+@findex -Wtrigraphs
+Warn if any trigraphs are encountered (assuming they are enabled).
+
+@item -Wwhite-space
+@findex -Wwhite-space
+Warn about possible white space confusion, e.g. white space between a
+backslash and a newline.
+
 @item -Wall
 @findex -Wall
-Requests both @samp{-Wtrigraphs} and @samp{-Wcomment} (but not
-@samp{-Wtraditional} or @samp{-Wundef}). 
+Requests @samp{-Wcomment}, @samp{-Wtrigraphs}, and @samp{-Wwhite-space}
+(but not @samp{-Wtraditional} or @samp{-Wundef}).
 
 @item -Wtraditional
 @findex -Wtraditional

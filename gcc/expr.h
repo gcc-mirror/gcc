@@ -945,7 +945,7 @@ extern rtx clear_storage PROTO((rtx, rtx, int));
 extern rtx emit_move_insn PROTO((rtx, rtx));
 
 /* Emit insns to set X from Y, with no frills.  */
-extern rtx emit_move_insn_1 PROTO ((rtx, rtx));
+extern rtx emit_move_insn_1 PROTO((rtx, rtx));
 
 /* Push a block of length SIZE (perhaps variable)
    and return an rtx to address the beginning of the block.  */

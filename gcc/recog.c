@@ -369,8 +369,9 @@ apply_change_group ()
 		 {
 		   int j;
 
-		   newpat = gen_rtx_PARALLEL (VOIDmode, 
-					      gen_rtvec (XVECLEN (pat, 0) - 1));
+		   newpat
+		     = gen_rtx_PARALLEL (VOIDmode, 
+					 gen_rtvec (XVECLEN (pat, 0) - 1));
 		   for (j = 0; j < XVECLEN (newpat, 0); j++)
 		     XVECEXP (newpat, 0, j) = XVECEXP (pat, 0, j);
 		 }
@@ -1971,7 +1972,8 @@ adj_offsettable_operand (op, offset)
 
       if (CONSTANT_ADDRESS_P (y))
 	{
-	  new = gen_rtx_MEM (GET_MODE (op), plus_constant_for_output (y, offset));
+	  new = gen_rtx_MEM (GET_MODE (op),
+			     plus_constant_for_output (y, offset));
 	  RTX_UNCHANGING_P (new) = RTX_UNCHANGING_P (op);
 	  return new;
 	}
@@ -2288,12 +2290,8 @@ constrain_operands (strict)
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '?':
-	      case '!':
-	      case '*':
-	      case '%':
-	      case '=':
-	      case '+':
+	      case '?':  case '!': case '*':  case '%':
+	      case '=':  case '+':
 		break;
 
 	      case '#':
@@ -2307,8 +2305,9 @@ constrain_operands (strict)
 		earlyclobber[opno] = 1;
 		break;
 
-	      case '0': case '1': case '2': case '3': case '4':
-	      case '5': case '6': case '7': case '8': case '9':
+	      case '0':  case '1':  case '2':  case '3':  case '4':
+	      case '5':  case '6':  case '7':  case '8':  case '9':
+
 		/* This operand must be the same as a previous one.
 		   This kind of constraint is used for instructions such
 		   as add when they take only two operands.
