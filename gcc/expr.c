@@ -10862,16 +10862,6 @@ bc_load_externaddr (externaddr)
 }
 
 
-static char *
-bc_strdup (s)
-    char *s;
-{
-  char *new = (char *) xmalloc ((strlen (s) + 1) * sizeof *s);
-  strcpy (new, s);
-  return new;
-}
-
-
 /* Like above, but expects an IDENTIFIER.  */
 void
 bc_load_externaddr_id (id, offset)
@@ -10882,7 +10872,7 @@ bc_load_externaddr_id (id, offset)
     abort ();
 
   bc_emit_bytecode (constP);
-  bc_emit_code_labelref (bc_xstrdup (IDENTIFIER_POINTER (id)), offset);
+  bc_emit_code_labelref (xstrdup (IDENTIFIER_POINTER (id)), offset);
 
 #ifdef DEBUG_PRINT_CODE
   fputc ('\n', stderr);
