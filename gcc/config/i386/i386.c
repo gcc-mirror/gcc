@@ -444,12 +444,14 @@ output_move_double (operands)
     }
 
   /* If insn is effectively movd N (sp),-(sp) then we will do the
-     high word first.  We should use the adjusted operand 1 (which is N+4 (sp))
-     for the low word as well, to compensate for the first decrement of sp.  */
+     high word first.  We should use the adjusted operand 1
+     (which is N+4 (sp) or N+8 (sp))
+     for the low word and middle word as well,
+     to compensate for the first decrement of sp.  */
   if (optype0 == PUSHOP
       && REGNO (XEXP (XEXP (operands[0], 0), 0)) == STACK_POINTER_REGNUM
       && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
-    operands[1] = latehalf[1];
+    middlehalf[1] = operands[1] = latehalf[1];
 
   /* For (set (reg:DI N) (mem:DI ... (reg:SI N) ...)),
      if the upper part of reg N does not appear in the MEM, arrange to
