@@ -539,50 +539,50 @@ arc-*-elf*)
 	extra_parts="crtinit.o crtfini.o"
 	;;
 arm*-*-rtems*)
-	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/rtems-elf.h rtems.h"
+	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/rtems-elf.h rtems.h"
 	tmake_file="arm/t-arm-elf t-rtems"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
 	;;
 arm-*-coff* | armel-*-coff*)
-	tm_file=arm/coff.h
+	tm_file="arm/semi.h arm/aout.h arm/arm.h arm/coff.h"
 	tmake_file=arm/t-arm-coff
 	;;
 arm-*-vxworks*)
-	tm_file=arm/vxarm.h
+	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/vxarm.h arm/arm.h"
 	tmake_file=arm/t-arm-coff
 	thread_file='vxworks'
 	;;
 arm-*-riscix1.[01]*)		# Acorn RISC machine (early versions)
-	tm_file=arm/riscix1-1.h
+	tm_file="arm/riscix1-1.h arm/arm.h"
 	use_collect2=yes
 	;;
 arm-*-riscix*)			# Acorn RISC machine
 	if test x$gas = xyes
 	then
-	    tm_file=arm/rix-gas.h
+	    tm_file="arm/riscix.h arm/rix-gas.h arm/arm.h"
 	else
-	    tm_file=arm/riscix.h
+	    tm_file="arm/riscix.h arm/arm.h"
 	fi
 	tmake_file=arm/t-riscix
 	use_collect2=yes
 	;;
 arm-semi-aout | armel-semi-aout)
-	tm_file=arm/semi.h
+	tm_file="arm/semi.h arm/aout.h arm/arm.h"
 	tmake_file=arm/t-semi
 	;;
 arm-semi-aof | armel-semi-aof)
-	tm_file=arm/semiaof.h
+	tm_file="arm/semiaof.h arm/aof.h arm/arm.h"
 	tmake_file=arm/t-semi
 	;;
 arm*-*-netbsd*)
-	tm_file=arm/netbsd.h
+	tm_file="arm/aout.h arm/arm.h netbsd.h arm/netbsd.h"
 	tmake_file="t-netbsd arm/t-netbsd"
 	use_collect2=yes
 	;;
 arm*-*-linux*)			# ARM GNU/Linux with ELF
-	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
+	tm_file="elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h arm/linux-gas.h arm/linux-elf.h"
 	tmake_file="t-slibgcc-elf-ver t-linux arm/t-linux"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	gnu_ld=yes
