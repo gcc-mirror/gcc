@@ -1,6 +1,6 @@
 2003-09-06  Mark Mitchell  <mark@codesourcery.com>
 
-	PR c++/11687
+	PR c++/11867
 	* g++.dg/expr/static_cast5.C: New test.
 
 2003-09-06  Andrew Pinski  <pinskia@physics.uc.edu>
