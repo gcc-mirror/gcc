@@ -46,4 +46,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MACHINE_TYPE "RISC-OS System V.4 Mips"
 
+/* Override defaults for finding the MIPS tools.  */
+#define MD_STARTFILE_PREFIX "/svr4/usr/lib/cmplrs/cc/"
+#define MD_EXEC_PREFIX "/svr4/usr/lib/cmplrs/cc/"
+
 #include "mips.h"
