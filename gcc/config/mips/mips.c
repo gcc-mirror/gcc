@@ -3,7 +3,7 @@
    Changes by     Michael Meissner, meissner@osf.org.
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
    Brendan Eich, brendan@microunity.com.
-   Copyright (C) 1989, 1990, 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3780,7 +3780,10 @@ mips_output_external (file, decl, name)
     }
 
 #ifdef ASM_OUTPUT_UNDEF_FUNCTION
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      /* ??? Don't include alloca, since gcc will always expand it
+	 inline.  If we don't do this, libg++ fails to build.  */
+      && strcmp (name, "alloca"))
     {
       p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
       p->next = extern_head;
