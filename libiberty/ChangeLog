@@ -1,3 +1,7 @@
+2004-09-02  Paolo Bonzini  <bonzini@gnu.org> 
+
+	* configure.ac: Do not enable multilibs for build-side libiberty.
+
 2004-06-29  Danny Smith  <dannysmith@users.sourceforge.net> 
 
 	* lrealpath.c (lrealpath): Add _WIN32 support.
