@@ -1,3 +1,10 @@
+Thu Mar 12 09:39:40 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* lang-specs.h: Properly put brackets around array elements in initializer.
+
+	* typeck.c (build_binary_op_nodefault): Correctly place parens around
+	&& and || in expression.
+
 Thu Mar 12 09:26:04 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* call.c (default_parm_conversions): Remove prototype definition.
