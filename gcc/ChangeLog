@@ -1,3 +1,10 @@
+2003-09-23  John Davind Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (hppa_expand_prologue): Do pic register save in frame marker
+	without adding a frame note.
+	* pa.md (allocate_stack): Save pic register in new frame marker when
+	generating pic code.
+
 2003-09-23  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* cgraphunit.c (cgraph_expand_all_functions): Renamed from 
