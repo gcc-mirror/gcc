@@ -1127,6 +1127,7 @@ extern enum cmp_type hppa_branch_type;
 
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION) \
 { char *target_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0); \
+  STRIP_NAME_ENCODING (target_name, target_name); \
   output_function_prologue (FILE, 0); \
   if (VAL_14_BITS_P (DELTA)) \
     fprintf (FILE, "\tb %s\n\tldo %d(%%r26),%%r26\n", target_name, DELTA); \
