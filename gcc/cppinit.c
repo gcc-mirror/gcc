@@ -237,7 +237,11 @@ append_include_chain (pfile, dir, path, cxx_aware)
   new->ino  = st.st_ino;
   new->dev  = st.st_dev;
   if (path == SYSTEM)
+#ifdef NO_IMPLICIT_EXTERN_C
+    new->sysp = 1;
+#else
     new->sysp = cxx_aware ? 1 : 2;
+#endif
   else
     new->sysp = 0;
   new->name_map = NULL;
