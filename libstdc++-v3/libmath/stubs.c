@@ -100,6 +100,7 @@ sqrtf(float x)
 {
   return (float) sqrt(x);
 }
+#endif
 
 #ifndef _GLIBCPP_HAVE_TANF
 float
