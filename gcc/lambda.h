@@ -22,6 +22,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef LAMBDA_H
 #define LAMBDA_H
 
+#include "vec.h"
+
 /* An integer vector.  A vector formally consists of an element of a vector
    space. A vector space is a set that is closed under vector addition
    and scalar multiplication.  In this vector space, an element is a list of
@@ -30,6 +32,86 @@ typedef int *lambda_vector;
 /* An integer matrix.  A matrix consists of m vectors of length n (IE
    all vectors are the same length).  */
 typedef lambda_vector *lambda_matrix;
+
+/* A transformation matrix.  */
+typedef struct
+{
+  lambda_matrix matrix;
+  int rowsize;
+  int colsize;
+  int denominator;
+} *lambda_trans_matrix;
+#define LTM_MATRIX(T) ((T)->matrix)
+#define LTM_ROWSIZE(T) ((T)->rowsize)
+#define LTM_COLSIZE(T) ((T)->colsize)
+#define LTM_DENOMINATOR(T) ((T)->denominator)
+
+/* A vector representing a statement in the body of a loop.  */
+typedef struct
+{
+  lambda_vector coefficients;
+  int size;
+  int denominator;
+} *lambda_body_vector;
+#define LBV_COEFFICIENTS(T) ((T)->coefficients)
+#define LBV_SIZE(T) ((T)->size)
+#define LBV_DENOMINATOR(T) ((T)->denominator)
+
+/* Piecewise linear expression.  */
+typedef struct lambda_linear_expression_s
+{
+  lambda_vector coefficients;
+  int constant;
+  lambda_vector invariant_coefficients;
+  int denominator;
+  struct lambda_linear_expression_s *next;
+} *lambda_linear_expression;
+
+#define LLE_COEFFICIENTS(T) ((T)->coefficients)
+#define LLE_CONSTANT(T) ((T)->constant)
+#define LLE_INVARIANT_COEFFICIENTS(T) ((T)->invariant_coefficients)
+#define LLE_DENOMINATOR(T) ((T)->denominator)
+#define LLE_NEXT(T) ((T)->next)
+
+lambda_linear_expression lambda_linear_expression_new (int, int);
+void print_lambda_linear_expression (FILE *, lambda_linear_expression, int,
+				     int, char);
+
+/* Loop structure.  */
+typedef struct lambda_loop_s
+{
+  lambda_linear_expression lower_bound;
+  lambda_linear_expression upper_bound;
+  lambda_linear_expression linear_offset;
+  int step;
+} *lambda_loop;
+
+#define LL_LOWER_BOUND(T) ((T)->lower_bound)
+#define LL_UPPER_BOUND(T) ((T)->upper_bound)
+#define LL_LINEAR_OFFSET(T) ((T)->linear_offset)
+#define LL_STEP(T)   ((T)->step)
+
+/* Loop nest structure.  */
+typedef struct
+{
+  lambda_loop *loops;
+  int depth;
+  int invariants;
+} *lambda_loopnest;
+
+#define LN_LOOPS(T) ((T)->loops)
+#define LN_DEPTH(T) ((T)->depth)
+#define LN_INVARIANTS(T) ((T)->invariants)
+
+lambda_loopnest lambda_loopnest_new (int, int);
+lambda_loopnest lambda_loopnest_transform (lambda_loopnest, lambda_trans_matrix);
+
+bool lambda_transform_legal_p (lambda_trans_matrix, int, varray_type);
+void print_lambda_loopnest (FILE *, lambda_loopnest, char);
+
+#define lambda_loop_new() (lambda_loop) ggc_alloc_cleared (sizeof (struct lambda_loop_s))
+
+void print_lambda_loop (FILE *, lambda_loop, int, int, char);
 
 lambda_matrix lambda_matrix_new (int, int);
 
@@ -61,8 +143,31 @@ void lambda_matrix_project_to_null (lambda_matrix, int, int, int,
 				    lambda_vector);
 void print_lambda_matrix (FILE *, lambda_matrix, int, int);
 
+lambda_trans_matrix lambda_trans_matrix_new (int, int);
+bool lambda_trans_matrix_nonsingular_p (lambda_trans_matrix);
+bool lambda_trans_matrix_fullrank_p (lambda_trans_matrix);
+int lambda_trans_matrix_rank (lambda_trans_matrix);
+lambda_trans_matrix lambda_trans_matrix_basis (lambda_trans_matrix);
+lambda_trans_matrix lambda_trans_matrix_padding (lambda_trans_matrix);
+lambda_trans_matrix lambda_trans_matrix_inverse (lambda_trans_matrix);
+void print_lambda_trans_matrix (FILE *, lambda_trans_matrix);
 void lambda_matrix_vector_mult (lambda_matrix, int, int, lambda_vector, 
 				lambda_vector);
+
+lambda_body_vector lambda_body_vector_new (int);
+lambda_body_vector lambda_body_vector_compute_new (lambda_trans_matrix, 
+						   lambda_body_vector);
+void print_lambda_body_vector (FILE *, lambda_body_vector);
+struct loop;
+
+lambda_loopnest gcc_loopnest_to_lambda_loopnest (struct loop *,
+						 VEC(tree) **,
+						 VEC(tree) **);
+void lambda_loopnest_to_gcc_loopnest (struct loop *, VEC(tree) *,
+				      VEC(tree) *,
+				      lambda_loopnest, 
+				      lambda_trans_matrix);
+
 
 static inline void lambda_vector_negate (lambda_vector, lambda_vector, int);
 static inline void lambda_vector_mult_const (lambda_vector, lambda_vector, int, int);

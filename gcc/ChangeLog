@@ -1,3 +1,44 @@
+2004-08-26  Daniel Berlin  <dberlin@dberlin.org>
+
+	* Makefile.in (lambda-code.o): New.
+	(lambda-trans.o): Ditto.
+	(TREE_DATA_REF_H): Ditto.
+	(LAMBDA_H): Ditto.
+	(lambda-mat.o): Use LAMBDA_H.
+	(tree-data-ref.o): Ditto.
+	* lambda-code.c: New file.  Lambda code generation algorithm.
+	* lambda-trans.c: Ditto. Lambda transformation matrix support.
+	* lambda.h: Add lambda loop structures.
+	Add lambda loopnest structures.
+	Add lambda body vector structure.
+	Add lambda linear expression structures.
+	Add prototypes for functions in new files.
+	* lambda-mat.c: Include tree.h
+
+2004-08-26  Daniel Berlin <dberlin@dberlin.org>
+	    Sebastian Pop  <pop@cri.ensmp.fr>	
+	
+	* tree-data-ref.h: Include lambda.h	
+	(free_dependence_relation): Declared here.
+	(free_dependence_relations): Ditto.	
+	(free_data_refs): Ditto.
+	* tree-data-ref.c (free_dependence_relation): New function.
+	(free_dependence_relations): Ditto.
+	(free_data_refs): Ditot.
+	(analyze_all_data_dependences): Free datarefs and dependence_relations.
+	(build_classic_dist_vector): Store in the dependence_relations the
+	information. Each arc in the dependence_relations graph is labelled
+	with the distance and direction vectors.
+	(build_classic_dir_vector): Ditto.
+	(compute_rw_wr_ww_dependences): Renamed again compute_all_dependences.
+	Now computes again the whole dependence graph including read-read
+	relations.
+	(compute_data_dependences_for_loop): Now dependence_relations contains
+	all the data, and thus it doesn't need to initialize the classic_dir
+	and classic_dist vectors.
+	(analyze_all_data_dependences): Adjusted for using the new interface of
+	compute_data_dependences_for_loop.  Remove the statistics dump.
+	
 2004-08-26  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_ld_opcodes, xtensa_st_opcodes): Delete.
