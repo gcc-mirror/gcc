@@ -286,6 +286,11 @@ make_alias_for_thunk (tree function)
   tree alias;
   char buf[256];
 
+#if defined (__CYGWIN__) || defined (__MINGW32__)
+  if (DECL_ONE_ONLY (function))
+    return function;
+#endif
+
   ASM_GENERATE_INTERNAL_LABEL (buf, "LTHUNK", thunk_labelno);
   thunk_labelno++;
   alias = build_decl (FUNCTION_DECL, get_identifier (buf),
@@ -398,7 +403,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 
   push_to_top_level ();
 
-#ifdef ASM_OUTPUT_DEF
+#if defined (ASM_OUTPUT_DEF) \
+  && !(defined (__CYGWIN__) || defined (__MINGW32__))
   if (targetm.have_named_sections)
     {
       resolve_unique_section (function, 0, flag_function_sections);

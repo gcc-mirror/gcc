@@ -1,3 +1,10 @@
+2004-04-08  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* method.c (make_alias_for_thunk): Just return function decl
+	for one_only functions if __CYGWIN__ or __MINGW32__
+	(use_thunk): Don't put function and thunk in same one_only
+	section if __CYGWIN__ or __MINGW32__.
+
 2004-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl2.c (mark_used): Don't segfault if cfun != NULL but
