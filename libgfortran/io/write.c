@@ -395,7 +395,7 @@ output_float (fnode *f, double value, int len)
 	  nafter = d;
 	}
 
-      if (ft = FMT_E)
+      if (ft == FMT_E)
 	expchar = 'E';
       else
 	expchar = 'D';
