@@ -1,3 +1,10 @@
+2001-01-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (init): Rename init_library.
+        (cpp_create_reader): Update.
+        * gcc.c (cpp_options): If -o given, use it as the target of
+        any -M options.
+
 2001-01-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_arch5e): New variable.

@@ -94,7 +94,7 @@ struct cpp_pending
 static void print_help                  PARAMS ((void));
 static void path_include		PARAMS ((cpp_reader *,
 						 char *, int));
-static void init			PARAMS ((void));
+static void init_library		PARAMS ((void));
 static void init_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 char *, int, int));
@@ -469,7 +469,7 @@ opt_comp (p1, p2)
    do anything depending on the platform and compiler.  */
 
 static void
-init ()
+init_library ()
 {
   static int initialized = 0;
 
@@ -499,7 +499,7 @@ cpp_create_reader (lang)
   cpp_reader *pfile;
 
   /* Initialise this instance of the library if it hasn't been already.  */
-  init ();
+  init_library ();
 
   pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
 
