@@ -3939,12 +3939,17 @@ sched_analyze (head, tail)
 		   || (NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP
 		       && GET_CODE (PREV_INSN (insn)) != CALL_INSN)))
 	{
+	  rtx region;
+
 	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
 	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
-	    loop_notes = alloc_EXPR_LIST (REG_DEAD,
-					  GEN_INT (NOTE_EH_HANDLER (insn)),
-					  loop_notes);
+	    region = GEN_INT (NOTE_EH_HANDLER (insn));
+	  else
+	    region = GEN_INT (0);
 
+	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
+					region,
+					loop_notes);
 	  loop_notes = alloc_EXPR_LIST (REG_DEAD,
 					GEN_INT (NOTE_LINE_NUMBER (insn)),
 					loop_notes);
@@ -6497,7 +6502,7 @@ move_insn1 (insn, last)
 /* Search INSN for fake REG_DEAD note pairs for NOTE_INSN_SETJMP,
    NOTE_INSN_{LOOP,EHREGION}_{BEG,END}; and convert them back into
    NOTEs.  The REG_DEAD note following first one is contains the saved
-   value for NOTE_EH_HANDLER which is useful for
+   value for NOTE_BLOCK_NUMBER which is useful for
    NOTE_INSN_EH_REGION_{BEG,END} NOTEs.  LAST is the last instruction
    output by the instruction scheduler.  Return the new value of LAST.  */
 
@@ -6519,6 +6524,8 @@ reemit_notes (insn, last)
 	    {
 	      retval = emit_note_after (NOTE_INSN_SETJMP, insn);
 	      CONST_CALL_P (retval) = CONST_CALL_P (note);
+	      remove_note (insn, note);
+	      note = XEXP (note, 1);
 	    }
 	  else if (note_type == NOTE_INSN_RANGE_START
                    || note_type == NOTE_INSN_RANGE_END)
@@ -6531,13 +6538,11 @@ reemit_notes (insn, last)
 	  else
 	    {
 	      last = emit_note_before (note_type, last);
+	      remove_note (insn, note);
+	      note = XEXP (note, 1);
 	      if (note_type == NOTE_INSN_EH_REGION_BEG
 		  || note_type == NOTE_INSN_EH_REGION_END)
-		{
-		  remove_note (insn, note);
-		  note = XEXP (note, 1);
-		  NOTE_EH_HANDLER (last) = INTVAL (XEXP (note, 0));
-		}
+		NOTE_EH_HANDLER (last) = INTVAL (XEXP (note, 0));
 	    }
 	  remove_note (insn, note);
 	}
