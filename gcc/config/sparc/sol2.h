@@ -71,17 +71,21 @@ Boston, MA 02111-1307, USA.  */
 
 /* This is here rather than in sparc.h because it's not known what
    other assemblers will accept.  */
+
 #if TARGET_CPU_DEFAULT == TARGET_CPU_v9
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC "-xarch=v8plus"
 #endif
+
 #if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC "-xarch=v8plusa"
 #endif
+
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC "\
 %{mcpu=v8plus:-xarch=v8plus} \
+%{mcpu=v9:-xarch=v8plus} \
 %{mcpu=ultrasparc:-xarch=v8plusa} \
 %{!mcpu*:%(asm_cpu_default)} \
 "
@@ -226,6 +230,12 @@ Boston, MA 02111-1307, USA.  */
 #define UDIVDI3_LIBCALL "__udiv64"
 #define MODDI3_LIBCALL "__rem64"
 #define UMODDI3_LIBCALL "__urem64"
+
+/* Solaris's _Qp_* library routine implementation clobbers the output
+   memory before the inputs are fully consumed.  */
+
+#undef TARGET_BUGGY_QP_LIB
+#define TARGET_BUGGY_QP_LIB	1
 
 #undef INIT_SUBTARGET_OPTABS
 #define INIT_SUBTARGET_OPTABS						\

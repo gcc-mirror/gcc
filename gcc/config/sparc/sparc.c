@@ -2489,9 +2489,17 @@ emit_soft_tfmode_libcall (func_name, nargs, operands)
       /* TFmode arguments and return values are passed by reference.  */
       if (GET_MODE (this_arg) == TFmode)
 	{
-	  if (GET_CODE (this_arg) == MEM)
+	  int force_stack_temp;
+
+	  force_stack_temp = 0;
+	  if (TARGET_BUGGY_QP_LIB && i == 0)
+	    force_stack_temp = 1;
+
+	  if (GET_CODE (this_arg) == MEM
+	      && ! force_stack_temp)
 	    this_arg = XEXP (this_arg, 0);
-	  else if (CONSTANT_P (this_arg))
+	  else if (CONSTANT_P (this_arg)
+		   && ! force_stack_temp)
 	    {
 	      this_slot = force_const_mem (TFmode, this_arg);
 	      this_arg = XEXP (this_slot, 0);
