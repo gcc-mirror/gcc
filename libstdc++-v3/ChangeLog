@@ -1,21 +1,47 @@
+2003-06-22  Paolo Carlini  <pcarlini@unitus.it>
+	    Nathan C. Myers  <ncm-nospam@cantrip.org>
+
+	* include/std/std_streambuf.h (_M_move_out_cur): _M_out_lim
+	is now used only for filebuf, when _M_buf_unified is true.
+	epgtr() plays the role of _M_out_lim but it's only updated
+	upon overflow, underflow, uflow, seekoff/pos.
+	* include/bits/sstream.tcc (_M_underflow): New, implements
+	stringbuf::underflow and uflow.
+	(seekoff, seekpos): Tweak, use  _M_update_egptr.
+	* include/std/std_sstream.h (str): Rewrote, deal correctly
+	with the new logic, in particular, when pptr() > egptr().
+	(_M_sync): When __testout && !__testin set all the get area
+	pointers to the current string end.
+	(_M_update_egptr): New, internal function updating egptr()
+	to the actual string end.
+	(_M_underflow): New, declare.
+	(underflow): Dispatch to _M_underflow(false).
+	(uflow): Dispatch to _M_underflow(true).
+
+	* include/bits/sstream.tcc (pbackfail, overflow, seekoff,
+	seekpos): Use only the documented derivation interface to
+	basic_streambuf (gptr(), setg(), etc.) to work right with
+	user specializations.
+	* include/std/std_sstream.h (str, _M_sync): Likewise.
+
 2003-06-20  Doug Gregor <dgregor@apple.com>
 
-        * testsuite/20_util/auto_ptr.cc: don't dereference NULL auto_ptr
-        * testsuite/21_strings/basic_string/replace/char/4.cc: don't 
-            dereference end iterator.
-        * testsuite/21_strings/basic_string/replace/wchar_t/4.cc: same.
-        * testsuite/22_locale/ctype/narrow/char/1.cc: don't subscript with
-            index equal to the length of a string.
-        * testsuite/22_locale/ctype/narrow/char/2.cc: same.
-        * testsuite/22_locale/ctype/narrow/wchar_t/1.cc: same.
-        * testsuite/22_locale/ctype/narrow/wchar_t/2.cc: same.
-        * testsuite/22_locale/ctype/widen/char/1.cc: same.
-        * testsuite/22_locale/ctype/widen/wchar_t/1.cc: same.
-        * testsuite/23_containers/list_modifiers.cc: don't dereference 
-            singular reverse iterator.
-        * testsuite/23_containers/vector_bool.cc: don't increment singular
-            iterator.
-        * testsuite/24_iterators/rel_ops.cc: don't compare singular iterator.
+	* testsuite/20_util/auto_ptr.cc: Don't dereference NULL auto_ptr
+	* testsuite/21_strings/basic_string/replace/char/4.cc: Don't
+	dereference end iterator.
+	* testsuite/21_strings/basic_string/replace/wchar_t/4.cc: Same.
+	* testsuite/22_locale/ctype/narrow/char/1.cc: Don't subscript with
+	index equal to the length of a string.
+	* testsuite/22_locale/ctype/narrow/char/2.cc: Same.
+	* testsuite/22_locale/ctype/narrow/wchar_t/1.cc: Same.
+	* testsuite/22_locale/ctype/narrow/wchar_t/2.cc: Same.
+	* testsuite/22_locale/ctype/widen/char/1.cc: Same.
+	* testsuite/22_locale/ctype/widen/wchar_t/1.cc: Same.
+	* testsuite/23_containers/list_modifiers.cc: Don't dereference
+	singular reverse iterator.
+	* testsuite/23_containers/vector_bool.cc: Don't increment singular
+	iterator.
+	* testsuite/24_iterators/rel_ops.cc: Don't compare singular iterator.
 
 2003-06-20  Doug Gregor <dgregor@apple.com>
 
