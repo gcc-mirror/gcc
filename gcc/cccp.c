@@ -4573,8 +4573,8 @@ get_filename:
 
 		    if (searchptr->fname[0] == 0)
 		      continue;
-		    p = alloca (strlen (searchptr->fname)
-				+ strlen (fname) + 2);
+		    p = (char *) alloca (strlen (searchptr->fname)
+					 + strlen (fname) + 2);
 		    strcpy (p, searchptr->fname);
 		    strcat (p, "/");
 		    strcat (p, fname);
