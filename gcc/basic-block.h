@@ -135,13 +135,16 @@ typedef struct edge_def {
 				   in profile.c  */
 } *edge;
 
-#define EDGE_FALLTHRU		1
-#define EDGE_ABNORMAL		2
-#define EDGE_ABNORMAL_CALL	4
-#define EDGE_EH			8
-#define EDGE_FAKE		16
-#define EDGE_DFS_BACK		32
-#define EDGE_CAN_FALLTHRU	64
+#define EDGE_FALLTHRU		1	/* 'Straight line' flow */
+#define EDGE_ABNORMAL		2	/* Strange flow, like computed
+					   label, or eh */
+#define EDGE_ABNORMAL_CALL	4	/* Call with abnormal exit
+					   like an exception, or sibcall */
+#define EDGE_EH			8	/* Exception throw */
+#define EDGE_FAKE		16	/* Not a real edge (profile.c) */
+#define EDGE_DFS_BACK		32	/* A backwards edge */
+#define EDGE_CAN_FALLTHRU	64	/* Candidate for straight line
+					   flow. */
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
