@@ -1335,7 +1335,7 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	    {
 	      if (dump_file)
 		fprintf (dump_file,
-			 "Outcomes of branch in bb %i and %i differs to much (%i %i)\n",
+			 "Outcomes of branch in bb %i and %i differs too much (%i %i)\n",
 			 bb1->index, bb2->index, b1->probability, prob2);
 
 	      return false;
