@@ -4,13 +4,13 @@ dnl This file is part of the GNU Fortran 95 Runtime Library (libgfortran)
 dnl Distributed under the GNU LGPL.  See COPYING for details.
 define(START_FOREACH_FUNCTION,
 `void
-`__'name`'rtype_qual`_'type_code (rtype * retarray, atype *array)
+`__'name`'rtype_qual`_'atype_code (rtype * retarray, atype *array)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type sstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
-  type_name *base;
+  atype_name *base;
   rtype_name *dest;
   index_type rank;
   index_type n;
@@ -86,7 +86,7 @@ define(FINISH_FOREACH_FUNCTION,
 }')dnl
 define(START_MASKED_FOREACH_FUNCTION,
 `void
-`__m'name`'rtype_qual`_'type_code (rtype * retarray, atype *array, gfc_array_l4 * mask)
+`__m'name`'rtype_qual`_'atype_code (rtype * retarray, atype *array, gfc_array_l4 * mask)
 {
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
@@ -94,7 +94,7 @@ define(START_MASKED_FOREACH_FUNCTION,
   index_type mstride[GFC_MAX_DIMENSIONS];
   index_type dstride;
   rtype_name *dest;
-  type_name *base;
+  atype_name *base;
   GFC_LOGICAL_4 *mbase;
   int rank;
   index_type n;

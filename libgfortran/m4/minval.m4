@@ -27,13 +27,13 @@ Boston, MA 02111-1307, USA.  */
 
 include(iparm.m4)dnl
 include(ifunction.m4)dnl
-ARRAY_FUNCTION(type_max,
-`  result = type_max;',
+ARRAY_FUNCTION(atype_max,
+`  result = atype_max;',
 `  if (*src < result)
     result = *src;')
 
-MASKED_ARRAY_FUNCTION(type_max,
-`  result = type_max;',
+MASKED_ARRAY_FUNCTION(atype_max,
+`  result = atype_max;',
 `  if (*msrc && *src < result)
     result = *src;')
 

@@ -23,12 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include <assert.h>
 #include "libgfortran.h"'
-include(types.m4)dnl
-define(rtype_kind, regexp(file, `_.\([0-9]+\)\.', `\1'))dnl
-define(rtype_letter, regexp(file, `_\(.\)[0-9]+\.', `\1'))dnl
-define(rtype_code,rtype_letter`'rtype_name)dnl
-define(rtype,get_arraytype(rtype_letter,rtype_kind))dnl
-define(rtype_name, get_typename(rtype_letter, rtype_kind))dnl
+include(iparm.m4)dnl
 
 typedef GFC_ARRAY_DESCRIPTOR(1, index_type) shape_type;
 

@@ -25,7 +25,6 @@ Boston, MA 02111-1307, USA.  */
 #include <float.h>
 #include "libgfortran.h"
 
-
 void
 __maxval_r4 (gfc_array_r4 * retarray, gfc_array_r4 *array, index_type *pdim)
 {

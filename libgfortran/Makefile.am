@@ -222,7 +222,7 @@ i_set_exponent_c = \
 generated/set_exponent_r4.c \
 generated/set_exponent_r8.c
 
-m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/types.m4 m4/all.m4 \
+m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/any.m4 m4/count.m4 m4/maxloc0.m4 m4/maxloc1.m4 m4/maxval.m4 \
     m4/minloc0.m4 m4/minloc1.m4 m4/minval.m4 m4/product.m4 m4/sum.m4 \
     m4/dotprod.m4 m4/dotprodl.m4 m4/dotprodc.m4 m4/matmul.m4 m4/matmull.m4 \
@@ -351,7 +351,7 @@ EXTRA_libgfortran_la_SOURCES = $(gfor_cmath_src)
 libgfortran_la_LIBADD = @MATH_OBJ@
 libgfortran_la_DEPENDENCIES = @MATH_OBJ@
 
-I_M4_DEPS=m4/iparm.m4 m4/types.m4
+I_M4_DEPS=m4/iparm.m4
 I_M4_DEPS0=$(I_M4_DEPS) m4/iforeach.m4
 I_M4_DEPS1=$(I_M4_DEPS) m4/ifunction.m4
 

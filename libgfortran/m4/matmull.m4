@@ -23,11 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h>
 #include <assert.h>
 #include "libgfortran.h"'
-include(types.m4)dnl
-define(rtype_kind, regexp(file, `_l\([0-9]+\)\.', `\1'))dnl
-define(rtype_code,`l'rtype_kind)dnl
-define(rtype,get_arraytype(l,rtype_kind))dnl
-define(rtype_name, get_typename(l, rtype_kind))dnl
+include(iparm.m4)dnl
 
 /* Dimensions: retarray(x,y) a(x, count) b(count,y).
    Either a or b can be rank 1.  In this case x or y is 1.  */
