@@ -1,7 +1,11 @@
+2003-04-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpplex.c (_cpp_get_fresh_line): Pop the buffer if return_at_eof.
 
 2003-04-22  Devang Patel  <dpatel@apple.com>
 
-	* cpptrad.c (_cpp_replacement_text_len): Add check for macro parameter count.
+	* cpptrad.c (_cpp_replacement_text_len): Add check for macro
+	parameter count.
 	(_cpp_copy_replacement_text): Same.
 	
 2003-04-22  Neil Booth  <neil@daikokuya.co.uk>
