@@ -500,10 +500,11 @@ extern rtx force_operand PARAMS ((rtx, rtx));
 
 /* Return an object on the placeholder list that matches EXP, a
    PLACEHOLDER_EXPR.  An object "matches" if it is of the type of the
-   PLACEHOLDER_EXPR or a pointer type to it.  For further information,
-   see tree.def.  If no such object is found, abort.  If PLIST is nonzero,
-   it is a location into which a pointer into the placeholder list at
-   which the object is found is placed.  */
+   PLACEHOLDER_EXPR or a pointer type to it.  For further information, see
+   tree.def.  If no such object is found, abort.  If PLIST is nonzero, it is
+   a location which initially points to a starting location in the
+   placeholder list (zero means start of the list) and where a pointer into
+   the placeholder list at which the object is found is placed.  */
 extern tree find_placeholder PARAMS ((tree, tree *));
 
 /* Generate code for computing expression EXP.
@@ -611,23 +612,26 @@ extern rtx memory_address_noforce PARAMS ((enum machine_mode, rtx));
 /* Set the alias set of MEM to SET.  */
 extern void set_mem_alias_set PARAMS ((rtx, HOST_WIDE_INT));
 
+/* Set the alignment of MEM to ALIGN.  */
+extern void set_mem_align PARAMS ((rtx, unsigned int));
+
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address changed to ADDR.
    (VOIDmode means don't change the mode.
-   NULL for ADDR means don't change the address.)
-   VALIDATE is nonzero if the returned memory location is required to be
-   valid.  */
-extern rtx change_address_1 PARAMS ((rtx, enum machine_mode, rtx, int));
-
-#define change_address(MEMREF, MODE, ADDR) \
-  change_address_1 (MEMREF, MODE, ADDR, 1)
+   NULL for ADDR means don't change the address.)  */
+extern rtx change_address PARAMS ((rtx, enum machine_mode, rtx));
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  */
-extern rtx adjust_address PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT));
+#define adjust_address(MEMREF, MODE, OFFSET) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1)
 
 /* Likewise, but the reference is not required to be valid.  */
-extern rtx adjust_address_nv PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT));
+#define adjust_address_nv(MEMREF, MODE, OFFSET) \
+  adjust_address_1 (MEMREF, MODE, OFFSET, 0)
+
+extern rtx adjust_address_1 PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT,
+				     int));
 
 /* Return a memory reference like MEMREF, but with its address changed to
    ADDR.  The caller is asserting that the actual piece of memory pointed

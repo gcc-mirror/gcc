@@ -1,3 +1,24 @@
+Wed Oct 17 05:26:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (print-rtl.o): Depend on TREE_H.
+	* alias.c (get_alias_set): Make two passes over objects to first
+	see if inner object is access via restricted pointer.
+	Defer allocating alias set for restricted pointer until here.
+	Call find_placeholder with second arg nonzero.
+	Minor cleanups.
+	* emit-rtl.c (set_mem_attributes): Set more attributes.
+	(set_mem_align, change_address, adjust_address_1): New functions.
+	(change_address_1): Now static.
+	(adjust_address, adjust_address_nv): Deleted.
+	(replace_equiv_address): Call change_address_1.
+	* expr.c (get_inner_reference): Handle PLACEHOLDER_EXPR.
+	(find_placeholder): Get starting point from PLIST arg.
+	(expand_expr, case PLACEHOLDER_EXPR): Initialize find_placeholder arg.
+	* expr.h (set_mem_align, change_address, adjust_address_1): New decls.
+	(adjust_address, adjust_address_nv): New macros.
+	* print-rtl.c (tree.h): New include.
+	(print_rtx, case MEM): Print all memory attributes.
+
 2001-10-17  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (direct_call_operand): Don't fall off end.
