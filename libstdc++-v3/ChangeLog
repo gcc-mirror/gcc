@@ -1,3 +1,7 @@
+2004-03-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/20_util/allocator.html: Add bitmap_allocator links.
+
 2004-03-24  Andreas Schwab  <schwab@suse.de>
 
 	* testsuite/lib/prune.exp (prune_g++_output): Ignore errata
