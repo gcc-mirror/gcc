@@ -1,5 +1,10 @@
 2003-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* doc/md.texi (Machine Constraints): Document
+	missing SPARC constraints.
+
+2003-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* doc/md.texi (Automaton pipeline description): Use
 	"type" instead of "cpu" as the attribute in the examples.
 
