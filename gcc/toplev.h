@@ -113,5 +113,6 @@ extern void fnotice			PROTO ((FILE *, const char *, ...))
 
 #undef trim_filename
 extern const char *trim_filename	PROTO ((const char *));
-
+extern int wrapup_global_declarations   PROTO ((union tree_node **, int));
+extern void check_global_declarations   PROTO ((union tree_node **, int));
 #endif /* __GCC_TOPLEV_H */
