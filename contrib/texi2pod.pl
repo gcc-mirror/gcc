@@ -151,7 +151,7 @@ while(<$inf>) {
 	} elsif ($ended =~ /^(?:example|smallexample|display)$/) {
 	    $shift = "";
 	    $_ = "";	# need a paragraph break
-	} elsif ($ended =~ /^(?:itemize|enumerate|table)$/) {
+	} elsif ($ended =~ /^(?:itemize|enumerate|[fv]?table)$/) {
 	    $_ = "\n=back\n";
 	    $ic = pop @icstack;
 	} else {

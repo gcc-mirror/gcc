@@ -1,3 +1,7 @@
+2002-03-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* texi2pod.pl: Handle @end ftable and @end vtable.
+
 2002-03-11  Zack Weinberg  <zack@codesourcery.com>
 
 	* texi2pod.pl: Handle @include, @ftable, @vtable.
