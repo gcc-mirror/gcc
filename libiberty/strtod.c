@@ -1,5 +1,5 @@
 /* Implementation of strtod for systems with atof.
-   Copyright (C) 1991, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1995, 2002 Free Software Foundation, Inc.
 
 This file is part of the libiberty library.  This library is free
 software; you can redistribute it and/or modify it under the
@@ -75,7 +75,7 @@ strtod (str, ptr)
 	  && (p[6] == 't' || p[6] == 'T')
 	  && (p[7] == 'y' || p[7] == 'Y'))
 	{
-	  *ptr = p + 7;
+	  *ptr = p + 8;
 	  return atof (str);
 	}
       else
