@@ -1,3 +1,8 @@
+Mon Nov 18 21:29:03 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (addqi_1_slp): Fix output template.
+	(subqi_1_slp): Fix type.
+
 Sun Nov 17 00:01:28 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (alloca_call_p): New global function.
