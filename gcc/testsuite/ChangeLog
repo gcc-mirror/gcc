@@ -1,3 +1,11 @@
+2005-02-01  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.test-framework: New directory.
+	* gcc.test-framework/README: New.
+	* gcc.test-framework/test-framework.exp: New.
+	* gcc.test-framework/test-framework.awk: New.
+	* gcc.test-framework/gen_directive_tests: New.
+
 2005-02-01  James A. Morrison  <phython@gcc.gnu.org>
 
 	* lib/treelang.exp: Fix comment typos.
