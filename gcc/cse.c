@@ -9135,8 +9135,16 @@ delete_trivially_dead_insns (insns, nreg)
 
   /* Go from the last insn to the first and delete insns that only set unused
      registers or copy a register to itself.  As we delete an insn, remove
-     usage counts for registers it uses.  */
-  for (insn = prev_real_insn (get_last_insn ()); insn; insn = prev)
+     usage counts for registers it uses. 
+
+     The first jump optimization pass may leave a real insn as the last
+     insn in the function.   We must not skip that insn or we may end
+     up deleting code that is not really dead.   */
+  insn = get_last_insn ();
+  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+    insn = prev_real_insn (insn);
+
+  for ( ; insn; insn = prev)
     {
       int live_insn = 0;
       rtx note;
