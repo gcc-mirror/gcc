@@ -21,17 +21,17 @@ Boston, MA 02111-1307, USA.  */
 
  
 /* The third argument can be:
-   "x" for an exceptional code (fits no category).
-   "t" for a type object code.
-   "b" for a lexical block.
-   "c" for codes for constants.
-   "d" for codes for declarations (also serving as variable refs).
-   "r" for codes for references to storage.
-   "<" for codes for comparison expressions.
-   "1" for codes for unary arithmetic expressions.
-   "2" for codes for binary arithmetic expressions.
-   "s" for codes for expressions with inherent side effects.
-   "e" for codes for other kinds of expressions.  */
+   'x' for an exceptional code (fits no category).
+   't' for a type object code.
+   'b' for a lexical block.
+   'c' for codes for constants.
+   'd' for codes for declarations (also serving as variable refs).
+   'r' for codes for references to storage.
+   '<' for codes for comparison expressions.
+   '1' for codes for unary arithmetic expressions.
+   '2' for codes for binary arithmetic expressions.
+   's' for codes for expressions with inherent side effects.
+   'e' for codes for other kinds of expressions.  */
 
 /* For `r', `e', `<', `1', `2', `s' and `x' nodes,
    the 4th element is the number of argument slots to allocate.
@@ -42,28 +42,28 @@ Boston, MA 02111-1307, USA.  */
    by later parsing activities, to avoid multiple error messages
    for one error.
    No fields in these nodes are used except the TREE_CODE.  */
-DEFTREECODE (ERROR_MARK, "error_mark", "x", 0)
+DEFTREECODE (ERROR_MARK, "error_mark", 'x', 0)
 
 /* Used to represent a name (such as, in the DECL_NAME of a decl node).
    Internally it looks like a STRING_CST node.
    There is only one IDENTIFIER_NODE ever made for any particular name.
    Use `get_identifier' to get it (or create it, the first time).  */
-DEFTREECODE (IDENTIFIER_NODE, "identifier_node", "x", -1)
+DEFTREECODE (IDENTIFIER_NODE, "identifier_node", 'x', -1)
 
 /* Used to hold information to identify an operator (or combination
    of two operators) considered as a `noun' rather than a `verb'.
    The first operand is encoded in the TREE_TYPE field.  */
-DEFTREECODE (OP_IDENTIFIER, "op_identifier", "x", 2)
+DEFTREECODE (OP_IDENTIFIER, "op_identifier", 'x', 2)
 
 /* Has the TREE_VALUE and TREE_PURPOSE fields.  */
 /* These nodes are made into lists by chaining through the
    TREE_CHAIN field.  The elements of the list live in the
    TREE_VALUE fields, while TREE_PURPOSE fields are occasionally
    used as well to get the effect of Lisp association lists.  */
-DEFTREECODE (TREE_LIST, "tree_list", "x", 2)
+DEFTREECODE (TREE_LIST, "tree_list", 'x', 2)
 
 /* These nodes contain an array of tree nodes.  */
-DEFTREECODE (TREE_VEC, "tree_vec", "x", 2)
+DEFTREECODE (TREE_VEC, "tree_vec", 'x', 2)
 
 /* A symbol binding block.  These are arranged in a tree,
    where the BLOCK_SUBBLOCKS field contains a chain of subblocks
@@ -83,7 +83,7 @@ DEFTREECODE (TREE_VEC, "tree_vec", "x", 2)
    BLOCK_ABSTRACT is non-zero if the block represents an abstract
    instance of a block (i.e. one which is nested within an abstract
    instance of a inline function. */
-DEFTREECODE (BLOCK, "block", "b", 0)
+DEFTREECODE (BLOCK, "block", 'b', 0)
 
 /* Each data type is represented by a tree node whose code is one of
    the following:  */
