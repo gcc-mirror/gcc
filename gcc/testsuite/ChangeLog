@@ -1,3 +1,8 @@
+2004-03-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/14114
+	* gcc.dg/decl-5.c: New test.
+
 2004-03-05  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* gcc.dg/20040305-1.c: New test.
