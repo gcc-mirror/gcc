@@ -1,3 +1,8 @@
+2003-04-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.in (arm-*-netbsdelf*): Add configuration.
+	(configure): Regenerated.
+
 2003-04-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/Makefile.in: Regenerate.
