@@ -1,3 +1,7 @@
+Fri Nov 23 15:55:44 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/ieee/20011123-1.c: New test.
+
 2001-11-23  Andreas Jaeger  <aj@suse.de>
 
 	* gcc.dg/cpp/charconst-2.c: New test.
