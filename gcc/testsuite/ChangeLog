@@ -1,3 +1,7 @@
+2004-08-30  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/opt/loop1.C: XFAIL.
+
 2004-08-30  Geoffrey Keating  <geoffk@apple.com>
 
 	* gcc.dg/funcdef-storage-1.c: New.
