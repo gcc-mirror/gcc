@@ -552,21 +552,27 @@ gfc_range_check (gfc_expr * e)
 static arith
 check_result (arith rc, gfc_expr * x, gfc_expr * r, gfc_expr ** rp)
 {
-  if (rc != ARITH_OK)
-    gfc_free_expr (r);
-  else
+  arith val = rc;
+
+  if (val == ARITH_UNDERFLOW)
     {
-      if (rc == ARITH_UNDERFLOW && gfc_option.warn_underflow)
-        gfc_warning ("%s at %L", gfc_arith_error (rc), &x->where);
-
-      if (rc == ARITH_ASYMMETRIC)
-	gfc_warning ("%s at %L", gfc_arith_error (rc), &x->where);
-
-      rc = ARITH_OK;
-      *rp = r;
+      if (gfc_option.warn_underflow)
+	gfc_warning ("%s at %L", gfc_arith_error (val), &x->where);
+      val = ARITH_OK;
     }
 
-  return rc;
+  if (val == ARITH_ASYMMETRIC)
+    {
+      gfc_warning ("%s at %L", gfc_arith_error (val), &x->where);
+      val = ARITH_OK;
+    }
+
+  if (val != ARITH_OK)
+    gfc_free_expr (r);
+  else
+    *rp = r;
+
+  return val;
 }
 
 
