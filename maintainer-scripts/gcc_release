@@ -520,6 +520,25 @@ while getopts "d:fr:u:t:p:sl" ARG; do
 done
 shift `expr ${OPTIND} - 1`
 
+# Handle the major modes.
+while [ $# -ne 0 ]; do
+    case $1 in
+    diffs)    MODE_DIFFS=1;;
+    gzip)     MODE_GZIP=1;;
+    sources)  MODE_SOURCES=1;;
+    tarfiles) MODE_TARFILES=1;;
+    upload)   MODE_UPLOAD=1;;
+    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_DIFFS=1; MODE_UPLOAD=1;
+              if [ $SNAPSHOT -ne 1 ]; then
+                # Only for releases and pre-releases.
+                MODE_GZIP=1;
+              fi
+              ;;
+    *)        error "Unknown mode $1";;
+    esac
+    shift
+done
+
 # Perform consistency checking.
 if [ ${LOCAL} -eq 0 ] && [ -z ${CVS_USERNAME} ]; then
   error "No username specified"
@@ -567,7 +586,7 @@ else
   BRANCH="3.3"
   CVSBRANCH=gcc-3_3-branch
   FTP_PATH="${FTP_PATH}/snapshots/${BRANCH}-${LONG_DATE}"
-  TAG=gcc_ss_${DATE}
+  TAG=gcc-ss-`echo ${BRANCH} | tr '.' '_'`-${DATE}
 
   # Building locally on gcc.gnu.org, we know what the last snapshot date
   # was.
@@ -608,25 +627,6 @@ export CVSROOT
 # Set the timezone to UTC
 TZ="UTC0"
 export TZ
-
-# Handle the major modes.
-while [ $# -ne 0 ]; do
-    case $1 in
-    diffs)    MODE_DIFFS=1;;
-    gzip)     MODE_GZIP=1;;
-    sources)  MODE_SOURCES=1;;
-    tarfiles) MODE_TARFILES=1;;
-    upload)   MODE_UPLOAD=1;;
-    all)      MODE_SOURCES=1; MODE_TARFILES=1; MODE_DIFFS=1; MODE_UPLOAD=1;
-              if [ $SNAPSHOT -ne 1 ]; then
-                # Only for releases and pre-releases.
-                MODE_GZIP=1;
-              fi
-              ;;
-    *)        error "Unknown mode $1";;
-    esac
-    shift
-done
 
 # Build the source directory.
 
