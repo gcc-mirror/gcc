@@ -1275,7 +1275,7 @@ sysv4)
   ;;
 esac
 
-# Handle CRLF in mingw too chain
+# Handle CRLF in mingw tool chain
 opt_cr=
 case "$host_os" in
 mingw*)
