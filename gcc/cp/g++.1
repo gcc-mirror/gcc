@@ -430,38 +430,6 @@ differently depending on whether `\|\c
 testing both of these predefined macros you can distinguish four
 situations: GNU C, traditional GNU C, other ANSI C compilers, and
 other old C compilers.
-.TP
-\ \ \ \(bu
-In the preprocessor, comments convert to nothing at all, rather than
-to a space.  This allows traditional token concatenation.
-.TP
-\ \ \ \(bu
-In the preprocessor, macro arguments are recognized within string
-constants in a macro definition (and their values are stringified,
-though without additional quote marks, when they appear in such a
-context).  The preprocessor always considers a string constant to end
-at a newline.
-.TP
-\ \ \ \(bu
-The preprocessor does not predefine the macro \c
-.B __STDC__\c
-\& when you use
-`\|\c
-.B \-traditional\c
-\&\|', but still predefines\c
-.B __GNUC__\c
-\& (since the GNU extensions indicated by 
-.B __GNUC__\c
-\& are not affected by
-`\|\c
-.B \-traditional\c
-\&\|').  If you need to write header files that work
-differently depending on whether `\|\c
-.B \-traditional\c
-\&\|' is in use, by
-testing both of these predefined macros you can distinguish four
-situations: GNU C, traditional GNU C, other ANSI C compilers, and
-other old C compilers.
 .PP
 .TP
 \ \ \ \(bu
