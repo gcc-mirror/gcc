@@ -42,7 +42,11 @@ declare_function_name ()
       char *kind = "function";
       if (TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
 	kind = "method";
-      name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+      /* Allow functions to be nameless (such as artificial ones).  */
+      if (DECL_NAME (current_function_decl))
+        name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+      else
+	name = "";
       printable_name = (*decl_printable_name) (current_function_decl, &kind);
     }
 
